@@ -47,7 +47,6 @@
 <translation id="2486653164587200256">Chromium 已不適用於 Windows XP 或 Windows Vista，因此可能無法正常運作。</translation>
 <translation id="2535480412977113886">您的帳戶登入詳細資料尚未更新，因此 Chromium 作業系統無法同步處理您的資料。</translation>
 <translation id="2558641060352364164">我們即將停止支援這個網站使用的 Chromium 內嵌框架外掛程式。請解除安裝該外掛程式，並升級至新型瀏覽器。</translation>
-<translation id="2565260267992448464">您的電腦未連上網際網路，因此 Chromium 無法顯示網頁。</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
 <translation id="2602806952220118310">Chromium - 通知</translation>
 <translation id="2636877269779209383">Chromium 需要攝影機存取權，才能與這個網站分享。</translation>
@@ -110,16 +109,6 @@
 <translation id="4458285410772214805">請先登出，然後重新登入，這項變更才會生效。</translation>
 <translation id="4488676065623537541">Chromium 已儲存您的帳單詳細資訊。</translation>
 <translation id="4549794359424059447">日後發佈的 Chromium 版本將不再支援 Windows XP 或 Windows Vista。</translation>
-<translation id="4559775032954821361">前往
-          Chromium 選單 &gt;
-          [<ph name="SETTINGS_TITLE" />]
-          &gt;
-          [<ph name="ADVANCED_TITLE" />]
-          &gt;
-          [<ph name="PROXIES_TITLE" />]
-          &gt;
-          [區域網路設定]
-          然後取消勾選 [在您的區域網路使用 Proxy 伺服器] 核取方塊。</translation>
 <translation id="4567424176335768812">您已使用 <ph name="USER_EMAIL_ADDRESS" /> 的身分登入，可以在所有登入的裝置上使用您的書籤、紀錄和其他設定。</translation>
 <translation id="457845228957001925">Chromium 資料的相關重要資訊</translation>
 <translation id="459535195905078186">Chromium 應用程式</translation>
@@ -141,14 +130,6 @@
 <translation id="5680901439334282664">登入 Chromium</translation>
 <translation id="5772805321386874569">(必須<ph name="BEGIN_BUTTON" />重新啟動<ph name="END_BUTTON" /> Chromium)</translation>
 <translation id="5796460469508169315">Chromium 即將準備就緒。</translation>
-<translation id="580822234363523061">前往
-          Chromium 選單 &gt;
-          [<ph name="SETTINGS_TITLE" />]
-          &gt;
-          [<ph name="ADVANCED_TITLE" />]
-          &gt;
-          [<ph name="PROXIES_TITLE" />]
-          並確認您的設定為 [不使用 Proxy] 或 [直接連線]。</translation>
 <translation id="5820394555380036790">Chromium 作業系統</translation>
 <translation id="5823381412099532241">由於 Chromium 無法更新至最新版本，您現在無法使用各種最新功能和安全性修正。請更新 Chromium。</translation>
 <translation id="5862307444128926510">歡迎使用 Chromium</translation>
@@ -225,9 +206,6 @@ Chromium 無法復原您的設定。</translation>
 <translation id="8033665941300843262">Chromium 需要存取權限，才能與這個網站分享。</translation>
 <translation id="805745970029938373">您可以在這裡查看所有 Chromium 應用程式、擴充功能和網站的通知。</translation>
 <translation id="8134284582177628525">如果您和「<ph name="PROFILE_NAME" />」共用這台電腦，只要在 Chromium 新增個人身分，就能享有專屬的瀏覽環境。如果您並未與對方共用電腦，請解除其 Google 帳戶的連結。</translation>
-<translation id="8187289872471304532">前往
-          [應用程式] &gt; [系統偏好設定] &gt; [網路] &gt; [進階] &gt; [Proxy]
-          然後取消勾選所有已選取的 Proxy。</translation>
 <translation id="8269379391216269538">協助改善 Chromium</translation>
 <translation id="8453117565092476964">安裝程式封存檔案已毀損或無效，請重新下載 Chromium。</translation>
 <translation id="8493179195440786826">Chromium 版本過舊</translation>
@@ -235,8 +213,6 @@ Chromium 無法復原您的設定。</translation>
 <translation id="85843667276690461">前往 Chromium 說明頁面</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> The Chromium Authors. 版權所有。</translation>
 <translation id="8605166112420372522">以桌面模式重新啟動 Chromium(&amp;R)</translation>
-<translation id="8610831143142469229">允許 Chromium 存取受到防火牆或防毒軟體設定所阻擋的
-        網路。</translation>
 <translation id="8621669128220841554">不明錯誤導致安裝失敗，請重新下載 Chromium。</translation>
 <translation id="8628626585870903697">Chromium 不含 PDF 檢視器，因此無法執行預覽列印功能。</translation>
 <translation id="8684913864886094367">Chromium 未正確關閉。</translation>

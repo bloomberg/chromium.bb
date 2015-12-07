@@ -8,6 +8,24 @@
           och inaktivera Förhandshämta sidresurser.
           Om det inte hjälper rekommenderar vi att du aktiverar alternativet
           igen vilket ger bättre prestanda.</translation>
+<translation id="4559775032954821361">Öppna
+          Chromium-menyn &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          &gt;
+          <ph name="PROXIES_TITLE" />
+          &gt;
+          LAN-inställningar
+          och avmarkera kryssrutan Använd en proxyserver för nätverket.</translation>
+<translation id="580822234363523061">Öppna
+          Chromium-menyn &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          &gt;
+          <ph name="PROXIES_TITLE" />
+          och kontrollera att "ingen proxy" eller "direkt" har angetts i konfigurationen</translation>
 <translation id="6613594504749178791">Ändringarna tillämpas nästa gång du startar om Chromium.</translation>
 <translation id="7861509383340276692">Öppna
         Chromium-menyn &gt;
@@ -17,4 +35,9 @@
         och avmarkera <ph name="NO_PREFETCH_DESCRIPTION" />.
         Om det inte hjälper rekommenderar vi att du markerar det
         här alternativet igen så att funktionaliteten förbättras.</translation>
+<translation id="8187289872471304532">Öppna
+          Program &gt; Systeminställningar &gt; Nätverk &gt; Avancerat &gt; Proxyservrar
+          och avmarkera alla proxyservrar.</translation>
+<translation id="8610831143142469229">Tillåt att Chromium får åtkomst till nätverket i din brandvägg eller dina
+        antivirusinställningar.</translation>
 </translationbundle>

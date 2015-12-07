@@ -378,21 +378,6 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 
           Si ce paramètre n'est pas défini, <ph name="PRODUCT_NAME" />
           autorise l'utilisation d'hôtes de messagerie native au niveau de l'utilisateur.</translation>
-<translation id="2393996789386329927">Bloquer l'accès aux URL répertoriées.
-
-      Cette règle empêche l'utilisateur de charger des pages Web à partir d'URL figurant sur la liste noire. La liste noire contient une liste de formats d'URL qui définissent quelles URL sont ajoutées à la liste noire.
-
-      Chaque format d'URL peut être soit un format pour fichiers locaux, soit un format d'URL générique. Les fichiers locaux suivent le format "file://path". Le chemin spécifié doit alors correspondre au chemin absolu à bloquer. Toutes les adresses du système de fichiers ayant ce chemin pour préfixe seront bloquées.
-
-      Le format pour une URL générique est "scheme://host:port/path".
-      Seul le schéma spécifié sera bloqué. Si le préfixe "scheme://" n'est pas spécifié, tous les schémas sont bloqués.
-      L'hôte doit être précisé sous la forme d'un nom d'hôte ou d'une adresse IP. Les sous-domaines d'un nom d'hôte seront également bloqués. Afin d'éviter le blocage des sous-domaines, ajoutez un "." devant le nom d'hôte. Le nom d'hôte spécial "*" bloque tous les domaines. 
-      Le port facultatif est un numéro de port valide de 1 à 65535. Si aucun port n'est spécifié, tous les ports sont bloqués. 
-      Si le chemin facultatif est spécifié, seuls les chemins contenant ce préfixe sont bloqués.
-
-      Vous pouvez définir des exceptions dans la règle s'appliquant aux URL sur liste blanche. Cette règle étant limitée à 1 000 entrées, les entrées suivantes seront ignorées.
-
-      Si cette règle n'est pas configurée, aucune URL n'est mise sur liste noire dans le navigateur.</translation>
 <translation id="240213793013362302">Configurer l'image de fond d'écran.
 
       Cette règle vous permet de configurer l'image de fond d'écran qui s'affiche sur le bureau et en arrière-plan sur l'écran de connexion de l'utilisateur. Pour la configurer, vous devez indiquer l'URL depuis laquelle <ph name="PRODUCT_OS_NAME" /> peut télécharger l'image de fond d'écran et un hachage cryptographique utilisé pour vérifier l'intégrité du téléchargement. L'image doit être au format JPEG et sa taille ne doit pas dépasser 16 Mo. L'URL doit être accessible sans authentification.

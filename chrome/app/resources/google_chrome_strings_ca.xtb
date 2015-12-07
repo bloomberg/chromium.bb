@@ -143,19 +143,10 @@ En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name=
 <translation id="5785746630574083988">En tornar a iniciar en el mode de Windows 8, les aplicacions de Chrome es tancaran i es tornaran a iniciar.</translation>
 <translation id="5855036575689098185">El programari que s'executa al vostre ordinador no és compatible amb Google Chrome.</translation>
 <translation id="5877064549588274448">El canal ha canviat. Reinicieu el dispositiu perquè s'apliquin els canvis.</translation>
-<translation id="5890698319714066019">Google Chrome no pot mostrar la pàgina web perquè l'ordinador no està connectat a Internet.</translation>
 <translation id="5931853610562009806">En un Mac, és possible que les contrasenyes es desin a Keychain i que altres usuaris de Chrome que comparteixin aquest compte d'OS X puguin accedir-hi i sincronitzar-les.</translation>
 <translation id="5940385492829620908">El vostre web, les adreces d'interès i altres coses de Chrome resideixen aquí.</translation>
 <translation id="5941830788786076944">Estableix Google Chrome com el navegador predeterminat</translation>
 <translation id="597770749449734237">Activa tecles de drecera addicionals que siguin útils per depurar Google Chrome.</translation>
-<translation id="6011049234605203654">Aneu al
-          menú de Chrome &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          i assegureu-vos que la configuració estigui definida sense servidor intermediari o com a directa.</translation>
 <translation id="6012342843556706400">Chrome necessita accés a la ubicació per compartir-la amb aquest lloc web.</translation>
 <translation id="6014844626092547096">Heu iniciat la sessió a Chrome. El vostre administrador ha desactivat la sincronització.</translation>
 <translation id="6049075767726609708">Un administrador ha instal·lat Google Chrome en aquest sistema i ja està disponible per a tots els usuaris. Ara substituirem la instal·lació de Google Chrome en l'àmbit del sistema per la instal·lació en l'àmbit dels usuaris.</translation>
@@ -176,16 +167,6 @@ En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name=
 <translation id="6676384891291319759">Accedeix a Internet</translation>
 <translation id="6757767188268205357">No em molestis</translation>
 <translation id="683440813066116847">Regla d'entrada de Google Chrome Canary per permetre el trànsit de mDNS.</translation>
-<translation id="6855094794438142393">Aneu al
-          menú de Chrome &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          &gt;
-          Configuració de LAN
-          i desmarqueu Utilitza un servidor intermediari per a la LAN.</translation>
 <translation id="6883876366448858277">Envia una paraula i el seu context a Cerca de Google i, a continuació, mostra definicions, imatges i altres resultats de la cerca.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="6970811910055250180">S'està actualitzant el dispositiu...</translation>
@@ -207,7 +188,6 @@ En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name=
 <translation id="7282192067747128786">Chrome: notificacions (<ph name="QUANTITY" /> no llegides)</translation>
 <translation id="729375352412857283">Aquest ordinador aviat deixarà de rebre actualitzacions de Google Chrome perquè Windows XP i Windows Vista ja no seran compatibles.</translation>
 <translation id="7339898014177206373">Finestra nova</translation>
-<translation id="7396375882099008034">Configureu el tallafoc o l'antivirus per permetre que Chrome accedeixi a la xarxa.</translation>
 <translation id="7398801000654795464">Teníeu la sessió iniciada a Chrome com a <ph name="USER_EMAIL_ADDRESS" />. Utilitzeu el mateix compte per tornar-hi a iniciar la sessió.</translation>
 <translation id="7400722733683201933">Quant a Google Chrome</translation>
 <translation id="7408085963519505752">Condicions de Chrome OS</translation>
@@ -237,9 +217,6 @@ En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name=
 <translation id="8032142183999901390">Després de suprimir el vostre compte de Chrome, pot ser que hàgiu de tornar a carregar les pestanyes obertes.</translation>
 <translation id="8037887340639533879">No s'ha trobat cap instal·lació de Google Chrome pendent d'actualització.</translation>
 <translation id="8129812357326543296">Quant a &amp;Google Chrome</translation>
-<translation id="8187289872471304532">Aneu a
-          Aplicacions &gt; Preferències del sistema &gt; Xarxa &gt; Opcions avançades &gt; Servidors intermediaris
-          i desmarqueu tots els servidors intermediaris que s'hagin seleccionat.</translation>
 <translation id="8205111949707227942">Opcional: ajudeu-nos a millorar Chrome OS enviant estadístiques d'ús i informes d'error a Google automàticament.</translation>
 <translation id="8227755444512189073">Google Chrome ha d'iniciar una aplicació externa per gestionar els enllaços <ph name="SCHEME" />. L'enllaç sol·licitat és <ph name="PROTOLINK" />.</translation>
 <translation id="8255190535488645436">Google Chrome està utilitzant la càmera i el micròfon.</translation>

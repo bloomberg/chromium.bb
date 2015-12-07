@@ -144,19 +144,10 @@ Tetap masuk akan menggabungkan informasi Chrome seperti bookmark, riwayat, dan s
 <translation id="5785746630574083988">Dengan meluncurkan kembali dalam mode Windows 8, Anda akan menutup dan meluncurkan kembali aplikasi Chrome.</translation>
 <translation id="5855036575689098185">Perangkat lunak yang berjalan di komputer Anda tidak kompatibel dengan Google Chrome.</translation>
 <translation id="5877064549588274448">Saluran diubah. Mulai ulang perangkat Anda untuk menerapkan perubahan.</translation>
-<translation id="5890698319714066019">Google Chrome tidak dapat menampilkan laman web karena komputer Anda tidak tersambung ke Internet.</translation>
 <translation id="5931853610562009806">Di Mac, sandi disimpan pada Keychain Anda dan diakses atau disinkronkan oleh pengguna Chrome lain yang membagikan akun OS X ini.</translation>
 <translation id="5940385492829620908">Web, bookmark, dan file Chrome Anda lainnya tersedia di sini.</translation>
 <translation id="5941830788786076944">Jadikan Google Chrome sebagai browser default</translation>
 <translation id="597770749449734237">Mengaktifkan pintasan keyboard tambahan yang berguna untuk melakukan debug Google Chrome.</translation>
-<translation id="6011049234605203654">Buka
-          menu Chrome &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          pastikan konfigurasi Anda disetel ke "tanpa proxy" atau "langsung".</translation>
 <translation id="6012342843556706400">Chrome memerlukan akses lokasi untuk berbagi dengan situs ini.</translation>
 <translation id="6014844626092547096">Sekarang Anda telah masuk ke Chrome! Sinkronisasi dinonaktifkan oleh administrator Anda.</translation>
 <translation id="6049075767726609708">Administrator telah menginstal Google Chrome di sistem ini dan tersedia bagi seluruh pengguna. Sekarang tingkat sistem Google Chrome akan mengganti penginstalan tingkat pengguna Anda.</translation>
@@ -177,16 +168,6 @@ Tetap masuk akan menggabungkan informasi Chrome seperti bookmark, riwayat, dan s
 <translation id="6676384891291319759">Akses Internet</translation>
 <translation id="6757767188268205357">Jangan ganggu saya</translation>
 <translation id="683440813066116847">Inbound rule untuk Google Chrome Canary guna mengizinkan lalu lintas mDNS.</translation>
-<translation id="6855094794438142393">Buka
-          menu Chrome &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          &gt;
-          Setelan LAN
-          dan batalkan pilihan "Gunakan server proxy untuk LAN".</translation>
 <translation id="6883876366448858277">mengirim kata dan konteks di sekitarnya ke Google Penelusuran, mengembalikan definisi, gambar, hasil penelusuran, dan hasil penelusuran lain.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="6970811910055250180">Memperbarui perangkat Anda...</translation>
@@ -208,8 +189,6 @@ Tetap masuk akan menggabungkan informasi Chrome seperti bookmark, riwayat, dan s
 <translation id="7282192067747128786">Chrome - Notifikasi (<ph name="QUANTITY" /> belum dibaca)</translation>
 <translation id="729375352412857283">Komputer ini akan segera berhenti menerima pembaruan Google Chrome karena Windows XP dan Windows Vista sudah tidak didukung.</translation>
 <translation id="7339898014177206373">Jendela baru</translation>
-<translation id="7396375882099008034">Izinkan Chrome untuk mengakses jaringan di setelan firewall atau antivirus
-        Anda.</translation>
 <translation id="7398801000654795464">Anda telah masuk ke Chrome sebagai <ph name="USER_EMAIL_ADDRESS" />. Gunakan akun yang sama untuk masuk kembali.</translation>
 <translation id="7400722733683201933">Tentang Google Chrome</translation>
 <translation id="7408085963519505752">Persyaratan Chrome OS</translation>
@@ -239,9 +218,6 @@ Tetap masuk akan menggabungkan informasi Chrome seperti bookmark, riwayat, dan s
 <translation id="8032142183999901390">Setelah membuang akun dari Chrome, Anda mungkin perlu memuat ulang tab terbuka untuk menerapkannya.</translation>
 <translation id="8037887340639533879">Tidak ditemukan pemasangan Google Chrome untuk diperbarui.</translation>
 <translation id="8129812357326543296">Tentang &amp;Google Chrome</translation>
-<translation id="8187289872471304532">Buka
-          Aplikasi &gt; Preferensi Sistem &gt; Jaringan &gt; Lanjutan &gt; Proxy
-          dan hapus centang proxy apa pun yang telah dipilih.</translation>
 <translation id="8205111949707227942">Opsional: Bantu kami membuat Chrome OS lebih baik dengan mengirim statistik penggunaan dan laporan kerusakan ke Google secara otomatis.</translation>
 <translation id="8227755444512189073">Google Chrome harus menjalankan aplikasi eksternal untuk menangani link <ph name="SCHEME" />. Link yang diminta adalah <ph name="PROTOLINK" />.</translation>
 <translation id="8255190535488645436">Google Chrome menggunakan kamera dan mikrofon Anda.</translation>

@@ -335,21 +335,6 @@
 
           Se esta definição for deixada por definir, o <ph name="PRODUCT_NAME" />
           permitirá a utilização de anfitriões de Mensagens nativas no nível do utilizador.</translation>
-<translation id="2393996789386329927">Bloqueia o acesso aos URLs listados.
-
-      Esta política impede que o utilizador carregue páginas Web a partir de URLs incluídos na lista negra. A lista negra fornece uma lista de padrões de URL que especifica que URLs são nela incluídos.
-
-      Cada padrão de URL pode ser um padrão para ficheiros locais ou um padrão de URL genérico. Os padrões de ficheiros locais têm o formato "ficheiro://caminho", em que o caminho deve ser um caminho absoluto para bloquear. Todas as localizações do sistema de ficheiros para as quais esse caminho seja um prefixo são bloqueadas.
-
-      Um padrão de URL genérico tem o formato "scheme://host:port/path".
-      Caso presente, só este esquema é bloqueado. Caso o prefixo scheme:// prefix não seja especificado, todos os esquemas são bloqueados.
-      O anfitrião pode ser um nome de anfitrião ou um endereço IP. Os subdomínios de um nome de anfitrião também são bloqueados. Para evitar o bloqueio de subdomínios, inclua um "." antes do nome do anfitrião. O nome de anfitrião especial "*" bloqueia todos os domínios.
-      A porta opcional é um número de porta válido entre 1 e 65535. Se não tiver sido especificado nenhum número, todas as portas são bloqueadas.
-      Se o caminho opcional for especificado, apenas os caminhos com esse prefixo são bloqueados.
-
-      É possível definir exceções na política de lista de autorizações de URLs. Estas políticas estão limitadas a 1000 entradas; as entradas subsequentes são ignoradas.
-
-      Se esta política não for definida, a lista negra do navegador não inclui qualquer URL.</translation>
 <translation id="240213793013362302">Configurar imagem de fundo.
 
       Esta política permite-lhe configurar a imagem de fundo apresentada no ambiente de trabalho e no fundo do ecrã de início de sessão do utilizador. A política é definida ao especificar o URL a partir do qual o <ph name="PRODUCT_OS_NAME" /> pode transferir a imagem de fundo e um hash criptográfico utilizado para confirmar a integridade da transferência. A imagem tem de estar no formato JPEG e o tamanho não pode exceder 16 MB. O URL tem de ser acessível sem qualquer autenticação.

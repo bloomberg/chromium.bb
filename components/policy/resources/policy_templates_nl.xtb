@@ -361,21 +361,6 @@
           Als deze instelling is uitgeschakeld, gebruikt <ph name="PRODUCT_NAME" /> alleen hosts voor systeemeigen berichten die zijn geïnstalleerd op systeemniveau.
 
           Als deze instelling niet wordt ingesteld, staat <ph name="PRODUCT_NAME" /> het gebruik toe van hosts voor systeemeigen berichten op gebruikersniveau.</translation>
-<translation id="2393996789386329927">Blokkeert de toegang tot de vermelde URL's.
-
-      Met dit beleid wordt voorkomen dat de gebruiker webpagina's laadt van URL's die op de zwarte lijst staan. De zwarte lijst biedt een lijst met URL-patronen die aangeven welke URL's op de zwarte lijst komen te staan.
-
-      Elk URL-patroon kan een patroon voor lokale bestanden of een algemeen URL-patroon zijn. Lokale bestandspatronen hebben de indeling 'bestand://pad', waarbij 'pad' een absoluut pad moet zijn om te blokkeren. Alle betandssysteemlocaties waarvoor dat pad een voorvoegsel is, worden geblokkeerd.
-
-      Een algemeen URL-patroon heeft de indeling 'schema://host:poort/pad'.
-      Indien aanwezig, wordt alleen het opgegeven schema geblokkeerd. Als het voorvoegsel schema:// niet wordt opgegeven, worden alle schema's geblokkeerd.
-      De host is vereist en kan een hostnaam of IP-adres zijn. Subdomeinen van een hostnaam worden ook geblokkeerd. Als je wilt voorkomen dat subdomeinen worden geblokkeerd, voeg je '.' toe vóór de hostnaam. De speciale hostnaam '*' blokkeert alle domeinen.
-      De optionele poort is een geldig poortnummer tussen 1 en 65535. Als geen poortnummer is opgegeven, worden alle poorten geblokkeerd.
-      Als het optionele pad is opgegeven, worden alleen paden met dat voorvoegsel geblokkeerd.
-
-      Uitzonderingen kunnen worden gedefinieerd in het beleid voor de witte lijst voor URL's. Dit beleid is beperkt tot 1000 items. Daaropvolgende items worden genegeerd.
-
-      Als dit beleid niet is ingesteld, wordt geen enkele URL op de zwarte lijst van de browser geplaatst.</translation>
 <translation id="240213793013362302">Achtergrondafbeelding configureren.
 
       Met dit beleid kun je de achtergrondafbeelding configureren die op het bureaublad en op de achtergrond van het inlogscherm voor de gebruiker wordt weergegeven. Het beleid wordt ingesteld door de URL op te geven waarvandaan <ph name="PRODUCT_OS_NAME" /> de achtergrondafbeelding en een cryptografische hash kan downloaden die wordt gebruikt om de integriteit van de download te verifiëren. De afbeelding moet een JPEG-indeling hebben en mag niet groter zijn dan 16 MB. De URL moet zonder verificatie toegankelijk zijn.

@@ -8,6 +8,24 @@
           và tắt "Tìm nạp trước tài nguyên trang".
           Nếu cách này không giải quyết được sự cố thì chúng tôi khuyên bạn nên bật lại tùy chọn này
           để cải thiện hiệu suất.</translation>
+<translation id="4559775032954821361">Đi tới
+          menu Chromium &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          &gt;
+          <ph name="PROXIES_TITLE" />
+          &gt;
+          Cài đặt mạng LAN
+          và bỏ chọn hộp kiểm "Sử dụng máy chủ proxy cho mạng LAN của bạn".</translation>
+<translation id="580822234363523061">Đi tới
+          menu Chromium &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          &gt;
+          <ph name="PROXIES_TITLE" />
+          và đảm bảo cấu hình của bạn được đặt thành "không có proxy" hoặc "trực tiếp".</translation>
 <translation id="6613594504749178791">Các thay đổi của bạn sẽ có hiệu lực vào lần tới khi bạn chạy lại Chromium.</translation>
 <translation id="7861509383340276692">Chuyển đến
           menu Chromium &gt;
@@ -17,4 +35,9 @@
           và bỏ chọn "<ph name="NO_PREFETCH_DESCRIPTION" />."
           Nếu cách này không giải quyết được sự cố thì chúng tôi khuyên bạn nên chọn lại tùy chọn này
           để cải thiện hiệu suất.</translation>
+<translation id="8187289872471304532">Đi tới
+          Ứng dụng&gt; Tùy chọn hệ thống &gt; Mạng &gt; Nâng cao &gt; Proxy
+          và bỏ chọn bất kỳ proxy nào đã được chọn.</translation>
+<translation id="8610831143142469229">Cho phép Chrome truy cập mạng trong cài đặt tường lửa hoặc diệt vi-rút 
+        của bạn.</translation>
 </translationbundle>

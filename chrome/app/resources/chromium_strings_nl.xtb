@@ -49,7 +49,6 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="2486653164587200256">Chromium werkt wellicht niet naar behoren omdat dit niet langer wordt ondersteund op Windows XP en Windows Vista.</translation>
 <translation id="2535480412977113886">Chromium OS kan je gegevens niet synchroniseren omdat de inloggegevens voor je account zijn verouderd.</translation>
 <translation id="2558641060352364164">Deze site maakt gebruik van de plug-in Chromium Frame die binnenkort niet meer wordt ondersteund. Verwijder deze en voer een upgrade naar een moderne browser uit.</translation>
-<translation id="2565260267992448464">Chromium kan de internetpagina niet weergeven omdat je computer niet is verbonden met internet.</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
 <translation id="2602806952220118310">Chromium - Meldingen</translation>
 <translation id="2636877269779209383">Chromium heeft cameratoegang nodig om het item te delen met deze site.</translation>
@@ -111,16 +110,6 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="4458285410772214805">Log uit en log weer in om deze wijziging door te voeren.</translation>
 <translation id="4488676065623537541">Je factureringsgegevens zijn opgeslagen in Chromium.</translation>
 <translation id="4549794359424059447">Toekomstige versies van Chromium bieden geen ondersteuning meer voor Windows XP en Windows Vista.</translation>
-<translation id="4559775032954821361">Ga naar
-          het menu 'Chromium' &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          &gt;
-          LAN-instellingen
-          en verwijder het vinkje uit het selectievakje bij 'Een proxyserver voor het LAN-netwerk gebruiken'.</translation>
 <translation id="4567424176335768812">Je bent ingelogd als <ph name="USER_EMAIL_ADDRESS" />. Je hebt nu toegang tot je bladwijzers, geschiedenis en andere instellingen op al je apparaten waarop je bent ingelogd.</translation>
 <translation id="457845228957001925">Belangrijke informatie over je Chromium-gegevens</translation>
 <translation id="459535195905078186">Chromium-apps</translation>
@@ -142,14 +131,6 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="5680901439334282664">inloggen bij Chromium</translation>
 <translation id="5772805321386874569">(je moet Chromium <ph name="BEGIN_BUTTON" />opnieuw starten<ph name="END_BUTTON" />)</translation>
 <translation id="5796460469508169315">Chromium is bijna klaar.</translation>
-<translation id="580822234363523061">Ga naar
-          het menu 'Chromium' &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          en zorg ervoor dat de configuratie is ingesteld op 'geen proxy' of 'direct'.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5823381412099532241">Chromium kan niet automatisch worden geüpdatet naar de nieuwste versie, waardoor je geweldige nieuwe functies en beveiligingsoplossingen misloopt. Je moet Chromium updaten.</translation>
 <translation id="5862307444128926510">Welkom bij Chromium</translation>
@@ -226,7 +207,6 @@ Chromium kan je instellingen niet herstellen.</translation>
 <translation id="8033665941300843262">Chromium heeft toegang tot rechten nodig om ze te delen met deze site.</translation>
 <translation id="805745970029938373">Hier kun je al je meldingen van Chromium-apps, -extensies en -websites weergeven.</translation>
 <translation id="8134284582177628525">Als je deze computer met <ph name="PROFILE_NAME" /> deelt, voeg je jezelf toe aan Chromium om afzonderlijk te surfen. Anders ontkoppel je zijn Google-account.</translation>
-<translation id="8187289872471304532">Ga naar 'Applicaties &gt; Systeemvoorkeuren &gt; Netwerk &gt; Geavanceerd &gt; Proxy's' en verwijder de vinkjes bij proxyservers die zijn aangevinkt.</translation>
 <translation id="8269379391216269538">Help ons Chromium beter te maken</translation>
 <translation id="8453117565092476964">Het archief van het installatieprogramma is beschadigd of ongeldig. Download Chromium opnieuw.</translation>
 <translation id="8493179195440786826">Chromium is verouderd</translation>
@@ -234,7 +214,6 @@ Chromium kan je instellingen niet herstellen.</translation>
 <translation id="85843667276690461">Hulp bij het gebruik van Chromium</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> De auteurs van Chromium. Alle rechten voorbehouden.</translation>
 <translation id="8605166112420372522">Ch&amp;romium opnieuw openen op het bureaublad</translation>
-<translation id="8610831143142469229">Chromium via je firewall- of antivirusinstellingen toestaan het netwerk te gebruiken.</translation>
 <translation id="8621669128220841554">De installatie is mislukt wegens een onbekende fout. Download Chromium opnieuw.</translation>
 <translation id="8628626585870903697">Chromium bevat niet de pdf-viewer die nodig is om de functie 'Afdrukvoorbeeld' te laten werken.</translation>
 <translation id="8684913864886094367">Chromium is niet goed afgesloten.</translation>

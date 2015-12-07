@@ -8,6 +8,24 @@
           dan nonaktifkan "Ambil sumber daya laman lebih dahulu".
           Jika hal ini tidak menyelesaikan masalah, sebaiknya aktifkan opsi ini
           lagi untuk kinerja yang ditingkatkan.</translation>
+<translation id="4559775032954821361">Buka
+          menu Chromium &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          &gt;
+          <ph name="PROXIES_TITLE" />
+          &gt;
+          Setelan LAN
+          dan hapus pilihan pada kotak centang "Gunakan server proxy untuk LAN".</translation>
+<translation id="580822234363523061">Buka
+          menu Chromium &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          &gt;
+          <ph name="PROXIES_TITLE" />
+          dan pastikan konfigurasi Anda disetel ke "tanpa proxy" atau "langsung".</translation>
 <translation id="6613594504749178791">Perubahan Anda akan berlaku saat berikutnya Anda membuka Chromium.</translation>
 <translation id="7861509383340276692">Buka
           menu Chromium &gt;
@@ -17,4 +35,9 @@
           dan batalkan pilihan "<ph name="NO_PREFETCH_DESCRIPTION" />."
           Jika hal ini tidak menyelesaikan masalah, sebaiknya pilih lagi opsi ini
           untuk meningkatkan kinerja.</translation>
+<translation id="8187289872471304532">Buka
+          Aplikasi &gt; Preferensi Sistem &gt; Jaringan &gt; Lanjutan &gt; Proxy
+          dan hapus centang proxy apa pun yang telah dipilih.</translation>
+<translation id="8610831143142469229">Izinkan Chromium untuk mengakses jaringan di setelan firewall atau antivirus
+        Anda.</translation>
 </translationbundle>

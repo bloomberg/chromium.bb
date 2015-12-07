@@ -151,19 +151,10 @@ Hindi magawang bawiin ng Google Chrome ang iyong mga setting.</translation>
 <translation id="5785746630574083988">Kapag naglunsad muli sa Windows 8, sasara at muling mailulunsad ang iyong mga app ng Chrome.</translation>
 <translation id="5855036575689098185">Hindi tumutugma ang software na tumatakbo sa iyong computer sa Google Chrome.</translation>
 <translation id="5877064549588274448">Binago ang channel. I-restart ang iyong device upang ilapat ang mga pagbabago.</translation>
-<translation id="5890698319714066019">Hindi maipakita ng Google Chrome ang webpage dahil hindi nakakonekta ang iyong computer sa Internet.</translation>
 <translation id="5931853610562009806">Sa Mac, maaaring ma-save ang mga password sa iyong Keychain at ma-access o ma-sync ng ibang mga user ng Chrome na nagbabahagi ng OS X account na ito.</translation>
 <translation id="5940385492829620908">Makikita dito ang iyong web, mga bookmark at iba pang mga bagay-bagay sa Chrome.</translation>
 <translation id="5941830788786076944">Gawin ang Google Chrome na default browser</translation>
 <translation id="597770749449734237">Ine-enable ang mga karagdagang keyboard shortcut na makakatulong sa pagde-debug ng Google Chrome.</translation>
-<translation id="6011049234605203654">Pumunta sa
-          menu ng Chrome &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          at tiyaking nakatakda sa "walang proxy" o "direkta" ang iyong configuration.</translation>
 <translation id="6012342843556706400">Kailangan ng Chrome ng access sa lokasyon upang maibahagi ito sa site na ito.</translation>
 <translation id="6014844626092547096">Naka-sign in ka na ngayon sa Chrome! Na-disable ng iyong administrator ang pag-sync.</translation>
 <translation id="6049075767726609708">In-install ng isang administrator ang Google Chrome sa system na ito, at magagamit ito ng lahat ng mga gumagamit. Papalitan ngayon ng Google Chrome sa antas ng system ang iyong pag-install sa antas ng gumagamit.</translation>
@@ -184,16 +175,6 @@ Hindi magawang bawiin ng Google Chrome ang iyong mga setting.</translation>
 <translation id="6676384891291319759">I-access ang Internet</translation>
 <translation id="6757767188268205357">Huwag akong istorbohin</translation>
 <translation id="683440813066116847">Inbound na panuntunan para sa Google Chrome Canary upang payagan ang trapiko ng mDNS.</translation>
-<translation id="6855094794438142393">Pumunta sa
-          menu ng Chrome &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          &gt;
-          Mga Setting ng LAN
-          at alisin sa pagkakapili ang "Gumamit ng proxy server para sa iyong LAN."</translation>
 <translation id="6883876366448858277">ipapadala ang isang salita at ang konteksto nito sa Google Search, at magbibigay ng mga pagpapakahulugan, larawan at iba pang mga resulta ng paghahanap.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="6970811910055250180">Ina-update ang iyong device...</translation>
@@ -215,8 +196,6 @@ Hindi magawang bawiin ng Google Chrome ang iyong mga setting.</translation>
 <translation id="7282192067747128786">Chrome - Mga Notification (<ph name="QUANTITY" /> ang hindi pa nababasa)</translation>
 <translation id="729375352412857283">Malapit nang hindi makatanggap ang computer na ito ng mga update sa Google Chrome dahil hindi na susuportahan ang Windows XP at Windows Vista.</translation>
 <translation id="7339898014177206373">Bagong window</translation>
-<translation id="7396375882099008034">Payagan ang Chrome na i-access ang network sa mga setting ng iyong firewall
-        o antivirus.</translation>
 <translation id="7398801000654795464">Naka-sign in ka sa Chrome bilang <ph name="USER_EMAIL_ADDRESS" />. Pakigamit ang parehong account upang mag-sign in muli.</translation>
 <translation id="7400722733683201933">Tungkol sa Google Chrome</translation>
 <translation id="7408085963519505752">Mga tuntunin ng Chrome OS</translation>
@@ -246,9 +225,6 @@ Hindi magawang bawiin ng Google Chrome ang iyong mga setting.</translation>
 <translation id="8032142183999901390">Pagkatapos alisin ang iyong account sa Chrome, maaaring kailangan mong i-reload ang mga nakabukas mong tab upang magkabisa.</translation>
 <translation id="8037887340639533879">Walang nakitang pag-install ng Google Chrome upang i-update.</translation>
 <translation id="8129812357326543296">Tungkol sa &amp;Google Chrome</translation>
-<translation id="8187289872471304532">Pumunta sa
-          Applications &gt; System Preferences &gt; Network &gt; Advanced &gt; Proxies
-          at alisin sa pagkakapili ang anumang mga napiling proxy.</translation>
 <translation id="8205111949707227942">Opsyonal: Tulungang mapagbuti ang Chrome OS sa pamamagitan ng awtomatikong pagpapadala ng mga istatistika ng paggamit at mga ulat ng pag-crash sa Google.</translation>
 <translation id="8227755444512189073">Kailangan ng Chrome na maglunsad ng isang panlabas na application upang mahawakan ang mga link <ph name="SCHEME" />. Ang hiling ng link ay <ph name="PROTOLINK" />.</translation>
 <translation id="8255190535488645436">Ginagamit ng Google Chrome ang iyong camera at mikropono.</translation>

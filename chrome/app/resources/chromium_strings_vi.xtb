@@ -47,7 +47,6 @@
 <translation id="2486653164587200256">Chromium có thể không hoạt động chính xác do không được hỗ trợ trên Windows XP hoặc Windows Vista nữa.</translation>
 <translation id="2535480412977113886">Chromium OS không thể đồng bộ hóa dữ liệu của bạn vì chi tiết đăng nhập tài khoản của bạn đã lỗi thời.</translation>
 <translation id="2558641060352364164">Trang web này đang sử dụng plugin Chromium Frame sắp không còn được hỗ trợ. Vui lòng gỡ cài đặt plugin này và nâng cấp lên một trình duyệt hiện đại.</translation>
-<translation id="2565260267992448464">Chromium không thể hiển thị trang web vì máy tính của bạn chưa kết nối Internet.</translation>
 <translation id="2572494885440352020">Trình trợ giúp của Chromium</translation>
 <translation id="2602806952220118310">Chromium - Thông báo</translation>
 <translation id="2636877269779209383">Chromium cần quyền truy cập vào máy ảnh để chia sẻ máy ảnh với trang web này.</translation>
@@ -110,16 +109,6 @@ không chính xác và bất thường. Điều này có thể xảy ra khi kẻ
 <translation id="4458285410772214805">Vui lòng đăng xuất và đăng nhập lại để thay đổi này có hiệu lực.</translation>
 <translation id="4488676065623537541">Chi tiết thanh toán của bạn đã được lưu trong Chromium.</translation>
 <translation id="4549794359424059447">Các phiên bản Chromium trong tương lai sẽ không hỗ trợ Windows XP hoặc Windows Vista nữa.</translation>
-<translation id="4559775032954821361">Đi tới
-          menu Chromium &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          &gt;
-          Cài đặt mạng LAN
-          và bỏ chọn hộp kiểm "Sử dụng máy chủ proxy cho mạng LAN của bạn".</translation>
 <translation id="4567424176335768812">Bạn đã đăng nhập với tên <ph name="USER_EMAIL_ADDRESS" />. Bây giờ, bạn có thể truy cập dấu trang, lịch sử và các cài đặt khác trên tất cả những thiết bị đã đăng nhập của bạn.</translation>
 <translation id="457845228957001925">Thông tin quan trọng liên quan đến dữ liệu Chromium của bạn</translation>
 <translation id="459535195905078186">Ứng dụng Chromium</translation>
@@ -141,14 +130,6 @@ không chính xác và bất thường. Điều này có thể xảy ra khi kẻ
 <translation id="5680901439334282664">đăng nhập vào Chromium</translation>
 <translation id="5772805321386874569">(yêu cầu Chromium <ph name="BEGIN_BUTTON" />khởi động lại<ph name="END_BUTTON" />)</translation>
 <translation id="5796460469508169315">Chromium gần như đã sẵn sàng.</translation>
-<translation id="580822234363523061">Đi tới
-          menu Chromium &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          và đảm bảo cấu hình của bạn được đặt thành "không có proxy" hoặc "trực tiếp".</translation>
 <translation id="5820394555380036790">Hệ điều hành Chromium</translation>
 <translation id="5823381412099532241">Chromium không thể tự cập nhật lên phiên bản mới nhất nên bạn đã bỏ lỡ các tính năng mới tuyệt vời và các bản vá bảo mật. Bạn cần cập nhật Chromium.</translation>
 <translation id="5862307444128926510">Chào mừng bạn đến với Chromium</translation>
@@ -225,9 +206,6 @@ Chromium không thể khôi phục cài đặt của bạn.</translation>
 <translation id="8033665941300843262">Chromium cần quyền truy cập vào các quyền để chia sẻ chúng với trang web này.</translation>
 <translation id="805745970029938373">Bạn có thể thấy tất cả các thông báo từ ứng dụng, tiện ích và trang web Chromium của bạn tại đây.</translation>
 <translation id="8134284582177628525">Nếu bạn chia sẻ máy tính này với <ph name="PROFILE_NAME" />, hãy thêm chính mình vào Chromium để duyệt web riêng biệt. Nếu không, hãy ngắt kết nối tài khoản Google của họ.</translation>
-<translation id="8187289872471304532">Đi tới
-          Ứng dụng&gt; Tùy chọn hệ thống &gt; Mạng &gt; Nâng cao &gt; Proxy
-          và bỏ chọn bất kỳ proxy nào đã được chọn.</translation>
 <translation id="8269379391216269538">Giúp cải thiện Chromium</translation>
 <translation id="8453117565092476964">Tệp lưu trữ trình cài đặt bị hỏng hoặc không hợp lệ. Hãy tải xuống Chromium lại lần nữa.</translation>
 <translation id="8493179195440786826">Chromium đã lỗi thời</translation>
@@ -235,8 +213,6 @@ Chromium không thể khôi phục cài đặt của bạn.</translation>
 <translation id="85843667276690461">Nhận trợ giúp về cách sử dụng Chromium</translation>
 <translation id="8586442755830160949">Bản quyền <ph name="YEAR" /> Tác giả Chromium. Mọi quyền được bảo lưu.</translation>
 <translation id="8605166112420372522">&amp;Khởi chạy lại Chromium trên máy tính để bàn</translation>
-<translation id="8610831143142469229">Cho phép Chrome truy cập mạng trong cài đặt tường lửa hoặc diệt vi-rút 
-        của bạn.</translation>
 <translation id="8621669128220841554">Không thể cài đặt do xảy ra lỗi không xác định. Hãy tải xuống Chromium lại lần nữa.</translation>
 <translation id="8628626585870903697">Chromium không bao gồm trình xem PDF được yêu cầu để tính năng xem trước bản in hoạt động.</translation>
 <translation id="8684913864886094367">Chromium không tắt đúng cách.</translation>

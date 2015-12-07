@@ -151,19 +151,10 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="5785746630574083988">Relaunching in Windows 8 mode will close and relaunch your Chrome apps.</translation>
 <translation id="5855036575689098185">Software running on your computer is incompatible with Google Chrome.</translation>
 <translation id="5877064549588274448">Channel changed. Restart your device to apply changes.</translation>
-<translation id="5890698319714066019">Google Chrome can't display the web page because your computer isn't connected to the Internet.</translation>
 <translation id="5931853610562009806">On Mac, passwords may be saved to your Keychain and accessed or synced by other Chrome users sharing this OS X account.</translation>
 <translation id="5940385492829620908">Your web, bookmarks and other Chrome stuff live here.</translation>
 <translation id="5941830788786076944">Make Google Chrome the default browser</translation>
 <translation id="597770749449734237">Enables additional keyboard shortcuts that are useful for debugging Google Chrome.</translation>
-<translation id="6011049234605203654">Go to
-          the Chrome menu &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          and make sure your configuration is set to "no proxy" or "direct."</translation>
 <translation id="6012342843556706400">Chrome needs location access to share it with this site.</translation>
 <translation id="6014844626092547096">You're now signed in to Chrome! Sync is disabled by your administrator.</translation>
 <translation id="6049075767726609708">An administrator has installed Google Chrome on this system, and it is available for all users. The system-level Google Chrome will replace your user-level installation now.</translation>
@@ -184,16 +175,6 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="6676384891291319759">Access the Internet</translation>
 <translation id="6757767188268205357">Don't bother me</translation>
 <translation id="683440813066116847">Inbound rule for Google Chrome Canary to allow mDNS traffic.</translation>
-<translation id="6855094794438142393">Go to
-          the Chrome menu &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          &gt;
-          LAN Settings
-          and deselect "Use a proxy server for your LAN".</translation>
 <translation id="6883876366448858277">sends a word and its surrounding context to Google Search, returning definitions, pictures and other search results.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="6970811910055250180">Updating your device...</translation>
@@ -215,8 +196,6 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="7282192067747128786">Chrome - Notifications (<ph name="QUANTITY" /> unread)</translation>
 <translation id="729375352412857283">This computer will soon stop receiving Google Chrome updates because Windows XP and Windows Vista will no longer be supported.</translation>
 <translation id="7339898014177206373">New window</translation>
-<translation id="7396375882099008034">Allow Chrome to access the network in your firewall or antivirus
-        settings.</translation>
 <translation id="7398801000654795464">You were signed in to Chrome as <ph name="USER_EMAIL_ADDRESS" />. Please use the same account to sign in again.</translation>
 <translation id="7400722733683201933">About Google Chrome</translation>
 <translation id="7408085963519505752">Chrome OS terms</translation>
@@ -246,9 +225,6 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="8032142183999901390">After removing your account from Chrome, you may need to reload your open tabs to take effect.</translation>
 <translation id="8037887340639533879">No installation of Google Chrome found to update.</translation>
 <translation id="8129812357326543296">About &amp;Google Chrome</translation>
-<translation id="8187289872471304532">Go to
-          Applications &gt; System Preferences &gt; Network &gt; Advanced &gt; Proxies
-          and deselect any proxies that have been selected.</translation>
 <translation id="8205111949707227942">Optional: Help make Chrome OS better by sending usage statistics and crash reports automatically to Google.</translation>
 <translation id="8227755444512189073">Google Chrome needs to launch an external application to handle <ph name="SCHEME" /> links. The link requested is <ph name="PROTOLINK" />.</translation>
 <translation id="8255190535488645436">Google Chrome is using your camera and microphone.</translation>

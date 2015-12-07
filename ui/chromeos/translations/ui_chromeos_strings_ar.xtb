@@ -23,6 +23,7 @@
 <translation id="3901991538546252627">جارٍ الاتصال بـ <ph name="NAME" /></translation>
 <translation id="3958548648197196644">كيوي</translation>
 <translation id="40400351611212369">خطأ تنشيط الشبكة</translation>
+<translation id="4118990158415604803">تم تعطيل الربط بالشبكات الأخرى من قبل مشرفك.</translation>
 <translation id="4237016987259239829">خطأ في اتصال الشبكة</translation>
 <translation id="4274292172790327596">خطأ غير معروف</translation>
 <translation id="4326192123064055915">قهوة</translation>
@@ -50,6 +51,7 @@
 <translation id="6857811139397017780">تنشيط <ph name="NETWORKSERVICE" /></translation>
 <translation id="6935521024859866267">رأسًا على عقب</translation>
 <translation id="6943836128787782965">‏أخفق الحصول على HTTP</translation>
+<translation id="7066646422045619941">تم تعطيل هذه الشبكة من قِبل مشرفك.</translation>
 <translation id="7165320105431587207">أخفقت تهيئة الشبكة</translation>
 <translation id="7170041865419449892">خارج النطاق</translation>
 <translation id="7229570126336867161">‏يلزم توفر EVDO</translation>

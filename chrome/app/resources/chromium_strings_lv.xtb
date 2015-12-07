@@ -47,7 +47,6 @@
 <translation id="2486653164587200256">Iespējams, Chromium nedarbosies pareizi, jo tas vairs netiek atbalstīts operētājsistēmās Windows XP un Windows Vista.</translation>
 <translation id="2535480412977113886">Chromium OS nevarēja sinhronizēt jūsu datus, jo jūsu konta pierakstīšanās informācija ir novecojusi.</translation>
 <translation id="2558641060352364164">Šajā vietnē tiek izmantots spraudnis Chromium Frame, kas drīzumā vairs netiks atbalstīts. Lūdzu, atinstalējiet to un veiciet jaunināšanu uz modernu pārlūku.</translation>
-<translation id="2565260267992448464">Chromium nevar parādīt šo tīmekļa lapu, jo jūsu datorā nav izveidots savienojums ar internetu.</translation>
 <translation id="2572494885440352020">Chromium palīgs</translation>
 <translation id="2602806952220118310">Chromium — paziņojumi</translation>
 <translation id="2636877269779209383">Chromium sistēmām ir nepieciešama piekļuve kamerai, lai kopīgotu to ar šo vietni.</translation>
@@ -111,16 +110,6 @@ un nepareizus akreditācijas datus. Iespējams, tas notika, jo uzbrucējs mēģi
 <translation id="4458285410772214805">Lūdzu, izrakstieties un pierakstieties vēlreiz, lai šīs izmaiņas stātos spēkā.</translation>
 <translation id="4488676065623537541">Jūsu norēķinu dati tika saglabāti pārlūkā Chromium.</translation>
 <translation id="4549794359424059447">Nākamajās Chromium versijās vairs netiks atbalstītas operētājsistēmas Windows XP un Windows Vista.</translation>
-<translation id="4559775032954821361">Atveriet
-          Chromium izvēlni &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          &gt;
-          LAN iestatījumi
-          un noņemiet atzīmi no izvēles rūtiņas “Use a proxy server for your LAN” (Izmantot starpniekserveri savam LAN).</translation>
 <translation id="4567424176335768812">Jūs esat pierakstījies kā <ph name="USER_EMAIL_ADDRESS" />. Tagad varat piekļūt savām grāmatzīmēm, vēsturei un citiem iestatījumiem visās ierīcēs, kurās esat pierakstījies.</translation>
 <translation id="457845228957001925">Svarīga informācija par jūsu datiem operētājsistēmā Chromium</translation>
 <translation id="459535195905078186">Chromium lietotnes</translation>
@@ -142,14 +131,6 @@ un nepareizus akreditācijas datus. Iespējams, tas notika, jo uzbrucējs mēģi
 <translation id="5680901439334282664">pierakstieties pārlūkā Chromium</translation>
 <translation id="5772805321386874569">(ir <ph name="BEGIN_BUTTON" />jārestartē<ph name="END_BUTTON" /> operētājsistēma Chromium)</translation>
 <translation id="5796460469508169315">Chromium ir gandrīz gatavs!</translation>
-<translation id="580822234363523061">Atveriet
-          Chromium izvēlni &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          un pārliecinieties, vai konfigurācija ir iestatīta uz “no proxy” (bez starpniekservera) vai “direct” (tieša).</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5823381412099532241">Pārlūku Chromium nevarēja automātiski atjaunināt uz jaunāko versiju, tāpēc jums nav pieejamas vairākas jaunas, noderīgas funkcijas un drošības uzlabojumi. Atjauniniet pārlūku Chromium.</translation>
 <translation id="5862307444128926510">Laipni lūdzam pārlūkā Chromium!</translation>
@@ -224,9 +205,6 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai iz
 <translation id="8033665941300843262">Chromium sistēmām ir nepieciešama piekļuve atļaujām, lai kopīgotu tās ar šo vietni.</translation>
 <translation id="805745970029938373">Šeit būs redzami visi paziņojumi no Chromium lietotnēm, paplašinājumiem un vietnēm.</translation>
 <translation id="8134284582177628525">Ja izmantojat šo datoru kopā ar lietotāju <ph name="PROFILE_NAME" />, pievienojiet savu kontu pārlūkā Chromium, lai veiktu pārlūkošanu atsevišķi. Pretējā gadījumā atsaistiet attiecīgā lietotāja Google kontu.</translation>
-<translation id="8187289872471304532">Atveriet izvēlni
-          Applications (Lietojumprogrammas) &gt; System Preferences (Sistēmas preferences) &gt; Network (Tīkls) &gt; Advanced (Papildu) &gt; (Proxies) Starpniekserveri
-          un noņemiet atzīmes no visiem atzīmētajiem starpniekserveriem.</translation>
 <translation id="8269379391216269538">Palīdziet uzlabot Chromium</translation>
 <translation id="8453117565092476964">Instalēšanas programmas arhīvs ir bojāts vai nav derīgs. Lejupielādējiet Chromium vēlreiz.</translation>
 <translation id="8493179195440786826">Chromium versija ir novecojusi</translation>
@@ -234,8 +212,6 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai iz
 <translation id="85843667276690461">Saņemt palīdzību par Chromium izmantošanu</translation>
 <translation id="8586442755830160949">Autortiesības <ph name="YEAR" /> Chromium autori. Visas tiesības paturētas.</translation>
 <translation id="8605166112420372522">&amp;Restartēt Chromium darbvirsmā</translation>
-<translation id="8610831143142469229">Atļaušana operētājsistēmai Chromium piekļūt tīklam jūsu ugunsmūra vai pretvīrusu programmas
-        iestatījumos.</translation>
 <translation id="8621669128220841554">Instalēšana neizdevās nenoteiktas kļūdas dēļ. Lejupielādējiet pārlūku Chromium vēlreiz.</translation>
 <translation id="8628626585870903697">Pārlūka Chromium komplektācijā nav PDF skatītāja, kas nepieciešams funkcijas Drukas priekšskatījums darbībai.</translation>
 <translation id="8684913864886094367">Chromium netika pareizi izslēgts.</translation>

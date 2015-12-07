@@ -324,21 +324,6 @@ Jos tämä asetus ei ole käytössä, järjestelmäpalkissa ei näytetä suurta 
 
           Jos asetusta ei ole määritetty, <ph name="PRODUCT_NAME" />
           sallii laitteen oman viestijärjestelmän käyttäjätason isäntien käytön.</translation>
-<translation id="2393996789386329927">Estää luettelon URL-osoitteiden käytön.
-
-      Tämä käytäntö estää käyttäjää lataamasta verkkosivuja mustalle listalle merkityistä URL-osoitteista. Mustalle listalle merkitään URL-osoitemallit, jotka määrittävät kielletyt URL-osoitteet.
-
-      URL-osoitemalli voi olla paikallisiin tiedostoihin viittaava tai yleinen URL-osoitemalli. Paikallisiin tiedostoihin viittaavat mallit ovat muotoa file://polku, jossa polku on estettävä absoluuttinen polku. Esto koskee tiedostojärjestelmän kaikkia sijainteja, jotka alkavat kyseisellä polulla.
-
-      Yleinen URL-osoitemalli on muotoa protokolla://isäntä:portti/polku.
-      Esto koskee vain määriteltyä protokollaa. Jos protokolla://-alkuosaa ei määritellä, esto koskee kaikkia protokollia.
-      Isäntä on pakollinen määrite, ja se voi olla isäntänimi tai IP-osoite. Esto koskee myös merkityn isäntänimen aliverkkotunnuksia. Aliverkkotunnusten esto voidaan kiertää merkitsemällä isäntänimen alkuun piste (.). Jos isäntänimeksi merkitään tähti (*), esto koskee kaikkia isäntänimiä.
-      Portti on valinnainen määrite. Se voi olla mikä tahansa kelvollinen portti väliltä 1–65535. Jos porttia ei määritetä, esto koskee kaikkia portteja.
-      Polku on valinnainen määrite. Jos se merkitään, esto koskee vain sijainteja, jotka alkavat annetulla polulla.
-
-      Poikkeuksia on mahdollista merkitä sallittuja URL-osoitteita koskevaan käytäntöön. Näiden käytäntöjen soveltamisessa huomioidaan vain 1 000 ensimmäistä merkintää (käytäntöjen enimmäisarvo).
-
-      Jos tätä käytäntöä ei aseteta, selaimessa ei estetä minkään URL-osoitteiden lataamista.</translation>
 <translation id="240213793013362302">Määrittää käytettävän taustakuvan.
 
       Tämä käytäntö määrittää taustakuvan, joka näytetään käyttäjän työpöydällä ja kirjautumisruudulla. Käytäntö asetetaan määrittämällä URL-osoite, josta <ph name="PRODUCT_OS_NAME" /> lataa taustakuvan, sekä kryptografinen hajautusarvo, jota käytetään latauksen onnistumisen varmistamiseen. Kuvan täytyy olla JPEG-muodossa, ja sen tiedostokoko voi olla korkeintaan 16 Mt. URL-osoitteen täytyy olla käytettävissä ilman todennusta.

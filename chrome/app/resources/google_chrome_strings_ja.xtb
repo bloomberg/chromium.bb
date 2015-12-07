@@ -144,19 +144,10 @@
 <translation id="5785746630574083988">Windows 8 モードで再起動すると、Chrome アプリが終了して再起動します。</translation>
 <translation id="5855036575689098185">お使いのパソコンで実行されているソフトウェアは Google Chrome に対応していません。</translation>
 <translation id="5877064549588274448">チャンネルが変更されました。変更を適用するには、デバイスを再起動してください。</translation>
-<translation id="5890698319714066019">パソコンがインターネットに接続されていないため、Google Chrome でウェブページを表示できません。</translation>
 <translation id="5931853610562009806">Mac では、パスワードはキーチェーンに保存され、この Mac OS X アカウントを共有する別の Chrome ユーザーからアクセスされたり同期されたりする可能性があります。</translation>
 <translation id="5940385492829620908">ウェブ、ブックマーク、その他の Chrome データを好みに設定できます。</translation>
 <translation id="5941830788786076944">Google Chrome を既定のブラウザにする</translation>
 <translation id="597770749449734237">Google Chrome のデバッグに役立つ追加のキーボード ショートカットを有効にします。</translation>
-<translation id="6011049234605203654">このオプションを無効にするには:
-          Chrome メニュー &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          の順に移動して、設定が [プロキシなし] または [直接] になっていることを確認します。</translation>
 <translation id="6012342843556706400">このサイトと位置情報を共有するには Chrome に位置情報へのアクセスを許可する必要があります。</translation>
 <translation id="6014844626092547096">Chrome にログインしています。同期は管理者によって無効にされています。</translation>
 <translation id="6049075767726609708">このコンピュータには管理者権限のあるユーザーがインストールしたシステムレベル (コンピュータの全ユーザーが利用可) の Google Chromeがあります。ユーザー レベルの Google Chrome はシステム レベルの Google Chrome に置き換えられます。</translation>
@@ -177,16 +168,6 @@
 <translation id="6676384891291319759">インターネットにアクセス</translation>
 <translation id="6757767188268205357">今後は表示しない</translation>
 <translation id="683440813066116847">mDNS トラフィックを許可する Google Chrome Canary のインバウンド ルールです。</translation>
-<translation id="6855094794438142393">このオプションを無効にするには:
-          Chrome メニュー &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          &gt;
-          [LAN の設定]
-          の順に移動して、[LAN にプロキシ サーバーを使用する] チェックボックスをオフにします。</translation>
 <translation id="6883876366448858277">機能は、単語とその周辺のコンテキストを Google 検索に送信し、定義、画像などの検索結果を返します。</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="6970811910055250180">お使いの端末を更新しています...</translation>
@@ -208,8 +189,6 @@
 <translation id="7282192067747128786">Chrome - お知らせ（<ph name="QUANTITY" /> 件未読）</translation>
 <translation id="729375352412857283">Windows XP と Windows Vista はサポートされなくなったため、このパソコンでは間もなく Google Chrome のアップデートが受信されなくなります。</translation>
 <translation id="7339898014177206373">新しいウィンドウ</translation>
-<translation id="7396375882099008034">ファイアウォールやウイルス対策の設定で、Chrome からネットワークへのアクセスを
-        許可します。</translation>
 <translation id="7398801000654795464">Chrome に <ph name="USER_EMAIL_ADDRESS" /> としてログインしていました。再度ログインするには同じアカウントを使用してください。</translation>
 <translation id="7400722733683201933">Google Chrome について</translation>
 <translation id="7408085963519505752">Chrome OS 利用規約</translation>
@@ -239,9 +218,6 @@
 <translation id="8032142183999901390">Chrome からアカウントを削除したら、場合によっては開いているタブを再読み込みして変更を反映させる必要があります。</translation>
 <translation id="8037887340639533879">更新対象の Google Chrome のインストールは見つかりませんでした。</translation>
 <translation id="8129812357326543296">Google Chrome について(&amp;G)</translation>
-<translation id="8187289872471304532">このオプションを無効にするには:
-          [アプリケーション] &gt; [システム環境設定] &gt; [ネットワーク] &gt; [詳細] &gt; [プロキシ] の順に移動して、
-          選択されているプロキシの選択を解除します。</translation>
 <translation id="8205111949707227942">オプション: 使用状況データと障害レポートを Google に自動送信して Chrome OS の機能向上に役立てる。</translation>
 <translation id="8227755444512189073"><ph name="SCHEME" /> リンクを処理するには外部アプリケーションの起動が必要です。リクエストされたリンクは <ph name="PROTOLINK" /> です。</translation>
 <translation id="8255190535488645436">Google Chrome がカメラとマイクを使用しています。</translation>

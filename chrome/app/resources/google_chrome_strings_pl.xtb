@@ -144,19 +144,10 @@ Jeśli jednak zalogujesz się teraz, informacje Chrome, takie jak zakładki, his
 <translation id="5785746630574083988">Ponowne uruchomienie w trybie Windows 8 spowoduje zamknięcie i ponowne otwarcie aplikacji Chrome.</translation>
 <translation id="5855036575689098185">Oprogramowanie, które działa na Twoim komputerze jest niezgodne z Google Chrome.</translation>
 <translation id="5877064549588274448">Kanał został zmieniony. Aby zastosować zmiany, uruchom ponownie urządzenie.</translation>
-<translation id="5890698319714066019">Google Chrome nie może wyświetlić strony internetowej, bo komputer nie ma połączenia z internetem.</translation>
 <translation id="5931853610562009806">Na Macach hasła można zapisywać w pęku kluczy. Inni użytkownicy Chrome dzielący to konto OS X mogą z nich korzystać i je synchronizować.</translation>
 <translation id="5940385492829620908">Tu są Twoje strony, zakładki i inne dane z Chrome.</translation>
 <translation id="5941830788786076944">Ustaw Google Chrome jako domyślną przeglądarkę</translation>
 <translation id="597770749449734237">Włącza dodatkowe skróty klawiszowe, które przydają się przy debugowaniu Google Chrome.</translation>
-<translation id="6011049234605203654">Wybierz
-          menu Chrome &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          i upewnij się, że w konfiguracji wybrano połączenie bez serwera proxy lub bezpośrednie.</translation>
 <translation id="6012342843556706400">Aby zezwolić stronie na wykorzystanie danych o lokalizacji, Chrome musi mieć do nich dostęp.</translation>
 <translation id="6014844626092547096">Jesteś zalogowany w Chrome. Administrator wyłączył synchronizację.</translation>
 <translation id="6049075767726609708">Administrator zainstalował w tym systemie przeglądarkę Google Chrome i jest ona dostępna dla wszystkich użytkowników. Przeglądarka Google Chrome zainstalowana na poziomie użytkownika zostanie teraz zastąpiona przez instalację systemową.</translation>
@@ -177,16 +168,6 @@ Jeśli jednak zalogujesz się teraz, informacje Chrome, takie jak zakładki, his
 <translation id="6676384891291319759">Skorzystaj z internetu</translation>
 <translation id="6757767188268205357">Nie proponuj więcej</translation>
 <translation id="683440813066116847">Reguła dla ruchu przychodzącego w Google Chrome Canary zezwalająca na ruch mDNS.</translation>
-<translation id="6855094794438142393">Wybierz
-          menu Chrome &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          &gt;
-          Ustawienia sieci LAN
-          i usuń zaznaczenie „Użyj serwera proxy dla sieci LAN”.</translation>
 <translation id="6883876366448858277">przesyła słowo i jego kontekst do wyszukiwarki Google, by wyświetlić definicje, zdjęcia i inne wyniki wyszukiwania.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="6970811910055250180">Aktualizowanie urządzenia...</translation>
@@ -208,8 +189,6 @@ Jeśli jednak zalogujesz się teraz, informacje Chrome, takie jak zakładki, his
 <translation id="7282192067747128786">Chrome – powiadomienia (nieprzeczytane: <ph name="QUANTITY" />)</translation>
 <translation id="729375352412857283">Google Chrome wkrótce przestanie aktualizować się na tym komputerze, bo nie będzie już zgodny z Windows XP ani Windows Vista.</translation>
 <translation id="7339898014177206373">Nowe okno</translation>
-<translation id="7396375882099008034">Zezwalaj Chrome na korzystanie z sieci w ustawieniach zapory sieciowej
-        lub oprogramowania antywirusowego.</translation>
 <translation id="7398801000654795464">Byłeś zalogowany w Chrome jako <ph name="USER_EMAIL_ADDRESS" />. Zaloguj się ponownie, korzystając z tego samego konta.</translation>
 <translation id="7400722733683201933">Google Chrome – informacje</translation>
 <translation id="7408085963519505752">Warunki korzystania z Chrome OS</translation>
@@ -239,9 +218,6 @@ Jeśli jednak zalogujesz się teraz, informacje Chrome, takie jak zakładki, his
 <translation id="8032142183999901390">Aby po usunięciu konta z Chrome zmiany zostały zastosowane, może być konieczne ponowne załadowanie otwartych kart.</translation>
 <translation id="8037887340639533879">Nie znaleziono instalacji Google Chrome do zaktualizowania.</translation>
 <translation id="8129812357326543296">&amp;Google Chrome – informacje</translation>
-<translation id="8187289872471304532">Wybierz
-          Aplikacje &gt; Ustawienia systemowe &gt; Sieć &gt; Zaawansowane &gt; Serwery proxy
-          i usuń zaznaczenie wszelkich wybranych serwerów proxy.</translation>
 <translation id="8205111949707227942">Opcjonalnie: pomóż nam udoskonalać system operacyjny Chrome poprzez automatyczne wysyłanie do Google statystyk użytkowania i raportów o awariach.</translation>
 <translation id="8227755444512189073">Chrome musi uruchomić zewnętrzną aplikację do obsługi linków <ph name="SCHEME" />. Żądany link to <ph name="PROTOLINK" />.</translation>
 <translation id="8255190535488645436">Google Chrome używa Twojej kamery i mikrofonu.</translation>

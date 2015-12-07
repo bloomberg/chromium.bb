@@ -148,19 +148,10 @@ Mõned funktsioonid ei pruugi saadaval olla. Määrake muu profiilikataloog või
 <translation id="5785746630574083988">Kui taaskäivitate Windows 8 režiimis, suletakse ja taaskäivitatakse teie Chrome'i rakendused.</translation>
 <translation id="5855036575689098185">Teie arvutis töötav tarkvara ei ühildu Google Chrome'iga.</translation>
 <translation id="5877064549588274448">Kanal on muutunud. Muudatuste rakendamiseks taaskäivitage oma seade.</translation>
-<translation id="5890698319714066019">Google Chrome ei saa veebilehte kuvada, kuna teie arvutis puudub Interneti-ühendus.</translation>
 <translation id="5931853610562009806">Macis võidakse paroolid salvestada rakendusse Keychain ja teised Chrome'i kasutajad, kes kasutavad sama OS X-i kontot, saavad neid paroole kasutada ning sünkroonida.</translation>
 <translation id="5940385492829620908">Siin asuvad teie veeb, järjehoidjad ja muu Chrome'i kraam.</translation>
 <translation id="5941830788786076944">Tee Google Chrome vaikebrauseriks</translation>
 <translation id="597770749449734237">Lubab täiendavaid klaviatuuri otseteid, millest on abi Google Chrome'i silumisel.</translation>
-<translation id="6011049234605203654">Minge
-          Chrome'i menüüsse &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          ja veenduge, et konfiguratsioon on määratud valikule „Puhverserverita” või „Otse”</translation>
 <translation id="6012342843556706400">Chrome vajab selle saidiga jagamiseks juurdepääsu asukohale.</translation>
 <translation id="6014844626092547096">Olete nüüd Chrome'i sisse logitud. Administraator on sünkroonimise keelanud.</translation>
 <translation id="6049075767726609708">Administraator on installinud Google Chrome'i sellesse süsteemi ja see on saadaval kõigile kasutajatele. Süsteemitasandi Google Chrome asendab nüüd teie kasutajatasandi installi.</translation>
@@ -181,16 +172,6 @@ Mõned funktsioonid ei pruugi saadaval olla. Määrake muu profiilikataloog või
 <translation id="6676384891291319759">Pääs Internetti</translation>
 <translation id="6757767188268205357">Ära tüüta mind</translation>
 <translation id="683440813066116847">Sissetuleku reegel Google Chrome Canaryle mDNS-liikluse lubamiseks.</translation>
-<translation id="6855094794438142393">Valige
-          Chrome'i menüü &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          &gt;
-          LAN-seaded
-          ja tühistage valik „Kasuta LAN-i jaoks puhverserverit”.</translation>
 <translation id="6883876366448858277">saadab sõna ja ümbritseva konteksti Google'i otsingule, tagastades definitsioonid, kujutised, otsingutulemused ja muud otsingutulemused.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="6970811910055250180">Teie seadme täiendamine ...</translation>
@@ -212,8 +193,6 @@ Mõned funktsioonid ei pruugi saadaval olla. Määrake muu profiilikataloog või
 <translation id="7282192067747128786">Chrome – märguanded (<ph name="QUANTITY" /> on lugemata)</translation>
 <translation id="729375352412857283">Arvuti ei saa varsti enam Google Chrome'i värskendusi, kuna Windows XP ja Windows Vista tugi lõpeb.</translation>
 <translation id="7339898014177206373">Uus aken</translation>
-<translation id="7396375882099008034">Juurdepääsuks võrgule tulemüüri või viirusetõrje seadetes lubage
-        Chrome.</translation>
 <translation id="7398801000654795464">Olite Chrome'i sisse logitud kasutajana <ph name="USER_EMAIL_ADDRESS" />. Kasutage uuesti sisselogimiseks sama kontot.</translation>
 <translation id="7400722733683201933">Google Chrome'i kohta</translation>
 <translation id="7408085963519505752">Chrome OS-i tingimused</translation>
@@ -243,9 +222,6 @@ Mõned funktsioonid ei pruugi saadaval olla. Määrake muu profiilikataloog või
 <translation id="8032142183999901390">Pärast konto eemaldamist Chrome'ist tuleb avatud vahekaardid võib-olla uuesti laadida, et need toimiksid.</translation>
 <translation id="8037887340639533879">Ei leitud Google Chrome'i installi, mida värskendada.</translation>
 <translation id="8129812357326543296">Teave &amp;Google Chrome'i kohta</translation>
-<translation id="8187289872471304532">Tehke valikud
-          Rakendused &gt; Süsteemieelised &gt; Võrk &gt; Täpsem &gt; Puhverserverid
-          ja tühjendage kõigi valitud puhverserverite märkeruudud.</translation>
 <translation id="8205111949707227942">Valikuline: aidake muuta Chrome OS paremaks, saates Google'ile automaatselt kasutusstatistikat ja kokkujooksuaruandeid.</translation>
 <translation id="8227755444512189073">Google Chrome peab käivitama välise rakenduse <ph name="SCHEME" /> linkide haldamiseks. Küsitud link on <ph name="PROTOLINK" />.</translation>
 <translation id="8255190535488645436">Google Chrome kasutab kaamerat ja mikrofoni.</translation>

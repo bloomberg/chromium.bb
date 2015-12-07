@@ -47,7 +47,6 @@
 <translation id="2486653164587200256">Chromium може да не функционира правилно, тъй като вече не се поддържа под Windows XP и Windows Vista.</translation>
 <translation id="2535480412977113886">Chromium OS не можа да синхронизира данните ви, защото потребителското име и паролата за вход в профила ви не са актуални.</translation>
 <translation id="2558641060352364164">Този сайт използва приставката Chromium Frame, чиято поддръжка скоро ще бъде прекратена. Моля, деинсталирайте я и надстройте до модерен браузър.</translation>
-<translation id="2565260267992448464">Chromium не може да покаже уеб страницата, тъй като компютърът ви не е свързан с интернет.</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
 <translation id="2602806952220118310">Chromium – Известия</translation>
 <translation id="2636877269779209383">Chromium се нуждае от достъп до камерата, за да я сподели с този сайт.</translation>
@@ -108,16 +107,6 @@
 <translation id="4458285410772214805">Моля, излезте от профила си и влезте отново, за да влезе в сила тази промяна.</translation>
 <translation id="4488676065623537541">Данните ви за фактуриране са запазени в Chromium.</translation>
 <translation id="4549794359424059447">Бъдещите версии на Chromium вече няма да поддържат Windows XP и Windows Vista.</translation>
-<translation id="4559775032954821361">Отворете
-менюто на Chromium &gt;
-<ph name="SETTINGS_TITLE" />
-&gt;
-<ph name="ADVANCED_TITLE" />
-&gt;
-<ph name="PROXIES_TITLE" />
-&gt;
-„LAN настройки“
-и премахнете отметката от квадратчето „Използвайте прокси сървър за вашата локална мрежа“.</translation>
 <translation id="4567424176335768812">Влезли сте като <ph name="USER_EMAIL_ADDRESS" />. Сега имате достъп до отметките, историята и другите си настройки на всички устройства, на които сте влезли.</translation>
 <translation id="457845228957001925">Важна информация относно данните ви в Chromium</translation>
 <translation id="459535195905078186">Приложения в Chromium</translation>
@@ -139,14 +128,6 @@
 <translation id="5680901439334282664">Влезте в Chromium</translation>
 <translation id="5772805321386874569">(изисква <ph name="BEGIN_BUTTON" />рестартиране<ph name="END_BUTTON" /> на Chromium)</translation>
 <translation id="5796460469508169315">Chromium е почти готов.</translation>
-<translation id="580822234363523061">Отворете
-менюто на Chromium &gt;
-<ph name="SETTINGS_TITLE" />
-&gt;
-<ph name="ADVANCED_TITLE" />
-&gt;
-<ph name="PROXIES_TITLE" />
-и се уверете, че за конфигурацията ви е зададено „no proxy“ или „direct“.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5823381412099532241">Chromium не можа да се актуализира до последната версия, така че пропускате невероятни нови функции и поправки за подобряване на сигурността. Налага се да актуализирате браузъра.</translation>
 <translation id="5862307444128926510">Добре дошли в Chromium</translation>
@@ -219,9 +200,6 @@
 <translation id="8033665941300843262">Chromium се нуждае от достъп до разрешенията, за да ги сподели с този сайт.</translation>
 <translation id="805745970029938373">Тук можете да виждате всичките си известия от уебсайтове, приложения и разширения в Chromium.</translation>
 <translation id="8134284582177628525">Ако споделяте компютъра с/ъс <ph name="PROFILE_NAME" />, добавете се към Chromium, за да сърфирате отделно. В противен случай прекратете връзката с профила в Google на този потребител.</translation>
-<translation id="8187289872471304532">Отворете
-„Applications“ &gt; „System Preferences“ &gt; „Network“ &gt; „Advanced“ &gt; „Proxies“
-и премахнете отметките от избраните прокси сървъри.</translation>
 <translation id="8269379391216269538">Помощ за подобряването на Chromium</translation>
 <translation id="8453117565092476964">Архивът на инсталационната програма е повреден или невалиден. Моля, изтеглете отново Chromium.</translation>
 <translation id="8493179195440786826">Chromium не е актуален</translation>
@@ -229,8 +207,6 @@
 <translation id="85843667276690461">Получаване на помощ за използването на Chromium</translation>
 <translation id="8586442755830160949">Авторски права <ph name="YEAR" /> Авторите на Chromium. Всички права запазени.</translation>
 <translation id="8605166112420372522">&amp;Повторно стартиране на Chromium на работния плот</translation>
-<translation id="8610831143142469229">Разрешете достъпа на Chromium до мрежата от настройките на защитната стена
-или антивирусния си софтуер.</translation>
 <translation id="8621669128220841554">Инсталирането не бе успешно поради неизвестна грешка. Моля, изтеглете отново Chromium.</translation>
 <translation id="8628626585870903697">Chromium не включва визуализатора на PDF, който се изисква, за да функционира визуализацията за печат.</translation>
 <translation id="8684913864886094367">Chromium не се затвори правилно.</translation>

@@ -49,7 +49,6 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="2486653164587200256">Prohlížeč Chromium nemusí fungovat správně, protože v systémech Windows XP a Windows Vista již není podporován.</translation>
 <translation id="2535480412977113886">Chromium OS nemůže synchronizovat data, protože vaše přihlašovací údaje k účtu jsou zastaralé.</translation>
 <translation id="2558641060352364164">Tento web používá plugin Chromium Frame, jehož podpora bude brzy ukončena. Odinstalujte jej a přejděte na moderní prohlížeč.</translation>
-<translation id="2565260267992448464">Chromium nemůže webovou stránku zobrazit, protože počítač není připojen k internetu.</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
 <translation id="2602806952220118310">Chromium – oznámení</translation>
 <translation id="2636877269779209383">Prohlížeč Chromium potřebuje přístup k fotoaparátu, aby jej mohl sdílet s těmito stránkami.</translation>
@@ -111,16 +110,6 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="4458285410772214805">Chcete-li, aby se změny projevily, odhlaste se a znovu se přihlaste.</translation>
 <translation id="4488676065623537541">Fakturační údaje byly uloženy do prohlížeče Chromium.</translation>
 <translation id="4549794359424059447">Budoucí verze prohlížeče Chromium již nebudou podporovat systémy Windows XP a Windows Vista.</translation>
-<translation id="4559775032954821361">Přejděte do
-          nabídky Chromium &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          &gt;
-          Nastavení místní sítě (LAN)
-          a zrušte zaškrtnutí políčka Použít pro síť LAN proxy server.</translation>
 <translation id="4567424176335768812">Jste přihlášeni pomocí účtu <ph name="USER_EMAIL_ADDRESS" />. Nyní můžete přistupovat ke všem svým záložkám, historii a dalším nastavením ve všech přihlášených zařízeních.</translation>
 <translation id="457845228957001925">Důležité informace o datech prohlížeče Chromium</translation>
 <translation id="459535195905078186">Aplikace Chromium</translation>
@@ -142,14 +131,6 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="5680901439334282664">přihlaste se do prohlížeče Chromium</translation>
 <translation id="5772805321386874569">(vyžaduje <ph name="BEGIN_BUTTON" />restartování<ph name="END_BUTTON" /> prohlížeče Chromium)</translation>
 <translation id="5796460469508169315">Prohlížeč Chromium je téměř připraven.</translation>
-<translation id="580822234363523061">Přejděte do
-          nabídky Chromium &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          a zkontrolujte, zda je konfigurace nastavena na možnost „no proxy“ (bez proxy) nebo „direct“ (přímo).</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5823381412099532241">Prohlížeč Chromium se nemohl aktualizovat na nejnovější verzi. Nebudete mít proto k dispozici skvělé nové funkce a opravy zabezpečení. Chromium je potřeba aktualizovat.</translation>
 <translation id="5862307444128926510">Vítejte v prohlížeči Chromium</translation>
@@ -226,9 +207,6 @@ Chromium nemůže vaše nastavení obnovit.</translation>
 <translation id="8033665941300843262">Prohlížeč Chromium potřebuje přístup k oprávněním, aby je mohl sdílet s těmito stránkami.</translation>
 <translation id="805745970029938373">Zde se zobrazují všechna oznámení z aplikací, rozšíření a webů Chromium.</translation>
 <translation id="8134284582177628525">Pokud tento počítač sdílíte s uživatelem <ph name="PROFILE_NAME" />, přidejte do prohlížeče Chromium svůj profil, abyste internet mohli procházet samostatně. Jinak jeho účet Google odpojte.</translation>
-<translation id="8187289872471304532">Přejděte do nabídky
-          Aplikace &gt; Nastavení systému &gt; Síť &gt; Rozšířená nastavení &gt; Servery proxy
-          a zrušte výběr všech vybraných serverů proxy.</translation>
 <translation id="8269379391216269538">Pomozte projekt Chromium vylepšit</translation>
 <translation id="8453117565092476964">Archiv instalačního programu je poškozený nebo neplatný. Stáhněte prosím Chromium znovu.</translation>
 <translation id="8493179195440786826">Prohlížeč Chromium je zastaralý</translation>
@@ -236,8 +214,6 @@ Chromium nemůže vaše nastavení obnovit.</translation>
 <translation id="85843667276690461">Pomoc s používáním prohlížeče Chromium</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Autoři prohlížeče Chromium. Všechna práva vyhrazena.</translation>
 <translation id="8605166112420372522">&amp;Spustit Chromium znovu na klasické ploše</translation>
-<translation id="8610831143142469229">V nastavení firewallu a antivirového programu povolte prohlížeči Chromium
-        přístup k síti.</translation>
 <translation id="8621669128220841554">Instalace se z neznámého důvodu nezdařila. Stáhněte prosím Chromium znovu.</translation>
 <translation id="8628626585870903697">Chromium neobsahuje prohlížeč PDF, který je požadován ke správnému fungování Náhledu tisku.</translation>
 <translation id="8684913864886094367">Aplikace Chromium nebyla řádně ukončena.</translation>

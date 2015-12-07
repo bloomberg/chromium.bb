@@ -49,7 +49,6 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="2486653164587200256">Maaaring hindi gumana nang maayos ang Chromium dahil hindi na ito sinusuportahan sa Windows XP o Windows Vista.</translation>
 <translation id="2535480412977113886">Hindi ma-sync ng Chromium OS ang iyong data dahil hindi napapanahon ang mga detalye sa pag-sign in sa iyong account.</translation>
 <translation id="2558641060352364164">Ginagamit ng site na ito ang plugin na Chromium Frame na malapit nang hindi suportahan. Paki-uninstall ito at mag-upgrade sa isang modernong browser.</translation>
-<translation id="2565260267992448464">Hindi maipakita ng Chromium ang webpage dahil hindi nakakonekta ang iyong computer sa Internet.</translation>
 <translation id="2572494885440352020">Helper ng Chromium</translation>
 <translation id="2602806952220118310">Chromium - Mga Notification</translation>
 <translation id="2636877269779209383">Nangangailangan ang Chromium ng access sa camera upang maibahagi ito sa site na ito.</translation>
@@ -111,16 +110,6 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="4458285410772214805">Mangyaring mag-sign out at mag-sign in muli upang magkabisa ang pagbabagong ito.</translation>
 <translation id="4488676065623537541">Na-save na sa Chromium ang iyong mga detalye ng pagsingil.</translation>
 <translation id="4549794359424059447">Hindi na susuportahan ng mga bersyon ng Chromium ang Windows XP o Windows Vista sa hinaharap.</translation>
-<translation id="4559775032954821361">Pumunta sa
-          menu ng Chromium &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          &gt;
-          Mga Setting ng LAN
-          at alisin sa pagkakapili ang checkbox ng "Gumamit ng proxy server para sa iyong LAN."</translation>
 <translation id="4567424176335768812">Naka-sign in ka bilang <ph name="USER_EMAIL_ADDRESS" />. Maaari mo na ngayong i-access ang iyong mga bookmark, kasaysayan, at iba pang setting sa lahat ng iyong device na naka-sign in.</translation>
 <translation id="457845228957001925">Mahalagang impormasyon patungkol sa iyong data sa Chromium</translation>
 <translation id="459535195905078186">Chromium Apps</translation>
@@ -142,14 +131,6 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="5680901439334282664">mag-sign in sa Chromium</translation>
 <translation id="5772805321386874569">(kinakailangang <ph name="BEGIN_BUTTON" />i-restart<ph name="END_BUTTON" /> ang Chromium)</translation>
 <translation id="5796460469508169315">Halos handa na ang Chromium.</translation>
-<translation id="580822234363523061">Pumunta sa
-          menu ng Chromium &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          at tiyaking nakatakda sa "walang proxy" o "direkta" ang iyong configuration.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5823381412099532241">Hindi ma-update ng Chromium ang sarili nito patungo sa pinakabagong bersyon, kaya napapalampas mo ang mahuhusay na bagong feature at pag-aayos sa seguridad. Kailangan mong i-update ang Chromium.</translation>
 <translation id="5862307444128926510">Maligayang Pagdating sa Chromium</translation>
@@ -226,9 +207,6 @@ Hindi mabawi ng Chromium ang iyong mga setting.</translation>
 <translation id="8033665941300843262">Nangangailangan ang Chromium ng access sa mga pahintulot upang maibahagi ang mga ito sa site na ito.</translation>
 <translation id="805745970029938373">Makikita mo ang lahat ng iyong notification mula sa apps, mga extension, at website ng Chromium dito.</translation>
 <translation id="8134284582177628525">Kung ibabahagi mo ang computer na ito kay <ph name="PROFILE_NAME" />, idagdag ang iyong sarili sa Chromium upang mag-browse nang hiwalay. Kung hindi naman, idiskonekta ang kanilang Google Account.</translation>
-<translation id="8187289872471304532">Pumunta sa
-          Applications &gt; System Preferences &gt; Network &gt; Advanced &gt; Proxies
-          at alisin sa pagkakapili ang anumang mga napiling proxy.</translation>
 <translation id="8269379391216269538">Tumulong sa pagpapahusay ng Chromium</translation>
 <translation id="8453117565092476964">Sira o di-wasto ang archive ng installer. Mangyaring i-download muli ang Chromium.</translation>
 <translation id="8493179195440786826">Luma na ang Chromium</translation>
@@ -236,8 +214,6 @@ Hindi mabawi ng Chromium ang iyong mga setting.</translation>
 <translation id="85843667276690461">Kumuha ng tulong sa paggamit ng Chromium</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Ang Mga May-akda ng Chromium. Nakalaan ang lahat ng karapatan.</translation>
 <translation id="8605166112420372522">&amp;Muling ilunsad ang Chromium sa desktop</translation>
-<translation id="8610831143142469229">Payagan ang Chromium na i-access ang network sa mga setting ng iyong firewall
-        o antivirus.</translation>
 <translation id="8621669128220841554">Nabigo ang pag-install dahil sa hindi natukoy na error. Mangyaring i-download muli ang Chromium.</translation>
 <translation id="8628626585870903697">Hindi isinasama ng Chromium ang PDF viewer na kinakailangan upang gumana ang Preview ng Pag-print.</translation>
 <translation id="8684913864886094367">Hindi nag-shut down nang tama ang Chromium.</translation>

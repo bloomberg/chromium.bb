@@ -145,19 +145,10 @@ Jos kirjaudut silti sisään, Chrome-tiedot, kuten kirjanmerkit, historia ja ase
 <translation id="5785746630574083988">Jos käynnistät uudelleen Windows 8 -tilassa, Chrome-sovelluksesi suljetaan ja käynnistetään uudelleen.</translation>
 <translation id="5855036575689098185">Tietokoneellasi käynnissä oleva ohjelmisto on yhteensopimaton Google Chromen kanssa.</translation>
 <translation id="5877064549588274448">Kanava vaihdettiin. Ota muutokset käyttöön käynnistämällä laite uudelleen.</translation>
-<translation id="5890698319714066019">Google Chrome ei voi näyttää verkkosivua, koska tietokoneellasi ei ole internetyhteyttä.</translation>
 <translation id="5931853610562009806">Macilla salasanat voidaan tallentaa Avainnippuusi, ja muut Chrome-käyttäjät, jotka jakavat saman OS X -käyttöjärjestelmän tilin, voivat käyttää tai synkronoida niitä.</translation>
 <translation id="5940385492829620908">Tämä on verkkosi, kirjanmerkkiesi ja muun Chrome-sisältösi koti.</translation>
 <translation id="5941830788786076944">Tee Google Chromesta oletusselain</translation>
 <translation id="597770749449734237">Ottaa käyttöön lisää pikanäppäimiä, joiden avulla voi suorittaa Google Chromen vianetsintää.</translation>
-<translation id="6011049234605203654">Avaa
-          Chrome-valikko &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          ja varmista, että asetus on "ei välityspalvelinta" tai "suora".</translation>
 <translation id="6012342843556706400">Chrome tarvitsee sijainnin käyttöoikeuden voidakseen jakaa sen tämän sivuston kanssa.</translation>
 <translation id="6014844626092547096">Olet nyt kirjautunut sisään Chromeen! Järjestelmänvalvoja on poistanut synkronoinnin käytöstä.</translation>
 <translation id="6049075767726609708">Järjestelmänvalvoja on asentanut Google Chromen tähän järjestelmään ja selain on kaikkien käyttäjien käytettävissä. Järjestelmätason Google Chrome korvaa käyttäjätason asennuksen.</translation>
@@ -178,16 +169,6 @@ Jos kirjaudut silti sisään, Chrome-tiedot, kuten kirjanmerkit, historia ja ase
 <translation id="6676384891291319759">Käytä internetiä</translation>
 <translation id="6757767188268205357">Älä häiritse</translation>
 <translation id="683440813066116847">Google Chrome Canaryn saapuvien yhteyksien sääntö, joka sallii mDNS-liikenteen.</translation>
-<translation id="6855094794438142393">Avaa
-          Chrome-valikko &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          &gt;
-          Lähiverkon asetukset
-          ja poista valinta kohdasta Käytä välityspalvelinta lähiverkossa.</translation>
 <translation id="6883876366448858277">lähettää sanan ja sen kontekstin Google-hakuun ja palauttaa määritelmiä, kuvia ja muita hakutuloksia.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="6970811910055250180">Päivitetään laitetta...</translation>
@@ -209,7 +190,6 @@ Jos kirjaudut silti sisään, Chrome-tiedot, kuten kirjanmerkit, historia ja ase
 <translation id="7282192067747128786">Chrome – ilmoitukset (lukematta: <ph name="QUANTITY" />)</translation>
 <translation id="729375352412857283">Tämän tietokoneen Google Chromen päivittäminen lopetetaan pian, koska Windows XP:n ja Windows Vistan tuki lakkaa.</translation>
 <translation id="7339898014177206373">Uusi ikkuna</translation>
-<translation id="7396375882099008034">Salli verkon käyttö Chromelle palomuurin tai virustorjunnan asetuksissa.</translation>
 <translation id="7398801000654795464">Chromeen kirjautunut käyttäjä: <ph name="USER_EMAIL_ADDRESS" />. Kirjaudu uudelleen sisään samalla tilillä.</translation>
 <translation id="7400722733683201933">Tietoja Google Chromesta</translation>
 <translation id="7408085963519505752">Chrome-käyttöjärjestelmän käyttöehdot</translation>
@@ -239,9 +219,6 @@ Jos kirjaudut silti sisään, Chrome-tiedot, kuten kirjanmerkit, historia ja ase
 <translation id="8032142183999901390">Kun olet poistanut tilisi Chromesta, sinun on ehkä avattava avoinna olleet välilehdet uudelleen, jotta muutos tulee voimaan.</translation>
 <translation id="8037887340639533879">Päivitettävää Google Chrome -asennusta ei löytynyt.</translation>
 <translation id="8129812357326543296">Tietoja &amp;Google Chromesta</translation>
-<translation id="8187289872471304532">Avaa
-          Sovellukset &gt; Järjestelmäasetukset &gt; Verkko &gt; Lisäasetukset &gt; Välityspalvelimet
-          ja poista valinta kaikkien valittujen välityspalvelimien kohdalta.</translation>
 <translation id="8205111949707227942">Valinnainen: lähetä automaattisesti käyttötilastoja ja virheraportteja Googlelle Chrome-käyttöjärjestelmän kehittämiseksi.</translation>
 <translation id="8227755444512189073">Google Chrome käynnistää ulkopuolisen ohjelman käsitelläkseen <ph name="SCHEME" /> linkkiä. Pyydetty linkki on <ph name="PROTOLINK" />.</translation>
 <translation id="8255190535488645436">Google Chrome käyttää kameraasi ja mikrofoniasi.</translation>

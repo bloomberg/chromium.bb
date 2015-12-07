@@ -565,7 +565,6 @@ However, you aren’t invisible. Going incognito doesn’t hide your browsing fr
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, tab</translation>
 <translation id="885701979325669005">Storage</translation>
 <translation id="886510833909353412">Encrypt all with passphrase</translation>
-<translation id="8872441722924401214">Choose certificate for authentication</translation>
 <translation id="8901170036886848654">No bookmarks found</translation>
 <translation id="8909135823018751308">Share…</translation>
 <translation id="8912362522468806198">Google Account</translation>
@@ -580,7 +579,6 @@ However, you aren’t invisible. Going incognito doesn’t hide your browsing fr
 <translation id="9060538597317784206">View app <ph name="APP_NAME" /> on the Play Store.  Rating: <ph name="APP_RATING" />.</translation>
 <translation id="9063523880881406963">Turn off Request desktop site</translation>
 <translation id="9065203028668620118">Edit</translation>
-<translation id="907015151729920253">Smart card</translation>
 <translation id="9070377983101773829">Start voice search</translation>
 <translation id="9086455579313502267">Unable to access the network</translation>
 <translation id="9099292894781394535">Data savings</translation>

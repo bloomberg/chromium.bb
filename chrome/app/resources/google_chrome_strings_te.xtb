@@ -144,18 +144,10 @@
 <translation id="5785746630574083988">Windows 8 మోడ్‌లో పునఃప్రారంభించడం వలన మీ Chrome అనువర్తనాలు మూసివేయబడి, పునఃప్రారంభించబడతాయి.</translation>
 <translation id="5855036575689098185">మీ కంప్యూటర్‌లో అమలవుతున్న సాఫ్ట్‌వేర్ Google Chromeకు అనుకూలంగా లేదు.</translation>
 <translation id="5877064549588274448">ఛానెల్ మార్చబడింది. మార్పులను వర్తింపజేయడానికి మీ పరికరాన్ని పునఃప్రారంభించండి.</translation>
-<translation id="5890698319714066019">మీ కంప్యూటర్ ఇంటర్నెట్‌కు కనెక్ట్ కానందున Google Chrome వెబ్‌పేజీని ప్రదర్శించలేదు.</translation>
 <translation id="5931853610562009806">Macలో, పాస్‌వర్డ్‌లు మీ కీచెయిన్‌కి సేవ్ చేయబడవచ్చు మరియు ఈ OS X ఖాతాను భాగస్వామ్యం చేసుకునే ఇతర Chrome వినియోగదారులు వాటిని ప్రాప్యత చేయవచ్చు లేదా సమకాలీకరించవచ్చు.</translation>
 <translation id="5940385492829620908">మీ వెబ్, బుక్‌మార్క్‌లు మరియు ఇతర Chrome అంశాలు ఇక్కడ చూపబడతాయి.</translation>
 <translation id="5941830788786076944">Google Chromeను డిఫాల్ట్ బ్రౌజర్‌గా చేసుకోండి</translation>
 <translation id="597770749449734237">Google Chromeని డీబగ్గింగ్ చేయడం కోసం ఉపయోగకరమైన అదనపు కీబోర్డ్ సత్వరమార్గాలను ప్రారంభిస్తుంది.</translation>
-<translation id="6011049234605203654">          Chrome మెను &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />కు వెళ్లండి
-          మరియు మీ కాన్ఫిగరేషన్ "ప్రాక్సీ వద్దు" లేదా "నేరుగా" వలె సెట్ చేయబడిందని నిర్ధారించుకోండి.</translation>
 <translation id="6012342843556706400">ఈ సైట్‌కు స్థానాన్ని భాగస్వామ్యం చేయడానికి Chromeకి స్థాన ప్రాప్యత అనుమతించడం అవసరం.</translation>
 <translation id="6014844626092547096">ఇప్పుడు మీరు Chromeకు సైన్ ఇన్ చేసారు! మీ నిర్వాహకులు సమకాలీకరణని నిలిపివేసారు.</translation>
 <translation id="6049075767726609708">ఒక నిర్వాహకుడు ఈ సిస్టమ్‌పై Google Chromeను ఇన్‌స్టాల్ చేసారు మరియు ఇది మొత్తం యూజర్‌లకు అందుబాటులో ఉంటుంది. ఇప్పుడు సిస్టమ్ స్థాయి Google Chrome మీ యూజర్ స్థాయి ఇన్‌స్టాలేషన్‌ను భర్తీ చేస్తుంది.</translation>
@@ -176,15 +168,6 @@
 <translation id="6676384891291319759">ఇంటర్నెట్‌ను ఆక్సెస్ చెయ్యండి</translation>
 <translation id="6757767188268205357">నన్ను విసిగించకు</translation>
 <translation id="683440813066116847">mDNS ట్రాఫిక్‌ను అనుమతించడానికి Google Chrome కెనరీ కోసం ఇన్‌బౌండ్ నియమం.</translation>
-<translation id="6855094794438142393">Chrome మెను &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          &gt;
-          LAN సెట్టింగ్‌లకు వెళ్లండి
-          మరియు "మీ LAN కోసం ప్రాక్సీ సర్వర్‌ను ఉపయోగించండి" ఎంపికను తీసివేయండి.</translation>
 <translation id="6883876366448858277">ఒక పదాన్ని మరియు దాని సంబంధిత సందర్భాన్ని Google శోధనకు పంపుతుంది, ప్రతిస్పందనగా దాని నుండి నిర్వచనాలు, చిత్రాలు మరియు ఇతర శోధన ఫలితాలను అందిస్తుంది.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="6970811910055250180">మీ పరికరాన్ని నవీకరిస్తోంది...</translation>
@@ -206,8 +189,6 @@
 <translation id="7282192067747128786">Chrome - నోటిఫికేషన్‌లు (<ph name="QUANTITY" /> చదవనివి)</translation>
 <translation id="729375352412857283">Windows XP మరియు Windows Vistaకు ఇకపై మద్దతు లేనందున ఈ కంప్యూటర్ త్వరలో Google Chrome నవీకరణలను స్వీకరించడం ఆపివేయబడుతుంది.</translation>
 <translation id="7339898014177206373">క్రొత్త విండో</translation>
-<translation id="7396375882099008034">మీ ఫైర్‌వాల్ లేదా యాంటీవైరస్ సెట్టింగ్‌ల్లో నెట్‌వర్క్‌ను ప్రాప్యత చేయడానికి
-        Chromeను అనుమతించండి.</translation>
 <translation id="7398801000654795464">మీరు <ph name="USER_EMAIL_ADDRESS" />గా Chromeకు సైన్ ఇన్ చేసారు. దయచేసి మళ్లీ సైన్ ఇన్ చేయడానికి ఇదే ఖాతాను ఉపయోగించండి.</translation>
 <translation id="7400722733683201933">Google Chrome గురించి</translation>
 <translation id="7408085963519505752">Chrome OS నిబంధనలు</translation>
@@ -237,8 +218,6 @@
 <translation id="8032142183999901390">Chrome నుండి మీ ఖాతాను తీసివేసిన తర్వాత, ప్రభావవంతం కావడానికి మీరు మీ తెరిచిన ట్యాబ్‌లను మళ్లీ లోడ్ చేయాల్సి రావచ్చు.</translation>
 <translation id="8037887340639533879">నవీకరించడానికి Google Chrome యొక్క ఇన్‌స్టాలేషన్ ఏదీ కనుగొనబడలేదు.</translation>
 <translation id="8129812357326543296">&amp;Google Chrome గురించి</translation>
-<translation id="8187289872471304532">          అనువర్తనాలు &gt; సిస్టమ్ ప్రాధాన్యతలు &gt; నెట్‌వర్క్ &gt; అధునాతనం &gt; ప్రాక్సీలకు వెళ్లండి
-          మరియు ఎంచుకోబడిన ప్రాక్సీల ఎంపికను తీసివేయండి.</translation>
 <translation id="8205111949707227942">వైకల్పికం: Googleకు ఉపయోగకర గణాంకాలను మరియు క్రాష్ నివేదికలను స్వయంచాలకంగా పంపడం ద్వారా Chrome OSను మరింత మెరుగుపరచడానికి సహాయం చేస్తుంది.</translation>
 <translation id="8227755444512189073"><ph name="SCHEME" /> లింకులను నిర్వహించడానికి Google Chrome ఒక బాహ్య అప్లికేషన్‌ను ప్రారంభించాల్సి ఉంది. అభ్యర్థించిన లింక్ <ph name="PROTOLINK" />.</translation>
 <translation id="8255190535488645436">Google Chrome మీ కెమెరా మరియు మైక్రోఫోన్‌ని ఉపయోగిస్తోంది.</translation>

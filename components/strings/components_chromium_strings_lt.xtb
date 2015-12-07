@@ -8,6 +8,24 @@
           ir išjunkite parinktį „Iš anksto iškviesti puslapio išteklius“.
           Jei tai atlikus problema išlieka, rekomenduojame iš naujo įgalinti šią parinktį,
           kad pagerėtų našumas.</translation>
+<translation id="4559775032954821361">Eikite į 
+          „Chromium“ meniu &gt;
+          „<ph name="SETTINGS_TITLE" />“
+          &gt;
+          „<ph name="ADVANCED_TITLE" />“
+          &gt;
+          „<ph name="PROXIES_TITLE" />“
+          &gt;
+          „LAN nustatymai“
+          ir panaikinkite žymimojo laukelio „LAN naudoti tarpinį serverį“ pasirinkimą.</translation>
+<translation id="580822234363523061">Eikite į
+          „Chromium“ meniu &gt;
+          „<ph name="SETTINGS_TITLE" />“
+          &gt;
+          „<ph name="ADVANCED_TITLE" />“
+          &gt;
+          „<ph name="PROXIES_TITLE" />“ 
+          ir nustatykite konfigūraciją kaip „Nėra tarpinio serverio“ arba „Tiesioginis“.</translation>
 <translation id="6613594504749178791">Pakeitimai įsigalios kitą kartą iš naujo paleidus „Chromium“.</translation>
 <translation id="7861509383340276692">Eikite į
         „Chromium“ meniu &gt;
@@ -17,4 +35,9 @@
         ir panaikinkite „<ph name="NO_PREFETCH_DESCRIPTION" />“ pasirinkimą.
         Jei tai atlikus problema išlieka, rekomenduojame vėl pasirinkti šią parinktį,
         kad pagerėtų našumas.</translation>
+<translation id="8187289872471304532">Eikite į
+          „Programos“ &gt; „Sistemos nuostatos“ &gt; „Tinklas“ &gt; „Išplėstinis“ &gt; „Tarpiniai serveriai“
+          ir panaikinkite visų tarpinių serverių pasirinkimą.</translation>
+<translation id="8610831143142469229">Leiskite „Chromium“ pasiekti tinklą užkardos ar antivirusinės
+        programos nustatymuose.</translation>
 </translationbundle>

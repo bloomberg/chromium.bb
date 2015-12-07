@@ -151,19 +151,10 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="5785746630574083988">Поновним покретањем у Windows 8 режиму затварате и поново покрећете Chrome апликације.</translation>
 <translation id="5855036575689098185">Софтвер покренут на рачунару није компатибилан са Google Chrome-ом.</translation>
 <translation id="5877064549588274448">Канал је промењен. Покрените поново уређај да бисте применили промене.</translation>
-<translation id="5890698319714066019">Google Chrome не може да прикаже веб-страницу јер рачунар није повезан са интернетом.</translation>
 <translation id="5931853610562009806">На Mac-у лозинке могу да се чувају у Keychain и други корисници Chrome-а који деле овај ОС X налог могу да им приступају или да их синхронизују.</translation>
 <translation id="5940385492829620908">Веб, обележивачи и други Chrome садржај се овде уживо приказују.</translation>
 <translation id="5941830788786076944">Подесите Google Chrome као подразумевани прегледач</translation>
 <translation id="597770749449734237">Омогућава додатне тастерске пречице које су корисне за отклањање грешака у Google Chrome-у.</translation>
-<translation id="6011049234605203654">Идите у
-          Chrome мени &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          и проверите да ли је конфигурација подешена на „no proxy“ (без проксија) или „direct“ (директно).</translation>
 <translation id="6012342843556706400">Chrome-у је потребан приступ за локацију да би га делио са овим сајтом.</translation>
 <translation id="6014844626092547096">Сада сте пријављени у Chrome! Администратор је онемогућио синхронизацију.</translation>
 <translation id="6049075767726609708">Администратор је инсталирао Google Chrome на овај систем и програм је доступан свим корисницима. Google Chrome са приступом на нивоу система ће сада заменити вашу инсталацију са приступом на нивоу корисника.</translation>
@@ -184,16 +175,6 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="6676384891291319759">Приступите Интернету</translation>
 <translation id="6757767188268205357">Не досађуј</translation>
 <translation id="683440813066116847">Правило за долазни саобраћај за Google Chrome Canary да бисте омогућили mDNS саобраћај.</translation>
-<translation id="6855094794438142393">Идите у
-          Chrome мени &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          &gt;
-          LAN Settings (Подешавања локалне мреже)
-          и опозовите избор опције „Use a proxy server for your LAN“ (Користи прокси сервер за локалну мрежу).</translation>
 <translation id="6883876366448858277">шаље реч и околни контекст Google претрази, а приказује дефиниције, слике и друге резултате претраге.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="6970811910055250180">Ажурирање уређаја...</translation>
@@ -215,8 +196,6 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="7282192067747128786">Chrome – Обавештења (непрочитаних: <ph name="QUANTITY" />)</translation>
 <translation id="729375352412857283">Овај рачунар ће ускоро престати да добија ажурирања за Google Chrome јер Windows XP и Windows Vista више неће бити подржани.</translation>
 <translation id="7339898014177206373">Нови прозор</translation>
-<translation id="7396375882099008034">Дозволите Chrome-у да приступа мрежи у заштитном зиду или антивирусним
-        подешавањима.</translation>
 <translation id="7398801000654795464">Били сте пријављени у Chrome као <ph name="USER_EMAIL_ADDRESS" />. Користите исти налог да бисте се поново пријавили.</translation>
 <translation id="7400722733683201933">О програму Google Chrome</translation>
 <translation id="7408085963519505752">Chrome ОС услови</translation>
@@ -246,7 +225,6 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="8032142183999901390">Када уклоните налог из Chrome-а, можда ћете морати поново да учитате отворене картице да би то ступило на снагу.</translation>
 <translation id="8037887340639533879">Није пронађена ниједна инсталација Google Chrome-а за ажурирање.</translation>
 <translation id="8129812357326543296">О &amp;Google Chrome-у</translation>
-<translation id="8187289872471304532">Идите на Applications (Апликације) &gt; System Preferences (Подешавања система) &gt; Network (Мрежа) &gt; Advanced (Више опција) &gt; Proxies (Проксији) и опозовите избор свих проксија који су изабрани.</translation>
 <translation id="8205111949707227942">Опционално: Помозите да побољшамо Chrome ОС аутоматским слањем статистике о коришћењу и извештаја о отказивању Google-у.</translation>
 <translation id="8227755444512189073">Google Chrome мора да покрене спољну апликацију за управљање <ph name="SCHEME" /> везама. Тражена веза је <ph name="PROTOLINK" />.</translation>
 <translation id="8255190535488645436">Google Chrome користи камеру и микрофон.</translation>

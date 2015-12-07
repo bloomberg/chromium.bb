@@ -354,21 +354,6 @@
 
           Hvis denne innstillingen ikke angis, tillater <ph name="PRODUCT_NAME" />
           bruk av integrerte meldingsverter på brukernivå.</translation>
-<translation id="2393996789386329927">Blokkerer tilgangen til de spesifiserte nettadressene.
-
-      Denne regelen hindrer brukerne i å laste inn nettsider fra svartelistede nettsteder. Svartelisten er en liste over nettadressemønstre som spesifiserer hvilke nettadresser som skal være svartelistet.
-
-      Hvert nettadressemønster kan enten være et mønster for lokale filer eller et generisk nettadressemønster. Mønstre for lokale filer har formatet «fil://bane», der banen skal være en absolutt bane som skal blokkeres. Alle filsystemplasseringer som denne banen er et prefiks for, blir blokkert.
-
-      Generiske nettadressemønstre har formatet «protokoll://vert:port/bane».
-      Bare den spesifiserte protokollen blir blokkert, hvis den er til stede. Hvis protokoll://-prefikset ikke er spesifisert, blokkeres alle protokoller.
-      Verten er obligatorisk og kan være et vertsnavn eller en IP-adresse. Underdomenene under vertsnavnet blir også blokkert. For å unngå blokkering av underdomener, ta med et «.» før vertsnavnet. Spesialvertsnavnet «*» blokkerer alle domener.
-      Porten er valgfri og er et gyldig portnummer fra 1 til 65535. Hvis verdien for port ikke spesifiseres, blokkeres alle portene.
-      Banen er valgfri, og hvis den spesifiseres, blokkeres bare banene med dette prefikset.
-
-      Unntak kan defineres i godkjenningslisten for nettadresser. Disse listene er begrenset til 1000 oppføringer. Oppføringer etter dette blir ignorert.
-
-      Hvis denne regelen ikke spesifiseres, blir ingen nettadresser svartelistet i nettleseren.</translation>
 <translation id="240213793013362302">Konfigurer bakgrunnsbildet.
 
       Med denne regelen kan du konfigurere bakgrunnsbildet brukerne ser på skrivebordet og påloggingsskjermbildet. Du konfigurerer regelen ved å spesifisere nettadressen <ph name="PRODUCT_OS_NAME" /> kan laste ned bakgrunnsbildet fra, samt den kryptografiske hash-koden som brukes til å bekrefte integriteten til nedlastingen. Bildet må være i JPEG-format og ha en størrelse på maksimalt 16 MB. Nettadressen må være tilgjengelig uten behov for autentisering.

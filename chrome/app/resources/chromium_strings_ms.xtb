@@ -47,7 +47,6 @@
 <translation id="2486653164587200256">Chromium mungkin tidak akan berfungsi dengan betul kerana tidak lagi disokong pada Windows XP atau Windows Vista.</translation>
 <translation id="2535480412977113886">OS Chromium tidak dapat menyegerakkan data anda kerana butiran log masuk akaun anda sudah lapuk.</translation>
 <translation id="2558641060352364164">Tapak ini menggunakan pemalam Chromium Frame yang tidak akan disokong tidak lama lagi. Sila nyahpasangnya dan naik taraf kepada penyemak imbas moden.</translation>
-<translation id="2565260267992448464">Chromium tidak dapat memaparkan halaman web itu kerana komputer anda tidak disambungkan ke Internet.</translation>
 <translation id="2572494885440352020">Pembantu Chromium</translation>
 <translation id="2602806952220118310">Chromium - Pemberitahuan</translation>
 <translation id="2636877269779209383">Chromium memerlukan akses kamera untuk mengongsinya dengan tapak ini.</translation>
@@ -110,16 +109,6 @@ dan salah. Hal ini boleh berlaku apabila penyerang sedang cuba menyamar sebagai 
 <translation id="4458285410772214805">Sila log keluar dan log masuk semula supaya perubahan ini boleh dilaksanakan.</translation>
 <translation id="4488676065623537541">Butiran pengebilan anda telah disimpan dalam Chromium.</translation>
 <translation id="4549794359424059447">Versi Chromium yang akan datang tidak lagi akan menyokong Windows XP atau Windows Vista.</translation>
-<translation id="4559775032954821361">Pergi ke
-          menu Chromium &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          &gt;
-          Tetapan LAN
-          dan nyahpilih kotak pilihan "Gunakan pelayan proksi untuk LAN anda".</translation>
 <translation id="4567424176335768812">Anda telah log masuk sebagai <ph name="USER_EMAIL_ADDRESS" />. Sekarang anda boleh mengakses penanda halaman, sejarah dan tetapan anda yang lain pada semua peranti yang anda gunakan untuk log masuk.</translation>
 <translation id="457845228957001925">Maklumat penting mengenai data Chromium anda</translation>
 <translation id="459535195905078186">Apl Chromium</translation>
@@ -141,14 +130,6 @@ dan salah. Hal ini boleh berlaku apabila penyerang sedang cuba menyamar sebagai 
 <translation id="5680901439334282664">log masuk ke Chromium</translation>
 <translation id="5772805321386874569">(memerlukan Chromium <ph name="BEGIN_BUTTON" />dimulakan semula<ph name="END_BUTTON" />)</translation>
 <translation id="5796460469508169315">Chromium hampir sedia.</translation>
-<translation id="580822234363523061">Pergi ke
-          menu Chromium &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          dan pastikan konfigurasi anda ditetapkan kepada "tiada proksi" atau "terus".</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5823381412099532241">Chromium tidak dapat dikemas kini kepada versi yang terbaharu, jadi anda terlepas ciri baharu yang hebat dan pembetulan keselamatan. Anda perlu mengemas kini Chromium.</translation>
 <translation id="5862307444128926510">Selamat datang ke Chromium</translation>
@@ -225,9 +206,6 @@ Chromium tidak dapat mengembalikan tetapan anda.</translation>
 <translation id="8033665941300843262">Chromium memerlukan akses kebenaran untuk mengongsinya dengan tapak ini.</translation>
 <translation id="805745970029938373">Anda boleh melihat semua pemberitahuan anda dari apl, sambungan dan tapak web Chromium di sini.</translation>
 <translation id="8134284582177628525">Jika anda berkongsi komputer ini dengan <ph name="PROFILE_NAME" /> , tambahkan diri anda pada Chromium menyemak imbas secara berasingan. Jika tidak, putuskan sambungan Akaun Googlenya.</translation>
-<translation id="8187289872471304532">Pergi ke
-          Apikasi &gt; Pilihan Sistem &gt; Rangkaian &gt; Terperinci &gt; Proksi
-          dan nyahpilih mana-mana proksi yang telah dipilih.</translation>
 <translation id="8269379391216269538">Bantu menjadikan Chromium lebih baik</translation>
 <translation id="8453117565092476964">Arkib pemasang rosak atau tidak sah. Sila muat turun Chromium sekali lagi.</translation>
 <translation id="8493179195440786826">Chromium sudah usang</translation>
@@ -235,8 +213,6 @@ Chromium tidak dapat mengembalikan tetapan anda.</translation>
 <translation id="85843667276690461">Dapatkan bantuan untuk menggunakan Chromium</translation>
 <translation id="8586442755830160949">Hak Cipta <ph name="YEAR" /> Pengarang Chromium. Hak cipta terpelihara.</translation>
 <translation id="8605166112420372522">&amp;Lancarkan semula Chromium pada desktop</translation>
-<translation id="8610831143142469229">Benarkan Chromium mengakses rangkaian dalam tetapan firewall atau antivirus
-        anda.</translation>
 <translation id="8621669128220841554">Pemasangan gagal disebabkan ralat yang tidak dinyatakan. Sila muat turun semula Chromium.</translation>
 <translation id="8628626585870903697">Chromium tidak menyertakan pemapar PDF yang diperlukan oleh Pratonton Cetakan untuk berfungsi.</translation>
 <translation id="8684913864886094367">Chromium tidak ditutup dengan betul.</translation>

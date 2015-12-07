@@ -47,7 +47,6 @@
 <translation id="2486653164587200256">Windows XP と Windows Vista はサポートされなくなったため、Chromium は正常に機能しない可能性があります。</translation>
 <translation id="2535480412977113886">アカウントのログイン情報が最新ではないため、Chromium OS はデータを同期できませんでした。</translation>
 <translation id="2558641060352364164">このサイトで使用されている Chromium Frame プラグインは、間もなくサポートが終了します。プラグインをアンインストールし、最新のブラウザにアップグレードしてください。</translation>
-<translation id="2565260267992448464">パソコンがインターネットに接続されていないため、Chromium でウェブページを表示できません。</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
 <translation id="2602806952220118310">Chromium - お知らせ</translation>
 <translation id="2636877269779209383">このサイトとカメラを共有するには、Chromium にカメラへのアクセスを許可する必要があります。</translation>
@@ -110,16 +109,6 @@
 <translation id="4458285410772214805">変更内容を反映するには、一度ログアウトして、もう一度ログインしてください。</translation>
 <translation id="4488676065623537541">お支払い情報を Chromium に保存しました。</translation>
 <translation id="4549794359424059447">Chromium の今後のバージョンでは Windows XP と Windows Vista はサポートされなくなります。</translation>
-<translation id="4559775032954821361">このオプションを無効にするには:
-          Chromium メニュー &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          &gt;
-          [LAN の設定]
-          の順に移動して、[LAN にプロキシ サーバーを使用する] チェックボックスをオフにします。</translation>
 <translation id="4567424176335768812"><ph name="USER_EMAIL_ADDRESS" /> としてログインしています。ログインしているすべてのデバイスで、ブックマーク、履歴、その他の設定にアクセスできます。</translation>
 <translation id="457845228957001925">Chromium データに関する重要な情報</translation>
 <translation id="459535195905078186">Chromium アプリ</translation>
@@ -141,14 +130,6 @@
 <translation id="5680901439334282664">Chromium にログイン</translation>
 <translation id="5772805321386874569">（Chromium を<ph name="BEGIN_BUTTON" />再起動<ph name="END_BUTTON" />する必要があります）</translation>
 <translation id="5796460469508169315">もうすぐ Chromium を使用できます。</translation>
-<translation id="580822234363523061">このオプションを無効にするには:
-          Chromium メニュー &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          の順に移動して、設定が [プロキシなし] または [直接] になっていることを確認します。</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5823381412099532241">Chromium を最新バージョンに自動更新できませんでした。新機能とセキュリティの修正が適用されていません。Chromium を更新する必要があります。</translation>
 <translation id="5862307444128926510">Chromium へようこそ</translation>
@@ -225,9 +206,6 @@
 <translation id="8033665941300843262">このサイトと制限付き機能を共有するには、Chromium に制限付き機能へのアクセスを許可する必要があります。</translation>
 <translation id="805745970029938373">Chromium のアプリ、拡張機能、ウェブサイトからの通知がすべてここに表示されます。</translation>
 <translation id="8134284582177628525">このパソコンを <ph name="PROFILE_NAME" /> さんと共有する場合は、個別に閲覧できるように、ご自分を Chromium に追加してください。そうしない場合は、他のユーザーの Google アカウントの接続を解除してください。</translation>
-<translation id="8187289872471304532">このオプションを無効にするには:
-          [アプリケーション] &gt; [システム環境設定] &gt; [ネットワーク] &gt; [詳細] &gt; [プロキシ] の順に移動して、
-          選択されているプロキシの選択を解除します。</translation>
 <translation id="8269379391216269538">Chromium の品質向上にご協力ください</translation>
 <translation id="8453117565092476964">インストーラ アーカイブが壊れているか無効です。Chromium をダウンロードし直してください。</translation>
 <translation id="8493179195440786826">Chromium は古いバージョンです</translation>
@@ -235,8 +213,6 @@
 <translation id="85843667276690461">Chromium の使用に関するアドバイス</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> The Chromium Authors. All rights reserved.</translation>
 <translation id="8605166112420372522">Chromium をデスクトップで再起動(&amp;R)</translation>
-<translation id="8610831143142469229">ファイアウォールやウイルス対策の設定で、Chromium からネットワークへのアクセスを
-        許可します。</translation>
 <translation id="8621669128220841554">原因不明のエラーによりインストールに失敗しました。Chromium をもう一度ダウンロードしてください。</translation>
 <translation id="8628626585870903697">印刷プレビューの表示に必要な PDF ビューアが Chromium にインストールされていません。</translation>
 <translation id="8684913864886094367">Chromium は正しく終了しませんでした。</translation>

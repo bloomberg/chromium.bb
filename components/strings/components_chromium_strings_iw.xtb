@@ -8,6 +8,24 @@
           והשבת את 'בצע אחזור מוקדם למשאבי דף'.
           אם פעולה זו אינה פותרת את הבעיה, מומלץ להפעיל מחדש את האפשרות הזו
           כדי לשפר את הביצועים.</translation>
+<translation id="4559775032954821361">‏עבור אל
+          תפריט Chromium‏ &gt;
+          <ph name="SETTINGS_TITLE" />
+          ‏&gt;
+          <ph name="ADVANCED_TITLE" />
+          ‏&gt;
+          <ph name="PROXIES_TITLE" />
+          ‏&gt;
+          הגדרות LAN
+          ובטל את הבחירה באפשרות "השתמש בשרת proxy עבור רשת LAN‏".</translation>
+<translation id="580822234363523061">‏עבור אל
+          תפריט Chromium‏ &gt;
+          <ph name="SETTINGS_TITLE" />
+          ‏&gt;
+          <ph name="ADVANCED_TITLE" />
+          ‏&gt;
+          <ph name="PROXIES_TITLE" />
+          ובדוק שהתצורה שלך מוגדרת לאפשרות "ללא שרת proxy‏" או "ישיר".</translation>
 <translation id="6613594504749178791">‏השינויים שביצעת ייכנסו לתוקף בפעם הבאה שתפעיל מחדש את Chromium‏.</translation>
 <translation id="7861509383340276692">‏עבור אל
         תפריט Chromium &gt;
@@ -17,4 +35,8 @@
         ובטל את הבחירה באפשרות '<ph name="NO_PREFETCH_DESCRIPTION" />'.
         אם פעולה זו אינה פותרת את הבעיה, מומלץ לבחור שוב באפשרות זו
         לקבלת ביצועים משופרים.</translation>
+<translation id="8187289872471304532">‏עבור אל
+          'יישומים' &gt; 'העדפות מערכת' &gt; 'רשת' &gt; 'מתקדם' &gt; שרתי Proxy'
+          ובטל את הבחירה בשרתי proxy שנבחרו.</translation>
+<translation id="8610831143142469229">‏אפשר ל-Chromium לגשת לרשת בהגדרות חומת האש או האנטי-וירוס שלך.</translation>
 </translationbundle>

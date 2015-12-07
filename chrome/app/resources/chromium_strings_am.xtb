@@ -49,7 +49,6 @@
 <translation id="2486653164587200256">Chromium በWindows XP ወይም Windows Vista ላይ ከእንግዲህ ስለማይደገፍ በአግባቡ ላይሰራ ይችላል።</translation>
 <translation id="2535480412977113886">የመለያ መግቢያ ዝርዝሮችዎ ጊዜ ያለፈባቸው ስለሆኑ Chromium OS ውሂብዎን ማመሳሰል አልቻለም።</translation>
 <translation id="2558641060352364164">ይህ ጣቢያ በቅርቡ የማይደገፍ የሚሆን የChromium ክፈፍ ተሰኪውን እየተጠቀመ ነው። እባክዎ ያራግፉትና ወደ ዘመናዊ አሳሽ ያሻሽሉ።</translation>
-<translation id="2565260267992448464">የእርስዎ ኮምፒውተር ከበይነመረቡ ጋር ስላልተገናኘ Chromium ድረ-ገጹን ማሳየት አይችልም።</translation>
 <translation id="2572494885440352020">Chromium አጋዥ</translation>
 <translation id="2602806952220118310">Chromium - ማሳወቂያዎች</translation>
 <translation id="2636877269779209383">Chromium ይህን ለዚህ ጣቢያ ለማጋራት የካሜራ መዳረሻ ያስፈልገዋል።</translation>
@@ -111,16 +110,6 @@
 <translation id="4458285410772214805">ይሄ ለውጥ እንዲተገበር እባክዎ ይውጡ እና እንደገና ይግቡ።</translation>
 <translation id="4488676065623537541">የክፍያ መጠየቂያ ዝርዝሮችዎ በChromium ውስጥ ተቀምጠዋል።</translation>
 <translation id="4549794359424059447">የወደፊት የChromium ስሪቶች ከአሁን በኋላ Windows XP ወይም Windows Vistaን አይደግፉም።</translation>
-<translation id="4559775032954821361">ወደ
-          የChromium ምናሌ &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          &gt;
-          የላን ቅንብሮች
-          ይሂዱና የ«ለእርስዎ ላን ተኪ አገልጋይ ይጠቀሙ»ን አመልካች ሳጥኑን አይምረጡ።</translation>
 <translation id="4567424176335768812">እንደ <ph name="USER_EMAIL_ADDRESS" /> ሆነው ገብተዋል። አሁን የእርስዎን ዕልባቶች፣ ታሪክ እና ሌሎች ቅንብሮች በመለያ በገቡ ሁሉም መሣሪያዎችዎ ላይ መድረስ ይችላሉ።</translation>
 <translation id="457845228957001925">የChromium ውሂብዎን በተመለከተ አስፈላጊ መረጃ</translation>
 <translation id="459535195905078186">የChromium መተግበሪያዎች</translation>
@@ -142,14 +131,6 @@
 <translation id="5680901439334282664">ወደ Chromium ይግቡ</translation>
 <translation id="5772805321386874569">(የChromium <ph name="BEGIN_BUTTON" />ዳግም መጀመር<ph name="END_BUTTON" /> ያስፈልገዋል)</translation>
 <translation id="5796460469508169315">Chromium ዝግጁ ሊሆን ትንሽ ቀርቶታል።</translation>
-<translation id="580822234363523061">ወደ
-          የChromium ምናሌ &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          ይሂዱና ውቅርዎ ወደ «ምንም ተኪ» ወይም «ቀጥታ» መዋቀሩን ያረጋግጡ።</translation>
 <translation id="5820394555380036790">Chromium ስርዓተ ክወና</translation>
 <translation id="5823381412099532241">Chromium እራሱን ወደ የቅርብ ጊዜው ስሪት ማዘመን አልቻለም፣ ስለዚህ ግሩም አዲስ ባህሪያት እና የደህንነት ጥገናዎች እያመለጠዎት ነው። Chromiumን ማዘመን አለብዎት።</translation>
 <translation id="5862307444128926510">ወደ Chromium እንኳን በደህና መጡ</translation>
@@ -226,9 +207,6 @@ Chromium ቅንብሮችዎን ማስመለስ አልቻለም።</translation>
 <translation id="8033665941300843262">Chromium ይህን ለዚህ ጣቢያ ለማጋራት የፍቃዶች መዳረሻ ያስፈልገዋል።</translation>
 <translation id="805745970029938373">ሁሉም ማሳወቂያዎችዎን እዚህ ካሉት የChromium መተግበሪያዎች፣ ቅጥያዎች፣ እና ድር ጣቢያዎች ሆነው ማየት ይችላሉ።</translation>
 <translation id="8134284582177628525">ይህን ኮምፒውተር ከ<ph name="PROFILE_NAME" /> ጋር የሚጋሩ ከሆኑ ተለይተው ለማሰስ እራስዎን Chromium ላይ ያክሉ። አለበለዚያ የGoogle መለያቸውን ያላቅቁት።</translation>
-<translation id="8187289872471304532">ወደ
-          መተግበሪያዎች &gt; የስርዓት ምርጫዎች &gt; አውታረ መረብ &gt; የላቁ &gt; ተኪዎች
-          ይሂዱና የተመረጡ ማናቸውም ተኪዎችን አይምረጡ።</translation>
 <translation id="8269379391216269538">Chromium ይበልጥ የተሻለ እንዲሆን ያግዙ</translation>
 <translation id="8453117565092476964">የጫኚው መዝገብ ተበላሽቷል ወይም ትክክል አይደለም። እባክዎ Chromiumን እንደገና ያውርዱ።</translation>
 <translation id="8493179195440786826">Chromium ጊዜው አልፎበታል</translation>
@@ -236,8 +214,6 @@ Chromium ቅንብሮችዎን ማስመለስ አልቻለም።</translation>
 <translation id="85843667276690461">Chromiumን መጠቀም ላይ እገዛ ያግኙ</translation>
 <translation id="8586442755830160949">የቅጂ መብት <ph name="YEAR" /> የChromium ደራሲያን። ሁሉም መብቶች የተጠበቁ ናቸው።</translation>
 <translation id="8605166112420372522">&amp;Chromiumን በዴስክቶፑ ላይ ዳግም አስጀምር</translation>
-<translation id="8610831143142469229">Chromium በኬላ ወይም የጸረ-ቫይረስ ቅንብሮችዎን አውታረ መረቡን እንዲደርስበት
-        ይፍቀዱለት።</translation>
 <translation id="8621669128220841554">ተለይቶ ባልታወቀ ስህተት ምክንያት ጭነት ከሽፏል። እባክዎ Chromiumን እንደገና ያውርዱ።</translation>
 <translation id="8628626585870903697">Chromium የህትመት ቅድመ እይታ እንዲሰራ የሚያስፈልገው የፒ ዲ ኤፍ ማያውን አያካትትም።</translation>
 <translation id="8684913864886094367">Chromium በትክክል አልተዘጋም።</translation>

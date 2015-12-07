@@ -8,6 +8,24 @@
           e inhabilita la opción para solicitar los recursos de la página previamente.
           Si el problema persiste, vuelve a habilitar esta opción
           para obtener un mejor rendimiento.</translation>
+<translation id="4559775032954821361">Accede
+          al menú de Chromium &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          &gt;
+          <ph name="PROXIES_TITLE" />
+          &gt;
+          Configuración LAN
+          y desmarca la casilla de verificación "Usar un servidor proxy para tu LAN".</translation>
+<translation id="580822234363523061">Accede
+          al menú de Chromium &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          &gt;
+          <ph name="PROXIES_TITLE" />
+          y asegúrate de que la configuración seleccionada sea "sin proxy" o "directa".</translation>
 <translation id="6613594504749178791">Los cambios se aplicarán la próxima vez que inicies Chromium.</translation>
 <translation id="7861509383340276692">Ve
           al menú de Chromium &gt;
@@ -17,4 +35,8 @@
           y anula la selección de "<ph name="NO_PREFETCH_DESCRIPTION" />."
           Si esto no resuelve el problema, vuelve a habilitar esta opción
           para obtener un mejor desempeño.</translation>
+<translation id="8187289872471304532">Accede a
+          Aplicaciones &gt; Preferencias del Sistema &gt; Red &gt; Avanzado &gt; Proxies
+          y desmarca las casillas de verificación de los proxies que se hayan seleccionado.</translation>
+<translation id="8610831143142469229">Permite que Chromium acceda a la red en tu configuración de antivirus o                de firewall.</translation>
 </translationbundle>

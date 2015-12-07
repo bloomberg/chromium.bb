@@ -370,21 +370,6 @@
 
           Nếu cài đặt này không được thiết lập thì <ph name="PRODUCT_NAME" />
           sẽ cho phép sử dụng các máy chủ Nhắn tin gốc ở mức người dùng.</translation>
-<translation id="2393996789386329927">Chặn quyền truy cập vào URL được liệt kê.
-
-      Chính sách này ngăn người dùng tải trang web từ các URL được liệt kê trong danh sách cấm. Danh sách cấm cung cấp danh sách các mẫu URL giúp chỉ định URL nào sẽ bị liệt kê vào danh sách cấm.
-
-      Mỗi mẫu URL có thể là mẫu cho các tệp cục bộ hoặc mẫu URL chung. Các mẫu tệp cục bộ có định dạng 'file://path', trong đó đường dẫn sẽ là một đường dẫn tuyệt đối để chặn. Tất cả các vị trí hệ thống tệp có đường dẫn đó là tiền tố sẽ bị chặn.
-
-      Mẫu URL chung có định dạng 'scheme://host:port/path'.
-      Nếu xuất hiện, chỉ giao thức truy cập được chỉ định mới bị chặn. Nếu tiền tố scheme:// không được chỉ định, tất cả giao thức truy cập sẽ bị chặn.
-      Cần có máy chủ và máy chủ này có thể là tên máy chủ hoặc địa chỉ IP. Tên miền phụ của tên máy chủ cũng sẽ bị chặn. Để ngăn việc chặn tên miền phụ, hãy bao gồm '.' trước tên máy chủ. Tên máy chủ đặc biệt '*' sẽ chặn tất cả các miền.
-      Cổng tùy chọn là một số cổng hợp lệ từ 1 đến 65535. Nếu chưa chỉ định cổng nào, tất cả các cổng sẽ bị chặn.
-      Nếu đường dẫn tùy chọn được chỉ định thì chỉ các đường dẫn có tiền tố đó mới bị chặn.
-
-      Có thể xác định các ngoại lệ trong chính sách về danh sách trắng URL. Các chính sách này được giới hạn ở 1000 mục, các mục tiếp theo sẽ được bỏ qua.
-
-      Nếu chính sách này không được đặt thì sẽ không có URL nào được liệt kê trong danh sách cấm trong trình duyệt.</translation>
 <translation id="240213793013362302">Định cấu hình hình nền.
 
       Chính sách này cho phép bạn định cấu hình hình nền hiển thị trên màn hình và trên nền màn hình đăng nhập cho người dùng. Chính sách được đặt bằng cách chỉ định URL mà từ đó <ph name="PRODUCT_OS_NAME" /> có thể tải xuống hình nền và mật mã được sử dụng để xác minh tính toàn vẹn của hình nền được tải xuống. Hình ảnh phải ở định dạng JPEG, kích thước tệp không được vượt quá 16 MB. URL phải truy cập được mà không cần xác thực.

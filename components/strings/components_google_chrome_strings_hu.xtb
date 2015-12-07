@@ -9,6 +9,15 @@
           és tiltsa le az „Oldalforrások előzetes lehívása” beállítást.
           Ha ettől nem szűnik meg a probléma, javasoljuk, hogy engedélyezze újra ezt a lehetőséget
           a jobb teljesítmény érdekében.</translation>
+<translation id="5890698319714066019">A Google Chrome nem tudja megjeleníteni a weboldalt, mert a számítógép nem csatlakozik az internethez.</translation>
+<translation id="6011049234605203654">Lépjen ide:
+          Chrome menü &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          &gt;
+          <ph name="PROXIES_TITLE" />,
+          és gondoskodjon róla, hogy a konfiguráció beállítása „nincs proxy” vagy „közvetlen” legyen.</translation>
 <translation id="6341737370356890233">Lépjen ide:
         Chrome menü &gt;
         <ph name="SETTINGS_TITLE" />
@@ -17,4 +26,17 @@
         és törölje a jelet a(z) „<ph name="NO_PREFETCH_DESCRIPTION" />” jelölőnégyzetből.
         Ha ettől nem szűnik meg a probléma, javasoljuk, hogy jelölje be ismét
         ezt a lehetőséget a jobb teljesítmény érdekében.</translation>
+<translation id="6855094794438142393">Lépjen ide:
+          Chrome menü &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          &gt;
+          <ph name="PROXIES_TITLE" />
+          &gt;
+          A helyi hálózat (LAN) beállításai,
+          és törölje a jelet innen: „Proxykiszolgáló használata a helyi hálózaton”.</translation>
+<translation id="7396375882099008034">A hálózat elérésének engedélyezése a Chrome számára a tűzfal- vagy vírusirtó-
+        beállításokban.</translation>
+<translation id="8187289872471304532">Az Applications &gt; System Preferences &gt; Network &gt; Advanced &gt; Proxies (Alkalmazások &gt; Rendszerbeállítások &gt; Hálózat &gt; Speciális &gt; Proxyk) menüpont alatt törölje a jelet minden kijelölt proxy mellől.</translation>
 </translationbundle>

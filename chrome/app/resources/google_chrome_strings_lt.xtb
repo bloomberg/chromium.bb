@@ -153,19 +153,10 @@ ir netinkamus prisijungimo duomenis. Gali būti, kad užpuolėjas bando apsimest
 <translation id="5785746630574083988">Iš naujo paleidus „Windows 8“ „Chrome“ programos bus uždarytos ir iš naujo paleistos.</translation>
 <translation id="5855036575689098185">Jūsų kompiuteryje veikianti programinė įranga nesuderinama su „Google Chrome“.</translation>
 <translation id="5877064549588274448">Kanalas pakeistas. Kad pritaikytumėte pakeitimus, iš naujo paleiskite įrenginį.</translation>
-<translation id="5890698319714066019">„Google Chrome“ nepavyksta pateikti tinklalapio, nes kompiuteris neprijungtas prie interneto.</translation>
 <translation id="5931853610562009806">„Mac“ kompiuteriuose slaptažodžiai gali būti išsaugoti naudojant „Keychain“, o juos gali pasiekti arba sinchronizuoti kiti „Chrome“ naudotojai, bendrai naudojantys šią „OS X“ paskyrą.</translation>
 <translation id="5940385492829620908">Čia saugoma žiniatinklio informacija, žymės ir kiti „Chrome“ duomenys.</translation>
 <translation id="5941830788786076944">Padarykite „Google Chrome“ numatytąja naršykle</translation>
 <translation id="597770749449734237">Įgalinami papildomi spartieji klavišai, naudingi derinant „Google Chrome“.</translation>
-<translation id="6011049234605203654">Eikite į
-          „Chrome“ meniu &gt;
-          „<ph name="SETTINGS_TITLE" />“
-          &gt;
-          „<ph name="ADVANCED_TITLE" />“
-          &gt;
-          „<ph name="PROXIES_TITLE" />“
-          ir įsitikinkite, kad konfigūracija nustatyta kaip „Nėra tarpinio serverio“ arba „Tiesioginis“.</translation>
 <translation id="6012342843556706400">„Chrome“ reikia galimybės pasiekti vietovės informaciją, kad ją būtų galima bendrinti su šia svetaine.</translation>
 <translation id="6014844626092547096">Dabar esate prisijungę prie „Chrome“. Administratorius neleidžia sinchronizuoti.</translation>
 <translation id="6049075767726609708">Administratorius šioje sistemoje jau įdiegė „Google Chrome“ ir ji prieinama visiems naudotojams. Sistemos lygio „Google Chrome“ pakeis naudotojo lygio diegimą.</translation>
@@ -186,16 +177,6 @@ ir netinkamus prisijungimo duomenis. Gali būti, kad užpuolėjas bando apsimest
 <translation id="6676384891291319759">Interneto prieiga</translation>
 <translation id="6757767188268205357">Netrukdykite</translation>
 <translation id="683440813066116847">„Canary“ versijos „Google Chrome“ skirta taisyklė, pagal kurią leidžiamas gaunamas mDNS srautas.</translation>
-<translation id="6855094794438142393">Eikite į
-          „Chrome“ meniu &gt;
-          „<ph name="SETTINGS_TITLE" />“
-          &gt;
-          „<ph name="ADVANCED_TITLE" />“
-          &gt;
-          „<ph name="PROXIES_TITLE" />“
-          &gt;
-          „LAN nustatymai“
-          ir panaikinkite „Naudoti tarpinį serverį LAN tinkle“ pasirinkimą.</translation>
 <translation id="6883876366448858277">siunčiamas žodis ir jo kontekstas „Google“ paieškai, kuri pateikia apibrėžimų, nuotraukų ir kitų paieškos rezultatų.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="6970811910055250180">Įrenginys atnaujinamas...</translation>
@@ -217,8 +198,6 @@ ir netinkamus prisijungimo duomenis. Gali būti, kad užpuolėjas bando apsimest
 <translation id="7282192067747128786">„Chrome“ – pranešimai (neskaitytų: <ph name="QUANTITY" />)</translation>
 <translation id="729375352412857283">Netrukus šis kompiuteris nebegaus „Google Chrome“ naujinių, nes nebepalaikoma „Windows XP“ ir „Windows Vista“.</translation>
 <translation id="7339898014177206373">Naujas langas</translation>
-<translation id="7396375882099008034">Leiskite „Chrome“ pasiekti tinklą užkardos ar antivirusinės
-        programos nustatymuose.</translation>
 <translation id="7398801000654795464">Buvote prisijungę prie „Chrome“ kaip <ph name="USER_EMAIL_ADDRESS" />. Prisijungdami vėl naudokite tą pačią paskyrą.</translation>
 <translation id="7400722733683201933">Apie „Google Chrome“</translation>
 <translation id="7408085963519505752">„Chrome“ OS sąlygos</translation>
@@ -248,9 +227,6 @@ ir netinkamus prisijungimo duomenis. Gali būti, kad užpuolėjas bando apsimest
 <translation id="8032142183999901390">Pašalinus paskyrą iš „Chrome“, galbūt reikės iš naujo įkelti skirtukus, kad pakeitimai įsigaliotų.</translation>
 <translation id="8037887340639533879">Nerasta jokių „Google Chrome“ įdiegčių, kurias būtų galima atnaujinti.</translation>
 <translation id="8129812357326543296">Apie „&amp;Google Chrome“</translation>
-<translation id="8187289872471304532">Eikite į
-          „Programos“ &gt; „Sistemos nuostatos“ &gt; „Tinklas“ &gt; „Išplėstinis“ &gt; „Tarpiniai serveriai“
-          ir panaikinkite visų tarpinių serverių pasirinkimą.</translation>
 <translation id="8205111949707227942">Pasirenkama: padėkite tobulinti „Chrome“ OS automatiškai siųsdami „Google“ naudojimo statistiką ir strigčių ataskaitas.</translation>
 <translation id="8227755444512189073">„Google Chrome“ turi paleisti išorinę taikomąją programą <ph name="SCHEME" /> nuorodoms valdyti. Prašyta nuoroda: <ph name="PROTOLINK" />.</translation>
 <translation id="8255190535488645436">„Google Chrome“ naudoja jūsų fotoaparatą ir mikrofoną.</translation>

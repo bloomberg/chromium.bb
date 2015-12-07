@@ -49,7 +49,6 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="2486653164587200256">Chromium kanske inte fungerar ordentligt eftersom den inte längre stöds på Windows XP och Windows Vista.</translation>
 <translation id="2535480412977113886">Det gick inte att synkronisera data med Chromium eftersom inloggningsuppgifterna för kontot är inaktuella.</translation>
 <translation id="2558641060352364164">På den här webbplatsen används pluginprogrammet Chromium Frame som snart slutar stödjas. Avinstallera det och uppgradera till en modern webbläsare.</translation>
-<translation id="2565260267992448464">Det går inte att visa webbsidan i Chromium eftersom datorn inte är ansluten till internet.</translation>
 <translation id="2572494885440352020">Hjälp för Chromium</translation>
 <translation id="2602806952220118310">Chromium – meddelanden</translation>
 <translation id="2636877269779209383">Chromium behöver tillgång till kameran för att kunna dela den på den här webbplatsen.</translation>
@@ -112,16 +111,6 @@ och felaktiga uppgifter. Sådant kan hända när en angripare utger sig för att
 <translation id="4458285410772214805">Den här ändringen träder inte i kraft förrän du loggat ut och sedan loggar in igen.</translation>
 <translation id="4488676065623537541">Dina faktureringsuppgifter har sparats i Chromium.</translation>
 <translation id="4549794359424059447">Framtida versioner av Chromium kommer inte att ha stöd för Windows XP och Windows Vista.</translation>
-<translation id="4559775032954821361">Öppna
-          Chromium-menyn &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          &gt;
-          LAN-inställningar
-          och avmarkera kryssrutan Använd en proxyserver för nätverket.</translation>
 <translation id="4567424176335768812">Du är inloggad som <ph name="USER_EMAIL_ADDRESS" />. Nu kan du komma åt dina bokmärken, historik och andra inställningar på alla enheter som du är inloggad på.</translation>
 <translation id="457845228957001925">Viktig information om uppgifter i Chromium</translation>
 <translation id="459535195905078186">Chromium-appar</translation>
@@ -143,14 +132,6 @@ och felaktiga uppgifter. Sådant kan hända när en angripare utger sig för att
 <translation id="5680901439334282664">Logga in i Chromium</translation>
 <translation id="5772805321386874569">(Chromium måste <ph name="BEGIN_BUTTON" />startas om<ph name="END_BUTTON" />)</translation>
 <translation id="5796460469508169315">Chromium är nästan klart.</translation>
-<translation id="580822234363523061">Öppna
-          Chromium-menyn &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          och kontrollera att "ingen proxy" eller "direkt" har angetts i konfigurationen</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5823381412099532241">Chromium kunde inte uppdateras till den senaste versionen. Du går miste om nya funktioner och säkerhetsuppdateringar. Du måste uppdatera Chromium.</translation>
 <translation id="5862307444128926510">Välkommen till Chromium</translation>
@@ -227,9 +208,6 @@ Chromium kan inte återställa dina inställningar.</translation>
 <translation id="8033665941300843262">Chromium behöver tillgång till behörigheter för att kunna dela dem på den här webbplatsen.</translation>
 <translation id="805745970029938373">Alla dina meddelanden från Chromium-appar, tillägg och webbplatser visas här.</translation>
 <translation id="8134284582177628525">Om du delar den här datorn med <ph name="PROFILE_NAME" /> lägger du till dig själv i Chromium så att du kan surfa enskilt. I annat fall kopplar du från deras Google-konto.</translation>
-<translation id="8187289872471304532">Öppna
-          Program &gt; Systeminställningar &gt; Nätverk &gt; Avancerat &gt; Proxyservrar
-          och avmarkera alla proxyservrar.</translation>
 <translation id="8269379391216269538">Bidra till att förbättra Chromium</translation>
 <translation id="8453117565092476964">Arkivet för installationsfilen är skadat eller ogiltigt. Ladda ned Chromium igen.</translation>
 <translation id="8493179195440786826">Den här versionen av Chromium är inaktuell</translation>
@@ -237,8 +215,6 @@ Chromium kan inte återställa dina inställningar.</translation>
 <translation id="85843667276690461">Få hjälp med att använda Chromium</translation>
 <translation id="8586442755830160949">Upphovsrätt <ph name="YEAR" /> The Chromium Authors. Med ensamrätt.</translation>
 <translation id="8605166112420372522">&amp;Starta om Chromium på skrivbordet</translation>
-<translation id="8610831143142469229">Tillåt att Chromium får åtkomst till nätverket i din brandvägg eller dina
-        antivirusinställningar.</translation>
 <translation id="8621669128220841554">Installationen misslyckades på grund av ett okänt fel. Ladda ned Chromium igen.</translation>
 <translation id="8628626585870903697">Chromium har inte det PDF-visningsprogram som krävs för att förhandsgranskning ska fungera.</translation>
 <translation id="8684913864886094367">Chromium stängdes inte ordentligt.</translation>

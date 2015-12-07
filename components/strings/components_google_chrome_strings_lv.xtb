@@ -9,6 +9,15 @@
           un atspējojiet opciju “Sākotnēji iegūt lapu resursus”.
           Ja problēma netiek novērsta, ieteicams atkārtoti iespējot šo opciju,
           lai uzlabotu veiktspēju.</translation>
+<translation id="5890698319714066019">Google Chrome nevar parādīt šo tīmekļa lapu, jo jūsu datorā nav izveidots savienojums ar internetu.</translation>
+<translation id="6011049234605203654">Atveriet
+          Chrome izvēlni &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          &gt;
+          <ph name="PROXIES_TITLE" />
+          un pārliecinieties, vai konfigurācija ir iestatīta uz “no proxy” (bez starpniekservera) vai “direct” (tieša).</translation>
 <translation id="6341737370356890233">Atveriet
         Chrome izvēlni &gt;
         <ph name="SETTINGS_TITLE" />
@@ -17,4 +26,19 @@
         un noņemiet atzīmi no izvēles rūtiņas “<ph name="NO_PREFETCH_DESCRIPTION" />”.
         Ja problēmu neizdodas novērst, ieteicams atkal atlasīt šo opciju,
         lai uzlabotu veiktspēju.</translation>
+<translation id="6855094794438142393">Atveriet
+          Chrome izvēlni &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          &gt;
+          <ph name="PROXIES_TITLE" />
+          &gt;
+          LAN iestatījumi
+          un noņemiet atzīmi no izvēles rūtiņas “Use a proxy server for your LAN” (Izmantot starpniekserveri savam LAN).</translation>
+<translation id="7396375882099008034">Atļaušana pārlūkam Chrome piekļūt tīklam jūsu ugunsmūra vai pretvīrusu programmas
+        iestatījumos.</translation>
+<translation id="8187289872471304532">Atveriet izvēlni
+          Applications (Lietojumprogrammas) &gt; System Preferences (Sistēmas preferences) &gt; Network (Tīkls) &gt; Advanced (Papildu) &gt; (Proxies) Starpniekserveri
+          un noņemiet atzīmes no visiem atzīmētajiem starpniekserveriem.</translation>
 </translationbundle>

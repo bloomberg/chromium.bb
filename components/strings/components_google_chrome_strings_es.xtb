@@ -6,6 +6,15 @@
 <translation id="3140883423282498090">Los cambios se aplicarán la próxima vez que reinicies Google Chrome.</translation>
 <translation id="3444832043240812445">Esta página solo muestra información sobre fallos recientes si se <ph name="BEGIN_LINK" />habilitan los informes sobre fallos<ph name="END_LINK" />.</translation>
 <translation id="5423788048750135178">Accede al menú de Chrome, selecciona Ajustes, haz clic en Privacidad (Avanzados) e inhabilita la opción de cargar previamente recursos de página. Si esto no soluciona el problema, te recomendamos que vuelvas a habilitar esta opción para mejorar el rendimiento.</translation>
+<translation id="5890698319714066019">Google Chrome no puede mostrar la página web porque el ordenador no está conectado a Internet.</translation>
+<translation id="6011049234605203654">Accede al
+          menú de Chrome, haz clic en
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          &gt;
+          <ph name="PROXIES_TITLE" />
+          y asegúrate de que esté seleccionada la opción de configuración sin proxy o directa.</translation>
 <translation id="6341737370356890233">Accede al
           menú de Chrome &gt;
           <ph name="SETTINGS_TITLE" />
@@ -14,4 +23,19 @@
           y desactiva la opción "<ph name="NO_PREFETCH_DESCRIPTION" />".
           Si esto no soluciona el problema, te recomendamos que vuelvas a seleccionar esta opción
           para conseguir un mejor rendimiento.</translation>
+<translation id="6855094794438142393">Accede al
+          menú de Chrome, haz clic en
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          &gt;
+          <ph name="PROXIES_TITLE" />
+          &gt;
+          Configuración de LAN
+          y desactiva la opción Usar un servidor proxy para la LAN.</translation>
+<translation id="7396375882099008034">Configura tu cortafuegos o tu antivirus para permitir el acceso de
+        Chrome a la red.</translation>
+<translation id="8187289872471304532">Accede a
+          Aplicaciones &gt; Preferencias del Sistema &gt; Red &gt; Avanzado &gt; Proxies
+          y desactiva las casillas de verificación de los proxies seleccionados.</translation>
 </translationbundle>

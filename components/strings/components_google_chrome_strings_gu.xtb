@@ -9,6 +9,14 @@
           અને "પૃષ્ઠ સંસાધનોનું પૂર્વ આનયન કરો" ને અક્ષમ કરો.
           જો આનાથી સમસ્યા ઉકેલાતી નથી, તો અમે સુધારેલ પ્રદર્શન માટે ફરીથી આ વિકલ્પને પસંદ કરવાની
         ભલામણ કરીએ છીએ.</translation>
+<translation id="5890698319714066019">Google Chrome વેબપૃષ્ઠ પ્રદર્શિત કરી શકતું નથી કારણ કે તમારું કમ્પ્યુટર ઇન્ટરનેટ સાથે કનેક્ટ થયેલ નથી.</translation>
+<translation id="6011049234605203654">Chrome મેનૂ &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          &gt;
+          <ph name="PROXIES_TITLE" />
+          પર જાઓ અને ખાતરી કરો કે ગોઠવણી "પ્રોક્સી નહીં" અથવા "પ્રત્યક્ષ" પર સેટ કરેલી છે.</translation>
 <translation id="6341737370356890233">Chrome મેનૂ &gt;
         <ph name="SETTINGS_TITLE" />
         &gt;
@@ -16,4 +24,17 @@
         પર જાઓ અને "<ph name="NO_PREFETCH_DESCRIPTION" />" પસંદગીને હટાવો.
         જો આનાથી સમસ્યા ઉકેલાતી નથી, તો અમે સુધારેલ પ્રદર્શન માટે ફરીથી આ વિકલ્પને પસંદ કરવાની 
         ભલામણ કરીએ છીએ.</translation>
+<translation id="6855094794438142393">Chrome મેનૂ &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          &gt;
+          <ph name="PROXIES_TITLE" />
+          &gt;
+          LAN સેટિંગ્સ પર જાઓ
+          અને "તમારા LAN માટે એક પ્રોક્સી સર્વરનો ઉપયોગ કરો" ની પસંદગી હટાવો.</translation>
+<translation id="7396375882099008034">Chrome ને તમારી ફાયરવૉલ અથવા એન્ટિવાયરસ સેટિંગ્સમાં નેટવર્ક ઍક્સેસ કરવાની
+        મંજૂરી આપો.</translation>
+<translation id="8187289872471304532">એપ્લિકેશનો &gt; સિસ્ટમ પસંદગીઓ &gt; નેટવર્ક &gt; વિગતવાર &gt; પ્રોક્સીઝ
+          પર જાઓ અને પસંદ કરવામાં આવેલી કોઈપણ પ્રોક્સીની પસંદગી હટાવો.</translation>
 </translationbundle>

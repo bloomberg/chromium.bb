@@ -144,19 +144,10 @@
 <translation id="5785746630574083988">Если вы перезапустите Chrome в режиме Windows 8, все приложения браузера будут закрыты и запущены снова.</translation>
 <translation id="5855036575689098185">Используемое программное обеспечение несовместимо с Google Chrome.</translation>
 <translation id="5877064549588274448">Канал изменен. Чтобы изменения вступили в силу, перезапустите устройство.</translation>
-<translation id="5890698319714066019">Не удается загрузить веб-страницу, так как компьютер не подключен к Интернету.</translation>
 <translation id="5931853610562009806">Если пароли на Mac сохраняются с помощью функции "Связка ключей", их могут просматривать и синхронизировать все пользователи Chrome, у которых есть доступ к этому аккаунту OS X.</translation>
 <translation id="5940385492829620908">Все веб-страницы, закладки и другие данные Chrome можно найти здесь.</translation>
 <translation id="5941830788786076944">Назначить Google Chrome браузером по умолчанию</translation>
 <translation id="597770749449734237">Включает дополнительные быстрые клавиши, которыми удобно пользоваться при отладке Chrome.</translation>
-<translation id="6011049234605203654">Выберите
-          меню Chrome &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          и убедитесь, что в конфигурации отключено использование прокси-сервера или выбрано непосредственное подключение.</translation>
 <translation id="6012342843556706400">Предоставьте браузеру Chrome доступ к геоданным, чтобы продолжить работу на этом сайте.</translation>
 <translation id="6014844626092547096">Добро пожаловать в Chrome! Синхронизация отключена администратором.</translation>
 <translation id="6049075767726609708">На этот компьютер администратором был установлен браузер Google Chrome системного уровня, который заменит вашу установку Google Chrome.</translation>
@@ -177,16 +168,6 @@
 <translation id="6676384891291319759">Доступ в Интернет</translation>
 <translation id="6757767188268205357">Больше не спрашивать</translation>
 <translation id="683440813066116847">Разрешить в Google Chrome Canary передачу входящего трафика по протоколу mDNS</translation>
-<translation id="6855094794438142393">Выберите
-          меню Chrome &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          &gt;
-          Настройка сети
-          и снимите флажок "Использовать прокси-сервер для локальных подключений".</translation>
 <translation id="6883876366448858277">отправляет слово и окружающий его контекст в Google Поиск; возвращает определения, фотографии, картинки и другие результаты.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="6970811910055250180">Обновление операционной системы…</translation>
@@ -208,7 +189,6 @@
 <translation id="7282192067747128786">Chrome - Оповещения (новых: <ph name="QUANTITY" />)</translation>
 <translation id="729375352412857283">Google Chrome скоро перестанет обновляться на этом компьютере, так как поддержка Windows XP и Windows Vista будет прекращена.</translation>
 <translation id="7339898014177206373">Новое окно</translation>
-<translation id="7396375882099008034">Разрешите доступ к сети для Chrome в настройках брандмауэра и антивирусного ПО.</translation>
 <translation id="7398801000654795464">Ранее вы входили в Chrome как <ph name="USER_EMAIL_ADDRESS" />. Войдите снова, используя тот же аккаунт.</translation>
 <translation id="7400722733683201933">О браузере Google Chrome</translation>
 <translation id="7408085963519505752">Условия использования Chrome OS</translation>
@@ -238,9 +218,6 @@
 <translation id="8032142183999901390">После удаления вашего аккаунта из Chrome может понадобиться перезагрузить открытые вкладки, чтобы изменения вступили в силу.</translation>
 <translation id="8037887340639533879">Невозможно выполнить обновление, так как приложение Google Chrome не найдено</translation>
 <translation id="8129812357326543296">О браузере &amp;Google Chrome</translation>
-<translation id="8187289872471304532">Выберите
-          Программы &gt; Системные настройки &gt; Сеть &gt; Дополнительно &gt; Прокси
-          и снимите флажки напротив всех прокси-серверов.</translation>
 <translation id="8205111949707227942">(Необязательно) Помогите улучшить Chrome OS, разрешив автоматическую отправку статистики использования и отчетов о сбоях в Google.</translation>
 <translation id="8227755444512189073">Браузеру Google Chrome требуется запустить внешнее приложение для обработки ссылок <ph name="SCHEME" />. Запрошенная ссылка: <ph name="PROTOLINK" />.</translation>
 <translation id="8255190535488645436">Google Chrome использует камеру и микрофон.</translation>

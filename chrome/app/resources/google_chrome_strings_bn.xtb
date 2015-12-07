@@ -147,19 +147,10 @@
 <translation id="5785746630574083988">Windows 8 মোডে পুনরায় লঞ্চ করা হলে তা আপনার Chrome অ্যাপ্লিকেশানগুলিকে বন্ধ করবে এবং পুনরায় লঞ্চ করবে৷</translation>
 <translation id="5855036575689098185">আপনার কম্পিউটারে যে সফটওয়্যারটি চলছে  সেটি Google Chrome এর সঙ্গে সঙ্গতিপূর্ণ নয়৷</translation>
 <translation id="5877064549588274448">চ্যানেল পরিবর্তিত হয়েছে৷ পরিবর্তনগুলি প্রয়োগ করার জন্য আপনার ডিভাইস পুনরায় শুরু করুন৷</translation>
-<translation id="5890698319714066019">আপনার কম্পিউটার ইন্টারনেটে সংযুক্ত না থাকায় Google Chrome ওয়েবপৃষ্ঠাটি প্রদর্শন করতে পারেনি৷</translation>
 <translation id="5931853610562009806">Mac এ, পাসওয়ার্ডগুলি আপনার Keychain এ সংরক্ষিত হতে পারে এবং এই OS X অ্যাকাউন্টটি ভাগ করে এমন অন্য Chrome ব্যবহারকারীরা এটি অ্যাক্সেস বা সিঙ্ক করতে পারবে।</translation>
 <translation id="5940385492829620908">আপনার ওয়েব, বুকমার্ক, এবং Chrome এর অন্যান্য জিনিস এখানে রয়েছে৷</translation>
 <translation id="5941830788786076944">Google Chrome-কে ডিফল্ট ব্রাউজার করুন</translation>
 <translation id="597770749449734237">Google Chrome ডিবাগ করার জন্য উপযোগী অতিরিক্ত কীবোর্ড শর্টকার্ট সক্ষম করে৷</translation>
-<translation id="6011049234605203654">Chrome মেনুতে
-          যান &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          এবং আপনার কনফিগারেশন "প্রক্সি নয়" বা "সরাসরি" তে সেট আছে কি না নিশ্চিত করুন৷</translation>
 <translation id="6012342843556706400">এই সাইটের সাথে এটি ভাগ করতে Chrome এর অবস্থানের অ্যাক্সেস প্রয়োজন।</translation>
 <translation id="6014844626092547096">আপনি এখন Chrome এ সাইন ইন করেছেন! আপনার প্রশাসক দ্বারা সিঙ্ক অক্ষম করা আছে৷</translation>
 <translation id="6049075767726609708">একজ প্রশাসক এই সিস্টেমে Google Chrome ইনস্টল করেছে এবং এটি সমস্ত ব্যবহারকারীর কাছেই উপলব্ধ৷  সিস্টেম স্তরীয় Google Chrome আপনার ব্যবহারকারী-স্তরীয় ইনস্টলেশনকে এখনই প্রতিস্থাপিত করবে৷</translation>
@@ -180,16 +171,6 @@
 <translation id="6676384891291319759">ইন্টারনেটটি অ্যাক্সেস করুন</translation>
 <translation id="6757767188268205357">আমাকে বাগ করবেন না</translation>
 <translation id="683440813066116847">mDNS ট্রাফিকের অনুমতি দিতে Google Chrome Canary এর জন্য ইনবাউন্ড নিয়ম।</translation>
-<translation id="6855094794438142393">Chrome মেনুতে
-          যান &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          &gt;
-          LAN সেটিংস
-          এবং "আপনার LAN এর জন্য একটি প্রক্সি সার্ভার ব্যবহার করুন" অনির্বাচন করুন৷</translation>
 <translation id="6883876366448858277">Google অনুসন্ধানে একটি শব্দ এবং এটির পার্শ্ববর্তী প্রসঙ্গ পাঠায়, সংজ্ঞা, ছবি, অনুসন্ধান ফলাফল, এবং অন্যান্য অনুসন্ধান ফলাফল ফেরত পাঠায়৷</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="6970811910055250180">আপনার ডিভাইস আপডেট করা হচ্ছে ...</translation>
@@ -211,8 +192,6 @@
 <translation id="7282192067747128786">Chrome - বিজ্ঞপ্তিগুলি (<ph name="QUANTITY" />টি অপঠিত)</translation>
 <translation id="729375352412857283">এই কম্পিউটারটি শীঘ্রই Google Chrome আপডেট গ্রহণ করা বন্ধ করবে কারণ Windows XP ও Windows Vista আর সমর্থিত হবে না।</translation>
 <translation id="7339898014177206373">নতুন উইন্ডো</translation>
-<translation id="7396375882099008034">আপনার ফায়ারওয়াল বা অ্যান্টিভাইরাস সেটিংসে Chrome কে নেটওয়ার্ক অ্যাক্সেস 
-        করতে মঞ্জুরি দিন৷</translation>
 <translation id="7398801000654795464">আপনি <ph name="USER_EMAIL_ADDRESS" /> হিসাবে Chrome এ সাইন ইন করেছেন৷ আবার সাইন করতে দয়া করে একই অ্যাকাউন্ট ব্যবহার করুন৷</translation>
 <translation id="7400722733683201933">Google Chrome সম্বন্ধে</translation>
 <translation id="7408085963519505752">Chrome OS শর্তাবলী</translation>
@@ -242,8 +221,6 @@
 <translation id="8032142183999901390">Chrome থেকে আপনার অ্যাকাউন্ট সরানোর পরে, কার্য়করী করতে আপনাকে খোলা ট্যাবগুলিকে  পুনরায় লোড করার প্রয়োজন হতে পারে।</translation>
 <translation id="8037887340639533879">আপডেট করার জন্য Google Chrome এর কোনো ইনস্টলশান পাওয়া যায়নি৷</translation>
 <translation id="8129812357326543296">&amp;Google Chrome সম্বন্ধে</translation>
-<translation id="8187289872471304532">Applications &gt; System Preferences &gt; Network &gt; Advanced &gt; Proxies এ যান
-          এবং নির্বাচিত থাকা যে কোনো প্রক্সি অনির্বাচন করুন৷</translation>
 <translation id="8205111949707227942">ঐচ্ছিক: Google-এ ব্যবহার পরিসংখ্যান এবং ক্র্যাশ প্রতিবেদন স্বয়ংক্রিয়ভাবে পাঠিয়ে  Chrome-কে সর্বোত্তম করে তুলতে সাহায্য করুন৷</translation>
 <translation id="8227755444512189073"><ph name="SCHEME" /> লিঙ্কগুলি নিয়ন্ত্রণ করার জন্য Google Chrome-এর একটি বহিরাগত অ্যাপ্লিকেশন প্রবর্তন করা দরকার৷ অনুরোধ করা লিঙ্কটি হল <ph name="PROTOLINK" />৷</translation>
 <translation id="8255190535488645436">Google Chrome আপনার ক্যামেরা এবং মাইক্রোফোন ব্যবহার করছে৷</translation>

@@ -375,21 +375,6 @@
 
           Ja šis iestatījums netiks iestatīts, pārlūkā <ph name="PRODUCT_NAME" /> varēs izmantot
           lietotāja līmeņa vietējās ziņojumapmaiņas saimniekdatorus.</translation>
-<translation id="2393996789386329927">Tiek bloķēta piekļuve norādītajiem vietrāžiem URL.
-
-      Šī politika neļauj lietotājam ielādēt tīmekļa lapas no melnajā sarakstā iekļautajiem vietrāžiem URL. Melnajā sarakstā ir iekļauts URL šablonu saraksts, kas nosaka, kuri vietrāži URL nav atļauti.
-
-      URL šablons var būt lokālo failu šablons vai vispārīgs URL šablons. Lokālo failu šabloni ir jānorāda formātā “file://ceļš”, kurā “ceļš” ir bloķējamais absolūtais ceļš. Tiks bloķētas visas failu sistēmas atrašanās vietas, kurām šis ceļš ir prefikss.
-
-      Vispārīga URL šablona formāts “shēma://saimniekdators:ports/ceļš”.
-      Ja būs norādīta konkrēta shēma, tiks bloķēta tikai šī shēma. Ja prefikss shēma:// nebūs norādīts, tiks bloķētas visas shēmas.
-      Saimniekdators ir jānorāda obligāti; tas var būt saimniekdatora nosaukums vai IP adrese. Tiks bloķēti arī saimniekdatora nosaukuma apakšdomēni. Lai novērstu apakšdomēnu bloķēšanu, pirms saimniekdatora nosaukuma iekļaujiet “.”. Īpašais saimniekdatora nosaukums “*” bloķēs visus domēnus.
-      Porta numuram (nav obligāts) ir jābūt derīgam porta numuram no 1 līdz 65535. Ja tas netiks norādīts, tiks bloķēti visi porti.
-      Ja būs norādīts ceļš (nav obligāts), tiks bloķēti tikai ceļi ar šo prefiksu.
-
-      Izņēmumus var definēt URL baltā saraksta politikā. Šīm politikām ir 1000 ierakstu ierobežojums; pārējie ieraksti tiks ignorēti.
-
-      Ja šī politika nav iestatīta, pārlūkā netiks bloķēts neviens vietrādis URL.</translation>
 <translation id="240213793013362302">Šī politika tiek izmantota, lai konfigurētu fona tapetes attēlu.
 
       Izmantojot šo politiku, varat konfigurēt fona tapetes attēlu, kas tiek rādīts darbvirsmā un lietotāja pieteikšanās ekrāna fonā. Politika tiek iestatīta, norādot vietrādi URL, no kura <ph name="PRODUCT_OS_NAME" /> var lejupielādēt fona tapetes attēlu un kriptogrāfisku jaucējkodu, kas tiek izmantots lejupielādes integritātes pārbaudei. Attēlam ir jābūt JPEG formātā, un tā lielums nedrīkst pārsniegt 16 MB. Vietrādim URL ir jābūt pieejamam bez autentifikācijas.

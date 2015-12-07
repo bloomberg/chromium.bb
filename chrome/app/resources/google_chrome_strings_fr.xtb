@@ -152,19 +152,10 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="5785746630574083988">Le redémarrage en mode Windows 8 entraîne la fermeture, puis la réouverture des applications Chrome.</translation>
 <translation id="5855036575689098185">Le logiciel exécuté sur votre ordinateur n'est pas compatible avec Google Chrome.</translation>
 <translation id="5877064549588274448">La version a été modifiée. Redémarrez votre appareil pour appliquer les modifications.</translation>
-<translation id="5890698319714066019">Cette page Web ne peut pas s'afficher dans Google Chrome, car votre ordinateur n'est pas connecté à Internet.</translation>
 <translation id="5931853610562009806">Sur Mac, les mots de passe peuvent être enregistrés dans votre trousseau. D'autres utilisateurs de Chrome partageant ce compte OS X peuvent les consulter ou les synchroniser.</translation>
 <translation id="5940385492829620908">Votre contenu Web, vos favoris et toutes vos données Chrome sont conservés ici.</translation>
 <translation id="5941830788786076944">Définir Google Chrome comme navigateur par défaut</translation>
 <translation id="597770749449734237">Activez d'autres raccourcis clavier utiles pour déboguer Google Chrome.</translation>
-<translation id="6011049234605203654">Accédez au
-          menu Chrome &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          et assurez-vous que vos paramètres sont définis sur "sans proxy" ou "direct".</translation>
 <translation id="6012342843556706400">Chrome doit disposer de l'accès à votre position pour la partager avec ce site.</translation>
 <translation id="6014844626092547096">Vous êtes maintenant connecté à Chrome. La synchronisation a été désactivée par votre administrateur.</translation>
 <translation id="6049075767726609708">Un administrateur a installé Google Chrome pour tous les utilisateurs de ce système. Votre version utilisateur de Google Chrome va être remplacée par la version système.</translation>
@@ -185,16 +176,6 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="6676384891291319759">Accéder à Internet</translation>
 <translation id="6757767188268205357">Ne plus me notifier</translation>
 <translation id="683440813066116847">Règle de trafic entrant pour Google Chrome Canary autorisant le trafic mDNS</translation>
-<translation id="6855094794438142393">Accédez au
-          menu Chrome &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          &gt;
-          Paramètres réseau,
-          puis décochez l'option "Utiliser un serveur proxy pour votre réseau local".</translation>
 <translation id="6883876366448858277">envoie un mot et son contexte à la recherche Google, qui renvoie à son tour des définitions, des photos et d'autres résultats de recherche.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="6970811910055250180">Mise à jour de votre appareil en cours…</translation>
@@ -216,8 +197,6 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="7282192067747128786">Notifications – Chrome (<ph name="QUANTITY" /> non lues)</translation>
 <translation id="729375352412857283">Cet ordinateur ne recevra bientôt plus les mises à jour de Google Chrome, car la compatibilité ne sera plus assurée sur Windows XP et Windows Vista.</translation>
 <translation id="7339898014177206373">Nouvelle fenêtre</translation>
-<translation id="7396375882099008034">Autoriser Chrome à accéder au réseau dans les paramètres de votre pare-feu ou
-        de votre antivirus</translation>
 <translation id="7398801000654795464">Vous étiez connecté à Google Chrome en tant que <ph name="USER_EMAIL_ADDRESS" />. Veuillez utiliser le même compte pour vous reconnecter.</translation>
 <translation id="7400722733683201933">À propos de Google Chrome</translation>
 <translation id="7408085963519505752">Conditions d'utilisation de Chrome OS</translation>
@@ -247,9 +226,6 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="8032142183999901390">Une fois votre compte Chrome supprimé, vous devrez peut-être charger de nouveau les onglets ouverts pour que les modifications prennent effet.</translation>
 <translation id="8037887340639533879">Aucune installation de Google Chrome à mettre à jour.</translation>
 <translation id="8129812357326543296">À propos de &amp;Google Chrome</translation>
-<translation id="8187289872471304532">Sélectionnez
-          Applications &gt; Préférences système &gt; Réseau &gt; Avancé &gt; Proxys
-          et désélectionnez les serveurs proxy sélectionnés.</translation>
 <translation id="8205111949707227942">Facultatif : Aidez-nous à améliorer Google Chrome OS en envoyant automatiquement des statistiques d'utilisation et des rapports d'erreur à Google.</translation>
 <translation id="8227755444512189073">Chrome va devoir lancer une application tierce pour gérer les liens <ph name="SCHEME" />. Le lien demandé est <ph name="PROTOLINK" />.</translation>
 <translation id="8255190535488645436">Votre webcam et votre micro sont en cours d'utilisation dans Google Chrome.</translation>

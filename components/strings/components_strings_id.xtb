@@ -1,19 +1,26 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="id">
+<translation id="1015255576907412255">Hubungi administrator sistem Anda untuk informasi selengkapnya.</translation>
 <translation id="1032854598605920125">Putar searah jarum jam</translation>
 <translation id="1055184225775184556">&amp;Urungkan Penambahan</translation>
+<translation id="1066332784716773939">Mendiagnosis kesalahan...</translation>
 <translation id="106701514854093668">Bookmark Desktop</translation>
 <translation id="1080116354587839789">Paskan dengan lebar</translation>
+<translation id="108346963417674655">Tidak dapat tersambung dengan aman ke server. Situs web ini mungkin sebelumnya bekerja, namun terjadi masalah dengan server. Sambungan ke situs semacam ini melemahkan keamanan untuk semua pengguna dan oleh karena itu situs telah dinonaktifkan.</translation>
 <translation id="1103523840287552314">Selalu terjemahkan <ph name="LANGUAGE" /></translation>
+<translation id="1105117579475534983">Laman Web Diblokir</translation>
 <translation id="1113869188872983271">&amp;Urungkan pengaturan ulang</translation>
 <translation id="111844081046043029">Yakin ingin meninggalkan laman ini?</translation>
 <translation id="112840717907525620">Cache kebijakan Oke</translation>
 <translation id="113188000913989374"><ph name="SITE" /> menyatakan:</translation>
 <translation id="1132774398110320017">Setelan IsiOtomatis Chrome...</translation>
+<translation id="1146498888431277930">Kesalahan koneksi SSL</translation>
 <translation id="1146673768181266552">ID Kerusakan <ph name="CRASH_ID" /> (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN" />; sertifikat keamanannya tidak dipercaya oleh sistem operasi komputer Anda. Hal ini dapat disebabkan oleh kesalahan konfigurasi atau penyerang memotong sambungan Anda.</translation>
 <translation id="1152921474424827756">Akses <ph name="BEGIN_LINK" />salinan yang disimpan dalam cache<ph name="END_LINK" /> dari <ph name="URL" /></translation>
+<translation id="1195447618553298278">Kesalahan tak dikenal.</translation>
+<translation id="1202290638211552064">Gerbang atau server proxy kehabisan waktu saat menunggu tanggapan dari server upstream.</translation>
 <translation id="121201262018556460">Anda bermaksud membuka <ph name="DOMAIN" />, namun server menyajikan sertifikat yang berisi kunci yang lemah. Penyerang mungkin telah merusak kunci pribadi, dan server mungkin bukan yang diharapkan (Anda mungkin sedang berkomunikasi dengan penyerang).</translation>
 <translation id="1227224963052638717">Kebijakan tidak dikenal.</translation>
 <translation id="1227633850867390598">Sembunyikan nilai</translation>
@@ -26,6 +33,7 @@
 <translation id="1430915738399379752">Cetak</translation>
 <translation id="1455235771979731432">Terjadi masalah saat memverifikasi kartu. Periksa sambungan internet Anda dan coba lagi.</translation>
 <translation id="1491151370853475546">Muat Ulang Laman Ini</translation>
+<translation id="1506687042165942984">Tampilkan salinan tersimpan (yang diketahui telah habis masa berlakunya) dari laman ini.</translation>
 <translation id="1519264250979466059">Tanggal Dibuat</translation>
 <translation id="1549470594296187301">JavaScript harus diaktifkan untuk menggunakan fitur ini.</translation>
 <translation id="1559528461873125649">Tidak ada file atau direktori tersebut</translation>
@@ -49,11 +57,13 @@
 <translation id="1962204205936693436">Bookmark <ph name="DOMAIN" /></translation>
 <translation id="1973335181906896915">Kesalahan serialisasi</translation>
 <translation id="1974060860693918893">Lanjutan</translation>
+<translation id="201192063813189384">Kesalahan membaca data dari cache.</translation>
 <translation id="2025186561304664664">Proxy disetel ke konfigurasi otomatis.</translation>
 <translation id="2025623846716345241">Konfirmasi Pemuatan Ulang</translation>
 <translation id="2030481566774242610">Mungkin maksud Anda <ph name="LINK" />?</translation>
 <translation id="2053553514270667976">Kode pos</translation>
 <translation id="20817612488360358">Setelan proxy sistem disetel untuk digunakan namun konfigurasi proxy eksplisit juga ditentukan.</translation>
+<translation id="2089090684895656482">Lebih Sedikit</translation>
 <translation id="2094505752054353250">Ketidakcocokan domain</translation>
 <translation id="2096368010154057602">Departemen</translation>
 <translation id="2113977810652731515">Kartu</translation>
@@ -64,17 +74,22 @@
 <translation id="2181821976797666341">Kebijakan</translation>
 <translation id="2212735316055980242">Kebijakan tidak ditemukan</translation>
 <translation id="2213606439339815911">Mengambil entri...</translation>
+<translation id="2214283295778284209"><ph name="SITE" /> tidak tersedia</translation>
 <translation id="225207911366869382">Nilai ini sudah usang untuk kebijakan ini.</translation>
 <translation id="2262243747453050782">Kesalahan HTTP</translation>
+<translation id="2271281383664374369">Permintaan ekstensi ke URL ini tersendat untuk sementara.</translation>
+<translation id="2279770628980885996">Kondisi yang tidak terduga terjadi ketika server berusaha memenuhi permintaan.</translation>
 <translation id="2282872951544483773">Eksperimen Tidak Tersedia</translation>
 <translation id="229702904922032456">Masa berlaku sertifikat akar atau menengah telah berakhir.</translation>
 <translation id="2328300916057834155">Mengabaikan bookmark tidak valid di indeks <ph name="ENTRY_INDEX" /></translation>
+<translation id="2345460471437425338">Sertifikat untuk host salah.</translation>
 <translation id="2354001756790975382">Bookmark lain</translation>
 <translation id="2367567093518048410">Tingkat</translation>
 <translation id="2384307209577226199">Default perusahaan</translation>
 <translation id="2386255080630008482">Sertifikat server telah dicabut.</translation>
 <translation id="2392959068659972793">Tampilkan kebijakan tanpa nilai yang disetel</translation>
 <translation id="2396249848217231973">&amp;Urungkan penghapusan</translation>
+<translation id="2400837204278978822">File Tak Dikenal</translation>
 <translation id="2413528052993050574">Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN" />; sertifikat keamanannya mungkin dicabut. Hal ini dapat disebabkan oleh kesalahan konfigurasi atau penyerang memotong sambungan Anda.</translation>
 <translation id="2455981314101692989">Laman web ini telah menonaktifkan pengisian otomatis untuk formulir ini.</translation>
 <translation id="2479410451996844060">URL penelusuran tidak valid.</translation>
@@ -89,28 +104,39 @@
 <translation id="2609632851001447353">Variasi</translation>
 <translation id="2625385379895617796">Setelan jam terlalu cepat</translation>
 <translation id="2639739919103226564">Status:</translation>
+<translation id="2650446666397867134">Akses ke file ditolak</translation>
 <translation id="2653659639078652383">Kirim</translation>
 <translation id="2704283930420550640">Nilai tidak sesuai format.</translation>
 <translation id="2721148159707890343">Permintaan berhasil</translation>
 <translation id="2728127805433021124">Sertifikat server ditandai menggunakan algoritme yang lemah.</translation>
 <translation id="277499241957683684">Catatan perangkat hilang</translation>
+<translation id="2784949926578158345">Sambungan disetel ulang.</translation>
 <translation id="2835170189407361413">Hapus formulir</translation>
 <translation id="2855922900409897335">Verifikasi <ph name="CREDIT_CARD" /> Anda</translation>
+<translation id="2909946352844186028">Perubahan jaringan terdeteksi.</translation>
 <translation id="2915500479781995473">Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN" />; masa berlaku sertifikat keamanannya telah habis. Hal ini dapat disebabkan oleh kesalahan konfigurasi atau penyerang memotong sambungan Anda. Saat ini jam komputer Anda disetel ke <ph name="CURRENT_TIME" />. Apakah sudah benar? Jika belum, sebaiknya perbaiki jam sistem kemudian segarkan laman ini.</translation>
 <translation id="2922350208395188000">Sertifikat server tidak dapat diperiksa.</translation>
 <translation id="2941952326391522266">Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN" />; sertifikat keamanannya dari <ph name="DOMAIN2" />. Hal ini disebabkan oleh kesalahan konfigurasi atau penyerang memotong sambungan Anda.</translation>
+<translation id="2948083400971632585">Anda dapat menonaktifkan proxy apa pun yang dikonfigurasi untuk sambungan dari laman setelan.</translation>
+<translation id="2950186680359523359">Server memutus sambungan tanpa mengirim data apa pun.</translation>
 <translation id="2958431318199492670">Konfigurasi jaringan tidak mematuhi standar ONC. Bagian dari konfigurasi mungkin tidak diimpor.</translation>
 <translation id="2969319727213777354">Untuk membuat sambungan aman, jam perlu disetel dengan benar. Itu karena sertifikat yang digunakan situs web untuk mengidentifikasi situs web tersebut hanya valid untuk jangka waktu tertentu. Karena jam perangkat tidak benar, Google Chrome tidak dapat memverifikasi sertifikat ini.</translation>
 <translation id="2972581237482394796">&amp;Ulang</translation>
+<translation id="3005723025932146533">Tampilkan salinan yang disimpan</translation>
 <translation id="3010559122411665027">Entri daftar "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">Jenis kebijakan salah</translation>
+<translation id="3093245981617870298">Anda sedang offline.</translation>
 <translation id="3105172416063519923">ID Aset:</translation>
+<translation id="3118046075435288765">Server tiba-tiba memutuskan sambungan.</translation>
 <translation id="3145945101586104090">Gagal mendekodekan tanggapan</translation>
+<translation id="3147485256806412701">Situs ini menggunakan domain tingkat atas generik baru.</translation>
 <translation id="3150653042067488994">Kesalahan server sementara</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3174168572213147020">Pulau</translation>
 <translation id="3219579145727097045">Masukkan tanggal masa berlaku habis dan 4 digit CVC di depan kartu Anda</translation>
+<translation id="3225579507836276307">Ekstensi pihak ketiga telah mencekal akses ke laman web ini.</translation>
 <translation id="3225919329040284222">Server menunjukkan sertifikat yang tidak sesuai dengan harapan terpasang. Harapan ini disertakan untuk situs web tertentu dengan keamanan tinggi guna melindungi Anda.</translation>
+<translation id="3226128629678568754">Tekan tombol muat ulang untuk mengirimkan lagi data yang dibutuhkan untuk memuat laman ini.</translation>
 <translation id="3228969707346345236">Terjemahan gagal karena laman sudah dalam bahasa <ph name="LANGUAGE" />.</translation>
 <translation id="3270847123878663523">&amp;Urungkan Pengaturan Ulang</translation>
 <translation id="3286538390144397061">Mulai Ulang Sekarang</translation>
@@ -122,70 +148,98 @@
 <translation id="3377188786107721145">Kesalahan penguraian kebijakan</translation>
 <translation id="3380365263193509176">Kesalahan tidak dikenal</translation>
 <translation id="3380864720620200369">ID Klien:</translation>
+<translation id="3393716657345709557">Entri yang diminta tidak ditemukan di cache.</translation>
 <translation id="3427342743765426898">&amp;Ulangi Pengeditan</translation>
 <translation id="3435896845095436175">Aktifkan</translation>
+<translation id="3447661539832366887">Pemilik perangkat ini menonaktifkan game dinosaurus.</translation>
 <translation id="3450660100078934250">MasterCard</translation>
 <translation id="3452404311384756672">Interval pengambilan:</translation>
 <translation id="3462200631372590220">Sembunyikan lanjutan</translation>
 <translation id="3528171143076753409">Sertifikat server tidak dipercaya.</translation>
 <translation id="3542684924769048008">Gunakan sandi untuk:</translation>
 <translation id="3583757800736429874">&amp;Ulangi Pemindahan</translation>
+<translation id="3586931643579894722">Sembunyikan detail</translation>
+<translation id="3608308818141211642">Klien dan server tidak mendukung versi protokol SSL umum atau cipher suite. Hal ini mungkin terjadi ketika server memerlukan RC4, yang sudah dianggap tidak aman.</translation>
 <translation id="3623476034248543066">Tampilkan nilai</translation>
 <translation id="3648607100222897006">Fitur eksperimental ini bisa berubah, rusak, atau hilang kapan saja. Kami sama sekali tidak menjamin apa yang akan terjadi saat eksperimen ini dinyalakan, siapa tahu browser Anda tiba-tiba hangus terbakar! Becanda! Tapi bisa jadi browser akan menghapus semua data, atau keamanan dan privasi Anda akan disusupi secara tak terduga. Eksperimen yang Anda aktifkan akan diaktifkan untuk semua pengguna browser ini. Lanjutkan dengan hati-hati.</translation>
 <translation id="3650584904733503804">Validasi berhasil</translation>
+<translation id="3651020361689274926">Sumber daya yang diminta sudah tidak ada lagi, dan tidak ada alamat terusan.  Kondisi ini diperkirakan permanen.</translation>
 <translation id="3658742229777143148">Revisi</translation>
 <translation id="370665806235115550">Membuka...</translation>
 <translation id="3712624925041724820">Lisensi habis</translation>
 <translation id="3739623965217189342">Tautan yang Anda salin</translation>
+<translation id="3748412725338508953">Terlalu banyak arahan ulang.</translation>
 <translation id="375403751935624634">Terjemahan gagal karena kesalahan server.</translation>
 <translation id="3759461132968374835">Tidak ada laporan kondisi ngadat saat ini. Kondisi ngadat yang terjadi saat pelaporan kondisi ngadat tidak diaktifkan tidak akan tampil di sini.</translation>
+<translation id="382518646247711829">Jika Anda menggunakan server proxy...</translation>
 <translation id="3858027520442213535">Perbarui tanggal dan waktu</translation>
 <translation id="3884278016824448484">Pengenal perangkat bertentangan</translation>
 <translation id="3885155851504623709">Parish</translation>
+<translation id="3903912596042358459">Server menolak untuk memenuhi permintaan.</translation>
 <translation id="3934680773876859118">Gagal memuat dokumen PDF</translation>
+<translation id="3940082421246752453">Server tidak mendukung versi HTTP yang digunakan dalam permintaan.</translation>
+<translation id="3950924596163729246">Tidak dapat mengakses jaringan.</translation>
 <translation id="3963721102035795474">Mode Pembaca</translation>
 <translation id="4030383055268325496">&amp;Urungkan penambahan</translation>
+<translation id="4032534284272647190">Akses ke <ph name="URL" /> ditolak.</translation>
 <translation id="404928562651467259">PERINGATAN</translation>
 <translation id="4058922952496707368">Kunci "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
+<translation id="4060383410180771901">Situs web tidak dapat menangani permintaan untuk <ph name="URL" />.</translation>
 <translation id="4079302484614802869">Konfigurasi proxy disetel untuk menggunakan URL skrip .pac, bukan server proxy yang tetap.</translation>
 <translation id="409504436206021213">Jangan Muat Ulang</translation>
 <translation id="4103249731201008433">Nomor seri perangkat tidak valid</translation>
+<translation id="4103763322291513355">Kunjungi &lt;strong&gt;chrome://policy&lt;/strong&gt; untuk melihat daftar URL yang masuk daftar hitam dan kebijakan lain yang diterapkan oleh administrator sistem Anda.</translation>
 <translation id="4117700440116928470">Lingkup kebijakan tidak didukung.</translation>
 <translation id="4120075327926916474">Ingin Chrome menyimpan informasi kartu kredit ini untuk melengkapi formulir web?</translation>
+<translation id="4147376274874979956">Tidak dapat mengakses file.</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">Ingin Chromium menyimpan kartu ini?</translation>
 <translation id="4171400957073367226">Tanda tangan verifikasi tidak valid</translation>
 <translation id="4176463684765177261">Dinonaktifkan</translation>
 <translation id="4196861286325780578">&amp;Ulangi pemindahan</translation>
 <translation id="4220128509585149162">Kerusakan</translation>
+<translation id="4241404202385006548">Nonaktifkan ekstensi Anda kemudian muat ulang laman web ini</translation>
 <translation id="4250680216510889253">Tidak</translation>
 <translation id="4258748452823770588">Tanda tangan salah</translation>
 <translation id="4268298190799576220">Saat ini Chromium tidak dapat memverifikasi kartu. Coba lagi nanti.</translation>
 <translation id="4269787794583293679">(Tidak ada nama pengguna)</translation>
+<translation id="4287689875748136217">Tidak dapat memuat laman web karena server tidak mengirim data apa pun.</translation>
 <translation id="4300246636397505754">Saran induk</translation>
 <translation id="4325863107915753736">Gagal menemukan artikel</translation>
+<translation id="4350711002179453268">Tidak dapat melakukan koneksi yang aman ke server. Mungkin ada masalah dengan server, atau mungkin memerlukan sertifikat autentikasi klien yang tidak Anda miliki.</translation>
 <translation id="4372948949327679948">Nilai <ph name="VALUE_TYPE" /> yang diharapkan.</translation>
 <translation id="4377125064752653719">Anda berusaha menjangkau <ph name="DOMAIN" />, tetapi sertifikat yang disajikan oleh server telah dibatalkan oleh penerbitnya. Artinya informasi rahasia keamanan yang disajikan tidak dapat dipercaya. Anda mungkin sedang berkomunikasi dengan penyerang.</translation>
 <translation id="4394049700291259645">Nonaktifkan</translation>
+<translation id="4405141258442788789">Terlalu lama!</translation>
 <translation id="4424024547088906515">Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN" />; sertifikat keamanannya tidak dipercaya oleh Chrome. Hal ini dapat disebabkan oleh kesalahan konfigurasi atau penyerang memotong sambungan Anda.</translation>
 <translation id="443673843213245140">Penggunaan proxy dinonaktifkan tetapi konfigurasi proxy yang eksplisit ditentukan.</translation>
 <translation id="4506176782989081258">Kesalahan validasi: <ph name="VALIDATION_ERROR" /></translation>
+<translation id="4522570452068850558">Detail</translation>
+<translation id="4535734014498033861">Sambungan server proxy gagal.</translation>
 <translation id="4587425331216688090">Hapus alamat dari Chrome?</translation>
 <translation id="4594403342090139922">&amp;Urungkan Penghapusan</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN" />; sertifikat keamanannya berisi kesalahan. Hal ini dapat disebabkan oleh kesalahan konfigurasi atau penyerang memotong sambungan Anda.</translation>
+<translation id="4681260323810445443">Anda tidak berhak mengakses laman web di <ph name="URL" />.  Anda mungkin harus masuk.</translation>
+<translation id="4697214168136963651"><ph name="URL" /> dicekal</translation>
 <translation id="4726672564094551039">Muat ulang kebijakan</translation>
 <translation id="4728558894243024398">Platform</translation>
 <translation id="4744603770635761495">Jalur Yang Dapat Dijalankan</translation>
+<translation id="4764776831041365478">Laman web di <ph name="URL" /> mungkin sedang tidak aktif untuk sementara atau dipindahkan secara permanen ke alamat web baru.</translation>
 <translation id="4771973620359291008">Terjadi kesalahan yang tidak diketahui.</translation>
+<translation id="477518548916168453">Server tidak mendukung fungsi yang diperlukan untuk memenuhi permintaan.</translation>
+<translation id="4779052991835840224">Tidak dapat membentuk sambungan aman karena situs ini menggunakan cipher suite atau protokol yang tidak didukung. Hal ini mungkin disebabkan karena server memerlukan RC4, yang sudah dianggap tidak aman.</translation>
+<translation id="4786993863723020412">Kesalahan pembacaan cache</translation>
 <translation id="4800132727771399293">Periksa tanggal masa berlaku habis dan CVC, lalu coba lagi</translation>
 <translation id="4813512666221746211">Kesalahan jaringan</translation>
 <translation id="4816492930507672669">Paskan dengan halaman</translation>
 <translation id="4850886885716139402">Lihat</translation>
 <translation id="4923417429809017348">Laman ini telah diterjemahkan dari bahasa yang tidak diketahui ke bahasa <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">Harus ditentukan.</translation>
+<translation id="4980112683975062744">Header ganda diterima dari server</translation>
 <translation id="498957508165411911">Terjemahkan dari <ph name="ORIGINAL_LANGUAGE" /> ke <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="5019198164206649151">Penyimpanan cadangan dalam kondisi buruk</translation>
+<translation id="5023310440958281426">Periksa kebijakan administrator Anda</translation>
 <translation id="5031870354684148875">Tentang Google Terjemahan</translation>
 <translation id="5045550434625856497">Sandi salah</translation>
 <translation id="5065199687811594072">Ingin Chrome menyimpan informasi kartu kredit ini untuk melengkapi formulir web?</translation>
@@ -199,16 +253,20 @@
 <translation id="5179510805599951267">Bukan <ph name="ORIGINAL_LANGUAGE" />? Laporkan kesalahan deteksi ini</translation>
 <translation id="5190835502935405962">Bilah Bookmark</translation>
 <translation id="5199729219167945352">Eksperimen</translation>
+<translation id="5228309736894624122">Kesalahan protokol SSL.</translation>
 <translation id="5251803541071282808">Awan</translation>
 <translation id="5295309862264981122">Konfirmasikan Navigasi</translation>
 <translation id="5299298092464848405">Kebijakan kesalahan penguraian</translation>
+<translation id="5303618139271450299">Laman web ini tidak ditemukan</translation>
 <translation id="5308689395849655368">Pelaporan kondisi ngadat dinonaktifkan.</translation>
 <translation id="5317780077021120954">Simpan</translation>
 <translation id="536296301121032821">Gagal menyimpan setelan kebijakan</translation>
 <translation id="540969355065856584">Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN" />; sertifikat keamanannya saat ini tidak valid. Hal ini mungkin disebabkan oleh kesalahan konfigurasi atau ada penyerang yang mengganggu sambungan internet Anda.</translation>
 <translation id="5439770059721715174">Kesalahan validasi skema di "<ph name="ERROR_PATH" />": <ph name="ERROR" /></translation>
+<translation id="5447330194051379405">Tampilkan semua laman tersimpan</translation>
 <translation id="5455374756549232013">Stempel waktu kebijakan salah</translation>
 <translation id="5470861586879999274">&amp;Ulangi pengeditan</translation>
+<translation id="5498951625591520696">Tidak dapat menjangkau server.</translation>
 <translation id="5509780412636533143">Mengelola bookmark</translation>
 <translation id="5523118979700054094">Nama kebijakan</translation>
 <translation id="552553974213252141">Apakah teks diekstrak dengan benar?</translation>
@@ -223,45 +281,69 @@
 <translation id="5720705177508910913">Pengguna saat ini</translation>
 <translation id="5813119285467412249">&amp;Ulangi Penambahan</translation>
 <translation id="5872918882028971132">Saran Induk</translation>
+<translation id="5880867612172997051">Akses jaringan ditangguhkan</translation>
+<translation id="5900623698597156974">TLS 1.0 fallback dapat menghubungi server, namun kami tidak lagi menerima TLS 1.0 fallback. Server perlu diperbarui agar dapat menerapkan versi negosiasi dengan benar dan lebih mendukung TLS 1.2.</translation>
 <translation id="59107663811261420">Kartu jenis ini tidak didukung oleh Google Payments untuk pedagang ini. Pilih kartu lain.</translation>
 <translation id="59174027418879706">Diaktifkan</translation>
+<translation id="5949910269212525572">Tidak dapat menentukan alamat DNS server.</translation>
 <translation id="5975083100439434680">Perkecil</translation>
 <translation id="5989320800837274978">Baik proxy server tetap ataupun URL skrip .pac tidak ditentukan.</translation>
+<translation id="5990559369517809815">Permintaan ke server telah dicekal oleh ekstensi.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">Tutup</translation>
 <translation id="604124094241169006">Otomatis</translation>
+<translation id="6042308850641462728">Lainnya</translation>
 <translation id="6060685159320643512">Hati-hati, eksperimen ini dapat menimbulkan masalah</translation>
+<translation id="6066742401428748382">Akses ke laman web ditolak</translation>
 <translation id="6099520380851856040">Terjadi pada <ph name="CRASH_TIME" /></translation>
 <translation id="6151417162996330722">Sertifikat server memiliki masa berlaku yang terlalu panjang.</translation>
 <translation id="6154808779448689242">Token kebijakan yang dikembalikan tidak cocok dengan token saat ini</translation>
 <translation id="6165508094623778733">Pelajari lebih lanjut</translation>
+<translation id="6203231073485539293">Periksa sambungan internet Anda</translation>
 <translation id="6218753634732582820">Hapus alamat dari Chromium?</translation>
+<translation id="6232139169545176020">Skema URI yang diminta tidak didukung.</translation>
+<translation id="6237614789842758826">Telusuri di Google</translation>
 <translation id="6259156558325130047">&amp;Ulangi Pengaturan Ulang</translation>
 <translation id="6263376278284652872">Bookmark <ph name="DOMAIN" /></translation>
+<translation id="6268647269805730940">Perangkat ini belum menyelesaikan langkah-langkah pertamanya.</translation>
 <translation id="6282194474023008486">Kode pos</translation>
+<translation id="6321917430147971392">Periksa setelan DNS Anda</translation>
+<translation id="6328639280570009161">Coba nonaktifkan prediksi jaringan</translation>
 <translation id="6337534724793800597">Filter kebijakan menurut nama</translation>
 <translation id="6342069812937806050">Baru saja</translation>
 <translation id="6355080345576803305">Diganti oleh sesi publik</translation>
 <translation id="6387478394221739770">Tertarik dengan fitur Chrome baru yang keren? Coba saluran beta kami di chrome.com/beta.</translation>
+<translation id="6391832066170725637">File atau direktori tak ditemukan.</translation>
+<translation id="641480858134062906"><ph name="URL" /> gagal dimuat</translation>
 <translation id="6445051938772793705">Negara</translation>
 <translation id="6458467102616083041">Diabaikan karena penelusuran default dinonaktifkan oleh kebijakan.</translation>
 <translation id="647261751007945333">Kebijakan perangkat</translation>
 <translation id="6489534406876378309">Mulai mengunggah kerusakan</translation>
+<translation id="6500116422101723010">Server tidak dapat menangani permintaan untuk sementara.  Kode ini menunjukkan bahwa ini adalah keadaan sementara, dan server akan hidup lagi setelah penundaan.</translation>
 <translation id="6512448926095770873">Keluar dari Laman</translation>
+<translation id="6516193643535292276">Tidak dapat menyambung ke internet</translation>
 <translation id="6529602333819889595">&amp;Ulangi Penghapusan</translation>
+<translation id="6533019874004191247">URL Tidak Didukung.</translation>
 <translation id="6550675742724504774">Opsi</translation>
+<translation id="6626108645084335023">Menunggu penyelidikan DNS.</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> Penelusuran</translation>
+<translation id="6637478299472506933">Unduhan Gagal</translation>
+<translation id="6640442327198413730">Cache hilang</translation>
 <translation id="6644283850729428850">Kebijakan ini telah usang.</translation>
 <translation id="6646897916597483132">Masukkan 4 digit CVC di depan kartu Anda</translation>
 <translation id="6671697161687535275">Hapus saran formulir dari Chromium?</translation>
 <translation id="674375294223700098">Kesalahan sertifikat server tidak dikenal.</translation>
 <translation id="6753269504797312559">Nilai kebijakan</translation>
+<translation id="6771079623344431310">Tidak dapat menyambung ke server proxy</translation>
+<translation id="6781404225664080496">Permintaan untuk URL ini telah dihentikan untuk sementara.</translation>
+<translation id="6830600606572693159">Saat ini laman web di <ph name="URL" /> tidak tersedia. Mungkin laman web sedang kelebihan muatan atau terganggu karena ada perawatan.</translation>
 <translation id="6831043979455480757">Terjemahkan</translation>
 <translation id="6839929833149231406">Area</translation>
 <translation id="6874604403660855544">&amp;Ulangi penambahan</translation>
 <translation id="6891596781022320156">Tingkat kebijakan tidak didukung.</translation>
 <translation id="6897140037006041989">Agen Pengguna</translation>
 <translation id="6915804003454593391">Pengguna:</translation>
+<translation id="6948142510520900350">&lt;strong&gt;Administrator sistem&lt;/strong&gt; Anda telah memblokir akses ke laman web ini.</translation>
 <translation id="6957887021205513506">Sertifikat server tampaknya palsu.</translation>
 <translation id="6965382102122355670">Oke</translation>
 <translation id="6965978654500191972">Perangkat</translation>
@@ -269,17 +351,22 @@
 <translation id="6973656660372572881">Server proxy tetap dan URL skrip .pac telah ditentukan.</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7050187094878475250">Anda berusaha menjangkau <ph name="DOMAIN" />, namun server memberikan sertifikat yang masa berlakunya terlalu lama untuk dapat dipercaya.</translation>
+<translation id="7052500709156631672">Gerbang atau server proxy menerima tanggapan yang tidak valid dari server upstream.</translation>
 <translation id="7087282848513945231">County</translation>
 <translation id="7108649287766967076">Penerjemahan ke <ph name="TARGET_LANGUAGE" /> gagal.</translation>
+<translation id="7117303293717852287">Muat ulang laman web ini</translation>
 <translation id="7139724024395191329">Emirate</translation>
+<translation id="7148804936871729015">Server untuk <ph name="URL" /> menghabiskan waktu terlalu lama untuk merespons.  Server mungkin sedang kelebihan muatan.</translation>
 <translation id="7179921470347911571">Luncurkan Ulang Sekarang</translation>
 <translation id="7180611975245234373">Segarkan</translation>
 <translation id="7182878459783632708">Tidak ada kebijakan yang disetel</translation>
 <translation id="7186367841673660872">Laman ini telah diterjemahkan dari<ph name="ORIGINAL_LANGUAGE" />ke<ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="7208899522964477531">Telusuri <ph name="SEARCH_TERMS" /> dengan <ph name="SITE_NAME" /></translation>
+<translation id="721197778055552897"><ph name="BEGIN_LINK" />Selengkapnya<ph name="END_LINK" /> tentang masalah ini.</translation>
 <translation id="7225807090967870017">Buat ID</translation>
 <translation id="725866823122871198">Sambungan pribadi ke <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> tidak dapat dibuat karena tanggal dan waktu (<ph name="DATE_AND_TIME" />) komputer Anda tidak benar.</translation>
+<translation id="7269802741830436641">Laman web ini memiliki simpul pengalihan</translation>
 <translation id="7275334191706090484">Bookmark yang Terkelola</translation>
 <translation id="7298195798382681320">Direkomendasikan</translation>
 <translation id="7334320624316649418">&amp;Ulangi pengaturan ulang</translation>
@@ -289,10 +376,13 @@
 <translation id="7419106976560586862">Jalur Profil</translation>
 <translation id="7424977062513257142">Laman tersemat di laman web ini menyatakan:</translation>
 <translation id="7441627299479586546">Subjek kebijakan salah</translation>
+<translation id="7450732239874446337">IO jaringan ditangguhkan.</translation>
 <translation id="7485870689360869515">Tidak ada data yang ditemukan.</translation>
 <translation id="7514365320538308">Unduh</translation>
+<translation id="7518003948725431193">Tidak ada laman web yang ditemukan untuk alamat web:<ph name="URL" /></translation>
 <translation id="7537536606612762813">Wajib</translation>
 <translation id="7542995811387359312">Pengisian kartu kredit otomatis dinonaktifkan karena formulir ini tidak menggunakan sambungan aman.</translation>
+<translation id="7549584377607005141">Laman web ini membutuhkan data yang Anda masukkan sebelumnya agar dapat ditampilkan dengan benar. Anda dapat mengirimkan data ini lagi, namun dengan begitu Anda akan mengulangi tindakan apa pun yang sebelumnya dilakukan oleh laman ini.</translation>
 <translation id="7567204685887185387">Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN" />; sertifikat keamanannya mungkin telah dikeluarkan dengan curang. Hal ini disebabkan oleh kesalahan konfigurasi atau penyerang memotong sambungan Anda.</translation>
 <translation id="7568593326407688803">Laman ini dalam bahasa<ph name="ORIGINAL_LANGUAGE" />Ingin diterjemahkan?</translation>
 <translation id="7569952961197462199">Hapus kartu kredit dari Chrome?</translation>
@@ -300,16 +390,21 @@
 <translation id="7592362899630581445">Sertifikat server melanggar batasan nama.</translation>
 <translation id="7600965453749440009">Jangan pernah terjemahkan bahasa <ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">Nilai di luar jangkauan <ph name="VALUE" />.</translation>
+<translation id="7614030880636783720">Wi-Fi dan data seluler tidak tersedia. Laman dapat dimuat setelah perangkat tersambung ke jaringan.</translation>
 <translation id="7637571805876720304">Hapus kartu kredit dari Chromium?</translation>
+<translation id="7643817847124207232">Sambungan Internet telah terputus.</translation>
 <translation id="7674629440242451245">Tertarik dengan fitur Chrome baru yang keren? Coba saluran dev kami di chrome.com/dev.</translation>
 <translation id="7752995774971033316">Tidak terkelola</translation>
 <translation id="7761701407923456692">Sertifikat server tidak cocok dengan URL.</translation>
 <translation id="777702478322588152">Prefektur</translation>
+<translation id="778579833039460630">Tidak ada data yang diterima</translation>
 <translation id="7791543448312431591">Tambahkan</translation>
 <translation id="780301667611848630">Lain kali</translation>
 <translation id="7805768142964895445">Status</translation>
 <translation id="7813600968533626083">Hapus sebagai saran dari Chrome?</translation>
+<translation id="7839809549045544450">Server memiliki kunci publik Diffie-Hellman yang singkat dan lemah</translation>
 <translation id="7887683347370398519">Periksa CVC dan coba lagi</translation>
+<translation id="790025292736025802"><ph name="URL" /> tidak ditemukan</translation>
 <translation id="7935318582918952113">Penyaring DOM</translation>
 <translation id="7938958445268990899">Sertifikat server belum valid.</translation>
 <translation id="7951415247503192394">(32 bit)</translation>
@@ -319,22 +414,31 @@
 <translation id="7983301409776629893">Selalu terjemahkan <ph name="ORIGINAL_LANGUAGE" /> ke <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="7988324688042446538">Bookmark desktop</translation>
 <translation id="7995512525968007366">Tidak Ditentukan</translation>
+<translation id="8016174103774548813">Server SSL mungkin sudah usang.</translation>
 <translation id="8034522405403831421">Laman ini berbahasa <ph name="SOURCE_LANGUAGE" />. Terjemahkan ke <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="8088680233425245692">Gagal melihat artikel.</translation>
 <translation id="8091372947890762290">Aktivasi ditunda di server</translation>
+<translation id="8150722005171944719">File pada <ph name="URL" /> tidak dapat dibaca.  File mungkin telah dihapus, dipindahkan, atau izin file mungkin mencegah akses.</translation>
 <translation id="8194797478851900357">&amp;Urungkan Pemindahan</translation>
 <translation id="8201077131113104583">URL pembaruan tidak valid untuk ekstensi dengan ID "<ph name="EXTENSION_ID" />".</translation>
+<translation id="8204086856545141093">Permintaan ke server telah diblokir oleh kebijakan.</translation>
+<translation id="820791781874064845">Laman web ini dicekal oleh ekstensi</translation>
 <translation id="8208216423136871611">Jangan simpan</translation>
 <translation id="8218327578424803826">Lokasi yang Ditetapkan:</translation>
 <translation id="8249320324621329438">Terakhir diambil:</translation>
+<translation id="8289355894181816810">Hubungi administrator jaringan Anda jika Anda tidak yakin apa maksudnya.</translation>
 <translation id="8294431847097064396">Sumber</translation>
+<translation id="8295070100601117548">Kesalahan server</translation>
 <translation id="8308427013383895095">Terjemahan gagal karena ada masalah dengan koneksi jaringan.</translation>
 <translation id="8311778656528046050">Yakin ingin memuat ulang laman ini?</translation>
 <translation id="8349305172487531364">Bilah bookmark</translation>
 <translation id="8364627913115013041">Tidak disetel.</translation>
 <translation id="8412145213513410671">Ngadat (<ph name="CRASH_COUNT" />)</translation>
+<translation id="8428213095426709021">Setelan</translation>
 <translation id="8437238597147034694">&amp;Urungkan pemindahan</translation>
 <translation id="8488350697529856933">Berlaku untuk</translation>
+<translation id="8494979374722910010">Upaya tersambung ke server gagal.</translation>
+<translation id="8515737884867295000">Autentikasi berbasis sertifikat gagal</translation>
 <translation id="8530504477309582336">Kartu jenis ini tidak didukung oleh Google Payments. Pilih kartu lain.</translation>
 <translation id="8553075262323480129">Terjemahan gagal karena bahasa laman tidak dapat ditentukan.</translation>
 <translation id="8559762987265718583">Sambungan pribadi ke <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> tidak dapat dibuat karena tanggal dan waktu (<ph name="DATE_AND_TIME" />) perangkat tidak benar.</translation>
@@ -342,6 +446,7 @@
 <translation id="8647750283161643317">Setel ulang semua ke default</translation>
 <translation id="8713130696108419660">Tanda tangan awal yang buruk</translation>
 <translation id="8725066075913043281">Coba lagi</translation>
+<translation id="8729518820755801792">Tidak bisa buka URL.</translation>
 <translation id="8738058698779197622">Untuk membuat sambungan aman, jam perlu disetel dengan benar. Hal ini karena sertifikat yang digunakan situs web untuk mengidentifikasi situs web tersebut hanya valid untuk jangka waktu tertentu. Karena jam perangkat tidak benar, Chromium tidak dapat memverifikasi sertifikat ini.</translation>
 <translation id="8790007591277257123">&amp;Ulangi penghapusan</translation>
 <translation id="8798099450830957504">Default</translation>
@@ -356,14 +461,20 @@
 <translation id="8876793034577346603">Konfigurasi jaringan gagal diuraikan.</translation>
 <translation id="8891727572606052622">Mode proxy tidak valid.</translation>
 <translation id="889901481107108152">Maaf, percobaan ini tidak tersedia di platform Anda.</translation>
+<translation id="890308499387283275">Chrome tidak dapat mengunduh file ini.</translation>
 <translation id="8903921497873541725">Perbesar</translation>
 <translation id="8932102934695377596">Setelan waktu Anda terlalu lambat</translation>
 <translation id="8940229512486821554">Jalankan perintah <ph name="EXTENSION_NAME" />: <ph name="SEARCH_TERMS" /></translation>
 <translation id="8971063699422889582">Sertifikat server telah kedaluwarsa.</translation>
 <translation id="8988760548304185580">Masukkan tanggal masa berlaku habis dan 3 digit CVC di belakang kartu Anda</translation>
+<translation id="9013589315497579992">Sertifikat autentikasi klien SSL gagal.</translation>
 <translation id="901974403500617787">Tanda yang berlaku bagi sistem secara luas hanya dapat disetel oleh pemilik: <ph name="OWNER_EMAIL" />.</translation>
+<translation id="9020142588544155172">Server menolak sambungan.</translation>
+<translation id="9020278534503090146">Laman web ini tidak tersedia</translation>
 <translation id="9020542370529661692">Laman ini telah diterjemahkan ke <ph name="TARGET_LANGUAGE" /></translation>
+<translation id="904949795138183864">Laman web di <ph name="URL" /> sudah tidak ada.</translation>
 <translation id="9049981332609050619">Anda berupaya menjangkau <ph name="DOMAIN" />, tetapi server menyajikan sertifikat yang tidak valid.</translation>
+<translation id="9086455579313502267">Tidak dapat mengakses jaringan</translation>
 <translation id="9125941078353557812">Masukkan 3 digit CVC di belakang kartu Anda</translation>
 <translation id="9137013805542155359">Perlihatkan laman asli</translation>
 <translation id="9148507642005240123">&amp;Urungkan pengeditan</translation>

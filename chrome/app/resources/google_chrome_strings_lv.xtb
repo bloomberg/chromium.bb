@@ -149,19 +149,10 @@ neparastus
 <translation id="5785746630574083988">Restartējot Windows 8 režīmā, Chrome lietotnes tiks aizvērtas.</translation>
 <translation id="5855036575689098185">Programmatūra, kas darbojas jūsu datorā, nav saderīga ar pārlūku Google Chrome.</translation>
 <translation id="5877064549588274448">Kanāls tika mainīts. Lai lietotu izmaiņas, restartējiet ierīci.</translation>
-<translation id="5890698319714066019">Google Chrome nevar parādīt šo tīmekļa lapu, jo jūsu datorā nav izveidots savienojums ar internetu.</translation>
 <translation id="5931853610562009806">Operētājsistēmā Mac paroles var tikt saglabātas sistēmā Keychain, un citi Chrome lietotāji, kuri koplieto šo OS X kontu, var piekļūt tām un sinhronizēt tās.</translation>
 <translation id="5940385492829620908">Šeit atrodas jūsu tīmekļa saturs, grāmatzīmes un cits Chrome saturs.</translation>
 <translation id="5941830788786076944">Izveidot Google Chrome par noklusējuma pārlūku</translation>
 <translation id="597770749449734237">Iespējo papildu īsinājumtaustiņus, kas ir noderīgi pārlūka Chromium atkļūdošanā.</translation>
-<translation id="6011049234605203654">Atveriet
-          Chrome izvēlni &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          un pārliecinieties, vai konfigurācija ir iestatīta uz “no proxy” (bez starpniekservera) vai “direct” (tieša).</translation>
 <translation id="6012342843556706400">Pārlūkam Chrome ir nepieciešama piekļuve atrašanās vietai, lai kopīgotu to ar šo vietni.</translation>
 <translation id="6014844626092547096">Jūs esat pierakstījies pārlūkā Chrome. Jūsu administrators ir atspējojis sinhronizēšanu.</translation>
 <translation id="6049075767726609708">Administrators šai sistēmai ir instalējis Google Chrome, un tas ir pieejams visiem lietotājiem. Google Chrome lietotāja līmeņa instalācija tagad aizvietota ar sistēmas līmeņa instalāciju.</translation>
@@ -182,16 +173,6 @@ neparastus
 <translation id="6676384891291319759">Piekļūt internetam</translation>
 <translation id="6757767188268205357">Netraucējiet mani</translation>
 <translation id="683440813066116847">Ienākošo savienojumu kārtula pārlūkam Google Chrome Canary, lai atļautu mDNS datplūsmu.</translation>
-<translation id="6855094794438142393">Atveriet
-          Chrome izvēlni &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          &gt;
-          LAN iestatījumi
-          un noņemiet atzīmi no izvēles rūtiņas “Use a proxy server for your LAN” (Izmantot starpniekserveri savam LAN).</translation>
 <translation id="6883876366448858277">nosūta vārdu un tā apkārtējo kontekstu pakalpojumam Google meklēšana, iegūstot definīcijas, attēlus un citus meklēšanas rezultātus.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="6970811910055250180">Notiek ierīces atjaunināšana...</translation>
@@ -213,8 +194,6 @@ neparastus
 <translation id="7282192067747128786">Chrome — paziņojumi (nelasīti: <ph name="QUANTITY" />)</translation>
 <translation id="729375352412857283">Šajā datorā drīzumā vairs netiks saņemti Google Chrome atjauninājumi, jo operētājsistēmas Windows XP un Windows Vista vairs netiks atbalstītas.</translation>
 <translation id="7339898014177206373">Jauns logs</translation>
-<translation id="7396375882099008034">Atļaušana pārlūkam Chrome piekļūt tīklam jūsu ugunsmūra vai pretvīrusu programmas
-        iestatījumos.</translation>
 <translation id="7398801000654795464">Pārlūkā Chrome iepriekš pierakstījāties kā lietotājs <ph name="USER_EMAIL_ADDRESS" />. Lai pierakstītos vēlreiz, lūdzu, izmantojiet to pašu kontu.</translation>
 <translation id="7400722733683201933">Par Google Chrome</translation>
 <translation id="7408085963519505752">Chrome OS noteikumi</translation>
@@ -244,9 +223,6 @@ neparastus
 <translation id="8032142183999901390">Kad konts būs noņemts no Chrome, iespējams, būs atkārtoti jāielādē atvērtās cilnes, lai izmaiņas stātos spēkā.</translation>
 <translation id="8037887340639533879">Netika atrasta neviena Google Chrome instalācija, kuru varētu atjaunināt.</translation>
 <translation id="8129812357326543296">Par &amp;Google Chrome</translation>
-<translation id="8187289872471304532">Atveriet izvēlni
-          Applications (Lietojumprogrammas) &gt; System Preferences (Sistēmas preferences) &gt; Network (Tīkls) &gt; Advanced (Papildu) &gt; (Proxies) Starpniekserveri
-          un noņemiet atzīmes no visiem atzīmētajiem starpniekserveriem.</translation>
 <translation id="8205111949707227942">Neobligāti: palīdziet uzlabot Chrome OS, automātiski nosūtot uzņēmumam Google lietošanas statistiku un avārijas pārskatus.</translation>
 <translation id="8227755444512189073">Google Chrome nepieciešams ieslēgt ārēju lietojumprogrammu, lai regulētu <ph name="SCHEME" /> saites. Pieprasītā saite ir <ph name="PROTOLINK" /></translation>
 <translation id="8255190535488645436">Pārlūkā Google Chrome tiek izmantota kamera un mikrofons.</translation>

@@ -323,21 +323,6 @@ Diese Richtlinien sind nur aktiv, wenn der Chrome Remote Desktop-Host installier
 
           Wenn die Einstellung nicht festgelegt wird, können in <ph name="PRODUCT_NAME" />
           Hosts für natives Messaging auf Nutzerebene verwendet werden.</translation>
-<translation id="2393996789386329927">Durch diese Richtlinie wird der Zugriff auf die gelisteten URLs blockiert.
-
-      Mithilfe der Richtlinie wird verhindert, dass Nutzer Webseiten von URLs auf der schwarzen Liste laden. Die schwarze Liste stellt eine Liste von URL-Mustern bereit, die angeben, welche URLs auf die schwarze Liste gesetzt werden.
-
-      Jedes URL-Muster kann entweder als Muster für lokale Dateien oder als ein generisches URL-Muster fungieren. Muster für lokale Dateien weisen das Format "file://path" auf, wobei "path" ein absoluter zu blockierender Pfad sein sollte. Sämtliche Speicherorte im Dateisystem, für die dieser Pfad ein Präfix darstellt, werden blockiert.
-
-      Ein generisches URL-Muster hat das Format "scheme://host:port/path".
-      Falls vorhanden, wird nur das angegebene Schema blockiert. Wird das Präfix "scheme://" nicht angegeben, werden alle Schemas blockiert.
-      Der Host muss angegeben werden und kann ein Hostname oder eine IP-Adresse sein. Subdomains eines Hostnamens werden ebenfalls blockiert. Fügen Sie vor den Hostnamen einen Punkt "." ein, damit keine Subdomains blockiert werden. Der spezielle Hostname "*" blockiert alle Domains.
-      Der optionale Port besteht aus einer gültigen Portnummer zwischen 1 und 65535. Wenn kein Port ausgewählt wird, werden alle blockiert.
-      Wurde der optionale Pfad angegeben, werden nur Pfade mit diesem Präfix blockiert.
-
-      Ausnahmen können in der Richtlinie für die URL-Whitelist definiert werden. Diese Richtlinien sind auf 1000 Einträge begrenzt, weitere Einträge werden ignoriert.
-
-      Wird diese Richtlinie nicht konfiguriert, werden im Browser keine URLs zur schwarzen Liste hinzugefügt.</translation>
 <translation id="240213793013362302">Hintergrundbild konfigurieren
 
       Mit dieser Richtlinie können Sie das Hintergrundbild konfigurieren, das dem Nutzer auf dem Desktop und auf dem Anmeldebildschirm angezeigt wird. Die Richtlinie wird durch Festlegen einer URL konfiguriert, über die <ph name="PRODUCT_OS_NAME" /> das Hintergrundbild und einen kryptografischen Hash zur Verifizierung der Integrität des Downloads herunterladen kann. Das Bild muss im JPEG-Format vorliegen und darf nicht größer als 16 MB sein. Die URL muss ohne Authentifizierung aufrufbar sein.

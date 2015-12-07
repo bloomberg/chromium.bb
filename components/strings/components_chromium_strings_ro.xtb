@@ -8,6 +8,24 @@
           și dezactivează „Preia în avans resursele paginii.”
           Dacă această acțiune nu rezolvă problema, îți recomandăm să reactivezi
           această opțiune pentru îmbunătățirea performanței.</translation>
+<translation id="4559775032954821361">Accesați
+          meniul Chromium &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          &gt;
+          <ph name="PROXIES_TITLE" />
+          &gt;
+          Setări LAN
+          și debifați caseta „Utilizați un server proxy pentru LAN”.</translation>
+<translation id="580822234363523061">Accesați
+          meniul Chromium &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          &gt;
+          <ph name="PROXIES_TITLE" />
+          și asigurați-vă că aveți configurația setată la „fără proxy” sau „direct”.</translation>
 <translation id="6613594504749178791">Modificările dvs. vor intra în vigoare următoarea dată când reporniți Chromium.</translation>
 <translation id="7861509383340276692">Accesează
           meniul Chromium &gt;
@@ -17,4 +35,9 @@
           și debifează „<ph name="NO_PREFETCH_DESCRIPTION" />”.
           Dacă această acțiune nu rezolvă problema, îți recomandăm să selectezi din nou
           această opțiune pentru performanță îmbunătățită.</translation>
+<translation id="8187289872471304532">Accesați
+          Applications (Aplicații) &gt; System Preferences (Preferințe de sistem) &gt; Network (Rețea) &gt; Advanced (Avansat) &gt; Proxies (Servere proxy)
+          și debifați toate serverele proxy selectate.</translation>
+<translation id="8610831143142469229">Permiteți Chromium să acceseze rețeaua din setările pentru firewall sau
+        antivirus.</translation>
 </translationbundle>

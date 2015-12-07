@@ -144,19 +144,10 @@ invulgares e incorretas. Isto pode acontecer quando um utilizador mal intenciona
 <translation id="5785746630574083988">A reinicialização no modo Windows 8 fecha e reinicia as aplicações do Chrome.</translation>
 <translation id="5855036575689098185">O software em execução no seu computador é incompatível com o Google Chrome.</translation>
 <translation id="5877064549588274448">Canal alterado. Reinicie o dispositivo para aplicar as alterações.</translation>
-<translation id="5890698319714066019">O Google Chrome não consegue apresentar a página Web, uma vez que o seu computador não está ligado à Internet.</translation>
 <translation id="5931853610562009806">No Mac, as palavras-passe podem ser guardadas no Porta-chaves e podem ser sincronizadas ou acedidas por outros utilizadores do Chrome que partilhem esta conta do OS X.</translation>
 <translation id="5940385492829620908">A sua Web, os seus marcadores e os seus outros itens do Chrome estão aqui.</translation>
 <translation id="5941830788786076944">Tornar o Google Chrome no browser padrão.</translation>
 <translation id="597770749449734237">Ativa atalhos de teclado adicionais, úteis para depurar o Google Chrome.</translation>
-<translation id="6011049234605203654">Aceda ao
-          menu Chrome &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          e certifique-se de que a sua configuração está definida como "sem proxy" ou "direta".</translation>
 <translation id="6012342843556706400">O Chrome necessita de acesso à localização para a partilhar com este site.</translation>
 <translation id="6014844626092547096">Tem agora sessão iniciada no Chrome! A sincronização foi desativada pelo seu administrador.</translation>
 <translation id="6049075767726609708">Um administrador instalou o Google Chrome neste sistema, disponível para todos os utilizadores. O Google Chrome ao nível do sistema substituirá a instalação ao nível do utilizador.</translation>
@@ -177,16 +168,6 @@ invulgares e incorretas. Isto pode acontecer quando um utilizador mal intenciona
 <translation id="6676384891291319759">Aceder à Internet</translation>
 <translation id="6757767188268205357">Não incomodar</translation>
 <translation id="683440813066116847">Regra de importação para o Google Chrome Canary permitir o tráfego mDNS.</translation>
-<translation id="6855094794438142393">Aceda ao
-          menu Chrome &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          &gt;
-          Definições de LAN
-          e desmarque "Utilizar um servidor proxy para a rede local".</translation>
 <translation id="6883876366448858277">envia uma palavra e o respetivo contexto circundante à Pesquisa Google, que devolve definições, imagens e outros resultados da pesquisa.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="6970811910055250180">A atualizar o dispositivo...</translation>
@@ -208,7 +189,6 @@ invulgares e incorretas. Isto pode acontecer quando um utilizador mal intenciona
 <translation id="7282192067747128786">Chrome – Notificações (<ph name="QUANTITY" /> não lidas)</translation>
 <translation id="729375352412857283">Em breve, este computador deixará de receber atualizações do Google Chrome, uma vez que o Windows XP e o Windows Vista já não serão suportados.</translation>
 <translation id="7339898014177206373">Nova janela</translation>
-<translation id="7396375882099008034">Permita que o Chrome aceda à rede nas definições da sua firewall ou antivírus.</translation>
 <translation id="7398801000654795464">Iniciou sessão no Chrome com a conta <ph name="USER_EMAIL_ADDRESS" />. Utilize a mesma conta para iniciar sessão novamente.</translation>
 <translation id="7400722733683201933">Acerca do Google Chrome</translation>
 <translation id="7408085963519505752">Termos do SO Chrome</translation>
@@ -238,7 +218,6 @@ invulgares e incorretas. Isto pode acontecer quando um utilizador mal intenciona
 <translation id="8032142183999901390">Depois de remover a sua conta do Chrome, poderá ter de recarregar os separadores abertos para que a alteração tenha efeito.</translation>
 <translation id="8037887340639533879">Não foi encontrada qualquer instalação do Google Chrome para atualização.</translation>
 <translation id="8129812357326543296">Acerca do &amp;Google Chrome</translation>
-<translation id="8187289872471304532">Aceda a Aplicações &gt; Preferências do Sistema &gt; Rede &gt; Avançadas &gt; Proxies e desmarque todos os proxies selecionados.</translation>
 <translation id="8205111949707227942">Opcional: Ajude a melhorar o Chrome OS ao enviar automaticamente estatísticas de utilização e relatórios de falhas para a Google.</translation>
 <translation id="8227755444512189073">O Google Chrome precisa de executar uma aplicação externa para processar links <ph name="SCHEME" />. O link solicitado é <ph name="PROTOLINK" />.</translation>
 <translation id="8255190535488645436">O Google Chrome está a utilizar a câmara e o microfone.</translation>

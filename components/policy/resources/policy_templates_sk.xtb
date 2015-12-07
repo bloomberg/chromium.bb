@@ -371,21 +371,6 @@
 
           Ak toto pravidlo nenastavíte, produkt <ph name="PRODUCT_NAME" /> povolí
           používanie hostiteľov zasielania natívnych správ na používateľskej úrovni.</translation>
-<translation id="2393996789386329927">Blokuje prístup k webovým adresám uvedeným v zozname.
-
-      Toto pravidlo bráni používateľom načítať webové stránky zo zoznamu zakázaných webových adries. Zoznam zakázaných položiek obsahuje vzory webových adries. Tie určujú, ktoré webové adresy budú zakázané.
-
-      Každý vzor webovej adresy môže byť buď vzorom pre miestne súbory, alebo všeobecným vzorom pre webové adresy. Vzory miestnych súborov sú vo formáte file://cesta. Ak chcete zablokovať prístup, cesta musí byť absolútna. Všetky umiestnenia v systéme súborov s touto predponou budú zablokované.
-
-      Všeobecný vzor webovej adresy má formát schéma://hostiteľ:port/cesta.
-      Ak je určená schéma dostupná, bude zablokovaná iba ona. Ak nie je určená predpona schéma://, budú blokované všetky schémy.
-      Hostiteľ sa vyžaduje a môže ísť o názov hostiteľa alebo adresu IP. Blokované budú aj subdomény názvu hostiteľa. Ak chcete zabrániť blokovaniu subdomén, zadajte pred názov hostiteľa bodku „.“. Špeciálny názov hostiteľa „*“ zablokuje všetky domény.
-      Ako port je možné zvoliť platné číslo portu v rozpätí od 1 do 65535. Ak to nie je bližšie určené, blokované budú všetky porty.
-      Ak je určená voliteľná cesta, budú blokované iba cesty s príslušnou predponou.
-
-      Výnimky môžu byť definované v pravidle zoznamu povolených webových adries. Počet záznamov v týchto pravidlách je obmedzený na 1 000. Všetky ďalšie záznamy sa budú ignorovať.
-
-      Ak toto pravidlo nebude nastavené, nebude v prehliadači zakázaná žiadna webová adresa.</translation>
 <translation id="240213793013362302">Konfigurácia obrázka tapety.
 
       Toto pravidlo umožňuje nakonfigurovať obrázok tapety, ktorá sa používateľovi zobrazuje na pracovnej ploche a na pozadí prihlasovacej obrazovky. Pravidlo nastavíte určením webovej adresy, z ktorej môže systém <ph name="PRODUCT_OS_NAME" /> stiahnuť daný obrázok tapety, a určením kryptografickej hodnoty hash, pomocou ktorej sa overí integrita stiahnutého súboru. Obrázok musí byť vo formáte JPEG a jeho veľkosť nesmie prekročiť 16 MB. Webová adresa musí byť prístupná bez overenia totožnosti.
@@ -2144,7 +2129,7 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
 <translation id="8382184662529825177">Povoliť použitie vzdialeného overenia na ochranu obsahu pre zariadenie</translation>
 <translation id="838870586332499308">Povoliť roaming pre dátové prenosy</translation>
 <translation id="8412312801707973447">Či sa majú vykonávať kontroly OCSP/CRL online</translation>
-<translation id="8424255554404582727">Nastaviť predvolené otáčanie obrazovky, ktoré sa opakovane použije pri každom reštarte</translation>
+<translation id="8424255554404582727">Nastaviť predvolené otočenie obrazovky, ktoré sa opakovane použije pri každom reštarte</translation>
 <translation id="8426231401662877819">Otočiť obrazovku v smere hodinových ručičiek o 90 stupňov</translation>
 <translation id="8451988835943702790">Použiť stránku Nová karta ako domovskú stránku</translation>
 <translation id="8465065632133292531">Parametre pre webovú adresu okamžitého vyhľadávania, ktorá používa metódu POST</translation>

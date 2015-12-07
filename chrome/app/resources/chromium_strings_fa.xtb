@@ -47,7 +47,6 @@
 <translation id="2486653164587200256">‏Chromium ممکن است درست کار نکند زیرا دیگر در Windows XP یا Windows Vista پشتیبانی نمی‌شود.</translation>
 <translation id="2535480412977113886">‏سیستم‌عامل Chromium قادر به همگام‌سازی داده‌های شما نبود زیرا جزئیات ورود به حساب شما به‌روز نیست.</translation>
 <translation id="2558641060352364164">‏این سایت از افزایه Chromium Frame استفاده می‌کند که به زودی پشتیبانی از آن متوقف می‌شود. لطفاً آن را حذف نصب کرده و به مرورگر جدیدی ارتقا دهید.</translation>
-<translation id="2565260267992448464">‏Chromium نمی‌تواند صفحه‌وب را نمایش دهد، زیرا رایانه شما به اینترنت متصل نیست.</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
 <translation id="2602806952220118310">‏Chromium - اعلان‌ها</translation>
 <translation id="2636877269779209383">‏Chromium نیاز به مجوز دسترسی به دوربین دارد تا آن را با این سایت به اشتراک بگذارد.</translation>
@@ -108,16 +107,6 @@
 <translation id="4458285410772214805">لطفاً از سیستم خارج شوید و دوباره وارد آن شوید تا این تغییر اعمال شود.</translation>
 <translation id="4488676065623537541">‏جزئیات صورت‌حساب شما در Chromium ذخیره شده است.</translation>
 <translation id="4549794359424059447">‏نسخه‌های آینده Chromium دیگر از Windows XP یا Windows Vista پشتیبانی نمی‌کند.</translation>
-<translation id="4559775032954821361">‏به
-         منوی Chromium  &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          &gt;
-          تنظیمات LAN
-          بروید و علامت کادر انتخاب «استفاده از سرور پراکسی برای LAN خود» را بردارید.</translation>
 <translation id="4567424176335768812">با حساب <ph name="USER_EMAIL_ADDRESS" /> وارد سیستم شده‌اید. اکنون در همه دستگاه‌هایی که با آنها به سیستم وارد شده‌اید می‌توانید به نشانک‌ها، سابقه و دیگر تنظیماتتان دسترسی داشته باشید.</translation>
 <translation id="457845228957001925">‏اطلاعات مهم در مورد داده‌های Chromium</translation>
 <translation id="459535195905078186">‏برنامه‌های Chromium</translation>
@@ -139,14 +128,6 @@
 <translation id="5680901439334282664">‏ورود به سیستم Chromium</translation>
 <translation id="5772805321386874569">‏(Chromium باید <ph name="BEGIN_BUTTON" />راه‌اندازی مجدد<ph name="END_BUTTON" /> شود)</translation>
 <translation id="5796460469508169315">‏Chromium تقریباً آماده است.</translation>
-<translation id="580822234363523061">‏به
-          منوی Chromium &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          بروید و مطمئن شوید که تنظیمات بر روی «بدون پراکسی» یا «مستقیم» است.</translation>
 <translation id="5820394555380036790">‏سیستم عامل Chromium </translation>
 <translation id="5823381412099532241">‏Chromium نتوانست به صورت خودکار به جدیدترین نسخه به‌روزرسانی شود، بنابراین ویژگی‌های جدید فوق‌العاده و اشکال‌زدایی‌های امنیتی را از دست می‌دهید. باید Chromium را به‌روزرسانی کنید.</translation>
 <translation id="5862307444128926510">‏به Chromium خوش آمدید</translation>
@@ -222,10 +203,6 @@ Chromium قادر به بازیابی تنظیمات شما نیست.</translati
 <translation id="8033665941300843262">‏Chromium نیاز به مجوزهای دسترسی دارد تا آن‌ها را با این سایت به اشتراک بگذارد.</translation>
 <translation id="805745970029938373">‏می‌توانید همه اعلان‌هایتان از برنامه‌های Chromium، افزودنی‌ها و وب‌سایت‌ها را در اینجا مشاهده کنید.</translation>
 <translation id="8134284582177628525">‏اگر این رایانه را با <ph name="PROFILE_NAME" /> به اشتراک می‌گذارید، خودتان را به Chromium اضافه کنید تا جداگانه مرور کنید. در غیر این صورت اتصال حساب Google این شخص را قطع کنید.</translation>
-<translation id="8187289872471304532">به
-          برنامه‌ها &gt; 
-موارد برگزیده سیستم &gt; شبکه &gt; پیشرفته &gt; پراکسی‌ها
-بروید و علامت تمام پراکسی‌های انتخاب شده را بردارید.</translation>
 <translation id="8269379391216269538">‏به بهبود Chromium کمک کنید</translation>
 <translation id="8453117565092476964">‏بایگانی نصب‌کننده خراب یا نامعتبر است. لطفاً Chromium را دوباره را دانلود کنید.</translation>
 <translation id="8493179195440786826">‏نسخه Chromium قدیمی است</translation>
@@ -233,7 +210,6 @@ Chromium قادر به بازیابی تنظیمات شما نیست.</translati
 <translation id="85843667276690461">‏دریافت راهنمایی برای استفاده از Chromium </translation>
 <translation id="8586442755830160949">‏حق نسخه‌برداری <ph name="YEAR" /> نویسندگان Chromium. کلیه حقوق محفوظ است.</translation>
 <translation id="8605166112420372522">‏راه‌اندازی مجدد Chromium در حالت دسک‌تاپ (‎&amp;R)</translation>
-<translation id="8610831143142469229">‏در تنظیمات فایروال و ضد ویروس‌تان، به Chromium اجازه دسترسی به شبکه را بدهید.</translation>
 <translation id="8621669128220841554">‏به دلیل خطای نامشخص، نصب ناموفق بود. لطفاً دوباره Chromium را دانلود کنید.</translation>
 <translation id="8628626585870903697">‏Chromium فاقد نمایشگر PDF است که برای عملکرد پیش‌نمایش چاپ لازم است.</translation>
 <translation id="8684913864886094367">‏Chromium به درستی خاموش نشده است.</translation>

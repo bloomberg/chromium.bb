@@ -9,6 +9,15 @@
           og slå av alternativet for henting av sideressurser på forhånd.
           Hvis ikke dette løser problemet, bør du slå på dette alternativet
           igjen for å bedre ytelsen.</translation>
+<translation id="5890698319714066019">Google Chrome kan ikke vise nettsiden fordi datamaskinen din ikke er koblet til Internett.</translation>
+<translation id="6011049234605203654">Gå til
+          Chrome-menyen &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          &gt;
+          <ph name="PROXIES_TITLE" />
+          og sørg for at konfigurasjonen din er angitt til «ingen mellomtjener» eller «direkte».</translation>
 <translation id="6341737370356890233">Gå til
         Chrome-menyen &gt;
         <ph name="SETTINGS_TITLE" />
@@ -17,4 +26,16 @@
         og fjern avmerkingen for «<ph name="NO_PREFETCH_DESCRIPTION" />».
         Hvis dette ikke løser problemet, bør du velge dette alternativet
         på nytt for bedre ytelse.</translation>
+<translation id="6855094794438142393">Gå til
+          Chrome-menyen &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          &gt;
+          <ph name="PROXIES_TITLE" />        
+          &gt;
+          LAN-innstillinger         
+          og fjern avmerkingen for «Bruk en mellomtjener for LAN-nettverket».</translation>
+<translation id="7396375882099008034">Tillat at Chrome bruker nettverket i brannmur- eller antivirusinnstillingene dine.</translation>
+<translation id="8187289872471304532">Gå til Programmer &gt; Systeminnstillinger &gt; Nettverk &gt; Avansert &gt; Mellomtjenere og fjern avmerkingen for alle valgte mellomtjenere.</translation>
 </translationbundle>

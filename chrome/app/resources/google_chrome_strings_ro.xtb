@@ -5,7 +5,7 @@
 <translation id="1013290471399003443">Chrome s-a asigurat că certificatul acestui site a fost emis de <ph name="ISSUER" />. Serverul a oferit informații valide privind Certificate Transparency.</translation>
 <translation id="1016765312371154165">Chrome nu s-a închis corect.</translation>
 <translation id="103396972844768118">Informații importante cu privire la datele dvs. Chrome</translation>
-<translation id="1035334672863811645">conectează-te în Chrome</translation>
+<translation id="1035334672863811645">conectează-te la Chrome</translation>
 <translation id="1061441684050139317">Chrome are nevoie de acces la microfon pentru a-l acorda acestui site.</translation>
 <translation id="1065672644894730302">Preferințele dvs. nu pot fi citite. Este posibil ca unele funcții să nu fie disponibile, iar modificările aduse preferințelor nu vor fi salvate.</translation>
 <translation id="1073391069195728457">Chrome – Notificări</translation>
@@ -143,19 +143,10 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
 <translation id="5785746630574083988">Repornirea în modul Windows 8 va închide și relansa aplicațiile Chrome.</translation>
 <translation id="5855036575689098185">Software-ul care rulează pe computer este incompatibil cu Google Chrome.</translation>
 <translation id="5877064549588274448">Canalul a fost schimbat. Reporniți dispozitivul pentru a aplica modificările.</translation>
-<translation id="5890698319714066019">Google Chrome nu poate afișa pagina web, deoarece computerul nu este conectat la internet.</translation>
 <translation id="5931853610562009806">Pe Mac, parolele pot fi salvate în aplicația Keychain și pot fi accesate sau sincronizate de alți utilizatori Chrome care folosesc același cont de OS X.</translation>
 <translation id="5940385492829620908">Experiența web personalizată, marcajele și celelalte date Chrome chiar aici.</translation>
 <translation id="5941830788786076944">Setează Google Chrome ca browser prestabilit</translation>
 <translation id="597770749449734237">Activează comenzi rapide suplimentare de la tastatură care sunt utile pentru remedierea erorilor din Google Chrome.</translation>
-<translation id="6011049234605203654">Accesați
-          meniul Chrome &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          și asigurați-vă că aveți configurația setată la „fără proxy” sau „direct”.</translation>
 <translation id="6012342843556706400">Chrome are nevoie de acces la locație pentru a-l acorda acestui site.</translation>
 <translation id="6014844626092547096">Sunteți conectat(ă) la Chrome! Sincronizarea este dezactivată de administrator.</translation>
 <translation id="6049075767726609708">Un administrator a instalat Google Chrome pe acest sistem, iar acum acesta este disponibil pentru toți utilizatorii. Versiunea Google Chrome la nivel de sistem o va înlocui acum pe cea la nivel de utilizator.</translation>
@@ -176,16 +167,6 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
 <translation id="6676384891291319759">Accesează internetul</translation>
 <translation id="6757767188268205357">Nu mă mai întreba</translation>
 <translation id="683440813066116847">Regula de intrare pentru Google Chrome Canary pentru a permite traficul mDNS.</translation>
-<translation id="6855094794438142393">Accesați
-          meniul Chrome &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          &gt;
-          Setări LAN
-          și debifați caseta de selectare „Utilizați un server proxy pentru LAN”.</translation>
 <translation id="6883876366448858277">trimite un cuvânt și contextul aferent către Căutarea Google, afișând definiții, imagini, rezultate ale căutării.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="6970811910055250180">Se actualizează dispozitivul...</translation>
@@ -207,8 +188,6 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
 <translation id="7282192067747128786">Chrome – Notificări (<ph name="QUANTITY" /> necitite)</translation>
 <translation id="729375352412857283">În curând, acest computer nu va mai primi actualizări pentru Google Chrome, deoarece Windows XP și Windows Vista nu vor mai fi acceptate.</translation>
 <translation id="7339898014177206373">Fereastră nouă</translation>
-<translation id="7396375882099008034">Permiteți browserului Chrome să acceseze rețeaua din setările pentru firewall sau
-        antivirus.</translation>
 <translation id="7398801000654795464">Ați fost conectat(ă) la Chrome ca <ph name="USER_EMAIL_ADDRESS" />. Utilizați același cont pentru a vă conecta din nou.</translation>
 <translation id="7400722733683201933">Despre Google Chrome</translation>
 <translation id="7408085963519505752">Termeni și condiții pentru sistemul de operare Chrome</translation>
@@ -238,9 +217,6 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
 <translation id="8032142183999901390">După eliminarea contului din Chrome, poate fi necesar să reîncărcați filele deschise pentru ca schimbarea să se aplice.</translation>
 <translation id="8037887340639533879">Nu s-a găsit nicio versiune instalată de Google Chrome pentru a fi actualizată.</translation>
 <translation id="8129812357326543296">Despre &amp;Google Chrome</translation>
-<translation id="8187289872471304532">Accesați
-          Applications (Aplicații) &gt; System Preferences (Preferințe de sistem) &gt; Network (Rețea) &gt; Advanced (Avansat) &gt; Proxies (Servere proxy)
-          și debifați toate serverele proxy selectate.</translation>
 <translation id="8205111949707227942">Opțional: ajută-ne să îmbunătățim sistemul de operare Chrome prin trimiterea automată de statistici de utilizare și rapoarte de blocare către Google.</translation>
 <translation id="8227755444512189073">Google Chrome necesită lansarea unei aplicații externe pentru a gestiona linkuri <ph name="SCHEME" />. Linkul solicitat este <ph name="PROTOLINK" />.</translation>
 <translation id="8255190535488645436">Google Chrome utilizează camera foto și microfonul.</translation>

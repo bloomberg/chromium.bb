@@ -8,10 +8,31 @@
           na uzime "Leta mapema rasilimali za kurasa."
           Ikiwa hili halitatui tatizo, tunapendekeza uwashe chaguo hili
           tena kwa utendaji ulioimarishwa.</translation>
+<translation id="4559775032954821361">Nenda kwenye
+         menyu ya Chromium &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          &gt;
+          <ph name="PROXIES_TITLE" />
+          &gt;
+          Mipangilio ya LAN
+         na uondoe tiki "Tumia seva ya proksi kwa kikasha kaguzi chako cha LAN".</translation>
+<translation id="580822234363523061">Nenda kwenye
+          menyu ya Chromium &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          &gt;
+          <ph name="PROXIES_TITLE" />
+         na uhakikishe kuwa usanidi wako umewekwa kwenye "hakuna proksi" au "moja kwa moja."</translation>
 <translation id="6613594504749178791">Mabadiliko yako yataanza kufanya kazi wakati ujao utakapozindua upya Chromium.</translation>
 <translation id="7861509383340276692">Nenda kwenye
         menyu ya Chromium &gt;
         <ph name="SETTINGS_TITLE" />
         <ph name="ADVANCED_TITLE" />na uondoe tiki kwenye "<ph name="NO_PREFETCH_DESCRIPTION" />."
         Ikiwa hili halitatatua tatizo, tunapendekeza uchague tena chaguo hili kwa utendaji ulioboreshwa.</translation>
+<translation id="8187289872471304532">Nenda kwenye
+          Programu &gt; Mapendeleo ya Mfumo &gt; Mtandao &gt; Uboreshaji &gt; Proksi na uondoe tiki kwenye proksi zozote ambazo zimechaguliwa.</translation>
+<translation id="8610831143142469229">Ruhusu Chromium ifikie mtandao kwenye mipangilio yako ya ngome au kingavirusi.</translation>
 </translationbundle>

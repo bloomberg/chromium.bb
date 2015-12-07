@@ -9,6 +9,15 @@
           e desative "Registar previamente os recursos da página".
           Se esta ação não resolver o problema, recomendamos que reative esta opção
           novamente para melhorar o desempenho.</translation>
+<translation id="5890698319714066019">O Google Chrome não consegue apresentar a página Web, uma vez que o seu computador não está ligado à Internet.</translation>
+<translation id="6011049234605203654">Aceda ao
+          menu Chrome &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          &gt;
+          <ph name="PROXIES_TITLE" />
+          e certifique-se de que a sua configuração está definida como "sem proxy" ou "direta".</translation>
 <translation id="6341737370356890233">Aceda ao
         menu Chrome &gt;
         <ph name="SETTINGS_TITLE" />
@@ -17,4 +26,16 @@
         e desmarque "<ph name="NO_PREFETCH_DESCRIPTION" />".
         Se isso não resolver o problema, recomendamos que selecione esta opção
         novamente para obter um desempenho melhorado.</translation>
+<translation id="6855094794438142393">Aceda ao
+          menu Chrome &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          &gt;
+          <ph name="PROXIES_TITLE" />
+          &gt;
+          Definições de LAN
+          e desmarque "Utilizar um servidor proxy para a rede local".</translation>
+<translation id="7396375882099008034">Permita que o Chrome aceda à rede nas definições da sua firewall ou antivírus.</translation>
+<translation id="8187289872471304532">Aceda a Aplicações &gt; Preferências do Sistema &gt; Rede &gt; Avançadas &gt; Proxies e desmarque todos os proxies selecionados.</translation>
 </translationbundle>

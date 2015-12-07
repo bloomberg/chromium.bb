@@ -373,21 +373,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
           If this setting is left not set <ph name="PRODUCT_NAME" />
           will allow usage of user-level Native Messaging hosts.</translation>
-<translation id="2393996789386329927">Blocks access to the listed URLs.
-
-      This policy prevents the user from loading web pages from blacklisted URLs. The blacklist provides a list of URL patterns that specify which URLs will be blacklisted.
-
-      Each URL pattern can either be a pattern for local files or a generic URL pattern. Local file patterns are of the format 'file://path', where path should be an absolute path to block. All file system locations for which that path is a prefix will be blocked.
-
-      A generic URL pattern has the format 'scheme://host:port/path'.
-      If present, only the specified scheme will be blocked. If the scheme:// prefix is not specified, all schemes are blocked.
-      The host is required and can be a hostname or an IP address. Subdomains of a hostname will also be blocked. To prevent blocking subdomains, include a '.' before the hostname. The special hostname '*' will block all domains.
-      The optional port is a valid port number from 1 to 65535. If none is specified, all ports are blocked.
-      If the optional path is specified, only paths with that prefix will be blocked.
-
-      Exceptions can be defined in the URL whitelist policy. These policies are limited to 1000 entries; subsequent entries will be ignored.
-
-      If this policy is not set no URL will be blacklisted in the browser.</translation>
 <translation id="240213793013362302">Configure wallpaper image.
 
       This policy allows you to configure the wallpaper image that is shown on the desktop and on the login screen background for the user. The policy is set by specifying the URL from which <ph name="PRODUCT_OS_NAME" /> can download the wallpaper image and a cryptographic hash used to verify the integrity of the download. The image must be in JPEG format, its file size must not exceed 16MB. The URL must be accessible without any authentication.

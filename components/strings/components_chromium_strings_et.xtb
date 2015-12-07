@@ -8,6 +8,24 @@
           ja keelake valik „Lehe ressursside eellaadimine”.
           Kui see probleemi ei lahenda, soovitame selle valiku toimivuse
           parandamiseks uuesti lubada.</translation>
+<translation id="4559775032954821361">Valige
+          Chromiumi menüü &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          &gt;
+          <ph name="PROXIES_TITLE" />
+          &gt;
+          LAN-seaded
+          ja tühjendage ruut valiku „Kasutage LAN-i puhul puhverserverit” juures.</translation>
+<translation id="580822234363523061">Minge
+          Chromiumi menüüsse &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          &gt;
+          <ph name="PROXIES_TITLE" />
+          ja veenduge, et konfiguratsioon on määratud valikule „Puhverserverita” või „Otse”.</translation>
 <translation id="6613594504749178791">Teie muudatused jõustuvad järgmine kord, kui Chromiumi taaskäivitate.</translation>
 <translation id="7861509383340276692">Avage
         Chromiumi menüü &gt;
@@ -17,4 +35,9 @@
         ja tühistage valik „<ph name="NO_PREFETCH_DESCRIPTION" />”.
         Kui see probleemi ei lahenda, soovitame selle valiku
         toimivuse parandamiseks uuesti teha.</translation>
+<translation id="8187289872471304532">Tehke valikud
+          Rakendused &gt; Süsteemieelised &gt; Võrk &gt; Täpsem &gt; Puhverserverid
+          ja tühjendage kõigi valitud puhverserverite märkeruudud.</translation>
+<translation id="8610831143142469229">Juurdepääsuks võrgule tulemüüri või viirusetõrje seadetes lubage
+        Chromium.</translation>
 </translationbundle>

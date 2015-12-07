@@ -8,6 +8,24 @@
 и деактивирайте опцията за предварително зареждане на ресурсите на страниците.
 Ако това не реши проблема, препоръчваме ви да я активирате отново,
 за да подобрите ефективността.</translation>
+<translation id="4559775032954821361">Отворете
+менюто на Chromium &gt;
+<ph name="SETTINGS_TITLE" />
+&gt;
+<ph name="ADVANCED_TITLE" />
+&gt;
+<ph name="PROXIES_TITLE" />
+&gt;
+„LAN настройки“
+и премахнете отметката от квадратчето „Използвайте прокси сървър за вашата локална мрежа“.</translation>
+<translation id="580822234363523061">Отворете
+менюто на Chromium &gt;
+<ph name="SETTINGS_TITLE" />
+&gt;
+<ph name="ADVANCED_TITLE" />
+&gt;
+<ph name="PROXIES_TITLE" />
+и се уверете, че за конфигурацията ви е зададено „no proxy“ или „direct“.</translation>
 <translation id="6613594504749178791">Промените ви ще влязат в сила следващия път, когато стартирате отново Chromium.</translation>
 <translation id="7861509383340276692">Отворете
 менюто на Chromium &gt;
@@ -17,4 +35,9 @@
 и премахнете отметката от „<ph name="NO_PREFETCH_DESCRIPTION" />“.
 Ако това не реши проблема, препоръчваме ви да изберете отново тази опция,
 за да подобрите ефективността.</translation>
+<translation id="8187289872471304532">Отворете
+„Applications“ &gt; „System Preferences“ &gt; „Network“ &gt; „Advanced“ &gt; „Proxies“
+и премахнете отметките от избраните прокси сървъри.</translation>
+<translation id="8610831143142469229">Разрешете достъпа на Chromium до мрежата от настройките на защитната стена
+или антивирусния си софтуер.</translation>
 </translationbundle>

@@ -144,12 +144,10 @@
 <translation id="5785746630574083988">若以Windows 8模式重新启动，将会关闭并重新启动您的Chrome应用。</translation>
 <translation id="5855036575689098185">您计算机上运行的软件与 Google Chrome 不兼容。</translation>
 <translation id="5877064549588274448">版本已更改。请重新启动设备来应用这些变更。</translation>
-<translation id="5890698319714066019">Google Chrome 无法显示该网页，因为您的计算机未连接到互联网。</translation>
 <translation id="5931853610562009806">在 Mac 上，密码可能会保存到您的钥匙串 (Keychain) 中，这将导致共用此 OS X 帐户的其他 Chrome 用户都能够访问或同步处理这些密码。</translation>
 <translation id="5940385492829620908">您的上网记录、书签和其他Chrome资料和数据都保存在此处。</translation>
 <translation id="5941830788786076944">将 Google Chrome 浏览器设为默认浏览器</translation>
 <translation id="597770749449734237">启用其他有助于调试 Google Chrome 的键盘快捷键。</translation>
-<translation id="6011049234605203654">依次转到 Chrome 菜单 &gt;“<ph name="SETTINGS_TITLE" />”&gt;“<ph name="ADVANCED_TITLE" />”&gt;“<ph name="PROXIES_TITLE" />”，并确保您已将配置设为“无代理”或“直接连接”。</translation>
 <translation id="6012342843556706400">Chrome 需要具有位置信息使用权，才能批准此网站的分享请求。</translation>
 <translation id="6014844626092547096">您现在已登录 Chrome！不过，管理员已停用同步功能。</translation>
 <translation id="6049075767726609708">管理员已为该系统安装了 Google Chrome 浏览器，并且所有用户均可使用它。因此，原来针对个别用户安装的浏览器现在可供系统上的所有用户使用。</translation>
@@ -170,7 +168,6 @@
 <translation id="6676384891291319759">访问互联网</translation>
 <translation id="6757767188268205357">谢绝打扰</translation>
 <translation id="683440813066116847">Google Chrome Canary版的入站规则，允许mDNS流量。</translation>
-<translation id="6855094794438142393">依次转到 Chrome 菜单 &gt;“<ph name="SETTINGS_TITLE" />”&gt;“<ph name="ADVANCED_TITLE" />”&gt;“<ph name="PROXIES_TITLE" />”&gt;“LAN 设置”，然后取消选中“为 LAN 使用代理服务器”。</translation>
 <translation id="6883876366448858277">将某个字词及上下文一起发送至 Google 搜索，后者将返回相应的定义、图片及其他搜索结果。</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="6970811910055250180">正在更新设备...</translation>
@@ -192,7 +189,6 @@
 <translation id="7282192067747128786">Chrome - 通知（<ph name="QUANTITY" />条未读）</translation>
 <translation id="729375352412857283">此计算机很快就不会再收到 Google Chrome 更新，因为 Windows XP 和 Windows Vista 将不再受支持。</translation>
 <translation id="7339898014177206373">打开新的窗口</translation>
-<translation id="7396375882099008034">对防火墙或防病毒软件进行设置，以允许 Chrome 访问该网络。</translation>
 <translation id="7398801000654795464">您之前登录 Chrome 时使用的帐户为 <ph name="USER_EMAIL_ADDRESS" />，请使用同一帐户再次登录。</translation>
 <translation id="7400722733683201933">关于Google Chrome</translation>
 <translation id="7408085963519505752">Chrome操作系统条款</translation>
@@ -222,7 +218,6 @@
 <translation id="8032142183999901390">从Chrome移除您的帐户后，您可能需要重新加载已打开的标签页才能使其正常显示。</translation>
 <translation id="8037887340639533879">未找到要更新的Google Chrome安装实例。</translation>
 <translation id="8129812357326543296">关于 Google Chrome(&amp;G)</translation>
-<translation id="8187289872471304532">依次转到“应用”&gt;“系统偏好设置”&gt;“网络”&gt;“高级”&gt;“代理”，然后取消选中所有已选的代理。</translation>
 <translation id="8205111949707227942">可选：将使用情况统计信息和崩溃报告自动发送给Google，帮助完善Chrome操作系统。</translation>
 <translation id="8227755444512189073">Google Chrome 浏览器必须启动外部应用才能处理 <ph name="SCHEME" /> 链接。请求的链接是 <ph name="PROTOLINK" />。</translation>
 <translation id="8255190535488645436">Google Chrome 正在使用您的摄像头和麦克风。</translation>

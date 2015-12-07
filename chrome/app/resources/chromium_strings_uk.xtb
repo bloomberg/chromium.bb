@@ -47,7 +47,6 @@
 <translation id="2486653164587200256">Chromium може працювати неналежним чином, оскільки Windows XP та Windows Vista більше не підтримуються.</translation>
 <translation id="2535480412977113886">ОС Chromium не вдалося синхронізувати ваші дані, оскільки дані для входу в обліковий запис застаріли.</translation>
 <translation id="2558641060352364164">Цей сайт використовує Chromium Frame. Ми припиняємо підтримку цього плагіна. Видаліть його та встановіть сучасний веб-переглядач.</translation>
-<translation id="2565260267992448464">Chromium не може показати веб-сторінку, оскільки ваш комп’ютер не під’єднано до Інтернету.</translation>
 <translation id="2572494885440352020">Помічник Chromium</translation>
 <translation id="2602806952220118310">Chromium – сповіщення</translation>
 <translation id="2636877269779209383">Chromium потрібен доступ до камери, щоб використовувати її на цьому сайті.</translation>
@@ -110,16 +109,6 @@
 <translation id="4458285410772214805">Щоб зміна почала діяти, вийдіть і ввійдіть знову.</translation>
 <translation id="4488676065623537541">Ваші платіжні дані збережено в Chromium.</translation>
 <translation id="4549794359424059447">Наступні версії Chromium не підтримуватимуть Windows XP та Windows Vista.</translation>
-<translation id="4559775032954821361">Перейдіть у
-          меню Chromium &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          &gt;
-          Налаштування LAN
-          і зніміть прапорець біля опції "Використовувати проксі-сервер для вашої локальної мережі".</translation>
 <translation id="4567424176335768812">Ви ввійшли як <ph name="USER_EMAIL_ADDRESS" />. Ваші закладки, історія й інші налаштування будуть доступні на всіх пристроях, на яких ви ввійдете в цей обліковий запис.</translation>
 <translation id="457845228957001925">Важлива інформація про ваші дані Chromium</translation>
 <translation id="459535195905078186">Програми Chromium</translation>
@@ -141,14 +130,6 @@
 <translation id="5680901439334282664">увійдіть в обліковий запис Chromium</translation>
 <translation id="5772805321386874569">(потрібно <ph name="BEGIN_BUTTON" />перезапустити<ph name="END_BUTTON" /> Chromium)</translation>
 <translation id="5796460469508169315">Chromium майже готовий.</translation>
-<translation id="580822234363523061">Перейдіть у
-          меню Chromium &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          і переконайтеся, що встановлено значення конфігурації "без проксі" чи "безпосередньо".</translation>
 <translation id="5820394555380036790">ОС Chromium</translation>
 <translation id="5823381412099532241">Не вдалось оновити Chromium до останньої версії. Щоб застосувати виправлення системи безпеки та скористатись новими цікавими функціями, потрібно оновити Chromium.</translation>
 <translation id="5862307444128926510">Вітаємо в Chromium</translation>
@@ -225,9 +206,6 @@ Chromium не може відновити ваші налаштування.</tr
 <translation id="8033665941300843262">Chromium потрібен доступ до дозволів, щоб використовувати їх на цьому сайті.</translation>
 <translation id="805745970029938373">Тут можна переглядати всі ваші сповіщення з програм і розширень Chromium, а також веб-сайтів.</translation>
 <translation id="8134284582177628525">Якщо ви користуєтеся цим комп’ютером спільно з користувачем <ph name="PROFILE_NAME" />, додайте себе в Chromium, щоб переглядати веб-сайти окремо. Також можна від’єднати обліковий запис Google цього користувача.</translation>
-<translation id="8187289872471304532">Перейдіть у меню
-          Applications &gt; System Preferences &gt; Network &gt; Advanced &gt; Proxies (Програми &gt; Системні налаштування &gt; Мережа &gt; Розширені &gt; Проксі-сервери)
-          і зніміть прапорці біля всіх вибраних проксі-серверів.</translation>
 <translation id="8269379391216269538">Допоможіть покращити Chromium</translation>
 <translation id="8453117565092476964">Архів програми встановлення пошкоджений або недійсний. Завантажте Chromium ще раз.</translation>
 <translation id="8493179195440786826">Версія Chromium застаріла</translation>
@@ -235,8 +213,6 @@ Chromium не може відновити ваші налаштування.</tr
 <translation id="85843667276690461">Отримати довідку щодо користування Chromium</translation>
 <translation id="8586442755830160949">Авторське право <ph name="YEAR" /> Автори Chromium. Усі права захищено.</translation>
 <translation id="8605166112420372522">Перезапустити Chromium на робочому столі</translation>
-<translation id="8610831143142469229">Надайте Chromium доступ до мережі в налаштуваннях свого брандмауера чи
-        антивірусного програмного забезпечення.</translation>
 <translation id="8621669128220841554">Не вдалося встановити через невизначену помилку. Завантажте Chromium ще раз.</translation>
 <translation id="8628626585870903697">У Chromium немає засобу перегляду файлів PDF, який потрібен для перегляду версії для друку.</translation>
 <translation id="8684913864886094367">Chromium було неправильно закрито.</translation>

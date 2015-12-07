@@ -8,6 +8,24 @@
           بروید و «واکشی منابع صفحه» را غیرفعال کنید.
           درصورتی‌که با این کار مشکل حل نشد، توصیه می‌کنیم برای عملکرد بهبودیافته،
          این گزینه را دوباره فعال کنید.</translation>
+<translation id="4559775032954821361">‏به
+         منوی Chromium  &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          &gt;
+          <ph name="PROXIES_TITLE" />
+          &gt;
+          تنظیمات LAN
+          بروید و علامت کادر انتخاب «استفاده از سرور پراکسی برای LAN خود» را بردارید.</translation>
+<translation id="580822234363523061">‏به
+          منوی Chromium &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          &gt;
+          <ph name="PROXIES_TITLE" />
+          بروید و مطمئن شوید که تنظیمات بر روی «بدون پراکسی» یا «مستقیم» است.</translation>
 <translation id="6613594504749178791">‏دفعه بعدی که Chromium را مجدداً راه‌اندازی می‌کنید، این تغییرات اعمال می‌شوند.</translation>
 <translation id="7861509383340276692">‏به
           منوی Chromium &gt;
@@ -17,4 +35,9 @@
           بروید و علامت «<ph name="NO_PREFETCH_DESCRIPTION" />» را بردارید.
           درصورتی‌که با این کار مشکل حل نشد، توصیه می‌کنیم برای عملکرد بهبودیافته،
           این گزینه را دوباره انتخاب کنید.</translation>
+<translation id="8187289872471304532">به
+          برنامه‌ها &gt; 
+موارد برگزیده سیستم &gt; شبکه &gt; پیشرفته &gt; پراکسی‌ها
+بروید و علامت تمام پراکسی‌های انتخاب شده را بردارید.</translation>
+<translation id="8610831143142469229">‏در تنظیمات فایروال و ضد ویروس‌تان، به Chromium اجازه دسترسی به شبکه را بدهید.</translation>
 </translationbundle>

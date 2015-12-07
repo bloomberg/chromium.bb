@@ -47,7 +47,6 @@
 <translation id="2486653164587200256">В работе Chromium могут возникать сбои, так как браузер больше не поддерживает Windows XP и Windows Vista.</translation>
 <translation id="2535480412977113886">Не удалось выполнить синхронизацию, так как учетные данные устарели.</translation>
 <translation id="2558641060352364164">Этот сайт использует плагин Chromium Frame, поддержка которого скоро будет прекращена. Установите новую версию браузера.</translation>
-<translation id="2565260267992448464">Не удается загрузить веб-страницу, так как компьютер не подключен к Интернету.</translation>
 <translation id="2572494885440352020">Помощник по Chromium</translation>
 <translation id="2602806952220118310">Chromium - Оповещения</translation>
 <translation id="2636877269779209383">Предоставьте браузеру Chromium доступ к камере, чтобы пользоваться ею на этом сайте.</translation>
@@ -108,16 +107,6 @@
 <translation id="4458285410772214805">Чтобы изменения вступили в силу, выполните вход еще раз.</translation>
 <translation id="4488676065623537541">Платежные данные сохранены в Chromium.</translation>
 <translation id="4549794359424059447">В следующих версиях Chromium будет прекращена поддержка Windows XP и Windows Vista.</translation>
-<translation id="4559775032954821361">Выберите
-          меню Chromium &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          &gt;
-          Настройка сети
-          и снимите флажок "Использовать прокси-сервер для локальных подключений".</translation>
 <translation id="4567424176335768812">Вы вошли с помощью аккаунта <ph name="USER_EMAIL_ADDRESS" />. Ваши закладки, история и другие настройки теперь доступны на всех устройствах, где вы используете этот аккаунт.</translation>
 <translation id="457845228957001925">Важная информация о ваших данных в Chromium</translation>
 <translation id="459535195905078186">Приложения Chromium</translation>
@@ -139,14 +128,6 @@
 <translation id="5680901439334282664">войдите в Chromium</translation>
 <translation id="5772805321386874569">(необходимо <ph name="BEGIN_BUTTON" />перезапустить<ph name="END_BUTTON" /> Chromium)</translation>
 <translation id="5796460469508169315">Chromium почти готов к работе</translation>
-<translation id="580822234363523061">Выберите
-          меню Chromium &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          и убедитесь, что в конфигурации отключено использование прокси-сервера или выбрано непосредственное подключение.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5823381412099532241">Не удалось установить последнюю версию Chromium. Обновите браузер, чтобы применить исправления безопасности и воспользоваться новыми замечательными функциями.</translation>
 <translation id="5862307444128926510">Добро пожаловать в Chromium</translation>
@@ -221,9 +202,6 @@
 <translation id="8033665941300843262">Предоставьте браузеру Chromium разрешения, чтобы продолжить работу на этом сайте.</translation>
 <translation id="805745970029938373">Здесь можно просмотреть все оповещения от приложений, расширений и сайтов Chromium.</translation>
 <translation id="8134284582177628525">Если вы работаете за одним компьютером с пользователем <ph name="PROFILE_NAME" />, добавьте свой аккаунт в Chromium для персонального использования браузера. В противном случае выйдите из чужого аккаунта Google.</translation>
-<translation id="8187289872471304532">Выберите
-          Программы &gt; Системные настройки &gt; Сеть &gt; Дополнительно &gt; Прокси
-          и снимите флажки напротив всех прокси-серверов.</translation>
 <translation id="8269379391216269538">Сделайте Chromium лучше</translation>
 <translation id="8453117565092476964">Установочный архив поврежден. Скачайте Chromium ещё раз.</translation>
 <translation id="8493179195440786826">Версия Chromium устарела</translation>
@@ -231,7 +209,6 @@
 <translation id="85843667276690461">Помощь по использованию Chromium</translation>
 <translation id="8586442755830160949">© The Chromium Authors, <ph name="YEAR" /> . Все права защищены.</translation>
 <translation id="8605166112420372522">П&amp;ерезапустить Chromium в режиме рабочего стола</translation>
-<translation id="8610831143142469229">Разрешите доступ к сети для Chromium в настройках брандмауэра и антивирусного ПО.</translation>
 <translation id="8621669128220841554">В процессе установки произошла неизвестная ошибка. Скачайте Chromium ещё раз.</translation>
 <translation id="8628626585870903697">В Chromium нет функции просмотра PDF-файлов, которая нужна для предварительного просмотра при печати.</translation>
 <translation id="8684913864886094367">Работа Chromium была завершена некорректно.</translation>

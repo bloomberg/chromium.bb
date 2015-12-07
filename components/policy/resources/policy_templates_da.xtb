@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="da">
-<translation id="101438888985615157">Roter skærmen med 180 grader</translation>
+<translation id="101438888985615157">Roter skærmen 180 grader</translation>
 <translation id="1017967144265860778">Strømstyring på loginskærmen</translation>
 <translation id="1019101089073227242">Angiv brugerdatamappe</translation>
 <translation id="1022361784792428773">Udvidelses-id'er, som brugeren skal forhindres i at installere (eller * for alle)</translation>
@@ -328,21 +328,6 @@
 
           Hvis denne indstilling ikke konfigureres, tillader <ph name="PRODUCT_NAME" /> brug af
           indbyggede beskedhosts, der er installeret på brugerniveau.</translation>
-<translation id="2393996789386329927">Blokerer adgangen til de angivne webadresser.
-
-      Denne politik forhindrer brugeren i at indlæse websider fra sortlistede webadresser. Sortlisten viser en liste over webadressemønstre, der angiver, hvilke webadresser der føjes til sortlisten.
-
-      De enkelte webadressemønstre kan enten være et mønster for lokale filer eller et generisk webadressemønster. Mønstre for lokale filer vises i formatet "fil://sti", hvor hele stien til den webadresse, der skal blokeres, skal angives. Alle filsystemer, hvor denne sti er angivet som præfiks, vil blive blokeret.
-
-      Et generisk webadressemønster har formatet "skema://host:port/sti".
-      Hvis der er angivet et skema, vil kun det pågældende skema blive blokeret. Hvis præfikset skema:// ikke er angivet, blokeres alle skemaer.
-      Hosten skal angives i form af et hostname eller en IP-adresse. Underdomæner af et hostname vil ligeledes blive blokeret. For at forhindre blokering af underdomæner skal du medtage et "." før navnet på hosten. Det særlige hostname "*" vil blokere alle domæner.
-     Den valgfrie port er et gyldigt portnummer mellem 1 og 65535. Hvis der ikke er angivet et portnummer, blokeres de alle sammen.
-      Hvis den valgfrie sti er angivet, vil kun stier med det pågældende præfiks blive blokeret.
-
-      Undtagelser kan defineres i politikken for hvidlistede webadresser. Disse politikker er begrænset til 1000 poster. Alle efterfølgende poster ignoreres.
-
-      Hvis denne politik ikke er angivet, føjes der ikke nogen webadresser til sortlisten i browseren.</translation>
 <translation id="240213793013362302">Konfigurer baggrundsbillede.
 
       Denne politik tillader, at du konfigurerer baggrundsbilledet, der vises på brugerens skrivebord og på loginskærmen. Politikken indstilles ved at angive den webadresse, hvorfra <ph name="PRODUCT_OS_NAME" /> kan downloade baggrundsbilledet og en kryptografisk hash-værdi, der bruges til at verificere downloadets integritet. Billedet skal være i .jpeg-format, og størrelsen må ikke overstige 16 MB. Webadressen skal være tilgængelig uden nogen form for godkendelsesproces.

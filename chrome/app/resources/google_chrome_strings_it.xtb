@@ -144,19 +144,10 @@ insolite e sbagliate. È possibile che un malintenzionato stia cercando di spacc
 <translation id="5785746630574083988">Il riavvio in modalità Windows 8 causerà la chiusura e il riavvio delle tue app Chrome.</translation>
 <translation id="5855036575689098185">Il software in esecuzione sul computer non è compatibile con Google Chrome.</translation>
 <translation id="5877064549588274448">Canale cambiato. Riavvia il dispositivo per applicare le modifiche.</translation>
-<translation id="5890698319714066019">Impossibile visualizzare la pagina web in Google Chrome perché il computer non è connesso a Internet.</translation>
 <translation id="5931853610562009806">Su Mac, le password possono essere salvate in Accesso Portachiavi e sono accessibili o sincronizzate da parte di altri utenti Chrome che utilizzano lo stesso account OS X.</translation>
 <translation id="5940385492829620908">Il tuoi siti web, i tuoi segnalibri e gli altri contenuti Chrome sempre disponibili e aggiornati qui.</translation>
 <translation id="5941830788786076944">Imposta Google Chrome come browser predefinito</translation>
 <translation id="597770749449734237">Consente di attivare altre scorciatoie da tastiera utili per il debug di Google Chrome.</translation>
-<translation id="6011049234605203654">Seleziona
-          il menu Chrome &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          e verifica che la configurazione sia impostata su "nessun proxy" o "diretta".</translation>
 <translation id="6012342843556706400">Chrome deve avere accesso alla posizione per condividerla con questo sito.</translation>
 <translation id="6014844626092547096">Hai eseguito l'accesso a Chrome. La sincronizzazione è stata disattivata dall'amministratore.</translation>
 <translation id="6049075767726609708">Un amministratore ha installato su questo sistema Google Chrome per tutti gli utenti. L'installazione di Google Chrome a livello di sistema sostituirà l'installazione a livello di utente.</translation>
@@ -177,16 +168,6 @@ insolite e sbagliate. È possibile che un malintenzionato stia cercando di spacc
 <translation id="6676384891291319759">Accesso a Internet</translation>
 <translation id="6757767188268205357">Non mi interessa</translation>
 <translation id="683440813066116847">Regola inbound per consentire il traffico mDNS in Google Chrome Canary.</translation>
-<translation id="6855094794438142393">Seleziona
-          il menu Chrome &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          &gt;
-          Impostazioni LAN
-          e deseleziona la casella di controllo "Utilizza un server proxy per le connessioni LAN".</translation>
 <translation id="6883876366448858277">invia una parola e il contesto circostante alla Ricerca Google affinché possano essere restituiti definizioni, immagini e altri risultati di ricerca.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="6970811910055250180">Aggiornamento del dispositivo in corso...</translation>
@@ -208,8 +189,6 @@ insolite e sbagliate. È possibile che un malintenzionato stia cercando di spacc
 <translation id="7282192067747128786">Chrome - Notifiche (<ph name="QUANTITY" /> da leggere)</translation>
 <translation id="729375352412857283">A breve questo computer non riceverà più gli aggiornamenti di Google Chrome perché Windows XP e Windows Vista non saranno più supportati.</translation>
 <translation id="7339898014177206373">Nuova finestra</translation>
-<translation id="7396375882099008034">Consenti a Chrome di accedere alla rete nelle impostazioni del firewall o del software
-        antivirus.</translation>
 <translation id="7398801000654795464">Hai eseguito l'accesso a Chrome come <ph name="USER_EMAIL_ADDRESS" />. Utilizza lo stesso account per eseguire di nuovo l'accesso.</translation>
 <translation id="7400722733683201933">Informazioni su Google Chrome</translation>
 <translation id="7408085963519505752">Termini di Chrome OS</translation>
@@ -239,9 +218,6 @@ insolite e sbagliate. È possibile che un malintenzionato stia cercando di spacc
 <translation id="8032142183999901390">Dopo avere rimosso il tuo account da Chrome, potresti dover ricaricare le schede aperte perché le modifiche vengano applicate.</translation>
 <translation id="8037887340639533879">Impossibile trovare un'installazione di Google Chrome da aggiornare.</translation>
 <translation id="8129812357326543296">Informazioni su &amp;Google Chrome</translation>
-<translation id="8187289872471304532">Seleziona
-          Applicazioni &gt; Preferenze di Sistema &gt; Network &gt; Avanzate &gt; Proxy
-          e deseleziona i proxy selezionati.</translation>
 <translation id="8205111949707227942">Facoltativo: aiutaci a migliorare Google Chrome OS inviando automaticamente a Google le statistiche sull'utilizzo e segnalazioni sugli arresti anomali.</translation>
 <translation id="8227755444512189073">Google Chrome deve avviare un'applicazione esterna per gestire i link <ph name="SCHEME" />. Il link richiesto è <ph name="PROTOLINK" />.</translation>
 <translation id="8255190535488645436">Google Chrome sta utilizzando videocamera e microfono.</translation>

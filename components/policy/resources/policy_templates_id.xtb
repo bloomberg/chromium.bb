@@ -328,21 +328,6 @@
 
           Jika setelan ini tidak disetel <ph name="PRODUCT_NAME" />
           akan memungkinkan penggunaan host Native Messaging pada tingkat pengguna.</translation>
-<translation id="2393996789386329927">Memblokir akses ke URL yang tercantum.
-
-      Kebijakan ini mencegah pengguna memuat laman web dari URL yang dimasukkan daftar hitam. Daftar hitam memberikan daftar pola URL yang menentukan URL yang akan dimasukkan dalam daftar hitam.
-
-      Setiap pola URL dapat berupa pola file lokal atau pola URL generik. Pola file lokal memiliki format 'file://path', yang jalurnya harus jalur absolut untuk diblokir. Semua lokasi sistem file, jika jalur tersebut adalah awalannya, akan diblokir.
-
-      Pola URL generik memiliki format 'scheme://host:port/path'.
-      Jika disajikan, hanya skema yang ditentukan yang akan diblokir. Jika awalan scheme:// tidak ditentukan, semua skema akan diblokir.
-      Host bersifat wajib dan dapat berupa hostname atau alamat IP. Subdomain pada hostname juga akan diblokir. Agar subdomain tidak diblokir, sertakan '.' sebelum hostname. Hostname khusus '*' akan memblokir semua domain.
-      Port opsional adalah nomor port valid mulai 1 hingga 65535. Jika tidak ada yang ditetapkan, semua port akan diblokir.
-      Jika jalur opsional ditentukan, hanya jalur dengan awalan tersebut yang akan diblokir.
-
-      Pengecualian dapat didefinisikan dalam kebijakan daftar putih URL. Kebijakan ini dibatasi hingga 1000 entri; entri berikutnya akan diabaikan.
-
-      Jika kebijakan ini tidak disetel, tidak ada URL yang akan dimasukkan dalam daftar hitam pada browser.</translation>
 <translation id="240213793013362302">Mengonfigurasi gambar wallpaper.
 
       Kebijakan ini memungkinkan Anda mengonfigurasikan gambar wallpaper yang ditampilkan di desktop dan di latar belakang layar masuk untuk pengguna. Kebijakan ini disetel dengan menetapkan URL tempat <ph name="PRODUCT_OS_NAME" /> dapat mengunduh gambar wallpaper dan potongan kriptografi yang digunakan untuk memverifikasi integritas unduhan. Gambar harus dalam format JPEG dan ukuran filenya tidak boleh melebihi 16 MB. URL harus dapat diakses tanpa autentikasi apa pun.

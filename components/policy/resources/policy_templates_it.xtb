@@ -308,21 +308,6 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 
           Se l'impostazione non viene specificata, in <ph name="PRODUCT_NAME" />
           è consentito utilizzare host di messaggistica nativi a livello di utente.</translation>
-<translation id="2393996789386329927">Consente di impedire l'accesso agli URL in elenco.
-
-      Questa norma consente di impedire all'utente di caricare le pagine web degli URL vietati. Nella lista nera è presente un elenco di pattern URL che indicano gli URL vietati.
-
-      Ogni pattern URL può essere generico oppure riguardare file locali. I pattern relativi a file locali sono nel formato "file://percorso", dove "percorso" deve essere un percorso assoluto da bloccare. Vengono bloccate tutte le posizioni del file system che hanno come prefisso il percorso indicato.
-
-      Un pattern URL generico è nel formato "schema://host:porta/percorso".
-      Se indicato, viene bloccato soltanto lo scherma specificato. Se non viene specificato il prefisso schema://, vengono bloccati tutti gli schemi.
-      Il valore "host" è obbligatorio e può essere un nome host o un indirizzo IP. Vengono bloccati anche i sottodomini di un nome host. Per impedire il blocco dei sottodomini, inserisci un segno "." davanti al nome host. Il nome host speciale "*" consente di bloccare tutti i domini.
-      La porta facoltativa è un numero di porta valido compreso tra 1 e 65535. Se non vengono specificate porte, vengono bloccate tutte le porte.
-      Se viene specificato il percorso facoltativo, vengono bloccati soltanto i percorsi con il prefisso indicato.
-
-      È possibile definire eccezioni nella norma relativa alla whitelist di URL. Per queste norme è possibile definire massimo 1000 voci; le voci in più vengono ignorate.
-
-      Se questa norma non viene impostata, non sarà vietato alcun URL nel browser.</translation>
 <translation id="240213793013362302">Configurazione dell'immagine di sfondo.
 
       Questa norma ti consente di configurare l'immagine di sfondo che viene visualizzata dall'utente sul desktop e sullo sfondo della schermata di accesso. La norma viene impostata specificando l'URL da cui <ph name="PRODUCT_OS_NAME" /> può scaricare l'immagine di sfondo e un hash di crittografia utilizzato per verificare l'integrità del download. L'immagine deve essere in formato JPEG e avere dimensioni non superiori a 16 MB. L'URL deve essere accessibile senza nessuna autenticazione.

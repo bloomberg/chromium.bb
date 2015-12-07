@@ -1,19 +1,26 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="de">
+<translation id="1015255576907412255">Um weitere Informationen zu erhalten, wenden Sie sich an Ihren Systemadministrator.</translation>
 <translation id="1032854598605920125">Im Uhrzeigersinn drehen</translation>
 <translation id="1055184225775184556">&amp;Hinzufügen rückgängig machen</translation>
+<translation id="1066332784716773939">Fehlerdiagnose läuft...</translation>
 <translation id="106701514854093668">Desktop-Lesezeichen</translation>
 <translation id="1080116354587839789">An Breite anpassen</translation>
+<translation id="108346963417674655">Zum Server konnte keine sichere Verbindung hergestellt werden. Möglicherweise hat diese Website zuvor funktioniert, aber auf dem Server ist ein Problem aufgetreten. Die Verbindung zu solchen Websites stellt ein Sicherheitsrisiko für alle Nutzer dar und wurde deshalb deaktiviert.</translation>
 <translation id="1103523840287552314"><ph name="LANGUAGE" /> immer übersetzen</translation>
+<translation id="1105117579475534983">Webseite blockiert</translation>
 <translation id="1113869188872983271">&amp;Neu anordnen rückgängig machen</translation>
 <translation id="111844081046043029">Möchten Sie diese Seite wirklich verlassen?</translation>
 <translation id="112840717907525620">Richtlinien-Cache einwandfrei</translation>
 <translation id="113188000913989374">Unter <ph name="SITE" /> wird Folgendes angezeigt:</translation>
 <translation id="1132774398110320017">AutoFill-Einstellungen für Chrome...</translation>
+<translation id="1146498888431277930">SSL-Verbindungsfehler</translation>
 <translation id="1146673768181266552">Absturz-ID <ph name="CRASH_ID" /> (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat wird vom Betriebssystem Ihres Computers als nicht vertrauenswürdig eingestuft. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.</translation>
 <translation id="1152921474424827756">Rufen Sie eine <ph name="BEGIN_LINK" />im Cache gespeicherte Kopie<ph name="END_LINK" /> von <ph name="URL" /> auf.</translation>
+<translation id="1195447618553298278">Unbekannter Fehler.</translation>
+<translation id="1202290638211552064">Beim Warten auf eine Antwort von einem Upstream-Server ist auf dem Gateway oder Proxyserver eine Zeitüberschreitung aufgetreten.</translation>
 <translation id="121201262018556460">Sie haben versucht, auf <ph name="DOMAIN" /> zuzugreifen, der Server hat jedoch ein Zertifikat mit einem schwachen Schlüssel übermittelt. Ein Hacker könnte den privaten Schlüssel geknackt haben, sodass es sich möglicherweise nicht um den erwarteten Server handelt, sondern Sie stattdessen mit einem Hacker kommunizieren.</translation>
 <translation id="1227224963052638717">Unbekannte Richtlinie</translation>
 <translation id="1227633850867390598">Wert ausblenden</translation>
@@ -26,6 +33,7 @@
 <translation id="1430915738399379752">Drucken</translation>
 <translation id="1455235771979731432">Beim Bestätigen Ihrer Karte ist ein Problem aufgetreten. Überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.</translation>
 <translation id="1491151370853475546">Diese Seite aktualisieren</translation>
+<translation id="1506687042165942984">Zeigt eine gespeicherte (veraltete) Kopie dieser Seite an</translation>
 <translation id="1519264250979466059">Build-Datum</translation>
 <translation id="1549470594296187301">Für diese Funktion muss JavaScript aktiviert sein.</translation>
 <translation id="1559528461873125649">Datei oder Verzeichnis nicht vorhanden</translation>
@@ -49,11 +57,13 @@
 <translation id="1962204205936693436"><ph name="DOMAIN" />-Lesezeichen</translation>
 <translation id="1973335181906896915">Fehler bei der Serialisierung</translation>
 <translation id="1974060860693918893">Erweitert</translation>
+<translation id="201192063813189384">Fehler beim Lesen von Daten aus Cache</translation>
 <translation id="2025186561304664664">Proxy ist auf automatische Konfiguration eingestellt.</translation>
 <translation id="2025623846716345241">Aktualisieren bestätigen</translation>
 <translation id="2030481566774242610">Meinten Sie <ph name="LINK" />?</translation>
 <translation id="2053553514270667976">Postleitzahl</translation>
 <translation id="20817612488360358">Die System-Proxy-Einstellungen sind zur Verwendung angegeben, gleichzeitig wurde aber auch eine explizite Proxy-Konfiguration festgelegt.</translation>
+<translation id="2089090684895656482">Weniger</translation>
 <translation id="2094505752054353250">Domains stimmen nicht überein.</translation>
 <translation id="2096368010154057602">Verwaltungsbezirk</translation>
 <translation id="2113977810652731515">Karte</translation>
@@ -64,17 +74,22 @@
 <translation id="2181821976797666341">Richtlinien</translation>
 <translation id="2212735316055980242">Richtlinie nicht gefunden</translation>
 <translation id="2213606439339815911">Einträge werden abgerufen...</translation>
+<translation id="2214283295778284209">Nicht verfügbar: <ph name="SITE" /></translation>
 <translation id="225207911366869382">Dieser Wert für die Richtlinie ist veraltet.</translation>
 <translation id="2262243747453050782">HTTP-Fehler</translation>
+<translation id="2271281383664374369">Anfragen von Erweiterungen an diese URL wurden vorübergehend eingeschränkt.</translation>
+<translation id="2279770628980885996">Beim Versuch des Servers, die Anforderung zu verarbeiten, ist eine unerwartete Bedingung aufgetreten.</translation>
 <translation id="2282872951544483773">Nicht verfügbare Experimente</translation>
 <translation id="229702904922032456">Ein Stamm- oder Zwischenzertifikat ist abgelaufen.</translation>
 <translation id="2328300916057834155">Ungültiges Lesezeichen bei Index <ph name="ENTRY_INDEX" /> ignoriert</translation>
+<translation id="2345460471437425338">Falsches Zertifikat für Host</translation>
 <translation id="2354001756790975382">Weitere Lesezeichen</translation>
 <translation id="2367567093518048410">Ebene</translation>
 <translation id="2384307209577226199">Standardeinstellung durch Unternehmen</translation>
 <translation id="2386255080630008482">Das Serverzertifikat wurde aufgehoben.</translation>
 <translation id="2392959068659972793">Richtlinien ohne Wert zeigen</translation>
 <translation id="2396249848217231973">&amp;Löschen rückgängig machen</translation>
+<translation id="2400837204278978822">Unbekannter Dateityp</translation>
 <translation id="2413528052993050574">Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat wurde möglicherweise widerrufen. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.</translation>
 <translation id="2455981314101692989">Auf dieser Webseite ist die AutoFill-Funktion für das Formular deaktiviert.</translation>
 <translation id="2479410451996844060">Ungültige Such-URL</translation>
@@ -89,28 +104,39 @@
 <translation id="2609632851001447353">Varianten</translation>
 <translation id="2625385379895617796">Ihre Uhr geht vor.</translation>
 <translation id="2639739919103226564">Status:</translation>
+<translation id="2650446666397867134">Der Zugriff auf die Datei wurde verweigert.</translation>
 <translation id="2653659639078652383">Senden</translation>
 <translation id="2704283930420550640">Wert stimmt nicht mit dem Format überein.</translation>
 <translation id="2721148159707890343">Anfrage erfolgreich</translation>
 <translation id="2728127805433021124">Das Serverzertifikat ist mit einem schwachen Signaturalgorithmus signiert.</translation>
 <translation id="277499241957683684">Fehlender Gerätedatensatz</translation>
+<translation id="2784949926578158345">Verbindung wurde zurückgesetzt.</translation>
 <translation id="2835170189407361413">Formular leeren</translation>
 <translation id="2855922900409897335"><ph name="CREDIT_CARD" /> bestätigen</translation>
+<translation id="2909946352844186028">Eine Netzwerkänderung ist aufgetreten.</translation>
 <translation id="2915500479781995473">Dieser Server konnte nicht nachweisen, dass es sich dabei um <ph name="DOMAIN" /> handelt, da das Sicherheitszertifikat abgelaufen ist. Der Grund hierfür könnte eine fehlerhafte Konfiguration oder ein Angreifer sein, der Ihre Verbindung abfängt. Die Uhr Ihres Computers zeigt derzeit <ph name="CURRENT_TIME" /> an. Ist das korrekt? Falls nicht, stellen Sie die Uhr Ihres Systems richtig ein und aktualisieren Sie dann diese Seite.</translation>
 <translation id="2922350208395188000">Das Serverzertifikat kann nicht überprüft werden.</translation>
 <translation id="2941952326391522266">Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat stammt von <ph name="DOMAIN2" />. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.</translation>
+<translation id="2948083400971632585">Sie können alle für eine Verbindung konfigurierten Proxys auf der Seite "Einstellungen" deaktivieren.</translation>
+<translation id="2950186680359523359">Server hat die Verbindung geschlossen. Es wurden keine Daten gesendet.</translation>
 <translation id="2958431318199492670">Die Netzwerkkonfiguration stimmt nicht mit dem ONC-Standard überein. Die Konfiguration wird unter Umständen nicht vollständig importiert.</translation>
 <translation id="2969319727213777354">Zum Herstellen einer sicheren Verbindung muss die Uhrzeit richtig eingestellt sein. Der Grund hierfür ist, dass Websites sich mithilfe von Zertifikaten identifizieren, die nur für einen bestimmten Zeitraum gelten. Da die Uhrzeit Ihres Geräts falsch ist, kann Google Chrome diese Zertifikate nicht bestätigen.</translation>
 <translation id="2972581237482394796">&amp;Wiederholen</translation>
+<translation id="3005723025932146533">Gespeicherte Kopie anzeigen</translation>
 <translation id="3010559122411665027">Listeneintrag "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">Falscher Richtlinientyp</translation>
+<translation id="3093245981617870298">Sie sind offline.</translation>
 <translation id="3105172416063519923">Geräte-ID:</translation>
+<translation id="3118046075435288765">Server hat die Verbindung unerwartet geschlossen.</translation>
 <translation id="3145945101586104090">Fehler beim Dekodieren der Antwort</translation>
+<translation id="3147485256806412701">Diese Website verwendet eine neue allgemeine Top-Level-Domain.</translation>
 <translation id="3150653042067488994">Vorübergehender Serverfehler</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3174168572213147020">Insel</translation>
 <translation id="3219579145727097045">Geben Sie das Ablaufdatum und den vierstelligen CVC-Code auf der Vorderseite Ihrer Karte ein.</translation>
+<translation id="3225579507836276307">Eine Drittanbietererweiterung hat den Zugang zu dieser Webseite blockiert.</translation>
 <translation id="3225919329040284222">Der Server hat ein Zertifikat übermittelt, das nicht mit den integrierten Erwartungen übereinstimmt. Diese Erwartungen sind zu Ihrem Schutz in bestimmten Websites mit hohen Sicherheitsstandards enthalten.</translation>
+<translation id="3226128629678568754">Klicken Sie auf die Schaltfläche zum erneuten Laden, um die für das Laden der Seite erforderlichen Daten erneut zu senden.</translation>
 <translation id="3228969707346345236">Die Übersetzung ist fehlgeschlagen, weil die Seite bereits auf <ph name="LANGUAGE" /> ist.</translation>
 <translation id="3270847123878663523">&amp;Neu anordnen rückgängig machen</translation>
 <translation id="3286538390144397061">Jetzt neu starten</translation>
@@ -122,70 +148,98 @@
 <translation id="3377188786107721145">Fehler beim Parsen der Richtlinie</translation>
 <translation id="3380365263193509176">Unbekannter Fehler</translation>
 <translation id="3380864720620200369">Client-ID:</translation>
+<translation id="3393716657345709557">Angeforderter Eintrag wurde nicht im Cache gefunden.</translation>
 <translation id="3427342743765426898">&amp;Bearbeiten wiederholen</translation>
 <translation id="3435896845095436175">Aktivieren</translation>
+<translation id="3447661539832366887">Der Besitzer dieses Geräts hat das Dinosaurier-Spiel deaktiviert.</translation>
 <translation id="3450660100078934250">MasterCard</translation>
 <translation id="3452404311384756672">Abrufintervall:</translation>
 <translation id="3462200631372590220">Erweiterte Informationen ausblenden</translation>
 <translation id="3528171143076753409">Serverzertifikat ist nicht vertrauenswürdig.</translation>
 <translation id="3542684924769048008">Passwort verwenden für:</translation>
 <translation id="3583757800736429874">&amp;Verschieben wiederholen</translation>
+<translation id="3586931643579894722">Details ausblenden</translation>
+<translation id="3608308818141211642">Der Client und der Server unterstützen keine gemeinsame SSL-Protokollversion oder Verschlüsselungssammlung. Dieses Problem tritt häufig auf, wenn der Server die RC4-Verschlüsselung erfordert, die nicht mehr als sicher gilt.</translation>
 <translation id="3623476034248543066">Wert zeigen</translation>
 <translation id="3648607100222897006">Diese experimentellen Funktionen können sich jederzeit ändern, abstürzen oder deaktiviert werden. Wir übernehmen keinerlei Gewährleistung für die Folgen der Aktivierung eines dieser Experimente. Es ist sogar möglich, dass Ihr Browser spontan in Flammen aufgeht. Spaß beiseite: Es ist möglich, dass Ihr Browser alle Ihre Daten löscht. Möglicherweise werden auch Ihre Sicherheits- und Datenschutzeinstellungen auf unerwartete Weise manipuliert. Alle von Ihnen aktivierten Experimente werden für alle Nutzer dieses Browsers aktiviert. Seien Sie also vorsichtig, wenn Sie fortfahren.</translation>
 <translation id="3650584904733503804">Überprüfung erfolgreich</translation>
+<translation id="3651020361689274926">Die angeforderte Ressource existiert nicht mehr und es liegt keine Adresse zur Weiterleitung vor. Dies ist voraussichtlich ein dauerhafter Zustand.</translation>
 <translation id="3658742229777143148">Überarbeitung</translation>
 <translation id="370665806235115550">Wird geladen...</translation>
 <translation id="3712624925041724820">Lizenzen aufgebraucht</translation>
 <translation id="3739623965217189342">Von Ihnen kopierter Link</translation>
+<translation id="3748412725338508953">Zu viele Umleitungen.</translation>
 <translation id="375403751935624634">Aufgrund eines Serverfehlers ist die Übersetzung fehlgeschlagen.</translation>
 <translation id="3759461132968374835">Es liegen keine kürzlich gemeldeten Abstürze vor. Abstürze, die bei deaktivierter Absturzberichtsfunktion aufgetreten sind, werden hier nicht angezeigt.</translation>
+<translation id="382518646247711829">Falls Sie einen Proxyserver verwenden...</translation>
 <translation id="3858027520442213535">Datum und Uhrzeit aktualisieren</translation>
 <translation id="3884278016824448484">In Konflikt stehende Gerätekennung</translation>
 <translation id="3885155851504623709">Gemeinde</translation>
+<translation id="3903912596042358459">Der Server hat die Verarbeitung der Anforderung verweigert.</translation>
 <translation id="3934680773876859118">Fehler beim Laden des PDF-Dokuments</translation>
+<translation id="3940082421246752453">Der Server unterstützt die in der Anforderung verwendete HTTP-Version nicht.</translation>
+<translation id="3950924596163729246">Kein Zugriff auf das Netzwerk möglich.</translation>
 <translation id="3963721102035795474">Lesemodus</translation>
 <translation id="4030383055268325496">&amp;Hinzufügen rückgängig machen</translation>
+<translation id="4032534284272647190">Zugriff auf <ph name="URL" /> verweigert</translation>
 <translation id="404928562651467259">Warnung</translation>
 <translation id="4058922952496707368">Schlüssel "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
+<translation id="4060383410180771901">Die Website kann die Anforderung für <ph name="URL" /> nicht verarbeiten.</translation>
 <translation id="4079302484614802869">Die Proxy-Konfiguration ist auf die Verwendung einer PAC-Skript-URL und nicht die von festen Proxyservern eingestellt.</translation>
 <translation id="409504436206021213">Nicht aktualisieren</translation>
 <translation id="4103249731201008433">Seriennummer des Geräts ist ungültig.</translation>
+<translation id="4103763322291513355">Unter &lt;strong&gt;chrome://policy&lt;/strong&gt; finden Sie eine Liste der blockierten URLs und andere Richtlinien, die durch Ihren Systemadministrator erzwungen werden.</translation>
 <translation id="4117700440116928470">Richtlinienbereich wird nicht unterstützt.</translation>
 <translation id="4120075327926916474">Soll Chrome diese Kreditkarteninformationen zum Ausfüllen von Webformularen speichern?</translation>
+<translation id="4147376274874979956">Kein Zugriff auf die Datei</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">Möchten Sie, dass Chromium diese Karte speichert?</translation>
 <translation id="4171400957073367226">Ungültige Bestätigungssignatur</translation>
 <translation id="4176463684765177261">Deaktiviert</translation>
 <translation id="4196861286325780578">&amp;Verschieben wiederholen</translation>
 <translation id="4220128509585149162">Abstürze</translation>
+<translation id="4241404202385006548">Deaktivieren Sie Ihre Erweiterungen und laden Sie die Webseite erneut.</translation>
 <translation id="4250680216510889253">Nein</translation>
 <translation id="4258748452823770588">Fehlerhafte Signatur</translation>
 <translation id="4268298190799576220">Chromium kann Ihre Karte momentan nicht verifizieren. Bitte versuchen Sie es später noch einmal.</translation>
 <translation id="4269787794583293679">(Kein Nutzername)</translation>
+<translation id="4287689875748136217">Die Webseite kann nicht geladen werden, da der Server keine Daten gesendet hat.</translation>
 <translation id="4300246636397505754">Vorschläge für Eltern</translation>
 <translation id="4325863107915753736">Der Artikel wurde nicht gefunden.</translation>
+<translation id="4350711002179453268">Es kann keine sichere Verbindung zum Server hergestellt werden. Möglicherweise liegt ein Problem mit dem Server vor oder es ist ein Client-Authentifizierungszertifikat erforderlich, das Sie nicht haben.</translation>
 <translation id="4372948949327679948">Erwarteter <ph name="VALUE_TYPE" />-Wert</translation>
 <translation id="4377125064752653719">Sie haben versucht, auf <ph name="DOMAIN" /> zuzugreifen, das vom Server übermittelte Zertifikat wurde jedoch vom entsprechenden Aussteller widerrufen. Das bedeutet, dass die vom Server übermittelten Sicherheitsinformationen nicht vertrauenswürdig sind. Möglicherweise kommunizieren Sie mit einem Hacker.</translation>
 <translation id="4394049700291259645">Deaktivieren</translation>
+<translation id="4405141258442788789">Zeitüberschreitung beim Ladevorgang.</translation>
 <translation id="4424024547088906515">Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat wird von Chrome als nicht vertrauenswürdig eingestuft. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.</translation>
 <translation id="443673843213245140">Die Proxy-Nutzung ist deaktiviert, es ist jedoch eine explizite Proxy-Konfiguration festgelegt.</translation>
 <translation id="4506176782989081258">Fehler bei der Überprüfung: <ph name="VALIDATION_ERROR" /></translation>
+<translation id="4522570452068850558">Details</translation>
+<translation id="4535734014498033861">Proxyserver-Verbindung fehlgeschlagen</translation>
 <translation id="4587425331216688090">Adresse aus Chrome entfernen?</translation>
 <translation id="4594403342090139922">&amp;Löschen rückgängig machen</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat enthält Fehler. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.</translation>
+<translation id="4681260323810445443">Sie sind nicht berechtigt, die Webseite unter <ph name="URL" /> anzuzeigen. Möglicherweise müssen Sie sich anmelden.</translation>
+<translation id="4697214168136963651"><ph name="URL" /> wurde blockiert.</translation>
 <translation id="4726672564094551039">Richtlinien neu laden</translation>
 <translation id="4728558894243024398">Plattform</translation>
 <translation id="4744603770635761495">Ausführbarer Pfad</translation>
+<translation id="4764776831041365478">Die Webseite unter <ph name="URL" /> ist möglicherweise vorübergehend nicht verfügbar oder wurde dauerhaft an eine neue Webadresse verschoben.</translation>
 <translation id="4771973620359291008">Ein unbekannter Fehler ist aufgetreten.</translation>
+<translation id="477518548916168453">Der Server unterstützt nicht die erforderliche Funktion, um die Anforderung zu erfüllen.</translation>
+<translation id="4779052991835840224">Eine sichere Verbindung kann nicht hergestellt werden, weil auf dieser Website ein nicht unterstütztes Protokoll oder eine nicht unterstützte Verschlüsselungssammlung verwendet wird. Dieses Problem tritt häufig auf, wenn der Server die RC4-Verschlüsselung erfordert, die nicht mehr als sicher gilt.</translation>
+<translation id="4786993863723020412">Cache-Lesefehler</translation>
 <translation id="4800132727771399293">Prüfen Sie Ihr Ablaufdatum und Ihren CVC und versuchen Sie es dann erneut.</translation>
 <translation id="4813512666221746211">Netzwerkfehler</translation>
 <translation id="4816492930507672669">An Seite anpassen</translation>
 <translation id="4850886885716139402">Anzeigen</translation>
 <translation id="4923417429809017348">Diese Seite wurde von einer unbekannten Sprache in <ph name="LANGUAGE_LANGUAGE" /> übersetzt.</translation>
 <translation id="4926049483395192435">Angabe erforderlich</translation>
+<translation id="4980112683975062744">Doppelte Header vom Server erhalten</translation>
 <translation id="498957508165411911">Übersetzen (<ph name="ORIGINAL_LANGUAGE" /> &gt; <ph name="TARGET_LANGUAGE" />)?</translation>
 <translation id="5019198164206649151">Sicherungsspeicher ist fehlerhaft.</translation>
+<translation id="5023310440958281426">Informieren Sie sich über die von Ihrem Administrator festgelegten Richtlinien.</translation>
 <translation id="5031870354684148875">Über Google Übersetzer</translation>
 <translation id="5045550434625856497">Falsches Passwort</translation>
 <translation id="5065199687811594072">Soll Chromium diese Kreditkartendaten zum Ausfüllen von Webformularen speichern?</translation>
@@ -199,16 +253,20 @@
 <translation id="5179510805599951267">Nicht auf <ph name="ORIGINAL_LANGUAGE" />? Diesen Fehler melden</translation>
 <translation id="5190835502935405962">Lesezeichenleiste</translation>
 <translation id="5199729219167945352">Experimente</translation>
+<translation id="5228309736894624122">SSL-Protokollfehler</translation>
 <translation id="5251803541071282808">Cloud</translation>
 <translation id="5295309862264981122">Navigation bestätigen</translation>
 <translation id="5299298092464848405">Fehler beim Parsen der Richtlinie</translation>
+<translation id="5303618139271450299">Diese Webseite wurde nicht gefunden.</translation>
 <translation id="5308689395849655368">Die Absturzberichtsfunktion ist deaktiviert.</translation>
 <translation id="5317780077021120954">Speichern</translation>
 <translation id="536296301121032821">Fehler beim Speichern der Richtlinieneinstellungen</translation>
 <translation id="540969355065856584">Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat ist zurzeit ungültig. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.</translation>
 <translation id="5439770059721715174">Schemavalidierungsfehler in "<ph name="ERROR_PATH" />": <ph name="ERROR" /></translation>
+<translation id="5447330194051379405">Alle gespeicherten Seiten anzeigen</translation>
 <translation id="5455374756549232013">Zeitstempel der Richtlinie ist fehlerhaft.</translation>
 <translation id="5470861586879999274">&amp;Bearbeiten wiederholen</translation>
+<translation id="5498951625591520696">Der Server konnte nicht erreicht werden.</translation>
 <translation id="5509780412636533143">Verwaltete Lesezeichen</translation>
 <translation id="5523118979700054094">Richtlinienname</translation>
 <translation id="552553974213252141">Wurde der Text korrekt extrahiert?</translation>
@@ -223,45 +281,69 @@
 <translation id="5720705177508910913">Aktueller Nutzer</translation>
 <translation id="5813119285467412249">&amp;Hinzufügen wiederholen</translation>
 <translation id="5872918882028971132">Vorschläge für Eltern</translation>
+<translation id="5880867612172997051">Netzwerkzugriff unterbrochen</translation>
+<translation id="5900623698597156974">Ein TLS-1.0-Fallback konnte einen Handshake mit dem Server durchführen, TLS-1.0-Fallbacks werden jedoch nicht mehr akzeptiert. Der Server muss aktualisiert werden, um die Versionsaushandlung korrekt zu implementieren, und sollte vorzugsweise TLS 1.2 unterstützen.</translation>
 <translation id="59107663811261420">Dieser Kartentyp wird von Google Payments für diesen Händler nicht unterstützt. Bitte verwenden Sie eine andere Karte.</translation>
 <translation id="59174027418879706">Aktiviert</translation>
+<translation id="5949910269212525572">Die DNS-Adresse des Servers kann nicht aufgelöst werden.</translation>
 <translation id="5975083100439434680">Verkleinern</translation>
 <translation id="5989320800837274978">Weder feste Proxyserver noch eine PAC-Skript-URL sind festgelegt.</translation>
+<translation id="5990559369517809815">Anfragen an den Server wurden durch eine Erweiterung blockiert.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">Schließen</translation>
 <translation id="604124094241169006">Automatisch</translation>
+<translation id="6042308850641462728">Mehr</translation>
 <translation id="6060685159320643512">Vorsichtig, diese Experimente können gefährlich sein!</translation>
+<translation id="6066742401428748382">Der Zugriff auf die Webseite wurde verweigert.</translation>
 <translation id="6099520380851856040">Aufgetreten am <ph name="CRASH_TIME" /></translation>
 <translation id="6151417162996330722">Die Gültigkeitsdauer des Serverzertifikats ist zu lang.</translation>
 <translation id="6154808779448689242">Zurückgegebenes Token der Richtlinie entspricht nicht dem aktuellen Token.</translation>
 <translation id="6165508094623778733">Weitere Informationen</translation>
+<translation id="6203231073485539293">Bitte überprüfen Sie Ihre Internetverbindung.</translation>
 <translation id="6218753634732582820">Adresse aus Chromium entfernen?</translation>
+<translation id="6232139169545176020">URI-Schema wird nicht unterstützt.</translation>
+<translation id="6237614789842758826">Führen Sie eine Google-Suche durch.</translation>
 <translation id="6259156558325130047">&amp;Neu anordnen rückgängig machen</translation>
 <translation id="6263376278284652872"><ph name="DOMAIN" />-Lesezeichen</translation>
+<translation id="6268647269805730940">Die Schritte zur Erstanmeldung wurden auf diesem Gerät noch nicht beendet.</translation>
 <translation id="6282194474023008486">Postleitzahl</translation>
+<translation id="6321917430147971392">Überprüfen Sie die DNS-Einstellungen.</translation>
+<translation id="6328639280570009161">Deaktivieren Sie die Netzwerkvervollständigung.</translation>
 <translation id="6337534724793800597">Richtlinien nach Name filtern</translation>
 <translation id="6342069812937806050">Abgeschlossen</translation>
 <translation id="6355080345576803305">Überschreibung öffentlicher Sitzung</translation>
 <translation id="6387478394221739770">Interessiert an coolen neuen Chrome-Funktionen? Testen Sie unsere Betaversion unter chrome.com/beta.</translation>
+<translation id="6391832066170725637">Die Datei oder das Verzeichnis konnte nicht gefunden werden.</translation>
+<translation id="641480858134062906"><ph name="URL" /> konnte nicht geladen werden</translation>
 <translation id="6445051938772793705">Land</translation>
 <translation id="6458467102616083041">Ignoriert, da Standardsuche durch Richtlinie deaktiviert</translation>
 <translation id="647261751007945333">Geräterichtlinien</translation>
 <translation id="6489534406876378309">Hochladen von Abstürzen starten</translation>
+<translation id="6500116422101723010">Der Server kann die Anforderung zurzeit nicht verarbeiten. Dieser Code deutet auf einen vorübergehenden Zustand hin, der Server steht nach einer Verzögerung wieder zur Verfügung.</translation>
 <translation id="6512448926095770873">Diese Seite verlassen</translation>
+<translation id="6516193643535292276">Verbindung zum Internet konnte nicht hergestellt werden.</translation>
 <translation id="6529602333819889595">&amp;Löschen wiederholen</translation>
+<translation id="6533019874004191247">URL nicht unterstützt</translation>
 <translation id="6550675742724504774">Optionen</translation>
+<translation id="6626108645084335023">Warten auf DNS-Sonde</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" />-Suche</translation>
+<translation id="6637478299472506933">Fehler beim Download</translation>
+<translation id="6640442327198413730">Cachefehler</translation>
 <translation id="6644283850729428850">Diese Richtlinie ist veraltet.</translation>
 <translation id="6646897916597483132">Geben Sie den vierstelligen CVC-Code auf der Vorderseite Ihrer Karte ein.</translation>
 <translation id="6671697161687535275">Vorschlag für das Formular aus Chromium entfernen?</translation>
 <translation id="674375294223700098">Fehler wegen unbekanntem Serverzertifikat</translation>
 <translation id="6753269504797312559">Wert der Richtlinie</translation>
+<translation id="6771079623344431310">Verbindung zum Proxyserver kann nicht hergestellt werden.</translation>
+<translation id="6781404225664080496">Anfragen an diese URL wurden vorübergehend reduziert.</translation>
+<translation id="6830600606572693159">Die Webseite unter <ph name="URL" /> ist zurzeit nicht verfügbar. Möglicherweise ist sie überlastet oder wird gerade gewartet.</translation>
 <translation id="6831043979455480757">Übersetzen</translation>
 <translation id="6839929833149231406">Stadtteil</translation>
 <translation id="6874604403660855544">&amp;Hinzufügen wiederholen</translation>
 <translation id="6891596781022320156">Richtlinienebene wird nicht unterstützt.</translation>
 <translation id="6897140037006041989">User-Agent</translation>
 <translation id="6915804003454593391">Nutzer:</translation>
+<translation id="6948142510520900350">Ihr &lt;strong&gt;Systemadministrator&lt;/strong&gt; hat den Zugriff auf diese Webseite blockiert.</translation>
 <translation id="6957887021205513506">Das Zertifikat des Servers ist möglicherweise eine Fälschung.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6965978654500191972">Gerät</translation>
@@ -269,17 +351,22 @@
 <translation id="6973656660372572881">Sowohl feste Proxyserver als auch eine PAC-Skript-URL sind festgelegt.</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7050187094878475250">Sie haben versucht, <ph name="DOMAIN" /> zu erreichen. Der Server hat jedoch ein Zertifikat präsentiert, dessen Gültigkeitsdauer zu lang ist, um vertrauenswürdig zu sein.</translation>
+<translation id="7052500709156631672">Das Gateway oder der Proxyserver hat eine ungültige Antwort von einem Upstream-Server erhalten.</translation>
 <translation id="7087282848513945231">Landkreis</translation>
 <translation id="7108649287766967076">Bei der Übersetzung (<ph name="TARGET_LANGUAGE" />) ist ein Fehler aufgetreten.</translation>
+<translation id="7117303293717852287">Laden Sie die Webseite erneut.</translation>
 <translation id="7139724024395191329">Emirat</translation>
+<translation id="7148804936871729015">Der Server für <ph name="URL" /> hat zu lange zum Antworten benötigt.  Möglicherweise ist er überlastet.</translation>
 <translation id="7179921470347911571">Jetzt neu starten</translation>
 <translation id="7180611975245234373">Aktualisieren</translation>
 <translation id="7182878459783632708">Keine Richtlinien festgelegt</translation>
 <translation id="7186367841673660872">Diese Seite wurde von<ph name="ORIGINAL_LANGUAGE" />in<ph name="LANGUAGE_LANGUAGE" />übersetzt.</translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="7208899522964477531"><ph name="SITE_NAME" /> nach <ph name="SEARCH_TERMS" /> durchsuchen</translation>
+<translation id="721197778055552897"><ph name="BEGIN_LINK" />Weitere Informationen<ph name="END_LINK" /> zu diesem Problem.</translation>
 <translation id="7225807090967870017">Build-ID</translation>
 <translation id="725866823122871198">Es kann keine private Verbindung zu <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> hergestellt werden, weil Datum und Uhrzeit Ihres Computers falsch sind (<ph name="DATE_AND_TIME" />).</translation>
+<translation id="7269802741830436641">Diese Webseite weist eine Weiterleitung auf.</translation>
 <translation id="7275334191706090484">Verwaltete Lesezeichen</translation>
 <translation id="7298195798382681320">Empfohlen</translation>
 <translation id="7334320624316649418">&amp;Neu anordnen wiederholen</translation>
@@ -289,10 +376,13 @@
 <translation id="7419106976560586862">Profilpfad</translation>
 <translation id="7424977062513257142">Auf einer in dieser Webseite eingebetteten Seite wird Folgendes angezeigt:</translation>
 <translation id="7441627299479586546">Falsche(r) Nutzername/Domain der Richtlinie</translation>
+<translation id="7450732239874446337">Netzwerk-E/A unterbrochen</translation>
 <translation id="7485870689360869515">Keine Daten gefunden</translation>
 <translation id="7514365320538308">Herunterladen</translation>
+<translation id="7518003948725431193">Für folgende Webadresse wurde keine Webseite gefunden: <ph name="URL" />.</translation>
 <translation id="7537536606612762813">Verbindlich</translation>
 <translation id="7542995811387359312">Die Funktion zur automatischen Ausfüllung der Kreditkartendaten ist deaktiviert, da dieses Formular keine sichere Verbindung nutzt.</translation>
+<translation id="7549584377607005141">Damit diese Webseite richtig angezeigt wird, werden die Daten benötigt, die Sie zuvor eingegeben haben. Sie können diese Daten erneut senden, dabei werden jedoch sämtliche Aktionen wiederholt, die zuvor durch diese Seite ausgeführt wurden.</translation>
 <translation id="7567204685887185387">Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat wurde möglicherweise in betrügerischer Absicht ausgegeben. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.</translation>
 <translation id="7568593326407688803">Diese Seite ist auf<ph name="ORIGINAL_LANGUAGE" />Soll sie übersetzt werden?</translation>
 <translation id="7569952961197462199">Kreditkarte aus Chrome entfernen?</translation>
@@ -300,16 +390,21 @@
 <translation id="7592362899630581445">Das Serverzertifikat verstößt gegen Namensbeschränkungen.</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE" /> nie übersetzen</translation>
 <translation id="7610193165460212391">Wert liegt außerhalb des zulässigen Bereichs (<ph name="VALUE" />).</translation>
+<translation id="7614030880636783720">WLAN und mobile Daten sind nicht verfügbar. Die Seite kann geladen werden, sobald das Gerät mit einem Netzwerk verbunden ist.</translation>
 <translation id="7637571805876720304">Kreditkarte aus Chromium entfernen?</translation>
+<translation id="7643817847124207232">Die Internetverbindung wurde unterbrochen.</translation>
 <translation id="7674629440242451245">Interessiert an coolen neuen Chrome-Funktionen? Testen Sie unsere Dev-Version unter chrome.com/dev.</translation>
 <translation id="7752995774971033316">Nicht verwaltet</translation>
 <translation id="7761701407923456692">Das Serverzertifikat stimmt nicht mit der URL überein.</translation>
 <translation id="777702478322588152">Präfektur</translation>
+<translation id="778579833039460630">Keine Daten empfangen</translation>
 <translation id="7791543448312431591">Hinzufügen</translation>
 <translation id="780301667611848630">Kein Interesse</translation>
 <translation id="7805768142964895445">Status</translation>
 <translation id="7813600968533626083">Vorschlag für das Formular aus Chrome entfernen?</translation>
+<translation id="7839809549045544450">Der öffentliche Ephemeral-Diffie-Hellman-Schlüssel des Servers ist unzulänglich.</translation>
 <translation id="7887683347370398519">Prüfen Sie Ihren CVC und versuchen Sie es dann erneut.</translation>
+<translation id="790025292736025802"><ph name="URL" /> wurde nicht gefunden</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7938958445268990899">Serverzertifikat ist noch nicht gültig.</translation>
 <translation id="7951415247503192394">(32-Bit)</translation>
@@ -319,22 +414,31 @@
 <translation id="7983301409776629893"><ph name="ORIGINAL_LANGUAGE" /> immer auf <ph name="TARGET_LANGUAGE" /> übersetzen</translation>
 <translation id="7988324688042446538">Desktop-Lesezeichen</translation>
 <translation id="7995512525968007366">Nicht angegeben</translation>
+<translation id="8016174103774548813">SSL-Server wahrscheinlich veraltet</translation>
 <translation id="8034522405403831421">Diese Seite ist auf <ph name="SOURCE_LANGUAGE" />. In folgende Sprache übersetzen: <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="8088680233425245692">Der Artikel kann nicht angezeigt werden.</translation>
 <translation id="8091372947890762290">Aktivierung auf dem Server steht noch aus.</translation>
+<translation id="8150722005171944719">Die Datei unter <ph name="URL" /> kann nicht gelesen werden. Sie wurde möglicherweise entfernt oder verschoben oder die Dateiberechtigungen verhindern den Zugriff.</translation>
 <translation id="8194797478851900357">&amp;Verschieben rückgängig machen</translation>
 <translation id="8201077131113104583">Ungültige Update-URL für Erweiterung mit der ID "<ph name="EXTENSION_ID" />"</translation>
+<translation id="8204086856545141093">An den Server gerichtete Anfragen wurden durch eine Richtlinie blockiert.</translation>
+<translation id="820791781874064845">Diese Webseite wurde durch eine Erweiterung blockiert.</translation>
 <translation id="8208216423136871611">Nicht speichern</translation>
 <translation id="8218327578424803826">Zugewiesener Standort:</translation>
 <translation id="8249320324621329438">Letzter Abruf:</translation>
+<translation id="8289355894181816810">Wenn Sie weitere Informationen dazu benötigen, kann Ihnen Ihr Netzwerkadministrator weiterhelfen.</translation>
 <translation id="8294431847097064396">Quelle</translation>
+<translation id="8295070100601117548">Serverfehler</translation>
 <translation id="8308427013383895095">Die Übersetzung ist aufgrund eines Problems mit der Netzwerkverbindung fehlgeschlagen.</translation>
 <translation id="8311778656528046050">Möchten Sie diese Seite wirklich aktualisieren?</translation>
 <translation id="8349305172487531364">Lesezeichenleiste</translation>
 <translation id="8364627913115013041">Nicht eingerichtet</translation>
 <translation id="8412145213513410671">Abstürze (<ph name="CRASH_COUNT" />)</translation>
+<translation id="8428213095426709021">Einstellungen</translation>
 <translation id="8437238597147034694">&amp;Verschieben rückgängig machen</translation>
 <translation id="8488350697529856933">Gilt für</translation>
+<translation id="8494979374722910010">Die Verbindung zum Server kann nicht hergestellt werden.</translation>
+<translation id="8515737884867295000">Zertifikatbasierte Authentifizierung fehlgeschlagen</translation>
 <translation id="8530504477309582336">Dieser Kartentyp wird von Google Payments nicht unterstützt. Bitte verwenden Sie eine andere Karte.</translation>
 <translation id="8553075262323480129">Die Übersetzung ist fehlgeschlagen, weil die Sprache der Seite nicht ermittelt werden konnte.</translation>
 <translation id="8559762987265718583">Es kann keine private Verbindung zu <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> hergestellt werden, weil Datum und Uhrzeit Ihres Geräts falsch sind (<ph name="DATE_AND_TIME" />).</translation>
@@ -342,6 +446,7 @@
 <translation id="8647750283161643317">Alle auf Standardeinstellung zurücksetzen</translation>
 <translation id="8713130696108419660">Erste Signatur ungültig</translation>
 <translation id="8725066075913043281">Erneut versuchen</translation>
+<translation id="8729518820755801792">Chrome kann URL nicht öffnen</translation>
 <translation id="8738058698779197622">Zum Aufbau einer sicheren Verbindung muss die Uhrzeit richtig eingestellt sein. Der Grund hierfür ist, dass Websites sich mithilfe von Zertifikaten identifizieren, die nur für einen bestimmten Zeitraum gelten. Da die Uhrzeit Ihres Geräts falsch ist, kann Chromium diese Zertifikate nicht bestätigen.</translation>
 <translation id="8790007591277257123">&amp;Löschen wiederholen</translation>
 <translation id="8798099450830957504">Standardeinstellung</translation>
@@ -356,14 +461,20 @@
 <translation id="8876793034577346603">Fehler beim Parsen der Netzwerkkonfiguration</translation>
 <translation id="8891727572606052622">Ungültiger Proxy-Modus</translation>
 <translation id="889901481107108152">Leider steht dieses Experiment auf Ihrer Plattform nicht zur Verfügung.</translation>
+<translation id="890308499387283275">Chrome kann Datei nicht herunterladen.</translation>
 <translation id="8903921497873541725">Vergrößern</translation>
 <translation id="8932102934695377596">Ihre Uhr geht nach.</translation>
 <translation id="8940229512486821554"><ph name="EXTENSION_NAME" />-Befehl ausführen: <ph name="SEARCH_TERMS" /></translation>
 <translation id="8971063699422889582">Das Serverzertifikat ist abgelaufen.</translation>
 <translation id="8988760548304185580">Geben Sie das Ablaufdatum und den dreistelligen CVC-Code auf der Rückseite Ihrer Karte ein.</translation>
+<translation id="9013589315497579992">Ungültiges Zertifikat für SSL-Clientauthentifizierung</translation>
 <translation id="901974403500617787">Parameter, die systemweit gelten, können nur vom Eigentümer festgelegt werden: <ph name="OWNER_EMAIL" />.</translation>
+<translation id="9020142588544155172">Server hat die Verbindung abgelehnt.</translation>
+<translation id="9020278534503090146">Diese Webseite ist nicht verfügbar.</translation>
 <translation id="9020542370529661692">Die Seite wurde übersetzt und liegt nun auf <ph name="TARGET_LANGUAGE" /> vor.</translation>
+<translation id="904949795138183864">Die Webseite unter <ph name="URL" /> existiert nicht mehr.</translation>
 <translation id="9049981332609050619">Sie haben versucht, auf <ph name="DOMAIN" /> zuzugreifen, der Server hat sich jedoch mit einem ungültigen Zertifikat ausgewiesen.</translation>
+<translation id="9086455579313502267">Kein Zugriff auf das Netzwerk</translation>
 <translation id="9125941078353557812">Geben Sie den dreistelligen CVC-Code auf der Rückseite Ihrer Karte ein.</translation>
 <translation id="9137013805542155359">Original anzeigen</translation>
 <translation id="9148507642005240123">&amp;Bearbeiten rückgängig machen</translation>

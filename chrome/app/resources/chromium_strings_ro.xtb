@@ -47,7 +47,6 @@
 <translation id="2486653164587200256">Este posibil ca Chromium să nu funcționeze corespunzător, deoarece nu mai este acceptat pe Windows XP sau Windows Vista.</translation>
 <translation id="2535480412977113886">Sistemul de operare Chromium nu a putut sincroniza datele, deoarece detaliile de conectare pentru contul dvs. nu sunt actualizate.</translation>
 <translation id="2558641060352364164">Acest site folosește pluginul Chromium Frame, care nu va mai fi acceptat în curând. Dezinstalează-l și fă upgrade la un browser modern.</translation>
-<translation id="2565260267992448464">Chromium nu poate afișa pagina web, deoarece computerul nu este conectat la internet.</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
 <translation id="2602806952220118310">Chromium – Notificări</translation>
 <translation id="2636877269779209383">Chromium are nevoie de acces la camera foto pentru a-l acorda acestui site.</translation>
@@ -109,16 +108,6 @@
 <translation id="4458285410772214805">Pentru ca modificarea să fie aplicată, deconectați-vă și conectați-vă din nou.</translation>
 <translation id="4488676065623537541">Detaliile de facturare au fost salvate în Chromium.</translation>
 <translation id="4549794359424059447">Versiunile Chromium ulterioare nu vor mai accepta Windows XP sau Windows Vista.</translation>
-<translation id="4559775032954821361">Accesați
-          meniul Chromium &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          &gt;
-          Setări LAN
-          și debifați caseta „Utilizați un server proxy pentru LAN”.</translation>
 <translation id="4567424176335768812">V-ați conectat ca <ph name="USER_EMAIL_ADDRESS" />. Acum vă puteți accesa marcajele, istoricul și alte setări de pe toate dispozitivele pe care v-ați conectat.</translation>
 <translation id="457845228957001925">Informații importante cu privire la datele dvs. Chromium</translation>
 <translation id="459535195905078186">Aplicații Chromium</translation>
@@ -137,17 +126,9 @@
 <translation id="549669000822060376">Așteaptă până când Chromium instalează cele mai recente actualizări de sistem.</translation>
 <translation id="5563479599352954471">Caută cu o atingere</translation>
 <translation id="5620765574781326016">Află despre subiectele de pe site-uri fără să părăsești pagina.</translation>
-<translation id="5680901439334282664">conectează-te în Chromium</translation>
+<translation id="5680901439334282664">conectează-te la Chromium</translation>
 <translation id="5772805321386874569">(necesită <ph name="BEGIN_BUTTON" />repornirea<ph name="END_BUTTON" /> Chromium)</translation>
 <translation id="5796460469508169315">Chromium este aproape configurat.</translation>
-<translation id="580822234363523061">Accesați
-          meniul Chromium &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          și asigurați-vă că aveți configurația setată la „fără proxy” sau „direct”.</translation>
 <translation id="5820394555380036790">Sistemul de operare Chromium</translation>
 <translation id="5823381412099532241">Chromium nu s-a putut actualiza automat la cea mai recentă versiune, astfel încât pierdeți noi funcții excelente și remedieri de securitate. Trebuie să actualizați Chromium.</translation>
 <translation id="5862307444128926510">Bun venit la Chromium</translation>
@@ -224,9 +205,6 @@ Chromium nu poate recupera setările.</translation>
 <translation id="8033665941300843262">Chromium are nevoie de acces la permisiuni pentru a-l acorda acestui site.</translation>
 <translation id="805745970029938373">Aici puteți vedea toate notificările de la aplicațiile, extensiile și site-urile web Chromium.</translation>
 <translation id="8134284582177628525">Dacă folosești acest computer în comun cu <ph name="PROFILE_NAME" />, adaugă-te în Chromium pentru a naviga separat. În caz contrar, deconectează Contul Google al celuilalt utilizator.</translation>
-<translation id="8187289872471304532">Accesați
-          Applications (Aplicații) &gt; System Preferences (Preferințe de sistem) &gt; Network (Rețea) &gt; Advanced (Avansat) &gt; Proxies (Servere proxy)
-          și debifați toate serverele proxy selectate.</translation>
 <translation id="8269379391216269538">Să îmbunătățim Chromium</translation>
 <translation id="8453117565092476964">Arhiva programului de instalare este deteriorată sau nevalidă. Descărcați din nou Chromium.</translation>
 <translation id="8493179195440786826">Chromium nu este actualizat</translation>
@@ -234,8 +212,6 @@ Chromium nu poate recupera setările.</translation>
 <translation id="85843667276690461">Obțineți ajutor în legătură cu utilizarea Chromium</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> The Chromium Authors. Toate drepturile rezervate.</translation>
 <translation id="8605166112420372522">&amp;Repornește Chromium pe desktop</translation>
-<translation id="8610831143142469229">Permiteți Chromium să acceseze rețeaua din setările pentru firewall sau
-        antivirus.</translation>
 <translation id="8621669128220841554">Instalarea nu a reușit din cauza unei erori neprecizate. Descărcați Chromium din nou.</translation>
 <translation id="8628626585870903697">Chromium nu include vizualizatorul PDF care este necesar pentru funcționarea Previzualizării înainte de printare.</translation>
 <translation id="8684913864886094367">Chromium nu s-a închis corect.</translation>

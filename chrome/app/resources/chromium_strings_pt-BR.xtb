@@ -47,7 +47,6 @@
 <translation id="2486653164587200256">É possível que o Chromium não funcione corretamente, porque ele não é mais compatível com o Windows XP ou Windows Vista.</translation>
 <translation id="2535480412977113886">O Chromium OS não pôde sincronizar seus dados porque os detalhes de login da sua conta estão desatualizados.</translation>
 <translation id="2558641060352364164">Este site está usando o plug-in Chromium Frame, que não será mais compatível em breve. Desinstale-o e faça upgrade para um navegador moderno.</translation>
-<translation id="2565260267992448464">O Chromium não pode exibir a página da Web porque seu computador não está conectado à Internet.</translation>
 <translation id="2572494885440352020">Assistente do Chromium</translation>
 <translation id="2602806952220118310">Chromium – Notificações</translation>
 <translation id="2636877269779209383">O Chromium precisa de acesso à câmera para compartilhá-la com este site.</translation>
@@ -108,16 +107,6 @@ incomuns e incorretas. Isso pode acontecer quando que um invasor está fingindo 
 <translation id="4458285410772214805">Saia e faça login novamente para que esta alteração entre em vigor.</translation>
 <translation id="4488676065623537541">Seus dados para cobrança foram salvos no Chromium.</translation>
 <translation id="4549794359424059447">As futuras versões do Chromium não serão mais compatível com o Windows XP ou Windows Vista.</translation>
-<translation id="4559775032954821361">Vá para
-          o menu do Chromium &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          &gt;
-          Configurações da LAN
-          e desmarque a caixa de seleção "Usar um servidor proxy para a rede local".</translation>
 <translation id="4567424176335768812">Você está conectado como <ph name="USER_EMAIL_ADDRESS" />. Agora você pode acessar seus favoritos, histórico e outras configurações em todos os seus dispositivos conectados.</translation>
 <translation id="457845228957001925">Informação importante sobre seus dados do Chromium</translation>
 <translation id="459535195905078186">Aplicativos do Chromium</translation>
@@ -139,14 +128,6 @@ incomuns e incorretas. Isso pode acontecer quando que um invasor está fingindo 
 <translation id="5680901439334282664">fazer login no Chromium</translation>
 <translation id="5772805321386874569">(requer a <ph name="BEGIN_BUTTON" />reinicialização<ph name="END_BUTTON" /> do Chromium)</translation>
 <translation id="5796460469508169315">O Chromium está quase pronto.</translation>
-<translation id="580822234363523061">Vá para
-          o menu do Chromium &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          e verifique se sua configuração está definida como "Sem proxy" ou "Direta".</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5823381412099532241">Não foi possível atualizar o Chromium para a versão mais recente. Com isso, você está perdendo novos recursos e correções de segurança incríveis. Atualize o Chromium.</translation>
 <translation id="5862307444128926510">Bem-vindo ao Chromium</translation>
@@ -219,9 +200,6 @@ incomuns e incorretas. Isso pode acontecer quando que um invasor está fingindo 
 <translation id="8033665941300843262">O Chromium precisa de acesso às permissões para compartilhá-las com este site.</translation>
 <translation id="805745970029938373">Veja aqui todas suas notificações de aplicativos, extensões e websites do Chromium.</translation>
 <translation id="8134284582177628525">Se você compartilha este computador com <ph name="PROFILE_NAME" />, adicione seu perfil ao Chromium para navegar separadamente. Caso contrário, desconecte sua Conta do Google.</translation>
-<translation id="8187289872471304532">Vá para
-          Aplicativos &gt; Preferências do Sistema &gt; Rede &gt; Avançado &gt; Proxies
-          e desmarque todos os proxies que estiverem selecionados.</translation>
 <translation id="8269379391216269538">Ajudar a melhorar o Chromium</translation>
 <translation id="8453117565092476964">O arquivo de instalação está corrompido ou não é válido. Faça o download do Chromium novamente.</translation>
 <translation id="8493179195440786826">O Chromium está desatualizado</translation>
@@ -229,8 +207,6 @@ incomuns e incorretas. Isso pode acontecer quando que um invasor está fingindo 
 <translation id="85843667276690461">Obter ajuda para usar o Chromium</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Autores do Chromium. Todos os direitos reservados.</translation>
 <translation id="8605166112420372522">&amp;Reiniciar o Chromium na área de trabalho</translation>
-<translation id="8610831143142469229">Permitir que o Chromium acesse a rede em suas configurações de
-        firewall ou antivírus.</translation>
 <translation id="8621669128220841554">Falha na instalação devido a um erro não especificado. Faça o download do Chromium novamente.</translation>
 <translation id="8628626585870903697">O Chromium não inclui o visualizador de PDF que é necessário para que a visualização de impressão funcione.</translation>
 <translation id="8684913864886094367">O Chromium não foi encerrado corretamente.</translation>

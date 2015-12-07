@@ -374,21 +374,6 @@
 
           Jei šis nustatymas nenustatytas, „<ph name="PRODUCT_NAME" />“ leis naudoti
           savosios susirašinėjimo pranešimais programos prieglobą naudotojo lygiu.</translation>
-<translation id="2393996789386329927">Užblokuojama galimybė pasiekti sąraše pateiktus URL.
-
-      Naudojant šią politiką naudotojams neleidžiama įkelti tinklalapių iš juodojo URL sąrašo. Juodajame sąraše pateikiami URL šablonai, nurodantys, kurie URL bus įtraukti į juodąjį sąrašą.
-
-      Kiekvienas URL šablonas gali būti vietinių failų arba bendrojo URL šablonas. Vietinių failų šablonų formatas yra „file://path“, kur kelias („path“) turi būti absoliutus blokavimo kelias. Visos failų sistemos vietos, kurių priešdėlis yra kelias, bus užblokuotos.
-
-      Bendrojo URL šablono formatas yra „scheme://host:port/path“.
-      Jei nustatyta schema („scheme“), bus užblokuota tik nurodyta schema. Jei priešdėlis „scheme://“ nenurodytas, bus užblokuotos visos schemos.
-      Būtina nurodyti prieglobos serverį („host“). Tai gali būti prieglobos serverio pavadinimas arba IP adresas. Prieglobos serverio pavadinimo padomeniai taip pat bus blokuojami. Kad padomeniai nebūtų blokuojami, prieš prieglobos serverio pavadinimą nurodykite „.“. Naudojant specialųjį prieglobos serverio pavadinimą „*“ bus užblokuoti visi domenai.
-      Prievadas (nurodyti nebūtina) yra galiojantis prievado skaičius nuo 1 iki 65535. Jei jis nenurodytas, blokuojami visi prievadai.
-      Jei nurodytas kelias („path“) (nėra būtinas), bus blokuojami tik keliai su tuo priešdėliu.
-
-      URL baltojo sąrašo politikoje galima pateikti išimčių. Šiose politikose galima pateikti iki 1 000 įrašų; kitų įrašų bus nepaisoma.
-
-      Jei ši politika nenustatyta, į naršyklės juodąjį sąrašą nebus įtrauktas nė vienas URL.</translation>
 <translation id="240213793013362302">Konfigūruojamas ekrano fono vaizdas.
 
       Pagal šią politiką leidžiama konfigūruoti ekrano fono vaizdą, kuris rodomas naudotojo darbalaukyje ir prisijungimo ekrano fone. Politika nustatoma nurodant URL, iš kurio „<ph name="PRODUCT_OS_NAME" />“ gali atsisiųsti ekrano fono vaizdą ir kriptografinę maišą, naudojamą atsisiuntimo vientisumui patikrinti. Vaizdas turi būti JPEG formato, ne didesnis nei 16 MB. URL turi būti galima pasiekti nenustačius tapatybės.
@@ -2171,7 +2156,7 @@ Jei plėtinio nėra sąraše arba sąrašas nenustatytas, kreipiantis į API įv
 <translation id="8382184662529825177">Įgalinti nuotolinio patvirtinimo naudojimą siekiant apsaugoti įrenginio turinį</translation>
 <translation id="838870586332499308">Įgalinti duomenų tarptinklinį ryšį</translation>
 <translation id="8412312801707973447">Ar atliekami OCSP / CRL patikrinimai prisijungus</translation>
-<translation id="8424255554404582727">Nustatyti numatytąjį ekrano sukimo nustatymą, kuris bus iš naujo pritaikymas kiekvieną kartą paleidus iš naujo</translation>
+<translation id="8424255554404582727">Nustatyti numatytąjį ekrano sukimo nustatymą, kuris bus iš naujo pritaikomas kiekvieną kartą paleidus iš naujo</translation>
 <translation id="8426231401662877819">Sukti ekraną pagal laikrodžio rodyklę 90 laipsnių kampu</translation>
 <translation id="8451988835943702790">Naudoti naujo skirtuko puslapį kaip pagrindinį puslapį</translation>
 <translation id="8465065632133292531">Intuityviosios paieškos URL parametrai, kuriuose naudojama POST</translation>

@@ -8,6 +8,8 @@
           und deaktivieren Sie die Option "Vorabruf von Seitenressourcen".
           Falls das Problem hierdurch nicht behoben wird, empfehlen wir,
           diese Option für eine verbesserte Leistung wieder zu aktivieren.</translation>
+<translation id="4559775032954821361">Gehen Sie zum Chromium-Menü &gt; "<ph name="SETTINGS_TITLE" />" &gt; "<ph name="ADVANCED_TITLE" />" &gt; "<ph name="PROXIES_TITLE" />" &gt; "LAN-Einstellungen" und deaktivieren Sie das Kästchen "Proxyserver für LAN verwenden".</translation>
+<translation id="580822234363523061">Gehen Sie zum Chromium-Menü &gt; "<ph name="SETTINGS_TITLE" />" &gt; "<ph name="ADVANCED_TITLE" />" &gt; "<ph name="PROXIES_TITLE" />" und vergewissern Sie sich, dass in Ihrer Konfiguration die Einstellung "Kein Proxy" oder "Direkt" verwendet wird.</translation>
 <translation id="6613594504749178791">Ihre Änderungen werden beim nächsten Neustart von Chromium wirksam.</translation>
 <translation id="7861509383340276692">Öffnen Sie
           das Chromium-Menü &gt;
@@ -17,4 +19,6 @@
           und deaktivieren Sie "<ph name="NO_PREFETCH_DESCRIPTION" />".
           Falls das Problem nicht dadurch verursacht wurde, empfehlen wir,
           diese Option für eine verbesserte Leistung wieder zu aktivieren.</translation>
+<translation id="8187289872471304532">Gehen Sie zu "Anwendungen" &gt; "Systemeinstellungen" &gt; "Netzwerk" &gt; "Erweitert" &gt; "Proxys" und deaktivieren Sie alle ausgewählten Proxyserver.</translation>
+<translation id="8610831143142469229">Erlauben Sie Chromium in Ihren Firewall- und Virenschutzeinstellungen den Zugriff auf das Netzwerk.</translation>
 </translationbundle>

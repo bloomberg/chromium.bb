@@ -232,11 +232,11 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 <translation id="2113068765175018713">Limita el tiempo de actividad del dispositivo mediante un reinicio automático.</translation>
 <translation id="2127599828444728326">Permitir notificaciones en estos sitios</translation>
 <translation id="2131902621292742709">Demora de atenuación de pantalla con batería</translation>
-<translation id="2137064848866899664">Si se establece esta política, la pantalla rotará en la orientación especificada en cada reinicio y la primera vez que se conecte luego de que se cambie el valor de la política. Los usuarios pueden cambiar la rotación de la pantalla a través de la página de configuración después de acceder, pero el valor de la política anulará la configuración en el siguiente reinicio.
+<translation id="2137064848866899664">Si se establece esta política, la pantalla rotará en la orientación que se especifica en cada reinicio y la primera vez que se conecte luego de que se cambie el valor de la política. Los usuarios pueden cambiar la rotación de la pantalla a través de la página de configuración después de acceder, pero el valor de la política anulará la configuración en el siguiente reinicio.
 
       Esta política se aplica tanto a las pantallas principales como a las secundarias.
 
-      Si la política no se establece, el valor predeterminado es de 0 grados y el usuario puede cambiarlo. En este caso, el valor predeterminado no se volverá a aplicar en el reinicio.</translation>
+      Si la política no se establece, el valor predeterminado es de 0 grados, y el usuario puede cambiarlo. En este caso, el valor predeterminado no se volverá a aplicar en el reinicio.</translation>
 <translation id="2166715102875984646">Inhabilitar la compatibilidad para API gráficas en 3D
 
       Al habilitar esta configuración, las páginas web no pueden acceder a la unidad de procesamiento gráfico (GPU). Las páginas web no pueden acceder específicamente a la API WebGL, y los complementos no pueden usar la API Pepper 3D.
@@ -310,21 +310,6 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 
           Si esta opción se deja sin establecer, <ph name="PRODUCT_NAME" />
           permitirá el uso de hosts de mensajería nativa en el nivel de usuario.</translation>
-<translation id="2393996789386329927">Bloquea el acceso a las URL incluidas.
-
-      Esta política impide que el usuario cargue páginas web de las direcciones URL incluidas en listas negras. La lista negra proporciona una lista de los patrones de URL que especifican qué URL se incluirá en la lista negra.
-
-      Cada patrón de URL puede ser un patrón de archivos locales o un patrón de URL genéricas. Los patrones de archivos locales tienen el formato "file://path", donde path debe ser una ruta absoluta para el bloqueo. Se bloquearán todas las ubicaciones del sistema de archivos de las que esa ruta sea un prefijo.
-
-      Un patrón de URL genéricas tiene el formato "scheme://host:port/path".
-      Solo se bloqueará el esquema especificado, si está presente. Si no se especifica el prefijo scheme://, se bloquearán todos los esquemas.
-      El host es obligatorio y puede ser un nombre de host o una dirección IP. También se bloquearán los subdominios de un nombre de host. Para impedir el bloqueo de subdominios, se debe incluir un "." antes del nombre de host. El nombre de host especial "*" bloqueará todos los dominios.
-      El puerto opcional es un número de puerto válido entre 1 y 65535. Si no se especifica ninguno, se bloquearán todos los puertos.
-      Si se especifica la ruta opcional, solo se bloquearán las rutas con ese prefijo.
-
-      Es posible definir excepciones en la política de lista blanca de URL. Estas políticas se limitan a 1000 entradas; las entradas posteriores se ignorarán.
-
-      Si esta política no se configura, no se incluirá ninguna URL en la lista negra en el navegador.</translation>
 <translation id="240213793013362302">Configurar la imagen del fondo de pantalla
 
       Esta política permite configurar la imagen del fondo de pantalla del escritorio y el fondo de la pantalla de acceso del usuario. Para establecerla, se debe indicar la URL desde la cual <ph name="PRODUCT_OS_NAME" /> puede descargar la imagen del fondo de pantalla y un hash criptográfico que verifique la integridad de la descarga. La imagen debe estar en formato JPEG, y el tamaño de archivo no debe superar los 16 MB. Se debe poder acceder a la URL sin autenticación previa.

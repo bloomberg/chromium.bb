@@ -151,19 +151,10 @@ Aplikace Google Chrome nemůže vaše nastavení obnovit.</translation>
 <translation id="5785746630574083988">Spuštěním v režimu Windows 8 zavřete a znovu spustíte všechny aplikace Chrome.</translation>
 <translation id="5855036575689098185">Software spuštěný v počítači není kompatibilní s prohlížečem Google Chrome.</translation>
 <translation id="5877064549588274448">Verze byla změněna. Změny se projeví po restartování zařízení.</translation>
-<translation id="5890698319714066019">Google Chrome nemůže webovou stránku zobrazit, protože počítač není připojen k internetu.</translation>
 <translation id="5931853610562009806">V počítačích Mac se hesla mohou ukládat do úložiště Keychain a mohou k nim přistupovat nebo je synchronizovat i další uživatelé aplikace Chrome, kteří sdílejí tento účet systému OS X.</translation>
 <translation id="5940385492829620908">Zde jsou k dispozici vaše weby, záložky a další obsah Chromu.</translation>
 <translation id="5941830788786076944">Nastavit Google Chrome jako výchozí prohlížeč</translation>
 <translation id="597770749449734237">Aktivuje další klávesové zkratky, které jsou užitečné pro ladění prohlížeče Google Chrome.</translation>
-<translation id="6011049234605203654">Přejděte do
-          nabídky Chrome &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          a zkontrolujte, zda je konfigurace nastavena na možnost „no proxy“ (bez proxy) nebo „direct“ (přímo).</translation>
 <translation id="6012342843556706400">Aby Chrome mohl s těmito webovými stránkami sdílet polohu, musí k ní mít přístup.</translation>
 <translation id="6014844626092547096">Nyní jste v Chromu přihlášeni. Synchronizace je ale deaktivována správcem.</translation>
 <translation id="6049075767726609708">Správce již na tomto počítači na systémové úrovni nainstaloval Google Chrome, který je přístupný všem uživatelům. Instalaci prohlížeče Google Chrome na úrovni uživatele nahradí instalace na systémové úrovni.</translation>
@@ -184,16 +175,6 @@ Aplikace Google Chrome nemůže vaše nastavení obnovit.</translation>
 <translation id="6676384891291319759">Přístup k internetu</translation>
 <translation id="6757767188268205357">Již se neptat</translation>
 <translation id="683440813066116847">Pravidlo příchozího provozu pro aplikaci Google Chrome Canary, které povolí provoz mDNS.</translation>
-<translation id="6855094794438142393">Přejděte do
-          nabídky Chrome &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          &gt;
-          Nastavení místní sítě (LAN)
-          a zrušte zaškrtnutí políčka Použít pro síť LAN proxy server.</translation>
 <translation id="6883876366448858277">odesílá slovo a jeho okolní kontext do Vyhledávání Google a vrací definice, obrázky a další výsledky vyhledávání.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="6970811910055250180">Aktualizace zařízení...</translation>
@@ -215,8 +196,6 @@ Aplikace Google Chrome nemůže vaše nastavení obnovit.</translation>
 <translation id="7282192067747128786">Chrome – oznámení (nepřečtené: <ph name="QUANTITY" />)</translation>
 <translation id="729375352412857283">Google Chrome se v tomto počítači již brzy přestane aktualizovat, protože systémy Windows XP a Windows Vista již nejsou podporovány.</translation>
 <translation id="7339898014177206373">Nové okno</translation>
-<translation id="7396375882099008034">V nastavení firewallu a antivirového programu povolte prohlížeči Chrome
-        přístup k síti.</translation>
 <translation id="7398801000654795464">K prohlížeči Chrome jste byli přihlášeni pomocí účtu <ph name="USER_EMAIL_ADDRESS" />. Přihlaste se prosím znovu pomocí stejného účtu.</translation>
 <translation id="7400722733683201933">O aplikaci Google Chrome</translation>
 <translation id="7408085963519505752">Smluvní podmínky systému Chrome OS</translation>
@@ -246,9 +225,6 @@ Aplikace Google Chrome nemůže vaše nastavení obnovit.</translation>
 <translation id="8032142183999901390">Odebrání účtu z Chromu se může projevit až po opětovném načtení otevřených karet.</translation>
 <translation id="8037887340639533879">Nebyla nalezena žádná instalace Google Chrome, kterou by bylo možné aktualizovat.</translation>
 <translation id="8129812357326543296">O aplikaci &amp;Google Chrome</translation>
-<translation id="8187289872471304532">Přejděte do nabídky
-          Aplikace &gt; Nastavení systému &gt; Síť &gt; Rozšířená nastavení &gt; Servery proxy
-          a zrušte výběr všech vybraných serverů proxy.</translation>
 <translation id="8205111949707227942">Volitelné: Pomozte zlepšit operační systém Chrome OS tím, že budete společnosti Google automaticky zasílat statistiky využití a zprávy o selhání.</translation>
 <translation id="8227755444512189073">Aplikace Chrome potřebuje spustit externí aplikaci pro práci s odkazy <ph name="SCHEME" />. Požadovaný odkaz je <ph name="PROTOLINK" />.</translation>
 <translation id="8255190535488645436">Google Chrome používá vaši kameru a mikrofon.</translation>

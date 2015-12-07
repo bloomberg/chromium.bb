@@ -369,22 +369,6 @@ kialamisho na shabaha yake. Folda ndogo inaweza kusanidiwa kwa kubainisha alamis
 
           Iwapo mpangilio huu utaachwa bila kuwekwa <ph name="PRODUCT_NAME" /> itaruhusu
           matumizi ya wapangishi wa Ujumbe Asili wa ngazi ya mtumiaji.</translation>
-<translation id="2393996789386329927">Huzuia idhini ya kufikia URL zilizoorodheshwa.
-
-     Sera hii humzuia mtumiaji kupakia kurasa za wavuti kutoka kwenye URL zisizoidhinishwa. Orodha illiyoondolewa idhini hutoa orodha ya ruwaza za URL ambazo hubainisha URL zitakazoondolewa idhini.
-
-     Kila ruwaza ya URL inaweza kuwa ruwaza ya faili za ndani au ruwaza ya URL ya kuzalishwa. Ruwaza za faili za ndani zina muundo wa 'file://path', ambapo njia inapaswa kuwa njia ya kufunga. Sehemu zote za mifumo ya faili ambayo njia hiyo ni kiambishi awali itafungwa.
-
-      Ruwaza ya URL ya kuzalisha ina muundo wa 'scheme://host:port/path''.
-      Kama ipo, ni mpangilio uliobainishwa pekee utakaozuiwa. Ikiwa mpangilio:// kiambishi awali hakijabainishwa,mipangilio yote itazuiwa.
-
-      Seva pangishi inahitajika inaweza kuwa jina la mpangishaji au Anwani ya IP. Vijikoa vya jina la mpangishaji pia litazuiwa. Ili usizuie vijikoa, jumuisha '.' kabla ya jina la mpangishaji. Jina la kipekee la mpangishaji '*' litazuia vikoa vyote.
-      Mlango wa hiari ni nambari sahihi ya mlango kuanzia 1 hadi 65535. Ikiwa hakuna iliyobainishwa, milango yote itazuiwa.
-      Ikiwa njia ya hiari imebainishwa, ni njia zenye kiambishi awali hicho ambazo zitazuiwa.
-
-      Vighairi vinaweza kubainishwa katika sera ya URL iliyoidhinishwa. Sera hizi zinatumika kufikia uingizaji wa 1000 pekee; uingizaji uunaofuata utapuuzwa.
-
-      Sera hii isipowekwa hakuna URL ambayo itaondolewa idhini katika kivinjari.</translation>
 <translation id="240213793013362302">Sanidi picha ya mandhari.
 
       Sera hii hukuruhusu kusanidi picha ya mandhari inayoonyeshwa kwenye eneo-kazi na kwenye mandharinyuma ya skrini ya mtumiaji ya kuingia katika akaunti. Sera huwekwa kwa kubainisha URL ambayo <ph name="PRODUCT_OS_NAME" /> inaweza kupakua picha ya mandhari na picha ya msimbo wa alama ya reli inayotumika kuthibitisha uhalali wa kipakuliwa. Lazima picha iwe ya muundo wa JPEG, ukubwa wake usizidi MB 16. Lazima URL ipatikane bila uthibitishaji wowote.

@@ -1,19 +1,26 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="hu">
+<translation id="1015255576907412255">Ha további információra van szüksége, vegye fel a kapcsolatot rendszergazdájával.</translation>
 <translation id="1032854598605920125">Forgatás jobbra</translation>
 <translation id="1055184225775184556">&amp;Hozzáadás visszavonása</translation>
+<translation id="1066332784716773939">Hibák diagnosztizálása...</translation>
 <translation id="106701514854093668">Asztali könyvjelzők</translation>
 <translation id="1080116354587839789">Szélességhez igazítás</translation>
+<translation id="108346963417674655">Nem lehet biztonságosan kapcsolódni a szerverhez. Lehetséges, hogy ez a webhely korábban működött, de jelenleg probléma van a szerverrel. Az ilyen webhelyekhez való kapcsolódás biztonsági kockázatot jelent az összes felhasználó számára, ezért le lett tiltva.</translation>
 <translation id="1103523840287552314"><ph name="LANGUAGE" /> - mindig legyen lefordítva</translation>
+<translation id="1105117579475534983">A weboldal le van tiltva</translation>
 <translation id="1113869188872983271">&amp;Átrendezés visszavonása</translation>
 <translation id="111844081046043029">Biztos, hogy el szeretné hagyni ezt az oldalt?</translation>
 <translation id="112840717907525620">Irányelv-gyorsítótár OK</translation>
 <translation id="113188000913989374">A(z) <ph name="SITE" /> közlendője:</translation>
 <translation id="1132774398110320017">A Chrome Automatikus kitöltési beállításai…</translation>
+<translation id="1146498888431277930">SSL kapcsolódási hiba</translation>
 <translation id="1146673768181266552"><ph name="CRASH_ID" /> összeomlás-azonosító (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">A szerver nem tudta bizonyítani, hogy valóban a(z) <ph name="DOMAIN" /> domainbe tartozik; biztonsági tanúsítványa az Ön számítógépének operációs rendszere szerint nem megbízható. Ennek oka lehet konfigurációs hiba, vagy hogy egy támadó eltérítette az Ön kapcsolódását.</translation>
 <translation id="1152921474424827756">A(z) <ph name="URL" /> egy <ph name="BEGIN_LINK" />tárolt változatának<ph name="END_LINK" /> megtekintése</translation>
+<translation id="1195447618553298278">Ismeretlen hiba.</translation>
+<translation id="1202290638211552064">A kapuoldal vagy a proxyszerver kapcsolata időtúllépés miatt megszakadt, miközben egy ellentétes irányú szerver válaszára várt.</translation>
 <translation id="121201262018556460">Megpróbálta elérni a(z) <ph name="DOMAIN" /> webhelyet, de a szerver egy gyenge kulccsal rendelkező tanúsítványt adott. Egy támadó feltörhette a privát kulcsot, és lehet, hogy a szerver nem a várt kiszolgáló (lehet, hogy Ön egy támadóval kommunikál).</translation>
 <translation id="1227224963052638717">Ismeretlen házirend</translation>
 <translation id="1227633850867390598">Érték elrejtése</translation>
@@ -26,6 +33,7 @@
 <translation id="1430915738399379752">Nyomtatás</translation>
 <translation id="1455235771979731432">A kártya ellenőrzése során hiba történt. Ellenőrizze az internetkapcsolatot, és próbálja újra.</translation>
 <translation id="1491151370853475546">Az oldal újratöltése</translation>
+<translation id="1506687042165942984">Az oldal mentett (pl. köztudottan régi) változatának megjelenítése.</translation>
 <translation id="1519264250979466059">Build dátuma</translation>
 <translation id="1549470594296187301">A funkció használatához engedélyezni kell a JavaScriptet.</translation>
 <translation id="1559528461873125649">Nincs ilyen fájl vagy könyvtár</translation>
@@ -49,11 +57,13 @@
 <translation id="1962204205936693436">A(z) <ph name="DOMAIN" /> könyvjelzői</translation>
 <translation id="1973335181906896915">Szerializálási hiba</translation>
 <translation id="1974060860693918893">Speciális</translation>
+<translation id="201192063813189384">Hiba történt a gyorsítótárban lévő adatok beolvasása során.</translation>
 <translation id="2025186561304664664">Automatikusan konfigurálhatóra beállított proxy.</translation>
 <translation id="2025623846716345241">Újratöltés megerősítése</translation>
 <translation id="2030481566774242610">Erre gondolt: <ph name="LINK" />?</translation>
 <translation id="2053553514270667976">Irányítószám</translation>
 <translation id="20817612488360358">A rendszer proxybeállításai konfigurálva vannak a használathoz, de kifejezett proxykonfiguráció is meg van adva.</translation>
+<translation id="2089090684895656482">Rövidebben</translation>
 <translation id="2094505752054353250">Domainkeveredés</translation>
 <translation id="2096368010154057602">Megye</translation>
 <translation id="2113977810652731515">Kártya</translation>
@@ -64,17 +74,22 @@
 <translation id="2181821976797666341">Házirendek</translation>
 <translation id="2212735316055980242">Nem találhatók irányelvek</translation>
 <translation id="2213606439339815911">Bejegyzések lekérése...</translation>
+<translation id="2214283295778284209"><ph name="SITE" /> nem érhető el</translation>
 <translation id="225207911366869382">Ez az érték elavult ennél a házirendnél.</translation>
 <translation id="2262243747453050782">HTTP hiba</translation>
+<translation id="2271281383664374369">Az erre az URL-re irányuló bővítménykérelmek ideiglenesen gátolva lettek.</translation>
+<translation id="2279770628980885996">Váratlan feltétel merült fel, miközben a szerver megpróbált eleget tenni a kérésnek.</translation>
 <translation id="2282872951544483773">Nem elérhető kísérletek</translation>
 <translation id="229702904922032456">Lejárt egy gyökér- vagy köztes tanúsítvány.</translation>
 <translation id="2328300916057834155">Mellőzött érvénytelen könyvjelző a(z) <ph name="ENTRY_INDEX" />. indexnél</translation>
+<translation id="2345460471437425338">A gazdagép tanúsítványa érvénytelen.</translation>
 <translation id="2354001756790975382">További könyvjelzők</translation>
 <translation id="2367567093518048410">Szint</translation>
 <translation id="2384307209577226199">Vállalati alapértelmezett</translation>
 <translation id="2386255080630008482">A szerver tanúsítványát visszavonták.</translation>
 <translation id="2392959068659972793">Beállított értékkel nem rendelkező házirendek megjelenítése</translation>
 <translation id="2396249848217231973">&amp;Törlés visszavonása</translation>
+<translation id="2400837204278978822">Ismeretlen fájltípus.</translation>
 <translation id="2413528052993050574">A szerver nem tudta bizonyítani, hogy valóban a(z) <ph name="DOMAIN" /> domainbe tartozik; biztonsági tanúsítványát visszavonhatták. Ennek oka lehet konfigurációs hiba, vagy hogy egy támadó eltérítette az Ön kapcsolódását.</translation>
 <translation id="2455981314101692989">A weboldal letiltotta az automatikus kitöltést erre az űrlapra.</translation>
 <translation id="2479410451996844060">Érvénytelen keresési URL</translation>
@@ -89,28 +104,39 @@
 <translation id="2609632851001447353">Változatok</translation>
 <translation id="2625385379895617796">Az órája siet</translation>
 <translation id="2639739919103226564">Állapot:</translation>
+<translation id="2650446666397867134">A hozzáférés a fájlhoz megtagadva.</translation>
 <translation id="2653659639078652383">Elküldés</translation>
 <translation id="2704283930420550640">Az érték nem egyezik a formátummal.</translation>
 <translation id="2721148159707890343">Sikeres kérés</translation>
 <translation id="2728127805433021124">A szerver tanúsítványa gyenge aláírási algoritmussal van aláírva.</translation>
 <translation id="277499241957683684">Hiányzó eszközrekord</translation>
+<translation id="2784949926578158345">A kapcsolat alaphelyzetbe állt.</translation>
 <translation id="2835170189407361413">Űrlap törlése</translation>
 <translation id="2855922900409897335">A(z) <ph name="CREDIT_CARD" /> kártya igazolása</translation>
+<translation id="2909946352844186028">Változást érzékeltünk a hálózatban.</translation>
 <translation id="2915500479781995473">A szerver nem tudta bizonyítani, hogy valóban a(z) <ph name="DOMAIN" /> domainbe tartozik; biztonsági tanúsítványa lejárt. Ennek oka lehet konfigurációs hiba, vagy hogy egy támadó eltérítette az Ön kapcsolódását. Számítógépének órája jelenleg <ph name="CURRENT_TIME" /> időre van állítva. Ez helyesnek tűnik? Ha nem, állítsa be megfelelően a rendszer óráját, majd frissítse az oldalt.</translation>
 <translation id="2922350208395188000">A szerver tanúsítványát nem sikerült leellenőrizni.</translation>
 <translation id="2941952326391522266">A szerver nem tudta bizonyítani, hogy valóban a(z) <ph name="DOMAIN" /> domainbe tartozik; biztonsági tanúsítványa a következőről származik: <ph name="DOMAIN2" />. Ennek oka lehet konfigurációs hiba, vagy hogy egy támadó eltérítette az Ön kapcsolódását.</translation>
+<translation id="2948083400971632585">Bármelyik kapcsolatlétesítésre használt proxyt letilthatja a beállítások oldalon.</translation>
+<translation id="2950186680359523359">A szerver adatok küldése nélkül lezárta a kapcsolatot.</translation>
 <translation id="2958431318199492670">A hálózati konfiguráció nem felel meg az ONC szabványnak. A konfiguráció egyes részeit nem lehet importálni.</translation>
 <translation id="2969319727213777354">Biztonságos kapcsolat létrehozásához az órát pontosan be kell állítani. Ez azért szükséges, mert a webhelyek által az azonosításukra használt tanúsítványok csak adott ideig érvényesek. Mivel az eszköz órája nem pontos, a Google Chrome nem tudja ellenőrizni ezeket a tanúsítványokat.</translation>
 <translation id="2972581237482394796">&amp;Újra</translation>
+<translation id="3005723025932146533">Mentett másolat megjelenítése</translation>
 <translation id="3010559122411665027">"<ph name="ENTRY_INDEX" />." listabejegyzés: <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">Nem megfelelő irányelvtípus</translation>
+<translation id="3093245981617870298">Ön jelenleg offline.</translation>
 <translation id="3105172416063519923">Tartalomazonosító:</translation>
+<translation id="3118046075435288765">A szerver váratlanul megszakította a kapcsolatot.</translation>
 <translation id="3145945101586104090">Nem sikerült dekódolni a választ</translation>
+<translation id="3147485256806412701">Ez a webhely új, általános felső szintű domaint használ.</translation>
 <translation id="3150653042067488994">Átmeneti szerverhiba</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3174168572213147020">Sziget</translation>
 <translation id="3219579145727097045">Adja meg a lejárati dátumot, és a kártya elején szereplő négyjegyű CVC-kódot</translation>
+<translation id="3225579507836276307">Egy harmadik féltől származó bővítmény blokkolta az ehhez a weboldalhoz való hozzáférést.</translation>
 <translation id="3225919329040284222">A szerver tanúsítványa nem felel meg a beépített elvárásoknak. Ezek a beépített elvárások bizonyos nagy biztonságú webhelyekre vonatkoznak az Ön védelme érdekében.</translation>
+<translation id="3226128629678568754">Nyomja meg a frissítés gombot az oldal betöltéséhez szükséges adatok újraküldéséhez.</translation>
 <translation id="3228969707346345236">A fordítás nem sikerült, mert az oldal már ezen a nyelven van: <ph name="LANGUAGE" />.</translation>
 <translation id="3270847123878663523">&amp;Átrendezés visszavonása</translation>
 <translation id="3286538390144397061">Újraindítás most</translation>
@@ -122,70 +148,98 @@
 <translation id="3377188786107721145">Irányelv-előfeldolgozási hiba</translation>
 <translation id="3380365263193509176">Ismeretlen hiba</translation>
 <translation id="3380864720620200369">Ügyfél-azonosító:</translation>
+<translation id="3393716657345709557">A kért bejegyzés nem található a gyorsítótárban.</translation>
 <translation id="3427342743765426898">&amp;Szerkesztés újra</translation>
 <translation id="3435896845095436175">Engedélyezés</translation>
+<translation id="3447661539832366887">Az eszköz tulajdonosa kikapcsolta a dinoszauruszos játékot.</translation>
 <translation id="3450660100078934250">MasterCard</translation>
 <translation id="3452404311384756672">Lekérési intervallum:</translation>
 <translation id="3462200631372590220">Speciális beállítások elrejtése</translation>
 <translation id="3528171143076753409">A szervezet tanúsítványa nem megbízható.</translation>
 <translation id="3542684924769048008">Jelszó használata a következőre:</translation>
 <translation id="3583757800736429874">&amp;Áthelyezés újra</translation>
+<translation id="3586931643579894722">Részletek elrejtése</translation>
+<translation id="3608308818141211642">Az ügyfél és a szerver nem támogatnak ugyanolyan SSL-protokollverziót vagy rejtjelezési csomagot. Ennek valószínűleg az az oka, hogy a szerver RC4-támogatást követel meg, amely már nem számít biztonságosnak.</translation>
 <translation id="3623476034248543066">Érték megjelenítése</translation>
 <translation id="3648607100222897006">Ezek a kísérleti funkciók bármikor megváltozhatnak, elromolhatnak vagy eltűnhetnek. Nem vállalunk semmilyen garanciát az ezen kísérleti funkciók bekapcsolásából származó eseményekért; továbbá böngészője váratlanul összeomolhat. A viccet félretéve, a böngészője törölheti az összes adatot, valamint különböző módokon veszélyeztetheti biztonságát és adatvédelmét. Ha bármilyen kísérleti funkciót engedélyez, az a böngésző minden felhasználója számára engedélyezve lesz. Kérjük, óvatosan lépjen tovább.</translation>
 <translation id="3650584904733503804">Sikeres érvényesítés</translation>
+<translation id="3651020361689274926">A kért forrás már nem létezik, és nincs átirányítási cím.  Ez valószínűleg egy végleges állapot.</translation>
 <translation id="3658742229777143148">Ellenőrzés</translation>
 <translation id="370665806235115550">Betöltés…</translation>
 <translation id="3712624925041724820">Az engedélyek elfogytak</translation>
 <translation id="3739623965217189342">Átmásolt link</translation>
+<translation id="3748412725338508953">Túl sok átirányítás történt.</translation>
 <translation id="375403751935624634">A fordítás a szerver hibája miatt nem sikerült.</translation>
 <translation id="3759461132968374835">Nincs a közelmúltban bejelentett rendszerösszeomlás. A kikapcsolt jelentésküldés során történt összeomlások nem jelennek meg itt.</translation>
+<translation id="382518646247711829">Ha proxyszervert használ...</translation>
 <translation id="3858027520442213535">Dátum és idő frissítése</translation>
 <translation id="3884278016824448484">Eszközazonosító-ütközés</translation>
 <translation id="3885155851504623709">Körzet</translation>
+<translation id="3903912596042358459">A szerver visszautasította a kérés teljesítését.</translation>
 <translation id="3934680773876859118">PDF dokumentum betöltése sikertelen</translation>
+<translation id="3940082421246752453">A szerver nem támogatja a kérésben használt HTTP-verziót.</translation>
+<translation id="3950924596163729246">Nem sikerült elérni a hálózatot.</translation>
 <translation id="3963721102035795474">Olvasási mód</translation>
 <translation id="4030383055268325496">&amp;Hozzáadás visszavonása</translation>
+<translation id="4032534284272647190">Hozzáférés a(z) <ph name="URL" /> URL-hez megtagadva.</translation>
 <translation id="404928562651467259">FIGYELMEZTETÉS</translation>
 <translation id="4058922952496707368">"<ph name="SUBKEY" />" kulcs: <ph name="ERROR" /></translation>
+<translation id="4060383410180771901">A webhely nem képes kezelni a(z) <ph name="URL" /> URL-re vonatkozó kérelmet.</translation>
 <translation id="4079302484614802869">A proxykonfiguráció a .pac típusú szkript URL-cím, nem pedig a fix proxyszerverek használatára van beállítva.</translation>
 <translation id="409504436206021213">Ne töltse újra</translation>
 <translation id="4103249731201008433">Az eszköz sorozatszáma érvénytelen</translation>
+<translation id="4103763322291513355">Látogasson el a &lt;strong&gt;chrome://policy&lt;/strong&gt; oldalra a feketelistán lévő URL-ek és egyéb, a rendszergazda által előírt szabályok megtekintéséhez.</translation>
 <translation id="4117700440116928470">Az irányelv hatásköre nem támogatott.</translation>
 <translation id="4120075327926916474">Szeretné, hogy a Chrome elmentse ezt a bankkártya-információt a internetes űrlapok kitöltéséhez?</translation>
+<translation id="4147376274874979956">Nem sikerült elérni a fájlt.</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">Szeretné, hogy a Chromium mentse ezt a kártyát?</translation>
 <translation id="4171400957073367226">Hibás igazoló aláírás.</translation>
 <translation id="4176463684765177261">Kikapcsolva</translation>
 <translation id="4196861286325780578">&amp;Áthelyezés újra</translation>
 <translation id="4220128509585149162">Összeomlások</translation>
+<translation id="4241404202385006548">Tiltsa le bővítményeit, majd töltse be újra ezt a weboldalt</translation>
 <translation id="4250680216510889253">Nem</translation>
 <translation id="4258748452823770588">Rossz aláírás</translation>
 <translation id="4268298190799576220">A Chromium ez alkalommal nem tudta azonosítani kártyáját. Próbálja újra később.</translation>
 <translation id="4269787794583293679">(Nincs felhasználónév)</translation>
+<translation id="4287689875748136217">Nem sikerült betölteni a weblapot, mert a szerver nem küldött adatokat.</translation>
 <translation id="4300246636397505754">Szülői javaslatok</translation>
 <translation id="4325863107915753736">Nem sikerült megtalálni a cikket</translation>
+<translation id="4350711002179453268">Nem lehet biztonságos kapcsolatot létesíteni a szerverrel. Lehet, hogy a szerverrel van probléma, de az is lehet, hogy olyan ügyfélhitelesítési tanúsítványt kér, amellyel nem rendelkezik.</translation>
 <translation id="4372948949327679948">Várt <ph name="VALUE_TYPE" /> érték.</translation>
 <translation id="4377125064752653719">A(z) <ph name="DOMAIN" /> webhelyet próbálta megnyitni, de a kiállító visszavonta a szerver által bemutatott tanúsítványt. Ez azt jelenti, hogy a szerver biztonsági igazolásaiban egyáltalán nem lehet megbízni. Lehet, hogy egy támadóval áll kapcsolatban.</translation>
 <translation id="4394049700291259645">Kikapcsolás</translation>
+<translation id="4405141258442788789">A művelet túllépte az időkeretet.</translation>
 <translation id="4424024547088906515">A szerver nem tudta bizonyítani, hogy valóban a(z) <ph name="DOMAIN" /> domainbe tartozik; biztonsági tanúsítványa a Chrome szerint nem megbízható. Ennek oka lehet konfigurációs hiba, vagy hogy egy támadó eltérítette az Ön kapcsolódását.</translation>
 <translation id="443673843213245140">A proxy használata le van tiltva, de kifejezett proxykonfiguráció van megadva.</translation>
 <translation id="4506176782989081258">Érvényesítési hiba: <ph name="VALIDATION_ERROR" /></translation>
+<translation id="4522570452068850558">Részletek</translation>
+<translation id="4535734014498033861">A proxyszerver-csatlakozás sikertelen.</translation>
 <translation id="4587425331216688090">Eltávolítja a címet a Chrome-ból?</translation>
 <translation id="4594403342090139922">&amp;Törlés visszavonása</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">A szerver nem tudta bizonyítani, hogy valóban a(z) <ph name="DOMAIN" /> domainbe tartozik; biztonsági tanúsítványa hibákat tartalmaz. Ennek oka lehet konfigurációs hiba, vagy hogy egy támadó eltérítette az Ön kapcsolódását.</translation>
+<translation id="4681260323810445443">Nincs jogosultsága a következő weboldal elérésére: <ph name="URL" />. Valószínűleg be kell jelentkeznie.</translation>
+<translation id="4697214168136963651"><ph name="URL" /> blokkolva volt</translation>
 <translation id="4726672564094551039">Házirendek újratöltése</translation>
 <translation id="4728558894243024398">Platform</translation>
 <translation id="4744603770635761495">Végrehajtható fájl útvonala</translation>
+<translation id="4764776831041365478">A <ph name="URL" /> weboldal lehet, hogy ideiglenesen nem érhető el, vagy véglegesen új címre költözött.</translation>
 <translation id="4771973620359291008">Ismeretlen hiba történt.</translation>
+<translation id="477518548916168453">A szerver nem támogatja a kérelem teljesítéséhez szükséges funkciókat.</translation>
+<translation id="4779052991835840224">Nem lehet biztonságos kapcsolatot létrehozni, mert ez a webhely nem támogatott protokollt vagy rejtjelezési csomagot használ. Ennek valószínűleg az az oka, hogy a szerver RC4-támogatást követel meg, amely már nem számít biztonságosnak.</translation>
+<translation id="4786993863723020412">Gyorsítótár-olvasási hiba</translation>
 <translation id="4800132727771399293">Ellenőrizze a lejárati dátumot és a CVC-t, majd próbálja újra</translation>
 <translation id="4813512666221746211">Hálózati hiba</translation>
 <translation id="4816492930507672669">Igazítás az oldalmérethez</translation>
 <translation id="4850886885716139402">Nézet</translation>
 <translation id="4923417429809017348">Ezt az oldalt lefordították egy ismeretlen nyelvről <ph name="LANGUAGE_LANGUAGE" /> nyelvre</translation>
 <translation id="4926049483395192435">Meg kell határozni.</translation>
+<translation id="4980112683975062744">Ismétlődő fejléc érkezett a szervertől</translation>
 <translation id="498957508165411911">Lefordítja <ph name="ORIGINAL_LANGUAGE" /> nyelvről <ph name="TARGET_LANGUAGE" /> nyelvre?</translation>
 <translation id="5019198164206649151">A háttértároló állapota nem megfelelő</translation>
+<translation id="5023310440958281426">Ellenőrizze rendszergazdai házirendjeit</translation>
 <translation id="5031870354684148875">A Google Fordító leírása</translation>
 <translation id="5045550434625856497">Téves jelszó</translation>
 <translation id="5065199687811594072">Szeretné, hogy a Chromium mentse ezt a bankkártya-információt az internetes űrlapok kitöltéséhez?</translation>
@@ -199,16 +253,20 @@
 <translation id="5179510805599951267">Nem <ph name="ORIGINAL_LANGUAGE" /> nyelven van? Hiba bejelentése</translation>
 <translation id="5190835502935405962">Könyvjelzősáv</translation>
 <translation id="5199729219167945352">Kísérletek</translation>
+<translation id="5228309736894624122">SSL-protokoll hiba.</translation>
 <translation id="5251803541071282808">Felhő</translation>
 <translation id="5295309862264981122">Navigálás megerősítése</translation>
 <translation id="5299298092464848405">Irányelv-előfeldolgozási hiba</translation>
+<translation id="5303618139271450299">Ez a weboldal nem található</translation>
 <translation id="5308689395849655368">A hibabejelentés ki van kapcsolva.</translation>
 <translation id="5317780077021120954">Mentés</translation>
 <translation id="536296301121032821">Az irányelv-beállítások tárolása sikertelen</translation>
 <translation id="540969355065856584">A szerver nem tudta bizonyítani, hogy valóban a(z) <ph name="DOMAIN" /> domainbe tartozik; biztonsági tanúsítványa jelenleg nem érvényes. Ennek oka lehet konfigurációs hiba, vagy hogy egy támadó eltérítette az Ön kapcsolatát.</translation>
 <translation id="5439770059721715174">Sémaérvényesítési hiba a következőnél: „<ph name="ERROR_PATH" />”: <ph name="ERROR" /></translation>
+<translation id="5447330194051379405">Az összes mentett oldal megjelenítése</translation>
 <translation id="5455374756549232013">Hibás az irányelv időbélyege</translation>
 <translation id="5470861586879999274">&amp;Szerkesztés újra</translation>
+<translation id="5498951625591520696">A szervert nem sikerült elérni.</translation>
 <translation id="5509780412636533143">Kezelt könyvjelzők</translation>
 <translation id="5523118979700054094">Az irányelv neve</translation>
 <translation id="552553974213252141">Megfelelően kinyerte a szöveget?</translation>
@@ -223,45 +281,69 @@
 <translation id="5720705177508910913">Jelenlegi felhasználó</translation>
 <translation id="5813119285467412249">&amp;Hozzáadás újra</translation>
 <translation id="5872918882028971132">Szülői javaslatok</translation>
+<translation id="5880867612172997051">A hálózati hozzáférés felfüggesztve</translation>
+<translation id="5900623698597156974">Egy TLS 1.0-tartalék fel tudta venni a kapcsolatot a szerverrel, de már nem fogadjuk el a TLS 1.0-tartalékokat. A szervert frissíteni kell, hogy megfelelően hajthassa végre a verzió egyeztetést és ideális esetben a TLS 1.2 verziót támogassa</translation>
 <translation id="59107663811261420">A Google Payments ennél a kereskedőnél nem támogatja az ilyen típusú kártyákat. Kérjük, válasszon másik kártyát.</translation>
 <translation id="59174027418879706">Engedélyezve</translation>
+<translation id="5949910269212525572">Nem sikerült feloldani a szerver DNS-címét.</translation>
 <translation id="5975083100439434680">Kicsinyítés</translation>
 <translation id="5989320800837274978">Sem fix proxyszerver, sem pedig .pac típusú szkript URL-címe nincs megadva.</translation>
+<translation id="5990559369517809815">A szerver felé irányuló kéréseket egy bővítmény blokkolja.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">Bezárás</translation>
 <translation id="604124094241169006">Automatikus</translation>
+<translation id="6042308850641462728">Hosszabban</translation>
 <translation id="6060685159320643512">Óvatosan, ezek a kísérletek haraphatnak</translation>
+<translation id="6066742401428748382">A weboldalhoz való hozzáférés megtagadva</translation>
 <translation id="6099520380851856040">Időpont: <ph name="CRASH_TIME" /></translation>
 <translation id="6151417162996330722">A szervertanúsítvány érvényességi ideje túl hosszú.</translation>
 <translation id="6154808779448689242">A visszaadott irányelvtoken nem egyezik az aktuális tokennel</translation>
 <translation id="6165508094623778733">További információ</translation>
+<translation id="6203231073485539293">Ellenőrizze az internetkapcsolatot</translation>
 <translation id="6218753634732582820">Eltávolítja a címet a Chromiumból?</translation>
+<translation id="6232139169545176020">A kért URI-séma nem támogatott.</translation>
+<translation id="6237614789842758826">Keresés a Google-on</translation>
 <translation id="6259156558325130047">&amp;Átrendezés újra</translation>
 <translation id="6263376278284652872"><ph name="DOMAIN" /> könyvjelzők</translation>
+<translation id="6268647269805730940">Az eszköz még nem fejezte be az első indításkor elvégzendő lépéseket.</translation>
 <translation id="6282194474023008486">Irányítószám</translation>
+<translation id="6321917430147971392">Ellenőrizze a DNS-beállításokat</translation>
+<translation id="6328639280570009161">Próbálkozzon a hálózati előrejelzések kikapcsolásával</translation>
 <translation id="6337534724793800597">Házirendek szűrése név szerint</translation>
 <translation id="6342069812937806050">Éppen most</translation>
 <translation id="6355080345576803305">Nyilvános munkamenet általi felülbírálás</translation>
 <translation id="6387478394221739770">Érdekli néhány remek új Chrome-funkció? Próbálja ki a Béta csatornánkat a chrome.com/beta webhelyen.</translation>
+<translation id="6391832066170725637">A fájlt vagy könyvtárat nem sikerült megtalálni.</translation>
+<translation id="641480858134062906"><ph name="URL" /> nem töltődött be</translation>
 <translation id="6445051938772793705">Ország</translation>
 <translation id="6458467102616083041">A rendszer figyelmen kívül hagyja, mivel az alapértelmezett keresést házirend tiltja le.</translation>
 <translation id="647261751007945333">Eszközházirendek</translation>
 <translation id="6489534406876378309">Feltöltési összeomlások indítása</translation>
+<translation id="6500116422101723010">A webhely nem képes kezelni a kérelmet. Ez a kód egy átmeneti állapotot jelez, és a szerver egy idő után újra működni fog.</translation>
 <translation id="6512448926095770873">Az oldal elhagyása</translation>
+<translation id="6516193643535292276">Nem sikerült kapcsolódni az internethez</translation>
 <translation id="6529602333819889595">&amp;Törlés újra</translation>
+<translation id="6533019874004191247">Nem támogatott URL.</translation>
 <translation id="6550675742724504774">Beállítások</translation>
+<translation id="6626108645084335023">Várakozás DNS-vizsgálatra.</translation>
 <translation id="6628463337424475685">Keresés: <ph name="ENGINE" /></translation>
+<translation id="6637478299472506933">Letöltés sikertelen</translation>
+<translation id="6640442327198413730">Hiányzik a gyorsítótárból</translation>
 <translation id="6644283850729428850">Ez a házirend már elavult.</translation>
 <translation id="6646897916597483132">Adja meg a kártya elején szereplő négyjegyű CVC-kódot</translation>
 <translation id="6671697161687535275">Eltávolítja az űrlapjavaslatot a Chromiumból?</translation>
 <translation id="674375294223700098">Ismeretlen szervertanúsítvány-hiba.</translation>
 <translation id="6753269504797312559">Házirend értéke</translation>
+<translation id="6771079623344431310">A proxyszerverhez való kapcsolódás sikertelen</translation>
+<translation id="6781404225664080496">Az erre az URL-re irányuló kérések átmenetileg korlátozva vannak.</translation>
+<translation id="6830600606572693159">A(z) <ph name="URL" /> helyen lévő weboldal pillanatnyilag nem érhető el. Lehetséges, hogy túlterhelt, vagy karbantartás miatt nem működik.</translation>
 <translation id="6831043979455480757">Fordítás</translation>
 <translation id="6839929833149231406">Körzet</translation>
 <translation id="6874604403660855544">&amp;Hozzáadás újra</translation>
 <translation id="6891596781022320156">Ezt a házirendszintet a rendszer nem támogatja.</translation>
 <translation id="6897140037006041989">User agent</translation>
 <translation id="6915804003454593391">Felhasználó:</translation>
+<translation id="6948142510520900350">&lt;strong&gt;Rendszergazdája&lt;/strong&gt; letiltotta a hozzáférést ehhez a weboldalhoz.</translation>
 <translation id="6957887021205513506">A szerver tanúsítványa hamisítványnak tűnik.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6965978654500191972">Készülék</translation>
@@ -269,17 +351,22 @@
 <translation id="6973656660372572881">Mindkét fix proxyszerver és egy .Pac típusú szkript URL-címe meg van adva.</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7050187094878475250">Ön megpróbálta elérni a(z) <ph name="DOMAIN" /> domaint, de a szerver olyan tanúsítványt küldött, amelynek érvényességi ideje túl hosszú ahhoz, hogy megbízható legyen.</translation>
+<translation id="7052500709156631672">A kapuoldal vagy a proxyszerver érvénytelen választ kapott egy ellentétes irányú szervertől.</translation>
 <translation id="7087282848513945231">Megye</translation>
 <translation id="7108649287766967076">A(z) <ph name="TARGET_LANGUAGE" /> nyelvre fordítás sikertelen volt.</translation>
+<translation id="7117303293717852287">A weboldal újratöltése</translation>
 <translation id="7139724024395191329">Emírség</translation>
+<translation id="7148804936871729015">A(z) <ph name="URL" /> URL szervere túl hosszú ideje nem válaszol, feltehetőleg túlterhelt.</translation>
 <translation id="7179921470347911571">Újraindítás most</translation>
 <translation id="7180611975245234373">Frissítés</translation>
 <translation id="7182878459783632708">Nincsenek beállított házirendek</translation>
 <translation id="7186367841673660872">Ezt az oldalt<ph name="ORIGINAL_LANGUAGE" />nyelvről fordítottuk<ph name="LANGUAGE_LANGUAGE" />nyelvre.</translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="7208899522964477531">Keresés <ph name="SITE_NAME" /> keresővel a következő kifejezésre: "<ph name="SEARCH_TERMS" />"</translation>
+<translation id="721197778055552897"><ph name="BEGIN_LINK" />További információ<ph name="END_LINK" /> erről a hibáról.</translation>
 <translation id="7225807090967870017">Buildazonosító</translation>
 <translation id="725866823122871198">Nem hozható létre privát kapcsolat a következővel: <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, mert a számítógép dátum- és időbeállítása helytelen (<ph name="DATE_AND_TIME" />).</translation>
+<translation id="7269802741830436641">Ez a weboldal átirányítási körbe került</translation>
 <translation id="7275334191706090484">Kezelt könyvjelzők</translation>
 <translation id="7298195798382681320">Ajánlott</translation>
 <translation id="7334320624316649418">&amp;Átrendezés újra</translation>
@@ -289,10 +376,13 @@
 <translation id="7419106976560586862">Profil elérési útja</translation>
 <translation id="7424977062513257142">A weboldal egy beágyazott oldalának közlendője:</translation>
 <translation id="7441627299479586546">Az irányelv tárgya nem megfelelő</translation>
+<translation id="7450732239874446337">A hálózati forgalom felfüggesztve.</translation>
 <translation id="7485870689360869515">Nem található adat.</translation>
 <translation id="7514365320538308">Letöltés</translation>
+<translation id="7518003948725431193">Nem található weboldal az internetcímen:<ph name="URL" /></translation>
 <translation id="7537536606612762813">Kötelező</translation>
 <translation id="7542995811387359312">Az automatikus bankkártya-kitöltés le van tiltva, mivel ez az űrlap nem biztonságos kapcsolatot használ.</translation>
+<translation id="7549584377607005141">Ez a weboldal korábban megadott adatokat kér ahhoz, hogy megfelelően jelenjen meg. Az adatokat újra elküldheti, de ezzel meg fog ismételni minden olyan műveletet, amelyet ez az oldal korábban végrehajtott.</translation>
 <translation id="7567204685887185387">A szerver nem tudta bizonyítani, hogy valóban a(z) <ph name="DOMAIN" /> domainbe tartozik; biztonsági tanúsítványát csalással állíthatták ki. Ennek oka lehet konfigurációs hiba, vagy hogy egy támadó eltérítette az Ön kapcsolódását.</translation>
 <translation id="7568593326407688803">Az oldal nyelve<ph name="ORIGINAL_LANGUAGE" />Kívánja lefordítani?</translation>
 <translation id="7569952961197462199">Eltávolítja a hitelkártyát a Chrome-ból?</translation>
@@ -300,16 +390,21 @@
 <translation id="7592362899630581445">A szervertanúsítvány sérti a névre vonatkozó megkötéseket.</translation>
 <translation id="7600965453749440009">Soha ne fordítsa le a(z) <ph name="LANGUAGE" /> nyelvű szöveget</translation>
 <translation id="7610193165460212391">Az érték kívül esik a következő tartományon: <ph name="VALUE" />.</translation>
+<translation id="7614030880636783720">A Wi-Fi- és mobiladat-kapcsolat nem érhető el. Az oldal csak azután tölthető be, miután az eszköz egy hálózathoz csatlakozik.</translation>
 <translation id="7637571805876720304">Eltávolítja a hitelkártyát a Chromiumból?</translation>
+<translation id="7643817847124207232">Elveszett az internetes kapcsolat.</translation>
 <translation id="7674629440242451245">Érdekli néhány remek új Chrome-funkció? Próbálja ki a fejlesztői csatornánkat a chrome.com/dev webhelyen.</translation>
 <translation id="7752995774971033316">Nem kezelt</translation>
 <translation id="7761701407923456692">A szerver tanúsítványa nem egyezik az URL-lel</translation>
 <translation id="777702478322588152">Prefektúra</translation>
+<translation id="778579833039460630">Nincsenek fogadott adatok</translation>
 <translation id="7791543448312431591">Hozzáadás</translation>
 <translation id="780301667611848630">Köszönöm, nem</translation>
 <translation id="7805768142964895445">Állapot</translation>
 <translation id="7813600968533626083">Eltávolítja a javaslatot a Chrome-ból?</translation>
+<translation id="7839809549045544450">A szerver Diffie-Hellman kulcsa gyenge</translation>
 <translation id="7887683347370398519">Ellenőrizze a CVC-t, majd próbálja újra</translation>
+<translation id="790025292736025802"><ph name="URL" /> nem található</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7938958445268990899">A szerver tanúsítványa még nem érvényes.</translation>
 <translation id="7951415247503192394">(32 bites)</translation>
@@ -319,22 +414,31 @@
 <translation id="7983301409776629893">A(z) <ph name="ORIGINAL_LANGUAGE" /> nyelvű szövegeket mindig fordítsa <ph name="TARGET_LANGUAGE" /> nyelvre</translation>
 <translation id="7988324688042446538">Asztali könyvjelzők</translation>
 <translation id="7995512525968007366">Nincs megadva</translation>
+<translation id="8016174103774548813">Az SSL-szerver valószínűleg elavult.</translation>
 <translation id="8034522405403831421">Ez az oldal <ph name="SOURCE_LANGUAGE" /> nyelven van. Lefordítja <ph name="TARGET_LANGUAGE" /> nyelvre?</translation>
 <translation id="8088680233425245692">Nem sikerült megtekinteni a cikket.</translation>
 <translation id="8091372947890762290">Az aktiválás függőben van a szerveren</translation>
+<translation id="8150722005171944719">A fájl (<ph name="URL" />) nem olvasható. Lehet, hogy eltávolították, áthelyezték, vagy a fájlengedélyek megakadályozzák a hozzáférést.</translation>
 <translation id="8194797478851900357">&amp;Áthelyezés visszavonása</translation>
 <translation id="8201077131113104583">A(z) „<ph name="EXTENSION_ID" />” azonosítójú bővítmény frissítési URL-je érvénytelen.</translation>
+<translation id="8204086856545141093">A szerver felé irányuló kéréseket letiltja egy házirend.</translation>
+<translation id="820791781874064845">A weboldalt egy bővítmény blokkolja</translation>
 <translation id="8208216423136871611">Ne mentse</translation>
 <translation id="8218327578424803826">Hozzárendelt helyszín:</translation>
 <translation id="8249320324621329438">Utolsó lekérés:</translation>
+<translation id="8289355894181816810">Forduljon a hálózati rendszergazdához, ha nem tudja, hogy ez mit jelent.</translation>
 <translation id="8294431847097064396">Forrás</translation>
+<translation id="8295070100601117548">Szerverhiba</translation>
 <translation id="8308427013383895095">A fordítás a hálózati kapcsolat problémája miatt nem sikerült.</translation>
 <translation id="8311778656528046050">Biztos, hogy újra szeretné tölteni ezt az oldalt?</translation>
 <translation id="8349305172487531364">Könyvjelzősáv</translation>
 <translation id="8364627913115013041">Nincs beállítva.</translation>
 <translation id="8412145213513410671">Rendszerösszeomlások ( <ph name="CRASH_COUNT" /> )</translation>
+<translation id="8428213095426709021">Beállítások</translation>
 <translation id="8437238597147034694">&amp;Áthelyezés visszavonása</translation>
 <translation id="8488350697529856933">A következőre érvényes</translation>
+<translation id="8494979374722910010">A szerverhez való kapcsolódás sikertelen.</translation>
+<translation id="8515737884867295000">A tanúsítványalapú hitelesítés nem sikerült</translation>
 <translation id="8530504477309582336">A Google Payments nem támogatja az ilyen típusú kártyákat. Kérjük, válasszon egy másikat.</translation>
 <translation id="8553075262323480129">A fordítás nem sikerült, mivel az oldal nyelvét nem lehet megállapítani.</translation>
 <translation id="8559762987265718583">Nem hozható létre privát kapcsolat a következővel: <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, mert az eszköz dátum- és időbeállítása helytelen (<ph name="DATE_AND_TIME" />).</translation>
@@ -342,6 +446,7 @@
 <translation id="8647750283161643317">Minden visszaállítása az alapértékre</translation>
 <translation id="8713130696108419660">Helytelen első aláírás</translation>
 <translation id="8725066075913043281">Újrapróbálás</translation>
+<translation id="8729518820755801792">Az URL nem nyitható meg.</translation>
 <translation id="8738058698779197622">Biztonságos kapcsolat létrehozásához az órát pontosan be kell állítani. Ez azért szükséges, mert a webhelyek által az azonosításukra használt tanúsítványok csak adott ideig érvényesek. Mivel az eszköz órája nem pontos, a Chromium nem tudja ellenőrizni ezeket a tanúsítványokat.</translation>
 <translation id="8790007591277257123">&amp;Törlés újra</translation>
 <translation id="8798099450830957504">Alapértelmezett</translation>
@@ -356,14 +461,20 @@
 <translation id="8876793034577346603">A hálózati konfiguráció előfeldolgozása sikertelen.</translation>
 <translation id="8891727572606052622">Érvénytelen proxymód.</translation>
 <translation id="889901481107108152">Sajnos ez a kísérlet nem érhető el az Ön operációs rendszerén.</translation>
+<translation id="890308499387283275">A Chrome nem tudja letölteni a fájlt.</translation>
 <translation id="8903921497873541725">Nagyítás</translation>
 <translation id="8932102934695377596">Késik az órája</translation>
 <translation id="8940229512486821554"><ph name="EXTENSION_NAME" /> futtatása a következő paranccsal: <ph name="SEARCH_TERMS" /></translation>
 <translation id="8971063699422889582">A szerver tanúsítványa lejárt.</translation>
 <translation id="8988760548304185580">Adja meg a lejárati dátumot, és a kártya hátoldalán szereplő háromjegyű CVC-kódot</translation>
+<translation id="9013589315497579992">Rossz SSL-ügyfélhitelesítési tanúsítvány.</translation>
 <translation id="901974403500617787">Rendszerszinten érvényes jelölőket csak a tulajdonos (<ph name="OWNER_EMAIL" />) állíthat be.</translation>
+<translation id="9020142588544155172">A szerver visszautasította a kapcsolatot.</translation>
+<translation id="9020278534503090146">Ez a weboldal nem érhető el</translation>
 <translation id="9020542370529661692">Az oldalt lefordítottuk <ph name="TARGET_LANGUAGE" /> nyelvre.</translation>
+<translation id="904949795138183864">A(z) <ph name="URL" /> alatt található webhely már nem létezik.</translation>
 <translation id="9049981332609050619">Megpróbálta elérni a(z) <ph name="DOMAIN" /> webhelyet, de a szerver érvénytelen tanúsítványt mutatott be.</translation>
+<translation id="9086455579313502267">Nem sikerült elérni a hálózatot</translation>
 <translation id="9125941078353557812">Adja meg a kártya hátoldalán szereplő háromjegyű CVC-kódot</translation>
 <translation id="9137013805542155359">Eredeti megjelenítése</translation>
 <translation id="9148507642005240123">&amp;Szerkesztés visszavonása</translation>

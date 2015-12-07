@@ -47,7 +47,6 @@
 <translation id="2486653164587200256">Chromium fungerer kanskje ikke riktig fordi den ikke lenger støttes på Windows XP eller Windows Vista.</translation>
 <translation id="2535480412977113886">Chromium kunne ikke synkronisere dataene fordi påloggingsopplysningene dine er foreldede.</translation>
 <translation id="2558641060352364164">Dette nettstedet bruker Chromium Frame-programtillegget. Støtten for dette programtillegget utløper snart, og du bør derfor avinstallere det og oppgradere til en nyere nettleser.</translation>
-<translation id="2565260267992448464">Chromium kan ikke vise nettsiden fordi datamaskinen din ikke er koblet til Internett.</translation>
 <translation id="2572494885440352020">Chromium-hjelper</translation>
 <translation id="2602806952220118310">Chromium – varsler</translation>
 <translation id="2636877269779209383">Chromium må ha tilgang til kameraet ditt for å kunne dele det med dette nettstedet.</translation>
@@ -110,16 +109,6 @@ og feil legitimasjon. Dette kan skje når en angriper prøver å utgi seg for å
 <translation id="4458285410772214805">Logg deg av og så på igjen for at denne endringen skal tre i kraft.</translation>
 <translation id="4488676065623537541">Faktureringsdetaljene dine er lagret i Chromium.</translation>
 <translation id="4549794359424059447">Fremtidige versjoner av Chromium kommer ikke lenger til å støtte Windows XP eller Windows Vista.</translation>
-<translation id="4559775032954821361">Gå til
-          Chromium-menyen &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          &gt;          
-          LAN-innstillinger
-          og fjern avmerkingen for «Bruk en mellomtjener for LAN-nettverket».</translation>
 <translation id="4567424176335768812">Du er logget på som <ph name="USER_EMAIL_ADDRESS" />. Nå kan du bruke bokmerkene, loggen og andre innstillinger på alle enhetene du er logget på.</translation>
 <translation id="457845228957001925">Viktig informasjon om Chromium-dataene dine</translation>
 <translation id="459535195905078186">Chromium-apper</translation>
@@ -141,14 +130,6 @@ og feil legitimasjon. Dette kan skje når en angriper prøver å utgi seg for å
 <translation id="5680901439334282664">logg på Chromium</translation>
 <translation id="5772805321386874569">(krever at Chromium <ph name="BEGIN_BUTTON" />startes på nytt<ph name="END_BUTTON" />)</translation>
 <translation id="5796460469508169315">Chromium er nesten klar.</translation>
-<translation id="580822234363523061">Gå til
-          Chromium-menyen &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          og sørg for at konfigurasjonen din er angitt til «ingen mellomtjener» eller «direkte».</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5823381412099532241">Chromium kunne ikke oppdatere seg selv til den nyeste versjonen, så du går glipp av fantastiske nye funksjoner og sikkerhetsforbedringer. Du må oppdatere Chromium.</translation>
 <translation id="5862307444128926510">Velkommen til Chromium</translation>
@@ -225,7 +206,6 @@ Chromium kan ikke gjenopprette innstillingen dine.</translation>
 <translation id="8033665941300843262">Chromium må ha tilgang til tillatelsene dine for å kunne dele dem med dette nettstedet.</translation>
 <translation id="805745970029938373">Du kan se alle varslene dine fra Chromium-apper, -utvidelser og -nettsteder her.</translation>
 <translation id="8134284582177628525">Hvis du deler denne datamaskinen med <ph name="PROFILE_NAME" />, kan du legge deg selv til i Chromium for å holde surfingen atskilt. Eventuelt kan du koble fra vedkommendes Google-konto.</translation>
-<translation id="8187289872471304532">Gå til Programmer &gt; Systeminnstillinger &gt; Nettverk &gt; Avansert &gt; Mellomtjenere og fjern avmerkingen for alle valgte mellomtjenere.</translation>
 <translation id="8269379391216269538">Bidra til å gjøre Chromium bedre</translation>
 <translation id="8453117565092476964">Installasjonsarkivet er skadet eller ugyldig. Last ned Chromium på nytt.</translation>
 <translation id="8493179195440786826">Chromium er utdatert</translation>
@@ -233,7 +213,6 @@ Chromium kan ikke gjenopprette innstillingen dine.</translation>
 <translation id="85843667276690461">Få hjelp med å bruke Chromium</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> – The Chromium Authors. Med enerett.</translation>
 <translation id="8605166112420372522">&amp;Start Chromium på nytt på skrivebordet</translation>
-<translation id="8610831143142469229">Tillat at Chromium bruker nettverket i brannmur- eller antivirusinnstillingene dine.</translation>
 <translation id="8621669128220841554">Installeringen mislyktes på grunn av en uspesifisert feil. Last ned Chromium på nytt.</translation>
 <translation id="8628626585870903697">Chromium omfatter ikke PDF-visningsprogrammet som er nødvendig for at «Forhåndsvisning av utskrift» skal fungere.</translation>
 <translation id="8684913864886094367">Chromium ble ikke avsluttet på riktig måte.</translation>

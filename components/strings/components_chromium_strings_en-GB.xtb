@@ -8,6 +8,24 @@
           and disable "Prefetch page resources".
           If this does not resolve the issue, we recommend re-enabling this option
           again for improved performance.</translation>
+<translation id="4559775032954821361">Go to
+          the Chromium menu &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          &gt;
+          <ph name="PROXIES_TITLE" />
+          &gt;
+          LAN Settings
+          and deselect the "Use a proxy server for your LAN" checkbox.</translation>
+<translation id="580822234363523061">Go to
+          the Chromium menu &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          &gt;
+          <ph name="PROXIES_TITLE" />
+          and make sure your configuration is set to "no proxy" or "direct."</translation>
 <translation id="6613594504749178791">Your changes will take effect the next time you relaunch Chromium.</translation>
 <translation id="7861509383340276692">Go to
           the Chromium menu &gt;
@@ -17,4 +35,9 @@
           and deselect "<ph name="NO_PREFETCH_DESCRIPTION" />".
           If this does not resolve the issue, we recommend selecting this option
           again for improved performance.</translation>
+<translation id="8187289872471304532">Go to
+          Applications &gt; System Preferences &gt; Network &gt; Advanced &gt; Proxies
+          and deselect any proxies that have been selected.</translation>
+<translation id="8610831143142469229">Allow Chromium to access the network in your firewall or antivirus
+        settings.</translation>
 </translationbundle>

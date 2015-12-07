@@ -47,7 +47,6 @@
 <translation id="2486653164587200256">Chromium 可能无法正常运行，因为它不再支持 Windows XP 或 Windows Vista。</translation>
 <translation id="2535480412977113886">您的帐户登录详细信息已过期，Chromium操作系统无法同步您的数据。</translation>
 <translation id="2558641060352364164">此网站使用的 Chromium 内嵌框架插件即将不受支持。请卸载该插件，然后升级到新型浏览器。</translation>
-<translation id="2565260267992448464">Chromium 无法显示该网页，因为您的计算机未连接到互联网。</translation>
 <translation id="2572494885440352020">Chromium 帮助程序</translation>
 <translation id="2602806952220118310">Chromium - 通知</translation>
 <translation id="2636877269779209383">Chromium 需要具有摄像头使用权限，才能批准此网站的分享请求。</translation>
@@ -109,7 +108,6 @@
 <translation id="4458285410772214805">请先退出，然后重新登录，以便此更改生效。</translation>
 <translation id="4488676065623537541">您的帐单明细已保存在 Chromium 中。</translation>
 <translation id="4549794359424059447">Chromium 的后续版本将不再支持 Windows XP 或 Windows Vista。</translation>
-<translation id="4559775032954821361">依次转到 Chromium 菜单 &gt;“<ph name="SETTINGS_TITLE" />”&gt;“<ph name="ADVANCED_TITLE" />”&gt;“<ph name="PROXIES_TITLE" />”&gt;“LAN 设置”，然后取消选中“为 LAN 使用代理服务器”复选框。</translation>
 <translation id="4567424176335768812">您已使用 <ph name="USER_EMAIL_ADDRESS" /> 的身份登录。现在您可在已登录的所有设备上访问您的书签、历史记录和其他设置。</translation>
 <translation id="457845228957001925">与您的 Chromium 数据相关的重要信息</translation>
 <translation id="459535195905078186">Chromium 应用</translation>
@@ -131,7 +129,6 @@
 <translation id="5680901439334282664">登录 Chromium</translation>
 <translation id="5772805321386874569">（需要<ph name="BEGIN_BUTTON" />重新启动<ph name="END_BUTTON" /> Chromium）</translation>
 <translation id="5796460469508169315">Chromium 即将准备就绪。</translation>
-<translation id="580822234363523061">依次转到 Chromium 菜单 &gt;“<ph name="SETTINGS_TITLE" />”&gt;“<ph name="ADVANCED_TITLE" />”&gt;“<ph name="PROXIES_TITLE" />”，并确保您已将配置设为“无代理”或“直接连接”。</translation>
 <translation id="5820394555380036790">Chromium 操作系统</translation>
 <translation id="5823381412099532241">Chromium无法自动更新到最新版本，因此其中缺少一些非常棒的新功能和安全修复程序。要获得这些内容，您需要更新Chromium。</translation>
 <translation id="5862307444128926510">欢迎使用 Chromium</translation>
@@ -208,7 +205,6 @@ Chromium 无法恢复您的设置。</translation>
 <translation id="8033665941300843262">Chromium 需要具有这些功能的使用权限，才能批准此网站的分享请求。</translation>
 <translation id="805745970029938373">您可以在此处查看来自 Chromium 应用、扩展程序和网站的所有通知。</translation>
 <translation id="8134284582177628525">如果您与<ph name="PROFILE_NAME" />共用这台计算机，将您的帐户添加到Chromium，即可在单独的环境中浏览。或者，您也可以取消与其Google帐户的关联。</translation>
-<translation id="8187289872471304532">依次转到“应用”&gt;“系统偏好设置”&gt;“网络”&gt;“高级”&gt;“代理”，然后取消选中所有已选的代理。</translation>
 <translation id="8269379391216269538">帮助我们改进Chromium</translation>
 <translation id="8453117565092476964">安装程序归档损坏或无效。请重新下载 Chromium。</translation>
 <translation id="8493179195440786826">Chromium版本太旧</translation>
@@ -216,7 +212,6 @@ Chromium 无法恢复您的设置。</translation>
 <translation id="85843667276690461">获取 Chromium 使用帮助</translation>
 <translation id="8586442755830160949">版权所有<ph name="YEAR" /> The Chromium Authors。保留所有权利。</translation>
 <translation id="8605166112420372522">以桌面模式重新启动 Chromium(&amp;R)</translation>
-<translation id="8610831143142469229">对防火墙或防病毒软件进行设置，以允许 Chromium 访问该网络。</translation>
 <translation id="8621669128220841554">未指定的错误导致安装失败。请重新下载 Chromium。</translation>
 <translation id="8628626585870903697">Chromium 未包含运行打印预览所需的 PDF 查看器。</translation>
 <translation id="8684913864886094367">Chromium 未正确关闭。</translation>

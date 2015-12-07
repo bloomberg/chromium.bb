@@ -93,7 +93,7 @@
 <translation id="6820355525329141109">Nepavyko įkelti papildinio.</translation>
 <translation id="6843725295806269523">nutildyti</translation>
 <translation id="6845533974506654842">paspausti</translation>
-<translation id="6853785296079745596">slėpti uždaras antraštes</translation>
+<translation id="6853785296079745596">slėpti subtitrus</translation>
 <translation id="7057186640035488495">filmo laikas</translation>
 <translation id="709897737746224366">Priderinkite reikalaujamą formatą.</translation>
 <translation id="7223624360433298498">praėjęs laikas</translation>
@@ -102,13 +102,13 @@
 <translation id="739024184232394898">Kita...</translation>
 <translation id="7673697353781729403">Valandos</translation>
 <translation id="7720026100085573005">likęs laikas</translation>
-<translation id="7740016676195725605">nebepateikti uždarų antraščių</translation>
+<translation id="7740016676195725605">nebepateikti subtitrų</translation>
 <translation id="7740050170769002709">HTML turinys</translation>
 <translation id="7789962463072032349">pristabdyti</translation>
 <translation id="7888071071722539607">Į el. pašto adresą įtraukite „<ph name="ATSIGN" />“. „<ph name="INVALIDADDRESS" />“ trūksta „<ph name="ATSIGN" />“.</translation>
 <translation id="795667975304826397">Nepasirinktas joks failas</translation>
 <translation id="8053789581856978548">paieškos teksto laukas</translation>
-<translation id="8115662671911883373">pateikti uždaras antraštes</translation>
+<translation id="8115662671911883373">pateikti subtitrus</translation>
 <translation id="8117451130807776954">Ši savaitė</translation>
 <translation id="8141602879876242471">Tai yra ieškotinas indeksas. Įveskite paieškos raktinių žodžių:</translation>
 <translation id="819205353528511139">paleisti filmą viso ekrano režimu</translation>
@@ -129,7 +129,7 @@
 <translation id="8987927404178983737">Mėnuo</translation>
 <translation id="901493112792887934">dabartinis laikas sekundėmis</translation>
 <translation id="9048119486235211610">naršymas</translation>
-<translation id="9050748414552849310">rodyti uždaras antraštes</translation>
+<translation id="9050748414552849310">rodyti subtitrus</translation>
 <translation id="9108370397979208512">matematika</translation>
 <translation id="9132465097189459683">Kita...</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />, nuo <ph name="WEEK_START_DATE" /></translation>

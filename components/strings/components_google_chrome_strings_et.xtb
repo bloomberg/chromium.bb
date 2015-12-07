@@ -9,6 +9,15 @@
           ja keelake valik „Lehe ressursside eellaadimine”.
           Kui see probleemi ei lahenda, soovitame selle valiku toimivuse
           parandamiseks uuesti lubada.</translation>
+<translation id="5890698319714066019">Google Chrome ei saa veebilehte kuvada, kuna teie arvutis puudub Interneti-ühendus.</translation>
+<translation id="6011049234605203654">Minge
+          Chrome'i menüüsse &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          &gt;
+          <ph name="PROXIES_TITLE" />
+          ja veenduge, et konfiguratsioon on määratud valikule „Puhverserverita” või „Otse”</translation>
 <translation id="6341737370356890233">Avage
         Chrome'i menüü &gt;
         <ph name="SETTINGS_TITLE" />
@@ -17,4 +26,19 @@
         ja tühistage valik „<ph name="NO_PREFETCH_DESCRIPTION" />”.
         Kui see probleemi ei lahenda, soovitame toimivuse parandamiseks
         selle valiku uuesti teha.</translation>
+<translation id="6855094794438142393">Valige
+          Chrome'i menüü &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          &gt;
+          <ph name="PROXIES_TITLE" />
+          &gt;
+          LAN-seaded
+          ja tühistage valik „Kasuta LAN-i jaoks puhverserverit”.</translation>
+<translation id="7396375882099008034">Juurdepääsuks võrgule tulemüüri või viirusetõrje seadetes lubage
+        Chrome.</translation>
+<translation id="8187289872471304532">Tehke valikud
+          Rakendused &gt; Süsteemieelised &gt; Võrk &gt; Täpsem &gt; Puhverserverid
+          ja tühjendage kõigi valitud puhverserverite märkeruudud.</translation>
 </translationbundle>

@@ -151,19 +151,10 @@ Google Chrome haiwezi kufufua mipangilio yako.</translation>
 <translation id="5785746630574083988">Kuzindua upya kwenye hali ya Windows 8 kutafunga na kuzindua upya programu zako za Chrome.</translation>
 <translation id="5855036575689098185">Programu unayotumia kwenye kompyuta yako haioani na Google Chrome.</translation>
 <translation id="5877064549588274448">Kituo kimebadilishwa. Zima na uwashe kifaa chako ili mabadiliko yaanze kutumika.</translation>
-<translation id="5890698319714066019">Google Chrome haiwezi kuonyesha ukurasa wa wavuti kwa sababu kompyuta yako haijaunganishwa kwenye Intaneti.</translation>
 <translation id="5931853610562009806">Kwenye Mac, manenosiri yanaweza kuhifadhiwa kwenye Msururu wako wa kitufe na yanaweza kufikiwa au kusawazishwa na watumiaji wengine wa Chrome wanaoshiriki akaunti hii ya OS X.</translation>
 <translation id="5940385492829620908">Wavuti, alamisho, na vitu vyako vingine vya Chrome vinapatikana hapa.</translation>
 <translation id="5941830788786076944">Fanya Google Chrome iwe kivinjari chaguo-msingi</translation>
 <translation id="597770749449734237">Huwasha mikato ya kibodi ya ziada ambayo ni muhimu kwa kutatua Google Chrome.</translation>
-<translation id="6011049234605203654">Nenda kwenye
-          menyu ya Chrome &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-           na uhakikishe kuwa usanidi wako umewekwa kwenye "hakuna proksi" au "moja kwa moja."</translation>
 <translation id="6012342843556706400">Chrome inahitaji idhini ya kufikia mahali ili ipashiriki na tovuti hii.</translation>
 <translation id="6014844626092547096">Sasa umeingia kwenye Chrome! Usawazishaji umezimwa na msimamizi wako.</translation>
 <translation id="6049075767726609708">Msimamiaji kompyuta amesanidi Google Chrome kwenye mfumo huu na inapatikana kwa watumiaji wote. Google Chrome ya kiwango cha mfumo itachukua mahali pa usanidi wako wa kiwago cha mtumiaji sasa.</translation>
@@ -184,16 +175,6 @@ Google Chrome haiwezi kufufua mipangilio yako.</translation>
 <translation id="6676384891291319759">Fika kwenye wavuti</translation>
 <translation id="6757767188268205357">Usinisumbue</translation>
 <translation id="683440813066116847">Sheria ya ndani ya Google Chrome Canary ili kuruhusu trafiki ya mDNS.</translation>
-<translation id="6855094794438142393">Nenda kwenye
-          menyu ya Chrome &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          &gt;
-          Mipangilio ya LAN
-          na uondoe tiki kwenye "Tumia seva ya proksi kwa LAN yako".</translation>
 <translation id="6883876366448858277">hutuma neno na muktadha wake kwenye Tafuta na Google, kurejesha ufafanuzi, picha, na matokeo mengine ya utafutaji.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="6970811910055250180">Inasasisha kifaa chako...</translation>
@@ -215,7 +196,6 @@ Google Chrome haiwezi kufufua mipangilio yako.</translation>
 <translation id="7282192067747128786">Chrome - Arifa (<ph name="QUANTITY" /> hazijasomwa)</translation>
 <translation id="729375352412857283">Kompyuta hii itaacha kupokea sasisho za Google Chrome hivi karibuni kwa sababu Windows XP na Windows Vista hazitatumika tena.</translation>
 <translation id="7339898014177206373">Dirisha jipya</translation>
-<translation id="7396375882099008034">Ruhusu Chrome ifikie mtandao kwenye mipangilio yako ya ngome au kingavirusi.</translation>
 <translation id="7398801000654795464">Uliingia kwenye Chrome kama <ph name="USER_EMAIL_ADDRESS" />. Tafadhali tumia akaunti sawa ili kuingia tena.</translation>
 <translation id="7400722733683201933">Kuhusu Google Chrome</translation>
 <translation id="7408085963519505752">Masharti ya Chrome OS</translation>
@@ -245,8 +225,6 @@ Google Chrome haiwezi kufufua mipangilio yako.</translation>
 <translation id="8032142183999901390">Baada ya kuiondoa akaunti yako kwenye Chrome, huenda ukahitajika kupakia upya vichupo vyako vilivyo wazi ili kuanza kufanya kazi.</translation>
 <translation id="8037887340639533879">Hakuna usakinishi wa Google Chrome uliopatikana kusasishwa.</translation>
 <translation id="8129812357326543296">Kuhusu &amp;Google Chrome</translation>
-<translation id="8187289872471304532">Nenda kwenye
-          Programu &gt; Mapendeleo ya Mfumo &gt; Mtandao &gt; Uboreshaji &gt; Proksi na uondoe tiki kwenye proksi zozote ambazo zimechaguliwa.</translation>
 <translation id="8205111949707227942">Hiari: Saidia kuifanya Chrome OS kuwa bora kwa kutuma kiotomatiki takwimu za utumiaji na ripoti za kuvurugika kwa Google.</translation>
 <translation id="8227755444512189073">Google Chrome inahitaji kufungua programu ya nje ili kushughulikia viungo vya <ph name="SCHEME" />. Kiungo kilichoitishwa ni <ph name="PROTOLINK" />.</translation>
 <translation id="8255190535488645436">Google Chrome inatumia kamera na maikrofoni yako.</translation>

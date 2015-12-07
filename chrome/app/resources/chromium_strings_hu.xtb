@@ -47,7 +47,6 @@
 <translation id="2486653164587200256">Előfordulhat, hogy a Chromium nem fog megfelelően működni, mert a továbbiakban már nem támogatja a következő rendszereket: Windows XP és Windows Vista.</translation>
 <translation id="2535480412977113886">A Chromium OS nem tudta szinkronizálni az adatokat, mert a fiók bejelentkezési adatai elavultak.</translation>
 <translation id="2558641060352364164">Ez a webhely a Chromium Frame beépülő modult használja, amelynek támogatása hamarosan megszűnik. Kérjük, távolítsa el, majd frissítsen egy modern böngészőre.</translation>
-<translation id="2565260267992448464">A Chromium nem tudja megjeleníteni a weboldalt, mert a számítógép nem csatlakozik az internethez.</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
 <translation id="2602806952220118310">Chromium – Értesítések</translation>
 <translation id="2636877269779209383">A Chromiumnak hozzáférésre van szüksége a kamerához, hogy megoszthassa azt a webhellyel.</translation>
@@ -110,16 +109,6 @@
 <translation id="4458285410772214805">Kérjük, jelentkezzen ki, majd jelentkezzen be újra a módosítás aktiválásához.</translation>
 <translation id="4488676065623537541">Számlázási adatait a Chromium mentette.</translation>
 <translation id="4549794359424059447">A Chromium jövőbeli verziói nem fogják támogatni a következő rendszereket: Windows XP és Windows Vista.</translation>
-<translation id="4559775032954821361">Lépjen ide:
-          Chromium menü &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          &gt;
-          A helyi hálózat (LAN) beállításai,
-          majd törölje a jelet a „Proxykiszolgáló használata a helyi hálózaton” jelölőnégyzetből.</translation>
 <translation id="4567424176335768812">A(z) <ph name="USER_EMAIL_ADDRESS" /> címmel van bejelentkezve. Elérheti könyvjelzőit, előzményeit és más beállításait minden olyan eszközön, amelyen bejelentkezett.</translation>
 <translation id="457845228957001925">Fontos információ az Ön Chromium-adatairól</translation>
 <translation id="459535195905078186">Chromium-alkalmazások</translation>
@@ -141,14 +130,6 @@
 <translation id="5680901439334282664">bejelentkezés a Chromiumba</translation>
 <translation id="5772805321386874569">(a Chromium <ph name="BEGIN_BUTTON" />újraindítását<ph name="END_BUTTON" /> igényli)</translation>
 <translation id="5796460469508169315">A Chromium majdnem készen áll.</translation>
-<translation id="580822234363523061">Lépjen ide:
-          Chromium menü &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />,
-          és gondoskodjon róla, hogy a konfiguráció beállítása „nincs proxy” vagy „közvetlen” legyen.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5823381412099532241">A Chromium nem tudott frissíteni a legújabb verzióra, ezért Ön nem rendelkezik a remek új funkciókkal és biztonsági javításokkal. A Chromium frissítése szükséges.</translation>
 <translation id="5862307444128926510">Üdvözli a Chromium!</translation>
@@ -223,7 +204,6 @@ A Chromium nem tudja visszaállítani a beállításait.</translation>
 <translation id="8033665941300843262">A Chromiumnak hozzáférésre van szüksége az engedélyekhez, hogy megoszthassa azokat a webhellyel.</translation>
 <translation id="805745970029938373">Itt tekintheti meg a Chromium-alkalmazások és bővítmények, valamint a webhelyek értesítéseit.</translation>
 <translation id="8134284582177628525">Ha közösen használja ezt a számítógépet <ph name="PROFILE_NAME" /> felhasználóval, adja hozzá magát a Chromiumhoz, hogy külön böngészhessen. Máskülönben válassza le az ő Google-fiókját.</translation>
-<translation id="8187289872471304532">Az Applications &gt; System Preferences &gt; Network &gt; Advanced &gt; Proxies (Alkalmazások &gt; Rendszerbeállítások &gt; Hálózat &gt; Speciális &gt; Proxyk) menüpont alatt törölje a jelet minden kijelölt proxy mellől.</translation>
 <translation id="8269379391216269538">Segítsen a Chromium továbbfejlesztésében</translation>
 <translation id="8453117565092476964">A telepítő tömörített állománya megsérült vagy érvénytelen. Kérjük, töltse le újra a Chromium böngészőt.</translation>
 <translation id="8493179195440786826">A Chromium elavult</translation>
@@ -231,8 +211,6 @@ A Chromium nem tudja visszaállítani a beállításait.</translation>
 <translation id="85843667276690461">Segítséget kaphat a Chromium használatával kapcsolatban</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> – A Chromium szerzői. Minden jog fenntartva.</translation>
 <translation id="8605166112420372522">Chromium új&amp;raindítása az asztalon</translation>
-<translation id="8610831143142469229">A hálózat elérésének engedélyezése a Chromium számára a
-        tűzfal- vagy vírusirtó-beállításokban.</translation>
 <translation id="8621669128220841554">A telepítés egy meg nem határozott hiba miatt nem sikerült. Kérjük, töltse le újra a Chromiumot.</translation>
 <translation id="8628626585870903697">A Chromium nem tartalmazza a PDF Viewer alkalmazást, amely a Nyomtatási előnézet működéséhez szükséges.</translation>
 <translation id="8684913864886094367">A Chromium nem záródott be megfelelően.</translation>

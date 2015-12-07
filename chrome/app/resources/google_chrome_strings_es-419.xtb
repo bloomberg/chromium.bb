@@ -143,19 +143,10 @@ Si accedes de todos modos, se fusionará la información de Google Chrome, como 
 <translation id="5785746630574083988">Si vuelves a iniciar en el modo Windows 8, las aplicaciones de Chrome se cerrarán y se volverán a abrir.</translation>
 <translation id="5855036575689098185">El software que se ejecuta en tu computadora no es compatible con Google Chrome.</translation>
 <translation id="5877064549588274448">Se cambió el canal. Reinicia el dispositivo para aplicar los cambios.</translation>
-<translation id="5890698319714066019">Google Chrome no puede mostrar la página web porque la computadora no está conectada a Internet.</translation>
 <translation id="5931853610562009806">En dispositivos Mac, las contraseñas pueden guardarse en la aplicación Keychain. Los usuarios de Chrome con los que compartes esta cuenta del sistema operativo X pueden acceder a las contraseñas o sincronizarlas.</translation>
 <translation id="5940385492829620908">Aquí puedes encontrar tus páginas web, marcadores y otros contenidos de Chrome.</translation>
 <translation id="5941830788786076944">Haga de Google Chrome su navegador predeterminado</translation>
 <translation id="597770749449734237">Permite habilitar combinaciones de teclas para acceso directo adicionales que son útiles para depurar Google Chrome.</translation>
-<translation id="6011049234605203654">Accede
-          al menú de Chrome &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          y asegúrate de que la configuración seleccionada sea "sin proxy" o "directa".</translation>
 <translation id="6012342843556706400">Chrome necesita acceso a la ubicación para compartirla con este sitio.</translation>
 <translation id="6014844626092547096">Accediste a Chrome. El administrador inhabilitó la sincronización.</translation>
 <translation id="6049075767726609708">Un administrador instaló Google Chrome en este equipo, que está disponible para todos los usuarios, y la versión de Google Chrome instalada a nivel del sistema reemplazará la versión instalada a nivel de usuario en este momento.</translation>
@@ -176,16 +167,6 @@ Si accedes de todos modos, se fusionará la información de Google Chrome, como 
 <translation id="6676384891291319759">Acceder a Internet</translation>
 <translation id="6757767188268205357">No preguntar de nuevo</translation>
 <translation id="683440813066116847">Regla de entrada para que Google Chrome Canary permita el tráfico mDNS.</translation>
-<translation id="6855094794438142393">Accede
-          al menú de Chrome &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          &gt;
-          Configuración LAN
-          y desmarca la casilla de verificación "Usar un servidor proxy para tu LAN".</translation>
 <translation id="6883876366448858277">envía una palabra y el contexto en el que se encuentra a la Búsqueda de Google, y muestra definiciones, imágenes y otros resultados de búsqueda.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="6970811910055250180">Actualizando el dispositivo...</translation>
@@ -207,7 +188,6 @@ Si accedes de todos modos, se fusionará la información de Google Chrome, como 
 <translation id="7282192067747128786">Chrome: notificaciones (<ph name="QUANTITY" /> sin leer)</translation>
 <translation id="729375352412857283">Esta computadora dejará de recibir actualizaciones de Google Chrome en breve porque Windows XP y Windows Vista ya no se admitirán.</translation>
 <translation id="7339898014177206373">Nueva ventana</translation>
-<translation id="7396375882099008034">Permite que Chrome acceda a la red en tu configuración de antivirus o de firewall.</translation>
 <translation id="7398801000654795464">Accediste a Google Chrome con <ph name="USER_EMAIL_ADDRESS" />. Usa la misma cuenta para volver a acceder.</translation>
 <translation id="7400722733683201933">Acerca de Google Chrome</translation>
 <translation id="7408085963519505752">Condiciones del Sistema operativo Chrome</translation>
@@ -237,9 +217,6 @@ Si accedes de todos modos, se fusionará la información de Google Chrome, como 
 <translation id="8032142183999901390">Luego de eliminar la cuenta de Chrome, es posible que debas volver a cargar las pestañas abiertas para que se aplique el cambio.</translation>
 <translation id="8037887340639533879">No se encontraron actualizaciones de Google Chrome.</translation>
 <translation id="8129812357326543296">Acerca de &amp;Google Chrome</translation>
-<translation id="8187289872471304532">Accede a
-          Aplicaciones &gt; Preferencias del Sistema &gt; Red &gt; Avanzado &gt; Proxies
-          y desmarca las casillas de verificación de los proxies que se hayan seleccionado.</translation>
 <translation id="8205111949707227942">Opcional: Ayúdanos a mejorar Chrome SO enviando estadísticas de uso e informes sobre fallos automáticamente a Google.</translation>
 <translation id="8227755444512189073">Google Chrome debe iniciar una aplicación externa para administrar <ph name="SCHEME" /> enlaces. El enlace solicitado es <ph name="PROTOLINK" />.</translation>
 <translation id="8255190535488645436">Google Chrome está usando tu cámara y tu micrófono.</translation>

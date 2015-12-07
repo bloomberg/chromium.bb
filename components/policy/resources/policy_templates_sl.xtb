@@ -374,21 +374,6 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
 
           Če ta nastavitev ni nastavljena, bo <ph name="PRODUCT_NAME" />
           dovolil uporabo gostiteljev izvornega pošiljanja na uporabniški ravni.</translation>
-<translation id="2393996789386329927">Blokira dostop do URL-jev na seznamu.
-
-      Ta pravilnik uporabniku preprečuje nalaganje spletnih strani URL-jev s seznama blokiranih. Seznam blokiranih posreduje seznam vzorcev URL-jev, ki določajo, kateri URL-ji bodo uvrščeni na seznam blokiranih.
-
-      Vsak vzorec URL-ja je lahko vzorec lokalnih datotek ali splošni vzorec URL-ja. Vzorci lokalnih datotek so oblike »file://path«, pri čemer mora biti pot absolutna pot za blokiranje. Vse lokacije datotečnega sistema, ki imajo za predpono to pot, bodo blokirane.
-
-      Splošni vzorec URL-ja ima obliko »scheme://host:port/path«.
-      Če je na voljo, bo blokirana samo določena shema. Če predpona za »scheme://« ni določena, so blokirane vse sheme.
-      Gostitelj je obvezen in je lahko ime gostitelja ali naslov IP. Prav tako bodo blokirane poddomene imena gostitelja. Če želite preprečiti blokiranje poddomen, pred ime gostitelja vključite ».«. Posebno ime gostitelja »*« blokira vse domene.
-      Izbirna vrata so veljavna številka vrat od 1 do 65535. Če ni določenih vrat, so blokirana vsa vrata.
-      Če je določena izbirna pot, bodo blokirane samo poti s tisto predpono.
-
-      Izjeme je mogoče opredeliti v pravilniku o seznamu dovoljenih URL-jev. Ti pravilniki so omejeni na 1000 vnosov; nadaljnji vnosi bodo prezrti.
-
-      Če pravilnik ni nastavljen, noben URL v brskalniku ne bo uvrščen na seznam blokiranih.</translation>
 <translation id="240213793013362302">Nastavitev slike za ozadje.
 
       S tem pravilnikom lahko nastavite sliko za ozadje, prikazano na namizju in na prijavni strani za uporabnika. Pravilnik se nastavi tako, da navedete URL, s katerega lahko <ph name="PRODUCT_OS_NAME" /> prenese sliko za ozadje, in kriptografsko razpršilno vrednost, ki se uporabi za preverjanje celovitosti prenosa. Slika mora biti v obliki JPEG in njena velikost ne sme presegati 16 MB. URL mora biti dostopen brez preverjanja pristnosti.

@@ -149,19 +149,10 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="5785746630574083988">Chế độ chạy lại trong Windows 8 sẽ đóng và chạy lại ứng dụng Chrome của bạn.</translation>
 <translation id="5855036575689098185">Phần mềm đang chạy trên máy tính của bạn không tương thích với Google Chrome.</translation>
 <translation id="5877064549588274448">Kênh đã thay đổi. Hãy khởi động lại thiết bị để áp dụng thay đổi.</translation>
-<translation id="5890698319714066019">Google Chrome không thể hiển thị trang web vì máy tính của bạn chưa kết nối Internet.</translation>
 <translation id="5931853610562009806">Trên máy Mac, mật khẩu có thể được lưu vào Keychain và được truy cập hoặc đồng bộ hóa bởi những người dùng Chrome khác dùng chung tài khoản OS X này.</translation>
 <translation id="5940385492829620908">Web, dấu trang và các nội dung khác của bạn trên Chrome đều có ở đây.</translation>
 <translation id="5941830788786076944">Chọn Google Chrome làm trình duyệt mặc định</translation>
 <translation id="597770749449734237">Bật các phím tắt bổ sung hữu ích để gỡ lỗi Google Chrome.</translation>
-<translation id="6011049234605203654">Đi tới
-          menu Chrome &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          và đảm bảo cấu hình của bạn được đặt thành "không có proxy" hoặc "trực tiếp".</translation>
 <translation id="6012342843556706400">Chrome cần quyền truy cập vị trí để chia sẻ vị trí với trang web này.</translation>
 <translation id="6014844626092547096">Bạn hiện đã đăng nhập vào Chrome! Quản trị viên của bạn đã tắt tính năng Đồng bộ hóa.</translation>
 <translation id="6049075767726609708">Quản trị viên đã cài đặt Google Chrome trên hệ thống này và Google Chrome khả dụng cho tất cả người dùng. Ngay bây giờ, Google Chrome cấp hệ thống sẽ thay thế cài đặt cấp người dùng của bạn.</translation>
@@ -182,16 +173,6 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="6676384891291319759">Truy cập Internet</translation>
 <translation id="6757767188268205357">Đừng hỏi lại</translation>
 <translation id="683440813066116847">Quy tắc kết nối để Google Chrome Canary cho phép lưu lượng truy cập mDNS.</translation>
-<translation id="6855094794438142393">Đi tới
-          menu Chrome &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          &gt;
-          Cài đặt mạng LAN
-          và bỏ chọn "Sử dụng máy chủ proxy cho mạng LAN của bạn".</translation>
 <translation id="6883876366448858277">gửi một từ và ngữ cảnh xung quanh từ đó tới Google Tìm kiếm, trả về định nghĩa, hình ảnh và các kết quả tìm kiếm khác.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="6970811910055250180">Đang cập nhật thiết bị của bạn...</translation>
@@ -213,8 +194,6 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="7282192067747128786">Chrome - Thông báo (<ph name="QUANTITY" /> thông báo chưa đọc)</translation>
 <translation id="729375352412857283">Máy tính này sắp dừng nhận bản cập nhật Google Chrome do Windows XP và Windows Vista sẽ không được hỗ trợ nữa.</translation>
 <translation id="7339898014177206373">Cửa sổ mới</translation>
-<translation id="7396375882099008034">Cho phép Chrome truy cập mạng trong cài đặt tường lửa hoặc diệt vi-rút
-        của bạn.</translation>
 <translation id="7398801000654795464">Bạn đã đăng nhập vào Chrome là <ph name="USER_EMAIL_ADDRESS" />. Vui lòng sử dụng cùng tài khoản để đăng nhập lại.</translation>
 <translation id="7400722733683201933">Giới thiệu về Google Chrome</translation>
 <translation id="7408085963519505752">Điều khoản của Chrome OS</translation>
@@ -244,9 +223,6 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="8032142183999901390">Sau khi xóa tài khoản khỏi Chrome, bạn có thể cần phải tải lại các tab đang mở của mình để tác vụ có hiệu lực.</translation>
 <translation id="8037887340639533879">Không tìm thấy bản cài đặt Google Chrome cần cập nhật.</translation>
 <translation id="8129812357326543296">Giới thiệu về &amp;Google Chrome</translation>
-<translation id="8187289872471304532">Đi tới
-          Ứng dụng&gt; Tùy chọn hệ thống &gt; Mạng &gt; Nâng cao &gt; Proxy
-          và bỏ chọn bất kỳ proxy nào đã được chọn.</translation>
 <translation id="8205111949707227942">Tùy chọn: Giúp cải thiện Hệ điều hành Chrome bằng cách tự động gửi về Google thống kê sử dụng và báo cáo sự cố.</translation>
 <translation id="8227755444512189073">Google Chrome cần chạy ứng dụng ngoài để xử lý các liên kết <ph name="SCHEME" />. Liên kết được yêu cầu là <ph name="PROTOLINK" />.</translation>
 <translation id="8255190535488645436">Google Chrome đang sử dụng máy ảnh và micrô của bạn.</translation>

@@ -328,21 +328,6 @@
 
           Ako se ta postavka ne postavi, <ph name="PRODUCT_NAME" /> dopustit
           će upotrebu hostova Lokalnog slanja poruka na razini korisnika.</translation>
-<translation id="2393996789386329927">Blokira pristup navedenim URL-ovima.
-
-      To pravilo sprječava korisnika da učitava web-stranice s popisa zabranjenih URL-ova. Popis zabranjenih URL-ova navodi zabranjene uzorke URL-ova.
-
-      Svaki uzorak URL-a može biti uzorak za lokalne datoteke ili generički URL uzorak. Uzorci za lokalne datoteke imaju oblik "file://path", pri čemu "path" treba biti apsolutna putanja za blokiranje. Sve lokacije sustava datoteka kojima je ta putanja prefiks blokirat će se.
-
-      Generički uzorak URL-a ima oblik "scheme://host:port/path".
-      Ako je prisutan, blokirat će se samo navedena shema. Ako prefiks scheme:// nije naveden, blokiraju se sve sheme.
-      Host je obavezan i može biti naziv hosta ili IP adresa. Blokirat će se i poddomene naziva hosta. Da biste spriječili blokiranje poddomena, unesite "." ispred naziva hosta. Posebni naziv hosta "*" blokirat će sve domene.
-      Izborni priključak važeći je broj priključka od 1 do 65535. Ako nije naveden, blokirat će se svi priključci.
-      Ako je navedena izborna putanja, blokirat će se samo putanje s tim prefiksom.
-
-      Iznimke se mogu definirati pravilom za dopuštene URL-ove. Ta su pravila ograničena na 1000 unosa, a svi se daljnji unosi zanemaruju.
-
-      Ako se to pravilo ne postavi, nijedan URL neće se zabranjivati u pregledniku.</translation>
 <translation id="240213793013362302">Konfiguriraj sliku pozadine.
 
       Ovo vam pravilo omogućuje da konfigurirate sliku pozadine koja se prikazuje na radnoj površini i pozadini zaslona za prijavu korisnika. Pravilo se postavlja tako da se navede URL s kojeg <ph name="PRODUCT_OS_NAME" /> može preuzeti sliku pozadine i kriptografski sažetak kojim se potvrđuje integritet preuzimanja. Slika mora biti u JPEG formatu i ne smije biti veća od 16 MB. URL-u se mora moći pristupiti bez autentifikacije.

@@ -47,7 +47,6 @@
 <translation id="2486653164587200256">Pot ser que Chromium no funcioni correctament perquè ja no és compatible amb Windows XP ni amb Windows Vista.</translation>
 <translation id="2535480412977113886">Chromium OS no ha pogut sincronitzar les vostres dades perquè la informació d'inici de sessió del vostre compte no està actualitzada.</translation>
 <translation id="2558641060352364164">Aquest lloc fa servir el connector Chromium Frame que aviat deixarà de ser compatible. Desinstal·leu-lo i instal·leu un navegador més modern.</translation>
-<translation id="2565260267992448464">Chromium no pot mostrar la pàgina web perquè l'ordinador no està connectat a Internet.</translation>
 <translation id="2572494885440352020">Aplicació auxiliar de Chromium</translation>
 <translation id="2602806952220118310">Chromium: notificacions</translation>
 <translation id="2636877269779209383">Chromium necessita accedir a la càmera per compartir-la amb aquest lloc.</translation>
@@ -109,16 +108,6 @@
 <translation id="4458285410772214805">Tanqueu la sessió i torneu a iniciar-la perquè aquest canvi es faci efectiu.</translation>
 <translation id="4488676065623537541">Els detalls de facturació s'han desat a Chromium.</translation>
 <translation id="4549794359424059447">Les versions futures de Chromium ja no admetran Windows XP ni Windows Vista.</translation>
-<translation id="4559775032954821361">Aneu al
-          menú de Chromium &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          &gt;
-          Configuració de LAN
-          i desmarqueu la casella de selecció Utilitza un servidor intermediari per a la LAN.</translation>
 <translation id="4567424176335768812">Heu iniciat la sessió com a <ph name="USER_EMAIL_ADDRESS" />. Ja podeu accedir a les vostres adreces d'interès, al vostre historial i a altres paràmetres en tots els dispositius en què hàgiu iniciat la sessió.</translation>
 <translation id="457845228957001925">Informació important sobre les dades de Chromium</translation>
 <translation id="459535195905078186">Aplicacions de Chromium</translation>
@@ -140,14 +129,6 @@
 <translation id="5680901439334282664">Inicieu la sessió a Chromium</translation>
 <translation id="5772805321386874569">(cal <ph name="BEGIN_BUTTON" />reiniciar<ph name="END_BUTTON" /> Chromium)</translation>
 <translation id="5796460469508169315">Chromium ja està quasi llest.</translation>
-<translation id="580822234363523061">Aneu al
-          menú de Chromium &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          i assegureu-vos que la configuració estigui definida sense servidor intermediari o com a directa.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5823381412099532241">No s'ha pogut fer l'actualització de Chromium a la versió més recent, de manera que esteu perdent funcions noves i correccions de seguretat magnífiques. Heu d'actualitzar Chromium.</translation>
 <translation id="5862307444128926510">Us donem la benvinguda a Chromium</translation>
@@ -224,9 +205,6 @@ Chromium no pot recuperar la configuració.</translation>
 <translation id="8033665941300843262">Chromium necessita accedir als permisos per compartir-los amb aquest lloc.</translation>
 <translation id="805745970029938373">Podeu veure totes les vostres notificacions des de les aplicacions, les extensions i els llocs web de Chromium aquí.</translation>
 <translation id="8134284582177628525">Si compartiu aquest ordinador amb <ph name="PROFILE_NAME" />, afegiu el vostre usuari a Chromium per navegar per separat. Si no, també podeu desconnectar el seu compte de Google.</translation>
-<translation id="8187289872471304532">Aneu a
-          Aplicacions &gt; Preferències del sistema &gt; Xarxa &gt; Opcions avançades &gt; Servidors intermediaris
-          i desmarqueu tots els servidors intermediaris que s'hagin seleccionat.</translation>
 <translation id="8269379391216269538">Ajudeu a millorar Chromium</translation>
 <translation id="8453117565092476964">L'arxiu d'instal·lació està malmès o no és vàlid. Torneu a baixar Chromium.</translation>
 <translation id="8493179195440786826">Chromium no està actualitzat</translation>
@@ -234,7 +212,6 @@ Chromium no pot recuperar la configuració.</translation>
 <translation id="85843667276690461">Obtén ajuda per a l'ús de Chromium</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Els autors de Chromium. Tots els drets reservats.</translation>
 <translation id="8605166112420372522">&amp;Reinicia Chromium a l'escriptori</translation>
-<translation id="8610831143142469229">Configureu el tallafoc o l'antivirus per permetre que Chrome accedeixi a la xarxa.</translation>
 <translation id="8621669128220841554">La instal·lació ha fallat a causa d'un error no especificat. Torneu a baixar Chromium.</translation>
 <translation id="8628626585870903697">Chromium no inclou el lector de PDF que és necessari perquè la previsualització funcioni.</translation>
 <translation id="8684913864886094367">Chromium no s'ha tancat correctament.</translation>

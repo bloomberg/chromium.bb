@@ -144,19 +144,10 @@
 <translation id="5785746630574083988">Перезапуск у режимі Windows 8 закриє та перезапустить додатки Chrome.</translation>
 <translation id="5855036575689098185">Програмне забезпечення, запущене на вашому комп’ютері, не сумісне з Google Chrome.</translation>
 <translation id="5877064549588274448">Канал змінено. Перезапустіть пристрій, щоб застосувати зміни.</translation>
-<translation id="5890698319714066019">Google Chrome не може показати веб-сторінку, оскільки ваш комп’ютер не під’єднано до Інтернету.</translation>
 <translation id="5931853610562009806">В ОС Mac паролі можуть зберігатися в системі Keychain, де їх можуть застосовувати чи синхронізувати інші користувачі Chrome, які спільно користуються цим обліковим записом ОС X.</translation>
 <translation id="5940385492829620908">Тут містяться ваші веб-сторінки, закладки та інші дані Chrome.</translation>
 <translation id="5941830788786076944">Зробити Google Chrome переглядачем за промовчанням</translation>
 <translation id="597770749449734237">Вмикає додаткові комбінації клавіш, якими зручно користуватися під час налагодження ОС Chrome.</translation>
-<translation id="6011049234605203654">Перейдіть у
-          меню Chrome &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          і переконайтеся, що встановлено значення конфігурації "без проксі" чи "безпосередньо".</translation>
 <translation id="6012342843556706400">Chrome потрібен доступ до геоданих, щоб дозволити цьому сайту використовувати їх.</translation>
 <translation id="6014844626092547096">Ви ввійшли в Chrome. Проте ваш адміністратор вимкнув синхронізацію.</translation>
 <translation id="6049075767726609708">Адміністратор установив Google Chrome у цій системі, веб-переглядач доступний для всіх користувачів. Установку Google Chrome на рівні користувача буде змінено установкою на рівні системи.</translation>
@@ -177,16 +168,6 @@
 <translation id="6676384891291319759">Доступ до Інтернету</translation>
 <translation id="6757767188268205357">Не турбувати мене</translation>
 <translation id="683440813066116847">Вхідне правило для Google Chrome Canary дозволяє трафік mDNS.</translation>
-<translation id="6855094794438142393">Перейдіть у
-          меню Chrome &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          &gt;
-          Налаштування LAN
-          і зніміть прапорець біля опції "Використовувати проксі-сервер для вашої локальної мережі".</translation>
 <translation id="6883876366448858277">надсилає слово та його контекст у Пошук Google і повертає визначення, зображення й інші результати пошуку.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="6970811910055250180">Оновлення пристрою...</translation>
@@ -208,8 +189,6 @@
 <translation id="7282192067747128786">Chrome – сповіщення (непрочитаних: <ph name="QUANTITY" />)</translation>
 <translation id="729375352412857283">На цей комп’ютер невдовзі перестануть надходити оновлення Google Chrome, оскільки Windows XP та Windows Vista більше не підтримуватимуться.</translation>
 <translation id="7339898014177206373">Нове вікно</translation>
-<translation id="7396375882099008034">Надайте Chrome доступ до мережі в налаштуваннях свого брандмауера чи
-        антивірусного програмного забезпечення.</translation>
 <translation id="7398801000654795464">Ви ввійшли в Chrome як <ph name="USER_EMAIL_ADDRESS" />. Скористайтеся тим самим обліковим записом, щоб увійти знову.</translation>
 <translation id="7400722733683201933">Про Google Chrome</translation>
 <translation id="7408085963519505752">Умови ОС Chrome</translation>
@@ -239,9 +218,6 @@
 <translation id="8032142183999901390">Якщо видалити обліковий запис із Chrome, можливо, потрібно оновити відкриті вкладки, щоб зміни почали діяти.</translation>
 <translation id="8037887340639533879">Неможливо виконати оновлення, оскільки не знайдено встановленої версії Google Chrome.</translation>
 <translation id="8129812357326543296">Про &amp;Google Chrome</translation>
-<translation id="8187289872471304532">Перейдіть у меню
-          Applications &gt; System Preferences &gt; Network &gt; Advanced &gt; Proxies (Програми &gt; Системні налаштування &gt; Мережа &gt; Розширені &gt; Проксі-сервери)
-          і зніміть прапорці біля всіх вибраних проксі-серверів.</translation>
 <translation id="8205111949707227942">Додатково. Допоможіть покращити ОС Chrome, автоматично надсилаючи статистику використання та звіти про аварійне завершення роботи до Google.</translation>
 <translation id="8227755444512189073">Google Chrome потребує запуску зовнішньої прикладної програми для опрацювання посилань <ph name="SCHEME" />. Посилання, на яке здійснено запит, - <ph name="PROTOLINK" />.</translation>
 <translation id="8255190535488645436">Google Chrome використовує вашу камеру та мікрофон.</translation>

@@ -145,19 +145,10 @@
 <translation id="5785746630574083988">การเปิดอีกครั้งในโหมด Windows 8 จะปิดและเปิดแอป Chrome ของคุณใหม่</translation>
 <translation id="5855036575689098185">ซอฟต์แวร์ที่ทำงานบนคอมพิวเตอร์ของคุณไม่สามารถใช้ได้กับ Google Chrome</translation>
 <translation id="5877064549588274448">เปลี่ยนช่องแล้ว รีสตาร์ทอุปกรณ์เพื่อใช้การเปลี่ยนแปลง</translation>
-<translation id="5890698319714066019">Google Chrome ไม่สามารถแสดงหน้าเว็บเนื่องจากคอมพิวเตอร์ของคุณไม่ได้เชื่อมต่ออินเทอร์เน็ต</translation>
 <translation id="5931853610562009806">สำหรับ Mac ระบบจะบันทึกรหัสผ่านไว้ใน Keychain และผู้ใช้ Chrome คนอื่นๆ ที่แชร์บัญชี OS X นี้อาจสามารถเข้าถึงหรือซิงค์รหัสผ่านนี้ได้</translation>
 <translation id="5940385492829620908">เว็บของคุณ บุ๊กมาร์ก และสิ่งอื่นๆ ใน Chrome พร้อมใช้แล้วที่นี่</translation>
 <translation id="5941830788786076944">ทำให้ Google Chrome เป็นเบราว์เซอร์เริ่มต้น</translation>
 <translation id="597770749449734237">เปิดใช้แป้นพิมพ์ลัดที่มีประโยชน์เพิ่มเติมสำหรับการแก้ไขข้อบกพร่องของ Google Chrome</translation>
-<translation id="6011049234605203654">ไปที่
-          เมนู Chrome &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          และตรวจสอบว่าคุณตั้งการกำหนดค่าของคุณเป็น "ไม่มีพร็อกซี" หรือ "โดยตรง"</translation>
 <translation id="6012342843556706400">Chrome ต้องการเข้าถึงตำแหน่งเพื่อแชร์กับเว็บไซต์นี้</translation>
 <translation id="6014844626092547096">ขณะนี้คุณลงชื่อเข้าใช้ Chrome แล้ว! การซิงค์ถูกปิดใช้งานโดยผู้ดูแลระบบของคุณ</translation>
 <translation id="6049075767726609708">ผู้ดูแลระบบติดตั้ง Google Chrome ในระบบนี้แล้ว และผู้ใช้ทุกคนสามารถใช้งานได้ ขณะนี้ Google Chrome ระดับระบบจะแทนที่การติดตั้งระดับผู้ใช้ของคุณ</translation>
@@ -178,16 +169,6 @@
 <translation id="6676384891291319759">เข้าถึงอินเทอร์เน็ต</translation>
 <translation id="6757767188268205357">อย่ากวนใจฉัน</translation>
 <translation id="683440813066116847">กฎขาเข้าสำหรับ Google Chrome Canary เพื่ออนุญาตการเข้าชมแบบ mDNS</translation>
-<translation id="6855094794438142393">ไปที่
-          เมนู Chrome &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          &gt;
-          การตั้งค่า LAN
-          และยกเลิกการเลือก "ใช้พร็อกซีเซิร์ฟเวอร์สำหรับ LAN ของคุณ"</translation>
 <translation id="6883876366448858277">ส่งคำและบริบทโดยรอบไปยัง Google Search เพื่อแสดงคำจำกัดความ รูปภาพ และผลการค้นหาอื่นๆ</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="6970811910055250180">กำลังอัปเดตอุปกรณ์ของคุณ...</translation>
@@ -209,8 +190,6 @@
 <translation id="7282192067747128786">Chrome - การแจ้งเตือน (ยังไม่ได้อ่าน <ph name="QUANTITY" />)</translation>
 <translation id="729375352412857283">คอมพิวเตอร์เครื่องนี้จะหยุดรับการอัปเดต Google Chrome ในอีกไม่ช้าเพราะระบบจะไม่รองรับ Windows XP และ Windows Vista อีกต่อไป</translation>
 <translation id="7339898014177206373">หน้าต่างใหม่</translation>
-<translation id="7396375882099008034">อนุญาตให้ Chrome เข้าถึงเครือข่ายในการตั้งค่าไฟร์วอลล์หรือโปรแกรม
-        ป้องกันไวรัส</translation>
 <translation id="7398801000654795464">คุณเคยลงชื่อเข้าใช้ Chrome ในชื่อ <ph name="USER_EMAIL_ADDRESS" /> โปรดใช้บัญชีเดิมเพื่อลงชื่อเข้าใช้อีกครั้ง</translation>
 <translation id="7400722733683201933">เกี่ยวกับ Google Chrome</translation>
 <translation id="7408085963519505752">ข้อกำหนดของ Chrome OS</translation>
@@ -240,9 +219,6 @@
 <translation id="8032142183999901390">เมื่อลบบัญชีของคุณออกจาก Chrome แล้ว คุณต้องโหลดแท็บที่เปิดอยู่ซ้ำเพื่อให้มีผล</translation>
 <translation id="8037887340639533879">ไม่พบการติดตั้ง Google Chrome ที่จะอัปเดต</translation>
 <translation id="8129812357326543296">เกี่ยวกับ &amp;Google Chrome</translation>
-<translation id="8187289872471304532">ไปที่
-          แอปพลิเคชัน &gt; ค่ากำหนดของระบบ &gt; เครือข่าย &gt; ขั้นสูง &gt; พร็อกซี
-          แล้วยกเลิกการเลือกพร็อกซีที่ได้เลือกไว้</translation>
 <translation id="8205111949707227942">ไม่บังคับ: ช่วยปรับปรุงระบบปฏิบัติการ Chrome ให้ดีขึ้นโดยส่งสถิติการใช้งานและรายงานปัญหาไปยัง Google โดยอัตโนมัติ</translation>
 <translation id="8227755444512189073">Google Chrome จำเป็นต้องเรียกแอปพลิเคชันภายนอกเพื่อเปิดลิงก์ <ph name="SCHEME" /> ลิงก์ที่ขอคือ <ph name="PROTOLINK" /></translation>
 <translation id="8255190535488645436">Google Chrome ใช้กล้องและไมโครโฟนของคุณอยู่</translation>

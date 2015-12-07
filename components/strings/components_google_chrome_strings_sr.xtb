@@ -9,6 +9,15 @@
           и онемогућите „Припреми учитавање ресурса странице“.
           Ако вам то не реши проблем, препоручујемо да поново омогућите
           ову опцију ради бољих перформанси.</translation>
+<translation id="5890698319714066019">Google Chrome не може да прикаже веб-страницу јер рачунар није повезан са интернетом.</translation>
+<translation id="6011049234605203654">Идите у
+          Chrome мени &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          &gt;
+          <ph name="PROXIES_TITLE" />
+          и проверите да ли је конфигурација подешена на „no proxy“ (без проксија) или „direct“ (директно).</translation>
 <translation id="6341737370356890233">Отворите
           Chromе мени &gt;
           <ph name="SETTINGS_TITLE" />
@@ -17,4 +26,17 @@
           и опозовите избор опције „<ph name="NO_PREFETCH_DESCRIPTION" />“.
           Ако вам то не реши проблем, препоручујемо да поново изаберете
           ову опцију ради бољих перформанси.</translation>
+<translation id="6855094794438142393">Идите у
+          Chrome мени &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          &gt;
+          <ph name="PROXIES_TITLE" />
+          &gt;
+          LAN Settings (Подешавања локалне мреже)
+          и опозовите избор опције „Use a proxy server for your LAN“ (Користи прокси сервер за локалну мрежу).</translation>
+<translation id="7396375882099008034">Дозволите Chrome-у да приступа мрежи у заштитном зиду или антивирусним
+        подешавањима.</translation>
+<translation id="8187289872471304532">Идите на Applications (Апликације) &gt; System Preferences (Подешавања система) &gt; Network (Мрежа) &gt; Advanced (Више опција) &gt; Proxies (Проксији) и опозовите избор свих проксија који су изабрани.</translation>
 </translationbundle>

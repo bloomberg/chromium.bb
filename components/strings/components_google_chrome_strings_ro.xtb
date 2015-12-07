@@ -9,6 +9,15 @@
           și dezactivează „Preia în avans resursele paginii”.
           Dacă această acțiune nu rezolvă problema, îți recomandăm să reactivezi
           această opțiune pentru îmbunătățirea performanței.</translation>
+<translation id="5890698319714066019">Google Chrome nu poate afișa pagina web, deoarece computerul nu este conectat la internet.</translation>
+<translation id="6011049234605203654">Accesați
+          meniul Chrome &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          &gt;
+          <ph name="PROXIES_TITLE" />
+          și asigurați-vă că aveți configurația setată la „fără proxy” sau „direct”.</translation>
 <translation id="6341737370356890233">Accesează
           meniul Chrome &gt;
           <ph name="SETTINGS_TITLE" />
@@ -17,4 +26,19 @@
           și debifează „<ph name="NO_PREFETCH_DESCRIPTION" />”.
           Dacă această acțiune nu rezolvă problema, îți recomandăm să selectezi din nou
           această opțiune pentru performanță îmbunătățită.</translation>
+<translation id="6855094794438142393">Accesați
+          meniul Chrome &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          &gt;
+          <ph name="PROXIES_TITLE" />
+          &gt;
+          Setări LAN
+          și debifați caseta de selectare „Utilizați un server proxy pentru LAN”.</translation>
+<translation id="7396375882099008034">Permiteți browserului Chrome să acceseze rețeaua din setările pentru firewall sau
+        antivirus.</translation>
+<translation id="8187289872471304532">Accesați
+          Applications (Aplicații) &gt; System Preferences (Preferințe de sistem) &gt; Network (Rețea) &gt; Advanced (Avansat) &gt; Proxies (Servere proxy)
+          și debifați toate serverele proxy selectate.</translation>
 </translationbundle>

@@ -49,7 +49,6 @@
 <translation id="2486653164587200256">Chromium можда неће исправно функционисати зато што више није подржан на Windows XP-у или Windows Vista-и.</translation>
 <translation id="2535480412977113886">Chromium ОС не може да синхронизује податке зато што су подаци за пријављивање на налог застарели.</translation>
 <translation id="2558641060352364164">Овај сајт користи додатну компоненту Chromium Frame која ускоро више неће бити подржана. Деинсталирајте је и надоградите на модеран прегледач.</translation>
-<translation id="2565260267992448464">Chromium не може да прикаже веб-страницу јер рачунар није повезан са интернетом.</translation>
 <translation id="2572494885440352020">Chromium помагач</translation>
 <translation id="2602806952220118310">Chromium – Обавештења</translation>
 <translation id="2636877269779209383">Chromium захтева приступ камери да би је делио са овим сајтом.</translation>
@@ -111,16 +110,6 @@
 <translation id="4458285410772214805">Одјавите се и поново се пријавите да би ова промена ступила на снагу.</translation>
 <translation id="4488676065623537541">Детаљи обрачуна су сачувани у Chromium-у.</translation>
 <translation id="4549794359424059447">Будуће верзије Chromium-а више неће подржавати Windows XP или Windows Vista-у.</translation>
-<translation id="4559775032954821361">Идите у
-          Chromium мени &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          &gt;
-          LAN Settings (Подешавања локалне мреже)
-          и опозовите избор у пољу за потврду „Use a proxy server for your LAN“ (Користи прокси сервер за локалну мрежу).</translation>
 <translation id="4567424176335768812">Пријављени сте као <ph name="USER_EMAIL_ADDRESS" />. Сада можете да приступате обележивачима, историји и другим подешавањима на свим уређајима на којима сте пријављени.</translation>
 <translation id="457845228957001925">Важне информације у вези са Chromium подацима</translation>
 <translation id="459535195905078186">Chromium апликације</translation>
@@ -142,14 +131,6 @@
 <translation id="5680901439334282664">пријавите се на Chromium</translation>
 <translation id="5772805321386874569">(захтева <ph name="BEGIN_BUTTON" />поновно покретање<ph name="END_BUTTON" /> Chromium-а)</translation>
 <translation id="5796460469508169315">Chromium је скоро спреман.</translation>
-<translation id="580822234363523061">Идите у
-          Chromium мени &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          и проверите да ли је конфигурација подешена на „no proxy“ (без проксија) или „direct“ (директно).</translation>
 <translation id="5820394555380036790">Chromium ОС</translation>
 <translation id="5823381412099532241">Chromium не може сâм да се ажурира на најновију верзију, па пропуштате одличне нове функције и безбедносне исправке. Треба да ажурирате Chromium.</translation>
 <translation id="5862307444128926510">Добро дошли у Chromium</translation>
@@ -226,7 +207,6 @@ Chromium не може да врати подешавања.</translation>
 <translation id="8033665941300843262">Chromium захтева приступ дозволама да би их делио са овим сајтом.</translation>
 <translation id="805745970029938373">Овде можете да видите сва обавештења из Chromium апликација, додатака и веб-сајтова.</translation>
 <translation id="8134284582177628525">Ако делите овај рачунар са корисником <ph name="PROFILE_NAME" />, додајте себе у Chromium да бисте прегледали одвојено. У супротном, прекините везу са Google налогом овог корисника.</translation>
-<translation id="8187289872471304532">Идите на Applications (Апликације) &gt; System Preferences (Подешавања система) &gt; Network (Мрежа) &gt; Advanced (Више опција) &gt; Proxies (Проксији) и опозовите избор свих проксија који су изабрани.</translation>
 <translation id="8269379391216269538">Помозите нам да побољшамо Chromium</translation>
 <translation id="8453117565092476964">Архива програма за инсталацију је оштећена или неважећа. Преузмите Chromium поново.</translation>
 <translation id="8493179195440786826">Chromium је застарео</translation>
@@ -234,8 +214,6 @@ Chromium не може да врати подешавања.</translation>
 <translation id="85843667276690461">Пронађи помоћ за коришћење Chromium-а</translation>
 <translation id="8586442755830160949">Ауторска права <ph name="YEAR" />. Аутори Chromium-а. Сва права задржана.</translation>
 <translation id="8605166112420372522">&amp;Поново покрени Chromium на рачунару</translation>
-<translation id="8610831143142469229">Дозволите Chromium-у да приступа мрежи у заштитном зиду или антивирусним
-        подешавањима.</translation>
 <translation id="8621669128220841554">Инсталација није успела због неодређене грешке. Преузмите Chromium поново.</translation>
 <translation id="8628626585870903697">Chromium не садржи PDF приказивач који је потребан да би Приказ пре штампања функционисао.</translation>
 <translation id="8684913864886094367">Chromium се није исправно затворио.</translation>

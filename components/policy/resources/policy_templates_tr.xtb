@@ -378,21 +378,6 @@
 
           Bu ayar yapılandırmadan bırakılırsa <ph name="PRODUCT_NAME" />, kullanıcı düzeyinde
           Yerel Mesajlaşma ana makinelerinin kullanımına izin verir.</translation>
-<translation id="2393996789386329927">Listelenen URL'lere erişimi engeller.
-
-      Bu politika, kullanıcının kara listeye alınmış URL'lere ait web sayfalarını yüklemesini engeller. Kara liste, hangi URL'lerin kara listeye alınacağını belirten URL kalıplarının listesini sağlar.
-
-      Her bir URL kalıbı, yerel dosyalar için bir kalıp veya genel bir URL kalıbı olabilir. Yerel dosya kalıpları "file://path" biçimindedir; burada yol (path) engellenecek mutlak bir yol olmalıdır. Önek olarak o yolu taşıyan tüm dosya sistemi konumları engellenir.
-
-      Genel URL kalıbı "scheme://host:port/path" biçimindedir.
-      Varsa, sadece belirtilen şema engellenir. scheme:// öneki belirtilmezse, tüm şemalar engellenir.
-      Ana makine (host) gereklidir ve bir ana makine adı veya IP adresi olabilir. Bir ana makinenin alt alan adları da engellenir. Alt alanların engellenmesini önlemek için ana makine adından önce bir "." ekleyin. Özel ana makine adı "*" tüm alan adlarını engeller.
-      İsteğe bağlı bağlantı noktası 1 ile 65535 arasında geçerli bir bağlantı noktasıdır. Hiçbir değer belirtilmezse, tüm bağlantı noktaları engellenir.
-      İsteğe bağlı yol belirtilirse, sadece o öneke sahip yollar engellenir.
-
-      İstisnalar URL beyaz liste politikasında tanımlanabilir. Bu politikalar 1000 girişle sınırlıdır; ondan sonra yapılan girişler yoksayılır.
-
-      Bu politika ayarlanmazsa, tarayıcıda hiçbir URL kara listeye alınmaz.</translation>
 <translation id="240213793013362302">Duvar kağıdı resmini yapılandırın.
 
       Bu politika, masaüstünde ve kullanıcı için giriş ekranı arka planında görüntülenecek duvar kağıdı resmini yapılandırmanıza olanak verir. Politika, <ph name="PRODUCT_OS_NAME" /> sisteminin duvar kağıdı resmini indirebileceği URL ve indirme işleminin bütünlüğünü doğrulamak için kullanılacak şifreli bir karma belirtilerek ayarlanır. Resim JPEG biçiminde olmalı, dosya boyutu 16 MB'tan fazla olmamalıdır. URL'ye kimlik doğrulaması yapmadan erişilebilmelidir.

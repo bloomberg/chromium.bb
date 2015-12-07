@@ -8,6 +8,24 @@
           и онемогућите „Припреми учитавање ресурса странице“.
           Ако вам то не реши проблем, препоручујемо да поново омогућите
           ову опцију ради бољих перформанси.</translation>
+<translation id="4559775032954821361">Идите у
+          Chromium мени &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          &gt;
+          <ph name="PROXIES_TITLE" />
+          &gt;
+          LAN Settings (Подешавања локалне мреже)
+          и опозовите избор у пољу за потврду „Use a proxy server for your LAN“ (Користи прокси сервер за локалну мрежу).</translation>
+<translation id="580822234363523061">Идите у
+          Chromium мени &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          &gt;
+          <ph name="PROXIES_TITLE" />
+          и проверите да ли је конфигурација подешена на „no proxy“ (без проксија) или „direct“ (директно).</translation>
 <translation id="6613594504749178791">Промене ће ступити на снагу када следећи пут поново покренете Chromium.</translation>
 <translation id="7861509383340276692">Отворите
           Chromium мени &gt;
@@ -17,4 +35,7 @@
           и опозовите избор опције „<ph name="NO_PREFETCH_DESCRIPTION" />“.
           Ако вам то не реши проблем, препоручујемо да поново изаберете
           ову опцију ради бољих перформанси.</translation>
+<translation id="8187289872471304532">Идите на Applications (Апликације) &gt; System Preferences (Подешавања система) &gt; Network (Мрежа) &gt; Advanced (Више опција) &gt; Proxies (Проксији) и опозовите избор свих проксија који су изабрани.</translation>
+<translation id="8610831143142469229">Дозволите Chromium-у да приступа мрежи у заштитном зиду или антивирусним
+        подешавањима.</translation>
 </translationbundle>

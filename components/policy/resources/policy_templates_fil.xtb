@@ -373,21 +373,6 @@
 
           Kung iiwanang hindi nakatakda ang setting na ito, bibigyang-daan ng <ph name="PRODUCT_NAME" />
           ang paggamit sa mga host ng Native na Pagmemensahe sa antas ng user.</translation>
-<translation id="2393996789386329927">Bina-block ang access sa lahat ng nakalistang URL.
-
-      Pinipigilan ng patakarang ito ang user sa paglo-load ng mga web page mula sa mga naka-blacklist na URL. Nagbibigay ang blacklist ng listahan ng mga pattern ng URL na tumutukoy sa kung anong mga URL ang mailalagay sa blacklist.
-
-      Ang bawat pattern ng URL ay maaaring maging pattern para sa mga lokal na file o generic na pattern ng URL. Nasa format na 'file://path' ang mga pattern ng lokal na file, kung saan upang ma-block ang path, isa dapat itong absolute path. Iba-block ang lahat ng lokasyon ng file sa system kung saan prefix ang path na iyon.
-
-      May format na 'scheme://host:port/path' ang isang generic na pattern ng URL.
-      Kung mayroon man, ang tinukoy na scheme lang ang maba-block. Kung hindi tinukoy ang prefix na scheme://, iba-block ang lahat ng scheme.
-      Kinakailangan ang host at maaari itong maging isang hostname o isang IP address. Iba-block din ang mga subdomain ng isang hostname. Upang iwasan ang pagba-block ng mga subdomain, maglagay ng '.' bago ang hostname. Iba-block ng espesyal na hostname na '*' ang lahat ng domain.
-      Ang opsyonal na port ay isang wastong port number mula sa 1 hanggang 65535. Kung walang tinukoy, iba-block ang lahat ng port.
-      Kung tutukuyin ang opsyonal na path, ang mga path lang na may prefix na iyon ang iba-block.
-
-      Maaaring tukuyin ang mga exception sa patakaran ng whitelist ng URL. Limitado ang mga patakaran na ito sa 1000 entry; babalewalain ang mga susunod na entry.
-
-      Kung hindi itatakda ang patakaran na ito, walang maba-blacklist na URL sa browser.</translation>
 <translation id="240213793013362302">I-configure ang larawan ng wallpaper.
 
       Pinapayagan ka ng patakarang ito na i-configure ang larawan ng wallpaper na ipinapakita sa desktop at sa background ng screen ng login para sa user. Itinatakda ang patakaran sa pamamagitan ng pagtukoy sa URL kung saan mada-download ng <ph name="PRODUCT_OS_NAME" /> ang larawan ng wallpaper at isang cryptographic hash na ginagamit upang i-verify ang integridad ng download. Dapat na nasa format na JPEG ang larawan, hindi dapat lumampas ang laki ng file sa 16MB. Dapat na naa-access ang URL nang walang anumang pagpapatotoo.

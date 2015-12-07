@@ -47,7 +47,6 @@
 <translation id="2486653164587200256">Chromium ei välttämättä toimi oikein, koska se ei enää tue Windows XP:tä tai Windows Vistaa.</translation>
 <translation id="2535480412977113886">Chromium-käyttöjärjestelmä ei voi synkronoida tietoja, sillä tilin kirjautumistiedot ovat vanhentuneet.</translation>
 <translation id="2558641060352364164">Tämä sivusto käyttää Chromium-kehyslaajennusta, jonka tukeminen lopetetaan pian. Poista se ja asenna uudempi selain.</translation>
-<translation id="2565260267992448464">Chromium ei voi näyttää verkkosivua, koska tietokoneellasi ei ole internetyhteyttä.</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
 <translation id="2602806952220118310">Chromium – ilmoitukset</translation>
 <translation id="2636877269779209383">Chromium tarvitsee kameran käyttöoikeuden, jotta voi jakaa sen sivustolle.</translation>
@@ -110,16 +109,6 @@ ja virheelliset tiedot. Joko hyökkääjä yrittää esiintyä sivustona <ph nam
 <translation id="4458285410772214805">Kirjaudu ulos ja kirjaudu uudelleen sisään, jotta muutos tulee voimaan.</translation>
 <translation id="4488676065623537541">Laskutustietosi on tallennettu Chromiumiin.</translation>
 <translation id="4549794359424059447">Chromiumin tulevat versiot eivät enää tue Windows XP:tä tai Windows Vistaa.</translation>
-<translation id="4559775032954821361">Avaa
-          Chromium-valikko &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          &gt;
-          Lähiverkon asetukset
-          ja poista valinta kohdasta Käytä välityspalvelinta lähiverkossa.</translation>
 <translation id="4567424176335768812">Olet kirjautunut Chromeen tilillä <ph name="USER_EMAIL_ADDRESS" />. Nyt voit käyttää kirjanmerkkejäsi, historiaa ja muita asetuksia kaikilla laitteilla, joihin olet kirjautunut.</translation>
 <translation id="457845228957001925">Tärkeitä tietoja Chromium-tiedoistasi</translation>
 <translation id="459535195905078186">Chromium-sovellukset</translation>
@@ -141,14 +130,6 @@ ja virheelliset tiedot. Joko hyökkääjä yrittää esiintyä sivustona <ph nam
 <translation id="5680901439334282664">Kirjaudu sisään Chromiumiin</translation>
 <translation id="5772805321386874569">(vaatii Chromiumin <ph name="BEGIN_BUTTON" />uudelleenkäynnistyksen<ph name="END_BUTTON" />)</translation>
 <translation id="5796460469508169315">Chromium on lähes valmis.</translation>
-<translation id="580822234363523061">Avaa
-          Chromium-valikko &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          ja varmista, että asetus on "ei välityspalvelinta" tai "suora".</translation>
 <translation id="5820394555380036790">Chromium-käyttöjärjestelmä</translation>
 <translation id="5823381412099532241">Chromium ei voinut päivittää uusimpaan versioon, joten uudet ominaisuudet ja tietoturvapäivitykset eivät ole käytössäsi. Päivitä Chromium.</translation>
 <translation id="5862307444128926510">Tervetuloa Chromiumiin</translation>
@@ -225,9 +206,6 @@ Chromium ei voi palauttaa asetuksiasi.</translation>
 <translation id="8033665941300843262">Chromium tarvitsee lupien käyttöoikeuden, jotta voi jakaa sen sivustolle.</translation>
 <translation id="805745970029938373">Täällä näet kaikki ilmoituksesi Chromium-sovelluksista, laajennuksista ja verkkosivustoista.</translation>
 <translation id="8134284582177628525">Jos jaat tämän tietokoneen henkilön <ph name="PROFILE_NAME" /> kanssa, lisää itsesi Chromiumiin, jotta voitte selata erikseen. Muuten sinun on irrotettava hänen Google-tilinsä.</translation>
-<translation id="8187289872471304532">Avaa
-          Sovellukset &gt; Järjestelmäasetukset &gt; Verkko &gt; Lisäasetukset &gt; Välityspalvelimet
-          ja poista valinta kaikkien valittujen välityspalvelimien kohdalta.</translation>
 <translation id="8269379391216269538">Auta parantamaan Chromiumia</translation>
 <translation id="8453117565092476964">Asennusarkisto on virheellinen. Lataa Chromium uudelleen.</translation>
 <translation id="8493179195440786826">Chromium on vanhentunut</translation>
@@ -235,7 +213,6 @@ Chromium ei voi palauttaa asetuksiasi.</translation>
 <translation id="85843667276690461">Apua Chromiumin käytössä</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> The Chromium Authors. Kaikki oikeudet pidätetään.</translation>
 <translation id="8605166112420372522">Käynnistä Ch&amp;romium uudelleen työpöydällä</translation>
-<translation id="8610831143142469229">Salli verkon käyttö Chromiumille palomuurin tai virustorjunnan asetuksissa.</translation>
 <translation id="8621669128220841554">Asennus epäonnistui määrittelemättömän virheen vuoksi. Lataa Chromium uudelleen.</translation>
 <translation id="8628626585870903697">Chromium ei sisällä PDF-katseluohjelmaa, joka tarvitaan tulostuksen esikatseluun.</translation>
 <translation id="8684913864886094367">Chromiumia ei suljettu oikein.</translation>

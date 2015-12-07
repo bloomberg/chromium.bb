@@ -49,7 +49,6 @@ Baadhi ya vipengele huenda visipatikane na mabadiliko katika mapendeleo hayatahi
 <translation id="2486653164587200256">Huenda Chromium isifanye kazi vizuri kwa sababu haitumiki tena kwenye Windows XP au Windows Vista.</translation>
 <translation id="2535480412977113886">Mfumo wa Uendeshaji wa Chromium haukuweza kusawazisha data yako kwa sababu maelezo yako ya kuingia katika akaunti yanahitaji kusasishwa.</translation>
 <translation id="2558641060352364164">Tovuti hii inatumia programu-jalizi ya Fremu ya Chromium ambayo haitaweza kutumika hivi karibuni. Tafadhali iondoe na upate toleo jipya la kivinjari cha kisasa.</translation>
-<translation id="2565260267992448464">Chromium haiwezi kuonyesha ukurasa wa wavuti kwa sababu kompyuta yako haijaunganishwa kwenye Intaneti.</translation>
 <translation id="2572494885440352020">Kisaidizi cha Chromium</translation>
 <translation id="2602806952220118310">Chromium - Arifa</translation>
 <translation id="2636877269779209383">Chromium inahitaji idhini ya kufikia kamera ili iishiriki na tovuti hii.</translation>
@@ -111,16 +110,6 @@ Baadhi ya vipengele huenda visipatikane na mabadiliko katika mapendeleo hayatahi
 <translation id="4458285410772214805">Tafadhali toka na uingie tena ili mabadiliko haya yafanye kazi.</translation>
 <translation id="4488676065623537541">Maelezo yako ya utozwaji yamehifadhiwa katika Chromium.</translation>
 <translation id="4549794359424059447">Matoleo ya siku za usoni ya Chromium hayatatumia tena Windows XP au Windows Vista.</translation>
-<translation id="4559775032954821361">Nenda kwenye
-         menyu ya Chromium &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          &gt;
-          Mipangilio ya LAN
-         na uondoe tiki "Tumia seva ya proksi kwa kikasha kaguzi chako cha LAN".</translation>
 <translation id="4567424176335768812">Umeingia katika akaunti kama <ph name="USER_EMAIL_ADDRESS" />. Sasa unaweza kupata alamisho, historia, na mipangilio yako mingine kwenye vifaa vyako vyote vilivyoingia katika akaunti.</translation>
 <translation id="457845228957001925">Maelezo muhimu kuhusu data yako ya Chromium</translation>
 <translation id="459535195905078186">Programu za Chromium</translation>
@@ -142,14 +131,6 @@ Baadhi ya vipengele huenda visipatikane na mabadiliko katika mapendeleo hayatahi
 <translation id="5680901439334282664">ingia katika Chromium</translation>
 <translation id="5772805321386874569">(inahitaji uanzishaji upya wa  <ph name="BEGIN_BUTTON" />Chromium<ph name="END_BUTTON" />)</translation>
 <translation id="5796460469508169315">Chromium inakaribia kuwa tayari.</translation>
-<translation id="580822234363523061">Nenda kwenye
-          menyu ya Chromium &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-         na uhakikishe kuwa usanidi wako umewekwa kwenye "hakuna proksi" au "moja kwa moja."</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5823381412099532241">Chromium haikuweza kupata toleo jipya, kwa hivyo unakosa vipengele vipya vizuri na marekebisho ya usalama. Unahitaji kupata toleo jipya la Chromium.</translation>
 <translation id="5862307444128926510">Karibu kwenye Chromium</translation>
@@ -226,8 +207,6 @@ Chromium haiwezi kufufua mipangilio yako.</translation>
 <translation id="8033665941300843262">Chromium inahitaji idhini ya kufikia ruhusa ili izishiriki na tovuti hii.</translation>
 <translation id="805745970029938373">Unaweza kuona arifa zako zote kutoka kwa programu za Chromium, viendelezi, na tovuti hapa.</translation>
 <translation id="8134284582177628525">Ukishiriki kompyuta hii na <ph name="PROFILE_NAME" />, jiongeze kwenye Chromium ili uvinjari tofauti. Vinginevyo ondoa Akaunti yake ya Google.</translation>
-<translation id="8187289872471304532">Nenda kwenye
-          Programu &gt; Mapendeleo ya Mfumo &gt; Mtandao &gt; Uboreshaji &gt; Proksi na uondoe tiki kwenye proksi zozote ambazo zimechaguliwa.</translation>
 <translation id="8269379391216269538">Saidia ili kuiboresha Chromium</translation>
 <translation id="8453117565092476964">Kumbukumbu ya kisakinishi imeharibika au ni batili. Tafadhali pakua Chromium tena.</translation>
 <translation id="8493179195440786826">Chromium Imepitwa na Wakati</translation>
@@ -235,7 +214,6 @@ Chromium haiwezi kufufua mipangilio yako.</translation>
 <translation id="85843667276690461">Pata msaada kwa kutumia Chromium</translation>
 <translation id="8586442755830160949">Hakimiliki <ph name="YEAR" /> Wasanidi wa Chromium. Haki zote zimehifadhiwa.</translation>
 <translation id="8605166112420372522">Zima halafu uwashe Chromium katika hali ya eneo-kazi</translation>
-<translation id="8610831143142469229">Ruhusu Chromium ifikie mtandao kwenye mipangilio yako ya ngome au kingavirusi.</translation>
 <translation id="8621669128220841554">Usakinishaji ulishindwa kwa sababu ya hitilafu isiyobainika. Tafadhali pakua Chromium tena.</translation>
 <translation id="8628626585870903697">Chromium haijumuishi kitazamaji cha PDF kinachohitajika ili Uhakiki wa Uchapishaji ufanye kazi.</translation>
 <translation id="8684913864886094367">Chromium haikuzimika kwa njia sahihi.</translation>

@@ -342,21 +342,6 @@ Tyto záložky budou umístěny do složky Spravované záložky, kterou uživat
 
           Pokud je tato zásada ponechána nenastavená, <ph name="PRODUCT_NAME" />
           bude použití hostitelů zasílání nativních zpráv na úrovni uživatele povolovat.</translation>
-<translation id="2393996789386329927">Blokování přístupu k adresám URL uvedeným v seznamu.
-
-Tato zásada zabraňuje uživatelům načítat webové stránky ze zakázaných adres URL. Seznam zakázaných položek obsahuje vzory adres URL. Ty určují, které adresy URL budou zakázány.
-
-Každý vzor adresy URL může být určen místním souborům nebo obecné adrese URL. Vzory místních souborů jsou ve formátu soubor://cesta. Chcete-li přístup zablokovat, cesta musí být absolutní. Všechna umístění v systému souborů s touto předponou budou zablokována.
-
-Vzor obecné adresy URL má formát schéma://hostitel:port/cesta.
-Pokud je určené schéma dostupné, bude zablokováno pouze toto. Pokud předpona schéma:// není určena, budou zablokována všechna schémata.
-Jako povinnou položku hostitele lze zvolit název hostitele nebo IP adresu. Blokovány budou i subdomény názvu hostitele. Chcete-li blokování subdomén zamezit, přidejte před název hostitele tečku (.). Všechny domény lze zablokovat pomocí zvláštního názvu hostitele (*).
-Jako port lze zvolit platné číslo portu v rozmezí od 1 do 65535. Není-li uvedeno, budou zablokovány všechny porty.
-Je-li uvedena volitelná cesta, budou zablokovány pouze cesty s příslušnou předponou.
-
-Výjimky lze zadat v zásadě pro povolené adresy URL. Počet záznamů v těchto zásadách je omezen na 1000. Všechny další záznamy budou ignorovány.
-
-Není-li zásada nastavena, nebude v prohlížeči zakázána žádná adresa URL.</translation>
 <translation id="240213793013362302">Konfiguruje obrázek tapety.
 
 Tato zásada umožňuje nakonfigurovat obrázek tapety, který se zobrazuje na ploše a na pozadí přihlašovací obrazovky daného uživatele. Zásadu nastavíte zadáním adresy URL, ze které může <ph name="PRODUCT_OS_NAME" /> obrázek tapety stáhnout, a kryptografické hodnoty hash, která slouží k ověření integrity staženého obsahu. Obrázek musí být ve formátu JPEG a jeho velikost nesmí překročit 16 MB. Adresa URL musí být přístupná bez nutnosti autentizace.

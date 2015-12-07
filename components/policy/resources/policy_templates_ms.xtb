@@ -377,21 +377,6 @@
 
           Jika tetapan ini dibiarkan tanpa ditetapkan <ph name="PRODUCT_NAME" />
           akan membenarkan penggunaan hos Pemesejan Asli tahap pengguna.</translation>
-<translation id="2393996789386329927">Menyekat akses kepada URL yang disenaraikan.
-
-      Dasar ini menghalang pengguna daripada memuatkan halaman web daripada URL yang disenaraihitamkan. Senarai hitam tersebut memberi senarai pola URL yang menentukan URL yang akan disenaraihitamkan.
-
-      Setiap pola URL boleh jadi pola untuk fail setempat atau pola URL generik. Pola fail setempat adalah dalam format 'file://path', di mana laluan sepatutnya adalah laluan mutlak untuk menyekat. Semua lokasi sistem fail yang mana laluan itu adalah awalan akan disekat.
-
-      Pola URL generik mempunyai format 'scheme://host:port/path'.
-      Jika ada, hanya skim tertentu akan disekat. Semua skim akan disekat jika awalan scheme:// tidak dinyatakan.
-      Hos diperlukan dan boleh jadi nama hos atau alamat IP. Subdomain nama hos akan turut disekat. Untuk menghalang subdomain daripada disekat, masukkan '.' sebelum nama hos. Nama hos khas '*' akan menyekat semua domain.
-      Port pilihan ialah nombor port yang sah dari 1 hingga 65535. Jika tiada nombor ditetapkan, semua port akan disekat.
-     Jika laluan pilihan ditentukan, hanya laluan dengan awalan tersebut akan disekat.
-
-      Pengecualian boleh ditentukan dalam dasar senarai putih URL. Dasar ini terhad kepada 1,000 masukan; masukan berikutnya akan diabaikan.
-
-      Jika dasar ini tidak ditetapkan, tiada URL akan disenaraihitamkan dalam penyemak imbas.</translation>
 <translation id="240213793013362302">Konfigurasikan imej hias latar.
 
       Dasar ini membenarkan anda mengkonfigurasi imej hias latar yang dipaparkan pada desktop dan pada latar belakang skrin log masuk untuk pengguna. Dasar ditetapkan dengan menentukan URL tempat <ph name="PRODUCT_OS_NAME" /> boleh memuat turun imej hias latar dan cincangan kriptografi yang digunakan untuk mengesahkan integriti muat turun tersebut. Imej mestilah dalam format JPEG, saiznya tidak boleh melebihi 16MB. URL mesti boleh diakses tanpa sebarang pengesahan.

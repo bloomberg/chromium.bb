@@ -47,7 +47,6 @@
 <translation id="2486653164587200256">Chromiumకి ఇప్పుడు Windows XP లేదా Windows Vistaలో మద్దతు లేనందున ఇది సరిగ్గా పని చేయకపోవచ్చు.</translation>
 <translation id="2535480412977113886">మీ ఖాతా సైన్-ఇన్ వివరాల గడువు ముగిసినందున Chromium OS మీ డేటాను సమకాలీకరించలేకపోయింది.</translation>
 <translation id="2558641060352364164">ఈ సైట్ ఉపయోగిస్తున్న Chromium ఫ్రేమ్ ప్లగిన్‌కు త్వరలో మద్దతు ఉపసంహరించబడుతుంది. దయచేసి దీన్ని అన్ఇన్‌స్టాల్ చేసి, ఆధునిక బ్రౌజర్‌కు అప్‌గ్రేడ్ చేయండి.</translation>
-<translation id="2565260267992448464">మీ కంప్యూటర్ ఇంటర్నెట్‌కు కనెక్ట్ కానందున Chromium వెబ్‌పేజీని ప్రదర్శించలేదు.</translation>
 <translation id="2572494885440352020">Chromium సహాయకం</translation>
 <translation id="2602806952220118310">Chromium - నోటిఫికేషన్‌లు</translation>
 <translation id="2636877269779209383">ఈ సైట్‌కు కెమెరా సామర్థ్యాన్ని భాగస్వామ్యం చేయడానికి Chromiumకి కెమెరా ప్రాప్యతను మంజూరు చేయడం అవసరం.</translation>
@@ -108,15 +107,6 @@
 <translation id="4458285410772214805">దయచేసి ఈ మార్పు ప్రభావవంతం కావడానికి సైన్ అవుట్ చేసి, మళ్లీ సైన్ ఇన్ చేయండి.</translation>
 <translation id="4488676065623537541">మీ బిల్లింగ్ వివరాలు Chromiumలో సేవ్ చేయబడ్డాయి.</translation>
 <translation id="4549794359424059447">భవిష్యత్తు Chromium సంస్కరణల్లో ఇకపై Windows XP లేదా Windows Vistaకి మద్దతు ఉండదు.</translation>
-<translation id="4559775032954821361">Chromium మెను &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          &gt;
-          LAN సెట్టింగ్‌లకు వెళ్లండి
-          మరియు "మీ LAN కోసం ప్రాక్సీ సర్వర్‌ను ఉపయోగించండి" తనిఖీ పెట్టె ఎంపికను తీసివేయండి.</translation>
 <translation id="4567424176335768812">మీరు <ph name="USER_EMAIL_ADDRESS" />గా సైన్ ఇన్ చేసారు. ఇప్పుడు మీరు మీ సైన్ ఇన్ చేసిన అన్ని పరికరాల్లో మీ బుక్‌మార్క్‌లు, చరిత్ర మరియు ఇతర సెట్టింగ్‌లను ప్రాప్యత చేయవచ్చు.</translation>
 <translation id="457845228957001925">మీ Chromium డేటాకు సంబంధించిన ముఖ్యమైన సమాచారం</translation>
 <translation id="459535195905078186">Chromium అనువర్తనాలు</translation>
@@ -138,13 +128,6 @@
 <translation id="5680901439334282664">Chromiumకి సైన్ ఇన్ చేయండి</translation>
 <translation id="5772805321386874569">(Chromium <ph name="BEGIN_BUTTON" />పునఃప్రారంభం<ph name="END_BUTTON" /> అవసరం)</translation>
 <translation id="5796460469508169315">Chromium దాదాపు సిద్ధంగా ఉంది.</translation>
-<translation id="580822234363523061">Chromium మెను &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />కు వెళ్లండి
-          మరియు మీ కాన్ఫిగరేషన్ "ప్రాక్సీ వద్దు" లేదా "నేరుగా" వలె సెట్ చేయబడిందని నిర్ధారించుకోండి.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5823381412099532241">Chromium దానికదే తాజా సంస్కరణకు నవీకరించబడదు, కనుక మీరు అద్భుతమైన కొత్త లక్షణాలను మరియు భద్రతా పరిష్కారాలను కోల్పోతున్నారు. మీరు Chromiumను నవీకరించాలి.</translation>
 <translation id="5862307444128926510">Chromiumకు స్వాగతం</translation>
@@ -219,8 +202,6 @@
 <translation id="8033665941300843262">ఈ సైట్‌కు అనుమతులను భాగస్వామ్యం చేయడానికి Chromiumకి అనుమతుల ప్రాప్యతను మంజూరు చేయడం అవసరం.</translation>
 <translation id="805745970029938373">మీరు Chromium అనువర్తనాలు, పొడిగింపులు మరియు వెబ్‌సైట్‌ల నుండి పొందే మీ నోటిఫికేషన్‌లన్నింటినీ ఇక్కడ చూడవచ్చు.</translation>
 <translation id="8134284582177628525">మీరు ఈ కంప్యూటర్‌ను <ph name="PROFILE_NAME" />తో భాగస్వామ్యం చేస్తే, వేరుగా బ్రౌజ్ చేయడానికి మిమ్మల్ని Chromiumకు జోడించుకోండి. లేకుంటే వారి Google ఖాతాను డిస్‌కనెక్ట్ చేయండి.</translation>
-<translation id="8187289872471304532">          అనువర్తనాలు &gt; సిస్టమ్ ప్రాధాన్యతలు &gt; నెట్‌వర్క్ &gt; అధునాతనం &gt; ప్రాక్సీలకు వెళ్లండి
-          మరియు ఎంచుకోబడిన ప్రాక్సీల ఎంపికను తీసివేయండి.</translation>
 <translation id="8269379391216269538">Chromiumని మెరుగుపరచడంలో సహాయం అందించండి</translation>
 <translation id="8453117565092476964">ఇన్‌స్టాలర్ ఆర్కైవ్ పాడైంది లేదా చెల్లదు. దయచేసి Chromiumని మళ్లీ డౌన్‌లోడ్ చేయండి.</translation>
 <translation id="8493179195440786826">Chromium కాలం చెల్లినది</translation>
@@ -228,8 +209,6 @@
 <translation id="85843667276690461">Chromiumని ఉపయోగించి సహాయాన్ని పొందండి</translation>
 <translation id="8586442755830160949">కాపీరైట్ <ph name="YEAR" /> Chromium రచయితలు. సర్వ హక్కులు ప్రత్యేకించబడ్డాయి.</translation>
 <translation id="8605166112420372522">Chromiumను డెస్క్‌టాప్‌లో &amp;మళ్లీ ప్రారంభించండి</translation>
-<translation id="8610831143142469229">మీ ఫైర్‌వాల్ లేదా యాంటీవైరస్ సెట్టింగ్‌ల్లో నెట్‌వర్క్‌ను ప్రాప్యత చేయడానికి
-        Chromiumను అనుమతించండి.</translation>
 <translation id="8621669128220841554">పేర్కొనబడలేని లోపం కారణంగా ఇన్‌స్టాలేషన్ విఫలమైంది. దయచేసి Chromiumని మళ్లీ డౌన్‌లోడ్ చేయండి.</translation>
 <translation id="8628626585870903697">ముద్రణా పరిదృశ్యం పని చేయడానికి అవసరమైన PDF వ్యూయర్‌ని Chromium చేర్చలేదు.</translation>
 <translation id="8684913864886094367">Chromium సరిగ్గా షట్ డౌన్ కాలేదు.</translation>

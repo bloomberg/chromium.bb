@@ -144,19 +144,10 @@
 <translation id="5785746630574083988">‏راه‌اندازی مجدد در حالت Windows 8 برنامه‌های Chrome شما را می‌بندد یا دوباره راه‌اندازی می‌کند.</translation>
 <translation id="5855036575689098185">‏نرم‌افزار در حال اجرا در رایانه شما با Google Chrome سازگار نیست.</translation>
 <translation id="5877064549588274448">کانال تغییر کرد. برای اعمال تغییرات دستگاه خود را مجدداً راه‌اندازی کنید.</translation>
-<translation id="5890698319714066019">‏Google Chrome نمی‌تواند صفحه وب را نمایش دهد، زیرا رایانه شما به اینترنت متصل نیست.</translation>
 <translation id="5931853610562009806">‏در Mac ممکن است گذرواژه‌ها در Keychain شما ذخیره شوند و سایر کاربران Chrome که این حساب OS X را دارند به آن دسترسی داشته باشند یا بتوانند همگام‌سازی کنند.</translation>
 <translation id="5940385492829620908">‏وب، نشانک‌ها و موارد دیگر Chrome شما در اینجا هستند.</translation>
 <translation id="5941830788786076944">‏Google Chrome مرورگر پیش‌فرض شود</translation>
 <translation id="597770749449734237">‏میان‌برهای اضافی صفحه‌کلید را که برای اشکال زدایی Google Chrome مفید هستند، فعال می‌کند.</translation>
-<translation id="6011049234605203654">‏به
-          منوی Chrome &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          بروید و مطمئن شوید تنظیمات بر روی «بدون پراکسی» یا «مستقیم» است.</translation>
 <translation id="6012342843556706400">‏Chrome باید به موقعیت مکانی دسترسی داشته باشد تا آن را با این سایت به اشتراک بگذارد.</translation>
 <translation id="6014844626092547096">‏اکنون وارد Chrome شدید! سرپرست سیستم شما همگام‌سازی را از کار انداخته است.</translation>
 <translation id="6049075767726609708">‏یک سرپرست Google Chrome را روی این سیستم نصب کرده است، و برای همه کاربران در دسترس است. اکنون Google Chrome در سطح سیستم جایگزین این برنامه نصب شده در سطح کاربر خواهد شد.</translation>
@@ -177,16 +168,6 @@
 <translation id="6676384891291319759">دسترسی به اینترنت</translation>
 <translation id="6757767188268205357">مرا اذیت نکن</translation>
 <translation id="683440813066116847">‏قانون ترافیک ورودی برای Google Chrome Canary به منظور اجازه به ترافیک mDNS .</translation>
-<translation id="6855094794438142393">‏به
-          منوی Chrome  &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          &gt;
-          تنظیمات LAN
-          بروید و علامت انتخاب «استفاده از سرور پراکسی برای LAN» را بردارید.</translation>
 <translation id="6883876366448858277">‏کلمه و نوشتار اطرافش را به جستجوی Google ارسال می‌کند و معانی، تصاویر و نتایج جستجوی دیگر را برمی‌گرداند.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="6970811910055250180">درحال به‌روزرسانی دستگاه شما…</translation>
@@ -208,7 +189,6 @@
 <translation id="7282192067747128786">‏Chrome -اعلان‌ها (<ph name="QUANTITY" /> خوانده نشده)</translation>
 <translation id="729375352412857283">‏دریافت به‌روزرسانی‌های Google Chrome به‌زودی در این رایانه متوقف می‌شود، زیرا Windows XP و Windows Vista دیگر پشتیبانی نمی‌شوند.</translation>
 <translation id="7339898014177206373">پنجرهٔ جدید</translation>
-<translation id="7396375882099008034">‏در تنظیمات فایروال و ضد ویروس‌تان، به Chrome اجازه دسترسی به شبکه را بدهید.</translation>
 <translation id="7398801000654795464">‏شما بعنوان <ph name="USER_EMAIL_ADDRESS" /> وارد سیستم Chrome شدید. لطفاً برای ورود به سیستم مجدد از همان حساب استفاده کنید.</translation>
 <translation id="7400722733683201933">‏درباره Google Chrome</translation>
 <translation id="7408085963519505752">‏شرایط Chrome OS</translation>
@@ -238,10 +218,6 @@
 <translation id="8032142183999901390">‏پس از حذف حسابتان از Chrome، ممکن است لازم باشد برای اعمال تغییرات، برگه‌های بازتان را تازه‌سازی کنید.</translation>
 <translation id="8037887340639533879">‏هیچ مورد نصب شده‌ای از Google Chrome برای به‌روزرسانی یافت نشد.</translation>
 <translation id="8129812357326543296">‏درباره &amp;Google Chrome</translation>
-<translation id="8187289872471304532">به
-          برنامه‌ها &gt; 
-موارد برگزیده سیستم &gt; شبکه &gt; پیشرفته &gt; پراکسی‌ها
-بروید و علامت تمام پراکسی‌های انتخاب شده را بردارید.</translation>
 <translation id="8205111949707227942">‏اختیاری: با ارسال خودکار آمار کاربرد و گزارش‌های خرابی برنامه به Google، به پیشرفت سیستم عامل Chrome کمک کنید.</translation>
 <translation id="8227755444512189073">‏برای کار با پیوندهای <ph name="SCHEME" />، Google Chrome باید برنامه خارجی را راه‌اندازی کند. پیوند <ph name="PROTOLINK" /> مورد نیاز است.</translation>
 <translation id="8255190535488645436">‏Google Chrome درحال استفاده از دوربین و میکروفون شما است.</translation>

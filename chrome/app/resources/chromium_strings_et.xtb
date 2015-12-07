@@ -47,7 +47,6 @@
 <translation id="2486653164587200256">Chromium ei pruugi õigesti töötada, kuna seda ei toetata enam Windows XP-s ega Windows Vistas.</translation>
 <translation id="2535480412977113886">Chromium OS ei saanud andmeid sünkroonida, sest teie konto sisselogimisandmed on aegunud.</translation>
 <translation id="2558641060352364164">See sait kasutab pistikprogrammi Chromium Frame, mille tugi peagi lõpeb. Desinstallige see ja täiendage moodsale brauserile.</translation>
-<translation id="2565260267992448464">Chromium ei saa veebilehte kuvada, kuna teie arvutis puudub Interneti-ühendus.</translation>
 <translation id="2572494885440352020">Chromiumi abiline</translation>
 <translation id="2602806952220118310">Chromium – märguanded</translation>
 <translation id="2636877269779209383">Chromiumil on vaja kaamerale juurdepääsu selle jagamiseks saidiga.</translation>
@@ -110,16 +109,6 @@ ja valed mandaadid. See võib juhtuda siis, kui ründaja proovib teeselda, et on
 <translation id="4458285410772214805">Muudatuse jõustamiseks logige välja ja uuesti sisse.</translation>
 <translation id="4488676065623537541">Teie arvelduse detailid on salvestatud Chromiumi.</translation>
 <translation id="4549794359424059447">Chromiumi tulevased versioonid ei toeta enam Windows XP-d ega Windows Vistat.</translation>
-<translation id="4559775032954821361">Valige
-          Chromiumi menüü &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          &gt;
-          LAN-seaded
-          ja tühjendage ruut valiku „Kasutage LAN-i puhul puhverserverit” juures.</translation>
 <translation id="4567424176335768812">Olete sisse logitud aadressiga <ph name="USER_EMAIL_ADDRESS" />. Nüüd on teil juurdepääs oma järjehoidjatele, ajaloole ja muudele seadetele kõigis seadmetes, kuhu olete sisse logitud.</translation>
 <translation id="457845228957001925">Oluline teave teie Chromiumi andmete kohta</translation>
 <translation id="459535195905078186">Chromiumi rakendused</translation>
@@ -141,14 +130,6 @@ ja valed mandaadid. See võib juhtuda siis, kui ründaja proovib teeselda, et on
 <translation id="5680901439334282664">logige Chromiumi sisse</translation>
 <translation id="5772805321386874569">(nõuab Chromiumi <ph name="BEGIN_BUTTON" />taaskäivitamist<ph name="END_BUTTON" />)</translation>
 <translation id="5796460469508169315">Chromium on peaaegu valmis.</translation>
-<translation id="580822234363523061">Minge
-          Chromiumi menüüsse &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          ja veenduge, et konfiguratsioon on määratud valikule „Puhverserverita” või „Otse”.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5823381412099532241">Chromium ei suutnud ennast uusimale versioonile värskendada, nii et te ei saa kasutada lahedaid uusi funktsioone ja turvaparandusi. Peate Chromiumi värskendama.</translation>
 <translation id="5862307444128926510">Tere tulemast Chromiumi</translation>
@@ -225,9 +206,6 @@ Chromium ei saa teie seadeid taastada.</translation>
 <translation id="8033665941300843262">Chromiumil on vaja lubadele juurdepääsu nende jagamiseks saidiga.</translation>
 <translation id="805745970029938373">Siin näete kõiki Chromiumi rakendustest, laiendustest ja veebisaitidelt pärinevaid märguandeid.</translation>
 <translation id="8134284582177628525">Kui jagate seda arvutit kasutajaga <ph name="PROFILE_NAME" />, lisage ennast Chromiumi, et saaksite eraldi sirvida. Muidu katkestage ühendus nende Google'i kontoga.</translation>
-<translation id="8187289872471304532">Tehke valikud
-          Rakendused &gt; Süsteemieelised &gt; Võrk &gt; Täpsem &gt; Puhverserverid
-          ja tühjendage kõigi valitud puhverserverite märkeruudud.</translation>
 <translation id="8269379391216269538">Aidake muuta Chromiumi paremaks</translation>
 <translation id="8453117565092476964">Installeri arhiiv on rikutud või kehtetu. Laadige Chromium uuesti alla.</translation>
 <translation id="8493179195440786826">Chromium on aegunud</translation>
@@ -235,8 +213,6 @@ Chromium ei saa teie seadeid taastada.</translation>
 <translation id="85843667276690461">Hangi abi Chromiumi kasutamise kohta</translation>
 <translation id="8586442755830160949">Autoriõigus <ph name="YEAR" /> The Chromium Authors. Kõik õigused on kaitstud.</translation>
 <translation id="8605166112420372522">&amp;Käivitage Chromium uuesti töölaual</translation>
-<translation id="8610831143142469229">Juurdepääsuks võrgule tulemüüri või viirusetõrje seadetes lubage
-        Chromium.</translation>
 <translation id="8621669128220841554">Installimine ebaõnnestus tundmatu vea tõttu. Laadige Chromium uuesti alla.</translation>
 <translation id="8628626585870903697">Chromium ei sisalda PDF-vaaturit, mida on printimise eelvaate jaoks vaja.</translation>
 <translation id="8684913864886094367">Chromium ei sulgunud õigesti.</translation>

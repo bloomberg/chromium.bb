@@ -378,21 +378,6 @@
 
           Om inställningen inte anges tillåter <ph name="PRODUCT_NAME" />
           Native Messaging-värdar på användarnivå.</translation>
-<translation id="2393996789386329927">Policyn blockerar åtkomst till de angivna webbadresserna.
-
-      Policyn förhindrar att användaren läser in webbsidor från svartlistade webbadresser. Svartlistan innehåller en lista med webbadressmönster som anger vilka webbadresser som ska svartlistas.
-
-      Varje webbadressmönster kan antingen vara ett mönster för lokala filer eller ett allmänt webbadressmönster. Mönster för lokala filer är i formatet fil://sökväg, där sökvägen ska vara en absolut sökväg som ska blockeras. Alla platser i filsystemet som den sökvägen är ett prefix för kommer att blockeras.
-
-      Ett allmänt webbadressmönster har formatet schema://värd:port/sökväg.
-      Om ett sådant mönster förekommer blockeras endast det angivna schemat. Om prefixet schema:// inte anges blockeras alla scheman.
-      Värden är obligatorisk och kan vara ett värdnamn eller en IP-adress. Underdomäner till ett värdnamn blockeras också. Om du vill förhindra att underdomäner blockeras inkluderar du en ”.” före värdnamnet. Det särskilda värdnamnet ”*” blockerar alla domäner.
-      Den valfria porten är ett giltigt portnummer från 1 till 65535. Om inget anges blockeras alla portar.
-      Om den valfria sökvägen anges blockeras bara sökvägar med det prefixet.
-
-      Undantag kan anges i policyn för tillåtna webbadresser. Dessa policyer är begränsade till 1 000 poster. Efterföljande poster ignoreras.
-
-      Om den här policyn inte har angetts kommer ingen webbadress att svartlistas i webbläsaren.</translation>
 <translation id="240213793013362302">Konfigurera bakgrundsbild.
 
       Med den här policyn kan du konfigurera bakgrundsbilden som visas på skrivbordet och på inloggningsskärmen åt användaren. Policyn anges genom att webbadressen som <ph name="PRODUCT_OS_NAME" /> kan hämta bakgrundsbilden från anges och att en kryptografisk hash används för att verifiera nedladdningens integritet. Bilden måste vara i JPEG-format och filstorleken får inte överskrida 16 MB. Det måste gå att komma åt webbadressen utan autentisering.

@@ -9,6 +9,15 @@
           and disable "Prefetch page resources".
           If this does not resolve the issue, we recommend re-enabling this option
           again for improved performance.</translation>
+<translation id="5890698319714066019">Google Chrome can't display the web page because your computer isn't connected to the Internet.</translation>
+<translation id="6011049234605203654">Go to
+          the Chrome menu &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          &gt;
+          <ph name="PROXIES_TITLE" />
+          and make sure your configuration is set to "no proxy" or "direct."</translation>
 <translation id="6341737370356890233">Go to
           the Chrome menu &gt;
           <ph name="SETTINGS_TITLE" />
@@ -17,4 +26,19 @@
           and deselect "<ph name="NO_PREFETCH_DESCRIPTION" />".
           If this does not resolve the issue, we recommend selecting this option
           again for improved performance.</translation>
+<translation id="6855094794438142393">Go to
+          the Chrome menu &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          &gt;
+          <ph name="PROXIES_TITLE" />
+          &gt;
+          LAN Settings
+          and deselect "Use a proxy server for your LAN".</translation>
+<translation id="7396375882099008034">Allow Chrome to access the network in your firewall or antivirus
+        settings.</translation>
+<translation id="8187289872471304532">Go to
+          Applications &gt; System Preferences &gt; Network &gt; Advanced &gt; Proxies
+          and deselect any proxies that have been selected.</translation>
 </translationbundle>

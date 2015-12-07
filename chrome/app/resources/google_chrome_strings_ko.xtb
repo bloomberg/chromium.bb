@@ -152,18 +152,10 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="5785746630574083988">Windows 8 모드로 다시 실행하면 Chrome 앱이 닫혔다가 다시 실행됩니다.</translation>
 <translation id="5855036575689098185">컴퓨터에서 실행 중인 소프트웨어가 Chrome과 호환되지 않습니다.</translation>
 <translation id="5877064549588274448">채널이 변경되었습니다. 변경사항을 적용하려면 기기를 다시 시작하세요.</translation>
-<translation id="5890698319714066019">컴퓨터가 인터넷에 연결되어 있지 않아 Chrome에서 웹페이지를 표시할 수 없습니다.</translation>
 <translation id="5931853610562009806">Mac에서는 비밀번호가 키체인에 저장되어 이 OS X 계정을 공유하는 다른 Chrome 사용자가 액세스하거나 동기화할 수 있습니다.</translation>
 <translation id="5940385492829620908">웹, 북마크 및 기타 Chrome 콘텐츠가 여기에 저장됩니다.</translation>
 <translation id="5941830788786076944">Chrome을 기본 브라우저로</translation>
 <translation id="597770749449734237">Chrome 디버깅에 유용한 추가 키보드 단축키를 사용합니다.</translation>
-<translation id="6011049234605203654">Chrome 메뉴 &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          (으)로 이동하여 '프록시 없음' 또는 '직접 연결'로 설정되어 있는지 확인합니다.</translation>
 <translation id="6012342843556706400">이 사이트에 공유하려면 Chrome에 위치 정보 액세스 권한이 있어야 합니다.</translation>
 <translation id="6014844626092547096">Chrome에 로그인했습니다. 관리자가 동기화를 사용 중지했습니다.</translation>
 <translation id="6049075767726609708">시스템에 모든 사용자용 Chrome이 설치되었습니다. 기존의 사용자 수준 Chrome 대신 설치된 시스템 수준 Chrome이 사용됩니다.</translation>
@@ -184,15 +176,6 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="6676384891291319759">인터넷 연결</translation>
 <translation id="6757767188268205357">더 이상 묻지 않음</translation>
 <translation id="683440813066116847">Chrome Canary가 mDNS 트래픽을 허용하는 인바운드 규칙입니다.</translation>
-<translation id="6855094794438142393">Chrome 메뉴 &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          &gt;
-          LAN 설정으로 이동하여
-          '사용자 LAN에 프록시 서버 사용'을 선택 취소합니다.</translation>
 <translation id="6883876366448858277">단어와 관련 컨텍스트를 Google 검색에 전송하며 정의, 사진, 기타 검색결과를 표시합니다.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="6970811910055250180">기기를 업데이트하는 중...</translation>
@@ -214,8 +197,6 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="7282192067747128786">Chrome - 알림(읽지 않은 알림 <ph name="QUANTITY" />개)</translation>
 <translation id="729375352412857283">Windows XP 및 Windows Vista가 더 이상 지원되지 않을 예정이므로 곧 이 컴퓨터에서 Chrome 업데이트를 받을 수 없게 됩니다.</translation>
 <translation id="7339898014177206373">새 창</translation>
-<translation id="7396375882099008034">Chrome이 방화벽이나 바이러스 백신이 설정된
-        네트워크에 액세스할 수 있도록 허용합니다.</translation>
 <translation id="7398801000654795464"><ph name="USER_EMAIL_ADDRESS" />(으)로 Chrome에 로그인되어 있습니다. 같은 계정으로 다시 로그인해 주세요.</translation>
 <translation id="7400722733683201933">Chrome 정보</translation>
 <translation id="7408085963519505752">Chrome OS 이용약관</translation>
@@ -245,8 +226,6 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="8032142183999901390">Chrome에서 계정을 삭제한 후 열려 있는 탭을 새로고침해야 적용됩니다.</translation>
 <translation id="8037887340639533879">업데이트할 Chrome 설치가 없습니다.</translation>
 <translation id="8129812357326543296">Chrome 정보(&amp;G)</translation>
-<translation id="8187289872471304532">애플리케이션 &gt; 시스템 환경설정 &gt; 네트워크 &gt; 고급 &gt; 프록시로 이동한 다음
-          선택된 프록시를 선택 취소합니다.</translation>
 <translation id="8205111949707227942" />
 <translation id="8227755444512189073"><ph name="SCHEME" />SCHEME링크 처리를 위해 Chrome에서 외부 응용 프로그램을 실행해야 합니다. 요청 링크는PROTOLINK입니다 <ph name="PROTOLINK" />.</translation>
 <translation id="8255190535488645436">Chrome에서 카메라와 마이크를 사용 중입니다.</translation>

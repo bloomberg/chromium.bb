@@ -335,21 +335,6 @@
 
           Dacă această setare nu este configurată, <ph name="PRODUCT_NAME" />
           va permite folosirea gazdelor de mesagerie nativă la nivel de utilizator.</translation>
-<translation id="2393996789386329927">Blochează accesul la adresele URL incluse în listă.
-
-      Politica împiedică utilizatorul să încarce pagini web de la adresele URL incluse în lista neagră. Lista neagră este o listă cu șabloane de adrese URL care indică ce adrese URL vor fi adăugate în lista neagră.
-
-      Fiecare șablon de adrese URL poate fi un șablon pentru fișierele locale sau un șablon de adrese URL generic. Șabloanele pentru fișierele locale au formatul „file://path”, în care „path” trebuie să fie o cale absolută de blocat. Toate locațiile sistemului de fișiere pentru care acea cale este un prefix vor fi blocate.
-
-      Un șablon de adrese URL generic are formatul „scheme://host:port/path”.
-      Dacă există, numai schema specificată va fi blocată. Dacă prefixul scheme:// nu este specificat, toate schemele sunt blocate.
-      Gazda este obligatorie și poate fi un nume de gazdă sau o adresă IP. Subdomeniile unui nume de gazdă vor fi, de asemenea, blocate. Pentru a împiedica blocarea subdomeniilor, include un semn „.” înaintea numelui de gazdă. Numele de gazdă special „*” va bloca toate domeniile.
-      Portul opțional este un număr de port valid, de la 1 la 65535. Dacă nu este specificat niciun număr, toate porturile vor fi blocate.
-      Dacă este specificată calea opțională, numai căile cu acel prefix vor fi blocate.
-
-      Excepțiile pot fi definite în politica privind lista albă de adrese URL. Aceste politici sunt limitate la 1.000 de intrări. Intrările suplimentare vor fi ignorate.
-
-      Dacă această politică nu este configurată, în browser nu va fi adăugată nicio adresă URL în lista neagră.</translation>
 <translation id="240213793013362302">Configurează imaginea de fundal.
 
       Cu această politică poți să configurezi imaginea de fundal care se afișează pe desktop și pe fundalul ecranului de conectare pentru utilizator. Politica este setată prin specificarea adresei URL de la care <ph name="PRODUCT_OS_NAME" /> poate descărca imaginea de fundal și a unui cod hash criptografic utilizat pentru a verifica integritatea descărcării. Imaginea trebuie să fie în format JPEG, iar dimensiunea acesteia nu trebuie să depășească 16 MB. Adresa URL trebuie să poată fi accesată fără autentificare.

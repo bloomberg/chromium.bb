@@ -47,7 +47,6 @@
 <translation id="2486653164587200256">‏ייתכן ש-Chromium לא יפעל כראוי כי כבר אין בו תמיכה ב-Windows XP וב-Windows Vista.</translation>
 <translation id="2535480412977113886">‏מערכת ההפעלה של Chromium לא הצליחה לסנכרן את הנתונים שלך מפני שפרטי הכניסה של חשבונך אינם מעודכנים.</translation>
 <translation id="2558641060352364164">‏האתר הזה משתמש בפלאגין Chromium Frame. התמיכה בפלאגין הזה תסתיים בקרוב. הסר את ההתקנה שלו ושדרג לדפדפן מודרני.</translation>
-<translation id="2565260267992448464">‏Chromium אינו יכול להציג את דף האינטרנט מכיוון שהמחשב שלך לא מחובר לאינטרנט.</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
 <translation id="2602806952220118310">‏Chromium - הודעות</translation>
 <translation id="2636877269779209383">‏Chromium זקוק לגישה אל המצלמה כדי לשתף אותה עם האתר הזה.</translation>
@@ -108,16 +107,6 @@
 <translation id="4458285410772214805">צא מהמערכת והיכנס שוב כדי שהשינוי ייכנס לתוקף.</translation>
 <translation id="4488676065623537541">‏פרטי החיוב שלך נשמרו ב-Chromium.</translation>
 <translation id="4549794359424059447">‏גרסאות עתידיות של Chromium כבר לא יתמכו ב-Windows XP וב-Windows Vista.</translation>
-<translation id="4559775032954821361">‏עבור אל
-          תפריט Chromium‏ &gt;
-          <ph name="SETTINGS_TITLE" />
-          ‏&gt;
-          <ph name="ADVANCED_TITLE" />
-          ‏&gt;
-          <ph name="PROXIES_TITLE" />
-          ‏&gt;
-          הגדרות LAN
-          ובטל את הבחירה באפשרות "השתמש בשרת proxy עבור רשת LAN‏".</translation>
 <translation id="4567424176335768812">נכנסת למערכת בתור <ph name="USER_EMAIL_ADDRESS" />. כעת אתה יכול לגשת אל הסימניות, ההיסטוריה והגדרות אחרות שלך בכל המכשירים שבהם אתה מחובר לחשבון.</translation>
 <translation id="457845228957001925">‏מידע חשוב בנוגע לנתונים שלך ב-Chromium</translation>
 <translation id="459535195905078186">‏יישומי Chromium</translation>
@@ -139,14 +128,6 @@
 <translation id="5680901439334282664">‏היכנס אל Chromium</translation>
 <translation id="5772805321386874569">‏(נדרש <ph name="BEGIN_BUTTON" />אתחול<ph name="END_BUTTON" /> של Chromium)</translation>
 <translation id="5796460469508169315">‏Chromium כמעט מוכן.</translation>
-<translation id="580822234363523061">‏עבור אל
-          תפריט Chromium‏ &gt;
-          <ph name="SETTINGS_TITLE" />
-          ‏&gt;
-          <ph name="ADVANCED_TITLE" />
-          ‏&gt;
-          <ph name="PROXIES_TITLE" />
-          ובדוק שהתצורה שלך מוגדרת לאפשרות "ללא שרת proxy‏" או "ישיר".</translation>
 <translation id="5820394555380036790">‏מערכת ההפעלה של Chromium</translation>
 <translation id="5823381412099532241">‏העדכון העצמי של Chromium לגרסה העדכנית ביותר נכשל, לכן אתה מחמיץ תכונות חדשות מדליקות ותיקוני אבטחה. עליך לעדכן את Chromium.</translation>
 <translation id="5862307444128926510">‏ברוכים הבאים ל-Chromium‏</translation>
@@ -223,9 +204,6 @@ Chromium לא יכול לשחזר את ההגדרות שלך.</translation>
 <translation id="8033665941300843262">‏Chromium זקוק להרשאות גישה כדי לשתף תכונות מסוימות עם האתר הזה.</translation>
 <translation id="805745970029938373">‏כאן תוכל לראות את כל ההתראות שלך מיישומים, מתוספים ומאתרים של Chromium.</translation>
 <translation id="8134284582177628525">‏אם אתם משתף את המחשב הזה עם <ph name="PROFILE_NAME" />, הוסף את עצמך ל-Chromium כדי לגלוש בנפרד. אחרת, נתק את חשבון Google שלו.</translation>
-<translation id="8187289872471304532">‏עבור אל
-          'יישומים' &gt; 'העדפות מערכת' &gt; 'רשת' &gt; 'מתקדם' &gt; שרתי Proxy'
-          ובטל את הבחירה בשרתי proxy שנבחרו.</translation>
 <translation id="8269379391216269538">‏עזור לנו לשפר את Chromium</translation>
 <translation id="8453117565092476964">‏הארכיון של המתקין פגום או שאינו חוקי. הורד שוב את Chromium.</translation>
 <translation id="8493179195440786826">‏Chromium אינו מעודכן</translation>
@@ -233,7 +211,6 @@ Chromium לא יכול לשחזר את ההגדרות שלך.</translation>
 <translation id="85843667276690461">‏עזרה באמצעות Chromium</translation>
 <translation id="8586442755830160949">‏Copyright <ph name="YEAR" /> The Chromium Authors. כל הזכויות שמורות.</translation>
 <translation id="8605166112420372522">‏ה&amp;פעל מחדש את Chromium בשולחן העבודה</translation>
-<translation id="8610831143142469229">‏אפשר ל-Chromium לגשת לרשת בהגדרות חומת האש או האנטי-וירוס שלך.</translation>
 <translation id="8621669128220841554">‏ההתקנה נכשלה בשל שגיאה לא מזוהה. הורד שוב את Chromium.</translation>
 <translation id="8628626585870903697">‏Chromium אינו כולל מציג PDF, הנדרש להפעלת תצוגה מקדימה של הדפסה.</translation>
 <translation id="8684913864886094367">‏כיבוי Chromium לא בוצע כהלכה.</translation>

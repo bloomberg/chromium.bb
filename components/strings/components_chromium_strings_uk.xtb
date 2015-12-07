@@ -8,6 +8,24 @@
           і вимкніть опцію "Заздалегідь отримувати ресурси сторінки".
           Якщо проблема не зникне, радимо знову ввімкнути цю опцію,
           щоб покращити стабільність.</translation>
+<translation id="4559775032954821361">Перейдіть у
+          меню Chromium &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          &gt;
+          <ph name="PROXIES_TITLE" />
+          &gt;
+          Налаштування LAN
+          і зніміть прапорець біля опції "Використовувати проксі-сервер для вашої локальної мережі".</translation>
+<translation id="580822234363523061">Перейдіть у
+          меню Chromium &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          &gt;
+          <ph name="PROXIES_TITLE" />
+          і переконайтеся, що встановлено значення конфігурації "без проксі" чи "безпосередньо".</translation>
 <translation id="6613594504749178791">Ваші зміни почнуть діяти після наступного перезапуску Chromium.</translation>
 <translation id="7861509383340276692">Перейдіть у
           меню Chromium &gt;
@@ -17,4 +35,9 @@
           і зніміть прапорець біля опції "<ph name="NO_PREFETCH_DESCRIPTION" />".
           Якщо проблема не зникне, радимо знову вибрати цю опцію,
           щоб покращити стабільність.</translation>
+<translation id="8187289872471304532">Перейдіть у меню
+          Applications &gt; System Preferences &gt; Network &gt; Advanced &gt; Proxies (Програми &gt; Системні налаштування &gt; Мережа &gt; Розширені &gt; Проксі-сервери)
+          і зніміть прапорці біля всіх вибраних проксі-серверів.</translation>
+<translation id="8610831143142469229">Надайте Chromium доступ до мережі в налаштуваннях свого брандмауера чи
+        антивірусного програмного забезпечення.</translation>
 </translationbundle>

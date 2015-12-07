@@ -49,7 +49,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="2486653164587200256">Chromium may not function correctly because it is no longer supported on Windows XP or Windows Vista.</translation>
 <translation id="2535480412977113886">Chromium OS could not sync your data because your account sign-in details are out of date.</translation>
 <translation id="2558641060352364164">This site is using the Chromium Frame plug-in which will soon be unsupported. Please uninstall it and upgrade to a modern browser.</translation>
-<translation id="2565260267992448464">Chromium can't display the web page because your computer isn't connected to the Internet.</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
 <translation id="2602806952220118310">Chromium - Notifications</translation>
 <translation id="2636877269779209383">Chromium needs camera access to share it with this site.</translation>
@@ -111,16 +110,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="4458285410772214805">Please sign out and sign in again for this change to take effect.</translation>
 <translation id="4488676065623537541">Your billing details have been saved in Chromium.</translation>
 <translation id="4549794359424059447">Future versions of Chromium will no longer support Windows XP or Windows Vista.</translation>
-<translation id="4559775032954821361">Go to
-          the Chromium menu &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          &gt;
-          LAN Settings
-          and deselect the "Use a proxy server for your LAN" checkbox.</translation>
 <translation id="4567424176335768812">You're signed in as <ph name="USER_EMAIL_ADDRESS" />. Now you can access your bookmarks, history and other settings on all your signed in devices.</translation>
 <translation id="457845228957001925">Important information regarding your Chromium data</translation>
 <translation id="459535195905078186">Chromium Apps</translation>
@@ -142,14 +131,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="5680901439334282664">sign in to Chromium</translation>
 <translation id="5772805321386874569">(requires Chromium <ph name="BEGIN_BUTTON" />restart<ph name="END_BUTTON" />)</translation>
 <translation id="5796460469508169315">Chromium is almost ready.</translation>
-<translation id="580822234363523061">Go to
-          the Chromium menu &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          and make sure your configuration is set to "no proxy" or "direct."</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5823381412099532241">Chromium could not update itself to the latest version, so you are missing out on amazing new features and security fixes. You need to update Chromium.</translation>
 <translation id="5862307444128926510">Welcome to Chromium</translation>
@@ -226,9 +207,6 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="8033665941300843262">Chromium needs permissions access to share them with this site.</translation>
 <translation id="805745970029938373">You can see all your notifications from Chromium apps, extensions and websites here.</translation>
 <translation id="8134284582177628525">If you share this computer with <ph name="PROFILE_NAME" />, add yourself to Chromium to browse separately. Otherwise disconnect their Google Account.</translation>
-<translation id="8187289872471304532">Go to
-          Applications &gt; System Preferences &gt; Network &gt; Advanced &gt; Proxies
-          and deselect any proxies that have been selected.</translation>
 <translation id="8269379391216269538">Help make Chromium better</translation>
 <translation id="8453117565092476964">The installer archive is corrupted or invalid. Please download Chromium again.</translation>
 <translation id="8493179195440786826">Chromium is Out of Date</translation>
@@ -236,8 +214,6 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="85843667276690461">Get help with using Chromium</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> The Chromium Authors. All rights reserved.</translation>
 <translation id="8605166112420372522">&amp;Relaunch Chromium on the desktop</translation>
-<translation id="8610831143142469229">Allow Chromium to access the network in your firewall or antivirus
-        settings.</translation>
 <translation id="8621669128220841554">Installation failed due to unspecified error. Please download Chromium again.</translation>
 <translation id="8628626585870903697">Chromium does not include the PDF viewer which is required for Print Preview to function.</translation>
 <translation id="8684913864886094367">Chromium didn't shut down correctly.</translation>

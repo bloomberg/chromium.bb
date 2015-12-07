@@ -324,21 +324,6 @@
           Jeśli to ustawienie nie jest określone, to <ph name="PRODUCT_NAME" />
           umożliwia używanie hostów Wiadomości natywnych
           na poziomie użytkownika.</translation>
-<translation id="2393996789386329927">Blokuje dostęp do wymienionych adresów URL.
-
-      Zasada uniemożliwia użytkownikowi wczytanie stron internetowych dodanych do czarnej listy. Czarna lista zawiera wzorce adresów URL, które określają, jakie adresy URL będą blokowane.
-
-      Każdy wzorzec adresu URL może być wzorcem plików lokalnych lub wzorcem ogólnym. Wzorce plików lokalnych mają format „file://ścieżka”, gdzie ścieżka powinna być ścieżką bezwzględną, która ma być blokowana. Blokowane będą wszystkie lokalizacje plików systemowych poprzedzone prefiksem z podaną ścieżką.
-
-      Ogólny wzorzec adresu URL ma format „scheme://host:port/ścieżka”.
-      Jeśli istnieje określony schemat, tylko on zostanie zablokowany. Jeśli prefiks scheme:// nie zostanie określony, blokowane będą wszystkie schematy.
-      Host jest wymagany i może to być nazwa hosta lub adres IP. Subdomeny nazwy hosta również są blokowane. Aby zapobiec blokowaniu subdomen, przed nazwą hosta umieść znak „.”. Specjalna nazwa hosta „*” spowoduje zablokowanie wszystkich domen.
-      Opcjonalny prawidłowy port to liczba z zakresu od 1 do 65 535. Jeśli nie zostanie określony, blokowane są wszystkie.
-      Określenie opcjonalnej ścieżki powoduje blokowanie tylko ścieżek z podanym prefiksem.
-
-      Wyjątki można zdefiniować w zasadzie dotyczącej białej listy adresów URL. Maksymalna liczba wpisów w tych zasadach wynosi 1000. Kolejne wpisy są ignorowane.
-
-      Jeśli zasada nie zostanie skonfigurowana, żaden adres URL nie będzie blokowany w przeglądarce.</translation>
 <translation id="240213793013362302">Konfigurowanie obrazu tapety.
 
       Ta zasada pozwala skonfigurować obraz tapety, który użytkownik widzi na pulpicie i na ekranie logowania. Zasadę konfiguruje się przez podanie adresu URL, z którego <ph name="PRODUCT_OS_NAME" /> może pobrać obraz tapety, oraz skrótu kryptograficznego służącego do weryfikacji integralności pobranego pliku. Obraz musi mieć format JPEG i nie może być większy niż 16 MB. Adres URL musi być dostępny bez żadnego uwierzytelniania.

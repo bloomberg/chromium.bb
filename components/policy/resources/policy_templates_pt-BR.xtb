@@ -313,21 +313,6 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
           Se essa configuração é desativada, o <ph name="PRODUCT_NAME" /> usa somente os hosts de Mensagem nativos instalados em nível de sistema.
 
           Se essa configuração não é definida, o <ph name="PRODUCT_NAME" /> permite o uso de hosts de Mensagem nativos em nível de usuário.</translation>
-<translation id="2393996789386329927">Bloqueia o acesso aos URLs listados.
-
-      Esta política impede que o usuário carregue páginas da Web de URLs da lista negra, a qual fornece uma lista de padrões de URL que especifica quais URLs são incluídos na lista negra.
-
-      Cada padrão de URL pode ser tanto um padrão para arquivos locais, como um padrão genérico de URL. Padrões de arquivos locais têm o formato "arquivo://caminho", e o caminho deve ser um caminho absoluto para bloqueio. Todos os locais de sistema de arquivos para os quais esse caminho é prefixado são bloqueados.
-
-      Um padrão de URL genérico tem o formato "esquema://host:porta/caminho".
-      Caso esteja presente, apenas o esquema especificado é bloqueado. Se o prefixo esquema:// não for especificado, todos os esquemas serão bloqueados.
-      O host é exigido e pode ser um nome de host ou um endereço IP. Subdomínios de um nome de host também são bloqueados. Para impedir que os subdomínios sejam bloqueados, inclua um "." antes do nome do host. O nome de host especial "*" bloqueia todos os domínios.
-      A porta opcional é um número de porta válido de 1 a 65535. Se nenhuma porta for especificada, todas as portas serão bloqueadas.
-      Se o caminho opcional for especificado, apenas os caminhos com esse prefixo serão bloqueados.
-
-      É possível configurar exceções na política de lista de permissões de URL. Essas políticas são limitadas a 1.000 entradas. Entradas subsequentes serão ignoradas.
-
-      Se esta política não é configurada, nenhum URL é colocado na lista negra no navegador.</translation>
 <translation id="240213793013362302">Configurar imagem de plano de fundo.
 
       Esta política permite que você configure a imagem de plano de fundo exibida na área de trabalho e no segundo plano da tela de login do usuário. A política é definida especificando o URL do qual o <ph name="PRODUCT_OS_NAME" /> pode fazer o download da imagem de plano de fundo e de uma chave criptográfica usada para verificar a integridade do download. A imagem deve estar no formato JPEG, e seu tamanho de arquivo não deve ultrapassar 16 MB. O URL deve ser acessível sem nenhuma autenticação.

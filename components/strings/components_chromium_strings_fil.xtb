@@ -8,6 +8,24 @@
           at i-disable ang "I-prefetch ang mga mapagkukunan ng page."
           Kung hindi nito malutas ang isyu, inirerekomenda naming muling
           i-enable ang opsyong ito para sa mas mahusay na pagganap.</translation>
+<translation id="4559775032954821361">Pumunta sa
+          menu ng Chromium &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          &gt;
+          <ph name="PROXIES_TITLE" />
+          &gt;
+          Mga Setting ng LAN
+          at alisin sa pagkakapili ang checkbox ng "Gumamit ng proxy server para sa iyong LAN."</translation>
+<translation id="580822234363523061">Pumunta sa
+          menu ng Chromium &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          &gt;
+          <ph name="PROXIES_TITLE" />
+          at tiyaking nakatakda sa "walang proxy" o "direkta" ang iyong configuration.</translation>
 <translation id="6613594504749178791">Magkakabisa ang iyong mga pagbabago sa susunod na ilunsad mong muli ang Chromium.</translation>
 <translation id="7861509383340276692">Pumunta
           sa menu ng Chromium &gt;
@@ -17,4 +35,9 @@
           at alisin sa pagkakapili ang "<ph name="NO_PREFETCH_DESCRIPTION" />."
           Kung hindi nito malulutas ang isyu, inirerekomenda naming piliing muli ang opsyong ito
           para sa pinahusay na pagganap.</translation>
+<translation id="8187289872471304532">Pumunta sa
+          Applications &gt; System Preferences &gt; Network &gt; Advanced &gt; Proxies
+          at alisin sa pagkakapili ang anumang mga napiling proxy.</translation>
+<translation id="8610831143142469229">Payagan ang Chromium na i-access ang network sa mga setting ng iyong firewall
+        o antivirus.</translation>
 </translationbundle>

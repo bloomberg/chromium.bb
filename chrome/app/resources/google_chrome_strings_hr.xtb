@@ -144,19 +144,10 @@ i netočne vjerodajnice. To može značiti da se neki napadač pokušava predsta
 <translation id="5785746630574083988">Ponovno pokretanje u načinu Windows 8 zatvorit će i ponovo pokrenuti vaše aplikacije Chrome.</translation>
 <translation id="5855036575689098185">Softver koji se izvodi na vašem računalu nije kompatibilan s Google Chromeom.</translation>
 <translation id="5877064549588274448">Kanal je promijenjen. Ponovo pokrenite uređaj za primjenu promjena.</translation>
-<translation id="5890698319714066019">Google Chrome ne može prikazati web-stranicu jer vaše računalo nije povezano s internetom.</translation>
 <translation id="5931853610562009806">Na Mac računalima zaporke se mogu spremati u vaš Keychain, a drugi korisnici Chromea koji dijele ovaj OS X račun mogu im pristupiti ili ih sinkronizirati.</translation>
 <translation id="5940385492829620908">Ovdje se nalaze vaš web, oznake i ostali sadržaji u Chromeu.</translation>
 <translation id="5941830788786076944">Neka Google Chrome bude zadani preglednik.</translation>
 <translation id="597770749449734237">Omogućuje dodatne tipkovne prečace korisne za otklanjanje pogrešaka u Google Chromeu.</translation>
-<translation id="6011049234605203654">Idite na
-          izbornik Chrome &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          i provjerite je li konfiguracija postavljena na "bez proxyja" ili "izravno".</translation>
 <translation id="6012342843556706400">Chrome treba imati pristup lokaciji da bi je dijelio s ovom web-lokacijom.</translation>
 <translation id="6014844626092547096">Sada ste prijavljeni na Chrome! Administrator je onemogućio sinkronizaciju.</translation>
 <translation id="6049075767726609708">Administrator je na ovaj sustav instalirao program Google Chrome koji je dostupan svim korisnicima. Google Chrome na razini sustava će sada zamijeniti Vašu instalaciju na razini korisnika.</translation>
@@ -177,16 +168,6 @@ i netočne vjerodajnice. To može značiti da se neki napadač pokušava predsta
 <translation id="6676384891291319759">Pristup Internetu</translation>
 <translation id="6757767188268205357">Ne ometaj me</translation>
 <translation id="683440813066116847">Ulazno pravilo kako bi Google Chrome Canary dopustio mDNS promet.</translation>
-<translation id="6855094794438142393">Idite na
-          izbornik Chrome &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          &gt;
-          Postavke LAN-a
-          pa poništite odabir potvrdnog okvira "Upotrijebi proxy poslužitelj za LAN".</translation>
 <translation id="6883876366448858277">Šalje riječ i njezin okolni kontekst na Google pretraživanje te vraća definicije, slike i ostale rezultate pretraživanja.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="6970811910055250180">Ažuriranje uređaja...</translation>
@@ -208,7 +189,6 @@ i netočne vjerodajnice. To može značiti da se neki napadač pokušava predsta
 <translation id="7282192067747128786">Chrome – obavijesti (nepročitane: <ph name="QUANTITY" />)</translation>
 <translation id="729375352412857283">Ovo računalo uskoro će prestati primati ažuriranja za Google Chrome jer sustavi Windows XP i Windows Vista više neće biti podržani.</translation>
 <translation id="7339898014177206373">Novi prozor</translation>
-<translation id="7396375882099008034">U postavkama vatrozida ili antivirusnog programa omogućite Chromeu da pristupa mreži.</translation>
 <translation id="7398801000654795464">Bili ste prijavljeni na Chrome kao <ph name="USER_EMAIL_ADDRESS" />. Prijavite se ponovo istim računom.</translation>
 <translation id="7400722733683201933">O programu Google Chrome</translation>
 <translation id="7408085963519505752">Uvjeti za OS Chrome</translation>
@@ -238,9 +218,6 @@ i netočne vjerodajnice. To može značiti da se neki napadač pokušava predsta
 <translation id="8032142183999901390">Nakon uklanjanja računa s Chromea možda ćete morati ponovo učitati otvorene kartice kako bi nastupile promjene.</translation>
 <translation id="8037887340639533879">Nije pronađena nijedna instalacija Google Chromea za ažuriranje.</translation>
 <translation id="8129812357326543296">O programu Google Chrome</translation>
-<translation id="8187289872471304532">Idite na
-          Aplikacije &gt; Postavke sustava &gt; Mreža &gt; Napredno &gt; Proxy poslužitelji
-          i poništite odabir proxy poslužitelja.</translation>
 <translation id="8205111949707227942">Dodatno: Pomozite nam da poboljšamo OS Chrome automatskim slanjem statistike o upotrebi i izvješća o padu sustava Googleu.</translation>
 <translation id="8227755444512189073">Google Chrome treba pokrenuti vanjsku aplikaciju da bi mogao koristiti veze <ph name="SCHEME" />. Zatražena je veza <ph name="PROTOLINK" />.</translation>
 <translation id="8255190535488645436">Google Chrome upotrebljava vašu kameru i mikrofon.</translation>

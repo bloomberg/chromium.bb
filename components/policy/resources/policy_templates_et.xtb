@@ -372,21 +372,6 @@
 
           Kui seda seadet ei määrata, lubab teenus <ph name="PRODUCT_NAME" />
           kasutada kasutaja tasemel omasõnumside hoste.</translation>
-<translation id="2393996789386329927">Blokeerib juurdepääsu loetletud URL-idele.
-
-      See reegel keelab kasutajal laadida keelatud URL-ide loendis olevaid veebilehti. Keelatute loendis on loend URL-i mustritest, milles määratakse, millised URL-id keelatute loendisse lisatakse.
-
-      Iga URL-i muster võib olla muster kohalike failide jaoks või üldine URL-i muster. Kohalikud failimustrid on vormingus „file://path”, kus „path” peaks olema blokeeritav absoluutne tee. Kõik failisüsteemi asukohad, mille eesliide see tee on, blokeeritakse.
-
-      Üldine URL-i muster on vormingus „scheme://host:port/path”.
-      Selle olemasolul blokeeritakse ainult määratud skeem. Kui eesliidet scheme:// ei määrata, blokeeritakse kõik skeemid.
-      Host on kohustuslik ja see võib olla hosti nimi või IP-aadress. Blokeeritakse ka hosti nime alamdomeenid. Alamdomeenide blokeerimise vältimiseks lisage hosti nime ette „.”. Spetsiaalne hosti nimi „*” blokeerib kõik domeenid.
-      Valikuline port on kehtiv pordi number vahemikus 1–65535. Kui seda ei määrata, blokeeritakse kõik pordid.
-      Kui määratakse valikuline tee, blokeeritakse ainult selle eesliitega teed.
-
-      Erandid saab määrata lubatud URL-ide loendi reegliga. Need reeglid kehtivad vaid 1000 kirje puhul, järgnevaid kirjeid eiratakse.
-
-      Kui seda reeglit ei määrata, ei lisata brauseris keelatute loendisse ühtegi URL-i.</translation>
 <translation id="240213793013362302">Seadistab taustapildi.
 
       Reegel võimaldab seadistada taustapildi, mis kuvatakse kasutaja töölaual ja sisselogimisekraani taustal. Reegli seadistamiseks määrake URL, millelt <ph name="PRODUCT_OS_NAME" /> saab alla laadida taustapildi ja allalaaditava sisu terviklikkuse kinnitamiseks kasutatava krüptograafilise räsi. Pilt peab olema JPEG-vormingus ja faili maht ei tohi olla suurem kui 16 MB. URL peab olema juurdepääsetav autentimiseta.

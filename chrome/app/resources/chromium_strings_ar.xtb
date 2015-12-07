@@ -47,7 +47,6 @@
 <translation id="2486653164587200256">‏ربما لن يعمل Chromium بشكل صحيح لأنه لم يعد مدعومًا على أنظمة Windows XP أو Windows Vista.</translation>
 <translation id="2535480412977113886">‏تعذر على نظام التشغيل Chromium مزامنة البيانات نظرًا لأن تفاصيل تسجيل الدخول إلى حسابك قديمة.</translation>
 <translation id="2558641060352364164">‏هذا الموقع يستخدم المكون الإضافي Chromium Frame والذي سيصبح غير معتمد قريبًا. يُرجى إلغاء تثبيته والترقية إلى متصفّح حديث.</translation>
-<translation id="2565260267992448464">‏يتعذر على Chromium عرض صفحة الويب لأن الكمبيوتر غير متصل بالإنترنت.</translation>
 <translation id="2572494885440352020">‏أداة مساعدة Chromium</translation>
 <translation id="2602806952220118310">‏Chromium - الإشعارات</translation>
 <translation id="2636877269779209383">‏يحتاج Chromium الوصول إلى الكاميرا لمشاركتها مع هذا الموقع.</translation>
@@ -110,16 +109,6 @@
 <translation id="4458285410772214805">الرجاء الخروج ثم تسجيل الدخول حتى يسري هذا التغيير.</translation>
 <translation id="4488676065623537541">‏تم حفظ تفاصيل الفوترة في Chromium.</translation>
 <translation id="4549794359424059447">‏لن تدعم الإصدارات المستقبلية من Chromium أنظمة Windows XP أو Windows Vista.</translation>
-<translation id="4559775032954821361">‏انتقل إلى
-          قائمة Chromium &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          &gt;
-          إعدادات الشبكة المحلية
-          وألغ تحديد مربع الاختيار "استخدام خادم وكيل لشبكة الاتصال المحلية".</translation>
 <translation id="4567424176335768812">لقد سجلت دخولك باعتبارك <ph name="USER_EMAIL_ADDRESS" />. ويُمكنك الآن الاستمتاع بالدخول إلى الإشارات المرجعية، والسجلّ، والإعدادات الأخرى على جميع الأجهزة التي تسجّل الدخول إليها.</translation>
 <translation id="457845228957001925">‏معلومات مهمة بخصوص بياناتك في Chromium</translation>
 <translation id="459535195905078186">‏تطبيقات Chromium</translation>
@@ -141,14 +130,6 @@
 <translation id="5680901439334282664">‏تسجيل الدخول إلى Chromium</translation>
 <translation id="5772805321386874569">‏(<ph name="BEGIN_BUTTON" />إعادة تشغيل<ph name="END_BUTTON" /> Chromium مطلوبة)</translation>
 <translation id="5796460469508169315">‏Chromium جاهز تقريبًا.</translation>
-<translation id="580822234363523061">‏انتقل إلى
-          قائمة Chromium &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          وتأكد من ضبط التهيئة على "بلا خادم وكيل" أو "مباشر."</translation>
 <translation id="5820394555380036790">‏نظام التشغيل Chromium</translation>
 <translation id="5823381412099532241">‏تعذر تحديث Chromium إلى أحدث إصدار، وبالتالي تفوتك ميزات جديدة رائعة وإصلاحات للأمان. يلزمك تحديث Chromium.</translation>
 <translation id="5862307444128926510">‏مرحبًا بك في Chromium</translation>
@@ -225,7 +206,6 @@
 <translation id="8033665941300843262">‏يحتاج Chromium الوصول إلى الأذونات لمشاركتها مع هذا الموقع.</translation>
 <translation id="805745970029938373">‏يُمكنك الاطلاع على جميع إشعاراتك من تطبيقات Chromium والإضافات ومواقع الويب هنا.</translation>
 <translation id="8134284582177628525">‏إذا كنت تشارك جهاز الكمبيوتر هذا مع <ph name="PROFILE_NAME" />، فأضف نفسك إلى Chromium للتصفح بشكلٍ منفصل. أو ألغِ ربط حسابك بحسابه في Google.</translation>
-<translation id="8187289872471304532">‏انتقل إلى Applications (التطبيقات) &gt; System Preferences (تفضيلات النظام) &gt; Network (الشبكة) &gt; Advanced (الخيارات المتقدمة) &gt; Proxies (الخوادم الوكيلة) وألغ تحديد أي خوادم وكيلة تم تحديدها.</translation>
 <translation id="8269379391216269538">‏المساعدة في تحسين Chromium</translation>
 <translation id="8453117565092476964">‏أرشيف أداة التثبيت تالف أو غير صالح. الرجاء إعادة تنزيل Chromium.</translation>
 <translation id="8493179195440786826">‏إصدار Chromium قديم</translation>
@@ -233,8 +213,6 @@
 <translation id="85843667276690461">‏الحصول على مساعدة بشأن استخدام Chromium</translation>
 <translation id="8586442755830160949">‏حقوق الطبع والنشر لعام <ph name="YEAR" /> لصالح The Chromium Authors. جميع الحقوق محفوظة.</translation>
 <translation id="8605166112420372522">‏إع&amp;ادة تشغيل Chromium على سطح المكتب</translation>
-<translation id="8610831143142469229">‏اسمح للمتصفح Chromium بالدخول إلى الشبكة من خلال إعدادات الجدار الناري أو
-        برنامج مكافحة الفيروسات.</translation>
 <translation id="8621669128220841554">‏أخفق التثبيت نظرًا لحدوث خطأ غير محدد. الرجاء إعادة تنزيل Chromium.</translation>
 <translation id="8628626585870903697">‏لا يتضمن Chromium عارض PDF المطلوب لإجراء معاينة الطباعة.</translation>
 <translation id="8684913864886094367">‏لم يغلق Chromium بشكل صحيح.</translation>

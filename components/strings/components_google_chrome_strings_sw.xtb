@@ -9,6 +9,15 @@
           na uzime "Leta mapema rasilimali za kurasa."
           Ikiwa hili halitatui tatizo, tunapendekeza uwashe chaguo hili
           tena kwa utendaji ulioimarishwa.</translation>
+<translation id="5890698319714066019">Google Chrome haiwezi kuonyesha ukurasa wa wavuti kwa sababu kompyuta yako haijaunganishwa kwenye Intaneti.</translation>
+<translation id="6011049234605203654">Nenda kwenye
+          menyu ya Chrome &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          &gt;
+          <ph name="PROXIES_TITLE" />
+           na uhakikishe kuwa usanidi wako umewekwa kwenye "hakuna proksi" au "moja kwa moja."</translation>
 <translation id="6341737370356890233">Nenda kwenye
         menyu ya Chrome &gt;
        <ph name="SETTINGS_TITLE" />
@@ -16,4 +25,17 @@
         <ph name="ADVANCED_TITLE" />
         na uondoe tiki kwenye "<ph name="NO_PREFETCH_DESCRIPTION" />."
         Ikiwa hili halitatatua tatizo, tunapendekeza uchague tena chaguo hili kwa utendaji ulioboreshwa.</translation>
+<translation id="6855094794438142393">Nenda kwenye
+          menyu ya Chrome &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          &gt;
+          <ph name="PROXIES_TITLE" />
+          &gt;
+          Mipangilio ya LAN
+          na uondoe tiki kwenye "Tumia seva ya proksi kwa LAN yako".</translation>
+<translation id="7396375882099008034">Ruhusu Chrome ifikie mtandao kwenye mipangilio yako ya ngome au kingavirusi.</translation>
+<translation id="8187289872471304532">Nenda kwenye
+          Programu &gt; Mapendeleo ya Mfumo &gt; Mtandao &gt; Uboreshaji &gt; Proksi na uondoe tiki kwenye proksi zozote ambazo zimechaguliwa.</translation>
 </translationbundle>

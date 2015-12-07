@@ -8,6 +8,24 @@
           i onemogućite "Unaprijed dohvati resurse stranice".
           Ako se time ne riješi poteškoća, preporučujemo da ponovo omogućite tu opciju
           radi bolje izvedbe.</translation>
+<translation id="4559775032954821361">Idite na
+          izbornik Chromium &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          &gt;
+          <ph name="PROXIES_TITLE" />
+          &gt;
+          Postavke LAN-a
+          i poništite odabir potvrdnog okvira "Upotrijebi proxy poslužitelj za LAN".</translation>
+<translation id="580822234363523061">Idite na
+          izbornik Chromium &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          &gt;
+          <ph name="PROXIES_TITLE" />
+          i provjerite je li konfiguracija postavljena na "bez proxyja" ili "izravno".</translation>
 <translation id="6613594504749178791">Promjene će početi vrijediti sljedeći put kad ponovo pokrenete Chromium.</translation>
 <translation id="7861509383340276692">Otvorite
         izbornik Chromiuma &gt;
@@ -17,4 +35,8 @@
         pa poništite odabir stavke "<ph name="NO_PREFETCH_DESCRIPTION" />".
         Ako se time ne riješi poteškoća, preporučujemo da ponovo odaberete tu opciju
         radi bolje izvedbe.</translation>
+<translation id="8187289872471304532">Idite na
+          Aplikacije &gt; Postavke sustava &gt; Mreža &gt; Napredno &gt; Proxy poslužitelji
+          i poništite odabir proxy poslužitelja.</translation>
+<translation id="8610831143142469229">U postavkama vatrozida ili antivirusnog programa omogućite Chromiumu da pristupa mreži.</translation>
 </translationbundle>

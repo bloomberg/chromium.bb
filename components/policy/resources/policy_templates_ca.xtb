@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ca">
-<translation id="101438888985615157">Gira la visualització 180 graus</translation>
+<translation id="101438888985615157">Gira la pantalla 180 graus</translation>
 <translation id="1017967144265860778">Gestió de l'alimentació a la pantalla d'inici de sessió</translation>
 <translation id="1019101089073227242">Estableix el directori de dades de l'usuari</translation>
 <translation id="1022361784792428773">ID de les extensions que l'usuari no pot instal·lar (o bé * per a totes)</translation>
@@ -236,14 +236,14 @@ Si aquesta opció està desactivada o no especificada, no apareix cap botó gran
 <translation id="2113068765175018713">Limita el temps d'activitat del dispositiu mitjançant el reinici automàtic</translation>
 <translation id="2127599828444728326">Permet les notificacions en aquests llocs</translation>
 <translation id="2131902621292742709">Retard d'atenuació de pantalla quan s'utilitza bateria</translation>
-<translation id="2137064848866899664">Si aquesta política s'estableix, després de cada reinici es giren totes les
-      visualitzacions segons l'orientació especificada. També es giren la primera vegada
+<translation id="2137064848866899664">Si aquesta política s'estableix, es giren totes les
+      visualitzacions segons l'orientació especificada cada cop que es reiniciï el dispositiu. També es giren la primera vegada
       que es connecten després d'haver canviat el valor de la política. Els usuaris poden
       anar a la pàgina de configuració després d'iniciar la sessió per canviar la rotació
       de la visualització, però el valor de la política anul·larà l'opció de configuració
-      durant el reinici següent.
+      el proper cop que es reiniciï el dispositiu.
 
-      Aquesta política s'aplica tant a la visualització principal com a la secundària.
+      Aquesta política s'aplica tant a la visualització principal com a les secundàries.
 
       Si la política no s'estableix, el valor predeterminat és 0 graus, i l'usuari
       és lliure de canviar-lo. En aquest cas, el valor predeterminat no es torna a aplicar
@@ -328,21 +328,6 @@ Si aquesta opció està desactivada o no especificada, no apareix cap botó gran
 
           Si aquest paràmetre no es defineix, <ph name="PRODUCT_NAME" />
           permetrà l'ús d'amfitrions de missatgeria nadius per a l'usuari.</translation>
-<translation id="2393996789386329927">Bloqueja l'accés als URL de la llista.
-
-      Aquesta política impedeix que l'usuari carregui pàgines web d'URL inclosos en llistes negres. La llista negra facilita una llista de patrons d'URL que especifiquen quins URL acabaran inclosos en una llista negra.
-
-      Cada patró d'URL pot ser un patró de fitxers locals o un patró d'URL genèric. Els de fitxers locals tenen el format "file://path", on el camí ha de ser un camí absolut que cal bloquejar. Es bloquejaran totes les ubicacions del sistema de fitxers que tinguin aquest camí com a prefix.
-
-      Un patró d'URL genèric té el format "scheme://host:port/path".
-      Si està present, només es bloquejarà l'esquema especificat. Si el prefix "scheme://" no està especificat, es bloquejaran tots els esquemes.
-      Cal definir un amfitrió, el qual pot ser un nom d'amfitrió o una adreça IP. També es bloquejaran els subdominis del nom d'amfitrió. Per impedir-ho, incloeu un punt (".") abans del nom d'amfitrió. El nom d'amfitrió especial "*" bloquejarà tots els dominis.
-      El port opcional és un número de port vàlid d'1 a 65535. Si no se n'especifica cap, es bloquejaran tots els ports.
-      Si s'especifica el camí opcional, només es bloquejaran camins amb aquest prefix.
-
-      Es poden definir excepcions a la política de llista blanca d'URL. Aquestes polítiques es limiten a 1000 entrades; les posteriors s'ignoren.
-
-      Si aquesta política no s'estableix, no s'afegirà cap URL a la llista negra del navegador.</translation>
 <translation id="240213793013362302">Configura la imatge de fons de pantalla.
 
       Aquesta política us permet configurar la imatge de fons de pantalla que es mostra a l'escriptori i a la pantalla d'inici de sessió de l'usuari. Per establir la política, s'especifica l'URL des del qual <ph name="PRODUCT_OS_NAME" /> pot baixar la imatge de fons de pantalla i un hash criptogràfic que s'utilitza per verificar la integritat de la baixada. La imatge ha d'estar en format JPEG i no pot superar els 16 MB de mida. L'URL ha de permetre-hi l'accés sense autenticació.
@@ -898,7 +883,7 @@ Si no es configura aquesta opció, no s'aplicarà cap restricció sobre els tipu
       </translation>
 <translation id="4442582539341804154">Activació del bloqueig quan el dispositiu està inactiu o se suspèn</translation>
 <translation id="4445684791305970001">Desactiva les eines per a desenvolupador i la consola de JavaScript. Si activeu aquest paràmetre, no es podrà accedir a les eines per a desenvolupadors i no es podran inspeccionar més els elements del lloc web. Les tecles de drecera i les entrades dels menús o dels menús contextuals per obrir les eines per a desenvolupadors es desactivaran. Si es desactiva o no es defineix aquesta opció, es podran utilitzar les eines per a desenvolupadors i la consola de JavaScript.</translation>
-<translation id="4449545651113180484">Gira la visualització 270 graus en el sentit de les agulles del rellotge</translation>
+<translation id="4449545651113180484">Gira la pantalla 270 graus en el sentit de les agulles del rellotge</translation>
 <translation id="4467952432486360968">Bloqueja les galetes de tercers</translation>
 <translation id="4474167089968829729">Permet que el gestor de contrasenyes desi contrasenyes</translation>
 <translation id="4480694116501920047">Força SafeSearch</translation>
@@ -1809,7 +1794,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="7953256619080733119">Amfitrions d'excepcions manuals d'usuari gestionat</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Aquesta política ja no és compatible. Activa l'ús de servidors STUN i de relé quan us connecteu a un client remot. Si s'activa aquest paràmetre, aquest equip pot descobrir i connectar-se a equips amfitrions remots, fins i tot si estan separats per un tallafoc. Si es desactiva aquest paràmetre i el tallafoc filtra les connexions UDP de sortida, aquest equip només es podrà connectar als equips amfitrions de la xarxa local.</translation>
-<translation id="802147957407376460">Gira la visualització 0 graus</translation>
+<translation id="802147957407376460">Gira la pantalla 0 graus</translation>
 <translation id="8044493735196713914">Informa del mode d'inici del dispositiu</translation>
 <translation id="8059164285174960932">URL on els clients d'accés remot han d'obtenir el testimoni d'autenticació</translation>
 <translation id="8071636581296916773">Permet l'ús de servidors de tramesa quan els clients remots estan provant d'establir una connexió amb aquest ordinador.
@@ -1918,8 +1903,8 @@ Aquesta política s'ignora en els comptes d'usuari normals.</translation>
 <translation id="8382184662529825177">Activa l'ús del testimoni remot del contingut protegit al dispositiu.</translation>
 <translation id="838870586332499308">Activa la itinerància de dades</translation>
 <translation id="8412312801707973447">Si es realitzen comprovacions OCSP/CRL en línia</translation>
-<translation id="8424255554404582727">Estableix la rotació predeterminada de la visualització, que es torna a aplicar després de cada reinici</translation>
-<translation id="8426231401662877819">Gira la visualització 90 graus en el sentit de les agulles del rellotge</translation>
+<translation id="8424255554404582727">Estableix la rotació predeterminada de la visualització, que es tornarà a aplicar cada cop que es reiniciï el dispositiu</translation>
+<translation id="8426231401662877819">Gira la pantalla 90 graus en el sentit de les agulles del rellotge</translation>
 <translation id="8451988835943702790">Fes servir la pàgina de pestanya nova com a pàgina d'inici</translation>
 <translation id="8465065632133292531">Paràmetres per a l'URL instantani que utilitza POST</translation>
 <translation id="847472800012384958">No permetis que cap lloc mostri elements emergents</translation>

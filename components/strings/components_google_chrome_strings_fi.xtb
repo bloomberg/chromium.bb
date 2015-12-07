@@ -9,6 +9,15 @@
           ja poista valinta kohdasta Hae valmiiksi sivun resurssit.
           Jos ongelma ei ratkea, valitse tämä vaihtoehto uudelleen suorituskyvyn 
           parantamiseksi.</translation>
+<translation id="5890698319714066019">Google Chrome ei voi näyttää verkkosivua, koska tietokoneellasi ei ole internetyhteyttä.</translation>
+<translation id="6011049234605203654">Avaa
+          Chrome-valikko &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          &gt;
+          <ph name="PROXIES_TITLE" />
+          ja varmista, että asetus on "ei välityspalvelinta" tai "suora".</translation>
 <translation id="6341737370356890233">Avaa
         Chrome-valikko &gt;
         <ph name="SETTINGS_TITLE" />
@@ -17,4 +26,18 @@
         ja poista valinta kohdasta <ph name="NO_PREFETCH_DESCRIPTION" />.
         Jos ongelma ei ratkea, valitse tämä vaihtoehto
         uudelleen suorituskyvyn parantamiseksi.</translation>
+<translation id="6855094794438142393">Avaa
+          Chrome-valikko &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          &gt;
+          <ph name="PROXIES_TITLE" />
+          &gt;
+          Lähiverkon asetukset
+          ja poista valinta kohdasta Käytä välityspalvelinta lähiverkossa.</translation>
+<translation id="7396375882099008034">Salli verkon käyttö Chromelle palomuurin tai virustorjunnan asetuksissa.</translation>
+<translation id="8187289872471304532">Avaa
+          Sovellukset &gt; Järjestelmäasetukset &gt; Verkko &gt; Lisäasetukset &gt; Välityspalvelimet
+          ja poista valinta kaikkien valittujen välityspalvelimien kohdalta.</translation>
 </translationbundle>

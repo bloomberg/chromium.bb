@@ -9,6 +9,15 @@
           at i-disable ang "I-prefetch ang mga mapagkukunan ng page."
           Kung hindi nito malutas ang isyu, inirerekomenda naming muling
           i-enable ang opsyong ito para sa mas mahusay na pagganap.</translation>
+<translation id="5890698319714066019">Hindi maipakita ng Google Chrome ang webpage dahil hindi nakakonekta ang iyong computer sa Internet.</translation>
+<translation id="6011049234605203654">Pumunta sa
+          menu ng Chrome &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          &gt;
+          <ph name="PROXIES_TITLE" />
+          at tiyaking nakatakda sa "walang proxy" o "direkta" ang iyong configuration.</translation>
 <translation id="6341737370356890233">Pumunta
           sa menu ng Chrome &gt;
           <ph name="SETTINGS_TITLE" />
@@ -17,4 +26,19 @@
           at alisin sa pagkakapili ang "<ph name="NO_PREFETCH_DESCRIPTION" />."
           Kung hindi nito malulutas ang isyu, inirerekomenda naming piliing muli ang opsyong ito
           para sa pinahusay na pagganap.</translation>
+<translation id="6855094794438142393">Pumunta sa
+          menu ng Chrome &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          &gt;
+          <ph name="PROXIES_TITLE" />
+          &gt;
+          Mga Setting ng LAN
+          at alisin sa pagkakapili ang "Gumamit ng proxy server para sa iyong LAN."</translation>
+<translation id="7396375882099008034">Payagan ang Chrome na i-access ang network sa mga setting ng iyong firewall
+        o antivirus.</translation>
+<translation id="8187289872471304532">Pumunta sa
+          Applications &gt; System Preferences &gt; Network &gt; Advanced &gt; Proxies
+          at alisin sa pagkakapili ang anumang mga napiling proxy.</translation>
 </translationbundle>

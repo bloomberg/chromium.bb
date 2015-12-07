@@ -143,19 +143,10 @@ Hvis du logger ind alligevel, flettes Chrome-oplysninger, som f.eks. bogmærker,
 <translation id="5785746630574083988">En genstart i Windows 8-tilstand vil lukke og genstarte dine Chrome-apps.</translation>
 <translation id="5855036575689098185">Du har software på din computer, som ikke er kompatibel med Google Chrome.</translation>
 <translation id="5877064549588274448">Kanalen er ændret. Genstart din enhed for at anvende ændringerne.</translation>
-<translation id="5890698319714066019">Google Chrome kan ikke vise websiden, fordi din computer ikke har forbindelse til internettet.</translation>
 <translation id="5931853610562009806">På Mac kan adgangskoder blive gemt i din Keychain, og andre Chrome-brugere, der deler denne OS X-konto, kan få adgang til eller synkronisere adgangskoderne.</translation>
 <translation id="5940385492829620908">Dit webindhold, dine bogmærker og andre Chrome-ting kan findes her.</translation>
 <translation id="5941830788786076944">Gør Google Chrome til din standardbrowser</translation>
 <translation id="597770749449734237">Aktiverer yderligere tastaturgenveje, der er nyttige i forbindelse med fejlretning i Google Chrome.</translation>
-<translation id="6011049234605203654">Gå til
-          Chrome-menuen &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />,
-          og kontrollér, at din konfiguration er indstillet til "ingen proxy" eller "direkte".</translation>
 <translation id="6012342843556706400">Chrome skal have adgang til din placering for at kunne dele den med dette website.</translation>
 <translation id="6014844626092547096">Du er nu logget ind på Chrome. Synkronisering er deaktiveret af din administrator.</translation>
 <translation id="6049075767726609708">En administrator har allerede installeret Google Chrome på dette system, og det er tilgængeligt for alle brugere. Google Chrome-programmet på systemniveau vil nu erstatte din installation på brugerniveau.</translation>
@@ -176,16 +167,6 @@ Hvis du logger ind alligevel, flettes Chrome-oplysninger, som f.eks. bogmærker,
 <translation id="6676384891291319759">Få adgang til internettet</translation>
 <translation id="6757767188268205357">Spørg mig ikke igen</translation>
 <translation id="683440813066116847">Indgående regel for Google Chrome Canary om at tillade mDNS-trafik.</translation>
-<translation id="6855094794438142393">Gå til
-          Chrome-menuen &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          &gt;
-          LAN-indstillinger,
-          og fjern markeringen af "Brug en proxyserver til LAN".</translation>
 <translation id="6883876366448858277">sender et ord og ordets kontekst til Google Søgning, der leverer definitioner, billeder, søgeresultater og andre oplysninger.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="6970811910055250180">Opdaterer din enhed...</translation>
@@ -207,8 +188,6 @@ Hvis du logger ind alligevel, flettes Chrome-oplysninger, som f.eks. bogmærker,
 <translation id="7282192067747128786">Chrome – Underretninger (<ph name="QUANTITY" /> ulæste)</translation>
 <translation id="729375352412857283">Denne computer holder snart op med at modtage Google Chrome-opdateringer, fordi Windows XP og Windows Vista ikke længere understøttes.</translation>
 <translation id="7339898014177206373">Nyt vindue</translation>
-<translation id="7396375882099008034">Tillad, at Chrome får adgang til netværket i dine indstillinger for firewall eller
-       antivirus.</translation>
 <translation id="7398801000654795464">Du loggede ind i Chrome som <ph name="USER_EMAIL_ADDRESS" />. Brug den samme konto til at logge ind igen.</translation>
 <translation id="7400722733683201933">Om Google Chrome</translation>
 <translation id="7408085963519505752">Vilkår for Chrome OS</translation>
@@ -238,9 +217,6 @@ Hvis du logger ind alligevel, flettes Chrome-oplysninger, som f.eks. bogmærker,
 <translation id="8032142183999901390">Når du har fjernet din konto fra Chrome, skal du muligvis indlæse dine åbne faner, før ændringen træder i kraft.</translation>
 <translation id="8037887340639533879">Der blev ikke fundet nogen opdateringsinstallation til Google Chrome.</translation>
 <translation id="8129812357326543296">Om &amp;Google Chrome</translation>
-<translation id="8187289872471304532">Gå til 
-          Applikationer &gt; Systemindstillinger &gt; Netværk &gt; Avanceret &gt; Proxyer,
-          og fjern markeringen af alle valgte proxyer.</translation>
 <translation id="8205111949707227942">Valgfrit: Vær med til at gøre Chrome OS bedre ved automatisk at sende brugsstatistikker og rapporter om nedbrud til Google.</translation>
 <translation id="8227755444512189073">Google Chrome er nødt til at starte en ekstern applikation for at håndtere links fra <ph name="SCHEME" />. Det link, der anmodes om, er <ph name="PROTOLINK" />.</translation>
 <translation id="8255190535488645436">Google Chrome bruger dit kamera og din mikrofon.</translation>

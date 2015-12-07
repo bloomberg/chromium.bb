@@ -49,7 +49,6 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="2486653164587200256">Chromium morda ne bo deloval pravilno, ker ni več podprt v sistemu Windows XP ali Windows Vista.</translation>
 <translation id="2535480412977113886">Chromium OS ni mogel sinhronizirati podatkov, ker so podatki za prijavo v račun zastareli.</translation>
 <translation id="2558641060352364164">To spletno mesto uporablja vtičnik Chromium Frame, za katerega podpora kmalu ne bo več na voljo. Odstranite ga in nadgradite na sodoben brskalnik.</translation>
-<translation id="2565260267992448464">Chromium ne more prikazati spletne strani, ker računalnik nima internetne povezave.</translation>
 <translation id="2572494885440352020">Pomoč za Chromium</translation>
 <translation id="2602806952220118310">Chrome – Obvestila</translation>
 <translation id="2636877269779209383">Chromium potrebuje dostop do kamere, če želite, da temu spletnemu mestu omogoči dostop do nje.</translation>
@@ -111,16 +110,6 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="4458285410772214805">Odjavite se in znova prijavite, da bodo te spremembe začele veljati.</translation>
 <translation id="4488676065623537541">Vaše podrobnosti za obračun so shranjene v Chromium.</translation>
 <translation id="4549794359424059447">Prihodnje različice Chromiuma ne bodo več podpirale sistema Windows XP ali Windows Vista.</translation>
-<translation id="4559775032954821361">Odprite
-          meni Chromiuma &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          &gt;
-          Nastavitve lokalnega omrežja
-          in počistite potrditveno polje »Uporabi namestniški strežnik za lokalno omrežje«.</translation>
 <translation id="4567424176335768812">Prijavljeni ste kot <ph name="USER_EMAIL_ADDRESS" />. Zdaj imate dostop do zaznamkov, zgodovine in drugih nastavitev v vseh napravah, v katerih ste prijavljeni.</translation>
 <translation id="457845228957001925">Pomembne informacije o vaših podatkih v Chromiumu</translation>
 <translation id="459535195905078186">Aplikacije za Chromium</translation>
@@ -142,14 +131,6 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="5680901439334282664">se prijavite v Chromium</translation>
 <translation id="5772805321386874569">(zahteva <ph name="BEGIN_BUTTON" />vnovični zagon<ph name="END_BUTTON" /> Chromiuma)</translation>
 <translation id="5796460469508169315">Chromium je skoraj pripravljen.</translation>
-<translation id="580822234363523061">Odprite
-          meni Chromiuma &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          in poskrbite, da je konfiguracija nastavljena na »brez namestniškega strežnika« ali »neposredno«.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5823381412099532241">Chromium se ni mogel posodobiti na najnovejšo različico, zato ste prikrajšani za izjemne nove funkcije in varnostne popravke. Chromium morate posodobiti.</translation>
 <translation id="5862307444128926510">Pozdravljeni v Chromiumu</translation>
@@ -226,9 +207,6 @@ Chromium ne more obnoviti vaših nastavitev.</translation>
 <translation id="8033665941300843262">Chromium potrebuje dostop do dovoljenj, če želite, da temu spletnemu mestu omogoči dostop do njih.</translation>
 <translation id="805745970029938373">Vsa obvestila aplikacij za Chromium, razširitev in spletnih mest lahko vidite tukaj.</translation>
 <translation id="8134284582177628525">Če imate ta računalnik v skupni rabi z osebo <ph name="PROFILE_NAME" />, se dodajte v Chromium, če želite brskati ločeno. V nasprotnem primeru prekinite povezavo z njenim Google Računom.</translation>
-<translation id="8187289872471304532">Odprite
-          Aplikacije &gt; Sistemske nastavitve &gt; Omrežje &gt; Dodatno &gt; Namestniški strežniki
-          in počistite polja z označenimi namestniškimi strežniki.</translation>
 <translation id="8269379391216269538">Pomagajte izboljšati Chromium</translation>
 <translation id="8453117565092476964">Arhiv namestitvenega programa je poškodovan ali neveljaven. Znova prenesite Chromium.</translation>
 <translation id="8493179195440786826">Chromium je zastarel</translation>
@@ -236,8 +214,6 @@ Chromium ne more obnoviti vaših nastavitev.</translation>
 <translation id="85843667276690461">Pomoč pri uporabi Chromiuma</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Ustvarjalci Chromiuma. Vse pravice pridržane.</translation>
 <translation id="8605166112420372522">&amp;Vnovični zagon Chromiuma na namizju</translation>
-<translation id="8610831143142469229">V nastavitvah požarnega zidu ali protivirusnega programa omogočite Chromiumu dostop do
-        omrežja.</translation>
 <translation id="8621669128220841554">Namestitev ni uspela zaradi nenavedene napake. Znova prenesite Chromium.</translation>
 <translation id="8628626585870903697">Chromium nima pregledovalnika datotek PDF, ki je potreben za predogled tiskanja.</translation>
 <translation id="8684913864886094367">Chromium se ni pravilno zaustavil.</translation>

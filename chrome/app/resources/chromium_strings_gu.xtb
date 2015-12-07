@@ -49,7 +49,6 @@
 <translation id="2486653164587200256">Chromium યોગ્ય રીતે કાર્ય ન કરે તેવું બની શકે કારણકે તે હવેથી Windows XP અથવા Windows Vista પર સમર્થિત નથી.</translation>
 <translation id="2535480412977113886">તમારી એકાઉન્ટ સાઇન ઇન વિગતો જૂની હોવાને કારણે Chromium OS તમારા ડેટાને સમન્વયિત કરી શક્યું નથી.</translation>
 <translation id="2558641060352364164">આ સાઇટ Chromium ફ્રેમ પ્લગિનનો ઉપયોગ કરી રહી છે જે ટૂંક સમયમાં અસમર્થિત થશે. કૃપા કરીને તેને અનઇન્સ્ટોલ કરો અને આધુનિક બ્રાઉઝરમાં અપગ્રેડ કરો.</translation>
-<translation id="2565260267992448464">Chromium વેબપૃષ્ઠ પ્રદર્શિત કરી શકતું નથી કારણ કે તમારું કમ્પ્યુટર ઇન્ટરનેટ સાથે કનેક્ટ થયેલ નથી.</translation>
 <translation id="2572494885440352020">Chromium હેલ્પર</translation>
 <translation id="2602806952220118310">Chromium - સૂચનાઓ</translation>
 <translation id="2636877269779209383">Chromium ને આ સાઇટ સાથે કૅમેરો શેર કરવા માટે તેની ઍક્સેસની જરૂર છે.</translation>
@@ -113,15 +112,6 @@
 <translation id="4458285410772214805">કૃપા કરીને આ પરિવર્તનને પ્રભાવમાં લાવવા માટે સાઇન આઉટ કરો અને ફરીથી સાઇન ઇન કરો.</translation>
 <translation id="4488676065623537541">તમારી બિલિંગ વિગતો Chromium માં સાચવવામાં આવી છે.</translation>
 <translation id="4549794359424059447">Chromium ના ભાવિ સંસ્કરણો હવેથી Windows XP અથવા Windows Vista ને સમર્થિત કરશે નહિ.</translation>
-<translation id="4559775032954821361">Chromium મેનૂ &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          &gt;
-          LAN સેટિંગ્સ
-          પર જાઓ અને "તમારા LAN માટે પ્રોક્સી સર્વરનો ઉપયોગ કરો" ચેકબૉક્સથી પસંદ હટાવો.</translation>
 <translation id="4567424176335768812">તમે <ph name="USER_EMAIL_ADDRESS" /> તરીકે સાઇન ઇન છો. હવે તમે તમારા બધા સાઇન ઇન કરેલા ઉપકરણો પર તમારા બુકમાર્ક્સ, ઇતિહાસ અને અન્ય સેટિંગ્સને ઍક્સેસ કરી શકો છો.</translation>
 <translation id="457845228957001925">તમારા Chromium ડેટા અંગેની મહત્વપૂર્ણ માહિતી</translation>
 <translation id="459535195905078186">Chromium એપ્લિકેશનો</translation>
@@ -143,13 +133,6 @@
 <translation id="5680901439334282664">Chromium માં સાઇન ઇન કરો</translation>
 <translation id="5772805321386874569">(Chromium <ph name="BEGIN_BUTTON" />પુનઃપ્રારંભ કરવું<ph name="END_BUTTON" /> આવશ્યક છે)</translation>
 <translation id="5796460469508169315">Chromium લગભગ તૈયાર છે.</translation>
-<translation id="580822234363523061">Chromium મેનૂ &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          પર જાઓ અને ખાતરી કરો કે ગોઠવણી "પ્રોક્સી નહીં" અથવા "પ્રત્યક્ષ" પર સેટ કરેલી છે.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5823381412099532241">Chromium પોતાને નવીનતમ સંસ્કરણ પર અપડેટ કરી શક્યું નથી, જેથી તમે અદ્ભુત નવી સુવિધાઓ અને સુરક્ષા સુધારાઓ ગુમાવી રહ્યાં છો. તમારે Chromium અપડેટ કરવાની જરૂર છે.</translation>
 <translation id="5862307444128926510">Chromium માં સ્વાગત છે</translation>
@@ -226,8 +209,6 @@ Chromium તમારી સેટિંગ્સને પુનઃપ્રા
 <translation id="8033665941300843262">Chromium ને આ સાઇટ સાથે પરવાનગીઓ શેર કરવા માટે તેમની ઍક્સેસની જરૂર છે.</translation>
 <translation id="805745970029938373">તમે Chromium એપ્લિકેશનો પરની તમારી બધી સૂચનાઓ, એક્સ્ટેન્શન્સ અને વેબસાઇટ્સને અહીં જોઈ શકો છો.</translation>
 <translation id="8134284582177628525">જો તમે <ph name="PROFILE_NAME" /> સાથે આ કમ્પ્યુટર શેર કરો છો, તો અલગથી બ્રાઉઝ કરવા માટે તમને પોતાને Chromium પર ઉમેરો. અન્યથા તેઓનું Google એકાઉન્ટ ડિસ્કનેક્ટ કરો.</translation>
-<translation id="8187289872471304532">એપ્લિકેશનો &gt; સિસ્ટમ પસંદગીઓ &gt; નેટવર્ક &gt; વિગતવાર &gt; પ્રોક્સીઝ
-          પર જાઓ અને પસંદ કરવામાં આવેલી કોઈપણ પ્રોક્સીની પસંદગી હટાવો.</translation>
 <translation id="8269379391216269538">Chromium ને બહેતર બનાવવામાં સહાય કરો</translation>
 <translation id="8453117565092476964">ઇન્સ્ટોલર આર્કાઇવ દૂષિત અથવા અમાન્ય છે. કૃપા કરીને Chromium ફરીથી ડાઉનલોડ કરો.</translation>
 <translation id="8493179195440786826">Chromium જૂનું થઈ ગયું છે</translation>
@@ -235,8 +216,6 @@ Chromium તમારી સેટિંગ્સને પુનઃપ્રા
 <translation id="85843667276690461">Chromium નો ઉપયોગ કરવા સહાય મેળવો</translation>
 <translation id="8586442755830160949">કોપિરાઇટ <ph name="YEAR" /> The Chromium Authors. સર્વાધિકાર સુરક્ષિત.</translation>
 <translation id="8605166112420372522">ડેસ્કટૉપ પર Chromium &amp;ફરીથી લોંચ કરો</translation>
-<translation id="8610831143142469229">Chromium ને તમારી ફાયરવૉલ અથવા એન્ટિવાયરસ સેટિંગ્સમાં નેટવર્ક ઍક્સેસ કરવાની
-        મંજૂરી આપો.</translation>
 <translation id="8621669128220841554">અનુલ્લેખિત ભૂલને કારણે ઇન્સ્ટોલેશન નિષ્ફળ રહ્યું. કૃપા કરીને Chromium ફરીથી ડાઉનલોડ કરો.</translation>
 <translation id="8628626585870903697">Chromium માં PDF વ્યૂઅર સામેલ કરતું નથી, જે પ્રિંટ પૂર્વાવલોકનને કાર્ય કરવા માટે જરૂરી છે.</translation>
 <translation id="8684913864886094367">Chromium યોગ્ય રીતે શટ ડાઉન થયું નહોતું.</translation>

@@ -47,7 +47,6 @@
 <translation id="2486653164587200256">Chromium może działać nieprawidłowo, bo nie jest już zgodny z Windows XP ani Windows Vista.</translation>
 <translation id="2535480412977113886">System operacyjny Chromium nie może zsynchronizować danych, ponieważ dane logowania na Twoje konto są nieaktualne.</translation>
 <translation id="2558641060352364164">Ta strona korzysta z wtyczki Chromium Frame, która wkrótce nie będzie obsługiwana. Odinstaluj wtyczkę i przejdź na nowoczesną przeglądarkę.</translation>
-<translation id="2565260267992448464">Chromium nie może wyświetlić strony internetowej, bo komputer nie ma połączenia z internetem.</translation>
 <translation id="2572494885440352020">Pomoc Chromium</translation>
 <translation id="2602806952220118310">Chromium – powiadomienia</translation>
 <translation id="2636877269779209383">Chromium potrzebuje dostępu do kamery, by móc ją udostępnić tej stronie.</translation>
@@ -107,16 +106,6 @@
 <translation id="4458285410772214805">Wyloguj się i zaloguj ponownie, by zmiana zaczęła obowiązywać.</translation>
 <translation id="4488676065623537541">Szczegóły płatności zostały zapisane w Chromium.</translation>
 <translation id="4549794359424059447">Przyszłe wersje Chromium nie będą już zgodne z Windows XP ani Windows Vista.</translation>
-<translation id="4559775032954821361">Wybierz
-          menu Chromium &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          &gt;
-          Ustawienia sieci LAN
-          i usuń zaznaczenie pola wyboru „Użyj serwera proxy dla sieci LAN”.</translation>
 <translation id="4567424176335768812">Jesteś zalogowany jako <ph name="USER_EMAIL_ADDRESS" />. Teraz możesz korzystać ze swoich zakładek, historii i innych ustawień na wszystkich zalogowanych urządzeniach.</translation>
 <translation id="457845228957001925">Ważne informacje dotyczące Twoich danych Chromium</translation>
 <translation id="459535195905078186">Aplikacje Chromium</translation>
@@ -138,14 +127,6 @@
 <translation id="5680901439334282664">zaloguj się w Chromium</translation>
 <translation id="5772805321386874569">(wymaga <ph name="BEGIN_BUTTON" />ponownego uruchomienia<ph name="END_BUTTON" /> Chromium)</translation>
 <translation id="5796460469508169315">Chromium jest prawie gotowy.</translation>
-<translation id="580822234363523061">Wybierz
-          menu Chromium &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          i upewnij się, że w konfiguracji wybrano połączenie bez serwera proxy lub bezpośrednie.</translation>
 <translation id="5820394555380036790">System operacyjny Chromium</translation>
 <translation id="5823381412099532241">Nie udało się zaktualizować Chromium do najnowszej wersji, więc nie masz nowych, przydatnych funkcji ani poprawek zabezpieczeń. Musisz zaktualizować Chromium.</translation>
 <translation id="5862307444128926510">Chromium – witamy!</translation>
@@ -222,9 +203,6 @@ Chromium nie może odzyskać ustawień.</translation>
 <translation id="8033665941300843262">Chromium potrzebuje dostępu do uprawnień, by móc je udostępnić tej stronie.</translation>
 <translation id="805745970029938373">Tutaj możesz zobaczyć wszystkie powiadomienia z aplikacji, rozszerzeń i stron internetowych w Chromium.</translation>
 <translation id="8134284582177628525">Jeśli korzystasz z tego komputera wraz z użytkownikiem <ph name="PROFILE_NAME" />, dodaj siebie do Chromium, by używać niezależnych ustawień przeglądarki. Możesz też odłączyć konto Google tego użytkownika.</translation>
-<translation id="8187289872471304532">Wybierz
-          Aplikacje &gt; Ustawienia systemowe &gt; Sieć &gt; Zaawansowane &gt; Serwery proxy
-          i usuń zaznaczenie wszelkich wybranych serwerów proxy.</translation>
 <translation id="8269379391216269538">Pomóż ulepszyć Chromium</translation>
 <translation id="8453117565092476964">Archiwum instalatora jest uszkodzone lub nieprawidłowe. Pobierz Chromium ponownie.</translation>
 <translation id="8493179195440786826">Chromium jest nieaktualny</translation>
@@ -232,8 +210,6 @@ Chromium nie może odzyskać ustawień.</translation>
 <translation id="85843667276690461">Pomoc do Chromium</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Autorzy Chromium. Wszelkie prawa zastrzeżone.</translation>
 <translation id="8605166112420372522">U&amp;ruchom Chromium ponownie na pulpicie</translation>
-<translation id="8610831143142469229">Zezwalaj Chromium na korzystanie z sieci w ustawieniach zapory sieciowej
-        lub oprogramowania antywirusowego.</translation>
 <translation id="8621669128220841554">Instalacja nie powiodła się z powodu nieokreślonego błędu. Pobierz Chromium ponownie.</translation>
 <translation id="8628626585870903697">Chromium nie zawiera przeglądarki PDF wymaganej przez podgląd wydruku.</translation>
 <translation id="8684913864886094367">Chromium nie został poprawnie zamknięty.</translation>

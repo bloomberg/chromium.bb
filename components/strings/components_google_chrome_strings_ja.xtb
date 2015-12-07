@@ -9,6 +9,15 @@
           [ページリソースのプリフェッチ] を無効にします。
           上記を行っても問題が解決しない場合は、パフォーマンス向上のため
           このオプションを再び有効にすることをおすすめします。</translation>
+<translation id="5890698319714066019">パソコンがインターネットに接続されていないため、Google Chrome でウェブページを表示できません。</translation>
+<translation id="6011049234605203654">このオプションを無効にするには:
+          Chrome メニュー &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          &gt;
+          <ph name="PROXIES_TITLE" />
+          の順に移動して、設定が [プロキシなし] または [直接] になっていることを確認します。</translation>
 <translation id="6341737370356890233">Chrome メニュー &gt;
           <ph name="SETTINGS_TITLE" />
           &gt;
@@ -16,4 +25,19 @@
           の順に移動して、[<ph name="NO_PREFETCH_DESCRIPTION" />] をオフにします。
           上記を行っても問題が解決しない場合は、パフォーマンス向上のため
           このオプションを再びオンにすることをおすすめします。</translation>
+<translation id="6855094794438142393">このオプションを無効にするには:
+          Chrome メニュー &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          &gt;
+          <ph name="PROXIES_TITLE" />
+          &gt;
+          [LAN の設定]
+          の順に移動して、[LAN にプロキシ サーバーを使用する] チェックボックスをオフにします。</translation>
+<translation id="7396375882099008034">ファイアウォールやウイルス対策の設定で、Chrome からネットワークへのアクセスを
+        許可します。</translation>
+<translation id="8187289872471304532">このオプションを無効にするには:
+          [アプリケーション] &gt; [システム環境設定] &gt; [ネットワーク] &gt; [詳細] &gt; [プロキシ] の順に移動して、
+          選択されているプロキシの選択を解除します。</translation>
 </translationbundle>

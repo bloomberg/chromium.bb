@@ -5,7 +5,7 @@
 <translation id="1013290471399003443">‏Chrome אימת שהגורם שהנפיק את אישור האתר הזה הוא <ph name="ISSUER" />. השרת סיפק פרטים חוקיים על שקיפות האישור.</translation>
 <translation id="1016765312371154165">‏כיבוי Chrome לא בוצע כהלכה.</translation>
 <translation id="103396972844768118">‏מידע חשוב בנוגע לנתונים שלך ב-Chrome</translation>
-<translation id="1035334672863811645">‏כניסה ל-Chrome</translation>
+<translation id="1035334672863811645">‏היכנס ל-Chrome</translation>
 <translation id="1061441684050139317">‏Chrome זקוק לגישה למיקרופון כדי לשתף אותו עם האתר הזה.</translation>
 <translation id="1065672644894730302">לא היתה אפשרות לקרוא את ההעדפות שלך. ייתכן שחלק מהתכונות לא יהיו זמינות ושינויים בהעדפות לא יישמרו.</translation>
 <translation id="1073391069195728457">‏Chrome - הודעות</translation>
@@ -144,19 +144,10 @@
 <translation id="5785746630574083988">‏הפעלה מחדש במצב Windows 8 תסגור ותפעיל מחדש את יישומי Chrome.</translation>
 <translation id="5855036575689098185">‏תוכנה שפועלת במחשב שלך אינה תואמת ל-Google Chrome.</translation>
 <translation id="5877064549588274448">הערוץ שונה. הפעל מחדש את המכשיר להחלת השינויים.</translation>
-<translation id="5890698319714066019">‏Google Chrome אינו יכול להציג את דף האינטרנט מכיוון שהמחשב שלך לא מחובר לאינטרנט.</translation>
 <translation id="5931853610562009806">‏אם אתה משתמש ב-Mac, ייתכן שסיסמאות יישמרו ב-Keychain שלך, ומשתמשי Chrome אחרים החולקים את חשבון OS X הזה יוכלו לגשת אליהן או לסנכרן אותן.</translation>
 <translation id="5940385492829620908">‏היסטוריית האתרים, הסימניות ופריטים נוספים מ-Chrome נמצאים כאן.</translation>
 <translation id="5941830788786076944">‏הפוך את Google Chrome לדפדפן ברירת המחדל</translation>
 <translation id="597770749449734237">‏מפעיל מקשי קיצור נוספים השימושיים לתיקון באגים ב-‏Google Chrome.</translation>
-<translation id="6011049234605203654">‏עבור אל
-          תפריט Chrome‏ &gt;
-          <ph name="SETTINGS_TITLE" />
-          ‏&gt;
-          <ph name="ADVANCED_TITLE" />
-          ‏&gt;
-          <ph name="PROXIES_TITLE" />
-          ובדוק שהתצורה שלך מוגדרת לאפשרות "ללא שרת proxy‏" או "ישיר".</translation>
 <translation id="6012342843556706400">‏Chrome זקוק לגישה אל המיקום כדי לשתף אותו עם האתר הזה.</translation>
 <translation id="6014844626092547096">‏אתה מחובר כעת ל-Chrome‏! הסנכרון הושבת על ידי מנהל המערכת שלך.</translation>
 <translation id="6049075767726609708">‏במערכת זו הותקן דפדפן Google Chrome על ידי מנהל והוא זמין עבור כל המשתמשים. Google Chrome ברמת המערכת יחליף כעת את ההתקנה שלך ברמת המשתמש.</translation>
@@ -177,16 +168,6 @@
 <translation id="6676384891291319759">גישה אל האינטרנט</translation>
 <translation id="6757767188268205357">אל תנדנד לי</translation>
 <translation id="683440813066116847">‏כלל נכנס עבור הגרסה הניסיונית של Google Chrome על מנת לאפשר תנועת mDNS.</translation>
-<translation id="6855094794438142393">‏עבור אל
-          תפריט Chrome ‏&gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          &gt;
-          הגדרות LAN
-          ובטל את הבחירה באפשרות "השתמש בשרת עבור רשת LAN".</translation>
 <translation id="6883876366448858277">‏שולח לחיפוש Google מילה יחד עם ההקשר סביבה. מחזיר הגדרות, תמונות, ותוצאות חיפוש נוספות.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="6970811910055250180">מעדכן את המכשיר שלך...</translation>
@@ -208,7 +189,6 @@
 <translation id="7282192067747128786">‏Chrome - הודעות (<ph name="QUANTITY" /> שלא נקראו)</translation>
 <translation id="729375352412857283">‏בקרוב מחשב זה יפסיק לקבל עדכונים ל-Google Chrome בשל הפסקת התמיכה במערכות ההפעלה Windows XP ו-Windows Vista.</translation>
 <translation id="7339898014177206373">חלון חדש</translation>
-<translation id="7396375882099008034">‏אפשר ל-Chrome לגשת לרשת בהגדרות חומת האש או האנטי-וירוס שלך.</translation>
 <translation id="7398801000654795464">‏היית מחובר ל-Chrome כ-<ph name="USER_EMAIL_ADDRESS" />. השתמש באותו חשבון כדי להיכנס שוב.</translation>
 <translation id="7400722733683201933">‏אודות Google Chrome</translation>
 <translation id="7408085963519505752">‏תנאים עבור מערכת ההפעלה של Chrome</translation>
@@ -238,9 +218,6 @@
 <translation id="8032142183999901390">‏לאחר הסרת החשבון שלך מ-Chrome, ייתכן שתידרש לטעון מחדש את הכרטיסיות הפתוחות שלך כדי שההסרה תיושם בפועל.</translation>
 <translation id="8037887340639533879">‏לא נמצאה התקנה של Google Chrome שיש לעדכן.</translation>
 <translation id="8129812357326543296">‏מידע על Google Chrome&amp;</translation>
-<translation id="8187289872471304532">‏עבור אל
-          'יישומים' &gt; 'העדפות מערכת' &gt; 'רשת' &gt; 'מתקדם' &gt; שרתי Proxy'
-          ובטל את הבחירה בשרתי proxy שנבחרו.</translation>
 <translation id="8205111949707227942">‏אופציונלי: עזור לנו לשפר את Chrome OS על ידי שליחת נתוני שימוש ודוחות קריסה אל Google באופן אוטומטי.</translation>
 <translation id="8227755444512189073">‏Google Chrome חייב לבצע יישום חיצוני על מנת לנהל <ph name="SCHEME" /> קישורים הקישור המבוקש הוא <ph name="PROTOLINK" />.</translation>
 <translation id="8255190535488645436">‏Google Chrome משתמש במצלמה ובמיקרופון שלך.</translation>

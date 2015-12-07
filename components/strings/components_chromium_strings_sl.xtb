@@ -8,6 +8,24 @@
           in onemogočite »Vnaprej prenesi sredstva strani«.
           Če s tem ne odpravite težave, priporočamo, da možnost znova
           omogočite zaradi izboljšanega delovanja.</translation>
+<translation id="4559775032954821361">Odprite
+          meni Chromiuma &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          &gt;
+          <ph name="PROXIES_TITLE" />
+          &gt;
+          Nastavitve lokalnega omrežja
+          in počistite potrditveno polje »Uporabi namestniški strežnik za lokalno omrežje«.</translation>
+<translation id="580822234363523061">Odprite
+          meni Chromiuma &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          &gt;
+          <ph name="PROXIES_TITLE" />
+          in poskrbite, da je konfiguracija nastavljena na »brez namestniškega strežnika« ali »neposredno«.</translation>
 <translation id="6613594504749178791">Spremembe bodo začele veljati ob naslednjem zagonu Chromiuma.</translation>
 <translation id="7861509383340276692">Odprite
         meni Chromiuma &gt;
@@ -17,4 +35,9 @@
         in počistite polje »<ph name="NO_PREFETCH_DESCRIPTION" />«.
         Če s tem težave ne odpravite, priporočamo, da to možnost
         zaradi izboljšanja delovanja znova izberete.</translation>
+<translation id="8187289872471304532">Odprite
+          Aplikacije &gt; Sistemske nastavitve &gt; Omrežje &gt; Dodatno &gt; Namestniški strežniki
+          in počistite polja z označenimi namestniškimi strežniki.</translation>
+<translation id="8610831143142469229">V nastavitvah požarnega zidu ali protivirusnega programa omogočite Chromiumu dostop do
+        omrežja.</translation>
 </translationbundle>

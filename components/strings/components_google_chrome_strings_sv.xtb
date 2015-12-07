@@ -9,6 +9,15 @@
           och inaktivera Förhandshämta sidresurser.
           Om det inte hjälper rekommenderar vi att du aktiverar alternativet
           igen vilket ger bättre prestanda.</translation>
+<translation id="5890698319714066019">Det går inte att visa webbsidan i Google Chrome eftersom datorn inte är ansluten till internet.</translation>
+<translation id="6011049234605203654">Öppna
+          Chrome-menyn &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          &gt;
+          <ph name="PROXIES_TITLE" />
+          och kontrollera att "ingen proxy" eller "direkt" har angetts i konfigurationen.</translation>
 <translation id="6341737370356890233">Öppna
         Chrome-menyn &gt;
         <ph name="SETTINGS_TITLE" />
@@ -17,4 +26,19 @@
         och avmarkera <ph name="NO_PREFETCH_DESCRIPTION" />.
         Om det inte hjälper rekommenderar vi att du markerar det
         här alternativet igen så att funktionaliteten förbättras.</translation>
+<translation id="6855094794438142393">Öppna
+          Chrome-menyn &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          &gt;
+          <ph name="PROXIES_TITLE" />
+          &gt;
+          LAN-inställningar
+          och avmarkera Använd en proxyserver för nätverket.</translation>
+<translation id="7396375882099008034">Tillåt att Chrome får åtkomst till nätverket i inställningarna för brandväggen eller
+        antivirusprogrammet.</translation>
+<translation id="8187289872471304532">Öppna
+          Program &gt; Systeminställningar &gt; Nätverk &gt; Avancerat &gt; Proxyservrar
+          och avmarkera alla proxyservrar.</translation>
 </translationbundle>

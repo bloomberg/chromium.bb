@@ -49,7 +49,6 @@
 <translation id="2486653164587200256">Windows XP 또는 Windows Vista에서 더 이상 Chromium을 지원하지 않으므로 Chromium이 올바르게 작동하지 않을 수 있습니다.</translation>
 <translation id="2535480412977113886">계정의 로그인 세부정보가 오래되어 Chromium OS에서 데이터를 동기화하지 못했습니다.</translation>
 <translation id="2558641060352364164">이 사이트에서 곧 지원이 중단되는 Chromium 프레임 플러그인을 사용하고 있습니다. 플러그인을 제거하고 최신 브라우저로 업그레이드하세요.</translation>
-<translation id="2565260267992448464">컴퓨터가 인터넷에 연결되어 있지 않아 Chromium에서 웹페이지를 표시할 수 없습니다.</translation>
 <translation id="2572494885440352020">Chromium 도우미</translation>
 <translation id="2602806952220118310">Chromium - 알림</translation>
 <translation id="2636877269779209383">Chromium이 이 사이트와 카메라를 공유하려면 카메라 액세스가 필요합니다.</translation>
@@ -112,15 +111,6 @@
 <translation id="4458285410772214805">변경사항을 적용하려면 로그아웃했다가 다시 로그인하세요.</translation>
 <translation id="4488676065623537541">결제 세부정보가 Chromium에 저장되었습니다.</translation>
 <translation id="4549794359424059447">Chromium 향후 버전에서는 더 이상 Windows XP 또는 Windows Vista를 지원하지 않습니다.</translation>
-<translation id="4559775032954821361">Chromium 메뉴 &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          &gt;
-          LAN 설정으로 이동하여
-          '사용자 LAN에 프록시 서버 사용'을 선택 취소합니다.</translation>
 <translation id="4567424176335768812"><ph name="USER_EMAIL_ADDRESS" />(으)로 로그인되어 있습니다. 이제 로그인한 모든 기기에서 북마크, 방문 기록 및 기타 설정에 액세스할 수 있습니다.</translation>
 <translation id="457845228957001925">Chromium 데이터 관련 중요 정보</translation>
 <translation id="459535195905078186">Chromium 앱</translation>
@@ -142,13 +132,6 @@
 <translation id="5680901439334282664">Chromium에 로그인</translation>
 <translation id="5772805321386874569">(Chromium을 <ph name="BEGIN_BUTTON" />다시 시작<ph name="END_BUTTON" />해야 함)</translation>
 <translation id="5796460469508169315">Chromium 준비가 거의 완료되었습니다.</translation>
-<translation id="580822234363523061">Chromium 메뉴 &gt;
-          <ph name="SETTINGS_TITLE" />
-          &gt;
-          <ph name="ADVANCED_TITLE" />
-          &gt;
-          <ph name="PROXIES_TITLE" />
-          (으)로 이동하여 '프록시 없음' 또는 '직접 연결'로 설정되어 있는지 확인합니다.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5823381412099532241">Chromium을 최신 버전으로 자동 업데이트할 수 없기 때문에 새로운 기능과 보안 수정사항 업데이트가 누락될 수 있습니다. Chromium을 업데이트해야 합니다.</translation>
 <translation id="5862307444128926510">Chromium에 오신 것을 환영합니다.</translation>
@@ -225,8 +208,6 @@ Chromium에서 설정을 복구할 수 없습니다.</translation>
 <translation id="8033665941300843262">Chromium이 이 사이트와 권한을 공유하려면 권한 액세스가 필요합니다.</translation>
 <translation id="805745970029938373">Chromium 앱, 확장 프로그램 및 웹사이트의 모든 알림을 여기에서 볼 수 있습니다.</translation>
 <translation id="8134284582177628525"><ph name="PROFILE_NAME" />님과 컴퓨터를 공유하는 경우 개별적으로 인터넷을 사용하려면 본인을 Chromium에 추가하세요. 아니면 상대방의 Google 계정 연결을 해제하세요.</translation>
-<translation id="8187289872471304532">애플리케이션 &gt; 시스템 환경설정 &gt; 네트워크 &gt; 고급 &gt; 프록시로 이동한 다음
-          선택된 프록시를 선택 취소합니다.</translation>
 <translation id="8269379391216269538">Chromium 개선에 참여</translation>
 <translation id="8453117565092476964">설치 프로그램 아카이브가 손상되었거나 잘못되었습니다. Chromium을 다시 다운로드하세요.</translation>
 <translation id="8493179195440786826">Chromium이 이전 버전임</translation>
@@ -234,8 +215,6 @@ Chromium에서 설정을 복구할 수 없습니다.</translation>
 <translation id="85843667276690461">Chromium 사용에 대한 도움말</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> The Chromium Authors. All rights reserved.</translation>
 <translation id="8605166112420372522">데스크톱 모드에서 Chromium 다시 실행(&amp;R)</translation>
-<translation id="8610831143142469229">Chromium이 방화벽이나 바이러스 백신이 설정된
-        네트워크에 액세스할 수 있도록 허용합니다.</translation>
 <translation id="8621669128220841554">알 수 없는 오류로 인해 설치에 실패했습니다. Chromium을 다시 다운로드하세요.</translation>
 <translation id="8628626585870903697">Chromium은 인쇄 미리보기에 필요한 PDF 뷰어가 포함되어 있지 않습니다.</translation>
 <translation id="8684913864886094367">Chromium이 제대로 종료되지 않았습니다.</translation>

@@ -9,6 +9,15 @@
           dan lumpuhkan "Praambil sumber halaman."
           Jika tindakan ini tidak menyelesaikan isu ini, kami cadangkan agar mendayakan semula pilihan ini
           sekali lagi untuk prestasi yang lebih baik.</translation>
+<translation id="5890698319714066019">Google Chrome tidak dapat memaparkan halaman web itu kerana komputer anda tidak disambungkan ke Internet.</translation>
+<translation id="6011049234605203654">Pergi ke
+          menu Chrome &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          &gt;
+          <ph name="PROXIES_TITLE" />
+          dan pastikan konfigurasi anda ditetapkan kepada "tiada proksi" atau "terus".</translation>
 <translation id="6341737370356890233">Pergi ke
           menu Chrome &gt;
           <ph name="SETTINGS_TITLE" />
@@ -17,4 +26,19 @@
           dan nyahpilih "<ph name="NO_PREFETCH_DESCRIPTION" />."
           Jika tindakan ini tidak menyelesaikan isu ini, kami cadangkan agar memilih pilihan ini
           sekali lagi untuk prestasi yang dipertingkatkan.</translation>
+<translation id="6855094794438142393">Pergi ke
+          menu Chrome &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          &gt;
+          <ph name="PROXIES_TITLE" />
+          &gt;
+          Tetapan LAN
+          dan nyahpilih "Gunakan pelayan proksi untuk LAN anda".</translation>
+<translation id="7396375882099008034">Benarkan Chrome mengakses rangkaian dalam tetapan firewall atau antivirus
+        anda.</translation>
+<translation id="8187289872471304532">Pergi ke
+          Apikasi &gt; Pilihan Sistem &gt; Rangkaian &gt; Terperinci &gt; Proksi
+          dan nyahpilih mana-mana proksi yang telah dipilih.</translation>
 </translationbundle>

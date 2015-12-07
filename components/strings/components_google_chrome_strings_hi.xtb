@@ -9,6 +9,15 @@
           और "पृष्‍ठ संसाधनों को प्रीफ़ेच करें" को अक्षम करें.
           यदि इससे समस्‍या हल नहीं होती, तो बेहतर प्रदर्शन के लिए हम इस विकल्‍प को पुन:
           सक्षम करने की अनुशंसा करते हैं.</translation>
+<translation id="5890698319714066019">Google Chrome वेबपृष्‍ठ प्रदर्शित नहीं कर पा रहा है क्‍योंकि आपका कंप्‍यूटर इंटरनेट से कनेक्‍ट नहीं है.</translation>
+<translation id="6011049234605203654">यहां
+          Chrome मेनू &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          &gt;
+          <ph name="PROXIES_TITLE" />
+          पर जाएं और सुनिश्चित करें कि आपका कॉन्फ़िगरेशन "कोई प्रॉक्सी नहीं" या "प्रत्यक्ष" पर सेट है.</translation>
 <translation id="6341737370356890233">Chrome
           मेनू &gt;
           <ph name="SETTINGS_TITLE" />
@@ -17,4 +26,19 @@
           पर जाएं और "<ph name="NO_PREFETCH_DESCRIPTION" />" का चयन हटाएं
           यदि इससे समस्या का समाधान नहीं होता, तो बेहतर प्रदर्शन के लिए हम इस विकल्‍प को पुन: चुनने
           की अनुशंसा करते हैं.</translation>
+<translation id="6855094794438142393">यहां
+          Chrome मेनू &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          &gt;
+          <ph name="PROXIES_TITLE" />
+          &gt;
+          LAN सेटिंग में जाएं
+          और "अपने LAN के लिए किसी प्रॉक्सी सर्वर का उपयोग करें" का चयन ना करें.</translation>
+<translation id="7396375882099008034">Chrome को अपनी फ़ायरवॉल और एंटीवायरस सेटिंग में नेटवर्क एक्सेस
+        करने दें.</translation>
+<translation id="8187289872471304532">यहां
+          ऐप्स  &gt; सिस्टम प्राथमिकताएं &gt; नेटवर्क &gt; उन्नत &gt; प्रॉक्सी
+          पर जाएं और चयनित प्रॉक्सी का चयन ना करें.</translation>
 </translationbundle>

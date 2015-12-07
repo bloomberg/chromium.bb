@@ -6,6 +6,15 @@
 <translation id="3140883423282498090">Je wijzigingen worden toegepast als je Google Chrome opnieuw start.</translation>
 <translation id="3444832043240812445">Deze pagina bevat alleen informatie over recente crashes als je <ph name="BEGIN_LINK" />crashrapportage inschakelt<ph name="END_LINK" />.</translation>
 <translation id="5423788048750135178">Ga naar het Chrome-menu &gt; Instellingen &gt; (Geavanceerd) Privacy en schakel 'Paginabronnen prefetchen' uit. Als het probleem hiermee niet wordt opgelost, raden we je aan deze optie weer in te schakelen voor verbeterde prestaties.</translation>
+<translation id="5890698319714066019">Google Chrome kan de webpagina niet weergeven, omdat je computer niet is verbonden met internet.</translation>
+<translation id="6011049234605203654">Ga naar
+          het menu 'Chrome' &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          &gt;
+          <ph name="PROXIES_TITLE" />
+          en zorg ervoor dat de configuratie is ingesteld op 'geen proxy' of 'direct'.</translation>
 <translation id="6341737370356890233">Ga naar
           het Chrome-menu &gt;
           <ph name="SETTINGS_TITLE" />
@@ -14,4 +23,16 @@
           en verwijder het vinkje bij '<ph name="NO_PREFETCH_DESCRIPTION" />'.
           Als het probleem aanhoudt, adviseren we deze optie weer aan te vinken
           voor betere prestaties.</translation>
+<translation id="6855094794438142393">Ga naar
+          het menu 'Chrome' &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          &gt;
+          <ph name="PROXIES_TITLE" />
+          &gt;
+          LAN-instellingen
+          en verwijder het vinkje naast 'Een proxyserver voor het LAN-netwerk gebruiken'.</translation>
+<translation id="7396375882099008034">Sta Chrome via je firewall- of antivirusinstellingen toe het netwerk te gebruiken.</translation>
+<translation id="8187289872471304532">Ga naar 'Applicaties &gt; Systeemvoorkeuren &gt; Netwerk &gt; Geavanceerd &gt; Proxy's' en verwijder de vinkjes bij proxyservers die zijn aangevinkt.</translation>
 </translationbundle>

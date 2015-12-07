@@ -328,21 +328,6 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
 
           Ha nincs beállítva, akkor a(z) <ph name="PRODUCT_NAME" />
           engedélyezi a felhasználói szintű natív üzenetváltási szerverek használatát.</translation>
-<translation id="2393996789386329927">Letiltja a hozzáférést a felsorolt URL-ekhez.
-
-      A házirend megakadályozza, hogy a felhasználó betöltse a tiltólistán szereplő URL-eket. A tiltólistán URL-minták találhatók, amelyek meghatározzák, hogy mely URL-ek lesznek letiltva.
-
-      Az URL-minták vagy helyi fájlokra vonatkozó, vagy általános URL-minták lehetnek. A helyi fájlokra vonatkozó minták formátuma „fájl://elérési út”, ahol az elérési útnak abszolút útvonalnak kell lennie. A fájlrendszer minden olyan helye le lesz tiltva, amelynek az előtagja az elérési út.
-
-      Az általános URL-minta formátuma a következő: „protokoll://gazdagép:port/elérési út”.
-      Ha meg van adva, akkor csak az adott protokoll lesz letiltva. Ha a protokoll:// előtag nincs megadva, akkor a böngésző minden protokollt letilt.
-      A gazdagép megadása kötelező: lehet gazdagépnév vagy IP-cím. A gazdagépnév aldomainjei sem lesznek elérhetők. Ha meg szeretné előzni az aldomainek letiltását, írjon egy „.” karaktert a gazdagépnév elé. A „*” gazdagépnév minden domaint letilt.
-      A port megadása nem kötelező, száma 1 és 65535 között kell, hogy legyen. Ha nincs megadva, minden portot letilt a böngésző.
-      Ha megadja a (nem kötelező) elérési utat, akkor csak az adott előtaggal rendelkező útvonalak válnak elérhetetlenné.
-
-      Kivételeket az URL-ek engedélyezőlistáját meghatározó házirendben lehet megadni. E házirendekben legfeljebb 1000 bejegyzés vehető fel, a további bejegyzéseket figyelmen kívül hagyja a böngésző.
-
-      Ha nem állítja be a házirendet, akkor semmilyen URL nem kerül tiltólistára a böngészőben.</translation>
 <translation id="240213793013362302">Háttérkép képének konfigurálása.
 
       A házirend lehetővé teszi az asztalon és a bejelentkezési képernyő háttereként a felhasználó számára megjelenített háttérkép beállítását. A háttérkép annak az URL-nek a megadásával állítható be, ahonnan a <ph name="PRODUCT_OS_NAME" /> letöltheti a háttérképet. A beállításhoz meg kell adni a letöltés integritásának ellenőrzésére szolgáló kriptográfiai kivonatot is. A képnek JPEG-formátumúnak kell lennie, a fájlméret pedig nem haladhatja meg a 16 MB-ot. Az URL-nek hitelesítés nélkül is elérhetőnek kell lennie.

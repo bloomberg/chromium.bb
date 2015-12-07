@@ -8,6 +8,24 @@
           puis désactivez "Prélire les ressources de pages".
           Si le problème persiste, nous vous conseillons de réactiver cette option
           pour des performances optimales.</translation>
+<translation id="4559775032954821361">Accédez au
+          menu Chromium &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          &gt;
+          <ph name="PROXIES_TITLE" />
+          &gt;
+          Paramètres réseau
+          et décochez l'option "Utiliser un serveur proxy pour votre réseau local".</translation>
+<translation id="580822234363523061">Accédez au
+          menu Chromium &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          &gt;
+          <ph name="PROXIES_TITLE" />
+          et assurez-vous que vos paramètres sont définis sur "sans proxy" ou "direct".</translation>
 <translation id="6613594504749178791">Vos modifications seront prises en compte au prochain redémarrage de Chromium.</translation>
 <translation id="7861509383340276692">Accédez
           au menu Chromium &gt;
@@ -17,4 +35,9 @@
           puis désélectionnez "<ph name="NO_PREFETCH_DESCRIPTION" />".
           Si le problème persiste, nous vous conseillons de
           réactiver cette option pour des performances optimales.</translation>
+<translation id="8187289872471304532">Sélectionnez
+          Applications &gt; Préférences système &gt; Réseau &gt; Avancé &gt; Proxys
+          et désélectionnez les serveurs proxy sélectionnés.</translation>
+<translation id="8610831143142469229">Autoriser Chromium à accéder au réseau depuis les paramètres du pare-feu ou
+        de l'antivirus</translation>
 </translationbundle>

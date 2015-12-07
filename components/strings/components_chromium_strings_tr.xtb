@@ -8,6 +8,22 @@
           ve "Sayfa kaynaklarını ön getir"in işaretini kaldırın.
           Bu işlem sorunu çözmezse performansın iyileşmesi için bu seçeneği tekrar 
           etkinleştirmenizi öneririz.</translation>
+<translation id="4559775032954821361">Chromium menüsü &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          &gt;
+          <ph name="PROXIES_TITLE" />
+          &gt;
+          LAN Ayarları
+          öğesine gidin ve "LAN için proxy sunucusu kullan" onay kutusunun seçimini kaldırın.</translation>
+<translation id="580822234363523061">Chromium menüsü &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          &gt;
+          <ph name="PROXIES_TITLE" />
+           öğesine gidin ve yapılandırmanızın "proxy yok" veya "doğrudan" olarak ayarlandığından emin olun.</translation>
 <translation id="6613594504749178791">Değişiklikleriniz, Chromium tekrar başlatıldığında geçerli olacak.</translation>
 <translation id="7861509383340276692">Chromium menüsü &gt;
           <ph name="SETTINGS_TITLE" />
@@ -15,4 +31,8 @@
           <ph name="ADVANCED_TITLE" /> öğesine gidin
           ve "<ph name="NO_PREFETCH_DESCRIPTION" />" seçeneğinin işaretini kaldırın.
           Bu işlem sorunu çözmezse performansın iyileşmesi için bu seçeneği tekrar işaretlemenizi öneririz.</translation>
+<translation id="8187289872471304532">Uygulamalar &gt; Sistem Tercihleri &gt; Ağ &gt; Gelişmiş &gt; Proxy'ler
+          öğesine gidin ve seçilmiş olabilecek proxy'lerin seçimini kaldırın.</translation>
+<translation id="8610831143142469229">Güvenlik duvarınızın veya virüsten korunma programınızın ayarlarından, Chromium'un
+        ağa erişmesine izin verin.</translation>
 </translationbundle>

@@ -358,7 +358,7 @@ Du er dog ikke usynlig. Inkognitotilstanden skjuler ikke dine søgninger fra din
 <translation id="6031101910111098835">Skjult – klik for at udvide</translation>
 <translation id="6040143037577758943">Luk</translation>
 <translation id="6042308850641462728">Mere</translation>
-<translation id="604996488070107836"><ph name="FILE_NAME" /> kunne ikke downloades, da der opstod en fejl.</translation>
+<translation id="604996488070107836"><ph name="FILE_NAME" /> kunne ikke downloades, da der opstod en ukendt fejl.</translation>
 <translation id="605721222689873409">ÅÅ</translation>
 <translation id="6075798973483050474">Rediger startside</translation>
 <translation id="6108923351542677676">Konfigurationen er i gang...</translation>
@@ -567,7 +567,6 @@ Du kan få nye licenser ved at oprette forbindelse til internettet og afspille d
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, fane</translation>
 <translation id="885701979325669005">Lagerplads</translation>
 <translation id="886510833909353412">Kryptér alle med en adgangssætning</translation>
-<translation id="8872441722924401214">Vælg certifikat til godkendelse</translation>
 <translation id="8901170036886848654">Der blev ikke fundet nogen bogmærker</translation>
 <translation id="8909135823018751308">Del…</translation>
 <translation id="8912362522468806198">Google-konto</translation>
@@ -582,7 +581,6 @@ Du kan få nye licenser ved at oprette forbindelse til internettet og afspille d
 <translation id="9060538597317784206">Se appen <ph name="APP_NAME" /> i Google Play Butik. Klassificering: <ph name="APP_RATING" />.</translation>
 <translation id="9063523880881406963">Slå anmodning om computerversionen af websitet fra</translation>
 <translation id="9065203028668620118">Rediger</translation>
-<translation id="907015151729920253">Smart card</translation>
 <translation id="9070377983101773829">Start talesøgning</translation>
 <translation id="9086455579313502267">Der kunne ikke opnås adgang til netværket</translation>
 <translation id="9099292894781394535">Sparet data</translation>

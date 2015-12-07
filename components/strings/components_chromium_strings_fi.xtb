@@ -8,6 +8,24 @@
           ja poista valinta kohdasta Hae valmiiksi sivun resurssit.
           Jos ongelma ei ratkea, valitse tämä vaihtoehto uudelleen suorituskyvyn 
           parantamiseksi.</translation>
+<translation id="4559775032954821361">Avaa
+          Chromium-valikko &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          &gt;
+          <ph name="PROXIES_TITLE" />
+          &gt;
+          Lähiverkon asetukset
+          ja poista valinta kohdasta Käytä välityspalvelinta lähiverkossa.</translation>
+<translation id="580822234363523061">Avaa
+          Chromium-valikko &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          &gt;
+          <ph name="PROXIES_TITLE" />
+          ja varmista, että asetus on "ei välityspalvelinta" tai "suora".</translation>
 <translation id="6613594504749178791">Muutokset tulevat voimaan, kun käynnistät Chromiumin seuraavan kerran.</translation>
 <translation id="7861509383340276692">Avaa
         Chromium-valikko &gt;
@@ -17,4 +35,8 @@
         ja poista valinta kohdasta <ph name="NO_PREFETCH_DESCRIPTION" />.
         Jos ongelma ei ratkea, valitse tämä vaihtoehto
         uudelleen suorituskyvyn parantamiseksi.</translation>
+<translation id="8187289872471304532">Avaa
+          Sovellukset &gt; Järjestelmäasetukset &gt; Verkko &gt; Lisäasetukset &gt; Välityspalvelimet
+          ja poista valinta kaikkien valittujen välityspalvelimien kohdalta.</translation>
+<translation id="8610831143142469229">Salli verkon käyttö Chromiumille palomuurin tai virustorjunnan asetuksissa.</translation>
 </translationbundle>

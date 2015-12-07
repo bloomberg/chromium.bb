@@ -9,6 +9,15 @@
           ir išjunkite parinktį „Iš anksto iškviesti puslapio išteklius“.
           Jei tai atlikus problema išlieka, rekomenduojame iš naujo įgalinti šią parinktį,
           kad pagerėtų našumas.</translation>
+<translation id="5890698319714066019">„Google Chrome“ nepavyksta pateikti tinklalapio, nes kompiuteris neprijungtas prie interneto.</translation>
+<translation id="6011049234605203654">Eikite į
+          „Chrome“ meniu &gt;
+          „<ph name="SETTINGS_TITLE" />“
+          &gt;
+          „<ph name="ADVANCED_TITLE" />“
+          &gt;
+          „<ph name="PROXIES_TITLE" />“
+          ir įsitikinkite, kad konfigūracija nustatyta kaip „Nėra tarpinio serverio“ arba „Tiesioginis“.</translation>
 <translation id="6341737370356890233">Eikite į
 
         „Chrome“ meniu &gt;
@@ -18,4 +27,19 @@
         ir panaikinkite „<ph name="NO_PREFETCH_DESCRIPTION" />“ pasirinkimą.
         Jei tai atlikus problema išlieka, rekomenduojame vėl pasirinkti šią parinktį,
         kad pagerėtų našumas.</translation>
+<translation id="6855094794438142393">Eikite į
+          „Chrome“ meniu &gt;
+          „<ph name="SETTINGS_TITLE" />“
+          &gt;
+          „<ph name="ADVANCED_TITLE" />“
+          &gt;
+          „<ph name="PROXIES_TITLE" />“
+          &gt;
+          „LAN nustatymai“
+          ir panaikinkite „Naudoti tarpinį serverį LAN tinkle“ pasirinkimą.</translation>
+<translation id="7396375882099008034">Leiskite „Chrome“ pasiekti tinklą užkardos ar antivirusinės
+        programos nustatymuose.</translation>
+<translation id="8187289872471304532">Eikite į
+          „Programos“ &gt; „Sistemos nuostatos“ &gt; „Tinklas“ &gt; „Išplėstinis“ &gt; „Tarpiniai serveriai“
+          ir panaikinkite visų tarpinių serverių pasirinkimą.</translation>
 </translationbundle>
