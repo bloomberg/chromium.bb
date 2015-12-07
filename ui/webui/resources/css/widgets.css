@@ -36,11 +36,13 @@ input[type='radio'] {
 select {
   min-height: 2em;
   min-width: 4em;
+  padding-top: 1px;
+  padding-bottom: 1px;
 <if expr="is_win">
   /* The following platform-specific rule is necessary to get adjacent
    * buttons, text inputs, and so forth to align on their borders while also
    * aligning on the text's baselines. */
-  padding-bottom: 1px;
+  padding-bottom: 2px;
 </if>
 }
 
@@ -53,8 +55,8 @@ select {
 
 select {
   -webkit-appearance: none;
-  -webkit-padding-end: 20px;
-  -webkit-padding-start: 6px;
+  -webkit-padding-end: 24px;
+  -webkit-padding-start: 10px;
   /* OVERRIDE */
   background-image: url(../images/select.png),
       -webkit-linear-gradient(#ededed, #ededed 38%, #dedede);
