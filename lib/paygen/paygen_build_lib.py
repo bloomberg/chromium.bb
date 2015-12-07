@@ -1177,7 +1177,7 @@ class _PaygenBuild(object):
       logging.info('Skipping payload autotest for board %s',
                    self._archive_board)
       return
-    timeout_mins = config_lib.HWTestConfig.DEFAULT_HW_TEST_TIMEOUT / 60
+    timeout_mins = config_lib.HWTestConfig.SHARED_HW_TEST_TIMEOUT / 60
     if self._run_on_builder:
       cmd_result = commands.RunHWTestSuite(
           board=self._archive_board,

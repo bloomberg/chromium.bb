@@ -271,13 +271,15 @@ class HWTestConfig(object):
     * A suite config may not specify both blocking and async.
     * A suite config may not specify both warn_only and critical.
   """
-  # This timeout is larger than it needs to be because of autotest overhead.
-  # TODO(davidjames): Reduce this timeout once http://crbug.com/366141 is fixed.
-  DEFAULT_HW_TEST_TIMEOUT = 60 * 220
-  BRANCHED_HW_TEST_TIMEOUT = 10 * 60 * 60
+  _MINUTE = 60
+  _HOUR = 60 * _MINUTE
+  SHARED_HW_TEST_TIMEOUT = int(1.5 * _HOUR)
+  PALADIN_HW_TEST_TIMEOUT = int(1.5 * _HOUR)
+  BRANCHED_HW_TEST_TIMEOUT = int(10.0 * _HOUR)
+  ASYNC_HW_TEST_TIMEOUT = int(5.0 * _MINUTE)
 
   def __init__(self, suite, num=constants.HWTEST_DEFAULT_NUM,
-               pool=constants.HWTEST_MACH_POOL, timeout=DEFAULT_HW_TEST_TIMEOUT,
+               pool=constants.HWTEST_MACH_POOL, timeout=SHARED_HW_TEST_TIMEOUT,
                async=False, warn_only=False, critical=False, blocking=False,
                file_bugs=False, priority=constants.HWTEST_BUILD_PRIORITY,
                retry=True, max_retries=10, minimum_duts=0, suite_min_duts=0,

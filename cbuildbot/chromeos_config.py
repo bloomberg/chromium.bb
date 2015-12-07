@@ -125,6 +125,7 @@ class HWTestList(object):
     async_kwargs['priority'] = constants.HWTEST_POST_BUILD_PRIORITY
     async_kwargs['async'] = True
     async_kwargs['suite_min_duts'] = 1
+    async_kwargs['timeout'] = config_lib.HWTestConfig.ASYNC_HW_TEST_TIMEOUT
 
     # BVT + AU suite.
     return [config_lib.HWTestConfig(constants.HWTEST_BVT_SUITE,
@@ -180,7 +181,8 @@ class HWTestList(object):
     Optional arguments may be overridden in `kwargs`, except that
     the `blocking` setting cannot be provided.
     """
-    default_dict = dict(pool=constants.HWTEST_PALADIN_POOL, timeout=120 * 60,
+    default_dict = dict(pool=constants.HWTEST_PALADIN_POOL,
+                        timeout=config_lib.HWTestConfig.PALADIN_HW_TEST_TIMEOUT,
                         file_bugs=False, priority=constants.HWTEST_CQ_PRIORITY,
                         minimum_duts=4, offload_failures_only=True)
     # Allows kwargs overrides to default_dict for cq.
@@ -231,7 +233,8 @@ class HWTestList(object):
     shared with other types of builder (canaries, pfq). The first suite in the
     list is a blocking sanity suite that verifies the build will not break dut.
     """
-    sanity_dict = dict(pool=constants.HWTEST_MACH_POOL, timeout=120 * 60,
+    sanity_dict = dict(pool=constants.HWTEST_MACH_POOL,
+                       timeout=config_lib.HWTestConfig.SHARED_HW_TEST_TIMEOUT,
                        file_bugs=False, priority=constants.HWTEST_CQ_PRIORITY)
     sanity_dict.update(kwargs)
     sanity_dict.update(dict(num=1, minimum_duts=1, suite_min_duts=1,

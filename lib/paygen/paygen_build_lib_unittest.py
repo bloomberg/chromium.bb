@@ -1621,7 +1621,7 @@ DOC = "Faux doc"
     self.mox.StubOutWithMock(utils, 'RunCommand')
     self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
 
-    timeout_mins = config_lib.HWTestConfig.DEFAULT_HW_TEST_TIMEOUT / 60
+    timeout_mins = config_lib.HWTestConfig.SHARED_HW_TEST_TIMEOUT / 60
     expected_command = [
         mox.StrContains('site_utils/run_suite.py'),
         '--board', 'foo-board',
@@ -1661,7 +1661,7 @@ The suite job has another 2:39:39.789250 till timeout.
     self.mox.StubOutWithMock(utils, 'RunCommand')
     self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
 
-    timeout_mins = config_lib.HWTestConfig.DEFAULT_HW_TEST_TIMEOUT / 60
+    timeout_mins = config_lib.HWTestConfig.SHARED_HW_TEST_TIMEOUT / 60
     expected_command = [
         mox.StrContains('site_utils/run_suite.py'),
         '--board', 'foo-board',
@@ -1695,7 +1695,7 @@ The suite job has another 2:39:39.789250 till timeout.
     self.mox.StubOutWithMock(utils, 'RunCommand')
     self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
 
-    timeout_mins = config_lib.HWTestConfig.DEFAULT_HW_TEST_TIMEOUT / 60
+    timeout_mins = config_lib.HWTestConfig.SHARED_HW_TEST_TIMEOUT / 60
     paygen_build_lib.commands.RunHWTestSuite(
         board='foo-board', build='foo-board-release/R99-1.2.3', file_bugs=True,
         pool='bvt', priority=constants.HWTEST_BUILD_PRIORITY,
@@ -1722,7 +1722,7 @@ The suite job has another 2:39:39.789250 till timeout.
     self.mox.StubOutWithMock(utils, 'RunCommand')
     self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
 
-    timeout_mins = config_lib.HWTestConfig.DEFAULT_HW_TEST_TIMEOUT / 60
+    timeout_mins = config_lib.HWTestConfig.SHARED_HW_TEST_TIMEOUT / 60
     to_raise = failures_lib.TestWarning(
         '** Suite passed with a warning code **')
     paygen_build_lib.commands.RunHWTestSuite(
