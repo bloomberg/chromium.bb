@@ -28,6 +28,8 @@ template("js2gtest") {
   # The mapping from sources to the copied version.
   copied_source_pattern = "$root_out_dir/test_data/{{source_root_relative_dir}}/{{source_file_part}}"
 
+  gen_source_pattern = "{{source_gen_dir}}/{{source_name_part}}-gen.cc"
+
   action_foreach(action_name) {
     testonly = true
     visibility = [ ":$source_set_name" ]
@@ -58,8 +60,8 @@ template("js2gtest") {
     # which then must be treated as runtime data. The generated .cc file isn't
     # data, it will be compiled in a step below.
     outputs = [
-      "$target_gen_dir/{{source_name_part}}-gen.cc",
       copied_source_pattern,
+      gen_source_pattern,
     ]
     data = process_file_template(sources, [ copied_source_pattern ])
 
@@ -83,8 +85,9 @@ template("js2gtest") {
     args += [
       "{{source}}",
       "{{source_root_relative_dir}}/{{source_file_part}}",
+      gen_source_pattern,
+      rebase_path(copied_source_pattern, root_build_dir),
     ]
-    args += rebase_path(outputs, root_build_dir)
 
     deps = [
       "//v8:d8($snapshot_toolchain)",
