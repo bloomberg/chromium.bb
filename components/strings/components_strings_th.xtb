@@ -85,6 +85,7 @@
 <translation id="2345460471437425338">ใบรับรองสำหรับโฮสต์ไม่ถูกต้อง</translation>
 <translation id="2354001756790975382">บุ๊กมาร์กอื่นๆ</translation>
 <translation id="2367567093518048410">ระดับ</translation>
+<translation id="237718015863234333">ไม่มีทางเลือก UI ที่พร้อมใช้งาน</translation>
 <translation id="2384307209577226199">ค่าเริ่มต้นขององค์กร</translation>
 <translation id="2386255080630008482">ใบรับรองของเซิร์ฟเวอร์ถูกเพิกถอนแล้ว</translation>
 <translation id="2392959068659972793">แสดงนโยบายโดยที่ไม่ได้ตั้งค่า</translation>
@@ -96,6 +97,7 @@
 <translation id="2491120439723279231">ใบรับรองของเซิร์ฟเวอร์มีข้อผิดพลาด</translation>
 <translation id="2495083838625180221">โปรแกรมแยกวิเคราะห์ JSON</translation>
 <translation id="2498091847651709837">สแกนบัตรใหม่</translation>
+<translation id="2516305470678292029">ทางเลือก UI</translation>
 <translation id="2556876185419854533">&amp;เลิกทำการแก้ไข</translation>
 <translation id="2581221116934462656">คุณต้องการให้ <ph name="PRODUCT_NAME" /> เสนอที่จะแปลหน้าในภาษา<ph name="LANGUAGE_NAME" />จากไซต์นี้ในครั้งถัดไปไหม</translation>
 <translation id="2587841377698384444">รหัส API ไดเรกทอรี:</translation>

@@ -85,6 +85,7 @@
 <translation id="2345460471437425338">Неверный сертификат для хоста.</translation>
 <translation id="2354001756790975382">Другие закладки</translation>
 <translation id="2367567093518048410">Уровень</translation>
+<translation id="237718015863234333">Ничего не найдено</translation>
 <translation id="2384307209577226199">Для предприятий (по умолчанию)</translation>
 <translation id="2386255080630008482">Сертификат сервера отозван.</translation>
 <translation id="2392959068659972793">Показывать правила, значения которых не заданы</translation>
@@ -96,6 +97,7 @@
 <translation id="2491120439723279231">Сертификат сервера содержит ошибки.</translation>
 <translation id="2495083838625180221">Синтаксический анализатор JSON</translation>
 <translation id="2498091847651709837">Сканировать новую карту</translation>
+<translation id="2516305470678292029">Варианты интерфейса</translation>
 <translation id="2556876185419854533">&amp;Отменить изменения</translation>
 <translation id="2581221116934462656">Хотите, чтобы <ph name="PRODUCT_NAME" /> всегда предлагал перевести этот сайт, когда обнаружит на его страницах <ph name="LANGUAGE_NAME" />?</translation>
 <translation id="2587841377698384444">Идентификатор Directory API:</translation>

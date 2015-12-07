@@ -1169,7 +1169,6 @@ Tento web by podle mě neměl být blokován.</translation>
 <translation id="2749881179542288782">Zkontrolovat pravopis a gramatiku</translation>
 <translation id="2752805177271551234">Použít historii zadávání textu</translation>
 <translation id="2756798847867733934">SIM karta je deaktivována</translation>
-<translation id="2757031529886297178">Čítač snímků za sekundu</translation>
 <translation id="2758939858455657368">Následné oznámení, okna a dialogy mohou být rozděleny mezi plochy.</translation>
 <translation id="2761824548806711139">Proxy <ph name="DOMAIN" /> vyžaduje uživatelské jméno a heslo. Proxy hlásí: <ph name="REALM" />.</translation>
 <translation id="2765217105034171413">Malé</translation>
@@ -2903,7 +2902,6 @@ Chcete-li pokračovat v práci, stiskněte libovolnou klávesu.</translation>
 <translation id="5355351445385646029">Vybrat návrh stiskem mezerníku</translation>
 <translation id="5355926466126177564">Rozšíření <ph name="EXTENSION_NAME" /> změnilo stránku, která se zobrazí při vyhledávání z omniboxu.</translation>
 <translation id="5357579842739549440">Klávesové zkratky pro ladění</translation>
-<translation id="5359419173856026110">Zobrazuje aktuální snímkovou frekvenci stránky ve snímcích za sekundu, když je aktivní hardwarová akcelerace.</translation>
 <translation id="5360150013186312835">Zobrazit na liště</translation>
 <translation id="5362741141255528695">Vyberte soubor soukromého klíče.</translation>
 <translation id="5363109466694494651">Obnovit pomocí funkce Powerwash a vrátit předchozí verzi</translation>

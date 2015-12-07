@@ -85,6 +85,7 @@
 <translation id="2345460471437425338">Felaktigt certifikat för värd.</translation>
 <translation id="2354001756790975382">Övriga bokmärken</translation>
 <translation id="2367567093518048410">Nivå</translation>
+<translation id="237718015863234333">Det finns inga användargränssnittsalternativ</translation>
 <translation id="2384307209577226199">Standardinställning i företaget</translation>
 <translation id="2386255080630008482">Servercertifikatet har återkallats.</translation>
 <translation id="2392959068659972793">Visa policyer utan inställt värde</translation>
@@ -96,6 +97,7 @@
 <translation id="2491120439723279231">Servercertifikatet innehåller fel.</translation>
 <translation id="2495083838625180221">JSON-analysator</translation>
 <translation id="2498091847651709837">Läs in ett nytt kort</translation>
+<translation id="2516305470678292029">Användargränssnittsalternativ</translation>
 <translation id="2556876185419854533">&amp;Ånga Redigera</translation>
 <translation id="2581221116934462656">Vill du att <ph name="PRODUCT_NAME" /> ska översätta sidor skrivna på <ph name="LANGUAGE_NAME" /> på den här webbplatsen nästa gång?</translation>
 <translation id="2587841377698384444">Id för katalog-API:</translation>

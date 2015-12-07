@@ -1173,7 +1173,6 @@ To spletno mesto ne sme biti blokirano.</translation>
 <translation id="2749881179542288782">Preverjanje slovnice in črkovanja</translation>
 <translation id="2752805177271551234">Uporabi zgodovino vnosov</translation>
 <translation id="2756798847867733934">Kartica SIM onemogočena</translation>
-<translation id="2757031529886297178">Števec števila okvirov na sekundo</translation>
 <translation id="2758939858455657368">Nadaljnja obvestila, okna in pogovorna okna so lahko razdeljena med namizji.</translation>
 <translation id="2761824548806711139">Strežnik proxy <ph name="DOMAIN" /> zahteva uporabniško ime in geslo. Sporočilo strežnika proxy: <ph name="REALM" />.</translation>
 <translation id="2765217105034171413">Majhna</translation>
@@ -2915,7 +2914,6 @@ Pritisnite katero koli tipko, če želite še naprej raziskovati.</translation>
 <translation id="5355351445385646029">Pritisnite preslednico, če želite izbrati kandidata</translation>
 <translation id="5355926466126177564">Zaradi razširitve »<ph name="EXTENSION_NAME" />« se je spremenila stran, ki je prikazana, ko iščete v naslovni vrstici.</translation>
 <translation id="5357579842739549440">Bližnjične tipke za odpravljanje napak</translation>
-<translation id="5359419173856026110">Pokaže dejansko hitrost prikazovanja sličic na strani (v sličicah na sekundo), ko je aktivna strojna oprema za pospeševanje.</translation>
 <translation id="5360150013186312835">Pokaži v orodni vrstici</translation>
 <translation id="5362741141255528695">Izberite datoteko z zasebnim ključem.</translation>
 <translation id="5363109466694494651">Izvedi Powerwash in povrni</translation>

@@ -85,6 +85,7 @@
 <translation id="2345460471437425338">Forkert certifikat til vært.</translation>
 <translation id="2354001756790975382">Andre bogmærker</translation>
 <translation id="2367567093518048410">Niveau</translation>
+<translation id="237718015863234333">Der er ingen alternative grænseflader</translation>
 <translation id="2384307209577226199">Virksomhedsstandard</translation>
 <translation id="2386255080630008482">Serverens certifikat er blevet tilbagekaldt.</translation>
 <translation id="2392959068659972793">Vis politikker uden nogen værdier</translation>
@@ -96,6 +97,7 @@
 <translation id="2491120439723279231">Serverens certifikat indeholder fejl.</translation>
 <translation id="2495083838625180221">Værktøj til parsing af JSON-filer</translation>
 <translation id="2498091847651709837">Scan et nyt kort</translation>
+<translation id="2516305470678292029">Alternative grænseflader</translation>
 <translation id="2556876185419854533">&amp;Fortryd redigering</translation>
 <translation id="2581221116934462656">Skal <ph name="PRODUCT_NAME" /> tilbyde at oversætte sider på <ph name="LANGUAGE_NAME" /> fra dette website næste gang?</translation>
 <translation id="2587841377698384444">Id for Directory API:</translation>

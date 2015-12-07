@@ -85,6 +85,7 @@
 <translation id="2345460471437425338">ホストの証明書が正しくありません。</translation>
 <translation id="2354001756790975382">その他のブックマーク</translation>
 <translation id="2367567093518048410">レベル</translation>
+<translation id="237718015863234333">代替ユーザーインターフェースはありません</translation>
 <translation id="2384307209577226199">企業のデフォルト</translation>
 <translation id="2386255080630008482">サーバーの証明書は取り消されています。</translation>
 <translation id="2392959068659972793">値が設定されていないポリシーを表示する</translation>
@@ -96,6 +97,7 @@
 <translation id="2491120439723279231">サーバーの証明書にエラーがあります。</translation>
 <translation id="2495083838625180221">JSON パーサー</translation>
 <translation id="2498091847651709837">新しいカードをスキャン</translation>
+<translation id="2516305470678292029">代替ユーザーインターフェース</translation>
 <translation id="2556876185419854533">編集の取り消し（&amp;U）</translation>
 <translation id="2581221116934462656">次回、<ph name="PRODUCT_NAME" /> でこのサイトの<ph name="LANGUAGE_NAME" />ページを翻訳しますか？</translation>
 <translation id="2587841377698384444">Directory API ID:</translation>

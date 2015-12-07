@@ -1166,7 +1166,6 @@
 <translation id="2749881179542288782">检查拼写和语法</translation>
 <translation id="2752805177271551234">使用输入历史记录功能</translation>
 <translation id="2756798847867733934">SIM 卡已停用</translation>
-<translation id="2757031529886297178">FPS 计数器</translation>
 <translation id="2758939858455657368">后续通知、窗口和对话框可能会在不同的桌面上分开显示。</translation>
 <translation id="2761824548806711139">代理 (<ph name="DOMAIN" />) 要求提供用户名和密码。代理提示：<ph name="REALM" />。</translation>
 <translation id="2765217105034171413">小</translation>
@@ -2897,7 +2896,6 @@
 <translation id="5355351445385646029">按空格键选择候选字词</translation>
 <translation id="5355926466126177564">“<ph name="EXTENSION_NAME" />”扩展程序更改了您通过多功能框进行搜索时系统显示的页面。</translation>
 <translation id="5357579842739549440">调试键盘快捷键</translation>
-<translation id="5359419173856026110">当硬件加速处于活动状态时，显示网页的实际帧速率（帧/秒）。</translation>
 <translation id="5360150013186312835">在工具栏中显示</translation>
 <translation id="5362741141255528695">选择私有密钥文件。</translation>
 <translation id="5363109466694494651">执行 Powerwash 操作并还原</translation>

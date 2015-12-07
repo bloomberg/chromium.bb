@@ -85,6 +85,7 @@
 <translation id="2345460471437425338">Certificat incorrecte per a l'amfitrió.</translation>
 <translation id="2354001756790975382">Altres adreces d'interès</translation>
 <translation id="2367567093518048410">Nivell</translation>
+<translation id="237718015863234333">No hi ha cap alternativa a la IU disponible.</translation>
 <translation id="2384307209577226199">Predeterminada de l'empresa</translation>
 <translation id="2386255080630008482">El certificat del servidor s'ha revocat.</translation>
 <translation id="2392959068659972793">Mostra les polítiques sense valors definits</translation>
@@ -96,6 +97,7 @@
 <translation id="2491120439723279231">El certificat del servidor conté errors.</translation>
 <translation id="2495083838625180221">Analitzador JSON</translation>
 <translation id="2498091847651709837">Escaneja una targeta nova</translation>
+<translation id="2516305470678292029">Alternatives a la IU</translation>
 <translation id="2556876185419854533">&amp;Desfés la modificació</translation>
 <translation id="2581221116934462656">La propera vegada, voleu que <ph name="PRODUCT_NAME" /> ofereixi la traducció de les pàgines escrites en <ph name="LANGUAGE_NAME" /> d'aquest lloc?</translation>
 <translation id="2587841377698384444">Identificador de l'API de directoris:</translation>

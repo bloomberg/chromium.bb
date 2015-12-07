@@ -85,6 +85,7 @@
 <translation id="2345460471437425338">Погрешан сертификат за хост.</translation>
 <translation id="2354001756790975382">Остали обележивачи</translation>
 <translation id="2367567093518048410">Ниво</translation>
+<translation id="237718015863234333">Нема доступних алтернатива корисничког интерфејса</translation>
 <translation id="2384307209577226199">Подразумеване смернице за предузеће</translation>
 <translation id="2386255080630008482">Сертификат сервера је опозван.</translation>
 <translation id="2392959068659972793">Прикажи смернице без подешених вредности</translation>
@@ -96,6 +97,7 @@
 <translation id="2491120439723279231">Сертификат сервера садржи грешке.</translation>
 <translation id="2495083838625180221">Рашчлањивач JSON датотека</translation>
 <translation id="2498091847651709837">Скенирајте нову картицу</translation>
+<translation id="2516305470678292029">Алтернативе корисничког интерфејса</translation>
 <translation id="2556876185419854533">&amp;Опозови измену</translation>
 <translation id="2581221116934462656">Желите ли да вам <ph name="PRODUCT_NAME" /> следећи пут понуди да преведе странице чији је језик <ph name="LANGUAGE_NAME" /> на овом сајту?</translation>
 <translation id="2587841377698384444">ИД API-ја за директоријуме:</translation>

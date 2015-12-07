@@ -1162,7 +1162,6 @@
 <translation id="2749881179542288782">בדוק דקדוק עם איות</translation>
 <translation id="2752805177271551234">השתמש בהיסטוריית קלט</translation>
 <translation id="2756798847867733934">‏כרטיס SIM מושבת</translation>
-<translation id="2757031529886297178">‏מונה FPS</translation>
 <translation id="2758939858455657368">ניתן לפצל הודעות, חלונות ותיבות דו-שיח שיוצגו בהמשך בין שולחנות עבודה.</translation>
 <translation id="2761824548806711139">‏שרת ה-proxy ‏<ph name="DOMAIN" /> מצריך שם משתמש וסיסמה. שרת ה-proxy מציין: <ph name="REALM" />.</translation>
 <translation id="2765217105034171413">קטן</translation>
@@ -2903,7 +2902,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="5355351445385646029">‏הקש על המקש Space כדי לבחור את המועמד</translation>
 <translation id="5355926466126177564">התוסף "<ph name="EXTENSION_NAME" />" שינה את הדף שמוצג כשאתה מבצע חיפוש מסרגל הכתובות.</translation>
 <translation id="5357579842739549440">מקשי קיצור לתיקון באגים</translation>
-<translation id="5359419173856026110">מציג את קצב הפריימים בפועל של הדף, ביחידות של פריימים לשנייה, כאשר האצת החומרה פועלת.</translation>
 <translation id="5360150013186312835">הצג בסרגל הכלים</translation>
 <translation id="5362741141255528695">בחר קובץ מפתח פרטי.</translation>
 <translation id="5363109466694494651">‏בצע Powerwash וחזור לגרסה הקודמת</translation>

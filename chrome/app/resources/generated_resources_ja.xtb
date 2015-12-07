@@ -1172,7 +1172,6 @@
 <translation id="2749881179542288782">スペルと一緒に文法をチェック</translation>
 <translation id="2752805177271551234">入力履歴を利用する</translation>
 <translation id="2756798847867733934">SIM カードが無効です</translation>
-<translation id="2757031529886297178">FPS カウンター</translation>
 <translation id="2758939858455657368">以降の通知、ウィンドウ、ダイアログは、複数のデスクトップに分かれて表示される可能性があります。</translation>
 <translation id="2761824548806711139">プロキシ <ph name="DOMAIN" /> にはユーザー名とパスワードを指定する必要があります。プロキシからの情報: <ph name="REALM" />。</translation>
 <translation id="2765217105034171413">小</translation>
@@ -2914,7 +2913,6 @@
 <translation id="5355351445385646029">スペース キーを押して候補を選択する</translation>
 <translation id="5355926466126177564">拡張機能「<ph name="EXTENSION_NAME" />」により、アドレスバーから検索したときに表示されるページが変更されました。</translation>
 <translation id="5357579842739549440">デバッグ用キーボード ショートカット</translation>
-<translation id="5359419173856026110">ハードウェア アクセラレーションが有効になっているときに、ページの実際のフレーム レート（1 秒あたりのフレーム数）を表示します。</translation>
 <translation id="5360150013186312835">ツールバーに表示</translation>
 <translation id="5362741141255528695">秘密鍵ファイルを選択します。</translation>
 <translation id="5363109466694494651">Powerwash を実行して以前のバージョンに戻す</translation>

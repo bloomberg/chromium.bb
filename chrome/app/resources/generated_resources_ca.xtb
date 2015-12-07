@@ -1170,7 +1170,6 @@ No crec que calgui bloquejar aquest lloc.</translation>
 <translation id="2749881179542288782">Comprova la gramàtica amb l'ortografia</translation>
 <translation id="2752805177271551234">Utilitza l'historial d'entrada</translation>
 <translation id="2756798847867733934">Targeta SIM desactivada</translation>
-<translation id="2757031529886297178">Comptador d'FPS</translation>
 <translation id="2758939858455657368">És possible que les notificacions, les finestres i els diàlegs següents es divideixin entre els escriptoris.</translation>
 <translation id="2761824548806711139">El servidor intermediari del domini <ph name="DOMAIN" /> requereix un nom d'usuari i una contrasenya. El servidor intermediari diu: <ph name="REALM" />.</translation>
 <translation id="2765217105034171413">Petit</translation>
@@ -2906,7 +2905,6 @@ Premeu qualsevol tecla per continuar explorant.</translation>
 <translation id="5355351445385646029">Premeu Espai per seleccionar el candidat</translation>
 <translation id="5355926466126177564">L'extensió <ph name="EXTENSION_NAME" /> ha canviat la pàgina que es mostra quan feu una cerca des de l'omnibox.</translation>
 <translation id="5357579842739549440">Depuració de tecles de drecera</translation>
-<translation id="5359419173856026110">Mostra la taxa de fotogrames real d'una pàgina, en fotogrames per segon, quan l'acceleració per maquinari és activa.</translation>
 <translation id="5360150013186312835">Mostra a la barra d'eines</translation>
 <translation id="5362741141255528695">Seleccioneu el fitxer de clau privada.</translation>
 <translation id="5363109466694494651">Fes un Powerwash i canvia a la versió anterior</translation>

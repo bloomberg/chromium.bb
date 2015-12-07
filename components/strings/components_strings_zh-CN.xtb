@@ -85,6 +85,7 @@
 <translation id="2345460471437425338">主机的证书不正确。</translation>
 <translation id="2354001756790975382">其他书签</translation>
 <translation id="2367567093518048410">级别</translation>
+<translation id="237718015863234333">没有可用的界面备选项</translation>
 <translation id="2384307209577226199">在企业环境中默认实施</translation>
 <translation id="2386255080630008482">服务器的证书已撤消。</translation>
 <translation id="2392959068659972793">显示未设定值的政策</translation>
@@ -96,6 +97,7 @@
 <translation id="2491120439723279231">服务器证书中包含错误。</translation>
 <translation id="2495083838625180221">JSON 解析器</translation>
 <translation id="2498091847651709837">扫描新的信用卡</translation>
+<translation id="2516305470678292029">界面备选项</translation>
 <translation id="2556876185419854533">撤消修改(&amp;U)</translation>
 <translation id="2581221116934462656">您希望 <ph name="PRODUCT_NAME" /> 下次翻译此网站的<ph name="LANGUAGE_NAME" />网页吗？</translation>
 <translation id="2587841377698384444">Directory API ID：</translation>

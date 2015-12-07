@@ -85,6 +85,7 @@
 <translation id="2345460471437425338">Incorrect certificate for host.</translation>
 <translation id="2354001756790975382">Other bookmarks</translation>
 <translation id="2367567093518048410">Level</translation>
+<translation id="237718015863234333">No UI alternatives available</translation>
 <translation id="2384307209577226199">Enterprise default</translation>
 <translation id="2386255080630008482">Server's certificate has been revoked</translation>
 <translation id="2392959068659972793">Show policies with no value set</translation>
@@ -96,6 +97,7 @@
 <translation id="2491120439723279231">Server's certificate contains errors.</translation>
 <translation id="2495083838625180221">JSON Parser</translation>
 <translation id="2498091847651709837">Scan new card</translation>
+<translation id="2516305470678292029">UI Alternatives</translation>
 <translation id="2556876185419854533">&amp;Undo Edit</translation>
 <translation id="2581221116934462656">Would you like <ph name="PRODUCT_NAME" /> to offer to translate <ph name="LANGUAGE_NAME" /> pages from this site next time?</translation>
 <translation id="2587841377698384444">Directory API ID:</translation>

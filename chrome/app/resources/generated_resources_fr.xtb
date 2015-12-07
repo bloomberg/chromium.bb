@@ -1171,7 +1171,6 @@ Je ne pense pas que ce site devrait être bloqué.</translation>
 <translation id="2749881179542288782">Vérifier la grammaire et l'orthographe</translation>
 <translation id="2752805177271551234">Utiliser l'historique d'entrée</translation>
 <translation id="2756798847867733934">Carte SIM désactivée</translation>
-<translation id="2757031529886297178">Compteur d'images par seconde</translation>
 <translation id="2758939858455657368">Suite à cette opération, les notifications, les fenêtres et les boîtes de dialogue peuvent s'afficher sur les deux écrans.</translation>
 <translation id="2761824548806711139">Le proxy <ph name="DOMAIN" /> nécessite un nom d'utilisateur et un mot de passe. Message du proxy : <ph name="REALM" />.</translation>
 <translation id="2765217105034171413">Petite</translation>
@@ -2912,7 +2911,6 @@ Pour poursuivre l'exploration, appuyez sur n'importe quelle touche.</translation
 <translation id="5355351445385646029">Appuyer sur la touche Espace pour sélectionner la suggestion</translation>
 <translation id="5355926466126177564">L'extension <ph name="EXTENSION_NAME" /> a modifié la page qui s'affiche lorsque vous effectuez une recherche dans l'omnibox.</translation>
 <translation id="5357579842739549440">Raccourcis clavier de débogage</translation>
-<translation id="5359419173856026110">Cette fonctionnalité indique la vitesse d'affichage réelle d'une page, en images par seconde, lorsque l'accélération matérielle est active.</translation>
 <translation id="5360150013186312835">Afficher dans la barre d'outils</translation>
 <translation id="5362741141255528695">Sélectionnez le fichier de clé privée.</translation>
 <translation id="5363109466694494651">Powerwash et rétablir</translation>

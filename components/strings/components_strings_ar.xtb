@@ -85,6 +85,7 @@
 <translation id="2345460471437425338">شهادة غير صحيحة للمضيف.</translation>
 <translation id="2354001756790975382">الإشارات الأخرى</translation>
 <translation id="2367567093518048410">المستوى</translation>
+<translation id="237718015863234333">لا توجد بدائل لعناصر واجهة المستخدم</translation>
 <translation id="2384307209577226199">السياسة افتراضية في المؤسسة ويمكن إلغاؤها</translation>
 <translation id="2386255080630008482">تم إبطال شهادة الخادم.</translation>
 <translation id="2392959068659972793">عرض السياسات التي لم يتم تعيين قيم لها</translation>
@@ -96,6 +97,7 @@
 <translation id="2491120439723279231">تحتوي شهادة الخادم على أخطاء.</translation>
 <translation id="2495083838625180221">‏محلل JSON اللغوي</translation>
 <translation id="2498091847651709837">فحص بطاقة جديدة</translation>
+<translation id="2516305470678292029">بدائل عناصر واجهة المستخدم</translation>
 <translation id="2556876185419854533">تراجع عن ا&amp;لتحرير</translation>
 <translation id="2581221116934462656">هل تريد أن يعرض <ph name="PRODUCT_NAME" /> ترجمة صفحات <ph name="LANGUAGE_NAME" /> من هذا الموقع في المرة القادمة؟</translation>
 <translation id="2587841377698384444">رقم تعريف واجهة برمجة التطبيقات الدليل:</translation>

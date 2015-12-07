@@ -1173,7 +1173,6 @@
 <translation id="2749881179542288782">영문 철자 및 문법 검사</translation>
 <translation id="2752805177271551234">입력 기록 사용</translation>
 <translation id="2756798847867733934">SIM 카드 사용 안 함</translation>
-<translation id="2757031529886297178">FPS 카운터</translation>
 <translation id="2758939858455657368">이후의 알림, 창, 대화상자가 데스크톱 간에 분할될 수 있습니다.</translation>
 <translation id="2761824548806711139">프록시 <ph name="DOMAIN" />에 사용자 이름과 비밀번호를 입력해야 합니다. 프록시 메시지: <ph name="REALM" />.</translation>
 <translation id="2765217105034171413">작게</translation>
@@ -2914,7 +2913,6 @@
 <translation id="5355351445385646029">스페이스 키를 눌러 후보자 선택</translation>
 <translation id="5355926466126177564">검색주소창에서 검색하면 표시되는 페이지가 '<ph name="EXTENSION_NAME" />' 확장 프로그램으로 인해 변경되었습니다.</translation>
 <translation id="5357579842739549440">키보드 단축키 디버깅</translation>
-<translation id="5359419173856026110">하드웨어 가속을 사용 중인 경우 페이지의 실제 프레임 속도를 초당 프레임으로 표시합니다.</translation>
 <translation id="5360150013186312835">툴바에서 보기</translation>
 <translation id="5362741141255528695">비공개 키 파일을 선택합니다.</translation>
 <translation id="5363109466694494651">Powerwash 및 되돌리기</translation>
