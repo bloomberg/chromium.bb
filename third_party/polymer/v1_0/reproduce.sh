@@ -16,7 +16,7 @@ cd "$(dirname "$0")"
 rm -rf components components-chromium
 rm -rf ../../web-animations-js/sources
 
-bower install
+bower install --no-color
 
 rm components/*/.travis.yml
 
