@@ -96,19 +96,6 @@ if (!is_android) {
         "$root_out_dir/locales/fr.pak",
       ]
     }
-    if (enable_nacl) {
-      if (is_win || (is_linux && target_cpu == "x64")) {
-        data += [
-          # TODO(GYP): Enable this when the IRT is in the right location.
-          # "$root_out_dir/nacl_irt_x86_64.nexe"
-        ]
-      } else if (is_linux && target_cpu == "arm") {
-        data += [
-          # TODO(GYP): same comment
-          # "$root_out_dir/nacl_irt_arm.nexe"
-        ]
-      }
-    }
 
     data_deps = []
 
