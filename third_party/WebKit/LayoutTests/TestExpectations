@@ -81,6 +81,16 @@ crbug.com/463358 [ Mac Linux Debug ] css3/masking/clip-path-polygon.html [ Failu
 
 crbug.com/267206 [ Mac ] virtual/rootlayerscrolls/fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
 
+crbug.com/561418 imported/web-platform-tests/html/rendering/non-replaced-elements/lists/li-type-unsupported-lower-alpha.html [ Failure ]
+crbug.com/561418 imported/web-platform-tests/html/rendering/non-replaced-elements/lists/li-type-unsupported-lower-roman.html [ Failure ]
+crbug.com/561418 imported/web-platform-tests/html/rendering/non-replaced-elements/lists/li-type-unsupported-upper-alpha.html [ Failure ]
+crbug.com/561418 imported/web-platform-tests/html/rendering/non-replaced-elements/lists/li-type-unsupported-upper-roman.html [ Failure ]
+crbug.com/561418 imported/web-platform-tests/html/rendering/non-replaced-elements/lists/ul-type-unsupported-decimal.html [ Failure ]
+crbug.com/561418 imported/web-platform-tests/html/rendering/non-replaced-elements/lists/ul-type-unsupported-lower-alpha.html [ Failure ]
+crbug.com/561418 imported/web-platform-tests/html/rendering/non-replaced-elements/lists/ul-type-unsupported-lower-roman.html [ Failure ]
+crbug.com/561418 imported/web-platform-tests/html/rendering/non-replaced-elements/lists/ul-type-unsupported-upper-alpha.html [ Failure ]
+crbug.com/561418 imported/web-platform-tests/html/rendering/non-replaced-elements/lists/ul-type-unsupported-upper-roman.html [ Failure ]
+
 crbug.com/465126 imported/gecko/variables/variable-declaration-24.html [ Failure ]
 crbug.com/465126 imported/gecko/variables/variable-declaration-25.html [ Failure ]
 crbug.com/465126 imported/gecko/variables/variable-external-font-face-01.html [ Failure ]
