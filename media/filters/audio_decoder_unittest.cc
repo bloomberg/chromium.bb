@@ -407,7 +407,7 @@ TEST_P(OpusAudioDecoderBehavioralTest, InitializeWithBadCodecDelay) {
       base::TimeDelta::FromMilliseconds(80),
       // Use a different codec delay than in the extradata.
       100);
-  InitializeDecoderWithResult(decoder_config, false);
+  InitializeDecoderWithResult(decoder_config, true);
 }
 
 #if defined(OPUS_FIXED_POINT)

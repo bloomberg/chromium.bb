@@ -258,10 +258,13 @@ bool OpusAudioDecoder::ConfigureDecoder() {
   }
 
   if (config_.codec_delay() != opus_extra_data.skip_samples) {
-    DLOG(ERROR) << "Invalid file. Codec Delay in container does not match the "
-                << "value in Opus Extra Data. " << config_.codec_delay()
-                << " vs " << opus_extra_data.skip_samples;
-    return false;
+    DLOG(WARNING) << "Invalid file. Codec Delay in container does not match "
+                  << "the value in Opus Extra Data. " << config_.codec_delay()
+                  << " vs " << opus_extra_data.skip_samples;
+    config_.Initialize(config_.codec(), config_.sample_format(),
+                       config_.channel_layout(), config_.samples_per_second(),
+                       config_.extra_data(), config_.is_encrypted(),
+                       config_.seek_preroll(), opus_extra_data.skip_samples);
   }
 
   uint8 channel_mapping[OPUS_MAX_VORBIS_CHANNELS] = {0};
