@@ -30,7 +30,6 @@
     ImplementedAs=SVGTransformListTearOff,
     SetWrapperReferenceTo(SVGElement contextElement),
     RuntimeEnabled=SVG1DOM,
-    MeasureAs=SVG1DOM,
     WillBeGarbageCollected,
 ] interface SVGTransformList {
     readonly attribute unsigned long length;

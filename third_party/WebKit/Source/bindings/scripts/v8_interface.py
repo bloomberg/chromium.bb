@@ -226,11 +226,14 @@ def interface_context(interface):
     if constructors or custom_constructors or named_constructor:
         if interface.is_partial:
             raise Exception('[Constructor] and [NamedConstructor] MUST NOT be'
-                            ' specified on partial interface definitions:'
+                            ' specified on partial interface definitions: '
                             '%s' % interface.name)
 
         includes.add('bindings/core/v8/V8ObjectConstructor.h')
         includes.add('core/frame/LocalDOMWindow.h')
+    elif 'Measure' in extended_attributes or 'MeasureAs' in extended_attributes:
+        raise Exception('[Measure] or [MeasureAs] specified for interface without a constructor: '
+                        '%s' % interface.name)
 
     # [Unscopeable] attributes and methods
     unscopeables = []
