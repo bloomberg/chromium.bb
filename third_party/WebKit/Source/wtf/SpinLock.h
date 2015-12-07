@@ -67,7 +67,7 @@ private:
     // slower, but has a much better scheduling and power consumption behavior.
     WTF_EXPORT void lockSlow();
 
-    std::atomic<int> m_lock;
+    std::atomic_int m_lock;
 };
 
 
