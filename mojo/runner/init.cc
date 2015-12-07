@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "mojo/runner/host/switches.h"
 
@@ -52,7 +53,9 @@ void WaitForDebuggerIfNecessary() {
     if (apps_to_debug.empty() || ContainsValue(apps_to_debug, app)) {
 #if defined(OS_WIN)
       base::string16 appw = base::UTF8ToUTF16(app);
-      MessageBox(NULL, appw.c_str(), appw.c_str(), MB_OK | MB_SETFOREGROUND);
+      base::string16 message = base::UTF8ToUTF16(
+          base::StringPrintf("%s - %d", app.c_str(), GetCurrentProcessId()));
+      MessageBox(NULL, message.c_str(), appw.c_str(), MB_OK | MB_SETFOREGROUND);
 #else
       LOG(ERROR) << app << " waiting for GDB. pid: " << getpid();
       base::debug::WaitForDebugger(60, true);
