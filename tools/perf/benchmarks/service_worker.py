@@ -8,7 +8,6 @@ import re
 
 from core import perf_benchmark
 
-from telemetry import benchmark
 from telemetry.core import util
 from telemetry.page import action_runner
 from telemetry.page import page_test
@@ -95,12 +94,6 @@ class _ServiceWorkerMeasurement(page_test.PageTest):
     self._speed_index = speedindex.SpeedIndexMetric()
     self._page_open_times = collections.defaultdict(int)
 
-  # TODO(falken): Remove when reference build rolls. crbug.com/458538
-  def CustomizeBrowserOptions(self, options):
-    options.AppendExtraBrowserArgs([
-        '--enable-experimental-web-platform-features'
-      ])
-
   def WillNavigateToPage(self, page, tab):
     self._timeline_controller.SetUp(page, tab)
     self._timeline_controller.Start(tab)
@@ -176,9 +169,6 @@ class ServiceWorkerPerfTest(perf_benchmark.PerfBenchmark):
     return 'service_worker.service_worker'
 
 
-# The reference build is disabled. crbug.com/442752
-# TODO(horo): Enable after the reference build newer than M39 will be rolled.
-@benchmark.Disabled('reference')
 class ServiceWorkerMicroBenchmarkPerfTest(perf_benchmark.PerfBenchmark):
   """This test is a microbenchmark of service worker.
 

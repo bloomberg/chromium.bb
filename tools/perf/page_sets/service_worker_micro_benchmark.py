@@ -26,12 +26,10 @@ class ServiceWorkerMicroBenchmarkPageSet(story.StorySet):
         cloud_storage_bucket=story.PUBLIC_BUCKET)
 
     # pylint: disable=line-too-long
-    # The code of localhost:8091 is placed in
-    # https://github.com/coonsta/Service-Worker-Performance
-    # but currently the following is used:
-    # https://github.com/amiq11/Service-Worker-Performance/tree/follow_spec_and_many_registration
-    # (rev: 3238098ea0225f53dab2f69f7406db8a2712dbf9)
-    # This will be merged into the main repository.
+    # The latest code of localhost:8091 is from:
+    # https://github.com/horo-t/Service-Worker-Performance/tree/fix-flakyness
+    # (rev: 0cc35c2398526665399ca99fe53147ff81101408)
+    # TODO(falken): House the code in GoogleChrome's GitHub repository.
     # pylint: enable=C0301
     # Why: to measure performance of many concurrent fetches
     self.AddStory(ServiceWorkerBenchmarkPage(
