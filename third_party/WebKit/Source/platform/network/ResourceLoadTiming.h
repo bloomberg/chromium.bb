@@ -26,76 +26,35 @@
 #ifndef ResourceLoadTiming_h
 #define ResourceLoadTiming_h
 
+#include "platform/PlatformExport.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 
 namespace blink {
 
-class ResourceLoadTiming : public RefCounted<ResourceLoadTiming> {
+class PLATFORM_EXPORT ResourceLoadTiming : public RefCounted<ResourceLoadTiming> {
 public:
-    static PassRefPtr<ResourceLoadTiming> create()
-    {
-        return adoptRef(new ResourceLoadTiming);
-    }
+    static PassRefPtr<ResourceLoadTiming> create();
 
-    PassRefPtr<ResourceLoadTiming> deepCopy()
-    {
-        RefPtr<ResourceLoadTiming> timing = create();
-        timing->m_requestTime = m_requestTime;
-        timing->m_proxyStart = m_proxyStart;
-        timing->m_proxyEnd = m_proxyEnd;
-        timing->m_dnsStart = m_dnsStart;
-        timing->m_dnsEnd = m_dnsEnd;
-        timing->m_connectStart = m_connectStart;
-        timing->m_connectEnd = m_connectEnd;
-        timing->m_workerStart = m_workerStart;
-        timing->m_workerReady = m_workerReady;
-        timing->m_sendStart = m_sendStart;
-        timing->m_sendEnd = m_sendEnd;
-        timing->m_receiveHeadersEnd = m_receiveHeadersEnd;
-        timing->m_sslStart = m_sslStart;
-        timing->m_sslEnd = m_sslEnd;
-        return timing.release();
-    }
+    PassRefPtr<ResourceLoadTiming> deepCopy();
+    bool operator==(const ResourceLoadTiming&) const;
+    bool operator!=(const ResourceLoadTiming&) const;
 
-    bool operator==(const ResourceLoadTiming& other) const
-    {
-        return m_requestTime == other.m_requestTime
-            && m_proxyStart == other.m_proxyStart
-            && m_proxyEnd == other.m_proxyEnd
-            && m_dnsStart == other.m_dnsStart
-            && m_dnsEnd == other.m_dnsEnd
-            && m_connectStart == other.m_connectStart
-            && m_connectEnd == other.m_connectEnd
-            && m_workerStart == other.m_workerStart
-            && m_workerReady == other.m_workerReady
-            && m_sendStart == other.m_sendStart
-            && m_sendEnd == other.m_sendEnd
-            && m_receiveHeadersEnd == other.m_receiveHeadersEnd
-            && m_sslStart == other.m_sslStart
-            && m_sslEnd == other.m_sslEnd;
-    }
-
-    bool operator!=(const ResourceLoadTiming& other) const
-    {
-        return !(*this == other);
-    }
-
-    void setDnsStart(double dnsStart) { m_dnsStart = dnsStart; }
-    void setRequestTime(double requestTime) { m_requestTime = requestTime; }
-    void setProxyStart(double proxyStart) { m_proxyStart = proxyStart; }
-    void setProxyEnd(double proxyEnd) { m_proxyEnd = proxyEnd; }
-    void setDnsEnd(double dnsEnd) { m_dnsEnd = dnsEnd; }
-    void setConnectStart(double connectStart) { m_connectStart = connectStart; }
-    void setConnectEnd(double connectEnd) { m_connectEnd = connectEnd; }
-    void setWorkerStart(double workerStart) { m_workerStart = workerStart; }
-    void setWorkerReady(double workerReady) { m_workerReady = workerReady; }
-    void setSendStart(double sendStart) { m_sendStart = sendStart; }
-    void setSendEnd(double sendEnd) { m_sendEnd = sendEnd; }
-    void setReceiveHeadersEnd(double receiveHeadersEnd) { m_receiveHeadersEnd = receiveHeadersEnd; }
-    void setSslStart(double sslStart) { m_sslStart = sslStart; }
-    void setSslEnd(double sslEnd) { m_sslEnd = sslEnd; }
+    void setDnsStart(double);
+    void setRequestTime(double);
+    void setProxyStart(double);
+    void setProxyEnd(double);
+    void setDnsEnd(double);
+    void setConnectStart(double);
+    void setConnectEnd(double);
+    void setWorkerStart(double);
+    void setWorkerReady(double);
+    void setSendStart(double);
+    void setSendEnd(double);
+    void setReceiveHeadersEnd(double);
+    void setSslStart(double);
+    void setSslEnd(double);
 
     double dnsStart() const { return m_dnsStart; }
     double requestTime() const { return m_requestTime; }
@@ -112,26 +71,10 @@ public:
     double sslStart() const { return m_sslStart; }
     double sslEnd() const { return m_sslEnd; }
 
-    double calculateMillisecondDelta(double time) const { return time ? (time - m_requestTime) * 1000 : -1; }
+    double calculateMillisecondDelta(double) const;
 
 private:
-    ResourceLoadTiming()
-        : m_requestTime(0)
-        , m_proxyStart(0)
-        , m_proxyEnd(0)
-        , m_dnsStart(0)
-        , m_dnsEnd(0)
-        , m_connectStart(0)
-        , m_connectEnd(0)
-        , m_workerStart(0)
-        , m_workerReady(0)
-        , m_sendStart(0)
-        , m_sendEnd(0)
-        , m_receiveHeadersEnd(0)
-        , m_sslStart(0)
-        , m_sslEnd(0)
-    {
-    }
+    ResourceLoadTiming();
 
     // We want to present a unified timeline to Javascript. Using walltime is problematic, because the clock may skew while resources
     // load. To prevent that skew, we record a single reference walltime when root document navigation begins. All other times are

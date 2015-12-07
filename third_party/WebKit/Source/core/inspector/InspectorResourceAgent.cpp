@@ -67,6 +67,7 @@
 #include "platform/network/HTTPHeaderMap.h"
 #include "platform/network/ResourceError.h"
 #include "platform/network/ResourceLoadPriority.h"
+#include "platform/network/ResourceLoadTiming.h"
 #include "platform/network/ResourceRequest.h"
 #include "platform/network/ResourceResponse.h"
 #include "platform/network/WebSocketHandshakeRequest.h"
