@@ -236,6 +236,17 @@
           ],
         },
         {
+          'postbuild_name:': 'Lipo KeystoneRegistration.framework',
+          'variables': {
+            'KEYSTONE_FILE':
+            '${BUILT_PRODUCTS_DIR}/${CONTENTS_FOLDER_PATH}/Frameworks/KeystoneRegistration.framework/KeystoneRegistration',
+          },
+          'action': [
+            'tools/mac_helpers/lipo_thin_x86_64.sh',
+            '<(KEYSTONE_FILE)',
+          ],
+        },
+        {
           'postbuild_name': 'Symlink Frameworks',
           'action': [
             'ln',
