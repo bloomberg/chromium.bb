@@ -165,13 +165,6 @@ crbug.com/410974 virtual/threaded/fast/scroll-behavior/scroll-customization/scro
 crbug.com/410974 virtual/threaded/fast/scroll-behavior/scroll-customization/scrollstate-distribute-to-scroll-chain-descendant.html [ Pass Failure ]
 crbug.com/410974 virtual/threaded/fast/scroll-behavior/scroll-customization/touch-scroll-customization.html [ Pass Failure ]
 
-Bug(mkwst) [ XP ] transforms/3d/general/perspective-units.html [ NeedsRebaseline ]
-Bug(mkwst) [ XP ] transforms/3d/general/transform-origin-z-change.html [ NeedsRebaseline ]
-Bug(mkwst) [ XP ] transforms/3d/point-mapping/3d-point-mapping-coplanar.html [ NeedsRebaseline ]
-Bug(mkwst) [ XP ] transforms/3d/point-mapping/3d-point-mapping-origins.html [ NeedsRebaseline ]
-Bug(mkwst) [ XP ] transforms/3d/point-mapping/3d-point-mapping.html [ NeedsRebaseline ]
-Bug(mkwst) [ XP ] virtual/syncpaint/fast/repaint/inline-focus.html [ NeedsRebaseline ]
-
 crbug.com/410974 virtual/threaded_animation_timelines/fast/scroll-behavior/scroll-customization/scrollstate-basic.html [ Pass Failure ]
 crbug.com/410974 virtual/threaded_animation_timelines/fast/scroll-behavior/scroll-customization/scrollstate-consume-deltas.html [ Pass Failure ]
 crbug.com/410974 virtual/threaded_animation_timelines/fast/scroll-behavior/scroll-customization/scrollstate-consume-deltas-throw.html [ Pass Failure ]
