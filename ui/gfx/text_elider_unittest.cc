@@ -52,9 +52,10 @@ struct TestData {
 
 }  // namespace
 
-// TODO(ios): This test fails on iOS because iOS version of GetStringWidthF
-// that calls [NSString sizeWithFont] returns the rounded string width.
-// TODO(338784): Enable this on android.
+// TODO(crbug.com/546240): This test fails on iOS because iOS version of
+// GetStringWidthF that calls [NSString sizeWithFont] returns the rounded string
+// width.
+// TODO(crbug.com/338784): Enable this on android.
 #if defined(OS_IOS) || defined(OS_ANDROID)
 #define MAYBE_ElideEmail DISABLED_ElideEmail
 #else
@@ -115,7 +116,7 @@ TEST(TextEliderTest, MAYBE_ElideEmail) {
   }
 }
 
-// TODO(338784): Enable this on android.
+// TODO(crbug.com/338784): Enable this on android.
 #if defined(OS_ANDROID)
 #define MAYBE_ElideEmailMoreSpace DISABLED_ElideEmailMoreSpace
 #else
@@ -147,9 +148,10 @@ TEST(TextEliderTest, MAYBE_ElideEmailMoreSpace) {
   }
 }
 
-// TODO(ios): This test fails on iOS because iOS version of GetStringWidthF
-// that calls [NSString sizeWithFont] returns the rounded string width.
-// TODO(338784): Enable this on android.
+// TODO(crbug.com/546240): This test fails on iOS because iOS version of
+// GetStringWidthF that calls [NSString sizeWithFont] returns the rounded string
+// width.
+// TODO(crbug.com/338784): Enable this on android.
 #if defined(OS_IOS) || defined(OS_ANDROID)
 #define MAYBE_TestFilenameEliding DISABLED_TestFilenameEliding
 #else
@@ -204,7 +206,7 @@ TEST(TextEliderTest, MAYBE_TestFilenameEliding) {
   }
 }
 
-// TODO(338784): Enable this on android.
+// TODO(crbug.com/338784): Enable this on android.
 #if defined(OS_ANDROID)
 #define MAYBE_ElideTextTruncate DISABLED_ElideTextTruncate
 #else
@@ -233,7 +235,7 @@ TEST(TextEliderTest, MAYBE_ElideTextTruncate) {
   }
 }
 
-// TODO(338784): Enable this on android.
+// TODO(crbug.com/338784): Enable this on android.
 #if defined(OS_ANDROID)
 #define MAYBE_ElideTextEllipsis DISABLED_ElideTextEllipsis
 #else
@@ -265,7 +267,7 @@ TEST(TextEliderTest, MAYBE_ElideTextEllipsis) {
   }
 }
 
-// TODO(338784): Enable this on android.
+// TODO(crbug.com/338784): Enable this on android.
 #if defined(OS_ANDROID)
 #define MAYBE_ElideTextEllipsisFront DISABLED_ElideTextEllipsisFront
 #else
@@ -317,7 +319,7 @@ static void CheckCodeUnitPairs(const base::string16& text,
 
 // Test that both both UTF-16 surrogate pairs and combining character sequences
 // do not get split by ElideText.
-// TODO(338784): Enable this on android.
+// TODO(crbug.com/338784): Enable this on android.
 #if defined(OS_ANDROID)
 #define MAYBE_ElideTextAtomicSequences DISABLED_ElideTextAtomicSequences
 #else
@@ -361,7 +363,7 @@ TEST(TextEliderTest, MAYBE_ElideTextAtomicSequences) {
   }
 }
 
-// TODO(338784): Enable this on android.
+// TODO(crbug.com/338784): Enable this on android.
 #if defined(OS_ANDROID)
 #define MAYBE_ElideTextLongStrings DISABLED_ElideTextLongStrings
 #else
@@ -613,7 +615,7 @@ TEST(TextEliderTest, ElideString) {
   }
 }
 
-// TODO(338784): Enable this on android.
+// TODO(crbug.com/338784): Enable this on android.
 #if defined(OS_ANDROID)
 #define MAYBE_ElideRectangleText DISABLED_ElideRectangleText
 #else
@@ -677,7 +679,7 @@ TEST(TextEliderTest, MAYBE_ElideRectangleText) {
   }
 }
 
-// TODO(338784): Enable this on android.
+// TODO(crbug.com/338784): Enable this on android.
 #if defined(OS_ANDROID)
 #define MAYBE_ElideRectangleTextPunctuation \
     DISABLED_ElideRectangleTextPunctuation
@@ -725,7 +727,7 @@ TEST(TextEliderTest, MAYBE_ElideRectangleTextPunctuation) {
   }
 }
 
-// TODO(338784): Enable this on android.
+// TODO(crbug.com/338784): Enable this on android.
 #if defined(OS_ANDROID)
 #define MAYBE_ElideRectangleTextLongWords DISABLED_ElideRectangleTextLongWords
 #else
@@ -797,7 +799,7 @@ TEST(TextEliderTest, MAYBE_ElideRectangleTextLongWords) {
 // fail because the truncated integer width is returned for the string
 // and the accumulation of the truncated values causes the elide function
 // to wrap incorrectly.
-// TODO(338784): Enable this on android.
+// TODO(crbug.com/338784): Enable this on android.
 #if defined(OS_ANDROID)
 #define MAYBE_ElideRectangleTextCheckLineWidth \
     DISABLED_ElideRectangleTextCheckLineWidth
@@ -842,7 +844,7 @@ TEST(TextEliderTest, ElideRectangleTextCheckConcatWidthEqualsSumOfWidths) {
 }
 #endif // OS_CHROMEOS
 
-// TODO(338784): Enable this on android.
+// TODO(crbug.com/338784): Enable this on android.
 #if defined(OS_ANDROID)
 #define MAYBE_ElideRectangleString DISABLED_ElideRectangleString
 #else
@@ -931,7 +933,7 @@ TEST(TextEliderTest, MAYBE_ElideRectangleString) {
   }
 }
 
-// TODO(338784): Enable this on android.
+// TODO(crbug.com/338784): Enable this on android.
 #if defined(OS_ANDROID)
 #define MAYBE_ElideRectangleStringNotStrict \
     DISABLED_ElideRectangleStringNotStrict
@@ -1020,7 +1022,7 @@ TEST(TextEliderTest, MAYBE_ElideRectangleStringNotStrict) {
   }
 }
 
-// TODO(338784): Enable this on android.
+// TODO(crbug.com/338784): Enable this on android.
 #if defined(OS_ANDROID)
 #define MAYBE_ElideRectangleWide16 DISABLED_ElideRectangleWide16
 #else
@@ -1045,7 +1047,7 @@ TEST(TextEliderTest, MAYBE_ElideRectangleWide16) {
   EXPECT_EQ(out2, output);
 }
 
-// TODO(338784): Enable this on android.
+// TODO(crbug.com/338784): Enable this on android.
 #if defined(OS_ANDROID)
 #define MAYBE_ElideRectangleWide32 DISABLED_ElideRectangleWide32
 #else
@@ -1064,7 +1066,7 @@ TEST(TextEliderTest, MAYBE_ElideRectangleWide32) {
   EXPECT_EQ(out, output);
 }
 
-// TODO(338784): Enable this on android.
+// TODO(crbug.com/338784): Enable this on android.
 #if defined(OS_ANDROID)
 #define MAYBE_TruncateString DISABLED_TruncateString
 #else
