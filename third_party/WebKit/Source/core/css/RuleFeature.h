@@ -101,8 +101,8 @@ protected:
     InvalidationSet* invalidationSetForSelector(const CSSSelector&, InvalidationType);
 
 private:
-    using InvalidationSetMap = HashMap<AtomicString, RefPtr<InvalidationData>>;
-    using PseudoTypeInvalidationSetMap = HashMap<CSSSelector::PseudoType, RefPtr<InvalidationData>, WTF::IntHash<unsigned>, WTF::UnsignedWithZeroKeyHashTraits<unsigned>>;
+    using InvalidationSetMap = HashMap<AtomicString, InvalidationData>;
+    using PseudoTypeInvalidationSetMap = HashMap<CSSSelector::PseudoType, InvalidationData, WTF::IntHash<unsigned>, WTF::UnsignedWithZeroKeyHashTraits<unsigned>>;
 
     struct FeatureMetadata {
         DISALLOW_NEW();

@@ -31,12 +31,12 @@ InvalidationSet& InvalidationData::ensureInvalidationSet(InvalidationType type)
 
 void InvalidationData::combine(const InvalidationData& other)
 {
-    if (other.descendants()) {
-        ensureDescendantInvalidationSet().combine(*other.descendants());
+    if (other.m_descendants) {
+        ensureDescendantInvalidationSet().combine(*other.m_descendants);
     }
 
-    if (other.siblings()) {
-        ensureSiblingInvalidationSet().combine(*other.siblings());
+    if (other.m_siblings) {
+        ensureSiblingInvalidationSet().combine(*other.m_siblings);
     }
 }
 

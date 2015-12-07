@@ -9,29 +9,18 @@
 
 namespace blink {
 
-class CORE_EXPORT InvalidationData final : public RefCounted<InvalidationData> {
-    WTF_MAKE_NONCOPYABLE(InvalidationData);
+class CORE_EXPORT InvalidationData final {
 public:
-    static PassRefPtr<InvalidationData> create()
-    {
-        return adoptRef(new InvalidationData);
-    }
-
     void combine(const InvalidationData& other);
 
-    PassRefPtr<DescendantInvalidationSet> descendants() { return m_descendants; }
-    PassRefPtr<SiblingInvalidationSet> siblings() { return m_siblings; }
-
-    const DescendantInvalidationSet* descendants() const { return m_descendants.get(); }
-    const SiblingInvalidationSet* siblings() const { return m_siblings.get(); }
+    DescendantInvalidationSet* descendants() const { return m_descendants.get(); }
+    SiblingInvalidationSet* siblings() const { return m_siblings.get(); }
 
     DescendantInvalidationSet& ensureDescendantInvalidationSet();
     SiblingInvalidationSet& ensureSiblingInvalidationSet();
     InvalidationSet& ensureInvalidationSet(InvalidationType);
 
 private:
-    InvalidationData() {}
-
     RefPtr<DescendantInvalidationSet> m_descendants;
     RefPtr<SiblingInvalidationSet> m_siblings;
 };
