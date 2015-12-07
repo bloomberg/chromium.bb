@@ -5,21 +5,22 @@
 #ifndef TOOLS_BATTOR_AGENT_BATTOR_AGENT_H_
 #define TOOLS_BATTOR_AGENT_BATTOR_AGENT_H_
 
-#include <string>
-
+#include "base/callback_forward.h"
 #include "base/macros.h"
-#include "tools/battor_agent/battor_connection.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
+#include "base/threading/thread_checker.h"
 #include "tools/battor_agent/battor_error.h"
+
+namespace device {
+class SerialIoHandler;
+}
 
 namespace battor {
 
-// A BattOrAgent is a class used to synchronously communicate with a BattOr for
+// A BattOrAgent is a class used to asynchronously communicate with a BattOr for
 // the purpose of collecting power samples. A BattOr is an external USB device
 // that's capable of recording accurate, high-frequency (2000Hz) power samples.
-//
-// Because the communication is synchronous and passes over a serial connection,
-// callers wishing to avoid blocking the thread (like the Chromium tracing
-// controller) should issue these commands in a separate thread.
 //
 // The serial connection is automatically opened when the first command
 // (e.g. StartTracing(), StopTracing(), etc.) is issued, and automatically
@@ -29,43 +30,62 @@ namespace battor {
 // same BattOrAgent for multiple commands and thus avoid having to reinitialize
 // the serial connection.
 //
-// This class is NOT thread safe.
-class BattOrAgent {
+// This class is NOT thread safe, and must be interacted with only from the IO
+// thread. The IO thread must also have a running MessageLoop.
+class BattOrAgent : public base::SupportsWeakPtr<BattOrAgent> {
  public:
-  explicit BattOrAgent(const std::string& path);
+  // The listener interface that must be implemented in order to interact with
+  // the BattOrAgent.
+  class Listener {
+   public:
+    virtual void OnStartTracingComplete(BattOrError error) = 0;
+  };
+
+  BattOrAgent(
+      scoped_refptr<base::SingleThreadTaskRunner> file_thread_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_rnuner,
+      const std::string& path,
+      Listener* listener);
   virtual ~BattOrAgent();
 
   // Tells the BattOr to start tracing.
-  BattOrError StartTracing();
-
-  // Tells the BattOr to stop tracing and write the trace output to the
-  // specified string.
-  BattOrError StopTracing(std::string* trace_output);
-
-  // Tells the BattOr to record a clock sync marker in its own trace log.
-  BattOrError RecordClockSyncMarker(const std::string& marker);
-
-  // Tells the BattOr to issue clock sync markers to all other tracing agents
-  // to which it's connected.
-  BattOrError IssueClockSyncMarker();
+  void StartTracing();
 
   // Returns whether the BattOr is able to record clock sync markers in its own
   // trace log.
   static bool SupportsExplicitClockSync() { return true; }
 
  private:
-  // Initializes the serial connection with the BattOr. If the connection
-  // already exists, BATTOR_ERROR_NONE is immediately returned.
-  BattOrError ConnectIfNeeded();
+  // Initializes the serial connection (if not done already) and calls one of
+  // the two callbacks depending its success. The callback will be invoked on
+  // the same thread that this method is called on.
+  void ConnectIfNeeded(const base::Closure& success_callback,
+                       const base::Closure& failure_callback);
+  void OnConnectComplete(const base::Closure& success_callback,
+                         const base::Closure& failure_callback,
+                         bool success);
+
+  // StartTracing continuation called once the connection is initialized.
+  void DoStartTracing();
 
   // Resets the connection to its unopened state.
   void ResetConnection();
 
+  // Threads needed for serial communication.
+  scoped_refptr<base::SingleThreadTaskRunner> file_thread_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner_;
+
   // The path of the BattOr (e.g. "/dev/tty.battor_serial").
   std::string path_;
 
-  // Serial connection the BattOr.
-  scoped_ptr<BattOrConnection> connection_;
+  // The listener that handles the commands' results. It must outlive the agent.
+  Listener* listener_;
+
+  // IO handler capable of reading and writing from the serial connection.
+  scoped_refptr<device::SerialIoHandler> io_handler_;
+
+  // Checker to make sure that this is only ever called on the IO thread.
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(BattOrAgent);
 };

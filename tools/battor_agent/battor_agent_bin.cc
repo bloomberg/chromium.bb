@@ -9,41 +9,47 @@
 
 #include <iostream>
 
+#include "base/at_exit.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/location.h"
+#include "base/logging.h"
 #include "base/threading/thread.h"
-#include "device/serial/serial.mojom.h"
 #include "tools/battor_agent/battor_agent.h"
 #include "tools/battor_agent/battor_error.h"
 
-using std::cerr;
-using std::cout;
 using std::endl;
-using std::string;
-
-using device::serial::ReceiveError;
-using device::serial::SendError;
 
 namespace {
 
+const char kIoThreadName[] = "BattOr IO Thread";
+const char kFileThreadName[] = "BattOr File Thread";
+const char kUiThreadName[] = "BattOr UI Thread";
+const int32 kBattOrCommandTimeoutSeconds = 10;
+
 void PrintUsage() {
-  cerr << "Usage: battor_agent <command> <arguments>" << endl
-       << endl
-       << "Commands:" << endl
-       << endl
-       << "  StartTracing <path>" << endl
-       << "  StopTracing <path>" << endl
-       << "  SupportsExplicitClockSync" << endl
-       << "  RecordClockSyncMarker <path> <marker>" << endl
-       << "  IssueClockSyncMarker <path>" << endl
-       << "  Help" << endl;
+  std::cout << "Usage: battor_agent <command> <arguments>" << endl
+            << endl
+            << "Commands:" << endl
+            << endl
+            << "  StartTracing <path>" << endl
+            << "  StopTracing <path>" << endl
+            << "  SupportsExplicitClockSync" << endl
+            << "  RecordClockSyncMarker <path> <marker>" << endl
+            << "  IssueClockSyncMarker <path>" << endl
+            << "  Help" << endl;
+}
+
+void PrintSupportsExplicitClockSync() {
+  std::cout << battor::BattOrAgent::SupportsExplicitClockSync() << endl;
 }
 
 // Retrieves argument argnum from the argument list, printing the usage
 // guidelines and exiting with an error code if the argument doesn't exist.
-string GetArg(int argnum, int argc, char* argv[]) {
+std::string GetArg(int argnum, int argc, char* argv[]) {
   if (argnum >= argc) {
     PrintUsage();
-    exit(1);
+    PLOG(FATAL);
   }
 
   return argv[argnum];
@@ -53,66 +59,162 @@ string GetArg(int argnum, int argc, char* argv[]) {
 // with an error code.
 void CheckError(battor::BattOrError error) {
   if (error != battor::BATTOR_ERROR_NONE) {
-    cerr << "Error when communicating with the BattOr: " << error << endl;
-    exit(1);
+    LOG(ERROR) << "Fatal error when communicating with the BattOr: " << error;
+    PLOG(FATAL);
   }
 }
 
-void StartTracing(int argc, char* argv[]) {
-  string path = GetArg(2, argc, argv);
-  battor::BattOrAgent agent(path);
-
-  CheckError(agent.StartTracing());
-}
-
-void StopTracing(int argc, char* argv[]) {
-  string path = GetArg(2, argc, argv);
-  string trace_output;
-  battor::BattOrAgent agent(path);
-
-  CheckError(agent.StopTracing(&trace_output));
-}
-
-void SupportsExplicitClockSync() {
-  cout << battor::BattOrAgent::SupportsExplicitClockSync() << endl;
-}
-
-void RecordClockSyncMarker(int argc, char* argv[]) {
-  string path = GetArg(2, argc, argv);
-  string marker = GetArg(3, argc, argv);
-  battor::BattOrAgent agent(path);
-
-  // TODO(charliea): Write time to STDOUT.
-  CheckError(agent.RecordClockSyncMarker(marker));
-  // TODO(charliea): Write time to STDOUT.
-}
-
-void IssueClockSyncMarker(int argc, char* argv[]) {
-  string path = GetArg(2, argc, argv);
-  battor::BattOrAgent agent(path);
-
-  CheckError(agent.IssueClockSyncMarker());
+// Prints an error message and exits due to a required thread failing to start.
+void ExitFromThreadStartFailure(const std::string& thread_name) {
+  LOG(ERROR) << "Failed to start " << thread_name;
+  PLOG(FATAL);
 }
 
 }  // namespace
 
-int main(int argc, char* argv[]) {
-  string cmd = GetArg(1, argc, argv);
+namespace battor {
 
-  if (cmd == "StartTracing") {
-    StartTracing(argc, argv);
-  } else if (cmd == "StopTracing") {
-    StopTracing(argc, argv);
-  } else if (cmd == "SupportsExplicitClockSync") {
-    SupportsExplicitClockSync();
-  } else if (cmd == "RecordClockSyncMarker") {
-    RecordClockSyncMarker(argc, argv);
-  } else if (cmd == "IssueClockSyncMarker") {
-    IssueClockSyncMarker(argc, argv);
-  } else {
-    PrintUsage();
-    return 1;
+// Wrapper class containing all state necessary for an independent binary to
+// use a BattOrAgent to communicate with a BattOr.
+class BattOrAgentBin : public BattOrAgent::Listener {
+ public:
+  BattOrAgentBin()
+      : done_(false, false),
+        io_thread_(kIoThreadName),
+        file_thread_(kFileThreadName),
+        ui_thread_(kUiThreadName) {}
+
+  ~BattOrAgentBin() {
+    DCHECK(!agent_);
   }
 
-  return 0;
+  // Runs the BattOr binary and returns the exit code.
+  int Run(int argc, char* argv[]) {
+    std::string cmd = GetArg(1, argc, argv);
+
+    // SupportsExplicitClockSync doesn't need to use the serial connection, so
+    // handle it separately.
+    if (cmd == "SupportsExplicitClockSync") {
+      PrintSupportsExplicitClockSync();
+      return 0;
+    }
+
+    std::string path = GetArg(2, argc, argv);
+    SetUp(path);
+
+    if (cmd == "StartTracing") {
+      StartTracing();
+    } else if (cmd == "StopTracing") {
+      // TODO(charliea): Write StopTracing.
+    } else if (cmd == "RecordClockSyncMarker") {
+      // TODO(charliea): Write RecordClockSyncMarker.
+    } else if (cmd == "IssueClockSyncMarker") {
+      // TODO(charliea): Write IssueClockSyncMarker.
+    } else {
+      TearDown();
+      PrintUsage();
+      return 1;
+    }
+
+    TearDown();
+    return 0;
+  }
+
+  // Performs any setup necessary for the BattOr binary to run.
+  void SetUp(const std::string& path) {
+    // TODO(charliea): Investigate whether it's possible to replace this
+    // separate thread with a combination of MessageLoopForIO and RunLoop.
+    base::Thread::Options io_thread_options;
+    io_thread_options.message_loop_type = base::MessageLoopForIO::TYPE_IO;
+    if (!io_thread_.StartWithOptions(io_thread_options)) {
+      ExitFromThreadStartFailure(kIoThreadName);
+    }
+
+    io_thread_.task_runner()->PostTask(
+        FROM_HERE,
+        base::Bind(&BattOrAgentBin::CreateAgent, base::Unretained(this), path));
+    CheckError(AwaitResult());
+  }
+
+  // Performs any cleanup necessary after the BattOr binary is done running.
+  void TearDown() {
+    io_thread_.task_runner()->PostTask(
+        FROM_HERE,
+        base::Bind(&BattOrAgentBin::DeleteAgent, base::Unretained(this)));
+    CheckError(AwaitResult());
+  }
+
+  void StartTracing() {
+    io_thread_.task_runner()->PostTask(
+        FROM_HERE,
+        base::Bind(&BattOrAgent::StartTracing, base::Unretained(agent_.get())));
+    CheckError(AwaitResult());
+  }
+
+  void OnStartTracingComplete(BattOrError error) override {
+    error_ = error;
+    done_.Signal();
+  }
+
+  // Postable task for creating the BattOrAgent. Because the BattOrAgent has
+  // uber thread safe dependencies, all interactions with it, including creating
+  // and deleting it, MUST happen on the IO thread.
+  void CreateAgent(const std::string& path) {
+    // In Chrome, we already have file and UI threads running. Because the
+    // Chrome serial libraries rely on having those threads available, we have
+    // to spin up our own because we're in a separate binary.
+    if (!file_thread_.Start())
+      ExitFromThreadStartFailure(kFileThreadName);
+
+    base::Thread::Options ui_thread_options;
+    ui_thread_options.message_loop_type = base::MessageLoopForIO::TYPE_UI;
+    if (!ui_thread_.StartWithOptions(ui_thread_options)) {
+      ExitFromThreadStartFailure(kUiThreadName);
+    }
+
+    agent_.reset(new BattOrAgent(file_thread_.task_runner(),
+                                 ui_thread_.task_runner(), path, this));
+    error_ = BATTOR_ERROR_NONE;
+    done_.Signal();
+  }
+
+  // Postable task for deleting the BattOrAgent. See the comment for
+  // CreateAgent() above regarding why this is necessary.
+  void DeleteAgent() {
+    agent_.reset(nullptr);
+    error_ = BATTOR_ERROR_NONE;
+    done_.Signal();
+  }
+
+  // Waits until the previously executed command has finished executing.
+  BattOrError AwaitResult() {
+    if (!done_.TimedWait(
+            base::TimeDelta::FromSeconds(kBattOrCommandTimeoutSeconds)))
+      return BATTOR_ERROR_TIMEOUT;
+
+    return error_;
+  }
+
+ private:
+  // Event signaled when an async task has finished executing.
+  base::WaitableEvent done_;
+
+  // The error from the last async command that finished.
+  BattOrError error_;
+
+  // Threads needed for serial communication.
+  base::Thread io_thread_;
+  base::Thread file_thread_;
+  base::Thread ui_thread_;
+
+  // The agent capable of asynchronously communicating with the BattOr.
+  scoped_ptr<BattOrAgent> agent_;
+};
+
+}  // namespace battor
+
+int main(int argc, char* argv[]) {
+  base::AtExitManager exit_manager;
+  battor::BattOrAgentBin bin;
+  return bin.Run(argc, argv);
 }
