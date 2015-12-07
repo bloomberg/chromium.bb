@@ -11,10 +11,12 @@ namespace content_settings {
 ContentSettingsInfo::ContentSettingsInfo(
     const WebsiteSettingsInfo* website_settings_info,
     const std::vector<std::string>& whitelisted_schemes,
-    const std::set<ContentSetting>& valid_settings)
+    const std::set<ContentSetting>& valid_settings,
+    IncognitoBehavior incognito_behavior)
     : website_settings_info_(website_settings_info),
       whitelisted_schemes_(whitelisted_schemes),
-      valid_settings_(valid_settings) {}
+      valid_settings_(valid_settings),
+      incognito_behavior_(incognito_behavior) {}
 
 ContentSettingsInfo::~ContentSettingsInfo() {}
 

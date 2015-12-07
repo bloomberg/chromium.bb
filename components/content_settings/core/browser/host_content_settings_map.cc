@@ -68,6 +68,26 @@ bool SchemeCanBeWhitelisted(const std::string& scheme) {
          scheme == content_settings::kChromeUIScheme;
 }
 
+// Prevents content settings marked INHERIT_IN_INCOGNITO_EXCEPT_ALLOW from
+// inheriting CONTENT_SETTING_ALLOW settings from regular to incognito.
+scoped_ptr<base::Value> CoerceSettingInheritedToIncognito(
+    ContentSettingsType content_type,
+    scoped_ptr<base::Value> value) {
+  const content_settings::ContentSettingsInfo* info =
+      content_settings::ContentSettingsRegistry::GetInstance()->Get(
+          content_type);
+  if (!info)
+    return value;
+  if (info->incognito_behavior() !=
+      content_settings::ContentSettingsInfo::INHERIT_IN_INCOGNITO_EXCEPT_ALLOW)
+    return value;
+  ContentSetting setting = content_settings::ValueToContentSetting(value.get());
+  if (setting != CONTENT_SETTING_ALLOW)
+    return value;
+  DCHECK(info->IsSettingValid(CONTENT_SETTING_ASK));
+  return content_settings::ContentSettingToValue(CONTENT_SETTING_ASK);
+}
+
 }  // namespace
 
 HostContentSettingsMap::HostContentSettingsMap(PrefService* prefs,
@@ -157,6 +177,12 @@ ContentSetting HostContentSettingsMap::GetDefaultContentSetting(
       continue;
     ContentSetting default_setting =
         GetDefaultContentSettingFromProvider(content_type, provider->second);
+    if (is_off_the_record_) {
+      default_setting = content_settings::ValueToContentSetting(
+          CoerceSettingInheritedToIncognito(
+              content_type,
+              content_settings::ContentSettingToValue(default_setting)).get());
+    }
     if (default_setting != CONTENT_SETTING_DEFAULT) {
       if (provider_id)
         *provider_id = kProviderNamesSourceMap[provider->first].provider_name;
@@ -653,16 +679,10 @@ scoped_ptr<base::Value> HostContentSettingsMap::GetWebsiteSettingInternal(
   for (ConstProviderIterator provider = content_settings_providers_.begin();
        provider != content_settings_providers_.end();
        ++provider) {
-
-    scoped_ptr<base::Value> value(
-        content_settings::GetContentSettingValueAndPatterns(provider->second,
-                                                            primary_url,
-                                                            secondary_url,
-                                                            content_type,
-                                                            resource_identifier,
-                                                            is_off_the_record_,
-                                                            primary_pattern,
-                                                            secondary_pattern));
+    scoped_ptr<base::Value> value = GetContentSettingValueAndPatterns(
+        provider->second, primary_url, secondary_url, content_type,
+        resource_identifier, is_off_the_record_, primary_pattern,
+        secondary_pattern);
     if (value) {
       if (info)
         info->source = kProviderNamesSourceMap[provider->first].provider_source;
@@ -674,6 +694,64 @@ scoped_ptr<base::Value> HostContentSettingsMap::GetWebsiteSettingInternal(
     info->source = content_settings::SETTING_SOURCE_NONE;
     info->primary_pattern = ContentSettingsPattern();
     info->secondary_pattern = ContentSettingsPattern();
+  }
+  return scoped_ptr<base::Value>();
+}
+
+// static
+scoped_ptr<base::Value>
+HostContentSettingsMap::GetContentSettingValueAndPatterns(
+    const content_settings::ProviderInterface* provider,
+    const GURL& primary_url,
+    const GURL& secondary_url,
+    ContentSettingsType content_type,
+    const std::string& resource_identifier,
+    bool include_incognito,
+    ContentSettingsPattern* primary_pattern,
+    ContentSettingsPattern* secondary_pattern) {
+  if (include_incognito) {
+    // Check incognito-only specific settings. It's essential that the
+    // |RuleIterator| gets out of scope before we get a rule iterator for the
+    // normal mode.
+    scoped_ptr<content_settings::RuleIterator> incognito_rule_iterator(
+        provider->GetRuleIterator(content_type, resource_identifier,
+                                  true /* incognito */));
+    scoped_ptr<base::Value> value = GetContentSettingValueAndPatterns(
+        incognito_rule_iterator.get(), primary_url, secondary_url,
+        primary_pattern, secondary_pattern);
+    if (value)
+      return value;
+  }
+  // No settings from the incognito; use the normal mode.
+  scoped_ptr<content_settings::RuleIterator> rule_iterator(
+      provider->GetRuleIterator(content_type, resource_identifier,
+                                false /* incognito */));
+  scoped_ptr<base::Value> value = GetContentSettingValueAndPatterns(
+      rule_iterator.get(), primary_url, secondary_url, primary_pattern,
+      secondary_pattern);
+  if (value && include_incognito)
+    value = CoerceSettingInheritedToIncognito(content_type, value.Pass());
+  return value;
+}
+
+// static
+scoped_ptr<base::Value>
+HostContentSettingsMap::GetContentSettingValueAndPatterns(
+    content_settings::RuleIterator* rule_iterator,
+    const GURL& primary_url,
+    const GURL& secondary_url,
+    ContentSettingsPattern* primary_pattern,
+    ContentSettingsPattern* secondary_pattern) {
+  while (rule_iterator->HasNext()) {
+    const content_settings::Rule& rule = rule_iterator->Next();
+    if (rule.primary_pattern.Matches(primary_url) &&
+        rule.secondary_pattern.Matches(secondary_url)) {
+      if (primary_pattern)
+        *primary_pattern = rule.primary_pattern;
+      if (secondary_pattern)
+        *secondary_pattern = rule.secondary_pattern;
+      return make_scoped_ptr(rule.value.get()->DeepCopy());
+    }
   }
   return scoped_ptr<base::Value>();
 }

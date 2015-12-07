@@ -44,6 +44,12 @@ TEST_F(ContentSettingsRegistryTest, Properties) {
   expected_whitelist.push_back("chrome-devtools");
   EXPECT_EQ(expected_whitelist, info->whitelisted_schemes());
 
+  // Check the other properties are populated correctly.
+  EXPECT_TRUE(info->IsSettingValid(CONTENT_SETTING_SESSION_ONLY));
+  EXPECT_FALSE(info->IsSettingValid(CONTENT_SETTING_ASK));
+  EXPECT_EQ(ContentSettingsInfo::INHERIT_IN_INCOGNITO,
+            info->incognito_behavior());
+
   // Check the WebsiteSettingsInfo is populated correctly.
   const WebsiteSettingsInfo* website_settings_info =
       info->website_settings_info();

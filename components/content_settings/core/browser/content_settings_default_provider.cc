@@ -235,6 +235,10 @@ scoped_ptr<RuleIterator> DefaultProvider::GetRuleIterator(
     ContentSettingsType content_type,
     const ResourceIdentifier& resource_identifier,
     bool incognito) const {
+  // The default provider never has incognito-specific settings.
+  if (incognito)
+    return scoped_ptr<RuleIterator>(new EmptyRuleIterator());
+
   base::AutoLock lock(lock_);
   if (resource_identifier.empty()) {
     auto it(default_settings_.find(content_type));

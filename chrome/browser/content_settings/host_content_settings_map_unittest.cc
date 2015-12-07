@@ -103,7 +103,7 @@ TEST_F(HostContentSettingsMapTest, IndividualSettings) {
   // Check returning individual settings.
   GURL host("http://example.com/");
   ContentSettingsPattern pattern =
-       ContentSettingsPattern::FromString("[*.]example.com");
+      ContentSettingsPattern::FromString("[*.]example.com");
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             host_content_settings_map->GetContentSetting(
                 host, host, CONTENT_SETTINGS_TYPE_IMAGES, std::string()));
@@ -186,7 +186,7 @@ TEST_F(HostContentSettingsMapTest, IndividualSettings) {
 
   // Check returning all hosts for a setting.
   ContentSettingsPattern pattern2 =
-       ContentSettingsPattern::FromString("[*.]example.org");
+      ContentSettingsPattern::FromString("[*.]example.org");
   host_content_settings_map->SetContentSetting(
       pattern2,
       ContentSettingsPattern::Wildcard(),
@@ -225,7 +225,7 @@ TEST_F(HostContentSettingsMapTest, Clear) {
 
   // Check clearing one type.
   ContentSettingsPattern pattern =
-       ContentSettingsPattern::FromString("[*.]example.org");
+      ContentSettingsPattern::FromString("[*.]example.org");
   ContentSettingsPattern pattern2 =
       ContentSettingsPattern::FromString("[*.]example.net");
   host_content_settings_map->SetContentSetting(
@@ -278,9 +278,9 @@ TEST_F(HostContentSettingsMapTest, Patterns) {
   GURL host2("http://www.example.com/");
   GURL host3("http://example.org/");
   ContentSettingsPattern pattern1 =
-       ContentSettingsPattern::FromString("[*.]example.com");
+      ContentSettingsPattern::FromString("[*.]example.com");
   ContentSettingsPattern pattern2 =
-       ContentSettingsPattern::FromString("example.org");
+      ContentSettingsPattern::FromString("example.org");
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             host_content_settings_map->GetContentSetting(
                 host1, host1, CONTENT_SETTINGS_TYPE_IMAGES, std::string()));
@@ -395,7 +395,7 @@ TEST_F(HostContentSettingsMapTest, ObserveExceptionPref) {
           ->DeepCopy());
 
   ContentSettingsPattern pattern =
-       ContentSettingsPattern::FromString("[*.]example.com");
+      ContentSettingsPattern::FromString("[*.]example.com");
   GURL host("http://example.com");
 
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
@@ -439,7 +439,7 @@ TEST_F(HostContentSettingsMapTest, HostTrimEndingDotCheck) {
       CookieSettingsFactory::GetForProfile(&profile).get();
 
   ContentSettingsPattern pattern =
-       ContentSettingsPattern::FromString("[*.]example.com");
+      ContentSettingsPattern::FromString("[*.]example.com");
   GURL host_ending_with_dot("http://example.com./");
 
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
@@ -614,11 +614,11 @@ TEST_F(HostContentSettingsMapTest, NestedSettings) {
 
   GURL host("http://a.b.example.com/");
   ContentSettingsPattern pattern1 =
-       ContentSettingsPattern::FromString("[*.]example.com");
+      ContentSettingsPattern::FromString("[*.]example.com");
   ContentSettingsPattern pattern2 =
-       ContentSettingsPattern::FromString("[*.]b.example.com");
+      ContentSettingsPattern::FromString("[*.]b.example.com");
   ContentSettingsPattern pattern3 =
-       ContentSettingsPattern::FromString("a.b.example.com");
+      ContentSettingsPattern::FromString("a.b.example.com");
 
   host_content_settings_map->SetContentSetting(
       pattern1,
@@ -678,15 +678,15 @@ TEST_F(HostContentSettingsMapTest, NestedSettings) {
 
 TEST_F(HostContentSettingsMapTest, OffTheRecord) {
   TestingProfile profile;
+  Profile* otr_profile = profile.GetOffTheRecordProfile();
   HostContentSettingsMap* host_content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(&profile);
-  scoped_refptr<HostContentSettingsMap> otr_map(
-      new HostContentSettingsMap(profile.GetPrefs(),
-                                 true));
+  HostContentSettingsMap* otr_map =
+      HostContentSettingsMapFactory::GetForProfile(otr_profile);
 
   GURL host("http://example.com/");
   ContentSettingsPattern pattern =
-       ContentSettingsPattern::FromString("[*.]example.com");
+      ContentSettingsPattern::FromString("[*.]example.com");
 
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             host_content_settings_map->GetContentSetting(
@@ -723,8 +723,130 @@ TEST_F(HostContentSettingsMapTest, OffTheRecord) {
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             otr_map->GetContentSetting(
                 host, host, CONTENT_SETTINGS_TYPE_IMAGES, std::string()));
+}
 
-  otr_map->ShutdownOnUIThread();
+TEST_F(HostContentSettingsMapTest, OffTheRecordPartialInheritPref) {
+  // Permissions marked INHERIT_IN_INCOGNITO_EXCEPT_ALLOW in
+  // ContentSettingsRegistry (e.g. push & notifications) only inherit BLOCK
+  // settings from regular to incognito.
+  TestingProfile profile;
+  Profile* otr_profile = profile.GetOffTheRecordProfile();
+  HostContentSettingsMap* host_content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(&profile);
+  HostContentSettingsMap* otr_map =
+      HostContentSettingsMapFactory::GetForProfile(otr_profile);
+
+  GURL host("http://example.com/");
+  ContentSettingsPattern pattern =
+      ContentSettingsPattern::FromURLNoWildcard(host);
+
+  EXPECT_EQ(
+      CONTENT_SETTING_ASK,
+      host_content_settings_map->GetContentSetting(
+          host, host, CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string()));
+  EXPECT_EQ(
+      CONTENT_SETTING_ASK,
+      otr_map->GetContentSetting(
+          host, host, CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string()));
+
+  // BLOCK should be inherited from the main map to the incognito map.
+  host_content_settings_map->SetContentSetting(
+      pattern,
+      ContentSettingsPattern::Wildcard(),
+      CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+      std::string(),
+      CONTENT_SETTING_BLOCK);
+  EXPECT_EQ(
+      CONTENT_SETTING_BLOCK,
+      host_content_settings_map->GetContentSetting(
+          host, host, CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string()));
+  EXPECT_EQ(
+      CONTENT_SETTING_BLOCK,
+      otr_map->GetContentSetting(
+          host, host, CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string()));
+
+  // ALLOW should not be inherited from the main map to the incognito map (but
+  // it still overwrites the BLOCK, hence incognito reverts to ASK).
+  host_content_settings_map->SetContentSetting(
+      pattern,
+      ContentSettingsPattern::Wildcard(),
+      CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+      std::string(),
+      CONTENT_SETTING_ALLOW);
+  EXPECT_EQ(
+      CONTENT_SETTING_ALLOW,
+      host_content_settings_map->GetContentSetting(
+          host, host, CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string()));
+  EXPECT_EQ(
+      CONTENT_SETTING_ASK,
+      otr_map->GetContentSetting(
+          host, host, CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string()));
+}
+
+TEST_F(HostContentSettingsMapTest, OffTheRecordPartialInheritDefault) {
+  // Permissions marked INHERIT_IN_INCOGNITO_EXCEPT_ALLOW in
+  // ContentSettingsRegistry (e.g. push & notifications) only inherit BLOCK
+  // default settings from regular to incognito.
+  TestingProfile profile;
+  Profile* otr_profile = profile.GetOffTheRecordProfile();
+  HostContentSettingsMap* host_content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(&profile);
+  HostContentSettingsMap* otr_map =
+      HostContentSettingsMapFactory::GetForProfile(otr_profile);
+
+  GURL host("http://example.com/");
+
+  EXPECT_EQ(CONTENT_SETTING_ASK,
+            host_content_settings_map->GetDefaultContentSetting(
+                CONTENT_SETTINGS_TYPE_NOTIFICATIONS, NULL));
+  EXPECT_EQ(
+      CONTENT_SETTING_ASK,
+      host_content_settings_map->GetContentSetting(
+          host, host, CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string()));
+  EXPECT_EQ(CONTENT_SETTING_ASK,
+            otr_map->GetDefaultContentSetting(
+                CONTENT_SETTINGS_TYPE_NOTIFICATIONS, NULL));
+  EXPECT_EQ(
+      CONTENT_SETTING_ASK,
+      otr_map->GetContentSetting(
+          host, host, CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string()));
+
+  // BLOCK should be inherited from the main map to the incognito map.
+  host_content_settings_map->SetDefaultContentSetting(
+      CONTENT_SETTINGS_TYPE_NOTIFICATIONS, CONTENT_SETTING_BLOCK);
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            host_content_settings_map->GetDefaultContentSetting(
+                CONTENT_SETTINGS_TYPE_NOTIFICATIONS, NULL));
+  EXPECT_EQ(
+      CONTENT_SETTING_BLOCK,
+      host_content_settings_map->GetContentSetting(
+          host, host, CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string()));
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            otr_map->GetDefaultContentSetting(
+                CONTENT_SETTINGS_TYPE_NOTIFICATIONS, NULL));
+  EXPECT_EQ(
+      CONTENT_SETTING_BLOCK,
+      otr_map->GetContentSetting(
+          host, host, CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string()));
+
+  // ALLOW should not be inherited from the main map to the incognito map (but
+  // it still overwrites the BLOCK, hence incognito reverts to ASK).
+  host_content_settings_map->SetDefaultContentSetting(
+      CONTENT_SETTINGS_TYPE_NOTIFICATIONS, CONTENT_SETTING_ALLOW);
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetDefaultContentSetting(
+                CONTENT_SETTINGS_TYPE_NOTIFICATIONS, NULL));
+  EXPECT_EQ(
+      CONTENT_SETTING_ALLOW,
+      host_content_settings_map->GetContentSetting(
+          host, host, CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string()));
+  EXPECT_EQ(CONTENT_SETTING_ASK,
+            otr_map->GetDefaultContentSetting(
+                CONTENT_SETTINGS_TYPE_NOTIFICATIONS, NULL));
+  EXPECT_EQ(
+      CONTENT_SETTING_ASK,
+      otr_map->GetContentSetting(
+          host, host, CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string()));
 }
 
 // For a single Unicode encoded pattern, check if it gets converted to punycode
@@ -853,7 +975,7 @@ TEST_F(HostContentSettingsMapTest,
 
   // Set pattern for JavaScript setting.
   ContentSettingsPattern pattern =
-       ContentSettingsPattern::FromString("[*.]example.com");
+      ContentSettingsPattern::FromString("[*.]example.com");
   host_content_settings_map->SetContentSetting(
       pattern,
       ContentSettingsPattern::Wildcard(),
@@ -991,7 +1113,7 @@ TEST_F(HostContentSettingsMapTest, GetContentSetting) {
   GURL host("http://example.com/");
   GURL embedder("chrome://foo");
   ContentSettingsPattern pattern =
-       ContentSettingsPattern::FromString("[*.]example.com");
+      ContentSettingsPattern::FromString("[*.]example.com");
   host_content_settings_map->SetContentSetting(
       pattern,
       ContentSettingsPattern::Wildcard(),

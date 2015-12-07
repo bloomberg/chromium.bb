@@ -77,27 +77,9 @@ std::string CreatePatternString(
     const ContentSettingsPattern& item_pattern,
     const ContentSettingsPattern& top_level_frame_pattern);
 
-// Caller takes the ownership of the returned |base::Value*|.
-base::Value* GetContentSettingValueAndPatterns(
-    RuleIterator* rule_iterator,
-    const GURL& primary_url,
-    const GURL& secondary_url,
-    ContentSettingsPattern* primary_pattern,
-    ContentSettingsPattern* secondary_pattern);
-
 // Returns a |base::Value*| representation of |setting| if |setting| is
 // a valid content setting. Otherwise, returns a nullptr.
 scoped_ptr<base::Value> ContentSettingToValue(ContentSetting setting);
-
-base::Value* GetContentSettingValueAndPatterns(
-    const ProviderInterface* provider,
-    const GURL& primary_url,
-    const GURL& secondary_url,
-    ContentSettingsType content_type,
-    const std::string& resource_identifier,
-    bool include_incognito,
-    ContentSettingsPattern* primary_pattern,
-    ContentSettingsPattern* secondary_pattern);
 
 // Populates |rules| with content setting rules for content types that are
 // handled by the renderer.

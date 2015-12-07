@@ -18,10 +18,22 @@ class WebsiteSettingsInfo;
 
 class ContentSettingsInfo {
  public:
+  enum IncognitoBehavior {
+    // Content setting will be inherited from regular to incognito profiles
+    // as usual.
+    INHERIT_IN_INCOGNITO,
+
+    // Content setting will only partially inherit from regular to incognito
+    // profiles: BLOCK will inherit as usual, but ALLOW will become ASK.
+    // This is unusual, so seek privacy review before using this.
+    INHERIT_IN_INCOGNITO_EXCEPT_ALLOW
+  };
+
   // This object does not take ownership of |website_settings_info|.
   ContentSettingsInfo(const WebsiteSettingsInfo* website_settings_info,
                       const std::vector<std::string>& whitelisted_schemes,
-                      const std::set<ContentSetting>& valid_settings);
+                      const std::set<ContentSetting>& valid_settings,
+                      IncognitoBehavior incognito_behavior);
   ~ContentSettingsInfo();
 
   const WebsiteSettingsInfo* website_settings_info() const {
@@ -33,10 +45,13 @@ class ContentSettingsInfo {
 
   bool IsSettingValid(ContentSetting setting) const;
 
+  IncognitoBehavior incognito_behavior() const { return incognito_behavior_; }
+
  private:
   const WebsiteSettingsInfo* website_settings_info_;
   const std::vector<std::string> whitelisted_schemes_;
   const std::set<ContentSetting> valid_settings_;
+  const IncognitoBehavior incognito_behavior_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingsInfo);
 };

@@ -6,20 +6,11 @@
 
 #include <vector>
 
-#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/prefs/pref_registry.h"
 #include "base/strings/string_split.h"
 #include "base/values.h"
-#include "components/content_settings/core/browser/content_settings_provider.h"
-#include "components/content_settings/core/browser/content_settings_rule.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
-#include "components/content_settings/core/browser/website_settings_info.h"
-#include "components/content_settings/core/browser/website_settings_registry.h"
-#include "components/content_settings/core/common/content_settings_pattern.h"
-#include "components/pref_registry/pref_registry_syncable.h"
-#include "url/gurl.h"
 
 namespace {
 
@@ -134,55 +125,6 @@ scoped_ptr<base::Value> ContentSettingToValue(ContentSetting setting) {
     return nullptr;
   }
   return make_scoped_ptr(new base::FundamentalValue(setting));
-}
-
-base::Value* GetContentSettingValueAndPatterns(
-    const ProviderInterface* provider,
-    const GURL& primary_url,
-    const GURL& secondary_url,
-    ContentSettingsType content_type,
-    const std::string& resource_identifier,
-    bool include_incognito,
-    ContentSettingsPattern* primary_pattern,
-    ContentSettingsPattern* secondary_pattern) {
-  if (include_incognito) {
-    // Check incognito-only specific settings. It's essential that the
-    // |RuleIterator| gets out of scope before we get a rule iterator for the
-    // normal mode.
-    scoped_ptr<RuleIterator> incognito_rule_iterator(
-        provider->GetRuleIterator(content_type, resource_identifier, true));
-    base::Value* value = GetContentSettingValueAndPatterns(
-        incognito_rule_iterator.get(), primary_url, secondary_url,
-        primary_pattern, secondary_pattern);
-    if (value)
-      return value;
-  }
-  // No settings from the incognito; use the normal mode.
-  scoped_ptr<RuleIterator> rule_iterator(
-      provider->GetRuleIterator(content_type, resource_identifier, false));
-  return GetContentSettingValueAndPatterns(
-      rule_iterator.get(), primary_url, secondary_url,
-      primary_pattern, secondary_pattern);
-}
-
-base::Value* GetContentSettingValueAndPatterns(
-    RuleIterator* rule_iterator,
-    const GURL& primary_url,
-    const GURL& secondary_url,
-    ContentSettingsPattern* primary_pattern,
-    ContentSettingsPattern* secondary_pattern) {
-  while (rule_iterator->HasNext()) {
-    const Rule& rule = rule_iterator->Next();
-    if (rule.primary_pattern.Matches(primary_url) &&
-        rule.secondary_pattern.Matches(secondary_url)) {
-      if (primary_pattern)
-        *primary_pattern = rule.primary_pattern;
-      if (secondary_pattern)
-        *secondary_pattern = rule.secondary_pattern;
-      return rule.value.get()->DeepCopy();
-    }
-  }
-  return NULL;
 }
 
 void GetRendererContentSettingRules(const HostContentSettingsMap* map,

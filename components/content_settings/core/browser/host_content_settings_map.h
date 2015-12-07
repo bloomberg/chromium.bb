@@ -19,6 +19,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_checker.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
+#include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -37,6 +38,7 @@ namespace content_settings {
 class ObservableProvider;
 class ProviderInterface;
 class PrefProvider;
+class TestUtils;
 }
 
 namespace user_prefs {
@@ -243,6 +245,7 @@ class HostContentSettingsMap : public content_settings::Observer,
  private:
   friend class base::RefCountedThreadSafe<HostContentSettingsMap>;
   friend class HostContentSettingsMapTest_NonDefaultSettings_Test;
+  friend class content_settings::TestUtils;
 
   typedef std::map<ProviderType, content_settings::ProviderInterface*>
       ProviderMap;
@@ -293,6 +296,23 @@ class HostContentSettingsMap : public content_settings::Observer,
       ContentSettingsType content_type,
       const std::string& resource_identifier,
       content_settings::SettingInfo* info) const;
+
+  static scoped_ptr<base::Value> GetContentSettingValueAndPatterns(
+      const content_settings::ProviderInterface* provider,
+      const GURL& primary_url,
+      const GURL& secondary_url,
+      ContentSettingsType content_type,
+      const std::string& resource_identifier,
+      bool include_incognito,
+      ContentSettingsPattern* primary_pattern,
+      ContentSettingsPattern* secondary_pattern);
+
+  static scoped_ptr<base::Value> GetContentSettingValueAndPatterns(
+      content_settings::RuleIterator* rule_iterator,
+      const GURL& primary_url,
+      const GURL& secondary_url,
+      ContentSettingsPattern* primary_pattern,
+      ContentSettingsPattern* secondary_pattern);
 
   content_settings::PrefProvider* GetPrefProvider();
 

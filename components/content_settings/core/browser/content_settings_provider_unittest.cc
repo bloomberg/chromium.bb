@@ -25,39 +25,30 @@ TEST(ContentSettingsProviderTest, Mock) {
       new base::FundamentalValue(CONTENT_SETTING_BLOCK));
 
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            GetContentSetting(&mock_provider, url, url,
-                              CONTENT_SETTINGS_TYPE_PLUGINS, "java_plugin",
-                              false));
-  scoped_ptr<base::Value> value_ptr(
-            GetContentSettingValue(&mock_provider, url, url,
-                                   CONTENT_SETTINGS_TYPE_PLUGINS,
-                                   "java_plugin", false));
+            TestUtils::GetContentSetting(&mock_provider, url, url,
+                                         CONTENT_SETTINGS_TYPE_PLUGINS,
+                                         "java_plugin", false));
+  scoped_ptr<base::Value> value_ptr(TestUtils::GetContentSettingValue(
+      &mock_provider, url, url, CONTENT_SETTINGS_TYPE_PLUGINS, "java_plugin",
+      false));
   int int_value = -1;
   value_ptr->GetAsInteger(&int_value);
   EXPECT_EQ(CONTENT_SETTING_BLOCK, IntToContentSetting(int_value));
 
   EXPECT_EQ(CONTENT_SETTING_DEFAULT,
-            GetContentSetting(&mock_provider, url, url,
-                              CONTENT_SETTINGS_TYPE_PLUGINS, "flash_plugin",
-                              false));
-  EXPECT_EQ(NULL,
-            GetContentSettingValue(&mock_provider, url, url,
-                                   CONTENT_SETTINGS_TYPE_PLUGINS,
-                                   "flash_plugin", false));
+            TestUtils::GetContentSetting(&mock_provider, url, url,
+                                         CONTENT_SETTINGS_TYPE_PLUGINS,
+                                         "flash_plugin", false));
+  EXPECT_EQ(NULL, TestUtils::GetContentSettingValue(
+                      &mock_provider, url, url, CONTENT_SETTINGS_TYPE_PLUGINS,
+                      "flash_plugin", false));
   EXPECT_EQ(CONTENT_SETTING_DEFAULT,
-            GetContentSetting(&mock_provider,
-                              url,
-                              url,
-                              CONTENT_SETTINGS_TYPE_GEOLOCATION,
-                              std::string(),
-                              false));
-  EXPECT_EQ(NULL,
-            GetContentSettingValue(&mock_provider,
-                                   url,
-                                   url,
-                                   CONTENT_SETTINGS_TYPE_GEOLOCATION,
-                                   std::string(),
-                                   false));
+            TestUtils::GetContentSetting(&mock_provider, url, url,
+                                         CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                                         std::string(), false));
+  EXPECT_EQ(NULL, TestUtils::GetContentSettingValue(
+                      &mock_provider, url, url,
+                      CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string(), false));
 
   bool owned = mock_provider.SetWebsiteSetting(
       pattern,
@@ -67,9 +58,9 @@ TEST(ContentSettingsProviderTest, Mock) {
       new base::FundamentalValue(CONTENT_SETTING_ALLOW));
   EXPECT_TRUE(owned);
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
-            GetContentSetting(&mock_provider, url, url,
-                              CONTENT_SETTINGS_TYPE_PLUGINS, "java_plugin",
-                              false));
+            TestUtils::GetContentSetting(&mock_provider, url, url,
+                                         CONTENT_SETTINGS_TYPE_PLUGINS,
+                                         "java_plugin", false));
 
   mock_provider.set_read_only(true);
   scoped_ptr<base::Value> value(
@@ -82,9 +73,9 @@ TEST(ContentSettingsProviderTest, Mock) {
       value.get());
   EXPECT_FALSE(owned);
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
-            GetContentSetting(&mock_provider, url, url,
-                              CONTENT_SETTINGS_TYPE_PLUGINS, "java_plugin",
-                              false));
+            TestUtils::GetContentSetting(&mock_provider, url, url,
+                                         CONTENT_SETTINGS_TYPE_PLUGINS,
+                                         "java_plugin", false));
 
   EXPECT_TRUE(mock_provider.read_only());
 
@@ -97,9 +88,9 @@ TEST(ContentSettingsProviderTest, Mock) {
       new base::FundamentalValue(CONTENT_SETTING_BLOCK));
   EXPECT_TRUE(owned);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            GetContentSetting(&mock_provider, url, url,
-                              CONTENT_SETTINGS_TYPE_PLUGINS, "java_plugin",
-                              false));
+            TestUtils::GetContentSetting(&mock_provider, url, url,
+                                         CONTENT_SETTINGS_TYPE_PLUGINS,
+                                         "java_plugin", false));
 }
 
 }  // namespace content_settings

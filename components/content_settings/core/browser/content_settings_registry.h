@@ -61,7 +61,8 @@ class ContentSettingsRegistry {
                 WebsiteSettingsInfo::SyncStatus sync_status,
                 const std::vector<std::string>& whitelisted_schemes,
                 const std::set<ContentSetting>& valid_settings,
-                WebsiteSettingsInfo::ScopingType scoping_type);
+                WebsiteSettingsInfo::ScopingType scoping_type,
+                ContentSettingsInfo::IncognitoBehavior incognito_behavior);
 
   Map content_settings_info_;
   WebsiteSettingsRegistry* website_settings_registry_;

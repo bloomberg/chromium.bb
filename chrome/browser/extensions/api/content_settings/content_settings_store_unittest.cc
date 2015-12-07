@@ -7,6 +7,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "components/content_settings/core/browser/content_settings_rule.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
+#include "components/content_settings/core/test/content_settings_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -55,7 +56,7 @@ ContentSetting GetContentSettingFromStore(
   scoped_ptr<content_settings::RuleIterator> rule_iterator(
       store->GetRuleIterator(content_type, resource_identifier, incognito));
   scoped_ptr<base::Value> setting(
-      content_settings::GetContentSettingValueAndPatterns(
+      content_settings::TestUtils::GetContentSettingValueAndPatterns(
           rule_iterator.get(), primary_url, secondary_url, NULL, NULL));
   return content_settings::ValueToContentSetting(setting.get());
 }
