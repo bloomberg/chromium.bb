@@ -84,10 +84,13 @@ class SandboxPolicy : public sandbox::BaselinePolicy {
       case __NR_sched_getaffinity:
         return sandbox::RestrictSchedTarget(policy_pid(), sysno);
       case __NR_ftruncate:
-#if defined(__NR_getrlimit)
-      // __NR_getrlimit does not exist on all systems (e.g. in the arm/linux
-      // build).
+#if defined(__i386__) || defined(__x86_64__) || defined(__mips__)
+      // Per #ifdefs in
+      // content/common/sandbox_linux/bpf_renderer_policy_linux.cc
       case __NR_getrlimit:
+#endif
+#if defined(__i386__) || defined(__arm__)
+      case __NR_ugetrlimit:
 #endif
       case __NR_uname:
       case __NR_getsockopt:

@@ -400,6 +400,7 @@ source_set("common") {
     }
     if (use_v4l2_codec) {
       defines += [ "USE_V4L2_CODEC" ]
+      deps += [ "//third_party/libyuv" ]
       sources += [
         "gpu/media/generic_v4l2_device.cc",
         "gpu/media/generic_v4l2_device.h",
