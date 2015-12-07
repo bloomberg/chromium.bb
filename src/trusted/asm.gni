@@ -12,7 +12,8 @@
 # just the regular toolchain.
 
 if (is_win) {
-  nacl_asm_toolchain = "//native_client/src/trusted/win:nacl_win_as"
+  nacl_asm_toolchain =
+      "//native_client/src/trusted/win:nacl_win_as_$current_cpu"
 } else {
   nacl_asm_toolchain = current_toolchain
 }
