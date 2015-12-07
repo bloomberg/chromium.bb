@@ -1745,7 +1745,7 @@ bool ChromeContentBrowserClient::AllowSetCookie(
     content::ResourceContext* context,
     int render_process_id,
     int render_frame_id,
-    net::CookieOptions* options) {
+    const net::CookieOptions& options) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
   content_settings::CookieSettings* cookie_settings =
@@ -1755,7 +1755,7 @@ bool ChromeContentBrowserClient::AllowSetCookie(
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&TabSpecificContentSettings::CookieChanged, render_process_id,
-                 render_frame_id, url, first_party, cookie_line, *options,
+                 render_frame_id, url, first_party, cookie_line, options,
                  !allow));
   return allow;
 }

@@ -205,6 +205,7 @@ class NET_EXPORT NetworkDelegateImpl : public NetworkDelegate {
   // first-party cookies and cookie prefixes. https://crbug.com/459154,
   // https://crbug.com/541511
   bool OnAreExperimentalCookieFeaturesEnabled() const override;
+  bool OnAreStrictSecureCookiesEnabled() const override;
 
   // Called when the |referrer_url| for requesting |target_url| during handling
   // of the |request| is does not comply with the referrer policy (e.g. a

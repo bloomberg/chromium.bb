@@ -14,6 +14,7 @@
 #include "base/debug/dump_without_crashing.h"
 #include "base/debug/stack_trace.h"
 #include "base/logging.h"
+#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/metrics/user_metrics.h"
@@ -723,6 +724,14 @@ bool ChromeNetworkDelegate::OnCanEnablePrivacyMode(
 
 bool ChromeNetworkDelegate::OnAreExperimentalCookieFeaturesEnabled() const {
   return experimental_web_platform_features_enabled_;
+}
+
+bool ChromeNetworkDelegate::OnAreStrictSecureCookiesEnabled() const {
+  const std::string enforce_strict_secure_group =
+      base::FieldTrialList::FindFullName("StrictSecureCookies");
+  return experimental_web_platform_features_enabled_ ||
+         base::StartsWith(enforce_strict_secure_group, "Enabled",
+                          base::CompareCase::INSENSITIVE_ASCII);
 }
 
 bool ChromeNetworkDelegate::OnCancelURLRequestWithPolicyViolatingReferrerHeader(

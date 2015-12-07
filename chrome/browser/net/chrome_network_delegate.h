@@ -183,6 +183,7 @@ class ChromeNetworkDelegate : public net::NetworkDelegateImpl {
       const GURL& url,
       const GURL& first_party_for_cookies) const override;
   bool OnAreExperimentalCookieFeaturesEnabled() const override;
+  bool OnAreStrictSecureCookiesEnabled() const override;
   bool OnCancelURLRequestWithPolicyViolatingReferrerHeader(
       const net::URLRequest& request,
       const GURL& target_url,

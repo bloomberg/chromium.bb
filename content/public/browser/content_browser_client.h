@@ -361,7 +361,7 @@ class CONTENT_EXPORT ContentBrowserClient {
                               ResourceContext* context,
                               int render_process_id,
                               int render_frame_id,
-                              net::CookieOptions* options);
+                              const net::CookieOptions& options);
 
   // This is called on the IO thread.
   virtual bool AllowSaveLocalState(ResourceContext* context);

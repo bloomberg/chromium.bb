@@ -111,6 +111,8 @@ class NET_EXPORT NetworkDelegate : public base::NonThreadSafe {
   // secure scheme. https://crbug.com/459154, https://crbug.com/541511,
   // https://crbug.com/546820
   bool AreExperimentalCookieFeaturesEnabled() const;
+  // TODO(jww): Remove this once we ship strict secure cookies.
+  bool AreStrictSecureCookiesEnabled() const;
 
   bool CancelURLRequestWithPolicyViolatingReferrerHeader(
       const URLRequest& request,
@@ -294,6 +296,12 @@ class NET_EXPORT NetworkDelegate : public base::NonThreadSafe {
   // secure scheme. https://crbug.com/459154, https://crbug.com/541511,
   // https://crbug.com/546820
   virtual bool OnAreExperimentalCookieFeaturesEnabled() const = 0;
+
+  // Returns true if the embedder has enabled experimental features or
+  // specifically strict secure cookies, and false otherwise.
+  //
+  // TODO(jww): Remove this once we ship strict secure cookies.
+  virtual bool OnAreStrictSecureCookiesEnabled() const = 0;
 
   // Called when the |referrer_url| for requesting |target_url| during handling
   // of the |request| is does not comply with the referrer policy (e.g. a

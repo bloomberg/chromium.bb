@@ -256,8 +256,15 @@ bool LayeredNetworkDelegate::OnAreExperimentalCookieFeaturesEnabled() const {
   return nested_network_delegate_->AreExperimentalCookieFeaturesEnabled();
 }
 
+bool LayeredNetworkDelegate::OnAreStrictSecureCookiesEnabled() const {
+  OnAreStrictSecureCookiesEnabledInternal();
+  return nested_network_delegate_->AreStrictSecureCookiesEnabled();
+}
+
 void LayeredNetworkDelegate::OnAreExperimentalCookieFeaturesEnabledInternal()
     const {}
+
+void LayeredNetworkDelegate::OnAreStrictSecureCookiesEnabledInternal() const {}
 
 bool LayeredNetworkDelegate::
     OnCancelURLRequestWithPolicyViolatingReferrerHeader(

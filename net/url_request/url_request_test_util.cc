@@ -626,6 +626,10 @@ bool TestNetworkDelegate::OnAreExperimentalCookieFeaturesEnabled() const {
   return experimental_cookie_features_enabled_;
 }
 
+bool TestNetworkDelegate::OnAreStrictSecureCookiesEnabled() const {
+  return experimental_cookie_features_enabled_;
+}
+
 bool TestNetworkDelegate::OnCancelURLRequestWithPolicyViolatingReferrerHeader(
     const URLRequest& request,
     const GURL& target_url,

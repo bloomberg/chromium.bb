@@ -172,6 +172,10 @@ bool NetworkDelegate::AreExperimentalCookieFeaturesEnabled() const {
   return OnAreExperimentalCookieFeaturesEnabled();
 }
 
+bool NetworkDelegate::AreStrictSecureCookiesEnabled() const {
+  return OnAreStrictSecureCookiesEnabled();
+}
+
 bool NetworkDelegate::CancelURLRequestWithPolicyViolatingReferrerHeader(
     const URLRequest& request,
     const GURL& target_url,

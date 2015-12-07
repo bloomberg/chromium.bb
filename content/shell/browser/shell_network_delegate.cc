@@ -5,6 +5,7 @@
 #include "content/shell/browser/shell_network_delegate.h"
 
 #include "base/command_line.h"
+#include "base/strings/string_util.h"
 #include "content/public/common/content_switches.h"
 #include "net/base/net_errors.h"
 #include "net/base/static_cookie_policy.h"
@@ -110,6 +111,10 @@ bool ShellNetworkDelegate::OnCanAccessFile(const net::URLRequest& request,
 bool ShellNetworkDelegate::OnAreExperimentalCookieFeaturesEnabled() const {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableExperimentalWebPlatformFeatures);
+}
+
+bool ShellNetworkDelegate::OnAreStrictSecureCookiesEnabled() const {
+  return OnAreExperimentalCookieFeaturesEnabled();
 }
 
 }  // namespace content

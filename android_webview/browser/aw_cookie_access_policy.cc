@@ -100,7 +100,7 @@ bool AwCookieAccessPolicy::AllowSetCookie(const GURL& url,
                                           content::ResourceContext* context,
                                           int render_process_id,
                                           int render_frame_id,
-                                          net::CookieOptions* options) {
+                                          const net::CookieOptions& options) {
   bool global = GetShouldAcceptCookies();
   bool thirdParty =
       GetShouldAcceptThirdPartyCookies(render_process_id, render_frame_id);

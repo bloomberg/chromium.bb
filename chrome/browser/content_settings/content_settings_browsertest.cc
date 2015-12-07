@@ -33,6 +33,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/url_request/url_request_mock_http_job.h"
 
@@ -44,6 +45,19 @@
 
 using content::BrowserThread;
 using net::URLRequestMockHTTPJob;
+
+namespace {
+
+const LocalSharedObjectsContainer* GetSiteSettingsCookieContainer(
+    Browser* browser) {
+  TabSpecificContentSettings* settings =
+      TabSpecificContentSettings::FromWebContents(
+          browser->tab_strip_model()->GetWebContentsAt(0));
+  return static_cast<const LocalSharedObjectsContainer*>(
+      &settings->allowed_local_shared_objects());
+}
+
+}  // namespace
 
 class ContentSettingsTest : public InProcessBrowserTest {
  public:
@@ -231,6 +245,38 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsTest, RedirectLoopCookies) {
   EXPECT_TRUE(TabSpecificContentSettings::FromWebContents(web_contents)->
       IsContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES));
 }
+
+// TODO(jww): This should be removed after strict secure cookies is enabled for
+// all and this test should be moved into ContentSettingsTest above.
+class ContentSettingsStrictSecureCookiesBrowserTest
+    : public ContentSettingsTest {
+ protected:
+  void SetUpCommandLine(base::CommandLine* cmd) override {
+    cmd->AppendSwitch(switches::kEnableExperimentalWebPlatformFeatures);
+  }
+};
+
+// This test verifies that if strict secure cookies is enabled, the site
+// settings accurately reflect that an attempt to create a secure cookie by an
+// insecure origin fails.
+IN_PROC_BROWSER_TEST_F(ContentSettingsStrictSecureCookiesBrowserTest, Cookies) {
+  host_resolver()->AddRule("*", "127.0.0.1");
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.ServeFilesFromSourceDirectory("chrome/test/data");
+  ASSERT_TRUE(https_server.Start());
+
+  GURL http_url = embedded_test_server()->GetURL("/setsecurecookie.html");
+  GURL https_url = https_server.GetURL("/setsecurecookie.html");
+
+  ui_test_utils::NavigateToURL(browser(), http_url);
+  EXPECT_TRUE(GetSiteSettingsCookieContainer(browser())->cookies()->empty());
+
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server.GetURL("/setsecurecookie.html"));
+  EXPECT_FALSE(GetSiteSettingsCookieContainer(browser())->cookies()->empty());
+};
 
 IN_PROC_BROWSER_TEST_F(ContentSettingsTest, ContentSettingsBlockDataURLs) {
   GURL url("data:text/html,<title>Data URL</title><script>alert(1)</script>");

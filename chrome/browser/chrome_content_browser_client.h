@@ -143,7 +143,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
                       content::ResourceContext* context,
                       int render_process_id,
                       int render_frame_id,
-                      net::CookieOptions* options) override;
+                      const net::CookieOptions& options) override;
   bool AllowSaveLocalState(content::ResourceContext* context) override;
   bool AllowWorkerDatabase(
       const GURL& url,

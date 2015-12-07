@@ -311,7 +311,7 @@ bool AwContentBrowserClient::AllowSetCookie(const GURL& url,
                                             content::ResourceContext* context,
                                             int render_process_id,
                                             int render_frame_id,
-                                            net::CookieOptions* options) {
+                                            const net::CookieOptions& options) {
   return AwCookieAccessPolicy::GetInstance()->AllowSetCookie(url,
                                                              first_party,
                                                              cookie_line,

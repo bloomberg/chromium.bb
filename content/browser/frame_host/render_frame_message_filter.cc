@@ -351,22 +351,22 @@ void RenderFrameMessageFilter::OnSetCookie(int render_frame_id,
   }
 
   net::CookieOptions options;
+  bool experimental_web_platform_features_enabled =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableExperimentalWebPlatformFeatures);
+  const std::string enforce_strict_secure_group =
+      base::FieldTrialList::FindFullName(kEnforceStrictSecureExperiment);
+  if (experimental_web_platform_features_enabled)
+    options.set_enforce_prefixes();
+  if (experimental_web_platform_features_enabled ||
+      base::StartsWith(enforce_strict_secure_group, "Enabled",
+                       base::CompareCase::INSENSITIVE_ASCII)) {
+    options.set_enforce_strict_secure();
+  }
   if (GetContentClient()->browser()->AllowSetCookie(
           url, first_party_for_cookies, cookie, resource_context_,
-          render_process_id_, render_frame_id, &options)) {
+          render_process_id_, render_frame_id, options)) {
     net::URLRequestContext* context = GetRequestContextForURL(url);
-    bool experimental_web_platform_features_enabled =
-        base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableExperimentalWebPlatformFeatures);
-    const std::string enforce_strict_secure_group =
-        base::FieldTrialList::FindFullName(kEnforceStrictSecureExperiment);
-    if (experimental_web_platform_features_enabled)
-      options.set_enforce_prefixes();
-    if (experimental_web_platform_features_enabled ||
-        base::StartsWith(enforce_strict_secure_group, "Enabled",
-                         base::CompareCase::INSENSITIVE_ASCII)) {
-      options.set_enforce_strict_secure();
-    }
     // Pass a null callback since we don't care about when the 'set' completes.
     context->cookie_store()->SetCookieWithOptionsAsync(
         url, cookie, options, net::CookieStore::SetCookiesCallback());

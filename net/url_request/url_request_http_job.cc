@@ -746,9 +746,15 @@ void URLRequestHttpJob::SaveNextCookie() {
     CookieOptions options;
     options.set_include_httponly();
     options.set_server_time(response_date_);
+
     if (network_delegate() &&
         network_delegate()->AreExperimentalCookieFeaturesEnabled()) {
       options.set_enforce_prefixes();
+    }
+
+    if (network_delegate() &&
+        network_delegate()->AreStrictSecureCookiesEnabled()) {
+      options.set_enforce_strict_secure();
     }
 
     CookieStore::SetCookiesCallback callback(base::Bind(

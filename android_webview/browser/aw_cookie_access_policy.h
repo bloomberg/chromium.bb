@@ -62,7 +62,7 @@ class AwCookieAccessPolicy {
                       content::ResourceContext* context,
                       int render_process_id,
                       int render_frame_id,
-                      net::CookieOptions* options);
+                      const net::CookieOptions& options);
 
  private:
   friend struct base::DefaultLazyInstanceTraits<AwCookieAccessPolicy>;
