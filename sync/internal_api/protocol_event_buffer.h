@@ -17,7 +17,7 @@ class ProtocolEvent;
 // A container for ProtocolEvents.
 //
 // Stores at most kBufferSize events, then starts dropping the oldest events.
-class SYNC_EXPORT ProtocolEventBuffer {
+class SYNC_EXPORT_PRIVATE ProtocolEventBuffer {
  public:
   static const size_t kBufferSize;
 

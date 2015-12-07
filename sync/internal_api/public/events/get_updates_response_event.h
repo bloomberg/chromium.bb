@@ -2,10 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNC_INTERNAL_API_PUBLIC_EVENTS_GET_UPDATES_RESPONSE_EVENT_H_
-#define SYNC_INTERNAL_API_PUBLIC_EVENTS_GET_UPDATES_RESPONSE_EVENT_H_
-
-#include <string>
+#ifndef SYNC_INTERNAL_API_EVENTS_GET_UPDATES_RESPONSE_EVENT_H
+#define SYNC_INTERNAL_API_EVENTS_GET_UPDATES_RESPONSE_EVENT_H
 
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
@@ -21,7 +19,7 @@ namespace syncer {
 //
 // Unlike the events for the request message, the response events are generic
 // and do not vary for each type of GetUpdate cycle.
-class SYNC_EXPORT GetUpdatesResponseEvent : public ProtocolEvent {
+class SYNC_EXPORT_PRIVATE GetUpdatesResponseEvent : public ProtocolEvent {
  public:
   GetUpdatesResponseEvent(
       base::Time timestamp,
@@ -46,4 +44,4 @@ class SYNC_EXPORT GetUpdatesResponseEvent : public ProtocolEvent {
 
 }  // namespace syncer
 
-#endif  // SYNC_INTERNAL_API_PUBLIC_EVENTS_GET_UPDATES_RESPONSE_EVENT_H_
+#endif  // SYNC_INTERNAL_API_EVENTS_GET_UPDATES_RESPONSE_EVENT_H

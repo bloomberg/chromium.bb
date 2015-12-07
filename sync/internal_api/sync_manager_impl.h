@@ -5,7 +5,6 @@
 #ifndef SYNC_INTERNAL_API_SYNC_MANAGER_IMPL_H_
 #define SYNC_INTERNAL_API_SYNC_MANAGER_IMPL_H_
 
-#include <map>
 #include <string>
 #include <vector>
 
@@ -57,7 +56,7 @@ class SyncSessionContext;
 //
 // Unless stated otherwise, all methods of SyncManager should be called on the
 // same thread.
-class SYNC_EXPORT SyncManagerImpl
+class SYNC_EXPORT_PRIVATE SyncManagerImpl
     : public SyncManager,
       public net::NetworkChangeNotifier::IPAddressObserver,
       public net::NetworkChangeNotifier::ConnectionTypeObserver,

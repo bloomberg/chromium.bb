@@ -21,7 +21,8 @@ namespace syncable {
 // good job of tracking and reporting on changes to the entries modified within
 // its scope.  This is because its changes do not need to be reported to the
 // DirectoryChangeDelegate.
-class SYNC_EXPORT ModelNeutralWriteTransaction : public BaseWriteTransaction {
+class SYNC_EXPORT_PRIVATE ModelNeutralWriteTransaction
+    : public BaseWriteTransaction {
  public:
   ModelNeutralWriteTransaction(
       const tracked_objects::Location& location,

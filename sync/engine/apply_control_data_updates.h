@@ -17,7 +17,7 @@ class MutableEntry;
 class WriteTransaction;
 }
 
-SYNC_EXPORT void ApplyControlDataUpdates(syncable::Directory* dir);
+SYNC_EXPORT_PRIVATE void ApplyControlDataUpdates(syncable::Directory* dir);
 void ApplyNigoriUpdate(syncable::WriteTransaction* trans,
                        syncable::MutableEntry* const entry,
                        Cryptographer* cryptographer);

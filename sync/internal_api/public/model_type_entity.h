@@ -24,7 +24,7 @@ struct UpdateResponseData;
 // present. The data part of ModelTypeEntity is cached temporarily, only for
 // in-flight entities that are being committed to the server.
 //
-class SYNC_EXPORT ModelTypeEntity {
+class SYNC_EXPORT_PRIVATE ModelTypeEntity {
  public:
   // Construct an instance representing a new locally-created item.
   static scoped_ptr<ModelTypeEntity> CreateNew(

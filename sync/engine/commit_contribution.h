@@ -20,7 +20,7 @@ class StatusController;
 // have been selected from a CommitContributor and prepared for commit.
 //
 // This class handles the bookkeeping related to the commit of these items.
-class SYNC_EXPORT CommitContribution {
+class SYNC_EXPORT_PRIVATE CommitContribution {
  public:
   CommitContribution();
   virtual ~CommitContribution() = 0;

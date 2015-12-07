@@ -36,12 +36,12 @@ namespace sessions {
 
 class NudgeTracker;
 
-class SYNC_EXPORT SyncSession {
+class SYNC_EXPORT_PRIVATE SyncSession {
  public:
   // The Delegate services events that occur during the session requiring an
   // explicit (and session-global) action, as opposed to events that are simply
   // recorded in per-session state.
-  class SYNC_EXPORT Delegate {
+  class SYNC_EXPORT_PRIVATE Delegate {
    public:
     // The client was throttled and should cease-and-desist syncing activity
     // until the specified time.

@@ -22,7 +22,7 @@ SYNC_EXPORT void GetSessionName(
     const scoped_refptr<base::TaskRunner>& task_runner,
     const base::Callback<void(const std::string&)>& done_callback);
 
-SYNC_EXPORT std::string GetSessionNameSynchronouslyForTesting();
+SYNC_EXPORT_PRIVATE std::string GetSessionNameSynchronouslyForTesting();
 
 }  // namespace syncer
 

@@ -168,7 +168,7 @@ class SYNC_EXPORT AttachmentStore {
 // AttachmentService writes attachment on behalf of model type after download
 // and takes reference on attachment for the duration of upload.
 // Model type implementation shouldn't use this interface.
-class SYNC_EXPORT AttachmentStoreForSync : public AttachmentStore {
+class SYNC_EXPORT_PRIVATE AttachmentStoreForSync : public AttachmentStore {
  public:
   ~AttachmentStoreForSync();
 

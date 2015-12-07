@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNC_ENGINE_GET_UPDATES_PROCESSOR_H_
-#define SYNC_ENGINE_GET_UPDATES_PROCESSOR_H_
+#ifndef SYNC_ENGINE_GET_UPDATES_PROCESSOR_H
+#define SYNC_ENGINE_GET_UPDATES_PROCESSOR_H
 
 #include <map>
 #include <vector>
@@ -42,7 +42,7 @@ class GetUpdatesDelegate;
 // Most methods allow the caller to specify a subset of types on which the
 // operation is to be applied.  It is a logic error if the supplied set of types
 // contains a type which was not previously registered with the manager.
-class SYNC_EXPORT GetUpdatesProcessor {
+class SYNC_EXPORT_PRIVATE GetUpdatesProcessor {
  public:
   explicit GetUpdatesProcessor(UpdateHandlerMap* update_handler_map,
                                const GetUpdatesDelegate& delegate);

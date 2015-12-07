@@ -30,9 +30,9 @@
 namespace syncer {
 namespace sessions {
 
-class SYNC_EXPORT StatusController {
+class SYNC_EXPORT_PRIVATE StatusController {
  public:
-  StatusController();
+  explicit StatusController();
   ~StatusController();
 
   // ClientToServer messages.

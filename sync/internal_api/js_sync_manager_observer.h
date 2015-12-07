@@ -24,7 +24,7 @@ class JsEventDetails;
 class JsEventHandler;
 
 // Routes SyncManager events to a JsEventHandler.
-class SYNC_EXPORT JsSyncManagerObserver : public SyncManager::Observer {
+class SYNC_EXPORT_PRIVATE JsSyncManagerObserver : public SyncManager::Observer {
  public:
   JsSyncManagerObserver();
   ~JsSyncManagerObserver() override;

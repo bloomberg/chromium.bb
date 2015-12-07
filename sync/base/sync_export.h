@@ -2,29 +2,39 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNC_BASE_SYNC_EXPORT_H_
-#define SYNC_BASE_SYNC_EXPORT_H_
+#ifndef SYNC_SYNC_EXPORT_H_
+#define SYNC_SYNC_EXPORT_H_
 
 #if defined(COMPONENT_BUILD)
 #if defined(WIN32)
 
 #if defined(SYNC_IMPLEMENTATION)
 #define SYNC_EXPORT __declspec(dllexport)
-#else  // defined(SYNC_IMPLEMENTATION)
+#define SYNC_EXPORT_PRIVATE __declspec(dllexport)
+#elif defined(SYNC_TEST)
 #define SYNC_EXPORT __declspec(dllimport)
+#define SYNC_EXPORT_PRIVATE __declspec(dllimport)
+#else
+#define SYNC_EXPORT __declspec(dllimport)
+#define SYNC_EXPORT_PRIVATE
 #endif  // defined(SYNC_IMPLEMENTATION)
 
 #else  // defined(WIN32)
-
 #if defined(SYNC_IMPLEMENTATION)
 #define SYNC_EXPORT __attribute__((visibility("default")))
-#else  // defined(SYNC_IMPLEMENTATION)
+#define SYNC_EXPORT_PRIVATE __attribute__((visibility("default")))
+#elif defined(SYNC_TEST)
 #define SYNC_EXPORT
+#define SYNC_EXPORT_PRIVATE __attribute__((visibility("default")))
+#else
+#define SYNC_EXPORT
+#define SYNC_EXPORT_PRIVATE
 #endif  // defined(SYNC_IMPLEMENTATION)
+#endif
 
-#endif  // defined(WIN32)
 #else  // defined(COMPONENT_BUILD)
 #define SYNC_EXPORT
-#endif  // defined(COMPONENT_BUILD)
+#define SYNC_EXPORT_PRIVATE
+#endif
 
-#endif  // SYNC_BASE_SYNC_EXPORT_H_
+#endif  // SYNC_SYNC_EXPORT_H_

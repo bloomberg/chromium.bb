@@ -34,11 +34,11 @@ class GetUpdatesProcessor;
 // A Syncer instance expects to run on a dedicated thread.  Calls to SyncShare()
 // may take an unbounded amount of time because it may block on network I/O, on
 // lock contention, or on tasks posted to other threads.
-class SYNC_EXPORT Syncer {
+class SYNC_EXPORT_PRIVATE Syncer {
  public:
   typedef std::vector<int64> UnsyncedMetaHandles;
 
-  explicit Syncer(CancelationSignal* cancelation_signal);
+  Syncer(CancelationSignal* cancelation_signal);
   virtual ~Syncer();
 
   // Whether an early exist was requested due to a cancelation signal.

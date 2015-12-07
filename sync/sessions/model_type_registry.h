@@ -2,12 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNC_SESSIONS_MODEL_TYPE_REGISTRY_H_
-#define SYNC_SESSIONS_MODEL_TYPE_REGISTRY_H_
+#ifndef SYNC_ENGINE_MODEL_TYPE_REGISTRY_H_
+#define SYNC_ENGINE_MODEL_TYPE_REGISTRY_H_
 
 #include <map>
-#include <string>
-#include <vector>
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
@@ -46,8 +44,9 @@ typedef std::map<ModelType, DirectoryTypeDebugInfoEmitter*>
     DirectoryTypeDebugInfoEmitterMap;
 
 // Keeps track of the sets of active update handlers and commit contributors.
-class SYNC_EXPORT ModelTypeRegistry : public syncer_v2::SyncContext,
-                                      public SyncEncryptionHandler::Observer {
+class SYNC_EXPORT_PRIVATE ModelTypeRegistry
+    : public syncer_v2::SyncContext,
+      public SyncEncryptionHandler::Observer {
  public:
   // Constructs a ModelTypeRegistry that supports directory types.
   ModelTypeRegistry(const std::vector<scoped_refptr<ModelSafeWorker> >& workers,
@@ -163,4 +162,4 @@ class SYNC_EXPORT ModelTypeRegistry : public syncer_v2::SyncContext,
 
 }  // namespace syncer
 
-#endif  // SYNC_SESSIONS_MODEL_TYPE_REGISTRY_H_
+#endif // SYNC_ENGINE_MODEL_TYPE_REGISTRY_H_

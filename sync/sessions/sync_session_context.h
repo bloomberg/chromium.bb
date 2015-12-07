@@ -16,7 +16,6 @@
 #define SYNC_SESSIONS_SYNC_SESSION_CONTEXT_H_
 
 #include <string>
-#include <vector>
 
 #include "sync/base/sync_export.h"
 #include "sync/engine/sync_engine_event_listener.h"
@@ -39,7 +38,7 @@ static const int kDefaultMaxCommitBatchSize = 25;
 namespace sessions {
 class TestScopedSessionEventListener;
 
-class SYNC_EXPORT SyncSessionContext {
+class SYNC_EXPORT_PRIVATE SyncSessionContext {
  public:
   SyncSessionContext(
       ServerConnectionManager* connection_manager,

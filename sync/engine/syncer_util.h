@@ -59,16 +59,17 @@ UpdateAttemptResponse AttemptToUpdateEntry(
 //
 // Will return an invalid position if no valid position can be constructed, or
 // if this type does not support positioning.
-SYNC_EXPORT UniquePosition GetUpdatePosition(const sync_pb::SyncEntity& update,
-                                             const std::string& suffix);
+SYNC_EXPORT_PRIVATE UniquePosition GetUpdatePosition(
+    const sync_pb::SyncEntity& update,
+    const std::string& suffix);
 
 // Fetch the cache_guid and item_id-based unique bookmark tag from an update.
 // Will return an empty string if someting unexpected happens.
-SYNC_EXPORT std::string GetUniqueBookmarkTagFromUpdate(
+SYNC_EXPORT_PRIVATE std::string GetUniqueBookmarkTagFromUpdate(
     const sync_pb::SyncEntity& update);
 
 // Pass in name to avoid redundant UTF8 conversion.
-SYNC_EXPORT void UpdateServerFieldsFromUpdate(
+SYNC_EXPORT_PRIVATE void UpdateServerFieldsFromUpdate(
     syncable::ModelNeutralMutableEntry* local_entry,
     const sync_pb::SyncEntity& server_entry,
     const std::string& name);

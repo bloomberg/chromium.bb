@@ -22,19 +22,20 @@ namespace syncer {
 // The returned strings (which don't have to be freed) are in ASCII.
 // The result of passing in an invalid enum value is undefined.
 
-SYNC_EXPORT const char* GetAppListItemTypeString(
+SYNC_EXPORT_PRIVATE const char* GetAppListItemTypeString(
     sync_pb::AppListSpecifics::AppListItemType item_type);
 
-SYNC_EXPORT const char* GetBrowserTypeString(
+SYNC_EXPORT_PRIVATE const char* GetBrowserTypeString(
     sync_pb::SessionWindow::BrowserType browser_type);
 
-SYNC_EXPORT const char* GetPageTransitionString(
+SYNC_EXPORT_PRIVATE const char* GetPageTransitionString(
     sync_pb::SyncEnums::PageTransition page_transition);
 
-SYNC_EXPORT const char* GetPageTransitionRedirectTypeString(
-    sync_pb::SyncEnums::PageTransitionRedirectType redirect_type);
+SYNC_EXPORT_PRIVATE const char* GetPageTransitionRedirectTypeString(
+    sync_pb::SyncEnums::PageTransitionRedirectType
+        redirect_type);
 
-SYNC_EXPORT const char* GetWifiCredentialSecurityClassString(
+SYNC_EXPORT_PRIVATE const char* GetWifiCredentialSecurityClassString(
     sync_pb::WifiCredentialSpecifics::SecurityClass security_class);
 
 SYNC_EXPORT const char* GetUpdatesSourceString(
@@ -43,27 +44,28 @@ SYNC_EXPORT const char* GetUpdatesSourceString(
 SYNC_EXPORT const char* GetUpdatesOriginString(
     sync_pb::SyncEnums::GetUpdatesOrigin origin);
 
-SYNC_EXPORT const char* GetResponseTypeString(
+SYNC_EXPORT_PRIVATE const char* GetResponseTypeString(
     sync_pb::CommitResponse::ResponseType response_type);
 
-SYNC_EXPORT const char* GetErrorTypeString(
+SYNC_EXPORT_PRIVATE const char* GetErrorTypeString(
     sync_pb::SyncEnums::ErrorType error_type);
 
-SYNC_EXPORT const char* GetActionString(sync_pb::SyncEnums::Action action);
+SYNC_EXPORT_PRIVATE const char* GetActionString(
+    sync_pb::SyncEnums::Action action);
 
-SYNC_EXPORT const char* GetLaunchTypeString(
+SYNC_EXPORT_PRIVATE const char* GetLaunchTypeString(
     sync_pb::AppSpecifics::LaunchType launch_type);
 
-SYNC_EXPORT const char* GetWalletInfoTypeString(
+SYNC_EXPORT_PRIVATE const char* GetWalletInfoTypeString(
     sync_pb::AutofillWalletSpecifics::WalletInfoType wallet_info_type);
 
-SYNC_EXPORT const char* GetWalletMetadataTypeString(
+SYNC_EXPORT_PRIVATE const char* GetWalletMetadataTypeString(
     sync_pb::WalletMetadataSpecifics::Type wallet_metadata_type);
 
-SYNC_EXPORT const char* GetWalletCardStatusString(
+SYNC_EXPORT_PRIVATE const char* GetWalletCardStatusString(
     sync_pb::WalletMaskedCreditCard::WalletCardStatus wallet_card_status);
 
-SYNC_EXPORT const char* GetWalletCardTypeString(
+SYNC_EXPORT_PRIVATE const char* GetWalletCardTypeString(
     sync_pb::WalletMaskedCreditCard::WalletCardType wallet_card_type);
 
 const char* GetDeviceTypeString(sync_pb::SyncEnums::DeviceType device_type);

@@ -6,7 +6,6 @@
 #define SYNC_ENGINE_COMMIT_H_
 
 #include <map>
-#include <string>
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -37,7 +36,7 @@ class Syncer;
 // been acceptable to let this class be a dumb container object, it turns out
 // that there was no other convenient place to put the Init() and
 // PostAndProcessCommitResponse() functions.  So they ended up here.
-class SYNC_EXPORT Commit {
+class SYNC_EXPORT_PRIVATE Commit {
  public:
   typedef std::map<ModelType, scoped_ptr<CommitContribution>> ContributionMap;
 

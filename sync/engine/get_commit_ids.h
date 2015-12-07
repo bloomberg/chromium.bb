@@ -28,10 +28,11 @@ class BaseTransaction;
 //
 // This function also enforces some position ordering constraints that are no
 // longer necessary.  We should relax those constraints.  See crbug.com/287938.
-SYNC_EXPORT void GetCommitIdsForType(syncable::BaseTransaction* trans,
-                                     ModelType type,
-                                     size_t max_entries,
-                                     std::vector<int64>* out);
+SYNC_EXPORT_PRIVATE void GetCommitIdsForType(
+    syncable::BaseTransaction* trans,
+    ModelType type,
+    size_t max_entries,
+    std::vector<int64>* out);
 
 }  // namespace syncer
 

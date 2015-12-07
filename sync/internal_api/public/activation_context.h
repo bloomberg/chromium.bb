@@ -16,7 +16,7 @@ namespace syncer_v2 {
 
 // The state passed from ModelTypeProcessor to Sync thread during DataType
 // activation.
-struct SYNC_EXPORT ActivationContext {
+struct SYNC_EXPORT_PRIVATE ActivationContext {
   ActivationContext();
   ~ActivationContext();
 

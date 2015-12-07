@@ -560,7 +560,7 @@
         'enable_wexit_time_destructors': 1,
         'proto_in_dir': 'internal_api/attachments/proto',
         'proto_out_dir': 'sync/internal_api/attachments/proto',
-        'cc_generator_options': 'dllexport_decl=SYNC_EXPORT:',
+        'cc_generator_options': 'dllexport_decl=SYNC_EXPORT_PRIVATE:',
         'cc_include': 'sync/base/sync_export.h',
       },
       'includes': [

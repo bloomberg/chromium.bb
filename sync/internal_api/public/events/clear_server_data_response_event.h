@@ -2,10 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNC_INTERNAL_API_PUBLIC_EVENTS_CLEAR_SERVER_DATA_RESPONSE_EVENT_H_
-#define SYNC_INTERNAL_API_PUBLIC_EVENTS_CLEAR_SERVER_DATA_RESPONSE_EVENT_H_
-
-#include <string>
+#ifndef SYNC_INTERNAL_API_EVENTS_CLEAR_SERVER_DATA_RESPONSE_EVENT_H_
+#define SYNC_INTERNAL_API_EVENTS_CLEAR_SERVER_DATA_RESPONSE_EVENT_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
@@ -18,7 +16,7 @@
 namespace syncer {
 
 // An event representing a ClearServerData response event from the server.
-class SYNC_EXPORT ClearServerDataResponseEvent : public ProtocolEvent {
+class SYNC_EXPORT_PRIVATE ClearServerDataResponseEvent : public ProtocolEvent {
  public:
   ClearServerDataResponseEvent(base::Time timestamp,
                                SyncerError result,
@@ -43,4 +41,4 @@ class SYNC_EXPORT ClearServerDataResponseEvent : public ProtocolEvent {
 
 }  // namespace syncer
 
-#endif  // SYNC_INTERNAL_API_PUBLIC_EVENTS_CLEAR_SERVER_DATA_RESPONSE_EVENT_H_
+#endif  // SYNC_INTERNAL_API_EVENTS_CLEAR_SERVER_DATA_RESPONSE_EVENT_H_

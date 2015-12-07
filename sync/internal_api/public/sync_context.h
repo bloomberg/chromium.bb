@@ -19,7 +19,7 @@ struct ActivationContext;
 // functionality to other classes, and most of the interface is exposed not
 // directly here but instead through a per-ModelType class that this class helps
 // instantiate.
-class SYNC_EXPORT SyncContext {
+class SYNC_EXPORT_PRIVATE SyncContext {
  public:
   SyncContext();
   virtual ~SyncContext();

@@ -5,8 +5,6 @@
 #ifndef SYNC_SYNCABLE_ON_DISK_DIRECTORY_BACKING_STORE_H_
 #define SYNC_SYNCABLE_ON_DISK_DIRECTORY_BACKING_STORE_H_
 
-#include <string>
-
 #include "base/files/file_path.h"
 #include "sync/base/sync_export.h"
 #include "sync/syncable/directory_backing_store.h"
@@ -16,7 +14,8 @@ namespace syncable {
 
 // This is the concrete class that provides a useful implementation of
 // DirectoryBackingStore.
-class SYNC_EXPORT OnDiskDirectoryBackingStore : public DirectoryBackingStore {
+class SYNC_EXPORT_PRIVATE OnDiskDirectoryBackingStore
+    : public DirectoryBackingStore {
  public:
   OnDiskDirectoryBackingStore(const std::string& dir_name,
                               const base::FilePath& backing_file_path);

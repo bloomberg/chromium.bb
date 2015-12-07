@@ -5,10 +5,7 @@
 #ifndef SYNC_SYNCABLE_ENTRY_KERNEL_H_
 #define SYNC_SYNCABLE_ENTRY_KERNEL_H_
 
-#include <algorithm>
-#include <map>
 #include <set>
-#include <string>
 
 #include "base/time/time.h"
 #include "base/values.h"
@@ -196,7 +193,7 @@ enum {
   BIT_TEMPS_COUNT = BIT_TEMPS_END - BIT_TEMPS_BEGIN
 };
 
-struct SYNC_EXPORT EntryKernel {
+struct SYNC_EXPORT_PRIVATE EntryKernel {
  private:
   typedef syncer::ProtoValuePtr<sync_pb::EntitySpecifics> EntitySpecificsPtr;
   typedef syncer::ProtoValuePtr<sync_pb::AttachmentMetadata>
@@ -419,4 +416,4 @@ std::ostream& operator<<(std::ostream& os, const EntryKernel& entry_kernel);
 }  // namespace syncable
 }  // namespace syncer
 
-#endif  // SYNC_SYNCABLE_ENTRY_KERNEL_H_
+#endif // SYNC_SYNCABLE_ENTRY_KERNEL_H_

@@ -33,7 +33,8 @@ class Directory;
 // This class handles the bookkeeping related to the commit of these items,
 // including processing the commit response message and setting and unsetting
 // the SYNCING bits.
-class SYNC_EXPORT DirectoryCommitContribution : public CommitContribution {
+class SYNC_EXPORT_PRIVATE DirectoryCommitContribution
+    : public CommitContribution {
  public:
   // This destructor will DCHECK if UnsetSyncingBits() has not been called yet.
   ~DirectoryCommitContribution() override;

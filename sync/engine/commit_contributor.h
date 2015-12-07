@@ -22,7 +22,7 @@ class Directory;
 //
 // When asked, it can return CommitContribution objects that contain a set of
 // items to be committed from this source.
-class SYNC_EXPORT CommitContributor {
+class SYNC_EXPORT_PRIVATE CommitContributor {
  public:
   CommitContributor();
   virtual ~CommitContributor() = 0;
@@ -34,6 +34,6 @@ class SYNC_EXPORT CommitContributor {
       size_t max_entries) = 0;
 };
 
-}  // namespace syncer
+}  // namespace
 
 #endif  // SYNC_ENGINE_COMMIT_CONTRIBUTOR_H_

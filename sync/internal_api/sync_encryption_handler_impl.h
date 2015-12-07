@@ -6,7 +6,6 @@
 #define SYNC_INTERNAL_API_SYNC_ENCRYPTION_HANDLER_IMPL_H_
 
 #include <string>
-#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
@@ -43,8 +42,9 @@ class WriteTransaction;
 // sync methods.
 // All methods are non-thread-safe and should only be called from the sync
 // thread unless explicitly noted otherwise.
-class SYNC_EXPORT SyncEncryptionHandlerImpl : public SyncEncryptionHandler,
-                                              public syncable::NigoriHandler {
+class SYNC_EXPORT_PRIVATE SyncEncryptionHandlerImpl
+    : public SyncEncryptionHandler,
+      public syncable::NigoriHandler {
  public:
   // |clear_data_option| controls whether this object should update the Nigori
   // node to indiciate that we are to clear server data as part of the
@@ -327,4 +327,4 @@ class SYNC_EXPORT SyncEncryptionHandlerImpl : public SyncEncryptionHandler,
 
 }  // namespace syncer
 
-#endif  // SYNC_INTERNAL_API_SYNC_ENCRYPTION_HANDLER_IMPL_H_
+#endif  // SYNC_INTERNAL_API_PUBLIC_SYNC_ENCRYPTION_HANDLER_IMPL_H_

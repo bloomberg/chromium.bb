@@ -11,7 +11,7 @@
 
 namespace syncer {
 
-class SYNC_EXPORT NudgeHandler {
+class SYNC_EXPORT_PRIVATE NudgeHandler {
  public:
   NudgeHandler();
   virtual ~NudgeHandler();

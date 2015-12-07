@@ -25,7 +25,7 @@ class EntitySpecifics;
 namespace syncer {
 namespace syncable {
 
-SYNC_EXPORT extern const int32 kCurrentDBVersion;
+SYNC_EXPORT_PRIVATE extern const int32 kCurrentDBVersion;
 
 struct ColumnSpec;
 
@@ -44,7 +44,7 @@ struct ColumnSpec;
 // This class is abstract so that we can extend it in interesting ways for use
 // in tests.  The concrete class used in non-test scenarios is
 // OnDiskDirectoryBackingStore.
-class SYNC_EXPORT DirectoryBackingStore : public base::NonThreadSafe {
+class SYNC_EXPORT_PRIVATE DirectoryBackingStore : public base::NonThreadSafe {
  public:
   explicit DirectoryBackingStore(const std::string& dir_name);
   virtual ~DirectoryBackingStore();

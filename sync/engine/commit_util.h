@@ -2,10 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNC_ENGINE_COMMIT_UTIL_H_
-#define SYNC_ENGINE_COMMIT_UTIL_H_
-
-#include <set>
+#ifndef SYNC_ENGINE_BUILD_COMMIT_UTIL_H_
+#define SYNC_ENGINE_BUILD_COMMIT_UTIL_H_
 
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/model_type.h"
@@ -29,20 +27,21 @@ class BaseWriteTransaction;
 namespace commit_util {
 
 // Adds bookmark extensions activity report to |message|.
-SYNC_EXPORT void AddExtensionsActivityToMessage(
+SYNC_EXPORT_PRIVATE void AddExtensionsActivityToMessage(
     ExtensionsActivity* activity,
     ExtensionsActivity::Records* extensions_activity_buffer,
     sync_pb::CommitMessage* message);
 
 // Fills the config_params field of |message|.
-SYNC_EXPORT void AddClientConfigParamsToMessage(
+SYNC_EXPORT_PRIVATE void AddClientConfigParamsToMessage(
     ModelTypeSet enabled_types,
     sync_pb::CommitMessage* message);
 
 // Takes a snapshot of |meta_entry| and puts it into a protobuf suitable for use
 // in a commit request message.
-SYNC_EXPORT void BuildCommitItem(const syncable::Entry& meta_entry,
-                                 sync_pb::SyncEntity* sync_entry);
+SYNC_EXPORT_PRIVATE void BuildCommitItem(
+    const syncable::Entry& meta_entry,
+    sync_pb::SyncEntity* sync_entry);
 
 // Process a single commit response.  Updates the entry's SERVER fields using
 // |pb_commit_response| and |pb_committed_entry|.
@@ -50,7 +49,7 @@ SYNC_EXPORT void BuildCommitItem(const syncable::Entry& meta_entry,
 // The |deleted_folders| parameter is a set of IDs that represent deleted
 // folders.  This function will add its entry's ID to this set if it finds
 // itself processing a folder deletion.
-SYNC_EXPORT
+SYNC_EXPORT_PRIVATE
 sync_pb::CommitResponse::ResponseType ProcessSingleCommitResponse(
     syncable::BaseWriteTransaction* trans,
     const sync_pb::CommitResponse_EntryResponse& server_entry,
@@ -62,4 +61,4 @@ sync_pb::CommitResponse::ResponseType ProcessSingleCommitResponse(
 
 }  // namespace syncer
 
-#endif  // SYNC_ENGINE_COMMIT_UTIL_H_
+#endif  // SYNC_ENGINE_BUILD_COMMIT_UTIL_H_

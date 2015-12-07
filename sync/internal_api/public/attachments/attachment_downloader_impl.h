@@ -5,9 +5,6 @@
 #ifndef SYNC_INTERNAL_API_PUBLIC_ATTACHMENTS_ATTACHMENT_DOWNLOADER_IMPL_H_
 #define SYNC_INTERNAL_API_PUBLIC_ATTACHMENTS_ATTACHMENT_DOWNLOADER_IMPL_H_
 
-#include <string>
-#include <vector>
-
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/gtest_prod_util.h"
 #include "base/threading/non_thread_safe.h"
@@ -100,8 +97,9 @@ class AttachmentDownloaderImpl : public AttachmentDownloader,
   // Return true if a crc32c was found and useable for checking data integrity.
   // "Usable" means headers are present, there is "x-goog-hash" header with
   // "crc32c" hash in it, this hash is correctly base64 encoded 32 bit integer.
-  SYNC_EXPORT static bool ExtractCrc32c(const net::HttpResponseHeaders* headers,
-                                        uint32_t* crc32c);
+  SYNC_EXPORT_PRIVATE static bool ExtractCrc32c(
+      const net::HttpResponseHeaders* headers,
+      uint32_t* crc32c);
 
   GURL sync_service_url_;
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;

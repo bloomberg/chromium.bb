@@ -12,7 +12,8 @@ namespace syncer {
 namespace syncable {
 
 // A class used to test scenarios where loading a directory fails.
-class SYNC_EXPORT InvalidDirectoryBackingStore : public DirectoryBackingStore {
+class SYNC_EXPORT_PRIVATE InvalidDirectoryBackingStore
+    : public DirectoryBackingStore {
  public:
   InvalidDirectoryBackingStore();
   ~InvalidDirectoryBackingStore() override;

@@ -21,7 +21,7 @@ class Directory;
 // user and their data (share).
 // This encompasses all pieces required to build transaction objects on the
 // syncable share.
-struct SYNC_EXPORT UserShare {
+struct SYNC_EXPORT_PRIVATE UserShare {
   UserShare();
   ~UserShare();
 

@@ -21,7 +21,7 @@
 
 namespace base {
 class DictionaryValue;
-}  // namespace base
+}  // namespace
 
 namespace syncer {
 
@@ -149,8 +149,8 @@ class SYNC_EXPORT ModelSafeWorker
 typedef std::map<ModelType, ModelSafeGroup> ModelSafeRoutingInfo;
 
 // Caller takes ownership of return value.
-SYNC_EXPORT scoped_ptr<base::DictionaryValue> ModelSafeRoutingInfoToValue(
-    const ModelSafeRoutingInfo& routing_info);
+SYNC_EXPORT_PRIVATE scoped_ptr<base::DictionaryValue>
+ModelSafeRoutingInfoToValue(const ModelSafeRoutingInfo& routing_info);
 
 SYNC_EXPORT std::string ModelSafeRoutingInfoToString(
     const ModelSafeRoutingInfo& routing_info);

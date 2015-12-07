@@ -19,7 +19,7 @@ template <typename T> class WeakHandle;
 // Interface representing the backend of chrome://sync-internals.  A
 // JsBackend can handle messages and can emit events to a
 // JsEventHandler.
-class SYNC_EXPORT JsBackend {
+class SYNC_EXPORT_PRIVATE JsBackend {
  public:
   // Starts emitting events to the given handler, if initialized.
   virtual void SetJsEventHandler(

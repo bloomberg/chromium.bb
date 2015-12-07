@@ -24,7 +24,7 @@ class JsEventDetails;
 class JsEventHandler;
 
 // Routes SyncEncryptionHandler events to a JsEventHandler.
-class SYNC_EXPORT JsSyncEncryptionHandlerObserver
+class SYNC_EXPORT_PRIVATE JsSyncEncryptionHandlerObserver
     : public SyncEncryptionHandler::Observer {
  public:
   JsSyncEncryptionHandlerObserver();

@@ -2,10 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNC_INTERNAL_API_PUBLIC_EVENTS_NORMAL_GET_UPDATES_REQUEST_EVENT_H_
-#define SYNC_INTERNAL_API_PUBLIC_EVENTS_NORMAL_GET_UPDATES_REQUEST_EVENT_H_
-
-#include <string>
+#ifndef SYNC_INTERNAL_API_EVENTS_NORMAL_GET_UPDATES_REQUEST_H
+#define SYNC_INTERNAL_API_EVENTS_NORMAL_GET_UPDATES_REQUEST_H
 
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
@@ -22,7 +20,7 @@ class NudgeTracker;
 }  // namespace sessions
 
 // An event representing a 'normal mode' GetUpdate request to the server.
-class SYNC_EXPORT NormalGetUpdatesRequestEvent : public ProtocolEvent {
+class SYNC_EXPORT_PRIVATE NormalGetUpdatesRequestEvent : public ProtocolEvent {
  public:
   NormalGetUpdatesRequestEvent(
       base::Time timestamp,
@@ -58,6 +56,6 @@ class SYNC_EXPORT NormalGetUpdatesRequestEvent : public ProtocolEvent {
   DISALLOW_COPY_AND_ASSIGN(NormalGetUpdatesRequestEvent);
 };
 
-}  // namespace syncer
+}
 
-#endif  // SYNC_INTERNAL_API_PUBLIC_EVENTS_NORMAL_GET_UPDATES_REQUEST_EVENT_H_
+#endif  // SYNC_INTERNAL_API_EVENTS_NORMAL_GET_UPDATES_REQUEST_H

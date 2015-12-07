@@ -31,7 +31,7 @@ class CancelationObserver;
 //
 // This class supports only one handler, though it could easily support multiple
 // observers if we found a use case for such a feature.
-class SYNC_EXPORT CancelationSignal {
+class SYNC_EXPORT_PRIVATE CancelationSignal {
  public:
   CancelationSignal();
   ~CancelationSignal();

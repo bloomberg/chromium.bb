@@ -15,7 +15,7 @@ struct ModelNeutralState;
 }
 
 // A component used to get time delays associated with exponential backoff.
-class SYNC_EXPORT BackoffDelayProvider {
+class SYNC_EXPORT_PRIVATE BackoffDelayProvider {
  public:
   // Factory function to create a standard BackoffDelayProvider.
   static BackoffDelayProvider* FromDefaults();
