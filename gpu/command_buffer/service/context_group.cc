@@ -16,6 +16,7 @@
 #include "gpu/command_buffer/service/path_manager.h"
 #include "gpu/command_buffer/service/program_manager.h"
 #include "gpu/command_buffer/service/renderbuffer_manager.h"
+#include "gpu/command_buffer/service/sampler_manager.h"
 #include "gpu/command_buffer/service/shader_manager.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/command_buffer/service/transfer_buffer_manager.h"
@@ -155,6 +156,7 @@ bool ContextGroup::Initialize(GLES2Decoder* decoder,
       memory_tracker_.get(), max_renderbuffer_size, max_samples,
       feature_info_.get()));
   shader_manager_.reset(new ShaderManager());
+  sampler_manager_.reset(new SamplerManager(feature_info_.get()));
   valuebuffer_manager_.reset(
       new ValuebufferManager(subscription_ref_set_.get(),
                              pending_valuebuffer_state_.get()));
@@ -376,6 +378,11 @@ void ContextGroup::Destroy(GLES2Decoder* decoder, bool have_context) {
   if (shader_manager_ != NULL) {
     shader_manager_->Destroy(have_context);
     shader_manager_.reset();
+  }
+
+  if (sampler_manager_ != NULL) {
+    sampler_manager_->Destroy(have_context);
+    sampler_manager_.reset();
   }
 
   if (valuebuffer_manager_ != NULL) {

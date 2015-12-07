@@ -562,10 +562,7 @@ TEST_P(GLES2DecoderTest1, DeleteSamplersImmediateValidArgs) {
   EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(client_sampler_id_)));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  EXPECT_FALSE(GetSamplerServiceId(client_sampler_id_, NULL));
-  decoder_->set_unsafe_es3_apis_enabled(false);
-  EXPECT_EQ(error::kUnknownCommand,
-            ExecuteImmediateCmd(cmd, sizeof(client_sampler_id_)));
+  EXPECT_TRUE(GetSampler(client_sampler_id_) == NULL);
 }
 
 TEST_P(GLES2DecoderTest1, DeleteSamplersImmediateInvalidArgs) {
@@ -955,11 +952,7 @@ TEST_P(GLES2DecoderTest1, GenSamplersImmediateValidArgs) {
   cmd->Init(1, &temp);
   EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(*cmd, sizeof(temp)));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  GLuint service_id;
-  EXPECT_TRUE(GetSamplerServiceId(kNewClientId, &service_id));
-  EXPECT_EQ(kNewServiceId, service_id);
-  decoder_->set_unsafe_es3_apis_enabled(false);
-  EXPECT_EQ(error::kUnknownCommand, ExecuteImmediateCmd(*cmd, sizeof(temp)));
+  EXPECT_TRUE(GetSampler(kNewClientId) != NULL);
 }
 
 TEST_P(GLES2DecoderTest1, GenSamplersImmediateInvalidArgs) {

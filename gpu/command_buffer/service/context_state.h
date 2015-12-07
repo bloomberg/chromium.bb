@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/service/gl_utils.h"
+#include "gpu/command_buffer/service/sampler_manager.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/command_buffer/service/valuebuffer_manager.h"
 #include "gpu/command_buffer/service/vertex_attrib_manager.h"
@@ -217,6 +218,7 @@ struct GPU_EXPORT ContextState {
   void RemoveBoundBuffer(Buffer* buffer);
 
   void UnbindTexture(TextureRef* texture);
+  void UnbindSampler(Sampler* sampler);
 
   #include "gpu/command_buffer/service/context_state_autogen.h"
 
@@ -240,6 +242,9 @@ struct GPU_EXPORT ContextState {
 
   // Which textures are bound to texture units through glActiveTexture.
   std::vector<TextureUnit> texture_units;
+
+  // Which samplers are bound to each texture unit;
+  std::vector<scoped_refptr<Sampler>> sampler_units;
 
   // The values for each attrib.
   std::vector<Vec4> attrib_values;

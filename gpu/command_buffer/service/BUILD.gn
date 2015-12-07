@@ -99,6 +99,8 @@ source_set("service_sources") {
     "query_manager.h",
     "renderbuffer_manager.cc",
     "renderbuffer_manager.h",
+    "sampler_manager.cc",
+    "sampler_manager.h",
     "shader_manager.cc",
     "shader_manager.h",
     "shader_translator.cc",

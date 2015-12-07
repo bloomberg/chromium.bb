@@ -585,6 +585,15 @@ void ContextState::UnbindTexture(TextureRef* texture) {
   }
 }
 
+void ContextState::UnbindSampler(Sampler* sampler) {
+  for (size_t jj = 0; jj < sampler_units.size(); ++jj) {
+    if (sampler_units[jj].get() == sampler) {
+      sampler_units[jj] = nullptr;
+      glBindSampler(jj, 0);
+    }
+  }
+}
+
 // Include the auto-generated part of this file. We split this because it means
 // we can easily edit the non-auto generated parts right here in this file
 // instead of having to edit some template or the code generator.

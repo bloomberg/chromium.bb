@@ -17,6 +17,7 @@
 #include "gpu/command_buffer/service/program_manager.h"
 #include "gpu/command_buffer/service/query_manager.h"
 #include "gpu/command_buffer/service/renderbuffer_manager.h"
+#include "gpu/command_buffer/service/sampler_manager.h"
 #include "gpu/command_buffer/service/shader_manager.h"
 #include "gpu/command_buffer/service/test_helper.h"
 #include "gpu/command_buffer/service/texture_manager.h"
@@ -134,8 +135,8 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
     return decoder_->GetQueryManager()->GetQuery(client_id);
   }
 
-  bool GetSamplerServiceId(GLuint client_id, GLuint* service_id) const {
-    return group_->GetSamplerServiceId(client_id, service_id);
+  Sampler* GetSampler(GLuint client_id) {
+    return group_->sampler_manager()->GetSampler(client_id);
   }
 
   bool GetTransformFeedbackServiceId(

@@ -102,6 +102,8 @@
     'command_buffer/service/query_manager.h',
     'command_buffer/service/renderbuffer_manager.cc',
     'command_buffer/service/renderbuffer_manager.h',
+    'command_buffer/service/sampler_manager.cc',
+    'command_buffer/service/sampler_manager.h',
     'command_buffer/service/shader_manager.cc',
     'command_buffer/service/shader_manager.h',
     'command_buffer/service/shader_translator.cc',

@@ -50,6 +50,7 @@
 #include "gpu/command_buffer/service/program_manager.h"
 #include "gpu/command_buffer/service/query_manager.h"
 #include "gpu/command_buffer/service/renderbuffer_manager.h"
+#include "gpu/command_buffer/service/sampler_manager.h"
 #include "gpu/command_buffer/service/shader_manager.h"
 #include "gpu/command_buffer/service/shader_translator.h"
 #include "gpu/command_buffer/service/texture_manager.h"
@@ -708,6 +709,8 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   void DeleteVertexArraysOESHelper(GLsizei n, const GLuint* client_ids);
   bool GenPathsCHROMIUMHelper(GLuint first_client_id, GLsizei range);
   bool DeletePathsCHROMIUMHelper(GLuint first_client_id, GLsizei range);
+  bool GenSamplersHelper(GLsizei n, const GLuint* client_ids);
+  void DeleteSamplersHelper(GLsizei n, const GLuint* client_ids);
 
   // Workarounds
   void OnFboChanged() const;
@@ -735,6 +738,10 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
 
   ProgramManager* program_manager() {
     return group_->program_manager();
+  }
+
+  SamplerManager* sampler_manager() {
+    return group_->sampler_manager();
   }
 
   ShaderManager* shader_manager() {
@@ -793,6 +800,22 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   // Deletes the texture info for the given texture.
   void RemoveTexture(GLuint client_id) {
     texture_manager()->RemoveTexture(client_id);
+  }
+
+  // Creates a Sampler for the given sampler.
+  Sampler* CreateSampler(
+      GLuint client_id, GLuint service_id) {
+    return sampler_manager()->CreateSampler(client_id, service_id);
+  }
+
+  // Gets the sampler info for the given sampler. Returns NULL if none exists.
+  Sampler* GetSampler(GLuint client_id) {
+    return sampler_manager()->GetSampler(client_id);
+  }
+
+  // Deletes the sampler info for the given sampler.
+  void RemoveSampler(GLuint client_id) {
+    sampler_manager()->RemoveSampler(client_id);
   }
 
   // Get the size (in pixels) of the currently bound frame buffer (either FBO
@@ -1373,6 +1396,9 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   // Wrapper for glBindTexture since we need to track the current targets.
   void DoBindTexture(GLenum target, GLuint texture);
 
+  // Wrapper for glBindSampler since we need to track the current targets.
+  void DoBindSampler(GLuint unit, GLuint sampler);
+
   // Wrapper for glBindVertexArrayOES
   void DoBindVertexArrayOES(GLuint array);
   void EmulateVertexArrayState();
@@ -1504,6 +1530,10 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   void DoGetRenderbufferParameteriv(
       GLenum target, GLenum pname, GLint* params);
 
+  // Wrappers for glGetSamplerParameter.
+  void DoGetSamplerParameterfv(GLuint client_id, GLenum pname, GLfloat* params);
+  void DoGetSamplerParameteriv(GLuint client_id, GLenum pname, GLint* params);
+
   // Wrapper for glGetShaderiv
   void DoGetShaderiv(GLuint shader, GLenum pname, GLint* params);
 
@@ -1528,6 +1558,7 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   bool DoIsRenderbuffer(GLuint client_id);
   bool DoIsShader(GLuint client_id);
   bool DoIsTexture(GLuint client_id);
+  bool DoIsSampler(GLuint client_id);
   bool DoIsVertexArrayOES(GLuint client_id);
   bool DoIsPathCHROMIUM(GLuint client_id);
 
@@ -1569,10 +1600,13 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   // Wrapper for glReleaseShaderCompiler.
   void DoReleaseShaderCompiler() { }
 
-  // Wrappers for glSamplerParameter*v functions.
+  // Wrappers for glSamplerParameter functions.
+  void DoSamplerParameterf(GLuint client_id, GLenum pname, GLfloat param);
+  void DoSamplerParameteri(GLuint client_id, GLenum pname, GLint param);
   void DoSamplerParameterfv(
-      GLuint sampler, GLenum pname, const GLfloat* params);
-  void DoSamplerParameteriv(GLuint sampler, GLenum pname, const GLint* params);
+      GLuint client_id, GLenum pname, const GLfloat* params);
+  void DoSamplerParameteriv(
+      GLuint client_id, GLenum pname, const GLint* params);
 
   // Wrappers for glTexParameter functions.
   void DoTexParameterf(GLenum target, GLenum pname, GLfloat param);
@@ -2708,6 +2742,7 @@ bool GLES2DecoderImpl::Initialize(
   glGenBuffersARB(1, &fixed_attrib_buffer_id_);
 
   state_.texture_units.resize(group_->max_texture_units());
+  state_.sampler_units.resize(group_->max_texture_units());
   for (uint32 tt = 0; tt < state_.texture_units.size(); ++tt) {
     glActiveTexture(GL_TEXTURE0 + tt);
     // We want the last bind to be 2D.
@@ -3376,6 +3411,20 @@ bool GLES2DecoderImpl::GenTexturesHelper(GLsizei n, const GLuint* client_ids) {
   return true;
 }
 
+bool GLES2DecoderImpl::GenSamplersHelper(GLsizei n, const GLuint* client_ids) {
+  for (GLsizei ii = 0; ii < n; ++ii) {
+    if (GetSampler(client_ids[ii])) {
+      return false;
+    }
+  }
+  scoped_ptr<GLuint[]> service_ids(new GLuint[n]);
+  glGenSamplers(n, service_ids.get());
+  for (GLsizei ii = 0; ii < n; ++ii) {
+    CreateSampler(client_ids[ii], service_ids[ii]);
+  }
+  return true;
+}
+
 bool GLES2DecoderImpl::GenPathsCHROMIUMHelper(GLuint first_client_id,
                                               GLsizei range) {
   GLuint last_client_id;
@@ -3541,6 +3590,19 @@ void GLES2DecoderImpl::DeleteTexturesHelper(
       }
 #endif
       RemoveTexture(client_ids[ii]);
+    }
+  }
+}
+
+void GLES2DecoderImpl::DeleteSamplersHelper(
+    GLsizei n, const GLuint* client_ids) {
+  for (GLsizei ii = 0; ii < n; ++ii) {
+    Sampler* sampler = GetSampler(client_ids[ii]);
+    if (sampler && !sampler->IsDeleted()) {
+      // Unbind from current sampler units.
+      state_.UnbindSampler(sampler);
+
+      RemoveSampler(client_ids[ii]);
     }
   }
 }
@@ -3988,6 +4050,7 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
   state_.vertex_attrib_manager = NULL;
   state_.default_vertex_attrib_manager = NULL;
   state_.texture_units.clear();
+  state_.sampler_units.clear();
   state_.bound_array_buffer = NULL;
   state_.bound_copy_read_buffer = NULL;
   state_.bound_copy_write_buffer = NULL;
@@ -4888,6 +4951,29 @@ void GLES2DecoderImpl::DoBindTexture(GLenum target, GLuint client_id) {
       NOTREACHED();  // Validation should prevent us getting here.
       break;
   }
+}
+
+void GLES2DecoderImpl::DoBindSampler(GLuint unit, GLuint client_id) {
+  Sampler* sampler = nullptr;
+  if (client_id != 0) {
+    sampler = GetSampler(client_id);
+    if (!sampler) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION,
+                         "glBindSampler",
+                         "id not generated by glGenSamplers");
+      return;
+    }
+  }
+
+  // Check the sampler exists
+  if (sampler) {
+    LogClientServiceForInfo(sampler, client_id, "glBindSampler");
+    glBindSampler(unit, sampler->service_id());
+  } else {
+    glBindSampler(unit, 0);
+  }
+
+  state_.sampler_units[unit] = sampler;
 }
 
 void GLES2DecoderImpl::DoDisableVertexAttribArray(GLuint index) {
@@ -6850,16 +6936,54 @@ void GLES2DecoderImpl::DoReadBuffer(GLenum src) {
   glReadBuffer(src);
 }
 
+void GLES2DecoderImpl::DoSamplerParameterf(
+    GLuint client_id, GLenum pname, GLfloat param) {
+  Sampler* sampler = GetSampler(client_id);
+  if (!sampler) {
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_VALUE, "glSamplerParameterf", "unknown sampler");
+    return;
+  }
+  sampler_manager()->SetParameterf(
+      "glSamplerParameterf", GetErrorState(), sampler, pname, param);
+}
+
+void GLES2DecoderImpl::DoSamplerParameteri(
+    GLuint client_id, GLenum pname, GLint param) {
+  Sampler* sampler = GetSampler(client_id);
+  if (!sampler) {
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_VALUE, "glSamplerParameteri", "unknown sampler");
+    return;
+  }
+  sampler_manager()->SetParameteri(
+      "glSamplerParameteri", GetErrorState(), sampler, pname, param);
+}
+
 void GLES2DecoderImpl::DoSamplerParameterfv(
-    GLuint sampler, GLenum pname, const GLfloat* params) {
+    GLuint client_id, GLenum pname, const GLfloat* params) {
   DCHECK(params);
-  glSamplerParameterf(sampler, pname, params[0]);
+  Sampler* sampler = GetSampler(client_id);
+  if (!sampler) {
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_VALUE, "glSamplerParameterfv", "unknown sampler");
+    return;
+  }
+  sampler_manager()->SetParameterf(
+      "glSamplerParameterfv", GetErrorState(), sampler, pname, params[0]);
 }
 
 void GLES2DecoderImpl::DoSamplerParameteriv(
-    GLuint sampler, GLenum pname, const GLint* params) {
+    GLuint client_id, GLenum pname, const GLint* params) {
   DCHECK(params);
-  glSamplerParameteri(sampler, pname, params[0]);
+  Sampler* sampler = GetSampler(client_id);
+  if (!sampler) {
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_VALUE, "glSamplerParameteriv", "unknown sampler");
+    return;
+  }
+  sampler_manager()->SetParameteri(
+      "glSamplerParameteriv", GetErrorState(), sampler, pname, params[0]);
 }
 
 void GLES2DecoderImpl::DoTexParameterf(
@@ -8399,6 +8523,11 @@ bool GLES2DecoderImpl::DoIsTexture(GLuint client_id) {
   return texture_ref && texture_ref->texture()->IsValid();
 }
 
+bool GLES2DecoderImpl::DoIsSampler(GLuint client_id) {
+  const Sampler* sampler = GetSampler(client_id);
+  return sampler && !sampler->IsDeleted();
+}
+
 void GLES2DecoderImpl::DoAttachShader(
     GLuint program_client_id, GLint shader_client_id) {
   Program* program = GetProgramInfoNotShader(
@@ -8487,6 +8616,28 @@ void GLES2DecoderImpl::GetVertexAttribHelper(
       NOTREACHED();
       break;
   }
+}
+
+void GLES2DecoderImpl::DoGetSamplerParameterfv(
+    GLuint client_id, GLenum pname, GLfloat* params) {
+  Sampler* sampler = GetSampler(client_id);
+  if (!sampler) {
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_OPERATION, "glGetSamplerParamterfv", "unknown sampler");
+    return;
+  }
+  glGetSamplerParameterfv(sampler->service_id(), pname, params);
+}
+
+void GLES2DecoderImpl::DoGetSamplerParameteriv(
+    GLuint client_id, GLenum pname, GLint* params) {
+  Sampler* sampler = GetSampler(client_id);
+  if (!sampler) {
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_OPERATION, "glGetSamplerParamteriv", "unknown sampler");
+    return;
+  }
+  glGetSamplerParameteriv(sampler->service_id(), pname, params);
 }
 
 void GLES2DecoderImpl::DoGetTexParameterfv(

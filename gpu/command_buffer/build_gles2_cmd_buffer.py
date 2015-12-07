@@ -2200,6 +2200,8 @@ _PEPPER_INTERFACES = [
 # not_shared:   For GENn types, True if objects can't be shared between contexts
 # unsafe:       True = no validation is implemented on the service side and the
 #               command is only available with --enable-unsafe-es3-apis.
+# use_helper:   True = use explicit helper or decoder functions rather than the
+#               defaults created when unsafe is True.
 # id_mapping:   A list of resource type names whose client side IDs need to be
 #               mapped to service side IDs.  This is only used for unsafe APIs.
 
@@ -2259,8 +2261,9 @@ _FUNCTION_INFO = {
   },
   'BindSampler': {
     'type': 'Bind',
-    'id_mapping': [ 'Sampler' ],
+    'decoder_func': 'DoBindSampler',
     'unsafe': True,
+    'use_helper': True,
   },
   'BindTexture': {
     'type': 'Bind',
@@ -2644,6 +2647,7 @@ _FUNCTION_INFO = {
     'resource_type': 'Sampler',
     'resource_types': 'Samplers',
     'unsafe': True,
+    'use_helper': True
   },
   'DeleteShader': { 'type': 'Delete' },
   'DeleteSync': {
@@ -2788,6 +2792,7 @@ _FUNCTION_INFO = {
     'resource_type': 'Sampler',
     'resource_types': 'Samplers',
     'unsafe': True,
+    'use_helper': True,
   },
   'GenTextures': {
     'type': 'GENn',
@@ -3005,15 +3010,17 @@ _FUNCTION_INFO = {
   },
   'GetSamplerParameterfv': {
     'type': 'GETn',
+    'decoder_func': 'DoGetSamplerParameterfv',
     'result': ['SizedResult<GLfloat>'],
-    'id_mapping': [ 'Sampler' ],
     'unsafe': True,
+    'use_helper': True,
   },
   'GetSamplerParameteriv': {
     'type': 'GETn',
+    'decoder_func': 'DoGetSamplerParameteriv',
     'result': ['SizedResult<GLint>'],
-    'id_mapping': [ 'Sampler' ],
     'unsafe': True,
+    'use_helper': True,
   },
   'GetShaderiv': {
     'type': 'GETn',
@@ -3250,9 +3257,10 @@ _FUNCTION_INFO = {
   },
   'IsSampler': {
     'type': 'Is',
-    'id_mapping': [ 'Sampler' ],
+    'decoder_func': 'DoIsSampler',
     'expectation': False,
     'unsafe': True,
+    'use_helper': True,
   },
   'IsSync': {
     'type': 'Is',
@@ -3410,8 +3418,9 @@ _FUNCTION_INFO = {
     'valid_args': {
       '2': 'GL_NEAREST'
     },
-    'id_mapping': [ 'Sampler' ],
+    'decoder_func': 'DoSamplerParameterf',
     'unsafe': True,
+    'use_helper': True,
   },
   'SamplerParameterfv': {
     'type': 'PUT',
@@ -3420,15 +3429,16 @@ _FUNCTION_INFO = {
     'gl_test_func': 'glSamplerParameterf',
     'decoder_func': 'DoSamplerParameterfv',
     'first_element_only': True,
-    'id_mapping': [ 'Sampler' ],
     'unsafe': True,
+    'use_helper': True,
   },
   'SamplerParameteri': {
     'valid_args': {
       '2': 'GL_NEAREST'
     },
-    'id_mapping': [ 'Sampler' ],
+    'decoder_func': 'DoSamplerParameteri',
     'unsafe': True,
+    'use_helper': True,
   },
   'SamplerParameteriv': {
     'type': 'PUT',
@@ -3438,6 +3448,7 @@ _FUNCTION_INFO = {
     'decoder_func': 'DoSamplerParameteriv',
     'first_element_only': True,
     'unsafe': True,
+    'use_helper': True,
   },
   'ShaderBinary': {
     'type': 'Custom',
@@ -5925,7 +5936,7 @@ class GENnHandler(TypeHandler):
 
   def WriteImmediateHandlerImplementation(self, func, f):
     """Overrriden from TypeHandler."""
-    if func.IsUnsafe():
+    if func.IsUnsafe() and not func.UseHelper():
       f.write("""  for (GLsizei ii = 0; ii < n; ++ii) {
     if (group_->Get%(resource_name)sServiceId(%(last_arg_name)s[ii], NULL)) {
       return error::kInvalidArguments;
@@ -6030,7 +6041,7 @@ TEST_P(%(test_name)s, %(name)sValidArgs) {
   cmd.Init(%(args)s);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());"""
-    if func.IsUnsafe():
+    if func.IsUnsafe() and not func.UseHelper():
       valid_test += """
   GLuint service_id;
   EXPECT_TRUE(Get%(resource_name)sServiceId(kNewClientId, &service_id));
@@ -6076,7 +6087,7 @@ TEST_P(%(test_name)s, %(name)sValidArgs) {
   EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(*cmd, sizeof(temp)));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());"""
-    if func.IsUnsafe():
+    if func.IsUnsafe() and not func.UseHelper():
       valid_test += """
   GLuint service_id;
   EXPECT_TRUE(Get%(resource_name)sServiceId(kNewClientId, &service_id));
@@ -6378,7 +6389,7 @@ class DeleteHandler(TypeHandler):
     """Overrriden from TypeHandler."""
     assert len(func.GetOriginalArgs()) == 1
     arg = func.GetOriginalArgs()[0]
-    if func.IsUnsafe():
+    if func.IsUnsafe() and not func.UseHelper():
       f.write("""  %(arg_type)s service_id = 0;
   if (group_->Get%(resource_type)sServiceId(%(arg_name)s, &service_id)) {
     glDelete%(resource_type)s(service_id);
@@ -6479,7 +6490,7 @@ TEST_P(%(test_name)s, %(name)sValidArgs) {
   EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(client_%(resource_name)s_id_)));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());"""
-    if func.IsUnsafe():
+    if func.IsUnsafe() and not func.UseHelper():
       valid_test += """
   EXPECT_FALSE(Get%(upper_resource_name)sServiceId(
       client_%(resource_name)s_id_, NULL));
@@ -6529,7 +6540,7 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs) {
 
   def WriteImmediateHandlerImplementation (self, func, f):
     """Overrriden from TypeHandler."""
-    if func.IsUnsafe():
+    if func.IsUnsafe() and not func.UseHelper():
       f.write("""  for (GLsizei ii = 0; ii < n; ++ii) {
     GLuint service_id = 0;
     if (group_->Get%(resource_type)sServiceId(
@@ -6989,7 +7000,7 @@ TEST_P(%(test_name)s, %(name)sValidArgs) {
   cmds::%(name)s& cmd = *GetImmediateAs<cmds::%(name)s>();
   SpecializedSetup<cmds::%(name)s, 0>(true);
   %(data_type)s temp[%(data_count)s] = { %(data_value)s, };
-  cmd.Init(%(gl_args)s, &temp[0]);
+  cmd.Init(%(gl_client_args)s, &temp[0]);
   EXPECT_CALL(
       *gl_,
       %(gl_func_name)s(%(gl_args)s, %(data_ref)sreinterpret_cast<
@@ -7009,6 +7020,9 @@ TEST_P(%(test_name)s, %(name)sValidArgs) {
     valid_test += """
 }
 """
+    gl_client_arg_strings = [
+      arg.GetValidArg(func) for arg in func.GetOriginalArgs()[0:-1]
+    ]
     gl_arg_strings = [
       arg.GetValidGLArg(func) for arg in func.GetOriginalArgs()[0:-1]
     ]
@@ -7019,6 +7033,7 @@ TEST_P(%(test_name)s, %(name)sValidArgs) {
       'data_type': self.GetArrayType(func),
       'data_count': self.GetArrayCount(func),
       'data_value': func.GetInfo('data_value') or '0',
+      'gl_client_args': ", ".join(gl_client_arg_strings),
       'gl_args': ", ".join(gl_arg_strings),
       'gl_any_args': ", ".join(gl_any_strings),
     }
@@ -8243,7 +8258,7 @@ TEST_P(%(test_name)s, %(name)sInvalidArgsBadSharedMemoryId) {
 """
     f.write(code % {'func_name': func.name})
     func.WriteHandlerValidation(f)
-    if func.IsUnsafe():
+    if func.IsUnsafe() and not func.UseHelper():
       assert func.GetInfo('id_mapping')
       assert len(func.GetInfo('id_mapping')) == 1
       assert len(args) == 1
@@ -9306,6 +9321,10 @@ class Function(object):
   def IsUnsafe(self):
     """Returns whether the function has service side validation or not."""
     return self.GetInfo('unsafe', False)
+
+  def UseHelper(self):
+    """Returns whether the function uses explicit helper functions."""
+    return self.GetInfo('use_helper', False)
 
   def GetInfo(self, name, default = None):
     """Returns a value from the function info for this function."""

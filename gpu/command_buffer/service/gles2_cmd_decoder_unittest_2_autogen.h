@@ -836,7 +836,7 @@ TEST_P(GLES2DecoderTest2, SamplerParameterfvImmediateValidArgs) {
   GLfloat temp[1] = {
       GL_NEAREST,
   };
-  cmd.Init(kServiceSamplerId, GL_TEXTURE_MAG_FILTER, &temp[0]);
+  cmd.Init(client_sampler_id_, GL_TEXTURE_MAG_FILTER, &temp[0]);
   EXPECT_CALL(*gl_, SamplerParameterf(kServiceSamplerId, GL_TEXTURE_MAG_FILTER,
                                       *reinterpret_cast<GLfloat*>(
                                           ImmediateDataAddress(&cmd))));
@@ -867,7 +867,7 @@ TEST_P(GLES2DecoderTest2, SamplerParameterivImmediateValidArgs) {
   GLint temp[1] = {
       GL_NEAREST,
   };
-  cmd.Init(kServiceSamplerId, GL_TEXTURE_MAG_FILTER, &temp[0]);
+  cmd.Init(client_sampler_id_, GL_TEXTURE_MAG_FILTER, &temp[0]);
   EXPECT_CALL(*gl_, SamplerParameteri(
                         kServiceSamplerId, GL_TEXTURE_MAG_FILTER,
                         *reinterpret_cast<GLint*>(ImmediateDataAddress(&cmd))));

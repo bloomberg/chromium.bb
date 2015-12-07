@@ -34,6 +34,7 @@ class MailboxManager;
 class RenderbufferManager;
 class PathManager;
 class ProgramManager;
+class SamplerManager;
 class ShaderManager;
 class TextureManager;
 class SubscriptionRefSet;
@@ -177,30 +178,16 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
     return transfer_buffer_manager_.get();
   }
 
+  SamplerManager* sampler_manager() const {
+    return sampler_manager_.get();
+  }
+
   uint32 GetMemRepresented() const;
 
   // Loses all the context associated with this group.
   void LoseContexts(error::ContextLostReason reason);
 
   bool GetBufferServiceId(GLuint client_id, GLuint* service_id) const;
-
-  void AddSamplerId(GLuint client_id, GLuint service_id) {
-    samplers_id_map_[client_id] = service_id;
-  }
-
-  bool GetSamplerServiceId(GLuint client_id, GLuint* service_id) const {
-    base::hash_map<GLuint, GLuint>::const_iterator iter =
-        samplers_id_map_.find(client_id);
-    if (iter == samplers_id_map_.end())
-      return false;
-    if (service_id)
-      *service_id = iter->second;
-    return true;
-  }
-
-  void RemoveSamplerId(GLuint client_id) {
-    samplers_id_map_.erase(client_id);
-  }
 
   void AddTransformFeedbackId(GLuint client_id, GLuint service_id) {
     transformfeedbacks_id_map_[client_id] = service_id;
@@ -293,6 +280,8 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
 
   scoped_ptr<ShaderManager> shader_manager_;
 
+  scoped_ptr<SamplerManager> sampler_manager_;
+
   scoped_ptr<ValuebufferManager> valuebuffer_manager_;
 
   scoped_refptr<FeatureInfo> feature_info_;
@@ -300,7 +289,6 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
   std::vector<base::WeakPtr<gles2::GLES2Decoder> > decoders_;
 
   // Mappings from client side IDs to service side IDs.
-  base::hash_map<GLuint, GLuint> samplers_id_map_;
   base::hash_map<GLuint, GLuint> transformfeedbacks_id_map_;
   base::hash_map<GLuint, GLsync> syncs_id_map_;
 
