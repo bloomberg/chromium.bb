@@ -50,6 +50,8 @@ DecodingImageGenerator::~DecodingImageGenerator()
 
 SkData* DecodingImageGenerator::onRefEncodedData()
 {
+    TRACE_EVENT0("blink", "DecodingImageGenerator::refEncodedData");
+
     // FIXME: If the image has been clipped or scaled, do not return the original
     // encoded data, since on playback it will not be known how the clipping/scaling
     // was done.
@@ -64,7 +66,7 @@ SkData* DecodingImageGenerator::onRefEncodedData()
 bool DecodingImageGenerator::onGetPixels(const SkImageInfo& info, void* pixels, size_t rowBytes,
     SkPMColor ctable[], int* ctableCount)
 {
-    TRACE_EVENT1("blink", "DecodingImageGenerator::getPixels", "index", static_cast<int>(m_frameIndex));
+    TRACE_EVENT1("blink", "DecodingImageGenerator::getPixels", "frame index", static_cast<int>(m_frameIndex));
 
     // Implementation doesn't support scaling yet so make sure we're not given a different size.
     if (info.width() != getInfo().width() || info.height() != getInfo().height())
@@ -88,15 +90,19 @@ bool DecodingImageGenerator::onGetYUV8Planes(SkISize sizes[3], void* planes[3], 
     if (!RuntimeEnabledFeatures::decodeToYUVEnabled())
         return false;
 
-    if (!planes || !planes[0])
+    bool requestingYUVSizes = !planes || !planes[0];
+
+    TRACE_EVENT1("blink", "DecodingImageGenerator::getYUV8Planes", requestingYUVSizes ? "sizes" : "frame index", static_cast<int>(m_frameIndex));
+
+    if (requestingYUVSizes)
         return m_frameGenerator->getYUVComponentSizes(sizes);
 
-    TRACE_EVENT0("blink", "DecodingImageGenerator::onGetYUV8Planes");
     PlatformInstrumentation::willDecodeLazyPixelRef(m_generationId);
     bool decoded = m_frameGenerator->decodeToYUV(sizes, planes, rowBytes);
     PlatformInstrumentation::didDecodeLazyPixelRef();
     if (colorSpace)
         *colorSpace = kJPEG_SkYUVColorSpace;
+
     return decoded;
 }
 
