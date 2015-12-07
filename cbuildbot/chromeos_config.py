@@ -1206,10 +1206,8 @@ def GetConfig():
       'nyan',
   ])
 
-
-  # TODO(akeshet): Replace this with a config named x86-alex-chrome-pfq.
   site_config.AddConfig(
-      chrome_pfq, 'alex-chrome-pfq',
+      chrome_pfq, 'x86-alex-chrome-pfq',
       _base_configs['x86-alex'],
   )
 

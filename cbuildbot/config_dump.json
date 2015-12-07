@@ -1124,14 +1124,6 @@
             "vm_tests_override": null
         }
     },
-    "alex-chrome-pfq": {
-        "_template": "chrome-pfq",
-        "active_waterfall": "chromeos",
-        "boards": [
-            "x86-alex"
-        ],
-        "manifest": "official.xml"
-    },
     "amd64-generic-asan": {
         "_template": "asan",
         "active_waterfall": "chromiumos",
@@ -23776,10 +23768,10 @@
     },
     "x86-alex-chrome-pfq": {
         "_template": "chrome-pfq",
+        "active_waterfall": "chromeos",
         "boards": [
             "x86-alex"
         ],
-        "important": false,
         "manifest": "official.xml"
     },
     "x86-alex-chromium-pfq": {
