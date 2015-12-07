@@ -1681,6 +1681,15 @@ void WebViewImpl::cancelPagePopup()
 
 void WebViewImpl::enablePopupMouseWheelEventListener()
 {
+    // TODO(kenrb): Popup coordination for out-of-process iframes needs to be
+    // added. Because of the early return here (and also the one in
+    // ScrollingCoordinator::updateHaveWheelEventHandlers) a select element
+    // popup can remain visible even when the element underneath it is
+    // scrolled to a new position. This is part of a larger set of issues with
+    // popups.
+    // See https://crbug.com/566130
+    if (!mainFrameImpl() || !mainFrameImpl()->frame()->isLocalFrame())
+        return;
     ASSERT(!m_popupMouseWheelEventListener);
     Document* document = mainFrameImpl()->frame()->document();
     ASSERT(document);
@@ -1692,6 +1701,10 @@ void WebViewImpl::enablePopupMouseWheelEventListener()
 
 void WebViewImpl::disablePopupMouseWheelEventListener()
 {
+    // TODO(kenrb): Concerns the same as in enablePopupMouseWheelEventListener.
+    // See https://crbug.com/566130
+    if (!mainFrameImpl() || !mainFrameImpl()->frame()->isLocalFrame())
+        return;
     ASSERT(m_popupMouseWheelEventListener);
     Document* document = mainFrameImpl()->frame()->document();
     ASSERT(document);
