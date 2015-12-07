@@ -208,6 +208,10 @@ HeartbeatScheduler::HeartbeatScheduler(
   // Update the heartbeat frequency from settings. This will trigger a
   // heartbeat as appropriate once the settings have been refreshed.
   RefreshHeartbeatSettings();
+
+  // Initialize the default heartbeats interval for GCM driver.
+  gcm_driver_->AddHeartbeatInterval(kHeartbeatSchedulerScope,
+                                    heartbeat_interval_.InMilliseconds());
 }
 
 void HeartbeatScheduler::RefreshHeartbeatSettings() {
