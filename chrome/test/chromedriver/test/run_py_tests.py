@@ -60,6 +60,8 @@ _VERSION_SPECIFIC_FILTER = {}
 _VERSION_SPECIFIC_FILTER['HEAD'] = [
     # https://code.google.com/p/chromedriver/issues/detail?id=992
     'ChromeDownloadDirTest.testDownloadDirectoryOverridesExistingPreferences',
+    # https://code.google.com/p/chromedriver/issues/detail?id=1278
+    #'ChromeDownloadDirTest.testFileDownloadWithGet',
 ]
 _VERSION_SPECIFIC_FILTER['44'] = [
     # https://code.google.com/p/chromedriver/issues/detail?id=1202
