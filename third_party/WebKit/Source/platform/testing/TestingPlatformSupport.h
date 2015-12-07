@@ -33,6 +33,7 @@
 
 #include "platform/PlatformExport.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebCompositorSupport.h"
 #include "public/platform/WebDiscardableMemory.h"
 #include "wtf/Vector.h"
 
@@ -55,6 +56,9 @@ public:
 private:
     Vector<char> m_data;
     bool m_isLocked;
+};
+
+class TestingCompositorSupport : public WebCompositorSupport {
 };
 
 class TestingPlatformSupport : public Platform {

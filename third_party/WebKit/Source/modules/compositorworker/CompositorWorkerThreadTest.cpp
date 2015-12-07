@@ -114,8 +114,11 @@ public:
         return m_oldPlatform->createWaitableEvent(policy, state);
     }
 
+    WebCompositorSupport* compositorSupport() override { return &m_compositorSupport; }
+
 private:
     OwnPtr<WebThread> m_thread;
+    TestingCompositorSupport m_compositorSupport;
 };
 
 } // namespace
