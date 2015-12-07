@@ -69,6 +69,7 @@
         'range/range_unittest.cc',
         'range/range_win_unittest.cc',
         'render_text_unittest.cc',
+        'screen_win_unittest.cc',
         'sequential_id_generator_unittest.cc',
         'shadow_value_unittest.cc',
         'skbitmap_operations_unittest.cc',

@@ -25,12 +25,14 @@ MONITORINFOEX GetMonitorInfoForMonitor(HMONITOR monitor) {
   return monitor_info;
 }
 
-gfx::Display GetDisplay(MONITORINFOEX& monitor_info) {
+gfx::Display GetDisplay(const MONITORINFOEX& monitor_info) {
   int64 id = static_cast<int64>(
       base::Hash(base::WideToUTF8(monitor_info.szDevice)));
   gfx::Rect bounds = gfx::Rect(monitor_info.rcMonitor);
-  gfx::Display display(id, bounds);
-  display.set_work_area(gfx::Rect(monitor_info.rcWork));
+  gfx::Display display(id);
+  display.set_bounds(gfx::win::ScreenToDIPRect(bounds));
+  display.set_work_area(
+      gfx::win::ScreenToDIPRect(gfx::Rect(monitor_info.rcWork)));
   display.SetScaleAndBounds(gfx::GetDPIScale(), bounds);
 
   DEVMODE mode;
@@ -198,6 +200,16 @@ void ScreenWin::OnWndProc(HWND hwnd,
   displays_ = GetDisplays();
 
   change_notifier_.NotifyDisplaysChanged(old_displays, displays_);
+}
+
+// static
+std::vector<gfx::Display> ScreenWin::GetDisplaysForMonitorInfos(
+    const std::vector<MONITORINFOEX>& monitor_infos) {
+  std::vector<gfx::Display> displays;
+  for (const MONITORINFOEX& monitor_info : monitor_infos)
+    displays.push_back(GetDisplay(monitor_info));
+
+  return displays;
 }
 
 }  // namespace gfx

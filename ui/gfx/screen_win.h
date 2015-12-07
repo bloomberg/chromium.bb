@@ -6,6 +6,7 @@
 #define UI_GFX_SCREEN_WIN_H_
 
 #include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/display_change_notifier.h"
 #include "ui/gfx/gfx_export.h"
@@ -40,7 +41,13 @@ class GFX_EXPORT ScreenWin : public Screen {
   void RemoveObserver(DisplayObserver* observer) override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(ScreenWinTest, SingleDisplay1x);
+  FRIEND_TEST_ALL_PREFIXES(ScreenWinTest, SingleDisplay2x);
+
   void OnWndProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam);
+
+  static std::vector<gfx::Display> GetDisplaysForMonitorInfos(
+      const std::vector<MONITORINFOEX>& monitor_infos);
 
   // Helper implementing the DisplayObserver handling.
   gfx::DisplayChangeNotifier change_notifier_;
