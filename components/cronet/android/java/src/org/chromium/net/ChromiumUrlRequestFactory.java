@@ -25,7 +25,7 @@ public class ChromiumUrlRequestFactory extends HttpUrlRequestFactory {
     public ChromiumUrlRequestFactory(Context context, CronetEngine.Builder config) {
         if (isEnabled()) {
             String userAgent = config.getUserAgent();
-            if (userAgent.isEmpty()) {
+            if (userAgent == null) {
                 // Cannot use config.getDefaultUserAgent() as config.mContext may be null.
                 userAgent = new CronetEngine.Builder(context).getDefaultUserAgent();
             }

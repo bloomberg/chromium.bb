@@ -32,6 +32,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/base/network_delegate_impl.h"
+#include "net/cert/cert_verifier.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_server_properties_manager.h"
 #include "net/log/write_to_file_net_log_observer.h"
@@ -384,23 +385,10 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
 
   // Iterate through PKP configuration for every host.
   for (const auto& pkp : config->pkp_list) {
-    // Convert the vector of hash strings from the config to
-    // a vector of HashValue objects.
-    net::HashValueVector hash_value_vector;
-    for (const auto& hash : pkp->pin_hashes) {
-      net::HashValue hash_value;
-      bool good_hash = hash_value.FromString(*hash);
-      if (good_hash) {
-        hash_value_vector.push_back(hash_value);
-      } else {
-        LOG(WARNING) << "Unable to add hash value " << *hash;
-      }
-    }
-
     // Add the host pinning.
     context_->transport_security_state()->AddHPKP(
         pkp->host, pkp->expiration_date, pkp->include_subdomains,
-        hash_value_vector, GURL::EmptyGURL());
+        pkp->pin_hashes, GURL::EmptyGURL());
   }
 
   JNIEnv* env = base::android::AttachCurrentThread();
@@ -548,17 +536,105 @@ void CronetURLRequestContextAdapter::OnThroughputObservation(
       (timestamp - base::TimeTicks::UnixEpoch()).InMilliseconds(), source);
 }
 
+// Create a URLRequestContextConfig from the given parameters.
+static jlong CreateRequestContextConfig(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& jcaller,
+    const JavaParamRef<jstring>& juser_agent,
+    const JavaParamRef<jstring>& jstorage_path,
+    jboolean jquic_enabled,
+    jboolean jhttp2_enabled,
+    jboolean jsdch_enabled,
+    const JavaParamRef<jstring>& jdata_reduction_proxy_key,
+    const JavaParamRef<jstring>& jdata_reduction_proxy_primary_proxy,
+    const JavaParamRef<jstring>& jdata_reduction_proxy_fallback_proxy,
+    const JavaParamRef<jstring>& jdata_reduction_proxy_secure_proxy_check_url,
+    jboolean jdisable_cache,
+    jint jhttp_cache_mode,
+    jlong jhttp_cache_max_size,
+    const JavaParamRef<jstring>& jexperimental_quic_connection_options,
+    jlong jmock_cert_verifier) {
+  return reinterpret_cast<jlong>(new URLRequestContextConfig(
+      jquic_enabled, jhttp2_enabled, jsdch_enabled,
+      static_cast<URLRequestContextConfig::HttpCacheType>(jhttp_cache_mode),
+      jhttp_cache_max_size, jdisable_cache,
+      base::android::ConvertJavaStringToUTF8(env, jstorage_path),
+      base::android::ConvertJavaStringToUTF8(env, juser_agent),
+      base::android::ConvertJavaStringToUTF8(
+          env, jexperimental_quic_connection_options),
+      base::android::ConvertJavaStringToUTF8(env, jdata_reduction_proxy_key),
+      base::android::ConvertJavaStringToUTF8(
+          env, jdata_reduction_proxy_primary_proxy),
+      base::android::ConvertJavaStringToUTF8(
+          env, jdata_reduction_proxy_fallback_proxy),
+      base::android::ConvertJavaStringToUTF8(
+          env, jdata_reduction_proxy_secure_proxy_check_url),
+      make_scoped_ptr(
+          reinterpret_cast<net::CertVerifier*>(jmock_cert_verifier))));
+}
+
+// Add a QUIC hint to a URLRequestContextConfig.
+static void AddQuicHint(JNIEnv* env,
+                        const JavaParamRef<jclass>& jcaller,
+                        jlong jurl_request_context_config,
+                        const JavaParamRef<jstring>& jhost,
+                        jint jport,
+                        jint jalternate_port) {
+  URLRequestContextConfig* config =
+      reinterpret_cast<URLRequestContextConfig*>(jurl_request_context_config);
+  config->quic_hints.push_back(
+      make_scoped_ptr(new URLRequestContextConfig::QuicHint(
+          base::android::ConvertJavaStringToUTF8(env, jhost), jport,
+          jalternate_port)));
+}
+
+// Add a public key pin to URLRequestContextConfig.
+// |jhost| is the host to apply the pin to.
+// |jhashes| is an array of jbyte[32] representing SHA256 key hashes.
+// |jinclude_subdomains| indicates if pin should be applied to subdomains.
+// |jexpiration_time| is the time that the pin expires, in milliseconds since
+// Jan. 1, 1970, midnight GMT.
+static void AddPkp(JNIEnv* env,
+                   const JavaParamRef<jclass>& jcaller,
+                   jlong jurl_request_context_config,
+                   const JavaParamRef<jstring>& jhost,
+                   const JavaParamRef<jobjectArray>& jhashes,
+                   jboolean jinclude_subdomains,
+                   jlong jexpiration_time) {
+  URLRequestContextConfig* config =
+      reinterpret_cast<URLRequestContextConfig*>(jurl_request_context_config);
+  scoped_ptr<URLRequestContextConfig::Pkp> pkp(new URLRequestContextConfig::Pkp(
+      base::android::ConvertJavaStringToUTF8(env, jhost), jinclude_subdomains,
+      base::Time::UnixEpoch() +
+          base::TimeDelta::FromMilliseconds(jexpiration_time)));
+  size_t hash_count = env->GetArrayLength(jhashes);
+  for (size_t i = 0; i < hash_count; ++i) {
+    ScopedJavaLocalRef<jbyteArray> bytes_array(
+        env, static_cast<jbyteArray>(env->GetObjectArrayElement(jhashes, i)));
+    static_assert(std::is_pod<net::SHA256HashValue>::value,
+                  "net::SHA256HashValue is not POD");
+    static_assert(sizeof(net::SHA256HashValue) * CHAR_BIT == 256,
+                  "net::SHA256HashValue contains overhead");
+    if (env->GetArrayLength(bytes_array.obj()) !=
+        sizeof(net::SHA256HashValue)) {
+      LOG(ERROR) << "Unable to add public key hash value.";
+      continue;
+    }
+    jbyte* bytes = env->GetByteArrayElements(bytes_array.obj(), nullptr);
+    net::HashValue hash(*reinterpret_cast<net::SHA256HashValue*>(bytes));
+    pkp->pin_hashes.push_back(hash);
+    env->ReleaseByteArrayElements(bytes_array.obj(), bytes, JNI_ABORT);
+  }
+  config->pkp_list.push_back(std::move(pkp));
+}
+
 // Creates RequestContextAdater if config is valid URLRequestContextConfig,
 // returns 0 otherwise.
 static jlong CreateRequestContextAdapter(JNIEnv* env,
                                          const JavaParamRef<jclass>& jcaller,
-                                         const JavaParamRef<jstring>& jconfig) {
-  std::string config_string =
-      base::android::ConvertJavaStringToUTF8(env, jconfig);
+                                         jlong jconfig) {
   scoped_ptr<URLRequestContextConfig> context_config(
-      new URLRequestContextConfig());
-  if (!context_config->LoadFromJSON(config_string))
-    return 0;
+      reinterpret_cast<URLRequestContextConfig*>(jconfig));
 
   CronetURLRequestContextAdapter* context_adapter =
       new CronetURLRequestContextAdapter(context_config.Pass());
