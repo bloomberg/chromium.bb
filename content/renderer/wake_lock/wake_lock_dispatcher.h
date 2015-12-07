@@ -21,7 +21,7 @@ class WakeLockDispatcher : public RenderFrameObserver,
 
  private:
   // WebWakeLockClient implementation.
-  virtual void requestKeepScreenAwake(bool keepScreenAwake);
+  void requestKeepScreenAwake(bool keepScreenAwake) override;
 
   WakeLockServicePtr wake_lock_service_;
 };

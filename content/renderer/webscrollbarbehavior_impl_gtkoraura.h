@@ -11,13 +11,12 @@ namespace content {
 
 class WebScrollbarBehaviorImpl : public blink::WebScrollbarBehavior {
  public:
-  virtual bool shouldCenterOnThumb(
-      blink::WebScrollbarBehavior::Button mouseButton,
-      bool shiftKeyPressed,
-      bool altKeyPressed);
-  virtual bool shouldSnapBackToDragOrigin(const blink::WebPoint& eventPoint,
-                                          const blink::WebRect& scrollbarRect,
-                                          bool isHorizontal);
+  bool shouldCenterOnThumb(blink::WebScrollbarBehavior::Button mouseButton,
+                           bool shiftKeyPressed,
+                           bool altKeyPressed) override;
+  bool shouldSnapBackToDragOrigin(const blink::WebPoint& eventPoint,
+                                  const blink::WebRect& scrollbarRect,
+                                  bool isHorizontal) override;
 };
 
 }  // namespace content

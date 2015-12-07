@@ -41,7 +41,7 @@ class CONTENT_EXPORT CanvasCaptureHandler final
   blink::WebSize GetSourceSize() const { return size_; }
 
  private:
-  virtual ~CanvasCaptureHandler();
+  ~CanvasCaptureHandler() override;
 
   void CreateNewFrame(const blink::WebSkImage& image);
 
