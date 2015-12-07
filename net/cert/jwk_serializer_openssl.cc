@@ -10,7 +10,7 @@
 #include <openssl/evp.h>
 #include <openssl/x509.h>
 
-#include "base/base64.h"
+#include "base/base64url.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
@@ -74,11 +74,13 @@ bool ConvertEcKeyToJwk(EVP_PKEY* pkey,
   public_key_jwk->SetString("crv", curve_name);
 
   std::string x_b64;
-  base::Base64Encode(x_bytes, &x_b64);
+  base::Base64UrlEncode(x_bytes, base::Base64UrlEncodePolicy::OMIT_PADDING,
+                        &x_b64);
   public_key_jwk->SetString("x", x_b64);
 
   std::string y_b64;
-  base::Base64Encode(y_bytes, &y_b64);
+  base::Base64UrlEncode(y_bytes, base::Base64UrlEncodePolicy::OMIT_PADDING,
+                        &y_b64);
   public_key_jwk->SetString("y", y_b64);
 
   return true;

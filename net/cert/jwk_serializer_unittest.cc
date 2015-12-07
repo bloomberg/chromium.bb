@@ -4,11 +4,13 @@
 
 #include "net/cert/jwk_serializer.h"
 
-#include "base/base64.h"
+#include "base/base64url.h"
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
+
+namespace {
 
 // This is the ASN.1 prefix for a P-256 public key. Specifically it's:
 // SEQUENCE
@@ -60,6 +62,15 @@ static const unsigned char kSpkiEcWithLeadingZero[] = {
     0xc9, 0x1e, 0x31, 0x89, 0xe2, 0x62, 0xcb, 0x3f
 };
 
+// Section 2 of RFC 7515 defines that an URL-safe base64 encoding must be used
+// with all trailing '=' characters omitted. Returns whether the |input|
+// contains any of the forbidden base64 characters (+, -, =).
+bool ContainsNonUrlSafeBase64Characters(base::StringPiece input) {
+  return input.find_first_of("+-=") != std::string::npos;
+}
+
+}  // namespace
+
 TEST(JwkSerializerTest, ConvertSpkiFromDerToJwkEc) {
   base::StringPiece spki;
   base::DictionaryValue public_key_jwk;
@@ -78,8 +89,11 @@ TEST(JwkSerializerTest, ConvertSpkiFromDerToJwkEc) {
   EXPECT_STREQ("P-256", string_value.c_str());
 
   EXPECT_TRUE(public_key_jwk.GetString("x", &string_value));
+  EXPECT_FALSE(ContainsNonUrlSafeBase64Characters(string_value));
   std::string decoded_coordinate;
-  EXPECT_TRUE(base::Base64Decode(string_value, &decoded_coordinate));
+  EXPECT_TRUE(base::Base64UrlDecode(
+      string_value, base::Base64UrlDecodePolicy::DISALLOW_PADDING,
+      &decoded_coordinate));
   EXPECT_EQ(kEcCoordinateSize, decoded_coordinate.size());
   EXPECT_EQ(0,
             memcmp(decoded_coordinate.data(),
@@ -87,7 +101,10 @@ TEST(JwkSerializerTest, ConvertSpkiFromDerToJwkEc) {
                    kEcCoordinateSize));
 
   EXPECT_TRUE(public_key_jwk.GetString("y", &string_value));
-  EXPECT_TRUE(base::Base64Decode(string_value, &decoded_coordinate));
+  EXPECT_FALSE(ContainsNonUrlSafeBase64Characters(string_value));
+  EXPECT_TRUE(base::Base64UrlDecode(
+      string_value, base::Base64UrlDecodePolicy::DISALLOW_PADDING,
+      &decoded_coordinate));
   EXPECT_EQ(kEcCoordinateSize, decoded_coordinate.size());
   EXPECT_EQ(0,
             memcmp(decoded_coordinate.data(),
@@ -106,7 +123,10 @@ TEST(JwkSerializerTest, ConvertSpkiFromDerToJwkEc) {
   EXPECT_STREQ("P-256", string_value.c_str());
 
   EXPECT_TRUE(public_key_jwk.GetString("x", &string_value));
-  EXPECT_TRUE(base::Base64Decode(string_value, &decoded_coordinate));
+  EXPECT_FALSE(ContainsNonUrlSafeBase64Characters(string_value));
+  EXPECT_TRUE(base::Base64UrlDecode(
+      string_value, base::Base64UrlDecodePolicy::DISALLOW_PADDING,
+      &decoded_coordinate));
   EXPECT_EQ(kEcCoordinateSize, decoded_coordinate.size());
   EXPECT_EQ(0,
             memcmp(decoded_coordinate.data(),
@@ -114,7 +134,10 @@ TEST(JwkSerializerTest, ConvertSpkiFromDerToJwkEc) {
                    kEcCoordinateSize));
 
   EXPECT_TRUE(public_key_jwk.GetString("y", &string_value));
-  EXPECT_TRUE(base::Base64Decode(string_value, &decoded_coordinate));
+  EXPECT_FALSE(ContainsNonUrlSafeBase64Characters(string_value));
+  EXPECT_TRUE(base::Base64UrlDecode(
+      string_value, base::Base64UrlDecodePolicy::DISALLOW_PADDING,
+      &decoded_coordinate));
   EXPECT_EQ(kEcCoordinateSize, decoded_coordinate.size());
   EXPECT_EQ(0, memcmp(
       decoded_coordinate.data(),

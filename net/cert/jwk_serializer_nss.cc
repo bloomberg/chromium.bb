@@ -8,7 +8,7 @@
 #include <keyhi.h>
 #include <nss.h>
 
-#include "base/base64.h"
+#include "base/base64url.h"
 #include "base/values.h"
 #include "crypto/nss_util.h"
 #include "crypto/scoped_nss_types.h"
@@ -37,7 +37,7 @@ bool ConvertEcPrime256v1PublicKeyInfoToJwk(
       reinterpret_cast<char*>(spki->subjectPublicKey.data + 1),
       kPrime256v1PublicKeyLength / 2);
   std::string x_b64;
-  base::Base64Encode(x, &x_b64);
+  base::Base64UrlEncode(x, base::Base64UrlEncodePolicy::OMIT_PADDING, &x_b64);
   public_key_jwk->SetString("x", x_b64);
 
   base::StringPiece y(
@@ -45,7 +45,7 @@ bool ConvertEcPrime256v1PublicKeyInfoToJwk(
                               kPrime256v1PublicKeyLength / 2),
       kPrime256v1PublicKeyLength / 2);
   std::string y_b64;
-  base::Base64Encode(y, &y_b64);
+  base::Base64UrlEncode(y, base::Base64UrlEncodePolicy::OMIT_PADDING, &y_b64);
   public_key_jwk->SetString("y", y_b64);
   return true;
 }
