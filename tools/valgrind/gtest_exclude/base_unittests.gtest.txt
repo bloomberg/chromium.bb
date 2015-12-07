@@ -27,3 +27,7 @@ PlatformFile.TouchGetInfoPlatformFile
 
 # Crashes under Valgrind, see http://crbug.com/355436
 OutOfMemoryHandledTest.Unchecked*
+
+# Running under Valgrind breaks TCMalloc tests, see https://crbug.com/567315
+TCMallocTest.*
+TCMallocFreeTest.*
