@@ -4,6 +4,9 @@
 
 #include "content/browser/service_worker/service_worker_process_manager.h"
 
+#include <algorithm>
+#include <utility>
+
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/public/browser/browser_thread.h"
@@ -51,14 +54,16 @@ ServiceWorkerProcessManager::ServiceWorkerProcessManager(
     : browser_context_(browser_context),
       process_id_for_test_(-1),
       weak_this_factory_(this) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   weak_this_ = weak_this_factory_.GetWeakPtr();
 }
 
 ServiceWorkerProcessManager::~ServiceWorkerProcessManager() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(browser_context_ == NULL)
+  DCHECK(IsShutdown())
       << "Call Shutdown() before destroying |this|, so that racing method "
       << "invocations don't use a destroyed BrowserContext.";
+  DCHECK(instance_info_.empty());
 }
 
 void ServiceWorkerProcessManager::Shutdown() {
@@ -107,7 +112,7 @@ void ServiceWorkerProcessManager::RemoveProcessReferenceFromPattern(
 
   PatternProcessRefMap::iterator it = pattern_processes_.find(pattern);
   if (it == pattern_processes_.end()) {
-    NOTREACHED() << "process refrences not found for pattern: " << pattern;
+    NOTREACHED() << "process references not found for pattern: " << pattern;
     return;
   }
   ProcessRefMap& process_refs = it->second;
@@ -161,30 +166,28 @@ void ServiceWorkerProcessManager::AllocateWorkerProcess(
     return;
   }
 
-  DCHECK(!ContainsKey(instance_info_, embedded_worker_id))
-      << embedded_worker_id << " already has a process allocated";
-
-  std::vector<int> sorted_candidates = SortProcessesForPattern(pattern);
-  for (std::vector<int>::const_iterator it = sorted_candidates.begin();
-       it != sorted_candidates.end();
-       ++it) {
-    if (!IncrementWorkerRefCountByPid(*it))
-      continue;
-    instance_info_.insert(
-        std::make_pair(embedded_worker_id, ProcessInfo(*it)));
-    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                            base::Bind(callback, SERVICE_WORKER_OK, *it,
-                                       false /* is_new_process */));
-    return;
-  }
-
-  if (!browser_context_) {
-    // Shutdown has started.
+  if (IsShutdown()) {
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                             base::Bind(callback, SERVICE_WORKER_ERROR_ABORT, -1,
                                        false /* is_new_process */));
     return;
   }
+
+  DCHECK(!ContainsKey(instance_info_, embedded_worker_id))
+      << embedded_worker_id << " already has a process allocated";
+
+  std::vector<int> sorted_candidates = SortProcessesForPattern(pattern);
+  for (int process_id : sorted_candidates) {
+    if (!IncrementWorkerRefCountByPid(process_id))
+      continue;
+    instance_info_.insert(
+        std::make_pair(embedded_worker_id, ProcessInfo(process_id)));
+    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                            base::Bind(callback, SERVICE_WORKER_OK, process_id,
+                                       false /* is_new_process */));
+    return;
+  }
+
   // No existing processes available; start a new one.
   scoped_refptr<SiteInstance> site_instance =
       SiteInstance::CreateForURL(browser_context_, script_url);
@@ -220,16 +223,19 @@ void ServiceWorkerProcessManager::ReleaseWorkerProcess(int embedded_worker_id) {
                    embedded_worker_id));
     return;
   }
+
   if (process_id_for_test_ != -1) {
     // Unittests don't increment or decrement the worker refcount of a
     // RenderProcessHost.
     return;
   }
-  if (browser_context_ == NULL) {
+
+  if (IsShutdown()) {
     // Shutdown already released all instances.
     DCHECK(instance_info_.empty());
     return;
   }
+
   std::map<int, ProcessInfo>::iterator info =
       instance_info_.find(embedded_worker_id);
   DCHECK(info != instance_info_.end());

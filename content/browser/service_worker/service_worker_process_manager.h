@@ -76,6 +76,8 @@ class CONTENT_EXPORT ServiceWorkerProcessManager {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerProcessManagerTest, SortProcess);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerProcessManagerTest,
+                           AllocateWorkerProcess_InShutdown);
 
   // Information about the process for an EmbeddedWorkerInstance.
   struct ProcessInfo {
@@ -94,6 +96,9 @@ class CONTENT_EXPORT ServiceWorkerProcessManager {
     // so all processes can be allocated with a SiteInstance.
     int process_id;
   };
+
+  // Returns true if Shutdown() has been called.
+  bool IsShutdown() const { return !browser_context_; }
 
   // Maps the process ID to its reference count.
   typedef std::map<int, int> ProcessRefMap;
