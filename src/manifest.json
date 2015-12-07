@@ -16,6 +16,7 @@
     "videoCapture",
     "storage",
     "unlimitedStorage",
+    "chromeosInfoPrivate",
     {"fileSystem": ["write"]}
   ],
   "requirements": {

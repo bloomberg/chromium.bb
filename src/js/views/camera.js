@@ -542,109 +542,122 @@ camera.views.Camera.prototype = {
  * @override
  */
 camera.views.Camera.prototype.initialize = function(callback) {
-  // Initialize the webgl canvases.
-  try {
-    this.mainCanvas_ = fx.canvas();
-    this.mainPreviewCanvas_ = fx.canvas();
-    this.mainFastCanvas_ = fx.canvas();
-    this.effectCanvas_ = fx.canvas();
-  }
-  catch (e) {
-    // TODO(mtomasz): Replace with a better icon.
-    this.context_.onError('no-camera',
-        chrome.i18n.getMessage('errorMsgNoWebGL'),
-        chrome.i18n.getMessage('errorMsgNoWebGLHint'));
+  var effects = [camera.effects.Normal, camera.effects.Vintage,
+      camera.effects.Cinema, camera.effects.TiltShift,
+      camera.effects.Retro30, camera.effects.Retro50,
+      camera.effects.Retro60, camera.effects.PhotoLab,
+      camera.effects.BigHead, camera.effects.BigJaw,
+      camera.effects.BigEyes, camera.effects.BunnyHead,
+      camera.effects.Grayscale, camera.effects.Sepia,
+      camera.effects.Colorize, camera.effects.Modern,
+      camera.effects.Beauty, camera.effects.Newspaper,
+      camera.effects.Funky, camera.effects.Ghost,
+      camera.effects.Swirl];
 
-    // Initialization failed due to lack of webgl.
-    document.body.classList.remove('initializing');
-  }
-
-  if (this.mainCanvas_ && this.mainPreviewCanvas_ && this.mainFastCanvas_) {
-    // Initialize the processors.
-    this.mainCanvasTexture_ = this.mainCanvas_.texture(this.video_);
-    this.mainPreviewCanvasTexture_ = this.mainPreviewCanvas_.texture(
-        this.video_);
-    this.mainFastCanvasTexture_ = this.mainFastCanvas_.texture(this.video_);
-    this.mainProcessor_ = new camera.Processor(
-        this.tracker_,
-        this.mainCanvasTexture_,
-        this.mainCanvas_,
-        this.mainCanvas_);
-    this.mainPreviewProcessor_ = new camera.Processor(
-        this.tracker_,
-        this.mainPreviewCanvasTexture_,
-        this.mainPreviewCanvas_,
-        this.mainPreviewCanvas_);
-    this.mainFastProcessor_ = new camera.Processor(
-        this.tracker_,
-        this.mainFastCanvasTexture_,
-        this.mainFastCanvas_,
-        this.mainFastCanvas_);
-
-    // Insert the main canvas to its container.
-    document.querySelector('#main-canvas-wrapper').appendChild(
-        this.mainCanvas_);
-    document.querySelector('#main-preview-canvas-wrapper').appendChild(
-        this.mainPreviewCanvas_);
-    document.querySelector('#main-fast-canvas-wrapper').appendChild(
-        this.mainFastCanvas_);
-
-    // Set the default effect.
-    this.mainProcessor_.effect = new camera.effects.Normal();
-
-    // Prepare effect previews.
-    this.effectCanvasTexture_ = this.effectCanvas_.texture(
-        this.effectInputCanvas_);
-
-    var effects = [camera.effects.Normal, camera.effects.Vintage,
-        camera.effects.Cinema, camera.effects.TiltShift,
-        camera.effects.Retro30, camera.effects.Retro50,
-        camera.effects.Retro60, camera.effects.PhotoLab,
-        camera.effects.BigHead, camera.effects.BigJaw,
-        camera.effects.BigEyes, camera.effects.BunnyHead,
-        camera.effects.Grayscale, camera.effects.Sepia,
-        camera.effects.Colorize, camera.effects.Modern,
-        camera.effects.Beauty, camera.effects.Newspaper,
-        camera.effects.Funky, camera.effects.Ghost,
-        camera.effects.Swirl];
-    for (var index = 0; index < effects.length; index++) {
-      this.addEffect_(new effects[index]());
+  // Workaround for: crbug.com/523216.
+  // Hide unsupported effects on alex.
+  camera.util.isBoard('x86-alex', function(result) {
+    if (result) {
+      var unsupported = [camera.effects.Cinema, camera.effects.TiltShift,
+          camera.effects.Beauty, camera.effects.Funky];
+      effects = effects.filter(function(item) {
+        return (unsupported.indexOf(item) == -1);
+      });
     }
 
-    // Select the default effect and state of the timer toggle button.
-    // TODO(mtomasz): Move to chrome.storage.local.sync, after implementing
-    // syncing of the gallery.
-    chrome.storage.local.get(
-        {
-          effectIndex: 0,
-          toggleTimer: true,
-          toggleMulti: false,
-          toggleMirror: true,
-        },
-        function(values) {
-          if (values.effectIndex < this.effectProcessors_.length)
-            this.setCurrentEffect_(values.effectIndex);
-          else
-            this.setCurrentEffect_(0);
-          document.querySelector('#toggle-timer').checked = values.toggleTimer;
-          document.querySelector('#toggle-multi').checked = values.toggleMulti;
-          document.querySelector('#toggle-mirror').checked = values.toggleMirror;
-          document.body.classList.toggle('mirror', values.toggleMirror);
-        }.bind(this));
-  }
+    // Initialize the webgl canvases.
+    try {
+      this.mainCanvas_ = fx.canvas();
+      this.mainPreviewCanvas_ = fx.canvas();
+      this.mainFastCanvas_ = fx.canvas();
+      this.effectCanvas_ = fx.canvas();
+    }
+    catch (e) {
+      // TODO(mtomasz): Replace with a better icon.
+      this.context_.onError('no-camera',
+          chrome.i18n.getMessage('errorMsgNoWebGL'),
+          chrome.i18n.getMessage('errorMsgNoWebGLHint'));
 
-  // Initialize the web camera.
-  this.start_();
+      // Initialization failed due to lack of webgl.
+      document.body.classList.remove('initializing');
+    }
 
-  // Acquire the gallery model.
-  camera.models.Gallery.getInstance(function(model) {
-    this.model_ = model;
-    callback();
-  }.bind(this), function() {
-    // TODO(mtomasz): Add error handling.
-    console.error('Unable to initialize the file system.');
-    callback();
-  });
+    if (this.mainCanvas_ && this.mainPreviewCanvas_ && this.mainFastCanvas_) {
+      // Initialize the processors.
+      this.mainCanvasTexture_ = this.mainCanvas_.texture(this.video_);
+      this.mainPreviewCanvasTexture_ = this.mainPreviewCanvas_.texture(
+          this.video_);
+      this.mainFastCanvasTexture_ = this.mainFastCanvas_.texture(this.video_);
+      this.mainProcessor_ = new camera.Processor(
+          this.tracker_,
+          this.mainCanvasTexture_,
+          this.mainCanvas_,
+          this.mainCanvas_);
+      this.mainPreviewProcessor_ = new camera.Processor(
+          this.tracker_,
+          this.mainPreviewCanvasTexture_,
+          this.mainPreviewCanvas_,
+          this.mainPreviewCanvas_);
+      this.mainFastProcessor_ = new camera.Processor(
+          this.tracker_,
+          this.mainFastCanvasTexture_,
+          this.mainFastCanvas_,
+          this.mainFastCanvas_);
+
+      // Insert the main canvas to its container.
+      document.querySelector('#main-canvas-wrapper').appendChild(
+          this.mainCanvas_);
+      document.querySelector('#main-preview-canvas-wrapper').appendChild(
+          this.mainPreviewCanvas_);
+      document.querySelector('#main-fast-canvas-wrapper').appendChild(
+          this.mainFastCanvas_);
+
+      // Set the default effect.
+      this.mainProcessor_.effect = new camera.effects.Normal();
+
+      // Prepare effect previews.
+      this.effectCanvasTexture_ = this.effectCanvas_.texture(
+          this.effectInputCanvas_);
+
+      for (var index = 0; index < effects.length; index++) {
+        this.addEffect_(new effects[index]());
+      }
+
+      // Select the default effect and state of the timer toggle button.
+      // TODO(mtomasz): Move to chrome.storage.local.sync, after implementing
+      // syncing of the gallery.
+      chrome.storage.local.get(
+          {
+            effectIndex: 0,
+            toggleTimer: true,
+            toggleMulti: false,
+            toggleMirror: true,
+          },
+          function(values) {
+            if (values.effectIndex < this.effectProcessors_.length)
+              this.setCurrentEffect_(values.effectIndex);
+            else
+              this.setCurrentEffect_(0);
+            document.querySelector('#toggle-timer').checked = values.toggleTimer;
+            document.querySelector('#toggle-multi').checked = values.toggleMulti;
+            document.querySelector('#toggle-mirror').checked = values.toggleMirror;
+            document.body.classList.toggle('mirror', values.toggleMirror);
+          }.bind(this));
+    }
+
+    // Initialize the web camera.
+    this.start_();
+
+    // Acquire the gallery model.
+    camera.models.Gallery.getInstance(function(model) {
+      this.model_ = model;
+      callback();
+    }.bind(this), function() {
+      // TODO(mtomasz): Add error handling.
+      console.error('Unable to initialize the file system.');
+      callback();
+    });
+  }.bind(this));
 };
 
 /**
