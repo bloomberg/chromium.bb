@@ -67759,6 +67759,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-1490298774" label="enable-captive-portal-bypass-proxy-option"/>
   <int value="-1482685863" label="enable-request-tablet-site"/>
   <int value="-1460462432" label="disable-media-source"/>
+  <int value="-1440152291" label="disable-gesture-typing"/>
   <int value="-1433719718" label="enable-webrtc-stun-origin"/>
   <int value="-1433087548" label="enable-app-install-alerts"/>
   <int value="-1419788257" label="enable-experimental-hotwording"/>
@@ -68007,6 +68008,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="625273056" label="disable-boot-animation"/>
   <int value="630947363" label="touch-events"/>
   <int value="643725031" label="disable-touch-feedback"/>
+  <int value="646738320" label="disable-gesture-editing"/>
   <int value="650602639" label="enable-autofill-keyboard-accessory-view"/>
   <int value="683410401"
       label="enable-proximity-auth-bluetooth-low-energy-discovery"/>
@@ -68067,6 +68069,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1105439588" label="enable-swipe-selection"/>
   <int value="1107543566" label="enable-one-copy"/>
   <int value="1108663108" label="disable-device-discovery-notifications"/>
+  <int value="1114629582" label="enable-floating-virtual-keyboard"/>
   <int value="1118109174" label="enable-launcher-search-provider-api"/>
   <int value="1129888794" label="ash-touch-hud"/>
   <int value="1133635187" label="force-gpu-rasterization"/>

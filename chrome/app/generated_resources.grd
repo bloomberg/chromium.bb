@@ -13360,7 +13360,7 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
           Virtual Keyboard Overscroll
         </message>
         <message name="IDS_FLAGS_VIRTUAL_KEYBOARD_OVERSCROLL_DESCRIPTION" desc="Description of about:flags option to turn on overscrolling for the virtual keyboard">
-          Enable virtual keyboard overscroll support.
+          Enables virtual keyboard overscroll support.
         </message>
 
         <message name="IDS_FLAGS_INPUT_VIEW_NAME" desc="Name of about::flags option to enable IME extensions to override the virtual keyboard view">

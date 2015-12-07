@@ -396,46 +396,6 @@ const FeatureEntry::Choice kDataSaverPromptChoices[] = {
     chromeos::switches::kDataSaverPromptDemoMode },
 };
 
-const FeatureEntry::Choice kFloatingVirtualKeyboardChoices[] = {
-  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
-  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
-    keyboard::switches::kFloatingVirtualKeyboard,
-    keyboard::switches::kFloatingVirtualKeyboardDisabled},
-  { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
-    keyboard::switches::kFloatingVirtualKeyboard,
-    keyboard::switches::kFloatingVirtualKeyboardEnabled},
-};
-
-const FeatureEntry::Choice kSmartVirtualKeyboardChoices[] = {
-  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
-  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
-    keyboard::switches::kSmartVirtualKeyboard,
-    keyboard::switches::kSmartVirtualKeyboardDisabled},
-  { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
-    keyboard::switches::kSmartVirtualKeyboard,
-    keyboard::switches::kSmartVirtualKeyboardEnabled},
-};
-
-const FeatureEntry::Choice kGestureTypingChoices[] = {
-  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
-  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
-    keyboard::switches::kGestureTyping,
-    keyboard::switches::kGestureTypingDisabled},
-  { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
-    keyboard::switches::kGestureTyping,
-    keyboard::switches::kGestureTypingEnabled},
-};
-
-const FeatureEntry::Choice kGestureEditingChoices[] = {
-  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
-  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
-    keyboard::switches::kGestureEditing,
-    keyboard::switches::kGestureEditingDisabled},
-  { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
-    keyboard::switches::kGestureEditing,
-    keyboard::switches::kGestureEditingEnabled},
-};
-
 const FeatureEntry::Choice kDownloadNotificationChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
   { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
@@ -1181,19 +1141,17 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_VIRTUAL_KEYBOARD_DESCRIPTION,
      kOsCrOS,
      SINGLE_VALUE_TYPE(keyboard::switches::kEnableVirtualKeyboard)},
-    {"enable-virtual-keyboard-overscroll",
+    {"virtual-keyboard-overscroll",
      IDS_FLAGS_VIRTUAL_KEYBOARD_OVERSCROLL_NAME,
      IDS_FLAGS_VIRTUAL_KEYBOARD_OVERSCROLL_DESCRIPTION,
      kOsCrOS,
-     ENABLE_DISABLE_VALUE_TYPE(
-         keyboard::switches::kEnableVirtualKeyboardOverscroll,
+     SINGLE_DISABLE_VALUE_TYPE(
          keyboard::switches::kDisableVirtualKeyboardOverscroll)},
-    {"enable-input-view",
+    {"input-view",
      IDS_FLAGS_INPUT_VIEW_NAME,
      IDS_FLAGS_INPUT_VIEW_DESCRIPTION,
      kOsCrOS,
-     ENABLE_DISABLE_VALUE_TYPE(keyboard::switches::kEnableInputView,
-                               keyboard::switches::kDisableInputView)},
+     SINGLE_DISABLE_VALUE_TYPE(keyboard::switches::kDisableInputView)},
     {"disable-new-korean-ime",
      IDS_FLAGS_NEW_KOREAN_IME_NAME,
      IDS_FLAGS_NEW_KOREAN_IME_DESCRIPTION,
@@ -1211,7 +1169,7 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_VOICE_INPUT_DESCRIPTION,
      kOsCrOS,
      SINGLE_DISABLE_VALUE_TYPE(keyboard::switches::kDisableVoiceInput)},
-    {"enable-experimental-input-view-features",
+    {"experimental-input-view-features",
      IDS_FLAGS_EXPERIMENTAL_INPUT_VIEW_FEATURES_NAME,
      IDS_FLAGS_EXPERIMENTAL_INPUT_VIEW_FEATURES_DESCRIPTION,
      kOsCrOS,
@@ -1221,22 +1179,23 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_FLOATING_VIRTUAL_KEYBOARD_NAME,
      IDS_FLAGS_FLOATING_VIRTUAL_KEYBOARD_DESCRIPTION,
      kOsCrOS,
-     MULTI_VALUE_TYPE(kFloatingVirtualKeyboardChoices)},
+     SINGLE_VALUE_TYPE(keyboard::switches::kEnableFloatingVirtualKeyboard)},
     {"smart-virtual-keyboard",
      IDS_FLAGS_SMART_VIRTUAL_KEYBOARD_NAME,
      IDS_FLAGS_SMART_VIRTUAL_KEYBOARD_DESCRIPTION,
      kOsCrOS,
-     MULTI_VALUE_TYPE(kSmartVirtualKeyboardChoices)},
+     SINGLE_DISABLE_VALUE_TYPE(
+         keyboard::switches::kDisableSmartVirtualKeyboard)},
     {"gesture-typing",
      IDS_FLAGS_GESTURE_TYPING_NAME,
      IDS_FLAGS_GESTURE_TYPING_DESCRIPTION,
      kOsCrOS,
-     MULTI_VALUE_TYPE(kGestureTypingChoices)},
+     SINGLE_DISABLE_VALUE_TYPE(keyboard::switches::kDisableGestureTyping)},
     {"gesture-editing",
      IDS_FLAGS_GESTURE_EDITING_NAME,
      IDS_FLAGS_GESTURE_EDITING_DESCRIPTION,
      kOsCrOS,
-     MULTI_VALUE_TYPE(kGestureEditingChoices)},
+     SINGLE_DISABLE_VALUE_TYPE(keyboard::switches::kDisableGestureEditing)},
     {"enable-fullscreen-app-list",
      IDS_FLAGS_FULLSCREEN_APP_LIST_NAME,
      IDS_FLAGS_FULLSCREEN_APP_LIST_DESCRIPTION,
