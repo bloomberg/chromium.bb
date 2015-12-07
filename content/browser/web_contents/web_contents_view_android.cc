@@ -57,11 +57,11 @@ void WebContentsViewAndroid::SetContentViewCore(
 }
 
 gfx::NativeView WebContentsViewAndroid::GetNativeView() const {
-  return content_view_core_ ? content_view_core_->GetViewAndroid() : NULL;
+  return content_view_core_ ? content_view_core_ : NULL;
 }
 
 gfx::NativeView WebContentsViewAndroid::GetContentNativeView() const {
-  return content_view_core_ ? content_view_core_->GetViewAndroid() : NULL;
+  return content_view_core_ ? content_view_core_ : NULL;
 }
 
 gfx::NativeWindow WebContentsViewAndroid::GetTopLevelNativeWindow() const {

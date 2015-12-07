@@ -211,15 +211,15 @@ ContentViewCoreImpl::ContentViewCoreImpl(
       web_contents_(static_cast<WebContentsImpl*>(web_contents)),
       root_layer_(cc::SolidColorLayer::Create(Compositor::LayerSettings())),
       page_scale_(1),
-      view_android_(new ui::ViewAndroid(view_android_delegate, window_android)),
-      dpi_scale_(ui::GetScaleFactorForNativeView(view_android_.get())),
+      dpi_scale_(ui::GetScaleFactorForNativeView(this)),
       window_android_(window_android),
       device_orientation_(0),
       accessibility_enabled_(false) {
   CHECK(web_contents) <<
       "A ContentViewCoreImpl should be created with a valid WebContents.";
   DCHECK(window_android_);
-
+  DCHECK(view_android_delegate);
+  view_android_delegate_.Reset(AttachCurrentThread(), view_android_delegate);
   root_layer_->SetBackgroundColor(GetBackgroundColor(env, obj));
   gfx::Size physical_size(
       Java_ContentViewCore_getPhysicalBackingWidthPix(env, obj),
@@ -798,8 +798,9 @@ void ContentViewCoreImpl::SelectBetweenCoordinates(const gfx::PointF& base,
   web_contents_->SelectRange(base_point, extent_point);
 }
 
-ui::ViewAndroid* ContentViewCoreImpl::GetViewAndroid() const {
-  return view_android_.get();
+ScopedJavaLocalRef<jobject> ContentViewCoreImpl::GetViewAndroidDelegate()
+    const {
+  return base::android::ScopedJavaLocalRef<jobject>(view_android_delegate_);
 }
 
 ui::WindowAndroid* ContentViewCoreImpl::GetWindowAndroid() const {
@@ -1357,7 +1358,7 @@ void ContentViewCoreImpl::SetAccessibilityEnabledInternal(bool enabled) {
 void ContentViewCoreImpl::SendOrientationChangeEventInternal() {
   RenderWidgetHostViewAndroid* rwhv = GetRenderWidgetHostViewAndroid();
   if (rwhv)
-    rwhv->UpdateScreenInfo(GetViewAndroid());
+    rwhv->UpdateScreenInfo(this);
 
   static_cast<WebContentsImpl*>(web_contents())->
       screen_orientation_dispatcher_host()->OnOrientationChange();

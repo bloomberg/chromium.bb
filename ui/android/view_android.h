@@ -5,8 +5,6 @@
 #ifndef UI_ANDROID_VIEW_ANDROID_H_
 #define UI_ANDROID_VIEW_ANDROID_H_
 
-#include <jni.h>
-#include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
 #include "ui/android/ui_android_export.h"
 
@@ -14,22 +12,17 @@ namespace ui {
 
 class WindowAndroid;
 
-// This class is merely a holder of the Java object. It must be destroyed
-// explicitly.
+// This is a NativeView interface for getting access to
+// WindowAndroid(NativeWindow).
 class UI_ANDROID_EXPORT ViewAndroid {
  public:
-  ViewAndroid(jobject obj, WindowAndroid* window);
-  ~ViewAndroid();
+  virtual WindowAndroid* GetWindowAndroid() const = 0;
 
-  WindowAndroid* GetWindowAndroid();
+  virtual base::android::ScopedJavaLocalRef<jobject>
+      GetViewAndroidDelegate() const = 0 ;
 
-  base::android::ScopedJavaLocalRef<jobject> GetViewAndroidDelegate();
-
- private:
-  base::android::ScopedJavaGlobalRef<jobject> view_android_delegate_;
-  WindowAndroid* window_android_;
-
-  DISALLOW_COPY_AND_ASSIGN(ViewAndroid);
+ protected:
+  virtual ~ViewAndroid() {}
 };
 
 }  // namespace ui

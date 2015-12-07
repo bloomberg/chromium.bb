@@ -44,7 +44,6 @@
         'ui_android_export.h',
         'ui_android_jni_registrar.cc',
         'ui_android_jni_registrar.h',
-        'view_android.cc',
         'view_android.h',
         'window_android.cc',
         'window_android.h',

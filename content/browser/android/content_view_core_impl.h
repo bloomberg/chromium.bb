@@ -19,12 +19,12 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/android/overscroll_refresh.h"
+#include "ui/android/view_android.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "url/gurl.h"
 
 namespace ui {
-class ViewAndroid;
 class WindowAndroid;
 }
 
@@ -36,6 +36,7 @@ class RenderWidgetHostViewAndroid;
 struct MenuItem;
 
 class ContentViewCoreImpl : public ContentViewCore,
+                            public ui::ViewAndroid,
                             public ui::OverscrollRefreshHandler,
                             public WebContentsObserver {
  public:
@@ -50,7 +51,6 @@ class ContentViewCoreImpl : public ContentViewCore,
   // ContentViewCore implementation.
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject() override;
   WebContents* GetWebContents() const override;
-  ui::ViewAndroid* GetViewAndroid() const override;
   ui::WindowAndroid* GetWindowAndroid() const override;
   const scoped_refptr<cc::Layer>& GetLayer() const override;
   bool ShowPastePopup(int x, int y) override;
@@ -66,6 +66,10 @@ class ContentViewCoreImpl : public ContentViewCore,
       const base::Callback<void(const base::string16& content,
                                 int start_offset,
                                 int end_offset)>& callback) override;
+
+  // ViewAndroid implementation
+  base::android::ScopedJavaLocalRef<jobject> GetViewAndroidDelegate()
+      const override;
 
   // --------------------------------------------------------------------------
   // Methods called from Java via JNI
@@ -437,9 +441,8 @@ class ContentViewCoreImpl : public ContentViewCore,
   // Page scale factor.
   float page_scale_;
 
-  // The Android view that can be used to add and remove decoration layers
-  // like AutofillPopup.
-  scoped_ptr<ui::ViewAndroid> view_android_;
+  // Java delegate to acquire and release anchor views from the NativeView
+  base::android::ScopedJavaGlobalRef<jobject> view_android_delegate_;
 
   // Device scale factor.
   const float dpi_scale_;

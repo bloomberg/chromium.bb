@@ -45,7 +45,6 @@ class CONTENT_EXPORT ContentViewCore {
 
   // May return null reference.
   virtual base::android::ScopedJavaLocalRef<jobject> GetJavaObject() = 0;
-  virtual ui::ViewAndroid* GetViewAndroid() const = 0;
   virtual ui::WindowAndroid* GetWindowAndroid() const = 0;
   virtual const scoped_refptr<cc::Layer>& GetLayer() const = 0;
   virtual bool ShowPastePopup(int x, int y) = 0;
