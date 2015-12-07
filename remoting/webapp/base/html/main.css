@@ -509,6 +509,11 @@ thead {
   padding: 0 5px;
 }
 
+.host-list-clip {
+  overflow-x: hidden;
+  text-overflow: ellipsis;
+}
+
 .host-name-label, .host-name-label:visited, .host-name-label:active {
   color: inherit;
   cursor: inherit;

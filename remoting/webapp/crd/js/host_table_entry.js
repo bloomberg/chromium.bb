@@ -90,7 +90,7 @@ remoting.HostTableEntry.prototype.getHTML_ = function() {
       '<span class="warning-overlay"></span>' +
       '<img src="icon_host.webp">' +
     '</div>' +
-    '<div class="box-spacer">' +
+    '<div class="box-spacer host-list-clip">' +
       '<a class="host-name-label" href="#""></a>' +
       '<input class="host-rename-input" type="text" hidden/>' +
     '</div>' +
