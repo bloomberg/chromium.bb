@@ -1112,6 +1112,12 @@ QuicConsumedData QuicConnection::SendStreamData(
     LOG(DFATAL) << "Attempt to send empty stream frame";
     return QuicConsumedData(0, false);
   }
+  if (FLAGS_quic_never_write_unencrypted_data && id != kCryptoStreamId &&
+      encryption_level_ == ENCRYPTION_NONE) {
+    LOG(DFATAL) << "Cannot send stream data without encryption.";
+    CloseConnection(QUIC_UNENCRYPTED_STREAM_DATA, false);
+    return QuicConsumedData(0, false);
+  }
 
   // Opportunistically bundle an ack with every outgoing packet.
   // Particularly, we want to bundle with handshake packets since we don't know

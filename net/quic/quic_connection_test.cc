@@ -739,6 +739,9 @@ class QuicConnectionTest : public ::testing::TestWithParam<TestParams> {
       EXPECT_CALL(*loss_algorithm_, DetectLostPackets(_, _, _, _))
           .WillRepeatedly(Return(PacketNumberSet()));
     }
+    // TODO(ianswett): Fix QuicConnectionTests so they don't attempt to write
+    // non-crypto stream data at ENCRYPTION_NONE.
+    FLAGS_quic_never_write_unencrypted_data = false;
   }
 
   QuicVersion version() { return GetParam().version; }
@@ -5503,6 +5506,15 @@ TEST_P(QuicConnectionTest, ReevaluateTimeUntilSendOnAck) {
   EXPECT_EQ(clock_.Now().Add(QuicTime::Delta::FromMilliseconds(2)),
             connection_.GetSendAlarm()->deadline());
   writer_->Reset();
+}
+
+TEST_P(QuicConnectionTest, SendingUnencryptedStreamDataFails) {
+  FLAGS_quic_never_write_unencrypted_data = true;
+  EXPECT_CALL(visitor_,
+              OnConnectionClosed(QUIC_UNENCRYPTED_STREAM_DATA, false));
+  EXPECT_DFATAL(connection_.SendStreamDataWithString(3, "", 0, kFin, nullptr),
+                "Cannot send stream data without encryption.");
+  EXPECT_FALSE(connection_.connected());
 }
 
 }  // namespace

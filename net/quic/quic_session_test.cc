@@ -241,6 +241,9 @@ class QuicSessionTestBase : public ::testing::TestWithParam<QuicVersion> {
         "EFFlEYHsBQ98rXImL8ySDycdLEFvBPdtctPmWCfTxwmoSMLHU2SCVDhbqMWU5b0yr"
         "JBCScs_ejbKaqBDoB7ZGxTvqlrB__2ZmnHHjCr8RgMRtKNtIeuZAo ";
     connection_->AdvanceTime(QuicTime::Delta::FromSeconds(1));
+    // TODO(ianswett): Fix QuicSessionTests so they don't attempt to write
+    // non-crypto stream data at ENCRYPTION_NONE.
+    FLAGS_quic_never_write_unencrypted_data = false;
   }
 
   void CheckClosedStreams() {
