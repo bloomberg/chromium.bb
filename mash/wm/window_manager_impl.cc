@@ -108,9 +108,13 @@ void WindowManagerImpl::OpenWindow(
   state_->GetWindowForContainer(container)->AddChild(child_window);
   child_window->Embed(client.Pass());
 
-  // NonClientFrameController deletes itself when |child_window| is destroyed.
-  new NonClientFrameController(state_->app()->shell(), child_window,
-                               state_->window_tree_host());
+  // TODO(sky): we need more sophisticated heuristics as to when the non-client
+  // frame is necessary.
+  if (container == mojom::CONTAINER_USER_WINDOWS) {
+    // NonClientFrameController deletes itself when |child_window| is destroyed.
+    new NonClientFrameController(state_->app()->shell(), child_window,
+                                 state_->window_tree_host());
+  }
 
   state_->IncrementWindowCount();
 }

@@ -157,10 +157,12 @@ NonClientFrameController::NonClientFrameController(
   window_->AddObserver(this);
 
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
+  // We initiate focus at the mus level, not at the views level.
+  params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
   params.delegate = this;
   params.native_widget = new WmNativeWidgetMus(widget_, shell, window);
   widget_->Init(params);
-  widget_->Show();
+  widget_->ShowInactive();
 
   const int shadow_inset =
       Shadow::GetInteriorInsetForStyle(Shadow::STYLE_ACTIVE);
