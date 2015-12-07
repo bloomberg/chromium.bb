@@ -2743,9 +2743,6 @@
       ['image_loader_extension==1', {
         'defines': ['IMAGE_LOADER_EXTENSION=1'],
       }],
-      ['profiling==1', {
-        'defines': ['ENABLE_PROFILING=1'],
-      }],
       ['enable_webrtc==1', {
         'defines': ['ENABLE_WEBRTC=1'],
       }],
