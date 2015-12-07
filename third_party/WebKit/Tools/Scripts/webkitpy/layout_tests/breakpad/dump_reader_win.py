@@ -113,10 +113,10 @@ class DumpReaderWin(DumpReader):
         # Look in depot_tools win_toolchain too.
         depot_tools = self._find_depot_tools_path()
         if depot_tools:
-            win8sdk = os.path.join(depot_tools, 'win_toolchain', 'vs2013_files', 'win8sdk')
+            win_sdk = os.path.join(depot_tools, 'win_toolchain', 'vs2013_files', 'win_sdk')
             possible_cdb_locations.extend([
-                '%s\\Debuggers\\x86' % win8sdk,
-                '%s\\Debuggers\\x64' % win8sdk,
+                '%s\\Debuggers\\x86' % win_sdk,
+                '%s\\Debuggers\\x64' % win_sdk,
             ])
 
         for cdb_path in possible_cdb_locations:
