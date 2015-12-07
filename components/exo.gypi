@@ -62,8 +62,8 @@
           ],
           'sources': [
             # Note: sources list duplicated in GN build.
-            'exo/wayland/scoped_wl_types.cc',
-            'exo/wayland/scoped_wl_types.h',
+            'exo/wayland/scoped_wl.cc',
+            'exo/wayland/scoped_wl.h',
             'exo/wayland/server.cc',
             'exo/wayland/server.h',
           ],

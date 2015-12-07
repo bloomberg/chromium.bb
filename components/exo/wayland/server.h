@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
-#include "components/exo/wayland/scoped_wl_types.h"
+#include "components/exo/wayland/scoped_wl.h"
 
 namespace exo {
 class Display;
@@ -46,7 +46,7 @@ class Server {
 
  private:
   Display* const display_;
-  ScopedWLDisplay wl_display_;
+  scoped_ptr<wl_display, WlDisplayDeleter> wl_display_;
 
   DISALLOW_COPY_AND_ASSIGN(Server);
 };

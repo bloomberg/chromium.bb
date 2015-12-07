@@ -2,19 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/exo/wayland/scoped_wl_types.h"
+#include "components/exo/wayland/scoped_wl.h"
 
 #include <wayland-server-core.h>
 
 namespace exo {
 namespace wayland {
-namespace internal {
 
-// static
-void ScopedWLDisplayTraits::Free(wl_display* display) {
+void WlDisplayDeleter::operator()(wl_display* display) const {
   wl_display_destroy(display);
 }
 
-}  // namespace internal
 }  // namespace wayland
 }  // namespace exo

@@ -6,8 +6,8 @@ import("//build/config/ui.gni")
 
 source_set("wayland") {
   sources = [
-    "scoped_wl_types.cc",
-    "scoped_wl_types.h",
+    "scoped_wl.cc",
+    "scoped_wl.h",
     "server.cc",
     "server.h",
   ]
