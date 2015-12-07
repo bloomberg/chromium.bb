@@ -52,11 +52,10 @@ enum ContentTypeOptionsDisposition {
 };
 
 enum XFrameOptionsDisposition {
-    XFrameOptionsNone,
+    XFrameOptionsInvalid,
     XFrameOptionsDeny,
     XFrameOptionsSameOrigin,
     XFrameOptionsAllowAll,
-    XFrameOptionsInvalid,
     XFrameOptionsConflict
 };
 

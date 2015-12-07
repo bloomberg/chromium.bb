@@ -440,7 +440,7 @@ ContentTypeOptionsDisposition parseContentTypeOptionsHeader(const String& header
 
 XFrameOptionsDisposition parseXFrameOptionsHeader(const String& header)
 {
-    XFrameOptionsDisposition result = XFrameOptionsNone;
+    XFrameOptionsDisposition result = XFrameOptionsInvalid;
 
     if (header.isEmpty())
         return result;
@@ -448,22 +448,22 @@ XFrameOptionsDisposition parseXFrameOptionsHeader(const String& header)
     Vector<String> headers;
     header.split(',', headers);
 
+    bool hasValue = false;
     for (size_t i = 0; i < headers.size(); i++) {
         String currentHeader = headers[i].stripWhiteSpace();
-        XFrameOptionsDisposition currentValue = XFrameOptionsNone;
+        XFrameOptionsDisposition currentValue = XFrameOptionsInvalid;
         if (equalIgnoringCase(currentHeader, "deny"))
             currentValue = XFrameOptionsDeny;
         else if (equalIgnoringCase(currentHeader, "sameorigin"))
             currentValue = XFrameOptionsSameOrigin;
         else if (equalIgnoringCase(currentHeader, "allowall"))
             currentValue = XFrameOptionsAllowAll;
-        else
-            currentValue = XFrameOptionsInvalid;
 
-        if (result == XFrameOptionsNone)
+        if (!hasValue)
             result = currentValue;
         else if (result != currentValue)
             return XFrameOptionsConflict;
+        hasValue = true;
     }
     return result;
 }

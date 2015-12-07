@@ -1,0 +1,12 @@
+http://127.0.0.1:8000/security/XFrameOptions/resources/x-frame-options-none.cgi - willSendRequest <NSURLRequest URL http://127.0.0.1:8000/security/XFrameOptions/resources/x-frame-options-none.cgi, main document URL http://127.0.0.1:8000/security/XFrameOptions/x-frame-options-none.html, http method GET> redirectResponse (null)
+CONSOLE ERROR: Invalid 'X-Frame-Options' header encountered when loading 'http://127.0.0.1:8000/security/XFrameOptions/resources/x-frame-options-none.cgi': '' is not a recognized directive. The header will be ignored.
+http://127.0.0.1:8000/security/XFrameOptions/resources/x-frame-options-none.cgi - didReceiveResponse <NSURLResponse http://127.0.0.1:8000/security/XFrameOptions/resources/x-frame-options-none.cgi, http status code 200>
+http://127.0.0.1:8000/security/XFrameOptions/resources/x-frame-options-none.cgi - didFinishLoading
+The frame below should load, and a console message should be generated that notes the invalid header.
+
+
+
+--------
+Frame: '<!--framePath //<!--frame0-->-->'
+--------
+PASS: This text should show up.
