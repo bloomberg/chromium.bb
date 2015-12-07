@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
+#include "base/debug/stack_trace.h"
 #include "base/files/file_path.h"
 #include "base/process/kill.h"
 #include "base/strings/string16.h"
@@ -676,6 +677,9 @@ class WebContents : public PageNavigator,
   // should not yet be resumed. Then the client is responsible for calling this
   // as soon as they are ready.
   virtual void ResumeLoadingCreatedWebContents() = 0;
+
+  // Temporary to track down http://crbug.com/538612
+  virtual base::debug::StackTrace GetCreationStackTrace() = 0;
 
 #if defined(OS_ANDROID)
   // Requests to resume the current media session.
