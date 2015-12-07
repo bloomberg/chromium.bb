@@ -85,7 +85,7 @@ class SharedWorkerHost {
   }
   int process_id() const { return worker_process_id_; }
   int worker_route_id() const { return worker_route_id_; }
-  bool closed() const { return closed_; }
+  bool IsAvailable() const;
 
  private:
   // Unique identifier for a worker client.
@@ -127,6 +127,7 @@ class SharedWorkerHost {
   SharedWorkerMessageFilter* container_render_filter_;
   int worker_process_id_;
   int worker_route_id_;
+  bool termination_message_sent_;
   bool closed_;
   const base::TimeTicks creation_time_;
 

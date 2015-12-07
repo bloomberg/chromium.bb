@@ -58,6 +58,7 @@ SharedWorkerHost::SharedWorkerHost(SharedWorkerInstance* instance,
       container_render_filter_(filter),
       worker_process_id_(filter->render_process_id()),
       worker_route_id_(worker_route_id),
+      termination_message_sent_(false),
       closed_(false),
       creation_time_(base::TimeTicks::Now()),
       weak_factory_(this) {
@@ -68,7 +69,7 @@ SharedWorkerHost::~SharedWorkerHost() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   UMA_HISTOGRAM_LONG_TIMES("SharedWorker.TimeToDeleted",
                            base::TimeTicks::Now() - creation_time_);
-  if (!closed_)
+  if (!closed_ && !termination_message_sent_)
     NotifyWorkerDestroyed(worker_process_id_, worker_route_id_);
   SharedWorkerServiceImpl::GetInstance()->NotifyWorkerDestroyed(
       worker_process_id_, worker_route_id_);
@@ -100,15 +101,11 @@ void SharedWorkerHost::Start(bool pause_on_start) {
 
 bool SharedWorkerHost::FilterMessage(const IPC::Message& message,
                                      SharedWorkerMessageFilter* filter) {
-  if (!instance_)
+  if (!IsAvailable() || !HasFilter(filter, message.routing_id()))
     return false;
 
-  if (!closed_ && HasFilter(filter, message.routing_id())) {
-    RelayMessage(message, filter);
-    return true;
-  }
-
-  return false;
+  RelayMessage(message, filter);
+  return true;
 }
 
 void SharedWorkerHost::FilterShutdown(SharedWorkerMessageFilter* filter) {
@@ -118,7 +115,7 @@ void SharedWorkerHost::FilterShutdown(SharedWorkerMessageFilter* filter) {
   worker_document_set_->RemoveAll(filter);
   if (worker_document_set_->IsEmpty()) {
     // This worker has no more associated documents - shut it down.
-    Send(new WorkerMsg_TerminateWorkerContext(worker_route_id_));
+    TerminateWorker();
   }
 }
 
@@ -130,7 +127,7 @@ void SharedWorkerHost::DocumentDetached(SharedWorkerMessageFilter* filter,
   worker_document_set_->Remove(filter, document_id);
   if (worker_document_set_->IsEmpty()) {
     // This worker has no more associated documents - shut it down.
-    Send(new WorkerMsg_TerminateWorkerContext(worker_route_id_));
+    TerminateWorker();
   }
 }
 
@@ -141,7 +138,8 @@ void SharedWorkerHost::WorkerContextClosed() {
   // being sent to the worker (messages can still be sent from the worker,
   // for exception reporting, etc).
   closed_ = true;
-  NotifyWorkerDestroyed(worker_process_id_, worker_route_id_);
+  if (!termination_message_sent_)
+    NotifyWorkerDestroyed(worker_process_id_, worker_route_id_);
 }
 
 void SharedWorkerHost::WorkerContextDestroyed() {
@@ -267,6 +265,9 @@ void SharedWorkerHost::RelayMessage(
 }
 
 void SharedWorkerHost::TerminateWorker() {
+  termination_message_sent_ = true;
+  if (!closed_)
+    NotifyWorkerDestroyed(worker_process_id_, worker_route_id_);
   Send(new WorkerMsg_TerminateWorkerContext(worker_route_id_));
 }
 
@@ -285,6 +286,10 @@ SharedWorkerHost::GetRenderFrameIDsForWorker() {
         std::make_pair(doc->render_process_id(), doc->render_frame_id()));
   }
   return result;
+}
+
+bool SharedWorkerHost::IsAvailable() const {
+  return instance_ && !termination_message_sent_ && !closed_;
 }
 
 void SharedWorkerHost::AddFilter(SharedWorkerMessageFilter* filter,

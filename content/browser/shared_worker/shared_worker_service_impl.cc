@@ -604,10 +604,8 @@ SharedWorkerHost* SharedWorkerServiceImpl::FindSharedWorkerHost(
        iter != worker_hosts_.end();
        ++iter) {
     SharedWorkerHost* host = iter->second;
-    if (host->instance() && !host->closed() &&
-        host->instance()->Matches(instance)) {
+    if (host->IsAvailable() && host->instance()->Matches(instance))
       return iter->second;
-    }
   }
   return NULL;
 }

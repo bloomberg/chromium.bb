@@ -51,7 +51,7 @@ bool SharedWorkerDevToolsManager::WorkerCreated(
   agent_host->WorkerRestarted(id);
   workers_.erase(it);
   workers_[id] = agent_host;
-  return true;
+  return agent_host->IsAttached();
 }
 
 void SharedWorkerDevToolsManager::WorkerReadyForInspection(
