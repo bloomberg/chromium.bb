@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL writing-mode: sideways-rl assert_equals: expected "sideways-rl" but got "horizontal-tb"
-Harness: the test ran to completion.
-
