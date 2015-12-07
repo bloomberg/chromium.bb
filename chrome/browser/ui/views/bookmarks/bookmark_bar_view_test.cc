@@ -1716,8 +1716,11 @@ class BookmarkBarViewTest18 : public BookmarkBarViewEventTestBase {
     views::MenuItemView* menu = bb_view_->GetMenu();
     ASSERT_TRUE(menu != NULL);
     ASSERT_TRUE(menu->GetSubmenu()->IsShowing());
+    // The button should be pressed.
+    EXPECT_EQ(views::Button::STATE_PRESSED,
+              bb_view_->other_bookmarks_button()->state());
 
-    // Move the mouse to the first folder on the bookmark bar
+    // Move the mouse to the first folder on the bookmark bar.
     views::LabelButton* button = GetBookmarkButton(0);
     gfx::Point button_center(button->width() / 2, button->height() / 2);
     views::View::ConvertPointToScreen(button, &button_center);
@@ -1733,9 +1736,12 @@ class BookmarkBarViewTest18 : public BookmarkBarViewEventTestBase {
     ASSERT_TRUE(menu->GetSubmenu()->IsShowing());
 
     // The menu for the first folder should be in the pressed state (since the
-    // menu is showing for it).
+    // menu is showing for it)...
     EXPECT_EQ(views::CustomButton::STATE_PRESSED,
               GetBookmarkButton(0)->state());
+    // ... And the "other bookmarks" button should no longer be pressed.
+    EXPECT_EQ(views::Button::STATE_NORMAL,
+              bb_view_->other_bookmarks_button()->state());
 
     menu->GetMenuController()->CancelAll();
 

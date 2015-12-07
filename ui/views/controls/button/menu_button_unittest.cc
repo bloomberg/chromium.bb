@@ -130,6 +130,8 @@ class TestMenuButtonListener : public MenuButtonListener {
  private:
   View* last_source_;
   Button::ButtonState last_source_state_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestMenuButtonListener);
 };
 
 // Basic implementation of a DragController, to test input behaviour for
@@ -248,6 +250,22 @@ void TestDragDropClient::OnMouseEvent(ui::MouseEvent* event) {
 }
 #endif  // defined(USE_AURA)
 
+class TestShowSiblingButtonListener : public MenuButtonListener {
+ public:
+  TestShowSiblingButtonListener() {}
+  ~TestShowSiblingButtonListener() override {}
+
+  void OnMenuButtonClicked(View* source, const gfx::Point& point) override {
+    // The MenuButton itself doesn't set the PRESSED state during Activate() or
+    // OnMenuButtonClicked(). That should be handled by the MenuController or,
+    // if no menu is shown, the listener.
+    EXPECT_EQ(Button::STATE_HOVERED, static_cast<MenuButton*>(source)->state());
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestShowSiblingButtonListener);
+};
+
 // Tests if the listener is notified correctly, when a mouse click happens on a
 // MenuButton that has a regular ButtonListener.
 TEST_F(MenuButtonTest, ActivateNonDropDownOnMouseClick) {
@@ -280,7 +298,7 @@ TEST_F(MenuButtonTest, ActivateDropDownOnMouseClick) {
   // Check that MenuButton has notified the listener, while it was in pressed
   // state.
   EXPECT_EQ(button(), menu_button_listener.last_source());
-  EXPECT_EQ(Button::STATE_PRESSED, menu_button_listener.last_source_state());
+  EXPECT_EQ(Button::STATE_HOVERED, menu_button_listener.last_source_state());
 }
 
 // Test that the MenuButton stays pressed while there are any PressedLocks.
@@ -344,6 +362,20 @@ TEST_F(MenuButtonTest, MenuButtonPressedLock) {
   EXPECT_EQ(Button::STATE_NORMAL, button()->state());
 }
 
+// Test that if a sibling menu is shown, the original menu button releases its
+// PressedLock.
+TEST_F(MenuButtonTest, PressedStateWithSiblingMenu) {
+  TestShowSiblingButtonListener listener;
+  CreateMenuButtonWithMenuButtonListener(&listener);
+
+  // Move the mouse over the button; the button should be in a hovered state.
+  ui::test::EventGenerator generator(GetContext(), widget()->GetNativeWindow());
+  generator.MoveMouseTo(gfx::Point(10, 10));
+  EXPECT_EQ(Button::STATE_HOVERED, button()->state());
+  generator.ClickLeftButton();
+  // Test is continued in TestShowSiblingButtonListener::OnMenuButtonClicked().
+}
+
 // Test that the MenuButton does not become pressed if it can be dragged, until
 // a release occurs.
 TEST_F(MenuButtonTest, DraggableMenuButtonActivatesOnRelease) {
@@ -360,7 +392,7 @@ TEST_F(MenuButtonTest, DraggableMenuButtonActivatesOnRelease) {
 
   generator.ReleaseLeftButton();
   EXPECT_EQ(button(), menu_button_listener.last_source());
-  EXPECT_EQ(Button::STATE_PRESSED, menu_button_listener.last_source_state());
+  EXPECT_EQ(Button::STATE_HOVERED, menu_button_listener.last_source_state());
 }
 
 #if defined(USE_AURA)
@@ -432,7 +464,7 @@ TEST_F(MenuButtonTest, ActivateDropDownOnGestureTap) {
   // Check that MenuButton has notified the listener, while it was in pressed
   // state.
   EXPECT_EQ(button(), menu_button_listener.last_source());
-  EXPECT_EQ(Button::STATE_PRESSED, menu_button_listener.last_source_state());
+  EXPECT_EQ(Button::STATE_HOVERED, menu_button_listener.last_source_state());
 
   // The button should go back to it's normal state since the gesture ended.
   EXPECT_EQ(Button::STATE_NORMAL, button()->state());
@@ -449,7 +481,7 @@ TEST_F(MenuButtonTest, TouchFeedbackDuringTap) {
   EXPECT_EQ(Button::STATE_HOVERED, button()->state());
 
   generator.ReleaseTouch();
-  EXPECT_EQ(Button::STATE_PRESSED, menu_button_listener.last_source_state());
+  EXPECT_EQ(Button::STATE_HOVERED, menu_button_listener.last_source_state());
 }
 
 // Tests that a move event that exits the button returns it to the normal state,
