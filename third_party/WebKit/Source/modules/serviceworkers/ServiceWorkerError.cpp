@@ -58,6 +58,10 @@ DOMException* ServiceWorkerError::take(ScriptPromiseResolver*, const WebServiceW
     case WebServiceWorkerError::ErrorTypeInstall:
         // FIXME: Introduce new InstallError type to ExceptionCodes?
         return createException(AbortError, "The Service Worker installation failed.", webError.message);
+    case WebServiceWorkerError::ErrorTypeNavigation:
+        // ErrorTypeNavigation should have bailed out before calling this.
+        ASSERT_NOT_REACHED();
+        return DOMException::create(UnknownError);
     case WebServiceWorkerError::ErrorTypeNetwork:
         return createException(NetworkError, "The Service Worker failed by network.", webError.message);
     case WebServiceWorkerError::ErrorTypeNotFound:

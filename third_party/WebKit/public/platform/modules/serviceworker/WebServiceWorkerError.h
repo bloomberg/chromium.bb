@@ -41,6 +41,7 @@ struct WebServiceWorkerError {
         ErrorTypeActivate,
         ErrorTypeDisabled,
         ErrorTypeInstall,
+        ErrorTypeNavigation,
         ErrorTypeNetwork,
         ErrorTypeNotFound,
         ErrorTypeSecurity,

@@ -26,15 +26,11 @@ var test_list = [
 
 var expected = [
   location.origin + '/serviceworker/resources/blank.html',
-  // TODO(zino): Should TypeError instead of UnknownError.
-  // Please see: http://crbug.com/540503
-  'UnknownError',
+  'TypeError',
   null,
   'TypeError',
-  // TODO(zino): Should TypeError instead of UnknownError.
-  // Please see: http://crbug.com/540503
-  'UnknownError',
-  'SecurityError',
+  'TypeError',
+  'TypeError',
   'TypeError',
   'TypeError'
 ];

@@ -866,7 +866,7 @@ void ServiceWorkerContextClient::OnOpenWindowError(
     return;
   }
   callbacks->onError(blink::WebServiceWorkerError(
-      blink::WebServiceWorkerError::ErrorTypeUnknown,
+      blink::WebServiceWorkerError::ErrorTypeNavigation,
       blink::WebString::fromUTF8(message)));
   context_->client_callbacks.Remove(request_id);
 }
@@ -929,7 +929,7 @@ void ServiceWorkerContextClient::OnNavigateClientError(int request_id,
   }
   std::string message = "Cannot navigate to URL: " + url.spec();
   callbacks->onError(blink::WebServiceWorkerError(
-      blink::WebServiceWorkerError::ErrorTypeUnknown,
+      blink::WebServiceWorkerError::ErrorTypeNavigation,
       blink::WebString::fromUTF8(message)));
   context_->client_callbacks.Remove(request_id);
 }

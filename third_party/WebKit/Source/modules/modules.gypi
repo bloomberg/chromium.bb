@@ -1386,6 +1386,8 @@
       'serviceworkers/ServiceWorkerContainerClient.h',
       'serviceworkers/ServiceWorkerWindowClient.cpp',
       'serviceworkers/ServiceWorkerWindowClient.h',
+      'serviceworkers/ServiceWorkerWindowClientCallback.cpp',
+      'serviceworkers/ServiceWorkerWindowClientCallback.h',
       'serviceworkers/ServiceWorkerError.cpp',
       'serviceworkers/ServiceWorkerError.h',
       'serviceworkers/ServiceWorkerGlobalScope.cpp',

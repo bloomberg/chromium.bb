@@ -14,6 +14,7 @@
 #include "modules/serviceworkers/ServiceWorkerError.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
 #include "modules/serviceworkers/ServiceWorkerWindowClient.h"
+#include "modules/serviceworkers/ServiceWorkerWindowClientCallback.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerClientQueryOptions.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerClientsInfo.h"
 #include "wtf/OwnPtr.h"
@@ -127,7 +128,7 @@ ScriptPromise ServiceWorkerClients::openWindow(ScriptState* scriptState, const S
     }
     context->consumeWindowInteraction();
 
-    ServiceWorkerGlobalScopeClient::from(context)->openWindow(parsedUrl, new CallbackPromiseAdapter<ServiceWorkerWindowClient, ServiceWorkerError>(resolver));
+    ServiceWorkerGlobalScopeClient::from(context)->openWindow(parsedUrl, new NavigateClientCallback(resolver));
     return promise;
 }
 
