@@ -377,6 +377,14 @@ std::end</a></td>
 </tr>
 
 <tr>
+<td>Range Move</td>
+<td><code>std::move()</code></td>
+<td>Moves contents of an iterator range to a different iterator. This is a counterpart of std::copy that applies std::move() to each element.</td>
+<td><a href="http://en.cppreference.com/w/cpp/algorithm/move"><code>std::move</code> reference</a></td>
+<td>This is allowed, but there is almost always a way to write code without using this version of std::move. Not using it usually results in cleaner, easier to read, and less confusing code. <a href='https://groups.google.com/a/chromium.org/forum/#!topic/cxx/8WzmtYrZvQ8'>Discussion thread</a></td>
+</tr>
+
+<tr>
 <td>Type Traits</td>
 <td>Class templates within <code>&lt;type_traits&gt;</code></td>
 <td>Allows compile-time inspection of the properties of types</td>
