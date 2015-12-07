@@ -20,6 +20,7 @@ class CONTENT_EXPORT WebMediaSessionAndroid : public blink::WebMediaSession {
 
   void activate(blink::WebMediaSessionActivateCallback*) override;
   void deactivate(blink::WebMediaSessionDeactivateCallback*) override;
+  void setMetadata(const blink::WebMediaMetadata*) override;
 
  private:
   RendererMediaSessionManager* const session_manager_;

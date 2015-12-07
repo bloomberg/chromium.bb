@@ -37,4 +37,9 @@ void WebMediaSessionAndroid::deactivate(
   callback->onSuccess();
 }
 
+void WebMediaSessionAndroid::setMetadata(
+    const blink::WebMediaMetadata* metadata) {
+  NOTIMPLEMENTED();
+}
+
 }  // namespace content

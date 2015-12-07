@@ -13,6 +13,7 @@
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/loader/FrameLoaderClient.h"
+#include "modules/mediasession/MediaMetadata.h"
 #include "modules/mediasession/MediaSessionError.h"
 
 namespace blink {
@@ -52,6 +53,23 @@ ScriptPromise MediaSession::deactivate(ScriptState* scriptState)
 
     m_webMediaSession->deactivate(new CallbackPromiseAdapter<void, void>(resolver));
     return promise;
+}
+
+void MediaSession::setMetadata(MediaMetadata* metadata)
+{
+    m_metadata = metadata;
+
+    m_webMediaSession->setMetadata(m_metadata ? m_metadata->data() : nullptr);
+}
+
+MediaMetadata* MediaSession::metadata() const
+{
+    return m_metadata;
+}
+
+DEFINE_TRACE(MediaSession)
+{
+    visitor->trace(m_metadata);
 }
 
 } // namespace blink

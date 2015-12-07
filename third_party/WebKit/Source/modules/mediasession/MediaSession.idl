@@ -11,6 +11,8 @@
     GarbageCollected,
     RuntimeEnabled=MediaSession,
 ] interface MediaSession {
+    attribute MediaMetadata? metadata;
+
     [CallWith=ScriptState] Promise<void> activate();
     [CallWith=ScriptState] Promise<void> deactivate();
 };

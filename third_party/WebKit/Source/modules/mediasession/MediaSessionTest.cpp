@@ -7,6 +7,8 @@
 
 #include "core/dom/Document.h"
 #include "core/testing/DummyPageHolder.h"
+#include "modules/mediasession/MediaMetadata.h"
+#include "modules/mediasession/MediaMetadataInit.h"
 #include "public/platform/modules/mediasession/WebMediaSession.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -41,6 +43,7 @@ class MockWebMediaSession : public WebMediaSession {
 public:
     MOCK_METHOD1(activate, void(WebMediaSessionActivateCallback*));
     MOCK_METHOD1(deactivate, void(WebMediaSessionDeactivateCallback*));
+    MOCK_METHOD1(setMetadata, void(const WebMediaMetadata*));
 };
 
 class Helper {
@@ -69,6 +72,28 @@ TEST_F(MediaSessionTest, Deactivate)
     Helper helper;
     EXPECT_CALL(*mockWebMediaSession, deactivate(_)).WillOnce(Invoke(&helper, &Helper::deactivate));
     mediaSession->deactivate(mainScriptState());
+}
+
+TEST_F(MediaSessionTest, SetMetadata_Null)
+{
+    MockWebMediaSession* mockWebMediaSession = new MockWebMediaSession;
+    MediaSession* mediaSession = createMediaSession(mockWebMediaSession);
+
+    EXPECT_CALL(*mockWebMediaSession, setMetadata(testing::IsNull()));
+    mediaSession->setMetadata(nullptr);
+
+    EXPECT_EQ(nullptr, mediaSession->metadata());
+}
+
+TEST_F(MediaSessionTest, SetMetadata_NotNull)
+{
+    MockWebMediaSession* mockWebMediaSession = new MockWebMediaSession;
+    MediaSession* mediaSession = createMediaSession(mockWebMediaSession);
+
+    EXPECT_CALL(*mockWebMediaSession, setMetadata(testing::NotNull()));
+    mediaSession->setMetadata(MediaMetadata::create(MediaMetadataInit()));
+
+    EXPECT_NE(nullptr, mediaSession->metadata());
 }
 
 } // namespace

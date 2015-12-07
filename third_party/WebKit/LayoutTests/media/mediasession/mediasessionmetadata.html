@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<title>MediaMetadata interface</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script>
+  console.warn("dummy log entry to avoid an empty -expected.txt in virtual/");
+
+  test(function() {
+    var metadata = new MediaMetadata({});
+    assert_true(metadata != null);
+
+    var exception = false;
+    try {
+      metadata = new MediaMetadata("foobar");
+    } catch (e) {
+      exception = true;
+    }
+    assert_true(exception);
+
+    exception = false;
+    try {
+      metadata = new MediaMetadata(42);
+    } catch (e) {
+      exception = true;
+    }
+    assert_true(exception);
+  }, 'Test that MediaMetadata is constructed using a dictionary');
+
+  test(function() {
+    var metadata = new MediaMetadata({ title: 'foo', album: 'bar', artist: 'plop' });
+    assert_equals(metadata.title, 'foo');
+    assert_equals(metadata.album, 'bar');
+    assert_equals(metadata.artist, 'plop');
+  }, 'Test the different values allowed in MediaMetadata init dictionary');
+
+  test(function() {
+    var metadata = new MediaMetadata({});
+    assert_equals(metadata.title, '');
+    assert_equals(metadata.artist, '');
+    assert_equals(metadata.album, '');
+  }, 'Test the default values for MediaMetadata');
+
+  test(function() {
+    var metadata = new MediaMetadata({ randomValueThatWillNotBeAdded: '... hopefully ;)' });
+    assert_equals(metadata.randomValueThatWillNotBeAdded, undefined);
+  }, 'Test that passing unknown values to the dictionary is a no-op');
+</script>

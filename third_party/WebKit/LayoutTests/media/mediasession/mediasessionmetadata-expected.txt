@@ -1,0 +1,8 @@
+CONSOLE WARNING: line 6: dummy log entry to avoid an empty -expected.txt in virtual/
+This is a testharness.js-based test.
+FAIL Test that MediaMetadata is constructed using a dictionary MediaMetadata is not defined
+FAIL Test the different values allowed in MediaMetadata init dictionary MediaMetadata is not defined
+FAIL Test the default values for MediaMetadata MediaMetadata is not defined
+FAIL Test that passing unknown values to the dictionary is a no-op MediaMetadata is not defined
+Harness: the test ran to completion.
+

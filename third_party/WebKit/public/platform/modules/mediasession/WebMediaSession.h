@@ -13,12 +13,19 @@ namespace blink {
 using WebMediaSessionActivateCallback = WebCallbacks<void, const WebMediaSessionError&>;
 using WebMediaSessionDeactivateCallback = WebCallbacks<void, void>;
 
+struct WebMediaMetadata;
+
 class WebMediaSession {
 public:
     virtual ~WebMediaSession() = default;
 
     virtual void activate(WebMediaSessionActivateCallback*) = 0;
     virtual void deactivate(WebMediaSessionDeactivateCallback*) = 0;
+
+    // Updates the metadata associated with the WebMediaSession. The metadata
+    // can be a nullptr in which case the associated metadata should be reset.
+    // The pointer is not owned by the WebMediaSession implementation.
+    virtual void setMetadata(const WebMediaMetadata*) = 0;
 };
 
 } // namespace blink
