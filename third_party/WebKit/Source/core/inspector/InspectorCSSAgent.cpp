@@ -175,6 +175,10 @@ void addColorsFromImageStyle(const ComputedStyle& style, WillBeHeapVector<Color>
         return;
 
     StyleImage* styleImage = backgroundLayers.image();
+    // hasImage() does not always indicate that this is non-null
+    if (!styleImage)
+        return;
+
     if (!styleImage->isGeneratedImage()) {
         // Make no assertions about the colors in non-generated images
         colors.clear();
