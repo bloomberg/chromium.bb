@@ -148,7 +148,7 @@ void IOSChromeSyncClient::Initialize(sync_driver::SyncService* sync_service) {
         this, ::GetChannel(), ::GetVersionString(),
         ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET,
         *base::CommandLine::ForCurrentProcess(),
-        ios::prefs::kSavingBrowserHistoryDisabled, sync_service_url,
+        prefs::kSavingBrowserHistoryDisabled, sync_service_url,
         web::WebThread::GetTaskRunnerForThread(web::WebThread::UI),
         web::WebThread::GetTaskRunnerForThread(web::WebThread::DB),
         token_service, url_request_context_getter));

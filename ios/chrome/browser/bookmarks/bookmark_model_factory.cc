@@ -69,7 +69,7 @@ scoped_ptr<KeyedService> BookmarkModelFactory::BuildServiceInstanceFor(
   bookmark_client->Init(bookmark_model.get());
   bookmark_model->Load(
       browser_state->GetPrefs(),
-      browser_state->GetPrefs()->GetString(ios::prefs::kAcceptLanguages),
+      browser_state->GetPrefs()->GetString(prefs::kAcceptLanguages),
       browser_state->GetStatePath(),
       ios::StartupTaskRunnerServiceFactory::GetForBrowserState(browser_state)
           ->GetBookmarkTaskRunner(),

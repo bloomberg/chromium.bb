@@ -13,12 +13,12 @@
 net::HttpServerPropertiesManager*
 HttpServerPropertiesManagerFactory::CreateManager(PrefService* pref_service) {
   return new net::HttpServerPropertiesManager(
-      pref_service, ios::prefs::kHttpServerProperties,
+      pref_service, prefs::kHttpServerProperties,
       web::WebThread::GetTaskRunnerForThread(web::WebThread::IO));
 }
 
 // static
 void HttpServerPropertiesManagerFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterDictionaryPref(ios::prefs::kHttpServerProperties);
+  registry->RegisterDictionaryPref(prefs::kHttpServerProperties);
 }

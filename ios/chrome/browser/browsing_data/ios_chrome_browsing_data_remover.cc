@@ -143,7 +143,7 @@ void IOSChromeBrowsingDataRemover::RemoveImpl(int remove_mask,
 
   PrefService* prefs = browser_state_->GetPrefs();
   bool may_delete_history =
-      prefs->GetBoolean(ios::prefs::kAllowDeletingBrowserHistory);
+      prefs->GetBoolean(prefs::kAllowDeletingBrowserHistory);
 
   // All the UI entry points into the IOSChromeBrowsingDataRemover should be
   // disabled, but this will fire if something was missed or added.

@@ -34,8 +34,7 @@ class TranslateAcceptLanguagesService : public KeyedService {
 
 TranslateAcceptLanguagesService::TranslateAcceptLanguagesService(
     PrefService* prefs)
-    : accept_languages_(prefs, ios::prefs::kAcceptLanguages) {
-}
+    : accept_languages_(prefs, prefs::kAcceptLanguages) {}
 
 TranslateAcceptLanguagesService::~TranslateAcceptLanguagesService() {
 }

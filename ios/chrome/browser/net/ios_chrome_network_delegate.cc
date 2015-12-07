@@ -80,7 +80,7 @@ void IOSChromeNetworkDelegate::InitializePrefsOnUIThread(
     PrefService* pref_service) {
   DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
   if (enable_do_not_track) {
-    enable_do_not_track->Init(ios::prefs::kEnableDoNotTrack, pref_service);
+    enable_do_not_track->Init(prefs::kEnableDoNotTrack, pref_service);
     enable_do_not_track->MoveToThread(
         web::WebThread::GetTaskRunnerForThread(web::WebThread::IO));
   }

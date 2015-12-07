@@ -27,7 +27,7 @@ history::HistoryService* HistoryServiceFactory::GetForBrowserState(
   // If saving history is disabled, only allow explicit access.
   if (access_type != ServiceAccessType::EXPLICIT_ACCESS &&
       browser_state->GetPrefs()->GetBoolean(
-          ios::prefs::kSavingBrowserHistoryDisabled)) {
+          prefs::kSavingBrowserHistoryDisabled)) {
     return nullptr;
   }
 
@@ -42,7 +42,7 @@ history::HistoryService* HistoryServiceFactory::GetForBrowserStateIfExists(
   // If saving history is disabled, only allow explicit access.
   if (access_type != ServiceAccessType::EXPLICIT_ACCESS &&
       browser_state->GetPrefs()->GetBoolean(
-          ios::prefs::kSavingBrowserHistoryDisabled)) {
+          prefs::kSavingBrowserHistoryDisabled)) {
     return nullptr;
   }
 
@@ -75,7 +75,7 @@ scoped_ptr<KeyedService> HistoryServiceFactory::BuildServiceInstanceFor(
               ios::BookmarkModelFactory::GetForBrowserState(browser_state))),
           nullptr));
   if (!history_service->Init(
-          browser_state->GetPrefs()->GetString(ios::prefs::kAcceptLanguages),
+          browser_state->GetPrefs()->GetString(prefs::kAcceptLanguages),
           history::HistoryDatabaseParamsForPath(
               browser_state->GetStatePath()))) {
     return nullptr;

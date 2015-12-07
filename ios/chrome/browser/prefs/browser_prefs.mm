@@ -62,10 +62,9 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   web_resource::PromoResourceService::RegisterPrefs(registry);
 
   // Preferences related to the browser state manager.
-  registry->RegisterStringPref(ios::prefs::kBrowserStateLastUsed,
-                               std::string());
-  registry->RegisterIntegerPref(ios::prefs::kBrowserStatesNumCreated, 1);
-  registry->RegisterListPref(ios::prefs::kBrowserStatesLastActive);
+  registry->RegisterStringPref(prefs::kBrowserStateLastUsed, std::string());
+  registry->RegisterIntegerPref(prefs::kBrowserStatesNumCreated, 1);
+  registry->RegisterListPref(prefs::kBrowserStatesLastActive);
 
   [OmniboxGeolocationLocalState registerLocalState:registry];
   [MemoryDebuggerManager registerLocalState:registry];
@@ -99,16 +98,16 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   ZeroSuggestProvider::RegisterProfilePrefs(registry);
 
   registry->RegisterBooleanPref(
-      ios::prefs::kEnableDoNotTrack, false,
+      prefs::kEnableDoNotTrack, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterBooleanPref(
       prefs::kEnableTranslate, true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterStringPref(
-      ios::prefs::kAcceptLanguages,
+      prefs::kAcceptLanguages,
       l10n_util::GetStringUTF8(IDS_IOS_ACCEPT_LANGUAGES));
   registry->RegisterStringPref(
-      ios::prefs::kDefaultCharset,
+      prefs::kDefaultCharset,
       l10n_util::GetStringUTF8(IDS_IOS_DEFAULT_ENCODING),
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterInt64Pref(prefs::kRateThisAppDialogLastShownTime, 0,
@@ -122,13 +121,12 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterStringPref(prefs::kContextualSearchEnabled, std::string(),
                                user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterBooleanPref(
-      ios::prefs::kSearchSuggestEnabled, true,
+      prefs::kSearchSuggestEnabled, true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterBooleanPref(prefs::kSigninAllowed, true);
-  registry->RegisterBooleanPref(ios::prefs::kSavingBrowserHistoryDisabled,
-                                false);
-  registry->RegisterBooleanPref(ios::prefs::kAllowDeletingBrowserHistory, true);
-  registry->RegisterIntegerPref(ios::prefs::kNtpShownPage, 1 << 10);
+  registry->RegisterBooleanPref(prefs::kSavingBrowserHistoryDisabled, false);
+  registry->RegisterBooleanPref(prefs::kAllowDeletingBrowserHistory, true);
+  registry->RegisterIntegerPref(prefs::kNtpShownPage, 1 << 10);
   // This comes from components/bookmarks/core/browser/bookmark_model.h
   // Defaults to 3, which is the id of bookmarkModel_->mobile_node()
   registry->RegisterInt64Pref(prefs::kNtpShownBookmarksFolder, 3);
@@ -149,8 +147,7 @@ void MigrateObsoleteLocalStatePrefs(PrefService* prefs) {}
 // This method should be periodically pruned of year+ old migrations.
 void MigrateObsoleteBrowserStatePrefs(PrefService* prefs) {
   // Added 07/2014.
-  translate::TranslatePrefs::MigrateUserPrefs(prefs,
-                                              ios::prefs::kAcceptLanguages);
+  translate::TranslatePrefs::MigrateUserPrefs(prefs, prefs::kAcceptLanguages);
 
   // Added 08/2015.
   prefs->ClearPref(::prefs::kSigninSharedAuthenticationUserId);

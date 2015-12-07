@@ -88,7 +88,7 @@ ApplicationContextImpl::~ApplicationContextImpl() {
 
 // static
 void ApplicationContextImpl::RegisterPrefs(PrefRegistrySimple* registry) {
-  registry->RegisterStringPref(ios::prefs::kApplicationLocale, std::string());
+  registry->RegisterStringPref(prefs::kApplicationLocale, std::string());
   registry->RegisterBooleanPref(prefs::kEulaAccepted, false);
   registry->RegisterBooleanPref(metrics::prefs::kMetricsReportingEnabled,
                                 false);

@@ -104,7 +104,7 @@ AutocompleteProviderClientImpl::GetKeywordExtensionsDelegate(
 }
 
 std::string AutocompleteProviderClientImpl::GetAcceptLanguages() const {
-  return browser_state_->GetPrefs()->GetString(ios::prefs::kAcceptLanguages);
+  return browser_state_->GetPrefs()->GetString(prefs::kAcceptLanguages);
 }
 
 std::string
@@ -128,8 +128,7 @@ bool AutocompleteProviderClientImpl::IsOffTheRecord() const {
 }
 
 bool AutocompleteProviderClientImpl::SearchSuggestEnabled() const {
-  return browser_state_->GetPrefs()->GetBoolean(
-      ios::prefs::kSearchSuggestEnabled);
+  return browser_state_->GetPrefs()->GetBoolean(prefs::kSearchSuggestEnabled);
 }
 
 bool AutocompleteProviderClientImpl::BookmarkBarIsVisible() const {

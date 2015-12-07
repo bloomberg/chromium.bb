@@ -36,11 +36,10 @@ DEFINE_WEB_STATE_USER_DATA_KEY(ChromeIOSTranslateClient);
 ChromeIOSTranslateClient::ChromeIOSTranslateClient(web::WebState* web_state)
     : web::WebStateObserver(web_state),
       translate_manager_(
-          new translate::TranslateManager(this, ios::prefs::kAcceptLanguages)),
+          new translate::TranslateManager(this, prefs::kAcceptLanguages)),
       translate_driver_(web_state,
                         web_state->GetNavigationManager(),
-                        translate_manager_.get()) {
-}
+                        translate_manager_.get()) {}
 
 ChromeIOSTranslateClient::~ChromeIOSTranslateClient() {
 }
@@ -48,8 +47,8 @@ ChromeIOSTranslateClient::~ChromeIOSTranslateClient() {
 // static
 scoped_ptr<translate::TranslatePrefs>
 ChromeIOSTranslateClient::CreateTranslatePrefs(PrefService* prefs) {
-  return scoped_ptr<translate::TranslatePrefs>(new translate::TranslatePrefs(
-      prefs, ios::prefs::kAcceptLanguages, nullptr));
+  return scoped_ptr<translate::TranslatePrefs>(
+      new translate::TranslatePrefs(prefs, prefs::kAcceptLanguages, nullptr));
 }
 
 translate::TranslateManager* ChromeIOSTranslateClient::GetTranslateManager() {

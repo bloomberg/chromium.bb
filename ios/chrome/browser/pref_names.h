@@ -5,11 +5,8 @@
 #ifndef IOS_CHROME_BROWSER_PREF_NAMES_H_
 #define IOS_CHROME_BROWSER_PREF_NAMES_H_
 
-namespace ios {
 namespace prefs {
 
-// Preferences in ios::prefs:: are temporary shared with desktop Chrome.
-// Non-shared preferences should be in the prefs:: namespace (no ios::).
 extern const char kAcceptLanguages[];
 extern const char kAllowDeletingBrowserHistory[];
 extern const char kApplicationLocale[];
@@ -17,30 +14,24 @@ extern const char kBrowserStateInfoCache[];
 extern const char kBrowserStateLastUsed[];
 extern const char kBrowserStatesLastActive[];
 extern const char kBrowserStatesNumCreated[];
+extern const char kBrowsingDataMigrationHasBeenPossible[];
+extern const char kContextualSearchEnabled[];
 extern const char kDefaultCharset[];
 extern const char kEnableDoNotTrack[];
 extern const char kHttpServerProperties[];
-extern const char kNtpShownPage[];
-extern const char kSavingBrowserHistoryDisabled[];
-extern const char kSearchSuggestEnabled[];
-
-}  // namespace prefs
-}  // namespace ios
-
-namespace prefs {
-
-extern const char kContextualSearchEnabled[];
 extern const char kIosBookmarkFolderDefault[];
 extern const char kIosBookmarkPromoAlreadySeen[];
-extern const char kBrowsingDataMigrationHasBeenPossible[];
-extern const char kOTRStashStatePathSystemBackupExcluded[];
 extern const char kIosHandoffToOtherDevices[];
 extern const char kLastSessionExitedCleanly[];
 extern const char kLastSessionUsedWKWebViewControlGroup[];
 extern const char kMetricsReportingWifiOnly[];
+extern const char kNtpShownPage[];
+extern const char kOTRStashStatePathSystemBackupExcluded[];
+extern const char kSavingBrowserHistoryDisabled[];
+extern const char kSearchSuggestEnabled[];
 
-// TODO(stkhapugin): Consider migrating from these two bools to an integer.
-// http://crbug.com/538573
+// TODO(crbug.com/538573): Consider migrating from these two bools to an integer
+// since only three cases are supported.
 extern const char kNetworkPredictionEnabled[];
 extern const char kNetworkPredictionWifiOnly[];
 
@@ -59,6 +50,15 @@ extern const char kOmniboxGeolocationAuthorizationState[];
 extern const char kOmniboxGeolocationLastAuthorizationAlertVersion[];
 
 extern const char kRateThisAppDialogLastShownTime[];
+
+// TODO(crbug.com/567136): those preferences are duplicated between desktop
+// and iOS. Once the corresponding code has been componentized or is no longer
+// used by iOS, remove the duplicate registration/definition.
+extern const char kSafeBrowsingEnabled[];
+extern const char kSafeBrowsingExtendedReportingEnabled[];
+extern const char kSafeBrowsingExtendedReportingOptInAllowed[];
+extern const char kSafeBrowsingProceedAnywayDisabled[];
+extern const char kSSLErrorOverrideAllowed[];
 
 }  // namespace prefs
 

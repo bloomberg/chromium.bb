@@ -13,7 +13,7 @@
 IOSChromeHttpUserAgentSettings::IOSChromeHttpUserAgentSettings(
     PrefService* prefs) {
   DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
-  pref_accept_language_.Init(ios::prefs::kAcceptLanguages, prefs);
+  pref_accept_language_.Init(prefs::kAcceptLanguages, prefs);
   last_pref_accept_language_ = *pref_accept_language_;
   last_http_accept_language_ =
       net::HttpUtil::GenerateAcceptLanguageHeader(last_pref_accept_language_);
