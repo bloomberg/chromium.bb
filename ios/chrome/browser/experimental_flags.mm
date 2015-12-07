@@ -16,7 +16,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_util.h"
 #include "components/autofill/core/common/autofill_switches.h"
-#include "components/enhanced_bookmarks/enhanced_bookmark_features.h"
+#include "components/enhanced_bookmarks/enhanced_bookmark_switches.h"
 #include "components/variations/variations_associated_data.h"
 #include "ios/chrome/browser/chrome_switches.h"
 #include "ios/web/public/web_view_creation_util.h"
@@ -48,7 +48,24 @@ bool IsAlertOnBackgroundUploadEnabled() {
 }
 
 bool IsBookmarkCollectionEnabled() {
-  return enhanced_bookmarks::IsEnhancedBookmarksEnabled();
+  // kEnhancedBookmarksExperiment flag could have values "", "1" and "0".
+  // "" - default, "0" - user opted out, "1" - user opted in.  Tests also use
+  // the command line flag to force enhanced bookmark to be on.
+  // If none is specified, the finch experiment is checked. If not disabled in
+  // finch, the default is opt-in.
+  std::string switch_value =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kEnhancedBookmarksExperiment);
+  if (switch_value == "1")
+    return true;
+  if (switch_value == "0")
+    return false;
+
+  // Check if the finch experiment is turned on.
+  std::string group_name =
+      base::FieldTrialList::FindFullName("IOSNewBookmarksUI");
+  return !base::StartsWith(group_name, "Disabled",
+                           base::CompareCase::INSENSITIVE_ASCII);
 }
 
 void SetWKWebViewTrialEligibility(bool eligible) {
