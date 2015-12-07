@@ -49,7 +49,7 @@ const char kNoteProtectedNonVirtualDtor[] =
     "[chromium-style] Protected non-virtual destructor declared here";
 
 bool TypeHasNonTrivialDtor(const Type* type) {
-  if (const CXXRecordDecl* cxx_r = type->getPointeeCXXRecordDecl())
+  if (const CXXRecordDecl* cxx_r = type->getAsCXXRecordDecl())
     return !cxx_r->hasTrivialDestructor();
 
   return false;
@@ -563,9 +563,9 @@ void FindBadConstructsConsumer::CountType(const Type* type,
       // Simplifying; the whole class isn't trivial if the dtor is, but
       // we use this as a signal about complexity.
       if (TypeHasNonTrivialDtor(type))
-        (*trivial_member)++;
-      else
         (*non_trivial_member)++;
+      else
+        (*trivial_member)++;
       break;
     }
     case Type::TemplateSpecialization: {
@@ -606,8 +606,8 @@ void FindBadConstructsConsumer::CountType(const Type* type,
       break;
     }
     default: {
-      // Stupid assumption: anything we see that isn't the above is one of
-      // the 20 integer types.
+      // Stupid assumption: anything we see that isn't the above is a POD
+      // or reference type.
       (*trivial_member)++;
       break;
     }

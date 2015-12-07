@@ -5,4 +5,8 @@ In file included from inline_ctor.cpp:5:
 ./inline_ctor.h:14:3: warning: [chromium-style] Complex destructor has an inline body.
   ~InlineCtorsArentOKInHeader() {}
   ^
-2 warnings generated.
+./inline_ctor.h:82:1: warning: [chromium-style] Complex class/struct needs an explicit out-of-line constructor.
+struct FourNonTrivialMembers {
+^
+./inline_ctor.h:82:1: warning: [chromium-style] Complex class/struct needs an explicit out-of-line destructor.
+4 warnings generated.

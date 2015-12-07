@@ -50,4 +50,40 @@ inline ExplicitlyInlinedIsAlsoOK::ExplicitlyInlinedIsAlsoOK(
     const ExplicitlyInlinedIsAlsoOK&) {
 }
 
+struct TrivialStruct {
+  int something_;
+};
+
+struct NonTrivialStruct {
+  NonTrivialStruct();
+  ~NonTrivialStruct();
+
+  int something_;
+};
+
+// Plugin doesn't warn about inlining trivial member dtor calls.
+struct FourTrivialMembers {
+  ~FourTrivialMembers();
+
+  TrivialStruct a;
+  TrivialStruct b;
+  TrivialStruct c;
+  TrivialStruct d;
+};
+
+// Plugin doesn't warn about inlining three ctor/dtor calls.
+struct ThreeNonTrivialMembers {
+  NonTrivialStruct a;
+  NonTrivialStruct b;
+  NonTrivialStruct c;
+};
+
+// Plugin does warn about inlining four ctor/dtor calls.
+struct FourNonTrivialMembers {
+  NonTrivialStruct a;
+  NonTrivialStruct b;
+  NonTrivialStruct c;
+  NonTrivialStruct d;
+};
+
 #endif  // INLINE_CTOR_H_
