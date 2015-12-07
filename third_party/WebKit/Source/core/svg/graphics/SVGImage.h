@@ -108,6 +108,7 @@ private:
     void drawForContainer(SkCanvas*, const SkPaint&, const FloatSize, float, const FloatRect&, const FloatRect&, const KURL&);
     void drawPatternForContainer(GraphicsContext*, const FloatSize, float, const FloatRect&, const FloatSize&, const FloatPoint&,
         SkXfermode::Mode, const FloatRect&, const FloatSize& repeatSpacing, const KURL&);
+    PassRefPtr<SkImage> imageForCurrentFrameForContainer(const KURL&);
     void drawInternal(SkCanvas*, const SkPaint&, const FloatRect& fromRect, const FloatRect& toRect, RespectImageOrientationEnum,
         ImageClampingMode, const KURL&);
 

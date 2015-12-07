@@ -215,16 +215,7 @@ void SVGImage::drawForContainer(SkCanvas* canvas, const SkPaint& paint, const Fl
 
 PassRefPtr<SkImage> SVGImage::imageForCurrentFrame()
 {
-    if (!m_page)
-        return nullptr;
-
-    SkPictureRecorder recorder;
-    SkCanvas* canvas = recorder.beginRecording(width(), height());
-    drawForContainer(canvas, SkPaint(), FloatSize(size()), 1, rect(), rect(), KURL());
-    RefPtr<SkPicture> picture = adoptRef(recorder.endRecording());
-
-    return adoptRef(
-        SkImage::NewFromPicture(picture.get(), SkISize::Make(width(), height()), nullptr, nullptr));
+    return imageForCurrentFrameForContainer(KURL());
 }
 
 void SVGImage::drawPatternForContainer(GraphicsContext* context, const FloatSize containerSize,
@@ -262,6 +253,20 @@ void SVGImage::drawPatternForContainer(GraphicsContext* context, const FloatSize
     paint.setXfermodeMode(compositeOp);
     paint.setColorFilter(context->colorFilter());
     context->drawRect(dstRect, paint);
+}
+
+PassRefPtr<SkImage> SVGImage::imageForCurrentFrameForContainer(const KURL& url)
+{
+    if (!m_page)
+        return nullptr;
+
+    SkPictureRecorder recorder;
+    SkCanvas* canvas = recorder.beginRecording(width(), height());
+    drawForContainer(canvas, SkPaint(), FloatSize(size()), 1, rect(), rect(), url);
+    RefPtr<SkPicture> picture = adoptRef(recorder.endRecording());
+
+    return adoptRef(
+        SkImage::NewFromPicture(picture.get(), SkISize::Make(width(), height()), nullptr, nullptr));
 }
 
 static bool drawNeedsLayer(const SkPaint& paint)
