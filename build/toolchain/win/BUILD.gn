@@ -50,8 +50,8 @@ if (current_toolchain == default_toolchain) {
 }
 
 # Parameters:
-#  current_cpu: current_cpu to pass as a build arg
-#  current_os: current_os to pass as a build arg
+#  toolchain_cpu: current_cpu to pass as a build arg
+#  toolchain_os: current_os to pass as a build arg
 #  environment: File name of environment file.
 template("msvc_toolchain") {
   if (defined(invoker.concurrent_links)) {
@@ -107,7 +107,7 @@ template("msvc_toolchain") {
     }
 
     tool("asm") {
-      if (current_cpu == "x64") {
+      if (invoker.toolchain_cpu == "x64") {
         ml = "ml64.exe"
       } else {
         ml = "ml.exe"
@@ -221,11 +221,13 @@ template("msvc_toolchain") {
     # When invoking this toolchain not as the default one, these args will be
     # passed to the build. They are ignored when this is the default toolchain.
     toolchain_args() {
-      current_cpu = invoker.current_cpu
+      current_cpu = invoker.toolchain_cpu
+      if (defined(invoker.toolchain_os)) {
+        current_os = invoker.toolchain_os
+      }
       if (defined(invoker.is_clang)) {
         is_clang = invoker.is_clang
       }
-      current_os = invoker.current_os
 
       # This value needs to be passed through unchanged.
       host_toolchain = host_toolchain
@@ -249,18 +251,18 @@ if (target_cpu == "x86") {
 
   msvc_toolchain("x86") {
     environment = "environment.x86"
-    current_cpu = "x86"
+    toolchain_cpu = "x86"
     cl = "${goma_prefix}\"${x86_toolchain_data.vc_bin_dir}/cl.exe\""
     is_clang = false
   }
 
   msvc_toolchain("clang_x86") {
     environment = "environment.x86"
-    current_cpu = "x86"
+    toolchain_cpu = "x86"
     prefix = rebase_path("//third_party/llvm-build/Release+Asserts/bin",
                          root_build_dir)
     cl = "${goma_prefix}$prefix/clang-cl.exe"
-    current_os = "win"
+    toolchain_os = "win"
     is_clang = true
   }
 }
@@ -278,18 +280,18 @@ x64_toolchain_data = exec_script("setup_toolchain.py",
 
 msvc_toolchain("x64") {
   environment = "environment.x64"
-  current_cpu = "x64"
+  toolchain_cpu = "x64"
   cl = "${goma_prefix}\"${x64_toolchain_data.vc_bin_dir}/cl.exe\""
   is_clang = false
 }
 
 msvc_toolchain("clang_x64") {
   environment = "environment.x64"
-  current_cpu = "x64"
+  toolchain_cpu = "x64"
   prefix = rebase_path("//third_party/llvm-build/Release+Asserts/bin",
                        root_build_dir)
   cl = "${goma_prefix}$prefix/clang-cl.exe"
-  current_os = "win"
+  toolchain_os = "win"
   is_clang = true
 }
 
@@ -305,8 +307,8 @@ if (target_os == "winrt_81" || target_os == "winrt_81_phone" ||
     cl = "${goma_prefix}\"${vc_bin_dir}/cl.exe\""
     is_clang = false
 
-    current_cpu = "x86"
-    current_os = current_os
+    toolchain_cpu = "x86"
+    toolchain_os = current_os
   }
 
   msvc_toolchain("winrt_x64") {
@@ -314,7 +316,7 @@ if (target_os == "winrt_81" || target_os == "winrt_81_phone" ||
     cl = "${goma_prefix}\"${vc_bin_dir}/cl.exe\""
     is_clang = false
 
-    current_cpu = "x64"
-    current_os = current_os
+    toolchain_cpu = "x64"
+    toolchain_os = current_os
   }
 }
