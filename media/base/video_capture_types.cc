@@ -69,8 +69,10 @@ size_t VideoCaptureFormat::ImageAllocationSize() const {
 
 //static
 std::string VideoCaptureFormat::ToString(const VideoCaptureFormat& format) {
+  // Beware: This string is parsed by manager.js:parseVideoCaptureFormat_,
+  // take care when changing the formatting.
   return base::StringPrintf(
-      "(%s)@%.3ffps, pixel format: %s storage: %s.",
+      "(%s)@%.3ffps, pixel format: %s, storage: %s",
       format.frame_size.ToString().c_str(), format.frame_rate,
       VideoPixelFormatToString(format.pixel_format).c_str(),
       PixelStorageToString(format.pixel_storage).c_str());

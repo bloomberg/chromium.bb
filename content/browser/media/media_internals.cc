@@ -584,6 +584,10 @@ void MediaInternals::UpdateVideoCaptureDeviceCapabilities(
 
   for (const auto& video_capture_device_info : video_capture_device_infos) {
     base::ListValue* format_list = new base::ListValue();
+    // TODO(nisse): Representing format information as a string, to be
+    // parsed by the javascript handler, is brittle. Consider passing
+    // a list of mappings instead.
+
     for (const auto& format : video_capture_device_info.supported_formats)
       format_list->AppendString(media::VideoCaptureFormat::ToString(format));
 

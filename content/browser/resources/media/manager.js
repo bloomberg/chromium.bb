@@ -117,23 +117,32 @@ var Manager = (function() {
        * Example:
        *
        * format:
-       *   "resolution: 1280x720, fps: 30.000000, pixel format: I420"
+       *   "(160x120)@30.000fps, pixel format: PIXEL_FORMAT_I420, storage: CPU"
        *
        * formatDict:
-       *   {'resolution':'1280x720', 'fps': '30.00'}
+       *   {'resolution':'1280x720', 'fps': '30.00', "storage: "CPU" }
        */
       var parts = format.split(', ');
       var formatDict = {};
       for (var i in parts) {
         var kv = parts[i].split(': ');
-        formatDict[kv[0]] = kv[1];
+        if (kv.length == 2) {
+          if (kv[0] == 'pixel format') {
+            // The camera does not actually output I420,
+            // so this info is misleading.
+            continue;
+          }
+          formatDict[kv[0]] = kv[1];
+        } else {
+          kv = parts[i].split("@");
+          if (kv.length == 2) {
+            formatDict['resolution'] = kv[0].replace(/[)(]/g, '');
+            // Round down the FPS to 2 decimals.
+            formatDict['fps'] =
+                parseFloat(kv[1].replace(/fps$/, '')).toFixed(2);
+          }
+        }
       }
-
-      // Round down the FPS to 2 decimals.
-      formatDict['fps'] = parseFloat(formatDict['fps']).toFixed(2);
-
-      // The camera does not actually output I420 so this info is misleading.
-      delete formatDict['pixel format'];
 
       return formatDict;
     },
