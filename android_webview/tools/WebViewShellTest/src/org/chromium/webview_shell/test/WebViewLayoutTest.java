@@ -11,7 +11,6 @@ import android.test.suitebuilder.annotation.MediumTest;
 import junit.framework.ComparisonFailure;
 
 import org.chromium.base.Log;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.webview_shell.WebViewLayoutTestActivity;
 
 import java.io.BufferedReader;
@@ -83,11 +82,9 @@ public class WebViewLayoutTest
                            "webexposed/global-interface-listing-expected.txt", true);
     }
 
-    /*
+    // This is a non-failing test to avoid 'blind' rebaselines by the sheriff
+    // (see crbug.com/564765).
     @MediumTest
-    crbug.com/564765
-    */
-    @DisabledTest
     public void testNoUnexpectedInterfaces() throws Exception {
         ensureJsTestCopied();
         loadUrlWebViewAsync("file://" + PATH_BLINK_PREFIX
@@ -108,7 +105,10 @@ public class WebViewLayoutTest
                 newInterfaces.append(interfaceS + "\n");
             }
         }
-        assertEquals("Unexpected new webview interfaces found", "", newInterfaces.toString());
+
+        if (newInterfaces.length() > 0) {
+            Log.w(TAG, "Unexpected WebView interfaces found: " + newInterfaces.toString());
+        }
     }
 
     @MediumTest
