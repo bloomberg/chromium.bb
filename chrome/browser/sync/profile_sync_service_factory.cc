@@ -4,7 +4,8 @@
 
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 
-#include "base/command_line.h"
+#include <utility>
+
 #include "base/memory/singleton.h"
 #include "base/time/time.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
@@ -18,7 +19,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
-#include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/signin/about_signin_internals_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
@@ -134,7 +134,7 @@ ProfileSyncServiceFactory::~ProfileSyncServiceFactory() {
 
 KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  Profile* profile = static_cast<Profile*>(context);
+  Profile* profile = Profile::FromBrowserContext(context);
 
   SigninManagerBase* signin = SigninManagerFactory::GetForProfile(profile);
 
@@ -162,10 +162,12 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
   browser_sync::ProfileSyncServiceStartBehavior behavior =
       browser_defaults::kSyncAutoStarts ? browser_sync::AUTO_START
                                         : browser_sync::MANUAL_START;
-  browser_sync::ChromeSyncClient* chrome_sync_client =
-      new browser_sync::ChromeSyncClient(profile);
-  ProfileSyncService* pss = new ProfileSyncService(
-      make_scoped_ptr(chrome_sync_client), signin_wrapper.Pass(), token_service,
+
+  auto chrome_sync_client =
+      make_scoped_ptr(new browser_sync::ChromeSyncClient(profile));
+
+  auto pss = make_scoped_ptr(new ProfileSyncService(
+      std::move(chrome_sync_client), std::move(signin_wrapper), token_service,
       behavior, base::Bind(&UpdateNetworkTime), profile->GetPath(),
       profile->GetRequestContext(), profile->GetDebugName(),
       chrome::GetChannel(),
@@ -173,11 +175,11 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
           content::BrowserThread::DB),
       content::BrowserThread::GetMessageLoopProxyForThread(
           content::BrowserThread::FILE),
-      content::BrowserThread::GetBlockingPool());
+      content::BrowserThread::GetBlockingPool()));
 
   // Will also initialize the sync client.
   pss->Initialize();
-  return pss;
+  return pss.release();
 }
 
 // static

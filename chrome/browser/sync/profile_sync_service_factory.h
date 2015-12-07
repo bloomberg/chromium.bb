@@ -5,9 +5,13 @@
 #ifndef CHROME_BROWSER_SYNC_PROFILE_SYNC_SERVICE_FACTORY_H_
 #define CHROME_BROWSER_SYNC_PROFILE_SYNC_SERVICE_FACTORY_H_
 
-#include "base/compiler_specific.h"
-#include "base/memory/singleton.h"
+#include "base/macros.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
+
+namespace base {
+template <typename T>
+struct DefaultSingletonTraits;
+}
 
 namespace sync_driver {
 class SyncService;
@@ -37,6 +41,8 @@ class ProfileSyncServiceFactory : public BrowserContextKeyedServiceFactory {
   // BrowserContextKeyedServiceFactory:
   KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
+
+  DISALLOW_COPY_AND_ASSIGN(ProfileSyncServiceFactory);
 };
 
 #endif  // CHROME_BROWSER_SYNC_PROFILE_SYNC_SERVICE_FACTORY_H_
