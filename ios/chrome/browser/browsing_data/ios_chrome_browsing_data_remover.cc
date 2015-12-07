@@ -28,6 +28,8 @@
 #include "components/sessions/core/tab_restore_service.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
+#include "ios/chrome/browser/data_reduction_proxy/ios_chrome_data_reduction_proxy_settings.h"
+#include "ios/chrome/browser/data_reduction_proxy/ios_chrome_data_reduction_proxy_settings_factory.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/chrome/browser/history/web_history_service_factory.h"
 #include "ios/chrome/browser/ios_chrome_io_thread.h"
@@ -39,7 +41,6 @@
 #include "ios/net/http_cache_helper.h"
 #include "ios/public/provider/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
-#include "ios/public/provider/chrome/browser/keyed_service_provider.h"
 #include "ios/web/public/user_metrics.h"
 #include "ios/web/public/web_thread.h"
 #include "net/base/net_errors.h"
@@ -247,8 +248,8 @@ void IOSChromeBrowsingDataRemover::RemoveImpl(int remove_mask,
 
     data_reduction_proxy::DataReductionProxySettings*
         data_reduction_proxy_settings =
-            ios::GetKeyedServiceProvider()
-                ->GetDataReductionProxySettingsForBrowserState(browser_state_);
+            IOSChromeDataReductionProxySettingsFactory::GetForBrowserState(
+                browser_state_);
 
     // |data_reduction_proxy_settings| is null if |browser_state_| is off the
     // record.
