@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/stl_util.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
 #include "base/test/sequenced_task_runner_test_template.h"
@@ -69,7 +70,8 @@ class ThreadBlocker {
 class DestructionDeadlockChecker
     : public base::RefCountedThreadSafe<DestructionDeadlockChecker> {
  public:
-  DestructionDeadlockChecker(const scoped_refptr<SequencedWorkerPool>& pool)
+  explicit DestructionDeadlockChecker(
+      const scoped_refptr<SequencedWorkerPool>& pool)
       : pool_(pool) {}
 
  protected:
@@ -519,10 +521,8 @@ TEST_F(SequencedWorkerPoolTest, DISABLED_IgnoresAfterShutdown) {
 
   // The kNumWorkerThread items should have completed, in no particular order.
   ASSERT_EQ(kNumWorkerThreads, result.size());
-  for (size_t i = 0; i < kNumWorkerThreads; i++) {
-    EXPECT_TRUE(std::find(result.begin(), result.end(), static_cast<int>(i)) !=
-                result.end());
-  }
+  for (size_t i = 0; i < kNumWorkerThreads; i++)
+    EXPECT_TRUE(ContainsValue(result, static_cast<int>(i)));
 
   // No further tasks, regardless of shutdown mode, should be allowed.
   EXPECT_FALSE(pool()->PostWorkerTaskWithShutdownBehavior(
@@ -654,11 +654,9 @@ TEST_F(SequencedWorkerPoolTest, DiscardOnShutdown) {
   // The kNumWorkerThread items should have completed, plus the BLOCK_SHUTDOWN
   // one, in no particular order.
   ASSERT_EQ(kNumWorkerThreads + 1, result.size());
-  for (size_t i = 0; i < kNumWorkerThreads; i++) {
-    EXPECT_TRUE(std::find(result.begin(), result.end(), static_cast<int>(i)) !=
-                result.end());
-  }
-  EXPECT_TRUE(std::find(result.begin(), result.end(), 102) != result.end());
+  for (size_t i = 0; i < kNumWorkerThreads; i++)
+    EXPECT_TRUE(ContainsValue(result, static_cast<int>(i)));
+  EXPECT_TRUE(ContainsValue(result, 102));
 }
 
 // Tests that CONTINUE_ON_SHUTDOWN tasks don't block shutdown.
@@ -754,10 +752,8 @@ TEST_F(SequencedWorkerPoolTest, SkipOnShutdown) {
   // allowed to complete. No additional non-blocking tasks should have been
   // started.
   ASSERT_EQ(kNumWorkerThreads, result.size());
-  for (size_t i = 0; i < kNumWorkerThreads; i++) {
-    EXPECT_TRUE(std::find(result.begin(), result.end(), static_cast<int>(i)) !=
-                result.end());
-  }
+  for (size_t i = 0; i < kNumWorkerThreads; i++)
+    EXPECT_TRUE(ContainsValue(result, static_cast<int>(i)));
 }
 
 // Ensure all worker threads are created, and then trigger a spurious

@@ -17,6 +17,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/process/process_metrics.h"
+#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/stringprintf.h"
@@ -34,7 +35,6 @@
 #include "base/trace_event/trace_buffer.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_synthetic_delay.h"
-#include "base/trace_event/trace_log.h"
 #include "base/trace_event/trace_sampling_thread.h"
 
 #if defined(OS_WIN)
@@ -212,15 +212,16 @@ class TraceLog::ThreadLocalEventBuffer
     : public MessageLoop::DestructionObserver,
       public MemoryDumpProvider {
  public:
-  ThreadLocalEventBuffer(TraceLog* trace_log);
+  explicit ThreadLocalEventBuffer(TraceLog* trace_log);
   ~ThreadLocalEventBuffer() override;
 
   TraceEvent* AddTraceEvent(TraceEventHandle* handle);
 
   TraceEvent* GetEventByHandle(TraceEventHandle handle) {
     if (!chunk_ || handle.chunk_seq != chunk_->seq() ||
-        handle.chunk_index != chunk_index_)
-      return NULL;
+        handle.chunk_index != chunk_index_) {
+      return nullptr;
+    }
 
     return chunk_->GetEventAt(handle.event_index);
   }
@@ -770,10 +771,7 @@ void TraceLog::RemoveEnabledStateObserver(EnabledStateObserver* listener) {
 
 bool TraceLog::HasEnabledStateObserver(EnabledStateObserver* listener) const {
   AutoLock lock(lock_);
-  std::vector<EnabledStateObserver*>::const_iterator it =
-      std::find(enabled_state_observer_list_.begin(),
-                enabled_state_observer_list_.end(), listener);
-  return it != enabled_state_observer_list_.end();
+  return ContainsValue(enabled_state_observer_list_, listener);
 }
 
 TraceLogStatus TraceLog::GetStatus() const {
@@ -834,7 +832,7 @@ void TraceLog::SetEventCallbackEnabled(const TraceConfig& trace_config,
                           reinterpret_cast<subtle::AtomicWord>(cb));
   event_callback_trace_config_ = trace_config;
   UpdateCategoryGroupEnabledFlags();
-};
+}
 
 void TraceLog::SetEventCallbackDisabled() {
   AutoLock lock(lock_);

@@ -10,6 +10,7 @@
 
 #include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/stl_util.h"
 
 @interface CRBProtocolObservers () {
   base::scoped_nsobject<Protocol> _protocol;
@@ -102,8 +103,7 @@ id Iterator::GetNext() {
   DCHECK(observer);
   DCHECK([observer conformsToProtocol:self.protocol]);
 
-  if (std::find(_observers.begin(), _observers.end(), observer) !=
-      _observers.end())
+  if (ContainsValue(_observers, observer))
     return;
 
   _observers.push_back(observer);

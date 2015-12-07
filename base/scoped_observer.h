@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/stl_util.h"
 
 // ScopedObserver is used to keep track of the set of sources an object has
 // attached itself to as an observer. When ScopedObserver is destroyed it
@@ -44,8 +45,7 @@ class ScopedObserver {
   }
 
   bool IsObserving(Source* source) const {
-    return std::find(sources_.begin(), sources_.end(), source) !=
-        sources_.end();
+    return ContainsValue(sources_, source);
   }
 
   bool IsObservingSources() const { return !sources_.empty(); }

@@ -15,6 +15,7 @@
 #include "base/memory/singleton.h"
 #include "base/process/process_handle.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/pattern.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
@@ -1132,7 +1133,7 @@ TEST_F(TraceEventTestFixture, AddMetadataEvent) {
 
   class Convertable : public ConvertableToTraceFormat {
    public:
-    Convertable(int* num_calls) : num_calls_(num_calls) {}
+    explicit Convertable(int* num_calls) : num_calls_(num_calls) {}
     void AppendAsTraceFormat(std::string* out) const override {
       (*num_calls_)++;
       out->append("\"metadata_value\"");
@@ -1202,24 +1203,15 @@ TEST_F(TraceEventTestFixture, Categories) {
   EndTraceAndFlush();
   std::vector<std::string> cat_groups;
   TraceLog::GetInstance()->GetKnownCategoryGroups(&cat_groups);
-  EXPECT_TRUE(std::find(cat_groups.begin(),
-                        cat_groups.end(), "c1") != cat_groups.end());
-  EXPECT_TRUE(std::find(cat_groups.begin(),
-                        cat_groups.end(), "c2") != cat_groups.end());
-  EXPECT_TRUE(std::find(cat_groups.begin(),
-                        cat_groups.end(), "c3") != cat_groups.end());
-  EXPECT_TRUE(std::find(cat_groups.begin(),
-                        cat_groups.end(), "c4") != cat_groups.end());
-  EXPECT_TRUE(std::find(cat_groups.begin(),
-                        cat_groups.end(), "c5,c6") != cat_groups.end());
-  EXPECT_TRUE(std::find(cat_groups.begin(),
-                        cat_groups.end(), "c7,c8") != cat_groups.end());
-  EXPECT_TRUE(std::find(cat_groups.begin(),
-                        cat_groups.end(),
-                        "disabled-by-default-c9") != cat_groups.end());
+  EXPECT_TRUE(ContainsValue(cat_groups, "c1"));
+  EXPECT_TRUE(ContainsValue(cat_groups, "c2"));
+  EXPECT_TRUE(ContainsValue(cat_groups, "c3"));
+  EXPECT_TRUE(ContainsValue(cat_groups, "c4"));
+  EXPECT_TRUE(ContainsValue(cat_groups, "c5,c6"));
+  EXPECT_TRUE(ContainsValue(cat_groups, "c7,c8"));
+  EXPECT_TRUE(ContainsValue(cat_groups, "disabled-by-default-c9"));
   // Make sure metadata isn't returned.
-  EXPECT_TRUE(std::find(cat_groups.begin(),
-                        cat_groups.end(), "__metadata") == cat_groups.end());
+  EXPECT_FALSE(ContainsValue(cat_groups, "__metadata"));
 
   const std::vector<std::string> empty_categories;
   std::vector<std::string> included_categories;
