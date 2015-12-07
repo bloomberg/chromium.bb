@@ -168,7 +168,6 @@
           },
           'includes': [
             'ffmpeg_generated.gypi',
-            '../../build/util/version.gypi',
           ],
           'sources': [
             '<@(c_sources)',
