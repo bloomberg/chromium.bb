@@ -5,20 +5,23 @@
 #ifndef COMPONENTS_ARC_ARC_BRIDGE_SERVICE_H_
 #define COMPONENTS_ARC_ARC_BRIDGE_SERVICE_H_
 
+#include <string>
+#include <vector>
+
 #include "base/files/scoped_file.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
-#include "components/arc/common/arc_message_types.h"
-#include "components/arc/common/arc_notification_types.h"
+#include "components/arc/common/arc_bridge.mojom.h"
 
 namespace base {
 class CommandLine;
-class SequencedTaskRunner;
-class SingleThreadTaskRunner;
 }  // namespace base
 
 namespace arc {
+
+class ArcBridgeBootstrap;
 
 // The Chrome-side service that handles ARC instances and ARC bridge creation.
 // This service handles the lifetime of ARC instances and sets up the
@@ -29,20 +32,21 @@ class ArcBridgeService {
   // in the following sequence:
   //
   // STOPPED
-  //   SetAvailable(true) + HandleStartup() -> SocketConnect() ->
+  //   PrerequisitesChanged() ->
   // CONNECTING
-  //   Connect() ->
+  //   OnConnectionEstablished() ->
   // CONNECTED
-  //   SocketConnectAfterSetSocketPermissions() ->
-  // STARTING
-  //   StartInstance() -> OnInstanceReady() ->
+  //   OnInstanceBootPhase(INSTANCE_BOOT_PHASE_BRIDGE_READY) ->
   // READY
   //
-  // When Shutdown() is called, the state changes depending on the state it was
-  // at:
+  // The ArcBridgeBootstrap state machine can be thought of being substates of
+  // ArcBridgeService's CONNECTING state.
   //
-  // CONNECTED/CONNECTING -> STOPPED
-  // STARTING/READY -> STOPPING -> StopInstance() -> STOPPED
+  // *
+  //   StopInstance() ->
+  // STOPPING
+  //   OnStopped() ->
+  // STOPPED
   enum class State {
     // ARC is not currently running.
     STOPPED,
@@ -50,14 +54,10 @@ class ArcBridgeService {
     // The request to connect has been sent.
     CONNECTING,
 
-    // The bridge has connected to the socket, but has not started the ARC
-    // instance.
+    // The instance has started, and the bridge is fully established.
     CONNECTED,
 
-    // The ARC bridge has been set up and ARC is starting up.
-    STARTING,
-
-    // The ARC instance has been fully initialized and is now ready for user
+    // The ARC instance has finished initializing and is now ready for user
     // interaction.
     READY,
 
@@ -187,10 +187,6 @@ class ArcBridgeService {
   // Changes the current availability and notifies all observers.
   void SetAvailable(bool availability);
 
-  const scoped_refptr<base::SequencedTaskRunner>& origin_task_runner() const {
-    return origin_task_runner_;
-  }
-
   base::ObserverList<Observer>& observer_list() { return observer_list_; }
   base::ObserverList<NotificationObserver>& notification_observer_list() {
     return notification_observer_list_;
@@ -200,13 +196,20 @@ class ArcBridgeService {
     return app_observer_list_;
   }
 
+  bool CalledOnValidThread();
+
  private:
-  scoped_refptr<base::SequencedTaskRunner> origin_task_runner_;
+  friend class ArcBridgeTest;
+  FRIEND_TEST_ALL_PREFIXES(ArcBridgeTest, Basic);
+  FRIEND_TEST_ALL_PREFIXES(ArcBridgeTest, Prerequisites);
+  FRIEND_TEST_ALL_PREFIXES(ArcBridgeTest, ShutdownMidStartup);
 
   base::ObserverList<Observer> observer_list_;
   base::ObserverList<NotificationObserver> notification_observer_list_;
 
   base::ObserverList<AppObserver> app_observer_list_;
+
+  base::ThreadChecker thread_checker_;
 
   // If the ARC instance service is available.
   bool available_;

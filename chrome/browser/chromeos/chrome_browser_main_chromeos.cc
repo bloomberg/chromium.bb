@@ -109,6 +109,8 @@
 #include "chromeos/network/portal_detector/network_portal_detector_stub.h"
 #include "chromeos/system/statistics_provider.h"
 #include "chromeos/tpm/tpm_token_loader.h"
+#include "components/arc/arc_bridge_service.h"
+#include "components/arc/arc_service_manager.h"
 #include "components/browser_sync/common/browser_sync_switches.h"
 #include "components/device_event_log/device_event_log.h"
 #include "components/metrics/metrics_service.h"
@@ -144,9 +146,6 @@
 #include "chrome/browser/chromeos/events/system_key_event_listener.h"
 #include "chrome/browser/chromeos/events/xinput_hierarchy_changed_event_listener.h"
 #endif
-
-#include "components/arc/arc_bridge_service.h"
-#include "components/arc/arc_service_manager.h"
 
 namespace chromeos {
 
@@ -390,11 +389,7 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
 
   wake_on_wifi_manager_.reset(new WakeOnWifiManager());
 
-  arc_service_manager_.reset(new arc::ArcServiceManager(
-      content::BrowserThread::GetMessageLoopProxyForThread(
-          content::BrowserThread::IO),
-      content::BrowserThread::GetMessageLoopProxyForThread(
-          content::BrowserThread::FILE)));
+  arc_service_manager_.reset(new arc::ArcServiceManager());
   arc_service_manager_->arc_bridge_service()->DetectAvailability();
 
   chromeos::ResourceReporter::GetInstance()->StartMonitoring();

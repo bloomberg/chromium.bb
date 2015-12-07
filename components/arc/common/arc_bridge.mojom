@@ -1,0 +1,180 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module arc;
+
+// Describes the boot phase of the ARC instance, as defined by AOSP in
+// com.android.server.SystemService
+enum InstanceBootPhase {
+  // Boot phase indicating that the instance is not running
+  NOT_RUNNING = 0,
+
+  // After receiving this boot phase the ARC bridge is ready to receive
+  // IPC messages. This phase is ARC-specific.
+  BRIDGE_READY,
+
+  // After receiving this boot phase, services can safely call into core
+  // system services such as the PowerManager or PackageManager.
+  SYSTEM_SERVICES_READY,
+
+  // After receiving this boot phase, services can broadcast Intents.
+  ACTIVITY_MANAGER_READY,
+
+  // After receiving this boot phase, services can start/bind to third party
+  // apps. Apps will be able to make Binder calls into services at this point.
+  THIRD_PARTY_APPS_CAN_START,
+
+  // After receiving this boot phase, services can allow user interaction
+  // with the device. This phase occurs when boot has completed and the home
+  // application has started.
+  BOOT_COMPLETED
+};
+
+// Duplicates ui::ScaleFactor enum in order to be accessible on Android side.
+enum ScaleFactor {
+  SCALE_FACTOR_NONE = 0,
+  SCALE_FACTOR_100P,
+  SCALE_FACTOR_125P,
+  SCALE_FACTOR_133P,
+  SCALE_FACTOR_140P,
+  SCALE_FACTOR_150P,
+  SCALE_FACTOR_180P,
+  SCALE_FACTOR_200P,
+  SCALE_FACTOR_250P,
+  SCALE_FACTOR_300P,
+
+  NUM_SCALE_FACTORS
+};
+
+// Describes ARC app.
+struct AppInfo {
+  string name;
+  string package;
+  string activity;
+};
+
+// These values must be matched with the NOTIFICATION_EVENT_* constants in
+// com.android.server.ArcNotificationListenerService.
+enum ArcNotificationEvent {
+  BODY_CLICKED = 0,
+  CLOSED = 1,
+  // Five buttons at maximum (message_center::kNotificationMaximumItems = 5).
+  BUTTON1_CLICKED = 2,
+  BUTTON2_CLICKED = 3,
+  BUTTON3_CLICKED = 4,
+  BUTTON4_CLICKED = 5,
+  BUTTON5_CLICKED = 6,
+};
+
+// These values must be matched with the NOTIFICATION_TYPE_* constants in
+// com.android.server.ArcNotificationListenerService.
+enum ArcNotificationType {
+  BASIC = 0,
+  IMAGE = 1,
+  PROGRESS = 2,
+};
+
+// Enumerates the types of wake lock the ARC instance can request from the
+// host.
+enum DisplayWakeLockType {
+  // Does not allow the screen to dim, turn off, or lock; prevents
+  // idle suspend.
+  BRIGHT = 0,
+
+  // Allows dimming the screen, but prevents it from turning off or locking.
+  // Also prevents idle suspend.
+  DIM = 1
+};
+
+struct ArcNotificationData {
+  // Identifier of notification
+  string key;
+  // Type of notification
+  ArcNotificationType type;
+  // Body message of notification
+  string message;
+  // Title of notification
+  string title;
+  // Mimetype of |icon_data|
+  string icon_mimetype;
+  // Binary data of the icon
+  array<uint8> icon_data;
+  // Priority of notification, must be [2,-2]
+  int32 priority;
+  // Timestamp related to the notification
+  int64 time;
+  // The current value of progress, must be [0, progress_max].
+  int32 progress_current;
+  // The maximum value of progress.
+  int32 progress_max;
+};
+
+// TODO(lhchavez): Migrate all request/response messages to Mojo.
+interface ArcBridgeHost {
+  OnInstanceBootPhase(InstanceBootPhase phase);
+
+  // Sends a list of available ARC apps to Chrome. Members of AppInfo must
+  // contain non-empty string. This message is sent in response to
+  // ArcInstanceMsg_RefreshApps message from Chrome to ARC and when ARC
+  // receives boot completed notification.
+  OnAppListRefreshed(array<AppInfo> apps);
+
+  // Sends an icon of required |scale_factor| for specific ARC app. The app is
+  // defined by |package| and |activity|. The icon content cannot be empty and
+  // must match to |scale_factor| assuming 48x48 for SCALE_FACTOR_100P.
+  // |scale_factor| is an enum defined at ui/base/layout.h. This message is
+  // sent in response to ArcInstanceMsg_RequestIcon from Chrome to ARC.
+  OnAppIcon(string package, string activity, ScaleFactor scale_factor,
+            array<uint8> icon_png_data);
+
+  // Tells the Chrome that a notification is posted (created or updated) on
+  // Android.
+  // |notification_data| is the data of notification (id, texts, icon and ...).
+  OnNotificationPosted(ArcNotificationData notification_data);
+
+  // Notifies that a notification is removed on Android.
+  // |key| is the identifier of the notification.
+  OnNotificationRemoved(string key);
+
+  // Acquire and release wake locks on the host side.
+  OnAcquireDisplayWakeLock(DisplayWakeLockType type);
+  OnReleaseDisplayWakeLock(DisplayWakeLockType type);
+};
+
+interface ArcBridgeInstance {
+  // Establishes full-duplex communication with the host.
+  // |pipe| is the MessagePipe endpoint that is bound to the ArcBridgeHostPtr
+  // binding.
+  Init(ArcBridgeHost host_ptr);
+
+  // Registers a virtual input device on the container side.
+  // |name| is the device name, like "Chrome OS Keyboard".
+  // |device_type| is the device type, like "keyboard".
+  // The virtual device will be reading 'struct input_event's from |fd|.  The
+  // ownership of |fd| will be transferred to the receiver, so the sender must
+  // not close it.
+  RegisterInputDevice(string name,
+                      string device_type,
+                      handle fd);
+
+  // Sends a request to ARC to refresh a list of ARC apps.
+  // OnRefreshAppsList is expected in response to this message. However,
+  // response may not be sent if ARC is not ready yet (boot completed event is
+  // not received).
+  RefreshAppList();
+
+  // Sends a request to ARC to launch an ARC app defined by |package| and
+  // |activity|, which cannot be empty.
+  LaunchApp(string package, string activity);
+
+  // Sends a request to ARC for the ARC app icon of a required scale factor.
+  // Scale factor is an enum defined at ui/base/layout.h. App is defined by
+  // package and activity, which cannot be empty.
+  RequestAppIcon(string package, string activity,
+                 ScaleFactor scale_factor);
+
+  // Sends an event from Chrome notification UI to Android.
+  // |event| is a type of occured event.
+  SendNotificationEventToAndroid(string key, ArcNotificationEvent event);
+};

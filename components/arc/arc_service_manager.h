@@ -6,15 +6,8 @@
 #define COMPONENTS_ARC_ARC_SERVICE_MANAGER_H_
 
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-
-namespace base {
-
-class SequencedTaskRunner;
-class SingleThreadTaskRunner;
-
-}  // namespace base
+#include "base/threading/thread_checker.h"
 
 namespace arc {
 
@@ -24,9 +17,7 @@ class ArcBridgeService;
 // instance via the ArcBridgeService.
 class ArcServiceManager {
  public:
-  ArcServiceManager(
-      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
-      const scoped_refptr<base::SequencedTaskRunner>& file_task_runner);
+  ArcServiceManager();
   virtual ~ArcServiceManager();
 
   // |arc_bridge_service| can only be accessed on the thread that this
@@ -38,7 +29,7 @@ class ArcServiceManager {
   static ArcServiceManager* Get();
 
  private:
-  scoped_refptr<base::SequencedTaskRunner> origin_task_runner_;
+  base::ThreadChecker thread_checker_;
   scoped_ptr<ArcBridgeService> arc_bridge_service_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcServiceManager);

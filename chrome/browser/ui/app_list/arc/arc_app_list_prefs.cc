@@ -256,7 +256,8 @@ void ArcAppListPrefs::OnStateChanged(arc::ArcBridgeService::State state) {
 }
 
 void ArcAppListPrefs::OnAppReady(const arc::AppInfo& app) {
-  if (app.name.empty() || app.package.empty() || app.activity.empty()) {
+  if (app.name.get().empty() || app.package.get().empty() ||
+      app.activity.get().empty()) {
     VLOG(2) << "Name, package and activity cannot be empty.";
     return;
   }
@@ -320,8 +321,8 @@ void ArcAppListPrefs::OnAppIcon(const std::string& package,
                                 const std::vector<uint8_t>& icon_png_data) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!icon_png_data.empty());
-  DCHECK(scale_factor >= arc::SCALE_FACTOR_100P &&
-         scale_factor < arc::NUM_SCALE_FACTORS);
+  DCHECK(scale_factor >= arc::SCALE_FACTOR_SCALE_FACTOR_100P &&
+         scale_factor < arc::SCALE_FACTOR_NUM_SCALE_FACTORS);
 
   std::string app_id = GetAppId(package, activity);
   if (!IsRegistered(app_id)) {

@@ -2,35 +2,54 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//mojo/public/tools/bindings/mojom.gni")
+
 static_library("arc") {
   sources = [
+    "arc_bridge_bootstrap.cc",
+    "arc_bridge_bootstrap.h",
     "arc_bridge_service.cc",
     "arc_bridge_service.h",
     "arc_bridge_service_impl.cc",
     "arc_bridge_service_impl.h",
     "arc_service_manager.cc",
     "arc_service_manager.h",
-    "common/arc_message_generator.cc",
-    "common/arc_notification_types.cc",
   ]
 
   deps = [
+    ":arc_bindings",
     "//base",
     "//base:prefs",
     "//chromeos",
-    "//ipc",
+    "//ipc:ipc",
+    "//ipc/mojo:mojo",
+    "//third_party/mojo/src/mojo/edk/system",
+  ]
+}
+
+mojom("arc_bindings") {
+  sources = [
+    "common/arc_bridge.mojom",
+  ]
+
+  import_dirs = [
+    get_path_info("../..", "abspath"),
+    "//mojo/services",
   ]
 }
 
 static_library("arc_test_support") {
   testonly = true
   sources = [
+    "test/fake_arc_bridge_instance.cc",
+    "test/fake_arc_bridge_instance.h",
     "test/fake_arc_bridge_service.cc",
     "test/fake_arc_bridge_service.h",
   ]
 
   deps = [
     ":arc",
+    ":arc_bindings",
     "//base",
   ]
 }
@@ -43,9 +62,13 @@ source_set("unit_tests") {
 
   deps = [
     ":arc",
+    ":arc_bindings",
+    ":arc_test_support",
     "//base",
     "//chromeos",
-    "//ipc",
+    "//ipc/mojo:mojo",
+    "//mojo/public/cpp/environment:environment",
+    "//mojo/public/cpp/system:system",
     "//testing/gtest",
   ]
 }

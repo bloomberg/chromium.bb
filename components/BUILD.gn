@@ -96,6 +96,7 @@ test("components_unittests") {
     "//components/web_resource:unit_tests",
     "//net",
     "//testing/gtest",
+    "//third_party/mojo/src/mojo/edk/embedder:headers",
     "//ui/base",
     "//ui/gl:test_support",
     "//ui/resources:ui_test_pak",

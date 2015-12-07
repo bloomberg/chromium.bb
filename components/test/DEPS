@@ -8,3 +8,9 @@ include_rules = [
   "+net",
   "+ui",
 ]
+
+specific_include_rules = {
+  "run_all_unittests\.cc": [
+    "+third_party/mojo/src/mojo/edk/embedder/embedder.h",
+  ],
+}

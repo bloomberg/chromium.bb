@@ -3,4 +3,6 @@ include_rules = [
   "+chromeos/chromeos_switches.h",
   "+chromeos/dbus",
   "+ipc",
+  "+mojo",
+  "+third_party/mojo",
 ]

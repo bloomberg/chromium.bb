@@ -5,12 +5,15 @@
 #ifndef COMPONENTS_ARC_ARC_BRIDGE_SERVICE_IMPL_H_
 #define COMPONENTS_ARC_ARC_BRIDGE_SERVICE_IMPL_H_
 
+#include <string>
+#include <vector>
+
 #include "base/files/scoped_file.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "components/arc/arc_bridge_bootstrap.h"
 #include "components/arc/arc_bridge_service.h"
-#include "ipc/ipc_channel_proxy.h"
-#include "ipc/ipc_listener.h"
-#include "ipc/ipc_message.h"
+#include "mojo/public/cpp/bindings/binding.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -21,11 +24,10 @@ namespace arc {
 
 // Real IPC based ArcBridgeService that is used in production.
 class ArcBridgeServiceImpl : public ArcBridgeService,
-                             public IPC::Listener {
+                             public ArcBridgeHost,
+                             public ArcBridgeBootstrap::Delegate {
  public:
-  ArcBridgeServiceImpl(
-      const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner,
-      const scoped_refptr<base::SequencedTaskRunner>& file_task_runner);
+  explicit ArcBridgeServiceImpl(scoped_ptr<ArcBridgeBootstrap> bootstrap);
   ~ArcBridgeServiceImpl() override;
 
   void DetectAvailability() override;
@@ -56,6 +58,7 @@ class ArcBridgeServiceImpl : public ArcBridgeService,
  private:
   friend class ArcBridgeTest;
   FRIEND_TEST_ALL_PREFIXES(ArcBridgeTest, Basic);
+  FRIEND_TEST_ALL_PREFIXES(ArcBridgeTest, Prerequisites);
   FRIEND_TEST_ALL_PREFIXES(ArcBridgeTest, ShutdownMidStartup);
 
   // If all pre-requisites are true (ARC is available, it has been enabled, and
@@ -63,53 +66,41 @@ class ArcBridgeServiceImpl : public ArcBridgeService,
   // and the pre-requisites stop being true, stop ARC.
   void PrerequisitesChanged();
 
-  // Binds to the socket specified by |socket_path|.
-  void SocketConnect(const base::FilePath& socket_path);
-
-  // Binds to the socket specified by |socket_path| after creating its parent
-  // directory is present.
-  void SocketConnectAfterEnsureParentDirectory(
-      const base::FilePath& socket_path,
-      bool directory_present);
-
-  // Internal connection method. Separated to make testing easier.
-  bool Connect(const IPC::ChannelHandle& handle, IPC::Channel::Mode mode);
-
-  // Finishes connecting after setting socket permissions.
-  void SocketConnectAfterSetSocketPermissions(const base::FilePath& socket_path,
-                                              bool socket_permissions_success);
-
   // Stops the running instance.
   void StopInstance();
 
   // Called when the instance has reached a boot phase
-  void OnInstanceBootPhase(InstanceBootPhase phase);
+  void OnInstanceBootPhase(InstanceBootPhase phase) override;
   // Handler for ArcInstanceHostMsg_NotificationPosted message.
-  void OnNotificationPostedFromAndroid(const ArcNotificationData& data);
+  void OnNotificationPosted(ArcNotificationDataPtr data) override;
   // Handler for ArcInstanceHostMsg_NotificationRemoved message.
-  void OnNotificationRemovedFromAndroid(const std::string& key);
+  void OnNotificationRemoved(const mojo::String& key) override;
 
   // Called whenever ARC sends information about available apps.
-  void OnAppListRefreshed(const std::vector<arc::AppInfo>& apps);
+  void OnAppListRefreshed(mojo::Array<arc::AppInfoPtr> apps) override;
 
   // Called whenever ARC sends app icon data for specific scale factor.
-  void OnAppIcon(const std::string& package,
-                 const std::string& activity,
+  void OnAppIcon(const mojo::String& package,
+                 const mojo::String& activity,
                  ScaleFactor scale_factor,
-                 const std::vector<uint8_t>& icon_png_data);
+                 mojo::Array<uint8_t> icon_png_data) override;
 
-  // IPC::Listener:
-  bool OnMessageReceived(const IPC::Message& message) override;
+  // Called when the instance requests wake lock services
+  void OnAcquireDisplayWakeLock(DisplayWakeLockType type) override;
+  void OnReleaseDisplayWakeLock(DisplayWakeLockType type) override;
+
+  // ArcBridgeBootstrap::Delegate:
+  void OnConnectionEstablished(ArcBridgeInstancePtr instance) override;
+  void OnStopped() override;
 
   // DBus callbacks.
   void OnArcAvailable(bool available);
-  void OnInstanceStarted(bool success);
-  void OnInstanceStopped(bool success);
 
-  scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner_;
-  scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
+  scoped_ptr<ArcBridgeBootstrap> bootstrap_;
 
-  scoped_ptr<IPC::ChannelProxy> ipc_channel_;
+  // Mojo endpoints.
+  mojo::Binding<ArcBridgeHost> binding_;
+  ArcBridgeInstancePtr instance_ptr_;
 
   // If the user's session has started.
   bool session_started_;

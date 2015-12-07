@@ -32,6 +32,10 @@
 #include "ui/gfx/android/gfx_jni_registrar.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
+#endif
+
 namespace {
 
 class ComponentsTestSuite : public base::TestSuite {
@@ -136,6 +140,10 @@ int main(int argc, char** argv) {
   testing::TestEventListeners& listeners =
       testing::UnitTest::GetInstance()->listeners();
   listeners.Append(new ComponentsUnitTestEventListener());
+
+#if defined(OS_CHROMEOS)
+  mojo::embedder::Init();
+#endif
 
   return base::LaunchUnitTests(
       argc, argv, base::Bind(&base::TestSuite::Run,

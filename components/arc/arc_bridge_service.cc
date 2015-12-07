@@ -4,6 +4,8 @@
 
 #include "components/arc/arc_bridge_service.h"
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/sequenced_task_runner.h"
 #include "base/thread_task_runner_handle.h"
@@ -20,15 +22,13 @@ ArcBridgeService* g_arc_bridge_service = nullptr;
 }  // namespace
 
 ArcBridgeService::ArcBridgeService()
-    : origin_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      available_(false),
-      state_(State::STOPPED) {
+    : available_(false), state_(State::STOPPED) {
   DCHECK(!g_arc_bridge_service);
   g_arc_bridge_service = this;
 }
 
 ArcBridgeService::~ArcBridgeService() {
-  DCHECK(origin_task_runner()->RunsTasksOnCurrentThread());
+  DCHECK(CalledOnValidThread());
   DCHECK(state() == State::STOPPING || state() == State::STOPPED);
   DCHECK(g_arc_bridge_service == this);
   g_arc_bridge_service = nullptr;
@@ -37,8 +37,7 @@ ArcBridgeService::~ArcBridgeService() {
 // static
 ArcBridgeService* ArcBridgeService::Get() {
   DCHECK(g_arc_bridge_service);
-  DCHECK(g_arc_bridge_service->origin_task_runner()->
-      RunsTasksOnCurrentThread());
+  DCHECK(g_arc_bridge_service->CalledOnValidThread());
   return g_arc_bridge_service;
 }
 
@@ -48,38 +47,38 @@ bool ArcBridgeService::GetEnabled(const base::CommandLine* command_line) {
 }
 
 void ArcBridgeService::AddObserver(Observer* observer) {
-  DCHECK(origin_task_runner()->RunsTasksOnCurrentThread());
+  DCHECK(CalledOnValidThread());
   observer_list_.AddObserver(observer);
 }
 
 void ArcBridgeService::RemoveObserver(Observer* observer) {
-  DCHECK(origin_task_runner()->RunsTasksOnCurrentThread());
+  DCHECK(CalledOnValidThread());
   observer_list_.RemoveObserver(observer);
 }
 
 void ArcBridgeService::AddNotificationObserver(NotificationObserver* observer) {
-  DCHECK(origin_task_runner()->RunsTasksOnCurrentThread());
+  DCHECK(CalledOnValidThread());
   notification_observer_list_.AddObserver(observer);
 }
 
 void ArcBridgeService::RemoveNotificationObserver(
     NotificationObserver* observer) {
-  DCHECK(origin_task_runner()->RunsTasksOnCurrentThread());
+  DCHECK(CalledOnValidThread());
   notification_observer_list_.RemoveObserver(observer);
 }
 
 void ArcBridgeService::AddAppObserver(AppObserver* observer) {
-  DCHECK(origin_task_runner()->RunsTasksOnCurrentThread());
+  DCHECK(CalledOnValidThread());
   app_observer_list_.AddObserver(observer);
 }
 
 void ArcBridgeService::RemoveAppObserver(AppObserver* observer) {
-  DCHECK(origin_task_runner()->RunsTasksOnCurrentThread());
+  DCHECK(CalledOnValidThread());
   app_observer_list_.RemoveObserver(observer);
 }
 
 void ArcBridgeService::SetState(State state) {
-  DCHECK(origin_task_runner()->RunsTasksOnCurrentThread());
+  DCHECK(CalledOnValidThread());
   // DCHECK on enum classes not supported.
   DCHECK(state_ != state);
   state_ = state;
@@ -87,10 +86,14 @@ void ArcBridgeService::SetState(State state) {
 }
 
 void ArcBridgeService::SetAvailable(bool available) {
-  DCHECK(origin_task_runner()->RunsTasksOnCurrentThread());
+  DCHECK(CalledOnValidThread());
   DCHECK(available_ != available);
   available_ = available;
   FOR_EACH_OBSERVER(Observer, observer_list(), OnAvailableChanged(available_));
+}
+
+bool ArcBridgeService::CalledOnValidThread() {
+  return thread_checker_.CalledOnValidThread();
 }
 
 }  // namespace arc

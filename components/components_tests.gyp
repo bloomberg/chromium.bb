@@ -1393,6 +1393,7 @@
           'dependencies': [
             '../chromeos/chromeos.gyp:chromeos_test_support',
             'components.gyp:arc',
+            'components.gyp:arc_test_support',
             'components.gyp:ownership',
             'components.gyp:pairing',
             'components.gyp:user_manager_test_support',
