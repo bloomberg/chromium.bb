@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 var commandLineFlags = ['--flag-switches-begin',
                         '--show-composited-layer-borders',
-                        '--show-fps-counter',
                         '--flag-switches-end'];
 var commandLineStr = './out/Debug/chrome ' + commandLineFlags.join(' ');
 

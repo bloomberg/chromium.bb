@@ -557,11 +557,6 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_COMPOSITED_LAYER_BORDERS_DESCRIPTION,
      kOsAll,
      SINGLE_VALUE_TYPE(cc::switches::kShowCompositedLayerBorders)},
-    {"show-fps-counter",
-     IDS_FLAGS_SHOW_FPS_COUNTER,
-     IDS_FLAGS_SHOW_FPS_COUNTER_DESCRIPTION,
-     kOsAll,
-     SINGLE_VALUE_TYPE(cc::switches::kShowFPSCounter)},
 #if defined(ENABLE_WEBRTC)
     {"disable-webrtc-hw-decoding",
      IDS_FLAGS_WEBRTC_HW_DECODING_NAME,

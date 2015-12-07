@@ -345,8 +345,6 @@ void RenderWidgetCompositor::Initialize() {
   // These flags should be mirrored by UI versions in ui/compositor/.
   settings.initial_debug_state.show_debug_borders =
       cmd->HasSwitch(cc::switches::kShowCompositedLayerBorders);
-  settings.initial_debug_state.show_fps_counter =
-      cmd->HasSwitch(cc::switches::kShowFPSCounter);
   settings.initial_debug_state.show_layer_animation_bounds_rects =
       cmd->HasSwitch(cc::switches::kShowLayerAnimationBounds);
   settings.initial_debug_state.show_paint_rects =

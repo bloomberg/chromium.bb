@@ -442,8 +442,6 @@ void CompositorImpl::CreateLayerTreeHost() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   settings.initial_debug_state.SetRecordRenderingStats(
       command_line->HasSwitch(cc::switches::kEnableGpuBenchmarking));
-  settings.initial_debug_state.show_fps_counter =
-      command_line->HasSwitch(cc::switches::kUIShowFPSCounter);
   if (command_line->HasSwitch(cc::switches::kDisableCompositorPropertyTrees))
     settings.use_property_trees = false;
   // TODO(enne): Update this this compositor to use the scheduler.

@@ -1452,7 +1452,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     cc::switches::kEnableGpuBenchmarking,
     cc::switches::kEnableMainFrameBeforeActivation,
     cc::switches::kShowCompositedLayerBorders,
-    cc::switches::kShowFPSCounter,
     cc::switches::kShowLayerAnimationBounds,
     cc::switches::kShowPropertyChangedRects,
     cc::switches::kShowReplicaScreenSpaceRects,
