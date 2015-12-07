@@ -157,7 +157,7 @@ class OnDiskSyncableDirectoryTest : public SyncableDirectoryTest {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     file_path_ = temp_dir_.path().Append(
         FILE_PATH_LITERAL("Test.sqlite3"));
-    base::DeleteFile(file_path_, true);
+    base::DeleteFile(file_path_, false);
     CreateDirectory();
   }
 
@@ -165,7 +165,7 @@ class OnDiskSyncableDirectoryTest : public SyncableDirectoryTest {
     // This also closes file handles.
     dir()->SaveChanges();
     dir().reset();
-    base::DeleteFile(file_path_, true);
+    base::DeleteFile(file_path_, false);
     SyncableDirectoryTest::TearDown();
   }
 

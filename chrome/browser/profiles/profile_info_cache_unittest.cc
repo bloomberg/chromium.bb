@@ -609,7 +609,7 @@ TEST_F(ProfileInfoCacheTest, DownloadHighResAvatarTest) {
   // Clean up.
   EXPECT_NE(std::string::npos, icon_path.MaybeAsASCII().find(file_name));
   EXPECT_TRUE(base::PathExists(icon_path));
-  EXPECT_TRUE(base::DeleteFile(icon_path, true));
+  EXPECT_TRUE(base::DeleteFile(icon_path, false));
   EXPECT_FALSE(base::PathExists(icon_path));
 }
 

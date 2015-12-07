@@ -122,8 +122,8 @@ void OnCompressArchiveCompleted(
         content::BrowserThread::UI,
         FROM_HERE,
         base::Bind(callback, base::FilePath(), false));
-    base::DeleteFile(tar_file_path, true);
-    base::DeleteFile(compressed_output_path, true);
+    base::DeleteFile(tar_file_path, false);
+    base::DeleteFile(compressed_output_path, false);
     return;
   }
 
@@ -144,7 +144,7 @@ void CompressArchive(const base::FilePath& tar_file_path,
         content::BrowserThread::UI,
         FROM_HERE,
         base::Bind(callback, base::FilePath(), false));
-    base::DeleteFile(tar_file_path, true);
+    base::DeleteFile(tar_file_path, false);
     return;
   }
 

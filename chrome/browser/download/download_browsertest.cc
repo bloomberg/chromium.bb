@@ -793,7 +793,7 @@ class DownloadTest : public InProcessBrowserTest {
     EXPECT_TRUE(VerifyFile(download_path, expected_contents, file_size));
 
     // Delete the file we just downloaded.
-    EXPECT_TRUE(base::DieFileDie(download_path, true));
+    EXPECT_TRUE(base::DieFileDie(download_path, false));
     EXPECT_FALSE(base::PathExists(download_path));
 
     return true;

@@ -151,7 +151,7 @@ bool FileSystemUsageCache::Delete(const base::FilePath& usage_file_path) {
   TRACE_EVENT0("FileSystem", "UsageCache::Delete");
   DCHECK(CalledOnValidThread());
   CloseCacheFiles();
-  return base::DeleteFile(usage_file_path, true);
+  return base::DeleteFile(usage_file_path, false);
 }
 
 void FileSystemUsageCache::CloseCacheFiles() {

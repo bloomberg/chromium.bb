@@ -1052,7 +1052,7 @@ base::File ObfuscatedFileUtil::CreateAndOpenFile(
     return base::File(error);
 
   if (base::PathExists(dest_local_path)) {
-    if (!base::DeleteFile(dest_local_path, true /* recursive */))
+    if (!base::DeleteFile(dest_local_path, false /* recursive */))
       return base::File(base::File::FILE_ERROR_FAILED);
     LOG(WARNING) << "A stray file detected";
     InvalidateUsageCache(context, dest_url.origin(), dest_url.type());
@@ -1094,7 +1094,7 @@ base::File::Error ObfuscatedFileUtil::CreateFile(
   bool created = false;
   if (src_file_path.empty()) {
     if (base::PathExists(dest_local_path)) {
-      if (!base::DeleteFile(dest_local_path, true /* recursive */))
+      if (!base::DeleteFile(dest_local_path, false /* recursive */))
         return base::File::FILE_ERROR_FAILED;
       LOG(WARNING) << "A stray file detected";
       InvalidateUsageCache(context, dest_url.origin(), dest_url.type());
