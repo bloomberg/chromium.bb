@@ -44,7 +44,7 @@ builds **on Linux**.
 *   Cache is kept in `~/.cache/chromium`
 *   New release testing depends on the distribution
     *   Distributions are encouraged to track stable channel releases: see
-        http://googlechromereleases.blogspot.com/, http://omahaproxy.pspot.com/
+        http://googlechromereleases.blogspot.com/, http://omahaproxy.appspot.com/
         and http://gsdview.appspot.com/chromium-browser-official/
 *   Google API keys depend on the distribution
     *   See http://www.chromium.org/developers/how-tos/api-keys
