@@ -227,7 +227,7 @@ void ContentSettingsRegistry::Init() {
            ContentSettingsInfo::INHERIT_IN_INCOGNITO);
 
   Register(CONTENT_SETTINGS_TYPE_PUSH_MESSAGING, "push-messaging",
-           CONTENT_SETTING_ASK, WebsiteSettingsInfo::SYNCABLE,
+           CONTENT_SETTING_ASK, WebsiteSettingsInfo::UNSYNCABLE,
            WhitelistedSchemes(),
            ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK,
                          CONTENT_SETTING_ASK),
