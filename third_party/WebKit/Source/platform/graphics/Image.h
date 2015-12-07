@@ -92,7 +92,6 @@ public:
     static Image* nullImage();
     bool isNull() const { return size().isEmpty(); }
 
-    virtual void setContainerSize(const IntSize&) { }
     virtual bool usesContainerSize() const { return false; }
     virtual bool hasRelativeWidth() const { return false; }
     virtual bool hasRelativeHeight() const { return false; }

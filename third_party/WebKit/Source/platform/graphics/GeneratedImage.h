@@ -36,7 +36,6 @@ class PLATFORM_EXPORT GeneratedImage : public Image {
 public:
     bool currentFrameHasSingleSecurityOrigin() const override { return true; }
 
-    void setContainerSize(const IntSize& size) override { m_size = size; }
     bool usesContainerSize() const override { return true; }
     bool hasRelativeWidth() const override { return true; }
     bool hasRelativeHeight() const override { return true; }

@@ -41,7 +41,6 @@ public:
         return adoptRef(new CrossfadeGeneratedImage(fromImage, toImage, percentage, crossfadeSize, size));
     }
 
-    void setContainerSize(const IntSize&) override { }
     bool usesContainerSize() const override { return false; }
     bool hasRelativeWidth() const override { return false; }
     bool hasRelativeHeight() const override { return false; }

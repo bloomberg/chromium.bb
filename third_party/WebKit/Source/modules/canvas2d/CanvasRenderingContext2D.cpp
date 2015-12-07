@@ -1416,7 +1416,7 @@ void CanvasRenderingContext2D::drawImage(CanvasImageSource* imageSource,
 
     bool isExpensive = false;
 
-    if (ExpensiveCanvasHeuristicParameters::SVGImageSourcesAreExpensive && image && image->isSVGImage())
+    if (ExpensiveCanvasHeuristicParameters::SVGImageSourcesAreExpensive && imageSource->isSVGSource())
         isExpensive = true;
 
     if (imageSource->elementSize().width() * imageSource->elementSize().height() > canvas()->width() * canvas()->height() * ExpensiveCanvasHeuristicParameters::ExpensiveImageSizeRatio)

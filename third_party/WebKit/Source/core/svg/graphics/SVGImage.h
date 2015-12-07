@@ -89,7 +89,7 @@ private:
 
     String filenameExtension() const override;
 
-    void setContainerSize(const IntSize&) override;
+    void setContainerSize(const IntSize&);
     IntSize containerSize() const;
     bool usesContainerSize() const override { return true; }
     void computeIntrinsicDimensions(Length& intrinsicWidth, Length& intrinsicHeight, FloatSize& intrinsicRatio) override;
