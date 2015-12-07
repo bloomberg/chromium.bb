@@ -249,10 +249,10 @@ void RenderWidgetCompositor::Initialize() {
   settings.accelerated_animation_enabled =
       compositor_deps_->IsThreadedAnimationEnabled();
 
-  if (cmd->HasSwitch(switches::kEnableCompositorAnimationTimelines)) {
-    settings.use_compositor_animation_timelines = true;
-    blink::WebRuntimeFeatures::enableCompositorAnimationTimelines(true);
-  }
+  settings.use_compositor_animation_timelines =
+      !cmd->HasSwitch(switches::kDisableCompositorAnimationTimelines);
+  blink::WebRuntimeFeatures::enableCompositorAnimationTimelines(
+      settings.use_compositor_animation_timelines);
 
   settings.default_tile_size = CalculateDefaultTileSize(widget_);
   if (cmd->HasSwitch(switches::kDefaultTileWidth)) {

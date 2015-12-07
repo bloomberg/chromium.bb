@@ -12,6 +12,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/platform_thread.h"
+#include "cc/blink/web_layer_impl.h"
+#include "cc/layers/layer_settings.h"
+#include "cc/trees/layer_tree_settings.h"
 #include "components/scheduler/renderer/renderer_scheduler_impl.h"
 #include "components/scheduler/renderer/webthread_impl_for_renderer_scheduler.h"
 #include "components/scheduler/test/lazy_scheduler_message_loop_delegate_for_tests.h"
@@ -118,6 +121,12 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport() {
   blink::WebRuntimeFeatures::enableDatabase(true);
   blink::WebRuntimeFeatures::enableNotifications(true);
   blink::WebRuntimeFeatures::enableTouch(true);
+
+  // External cc::AnimationHost is enabled for unit tests.
+  cc::LayerSettings layer_settings;
+  layer_settings.use_compositor_animation_timelines = true;
+  cc_blink::WebLayerImpl::SetLayerSettings(layer_settings);
+  blink::WebRuntimeFeatures::enableCompositorAnimationTimelines(true);
 
   // Initialize libraries for media and enable the media player.
   media::InitializeMediaLibrary();

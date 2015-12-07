@@ -669,8 +669,8 @@ void RenderThreadImpl::Init() {
       *base::CommandLine::ForCurrentProcess();
 
   cc::LayerSettings layer_settings;
-  if (command_line.HasSwitch(switches::kEnableCompositorAnimationTimelines))
-    layer_settings.use_compositor_animation_timelines = true;
+  layer_settings.use_compositor_animation_timelines =
+      !command_line.HasSwitch(switches::kDisableCompositorAnimationTimelines);
   cc_blink::WebLayerImpl::SetLayerSettings(layer_settings);
   cc::SetClientNameForMetrics("Renderer");
 
