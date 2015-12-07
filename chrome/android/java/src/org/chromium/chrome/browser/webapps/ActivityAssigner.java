@@ -210,6 +210,14 @@ public class ActivityAssigner {
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
         try {
             prefs = mContext.getSharedPreferences(PREF_PACKAGE, Context.MODE_PRIVATE);
+            try {
+                // Immediately try to query from the new prefs object. This will more reliably force
+                // the StrictMode violation to happen right away if there's going to be one.
+                // This is a bit of a hack and should be removed when we fix the violation
+                // TODO: http://crbug.com/562189.
+                prefs.getInt(PREF_NUM_SAVED_ENTRIES, 0);
+            } catch (ClassCastException exception) {
+            }
         } finally {
             StrictMode.setThreadPolicy(oldPolicy);
         }
@@ -265,6 +273,14 @@ public class ActivityAssigner {
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
         try {
             prefs = mContext.getSharedPreferences(PREF_PACKAGE, Context.MODE_PRIVATE);
+            try {
+                // Immediately try to query from the new prefs object. This will more reliably force
+                // the StrictMode violation to happen right away if there's going to be one.
+                // This is a bit of a hack and should be removed when we fix the violation
+                // TODO: http://crbug.com/562189.
+                prefs.getInt(PREF_NUM_SAVED_ENTRIES, 0);
+            } catch (ClassCastException exception) {
+            }
         } finally {
             StrictMode.setThreadPolicy(oldPolicy);
         }
