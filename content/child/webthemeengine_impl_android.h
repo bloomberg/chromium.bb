@@ -12,12 +12,13 @@ namespace content {
 class WebThemeEngineImpl : public blink::WebThemeEngine {
  public:
   // WebThemeEngine methods:
-  blink::WebSize getSize(blink::WebThemeEngine::Part) override;
-  void paint(blink::WebCanvas* canvas,
-             blink::WebThemeEngine::Part part,
-             blink::WebThemeEngine::State state,
-             const blink::WebRect& rect,
-             const blink::WebThemeEngine::ExtraParams* extra_params) override;
+  virtual blink::WebSize getSize(blink::WebThemeEngine::Part);
+  virtual void paint(
+      blink::WebCanvas* canvas,
+      blink::WebThemeEngine::Part part,
+      blink::WebThemeEngine::State state,
+      const blink::WebRect& rect,
+      const blink::WebThemeEngine::ExtraParams* extra_params);
 };
 
 }  // namespace content

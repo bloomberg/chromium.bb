@@ -432,7 +432,7 @@ class CONTENT_EXPORT RenderFrameImpl
                      const blink::WebString& name) override;
   void didChangeSandboxFlags(blink::WebFrame* child_frame,
                              blink::WebSandboxFlags flags) override;
-  void didChangeFrameOwnerProperties(
+  virtual void didChangeFrameOwnerProperties(
       blink::WebFrame* child_frame,
       const blink::WebFrameOwnerProperties& frame_owner_properties) override;
   void didMatchCSS(

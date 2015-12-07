@@ -33,8 +33,8 @@ class WebScrollOffsetAnimationCurveImpl
   blink::WebFloatPoint getValue(double time) const override;
   double duration() const override;
 
-  blink::WebFloatPoint targetValue() const override;
-  void updateTarget(double time, blink::WebFloatPoint new_target) override;
+  virtual blink::WebFloatPoint targetValue() const;
+  virtual void updateTarget(double time, blink::WebFloatPoint new_target);
 
   scoped_ptr<cc::AnimationCurve> CloneToAnimationCurve() const;
 

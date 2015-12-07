@@ -15,12 +15,12 @@ class MockWebThemeEngine : public blink::WebThemeEngine {
 
 #if !defined(OS_MACOSX)
   // blink::WebThemeEngine:
-  blink::WebSize getSize(blink::WebThemeEngine::Part) override;
-  void paint(blink::WebCanvas*,
-             blink::WebThemeEngine::Part,
-             blink::WebThemeEngine::State,
-             const blink::WebRect&,
-             const blink::WebThemeEngine::ExtraParams*) override;
+  virtual blink::WebSize getSize(blink::WebThemeEngine::Part);
+  virtual void paint(blink::WebCanvas*,
+                     blink::WebThemeEngine::Part,
+                     blink::WebThemeEngine::State,
+                     const blink::WebRect&,
+                     const blink::WebThemeEngine::ExtraParams*);
 #endif  // !defined(OS_MACOSX)
 };
 

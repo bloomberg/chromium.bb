@@ -16,7 +16,7 @@ class RendererMediaSessionManager;
 class CONTENT_EXPORT WebMediaSessionAndroid : public blink::WebMediaSession {
  public:
   WebMediaSessionAndroid(RendererMediaSessionManager* session_manager);
-  ~WebMediaSessionAndroid() override;
+  virtual ~WebMediaSessionAndroid() override;
 
   void activate(blink::WebMediaSessionActivateCallback*) override;
   void deactivate(blink::WebMediaSessionDeactivateCallback*) override;

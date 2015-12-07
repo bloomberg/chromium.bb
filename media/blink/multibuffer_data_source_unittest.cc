@@ -47,7 +47,7 @@ class TestMultiBufferDataProvider : public ResourceMultiBufferDataProvider {
       : ResourceMultiBufferDataProvider(url_data, pos), loading_(false) {
     CHECK(test_data_providers.insert(this).second);
   }
-  ~TestMultiBufferDataProvider() override {
+  ~TestMultiBufferDataProvider() {
     CHECK_EQ(static_cast<size_t>(1), test_data_providers.erase(this));
   }
   void Start() override {

@@ -116,13 +116,13 @@ class MockWebServiceWorkerProviderClientImpl
     dispatcher_->AddProviderClient(provider_id, this);
   }
 
-  ~MockWebServiceWorkerProviderClientImpl() override {
+  ~MockWebServiceWorkerProviderClientImpl() {
     dispatcher_->RemoveProviderClient(provider_id_);
   }
 
   void setController(
       blink::WebPassOwnPtr<blink::WebServiceWorker::Handle> handle,
-      bool shouldNotifyControllerChange) override {
+      bool shouldNotifyControllerChange) {
     // WebPassOwnPtr cannot be owned in Chromium, so drop the handle here.
     // The destruction releases ServiceWorkerHandleReference.
     is_set_controlled_called_ = true;
