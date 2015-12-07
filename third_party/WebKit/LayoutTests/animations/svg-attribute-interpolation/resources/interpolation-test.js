@@ -320,8 +320,8 @@
         }
         break;
       case 'Web Animations':
-        // Replace 'transform' with 'svgTransform', etc. This avoids collisions with CSS properties or the Web Animations API (offset).
-        var prefixedProperty = 'svg' + params.property[0].toUpperCase() + params.property.slice(1);
+        // Replace 'transform' with 'svg-transform', etc. This avoids collisions with CSS properties or the Web Animations API (offset).
+        var prefixedProperty = 'svg-' + params.property;
         var keyframes = [];
         if (!isNeutralKeyframe(params.from)) {
           keyframes.push({

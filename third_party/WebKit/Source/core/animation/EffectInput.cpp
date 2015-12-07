@@ -52,18 +52,16 @@ namespace blink {
 
 namespace {
 
-bool svgPrefixed(const String& property)
+bool isSVGPrefixed(const String& property)
 {
-    return property.length() >= 4 && property.startsWith("svg") && isASCIIUpper(property[3]);
+    return property.startsWith("svg-");
 }
 
 QualifiedName svgAttributeName(String property)
 {
-    // Replace 'svgTransform' with 'transform', etc.
-    ASSERT(svgPrefixed(property));
-    UChar first = toASCIILower(property[3]);
+    // Replace 'svg-transform' with 'transform', etc.
+    ASSERT(isSVGPrefixed(property));
     property.remove(0, 4);
-    property.insert(&first, 1, 0);
 
     if (property == "href")
         return XLinkNames::hrefAttr;
@@ -71,9 +69,10 @@ QualifiedName svgAttributeName(String property)
     return QualifiedName(nullAtom, AtomicString(property), SVGNames::amplitudeAttr.namespaceURI());
 }
 
-const QualifiedName* supportedSVGAttribute(const String& property, SVGElement* svgElement)
+using AttributeNameMap = HashMap<QualifiedName, const QualifiedName*>;
+
+const AttributeNameMap& getSupportedAttributes()
 {
-    typedef HashMap<QualifiedName, const QualifiedName*> AttributeNameMap;
     DEFINE_STATIC_LOCAL(AttributeNameMap, supportedAttributes, ());
     if (supportedAttributes.isEmpty()) {
         // Fill the set for the first use.
@@ -178,12 +177,17 @@ const QualifiedName* supportedSVGAttribute(const String& property, SVGElement* s
         for (size_t i = 0; i < WTF_ARRAY_LENGTH(attributes); i++)
             supportedAttributes.set(*attributes[i], attributes[i]);
     }
+    return supportedAttributes;
+}
 
+const QualifiedName* findSVGAttributeForProperty(const String& property, SVGElement* svgElement)
+{
     if (isSVGSMILElement(*svgElement))
         return nullptr;
 
     QualifiedName attributeName = svgAttributeName(property);
 
+    const AttributeNameMap& supportedAttributes = getSupportedAttributes();
     auto iter = supportedAttributes.find(attributeName);
     if (iter == supportedAttributes.end() || !svgElement->propertyFromAttribute(*iter->value))
         return nullptr;
@@ -266,14 +270,12 @@ EffectModel* EffectInput::convert(Element* element, const Vector<Dictionary>& ke
                 continue;
             }
 
-            if (!RuntimeEnabledFeatures::webAnimationsSVGEnabled() || !element->isSVGElement() || !svgPrefixed(property))
+            if (!RuntimeEnabledFeatures::webAnimationsSVGEnabled() || !element->isSVGElement() || !isSVGPrefixed(property))
                 continue;
 
-            SVGElement* svgElement = toSVGElement(element);
-            const QualifiedName* qualifiedName = supportedSVGAttribute(property, svgElement);
-
+            const QualifiedName* qualifiedName = findSVGAttributeForProperty(property, toSVGElement(element));
             if (qualifiedName)
-                keyframe->setPropertyValue(*qualifiedName, value, svgElement);
+                keyframe->setPropertyValue(*qualifiedName, value);
         }
     }
 

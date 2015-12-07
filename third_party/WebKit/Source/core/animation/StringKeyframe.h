@@ -23,7 +23,7 @@ public:
 
     void setPropertyValue(CSSPropertyID, const String& value, Element*, StyleSheetContents*);
     void setPropertyValue(CSSPropertyID, PassRefPtrWillBeRawPtr<CSSValue>);
-    void setPropertyValue(const QualifiedName&, const String& value, Element*);
+    void setPropertyValue(const QualifiedName&, const String& value);
     CSSValue* cssPropertyValue(CSSPropertyID property) const
     {
         int index = m_propertySet->findPropertyIndex(property);

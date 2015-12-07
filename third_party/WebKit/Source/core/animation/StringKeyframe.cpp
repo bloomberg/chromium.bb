@@ -73,9 +73,8 @@ void StringKeyframe::setPropertyValue(CSSPropertyID property, PassRefPtrWillBeRa
     m_propertySet->setProperty(property, value, false);
 }
 
-void StringKeyframe::setPropertyValue(const QualifiedName& attributeName, const String& value, Element* element)
+void StringKeyframe::setPropertyValue(const QualifiedName& attributeName, const String& value)
 {
-    ASSERT(element->isSVGElement());
     m_svgPropertyMap.set(&attributeName, value);
 }
 

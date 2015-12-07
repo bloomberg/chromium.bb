@@ -74,7 +74,7 @@ function assertSVGResponsive(options) {
     options,
     bindings: {
       prefixProperty(property) {
-        return 'svg' + property[0].toUpperCase() + property.slice(1);
+        return 'svg-' + property;
       },
       createTargetContainer(container) {
         var svgRoot = createElement('svg', container, 'svg-root', svgNamespace);
