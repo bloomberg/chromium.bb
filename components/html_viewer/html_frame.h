@@ -13,6 +13,7 @@
 #include "cc/layers/surface_layer.h"
 #include "components/html_viewer/html_frame_tree_manager.h"
 #include "components/html_viewer/replicated_frame_state.h"
+#include "components/mus/public/cpp/input_event_handler.h"
 #include "components/mus/public/cpp/window_observer.h"
 #include "components/web_view/public/interfaces/frame.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -70,7 +71,8 @@ class WebLayerTreeViewImpl;
 class HTMLFrame : public blink::WebFrameClient,
                   public blink::WebRemoteFrameClient,
                   public web_view::mojom::FrameClient,
-                  public mus::WindowObserver {
+                  public mus::WindowObserver,
+                  public mus::InputEventHandler {
  public:
   struct CreateParams {
     CreateParams(
@@ -270,10 +272,13 @@ class HTMLFrame : public blink::WebFrameClient,
                              const gfx::Rect& old_bounds,
                              const gfx::Rect& new_bounds) override;
   void OnWindowDestroyed(mus::Window* window) override;
-  void OnWindowInputEvent(mus::Window* window,
-                          const mus::mojom::EventPtr& event) override;
   void OnWindowFocusChanged(mus::Window* gained_focus,
                             mus::Window* lost_focus) override;
+
+  // mus::InputEventHandler:
+  void OnWindowInputEvent(mus::Window* window,
+                          mus::mojom::EventPtr event,
+                          scoped_ptr<base::Closure>* ack_callback) override;
 
   // web_view::mojom::FrameClient:
   void OnConnect(web_view::mojom::FramePtr server,

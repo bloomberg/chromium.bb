@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "components/bitmap_uploader/bitmap_uploader.h"
 #include "components/mus/common/types.h"
+#include "components/mus/public/cpp/input_event_handler.h"
 #include "components/mus/public/cpp/scoped_window_ptr.h"
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_observer.h"
@@ -42,6 +43,7 @@ namespace {
 // Responsible for managing a particlar view displaying a PDF document.
 class PDFView : public mus::WindowTreeDelegate,
                 public mus::WindowObserver,
+                public mus::InputEventHandler,
                 public web_view::mojom::FrameClient,
                 public mojo::InterfaceFactory<web_view::mojom::FrameClient> {
  public:
@@ -105,6 +107,7 @@ class PDFView : public mus::WindowTreeDelegate,
     DCHECK(!root_);
     root_ = root;
     root_->AddObserver(this);
+    root_->set_input_event_handler(this);
     bitmap_uploader_.reset(new bitmap_uploader::BitmapUploader(root_));
     bitmap_uploader_->Init(shell_);
     bitmap_uploader_->SetColor(g_background_color);
@@ -123,8 +126,16 @@ class PDFView : public mus::WindowTreeDelegate,
     DrawBitmap();
   }
 
+  void OnWindowDestroyed(mus::Window* view) override {
+    DCHECK_EQ(root_, view);
+    root_ = nullptr;
+    bitmap_uploader_.reset();
+  }
+
+  // mus::InputEventHandler:
   void OnWindowInputEvent(mus::Window* view,
-                          const mus::mojom::EventPtr& event) override {
+                          mus::mojom::EventPtr event,
+                          scoped_ptr<base::Closure>* ack_callback) override {
     if (event->key_data &&
         (event->action != mus::mojom::EVENT_TYPE_KEY_PRESSED ||
          event->key_data->is_char)) {
@@ -151,12 +162,6 @@ class PDFView : public mus::WindowTreeDelegate,
         DrawBitmap();
       }
     }
-  }
-
-  void OnWindowDestroyed(mus::Window* view) override {
-    DCHECK_EQ(root_, view);
-    root_ = nullptr;
-    bitmap_uploader_.reset();
   }
 
   // web_view::mojom::FrameClient:

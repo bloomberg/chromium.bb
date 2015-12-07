@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "components/mus/common/util.h"
+#include "components/mus/public/cpp/input_event_handler.h"
 #include "components/mus/public/cpp/lib/window_private.h"
 #include "components/mus/public/cpp/property_type_converters.h"
 #include "components/mus/public/cpp/tests/test_window.h"
@@ -15,7 +16,10 @@
 #include "components/mus/public/cpp/window_property.h"
 #include "components/mus/public/cpp/window_tree_delegate.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
+#include "mojo/converters/input_events/input_events_type_converters.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/events/event.h"
+#include "ui/events/event_utils.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace mus {
@@ -94,6 +98,48 @@ class WindowTreeSetup {
   WindowTreeClientImpl tree_client_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeSetup);
+};
+
+class TestInputEventHandler : public InputEventHandler {
+ public:
+  TestInputEventHandler()
+      : received_event_(false), should_manually_ack_(false) {}
+  ~TestInputEventHandler() override {}
+
+  void set_should_manually_ack() { should_manually_ack_ = true; }
+
+  void AckEvent() {
+    DCHECK(should_manually_ack_);
+    DCHECK(!ack_callback_.is_null());
+    ack_callback_.Run();
+    ack_callback_ = base::Closure();
+  }
+
+  void Reset() {
+    received_event_ = false;
+    ack_callback_ = base::Closure();
+  }
+  bool received_event() const { return received_event_; }
+
+ private:
+  // InputEventHandler:
+  void OnWindowInputEvent(Window* target,
+                          mojom::EventPtr event,
+                          scoped_ptr<base::Closure>* ack_callback) override {
+    EXPECT_FALSE(received_event_)
+        << "Observer was not reset after receiving event.";
+    received_event_ = true;
+    if (should_manually_ack_) {
+      ack_callback_ = *ack_callback->get();
+      ack_callback->reset();
+    }
+  }
+
+  bool received_event_;
+  bool should_manually_ack_;
+  base::Closure ack_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestInputEventHandler);
 };
 
 using WindowTreeClientImplTest = testing::Test;
@@ -274,6 +320,35 @@ TEST_F(WindowTreeClientImplTest, SetVisibleFailedWithPendingChange) {
   setup.window_tree_client()->OnWindowVisibilityChanged(root->id(),
                                                         original_visible);
   EXPECT_EQ(original_visible, root->visible());
+}
+
+TEST_F(WindowTreeClientImplTest, InputEventBasic) {
+  WindowTreeSetup setup;
+  Window* root = setup.window_tree_connection()->GetRoot();
+  ASSERT_TRUE(root);
+
+  TestInputEventHandler event_handler;
+  root->set_input_event_handler(&event_handler);
+
+  scoped_ptr<ui::Event> ui_event(
+      new ui::MouseEvent(ui::ET_MOUSE_MOVED, gfx::Point(), gfx::Point(),
+                         ui::EventTimeForNow(), ui::EF_NONE, 0));
+  mojom::EventPtr mus_event = mojom::Event::From(*ui_event);
+  setup.window_tree_client()->OnWindowInputEvent(1, root->id(),
+                                                 std::move(mus_event));
+  EXPECT_TRUE(event_handler.received_event());
+  EXPECT_TRUE(setup.window_tree()->WasEventAcked(1));
+  event_handler.Reset();
+
+  event_handler.set_should_manually_ack();
+  mus_event = mojom::Event::From(*ui_event);
+  setup.window_tree_client()->OnWindowInputEvent(33, root->id(),
+                                                 std::move(mus_event));
+  EXPECT_TRUE(event_handler.received_event());
+  EXPECT_FALSE(setup.window_tree()->WasEventAcked(33));
+
+  event_handler.AckEvent();
+  EXPECT_TRUE(setup.window_tree()->WasEventAcked(33));
 }
 
 // Verifies focus is reverted if the server replied that the change failed.

@@ -28,6 +28,7 @@ PlatformWindowMus::PlatformWindowMus(ui::PlatformWindowDelegate* delegate,
   DCHECK(delegate_);
   DCHECK(mus_window_);
   mus_window_->AddObserver(this);
+  mus_window_->set_input_event_handler(this);
 
   // We need accelerated widget numbers to be different for each
   // window and fit in the smallest sizeof(AcceleratedWidget) uint32_t
@@ -47,6 +48,7 @@ PlatformWindowMus::~PlatformWindowMus() {
   if (!mus_window_)
     return;
   mus_window_->RemoveObserver(this);
+  mus_window_->set_input_event_handler(nullptr);
   mus_window_->Destroy();
 }
 
@@ -166,12 +168,6 @@ void PlatformWindowMus::OnWindowPredefinedCursorChanged(
   last_cursor_ = cursor;
 }
 
-void PlatformWindowMus::OnWindowInputEvent(mus::Window* view,
-                                           const mus::mojom::EventPtr& event) {
-  scoped_ptr<ui::Event> ui_event(event.To<scoped_ptr<ui::Event>>());
-  delegate_->DispatchEvent(ui_event.get());
-}
-
 void PlatformWindowMus::OnWindowSharedPropertyChanged(
     mus::Window* window,
     const std::string& name,
@@ -203,6 +199,14 @@ void PlatformWindowMus::OnWindowSharedPropertyChanged(
       break;
   }
   delegate_->OnWindowStateChanged(state);
+}
+
+void PlatformWindowMus::OnWindowInputEvent(
+    mus::Window* view,
+    mus::mojom::EventPtr event,
+    scoped_ptr<base::Closure>* ack_callback) {
+  scoped_ptr<ui::Event> ui_event(event.To<scoped_ptr<ui::Event>>());
+  delegate_->DispatchEvent(ui_event.get());
 }
 
 }  // namespace views
