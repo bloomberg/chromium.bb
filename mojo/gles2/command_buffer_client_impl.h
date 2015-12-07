@@ -84,9 +84,6 @@ class CommandBufferClientImpl
   bool CanWaitUnverifiedSyncToken(const gpu::SyncToken* sync_token) override;
 
  private:
-  class SyncClientImpl;
-  class SyncPointClientImpl;
-
   // mus::mojom::CommandBufferLostContextObserver implementation:
   void DidLoseContext(int32_t lost_reason) override;
 
@@ -99,9 +96,8 @@ class CommandBufferClientImpl
   std::vector<int32_t> attribs_;
   mojo::Binding<mus::mojom::CommandBufferLostContextObserver> observer_binding_;
   mus::mojom::CommandBufferPtr command_buffer_;
-  scoped_ptr<SyncClientImpl> sync_client_impl_;
-  scoped_ptr<SyncPointClientImpl> sync_point_client_impl_;
 
+  uint64_t command_buffer_id_;
   gpu::Capabilities capabilities_;
   State last_state_;
   mojo::ScopedSharedBufferHandle shared_state_handle_;

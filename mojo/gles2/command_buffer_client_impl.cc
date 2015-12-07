@@ -43,94 +43,16 @@ bool CreateMapAndDupSharedBuffer(size_t size,
   return true;
 }
 
+template <typename T>
+void Copy(T* output, T input) {
+  *output = std::move(input);
+}
+
 }  // namespace
 
 CommandBufferDelegate::~CommandBufferDelegate() {}
 
 void CommandBufferDelegate::ContextLost() {}
-
-class CommandBufferClientImpl::SyncClientImpl
-    : public mus::mojom::CommandBufferSyncClient {
- public:
-  SyncClientImpl(mus::mojom::CommandBufferSyncClientPtr* ptr,
-                 const MojoAsyncWaiter* async_waiter)
-      : initialized_successfully_(false),
-        command_buffer_id_(0),
-        binding_(this, ptr, async_waiter) {}
-
-  bool WaitForInitialization() {
-    base::ThreadRestrictions::ScopedAllowWait wait;
-    if (!binding_.WaitForIncomingMethodCall())
-      return false;
-    return initialized_successfully_;
-  }
-
-  mus::mojom::CommandBufferStatePtr WaitForProgress() {
-    base::ThreadRestrictions::ScopedAllowWait wait;
-    if (!binding_.WaitForIncomingMethodCall())
-      return mus::mojom::CommandBufferStatePtr();
-    return command_buffer_state_.Pass();
-  }
-
-  gpu::Capabilities GetCapabilities() {
-    if (capabilities_)
-      return capabilities_.To<gpu::Capabilities>();
-    return gpu::Capabilities();
-  }
-
-  uint64_t GetCommandBufferID() const {
-    return command_buffer_id_;
-  }
-
- private:
-  // CommandBufferSyncClient methods:
-  void DidInitialize(bool success,
-                     int32_t command_buffer_namespace,
-                     uint64_t command_buffer_id,
-                     mus::mojom::GpuCapabilitiesPtr capabilities) override {
-    DCHECK_EQ(command_buffer_namespace, gpu::CommandBufferNamespace::MOJO);
-    initialized_successfully_ = success;
-    command_buffer_id_ = command_buffer_id;
-    capabilities_ = capabilities.Pass();
-  }
-  void DidMakeProgress(mus::mojom::CommandBufferStatePtr state) override {
-    command_buffer_state_ = state.Pass();
-  }
-
-  bool initialized_successfully_;
-  uint64_t command_buffer_id_;
-  mus::mojom::GpuCapabilitiesPtr capabilities_;
-  mus::mojom::CommandBufferStatePtr command_buffer_state_;
-  mojo::Binding<mus::mojom::CommandBufferSyncClient> binding_;
-
-  DISALLOW_COPY_AND_ASSIGN(SyncClientImpl);
-};
-
-class CommandBufferClientImpl::SyncPointClientImpl
-    : public mus::mojom::CommandBufferSyncPointClient {
- public:
-  SyncPointClientImpl(mus::mojom::CommandBufferSyncPointClientPtr* ptr,
-                      const MojoAsyncWaiter* async_waiter)
-      : sync_point_(0u), binding_(this, ptr, async_waiter) {}
-
-  uint32_t WaitForInsertSyncPoint() {
-    base::ThreadRestrictions::ScopedAllowWait wait;
-    if (!binding_.WaitForIncomingMethodCall())
-      return 0u;
-    uint32_t result = sync_point_;
-    sync_point_ = 0u;
-    return result;
-  }
-
- private:
-  void DidInsertSyncPoint(uint32_t sync_point) override {
-    sync_point_ = sync_point;
-  }
-
-  uint32_t sync_point_;
-
-  mojo::Binding<mus::mojom::CommandBufferSyncPointClient> binding_;
-};
 
 CommandBufferClientImpl::CommandBufferClientImpl(
     CommandBufferDelegate* delegate,
@@ -140,6 +62,7 @@ CommandBufferClientImpl::CommandBufferClientImpl(
     : delegate_(delegate),
       attribs_(attribs),
       observer_binding_(this),
+      command_buffer_id_(0),
       shared_state_(NULL),
       last_put_offset_(-1),
       next_transfer_buffer_id_(0),
@@ -169,27 +92,26 @@ bool CommandBufferClientImpl::Initialize() {
 
   shared_state()->Initialize();
 
-  mus::mojom::CommandBufferSyncClientPtr sync_client;
-  sync_client_impl_.reset(new SyncClientImpl(&sync_client, async_waiter_));
-
-  mus::mojom::CommandBufferSyncPointClientPtr sync_point_client;
-  sync_point_client_impl_.reset(
-      new SyncPointClientImpl(&sync_point_client, async_waiter_));
-
   mus::mojom::CommandBufferLostContextObserverPtr observer_ptr;
   observer_binding_.Bind(GetProxy(&observer_ptr), async_waiter_);
-  command_buffer_->Initialize(sync_client.Pass(),
-                              sync_point_client.Pass(),
-                              observer_ptr.Pass(),
-                              duped.Pass(),
-                              mojo::Array<int32_t>::From(attribs_));
+  mus::mojom::CommandBufferInfoPtr info;
+  command_buffer_->Initialize(
+      observer_ptr.Pass(), duped.Pass(), mojo::Array<int32_t>::From(attribs_),
+      base::Bind(&Copy<mus::mojom::CommandBufferInfoPtr>, &info));
 
-  // Wait for DidInitialize to come on the sync client pipe.
-  if (!sync_client_impl_->WaitForInitialization()) {
-    VLOG(1) << "Channel encountered error while creating command buffer";
+  if (!command_buffer_.WaitForIncomingResponse()) {
+    VLOG(1) << "Channel encountered error while creating command buffer.";
     return false;
   }
-  capabilities_ = sync_client_impl_->GetCapabilities();
+
+  if (!info) {
+    VLOG(1) << "Command buffer cannot be initialized successfully.";
+    return false;
+  }
+
+  DCHECK_EQ(gpu::CommandBufferNamespace::MOJO, info->command_buffer_namespace);
+  command_buffer_id_ = info->command_buffer_id;
+  capabilities_ = info->capabilities.To<gpu::Capabilities>();
   return true;
 }
 
@@ -345,13 +267,23 @@ int32_t CommandBufferClientImpl::CreateGpuMemoryBufferImage(
 }
 
 uint32_t CommandBufferClientImpl::InsertSyncPoint() {
-  command_buffer_->InsertSyncPoint(true);
-  return sync_point_client_impl_->WaitForInsertSyncPoint();
+  uint32_t sync_point = 0;
+  command_buffer_->InsertSyncPoint(true,
+                                   base::Bind(&Copy<uint32_t>, &sync_point));
+  if (!command_buffer_.WaitForIncomingResponse()) {
+    VLOG(1) << "Channel encountered error while creating command buffer.";
+  }
+  return sync_point;
 }
 
 uint32_t CommandBufferClientImpl::InsertFutureSyncPoint() {
-  command_buffer_->InsertSyncPoint(false);
-  return sync_point_client_impl_->WaitForInsertSyncPoint();
+  uint32_t sync_point = 0;
+  command_buffer_->InsertSyncPoint(false,
+                                   base::Bind(&Copy<uint32_t>, &sync_point));
+  if (!command_buffer_.WaitForIncomingResponse()) {
+    VLOG(1) << "Channel encountered error while creating command buffer.";
+  }
+  return sync_point;
 }
 
 void CommandBufferClientImpl::RetireSyncPoint(uint32_t sync_point) {
@@ -382,12 +314,12 @@ void CommandBufferClientImpl::TryUpdateState() {
 }
 
 void CommandBufferClientImpl::MakeProgressAndUpdateState() {
-  command_buffer_->MakeProgress(last_state_.get_offset);
-
-  mus::mojom::CommandBufferStatePtr state =
-      sync_client_impl_->WaitForProgress();
-  if (!state) {
-    VLOG(1) << "Channel encountered error while waiting for command buffer";
+  mus::mojom::CommandBufferStatePtr state;
+  command_buffer_->MakeProgress(
+      last_state_.get_offset,
+      base::Bind(&Copy<mus::mojom::CommandBufferStatePtr>, &state));
+  if (!command_buffer_.WaitForIncomingResponse()) {
+    VLOG(1) << "Channel encountered error while waiting for command buffer.";
     // TODO(piman): is it ok for this to re-enter?
     DidLoseContext(gpu::error::kUnknown);
     return;
@@ -410,7 +342,7 @@ gpu::CommandBufferNamespace CommandBufferClientImpl::GetNamespaceID() const {
 }
 
 uint64_t CommandBufferClientImpl::GetCommandBufferID() const {
-  return sync_client_impl_->GetCommandBufferID();
+  return command_buffer_id_;
 }
 
 uint64_t CommandBufferClientImpl::GenerateFenceSyncRelease() {

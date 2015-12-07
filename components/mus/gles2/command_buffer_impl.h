@@ -37,21 +37,24 @@ class CommandBufferImpl : public mojom::CommandBuffer {
   ~CommandBufferImpl() override;
 
   // mojom::CommandBuffer:
-  void Initialize(mojom::CommandBufferSyncClientPtr sync_client,
-                  mojom::CommandBufferSyncPointClientPtr sync_point_client,
-                  mojom::CommandBufferLostContextObserverPtr loss_observer,
-                  mojo::ScopedSharedBufferHandle shared_state,
-                  mojo::Array<int32_t> attribs) override;
+  void Initialize(
+      mojom::CommandBufferLostContextObserverPtr loss_observer,
+      mojo::ScopedSharedBufferHandle shared_state,
+      mojo::Array<int32_t> attribs,
+      const mojom::CommandBuffer::InitializeCallback& callback) override;
   void SetGetBuffer(int32_t buffer) override;
   void Flush(int32_t put_offset) override;
-  void MakeProgress(int32_t last_get_offset) override;
+  void MakeProgress(
+      int32_t last_get_offset,
+      const mojom::CommandBuffer::MakeProgressCallback& callback) override;
   void RegisterTransferBuffer(int32_t id,
                               mojo::ScopedSharedBufferHandle transfer_buffer,
                               uint32_t size) override;
   void DestroyTransferBuffer(int32_t id) override;
-  void InsertSyncPoint(bool retire) override;
+  void InsertSyncPoint(
+      bool retire,
+      const mojom::CommandBuffer::InsertSyncPointCallback& callback) override;
   void RetireSyncPoint(uint32_t sync_point) override;
-  void Echo(const mojo::Callback<void()>& callback) override;
   void CreateImage(int32_t id,
                    mojo::ScopedHandle memory_handle,
                    int32_t type,
@@ -61,23 +64,21 @@ class CommandBufferImpl : public mojom::CommandBuffer {
   void DestroyImage(int32_t id) override;
 
   bool InitializeHelper(
-      mojom::CommandBufferSyncClientPtr sync_client,
       mojom::CommandBufferLostContextObserverPtr loss_observer,
       mojo::ScopedSharedBufferHandle shared_state,
-      mojo::Array<int32_t> attribs);
+      mojo::Array<int32_t> attribs,
+      const base::Callback<void(mojom::CommandBufferInfoPtr)>& callback);
   bool SetGetBufferHelper(int32_t buffer);
   bool FlushHelper(int32_t put_offset, uint32_t order_num);
-  bool MakeProgressHelper(int32_t last_get_offset);
+  bool MakeProgressHelper(
+      int32_t last_get_offset,
+      const base::Callback<void(mojom::CommandBufferStatePtr)>& callback);
   bool RegisterTransferBufferHelper(
       int32_t id,
       mojo::ScopedSharedBufferHandle transfer_buffer,
       uint32_t size);
   bool DestroyTransferBufferHelper(int32_t id);
   bool RetireSyncPointHelper(uint32_t sync_point);
-  bool EchoHelper(
-      const tracked_objects::Location& from_here,
-      scoped_refptr<base::SingleThreadTaskRunner> origin_task_runner,
-      const base::Closure& reply);
   bool CreateImageHelper(
       int32_t id,
       mojo::ScopedHandle memory_handle,
@@ -94,7 +95,6 @@ class CommandBufferImpl : public mojom::CommandBuffer {
 
   scoped_refptr<GpuState> gpu_state_;
   scoped_ptr<CommandBufferDriver> driver_;
-  mojom::CommandBufferSyncPointClientPtr sync_point_client_;
   scoped_ptr<mojo::Binding<CommandBuffer>> binding_;
   CommandBufferImplObserver* observer_;
   base::WeakPtrFactory<CommandBufferImpl> weak_ptr_factory_;

@@ -7,6 +7,12 @@ module mus.mojom;
 import "components/mus/public/interfaces/gpu_capabilities.mojom";
 import "ui/mojo/geometry/geometry.mojom";
 
+struct CommandBufferInfo {
+    int32 command_buffer_namespace;
+    uint64 command_buffer_id;
+    GpuCapabilities capabilities;
+};
+
 struct CommandBufferState {
   int32 num_entries;
   int32 get_offset;
@@ -17,47 +23,30 @@ struct CommandBufferState {
   uint32 generation;
 };
 
-interface CommandBufferSyncClient {
-  // |capabilities| is null if |success| is false.
-  DidInitialize(bool success,
-                int32 command_buffer_namespace,
-                uint64 command_buffer_id,
-                GpuCapabilities? capabilities);
-  DidMakeProgress(CommandBufferState state);
-};
-
-interface CommandBufferSyncPointClient {
-  DidInsertSyncPoint(uint32 sync_point);
-};
-
 interface CommandBufferLostContextObserver {
   DidLoseContext(int32 context_lost_reason);
 };
 
+
 interface CommandBuffer {
-  // Initialize attempts to initialize the command buffer. Success or failure
-  // will be communicated via the CommandBufferSyncClient DidInitialize() call.
+  // Initialize attempts to initialize the command buffer.
   // If the context is lost after creation the LostContext method on the
   // CommandBufferLostContextObserver's will be called then this pipe will be
   // closed.
-  Initialize(CommandBufferSyncClient sync_client,
-             CommandBufferSyncPointClient sync_point_client,
-             CommandBufferLostContextObserver lost_observer,
+  Initialize(CommandBufferLostContextObserver lost_observer,
              handle<shared_buffer> shared_state,
-             array<int32> attribs);
+             array<int32> attribs) => (CommandBufferInfo? info);
   SetGetBuffer(int32 buffer);
   Flush(int32 put_offset);
-  MakeProgress(int32 last_get_offset);
+  MakeProgress(int32 last_get_offset) => (CommandBufferState state);
   RegisterTransferBuffer(
       int32 id, handle<shared_buffer> transfer_buffer, uint32 size);
   DestroyTransferBuffer(int32 id);
 
-  // InsertSyncPoint returns the sync point returned via DidInsertSyncPoint.
   // If |retire| is true, the sync point is retired on insertion. Otherwise,
   // explicitly call RetireSyncPoint to retire it.
-  InsertSyncPoint(bool retire);
+  InsertSyncPoint(bool retire) => (uint32 sync_point);
   RetireSyncPoint(uint32 sync_point);
-  Echo() => ();
 
   CreateImage(int32 id,
               handle memory_handle,
