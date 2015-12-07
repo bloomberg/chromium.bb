@@ -9,9 +9,11 @@ namespace page_load_metrics {
 PageLoadExtraInfo::PageLoadExtraInfo(
     const base::TimeDelta& first_background_time,
     const base::TimeDelta& first_foreground_time,
-    bool started_in_foreground)
+    bool started_in_foreground,
+    bool has_commit)
     : first_background_time(first_background_time),
       first_foreground_time(first_foreground_time),
-      started_in_foreground(started_in_foreground) {}
+      started_in_foreground(started_in_foreground),
+      has_commit(has_commit) {}
 
 }  // namespace page_load_metrics

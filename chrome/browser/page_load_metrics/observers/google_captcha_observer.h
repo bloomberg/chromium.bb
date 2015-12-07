@@ -16,19 +16,15 @@ bool IsGoogleCaptcha(const GURL& url);
 class GoogleCaptchaObserver
     : public page_load_metrics::PageLoadMetricsObserver {
  public:
-  explicit GoogleCaptchaObserver(
-      page_load_metrics::PageLoadMetricsObservable* metrics);
+  GoogleCaptchaObserver();
 
   // page_load_metrics::PageLoadMetricsObserver implementation:
   void OnCommit(content::NavigationHandle* navigation_handle) override;
   void OnRedirect(content::NavigationHandle* navigation_handle) override;
-  void OnPageLoadMetricsGoingAway() override;
 
  private:
   bool saw_solution_;
-  page_load_metrics::PageLoadMetricsObservable* const metrics_;
   DISALLOW_COPY_AND_ASSIGN(GoogleCaptchaObserver);
-
 };
 
 }  // namespace google_captcha_observer

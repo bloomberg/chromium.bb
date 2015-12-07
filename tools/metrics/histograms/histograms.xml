@@ -66590,7 +66590,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <enum name="InternalErrorLoadEvent" type="int">
   <summary>Internal Errors in the page_load_metrics system</summary>
   <int value="0" label="Invalid timing IPC sent from renderer"/>
-  <int value="1" label="IPC received while not tracking a committed load"/>
+  <int value="1"
+      label="IPC received while not tracking a relevant committed load"/>
   <int value="2" label="IPC received from a frame we navigated away from"/>
   <int value="3" label="IPC received from a bad URL scheme"/>
   <int value="4" label="No IPCs received for this navigation"/>

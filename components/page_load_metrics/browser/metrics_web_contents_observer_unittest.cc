@@ -37,6 +37,7 @@ class TestPageLoadMetricsEmbedderInterface
   bool IsPrerendering(content::WebContents* web_contents) override {
     return is_prerendering_;
   }
+  void RegisterObservers(PageLoadTracker* tracker) override {}
   void set_is_prerendering(bool is_prerendering) {
     is_prerendering_ = is_prerendering;
   }
@@ -88,7 +89,7 @@ class MetricsWebContentsObserverTest
     }
   }
 
-  void CheckCommittedEvent(CommittedLoadEvent event,
+  void CheckCommittedEvent(CommittedRelevantLoadEvent event,
                            int count,
                            bool background) {
     if (background) {
@@ -506,9 +507,9 @@ TEST_F(MetricsWebContentsObserverTest, DontLogIrrelevantNavigation) {
   web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
 
   CheckProvisionalEvent(PROVISIONAL_LOAD_COMMITTED, 2, false);
-  CheckCommittedEvent(COMMITTED_LOAD_STARTED, 1, false);
+  CheckCommittedEvent(RELEVANT_LOAD_STARTED, 1, false);
   CheckErrorEvent(ERR_IPC_FROM_BAD_URL_SCHEME, 1);
-  CheckErrorEvent(ERR_IPC_WITH_NO_COMMITTED_LOAD, 1);
+  CheckErrorEvent(ERR_IPC_WITH_NO_RELEVANT_LOAD, 1);
   CheckTotalEvents();
 }
 
@@ -550,8 +551,8 @@ TEST_F(MetricsWebContentsObserverTest, AbortCommittedLoadBeforeFirstLayout) {
   web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl2));
 
   CheckProvisionalEvent(PROVISIONAL_LOAD_COMMITTED, 2, false);
-  CheckCommittedEvent(COMMITTED_LOAD_STARTED, 2, false);
-  CheckCommittedEvent(COMMITTED_LOAD_FAILED_BEFORE_FIRST_LAYOUT, 1, false);
+  CheckCommittedEvent(RELEVANT_LOAD_STARTED, 2, false);
+  CheckCommittedEvent(RELEVANT_LOAD_FAILED_BEFORE_FIRST_LAYOUT, 1, false);
   CheckTotalEvents();
 }
 
@@ -571,8 +572,8 @@ TEST_F(MetricsWebContentsObserverTest, SuccessfulFirstLayoutInForegroundEvent) {
   web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl2));
 
   CheckProvisionalEvent(PROVISIONAL_LOAD_COMMITTED, 2, false);
-  CheckCommittedEvent(COMMITTED_LOAD_STARTED, 2, false);
-  CheckCommittedEvent(COMMITTED_LOAD_SUCCESSFUL_FIRST_LAYOUT, 1, false);
+  CheckCommittedEvent(RELEVANT_LOAD_STARTED, 2, false);
+  CheckCommittedEvent(RELEVANT_LOAD_SUCCESSFUL_FIRST_LAYOUT, 1, false);
   CheckTotalEvents();
 }
 
@@ -598,9 +599,9 @@ TEST_F(MetricsWebContentsObserverTest,
 
   CheckProvisionalEvent(PROVISIONAL_LOAD_COMMITTED, 1, true);
   CheckProvisionalEvent(PROVISIONAL_LOAD_COMMITTED, 1, false);
-  CheckCommittedEvent(COMMITTED_LOAD_STARTED, 1, true);
-  CheckCommittedEvent(COMMITTED_LOAD_STARTED, 1, false);
-  CheckCommittedEvent(COMMITTED_LOAD_SUCCESSFUL_FIRST_LAYOUT, 1, true);
+  CheckCommittedEvent(RELEVANT_LOAD_STARTED, 1, true);
+  CheckCommittedEvent(RELEVANT_LOAD_STARTED, 1, false);
+  CheckCommittedEvent(RELEVANT_LOAD_SUCCESSFUL_FIRST_LAYOUT, 1, true);
   CheckTotalEvents();
 }
 
@@ -622,7 +623,7 @@ TEST_F(MetricsWebContentsObserverTest, BadIPC) {
       main_rfh());
 
   CheckProvisionalEvent(PROVISIONAL_LOAD_COMMITTED, 1, false);
-  CheckCommittedEvent(COMMITTED_LOAD_STARTED, 1, false);
+  CheckCommittedEvent(RELEVANT_LOAD_STARTED, 1, false);
   CheckErrorEvent(ERR_BAD_TIMING_IPC, 1);
   CheckTotalEvents();
 }

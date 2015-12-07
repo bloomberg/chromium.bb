@@ -13,40 +13,30 @@
 #include "components/rappor/rappor_service.h"
 #include "content/public/browser/web_contents.h"
 
-namespace {
-
-void RegisterPageLoadMetricsObservers(
-    page_load_metrics::PageLoadMetricsObservable* metrics) {
-  // Attach observers scoped to the web contents here.
-
-  // This is a self-destruct class, and will delete itself when triggered by
-  // OnPageLoadMetricsGoingAway.
-  metrics->AddObserver(new FromGWSPageLoadMetricsObserver(metrics));
-  metrics->AddObserver(
-      new google_captcha_observer::GoogleCaptchaObserver(metrics));
-  // StaleWhileRevalidateMetricsObserver also deletes itself from
-  // OnPageLoadMetricsGoingAway.
-  // TODO(ricea): Remove this in April 2016 or before. crbug.com/348877
-  metrics->AddObserver(
-      new chrome::StaleWhileRevalidateMetricsObserver(metrics));
-}
-
-}  // namespace
-
 namespace chrome {
 
 void InitializePageLoadMetricsForWebContents(
     content::WebContents* web_contents) {
-  RegisterPageLoadMetricsObservers(
-      page_load_metrics::MetricsWebContentsObserver::CreateForWebContents(
-          web_contents,
-          make_scoped_ptr(new PageLoadMetricsEmbedderInterfaceImpl())));
+  page_load_metrics::MetricsWebContentsObserver::CreateForWebContents(
+      web_contents,
+      make_scoped_ptr(new PageLoadMetricsEmbedder()));
 }
 
-PageLoadMetricsEmbedderInterfaceImpl::~PageLoadMetricsEmbedderInterfaceImpl() {}
+PageLoadMetricsEmbedder::~PageLoadMetricsEmbedder() {}
+
+void PageLoadMetricsEmbedder::RegisterObservers(
+    page_load_metrics::PageLoadTracker* tracker) {
+  // These classes are owned by the metrics.
+  tracker->AddObserver(make_scoped_ptr(new FromGWSPageLoadMetricsObserver()));
+  tracker->AddObserver(
+      make_scoped_ptr(new google_captcha_observer::GoogleCaptchaObserver()));
+  // TODO(ricea): Remove this in April 2016 or before. crbug.com/348877
+  tracker->AddObserver(
+      make_scoped_ptr(new chrome::StaleWhileRevalidateMetricsObserver()));
+}
 
 rappor::RapporService*
-PageLoadMetricsEmbedderInterfaceImpl::GetRapporService() {
+PageLoadMetricsEmbedder::GetRapporService() {
   // During the browser process shutdown path, calling this getter can
   // reinitialize multiple destroyed objects. This alters shutdown ordering.
   if (g_browser_process->IsShuttingDown())
@@ -54,7 +44,7 @@ PageLoadMetricsEmbedderInterfaceImpl::GetRapporService() {
   return g_browser_process->rappor_service();
 }
 
-bool PageLoadMetricsEmbedderInterfaceImpl::IsPrerendering(
+bool PageLoadMetricsEmbedder::IsPrerendering(
     content::WebContents* web_contents) {
   return prerender::PrerenderContents::FromWebContents(web_contents) != nullptr;
 }

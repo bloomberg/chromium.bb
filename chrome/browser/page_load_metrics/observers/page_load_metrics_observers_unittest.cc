@@ -19,32 +19,43 @@ const char kHistogramNameFromGWSFirstTextPaint[] =
 
 }  // namespace
 
-class TestPageLoadMetricsEmbedderInterface
-    : public page_load_metrics::PageLoadMetricsEmbedderInterface {
- public:
-  TestPageLoadMetricsEmbedderInterface() {}
-  rappor::RapporService* GetRapporService() override { return nullptr; }
-  bool IsPrerendering(content::WebContents* web_contents) override {
-    return false;
-  }
-};
-
 class TestFromGWSPageLoadMetricsObserver
     : public FromGWSPageLoadMetricsObserver {
  public:
-  explicit TestFromGWSPageLoadMetricsObserver(
-      page_load_metrics::PageLoadMetricsObservable* metrics)
-      : FromGWSPageLoadMetricsObserver(metrics) {}
+  explicit TestFromGWSPageLoadMetricsObserver(const content::Referrer& referrer)
+      : FromGWSPageLoadMetricsObserver(), referrer_(referrer) {}
   void OnCommit(content::NavigationHandle* navigation_handle) override {
     const GURL& url = navigation_handle->GetURL();
     SetCommittedURLAndReferrer(
         url, content::Referrer::SanitizeForRequest(url, referrer_));
   }
 
+ private:
+  const content::Referrer referrer_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestFromGWSPageLoadMetricsObserver);
+};
+
+class TestPageLoadMetricsEmbedderInterface
+    : public page_load_metrics::PageLoadMetricsEmbedderInterface {
+ public:
+  TestPageLoadMetricsEmbedderInterface()
+      : referrer_(content::Referrer(GURL("https://www.google.com"),
+                                    blink::WebReferrerPolicyDefault)) {}
+  rappor::RapporService* GetRapporService() override { return nullptr; }
+  bool IsPrerendering(content::WebContents* web_contents) override {
+    return false;
+  }
+  void RegisterObservers(page_load_metrics::PageLoadTracker* tracker) override {
+    tracker->AddObserver(
+        make_scoped_ptr(new TestFromGWSPageLoadMetricsObserver(referrer_)));
+  }
   void set_referrer(const content::Referrer& referrer) { referrer_ = referrer; }
 
  private:
   content::Referrer referrer_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestPageLoadMetricsEmbedderInterface);
 };
 
 class PageLoadMetricsObserverTest : public ChromeRenderViewHostTestHarness {
@@ -55,22 +66,16 @@ class PageLoadMetricsObserverTest : public ChromeRenderViewHostTestHarness {
     ChromeRenderViewHostTestHarness::SetUp();
     SetContents(CreateTestWebContents());
     NavigateAndCommit(GURL("http://www.google.com"));
+    embedder_interface_ = new TestPageLoadMetricsEmbedderInterface();
     observer_ =
         make_scoped_ptr(new page_load_metrics::MetricsWebContentsObserver(
-            web_contents(),
-            make_scoped_ptr(new TestPageLoadMetricsEmbedderInterface())));
+            web_contents(), make_scoped_ptr(embedder_interface_)));
     observer_->WasShown();
-
-    // Add PageLoadMetricsObservers here.
-    gws_observer_ = new TestFromGWSPageLoadMetricsObserver(observer_.get());
-    observer_->AddObserver(gws_observer_);
   }
 
   base::HistogramTester histogram_tester_;
+  TestPageLoadMetricsEmbedderInterface* embedder_interface_;
   scoped_ptr<page_load_metrics::MetricsWebContentsObserver> observer_;
-
-  // PageLoadMetricsObservers:
-  TestFromGWSPageLoadMetricsObserver* gws_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(PageLoadMetricsObserverTest);
 };
@@ -99,7 +104,7 @@ TEST_F(PageLoadMetricsObserverTest, ReferralsFromGWSHTTPToHTTPS) {
   timing.navigation_start = base::Time::FromDoubleT(1);
   timing.first_text_paint = base::TimeDelta::FromMilliseconds(1);
   // HTTPS google.com referral  to HTTP example.com.
-  gws_observer_->set_referrer(content::Referrer(
+  embedder_interface_->set_referrer(content::Referrer(
       GURL("https://www.google.com"), blink::WebReferrerPolicyOrigin));
   NavigateAndCommit(GURL("http://www.example.com"));
 
@@ -120,7 +125,7 @@ TEST_F(PageLoadMetricsObserverTest, ReferralFromGWS) {
   timing.navigation_start = base::Time::FromDoubleT(1);
   timing.first_text_paint = base::TimeDelta::FromMilliseconds(1);
 
-  gws_observer_->set_referrer(content::Referrer(
+  embedder_interface_->set_referrer(content::Referrer(
       GURL("https://www.google.com/url"), blink::WebReferrerPolicyDefault));
   NavigateAndCommit(GURL("https://www.example.com"));
 
@@ -141,7 +146,7 @@ TEST_F(PageLoadMetricsObserverTest, ReferralFromGWSBackgroundLater) {
   timing.navigation_start = base::Time::FromDoubleT(1);
   timing.first_text_paint = base::TimeDelta::FromMicroseconds(1);
 
-  gws_observer_->set_referrer(content::Referrer(
+  embedder_interface_->set_referrer(content::Referrer(
       GURL("https://www.google.com/url"), blink::WebReferrerPolicyDefault));
   NavigateAndCommit(GURL("https://www.example.com"));
 
@@ -164,7 +169,7 @@ TEST_F(PageLoadMetricsObserverTest, ReferralsFromCaseInsensitive) {
   timing.navigation_start = base::Time::FromDoubleT(1);
   timing.first_text_paint = base::TimeDelta::FromMilliseconds(1);
   // HTTPS google.com referral  to HTTP example.com.
-  gws_observer_->set_referrer(content::Referrer(
+  embedder_interface_->set_referrer(content::Referrer(
       GURL("https://wWw.GoOGlE.cOm/webhp"), blink::WebReferrerPolicyOrigin));
   NavigateAndCommit(GURL("https://www.example.com"));
 
@@ -185,7 +190,7 @@ TEST_F(PageLoadMetricsObserverTest, ReferralsFromGWSOrigin) {
   timing.navigation_start = base::Time::FromDoubleT(1);
   timing.first_text_paint = base::TimeDelta::FromMilliseconds(1);
   // HTTPS google.com referral  to HTTP example.com.
-  gws_observer_->set_referrer(content::Referrer(
+  embedder_interface_->set_referrer(content::Referrer(
       GURL("https://www.google.com"), blink::WebReferrerPolicyOrigin));
   NavigateAndCommit(GURL("https://www.example.com"));
 
@@ -197,7 +202,7 @@ TEST_F(PageLoadMetricsObserverTest, ReferralsFromGWSOrigin) {
   timing2.navigation_start = base::Time::FromDoubleT(10);
   timing2.first_text_paint = base::TimeDelta::FromMilliseconds(100);
   // HTTPS google.com referral  to HTTP example.com.
-  gws_observer_->set_referrer(content::Referrer(
+  embedder_interface_->set_referrer(content::Referrer(
       GURL("https://www.google.co.in"), blink::WebReferrerPolicyOrigin));
   NavigateAndCommit(GURL("https://www.example2.com"));
 
@@ -219,9 +224,9 @@ TEST_F(PageLoadMetricsObserverTest, ReferralNotFromGWS) {
   page_load_metrics::PageLoadTiming timing;
   timing.navigation_start = base::Time::FromDoubleT(1);
   timing.first_text_paint = base::TimeDelta::FromMilliseconds(1);
-  NavigateAndCommit(GURL("https://www.example.com"));
-  gws_observer_->set_referrer(content::Referrer(
+  embedder_interface_->set_referrer(content::Referrer(
       GURL("https://www.anothersite.com"), blink::WebReferrerPolicyDefault));
+  NavigateAndCommit(GURL("https://www.example.com"));
 
   observer_->OnMessageReceived(
       PageLoadMetricsMsg_TimingUpdated(observer_->routing_id(), timing),

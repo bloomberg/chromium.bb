@@ -41,29 +41,22 @@ bool IsGoogleCaptcha(const GURL& url) {
       && base::StartsWith(url.path(), "/sorry", base::CompareCase::SENSITIVE);
 }
 
-GoogleCaptchaObserver::GoogleCaptchaObserver(
-    page_load_metrics::PageLoadMetricsObservable* metrics)
-    : saw_solution_(false), metrics_(metrics) {}
+GoogleCaptchaObserver::GoogleCaptchaObserver() : saw_solution_(false) {}
 
 void GoogleCaptchaObserver::OnCommit(
     content::NavigationHandle* navigation_handle) {
-  if (IsGoogleCaptcha(navigation_handle->GetURL()))
+  if (!navigation_handle->IsSamePage()
+      && IsGoogleCaptcha(navigation_handle->GetURL())) {
     RecordGoogleCaptchaEvent(GOOGLE_CAPTCHA_SHOWN);
-  if (saw_solution_) {
-    RecordGoogleCaptchaEvent(GOOGLE_CAPTCHA_SOLVED);
-    saw_solution_ = false;
   }
 }
 
 void GoogleCaptchaObserver::OnRedirect(
     content::NavigationHandle* navigation_handle) {
-  if (IsGoogleCaptcha(navigation_handle->GetReferrer().url))
+  if (IsGoogleCaptcha(navigation_handle->GetReferrer().url) && !saw_solution_) {
+    RecordGoogleCaptchaEvent(GOOGLE_CAPTCHA_SOLVED);
     saw_solution_ = true;
-}
-
-void GoogleCaptchaObserver::OnPageLoadMetricsGoingAway() {
-  metrics_->RemoveObserver(this);
-  delete this;
+  }
 }
 
 }  // namespace google_captcha_observer

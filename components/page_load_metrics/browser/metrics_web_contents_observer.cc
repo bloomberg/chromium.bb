@@ -109,18 +109,26 @@ uint64_t RapporHistogramBucketIndex(const base::TimeDelta& time) {
 PageLoadTracker::PageLoadTracker(
     bool in_foreground,
     PageLoadMetricsEmbedderInterface* embedder_interface,
-    content::NavigationHandle* navigation_handle,
-    base::ObserverList<PageLoadMetricsObserver, true>* observers)
-    : has_commit_(false),
+    content::NavigationHandle* navigation_handle)
+    : renderer_tracked_(false),
+      has_commit_(false),
       navigation_start_(navigation_handle->NavigationStart()),
       started_in_foreground_(in_foreground),
-      embedder_interface_(embedder_interface),
-      observers_(observers) {}
+      embedder_interface_(embedder_interface) {
+  embedder_interface_->RegisterObservers(this);
+  for (const auto& observer : observers_) {
+    observer->OnStart(navigation_handle);
+  }
+}
 
 PageLoadTracker::~PageLoadTracker() {
   if (has_commit_) {
     RecordTimingHistograms();
     RecordRappor();
+  }
+  PageLoadExtraInfo info = GetPageLoadMetricsInfo();
+  for (const auto& observer : observers_) {
+    observer->OnComplete(timing_, info);
   }
 }
 
@@ -143,15 +151,18 @@ void PageLoadTracker::Commit(content::NavigationHandle* navigation_handle) {
   // We log the event that this load started. Because we don't know if a load is
   // relevant or if it will commit before now, we have to log this event at
   // commit time.
-  RecordCommittedEvent(COMMITTED_LOAD_STARTED, !started_in_foreground_);
+  if (renderer_tracked())
+    RecordCommittedEvent(RELEVANT_LOAD_STARTED, !started_in_foreground_);
 
-  FOR_EACH_OBSERVER(PageLoadMetricsObserver, *observers_,
-                    OnCommit(navigation_handle));
+  for (const auto& observer : observers_) {
+    observer->OnCommit(navigation_handle);
+  }
 }
 
 void PageLoadTracker::Redirect(content::NavigationHandle* navigation_handle) {
-  FOR_EACH_OBSERVER(PageLoadMetricsObserver, *observers_,
-                    OnRedirect(navigation_handle));
+  for (const auto& observer : observers_) {
+    observer->OnRedirect(navigation_handle);
+  }
 }
 
 bool PageLoadTracker::UpdateTiming(const PageLoadTiming& new_timing) {
@@ -173,6 +184,15 @@ bool PageLoadTracker::HasBackgrounded() {
   return !started_in_foreground_ || !background_time_.is_null();
 }
 
+void PageLoadTracker::set_renderer_tracked(bool renderer_tracked) {
+  renderer_tracked_ = renderer_tracked;
+}
+
+void PageLoadTracker::AddObserver(
+    scoped_ptr<PageLoadMetricsObserver> observer) {
+  observers_.push_back(std::move(observer));
+}
+
 PageLoadExtraInfo PageLoadTracker::GetPageLoadMetricsInfo() {
   base::TimeDelta first_background_time;
   base::TimeDelta first_foreground_time;
@@ -181,10 +201,10 @@ PageLoadExtraInfo PageLoadTracker::GetPageLoadMetricsInfo() {
   if (!foreground_time_.is_null() && !started_in_foreground_)
     first_foreground_time = foreground_time_ - navigation_start_;
   return PageLoadExtraInfo(first_background_time, first_foreground_time,
-                           started_in_foreground_);
+                           started_in_foreground_, has_commit_);
 }
 
-const GURL& PageLoadTracker::GetCommittedURL() {
+const GURL& PageLoadTracker::committed_url() {
   DCHECK(has_commit_);
   return url_;
 }
@@ -211,14 +231,13 @@ base::TimeDelta PageLoadTracker::GetBackgroundDelta() {
 
 void PageLoadTracker::RecordTimingHistograms() {
   DCHECK(has_commit_);
+  if (!renderer_tracked())
+    return;
+
   if (timing_.IsEmpty()) {
     RecordInternalError(ERR_NO_IPCS_RECEIVED);
     return;
   }
-
-  PageLoadExtraInfo info = GetPageLoadMetricsInfo();
-  FOR_EACH_OBSERVER(PageLoadMetricsObserver, *observers_,
-                    OnComplete(timing_, info));
 
   base::TimeDelta background_delta = GetBackgroundDelta();
 
@@ -239,16 +258,16 @@ void PageLoadTracker::RecordTimingHistograms() {
     }
   }
   if (timing_.first_layout.is_zero()) {
-    RecordCommittedEvent(COMMITTED_LOAD_FAILED_BEFORE_FIRST_LAYOUT,
+    RecordCommittedEvent(RELEVANT_LOAD_FAILED_BEFORE_FIRST_LAYOUT,
                          HasBackgrounded());
   } else {
     if (timing_.first_layout < background_delta) {
       PAGE_LOAD_HISTOGRAM(kHistogramFirstLayout, timing_.first_layout);
-      RecordCommittedEvent(COMMITTED_LOAD_SUCCESSFUL_FIRST_LAYOUT, false);
+      RecordCommittedEvent(RELEVANT_LOAD_SUCCESSFUL_FIRST_LAYOUT, false);
     } else {
       PAGE_LOAD_HISTOGRAM(kBackgroundHistogramFirstLayout,
                           timing_.first_layout);
-      RecordCommittedEvent(COMMITTED_LOAD_SUCCESSFUL_FIRST_LAYOUT, true);
+      RecordCommittedEvent(RELEVANT_LOAD_SUCCESSFUL_FIRST_LAYOUT, true);
     }
   }
   if (!timing_.first_paint.is_zero()) {
@@ -317,19 +336,19 @@ void PageLoadTracker::RecordProvisionalEvent(ProvisionalLoadEvent event) {
 // RecordCommittedEvent needs a backgrounded input because we need to special
 // case a few events that need either precise timing measurements, or different
 // logic than simply "Did I background before logging this event?"
-void PageLoadTracker::RecordCommittedEvent(CommittedLoadEvent event,
+void PageLoadTracker::RecordCommittedEvent(CommittedRelevantLoadEvent event,
                                            bool backgrounded) {
   if (backgrounded) {
     UMA_HISTOGRAM_ENUMERATION(kBackgroundCommittedEvents, event,
-                              COMMITTED_LOAD_LAST_ENTRY);
+                              RELEVANT_LOAD_LAST_ENTRY);
   } else {
     UMA_HISTOGRAM_ENUMERATION(kCommittedEvents, event,
-                              COMMITTED_LOAD_LAST_ENTRY);
+                              RELEVANT_LOAD_LAST_ENTRY);
   }
 }
 
 void PageLoadTracker::RecordRappor() {
-  DCHECK(!GetCommittedURL().is_empty());
+  DCHECK(!committed_url().is_empty());
   rappor::RapporService* rappor_service =
       embedder_interface_->GetRapporService();
   if (!rappor_service)
@@ -340,8 +359,8 @@ void PageLoadTracker::RecordRappor() {
       first_contentful_paint < GetBackgroundDelta()) {
     scoped_ptr<rappor::Sample> sample =
         rappor_service->CreateSample(rappor::UMA_RAPPOR_TYPE);
-    sample->SetStringField("Domain", rappor::GetDomainAndRegistrySampleFromGURL(
-                                         GetCommittedURL()));
+    sample->SetStringField(
+        "Domain", rappor::GetDomainAndRegistrySampleFromGURL(committed_url()));
     uint64_t bucket_index = RapporHistogramBucketIndex(first_contentful_paint);
     sample->SetFlagsField("Bucket", uint64_t(1) << bucket_index,
                           kNumRapporHistogramBuckets);
@@ -375,23 +394,7 @@ MetricsWebContentsObserver* MetricsWebContentsObserver::CreateForWebContents(
   return metrics;
 }
 
-MetricsWebContentsObserver::~MetricsWebContentsObserver() {
-  // Reset PageLoadTrackers so observers get final notifications.
-  committed_load_.reset();
-  provisional_loads_.clear();
-  FOR_EACH_OBSERVER(PageLoadMetricsObserver, observers_,
-                    OnPageLoadMetricsGoingAway());
-}
-
-void MetricsWebContentsObserver::AddObserver(
-    PageLoadMetricsObserver* observer) {
-  observers_.AddObserver(observer);
-}
-
-void MetricsWebContentsObserver::RemoveObserver(
-    PageLoadMetricsObserver* observer) {
-  observers_.RemoveObserver(observer);
-}
+MetricsWebContentsObserver::~MetricsWebContentsObserver() {}
 
 bool MetricsWebContentsObserver::OnMessageReceived(
     const IPC::Message& message,
@@ -420,9 +423,9 @@ void MetricsWebContentsObserver::DidStartNavigation(
   // the MetricsWebContentsObserver owns them both list and they are torn down
   // after the PageLoadTracker.
   provisional_loads_.insert(std::make_pair(
-      navigation_handle, make_scoped_ptr(new PageLoadTracker(
-                             in_foreground_, embedder_interface_.get(),
-                             navigation_handle, &observers_))));
+      navigation_handle,
+      make_scoped_ptr(new PageLoadTracker(
+          in_foreground_, embedder_interface_.get(), navigation_handle))));
 }
 
 void MetricsWebContentsObserver::DidFinishNavigation(
@@ -456,18 +459,15 @@ void MetricsWebContentsObserver::DidFinishNavigation(
   if (navigation_handle->IsSamePage())
     return;
 
-  // Eagerly log the previous UMA even if we don't care about the current
-  // navigation.
-  committed_load_.reset();
+  committed_load_ = finished_nav.Pass();
 
   const GURL& browser_url = web_contents()->GetLastCommittedURL();
   const std::string& mime_type = web_contents()->GetContentsMimeType();
   DCHECK(!browser_url.is_empty());
   DCHECK(!mime_type.empty());
-  if (!IsRelevantNavigation(navigation_handle, browser_url, mime_type))
-    return;
+  committed_load_->set_renderer_tracked(
+      IsRelevantNavigation(navigation_handle, browser_url, mime_type));
 
-  committed_load_ = finished_nav.Pass();
   committed_load_->Commit(navigation_handle);
 }
 
@@ -511,8 +511,8 @@ void MetricsWebContentsObserver::OnTimingUpdated(
     content::RenderFrameHost* render_frame_host,
     const PageLoadTiming& timing) {
   bool error = false;
-  if (!committed_load_) {
-    RecordInternalError(ERR_IPC_WITH_NO_COMMITTED_LOAD);
+  if (!committed_load_ || !committed_load_->renderer_tracked()) {
+    RecordInternalError(ERR_IPC_WITH_NO_RELEVANT_LOAD);
     error = true;
   }
 

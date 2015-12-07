@@ -11,9 +11,8 @@
 
 namespace chrome {
 
-StaleWhileRevalidateMetricsObserver::StaleWhileRevalidateMetricsObserver(
-    page_load_metrics::PageLoadMetricsObservable* metrics)
-    : is_interesting_domain_(false), metrics_(metrics) {}
+StaleWhileRevalidateMetricsObserver::StaleWhileRevalidateMetricsObserver()
+    : is_interesting_domain_(false) {}
 
 void StaleWhileRevalidateMetricsObserver::OnCommit(
     content::NavigationHandle* navigation_handle) {
@@ -45,11 +44,6 @@ void StaleWhileRevalidateMetricsObserver::OnComplete(
         "NavigationToFirstTextPaint",
         timing.first_text_paint);
   }
-}
-
-void StaleWhileRevalidateMetricsObserver::OnPageLoadMetricsGoingAway() {
-  metrics_->RemoveObserver(this);
-  delete this;
 }
 
 }  // namespace chrome

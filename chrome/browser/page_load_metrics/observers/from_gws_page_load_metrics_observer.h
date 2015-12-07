@@ -11,14 +11,12 @@
 class FromGWSPageLoadMetricsObserver
     : public page_load_metrics::PageLoadMetricsObserver {
  public:
-  explicit FromGWSPageLoadMetricsObserver(
-      page_load_metrics::PageLoadMetricsObservable* metrics);
+  FromGWSPageLoadMetricsObserver();
   // page_load_metrics::PageLoadMetricsObserver implementation:
   void OnCommit(content::NavigationHandle* navigation_handle) override;
   void OnComplete(
       const page_load_metrics::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& extra_info) override;
-  void OnPageLoadMetricsGoingAway() override;
 
  protected:
   // Called in tests.
@@ -27,7 +25,6 @@ class FromGWSPageLoadMetricsObserver
 
  private:
   bool navigation_from_gws_;
-  page_load_metrics::PageLoadMetricsObservable* const metrics_;
 
   DISALLOW_COPY_AND_ASSIGN(FromGWSPageLoadMetricsObserver);
 };

@@ -57,9 +57,8 @@ bool ShouldLogEvent(const base::TimeDelta& event,
 
 }  // namespace
 
-FromGWSPageLoadMetricsObserver::FromGWSPageLoadMetricsObserver(
-    page_load_metrics::PageLoadMetricsObservable* metrics)
-    : navigation_from_gws_(false), metrics_(metrics) {}
+FromGWSPageLoadMetricsObserver::FromGWSPageLoadMetricsObserver()
+    : navigation_from_gws_(false) {}
 
 void FromGWSPageLoadMetricsObserver::OnCommit(
     content::NavigationHandle* navigation_handle) {
@@ -114,11 +113,6 @@ void FromGWSPageLoadMetricsObserver::OnComplete(
         "PageLoad.Clients.FromGWS.Timing2.NavigationToFirstContentfulPaint",
         first_contentful_paint);
   }
-}
-
-void FromGWSPageLoadMetricsObserver::OnPageLoadMetricsGoingAway() {
-  metrics_->RemoveObserver(this);
-  delete this;
 }
 
 void FromGWSPageLoadMetricsObserver::SetCommittedURLAndReferrer(
