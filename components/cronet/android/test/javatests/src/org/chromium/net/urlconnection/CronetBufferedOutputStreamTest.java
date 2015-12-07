@@ -12,8 +12,6 @@ import org.chromium.net.CronetTestBase;
 import org.chromium.net.CronetTestFramework;
 import org.chromium.net.NativeTestServer;
 
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.ProtocolException;
@@ -23,10 +21,6 @@ import java.net.URL;
  * Tests the CronetBufferedOutputStream implementation.
  */
 public class CronetBufferedOutputStreamTest extends CronetTestBase {
-    private static final String UPLOAD_DATA_STRING = "Nifty upload data!";
-    private static final byte[] UPLOAD_DATA = UPLOAD_DATA_STRING.getBytes();
-    private static final int REPEAT_COUNT = 100000;
-
     @Override
     protected void setUp() throws Exception {
         super.setUp();
@@ -77,11 +71,11 @@ public class CronetBufferedOutputStreamTest extends CronetTestBase {
         connection.setDoOutput(true);
         connection.setRequestMethod("POST");
         OutputStream out = connection.getOutputStream();
-        out.write(UPLOAD_DATA);
+        out.write(TestUtil.UPLOAD_DATA);
         connection.connect();
         try {
             // Attemp to write some more.
-            out.write(UPLOAD_DATA);
+            out.write(TestUtil.UPLOAD_DATA);
             fail();
         } catch (IllegalStateException e) {
             assertEquals("Cannot write after being connected.", e.getMessage());
@@ -100,7 +94,7 @@ public class CronetBufferedOutputStreamTest extends CronetTestBase {
         OutputStream out = connection.getOutputStream();
         assertEquals(200, connection.getResponseCode());
         try {
-            out.write(UPLOAD_DATA);
+            out.write(TestUtil.UPLOAD_DATA);
             fail();
         } catch (Exception e) {
             // Default implementation gives an IOException and says that the
@@ -118,7 +112,7 @@ public class CronetBufferedOutputStreamTest extends CronetTestBase {
                 (HttpURLConnection) url.openConnection();
         connection.setDoOutput(true);
         connection.setRequestMethod("POST");
-        byte[] largeData = getLargeData();
+        byte[] largeData = TestUtil.getLargeData();
         connection.setRequestProperty("Content-Length",
                 Integer.toString(largeData.length));
         OutputStream out = connection.getOutputStream();
@@ -137,7 +131,7 @@ public class CronetBufferedOutputStreamTest extends CronetTestBase {
         }
         assertEquals(200, connection.getResponseCode());
         assertEquals("OK", connection.getResponseMessage());
-        checkLargeData(getResponseAsString(connection));
+        TestUtil.checkLargeData(TestUtil.getResponseAsString(connection));
         connection.disconnect();
     }
 
@@ -150,14 +144,14 @@ public class CronetBufferedOutputStreamTest extends CronetTestBase {
                 (HttpURLConnection) url.openConnection();
         connection.setDoOutput(true);
         connection.setRequestMethod("POST");
-        byte[] largeData = getLargeData();
+        byte[] largeData = TestUtil.getLargeData();
         connection.setRequestProperty("Content-Length",
                 Integer.toString(largeData.length));
         OutputStream out = connection.getOutputStream();
         out.write(largeData);
         assertEquals(200, connection.getResponseCode());
         assertEquals("OK", connection.getResponseMessage());
-        checkLargeData(getResponseAsString(connection));
+        TestUtil.checkLargeData(TestUtil.getResponseAsString(connection));
         connection.disconnect();
     }
 
@@ -170,7 +164,7 @@ public class CronetBufferedOutputStreamTest extends CronetTestBase {
                 (HttpURLConnection) url.openConnection();
         connection.setDoOutput(true);
         connection.setRequestMethod("POST");
-        byte[] largeData = getLargeData();
+        byte[] largeData = TestUtil.getLargeData();
         connection.setRequestProperty("Content-Length",
                 Integer.toString(largeData.length));
         OutputStream out = connection.getOutputStream();
@@ -179,7 +173,7 @@ public class CronetBufferedOutputStreamTest extends CronetTestBase {
         }
         assertEquals(200, connection.getResponseCode());
         assertEquals("OK", connection.getResponseMessage());
-        checkLargeData(getResponseAsString(connection));
+        TestUtil.checkLargeData(TestUtil.getResponseAsString(connection));
         connection.disconnect();
     }
 
@@ -195,7 +189,7 @@ public class CronetBufferedOutputStreamTest extends CronetTestBase {
         connection.setRequestProperty("Content-Length", "0");
         assertEquals(200, connection.getResponseCode());
         assertEquals("OK", connection.getResponseMessage());
-        assertEquals("", getResponseAsString(connection));
+        assertEquals("", TestUtil.getResponseAsString(connection));
         connection.disconnect();
     }
 
@@ -211,7 +205,7 @@ public class CronetBufferedOutputStreamTest extends CronetTestBase {
         connection.setRequestMethod("POST");
         assertEquals(200, connection.getResponseCode());
         assertEquals("OK", connection.getResponseMessage());
-        assertEquals("0", getResponseAsString(connection));
+        assertEquals("0", TestUtil.getResponseAsString(connection));
         connection.disconnect();
 
         // Make sure the server echoes back empty body for both implementation.
@@ -222,7 +216,7 @@ public class CronetBufferedOutputStreamTest extends CronetTestBase {
         connection2.setRequestMethod("POST");
         assertEquals(200, connection2.getResponseCode());
         assertEquals("OK", connection2.getResponseMessage());
-        assertEquals("", getResponseAsString(connection2));
+        assertEquals("", TestUtil.getResponseAsString(connection2));
         connection2.disconnect();
     }
 
@@ -236,10 +230,10 @@ public class CronetBufferedOutputStreamTest extends CronetTestBase {
         connection.setDoOutput(true);
         connection.setRequestMethod("POST");
         OutputStream out = connection.getOutputStream();
-        out.write(UPLOAD_DATA);
+        out.write(TestUtil.UPLOAD_DATA);
         assertEquals(200, connection.getResponseCode());
         assertEquals("OK", connection.getResponseMessage());
-        assertEquals(UPLOAD_DATA_STRING, getResponseAsString(connection));
+        assertEquals(TestUtil.UPLOAD_DATA_STRING, TestUtil.getResponseAsString(connection));
         connection.disconnect();
     }
 
@@ -252,7 +246,7 @@ public class CronetBufferedOutputStreamTest extends CronetTestBase {
                 (HttpURLConnection) url.openConnection();
         connection.setDoOutput(true);
         connection.setRequestMethod("POST");
-        byte[] largeData = getLargeData();
+        byte[] largeData = TestUtil.getLargeData();
         OutputStream out = connection.getOutputStream();
         int totalBytesWritten = 0;
         // Number of bytes to write each time. It is doubled each time
@@ -269,7 +263,7 @@ public class CronetBufferedOutputStreamTest extends CronetTestBase {
         }
         assertEquals(200, connection.getResponseCode());
         assertEquals("OK", connection.getResponseMessage());
-        checkLargeData(getResponseAsString(connection));
+        TestUtil.checkLargeData(TestUtil.getResponseAsString(connection));
         connection.disconnect();
     }
 
@@ -283,11 +277,11 @@ public class CronetBufferedOutputStreamTest extends CronetTestBase {
         connection.setDoOutput(true);
         connection.setRequestMethod("POST");
         OutputStream out = connection.getOutputStream();
-        byte[] largeData = getLargeData();
+        byte[] largeData = TestUtil.getLargeData();
         out.write(largeData);
         assertEquals(200, connection.getResponseCode());
         assertEquals("OK", connection.getResponseMessage());
-        checkLargeData(getResponseAsString(connection));
+        TestUtil.checkLargeData(TestUtil.getResponseAsString(connection));
         connection.disconnect();
     }
 
@@ -301,13 +295,13 @@ public class CronetBufferedOutputStreamTest extends CronetTestBase {
         connection.setDoOutput(true);
         connection.setRequestMethod("POST");
         OutputStream out = connection.getOutputStream();
-        byte[] largeData = getLargeData();
+        byte[] largeData = TestUtil.getLargeData();
         for (int i = 0; i < largeData.length; i++) {
             out.write(largeData[i]);
         }
         assertEquals(200, connection.getResponseCode());
         assertEquals("OK", connection.getResponseMessage());
-        checkLargeData(getResponseAsString(connection));
+        TestUtil.checkLargeData(TestUtil.getResponseAsString(connection));
         connection.disconnect();
     }
 
@@ -322,10 +316,10 @@ public class CronetBufferedOutputStreamTest extends CronetTestBase {
         connection.setDoOutput(true);
         connection.setRequestMethod("POST");
         // Set a content length that's 1 byte more.
-        connection.setRequestProperty("Content-Length",
-                Integer.toString(UPLOAD_DATA.length + 1));
+        connection.setRequestProperty(
+                "Content-Length", Integer.toString(TestUtil.UPLOAD_DATA.length + 1));
         OutputStream out = connection.getOutputStream();
-        out.write(UPLOAD_DATA);
+        out.write(TestUtil.UPLOAD_DATA);
         try {
             connection.getResponseCode();
             fail();
@@ -349,20 +343,21 @@ public class CronetBufferedOutputStreamTest extends CronetTestBase {
         connection.setDoOutput(true);
         connection.setRequestMethod("POST");
         // Use a content length that is 1 byte shorter than actual data.
-        connection.setRequestProperty("Content-Length",
-                Integer.toString(UPLOAD_DATA.length - 1));
+        connection.setRequestProperty(
+                "Content-Length", Integer.toString(TestUtil.UPLOAD_DATA.length - 1));
         OutputStream out = connection.getOutputStream();
         // Write a few bytes first.
-        out.write(UPLOAD_DATA, 0, 3);
+        out.write(TestUtil.UPLOAD_DATA, 0, 3);
         try {
             // Write remaining bytes.
-            out.write(UPLOAD_DATA, 3, UPLOAD_DATA.length - 3);
+            out.write(TestUtil.UPLOAD_DATA, 3, TestUtil.UPLOAD_DATA.length - 3);
             // On Lollipop, default implementation only triggers the error when reading response.
             connection.getInputStream();
             fail();
         } catch (ProtocolException e) {
-            assertEquals("exceeded content-length limit of "
-                    + (UPLOAD_DATA.length - 1) + " bytes", e.getMessage());
+            assertEquals("exceeded content-length limit of " + (TestUtil.UPLOAD_DATA.length - 1)
+                            + " bytes",
+                    e.getMessage());
         }
     }
 
@@ -380,19 +375,20 @@ public class CronetBufferedOutputStreamTest extends CronetTestBase {
         connection.setDoOutput(true);
         connection.setRequestMethod("POST");
         // Use a content length that is 1 byte shorter than actual data.
-        connection.setRequestProperty("Content-Length",
-                Integer.toString(UPLOAD_DATA.length - 1));
+        connection.setRequestProperty(
+                "Content-Length", Integer.toString(TestUtil.UPLOAD_DATA.length - 1));
         OutputStream out = connection.getOutputStream();
         try {
-            for (int i = 0; i < UPLOAD_DATA.length; i++) {
-                out.write(UPLOAD_DATA[i]);
+            for (int i = 0; i < TestUtil.UPLOAD_DATA.length; i++) {
+                out.write(TestUtil.UPLOAD_DATA[i]);
             }
             // On Lollipop, default implementation only triggers the error when reading response.
             connection.getInputStream();
             fail();
         } catch (java.net.ProtocolException e) {
-            assertEquals("exceeded content-length limit of "
-                    + (UPLOAD_DATA.length - 1) + " bytes", e.getMessage());
+            assertEquals("exceeded content-length limit of " + (TestUtil.UPLOAD_DATA.length - 1)
+                            + " bytes",
+                    e.getMessage());
         }
     }
 
@@ -411,11 +407,11 @@ public class CronetBufferedOutputStreamTest extends CronetTestBase {
                 (HttpURLConnection) url.openConnection();
         connection.setDoOutput(true);
         connection.setRequestMethod("POST");
-        connection.setRequestProperty("Content-Length",
-                Integer.toString(UPLOAD_DATA.length));
+        connection.setRequestProperty(
+                "Content-Length", Integer.toString(TestUtil.UPLOAD_DATA.length));
         OutputStream out = connection.getOutputStream();
-        out.write(UPLOAD_DATA);
-        assertEquals(UPLOAD_DATA_STRING, getResponseAsString(connection));
+        out.write(TestUtil.UPLOAD_DATA);
+        assertEquals(TestUtil.UPLOAD_DATA_STRING, TestUtil.getResponseAsString(connection));
         connection.disconnect();
     }
 
@@ -432,48 +428,8 @@ public class CronetBufferedOutputStreamTest extends CronetTestBase {
         connection.setDoOutput(true);
         connection.setRequestMethod("POST");
         OutputStream out = connection.getOutputStream();
-        out.write(UPLOAD_DATA);
-        assertEquals(UPLOAD_DATA_STRING, getResponseAsString(connection));
+        out.write(TestUtil.UPLOAD_DATA);
+        assertEquals(TestUtil.UPLOAD_DATA_STRING, TestUtil.getResponseAsString(connection));
         connection.disconnect();
-    }
-
-    /**
-     * Helper method to extract response body as a string for testing.
-     */
-    private String getResponseAsString(HttpURLConnection connection)
-            throws Exception {
-        InputStream in = connection.getInputStream();
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        int b;
-        while ((b = in.read()) != -1) {
-            out.write(b);
-        }
-        return out.toString();
-    }
-
-    /**
-     * Produces a byte array that contains {@code REPEAT_COUNT} of
-     * {@code UPLOAD_DATA_STRING}.
-     */
-    private byte[] getLargeData() {
-        byte[] largeData = new byte[REPEAT_COUNT * UPLOAD_DATA.length];
-        for (int i = 0; i < REPEAT_COUNT; i++) {
-            for (int j = 0; j < UPLOAD_DATA.length; j++) {
-                largeData[i * UPLOAD_DATA.length + j] = UPLOAD_DATA[j];
-            }
-        }
-        return largeData;
-    }
-
-    /**
-     * Helper function to check whether {@code data} is a concatenation of
-     * {@code REPEAT_COUNT} {@code UPLOAD_DATA_STRING} strings.
-     */
-    private void checkLargeData(String data) {
-        for (int i = 0; i < REPEAT_COUNT; i++) {
-            assertEquals(UPLOAD_DATA_STRING, data.substring(
-                    UPLOAD_DATA_STRING.length() * i,
-                    UPLOAD_DATA_STRING.length() * (i + 1)));
-        }
     }
 }

@@ -73,13 +73,7 @@ public class CronetHttpURLConnection extends HttpURLConnection {
     @Override
     public void disconnect() {
         // Disconnect before connection is made should have no effect.
-        if (connected && mInputStream != null) {
-            try {
-                mInputStream.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            mInputStream = null;
+        if (connected) {
             mRequest.cancel();
         }
     }
@@ -458,13 +452,13 @@ public class CronetHttpURLConnection extends HttpURLConnection {
             }
             mResponseInfo = info;
             mRequest.cancel();
-            setResponseDataCompleted();
+            setResponseDataCompleted(null);
         }
 
         @Override
         public void onSucceeded(UrlRequest request, UrlResponseInfo info) {
             mResponseInfo = info;
-            setResponseDataCompleted();
+            setResponseDataCompleted(null);
         }
 
         @Override
@@ -476,16 +470,24 @@ public class CronetHttpURLConnection extends HttpURLConnection {
             }
             mResponseInfo = info;
             mException = exception;
-            setResponseDataCompleted();
+            setResponseDataCompleted(mException);
+        }
+
+        @Override
+        public void onCanceled(UrlRequest request, UrlResponseInfo info) {
+            mResponseInfo = info;
+            setResponseDataCompleted(new IOException("stream closed"));
         }
 
         /**
          * Notifies {@link #mInputStream} that transferring of response data has
          * completed.
+         * @param exception if not {@code null}, it is the exception to report when
+         *            caller tries to read more data.
          */
-        private void setResponseDataCompleted() {
+        private void setResponseDataCompleted(IOException exception) {
             if (mInputStream != null) {
-                mInputStream.setResponseDataCompleted();
+                mInputStream.setResponseDataCompleted(exception);
             }
             mMessageLoop.quit();
         }

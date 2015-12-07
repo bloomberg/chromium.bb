@@ -17,6 +17,7 @@ class CronetInputStream extends InputStream {
     // Indicates whether listener's onSucceeded or onFailed callback is invoked.
     private boolean mResponseDataCompleted;
     private ByteBuffer mBuffer;
+    private IOException mException;
 
     private static final int READ_BUFFER_SIZE = 32 * 1024;
 
@@ -58,15 +59,24 @@ class CronetInputStream extends InputStream {
     /**
      * Called by {@link CronetHttpURLConnection} to notify that the entire
      * response body has been read.
+     * @param exception if not {@code null}, it is the exception to throw when caller
+     *            tries to read more data.
      */
-    void setResponseDataCompleted() {
+    void setResponseDataCompleted(IOException exception) {
+        mException = exception;
         mResponseDataCompleted = true;
         // Nothing else to read, so can free the buffer.
         mBuffer = null;
     }
 
     private void getMoreDataIfNeeded() throws IOException {
-        if (!mResponseDataCompleted && !hasUnreadData()) {
+        if (mResponseDataCompleted) {
+            if (mException != null) {
+                throw mException;
+            }
+            return;
+        }
+        if (!hasUnreadData()) {
             // Allocate read buffer if needed.
             if (mBuffer == null) {
                 mBuffer = ByteBuffer.allocateDirect(READ_BUFFER_SIZE);
@@ -75,6 +85,9 @@ class CronetInputStream extends InputStream {
 
             // Requests more data from CronetHttpURLConnection.
             mHttpURLConnection.getMoreData(mBuffer);
+            if (mException != null) {
+                throw mException;
+            }
             if (mBuffer != null) {
                 mBuffer.flip();
             }

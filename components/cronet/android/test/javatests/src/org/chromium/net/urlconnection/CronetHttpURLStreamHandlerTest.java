@@ -11,8 +11,6 @@ import org.chromium.net.CronetTestBase;
 import org.chromium.net.CronetTestFramework;
 import org.chromium.net.NativeTestServer;
 
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
@@ -47,7 +45,7 @@ public class CronetHttpURLStreamHandlerTest extends CronetTestBase {
                 (HttpURLConnection) streamHandler.openConnection(url);
         assertEquals(200, connection.getResponseCode());
         assertEquals("OK", connection.getResponseMessage());
-        assertEquals("GET", getResponseAsString(connection));
+        assertEquals("GET", TestUtil.getResponseAsString(connection));
         connection.disconnect();
     }
 
@@ -90,20 +88,5 @@ public class CronetHttpURLStreamHandlerTest extends CronetTestBase {
         } catch (UnsupportedOperationException e) {
             // Expected.
         }
-    }
-
-    /**
-     * Helper method to extract response body as a string for testing.
-     */
-    // TODO(xunjieli): consider moving this helper method to a util class.
-    private String getResponseAsString(HttpURLConnection connection)
-            throws Exception {
-        InputStream in = connection.getInputStream();
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        int b;
-        while ((b = in.read()) != -1) {
-            out.write(b);
-        }
-        return out.toString();
     }
 }

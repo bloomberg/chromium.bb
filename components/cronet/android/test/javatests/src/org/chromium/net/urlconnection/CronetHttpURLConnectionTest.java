@@ -68,7 +68,7 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
                 (HttpURLConnection) url.openConnection();
         assertEquals(200, urlConnection.getResponseCode());
         assertEquals("OK", urlConnection.getResponseMessage());
-        assertEquals("GET", getResponseAsString(urlConnection));
+        assertEquals("GET", TestUtil.getResponseAsString(urlConnection));
         urlConnection.disconnect();
     }
 
@@ -85,7 +85,7 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
         out.write("dummy data".getBytes());
         assertEquals(200, connection.getResponseCode());
         assertEquals("OK", connection.getResponseMessage());
-        assertEquals("PUT", getResponseAsString(connection));
+        assertEquals("PUT", TestUtil.getResponseAsString(connection));
         connection.disconnect();
     }
 
@@ -112,7 +112,7 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
             out.write(data);
             assertEquals(200, connection.getResponseCode());
             assertEquals("OK", connection.getResponseMessage());
-            assertEquals(dataString, getResponseAsString(connection));
+            assertEquals(dataString, TestUtil.getResponseAsString(connection));
             connection.disconnect();
         }
     }
@@ -152,8 +152,7 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
         URL url = new URL(NativeTestServer.getFileURL("/success.txt"));
         HttpURLConnection urlConnection =
                 (HttpURLConnection) url.openConnection();
-        assertEquals("this is a text file\n",
-                getResponseAsString(urlConnection));
+        assertEquals("this is a text file\n", TestUtil.getResponseAsString(urlConnection));
         // After shutting down the server, the server should not be handling
         // new requests.
         NativeTestServer.shutdownNativeTestServer();
@@ -247,7 +246,7 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
         urlConnection.disconnect();
         assertEquals(200, urlConnection.getResponseCode());
         assertEquals("OK", urlConnection.getResponseMessage());
-        assertEquals("GET", getResponseAsString(urlConnection));
+        assertEquals("GET", TestUtil.getResponseAsString(urlConnection));
     }
 
     @SmallTest
@@ -285,7 +284,7 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
                 (HttpURLConnection) url.openConnection();
         assertEquals(200, urlConnection.getResponseCode());
         assertEquals("OK", urlConnection.getResponseMessage());
-        assertEquals("GET", getResponseAsString(urlConnection));
+        assertEquals("GET", TestUtil.getResponseAsString(urlConnection));
         // Disconnect multiple times should be fine.
         for (int i = 0; i < 10; i++) {
             urlConnection.disconnect();
@@ -316,7 +315,7 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
         // Check the request headers echoed back by the server.
         assertEquals(200, connection.getResponseCode());
         assertEquals("OK", connection.getResponseMessage());
-        String headers = getResponseAsString(connection);
+        String headers = TestUtil.getResponseAsString(connection);
         List<String> fooHeaderValues =
                 getRequestHeaderValues(headers, "foo-header");
         List<String> barHeaderValues =
@@ -388,7 +387,7 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
         // Check the request headers echoed back by the server.
         assertEquals(200, conn.getResponseCode());
         assertEquals("OK", conn.getResponseMessage());
-        String headers = getResponseAsString(conn);
+        String headers = TestUtil.getResponseAsString(conn);
         List<String> actualValues1 =
                 getRequestHeaderValues(headers, "same-capitalization");
         assertEquals(1, actualValues1.size());
@@ -419,7 +418,7 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
         // Check the request headers echoed back by the server.
         assertEquals(200, connection.getResponseCode());
         assertEquals("OK", connection.getResponseMessage());
-        String headers = getResponseAsString(connection);
+        String headers = TestUtil.getResponseAsString(connection);
         List<String> actualValues =
                 getRequestHeaderValues(headers, "Header-nAme");
         assertEquals(1, actualValues.size());
@@ -547,15 +546,17 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
 
     @SmallTest
     @Feature({"Cronet"})
-    @OnlyRunCronetHttpURLConnection
+    @CompareDefaultWithCronet
     public void testInputStreamReadOneByte() throws Exception {
-        String data = "MyBigFunkyData";
-        int dataLength = data.length();
-        int repeatCount = 100000;
-        MockUrlRequestJobFactory.setUp();
-        URL url = new URL(MockUrlRequestJobFactory.getMockUrlForData(data, repeatCount));
-        HttpURLConnection connection =
-                (HttpURLConnection) url.openConnection();
+        URL url = new URL(NativeTestServer.getEchoBodyURL());
+        final HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        // Make the server echo a large request body, so it exceeds the internal
+        // read buffer.
+        connection.setDoOutput(true);
+        connection.setRequestMethod("POST");
+        byte[] largeData = TestUtil.getLargeData();
+        connection.setFixedLengthStreamingMode(largeData.length);
+        connection.getOutputStream().write(largeData);
         InputStream in = connection.getInputStream();
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         int b;
@@ -565,13 +566,10 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
 
         // All data has been read. Try reading beyond what is available should give -1.
         assertEquals(-1, in.read());
-        String responseData = new String(out.toByteArray());
-        for (int i = 0; i < repeatCount; ++i) {
-            assertEquals(data, responseData.substring(dataLength * i,
-                    dataLength * (i + 1)));
-        }
         assertEquals(200, connection.getResponseCode());
         assertEquals("OK", connection.getResponseMessage());
+        String responseData = new String(out.toByteArray());
+        TestUtil.checkLargeData(responseData);
     }
 
     @SmallTest
@@ -691,6 +689,104 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
         urlConnection.disconnect();
     }
 
+    /**
+     * Makes sure that disconnect while reading from InputStream, the message
+     * loop does not block. Regression test for crbug.com/550605.
+     */
+    @SmallTest
+    @Feature({"Cronet"})
+    @CompareDefaultWithCronet
+    public void testDisconnectWhileReadingDoesnotBlock() throws Exception {
+        URL url = new URL(NativeTestServer.getEchoBodyURL());
+        final HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        // Make the server echo a large request body, so it exceeds the internal
+        // read buffer.
+        connection.setDoOutput(true);
+        connection.setRequestMethod("POST");
+        byte[] largeData = TestUtil.getLargeData();
+        connection.setFixedLengthStreamingMode(largeData.length);
+        OutputStream out = connection.getOutputStream();
+        out.write(largeData);
+
+        InputStream in = connection.getInputStream();
+        // Read one byte and disconnect.
+        assertTrue(in.read() != 1);
+        connection.disconnect();
+        // Continue reading, and make sure the message loop will not block.
+        try {
+            int b = 0;
+            while (b != -1) {
+                b = in.read();
+            }
+            // The response body is big, the connection should be disconnected
+            // before EOF can be received.
+            fail();
+        } catch (IOException e) {
+            // Expected.
+            assertEquals("stream closed", e.getMessage());
+        }
+        // Read once more, and make sure exception is thrown.
+        try {
+            in.read();
+            fail();
+        } catch (IOException e) {
+            // Expected.
+            assertEquals("stream closed", e.getMessage());
+        }
+    }
+
+    /**
+     * Makes sure that {@link UrlRequest.Callback#onFailed} exception is
+     * propagated when calling read on the input stream.
+     */
+    @SmallTest
+    @Feature({"Cronet"})
+    @CompareDefaultWithCronet
+    public void testServerHangsUp() throws Exception {
+        URL url = new URL(NativeTestServer.getEchoBodyURL());
+        final HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        // Make the server echo a large request body, so it exceeds the internal
+        // read buffer.
+        connection.setDoOutput(true);
+        connection.setRequestMethod("POST");
+        byte[] largeData = TestUtil.getLargeData();
+        connection.setFixedLengthStreamingMode(largeData.length);
+        OutputStream out = connection.getOutputStream();
+        out.write(largeData);
+
+        InputStream in = connection.getInputStream();
+        // Read one byte and shut down the server.
+        assertTrue(in.read() != 1);
+        NativeTestServer.shutdownNativeTestServer();
+        // Continue reading, and make sure the message loop will not block.
+        try {
+            int b = 0;
+            while (b != -1) {
+                b = in.read();
+            }
+            // Server closes the connection before EOF can be received.
+            fail();
+        } catch (IOException e) {
+            // Expected.
+            // Cronet gives a net::ERR_CONTENT_LENGTH_MISMATCH while the
+            // default implementation gives a java.net.ProtocolException with
+            // "unexpected end of stream" message.
+        }
+
+        // Read once more, and make sure exception is thrown.
+        try {
+            in.read();
+            fail();
+        } catch (IOException e) {
+            // Expected.
+            // Cronet gives a net::ERR_CONTENT_LENGTH_MISMATCH while the
+            // default implementation gives a java.net.ProtocolException with
+            // "unexpected end of stream" message.
+        }
+        // Spins up server to avoid crash when shutting it down in tearDown().
+        assertTrue(NativeTestServer.startNativeTestServer(getContext()));
+    }
+
     @SmallTest
     @Feature({"Cronet"})
     @CompareDefaultWithCronet
@@ -703,7 +799,7 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
         assertEquals("OK", connection.getResponseMessage());
         assertEquals(NativeTestServer.getFileURL("/success.txt"),
                 connection.getURL().toString());
-        assertEquals("this is a text file\n", getResponseAsString(connection));
+        assertEquals("this is a text file\n", TestUtil.getResponseAsString(connection));
         connection.disconnect();
     }
 
@@ -755,7 +851,7 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
         assertEquals("OK", connection.getResponseMessage());
         assertEquals(NativeTestServer.getFileURL("/success.txt"),
                 connection.getURL().toString());
-        assertEquals("this is a text file\n", getResponseAsString(connection));
+        assertEquals("this is a text file\n", TestUtil.getResponseAsString(connection));
         connection.disconnect();
     }
 
@@ -919,8 +1015,7 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
         connection.setUseCaches(cacheSetting == CacheSetting.USE_CACHE);
         if (outcome == ExpectedOutcome.SUCCESS) {
             assertEquals(200, connection.getResponseCode());
-            assertEquals("this is a cacheable file\n",
-                    getResponseAsString(connection));
+            assertEquals("this is a cacheable file\n", TestUtil.getResponseAsString(connection));
         } else {
             try {
                 connection.getResponseCode();
@@ -1000,20 +1095,6 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
         // there's an exception.
         InputStream errorStream = connection.getErrorStream();
         assertNull(errorStream);
-    }
-
-    /**
-     * Helper method to extract response body as a string for testing.
-     */
-    private String getResponseAsString(HttpURLConnection connection)
-            throws Exception {
-        InputStream in = connection.getInputStream();
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        int b;
-        while ((b = in.read()) != -1) {
-            out.write(b);
-        }
-        return out.toString();
     }
 
     /**
