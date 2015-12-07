@@ -1396,6 +1396,27 @@
 	This is emitted whenever a seat gains or loses the pointer,
 	keyboard or touch capabilities.  The argument is a capability
 	enum containing the complete set of capabilities this seat has.
+
+	When the pointer capability is added, a client may create a
+	wl_pointer object using the wl_seat.get_pointer request. This object
+	will receive pointer events until the capability is removed in the
+	future.
+
+	When the pointer capability is removed, a client should destroy the
+	wl_pointer objects associated with the seat where the capability was
+	removed, using the wl_pointer.release request. No further pointer
+	events will be received on these objects.
+
+	In some compositors, if a seat regains the pointer capability and a
+	client has a previously obtained wl_pointer object of version 4 or
+	less, that object may start sending pointer events again. This
+	behavior is considered a misinterpretation of the intended behavior
+	and must not be relied upon by the client. wl_pointer objects of
+	version 5 or later must not send events if created before the most
+	recent event notifying the client of an added pointer capability.
+
+	The above behavior also applies to wl_keyboard and wl_touch with the
+	keyboard and touch capabilities, respectively.
       </description>
       <arg name="capabilities" type="uint" enum="capability"/>
     </event>
@@ -1406,7 +1427,9 @@
 	for this seat.
 
 	This request only takes effect if the seat has the pointer
-	capability.
+	capability, or has had the pointer capability in the past.
+	It is a protocol violation to issue this request on a seat that has
+	never had the pointer capability.
       </description>
       <arg name="id" type="new_id" interface="wl_pointer"/>
     </request>
@@ -1417,7 +1440,9 @@
 	for this seat.
 
 	This request only takes effect if the seat has the keyboard
-	capability.
+	capability, or has had the keyboard capability in the past.
+	It is a protocol violation to issue this request on a seat that has
+	never had the keyboard capability.
       </description>
       <arg name="id" type="new_id" interface="wl_keyboard"/>
     </request>
@@ -1428,7 +1453,9 @@
 	for this seat.
 
 	This request only takes effect if the seat has the touch
-	capability.
+	capability, or has had the touch capability in the past.
+	It is a protocol violation to issue this request on a seat that has
+	never had the touch capability.
       </description>
       <arg name="id" type="new_id" interface="wl_touch"/>
     </request>
