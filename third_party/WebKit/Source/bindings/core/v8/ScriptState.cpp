@@ -102,6 +102,15 @@ ScriptValue ScriptState::getFromGlobalObject(const char* name)
     return ScriptValue(this, v8Value);
 }
 
+ScriptValue ScriptState::getFromExtrasExports(const char* name)
+{
+    v8::HandleScope handleScope(m_isolate);
+    v8::Local<v8::Value> v8Value;
+    if (!context()->GetExtrasBindingObject()->Get(context(), v8AtomicString(isolate(), name)).ToLocal(&v8Value))
+        return ScriptValue();
+    return ScriptValue(this, v8Value);
+}
+
 ExecutionContext* ScriptState::executionContext() const
 {
     v8::HandleScope scope(m_isolate);

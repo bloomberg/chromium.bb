@@ -761,5 +761,10 @@
   // Exports to Blink
   //
 
+  binding.AcquireReadableStreamReader = AcquireReadableStreamReader;
+  binding.IsReadableStream = IsReadableStream;
   binding.IsReadableStreamDisturbed = IsReadableStreamDisturbed;
+  binding.IsReadableStreamLocked = IsReadableStreamLocked;
+  binding.IsReadableStreamReader = IsReadableStreamReader;
+  binding.ReadFromReadableStreamReader = ReadFromReadableStreamReader;
 });

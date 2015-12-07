@@ -78,6 +78,12 @@ inline bool v8Call(v8::Maybe<T> maybe, T& outVariable, v8::TryCatch& tryCatch)
 }
 
 template <typename T>
+inline bool v8Call(v8::MaybeLocal<T> maybeLocal, v8::Local<T>& outVariable)
+{
+    return maybeLocal.ToLocal(&outVariable);
+}
+
+template <typename T>
 inline bool v8Call(v8::MaybeLocal<T> maybeLocal, v8::Local<T>& outVariable, v8::TryCatch& tryCatch)
 {
     bool success = maybeLocal.ToLocal(&outVariable);

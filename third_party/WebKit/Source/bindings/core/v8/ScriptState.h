@@ -113,6 +113,7 @@ public:
     bool evalEnabled() const;
     void setEvalEnabled(bool);
     ScriptValue getFromGlobalObject(const char* name);
+    ScriptValue getFromExtrasExports(const char* name);
 
 protected:
     ScriptState(v8::Local<v8::Context>, PassRefPtr<DOMWrapperWorld>);
