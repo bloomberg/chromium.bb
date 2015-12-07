@@ -42,7 +42,8 @@ void ShadowController::SetActiveWindow(mus::Window* window) {
     return;
 
   if (active_window_) {
-    GetShadow(active_window_)->SetStyle(Shadow::STYLE_INACTIVE);
+    if (GetShadow(active_window_))
+      GetShadow(active_window_)->SetStyle(Shadow::STYLE_INACTIVE);
     active_window_->RemoveObserver(this);
   }
   active_window_ = window;

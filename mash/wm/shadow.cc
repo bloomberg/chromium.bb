@@ -4,6 +4,7 @@
 
 #include "mash/wm/shadow.h"
 
+#include "mash/wm/property_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/layer.h"
@@ -48,10 +49,14 @@ int GetShadowApertureForStyle(wm::Shadow::Style style) {
 
 }  // namespace
 
-Shadow::Shadow() : style_(STYLE_ACTIVE), interior_inset_(0) {
+Shadow::Shadow() : style_(STYLE_ACTIVE), interior_inset_(0), window_(nullptr) {
 }
 
 Shadow::~Shadow() {
+  if (window_) {
+    SetShadow(window_, nullptr);
+    window_->RemoveObserver(this);
+  }
 }
 
 void Shadow::Init(Style style) {
@@ -136,6 +141,12 @@ void Shadow::SetStyle(Style style) {
   }
 }
 
+void Shadow::Install(mus::Window* window) {
+  SetShadow(window, this);
+  window_ = window;
+  window_->AddObserver(this);
+}
+
 void Shadow::OnImplicitAnimationsCompleted() {
   // If we just finished going inactive, switch images.  This doesn't cause
   // a visual pop because the inactive image opacity is so low.
@@ -190,6 +201,11 @@ void Shadow::UpdateLayerBounds() {
                 image_size_.height() - aperture_y * 2));
   shadow_layer_->UpdateNinePatchLayerBorder(
       gfx::Rect(aperture_x, aperture_y, aperture_x * 2, aperture_y * 2));
+}
+
+void Shadow::OnWindowDestroyed(mus::Window* window) {
+  DCHECK_EQ(window_, window);
+  window_ = nullptr;
 }
 
 }  // namespace wm

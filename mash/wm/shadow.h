@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "components/mus/public/cpp/window_observer.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -19,7 +20,8 @@ namespace mash {
 namespace wm {
 
 // Simple class that draws a drop shadow around content at given bounds.
-class Shadow : public ui::ImplicitAnimationObserver {
+class Shadow : public ui::ImplicitAnimationObserver,
+               public mus::WindowObserver {
  public:
   enum Style {
     // Active windows have more opaque shadows, shifted down to make the window
@@ -60,6 +62,9 @@ class Shadow : public ui::ImplicitAnimationObserver {
   // Sets the shadow's style, animating opacity as necessary.
   void SetStyle(Style style);
 
+  // Installs this shadow for |window|.
+  void Install(mus::Window* window);
+
   // ui::ImplicitAnimationObserver overrides:
   void OnImplicitAnimationsCompleted() override;
 
@@ -70,6 +75,9 @@ class Shadow : public ui::ImplicitAnimationObserver {
   // Updates the shadow layer bounds based on the inteior inset and the current
   // |content_bounds_|.
   void UpdateLayerBounds();
+
+  // WindowObserver:
+  void OnWindowDestroyed(mus::Window* window) override;
 
   // The current style, set when the transition animation starts.
   Style style_;
@@ -90,6 +98,8 @@ class Shadow : public ui::ImplicitAnimationObserver {
   // The interior inset of the shadow images. The content bounds of the image
   // grid should be set to |content_bounds_| inset by this amount.
   int interior_inset_;
+
+  mus::Window* window_;
 
   DISALLOW_COPY_AND_ASSIGN(Shadow);
 };

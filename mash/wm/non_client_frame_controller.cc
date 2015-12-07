@@ -41,12 +41,6 @@ class ContentWindowLayoutManager : public aura::LayoutManager {
   }
   ~ContentWindowLayoutManager() override {}
 
-  void SetShadow(Shadow* shadow) {
-    shadow_ = shadow;
-    if (shadow_)
-      shadow_->SetContentBounds(child_bounds());
-  }
-
  private:
   // Bounds for child windows.
   gfx::Rect child_bounds() const {
@@ -112,7 +106,7 @@ class WmNativeWidgetMus : public views::NativeWidgetMus {
     // TODO(sky): shadow should be determined by window type.
     shadow_.reset(new Shadow);
     shadow_->Init(Shadow::STYLE_INACTIVE);
-    SetShadow(window(), shadow_.get());
+    shadow_->Install(window());
     ContentWindowLayoutManager* layout_manager = new ContentWindowLayoutManager(
         window_tree_host->window(), ShadowStyle::NORMAL, shadow_.get());
     window_tree_host->window()->SetLayoutManager(layout_manager);
