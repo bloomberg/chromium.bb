@@ -206,9 +206,15 @@ IN_PROC_BROWSER_TEST_F(SingleProcessMemoryTracingTest, ManyInterleavedDumps) {
 
 #endif  // !defined(GOOGLE_CHROME_BUILD)
 
+// Non-deterministic races under TSan. crbug.com/529678
+#if defined(THREAD_SANITIZER)
+#define MAYBE_BrowserInitiatedDump DISABLED_BrowserInitiatedDump
+#else
+#define MAYBE_BrowserInitiatedDump BrowserInitiatedDump
+#endif
 // Checks that a memory dump initiated from a the main browser thread ends up in
 // a successful dump.
-IN_PROC_BROWSER_TEST_F(MemoryTracingTest, BrowserInitiatedDump) {
+IN_PROC_BROWSER_TEST_F(MemoryTracingTest, MAYBE_BrowserInitiatedDump) {
   Navigate(shell());
 
   EXPECT_CALL(*mock_dump_provider_, OnMemoryDump(_,_)).WillOnce(Return(true));
