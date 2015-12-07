@@ -42,7 +42,7 @@ hyphen    \x002D  36
 
 # §3.1 Het cijferteken [1]
 
-decpoint  \x002C  2    # COMMA
+midnum    \x002C  2    # COMMA
 midnum    \x002E  256  # FULL STOP
 midnum    \x003A  25   # COLON
 
