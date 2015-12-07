@@ -78,11 +78,11 @@ def roll(root, deps_dir, roll_to, key, reviewers, bug, no_log, log_limit,
                 'containing DEPS file.')
 
   if not ignore_dirty_tree and not is_pristine(root):
-    raise Error('Ensure %s is clean first.' % root)
+    raise Error('Ensure %s is clean first (no non-merged commits).' % root)
 
   full_dir = os.path.normpath(os.path.join(os.path.dirname(root), deps_dir))
   if not os.path.isdir(full_dir):
-    raise Error('Directory not found: %s' % deps_dir)
+    raise Error('Directory not found: %s (%s)' % (deps_dir, full_dir))
   head = check_output(['git', 'rev-parse', 'HEAD'], cwd=full_dir).strip()
 
   if not head in deps_content:
