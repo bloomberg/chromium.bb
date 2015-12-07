@@ -32,10 +32,10 @@ class UI_ANDROID_EXPORT ResourceManagerImpl : public ResourceManager {
   // Called from Java
   // ----------------------------------------------------------
   void OnResourceReady(JNIEnv* env,
-                       jobject jobj,
+                       const base::android::JavaRef<jobject>& jobj,
                        jint res_type,
                        jint res_id,
-                       jobject bitmap,
+                       const base::android::JavaRef<jobject>& bitmap,
                        jint padding_left,
                        jint padding_top,
                        jint padding_right,
@@ -44,19 +44,21 @@ class UI_ANDROID_EXPORT ResourceManagerImpl : public ResourceManager {
                        jint aperture_top,
                        jint aperture_right,
                        jint aperture_bottom);
-  void OnCrushedSpriteResourceReady(JNIEnv* env,
-                                    jobject jobj,
-                                    jint bitmap_res_id,
-                                    jobject bitmap,
-                                    jobjectArray frame_rects,
-                                    jint unscaled_sprite_width,
-                                    jint unscaled_sprite_height,
-                                    jfloat scaled_sprite_width,
-                                    jfloat scaled_sprite_height);
-  void OnCrushedSpriteResourceReloaded(JNIEnv* env,
-                                       jobject jobj,
-                                       jint bitmap_res_id,
-                                       jobject bitmap);
+  void OnCrushedSpriteResourceReady(
+      JNIEnv* env,
+      const base::android::JavaRef<jobject>& jobj,
+      jint bitmap_res_id,
+      const base::android::JavaRef<jobject>& bitmap,
+      const base::android::JavaRef<jobjectArray>& frame_rects,
+      jint unscaled_sprite_width,
+      jint unscaled_sprite_height,
+      jfloat scaled_sprite_width,
+      jfloat scaled_sprite_height);
+  void OnCrushedSpriteResourceReloaded(
+      JNIEnv* env,
+      const base::android::JavaRef<jobject>& jobj,
+      jint bitmap_res_id,
+      const base::android::JavaRef<jobject>& bitmap);
 
   static bool RegisterResourceManager(JNIEnv* env);
 

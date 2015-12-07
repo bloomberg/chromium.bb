@@ -23,7 +23,7 @@ WindowAndroid::WindowAndroid(JNIEnv* env, jobject obj) : compositor_(NULL) {
   java_window_.Reset(env, obj);
 }
 
-void WindowAndroid::Destroy(JNIEnv* env, jobject obj) {
+void WindowAndroid::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   delete this;
 }
 
@@ -95,7 +95,7 @@ void WindowAndroid::Animate(base::TimeTicks begin_frame_time) {
 }
 
 void WindowAndroid::OnVSync(JNIEnv* env,
-                            jobject obj,
+                            const JavaParamRef<jobject>& obj,
                             jlong time_micros,
                             jlong period_micros) {
   base::TimeTicks frame_time(base::TimeTicks::FromInternalValue(time_micros));
@@ -110,17 +110,19 @@ void WindowAndroid::OnVSync(JNIEnv* env,
 }
 
 void WindowAndroid::OnVisibilityChanged(JNIEnv* env,
-                                        jobject obj,
+                                        const JavaParamRef<jobject>& obj,
                                         bool visible) {
   FOR_EACH_OBSERVER(WindowAndroidObserver, observer_list_,
                     OnRootWindowVisibilityChanged(visible));
 }
 
-void WindowAndroid::OnActivityStopped(JNIEnv* env, jobject obj) {
+void WindowAndroid::OnActivityStopped(JNIEnv* env,
+                                      const JavaParamRef<jobject>& obj) {
   FOR_EACH_OBSERVER(WindowAndroidObserver, observer_list_, OnActivityStopped());
 }
 
-void WindowAndroid::OnActivityStarted(JNIEnv* env, jobject obj) {
+void WindowAndroid::OnActivityStarted(JNIEnv* env,
+                                      const JavaParamRef<jobject>& obj) {
   FOR_EACH_OBSERVER(WindowAndroidObserver, observer_list_, OnActivityStarted());
 }
 

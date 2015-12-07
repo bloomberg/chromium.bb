@@ -19,16 +19,19 @@ class SelectFileDialogImpl : public SelectFileDialog {
                                       SelectFilePolicy* policy);
 
   void OnFileSelected(JNIEnv* env,
-                      jobject java_object,
-                      jstring filepath,
-                      jstring display_name);
+                      const base::android::JavaParamRef<jobject>& java_object,
+                      const base::android::JavaParamRef<jstring>& filepath,
+                      const base::android::JavaParamRef<jstring>& display_name);
 
-  void OnMultipleFilesSelected(JNIEnv* env,
-                               jobject java_object,
-                               jobjectArray filepaths,
-                               jobjectArray display_names);
+  void OnMultipleFilesSelected(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& java_object,
+      const base::android::JavaParamRef<jobjectArray>& filepaths,
+      const base::android::JavaParamRef<jobjectArray>& display_names);
 
-  void OnFileNotSelected(JNIEnv* env, jobject java_object);
+  void OnFileNotSelected(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& java_object);
 
   // From SelectFileDialog
   bool IsRunning(gfx::NativeWindow) const override;

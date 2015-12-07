@@ -18,6 +18,7 @@
 #include "ui/gfx/geometry/rect.h"
 
 using base::android::JavaArrayOfIntArrayToIntVector;
+using base::android::JavaRef;
 
 namespace ui {
 
@@ -84,10 +85,10 @@ void ResourceManagerImpl::PreloadResource(AndroidResourceType res_type,
 }
 
 void ResourceManagerImpl::OnResourceReady(JNIEnv* env,
-                                          jobject jobj,
+                                          const JavaRef<jobject>& jobj,
                                           jint res_type,
                                           jint res_id,
-                                          jobject bitmap,
+                                          const JavaRef<jobject>& bitmap,
                                           jint padding_left,
                                           jint padding_top,
                                           jint padding_right,
@@ -108,7 +109,7 @@ void ResourceManagerImpl::OnResourceReady(JNIEnv* env,
     resources_[res_type].AddWithID(resource, res_id);
   }
 
-  gfx::JavaBitmap jbitmap(bitmap);
+  gfx::JavaBitmap jbitmap(bitmap.obj());
   resource->size = jbitmap.size();
   resource->padding.SetRect(padding_left, padding_top,
                             padding_right - padding_left,
@@ -139,24 +140,24 @@ CrushedSpriteResource* ResourceManagerImpl::GetCrushedSpriteResource(
 
 void ResourceManagerImpl::OnCrushedSpriteResourceReady(
     JNIEnv* env,
-    jobject jobj,
+    const JavaRef<jobject>& jobj,
     jint bitmap_res_id,
-    jobject bitmap,
-    jobjectArray frame_rects,
+    const JavaRef<jobject>& bitmap,
+    const JavaRef<jobjectArray>& frame_rects,
     jint unscaled_sprite_width,
     jint unscaled_sprite_height,
     jfloat scaled_sprite_width,
     jfloat scaled_sprite_height) {
-
   // Construct source and destination rectangles for each frame from
   // |frame_rects|.
   std::vector<std::vector<int>> all_frame_rects_vector;
-  JavaArrayOfIntArrayToIntVector(env, frame_rects, &all_frame_rects_vector);
+  JavaArrayOfIntArrayToIntVector(env, frame_rects.obj(),
+                                 &all_frame_rects_vector);
   CrushedSpriteResource::SrcDstRects src_dst_rects =
       ProcessCrushedSpriteFrameRects(all_frame_rects_vector);
 
   SkBitmap skbitmap =
-      gfx::CreateSkBitmapFromJavaBitmap(gfx::JavaBitmap(bitmap));
+      gfx::CreateSkBitmapFromJavaBitmap(gfx::JavaBitmap(bitmap.obj()));
 
   CrushedSpriteResource* resource = new CrushedSpriteResource(
       skbitmap,
@@ -202,9 +203,9 @@ ResourceManagerImpl::ProcessCrushedSpriteFrameRects(
 
 void ResourceManagerImpl::OnCrushedSpriteResourceReloaded(
     JNIEnv* env,
-    jobject jobj,
+    const JavaRef<jobject>& jobj,
     jint bitmap_res_id,
-    jobject bitmap) {
+    const JavaRef<jobject>& bitmap) {
   CrushedSpriteResource* resource =
       crushed_sprite_resources_.Lookup(bitmap_res_id);
   if (!resource) {
@@ -212,7 +213,7 @@ void ResourceManagerImpl::OnCrushedSpriteResourceReloaded(
     return;
   }
   SkBitmap skbitmap =
-      gfx::CreateSkBitmapFromJavaBitmap(gfx::JavaBitmap(bitmap));
+      gfx::CreateSkBitmapFromJavaBitmap(gfx::JavaBitmap(bitmap.obj()));
   resource->SetBitmap(skbitmap);
 }
 

@@ -19,13 +19,15 @@ SurfaceTextureListener::SurfaceTextureListener(const base::Closure& callback)
 SurfaceTextureListener::~SurfaceTextureListener() {
 }
 
-void SurfaceTextureListener::Destroy(JNIEnv* env, jobject obj) {
+void SurfaceTextureListener::Destroy(JNIEnv* env,
+                                     const JavaParamRef<jobject>& obj) {
   if (!browser_loop_->DeleteSoon(FROM_HERE, this)) {
     delete this;
   }
 }
 
-void SurfaceTextureListener::FrameAvailable(JNIEnv* env, jobject obj) {
+void SurfaceTextureListener::FrameAvailable(JNIEnv* env,
+                                            const JavaParamRef<jobject>& obj) {
   if (!browser_loop_->BelongsToCurrentThread()) {
     browser_loop_->PostTask(FROM_HERE, callback_);
   } else {
