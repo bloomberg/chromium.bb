@@ -73,8 +73,7 @@ class CronetUrlRequestContext extends CronetEngine {
     public CronetUrlRequestContext(CronetEngine.Builder builder) {
         CronetLibraryLoader.ensureInitialized(builder.getContext(), builder);
         nativeSetMinLogLevel(getLoggingLevel());
-        mUrlRequestContextAdapter =
-                nativeCreateRequestContextAdapter(createNativeUrlRequestContextConfig(builder));
+        mUrlRequestContextAdapter = nativeCreateRequestContextAdapter(builder.toJSONString());
         if (mUrlRequestContextAdapter == 0) {
             throw new NullPointerException("Context Adapter creation failed.");
         }
@@ -97,25 +96,6 @@ class CronetUrlRequestContext extends CronetEngine {
         } else {
             new Handler(Looper.getMainLooper()).post(task);
         }
-    }
-
-    static long createNativeUrlRequestContextConfig(CronetEngine.Builder builder) {
-        final long urlRequestContextConfig = nativeCreateRequestContextConfig(
-                builder.getUserAgent(), builder.storagePath(), builder.quicEnabled(),
-                builder.http2Enabled(), builder.sdchEnabled(), builder.dataReductionProxyKey(),
-                builder.dataReductionProxyPrimaryProxy(), builder.dataReductionProxyFallbackProxy(),
-                builder.dataReductionProxySecureProxyCheckUrl(), builder.cacheDisabled(),
-                builder.httpCacheMode(), builder.httpCacheMaxSize(), builder.experimentalOptions(),
-                builder.mockCertVerifier());
-        for (Builder.QuicHint quicHint : builder.quicHints()) {
-            nativeAddQuicHint(urlRequestContextConfig, quicHint.mHost, quicHint.mPort,
-                    quicHint.mAlternatePort);
-        }
-        for (Builder.Pkp pkp : builder.publicKeyPins()) {
-            nativeAddPkp(urlRequestContextConfig, pkp.mHost, pkp.mHashes, pkp.mIncludeSubdomains,
-                    pkp.mExpirationDate.getTime());
-        }
-        return urlRequestContextConfig;
     }
 
     @Override
@@ -420,20 +400,7 @@ class CronetUrlRequestContext extends CronetEngine {
     }
 
     // Native methods are implemented in cronet_url_request_context_adapter.cc.
-    private static native long nativeCreateRequestContextConfig(String userAgent,
-            String storagePath, boolean quicEnabled, boolean http2Enabled, boolean sdchEnabled,
-            String dataReductionProxyKey, String dataReductionProxyPrimaryProxy,
-            String dataReductionProxyFallbackProxy, String dataReductionProxySecureProxyCheckUrl,
-            boolean disableCache, int httpCacheMode, long httpCacheMaxSize,
-            String experimentalOptions, long mockCertVerifier);
-
-    private static native void nativeAddQuicHint(
-            long urlRequestContextConfig, String host, int port, int alternatePort);
-
-    private static native void nativeAddPkp(long urlRequestContextConfig, String host,
-            byte[][] hashes, boolean includeSubdomains, long expirationTime);
-
-    private static native long nativeCreateRequestContextAdapter(long urlRequestContextConfig);
+    private static native long nativeCreateRequestContextAdapter(String config);
 
     private static native int nativeSetMinLogLevel(int loggingLevel);
 

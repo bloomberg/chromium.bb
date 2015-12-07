@@ -179,7 +179,7 @@ public class HttpUrlRequestFactoryTest extends CronetTestBase {
             config.enableHttpCache(HttpUrlRequestFactoryConfig.HTTP_CACHE_IN_MEMORY, 0);
             fail("IllegalArgumentException must be thrown");
         } catch (IllegalArgumentException e) {
-            assertEquals("Storage path must not be set", e.getMessage());
+            assertEquals("Storage path must be empty", e.getMessage());
         }
         assertTrue(dir.delete());
     }

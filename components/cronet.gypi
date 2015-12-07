@@ -48,12 +48,16 @@
           'includes': [ '../build/android/java_cpp_enum.gypi' ],
         },
         {
-          'target_name': 'http_cache_type_java',
+          'target_name': 'cronet_engine_builder_list',
           'type': 'none',
+          'sources': [
+            'cronet/android/java/src/org/chromium/net/CronetEngineBuilderList.template',
+          ],
           'variables': {
-            'source_file': 'cronet/url_request_context_config.h',
+            'package_name': 'org/chromium/net',
+            'template_deps': ['cronet/url_request_context_config_list.h'],
           },
-          'includes': [ '../build/android/java_cpp_enum.gypi' ],
+          'includes': [ '../build/android/java_cpp_template.gypi' ],
         },
         {
           'target_name': 'load_states_list',
@@ -210,7 +214,7 @@
           'target_name': 'cronet_api',
           'type': 'none',
           'dependencies': [
-            'http_cache_type_java',
+            'cronet_engine_builder_list',
             'cronet_version',
             'load_states_list',
             'network_quality_observations_java',
@@ -324,7 +328,6 @@
             'cronet/android/test/src/org/chromium/net/QuicTestServer.java',
             'cronet/android/test/src/org/chromium/net/SdchObserver.java',
             'cronet/android/test/src/org/chromium/net/TestUploadDataStreamHandler.java',
-            'cronet/android/test/javatests/src/org/chromium/net/CronetUrlRequestContextTest.java',
           ],
           'variables': {
             'jni_gen_package': 'cronet_tests',
@@ -350,8 +353,6 @@
             'cronet/android/test/test_upload_data_stream_handler.h',
             'cronet/android/test/network_change_notifier_util.cc',
             'cronet/android/test/network_change_notifier_util.h',
-            'cronet/android/test/cronet_url_request_context_config_test.cc',
-            'cronet/android/test/cronet_url_request_context_config_test.h',
           ],
           'dependencies': [
             'cronet_tests_jni_headers',

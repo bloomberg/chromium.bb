@@ -29,6 +29,18 @@ const char kQuicMaxNumberOfLossyConnections[] =
     "max_number_of_lossy_connections";
 const char kQuicPacketLossThreshold[] = "packet_loss_threshold";
 
+// Using a reference to scoped_ptr is unavoidable because of the semantics of
+// RegisterCustomField.
+// TODO(xunjieli): Remove this once crbug.com/544976 is fixed.
+bool GetMockCertVerifierFromString(
+    const base::StringPiece& mock_cert_verifier_string,
+    scoped_ptr<net::CertVerifier>* result) {
+  int64 val;
+  bool success = base::StringToInt64(mock_cert_verifier_string, &val);
+  *result = make_scoped_ptr(reinterpret_cast<net::CertVerifier*>(val));
+  return success;
+}
+
 void ParseAndSetExperimentalOptions(
     const std::string& experimental_options,
     net::URLRequestContextBuilder* context_builder) {
@@ -91,63 +103,83 @@ void ParseAndSetExperimentalOptions(
   }
 }
 
+bool GetTimeFromDouble(const base::Value* json_value, base::Time* time) {
+  double time_double;
+  bool success = json_value->GetAsDouble(&time_double);
+  if (success) {
+    *time = base::Time::FromDoubleT(time_double);
+  }
+  return success;
+}
+
 }  // namespace
 
-URLRequestContextConfig::QuicHint::QuicHint(const std::string& host,
-                                            int port,
-                                            int alternate_port)
-    : host(host), port(port), alternate_port(alternate_port) {}
+#define DEFINE_CONTEXT_CONFIG(x) const char REQUEST_CONTEXT_CONFIG_##x[] = #x;
+#include "components/cronet/url_request_context_config_list.h"
+#undef DEFINE_CONTEXT_CONFIG
+
+URLRequestContextConfig::QuicHint::QuicHint() {}
 
 URLRequestContextConfig::QuicHint::~QuicHint() {}
 
-URLRequestContextConfig::Pkp::Pkp(const std::string& host,
-                                  bool include_subdomains,
-                                  const base::Time& expiration_date)
-    : host(host),
-      include_subdomains(include_subdomains),
-      expiration_date(expiration_date) {}
+// static
+void URLRequestContextConfig::QuicHint::RegisterJSONConverter(
+    base::JSONValueConverter<URLRequestContextConfig::QuicHint>* converter) {
+  converter->RegisterStringField(REQUEST_CONTEXT_CONFIG_QUIC_HINT_HOST,
+                                 &URLRequestContextConfig::QuicHint::host);
+  converter->RegisterIntField(
+      REQUEST_CONTEXT_CONFIG_QUIC_HINT_PORT,
+      &URLRequestContextConfig::QuicHint::port);
+  converter->RegisterIntField(
+      REQUEST_CONTEXT_CONFIG_QUIC_HINT_ALT_PORT,
+      &URLRequestContextConfig::QuicHint::alternate_port);
+}
+
+URLRequestContextConfig::Pkp::Pkp() {}
 
 URLRequestContextConfig::Pkp::~Pkp() {}
 
-URLRequestContextConfig::URLRequestContextConfig(
-    bool enable_quic,
-    bool enable_spdy,
-    bool enable_sdch,
-    HttpCacheType http_cache,
-    int http_cache_max_size,
-    bool load_disable_cache,
-    const std::string& storage_path,
-    const std::string& user_agent,
-    const std::string& experimental_options,
-    const std::string& data_reduction_proxy_key,
-    const std::string& data_reduction_primary_proxy,
-    const std::string& data_reduction_fallback_proxy,
-    const std::string& data_reduction_secure_proxy_check_url,
-    scoped_ptr<net::CertVerifier> mock_cert_verifier)
-    : enable_quic(enable_quic),
-      enable_spdy(enable_spdy),
-      enable_sdch(enable_sdch),
-      http_cache(http_cache),
-      http_cache_max_size(http_cache_max_size),
-      load_disable_cache(load_disable_cache),
-      storage_path(storage_path),
-      user_agent(user_agent),
-      experimental_options(experimental_options),
-      data_reduction_proxy_key(data_reduction_proxy_key),
-      data_reduction_primary_proxy(data_reduction_primary_proxy),
-      data_reduction_fallback_proxy(data_reduction_fallback_proxy),
-      data_reduction_secure_proxy_check_url(
-          data_reduction_secure_proxy_check_url),
-      mock_cert_verifier(std::move(mock_cert_verifier)) {}
+// static
+void URLRequestContextConfig::Pkp::RegisterJSONConverter(
+    base::JSONValueConverter<URLRequestContextConfig::Pkp>* converter) {
+  converter->RegisterStringField(REQUEST_CONTEXT_CONFIG_PKP_HOST,
+                                 &URLRequestContextConfig::Pkp::host);
+  converter->RegisterRepeatedString(REQUEST_CONTEXT_CONFIG_PKP_PIN_HASHES,
+                                    &URLRequestContextConfig::Pkp::pin_hashes);
+  converter->RegisterBoolField(
+      REQUEST_CONTEXT_CONFIG_PKP_INCLUDE_SUBDOMAINS,
+      &URLRequestContextConfig::Pkp::include_subdomains);
+  converter->RegisterCustomValueField<base::Time>(
+      REQUEST_CONTEXT_CONFIG_PKP_EXPIRATION_DATE,
+      &URLRequestContextConfig::Pkp::expiration_date, &GetTimeFromDouble);
+}
+
+URLRequestContextConfig::URLRequestContextConfig() {}
 
 URLRequestContextConfig::~URLRequestContextConfig() {}
+
+bool URLRequestContextConfig::LoadFromJSON(const std::string& config_string) {
+  scoped_ptr<base::Value> config_value = base::JSONReader::Read(config_string);
+  if (!config_value || !config_value->IsType(base::Value::TYPE_DICTIONARY)) {
+    DLOG(ERROR) << "Bad JSON: " << config_string;
+    return false;
+  }
+
+  base::JSONValueConverter<URLRequestContextConfig> converter;
+  if (!converter.Convert(*config_value, this)) {
+    DLOG(ERROR) << "Bad Config: " << config_value;
+    return false;
+  }
+  return true;
+}
 
 void URLRequestContextConfig::ConfigureURLRequestContextBuilder(
     net::URLRequestContextBuilder* context_builder) {
   std::string config_cache;
-  if (http_cache != DISABLED) {
+  if (http_cache != REQUEST_CONTEXT_CONFIG_HTTP_CACHE_DISABLED) {
     net::URLRequestContextBuilder::HttpCacheParams cache_params;
-    if (http_cache == DISK && !storage_path.empty()) {
+    if (http_cache == REQUEST_CONTEXT_CONFIG_HTTP_CACHE_DISK &&
+        !storage_path.empty()) {
       cache_params.type = net::URLRequestContextBuilder::HttpCacheParams::DISK;
       cache_params.path = base::FilePath(storage_path);
     } else {
@@ -168,6 +200,52 @@ void URLRequestContextConfig::ConfigureURLRequestContextBuilder(
   if (mock_cert_verifier)
     context_builder->SetCertVerifier(mock_cert_verifier.Pass());
   // TODO(mef): Use |config| to set cookies.
+}
+
+// static
+void URLRequestContextConfig::RegisterJSONConverter(
+    base::JSONValueConverter<URLRequestContextConfig>* converter) {
+  converter->RegisterStringField(REQUEST_CONTEXT_CONFIG_USER_AGENT,
+                                 &URLRequestContextConfig::user_agent);
+  converter->RegisterStringField(REQUEST_CONTEXT_CONFIG_STORAGE_PATH,
+                                 &URLRequestContextConfig::storage_path);
+  converter->RegisterBoolField(REQUEST_CONTEXT_CONFIG_ENABLE_QUIC,
+                               &URLRequestContextConfig::enable_quic);
+  converter->RegisterBoolField(REQUEST_CONTEXT_CONFIG_ENABLE_SPDY,
+                               &URLRequestContextConfig::enable_spdy);
+  converter->RegisterBoolField(REQUEST_CONTEXT_CONFIG_ENABLE_SDCH,
+                               &URLRequestContextConfig::enable_sdch);
+  converter->RegisterStringField(REQUEST_CONTEXT_CONFIG_HTTP_CACHE,
+                                 &URLRequestContextConfig::http_cache);
+  converter->RegisterBoolField(REQUEST_CONTEXT_CONFIG_LOAD_DISABLE_CACHE,
+                               &URLRequestContextConfig::load_disable_cache);
+  converter->RegisterIntField(REQUEST_CONTEXT_CONFIG_HTTP_CACHE_MAX_SIZE,
+                              &URLRequestContextConfig::http_cache_max_size);
+  converter->RegisterRepeatedMessage(REQUEST_CONTEXT_CONFIG_QUIC_HINTS,
+                                     &URLRequestContextConfig::quic_hints);
+  converter->RegisterStringField(
+      REQUEST_CONTEXT_CONFIG_EXPERIMENTAL_OPTIONS,
+      &URLRequestContextConfig::experimental_options);
+  converter->RegisterStringField(
+      REQUEST_CONTEXT_CONFIG_DATA_REDUCTION_PRIMARY_PROXY,
+      &URLRequestContextConfig::data_reduction_primary_proxy);
+  converter->RegisterStringField(
+      REQUEST_CONTEXT_CONFIG_DATA_REDUCTION_FALLBACK_PROXY,
+      &URLRequestContextConfig::data_reduction_fallback_proxy);
+  converter->RegisterStringField(
+      REQUEST_CONTEXT_CONFIG_DATA_REDUCTION_SECURE_PROXY_CHECK_URL,
+      &URLRequestContextConfig::data_reduction_secure_proxy_check_url);
+  converter->RegisterStringField(
+      REQUEST_CONTEXT_CONFIG_DATA_REDUCTION_PROXY_KEY,
+      &URLRequestContextConfig::data_reduction_proxy_key);
+  converter->RegisterRepeatedMessage(REQUEST_CONTEXT_CONFIG_PKP_LIST,
+                                     &URLRequestContextConfig::pkp_list);
+
+  // For Testing.
+  converter->RegisterCustomField<scoped_ptr<net::CertVerifier>>(
+      REQUEST_CONTEXT_CONFIG_MOCK_CERT_VERIFIER,
+      &URLRequestContextConfig::mock_cert_verifier,
+      &GetMockCertVerifierFromString);
 }
 
 }  // namespace cronet
