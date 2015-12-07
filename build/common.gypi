@@ -5813,10 +5813,6 @@
                   '-Wno-microsoft-enum-value',  # http://crbug.com/505296
                   '-Wno-unknown-pragmas',  # http://crbug.com/505314
                   '-Wno-microsoft-cast',  # http://crbug.com/550065
-                  # Disable unused-value (crbug.com/505318) except
-                  # -Wunused-result.
-                  '-Wno-unused-value',
-                  '-Wunused-result',
                 ],
               },
             }],
