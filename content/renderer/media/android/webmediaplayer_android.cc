@@ -83,6 +83,17 @@ namespace {
 // Prefix for histograms related to Encrypted Media Extensions.
 const char* kMediaEme = "Media.EME.";
 
+// Values for Media.Android.IsHttpLiveStreamingMediaPredictionResult UMA.
+// Never reuse values!
+enum MediaTypePredictionResult {
+  PREDICTION_RESULT_ALL_CORRECT,
+  PREDICTION_RESULT_ALL_INCORRECT,
+  PREDICTION_RESULT_PATH_BASED_WAS_BETTER,
+  PREDICTION_RESULT_URL_BASED_WAS_BETTER,
+  // Must always be larger than the largest logged value.
+  PREDICTION_RESULT_MAX
+};
+
 // File-static function is to allow it to run even after WMPA is deleted.
 void OnReleaseTexture(
     const scoped_refptr<content::StreamTextureFactory>& factories,
@@ -1915,12 +1926,29 @@ void WebMediaPlayerAndroid::enterFullscreen() {
   suppress_deleting_texture_ = false;
 }
 
-bool WebMediaPlayerAndroid::IsHLSStream() const {
-  std::string mime;
-  GURL url = redirected_url_.is_empty() ? url_ : redirected_url_;
-  if (!net::GetMimeTypeFromFile(base::FilePath(url.path()), &mime))
+// Test whether the path of a URL ends with '.m3u8'.
+static bool IsHLSPath(const GURL& url) {
+  if (!url.SchemeIsHTTPOrHTTPS() && !url.SchemeIsFile())
     return false;
-  return !mime.compare("application/x-mpegurl");
+
+  std::string path = url.path();
+  return base::EndsWith(path, ".m3u8", base::CompareCase::INSENSITIVE_ASCII);
+}
+
+// Predict whether NuPlayer will use HTTPLiveSource.
+static bool IsHLSURL(const GURL& url) {
+  if (!url.SchemeIsHTTPOrHTTPS() && !url.SchemeIsFile())
+    return false;
+
+  std::string spec = url.spec();
+  if (base::EndsWith(spec, ".m3u8", base::CompareCase::INSENSITIVE_ASCII))
+    return true;
+  return (spec.find("m3u8") != std::string::npos);
+}
+
+bool WebMediaPlayerAndroid::IsHLSStream() const {
+  const GURL& url = redirected_url_.is_empty() ? url_ : redirected_url_;
+  return IsHLSURL(url);
 }
 
 void WebMediaPlayerAndroid::ReportHLSMetrics() const {
@@ -1933,6 +1961,21 @@ void WebMediaPlayerAndroid::ReportHLSMetrics() const {
     media::RecordOriginOfHLSPlayback(
         GURL(frame_->document().securityOrigin().toString()));
   }
+
+  // Assuming that |is_hls| is the ground truth, test predictions.
+  bool is_hls_path = IsHLSPath(url_);
+  bool is_hls_url = IsHLSURL(url_);
+  MediaTypePredictionResult result = PREDICTION_RESULT_ALL_INCORRECT;
+  if (is_hls_path == is_hls && is_hls_url == is_hls) {
+    result = PREDICTION_RESULT_ALL_CORRECT;
+  } else if (is_hls_path == is_hls) {
+    result = PREDICTION_RESULT_PATH_BASED_WAS_BETTER;
+  } else if (is_hls_url == is_hls) {
+    result = PREDICTION_RESULT_URL_BASED_WAS_BETTER;
+  }
+  UMA_HISTOGRAM_ENUMERATION(
+      "Media.Android.IsHttpLiveStreamingMediaPredictionResult",
+      result, PREDICTION_RESULT_MAX);
 }
 
 }  // namespace content

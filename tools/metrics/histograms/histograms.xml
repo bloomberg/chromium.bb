@@ -17910,8 +17910,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="Media.Android.IsHttpLiveStreamingMedia" enum="MediaUrlType">
   <owner>qinmin@chromium.org</owner>
   <summary>
-    Android: Records whether a regular media url is HLS (http live streaming)
+    Android: Records whether a regular media URL is HLS (HTTP Live Streaming)
     media or not.
+  </summary>
+</histogram>
+
+<histogram name="Media.Android.IsHttpLiveStreamingMediaPredictionResult"
+    enum="MediaTypePredictionResult">
+  <owner>sandersd@chromium.org</owner>
+  <summary>
+    Android: Records which HLS prediction based on the original URL was best.
   </summary>
 </histogram>
 
@@ -69256,6 +69264,13 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="0" label="Explicitly Cancelled"/>
   <int value="1" label="Stream Not Generated"/>
   <int value="2" label="Pending Media Tracks"/>
+</enum>
+
+<enum name="MediaTypePredictionResult" type="int">
+  <int value="0" label="All correct"/>
+  <int value="1" label="All incorrect"/>
+  <int value="2" label="Path-based was better"/>
+  <int value="3" label="URL-based was better"/>
 </enum>
 
 <enum name="MediaUrlType" type="int">
