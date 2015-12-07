@@ -28,6 +28,10 @@ Status StubWebView::HandleReceivedEvents() {
   return Status(kOk);
 }
 
+Status StubWebView::GetUrl(std::string* url) {
+  return Status(kOk);
+}
+
 Status StubWebView::Load(const std::string& url) {
   return Status(kOk);
 }

@@ -50,6 +50,7 @@ class WebViewImpl : public WebView {
   bool WasCrashed() override;
   Status ConnectIfNecessary() override;
   Status HandleReceivedEvents() override;
+  Status GetUrl(std::string* url) override;
   Status Load(const std::string& url) override;
   Status Reload() override;
   Status TraverseHistory(int delta) override;

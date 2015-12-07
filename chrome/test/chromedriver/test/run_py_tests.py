@@ -1190,6 +1190,14 @@ class ChromeDriverTest(ChromeDriverBaseTest):
       else:
         self.fail('unexpected cookie: %s' % json.dumps(cookie))
 
+  def testGetUrlOnInvalidUrl(self):
+    # Make sure we don't return 'data:text/html,chromewebdata' (see
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1272). RFC 6761
+    # requires domain registrars to keep 'invalid.' unregistered (see
+    # https://tools.ietf.org/html/rfc6761#section-6.4).
+    self._driver.Load('http://invalid./')
+    self.assertEquals('http://invalid./', self._driver.GetCurrentUrl())
+
 
 class ChromeDriverAndroidTest(ChromeDriverBaseTest):
   """End to end tests for Android-specific tests."""

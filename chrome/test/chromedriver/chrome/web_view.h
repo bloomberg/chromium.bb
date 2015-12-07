@@ -44,6 +44,9 @@ class WebView {
   // Handles events that have been received but not yet handled.
   virtual Status HandleReceivedEvents() = 0;
 
+  // Get the current URL of the main frame.
+  virtual Status GetUrl(std::string* url) = 0;
+
   // Load a given URL in the main frame.
   virtual Status Load(const std::string& url) = 0;
 

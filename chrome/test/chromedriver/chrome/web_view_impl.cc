@@ -152,6 +152,27 @@ Status WebViewImpl::HandleReceivedEvents() {
   return client_->HandleReceivedEvents();
 }
 
+Status WebViewImpl::GetUrl(std::string* url) {
+  base::DictionaryValue params;
+  scoped_ptr<base::DictionaryValue> result;
+  Status status = client_->SendCommandAndGetResult(
+      "Page.getNavigationHistory", params, &result);
+  if (status.IsError())
+    return status;
+  int current_index = 0;
+  if (!result->GetInteger("currentIndex", &current_index))
+    return Status(kUnknownError, "navigation history missing currentIndex");
+  base::ListValue* entries = nullptr;
+  if (!result->GetList("entries", &entries))
+    return Status(kUnknownError, "navigation history missing entries");
+  base::DictionaryValue* entry = nullptr;
+  if (!entries->GetDictionary(current_index, &entry))
+    return Status(kUnknownError, "navigation history missing entry");
+  if (!entry->GetString("url", url))
+    return Status(kUnknownError, "navigation history entry is missing url");
+  return Status(kOk);
+}
+
 Status WebViewImpl::Load(const std::string& url) {
   // Javascript URLs will cause a hang while waiting for the page to stop
   // loading, so just disallow.
