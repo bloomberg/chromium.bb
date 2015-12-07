@@ -36,7 +36,7 @@
 #include "platform/ThreadSafeFunctional.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
-#include "wtf/TypeTraits.h"
+#include <type_traits>
 
 namespace blink {
 
@@ -122,7 +122,7 @@ private:
 // (P = <P1, ..., Pn>, MP = <MP1, ..., MPn, ExecutionContext*>)
 template<typename... P, typename... MP,
     typename RETTYPE = PassOwnPtr<ExecutionContextTask>, size_t PS = sizeof...(P), size_t MPS = sizeof...(MP)>
-typename WTF::EnableIf<PS + 1 == MPS, RETTYPE>::Type createCrossThreadTask(void (*function)(MP...), const P&... parameters)
+typename std::enable_if<PS + 1 == MPS, RETTYPE>::type createCrossThreadTask(void (*function)(MP...), const P&... parameters)
 {
     return internal::CallClosureWithExecutionContextTask::create(threadSafeBind<ExecutionContext*>(function, parameters...));
 }
@@ -131,7 +131,7 @@ typename WTF::EnableIf<PS + 1 == MPS, RETTYPE>::Type createCrossThreadTask(void 
 // (P = <P1, ..., Pn>, MP = <MP1, ..., MPn, ExecutionContext*>)
 template<typename C, typename... P, typename... MP,
     typename RETTYPE = PassOwnPtr<ExecutionContextTask>, size_t PS = sizeof...(P), size_t MPS = sizeof...(MP)>
-typename WTF::EnableIf<PS + 1 == MPS, RETTYPE>::Type createCrossThreadTask(void (C::*function)(MP...), C* p, const P&... parameters)
+typename std::enable_if<PS + 1 == MPS, RETTYPE>::type createCrossThreadTask(void (C::*function)(MP...), C* p, const P&... parameters)
 {
     return internal::CallClosureWithExecutionContextTask::create(threadSafeBind<ExecutionContext*>(function, AllowCrossThreadAccess(p), parameters...));
 }
@@ -140,7 +140,7 @@ typename WTF::EnableIf<PS + 1 == MPS, RETTYPE>::Type createCrossThreadTask(void 
 // (P = <P1, ..., Pn>, MP = <MP1, ..., MPn>)
 template<typename... P, typename... MP,
     typename RETTYPE = PassOwnPtr<ExecutionContextTask>, size_t PS = sizeof...(P), size_t MPS = sizeof...(MP)>
-typename WTF::EnableIf<PS == MPS, RETTYPE>::Type createCrossThreadTask(void (*function)(MP...), const P&... parameters)
+typename std::enable_if<PS == MPS, RETTYPE>::type createCrossThreadTask(void (*function)(MP...), const P&... parameters)
 {
     return internal::CallClosureTask::create(threadSafeBind(function, parameters...));
 }
@@ -150,14 +150,14 @@ typename WTF::EnableIf<PS == MPS, RETTYPE>::Type createCrossThreadTask(void (*fu
 // (P = <P1, ..., Pn>, MP = <MP1, ..., MPn>)
 template<typename C, typename... P, typename... MP,
     typename RETTYPE = PassOwnPtr<ExecutionContextTask>, size_t PS = sizeof...(P), size_t MPS = sizeof...(MP)>
-typename WTF::EnableIf<PS == MPS, RETTYPE>::Type createCrossThreadTask(void (C::*function)(MP...), C* p, const P&... parameters)
+typename std::enable_if<PS == MPS, RETTYPE>::type createCrossThreadTask(void (C::*function)(MP...), C* p, const P&... parameters)
 {
     return internal::CallClosureTask::create(threadSafeBind(function, AllowCrossThreadAccess(p), parameters...));
 }
 
 template<typename C, typename... P, typename... MP,
     typename RETTYPE = PassOwnPtr<ExecutionContextTask>, size_t PS = sizeof...(P), size_t MPS = sizeof...(MP)>
-typename WTF::EnableIf<PS == MPS, RETTYPE>::Type createCrossThreadTask(void (C::*function)(MP...), const WeakPtr<C>& p, const P&... parameters)
+typename std::enable_if<PS == MPS, RETTYPE>::type createCrossThreadTask(void (C::*function)(MP...), const WeakPtr<C>& p, const P&... parameters)
 {
     return internal::CallClosureTask::create(threadSafeBind(function, AllowCrossThreadAccess(p), parameters...));
 }
@@ -166,7 +166,7 @@ typename WTF::EnableIf<PS == MPS, RETTYPE>::Type createCrossThreadTask(void (C::
 // (P = <P0, P1, ..., Pn>, MP = <MP1, ..., MPn>)
 template<typename C, typename... P, typename... MP,
     typename RETTYPE = PassOwnPtr<ExecutionContextTask>, size_t PS = sizeof...(P), size_t MPS = sizeof...(MP)>
-typename WTF::EnableIf<PS == MPS + 1, RETTYPE>::Type createCrossThreadTask(void (C::*function)(MP...), const P&... parameters)
+typename std::enable_if<PS == MPS + 1, RETTYPE>::type createCrossThreadTask(void (C::*function)(MP...), const P&... parameters)
 {
     return internal::CallClosureTask::create(threadSafeBind(function, parameters...));
 }
