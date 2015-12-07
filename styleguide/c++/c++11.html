@@ -245,6 +245,24 @@ Range-based for loop</a></td>
 </tr>
 
 <tr>
+<td>Rvalue References</td>
+<td><code>T(T&amp;&amp; t)</code> and <code>T&amp; operator=(T&amp;&amp; t)</code><br/><br/>
+    <code>template &lt;typename T&gt;<br/>void Function(T&& t) { ... }</code></td>
+<td>Reference that only binds to a temporary object</td>
+<td><a href="http://en.cppreference.com/w/cpp/language/references#Rvalue_references">
+Rvalue references</a></td>
+<td>As per the <a href="https://google.github.io/styleguide/cppguide.html#Rvalue_references">Google style guide</a>: Only use these to define move constructors and move assignment operators, and for perfect forwarding.<br/>Most classes should not be copyable, even if movable. Continue to use DISALLOW_COPY_AND_ASSIGN (or DISALLOW_COPY_AND_ASSIGN_WITH_MOVE_FOR_BIND if needed) in most cases. <a href="https://groups.google.com/a/chromium.org/d/topic/chromium-dev/UnRaORb4TSw">Discussion thread</a> and <a href="https://groups.google.com/a/chromium.org/d/topic/cxx/Q526tkruXpM">discussion thread</a>.
+<br/><br/>
+MSVC 2013 has some known bugs with rvalue references:
+<ul>
+<li>Exported classes generate copy constructors even if they are not used, which tries to use copy constructors on members. Use DISALLOW_COPY_AND_ASSIGN on the exported class to resolve it.</li>
+<li>The compiler chooses a T::(T&) constructor before T::(T&&). However copy constructors should be written as T::T(const T&) and these are prioritized correctly.</li>
+<li>The compiler does not create default move constructors, either implicitly or with the =default keyword. You must provide such constructors explicitly to create them.</li>
+</ul>
+</td>
+</tr>
+
+<tr>
 <td>Standard Integers</td>
 <td>Typedefs within <code>&lt;stdint.h&gt;</code>
 and <code>&lt;inttypes&gt;</code></td>
@@ -355,7 +373,7 @@ std::end</a></td>
 <td><code>std::move()</code></td>
 <td>Facilitates efficient move operations</td>
 <td><a href="http://en.cppreference.com/w/cpp/utility/move"><code>std::move</code> reference</a></td>
-<td>Note: std::move() is allowed but writing your own move constructors is still only allowed in exceptional cases for now, see 'Rvalue References (and Move Semantics)'. <a href='https://groups.google.com/a/chromium.org/forum/#!topic/cxx/x_dWFxJFdbM'>Discussion thread</a></td>
+<td><a href='https://groups.google.com/a/chromium.org/forum/#!topic/cxx/x_dWFxJFdbM'>Discussion thread</a></td>
 </tr>
 
 <tr>
@@ -458,15 +476,6 @@ sequences, easing parsing in regex expressions, for example</td>
 <td><a href="http://en.cppreference.com/w/cpp/language/string_literal">
 string literal</a></td>
 <td>Causes incorrect line numbers in MSVS2013 and gcc. Reevaluate once that works. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/2kWQHbbuMHI">Discussion thread</a></td>
-</tr>
-
-<tr>
-<td>Rvalue References (and Move Semantics)</td>
-<td><code>T(T&amp;&amp; t)</code> and <code>T&amp; operator=(T&amp;&amp; t)</code></td>
-<td>Reference that only binds to a temporary object</td>
-<td><a href="http://en.cppreference.com/w/cpp/language/references#Rvalue_references">
-Rvalue references</a></td>
-<td>To be revisited in the future.  Allowed in exceptional cases where approved by the OWNERS of src/styleguide/c++/. <a href="https://groups.google.com/a/chromium.org/d/topic/chromium-dev/UnRaORb4TSw">Discussion thread</a></td>
 </tr>
 
 <tr>
