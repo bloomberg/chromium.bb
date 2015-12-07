@@ -5,19 +5,14 @@
 :host {
   align-items: center;
   background: rgb(245, 245, 245);
-  bottom: 72px;  /* Room for the controls bar. */
   color: rgb(51, 51, 51);
   cursor: default;
   display: flex;
   flex-direction: column;
   font-size: 10pt;
   justify-content: flex-start;
-  left: 0;
   overflow-x: hidden;
   overflow-y: auto;
-  position: absolute;
-  right: 0;
-  top: 0;
 }
 
 /* Track item. */
