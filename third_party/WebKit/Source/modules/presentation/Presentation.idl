@@ -8,7 +8,7 @@
     GarbageCollected,
     RuntimeEnabled=Presentation
 ] interface Presentation {
-    [MeasureAs=PresentationDefaultRequest, LegacyInterfaceTypeChecking] attribute PresentationRequest? defaultRequest;
+    [MeasureAs=PresentationDefaultRequest] attribute PresentationRequest? defaultRequest;
 
     // This API is available on the receiving browsing context.
     [RuntimeEnabled=PresentationReceiver, SameObject] readonly attribute PresentationReceiver? receiver;

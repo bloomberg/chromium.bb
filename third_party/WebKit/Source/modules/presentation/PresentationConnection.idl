@@ -24,7 +24,7 @@ enum PresentationConnectionState {
     attribute BinaryType binaryType;
     attribute EventHandler onmessage;
     [RaisesException, MeasureAs=PresentationConnectionSend] void send(DOMString message);
-    [RaisesException, MeasureAs=PresentationConnectionSend, LegacyInterfaceTypeChecking] void send(Blob data);
-    [RaisesException, MeasureAs=PresentationConnectionSend, LegacyInterfaceTypeChecking] void send(ArrayBuffer data);
-    [RaisesException, MeasureAs=PresentationConnectionSend, LegacyInterfaceTypeChecking] void send(ArrayBufferView data);
+    [RaisesException, MeasureAs=PresentationConnectionSend] void send(Blob data);
+    [RaisesException, MeasureAs=PresentationConnectionSend] void send(ArrayBuffer data);
+    [RaisesException, MeasureAs=PresentationConnectionSend] void send(ArrayBufferView data);
 };
