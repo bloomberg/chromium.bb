@@ -101,6 +101,12 @@ ChildProcessHostImpl::ChildProcessHostImpl(ChildProcessHostDelegate* delegate)
 }
 
 ChildProcessHostImpl::~ChildProcessHostImpl() {
+  // If a channel was never created than it wasn't registered and the filters
+  // weren't notified. For the sake of symmetry don't call the matching teardown
+  // functions. This is analogous to how RenderProcessHostImpl handles things.
+  if (!channel_)
+    return;
+
 #if USE_ATTACHMENT_BROKER
   IPC::AttachmentBroker::GetGlobal()->DeregisterCommunicationChannel(
       channel_.get());
