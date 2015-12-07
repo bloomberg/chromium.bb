@@ -149,7 +149,7 @@ function getPageCache(opt_doc) {
  * @return {*} The wrapped value.
  */
 function wrap(value) {
-  if (typeof(value) == 'object' && value != null) {
+  if (value instanceof Object && value != null) {
     var nodeType = value['nodeType'];
     if (nodeType == NodeType.ELEMENT || nodeType == NodeType.DOCUMENT
         || (SHADOW_DOM_ENABLED && value instanceof ShadowRoot)) {
@@ -176,7 +176,7 @@ function wrap(value) {
  * @return {*} The unwrapped value.
  */
 function unwrap(value, cache) {
-  if (typeof(value) == 'object' && value != null) {
+  if (value instanceof Object && value != null) {
     if (ELEMENT_KEY in value)
       return cache.retrieveItem(value[ELEMENT_KEY]);
 
