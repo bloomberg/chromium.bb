@@ -199,8 +199,8 @@ function isFormInteresting_(form, numEditableElements, numFieldsRequired) {
   // If the form has at least one field with an autocomplete attribute, it is a
   // candidate for autofill.
   for (var i = 0; i < form.fields.length; ++i) {
-    if (form.fields['autocomplete_attribute'] != null &&
-        form.fields['autocomplete_attribute'].length > 0) {
+    if (form.fields[i]['autocomplete_attribute'] != null &&
+        form.fields[i]['autocomplete_attribute'].length > 0) {
       return true;
     }
   }
