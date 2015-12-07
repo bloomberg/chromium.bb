@@ -28,6 +28,10 @@ class LocationBarView;
 class OmniboxPopupView;
 class Profile;
 
+namespace content {
+class WebContents;
+}  // namespace content
+
 namespace gfx {
 class RenderText;
 }

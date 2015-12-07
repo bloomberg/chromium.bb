@@ -21,7 +21,7 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(ChromeSecurityStateModelClient);
 ChromeSecurityStateModelClient::ChromeSecurityStateModelClient(
     content::WebContents* web_contents)
     : web_contents_(web_contents),
-      security_state_model_(new SecurityStateModel(web_contents)) {
+      security_state_model_(new SecurityStateModel()) {
   security_state_model_->SetClient(this);
 }
 
@@ -51,4 +51,32 @@ bool ChromeSecurityStateModelClient::UsedPolicyInstalledCertificate() {
     return true;
 #endif
   return false;
+}
+
+void ChromeSecurityStateModelClient::GetVisibleSecurityState(
+    SecurityStateModel::VisibleSecurityState* state) {
+  content::NavigationEntry* entry =
+      web_contents_->GetController().GetVisibleEntry();
+  if (!entry) {
+    *state = SecurityStateModel::VisibleSecurityState();
+    return;
+  }
+
+  state->url = entry->GetURL();
+  const content::SSLStatus& ssl = entry->GetSSL();
+  state->initial_security_style = ssl.security_style;
+  state->cert_id = ssl.cert_id;
+  state->cert_status = ssl.cert_status;
+  state->connection_status = ssl.connection_status;
+  state->security_bits = ssl.security_bits;
+  state->sct_verify_statuses.clear();
+  for (const auto& sct : ssl.signed_certificate_timestamp_ids)
+    state->sct_verify_statuses.push_back(sct.status);
+  state->displayed_mixed_content =
+      (ssl.content_status & content::SSLStatus::DISPLAYED_INSECURE_CONTENT)
+          ? true
+          : false;
+  state->ran_mixed_content =
+      (ssl.content_status & content::SSLStatus::RAN_INSECURE_CONTENT) ? true
+                                                                      : false;
 }

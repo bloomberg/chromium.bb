@@ -6,17 +6,12 @@
 #define CHROME_BROWSER_SSL_SECURITY_STATE_MODEL_H_
 
 #include "base/macros.h"
-#include "content/public/browser/web_contents_user_data.h"
 #include "content/public/common/security_style.h"
 #include "content/public/common/ssl_status.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/sct_status_flags.h"
 #include "net/cert/x509_certificate.h"
-
-namespace content {
-class NavigationHandle;
-class WebContents;
-}  // namespace content
+#include "url/gurl.h"
 
 class Profile;
 class SecurityStateModelClient;
@@ -116,46 +111,64 @@ class SecurityStateModel {
     bool is_secure_protocol_and_ciphersuite;
   };
 
+  // Contains the security state relevant to computing the SecurityInfo
+  // for a page. This is the input to GetSecurityInfo() provided by the
+  // model's client.
+  struct VisibleSecurityState {
+    VisibleSecurityState();
+    ~VisibleSecurityState();
+    bool operator==(const VisibleSecurityState& other) const;
+    GURL url;
+    // The baseline SecurityStyle describing the page or request
+    // before any SecurityStateModel policies have been applied.
+    // TODO(estark): Change this to a SecurityLevel to remove the
+    // dependency on content. https://crbug.com/515071
+    content::SecurityStyle initial_security_style;
+    // The following fields contain information about the connection
+    // used to load the page or request.
+    int cert_id;
+    net::CertStatus cert_status;
+    int connection_status;
+    int security_bits;
+    // The verification statuses of the Signed Certificate
+    // Timestamps (if any) that the server provided.
+    std::vector<net::ct::SCTVerifyStatus> sct_verify_statuses;
+    // True if the page displayed passive mixed content.
+    bool displayed_mixed_content;
+    // True if the page ran active mixed content.
+    bool ran_mixed_content;
+  };
+
   // These security styles describe the treatment given to pages that
   // display and run mixed content. They are used to coordinate the
   // treatment of mixed content with other security UI elements.
   static const content::SecurityStyle kDisplayedInsecureContentStyle;
   static const content::SecurityStyle kRanInsecureContentStyle;
 
-  explicit SecurityStateModel(content::WebContents* web_contents);
+  SecurityStateModel();
   virtual ~SecurityStateModel();
 
   // Returns a SecurityInfo describing the current page. Results are
-  // cached so that computation is only done once per visible
-  // NavigationEntry.
+  // cached so that computation is only done when the relevant security
+  // state has changed.
   const SecurityInfo& GetSecurityInfo() const;
 
   void SetClient(SecurityStateModelClient* client);
 
   // Returns a SecurityInfo describing an individual request for the
-  // given |profile|.
+  // given |client|.
   static void SecurityInfoForRequest(
-      const GURL& url,
-      const content::SSLStatus& ssl,
-      Profile* profile,
+      SecurityStateModelClient* client,
+      const VisibleSecurityState& visible_security_state,
       const scoped_refptr<net::X509Certificate>& cert,
-      bool used_known_mitm_certificate,
       SecurityInfo* security_info);
 
  private:
-  // The WebContents for which this class describes the security status.
-  //
-  // TODO(estark): this should go away shortly and the model should rely
-  // on its delegate to provide whatever it needs from the
-  // WebContents. https://crbug.com/515071
-  content::WebContents* web_contents_;
-
-  // These data members cache the SecurityInfo for the visible
-  // NavigationEntry. They are marked mutable so that the const accessor
-  // GetSecurityInfo() can update the cache.
+  // Caches the SecurityInfo for the visible page. Marked
+  // mutable so that the const accessor GetSecurityInfo() can update the
+  // cached values.
   mutable SecurityInfo security_info_;
-  mutable GURL visible_url_;
-  mutable content::SSLStatus visible_ssl_status_;
+  mutable VisibleSecurityState visible_security_state_;
 
   SecurityStateModelClient* client_;
 
