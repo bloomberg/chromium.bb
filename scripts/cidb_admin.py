@@ -12,6 +12,7 @@ from chromite.lib import cidb
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
+from chromite.lib import git
 
 
 MIGRATE = 'migrate'
@@ -44,6 +45,20 @@ def main(argv):
 
   logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
 
+  # Check that we have no uncommitted files, and that our checkout's HEAD is
+  # contained in a remote branch. This is to ensure that we don't accidentally
+  # run uncommitted migrations.
+  uncommitted_files = git.RunGit(os.getcwd(), ['status', '-s']).output
+  if uncommitted_files:
+    cros_build_lib.Die('You appear to have uncommitted files. Aborting!')
+
+  remote_branches = git.RunGit(
+      os.getcwd(), ['branch', '-r', '--contains']).output
+  if not remote_branches:
+    cros_build_lib.Die(
+        'You appear to be on a local branch of chromite. Aborting!')
+
+
   if options.command == MIGRATE:
     positive_confirmation = 'please modify my database'
     warn = ('This option will apply schema changes to your existing database. '
@@ -61,14 +76,12 @@ def main(argv):
                 os.path.join(options.cred_dir, 'host.txt'),
                 positive_confirmation)
   else:
-    print('No command or unsupported command. Exiting.')
-    exit()
+    cros_build_lib.Die('No command or unsupported command. Exiting.')
 
   print(warn)
   conf_string = cros_build_lib.GetInput('(%s)?: ' % positive_confirmation)
   if conf_string != positive_confirmation:
-    print('You changed your mind. Aborting.')
-    exit()
+    cros_build_lib.Die('You changed your mind. Aborting.')
 
   if options.command == MIGRATE:
     print('OK, applying migrations...')
