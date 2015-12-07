@@ -138,6 +138,14 @@ void WindowTreeHostImpl::OnCursorUpdated(ServerWindow* window) {
     UpdateNativeCursor(window->cursor());
 }
 
+void WindowTreeHostImpl::MaybeChangeCursorOnWindowTreeChange() {
+  event_dispatcher_.UpdateCursorProviderByLastKnownLocation();
+  ServerWindow* cursor_source_window =
+      event_dispatcher_.mouse_cursor_source_window();
+  if (cursor_source_window)
+    UpdateNativeCursor(cursor_source_window->cursor());
+}
+
 void WindowTreeHostImpl::SetSize(mojo::SizePtr size) {
   display_manager_->SetViewportSize(size.To<gfx::Size>());
 }

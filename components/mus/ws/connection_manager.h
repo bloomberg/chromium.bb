@@ -200,6 +200,9 @@ class ConnectionManager : public ServerWindowDelegate,
   // Adds |connection| to internal maps.
   void AddConnection(ClientConnection* connection);
 
+  // Run in response to events which may cause us to change the native cursor.
+  void MaybeUpdateNativeCursor(ServerWindow* window);
+
   // Overridden from ServerWindowDelegate:
   mus::SurfacesState* GetSurfacesState() override;
   void OnScheduleWindowPaint(const ServerWindow* window) override;

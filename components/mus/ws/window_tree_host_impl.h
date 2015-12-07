@@ -97,6 +97,11 @@ class WindowTreeHostImpl : public DisplayManagerDelegate,
   // native display if the cursor is currently under |window|.
   void OnCursorUpdated(ServerWindow* window);
 
+  // Called when the window tree when stacking and bounds of a window
+  // change. This may update the cursor if the ServerWindow under the last
+  // known pointer location changed.
+  void MaybeChangeCursorOnWindowTreeChange();
+
   // WindowTreeHost:
   void SetSize(mojo::SizePtr size) override;
   void SetTitle(const mojo::String& title) override;

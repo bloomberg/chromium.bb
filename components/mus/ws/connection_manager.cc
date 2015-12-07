@@ -378,6 +378,13 @@ void ConnectionManager::AddConnection(ClientConnection* connection) {
   connection_map_[connection->service()->id()] = connection;
 }
 
+void ConnectionManager::MaybeUpdateNativeCursor(ServerWindow* window) {
+  // This can be null in unit tests.
+  WindowTreeHostImpl* impl = GetWindowTreeHostByWindow(window);
+  if (impl)
+    impl->MaybeChangeCursorOnWindowTreeChange();
+}
+
 mus::SurfacesState* ConnectionManager::GetSurfacesState() {
   return surfaces_state_.get();
 }
@@ -429,6 +436,8 @@ void ConnectionManager::OnWindowHierarchyChanged(ServerWindow* window,
     SchedulePaint(old_parent, gfx::Rect(old_parent->bounds().size()));
   if (new_parent)
     SchedulePaint(new_parent, gfx::Rect(new_parent->bounds().size()));
+
+  MaybeUpdateNativeCursor(window);
 }
 
 void ConnectionManager::OnWindowBoundsChanged(ServerWindow* window,
@@ -444,6 +453,8 @@ void ConnectionManager::OnWindowBoundsChanged(ServerWindow* window,
   // TODO(sky): optimize this.
   SchedulePaint(window->parent(), old_bounds);
   SchedulePaint(window->parent(), new_bounds);
+
+  MaybeUpdateNativeCursor(window);
 }
 
 void ConnectionManager::OnWindowClientAreaChanged(
@@ -463,6 +474,7 @@ void ConnectionManager::OnWindowReordered(ServerWindow* window,
   ProcessWindowReorder(window, relative, direction);
   if (!in_destructor_)
     SchedulePaint(window, gfx::Rect(window->bounds().size()));
+  MaybeUpdateNativeCursor(window);
 }
 
 void ConnectionManager::OnWillChangeWindowVisibility(ServerWindow* window) {

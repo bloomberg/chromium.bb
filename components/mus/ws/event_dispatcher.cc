@@ -169,6 +169,14 @@ EventDispatcher::~EventDispatcher() {
   }
 }
 
+void EventDispatcher::UpdateCursorProviderByLastKnownLocation() {
+  if (!mouse_button_down_) {
+    gfx::Point location = mouse_pointer_last_location_;
+    mouse_cursor_source_window_ =
+        FindDeepestVisibleWindowForEvents(root_, surface_id_, &location);
+  }
+}
+
 bool EventDispatcher::AddAccelerator(uint32_t id,
                                      mojom::EventMatcherPtr event_matcher) {
   EventMatcher matcher(*event_matcher);
@@ -224,6 +232,9 @@ void EventDispatcher::ProcessPointerEvent(mojom::EventPtr event) {
   bool is_mouse_event =
       event->pointer_data &&
       event->pointer_data->kind == mojom::PointerKind::POINTER_KIND_MOUSE;
+
+  if (is_mouse_event)
+    mouse_pointer_last_location_ = EventLocationToPoint(*event);
 
   const int32_t pointer_id = event->pointer_data->pointer_id;
   if (event->action == mojom::EVENT_TYPE_WHEEL ||

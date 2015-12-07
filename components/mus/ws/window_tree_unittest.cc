@@ -380,7 +380,8 @@ class WindowTreeTest : public testing::Test {
   // Embeds a child window to the root window. Shared setup between several of
   // the unit tests.
   void SetupEventTargeting(TestWindowTreeClient** out_client,
-                           ServerWindow** out_window);
+                           WindowTreeImpl** window_tree_connection,
+                           ServerWindow** window);
 
  protected:
   // testing::Test:
@@ -414,8 +415,10 @@ class WindowTreeTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(WindowTreeTest);
 };
 
-void WindowTreeTest::SetupEventTargeting(TestWindowTreeClient** out_client,
-                                         ServerWindow** out_window) {
+void WindowTreeTest::SetupEventTargeting(
+    TestWindowTreeClient** out_client,
+    WindowTreeImpl** window_tree_connection,
+    ServerWindow** window) {
   const WindowId embed_window_id(wm_connection()->id(), 1);
   EXPECT_TRUE(
       wm_connection()->NewWindow(embed_window_id, ServerWindow::Properties()));
@@ -457,7 +460,8 @@ void WindowTreeTest::SetupEventTargeting(TestWindowTreeClient** out_client,
   wm_client()->tracker()->changes()->clear();
 
   *out_client = embed_connection;
-  *out_window = v1;
+  *window_tree_connection = connection1;
+  *window = v1;
 }
 
 // Verifies focus correctly changes on pointer events.
@@ -549,8 +553,10 @@ TEST_F(WindowTreeTest, FocusOnPointer) {
 
 TEST_F(WindowTreeTest, BasicInputEventTarget) {
   TestWindowTreeClient* embed_connection = nullptr;
-  ServerWindow* out_window = nullptr;
-  EXPECT_NO_FATAL_FAILURE(SetupEventTargeting(&embed_connection, &out_window));
+  WindowTreeImpl* window_tree_connection = nullptr;
+  ServerWindow* window = nullptr;
+  EXPECT_NO_FATAL_FAILURE(
+      SetupEventTargeting(&embed_connection, &window_tree_connection, &window));
 
   // Send an event to |v1|. |embed_connection| should get the event, not
   // |wm_client|, since |v1| lives inside an embedded window.
@@ -567,14 +573,16 @@ TEST_F(WindowTreeTest, BasicInputEventTarget) {
 
 TEST_F(WindowTreeTest, CursorChangesWhenMouseOverWindowAndWindowSetsCursor) {
   TestWindowTreeClient* embed_connection = nullptr;
-  ServerWindow* out_window = nullptr;
-  EXPECT_NO_FATAL_FAILURE(SetupEventTargeting(&embed_connection, &out_window));
+  WindowTreeImpl* window_tree_connection = nullptr;
+  ServerWindow* window = nullptr;
+  EXPECT_NO_FATAL_FAILURE(
+      SetupEventTargeting(&embed_connection, &window_tree_connection, &window));
 
   // Like in BasicInputEventTarget, we send a pointer down event to be
   // dispatched. This is only to place the mouse cursor over that window though.
   DispatchEventAndAckImmediately(CreateMouseMoveEvent(21, 22));
 
-  out_window->SetPredefinedCursor(mojom::Cursor::CURSOR_IBEAM);
+  window->SetPredefinedCursor(mojom::Cursor::CURSOR_IBEAM);
 
   // Because the cursor is over the window when SetCursor was called, we should
   // have immediately changed the cursor.
@@ -583,13 +591,15 @@ TEST_F(WindowTreeTest, CursorChangesWhenMouseOverWindowAndWindowSetsCursor) {
 
 TEST_F(WindowTreeTest, CursorChangesWhenEnteringWindowWithDifferentCursor) {
   TestWindowTreeClient* embed_connection = nullptr;
-  ServerWindow* out_window = nullptr;
-  EXPECT_NO_FATAL_FAILURE(SetupEventTargeting(&embed_connection, &out_window));
+  WindowTreeImpl* window_tree_connection = nullptr;
+  ServerWindow* window = nullptr;
+  EXPECT_NO_FATAL_FAILURE(
+      SetupEventTargeting(&embed_connection, &window_tree_connection, &window));
 
   // Let's create a pointer event outside the window and then move the pointer
   // inside.
   DispatchEventAndAckImmediately(CreateMouseMoveEvent(5, 5));
-  out_window->SetPredefinedCursor(mojom::Cursor::CURSOR_IBEAM);
+  window->SetPredefinedCursor(mojom::Cursor::CURSOR_IBEAM);
   EXPECT_EQ(mojom::Cursor::CURSOR_NULL, cursor_id());
 
   DispatchEventAndAckImmediately(CreateMouseMoveEvent(21, 22));
@@ -598,13 +608,15 @@ TEST_F(WindowTreeTest, CursorChangesWhenEnteringWindowWithDifferentCursor) {
 
 TEST_F(WindowTreeTest, TouchesDontChangeCursor) {
   TestWindowTreeClient* embed_connection = nullptr;
-  ServerWindow* out_window = nullptr;
-  EXPECT_NO_FATAL_FAILURE(SetupEventTargeting(&embed_connection, &out_window));
+  WindowTreeImpl* window_tree_connection = nullptr;
+  ServerWindow* window = nullptr;
+  EXPECT_NO_FATAL_FAILURE(
+      SetupEventTargeting(&embed_connection, &window_tree_connection, &window));
 
   // Let's create a pointer event outside the window and then move the pointer
   // inside.
   DispatchEventAndAckImmediately(CreateMouseMoveEvent(5, 5));
-  out_window->SetPredefinedCursor(mojom::Cursor::CURSOR_IBEAM);
+  window->SetPredefinedCursor(mojom::Cursor::CURSOR_IBEAM);
   EXPECT_EQ(mojom::Cursor::CURSOR_NULL, cursor_id());
 
   // With a touch event, we shouldn't update the cursor.
@@ -614,13 +626,15 @@ TEST_F(WindowTreeTest, TouchesDontChangeCursor) {
 
 TEST_F(WindowTreeTest, DragOutsideWindow) {
   TestWindowTreeClient* embed_connection = nullptr;
-  ServerWindow* out_window = nullptr;
-  EXPECT_NO_FATAL_FAILURE(SetupEventTargeting(&embed_connection, &out_window));
+  WindowTreeImpl* window_tree_connection = nullptr;
+  ServerWindow* window = nullptr;
+  EXPECT_NO_FATAL_FAILURE(
+      SetupEventTargeting(&embed_connection, &window_tree_connection, &window));
 
   // Start with the cursor outside the window. Setting the cursor shouldn't
   // change the cursor.
   DispatchEventAndAckImmediately(CreateMouseMoveEvent(5, 5));
-  out_window->SetPredefinedCursor(mojom::Cursor::CURSOR_IBEAM);
+  window->SetPredefinedCursor(mojom::Cursor::CURSOR_IBEAM);
   EXPECT_EQ(mojom::Cursor::CURSOR_NULL, cursor_id());
 
   // Move the pointer to the inside of the window
@@ -641,8 +655,60 @@ TEST_F(WindowTreeTest, DragOutsideWindow) {
   EXPECT_EQ(mojom::Cursor::CURSOR_NULL, cursor_id());
 }
 
-// TODO(erg): Add tests for when programmatic changes to the window hierarchy
-// would cause the window that supplies the cursor to change.
+TEST_F(WindowTreeTest, ChangingWindowBoundsChangesCursor) {
+  TestWindowTreeClient* embed_connection = nullptr;
+  WindowTreeImpl* window_tree_connection = nullptr;
+  ServerWindow* window = nullptr;
+  EXPECT_NO_FATAL_FAILURE(
+      SetupEventTargeting(&embed_connection, &window_tree_connection, &window));
+
+  // Put the cursor just outside the bounds of the window.
+  DispatchEventAndAckImmediately(CreateMouseMoveEvent(41, 41));
+  window->SetPredefinedCursor(mojom::Cursor::CURSOR_IBEAM);
+  EXPECT_EQ(mojom::Cursor::CURSOR_NULL, cursor_id());
+
+  // Expand the bounds of the window so they now include where the cursor now
+  // is.
+  window->SetBounds(gfx::Rect(20, 20, 25, 25));
+  EXPECT_EQ(mojom::Cursor::CURSOR_IBEAM, cursor_id());
+
+  // Contract the bounds again.
+  window->SetBounds(gfx::Rect(20, 20, 20, 20));
+  EXPECT_EQ(mojom::Cursor::CURSOR_NULL, cursor_id());
+}
+
+TEST_F(WindowTreeTest, WindowReorderingChangesCursor) {
+  TestWindowTreeClient* embed_connection = nullptr;
+  WindowTreeImpl* window_tree_connection = nullptr;
+  ServerWindow* window1 = nullptr;
+  EXPECT_NO_FATAL_FAILURE(SetupEventTargeting(
+      &embed_connection, &window_tree_connection, &window1));
+
+  // Create a second window right over the first.
+  const WindowId embed_window_id(wm_connection()->id(), 1);
+  const WindowId child2(window_tree_connection->id(), 2);
+  EXPECT_TRUE(
+      window_tree_connection->NewWindow(child2, ServerWindow::Properties()));
+  EXPECT_TRUE(window_tree_connection->AddWindow(embed_window_id, child2));
+  window_tree_connection->GetHost()->AddActivationParent(
+      WindowIdToTransportId(embed_window_id));
+  ServerWindow* window2 = window_tree_connection->GetWindow(child2);
+  window2->SetVisible(true);
+  window2->SetBounds(gfx::Rect(20, 20, 20, 20));
+  EnableHitTest(window2);
+
+  // Give each window a different cursor.
+  window1->SetPredefinedCursor(mojom::Cursor::CURSOR_IBEAM);
+  window2->SetPredefinedCursor(mojom::Cursor::CURSOR_HAND);
+
+  // We expect window2 to be over window1 now.
+  DispatchEventAndAckImmediately(CreateMouseMoveEvent(22, 22));
+  EXPECT_EQ(mojom::Cursor::CURSOR_HAND, cursor_id());
+
+  // But when we put window2 at the bottom, we should adapt window1's cursor.
+  window2->parent()->StackChildAtBottom(window2);
+  EXPECT_EQ(mojom::Cursor::CURSOR_IBEAM, cursor_id());
+}
 
 TEST_F(WindowTreeTest, EventAck) {
   const WindowId embed_window_id(wm_connection()->id(), 1);
