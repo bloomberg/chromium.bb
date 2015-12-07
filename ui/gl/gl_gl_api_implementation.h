@@ -124,11 +124,13 @@ class VirtualGLApi : public GLApiBase {
 
   void OnReleaseVirtuallyCurrent(GLContext* virtual_context);
 
-private:
+ private:
   // Overridden functions from GLApiBase
- const GLubyte* glGetStringFn(GLenum name) override;
- void glFinishFn() override;
- void glFlushFn() override;
+  void glGetIntegervFn(GLenum pname, GLint* params) override;
+  const GLubyte* glGetStringFn(GLenum name) override;
+  const GLubyte* glGetStringiFn(GLenum name, GLuint index) override;
+  void glFinishFn() override;
+  void glFlushFn() override;
 
   // The real context we're running on.
   GLContext* real_context_;
@@ -138,6 +140,7 @@ private:
 
   // The supported extensions being advertised for this virtual context.
   std::string extensions_;
+  std::vector<std::string> extensions_vec_;
 };
 
 }  // namespace gfx

@@ -525,6 +525,8 @@ void VirtualGLApi::Initialize(DriverGL* driver, GLContext* real_context) {
 
   DCHECK(real_context->IsCurrent(NULL));
   extensions_ = real_context->GetExtensions();
+  extensions_vec_ = base::SplitString(extensions_, " ", base::TRIM_WHITESPACE,
+                                      base::SPLIT_WANT_ALL);
 }
 
 bool VirtualGLApi::MakeCurrent(GLContext* virtual_context, GLSurface* surface) {
@@ -598,12 +600,34 @@ void VirtualGLApi::OnReleaseVirtuallyCurrent(GLContext* virtual_context) {
     current_context_ = NULL;
 }
 
+void VirtualGLApi::glGetIntegervFn(GLenum pname, GLint* params) {
+  switch (pname) {
+    case GL_NUM_EXTENSIONS:
+      *params = static_cast<GLint>(extensions_vec_.size());
+      break;
+    default:
+      driver_->fn.glGetIntegervFn(pname, params);
+      break;
+  }
+}
+
 const GLubyte* VirtualGLApi::glGetStringFn(GLenum name) {
   switch (name) {
     case GL_EXTENSIONS:
       return reinterpret_cast<const GLubyte*>(extensions_.c_str());
     default:
       return driver_->fn.glGetStringFn(name);
+  }
+}
+
+const GLubyte* VirtualGLApi::glGetStringiFn(GLenum name, GLuint index) {
+  switch (name) {
+    case GL_EXTENSIONS:
+      if (index >= extensions_vec_.size())
+        return NULL;
+      return reinterpret_cast<const GLubyte*>(extensions_vec_[index].c_str());
+    default:
+      return driver_->fn.glGetStringiFn(name, index);
   }
 }
 
