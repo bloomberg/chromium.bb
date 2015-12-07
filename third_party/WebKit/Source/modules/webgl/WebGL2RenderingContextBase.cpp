@@ -2339,23 +2339,9 @@ GLuint WebGL2RenderingContextBase::getUniformBlockIndex(WebGLProgram* program, c
     return webContext()->getUniformBlockIndex(objectOrZero(program), uniformBlockName.utf8().data());
 }
 
-bool WebGL2RenderingContextBase::validateUniformBlockIndex(const char* functionName, WebGLProgram* program, GLuint blockIndex)
-{
-    GLint activeUniformBlocks = 0;
-    webContext()->getProgramiv(objectOrZero(program), GL_ACTIVE_UNIFORM_BLOCKS, &activeUniformBlocks);
-    if (blockIndex >= static_cast<GLuint>(activeUniformBlocks)) {
-        synthesizeGLError(GL_INVALID_VALUE, functionName, "invalid uniform block index");
-        return false;
-    }
-    return true;
-}
-
 ScriptValue WebGL2RenderingContextBase::getActiveUniformBlockParameter(ScriptState* scriptState, WebGLProgram* program, GLuint uniformBlockIndex, GLenum pname)
 {
     if (isContextLost() || !validateWebGLObject("getActiveUniformBlockParameter", program))
-        return ScriptValue::createNull(scriptState);
-
-    if (!validateUniformBlockIndex("getActiveUniformBlockParameter", program, uniformBlockIndex))
         return ScriptValue::createNull(scriptState);
 
     switch (pname) {
@@ -2394,9 +2380,6 @@ String WebGL2RenderingContextBase::getActiveUniformBlockName(WebGLProgram* progr
     if (isContextLost() || !validateWebGLObject("getActiveUniformBlockName", program))
         return String();
 
-    if (!validateUniformBlockIndex("getActiveUniformBlockName", program, uniformBlockIndex))
-        return String();
-
     GLint maxNameLength = -1;
     webContext()->getProgramiv(objectOrZero(program), GL_ACTIVE_UNIFORM_BLOCK_MAX_NAME_LENGTH, &maxNameLength);
     if (maxNameLength <= 0) {
@@ -2415,9 +2398,6 @@ String WebGL2RenderingContextBase::getActiveUniformBlockName(WebGLProgram* progr
 void WebGL2RenderingContextBase::uniformBlockBinding(WebGLProgram* program, GLuint uniformBlockIndex, GLuint uniformBlockBinding)
 {
     if (isContextLost() || !validateWebGLObject("uniformBlockBinding", program))
-        return;
-
-    if (!validateUniformBlockIndex("uniformBlockBinding", program, uniformBlockIndex))
         return;
 
     webContext()->uniformBlockBinding(objectOrZero(program), uniformBlockIndex, uniformBlockBinding);
