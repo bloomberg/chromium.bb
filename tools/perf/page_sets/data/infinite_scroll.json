@@ -1,12 +1,18 @@
 {
     "description": "Describes the Web Page Replay archives for a story set. Don't edit by hand! Use record_wpr for updating.", 
     "archives": {
+        "infinite_scroll_001.wpr": [
+            "facebook"
+        ], 
+        "infinite_scroll_003.wpr": [
+            "flickr"
+        ], 
         "infinite_scroll_000.wpr": [
             "twitter", 
-            "facebook", 
             "espn", 
-            "yahoo", 
-            "flickr", 
+            "yahoo"
+        ], 
+        "infinite_scroll_002.wpr": [
             "tumblr"
         ]
     }

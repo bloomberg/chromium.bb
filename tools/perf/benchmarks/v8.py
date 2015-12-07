@@ -65,7 +65,8 @@ class V8InfiniteScroll(perf_benchmark.PerfBenchmark):
         # See: http://crbug.com/513692
         '--enable-memory-benchmarking',
         # TODO(ssid): Remove this flag after fixing http://crbug.com/461788.
-        '--no-sandbox'
+        '--no-sandbox',
+        '--js-flags=--heap-growing-percent=10'
     ])
 
   def CreateStorySet(self, options):

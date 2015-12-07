@@ -6,6 +6,7 @@ from telemetry.page import shared_page_state
 from telemetry import story
 
 TIME_TO_WAIT_BEFORE_STARTING_IN_SECONDS = 5
+SCROLL_TIMEOUT_IN_SECONDS=120
 
 # TODO(ulan): Remove this once crbug.com/541508 is fixed.
 STARTUP_SCRIPT = '''
@@ -20,7 +21,8 @@ def _ScrollAction(action_runner, scroll_amount, delay, repeat):
     action_runner.RepeatableBrowserDrivenScroll(
       y_scroll_distance_ratio=scroll_amount,
       repeat_delay_ms=delay,
-      repeat_count=repeat)
+      repeat_count=repeat,
+      timeout=SCROLL_TIMEOUT_IN_SECONDS)
   with action_runner.CreateInteraction('End'):
     action_runner.tab.browser.DumpMemory()
 
@@ -60,14 +62,11 @@ class InfiniteScrollPageSet(story.StorySet):
         cloud_storage_bucket=story.PARTNER_BUCKET)
     # The scroll distance is chosen such that the page can be scrolled
     # continiously throught the test without hitting the end of the page.
-    SCROLL_FAR = 30
-    SCROLL_NEAR = 13
+    SCROLL_FAR = 60
     SCROLL_PAGE = 1
     pages = [
         ('https://www.facebook.com/shakira', 'facebook', SCROLL_FAR, 0, 0),
         ('https://twitter.com/taylorswift13', 'twitter', SCROLL_PAGE, 10, 30),
-        ('http://espn.go.com/', 'espn', SCROLL_NEAR, 0, 0),
-        ('https://www.yahoo.com', 'yahoo', SCROLL_NEAR, 0, 0),
         ('http://techcrunch.tumblr.com/', 'tumblr', SCROLL_FAR, 0, 0),
         ('https://www.flickr.com/explore', 'flickr', SCROLL_FAR, 0, 0)
     ]
