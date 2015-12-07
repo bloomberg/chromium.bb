@@ -272,15 +272,3 @@ if (use_allocator == "tcmalloc") {
     deps += [ "//base/third_party/dynamic_annotations" ]
   }
 }  # !is_android
-
-source_set("extension_thunks") {
-  visibility = [ "//base/*" ]
-  sources = [
-    "allocator_extension_thunks.cc",
-    "allocator_extension_thunks.h",
-  ]
-  if (is_android && !is_debug) {
-    configs -= [ "//build/config/compiler:default_optimization" ]
-    configs += [ "//build/config/compiler:optimize_max" ]
-  }
-}

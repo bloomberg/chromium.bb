@@ -157,7 +157,6 @@ def write_ninja(path, options):
       'base/third_party/superfasthash/superfasthash.c',
   ])
   static_libraries['base']['sources'].extend([
-      'base/allocator/allocator_extension_thunks.cc',
       'base/at_exit.cc',
       'base/base_paths.cc',
       'base/base_switches.cc',

@@ -9,25 +9,31 @@
 namespace base {
 namespace allocator {
 
+namespace {
+ReleaseFreeMemoryFunction g_release_free_memory_function = nullptr;
+GetNumericPropertyFunction g_get_numeric_property_function = nullptr;
+}
+
 void ReleaseFreeMemory() {
-  thunks::ReleaseFreeMemoryFunction release_free_memory_function =
-      thunks::GetReleaseFreeMemoryFunction();
-  if (release_free_memory_function)
-    release_free_memory_function();
+  if (g_release_free_memory_function)
+    g_release_free_memory_function();
+}
+
+bool GetNumericProperty(const char* name, size_t* value) {
+  return g_get_numeric_property_function &&
+         g_get_numeric_property_function(name, value);
 }
 
 void SetReleaseFreeMemoryFunction(
-    thunks::ReleaseFreeMemoryFunction release_free_memory_function) {
-  DCHECK_EQ(thunks::GetReleaseFreeMemoryFunction(),
-            reinterpret_cast<thunks::ReleaseFreeMemoryFunction>(NULL));
-  thunks::SetReleaseFreeMemoryFunction(release_free_memory_function);
+    ReleaseFreeMemoryFunction release_free_memory_function) {
+  DCHECK(!g_release_free_memory_function);
+  g_release_free_memory_function = release_free_memory_function;
 }
 
 void SetGetNumericPropertyFunction(
-    thunks::GetNumericPropertyFunction get_numeric_property_function) {
-  DCHECK_EQ(thunks::GetGetNumericPropertyFunction(),
-            reinterpret_cast<thunks::GetNumericPropertyFunction>(NULL));
-  thunks::SetGetNumericPropertyFunction(get_numeric_property_function);
+    GetNumericPropertyFunction get_numeric_property_function) {
+  DCHECK(!g_get_numeric_property_function);
+  g_get_numeric_property_function = get_numeric_property_function;
 }
 
 }  // namespace allocator

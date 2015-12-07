@@ -699,7 +699,6 @@ component("base") {
   ]
 
   deps = [
-    "//base/allocator:extension_thunks",
     "//base/third_party/dynamic_annotations",
     "//third_party/modp_b64",
   ]

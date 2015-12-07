@@ -90,7 +90,6 @@ source_set("trace_event") {
       "malloc_dump_provider.cc",
       "malloc_dump_provider.h",
     ]
-    deps += [ "//base/allocator:extension_thunks" ]
   }
 
   if (is_linux || is_android) {
