@@ -3882,7 +3882,7 @@ TEST_P(QuicConnectionTest, NoMtuDiscoveryAfterConnectionClosed) {
 }
 
 TEST_P(QuicConnectionTest, OldTimeoutAfterSend) {
-  FLAGS_quic_use_new_idle_timeout = false;
+  ValueRestore<bool> old_flags(&FLAGS_quic_use_new_idle_timeout, false);
   EXPECT_TRUE(connection_.connected());
   EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
   QuicConfig config;
@@ -3923,7 +3923,7 @@ TEST_P(QuicConnectionTest, OldTimeoutAfterSend) {
 }
 
 TEST_P(QuicConnectionTest, OldTimeoutAfterSendSilentClose) {
-  FLAGS_quic_use_new_idle_timeout = false;
+  ValueRestore<bool> old_flags(&FLAGS_quic_use_new_idle_timeout, false);
   // Same test as above, but complete a handshake which enables silent close,
   // causing no connection close packet to be sent.
   EXPECT_TRUE(connection_.connected());
@@ -3982,7 +3982,7 @@ TEST_P(QuicConnectionTest, OldTimeoutAfterSendSilentClose) {
 }
 
 TEST_P(QuicConnectionTest, TimeoutAfterSend) {
-  FLAGS_quic_use_new_idle_timeout = true;
+  ValueRestore<bool> old_flags(&FLAGS_quic_use_new_idle_timeout, true);
   EXPECT_TRUE(connection_.connected());
   EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
   QuicConfig config;
@@ -4027,7 +4027,7 @@ TEST_P(QuicConnectionTest, TimeoutAfterSend) {
 }
 
 TEST_P(QuicConnectionTest, NewTimeoutAfterSendSilentClose) {
-  FLAGS_quic_use_new_idle_timeout = true;
+  ValueRestore<bool> old_flags(&FLAGS_quic_use_new_idle_timeout, true);
   // Same test as above, but complete a handshake which enables silent close,
   // causing no connection close packet to be sent.
   EXPECT_TRUE(connection_.connected());
@@ -4137,7 +4137,7 @@ TEST_P(QuicConnectionTest, TimeoutAfterReceive) {
 }
 
 TEST_P(QuicConnectionTest, TimeoutAfterReceiveNotSendWhenUnacked) {
-  FLAGS_quic_use_new_idle_timeout = true;
+  ValueRestore<bool> old_flags(&FLAGS_quic_use_new_idle_timeout, true);
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
   EXPECT_TRUE(connection_.connected());
   EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
@@ -5475,7 +5475,7 @@ TEST_P(QuicConnectionTest, DoNotSendGoAwayTwice) {
 }
 
 TEST_P(QuicConnectionTest, ReevaluateTimeUntilSendOnAck) {
-  FLAGS_quic_respect_send_alarm = true;
+  ValueRestore<bool> old_flag(&FLAGS_quic_respect_send_alarm, true);
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
   connection_.SendStreamDataWithString(kClientDataStreamId1, "foo", 0, !kFin,
                                        nullptr);

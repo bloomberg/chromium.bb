@@ -4,8 +4,6 @@
 
 #include "net/quic/quic_flags.h"
 
-bool FLAGS_quic_allow_oversized_packets_for_test = false;
-
 // When true, the use time based loss detection instead of nack.
 bool FLAGS_quic_use_time_loss_detection = false;
 
@@ -50,9 +48,6 @@ bool FLAGS_quic_ack_decimation = true;
 // If true, flow controller may grow the receive window size if necessary.
 bool FLAGS_quic_auto_tune_receive_window = true;
 
-// If true, record received connection options to TransportConnectionStats.
-bool FLAGS_quic_connection_options_to_transport_stats = true;
-
 // Limits QUIC's max CWND to 200 packets.
 bool FLAGS_quic_limit_max_cwnd = true;
 
@@ -60,14 +55,6 @@ bool FLAGS_quic_limit_max_cwnd = true;
 // disabling 0-rtt handshakes.
 // TODO(rtenneti): Enable this flag after CryptoServerTest's are fixed.
 bool FLAGS_quic_require_handshake_confirmation = false;
-
-// If true, after a server silo receives a packet from a migrated QUIC
-// client, a GO_AWAY frame is sent to the client.
-bool FLAGS_send_goaway_after_client_migration = true;
-
-// If true, use an interval set as the internal representation of a packet queue
-// instead of a set.
-bool FLAGS_quic_packet_queue_use_interval_set = true;
 
 // If true, Cubic's epoch is shifted when the sender is application-limited.
 bool FLAGS_shift_quic_cubic_epoch_when_app_limited = true;
@@ -84,10 +71,6 @@ bool FLAGS_quic_disable_pacing = false;
 // If true, Use QUIC's GeneralLossAlgorithm implementation instead of
 // TcpLossAlgorithm or TimeLossAlgorithm.
 bool FLAGS_quic_general_loss_algorithm = true;
-
-// Invoke the QuicAckListener directly, instead of going through the AckNotifier
-// and AckNotifierManager.
-bool FLAGS_quic_no_ack_notifier = true;
 
 // If true, use the unrolled prefetch path in QuicPacketCreator::CopyToBuffer.
 bool FLAGS_quic_packet_creator_prefetch = false;

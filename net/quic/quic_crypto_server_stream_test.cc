@@ -472,7 +472,7 @@ TEST_P(QuicCryptoServerStreamTest, NoTokenBindingWithoutClientSupport) {
 TEST_P(QuicCryptoServerStreamTest, CancelRPCBeforeVerificationCompletes) {
   // Tests that the client can close the connection while the remote strike
   // register verification RPC is still pending.
-  FLAGS_quic_set_client_hello_cb_nullptr = true;
+  ValueRestore<bool> old_flag(&FLAGS_quic_set_client_hello_cb_nullptr, true);
 
   // Set version to QUIC_VERSION_25 as QUIC_VERSION_26 and later don't support
   // asynchronous strike register RPCs.

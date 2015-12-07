@@ -427,7 +427,7 @@ TEST_P(QuicSessionTestServer, OnCanWrite) {
 }
 
 TEST_P(QuicSessionTestServer, TestBatchedWrites) {
-  FLAGS_quic_batch_writes = true;
+  ValueRestore<bool> old_flag(&FLAGS_quic_batch_writes, true);
   TestStream* stream2 = session_.CreateOutgoingDynamicStream();
   TestStream* stream4 = session_.CreateOutgoingDynamicStream();
   TestStream* stream6 = session_.CreateOutgoingDynamicStream();
