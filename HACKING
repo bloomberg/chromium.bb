@@ -257,6 +257,10 @@ binaries can not be used outside the Cygwin environment)
 These steps describe what a maintainer does to make a release; they
 are not needed for ordinary patch submission.
 
+** Update the NEWS entry
+If any new tables were added or renamed please note them with their
+name in the NEWS entry. This is usefull for projects like NVDA.
+
 ** Set the version number
 Update the version number in NEWS (with version, date, and release
 type), ChangeLog and configure.ac.
