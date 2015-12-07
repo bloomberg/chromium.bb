@@ -126,11 +126,6 @@ def interface_context(interface):
     is_global = ('PrimaryGlobal' in extended_attributes or
                  'Global' in extended_attributes)
 
-    # [MeasureAs]
-    is_measure_as = 'MeasureAs' in extended_attributes
-    if is_measure_as:
-        includes.add('core/frame/UseCounter.h')
-
     # [SetWrapperReferenceFrom]
     set_wrapper_reference_from = extended_attributes.get('SetWrapperReferenceFrom')
     if set_wrapper_reference_from:
