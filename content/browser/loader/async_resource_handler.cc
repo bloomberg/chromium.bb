@@ -318,6 +318,9 @@ bool AsyncResourceHandler::OnReadCompleted(int bytes_read, bool* defer) {
     int size;
     if (!buffer_->ShareToProcess(filter->PeerHandle(), &handle, &size))
       return false;
+
+    // TODO(erikchen): Temporary debugging. http://crbug.com/527588.
+    CHECK_LE(size, kBufferSize);
     filter->Send(new ResourceMsg_SetDataBuffer(
         GetRequestID(), handle, size, filter->peer_pid()));
     sent_first_data_msg_ = true;
@@ -328,6 +331,9 @@ bool AsyncResourceHandler::OnReadCompleted(int bytes_read, bool* defer) {
   int64_t current_transfer_size = request()->GetTotalReceivedBytes();
   int encoded_data_length = current_transfer_size - reported_transfer_size_;
   reported_transfer_size_ = current_transfer_size;
+
+  // TODO(erikchen): Temporary debugging. http://crbug.com/527588.
+  CHECK_LE(data_offset, kBufferSize);
 
   filter->Send(new ResourceMsg_DataReceived(
       GetRequestID(), data_offset, bytes_read, encoded_data_length));

@@ -12,6 +12,7 @@
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_attachment_set.h"
 #include "ipc/ipc_message_macros.h"
+#include "ipc/ipc_message_start.h"
 
 namespace IPC {
 namespace internal {
@@ -163,6 +164,11 @@ bool ChannelReader::TranslateInputData(const char* input_data,
 bool ChannelReader::HandleTranslatedMessage(
     Message* translated_message,
     const AttachmentIdVector& attachment_ids) {
+  // TODO(erikchen): Temporary code to help track http://crbug.com/527588.
+  Channel::MessageVerifier verifier = Channel::GetMessageVerifier();
+  if (verifier)
+    verifier(translated_message);
+
   // Immediately handle internal messages.
   if (IsInternalMessage(*translated_message)) {
     EmitLogBeforeDispatch(*translated_message);

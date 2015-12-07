@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "content/child/resource_dispatcher.h"
+#include "content/common/resource_messages.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_start.h"
 #include "third_party/WebKit/public/platform/WebTaskRunner.h"
@@ -49,6 +50,9 @@ ResourceSchedulingFilter::~ResourceSchedulingFilter() {
 }
 
 bool ResourceSchedulingFilter::OnMessageReceived(const IPC::Message& message) {
+  // TODO(erikchen): Temporary code to help track http://crbug.com/527588.
+  content::CheckContentsOfResourceMessage(&message);
+
   base::AutoLock lock(request_id_to_task_runner_map_lock_);
   int request_id;
 

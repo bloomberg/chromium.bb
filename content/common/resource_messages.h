@@ -29,6 +29,10 @@ struct LoadTimingInfo;
 
 namespace content {
 struct ResourceDevToolsInfo;
+
+// TODO(erikchen): Temporary code to help track http://crbug.com/527588.
+// This method sanity checks the contents of the DataReceived resource message.
+void CheckContentsOfResourceMessage(const IPC::Message* m);
 }
 
 namespace IPC {

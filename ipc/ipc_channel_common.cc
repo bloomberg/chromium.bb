@@ -6,6 +6,8 @@
 
 namespace IPC {
 
+static Channel::MessageVerifier g_message_verifier = nullptr;
+
 // static
 scoped_ptr<Channel> Channel::CreateClient(
     const IPC::ChannelHandle& channel_handle,
@@ -45,6 +47,16 @@ scoped_ptr<Channel> Channel::CreateServer(
 }
 
 Channel::~Channel() {
+}
+
+// static
+void Channel::SetMessageVerifier(MessageVerifier verifier) {
+  g_message_verifier = verifier;
+}
+
+// static
+Channel::MessageVerifier Channel::GetMessageVerifier() {
+  return g_message_verifier;
 }
 
 bool Channel::IsSendThreadSafe() const {
