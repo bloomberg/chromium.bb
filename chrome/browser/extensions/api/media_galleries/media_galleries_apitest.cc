@@ -565,9 +565,15 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest,
   DetachFakeDevice();
 }
 
+// Test is flaky, it times out frequently on Win7 bots. See crbug.com/567212.
+#if defined(OS_WIN)
+#define MAYBE_PicasaDefaultLocation DISABLED_PicasaDefaultLocation
+#else
+#define MAYBE_PicasaDefaultLocation PicasaDefaultLocation
+#endif
 #if defined(OS_WIN)|| defined(OS_MACOSX)
 IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest,
-                       PicasaDefaultLocation) {
+                       MAYBE_PicasaDefaultLocation) {
 #if defined(OS_WIN)
   PopulatePicasaTestData(
       ensure_media_directories_exists()->GetFakeLocalAppDataPath());
