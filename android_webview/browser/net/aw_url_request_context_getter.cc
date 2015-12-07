@@ -225,9 +225,8 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
   scoped_ptr<net::MappedHostResolver> host_resolver(new net::MappedHostResolver(
       net::HostResolver::CreateDefaultResolver(nullptr)));
   ApplyCmdlineOverridesToHostResolver(host_resolver.get());
-  builder.add_http_auth_handler_factory(
-      "negotiate",
-      CreateNegotiateAuthHandlerFactory(host_resolver.get()).release());
+  builder.SetHttpAuthHandlerFactory(
+      CreateAuthHandlerFactory(host_resolver.get()).Pass());
   builder.set_host_resolver(host_resolver.Pass());
 
   url_request_context_ = builder.Build().Pass();
@@ -273,18 +272,19 @@ void AwURLRequestContextGetter::SetKeyOnIO(const std::string& key) {
 }
 
 scoped_ptr<net::HttpAuthHandlerFactory>
-AwURLRequestContextGetter::CreateNegotiateAuthHandlerFactory(
+AwURLRequestContextGetter::CreateAuthHandlerFactory(
     net::HostResolver* resolver) {
   DCHECK(resolver);
-  std::vector<std::string> supported_schemes = {"negotiate"};
+
+  // In Chrome this is configurable via the AuthSchemes policy. For WebView
+  // there is no interest to have it available so far.
+  std::vector<std::string> supported_schemes = {"basic", "digest", "negotiate"};
   http_auth_preferences_.reset(new net::HttpAuthPreferences(supported_schemes));
   http_auth_preferences_->set_server_whitelist(auth_server_whitelist_);
   http_auth_preferences_->set_auth_android_negotiate_account_type(
       auth_android_negotiate_account_type_);
-  scoped_ptr<net::HttpAuthHandlerFactory> negotiate_factory(
-      net::HttpAuthHandlerRegistryFactory::Create(http_auth_preferences_.get(),
-                                                  resolver));
-  return negotiate_factory;
+  return net::HttpAuthHandlerRegistryFactory::Create(
+      http_auth_preferences_.get(), resolver);
 }
 
 }  // namespace android_webview

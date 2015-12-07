@@ -186,15 +186,6 @@ URLRequestContextBuilder::HttpNetworkSessionParams::HttpNetworkSessionParams()
 URLRequestContextBuilder::HttpNetworkSessionParams::~HttpNetworkSessionParams()
 {}
 
-URLRequestContextBuilder::SchemeFactory::SchemeFactory(
-    const std::string& auth_scheme,
-    HttpAuthHandlerFactory* auth_handler_factory)
-    : scheme(auth_scheme), factory(auth_handler_factory) {
-}
-
-URLRequestContextBuilder::SchemeFactory::~SchemeFactory() {
-}
-
 URLRequestContextBuilder::URLRequestContextBuilder()
     : data_enabled_(false),
 #if !defined(DISABLE_FILE_SUPPORT)
@@ -268,6 +259,11 @@ void URLRequestContextBuilder::SetFileTaskRunner(
   file_task_runner_ = task_runner;
 }
 
+void URLRequestContextBuilder::SetHttpAuthHandlerFactory(
+    scoped_ptr<HttpAuthHandlerFactory> factory) {
+  http_auth_handler_factory_ = factory.Pass();
+}
+
 void URLRequestContextBuilder::SetHttpServerProperties(
     scoped_ptr<HttpServerProperties> http_server_properties) {
   http_server_properties_ = http_server_properties.Pass();
@@ -316,15 +312,13 @@ scoped_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   storage->set_proxy_service(proxy_service_.Pass());
 
   storage->set_ssl_config_service(new SSLConfigServiceDefaults);
-  scoped_ptr<HttpAuthHandlerRegistryFactory> http_auth_handler_registry_factory(
-      HttpAuthHandlerRegistryFactory::CreateDefault(context->host_resolver()));
-  for (size_t i = 0; i < extra_http_auth_handlers_.size(); ++i) {
-    http_auth_handler_registry_factory->RegisterSchemeFactory(
-        extra_http_auth_handlers_[i].scheme,
-        extra_http_auth_handlers_[i].factory);
+
+  if (!http_auth_handler_factory_) {
+    http_auth_handler_factory_ =
+        HttpAuthHandlerRegistryFactory::CreateDefault(context->host_resolver());
   }
-  storage->set_http_auth_handler_factory(
-      http_auth_handler_registry_factory.Pass());
+
+  storage->set_http_auth_handler_factory(http_auth_handler_factory_.Pass());
 
   if (cookie_store_) {
     storage->set_cookie_store(cookie_store_.get());

@@ -15,7 +15,6 @@
 #define NET_URL_REQUEST_URL_REQUEST_CONTEXT_BUILDER_H_
 
 #include <string>
-#include <vector>
 
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
@@ -162,14 +161,13 @@ class NET_EXPORT URLRequestContextBuilder {
     network_delegate_ = delegate.Pass();
   }
 
-  // Adds additional auth handler factories to be used in addition to what is
-  // provided in the default |HttpAuthHandlerRegistryFactory|. The auth |scheme|
-  // and |factory| are provided. The builder takes ownership of the factory and
-  // Build() must be called after this method.
-  void add_http_auth_handler_factory(const std::string& scheme,
-                                     HttpAuthHandlerFactory* factory) {
-    extra_http_auth_handlers_.push_back(SchemeFactory(scheme, factory));
-  }
+  // Sets a specific HttpAuthHandlerFactory to be used by the URLRequestContext
+  // rather than the default |HttpAuthHandlerRegistryFactory|. The builder
+  // takes ownership of the factory and will eventually transfer it to the new
+  // URLRequestContext. Note that since Build will transfer ownership, the
+  // custom factory will be unset and this must be called before the next Build
+  // to set another custom one.
+  void SetHttpAuthHandlerFactory(scoped_ptr<HttpAuthHandlerFactory> factory);
 
   // By default HttpCache is enabled with a default constructed HttpCacheParams.
   void EnableHttpCache(const HttpCacheParams& params);
@@ -261,14 +259,6 @@ class NET_EXPORT URLRequestContextBuilder {
   scoped_ptr<URLRequestContext> Build();
 
  private:
-  struct NET_EXPORT SchemeFactory {
-    SchemeFactory(const std::string& scheme, HttpAuthHandlerFactory* factory);
-    ~SchemeFactory();
-
-    std::string scheme;
-    HttpAuthHandlerFactory* factory;
-  };
-
   std::string accept_language_;
   std::string user_agent_;
   // Include support for data:// requests.
@@ -298,7 +288,7 @@ class NET_EXPORT URLRequestContextBuilder {
   scoped_ptr<NetworkDelegate> network_delegate_;
   scoped_refptr<CookieStore> cookie_store_;
   scoped_ptr<FtpTransactionFactory> ftp_transaction_factory_;
-  std::vector<SchemeFactory> extra_http_auth_handlers_;
+  scoped_ptr<HttpAuthHandlerFactory> http_auth_handler_factory_;
   scoped_ptr<CertVerifier> cert_verifier_;
   ScopedVector<URLRequestInterceptor> url_request_interceptors_;
   scoped_ptr<HttpServerProperties> http_server_properties_;

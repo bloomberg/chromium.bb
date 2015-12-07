@@ -69,9 +69,9 @@ class AwURLRequestContextGetter : public net::URLRequestContextGetter {
   void InitializeURLRequestContext();
 
   // This is called to create a HttpAuthHandlerFactory that will handle
-  // negotiate challenges for the new URLRequestContext
-  scoped_ptr<net::HttpAuthHandlerFactory>
-  CreateNegotiateAuthHandlerFactory(net::HostResolver* resolver);
+  // auth challenges for the new URLRequestContext
+  scoped_ptr<net::HttpAuthHandlerFactory> CreateAuthHandlerFactory(
+      net::HostResolver* resolver);
 
   const base::FilePath cache_path_;
 
