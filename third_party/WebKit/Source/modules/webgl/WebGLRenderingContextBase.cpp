@@ -1883,7 +1883,7 @@ void WebGLRenderingContextBase::compressedTexImage2D(GLenum target, GLint level,
         synthesizeGLError(GL_INVALID_VALUE, "compressedTexImage2D", "border not 0");
         return;
     }
-    if (!validateCompressedTexDimensions("compressedTexImage2D", NotTexSubImage2D, target, level, width, height, internalformat))
+    if (!validateCompressedTexDimensions("compressedTexImage2D", NotTexSubImage2D, target, level, width, height, 1, internalformat))
         return;
     if (!validateCompressedTexFuncData("compressedTexImage2D", width, height, internalformat, data))
         return;
@@ -6032,13 +6032,14 @@ bool WebGLRenderingContextBase::validateCompressedTexFuncData(const char* functi
     return true;
 }
 
-bool WebGLRenderingContextBase::validateCompressedTexDimensions(const char* functionName, TexImageFunctionType functionType, GLenum target, GLint level, GLsizei width, GLsizei height, GLenum format)
+bool WebGLRenderingContextBase::validateCompressedTexDimensions(const char* functionName, TexImageFunctionType functionType, GLenum target, GLint level, GLsizei width, GLsizei height, GLsizei depth, GLenum format)
 {
-    if (!validateTexFuncDimensions(functionName, functionType, target, level, width, height, 1))
+    if (!validateTexFuncDimensions(functionName, functionType, target, level, width, height, depth))
         return false;
 
     bool widthValid = false;
     bool heightValid = false;
+    bool depthValid = false;
 
     switch (format) {
     case GL_COMPRESSED_R11_EAC:
@@ -6053,6 +6054,7 @@ bool WebGLRenderingContextBase::validateCompressedTexDimensions(const char* func
     case GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC: {
         widthValid = true;
         heightValid = true;
+        depthValid = true;
         break;
     }
     case GL_COMPRESSED_RGBA_ASTC_4x4_KHR:
@@ -6085,8 +6087,10 @@ bool WebGLRenderingContextBase::validateCompressedTexDimensions(const char* func
     case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR: {
         widthValid = true;
         heightValid = true;
+        depthValid = true;
         break;
     }
+    // FIXME: should check if ATC/S3TC/PVRTV extensions work with CompressedTexImage3D.
     case GC3D_COMPRESSED_ATC_RGB_AMD:
     case GC3D_COMPRESSED_ATC_RGBA_EXPLICIT_ALPHA_AMD:
     case GC3D_COMPRESSED_ATC_RGBA_INTERPOLATED_ALPHA_AMD:
@@ -6098,6 +6102,7 @@ bool WebGLRenderingContextBase::validateCompressedTexDimensions(const char* func
         const int kBlockHeight = 4;
         widthValid = (level && width == 1) || (level && width == 2) || !(width % kBlockWidth);
         heightValid = (level && height == 1) || (level && height == 2) || !(height % kBlockHeight);
+        depthValid = true;
         break;
     }
     case GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG:
@@ -6107,19 +6112,21 @@ bool WebGLRenderingContextBase::validateCompressedTexDimensions(const char* func
         // Must be a power of two
         widthValid = (width & (width - 1)) == 0;
         heightValid = (height & (height - 1)) == 0;
+        depthValid = (depth & (depth - 1)) == 0;
         break;
     }
     case GL_ETC1_RGB8_OES: {
         widthValid = true;
         heightValid = true;
+        depthValid = true;
         break;
     }
     default:
         return false;
     }
 
-    if (!widthValid || !heightValid) {
-        synthesizeGLError(GL_INVALID_OPERATION, functionName, "width or height invalid for level");
+    if (!widthValid || !heightValid || !depthValid) {
+        synthesizeGLError(GL_INVALID_OPERATION, functionName, "width, height or depth invalid for level");
         return false;
     }
 
@@ -6153,7 +6160,7 @@ bool WebGLRenderingContextBase::validateCompressedTexSubDimensions(const char* f
             synthesizeGLError(GL_INVALID_VALUE, functionName, "dimensions out of range");
             return false;
         }
-        return validateCompressedTexDimensions(functionName, TexSubImage2D, target, level, width, height, format);
+        return validateCompressedTexDimensions(functionName, TexSubImage2D, target, level, width, height, 1, format);
     }
     case GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG:
     case GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG:
@@ -6168,7 +6175,7 @@ bool WebGLRenderingContextBase::validateCompressedTexSubDimensions(const char* f
             synthesizeGLError(GL_INVALID_OPERATION, functionName, "dimensions must match existing level");
             return false;
         }
-        return validateCompressedTexDimensions(functionName, TexSubImage2D, target, level, width, height, format);
+        return validateCompressedTexDimensions(functionName, TexSubImage2D, target, level, width, height, 1, format);
     }
     case GC3D_COMPRESSED_ATC_RGB_AMD:
     case GC3D_COMPRESSED_ATC_RGBA_EXPLICIT_ALPHA_AMD:

@@ -967,7 +967,7 @@ protected:
 
     // Helper function to validate compressed texture dimensions are valid for
     // the given format.
-    bool validateCompressedTexDimensions(const char* functionName, TexImageFunctionType, GLenum target, GLint level, GLsizei width, GLsizei height, GLenum format);
+    bool validateCompressedTexDimensions(const char* functionName, TexImageFunctionType, GLenum target, GLint level, GLsizei width, GLsizei height, GLsizei depth, GLenum format);
 
     // Helper function to validate compressed texture dimensions are valid for
     // the given format.

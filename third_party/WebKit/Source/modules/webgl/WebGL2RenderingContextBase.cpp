@@ -1066,14 +1066,22 @@ void WebGL2RenderingContextBase::compressedTexImage3D(GLenum target, GLint level
         return;
     if (!validateTexFunc3DTarget("compressedTexImage3D", target))
         return;
+    if (!validateTexFuncLevel("compressedTexImage3D", target, level))
+        return;
+    if (!validateCompressedTexFormat(internalformat)) {
+        synthesizeGLError(GL_INVALID_ENUM, "compressedTexImage3D", "invalid internalformat");
+        return;
+    }
+    if (border) {
+        synthesizeGLError(GL_INVALID_VALUE, "compressedTexImage3D", "border not 0");
+        return;
+    }
+    if (!validateCompressedTexDimensions("compressedTexImage3D", NotTexSubImage2D, target, level, width, height, depth, internalformat))
+        return;
 
     WebGLTexture* tex = validateTextureBinding("compressedTexImage3D", target, true);
     if (!tex)
         return;
-
-    if (!validateTexFuncLevel("compressedTexImage3D", target, level))
-        return;
-
     if (tex->isImmutable()) {
         synthesizeGLError(GL_INVALID_OPERATION, "compressedTexImage3D", "attempted to modify immutable texture");
         return;
