@@ -63,13 +63,6 @@ RenderProcessImpl::RenderProcessImpl()
     v8::V8::SetFlagsFromString(flags.c_str(), static_cast<int>(flags.size()));
   }
 
-  if (command_line.HasSwitch(
-          switches::kEnableExperimentalWebPlatformFeatures)) {
-    std::string extras_flag("--experimental_extras");
-    v8::V8::SetFlagsFromString(extras_flag.c_str(),
-                               static_cast<int>(extras_flag.size()));
-  }
-
   SiteIsolationStatsGatherer::SetEnabled(
       GetContentClient()->renderer()->ShouldGatherSiteIsolationStats());
 }

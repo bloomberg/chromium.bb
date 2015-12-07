@@ -65,6 +65,7 @@ void RunTestFromFile(const base::FilePath& path, FileRunnerDelegate* delegate,
 #endif
 
   gin::IsolateHolder::Initialize(gin::IsolateHolder::kStrictMode,
+                                 gin::IsolateHolder::kStableV8Extras,
                                  gin::ArrayBufferAllocator::SharedInstance());
 
   gin::IsolateHolder instance;

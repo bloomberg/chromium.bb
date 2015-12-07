@@ -35,6 +35,12 @@ class GIN_EXPORT IsolateHolder {
     kUseLocker
   };
 
+  // Indicates whether V8 works with stable or experimental v8 extras.
+  enum V8ExtrasMode {
+    kStableV8Extras,
+    kStableAndExperimentalV8Extras,
+  };
+
   IsolateHolder();
   explicit IsolateHolder(AccessMode access_mode);
   ~IsolateHolder();
@@ -48,6 +54,7 @@ class GIN_EXPORT IsolateHolder {
   // V8Initializer::LoadV8SnapshotFromFD or
   // V8Initializer::LoadV8Snapshot) before calling this method.
   static void Initialize(ScriptMode mode,
+                         V8ExtrasMode v8_extras_mode,
                          v8::ArrayBuffer::Allocator* allocator);
 
   v8::Isolate* isolate() { return isolate_; }

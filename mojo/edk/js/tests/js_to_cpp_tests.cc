@@ -381,6 +381,7 @@ class JsToCppTest : public testing::Test {
     js_side->SetCppSide(cpp_side_ptr.Pass());
 
     gin::IsolateHolder::Initialize(gin::IsolateHolder::kStrictMode,
+                                   gin::IsolateHolder::kStableV8Extras,
                                    gin::ArrayBufferAllocator::SharedInstance());
     gin::IsolateHolder instance;
     MojoRunnerDelegate delegate;

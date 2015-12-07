@@ -455,6 +455,7 @@ gin::IsolateHolder* g_isolate_holder = nullptr;
 
 void SetUpV8() {
   gin::IsolateHolder::Initialize(gin::IsolateHolder::kNonStrictMode,
+                                 gin::IsolateHolder::kStableV8Extras,
                                  gin::ArrayBufferAllocator::SharedInstance());
   g_isolate_holder =
       new gin::IsolateHolder(gin::IsolateHolder::kSingleThread);

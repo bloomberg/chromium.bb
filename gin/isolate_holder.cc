@@ -74,9 +74,10 @@ IsolateHolder::~IsolateHolder() {
 
 // static
 void IsolateHolder::Initialize(ScriptMode mode,
+                               V8ExtrasMode v8_extras_mode,
                                v8::ArrayBuffer::Allocator* allocator) {
   CHECK(allocator);
-  V8Initializer::Initialize(mode);
+  V8Initializer::Initialize(mode, v8_extras_mode);
   g_array_buffer_allocator = allocator;
 }
 

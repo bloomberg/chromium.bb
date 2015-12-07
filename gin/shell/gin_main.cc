@@ -68,6 +68,7 @@ int main(int argc, char** argv) {
   base::MessageLoop message_loop;
 
   gin::IsolateHolder::Initialize(gin::IsolateHolder::kStrictMode,
+                                 gin::IsolateHolder::kStableV8Extras,
                                  gin::ArrayBufferAllocator::SharedInstance());
   gin::IsolateHolder instance;
 
