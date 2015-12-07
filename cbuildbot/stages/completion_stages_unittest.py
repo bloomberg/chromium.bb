@@ -125,15 +125,17 @@ class MasterSlaveSyncCompletionStageMockConfigTest(
 
   def _GetTestConfig(self):
     test_config = config_lib.SiteConfig()
-    test_config.AddConfigWithoutTemplate(
+    test_config.Add(
         'master',
+        config_lib.BuildConfig(),
         boards=[],
         build_type=self.build_type,
         master=True,
         manifest_version=True,
     )
-    test_config.AddConfigWithoutTemplate(
+    test_config.Add(
         'test1',
+        config_lib.BuildConfig(),
         boards=['x86-generic'],
         manifest_version=True,
         build_type=constants.PFQ_TYPE,
@@ -144,8 +146,9 @@ class MasterSlaveSyncCompletionStageMockConfigTest(
         internal=False,
         master=False,
     )
-    test_config.AddConfigWithoutTemplate(
+    test_config.Add(
         'test2',
+        config_lib.BuildConfig(),
         boards=['x86-generic'],
         manifest_version=False,
         build_type=constants.PFQ_TYPE,
@@ -156,8 +159,9 @@ class MasterSlaveSyncCompletionStageMockConfigTest(
         internal=False,
         master=False,
     )
-    test_config.AddConfigWithoutTemplate(
+    test_config.Add(
         'test3',
+        config_lib.BuildConfig(),
         boards=['x86-generic'],
         manifest_version=True,
         build_type=constants.PFQ_TYPE,
@@ -168,8 +172,9 @@ class MasterSlaveSyncCompletionStageMockConfigTest(
         internal=True,
         master=False,
     )
-    test_config.AddConfigWithoutTemplate(
+    test_config.Add(
         'test4',
+        config_lib.BuildConfig(),
         boards=['x86-generic'],
         manifest_version=True,
         build_type=constants.PFQ_TYPE,
@@ -180,8 +185,9 @@ class MasterSlaveSyncCompletionStageMockConfigTest(
         internal=True,
         master=False,
     )
-    test_config.AddConfigWithoutTemplate(
+    test_config.Add(
         'test5',
+        config_lib.BuildConfig(),
         boards=['x86-generic'],
         manifest_version=True,
         build_type=constants.PFQ_TYPE,

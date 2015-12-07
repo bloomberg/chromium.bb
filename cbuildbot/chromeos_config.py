@@ -914,7 +914,7 @@ def GetConfig():
       chromeos_official=True,
   )
 
-  _cros_sdk = site_config.AddConfigWithoutTemplate(
+  _cros_sdk = site_config.AddWithoutTemplate(
       'chromiumos-sdk',
       full_prebuilts,
       no_hwtest_builder,
@@ -991,8 +991,9 @@ def GetConfig():
           'TOC-Chrome-PFQ',
   )
 
-  site_config.AddConfig(
-      internal_chromium_pfq, 'master-chromium-pfq',
+  site_config.Add(
+      'master-chromium-pfq',
+      internal_chromium_pfq,
       boards=[],
       master=True,
       binhost_test=True,
@@ -1126,15 +1127,21 @@ def GetConfig():
     for board in boards:
       config_name = '%s-%s' % (board, name_suffix)
       if config_name not in site_config:
-        base = config_lib.BuildConfig()
-        config = site_config.AddConfig(config_base, config_name, base,
-                                       _base_configs[board], **kwargs)
+        # I derive the config_base build config since the config gets modified
+        # below if they're in _nofactory_boards.  What happens if I don't derive
+        # is that once factory_install is removed from images, all configs will
+        # have factory_install removed from their images.  The derive creates a
+        # new copy of the config_base and thus isolates changes to the instance
+        # created.
+        config = site_config.Add(config_name,
+                                 config_base.derive(config_lib.BuildConfig()),
+                                 _base_configs[board],
+                                 **kwargs)
         if board in _nofactory_boards:
           try:
             config.get('images', []).remove('factory_install')
           except ValueError:
             pass
-
 
   _chromium_pfq_important_boards = frozenset([
       'arm-generic_freon',
@@ -1146,20 +1153,28 @@ def GetConfig():
 
   def _AddFullConfigs():
     """Add x86 and arm full configs."""
-    external_overrides = config_lib.BuildConfig.delete_keys(internal)
-    external_overrides.update(manifest=config_lib.BuildConfig.delete_key())
-    external_overrides.update(
-        useflags=append_useflags(['-%s' % constants.USE_CHROME_INTERNAL]))
+    defaults = config_lib.DefaultSettings()
+    external_overrides = config_lib.BuildConfig(
+        manifest=defaults['manifest'],
+        useflags=append_useflags(['-%s' % constants.USE_CHROME_INTERNAL]),
+    )
     _CreateConfigsForBoards(full_prebuilts, _all_full_boards,
                             config_lib.CONFIG_TYPE_FULL,
+                            internal=defaults['internal'],
+                            manifest_repo_url=site_params['MANIFEST_URL'],
+                            overlays=defaults['overlays'],
                             **external_overrides)
     _CreateConfigsForBoards(chromium_info, _all_full_boards,
-                            'tot-chromium-pfq-informational', important=False,
+                            'tot-chromium-pfq-informational',
+                            important=False,
+                            internal=defaults['internal'],
+                            manifest_repo_url=site_params['MANIFEST_URL'],
+                            overlays=constants.PUBLIC_OVERLAYS,
                             **external_overrides)
     # Create important configs, then non-important configs.
-    _CreateConfigsForBoards(
-        internal_chromium_pfq, _chromium_pfq_important_boards,
-        'chromium-pfq', **external_overrides)
+    _CreateConfigsForBoards(internal_chromium_pfq,
+                            _chromium_pfq_important_boards,
+                            'chromium-pfq', **external_overrides)
     _CreateConfigsForBoards(internal_chromium_pfq, _all_full_boards,
                             'chromium-pfq', important=False,
                             **external_overrides)
@@ -1170,21 +1185,21 @@ def GetConfig():
   # These remaining chromium pfq configs have eccentricities that are easier to
   # create manually.
 
-  site_config.AddConfig(
-      internal_chromium_pfq, 'amd64-generic-chromium-pfq',
+  site_config.Add(
+      'amd64-generic-chromium-pfq', internal_chromium_pfq,
       _base_configs['amd64-generic'],
       disk_layout='2gb-rootfs',
   )
 
-  site_config.AddConfig(
-      internal_chromium_pfq, 'amd64-generic_freon-chromium-pfq',
+  site_config.Add(
+      'amd64-generic_freon-chromium-pfq', internal_chromium_pfq,
       _base_configs['amd64-generic_freon'],
       disk_layout='2gb-rootfs',
       vm_tests=[],
   )
 
-  site_config.AddConfig(
-      internal_chromium_pfq, 'x86-generic_freon-chromium-pfq',
+  site_config.Add(
+      'x86-generic_freon-chromium-pfq', internal_chromium_pfq,
       _base_configs['x86-generic_freon'],
       vm_tests=[],
   )
@@ -1196,38 +1211,38 @@ def GetConfig():
       'nyan',
   ])
 
-  site_config.AddConfig(
-      chrome_pfq, 'x86-alex-chrome-pfq',
+  site_config.Add(
+      'x86-alex-chrome-pfq', chrome_pfq,
       _base_configs['x86-alex'],
   )
 
-  site_config.AddConfig(
-      chrome_pfq, 'lumpy-chrome-pfq',
+  site_config.Add(
+      'lumpy-chrome-pfq', chrome_pfq,
       _base_configs['lumpy'],
       afdo_generate=True,
       hw_tests=[HWTestList.AFDORecordTest()] + HWTestList.SharedPoolPFQ(),
   )
 
-  site_config.AddConfig(
-      chrome_pfq, 'daisy_skate-chrome-pfq',
+  site_config.Add(
+      'daisy_skate-chrome-pfq', chrome_pfq,
       _base_configs['daisy_skate'],
       hw_tests=HWTestList.SharedPoolPFQ(),
   )
 
-  site_config.AddConfig(
-      chrome_pfq, 'falco-chrome-pfq',
+  site_config.Add(
+      'falco-chrome-pfq', chrome_pfq,
       _base_configs['falco'],
       hw_tests=HWTestList.SharedPoolPFQ(),
   )
 
-  site_config.AddConfig(
-      chrome_pfq, 'peach_pit-chrome-pfq',
+  site_config.Add(
+      'peach_pit-chrome-pfq', chrome_pfq,
       _base_configs['peach_pit'],
       hw_tests=HWTestList.SharedPoolPFQ(),
   )
 
-  site_config.AddConfig(
-      chrome_pfq, 'tricky-chrome-pfq',
+  site_config.Add(
+      'tricky-chrome-pfq', chrome_pfq,
       _base_configs['tricky'],
       hw_tests=HWTestList.SharedPoolPFQ(),
   )
@@ -1240,7 +1255,7 @@ def GetConfig():
 
   _CreateConfigsForBoards(telemetry, _telemetry_boards, 'telemetry')
 
-  _toolchain_minor = site_config.AddConfigWithoutTemplate(
+  _toolchain_minor = site_config.AddWithoutTemplate(
       'toolchain-minor',
       _cros_sdk,
       latest_toolchain=True,
@@ -1250,9 +1265,9 @@ def GetConfig():
       description='Test next minor toolchain revision',
   )
 
-  site_config.AddConfig(
-      llvm,
+  site_config.Add(
       'toolchain-llvm',
+      llvm,
       incremental,
       no_vmtest_builder,
       boards=['amd64-generic', 'daisy', 'x86-alex'],
@@ -1263,9 +1278,9 @@ def GetConfig():
       trybot_list=True,
   )
 
-  site_config.AddConfig(
-      asan,
+  site_config.Add(
       'x86-generic-asan',
+      asan,
       incremental,
       boards=['x86-generic'],
       chroot_replace=True,
@@ -1282,71 +1297,71 @@ def GetConfig():
       description='Build TOT Chrome with Address Sanitizer (Clang)',
   )
 
-  site_config.AddConfig(
-      tot_asan_info,
+  site_config.Add(
       'x86-generic-tot-asan-informational',
+      tot_asan_info,
       boards=['x86-generic'],
   )
 
-  site_config.AddConfig(
-      asan,
+  site_config.Add(
       'amd64-generic-asan',
+      asan,
       incremental,
       boards=['amd64-generic'],
       description='Build with Address Sanitizer (Clang)',
       trybot_list=True,
   )
 
-  site_config.AddConfig(
-      tot_asan_info, 'amd64-generic-tot-asan-informational',
+  site_config.Add(
+      'amd64-generic-tot-asan-informational', tot_asan_info,
       boards=['amd64-generic'],
   )
 
   incremental_beaglebone = incremental.derive(beaglebone)
-  site_config.AddConfig(
-      incremental_beaglebone, 'beaglebone-incremental',
+  site_config.Add(
+      'beaglebone-incremental', incremental_beaglebone,
       boards=['beaglebone'],
       trybot_list=True,
       description='Incremental Beaglebone Builder',
   )
 
-  site_config.AddConfig(
-      incremental, 'x86-generic-incremental',
+  site_config.Add(
+      'x86-generic-incremental', incremental,
       _base_configs['x86-generic'],
   )
 
-  site_config.AddConfig(
-      incremental, 'daisy-incremental',
-      _base_configs['daisy'],
-      config_lib.BuildConfig.delete_keys(internal),
-      manifest=config_lib.BuildConfig.delete_key(),
+  site_config.Add(
+      'daisy-incremental', incremental,
+      _base_configs['daisy'].derive(
+          config_lib.BuildConfig.delete_keys(internal),
+          manifest=config_lib.BuildConfig.delete_key()),
       useflags=append_useflags(['-chrome_internal']),
   )
 
-  site_config.AddConfig(
-      incremental, 'amd64-generic-incremental',
+  site_config.Add(
+      'amd64-generic-incremental', incremental,
       _base_configs['amd64-generic'],
       # This builder runs on a VM, so it can't run VM tests.
       vm_tests=[],
   )
 
-  site_config.AddConfig(
-      incremental, 'x32-generic-incremental',
+  site_config.Add(
+      'x32-generic-incremental', incremental,
       _base_configs['x32-generic'],
       # This builder runs on a VM, so it can't run VM tests.
       vm_tests=[],
   )
 
-  site_config.AddConfig(
-      paladin, 'x86-generic-asan-paladin',
+  site_config.Add(
+      'x86-generic-asan-paladin', paladin,
       _base_configs['x86-generic'],
       asan,
       description='Paladin build with Address Sanitizer (Clang)',
       important=False,
   )
 
-  site_config.AddConfig(
-      paladin, 'amd64-generic-asan-paladin',
+  site_config.Add(
+      'amd64-generic-asan-paladin', paladin,
       _base_configs['amd64-generic'],
       asan,
       description='Paladin build with Address Sanitizer (Clang)',
@@ -1362,10 +1377,11 @@ def GetConfig():
   _CreateConfigsForBoards(chrome_perf, _chrome_perf_boards, 'chrome-perf',
                           trybot_list=True)
 
-  _CreateConfigsForBoards(chromium_info,
-                          ['x86-generic', 'amd64-generic'],
-                          'telem-chromium-pfq-informational',
-                          **telemetry.derive(chrome_try))
+  # pylint: disable=bad-continuation
+  _CreateConfigsForBoards(chromium_info, ['x86-generic', 'amd64-generic'],
+      'telem-chromium-pfq-informational',
+      **telemetry.derive(chrome_try,
+                         _template=(config_lib.BuildConfig.delete_key())))
 
   #
   # Internal Builds
@@ -1411,9 +1427,9 @@ def GetConfig():
       important=False,
   )
 
-  site_config.AddConfig(
-      internal_nowithdebug_paladin,
+  site_config.Add(
       'x86-mario-nowithdebug-paladin',
+      internal_nowithdebug_paladin,
       boards=['x86-mario'])
 
   # Used for builders which build completely from source except Chrome.
@@ -1485,7 +1501,7 @@ def GetConfig():
       unittests=False,
   )
 
-  site_config.AddConfigWithoutTemplate(
+  site_config.AddWithoutTemplate(
       constants.BRANCH_UTIL_CONFIG,
       internal_paladin,
       no_vmtest_builder,
@@ -1511,8 +1527,8 @@ def GetConfig():
       description='Incremental Builds (internal)',
   )
 
-  site_config.AddConfig(
-      internal_pfq_branch, 'lumpy-pre-flight-branch',
+  site_config.Add(
+      'lumpy-pre-flight-branch', internal_pfq_branch,
       master=True,
       push_overlays=constants.BOTH_OVERLAYS,
       boards=['lumpy'],
@@ -1536,14 +1552,14 @@ def GetConfig():
 
   site_config.AddGroup(
       'test-ap-group',
-      site_config.AddConfig(_test_ap, 'stumpy-test-ap', boards=['stumpy']),
-      site_config.AddConfig(_test_ap, 'panther-test-ap', boards=['panther']),
+      site_config.Add('stumpy-test-ap', _test_ap, boards=['stumpy']),
+      site_config.Add('panther-test-ap', _test_ap, boards=['panther']),
   )
 
   ### Master paladin (CQ builder).
 
-  site_config.AddConfig(
-      internal_paladin, 'master-paladin',
+  site_config.Add(
+      'master-paladin', internal_paladin,
       boards=[],
       master=True,
       binhost_test=True,
@@ -1573,8 +1589,8 @@ def GetConfig():
 
   # Sanity check builder, part of the CQ but builds without the patches
   # under test.
-  site_config.AddConfig(
-      internal_paladin, 'wolf-tot-paladin',
+  site_config.Add(
+      'wolf-tot-paladin', internal_paladin,
       boards=['wolf'],
       do_not_apply_cq_patches=True,
       prebuilts=False,
@@ -1745,15 +1761,15 @@ def GetConfig():
             description=paladin['description'] + ' (internal)')
       else:
         customizations.update(prebuilts=constants.PUBLIC)
-      site_config.AddConfig(
-          paladin, config_name,
+      site_config.Add(
+          config_name, paladin,
           customizations,
           base_config)
 
   _CreatePaladinConfigs()
 
-  site_config.AddConfig(
-      internal_paladin, 'lumpy-incremental-paladin',
+  site_config.Add(
+      'lumpy-incremental-paladin', internal_paladin,
       boards=['lumpy'],
       build_before_patching=True,
       prebuilts=False,
@@ -1765,8 +1781,8 @@ def GetConfig():
   # itself.
   external_brillo_paladin = paladin.derive(brillo)
 
-  site_config.AddConfig(
-      external_brillo_paladin, 'panther_embedded-minimal-paladin',
+  site_config.Add(
+      'panther_embedded-minimal-paladin', external_brillo_paladin,
       boards=['panther_embedded'],
       profile='minimal',
       trybot_list=True,
@@ -1774,14 +1790,14 @@ def GetConfig():
 
   internal_beaglebone_paladin = internal_paladin.derive(beaglebone)
 
-  site_config.AddConfig(
-      internal_beaglebone_paladin, 'beaglebone-paladin',
+  site_config.Add(
+      'beaglebone-paladin', internal_beaglebone_paladin,
       boards=['beaglebone'],
       trybot_list=True,
   )
 
-  site_config.AddConfig(
-      internal_beaglebone_paladin, 'beaglebone_servo-paladin',
+  site_config.Add(
+      'beaglebone_servo-paladin', internal_beaglebone_paladin,
       boards=['beaglebone_servo'],
       important=False,
   )
@@ -1824,8 +1840,8 @@ def GetConfig():
 
   # Add a pre-cq config for every board.
   _CreateConfigsForBoards(pre_cq, _all_boards, 'pre-cq')
-  site_config.AddConfig(
-      pre_cq, 'lakitu-pre-cq',
+  site_config.Add(
+      'lakitu-pre-cq', pre_cq,
       _base_configs['lakitu'],
       vm_tests=[constants.SMOKE_SUITE_TEST_TYPE],
       run_gce_tests=True,
@@ -1835,8 +1851,8 @@ def GetConfig():
   _CreateConfigsForBoards(
       compile_only_pre_cq, _all_boards, 'compile-only-pre-cq')
 
-  site_config.AddConfig(
-      pre_cq, constants.BINHOST_PRE_CQ,
+  site_config.Add(
+      constants.BINHOST_PRE_CQ, pre_cq,
       no_vmtest_pre_cq,
       internal,
       boards=[],
@@ -1890,7 +1906,7 @@ def GetConfig():
       site_config['rush_ryu-no-vmtest-pre-cq']
   )
 
-  site_config.AddConfigWithoutTemplate(
+  site_config.AddWithoutTemplate(
       'pre-cq-launcher',
       internal_paladin,
       no_vmtest_builder,
@@ -1909,28 +1925,28 @@ def GetConfig():
   )
 
 
-  site_config.AddConfig(
-      internal_incremental, 'mario-incremental',
+  site_config.Add(
+      'mario-incremental', internal_incremental,
       boards=['x86-mario'],
   )
 
-  site_config.AddConfig(
-      internal_incremental, 'lakitu-incremental',
+  site_config.Add(
+      'lakitu-incremental', internal_incremental,
       _base_configs['lakitu'],
       vm_tests=[constants.SMOKE_SUITE_TEST_TYPE],
       run_gce_tests=True,
   )
 
-  site_config.AddConfig(
-      internal_incremental, 'lakitu_next-incremental',
+  site_config.Add(
+      'lakitu_next-incremental', internal_incremental,
       _base_configs['lakitu_next'],
       vm_tests=[constants.SMOKE_SUITE_TEST_TYPE],
       run_gce_tests=True,
   )
 
-  site_config.AddConfigWithoutTemplate(
+  site_config.Add(
       'internal-toolchain-minor',
-      _toolchain_minor, internal, official,
+      config_lib.BuildConfig(), _toolchain_minor, internal, official,
       boards=['x86-alex', 'stumpy', 'daisy', 'lakitu'],
       build_tests=True,
       description=_toolchain_minor['description'] + ' (internal)',
@@ -1989,8 +2005,8 @@ def GetConfig():
 
   ### Master release config.
 
-  site_config.AddConfig(
-      _release, 'master-release',
+  site_config.Add(
+      'master-release', _release,
       boards=[],
       master=True,
       sync_chrome=False,
@@ -2005,12 +2021,12 @@ def GetConfig():
 
   site_config.AddGroup(
       'x86-alex-release-group',
-      site_config.AddConfig(
-          _release, 'x86-alex-release',
+      site_config.Add(
+          'x86-alex-release', _release,
           boards=['x86-alex'],
       ),
-      site_config.AddConfig(
-          _grouped_variant_release, 'x86-alex_he-release',
+      site_config.Add(
+          'x86-alex_he-release', _grouped_variant_release,
           boards=['x86-alex_he'],
           hw_tests=[],
           upload_hw_test_artifacts=False,
@@ -2020,12 +2036,12 @@ def GetConfig():
 
   site_config.AddGroup(
       'x86-zgb-release-group',
-      site_config.AddConfig(
-          _release, 'x86-zgb-release',
+      site_config.Add(
+          'x86-zgb-release', _release,
           boards=['x86-zgb'],
       ),
-      site_config.AddConfig(
-          _grouped_variant_release, 'x86-zgb_he-release',
+      site_config.Add(
+          'x86-zgb_he-release', _grouped_variant_release,
           boards=['x86-zgb_he'],
           hw_tests=[],
           upload_hw_test_artifacts=False,
@@ -2094,11 +2110,11 @@ def GetConfig():
 
       site_config.AddGroup(
           config_name,
-          site_config.AddConfig(
-              release_afdo_generate, generate_config_name, base
+          site_config.Add(
+              generate_config_name, release_afdo_generate, base
           ),
-          site_config.AddConfig(
-              release_afdo_use, use_config_name, base
+          site_config.Add(
+              use_config_name, release_afdo_use, base
           ),
       )
 
@@ -2112,32 +2128,32 @@ def GetConfig():
       'parrot',
   ])
 
-  site_config.AddConfig(
-      _release, 'gizmo-release',
+  site_config.Add(
+      'gizmo-release', _release,
       _base_configs['gizmo'],
       important=True,
       paygen=False,
       signer_tests=False,
   )
 
-  site_config.AddConfig(
-      _release, 'samus-release',
+  site_config.Add(
+      'samus-release', _release,
       _base_configs['samus'],
       important=True,
   )
 
   ### Arm release configs.
 
-  site_config.AddConfig(
-      _release, 'veyron_rialto-release',
+  site_config.Add(
+      'veyron_rialto-release', _release,
       _base_configs['veyron_rialto'],
       # rialto does not use Chrome.
       sync_chrome=False,
       chrome_sdk=False,
   )
 
-  site_config.AddConfig(
-      _release, 'smaug-release',
+  site_config.Add(
+      'smaug-release', _release,
       _base_configs['smaug'],
       images=['base', 'recovery', 'test'],
       sign_types=['nv_lp0_firmware'],
@@ -2164,8 +2180,8 @@ def GetConfig():
 
   _AddReleaseConfigs()
 
-  site_config.AddConfig(
-      _release, 'panther_embedded-minimal-release',
+  site_config.Add(
+      'panther_embedded-minimal-release', _release,
       _base_configs['panther_embedded'],
       profile='minimal',
       important=True,
@@ -2181,27 +2197,27 @@ def GetConfig():
 
   site_config.AddGroup(
       'beaglebone-release-group',
-      site_config.AddConfig(
-          _beaglebone_release, 'beaglebone-release',
+      site_config.Add(
+          'beaglebone-release', _beaglebone_release,
           boards=['beaglebone'],
       ),
-      site_config.AddConfig(
-          _beaglebone_release, 'beaglebone_servo-release',
+      site_config.Add(
+          'beaglebone_servo-release', _beaglebone_release,
           boards=['beaglebone_servo'],
           payload_image='base'
       ).derive(_grouped_variant_config),
       important=True,
   )
 
-  site_config.AddConfig(
-      _release, 'kayle-release',
+  site_config.Add(
+      'kayle-release', _release,
       _base_configs['kayle'],
       paygen=False,
       signer_tests=False,
   )
 
-  site_config.AddConfig(
-      _release, 'storm-release',
+  site_config.Add(
+      'storm-release', _release,
       _base_configs['storm'],
 
       # Hw Lab can't test storm, yet.
@@ -2229,23 +2245,23 @@ def GetConfig():
                                   warn_only=True, num=1)],
   )
 
-  site_config.AddConfig(
-      moblab_release, 'stumpy_moblab-release',
+  site_config.Add(
+      'stumpy_moblab-release', moblab_release,
       _base_configs['stumpy_moblab'],
   )
 
-  site_config.AddConfig(
-      moblab_release, 'guado_moblab-release',
+  site_config.Add(
+      'guado_moblab-release', moblab_release,
       _base_configs['guado_moblab'],
   )
 
-  site_config.AddConfig(
-      moblab_release, 'panther_moblab-release',
+  site_config.Add(
+      'panther_moblab-release', moblab_release,
       _base_configs['panther_moblab'],
   )
 
-  site_config.AddConfig(
-      _release, 'rush_ryu-release',
+  site_config.Add(
+      'rush_ryu-release', _release,
       _base_configs['rush_ryu'],
       images=['base', 'test', 'factory_install'],
       dev_installer_prebuilts=False,
@@ -2254,26 +2270,26 @@ def GetConfig():
       push_image=False,
   )
 
-  site_config.AddConfig(
-      _release, 'veyron_mickey-release',
+  site_config.Add(
+      'veyron_mickey-release', _release,
       _base_configs['veyron_mickey'],
       vm_tests=[],
   )
 
-  site_config.AddConfig(
-      _release, 'veyron_romy-release',
+  site_config.Add(
+      'veyron_romy-release', _release,
       _base_configs['veyron_romy'],
       vm_tests=[],
   )
 
-  site_config.AddConfig(
-      _release, 'whirlwind-release',
+  site_config.Add(
+      'whirlwind-release', _release,
       _base_configs['whirlwind'],
       dev_installer_prebuilts=True,
   )
 
-  site_config.AddConfig(
-      _release, 'lakitu-release',
+  site_config.Add(
+      'lakitu-release', _release,
       _base_configs['lakitu'],
       vm_tests=[constants.SMOKE_SUITE_TEST_TYPE],
       run_gce_tests=True,
@@ -2281,8 +2297,8 @@ def GetConfig():
       important=True,
   )
 
-  site_config.AddConfig(
-      _release, 'lakitu_mobbuild-release',
+  site_config.Add(
+      'lakitu_mobbuild-release', _release,
       _base_configs['lakitu_mobbuild'],
       vm_tests=[constants.SMOKE_SUITE_TEST_TYPE],
       run_gce_tests=True,
@@ -2290,8 +2306,8 @@ def GetConfig():
       important=True,
   )
 
-  site_config.AddConfig(
-      _release, 'lakitu_next-release',
+  site_config.Add(
+      'lakitu_next-release', _release,
       _base_configs['lakitu_next'],
       vm_tests=[constants.SMOKE_SUITE_TEST_TYPE],
       run_gce_tests=True,
@@ -2311,21 +2327,21 @@ def GetConfig():
 
   site_config.AddGroup(
       'mixed-wificell-pre-cq',
-      site_config.AddConfig(
-          _wificell_pre_cq,
+      site_config.Add(
           'winky-wificell-pre-cq',
+          _wificell_pre_cq,
           _base_configs['winky']),
-      site_config.AddConfig(
-          _wificell_pre_cq,
+      site_config.Add(
           'veyron_speedy-wificell-pre-cq',
+          _wificell_pre_cq,
           _base_configs['veyron_speedy']),
-      site_config.AddConfig(
-          _wificell_pre_cq,
+      site_config.Add(
           'veyron_jerry-wificell-pre-cq',
-          _base_configs['veyron_jerry']),
-      site_config.AddConfig(
           _wificell_pre_cq,
+          _base_configs['veyron_jerry']),
+      site_config.Add(
           'daisy-wificell-pre-cq',
+          _wificell_pre_cq,
           _base_configs['daisy']),
   )
 
@@ -2749,24 +2765,24 @@ def GetConfig():
   def _AddFirmwareConfigs():
     """Add x86 and arm firmware configs."""
     for board in _firmware_boards:
-      site_config.AddConfig(
-          _firmware_release,
+      site_config.Add(
           '%s-%s' % (board, config_lib.CONFIG_TYPE_FIRMWARE),
+          _firmware_release,
           _base_configs[board],
           no_vmtest_builder,
       )
 
     for board in _x86_depthcharge_firmware_boards:
-      site_config.AddConfig(
-          _depthcharge_release,
+      site_config.Add(
           '%s-%s-%s' % (board, 'depthcharge', config_lib.CONFIG_TYPE_FIRMWARE),
+          _depthcharge_release,
           _base_configs[board],
           no_vmtest_builder,
       )
-      site_config.AddConfig(
-          _depthcharge_full_internal,
+      site_config.Add(
           '%s-%s-%s-%s' % (board, 'depthcharge', config_lib.CONFIG_TYPE_FULL,
                            config_lib.CONFIG_TYPE_FIRMWARE),
+          _depthcharge_full_internal,
           _base_configs[board],
           no_vmtest_builder,
       )
@@ -2776,8 +2792,8 @@ def GetConfig():
 
   # This is an example factory branch configuration.
   # Modify it to match your factory branch.
-  site_config.AddConfig(
-      _factory_release, 'x86-mario-factory',
+  site_config.Add(
+      'x86-mario-factory', _factory_release,
       boards=['x86-mario'],
   )
 
@@ -2826,7 +2842,7 @@ def GetConfig():
     # Generate a payloads trybot config for every board that generates payloads.
     for board in payload_boards:
       name = '%s-payloads' % board
-      site_config.AddConfig(_payloads, name, boards=[board])
+      site_config.Add(name, _payloads, boards=[board])
 
   _AddPayloadConfigs()
 

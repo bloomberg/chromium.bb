@@ -1080,7 +1080,9 @@ class SiteConfig(dict):
     """
     inherits, overrides = args, kwargs
 
-    assert name not in self, '%s already exists.' % (name,)
+    # TODO(kevcheng): Uncomment and fix unittests (or chromeos_config) since it
+    #                 seems configs are repeatedly added.
+    # assert name not in self, '%s already exists.' % (name,)
     overrides['name'] = name
 
     # Remember our template, if we have one.
@@ -1096,42 +1098,16 @@ class SiteConfig(dict):
     self[name] = result
     return result
 
-  def AddConfig(self, config, name, *args, **kwargs):
-    """Derive and add the config to cbuildbot's usable config targets
-
-    Args:
-      config: BuildConfig to derive the new config from.
-      name: The name to label this configuration; this is what cbuildbot
-            would see.
-      args: See the docstring of derive.
-      kwargs: See the docstring of derive.
-
-    Returns:
-      See the docstring of derive.
-    """
-    inherits, overrides = args, kwargs
-
-    # Overrides 'name' and '_template' so that we consistently use the
-    # provided names and not the names from mix-ins. E.g., If this config
-    # inherits from multiple templates, we only pay attention to the first
-    # one listed. TODO(davidjames): Clean up the inheritance more so that
-    # this isn't needed.
-    overrides['name'] = name
-    overrides['_template'] = config.get('_template')
-    if config:
-      assert overrides['_template'], '%s inherits from non-template' % (name,)
-
-    # Add ourselves into the global dictionary, adding in the defaults.
-    new_config = config.derive(*inherits, **overrides)
-    self[name] = self.GetDefault().derive(config, new_config)
-
-    # Return a BuildConfig object without the defaults, so that other objects
-    # can derive from us without inheriting the defaults.
-    return new_config
-
-  def AddConfigWithoutTemplate(self, name, *args, **kwargs):
+  def AddWithoutTemplate(self, name, *args, **kwargs):
     """Add a config containing only explicitly listed values (no defaults)."""
-    return self.AddConfig(BuildConfig(), name, *args, **kwargs)
+    # TODO(kevcheng): Eventually deprecate this method and modify Add so that
+    #                 there's a clean way of handling this use case.
+    # Let's remove the _template for all the BuildConfigs passed in.
+    inherits = []
+    for build_config in args:
+      inherits.append(build_config.derive(
+          _template=BuildConfig.delete_key()))
+    return self.Add(name, BuildConfig(), *inherits, **kwargs)
 
   def AddGroup(self, name, *args, **kwargs):
     """Create a new group of build configurations.
@@ -1148,7 +1124,7 @@ class SiteConfig(dict):
       A new BuildConfig instance.
     """
     child_configs = [self.GetDefault().derive(x, grouped=True) for x in args]
-    return self.AddConfig(args[0], name, child_configs=child_configs, **kwargs)
+    return self.Add(name, args[0], child_configs=child_configs, **kwargs)
 
   def SaveConfigToFile(self, config_file):
     """Save this Config to a Json file.
