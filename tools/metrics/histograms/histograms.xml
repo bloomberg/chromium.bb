@@ -367,16 +367,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="AppBanners.MinutesFromFirstVisitToBannerShown" units="minutes">
-  <owner>dominickn@chromium.org</owner>
-  <summary>
-    App banners promote an application related to the current website, and are
-    requested specifically through the current page's HTML.  This stat tracks
-    the number of minutes between the first recorded visit to an origin and the
-    time when the banner is actually shown.
-  </summary>
-</histogram>
-
 <histogram name="AppBanners.UserResponse" enum="AppBannersUserResponse">
   <owner>dominickn@chromium.org</owner>
   <summary>

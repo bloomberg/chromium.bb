@@ -4,14 +4,8 @@
 
 #include <vector>
 
-#include "base/command_line.h"
-#include "chrome/browser/banners/app_banner_metrics.h"
 #include "chrome/browser/banners/app_banner_settings_helper.h"
-#include "chrome/browser/engagement/site_engagement_service.h"
-#include "chrome/browser/engagement/site_engagement_service_factory.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
-#include "chrome/test/base/testing_profile.h"
 #include "ui/base/page_transition_types.h"
 
 namespace {
@@ -734,96 +728,6 @@ TEST_F(AppBannerSettingsHelperTest, OperatesOnOrigins) {
   NavigateAndCommit(url);
 
   // The banner should show as settings are per-origin.
-  EXPECT_TRUE(AppBannerSettingsHelper::ShouldShowBanner(
-      web_contents(), url, kTestPackageName, reference_time));
-}
-
-TEST_F(AppBannerSettingsHelperTest, ShouldShowWithHigherTotal) {
-  AppBannerSettingsHelper::SetEngagementWeights(1, 1);
-  AppBannerSettingsHelper::SetTotalEngagementToTrigger(5);
-  GURL url(kTestURL);
-  NavigateAndCommit(url);
-
-  base::Time reference_time = GetReferenceTime();
-  base::Time second_day = reference_time + base::TimeDelta::FromDays(1);
-  base::Time third_day = reference_time + base::TimeDelta::FromDays(2);
-  base::Time fourth_day = reference_time + base::TimeDelta::FromDays(3);
-  base::Time fifth_day = reference_time + base::TimeDelta::FromDays(4);
-
-  EXPECT_FALSE(AppBannerSettingsHelper::ShouldShowBanner(
-      web_contents(), url, kTestPackageName, reference_time));
-
-  // It should take five visits to trigger the banner.
-  AppBannerSettingsHelper::RecordBannerCouldShowEvent(
-      web_contents(), url, kTestPackageName, reference_time,
-      ui::PAGE_TRANSITION_LINK);
-  EXPECT_FALSE(AppBannerSettingsHelper::ShouldShowBanner(
-      web_contents(), url, kTestPackageName, reference_time));
-
-  AppBannerSettingsHelper::RecordBannerCouldShowEvent(
-      web_contents(), url, kTestPackageName, second_day,
-      ui::PAGE_TRANSITION_TYPED);
-  EXPECT_FALSE(AppBannerSettingsHelper::ShouldShowBanner(
-      web_contents(), url, kTestPackageName, second_day));
-
-  AppBannerSettingsHelper::RecordBannerCouldShowEvent(
-      web_contents(), url, kTestPackageName, third_day,
-      ui::PAGE_TRANSITION_GENERATED);
-  EXPECT_FALSE(AppBannerSettingsHelper::ShouldShowBanner(
-      web_contents(), url, kTestPackageName, third_day));
-
-  AppBannerSettingsHelper::RecordBannerCouldShowEvent(
-      web_contents(), url, kTestPackageName, fourth_day,
-      ui::PAGE_TRANSITION_LINK);
-  EXPECT_FALSE(AppBannerSettingsHelper::ShouldShowBanner(
-      web_contents(), url, kTestPackageName, fourth_day));
-
-  // Visit the site again; now it should be shown.
-  AppBannerSettingsHelper::RecordBannerCouldShowEvent(
-      web_contents(), url, kTestPackageName, fifth_day,
-      ui::PAGE_TRANSITION_TYPED);
-  EXPECT_TRUE(AppBannerSettingsHelper::ShouldShowBanner(
-      web_contents(), url, kTestPackageName, fifth_day));
-}
-
-// Test that the banner triggers correctly using site engagement.
-TEST_F(AppBannerSettingsHelperTest, SiteEngagementTrigger) {
-  AppBannerSettingsHelper::SetTotalEngagementToTrigger(2);
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  command_line->AppendSwitch(switches::kEnableSiteEngagementAppBanner);
-
-  SiteEngagementService* service =
-      SiteEngagementServiceFactory::GetForProfile(profile());
-  DCHECK(service);
-
-  // Not used, but needed for method call.
-  base::Time reference_time = GetReferenceTime();
-  GURL url(kTestURL);
-
-  EXPECT_FALSE(AppBannerSettingsHelper::ShouldShowBanner(
-      web_contents(), url, kTestPackageName, reference_time));
-
-  service->AddPoints(url, 1);
-  EXPECT_FALSE(AppBannerSettingsHelper::ShouldShowBanner(
-      web_contents(), url, kTestPackageName, reference_time));
-
-  service->AddPoints(url, 1);
-  EXPECT_TRUE(AppBannerSettingsHelper::ShouldShowBanner(
-      web_contents(), url, kTestPackageName, reference_time));
-
-  AppBannerSettingsHelper::SetTotalEngagementToTrigger(5);
-  EXPECT_FALSE(AppBannerSettingsHelper::ShouldShowBanner(
-      web_contents(), url, kTestPackageName, reference_time));
-
-  service->AddPoints(url, 1.5);
-  EXPECT_FALSE(AppBannerSettingsHelper::ShouldShowBanner(
-      web_contents(), url, kTestPackageName, reference_time));
-
-  service->AddPoints(url, 0.5);
-  EXPECT_FALSE(AppBannerSettingsHelper::ShouldShowBanner(
-      web_contents(), url, kTestPackageName, reference_time));
-
-  service->AddPoints(url, 1.5);
   EXPECT_TRUE(AppBannerSettingsHelper::ShouldShowBanner(
       web_contents(), url, kTestPackageName, reference_time));
 }
