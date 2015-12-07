@@ -179,6 +179,8 @@
         'browser/bookmarks/bookmark_client_impl.h',
         'browser/bookmarks/bookmark_model_factory.cc',
         'browser/bookmarks/bookmark_model_factory.h',
+        'browser/bookmarks/bookmarks_utils.cc',
+        'browser/bookmarks/bookmarks_utils.h',
         'browser/bookmarks/startup_task_runner_service_factory.cc',
         'browser/bookmarks/startup_task_runner_service_factory.h',
         'browser/browser_state/browser_state_info_cache.cc',
