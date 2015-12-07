@@ -30,11 +30,6 @@ class StringProvider {
   // copy the URL for the current search query into the pasteboard.
   virtual std::string GetOmniboxCopyUrlString() = 0;
 
-  // Returns the resource IDs for the strings that are used in the Apple flags
-  // page (i.e., chrome://ui-alternatives).
-  virtual int GetAppleFlagsTableTitleID() = 0;
-  virtual int GetAppleFlagsNoExperimentsAvailableID() = 0;
-
   // Return the strings used to display spoofing attempt errors.
   virtual base::string16 GetSpoofingInterstitialTitle() = 0;
   virtual base::string16 GetSpoofingInterstitialHeadline() = 0;

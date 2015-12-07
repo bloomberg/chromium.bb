@@ -18,8 +18,6 @@ class FakeStringProvider : public StringProvider {
 
   // StringProvider implementation
   std::string GetOmniboxCopyUrlString() override;
-  int GetAppleFlagsTableTitleID() override;
-  int GetAppleFlagsNoExperimentsAvailableID() override;
   base::string16 GetSpoofingInterstitialTitle() override;
   base::string16 GetSpoofingInterstitialHeadline() override;
   base::string16 GetSpoofingInterstitialMessage() override;

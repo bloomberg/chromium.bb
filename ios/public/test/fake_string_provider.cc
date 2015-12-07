@@ -16,14 +16,6 @@ std::string FakeStringProvider::GetOmniboxCopyUrlString() {
   return "Copy URL";
 }
 
-int FakeStringProvider::GetAppleFlagsTableTitleID() {
-  return 0;
-}
-
-int FakeStringProvider::GetAppleFlagsNoExperimentsAvailableID() {
-  return 0;
-}
-
 base::string16 FakeStringProvider::GetSpoofingInterstitialTitle() {
   return base::string16();
 }

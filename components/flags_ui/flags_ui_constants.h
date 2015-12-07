@@ -26,6 +26,7 @@ extern const char kDisable[];
 extern const char kEnable[];
 extern const char kFlagsBlurb[];
 extern const char kFlagsLongTitle[];
+extern const char kFlagsNoExperimentsAvailable[];
 extern const char kFlagsNotSupported[];
 extern const char kFlagsRestartButton[];
 extern const char kFlagsRestartNotice[];

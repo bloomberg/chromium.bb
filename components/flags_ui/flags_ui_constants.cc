@@ -22,6 +22,7 @@ const char kDisable[] = "disable";
 const char kEnable[] = "enable";
 const char kFlagsBlurb[] = "flagsBlurb";
 const char kFlagsLongTitle[] = "flagsLongTitle";
+const char kFlagsNoExperimentsAvailable[] = "flagsNoExperimentsAvailable";
 const char kFlagsNotSupported[] = "flagsNotSupported";
 const char kFlagsRestartButton[] = "flagsRestartButton";
 const char kFlagsRestartNotice[] = "flagsRestartNotice";

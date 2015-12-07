@@ -61,4 +61,12 @@
   <message name="IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED" desc="Generic 'Disabled' experiment choice option name. E.G. shown in multi value options in about:flags.">
     Disabled
   </message>
+  <if expr="is_ios">
+    <message name="IDS_FLAGS_UI_ALTERNATIVES_UI_TABLE_TITLE" desc="Title for the features table on the about:ui_alternatives page.">
+      UI Alternatives
+    </message>
+    <message name="IDS_FLAGS_UI_ALTERNATIVES_UI_NO_EXPERIMENTS_AVAILABLE" desc="Shown on the about://ui-alternatives page if no experiments are available">
+      No UI alternatives available
+    </message>
+  </if>
 </grit-part>
