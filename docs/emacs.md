@@ -379,7 +379,7 @@ for details.
 
 ## ERC for IRC
 
-See [ErcIrc][erc_irc.md].
+See [ErcIrc](erc_irc.md).
 
 ## TODO
 
