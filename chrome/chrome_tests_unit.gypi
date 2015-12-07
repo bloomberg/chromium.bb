@@ -1548,6 +1548,7 @@
       'browser/ui/panels/panel_mouse_watcher_unittest.cc',
       'browser/ui/passwords/manage_passwords_bubble_model_unittest.cc',
       'browser/ui/passwords/manage_passwords_view_utils_desktop_unittest.cc',
+      'browser/ui/passwords/password_dialog_controller_impl_unittest.cc',
       'browser/ui/search/instant_page_unittest.cc',
       'browser/ui/search/instant_search_prerenderer_unittest.cc',
       'browser/ui/search/search_delegate_unittest.cc',
