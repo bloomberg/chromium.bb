@@ -205,7 +205,8 @@ Polymer({
 
   /**
    * A handler for activating one of the menu action items.
-   * @param {!{target: !{selectedItems: !{textContent: string}}}} event
+   * @param {!{model: !{item: !{url: string}},
+   *           target: !{selectedItems: !{textContent: string}}}} event
    * @private
    */
   onActionMenuIronSelect_: function(event) {
