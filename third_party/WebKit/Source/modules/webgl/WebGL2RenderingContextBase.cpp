@@ -1541,9 +1541,23 @@ void WebGL2RenderingContextBase::drawBuffers(const Vector<GLenum>& buffers)
 
     GLsizei n = buffers.size();
     const GLenum* bufs = buffers.data();
+    for (GLsizei i = 0; i < n; ++i) {
+        switch (bufs[i]) {
+        case GL_NONE:
+        case GL_BACK:
+        case GL_COLOR_ATTACHMENT0:
+            break;
+        default:
+            if (bufs[i] > GL_COLOR_ATTACHMENT0
+                && bufs[i] < static_cast<GLenum>(GL_COLOR_ATTACHMENT0 + maxColorAttachments()))
+                break;
+            synthesizeGLError(GL_INVALID_ENUM, "drawBuffers", "invalid buffer");
+            return;
+        }
+    }
     if (!m_framebufferBinding) {
         if (n != 1) {
-            synthesizeGLError(GL_INVALID_VALUE, "drawBuffers", "more than one buffer");
+            synthesizeGLError(GL_INVALID_OPERATION, "drawBuffers", "the number of buffers is not 1");
             return;
         }
         if (bufs[0] != GL_BACK && bufs[0] != GL_NONE) {
@@ -2822,7 +2836,7 @@ bool WebGL2RenderingContextBase::validateAndUpdateBufferBindBaseTarget(const cha
     switch (target) {
     case GL_TRANSFORM_FEEDBACK_BUFFER:
         if (index >= m_boundIndexedTransformFeedbackBuffers.size()) {
-            synthesizeGLError(GL_INVALID_OPERATION, functionName, "index out of range");
+            synthesizeGLError(GL_INVALID_VALUE, functionName, "index out of range");
             return false;
         }
         m_boundIndexedTransformFeedbackBuffers[index] = buffer;
@@ -2830,7 +2844,7 @@ bool WebGL2RenderingContextBase::validateAndUpdateBufferBindBaseTarget(const cha
         break;
     case GL_UNIFORM_BUFFER:
         if (index >= m_boundIndexedUniformBuffers.size()) {
-            synthesizeGLError(GL_INVALID_OPERATION, functionName, "index out of range");
+            synthesizeGLError(GL_INVALID_VALUE, functionName, "index out of range");
             return false;
         }
         m_boundIndexedUniformBuffers[index] = buffer;
