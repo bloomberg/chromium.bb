@@ -299,8 +299,8 @@ void MidiManagerAlsa::DispatchSendMidiData(MidiManagerClient* client,
 
   // Acknowledge send.
   send_thread_.message_loop()->PostTask(
-      FROM_HERE, base::Bind(&MidiManagerClient::AccumulateMidiBytesSent,
-                            base::Unretained(client), data.size()));
+      FROM_HERE, base::Bind(&MidiManagerAlsa::AccumulateMidiBytesSent,
+                            base::Unretained(this), client, data.size()));
 }
 
 MidiManagerAlsa::MidiPort::Id::Id() = default;

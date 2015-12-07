@@ -149,11 +149,10 @@ void MidiManager::EndSession(MidiManagerClient* client) {
 }
 
 void MidiManager::AccumulateMidiBytesSent(MidiManagerClient* client, size_t n) {
-  {
-    base::AutoLock auto_lock(lock_);
-    if (clients_.find(client) == clients_.end())
-      return;
-  }
+  base::AutoLock auto_lock(lock_);
+  if (clients_.find(client) == clients_.end())
+    return;
+
   client->AccumulateMidiBytesSent(n);
 }
 
