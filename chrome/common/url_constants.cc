@@ -747,6 +747,11 @@ const char kLanguageSettingsLearnMoreUrl[] =
     "https://support.google.com/chrome/topic/1678461";
 #endif
 
+#if defined(GOOGLE_CHROME_BUILD) && defined(OS_LINUX) && !defined(OS_CHROMEOS)
+const char kLinuxWheezyPreciseDeprecationURL[] =
+    "https://support.google.com/chrome/answer/95346";
+#endif
+
 #if defined(OS_MACOSX)
 // TODO(mark): Change to a Help Center URL when one is available.
 // https://crbug.com/555044

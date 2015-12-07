@@ -224,8 +224,16 @@ If you update this file, be sure also to update google_chrome_strings.grd. -->
       <message name="IDS_ABOUT_TERMS_OF_SERVICE" desc="The terms of service label in the About box.">
         Not used in Chromium. Placeholder to keep resource maps in sync. It expects one argument: $1.
       </message>
+      <if expr="is_linux and not chromeos">
+        <!-- These messages are not actually used, but they are here as placeholders to match the Chrome messages. -->
+        <message name="IDS_LINUX_WHEEZY_PRECISE_OBSOLETE_SOON" desc="A message displayed on an at-launch infobar and about:help warning the user that the computer they are using is about to become unsupported.">
+          Future versions of Chromium will no longer support this Linux system.
+        </message>
+        <message name="IDS_LINUX_WHEEZY_PRECISE_OBSOLETE_NOW" desc="A message displayed on an at-launch infobar and about:help warning the user that the computer they are using is no longer supported.">
+          Chromium may not function correctly because it is no longer supported on this Linux system.
+        </message>
+      </if>
       <if expr="is_macosx">
-        <!-- Mac 32-bit deprecation -->
         <message name="IDS_MAC_10_678_OBSOLETE_SOON" desc="A message displayed on an at-launch infobar and About (Help) page warning the user that the OS version they are using is about to become unsupported.">
           Future versions of Chromium will no longer support Mac OS X 10.6, 10.7, or 10.8.
         </message>
