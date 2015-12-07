@@ -104,6 +104,7 @@ public class ChromiumMultiDex {
         try {
             ApplicationInfo appInfo = packageManager.getApplicationInfo(context.getPackageName(),
                     PackageManager.GET_META_DATA);
+            if (appInfo == null || appInfo.metaData == null) return true;
             return !appInfo.metaData.getBoolean(currentProcessName + IGNORE_MULTIDEX_KEY, false);
         } catch (PackageManager.NameNotFoundException e) {
             return true;
