@@ -43,13 +43,12 @@ import java.util.Locale;
  * any unnecessary measures and layouts.
  */
 class SuggestionView extends ViewGroup {
-    private enum SuggestionIconType {
-        BOOKMARK,
-        HISTORY,
-        GLOBE,
-        MAGNIFIER,
-        VOICE
-    }
+    private static final int SUGGESTION_ICON_UNDEFINED = -1;
+    private static final int SUGGESTION_ICON_BOOKMARK = 0;
+    private static final int SUGGESTION_ICON_HISTORY = 1;
+    private static final int SUGGESTION_ICON_GLOBE = 2;
+    private static final int SUGGESTION_ICON_MAGNIFIER = 3;
+    private static final int SUGGESTION_ICON_VOICE = 4;
 
     private static final int FIRST_LINE_TEXT_SIZE_SP = 17;
     private static final int SECOND_LINE_TEXT_SIZE_SP = 14;
@@ -286,7 +285,7 @@ class SuggestionView extends ViewGroup {
         // suggestion type they are.
         if (mSuggestion.hasAnswer()) {
             setAnswer(mSuggestion.getAnswer());
-            mContentsView.setSuggestionIcon(SuggestionIconType.MAGNIFIER, colorsChanged);
+            mContentsView.setSuggestionIcon(SUGGESTION_ICON_MAGNIFIER, colorsChanged);
             mContentsView.mTextLine2.setVisibility(VISIBLE);
             setRefinable(true);
             return;
@@ -297,11 +296,11 @@ class SuggestionView extends ViewGroup {
         int suggestionType = mSuggestion.getType();
         if (mSuggestion.isUrlSuggestion()) {
             if (mSuggestion.isStarred()) {
-                mContentsView.setSuggestionIcon(SuggestionIconType.BOOKMARK, colorsChanged);
+                mContentsView.setSuggestionIcon(SUGGESTION_ICON_BOOKMARK, colorsChanged);
             } else if (suggestionType == OmniboxSuggestionType.HISTORY_URL) {
-                mContentsView.setSuggestionIcon(SuggestionIconType.HISTORY, colorsChanged);
+                mContentsView.setSuggestionIcon(SUGGESTION_ICON_HISTORY, colorsChanged);
             } else {
-                mContentsView.setSuggestionIcon(SuggestionIconType.GLOBE, colorsChanged);
+                mContentsView.setSuggestionIcon(SUGGESTION_ICON_GLOBE, colorsChanged);
             }
             boolean urlShown = !TextUtils.isEmpty(mSuggestion.getUrl());
             boolean urlHighlighted = false;
@@ -313,13 +312,13 @@ class SuggestionView extends ViewGroup {
             setSuggestedQuery(suggestionItem, true, urlShown, urlHighlighted);
             setRefinable(!sameAsTyped);
         } else {
-            SuggestionIconType suggestionIcon = SuggestionIconType.MAGNIFIER;
+            int suggestionIcon = SUGGESTION_ICON_MAGNIFIER;
             if (suggestionType == OmniboxSuggestionType.VOICE_SUGGEST) {
-                suggestionIcon = SuggestionIconType.VOICE;
+                suggestionIcon = SUGGESTION_ICON_VOICE;
             } else if ((suggestionType == OmniboxSuggestionType.SEARCH_SUGGEST_PERSONALIZED)
                     || (suggestionType == OmniboxSuggestionType.SEARCH_HISTORY)) {
                 // Show history icon for suggestions based on user queries.
-                suggestionIcon = SuggestionIconType.HISTORY;
+                suggestionIcon = SUGGESTION_ICON_HISTORY;
             }
             mContentsView.setSuggestionIcon(suggestionIcon, colorsChanged);
             setRefinable(!sameAsTyped);
@@ -569,7 +568,7 @@ class SuggestionView extends ViewGroup {
         private int mTextLeft = Integer.MIN_VALUE;
         private int mTextRight = Integer.MIN_VALUE;
         private Drawable mSuggestionIcon;
-        private SuggestionIconType mSuggestionIconType;
+        private int mSuggestionIconType = SUGGESTION_ICON_UNDEFINED;
 
         private final TextView mTextLine1;
         private final TextView mTextLine2;
@@ -902,21 +901,22 @@ class SuggestionView extends ViewGroup {
             return drawableState;
         }
 
-        private void setSuggestionIcon(SuggestionIconType type, boolean invalidateCurrentIcon) {
+        private void setSuggestionIcon(int type, boolean invalidateCurrentIcon) {
             if (mSuggestionIconType == type && !invalidateCurrentIcon) return;
+            assert type != SUGGESTION_ICON_UNDEFINED;
 
             int drawableId = R.drawable.ic_omnibox_page;
             switch (type) {
-                case BOOKMARK:
+                case SUGGESTION_ICON_BOOKMARK:
                     drawableId = R.drawable.btn_star;
                     break;
-                case MAGNIFIER:
+                case SUGGESTION_ICON_MAGNIFIER:
                     drawableId = R.drawable.ic_suggestion_magnifier;
                     break;
-                case HISTORY:
+                case SUGGESTION_ICON_HISTORY:
                     drawableId = R.drawable.ic_suggestion_history;
                     break;
-                case VOICE:
+                case SUGGESTION_ICON_VOICE:
                     drawableId = R.drawable.btn_mic;
                     break;
                 default:
