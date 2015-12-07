@@ -8,14 +8,14 @@ vars = {
   # directories contain commits at each revision, you will need to select
   # revisions at latest revision up to a high watermark from each slice.
   # Document the high watermark here:
-  # chrome_rev: 358688
-  "build_rev": "e082ba4c3954cb582bc392862e8df9eaad977911", # from cr commit position 358684
-  "build_overrides_rev": "794be476f56f5af4aa08752cc06bfa562dda8a66", # from cr commit position 357577
+  # chrome_rev: 363546
+  "build_rev": "fd1a66b01ac6fc05107e8f4a0509ca89cc6dd0cf", # from cr commit position 363527
+  "build_overrides_rev": "8483c5358c0e69f1fcd4269ff2cd27f8c8f019b7", # from cr commit position 362804
   "binutils_rev": "c485984110688e490052a3ef60218a26b71e207a", # from cr commit position 354325
   "libcxx_static_rev": "17acece915b87b2d53da5e8cbc2028b1300783e2", # from cr commit position 356325
   # NOTE: be sure to update clang_lib_version in SConstruct whenever
   # updating this clang_rev (e.g., if LLVM changes from version 3.7 to 3.8).
-  "clang_rev": "66f5328417331216569e8beb244fd887f62e8997", # from cr commit position 355905
+  "clang_rev": "5b7bd8a08ae5ee5262c38e01f5b703cc193074d4", # from cr commit position 363337
 
   # NOTE!  These five should be kept up to date with their counterparts in
   # chromium/src/DEPS.
@@ -24,12 +24,12 @@ vars = {
   # in the build that goes into Chromium.  But we might as well update it too.)
   # You should now use the roll-dep script in depot_tools to do this update.
   "gtest_rev": "6f8a66431cb592dad629028a50b3dd418a408c87",
-  "gyp_rev": "2c1e6cced23554ce84806e570acea637f6473afc",
+  "gyp_rev": "e2313c02ad7b6d589b38fe578f5d39970a9bbc20",
   "breakpad_rev": "a4eb2e302cefff9908ec955e761fef5d813d1b00", # from svn revision 1416
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling build tools
   # and whatever else without interference from each other.
-  'buildtools_revision': 'c2f259809d5ede3275df5ea0842f0431990c4f98',
+  'buildtools_revision': 'b747a9e091cb8212a62343258406eaf53a6c032e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling lss
   # and whatever else without interference from each other.
