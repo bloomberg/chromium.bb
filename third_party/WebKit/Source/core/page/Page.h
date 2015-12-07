@@ -193,7 +193,9 @@ public:
     };
 
     void addMultisamplingChangedObserver(MultisamplingChangedObserver*);
+#if !ENABLE(OILPAN)
     void removeMultisamplingChangedObserver(MultisamplingChangedObserver*);
+#endif
 
     void didCommitLoad(LocalFrame*);
 

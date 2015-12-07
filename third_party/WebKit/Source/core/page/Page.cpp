@@ -389,10 +389,13 @@ void Page::addMultisamplingChangedObserver(MultisamplingChangedObserver* observe
     m_multisamplingChangedObservers.add(observer);
 }
 
+// For Oilpan, unregistration is handled by the GC and weak references.
+#if !ENABLE(OILPAN)
 void Page::removeMultisamplingChangedObserver(MultisamplingChangedObserver* observer)
 {
     m_multisamplingChangedObservers.remove(observer);
 }
+#endif
 
 void Page::settingsChanged(SettingsDelegate::ChangeType changeType)
 {
