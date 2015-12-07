@@ -93,11 +93,6 @@ void CSSPropertyParser::rollbackLastProperties(int num)
     m_parsedProperties.shrink(m_parsedProperties.size() - num);
 }
 
-KURL CSSPropertyParser::completeURL(const String& url) const
-{
-    return m_context.completeURL(url);
-}
-
 bool CSSPropertyParser::validCalculationUnit(CSSParserValue* value, Units unitflags, ReleaseParsedCalcValueCondition releaseCalc)
 {
     bool mustBeNonNegative = unitflags & (FNonNeg | FPositiveInteger);
@@ -1305,7 +1300,7 @@ PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::parseContent()
         RefPtrWillBeRawPtr<CSSValue> parsedValue = nullptr;
         if (val->m_unit == CSSParserValue::URI) {
             // url
-            parsedValue = createCSSImageValueWithReferrer(val->string, completeURL(val->string));
+            parsedValue = createCSSImageValueWithReferrer(val->string, m_context);
         } else if (val->m_unit == CSSParserValue::Function) {
             // attr(X) | counter(X [,Y]) | counters(X, Y, [,Z]) | -webkit-gradient(...)
             CSSParserValueList* args = val->function->args.get();
@@ -1424,7 +1419,7 @@ bool CSSPropertyParser::parseFillImage(CSSParserValueList* valueList, RefPtrWill
         return true;
     }
     if (valueList->current()->m_unit == CSSParserValue::URI) {
-        value = createCSSImageValueWithReferrer(valueList->current()->string, completeURL(valueList->current()->string));
+        value = createCSSImageValueWithReferrer(valueList->current()->string, m_context);
         return true;
     }
 
@@ -3767,7 +3762,7 @@ bool CSSPropertyParser::buildBorderImageParseContext(CSSPropertyID propId, Borde
 
         if (!context.canAdvance() && context.allowImage()) {
             if (val->m_unit == CSSParserValue::URI) {
-                context.commitImage(createCSSImageValueWithReferrer(val->string, m_context.completeURL(val->string)));
+                context.commitImage(createCSSImageValueWithReferrer(val->string, m_context));
             } else if (val->m_unit == CSSParserValue::Function) {
                 if (isGeneratedImageValue(val->function->id)) {
                     RefPtrWillBeRawPtr<CSSValue> value = nullptr;
@@ -4952,7 +4947,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseImageSet(CSSParserValue
         if (arg->m_unit != CSSParserValue::URI)
             return nullptr;
 
-        RefPtrWillBeRawPtr<CSSValue> image = createCSSImageValueWithReferrer(arg->string, completeURL(arg->string));
+        RefPtrWillBeRawPtr<CSSValue> image = createCSSImageValueWithReferrer(arg->string, m_context);
         imageSet->append(image);
 
         arg = functionArgs->next();

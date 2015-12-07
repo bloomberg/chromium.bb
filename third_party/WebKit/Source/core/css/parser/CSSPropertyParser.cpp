@@ -2177,7 +2177,7 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeBaselineShift(CSSParserT
     return consumeLengthOrPercent(range, SVGAttributeMode, ValueRangeAll, UnitlessQuirk::Forbid);
 }
 
-PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::consumeImageSet(CSSParserTokenRange& range)
+static PassRefPtrWillBeRawPtr<CSSValue> consumeImageSet(CSSParserTokenRange& range, CSSParserContext context)
 {
     CSSParserTokenRange rangeCopy = range;
     CSSParserTokenRange args = consumeFunction(rangeCopy);
@@ -2187,7 +2187,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::consumeImageSet(CSSParserTok
         if (urlValue.isNull())
             return nullptr;
 
-        RefPtrWillBeRawPtr<CSSValue> image = createCSSImageValueWithReferrer(urlValue, completeURL(urlValue));
+        RefPtrWillBeRawPtr<CSSValue> image = CSSPropertyParser::createCSSImageValueWithReferrer(urlValue, context);
         imageSet->append(image);
 
         const CSSParserToken& token = args.consumeIncludingWhitespace();
@@ -2207,16 +2207,16 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::consumeImageSet(CSSParserTok
     return imageSet.release();
 }
 
-PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::consumeCursor(CSSParserTokenRange& range)
+static PassRefPtrWillBeRawPtr<CSSValue> consumeCursor(CSSParserTokenRange& range, CSSParserContext context, bool inQuirksMode)
 {
     RefPtrWillBeRawPtr<CSSValueList> list = nullptr;
     while (!range.atEnd()) {
         RefPtrWillBeRawPtr<CSSValue> image = nullptr;
         AtomicString uri(consumeUrl(range));
         if (!uri.isNull()) {
-            image = createCSSImageValueWithReferrer(uri, completeURL(uri));
+            image = CSSPropertyParser::createCSSImageValueWithReferrer(uri, context);
         } else if (range.peek().type() == FunctionToken && range.peek().functionId() == CSSValueWebkitImageSet) {
-            image = consumeImageSet(range);
+            image = consumeImageSet(range, context);
             if (!image)
                 return nullptr;
         } else {
@@ -2243,15 +2243,15 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::consumeCursor(CSSParserToken
     }
 
     CSSValueID id = range.peek().id();
-    if (!range.atEnd() && m_context.useCounter()) {
+    if (!range.atEnd() && context.useCounter()) {
         if (id == CSSValueWebkitZoomIn)
-            m_context.useCounter()->count(UseCounter::PrefixedCursorZoomIn);
+            context.useCounter()->count(UseCounter::PrefixedCursorZoomIn);
         else if (id == CSSValueWebkitZoomOut)
-            m_context.useCounter()->count(UseCounter::PrefixedCursorZoomOut);
+            context.useCounter()->count(UseCounter::PrefixedCursorZoomOut);
     }
     RefPtrWillBeRawPtr<CSSValue> cursorType = nullptr;
     if (id == CSSValueHand) {
-        if (inQuirksMode()) // Non-standard behavior
+        if (inQuirksMode) // Non-standard behavior
             cursorType = cssValuePool().createIdentifierValue(CSSValuePointer);
         range.consumeIncludingWhitespace();
     } else if ((id >= CSSValueAuto && id <= CSSValueWebkitZoomOut) || id == CSSValueCopy || id == CSSValueNone) {
@@ -2481,7 +2481,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
     case CSSPropertyRy:
         return consumeLengthOrPercent(m_range, SVGAttributeMode, ValueRangeAll, UnitlessQuirk::Forbid);
     case CSSPropertyCursor:
-        return consumeCursor(m_range);
+        return consumeCursor(m_range, m_context, inQuirksMode());
     case CSSPropertyContain:
         return consumeContain(m_range);
     case CSSPropertyTransformOrigin:
@@ -2515,7 +2515,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::consumeFontFaceSrcURI()
     String url = consumeUrl(m_range);
     if (url.isNull())
         return nullptr;
-    RefPtrWillBeRawPtr<CSSFontFaceSrcValue> uriValue(CSSFontFaceSrcValue::create(completeURL(url), m_context.shouldCheckContentSecurityPolicy()));
+    RefPtrWillBeRawPtr<CSSFontFaceSrcValue> uriValue(CSSFontFaceSrcValue::create(m_context.completeURL(url), m_context.shouldCheckContentSecurityPolicy()));
     uriValue->setReferrer(m_context.referrer());
 
     if (m_range.peek().functionId() != CSSValueFormat)
