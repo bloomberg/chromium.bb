@@ -92,6 +92,11 @@ const char kEnableTabSwitcher[] = "enable-tab-switcher";
 // Enables the snapshot lru cache.
 const char kEnableLRUSnapshotCache[] = "enable-lru-snapshot-cache";
 
+// Forces additional Chrome Variation Ids that will be sent in X-Client-Data
+// header, specified as a 64-bit encoded list of numeric experiment ids. Ids
+// prefixed with the character "t" will be treated as Trigger Variation Ids.
+const char kIOSForceVariationIds[] = "force-variation-ids";
+
 // Enables the recording of metrics reports but disables reporting. In contrast
 // to kDisableMetrics, this executes all the code that a normal client would
 // use for reporting, except the report is dropped rather than sent to the
@@ -111,5 +116,36 @@ const char kIOSIgnoreCertificateErrors[] = "ignore-certificate-errors";
 // Allows for forcing socket connections to http/https to use fixed ports.
 const char kIOSTestingFixedHttpPort[] = "testing-fixed-http-port";
 const char kIOSTestingFixedHttpsPort[] = "testing-fixed-https-port";
+
+// Disable several subsystems which run network requests in the background.
+// This is for use when doing network performance testing to avoid noise in the
+// measurements.
+const char kDisableBackgroundNetworking[] = "disable-background-networking";
+
+// Disables the dinosaur easter egg on the offline interstitial.
+const char kDisableDinosaurEasterEgg[] = "disable-dinosaur-easter-egg";
+
+// Enables grouping websites by domain and filtering them by period.
+const char kHistoryEnableGroupByDomain[] = "enable-grouped-history";
+
+// Use to opt-in to marking HTTP as non-secure.
+const char kMarkNonSecureAs[] = "mark-non-secure-as";
+const char kMarkNonSecureAsNeutral[] = "neutral";
+const char kMarkNonSecureAsNonSecure[] = "non-secure";
+
+// If present, safebrowsing only performs update when
+// SafeBrowsingProtocolManager::ForceScheduleNextUpdate() is explicitly called.
+// This is used for testing only.
+const char kSbDisableAutoUpdate[] = "safebrowsing-disable-auto-update";
+
+// Command line flag offering a "Show saved copy" option to the user if offline.
+// The various modes are disabled, primary, or secondary. Primary/secondary
+// refers to button placement (for experiment).
+const char kShowSavedCopy[] = "show-saved-copy";
+
+// Values for the kShowSavedCopy flag.
+const char kEnableShowSavedCopyPrimary[] = "primary";
+const char kEnableShowSavedCopySecondary[] = "secondary";
+const char kDisableShowSavedCopy[] = "disable";
 
 }  // namespace switches
