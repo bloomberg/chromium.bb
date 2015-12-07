@@ -136,7 +136,7 @@ SourceBuffer::~SourceBuffer()
     ASSERT(!m_stream);
     ASSERT(!m_webSourceBuffer);
 #endif
-    WTF_LOG(Media, "SourceBuffer::~SourceBuffer %p", this);
+    WTF_LOG(Media, "SourceBuffer(%p)::~SourceBuffer", this);
 }
 
 const AtomicString& SourceBuffer::segmentsKeyword()
@@ -293,7 +293,7 @@ void SourceBuffer::setAppendWindowEnd(double end, ExceptionState& exceptionState
 
 void SourceBuffer::appendBuffer(PassRefPtr<DOMArrayBuffer> data, ExceptionState& exceptionState)
 {
-    WTF_LOG(Media, "SourceBuffer::appendBuffer %p size=%u", this, data->byteLength());
+    WTF_LOG(Media, "SourceBuffer(%p)::appendBuffer size=%u", this, data->byteLength());
     // Section 3.2 appendBuffer()
     // https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#widl-SourceBuffer-appendBuffer-void-ArrayBufferView-data
     appendBufferInternal(static_cast<const unsigned char*>(data->data()), data->byteLength(), exceptionState);
@@ -301,7 +301,7 @@ void SourceBuffer::appendBuffer(PassRefPtr<DOMArrayBuffer> data, ExceptionState&
 
 void SourceBuffer::appendBuffer(PassRefPtr<DOMArrayBufferView> data, ExceptionState& exceptionState)
 {
-    WTF_LOG(Media, "SourceBuffer::appendBuffer %p size=%u", this, data->byteLength());
+    WTF_LOG(Media, "SourceBuffer(%p)::appendBuffer size=%u", this, data->byteLength());
     // Section 3.2 appendBuffer()
     // https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#widl-SourceBuffer-appendBuffer-void-ArrayBufferView-data
     appendBufferInternal(static_cast<const unsigned char*>(data->baseAddress()), data->byteLength(), exceptionState);
@@ -315,7 +315,7 @@ void SourceBuffer::appendStream(Stream* stream, ExceptionState& exceptionState)
 
 void SourceBuffer::appendStream(Stream* stream, unsigned long long maxSize, ExceptionState& exceptionState)
 {
-    WTF_LOG(Media, "SourceBuffer::appendStream %p maxSize=%llu", this, maxSize);
+    WTF_LOG(Media, "SourceBuffer(%p)::appendStream maxSize=%llu", this, maxSize);
     m_streamMaxSizeValid = maxSize > 0;
     if (m_streamMaxSizeValid)
         m_streamMaxSize = maxSize;
@@ -355,7 +355,7 @@ void SourceBuffer::abort(ExceptionState& exceptionState)
 
 void SourceBuffer::remove(double start, double end, ExceptionState& exceptionState)
 {
-    WTF_LOG(Media, "SourceBuffer::remove %p start=%f end=%f", this, start, end);
+    WTF_LOG(Media, "SourceBuffer(%p)::remove start=%f end=%f", this, start, end);
 
     // Section 3.2 remove() method steps.
     // 1. If duration equals NaN, then throw an InvalidAccessError exception and abort these steps.
@@ -462,7 +462,7 @@ void SourceBuffer::removedFromMediaSource()
     if (isRemoved())
         return;
 
-    WTF_LOG(Media, "SourceBuffer::removedFromMediaSource %p", this);
+    WTF_LOG(Media, "SourceBuffer(%p)::removedFromMediaSource", this);
     abortIfUpdating();
 
     m_webSourceBuffer->removedFromMediaSource();
@@ -575,7 +575,7 @@ bool SourceBuffer::prepareAppend(size_t newDataSize, ExceptionState& exceptionSt
     // 5. Run the coded frame eviction algorithm.
     if (!evictCodedFrames(newDataSize)) {
         // 6. If the buffer full flag equals true, then throw a QUOTA_EXCEEDED_ERR exception and abort these steps.
-        WTF_LOG(Media, "SourceBuffer::prepareAppend %p -> throw QuotaExceededError", this);
+        WTF_LOG(Media, "SourceBuffer(%p)::prepareAppend -> throw QuotaExceededError", this);
         MediaSource::logAndThrowDOMException(exceptionState, QuotaExceededError, "The SourceBuffer is full, and cannot free space to append additional buffers.");
         TRACE_EVENT_ASYNC_END0("media", "SourceBuffer::prepareAppend", this);
         return false;
@@ -590,7 +590,11 @@ bool SourceBuffer::evictCodedFrames(size_t newDataSize)
     ASSERT(m_source);
     ASSERT(m_source->mediaElement());
     double currentTime = m_source->mediaElement()->currentTime();
-    return m_webSourceBuffer->evictCodedFrames(currentTime, newDataSize);
+    bool result = m_webSourceBuffer->evictCodedFrames(currentTime, newDataSize);
+    if (!result) {
+        WTF_LOG(Media, "SourceBuffer(%p)::evictCodedFrames failed. newDataSize=%zu currentTime=%f buffered=%s", this, newDataSize, currentTime, webTimeRangesToString(m_webSourceBuffer->buffered()).utf8().data());
+    }
+    return result;
 }
 
 void SourceBuffer::appendBufferInternal(const unsigned char* data, unsigned size, ExceptionState& exceptionState)
@@ -676,7 +680,7 @@ void SourceBuffer::appendBufferAsyncPart()
     // 5. Queue a task to fire a simple event named updateend at this SourceBuffer object.
     scheduleEvent(EventTypeNames::updateend);
     TRACE_EVENT_ASYNC_END0("media", "SourceBuffer::appendBuffer", this);
-    WTF_LOG(Media, "SourceBuffer::appendBuffer %p ended. buffered=%s", this, webTimeRangesToString(m_webSourceBuffer->buffered()).utf8().data());
+    WTF_LOG(Media, "SourceBuffer(%p)::appendBuffer ended. buffered=%s", this, webTimeRangesToString(m_webSourceBuffer->buffered()).utf8().data());
 }
 
 void SourceBuffer::removeAsyncPart()
@@ -784,7 +788,7 @@ void SourceBuffer::appendStreamDone(bool success)
     // 14. Queue a task to fire a simple event named updateend at this SourceBuffer object.
     scheduleEvent(EventTypeNames::updateend);
     TRACE_EVENT_ASYNC_END0("media", "SourceBuffer::appendStream", this);
-    WTF_LOG(Media, "SourceBuffer::appendStream %p ended. buffered=%s", this, webTimeRangesToString(m_webSourceBuffer->buffered()).utf8().data());
+    WTF_LOG(Media, "SourceBuffer(%p)::appendStream ended. buffered=%s", this, webTimeRangesToString(m_webSourceBuffer->buffered()).utf8().data());
 }
 
 void SourceBuffer::clearAppendStreamState()
@@ -821,12 +825,12 @@ void SourceBuffer::appendError(bool decodeError)
 
 void SourceBuffer::didStartLoading()
 {
-    WTF_LOG(Media, "SourceBuffer::didStartLoading() %p", this);
+    WTF_LOG(Media, "SourceBuffer(%p)::didStartLoading", this);
 }
 
 void SourceBuffer::didReceiveDataForClient(const char* data, unsigned dataLength)
 {
-    WTF_LOG(Media, "SourceBuffer::didReceiveDataForClient(%d) %p", dataLength, this);
+    WTF_LOG(Media, "SourceBuffer(%p)::didReceiveDataForClient dataLength=%u", this, dataLength);
     ASSERT(m_updating);
     ASSERT(m_loader);
 
@@ -845,14 +849,14 @@ void SourceBuffer::didReceiveDataForClient(const char* data, unsigned dataLength
 
 void SourceBuffer::didFinishLoading()
 {
-    WTF_LOG(Media, "SourceBuffer::didFinishLoading() %p", this);
+    WTF_LOG(Media, "SourceBuffer(%p)::didFinishLoading", this);
     ASSERT(m_loader);
     appendStreamDone(true);
 }
 
 void SourceBuffer::didFail(FileError::ErrorCode errorCode)
 {
-    WTF_LOG(Media, "SourceBuffer::didFail(%d) %p", errorCode, this);
+    WTF_LOG(Media, "SourceBuffer(%p)::didFail errorCode=%d", this, errorCode);
     // m_loader might be already released, in case appendStream has failed due
     // to evictCodedFrames failing in didReceiveDataForClient. In that case
     // appendStreamDone will be invoked from there, no need to repeat it here.
