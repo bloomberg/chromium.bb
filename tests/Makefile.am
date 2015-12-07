@@ -241,6 +241,7 @@ dist_yaml_TESTS =				\
 	yaml/letterDefTest_harness.yaml		\
 	yaml/nl-BE-g0_harness.yaml			\
 	yaml/nl-BE-g1_harness.yaml			\
+	yaml/nl-NL-g0_harness.yaml			\
 	yaml/nocross_harness.yaml			\
 	yaml/pl-pl-comp8_harness.yaml		\
 	yaml/sr-g1_harness.yaml			\
