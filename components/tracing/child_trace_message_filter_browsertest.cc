@@ -107,11 +107,7 @@ class ChildTracingTest : public content::RenderViewTest, public IPC::Listener {
 
   // Simulates a synthetic browser -> child (this process) IPC message.
   void SimulateSyntheticMessageFromBrowser(const IPC::Message& msg) {
-    task_runner_->PostTask(
-        FROM_HERE, base::Bind(base::IgnoreResult(
-                                  &ChildTraceMessageFilter::OnMessageReceived),
-                              ctmf_, msg));
-    base::RunLoop().RunUntilIdle();
+    ctmf_->OnMessageReceived(msg);
   }
 
   void EnableTracingWithMemoryDumps() {
