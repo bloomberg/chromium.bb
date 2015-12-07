@@ -19,6 +19,7 @@ import unittest
 import devil_chromium
 
 from devil import base_error
+from devil import devil_env
 from devil.android import apk_helper
 from devil.android import device_blacklist
 from devil.android import device_errors
@@ -122,7 +123,7 @@ def ProcessCommonOptions(args):
   if args.adb_path:
     devil_custom_deps = {
       'adb': {
-        'android_host': [args.adb_path]
+        devil_env.GetPlatform(): [args.adb_path]
       }
     }
 

@@ -57,6 +57,7 @@ v8.log
 /ash/ash_unittests_run.xml
 /base/base_unittests_run.xml
 /breakpad/src/
+/build/android/bin
 /build/Debug
 /build/Debug_x64
 /build/gomacc.lock
