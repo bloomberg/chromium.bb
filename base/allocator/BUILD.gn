@@ -220,34 +220,6 @@ if (use_allocator == "tcmalloc") {
 
     deps = []
 
-    if (is_win) {
-      sources -= [
-        "$tcmalloc_dir/src/base/elf_mem_image.cc",
-        "$tcmalloc_dir/src/base/elf_mem_image.h",
-        "$tcmalloc_dir/src/base/linuxthreads.cc",
-        "$tcmalloc_dir/src/base/linuxthreads.h",
-        "$tcmalloc_dir/src/base/vdso_support.cc",
-        "$tcmalloc_dir/src/base/vdso_support.h",
-        "$tcmalloc_dir/src/maybe_threads.cc",
-        "$tcmalloc_dir/src/maybe_threads.h",
-        "$tcmalloc_dir/src/symbolize.h",
-        "$tcmalloc_dir/src/system-alloc.cc",
-        "$tcmalloc_dir/src/system-alloc.h",
-      ]
-
-      defines += [ "PERFTOOLS_DLL_DECL=" ]
-
-      configs -= [
-        # Tcmalloc defines this itself, and we don't want duplicate definition
-        # warnings.
-        "//build/config/win:nominmax",
-      ]
-
-      public_configs = [ ":nocmt" ]
-
-      deps += [ ":prep_libc" ]
-    }
-
     if (enable_profiling) {
       sources += [
         "$tcmalloc_dir/src/base/thread_lister.c",
@@ -298,10 +270,6 @@ if (use_allocator == "tcmalloc") {
     }
 
     deps += [ "//base/third_party/dynamic_annotations" ]
-
-    if (is_win) {
-      ldflags = [ "/ignore:4006:4221" ]
-    }
   }
 }  # !is_android
 

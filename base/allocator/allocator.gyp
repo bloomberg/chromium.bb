@@ -32,9 +32,7 @@
       # (crbug.com/564618) bring this file to a saner state (fewer conditions).
       'type': 'static_library',
       'conditions': [
-        # TODO(primiano): in next CL this should check win_use_allocator_shim.
-        # Right now that would produce a non-zero ninja diff for asan=1.
-        ['OS=="win" and component!="shared_library"', {
+        ['OS=="win" and win_use_allocator_shim==1', {
           'msvs_settings': {
             # TODO(sgk):  merge this with build/common.gypi settings
             'VCLibrarianTool': {
@@ -46,12 +44,8 @@
           },
           'dependencies': [
             'libcmt',
-
-            # TODO(primiano): remove in next CL, not really needed.
-            '../third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
           ],
           'include_dirs': [
-            '.',  # TODO(primiano): remove in next CL, not really needed.
             '../..',
           ],
           'sources': [
@@ -64,15 +58,6 @@
                   'RuntimeLibrary': '0',
                 },
               },
-              # TODO(primiano): remove this 'conditions' section soon. This is
-              # only for tc-malloc, which is not supported on windows. The only
-              # reason os it is to make the initial refactoring easier and
-              # a zero-diff ninja w.r.t. the current situation.
-              'conditions': [
-                ['disable_debugallocation==0', {
-                  'defines': [ 'TCMALLOC_FOR_DEBUGALLOCATION' ],
-                }],
-              ],
             },
           },
           'direct_dependent_settings': {
@@ -88,9 +73,6 @@
                 },
               },
             },
-            'defines': [
-              'PERFTOOLS_DLL_DECL=',
-            ],
           },
         }],  # OS=="win"
         ['use_allocator=="tcmalloc"', {
