@@ -1145,7 +1145,7 @@ class TypeBindings:
 
                     @staticmethod
                     def get_setter_value_expression_pattern():
-                        return None
+                        return "static_pointer_cast<JSONValue>(%s)"
 
                     @staticmethod
                     def reduce_to_raw_type():

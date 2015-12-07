@@ -114,12 +114,6 @@ static_assert(!IsConvertibleToInteger<const char*>::value, "const char* should n
 static_assert(!IsConvertibleToInteger<volatile char*>::value, "volatile char* should not be convertible to integer");
 static_assert(!IsConvertibleToInteger<IsConvertibleToInteger<bool>>::value, "struct should not be convertible to integer");
 
-static_assert((IsPointerConvertible<int, int>::Value), "pointers to the same type should be convertible");
-static_assert((!IsPointerConvertible<int, unsigned>::Value), "int pointers should not be convertible to unsigned pointers");
-static_assert((IsPointerConvertible<int, const int>::Value), "int pointers should be convertible to const int pointers");
-static_assert((!IsPointerConvertible<const int, int>::Value), "const int* should not be convertible to int*");
-static_assert((IsPointerConvertible<int, volatile int>::Value), "int* should be convertible to volatile int*");
-
 static_assert((IsSameType<bool, bool>::value), "bool should be the same type as itself");
 static_assert((IsSameType<int*, int*>::value), "int* should be the same type as itself");
 static_assert((!IsSameType<int, int*>::value), "int should not be the same type as int*");
@@ -138,8 +132,6 @@ static_assert((!IsSubclass<TestBaseClass<int>, TestDerivedClass>::value), "Base 
 static_assert((IsSubclassOfTemplate<TestDerivedClass, TestBaseClass>::value), "Derived class should be a subclass of template from its base");
 static_assert((IsSameType<RemoveTemplate<TestBaseClass<int>, TestBaseClass>::Type, int>::value), "RemoveTemplate should remove the template typename from the type");
 static_assert((IsSameType<RemoveTemplate<int, TestBaseClass>::Type, int>::value), "RemoveTemplate should not alter non-template types");
-static_assert((IsPointerConvertible<TestDerivedClass, TestBaseClass<int>>::Value), "Derived class pointers should be convertible to base class pointers");
-static_assert((!IsPointerConvertible<TestBaseClass<int>, TestDerivedClass>::Value), "Base class pointers should not be convertible to derived class pointers");
 
 typedef int IntArray[];
 typedef int IntArraySized[4];

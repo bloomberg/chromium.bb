@@ -23,6 +23,7 @@
 #define TypeTraits_h
 
 #include <cstddef>
+#include <type_traits>
 #include <utility>
 
 #include "wtf/Compiler.h"
@@ -98,20 +99,6 @@ template <typename T> class IsConvertibleToInteger {
 
 public:
     static const bool value = std::is_integral<T>::value || IsConvertibleToDouble<!std::is_integral<T>::value, T>::value;
-};
-
-template <typename From, typename To> class IsPointerConvertible {
-    typedef char YesType;
-    struct NoType {
-        char padding[8];
-    };
-
-    static YesType convertCheck(To* x);
-    static NoType convertCheck(...);
-public:
-    enum {
-        Value = (sizeof(YesType) == sizeof(convertCheck(static_cast<From*>(0))))
-    };
 };
 
 template <typename T, typename U> struct IsSameType {
@@ -191,10 +178,34 @@ template <typename T> struct IsPolymorphic {
     static const bool value = __is_polymorphic(T);
 };
 
+#if COMPILER(MSVC) && !COMPILER(CLANG)
+// FIXME: MSVC bug workaround. Remove once MSVC STL is fixed.
+// C++ 2011 Spec (ISO/IEC 14882:2011(E)) 20.9.6.2 Table 51 states that
+// the template parameters shall be a complete type if they are different types.
+// However, MSVC checks for type completeness even if they are the same type.
+// Here, we use a template specialization for same type case to allow incomplete
+// types.
+
+template <typename T, typename U> class IsBaseOf {
+public:
+    static const bool value = std::is_base_of<T, U>::value;
+};
+
+template <typename T> class IsBaseOf<T, T> {
+public:
+    static const bool value = true;
+};
+
 #define EnsurePtrConvertibleArgDecl(From, To) \
-    typename WTF::EnableIf<WTF::IsPointerConvertible<From, To>::Value, bool>::Type = true
+    typename std::enable_if<WTF::IsBaseOf<To, From>::value>::type* = nullptr
 #define EnsurePtrConvertibleArgDefn(From, To) \
-    typename WTF::EnableIf<WTF::IsPointerConvertible<From, To>::Value, bool>::Type
+    typename std::enable_if<WTF::IsBaseOf<To, From>::value>::type*
+#else
+#define EnsurePtrConvertibleArgDecl(From, To) \
+    typename std::enable_if<std::is_base_of<To, From>::value>::type* = nullptr
+#define EnsurePtrConvertibleArgDefn(From, To) \
+    typename std::enable_if<std::is_base_of<To, From>::value>::type*
+#endif
 
 } // namespace WTF
 

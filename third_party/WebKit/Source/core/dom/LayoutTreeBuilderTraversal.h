@@ -29,10 +29,10 @@
 
 #include "core/CoreExport.h"
 #include "core/dom/Element.h"
+#include "core/dom/shadow/InsertionPoint.h"
 
 namespace blink {
 
-class InsertionPoint;
 class LayoutObject;
 
 namespace LayoutTreeBuilderTraversal {

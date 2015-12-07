@@ -964,9 +964,9 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, M
     case CSSSelector::PseudoScope:
         if (m_mode == SharingRules)
             return true;
-        if (context.scope == element.document())
+        if (context.scope == &element.document())
             return element == element.document().documentElement();
-        return context.scope == element;
+        return context.scope == &element;
     case CSSSelector::PseudoUnresolved:
         return element.isUnresolvedCustomElement();
     case CSSSelector::PseudoHost:
