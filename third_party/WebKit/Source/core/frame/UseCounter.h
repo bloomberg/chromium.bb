@@ -916,6 +916,7 @@ public:
         RTCPeerConnectionGetStatsLegacyNonCompliant = 1058,
         NodeFilterIsFunction = 1059,
         NodeFilterIsObject = 1060,
+        TextEncoderUTF16 = 1061,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

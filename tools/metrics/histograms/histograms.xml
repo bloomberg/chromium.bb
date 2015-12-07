@@ -63774,6 +63774,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1058" label="RTCPeerConnectionGetStatsLegacyNonCompliant"/>
   <int value="1059" label="NodeFilterIsFunction"/>
   <int value="1060" label="NodeFilterIsObject"/>
+  <int value="1061" label="TextEncoderUTF16"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">
