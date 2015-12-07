@@ -9,7 +9,6 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
 #include "components/dom_distiller/core/distilled_page_prefs.h"
-#include "components/enhanced_bookmarks/bookmark_server_cluster_service.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
 #include "components/gcm_driver/gcm_channel_status_syncer.h"
 #include "components/network_time/network_time_tracker.h"
@@ -86,7 +85,6 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
 void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   autofill::AutofillManager::RegisterProfilePrefs(registry);
   dom_distiller::DistilledPagePrefs::RegisterProfilePrefs(registry);
-  enhanced_bookmarks::BookmarkServerClusterService::RegisterPrefs(registry);
   FirstRun::RegisterProfilePrefs(registry);
   gcm::GCMChannelStatusSyncer::RegisterProfilePrefs(registry);
   HostContentSettingsMap::RegisterProfilePrefs(registry);
