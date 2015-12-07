@@ -9,6 +9,7 @@
 
 #include "net/base/completion_callback.h"
 #include "net/base/load_states.h"
+#include "net/base/net_error_details.h"
 #include "net/base/net_export.h"
 #include "net/base/request_priority.h"
 #include "net/base/upload_progress.h"
@@ -167,6 +168,9 @@ class NET_EXPORT_PRIVATE HttpTransaction {
   // if it is available; returns false and leaves |endpoint| unchanged if it is
   // unavailable.
   virtual bool GetRemoteEndpoint(IPEndPoint* endpoint) const = 0;
+
+  // Populates network error details for this transaction.
+  virtual void PopulateNetErrorDetails(NetErrorDetails* details) const = 0;
 
   // Called when the priority of the parent job changes.
   virtual void SetPriority(RequestPriority priority) = 0;

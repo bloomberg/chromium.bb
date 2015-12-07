@@ -22,6 +22,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/load_states.h"
+#include "net/base/net_error_details.h"
 #include "net/base/request_priority.h"
 #include "net/base/upload_progress.h"
 #include "net/http/http_cache.h"
@@ -154,6 +155,7 @@ class HttpCache::Transaction : public HttpTransaction {
   void SetQuicServerInfo(QuicServerInfo* quic_server_info) override;
   bool GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const override;
   bool GetRemoteEndpoint(IPEndPoint* endpoint) const override;
+  void PopulateNetErrorDetails(NetErrorDetails* details) const override;
   void SetPriority(RequestPriority priority) override;
   void SetWebSocketHandshakeStreamCreateHelper(
       WebSocketHandshakeStreamBase::CreateHelper* create_helper) override;

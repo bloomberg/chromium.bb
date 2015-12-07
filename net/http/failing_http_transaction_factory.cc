@@ -13,6 +13,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "net/base/load_timing_info.h"
+#include "net/base/net_error_details.h"
 #include "net/base/upload_progress.h"
 #include "net/http/http_response_info.h"
 #include "net/socket/connection_attempts.h"
@@ -61,6 +62,7 @@ class FailingHttpTransaction : public HttpTransaction {
   void SetQuicServerInfo(QuicServerInfo* quic_server_info) override;
   bool GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const override;
   bool GetRemoteEndpoint(IPEndPoint* endpoint) const override;
+  void PopulateNetErrorDetails(NetErrorDetails* details) const override;
   void SetPriority(RequestPriority priority) override;
   void SetWebSocketHandshakeStreamCreateHelper(
       WebSocketHandshakeStreamBase::CreateHelper* create_helper) override;
@@ -160,6 +162,11 @@ bool FailingHttpTransaction::GetLoadTimingInfo(
 
 bool FailingHttpTransaction::GetRemoteEndpoint(IPEndPoint* endpoint) const {
   return false;
+}
+
+void FailingHttpTransaction::PopulateNetErrorDetails(
+    NetErrorDetails* details) const {
+  return;
 }
 
 void FailingHttpTransaction::SetPriority(RequestPriority priority)  {}

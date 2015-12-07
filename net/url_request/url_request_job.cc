@@ -187,6 +187,10 @@ bool URLRequestJob::GetResponseCookies(std::vector<std::string>* cookies) {
   return false;
 }
 
+void URLRequestJob::PopulateNetErrorDetails(NetErrorDetails* details) const {
+  return;
+}
+
 Filter* URLRequestJob::SetupFilter() const {
   return NULL;
 }

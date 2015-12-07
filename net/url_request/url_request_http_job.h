@@ -16,6 +16,7 @@
 #include "base/time/time.h"
 #include "net/base/auth.h"
 #include "net/base/completion_callback.h"
+#include "net/base/net_error_details.h"
 #include "net/base/net_export.h"
 #include "net/base/sdch_manager.h"
 #include "net/cookies/cookie_store.h"
@@ -119,6 +120,7 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   bool GetRemoteEndpoint(IPEndPoint* endpoint) const override;
   bool GetResponseCookies(std::vector<std::string>* cookies) override;
   int GetResponseCode() const override;
+  void PopulateNetErrorDetails(NetErrorDetails* details) const override;
   Filter* SetupFilter() const override;
   bool CopyFragmentOnRedirect(const GURL& location) const override;
   bool IsSafeRedirect(const GURL& location) override;

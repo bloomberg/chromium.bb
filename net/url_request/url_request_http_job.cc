@@ -1126,6 +1126,13 @@ int URLRequestHttpJob::GetResponseCode() const {
   return GetResponseHeaders()->response_code();
 }
 
+void URLRequestHttpJob::PopulateNetErrorDetails(
+    NetErrorDetails* details) const {
+  if (!transaction_)
+    return;
+  return transaction_->PopulateNetErrorDetails(details);
+}
+
 Filter* URLRequestHttpJob::SetupFilter() const {
   DCHECK(transaction_.get());
   if (!response_info_)

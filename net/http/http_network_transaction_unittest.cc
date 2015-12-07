@@ -9883,6 +9883,141 @@ TEST_P(HttpNetworkTransactionTest, DisableAlternativeServiceToDifferentHost) {
   EXPECT_EQ(ERR_CONNECTION_REFUSED, callback.GetResult(rv));
 }
 
+TEST_P(HttpNetworkTransactionTest, IdentifyQuicBroken) {
+  HostPortPair origin("origin.example.org", 443);
+  HostPortPair alternative("alternative.example.org", 443);
+  std::string origin_url = "https://origin.example.org:443";
+  std::string alternative_url = "https://alternative.example.org:443";
+
+  // Negotiate HTTP/1.1 with alternative.example.org.
+  SSLSocketDataProvider ssl(ASYNC, OK);
+  ssl.SetNextProto(kProtoHTTP11);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
+
+  // HTTP/1.1 data for request.
+  MockWrite http_writes[] = {
+      MockWrite("GET / HTTP/1.1\r\n"
+                "Host: alternative.example.org\r\n"
+                "Connection: keep-alive\r\n\r\n"),
+  };
+
+  MockRead http_reads[] = {
+      MockRead("HTTP/1.1 200 OK\r\n"
+               "Content-Type: text/html; charset=iso-8859-1\r\n"
+               "Content-Length: 40\r\n\r\n"
+               "first HTTP/1.1 response from alternative"),
+  };
+  StaticSocketDataProvider http_data(http_reads, arraysize(http_reads),
+                                     http_writes, arraysize(http_writes));
+  session_deps_.socket_factory->AddSocketDataProvider(&http_data);
+
+  StaticSocketDataProvider data_refused;
+  data_refused.set_connect_data(MockConnect(ASYNC, ERR_CONNECTION_REFUSED));
+  session_deps_.socket_factory->AddSocketDataProvider(&data_refused);
+
+  // Set up a QUIC alternative service for origin.
+  session_deps_.use_alternative_services = true;
+  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  base::WeakPtr<HttpServerProperties> http_server_properties =
+      session->http_server_properties();
+  AlternativeService alternative_service(QUIC, alternative);
+  base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
+  http_server_properties->SetAlternativeService(origin, alternative_service,
+                                                1.0, expiration);
+  // Mark the QUIC alternative service as broken.
+  http_server_properties->MarkAlternativeServiceBroken(alternative_service);
+
+  scoped_ptr<HttpTransaction> trans(
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
+  HttpRequestInfo request;
+  request.method = "GET";
+  request.url = GURL(origin_url);
+  request.load_flags = 0;
+  TestCompletionCallback callback;
+  NetErrorDetails details;
+  EXPECT_FALSE(details.quic_broken);
+
+  trans->Start(&request, callback.callback(), BoundNetLog());
+  trans->PopulateNetErrorDetails(&details);
+  EXPECT_TRUE(details.quic_broken);
+}
+
+TEST_P(HttpNetworkTransactionTest, IdentifyQuicNotBroken) {
+  HostPortPair origin("origin.example.org", 443);
+  HostPortPair alternative1("alternative1.example.org", 443);
+  HostPortPair alternative2("alternative2.example.org", 443);
+  std::string origin_url = "https://origin.example.org:443";
+  std::string alternative_url1 = "https://alternative1.example.org:443";
+  std::string alternative_url2 = "https://alternative2.example.org:443";
+
+  // Negotiate HTTP/1.1 with alternative1.example.org.
+  SSLSocketDataProvider ssl(ASYNC, OK);
+  ssl.SetNextProto(kProtoHTTP11);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
+
+  // HTTP/1.1 data for request.
+  MockWrite http_writes[] = {
+      MockWrite("GET / HTTP/1.1\r\n"
+                "Host: alternative1.example.org\r\n"
+                "Connection: keep-alive\r\n\r\n"),
+  };
+
+  MockRead http_reads[] = {
+      MockRead("HTTP/1.1 200 OK\r\n"
+               "Content-Type: text/html; charset=iso-8859-1\r\n"
+               "Content-Length: 40\r\n\r\n"
+               "first HTTP/1.1 response from alternative1"),
+  };
+  StaticSocketDataProvider http_data(http_reads, arraysize(http_reads),
+                                     http_writes, arraysize(http_writes));
+  session_deps_.socket_factory->AddSocketDataProvider(&http_data);
+
+  StaticSocketDataProvider data_refused;
+  data_refused.set_connect_data(MockConnect(ASYNC, ERR_CONNECTION_REFUSED));
+  session_deps_.socket_factory->AddSocketDataProvider(&data_refused);
+
+  session_deps_.use_alternative_services = true;
+  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  base::WeakPtr<HttpServerProperties> http_server_properties =
+      session->http_server_properties();
+
+  // Set up two QUIC alternative services for origin.
+  AlternativeServiceInfoVector alternative_service_info_vector;
+  base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
+
+  AlternativeService alternative_service1(QUIC, alternative1);
+  AlternativeServiceInfo alternative_service_info1(alternative_service1, 1.0,
+                                                   expiration);
+  alternative_service_info_vector.push_back(alternative_service_info1);
+  AlternativeService alternative_service2(QUIC, alternative2);
+  AlternativeServiceInfo alternative_service_info2(alternative_service2, 1.0,
+                                                   expiration);
+  alternative_service_info_vector.push_back(alternative_service_info2);
+
+  http_server_properties->SetAlternativeServices(
+      origin, alternative_service_info_vector);
+
+  // Mark one of the QUIC alternative service as broken.
+  http_server_properties->MarkAlternativeServiceBroken(alternative_service1);
+
+  const AlternativeServiceVector alternative_service_vector =
+      http_server_properties->GetAlternativeServices(origin);
+
+  scoped_ptr<HttpTransaction> trans(
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
+  HttpRequestInfo request;
+  request.method = "GET";
+  request.url = GURL(origin_url);
+  request.load_flags = 0;
+  TestCompletionCallback callback;
+  NetErrorDetails details;
+  EXPECT_FALSE(details.quic_broken);
+
+  trans->Start(&request, callback.callback(), BoundNetLog());
+  trans->PopulateNetErrorDetails(&details);
+  EXPECT_FALSE(details.quic_broken);
+}
+
 TEST_P(HttpNetworkTransactionTest,
        MarkBrokenAlternateProtocolAndFallback) {
   session_deps_.use_alternative_services = true;

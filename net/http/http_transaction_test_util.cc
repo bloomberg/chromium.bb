@@ -286,6 +286,11 @@ int MockNetworkTransaction::RestartWithAuth(
   return StartInternal(&auth_request_info, callback, BoundNetLog());
 }
 
+void MockNetworkTransaction::PopulateNetErrorDetails(
+    NetErrorDetails* details) const {
+  NOTIMPLEMENTED();
+}
+
 bool MockNetworkTransaction::IsReadyToRestartForAuth() {
   if (!request_)
     return false;

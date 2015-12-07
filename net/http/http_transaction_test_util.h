@@ -17,6 +17,7 @@
 #include "base/strings/string16.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
+#include "net/base/net_error_details.h"
 #include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
 #include "net/base/test_completion_callback.h"
@@ -194,6 +195,7 @@ class MockNetworkTransaction
   int Read(IOBuffer* buf,
            int buf_len,
            const CompletionCallback& callback) override;
+  void PopulateNetErrorDetails(NetErrorDetails* details) const override;
 
   void StopCaching() override;
 

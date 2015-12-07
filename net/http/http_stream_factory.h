@@ -148,6 +148,10 @@ class NET_EXPORT_PRIVATE HttpStreamRequest {
         const SSLConfig& used_ssl_config,
         const ProxyInfo& used_proxy_info,
         HttpStream* stream) = 0;
+
+    // Called when finding all QUIC alternative services are marked broken for
+    // the origin in this request which advertises supporting QUIC.
+    virtual void OnQuicBroken() = 0;
   };
 
   virtual ~HttpStreamRequest() {}

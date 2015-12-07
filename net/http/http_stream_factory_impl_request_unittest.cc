@@ -55,6 +55,7 @@ class DoNothingRequestDelegate : public HttpStreamRequest::Delegate {
                                   const SSLConfig& used_ssl_config,
                                   const ProxyInfo& used_proxy_info,
                                   HttpStream* stream) override {}
+  void OnQuicBroken() override {}
 };
 
 }  // namespace

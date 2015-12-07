@@ -189,6 +189,8 @@ class StreamRequestWaiter : public HttpStreamRequest::Delegate {
                                   const ProxyInfo& used_proxy_info,
                                   HttpStream* stream) override {}
 
+  void OnQuicBroken() override {}
+
   void WaitForStream() {
     while (!stream_done_) {
       waiting_for_stream_ = true;

@@ -17,6 +17,7 @@
 #include "base/power_monitor/power_observer.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_states.h"
+#include "net/base/net_error_details.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_export.h"
 #include "net/base/request_priority.h"
@@ -150,6 +151,10 @@ class NET_EXPORT URLRequestJob
   // NOTE: This removes the cookies from the job, so it will only return
   //       useful results once per job.
   virtual bool GetResponseCookies(std::vector<std::string>* cookies);
+
+  // Populates the network error details of the most recent origin that the
+  // network stack makes the request to.
+  virtual void PopulateNetErrorDetails(NetErrorDetails* details) const;
 
   // Called to setup a stream filter for this request. An example of filter is
   // content encoding/decoding.

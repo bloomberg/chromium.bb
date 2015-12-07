@@ -22,6 +22,7 @@
 #include "net/base/completion_callback.h"
 #include "net/base/load_states.h"
 #include "net/base/load_timing_info.h"
+#include "net/base/net_error_details.h"
 #include "net/base/net_export.h"
 #include "net/base/network_delegate.h"
 #include "net/base/request_priority.h"
@@ -461,6 +462,10 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
   // LoadTimingInfo only contains ConnectTiming information and socket IDs for
   // non-cached HTTP responses.
   void GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const;
+
+  // Gets the networkd error details of the most recent origin that the network
+  // stack makes the request to.
+  void PopulateNetErrorDetails(NetErrorDetails* details) const;
 
   // Gets the remote endpoint of the most recent socket that the network stack
   // used to make this request.

@@ -12,6 +12,7 @@
 #include "chrome/browser/devtools/devtools_network_interceptor.h"
 #include "net/base/completion_callback.h"
 #include "net/base/load_states.h"
+#include "net/base/net_error_details.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_transaction.h"
 #include "net/websockets/websocket_handshake_stream_base.h"
@@ -79,6 +80,7 @@ class DevToolsNetworkTransaction
   void SetQuicServerInfo(net::QuicServerInfo* quic_server_info) override;
   bool GetLoadTimingInfo(net::LoadTimingInfo* load_timing_info) const override;
   bool GetRemoteEndpoint(net::IPEndPoint* endpoint) const override;
+  void PopulateNetErrorDetails(net::NetErrorDetails* details) const override;
   void SetPriority(net::RequestPriority priority) override;
   void SetWebSocketHandshakeStreamCreateHelper(
       net::WebSocketHandshakeStreamBase::CreateHelper* create_helper) override;

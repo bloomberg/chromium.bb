@@ -94,7 +94,8 @@ HttpStreamRequest* HttpStreamFactoryImpl::RequestStreamInternal(
   request->AttachJob(job);
 
   const AlternativeServiceVector alternative_service_vector =
-      GetAlternativeServicesFor(request_info.url);
+      GetAlternativeServicesFor(request_info.url, delegate);
+
   if (!alternative_service_vector.empty()) {
     // TODO(bnc): Pass on multiple alternative services to Job.
     const AlternativeService& alternative_service =
@@ -129,7 +130,7 @@ void HttpStreamFactoryImpl::PreconnectStreams(
   DCHECK(!for_websockets_);
   AlternativeService alternative_service;
   AlternativeServiceVector alternative_service_vector =
-      GetAlternativeServicesFor(request_info.url);
+      GetAlternativeServicesFor(request_info.url, nullptr);
   if (!alternative_service_vector.empty()) {
     // TODO(bnc): Pass on multiple alternative services to Job.
     alternative_service = alternative_service_vector[0];
@@ -151,7 +152,8 @@ const HostMappingRules* HttpStreamFactoryImpl::GetHostMappingRules() const {
 }
 
 AlternativeServiceVector HttpStreamFactoryImpl::GetAlternativeServicesFor(
-    const GURL& original_url) {
+    const GURL& original_url,
+    HttpStreamRequest::Delegate* delegate) {
   if (original_url.SchemeIs("ftp"))
     return AlternativeServiceVector();
 
@@ -163,6 +165,9 @@ AlternativeServiceVector HttpStreamFactoryImpl::GetAlternativeServicesFor(
   if (alternative_service_vector.empty())
     return AlternativeServiceVector();
 
+  bool quic_advertised = false;
+  bool quic_all_broken = true;
+
   const bool enable_different_host =
       session_->params().use_alternative_services;
 
@@ -170,6 +175,8 @@ AlternativeServiceVector HttpStreamFactoryImpl::GetAlternativeServicesFor(
   for (const AlternativeService& alternative_service :
        alternative_service_vector) {
     DCHECK(IsAlternateProtocolValid(alternative_service.protocol));
+    if (!quic_advertised && alternative_service.protocol == QUIC)
+      quic_advertised = true;
     if (http_server_properties.IsAlternativeServiceBroken(
             alternative_service)) {
       HistogramAlternateProtocolUsage(ALTERNATE_PROTOCOL_USAGE_BROKEN);
@@ -205,6 +212,7 @@ AlternativeServiceVector HttpStreamFactoryImpl::GetAlternativeServicesFor(
     }
 
     DCHECK_EQ(QUIC, alternative_service.protocol);
+    quic_all_broken = false;
     if (!session_->params().enable_quic)
       continue;
 
@@ -217,6 +225,8 @@ AlternativeServiceVector HttpStreamFactoryImpl::GetAlternativeServicesFor(
 
     enabled_alternative_service_vector.push_back(alternative_service);
   }
+  if (quic_advertised && quic_all_broken && delegate != nullptr)
+    delegate->OnQuicBroken();
   return enabled_alternative_service_vector;
 }
 

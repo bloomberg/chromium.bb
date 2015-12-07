@@ -153,7 +153,8 @@ HttpNetworkTransaction::HttpNetworkTransaction(RequestPriority priority,
       total_sent_bytes_(0),
       next_state_(STATE_NONE),
       establishing_tunnel_(false),
-      websocket_handshake_stream_base_create_helper_(NULL) {
+      websocket_handshake_stream_base_create_helper_(NULL),
+      quic_broken_(false) {
   session->ssl_config_service()->GetSSLConfig(&server_ssl_config_);
   session->GetAlpnProtos(&server_ssl_config_.alpn_protos);
   session->GetNpnProtos(&server_ssl_config_.npn_protos);
@@ -465,6 +466,11 @@ bool HttpNetworkTransaction::GetRemoteEndpoint(IPEndPoint* endpoint) const {
   return true;
 }
 
+void HttpNetworkTransaction::PopulateNetErrorDetails(
+    NetErrorDetails* details) const {
+  details->quic_broken = quic_broken_;
+}
+
 void HttpNetworkTransaction::SetPriority(RequestPriority priority) {
   priority_ = priority;
   if (stream_request_)
@@ -608,6 +614,10 @@ void HttpNetworkTransaction::OnHttpsProxyTunnelResponse(
   stream_.reset(stream);
   stream_request_.reset();  // we're done with the stream request
   OnIOComplete(ERR_HTTPS_PROXY_TUNNEL_RESPONSE);
+}
+
+void HttpNetworkTransaction::OnQuicBroken() {
+  quic_broken_ = true;
 }
 
 void HttpNetworkTransaction::GetConnectionAttempts(
@@ -1464,6 +1474,7 @@ void HttpNetworkTransaction::ResetStateForAuthRestart() {
   response_ = HttpResponseInfo();
   establishing_tunnel_ = false;
   remote_endpoint_ = IPEndPoint();
+  quic_broken_ = false;
 }
 
 void HttpNetworkTransaction::RecordSSLFallbackMetrics(int result) {

@@ -31,7 +31,6 @@
 #include "net/base/auth.h"
 #include "net/base/load_flags.h"
 #include "net/base/load_timing_info.h"
-#include "net/base/net_errors.h"
 #include "net/base/upload_data_stream.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/x509_certificate.h"
@@ -610,6 +609,13 @@ bool HttpCache::Transaction::GetRemoteEndpoint(IPEndPoint* endpoint) const {
   }
 
   return false;
+}
+
+void HttpCache::Transaction::PopulateNetErrorDetails(
+    NetErrorDetails* details) const {
+  if (network_trans_)
+    return network_trans_->PopulateNetErrorDetails(details);
+  return;
 }
 
 void HttpCache::Transaction::SetPriority(RequestPriority priority) {

@@ -38,6 +38,7 @@
       'base/load_timing_info.h',
       'base/lookup_string_in_fixed_set.cc',
       'base/lookup_string_in_fixed_set.h',
+      'base/net_error_details.h',
       'base/net_error_list.h',
       'base/net_errors.cc',
       'base/net_errors.h',

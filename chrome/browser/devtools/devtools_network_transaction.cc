@@ -256,6 +256,11 @@ bool DevToolsNetworkTransaction::GetRemoteEndpoint(
   return network_transaction_->GetRemoteEndpoint(endpoint);
 }
 
+void DevToolsNetworkTransaction::PopulateNetErrorDetails(
+    net::NetErrorDetails* details) const {
+  return network_transaction_->PopulateNetErrorDetails(details);
+}
+
 void DevToolsNetworkTransaction::SetPriority(net::RequestPriority priority) {
   network_transaction_->SetPriority(priority);
 }
