@@ -21,6 +21,8 @@
         'arc/arc_bridge_service.h',
         'arc/arc_bridge_service_impl.cc',
         'arc/arc_bridge_service_impl.h',
+        'arc/arc_service_manager.cc',
+        'arc/arc_service_manager.h',
         'arc/common/arc_host_messages.h',
         'arc/common/arc_instance_messages.h',
         'arc/common/arc_message_generator.cc',

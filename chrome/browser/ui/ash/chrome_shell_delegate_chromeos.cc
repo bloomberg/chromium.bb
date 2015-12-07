@@ -37,6 +37,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/arc/arc_bridge_service.h"
+#include "components/arc/arc_service_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
 #include "ui/aura/window.h"
@@ -325,7 +326,7 @@ void ChromeShellDelegate::ArcSessionObserver::OnLoginStateChanged(
       return;
 
     case ash::user::LOGGED_IN_NONE:
-      arc::ArcBridgeService::Get()->Shutdown();
+      arc::ArcServiceManager::Get()->arc_bridge_service()->Shutdown();
       break;
 
     case ash::user::LOGGED_IN_USER:
@@ -335,7 +336,7 @@ void ChromeShellDelegate::ArcSessionObserver::OnLoginStateChanged(
     case ash::user::LOGGED_IN_SUPERVISED:
       if (arc::ArcBridgeService::GetEnabled(
               base::CommandLine::ForCurrentProcess())) {
-        arc::ArcBridgeService::Get()->HandleStartup();
+        arc::ArcServiceManager::Get()->arc_bridge_service()->HandleStartup();
       }
       break;
   }

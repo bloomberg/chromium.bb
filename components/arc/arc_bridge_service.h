@@ -112,11 +112,6 @@ class ArcBridgeService {
 
   virtual ~ArcBridgeService();
 
-  // Creates instance of |ArcBridgeService| for normal use.
-  static scoped_ptr<ArcBridgeService> Create(
-      const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner,
-      const scoped_refptr<base::SequencedTaskRunner>& file_task_runner);
-
   // Gets the global instance of the ARC Bridge Service. This can only be
   // called on the thread that this class was created on.
   static ArcBridgeService* Get();

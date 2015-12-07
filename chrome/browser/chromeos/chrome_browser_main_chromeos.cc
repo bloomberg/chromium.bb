@@ -146,6 +146,7 @@
 #endif
 
 #include "components/arc/arc_bridge_service.h"
+#include "components/arc/arc_service_manager.h"
 
 namespace chromeos {
 
@@ -389,12 +390,12 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
 
   wake_on_wifi_manager_.reset(new WakeOnWifiManager());
 
-  arc_bridge_service_ = arc::ArcBridgeService::Create(
+  arc_service_manager_.reset(new arc::ArcServiceManager(
       content::BrowserThread::GetMessageLoopProxyForThread(
           content::BrowserThread::IO),
       content::BrowserThread::GetMessageLoopProxyForThread(
-          content::BrowserThread::FILE));
-  arc_bridge_service_->DetectAvailability();
+          content::BrowserThread::FILE)));
+  arc_service_manager_->arc_bridge_service()->DetectAvailability();
 
   chromeos::ResourceReporter::GetInstance()->StartMonitoring();
 
@@ -713,7 +714,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
 
   BootTimesRecorder::Get()->AddLogoutTimeMarker("UIMessageLoopEnded", true);
 
-  arc_bridge_service_->Shutdown();
+  arc_service_manager_->arc_bridge_service()->Shutdown();
 
   // Destroy the application name notifier for Kiosk mode.
   KioskModeIdleAppNameNotification::Shutdown();

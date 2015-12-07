@@ -8,6 +8,8 @@ static_library("arc") {
     "arc_bridge_service.h",
     "arc_bridge_service_impl.cc",
     "arc_bridge_service_impl.h",
+    "arc_service_manager.cc",
+    "arc_service_manager.h",
     "common/arc_message_generator.cc",
     "common/arc_notification_types.cc",
   ]

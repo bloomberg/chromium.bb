@@ -16,7 +16,7 @@ class SessionManager;
 }
 
 namespace arc {
-class ArcBridgeService;
+class ArcServiceManager;
 }
 
 namespace chromeos {
@@ -81,7 +81,7 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
 
   scoped_refptr<chromeos::ExternalMetrics> external_metrics_;
 
-  scoped_ptr<arc::ArcBridgeService> arc_bridge_service_;
+  scoped_ptr<arc::ArcServiceManager> arc_service_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainPartsChromeos);
 };

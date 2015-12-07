@@ -14,7 +14,7 @@ namespace arc {
 
 namespace {
 
-// Weak pointer.  This class is owned by ChromeBrowserMainPartsChromeos.
+// Weak pointer.  This class is owned by ArcServiceManager.
 ArcBridgeService* g_arc_bridge_service = nullptr;
 
 }  // namespace
@@ -91,14 +91,6 @@ void ArcBridgeService::SetAvailable(bool available) {
   DCHECK(available_ != available);
   available_ = available;
   FOR_EACH_OBSERVER(Observer, observer_list(), OnAvailableChanged(available_));
-}
-
-// static
-scoped_ptr<ArcBridgeService> ArcBridgeService::Create(
-    const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner,
-    const scoped_refptr<base::SequencedTaskRunner>& file_task_runner) {
-  return make_scoped_ptr(new ArcBridgeServiceImpl(ipc_task_runner,
-                                                  file_task_runner));
 }
 
 }  // namespace arc
