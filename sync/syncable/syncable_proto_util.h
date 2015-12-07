@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNCABLE_PROTOCOL_PROTO_UTIL_H_
-#define SYNCABLE_PROTOCOL_PROTO_UTIL_H_
+#ifndef SYNC_SYNCABLE_SYNCABLE_PROTO_UTIL_H_
+#define SYNC_SYNCABLE_SYNCABLE_PROTO_UTIL_H_
 
 #include <string>
 
@@ -22,8 +22,7 @@ syncable::Id SyncableIdFromProto(const std::string& proto_string);
 
 // Converts from a syncable::Id to a formatted std::string.  This is useful for
 // populating the fields of a protobuf which will be sent to the server.
-SYNC_EXPORT_PRIVATE std::string SyncableIdToProto(
-    const syncable::Id& syncable_id);
+SYNC_EXPORT std::string SyncableIdToProto(const syncable::Id& syncable_id);
 
 // Helper function to determine if this SyncEntity's properties indicate that it
 // is a folder.
@@ -35,4 +34,4 @@ bool IsRoot(const sync_pb::SyncEntity& entity);
 
 }  // namespace syncer
 
-#endif  // SYNCABLE_PROTOCOL_PROTO_UTIL_H_
+#endif  // SYNC_SYNCABLE_SYNCABLE_PROTO_UTIL_H_

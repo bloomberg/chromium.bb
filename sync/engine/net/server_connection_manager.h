@@ -38,7 +38,7 @@ static const int32 kUnsetPayloadLength = -1;
 // HttpResponse gathers the relevant output properties of an HTTP request.
 // Depending on the value of the server_status code, response_code, and
 // content_length may not be valid.
-struct SYNC_EXPORT_PRIVATE HttpResponse {
+struct SYNC_EXPORT HttpResponse {
   enum ServerConnectionCode {
     // For uninitialized state.
     NONE,
@@ -99,7 +99,7 @@ struct ServerConnectionEvent {
       connection_code(code) {}
 };
 
-class SYNC_EXPORT_PRIVATE ServerConnectionEventListener {
+class SYNC_EXPORT ServerConnectionEventListener {
  public:
   virtual void OnServerConnectionEvent(const ServerConnectionEvent& event) = 0;
  protected:
@@ -110,8 +110,7 @@ class ServerConnectionManager;
 // A helper class that automatically notifies when the status changes.
 // TODO(tim): This class shouldn't be exposed outside of the implementation,
 // bug 35060.
-class SYNC_EXPORT_PRIVATE ScopedServerStatusWatcher
-    : public base::NonThreadSafe {
+class SYNC_EXPORT ScopedServerStatusWatcher : public base::NonThreadSafe {
  public:
   ScopedServerStatusWatcher(ServerConnectionManager* conn_mgr,
                             HttpResponse* response);
@@ -125,7 +124,7 @@ class SYNC_EXPORT_PRIVATE ScopedServerStatusWatcher
 // Use this class to interact with the sync server.
 // The ServerConnectionManager currently supports POSTing protocol buffers.
 //
-class SYNC_EXPORT_PRIVATE ServerConnectionManager : public CancelationObserver {
+class SYNC_EXPORT ServerConnectionManager : public CancelationObserver {
  public:
   // buffer_in - will be POSTed
   // buffer_out - string will be overwritten with response

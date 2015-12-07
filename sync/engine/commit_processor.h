@@ -30,7 +30,7 @@ class CommitContribution;
 // Many methods allow the caller to specify a subset of types on which the
 // operation is to be applied.  It is a logic error if the supplied set of types
 // contains a type which was not previously registered.
-class SYNC_EXPORT_PRIVATE CommitProcessor {
+class SYNC_EXPORT CommitProcessor {
  public:
   // Contructs a CommitProcessor from a map of CommitContributors.
   // The CommitProcessor does not own this map.

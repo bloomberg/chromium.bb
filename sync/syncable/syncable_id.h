@@ -27,7 +27,7 @@ namespace syncable {
 struct EntryKernel;
 class Id;
 
-SYNC_EXPORT_PRIVATE std::ostream& operator<<(std::ostream& out, const Id& id);
+SYNC_EXPORT std::ostream& operator<<(std::ostream& out, const Id& id);
 
 // For historical reasons, 3 concepts got everloaded into the Id:
 // 1. A unique, opaque identifier for the object.
@@ -110,8 +110,7 @@ class SYNC_EXPORT Id {
                                              int* total_created_entries);
   friend void BindFields(const EntryKernel& entry,
                          sql::Statement* statement);
-  SYNC_EXPORT_PRIVATE friend std::ostream& operator<<(std::ostream& out,
-                                                      const Id& id);
+  SYNC_EXPORT friend std::ostream& operator<<(std::ostream& out, const Id& id);
   friend class SyncableIdTest;
 
   std::string s_;

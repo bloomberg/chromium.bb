@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNC_SYNCABLE_PARENT_CHILD_INDEX
-#define SYNC_SYNCABLE_PARENT_CHILD_INDEX
+#ifndef SYNC_SYNCABLE_PARENT_CHILD_INDEX_H_
+#define SYNC_SYNCABLE_PARENT_CHILD_INDEX_H_
 
 #include <map>
 #include <set>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_vector.h"
@@ -21,7 +22,7 @@ struct EntryKernel;
 class ParentChildIndex;
 
 // A node ordering function.
-struct SYNC_EXPORT_PRIVATE ChildComparator {
+struct SYNC_EXPORT ChildComparator {
   bool operator() (const EntryKernel* a, const EntryKernel* b) const;
 };
 
@@ -30,7 +31,7 @@ typedef std::set<EntryKernel*, ChildComparator> OrderedChildSet;
 
 // Container that tracks parent-child relationships.
 // Provides fast lookup of all items under a given parent.
-class SYNC_EXPORT_PRIVATE ParentChildIndex {
+class SYNC_EXPORT ParentChildIndex {
  public:
   ParentChildIndex();
   ~ParentChildIndex();
@@ -100,4 +101,4 @@ class SYNC_EXPORT_PRIVATE ParentChildIndex {
 }  // namespace syncable
 }  // namespace syncer
 
-#endif  // SYNC_SYNCABLE_PARENT_CHILD_INDEX
+#endif  // SYNC_SYNCABLE_PARENT_CHILD_INDEX_H_

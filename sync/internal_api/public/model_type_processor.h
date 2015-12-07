@@ -13,7 +13,7 @@ namespace syncer_v2 {
 class CommitQueue;
 
 // Interface used by sync backend to issue requests to a synced data type.
-class SYNC_EXPORT_PRIVATE ModelTypeProcessor {
+class SYNC_EXPORT ModelTypeProcessor {
  public:
   ModelTypeProcessor();
   virtual ~ModelTypeProcessor();

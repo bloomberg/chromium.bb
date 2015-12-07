@@ -15,7 +15,7 @@ struct SyncProtocolError;
 struct SyncCycleEvent;
 class ProtocolEvent;
 
-class SYNC_EXPORT_PRIVATE SyncEngineEventListener {
+class SYNC_EXPORT SyncEngineEventListener {
  public:
   SyncEngineEventListener();
 

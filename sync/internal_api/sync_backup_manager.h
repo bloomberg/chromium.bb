@@ -15,7 +15,7 @@ namespace syncer {
 // SyncBackupManager runs before user signs in to sync to back up user's data
 // before sync starts. The data that's backed up can be used to restore user's
 // settings to pre-sync state.
-class SYNC_EXPORT_PRIVATE SyncBackupManager : public SyncRollbackManagerBase {
+class SYNC_EXPORT SyncBackupManager : public SyncRollbackManagerBase {
  public:
   SyncBackupManager();
   ~SyncBackupManager() override;

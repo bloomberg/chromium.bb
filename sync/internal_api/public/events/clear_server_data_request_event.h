@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNC_INTERNAL_API_EVENTS_CLEAR_SERVER_DATA_REQUEST_EVENT_H
-#define SYNC_INTERNAL_API_EVENTS_CLEAR_SERVER_DATA_REQUEST_EVENT_H
+#ifndef SYNC_INTERNAL_API_PUBLIC_EVENTS_CLEAR_SERVER_DATA_REQUEST_EVENT_H_
+#define SYNC_INTERNAL_API_PUBLIC_EVENTS_CLEAR_SERVER_DATA_REQUEST_EVENT_H_
+
+#include <string>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
@@ -15,7 +17,7 @@
 namespace syncer {
 
 // An event representing a ClearServerData request message sent to the server.
-class SYNC_EXPORT_PRIVATE ClearServerDataRequestEvent : public ProtocolEvent {
+class SYNC_EXPORT ClearServerDataRequestEvent : public ProtocolEvent {
  public:
   ClearServerDataRequestEvent(base::Time timestamp,
                               const sync_pb::ClientToServerMessage& request);
@@ -38,4 +40,4 @@ class SYNC_EXPORT_PRIVATE ClearServerDataRequestEvent : public ProtocolEvent {
 
 }  // namespace syncer
 
-#endif  // SYNC_INTERNAL_API_EVENTS_CLEAR_SERVER_DATA_REQUEST_EVENT_H
+#endif  // SYNC_INTERNAL_API_PUBLIC_EVENTS_CLEAR_SERVER_DATA_REQUEST_EVENT_H_

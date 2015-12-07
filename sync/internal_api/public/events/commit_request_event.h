@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNC_INTERNAL_API_EVENTS_COMMIT_REQUEST_EVENT_H
-#define SYNC_INTERNAL_API_EVENTS_COMMIT_REQUEST_EVENT_H
+#ifndef SYNC_INTERNAL_API_PUBLIC_EVENTS_COMMIT_REQUEST_EVENT_H_
+#define SYNC_INTERNAL_API_PUBLIC_EVENTS_COMMIT_REQUEST_EVENT_H_
 
 #include <cstddef>
+#include <string>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
@@ -18,7 +19,7 @@
 namespace syncer {
 
 // An event representing a commit request message sent to the server.
-class SYNC_EXPORT_PRIVATE CommitRequestEvent : public ProtocolEvent {
+class SYNC_EXPORT CommitRequestEvent : public ProtocolEvent {
  public:
   CommitRequestEvent(
       base::Time timestamp,
@@ -47,4 +48,4 @@ class SYNC_EXPORT_PRIVATE CommitRequestEvent : public ProtocolEvent {
 
 }  // namespace syncer
 
-#endif  // SYNC_INTERNAL_API_EVENTS_COMMIT_REQUEST_EVENT_H
+#endif  // SYNC_INTERNAL_API_PUBLIC_EVENTS_COMMIT_REQUEST_EVENT_H_

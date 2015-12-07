@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "testing/gtest/include/gtest/gtest.h"
+#include "sync/syncable/directory_backing_store.h"
 
+#include <map>
 #include <string>
 
 #include "base/files/file_path.h"
@@ -23,13 +24,13 @@
 #include "sync/protocol/bookmark_specifics.pb.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/syncable/directory.h"
-#include "sync/syncable/directory_backing_store.h"
 #include "sync/syncable/on_disk_directory_backing_store.h"
 #include "sync/syncable/syncable-inl.h"
 #include "sync/test/directory_backing_store_corruption_testing.h"
 #include "sync/test/test_directory_backing_store.h"
 #include "sync/util/time.h"
 #include "testing/gtest/include/gtest/gtest-param-test.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
 namespace syncable {
@@ -52,7 +53,7 @@ scoped_ptr<EntryKernel> CreateEntry(int id, const std::string &id_suffix) {
 
 }  // namespace
 
-SYNC_EXPORT_PRIVATE extern const int32 kCurrentDBVersion;
+SYNC_EXPORT extern const int32 kCurrentDBVersion;
 
 class MigrationTest : public testing::TestWithParam<int> {
  public:
@@ -754,8 +755,7 @@ void MigrationTest::SetUpVersion69Database(sql::Connection* connection) {
           "'Unknown',1263522064,-65542,"
           "'9010788312004066376x-6609234393368420856x');"
       "CREATE TABLE share_version (id VARCHAR(128) primary key, data INT);"
-      "INSERT INTO share_version VALUES('nick@chromium.org',69);"
-  ));
+      "INSERT INTO share_version VALUES('nick@chromium.org',69);"));
   ASSERT_TRUE(connection->CommitTransaction());
 }
 
@@ -862,8 +862,7 @@ void MigrationTest::SetUpVersion70Database(sql::Connection* connection) {
           "'The WebKit Open Source Project','The WebKit Open Source Project',"
           "NULL,NULL,X'C288101A0A12687474703A2F2F7765626B69742E6F72672F120450"
           "4E4758',X'C288101C0A13687474703A2F2F7765626B69742E6F72672F78120550"
-          "4E473259');"
-      ));
+          "4E473259');"));
   ASSERT_TRUE(connection->CommitTransaction());
 }
 
@@ -1276,8 +1275,7 @@ void MigrationTest::SetUpVersion74Database(sql::Connection* connection) {
           "ID_6','s_ID_6','s_ID_12','r',0,0,0,0,0,0,'The WebKit Open Source Pr"
           "oject','The WebKit Open Source Project',NULL,NULL,X'C288101A0A12687"
           "474703A2F2F7765626B69742E6F72672F1204504E4758',X'C288101C0A13687474"
-          "703A2F2F7765626B69742E6F72672F781205504E473259');"
-      ));
+          "703A2F2F7765626B69742E6F72672F781205504E473259');"));
   ASSERT_TRUE(connection->CommitTransaction());
 }
 
@@ -1382,8 +1380,7 @@ void MigrationTest::SetUpVersion75Database(sql::Connection* connection) {
               "en Source Project','The WebKit Open Source Project',NULL,NULL,X"
               "'C288101A0A12687474703A2F2F7765626B69742E6F72672F1204504E4758',"
               "X'C288101C0A13687474703A2F2F7765626B69742E6F72672F781205504E473"
-              "259');"
-      ));
+              "259');"));
   ASSERT_TRUE(connection->CommitTransaction());
 }
 
@@ -1479,8 +1476,7 @@ void MigrationTest::SetUpVersion76Database(sql::Connection* connection) {
           "ult -2, cache_guid TEXT , notification_state BLOB);"
       "INSERT INTO 'share_info' VALUES('nick@chromium.org','nick@chromium.org',"
           "'c27e9f59-08ca-46f8-b0cc-f16a2ed778bb','Unknown',1263522064,-65542,'"
-          "9010788312004066376x-6609234393368420856x',NULL);"
-      ));
+          "9010788312004066376x-6609234393368420856x',NULL);"));
   ASSERT_TRUE(connection->CommitTransaction());
 }
 
@@ -1570,8 +1566,7 @@ void MigrationTest::SetUpVersion77Database(sql::Connection* connection) {
           "ult -2, cache_guid TEXT , notification_state BLOB);"
       "INSERT INTO 'share_info' VALUES('nick@chromium.org','nick@chromium.org',"
           "'c27e9f59-08ca-46f8-b0cc-f16a2ed778bb','Unknown',1263522064,-65542,'"
-          "9010788312004066376x-6609234393368420856x',NULL);"
-      ));
+          "9010788312004066376x-6609234393368420856x',NULL);"));
   ASSERT_TRUE(connection->CommitTransaction());
 }
 
@@ -1665,8 +1660,7 @@ void MigrationTest::SetUpVersion78Database(sql::Connection* connection) {
           "ult -2, cache_guid TEXT , notification_state BLOB);"
       "INSERT INTO 'share_info' VALUES('nick@chromium.org','nick@chromium.org',"
           "'c27e9f59-08ca-46f8-b0cc-f16a2ed778bb','Unknown',1263522064,-65542,'"
-          "9010788312004066376x-6609234393368420856x',NULL);"
-          ));
+          "9010788312004066376x-6609234393368420856x',NULL);"));
   ASSERT_TRUE(connection->CommitTransaction());
 }
 
@@ -1760,8 +1754,7 @@ void MigrationTest::SetUpVersion79Database(sql::Connection* connection) {
           "ult -2, cache_guid TEXT , notification_state BLOB);"
       "INSERT INTO 'share_info' VALUES('nick@chromium.org','nick@chromium.org',"
           "'c27e9f59-08ca-46f8-b0cc-f16a2ed778bb','Unknown',1263522064,"
-          "-131078,'9010788312004066376x-6609234393368420856x',NULL);"
-          ));
+          "-131078,'9010788312004066376x-6609234393368420856x',NULL);"));
   ASSERT_TRUE(connection->CommitTransaction());
 }
 
@@ -1856,8 +1849,7 @@ void MigrationTest::SetUpVersion80Database(sql::Connection* connection) {
           "blob);"
       "INSERT INTO 'share_info' VALUES('nick@chromium.org','nick@chromium.org',"
           "'c27e9f59-08ca-46f8-b0cc-f16a2ed778bb','Unknown',1263522064,"
-          "-131078,'9010788312004066376x-6609234393368420856x',NULL, NULL);"
-          ));
+          "-131078,'9010788312004066376x-6609234393368420856x',NULL, NULL);"));
   ASSERT_TRUE(connection->CommitTransaction());
 }
 
@@ -1886,7 +1878,7 @@ std::string V81_Ordinal(int n) {
   return Int64ToNodeOrdinal(V80_POSITIONS[n]).ToInternalValue();
 }
 
-} //namespace
+}  // namespace
 
 // Unlike the earlier versions, the rows for version 81 are generated
 // programmatically to accurately handle unprintable characters for the
@@ -3995,7 +3987,7 @@ TEST_F(DirectoryBackingStoreTest, IncreaseDatabasePageSizeFrom4KTo32K) {
   // Check if update is successful.
   int pageSize = 0;
   dbs->GetDatabasePageSize(&pageSize);
-  EXPECT_TRUE(32768 != pageSize);
+  EXPECT_NE(32768, pageSize);
   dbs->db_->set_page_size(32768);
   dbs->IncreasePageSizeTo32K();
   pageSize = 0;

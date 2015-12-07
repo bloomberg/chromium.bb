@@ -34,7 +34,7 @@ class WriteTransaction;
 //          false if some unsynced changes need to be encrypted.
 // This method is similar to ProcessUnsyncedChangesForEncryption but does not
 // modify the data and does not care if data is unnecessarily encrypted.
-SYNC_EXPORT_PRIVATE bool VerifyUnsyncedChangesAreEncrypted(
+SYNC_EXPORT bool VerifyUnsyncedChangesAreEncrypted(
     BaseTransaction* const trans,
     ModelTypeSet encrypted_types);
 
@@ -50,15 +50,15 @@ bool EntryNeedsEncryption(ModelTypeSet encrypted_types,
                           const Entry& entry);
 
 // Same as EntryNeedsEncryption, but looks at specifics.
-SYNC_EXPORT_PRIVATE bool SpecificsNeedsEncryption(
+SYNC_EXPORT bool SpecificsNeedsEncryption(
     ModelTypeSet encrypted_types,
     const sync_pb::EntitySpecifics& specifics);
 
 // Verifies all data of type |type| is encrypted appropriately.
-SYNC_EXPORT_PRIVATE bool VerifyDataTypeEncryptionForTest(
-    BaseTransaction* const trans,
-    ModelType type,
-    bool is_encrypted) WARN_UNUSED_RESULT;
+SYNC_EXPORT bool VerifyDataTypeEncryptionForTest(BaseTransaction* const trans,
+                                                 ModelType type,
+                                                 bool is_encrypted)
+    WARN_UNUSED_RESULT;
 
 // Stores |new_specifics| into |entry|, encrypting if necessary.
 // Returns false if an error encrypting occurred (does not modify |entry|).
@@ -70,7 +70,7 @@ bool UpdateEntryWithEncryption(
 
 // Updates |nigori| to match the encryption state specified by |encrypted_types|
 // and |encrypt_everything|.
-SYNC_EXPORT_PRIVATE void UpdateNigoriFromEncryptedTypes(
+SYNC_EXPORT void UpdateNigoriFromEncryptedTypes(
     ModelTypeSet encrypted_types,
     bool encrypt_everything,
     sync_pb::NigoriSpecifics* nigori);

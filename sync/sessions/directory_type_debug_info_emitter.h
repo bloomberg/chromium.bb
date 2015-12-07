@@ -33,7 +33,7 @@ class TypeDebugInfoObserver;
 // is delegated to the UpdateHandler and CommitContributors.  For the Stats
 // counters, the emitter will use its type_ and directory_ members to fetch all
 // the required information on demand.
-class SYNC_EXPORT_PRIVATE DirectoryTypeDebugInfoEmitter {
+class SYNC_EXPORT DirectoryTypeDebugInfoEmitter {
  public:
   // Standard constructor for non-tests.
   //

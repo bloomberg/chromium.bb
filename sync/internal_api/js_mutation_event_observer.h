@@ -27,7 +27,7 @@ class JsEventHandler;
 
 // Observes all change- and transaction-related events and routes a
 // summarized version to a JsEventHandler.
-class SYNC_EXPORT_PRIVATE JsMutationEventObserver
+class SYNC_EXPORT JsMutationEventObserver
     : public SyncManager::ChangeObserver,
       public syncable::TransactionObserver,
       public base::NonThreadSafe {

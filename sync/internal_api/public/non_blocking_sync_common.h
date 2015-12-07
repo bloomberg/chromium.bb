@@ -19,7 +19,7 @@ static const int64 kUncommittedVersion = -1;
 
 // Data-type global state that must be accessed and updated on the sync thread,
 // but persisted on or through the model thread.
-struct SYNC_EXPORT_PRIVATE DataTypeState {
+struct SYNC_EXPORT DataTypeState {
   DataTypeState();
   ~DataTypeState();
 
@@ -43,7 +43,7 @@ struct SYNC_EXPORT_PRIVATE DataTypeState {
   bool initial_sync_done = false;
 };
 
-struct SYNC_EXPORT_PRIVATE CommitRequestData {
+struct SYNC_EXPORT CommitRequestData {
   CommitRequestData();
   ~CommitRequestData();
 
@@ -56,7 +56,7 @@ struct SYNC_EXPORT_PRIVATE CommitRequestData {
   int64 base_version = 0;
 };
 
-struct SYNC_EXPORT_PRIVATE CommitResponseData {
+struct SYNC_EXPORT CommitResponseData {
   CommitResponseData();
   ~CommitResponseData();
 
@@ -66,7 +66,7 @@ struct SYNC_EXPORT_PRIVATE CommitResponseData {
   int64 response_version = 0;
 };
 
-struct SYNC_EXPORT_PRIVATE UpdateResponseData {
+struct SYNC_EXPORT UpdateResponseData {
   UpdateResponseData();
   ~UpdateResponseData();
 

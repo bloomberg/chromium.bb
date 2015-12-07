@@ -5,6 +5,8 @@
 #ifndef SYNC_SYNCABLE_DEFERRED_ON_DISK_DIRECTORY_BACKING_STORE_H_
 #define SYNC_SYNCABLE_DEFERRED_ON_DISK_DIRECTORY_BACKING_STORE_H_
 
+#include <string>
+
 #include "base/files/file_path.h"
 #include "sync/base/sync_export.h"
 #include "sync/syncable/on_disk_directory_backing_store.h"
@@ -17,7 +19,7 @@ namespace syncable {
 // called, which only happens when SyncBackupManager is shut down and a
 // syncing backend is to be created. Thus we guarantee that user data is not
 // persisted until user is actually going to sync.
-class SYNC_EXPORT_PRIVATE DeferredOnDiskDirectoryBackingStore
+class SYNC_EXPORT DeferredOnDiskDirectoryBackingStore
     : public OnDiskDirectoryBackingStore {
  public:
   DeferredOnDiskDirectoryBackingStore(const std::string& dir_name,

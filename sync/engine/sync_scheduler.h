@@ -24,7 +24,7 @@ namespace syncer {
 
 struct ServerConnectionEvent;
 
-struct SYNC_EXPORT_PRIVATE ConfigurationParams {
+struct SYNC_EXPORT ConfigurationParams {
   ConfigurationParams();
   ConfigurationParams(
       const sync_pb::GetUpdatesCallerInfo::GetUpdatesSource& source,
@@ -46,16 +46,15 @@ struct SYNC_EXPORT_PRIVATE ConfigurationParams {
   base::Closure retry_task;
 };
 
-struct SYNC_EXPORT_PRIVATE ClearParams {
-  ClearParams(const base::Closure& report_success_task);
+struct SYNC_EXPORT ClearParams {
+  explicit ClearParams(const base::Closure& report_success_task);
   ~ClearParams();
 
   // Callback to invoke on successful completion.
   base::Closure report_success_task;
 };
 
-class SYNC_EXPORT_PRIVATE SyncScheduler
-    : public sessions::SyncSession::Delegate {
+class SYNC_EXPORT SyncScheduler : public sessions::SyncSession::Delegate {
  public:
   enum Mode {
     // In this mode, the thread only performs configuration tasks.  This is

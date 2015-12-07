@@ -18,16 +18,15 @@ namespace syncer {
 // |size| is the size in bytes of the attachment identified by this proto.
 //
 // |crc32c| is the crc32c of the attachment identified by this proto.
-SYNC_EXPORT_PRIVATE sync_pb::AttachmentIdProto CreateAttachmentIdProto(
-    size_t size,
-    uint32_t crc32c);
+SYNC_EXPORT sync_pb::AttachmentIdProto CreateAttachmentIdProto(size_t size,
+                                                               uint32_t crc32c);
 
 // Creates an AttachmentMetadata object from a repeated field of
 // AttachmentIdProto objects.
 //
 // Note: each record in the AttachmentMetadata will be marked as "on the
 // server".
-SYNC_EXPORT_PRIVATE sync_pb::AttachmentMetadata CreateAttachmentMetadata(
+SYNC_EXPORT sync_pb::AttachmentMetadata CreateAttachmentMetadata(
     const google::protobuf::RepeatedPtrField<sync_pb::AttachmentIdProto>& ids);
 
 }  // namespace syncer

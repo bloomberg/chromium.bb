@@ -11,7 +11,7 @@ proto_library("proto") {
   sources = [
     "attachment_store.proto",
   ]
-  cc_generator_options = "dllexport_decl=SYNC_EXPORT_PRIVATE:"
+  cc_generator_options = "dllexport_decl=SYNC_EXPORT:"
   cc_include = "sync/base/sync_export.h"
 
   defines = [ "SYNC_IMPLEMENTATION" ]

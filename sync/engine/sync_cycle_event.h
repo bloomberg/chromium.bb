@@ -12,7 +12,7 @@ namespace syncer {
 
 struct SyncProtocolError;
 
-struct SYNC_EXPORT_PRIVATE SyncCycleEvent {
+struct SYNC_EXPORT SyncCycleEvent {
   enum EventCause {
     ////////////////////////////////////////////////////////////////
     // Sent on entry of Syncer state machine

@@ -28,7 +28,7 @@ class ModelSafeWorker;
 
 // This class represents an entity that can request, receive, and apply updates
 // from the sync server.
-class SYNC_EXPORT_PRIVATE UpdateHandler {
+class SYNC_EXPORT UpdateHandler {
  public:
   UpdateHandler();
   virtual ~UpdateHandler() = 0;
