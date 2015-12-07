@@ -131,7 +131,7 @@ void MandolineUIServicesApp::Create(
 
 void MandolineUIServicesApp::Create(mojo::ApplicationConnection* connection,
                                     mojo::InterfaceRequest<Gpu> request) {
-  DCHECK(gpu_state_.get());
+  DCHECK(gpu_state_);
   new GpuImpl(request.Pass(), gpu_state_);
 }
 
@@ -140,7 +140,7 @@ void MandolineUIServicesApp::CreateWindowTreeHost(
     mojom::WindowTreeHostClientPtr host_client,
     mojom::WindowTreeClientPtr tree_client,
     mojom::WindowManagerPtr window_manager) {
-  DCHECK(connection_manager_.get());
+  DCHECK(connection_manager_);
 
   // TODO(fsamuel): We need to make sure that only the window manager can create
   // new roots.

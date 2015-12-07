@@ -30,7 +30,7 @@ void TraceProviderImpl::Bind(InterfaceRequest<tracing::TraceProvider> request) {
 
 void TraceProviderImpl::StartTracing(const String& categories,
                                      tracing::TraceRecorderPtr recorder) {
-  DCHECK(!recorder_.get());
+  DCHECK(!recorder_);
   recorder_ = recorder.Pass();
   tracing_forced_ = false;
   if (!base::trace_event::TraceLog::GetInstance()->IsEnabled()) {

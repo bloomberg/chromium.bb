@@ -393,7 +393,7 @@ class WindowTreeClientFactory
   // Runs a nested MessageLoop until a new instance has been created.
   scoped_ptr<TestWindowTreeClientImpl> WaitForInstance() {
     if (!client_impl_.get()) {
-      DCHECK(!run_loop_.get());
+      DCHECK(!run_loop_);
       run_loop_.reset(new base::RunLoop);
       run_loop_->Run();
       run_loop_.reset();
