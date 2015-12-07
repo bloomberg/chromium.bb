@@ -1385,6 +1385,22 @@ class ChromeExtensionsCapabilityTest(ChromeDriverBaseTest):
     body_element = driver.FindElement('tag name', 'body')
     self.assertEqual('It works!', body_element.GetText())
 
+  def testDontExecuteScriptsInContentScriptContext(self):
+    # This test extension has a content script which runs in all frames (see
+    # https://developer.chrome.com/extensions/content_scripts) which causes each
+    # frame on the page to be associated with multiple JS execution contexts.
+    # Make sure that ExecuteScript operates on the page's context, rather than
+    # the extension's content script's one.
+    extension_path = os.path.join(_TEST_DATA_DIR, 'all_frames')
+    driver = self.CreateDriver(
+        chrome_switches=['load-extension=%s' % extension_path])
+    driver.Load(
+        ChromeDriverTest._http_server.GetUrl() + '/chromedriver/container.html')
+    driver.SwitchToMainFrame()
+    self.assertEqual('one', driver.ExecuteScript("return window['global_var']"))
+    driver.SwitchToFrame('iframe')
+    self.assertEqual('two', driver.ExecuteScript("return window['iframe_var']"))
+
 
 class ChromeLogPathCapabilityTest(ChromeDriverBaseTest):
   """Tests that chromedriver properly processes chromeOptions.logPath."""

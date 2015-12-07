@@ -53,11 +53,25 @@ Status FrameTracker::OnEvent(DevToolsClient* client,
         !context->GetString("frameId", &frame_id)) {
       std::string json;
       base::JSONWriter::Write(*context, &json);
-      return Status(
-          kUnknownError,
-          "Runtime.executionContextCreated has invalid 'context': " + json);
+      return Status(kUnknownError, method + " has invalid 'context': " + json);
     }
-    frame_to_context_map_[frame_id] = context_id;
+    std::string type;
+    if (context->HasKey("type") && !context->GetString("type", &type))
+      return Status(kUnknownError, method + " has invalid 'context.type'");
+    if (type != "Extension")  // exclude content scripts
+      frame_to_context_map_[frame_id] = context_id;
+  } else if (method == "Runtime.executionContextDestroyed") {
+    int execution_context_id;
+    if (!params.GetInteger("executionContextId", &execution_context_id))
+      return Status(kUnknownError, method + " missing 'executionContextId'");
+    for (auto entry : frame_to_context_map_) {
+      if (entry.second == execution_context_id) {
+        frame_to_context_map_.erase(entry.first);
+        break;
+      }
+    }
+  } else if (method == "Runtime.executionContextsCleared") {
+    frame_to_context_map_.clear();
   } else if (method == "Page.frameNavigated") {
     const base::Value* unused_value;
     if (!params.Get("frame.parentId", &unused_value))
