@@ -19,19 +19,6 @@ function AudioPlayer(container) {
   this.metadataModel_ = MetadataModel.create(this.volumeManager_);
   this.selectedEntry_ = null;
   this.invalidTracks_ = {};
-
-  this.model_ = new AudioPlayerModel();
-  Object.observe(this.model_, function(changes) {
-    for (var i = 0; i < changes.length; i++) {
-      var change = changes[i];
-      if (change.name == 'expanded' &&
-          (change.type == 'add' || change.type == 'update')) {
-        this.onModelExpandedChanged(change.oldValue, change.object.expanded);
-        break;
-      }
-    }
-  }.bind(this));
-
   this.entries_ = [];
   this.currentTrackIndex_ = -1;
   this.playlistGeneration_ = 0;
@@ -48,10 +35,34 @@ function AudioPlayer(container) {
 
   this.player_ =
     /** @type {AudioPlayerElement} */ (document.querySelector('audio-player'));
-  // TODO(yoshiki): Move tracks into the model.
   this.player_.tracks = [];
-  this.model_.initialize(function() {
-    this.player_.model = this.model_;
+
+  // Restore the saved state from local storage, and update the local storage
+  // if the states are changed.
+  var STORAGE_PREFIX = 'audioplayer-';
+  var KEYS_TO_SAVE_STATES = ['shuffle', 'repeat', 'volume', 'expanded'];
+  var storageKeys = KEYS_TO_SAVE_STATES.map(a => STORAGE_PREFIX + a);
+  chrome.storage.local.get(storageKeys, function(results) {
+    // Update the UI by loaded state.
+    for (var storageKey in results) {
+      var key = storageKey.substr(STORAGE_PREFIX.length);
+      this.player_[key] = results[storageKey];
+    }
+    // Start listening to UI changes to write back the states to local storage.
+    for (var i = 0; i < KEYS_TO_SAVE_STATES.length; i++) {
+      this.player_.addEventListener(
+          KEYS_TO_SAVE_STATES[i] + '-changed',
+          function(storageKey, event) {
+            var objectToBeSaved = {};
+            objectToBeSaved[storageKey] = event.detail.value;
+            chrome.storage.local.set(objectToBeSaved);
+          }.bind(this, storageKeys[i]));
+    }
+  }.bind(this));
+
+  // Update the window size when UI's 'expanded' state is changed.
+  this.player_.addEventListener('expanded-changed', function(event) {
+    this.onExpandedChanged_(event.detail.value);
   }.bind(this));
 
   // Run asynchronously after an event of model change is delivered.
@@ -372,10 +383,10 @@ AudioPlayer.EXPANDED_MODE_MIN_HEIGHT = AudioPlayer.CONTROLS_HEIGHT +
 
 /**
  * Invoked when the 'expanded' property in the model is changed.
- * @param {boolean} oldValue Old value.
  * @param {boolean} newValue New value.
+ * @private
  */
-AudioPlayer.prototype.onModelExpandedChanged = function(oldValue, newValue) {
+AudioPlayer.prototype.onExpandedChanged_ = function(newValue) {
   if (this.isExpanded_ !== null &&
       this.isExpanded_ === newValue)
     return;

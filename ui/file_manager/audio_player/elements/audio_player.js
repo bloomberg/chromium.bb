@@ -29,7 +29,7 @@ Polymer({
      */
     shuffle: {
       type: Boolean,
-      observer: 'shuffleChanged'
+      notify: true
     },
 
     /**
@@ -37,7 +37,7 @@ Polymer({
      */
     repeat: {
       type: Boolean,
-      observer: 'repeatChanged'
+      notify: true
     },
 
     /**
@@ -45,7 +45,7 @@ Polymer({
      */
     volume: {
       type: Number,
-      observer: 'volumeChanged'
+      notify: true
     },
 
     /**
@@ -53,7 +53,7 @@ Polymer({
      */
     expanded: {
       type: Boolean,
-      observer: 'expandedChanged'
+      notify: true
     },
 
     /**
@@ -62,16 +62,6 @@ Polymer({
     currentTrackIndex: {
       type: Number,
       observer: 'currentTrackIndexChanged'
-    },
-
-    /**
-     * Model object of the Audio Player.
-     * @type {AudioPlayerModel}
-     */
-    model: {
-      type: Object,
-      value: null,
-      observer: 'modelChanged'
     },
 
     /**
@@ -102,41 +92,6 @@ Polymer({
    * @private {boolean}
    */
   wasPlayingOnDragStart_: false,
-
-  /**
-   * Handles change event for shuffle mode.
-   * @param {boolean} shuffle
-   */
-  shuffleChanged: function(shuffle) {
-    if (this.model)
-      this.model.shuffle = shuffle;
-  },
-
-  /**
-   * Handles change event for repeat mode.
-   * @param {boolean} repeat
-   */
-  repeatChanged: function(repeat) {
-    if (this.model)
-      this.model.repeat = repeat;
-  },
-
-  /**
-   * Handles change event for audio volume.
-   * @param {number} volume
-   */
-  volumeChanged: function(volume) {
-    if (this.model)
-      this.model.volume = volume;
-  },
-
-  /**
-   * Handles change event for expanded state of track list.
-   */
-  expandedChanged: function(expanded) {
-    if (this.model)
-      this.model.expanded = expanded;
-  },
 
   /**
    * Initializes an element. This method is called automatically when the
@@ -212,21 +167,6 @@ Polymer({
     this.$.audio.pause();
     this.currenttrackurl = '';
     this.lastAudioUpdateTime_ = null;
-  },
-
-  /**
-   * Invoked when the model changed.
-   * @param {AudioPlayerModel} newModel New model.
-   * @param {AudioPlayerModel} oldModel Old model.
-   */
-  modelChanged: function(newModel, oldModel) {
-    // Setting up the UI
-    if (newModel !== oldModel && newModel) {
-      this.shuffle = newModel.shuffle;
-      this.repeat = newModel.repeat;
-      this.volume = newModel.volume;
-      this.expanded = newModel.expanded;
-    }
   },
 
   /**

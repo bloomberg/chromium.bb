@@ -38,7 +38,6 @@ if (!('allowsEval' in document.securityPolicy))
 <include src="../../file_manager/foreground/js/metadata/thumbnail_model.js">
 
 <include src="audio_player.js"/>
-<include src="audio_player_model.js"/>
 
 window.reload = reload;
 window.unload = unload;

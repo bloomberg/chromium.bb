@@ -90,7 +90,6 @@
           '../elements/control_panel.js',
           '../elements/track_list.js',
           '../elements/audio_player.js',
-          'audio_player_model.js',
         ],
         'externs': [
           '<(EXTERNS_DIR)/chrome_extensions.js',
@@ -101,7 +100,6 @@
           '../../externs/audio_player_foreground.js',
           '../../externs/chrome_test.js',
           '../../externs/es6_workaround.js',
-          '../../externs/es7_workaround.js',
           '../../externs/platform.js',
         ],
       },

@@ -56,24 +56,7 @@ var TrackInfo;
      * element is ready.
      */
     ready: function() {
-      this.observeTrackList();
-
       window.addEventListener('resize', this.onWindowResize_.bind(this));
-    },
-
-    observeTrackList: function() {
-      // Unobserve the previous track list.
-      if (this.unobserveTrackList_)
-        this.unobserveTrackList_();
-
-      // Observe the new track list.
-      var observer = this.tracksValueChanged_.bind(this);
-      Array.observe(this.tracks, observer);
-
-      // Set the function to unobserve it.
-      this.unobserveTrackList_ = function(tracks, observer) {
-        Array.unobserve(tracks, observer);
-      }.bind(null, this.tracks, observer);
     },
 
     /**
@@ -130,9 +113,6 @@ var TrackInfo;
       // Note: Sometimes both oldValue and newValue are null though the actual
       // values are not null. Maybe it's a bug of Polymer.
 
-      // Re-register the observer of 'this.tracks'.
-      this.observeTrackList();
-
       if (this.tracks.length !== 0) {
         // Restore the active track.
         if (this.currentTrackIndex !== -1 &&
@@ -146,17 +126,6 @@ var TrackInfo;
         this.playOrder = [];
         this.currentTrackIndex = -1;
       }
-    },
-
-    /**
-     * Invoked when the value in the 'tracks' is changed.
-     * @param {Array<Object>} changes The detail of the change.
-     */
-    tracksValueChanged_: function(changes) {
-      if (this.tracks.length === 0)
-        this.currentTrackIndex = -1;
-      else
-        this.set('tracks.' + this.currentTrackIndex + '.active', true);
     },
 
     /**
