@@ -20,7 +20,7 @@ class ServiceRegistry;
 class VRDispatcher : NON_EXPORTED_BASE(public blink::WebVRClient) {
  public:
   explicit VRDispatcher(ServiceRegistry* service_registry);
-  ~VRDispatcher();
+  ~VRDispatcher() override;
 
   // blink::WebVRClient implementation.
   void getDevices(blink::WebVRGetDevicesCallback* callback) override;

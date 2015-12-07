@@ -45,9 +45,10 @@ class PpapiBlinkPlatformImpl::SandboxSupport : public WebSandboxSupport {
   bool loadFont(NSFont* srcFont, CGFontRef* out, uint32_t* fontID) override;
 #elif defined(OS_POSIX)
   SandboxSupport();
-  void getFallbackFontForCharacter(WebUChar32 character,
-                                   const char* preferred_locale,
-                                   blink::WebFallbackFont* fallbackFont);
+  void getFallbackFontForCharacter(
+      WebUChar32 character,
+      const char* preferred_locale,
+      blink::WebFallbackFont* fallbackFont) override;
   void getRenderStyleForStrike(const char* family,
                                int sizeAndStyle,
                                blink::WebFontRenderStyle* out) override;

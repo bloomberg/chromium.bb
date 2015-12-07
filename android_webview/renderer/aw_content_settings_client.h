@@ -20,14 +20,14 @@ class AwContentSettingsClient : public content::RenderFrameObserver,
   ~AwContentSettingsClient() override;
 
   // blink::WebContentSettingsClient implementation.
-  virtual bool allowDisplayingInsecureContent(
+  bool allowDisplayingInsecureContent(
       bool enabled_per_settings,
       const blink::WebSecurityOrigin& origin,
-      const blink::WebURL& url);
-  virtual bool allowRunningInsecureContent(
+      const blink::WebURL& url) override;
+  bool allowRunningInsecureContent(
       bool enabled_per_settings,
       const blink::WebSecurityOrigin& origin,
-      const blink::WebURL& url);
+      const blink::WebURL& url) override;
 
   DISALLOW_COPY_AND_ASSIGN(AwContentSettingsClient);
 };

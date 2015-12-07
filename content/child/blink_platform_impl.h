@@ -119,7 +119,7 @@ class CONTENT_EXPORT BlinkPlatformImpl
       const char* category_name) override;
   TraceEventAPIAtomicWord* getTraceSamplingState(
       const unsigned thread_bucket) override;
-  virtual TraceEventHandle addTraceEvent(
+  TraceEventHandle addTraceEvent(
       char phase,
       const unsigned char* category_group_enabled,
       const char* name,
@@ -131,7 +131,7 @@ class CONTENT_EXPORT BlinkPlatformImpl
       const unsigned char* arg_types,
       const unsigned long long* arg_values,
       blink::WebConvertableToTraceFormat* convertable_values,
-      unsigned int flags);
+      unsigned int flags) override;
   virtual TraceEventHandle addTraceEvent(
       char phase,
       const unsigned char* category_group_enabled,

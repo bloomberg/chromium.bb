@@ -25,11 +25,11 @@ class ContextProviderInProcess::LostContextCallbackProxy
     provider_->WebContext3DImpl()->setContextLostCallback(this);
   }
 
-  virtual ~LostContextCallbackProxy() {
+  ~LostContextCallbackProxy() override {
     provider_->WebContext3DImpl()->setContextLostCallback(NULL);
   }
 
-  virtual void onContextLost() {
+  void onContextLost() override {
     provider_->OnLostContext();
   }
 
