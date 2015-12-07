@@ -65,7 +65,7 @@ void AudioRendererMixerInput::Stop() {
   // Stop() may be called at any time, if Pause() hasn't been called we need to
   // remove our mixer input before shutdown.
   if (playing_) {
-    mixer_->RemoveMixerInput(this);
+    mixer_->RemoveMixerInput(params_, this);
     playing_ = false;
   }
 
@@ -88,7 +88,7 @@ void AudioRendererMixerInput::Play() {
   if (playing_ || !mixer_)
     return;
 
-  mixer_->AddMixerInput(this);
+  mixer_->AddMixerInput(params_, this);
   playing_ = true;
 }
 
@@ -96,7 +96,7 @@ void AudioRendererMixerInput::Pause() {
   if (!playing_ || !mixer_)
     return;
 
-  mixer_->RemoveMixerInput(this);
+  mixer_->RemoveMixerInput(params_, this);
   playing_ = false;
 }
 

@@ -91,8 +91,6 @@ class CONTENT_EXPORT AudioRendererMixerManager {
     bool operator()(const MixerKey& a, const MixerKey& b) const {
       if (a.source_render_frame_id != b.source_render_frame_id)
         return a.source_render_frame_id < b.source_render_frame_id;
-      if (a.params.sample_rate() != b.params.sample_rate())
-        return a.params.sample_rate() < b.params.sample_rate();
       if (a.params.channels() != b.params.channels())
         return a.params.channels() < b.params.channels();
 

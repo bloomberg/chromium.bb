@@ -13,10 +13,11 @@ namespace media {
 enum { kPauseDelaySeconds = 10 };
 
 AudioRendererMixer::AudioRendererMixer(
-    const AudioParameters& input_params, const AudioParameters& output_params,
+    const AudioParameters& output_params,
     const scoped_refptr<AudioRendererSink>& sink)
     : audio_sink_(sink),
-      audio_converter_(input_params, output_params, true),
+      output_params_(output_params),
+      master_converter_(output_params, output_params, true),
       pause_delay_(base::TimeDelta::FromSeconds(kPauseDelaySeconds)),
       last_play_time_(base::TimeTicks::Now()),
       // Initialize |playing_| to true since Start() results in an auto-play.
@@ -30,11 +31,13 @@ AudioRendererMixer::~AudioRendererMixer() {
   audio_sink_->Stop();
 
   // Ensure that all mixer inputs have removed themselves prior to destruction.
-  DCHECK(audio_converter_.empty());
+  DCHECK(master_converter_.empty());
+  DCHECK(converters_.empty());
   DCHECK_EQ(error_callbacks_.size(), 0U);
 }
 
-void AudioRendererMixer::AddMixerInput(AudioConverter::InputCallback* input) {
+void AudioRendererMixer::AddMixerInput(const AudioParameters& input_params,
+                                       AudioConverter::InputCallback* input) {
   base::AutoLock auto_lock(lock_);
   if (!playing_) {
     playing_ = true;
@@ -42,13 +45,49 @@ void AudioRendererMixer::AddMixerInput(AudioConverter::InputCallback* input) {
     audio_sink_->Play();
   }
 
-  audio_converter_.AddInput(input);
+  int input_sample_rate = input_params.sample_rate();
+  if (is_master_sample_rate(input_sample_rate)) {
+    master_converter_.AddInput(input);
+  } else {
+    AudioConvertersMap::iterator converter =
+        converters_.find(input_sample_rate);
+    if (converter == converters_.end()) {
+      std::pair<AudioConvertersMap::iterator, bool> result =
+          converters_.insert(std::make_pair(
+              input_sample_rate, make_scoped_ptr(
+                                     // We expect all InputCallbacks to be
+                                     // capable of handling arbitrary buffer
+                                     // size requests, disabling FIFO.
+                                     new LoopbackAudioConverter(
+                                         input_params, output_params_, true))));
+      converter = result.first;
+
+      // Add newly-created resampler as an input to the master mixer.
+      master_converter_.AddInput(converter->second.get());
+    }
+    converter->second->AddInput(input);
+  }
 }
 
 void AudioRendererMixer::RemoveMixerInput(
+    const AudioParameters& input_params,
     AudioConverter::InputCallback* input) {
   base::AutoLock auto_lock(lock_);
-  audio_converter_.RemoveInput(input);
+
+  int input_sample_rate = input_params.sample_rate();
+  if (is_master_sample_rate(input_sample_rate)) {
+    master_converter_.RemoveInput(input);
+  } else {
+    AudioConvertersMap::iterator converter =
+        converters_.find(input_sample_rate);
+    DCHECK(converter != converters_.end());
+    converter->second->RemoveInput(input);
+    if (converter->second->empty()) {
+      // Remove converter when it's empty.
+      master_converter_.RemoveInput(converter->second.get());
+      converters_.erase(converter);
+    }
+  }
 }
 
 void AudioRendererMixer::AddErrorCallback(const base::Closure& error_cb) {
@@ -85,14 +124,14 @@ int AudioRendererMixer::Render(AudioBus* audio_bus,
   // sink to avoid wasting resources when media elements are present but remain
   // in the pause state.
   const base::TimeTicks now = base::TimeTicks::Now();
-  if (!audio_converter_.empty()) {
+  if (!master_converter_.empty()) {
     last_play_time_ = now;
   } else if (now - last_play_time_ >= pause_delay_ && playing_) {
     audio_sink_->Pause();
     playing_ = false;
   }
 
-  audio_converter_.ConvertWithDelay(
+  master_converter_.ConvertWithDelay(
       base::TimeDelta::FromMilliseconds(audio_delay_milliseconds), audio_bus);
   return audio_bus->frames();
 }

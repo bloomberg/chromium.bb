@@ -67,8 +67,7 @@ class AudioRendererMixerInputTest : public testing::Test {
       EXPECT_CALL(*sink.get(), Start());
       EXPECT_CALL(*sink.get(), Stop());
 
-      mixers_[idx].reset(
-          new AudioRendererMixer(audio_parameters_, audio_parameters_, sink));
+      mixers_[idx].reset(new AudioRendererMixer(audio_parameters_, sink));
     }
     EXPECT_CALL(*this, RemoveMixer(testing::_, device_id, testing::_));
 

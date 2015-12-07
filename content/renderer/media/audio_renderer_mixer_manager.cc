@@ -105,7 +105,7 @@ media::AudioRendererMixer* AudioRendererMixerManager::GetMixer(
     output_params = params;
 
   media::AudioRendererMixer* mixer =
-      new media::AudioRendererMixer(params, output_params, sink);
+      new media::AudioRendererMixer(output_params, sink);
   AudioRendererMixerReference mixer_reference = { mixer, 1 };
   mixers_[key] = mixer_reference;
   return mixer;

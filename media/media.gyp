@@ -304,6 +304,8 @@
         'base/key_systems_support_uma.h',
         'base/keyboard_event_counter.cc',
         'base/keyboard_event_counter.h',
+        'base/loopback_audio_converter.cc',
+        'base/loopback_audio_converter.h',
         'base/mac/avfoundation_glue.h',
         'base/mac/avfoundation_glue.mm',
         'base/mac/coremedia_glue.h',
