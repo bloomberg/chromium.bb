@@ -118,7 +118,7 @@ class WebSocketStreamServerSetCookieTest
 
 TEST_P(WebSocketStreamClientUseCookieTest, ClientUseCookie) {
   // For wss tests.
-  ssl_data_.push_back(new SSLSocketDataProvider(ASYNC, OK));
+  ssl_data_.push_back(make_scoped_ptr(new SSLSocketDataProvider(ASYNC, OK)));
 
   CookieStore* store =
       url_request_context_host_.GetURLRequestContext()->cookie_store();
@@ -151,7 +151,7 @@ TEST_P(WebSocketStreamClientUseCookieTest, ClientUseCookie) {
 
 TEST_P(WebSocketStreamServerSetCookieTest, ServerSetCookie) {
   // For wss tests.
-  ssl_data_.push_back(new SSLSocketDataProvider(ASYNC, OK));
+  ssl_data_.push_back(make_scoped_ptr(new SSLSocketDataProvider(ASYNC, OK)));
 
   const GURL url(GetParam().url);
   const GURL cookie_url(GetParam().cookie_url);

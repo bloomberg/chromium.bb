@@ -8,7 +8,9 @@
 #include <string.h>
 
 #include <iostream>
+#include <iterator>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -16,7 +18,6 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -69,25 +70,25 @@ std::ostream& operator<<(std::ostream& os, const WebSocketFrame& frame) {
   return os << "NULL}";
 }
 
-std::ostream& operator<<(std::ostream& os,
-                         const ScopedVector<WebSocketFrame>& vector) {
+std::ostream& operator<<(
+    std::ostream& os,
+    const std::vector<scoped_ptr<WebSocketFrame>>& frames) {
   os << "{";
   bool first = true;
-  for (ScopedVector<WebSocketFrame>::const_iterator it = vector.begin();
-       it != vector.end();
-       ++it) {
+  for (const auto& frame : frames) {
     if (!first) {
       os << ",\n";
     } else {
       first = false;
     }
-    os << **it;
+    os << *frame;
   }
   return os << "}";
 }
 
-std::ostream& operator<<(std::ostream& os,
-                         const ScopedVector<WebSocketFrame>* vector) {
+std::ostream& operator<<(
+    std::ostream& os,
+    const std::vector<scoped_ptr<WebSocketFrame>>* vector) {
   return os << '&' << *vector;
 }
 
@@ -244,12 +245,12 @@ class FakeWebSocketStream : public WebSocketStream {
                       const std::string& extensions)
       : protocol_(protocol), extensions_(extensions) {}
 
-  int ReadFrames(ScopedVector<WebSocketFrame>* frames,
+  int ReadFrames(std::vector<scoped_ptr<WebSocketFrame>>* frames,
                  const CompletionCallback& callback) override {
     return ERR_IO_PENDING;
   }
 
-  int WriteFrames(ScopedVector<WebSocketFrame>* frames,
+  int WriteFrames(std::vector<scoped_ptr<WebSocketFrame>>* frames,
                   const CompletionCallback& callback) override {
     return ERR_IO_PENDING;
   }
@@ -319,9 +320,9 @@ std::ostream& operator<<(std::ostream& os, const InitFrame (&frames)[N]) {
 // Convert a const array of InitFrame structs to the format used at
 // runtime. Templated on the size of the array to save typing.
 template <size_t N>
-ScopedVector<WebSocketFrame> CreateFrameVector(
-    const InitFrame (&source_frames)[N]) {
-  ScopedVector<WebSocketFrame> result_frames;
+std::vector<scoped_ptr<WebSocketFrame>> CreateFrameVector(
+    const InitFrame(&source_frames)[N]) {
+  std::vector<scoped_ptr<WebSocketFrame>> result_frames;
   result_frames.reserve(N);
   for (size_t i = 0; i < N; ++i) {
     const InitFrame& source_frame = source_frames[i];
@@ -338,7 +339,7 @@ ScopedVector<WebSocketFrame> CreateFrameVector(
     }
     result_frames.push_back(result_frame.Pass());
   }
-  return result_frames.Pass();
+  return result_frames;
 }
 
 // A GoogleMock action which can be used to respond to call to ReadFrames with
@@ -352,19 +353,20 @@ ACTION_P(ReturnFrames, source_frames) {
 }
 
 // The implementation of a GoogleMock matcher which can be used to compare a
-// ScopedVector<WebSocketFrame>* against an expectation defined as an array of
-// InitFrame objects. Although it is possible to compose built-in GoogleMock
-// matchers to check the contents of a WebSocketFrame, the results are so
-// unreadable that it is better to use this matcher.
+// std::vector<scoped_ptr<WebSocketFrame>>* against an expectation defined as an
+// array of InitFrame objects. Although it is possible to compose built-in
+// GoogleMock matchers to check the contents of a WebSocketFrame, the results
+// are so unreadable that it is better to use this matcher.
 template <size_t N>
-class EqualsFramesMatcher
-    : public ::testing::MatcherInterface<ScopedVector<WebSocketFrame>*> {
+class EqualsFramesMatcher : public ::testing::MatcherInterface<
+                                std::vector<scoped_ptr<WebSocketFrame>>*> {
  public:
   EqualsFramesMatcher(const InitFrame (*expect_frames)[N])
       : expect_frames_(expect_frames) {}
 
-  virtual bool MatchAndExplain(ScopedVector<WebSocketFrame>* actual_frames,
-                               ::testing::MatchResultListener* listener) const {
+  virtual bool MatchAndExplain(
+      std::vector<scoped_ptr<WebSocketFrame>>* actual_frames,
+      ::testing::MatchResultListener* listener) const {
     if (actual_frames->size() != N) {
       *listener << "the vector size is " << actual_frames->size();
       return false;
@@ -419,8 +421,8 @@ class EqualsFramesMatcher
 // The definition of EqualsFrames GoogleMock matcher. Unlike the ReturnFrames
 // action, this can take the array by reference.
 template <size_t N>
-::testing::Matcher<ScopedVector<WebSocketFrame>*> EqualsFrames(
-    const InitFrame (&frames)[N]) {
+::testing::Matcher<std::vector<scoped_ptr<WebSocketFrame>>*> EqualsFrames(
+    const InitFrame(&frames)[N]) {
   return ::testing::MakeMatcher(new EqualsFramesMatcher<N>(&frames));
 }
 
@@ -456,30 +458,32 @@ class ReadableFakeWebSocketStream : public FakeWebSocketStream {
   // |async| is SYNC, the response will be returned synchronously. |error| is
   // returned directly from ReadFrames() in the synchronous case, or passed to
   // the callback in the asynchronous case. |frames| will be converted to a
-  // ScopedVector<WebSocketFrame> and copied to the pointer that was passed to
-  // ReadFrames().
+  // std::vector<scoped_ptr<WebSocketFrame>> and copied to the pointer that was
+  // passed to ReadFrames().
   template <size_t N>
   void PrepareReadFrames(IsSync async,
                          int error,
                          const InitFrame (&frames)[N]) {
-    responses_.push_back(new Response(async, error, CreateFrameVector(frames)));
+    responses_.push_back(
+        make_scoped_ptr(new Response(async, error, CreateFrameVector(frames))));
   }
 
   // An alternate version of PrepareReadFrames for when we need to construct
   // the frames manually.
   void PrepareRawReadFrames(IsSync async,
                             int error,
-                            ScopedVector<WebSocketFrame> frames) {
-    responses_.push_back(new Response(async, error, frames.Pass()));
+                            std::vector<scoped_ptr<WebSocketFrame>> frames) {
+    responses_.push_back(
+        make_scoped_ptr(new Response(async, error, std::move(frames))));
   }
 
   // Prepares a fake error response (ie. there is no data).
   void PrepareReadFramesError(IsSync async, int error) {
-    responses_.push_back(
-        new Response(async, error, ScopedVector<WebSocketFrame>()));
+    responses_.push_back(make_scoped_ptr(
+        new Response(async, error, std::vector<scoped_ptr<WebSocketFrame>>())));
   }
 
-  int ReadFrames(ScopedVector<WebSocketFrame>* frames,
+  int ReadFrames(std::vector<scoped_ptr<WebSocketFrame>>* frames,
                  const CompletionCallback& callback) override {
     CHECK(!read_frames_pending_);
     if (index_ >= responses_.size())
@@ -497,7 +501,7 @@ class ReadableFakeWebSocketStream : public FakeWebSocketStream {
   }
 
  private:
-  void DoCallback(ScopedVector<WebSocketFrame>* frames,
+  void DoCallback(std::vector<scoped_ptr<WebSocketFrame>>* frames,
                   const CompletionCallback& callback) {
     read_frames_pending_ = false;
     frames->swap(responses_[index_]->frames);
@@ -506,18 +510,20 @@ class ReadableFakeWebSocketStream : public FakeWebSocketStream {
   }
 
   struct Response {
-    Response(IsSync async, int error, ScopedVector<WebSocketFrame> frames)
-        : async(async), error(error), frames(frames.Pass()) {}
+    Response(IsSync async,
+             int error,
+             std::vector<scoped_ptr<WebSocketFrame>> frames)
+        : async(async), error(error), frames(std::move(frames)) {}
 
     IsSync async;
     int error;
-    ScopedVector<WebSocketFrame> frames;
+    std::vector<scoped_ptr<WebSocketFrame>> frames;
 
    private:
     // Bad things will happen if we attempt to copy or assign |frames|.
     DISALLOW_COPY_AND_ASSIGN(Response);
   };
-  ScopedVector<Response> responses_;
+  std::vector<scoped_ptr<Response>> responses_;
 
   // The index into the responses_ array of the next response to be returned.
   size_t index_;
@@ -533,7 +539,7 @@ class ReadableFakeWebSocketStream : public FakeWebSocketStream {
 // synchronously.
 class WriteableFakeWebSocketStream : public FakeWebSocketStream {
  public:
-  int WriteFrames(ScopedVector<WebSocketFrame>* frames,
+  int WriteFrames(std::vector<scoped_ptr<WebSocketFrame>>* frames,
                   const CompletionCallback& callback) override {
     return OK;
   }
@@ -542,7 +548,7 @@ class WriteableFakeWebSocketStream : public FakeWebSocketStream {
 // A FakeWebSocketStream where writes always fail.
 class UnWriteableFakeWebSocketStream : public FakeWebSocketStream {
  public:
-  int WriteFrames(ScopedVector<WebSocketFrame>* frames,
+  int WriteFrames(std::vector<scoped_ptr<WebSocketFrame>>* frames,
                   const CompletionCallback& callback) override {
     return ERR_CONNECTION_RESET;
   }
@@ -558,17 +564,19 @@ class EchoeyFakeWebSocketStream : public FakeWebSocketStream {
  public:
   EchoeyFakeWebSocketStream() : read_frames_(NULL), done_(false) {}
 
-  int WriteFrames(ScopedVector<WebSocketFrame>* frames,
+  int WriteFrames(std::vector<scoped_ptr<WebSocketFrame>>* frames,
                   const CompletionCallback& callback) override {
+    stored_frames_.insert(stored_frames_.end(),
+                          std::make_move_iterator(frames->begin()),
+                          std::make_move_iterator(frames->end()));
+    frames->clear();
     // Users of WebSocketStream will not expect the ReadFrames() callback to be
     // called from within WriteFrames(), so post it to the message loop instead.
-    stored_frames_.insert(stored_frames_.end(), frames->begin(), frames->end());
-    frames->weak_clear();
     PostCallback();
     return OK;
   }
 
-  int ReadFrames(ScopedVector<WebSocketFrame>* frames,
+  int ReadFrames(std::vector<scoped_ptr<WebSocketFrame>>* frames,
                  const CompletionCallback& callback) override {
     read_callback_ = callback;
     read_frames_ = frames;
@@ -597,13 +605,11 @@ class EchoeyFakeWebSocketStream : public FakeWebSocketStream {
   // Copy the frames stored in stored_frames_ to |out|, while clearing the
   // "masked" header bit. Returns true if a Close Frame was seen, false
   // otherwise.
-  bool MoveFrames(ScopedVector<WebSocketFrame>* out) {
+  bool MoveFrames(std::vector<scoped_ptr<WebSocketFrame>>* out) {
     bool seen_close = false;
-    *out = stored_frames_.Pass();
-    for (ScopedVector<WebSocketFrame>::iterator it = out->begin();
-         it != out->end();
-         ++it) {
-      WebSocketFrameHeader& header = (*it)->header;
+    *out = std::move(stored_frames_);
+    for (const auto& frame : *out) {
+      WebSocketFrameHeader& header = frame->header;
       header.masked = false;
       if (header.opcode == WebSocketFrameHeader::kOpCodeClose)
         seen_close = true;
@@ -611,10 +617,10 @@ class EchoeyFakeWebSocketStream : public FakeWebSocketStream {
     return seen_close;
   }
 
-  ScopedVector<WebSocketFrame> stored_frames_;
+  std::vector<scoped_ptr<WebSocketFrame>> stored_frames_;
   CompletionCallback read_callback_;
   // Owned by the caller of ReadFrames().
-  ScopedVector<WebSocketFrame>* read_frames_;
+  std::vector<scoped_ptr<WebSocketFrame>>* read_frames_;
   // True if we should close the connection.
   bool done_;
 };
@@ -630,7 +636,7 @@ class ResetOnWriteFakeWebSocketStream : public FakeWebSocketStream {
  public:
   ResetOnWriteFakeWebSocketStream() : closed_(false), weak_ptr_factory_(this) {}
 
-  int WriteFrames(ScopedVector<WebSocketFrame>* frames,
+  int WriteFrames(std::vector<scoped_ptr<WebSocketFrame>>* frames,
                   const CompletionCallback& callback) override {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
@@ -645,7 +651,7 @@ class ResetOnWriteFakeWebSocketStream : public FakeWebSocketStream {
     return ERR_IO_PENDING;
   }
 
-  int ReadFrames(ScopedVector<WebSocketFrame>* frames,
+  int ReadFrames(std::vector<scoped_ptr<WebSocketFrame>>* frames,
                  const CompletionCallback& callback) override {
     read_callback_ = callback;
     return ERR_IO_PENDING;
@@ -671,10 +677,10 @@ class ResetOnWriteFakeWebSocketStream : public FakeWebSocketStream {
 class MockWebSocketStream : public WebSocketStream {
  public:
   MOCK_METHOD2(ReadFrames,
-               int(ScopedVector<WebSocketFrame>* frames,
+               int(std::vector<scoped_ptr<WebSocketFrame>>* frames,
                    const CompletionCallback& callback));
   MOCK_METHOD2(WriteFrames,
-               int(ScopedVector<WebSocketFrame>* frames,
+               int(std::vector<scoped_ptr<WebSocketFrame>>* frames,
                    const CompletionCallback& callback));
   MOCK_METHOD0(Close, void());
   MOCK_CONST_METHOD0(GetSubProtocol, std::string());
@@ -2095,10 +2101,11 @@ TEST_F(WebSocketChannelEventInterfaceTest, ReservedBitsMustNotBeSet) {
        NOT_MASKED,  "sakana"}};
   // It is not worth adding support for reserved bits to InitFrame just for this
   // one test, so set the bit manually.
-  ScopedVector<WebSocketFrame> raw_frames = CreateFrameVector(frames);
+  std::vector<scoped_ptr<WebSocketFrame>> raw_frames =
+      CreateFrameVector(frames);
   raw_frames[0]->header.reserved1 = true;
-  stream->PrepareRawReadFrames(
-      ReadableFakeWebSocketStream::SYNC, OK, raw_frames.Pass());
+  stream->PrepareRawReadFrames(ReadableFakeWebSocketStream::SYNC, OK,
+                               std::move(raw_frames));
   set_stream(stream.Pass());
   EXPECT_CALL(*event_interface_, OnAddChannelResponse(_, _));
   EXPECT_CALL(*event_interface_, OnFlowControl(_));
@@ -2520,7 +2527,7 @@ TEST_F(WebSocketChannelStreamTest, CloseOnlySentOnce) {
   // We store the parameters that were passed to ReadFrames() so that we can
   // call them explicitly later.
   CompletionCallback read_callback;
-  ScopedVector<WebSocketFrame>* frames = NULL;
+  std::vector<scoped_ptr<WebSocketFrame>>* frames = NULL;
 
   // These are not interesting.
   EXPECT_CALL(*mock_stream_, GetSubProtocol()).Times(AnyNumber());
@@ -2702,7 +2709,7 @@ TEST_F(WebSocketChannelStreamTest, PongInTheMiddleOfDataMessage) {
   static const InitFrame expected3[] = {
       {FINAL_FRAME, WebSocketFrameHeader::kOpCodeContinuation,
        MASKED,      "World"}};
-  ScopedVector<WebSocketFrame>* read_frames;
+  std::vector<scoped_ptr<WebSocketFrame>>* read_frames;
   CompletionCallback read_callback;
   EXPECT_CALL(*mock_stream_, GetSubProtocol()).Times(AnyNumber());
   EXPECT_CALL(*mock_stream_, GetExtensions()).Times(AnyNumber());
@@ -2823,7 +2830,7 @@ TEST_F(WebSocketChannelStreamTest, SendGoingAwayOnRendererQuotaExceeded) {
 // protocol also has Binary frames and those need to be 8-bit clean. For the
 // sake of completeness, this test verifies that they are.
 TEST_F(WebSocketChannelStreamTest, WrittenBinaryFramesAre8BitClean) {
-  ScopedVector<WebSocketFrame>* frames = NULL;
+  std::vector<scoped_ptr<WebSocketFrame>>* frames = NULL;
 
   EXPECT_CALL(*mock_stream_, GetSubProtocol()).Times(AnyNumber());
   EXPECT_CALL(*mock_stream_, GetExtensions()).Times(AnyNumber());
@@ -2838,7 +2845,7 @@ TEST_F(WebSocketChannelStreamTest, WrittenBinaryFramesAre8BitClean) {
       std::vector<char>(kBinaryBlob, kBinaryBlob + kBinaryBlobSize));
   ASSERT_TRUE(frames != NULL);
   ASSERT_EQ(1U, frames->size());
-  const WebSocketFrame* out_frame = (*frames)[0];
+  const WebSocketFrame* out_frame = (*frames)[0].get();
   EXPECT_EQ(kBinaryBlobSize, out_frame->header.payload_length);
   ASSERT_TRUE(out_frame->data.get());
   EXPECT_EQ(0, memcmp(kBinaryBlob, out_frame->data->data(), kBinaryBlobSize));
@@ -2853,12 +2860,12 @@ TEST_F(WebSocketChannelEventInterfaceTest, ReadBinaryFramesAre8BitClean) {
   frame_header.payload_length = kBinaryBlobSize;
   frame->data = new IOBuffer(kBinaryBlobSize);
   memcpy(frame->data->data(), kBinaryBlob, kBinaryBlobSize);
-  ScopedVector<WebSocketFrame> frames;
+  std::vector<scoped_ptr<WebSocketFrame>> frames;
   frames.push_back(frame.Pass());
   scoped_ptr<ReadableFakeWebSocketStream> stream(
       new ReadableFakeWebSocketStream);
-  stream->PrepareRawReadFrames(
-      ReadableFakeWebSocketStream::SYNC, OK, frames.Pass());
+  stream->PrepareRawReadFrames(ReadableFakeWebSocketStream::SYNC, OK,
+                               std::move(frames));
   set_stream(stream.Pass());
   EXPECT_CALL(*event_interface_, OnAddChannelResponse(_, _));
   EXPECT_CALL(*event_interface_, OnFlowControl(_));
@@ -3380,7 +3387,7 @@ TEST_F(WebSocketChannelStreamTimeoutTest, ConnectionCloseTimesOut) {
   EXPECT_CALL(*mock_stream_, GetSubProtocol()).Times(AnyNumber());
   EXPECT_CALL(*mock_stream_, GetExtensions()).Times(AnyNumber());
   TestClosure completion;
-  ScopedVector<WebSocketFrame>* read_frames = NULL;
+  std::vector<scoped_ptr<WebSocketFrame>>* read_frames = NULL;
   CompletionCallback read_callback;
   {
     InSequence s;

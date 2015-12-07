@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_vector.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/statistics_recorder.h"
@@ -520,7 +519,7 @@ TEST_F(WebSocketStreamCreateExtensionTest, PerMessageDeflateInflates) {
   WaitUntilConnectDone();
 
   ASSERT_TRUE(stream_);
-  ScopedVector<WebSocketFrame> frames;
+  std::vector<scoped_ptr<WebSocketFrame>> frames;
   CompletionCallback callback;
   ASSERT_EQ(OK, stream_->ReadFrames(&frames, callback));
   ASSERT_EQ(1U, frames.size());
@@ -984,8 +983,8 @@ TEST_F(WebSocketStreamCreateTest, NoResponse) {
 }
 
 TEST_F(WebSocketStreamCreateTest, SelfSignedCertificateFailure) {
-  ssl_data_.push_back(
-      new SSLSocketDataProvider(ASYNC, ERR_CERT_AUTHORITY_INVALID));
+  ssl_data_.push_back(make_scoped_ptr(
+      new SSLSocketDataProvider(ASYNC, ERR_CERT_AUTHORITY_INVALID)));
   ssl_data_[0]->cert =
       ImportCertFromFile(GetTestCertsDirectory(), "unittest.selfsigned.der");
   ASSERT_TRUE(ssl_data_[0]->cert.get());

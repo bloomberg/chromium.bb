@@ -16,7 +16,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "net/base/net_export.h"
@@ -351,7 +350,7 @@ class NET_EXPORT WebSocketChannel {
   scoped_ptr<SendBuffer> data_to_send_next_;
 
   // Destination for the current call to WebSocketStream::ReadFrames
-  ScopedVector<WebSocketFrame> read_frames_;
+  std::vector<scoped_ptr<WebSocketFrame>> read_frames_;
 
   // Frames that have been read but not yet forwarded to the renderer due to
   // lack of quota.

@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "net/base/net_export.h"
 #include "net/websockets/websocket_errors.h"
 #include "net/websockets/websocket_frame.h"
@@ -40,7 +39,7 @@ class NET_EXPORT WebSocketFrameParser {
   // websocket_frame.h for more details.
   bool Decode(const char* data,
               size_t length,
-              ScopedVector<WebSocketFrameChunk>* frame_chunks);
+              std::vector<scoped_ptr<WebSocketFrameChunk>>* frame_chunks);
 
   // Returns kWebSocketNormalClosure if the parser has not failed to decode
   // WebSocket frames. Otherwise returns WebSocketError which is defined in

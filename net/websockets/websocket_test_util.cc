@@ -8,7 +8,6 @@
 #include <algorithm>
 #include <vector>
 
-#include "base/memory/scoped_vector.h"
 #include "base/strings/stringprintf.h"
 #include "net/proxy/proxy_service.h"
 #include "net/socket/socket_test_util.h"
@@ -86,8 +85,8 @@ struct WebSocketMockClientSocketFactoryMaker::Detail {
   std::string return_to_read;
   std::vector<MockRead> reads;
   MockWrite write;
-  ScopedVector<SequencedSocketData> socket_data_vector;
-  ScopedVector<SSLSocketDataProvider> ssl_socket_data_vector;
+  std::vector<scoped_ptr<SequencedSocketData>> socket_data_vector;
+  std::vector<scoped_ptr<SSLSocketDataProvider>> ssl_socket_data_vector;
   MockClientSocketFactory factory;
 };
 

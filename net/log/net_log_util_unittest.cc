@@ -8,6 +8,7 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/values.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"

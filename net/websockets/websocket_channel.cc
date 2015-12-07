@@ -9,6 +9,8 @@
 
 #include <algorithm>
 #include <deque>
+#include <utility>
+#include <vector>
 
 #include "base/big_endian.h"
 #include "base/bind.h"
@@ -136,11 +138,11 @@ class WebSocketChannel::SendBuffer {
   void AddFrame(scoped_ptr<WebSocketFrame> chunk);
 
   // Return a pointer to the frames_ for write purposes.
-  ScopedVector<WebSocketFrame>* frames() { return &frames_; }
+  std::vector<scoped_ptr<WebSocketFrame>>* frames() { return &frames_; }
 
  private:
   // The frames_ that will be sent in the next call to WriteFrames().
-  ScopedVector<WebSocketFrame> frames_;
+  std::vector<scoped_ptr<WebSocketFrame>> frames_;
 
   // The total size of the payload data in |frames_|. This will be used to
   // measure the throughput of the link.
@@ -738,9 +740,7 @@ ChannelState WebSocketChannel::OnReadDone(bool synchronous, int result) {
       DCHECK(!read_frames_.empty())
           << "ReadFrames() returned OK, but nothing was read.";
       for (size_t i = 0; i < read_frames_.size(); ++i) {
-        scoped_ptr<WebSocketFrame> frame(read_frames_[i]);
-        read_frames_[i] = NULL;
-        if (HandleFrame(frame.Pass()) == CHANNEL_DELETED)
+        if (HandleFrame(std::move(read_frames_[i])) == CHANNEL_DELETED)
           return CHANNEL_DELETED;
       }
       read_frames_.clear();

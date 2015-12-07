@@ -6,8 +6,9 @@
 #define NET_WEBSOCKETS_WEBSOCKET_DEFLATE_PREDICTOR_H_
 
 #include <stddef.h>
+#include <vector>
 
-#include "base/memory/scoped_vector.h"
+#include "base/memory/scoped_ptr.h"
 #include "net/base/net_export.h"
 
 namespace net {
@@ -39,7 +40,7 @@ class NET_EXPORT_PRIVATE WebSocketDeflatePredictor {
   // but future frames may contain control message frames.
   // |frames[frame_index]| cannot be recorded yet and all preceding
   // data frames have to be already recorded when this method is called.
-  virtual Result Predict(const ScopedVector<WebSocketFrame>& frames,
+  virtual Result Predict(const std::vector<scoped_ptr<WebSocketFrame>>& frames,
                          size_t frame_index) = 0;
 
   // Records frame data for future prediction.

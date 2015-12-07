@@ -13,6 +13,7 @@
 #include <string.h>  // for memcpy() and memset().
 
 #include <string>
+#include <vector>
 
 #include "base/big_endian.h"
 #include "base/macros.h"
@@ -166,7 +167,7 @@ class WebSocketBasicStreamSocketTest : public WebSocketBasicStreamTest {
   MockClientSocketFactory factory_;
   MockTransportClientSocketPool pool_;
   BoundTestNetLog(bound_net_log_);
-  ScopedVector<WebSocketFrame> frames_;
+  std::vector<scoped_ptr<WebSocketFrame>> frames_;
   TestCompletionCallback cb_;
   scoped_refptr<GrowableIOBuffer> http_read_buffer_;
   std::string sub_protocol_;
@@ -896,7 +897,7 @@ TEST_F(WebSocketBasicStreamSocketWriteTest, WriteNullPong) {
   header.final = true;
   header.masked = true;
   header.payload_length = 0;
-  ScopedVector<WebSocketFrame> frames;
+  std::vector<scoped_ptr<WebSocketFrame>> frames;
   frames.push_back(frame.Pass());
   EXPECT_EQ(OK, stream_->WriteFrames(&frames, cb_.callback()));
 }

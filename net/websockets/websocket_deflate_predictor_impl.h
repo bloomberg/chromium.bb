@@ -6,8 +6,9 @@
 #define NET_WEBSOCKETS_WEBSOCKET_DEFLATE_PREDICTOR_IMPL_H_
 
 #include <stddef.h>
+#include <vector>
 
-#include "base/memory/scoped_vector.h"
+#include "base/memory/scoped_ptr.h"
 #include "net/base/net_export.h"
 #include "net/websockets/websocket_deflate_predictor.h"
 
@@ -20,7 +21,7 @@ class NET_EXPORT_PRIVATE WebSocketDeflatePredictorImpl
  public:
   ~WebSocketDeflatePredictorImpl() override {}
 
-  Result Predict(const ScopedVector<WebSocketFrame>& frames,
+  Result Predict(const std::vector<scoped_ptr<WebSocketFrame>>& frames,
                  size_t frame_index) override;
   void RecordInputDataFrame(const WebSocketFrame* frame) override;
   void RecordWrittenDataFrame(const WebSocketFrame* frame) override;

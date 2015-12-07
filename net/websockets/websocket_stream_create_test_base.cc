@@ -100,10 +100,9 @@ void WebSocketStreamCreateTestBase::CreateAndConnectStream(
     const url::Origin& origin,
     scoped_ptr<base::Timer> timer) {
   for (size_t i = 0; i < ssl_data_.size(); ++i) {
-    scoped_ptr<SSLSocketDataProvider> ssl_data(ssl_data_[i]);
-    url_request_context_host_.AddSSLSocketDataProvider(ssl_data.Pass());
+    url_request_context_host_.AddSSLSocketDataProvider(std::move(ssl_data_[i]));
   }
-  ssl_data_.weak_clear();
+  ssl_data_.clear();
   scoped_ptr<WebSocketStream::ConnectDelegate> connect_delegate(
       new TestConnectDelegate(this, connect_run_loop_.QuitClosure()));
   WebSocketStream::ConnectDelegate* delegate = connect_delegate.get();

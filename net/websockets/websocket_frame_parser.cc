@@ -6,12 +6,12 @@
 
 #include <algorithm>
 #include <limits>
+#include <vector>
 
 #include "base/big_endian.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "net/base/io_buffer.h"
 #include "net/websockets/websocket_frame.h"
 
@@ -46,7 +46,7 @@ WebSocketFrameParser::~WebSocketFrameParser() {}
 bool WebSocketFrameParser::Decode(
     const char* data,
     size_t length,
-    ScopedVector<WebSocketFrameChunk>* frame_chunks) {
+    std::vector<scoped_ptr<WebSocketFrameChunk>>* frame_chunks) {
   if (websocket_error_ != kWebSocketNormalClosure)
     return false;
   if (!length)

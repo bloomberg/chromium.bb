@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/run_loop.h"
 #include "base/timer/timer.h"
 #include "net/base/net_export.h"
@@ -70,7 +69,7 @@ class WebSocketStreamCreateTestBase {
   scoped_ptr<WebSocketEventInterface::SSLErrorCallbacks> ssl_error_callbacks_;
   SSLInfo ssl_info_;
   bool ssl_fatal_;
-  ScopedVector<SSLSocketDataProvider> ssl_data_;
+  std::vector<scoped_ptr<SSLSocketDataProvider>> ssl_data_;
 
   // This temporarily sets WebSocketEndpointLockManager unlock delay to zero
   // during tests.

@@ -6,11 +6,11 @@
 #define NET_WEBSOCKETS_WEBSOCKET_BASIC_STREAM_H_
 
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "net/websockets/websocket_frame_parser.h"
 #include "net/websockets/websocket_stream.h"
 
@@ -43,10 +43,10 @@ class NET_EXPORT_PRIVATE WebSocketBasicStream : public WebSocketStream {
   ~WebSocketBasicStream() override;
 
   // WebSocketStream implementation.
-  int ReadFrames(ScopedVector<WebSocketFrame>* frames,
+  int ReadFrames(std::vector<scoped_ptr<WebSocketFrame>>* frames,
                  const CompletionCallback& callback) override;
 
-  int WriteFrames(ScopedVector<WebSocketFrame>* frames,
+  int WriteFrames(std::vector<scoped_ptr<WebSocketFrame>>* frames,
                   const CompletionCallback& callback) override;
 
   void Close() override;
@@ -78,14 +78,16 @@ class NET_EXPORT_PRIVATE WebSocketBasicStream : public WebSocketStream {
 
   // Attempts to parse the output of a read as WebSocket frames. On success,
   // returns OK and places the frame(s) in |frames|.
-  int HandleReadResult(int result, ScopedVector<WebSocketFrame>* frames);
+  int HandleReadResult(int result,
+                       std::vector<scoped_ptr<WebSocketFrame>>* frames);
 
   // Converts the chunks in |frame_chunks| into frames and writes them to
   // |frames|. |frame_chunks| is destroyed in the process. Returns
   // ERR_WS_PROTOCOL_ERROR if an invalid chunk was found. If one or more frames
   // was added to |frames|, then returns OK, otherwise returns ERR_IO_PENDING.
-  int ConvertChunksToFrames(ScopedVector<WebSocketFrameChunk>* frame_chunks,
-                            ScopedVector<WebSocketFrame>* frames);
+  int ConvertChunksToFrames(
+      std::vector<scoped_ptr<WebSocketFrameChunk>>* frame_chunks,
+      std::vector<scoped_ptr<WebSocketFrame>>* frames);
 
   // Converts a |chunk| to a |frame|. |*frame| should be NULL on entry to this
   // method. If |chunk| is an incomplete control frame, or an empty middle
@@ -113,7 +115,7 @@ class NET_EXPORT_PRIVATE WebSocketBasicStream : public WebSocketStream {
 
   // Called when a read completes. Parses the result and (unless no complete
   // header has been received) calls |callback|.
-  void OnReadComplete(ScopedVector<WebSocketFrame>* frames,
+  void OnReadComplete(std::vector<scoped_ptr<WebSocketFrame>>* frames,
                       const CompletionCallback& callback,
                       int result);
 

@@ -4,7 +4,8 @@
 
 #include "net/websockets/websocket_deflate_predictor_impl.h"
 
-#include "base/memory/scoped_vector.h"
+#include <vector>
+
 #include "net/websockets/websocket_frame.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -16,8 +17,9 @@ typedef WebSocketDeflatePredictor::Result Result;
 
 TEST(WebSocketDeflatePredictorImpl, Predict) {
   WebSocketDeflatePredictorImpl predictor;
-  ScopedVector<WebSocketFrame> frames;
-  frames.push_back(new WebSocketFrame(WebSocketFrameHeader::kOpCodeText));
+  std::vector<scoped_ptr<WebSocketFrame>> frames;
+  frames.push_back(
+      make_scoped_ptr(new WebSocketFrame(WebSocketFrameHeader::kOpCodeText)));
   Result result = predictor.Predict(frames, 0);
 
   EXPECT_EQ(WebSocketDeflatePredictor::DEFLATE, result);

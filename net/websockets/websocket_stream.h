@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_export.h"
@@ -159,7 +158,7 @@ class NET_EXPORT_PRIVATE WebSocketStream {
   // Extensions which use reserved header bits should clear them when they are
   // set correctly. If the reserved header bits are set incorrectly, it is okay
   // to leave it to the caller to report the error.
-  virtual int ReadFrames(ScopedVector<WebSocketFrame>* frames,
+  virtual int ReadFrames(std::vector<scoped_ptr<WebSocketFrame>>* frames,
                          const CompletionCallback& callback) = 0;
 
   // Writes WebSocket frame data.
@@ -176,7 +175,7 @@ class NET_EXPORT_PRIVATE WebSocketStream {
   // object. Implementations of WriteFrames() should be robust against
   // this. This generally means returning to the event loop immediately after
   // calling the callback.
-  virtual int WriteFrames(ScopedVector<WebSocketFrame>* frames,
+  virtual int WriteFrames(std::vector<scoped_ptr<WebSocketFrame>>* frames,
                           const CompletionCallback& callback) = 0;
 
   // Closes the stream. All pending I/O operations (if any) are cancelled
