@@ -32,16 +32,7 @@ Polymer({
     newUrl: {
       type: String,
     },
-
-    /** @type {!Array<string>} */
-    savedUrlList: {
-      type: Array,
-    },
   },
-
-  observers: [
-    'prefsChanged_(prefs.session.startup_urls.value.*)',
-  ],
 
   attached: function() {
     var self = this;
@@ -54,17 +45,6 @@ Polymer({
     });
   },
 
-
-  /** @private */
-  prefsChanged_: function(change) {
-    if (!this.savedUrlList) {
-      var pref = /** @type {chrome.settingsPrivate.PrefObject} */(
-          this.get('prefs.session.startup_urls'));
-      if (pref)
-        this.savedUrlList = pref.value.slice();
-    }
-  },
-
   /** @private */
   updateStartupPages_: function(data) {
     var urlArray = [];
@@ -74,15 +54,18 @@ Polymer({
   },
 
   /** @private */
+  onAddPageTap_: function() {
+    this.$.addUrlDialog.open();
+  },
+
+  /** @private */
   onUseCurrentPagesTap_: function() {
     chrome.send('setStartupPagesToCurrentPages');
   },
 
   /** @private */
   onCancelTap_: function() {
-    if (this.savedUrlList !== undefined) {
-      this.set('prefs.session.startup_urls.value', this.savedUrlList.slice());
-    }
+    this.$.addUrlDialog.close();
   },
 
   /** @private */
@@ -92,6 +75,7 @@ Polymer({
       return;
     this.push('prefs.session.startup_urls.value', value);
     this.newUrl = '';
+    this.$.addUrlDialog.close();
   },
 
   /**

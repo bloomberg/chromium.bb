@@ -1,4 +1,5 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-dialog/paper-dialog.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-icon-item.html">
 
@@ -6,37 +7,51 @@
   <link rel="import" type="css" href="chrome://md-settings/settings_shared.css">
   <link rel="import" type="css" href="on_startup_shared.css">
   <template>
-    <div class="settings-box">
-      <div class="entries">
-        <template is="dom-repeat" items="{{prefs.session.startup_urls.value}}">
-          <paper-icon-item>
-            <iron-icon icon="image:brightness-1" item-icon></iron-icon>
-            <span class="flex">[[item]]</span>
-            <iron-icon on-tap="onRemoveUrlTap_" icon="clear">
-            </iron-icon>
+    <template is="dom-repeat" items="{{prefs.session.startup_urls.value}}">
+      <div class="list-item">
+        <paper-icon-item>
+          <iron-icon icon="image:brightness-1" item-icon></iron-icon>
+          <span class="flex">[[item]]</span>
+          <iron-icon on-tap="onRemoveUrlTap_" icon="clear">
+          </iron-icon>
+        </paper-icon-item>
+      </div>
+    </template>
+    <div class="list-item">
+      <paper-button class="link-button" on-tap="onAddPageTap_"
+          i18n-content="onStartupSetPages">
+      </paper-button>
+    </div>
+    <div class="list-item">
+      <paper-button class="link-button" on-tap="onUseCurrentPagesTap_"
+          i18n-content="onStartupUseCurrent">
+      </paper-button>
+    </div>
+
+    <paper-dialog modal id="addUrlDialog" class="layout vertical">
+      <div id="dialog-content">
+        <div class="dialog-title"
+            i18n-content="onStartupSetPages"></div>
+        <div class="dialog-body">
+          <paper-icon-item class="start">
+            <div i18n-content="onStartupAddPage"></div>&nbsp;
+            <paper-input class="flex" no-label-float
+                i18n-values="label:onStartupEnterUrl" value="{{newUrl}}">
+            </paper-input>
           </paper-icon-item>
-        </template>
+          <div class="button-container">
+            <div class="action-buttons">
+              <paper-button class="cancel-button" on-tap="onCancelTap_"
+                  id="cancel" i18n-content="cancel"></paper-button>
+              <paper-button class="action-button" id="addUrlButton"
+                  on-tap="onOkTap_" i18n-content="okButton">
+              </paper-button>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
-    <div class="settings-box">
-      <paper-icon-item class="start">
-        <div i18n-content="onStartupAddPage"></div>&nbsp;
-        <paper-input class="flex" no-label-float
-            i18n-values="label:onStartupEnterUrl" value="{{newUrl}}">
-        </paper-input>
-      </paper-icon-item>
-      <paper-button on-tap="onCancelTap_" i18n-content="cancelButton">
-      </paper-button>
-      <paper-button on-tap="onOkTap_" raised i18n-content="okButton">
-      </paper-button>
-    </div>
-    <div class="settings-box">
-      <div class="flex">
-        <paper-button on-tap="onUseCurrentPagesTap_"
-            i18n-content="onStartupUseCurrent">
-        </paper-button>
-      </div>
-    </div>
+    </paper-dialog>
+
   </template>
   <script src="startup_urls_page.js"></script>
 </dom-module>

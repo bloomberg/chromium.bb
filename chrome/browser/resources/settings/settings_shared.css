@@ -33,6 +33,37 @@ h2 {
   text-align: end;
 }
 
+.list-frame {
+  @apply(--layout-center);
+  display: block;
+  margin-left: 48px;
+  padding: 0;
+}
+
+.list-item {
+  @apply(--layout-center);
+  border-top: 1px solid #e0e0e0;
+  display: block;
+  padding: 0;
+}
+
+.list-item:first-of-type {
+  border-top: none;
+}
+
+.list-item > paper-icon-item {
+  padding: 0;
+}
+
+.link-button {
+  color: rgb(66, 133, 244);
+  padding-bottom: 6px;
+  padding-left: 0;
+  padding-right: 0;
+  padding-top: 6px;
+  text-transform: none;
+}
+
 .settings-box {
   @apply(--layout-center);
   border-top: 1px solid #e0e0e0;

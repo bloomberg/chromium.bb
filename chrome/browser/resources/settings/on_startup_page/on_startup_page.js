@@ -37,6 +37,10 @@ Polymer({
       notify: true,
     },
 
+    /**
+     * Enum values for the 'session.restore_on_startup' preference.
+     * @private {!Object<string, number>}
+     */
     prefValues_: {
       readOnly: true,
       type: Object,
@@ -45,11 +49,16 @@ Polymer({
         CONTINUE: 1,
         OPEN_SPECIFIC: 4,
       },
-    }
+    },
   },
 
-  /** @private */
-  onSetPagesTap_: function() {
-    this.$.pages.setSubpageChain(['startup-urls']);
+  /**
+    * Determine whether to show the user defined startup pages.
+    * @param {number} restoreOnStartup Enum value from prefValues_.
+    * @return {boolean} Whether the open specific pages is selected.
+    * @private
+    */
+  showStartupUrls_: function(restoreOnStartup) {
+    return restoreOnStartup == this.prefValues_.OPEN_SPECIFIC;
   },
 });
