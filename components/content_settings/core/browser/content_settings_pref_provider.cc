@@ -32,11 +32,6 @@
 namespace {
 
 // Obsolete prefs.
-// TODO(msramek): Remove the cleanup code after two releases (i.e. in M48).
-const char kObsoleteContentSettingsPatternPairs[] =
-    "profile.content_settings.pattern_pairs";
-const char kObsoleteMigratedContentSettingsPatternPairs[] =
-    "profile.migrated_content_settings_exceptions";
 // TODO(msramek): Remove the cleanup code after two releases (i.e. in M50).
 const char kObsoleteMetroSwitchToDesktopExceptions[] =
     "profile.content_settings.exceptions.metro_switch_to_desktop";
@@ -65,11 +60,6 @@ void PrefProvider::RegisterProfilePrefs(
 
   // Obsolete prefs ----------------------------------------------------------
 
-  registry->RegisterDictionaryPref(
-      kObsoleteContentSettingsPatternPairs,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterBooleanPref(kObsoleteMigratedContentSettingsPatternPairs,
-                                false);
   registry->RegisterDictionaryPref(
       kObsoleteMetroSwitchToDesktopExceptions,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
@@ -205,8 +195,6 @@ void PrefProvider::Notify(
 }
 
 void PrefProvider::DiscardObsoletePreferences() {
-  prefs_->ClearPref(kObsoleteContentSettingsPatternPairs);
-  prefs_->ClearPref(kObsoleteMigratedContentSettingsPatternPairs);
   prefs_->ClearPref(kObsoleteMetroSwitchToDesktopExceptions);
 }
 

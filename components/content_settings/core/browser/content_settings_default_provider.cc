@@ -30,13 +30,6 @@ namespace content_settings {
 namespace {
 
 // Obsolete prefs to be removed from the pref file.
-// TODO(msramek): Remove this cleanup code after two releases (i.e. in M48).
-const char kObsoleteDefaultContentSettings[] =
-    "profile.default_content_settings";
-const char kObsoleteMigratedDefaultContentSettings[] =
-    "profile.migrated_default_content_settings";
-const char kObsoleteMigratedDefaultMediaStreamSetting[] =
-    "profile.migrated_default_media_stream_content_settings";
 // TODO(msramek): Remove this cleanup code after two releases (i.e. in M50).
 const char kObsoleteMetroSwitchToDesktopSetting[] =
     "profile.default_content_setting_values.metro_switch_to_desktop";
@@ -96,24 +89,6 @@ void DefaultProvider::RegisterProfilePrefs(
   }
 
   // Obsolete prefs -------------------------------------------------------
-
-  // The deprecated dictionary preference.
-  registry->RegisterDictionaryPref(
-      kObsoleteDefaultContentSettings,
-      new base::DictionaryValue(),
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-
-  // Whether the deprecated dictionary preference has already been migrated
-  // into the individual preferences in this profile.
-  registry->RegisterBooleanPref(
-      kObsoleteMigratedDefaultContentSettings,
-      false,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-
-  // Whether the deprecated mediastream default setting has already been
-  // migrated into microphone and camera default settings.
-  registry->RegisterBooleanPref(kObsoleteMigratedDefaultMediaStreamSetting,
-                                false);
 
   // The removed content settings type METRO_SWITCH_TO_DESKTOP.
   registry->RegisterIntegerPref(
@@ -370,9 +345,6 @@ scoped_ptr<base::Value> DefaultProvider::ReadFromPref(
 }
 
 void DefaultProvider::DiscardObsoletePreferences() {
-  prefs_->ClearPref(kObsoleteDefaultContentSettings);
-  prefs_->ClearPref(kObsoleteMigratedDefaultContentSettings);
-  prefs_->ClearPref(kObsoleteMigratedDefaultMediaStreamSetting);
   prefs_->ClearPref(kObsoleteMetroSwitchToDesktopSetting);
 }
 
