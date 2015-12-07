@@ -468,6 +468,10 @@ interface CacheStorage
     method keys
     method match
     method open
+interface CanvasCaptureMediaStream : MediaStream
+    getter canvas
+    method constructor
+    method requestFrame
 interface CanvasGradient
     method addColorStop
     method constructor
@@ -1700,6 +1704,7 @@ interface HTMLButtonElement : HTMLElement
 interface HTMLCanvasElement : HTMLElement
     getter height
     getter width
+    method captureStream
     method constructor
     method getContext
     method toBlob

@@ -38,7 +38,7 @@ namespace blink {
 
 class ExceptionState;
 
-class MODULES_EXPORT MediaStream final
+class MODULES_EXPORT MediaStream
     : public RefCountedGarbageCollectedEventTargetWithInlineData<MediaStream>
     , public URLRegistrable
     , public MediaStreamDescriptorClient
@@ -89,6 +89,8 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
+    friend class CanvasCaptureMediaStream;
+
     MediaStream(ExecutionContext*, MediaStreamDescriptor*);
     MediaStream(ExecutionContext*, const MediaStreamTrackVector& audioTracks, const MediaStreamTrackVector& videoTracks);
 

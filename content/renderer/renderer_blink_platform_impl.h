@@ -27,10 +27,12 @@ class SyncMessageFilter;
 
 namespace blink {
 class WebBatteryStatus;
+class WebCanvasCaptureHandler;
 class WebDeviceMotionData;
 class WebDeviceOrientationData;
 class WebGraphicsContext3DProvider;
 class WebMediaRecorderHandler;
+class WebMediaStream;
 class WebServiceWorkerCacheStorage;
 }
 
@@ -141,6 +143,10 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   blink::WebMediaRecorderHandler* createMediaRecorderHandler() override;
   blink::WebMediaStreamCenter* createMediaStreamCenter(
       blink::WebMediaStreamCenterClient* client) override;
+  blink::WebCanvasCaptureHandler* createCanvasCaptureHandler(
+      const blink::WebSize& size,
+      double frame_rate,
+      blink::WebMediaStream* stream) override;
   blink::WebGraphicsContext3D* createOffscreenGraphicsContext3D(
       const blink::WebGraphicsContext3D::Attributes& attributes) override;
   blink::WebGraphicsContext3D* createOffscreenGraphicsContext3D(

@@ -36,6 +36,7 @@
 #include "core/dom/DocumentVisibilityObserver.h"
 #include "core/fileapi/FileCallback.h"
 #include "core/html/HTMLElement.h"
+#include "core/html/canvas/CanvasDrawListener.h"
 #include "core/html/canvas/CanvasImageSource.h"
 #include "core/imagebitmap/ImageBitmapSource.h"
 #include "platform/geometry/FloatRect.h"
@@ -101,6 +102,10 @@ public:
 
     void toBlob(FileCallback*, const String& mimeType, const ScriptValue& qualityArgument, ExceptionState&);
     void toBlob(FileCallback* callback, const String& mimeType, ExceptionState& exceptionState) { return toBlob(callback, mimeType, ScriptValue(), exceptionState); }
+
+    // Used for canvas capture.
+    void addListener(CanvasDrawListener*);
+    void removeListener(CanvasDrawListener*);
 
     // Used for rendering
     void didDraw(const FloatRect&);
@@ -198,8 +203,12 @@ private:
 
     bool paintsIntoCanvasBuffer() const;
 
+    void notifyListenersCanvasChanged();
+
     ImageData* toImageData(SourceDrawingBuffer) const;
     String toDataURLInternal(const String& mimeType, const double& quality, SourceDrawingBuffer) const;
+
+    PersistentHeapHashSetWillBeHeapHashSet<WeakMember<CanvasDrawListener>> m_listeners;
 
     IntSize m_size;
 

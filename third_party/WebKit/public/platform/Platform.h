@@ -61,6 +61,7 @@ namespace blink {
 
 class WebAudioBus;
 class WebBlobRegistry;
+class WebCanvasCaptureHandler;
 class WebClipboard;
 class WebCompositorSupport;
 class WebConvertableToTraceFormat;
@@ -80,6 +81,7 @@ class WebIDBFactory;
 class WebMIDIAccessor;
 class WebMIDIAccessorClient;
 class WebMediaRecorderHandler;
+class WebMediaStream;
 class WebMediaStreamCenter;
 class WebMediaStreamCenterClient;
 class WebMemoryDumpProvider;
@@ -644,6 +646,8 @@ public:
     // May return null if WebRTC functionality is not avaliable or out of resources.
     virtual WebMediaStreamCenter* createMediaStreamCenter(WebMediaStreamCenterClient*) { return nullptr; }
 
+    // Creates an WebCanvasCaptureHandler to capture Canvas output.
+    virtual WebCanvasCaptureHandler* createCanvasCaptureHandler(const WebSize&, double, WebMediaStream*) { return nullptr; }
     // WebWorker ----------------------------------------------------------
 
     virtual void didStartWorkerRunLoop() { }

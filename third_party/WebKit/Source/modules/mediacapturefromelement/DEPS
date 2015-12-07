@@ -1,0 +1,9 @@
+include_rules = [
+    "+core",
+    "-modules",
+    "+modules/mediacapturefromelement",
+    "+modules/mediastream",
+    "+platform",
+    "-web",
+    "+wtf",
+]

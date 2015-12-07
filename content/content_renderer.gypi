@@ -629,6 +629,8 @@
       'renderer/media/audio_repetition_detector.h',
       'renderer/media/audio_track_recorder.cc',
       'renderer/media/audio_track_recorder.h',
+      'renderer/media/canvas_capture_handler.cc',
+      'renderer/media/canvas_capture_handler.h',
       'renderer/media/media_recorder_handler.cc',
       'renderer/media/media_recorder_handler.h',
       'renderer/media/media_stream.cc',

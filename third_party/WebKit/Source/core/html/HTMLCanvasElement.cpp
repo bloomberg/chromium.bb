@@ -283,6 +283,8 @@ void HTMLCanvasElement::didDraw(const FloatRect& rect)
 
 void HTMLCanvasElement::didFinalizeFrame()
 {
+    notifyListenersCanvasChanged();
+
     if (m_dirtyRect.isEmpty())
         return;
 
@@ -393,11 +395,39 @@ bool HTMLCanvasElement::paintsIntoCanvasBuffer() const
 
     if (!m_context->isAccelerated())
         return true;
-
     if (layoutBox() && layoutBox()->hasAcceleratedCompositing())
         return false;
 
     return true;
+}
+
+void HTMLCanvasElement::notifyListenersCanvasChanged()
+{
+    if (!originClean()) {
+        m_listeners.clear();
+        return;
+    }
+
+    bool listenerNeedsNewFrameCapture = false;
+    for (const CanvasDrawListener* listener : m_listeners) {
+        if (listener->needsNewFrame()) {
+            listenerNeedsNewFrameCapture = true;
+        }
+    }
+
+    if (listenerNeedsNewFrameCapture) {
+        SourceImageStatus status;
+        RefPtr<Image> sourceImage = getSourceImageForCanvas(&status, PreferNoAcceleration);
+        if (status != NormalSourceImageStatus)
+            return;
+        RefPtr<SkImage> image = sourceImage->imageForCurrentFrame();
+        for (CanvasDrawListener* listener : m_listeners) {
+            if (listener->needsNewFrame()) {
+                listener->sendNewFrame(image);
+            }
+        }
+    }
+
 }
 
 void HTMLCanvasElement::paint(GraphicsContext* context, const LayoutRect& r)
@@ -564,6 +594,16 @@ void HTMLCanvasElement::toBlob(FileCallback* callback, const String& mimeType, c
 
     // TODO(xlai): Remove idle-periods version of implementation completely, http://crbug.com/564218
     asyncCreatorRef->scheduleAsyncBlobCreation(false, quality);
+}
+
+void HTMLCanvasElement::addListener(CanvasDrawListener* listener)
+{
+    m_listeners.add(listener);
+}
+
+void HTMLCanvasElement::removeListener(CanvasDrawListener* listener)
+{
+    m_listeners.remove(listener);
 }
 
 SecurityOrigin* HTMLCanvasElement::securityOrigin() const
@@ -741,6 +781,7 @@ void HTMLCanvasElement::notifySurfaceInvalid()
 
 DEFINE_TRACE(HTMLCanvasElement)
 {
+    visitor->trace(m_listeners);
     visitor->trace(m_context);
     DocumentVisibilityObserver::trace(visitor);
     HTMLElement::trace(visitor);

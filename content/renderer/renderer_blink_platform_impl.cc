@@ -58,6 +58,7 @@
 #include "content/renderer/dom_storage/webstoragenamespace_impl.h"
 #include "content/renderer/gamepad_shared_memory_reader.h"
 #include "content/renderer/media/audio_decoder.h"
+#include "content/renderer/media/canvas_capture_handler.h"
 #include "content/renderer/media/media_recorder_handler.h"
 #include "content/renderer/media/renderer_webaudiodevice_impl.h"
 #include "content/renderer/media/renderer_webmidiaccessor_impl.h"
@@ -138,6 +139,7 @@
 using blink::Platform;
 using blink::WebAudioDevice;
 using blink::WebBlobRegistry;
+using blink::WebCanvasCaptureHandler;
 using blink::WebDatabaseObserver;
 using blink::WebFileInfo;
 using blink::WebFileSystem;
@@ -146,12 +148,14 @@ using blink::WebGamepads;
 using blink::WebIDBFactory;
 using blink::WebMIDIAccessor;
 using blink::WebMediaRecorderHandler;
+using blink::WebMediaStream;
 using blink::WebMediaStreamCenter;
 using blink::WebMediaStreamCenterClient;
 using blink::WebMimeRegistry;
 using blink::WebRTCPeerConnectionHandler;
 using blink::WebRTCPeerConnectionHandlerClient;
 using blink::WebStorageNamespace;
+using blink::WebSize;
 using blink::WebString;
 using blink::WebURL;
 using blink::WebVector;
@@ -933,6 +937,19 @@ bool RendererBlinkPlatformImpl::SetSandboxEnabledForTesting(bool enable) {
   bool was_enabled = g_sandbox_enabled;
   g_sandbox_enabled = enable;
   return was_enabled;
+}
+
+//------------------------------------------------------------------------------
+
+WebCanvasCaptureHandler* RendererBlinkPlatformImpl::createCanvasCaptureHandler(
+    const WebSize& size,
+    double frame_rate,
+    WebMediaStream* stream) {
+#if defined(ENABLE_WEBRTC)
+  return new CanvasCaptureHandler(size, frame_rate, stream);
+#else
+  return nullptr;
+#endif  // defined(ENABLE_WEBRTC)
 }
 
 //------------------------------------------------------------------------------

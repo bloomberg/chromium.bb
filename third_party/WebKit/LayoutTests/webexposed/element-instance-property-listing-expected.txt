@@ -381,6 +381,7 @@ html element button
     property value
     property willValidate
 html element canvas
+    property captureStream
     property getContext
     property height
     property toBlob
