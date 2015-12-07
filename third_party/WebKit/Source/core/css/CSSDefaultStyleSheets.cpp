@@ -68,7 +68,7 @@ static PassRefPtrWillBeRawPtr<StyleSheetContents> parseUASheet(const String& str
     sheet->parseString(str);
     // User Agent stylesheets are parsed once for the lifetime of the renderer
     // process and are intentionally leaked.
-    WTF_ANNOTATE_LEAKING_OBJECT_PTR(sheet.get());
+    LEAK_SANITIZER_IGNORE_OBJECT(sheet.get());
     return sheet.release();
 }
 
