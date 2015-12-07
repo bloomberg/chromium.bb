@@ -47,9 +47,11 @@ class BASE_EXPORT StackFrameDeduplicator : public ConvertableToTraceFormat {
 
   StackFrameDeduplicator();
 
-  // Inserts a backtrace and returns the index of its leaf node in |frames_|.
+  // Inserts a backtrace where |beginFrame| is a pointer to the bottom frame
+  // (e.g. main) and |endFrame| is a pointer past the top frame (most recently
+  // called function), and returns the index of its leaf node in |frames_|.
   // Returns -1 if the backtrace is empty.
-  int Insert(const Backtrace& bt);
+  int Insert(const StackFrame* beginFrame, const StackFrame* endFrame);
 
   // Iterators over the frame nodes in the call tree.
   ConstIterator begin() const { return frames_.begin(); }

@@ -83,7 +83,9 @@ scoped_refptr<TracedValue> HeapDumpWriter::WriteHeapDump() {
     traced_value_->BeginDictionary();
     // Insert a forward reference to the backtrace that will be written to the
     // |stackFrames| dictionary later on.
-    WriteStackFrameIndex(stack_frame_deduplicator_->Insert(entry.first));
+    int idx = stack_frame_deduplicator_->Insert(std::begin(entry.first.frames),
+                                                std::end(entry.first.frames));
+    WriteStackFrameIndex(idx);
     WriteSize(entry.second);
     traced_value_->EndDictionary();
   }

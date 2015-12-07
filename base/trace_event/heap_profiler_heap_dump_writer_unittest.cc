@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include <stdlib.h>
+
+#include <iterator>
 #include <string>
 
 #include "base/json/json_reader.h"
@@ -109,10 +111,12 @@ TEST(HeapDumpWriterTest, BacktraceTypeNameTable) {
 
   // Get the indices of the backtraces and types by adding them again to the
   // deduplicator. Because they were added before, the same number is returned.
+  StackFrame bt0[] = {kRendererMain, kInitialize};
+  StackFrame bt1[] = {kBrowserMain, kCreateWidget};
   int bt_renderer_main_initialize =
-      sf_deduplicator->Insert({{kRendererMain, kInitialize}});
+      sf_deduplicator->Insert(std::begin(bt0), std::end(bt0));
   int bt_browser_main_create_widget =
-      sf_deduplicator->Insert({{kBrowserMain, kCreateWidget}});
+      sf_deduplicator->Insert(std::begin(bt1), std::end(bt1));
   int type_id_int = tn_deduplicator->Insert(kInt);
   int type_id_bool = tn_deduplicator->Insert(kBool);
   int type_id_string = tn_deduplicator->Insert(kString);
