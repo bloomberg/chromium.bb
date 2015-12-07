@@ -459,6 +459,7 @@ class SSLUITest
     ui_test_utils::NavigateToURL(browser, https_server_expired_.GetURL("/"));
 
     WebContents* tab = browser->tab_strip_model()->GetActiveWebContents();
+    ASSERT_TRUE(tab != nullptr);
     CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID,
                                    AuthState::SHOWING_INTERSTITIAL);
 
@@ -466,8 +467,10 @@ class SSLUITest
         certificate_reporting_test_utils::SetUpMockSSLCertReporter(
             &run_loop, expect_report);
 
+    ASSERT_TRUE(tab->GetInterstitialPage() != nullptr);
     SSLBlockingPage* interstitial_page = static_cast<SSLBlockingPage*>(
         tab->GetInterstitialPage()->GetDelegateForTesting());
+    ASSERT_TRUE(interstitial_page != nullptr);
     interstitial_page->SetSSLCertReporterForTesting(ssl_cert_reporter.Pass());
 
     EXPECT_EQ(std::string(), GetLatestHostnameReported());
