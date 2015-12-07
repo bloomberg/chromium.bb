@@ -203,31 +203,25 @@ void V8Initializer::reportRejectedPromisesOnMainThread()
     rejectedPromisesOnMainThread().processQueue();
 }
 
-static void promiseRejectHandlerInMainThread(v8::PromiseRejectMessage data)
+static void promiseRejectHandler(v8::PromiseRejectMessage data, RejectedPromises& rejectedPromises, const String& fallbackResourceName)
 {
-    ASSERT(isMainThread());
     if (data.GetEvent() == v8::kPromiseHandlerAddedAfterReject) {
-        rejectedPromisesOnMainThread().handlerAdded(data);
+        rejectedPromises.handlerAdded(data);
         return;
     }
 
     ASSERT(data.GetEvent() == v8::kPromiseRejectWithNoHandler);
 
     v8::Local<v8::Promise> promise = data.GetPromise();
-
     v8::Isolate* isolate = promise->GetIsolate();
-    // There is no entered window during microtask callbacks from V8,
-    // thus we call toDOMWindow() instead of enteredDOMWindow().
-    LocalDOMWindow* window = currentDOMWindow(isolate);
-    if (!window || !window->isCurrentlyDisplayedInFrame())
-        return;
+    ScriptState* scriptState = ScriptState::current(isolate);
 
     v8::Local<v8::Value> exception = data.GetValue();
     if (V8DOMWrapper::isWrapper(isolate, exception)) {
         // Try to get the stack & location from a wrapped exception object (e.g. DOMException).
         ASSERT(exception->IsObject());
         v8::Local<v8::Object> obj = v8::Local<v8::Object>::Cast(exception);
-        v8::Local<v8::Value> error = V8HiddenValue::getHiddenValue(ScriptState::current(isolate), obj, V8HiddenValue::error(isolate));
+        v8::Local<v8::Value> error = V8HiddenValue::getHiddenValue(scriptState, obj, V8HiddenValue::error(isolate));
         if (!error.IsEmpty())
             exception = error;
     }
@@ -235,17 +229,21 @@ static void promiseRejectHandlerInMainThread(v8::PromiseRejectMessage data)
     int scriptId = 0;
     int lineNumber = 0;
     int columnNumber = 0;
-    String resourceName;
+    String resourceName = fallbackResourceName;
     String errorMessage;
     AccessControlStatus corsStatus = NotSharableCrossOrigin;
     RefPtrWillBeRawPtr<ScriptCallStack> callStack = nullptr;
 
     v8::Local<v8::Message> message = v8::Exception::CreateMessage(isolate, exception);
     if (!message.IsEmpty()) {
-        if (v8Call(message->GetLineNumber(isolate->GetCurrentContext()), lineNumber)
-            && v8Call(message->GetStartColumn(isolate->GetCurrentContext()), columnNumber))
+        V8StringResource<> v8ResourceName(message->GetScriptOrigin().ResourceName());
+        if (v8ResourceName.prepare())
+            resourceName = v8ResourceName;
+        scriptId = message->GetScriptOrigin().ScriptID()->Value();
+        if (v8Call(message->GetLineNumber(scriptState->context()), lineNumber)
+            && v8Call(message->GetStartColumn(scriptState->context()), columnNumber))
             ++columnNumber;
-        resourceName = extractResourceName(message, window->document());
+        // message->Get() can be empty here. https://crbug.com/450330
         errorMessage = toCoreStringWithNullCheck(message->Get());
         callStack = extractCallStack(isolate, message, &scriptId);
         if (message->IsSharedCrossOrigin())
@@ -256,8 +254,23 @@ static void promiseRejectHandlerInMainThread(v8::PromiseRejectMessage data)
     if (!messageForConsole.isEmpty())
         errorMessage = "Uncaught " + messageForConsole;
 
-    ScriptState* scriptState = ScriptState::current(isolate);
-    rejectedPromisesOnMainThread().rejectedWithNoHandler(scriptState, data, errorMessage, resourceName, scriptId, lineNumber, columnNumber, callStack, corsStatus);
+    rejectedPromises.rejectedWithNoHandler(scriptState, data, errorMessage, resourceName, scriptId, lineNumber, columnNumber, callStack, corsStatus);
+}
+
+static void promiseRejectHandlerInMainThread(v8::PromiseRejectMessage data)
+{
+    ASSERT(isMainThread());
+
+    v8::Local<v8::Promise> promise = data.GetPromise();
+
+    v8::Isolate* isolate = promise->GetIsolate();
+    // There is no entered window during microtask callbacks from V8,
+    // thus we call toDOMWindow() instead of enteredDOMWindow().
+    LocalDOMWindow* window = currentDOMWindow(isolate);
+    if (!window || !window->isCurrentlyDisplayedInFrame())
+        return;
+
+    promiseRejectHandler(data, rejectedPromisesOnMainThread(), window->document() ? window->document()->url() : String());
 }
 
 static void promiseRejectHandlerInWorker(v8::PromiseRejectMessage data)
@@ -278,34 +291,7 @@ static void promiseRejectHandlerInWorker(v8::PromiseRejectMessage data)
     WorkerScriptController* scriptController = toWorkerGlobalScope(executionContext)->script();
     ASSERT(scriptController);
 
-    if (data.GetEvent() == v8::kPromiseHandlerAddedAfterReject) {
-        scriptController->rejectedPromises()->handlerAdded(data);
-        return;
-    }
-
-    ASSERT(data.GetEvent() == v8::kPromiseRejectWithNoHandler);
-
-    int scriptId = 0;
-    int lineNumber = 0;
-    int columnNumber = 0;
-    String resourceName;
-    String errorMessage;
-    AccessControlStatus corsStatus = NotSharableCrossOrigin;
-
-    v8::Local<v8::Value> exception = data.GetValue();
-    v8::Local<v8::Message> message = v8::Exception::CreateMessage(isolate, exception);
-    if (!message.IsEmpty()) {
-        TOSTRING_VOID(V8StringResource<>, resourceName, message->GetScriptOrigin().ResourceName());
-        scriptId = message->GetScriptOrigin().ScriptID()->Value();
-        if (v8Call(message->GetLineNumber(scriptState->context()), lineNumber)
-            && v8Call(message->GetStartColumn(scriptState->context()), columnNumber))
-            ++columnNumber;
-        // message->Get() can be empty here. https://crbug.com/450330
-        errorMessage = toCoreStringWithNullCheck(message->Get());
-        if (message->IsSharedCrossOrigin())
-            corsStatus = SharableCrossOrigin;
-    }
-    scriptController->rejectedPromises()->rejectedWithNoHandler(scriptState, data, errorMessage, resourceName, scriptId, lineNumber, columnNumber, nullptr, corsStatus);
+    promiseRejectHandler(data, *scriptController->rejectedPromises(), String());
 }
 
 static void failedAccessCheckCallbackInMainThread(v8::Local<v8::Object> host, v8::AccessType type, v8::Local<v8::Value> data)
