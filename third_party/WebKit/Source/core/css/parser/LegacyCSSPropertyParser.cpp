@@ -568,21 +568,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         validPrimitive = validUnit(value, FInteger);
         break;
 
-    case CSSPropertyWebkitPerspectiveOriginX:
-    case CSSPropertyWebkitTransformOriginX:
-        parsedValue = parseFillPositionX(m_valueList);
-        if (parsedValue)
-            m_valueList->next();
-        break;
-    case CSSPropertyWebkitPerspectiveOriginY:
-    case CSSPropertyWebkitTransformOriginY:
-        parsedValue = parseFillPositionY(m_valueList);
-        if (parsedValue)
-            m_valueList->next();
-        break;
-    case CSSPropertyWebkitTransformOriginZ:
-        validPrimitive = validUnit(value, FLength);
-        break;
     case CSSPropertyPerspective:
         if (id == CSSValueNone) {
             validPrimitive = true;
@@ -765,6 +750,11 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         break;
 
     // These were not accepted by the new path above so we should return false.
+    case CSSPropertyWebkitPerspectiveOriginX:
+    case CSSPropertyWebkitTransformOriginX:
+    case CSSPropertyWebkitPerspectiveOriginY:
+    case CSSPropertyWebkitTransformOriginY:
+    case CSSPropertyWebkitTransformOriginZ:
     case CSSPropertyWebkitMarginCollapse:
     case CSSPropertyWillChange:
     case CSSPropertyPage:

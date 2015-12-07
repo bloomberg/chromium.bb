@@ -2062,6 +2062,36 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeTransform(CSSParserTokenRange& ra
     return list.release();
 }
 
+template <CSSValueID start, CSSValueID end>
+static PassRefPtrWillBeRawPtr<CSSValue> consumePositionLonghand(CSSParserTokenRange& range, CSSParserMode cssParserMode)
+{
+    if (range.peek().type() == IdentToken) {
+        CSSValueID id = range.peek().id();
+        int percent;
+        if (id == start)
+            percent = 0;
+        else if (id == CSSValueCenter)
+            percent = 50;
+        else if (id == end)
+            percent = 100;
+        else
+            return nullptr;
+        range.consumeIncludingWhitespace();
+        return cssValuePool().createValue(percent, CSSPrimitiveValue::UnitType::Percentage);
+    }
+    return consumeLengthOrPercent(range, cssParserMode, ValueRangeAll, UnitlessQuirk::Forbid);
+}
+
+static PassRefPtrWillBeRawPtr<CSSValue> consumePositionX(CSSParserTokenRange& range, CSSParserMode cssParserMode)
+{
+    return consumePositionLonghand<CSSValueLeft, CSSValueRight>(range, cssParserMode);
+}
+
+static PassRefPtrWillBeRawPtr<CSSValue> consumePositionY(CSSParserTokenRange& range, CSSParserMode cssParserMode)
+{
+    return consumePositionLonghand<CSSValueTop, CSSValueBottom>(range, cssParserMode);
+}
+
 static PassRefPtrWillBeRawPtr<CSSValue> consumePaint(CSSParserTokenRange& range, CSSParserContext context)
 {
     if (range.peek().id() == CSSValueNone)
@@ -2440,6 +2470,14 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
         return consumeLineWidth(m_range, m_context.mode());
     case CSSPropertyTransform:
         return consumeTransform(m_range, m_context.mode(), unresolvedProperty == CSSPropertyAliasWebkitTransform);
+    case CSSPropertyWebkitTransformOriginX:
+    case CSSPropertyWebkitPerspectiveOriginX:
+        return consumePositionX(m_range, m_context.mode());
+    case CSSPropertyWebkitTransformOriginY:
+    case CSSPropertyWebkitPerspectiveOriginY:
+        return consumePositionY(m_range, m_context.mode());
+    case CSSPropertyWebkitTransformOriginZ:
+        return consumeLength(m_range, m_context.mode(), ValueRangeAll);
     case CSSPropertyFill:
     case CSSPropertyStroke:
         return consumePaint(m_range, m_context);
