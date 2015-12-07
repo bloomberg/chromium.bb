@@ -76,7 +76,6 @@ void ProgrammaticScrollAnimator::animateToOffset(FloatPoint offset)
         WebCompositorAnimationCurve::TimingFunctionTypeEaseInOut,
         WebScrollOffsetAnimationCurve::ScrollDurationDeltaBased));
 
-    m_animationCurve->setInitialValue(FloatPoint(m_scrollableArea->scrollPosition()));
     m_scrollableArea->registerForAnimation();
     if (!m_scrollableArea->scheduleAnimation()) {
         resetAnimationState();
@@ -201,6 +200,7 @@ void ProgrammaticScrollAnimator::updateCompositorAnimations()
 
         if (!sentToCompositor) {
             m_runState = RunState::RunningOnMainThread;
+            m_animationCurve->setInitialValue(FloatPoint(m_scrollableArea->scrollPosition()));
             if (!m_scrollableArea->scheduleAnimation()) {
                 notifyPositionChanged(IntPoint(m_targetOffset.x(), m_targetOffset.y()));
                 resetAnimationState();

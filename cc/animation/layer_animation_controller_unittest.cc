@@ -67,6 +67,62 @@ TEST(LayerAnimationControllerTest, SyncNewAnimation) {
             controller_impl->GetAnimationById(animation_id)->run_state());
 }
 
+TEST(LayerAnimationControllerTest,
+     SyncScrollOffsetAnimationRespectsHasSetInitialValue) {
+  FakeLayerAnimationValueObserver dummy_impl;
+  FakeLayerAnimationValueProvider dummy_provider_impl;
+  scoped_refptr<LayerAnimationController> controller_impl(
+      LayerAnimationController::Create(0));
+  controller_impl->AddValueObserver(&dummy_impl);
+  controller_impl->set_value_provider(&dummy_provider_impl);
+  FakeLayerAnimationValueObserver dummy;
+  FakeLayerAnimationValueProvider dummy_provider;
+  scoped_refptr<LayerAnimationController> controller(
+      LayerAnimationController::Create(0));
+  controller->AddValueObserver(&dummy);
+  controller->set_value_provider(&dummy_provider);
+
+  EXPECT_FALSE(controller_impl->GetAnimation(Animation::SCROLL_OFFSET));
+
+  EXPECT_FALSE(controller->needs_to_start_animations_for_testing());
+  EXPECT_FALSE(controller_impl->needs_to_start_animations_for_testing());
+
+  gfx::ScrollOffset initial_value(100.f, 300.f);
+  gfx::ScrollOffset provider_initial_value(150.f, 300.f);
+  gfx::ScrollOffset target_value(300.f, 200.f);
+
+  dummy_provider_impl.set_scroll_offset(provider_initial_value);
+
+  // Animation with initial value set.
+  scoped_ptr<ScrollOffsetAnimationCurve> curve_fixed(
+      ScrollOffsetAnimationCurve::Create(target_value,
+                                         EaseInOutTimingFunction::Create()));
+  curve_fixed->SetInitialValue(initial_value);
+  scoped_ptr<Animation> animation_fixed(
+      Animation::Create(std::move(curve_fixed), 1 /* animation_id */, 0,
+                        Animation::SCROLL_OFFSET));
+  controller->AddAnimation(std::move(animation_fixed));
+  controller->PushAnimationUpdatesTo(controller_impl.get());
+  EXPECT_VECTOR2DF_EQ(initial_value, controller_impl->GetAnimationById(1)
+                                         ->curve()
+                                         ->ToScrollOffsetAnimationCurve()
+                                         ->GetValue(base::TimeDelta()));
+
+  // Animation without initial value set.
+  scoped_ptr<ScrollOffsetAnimationCurve> curve(
+      ScrollOffsetAnimationCurve::Create(target_value,
+                                         EaseInOutTimingFunction::Create()));
+  scoped_ptr<Animation> animation(Animation::Create(
+      std::move(curve), 2 /* animation id */, 0, Animation::SCROLL_OFFSET));
+  controller->AddAnimation(std::move(animation));
+  controller->PushAnimationUpdatesTo(controller_impl.get());
+  EXPECT_VECTOR2DF_EQ(provider_initial_value,
+                      controller_impl->GetAnimationById(2)
+                          ->curve()
+                          ->ToScrollOffsetAnimationCurve()
+                          ->GetValue(base::TimeDelta()));
+}
+
 // If an animation is started on the impl thread before it is ticked on the main
 // thread, we must be sure to respect the synchronized start time.
 TEST(LayerAnimationControllerTest, DoNotClobberStartTimes) {

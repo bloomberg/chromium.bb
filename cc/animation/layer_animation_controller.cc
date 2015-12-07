@@ -686,8 +686,11 @@ void LayerAnimationController::PushNewAnimationsToImplThread(
     if (controller_impl->GetAnimationById(animations_[i]->id()))
       continue;
 
-    // Scroll animations always start at the current scroll offset.
-    if (animations_[i]->target_property() == Animation::SCROLL_OFFSET) {
+    if (animations_[i]->target_property() == Animation::SCROLL_OFFSET &&
+        !animations_[i]
+             ->curve()
+             ->ToScrollOffsetAnimationCurve()
+             ->HasSetInitialValue()) {
       gfx::ScrollOffset current_scroll_offset;
       if (controller_impl->value_provider_) {
         current_scroll_offset =

@@ -69,15 +69,21 @@ ScrollOffsetAnimationCurve::ScrollOffsetAnimationCurve(
     DurationBehavior duration_behavior)
     : target_value_(target_value),
       timing_function_(std::move(timing_function)),
-      duration_behavior_(duration_behavior) {}
+      duration_behavior_(duration_behavior),
+      has_set_initial_value_(false) {}
 
 ScrollOffsetAnimationCurve::~ScrollOffsetAnimationCurve() {}
 
 void ScrollOffsetAnimationCurve::SetInitialValue(
     const gfx::ScrollOffset& initial_value) {
   initial_value_ = initial_value;
+  has_set_initial_value_ = true;
   total_animation_duration_ = SegmentDuration(
       target_value_.DeltaFrom(initial_value_), duration_behavior_);
+}
+
+bool ScrollOffsetAnimationCurve::HasSetInitialValue() const {
+  return has_set_initial_value_;
 }
 
 gfx::ScrollOffset ScrollOffsetAnimationCurve::GetValue(
@@ -115,6 +121,7 @@ scoped_ptr<AnimationCurve> ScrollOffsetAnimationCurve::Clone() const {
   curve_clone->initial_value_ = initial_value_;
   curve_clone->total_animation_duration_ = total_animation_duration_;
   curve_clone->last_retarget_ = last_retarget_;
+  curve_clone->has_set_initial_value_ = has_set_initial_value_;
   return std::move(curve_clone);
 }
 
