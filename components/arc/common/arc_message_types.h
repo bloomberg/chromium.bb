@@ -39,6 +39,21 @@ enum class InstanceBootPhase {
   LAST = BOOT_COMPLETED
 };
 
+// Enumerates the types of wake lock the ARC instance can request from the
+// host.
+enum class DisplayWakeLockType {
+  // Does not allow the screen to dim, turn off, or lock; prevents
+  // idle suspend.
+  BRIGHT = 0,
+
+  // Allows dimming the screen, but prevents it from turning off or locking.
+  // Also prevents idle suspend.
+  DIM = 1,
+
+  // Last enum entry for IPC_ENUM_TRAITS
+  LAST = DIM
+};
+
 // Duplicates ui::ScaleFactor enum in order to be accessible on Android side.
 enum ScaleFactor : int {
   SCALE_FACTOR_NONE = 0,

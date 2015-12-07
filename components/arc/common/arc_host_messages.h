@@ -17,6 +17,8 @@
 #define IPC_MESSAGE_START ArcInstanceHostMsgStart
 
 IPC_ENUM_TRAITS_MAX_VALUE(arc::InstanceBootPhase, arc::InstanceBootPhase::LAST)
+IPC_ENUM_TRAITS_MAX_VALUE(arc::DisplayWakeLockType,
+                          arc::DisplayWakeLockType::LAST)
 
 IPC_MESSAGE_CONTROL1(ArcInstanceHostMsg_InstanceBootPhase,
                      arc::InstanceBootPhase)
@@ -49,3 +51,9 @@ IPC_MESSAGE_CONTROL1(ArcInstanceHostMsg_NotificationPosted,
 // |key| is the identifier of the notification.
 IPC_MESSAGE_CONTROL1(ArcInstanceHostMsg_NotificationRemoved,
                      std::string /* key */);
+
+// Acquire and release wake locks on the host side.
+IPC_MESSAGE_CONTROL1(ArcInstanceHostMsg_AcquireDisplayWakeLock,
+                     arc::DisplayWakeLockType /* type */)
+IPC_MESSAGE_CONTROL1(ArcInstanceHostMsg_ReleaseDisplayWakeLock,
+                     arc::DisplayWakeLockType /* type */)
