@@ -162,13 +162,6 @@ bool CustomElementConstructorBuilder::createConstructor(Document* document, Cust
     if (!prototypeIsValid(definition->descriptor().type(), exceptionState))
         return false;
 
-    v8::Local<v8::FunctionTemplate> constructorTemplate = v8::FunctionTemplate::New(isolate);
-    constructorTemplate->SetCallHandler(constructCustomElement);
-    if (!constructorTemplate->GetFunction(context).ToLocal(&m_constructor)) {
-        CustomElementException::throwException(CustomElementException::ContextDestroyedRegisteringDefinition, definition->descriptor().type(), exceptionState);
-        return false;
-    }
-
     const CustomElementDescriptor& descriptor = definition->descriptor();
 
     v8::Local<v8::String> v8TagName = v8String(isolate, descriptor.localName());
@@ -178,12 +171,20 @@ bool CustomElementConstructorBuilder::createConstructor(Document* document, Cust
     else
         v8Type = v8::Null(isolate);
 
-    m_constructor->SetName(v8Type->IsNull() ? v8TagName : v8Type.As<v8::String>());
+    v8::Local<v8::Object> data = v8::Object::New(isolate);
+    V8HiddenValue::setHiddenValue(m_scriptState.get(), data, V8HiddenValue::customElementDocument(isolate), toV8(document, context->Global(), isolate));
+    V8HiddenValue::setHiddenValue(m_scriptState.get(), data, V8HiddenValue::customElementNamespaceURI(isolate), v8String(isolate, descriptor.namespaceURI()));
+    V8HiddenValue::setHiddenValue(m_scriptState.get(), data, V8HiddenValue::customElementTagName(isolate), v8TagName);
+    V8HiddenValue::setHiddenValue(m_scriptState.get(), data, V8HiddenValue::customElementType(isolate), v8Type);
 
-    V8HiddenValue::setHiddenValue(m_scriptState.get(), m_constructor, V8HiddenValue::customElementDocument(isolate), toV8(document, context->Global(), isolate));
-    V8HiddenValue::setHiddenValue(m_scriptState.get(), m_constructor, V8HiddenValue::customElementNamespaceURI(isolate), v8String(isolate, descriptor.namespaceURI()));
-    V8HiddenValue::setHiddenValue(m_scriptState.get(), m_constructor, V8HiddenValue::customElementTagName(isolate), v8TagName);
-    V8HiddenValue::setHiddenValue(m_scriptState.get(), m_constructor, V8HiddenValue::customElementType(isolate), v8Type);
+    v8::Local<v8::FunctionTemplate> constructorTemplate = v8::FunctionTemplate::New(isolate);
+    constructorTemplate->SetCallHandler(constructCustomElement, data);
+    if (!constructorTemplate->GetFunction(context).ToLocal(&m_constructor)) {
+        CustomElementException::throwException(CustomElementException::ContextDestroyedRegisteringDefinition, definition->descriptor().type(), exceptionState);
+        return false;
+    }
+
+    m_constructor->SetName(v8Type->IsNull() ? v8TagName : v8Type.As<v8::String>());
 
     v8::Local<v8::String> prototypeKey = v8String(isolate, "prototype");
     if (!v8CallBoolean(m_constructor->HasOwnProperty(context, prototypeKey)))
@@ -273,10 +274,11 @@ static void constructCustomElement(const v8::FunctionCallbackInfo<v8::Value>& in
     }
 
     ScriptState* scriptState = ScriptState::current(isolate);
-    Document* document = V8Document::toImpl(V8HiddenValue::getHiddenValue(scriptState, info.Callee(), V8HiddenValue::customElementDocument(isolate)).As<v8::Object>());
-    TOSTRING_VOID(V8StringResource<>, namespaceURI, V8HiddenValue::getHiddenValue(scriptState, info.Callee(), V8HiddenValue::customElementNamespaceURI(isolate)));
-    TOSTRING_VOID(V8StringResource<>, tagName, V8HiddenValue::getHiddenValue(scriptState, info.Callee(), V8HiddenValue::customElementTagName(isolate)));
-    v8::Local<v8::Value> maybeType = V8HiddenValue::getHiddenValue(scriptState, info.Callee(), V8HiddenValue::customElementType(isolate));
+    v8::Local<v8::Object> data = v8::Local<v8::Object>::Cast(info.Data());
+    Document* document = V8Document::toImpl(V8HiddenValue::getHiddenValue(scriptState, data, V8HiddenValue::customElementDocument(isolate)).As<v8::Object>());
+    TOSTRING_VOID(V8StringResource<>, namespaceURI, V8HiddenValue::getHiddenValue(scriptState, data, V8HiddenValue::customElementNamespaceURI(isolate)));
+    TOSTRING_VOID(V8StringResource<>, tagName, V8HiddenValue::getHiddenValue(scriptState, data, V8HiddenValue::customElementTagName(isolate)));
+    v8::Local<v8::Value> maybeType = V8HiddenValue::getHiddenValue(scriptState, data, V8HiddenValue::customElementType(isolate));
     TOSTRING_VOID(V8StringResource<>, type, maybeType);
 
     ExceptionState exceptionState(ExceptionState::ConstructionContext, "CustomElement", info.Holder(), info.GetIsolate());
