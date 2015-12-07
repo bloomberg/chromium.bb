@@ -4,6 +4,7 @@
 
 #include "components/plugins/renderer/loadable_plugin_placeholder.h"
 
+#include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/json/string_escape.h"
@@ -316,20 +317,18 @@ void LoadablePluginPlaceholder::RecheckSizeAndMaybeUnthrottle() {
   DCHECK(!in_size_recheck_);
   DCHECK(finished_loading_);
 
+  base::AutoReset<bool> recheck_scope(&in_size_recheck_, true);
+
   if (!plugin())
     return;
-
-  in_size_recheck_ = true;
 
   gfx::Rect old_rect = unobscured_rect_;
 
   // Re-check the size in case the reported size was incorrect.
   plugin()->container()->reportGeometry();
 
-  if (old_rect == unobscured_rect_) {
-    in_size_recheck_ = false;
+  if (old_rect == unobscured_rect_)
     return;
-  }
 
   float zoom_factor = plugin()->container()->pageZoomFactor();
   int width = roundf(unobscured_rect_.width() / zoom_factor);
@@ -363,8 +362,6 @@ void LoadablePluginPlaceholder::RecheckSizeAndMaybeUnthrottle() {
 
     heuristic_run_before_ = true;
   }
-
-  in_size_recheck_ = false;
 }
 
 }  // namespace plugins
