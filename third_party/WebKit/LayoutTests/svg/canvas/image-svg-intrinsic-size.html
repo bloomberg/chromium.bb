@@ -8,12 +8,15 @@
       image.src = "data:image/svg+xml," +
                   "<svg xmlns='http://www.w3.org/2000/svg' width='200' viewBox='0 0 1 1'>" +
                   "<rect width='1' height='1' fill='green'/></svg>";
+      image.onload = function() {
+          var canvas = document.querySelector('canvas');
+          var ctx = canvas.getContext("2d");
+          ctx.drawImage(document.querySelector('img'), 0, 0);
+          document.body.removeChild(document.querySelector('img'));
+      };
       return image;
   }
   document.body.appendChild(createSVGImage());
   document.body.offsetTop; // Force layout
-  var canvas = document.querySelector('canvas');
-  var ctx = canvas.getContext("2d");
-  ctx.drawImage(document.querySelector('img'), 0, 0);
-  document.body.removeChild(document.querySelector('img'));
+
 </script>

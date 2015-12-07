@@ -355,7 +355,7 @@ static unsigned avoidDownloadIfHigherDensityResourceIsInCache(Vector<ImageCandid
         return winner;
     for (unsigned i = imageCandidates.size() - 1; i > winner; --i) {
         KURL url = document->completeURL(stripLeadingAndTrailingHTMLSpaces(imageCandidates[i]->url()));
-        if (memoryCache()->resourceForURL(url, document->fetcher()->getCacheIdentifier()))
+        if (memoryCache()->resourceForURL(url, document->fetcher()->getCacheIdentifier()) || url.protocolIsData())
             return i;
     }
     return winner;
