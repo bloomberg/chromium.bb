@@ -40,7 +40,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "google_apis/gaia/gaia_auth_util.h"
-#include "google_apis/gaia/gaia_switches.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -58,7 +57,6 @@ const char kAuthIframeParentOrigin[] =
 
 const char kRestrictiveProxyURL[] = "https://www.google.com/generate_204";
 
-const char kGaiaSandboxUrlSwitch[] = "gaia-sandbox-url";
 const char kEndpointGen[] = "1.0";
 
 std::string GetChromeType() {
@@ -237,20 +235,7 @@ void GaiaScreenHandler::LoadGaiaWithVersion(
     params.SetString("emailDomain", email_domain);
   }
 
-  GURL gaia_url;
-  if (!command_line->HasSwitch(::switches::kGaiaUrl) &&
-      command_line->HasSwitch(kGaiaSandboxUrlSwitch)) {
-    // We can't use switch --gaia-url in this case cause we need get
-    // auth_code from staging gaia and make all the other auths against prod
-    // gaia so user could use all the google services.
-    // Default to production Gaia for MM unless --gaia-url or --gaia-sandbox-url
-    // is specified.
-    // TODO(dpolukhin): crbug.com/462204
-    gaia_url = GURL(command_line->GetSwitchValueASCII(kGaiaSandboxUrlSwitch));
-  } else {
-    gaia_url = GaiaUrls::GetInstance()->gaia_url();
-  }
-  params.SetString("gaiaUrl", gaia_url.spec());
+  params.SetString("gaiaUrl", GaiaUrls::GetInstance()->gaia_url().spec());
 
   if (use_easy_bootstrap_) {
     params.SetBoolean("useEafe", true);
