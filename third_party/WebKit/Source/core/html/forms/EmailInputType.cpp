@@ -141,7 +141,7 @@ bool EmailInputType::isValidEmailAddress(const String& address)
     if (!addressLength)
         return false;
 
-    WTF_ANNOTATE_SCOPED_MEMORY_LEAK;
+    LEAK_SANITIZER_DISABLED_SCOPE;
     DEFINE_STATIC_LOCAL(const ScriptRegexp, regExp, (emailPattern, TextCaseInsensitive));
 
     int matchLength;
