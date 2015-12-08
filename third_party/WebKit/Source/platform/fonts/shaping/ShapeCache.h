@@ -162,6 +162,18 @@ public:
         return m_singleCharMap.size() + m_shortStringMap.size();
     }
 
+    size_t byteSize() const
+    {
+        size_t selfByteSize = 0;
+        for (auto cacheEntry : m_singleCharMap) {
+            selfByteSize += cacheEntry.value.m_shapeResult->byteSize();
+        }
+        for (auto cacheEntry : m_shortStringMap) {
+            selfByteSize += cacheEntry.value.m_shapeResult->byteSize();
+        }
+        return selfByteSize;
+    }
+
     WeakPtr<ShapeCache> weakPtr()
     {
         return m_weakFactory.createWeakPtr();

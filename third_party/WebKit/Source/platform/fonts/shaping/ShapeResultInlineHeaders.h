@@ -83,6 +83,12 @@ public:
         return m_startIndex + m_glyphData[i].characterIndex;
     }
 
+    // For memory reporting.
+    size_t byteSize() const
+    {
+        return sizeof(this) + m_glyphData.size() * sizeof(HarfBuzzRunGlyphData);
+    }
+
     RefPtr<SimpleFontData> m_fontData;
     hb_direction_t m_direction;
     hb_script_t m_script;

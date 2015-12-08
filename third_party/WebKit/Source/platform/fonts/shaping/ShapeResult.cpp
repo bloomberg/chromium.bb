@@ -416,6 +416,15 @@ FloatRect ShapeResult::selectionRect(Vector<RefPtr<ShapeResult>>& results,
     return FloatRect(point.x() + toX, point.y(), fromX - toX, height);
 }
 
+size_t ShapeResult::byteSize()
+{
+    size_t selfByteSize = sizeof(this);
+    for (unsigned i = 0; i < m_runs.size(); ++i) {
+        selfByteSize += m_runs[i]->byteSize();
+    }
+    return selfByteSize;
+}
+
 int ShapeResult::offsetForPosition(Vector<RefPtr<ShapeResult>>& results,
     const TextRun& run, float targetX)
 {

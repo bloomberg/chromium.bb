@@ -45,6 +45,8 @@
 #include "platform/fonts/opentype/OpenTypeVerticalData.h"
 #include "platform/fonts/shaping/ShapeCache.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebMemoryAllocatorDump.h"
+#include "public/platform/WebProcessMemoryDump.h"
 #include "wtf/HashMap.h"
 #include "wtf/ListHashSet.h"
 #include "wtf/StdLibExtras.h"
@@ -328,5 +330,37 @@ void FontCache::invalidate()
 
     purge(ForcePurge);
 }
+
+void FontCache::dumpFontPlatformDataCache(WebProcessMemoryDump* memoryDump)
+{
+    ASSERT(isMainThread());
+    if (!gFontPlatformDataCache)
+        return;
+    String dumpName = String("font_caches/font_platform_data_cache");
+    WebMemoryAllocatorDump* dump = memoryDump->createMemoryAllocatorDump(dumpName);
+    size_t fontPlatformDataObjectsSize = gFontPlatformDataCache->size() * sizeof(FontPlatformData);
+    dump->addScalar("size", "bytes", fontPlatformDataObjectsSize);
+    memoryDump->addSuballocation(dump->guid(), String(WTF::Partitions::kAllocatedObjectPoolName));
+}
+
+void FontCache::dumpShapeResultCache(WebProcessMemoryDump* memoryDump)
+{
+    ASSERT(isMainThread());
+    if (!gFallbackListShaperCache) {
+        return;
+    }
+    String dumpName = String("font_caches/shape_caches");
+    WebMemoryAllocatorDump* dump = memoryDump->createMemoryAllocatorDump(dumpName);
+    size_t shapeResultCacheSize = 0;
+    FallbackListShaperCache::iterator iter;
+    for (iter = gFallbackListShaperCache->begin();
+        iter != gFallbackListShaperCache->end();
+        ++iter) {
+        shapeResultCacheSize += iter->value->byteSize();
+    }
+    dump->addScalar("size", "bytes", shapeResultCacheSize);
+    memoryDump->addSuballocation(dump->guid(), String(WTF::Partitions::kAllocatedObjectPoolName));
+}
+
 
 } // namespace blink

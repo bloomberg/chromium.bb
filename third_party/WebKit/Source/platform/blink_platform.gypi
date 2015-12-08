@@ -369,6 +369,8 @@
       'fonts/FontCache.h',
       'fonts/FontCacheClient.h',
       'fonts/FontCacheKey.h',
+      'fonts/FontCacheMemoryDumpProvider.h',
+      'fonts/FontCacheMemoryDumpProvider.cpp',
       'fonts/FontCustomPlatformData.h',
       'fonts/FontCustomPlatformData.cpp',
       'fonts/FontData.cpp',

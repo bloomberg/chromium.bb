@@ -75,6 +75,9 @@ public:
         TextDirection, float totalWidth, const FloatPoint&, int height,
         unsigned from, unsigned to);
 
+    // For memory reporting.
+    size_t byteSize();
+
 protected:
     struct RunInfo;
 #if COMPILER(MSVC)

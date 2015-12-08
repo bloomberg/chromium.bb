@@ -60,6 +60,7 @@ class FontDescription;
 class OpenTypeVerticalData;
 class ShapeCache;
 class SimpleFontData;
+class WebProcessMemoryDump;
 
 enum ShouldRetain { Retain, DoNotRetain };
 enum PurgeSeverity { PurgeIfNeeded, ForcePurge };
@@ -141,6 +142,10 @@ public:
     PassRefPtr<SimpleFontData> fontDataFromFontPlatformData(const FontPlatformData*, ShouldRetain = Retain);
 
     void invalidateShapeCache();
+
+    // Memory reporting
+    void dumpFontPlatformDataCache(WebProcessMemoryDump*);
+    void dumpShapeResultCache(WebProcessMemoryDump*);
 
 private:
     FontCache();

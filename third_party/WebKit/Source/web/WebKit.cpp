@@ -47,6 +47,7 @@
 #include "platform/LayoutTestSupport.h"
 #include "platform/Logging.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/fonts/FontCacheMemoryDumpProvider.h"
 #include "platform/graphics/ImageDecodingStore.h"
 #include "platform/heap/GCTaskRunner.h"
 #include "platform/heap/Heap.h"
@@ -124,6 +125,7 @@ void initialize(Platform* platform)
 
         // Register web cache dump provider for tracing.
         platform->registerMemoryDumpProvider(WebCacheMemoryDumpProvider::instance(), "MemoryCache");
+        platform->registerMemoryDumpProvider(FontCacheMemoryDumpProvider::instance(), "FontCaches");
     }
 }
 
@@ -198,6 +200,7 @@ void shutdown()
     // currentThread() is null if we are running on a thread without a message loop.
     if (Platform::current()->currentThread()) {
         Platform::current()->unregisterMemoryDumpProvider(WebCacheMemoryDumpProvider::instance());
+        Platform::current()->unregisterMemoryDumpProvider(FontCacheMemoryDumpProvider::instance());
 
         // We don't need to (cannot) remove s_endOfTaskRunner from the current
         // message loop, because the message loop is already destructed before
