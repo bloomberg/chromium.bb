@@ -307,9 +307,9 @@ test("app_list_unittests") {
     "//testing/gtest",
     "//ui/base",
     "//ui/compositor",
-    "//ui/events",
     "//ui/events:test_support",
-    "//ui/gl",
+    "//ui/gfx:test_support",
+    "//ui/gl:test_support",
     "//ui/resources",
     "//ui/resources:ui_test_pak",
   ]

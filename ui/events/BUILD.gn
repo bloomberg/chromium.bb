@@ -58,6 +58,7 @@ component("events_base") {
   deps = [
     ":dom_keycode_converter",
     "//base/third_party/dynamic_annotations",
+    "//ipc:param_traits",
     "//skia",
   ]
 
@@ -289,6 +290,7 @@ source_set("test_support") {
     ":events",
     ":events_base",
     ":gesture_detection",
+    "//ui/events/devices",
   ]
   deps = [
     "//base",
@@ -368,6 +370,7 @@ test("events_unittests") {
     "//base/test:run_all_unittests",
     "//ipc:test_support",
     "//skia",
+    "//testing/gmock",
     "//testing/gtest",
     "//ui/events/devices",
     "//ui/events/ipc:events_ipc",
@@ -382,6 +385,7 @@ test("events_unittests") {
       "gestures/blink/web_gesture_curve_impl_unittest.cc",
     ]
     deps += [
+      "//cc",
       "//third_party/WebKit/public:blink_headers",
       "//ui/events/blink",
       "//ui/events/gestures/blink",

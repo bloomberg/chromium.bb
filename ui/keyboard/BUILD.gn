@@ -148,7 +148,7 @@ test("keyboard_unittests") {
     "//ui/events:test_support",
     "//ui/gfx",
     "//ui/gfx/geometry",
-    "//ui/gl",
+    "//ui/gl:test_support",
     "//ui/wm",
   ]
 }

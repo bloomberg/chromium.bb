@@ -82,7 +82,7 @@ if (is_component_build) {
   }
 } else {
   group("content") {
-    deps = content_shared_components
+    public_deps = content_shared_components
   }
 }
 

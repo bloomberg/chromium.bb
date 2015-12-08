@@ -12,13 +12,11 @@ source_set("init") {
 
   deps = [
     "//base",
+    "//ui/gfx",
     "//ui/gfx/geometry",
   ]
 
   if (is_android) {
-    deps += [
-      "//ui/events:gesture_detection",
-      "//ui/gfx",
-    ]
+    deps += [ "//ui/events:gesture_detection" ]
   }
 }

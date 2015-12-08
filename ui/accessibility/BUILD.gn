@@ -74,6 +74,7 @@ component("accessibility") {
   public_deps = [
     ":ax_gen",
     "//base",
+    "//ui/base",
     "//ui/gfx",
     "//ui/gfx/geometry",
   ]
@@ -149,6 +150,7 @@ test("accessibility_unittests") {
     "//base",
     "//base/test:run_all_unittests",
     "//testing/gtest",
+    "//ui/base",
     "//ui/gfx",
     "//ui/gfx/geometry",
   ]

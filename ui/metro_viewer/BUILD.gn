@@ -14,5 +14,6 @@ source_set("metro_viewer") {
   deps = [
     "//base",
     "//ipc",
+    "//ui/events",
   ]
 }

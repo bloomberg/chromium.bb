@@ -133,7 +133,10 @@ component("views") {
   }
 
   if (is_mac) {
-    deps += [ "//ui/accelerated_widget_mac" ]
+    deps += [
+      "//ui/accelerated_widget_mac",
+      "//ui/events:dom_keycode_converter",
+    ]
     libs = [
       # Required by bridged_native_widget.mm.
       "QuartzCore.framework",
@@ -195,6 +198,7 @@ test("views_unittests") {
     "//base:i18n",
     "//base/allocator",
     "//base/test:test_support",
+    "//cc",
     "//skia",
     "//testing/gtest",
     "//third_party/icu",
@@ -203,12 +207,13 @@ test("views_unittests") {
     "//ui/base:test_support",
     "//ui/base/ime",
     "//ui/compositor:test_support",
+    "//ui/events:dom_keycode_converter",
     "//ui/events:events_base",
     "//ui/events:test_support",
     "//ui/events/platform",
-    "//ui/gfx",
+    "//ui/gfx:test_support",
     "//ui/gfx/geometry",
-    "//ui/gl",
+    "//ui/gl:test_support",
     "//ui/resources",
     "//ui/strings",
     "//url",
@@ -220,6 +225,7 @@ test("views_unittests") {
 
   if (is_win) {
     deps += [
+      "//build/win:default_exe_manifest",
       "//third_party/iaccessible2",
       "//third_party/wtl",
     ]
@@ -228,15 +234,6 @@ test("views_unittests") {
       "oleacc.lib",
       "comctl32.lib",
     ]
-
-    # TOOD(GYP)
-    #'msvs_settings': {
-    #  'VCManifestTool': {
-    #    'AdditionalManifestFiles': [
-    #      '$(ProjectDir)\\test\\views_unittest.manifest',
-    #    ],
-    #  },
-    #},
   }
 
   if (use_x11) {
@@ -303,6 +300,8 @@ if (is_mac) {
       "//testing/gtest",
       "//ui/base:test_support",
       "//ui/compositor",
+      "//ui/events:test_support",
+      "//ui/gl:test_support",
       "//ui/resources",
       "//ui/resources:ui_test_pak",
       "//ui/strings",

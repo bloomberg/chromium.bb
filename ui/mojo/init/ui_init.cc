@@ -8,7 +8,7 @@
 #include "ui/mojo/init/screen_mojo.h"
 
 #if defined(OS_ANDROID)
-#include "ui/events/gesture_detection/gesture_configuration.h"
+#include "ui/events/gesture_detection/gesture_configuration.h"  // nogncheck
 #endif
 
 namespace ui {

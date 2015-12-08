@@ -14,4 +14,8 @@ source_set("util") {
   sources = [
     "geometry_util.h",
   ]
+
+  deps = [
+    ":interfaces",
+  ]
 }

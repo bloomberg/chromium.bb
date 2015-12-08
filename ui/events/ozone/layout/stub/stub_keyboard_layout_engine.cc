@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "base/strings/string16.h"
-#include "ui/events/event.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/dom_key.h"
 #include "ui/events/keycodes/keyboard_code_conversion.h"

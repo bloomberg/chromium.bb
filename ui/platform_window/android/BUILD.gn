@@ -28,6 +28,7 @@ component("android") {
     "//ui/events:events_base",
     "//ui/gfx",
     "//ui/gfx/geometry",
+    "//ui/platform_window",
   ]
 
   libs = [ "android" ]

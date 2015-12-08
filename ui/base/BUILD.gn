@@ -618,9 +618,11 @@ source_set("test_support") {
   ]
   deps = [
     "//base",
+    "//base/test:test_config",
     "//skia",
     "//testing/gtest",
     "//ui/events:events_base",
+    "//ui/events:test_support",
     "//ui/gfx",
     "//ui/gfx/geometry",
   ]

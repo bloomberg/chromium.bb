@@ -109,6 +109,7 @@ component("aura") {
     "//ui/events/platform",
     "//ui/gfx",
     "//ui/gfx/geometry",
+    "//ui/platform_window",
   ]
 
   if (use_x11) {
@@ -312,7 +313,7 @@ test("aura_unittests") {
     "//ui/events:test_support",
     "//ui/gfx",
     "//ui/gfx/geometry",
-    "//ui/gl",
+    "//ui/gl:test_support",
   ]
 
   if (is_linux) {

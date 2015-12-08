@@ -86,7 +86,7 @@ test("ui_chromeos_unittests") {
     "//ui/aura:test_support",
     "//ui/compositor",
     "//ui/events:test_support",
-    "//ui/gl",
+    "//ui/gl:test_support",
     "//ui/message_center",
     "//ui/resources:ui_test_pak",
     "//ui/views",

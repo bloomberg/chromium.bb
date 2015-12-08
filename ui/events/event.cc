@@ -30,8 +30,8 @@
 #if defined(USE_X11)
 #include "ui/events/keycodes/keyboard_code_conversion_x.h"
 #elif defined(USE_OZONE)
-#include "ui/events/ozone/layout/keyboard_layout_engine.h"
-#include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
+#include "ui/events/ozone/layout/keyboard_layout_engine.h"  // nogncheck
+#include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"  // nogncheck
 #endif
 
 namespace {

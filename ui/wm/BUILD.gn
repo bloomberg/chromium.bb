@@ -166,7 +166,8 @@ test("wm_unittests") {
     "//ui/events/platform",
     "//ui/gfx",
     "//ui/gfx/geometry",
-    "//ui/gl",
+    "//ui/gl:test_support",
+    "//ui/resources",
   ]
 
   data_deps = [

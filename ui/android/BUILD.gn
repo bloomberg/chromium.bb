@@ -42,6 +42,7 @@ component("android") {
   defines = [ "UI_ANDROID_IMPLEMENTATION" ]
 
   deps = [
+    ":java_enums_srcjar",
     ":ui_android_jni_headers",
     "//base",
     "//cc",
@@ -157,6 +158,7 @@ test("ui_android_unittests") {
   ]
   deps = [
     ":android",
+    ":java_enums_srcjar",
     ":ui_java",
     "//base",
     "//base/test:test_support",

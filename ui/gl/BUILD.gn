@@ -288,6 +288,7 @@ source_set("gl_unittest_utils") {
   deps = [
     ":gl",
     "//testing/gmock",
+    "//testing/gtest",
   ]
 }
 
@@ -305,8 +306,10 @@ source_set("test_support") {
 
   configs += [ "//third_party/khronos:khronos_headers" ]
 
-  deps = [
+  public_deps = [
     ":gl",
+  ]
+  deps = [
     "//testing/gtest",
   ]
 

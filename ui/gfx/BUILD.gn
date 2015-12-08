@@ -427,7 +427,6 @@ component("gfx") {
 action("aggregate_vector_icons") {
   script = "vector_icons/aggregate_vector_icons.py"
   sources = [
-    "vector_icon_types.h",
     "vector_icons/account_box.icon",
     "vector_icons/account_child_invert.icon",
     "vector_icons/apps.icon",

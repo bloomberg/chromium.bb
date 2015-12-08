@@ -144,7 +144,7 @@ source_set("test_support") {
     "//ui/base",
     "//ui/gfx",
     "//ui/gfx/geometry",
-    "//ui/gl",
+    "//ui/gl:test_support",
   ]
 
   if (use_x11) {

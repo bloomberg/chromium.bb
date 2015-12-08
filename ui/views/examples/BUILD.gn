@@ -163,6 +163,7 @@ executable("views_examples_with_content_exe") {
     "//build/config/sanitizers:deps",
     "//content",
     "//content:sandbox_helper_win",
+    "//sandbox",
     "//ui/views_content_client",
   ]
 
