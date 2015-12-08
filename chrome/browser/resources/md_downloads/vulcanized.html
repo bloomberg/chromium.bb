@@ -50,7 +50,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <link rel="stylesheet" href="chrome://resources/css/text_defaults.css">
   <style>
     html {
-      background: #f2f2f2;
+      background: rgb(236, 239, 241);
     }
 
     html,
@@ -1841,7 +1841,7 @@ paper-button {
 }
 
 #date {
-  color: #7c7c7c;
+  color: rgb(104, 113, 116);
   font-size: 100%;
   font-weight: 500;
   margin: 24px auto 10px;
@@ -2655,7 +2655,7 @@ paper-button {
 
 :host {
   align-items: center;
-  background: rgb(63, 85, 102);
+  background: rgb(52, 73, 94);
   color: white;
   content-sizing: padding-box;
   display: flex;
@@ -2665,13 +2665,14 @@ paper-button {
 #title h1 {
   -webkit-margin-end: 0;
   -webkit-margin-start: 24px;
-  font-size: 107.7%;
+  font-size: 123.1%;
   font-weight: normal;
   margin-bottom: 0;
   margin-top: 0;
 }
 
 #actions {
+  color: rgb(176, 190, 197);
   display: flex;
   flex: none;
   width: var(--downloads-item-width);
@@ -2685,6 +2686,12 @@ paper-button {
   justify-content: center;
 }
 
+#actions paper-button {
+  --paper-button-flat-keyboard-focus: {
+    color: white;
+  };
+}
+
 #actions paper-button:first-of-type {
   -webkit-margin-start: -0.57em;  /* Matches paper-button padding. */
 }
@@ -2695,16 +2702,6 @@ paper-button {
 
 #actions paper-button:last-of-type {
   -webkit-margin-end: -0.57em;  /* Matches paper-button padding. */
-}
-
-/* TODO(dbeam): use --paper-button-flat-keyboard-focus when possible.
- * https://github.com/PolymerElements/paper-button/pull/54 */
-#actions paper-button /deep/ .keyboard-focus {
-  color: white;
-}
-
-#actions {
-  color: rgb(192, 199, 205);
 }
 
 #search {
