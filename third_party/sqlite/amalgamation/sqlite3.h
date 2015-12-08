@@ -7442,25 +7442,12 @@ CHROMIUM_SQLITE_API
 void chromium_sqlite3_initialize_win_sqlite3_file(sqlite3_file* file, HANDLE handle);
 #else  /* _WIN32 */
 CHROMIUM_SQLITE_API
-void chromium_sqlite3_initialize_unix_sqlite3_file(sqlite3_file* file);
-CHROMIUM_SQLITE_API
-int chromium_sqlite3_fill_in_unix_sqlite3_file(sqlite3_vfs* vfs,
+int chromium_sqlite3_fill_in_unix_sqlite3_file(sqlite3_vfs* pVfs,
                                                int fd,
-                                               int dirfd,
-                                               sqlite3_file* file,
-                                               const char* fileName,
-                                               int noLock);
-CHROMIUM_SQLITE_API
-int chromium_sqlite3_get_reusable_file_handle(sqlite3_file* file,
-                                              const char* fileName,
-                                              int flags,
-                                              int* fd);
-CHROMIUM_SQLITE_API
-void chromium_sqlite3_update_reusable_file_handle(sqlite3_file* file,
-                                                  int fd,
-                                                  int flags);
-CHROMIUM_SQLITE_API
-void chromium_sqlite3_destroy_reusable_file_handle(sqlite3_file* file);
+                                               sqlite3_file* pFile,
+                                               const char* zPath,
+                                               int noLock,
+                                               int flags);
 #endif  /* _WIN32 */
 #endif  /* CHROMIUM_SQLITE_INTERNALS */
 /* End WebDatabase patch for Chromium */

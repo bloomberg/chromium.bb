@@ -5625,75 +5625,41 @@ static int findCreateFileMode(
 }
 
 /*
-** Initializes a unixFile structure with zeros.
+** Initialize |unixFile| internals of |file| on behalf of chromiumOpen() in
+** WebDatabase SQLiteFileSystemPosix.cpp.  Function is a subset of unixOpen(),
+** each duplicated piece is marked by "Duplicated in" comment in unixOpen().
 */
 CHROMIUM_SQLITE_API
-void chromium_sqlite3_initialize_unix_sqlite3_file(sqlite3_file* file) {
-  memset(file, 0, sizeof(unixFile));
-}
-
-CHROMIUM_SQLITE_API
-int chromium_sqlite3_fill_in_unix_sqlite3_file(sqlite3_vfs* vfs,
+int chromium_sqlite3_fill_in_unix_sqlite3_file(sqlite3_vfs* pVfs,
                                                int fd,
-                                               int dirfd,
-                                               sqlite3_file* file,
-                                               const char* fileName,
-                                               int noLock) {
-  int ctrlFlags = (noLock ? UNIXFILE_NOLOCK : 0);
-  return fillInUnixFile(vfs, fd, file, fileName, ctrlFlags);
-}
+                                               sqlite3_file* pFile,
+                                               const char* zPath,
+                                               int noLock,
+                                               int flags) {
+  unixFile *p = (unixFile *)pFile;
+  const int eType = flags&0xFFFFFF00;  /* Type of file to open */
+  const int ctrlFlags = (noLock ? UNIXFILE_NOLOCK : 0);
+  int rc;
 
-/*
-** Search for an unused file descriptor that was opened on the database file.
-** If a suitable file descriptor if found, then it is stored in *fd; otherwise,
-** *fd is not modified.
-**
-** If a reusable file descriptor is not found, and a new UnixUnusedFd cannot
-** be allocated, SQLITE_NOMEM is returned. Otherwise, SQLITE_OK is returned.
-*/
-CHROMIUM_SQLITE_API
-int chromium_sqlite3_get_reusable_file_handle(sqlite3_file* file,
-                                              const char* fileName,
-                                              int flags,
-                                              int* fd) {
-  unixFile* unixSQLite3File = (unixFile*)file;
-  int fileType = flags & 0xFFFFFF00;
-  if (fileType == SQLITE_OPEN_MAIN_DB) {
-    UnixUnusedFd *unusedFd = findReusableFd(fileName, flags);
-    if (unusedFd) {
-      *fd = unusedFd->fd;
-    } else {
-      unusedFd = sqlite3_malloc(sizeof(*unusedFd));
-      if (!unusedFd) {
-        return SQLITE_NOMEM;
-      }
+  memset(p, 0, sizeof(unixFile));
+
+  /* osStat() will not work in the sandbox, so findReusableFd() will always
+  ** fail, so directly include the failure-case setup then initialize pUnused.
+  */
+  if( eType==SQLITE_OPEN_MAIN_DB ){
+    p->pUnused = sqlite3_malloc(sizeof(*p->pUnused));
+    if (!p->pUnused) {
+      return SQLITE_NOMEM;
     }
-    unixSQLite3File->pUnused = unusedFd;
+    p->pUnused->fd = fd;
+    p->pUnused->flags = flags;
   }
-  return SQLITE_OK;
-}
 
-/*
-** Marks 'fd' as the unused file descriptor for 'pFile'.
-*/
-CHROMIUM_SQLITE_API
-void chromium_sqlite3_update_reusable_file_handle(sqlite3_file* file,
-                                                  int fd,
-                                                  int flags) {
-  unixFile* unixSQLite3File = (unixFile*)file;
-  if (unixSQLite3File->pUnused) {
-    unixSQLite3File->pUnused->fd = fd;
-    unixSQLite3File->pUnused->flags = flags;
+  rc = fillInUnixFile(pVfs, fd, pFile, zPath, ctrlFlags);
+  if( rc!=SQLITE_OK ){
+    sqlite3_free(p->pUnused);
   }
-}
-
-/*
-** Destroys pFile's field that keeps track of the unused file descriptor.
-*/
-CHROMIUM_SQLITE_API
-void chromium_sqlite3_destroy_reusable_file_handle(sqlite3_file* file) {
-  unixFile* unixSQLite3File = (unixFile*)file;
-  sqlite3_free(unixSQLite3File->pUnused);
+  return rc;
 }
 
 /*
@@ -5797,13 +5763,22 @@ static int unixOpen(
     sqlite3_randomness(0,0);
   }
 
-  chromium_sqlite3_initialize_unix_sqlite3_file(pFile);
+  /* Duplicated in chromium_sqlite3_fill_in_unix_sqlite3_file(). */
+  memset(p, 0, sizeof(unixFile));
 
   if( eType==SQLITE_OPEN_MAIN_DB ){
-    rc = chromium_sqlite3_get_reusable_file_handle(pFile, zName, flags, &fd);
-    if( rc!=SQLITE_OK ){
-      return rc;
+    UnixUnusedFd *pUnused;
+    pUnused = findReusableFd(zName, flags);
+    if( pUnused ){
+      fd = pUnused->fd;
+    }else{
+      /* Duplicated in chromium_sqlite3_fill_in_unix_sqlite3_file(). */
+      pUnused = sqlite3_malloc(sizeof(*pUnused));
+      if( !pUnused ){
+        return SQLITE_NOMEM;
+      }
     }
+    p->pUnused = pUnused;
 
     /* Database filenames are double-zero terminated if they are not
     ** URIs with parameters.  Hence, they can always be passed into
@@ -5873,7 +5848,11 @@ static int unixOpen(
     *pOutFlags = flags;
   }
 
-  chromium_sqlite3_update_reusable_file_handle(pFile, fd, flags);
+  if( p->pUnused ){
+    /* Duplicated in chromium_sqlite3_fill_in_unix_sqlite3_file(). */
+    p->pUnused->fd = fd;
+    p->pUnused->flags = flags;
+  }
 
   if( isDelete ){
 #if OS_VXWORKS
@@ -5961,11 +5940,13 @@ static int unixOpen(
   }
 #endif
   
+  /* Duplicated in chromium_sqlite3_fill_in_unix_sqlite3_file(). */
   rc = fillInUnixFile(pVfs, fd, pFile, zPath, ctrlFlags);
 
 open_finished:
   if( rc!=SQLITE_OK ){
-    chromium_sqlite3_destroy_reusable_file_handle(pFile);
+    /* Duplicated in chromium_sqlite3_fill_in_unix_sqlite3_file(). */
+    sqlite3_free(p->pUnused);
   }
   return rc;
 }

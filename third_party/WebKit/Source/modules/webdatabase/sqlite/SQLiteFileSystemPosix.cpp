@@ -142,27 +142,16 @@ int chromiumDeviceCharacteristics(sqlite3_file* sqliteFile)
 // usedFlags - the actual open mode flags that were used.
 int chromiumOpenInternal(sqlite3_vfs* vfs, const char* fileName, sqlite3_file* id, int desiredFlags, int* usedFlags)
 {
-    chromium_sqlite3_initialize_unix_sqlite3_file(id);
-    int fd = -1;
-    int result = chromium_sqlite3_get_reusable_file_handle(id, fileName, desiredFlags, &fd);
-    if (result != SQLITE_OK)
-        return result;
-
-    if (fd < 0) {
+    int fd = Platform::current()->databaseOpenFile(String(fileName), desiredFlags);
+    if ((fd < 0) && (desiredFlags & SQLITE_OPEN_READWRITE)) {
+        desiredFlags = (desiredFlags & ~(SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE)) | SQLITE_OPEN_READONLY;
         fd = Platform::current()->databaseOpenFile(String(fileName), desiredFlags);
-        if ((fd < 0) && (desiredFlags & SQLITE_OPEN_READWRITE)) {
-            int newFlags = (desiredFlags & ~(SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE)) | SQLITE_OPEN_READONLY;
-            fd = Platform::current()->databaseOpenFile(String(fileName), newFlags);
-        }
     }
-    if (fd < 0) {
-        chromium_sqlite3_destroy_reusable_file_handle(id);
+    if (fd < 0)
         return SQLITE_CANTOPEN;
-    }
 
     if (usedFlags)
         *usedFlags = desiredFlags;
-    chromium_sqlite3_update_reusable_file_handle(id, fd, desiredFlags);
 
     fcntl(fd, F_SETFD, fcntl(fd, F_GETFD) | FD_CLOEXEC);
 
@@ -170,10 +159,7 @@ int chromiumOpenInternal(sqlite3_vfs* vfs, const char* fileName, sqlite3_file* i
     int fileType = desiredFlags & 0x00007F00;
     int noLock = (fileType != SQLITE_OPEN_MAIN_DB);
     sqlite3_vfs* wrappedVfs = static_cast<sqlite3_vfs*>(vfs->pAppData);
-    result = chromium_sqlite3_fill_in_unix_sqlite3_file(wrappedVfs, fd, -1, id, fileName, noLock);
-    if (result != SQLITE_OK)
-        chromium_sqlite3_destroy_reusable_file_handle(id);
-    return result;
+    return chromium_sqlite3_fill_in_unix_sqlite3_file(wrappedVfs, fd, id, fileName, noLock, desiredFlags);
 }
 
 int chromiumOpen(sqlite3_vfs* vfs, const char* fileName, sqlite3_file* id, int desiredFlags, int* usedFlags)
