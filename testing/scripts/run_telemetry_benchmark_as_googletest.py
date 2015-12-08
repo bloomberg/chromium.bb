@@ -33,6 +33,11 @@ import common
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import xvfb
 
+# Unfortunately we need to copy these variables from ../test_env.py.
+# Importing it and using its get_sandbox_env breaks test runs on Linux
+# (it seems to unset DISPLAY).
+CHROME_SANDBOX_ENV = 'CHROME_DEVEL_SANDBOX'
+CHROME_SANDBOX_PATH = '/opt/chromium/chrome_sandbox'
 
 def main():
   parser = argparse.ArgumentParser()
@@ -44,6 +49,10 @@ def main():
   xvfb_proc = None
   openbox_proc = None
   env = os.environ.copy()
+  # Assume we want to set up the sandbox environment variables all the
+  # time; doing so is harmless on non-Linux platforms and is needed
+  # all the time on Linux.
+  env[CHROME_SANDBOX_ENV] = CHROME_SANDBOX_PATH
   if args.xvfb and xvfb.should_start_xvfb(env):
     xvfb_proc, openbox_proc = xvfb.start_xvfb(env=env, build_dir='.')
     assert xvfb_proc and openbox_proc, 'Failed to start xvfb'
