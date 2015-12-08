@@ -23,7 +23,8 @@ class MockComponentToolbarActionsFactory
   std::set<std::string> GetInitialComponentIds(Profile* profile) override;
   scoped_ptr<ToolbarActionViewController> GetComponentToolbarActionForId(
       const std::string& id,
-      Browser* browser) override;
+      Browser* browser,
+      ToolbarActionsBar* bar) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockComponentToolbarActionsFactory);

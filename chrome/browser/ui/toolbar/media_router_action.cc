@@ -36,7 +36,8 @@ media_router::MediaRouter* GetMediaRouter(Browser* browser) {
 
 }  // namespace
 
-MediaRouterAction::MediaRouterAction(Browser* browser)
+MediaRouterAction::MediaRouterAction(Browser* browser,
+                                     ToolbarActionsBar* toolbar_actions_bar)
     : media_router::IssuesObserver(GetMediaRouter(browser)),
       media_router::LocalMediaRoutesObserver(GetMediaRouter(browser)),
       media_router_active_icon_(
@@ -53,11 +54,13 @@ MediaRouterAction::MediaRouterAction(Browser* browser)
       has_local_display_route_(false),
       delegate_(nullptr),
       browser_(browser),
+      toolbar_actions_bar_(toolbar_actions_bar),
       platform_delegate_(MediaRouterActionPlatformDelegate::Create(browser)),
       contextual_menu_(browser),
       tab_strip_model_observer_(this),
       weak_ptr_factory_(this) {
   DCHECK(browser_);
+  DCHECK(toolbar_actions_bar_);
   tab_strip_model_observer_.Add(browser_->tab_strip_model());
 
   RegisterObserver();
@@ -192,9 +195,13 @@ void MediaRouterAction::UpdatePopupState() {
   if (!controller)
     return;
 
-  // Immediately keep track of MediaRouterAction in the controller. If it was
-  // already set, this should be a no-op.
-  controller->SetMediaRouterAction(weak_ptr_factory_.GetWeakPtr());
+  // When each browser window is created, its toolbar creates a
+  // MediaRouterAction that is only destroyed when the browser window is torn
+  // down. |controller| will keep track of that instance. If |this| was created
+  // in overflow mode, it will be destroyed when the overflow menu is closed.
+  // If SetMediaRouterAction() was previously called, this is a no-op.
+  if (!toolbar_actions_bar_->in_overflow_mode())
+    controller->SetMediaRouterAction(weak_ptr_factory_.GetWeakPtr());
 
   // Update the button in case the pressed state is out of sync with dialog
   // visibility.

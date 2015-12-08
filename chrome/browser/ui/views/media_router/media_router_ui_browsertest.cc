@@ -4,6 +4,7 @@
 
 #include "base/bind.h"
 #include "base/thread_task_runner_handle.h"
+#include "chrome/browser/extensions/browser_action_test_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -37,7 +38,10 @@ class MediaRouterUIBrowserTest : public InProcessBrowserTest {
             ->browser_actions();
     ASSERT_TRUE(browser_actions_container);
 
-    media_router_action_.reset(new MediaRouterAction(browser()));
+    browser_action_test_util_.reset(new BrowserActionTestUtil(browser(),
+                                                              false));
+    media_router_action_.reset(new MediaRouterAction(browser(),
+        browser_action_test_util_->GetToolbarActionsBar()));
 
     // Sets delegate on |media_router_action_|.
     toolbar_action_view_.reset(
@@ -48,6 +52,7 @@ class MediaRouterUIBrowserTest : public InProcessBrowserTest {
   void TearDownOnMainThread() override {
     toolbar_action_view_.reset();
     media_router_action_.reset();
+    browser_action_test_util_.reset();
     InProcessBrowserTest::TearDownOnMainThread();
   }
 
@@ -82,6 +87,7 @@ class MediaRouterUIBrowserTest : public InProcessBrowserTest {
 
  protected:
   // Must be initialized after |InProcessBrowserTest::SetUpOnMainThread|.
+  scoped_ptr<BrowserActionTestUtil> browser_action_test_util_;
   scoped_ptr<MediaRouterAction> media_router_action_;
 
   // ToolbarActionView constructed to set the delegate on |mr_action|.

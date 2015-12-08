@@ -55,7 +55,8 @@ std::set<std::string> ComponentToolbarActionsFactory::GetInitialComponentIds(
 scoped_ptr<ToolbarActionViewController>
 ComponentToolbarActionsFactory::GetComponentToolbarActionForId(
     const std::string& id,
-    Browser* browser) {
+    Browser* browser,
+    ToolbarActionsBar* bar) {
   // This is currently behind the extension-action-redesign flag, as it is
   // designed for the new toolbar.
   DCHECK(extensions::FeatureSwitch::extension_action_redesign()->IsEnabled());
@@ -70,7 +71,7 @@ ComponentToolbarActionsFactory::GetComponentToolbarActionForId(
 #if defined(ENABLE_MEDIA_ROUTER)
   if (id == kMediaRouterActionId)
     return scoped_ptr<ToolbarActionViewController>(
-        new MediaRouterAction(browser));
+        new MediaRouterAction(browser, bar));
 #endif  // defined(ENABLE_MEDIA_ROUTER)
 
   NOTREACHED();

@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/toolbar/media_router_contextual_menu.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
+#include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 
 class Browser;
 class MediaRouterActionPlatformDelegate;
@@ -27,7 +28,7 @@ class MediaRouterAction : public ToolbarActionViewController,
                           public media_router::LocalMediaRoutesObserver,
                           public TabStripModelObserver {
  public:
-  explicit MediaRouterAction(Browser* browser);
+  MediaRouterAction(Browser* browser, ToolbarActionsBar* toolbar_actions_bar);
   ~MediaRouterAction() override;
 
   // ToolbarActionViewController implementation.
@@ -66,6 +67,11 @@ class MediaRouterAction : public ToolbarActionViewController,
   void OnPopupShown();
 
  private:
+  // Called when a new browser window is opened, the user switches tabs in the
+  // browser window, or when |delegate_| is swapped out to be non-null and has
+  // a valid WebContents.
+  // This updates the pressed/unpressed state of the icon, which is different
+  // on a per-tab basis.
   void UpdatePopupState();
 
   // Returns a reference to the MediaRouterDialogControllerImpl associated with
@@ -109,6 +115,7 @@ class MediaRouterAction : public ToolbarActionViewController,
   ToolbarActionViewDelegate* delegate_;
 
   Browser* const browser_;
+  ToolbarActionsBar* const toolbar_actions_bar_;
 
   // The delegate to handle platform-specific implementations.
   scoped_ptr<MediaRouterActionPlatformDelegate> platform_delegate_;

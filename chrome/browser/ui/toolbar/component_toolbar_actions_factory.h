@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 
 class Browser;
 class Profile;
@@ -34,7 +35,8 @@ class ComponentToolbarActionsFactory {
   // Returns a collection of controllers for component actions. Declared
   // virtual for testing.
   virtual scoped_ptr<ToolbarActionViewController>
-  GetComponentToolbarActionForId(const std::string& id, Browser* browser);
+  GetComponentToolbarActionForId(const std::string& id, Browser* browser,
+                                 ToolbarActionsBar* bar);
 
   // Sets the factory to use for testing purposes.
   // Ownership remains with the caller.

@@ -187,7 +187,7 @@ ToolbarActionsModel::CreateActionForItem(Browser* browser,
     case COMPONENT_ACTION: {
       DCHECK(use_redesign_);
       result = ComponentToolbarActionsFactory::GetInstance()
-                   ->GetComponentToolbarActionForId(item.id, browser)
+                   ->GetComponentToolbarActionForId(item.id, browser, bar)
                    .Pass();
       break;
     }

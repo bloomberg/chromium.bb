@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/extensions/browser_action_test_util.h"
+#include "chrome/browser/extensions/extension_action_test_util.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/media_router_action.h"
@@ -34,8 +36,9 @@ class MockToolbarActionViewDelegate : public ToolbarActionViewDelegate {
 
 class TestMediaRouterAction : public MediaRouterAction {
  public:
-  explicit TestMediaRouterAction(Browser* browser)
-      : MediaRouterAction(browser),
+  TestMediaRouterAction(Browser* browser,
+                        ToolbarActionsBar* toolbar_actions_bar)
+      : MediaRouterAction(browser, toolbar_actions_bar),
         controller_(nullptr),
         platform_delegate_(nullptr) {}
   ~TestMediaRouterAction() override {}
@@ -63,7 +66,8 @@ class TestMediaRouterAction : public MediaRouterAction {
 class MediaRouterActionUnitTest : public MediaRouterTest {
  public:
   MediaRouterActionUnitTest()
-      : fake_issue_notification_(media_router::Issue(
+      : toolbar_model_(nullptr),
+        fake_issue_notification_(media_router::Issue(
             "title notification",
             "message notification",
             media_router::IssueAction(media_router::IssueAction::TYPE_DISMISS),
@@ -107,10 +111,21 @@ class MediaRouterActionUnitTest : public MediaRouterTest {
   // MediaRouterTest:
   void SetUp() override {
     MediaRouterTest::SetUp();
-    action_.reset(new TestMediaRouterAction(browser()));
+    toolbar_model_ = extensions::extension_action_test_util::
+        CreateToolbarModelForProfileWithoutWaitingForReady(profile());
+
+    // browser() will only be valid once BrowserWithTestWindowTest::SetUp()
+    // has run.
+    browser_action_test_util_.reset(
+        new BrowserActionTestUtil(browser(), false));
+    action_.reset(
+        new TestMediaRouterAction(
+            browser(),
+            browser_action_test_util_->GetToolbarActionsBar()));
   }
 
   void TearDown() override {
+    browser_action_test_util_.reset();
     action_.reset();
     MediaRouterTest::TearDown();
   }
@@ -131,7 +146,14 @@ class MediaRouterActionUnitTest : public MediaRouterTest {
   const gfx::Image warning_icon() { return warning_icon_; }
 
  private:
+  // A BrowserActionTestUtil object constructed with the associated
+  // ToolbarActionsBar.
+  scoped_ptr<BrowserActionTestUtil> browser_action_test_util_;
+
   scoped_ptr<TestMediaRouterAction> action_;
+
+  // The associated ToolbarActionsModel (owned by the keyed service setup).
+  ToolbarActionsModel* toolbar_model_;
 
   // Fake Issues.
   const media_router::Issue fake_issue_notification_;
