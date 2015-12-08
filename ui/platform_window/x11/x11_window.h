@@ -57,6 +57,8 @@ class X11_WINDOW_EXPORT X11Window : public PlatformWindow,
   XID xroot_window_;
   X11AtomCache atom_cache_;
 
+  base::string16 window_title_;
+
   // Setting the bounds is an asynchronous operation in X11. |requested_bounds_|
   // is the bounds requested using XConfigureWindow, and |confirmed_bounds_| is
   // the bounds the X11 server has set on the window.

@@ -121,6 +121,7 @@ void WindowManagerApplication::OnEmbed(mus::Window* root) {
   window_layout_.reset(
       new WindowLayout(GetWindowForContainer(mojom::CONTAINER_USER_WINDOWS)));
   window_tree_host_->AddActivationParent(window->id());
+  window_tree_host_->SetTitle("Mash");
 
   AddAccelerators();
 
