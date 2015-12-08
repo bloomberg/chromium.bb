@@ -10,10 +10,10 @@ from telemetry import story
 WEBRTC_GITHUB_SAMPLES_URL = 'https://webrtc.github.io/samples/src/content/'
 
 
-class WebrtcCasesPage(page_module.Page):
+class WebrtcPage(page_module.Page):
 
   def __init__(self, url, page_set, name):
-    super(WebrtcCasesPage, self).__init__(
+    super(WebrtcPage, self).__init__(
         url=url, page_set=page_set, name=name)
 
     with open(os.path.join(os.path.dirname(__file__),
@@ -21,44 +21,11 @@ class WebrtcCasesPage(page_module.Page):
       self.script_to_evaluate_on_commit = javascript.read()
 
 
-class Page1(WebrtcCasesPage):
-
-  """ Why: Acquires a vga local stream. """
+class Page1(WebrtcPage):
+  """ Why: Acquires a high definition (720p) local stream. """
 
   def __init__(self, page_set):
     super(Page1, self).__init__(
-        url=WEBRTC_GITHUB_SAMPLES_URL + 'getusermedia/gum/',
-        name='vga_local_stream_10s',
-        page_set=page_set)
-
-  def RunPageInteractions(self, action_runner):
-    action_runner.Wait(10)
-
-
-class Page2(WebrtcCasesPage):
-
-  """ Why: Sets up a local WebRTC call. """
-
-  def __init__(self, page_set):
-    super(Page2, self).__init__(
-      url=WEBRTC_GITHUB_SAMPLES_URL + 'peerconnection/pc1/',
-      name='vga_call_10s',
-      page_set=page_set)
-
-  def RunPageInteractions(self, action_runner):
-    action_runner.ClickElement('button[id="startButton"]')
-    action_runner.Wait(2)
-    action_runner.ClickElement('button[id="callButton"]')
-    action_runner.Wait(10)
-    action_runner.ClickElement('button[id="hangupButton"]')
-
-
-class Page3(WebrtcCasesPage):
-
-  """ Why: Acquires a high definition local stream. """
-
-  def __init__(self, page_set):
-    super(Page3, self).__init__(
       url=WEBRTC_GITHUB_SAMPLES_URL + 'getusermedia/resolution/',
       name='hd_local_stream_10s',
       page_set=page_set)
@@ -68,76 +35,11 @@ class Page3(WebrtcCasesPage):
     action_runner.Wait(10)
 
 
-class Page4(WebrtcCasesPage):
-
-  """ Why: Sets up a WebRTC audio call with Opus. """
-
-  def __init__(self, page_set):
-    super(Page4, self).__init__(
-      url=WEBRTC_GITHUB_SAMPLES_URL + 'peerconnection/audio/?codec=OPUS',
-      name='audio_call_opus_10s',
-      page_set=page_set)
-
-  def RunPageInteractions(self, action_runner):
-    action_runner.ExecuteJavaScript('codecSelector.value="OPUS";')
-    action_runner.ClickElement('button[id="callButton"]')
-    action_runner.Wait(10)
-
-
-class Page5(WebrtcCasesPage):
-
-  """ Why: Sets up a WebRTC audio call with G722. """
+class Page2(WebrtcPage):
+  """ Why: Sets up a local video-only WebRTC 720p call for 45 seconds. """
 
   def __init__(self, page_set):
-    super(Page5, self).__init__(
-      url=WEBRTC_GITHUB_SAMPLES_URL + 'peerconnection/audio/?codec=G722',
-      name='audio_call_g722_10s',
-      page_set=page_set)
-
-  def RunPageInteractions(self, action_runner):
-    action_runner.ExecuteJavaScript('codecSelector.value="G722";')
-    action_runner.ClickElement('button[id="callButton"]')
-    action_runner.Wait(10)
-
-
-class Page6(WebrtcCasesPage):
-
-  """ Why: Sets up a WebRTC audio call with PCMU. """
-
-  def __init__(self, page_set):
-    super(Page6, self).__init__(
-      url=WEBRTC_GITHUB_SAMPLES_URL + 'peerconnection/audio/?codec=PCMU',
-      name='audio_call_pcmu_10s',
-      page_set=page_set)
-
-  def RunPageInteractions(self, action_runner):
-    action_runner.ExecuteJavaScript('codecSelector.value="PCMU";')
-    action_runner.ClickElement('button[id="callButton"]')
-    action_runner.Wait(10)
-
-
-class Page7(WebrtcCasesPage):
-
-  """ Why: Sets up a WebRTC audio call with iSAC 16K. """
-
-  def __init__(self, page_set):
-    super(Page7, self).__init__(
-      url=WEBRTC_GITHUB_SAMPLES_URL + 'peerconnection/audio/?codec=ISAC_16K',
-      name='audio_call_isac16k_10s',
-      page_set=page_set)
-
-  def RunPageInteractions(self, action_runner):
-    action_runner.ExecuteJavaScript('codecSelector.value="ISAC/16000";')
-    action_runner.ClickElement('button[id="callButton"]')
-    action_runner.Wait(10)
-
-
-class Page8(WebrtcCasesPage):
-
-  """ Why: Sets up a WebRTC 720p call for 45 seconds. """
-
-  def __init__(self, page_set):
-    super(Page8, self).__init__(
+    super(Page2, self).__init__(
         url=WEBRTC_GITHUB_SAMPLES_URL + 'peerconnection/constraints/',
         name='720p_call_45s',
         page_set=page_set)
@@ -152,12 +54,12 @@ class Page8(WebrtcCasesPage):
     action_runner.ClickElement('button[id="connect"]')
     action_runner.Wait(45)
 
-class Page9(WebrtcCasesPage):
 
+class Page3(WebrtcPage):
   """ Why: Transfer as much data as possible through a data channel in 20s. """
 
   def __init__(self, page_set):
-    super(Page9, self).__init__(
+    super(Page3, self).__init__(
         url=WEBRTC_GITHUB_SAMPLES_URL + 'datachannel/datatransfer',
         name="30s_datachannel_transfer",
         page_set=page_set)
@@ -170,19 +72,108 @@ class Page9(WebrtcCasesPage):
     action_runner.Wait(30)
 
 
-class WebrtcCasesPageSet(story.StorySet):
 
-  """ WebRTC tests for Real-time audio and video communication. """
+class Page4(WebrtcPage):
+  """ Why: Sets up a WebRTC audio call with Opus. """
+
+  def __init__(self, page_set):
+    super(Page4, self).__init__(
+      url=WEBRTC_GITHUB_SAMPLES_URL + 'peerconnection/audio/?codec=OPUS',
+      name='audio_call_opus_10s',
+      page_set=page_set)
+
+  def RunPageInteractions(self, action_runner):
+    action_runner.ExecuteJavaScript('codecSelector.value="OPUS";')
+    action_runner.ClickElement('button[id="callButton"]')
+    action_runner.Wait(10)
+
+
+class Page5(WebrtcPage):
+  """ Why: Sets up a WebRTC audio call with G722. """
+
+  def __init__(self, page_set):
+    super(Page5, self).__init__(
+      url=WEBRTC_GITHUB_SAMPLES_URL + 'peerconnection/audio/?codec=G722',
+      name='audio_call_g722_10s',
+      page_set=page_set)
+
+  def RunPageInteractions(self, action_runner):
+    action_runner.ExecuteJavaScript('codecSelector.value="G722";')
+    action_runner.ClickElement('button[id="callButton"]')
+    action_runner.Wait(10)
+
+
+class Page6(WebrtcPage):
+  """ Why: Sets up a WebRTC audio call with PCMU. """
+
+  def __init__(self, page_set):
+    super(Page6, self).__init__(
+      url=WEBRTC_GITHUB_SAMPLES_URL + 'peerconnection/audio/?codec=PCMU',
+      name='audio_call_pcmu_10s',
+      page_set=page_set)
+
+  def RunPageInteractions(self, action_runner):
+    action_runner.ExecuteJavaScript('codecSelector.value="PCMU";')
+    action_runner.ClickElement('button[id="callButton"]')
+    action_runner.Wait(10)
+
+
+class Page7(WebrtcPage):
+  """ Why: Sets up a WebRTC audio call with iSAC 16K. """
+
+  def __init__(self, page_set):
+    super(Page7, self).__init__(
+      url=WEBRTC_GITHUB_SAMPLES_URL + 'peerconnection/audio/?codec=ISAC_16K',
+      name='audio_call_isac16k_10s',
+      page_set=page_set)
+
+  def RunPageInteractions(self, action_runner):
+    action_runner.ExecuteJavaScript('codecSelector.value="ISAC/16000";')
+    action_runner.ClickElement('button[id="callButton"]')
+    action_runner.Wait(10)
+
+
+class WebrtcGetusermediaPageSet(story.StorySet):
+  """ WebRTC tests for local getUserMedia: video capture and playback. """
 
   def __init__(self):
-    super(WebrtcCasesPageSet, self).__init__(
-      archive_data_file='data/webrtc_cases.json',
+    super(WebrtcGetusermediaPageSet, self).__init__(
+      archive_data_file='data/webrtc_getusermedia_cases.json',
       cloud_storage_bucket=story.PUBLIC_BUCKET)
 
     self.AddStory(Page1(self))
+
+
+class WebrtcPeerconnectionPageSet(story.StorySet):
+  """ WebRTC tests for Real-time video and audio communication. """
+
+  def __init__(self):
+    super(WebrtcPeerconnectionPageSet, self).__init__(
+      archive_data_file='data/webrtc_peerconnection_cases.json',
+      cloud_storage_bucket=story.PUBLIC_BUCKET)
+
     self.AddStory(Page2(self))
+
+
+class WebrtcDatachannelPageSet(story.StorySet):
+  """ WebRTC tests for Real-time communication via the data channel. """
+
+  def __init__(self):
+    super(WebrtcDatachannelPageSet, self).__init__(
+      archive_data_file='data/webrtc_datachannel_cases.json',
+      cloud_storage_bucket=story.PUBLIC_BUCKET)
+
     self.AddStory(Page3(self))
-    # Disable page 4-7 until we can implement http://crbug.com/468732. We can
-    # get data out from the tests, but it's not very useful yet.
-    self.AddStory(Page8(self))
-    self.AddStory(Page9(self))
+
+class WebrtcAudioPageSet(story.StorySet):
+  """ WebRTC tests for Real-time audio communication. """
+
+  def __init__(self):
+    super(WebrtcAudioPageSet, self).__init__(
+      archive_data_file='data/webrtc_audio_cases.json',
+      cloud_storage_bucket=story.PUBLIC_BUCKET)
+
+    self.AddStory(Page4(self))
+    self.AddStory(Page5(self))
+    self.AddStory(Page6(self))
+    self.AddStory(Page7(self))
