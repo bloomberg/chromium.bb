@@ -74,8 +74,9 @@ void ProcessMirrorHeaderUIThread(int child_id,
     }
     signin_metrics::LogAccountReconcilorStateOnGaiaResponse(
         account_reconcilor->GetState());
-    browser->window()->ShowAvatarBubbleFromAvatarButton(bubble_mode,
-                                                        manage_accounts_params);
+    browser->window()->ShowAvatarBubbleFromAvatarButton(
+        bubble_mode, manage_accounts_params,
+        signin_metrics::AccessPoint::ACCESS_POINT_CONTENT_AREA);
   }
 #else   // BUILDFLAG(ANDROID_JAVA_UI)
   if (service_type == signin::GAIA_SERVICE_TYPE_INCOGNITO) {

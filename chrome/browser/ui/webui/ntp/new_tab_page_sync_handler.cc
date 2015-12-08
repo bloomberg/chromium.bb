@@ -130,7 +130,8 @@ void NewTabPageSyncHandler::HandleSyncLinkClicked(const base::ListValue* args) {
       chrome::FindBrowserWithWebContents(web_ui()->GetWebContents());
   if (!browser || browser->IsAttemptingToCloseBrowser())
     return;
-  chrome::ShowBrowserSignin(browser, signin_metrics::SOURCE_NTP_LINK);
+  chrome::ShowBrowserSignin(browser,
+                            signin_metrics::AccessPoint::ACCESS_POINT_NTP_LINK);
 
   if (sync_service_->HasSyncSetupCompleted()) {
     base::string16 user = base::UTF8ToUTF16(

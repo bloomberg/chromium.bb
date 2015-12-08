@@ -98,8 +98,8 @@ void SigninGlobalError::ExecuteMenuItem(Browser* browser) {
                             signin_metrics::HISTOGRAM_REAUTH_SHOWN,
                             signin_metrics::HISTOGRAM_REAUTH_MAX);
   browser->window()->ShowAvatarBubbleFromAvatarButton(
-      BrowserWindow::AVATAR_BUBBLE_MODE_REAUTH,
-      signin::ManageAccountsParams());
+      BrowserWindow::AVATAR_BUBBLE_MODE_REAUTH, signin::ManageAccountsParams(),
+      signin_metrics::AccessPoint::ACCESS_POINT_MENU);
 #endif
 }
 

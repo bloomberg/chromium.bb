@@ -20,6 +20,10 @@ namespace content {
 class WebContents;
 }
 
+namespace signin_metrics {
+enum class AccessPoint;
+}
+
 class SyncSetupHandler : public options::OptionsPageUIHandler,
                          public SyncStartupTracker::Observer,
                          public LoginUIService::LoginUI {
@@ -44,7 +48,7 @@ class SyncSetupHandler : public options::OptionsPageUIHandler,
       content::WebUI* web_ui);
 
   // Initializes the sync setup flow and shows the setup UI.
-  void OpenSyncSetup();
+  void OpenSyncSetup(const base::ListValue* args);
 
   // Shows advanced configuration dialog without going through sign in dialog.
   // Kicks the sync backend if necessary with showing spinner dialog until it
@@ -105,11 +109,12 @@ class SyncSetupHandler : public options::OptionsPageUIHandler,
   void HandleCloseTimeout(const base::ListValue* args);
 #if !defined(OS_CHROMEOS)
   // Displays the GAIA login form.
-  void DisplayGaiaLogin();
+  void DisplayGaiaLogin(signin_metrics::AccessPoint access_point);
 
   // When web-flow is enabled, displays the Gaia login form in a new tab.
   // This function is virtual so that tests can override.
-  virtual void DisplayGaiaLoginInNewTabOrWindow();
+  virtual void DisplayGaiaLoginInNewTabOrWindow(
+      signin_metrics::AccessPoint access_point);
 #endif
 
   // Helper routine that gets the Profile associated with this object (virtual

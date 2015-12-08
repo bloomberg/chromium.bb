@@ -75,17 +75,10 @@ class OneClickSigninSyncStarterTest : public ChromeRenderViewHostTestHarness {
   void CreateSyncStarter(OneClickSigninSyncStarter::Callback callback,
                          const GURL& continue_url) {
     sync_starter_ = new OneClickSigninSyncStarter(
-        profile(),
-        NULL,
-        kTestingGaiaId,
-        kTestingUsername,
-        std::string(),
-        "refresh_token",
-        OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS,
-        web_contents(),
-        OneClickSigninSyncStarter::NO_CONFIRMATION,
-        continue_url,
-        callback);
+        profile(), NULL, kTestingGaiaId, kTestingUsername, std::string(),
+        "refresh_token", OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS,
+        web_contents(), OneClickSigninSyncStarter::NO_CONFIRMATION, GURL(),
+        continue_url, callback);
   }
 
   // Deletes itself when SigninFailed() or SigninSuccess() is called.

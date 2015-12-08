@@ -50,6 +50,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/notification_service.h"
@@ -1194,7 +1195,8 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
            anchoredAt:(NSPoint)point
              viewMode:(profiles::BubbleViewMode)viewMode
          tutorialMode:(profiles::TutorialMode)tutorialMode
-          serviceType:(signin::GAIAServiceType)serviceType {
+          serviceType:(signin::GAIAServiceType)serviceType
+          accessPoint:(signin_metrics::AccessPoint)accessPoint {
   base::scoped_nsobject<InfoBubbleWindow> window([[InfoBubbleWindow alloc]
       initWithContentRect:ui::kWindowSizeDeterminedLater
                 styleMask:NSBorderlessWindowMask
@@ -1209,6 +1211,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
     tutorialMode_ = tutorialMode;
     observer_.reset(new ActiveProfileObserverBridge(self, browser_));
     serviceType_ = serviceType;
+    accessPoint_ = accessPoint;
 
     avatarMenu_.reset(new AvatarMenu(
         &g_browser_process->profile_manager()->GetProfileInfoCache(),
@@ -2076,21 +2079,21 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   int messageId = -1;
   switch (viewMode_) {
     case profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN:
-      url = signin::GetPromoURL(signin_metrics::SOURCE_AVATAR_BUBBLE_SIGN_IN,
-                                false /* auto_close */,
-                                true /* is_constrained */);
+      url = signin::GetPromoURL(
+          accessPoint_, signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT,
+          false /* auto_close */, true /* is_constrained */);
       messageId = IDS_PROFILES_GAIA_SIGNIN_TITLE;
       break;
     case profiles::BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT:
       url = signin::GetPromoURL(
-          signin_metrics::SOURCE_AVATAR_BUBBLE_ADD_ACCOUNT,
-          false /* auto_close */,
-          true /* is_constrained */);
+          accessPoint_, signin_metrics::Reason::REASON_ADD_SECONDARY_ACCOUNT,
+          false /* auto_close */, true /* is_constrained */);
       messageId = IDS_PROFILES_GAIA_ADD_ACCOUNT_TITLE;
       break;
     case profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH:
       DCHECK(HasAuthError(browser_->profile()));
       url = signin::GetReauthURL(
+          accessPoint_, signin_metrics::Reason::REASON_REAUTHENTICATION,
           browser_->profile(), GetAuthErrorAccountId(browser_->profile()));
       messageId = IDS_PROFILES_GAIA_REAUTH_TITLE;
       break;

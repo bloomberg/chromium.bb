@@ -422,7 +422,8 @@ void InstalledBubbleContent::LinkClicked(views::Link* source, int event_flags) {
     NOTIMPLEMENTED();
 #else
     chrome::ShowBrowserSignin(
-        browser_, signin_metrics::SOURCE_EXTENSION_INSTALL_BUBBLE);
+        browser_,
+        signin_metrics::AccessPoint::ACCESS_POINT_EXTENSION_INSTALL_BUBBLE);
 #endif
     return;
   }

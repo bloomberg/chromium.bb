@@ -68,7 +68,8 @@ void LoginUIService::ShowLoginPopup() {
   chrome::ScopedTabbedBrowserDisplayer displayer(
       profile_, chrome::GetActiveDesktop());
   chrome::ShowBrowserSignin(
-      displayer.browser(), signin_metrics::SOURCE_APP_LAUNCHER);
+      displayer.browser(),
+      signin_metrics::AccessPoint::ACCESS_POINT_EXTENSIONS);
 #endif
 }
 
@@ -80,9 +81,10 @@ void LoginUIService::DisplayLoginResult(Browser* browser,
 #endif
   last_login_result_ = message;
   browser->window()->ShowAvatarBubbleFromAvatarButton(
-      message.empty() ? BrowserWindow::AVATAR_BUBBLE_MODE_CONFIRM_SIGNIN :
-                        BrowserWindow::AVATAR_BUBBLE_MODE_SHOW_ERROR,
-      signin::ManageAccountsParams());
+      message.empty() ? BrowserWindow::AVATAR_BUBBLE_MODE_CONFIRM_SIGNIN
+                      : BrowserWindow::AVATAR_BUBBLE_MODE_SHOW_ERROR,
+      signin::ManageAccountsParams(),
+      signin_metrics::AccessPoint::ACCESS_POINT_EXTENSIONS);
 }
 
 const base::string16& LoginUIService::GetLastLoginResult() {

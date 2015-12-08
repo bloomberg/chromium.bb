@@ -781,7 +781,8 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
       ShowHelp(browser_, HELP_SOURCE_MENU);
       break;
     case IDC_SHOW_SIGNIN:
-      ShowBrowserSigninOrSettings(browser_, signin_metrics::SOURCE_MENU);
+      ShowBrowserSigninOrSettings(
+          browser_, signin_metrics::AccessPoint::ACCESS_POINT_MENU);
       break;
     case IDC_DISTILL_PAGE:
       DistillCurrentPage(browser_);

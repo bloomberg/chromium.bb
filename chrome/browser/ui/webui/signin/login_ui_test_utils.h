@@ -45,12 +45,12 @@ void SigninInOldGaiaFlow(Browser* browser,
 // This will block until a signin succeeded or failed notification is observed.
 // In case |wait_for_account_cookies|, the call will block until the account
 // cookies have been written to the cookie jar.
-// |signin_source| identifies the source used to load the signin page.
+// |access_point| identifies the access point used to load the signin page.
 bool SignInWithUI(Browser* browser,
                   const std::string& email,
                   const std::string& password,
                   bool wait_for_account_cookies,
-                  signin_metrics::Source signin_source);
+                  signin_metrics::AccessPoint access_point);
 
 // Most common way to sign in a user, it does not wait for cookies to be set
 // and uses the SOURCE_START_PAGE as signin source.

@@ -205,7 +205,8 @@ IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest,
   Browser* browser = CreateBrowser(new_profile);
   browser->window()->ShowAvatarBubbleFromAvatarButton(
       BrowserWindow::AVATAR_BUBBLE_MODE_CONFIRM_SIGNIN,
-      signin::ManageAccountsParams());
+      signin::ManageAccountsParams(),
+      signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN);
   ASSERT_FALSE(ProfileChooserView::IsShowing());
   CloseBrowserSynchronously(browser);
 }

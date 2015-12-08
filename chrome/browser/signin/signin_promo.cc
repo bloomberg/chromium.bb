@@ -165,25 +165,51 @@ void SetUserSkippedPromo(Profile* profile) {
   profile->GetPrefs()->SetBoolean(prefs::kSignInPromoUserSkipped, true);
 }
 
-GURL GetLandingURL(const char* option, int value) {
-  std::string url = base::StringPrintf("%s/success.html?%s=%d",
-                                       extensions::kGaiaAuthExtensionOrigin,
-                                       option,
-                                       value);
+GURL GetLandingURL(signin_metrics::AccessPoint access_point) {
+  std::string url = base::StringPrintf(
+      "%s/success.html?%s=%d", extensions::kGaiaAuthExtensionOrigin,
+      kSignInPromoQueryKeyAccessPoint, static_cast<int>(access_point));
+
+  // TODO(gogerald): right now, gaia server needs to distinguish the source from
+  // signin_metrics::SOURCE_START_PAGE, signin_metrics::SOURCE_SETTINGS and
+  // the others to show advanced sync settings, remove them after
+  // switching to Minute Maid sign in flow.
+  if (access_point == signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE) {
+    base::StringAppendF(&url, "&%s=%d", kSignInPromoQueryKeySource,
+                        signin_metrics::SOURCE_START_PAGE);
+  } else if (access_point ==
+             signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS) {
+    base::StringAppendF(&url, "&%s=%d", kSignInPromoQueryKeySource,
+                        signin_metrics::SOURCE_SETTINGS);
+  } else {
+    base::StringAppendF(&url, "&%s=%d", kSignInPromoQueryKeySource,
+                        signin_metrics::SOURCE_OTHERS);
+  }
+
   return GURL(url);
 }
 
-GURL GetPromoURL(signin_metrics::Source source, bool auto_close) {
-  return GetPromoURL(source, auto_close, false /* is_constrained */);
+GURL GetPromoURL(signin_metrics::AccessPoint access_point,
+                 signin_metrics::Reason reason,
+                 bool auto_close) {
+  return GetPromoURL(access_point, reason, auto_close,
+                     false /* is_constrained */);
 }
 
-GURL GetPromoURL(signin_metrics::Source source,
+GURL GetPromoURL(signin_metrics::AccessPoint access_point,
+                 signin_metrics::Reason reason,
                  bool auto_close,
                  bool is_constrained) {
-  DCHECK_NE(signin_metrics::SOURCE_UNKNOWN, source);
+  CHECK_LT(static_cast<int>(access_point),
+           static_cast<int>(signin_metrics::AccessPoint::ACCESS_POINT_MAX));
+  CHECK_LT(static_cast<int>(reason),
+           static_cast<int>(signin_metrics::Reason::REASON_MAX));
 
   std::string url(chrome::kChromeUIChromeSigninURL);
-  base::StringAppendF(&url, "?%s=%d", kSignInPromoQueryKeySource, source);
+  base::StringAppendF(&url, "?%s=%d", kSignInPromoQueryKeyAccessPoint,
+                      static_cast<int>(access_point));
+  base::StringAppendF(&url, "&%s=%d", kSignInPromoQueryKeyReason,
+                      static_cast<int>(reason));
   if (auto_close)
     base::StringAppendF(&url, "&%s=1", kSignInPromoQueryKeyAutoClose);
   if (is_constrained)
@@ -191,16 +217,20 @@ GURL GetPromoURL(signin_metrics::Source source,
   return GURL(url);
 }
 
-GURL GetReauthURL(Profile* profile, const std::string& account_id) {
+GURL GetReauthURL(signin_metrics::AccessPoint access_point,
+                  signin_metrics::Reason reason,
+                  Profile* profile,
+                  const std::string& account_id) {
   AccountInfo info = AccountTrackerServiceFactory::GetForProfile(profile)
                          ->GetAccountInfo(account_id);
-  return GetReauthURLWithEmail(info.email);
+  return GetReauthURLWithEmail(access_point, reason, info.email);
 }
 
-GURL GetReauthURLWithEmail(const std::string& email) {
-  GURL url = signin::GetPromoURL(
-      signin_metrics::SOURCE_REAUTH, true /* auto_close */,
-      true /* is_constrained */);
+GURL GetReauthURLWithEmail(signin_metrics::AccessPoint access_point,
+                           signin_metrics::Reason reason,
+                           const std::string& email) {
+  GURL url = signin::GetPromoURL(access_point, reason, true /* auto_close */,
+                                 true /* is_constrained */);
 
   url = net::AppendQueryParameter(url, "email", email);
   url = net::AppendQueryParameter(url, "validateEmail", "1");
@@ -223,24 +253,27 @@ GURL GetSigninPartitionURL() {
 }
 
 GURL GetSigninURLFromBubbleViewMode(Profile* profile,
-                                    profiles::BubbleViewMode mode) {
+                                    profiles::BubbleViewMode mode,
+                                    signin_metrics::AccessPoint access_point) {
   switch (mode) {
     case profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN:
-      return GetPromoURL(signin_metrics::SOURCE_AVATAR_BUBBLE_SIGN_IN,
-                         false /* auto_close */,
-                         true /* is_constrained */);
+      return GetPromoURL(access_point,
+                         signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT,
+                         false /* auto_close */, true /* is_constrained */);
       break;
     case profiles::BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT:
-      return GetPromoURL(signin_metrics::SOURCE_AVATAR_BUBBLE_ADD_ACCOUNT,
-                         false /* auto_close */,
-                         true /* is_constrained */);
+      return GetPromoURL(access_point,
+                         signin_metrics::Reason::REASON_ADD_SECONDARY_ACCOUNT,
+                         false /* auto_close */, true /* is_constrained */);
       break;
     case profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH: {
       const SigninErrorController* error_controller =
           SigninErrorControllerFactory::GetForProfile(profile);
       CHECK(error_controller);
       DCHECK(error_controller->HasError());
-      return GetReauthURL(profile, error_controller->error_account_id());
+      return GetReauthURL(access_point,
+                          signin_metrics::Reason::REASON_REAUTHENTICATION,
+                          profile, error_controller->error_account_id());
       break;
     }
     default:
@@ -249,17 +282,34 @@ GURL GetSigninURLFromBubbleViewMode(Profile* profile,
   }
 }
 
-signin_metrics::Source GetSourceForPromoURL(const GURL& url) {
+signin_metrics::AccessPoint GetAccessPointForPromoURL(const GURL& url) {
   std::string value;
-  if (net::GetValueForKeyInQuery(url, kSignInPromoQueryKeySource, &value)) {
-    int source = 0;
-    if (base::StringToInt(value, &source) &&
-        source >= signin_metrics::SOURCE_START_PAGE &&
-        source < signin_metrics::SOURCE_UNKNOWN) {
-      return static_cast<signin_metrics::Source>(source);
-    }
+  if (!net::GetValueForKeyInQuery(url, kSignInPromoQueryKeyAccessPoint,
+                                  &value)) {
+    return signin_metrics::AccessPoint::ACCESS_POINT_MAX;
   }
-  return signin_metrics::SOURCE_UNKNOWN;
+
+  int access_point = 0;
+  CHECK(base::StringToInt(value, &access_point));
+  CHECK_GE(
+      access_point,
+      static_cast<int>(signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE));
+  CHECK_LT(access_point,
+           static_cast<int>(signin_metrics::AccessPoint::ACCESS_POINT_MAX));
+  return static_cast<signin_metrics::AccessPoint>(access_point);
+}
+
+signin_metrics::Reason GetSigninReasonForPromoURL(const GURL& url) {
+  std::string value;
+  if (!net::GetValueForKeyInQuery(url, kSignInPromoQueryKeyReason, &value))
+    return signin_metrics::Reason::REASON_MAX;
+
+  int reason = 0;
+  CHECK(base::StringToInt(value, &reason));
+  CHECK_GE(reason, static_cast<int>(
+                       signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT));
+  CHECK_LT(reason, static_cast<int>(signin_metrics::Reason::REASON_MAX));
+  return static_cast<signin_metrics::Reason>(reason);
 }
 
 bool IsAutoCloseEnabledInURL(const GURL& url) {

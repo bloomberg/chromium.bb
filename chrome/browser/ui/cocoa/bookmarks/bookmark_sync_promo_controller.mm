@@ -108,7 +108,8 @@ const int kFontSize = 11;
 - (BOOL)textView:(NSTextView *)textView
    clickedOnLink:(id)link
          atIndex:(NSUInteger)charIndex {
-  chrome::ShowBrowserSignin(browser_, signin_metrics::SOURCE_BOOKMARK_BUBBLE);
+  chrome::ShowBrowserSignin(
+      browser_, signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_BUBBLE);
   return YES;
 }
 

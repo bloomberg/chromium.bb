@@ -1126,10 +1126,11 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
       break;
     case IDC_SHOW_SYNC_SETUP:
       if (Browser* browser = ActivateBrowser(lastProfile)) {
-        chrome::ShowBrowserSigninOrSettings(browser,
-                                            signin_metrics::SOURCE_MENU);
+        chrome::ShowBrowserSigninOrSettings(
+            browser, signin_metrics::AccessPoint::ACCESS_POINT_MENU);
       } else {
-        chrome::OpenSyncSetupWindow(lastProfile, signin_metrics::SOURCE_MENU);
+        chrome::OpenSyncSetupWindow(
+            lastProfile, signin_metrics::AccessPoint::ACCESS_POINT_MENU);
       }
       break;
     case IDC_TASK_MANAGER:

@@ -57,6 +57,10 @@ class Rect;
 class Size;
 }
 
+namespace signin_metrics {
+enum class AccessPoint;
+}
+
 namespace web_modal {
 class WebContentsModalDialogHost;
 }
@@ -363,6 +367,8 @@ class BrowserWindow : public ui::BaseWindow {
 
   // Shows the avatar bubble on the window frame off of the avatar button with
   // the given mode. The Service Type specified by GAIA is provided as well.
+  // |access_point| indicates the access point used to open the Gaia sign in
+  // page.
   enum AvatarBubbleMode {
     AVATAR_BUBBLE_MODE_DEFAULT,
     AVATAR_BUBBLE_MODE_ACCOUNT_MANAGEMENT,
@@ -373,11 +379,17 @@ class BrowserWindow : public ui::BaseWindow {
     AVATAR_BUBBLE_MODE_SHOW_ERROR,
     AVATAR_BUBBLE_MODE_FAST_USER_SWITCH,
   };
-  virtual void ShowAvatarBubbleFromAvatarButton(AvatarBubbleMode mode,
-      const signin::ManageAccountsParams& manage_accounts_params) = 0;
+  virtual void ShowAvatarBubbleFromAvatarButton(
+      AvatarBubbleMode mode,
+      const signin::ManageAccountsParams& manage_accounts_params,
+      signin_metrics::AccessPoint access_point) = 0;
 
   // Shows the signin flow for |mode| in a tab-modal dialog.
-  virtual void ShowModalSigninWindow(AvatarBubbleMode mode) = 0;
+  // |access_point| indicates the access point used to open the Gaia sign in
+  // page.
+  virtual void ShowModalSigninWindow(
+      AvatarBubbleMode mode,
+      signin_metrics::AccessPoint access_point) = 0;
 
   // Closes the tab-modal signin flow opened with ShowModalSigninWindow, if it's
   // open. Does nothing otherwise.

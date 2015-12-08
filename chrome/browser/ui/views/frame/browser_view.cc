@@ -2554,7 +2554,8 @@ void BrowserView::UpdateAcceleratorMetrics(const ui::Accelerator& accelerator,
 
 void BrowserView::ShowAvatarBubbleFromAvatarButton(
     AvatarBubbleMode mode,
-    const signin::ManageAccountsParams& manage_accounts_params) {
+    const signin::ManageAccountsParams& manage_accounts_params,
+    signin_metrics::AccessPoint access_point) {
 #if defined(FRAME_AVATAR_BUTTON)
   // Do not show avatar bubble if there is no avatar menu button.
   if (!frame_->GetNewAvatarMenuButton())
@@ -2566,10 +2567,10 @@ void BrowserView::ShowAvatarBubbleFromAvatarButton(
                                                &tutorial_mode);
 
   if (SigninViewController::ShouldShowModalSigninForMode(bubble_view_mode)) {
-    ShowModalSigninWindow(mode);
+    ShowModalSigninWindow(mode, access_point);
   } else {
     ProfileChooserView::ShowBubble(
-        bubble_view_mode, tutorial_mode, manage_accounts_params,
+        bubble_view_mode, tutorial_mode, manage_accounts_params, access_point,
         frame_->GetNewAvatarMenuButton(), views::BubbleBorder::TOP_RIGHT,
         views::BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE, browser());
     ProfileMetrics::LogProfileOpenMethod(ProfileMetrics::ICON_AVATAR_BUBBLE);
@@ -2579,12 +2580,15 @@ void BrowserView::ShowAvatarBubbleFromAvatarButton(
 #endif
 }
 
-void BrowserView::ShowModalSigninWindow(AvatarBubbleMode mode) {
+void BrowserView::ShowModalSigninWindow(
+    AvatarBubbleMode mode,
+    signin_metrics::AccessPoint access_point) {
   profiles::BubbleViewMode bubble_view_mode;
   profiles::TutorialMode tutorial_mode;
   profiles::BubbleViewModeFromAvatarBubbleMode(mode, &bubble_view_mode,
                                                &tutorial_mode);
-  signin_view_controller_.ShowModalSignin(bubble_view_mode, browser());
+  signin_view_controller_.ShowModalSignin(bubble_view_mode, browser(),
+                                          access_point);
 }
 
 void BrowserView::CloseModalSigninWindow() {

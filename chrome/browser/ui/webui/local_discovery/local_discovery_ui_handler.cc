@@ -261,7 +261,8 @@ void LocalDiscoveryUIHandler::HandleShowSyncUI(
   Browser* browser = chrome::FindBrowserWithWebContents(
       web_ui()->GetWebContents());
   DCHECK(browser);
-  chrome::ShowBrowserSignin(browser, signin_metrics::SOURCE_DEVICES_PAGE);
+  chrome::ShowBrowserSignin(
+      browser, signin_metrics::AccessPoint::ACCESS_POINT_DEVICES_PAGE);
 }
 
 void LocalDiscoveryUIHandler::StartRegisterHTTP(

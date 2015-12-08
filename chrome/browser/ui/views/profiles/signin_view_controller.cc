@@ -97,8 +97,10 @@ SigninViewController::~SigninViewController() {
 views::WebView* SigninViewController::CreateGaiaWebView(
     content::WebContentsDelegate* delegate,
     profiles::BubbleViewMode mode,
-    Profile* profile) {
-  GURL url = signin::GetSigninURLFromBubbleViewMode(profile, mode);
+    Profile* profile,
+    signin_metrics::AccessPoint access_point) {
+  GURL url =
+      signin::GetSigninURLFromBubbleViewMode(profile, mode, access_point);
 
   // Adds Gaia signin webview.
   const gfx::Size pref_size = switches::UsePasswordSeparatedSigninFlow()
@@ -121,12 +123,15 @@ views::WebView* SigninViewController::CreateGaiaWebView(
 }
 
 void SigninViewController::ShowModalSignin(
-    profiles::BubbleViewMode mode, Browser* browser) {
+    profiles::BubbleViewMode mode,
+    Browser* browser,
+    signin_metrics::AccessPoint access_point) {
   CloseModalSignin();
   // The delegate will delete itself on request of the views code when the
   // widget is closed.
   modal_signin_delegate_ = new ModalSigninDelegate(
-    this, CreateGaiaWebView(nullptr, mode, browser->profile()), browser);
+      this, CreateGaiaWebView(nullptr, mode, browser->profile(), access_point),
+      browser);
 }
 
 void SigninViewController::CloseModalSignin() {

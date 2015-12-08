@@ -203,7 +203,7 @@ cr.define('options', function() {
         } else if (cr.isChromeOS) {
           SyncSetupOverlay.showSetupUI();
         } else {
-          SyncSetupOverlay.startSignIn();
+          SyncSetupOverlay.startSignIn('access-point-settings');
         }
       };
       $('customize-sync').onclick = function(event) {

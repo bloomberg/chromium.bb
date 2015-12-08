@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "base/scoped_observer.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/sync/sync_startup_tracker.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
@@ -24,6 +25,10 @@ class SigninManagerBase;
 namespace content {
 class WebContents;
 class WebUI;
+}
+
+namespace signin_metrics {
+enum class AccessPoint;
 }
 
 namespace settings {
@@ -59,7 +64,7 @@ class SyncHandler : public content::WebUIMessageHandler,
   void OnStateChanged() override;
 
   // Initializes the sync setup flow and shows the setup UI.
-  void OpenSyncSetup();
+  void OpenSyncSetup(const base::ListValue* args);
 
   // Shows advanced configuration dialog without going through sign in dialog.
   // Kicks the sync backend if necessary with showing spinner dialog until it
@@ -127,11 +132,12 @@ class SyncHandler : public content::WebUIMessageHandler,
 
 #if !defined(OS_CHROMEOS)
   // Displays the GAIA login form.
-  void DisplayGaiaLogin();
+  void DisplayGaiaLogin(signin_metrics::AccessPoint access_point);
 
   // When web-flow is enabled, displays the Gaia login form in a new tab.
   // This function is virtual so that tests can override.
-  virtual void DisplayGaiaLoginInNewTabOrWindow();
+  virtual void DisplayGaiaLoginInNewTabOrWindow(
+      signin_metrics::AccessPoint access_point);
 #endif
 
   // A utility function to call before actually showing setup dialog. Makes sure

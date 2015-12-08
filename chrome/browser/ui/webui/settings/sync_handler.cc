@@ -244,16 +244,17 @@ void SyncHandler::RegisterMessages() {
 }
 
 #if !defined(OS_CHROMEOS)
-void SyncHandler::DisplayGaiaLogin() {
+void SyncHandler::DisplayGaiaLogin(signin_metrics::AccessPoint access_point) {
   DCHECK(!sync_startup_tracker_);
   // Advanced options are no longer being configured if the login screen is
   // visible. If the user exits the signin wizard after this without
   // configuring sync, CloseSyncSetup() will ensure they are logged out.
   configuring_sync_ = false;
-  DisplayGaiaLoginInNewTabOrWindow();
+  DisplayGaiaLoginInNewTabOrWindow(access_point);
 }
 
-void SyncHandler::DisplayGaiaLoginInNewTabOrWindow() {
+void SyncHandler::DisplayGaiaLoginInNewTabOrWindow(
+    signin_metrics::AccessPoint access_point) {
   Browser* browser = chrome::FindBrowserWithWebContents(
       web_ui()->GetWebContents());
   bool force_new_tab = false;
@@ -280,19 +281,21 @@ void SyncHandler::DisplayGaiaLoginInNewTabOrWindow() {
     if (!force_new_tab) {
       browser->window()->ShowAvatarBubbleFromAvatarButton(
           BrowserWindow::AVATAR_BUBBLE_MODE_REAUTH,
-          signin::ManageAccountsParams());
+          signin::ManageAccountsParams(), access_point);
     } else {
-      url = signin::GetReauthURL(browser->profile(),
-                                 error_controller->error_account_id());
+      url = signin::GetReauthURL(
+          access_point, signin_metrics::Reason::REASON_REAUTHENTICATION,
+          browser->profile(), error_controller->error_account_id());
     }
   } else {
-    signin_metrics::LogSigninSource(signin_metrics::SOURCE_SETTINGS);
     if (!force_new_tab) {
       browser->window()->ShowAvatarBubbleFromAvatarButton(
           BrowserWindow::AVATAR_BUBBLE_MODE_SIGNIN,
-          signin::ManageAccountsParams());
+          signin::ManageAccountsParams(), access_point);
     } else {
-      url = signin::GetPromoURL(signin_metrics::SOURCE_SETTINGS, true);
+      url = signin::GetPromoURL(
+          access_point, signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT,
+          true);
     }
   }
 
@@ -531,7 +534,7 @@ void SyncHandler::HandleShowSetupUI(const base::ListValue* args) {
   // If a setup wizard is present on this page or another, bring it to focus.
   // Otherwise, display a new one on this page.
   if (!FocusExistingWizardIfPresent())
-    OpenSyncSetup();
+    OpenSyncSetup(args);
 }
 
 #if defined(OS_CHROMEOS)
@@ -547,7 +550,7 @@ void SyncHandler::HandleDoSignOutOnAuthError(const base::ListValue* args) {
 void SyncHandler::HandleStartSignin(const base::ListValue* args) {
   // Should only be called if the user is not already signed in.
   DCHECK(!SigninManagerFactory::GetForProfile(profile_)->IsAuthenticated());
-  OpenSyncSetup();
+  OpenSyncSetup(args);
 }
 
 void SyncHandler::HandleStopSyncing(const base::ListValue* args) {
@@ -628,7 +631,7 @@ void SyncHandler::CloseSyncSetup() {
   configuring_sync_ = false;
 }
 
-void SyncHandler::OpenSyncSetup() {
+void SyncHandler::OpenSyncSetup(const base::ListValue* args) {
   if (!PrepareSyncSetup())
     return;
 
@@ -653,7 +656,15 @@ void SyncHandler::OpenSyncSetup() {
     // setup including any visible overlays, and display the gaia auth page.
     // Control will be returned to the sync settings page once auth is complete.
     CloseUI();
-    DisplayGaiaLogin();
+    if (args) {
+      std::string access_point = base::UTF16ToUTF8(ExtractStringValue(args));
+      if (access_point == "access-point-supervised-user") {
+        DisplayGaiaLogin(
+            signin_metrics::AccessPoint::ACCESS_POINT_SUPERVISED_USER);
+        return;
+      }
+    }
+    DisplayGaiaLogin(signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS);
     return;
   }
 #endif

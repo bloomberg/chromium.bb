@@ -85,8 +85,8 @@ TEST_F('SyncSetupWebUITestAsync', 'VerifySignIn', function() {
   // Handle SyncSetupStartSignIn by displaying the sync setup dialog, verifying
   // that a confirmation dialog appears, and clicking OK to dismiss the dialog.
   // Note that this test doesn't actually do a gaia sign in.
-  this.mockHandler.expects(once()).SyncSetupStartSignIn().will(callFunction(
-      function() {
+  this.mockHandler.expects(once()).SyncSetupStartSignIn(
+    'access-point-settings').will(callFunction(function() {
     SyncSetupOverlay.showSyncSetupPage('configure');
     var okButton = $('confirm-everything-ok');
     assertNotEquals(null, okButton);
@@ -103,8 +103,8 @@ TEST_F('SyncSetupWebUITestAsync', 'VerifySignIn', function() {
 
 // Test that switching to and from "Sync everything" saves and restores types.
 TEST_F('SyncSetupWebUITestAsync', 'RestoreSyncDataTypes', function() {
-  this.mockHandler.expects(once()).SyncSetupStartSignIn().will(callFunction(
-      function() {
+  this.mockHandler.expects(once()).SyncSetupStartSignIn(
+    'access-point-settings').will(callFunction(function() {
     SyncSetupOverlay.showSyncSetupPage('configure', {});
 
     $('sync-select-datatypes').selectedIndex = 1;

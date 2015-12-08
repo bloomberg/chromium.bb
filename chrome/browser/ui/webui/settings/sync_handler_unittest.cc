@@ -166,7 +166,8 @@ class TestingSyncHandler : public SyncHandler {
 
  private:
 #if !defined(OS_CHROMEOS)
-  void DisplayGaiaLoginInNewTabOrWindow() override {}
+  void DisplayGaiaLoginInNewTabOrWindow(
+      signin_metrics::AccessPoint access_point) override {}
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(TestingSyncHandler);
@@ -397,7 +398,7 @@ TEST_F(SyncHandlerTest,
   EXPECT_CALL(*mock_pss_, IsBackendInitialized()).WillRepeatedly(Return(false));
   SetDefaultExpectationsForConfigPage();
 
-  handler_->OpenSyncSetup();
+  handler_->OpenSyncSetup(nullptr);
 
   // We expect a call to settings.SyncPrivateApi.showSyncSetupPage.
   EXPECT_EQ(1U, web_ui_.call_data().size());
@@ -448,7 +449,7 @@ TEST_F(SyncHandlerTest,
       .WillOnce(Return(false))
       .WillRepeatedly(Return(true));
   SetDefaultExpectationsForConfigPage();
-  handler_->OpenSyncSetup();
+  handler_->OpenSyncSetup(nullptr);
 
   // It's important to tell sync the user cancelled the setup flow before we
   // tell it we're through with the setup progress.
@@ -472,7 +473,7 @@ TEST_F(SyncHandlerTest,
   error_ = GoogleServiceAuthError::AuthErrorNone();
   EXPECT_CALL(*mock_pss_, IsBackendInitialized()).WillRepeatedly(Return(false));
 
-  handler_->OpenSyncSetup();
+  handler_->OpenSyncSetup(nullptr);
   const content::TestWebUI::CallData& data = *web_ui_.call_data()[0];
   EXPECT_EQ("settings.SyncPrivateApi.showSyncSetupPage", data.function_name());
   std::string page;
@@ -506,7 +507,7 @@ TEST_F(SyncHandlerNonCrosTest, HandleGaiaAuthFailure) {
   EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
       .WillRepeatedly(Return(false));
   // Open the web UI.
-  handler_->OpenSyncSetup();
+  handler_->OpenSyncSetup(nullptr);
 
   ASSERT_FALSE(handler_->is_configuring_sync());
 }
@@ -519,7 +520,7 @@ TEST_F(SyncHandlerNonCrosTest, UnrecoverableErrorInitializingSync) {
   EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
       .WillRepeatedly(Return(false));
   // Open the web UI.
-  handler_->OpenSyncSetup();
+  handler_->OpenSyncSetup(nullptr);
 
   ASSERT_FALSE(handler_->is_configuring_sync());
 }
@@ -531,7 +532,7 @@ TEST_F(SyncHandlerNonCrosTest, GaiaErrorInitializingSync) {
   EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
       .WillRepeatedly(Return(false));
   // Open the web UI.
-  handler_->OpenSyncSetup();
+  handler_->OpenSyncSetup(nullptr);
 
   ASSERT_FALSE(handler_->is_configuring_sync());
 }
@@ -760,7 +761,7 @@ TEST_F(SyncHandlerTest, ShowSyncSetup) {
   SetupInitializedProfileSyncService();
   // This should display the sync setup dialog (not login).
   SetDefaultExpectationsForConfigPage();
-  handler_->OpenSyncSetup();
+  handler_->OpenSyncSetup(nullptr);
 
   ExpectConfig();
 }
@@ -797,7 +798,7 @@ TEST_F(SyncHandlerTest, ShowSigninOnAuthError) {
 
   // On ChromeOS, this should display the spinner while we try to startup the
   // sync backend, and on desktop this displays the login dialog.
-  handler_->OpenSyncSetup();
+  handler_->OpenSyncSetup(nullptr);
 
   // Sync setup is closed when re-auth is in progress.
   EXPECT_EQ(NULL,
@@ -816,7 +817,7 @@ TEST_F(SyncHandlerTest, ShowSetupSyncEverything) {
   SetupInitializedProfileSyncService();
   SetDefaultExpectationsForConfigPage();
   // This should display the sync setup dialog (not login).
-  handler_->OpenSyncSetup();
+  handler_->OpenSyncSetup(nullptr);
 
   ExpectConfig();
   const content::TestWebUI::CallData& data = *web_ui_.call_data()[0];
@@ -850,7 +851,7 @@ TEST_F(SyncHandlerTest, ShowSetupManuallySyncAll) {
   sync_prefs.SetKeepEverythingSynced(false);
   SetDefaultExpectationsForConfigPage();
   // This should display the sync setup dialog (not login).
-  handler_->OpenSyncSetup();
+  handler_->OpenSyncSetup(nullptr);
 
   ExpectConfig();
   const content::TestWebUI::CallData& data = *web_ui_.call_data()[0];
@@ -877,7 +878,7 @@ TEST_F(SyncHandlerTest, ShowSetupSyncForAllTypesIndividually) {
         WillRepeatedly(Return(types));
 
     // This should display the sync setup dialog (not login).
-    handler_->OpenSyncSetup();
+    handler_->OpenSyncSetup(nullptr);
 
     ExpectConfig();
     // Close the config overlay.
@@ -902,7 +903,7 @@ TEST_F(SyncHandlerTest, ShowSetupGaiaPassphraseRequired) {
   SetDefaultExpectationsForConfigPage();
 
   // This should display the sync setup dialog (not login).
-  handler_->OpenSyncSetup();
+  handler_->OpenSyncSetup(nullptr);
 
   ExpectConfig();
   const content::TestWebUI::CallData& data = *web_ui_.call_data()[0];
@@ -924,7 +925,7 @@ TEST_F(SyncHandlerTest, ShowSetupCustomPassphraseRequired) {
   SetDefaultExpectationsForConfigPage();
 
   // This should display the sync setup dialog (not login).
-  handler_->OpenSyncSetup();
+  handler_->OpenSyncSetup(nullptr);
 
   ExpectConfig();
   const content::TestWebUI::CallData& data = *web_ui_.call_data()[0];
@@ -946,7 +947,7 @@ TEST_F(SyncHandlerTest, ShowSetupEncryptAll) {
       .WillRepeatedly(Return(true));
 
   // This should display the sync setup dialog (not login).
-  handler_->OpenSyncSetup();
+  handler_->OpenSyncSetup(nullptr);
 
   ExpectConfig();
   const content::TestWebUI::CallData& data = *web_ui_.call_data()[0];
@@ -966,7 +967,7 @@ TEST_F(SyncHandlerTest, ShowSetupEncryptAllDisallowed) {
       .WillRepeatedly(Return(false));
 
   // This should display the sync setup dialog (not login).
-  handler_->OpenSyncSetup();
+  handler_->OpenSyncSetup(nullptr);
 
   ExpectConfig();
   const content::TestWebUI::CallData& data = *web_ui_.call_data()[0];

@@ -601,6 +601,7 @@ void ProfileChooserView::ShowBubble(
     profiles::BubbleViewMode view_mode,
     profiles::TutorialMode tutorial_mode,
     const signin::ManageAccountsParams& manage_accounts_params,
+    signin_metrics::AccessPoint access_point,
     views::View* anchor_view,
     views::BubbleBorder::Arrow arrow,
     views::BubbleBorder::BubbleAlignment border_alignment,
@@ -621,8 +622,9 @@ void ProfileChooserView::ShowBubble(
     return;
   }
 
-  profile_bubble_ = new ProfileChooserView(anchor_view, arrow, browser,
-      view_mode, tutorial_mode, manage_accounts_params.service_type);
+  profile_bubble_ = new ProfileChooserView(
+      anchor_view, arrow, browser, view_mode, tutorial_mode,
+      manage_accounts_params.service_type, access_point);
   views::BubbleDelegateView::CreateBubble(profile_bubble_);
   profile_bubble_->set_close_on_deactivate(close_on_deactivate_for_testing_);
   profile_bubble_->SetAlignment(border_alignment);
@@ -646,12 +648,14 @@ ProfileChooserView::ProfileChooserView(views::View* anchor_view,
                                        Browser* browser,
                                        profiles::BubbleViewMode view_mode,
                                        profiles::TutorialMode tutorial_mode,
-                                       signin::GAIAServiceType service_type)
+                                       signin::GAIAServiceType service_type,
+                                       signin_metrics::AccessPoint access_point)
     : BubbleDelegateView(anchor_view, arrow),
       browser_(browser),
       view_mode_(view_mode),
       tutorial_mode_(tutorial_mode),
-      gaia_service_type_(service_type) {
+      gaia_service_type_(service_type),
+      access_point_(access_point) {
   // Reset the default margins inherited from the BubbleDelegateView.
   // Add a small bottom inset so that the bubble's rounded corners show up.
   set_margins(gfx::Insets(0, 0, 1, 0));
@@ -843,7 +847,7 @@ void ProfileChooserView::ShowViewFromMode(profiles::BubbleViewMode mode) {
       converted_mode = BrowserWindow::AVATAR_BUBBLE_MODE_REAUTH;
     }
 
-    browser_->window()->ShowModalSigninWindow(converted_mode);
+    browser_->window()->ShowModalSigninWindow(converted_mode, access_point_);
   } else {
     ShowView(mode, avatar_menu_.get());
   }
@@ -1637,7 +1641,7 @@ void ProfileChooserView::CreateAccountButton(views::GridLayout* layout,
 views::View* ProfileChooserView::CreateGaiaSigninView(
     views::View** signin_content_view) {
   views::WebView* web_view = SigninViewController::CreateGaiaWebView(
-      this, view_mode_, browser_->profile());
+      this, view_mode_, browser_->profile(), access_point_);
 
   int message_id;
   switch (view_mode_) {

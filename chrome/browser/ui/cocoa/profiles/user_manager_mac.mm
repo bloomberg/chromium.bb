@@ -219,7 +219,9 @@ class ReauthDialogDelegate : public UserManager::ReauthDialogObserver,
 }
 
 - (void)show {
-  GURL url = signin::GetReauthURLWithEmail(emailAddress_);
+  GURL url = signin::GetReauthURLWithEmail(
+      signin_metrics::AccessPoint::ACCESS_POINT_USER_MANAGER,
+      signin_metrics::Reason::REASON_UNLOCK, emailAddress_);
   reauthWebContents_->GetController().LoadURL(url, content::Referrer(),
                                         ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
                                         std::string());

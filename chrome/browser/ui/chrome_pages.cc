@@ -357,7 +357,8 @@ void ShowSearchEngineSettings(Browser* browser) {
 }
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
-void ShowBrowserSignin(Browser* browser, signin_metrics::Source source) {
+void ShowBrowserSignin(Browser* browser,
+                       signin_metrics::AccessPoint access_point) {
   Profile* original_profile = browser->profile()->GetOriginalProfile();
   SigninManagerBase* manager =
       SigninManagerFactory::GetForProfile(original_profile);
@@ -374,14 +375,13 @@ void ShowBrowserSignin(Browser* browser, signin_metrics::Source source) {
     browser = displayer->browser();
   }
 
-  signin_metrics::LogSigninSource(source);
-
-  // Since the app launcher is a separate application, it might steal focus
+  // Since the extension is a separate application, it might steal focus
   // away from Chrome, and accidentally close the avatar bubble. The same will
   // happen if we had to switch browser windows to show the sign in page. In
   // this case, fallback to the full-tab signin page.
   bool show_avatar_bubble =
-      source != signin_metrics::SOURCE_APP_LAUNCHER && !switched_browser;
+      access_point != signin_metrics::AccessPoint::ACCESS_POINT_EXTENSIONS &&
+      !switched_browser;
 #if defined(OS_CHROMEOS)
   // ChromeOS doesn't have the avatar bubble.
   show_avatar_bubble = false;
@@ -390,16 +390,19 @@ void ShowBrowserSignin(Browser* browser, signin_metrics::Source source) {
   if (show_avatar_bubble) {
     browser->window()->ShowAvatarBubbleFromAvatarButton(
         BrowserWindow::AVATAR_BUBBLE_MODE_SIGNIN,
-        signin::ManageAccountsParams());
+        signin::ManageAccountsParams(), access_point);
   } else {
-    NavigateToSingletonTab(browser, GURL(signin::GetPromoURL(source, false)));
+    NavigateToSingletonTab(
+        browser,
+        signin::GetPromoURL(
+            access_point, signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT,
+            false));
     DCHECK_GT(browser->tab_strip_model()->count(), 0);
   }
 }
 
-void ShowBrowserSigninOrSettings(
-    Browser* browser,
-    signin_metrics::Source source) {
+void ShowBrowserSigninOrSettings(Browser* browser,
+                                 signin_metrics::AccessPoint access_point) {
   Profile* original_profile = browser->profile()->GetOriginalProfile();
   SigninManagerBase* manager =
       SigninManagerFactory::GetForProfile(original_profile);
@@ -407,7 +410,7 @@ void ShowBrowserSigninOrSettings(
   if (manager->IsAuthenticated())
     ShowSettings(browser);
   else
-    ShowBrowserSignin(browser, source);
+    ShowBrowserSignin(browser, access_point);
 }
 #endif
 

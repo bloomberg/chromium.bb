@@ -6,6 +6,7 @@
 #include "base/path_service.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
+#include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
@@ -37,7 +38,9 @@ class WebUIWebViewBrowserTest : public WebUIBrowserTest {
   }
 
   GURL GetWebViewEnabledWebUIURL() const {
-    return GURL(chrome::kChromeUIChromeSigninURL);
+    return GURL(signin::GetPromoURL(
+        signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE,
+        signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT, false));
   }
 
  private:

@@ -21,6 +21,23 @@ DifferentPrimaryAccounts ComparePrimaryAccounts(bool primary_accounts_same,
   return COOKIE_AND_TOKEN_PRIMARIES_DIFFERENT;
 }
 
+void LogSigninAccessPointStarted(AccessPoint access_point) {
+  UMA_HISTOGRAM_ENUMERATION("Signin.SigninStartedAccessPoint",
+                            static_cast<int>(access_point),
+                            static_cast<int>(AccessPoint::ACCESS_POINT_MAX));
+}
+
+void LogSigninAccessPointCompleted(AccessPoint access_point) {
+  UMA_HISTOGRAM_ENUMERATION("Signin.SigninCompletedAccessPoint",
+                            static_cast<int>(access_point),
+                            static_cast<int>(AccessPoint::ACCESS_POINT_MAX));
+}
+
+void LogSigninReason(Reason reason) {
+  UMA_HISTOGRAM_ENUMERATION("Signin.SigninReason", static_cast<int>(reason),
+                            static_cast<int>(Reason::REASON_MAX));
+}
+
 void LogSigninAccountReconciliation(int total_number_accounts,
                                     int count_added_to_cookie_jar,
                                     int count_removed_from_cookie_jar,
@@ -71,10 +88,6 @@ void LogSigninProfile(bool is_first_run, base::Time install_date) {
   base::TimeDelta elapsed_time = base::Time::Now() - install_date;
   UMA_HISTOGRAM_COUNTS("Signin.ElapsedTimeFromInstallToSignin",
                        elapsed_time.InMinutes());
-}
-
-void LogSigninSource(Source source) {
-  UMA_HISTOGRAM_ENUMERATION("Signin.SigninSource", source, HISTOGRAM_MAX);
 }
 
 void LogSigninAddAccount() {

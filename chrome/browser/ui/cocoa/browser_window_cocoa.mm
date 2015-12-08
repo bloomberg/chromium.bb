@@ -840,17 +840,21 @@ NSWindow* BrowserWindowCocoa::window() const {
 
 void BrowserWindowCocoa::ShowAvatarBubbleFromAvatarButton(
     AvatarBubbleMode mode,
-    const signin::ManageAccountsParams& manage_accounts_params) {
+    const signin::ManageAccountsParams& manage_accounts_params,
+    signin_metrics::AccessPoint access_point) {
   AvatarBaseController* controller = [controller_ avatarButtonController];
   NSView* anchor = [controller buttonView];
   if ([anchor isHiddenOrHasHiddenAncestor])
     anchor = [[controller_ toolbarController] wrenchButton];
   [controller showAvatarBubbleAnchoredAt:anchor
                                 withMode:mode
-                         withServiceType:manage_accounts_params.service_type];
+                         withServiceType:manage_accounts_params.service_type
+                         fromAccessPoint:access_point];
 }
 
-void BrowserWindowCocoa::ShowModalSigninWindow(AvatarBubbleMode mode) {
+void BrowserWindowCocoa::ShowModalSigninWindow(
+    AvatarBubbleMode mode,
+    signin_metrics::AccessPoint access_point) {
   NOTREACHED();
 }
 void BrowserWindowCocoa::CloseModalSigninWindow() {

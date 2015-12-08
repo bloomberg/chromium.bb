@@ -101,6 +101,7 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
                             StartSyncMode start_mode,
                             content::WebContents* web_contents,
                             ConfirmationRequired display_confirmation,
+                            const GURL& current_url,
                             const GURL& continue_url,
                             Callback callback);
 
@@ -225,6 +226,7 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
   StartSyncMode start_mode_;
   chrome::HostDesktopType desktop_type_;
   ConfirmationRequired confirmation_required_;
+  GURL current_url_;
   GURL continue_url_;
 
   // Callback executed when sync setup succeeds or fails.

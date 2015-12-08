@@ -44,7 +44,8 @@ class ProfileInfoUpdateObserver;
 // Shows the avatar bubble in the given mode.
 - (void)showAvatarBubbleAnchoredAt:(NSView*)anchor
                           withMode:(BrowserWindow::AvatarBubbleMode)mode
-                   withServiceType:(signin::GAIAServiceType)serviceType;
+                   withServiceType:(signin::GAIAServiceType)serviceType
+                   fromAccessPoint:(signin_metrics::AccessPoint)accessPoint;
 
 @end
 

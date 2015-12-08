@@ -20,6 +20,7 @@
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_impl.h"
+#include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
@@ -124,6 +125,13 @@ class HostZoomMapBrowserTest : public InProcessBrowserTest {
         results.push_back(it.key());
     }
     return results;
+  }
+
+  std::string GetSigninPromoURL() {
+    return signin::GetPromoURL(
+               signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE,
+               signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT, false)
+        .spec();
   }
 
   GURL ConstructTestServerURL(const char* url_template) {
@@ -243,7 +251,7 @@ IN_PROC_BROWSER_TEST_F(HostZoomMapBrowserTest, ZoomEventsWorkForOffTheRecord) {
 IN_PROC_BROWSER_TEST_F(
     HostZoomMapBrowserTest,
     WebviewBasedSigninUsesDefaultStoragePartitionForEmbedder) {
-  GURL test_url = ConstructTestServerURL(chrome::kChromeUIChromeSigninURL);
+  GURL test_url = ConstructTestServerURL(GetSigninPromoURL().c_str());
   std::string test_host(test_url.host());
   std::string test_scheme(test_url.scheme());
   ui_test_utils::NavigateToURL(browser(), test_url);
@@ -281,7 +289,7 @@ IN_PROC_BROWSER_TEST_F(HostZoomMapIframeSigninBrowserTest,
   // test currently relies on the signin page being loaded into a non-default
   // storage partition (and verifies this is the case), but ultimately it would
   // be better not to rely on what the signin page is doing.
-  GURL test_url = ConstructTestServerURL(chrome::kChromeUIChromeSigninURL);
+  GURL test_url = ConstructTestServerURL(GetSigninPromoURL().c_str());
   std::string test_host(test_url.host());
   std::string test_scheme(test_url.scheme());
   ui_test_utils::NavigateToURL(browser(), test_url);

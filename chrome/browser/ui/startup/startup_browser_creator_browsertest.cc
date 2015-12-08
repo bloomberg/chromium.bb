@@ -135,6 +135,12 @@ void ProcessCommandLineAlreadyRunningDefaultProfile(
 }
 #endif  // defined(OS_WIN)
 
+GURL GetSigninPromoURL() {
+  return signin::GetPromoURL(
+      signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE,
+      signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT, false);
+}
+
 }  // namespace
 
 class StartupBrowserCreatorTest : public ExtensionBrowserTest {
@@ -614,8 +620,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, SyncPromoNoWelcomePage) {
   if (signin::ShouldShowPromoAtStartup(browser()->profile(), true)) {
     // The browser should show only the promo.
     ASSERT_EQ(1, tab_strip->count());
-    EXPECT_EQ(signin::GetPromoURL(signin_metrics::SOURCE_START_PAGE, false),
-              tab_strip->GetWebContentsAt(0)->GetURL());
+    EXPECT_EQ(GetSigninPromoURL(), tab_strip->GetWebContentsAt(0)->GetURL());
   } else if (IsWindows10OrNewer()) {
     // The browser should show the welcome page and the NTP.
     ASSERT_EQ(2, tab_strip->count());
@@ -655,8 +660,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, SyncPromoWithWelcomePage) {
               tab_strip->GetWebContentsAt(1)->GetURL());
   } else {
     if (signin::ShouldShowPromoAtStartup(browser()->profile(), true)) {
-      EXPECT_EQ(signin::GetPromoURL(signin_metrics::SOURCE_START_PAGE, false),
-                tab_strip->GetWebContentsAt(0)->GetURL());
+      EXPECT_EQ(GetSigninPromoURL(), tab_strip->GetWebContentsAt(0)->GetURL());
     } else {
       EXPECT_EQ(GURL(chrome::kChromeUINewTabURL),
                 tab_strip->GetWebContentsAt(0)->GetURL());
@@ -691,8 +695,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, SyncPromoWithFirstRunTabs) {
   TabStripModel* tab_strip = new_browser->tab_strip_model();
   if (signin::ShouldShowPromoAtStartup(browser()->profile(), true)) {
     EXPECT_EQ(2, tab_strip->count());
-    EXPECT_EQ(signin::GetPromoURL(signin_metrics::SOURCE_START_PAGE, false),
-              tab_strip->GetWebContentsAt(0)->GetURL());
+    EXPECT_EQ(GetSigninPromoURL(), tab_strip->GetWebContentsAt(0)->GetURL());
     EXPECT_EQ("title1.html",
               tab_strip->GetWebContentsAt(1)->GetURL().ExtractFileName());
   } else {
@@ -726,8 +729,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
   TabStripModel* tab_strip = new_browser->tab_strip_model();
   if (signin::ShouldShowPromoAtStartup(browser()->profile(), true)) {
     EXPECT_EQ(3, tab_strip->count());
-    EXPECT_EQ(signin::GetPromoURL(signin_metrics::SOURCE_START_PAGE, false),
-              tab_strip->GetWebContentsAt(0)->GetURL());
+    EXPECT_EQ(GetSigninPromoURL(), tab_strip->GetWebContentsAt(0)->GetURL());
     EXPECT_EQ("title1.html",
               tab_strip->GetWebContentsAt(1)->GetURL().ExtractFileName());
     EXPECT_EQ(internals::GetWelcomePageURL(),
@@ -1407,8 +1409,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
   // Verify that the sync promo and the welcome page are shown.
   TabStripModel* tab_strip = new_browser->tab_strip_model();
   ASSERT_EQ(2, tab_strip->count());
-  EXPECT_EQ(signin::GetPromoURL(signin_metrics::SOURCE_START_PAGE, false),
-            tab_strip->GetWebContentsAt(0)->GetURL());
+  EXPECT_EQ(GetSigninPromoURL(), tab_strip->GetWebContentsAt(0)->GetURL());
   EXPECT_EQ(internals::GetWelcomePageURL(),
             tab_strip->GetWebContentsAt(1)->GetURL());
 }
@@ -1453,8 +1454,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
   // Verify that the first-run tab is shown and the sync promo has been added.
   TabStripModel* tab_strip = new_browser->tab_strip_model();
   ASSERT_EQ(2, tab_strip->count());
-  EXPECT_EQ(signin::GetPromoURL(signin_metrics::SOURCE_START_PAGE, false),
-            tab_strip->GetWebContentsAt(0)->GetURL());
+  EXPECT_EQ(GetSigninPromoURL(), tab_strip->GetWebContentsAt(0)->GetURL());
   EXPECT_EQ("title1.html",
             tab_strip->GetWebContentsAt(1)->GetURL().ExtractFileName());
 }
@@ -1484,8 +1484,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
   StartupBrowserCreator browser_creator;
   browser_creator.AddFirstRunTab(
       embedded_test_server()->GetURL("/title1.html"));
-  browser_creator.AddFirstRunTab(
-      signin::GetPromoURL(signin_metrics::SOURCE_START_PAGE, false));
+  browser_creator.AddFirstRunTab(GetSigninPromoURL());
   browser()->profile()->GetPrefs()->SetBoolean(
       prefs::kSignInPromoShowOnFirstRunAllowed, true);
 
@@ -1506,8 +1505,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
   ASSERT_EQ(2, tab_strip->count());
   EXPECT_EQ("title1.html",
             tab_strip->GetWebContentsAt(0)->GetURL().ExtractFileName());
-  EXPECT_EQ(signin::GetPromoURL(signin_metrics::SOURCE_START_PAGE, false),
-            tab_strip->GetWebContentsAt(1)->GetURL());
+  EXPECT_EQ(GetSigninPromoURL(), tab_strip->GetWebContentsAt(1)->GetURL());
 }
 
 #if defined(GOOGLE_CHROME_BUILD) && defined(OS_MACOSX)
@@ -1555,8 +1553,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
   // been replaced by the sync promo.
   TabStripModel* tab_strip = new_browser->tab_strip_model();
   ASSERT_EQ(2, tab_strip->count());
-  EXPECT_EQ(signin::GetPromoURL(signin_metrics::SOURCE_START_PAGE, false),
-            tab_strip->GetWebContentsAt(0)->GetURL());
+  EXPECT_EQ(GetSigninPromoURL(), tab_strip->GetWebContentsAt(0)->GetURL());
   EXPECT_EQ("title1.html",
             tab_strip->GetWebContentsAt(1)->GetURL().ExtractFileName());
 }

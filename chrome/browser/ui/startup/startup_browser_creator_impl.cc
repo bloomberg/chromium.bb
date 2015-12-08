@@ -872,7 +872,8 @@ void StartupBrowserCreatorImpl::AddStartupURLs(
     signin::DidShowPromoAtStartup(profile_);
 
     const GURL sync_promo_url = signin::GetPromoURL(
-        signin_metrics::SOURCE_START_PAGE, false);
+        signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE,
+        signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT, false);
 
     // No need to add if the sync promo is already in the startup list.
     bool add_promo = true;

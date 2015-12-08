@@ -79,6 +79,7 @@ OneClickSigninSyncStarter::OneClickSigninSyncStarter(
     StartSyncMode start_mode,
     content::WebContents* web_contents,
     ConfirmationRequired confirmation_required,
+    const GURL& current_url,
     const GURL& continue_url,
     Callback sync_setup_completed_callback)
     : content::WebContentsObserver(web_contents),
@@ -86,6 +87,7 @@ OneClickSigninSyncStarter::OneClickSigninSyncStarter(
       start_mode_(start_mode),
       desktop_type_(chrome::HOST_DESKTOP_TYPE_NATIVE),
       confirmation_required_(confirmation_required),
+      current_url_(current_url),
       continue_url_(continue_url),
       sync_setup_completed_callback_(sync_setup_completed_callback),
       weak_pointer_factory_(this) {
@@ -429,6 +431,12 @@ void OneClickSigninSyncStarter::SigninFailed(
 }
 
 void OneClickSigninSyncStarter::SigninSuccess() {
+  if (!current_url_.is_valid())  // Could be invalid for tests.
+    return;
+  signin_metrics::LogSigninAccessPointCompleted(
+      signin::GetAccessPointForPromoURL(current_url_));
+  signin_metrics::LogSigninReason(
+      signin::GetSigninReasonForPromoURL(current_url_));
 }
 
 void OneClickSigninSyncStarter::AccountAddedToCookie(

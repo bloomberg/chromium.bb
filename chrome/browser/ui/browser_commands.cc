@@ -1103,14 +1103,15 @@ void ShowAppMenu(Browser* browser) {
 
 void ShowAvatarMenu(Browser* browser) {
   browser->window()->ShowAvatarBubbleFromAvatarButton(
-      BrowserWindow::AVATAR_BUBBLE_MODE_DEFAULT,
-      signin::ManageAccountsParams());
+      BrowserWindow::AVATAR_BUBBLE_MODE_DEFAULT, signin::ManageAccountsParams(),
+      signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN);
 }
 
 void ShowFastUserSwitcher(Browser* browser) {
   browser->window()->ShowAvatarBubbleFromAvatarButton(
       BrowserWindow::AVATAR_BUBBLE_MODE_FAST_USER_SWITCH,
-      signin::ManageAccountsParams());
+      signin::ManageAccountsParams(),
+      signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN);
 }
 
 void OpenUpdateChromeDialog(Browser* browser) {

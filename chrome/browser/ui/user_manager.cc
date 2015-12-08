@@ -44,7 +44,10 @@ void UserManager::ReauthDialogObserver::DidStopLoading() {
   // webview and observe it instead.  The webview may not be found in the
   // initial page load since it loads asynchronously.
   if (url.GetOrigin() !=
-        signin::GetReauthURLWithEmail(email_address_).GetOrigin()) {
+      signin::GetReauthURLWithEmail(
+          signin_metrics::AccessPoint::ACCESS_POINT_USER_MANAGER,
+          signin_metrics::Reason::REASON_UNLOCK, email_address_)
+          .GetOrigin()) {
     return;
   }
 

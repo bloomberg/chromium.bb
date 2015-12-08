@@ -126,11 +126,11 @@ void AppLauncherLoginHandler::HandleShowSyncLoginUI(
     return;
 
   // The user isn't signed in, show the sign in promo.
-  signin_metrics::Source source =
-      web_contents->GetURL().spec() == chrome::kChromeUIAppsURL ?
-          signin_metrics::SOURCE_APPS_PAGE_LINK :
-          signin_metrics::SOURCE_NTP_LINK;
-  chrome::ShowBrowserSignin(browser, source);
+  signin_metrics::AccessPoint access_point =
+      web_contents->GetURL().spec() == chrome::kChromeUIAppsURL
+          ? signin_metrics::AccessPoint::ACCESS_POINT_APPS_PAGE_LINK
+          : signin_metrics::AccessPoint::ACCESS_POINT_NTP_LINK;
+  chrome::ShowBrowserSignin(browser, access_point);
   RecordInHistogram(NTP_SIGN_IN_PROMO_CLICKED);
 }
 
@@ -157,10 +157,15 @@ void AppLauncherLoginHandler::HandleLoginMessageSeen(
 
 void AppLauncherLoginHandler::HandleShowAdvancedLoginUI(
     const base::ListValue* args) {
-  Browser* browser =
-      chrome::FindBrowserWithWebContents(web_ui()->GetWebContents());
-  if (browser)
-    chrome::ShowBrowserSignin(browser, signin_metrics::SOURCE_NTP_LINK);
+  content::WebContents* web_contents = web_ui()->GetWebContents();
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+  if (!browser)
+    return;
+  signin_metrics::AccessPoint access_point =
+      web_contents->GetURL().spec() == chrome::kChromeUIAppsURL
+          ? signin_metrics::AccessPoint::ACCESS_POINT_APPS_PAGE_LINK
+          : signin_metrics::AccessPoint::ACCESS_POINT_NTP_LINK;
+  chrome::ShowBrowserSignin(browser, access_point);
 }
 
 void AppLauncherLoginHandler::UpdateLogin() {

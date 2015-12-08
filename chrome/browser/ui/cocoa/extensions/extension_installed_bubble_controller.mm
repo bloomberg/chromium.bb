@@ -224,8 +224,9 @@ void ExtensionInstalledBubbleBridge::UpdateAnchorPosition() {
    clickedOnLink:(id)link
          atIndex:(NSUInteger)charIndex {
   DCHECK_EQ(promo_.get(), aTextView);
-  chrome::ShowBrowserSignin(browser_,
-                            signin_metrics::SOURCE_EXTENSION_INSTALL_BUBBLE);
+  chrome::ShowBrowserSignin(
+      browser_,
+      signin_metrics::AccessPoint::ACCESS_POINT_EXTENSION_INSTALL_BUBBLE);
   return YES;
 }
 

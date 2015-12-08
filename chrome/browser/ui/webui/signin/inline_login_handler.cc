@@ -69,17 +69,17 @@ void InlineLoginHandler::ContinueHandleInitializeMessage() {
   params.SetInteger("authMode", InlineLoginHandler::kDesktopAuthMode);
 
   const GURL& current_url = web_ui()->GetWebContents()->GetURL();
-  signin_metrics::Source source = signin::GetSourceForPromoURL(current_url);
+  signin_metrics::AccessPoint access_point =
+      signin::GetAccessPointForPromoURL(current_url);
+  signin_metrics::LogSigninAccessPointStarted(access_point);
 
-  params.SetString(
-      "continueUrl",
-      signin::GetLandingURL(signin::kSignInPromoQueryKeySource,
-                            static_cast<int>(source)).spec());
+  params.SetString("continueUrl", signin::GetLandingURL(access_point).spec());
 
   Profile* profile = Profile::FromWebUI(web_ui());
+  signin_metrics::Reason reason =
+      signin::GetSigninReasonForPromoURL(current_url);
   std::string default_email;
-  if (source != signin_metrics::SOURCE_AVATAR_BUBBLE_ADD_ACCOUNT &&
-      source != signin_metrics::SOURCE_REAUTH) {
+  if (reason == signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT) {
     default_email =
         profile->GetPrefs()->GetString(prefs::kGoogleServicesLastUsername);
   } else {

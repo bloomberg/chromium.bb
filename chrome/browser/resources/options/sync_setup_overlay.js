@@ -827,8 +827,8 @@ cr.define('options', function() {
      * already signed in.
      * @private
      */
-    startSignIn_: function() {
-      chrome.send('SyncSetupStartSignIn');
+    startSignIn_: function(accessPoint) {
+      chrome.send('SyncSetupStartSignIn', [accessPoint]);
     },
 
     /**
@@ -840,34 +840,16 @@ cr.define('options', function() {
     },
   };
 
-  // These methods are for general consumption.
-  SyncSetupOverlay.closeOverlay = function() {
-    SyncSetupOverlay.getInstance().closeOverlay_();
-  };
-
-  SyncSetupOverlay.showSetupUI = function() {
-    SyncSetupOverlay.getInstance().showSetupUI_();
-  };
-
-  SyncSetupOverlay.startSignIn = function() {
-    SyncSetupOverlay.getInstance().startSignIn_();
-  };
-
-  SyncSetupOverlay.doSignOutOnAuthError = function() {
-    SyncSetupOverlay.getInstance().doSignOutOnAuthError_();
-  };
-
-  SyncSetupOverlay.showSyncSetupPage = function(page, args) {
-    SyncSetupOverlay.getInstance().showSyncSetupPage_(page, args);
-  };
-
-  SyncSetupOverlay.showCustomizePage = function(args, index) {
-    SyncSetupOverlay.getInstance().showCustomizePage_(args, index);
-  };
-
-  SyncSetupOverlay.showStopSyncingUI = function() {
-    SyncSetupOverlay.getInstance().showStopSyncingUI_();
-  };
+  // Forward public APIs to private implementations.
+  cr.makePublic(SyncSetupOverlay, [
+    'closeOverlay',
+    'showSetupUI',
+    'startSignIn',
+    'doSignOutOnAuthError',
+    'showSyncSetupPage',
+    'showCustomizePage',
+    'showStopSyncingUI',
+  ]);
 
   // Export
   return {

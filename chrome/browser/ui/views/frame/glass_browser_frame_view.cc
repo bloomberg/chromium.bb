@@ -275,8 +275,8 @@ void GlassBrowserFrameView::ButtonPressed(views::Button* sender,
       mode = BrowserWindow::AVATAR_BUBBLE_MODE_FAST_USER_SWITCH;
     }
     browser_view()->ShowAvatarBubbleFromAvatarButton(
-        mode,
-        signin::ManageAccountsParams());
+        mode, signin::ManageAccountsParams(),
+        signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN);
   }
 }
 

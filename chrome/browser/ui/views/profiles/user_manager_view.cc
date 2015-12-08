@@ -98,7 +98,9 @@ ReauthDelegate::ReauthDelegate(views::WebView* web_view,
   // Load the re-auth URL, prepopulated with the user's email address.
   // Add the index of the profile to the URL so that the inline login page
   // knows which profile to load and update the credentials.
-  GURL url = signin::GetReauthURLWithEmail(email_address_);
+  GURL url = signin::GetReauthURLWithEmail(
+      signin_metrics::AccessPoint::ACCESS_POINT_USER_MANAGER,
+      signin_metrics::Reason::REASON_UNLOCK, email_address_);
   web_view_->LoadInitialURL(url);
 }
 

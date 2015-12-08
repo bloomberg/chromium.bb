@@ -58,6 +58,7 @@ class ProfileChooserView : public content::WebContentsDelegate,
       profiles::BubbleViewMode view_mode,
       profiles::TutorialMode tutorial_mode,
       const signin::ManageAccountsParams& manage_accounts_params,
+      signin_metrics::AccessPoint access_point,
       views::View* anchor_view,
       views::BubbleBorder::Arrow arrow,
       views::BubbleBorder::BubbleAlignment border_alignment,
@@ -77,7 +78,8 @@ class ProfileChooserView : public content::WebContentsDelegate,
                      Browser* browser,
                      profiles::BubbleViewMode view_mode,
                      profiles::TutorialMode tutorial_mode,
-                     signin::GAIAServiceType service_type);
+                     signin::GAIAServiceType service_type,
+                     signin_metrics::AccessPoint access_point);
   ~ProfileChooserView() override;
 
   // views::BubbleDelegateView:
@@ -271,6 +273,9 @@ class ProfileChooserView : public content::WebContentsDelegate,
 
   // The GAIA service type provided in the response header.
   signin::GAIAServiceType gaia_service_type_;
+
+  // The current access point of sign in.
+  const signin_metrics::AccessPoint access_point_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileChooserView);
 };

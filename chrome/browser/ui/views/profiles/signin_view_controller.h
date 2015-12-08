@@ -17,6 +17,10 @@ namespace content {
 class WebContentsDelegate;
 }
 
+namespace signin_metrics {
+enum class AccessPoint;
+}
+
 namespace views {
 class WebView;
 }
@@ -35,11 +39,16 @@ class SigninViewController {
   static views::WebView* CreateGaiaWebView(
       content::WebContentsDelegate* delegate,
       profiles::BubbleViewMode mode,
-      Profile* profile);
+      Profile* profile,
+      signin_metrics::AccessPoint access_point);
 
   // Shows the signin flow as a tab modal dialog attached to |browser|'s active
   // web contents.
-  void ShowModalSignin(profiles::BubbleViewMode mode, Browser* browser);
+  // |access_point| indicates the access point used to open the Gaia sign in
+  // page.
+  void ShowModalSignin(profiles::BubbleViewMode mode,
+                       Browser* browser,
+                       signin_metrics::AccessPoint access_point);
 
   // Closes the tab-modal signin flow previously shown using this
   // SigninViewController, if one exists. Does nothing otherwise.

@@ -44212,11 +44212,34 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Signin.SigninCompletedAccessPoint" enum="SigninAccessPoint">
+  <owner>gogerald@chromium.org</owner>
+  <summary>Logs the original access point of each completed sign in.</summary>
+</histogram>
+
+<histogram name="Signin.SigninReason" enum="SigninReason">
+  <owner>gogerald@chromium.org</owner>
+  <summary>Logs the reason of each completed sign in.</summary>
+</histogram>
+
 <histogram name="Signin.SigninSource" enum="SigninSource">
+  <obsolete>
+    Removed this histogram since we have had newly designed histograms
+    Signin.SigninStartedAccessPoint, Signin.SigninCompletedAccessPoint, and
+    Signin.SigninReason.
+  </obsolete>
   <owner>noms@chromium.org</owner>
   <summary>
     Logs the original source that displayed the signin or reauth Gaia page,
     before the page is displayed.
+  </summary>
+</histogram>
+
+<histogram name="Signin.SigninStartedAccessPoint" enum="SigninAccessPoint">
+  <owner>gogerald@chromium.org</owner>
+  <summary>
+    Logs the original access point that displayed the signin or reauth Gaia
+    page, before the page is displayed.
   </summary>
 </histogram>
 
@@ -75240,6 +75263,26 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="2" label="Dismiss"/>
 </enum>
 
+<enum name="SigninAccessPoint" type="int">
+  <int value="0" label="Start page"/>
+  <int value="1" label="NTP Link"/>
+  <int value="2" label="Menu"/>
+  <int value="3" label="Settings"/>
+  <int value="4" label="Supervised user"/>
+  <int value="5" label="Extension install bubble"/>
+  <int value="6" label="Extensions"/>
+  <int value="7" label="Apps page link"/>
+  <int value="8" label="Bookmark bubble"/>
+  <int value="9" label="Bookmark manager"/>
+  <int value="10" label="Avatar bubble sign in"/>
+  <int value="11" label="User manager"/>
+  <int value="12" label="Devices page"/>
+  <int value="13" label="Cloud print"/>
+  <int value="14" label="Content area"/>
+  <int value="15" label="Signin promo"/>
+  <int value="16" label="Recent tabs"/>
+</enum>
+
 <enum name="SigninAccountReconcilorState" type="int">
   <int value="0" label="OK">
     The account reconcilor has finished running and is up-to-date.
@@ -75302,6 +75345,13 @@ To add a new entry, add it with any value and run test to compute valid value.
     The sync was started through auto-accept with advanced settings.
   </int>
   <int value="10" label="Undo">The sync was aborted with an undo button.</int>
+</enum>
+
+<enum name="SigninReason" type="int">
+  <int value="0" label="Signin primary account"/>
+  <int value="1" label="Add secondary account"/>
+  <int value="2" label="Reauthentication"/>
+  <int value="3" label="Unlock profile"/>
 </enum>
 
 <enum name="SigninReauthStates" type="int">
