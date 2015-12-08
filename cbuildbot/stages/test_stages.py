@@ -285,9 +285,9 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
       # Some boards may not have been setup in the lab yet for
       # non-code-checkin configs.
       if not config_lib.IsPFQType(self._run.config.build_type):
-        logging.warning('HWTest did not run because the board was not '
-                        'available in the lab yet')
-        return self._HandleExceptionAsWarning(exc_info)
+        logging.info('HWTest did not run because the board was not '
+                     'available in the lab yet')
+        return self._HandleExceptionAsSuccess(exc_info)
 
     return super(HWTestStage, self)._HandleStageException(exc_info)
 

@@ -331,7 +331,7 @@ class BuilderStage(object):
 
   def _HandleExceptionAsSuccess(self, _exc_info):
     """Use instead of HandleStageException to ignore an exception."""
-    return results_lib.Results.SUCCESS, None
+    return (results_lib.Results.SUCCESS, None, False)
 
   @staticmethod
   def _StringifyException(exc_info):
