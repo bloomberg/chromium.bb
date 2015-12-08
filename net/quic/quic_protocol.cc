@@ -99,6 +99,10 @@ QuicPublicResetPacket::QuicPublicResetPacket(
     const QuicPacketPublicHeader& header)
     : public_header(header), nonce_proof(0), rejected_packet_number(0) {}
 
+void StreamBufferDeleter::operator()(char* buf) const {
+  delete[] buf;
+}
+
 UniqueStreamBuffer NewStreamBuffer(size_t size) {
   return UniqueStreamBuffer(new char[size]);
 }
@@ -122,7 +126,7 @@ QuicStreamFrame::QuicStreamFrame(QuicStreamId stream_id,
       fin(fin),
       offset(offset),
       data(data),
-      buffer(buffer.release()) {}
+      buffer(std::move(buffer)) {}
 
 QuicStreamFrame::~QuicStreamFrame() {}
 

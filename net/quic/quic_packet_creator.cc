@@ -323,8 +323,8 @@ size_t QuicPacketCreator::CreateStreamFrame(QuicStreamId id,
   CopyToBuffer(iov, iov_offset, bytes_consumed, buffer.get());
   // TODO(zhongyi): figure out the lifetime of data. Crashes on windows only.
   StringPiece data(buffer.get(), bytes_consumed);
-  *frame =
-      QuicFrame(new QuicStreamFrame(id, set_fin, offset, data, buffer.Pass()));
+  *frame = QuicFrame(
+      new QuicStreamFrame(id, set_fin, offset, data, std::move(buffer)));
   return bytes_consumed;
 }
 

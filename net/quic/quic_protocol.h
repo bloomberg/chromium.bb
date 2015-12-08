@@ -708,7 +708,13 @@ struct NET_EXPORT_PRIVATE QuicPingFrame {};
 // frame.
 struct NET_EXPORT_PRIVATE QuicMtuDiscoveryFrame {};
 
-typedef scoped_ptr<char[]> UniqueStreamBuffer;
+// Deleter for stream buffers.
+class NET_EXPORT_PRIVATE StreamBufferDeleter {
+ public:
+  void operator()(char* buf) const;
+};
+
+using UniqueStreamBuffer = std::unique_ptr<char[], StreamBufferDeleter>;
 
 // Allocates memory of size |size| for a QUIC stream buffer.
 UniqueStreamBuffer NewStreamBuffer(size_t size);
