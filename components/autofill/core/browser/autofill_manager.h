@@ -479,7 +479,7 @@ class AutofillManager : public AutofillDownloadManager::Observer,
   bool user_did_accept_upload_prompt_;
 
   // Masked copies of recently unmasked cards, to help avoid double-asking to
-  // save the card (in the prompt and in the infobar after submit).
+  // save the card (in the unmask prompt and in the save prompt after submit).
   std::vector<CreditCard> recently_unmasked_cards_;
 
 #ifdef ENABLE_FORM_DEBUG_DUMP

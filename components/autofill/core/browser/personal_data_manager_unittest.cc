@@ -315,8 +315,25 @@ TEST_F(PersonalDataManagerTest, DontDuplicateServerProfile) {
   base::MessageLoop::current()->Run();
 
   // Verify the non-addition.
-  EXPECT_EQ(1U, personal_data_->GetProfiles().size());
   EXPECT_EQ(0U, personal_data_->web_profiles().size());
+  ASSERT_EQ(1U, personal_data_->GetProfiles().size());
+
+  // Verify that the server profile's use date was updated.
+  const AutofillProfile* server_profile = personal_data_->GetProfiles()[0];
+  EXPECT_GT(base::TimeDelta::FromMilliseconds(500),
+            base::Time::Now() - server_profile->use_date());
+}
+
+// Tests that SaveImportedProfile sets the modification date on new profiles.
+TEST_F(PersonalDataManagerTest, SaveImportedProfileSetModificationDate) {
+  AutofillProfile profile(test::GetFullProfile());
+  EXPECT_EQ(base::Time(), profile.modification_date());
+
+  personal_data_->SaveImportedProfile(profile);
+  const std::vector<AutofillProfile*>& profiles = personal_data_->GetProfiles();
+  ASSERT_EQ(1U, profiles.size());
+  EXPECT_GT(base::TimeDelta::FromMilliseconds(500),
+            base::Time::Now() - profiles[0]->modification_date());
 }
 
 TEST_F(PersonalDataManagerTest, AddUpdateRemoveProfiles) {
@@ -3310,6 +3327,13 @@ TEST_F(PersonalDataManagerTest, SaveImportedProfile) {
         EXPECT_EQ(base::UTF8ToUTF16(changed_field.field_value),
                   saved_profiles.front()->GetRawInfo(changed_field.field_type));
       }
+      // Verify that the merged profile's modification and use dates were
+      // updated.
+      EXPECT_GT(
+          base::TimeDelta::FromMilliseconds(500),
+          base::Time::Now() - saved_profiles.front()->modification_date());
+      EXPECT_GT(base::TimeDelta::FromMilliseconds(500),
+                base::Time::Now() - saved_profiles.front()->use_date());
     }
 
     // Erase the profiles for the next test.

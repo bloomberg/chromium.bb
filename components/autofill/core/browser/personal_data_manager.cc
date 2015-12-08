@@ -455,7 +455,7 @@ bool PersonalDataManager::ImportFormData(
   }
 
   // Don't import if we already have this info.
-  // Don't present an infobar if we have already saved this card number.
+  // Don't present a prompt if we have already saved this card number.
   bool merged_credit_card = false;
   if (local_imported_credit_card) {
     for (CreditCard* card : local_credit_cards_) {
@@ -1071,6 +1071,15 @@ std::string PersonalDataManager::MergeProfile(
       // verified profile, just drop it.
       matching_profile_found = true;
       guid = existing_profile->guid();
+
+      // We set the modification date so that immediate requests for profiles
+      // will properly reflect the fact that this profile has been modified
+      // recently. After writing to the database and refreshing the local copies
+      // the profile will have a very slightly newer time reflecting what's
+      // actually stored in the database.
+      existing_profile->set_modification_date(base::Time::Now());
+
+      existing_profile->RecordAndLogUse();
     }
     merged_profiles->push_back(*existing_profile);
   }
@@ -1078,6 +1087,9 @@ std::string PersonalDataManager::MergeProfile(
   // If the new profile was not merged with an existing one, add it to the list.
   if (!matching_profile_found) {
     merged_profiles->push_back(new_profile);
+    // Similar to updating merged profiles above, set the modification date on
+    // new profiles.
+    merged_profiles->back().set_modification_date(base::Time::Now());
     AutofillMetrics::LogProfileActionOnFormSubmitted(
         AutofillMetrics::NEW_PROFILE_CREATED);
   }
@@ -1257,16 +1269,18 @@ std::string PersonalDataManager::SaveImportedProfile(
   if (is_off_the_record_)
     return std::string();
 
-  // ...or server profile.
-  for (AutofillProfile* profile : server_profiles_) {
-    if (imported_profile.IsSubsetOf(*profile, app_locale_))
+  // Don't save a web profile if the data in the profile is a subset of a
+  // server profile, but do record the fact that it was used.
+  for (const AutofillProfile* profile : server_profiles_) {
+    if (imported_profile.IsSubsetOf(*profile, app_locale_)) {
+      RecordUseOf(*profile);
       return profile->guid();
+    }
   }
 
   std::vector<AutofillProfile> profiles;
-  std::string guid =
-      MergeProfile(imported_profile, web_profiles_.get(), app_locale_,
-                   &profiles);
+  std::string guid = MergeProfile(imported_profile, web_profiles_.get(),
+                                  app_locale_, &profiles);
   SetProfiles(&profiles);
   return guid;
 }

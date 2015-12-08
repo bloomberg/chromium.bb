@@ -106,7 +106,7 @@ class PersonalDataManager : public KeyedService,
   virtual std::string SaveImportedProfile(
       const AutofillProfile& imported_profile);
 
-  // Saves a credit card value detected in |ImportedFormData|. Returns the guid
+  // Saves |imported_credit_card| to the WebDB if it exists. Returns the guid of
   // of the new or updated card, or the empty string if no card was saved.
   virtual std::string SaveImportedCreditCard(
       const CreditCard& imported_credit_card);
