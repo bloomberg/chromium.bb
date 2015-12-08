@@ -38,6 +38,7 @@ uLong CalculateDictionaryId(const char* dictionary,
                  dictionary_size);
 }
 
+#if !defined(USE_SYSTEM_ZLIB)
 // Check to see if the name and value of a cookie are both empty.
 bool IsCookieEmpty(const base::StringPiece& cookie) {
   if (cookie.size() == 0) {
@@ -56,6 +57,7 @@ bool IsCookieEmpty(const base::StringPiece& cookie) {
   }
   return (pos == 0) && ((cookie.size() - value_start) == 0);
 }
+#endif  // !defined(USE_SYSTEM_ZLIB)
 
 // Pack parent stream ID and exclusive flag into the format used by HTTP/2
 // headers and priority frames.

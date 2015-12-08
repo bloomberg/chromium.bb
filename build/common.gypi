@@ -2300,7 +2300,6 @@
         'release_valgrind_build': 1,
         'werror': '',
         'component': 'static_library',
-        'use_system_zlib': 0,
       }],
 
       # Build tweaks for DrMemory.
