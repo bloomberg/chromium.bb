@@ -98,15 +98,6 @@ void ContentVideoView::OnVideoSizeChanged(int width, int height) {
   }
 }
 
-void ContentVideoView::OnBufferingUpdate(int percent) {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> content_video_view = GetJavaObject(env);
-  if (!content_video_view.is_null()) {
-    Java_ContentVideoView_onBufferingUpdate(env, content_video_view.obj(),
-        percent);
-  }
-}
-
 void ContentVideoView::OnPlaybackComplete() {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> content_video_view = GetJavaObject(env);

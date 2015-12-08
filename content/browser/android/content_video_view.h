@@ -62,7 +62,6 @@ class ContentVideoView {
   void UpdateMediaMetadata();
   void OnMediaPlayerError(int errorType);
   void OnVideoSizeChanged(int width, int height);
-  void OnBufferingUpdate(int percent);
   void OnPlaybackComplete();
   void OnExitFullscreen();
 

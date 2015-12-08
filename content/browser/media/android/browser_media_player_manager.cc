@@ -314,12 +314,10 @@ void BrowserMediaPlayerManager::OnMediaInterrupted(int player_id) {
   OnReleaseResources(player_id);
 }
 
-void BrowserMediaPlayerManager::OnBufferingUpdate(
-    int player_id, int percentage) {
-  Send(new MediaPlayerMsg_MediaBufferingUpdate(
-      RoutingID(), player_id, percentage));
-  if (fullscreen_player_id_ == player_id)
-    video_view_->OnBufferingUpdate(percentage);
+void BrowserMediaPlayerManager::OnBufferingUpdate(int player_id,
+                                                  int percentage) {
+  Send(new MediaPlayerMsg_MediaBufferingUpdate(RoutingID(), player_id,
+                                               percentage));
 }
 
 void BrowserMediaPlayerManager::OnSeekRequest(

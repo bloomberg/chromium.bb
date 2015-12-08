@@ -11,7 +11,6 @@ import android.graphics.Point;
 import android.provider.Settings;
 import android.view.Display;
 import android.view.Gravity;
-import android.view.KeyEvent;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -279,10 +278,6 @@ public class ContentVideoView extends FrameLayout
     }
 
     @CalledByNative
-    private void onBufferingUpdate(int percent) {
-    }
-
-    @CalledByNative
     private void onPlaybackComplete() {
         onCompletion();
     }
@@ -423,15 +418,6 @@ public class ContentVideoView extends FrameLayout
 
     public static ContentVideoView getContentVideoView() {
         return nativeGetSingletonJavaContentVideoView();
-    }
-
-    @Override
-    public boolean onKeyUp(int keyCode, KeyEvent event) {
-        if (keyCode == KeyEvent.KEYCODE_BACK) {
-            exitFullscreen(false);
-            return true;
-        }
-        return super.onKeyUp(keyCode, event);
     }
 
     private boolean isOrientationPortrait() {
