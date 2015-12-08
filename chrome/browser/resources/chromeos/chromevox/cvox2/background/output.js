@@ -9,9 +9,9 @@
 goog.provide('Output');
 goog.provide('Output.EventType');
 
-goog.require('AutomationUtil.Dir');
 goog.require('EarconEngine');
 goog.require('Spannable');
+goog.require('constants');
 goog.require('cursors.Cursor');
 goog.require('cursors.Range');
 goog.require('cursors.Unit');
@@ -22,7 +22,7 @@ goog.require('cvox.ValueSpan');
 goog.require('goog.i18n.MessageFormat');
 
 goog.scope(function() {
-var Dir = AutomationUtil.Dir;
+var Dir = constants.Dir;
 
 /**
  * An Output object formats a cursors.Range into speech, braille, or both

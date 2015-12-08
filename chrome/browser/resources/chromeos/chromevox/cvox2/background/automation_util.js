@@ -7,31 +7,19 @@
  */
 
 goog.provide('AutomationUtil');
-goog.provide('AutomationUtil.Dir');
 
 goog.require('AutomationPredicate');
+goog.require('AutomationTreeWalker');
+goog.require('constants');
 
 /**
  * @constructor
  */
 AutomationUtil = function() {};
 
-/**
- * Possible directions to perform tree traversals.
- * @enum {string}
- */
-AutomationUtil.Dir = {
-  // Search from left to right.
-  FORWARD: 'forward',
-
-  // Search from right to left.
-  BACKWARD: 'backward'
-};
-
-
 goog.scope(function() {
 var AutomationNode = chrome.automation.AutomationNode;
-var Dir = AutomationUtil.Dir;
+var Dir = constants.Dir;
 var RoleType = chrome.automation.RoleType;
 
 /**
@@ -219,7 +207,7 @@ AutomationUtil.getUniqueAncestors = function(prevNode, node) {
  * document.
  * @param {!AutomationNode} nodeA
  * @param {!AutomationNode} nodeB
- * @return {AutomationUtil.Dir}
+ * @return {Dir}
  */
 AutomationUtil.getDirection = function(nodeA, nodeB) {
   var ancestorsA = AutomationUtil.getAncestors(nodeA);

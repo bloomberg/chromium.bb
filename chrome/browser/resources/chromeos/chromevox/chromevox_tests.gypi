@@ -85,6 +85,7 @@
       'cvox2/background/cursors_test.extjs',
       'cvox2/background/live_regions_test.extjs',
       'cvox2/background/output_test.extjs',
+      'cvox2/background/tree_walker_test.extjs',
       'host/chrome/tts_background_test.extjs',
     ],
   },

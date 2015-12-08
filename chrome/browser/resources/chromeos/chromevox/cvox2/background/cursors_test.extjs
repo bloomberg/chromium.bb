@@ -26,8 +26,8 @@ CursorsTest.prototype = {
   /** @override */
   setUp: function() {
     // Various aliases.
-    window.BACKWARD = AutomationUtil.Dir.BACKWARD;
-    window.FORWARD = AutomationUtil.Dir.FORWARD;
+    window.BACKWARD = constants.Dir.BACKWARD;
+    window.FORWARD = constants.Dir.FORWARD;
     window.CHARACTER = cursors.Unit.CHARACTER;
     window.WORD = cursors.Unit.WORD;
     window.LINE = cursors.Unit.LINE;
@@ -42,7 +42,7 @@ CursorsTest.prototype = {
    * @param {!Array<Array<
    *     cursors.Unit|
    *     cursors.Movement|
-   *     automationUtil.Dir|
+   *     constants.Dir|
    *     Object>>}
    *     moves An array of arrays. Each inner array contains 4 items: unit,
    *     movement, direction, and assertions object. See example below.
@@ -62,7 +62,7 @@ CursorsTest.prototype = {
    * @param {!Array<Array<
    *          cursors.Unit|
    *          cursors.Movement|
-   *          automationUtil.Dir|
+   *          constants.Dir|
    *          Object>>}
    *     moves An array of arrays. Each inner array contains 4 items: unit,
    *     direction, start and end assertions objects. See example below.

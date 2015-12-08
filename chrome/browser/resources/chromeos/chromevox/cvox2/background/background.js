@@ -17,6 +17,7 @@ goog.require('LiveRegions');
 goog.require('NextEarcons');
 goog.require('Output');
 goog.require('Output.EventType');
+goog.require('constants');
 goog.require('cursors.Cursor');
 goog.require('cvox.BrailleKeyCommand');
 goog.require('cvox.ChromeVoxEditableTextBase');
@@ -27,7 +28,7 @@ goog.require('cvox.NavBraille');
 
 goog.scope(function() {
 var AutomationNode = chrome.automation.AutomationNode;
-var Dir = AutomationUtil.Dir;
+var Dir = constants.Dir;
 var EventType = chrome.automation.EventType;
 var RoleType = chrome.automation.RoleType;
 

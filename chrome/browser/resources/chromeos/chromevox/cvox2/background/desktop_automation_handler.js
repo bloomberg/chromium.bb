@@ -14,7 +14,7 @@ goog.require('ChromeVoxState');
 goog.scope(function() {
 var AutomationEvent = chrome.automation.AutomationEvent;
 var AutomationNode = chrome.automation.AutomationNode;
-var Dir = AutomationUtil.Dir;
+var Dir = constants.Dir;
 var RoleType = chrome.automation.RoleType;
 
 /**

@@ -1,0 +1,97 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// Include test fixture.
+GEN_INCLUDE(['../../testing/chromevox_next_e2e_test_base.js']);
+
+/**
+ * Test fixture for tree_walker.js.
+ * @constructor
+ * @extends {ChromeVoxE2ETestBase}
+ */
+function AutomationTreeWalkerTest() {
+  ChromeVoxNextE2ETest.call(this);
+}
+
+AutomationTreeWalkerTest.prototype = {
+  __proto__: ChromeVoxNextE2ETest.prototype,
+
+  flattenTree: function(node, outResult) {
+    outResult.push(node);
+    node = node.firstChild;
+    while (node) {
+      // Ensure proper parent/child links.
+      assertTrue(node.parent.children.some(function(c) {
+        return node == c;
+      }));
+      this.flattenTree(node, outResult);
+      node = node.nextSibling;
+    }
+  },
+
+  isAncestor: function(ancestor, node) {
+    while (node = node.parent) {
+      if (node === ancestor)
+      return true;
+    }
+    return false;
+  },
+
+  isDescendant: function(descendant, node) {
+    return this.isAncestor(node, descendant);
+  }
+};
+
+TEST_F('AutomationTreeWalkerTest', 'Forward', function() {
+  chrome.automation.getDesktop(this.newCallback(function(d) {
+    var resultList = [];
+    this.flattenTree(d, resultList);
+    var it = new AutomationTreeWalker(d, false);
+    for (var i = 1; i < resultList.length; i++)
+      assertEquals(resultList[i], it.next().node);
+    assertEquals(null, it.next().node);
+
+    for (var j = 0; j < resultList.length; j++) {
+      it = new AutomationTreeWalker(resultList[j], false);
+      var start = it.node;
+      var cur = it.next().node;
+      while (cur) {
+        var isDescendant = this.isDescendant(cur, start);
+        if (it.phase == 'descendant')
+          assertTrue(isDescendant);
+        else if (it.phase == 'other')
+          assertFalse(isDescendant);
+        else
+          assertNotReached();
+        cur = it.next().node;
+      }
+    }
+  }.bind(this)));
+});
+
+TEST_F('AutomationTreeWalkerTest', 'Backward', function() {
+  chrome.automation.getDesktop(this.newCallback(function(d) {
+    var resultList = [];
+    this.flattenTree(d, resultList);
+    var it = new AutomationTreeWalker(resultList[resultList.length - 1], true);
+    for (var i = resultList.length - 2; i >= 0; i--)
+      assertEquals(resultList[i], it.next().node);
+
+    for (var j = resultList.length - 1; j >= 0; j--) {
+      it = new AutomationTreeWalker(resultList[j], true);
+      var start = it.node;
+      var cur = it.next().node;
+      while (cur) {
+        var isAncestor = this.isAncestor(cur, start);
+        if (it.phase == 'ancestor')
+          assertTrue(isAncestor);
+        else if (it.phase == 'other')
+          assertFalse(isAncestor);
+        else
+          assertNotReached();
+        cur = it.next().node;
+      }
+    }
+  }.bind(this)));
+});

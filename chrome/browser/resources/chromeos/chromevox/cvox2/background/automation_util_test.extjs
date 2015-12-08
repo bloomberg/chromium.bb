@@ -19,7 +19,7 @@ AutomationUtilE2ETest.prototype = {
 
   /** @override */
   setUp: function() {
-    window.Dir = AutomationUtil.Dir;
+    window.Dir = constants.Dir;
   },
 
   basicDoc: function() {/*!

@@ -13,6 +13,7 @@ goog.provide('cursors.Range');
 goog.provide('cursors.Unit');
 
 goog.require('AutomationUtil');
+goog.require('constants');
 
 /**
  * The special index that represents a cursor pointing to a node without
@@ -55,7 +56,7 @@ cursors.Movement = {
 
 goog.scope(function() {
 var AutomationNode = chrome.automation.AutomationNode;
-var Dir = AutomationUtil.Dir;
+var Dir = constants.Dir;
 var Movement = cursors.Movement;
 var Role = chrome.automation.RoleType;
 var Unit = cursors.Unit;
