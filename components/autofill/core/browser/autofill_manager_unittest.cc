@@ -472,7 +472,8 @@ class TestAutofillManager : public AutofillManager {
         autofill_enabled_(true),
         credit_card_upload_enabled_(true),
         credit_card_was_uploaded_(false),
-        expect_all_unknown_possible_types_(false) {
+        expect_all_unknown_possible_types_(false),
+        expected_observed_submission_(true) {
     set_payments_client(
         new TestPaymentsClient(driver->GetURLRequestContext(), this));
   }
@@ -499,12 +500,18 @@ class TestAutofillManager : public AutofillManager {
     expected_submitted_field_types_ = expected_types;
   }
 
-  void UploadFormDataAsyncCallback(
-      const FormStructure* submitted_form,
-      const base::TimeTicks& load_time,
-      const base::TimeTicks& interaction_time,
-      const base::TimeTicks& submission_time) override {
+  void set_expected_observed_submission(bool expected) {
+    expected_observed_submission_ = expected;
+  }
+
+  void UploadFormDataAsyncCallback(const FormStructure* submitted_form,
+                                   const base::TimeTicks& load_time,
+                                   const base::TimeTicks& interaction_time,
+                                   const base::TimeTicks& submission_time,
+                                   bool observed_submission) override {
     run_loop_->Quit();
+
+    EXPECT_EQ(expected_observed_submission_, observed_submission);
 
     // If we have expected field types set, make sure they match.
     if (!expected_submitted_field_types_.empty()) {
@@ -528,18 +535,17 @@ class TestAutofillManager : public AutofillManager {
       }
     }
 
-    AutofillManager::UploadFormDataAsyncCallback(submitted_form,
-                                                 load_time,
-                                                 interaction_time,
-                                                 submission_time);
+    AutofillManager::UploadFormDataAsyncCallback(
+        submitted_form, load_time, interaction_time, submission_time,
+        observed_submission);
   }
 
   // Resets the run loop so that it can wait for an asynchronous form
   // submission to complete.
   void ResetRunLoop() { run_loop_.reset(new base::RunLoop()); }
 
-  // Wait for the asynchronous OnWillSubmitForm() call to complete.
-  void WaitForAsyncOnWillSubmitForm() { run_loop_->Run(); }
+  // Wait for the asynchronous calls within StartUploadProcess() to complete.
+  void WaitForAsyncUploadProcess() { run_loop_->Run(); }
 
   void UploadFormData(const FormStructure& submitted_form) override {
     submitted_form_signature_ = submitted_form.FormSignature();
@@ -592,6 +598,7 @@ class TestAutofillManager : public AutofillManager {
   bool credit_card_upload_enabled_;
   bool credit_card_was_uploaded_;
   bool expect_all_unknown_possible_types_;
+  bool expected_observed_submission_;
 
   scoped_ptr<base::RunLoop> run_loop_;
 
@@ -760,7 +767,7 @@ class AutofillManagerTest : public testing::Test {
   void FormSubmitted(const FormData& form) {
     autofill_manager_->ResetRunLoop();
     if (autofill_manager_->OnWillSubmitForm(form, base::TimeTicks::Now()))
-      autofill_manager_->WaitForAsyncOnWillSubmitForm();
+      autofill_manager_->WaitForAsyncUploadProcess();
     autofill_manager_->OnFormSubmitted(form);
   }
 
@@ -2574,7 +2581,7 @@ TEST_F(AutofillManagerTest, FormWillSubmitDoesNotSaveData) {
   // OnFormSubmitted.
   autofill_manager_->ResetRunLoop();
   autofill_manager_->OnWillSubmitForm(response_data, base::TimeTicks::Now());
-  autofill_manager_->WaitForAsyncOnWillSubmitForm();
+  autofill_manager_->WaitForAsyncUploadProcess();
   EXPECT_EQ(0, personal_data_.num_times_save_imported_profile_called());
 }
 
@@ -3431,6 +3438,155 @@ TEST_F(AutofillManagerTest, TestExternalDelegate) {
   GetAutofillSuggestions(form, field);  // should call the delegate's OnQuery()
 
   EXPECT_TRUE(external_delegate_->on_query_seen());
+}
+
+// Test that unfocusing a filled form sends an upload with types matching the
+// fields.
+TEST_F(AutofillManagerTest, OnTextFieldDidChangeAndUnfocus_Upload) {
+  // Set up our form data (it's already filled out with user data).
+  FormData form;
+  form.name = ASCIIToUTF16("MyForm");
+  form.origin = GURL("http://myform.com/form.html");
+  form.action = GURL("http://myform.com/submit.html");
+
+  std::vector<ServerFieldTypeSet> expected_types;
+  ServerFieldTypeSet types;
+
+  FormFieldData field;
+  test::CreateTestFormField("First Name", "firstname", "Elvis", "text", &field);
+  form.fields.push_back(field);
+  types.insert(NAME_FIRST);
+  expected_types.push_back(types);
+
+  test::CreateTestFormField("Last Name", "lastname", "Presley", "text", &field);
+  form.fields.push_back(field);
+  types.clear();
+  types.insert(NAME_LAST);
+  expected_types.push_back(types);
+
+  test::CreateTestFormField("Email", "email", "theking@gmail.com", "text",
+                            &field);
+  form.fields.push_back(field);
+  types.clear();
+  types.insert(EMAIL_ADDRESS);
+  expected_types.push_back(types);
+
+  FormsSeen(std::vector<FormData>(1, form));
+
+  // We will expect these types in the upload and no observed submission (the
+  // callback initiated by WaitForAsyncUploadProcess checks these expectations.)
+  autofill_manager_->set_expected_submitted_field_types(expected_types);
+  autofill_manager_->set_expected_observed_submission(false);
+
+  // Simulate editing a field.
+  autofill_manager_->OnTextFieldDidChange(form, form.fields.front(),
+                                          base::TimeTicks::Now());
+
+  autofill_manager_->ResetRunLoop();
+  // Simulate lost of focus on the form.
+  autofill_manager_->OnFocusNoLongerOnForm();
+  // Wait for upload to complete (will check expected types as well).
+  autofill_manager_->WaitForAsyncUploadProcess();
+}
+
+// Test that navigating with a filled form sends an upload with types matching
+// the fields.
+TEST_F(AutofillManagerTest, OnTextFieldDidChangeAndNavigation_Upload) {
+  // Set up our form data (it's already filled out with user data).
+  FormData form;
+  form.name = ASCIIToUTF16("MyForm");
+  form.origin = GURL("http://myform.com/form.html");
+  form.action = GURL("http://myform.com/submit.html");
+
+  std::vector<ServerFieldTypeSet> expected_types;
+  ServerFieldTypeSet types;
+
+  FormFieldData field;
+  test::CreateTestFormField("First Name", "firstname", "Elvis", "text", &field);
+  form.fields.push_back(field);
+  types.insert(NAME_FIRST);
+  expected_types.push_back(types);
+
+  test::CreateTestFormField("Last Name", "lastname", "Presley", "text", &field);
+  form.fields.push_back(field);
+  types.clear();
+  types.insert(NAME_LAST);
+  expected_types.push_back(types);
+
+  test::CreateTestFormField("Email", "email", "theking@gmail.com", "text",
+                            &field);
+  form.fields.push_back(field);
+  types.clear();
+  types.insert(EMAIL_ADDRESS);
+  expected_types.push_back(types);
+
+  FormsSeen(std::vector<FormData>(1, form));
+
+  // We will expect these types in the upload and no observed submission. (the
+  // callback initiated by WaitForAsyncUploadProcess checks these expectations.)
+  autofill_manager_->set_expected_submitted_field_types(expected_types);
+  autofill_manager_->set_expected_observed_submission(false);
+
+  // Simulate editing a field.
+  autofill_manager_->OnTextFieldDidChange(form, form.fields.front(),
+                                          base::TimeTicks::Now());
+
+  autofill_manager_->ResetRunLoop();
+  // Simulate a navigation so that the pending form is uploaded.
+  autofill_manager_->Reset();
+  // Wait for upload to complete (will check expected types as well).
+  autofill_manager_->WaitForAsyncUploadProcess();
+}
+
+// Test that unfocusing a filled form sends an upload with types matching the
+// fields.
+TEST_F(AutofillManagerTest, OnDidFillAutofillFormDataAndUnfocus_Upload) {
+  // Set up our form data (empty).
+  FormData form;
+  form.name = ASCIIToUTF16("MyForm");
+  form.origin = GURL("http://myform.com/form.html");
+  form.action = GURL("http://myform.com/submit.html");
+
+  std::vector<ServerFieldTypeSet> expected_types;
+
+  // These fields should all match.
+  ServerFieldTypeSet types;
+  FormFieldData field;
+  test::CreateTestFormField("First Name", "firstname", "", "text", &field);
+  form.fields.push_back(field);
+  types.insert(NAME_FIRST);
+  expected_types.push_back(types);
+
+  test::CreateTestFormField("Last Name", "lastname", "", "text", &field);
+  form.fields.push_back(field);
+  types.clear();
+  types.insert(NAME_LAST);
+  expected_types.push_back(types);
+
+  test::CreateTestFormField("Email", "email", "", "text", &field);
+  form.fields.push_back(field);
+  types.clear();
+  types.insert(EMAIL_ADDRESS);
+  expected_types.push_back(types);
+
+  FormsSeen(std::vector<FormData>(1, form));
+
+  // We will expect these types in the upload and no observed submission. (the
+  // callback initiated by WaitForAsyncUploadProcess checks these expectations.)
+  autofill_manager_->set_expected_submitted_field_types(expected_types);
+  autofill_manager_->set_expected_observed_submission(false);
+
+  // Form was autofilled with user data.
+  form.fields[0].value = base::ASCIIToUTF16("Elvis");
+  form.fields[1].value = base::ASCIIToUTF16("Presley");
+  form.fields[2].value = base::ASCIIToUTF16("theking@gmail.com");
+  autofill_manager_->OnDidFillAutofillFormData(form, base::TimeTicks::Now());
+
+  autofill_manager_->ResetRunLoop();
+  // Simulate lost of focus on the form.
+  autofill_manager_->OnFocusNoLongerOnForm();
+  // Wait for upload to complete.
+  autofill_manager_->WaitForAsyncUploadProcess();
 }
 
 // Test to verify suggestions appears for forms having credit card number split

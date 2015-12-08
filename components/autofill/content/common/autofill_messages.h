@@ -282,8 +282,12 @@ IPC_MESSAGE_ROUTED0(AutofillHostMsg_DidPreviewAutofillFormData)
 // Sent immediately after the renderer receives a ping IPC.
 IPC_MESSAGE_ROUTED0(AutofillHostMsg_PingAck)
 
+// Sent when the current form is no longer focused.
+IPC_MESSAGE_ROUTED0(AutofillHostMsg_FocusNoLongerOnForm)
+
 // Sent when a form is filled with Autofill suggestions.
-IPC_MESSAGE_ROUTED1(AutofillHostMsg_DidFillAutofillFormData,
+IPC_MESSAGE_ROUTED2(AutofillHostMsg_DidFillAutofillFormData,
+                    autofill::FormData /* the form */,
                     base::TimeTicks /* timestamp */)
 
 // Sent when a form receives a request to do interactive autocomplete.

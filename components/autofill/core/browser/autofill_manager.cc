@@ -227,6 +227,30 @@ bool AutofillManager::ShouldShowScanCreditCard(const FormData& form,
                                  base::ASCIIToUTF16("0123456789"));
 }
 
+void AutofillManager::OnFormsSeen(const std::vector<FormData>& forms,
+                                  const TimeTicks& timestamp) {
+  if (!IsValidFormDataVector(forms))
+    return;
+
+  if (!driver_->RendererIsAvailable())
+    return;
+
+  bool enabled = IsAutofillEnabled();
+  if (!has_logged_autofill_enabled_) {
+    AutofillMetrics::LogIsAutofillEnabledAtPageLoad(enabled);
+    has_logged_autofill_enabled_ = true;
+  }
+
+  if (!enabled)
+    return;
+
+  for (const FormData& form : forms) {
+    forms_loaded_timestamps_[form] = timestamp;
+  }
+
+  ParseForms(forms);
+}
+
 bool AutofillManager::OnWillSubmitForm(const FormData& form,
                                        const TimeTicks& timestamp) {
   if (!IsValidFormData(form))
@@ -253,45 +277,7 @@ bool AutofillManager::OnWillSubmitForm(const FormData& form,
   address_form_event_logger_->OnWillSubmitForm();
   credit_card_form_event_logger_->OnWillSubmitForm();
 
-  // Only upload server statistics and UMA metrics if at least some local data
-  // is available to use as a baseline.
-  const std::vector<AutofillProfile*>& profiles = personal_data_->GetProfiles();
-  if (submitted_form->IsAutofillable()) {
-    AutofillMetrics::LogNumberOfProfilesAtAutofillableFormSubmission(
-        personal_data_->GetProfiles().size());
-  }
-  const std::vector<CreditCard*>& credit_cards =
-      personal_data_->GetCreditCards();
-  if (!profiles.empty() || !credit_cards.empty()) {
-    // Copy the profile and credit card data, so that it can be accessed on a
-    // separate thread.
-    std::vector<AutofillProfile> copied_profiles;
-    copied_profiles.reserve(profiles.size());
-    for (const AutofillProfile* profile : profiles)
-      copied_profiles.push_back(*profile);
-
-    std::vector<CreditCard> copied_credit_cards;
-    copied_credit_cards.reserve(credit_cards.size());
-    for (const CreditCard* card : credit_cards)
-      copied_credit_cards.push_back(*card);
-
-    // Note that ownership of |submitted_form| is passed to the second task,
-    // using |base::Owned|.
-    FormStructure* raw_submitted_form = submitted_form.get();
-    driver_->GetBlockingPool()->PostTaskAndReply(
-        FROM_HERE,
-        base::Bind(&DeterminePossibleFieldTypesForUpload,
-                   copied_profiles,
-                   copied_credit_cards,
-                   app_locale_,
-                   raw_submitted_form),
-        base::Bind(&AutofillManager::UploadFormDataAsyncCallback,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   base::Owned(submitted_form.release()),
-                   forms_loaded_timestamps_[form],
-                   initial_interaction_timestamp_,
-                   timestamp));
-  }
+  StartUploadProcess(std::move(submitted_form), timestamp, true);
 
   return true;
 }
@@ -318,28 +304,69 @@ bool AutofillManager::OnFormSubmitted(const FormData& form) {
   return true;
 }
 
-void AutofillManager::OnFormsSeen(const std::vector<FormData>& forms,
-                                  const TimeTicks& timestamp) {
-  if (!IsValidFormDataVector(forms))
-    return;
-
-  if (!driver_->RendererIsAvailable())
-    return;
-
-  bool enabled = IsAutofillEnabled();
-  if (!has_logged_autofill_enabled_) {
-    AutofillMetrics::LogIsAutofillEnabledAtPageLoad(enabled);
-    has_logged_autofill_enabled_ = true;
+void AutofillManager::StartUploadProcess(
+    scoped_ptr<FormStructure> form_structure,
+    const TimeTicks& timestamp,
+    bool observed_submission) {
+  // Only upload server statistics and UMA metrics if at least some local data
+  // is available to use as a baseline.
+  const std::vector<AutofillProfile*>& profiles = personal_data_->GetProfiles();
+  if (observed_submission && form_structure->IsAutofillable()) {
+    // TODO(mathp): provide metrics for non-submission uploads.
+    AutofillMetrics::LogNumberOfProfilesAtAutofillableFormSubmission(
+        personal_data_->GetProfiles().size());
   }
+  const std::vector<CreditCard*>& credit_cards =
+      personal_data_->GetCreditCards();
+  if (!profiles.empty() || !credit_cards.empty()) {
+    // Copy the profile and credit card data, so that it can be accessed on a
+    // separate thread.
+    std::vector<AutofillProfile> copied_profiles;
+    copied_profiles.reserve(profiles.size());
+    for (const AutofillProfile* profile : profiles)
+      copied_profiles.push_back(*profile);
 
-  if (!enabled)
+    std::vector<CreditCard> copied_credit_cards;
+    copied_credit_cards.reserve(credit_cards.size());
+    for (const CreditCard* card : credit_cards)
+      copied_credit_cards.push_back(*card);
+
+    // Note that ownership of |form_structure| is passed to the second task,
+    // using |base::Owned|.
+    FormStructure* raw_form = form_structure.get();
+    TimeTicks loaded_timestamp =
+        forms_loaded_timestamps_[raw_form->ToFormData()];
+    driver_->GetBlockingPool()->PostTaskAndReply(
+        FROM_HERE,
+        base::Bind(&DeterminePossibleFieldTypesForUpload, copied_profiles,
+                   copied_credit_cards, app_locale_, raw_form),
+        base::Bind(&AutofillManager::UploadFormDataAsyncCallback,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   base::Owned(form_structure.release()), loaded_timestamp,
+                   initial_interaction_timestamp_, timestamp,
+                   observed_submission));
+  }
+}
+
+void AutofillManager::UpdatePendingForm(const FormData& form) {
+  // Process the current pending form if different than supplied |form|.
+  if (pending_form_data_ && !pending_form_data_->SameFormAs(form)) {
+    ProcessPendingFormForUpload();
+  }
+  // A new pending form is assigned.
+  pending_form_data_.reset(new FormData(form));
+}
+
+void AutofillManager::ProcessPendingFormForUpload() {
+  if (!pending_form_data_)
     return;
 
-  for (size_t i = 0; i < forms.size(); ++i) {
-    forms_loaded_timestamps_[forms[i]] = timestamp;
-  }
+  // We copy |pending_form_data_| to a new FormStructure to be consumed by the
+  // upload process and reset |pending_form_data_|.
+  scoped_ptr<FormStructure> upload_form(new FormStructure(*pending_form_data_));
+  pending_form_data_.reset();
 
-  ParseForms(forms);
+  StartUploadProcess(std::move(upload_form), base::TimeTicks::Now(), false);
 }
 
 void AutofillManager::OnTextFieldDidChange(const FormData& form,
@@ -355,6 +382,8 @@ void AutofillManager::OnTextFieldDidChange(const FormData& form,
   AutofillField* autofill_field = NULL;
   if (!GetCachedFormAndField(form, field, &form_structure, &autofill_field))
     return;
+
+  UpdatePendingForm(form);
 
   if (!user_did_type_) {
     user_did_type_ = true;
@@ -594,14 +623,21 @@ void AutofillManager::FillCreditCardForm(int query_id,
                              form, field, credit_card, true);
 }
 
+void AutofillManager::OnFocusNoLongerOnForm() {
+  ProcessPendingFormForUpload();
+}
+
 void AutofillManager::OnDidPreviewAutofillFormData() {
   if (test_delegate_)
     test_delegate_->DidPreviewFormData();
 }
 
-void AutofillManager::OnDidFillAutofillFormData(const TimeTicks& timestamp) {
+void AutofillManager::OnDidFillAutofillFormData(const FormData& form,
+                                                const TimeTicks& timestamp) {
   if (test_delegate_)
     test_delegate_->DidFillFormData();
+
+  UpdatePendingForm(form);
 
   AutofillMetrics::LogUserHappinessMetric(AutofillMetrics::USER_DID_AUTOFILL);
   if (!user_did_autofill_) {
@@ -1014,11 +1050,17 @@ void AutofillManager::UploadFormDataAsyncCallback(
     const FormStructure* submitted_form,
     const TimeTicks& load_time,
     const TimeTicks& interaction_time,
-    const TimeTicks& submission_time) {
-  submitted_form->LogQualityMetrics(
-      load_time, interaction_time, submission_time, client_->GetRapporService(),
-      did_show_suggestions_);
+    const TimeTicks& submission_time,
+    bool observed_submission) {
+  // TODO(mathp): Have different set of metrics for non-submission uploads.
+  if (observed_submission) {
+    submitted_form->LogQualityMetrics(
+        load_time, interaction_time, submission_time,
+        client_->GetRapporService(), did_show_suggestions_);
+  }
 
+  // TODO(crbug.com/555015): Differentiate non-submission uploads in the
+  // uploaded payload.
   if (submitted_form->ShouldBeCrowdsourced())
     UploadFormData(*submitted_form);
 }
@@ -1059,6 +1101,8 @@ void AutofillManager::Reset() {
   user_did_type_ = false;
   user_did_autofill_ = false;
   user_did_edit_autofilled_field_ = false;
+  ProcessPendingFormForUpload();
+  DCHECK(!pending_form_data_);
   unmask_request_ = payments::PaymentsClient::UnmaskRequestDetails();
   unmasking_query_id_ = -1;
   unmasking_form_ = FormData();
@@ -1501,7 +1545,6 @@ void AutofillManager::ParseForms(const std::vector<FormData>& forms) {
   for (const FormData& form : forms) {
     scoped_ptr<FormStructure> form_structure(new FormStructure(form));
     form_structure->ParseFieldTypesFromAutocompleteAttributes();
-
     if (!form_structure->ShouldBeParsed())
       continue;
 

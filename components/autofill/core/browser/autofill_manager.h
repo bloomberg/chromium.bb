@@ -109,7 +109,9 @@ class AutofillManager : public AutofillDownloadManager::Observer,
   void DidShowSuggestions(bool is_new_popup,
                           const FormData& form,
                           const FormFieldData& field);
-  void OnDidFillAutofillFormData(const base::TimeTicks& timestamp);
+  void OnFocusNoLongerOnForm();
+  void OnDidFillAutofillFormData(const FormData& form,
+                                 const base::TimeTicks& timestamp);
   void OnDidPreviewAutofillFormData();
 
   // Returns true if the value/identifier is deletable. Fills out
@@ -166,6 +168,20 @@ class AutofillManager : public AutofillDownloadManager::Observer,
   // personal profile. Returns false if this form is not relevant for Autofill.
   bool OnFormSubmitted(const FormData& form);
 
+  // Will send an upload based on the |form_structure| data and the local
+  // Autofill profile data. |observed_submission| is specified if the upload
+  // follows an observed submission event.
+  void StartUploadProcess(scoped_ptr<FormStructure> form_structure,
+                          const base::TimeTicks& timestamp,
+                          bool observed_submission);
+
+  // Update the pending form with |form|, possibly processing the current
+  // pending form for upload.
+  void UpdatePendingForm(const FormData& form);
+
+  // Upload the current pending form.
+  void ProcessPendingFormForUpload();
+
   void OnTextFieldDidChange(const FormData& form,
                             const FormFieldData& field,
                             const base::TimeTicks& timestamp);
@@ -205,12 +221,14 @@ class AutofillManager : public AutofillDownloadManager::Observer,
   virtual void UploadFormData(const FormStructure& submitted_form);
 
   // Logs quality metrics for the |submitted_form| and uploads the form data
-  // to the crowdsourcing server, if appropriate.
+  // to the crowdsourcing server, if appropriate. |observed_submission|
+  // indicates whether the upload is a result of an observed submission event.
   virtual void UploadFormDataAsyncCallback(
       const FormStructure* submitted_form,
       const base::TimeTicks& load_time,
       const base::TimeTicks& interaction_time,
-      const base::TimeTicks& submission_time);
+      const base::TimeTicks& submission_time,
+      bool observed_submission);
 
   // Maps suggestion backend ID to and from an integer identifying it. Two of
   // these intermediate integers are packed by MakeFrontendID to make the IDs
@@ -443,6 +461,9 @@ class AutofillManager : public AutofillDownloadManager::Observer,
 
   // Our copy of the form data.
   ScopedVector<FormStructure> form_structures_;
+
+  // A copy of the currently interacted form data.
+  scoped_ptr<FormData> pending_form_data_;
 
   // Collected information about a pending unmask request, and data about the
   // form.

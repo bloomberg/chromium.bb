@@ -259,11 +259,24 @@ void AutofillAgent::DidChangeScrollOffset() {
 void AutofillAgent::FocusedNodeChanged(const WebNode& node) {
   HidePopup();
 
-  if (node.isNull() || !node.isElementNode())
+  if (node.isNull() || !node.isElementNode()) {
+    if (!last_interacted_form_.isNull()) {
+      // Focus moved away from the last interacted form to somewhere else on
+      // the page.
+      Send(new AutofillHostMsg_FocusNoLongerOnForm(routing_id()));
+    }
     return;
+  }
 
   WebElement web_element = node.toConst<WebElement>();
   const WebInputElement* element = toWebInputElement(&web_element);
+  if (!element || (!last_interacted_form_.isNull() &&
+                   last_interacted_form_ != element->form())) {
+    // The focused element is not part of the last interacted form (could be
+    // in a different form).
+    Send(new AutofillHostMsg_FocusNoLongerOnForm(routing_id()));
+    return;
+  }
 
   if (!element || !element->isEnabled() || element->isReadOnly() ||
       !element->isTextField())
@@ -523,7 +536,7 @@ void AutofillAgent::OnFillForm(int query_id, const FormData& form) {
   if (!element_.form().isNull())
     last_interacted_form_ = element_.form();
 
-  Send(new AutofillHostMsg_DidFillAutofillFormData(routing_id(),
+  Send(new AutofillHostMsg_DidFillAutofillFormData(routing_id(), form,
                                                    base::TimeTicks::Now()));
 }
 

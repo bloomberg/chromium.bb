@@ -253,12 +253,12 @@ class TestAutofillManager : public AutofillManager {
 
   // Calls AutofillManager::OnWillSubmitForm and waits for it to complete.
   void WillSubmitForm(const FormData& form, const TimeTicks& timestamp) {
-    run_loop_.reset(new base::RunLoop());
+    ResetRunLoop();
     if (!OnWillSubmitForm(form, timestamp))
       return;
 
     // Wait for the asynchronous OnWillSubmitForm() call to complete.
-    run_loop_->Run();
+    RunRunLoop();
   }
 
   // Calls both AutofillManager::OnWillSubmitForm and
@@ -268,17 +268,20 @@ class TestAutofillManager : public AutofillManager {
     OnFormSubmitted(form);
   }
 
-  void UploadFormDataAsyncCallback(
-      const FormStructure* submitted_form,
-      const base::TimeTicks& load_time,
-      const base::TimeTicks& interaction_time,
-      const base::TimeTicks& submission_time) override {
+  // Control the run loop from within tests.
+  void ResetRunLoop() { run_loop_.reset(new base::RunLoop()); }
+  void RunRunLoop() { run_loop_->Run(); }
+
+  void UploadFormDataAsyncCallback(const FormStructure* submitted_form,
+                                   const base::TimeTicks& load_time,
+                                   const base::TimeTicks& interaction_time,
+                                   const base::TimeTicks& submission_time,
+                                   bool observed_submission) override {
     run_loop_->Quit();
 
-    AutofillManager::UploadFormDataAsyncCallback(submitted_form,
-                                                 load_time,
-                                                 interaction_time,
-                                                 submission_time);
+    AutofillManager::UploadFormDataAsyncCallback(
+        submitted_form, load_time, interaction_time, submission_time,
+        observed_submission);
   }
 
  private:
@@ -2854,7 +2857,7 @@ TEST_F(AutofillMetricsTest, UserHappinessFormInteraction) {
   // Simulate invoking autofill.
   {
     base::HistogramTester histogram_tester;
-    autofill_manager_->OnDidFillAutofillFormData(TimeTicks());
+    autofill_manager_->OnDidFillAutofillFormData(form, TimeTicks());
     histogram_tester.ExpectBucketCount("Autofill.UserHappiness",
                                        AutofillMetrics::USER_DID_AUTOFILL, 1);
     histogram_tester.ExpectBucketCount(
@@ -2884,7 +2887,7 @@ TEST_F(AutofillMetricsTest, UserHappinessFormInteraction) {
   // Simulate invoking autofill again.
   {
     base::HistogramTester histogram_tester;
-    autofill_manager_->OnDidFillAutofillFormData(TimeTicks());
+    autofill_manager_->OnDidFillAutofillFormData(form, TimeTicks());
     histogram_tester.ExpectUniqueSample("Autofill.UserHappiness",
                                         AutofillMetrics::USER_DID_AUTOFILL, 1);
   }
@@ -2915,7 +2918,7 @@ TEST_F(AutofillMetricsTest, FormFillDuration) {
   test::CreateTestFormField("Phone", "phone", "", "text", &field);
   form.fields.push_back(field);
 
-  std::vector<FormData> forms(1, form);
+  const std::vector<FormData> forms(1, form);
 
   // Fill additional form.
   FormData second_form = form;
@@ -2971,7 +2974,10 @@ TEST_F(AutofillMetricsTest, FormFillDuration) {
     histogram_tester.ExpectUniqueSample(
         "Autofill.FillDuration.FromInteraction.WithoutAutofill", 14, 1);
 
+    // We expected an upload to be triggered when the manager is reset.
+    autofill_manager_->ResetRunLoop();
     autofill_manager_->Reset();
+    autofill_manager_->RunRunLoop();
   }
 
   // Expect metric to be logged if the user autofilled the form.
@@ -2980,7 +2986,7 @@ TEST_F(AutofillMetricsTest, FormFillDuration) {
     base::HistogramTester histogram_tester;
     autofill_manager_->OnFormsSeen(forms, TimeTicks::FromInternalValue(1));
     autofill_manager_->OnDidFillAutofillFormData(
-        TimeTicks::FromInternalValue(5));
+        form, TimeTicks::FromInternalValue(5));
     autofill_manager_->SubmitForm(form, TimeTicks::FromInternalValue(17));
 
     histogram_tester.ExpectUniqueSample(
@@ -2992,7 +2998,10 @@ TEST_F(AutofillMetricsTest, FormFillDuration) {
     histogram_tester.ExpectTotalCount(
         "Autofill.FillDuration.FromInteraction.WithoutAutofill", 0);
 
+    // We expected an upload to be triggered when the manager is reset.
+    autofill_manager_->ResetRunLoop();
     autofill_manager_->Reset();
+    autofill_manager_->RunRunLoop();
   }
 
   // Expect metric to be logged if the user both manually filled some fields
@@ -3003,7 +3012,7 @@ TEST_F(AutofillMetricsTest, FormFillDuration) {
 
     autofill_manager_->OnFormsSeen(forms, TimeTicks::FromInternalValue(1));
     autofill_manager_->OnDidFillAutofillFormData(
-        TimeTicks::FromInternalValue(5));
+        form, TimeTicks::FromInternalValue(5));
     autofill_manager_->OnTextFieldDidChange(form, form.fields.front(),
                                             TimeTicks::FromInternalValue(3));
     autofill_manager_->SubmitForm(form, TimeTicks::FromInternalValue(17));
@@ -3017,7 +3026,10 @@ TEST_F(AutofillMetricsTest, FormFillDuration) {
     histogram_tester.ExpectTotalCount(
         "Autofill.FillDuration.FromInteraction.WithoutAutofill", 0);
 
+    // We expected an upload to be triggered when the manager is reset.
+    autofill_manager_->ResetRunLoop();
     autofill_manager_->Reset();
+    autofill_manager_->RunRunLoop();
   }
 
   // Make sure that loading another form doesn't affect metrics from the first
@@ -3028,7 +3040,7 @@ TEST_F(AutofillMetricsTest, FormFillDuration) {
     autofill_manager_->OnFormsSeen(second_forms,
                                    TimeTicks::FromInternalValue(3));
     autofill_manager_->OnDidFillAutofillFormData(
-        TimeTicks::FromInternalValue(5));
+        form, TimeTicks::FromInternalValue(5));
     autofill_manager_->OnTextFieldDidChange(form, form.fields.front(),
                                             TimeTicks::FromInternalValue(3));
     autofill_manager_->SubmitForm(form, TimeTicks::FromInternalValue(17));
@@ -3042,7 +3054,11 @@ TEST_F(AutofillMetricsTest, FormFillDuration) {
     histogram_tester.ExpectTotalCount(
         "Autofill.FillDuration.FromInteraction.WithoutAutofill", 0);
 
+    // We expected an upload to be triggered when the manager is reset.
+    autofill_manager_->ResetRunLoop();
     autofill_manager_->Reset();
+    autofill_manager_->RunRunLoop();
+    ;
   }
 
   // Make sure that submitting a form that was loaded later will report the

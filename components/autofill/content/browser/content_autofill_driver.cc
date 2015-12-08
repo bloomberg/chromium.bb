@@ -161,6 +161,9 @@ bool ContentAutofillDriver::HandleMessage(const IPC::Message& message) {
   IPC_MESSAGE_FORWARD(AutofillHostMsg_TextFieldDidChange,
                       autofill_manager_.get(),
                       AutofillManager::OnTextFieldDidChange)
+  IPC_MESSAGE_FORWARD(AutofillHostMsg_FocusNoLongerOnForm,
+                      autofill_manager_.get(),
+                      AutofillManager::OnFocusNoLongerOnForm)
   IPC_MESSAGE_FORWARD(AutofillHostMsg_QueryFormFieldAutofill,
                       autofill_manager_.get(),
                       AutofillManager::OnQueryFormFieldAutofill)
