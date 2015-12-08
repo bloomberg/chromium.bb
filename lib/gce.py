@@ -11,6 +11,7 @@ Google API fails, or gce.Error on other failures.
 from __future__ import print_function
 
 import httplib2
+import string
 
 from chromite.lib import cros_logging as logging
 from chromite.lib import timeout_util
@@ -144,6 +145,8 @@ class GceContext(object):
     self.gce_client = build('compute', 'v1', credentials=credentials,
                             requestBuilder=_BuildRequest)
 
+    self.region = self.GetZoneRegion(zone)
+
   @classmethod
   def ForServiceAccount(cls, project, zone, json_key_file):
     """Creates a GceContext using service account credentials.
@@ -182,8 +185,66 @@ class GceContext(object):
         cls._GCE_SCOPES)
     return GceContext(project, zone, credentials, thread_safe=True)
 
+  def CreateAddress(self, name, region=None):
+    """Reserves an external IP address.
+
+    Args:
+      name: The name to assign to the address.
+      region: Region to reserved the address in.
+
+    Returns:
+      The reserved address as a string.
+    """
+    body = {
+        'name': name,
+    }
+    operation = self.gce_client.addresses().insert(
+        project=self.project,
+        region=region or self.region,
+        body=body).execute()
+    self._WaitForRegionOperation(
+        operation['name'], region,
+        timeout_sec=self._INSTANCE_OPERATIONS_TIMEOUT_SEC)
+
+    address = self.gce_client.addresses().get(
+        project=self.project,
+        region=region or self.region,
+        address=name).execute()
+
+    return address['address']
+
+  def DeleteAddress(self, name, region=None):
+    """Frees up an external IP address.
+
+    Args:
+      name: The name of the address.
+      region: Region of the address.
+    """
+    operation = self.gce_client.addresses().delete(
+        project=self.project,
+        region=region or self.region,
+        address=name).execute()
+    self._WaitForRegionOperation(
+        operation['name'], region=region or self.region,
+        timeout_sec=self._INSTANCE_OPERATIONS_TIMEOUT_SEC)
+
+  def GetZoneRegion(self, zone=None):
+    """Resolves name of the region that a zone belongs to.
+
+    Args:
+      zone: The zone to resolve.
+
+    Returns:
+      Name of the region corresponding to the zone.
+    """
+    zone_resource = self.gce_client.zones().get(
+        project=self.project,
+        zone=zone or self.zone).execute()
+    return string.split(zone_resource['region'], '/')[-1]
+
   def CreateInstance(self, name, image, zone=None, network=None,
-                     machine_type=None, default_scopes=True, **kwargs):
+                     machine_type=None, default_scopes=True,
+                     static_address=None, **kwargs):
     """Creates an instance with the given image and waits until it's ready.
 
     Args:
@@ -200,7 +261,9 @@ class GceContext(object):
           will be used if omitted.
       machine_type: The machine type to use. Default machine type will be used
           if omitted.
-      default_scope: If true, the default scopes are added to the instances.
+      default_scopes: If true, the default scopes are added to the instances.
+      static_address: External IP address to assign to the instance as a string.
+          If None an emphemeral address will be used.
       kwargs: Other possible Instance Resource properties.
           https://cloud.google.com/compute/docs/reference/latest/instances#resource
           Note that values from kwargs will overrule properties constructed from
@@ -246,6 +309,9 @@ class GceContext(object):
         'serviceAccounts' : service_accounts,
     }
     config.update(**kwargs)
+    if static_address is not None:
+      config['networkInterfaces'][0]['accessConfigs'][0]['natIP'] = (
+          static_address)
     operation = self.gce_client.instances().insert(
         project=self.project,
         zone=zone or self.zone,
@@ -264,6 +330,34 @@ class GceContext(object):
       zone: Zone where the instance is in. Default zone will be used if omitted.
     """
     operation = self.gce_client.instances().delete(
+        project=self.project,
+        zone=zone or self.zone,
+        instance=name).execute()
+    self._WaitForZoneOperation(
+        operation['name'], timeout_sec=self._INSTANCE_OPERATIONS_TIMEOUT_SEC)
+
+  def StartInstance(self, name, zone=None):
+    """Starts an instance with the name and waits until it's done.
+
+    Args:
+      name: Name of the instance to start.
+      zone: Zone where the instance is in. Default zone will be used if omitted.
+    """
+    operation = self.gce_client.instances().start(
+        project=self.project,
+        zone=zone or self.zone,
+        instance=name).execute()
+    self._WaitForZoneOperation(
+        operation['name'], timeout_sec=self._INSTANCE_OPERATIONS_TIMEOUT_SEC)
+
+  def StopInstance(self, name, zone=None):
+    """Stops an instance with the name and waits until it's done.
+
+    Args:
+      name: Name of the instance to stop.
+      zone: Zone where the instance is in. Default zone will be used if omitted.
+    """
+    operation = self.gce_client.instances().stop(
         project=self.project,
         zone=zone or self.zone,
         instance=name).execute()
@@ -501,6 +595,21 @@ class GceContext(object):
     """
     get_request = self.gce_client.zoneOperations().get(
         project=self.project, zone=zone or self.zone, operation=operation)
+    self._WaitForOperation(operation, get_request, timeout_sec,
+                           timeout_handler=timeout_handler)
+
+  def _WaitForRegionOperation(self, operation, region, timeout_sec=None,
+                              timeout_handler=None):
+    """Waits until a GCE RegionOperation is finished or timed out.
+
+    Args:
+      operation: The GCE operation to wait for.
+      region: The region that |operation| belongs to.
+      timeout_sec: The maximum number of seconds to wait for.
+      timeout_handler: A callable to be executed when timeout happens.
+    """
+    get_request = self.gce_client.regionOperations().get(
+        project=self.project, region=region or self.region, operation=operation)
     self._WaitForOperation(operation, get_request, timeout_sec,
                            timeout_handler=timeout_handler)
 
