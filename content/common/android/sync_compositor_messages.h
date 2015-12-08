@@ -26,6 +26,7 @@ struct SyncCompositorCommonBrowserParams {
   size_t bytes_limit;
   cc::CompositorFrameAck ack;
   gfx::ScrollOffset root_scroll_offset;
+  bool update_root_scroll_offset;
 };
 
 struct SyncCompositorDemandDrawHwParams {
@@ -88,6 +89,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::SyncCompositorCommonBrowserParams)
   IPC_STRUCT_TRAITS_MEMBER(bytes_limit)
   IPC_STRUCT_TRAITS_MEMBER(ack)
   IPC_STRUCT_TRAITS_MEMBER(root_scroll_offset)
+  IPC_STRUCT_TRAITS_MEMBER(update_root_scroll_offset)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::SyncCompositorDemandDrawHwParams)

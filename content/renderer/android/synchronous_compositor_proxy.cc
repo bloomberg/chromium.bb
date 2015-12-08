@@ -269,7 +269,8 @@ void SynchronousCompositorProxy::ProcessCommonParams(
     bytes_limit_ = common_params.bytes_limit;
     output_surface_->SetMemoryPolicy(bytes_limit_);
   }
-  if (total_scroll_offset_ != common_params.root_scroll_offset) {
+  if (common_params.update_root_scroll_offset &&
+      total_scroll_offset_ != common_params.root_scroll_offset) {
     total_scroll_offset_ = common_params.root_scroll_offset;
     input_handler_proxy_->SynchronouslySetRootScrollOffset(
         total_scroll_offset_);

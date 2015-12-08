@@ -375,8 +375,6 @@ public class AndroidScrollIntegrationTest extends AwTestBase {
 
     @SmallTest
     @Feature({"AndroidWebView"})
-    // Run in single-process mode only. Flaky with sandboxed renderer crbug.com/554529.
-    @ParameterizedTest.Set
     public void testJsScrollFromBody() throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
         final ScrollTestContainerView testContainerView =

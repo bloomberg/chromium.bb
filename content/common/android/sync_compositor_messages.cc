@@ -7,7 +7,7 @@
 namespace content {
 
 SyncCompositorCommonBrowserParams::SyncCompositorCommonBrowserParams()
-    : bytes_limit(0u) {}
+    : bytes_limit(0u), update_root_scroll_offset(false) {}
 
 SyncCompositorCommonBrowserParams::~SyncCompositorCommonBrowserParams() {}
 

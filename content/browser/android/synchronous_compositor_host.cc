@@ -34,6 +34,7 @@ SynchronousCompositorHost::SynchronousCompositorHost(
       sender_(rwhva_->GetRenderWidgetHost()),
       is_active_(false),
       bytes_limit_(0u),
+      root_scroll_offset_updated_by_browser_(false),
       renderer_param_version_(0u),
       need_animate_scroll_(false),
       need_invalidate_(false),
@@ -170,6 +171,7 @@ void SynchronousCompositorHost::DidChangeRootLayerScrollOffset(
     const gfx::ScrollOffset& root_offset) {
   if (root_scroll_offset_ == root_offset)
     return;
+  root_scroll_offset_updated_by_browser_ = true;
   root_scroll_offset_ = root_offset;
   SendAsyncCompositorStateIfNeeded();
 }
@@ -257,8 +259,13 @@ void SynchronousCompositorHost::PopulateCommonParams(
   DCHECK(params);
   DCHECK(params->ack.resources.empty());
   params->bytes_limit = bytes_limit_;
-  params->root_scroll_offset = root_scroll_offset_;
   params->ack.resources.swap(returned_resources_);
+  if (root_scroll_offset_updated_by_browser_) {
+    params->root_scroll_offset = root_scroll_offset_;
+    params->update_root_scroll_offset = root_scroll_offset_updated_by_browser_;
+    root_scroll_offset_updated_by_browser_ = false;
+  }
+
   weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
