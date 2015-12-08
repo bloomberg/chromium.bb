@@ -13,28 +13,12 @@
 #include "base/memory/scoped_ptr.h"
 
 #include "courgette/disassembler.h"
+#include "courgette/image_utils.h"
 #include "courgette/memory_allocator.h"
 
 namespace courgette {
 
 class EncodedProgram;
-
-// A Label is a symbolic reference to an address.  Unlike a conventional
-// assembly language, we always know the address.  The address will later be
-// stored in a table and the Label will be replaced with the index into the
-// table.
-//
-// TODO(sra): Make fields private and add setters and getters.
-class Label {
- public:
-  static const int kNoIndex = -1;
-  Label() : rva_(0), index_(kNoIndex), count_(0) {}
-  explicit Label(RVA rva) : rva_(rva), index_(kNoIndex), count_(0) {}
-
-  RVA rva_;    // Address referred to by the label.
-  int index_;  // Index of address in address table, kNoIndex until assigned.
-  int count_;
-};
 
 typedef std::map<RVA, Label*> RVAToLabel;
 

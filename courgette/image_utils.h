@@ -15,6 +15,26 @@ namespace courgette {
 
 typedef uint32 RVA;
 
+// A Label is a symbolic reference to an address.  Unlike a conventional
+// assembly language, we always know the address.  The address will later be
+// stored in a table and the Label will be replaced with the index into the
+// table.
+// TODO(huangs): Make this a struct, and remove "_" from member names.
+class Label {
+ public:
+  enum : int { kNoIndex = -1 };
+  explicit Label(RVA rva) : rva_(rva) {}
+
+  bool operator==(const Label& other) const {
+    return rva_ == other.rva_ && index_ == other.index_ &&
+           count_ == other.count_;
+  }
+
+  RVA rva_ = 0;           // Address referred to by the label.
+  int index_ = kNoIndex;  // Index of address in address table.
+  int32 count_ = 0;
+};
+
 // These helper functions avoid the need for casts in the main code.
 inline uint16 ReadU16(const uint8* address, size_t offset) {
   return *reinterpret_cast<const uint16*>(address + offset);
