@@ -1148,7 +1148,7 @@ IN_PROC_BROWSER_TEST_F(
   } else if (extensions::IsIsolateExtensionsEnabled()) {
     EXPECT_THAT(details->uma()->GetAllSamples(
                     "SiteIsolation.SiteInstancesPerBrowsingInstance"),
-                ElementsAre(Bucket(1, 2)));
+                ElementsAre(Bucket(2, 1)));
   } else {
     EXPECT_THAT(details->uma()->GetAllSamples(
                     "SiteIsolation.SiteInstancesPerBrowsingInstance"),
@@ -1167,7 +1167,7 @@ IN_PROC_BROWSER_TEST_F(
   } else if (extensions::IsIsolateExtensionsEnabled()) {
     EXPECT_THAT(details->uma()->GetAllSamples(
                     "SiteIsolation.SiteInstancesPerBrowsingInstance"),
-                ElementsAre(Bucket(1, 3)));
+                ElementsAre(Bucket(1, 1), Bucket(2, 1)));
   } else {
     EXPECT_THAT(details->uma()->GetAllSamples(
                     "SiteIsolation.SiteInstancesPerBrowsingInstance"),
@@ -1187,7 +1187,7 @@ IN_PROC_BROWSER_TEST_F(
   } else if (extensions::IsIsolateExtensionsEnabled()) {
     EXPECT_THAT(details->uma()->GetAllSamples(
                     "SiteIsolation.SiteInstancesPerBrowsingInstance"),
-                ElementsAre(Bucket(1, 4)));
+                ElementsAre(Bucket(1, 1), Bucket(3, 1)));
   } else {
     EXPECT_THAT(details->uma()->GetAllSamples(
                     "SiteIsolation.SiteInstancesPerBrowsingInstance"),
