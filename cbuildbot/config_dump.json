@@ -9646,7 +9646,8 @@
                 "vm_tests": []
             }
         ],
-        "description": "Release Builds (canary) (internal); Group config (boards: kunimitsu, lars)"
+        "description": "Release Builds (canary) (internal); Group config (boards: kunimitsu, lars)",
+        "important": true
     },
     "kunimitsu-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -18548,7 +18549,8 @@
                 "vm_tests": []
             }
         ],
-        "description": "Release Builds (canary) (internal); Group config (boards: reks, wizpig, terra)"
+        "description": "Release Builds (canary) (internal); Group config (boards: reks, wizpig, terra)",
+        "important": true
     },
     "strago-c-full-group": {
         "_template": "full",
@@ -18591,7 +18593,8 @@
                 "name": "edgar-release"
             }
         ],
-        "description": "Release Builds (canary) (internal); Group config (boards: edgar)"
+        "description": "Release Builds (canary) (internal); Group config (boards: edgar)",
+        "important": true
     },
     "strago-chrome-pfq": {
         "_template": "chrome-pfq",
@@ -18891,7 +18894,8 @@
                 "vm_tests": []
             }
         ],
-        "description": "Release Builds (canary) (internal); Group config (boards: strago, cyan, celes, ultima)"
+        "description": "Release Builds (canary) (internal); Group config (boards: strago, cyan, celes, ultima)",
+        "important": true
     },
     "strago-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -20656,6 +20660,7 @@
             }
         ],
         "description": "Release Builds (canary) (internal); Group config (boards: veyron_shark, veyron_romy)",
+        "important": true,
         "vm_tests": []
     },
     "veyron-full-group": {
@@ -21871,7 +21876,6 @@
     },
     "veyron_mighty-paladin": {
         "_template": "paladin",
-        "active_waterfall": "chromeos",
         "boards": [
             "veyron_mighty"
         ],
@@ -22879,7 +22883,6 @@
     },
     "veyron_speedy-paladin": {
         "_template": "paladin",
-        "active_waterfall": "chromeos",
         "boards": [
             "veyron_speedy"
         ],

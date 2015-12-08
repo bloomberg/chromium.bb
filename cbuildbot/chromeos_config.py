@@ -592,16 +592,9 @@ _waterfall_config_map = {
     constants.WATERFALL_INTERNAL: frozenset([
         # Experimental Paladins.
         'lakitu_next-paladin',
-        'veyron_mighty-paladin',
-        'veyron_speedy-paladin',
 
         # Experimental Canaries (Group)
-        'kunimitsu-release-group',
         'storm-release-group',
-        'strago-release-group',
-        'strago-b-release-group',
-        'strago-c-release-group',
-        'veyron-d-release-group',
 
         # Experimental Canaries
         'bobcat-release',
@@ -2575,7 +2568,6 @@ def GetConfig():
       'veyron-d', 'veyron_shark', (
           'veyron_romy',
       ),
-      important=False,
   )
 
   # jecht-based boards
@@ -2594,7 +2586,6 @@ def GetConfig():
           'celes',
           'ultima',
       ),
-      important=False,
   )
 
   _AddGroupConfig(
@@ -2602,13 +2593,11 @@ def GetConfig():
           'wizpig',
           'terra',
       ),
-      important=False,
   )
 
   _AddGroupConfig(
       'strago-c', 'edgar', (
       ),
-      important=False,
   )
 
   # oak-based boards
@@ -2638,7 +2627,6 @@ def GetConfig():
       'kunimitsu', 'kunimitsu', (
           'lars',
       ),
-      important=False,
   )
 
   # Factory and Firmware releases much inherit from these classes.
