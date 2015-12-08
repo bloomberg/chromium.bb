@@ -927,7 +927,7 @@ SkAlpha TabStrip::GetInactiveAlpha(bool for_new_tab_button) const {
   static const SkAlpha kInactiveTabAlphaAsh = 230;
   static const SkAlpha kInactiveTabAlphaGlass = 200;
   static const SkAlpha kInactiveTabAlphaOpaque = 255;
-  static const float kMultiSelectionMultiplier = 0.75;
+  static const double kMultiSelectionMultiplier = 0.75;
 
   const chrome::HostDesktopType host_desktop_type =
       chrome::GetHostDesktopTypeForNativeView(GetWidget()->GetNativeView());

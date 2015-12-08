@@ -80,11 +80,11 @@ const int kPinnedTabExtraWidthToRenderAsNormal = 30;
 // How opaque to make the hover state (out of 1).
 const double kHoverOpacity = 0.33;
 
-// Opacity for non-active selected tabs.
-const double kSelectedTabOpacity = .45;
+// Opacity of the active tab background painted over inactive selected tabs.
+const double kSelectedTabOpacity = 0.45;
 
-// Selected (but not active) tabs have their throb value scaled down by this.
-const double kSelectedTabThrobScale = .5;
+// Inactive selected tabs have their throb value scaled by this.
+const double kSelectedTabThrobScale = 0.95 - kSelectedTabOpacity;
 
 // Durations for the various parts of the pinned tab title animation.
 const int kPinnedTitleChangeAnimationDuration1MS = 1600;
@@ -498,10 +498,10 @@ Tab::Tab(TabController* controller)
   // don't depend on the these, so we can set them here.
   const gfx::ImageSkia& hovered = gfx::CreateVectorIcon(
       gfx::VectorIconId::TAB_CLOSE_HOVERED_PRESSED, kTabCloseButtonSize,
-      SkColorSetARGB(0xFF, 0xDB, 0x44, 0x37));
+      SkColorSetRGB(0xDB, 0x44, 0x37));
   const gfx::ImageSkia& pressed = gfx::CreateVectorIcon(
       gfx::VectorIconId::TAB_CLOSE_HOVERED_PRESSED, kTabCloseButtonSize,
-      SkColorSetARGB(0xFF, 0xA8, 0x35, 0x2A));
+      SkColorSetRGB(0xA8, 0x35, 0x2A));
   close_button_->SetImage(views::CustomButton::STATE_HOVERED, &hovered);
   close_button_->SetImage(views::CustomButton::STATE_PRESSED, &pressed);
 
@@ -1487,23 +1487,20 @@ bool Tab::ShouldRenderAsNormalTab() const {
 
 double Tab::GetThrobValue() {
   const bool is_selected = IsSelected();
-  const double min = is_selected ? kSelectedTabOpacity : 0;
-  const double scale = is_selected ? kSelectedTabThrobScale : 1;
+  double val = is_selected ? kSelectedTabOpacity : 0;
+  const double offset =
+      is_selected ? (kSelectedTabThrobScale * kHoverOpacity) : kHoverOpacity;
 
   // Showing both the pulse and title change animation at the same time is too
   // much.
   if (pulse_animation_ && pulse_animation_->is_animating() &&
       (!pinned_title_change_animation_ ||
        !pinned_title_change_animation_->is_animating())) {
-    return pulse_animation_->GetCurrentValue() * kHoverOpacity * scale + min;
+    val += pulse_animation_->GetCurrentValue() * offset;
+  } else if (hover_controller_.ShouldDraw()) {
+    val += hover_controller_.GetAnimationValue() * offset;
   }
-
-  if (hover_controller_.ShouldDraw()) {
-    return kHoverOpacity * hover_controller_.GetAnimationValue() * scale +
-        min;
-  }
-
-  return is_selected ? kSelectedTabOpacity : 0;
+  return val;
 }
 
 void Tab::SetFaviconHidingOffset(int offset) {
