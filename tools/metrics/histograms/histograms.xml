@@ -14142,7 +14142,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="GCM.AndroidGcmReceiver" enum="GcmReceiverStatus">
+<histogram name="GCM.AndroidGcmReceiverError" enum="GcmReceiverStatus">
   <owner>khushalsagar@chromium.org</owner>
   <summary>Result of a message received by the GcmReceiver on Android.</summary>
 </histogram>
