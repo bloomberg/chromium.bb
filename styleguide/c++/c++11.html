@@ -426,6 +426,25 @@ codebase.
 </tr>
 
 <tr>
+<td>Alignment Features</td>
+<td>
+<code>alignas</code> specifier,
+<code>alignof</code> operator
+<td>Object alignment</td>
+<td>
+<a href="http://en.cppreference.com/w/cpp/language/alignas">alignas</a>,
+<a href="http://en.cppreference.com/w/cpp/language/alignof">alignof</a>
+</td>
+<td>
+<a href="https://codereview.chromium.org/1497963002/">Doesn't work in
+MSVS2013</a>.
+<a href="https://msdn.microsoft.com/en-us/library/dn956970.aspx">MSVS2015
+supports them</a>; reevaluate after MSVS2015 is available.
+<a href="https://groups.google.com/a/chromium.org/d/msg/cxx/rwXN02jzzq0/CpUc1ZzMBQAJ">Discussion thread</a>
+</td>
+</tr>
+
+<tr>
 <td>Constant Expressions</td>
 <td><code>constexpr</code></td>
 <td>Compile-time constant expressions</td>
@@ -582,16 +601,6 @@ work in all our compilers yet.</p>
 <th style='width:240px;'>Description</th>
 <th style='width:240px;'>Documentation Link</th>
 <th style='width:240px;'>Notes</th>
-</tr>
-
-<tr>
-<td>Alignment Features</td>
-<td>
-<code>alignas</code> specifier,
-<code>alignof</code> operator,
-<td>Object alignment</td>
-<td><a href="http://en.cppreference.com/w/cpp/language/alignof">alignof</a></td>
-<td></td>
 </tr>
 
 <tr>
