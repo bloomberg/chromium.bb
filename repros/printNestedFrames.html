@@ -1,0 +1,93 @@
+<html>
+<head>
+    <style>
+        .original .a {
+            background-color: red;
+        }
+
+        .original .b {
+            background-color: green;
+        }
+
+        .original.screen-grab .a {
+            background-color: green;
+        }
+
+        .original.screen-grab .b {
+            background-color: red;
+        }
+
+        div {
+            width: 100px;
+            height: 100px;
+            transform: scale(0.75, 0.75);
+            transform-origin: 0px 0px;
+            margin: 0;
+            border: 0;
+        }
+
+        body {
+            margin: 0;
+        }
+
+        iframe {
+            border: 0;
+        }
+    </style>
+</head>
+<body class="original">
+    <div class="a">
+        <div class="b">
+            <iframe></iframe>
+        </div>
+    </div>
+
+    <script>
+        document.getElementsByTagName('iframe')[0].setAttribute('srcdoc', "\
+<html>\
+    <head>\
+        <style>\
+            .original .a {\
+                background-color: red;\
+            }\
+            .original .b {\
+                background-color: green;\
+            }\
+            .original.screen-grab .a {\
+                background-color: green;\
+            }\
+            .original.screen-grab .b {\
+                background-color: red;\
+            }\
+            div {\
+                width: 100px;\
+                height: 100px;\
+                transform: scale(0.75, 0.75);\
+                transform-origin: 0px 0px;\
+                margin: 0;\
+                border: 0;\
+            }\
+            body {\
+                margin: 0;\
+            }\
+            iframe {\
+                border: 0;\
+            }\
+        </style>\
+    </head>\
+    <body class='original'>\
+        <div class='a'>\
+            <div class='b'>\
+                <object type='image/svg+xml' width='50' height='50' data=\"data:image/svg+xml;charset=UTF-8,<svg xmlns='http://www.w3.org/2000/svg' width='50' height='50'><rect x='0' y='0' width='50' height='50' fill='yellow' /></svg>\"> </object>\
+            </div>\
+        </div>\
+    </body>\
+</html>");
+    </script>
+
+    <p>The square above should have the strips yellow,green,red,green,red going from inside out.</p>
+    <p>The print out (with Test Capture) should have the colors: yellow,red,green,red,green.</p>
+
+</body>
+</html>
+
