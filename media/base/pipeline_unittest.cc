@@ -79,6 +79,8 @@ class PipelineTest : public ::testing::Test {
 
     MOCK_METHOD1(OnStart, void(PipelineStatus));
     MOCK_METHOD1(OnSeek, void(PipelineStatus));
+    MOCK_METHOD1(OnSuspend, void(PipelineStatus));
+    MOCK_METHOD1(OnResume, void(PipelineStatus));
     MOCK_METHOD0(OnStop, void());
     MOCK_METHOD0(OnEnded, void());
     MOCK_METHOD1(OnError, void(PipelineStatus));
@@ -272,6 +274,46 @@ class PipelineTest : public ::testing::Test {
     pipeline_->Seek(seek_time,
                     base::Bind(&CallbackHelper::OnSeek,
                                base::Unretained(&callbacks_)));
+    message_loop_.RunUntilIdle();
+  }
+
+  void ExpectSuspend() {
+    EXPECT_CALL(*renderer_, SetPlaybackRate(0));
+    EXPECT_CALL(*renderer_, Flush(_))
+        .WillOnce(DoAll(
+            SetBufferingState(&buffering_state_cb_, BUFFERING_HAVE_NOTHING),
+            RunClosure<0>()));
+    EXPECT_CALL(callbacks_, OnBufferingStateChange(BUFFERING_HAVE_NOTHING));
+    EXPECT_CALL(callbacks_, OnSuspend(PIPELINE_OK));
+  }
+
+  void DoSuspend() {
+    pipeline_->Suspend(
+        base::Bind(&CallbackHelper::OnSuspend, base::Unretained(&callbacks_)));
+    message_loop_.RunUntilIdle();
+
+    // |renderer_| has been deleted, replace it.
+    scoped_renderer_.reset(new StrictMock<MockRenderer>()),
+        renderer_ = scoped_renderer_.get();
+  }
+
+  void ExpectResume(const base::TimeDelta& seek_time) {
+    SetRendererExpectations();
+    EXPECT_CALL(*demuxer_, Seek(seek_time, _))
+        .WillOnce(RunCallback<1>(PIPELINE_OK));
+    EXPECT_CALL(*renderer_, SetPlaybackRate(_));
+    EXPECT_CALL(*renderer_, SetVolume(_));
+    EXPECT_CALL(*renderer_, StartPlayingFrom(seek_time))
+        .WillOnce(
+            SetBufferingState(&buffering_state_cb_, BUFFERING_HAVE_ENOUGH));
+    EXPECT_CALL(callbacks_, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH));
+    EXPECT_CALL(callbacks_, OnResume(PIPELINE_OK));
+  }
+
+  void DoResume(const base::TimeDelta& seek_time) {
+    pipeline_->Resume(
+        scoped_renderer_.Pass(), seek_time,
+        base::Bind(&CallbackHelper::OnResume, base::Unretained(&callbacks_)));
     message_loop_.RunUntilIdle();
   }
 
@@ -548,6 +590,27 @@ TEST_F(PipelineTest, SeekAfterError) {
   message_loop_.RunUntilIdle();
 }
 
+TEST_F(PipelineTest, SuspendResume) {
+  CreateAudioStream();
+  CreateVideoStream();
+  CreateTextStream();
+  MockDemuxerStreamVector streams;
+  streams.push_back(audio_stream());
+  streams.push_back(video_stream());
+
+  SetDemuxerExpectations(&streams, base::TimeDelta::FromSeconds(3000));
+  SetRendererExpectations();
+
+  StartPipelineAndExpect(PIPELINE_OK);
+
+  ExpectSuspend();
+  DoSuspend();
+
+  base::TimeDelta expected = base::TimeDelta::FromSeconds(2000);
+  ExpectResume(expected);
+  DoResume(expected);
+}
+
 TEST_F(PipelineTest, SetVolume) {
   CreateAudioStream();
   MockDemuxerStreamVector streams;
@@ -777,6 +840,9 @@ class PipelineTeardownTest : public PipelineTest {
     kFlushing,
     kSeeking,
     kPlaying,
+    kSuspending,
+    kSuspended,
+    kResuming,
   };
 
   enum StopOrError {
@@ -804,6 +870,13 @@ class PipelineTeardownTest : public PipelineTest {
       case kPlaying:
         DoInitialize(state, stop_or_error);
         DoStopOrError(stop_or_error);
+        break;
+
+      case kSuspending:
+      case kSuspended:
+      case kResuming:
+        DoInitialize(state, stop_or_error);
+        DoSuspend(state, stop_or_error);
         break;
     }
   }
@@ -956,6 +1029,75 @@ class PipelineTeardownTest : public PipelineTest {
     return status;
   }
 
+  void DoSuspend(TeardownState state, StopOrError stop_or_error) {
+    PipelineStatus status = SetSuspendExpectations(state, stop_or_error);
+
+    if (state != kSuspended) {
+      // DoStopOrError() handles these for kSuspended.
+      EXPECT_CALL(*demuxer_, Stop());
+      if (status == PIPELINE_OK) {
+        ExpectPipelineStopAndDestroyPipeline();
+      }
+    }
+
+    PipelineTest::DoSuspend();
+
+    if (state == kSuspended) {
+      DoStopOrError(stop_or_error);
+    } else if (state == kResuming) {
+      PipelineTest::DoResume(base::TimeDelta());
+    }
+  }
+
+  PipelineStatus SetSuspendExpectations(TeardownState state,
+                                        StopOrError stop_or_error) {
+    PipelineStatus status = PIPELINE_OK;
+    base::Closure stop_cb =
+        base::Bind(&CallbackHelper::OnStop, base::Unretained(&callbacks_));
+
+    EXPECT_CALL(*renderer_, SetPlaybackRate(0));
+    if (state == kSuspended || state == kResuming) {
+      EXPECT_CALL(*renderer_, Flush(_))
+          .WillOnce(DoAll(
+              SetBufferingState(&buffering_state_cb_, BUFFERING_HAVE_NOTHING),
+              RunClosure<0>()));
+      EXPECT_CALL(callbacks_, OnBufferingStateChange(BUFFERING_HAVE_NOTHING));
+      EXPECT_CALL(callbacks_, OnSuspend(PIPELINE_OK));
+      if (state == kResuming) {
+        if (stop_or_error == kStop) {
+          EXPECT_CALL(*demuxer_, Seek(_, _))
+              .WillOnce(DoAll(Stop(pipeline_.get(), stop_cb),
+                              RunCallback<1>(PIPELINE_OK)));
+          EXPECT_CALL(callbacks_, OnResume(PIPELINE_OK));
+        } else {
+          status = PIPELINE_ERROR_READ;
+          EXPECT_CALL(*demuxer_, Seek(_, _)).WillOnce(RunCallback<1>(status));
+          EXPECT_CALL(callbacks_, OnResume(status));
+        }
+      }
+      return status;
+    } else if (state == kSuspending) {
+      if (stop_or_error == kStop) {
+        EXPECT_CALL(*renderer_, Flush(_))
+            .WillOnce(DoAll(
+                Stop(pipeline_.get(), stop_cb),
+                SetBufferingState(&buffering_state_cb_, BUFFERING_HAVE_NOTHING),
+                RunClosure<0>()));
+        EXPECT_CALL(callbacks_, OnBufferingStateChange(BUFFERING_HAVE_NOTHING));
+        EXPECT_CALL(callbacks_, OnSuspend(PIPELINE_OK));
+      } else {
+        status = PIPELINE_ERROR_READ;
+        EXPECT_CALL(*renderer_, Flush(_))
+            .WillOnce(SetError(pipeline_.get(), status));
+        EXPECT_CALL(callbacks_, OnSuspend(status));
+      }
+      return status;
+    }
+
+    NOTREACHED() << "State not supported: " << state;
+    return status;
+  }
+
   void DoStopOrError(StopOrError stop_or_error) {
     InSequence s;
 
@@ -999,13 +1141,20 @@ INSTANTIATE_TEARDOWN_TEST(Stop, InitRenderer);
 INSTANTIATE_TEARDOWN_TEST(Stop, Flushing);
 INSTANTIATE_TEARDOWN_TEST(Stop, Seeking);
 INSTANTIATE_TEARDOWN_TEST(Stop, Playing);
+INSTANTIATE_TEARDOWN_TEST(Stop, Suspending);
+INSTANTIATE_TEARDOWN_TEST(Stop, Suspended);
+INSTANTIATE_TEARDOWN_TEST(Stop, Resuming);
 
 INSTANTIATE_TEARDOWN_TEST(Error, InitDemuxer);
 INSTANTIATE_TEARDOWN_TEST(Error, InitRenderer);
 INSTANTIATE_TEARDOWN_TEST(Error, Flushing);
 INSTANTIATE_TEARDOWN_TEST(Error, Seeking);
 INSTANTIATE_TEARDOWN_TEST(Error, Playing);
+INSTANTIATE_TEARDOWN_TEST(Error, Suspending);
+INSTANTIATE_TEARDOWN_TEST(Error, Suspended);
+INSTANTIATE_TEARDOWN_TEST(Error, Resuming);
 
 INSTANTIATE_TEARDOWN_TEST(ErrorAndStop, Playing);
+INSTANTIATE_TEARDOWN_TEST(ErrorAndStop, Suspended);
 
 }  // namespace media

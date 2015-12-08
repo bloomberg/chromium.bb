@@ -79,6 +79,8 @@ class PipelineIntegrationTestBase {
   void Play();
   void Pause();
   bool Seek(base::TimeDelta seek_time);
+  bool Suspend();
+  bool Resume(base::TimeDelta seek_time);
   void Stop();
   bool WaitUntilCurrentTimeIsAfter(const base::TimeDelta& wait_time);
 

@@ -1711,6 +1711,38 @@ TEST_F(PipelineIntegrationTest, SeekWhilePlaying) {
   ASSERT_TRUE(WaitUntilOnEnded());
 }
 
+TEST_F(PipelineIntegrationTest, SuspendWhilePaused) {
+  ASSERT_EQ(PIPELINE_OK, Start("bear-320x240.webm"));
+
+  base::TimeDelta duration(pipeline_->GetMediaDuration());
+  base::TimeDelta start_seek_time(duration / 4);
+  base::TimeDelta seek_time(duration * 3 / 4);
+
+  Play();
+  ASSERT_TRUE(WaitUntilCurrentTimeIsAfter(start_seek_time));
+  Pause();
+  ASSERT_TRUE(Suspend());
+  ASSERT_TRUE(Resume(seek_time));
+  EXPECT_GE(pipeline_->GetMediaTime(), seek_time);
+  Play();
+  ASSERT_TRUE(WaitUntilOnEnded());
+}
+
+TEST_F(PipelineIntegrationTest, SuspendWhilePlaying) {
+  ASSERT_EQ(PIPELINE_OK, Start("bear-320x240.webm"));
+
+  base::TimeDelta duration(pipeline_->GetMediaDuration());
+  base::TimeDelta start_seek_time(duration / 4);
+  base::TimeDelta seek_time(duration * 3 / 4);
+
+  Play();
+  ASSERT_TRUE(WaitUntilCurrentTimeIsAfter(start_seek_time));
+  ASSERT_TRUE(Suspend());
+  ASSERT_TRUE(Resume(seek_time));
+  EXPECT_GE(pipeline_->GetMediaTime(), seek_time);
+  ASSERT_TRUE(WaitUntilOnEnded());
+}
+
 #if defined(USE_PROPRIETARY_CODECS)
 TEST_F(PipelineIntegrationTest, Rotated_Metadata_0) {
   ASSERT_EQ(PIPELINE_OK, Start("bear_rotate_0.mp4"));

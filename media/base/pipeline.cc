@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
@@ -135,6 +136,20 @@ void Pipeline::SetPlaybackRate(double playback_rate) {
   }
 }
 
+void Pipeline::Suspend(const PipelineStatusCB& suspend_cb) {
+  task_runner_->PostTask(
+      FROM_HERE, base::Bind(&Pipeline::SuspendTask, weak_factory_.GetWeakPtr(),
+                            suspend_cb));
+}
+
+void Pipeline::Resume(scoped_ptr<Renderer> renderer,
+                      base::TimeDelta timestamp,
+                      const PipelineStatusCB& seek_cb) {
+  task_runner_->PostTask(
+      FROM_HERE, base::Bind(&Pipeline::ResumeTask, weak_factory_.GetWeakPtr(),
+                            base::Passed(renderer.Pass()), timestamp, seek_cb));
+}
+
 float Pipeline::GetVolume() const {
   base::AutoLock auto_lock(lock_);
   return volume_;
@@ -156,6 +171,8 @@ void Pipeline::SetVolume(float volume) {
 
 TimeDelta Pipeline::GetMediaTime() const {
   base::AutoLock auto_lock(lock_);
+  if (state_ == kSuspending || state_ == kSuspended || state_ == kResuming)
+    return suspend_timestamp_;
   return renderer_ ? std::min(renderer_->GetMediaTime(), duration_)
                    : TimeDelta();
 }
@@ -216,6 +233,9 @@ const char* Pipeline::GetStateString(State state) {
     RETURN_STRING(kPlaying);
     RETURN_STRING(kStopping);
     RETURN_STRING(kStopped);
+    RETURN_STRING(kSuspending);
+    RETURN_STRING(kSuspended);
+    RETURN_STRING(kResuming);
   }
   NOTREACHED();
   return "INVALID";
@@ -239,6 +259,15 @@ Pipeline::State Pipeline::GetNextState() const {
 
     case kInitRenderer:
     case kSeeking:
+      return kPlaying;
+
+    case kSuspending:
+      return kSuspended;
+
+    case kSuspended:
+      return kResuming;
+
+    case kResuming:
       return kPlaying;
 
     case kPlaying:
@@ -314,7 +343,8 @@ void Pipeline::StateTransitionTask(PipelineStatus status) {
 
   // Guard against accidentally clearing |pending_callbacks_| for states that
   // use it as well as states that should not be using it.
-  DCHECK_EQ(pending_callbacks_.get() != NULL, state_ == kSeeking);
+  DCHECK_EQ(pending_callbacks_.get() != NULL,
+            state_ == kSeeking || state_ == kSuspending || state_ == kResuming);
 
   pending_callbacks_.reset();
 
@@ -351,10 +381,17 @@ void Pipeline::StateTransitionTask(PipelineStatus status) {
       VolumeChangedTask(GetVolume());
       return;
 
+    case kSuspended:
+      renderer_.reset();
+      base::ResetAndReturn(&suspend_cb_).Run(PIPELINE_OK);
+      return;
+
     case kStopping:
     case kStopped:
     case kCreated:
     case kSeeking:
+    case kSuspending:
+    case kResuming:
       NOTREACHED() << "State has no transition: " << state_;
       return;
   }
@@ -433,10 +470,14 @@ void Pipeline::OnStopCompleted(PipelineStatus status) {
   SetState(kStopped);
   demuxer_ = NULL;
 
-  // If we stop during initialization/seeking we want to run |seek_cb_|
-  // followed by |stop_cb_| so we don't leave outstanding callbacks around.
+  // If we stop during initialization/seeking/suspending we don't want to leave
+  // outstanding callbacks around.
   if (!seek_cb_.is_null()) {
     base::ResetAndReturn(&seek_cb_).Run(status_);
+    error_cb_.Reset();
+  }
+  if (!suspend_cb_.is_null()) {
+    base::ResetAndReturn(&suspend_cb_).Run(status_);
     error_cb_.Reset();
   }
   if (!stop_cb_.is_null()) {
@@ -520,9 +561,10 @@ void Pipeline::StopTask(const base::Closure& stop_cb) {
     return;
 
   // Do not report statistics if the pipeline is not fully initialized.
-  if (state_ == kSeeking || state_ == kPlaying) {
+  if (state_ == kSeeking || state_ == kPlaying || state_ == kSuspending ||
+      state_ == kSuspended || state_ == kResuming) {
     PipelineStatistics stats = GetStatistics();
-    if (renderer_->HasVideo() && stats.video_frames_decoded > 0) {
+    if (stats.video_frames_decoded > 0) {
       UMA_HISTOGRAM_COUNTS("Media.DroppedFrameCount",
                            stats.video_frames_dropped);
     }
@@ -598,6 +640,86 @@ void Pipeline::SeekTask(TimeDelta time, const PipelineStatusCB& seek_cb) {
 
   DoSeek(seek_timestamp, base::Bind(&Pipeline::StateTransitionTask,
                                     weak_factory_.GetWeakPtr()));
+}
+
+void Pipeline::SuspendTask(const PipelineStatusCB& suspend_cb) {
+  // Suppress suspending if we're not playing.
+  if (state_ != kPlaying) {
+    DCHECK(state_ == kStopping || state_ == kStopped)
+        << "Receive suspend in unexpected state: " << state_;
+    suspend_cb.Run(PIPELINE_ERROR_INVALID_STATE);
+    return;
+  }
+  DCHECK(renderer_);
+  DCHECK(!pending_callbacks_.get());
+
+  SetState(kSuspending);
+  suspend_cb_ = suspend_cb;
+
+  // Freeze playback and record the media time before flushing. (Flushing clears
+  // the value.)
+  renderer_->SetPlaybackRate(0.0);
+  suspend_timestamp_ = renderer_->GetMediaTime();
+
+  // Queue the asynchronous actions required to stop playback. (Matches setup in
+  // DoSeek().)
+  // TODO(sandersd): Share implementation with DoSeek().
+  SerialRunner::Queue fns;
+
+  if (text_renderer_) {
+    fns.Push(base::Bind(&TextRenderer::Pause,
+                        base::Unretained(text_renderer_.get())));
+  }
+
+  fns.Push(base::Bind(&Renderer::Flush, base::Unretained(renderer_.get())));
+
+  if (text_renderer_) {
+    fns.Push(base::Bind(&TextRenderer::Flush,
+                        base::Unretained(text_renderer_.get())));
+  }
+
+  pending_callbacks_ = SerialRunner::Run(
+      fns,
+      base::Bind(&Pipeline::StateTransitionTask, weak_factory_.GetWeakPtr()));
+}
+
+void Pipeline::ResumeTask(scoped_ptr<Renderer> renderer,
+                          base::TimeDelta timestamp,
+                          const PipelineStatusCB& seek_cb) {
+  // Suppress resuming if we're not suspended.
+  if (state_ != kSuspended) {
+    DCHECK(state_ == kStopping || state_ == kStopped)
+        << "Receive resume in unexpected state: " << state_;
+    seek_cb.Run(PIPELINE_ERROR_INVALID_STATE);
+    return;
+  }
+  DCHECK(!renderer_);
+  DCHECK(!pending_callbacks_.get());
+
+  SetState(kResuming);
+  renderer_ = renderer.Pass();
+
+  // Set up for a seek. (Matches setup in SeekTask().)
+  // TODO(sandersd): Share implementation with SeekTask().
+  seek_cb_ = seek_cb;
+  renderer_ended_ = false;
+  text_renderer_ended_ = false;
+  start_timestamp_ = std::max(timestamp, demuxer_->GetStartTime());
+
+  // Queue the asynchronous actions required to start playback. Unlike DoSeek(),
+  // we need to initialize the renderer ourselves (we don't want to enter state
+  // kInitDemuxer, and even if we did the current code would seek to the start
+  // instead of |timestamp|).
+  SerialRunner::Queue fns;
+  base::WeakPtr<Pipeline> weak_this = weak_factory_.GetWeakPtr();
+
+  fns.Push(
+      base::Bind(&Demuxer::Seek, base::Unretained(demuxer_), start_timestamp_));
+
+  fns.Push(base::Bind(&Pipeline::InitializeRenderer, weak_this));
+
+  pending_callbacks_ = SerialRunner::Run(
+      fns, base::Bind(&Pipeline::StateTransitionTask, weak_this));
 }
 
 void Pipeline::SetCdmTask(CdmContext* cdm_context,

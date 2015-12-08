@@ -173,6 +173,25 @@ bool PipelineIntegrationTestBase::Seek(base::TimeDelta seek_time) {
   return (pipeline_status_ == PIPELINE_OK);
 }
 
+bool PipelineIntegrationTestBase::Suspend() {
+  pipeline_->Suspend(base::Bind(&PipelineIntegrationTestBase::OnStatusCallback,
+                                base::Unretained(this)));
+  message_loop_.Run();
+  return (pipeline_status_ == PIPELINE_OK);
+}
+
+bool PipelineIntegrationTestBase::Resume(base::TimeDelta seek_time) {
+  ended_ = false;
+
+  EXPECT_CALL(*this, OnBufferingStateChanged(BUFFERING_HAVE_ENOUGH))
+      .WillOnce(InvokeWithoutArgs(&message_loop_, &base::MessageLoop::QuitNow));
+  pipeline_->Resume(CreateRenderer(), seek_time,
+                    base::Bind(&PipelineIntegrationTestBase::OnSeeked,
+                               base::Unretained(this), seek_time));
+  message_loop_.Run();
+  return (pipeline_status_ == PIPELINE_OK);
+}
+
 void PipelineIntegrationTestBase::Stop() {
   DCHECK(pipeline_->IsRunning());
   pipeline_->Stop(base::MessageLoop::QuitWhenIdleClosure());
