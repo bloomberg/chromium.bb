@@ -87,15 +87,16 @@ void DrawWindowTree(cc::RenderPass* pass,
                    combined_opacity, referenced_window_ids);
   }
 
+  if (!window->surface_manager() || !window->surface_manager()->ShouldDraw())
+    return;
+
   // If an ancestor has already referenced this window, then we do not need
   // to create a SurfaceDrawQuad for it.
   const bool draw_default_surface =
       default_surface && (referenced_window_ids->count(window->id()) == 0);
 
   ServerWindowSurface* underlay_surface =
-      window->surface_manager()
-          ? window->surface_manager()->GetUnderlaySurface()
-          : nullptr;
+      window->surface_manager()->GetUnderlaySurface();
   if (!draw_default_surface && !underlay_surface)
     return;
 

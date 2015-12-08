@@ -104,6 +104,8 @@ void WindowManagerImpl::OpenWindow(
       transport_properties.To<mus::Window::SharedProperties>();
   const bool provide_non_client_frame =
       GetWindowType(properties) == mus::mojom::WINDOW_TYPE_WINDOW;
+  if (provide_non_client_frame)
+    properties[mus::mojom::kWaitForUnderlay_Property].clear();
 
   // TODO(sky): constrain and validate properties before passing to server.
   mus::Window* child_window = root->connection()->NewWindow(&properties);
