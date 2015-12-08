@@ -9,7 +9,6 @@
 #include "cc/layers/solid_color_scrollbar_layer_impl.h"
 #include "cc/output/filter_operation.h"
 #include "cc/output/filter_operations.h"
-#include "cc/test/animation_test_common.h"
 #include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/fake_output_surface.h"
@@ -298,18 +297,13 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
   // verified.
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetDrawsContent(true));
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer2->SetDrawsContent(true));
-  // Render surface functions should not trigger update draw properties, because
-  // creating render surface is part of update draw properties.
+  // Render surface functions.
+  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetHasRenderSurface(true));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetHasRenderSurface(true));
-  VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetHasRenderSurface(false));
+  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetHasRenderSurface(false));
   // Create a render surface, because we must have a render surface if we have
   // filters.
-  VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetHasRenderSurface(true));
-
-  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetForceRenderSurface(true));
-  VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetForceRenderSurface(true));
-  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetForceRenderSurface(false));
-  VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetForceRenderSurface(false));
+  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetHasRenderSurface(true));
 
   // Related filter functions.
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetFilters(arbitrary_filters));

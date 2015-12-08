@@ -1844,14 +1844,6 @@ bool LayerTreeImpl::TransformIsAnimatingOnImplOnly(
              : false;
 }
 
-bool LayerTreeImpl::AnimationsPreserveAxisAlignment(
-    const LayerImpl* layer) const {
-  return layer_tree_host_impl_->animation_host()
-             ? layer_tree_host_impl_->animation_host()
-                   ->AnimationsPreserveAxisAlignment(layer->id())
-             : true;
-}
-
 bool LayerTreeImpl::HasOnlyTranslationTransforms(const LayerImpl* layer) const {
   LayerTreeType tree_type =
       IsActiveTree() ? LayerTreeType::ACTIVE : LayerTreeType::PENDING;

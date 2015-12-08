@@ -115,6 +115,14 @@ class CC_EXPORT LayerTreeHostCommon {
                                       int current_render_surface_layer_list_id);
   };
 
+  static void UpdateRenderSurfaces(Layer* root_layer,
+                                   bool can_render_to_separate_surface,
+                                   const gfx::Transform& transform,
+                                   bool preserves_2d_axis_alignment);
+  static void UpdateRenderSurface(Layer* layer,
+                                  bool can_render_to_separate_surface,
+                                  gfx::Transform* transform,
+                                  bool* animation_preserves_axis_alignment);
   static void CalculateDrawProperties(CalcDrawPropsMainInputs* inputs);
   static void PreCalculateMetaInformation(Layer* root_layer);
   static void PreCalculateMetaInformationForTesting(LayerImpl* root_layer);

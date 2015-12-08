@@ -76,17 +76,17 @@ class DelegatedRendererLayerImplTestSimple
 
     host_impl_->SetViewportSize(gfx::Size(100, 100));
     root_layer->SetBounds(gfx::Size(100, 100));
-    root_layer->SetForceRenderSurface(true);
+    root_layer->SetHasRenderSurface(true);
 
     layer_before->SetPosition(gfx::PointF(20.f, 20.f));
     layer_before->SetBounds(gfx::Size(14, 14));
     layer_before->SetDrawsContent(true);
-    layer_before->SetForceRenderSurface(true);
+    layer_before->SetHasRenderSurface(true);
 
     layer_after->SetPosition(gfx::PointF(5.f, 5.f));
     layer_after->SetBounds(gfx::Size(15, 15));
     layer_after->SetDrawsContent(true);
-    layer_after->SetForceRenderSurface(true);
+    layer_after->SetHasRenderSurface(true);
 
     delegated_renderer_layer->SetPosition(gfx::PointF(3.f, 3.f));
     delegated_renderer_layer->SetBounds(gfx::Size(10, 10));
@@ -146,12 +146,12 @@ TEST_F(DelegatedRendererLayerImplTest,
 
     host_impl_->SetViewportSize(gfx::Size(100, 100));
     root_layer->SetBounds(gfx::Size(100, 100));
-    root_layer->SetForceRenderSurface(true);
+    root_layer->SetHasRenderSurface(true);
 
     delegated_renderer_layer->SetPosition(gfx::PointF(3.f, 3.f));
     delegated_renderer_layer->SetBounds(gfx::Size(10, 10));
     delegated_renderer_layer->SetDrawsContent(true);
-    delegated_renderer_layer->SetForceRenderSurface(true);
+    delegated_renderer_layer->SetHasRenderSurface(true);
     gfx::Transform transform;
     transform.Translate(1.0, 1.0);
     delegated_renderer_layer->SetTransform(transform);
@@ -225,12 +225,12 @@ TEST_F(DelegatedRendererLayerImplTest,
 
     host_impl_->SetViewportSize(gfx::Size(100, 100));
     root_layer->SetBounds(gfx::Size(100, 100));
-    root_layer->SetForceRenderSurface(true);
+    root_layer->SetHasRenderSurface(true);
 
     delegated_renderer_layer->SetPosition(gfx::PointF(3.f, 3.f));
     delegated_renderer_layer->SetBounds(gfx::Size(10, 10));
     delegated_renderer_layer->SetDrawsContent(true);
-    delegated_renderer_layer->SetForceRenderSurface(true);
+    delegated_renderer_layer->SetHasRenderSurface(true);
     gfx::Transform transform;
     transform.Translate(1.0, 1.0);
     delegated_renderer_layer->SetTransform(transform);
@@ -469,7 +469,7 @@ class DelegatedRendererLayerImplTestOwnSurface
  public:
   DelegatedRendererLayerImplTestOwnSurface()
       : DelegatedRendererLayerImplTestSimple() {
-    delegated_renderer_layer_->SetForceRenderSurface(true);
+    delegated_renderer_layer_->SetHasRenderSurface(true);
   }
 };
 
@@ -629,7 +629,7 @@ class DelegatedRendererLayerImplTestTransform
 
     host_impl_->SetViewportSize(gfx::Size(200, 200));
     root_layer->SetBounds(gfx::Size(100, 100));
-    root_layer->SetForceRenderSurface(true);
+    root_layer->SetHasRenderSurface(true);
 
     delegated_renderer_layer->SetPosition(gfx::PointF(20.f, 20.f));
     delegated_renderer_layer->SetBounds(gfx::Size(75, 75));
@@ -910,7 +910,7 @@ TEST_F(DelegatedRendererLayerImplTestTransform, QuadsUnclipped_Surface) {
   root_delegated_render_pass_is_clipped_ = false;
   SetUpTest();
 
-  delegated_renderer_layer_->SetForceRenderSurface(true);
+  delegated_renderer_layer_->SetHasRenderSurface(true);
 
   LayerTreeHostImpl::FrameData frame;
   EXPECT_EQ(DRAW_SUCCESS, PrepareToDrawFrame(&frame));
@@ -958,7 +958,7 @@ TEST_F(DelegatedRendererLayerImplTestTransform, QuadsClipped_Surface) {
   root_delegated_render_pass_is_clipped_ = true;
   SetUpTest();
 
-  delegated_renderer_layer_->SetForceRenderSurface(true);
+  delegated_renderer_layer_->SetHasRenderSurface(true);
 
   LayerTreeHostImpl::FrameData frame;
   EXPECT_EQ(DRAW_SUCCESS, PrepareToDrawFrame(&frame));
@@ -1055,7 +1055,7 @@ class DelegatedRendererLayerImplTestClip
 
     host_impl_->SetViewportSize(gfx::Size(100, 100));
     root_layer->SetBounds(gfx::Size(100, 100));
-    root_layer->SetForceRenderSurface(true);
+    root_layer->SetHasRenderSurface(true);
 
     delegated_renderer_layer->SetPosition(gfx::PointF(20.f, 20.f));
     delegated_renderer_layer->SetBounds(gfx::Size(50, 50));
@@ -1312,7 +1312,7 @@ TEST_F(DelegatedRendererLayerImplTestClip,
   clip_delegated_renderer_layer_ = false;
   SetUpTest();
 
-  delegated_renderer_layer_->SetForceRenderSurface(true);
+  delegated_renderer_layer_->SetHasRenderSurface(true);
 
   LayerTreeHostImpl::FrameData frame;
   EXPECT_EQ(DRAW_SUCCESS, PrepareToDrawFrame(&frame));
@@ -1341,7 +1341,7 @@ TEST_F(DelegatedRendererLayerImplTestClip,
   clip_delegated_renderer_layer_ = false;
   SetUpTest();
 
-  delegated_renderer_layer_->SetForceRenderSurface(true);
+  delegated_renderer_layer_->SetHasRenderSurface(true);
 
   LayerTreeHostImpl::FrameData frame;
   EXPECT_EQ(DRAW_SUCCESS, PrepareToDrawFrame(&frame));
@@ -1371,7 +1371,7 @@ TEST_F(DelegatedRendererLayerImplTestClip,
   clip_delegated_renderer_layer_ = true;
   SetUpTest();
 
-  delegated_renderer_layer_->SetForceRenderSurface(true);
+  delegated_renderer_layer_->SetHasRenderSurface(true);
 
   LayerTreeHostImpl::FrameData frame;
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
@@ -1400,7 +1400,7 @@ TEST_F(DelegatedRendererLayerImplTestClip, QuadsClipped_LayerClipped_Surface) {
   clip_delegated_renderer_layer_ = true;
   SetUpTest();
 
-  delegated_renderer_layer_->SetForceRenderSurface(true);
+  delegated_renderer_layer_->SetHasRenderSurface(true);
 
   LayerTreeHostImpl::FrameData frame;
   host_impl_->active_tree()->BuildPropertyTreesForTesting();

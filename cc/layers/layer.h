@@ -519,10 +519,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   const gfx::Rect& clip_rect() const { return clip_rect_; }
   void set_clip_rect(const gfx::Rect& rect) { clip_rect_ = rect; }
 
-  // This should only be called during BeginMainFrame since it does not trigger
-  // a Commit. This is called right after property tree being built and should
-  // not trigger property tree rebuild.
-  void SetHasRenderSurface(bool has_render_surface);
   bool has_render_surface() const {
     return has_render_surface_;
   }
@@ -670,6 +666,10 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   friend class LayerTreeHostCommon;
   void SetParent(Layer* layer);
   bool DescendantIsFixedToContainerLayer() const;
+
+  // This should only be called during BeginMainFrame since it does not
+  // trigger a Commit.
+  void SetHasRenderSurface(bool has_render_surface);
 
   // This should only be called from RemoveFromParent().
   void RemoveChildOrDependent(Layer* child);

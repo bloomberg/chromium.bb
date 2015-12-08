@@ -625,6 +625,141 @@ static inline bool SubtreeShouldBeSkipped(LayerImpl* layer,
 
 static inline void SavePaintPropertiesLayer(LayerImpl* layer) {}
 
+static bool SubtreeShouldRenderToSeparateSurface(
+    Layer* layer,
+    bool axis_aligned_with_respect_to_parent) {
+  //
+  // A layer and its descendants should render onto a new RenderSurfaceImpl if
+  // any of these rules hold:
+  //
+
+  // The root layer owns a render surface, but it never acts as a contributing
+  // surface to another render target. Compositor features that are applied via
+  // a contributing surface can not be applied to the root layer. In order to
+  // use these effects, another child of the root would need to be introduced
+  // in order to act as a contributing surface to the root layer's surface.
+  bool is_root = IsRootLayer(layer);
+
+  // If the layer uses a mask.
+  if (layer->mask_layer()) {
+    DCHECK(!is_root);
+    return true;
+  }
+
+  // If the layer has a reflection.
+  if (layer->replica_layer()) {
+    DCHECK(!is_root);
+    return true;
+  }
+
+  // If the layer uses a CSS filter.
+  if (!layer->filters().IsEmpty() || !layer->background_filters().IsEmpty()) {
+    DCHECK(!is_root);
+    return true;
+  }
+
+  // If the layer will use a CSS filter.  In this case, the animation
+  // will start and add a filter to this layer, so it needs a surface.
+  if (layer->HasPotentiallyRunningFilterAnimation()) {
+    DCHECK(!is_root);
+    return true;
+  }
+
+  int num_descendants_that_draw_content =
+      layer->NumDescendantsThatDrawContent();
+
+  // If the layer flattens its subtree, but it is treated as a 3D object by its
+  // parent (i.e. parent participates in a 3D rendering context).
+  if (LayerIsInExisting3DRenderingContext(layer) &&
+      layer->should_flatten_transform() &&
+      num_descendants_that_draw_content > 0) {
+    TRACE_EVENT_INSTANT0(
+        "cc",
+        "LayerTreeHostCommon::SubtreeShouldRenderToSeparateSurface flattening",
+        TRACE_EVENT_SCOPE_THREAD);
+    DCHECK(!is_root);
+    return true;
+  }
+
+  // If the layer has blending.
+  // TODO(rosca): this is temporary, until blending is implemented for other
+  // types of quads than RenderPassDrawQuad. Layers having descendants that draw
+  // content will still create a separate rendering surface.
+  if (!layer->uses_default_blend_mode()) {
+    TRACE_EVENT_INSTANT0(
+        "cc",
+        "LayerTreeHostCommon::SubtreeShouldRenderToSeparateSurface blending",
+        TRACE_EVENT_SCOPE_THREAD);
+    DCHECK(!is_root);
+    return true;
+  }
+
+  // If the layer clips its descendants but it is not axis-aligned with respect
+  // to its parent.
+  bool layer_clips_external_content =
+      LayerClipsSubtree(layer) || layer->HasDelegatedContent();
+  if (layer_clips_external_content && !axis_aligned_with_respect_to_parent &&
+      num_descendants_that_draw_content > 0) {
+    TRACE_EVENT_INSTANT0(
+        "cc",
+        "LayerTreeHostCommon::SubtreeShouldRenderToSeparateSurface clipping",
+        TRACE_EVENT_SCOPE_THREAD);
+    DCHECK(!is_root);
+    return true;
+  }
+
+  // If the layer has some translucency and does not have a preserves-3d
+  // transform style.  This condition only needs a render surface if two or more
+  // layers in the subtree overlap. But checking layer overlaps is unnecessarily
+  // costly so instead we conservatively create a surface whenever at least two
+  // layers draw content for this subtree.
+  bool at_least_two_layers_in_subtree_draw_content =
+      num_descendants_that_draw_content > 0 &&
+      (layer->DrawsContent() || num_descendants_that_draw_content > 1);
+
+  if (layer->opacity() != 1.f && layer->should_flatten_transform() &&
+      at_least_two_layers_in_subtree_draw_content) {
+    TRACE_EVENT_INSTANT0(
+        "cc",
+        "LayerTreeHostCommon::SubtreeShouldRenderToSeparateSurface opacity",
+        TRACE_EVENT_SCOPE_THREAD);
+    DCHECK(!is_root);
+    return true;
+  }
+
+  // The root layer should always have a render_surface.
+  if (is_root)
+    return true;
+
+  //
+  // These are allowed on the root surface, as they don't require the surface to
+  // be used as a contributing surface in order to apply correctly.
+  //
+
+  // If the layer has isolation.
+  // TODO(rosca): to be optimized - create separate rendering surface only when
+  // the blending descendants might have access to the content behind this layer
+  // (layer has transparent background or descendants overflow).
+  // https://code.google.com/p/chromium/issues/detail?id=301738
+  if (layer->is_root_for_isolated_group()) {
+    TRACE_EVENT_INSTANT0(
+        "cc",
+        "LayerTreeHostCommon::SubtreeShouldRenderToSeparateSurface isolation",
+        TRACE_EVENT_SCOPE_THREAD);
+    return true;
+  }
+
+  // If we force it.
+  if (layer->force_render_surface())
+    return true;
+
+  // If we'll make a copy of the layer's contents.
+  if (layer->HasCopyRequest())
+    return true;
+
+  return false;
+}
+
 // This function returns a translation matrix that can be applied on a vector
 // that's in the layer's target surface coordinate, while the position offset is
 // specified in some ancestor layer's coordinate.
@@ -1011,13 +1146,11 @@ struct PreCalculateMetaInformationRecursiveData {
   size_t num_unclipped_descendants;
   int num_layer_or_descendants_with_copy_request;
   int num_layer_or_descendants_with_input_handler;
-  int num_descendants_that_draw_content;
 
   PreCalculateMetaInformationRecursiveData()
       : num_unclipped_descendants(0),
         num_layer_or_descendants_with_copy_request(0),
-        num_layer_or_descendants_with_input_handler(0),
-        num_descendants_that_draw_content(0) {}
+        num_layer_or_descendants_with_input_handler(0) {}
 
   void Merge(const PreCalculateMetaInformationRecursiveData& data) {
     num_layer_or_descendants_with_copy_request +=
@@ -1025,9 +1158,25 @@ struct PreCalculateMetaInformationRecursiveData {
     num_layer_or_descendants_with_input_handler +=
         data.num_layer_or_descendants_with_input_handler;
     num_unclipped_descendants += data.num_unclipped_descendants;
-    num_descendants_that_draw_content += data.num_descendants_that_draw_content;
   }
 };
+
+static void ValidateRenderSurface(LayerImpl* layer) {
+  // This test verifies that there are no cases where a LayerImpl needs
+  // a render surface, but doesn't have one.
+  if (layer->render_surface())
+    return;
+
+  DCHECK(layer->filters().IsEmpty()) << "layer: " << layer->id();
+  DCHECK(layer->background_filters().IsEmpty()) << "layer: " << layer->id();
+  DCHECK(!layer->mask_layer()) << "layer: " << layer->id();
+  DCHECK(!layer->replica_layer()) << "layer: " << layer->id();
+  DCHECK(!IsRootLayer(layer)) << "layer: " << layer->id();
+  DCHECK(!layer->is_root_for_isolated_group()) << "layer: " << layer->id();
+  DCHECK(!layer->HasCopyRequest()) << "layer: " << layer->id();
+}
+
+static void ValidateRenderSurface(Layer* layer) {}
 
 static bool IsMetaInformationRecomputationNeeded(Layer* layer) {
   return layer->layer_tree_host()->needs_meta_info_recomputation();
@@ -1045,6 +1194,8 @@ static void UpdateMetaInformationSequenceNumber(LayerImpl* root_layer) {
 static void PreCalculateMetaInformationInternal(
     Layer* layer,
     PreCalculateMetaInformationRecursiveData* recursive_data) {
+  ValidateRenderSurface(layer);
+
   if (!IsMetaInformationRecomputationNeeded(layer)) {
     DCHECK(IsRootLayer(layer));
     return;
@@ -1096,6 +1247,8 @@ static void PreCalculateMetaInformationInternal(
 static void PreCalculateMetaInformationInternal(
     LayerImpl* layer,
     PreCalculateMetaInformationRecursiveData* recursive_data) {
+  ValidateRenderSurface(layer);
+
   layer->set_sorted_for_recursion(false);
   layer->draw_properties().has_child_with_a_scroll_parent = false;
   layer->set_layer_or_descendant_is_drawn(false);
@@ -1142,11 +1295,6 @@ static void PreCalculateMetaInformationInternal(
   // for tests constructing layers on the compositor thread.
   layer->set_num_layer_or_descendant_with_copy_request(
       recursive_data->num_layer_or_descendants_with_copy_request);
-  layer->SetNumDescendantsThatDrawContent(
-      recursive_data->num_descendants_that_draw_content);
-
-  if (layer->DrawsContent())
-    recursive_data->num_descendants_that_draw_content++;
 }
 
 void LayerTreeHostCommon::PreCalculateMetaInformation(Layer* root_layer) {
@@ -2068,6 +2216,43 @@ static void ProcessCalcDrawPropsInputs(
   data_for_recursion->subtree_is_visible_from_ancestor = true;
 }
 
+void LayerTreeHostCommon::UpdateRenderSurface(
+    Layer* layer,
+    bool can_render_to_separate_surface,
+    gfx::Transform* transform,
+    bool* draw_transform_is_axis_aligned) {
+  bool preserves_2d_axis_alignment =
+      transform->Preserves2dAxisAlignment() && *draw_transform_is_axis_aligned;
+  if (IsRootLayer(layer) || (can_render_to_separate_surface &&
+                             SubtreeShouldRenderToSeparateSurface(
+                                 layer, preserves_2d_axis_alignment))) {
+    // We reset the transform here so that any axis-changing transforms
+    // will now be relative to this RenderSurface.
+    transform->MakeIdentity();
+    *draw_transform_is_axis_aligned = true;
+    layer->SetHasRenderSurface(true);
+    return;
+  }
+  layer->SetHasRenderSurface(false);
+}
+
+void LayerTreeHostCommon::UpdateRenderSurfaces(
+    Layer* layer,
+    bool can_render_to_separate_surface,
+    const gfx::Transform& parent_transform,
+    bool draw_transform_is_axis_aligned) {
+  gfx::Transform transform_for_children = layer->transform();
+  transform_for_children *= parent_transform;
+  draw_transform_is_axis_aligned &= layer->AnimationsPreserveAxisAlignment();
+  UpdateRenderSurface(layer, can_render_to_separate_surface,
+                      &transform_for_children, &draw_transform_is_axis_aligned);
+
+  for (size_t i = 0; i < layer->children().size(); ++i) {
+    UpdateRenderSurfaces(layer->children()[i].get(),
+                         can_render_to_separate_surface, transform_for_children,
+                         draw_transform_is_axis_aligned);
+  }
+}
 
 static bool ApproximatelyEqual(const gfx::Rect& r1, const gfx::Rect& r2) {
   // TODO(vollick): This tolerance should be lower: crbug.com/471786
@@ -2166,6 +2351,7 @@ void VerifyPropertyTreeValuesForLayer(LayerImpl* current_layer,
   ComputeLayerDrawPropertiesUsingPropertyTrees(
       current_layer, property_trees, layers_always_allowed_lcd_text,
       can_use_lcd_text, &draw_properties);
+
   const bool visible_rects_match = ApproximatelyEqual(
       current_layer->visible_layer_rect(), draw_properties.visible_layer_rect);
   CHECK(visible_rects_match)
@@ -2247,9 +2433,7 @@ void CalculateRenderTargetInternal(LayerImpl* layer,
       (can_render_to_separate_surface && layer->render_surface());
 
   if (render_to_separate_surface) {
-    DCHECK(layer->render_surface()) << IsRootLayer(layer)
-                                    << can_render_to_separate_surface
-                                    << layer->has_render_surface();
+    DCHECK(layer->render_surface());
     layer->draw_properties().render_target = layer;
 
     if (layer->mask_layer())
@@ -2560,6 +2744,7 @@ void CalculateDrawPropertiesAndVerify(
   UpdateMetaInformationSequenceNumber(inputs->root_layer);
   PreCalculateMetaInformationRecursiveData recursive_data;
   PreCalculateMetaInformationInternal(inputs->root_layer, &recursive_data);
+
   const bool should_measure_property_tree_performance =
       inputs->verify_property_trees &&
       (property_tree_option == BUILD_PROPERTY_TREES_IF_NEEDED);
@@ -2641,8 +2826,6 @@ void CalculateDrawPropertiesAndVerify(
   }
 
   std::vector<AccumulatedSurfaceState> accumulated_surface_state;
-  DCHECK(inputs->can_render_to_separate_surface ==
-         inputs->property_trees->non_root_surfaces_enabled);
   CalculateRenderTarget(inputs);
   if (inputs->use_property_trees) {
     for (LayerImpl* layer : visible_layer_list) {
@@ -2684,6 +2867,8 @@ void LayerTreeHostCommon::CalculateDrawProperties(
     CalcDrawPropsMainInputs* inputs) {
   LayerList update_layer_list;
   bool can_render_to_separate_surface = true;
+  UpdateRenderSurfaces(inputs->root_layer, can_render_to_separate_surface,
+                       gfx::Transform(), false);
   PropertyTrees* property_trees =
       inputs->root_layer->layer_tree_host()->property_trees();
   Layer* overscroll_elasticity_layer = nullptr;

@@ -88,7 +88,6 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl,
       current_draw_mode_(DRAW_MODE_NONE),
       element_id_(0),
       mutable_properties_(kMutablePropertyNone),
-      force_render_surface_(false),
       num_layer_or_descendants_with_copy_request_(0),
       frame_timing_requests_dirty_(false),
       visited_(false),
@@ -281,6 +280,7 @@ void LayerImpl::PassCopyRequests(
   if (requests->empty())
     return;
 
+  DCHECK(render_surface());
   bool was_empty = copy_requests_.empty();
   for (auto& request : *requests)
     copy_requests_.push_back(std::move(request));
@@ -574,7 +574,6 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->SetDrawsContent(DrawsContent());
   layer->SetHideLayerAndSubtree(hide_layer_and_subtree_);
   layer->SetHasRenderSurface(!!render_surface());
-  layer->SetForceRenderSurface(force_render_surface_);
   layer->SetFilters(filters());
   layer->SetBackgroundFilters(background_filters());
   layer->SetMasksToBounds(masks_to_bounds_);
@@ -1356,12 +1355,6 @@ bool LayerImpl::HasOnlyTranslationTransforms() const {
       observer_type);
 }
 
-bool LayerImpl::AnimationsPreserveAxisAlignment() const {
-  return layer_animation_controller_
-             ? layer_animation_controller_->AnimationsPreserveAxisAlignment()
-             : layer_tree_impl_->AnimationsPreserveAxisAlignment(this);
-}
-
 bool LayerImpl::MaximumTargetScale(float* max_scale) const {
   if (!layer_animation_controller_)
     return layer_tree_impl_->MaximumTargetScale(this, max_scale);
@@ -1806,6 +1799,7 @@ void LayerImpl::SetHasRenderSurface(bool should_have_render_surface) {
     return;
 
   SetNeedsPushProperties();
+  layer_tree_impl()->set_needs_update_draw_properties();
   if (should_have_render_surface) {
     render_surface_ = make_scoped_ptr(new RenderSurfaceImpl(this));
     return;
@@ -1840,14 +1834,6 @@ gfx::Transform LayerImpl::ScreenSpaceTransform() const {
   }
 
   return draw_properties().screen_space_transform;
-}
-
-void LayerImpl::SetForceRenderSurface(bool force_render_surface) {
-  if (force_render_surface == force_render_surface_)
-    return;
-
-  force_render_surface_ = force_render_surface;
-  NoteLayerPropertyChanged();
 }
 
 Region LayerImpl::GetInvalidationRegion() {

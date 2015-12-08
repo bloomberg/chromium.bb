@@ -5,7 +5,6 @@
 #ifndef CC_TEST_LAYER_TREE_HOST_COMMON_TEST_H_
 #define CC_TEST_LAYER_TREE_HOST_COMMON_TEST_H_
 
-#include <algorithm>
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
@@ -54,14 +53,6 @@ class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
   }
 
   void SetLayerPropertiesForTesting(Layer* layer,
-                                    const gfx::Transform& transform,
-                                    const gfx::Point3F& transform_origin,
-                                    const gfx::PointF& position,
-                                    const gfx::Size& bounds,
-                                    bool flatten_transform,
-                                    bool is_3d_sorted);
-
-  void SetLayerPropertiesForTesting(LayerImpl* layer,
                                     const gfx::Transform& transform,
                                     const gfx::Point3F& transform_origin,
                                     const gfx::PointF& position,
@@ -127,15 +118,6 @@ class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
     return render_surface_layer_list_impl_.get();
   }
 
-  LayerImplList* update_layer_list_impl() const {
-    return update_layer_list_impl_.get();
-  }
-  bool UpdateLayerListImplContains(int id) const {
-    return std::count_if(
-               update_layer_list_impl_->begin(), update_layer_list_impl_->end(),
-               [id](LayerImpl* layer) { return layer->id() == id; }) != 0;
-  }
-
   const LayerList& update_layer_list() const { return update_layer_list_; }
   bool UpdateLayerListContains(int id) const;
 
@@ -148,7 +130,6 @@ class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
  private:
   scoped_ptr<std::vector<LayerImpl*>> render_surface_layer_list_impl_;
   LayerList update_layer_list_;
-  scoped_ptr<LayerImplList> update_layer_list_impl_;
   LayerSettings layer_settings_;
 
   int render_surface_layer_list_count_;

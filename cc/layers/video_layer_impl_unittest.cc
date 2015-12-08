@@ -93,7 +93,7 @@ TEST(VideoLayerImplTest, OccludesOtherLayers) {
 
   // Create a video layer with no frame on top of another layer.
   scoped_ptr<LayerImpl> layer_impl = LayerImpl::Create(active_tree, 3);
-  layer_impl->SetForceRenderSurface(true);
+  layer_impl->SetHasRenderSurface(true);
   layer_impl->SetBounds(layer_size);
   layer_impl->SetDrawsContent(true);
   const auto& draw_properties = layer_impl->draw_properties();
