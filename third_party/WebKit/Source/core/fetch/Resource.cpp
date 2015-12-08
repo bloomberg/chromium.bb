@@ -997,12 +997,6 @@ ResourcePriority Resource::priorityFromClients()
 
 Resource::ResourceCallback* Resource::ResourceCallback::callbackHandler()
 {
-    // Oilpan + LSan: as the callbackHandler() singleton is used by Resource
-    // and ResourcePtr finalizers, it cannot be released upon shutdown in
-    // preparation for leak detection.
-    //
-    // Keep it out of LSan's reach instead.
-    LEAK_SANITIZER_DISABLED_SCOPE;
     DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<ResourceCallback>, callbackHandler, (adoptPtrWillBeNoop(new ResourceCallback)));
     return callbackHandler.get();
 }

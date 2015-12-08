@@ -56,7 +56,6 @@ class CrossThreadPersistentRegion;
 struct GCInfo;
 class GarbageCollectedMixinConstructorMarker;
 class HeapObjectHeader;
-class PersistentNode;
 class PersistentRegion;
 class BaseHeap;
 class SafePointAwareMutexLocker;
@@ -509,14 +508,6 @@ public:
     size_t threadStackSize();
 #endif
 
-#if defined(LEAK_SANITIZER)
-    void registerStaticPersistentNode(PersistentNode*);
-    void releaseStaticPersistentNodes();
-
-    void enterStaticReferenceRegistrationDisabledScope();
-    void leaveStaticReferenceRegistrationDisabledScope();
-#endif
-
 private:
     enum SnapshotType {
         HeapSnapshot,
@@ -657,15 +648,6 @@ private:
 
 #if defined(ADDRESS_SANITIZER)
     void* m_asanFakeStack;
-#endif
-
-#if defined(LEAK_SANITIZER)
-    // PersistentNodes that are stored in static references;
-    // references we have to clear before initiating LSan's leak detection.
-    HashSet<PersistentNode*> m_staticPersistents;
-
-    // Count that controls scoped disabling of persistent registration.
-    size_t m_disabledStaticPersistentsRegistration;
 #endif
 
     // Ideally we want to allocate an array of size |gcInfoTableMax| but it will

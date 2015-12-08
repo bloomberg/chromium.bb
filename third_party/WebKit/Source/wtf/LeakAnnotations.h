@@ -32,22 +32,32 @@
 #ifndef WTF_LeakAnnotations_h
 #define WTF_LeakAnnotations_h
 
-// This file defines macros for working with LeakSanitizer, allowing memory
-// and allocations to be registered as exempted from LSan consideration.
+// This file defines macros which can be used to annotate intentional memory
+// leaks. Support for annotations is implemented in HeapChecker and
+// LeakSanitizer. Annotated objects will be treated as a source of live
+// pointers, i.e. any heap objects reachable by following pointers from an
+// annotated object will not be reported as leaks.
 //
-// LSan exempted memory will be treated as a source of live pointers,
-// i.e. heap objects reachable by following pointers from an exempted
-// object will not be reported as leaks.
+// WTF_ANNOTATE_SCOPED_MEMORY_LEAK: all allocations made in the current scope
+// will be annotated as leaks.
+// WTF_ANNOTATE_LEAKING_OBJECT_PTR(X): the heap object referenced by pointer X
+// will be annotated as a leak.
 //
+// Note that HeapChecker will report a fatal error if an object which has been
+// annotated with ANNOTATE_LEAKING_OBJECT_PTR is later deleted (but
+// LeakSanitizer won't).
+
 #include "wtf/Noncopyable.h"
-#if USE(LEAK_SANITIZER)
-#include "wtf/AddressSanitizer.h"
-#include "wtf/TypeTraits.h"
-#endif
 
 namespace WTF {
 
 #if USE(LEAK_SANITIZER)
+extern "C" {
+void __lsan_disable();
+void __lsan_enable();
+void __lsan_ignore_object(const void* p);
+} // extern "C"
+
 class LeakSanitizerDisabler {
     WTF_MAKE_NONCOPYABLE(LeakSanitizerDisabler);
 public:
@@ -62,75 +72,18 @@ public:
     }
 };
 
-// WTF_INTERNAL_LEAK_SANITIZER_DISABLED_SCOPE: all allocations made in the
-// current scope will be exempted from LSan consideration. Only to be
-// used internal to wtf/, Blink should use LEAK_SANITIZER_DISABLED_SCOPE
-// elsewhere.
-//
-// TODO(sof): once layering rules allow wtf/ to make use of the Oilpan
-// infrastructure, remove this macro.
-#define WTF_INTERNAL_LEAK_SANITIZER_DISABLED_SCOPE \
+#define WTF_ANNOTATE_SCOPED_MEMORY_LEAK \
         WTF::LeakSanitizerDisabler leakSanitizerDisabler; static_cast<void>(0)
 
-// LEAK_SANITIZER_IGNORE_OBJECT(X): the heap object referenced by pointer X
-// will be ignored by LSan.
-#define LEAK_SANITIZER_IGNORE_OBJECT(X) __lsan_ignore_object(X)
+#define WTF_ANNOTATE_LEAKING_OBJECT_PTR(X) \
+    WTF::__lsan_ignore_object(X)
 
-// If the object pointed to by the static local is on the Oilpan heap, a strong
-// Persistent<> is created to keep the pointed-to heap object alive. This makes
-// both the Persistent<> and the heap object _reachable_ by LeakSanitizer's leak
-// detection pass. We do not want these intentional leaks to be reported by LSan,
-// hence the static local is registered with Oilpan
-// (see RegisterStaticLocalReference<> below.)
-//
-// Upon Blink shutdown, all the registered statics are released and a final round
-// of GCs are performed to sweep out their now-unreachable object graphs. The end
-// result being a tidied heap that the LeakSanitizer can then scan to report real leaks.
-//
-// The CanRegisterStaticLocalReference<> and RegisterStaticLocalReference<> templates
-// arrange for this -- for a class type T, a registerStatic() implementation is
-// provided if "T* T::registerAsStaticReference(T*)" is a method on T
-// (inherited or otherwise.)
-//
-// An empty, trivial registerStatic() method is provided for all other class types T.
-template<typename T>
-class CanRegisterStaticLocalReference {
-    typedef char YesType;
-    typedef struct NoType {
-        char padding[8];
-    } NoType;
+#else // USE(LEAK_SANITIZER)
 
-    // Check if class T has public method "T* registerAsStaticReference()".
-    template<typename V> static YesType checkHasRegisterAsStaticReferenceMethod(V* p, typename EnableIf<IsSubclass<V, typename std::remove_pointer<decltype(p->registerAsStaticReference())>::type>::value>::Type* = 0);
-    template<typename V> static NoType checkHasRegisterAsStaticReferenceMethod(...);
+// If Leak Sanitizer is not being used, the annotations should be no-ops.
+#define WTF_ANNOTATE_SCOPED_MEMORY_LEAK
+#define WTF_ANNOTATE_LEAKING_OBJECT_PTR(X)
 
-public:
-    static const bool value = sizeof(YesType) + sizeof(T) == sizeof(checkHasRegisterAsStaticReferenceMethod<T>(nullptr)) + sizeof(T);
-};
-
-template<typename T, bool = CanRegisterStaticLocalReference<T>::value>
-class RegisterStaticLocalReference {
-public:
-    static T* registerStatic(T* ptr)
-    {
-        return ptr;
-    }
-};
-
-template<typename T>
-class RegisterStaticLocalReference<T, true> {
-public:
-    static T* registerStatic(T* ptr)
-    {
-        return static_cast<T*>(ptr->registerAsStaticReference());
-    }
-};
-
-#define LEAK_SANITIZER_REGISTER_STATIC_LOCAL(Type, Object) WTF::RegisterStaticLocalReference<Type>::registerStatic(Object)
-#else
-#define WTF_INTERNAL_LEAK_SANITIZER_DISABLED_SCOPE
-#define LEAK_SANITIZER_IGNORE_OBJECT
-#define LEAK_SANITIZER_REGISTER_STATIC_LOCAL(Type, Object) Object
 #endif // USE(LEAK_SANITIZER)
 
 } // namespace WTF

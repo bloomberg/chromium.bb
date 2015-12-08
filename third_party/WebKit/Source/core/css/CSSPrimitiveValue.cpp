@@ -158,33 +158,9 @@ bool CSSPrimitiveValue::colorIsDerivedFromElement() const
 }
 
 using CSSTextCache = WillBePersistentHeapHashMap<RawPtrWillBeWeakMember<const CSSPrimitiveValue>, String>;
-
-#if ENABLE(OILPAN) && defined(LEAK_SANITIZER)
-
-namespace {
-// With LSan, wrap the persistent cache so that the registration of the
-// (per-thread) static reference can be done.
-class CSSTextCacheWrapper {
-public:
-    CSSTextCacheWrapper()
-    {
-        m_cache.registerAsStaticReference();
-    }
-
-    operator CSSTextCache&() { return m_cache; }
-
-private:
-    CSSTextCache m_cache;
-};
-
-}
-#else
-using CSSTextCacheWrapper = CSSTextCache;
-#endif
-
 static CSSTextCache& cssTextCache()
 {
-    AtomicallyInitializedStaticReference(ThreadSpecific<CSSTextCacheWrapper>, cache, new ThreadSpecific<CSSTextCacheWrapper>);
+    AtomicallyInitializedStaticReference(ThreadSpecific<CSSTextCache>, cache, new ThreadSpecific<CSSTextCache>());
     return *cache;
 }
 

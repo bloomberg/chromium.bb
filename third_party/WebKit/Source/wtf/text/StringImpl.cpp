@@ -361,7 +361,7 @@ StringImpl* StringImpl::createStatic(const char* string, unsigned length, unsign
     RELEASE_ASSERT(length <= ((std::numeric_limits<unsigned>::max() - sizeof(StringImpl)) / sizeof(LChar)));
     size_t size = sizeof(StringImpl) + length * sizeof(LChar);
 
-    WTF_INTERNAL_LEAK_SANITIZER_DISABLED_SCOPE;
+    WTF_ANNOTATE_SCOPED_MEMORY_LEAK;
     StringImpl* impl = static_cast<StringImpl*>(Partitions::bufferMalloc(size, "WTF::StringImpl"));
 
     LChar* data = reinterpret_cast<LChar*>(impl + 1);
