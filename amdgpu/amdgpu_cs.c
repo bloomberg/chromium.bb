@@ -179,7 +179,7 @@ static int amdgpu_cs_submit_one(amdgpu_context_handle context,
 	struct drm_amdgpu_cs_chunk_dep *dependencies = NULL;
 	struct drm_amdgpu_cs_chunk_dep *sem_dependencies = NULL;
 	struct list_head *sem_list;
-	amdgpu_semaphore_handle sem;
+	amdgpu_semaphore_handle sem, tmp;
 	uint32_t i, size, sem_count = 0;
 	bool user_fence;
 	int r = 0;
@@ -282,7 +282,7 @@ static int amdgpu_cs_submit_one(amdgpu_context_handle context,
 			goto error_unlock;
 		}
 		sem_count = 0;
-		LIST_FOR_EACH_ENTRY(sem, sem_list, list) {
+		LIST_FOR_EACH_ENTRY_SAFE(sem, tmp, sem_list, list) {
 			struct amdgpu_cs_fence *info = &sem->signal_fence;
 			struct drm_amdgpu_cs_chunk_dep *dep = &sem_dependencies[sem_count++];
 			dep->ip_type = info->ip_type;
