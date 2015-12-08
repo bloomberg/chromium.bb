@@ -15,35 +15,52 @@ import org.chromium.base.test.util.Feature;
 /** Tests for {@link TapGestureDetector}. */
 public class TapGestureDetectorTest extends InstrumentationTestCase {
     private static class MockListener implements TapGestureDetector.OnTapListener {
+        private static final float COMPARISON_DELTA = 0.01f;
         int mTapCount = -1;
         int mLongPressCount = -1;
+        float mTapX = -1;
+        float mTapY = -1;
 
         @Override
-        public boolean onTap(int pointerCount) {
+        public boolean onTap(int pointerCount, float x, float y) {
             assertEquals(-1, mTapCount);
+            assertEquals(-1, mTapX, COMPARISON_DELTA);
+            assertEquals(-1, mTapY, COMPARISON_DELTA);
             mTapCount = pointerCount;
+            mTapX = x;
+            mTapY = y;
             return true;
         }
 
         @Override
-        public void onLongPress(int pointerCount) {
+        public void onLongPress(int pointerCount, float x, float y) {
             assertEquals(-1, mLongPressCount);
+            assertEquals(-1, mTapX, COMPARISON_DELTA);
+            assertEquals(-1, mTapY, COMPARISON_DELTA);
             mLongPressCount = pointerCount;
+            mTapX = x;
+            mTapY = y;
         }
 
-        public void assertTapDetected(int expectedCount) {
+        public void assertTapDetected(int expectedCount, float expectedX, float expectedY) {
             assertEquals(expectedCount, mTapCount);
+            assertEquals(expectedX, mTapX, COMPARISON_DELTA);
+            assertEquals(expectedY, mTapY, COMPARISON_DELTA);
             assertEquals(-1, mLongPressCount);
         }
 
-        public void assertLongPressDetected(int expectedCount) {
+        public void assertLongPressDetected(int expectedCount, float expectedX, float expectedY) {
             assertEquals(expectedCount, mLongPressCount);
+            assertEquals(expectedX, mTapX, COMPARISON_DELTA);
+            assertEquals(expectedY, mTapY, COMPARISON_DELTA);
             assertEquals(-1, mTapCount);
         }
 
         public void assertNothingDetected() {
             assertEquals(-1, mTapCount);
             assertEquals(-1, mLongPressCount);
+            assertEquals(-1, mTapX, COMPARISON_DELTA);
+            assertEquals(-1, mTapY, COMPARISON_DELTA);
         }
     }
 
@@ -85,7 +102,7 @@ public class TapGestureDetectorTest extends InstrumentationTestCase {
     public void testOneFingerDownUp() throws Exception {
         injectDownEvent(0, 0, 0);
         injectUpEvent(0);
-        mListener.assertTapDetected(1);
+        mListener.assertTapDetected(1, 0, 0);
     }
 
     /** Verifies that a simple multi-finger down/up is detected as a tap. */
@@ -98,7 +115,7 @@ public class TapGestureDetectorTest extends InstrumentationTestCase {
         injectUpEvent(0);
         injectUpEvent(1);
         injectUpEvent(2);
-        mListener.assertTapDetected(3);
+        mListener.assertTapDetected(3, 0, 0);
     }
 
     /** Verifies that a multi-finger tap is detected when lifting the fingers in reverse order. */
@@ -111,7 +128,7 @@ public class TapGestureDetectorTest extends InstrumentationTestCase {
         injectUpEvent(2);
         injectUpEvent(1);
         injectUpEvent(0);
-        mListener.assertTapDetected(3);
+        mListener.assertTapDetected(3, 0, 0);
     }
 
     /** Verifies that small movement of multiple fingers is still detected as a tap. */
@@ -127,7 +144,7 @@ public class TapGestureDetectorTest extends InstrumentationTestCase {
         injectUpEvent(0);
         injectUpEvent(1);
         injectUpEvent(2);
-        mListener.assertTapDetected(3);
+        mListener.assertTapDetected(3, 0, 0);
     }
 
     /** Verifies that large motion of a finger prevents a tap being detected. */
@@ -169,6 +186,6 @@ public class TapGestureDetectorTest extends InstrumentationTestCase {
             }
         });
 
-        mListener.assertLongPressDetected(1);
+        mListener.assertLongPressDetected(1, 0, 0);
     }
 }

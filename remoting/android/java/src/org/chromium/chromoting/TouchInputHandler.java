@@ -356,7 +356,7 @@ public class TouchInputHandler implements TouchInputHandlerInterface {
 
         /** Called when the user taps the screen with one or more fingers. */
         @Override
-        public boolean onTap(int pointerCount) {
+        public boolean onTap(int pointerCount, float x, float y) {
             int button = mouseButtonFromPointerCount(pointerCount);
             if (button == BUTTON_UNDEFINED) {
                 return false;
@@ -370,7 +370,7 @@ public class TouchInputHandler implements TouchInputHandlerInterface {
 
         /** Called when a long-press is triggered for one or more fingers. */
         @Override
-        public void onLongPress(int pointerCount) {
+        public void onLongPress(int pointerCount, float x, float y) {
             mHeldButton = mouseButtonFromPointerCount(pointerCount);
             if (mHeldButton != BUTTON_UNDEFINED) {
                 mInputStrategy.injectRemoteButtonEvent(mHeldButton, true);
