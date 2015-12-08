@@ -345,6 +345,8 @@
         'browser/net/connection_type_observer_bridge.mm',
         'browser/net/cookie_util.h',
         'browser/net/cookie_util.mm',
+        'browser/net/crl_set_fetcher.cc',
+        'browser/net/crl_set_fetcher.h',
         'browser/net/http_server_properties_manager_factory.cc',
         'browser/net/http_server_properties_manager_factory.h',
         'browser/net/image_fetcher.h',
