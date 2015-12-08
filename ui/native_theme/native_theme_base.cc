@@ -16,6 +16,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -42,6 +43,10 @@ const SkColor kSliderThumbBorderDarkGrey =
     SkColorSetRGB(0x9d, 0x96, 0x8e);
 
 const SkColor kTextBorderColor = SkColorSetRGB(0xa9, 0xa9, 0xa9);
+
+const SkColor kProgressBorderColor = kTextBorderColor;
+const SkColor kProgressTickColor = SkColorSetRGB(0xED, 0xED, 0xED);
+const SkColor kProgressValueColor = gfx::kGoogleBlue300;
 
 const SkColor kMenuPopupBackgroundColor = SkColorSetRGB(210, 225, 246);
 
@@ -889,90 +894,43 @@ void NativeThemeBase::PaintInnerSpinButton(SkCanvas* canvas,
   PaintArrowButton(canvas, half, kScrollbarDownArrow, south_state);
 }
 
-void NativeThemeBase::PaintProgressBar(SkCanvas* canvas,
+void NativeThemeBase::PaintProgressBar(
+    SkCanvas* canvas,
     State state,
     const gfx::Rect& rect,
     const ProgressBarExtraParams& progress_bar) const {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  gfx::ImageSkia* bar_image = rb.GetImageSkiaNamed(IDR_PROGRESS_BAR);
-  gfx::ImageSkia* left_border_image = rb.GetImageSkiaNamed(
-      IDR_PROGRESS_BORDER_LEFT);
-  gfx::ImageSkia* right_border_image = rb.GetImageSkiaNamed(
-      IDR_PROGRESS_BORDER_RIGHT);
+  DCHECK(!rect.IsEmpty());
+  canvas->drawColor(SK_ColorWHITE);
 
-  DCHECK(bar_image->width() > 0);
-  DCHECK(rect.width() > 0);
-
-  float tile_scale_y = static_cast<float>(rect.height()) / bar_image->height();
-
-  int dest_left_border_width = left_border_image->width();
-  int dest_right_border_width = right_border_image->width();
-
-  // Since an implicit float -> int conversion will truncate, we want to make
-  // sure that if a border is desired, it gets at least one pixel.
-  if (dest_left_border_width > 0) {
-    dest_left_border_width = dest_left_border_width * tile_scale_y;
-    dest_left_border_width = std::max(dest_left_border_width, 1);
+  // Draw the tick marks. The spacing between the tick marks is adjusted to
+  // evenly divide into the width.
+  SkPath path;
+  int stroke_width = std::max(1, rect.height() / 18);
+  int tick_width = 16 * stroke_width;
+  int ticks = rect.width() / tick_width + (rect.width() % tick_width ? 1 : 0);
+  SkScalar tick_spacing = SkIntToScalar(rect.width()) / ticks;
+  for (int i = 1; i < ticks; ++i) {
+    path.moveTo(rect.x() + i * tick_spacing, rect.y());
+    path.rLineTo(0, rect.height());
   }
-  if (dest_right_border_width > 0) {
-    dest_right_border_width = dest_right_border_width * tile_scale_y;
-    dest_right_border_width = std::max(dest_right_border_width, 1);
-  }
+  SkPaint stroke_paint;
+  stroke_paint.setColor(kProgressTickColor);
+  stroke_paint.setStyle(SkPaint::kStroke_Style);
+  stroke_paint.setStrokeWidth(stroke_width);
+  canvas->drawPath(path, stroke_paint);
 
-  // Since the width of the progress bar may not be evenly divisible by the
-  // tile size, in order to make it look right we may need to draw some of the
-  // with a width of 1 pixel smaller than the rest of the tiles.
-  int new_tile_width = static_cast<int>(bar_image->width() * tile_scale_y);
-  new_tile_width = std::max(new_tile_width, 1);
+  // Draw progress.
+  gfx::Rect progress_rect(progress_bar.value_rect_x, progress_bar.value_rect_y,
+                          progress_bar.value_rect_width,
+                          progress_bar.value_rect_height);
+  SkPaint progress_paint;
+  progress_paint.setColor(kProgressValueColor);
+  progress_paint.setStyle(SkPaint::kFill_Style);
+  canvas->drawRect(gfx::RectToSkRect(progress_rect), progress_paint);
 
-  float tile_scale_x = static_cast<float>(new_tile_width) / bar_image->width();
-  if (rect.width() % new_tile_width == 0) {
-    DrawTiledImage(canvas, *bar_image, 0, 0, tile_scale_x, tile_scale_y,
-        rect.x(), rect.y(),
-        rect.width(), rect.height());
-  } else {
-    int num_tiles = 1 + rect.width() / new_tile_width;
-    int overshoot = num_tiles * new_tile_width - rect.width();
-    // Since |overshoot| represents the number of tiles that were too big, draw
-    // |overshoot| tiles with their width reduced by 1.
-    int num_big_tiles = num_tiles - overshoot;
-    int num_small_tiles = overshoot;
-    int small_width = new_tile_width - 1;
-    float small_scale_x = static_cast<float>(small_width) / bar_image->width();
-    float big_scale_x = tile_scale_x;
-
-    gfx::Rect big_rect = rect;
-    gfx::Rect small_rect = rect;
-    big_rect.Inset(0, 0, num_small_tiles*small_width, 0);
-    small_rect.Inset(num_big_tiles*new_tile_width, 0, 0, 0);
-
-    DrawTiledImage(canvas, *bar_image, 0, 0, big_scale_x, tile_scale_y,
-      big_rect.x(), big_rect.y(), big_rect.width(), big_rect.height());
-    DrawTiledImage(canvas, *bar_image, 0, 0, small_scale_x, tile_scale_y,
-      small_rect.x(), small_rect.y(), small_rect.width(), small_rect.height());
-  }
-  if (progress_bar.value_rect_width) {
-    gfx::ImageSkia* value_image = rb.GetImageSkiaNamed(IDR_PROGRESS_VALUE);
-
-    new_tile_width = static_cast<int>(value_image->width() * tile_scale_y);
-    tile_scale_x = static_cast<float>(new_tile_width) /
-        value_image->width();
-
-    DrawTiledImage(canvas, *value_image, 0, 0, tile_scale_x, tile_scale_y,
-        progress_bar.value_rect_x,
-        progress_bar.value_rect_y,
-        progress_bar.value_rect_width,
-        progress_bar.value_rect_height);
-  }
-
-  DrawImageInt(canvas, *left_border_image, 0, 0, left_border_image->width(),
-      left_border_image->height(), rect.x(), rect.y(), dest_left_border_width,
-      rect.height());
-
-  int dest_x = rect.right() - dest_right_border_width;
-  DrawImageInt(canvas, *right_border_image, 0, 0, right_border_image->width(),
-               right_border_image->height(), dest_x, rect.y(),
-               dest_right_border_width, rect.height());
+  // Draw the border.
+  stroke_paint.setColor(kProgressBorderColor);
+  canvas->drawRect(gfx::RectToSkRect(rect), stroke_paint);
 }
 
 void NativeThemeBase::AdjustCheckboxRadioRectForPadding(SkRect* rect) const {

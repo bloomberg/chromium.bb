@@ -182,12 +182,6 @@
         <structure type="chrome_scaled_image" name="IDR_PANEL_BOTTOM_LEFT_CORNER" file="panel_bottom_left_corner.png" />
         <structure type="chrome_scaled_image" name="IDR_PANEL_BOTTOM_RIGHT_CORNER" file="panel_bottom_right_corner.png" />
       </if>
-      <if expr="use_aura or toolkit_views or (is_posix and not is_macosx and not is_ios)">
-        <structure type="chrome_scaled_image" name="IDR_PROGRESS_BAR" file="linux/linux-progress-bar.png" />
-        <structure type="chrome_scaled_image" name="IDR_PROGRESS_BORDER_LEFT" file="linux/linux-progress-border-left.png" />
-        <structure type="chrome_scaled_image" name="IDR_PROGRESS_BORDER_RIGHT" file="linux/linux-progress-border-right.png" />
-        <structure type="chrome_scaled_image" name="IDR_PROGRESS_VALUE" file="linux/linux-progress-value.png" />
-      </if>
       <if expr="use_aura">
         <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_ARROW_BUTTON_BASE_HOVER_BOTTOM" file="common/aura_scrollbar_arrow_button_base_hover_bottom.png" />
         <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_ARROW_BUTTON_BASE_HOVER_BOTTOM_LEFT" file="common/aura_scrollbar_arrow_button_base_hover_bottom_left.png" />
