@@ -206,7 +206,11 @@ void* MapFont(struct _FPDF_SYSFONTINFO*, int weight, int italic,
     // MS Mincho in Shift_JIS encoding.
     {"\x82\x6C\x82\x72\x96\xBE\x92\xA9",
      "MS Mincho", false, false},
-};
+  };
+
+  // Similar logic exists in PDFium's CFX_FolderFontInfo::FindFont().
+  if (charset == FXFONT_ANSI_CHARSET && (pitch_family & FXFONT_FF_FIXEDPITCH))
+    face = "Courier New";
 
   // Map from the standard PDF fonts to TrueType font names.
   size_t i;
