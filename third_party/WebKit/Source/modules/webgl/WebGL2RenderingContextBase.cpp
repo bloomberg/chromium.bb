@@ -2319,7 +2319,16 @@ Vector<GLint> WebGL2RenderingContextBase::getActiveUniforms(WebGLProgram* progra
     if (isContextLost() || !validateWebGLObject("getActiveUniforms", program))
         return result;
 
-    if (pname == GL_UNIFORM_NAME_LENGTH) {
+    switch (pname) {
+    case GL_UNIFORM_TYPE:
+    case GL_UNIFORM_SIZE:
+    case GL_UNIFORM_BLOCK_INDEX:
+    case GL_UNIFORM_OFFSET:
+    case GL_UNIFORM_ARRAY_STRIDE:
+    case GL_UNIFORM_MATRIX_STRIDE:
+    case GL_UNIFORM_IS_ROW_MAJOR:
+        break;
+    default:
         synthesizeGLError(GL_INVALID_ENUM, "getActiveUniforms", "invalid parameter name");
         return result;
     }
