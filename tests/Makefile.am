@@ -254,7 +254,6 @@ dist_yaml_TESTS =				\
 	yaml/ko-2006-g2_harness.txt.bak.yaml			\
 	yaml/ko-g2_harness.txt.bak.yaml			\
 	yaml/nl-BE-g1_harness.txt.bak.yaml			\
-	yaml/nl-NL-g0_harness.yaml				\
 	yaml/ta-ta-g1_harness.txt.bak.yaml
 
 TEST_EXTENSIONS = .yaml
