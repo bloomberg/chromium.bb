@@ -4,12 +4,13 @@
 
 #include "config.h"
 #include "core/dom/CompositorProxiedPropertySet.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
-PassOwnPtrWillBeRawPtr<CompositorProxiedPropertySet> CompositorProxiedPropertySet::create()
+PassOwnPtr<CompositorProxiedPropertySet> CompositorProxiedPropertySet::create()
 {
-    return adoptPtrWillBeNoop(new CompositorProxiedPropertySet);
+    return adoptPtr(new CompositorProxiedPropertySet);
 }
 
 CompositorProxiedPropertySet::CompositorProxiedPropertySet()

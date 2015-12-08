@@ -5,20 +5,20 @@
 #ifndef CompositorProxiedPropertySet_h
 #define CompositorProxiedPropertySet_h
 
-#include "platform/heap/Handle.h"
 #include "public/platform/WebCompositorMutableProperties.h"
+#include "wtf/Allocator.h"
+#include "wtf/Forward.h"
+#include "wtf/Noncopyable.h"
 
 namespace blink {
 
 // Keeps track of the number of proxies bound to each property.
-class CompositorProxiedPropertySet final : public NoBaseWillBeGarbageCollectedFinalized<CompositorProxiedPropertySet> {
+class CompositorProxiedPropertySet final {
     WTF_MAKE_NONCOPYABLE(CompositorProxiedPropertySet);
-    USING_FAST_MALLOC_WILL_BE_REMOVED(CompositorProxiedPropertySet);
+    USING_FAST_MALLOC(CompositorProxiedPropertySet);
 public:
-    static PassOwnPtrWillBeRawPtr<CompositorProxiedPropertySet> create();
+    static PassOwnPtr<CompositorProxiedPropertySet> create();
     virtual ~CompositorProxiedPropertySet();
-
-    DEFINE_INLINE_TRACE() { }
 
     bool isEmpty() const;
     void increment(uint32_t mutableProperties);

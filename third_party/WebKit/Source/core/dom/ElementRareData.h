@@ -141,7 +141,7 @@ private:
     OwnPtrWillBeMember<AttrNodeList> m_attrNodeList;
     PersistentWillBeMember<ElementAnimations> m_elementAnimations;
     OwnPtrWillBeMember<InlineCSSStyleDeclaration> m_cssomWrapper;
-    OwnPtrWillBeMember<CompositorProxiedPropertySet> m_proxiedProperties;
+    OwnPtr<CompositorProxiedPropertySet> m_proxiedProperties;
 
     RefPtr<ComputedStyle> m_computedStyle;
     RefPtrWillBeMember<CustomElementDefinition> m_customElementDefinition;
