@@ -17,6 +17,8 @@
       '<(PRODUCT_DIR)/md5sum_bin_host',
       '<(PRODUCT_DIR)/md5sum_dist/',
       'devil/',
+      'devil_chromium.json',
+      'devil_chromium.py',
       'gyp/util/',
       'incremental_install/',
       'lighttpd_server.py',
