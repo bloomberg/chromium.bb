@@ -99,7 +99,7 @@ public final class DomDistillerUIUtils {
     @CalledByNative
     public static void closePanel(boolean animate) {
         if (sManagerDelegate == null) return;
-        sManagerDelegate.closePanel(StateChangeReason.CLOSE_BUTTON, animate);
+        sManagerDelegate.closeReaderPanel(StateChangeReason.CLOSE_BUTTON, animate);
     }
 
     /**

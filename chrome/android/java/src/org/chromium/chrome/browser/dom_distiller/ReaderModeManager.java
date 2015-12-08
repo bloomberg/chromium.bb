@@ -295,12 +295,8 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
         return tab.getWebContents();
     }
 
-    /**
-     * This is a proxy method for those with access to the ReaderModeManagerDelegate to close the
-     * panel.
-     */
     @Override
-    public void closePanel(StateChangeReason reason, boolean animate) {
+    public void closeReaderPanel(StateChangeReason reason, boolean animate) {
         if (mReaderModePanel == null) return;
         mReaderModePanel.closePanel(reason, animate);
     }
@@ -376,17 +372,6 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
             return;
         }
         mReaderModePanel.requestPanelShow(reason);
-    }
-
-    /**
-     * A wrapper for the close method of the Reader Mode panel that checks for null and can be
-     * overridden for testing.
-     * @param reason The reason the panel is closing.
-     * @param animate True if the panel should animate closed.
-     */
-    protected void closeReaderPanel(StateChangeReason reason, boolean animate) {
-        if (mReaderModePanel == null) return;
-        mReaderModePanel.closePanel(reason, animate);
     }
 
     /**
