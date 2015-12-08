@@ -90,6 +90,7 @@ public:
     bool loadingMultipartContent() const { return m_loadingMultipartContent; }
 
 private:
+    // Assumes ResourceFetcher and Resource are non-null.
     ResourceLoader(ResourceFetcher*, Resource*, const ResourceLoaderOptions&);
 
     void init(const ResourceRequest&);

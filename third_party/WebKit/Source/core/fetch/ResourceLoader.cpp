@@ -77,6 +77,8 @@ ResourceLoader::ResourceLoader(ResourceFetcher* fetcher, Resource* resource, con
     , m_state(Initialized)
     , m_connectionState(ConnectionStateNew)
 {
+    ASSERT(m_resource);
+    ASSERT(m_fetcher);
 }
 
 ResourceLoader::~ResourceLoader()
