@@ -5,6 +5,8 @@
 #ifndef UI_GFX_WIN_DIRECT_WRITE_H_
 #define UI_GFX_WIN_DIRECT_WRITE_H_
 
+#include <dwrite.h>
+
 #include "ui/gfx/gfx_export.h"
 
 namespace gfx {
@@ -17,6 +19,9 @@ GFX_EXPORT void MaybeInitializeDirectWrite();
 
 // Returns true if we are using DirectWrite for font metrics and rendering.
 GFX_EXPORT bool IsDirectWriteEnabled();
+
+// Creates a DirectWrite factory, if using DirectWrite.
+GFX_EXPORT void CreateDWriteFactory(IDWriteFactory** factory);
 
 }  // namespace win
 }  // namespace gfx
