@@ -31,11 +31,6 @@ mojom("arc_bindings") {
   sources = [
     "common/arc_bridge.mojom",
   ]
-
-  import_dirs = [
-    get_path_info("../..", "abspath"),
-    "//mojo/services",
-  ]
 }
 
 static_library("arc_test_support") {

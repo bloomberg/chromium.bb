@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 
+#include <string>
+
 #include "base/files/file_util.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/task_runner_util.h"
@@ -339,7 +341,6 @@ void ArcAppListPrefs::OnAppIcon(const std::string& package,
 void ArcAppListPrefs::InstallIcon(const std::string& app_id,
                                   ui::ScaleFactor scale_factor,
                                   const std::vector<uint8>& content_png) {
-
   base::FilePath icon_path = GetIconPath(app_id, scale_factor);
   base::PostTaskAndReplyWithResult(content::BrowserThread::GetBlockingPool(),
                                    FROM_HERE,
