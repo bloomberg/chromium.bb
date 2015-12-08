@@ -35,6 +35,7 @@
 #include "platform/PlatformExport.h"
 #include "platform/audio/AudioDestinationConsumer.h"
 #include "public/platform/WebMediaConstraints.h"
+#include "wtf/Allocator.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"
@@ -53,6 +54,7 @@ public:
     };
 
     class ExtraData {
+        USING_FAST_MALLOC(ExtraData);
     public:
         virtual ~ExtraData() { }
     };

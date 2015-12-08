@@ -34,6 +34,7 @@
 
 #include "platform/mediastream/MediaStreamComponent.h"
 #include "platform/mediastream/MediaStreamSource.h"
+#include "wtf/Allocator.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
@@ -53,6 +54,7 @@ public:
 class PLATFORM_EXPORT MediaStreamDescriptor final : public GarbageCollectedFinalized<MediaStreamDescriptor> {
 public:
     class ExtraData {
+        USING_FAST_MALLOC(ExtraData);
     public:
         virtual ~ExtraData() { }
     };
