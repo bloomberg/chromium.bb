@@ -408,7 +408,7 @@ typedef long long      GLint64;
     GLenum clientWaitSync(WebGLSync? sync, GLbitfield flags, GLint64 timeout);
     void waitSync(WebGLSync? sync, GLbitfield flags, GLint64 timeout);
 
-    [CallWith=ScriptState] any getSyncParameter(WebGLSync sync, GLenum pname);
+    [CallWith=ScriptState] any getSyncParameter(WebGLSync? sync, GLenum pname);
 
     /* Transform Feedback */
     WebGLTransformFeedback createTransformFeedback();

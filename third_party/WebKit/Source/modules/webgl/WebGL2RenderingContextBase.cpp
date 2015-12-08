@@ -1815,8 +1815,17 @@ WebGLQuery* WebGL2RenderingContextBase::getQuery(GLenum target, GLenum pname)
 
 ScriptValue WebGL2RenderingContextBase::getQueryParameter(ScriptState* scriptState, WebGLQuery* query, GLenum pname)
 {
-    if (isContextLost() || !validateWebGLObject("getQueryParameter", query))
+    bool deleted;
+    if (!query) {
+        synthesizeGLError(GL_INVALID_OPERATION, "getQueryParameter", "query object is null");
         return ScriptValue::createNull(scriptState);
+    }
+    if (!checkObjectToBeBound("getQueryParameter", query, deleted))
+        return ScriptValue::createNull(scriptState);
+    if (deleted) {
+        synthesizeGLError(GL_INVALID_OPERATION, "getQueryParameter", "attempted to access to a deleted query object");
+        return ScriptValue::createNull(scriptState);
+    }
 
     // Query is non-null at this point.
     if (query == m_currentBooleanOcclusionQuery || query == m_currentTransformFeedbackPrimitivesWrittenQuery) {
