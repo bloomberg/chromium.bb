@@ -8,7 +8,8 @@
 #include "third_party/mojo/src/mojo/edk/test/test_support_impl.h"
 
 int main(int argc, char** argv) {
+  base::PerfTestSuite test_suite(argc, argv);
   mojo::embedder::Init();
   mojo::test::TestSupport::Init(new mojo::test::TestSupportImpl());
-  return base::PerfTestSuite(argc, argv).Run();
+  return test_suite.Run();
 }
