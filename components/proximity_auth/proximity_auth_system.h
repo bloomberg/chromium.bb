@@ -21,21 +21,35 @@ class RemoteDeviceLifeCycle;
 class UnlockManager;
 
 // This is the main entry point to start Proximity Auth, the underlying system
-// for the Smart Lock feature. Given a registered remote device (i.e. a phone),
-// this object will handle the connection, authentication, and protocol for the
-// device.
+// for the Smart Lock feature. Given a list of remote devices (i.e. a
+// phone) for each registered user, the system will handle the connection,
+// authentication, and messenging protocol when the screen is locked and the
+// registered user is focused.
 class ProximityAuthSystem : public RemoteDeviceLifeCycle::Observer,
                             public ScreenlockBridge::Observer {
  public:
   enum ScreenlockType { SESSION_LOCK, SIGN_IN };
 
   ProximityAuthSystem(ScreenlockType screenlock_type,
-                      RemoteDevice remote_device,
                       ProximityAuthClient* proximity_auth_client);
   ~ProximityAuthSystem() override;
 
-  // Starts the system to begin connecting and authenticating the remote device.
+  // Starts the system to connect and authenticate when a registered user is
+  // focused on the lock/sign-in screen.
   void Start();
+
+  // Stops the system.
+  void Stop();
+
+  // Registers a list of |remote_devices| for |user_id| that can be used for
+  // sign-in/unlock. If devices were previously registered for the user, then
+  // they will be replaced.
+  void SetRemoteDevicesForUser(const std::string& user_id,
+                               const RemoteDeviceList& remote_devices);
+
+  // Returns the RemoteDevices registered for |user_id|. Returns an empty list
+  // if no devices are registered for |user_id|.
+  RemoteDeviceList GetRemoteDevicesForUser(const std::string& user_id) const;
 
   // Called when the user clicks the user pod and attempts to unlock/sign-in.
   void OnAuthAttempted(const std::string& user_id);
@@ -62,14 +76,14 @@ class ProximityAuthSystem : public RemoteDeviceLifeCycle::Observer,
   // timeout.
   void ResumeAfterWakeUpTimeout();
 
-  // The remote device to connect to.
-  RemoteDevice remote_device_;
+  // Lists of remote devices, keyed by user id.
+  std::map<std::string, RemoteDeviceList> remote_devices_map_;
 
   // Delegate for Chrome dependent functionality.
   ProximityAuthClient* proximity_auth_client_;
 
   // Responsible for the life cycle of connecting and authenticating to
-  // |remote_device_|.
+  // the RemoteDevice of the currently focused user.
   scoped_ptr<RemoteDeviceLifeCycle> remote_device_life_cycle_;
 
   // Handles the interaction with the lock screen UI.
@@ -77,6 +91,9 @@ class ProximityAuthSystem : public RemoteDeviceLifeCycle::Observer,
 
   // True if the system is suspended.
   bool suspended_;
+
+  // True if the system is started_.
+  bool started_;
 
   base::WeakPtrFactory<ProximityAuthSystem> weak_ptr_factory_;
 

@@ -99,7 +99,7 @@ EasyUnlockServiceRegular::GetProximityAuthPrefManager() {
 
 void EasyUnlockServiceRegular::LoadRemoteDevices() {
   if (device_manager_->unlock_keys().empty()) {
-    OnRemoteDeviceChanged(nullptr);
+    SetProximityAuthDevices(GetUserEmail(), proximity_auth::RemoteDeviceList());
     return;
   }
 
@@ -114,10 +114,8 @@ void EasyUnlockServiceRegular::LoadRemoteDevices() {
 }
 
 void EasyUnlockServiceRegular::OnRemoteDevicesLoaded(
-    const std::vector<proximity_auth::RemoteDevice>& remote_devices) {
-  // TODO(tengs): We only support unlocking with one remote device at the
-  // moment. We need to revisit once multiple devices are supported.
-  OnRemoteDeviceChanged(&remote_devices[0]);
+    const proximity_auth::RemoteDeviceList& remote_devices) {
+  SetProximityAuthDevices(GetUserEmail(), remote_devices);
 
 #if defined(OS_CHROMEOS)
   // We need to store a copy of |remote devices_| in the TPM, so it can be

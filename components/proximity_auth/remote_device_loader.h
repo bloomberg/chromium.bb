@@ -6,7 +6,6 @@
 #define COMPONENTS_PROXIMITY_REMOTE_DEVICE_LOADER_H
 
 #include <string>
-#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -41,8 +40,7 @@ class RemoteDeviceLoader {
   ~RemoteDeviceLoader();
 
   // Loads the RemoteDevice objects. |callback| will be invoked upon completion.
-  typedef base::Callback<void(const std::vector<RemoteDevice>&)>
-      RemoteDeviceCallback;
+  typedef base::Callback<void(const RemoteDeviceList&)> RemoteDeviceCallback;
   void Load(const RemoteDeviceCallback& callback);
 
  private:
@@ -70,7 +68,7 @@ class RemoteDeviceLoader {
   RemoteDeviceCallback callback_;
 
   // The collection of RemoteDevices to return.
-  std::vector<RemoteDevice> remote_devices_;
+  RemoteDeviceList remote_devices_;
 
   base::WeakPtrFactory<RemoteDeviceLoader> weak_ptr_factory_;
 

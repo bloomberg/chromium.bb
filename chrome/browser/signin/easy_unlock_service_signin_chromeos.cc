@@ -426,37 +426,39 @@ void EasyUnlockServiceSignin::OnUserDataLoaded(
   if (user_id != user_id || devices.empty())
     return;
 
-  // TODO(tengs): Currently, ProximityAuthSystem only supports one device. Once
-  // multiple devices are supported, we need to load all devices.
-  std::string decoded_public_key, decoded_psk, decoded_challenge;
-  if (!base::Base64UrlDecode(devices[0].public_key,
-                             base::Base64UrlDecodePolicy::REQUIRE_PADDING,
-                             &decoded_public_key) ||
-      !base::Base64UrlDecode(devices[0].psk,
-                             base::Base64UrlDecodePolicy::REQUIRE_PADDING,
-                             &decoded_psk) ||
-      !base::Base64UrlDecode(devices[0].challenge,
-                             base::Base64UrlDecodePolicy::REQUIRE_PADDING,
-                             &decoded_challenge)) {
-    PA_LOG(ERROR) << "Unable to base64url decode the input data.";
-    return;
+  proximity_auth::RemoteDeviceList remote_devices;
+  for (const auto& device : devices) {
+    std::string decoded_public_key, decoded_psk, decoded_challenge;
+    if (!base::Base64UrlDecode(device.public_key,
+                               base::Base64UrlDecodePolicy::REQUIRE_PADDING,
+                               &decoded_public_key) ||
+        !base::Base64UrlDecode(device.psk,
+                               base::Base64UrlDecodePolicy::REQUIRE_PADDING,
+                               &decoded_psk) ||
+        !base::Base64UrlDecode(device.challenge,
+                               base::Base64UrlDecodePolicy::REQUIRE_PADDING,
+                               &decoded_challenge)) {
+      PA_LOG(ERROR) << "Unable base64url decode stored remote device: "
+                    << device.public_key;
+      continue;
+    }
+    proximity_auth::RemoteDevice::BluetoothType bluetooth_type =
+        device.bluetooth_type == chromeos::EasyUnlockDeviceKeyData::BLUETOOTH_LE
+            ? proximity_auth::RemoteDevice::BLUETOOTH_LE
+            : proximity_auth::RemoteDevice::BLUETOOTH_CLASSIC;
+    proximity_auth::RemoteDevice remote_device(
+        user_id, std::string(), decoded_public_key, bluetooth_type,
+        device.bluetooth_address, decoded_psk, decoded_challenge);
+    remote_devices.push_back(remote_device);
+    PA_LOG(INFO) << "Loaded Remote Device:\n"
+                 << "  user id: " << remote_device.user_id << "\n"
+                 << "  name: " << remote_device.name << "\n"
+                 << "  public key" << device.public_key << "\n"
+                 << "  bt_addr:" << remote_device.bluetooth_address
+                 << "  type:" << static_cast<int>(remote_device.bluetooth_type);
   }
 
-  proximity_auth::RemoteDevice::BluetoothType bluetooth_type =
-      devices[0].bluetooth_type ==
-              chromeos::EasyUnlockDeviceKeyData::BLUETOOTH_LE
-          ? proximity_auth::RemoteDevice::BLUETOOTH_LE
-          : proximity_auth::RemoteDevice::BLUETOOTH_CLASSIC;
-
-  proximity_auth::RemoteDevice remote_device(
-      user_id, std::string(), decoded_public_key, bluetooth_type,
-      devices[0].bluetooth_address, decoded_psk, decoded_challenge);
-  PA_LOG(INFO) << "Loaded Remote Device:\n"
-               << "  user id: " << remote_device.user_id << "\n"
-               << "  name: " << remote_device.name << "\n"
-               << "  public key" << devices[0].public_key << "\n"
-               << "  bt_addr:" << remote_device.bluetooth_address;
-  OnRemoteDeviceChanged(&remote_device);
+  SetProximityAuthDevices(user_id, remote_devices);
 }
 
 const EasyUnlockServiceSignin::UserData*

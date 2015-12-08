@@ -5,10 +5,8 @@
 #include "components/proximity_auth/proximity_auth_system.h"
 
 #include "base/thread_task_runner_handle.h"
-#include "base/time/default_tick_clock.h"
 #include "components/proximity_auth/logging/logging.h"
 #include "components/proximity_auth/proximity_auth_client.h"
-#include "components/proximity_auth/proximity_monitor_impl.h"
 #include "components/proximity_auth/remote_device_life_cycle_impl.h"
 #include "components/proximity_auth/unlock_manager.h"
 
@@ -24,17 +22,12 @@ const int kWakeUpTimeoutSeconds = 2;
 
 ProximityAuthSystem::ProximityAuthSystem(
     ScreenlockType screenlock_type,
-    RemoteDevice remote_device,
     ProximityAuthClient* proximity_auth_client)
-    : remote_device_(remote_device),
-      proximity_auth_client_(proximity_auth_client),
-      unlock_manager_(new UnlockManager(
-          screenlock_type,
-          make_scoped_ptr<ProximityMonitor>(new ProximityMonitorImpl(
-              remote_device,
-              make_scoped_ptr(new base::DefaultTickClock()))),
-          proximity_auth_client)),
+    : proximity_auth_client_(proximity_auth_client),
+      unlock_manager_(
+          new UnlockManager(screenlock_type, proximity_auth_client)),
       suspended_(false),
+      started_(false),
       weak_ptr_factory_(this) {}
 
 ProximityAuthSystem::~ProximityAuthSystem() {
@@ -43,9 +36,39 @@ ProximityAuthSystem::~ProximityAuthSystem() {
 }
 
 void ProximityAuthSystem::Start() {
+  if (started_)
+    return;
+  started_ = true;
   ScreenlockBridge::Get()->AddObserver(this);
-  if (remote_device_.user_id == ScreenlockBridge::Get()->focused_user_id())
-    OnFocusedUserChanged(ScreenlockBridge::Get()->focused_user_id());
+  std::string focused_user_id = ScreenlockBridge::Get()->focused_user_id();
+  if (!focused_user_id.empty())
+    OnFocusedUserChanged(focused_user_id);
+}
+
+void ProximityAuthSystem::Stop() {
+  if (!started_)
+    return;
+  started_ = false;
+  ScreenlockBridge::Get()->RemoveObserver(this);
+  OnFocusedUserChanged(std::string());
+}
+
+void ProximityAuthSystem::SetRemoteDevicesForUser(
+    const std::string& user_id,
+    const RemoteDeviceList& remote_devices) {
+  remote_devices_map_[user_id] = remote_devices;
+  if (started_) {
+    std::string focused_user_id = ScreenlockBridge::Get()->focused_user_id();
+    if (!focused_user_id.empty())
+      OnFocusedUserChanged(focused_user_id);
+  }
+}
+
+RemoteDeviceList ProximityAuthSystem::GetRemoteDevicesForUser(
+    const std::string& user_id) const {
+  if (remote_devices_map_.find(user_id) == remote_devices_map_.end())
+    return RemoteDeviceList();
+  return remote_devices_map_.at(user_id);
 }
 
 void ProximityAuthSystem::OnAuthAttempted(const std::string& user_id) {
@@ -81,8 +104,14 @@ void ProximityAuthSystem::OnSuspendDone() {
 void ProximityAuthSystem::ResumeAfterWakeUpTimeout() {
   PA_LOG(INFO) << "Resume after suspend";
   suspended_ = false;
-  if (ScreenlockBridge::Get()->IsLocked())
+
+  if (!ScreenlockBridge::Get()->IsLocked()) {
+    PA_LOG(INFO) << "Suspend done, but no lock screen.";
+  } else if (!started_) {
+    PA_LOG(INFO) << "Suspend done, but not system started.";
+  } else {
     OnFocusedUserChanged(ScreenlockBridge::Get()->focused_user_id());
+  }
 }
 
 void ProximityAuthSystem::OnLifeCycleStateChanged(
@@ -103,14 +132,29 @@ void ProximityAuthSystem::OnScreenDidUnlock(
 }
 
 void ProximityAuthSystem::OnFocusedUserChanged(const std::string& user_id) {
-  if (!user_id.empty() && remote_device_.user_id != user_id) {
-    PA_LOG(INFO) << "Different user focused, destroying RemoteDeviceLifeCycle.";
+  // Update the current RemoteDeviceLifeCycle to the focused user.
+  if (!user_id.empty() && remote_device_life_cycle_ &&
+      remote_device_life_cycle_->GetRemoteDevice().user_id != user_id) {
+    PA_LOG(INFO) << "Focused user changed, destroying life cycle for "
+                 << user_id << ".";
     unlock_manager_->SetRemoteDeviceLifeCycle(nullptr);
     remote_device_life_cycle_.reset();
-  } else if (!remote_device_life_cycle_ && !suspended_) {
-    PA_LOG(INFO) << "Creating RemoteDeviceLifeCycle for focused user.";
+  }
+
+  if (remote_devices_map_.find(user_id) == remote_devices_map_.end() ||
+      remote_devices_map_[user_id].size() == 0) {
+    PA_LOG(INFO) << "User " << user_id << " does not have a RemoteDevice.";
+    return;
+  }
+
+  // TODO(tengs): We currently assume each user has only one RemoteDevice, so we
+  // can simply take the first item in the list.
+  RemoteDevice remote_device = remote_devices_map_[user_id][0];
+  if (!suspended_) {
+    PA_LOG(INFO) << "Creating RemoteDeviceLifeCycle for focused user: "
+                 << user_id;
     remote_device_life_cycle_.reset(
-        new RemoteDeviceLifeCycleImpl(remote_device_, proximity_auth_client_));
+        new RemoteDeviceLifeCycleImpl(remote_device, proximity_auth_client_));
     unlock_manager_->SetRemoteDeviceLifeCycle(remote_device_life_cycle_.get());
     remote_device_life_cycle_->AddObserver(this);
     remote_device_life_cycle_->Start();

@@ -8,12 +8,13 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/thread_task_runner_handle.h"
+#include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
 #include "components/proximity_auth/logging/logging.h"
 #include "components/proximity_auth/messenger.h"
 #include "components/proximity_auth/metrics.h"
 #include "components/proximity_auth/proximity_auth_client.h"
-#include "components/proximity_auth/proximity_monitor.h"
+#include "components/proximity_auth/proximity_monitor_impl.h"
 #include "components/proximity_auth/remote_device.h"
 #include "components/proximity_auth/secure_context.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -79,11 +80,9 @@ metrics::RemoteSecuritySettingsState GetRemoteSecuritySettingsState(
 
 UnlockManager::UnlockManager(
     ProximityAuthSystem::ScreenlockType screenlock_type,
-    scoped_ptr<ProximityMonitor> proximity_monitor,
     ProximityAuthClient* proximity_auth_client)
     : screenlock_type_(screenlock_type),
       life_cycle_(nullptr),
-      proximity_monitor_(proximity_monitor.Pass()),
       proximity_auth_client_(proximity_auth_client),
       is_locked_(false),
       is_attempting_auth_(false),
@@ -92,12 +91,6 @@ UnlockManager::UnlockManager(
       clear_waking_up_state_weak_ptr_factory_(this),
       reject_auth_attempt_weak_ptr_factory_(this),
       weak_ptr_factory_(this) {
-  // TODO(isherman): Register for auth attempt notifications, equivalent to the
-  // JavaScript lines:
-  //
-  //   chrome.screenlockPrivate.onAuthAttempted.addListener(
-  //       this.onAuthAttempted_.bind(this));
-
   ScreenlockBridge* screenlock_bridge = ScreenlockBridge::Get();
   screenlock_bridge->AddObserver(this);
   OnScreenLockedOrUnlocked(screenlock_bridge->IsLocked());
@@ -134,7 +127,7 @@ bool UnlockManager::IsUnlockAllowed() {
           life_cycle_ &&
           life_cycle_->GetState() ==
               RemoteDeviceLifeCycle::State::SECURE_CHANNEL_ESTABLISHED &&
-          proximity_monitor_->IsUnlockAllowed() &&
+          proximity_monitor_ && proximity_monitor_->IsUnlockAllowed() &&
           (screenlock_type_ != ProximityAuthSystem::SIGN_IN ||
            (GetMessenger() && GetMessenger()->SupportsSignIn())));
 }
@@ -145,8 +138,12 @@ void UnlockManager::SetRemoteDeviceLifeCycle(
     GetMessenger()->RemoveObserver(this);
 
   life_cycle_ = life_cycle;
-  if (life_cycle_)
+  if (life_cycle_) {
+    proximity_monitor_ = CreateProximityMonitor(life_cycle->GetRemoteDevice());
     SetWakingUpState(true);
+  } else {
+    proximity_monitor_.reset();
+  }
 
   UpdateLockScreen();
 }
@@ -320,6 +317,12 @@ void UnlockManager::OnAuthAttempted(
   }
 }
 
+scoped_ptr<ProximityMonitor> UnlockManager::CreateProximityMonitor(
+    const RemoteDevice& remote_device) {
+  return make_scoped_ptr(new ProximityMonitorImpl(
+      remote_device, make_scoped_ptr(new base::DefaultTickClock())));
+}
+
 void UnlockManager::SendSignInChallenge() {
   if (!life_cycle_ || !GetMessenger() || !GetMessenger()->GetSecureContext()) {
     PA_LOG(ERROR) << "Not ready to send sign-in challenge";
@@ -418,6 +421,9 @@ void UnlockManager::UpdateLockScreen() {
 }
 
 void UnlockManager::UpdateProximityMonitorState() {
+  if (!proximity_monitor_)
+    return;
+
   if (is_locked_ && life_cycle_ &&
       life_cycle_->GetState() ==
           RemoteDeviceLifeCycle::State::SECURE_CHANNEL_ESTABLISHED) {

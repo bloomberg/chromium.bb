@@ -18,6 +18,7 @@
 #include "chrome/browser/signin/easy_unlock_metrics.h"
 #include "chrome/browser/signin/easy_unlock_screenlock_state_handler.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/proximity_auth/remote_device.h"
 #include "components/proximity_auth/screenlock_state.h"
 
 #if defined(OS_CHROMEOS)
@@ -40,7 +41,6 @@ class PrefRegistrySyncable;
 namespace proximity_auth {
 class ProximityAuthBleSystem;
 class ProximityAuthSystem;
-struct RemoteDevice;
 }
 
 class EasyUnlockAppManager;
@@ -296,11 +296,11 @@ class EasyUnlockService : public KeyedService {
   // according to the current state of the service.
   EasyUnlockAuthEvent GetPasswordAuthEvent() const;
 
-  // Called by subclasses when the remote device allowed to unlock the screen
-  // changes. If |remote_device| is not null, then |proximity_auth_system_| will
-  // be recreated with the new remote device. Otherwise,
-  // |proximity_auth_system_| will be destroyed if no |remote_device| is set.
-  void OnRemoteDeviceChanged(const proximity_auth::RemoteDevice* remote_device);
+  // Called by subclasses when remote devices allowed to unlock the screen
+  // are loaded for |user_id|.
+  void SetProximityAuthDevices(
+      const std::string& user_id,
+      const proximity_auth::RemoteDeviceList& remote_devices);
 
  private:
   // A class to detect whether a bluetooth adapter is present.

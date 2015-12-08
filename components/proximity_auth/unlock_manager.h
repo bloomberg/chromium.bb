@@ -37,12 +37,7 @@ class UnlockManager : public MessengerObserver,
  public:
   // The |proximity_auth_client| is not owned and should outlive the constructed
   // unlock manager.
-  // TODO(isherman): Rather than passing a single ProximityMonitor instance, we
-  // should pass a factory, as the UnlockManager should create and destroy
-  // ProximityMonitors as needed.  Currently, the expectations are misaligned
-  // between the ProximityMonitor and the UnlockManager classes.
   UnlockManager(ProximityAuthSystem::ScreenlockType screenlock_type,
-                scoped_ptr<ProximityMonitor> proximity_monitor,
                 ProximityAuthClient* proximity_auth_client);
   ~UnlockManager() override;
 
@@ -62,6 +57,12 @@ class UnlockManager : public MessengerObserver,
   // |auth_type|.
   // Exposed for testing.
   void OnAuthAttempted(ScreenlockBridge::LockHandler::AuthType auth_type);
+
+ protected:
+  // Creates a ProximityMonitor instance for the given |remote_device|.
+  // Exposed for testing.
+  virtual scoped_ptr<ProximityMonitor> CreateProximityMonitor(
+      const RemoteDevice& remote_device);
 
  private:
   // The possible lock screen states for the remote device.
