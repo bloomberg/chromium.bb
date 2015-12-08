@@ -688,13 +688,6 @@ void SVGSVGElement::setupInitialView(const String& fragmentIdentifier, Element* 
     bool hadUseCurrentView = m_useCurrentView;
     m_useCurrentView = false;
 
-    if (fragmentIdentifier.startsWith("xpointer(")) {
-        // FIXME: XPointer references are ignored (https://bugs.webkit.org/show_bug.cgi?id=17491)
-        if (layoutObject && hadUseCurrentView)
-            markForLayoutAndParentResourceInvalidation(layoutObject);
-        return;
-    }
-
     if (fragmentIdentifier.startsWith("svgView(")) {
         if (!view)
             view = currentView(); // Create the SVGViewSpec.
