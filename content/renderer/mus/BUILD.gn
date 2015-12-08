@@ -12,6 +12,8 @@ source_set("mus") {
     "render_widget_window_tree_client_factory.h",
   ]
 
+  configs += [ "//content:content_implementation" ]
+
   deps = [
     "//base",
     "//cc",
