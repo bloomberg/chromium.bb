@@ -5111,6 +5111,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
         If enabled, the chrome://history/ URL loads the Material Design history page.
       </message>
 
+      <!-- Material Design version of chrome://extensions -->
+      <message name="IDS_FLAGS_ENABLE_MATERIAL_DESIGN_EXTENSIONS_NAME" desc="Name for the flag to enable the material design extensions page.">
+        Enable Material Design extensions
+      </message>
+      <message name="IDS_FLAGS_ENABLE_MATERIAL_DESIGN_EXTENSIONS_DESCRIPTION" desc="Description for the flag to enable the material design extensions page.">
+        If enabled, the chrome://extensions/ URL loads the Material Design extensions page.
+      </message>
+
       <!-- Components -->
       <message name="IDS_COMPONENTS_TITLE" desc="Title for the chrome://components page.">
         Components

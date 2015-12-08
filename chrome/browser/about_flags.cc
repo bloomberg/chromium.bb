@@ -2054,6 +2054,13 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_FORCE_UI_DIRECTION_DESCRIPTION,
      kOsAll,
      MULTI_VALUE_TYPE(kForceUIDirectionChoices)},
+#if defined(ENABLE_EXTENSIONS)
+     {"enable-md-extensions",
+      IDS_FLAGS_ENABLE_MATERIAL_DESIGN_EXTENSIONS_NAME,
+      IDS_FLAGS_ENABLE_MATERIAL_DESIGN_EXTENSIONS_DESCRIPTION,
+      kOsDesktop,
+      SINGLE_VALUE_TYPE(switches::kEnableMaterialDesignExtensions)},
+#endif
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.
