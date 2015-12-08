@@ -153,6 +153,8 @@
             'installer/util/logging_installer.h',
             'installer/util/lzma_util.cc',
             'installer/util/lzma_util.h',
+            'installer/util/lzma_file_allocator.cc',
+            'installer/util/lzma_file_allocator.h',
             'installer/util/master_preferences.cc',
             'installer/util/master_preferences.h',
             'installer/util/product.cc',
