@@ -609,10 +609,6 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'tools/telemetry/third_party/altgraph': [
         'UNKNOWN',
     ],
-    # Not shipped, downloaded on trybots sometimes.
-    'tools/telemetry/third_party/gsutil': [
-        'UNKNOWN',
-    ],
     # Not shipped, MIT license but the header files contain no licensing info.
     'tools/telemetry/third_party/modulegraph': [
         'UNKNOWN',
