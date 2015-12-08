@@ -185,6 +185,13 @@ bool DeviceCloudPolicyManagerChromeOS::IsSharkRequisition() const {
   return GetDeviceRequisition() == kSharkRequisition;
 }
 
+void DeviceCloudPolicyManagerChromeOS::SetDeviceEnrollmentAutoStart() {
+  if (local_state_) {
+    local_state_->SetBoolean(prefs::kDeviceEnrollmentAutoStart, true);
+    local_state_->SetBoolean(prefs::kDeviceEnrollmentCanExit, false);
+  }
+}
+
 void DeviceCloudPolicyManagerChromeOS::Shutdown() {
   status_uploader_.reset();
   syslog_uploader_.reset();

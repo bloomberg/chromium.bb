@@ -74,6 +74,9 @@ class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
   bool IsRemoraRequisition() const;
   bool IsSharkRequisition() const;
 
+  // If set, the device will start the enterprise enrollment OOBE.
+  void SetDeviceEnrollmentAutoStart();
+
   // CloudPolicyManager:
   void Shutdown() override;
 

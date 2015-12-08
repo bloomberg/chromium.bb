@@ -140,6 +140,18 @@ bool IsRemoraRequisition() {
       ->IsRemoraRequisition();
 }
 
+// Checks if the device is a "Slave" device in the bootstrapping process.
+bool IsBootstrappingSlave() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kOobeBootstrappingSlave);
+}
+
+// Checks if the device is a "Master" device in the bootstrapping process.
+bool IsBootstrappingMaster() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kOobeBootstrappingMaster);
+}
+
 #if defined(GOOGLE_CHROME_BUILD)
 void InitializeCrashReporter() {
   // The crash reporter initialization needs IO to complete.
@@ -269,6 +281,11 @@ void WizardController::Init(const std::string& first_screen_name) {
                      weak_factory_.GetWeakPtr()));
     }
   }
+
+  // If the device is a Master device in bootstrapping process (mostly for demo
+  // and test purpose), start the enrollment OOBE flow.
+  if (IsBootstrappingMaster())
+    connector->GetDeviceCloudPolicyManager()->SetDeviceEnrollmentAutoStart();
 
   // Use the saved screen preference from Local State.
   const std::string screen_pref =
@@ -585,7 +602,7 @@ void WizardController::OnUpdateCompleted() {
                             ->browser_policy_connector_chromeos()
                             ->GetDeviceCloudPolicyManager()
                             ->IsSharkRequisition();
-  if (is_shark) {
+  if (is_shark || IsBootstrappingMaster()) {
     ShowControllerPairingScreen();
   } else {
     ShowAutoEnrollmentCheckScreen();
@@ -1287,7 +1304,7 @@ bool WizardController::IsHostPairingOobe() const {
 }
 
 void WizardController::MaybeStartListeningForSharkConnection() {
-  if (!IsRemoraRequisition())
+  if (!IsRemoraRequisition() && !IsBootstrappingSlave())
     return;
 
   // We shouldn't be here if we are running pairing OOBE already.
@@ -1308,6 +1325,14 @@ void WizardController::OnSharkConnected(
   base::MessageLoop::current()->DeleteSoon(
       FROM_HERE, shark_connection_listener_.release());
   shark_controller_detected_ = true;
+
+  if (IsBootstrappingSlave()) {
+    g_browser_process->platform_part()
+        ->browser_policy_connector_chromeos()
+        ->GetDeviceCloudPolicyManager()
+        ->SetDeviceEnrollmentAutoStart();
+  }
+
   ShowHostPairingScreen();
 }
 

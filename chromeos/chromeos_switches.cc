@@ -243,6 +243,10 @@ const char kOobeTimerInterval[] = "oobe-timer-interval";
 // Indicates that a guest session has been started before OOBE completion.
 const char kOobeGuestSession[] = "oobe-guest-session";
 
+// Indicates that if we should start bootstrapping Master/Slave OOBE.
+const char kOobeBootstrappingMaster[] = "oobe-bootstrapping-master";
+const char kOobeBootstrappingSlave[] = "oobe-bootstrapping-slave";
+
 // Specifies power stub behavior:
 //  'cycle=2' - Cycles power states every 2 seconds.
 // See FakeDBusThreadManager::ParsePowerCommandLineSwitch for full details.
