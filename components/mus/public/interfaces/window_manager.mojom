@@ -33,6 +33,7 @@ interface WindowManager {
   const string kShowState_Property = "prop:show-state";
   // The window bounds as set by user input. Type: gfx::Rect.
   const string kUserSetBounds_Property = "prop:user-set-bounds";
+  const string kWindowType_Property = "property:window-type";
 
   OpenWindow(WindowTreeClient client, map<string, array<uint8>> properties);
 

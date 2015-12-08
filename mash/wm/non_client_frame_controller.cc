@@ -103,7 +103,7 @@ class WmNativeWidgetMus : public views::NativeWidgetMus {
   void InitNativeWidget(const views::Widget::InitParams& params) override {
     views::NativeWidgetMus::InitNativeWidget(params);
     aura::WindowTreeHost* window_tree_host = GetNativeView()->GetHost();
-    // TODO(sky): shadow should be determined by window type.
+    // TODO(sky): shadow should be determined by window type and shadow type.
     shadow_.reset(new Shadow);
     shadow_->Init(Shadow::STYLE_INACTIVE);
     shadow_->Install(window());

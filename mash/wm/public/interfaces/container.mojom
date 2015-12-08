@@ -24,4 +24,3 @@ enum Container {
 };
 
 const string kWindowContainer_Property = "ash:window-container";
-

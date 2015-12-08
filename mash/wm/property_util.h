@@ -5,6 +5,7 @@
 #ifndef MASH_WM_PROPERTY_UTIL_H_
 #define MASH_WM_PROPERTY_UTIL_H_
 
+#include "components/mus/public/cpp/window.h"
 #include "components/mus/public/interfaces/window_manager.mojom.h"
 #include "components/mus/public/interfaces/window_manager_constants.mojom.h"
 #include "mash/wm/public/interfaces/container.mojom.h"
@@ -43,6 +44,10 @@ gfx::Rect GetRestoreBounds(const mus::Window* window);
 
 void SetShadow(mus::Window* window, Shadow* shadow);
 Shadow* GetShadow(mus::Window* window);
+
+mus::mojom::WindowType GetWindowType(mus::Window* window);
+mus::mojom::WindowType GetWindowType(
+    const mus::Window::SharedProperties& window);
 
 }  // namespace wm
 }  // namespace mash

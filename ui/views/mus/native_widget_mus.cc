@@ -20,6 +20,7 @@
 #include "ui/native_theme/native_theme_aura.h"
 #include "ui/views/mus/platform_window_mus.h"
 #include "ui/views/mus/surface_context_factory.h"
+#include "ui/views/mus/window_manager_constants_converters.h"
 #include "ui/views/mus/window_manager_frame_values.h"
 #include "ui/views/mus/window_tree_host_mus.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -227,6 +228,9 @@ void NativeWidgetMus::ConfigurePropertiesForNewWindow(
   if (!Widget::RequiresNonClientView(init_params.type))
     return;
 
+  (*properties)[mus::mojom::WindowManager::kWindowType_Property] =
+      mojo::TypeConverter<const std::vector<uint8_t>, int32_t>::Convert(
+          mojo::ConvertTo<mus::mojom::WindowType>(init_params.type));
   ConfigurePropertiesForNewWindowFromDelegate(init_params.delegate, properties);
 }
 

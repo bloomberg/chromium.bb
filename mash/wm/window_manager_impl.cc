@@ -10,6 +10,8 @@
 #include "components/mus/public/cpp/window_property.h"
 #include "components/mus/public/cpp/window_tree_connection.h"
 #include "components/mus/public/interfaces/input_events.mojom.h"
+#include "components/mus/public/interfaces/mus_constants.mojom.h"
+#include "components/mus/public/interfaces/window_manager.mojom.h"
 #include "mash/wm/non_client_frame_controller.h"
 #include "mash/wm/property_util.h"
 #include "mash/wm/public/interfaces/container.mojom.h"
@@ -100,7 +102,10 @@ void WindowManagerImpl::OpenWindow(
 
   mus::Window::SharedProperties properties =
       transport_properties.To<mus::Window::SharedProperties>();
-  // TODO(sky): constrain to valid properties here.
+  const bool provide_non_client_frame =
+      GetWindowType(properties) == mus::mojom::WINDOW_TYPE_WINDOW;
+
+  // TODO(sky): constrain and validate properties before passing to server.
   mus::Window* child_window = root->connection()->NewWindow(&properties);
   child_window->SetBounds(CalculateDefaultBounds(child_window));
 
@@ -108,9 +113,7 @@ void WindowManagerImpl::OpenWindow(
   state_->GetWindowForContainer(container)->AddChild(child_window);
   child_window->Embed(client.Pass());
 
-  // TODO(sky): we need more sophisticated heuristics as to when the non-client
-  // frame is necessary.
-  if (container == mojom::CONTAINER_USER_WINDOWS) {
+  if (provide_non_client_frame) {
     // NonClientFrameController deletes itself when |child_window| is destroyed.
     new NonClientFrameController(state_->app()->shell(), child_window,
                                  state_->window_tree_host());

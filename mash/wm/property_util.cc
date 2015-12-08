@@ -5,7 +5,6 @@
 #include "mash/wm/property_util.h"
 
 #include "components/mus/public/cpp/property_type_converters.h"
-#include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_property.h"
 #include "mash/wm/shadow.h"
 #include "ui/gfx/geometry/rect.h"
@@ -100,6 +99,22 @@ void SetShadow(mus::Window* window, Shadow* shadow) {
 
 Shadow* GetShadow(mus::Window* window) {
   return window->GetLocalProperty(kLocalShadowProperty);
+}
+
+mus::mojom::WindowType GetWindowType(mus::Window* window) {
+  return GetWindowType(window->shared_properties());
+}
+
+mus::mojom::WindowType GetWindowType(
+    const mus::Window::SharedProperties& properties) {
+  const auto iter =
+      properties.find(mus::mojom::WindowManager::kWindowType_Property);
+  if (iter != properties.end()) {
+    return static_cast<mus::mojom::WindowType>(
+        mojo::TypeConverter<int32_t, const std::vector<uint8_t>>::Convert(
+            iter->second));
+  }
+  return mus::mojom::WINDOW_TYPE_POPUP;
 }
 
 }  // namespace wm

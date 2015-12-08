@@ -40,3 +40,18 @@ struct Display {
   float device_pixel_ratio;
   Rotation rotation;
 };
+
+enum WindowType {
+  // These constants come from Widget::InitParams. See it for details.
+  // TODO: see if we can reduce this set. For example, why do we need both
+  // BUBBLE and POPUP.
+  WINDOW,
+  PANEL,
+  WINDOW_FRAMELESS,
+  CONTROL,
+  POPUP,
+  MENU,
+  TOOLTIP,
+  BUBBLE,
+  DRAG,
+};

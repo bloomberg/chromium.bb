@@ -25,6 +25,8 @@ component("mus") {
     "surface_context_factory.h",
     "window_manager_connection.cc",
     "window_manager_connection.h",
+    "window_manager_constants_converters.cc",
+    "window_manager_constants_converters.h",
     "window_manager_frame_values.cc",
     "window_manager_frame_values.h",
     "window_tree_host_mus.cc",
