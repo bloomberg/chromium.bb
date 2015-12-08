@@ -270,6 +270,7 @@ DomainReliabilityMonitor::RequestInfo::RequestInfo(
           DomainReliabilityUploader::GetURLRequestUploadDepth(request)) {
   request.GetLoadTimingInfo(&load_timing_info);
   request.GetConnectionAttempts(&connection_attempts);
+  request.PopulateNetErrorDetails(&details);
   if (!request.GetRemoteEndpoint(&remote_endpoint))
     remote_endpoint = net::IPEndPoint();
 }
@@ -321,6 +322,7 @@ void DomainReliabilityMonitor::OnRequestLegComplete(
   beacon_template.was_proxied = request.response_info.was_fetched_via_proxy;
   beacon_template.url = request.url;
   beacon_template.upload_depth = request.upload_depth;
+  beacon_template.details = request.details;
 
   // This is not foolproof -- it's possible that we'll see the same error twice
   // (e.g. an SSL error during connection on one attempt, and then an error

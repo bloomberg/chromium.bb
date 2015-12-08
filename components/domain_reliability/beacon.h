@@ -10,6 +10,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
 #include "components/domain_reliability/domain_reliability_export.h"
+#include "net/base/net_error_details.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -54,6 +55,8 @@ struct DOMAIN_RELIABILITY_EXPORT DomainReliabilityBeacon {
   bool was_proxied;
   // Protocol used to make the request.
   std::string protocol;
+  // Network error details for the request.
+  net::NetErrorDetails details;
   // HTTP response code returned by the server, or -1 if none was received.
   int http_response_code;
   // Elapsed time between starting and completing the request.

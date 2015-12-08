@@ -18,7 +18,6 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/load_states.h"
 #include "net/base/net_error_details.h"
-#include "net/base/net_errors.h"
 #include "net/base/net_export.h"
 #include "net/base/request_priority.h"
 #include "net/base/upload_progress.h"

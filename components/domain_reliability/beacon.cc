@@ -35,6 +35,8 @@ scoped_ptr<Value> DomainReliabilityBeacon::ToValue(
   beacon_value->SetString("server_ip", server_ip);
   beacon_value->SetBoolean("was_proxied", was_proxied);
   beacon_value->SetString("protocol", protocol);
+  if (details.quic_broken)
+    beacon_value->SetBoolean("quic_broken", details.quic_broken);
   if (http_response_code >= 0)
     beacon_value->SetInteger("http_response_code", http_response_code);
   beacon_value->SetInteger("request_elapsed_ms", elapsed.InMilliseconds());

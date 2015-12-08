@@ -31,6 +31,7 @@ scoped_ptr<DomainReliabilityBeacon> MakeBeacon(MockableTime* time) {
   beacon->server_ip = "127.0.0.1";
   beacon->was_proxied = false;
   beacon->protocol = "HTTP";
+  beacon->details.quic_broken = true;
   beacon->http_response_code = -1;
   beacon->elapsed = base::TimeDelta::FromMilliseconds(250);
   beacon->start_time = time->NowTicks() - beacon->elapsed;
@@ -212,10 +213,11 @@ TEST_F(DomainReliabilityContextTest, ReportUpload) {
     "\"entries\":["
       "{\"failure_data\":{\"custom_error\":\"net::ERR_CONNECTION_RESET\"},"
       "\"network_changed\":false,\"protocol\":\"HTTP\","
-      "\"request_age_ms\":300250,\"request_elapsed_ms\":250,"
+      "\"quic_broken\":true,\"request_age_ms\":300250,"
+      "\"request_elapsed_ms\":250,"
       "\"server_ip\":\"127.0.0.1\",\"status\":\"tcp.connection_reset\","
-      "\"url\":\"https://localhost/\",\"was_proxied\":false}],"
-      "\"reporter\":\"test-reporter\"}";
+      "\"url\":\"https://localhost/\","
+      "\"was_proxied\":false}],\"reporter\":\"test-reporter\"}";
 
   time_.Advance(max_delay());
   EXPECT_TRUE(upload_pending());
@@ -242,10 +244,11 @@ TEST_F(DomainReliabilityContextTest, Upload_NetworkChanged) {
     "\"entries\":["
       "{\"failure_data\":{\"custom_error\":\"net::ERR_CONNECTION_RESET\"},"
       "\"network_changed\":true,\"protocol\":\"HTTP\","
-      "\"request_age_ms\":300250,\"request_elapsed_ms\":250,"
+      "\"quic_broken\":true,\"request_age_ms\":300250,"
+      "\"request_elapsed_ms\":250,"
       "\"server_ip\":\"127.0.0.1\",\"status\":\"tcp.connection_reset\","
-      "\"url\":\"https://localhost/\",\"was_proxied\":false}],"
-      "\"reporter\":\"test-reporter\"}";
+      "\"url\":\"https://localhost/\","
+      "\"was_proxied\":false}],\"reporter\":\"test-reporter\"}";
 
   // Simulate a network change after the request but before the upload.
   last_network_change_time_ = time_.NowTicks();
