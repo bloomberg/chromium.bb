@@ -11,6 +11,7 @@
 
 #include <algorithm>
 #include <limits>
+#include <tuple>
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
@@ -251,13 +252,7 @@ void Trap::SigSys(int nr, LinuxSigInfo* info, ucontext_t* ctx) {
 }
 
 bool Trap::TrapKey::operator<(const TrapKey& o) const {
-  if (fnc != o.fnc) {
-    return fnc < o.fnc;
-  } else if (aux != o.aux) {
-    return aux < o.aux;
-  } else {
-    return safe < o.safe;
-  }
+  return std::tie(fnc, aux, safe) < std::tie(o.fnc, o.aux, o.safe);
 }
 
 uint16_t Trap::Add(TrapFnc fnc, const void* aux, bool safe) {
