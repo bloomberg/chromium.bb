@@ -19,6 +19,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Process;
+import android.os.StrictMode;
 import android.support.customtabs.CustomTabsIntent;
 import android.support.customtabs.CustomTabsService;
 import android.support.customtabs.ICustomTabsCallback;
@@ -495,6 +496,9 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
         // cgroups a process is part of can be queried by reading
         // /proc/<pid>/cgroup, which is world-readable.
         String cgroupFilename = "/proc/" + pid + "/cgroup";
+        // Reading from /proc does not cause disk IO, but strict mode doesn't like it.
+        // crbug.com/567143
+        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
         try {
             FileReader fileReader = new FileReader(cgroupFilename);
             BufferedReader reader = new BufferedReader(fileReader);
@@ -510,6 +514,8 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
             }
         } catch (IOException e) {
             return null;
+        } finally {
+            StrictMode.setThreadPolicy(oldPolicy);
         }
         return null;
     }
