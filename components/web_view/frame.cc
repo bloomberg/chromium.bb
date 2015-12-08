@@ -194,8 +194,7 @@ void Frame::InitClient(ClientType client_type,
                        mus::mojom::WindowTreeClientPtr window_tree_client,
                        mojo::InterfaceRequest<mojom::Frame> frame_request,
                        base::TimeTicks navigation_start_time) {
-  if (client_type == ClientType::EXISTING_FRAME_NEW_APP &&
-      window_tree_client.get()) {
+  if (client_type == ClientType::EXISTING_FRAME_NEW_APP && window_tree_client) {
     embedded_connection_id_ = kInvalidConnectionId;
     embed_weak_ptr_factory_.InvalidateWeakPtrs();
     window_->Embed(
@@ -258,7 +257,7 @@ void Frame::ChangeClient(mojom::FrameClient* frame_client,
   while (!children_.empty())
     delete children_[0];
 
-  ClientType client_type = window_tree_client.get() == nullptr
+  ClientType client_type = !window_tree_client
                                ? ClientType::EXISTING_FRAME_SAME_APP
                                : ClientType::EXISTING_FRAME_NEW_APP;
   scoped_ptr<FrameUserDataAndBinding> data_and_binding;
