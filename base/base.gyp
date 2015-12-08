@@ -21,7 +21,7 @@
         'optimize': 'max',
       },
       'dependencies': [
-        'base_debugging_flags',
+        'base_debugging_flags#target',
         'base_static',
         '../testing/gtest.gyp:gtest_prod',
         '../third_party/modp_b64/modp_b64.gyp:modp_b64',
@@ -1079,8 +1079,11 @@
     },
     {
       # GN version: //base/debug:debugging_flags
+      # Since this generates a file, it most only be referenced in the target
+      # toolchain or there will be multiple rules that generate the header.
+      # When referenced from a target that might be compiled in the host
+      # toolchain, always refer to 'base_debugging_flags#target'.
       'target_name': 'base_debugging_flags',
-      'toolsets': ['host', 'target'],
       'includes': [ '../build/buildflag_header.gypi' ],
       'variables': {
         'buildflag_header_path': 'base/debug/debugging_flags.h',
@@ -1144,7 +1147,7 @@
             'base_target': 1,
           },
           'dependencies': [
-            'base_debugging_flags',
+            'base_debugging_flags#target',
             'base_static_win64',
             '../third_party/modp_b64/modp_b64.gyp:modp_b64_win64',
             'third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations_win64',
