@@ -20,5 +20,4 @@ lencapsphrase 4
 capsword 45
 capswordstop 6
 firstwordcaps 45-45
-# This opcode should be renamed to lastwordcapsbefore.
-lastwordbeforecaps 45
+lastwordcapsbefore 45

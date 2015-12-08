@@ -176,5 +176,5 @@ lencapsphrase 4
 capsword 45
 capswordstop 6
 firstwordcaps 45-45
-lastwordbeforecaps 45
+lastwordcapsbefore 45
 singlelettercaps 46

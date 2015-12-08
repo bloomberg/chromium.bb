@@ -323,7 +323,7 @@ show_brailleIndicators (void)
   print_phraseLength (table->lenBeginCaps, "lenbegcaps");
   print_brailleIndicator (table->endCapitalSign, "endcaps");
   print_brailleIndicator (table->firstWordCaps, "firstwordcaps");
-  print_brailleIndicator (table->lastWordCapsAfter, "lastwordaftercaps");
+  print_brailleIndicator (table->lastWordCapsAfter, "lastwordcapsafter");
   print_phraseLength (table->lenCapsPhrase, "lencapsphrase");
   print_brailleIndicator (table->letterSign, "letsign");
   print_brailleIndicator (table->numberSign, "numsign");
