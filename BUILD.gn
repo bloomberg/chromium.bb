@@ -276,6 +276,7 @@ group("both_gn_and_gyp") {
       "//testing/android/junit:junit_unittests",
       "//third_party/errorprone:chromium_errorprone",
       "//tools/android:android_tools",
+      "//tools/android:memconsumer",
       "//tools/android/heap_profiler:heap_profiler_unittests",
       "//tools/android/kerberos/SpnegoAuthenticator:spnego_authenticator_apk",
       "//tools/imagediff($host_toolchain)",

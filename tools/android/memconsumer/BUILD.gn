@@ -1,0 +1,35 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/android/rules.gni")
+
+android_resources("memconsumer_apk_resources") {
+  resource_dirs = [ "java/res" ]
+  android_manifest = "java/AndroidManifest.xml"
+}
+
+android_apk("memconsumer_apk") {
+  apk_name = "MemConsumer"
+  android_manifest = "java/AndroidManifest.xml"
+  DEPRECATED_java_in_dir = "java/src"
+  native_libs = [ "libmemconsumer.so" ]
+
+  deps = [
+    ":libmemconsumer",
+    ":memconsumer_apk_resources",
+    "//base:base_java",
+  ]
+}
+
+shared_library("libmemconsumer") {
+  output_name = "memconsumer"
+  sources = [
+    "memconsumer_hook.cc",
+  ]
+  libs = [ "log" ]
+  configs -= [ "//build/config/android:hide_native_jni_exports" ]
+
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [ "//build/config/compiler:no_chromium_code" ]
+}

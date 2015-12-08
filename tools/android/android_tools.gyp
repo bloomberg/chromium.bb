@@ -38,6 +38,7 @@
       ],
     },
     {
+      # GN: //tools/android:memconsumer
       'target_name': 'memconsumer',
       'type': 'none',
       'dependencies': [
@@ -61,6 +62,7 @@
       ],
     },
     {
+      # GN: //tools/android:spnego_authenticator
       'target_name': 'spnego_authenticator',
       'type': 'none',
       'dependencies': [

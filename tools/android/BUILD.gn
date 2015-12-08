@@ -33,10 +33,32 @@ group("memdump") {
   ]
 }
 
+# GYP: //tools/android/android_tools.gyp:memconsumer
+group("memconsumer") {
+  deps = [
+    "//tools/android/memconsumer:memconsumer_apk",
+  ]
+}
+
+# GYP: //tools/android/android_tools.gyp:memtrack_helper
+group("memtrack_helper") {
+  deps = [
+    "//tools/android/memtrack_helper",
+  ]
+}
+
 # GYP: //tools/android/android_tools.gyp:ps_ext
 group("ps_ext") {
   deps = [
     "//tools/android/ps_ext",
+  ]
+}
+
+# GYP: //tools/android/android_tools.gyp:spnego_authenticator
+group("spnego_authenticator") {
+  testonly = true
+  deps = [
+    "//tools/android/kerberos/SpnegoAuthenticator:spnego_authenticator_apk",
   ]
 }
 
