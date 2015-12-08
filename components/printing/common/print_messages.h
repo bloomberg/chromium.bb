@@ -222,7 +222,7 @@ IPC_STRUCT_BEGIN(PrintHostMsg_DidPreviewDocument_Params)
   IPC_STRUCT_MEMBER(base::SharedMemoryHandle, metafile_data_handle)
 
   // Size of metafile data.
-  IPC_STRUCT_MEMBER(uint32, data_size)
+  IPC_STRUCT_MEMBER(uint32_t, data_size)
 
   // Cookie for the document to ensure correctness.
   IPC_STRUCT_MEMBER(int, document_cookie)
@@ -243,10 +243,9 @@ IPC_STRUCT_BEGIN(PrintHostMsg_DidPreviewPage_Params)
   IPC_STRUCT_MEMBER(base::SharedMemoryHandle, metafile_data_handle)
 
   // Size of metafile data.
-  IPC_STRUCT_MEMBER(uint32, data_size)
+  IPC_STRUCT_MEMBER(uint32_t, data_size)
 
-  // |page_number| is zero-based and can be |printing::INVALID_PAGE_INDEX| if it
-  // is just a check.
+  // |page_number| is zero-based and should not be negative.
   IPC_STRUCT_MEMBER(int, page_number)
 
   // The id of the preview request.
@@ -278,7 +277,7 @@ IPC_STRUCT_BEGIN(PrintHostMsg_DidPrintPage_Params)
   IPC_STRUCT_MEMBER(base::SharedMemoryHandle, metafile_data_handle)
 
   // Size of the metafile data.
-  IPC_STRUCT_MEMBER(uint32, data_size)
+  IPC_STRUCT_MEMBER(uint32_t, data_size)
 
   // Cookie for the document to ensure correctness.
   IPC_STRUCT_MEMBER(int, document_cookie)

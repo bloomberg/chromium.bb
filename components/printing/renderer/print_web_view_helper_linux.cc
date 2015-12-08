@@ -13,11 +13,11 @@
 #include "printing/pdf_metafile_skia.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 
-#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
-#include "base/process/process_handle.h"
-#else
+#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
 #include "base/file_descriptor_posix.h"
-#endif  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+#else
+#include "base/process/process_handle.h"
+#endif  // defined(OS_CHROMEOS) || defined(OS_ANDROID)
 
 namespace printing {
 
