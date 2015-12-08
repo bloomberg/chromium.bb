@@ -308,15 +308,37 @@ class TestReceiver {
   base::Closure notify_finish_;
 };
 
-#if defined(OS_ANDROID)
-// TODO(yzshen): This test is occasionally failing on Android GN builds.
-// http://crbug.com/567395.
-#define MAYBE_MultiThreadAccess DISABLED_MultiThreadAccess
-#else
-#define MAYBE_MultiThreadAccess MultiThreadAccess
-#endif  // defined(OS_ANDROID)
+class NotificationCounter {
+ public:
+  NotificationCounter(size_t total_count, const base::Closure& notify_finish)
+      : total_count_(total_count),
+        current_count_(0),
+        notify_finish_(notify_finish) {}
 
-TEST_F(AssociatedInterfaceTest, MAYBE_MultiThreadAccess) {
+  ~NotificationCounter() {}
+
+  // Okay to call from any thread.
+  void OnGotNotification() {
+    bool finshed = false;
+    {
+      base::AutoLock locker(lock_);
+      CHECK_LT(current_count_, total_count_);
+      current_count_++;
+      finshed = current_count_ == total_count_;
+    }
+
+    if (finshed)
+      notify_finish_.Run();
+  }
+
+ private:
+  base::Lock lock_;
+  const size_t total_count_;
+  size_t current_count_;
+  base::Closure notify_finish_;
+};
+
+TEST_F(AssociatedInterfaceTest, MultiThreadAccess) {
   // Set up four associated interfaces on a message pipe. Use the inteface
   // pointers on four threads in parallel; run the interface implementations on
   // two threads. Test that multi-threaded access works.
@@ -348,15 +370,18 @@ TEST_F(AssociatedInterfaceTest, MAYBE_MultiThreadAccess) {
 
   base::RunLoop run_loop;
   TestReceiver receivers[2];
+  NotificationCounter counter(
+      2, base::Bind(&AssociatedInterfaceTest::QuitRunLoop,
+                    base::Unretained(this), base::Unretained(&run_loop)));
   for (size_t i = 0; i < 2; ++i) {
     receivers[i].receiver_thread()->task_runner()->PostTask(
         FROM_HERE,
-        base::Bind(
-            &TestReceiver::SetUp, base::Unretained(&receivers[i]),
-            base::Passed(&requests[2 * i]), base::Passed(&requests[2 * i + 1]),
-            kMaxValue,
-            base::Bind(&AssociatedInterfaceTest::QuitRunLoop,
-                       base::Unretained(this), base::Unretained(&run_loop))));
+        base::Bind(&TestReceiver::SetUp, base::Unretained(&receivers[i]),
+                   base::Passed(&requests[2 * i]),
+                   base::Passed(&requests[2 * i + 1]),
+                   static_cast<int32_t>((i + 1) * kMaxValue / 2),
+                   base::Bind(&NotificationCounter::OnGotNotification,
+                              base::Unretained(&counter))));
   }
 
   for (size_t i = 0; i < 4; ++i) {
