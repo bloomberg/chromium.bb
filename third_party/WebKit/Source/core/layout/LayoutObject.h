@@ -341,10 +341,6 @@ public:
         return hasBoxDecorationBackground() || style()->hasVisualOverflowingEffect();
     }
 
-    // Obtains the nearest enclosing block (including this block) that contributes a first-line style to our inline
-    // children.
-    virtual LayoutBlock* firstLineBlock() const;
-
     // LayoutObject tree manipulation
     //////////////////////////////////////////
     virtual bool canHaveChildren() const { return virtualChildren(); }
@@ -749,6 +745,14 @@ public:
 
     virtual LayoutMultiColumnSpannerPlaceholder* spannerPlaceholder() const { return nullptr; }
     bool isColumnSpanAll() const { return style()->columnSpan() == ColumnSpanAll && spannerPlaceholder(); }
+
+    // We include isLayoutButton in this check because buttons are implemented
+    // using flex box but should still support first-line|first-letter.
+    // The flex box and grid specs require that flex box and grid do not
+    // support first-line|first-letter, though.
+    // TODO(cbiesinger): Remove when buttons are implemented with align-items instead
+    // of flex box. crbug.com/226252.
+    bool canHaveFirstLineOrFirstLetterStyle() const { return isLayoutBlockFlow() || isLayoutButton(); }
 
     // This function returns the containing block of the object.
     // Due to CSS being inconsistent, a containing block can be a relatively

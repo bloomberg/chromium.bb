@@ -9,11 +9,11 @@
         <p>This text should have a green background when hovered.</p>
     </div>
 </div>
+<script src="../../resources/run-after-layout-and-paint.js"></script>
 <script>
-document.body.offsetTop; // Force layout. The mouse is not tracked before first layout.
-
-if (window.eventSender)
+runAfterLayoutAndPaint(function() {
+  if (window.eventSender)
     eventSender.mouseMoveTo(100, 100); // Hover.
-
-document.body.offsetTop; // Update layout for the hovered state.
+  document.body.offsetTop; // Update layout for the hovered state.
+}, true);
 </script>

@@ -997,8 +997,6 @@ crbug.com/474798 virtual/syncpaint/fast/repaint/justify-self-change-keeping-geom
 
 crbug.com/548695 fast/forms/datalist/update-range-with-datalist.html [ Failure ]
 
-crbug.com/548705 fast/css/first-line-hover-001.html [ Failure ]
-
 # Temporarily disabled after chromium change
 crbug.com/492511 [ Mac ] fast/text/atsui-negative-spacing-features.html [ Failure ]
 crbug.com/492511 [ Mac ] fast/text/atsui-spacing-features.html [ Failure ]

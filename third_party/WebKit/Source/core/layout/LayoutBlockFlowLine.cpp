@@ -2072,4 +2072,11 @@ LayoutUnit LayoutBlockFlow::startAlignedOffsetForLine(LayoutUnit position, bool 
     return logicalLeft;
 }
 
+void LayoutBlockFlow::invalidateDisplayItemClientsOfFirstLine()
+{
+    ASSERT(childrenInline());
+    if (RootInlineBox* firstRootBox = this->firstRootBox())
+        firstRootBox->invalidateDisplayItemClientsRecursively();
+}
+
 }

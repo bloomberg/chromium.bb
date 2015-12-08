@@ -300,6 +300,8 @@ public:
     void setDirOverride(bool dirOverride) { m_bitfields.setDirOverride(dirOverride); }
 
     DisplayItemClient displayItemClient() const { return toDisplayItemClient(this); }
+    // Invalidate display item clients in the whole sub inline box tree.
+    void invalidateDisplayItemClientsRecursively();
 
 #define ADD_BOOLEAN_BITFIELD(name, Name) \
     private:\

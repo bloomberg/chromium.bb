@@ -109,7 +109,7 @@ LayoutObject* FirstLetterPseudoElement::firstLetterTextLayoutObject(const Elemen
     if (!parentLayoutObject
         || !parentLayoutObject->style()->hasPseudoStyle(FIRST_LETTER)
         || !canHaveGeneratedChildren(*parentLayoutObject)
-        || !(parentLayoutObject->isLayoutBlockFlow() || parentLayoutObject->isLayoutButton()))
+        || !parentLayoutObject->canHaveFirstLineOrFirstLetterStyle())
         return nullptr;
 
     // Drill down into our children and look for our first text child.

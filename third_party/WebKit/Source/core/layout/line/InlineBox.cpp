@@ -384,6 +384,15 @@ LayoutPoint InlineBox::flipForWritingMode(const LayoutPoint& point) const
     return root().block().flipForWritingMode(point);
 }
 
+void InlineBox::invalidateDisplayItemClientsRecursively()
+{
+    layoutObject().invalidateDisplayItemClient(*this);
+    if (!isInlineFlowBox())
+        return;
+    for (InlineBox* child = toInlineFlowBox(this)->firstChild(); child; child = child->nextOnLine())
+        child->invalidateDisplayItemClientsRecursively();
+}
+
 } // namespace blink
 
 #ifndef NDEBUG

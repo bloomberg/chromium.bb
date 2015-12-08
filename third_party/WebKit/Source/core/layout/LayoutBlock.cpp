@@ -2292,18 +2292,7 @@ int LayoutBlock::inlineBlockBaseline(LineDirectionMode lineDirection) const
     return -1;
 }
 
-static inline bool isLayoutBlockFlowOrLayoutButton(LayoutObject* layoutObject)
-{
-    // We include isLayoutButton in this check because buttons are implemented
-    // using flex box but should still support first-line|first-letter.
-    // The flex box and grid specs require that flex box and grid do not
-    // support first-line|first-letter, though.
-    // FIXME: Remove when buttons are implemented with align-items instead
-    // of flex box.
-    return layoutObject->isLayoutBlockFlow() || layoutObject->isLayoutButton();
-}
-
-LayoutBlock* LayoutBlock::firstLineBlock() const
+LayoutBlock* LayoutBlock::enclosingFirstLineStyleBlock() const
 {
     LayoutBlock* firstLineBlock = const_cast<LayoutBlock*>(this);
     bool hasPseudo = false;
@@ -2314,7 +2303,7 @@ LayoutBlock* LayoutBlock::firstLineBlock() const
         LayoutObject* parentBlock = firstLineBlock->parent();
         if (firstLineBlock->isReplaced() || firstLineBlock->isFloatingOrOutOfFlowPositioned()
             || !parentBlock
-            || !isLayoutBlockFlowOrLayoutButton(parentBlock))
+            || !parentBlock->canHaveFirstLineOrFirstLetterStyle())
             break;
         ASSERT_WITH_SECURITY_IMPLICATION(parentBlock->isLayoutBlock());
         if (toLayoutBlock(parentBlock)->firstChild() != firstLineBlock)
@@ -2326,6 +2315,17 @@ LayoutBlock* LayoutBlock::firstLineBlock() const
         return nullptr;
 
     return firstLineBlock;
+}
+
+LayoutBlockFlow* LayoutBlock::nearestInnerBlockWithFirstLine() const
+{
+    if (childrenInline())
+        return toLayoutBlockFlow(const_cast<LayoutBlock*>(this));
+    for (LayoutObject* child = firstChild(); child && !child->isFloatingOrOutOfFlowPositioned() && child->isLayoutBlockFlow(); child = toLayoutBlock(child)->firstChild()) {
+        if (child->childrenInline())
+            return toLayoutBlockFlow(child);
+    }
+    return nullptr;
 }
 
 // Helper methods for obtaining the last line, computing line counts and heights for line counts

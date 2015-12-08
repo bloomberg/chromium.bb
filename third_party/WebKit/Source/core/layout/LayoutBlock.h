@@ -276,6 +276,23 @@ public:
     bool recalcChildOverflowAfterStyleChange();
     bool recalcOverflowAfterStyleChange();
 
+    // An example explaining layout tree structure about first-line style:
+    // <style>
+    //   #enclosingFirstLineStyleBlock::first-line { ... }
+    // </style>
+    // <div id="enclosingFirstLineStyleBlock">
+    //   <div>
+    //     <div id="nearestInnerBlockWithFirstLine">
+    //       [<span>]first line text[</span>]
+    //     </div>
+    //   </div>
+    // </div>
+
+    // Returns the nearest enclosing block (including this block) that contributes a first-line style to our first line.
+    LayoutBlock* enclosingFirstLineStyleBlock() const;
+    // Returns this block or the nearest inner block containing the actual first line.
+    LayoutBlockFlow* nearestInnerBlockWithFirstLine() const;
+
 protected:
     void willBeDestroyed() override;
 
@@ -395,10 +412,6 @@ private:
     virtual bool isPointInOverflowControl(HitTestResult&, const LayoutPoint& locationInContainer, const LayoutPoint& accumulatedOffset) const;
 
     void computeBlockPreferredLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const;
-
-    // Obtains the nearest enclosing block (including this block) that contributes a first-line style to our inline
-    // children.
-    LayoutBlock* firstLineBlock() const override;
 
     LayoutObject* hoverAncestor() const final;
     void updateDragState(bool dragOn) final;

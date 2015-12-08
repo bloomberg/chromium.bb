@@ -293,6 +293,8 @@ public:
         return containsFloats() ? m_floatingObjects->set().last().get() : nullptr;
     }
 
+    void invalidateDisplayItemClientsOfFirstLine();
+
 protected:
     void rebuildFloatsFromIntruding();
     void layoutInlineChildren(bool relayoutChildren, LayoutUnit& paintInvalidationLogicalTop, LayoutUnit& paintInvalidationLogicalBottom, LayoutUnit afterEdge);

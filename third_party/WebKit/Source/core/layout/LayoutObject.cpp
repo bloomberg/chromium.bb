@@ -725,11 +725,6 @@ bool LayoutObject::skipInvalidationWhenLaidOutChildren() const
     return !hasBoxEffect();
 }
 
-LayoutBlock* LayoutObject::firstLineBlock() const
-{
-    return nullptr;
-}
-
 static inline bool objectIsRelayoutBoundary(const LayoutObject* object)
 {
     // FIXME: In future it may be possible to broaden these conditions in order to improve performance.
@@ -1837,12 +1832,33 @@ void LayoutObject::setPseudoStyle(PassRefPtr<ComputedStyle> pseudoStyle)
 void LayoutObject::firstLineStyleDidChange(const ComputedStyle& oldStyle, const ComputedStyle& newStyle)
 {
     StyleDifference diff = oldStyle.visualInvalidationDiff(newStyle);
-    if (diff.hasDifference()) {
-        // TODO(rune@opera.com): We should use the diff to determine whether a repaint vs. layout
-        // is needed, but for now just assume a layout will be required. The diff code
-        // in LayoutObject::setStyle would need to be factored out so that it could be reused.
-        setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::StyleChange);
+
+    if (diff.needsPaintInvalidation() || diff.textDecorationOrColorChanged()) {
+        // We need to invalidate all inline boxes in the first line, because they need to be
+        // repainted with the new style, e.g. background, font style, etc.
+        LayoutBlockFlow* firstLineContainer = nullptr;
+        if (canHaveFirstLineOrFirstLetterStyle()) {
+            // This object is a LayoutBlock having FIRST_LINE pseudo style changed.
+            firstLineContainer = toLayoutBlock(this)->nearestInnerBlockWithFirstLine();
+        } else if (isLayoutInline()) {
+            // This object is a LayoutInline having FIRST_LINE_INHERITED pesudo style changed.
+            // This method can be called even if the LayoutInline doesn't intersect the first line,
+            // but we only need to invalidate if it does.
+            if (InlineBox* firstLineBox = toLayoutInline(this)->firstLineBoxIncludingCulling()) {
+                if (firstLineBox->isFirstLineStyle())
+                    firstLineContainer = toLayoutBlockFlow(containingBlock());
+            }
+        }
+        if (firstLineContainer) {
+            firstLineContainer->invalidateDisplayItemClientsOfFirstLine();
+            // The following is for rect invalidation. For slimming paint v2, we can invalidate the rects
+            // of the first line display item clients instead of the whole rect of the container.
+            if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+                firstLineContainer->setShouldDoFullPaintInvalidation();
+        }
     }
+    if (diff.needsLayout())
+        setNeedsLayoutAndPrefWidthsRecalc(LayoutInvalidationReason::StyleChange);
 }
 
 void LayoutObject::markContainingBlocksForOverflowRecalc()
@@ -2802,8 +2818,8 @@ static PassRefPtr<ComputedStyle> firstLineStyleForCachedUncachedType(StyleCacheS
     if (layoutObject->isBeforeOrAfterContent())
         layoutObjectForFirstLineStyle = layoutObject->parent();
 
-    if (layoutObjectForFirstLineStyle->isLayoutBlockFlow() || layoutObjectForFirstLineStyle->isLayoutButton()) {
-        if (LayoutBlock* firstLineBlock = layoutObjectForFirstLineStyle->firstLineBlock()) {
+    if (layoutObjectForFirstLineStyle->canHaveFirstLineOrFirstLetterStyle()) {
+        if (LayoutBlock* firstLineBlock = toLayoutBlock(layoutObjectForFirstLineStyle)->enclosingFirstLineStyleBlock()) {
             if (type == Cached)
                 return firstLineBlock->getCachedPseudoStyle(FIRST_LINE, style);
             return firstLineBlock->getUncachedPseudoStyle(PseudoStyleRequest(FIRST_LINE), style, firstLineBlock == layoutObject ? style : 0);
