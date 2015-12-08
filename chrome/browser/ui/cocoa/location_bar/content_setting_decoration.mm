@@ -175,13 +175,14 @@ ContentSettingDecoration::~ContentSettingDecoration() {
 bool ContentSettingDecoration::UpdateFromWebContents(
     WebContents* web_contents) {
   bool was_visible = IsVisible();
-  int old_icon = content_setting_image_model_->icon_id();
+  int old_icon = content_setting_image_model_->raster_icon_id();
   content_setting_image_model_->UpdateFromWebContents(web_contents);
   SetVisible(content_setting_image_model_->is_visible());
-  bool decoration_changed = was_visible != IsVisible() ||
-      old_icon != content_setting_image_model_->icon_id();
+  bool decoration_changed =
+      was_visible != IsVisible() ||
+      old_icon != content_setting_image_model_->raster_icon_id();
   if (IsVisible()) {
-    SetImage(content_setting_image_model_->icon().ToNSImage());
+    SetImage(content_setting_image_model_->raster_icon().ToNSImage());
     SetToolTip(
         base::SysUTF16ToNSString(content_setting_image_model_->get_tooltip()));
 

@@ -49,12 +49,14 @@ class ContentSettingImageModel {
   virtual void SetAnimationHasRun(content::WebContents* web_contents) = 0;
 
   bool is_visible() const { return is_visible_; }
+
 #if defined(OS_MACOSX)
-  const gfx::Image& icon() const { return icon_; }
-  int icon_id() const { return icon_id_; }
-#else
-  gfx::Image GetIcon(SkColor nearby_text_color) const;
+  const gfx::Image& raster_icon() const { return raster_icon_; }
+  int raster_icon_id() const { return raster_icon_id_; }
 #endif
+
+  gfx::Image GetIcon(SkColor nearby_text_color) const;
+
   // Returns the resource ID of a string to show when the icon appears, or 0 if
   // we don't wish to show anything.
   int explanatory_string_id() const { return explanatory_string_id_; }
@@ -63,14 +65,13 @@ class ContentSettingImageModel {
  protected:
   ContentSettingImageModel();
   void SetIconByResourceId(int id);
-#if !defined(OS_MACOSX)
+
   void set_icon_by_vector_id(gfx::VectorIconId id, gfx::VectorIconId badge_id) {
     vector_icon_id_ = id;
     vector_icon_badge_id_ = badge_id;
   }
-#endif
+
   void set_visible(bool visible) { is_visible_ = visible; }
-  void set_icon(const gfx::Image& image) { icon_ = image; }
   void set_explanatory_string_id(int text_id) {
     explanatory_string_id_ = text_id;
   }
@@ -78,9 +79,11 @@ class ContentSettingImageModel {
 
  private:
   bool is_visible_;
-  // |icon_id_| and |icon_| are only used for pre-MD.
-  int icon_id_;
-  gfx::Image icon_;
+
+  // |raster_icon_id_| and |raster_icon_| are only used for pre-MD.
+  int raster_icon_id_;
+  gfx::Image raster_icon_;
+
   // Vector icons are used for MD.
   gfx::VectorIconId vector_icon_id_;
   gfx::VectorIconId vector_icon_badge_id_;

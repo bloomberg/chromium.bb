@@ -23,11 +23,7 @@
 namespace {
 
 bool HasIcon(const ContentSettingImageModel& model) {
-#if defined(OS_MACOSX)
-  return !model.icon().IsEmpty();
-#else
   return !model.GetIcon(gfx::kPlaceholderColor).IsEmpty();
-#endif
 }
 
 // Forward all NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED to the specified
