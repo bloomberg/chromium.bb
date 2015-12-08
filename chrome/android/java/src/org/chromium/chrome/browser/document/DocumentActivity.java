@@ -629,7 +629,7 @@ public class DocumentActivity extends ChromeActivity {
         LayoutManagerDocument layoutDriver = null;
         OverviewModeBehavior overviewModeBehavior = null;
         OnClickListener tabSwitcherClickHandler = null;
-        if (FeatureUtilities.isTabSwitchingEnabledInDocumentMode()) {
+        if (FeatureUtilities.isTabSwitchingEnabledInDocumentMode(getApplicationContext())) {
             LayoutManagerDocumentTabSwitcher layoutDriverTabSwitcher =
                     new LayoutManagerDocumentTabSwitcher(getCompositorViewHolder());
             layoutDriverTabSwitcher.addOverviewModeObserver(new OverviewModeObserver() {

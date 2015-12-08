@@ -682,7 +682,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
         mNativeLibraryReady = true;
         mToolbar.onNativeLibraryReady();
 
-        if (FeatureUtilities.isTabSwitchingEnabledInDocumentMode()) {
+        if (FeatureUtilities.isTabSwitchingEnabledInDocumentMode(mToolbar.getContext())) {
             // We want to give a similar look and feel as Android's overview mode button
             // by not updating tab count and keep the button as a rounded square.
             mShouldUpdateTabCount = false;

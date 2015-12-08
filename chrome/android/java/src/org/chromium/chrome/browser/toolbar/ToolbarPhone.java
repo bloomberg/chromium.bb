@@ -377,7 +377,7 @@ public class ToolbarPhone extends ToolbarLayout
         super.onNativeLibraryReady();
         getLocationBar().onNativeLibraryReady();
 
-        if (FeatureUtilities.isTabSwitchingEnabledInDocumentMode()) {
+        if (FeatureUtilities.isTabSwitchingEnabledInDocumentMode(getContext())) {
             // We might have hidden some buttons at onFinishInflate() because it was called
             // before native library is ready and chrome switch can be correctly read.
             // Now recover those buttons. Since we want to show toolbar even before native
