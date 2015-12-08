@@ -261,7 +261,13 @@ class HTMLFrameTest : public WindowServerTestBase {
   DISALLOW_COPY_AND_ASSIGN(HTMLFrameTest);
 };
 
-TEST_F(HTMLFrameTest, PageWithSingleFrame) {
+// Crashes on linux_chromium_rel_ng only. http://crbug.com/567337
+#if defined(OS_LINUX)
+#define MAYBE_PageWithSingleFrame DISABLED_PageWithSingleFrame
+#else
+#define MAYBE_PageWithSingleFrame PageWithSingleFrame
+#endif
+TEST_F(HTMLFrameTest, MAYBE_PageWithSingleFrame) {
   mus::Window* embed_window = window_manager()->NewWindow();
 
   FrameConnection* root_connection = InitFrameTree(
@@ -286,7 +292,13 @@ TEST_F(HTMLFrameTest, PageWithSingleFrame) {
 
 // Creates two frames. The parent navigates the child frame by way of changing
 // the location of the child frame.
-TEST_F(HTMLFrameTest, ChangeLocationOfChildFrame) {
+// Crashes on linux_chromium_rel_ng only. http://crbug.com/567337
+#if defined(OS_LINUX)
+#define MAYBE_ChangeLocationOfChildFrame DISABLED_ChangeLocationOfChildFrame
+#else
+#define MAYBE_ChangeLocationOfChildFrame ChangeLocationOfChildFrame
+#endif
+TEST_F(HTMLFrameTest, MAYBE_ChangeLocationOfChildFrame) {
   mus::Window* embed_window = window_manager()->NewWindow();
 
   ASSERT_TRUE(InitFrameTree(

@@ -454,7 +454,13 @@ TEST_F(FrameTest, RootFrameClientConnectData) {
 }
 
 // Verifies the FrameData supplied to a child FrameClient::OnConnect().
-TEST_F(FrameTest, ChildFrameClientConnectData) {
+// Crashes on linux_chromium_rel_ng only. http://crbug.com/567337
+#if defined(OS_LINUX)
+#define MAYBE_ChildFrameClientConnectData DISABLED_ChildFrameClientConnectData
+#else
+#define MAYBE_ChildFrameClientConnectData ChildFrameClientConnectData
+#endif
+TEST_F(FrameTest, MAYBE_ChildFrameClientConnectData) {
   scoped_ptr<WindowAndFrame> child_view_and_frame(
       CreateChildWindowAndFrame(root_window_and_frame()));
   ASSERT_TRUE(child_view_and_frame);
