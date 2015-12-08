@@ -2284,9 +2284,9 @@ LRESULT HWNDMessageHandler::HandleMouseEventInternal(UINT message,
       return 0;
   }
 
-  // Windows does not reliably set the touch flag on mouse moves and nc
-  // mouse moves. We also ignore mouse leaves as they are an artificially
-  // generated message in response to the TrackMouseEvents API.
+  // Windows does not reliably set the touch flag on mouse moves nc mouse
+  // moves/mouse wheel messages etc. We also ignore mouse leaves as they are
+  // artificially generated messages in response to the TrackMouseEvents API.
   // The code below is primarily for validation that we don't receive
   // other mouse messages while we are in a touch sequence.
   switch (message) {
@@ -2294,6 +2294,8 @@ LRESULT HWNDMessageHandler::HandleMouseEventInternal(UINT message,
     case WM_NCMOUSEMOVE:
     case WM_MOUSELEAVE:
     case WM_NCMOUSELEAVE:
+    case WM_MOUSEWHEEL:
+    case WM_MOUSEHWHEEL:
       break;
 
     default:
