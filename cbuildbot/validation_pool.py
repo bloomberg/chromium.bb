@@ -1302,8 +1302,13 @@ class ValidationPool(object):
       self.non_manifest_changes.extend(non_manifest_changes)
 
     # Filter out unwanted changes.
+    unfiltered_str = cros_patch.GetChangesAsString(self.changes)
     self.changes, self.non_manifest_changes = change_filter(
         self, self.changes, self.non_manifest_changes)
+    if self.changes:
+      filtered_str = cros_patch.GetChangesAsString(self.changes)
+      logging.info('Raw changes: %s', unfiltered_str)
+      logging.info('Filtered changes: %s', filtered_str)
 
     return self.changes or self.non_manifest_changes
 
@@ -1630,7 +1635,11 @@ class ValidationPool(object):
     fail_streak = self._GetFailStreak()
     test_pool_size = max(1, len(self.changes) / (2**fail_streak))
     random.shuffle(self.changes)
+    filtered = cros_patch.GetChangesAsString(self.changes[test_pool_size:])
+    logging.info('Skipped random changes for throttled tree: %s', filtered)
     self.changes = self.changes[:test_pool_size]
+    remaining = cros_patch.GetChangesAsString(self.changes)
+    logging.info('Remaining changes: %s', remaining)
 
   def ApplyPoolIntoRepo(self, manifest=None):
     """Applies changes from pool into the directory specified by the buildroot.
