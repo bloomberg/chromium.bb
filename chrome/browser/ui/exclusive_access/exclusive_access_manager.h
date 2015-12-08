@@ -16,6 +16,7 @@ class GURL;
 class MouseLockController;
 
 namespace content {
+struct NativeWebKeyboardEvent;
 class WebContents;
 }
 
@@ -56,8 +57,8 @@ class ExclusiveAccessManager {
   // Called by Browser::TabClosingAt.
   void OnTabClosing(content::WebContents* web_contents);
 
-  // Called by Browser::PreHandleKeyboardEvent
-  bool HandleUserPressedEscape();
+  // Called by Browser::PreHandleKeyboardEvent.
+  bool HandleUserKeyPress(const content::NativeWebKeyboardEvent& event);
 
   // Called by platform ExclusiveAccessExitBubble.
   void OnAcceptExclusiveAccessPermission();

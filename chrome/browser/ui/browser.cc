@@ -1238,12 +1238,12 @@ void Browser::SetFocusToLocationBar(bool select_all) {
 bool Browser::PreHandleKeyboardEvent(content::WebContents* source,
                                      const NativeWebKeyboardEvent& event,
                                      bool* is_keyboard_shortcut) {
-  // Escape exits tabbed fullscreen mode and mouse lock, and possibly others.
+  // Forward keyboard events to the manager for fullscreen / mouse lock. This
+  // may consume the event (e.g., Esc exits fullscreen mode).
   // TODO(koz): Write a test for this http://crbug.com/100441.
-  if (event.windowsKeyCode == 27 &&
-      exclusive_access_manager_->HandleUserPressedEscape()) {
+  if (exclusive_access_manager_->HandleUserKeyPress(event))
     return true;
-  }
+
   return window()->PreHandleKeyboardEvent(event, is_keyboard_shortcut);
 }
 

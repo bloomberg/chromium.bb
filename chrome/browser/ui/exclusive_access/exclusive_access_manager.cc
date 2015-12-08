@@ -12,6 +12,8 @@
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/exclusive_access/mouse_lock_controller.h"
 #include "chrome/common/chrome_switches.h"
+#include "content/public/browser/native_web_keyboard_event.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 
 using content::WebContents;
 
@@ -116,7 +118,13 @@ void ExclusiveAccessManager::OnTabClosing(WebContents* web_contents) {
   mouse_lock_controller_.OnTabClosing(web_contents);
 }
 
-bool ExclusiveAccessManager::HandleUserPressedEscape() {
+bool ExclusiveAccessManager::HandleUserKeyPress(
+    const content::NativeWebKeyboardEvent& event) {
+  if (event.windowsKeyCode != ui::VKEY_ESCAPE) {
+    exclusive_access_context_->OnExclusiveAccessUserInput();
+    return false;
+  }
+
   bool handled = false;
   handled = fullscreen_controller_.HandleUserPressedEscape();
   handled |= mouse_lock_controller_.HandleUserPressedEscape();

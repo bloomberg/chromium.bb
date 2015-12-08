@@ -11,8 +11,10 @@
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
+#include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_navigation_observer.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 
 using content::WebContents;
 
@@ -40,7 +42,9 @@ void FullscreenControllerTest::LostMouseLock() {
 }
 
 bool FullscreenControllerTest::SendEscapeToFullscreenController() {
-  return GetExclusiveAccessManager()->HandleUserPressedEscape();
+  content::NativeWebKeyboardEvent event;
+  event.windowsKeyCode = ui::VKEY_ESCAPE;
+  return GetExclusiveAccessManager()->HandleUserKeyPress(event);
 }
 
 bool FullscreenControllerTest::IsFullscreenForBrowser() {

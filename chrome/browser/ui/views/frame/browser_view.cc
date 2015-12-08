@@ -1027,6 +1027,11 @@ void BrowserView::UpdateExclusiveAccessExitBubbleContent(
   }
 }
 
+void BrowserView::OnExclusiveAccessUserInput() {
+  if (exclusive_access_bubble_.get())
+    exclusive_access_bubble_->OnUserInput();
+}
+
 bool BrowserView::ShouldHideUIForFullscreen() const {
   // Immersive mode needs UI for the slide-down top panel.
   if (immersive_mode_controller_->IsEnabled())

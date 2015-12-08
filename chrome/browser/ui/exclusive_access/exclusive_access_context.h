@@ -59,6 +59,10 @@ class ExclusiveAccessContext {
       const GURL& url,
       ExclusiveAccessBubbleType bubble_type) = 0;
 
+  // Informs the exclusive access system of some user input, which may update
+  // internal timers and/or re-display the bubble.
+  virtual void OnExclusiveAccessUserInput() = 0;
+
 #if defined(OS_WIN)
   // Sets state for entering or exiting Win8 Metro snap mode.
   virtual void SetMetroSnapMode(bool enable);

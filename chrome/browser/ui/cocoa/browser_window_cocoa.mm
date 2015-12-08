@@ -433,6 +433,10 @@ void BrowserWindowCocoa::UpdateExclusiveAccessExitBubbleContent(
   [controller_ updateFullscreenExitBubbleURL:url bubbleType:bubble_type];
 }
 
+void BrowserWindowCocoa::OnExclusiveAccessUserInput() {
+  // TODO(mgiuca): Route this signal to the exclusive access bubble on Mac.
+}
+
 bool BrowserWindowCocoa::ShouldHideUIForFullscreen() const {
   // On Mac, fullscreen mode has most normal things (in a slide-down panel).
   return false;
