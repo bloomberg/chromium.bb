@@ -770,6 +770,12 @@ def GetConfig():
           file_bugs=False),
   )
 
+  default_paladin_hw_tests_override = config_lib.BuildConfig(
+      hw_tests_override=HWTestList.DefaultListNonCanary(
+          num=constants.HWTEST_TRYBOT_NUM, pool=constants.HWTEST_TRYBOT_POOL,
+          file_bugs=False),
+  )
+
   # Arch-specific mixins.
 
   # Config parameters for builders that do not run tests on the builder.
@@ -838,7 +844,7 @@ def GetConfig():
 
   paladin = site_config.AddTemplate(
       'paladin',
-      default_hw_tests_override,
+      default_paladin_hw_tests_override,
       chroot_replace=False,
       important=True,
       build_type=constants.PALADIN_TYPE,
