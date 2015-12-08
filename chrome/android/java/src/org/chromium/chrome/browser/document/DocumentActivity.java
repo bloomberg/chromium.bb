@@ -113,6 +113,7 @@ public class DocumentActivity extends ChromeActivity {
 
         @Override
         public void onFaviconUpdated(Tab tab, Bitmap icon) {
+            if (icon == null) return;
             if (mLargestFavicon == null || icon.getWidth() > mLargestFavicon.getWidth()
                     || icon.getHeight() > mLargestFavicon.getHeight()) {
                 mLargestFavicon = icon;
@@ -145,6 +146,7 @@ public class DocumentActivity extends ChromeActivity {
                 int statusCode) {
             if (!isNavigationToDifferentPage) return;
             mLargestFavicon = null;
+            updateTaskDescription();
         }
 
         @Override
