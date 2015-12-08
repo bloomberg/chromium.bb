@@ -52,11 +52,16 @@ const char kGnomeAPIServiceName[] = "org.gnome.SessionManager";
 const char kGnomeAPIInterfaceName[] = "org.gnome.SessionManager";
 const char kGnomeAPIObjectPath[] = "/org/gnome/SessionManager";
 
-const char kFreeDesktopAPIServiceName[] = "org.freedesktop.PowerManagement";
-const char kFreeDesktopAPIInterfaceName[] =
+const char kFreeDesktopAPIPowerServiceName[] =
+    "org.freedesktop.PowerManagement";
+const char kFreeDesktopAPIPowerInterfaceName[] =
     "org.freedesktop.PowerManagement.Inhibit";
-const char kFreeDesktopAPIObjectPath[] =
+const char kFreeDesktopAPIPowerObjectPath[] =
     "/org/freedesktop/PowerManagement/Inhibit";
+
+const char kFreeDesktopAPIScreenServiceName[] = "org.freedesktop.ScreenSaver";
+const char kFreeDesktopAPIScreenInterfaceName[] = "org.freedesktop.ScreenSaver";
+const char kFreeDesktopAPIScreenObjectPath[] = "/org/freedesktop/ScreenSaver";
 
 }  // namespace
 
@@ -66,7 +71,9 @@ class PowerSaveBlockerImpl::Delegate
     : public base::RefCountedThreadSafe<PowerSaveBlockerImpl::Delegate> {
  public:
   // Picks an appropriate D-Bus API to use based on the desktop environment.
-  Delegate(PowerSaveBlockerType type, const std::string& description);
+  Delegate(PowerSaveBlockerType type,
+           const std::string& description,
+           bool freedesktop_only);
 
   // Post a task to initialize the delegate on the UI thread, which will itself
   // then post a task to apply the power save block on the FILE thread.
@@ -85,6 +92,9 @@ class PowerSaveBlockerImpl::Delegate
   // enqueues a call back to ApplyBlock() if it is true. See the comments for
   // enqueue_apply_ below.
   void InitOnUIThread();
+
+  // Returns true if ApplyBlock() / RemoveBlock() should be called.
+  bool ShouldBlock() const;
 
   // Apply or remove the power save block, respectively. These methods should be
   // called once each, on the same thread, per instance. They block waiting for
@@ -109,6 +119,7 @@ class PowerSaveBlockerImpl::Delegate
 
   const PowerSaveBlockerType type_;
   const std::string description_;
+  const bool freedesktop_only_;
 
   // Initially, we post a message to the UI thread to select an API. When it
   // finishes, it will post a message to the FILE thread to perform the actual
@@ -138,9 +149,11 @@ class PowerSaveBlockerImpl::Delegate
 };
 
 PowerSaveBlockerImpl::Delegate::Delegate(PowerSaveBlockerType type,
-                                         const std::string& description)
+                                         const std::string& description,
+                                         bool freedesktop_only)
     : type_(type),
       description_(description),
+      freedesktop_only_(freedesktop_only),
       api_(NO_API),
       enqueue_apply_(false),
       inhibit_cookie_(0) {
@@ -166,7 +179,7 @@ void PowerSaveBlockerImpl::Delegate::CleanUp() {
     // initializing on the UI thread, then just cancel it. We don't need to
     // remove the block because we haven't even applied it yet.
     enqueue_apply_ = false;
-  } else if (api_ != NO_API) {
+  } else if (ShouldBlock()) {
     BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
                             base::Bind(&Delegate::RemoveBlock, this));
   }
@@ -176,7 +189,7 @@ void PowerSaveBlockerImpl::Delegate::InitOnUIThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::AutoLock lock(lock_);
   api_ = SelectAPI();
-  if (enqueue_apply_ && api_ != NO_API) {
+  if (enqueue_apply_ && ShouldBlock()) {
     // The thread we use here becomes the origin and D-Bus thread for the D-Bus
     // library, so we need to use the same thread above for RemoveBlock(). It
     // must be a thread that allows I/O operations, so we use the FILE thread.
@@ -184,6 +197,10 @@ void PowerSaveBlockerImpl::Delegate::InitOnUIThread() {
                             base::Bind(&Delegate::ApplyBlock, this));
   }
   enqueue_apply_ = false;
+}
+
+bool PowerSaveBlockerImpl::Delegate::ShouldBlock() const {
+  return freedesktop_only_ ? api_ == FREEDESKTOP_API : api_ != NO_API;
 }
 
 void PowerSaveBlockerImpl::Delegate::ApplyBlock() {
@@ -235,11 +252,22 @@ void PowerSaveBlockerImpl::Delegate::ApplyBlock() {
       }
       break;
     case FREEDESKTOP_API:
-      object_proxy = bus_->GetObjectProxy(
-          kFreeDesktopAPIServiceName,
-          dbus::ObjectPath(kFreeDesktopAPIObjectPath));
-      method_call.reset(
-          new dbus::MethodCall(kFreeDesktopAPIInterfaceName, "Inhibit"));
+      switch (type_) {
+        case kPowerSaveBlockPreventDisplaySleep:
+          object_proxy = bus_->GetObjectProxy(
+              kFreeDesktopAPIScreenServiceName,
+              dbus::ObjectPath(kFreeDesktopAPIScreenObjectPath));
+          method_call.reset(new dbus::MethodCall(
+              kFreeDesktopAPIScreenInterfaceName, "Inhibit"));
+          break;
+        case kPowerSaveBlockPreventAppSuspension:
+          object_proxy = bus_->GetObjectProxy(
+              kFreeDesktopAPIPowerServiceName,
+              dbus::ObjectPath(kFreeDesktopAPIPowerObjectPath));
+          method_call.reset(new dbus::MethodCall(
+              kFreeDesktopAPIPowerInterfaceName, "Inhibit"));
+          break;
+      }
       message_writer.reset(new dbus::MessageWriter(method_call.get()));
       // The arguments of the method are:
       //     app_id:        The application identifier
@@ -311,11 +339,22 @@ void PowerSaveBlockerImpl::Delegate::RemoveBlock() {
           new dbus::MethodCall(kGnomeAPIInterfaceName, "Uninhibit"));
       break;
     case FREEDESKTOP_API:
-      object_proxy = bus_->GetObjectProxy(
-          kFreeDesktopAPIServiceName,
-          dbus::ObjectPath(kFreeDesktopAPIObjectPath));
-      method_call.reset(
-          new dbus::MethodCall(kFreeDesktopAPIInterfaceName, "UnInhibit"));
+      switch (type_) {
+        case kPowerSaveBlockPreventDisplaySleep:
+          object_proxy = bus_->GetObjectProxy(
+              kFreeDesktopAPIScreenServiceName,
+              dbus::ObjectPath(kFreeDesktopAPIScreenObjectPath));
+          method_call.reset(new dbus::MethodCall(
+              kFreeDesktopAPIScreenInterfaceName, "UnInhibit"));
+          break;
+        case kPowerSaveBlockPreventAppSuspension:
+          object_proxy = bus_->GetObjectProxy(
+              kFreeDesktopAPIPowerServiceName,
+              dbus::ObjectPath(kFreeDesktopAPIPowerObjectPath));
+          method_call.reset(new dbus::MethodCall(
+              kFreeDesktopAPIPowerInterfaceName, "UnInhibit"));
+          break;
+      }
       break;
   }
 
@@ -383,12 +422,21 @@ DBusAPI PowerSaveBlockerImpl::Delegate::SelectAPI() {
 PowerSaveBlockerImpl::PowerSaveBlockerImpl(PowerSaveBlockerType type,
                                            Reason reason,
                                            const std::string& description)
-    : delegate_(new Delegate(type, description)) {
+    : delegate_(new Delegate(type, description, false /* freedesktop_only */)) {
   delegate_->Init();
+
+  if (type == kPowerSaveBlockPreventDisplaySleep) {
+    freedesktop_suspend_delegate_ =
+        new Delegate(kPowerSaveBlockPreventAppSuspension, description,
+                     true /* freedesktop_only */);
+    freedesktop_suspend_delegate_->Init();
+  }
 }
 
 PowerSaveBlockerImpl::~PowerSaveBlockerImpl() {
   delegate_->CleanUp();
+  if (freedesktop_suspend_delegate_)
+    freedesktop_suspend_delegate_->CleanUp();
 }
 
 }  // namespace content
