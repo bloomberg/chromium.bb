@@ -9,6 +9,14 @@
       "chrome_public_apk"
     ]
   },
+  "Linux Builder": {
+    "additional_compile_targets": [
+      "browser_tests",
+      "chromium_builder_webrtc",
+      "content_browsertests",
+      "content_unittests"
+    ]
+  },
   "Linux GN": {
     "additional_compile_targets": [
       "accessibility_unittests",
@@ -111,6 +119,17 @@
       "wm_unittests"
     ]
   },
+  "Linux Tester": {
+    "gtest_tests": []
+  },
+  "Mac Builder": {
+    "additional_compile_targets": [
+      "browser_tests",
+      "chromium_builder_webrtc",
+      "content_browsertests",
+      "content_unittests"
+    ]
+  },
   "Mac GN": {
     "additional_compile_targets": [
       "accessibility_unittests",
@@ -171,6 +190,17 @@
       "sync_unit_tests",
       "ui_base_unittests",
       "url_unittests"
+    ]
+  },
+  "Mac Tester": {
+    "gtest_tests": []
+  },
+  "Win Builder": {
+    "additional_compile_targets": [
+      "browser_tests",
+      "chromium_builder_webrtc",
+      "content_browsertests",
+      "content_unittests"
     ]
   },
   "Win x64 GN": {
@@ -278,5 +308,14 @@
       "views_unittests",
       "wm_unittests"
     ]
+  },
+  "Win10 Tester": {
+    "gtest_tests": []
+  },
+  "Win7 Tester": {
+    "gtest_tests": []
+  },
+  "WinXP Tester": {
+    "gtest_tests": []
   }
 }
