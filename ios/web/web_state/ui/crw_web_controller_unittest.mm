@@ -877,8 +877,6 @@ WEB_TEST_F(CRWUIWebViewWebControllerTest,
   }
 }
 
-// This test requires iOS net stack.
-#if !defined(ENABLE_CHROME_NET_STACK_FOR_WKWEBVIEW)
 // Tests that presentSSLError:forSSLStatus:recoverable:callback: is called with
 // correct arguments if WKWebView fails to load a page with bad SSL cert.
 TEST_F(CRWWKWebViewWebControllerTest, SSLCertError) {
@@ -910,7 +908,6 @@ TEST_F(CRWWKWebViewWebControllerTest, SSLCertError) {
   EXPECT_FALSE([mockDelegate_ recoverable]);
   EXPECT_TRUE([mockDelegate_ shouldContinueCallback]);
 }
-#endif  // !defined(ENABLE_CHROME_NET_STACK_FOR_WKWEBVIEW)
 
 // None of the |CRWUIWebViewWebControllerTest| setup is needed;
 typedef web::WebTestWithUIWebViewWebController
