@@ -301,10 +301,12 @@ void ChromePasswordManagerClient::AutomaticPasswordSave(
 void ChromePasswordManagerClient::PasswordWasAutofilled(
     const autofill::PasswordFormMap& best_matches,
     const GURL& origin) const {
+#if !defined(OS_ANDROID)
   PasswordsClientUIDelegate* manage_passwords_ui_controller =
       PasswordsClientUIDelegateFromWebContents(web_contents());
   if (manage_passwords_ui_controller && IsTheHotNewBubbleUIEnabled())
     manage_passwords_ui_controller->OnPasswordAutofilled(best_matches, origin);
+#endif
 }
 
 void ChromePasswordManagerClient::HidePasswordGenerationPopup() {
