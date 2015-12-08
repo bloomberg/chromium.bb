@@ -93,6 +93,10 @@ class WindowTreeHostImpl : public DisplayManagerDelegate,
                             const ui::TextInputState& state);
   void SetImeVisibility(ServerWindow* window, bool visible);
 
+  // Called just before |tree| is destroyed after its connection encounters an
+  // error.
+  void OnWindowTreeConnectionError(WindowTreeImpl* tree);
+
   // Called when a client updates a cursor. This will update the cursor on the
   // native display if the cursor is currently under |window|.
   void OnCursorUpdated(ServerWindow* window);

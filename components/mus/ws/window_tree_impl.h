@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_MUS_WS_WINDOW_TREE_IMPL_H_
 #define COMPONENTS_MUS_WS_WINDOW_TREE_IMPL_H_
 
-#include <set>
+#include <queue>
 #include <string>
 #include <vector>
 
@@ -30,6 +30,7 @@ namespace ws {
 class AccessPolicy;
 class ConnectionManager;
 class ServerWindow;
+class TargetedEvent;
 class WindowTreeHostImpl;
 
 // An instance of WindowTreeImpl is created for every WindowTree request.
@@ -191,6 +192,8 @@ class WindowTreeImpl : public mojom::WindowTree, public AccessPolicyDelegate {
   void PrepareForEmbed(const WindowId& window_id);
   void RemoveChildrenAsPartOfEmbed(const WindowId& window_id);
 
+  void DispatchInputEventImpl(ServerWindow* target, mojom::EventPtr event);
+
   // Calls OnChangeCompleted() on the client.
   void NotifyChangeCompleted(uint32_t change_id,
                              mojom::WindowManagerErrorCode error_code);
@@ -284,6 +287,8 @@ class WindowTreeImpl : public mojom::WindowTree, public AccessPolicyDelegate {
 
   uint32_t event_ack_id_;
   bool is_embed_root_;
+
+  std::queue<scoped_ptr<TargetedEvent>> event_queue_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeImpl);
 };

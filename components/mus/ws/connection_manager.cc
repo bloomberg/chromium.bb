@@ -96,6 +96,11 @@ void ConnectionManager::OnConnectionError(ClientConnection* connection) {
   for (auto& pair : connection_map_)
     pair.second->service()->OnWillDestroyWindowTreeImpl(connection->service());
 
+  // Notify the host.
+  WindowTreeHostImpl* host = GetWindowTreeHostByWindow(window);
+  if (host)
+    host->OnWindowTreeConnectionError(connection->service());
+
   // Remove any requests from the client that resulted in a call to the window
   // manager and we haven't gotten a response back yet.
   std::set<uint32_t> to_remove;

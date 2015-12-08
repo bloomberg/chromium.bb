@@ -11,6 +11,7 @@
 #include "components/mus/ws/display_manager.h"
 #include "components/mus/ws/operation.h"
 #include "components/mus/ws/server_window.h"
+#include "components/mus/ws/server_window_observer.h"
 #include "components/mus/ws/window_manager_access_policy.h"
 #include "components/mus/ws/window_tree_host_impl.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
@@ -28,6 +29,34 @@ using mojo::String;
 namespace mus {
 
 namespace ws {
+
+class TargetedEvent : public ServerWindowObserver {
+ public:
+  TargetedEvent(ServerWindow* target, mojom::EventPtr event)
+      : target_(target), event_(std::move(event)) {
+    target_->AddObserver(this);
+  }
+  ~TargetedEvent() override {
+    if (target_)
+      target_->RemoveObserver(this);
+  }
+
+  ServerWindow* target() { return target_; }
+  mojom::EventPtr event() { return std::move(event_); }
+
+ private:
+  // ServerWindowObserver:
+  void OnWindowDestroyed(ServerWindow* window) override {
+    DCHECK_EQ(target_, window);
+    target_->RemoveObserver(this);
+    target_ = nullptr;
+  }
+
+  ServerWindow* target_;
+  mojom::EventPtr event_;
+
+  DISALLOW_COPY_AND_ASSIGN(TargetedEvent);
+};
 
 WindowTreeImpl::WindowTreeImpl(ConnectionManager* connection_manager,
                                ConnectionSpecificId creator_id,
@@ -198,14 +227,25 @@ bool WindowTreeImpl::Embed(const WindowId& window_id,
 
 void WindowTreeImpl::DispatchInputEvent(ServerWindow* target,
                                         mojom::EventPtr event) {
-  DCHECK_EQ(0u, event_ack_id_);
-  // We do not want to create a sequential id for each event, because that can
-  // leak some information to the client. So instead, manufacture the id from
-  // the event pointer.
-  event_ack_id_ =
-      0x1000000 | (reinterpret_cast<uintptr_t>(event.get()) & 0xffffff);
-  client()->OnWindowInputEvent(
-      event_ack_id_, WindowIdToTransportId(target->id()), event.Pass());
+  if (event_ack_id_) {
+    // This is currently waiting for an event ack. Add it to the queue.
+    event_queue_.push(
+        make_scoped_ptr(new TargetedEvent(target, std::move(event))));
+    // TODO(sad): If the |event_queue_| grows too large, then this should notify
+    // WindowTreeHostImpl, so that it can stop sending events.
+    return;
+  }
+
+  // If there are events in the queue, then store this new event in the queue,
+  // and dispatch the latest event from the queue instead that still has a live
+  // target.
+  if (!event_queue_.empty()) {
+    event_queue_.push(
+        make_scoped_ptr(new TargetedEvent(target, std::move(event))));
+    return;
+  }
+
+  DispatchInputEventImpl(target, std::move(event));
 }
 
 void WindowTreeImpl::ProcessWindowBoundsChanged(const ServerWindow* window,
@@ -629,6 +669,18 @@ void WindowTreeImpl::RemoveChildrenAsPartOfEmbed(const WindowId& window_id) {
     window->Remove(children[i]);
 }
 
+void WindowTreeImpl::DispatchInputEventImpl(ServerWindow* target,
+                                            mojom::EventPtr event) {
+  DCHECK(!event_ack_id_);
+  // We do not want to create a sequential id for each event, because that can
+  // leak some information to the client. So instead, manufacture the id from
+  // the event pointer.
+  event_ack_id_ =
+      0x1000000 | (reinterpret_cast<uintptr_t>(event.get()) & 0xffffff);
+  client()->OnWindowInputEvent(
+      event_ack_id_, WindowIdToTransportId(target->id()), event.Pass());
+}
+
 void WindowTreeImpl::NewWindow(
     uint32_t change_id,
     Id transport_window_id,
@@ -824,6 +876,21 @@ void WindowTreeImpl::OnWindowInputEventAck(uint32_t event_id) {
   }
   event_ack_id_ = 0;
   GetHost()->OnEventAck(this);
+
+  if (!event_queue_.empty()) {
+    DCHECK(!event_ack_id_);
+    ServerWindow* target = nullptr;
+    mojom::EventPtr event;
+    do {
+      scoped_ptr<TargetedEvent> targeted_event =
+          std::move(event_queue_.front());
+      event_queue_.pop();
+      target = targeted_event->target();
+      event = targeted_event->event();
+    } while (!event_queue_.empty() && !target);
+    if (target)
+      DispatchInputEventImpl(target, std::move(event));
+  }
 }
 
 void WindowTreeImpl::SetClientArea(

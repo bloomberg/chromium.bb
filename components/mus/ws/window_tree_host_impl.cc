@@ -133,6 +133,13 @@ void WindowTreeHostImpl::SetImeVisibility(ServerWindow* window, bool visible) {
   display_manager_->SetImeVisibility(visible);
 }
 
+void WindowTreeHostImpl::OnWindowTreeConnectionError(WindowTreeImpl* tree) {
+  if (tree_awaiting_input_ack_ != tree)
+    return;
+  // The WindowTree is dying. So it's not going to ack the event.
+  OnEventAck(tree_awaiting_input_ack_);
+}
+
 void WindowTreeHostImpl::OnCursorUpdated(ServerWindow* window) {
   if (window == event_dispatcher_.mouse_cursor_source_window())
     UpdateNativeCursor(window->cursor());
