@@ -37,6 +37,23 @@
       ],
     },
     {
+      # GN version: //components/offline_pages:test_support
+      'target_name': 'offline_pages_test_support',
+      'type': 'static_library',
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../testing/gtest.gyp:gtest',
+        '../url/url.gyp:url_lib',
+        'offline_pages',
+      ],
+      'sources': [
+        'offline_pages/offline_page_test_archiver.h',
+        'offline_pages/offline_page_test_archiver.cc',
+        'offline_pages/offline_page_test_store.h',
+        'offline_pages/offline_page_test_store.cc',
+      ],
+    },
+    {
       # Protobuf compiler / generator for the offline page item protocol buffer.
       # GN version: //components/offline_pages/proto
       'target_name': 'offline_pages_proto',

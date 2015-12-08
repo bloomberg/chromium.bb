@@ -1026,6 +1026,7 @@
         'components.gyp:network_time',
         'components.gyp:ntp_snippets',
         'components.gyp:offline_pages',
+        'components.gyp:offline_pages_test_support',
         'components.gyp:omnibox_browser',
         'components.gyp:omnibox_test_support',
         'components.gyp:open_from_clipboard',

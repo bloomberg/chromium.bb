@@ -12,12 +12,11 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "base/strings/string16.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/offline_pages/offline_page_item.h"
-#include "components/offline_pages/offline_page_metadata_store.h"
+#include "components/offline_pages/offline_page_test_archiver.h"
+#include "components/offline_pages/offline_page_test_store.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -36,158 +35,12 @@ const int64 kTestPageBookmarkId2 = 5678LL;
 const int64 kTestPageBookmarkId3 = 42LL;
 const int64 kTestFileSize = 876543LL;
 
-class OfflinePageTestStore : public OfflinePageMetadataStore {
- public:
-  enum class TestScenario {
-    SUCCESSFUL,
-    WRITE_FAILED,
-    LOAD_FAILED,
-    REMOVE_FAILED,
-  };
-
-  explicit OfflinePageTestStore(
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
-  explicit OfflinePageTestStore(const OfflinePageTestStore& other_store);
-  ~OfflinePageTestStore() override;
-
-  // OfflinePageMetadataStore overrides:
-  void Load(const LoadCallback& callback) override;
-  void AddOrUpdateOfflinePage(const OfflinePageItem& offline_page,
-                              const UpdateCallback& callback) override;
-  void RemoveOfflinePages(const std::vector<int64>& bookmark_ids,
-                          const UpdateCallback& callback) override;
-  void Reset(const ResetCallback& callback) override;
-
-  void UpdateLastAccessTime(int64 bookmark_id,
-                            const base::Time& last_access_time);
-
-  const OfflinePageItem& last_saved_page() const { return last_saved_page_; }
-
-  void set_test_scenario(TestScenario scenario) { scenario_ = scenario; };
-
-  const std::vector<OfflinePageItem>& offline_pages() const {
-    return offline_pages_;
-  }
-
- private:
-  OfflinePageItem last_saved_page_;
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  TestScenario scenario_;
-
-  std::vector<OfflinePageItem> offline_pages_;
-
-  DISALLOW_ASSIGN(OfflinePageTestStore);
-};
-
-OfflinePageTestStore::OfflinePageTestStore(
-    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
-    : task_runner_(task_runner),
-      scenario_(TestScenario::SUCCESSFUL) {
-}
-
-OfflinePageTestStore::OfflinePageTestStore(
-    const OfflinePageTestStore& other_store)
-    : task_runner_(other_store.task_runner_),
-      scenario_(other_store.scenario_),
-      offline_pages_(other_store.offline_pages_) {}
-
-OfflinePageTestStore::~OfflinePageTestStore() {
-}
-
-void OfflinePageTestStore::Load(const LoadCallback& callback) {
-  OfflinePageMetadataStore::LoadStatus load_status;
-  if (scenario_ != TestScenario::LOAD_FAILED) {
-    load_status = OfflinePageMetadataStore::LOAD_SUCCEEDED;
-  } else {
-    load_status = OfflinePageMetadataStore::STORE_LOAD_FAILED;
-    offline_pages_.clear();
-  }
-  task_runner_->PostTask(
-      FROM_HERE, base::Bind(callback, load_status, offline_pages_));
-}
-
-void OfflinePageTestStore::AddOrUpdateOfflinePage(
-    const OfflinePageItem& offline_page, const UpdateCallback& callback) {
-  last_saved_page_ = offline_page;
-  bool result = scenario_ != TestScenario::WRITE_FAILED;
-  if (result) {
-    offline_pages_.push_back(offline_page);
-  }
-  task_runner_->PostTask(FROM_HERE, base::Bind(callback, result));
-}
-
-void OfflinePageTestStore::RemoveOfflinePages(
-    const std::vector<int64>& bookmark_ids,
-    const UpdateCallback& callback) {
-  ASSERT_FALSE(bookmark_ids.empty());
-  bool result = false;
-  if (scenario_ != TestScenario::REMOVE_FAILED) {
-    for (auto iter = offline_pages_.begin();
-         iter != offline_pages_.end(); ++iter) {
-      if (iter->bookmark_id == bookmark_ids[0]) {
-        offline_pages_.erase(iter);
-        result = true;
-        break;
-      }
-    }
-  }
-
-  task_runner_->PostTask(FROM_HERE, base::Bind(callback, result));
-}
-
-void OfflinePageTestStore::Reset(const ResetCallback& callback) {
-  offline_pages_.clear();
-  task_runner_->PostTask(FROM_HERE, base::Bind(callback, true));
-}
-
-void OfflinePageTestStore:: UpdateLastAccessTime(
-    int64 bookmark_id, const base::Time& last_access_time) {
-  for (auto& offline_page : offline_pages_) {
-    if (offline_page.bookmark_id == bookmark_id) {
-      offline_page.last_access_time = last_access_time;
-      return;
-    }
-  }
-}
-
 }  // namespace
-
-class OfflinePageModelTest;
-
-class OfflinePageTestArchiver : public OfflinePageArchiver {
- public:
-  OfflinePageTestArchiver(
-      OfflinePageModelTest* test,
-      const GURL& url,
-      ArchiverResult result,
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
-  ~OfflinePageTestArchiver() override;
-
-  // OfflinePageArchiver implementation:
-  void CreateArchive(const base::FilePath& archives_dir,
-                     const CreateArchiveCallback& callback) override;
-
-  void CompleteCreateArchive();
-
-  void set_delayed(bool delayed) { delayed_ = delayed; }
-
-  bool create_archive_called() const { return create_archive_called_; }
-
- private:
-  OfflinePageModelTest* test_;  // Outlive OfflinePageTestArchiver.
-  GURL url_;
-  base::FilePath archives_dir_;
-  ArchiverResult result_;
-  bool create_archive_called_;
-  bool delayed_;
-  CreateArchiveCallback callback_;
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  DISALLOW_COPY_AND_ASSIGN(OfflinePageTestArchiver);
-};
 
 class OfflinePageModelTest
     : public testing::Test,
       public OfflinePageModel::Observer,
+      public OfflinePageTestArchiver::Observer,
       public base::SupportsWeakPtr<OfflinePageModelTest> {
  public:
   OfflinePageModelTest();
@@ -200,6 +53,9 @@ class OfflinePageModelTest
   void OfflinePageModelLoaded(OfflinePageModel* model) override;
   void OfflinePageModelChanged(OfflinePageModel* model) override;
   void OfflinePageDeleted(int64 bookmark_id) override;
+
+  // OfflinePageTestArchiver::Observer implementation.
+  void SetLastPathCreatedByArchiver(const base::FilePath& file_path) override;
 
   // OfflinePageModel callbacks.
   void OnSavePageDone(SavePageResult result);
@@ -242,9 +98,6 @@ class OfflinePageModelTest
   }
 
   const base::FilePath& last_archiver_path() { return last_archiver_path_; }
-  void set_last_archiver_path(const base::FilePath& last_archiver_path) {
-    last_archiver_path_ = last_archiver_path;
-  }
 
  private:
   base::MessageLoop message_loop_;
@@ -256,42 +109,6 @@ class OfflinePageModelTest
   base::FilePath last_archiver_path_;
   int64 last_deleted_bookmark_id_;
 };
-
-OfflinePageTestArchiver::OfflinePageTestArchiver(
-    OfflinePageModelTest* test,
-    const GURL& url,
-    ArchiverResult result,
-    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
-    : test_(test),
-      url_(url),
-      result_(result),
-      create_archive_called_(false),
-      delayed_(false),
-      task_runner_(task_runner) {
-}
-
-OfflinePageTestArchiver::~OfflinePageTestArchiver() {
-  EXPECT_TRUE(create_archive_called_);
-}
-
-void OfflinePageTestArchiver::CreateArchive(
-    const base::FilePath& archives_dir,
-    const CreateArchiveCallback& callback) {
-  create_archive_called_ = true;
-  callback_ = callback;
-  archives_dir_ = archives_dir;
-  if (!delayed_)
-    CompleteCreateArchive();
-}
-
-void OfflinePageTestArchiver::CompleteCreateArchive() {
-  DCHECK(!callback_.is_null());
-  base::FilePath archive_path;
-  ASSERT_TRUE(base::CreateTemporaryFileInDir(archives_dir_, &archive_path));
-  test_->set_last_archiver_path(archive_path);
-  task_runner_->PostTask(FROM_HERE, base::Bind(callback_, this, result_, url_,
-                                               archive_path, kTestFileSize));
-}
 
 OfflinePageModelTest::OfflinePageModelTest()
     : last_save_result_(SavePageResult::CANCELLED),
@@ -326,6 +143,11 @@ void OfflinePageModelTest::OfflinePageDeleted(int64 bookmark_id) {
   last_deleted_bookmark_id_ = bookmark_id;
 }
 
+void OfflinePageModelTest::SetLastPathCreatedByArchiver(
+    const base::FilePath& file_path) {
+  last_archiver_path_ = file_path;
+}
+
 void OfflinePageModelTest::OnSavePageDone(
     OfflinePageModel::SavePageResult result) {
   last_save_result_ = result;
@@ -345,8 +167,8 @@ void OfflinePageModelTest::OnStoreUpdateDone(bool /* success - ignored */) {
 scoped_ptr<OfflinePageTestArchiver> OfflinePageModelTest::BuildArchiver(
     const GURL& url,
     OfflinePageArchiver::ArchiverResult result) {
-  return scoped_ptr<OfflinePageTestArchiver>(
-      new OfflinePageTestArchiver(this, url, result, task_runner()));
+  return scoped_ptr<OfflinePageTestArchiver>(new OfflinePageTestArchiver(
+      this, url, result, kTestFileSize, task_runner()));
 }
 
 scoped_ptr<OfflinePageMetadataStore> OfflinePageModelTest::BuildStore() {
