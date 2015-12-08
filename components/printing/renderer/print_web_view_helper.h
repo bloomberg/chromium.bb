@@ -309,6 +309,12 @@ class PrintWebViewHelper
       double* scale_factor,
       PageSizeMargins* page_layout_in_points);
 
+  // Return an array of pages to print given the print |params| and an expected
+  // |page_count|. Page numbers are zero-based.
+  static std::vector<int> GetPrintedPages(
+      const PrintMsg_PrintPages_Params& params,
+      int page_count);
+
 #if defined(ENABLE_PRINT_PREVIEW)
   // Given the |device| and |canvas| to draw on, prints the appropriate headers
   // and footers using strings from |header_footer_info| on to the canvas.

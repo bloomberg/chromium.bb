@@ -1411,32 +1411,6 @@ void PrintWebViewHelper::FinishFramePrinting() {
   prep_frame_view_.reset();
 }
 
-#if defined(OS_MACOSX)
-bool PrintWebViewHelper::PrintPagesNative(blink::WebFrame* frame,
-                                          int page_count) {
-  const PrintMsg_PrintPages_Params& params = *print_pages_params_;
-  const PrintMsg_Print_Params& print_params = params.params;
-
-  PrintMsg_PrintPage_Params page_params;
-  page_params.params = print_params;
-  if (params.pages.empty()) {
-    for (int i = 0; i < page_count; ++i) {
-      page_params.page_number = i;
-      PrintPageInternal(page_params, frame);
-    }
-  } else {
-    for (size_t i = 0; i < params.pages.size(); ++i) {
-      if (params.pages[i] >= page_count)
-        break;
-      page_params.page_number = params.pages[i];
-      PrintPageInternal(page_params, frame);
-    }
-  }
-  return true;
-}
-
-#endif  // OS_MACOSX
-
 // static - Not anonymous so that platform implementations can use it.
 void PrintWebViewHelper::ComputePageLayoutInPointsForCss(
     blink::WebFrame* frame,
@@ -1451,6 +1425,25 @@ void PrintWebViewHelper::ComputePageLayoutInPointsForCss(
           blink::WebPrintScalingOptionFitToPrintableArea,
       scale_factor);
   CalculatePageLayoutFromPrintParams(params, page_layout_in_points);
+}
+
+// static - Not anonymous so that platform implementations can use it.
+std::vector<int> PrintWebViewHelper::GetPrintedPages(
+    const PrintMsg_PrintPages_Params& params,
+    int page_count) {
+  std::vector<int> printed_pages;
+  if (params.pages.empty()) {
+    for (int i = 0; i < page_count; ++i) {
+      printed_pages.push_back(i);
+    }
+  } else {
+    for (int page : params.pages) {
+      if (page >= 0 && page < page_count) {
+        printed_pages.push_back(page);
+      }
+    }
+  }
+  return printed_pages;
 }
 
 bool PrintWebViewHelper::InitPrintSettings(bool fit_to_paper_size) {

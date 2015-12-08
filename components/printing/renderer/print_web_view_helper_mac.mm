@@ -20,6 +20,24 @@ namespace printing {
 
 using blink::WebFrame;
 
+bool PrintWebViewHelper::PrintPagesNative(blink::WebFrame* frame,
+                                          int page_count) {
+  const PrintMsg_PrintPages_Params& params = *print_pages_params_;
+  const PrintMsg_Print_Params& print_params = params.params;
+
+  std::vector<int> printed_pages = GetPrintedPages(params, page_count);
+  if (printed_pages.empty())
+    return false;
+
+  PrintMsg_PrintPage_Params page_params;
+  page_params.params = print_params;
+  for (int page_number : printed_pages) {
+    page_params.page_number = page_number;
+    PrintPageInternal(page_params, frame);
+  }
+  return true;
+}
+
 void PrintWebViewHelper::PrintPageInternal(
     const PrintMsg_PrintPage_Params& params,
     WebFrame* frame) {
