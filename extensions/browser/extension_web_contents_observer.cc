@@ -197,7 +197,11 @@ void ExtensionWebContentsObserver::PepperInstanceDeleted() {
 
 std::string ExtensionWebContentsObserver::GetExtensionIdFromFrame(
     content::RenderFrameHost* render_frame_host) const {
-  const Extension* extension = GetExtensionFromFrame(render_frame_host, true);
+  // The second argument is false because |render_frame_host| need not be an
+  // active RenderFrameHost (crbug.com/567277).
+  // TODO(robwu): If there is a method to check whether |render_frame_host| is
+  // an active host, use it.
+  const Extension* extension = GetExtensionFromFrame(render_frame_host, false);
   return extension ? extension->id() : std::string();
 }
 
