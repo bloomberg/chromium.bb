@@ -153,6 +153,11 @@ void MidiManager::AccumulateMidiBytesSent(MidiManagerClient* client, size_t n) {
   if (clients_.find(client) == clients_.end())
     return;
 
+  // Continue to hold lock_ here in case another thread is currently doing
+  // EndSession.
+  // Note that if we are in EndSession, then a destructor is being called and
+  // it isn't really safe to call this method. But we don't have another way to
+  // check this right now.
   client->AccumulateMidiBytesSent(n);
 }
 
