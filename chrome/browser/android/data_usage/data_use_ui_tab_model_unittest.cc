@@ -56,6 +56,13 @@ class DataUseUITabModelTest : public testing::Test {
     return data_use_tab_model_.get();
   }
 
+  void FetchMatchingRulesDone(const std::vector<std::string>& app_package_name,
+                              const std::vector<std::string>& domain_path_regex,
+                              const std::vector<std::string>& label) {
+    external_data_use_observer_->FetchMatchingRulesDone(
+        &app_package_name, &domain_path_regex, &label);
+  }
+
  protected:
   void SetUp() override {
     thread_bundle_.reset(new content::TestBrowserThreadBundle(
@@ -104,7 +111,7 @@ TEST_F(DataUseUITabModelTest, ReportTabEventsTest) {
   std::vector<std::string> url_regexes;
   url_regexes.push_back(
       "http://www[.]foo[.]com/#q=.*|https://www[.]foo[.]com/#q=.*");
-  external_data_use_observer()->RegisterURLRegexes(
+  FetchMatchingRulesDone(
       std::vector<std::string>(url_regexes.size(), kFooPackage), url_regexes,
       std::vector<std::string>(url_regexes.size(), kFooLabel));
 

@@ -6,22 +6,18 @@
 
 #include <utility>
 
-#include "base/android/context_utils.h"
-#include "base/android/jni_string.h"
 #include "base/containers/hash_tables.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/android/data_usage/data_use_tab_model.h"
+#include "chrome/browser/android/data_usage/external_data_use_observer_bridge.h"
 #include "components/data_usage/core/data_use.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
-#include "jni/ExternalDataUseObserver_jni.h"
 #include "third_party/re2/re2/re2.h"
 #include "url/gurl.h"
-
-using base::android::ConvertUTF8ToJavaString;
-using base::android::ToJavaArrayOfStrings;
 
 namespace {
 
@@ -84,29 +80,28 @@ ExternalDataUseObserver::ExternalDataUseObserver(
       matching_rules_fetch_pending_(false),
       submit_data_report_pending_(false),
       registered_as_observer_(false),
-      io_task_runner_(io_task_runner),
       ui_task_runner_(ui_task_runner),
       previous_report_time_(base::Time::Now()),
       last_matching_rules_fetch_time_(base::TimeTicks::Now()),
+      external_data_use_observer_bridge_(new ExternalDataUseObserverBridge()),
       total_bytes_buffered_(0),
       fetch_matching_rules_duration_(
           base::TimeDelta::FromSeconds(GetFetchMatchingRulesDurationSeconds())),
       data_use_report_min_bytes_(GetMinBytes()),
-      io_weak_factory_(this),
-      ui_weak_factory_(this) {
+      weak_factory_(this) {
   DCHECK(data_use_aggregator_);
-  DCHECK(io_task_runner_);
+  DCHECK(io_task_runner);
   DCHECK(ui_task_runner_);
 
+  // Initialize the ExternalDataUseObserverBridge object. Initialization will
+  // also trigger the fetching of matching rules. It is okay to use
+  // base::Unretained here since |external_data_use_observer_bridge_| is
+  // owned by |this|, and is destroyed on UI thread when |this| is destroyed.
   ui_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&ExternalDataUseObserver::CreateJavaObjectOnUIThread,
-                 GetUIWeakPtr()));
-
-  ui_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&ExternalDataUseObserver::FetchMatchingRulesOnUIThread,
-                 GetUIWeakPtr()));
+      base::Bind(&ExternalDataUseObserverBridge::Init,
+                 base::Unretained(external_data_use_observer_bridge_),
+                 io_task_runner, GetWeakPtr()));
 
   // |this| owns and must outlive the |data_use_tab_model_|.
   data_use_tab_model_.reset(new DataUseTabModel(this, ui_task_runner_));
@@ -116,67 +111,24 @@ ExternalDataUseObserver::ExternalDataUseObserver(
   registered_as_observer_ = true;
 }
 
-void ExternalDataUseObserver::CreateJavaObjectOnUIThread() {
-  DCHECK(ui_task_runner_->BelongsToCurrentThread());
-  JNIEnv* env = base::android::AttachCurrentThread();
-  j_external_data_use_observer_.Reset(Java_ExternalDataUseObserver_create(
-      env, base::android::GetApplicationContext(),
-      reinterpret_cast<intptr_t>(this)));
-  DCHECK(!j_external_data_use_observer_.is_null());
-}
-
 ExternalDataUseObserver::~ExternalDataUseObserver() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  JNIEnv* env = base::android::AttachCurrentThread();
-  if (!j_external_data_use_observer_.is_null()) {
-    Java_ExternalDataUseObserver_onDestroy(env,
-                                           j_external_data_use_observer_.obj());
-  }
   if (registered_as_observer_)
     data_use_aggregator_->RemoveObserver(this);
-}
 
-void ExternalDataUseObserver::FetchMatchingRulesOnUIThread() const {
-  DCHECK(ui_task_runner_->BelongsToCurrentThread());
-  DCHECK(!j_external_data_use_observer_.is_null());
-  JNIEnv* env = base::android::AttachCurrentThread();
-  Java_ExternalDataUseObserver_fetchMatchingRules(
-      env, j_external_data_use_observer_.obj());
+  // Delete |external_data_use_observer_bridge_| on the UI thread.
+  if (!ui_task_runner_->DeleteSoon(FROM_HERE,
+                                   external_data_use_observer_bridge_)) {
+    NOTIMPLEMENTED()
+        << " ExternalDataUseObserverBridge was not deleted successfully";
+  }
 }
 
 void ExternalDataUseObserver::FetchMatchingRulesDone(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jobjectArray>& app_package_name,
-    const JavaParamRef<jobjectArray>& domain_path_regex,
-    const JavaParamRef<jobjectArray>& label) {
-  DCHECK(ui_task_runner_->BelongsToCurrentThread());
-  // Convert to native objects.
-  std::vector<std::string> app_package_name_native;
-  std::vector<std::string> domain_path_regex_native;
-  std::vector<std::string> label_native;
-
-  if (app_package_name && domain_path_regex && label) {
-    base::android::AppendJavaStringArrayToStringVector(
-        env, app_package_name, &app_package_name_native);
-    base::android::AppendJavaStringArrayToStringVector(
-        env, domain_path_regex, &domain_path_regex_native);
-    base::android::AppendJavaStringArrayToStringVector(env, label,
-                                                       &label_native);
-  }
-
-  io_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&ExternalDataUseObserver::FetchMatchingRulesDoneOnIOThread,
-                 GetIOWeakPtr(), app_package_name_native,
-                 domain_path_regex_native, label_native));
-}
-
-void ExternalDataUseObserver::FetchMatchingRulesDoneOnIOThread(
-    const std::vector<std::string>& app_package_name,
-    const std::vector<std::string>& domain_path_regex,
-    const std::vector<std::string>& label) {
+    const std::vector<std::string>* app_package_name,
+    const std::vector<std::string>* domain_path_regex,
+    const std::vector<std::string>* label) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   RegisterURLRegexes(app_package_name, domain_path_regex, label);
@@ -184,26 +136,7 @@ void ExternalDataUseObserver::FetchMatchingRulesDoneOnIOThread(
   // Process buffered reports.
 }
 
-void ExternalDataUseObserver::OnReportDataUseDone(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    bool success) {
-  DCHECK(ui_task_runner_->BelongsToCurrentThread());
-  io_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&ExternalDataUseObserver::OnReportDataUseDoneOnIOThread,
-                 GetIOWeakPtr(), success));
-}
-
-base::WeakPtr<ExternalDataUseObserver> ExternalDataUseObserver::GetIOWeakPtr() {
-  return io_weak_factory_.GetWeakPtr();
-}
-
-base::WeakPtr<ExternalDataUseObserver> ExternalDataUseObserver::GetUIWeakPtr() {
-  return ui_weak_factory_.GetWeakPtr();
-}
-
-void ExternalDataUseObserver::OnReportDataUseDoneOnIOThread(bool success) {
+void ExternalDataUseObserver::OnReportDataUseDone(bool success) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(submit_data_report_pending_);
 
@@ -224,10 +157,14 @@ void ExternalDataUseObserver::OnDataUse(const data_usage::DataUse& data_use) {
   if (now_ticks - last_matching_rules_fetch_time_ >=
       fetch_matching_rules_duration_) {
     last_matching_rules_fetch_time_ = now_ticks;
+
+    // It is okay to use base::Unretained here since
+    // |external_data_use_observer_bridge_| is owned by |this|, and is destroyed
+    // on UI thread when |this| is destroyed.
     ui_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&ExternalDataUseObserver::FetchMatchingRulesOnUIThread,
-                   GetUIWeakPtr()));
+        base::Bind(&ExternalDataUseObserverBridge::FetchMatchingRules,
+                   base::Unretained(external_data_use_observer_bridge_)));
   }
 
   if (matching_rules_fetch_pending_) {
@@ -240,8 +177,6 @@ void ExternalDataUseObserver::OnDataUse(const data_usage::DataUse& data_use) {
 
   previous_report_time_ = now_time;
 
-  // TODO(tbansal): Post SubmitBufferedDataUseReport on IO thread once the
-  // task runners are plumbed in.
   SubmitBufferedDataUseReport();
 }
 
@@ -309,38 +244,25 @@ void ExternalDataUseObserver::SubmitBufferedDataUseReport() {
 
   submit_data_report_pending_ = true;
 
+  // It is okay to use base::Unretained here since
+  // |external_data_use_observer_bridge_| is owned by |this|, and is destroyed
+  // on UI thread when |this| is destroyed.
   ui_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&ExternalDataUseObserver::ReportDataUseOnUIThread,
-                            GetIOWeakPtr(), key, report));
-}
-
-void ExternalDataUseObserver::ReportDataUseOnUIThread(
-    const DataUseReportKey& key,
-    const DataUseReport& report) const {
-  DCHECK(ui_task_runner_->BelongsToCurrentThread());
-  JNIEnv* env = base::android::AttachCurrentThread();
-  DCHECK(!j_external_data_use_observer_.is_null());
-
-  // End time should be greater than start time.
-  int64_t start_time_milliseconds = report.start_time.ToJavaTime();
-  int64_t end_time_milliseconds = report.end_time.ToJavaTime();
-  if (start_time_milliseconds >= end_time_milliseconds)
-    start_time_milliseconds = end_time_milliseconds - 1;
-
-  Java_ExternalDataUseObserver_reportDataUse(
-      env, j_external_data_use_observer_.obj(),
-      ConvertUTF8ToJavaString(env, key.label).obj(), key.connection_type,
-      ConvertUTF8ToJavaString(env, key.mcc_mnc).obj(), start_time_milliseconds,
-      end_time_milliseconds, report.bytes_downloaded, report.bytes_uploaded);
+      FROM_HERE,
+      base::Bind(&ExternalDataUseObserverBridge::ReportDataUse,
+                 base::Unretained(external_data_use_observer_bridge_),
+                 key.label, key.connection_type, key.mcc_mnc, report.start_time,
+                 report.end_time, report.bytes_downloaded,
+                 report.bytes_uploaded));
 }
 
 void ExternalDataUseObserver::RegisterURLRegexes(
-    const std::vector<std::string>& app_package_name,
-    const std::vector<std::string>& domain_path_regex,
-    const std::vector<std::string>& label) {
+    const std::vector<std::string>* app_package_name,
+    const std::vector<std::string>* domain_path_regex,
+    const std::vector<std::string>* label) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK_EQ(app_package_name.size(), domain_path_regex.size());
-  DCHECK_EQ(app_package_name.size(), label.size());
+  DCHECK_EQ(app_package_name->size(), domain_path_regex->size());
+  DCHECK_EQ(app_package_name->size(), label->size());
 
   base::hash_set<std::string> removed_matching_rule_labels;
 
@@ -351,18 +273,18 @@ void ExternalDataUseObserver::RegisterURLRegexes(
   re2::RE2::Options options(re2::RE2::DefaultOptions);
   options.set_case_sensitive(false);
 
-  for (size_t i = 0; i < domain_path_regex.size(); ++i) {
-    const std::string& url_regex = domain_path_regex[i];
+  for (size_t i = 0; i < domain_path_regex->size(); ++i) {
+    const std::string& url_regex = domain_path_regex->at(i);
     if (url_regex.empty() && app_package_name[i].empty())
       continue;
     scoped_ptr<re2::RE2> pattern(new re2::RE2(url_regex, options));
     if (!pattern->ok())
       continue;
-    DCHECK(!label[i].empty());
-    matching_rules_.push_back(make_scoped_ptr(
-        new MatchingRule(app_package_name[i], pattern.Pass(), label[i])));
+    DCHECK(!label->at(i).empty());
+    matching_rules_.push_back(make_scoped_ptr(new MatchingRule(
+        app_package_name->at(i), pattern.Pass(), label->at(i))));
 
-    removed_matching_rule_labels.erase(label[i]);
+    removed_matching_rule_labels.erase(label->at(i));
   }
 
   for (std::string label : removed_matching_rule_labels)
@@ -377,6 +299,11 @@ void ExternalDataUseObserver::RegisterURLRegexes(
     data_use_aggregator_->AddObserver(this);
     registered_as_observer_ = true;
   }
+}
+
+base::WeakPtr<ExternalDataUseObserver> ExternalDataUseObserver::GetWeakPtr() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return weak_factory_.GetWeakPtr();
 }
 
 bool ExternalDataUseObserver::Matches(const GURL& gurl,
@@ -482,10 +409,6 @@ const std::string& ExternalDataUseObserver::MatchingRule::app_package_name()
 
 const std::string& ExternalDataUseObserver::MatchingRule::label() const {
   return label_;
-}
-
-bool RegisterExternalDataUseObserver(JNIEnv* env) {
-  return RegisterNativesImpl(env);
 }
 
 }  // namespace android

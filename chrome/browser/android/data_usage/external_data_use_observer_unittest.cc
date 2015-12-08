@@ -34,7 +34,7 @@ class ExternalDataUseObserverTest : public testing::Test {
  public:
   void SetUp() override {
     thread_bundle_.reset(new content::TestBrowserThreadBundle(
-        content::TestBrowserThreadBundle::REAL_IO_THREAD));
+        content::TestBrowserThreadBundle::IO_MAINLOOP));
     io_task_runner_ = content::BrowserThread::GetMessageLoopProxyForThread(
         content::BrowserThread::IO);
     ui_task_runner_ = content::BrowserThread::GetMessageLoopProxyForThread(
@@ -44,6 +44,9 @@ class ExternalDataUseObserverTest : public testing::Test {
     external_data_use_observer_.reset(new ExternalDataUseObserver(
         data_use_aggregator_.get(), io_task_runner_.get(),
         ui_task_runner_.get()));
+    // Wait for |external_data_use_observer_| to create the Java object.
+    base::RunLoop().RunUntilIdle();
+
     test_data_use_tab_model_ = new TestDataUseTabModel(
         external_data_use_observer_.get(), ui_task_runner_.get());
     external_data_use_observer_->data_use_tab_model_.reset(
@@ -51,9 +54,20 @@ class ExternalDataUseObserverTest : public testing::Test {
   }
 
   scoped_ptr<ExternalDataUseObserver> Create() const {
-    return scoped_ptr<ExternalDataUseObserver>(new ExternalDataUseObserver(
-        data_use_aggregator_.get(), io_task_runner_.get(),
-        ui_task_runner_.get()));
+    scoped_ptr<ExternalDataUseObserver> external_data_use_observer(
+        new ExternalDataUseObserver(data_use_aggregator_.get(),
+                                    io_task_runner_.get(),
+                                    ui_task_runner_.get()));
+    // Wait for |external_data_use_observer| to create the Java object.
+    base::RunLoop().RunUntilIdle();
+    return external_data_use_observer;
+  }
+
+  void FetchMatchingRulesDone(const std::vector<std::string>& app_package_name,
+                              const std::vector<std::string>& domain_path_regex,
+                              const std::vector<std::string>& label) {
+    external_data_use_observer_->FetchMatchingRulesDone(
+        &app_package_name, &domain_path_regex, &label);
   }
 
   ExternalDataUseObserver* external_data_use_observer() const {
@@ -69,10 +83,11 @@ class ExternalDataUseObserverTest : public testing::Test {
   }
 
  private:
-  // Required for creating multiple threads for unit testing.
   scoped_ptr<content::TestBrowserThreadBundle> thread_bundle_;
   scoped_ptr<data_usage::DataUseAggregator> data_use_aggregator_;
   scoped_ptr<ExternalDataUseObserver> external_data_use_observer_;
+
+  // Owned by |external_data_use_observer_|.
   TestDataUseTabModel* test_data_use_tab_model_;
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
@@ -108,7 +123,7 @@ TEST_F(ExternalDataUseObserverTest, SingleRegex) {
 
   std::string label("test");
   for (size_t i = 0; i < arraysize(tests); ++i) {
-    external_data_use_observer()->RegisterURLRegexes(
+    FetchMatchingRulesDone(
         // App package name not specified in the matching rule.
         std::vector<std::string>(1, std::string()),
         std::vector<std::string>(1, tests[i].regex),
@@ -175,7 +190,7 @@ TEST_F(ExternalDataUseObserverTest, TwoRegex) {
     std::vector<std::string> url_regexes;
     url_regexes.push_back(tests[i].regex1 + "|" + tests[i].regex2);
     const std::string label("label");
-    external_data_use_observer()->RegisterURLRegexes(
+    FetchMatchingRulesDone(
         std::vector<std::string>(url_regexes.size(), "com.example.helloworld"),
         url_regexes, std::vector<std::string>(url_regexes.size(), label));
     EXPECT_EQ(tests[i].expect_match, external_data_use_observer()->Matches(
@@ -197,7 +212,7 @@ TEST_F(ExternalDataUseObserverTest, MultipleRegex) {
   url_regexes.push_back(
       "https?://www[.]google[.]com/#q=.*|https?://www[.]google[.]com[.]ph/"
       "#q=.*|https?://www[.]google[.]com[.]ph/[?]gws_rd=ssl#q=.*");
-  external_data_use_observer()->RegisterURLRegexes(
+  FetchMatchingRulesDone(
       std::vector<std::string>(url_regexes.size(), std::string()), url_regexes,
       std::vector<std::string>(url_regexes.size(), "label"));
 
@@ -248,7 +263,7 @@ TEST_F(ExternalDataUseObserverTest, ChangeRegex) {
   std::vector<std::string> url_regexes;
   url_regexes.push_back("http://www[.]google[.]com/#q=.*");
   url_regexes.push_back("https://www[.]google[.]com/#q=.*");
-  external_data_use_observer()->RegisterURLRegexes(
+  FetchMatchingRulesDone(
       std::vector<std::string>(url_regexes.size(), std::string()), url_regexes,
       std::vector<std::string>(url_regexes.size(), "label"));
 
@@ -263,7 +278,7 @@ TEST_F(ExternalDataUseObserverTest, ChangeRegex) {
   url_regexes.clear();
   url_regexes.push_back("http://www[.]google[.]co[.]in/#q=.*");
   url_regexes.push_back("https://www[.]google[.]co[.]in/#q=.*");
-  external_data_use_observer()->RegisterURLRegexes(
+  FetchMatchingRulesDone(
       std::vector<std::string>(url_regexes.size(), std::string()), url_regexes,
       std::vector<std::string>(url_regexes.size(), "label"));
   EXPECT_FALSE(external_data_use_observer()->Matches(GURL(""), &label));
@@ -280,7 +295,7 @@ TEST_F(ExternalDataUseObserverTest, LabelRemoved) {
   labels.push_back("label_1");
   labels.push_back("label_2");
   labels.push_back("label_3");
-  external_data_use_observer()->RegisterURLRegexes(
+  FetchMatchingRulesDone(
       std::vector<std::string>(labels.size(), std::string()),
       std::vector<std::string>(labels.size(), "http://foobar.com"), labels);
 
@@ -293,7 +308,7 @@ TEST_F(ExternalDataUseObserverTest, LabelRemoved) {
   labels.push_back("label_1");
   labels.push_back("label_4");
   labels.push_back("label_5");
-  external_data_use_observer()->RegisterURLRegexes(
+  FetchMatchingRulesDone(
       std::vector<std::string>(labels.size(), std::string()),
       std::vector<std::string>(labels.size(), "http://foobar.com"), labels);
 }
@@ -306,7 +321,7 @@ TEST_F(ExternalDataUseObserverTest, BufferSize) {
   url_regexes.push_back(
       "http://www[.]google[.]com/#q=.*|https://www[.]google[.]com/#q=.*");
 
-  external_data_use_observer()->FetchMatchingRulesDoneOnIOThread(
+  FetchMatchingRulesDone(
       std::vector<std::string>(url_regexes.size(), std::string()), url_regexes,
       std::vector<std::string>(url_regexes.size(), kLabel));
 
@@ -345,7 +360,7 @@ TEST_F(ExternalDataUseObserverTest, ReportsMergedCorrectly) {
   url_regexes.push_back(
       "http://www[.]google[.]com/#q=.*|https://www[.]google[.]com/#q=.*");
 
-  external_data_use_observer()->FetchMatchingRulesDoneOnIOThread(
+  FetchMatchingRulesDone(
       std::vector<std::string>(url_regexes.size(), std::string()), url_regexes,
       std::vector<std::string>(url_regexes.size(), kLabel));
 
@@ -406,7 +421,7 @@ TEST_F(ExternalDataUseObserverTest, TimestampsMergedCorrectly) {
   url_regexes.push_back(
       "http://www[.]google[.]com/#q=.*|https://www[.]google[.]com/#q=.*");
 
-  external_data_use_observer()->FetchMatchingRulesDoneOnIOThread(
+  FetchMatchingRulesDone(
       std::vector<std::string>(url_regexes.size(), std::string()), url_regexes,
       std::vector<std::string>(url_regexes.size(), kLabel));
 
@@ -453,8 +468,7 @@ TEST_F(ExternalDataUseObserverTest, MultipleMatchingRules) {
   app_package_names.push_back(kAppFoo);
   app_package_names.push_back(kAppBar);
 
-  external_data_use_observer()->FetchMatchingRulesDoneOnIOThread(
-      app_package_names, url_regexes, labels);
+  FetchMatchingRulesDone(app_package_names, url_regexes, labels);
   EXPECT_EQ(0U, external_data_use_observer()->buffered_data_reports_.size());
   EXPECT_FALSE(external_data_use_observer()->submit_data_report_pending_);
   EXPECT_FALSE(external_data_use_observer()->matching_rules_fetch_pending_);
@@ -549,7 +563,7 @@ TEST_F(ExternalDataUseObserverTest, PeriodicFetchMatchingRules) {
   url_regexes.push_back(
       "http://www[.]google[.]com/#q=.*|https://www[.]google[.]com/#q=.*");
 
-  external_data_use_observer()->FetchMatchingRulesDoneOnIOThread(
+  FetchMatchingRulesDone(
       std::vector<std::string>(url_regexes.size(), std::string()), url_regexes,
       std::vector<std::string>(url_regexes.size(), kLabel));
 
@@ -588,7 +602,7 @@ TEST_F(ExternalDataUseObserverTest, BufferDataUseReports) {
   url_regexes.push_back(
       "http://www[.]google[.]com/#q=.*|https://www[.]google[.]com/#q=.*");
 
-  external_data_use_observer()->FetchMatchingRulesDoneOnIOThread(
+  FetchMatchingRulesDone(
       std::vector<std::string>(url_regexes.size(), std::string()), url_regexes,
       std::vector<std::string>(url_regexes.size(), kLabel));
 

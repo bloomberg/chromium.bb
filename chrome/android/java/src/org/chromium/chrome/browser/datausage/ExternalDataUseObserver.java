@@ -8,6 +8,7 @@ import android.content.Context;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeClassQualifiedName;
 import org.chromium.chrome.browser.ChromeApplication;
 
 /**
@@ -17,9 +18,9 @@ import org.chromium.chrome.browser.ChromeApplication;
 @JNINamespace("chrome::android")
 public class ExternalDataUseObserver {
     /**
-     * Pointer to the native ExternalDataUseObserver object.
+     * Pointer to the native ExternalDataUseObserverBridge object.
      */
-    private long mNativeExternalDataUseObserver;
+    private long mNativeExternalDataUseObserverBridge;
 
     @CalledByNative
     private static ExternalDataUseObserver create(Context context, long nativePtr) {
@@ -31,8 +32,8 @@ public class ExternalDataUseObserver {
      * @param nativePtr pointer to the native ExternalDataUseObserver object.
      */
     public ExternalDataUseObserver(long nativePtr) {
-        mNativeExternalDataUseObserver = nativePtr;
-        assert mNativeExternalDataUseObserver != 0;
+        mNativeExternalDataUseObserverBridge = nativePtr;
+        assert mNativeExternalDataUseObserverBridge != 0;
     }
 
     /**
@@ -40,7 +41,7 @@ public class ExternalDataUseObserver {
      */
     @CalledByNative
     private void onDestroy() {
-        mNativeExternalDataUseObserver = 0;
+        mNativeExternalDataUseObserverBridge = 0;
     }
 
     /**
@@ -65,11 +66,11 @@ public class ExternalDataUseObserver {
     protected void fetchMatchingRulesDone(
             String[] appPackageName, String[] domainPathRegEx, String[] label) {
         // Check if native object is destroyed. This may happen at the time of Chromium shutdown.
-        if (mNativeExternalDataUseObserver == 0) {
+        if (mNativeExternalDataUseObserverBridge == 0) {
             return;
         }
         nativeFetchMatchingRulesDone(
-                mNativeExternalDataUseObserver, appPackageName, domainPathRegEx, label);
+                mNativeExternalDataUseObserverBridge, appPackageName, domainPathRegEx, label);
     }
 
     /**
@@ -102,15 +103,17 @@ public class ExternalDataUseObserver {
      */
     protected void onReportDataUseDone(boolean success) {
         // Check if native object is destroyed.  This may happen at the time of Chromium shutdown.
-        if (mNativeExternalDataUseObserver == 0) {
+        if (mNativeExternalDataUseObserverBridge == 0) {
             return;
         }
-        nativeOnReportDataUseDone(mNativeExternalDataUseObserver, success);
+        nativeOnReportDataUseDone(mNativeExternalDataUseObserverBridge, success);
     }
 
+    @NativeClassQualifiedName("ExternalDataUseObserverBridge")
     public native void nativeFetchMatchingRulesDone(long nativeExternalDataUseObserver,
             String[] appPackageName, String[] domainPathRegEx, String[] label);
 
+    @NativeClassQualifiedName("ExternalDataUseObserverBridge")
     public native void nativeOnReportDataUseDone(
             long nativeExternalDataUseObserver, boolean success);
 }
