@@ -15,9 +15,11 @@
       <div id="delete-browsing-history-container" class="checkbox">
         <label>
           <input id="delete-browsing-history-checkbox"
-              pref="browser.clear_data.browsing_history" type="checkbox">
+              pref="browser.clear_data.browsing_history" type="checkbox"
+              aria-controls="delete-browsing-history-counter">
           <span i18n-content="deleteBrowsingHistoryCheckbox"></span>
-          <span class="clear-browser-data-counter"></span>
+          <span class="clear-browser-data-counter" role="note"
+              aria-live="polite" id="delete-browsing-history-counter"></span>
         </label>
       </div>
       <div id="delete-download-history-container" class="checkbox">
@@ -40,25 +42,31 @@
       <div id="delete-cache-container" class="checkbox">
         <label>
           <input id="delete-cache-checkbox"
-              pref="browser.clear_data.cache" type="checkbox">
+              pref="browser.clear_data.cache" type="checkbox"
+              aria-controls="delete-cache-counter">
           <span i18n-content="deleteCacheCheckbox"></span>
-          <span class="clear-browser-data-counter"></span>
+          <span class="clear-browser-data-counter" role="note"
+              aria-live="polite" id="delete-cache-counter"></span>
         </label>
       </div>
       <div id="delete-passwords-container" class="checkbox">
         <label>
           <input id="delete-passwords-checkbox"
-              pref="browser.clear_data.passwords" type="checkbox">
+              pref="browser.clear_data.passwords" type="checkbox"
+              aria-controls="delete-passwords-counter">
           <span i18n-content="deletePasswordsCheckbox"></span>
-          <span class="clear-browser-data-counter"></span>
+          <span class="clear-browser-data-counter" role="note"
+              aria-live="polite" id="delete-passwords-counter"></span>
         </label>
       </div>
       <div id="delete-form-data-container" class="checkbox">
         <label>
           <input id="delete-form-data-checkbox"
-              pref="browser.clear_data.form_data" type="checkbox">
+              pref="browser.clear_data.form_data" type="checkbox"
+              aria-controls="delete-form-data-counter">
           <span i18n-content="deleteFormDataCheckbox"></span>
-          <span class="clear-browser-data-counter"></span>
+          <span class="clear-browser-data-counter" role="note"
+              aria-live="polite" id="delete-form-data-counter"></span>
         </label>
       </div>
       <div id="delete-hosted-apps-data-container" class="checkbox">
