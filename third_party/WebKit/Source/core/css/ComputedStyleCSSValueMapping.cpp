@@ -32,6 +32,7 @@
 #include "core/css/CSSBorderImageSliceValue.h"
 #include "core/css/CSSCounterValue.h"
 #include "core/css/CSSCustomIdentValue.h"
+#include "core/css/CSSCustomPropertyDeclaration.h"
 #include "core/css/CSSFontFeatureValue.h"
 #include "core/css/CSSFunctionValue.h"
 #include "core/css/CSSGridLineNamesValue.h"
@@ -1351,6 +1352,11 @@ static PassRefPtrWillBeRawPtr<CSSValue> valueForScrollSnapCoordinate(const Vecto
     }
 
     return list.release();
+}
+
+PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(const AtomicString customPropertyName, const ComputedStyle& style)
+{
+    return CSSCustomPropertyDeclaration::create(customPropertyName, style.variables()->getVariable(customPropertyName));
 }
 
 PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID propertyID, const ComputedStyle& style, const LayoutObject* layoutObject, Node* styledNode, bool allowVisitedStyle)
@@ -2696,7 +2702,7 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
         return list.release();
     }
     case CSSPropertyVariable:
-        // TODO(leviw): We should have a way to retrive variables here.
+        // Variables are retrieved via get(AtomicString).
         ASSERT_NOT_REACHED();
         return nullptr;
     case CSSPropertyAll:

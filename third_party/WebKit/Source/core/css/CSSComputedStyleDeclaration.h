@@ -63,6 +63,8 @@ public:
     PassRefPtrWillBeRawPtr<MutableStylePropertySet> copyProperties() const;
 
     PassRefPtrWillBeRawPtr<CSSValue> getPropertyCSSValue(CSSPropertyID) const;
+    PassRefPtrWillBeRawPtr<CSSValue> getPropertyCSSValue(AtomicString customPropertyName) const;
+
     PassRefPtrWillBeRawPtr<CSSValue> getFontSizeCSSValuePreferringKeyword() const;
     bool isMonospaceFont() const;
 

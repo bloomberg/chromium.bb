@@ -32,6 +32,7 @@
 #include "core/css/CSSValuePool.h"
 #include "core/css/ComputedStyleCSSValueMapping.h"
 #include "core/css/parser/CSSParser.h"
+#include "core/css/parser/CSSVariableParser.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
@@ -528,6 +529,11 @@ Node* CSSComputedStyleDeclaration::styledNode() const
     return m_node.get();
 }
 
+PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(AtomicString customPropertyName) const
+{
+    return ComputedStyleCSSValueMapping::get(customPropertyName, *computeComputedStyle());
+}
+
 PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropertyID propertyID) const
 {
     Node* styledNode = this->styledNode();
@@ -634,8 +640,11 @@ CSSRule* CSSComputedStyleDeclaration::parentRule() const
 String CSSComputedStyleDeclaration::getPropertyValue(const String& propertyName)
 {
     CSSPropertyID propertyID = cssPropertyID(propertyName);
-    if (!propertyID)
-        return String();
+    if (!propertyID) {
+        if (!RuntimeEnabledFeatures::cssVariablesEnabled() || !CSSVariableParser::isValidVariableName(propertyName))
+            return String();
+        return getPropertyCSSValue(AtomicString(propertyName))->cssText();
+    }
     ASSERT(CSSPropertyMetadata::isEnabledProperty(propertyID));
     return getPropertyValue(propertyID);
 }
