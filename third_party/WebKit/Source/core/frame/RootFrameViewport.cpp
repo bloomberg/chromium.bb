@@ -13,9 +13,10 @@
 
 namespace blink {
 
-RootFrameViewport::RootFrameViewport(ScrollableArea& visualViewport, ScrollableArea& layoutViewport)
+RootFrameViewport::RootFrameViewport(ScrollableArea& visualViewport, ScrollableArea& layoutViewport, bool invertScrollOrder)
     : m_visualViewport(visualViewport)
     , m_layoutViewport(layoutViewport)
+    , m_invertScrollOrder(invertScrollOrder)
 {
 }
 
@@ -140,22 +141,23 @@ void RootFrameViewport::distributeScrollBetweenViewports(const DoublePoint& offs
     if (delta.isZero())
         return;
 
-    DoublePoint targetPosition = visualViewport().clampScrollPosition(
-        visualViewport().scrollAnimator()->currentPosition() + delta);
+    ScrollableArea& primary = !m_invertScrollOrder ? layoutViewport() : visualViewport();
+    ScrollableArea& secondary = !m_invertScrollOrder ? visualViewport() : layoutViewport();
 
-    visualViewport().setScrollPosition(targetPosition, scrollType, behavior);
+    DoublePoint targetPosition = primary.clampScrollPosition(primary.scrollAnimator()->currentPosition() + delta);
+    primary.setScrollPosition(targetPosition, scrollType, behavior);
 
-    // Scroll the layout viewport if all of the scroll was not applied to the
-    // visual viewport.
-    DoublePoint updatedPosition = layoutViewport().scrollAnimator()->currentPosition() + FloatPoint(targetPosition);
+    // Scroll the secondary viewport if all of the scroll was not applied to the
+    // primary viewport.
+    DoublePoint updatedPosition = secondary.scrollAnimator()->currentPosition() + FloatPoint(targetPosition);
     DoubleSize applied = updatedPosition - oldPosition;
     delta -= applied;
 
     if (delta.isZero())
         return;
 
-    targetPosition = layoutViewport().clampScrollPosition(layoutViewport().scrollAnimator()->currentPosition() + delta);
-    layoutViewport().setScrollPosition(targetPosition, scrollType, behavior);
+    targetPosition = secondary.clampScrollPosition(secondary.scrollAnimator()->currentPosition() + delta);
+    secondary.setScrollPosition(targetPosition, scrollType, behavior);
 }
 
 IntPoint RootFrameViewport::scrollPosition() const

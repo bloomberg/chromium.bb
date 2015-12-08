@@ -185,6 +185,11 @@ void WebSettingsImpl::setInlineTextBoxAccessibilityEnabled(bool enabled)
     m_settings->setInlineTextBoxAccessibilityEnabled(enabled);
 }
 
+void WebSettingsImpl::setInvertViewportScrollOrder(bool enabled)
+{
+    m_settings->setInvertViewportScrollOrder(enabled);
+}
+
 void WebSettingsImpl::setDeviceScaleAdjustment(float deviceScaleAdjustment)
 {
     m_devToolsEmulator->setDeviceScaleAdjustment(deviceScaleAdjustment);

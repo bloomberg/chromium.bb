@@ -360,10 +360,10 @@ TEST_F(RootFrameViewportTest, ScrollIntoView)
         LayoutRect(25, 75, 50, 50),
         ScrollAlignment::alignToEdgeIfNeeded,
         ScrollAlignment::alignToEdgeIfNeeded);
-    EXPECT_POINT_EQ(DoublePoint(25, 75), layoutViewport->scrollPositionDouble());
-    EXPECT_POINT_EQ(DoublePoint(0, 0), visualViewport->scrollPositionDouble());
+    EXPECT_POINT_EQ(DoublePoint(25, 25), layoutViewport->scrollPositionDouble());
+    EXPECT_POINT_EQ(DoublePoint(0, 50), visualViewport->scrollPositionDouble());
 
-    // Reset the visual viewport's size, scale the page, and repeat the test
+    // Reset the visual viewport's size, scale the page and repeat the test
     visualViewport->setViewportSize(IntSize(100, 150));
     visualViewport->setScale(2);
     rootFrameViewport->setScrollPosition(DoublePoint(), ProgrammaticScroll);
@@ -372,8 +372,8 @@ TEST_F(RootFrameViewportTest, ScrollIntoView)
         LayoutRect(50, 75, 50, 75),
         ScrollAlignment::alignToEdgeIfNeeded,
         ScrollAlignment::alignToEdgeIfNeeded);
-    EXPECT_POINT_EQ(DoublePoint(0, 0), layoutViewport->scrollPositionDouble());
-    EXPECT_POINT_EQ(DoublePoint(50, 75), visualViewport->scrollPositionDouble());
+    EXPECT_POINT_EQ(DoublePoint(50, 75), layoutViewport->scrollPositionDouble());
+    EXPECT_POINT_EQ(DoublePoint(0, 0), visualViewport->scrollPositionDouble());
 
     rootFrameViewport->scrollIntoView(
         LayoutRect(190, 290, 10, 10),
@@ -422,18 +422,18 @@ TEST_F(RootFrameViewportTest, SetScrollPosition)
 
     visualViewport->setScale(2);
 
-    // Ensure that the visual viewport scrolls first.
+    // Ensure that the layout viewport scrolls first.
     rootFrameViewport->setScrollPosition(DoublePoint(100, 100), ProgrammaticScroll);
-    EXPECT_POINT_EQ(DoublePoint(100, 100), visualViewport->scrollPositionDouble());
-    EXPECT_POINT_EQ(DoublePoint(0, 0), layoutViewport->scrollPositionDouble());
+    EXPECT_POINT_EQ(DoublePoint(0, 0), visualViewport->scrollPositionDouble());
+    EXPECT_POINT_EQ(DoublePoint(100, 100), layoutViewport->scrollPositionDouble());
 
-    // Scroll to the visual viewport's extent, the layout viewport should scroll the
+    // Scroll to the layout viewport's extent, the visual viewport should scroll the
     // remainder.
-    rootFrameViewport->setScrollPosition(DoublePoint(300, 400), ProgrammaticScroll);
-    EXPECT_POINT_EQ(DoublePoint(250, 250), visualViewport->scrollPositionDouble());
-    EXPECT_POINT_EQ(DoublePoint(50, 150), layoutViewport->scrollPositionDouble());
+    rootFrameViewport->setScrollPosition(DoublePoint(700, 1700), ProgrammaticScroll);
+    EXPECT_POINT_EQ(DoublePoint(200, 200), visualViewport->scrollPositionDouble());
+    EXPECT_POINT_EQ(DoublePoint(500, 1500), layoutViewport->scrollPositionDouble());
 
-    // Only the layout viewport should scroll further. Make sure it doesn't scroll
+    // Only the visual viewport should scroll further. Make sure it doesn't scroll
     // out of bounds.
     rootFrameViewport->setScrollPosition(DoublePoint(780, 1780), ProgrammaticScroll);
     EXPECT_POINT_EQ(DoublePoint(250, 250), visualViewport->scrollPositionDouble());
@@ -470,16 +470,17 @@ TEST_F(RootFrameViewportTest, VisibleContentRect)
     EXPECT_SIZE_EQ(DoubleSize(250, 200.5), rootFrameViewport->visibleContentRectDouble().size());
 }
 
-// Tests that scrolls on the root frame scroll the visual viewport before
-// trying to scroll the layout viewport.
+// Tests that the invert scroll order experiment scrolls the visual viewport
+// before trying to scroll the layout viewport.
 TEST_F(RootFrameViewportTest, ViewportScrollOrder)
 {
     IntSize viewportSize(100, 100);
     OwnPtrWillBeRawPtr<RootFrameViewStub> layoutViewport = RootFrameViewStub::create(viewportSize, IntSize(200, 300));
     OwnPtrWillBeRawPtr<VisualViewportStub> visualViewport = VisualViewportStub::create(viewportSize, viewportSize);
 
+    bool invertScrollOrder = true;
     OwnPtrWillBeRawPtr<ScrollableArea> rootFrameViewport =
-        RootFrameViewport::create(*visualViewport.get(), *layoutViewport.get());
+        RootFrameViewport::create(*visualViewport.get(), *layoutViewport.get(), invertScrollOrder);
 
     visualViewport->setScale(2);
 

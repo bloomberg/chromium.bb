@@ -1038,6 +1038,9 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
 
   settings->setSupportsMultipleWindows(prefs.supports_multiple_windows);
 
+  // TODO(bokan): Remove once Blink side is gone.
+  settings->setInvertViewportScrollOrder(true);
+
   settings->setSmartInsertDeleteEnabled(prefs.smart_insert_delete_enabled);
 
   settings->setSpatialNavigationEnabled(prefs.spatial_navigation_enabled);

@@ -1587,9 +1587,15 @@ TEST_P(ParameterizedVisualViewportTest, WindowDimensionsOnLoadWideContent)
     EXPECT_EQ(std::string("2000x1500"), std::string(output->innerHTML().ascii().data()));
 }
 
+static void turnOnInvertedScrollOrder(WebSettings* settings)
+{
+    VisualViewportTest::configureSettings(settings);
+    settings->setInvertViewportScrollOrder(true);
+}
+
 TEST_P(ParameterizedVisualViewportTest, PinchZoomGestureScrollsVisualViewportOnly)
 {
-    initializeWithDesktopSettings();
+    initializeWithDesktopSettings(turnOnInvertedScrollOrder);
     webViewImpl()->resize(IntSize(100, 100));
 
     registerMockedHttpURLLoad("200-by-800-viewport.html");
