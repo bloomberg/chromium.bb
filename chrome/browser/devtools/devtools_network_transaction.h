@@ -18,6 +18,7 @@
 #include "net/websockets/websocket_handshake_stream_base.h"
 
 class DevToolsNetworkController;
+class DevToolsNetworkUploadDataStream;
 class GURL;
 
 namespace net {
@@ -114,7 +115,10 @@ class DevToolsNetworkTransaction
   DevToolsNetworkController* controller_;
   base::WeakPtr<DevToolsNetworkInterceptor> interceptor_;
 
-  // Modified request. Should be destructed after |network_transaction_|
+  // Modified upload data stream. Should be destructed after |custom_request_|.
+  scoped_ptr<DevToolsNetworkUploadDataStream> custom_upload_data_stream_;
+
+  // Modified request. Should be destructed after |network_transaction_|.
   scoped_ptr<net::HttpRequestInfo> custom_request_;
 
   // Real network transaction.

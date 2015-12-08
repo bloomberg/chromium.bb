@@ -35,10 +35,12 @@ class DevToolsNetworkInterceptor {
   // Applies network emulation configuration.
   void UpdateConditions(scoped_ptr<DevToolsNetworkConditions> conditions);
 
+  // Throttles with |is_upload == true| always succeed, even in offline mode.
   int StartThrottle(int result,
                     int64_t bytes,
                     base::TimeTicks send_end,
                     bool start,
+                    bool is_upload,
                     const ThrottleCallback& callback);
   void StopThrottle(const ThrottleCallback& callback);
 
@@ -59,6 +61,7 @@ class DevToolsNetworkInterceptor {
     int result;
     int64_t bytes;
     int64_t send_end;
+    bool is_upload;
     ThrottleCallback callback;
   };
   using ThrottleRecords = std::vector<ThrottleRecord>;

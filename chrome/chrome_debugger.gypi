@@ -40,6 +40,8 @@
         'browser/devtools/devtools_network_transaction.h',
         'browser/devtools/devtools_network_transaction_factory.cc',
         'browser/devtools/devtools_network_transaction_factory.h',
+        'browser/devtools/devtools_network_upload_data_stream.cc',
+        'browser/devtools/devtools_network_upload_data_stream.h',
         'browser/devtools/devtools_protocol.cc',
         'browser/devtools/devtools_protocol.h',
       ],

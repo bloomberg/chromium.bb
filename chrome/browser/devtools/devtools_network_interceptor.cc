@@ -51,16 +51,18 @@ void DevToolsNetworkInterceptor::UpdateConditions(
     ThrottleRecords throttled;
     throttled.swap(throttled_);
     for (const ThrottleRecord& record : throttled) {
+      bool failed = offline && !record.is_upload;
       record.callback.Run(
-          offline ? net::ERR_INTERNET_DISCONNECTED : record.result,
+          failed ? net::ERR_INTERNET_DISCONNECTED : record.result,
           record.bytes);
     }
 
     ThrottleRecords suspended;
     suspended.swap(suspended_);
     for (const ThrottleRecord& record : suspended) {
+      bool failed = offline && !record.is_upload;
       record.callback.Run(
-          offline ? net::ERR_INTERNET_DISCONNECTED : record.result,
+          failed ? net::ERR_INTERNET_DISCONNECTED : record.result,
           record.bytes);
     }
 
@@ -182,12 +184,13 @@ int DevToolsNetworkInterceptor::StartThrottle(
     int64_t bytes,
     base::TimeTicks send_end,
     bool start,
+    bool is_upload,
     const ThrottleCallback& callback) {
   if (result < 0)
     return result;
 
   if (conditions_->offline())
-    return net::ERR_INTERNET_DISCONNECTED;
+    return is_upload ? result : net::ERR_INTERNET_DISCONNECTED;
 
   if (!conditions_->IsThrottling())
     return result;
@@ -196,6 +199,8 @@ int DevToolsNetworkInterceptor::StartThrottle(
   record.result = result;
   record.bytes = bytes;
   record.callback = callback;
+  // TODO(dgozman): use upload throughput.
+  record.is_upload = is_upload;
 
   base::TimeTicks now = base::TimeTicks::Now();
   UpdateThrottled(now);
