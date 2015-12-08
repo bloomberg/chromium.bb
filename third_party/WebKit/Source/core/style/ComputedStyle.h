@@ -78,7 +78,6 @@
 #include "platform/text/UnicodeBidi.h"
 #include "platform/transforms/TransformOperations.h"
 #include "wtf/Forward.h"
-#include "wtf/LeakAnnotations.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/StdLibExtras.h"
@@ -352,7 +351,6 @@ private:
     static PassRefPtr<ComputedStyle> createInitialStyle();
     static inline ComputedStyle* initialStyle()
     {
-        LEAK_SANITIZER_DISABLED_SCOPE;
         DEFINE_STATIC_REF(ComputedStyle, s_initialStyle, (ComputedStyle::createInitialStyle()));
         return s_initialStyle;
     }

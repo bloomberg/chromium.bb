@@ -26,6 +26,7 @@ public:
         return adoptRefWillBeNoop(new RejectedPromises);
     }
 
+    RejectedPromises();
     void dispose();
     DECLARE_TRACE();
 
@@ -37,9 +38,8 @@ public:
 private:
     class Message;
 
-    RejectedPromises();
-
     using MessageQueue = WillBeHeapDeque<OwnPtrWillBeMember<Message>>;
+
     PassOwnPtrWillBeRawPtr<MessageQueue> createMessageQueue();
 
     void processQueueNow(PassOwnPtrWillBeRawPtr<MessageQueue>);

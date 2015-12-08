@@ -29,7 +29,6 @@
 #include "wtf/Assertions.h"
 #include "wtf/CPU.h"
 #include "wtf/CheckedArithmetic.h"
-#include "wtf/LeakAnnotations.h"
 #include <cstddef>
 
 #if ENABLE(ASSERT)
@@ -59,30 +58,31 @@ private:
 };
 #endif
 
-// Use DEFINE_STATIC_LOCAL() to declare and define a static local variable (static T;)
-// so that it is leaked and its destructors are not called at exit.
-//
-// To cooperate with leak detection, the objects held onto by these local statics
-// will in some cases have to be finalized prior to leak checking. This only applies
-// to static references to Oilpan heap objects and what they transitively hold on to.
-// LEAK_SANITIZER_REGISTER_STATIC_LOCAL() takes care of the details.
-//
+// Use this to declare and define a static local variable (static T;) so that
+//  it is leaked so that its destructors are not called at exit.
+#ifndef DEFINE_STATIC_LOCAL
+
 #if ENABLE(ASSERT)
 #define DEFINE_STATIC_LOCAL(type, name, arguments)        \
     static StaticLocalVerifier name##StaticLocalVerifier; \
-    ASSERT(name##StaticLocalVerifier.isNotRacy());        \
-    static type& name = *LEAK_SANITIZER_REGISTER_STATIC_LOCAL(type, new type arguments)
+    ASSERT(name##StaticLocalVerifier.isNotRacy()); \
+    static type& name = *new type arguments
 #else
 #define DEFINE_STATIC_LOCAL(type, name, arguments) \
-    static type& name = *LEAK_SANITIZER_REGISTER_STATIC_LOCAL(type, new type arguments)
+    static type& name = *new type arguments
 #endif
+
+#endif
+
 
 // Use this to declare and define a static local pointer to a ref-counted object so that
 // it is leaked so that the object's destructors are not called at exit.
 // This macro should be used with ref-counted objects rather than DEFINE_STATIC_LOCAL macro,
 // as this macro does not lead to an extra memory allocation.
+#ifndef DEFINE_STATIC_REF
 #define DEFINE_STATIC_REF(type, name, arguments) \
     static type* name = PassRefPtr<type>(arguments).leakRef();
+#endif
 
 /*
  * The reinterpret_cast<Type1*>([pointer to Type2]) expressions - where

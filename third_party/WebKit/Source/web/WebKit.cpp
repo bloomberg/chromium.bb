@@ -197,21 +197,6 @@ void initializeWithoutV8(Platform* platform)
 
 void shutdown()
 {
-#if defined(LEAK_SANITIZER)
-    // If LSan is about to perform leak detection, release all the registered
-    // static Persistent<> root references to global caches that Blink keeps,
-    // followed by GCs to clear out all they referred to. A full v8 GC cycle
-    // is needed to flush out all garbage.
-    //
-    // This is not needed for caches over non-Oilpan objects, as they're
-    // not scanned by LSan due to being held in non-global storage
-    // ("static" references inside functions/methods.)
-    if (ThreadState* threadState = ThreadState::current()) {
-        threadState->releaseStaticPersistentNodes();
-        Heap::collectAllGarbage();
-    }
-#endif
-
     // currentThread() is null if we are running on a thread without a message loop.
     if (Platform::current()->currentThread()) {
         Platform::current()->unregisterMemoryDumpProvider(WebCacheMemoryDumpProvider::instance());

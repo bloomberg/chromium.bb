@@ -54,9 +54,6 @@ void WebThreadSupportingGC::initialize()
 
 void WebThreadSupportingGC::shutdown()
 {
-#if defined(LEAK_SANITIZER)
-    ThreadState::current()->releaseStaticPersistentNodes();
-#endif
     // Ensure no posted tasks will run from this point on.
     m_gcTaskRunner.clear();
 

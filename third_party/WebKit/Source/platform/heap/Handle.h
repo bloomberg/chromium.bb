@@ -46,10 +46,6 @@
 #include "wtf/RefCounted.h"
 #include "wtf/TypeTraits.h"
 
-#if defined(LEAK_SANITIZER)
-#include "wtf/LeakAnnotations.h"
-#endif
-
 namespace blink {
 
 enum WeaknessPersistentConfiguration {
@@ -187,17 +183,6 @@ public:
         return *this;
     }
 
-#if defined(LEAK_SANITIZER)
-    PersistentBase* registerAsStaticReference()
-    {
-        if (m_persistentNode) {
-            ASSERT(ThreadState::current());
-            ThreadState::current()->registerStaticPersistentNode(m_persistentNode);
-            LEAK_SANITIZER_IGNORE_OBJECT(this);
-        }
-        return this;
-    }
-#endif
 
 private:
     NO_LAZY_SWEEP_SANITIZE_ADDRESS
@@ -560,20 +545,7 @@ public:
         visitor->trace(*static_cast<Collection*>(this));
     }
 
-#if defined(LEAK_SANITIZER)
-    PersistentHeapCollectionBase* registerAsStaticReference()
-    {
-        if (m_persistentNode) {
-            ASSERT(ThreadState::current());
-            ThreadState::current()->registerStaticPersistentNode(m_persistentNode);
-            LEAK_SANITIZER_IGNORE_OBJECT(this);
-        }
-        return this;
-    }
-#endif
-
 private:
-
     NO_LAZY_SWEEP_SANITIZE_ADDRESS
     void initialize()
     {
@@ -1094,13 +1066,8 @@ template<typename T> T* adoptPtrWillBeNoop(T* ptr)
 #define DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(type) // do nothing
 #define DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(type) // do nothing
 
-#if defined(LEAK_SANITIZER)
 #define DEFINE_STATIC_REF_WILL_BE_PERSISTENT(type, name, arguments) \
-    static type* name = *(new Persistent<type>(arguments))->registerAsStaticReference()
-#else
-#define DEFINE_STATIC_REF_WILL_BE_PERSISTENT(type, name, arguments) \
-    static type* name = *(new Persistent<type>(arguments))
-#endif
+    static type* name = (new Persistent<type>(arguments))->get();
 
 #else // !ENABLE(OILPAN)
 
@@ -1298,35 +1265,6 @@ public:
 private:
     CrossThreadWeakPersistent<T> m_value;
 };
-
-// LEAK_SANITIZER_DISABLED_SCOPE: all allocations made in the current scope
-// will be exempted from LSan consideration.
-//
-// TODO(sof): move this to wtf/LeakAnnotations.h (LeakSanitizer.h?) once
-// wtf/ can freely call upon Oilpan functionality.
-#if defined(LEAK_SANITIZER)
-class LeakSanitizerDisableScope {
-    STACK_ALLOCATED();
-    WTF_MAKE_NONCOPYABLE(LeakSanitizerDisableScope);
-public:
-    LeakSanitizerDisableScope()
-    {
-        __lsan_disable();
-        if (ThreadState::current())
-            ThreadState::current()->enterStaticReferenceRegistrationDisabledScope();
-    }
-
-    ~LeakSanitizerDisableScope()
-    {
-        __lsan_enable();
-        if (ThreadState::current())
-            ThreadState::current()->leaveStaticReferenceRegistrationDisabledScope();
-    }
-};
-#define LEAK_SANITIZER_DISABLED_SCOPE LeakSanitizerDisableScope lsanDisabledScope
-#else
-#define LEAK_SANITIZER_DISABLED_SCOPE
-#endif
 
 } // namespace blink
 
