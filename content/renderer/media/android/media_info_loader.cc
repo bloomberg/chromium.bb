@@ -88,7 +88,7 @@ void MediaInfoLoader::Start(blink::WebFrame* frame) {
 
 /////////////////////////////////////////////////////////////////////////////
 // blink::WebURLLoaderClient implementation.
-void MediaInfoLoader::willSendRequest(
+void MediaInfoLoader::willFollowRedirect(
     WebURLLoader* loader,
     WebURLRequest& newRequest,
     const WebURLResponse& redirectResponse) {
