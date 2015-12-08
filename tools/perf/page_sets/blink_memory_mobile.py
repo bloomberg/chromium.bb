@@ -26,6 +26,7 @@ class BlinkMemoryMobilePage(page_module.Page):
     with action_runner.CreateInteraction(phase):
       action_runner.Wait(DUMP_WAIT_TIME)
       action_runner.ForceGarbageCollection()
+      action_runner.SimulateMemoryPressureNotification('critical')
       action_runner.Wait(DUMP_WAIT_TIME)
       if not action_runner.tab.browser.DumpMemory():
         logging.error('Unable to get a memory dump for %s.', self.name)
