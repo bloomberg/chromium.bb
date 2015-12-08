@@ -34,7 +34,7 @@ function test()
                 WebInspector.TimelineUIUtils._generateCauses(record.traceEvent(), InspectorTest.timelineModel().target(), contentHelper);
                 var causes = contentHelper.element.deepTextContent();
                 InspectorTest.check(causes, "Should generate causes");
-                checkStringContains(causes, "Timer installedsetTimeoutFunction @ setTimeoutFunction.js:");
+                checkStringContains(causes, "Timer InstalledsetTimeoutFunction @ setTimeoutFunction.js:");
                 next();
             }
         },
@@ -60,7 +60,7 @@ function test()
                 WebInspector.TimelineUIUtils._generateCauses(record.traceEvent(), InspectorTest.timelineModel().target(), contentHelper);
                 var causes = contentHelper.element.deepTextContent();
                 InspectorTest.check(causes, "Should generate causes");
-                checkStringContains(causes, "Animation frame requestedrequestAnimationFrameFunction @ requestAnimationFrameFunction.js:");
+                checkStringContains(causes, "Animation Frame RequestedrequestAnimationFrameFunction @ requestAnimationFrameFunction.js:");
                 next();
             }
         },
@@ -88,7 +88,7 @@ function test()
                 WebInspector.TimelineUIUtils._generateCauses(record.traceEvent(), InspectorTest.timelineModel().target(), contentHelper);
                 var causes = contentHelper.element.deepTextContent();
                 InspectorTest.check(causes, "Should generate causes");
-                checkStringContains(causes, "First invalidatedstyleRecalcFunction @ styleRecalcFunction.js:");
+                checkStringContains(causes, "First InvalidatedstyleRecalcFunction @ styleRecalcFunction.js:");
                 next();
             }
         },
@@ -116,8 +116,8 @@ function test()
                 WebInspector.TimelineUIUtils._generateCauses(record.traceEvent(), InspectorTest.timelineModel().target(), contentHelper);
                 var causes = contentHelper.element.deepTextContent();
                 InspectorTest.check(causes, "Should generate causes");
-                checkStringContains(causes, "Layout forcedlayoutFunction @ layoutFunction.js:");
-                checkStringContains(causes, "First layout invalidationlayoutFunction @ layoutFunction.js:");
+                checkStringContains(causes, "Layout ForcedlayoutFunction @ layoutFunction.js:");
+                checkStringContains(causes, "First Layout InvalidationlayoutFunction @ layoutFunction.js:");
                 next();
             }
         }
