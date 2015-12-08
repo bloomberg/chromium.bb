@@ -1537,6 +1537,10 @@ void ResourceProvider::LazyCreateImage(Resource* resource) {
   DCHECK(resource->gpu_memory_buffer);
   DCHECK(resource->gl_id);
   DCHECK(resource->allocated);
+  // Avoid crashing in release builds if GpuMemoryBuffer allocation fails.
+  // http://crbug.com/554541
+  if (!resource->gpu_memory_buffer)
+    return;
   if (!resource->image_id) {
     GLES2Interface* gl = ContextGL();
     DCHECK(gl);
