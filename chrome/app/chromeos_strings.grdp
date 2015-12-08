@@ -2062,10 +2062,10 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_POWER_SOURCE_PORT_LEFT_BACK" desc="The text identifying an external device, when that device is connected to a USB Type-C port on the left side of this device. In this case there are two ports on that side, so this text should refer to the back one on that side.">
     USB-C device (left side back port)
   </message>
-  <message name="IDS_OPTIONS_POWER_SOURCE_PORT_RIGHT_FRONT" desc="The text identifying an external device, when that device is connected to a USB Type-C port on the right side of this device. In this case there are two ports on that side, so this text should refer to the front one on that side.">">
+  <message name="IDS_OPTIONS_POWER_SOURCE_PORT_RIGHT_FRONT" desc="The text identifying an external device, when that device is connected to a USB Type-C port on the right side of this device. In this case there are two ports on that side, so this text should refer to the front one on that side.">
     USB-C device (right side front port)
   </message>
-  <message name="IDS_OPTIONS_POWER_SOURCE_PORT_RIGHT_BACK" desc="The text identifying an external device, when that device is connected to a USB Type-C port on the right side of this device. In this case there are two ports on that side, so this text should refer to the back one on that side.">">
+  <message name="IDS_OPTIONS_POWER_SOURCE_PORT_RIGHT_BACK" desc="The text identifying an external device, when that device is connected to a USB Type-C port on the right side of this device. In this case there are two ports on that side, so this text should refer to the back one on that side.">
     USB-C device (right side back port)
   </message>
   <message name="IDS_OPTIONS_POWER_SOURCE_PORT_BACK_LEFT" desc="The text identifying an external device, when that device is connected to a USB Type-C port on the back of this device. In this case there are two ports on the back, so this text should refer to the one on the left.">
