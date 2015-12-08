@@ -93,7 +93,7 @@ class BASE_EXPORT CallbackBase {
 };
 
 // A helper template to determine if given type is non-const move-only-type,
-// i.e. if a value of the given type should be passed via .Pass() in a
+// i.e. if a value of the given type should be passed via std::move() in a
 // destructive way.
 template <typename T> struct IsMoveOnlyType {
   template <typename U>
@@ -197,7 +197,7 @@ struct CallbackParamTraitsForMoveOnlyType {
 // default template compiles out to be a no-op.
 //
 // In C++11, std::forward would replace all uses of this function.  However, it
-// is impossible to implement a general std::forward with C++11 due to a lack
+// is impossible to implement a general std::forward without C++11 due to a lack
 // of rvalue references.
 //
 // In addition to Callback/Bind, this is used by PostTaskAndReplyWithResult to
@@ -213,7 +213,7 @@ typename std::enable_if<!IsMoveOnlyType<T>::value, T>::type& CallbackForward(
 template <typename T>
 typename std::enable_if<IsMoveOnlyType<T>::value, T>::type CallbackForward(
     T& t) {
-  return t.Pass();
+  return std::move(t);
 }
 
 }  // namespace internal
