@@ -12,7 +12,11 @@
 base::FilePath GinShellPath() {
   base::FilePath dir;
   PathService::Get(base::DIR_EXE, &dir);
+#if defined(OS_WIN)
+  return dir.AppendASCII("gin_shell.exe");
+#else
   return dir.AppendASCII("gin_shell");
+#endif
 }
 
 base::FilePath HelloWorldPath() {

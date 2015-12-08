@@ -135,6 +135,8 @@ executable("gin_shell") {
     "//build/config/sanitizers:deps",
     "//v8",
   ]
+
+  configs += [ "//v8:external_startup_data" ]
 }
 
 source_set("gin_test") {
@@ -159,6 +161,8 @@ source_set("gin_test") {
   deps = [
     "//v8",
   ]
+
+  configs += [ "//v8:external_startup_data" ]
 }
 
 test("gin_unittests") {
@@ -177,8 +181,33 @@ test("gin_unittests") {
   ]
 
   deps = [
+    ":gin_shell",
     ":gin_test",
     "//base/test:test_support",
     "//v8",
+  ]
+
+  configs += [ "//v8:external_startup_data" ]
+
+  data = [
+    "modules/module_registry_unittests.js",
+    "shell/hello_world.js",
+    "test/expect.js",
+    "test/file_unittests.js",
+    "test/gtest_unittests.js",
+    "../OWNERS",
+  ]
+
+  data_deps = [
+    ":gin_shell",
+  ]
+}
+
+# TODO(GYP): Delete this after we've converted everything to GN.
+# The _run targets exist only for compatibility w/ GYP.
+group("gin_unittests_run") {
+  testonly = true
+  deps = [
+    ":gin_unittests",
   ]
 }
