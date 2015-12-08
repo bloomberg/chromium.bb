@@ -2183,6 +2183,17 @@ WebGLActiveInfo* WebGL2RenderingContextBase::getTransformFeedbackVarying(WebGLPr
     if (isContextLost() || !validateWebGLObject("getTransformFeedbackVarying", program))
         return nullptr;
 
+    if (!program->linkStatus()) {
+        synthesizeGLError(GL_INVALID_OPERATION, "getTransformFeedbackVarying", "program not linked");
+        return nullptr;
+    }
+    GLint maxIndex = 0;
+    webContext()->getProgramiv(objectOrZero(program), GL_TRANSFORM_FEEDBACK_VARYINGS, &maxIndex);
+    if (index >= static_cast<GLuint>(maxIndex)) {
+        synthesizeGLError(GL_INVALID_VALUE, "getTransformFeedbackVarying", "invalid index");
+        return nullptr;
+    }
+
     GLint maxNameLength = -1;
     webContext()->getProgramiv(objectOrZero(program), GL_TRANSFORM_FEEDBACK_VARYING_MAX_LENGTH, &maxNameLength);
     if (maxNameLength <= 0) {
