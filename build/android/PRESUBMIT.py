@@ -70,6 +70,7 @@ def CommonChecks(input_api, output_api):
       input_api,
       output_api,
       unit_tests=[
+          J('devil', 'devil_env_test.py'),
           J('devil', 'android', 'battery_utils_test.py'),
           J('devil', 'android', 'device_utils_test.py'),
           J('devil', 'android', 'fastboot_utils_test.py'),

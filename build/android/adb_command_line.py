@@ -8,6 +8,7 @@
 import argparse
 import sys
 
+import devil_chromium
 from devil.android import device_utils
 from devil.android import device_errors
 from devil.utils import cmd_helper
@@ -27,6 +28,8 @@ Otherwise: Writes command-line file.
   parser.add_argument('--device-path', required=True,
                       help='Remote path to flags file.')
   args, remote_args = parser.parse_known_args()
+
+  devil_chromium.Initialize()
 
   as_root = not args.device_path.startswith('/data/local/tmp/')
 
