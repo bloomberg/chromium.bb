@@ -3240,13 +3240,6 @@ static PaintInvalidationReason documentLifecycleBasedPaintInvalidationReason(con
 
 inline void LayoutObject::markContainerChainForPaintInvalidation()
 {
-    // Setting layer-needs-repaint doesn't mean we'll fully repaint the layer, but
-    // means we won't skip painting of the whole layer with a CachedSubsequenceDisplayItem.
-    // This is to ensure we'll check paint offset changes of the objects on the layer.
-    // We'll still use cached display items for non-invalidated objects on the layer.
-    if (PaintLayer* enclosingLayer = this->enclosingLayer())
-        enclosingLayer->setNeedsRepaint();
-
     for (LayoutObject* container = this->containerCrossingFrameBoundaries(); container && !container->shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState(); container = container->containerCrossingFrameBoundaries())
         container->m_bitfields.setChildShouldCheckForPaintInvalidation(true);
 }
