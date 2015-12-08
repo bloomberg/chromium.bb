@@ -129,7 +129,7 @@
 
       // Ignore the event if this is coming from a focused light child, since that
       // element will deal with it.
-      if (this.isLightDescendant(target))
+      if (this.isLightDescendant(/** @type {Node} */(target)))
         return;
 
       keyboardEvent.preventDefault();
@@ -146,7 +146,7 @@
 
       // Ignore the event if this is coming from a focused light child, since that
       // element will deal with it.
-      if (this.isLightDescendant(target))
+      if (this.isLightDescendant(/** @type {Node} */(target)))
         return;
 
       if (this.pressed) {

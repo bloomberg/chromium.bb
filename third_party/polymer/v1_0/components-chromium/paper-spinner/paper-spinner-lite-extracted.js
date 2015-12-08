@@ -1,5 +1,5 @@
 Polymer({
-      is: 'paper-spinner',
+      is: 'paper-spinner-lite',
 
       behaviors: [
         Polymer.PaperSpinnerBehavior

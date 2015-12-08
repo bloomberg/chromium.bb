@@ -7,9 +7,9 @@ The complete set of contributors may be found at http://polymer.github.io/CONTRI
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 --><html><head><link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
-<link rel="import" href="../iron-behaviors/iron-control-state.html">
 <link rel="import" href="../iron-behaviors/iron-button-state.html">
+<link rel="import" href="../iron-behaviors/iron-control-state.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../paper-behaviors/paper-ripple-behavior.html">
 
 <!--
@@ -38,77 +38,67 @@ Custom property | Description | Default
 -->
 
 </head><body><dom-module id="paper-tab">
-
-  <style>
-
-    :host {
-      @apply(--layout-inline);
-      @apply(--layout-center);
-      @apply(--layout-center-justified);
-      @apply(--layout-flex);
-
-      position: relative;
-      padding: 0 12px;
-      overflow: hidden;
-      cursor: pointer;
-
-      @apply(--paper-tab);
-    }
-
-    :host(:focus) {
-      outline: none;
-    }
-
-    :host([link]) {
-      padding: 0;
-    }
-
-    .tab-content {
-      height: 100%;
-      -webkit-transform: translateZ(0);
-      transform: translateZ(0);
-      transition: opacity 0.1s cubic-bezier(0.4, 0.0, 1, 1);
-      @apply(--layout-horizontal);
-      @apply(--layout-center-center);
-      @apply(--layout-flex-auto);
-      @apply(--paper-tab-content);
-    }
-
-    :host(:not(.iron-selected)) > .tab-content {
-      opacity: 0.8;
-
-      @apply(--paper-tab-content-unselected);
-    }
-
-    :host(:focus) .tab-content {
-      opacity: 1;
-      font-weight: 700;
-    }
-
-    paper-ripple {
-      color: var(--paper-tab-ink, --paper-yellow-a100);
-    }
-
-    .tab-content > ::content > a {
-      height: 100%;
-      /* flex */
-      -ms-flex: 1 1 0.000000001px;
-      -webkit-flex: 1;
-      flex: 1;
-      -webkit-flex-basis: 0.000000001px;
-      flex-basis: 0.000000001px;
-    }
-
-  </style>
-
   <template>
+    <style>
+      :host {
+        @apply(--layout-inline);
+        @apply(--layout-center);
+        @apply(--layout-center-justified);
+        @apply(--layout-flex);
+
+        position: relative;
+        padding: 0 12px;
+        overflow: hidden;
+        cursor: pointer;
+
+        @apply(--paper-tab);
+      }
+
+      :host(:focus) {
+        outline: none;
+      }
+
+      :host([link]) {
+        padding: 0;
+      }
+
+      .tab-content {
+        height: 100%;
+        transform: translateZ(0);
+          -webkit-transform: translateZ(0);
+        transition: opacity 0.1s cubic-bezier(0.4, 0.0, 1, 1);
+        @apply(--layout-horizontal);
+        @apply(--layout-center-center);
+        @apply(--layout-flex-auto);
+        @apply(--paper-tab-content);
+      }
+
+      :host(:not(.iron-selected)) > .tab-content {
+        opacity: 0.8;
+
+        @apply(--paper-tab-content-unselected);
+      }
+
+      :host(:focus) .tab-content {
+        opacity: 1;
+        font-weight: 700;
+      }
+
+      paper-ripple {
+        color: var(--paper-tab-ink, --paper-yellow-a100);
+      }
+
+      .tab-content > ::content > a {
+        @apply(--layout-flex)
+
+        height: 100%;
+      }
+    </style>
 
     <div class="tab-content">
       <content></content>
     </div>
-
   </template>
 
-</dom-module>
-
+  </dom-module>
 <script src="paper-tab-extracted.js"></script></body></html>

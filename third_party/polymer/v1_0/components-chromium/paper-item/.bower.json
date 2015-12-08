@@ -1,6 +1,6 @@
 {
   "name": "paper-item",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "A material-design styled list item",
   "authors": [
     "The Polymer Authors"
@@ -42,11 +42,11 @@
     "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0",
     "iron-test-helpers": "PolymerElements/iron-test-helpers#^1.0.0"
   },
-  "_release": "1.1.1",
+  "_release": "1.1.2",
   "_resolution": {
     "type": "version",
-    "tag": "v1.1.1",
-    "commit": "ca1a8afea954b80c839c6cdeef0bc88b9296dd1d"
+    "tag": "v1.1.2",
+    "commit": "e6d048b25af0a84e1ff9f48450f07972326d476b"
   },
   "_source": "git://github.com/PolymerElements/paper-item.git",
   "_target": "^1.0.0",

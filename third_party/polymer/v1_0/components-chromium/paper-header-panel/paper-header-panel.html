@@ -50,7 +50,7 @@ To have the content fit to the main area, use the `fit` class.
       <div class="fit">content fits 100% below the header</div>
     </paper-header-panel>
 
-Modes
+### Modes
 
 Controls header and scrolling behavior. Options are `standard`, `seamed`, `waterfall`, `waterfall-tall`, `scroll` and
 `cover`. Default is `standard`.
@@ -72,7 +72,7 @@ Example:
     </paper-header-panel>
 
 
-Styling header panel:
+### Styling
 
 To change the shadow that shows up underneath the header:
 
@@ -86,7 +86,7 @@ To change the shadow that shows up underneath the header:
 
 To change the panel container in different modes:
 
-    paper-slider {
+    paper-header-panel {
       --paper-header-panel-standard-container: {
         border: 1px solid gray;
       };
@@ -112,6 +112,19 @@ To change the panel container in different modes:
       };
     }
 
+The following custom properties and mixins are available for styling:
+
+Custom property | Description | Default
+----------------|-------------|----------
+`--paper-header-panel` | Mixin applied to the element | `{}`
+`--paper-header-panel-body` | Mixin applied to the element's body (i.e. everything below the toolbar) | `{}`
+`--paper-header-panel-scroll-container` | Mixin applied to the container when in scroll mode | `{}`
+`--paper-header-panel-cover-container` | Mixin applied to the container when in cover mode | `{}`
+`--paper-header-panel-standard-container` | Mixin applied to the container when in standard mode | `{}`
+`--paper-header-panel-seamed-container` | Mixin applied to the container when in seamed mode | `{}`
+`--paper-header-panel-waterfall-container` | Mixin applied to the container when in waterfall mode | `{}`
+`--paper-header-panel-waterfall-tall-container` | Mixin applied to the container when in tall waterfall mode | `{}`
+
 @group Paper Elements
 @element paper-header-panel
 @demo demo/index.html
@@ -119,10 +132,124 @@ To change the panel container in different modes:
 -->
 
 </head><body><dom-module id="paper-header-panel">
-
-  <link rel="import" type="css" href="paper-header-panel.css">
-
   <template>
+    <style>
+      :host {
+        --paper-header-panel-shadow: {
+          height: 6px;
+          bottom: -6px;
+          box-shadow: inset 0px 5px 6px -3px rgba(0, 0, 0, 0.4);
+        };
+
+        @apply(--layout-vertical);
+
+        position: relative;
+        height: 100%;
+
+        @apply(--paper-header-panel);
+      }
+
+      #mainContainer {
+        @apply(--layout-flex);
+
+        position: relative;
+        overflow-y: auto;
+        overflow-x: hidden;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      #mainPanel {
+        @apply(--layout-vertical);
+        @apply(--layout-flex);
+
+        position: relative;
+        min-height: 0;
+
+        @apply(--paper-header-panel-body);
+      }
+
+      /*
+       * mode: scroll
+       */
+      :host([mode=scroll]) #mainContainer {
+        @apply(--paper-header-panel-scroll-container);
+
+        overflow: visible;
+      }
+
+      :host([mode=scroll]) {
+        overflow-y: auto;
+        overflow-x: hidden;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      /*
+       * mode: cover
+       */
+      :host([mode=cover]) #mainContainer {
+        @apply(--paper-header-panel-cover-container);
+
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+      }
+
+      :host([mode=cover]) #mainPanel {
+        position: static;
+      }
+
+      /*
+       * mode: standard
+       */
+      :host([mode=standard]) #mainContainer {
+        @apply(--paper-header-panel-standard-container);
+      }
+
+      /*
+       * mode: seamed
+       */
+      :host([mode=seamed]) #mainContainer {
+        @apply(--paper-header-panel-seamed-container);
+      }
+
+
+      /*
+       * mode: waterfall
+       */
+      :host([mode=waterfall]) #mainContainer {
+        @apply(--paper-header-panel-waterfall-container);
+      }
+
+      /*
+       * mode: waterfall-tall
+       */
+      :host([mode=waterfall-tall]) #mainContainer {
+        @apply(--paper-header-panel-waterfall-tall-container);
+      }
+
+      #dropShadow {
+        @apply(--paper-header-panel-shadow);
+
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 6px;
+        pointer-events: none;
+
+        -webkit-transition: opacity 0.5s;
+        transition: opacity 0.5s;
+
+        opacity: 0;
+      }
+
+      #dropShadow.has-shadow {
+        opacity: 1;
+      }
+    </style>
+
     <content id="headerContent" select="paper-toolbar, .paper-header"></content>
 
     <div id="mainPanel">
@@ -133,6 +260,5 @@ To change the panel container in different modes:
     </div>
   </template>
 
-</dom-module>
-
+  </dom-module>
 <script src="paper-header-panel-extracted.js"></script></body></html>

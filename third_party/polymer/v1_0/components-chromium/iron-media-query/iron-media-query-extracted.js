@@ -30,25 +30,26 @@ Polymer({
         type: Boolean,
         value: false
       },
-      
+
       /**
        * @type {function(MediaQueryList)}
-       */ 
+       */
       _boundMQHandler: {
         value: function() {
           return this.queryHandler.bind(this);
         }
       },
-      
+
       /**
        * @type {MediaQueryList}
-       */ 
+       */
       _mq: {
         value: null
       }
     },
 
     attached: function() {
+      this.style.display = 'none';
       this.queryChanged();
     },
 

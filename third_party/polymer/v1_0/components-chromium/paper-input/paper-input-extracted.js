@@ -3,7 +3,6 @@ Polymer({
 
     behaviors: [
       Polymer.IronFormElementBehavior,
-      Polymer.PaperInputBehavior,
-      Polymer.IronControlState
+      Polymer.PaperInputBehavior
     ]
   });

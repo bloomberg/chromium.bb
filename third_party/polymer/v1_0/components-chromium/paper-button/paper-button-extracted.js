@@ -24,4 +24,13 @@ Polymer({
         Polymer.PaperButtonBehaviorImpl._calculateElevation.apply(this);
       }
     }
+    /**
+
+    Fired when the animation finishes.
+    This is useful if you want to wait until
+    the ripple animation finishes to perform some action.
+
+    @event transitionend
+    @param {{node: Object}} detail Contains the animated node.
+    */
   });

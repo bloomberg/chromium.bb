@@ -109,6 +109,7 @@
       for (var i = 0, item; item = this.items[i]; i++) {
         var attr = this.attrForItemTitle || 'textContent';
         var title = item[attr] || item.getAttribute(attr);
+
         if (title && title.trim().charAt(0).toLowerCase() === String.fromCharCode(event.keyCode).toLowerCase()) {
           this._setFocusedItem(item);
           break;
@@ -149,7 +150,6 @@
       } else {
         item.removeAttribute('aria-selected');
       }
-
       Polymer.IronSelectableBehavior._applySelection.apply(this, arguments);
     },
 
@@ -197,18 +197,18 @@
      * @param {CustomEvent} event A key combination event.
      */
     _onShiftTabDown: function(event) {
-      var oldTabIndex;
+      var oldTabIndex = this.getAttribute('tabindex');
 
       Polymer.IronMenuBehaviorImpl._shiftTabPressed = true;
 
-      oldTabIndex = this.getAttribute('tabindex');
+      this._setFocusedItem(null);
 
       this.setAttribute('tabindex', '-1');
 
       this.async(function() {
         this.setAttribute('tabindex', oldTabIndex);
         Polymer.IronMenuBehaviorImpl._shiftTabPressed = false;
-      // NOTE(cdata): polymer/polymer#1305
+        // NOTE(cdata): polymer/polymer#1305
       }, 1);
     },
 
@@ -219,23 +219,27 @@
      */
     _onFocus: function(event) {
       if (Polymer.IronMenuBehaviorImpl._shiftTabPressed) {
+        // do not focus the menu itself
         return;
       }
-      // do not focus the menu itself
+
       this.blur();
+
       // clear the cached focus item
-      this._setFocusedItem(null);
       this._defaultFocusAsync = this.async(function() {
         // focus the selected item when the menu receives focus, or the first item
         // if no item is selected
         var selectedItem = this.multi ? (this.selectedItems && this.selectedItems[0]) : this.selectedItem;
+
+        this._setFocusedItem(null);
+
         if (selectedItem) {
           this._setFocusedItem(selectedItem);
         } else {
           this._setFocusedItem(this.items[0]);
         }
-      // async 100ms to wait for `select` to get called from `_itemActivate`
-      }, 100);
+      // async 1ms to wait for `select` to get called from `_itemActivate`
+      }, 1);
     },
 
     /**
@@ -273,12 +277,17 @@
      * @param {KeyboardEvent} event A keyboard event.
      */
     _onKeydown: function(event) {
-      if (this.keyboardEventMatchesKeys(event, 'up down esc')) {
-        return;
+      if (!this.keyboardEventMatchesKeys(event, 'up down esc')) {
+        // all other keys focus the menu item starting with that character
+        this._focusWithKeyboardEvent(event);
       }
+      event.stopPropagation();
+    },
 
-      // all other keys focus the menu item starting with that character
-      this._focusWithKeyboardEvent(event);
+    // override _activateHandler
+    _activateHandler: function(event) {
+      Polymer.IronSelectableBehavior._activateHandler.call(this, event);
+      event.stopPropagation();
     }
   };
 

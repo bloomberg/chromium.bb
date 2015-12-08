@@ -52,6 +52,7 @@ PolymerElement.prototype.shadyRoot;
 /**
  * Returns the first node in this element’s local DOM that matches selector.
  * @param {string} selector
+ * @return {Element} Element found by the selector, or null if not found.
  */
 PolymerElement.prototype.$$ = function(selector) {};
 
@@ -255,6 +256,22 @@ PolymerElement.prototype.shift = function(path) {};
 PolymerElement.prototype.unshift = function(path, var_args) {};
 
 /**
+ * Returns a list of element children distributed to this element's
+ * `<content>`.
+ *
+ * If this element contans more than one `<content>` in its
+ * local DOM, an optional selector may be passed to choose the desired
+ * content.  This method differs from `getContentChildNodes` in that only
+ * elements are returned.
+ *
+ * @param {string=} slctr CSS selector to choose the desired
+ *   `<content>`.  Defaults to `content`.
+ * @return {!Array<!HTMLElement>} List of distributed nodes for the
+ *   `<content>`.
+ */
+PolymerElement.prototype.getContentChildren = function(slctr) {};
+
+/**
  * Fire an event.
  *
  * @param {string} type An event name.
@@ -339,6 +356,14 @@ PolymerElement.prototype.async = function(method, wait) {};
  * @param {...*} var_args
  */
 PolymerElement.prototype.factoryImpl = function(var_args) {};
+
+/**
+ * Apply style scoping to the specified container and all its descendants.
+ * @param {!Element} container Element to scope.
+ * @param {boolean} shouldObserve When true, monitors the container for changes
+ *   and re-applies scoping for any future changes.
+ */
+PolymerElement.prototype.scopeSubtree = function(container, shouldObserve) {};
 
 Polymer.Base;
 
@@ -439,7 +464,7 @@ PolymerElement.prototype.importHref = function(href, onload, onerror) {};
 
 /**
  * Checks whether an element is in this element's light DOM tree.
- * @param {HTMLElement=} node The element to be checked.
+ * @param {?Node} node The element to be checked.
  * @return {boolean} true if node is in this element's light DOM tree.
  */
 PolymerElement.prototype.isLightDescendant = function(node) {};
@@ -522,6 +547,12 @@ PolymerElement.prototype._logf = function(var_args) {};
  */
 var PolymerDomApi = function() {};
 
+/**
+ * @param {?Node} node
+ * @return {boolean}
+ */
+PolymerDomApi.prototype.deepContains = function(node) {};
+
 /** @param {!Node} node */
 PolymerDomApi.prototype.appendChild = function(node) {};
 
@@ -539,6 +570,9 @@ PolymerDomApi.prototype.insertBefore = function(node, beforeNode) {};
 
 /** @param {!Node} node */
 PolymerDomApi.prototype.removeChild = function(node) {};
+
+/** @type {!Array<!HTMLElement>} */
+PolymerDomApi.prototype.children;
 
 /** @type {!Array<!Node>} */
 PolymerDomApi.prototype.childNodes;
@@ -635,6 +669,16 @@ PolymerEventApi.prototype.localTarget;
 
 /** @type {?Array<!Element>|undefined} */
 PolymerEventApi.prototype.path;
+
+
+Polymer.Async;
+
+/**
+ * polymer-onerror experiment relies on this private API, so expose it only
+ * to let the compilation work. Do not use in user code.
+ */
+Polymer.Async._atEndOfMicrotask = function() {};
+
 
 /**
  * Returns a Polymer-friendly API for manipulating DOM of a specified node or

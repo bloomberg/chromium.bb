@@ -10,10 +10,6 @@ Polymer({
          * Controls how the items are aligned horizontally when they are placed
          * at the bottom.
          * Options are `start`, `center`, `end`, `justified` and `around`.
-         *
-         * @attribute bottomJustify
-         * @type string
-         * @default ''
          */
         bottomJustify: {
           type: String,
@@ -23,10 +19,6 @@ Polymer({
         /**
          * Controls how the items are aligned horizontally.
          * Options are `start`, `center`, `end`, `justified` and `around`.
-         *
-         * @attribute justify
-         * @type string
-         * @default ''
          */
         justify: {
           type: String,
@@ -37,10 +29,6 @@ Polymer({
          * Controls how the items are aligned horizontally when they are placed
          * in the middle.
          * Options are `start`, `center`, `end`, `justified` and `around`.
-         *
-         * @attribute middleJustify
-         * @type string
-         * @default ''
          */
         middleJustify: {
           type: String,

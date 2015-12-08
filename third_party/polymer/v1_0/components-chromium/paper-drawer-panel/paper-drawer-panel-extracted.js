@@ -191,7 +191,7 @@
           /**
            * Whether the transition is enabled.
            */
-          transition: {
+          _transition: {
             type: Boolean,
             value: false
           },
@@ -243,7 +243,7 @@
         ready: function() {
           // Avoid transition at the beginning e.g. page loads and enable
           // transitions only after the element is rendered and ready.
-          this.transition = true;
+          this._transition = true;
         },
 
         _onMainTransitionEnd: function (e) {
@@ -394,7 +394,7 @@
 
             if (this.dragging) {
               this.width = this.$.drawer.offsetWidth;
-              this.transition = false;
+              this._transition = false;
             }
           }
         },
@@ -430,7 +430,7 @@
             var xDirection = event.detail.dx > 0;
 
             this._setDragging(false);
-            this.transition = true;
+            this._transition = true;
             sharedPanel = null;
             this._moveDrawer(null);
 
