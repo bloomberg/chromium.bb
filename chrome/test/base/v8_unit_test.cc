@@ -33,16 +33,16 @@ std::string LogArgs2String(const v8::FunctionCallbackInfo<v8::Value>& args) {
 }
 
 // Whether errors were seen.
-bool had_errors = false;
+bool g_had_errors = false;
 
 // testDone results.
-bool testResult_ok = false;
+bool g_test_result_ok = false;
 
 // Location of test data (currently test/data/webui).
-base::FilePath test_data_directory;
+base::FilePath g_test_data_directory;
 
 // Location of generated test data (<(PROGRAM_DIR)/test_data).
-base::FilePath gen_test_data_directory;
+base::FilePath g_gen_test_data_directory;
 
 }  // namespace
 
@@ -66,10 +66,9 @@ bool V8UnitTest::ExecuteJavascriptLibraries() {
     std::string library_content;
     base::FilePath library_file(*user_libraries_iterator);
     if (!user_libraries_iterator->IsAbsolute()) {
-      base::FilePath gen_file = gen_test_data_directory.Append(library_file);
-      library_file = base::PathExists(gen_file)
-                         ? gen_file
-                         : test_data_directory.Append(*user_libraries_iterator);
+      base::FilePath gen_file = g_gen_test_data_directory.Append(library_file);
+      library_file = base::PathExists(gen_file) ?
+          gen_file : g_test_data_directory.Append(*user_libraries_iterator);
     }
     library_file = base::MakeAbsoluteFilePath(library_file);
     if (!base::ReadFileToString(library_file, &library_content)) {
@@ -83,10 +82,10 @@ bool V8UnitTest::ExecuteJavascriptLibraries() {
   return true;
 }
 
-bool V8UnitTest::RunJavascriptTestF(const std::string& testFixture,
-                                    const std::string& testName) {
-  had_errors = false;
-  testResult_ok = false;
+bool V8UnitTest::RunJavascriptTestF(const std::string& test_fixture,
+                                    const std::string& test_name) {
+  g_had_errors = false;
+  g_test_result_ok = false;
   std::string test_js;
   if (!ExecuteJavascriptLibraries())
     return false;
@@ -97,28 +96,28 @@ bool V8UnitTest::RunJavascriptTestF(const std::string& testFixture,
       v8::Local<v8::Context>::New(isolate, context_);
   v8::Context::Scope context_scope(context);
 
-  v8::Local<v8::Value> functionProperty =
+  v8::Local<v8::Value> function_property =
       context->Global()->Get(v8::String::NewFromUtf8(isolate, "runTest"));
-  EXPECT_FALSE(functionProperty.IsEmpty());
+  EXPECT_FALSE(function_property.IsEmpty());
   if (::testing::Test::HasNonfatalFailure())
     return false;
-  EXPECT_TRUE(functionProperty->IsFunction());
+  EXPECT_TRUE(function_property->IsFunction());
   if (::testing::Test::HasNonfatalFailure())
     return false;
   v8::Local<v8::Function> function =
-      v8::Local<v8::Function>::Cast(functionProperty);
+      v8::Local<v8::Function>::Cast(function_property);
 
   v8::Local<v8::Array> params = v8::Array::New(isolate);
   params->Set(0,
               v8::String::NewFromUtf8(isolate,
-                                      testFixture.data(),
+                                      test_fixture.data(),
                                       v8::String::kNormalString,
-                                      testFixture.size()));
+                                      test_fixture.size()));
   params->Set(1,
               v8::String::NewFromUtf8(isolate,
-                                      testName.data(),
+                                      test_name.data(),
                                       v8::String::kNormalString,
-                                      testName.size()));
+                                      test_name.size()));
   v8::Local<v8::Value> args[] = {
       v8::Boolean::New(isolate, false),
       v8::String::NewFromUtf8(isolate, "RUN_TEST_F"), params};
@@ -131,45 +130,40 @@ bool V8UnitTest::RunJavascriptTestF(const std::string& testFixture,
     return false;
 
   // Ok if ran successfully, passed tests, and didn't have console errors.
-  return result->BooleanValue() && testResult_ok && !had_errors;
+  return result->BooleanValue() && g_test_result_ok && !g_had_errors;
 }
 
 void V8UnitTest::InitPathsAndLibraries() {
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_directory));
-  test_data_directory = test_data_directory.AppendASCII("webui");
+  base::FilePath test_data;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data));
+
+  g_test_data_directory = test_data.AppendASCII("webui");
+
   ASSERT_TRUE(
-      PathService::Get(chrome::DIR_GEN_TEST_DATA, &gen_test_data_directory));
+      PathService::Get(chrome::DIR_GEN_TEST_DATA, &g_gen_test_data_directory));
 
-  base::FilePath mockPath;
-  ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &mockPath));
-  mockPath = mockPath.AppendASCII("chrome");
-  mockPath = mockPath.AppendASCII("third_party");
-  mockPath = mockPath.AppendASCII("mock4js");
-  mockPath = mockPath.AppendASCII("mock4js.js");
-  AddLibrary(mockPath);
+  base::FilePath src_root;
+  ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &src_root));
 
-  base::FilePath accessibilityAuditPath;
-  ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &accessibilityAuditPath));
-  accessibilityAuditPath = accessibilityAuditPath.AppendASCII("third_party");
-  accessibilityAuditPath =
-      accessibilityAuditPath.AppendASCII("accessibility-audit");
-  accessibilityAuditPath = accessibilityAuditPath.AppendASCII("axs_testing.js");
-  AddLibrary(accessibilityAuditPath);
+  AddLibrary(src_root.AppendASCII("chrome")
+                     .AppendASCII("third_party")
+                     .AppendASCII("mock4js")
+                     .AppendASCII("mock4js.js"));
 
-  base::FilePath testApiPath;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &testApiPath));
-  testApiPath = testApiPath.AppendASCII("webui");
-  testApiPath = testApiPath.AppendASCII("test_api.js");
-  AddLibrary(testApiPath);
+  AddLibrary(src_root.AppendASCII("third_party")
+                     .AppendASCII("accessibility-audit")
+                     .AppendASCII("axs_testing.js"));
+
+  AddLibrary(g_test_data_directory.AppendASCII("test_api.js"));
 }
 
 void V8UnitTest::SetUp() {
   v8::Isolate* isolate = blink::mainThreadIsolate();
   v8::Local<v8::ObjectTemplate> global = v8::ObjectTemplate::New(isolate);
-  v8::Local<v8::String> logString = v8::String::NewFromUtf8(isolate, "log");
-  v8::Local<v8::FunctionTemplate> logFunction =
+  v8::Local<v8::String> log_string = v8::String::NewFromUtf8(isolate, "log");
+  v8::Local<v8::FunctionTemplate> log_function =
       v8::FunctionTemplate::New(isolate, &V8UnitTest::Log);
-  global->Set(logString, logFunction);
+  global->Set(log_string, log_function);
 
   // Set up chrome object for chrome.send().
   v8::Local<v8::ObjectTemplate> chrome = v8::ObjectTemplate::New(isolate);
@@ -180,9 +174,9 @@ void V8UnitTest::SetUp() {
   // Set up console object for console.log(), etc.
   v8::Local<v8::ObjectTemplate> console = v8::ObjectTemplate::New(isolate);
   global->Set(v8::String::NewFromUtf8(isolate, "console"), console);
-  console->Set(logString, logFunction);
-  console->Set(v8::String::NewFromUtf8(isolate, "info"), logFunction);
-  console->Set(v8::String::NewFromUtf8(isolate, "warn"), logFunction);
+  console->Set(log_string, log_function);
+  console->Set(v8::String::NewFromUtf8(isolate, "info"), log_function);
+  console->Set(v8::String::NewFromUtf8(isolate, "warn"), log_function);
   console->Set(v8::String::NewFromUtf8(isolate, "error"),
                v8::FunctionTemplate::New(isolate, &V8UnitTest::Error));
 
@@ -260,12 +254,12 @@ void V8UnitTest::TestFunction(const std::string& function_name) {
       v8::Local<v8::Context>::New(isolate, context_);
   v8::Context::Scope context_scope(context);
 
-  v8::Local<v8::Value> functionProperty = context->Global()->Get(
+  v8::Local<v8::Value> function_property = context->Global()->Get(
       v8::String::NewFromUtf8(isolate, function_name.c_str()));
-  ASSERT_FALSE(functionProperty.IsEmpty());
-  ASSERT_TRUE(functionProperty->IsFunction());
+  ASSERT_FALSE(function_property.IsEmpty());
+  ASSERT_TRUE(function_property->IsFunction());
   v8::Local<v8::Function> function =
-      v8::Local<v8::Function>::Cast(functionProperty);
+      v8::Local<v8::Function>::Cast(function_property);
 
   v8::TryCatch try_catch(isolate);
   v8::Local<v8::Value> result = function->Call(context->Global(), 0, NULL);
@@ -280,7 +274,7 @@ void V8UnitTest::Log(const v8::FunctionCallbackInfo<v8::Value>& args) {
 }
 
 void V8UnitTest::Error(const v8::FunctionCallbackInfo<v8::Value>& args) {
-  had_errors = true;
+  g_had_errors = true;
   LOG(ERROR) << LogArgs2String(args);
 }
 
@@ -299,13 +293,13 @@ void V8UnitTest::ChromeSend(const v8::FunctionCallbackInfo<v8::Value>& args) {
   EXPECT_EQ(2, args.Length());
   if (::testing::Test::HasNonfatalFailure())
     return;
-  v8::Local<v8::Array> testResult(args[1].As<v8::Array>());
-  EXPECT_EQ(2U, testResult->Length());
+  v8::Local<v8::Array> test_result(args[1].As<v8::Array>());
+  EXPECT_EQ(2U, test_result->Length());
   if (::testing::Test::HasNonfatalFailure())
     return;
-  testResult_ok = testResult->Get(0)->BooleanValue();
-  if (!testResult_ok) {
-    v8::String::Utf8Value message(testResult->Get(1));
+  g_test_result_ok = test_result->Get(0)->BooleanValue();
+  if (!g_test_result_ok) {
+    v8::String::Utf8Value message(test_result->Get(1));
     LOG(ERROR) << *message;
   }
 }
