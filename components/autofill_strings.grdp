@@ -11,6 +11,9 @@
       CLEAR FORM
     </message>
   </if>
+  <message name="IDS_AUTOFILL_CLEAR_LOCAL_COPY_BUTTON" desc="The label of the button that clears the local copy of a Wallet Credit Card." formatter_data="android_java">
+    Clear copy
+  </message>
   <message name="IDS_AUTOFILL_WARNING_FORM_DISABLED" desc="Warning text to show when autofill is disabled by the website for a given form.">
     This webpage has disabled automatic filling for this form.
   </message>
@@ -244,6 +247,54 @@
   </message>
   <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS_EXPIRED_AMEX" desc="Text explaining what the user should do in the card unmasking dialog to update an expired amex card.">
     Enter the expiration date and 4-digit CVC from the front of your card
+  </message>
+  <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_STORAGE_CHECKBOX" desc="Text for checkbox in card unmasking dialog that allows user to store a Wallet card on their local device. If checked, the dialog won't show up again for the given credit card." formatter_data="android_java">
+    Keep a copy of this card on this device
+  </message>
+  <if expr="not is_ios">
+    <if expr="_google_chrome">
+      <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_STORAGE_TOOLTIP" desc="Text that provides further explanation for checkbox in card unmasking dialog that allows user to store a Wallet card on their local device." formatter_data="android_java">
+        If checked, Chrome will store a copy of your card on this device for faster form filling.
+      </message>
+    </if>
+    <if expr="not _google_chrome">
+      <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_STORAGE_TOOLTIP" desc="Text that provides further explanation for checkbox in card unmasking dialog that allows user to store a Wallet card on their local device." formatter_data="android_java">
+        If checked, Chromium will store a copy of your card on this device for faster form filling.
+      </message>
+    </if>
+  </if>
+  <if expr="is_ios">
+    <if expr="_google_chrome">
+      <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_STORAGE_TOOLTIP" desc="Text that provides further explanation on iOS for the option in the card unmasking dialog that allows user to store a Wallet card on their local device." formatter_data="android_java">
+        If enabled, Chrome will store a copy of your card on this device for faster form filling.
+      </message>
+    </if>
+    <if expr="not _google_chrome">
+      <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_STORAGE_TOOLTIP" desc="Text that provides further explanation on iOS for the option in the card unmasking dialog that allows user to store a Wallet card on their local device." formatter_data="android_java">
+        If enabled, Chromium will store a copy of your card on this device for faster form filling.
+      </message>
+    </if>
+  </if>
+  <message name="IDS_AUTOFILL_CARD_UNMASK_CONFIRM_BUTTON" desc="Text for button that confirms the credit card CVC entry dialog." formatter_data="android_java">
+    Verify
+  </message>
+  <message name="IDS_AUTOFILL_CARD_UNMASK_VERIFICATION_IN_PROGRESS" desc="Message displayed while credit card is being verified." formatter_data="android_java">
+    Verifying card
+  </message>
+  <message name="IDS_AUTOFILL_CARD_UNMASK_VERIFICATION_SUCCESS" desc="Message displayed after successful verification of credit card CVC." formatter_data="android_java">
+    Your card is verified
+  </message>
+  <message name="IDS_AUTOFILL_CARD_UNMASK_INVALID_EXPIRATION_DATE" desc="Error message to show when a user has input an invalid or old expiration date.">
+    The card is expired
+  </message>
+  <message name="IDS_AUTOFILL_CARD_UNMASK_EXPIRATION_DATE_SEPARATOR" desc="Separator for a credit card expiration date, e.g. the slash in 05/16." formatter_data="android_java">
+    /
+  </message>
+  <message name="IDS_AUTOFILL_CARD_UNMASK_NEW_CARD_LINK" desc="Text for link that prompts user to update their credit card after it may have been re-issued." formatter_data="android_java">
+    New card?
+  </message>
+  <message name="IDS_AUTOFILL_DIALOG_PLACEHOLDER_CVC" desc="The placeholder/label text for credit card verification code in the requestAutocomplete dialog.">
+    CVC
   </message>
 
 </grit-part>

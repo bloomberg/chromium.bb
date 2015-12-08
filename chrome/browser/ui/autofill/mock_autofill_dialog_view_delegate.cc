@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/autofill/mock_autofill_dialog_view_delegate.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/native_web_keyboard_event.h"  // For gmock.
+#include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/rect.h"  // Only needed because gmock needs complete types.
 

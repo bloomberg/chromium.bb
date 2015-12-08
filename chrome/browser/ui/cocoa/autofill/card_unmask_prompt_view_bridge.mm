@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/cocoa/themed_window.h"
 #include "components/autofill/core/browser/ui/card_unmask_prompt_controller.h"
 #include "content/public/browser/web_contents.h"
+#include "grit/components_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "skia/ext/skia_utils_mac.h"

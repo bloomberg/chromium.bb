@@ -74,6 +74,56 @@
     <output filename="components_strings_vi.pak" type="data_package" lang="vi" />
     <output filename="components_strings_zh-CN.pak" type="data_package" lang="zh-CN" />
     <output filename="components_strings_zh-TW.pak" type="data_package" lang="zh-TW" />
+
+    <!-- On Android, output some strings into Android's xml string format.
+         These strings are tagged with formatter_data="android_java" -->
+    <if expr="is_android">
+      <output filename="java/res/values-am/components_strings.xml" lang="am" type="android" context="android_java" />
+      <output filename="java/res/values-ar/components_strings.xml" lang="ar" type="android" context="android_java" />
+      <output filename="java/res/values-bg/components_strings.xml" lang="bg" type="android" context="android_java" />
+      <output filename="java/res/values-ca/components_strings.xml" lang="ca" type="android" context="android_java" />
+      <output filename="java/res/values-cs/components_strings.xml" lang="cs" type="android" context="android_java" />
+      <output filename="java/res/values-da/components_strings.xml" lang="da" type="android" context="android_java" />
+      <output filename="java/res/values-de/components_strings.xml" lang="de" type="android" context="android_java" />
+      <output filename="java/res/values-el/components_strings.xml" lang="el" type="android" context="android_java" />
+      <output filename="java/res/values/components_strings.xml" lang="en" type="android" context="android_java" />
+      <output filename="java/res/values-en-rGB/components_strings.xml" lang="en-GB" type="android" context="android_java" />
+      <output filename="java/res/values-es/components_strings.xml" lang="es" type="android" context="android_java" />
+      <output filename="java/res/values-es-rUS/components_strings.xml" lang="es-419" type="android" context="android_java" />
+      <output filename="java/res/values-fa/components_strings.xml" lang="fa" type="android" context="android_java" />
+      <output filename="java/res/values-fi/components_strings.xml" lang="fi" type="android" context="android_java" />
+      <output filename="java/res/values-tl/components_strings.xml" lang="fil" type="android" context="android_java" />
+      <output filename="java/res/values-fr/components_strings.xml" lang="fr" type="android" context="android_java" />
+      <output filename="java/res/values-hi/components_strings.xml" lang="hi" type="android" context="android_java" />
+      <output filename="java/res/values-hr/components_strings.xml" lang="hr" type="android" context="android_java" />
+      <output filename="java/res/values-hu/components_strings.xml" lang="hu" type="android" context="android_java" />
+      <output filename="java/res/values-in/components_strings.xml" lang="id" type="android" context="android_java" />
+      <output filename="java/res/values-it/components_strings.xml" lang="it" type="android" context="android_java" />
+      <output filename="java/res/values-iw/components_strings.xml" lang="he" type="android" context="android_java" />
+      <output filename="java/res/values-ja/components_strings.xml" lang="ja" type="android" context="android_java" />
+      <output filename="java/res/values-ko/components_strings.xml" lang="ko" type="android" context="android_java" />
+      <output filename="java/res/values-lt/components_strings.xml" lang="lt" type="android" context="android_java" />
+      <output filename="java/res/values-lv/components_strings.xml" lang="lv" type="android" context="android_java" />
+      <output filename="java/res/values-nl/components_strings.xml" lang="nl" type="android" context="android_java" />
+      <output filename="java/res/values-nb/components_strings.xml" lang="no" type="android" context="android_java" />
+      <output filename="java/res/values-pl/components_strings.xml" lang="pl" type="android" context="android_java" />
+      <output filename="java/res/values-pt-rBR/components_strings.xml" lang="pt-BR" type="android" context="android_java" />
+      <output filename="java/res/values-pt-rPT/components_strings.xml" lang="pt-PT" type="android" context="android_java" />
+      <output filename="java/res/values-ro/components_strings.xml" lang="ro" type="android" context="android_java" />
+      <output filename="java/res/values-ru/components_strings.xml" lang="ru" type="android" context="android_java" />
+      <output filename="java/res/values-sk/components_strings.xml" lang="sk" type="android" context="android_java" />
+      <output filename="java/res/values-sl/components_strings.xml" lang="sl" type="android" context="android_java" />
+      <output filename="java/res/values-sr/components_strings.xml" lang="sr" type="android" context="android_java" />
+      <output filename="java/res/values-sv/components_strings.xml" lang="sv" type="android" context="android_java" />
+      <output filename="java/res/values-sw/components_strings.xml" lang="sw" type="android" context="android_java" />
+      <output filename="java/res/values-th/components_strings.xml" lang="th" type="android" context="android_java" />
+      <output filename="java/res/values-tr/components_strings.xml" lang="tr" type="android" context="android_java" />
+      <output filename="java/res/values-uk/components_strings.xml" lang="uk" type="android" context="android_java" />
+      <output filename="java/res/values-vi/components_strings.xml" lang="vi" type="android" context="android_java" />
+      <output filename="java/res/values-zh-rCN/components_strings.xml" lang="zh-CN" type="android" context="android_java" />
+      <output filename="java/res/values-zh-rTW/components_strings.xml" lang="zh-TW" type="android" context="android_java" />
+    </if>
+
   </outputs>
   <translations>
     <file path="strings/components_strings_am.xtb" lang="am" />

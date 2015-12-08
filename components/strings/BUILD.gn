@@ -4,6 +4,56 @@
 
 import("//tools/grit/grit_rule.gni")
 
+if (is_android) {
+  import("//build/config/android/rules.gni")
+  android_components_strings_java_resources = [
+    "java/res/values-am/components_strings.xml",
+    "java/res/values-ar/components_strings.xml",
+    "java/res/values-bg/components_strings.xml",
+    "java/res/values-ca/components_strings.xml",
+    "java/res/values-cs/components_strings.xml",
+    "java/res/values-da/components_strings.xml",
+    "java/res/values-de/components_strings.xml",
+    "java/res/values-el/components_strings.xml",
+    "java/res/values-en-rGB/components_strings.xml",
+    "java/res/values-es-rUS/components_strings.xml",
+    "java/res/values-es/components_strings.xml",
+    "java/res/values-fa/components_strings.xml",
+    "java/res/values-fi/components_strings.xml",
+    "java/res/values-fr/components_strings.xml",
+    "java/res/values-hi/components_strings.xml",
+    "java/res/values-hr/components_strings.xml",
+    "java/res/values-hu/components_strings.xml",
+    "java/res/values-in/components_strings.xml",
+    "java/res/values-it/components_strings.xml",
+    "java/res/values-iw/components_strings.xml",
+    "java/res/values-ja/components_strings.xml",
+    "java/res/values-ko/components_strings.xml",
+    "java/res/values-lt/components_strings.xml",
+    "java/res/values-lv/components_strings.xml",
+    "java/res/values-nb/components_strings.xml",
+    "java/res/values-nl/components_strings.xml",
+    "java/res/values-pl/components_strings.xml",
+    "java/res/values-pt-rBR/components_strings.xml",
+    "java/res/values-pt-rPT/components_strings.xml",
+    "java/res/values-ro/components_strings.xml",
+    "java/res/values-ru/components_strings.xml",
+    "java/res/values-sk/components_strings.xml",
+    "java/res/values-sl/components_strings.xml",
+    "java/res/values-sr/components_strings.xml",
+    "java/res/values-sv/components_strings.xml",
+    "java/res/values-sw/components_strings.xml",
+    "java/res/values-th/components_strings.xml",
+    "java/res/values-tl/components_strings.xml",
+    "java/res/values-tr/components_strings.xml",
+    "java/res/values-uk/components_strings.xml",
+    "java/res/values-vi/components_strings.xml",
+    "java/res/values-zh-rCN/components_strings.xml",
+    "java/res/values-zh-rTW/components_strings.xml",
+    "java/res/values/components_strings.xml",
+  ]
+}
+
 group("strings") {
   public_deps = [
     ":components_chromium_strings",
@@ -83,6 +133,21 @@ grit("components_strings") {
     outputs += [
       "components_strings_pt.pak",
       "components_strings_es-MX.pak",
+    ]
+  }
+
+  if (is_android) {
+    outputs += android_components_strings_java_resources
+  }
+}
+
+if (is_android) {
+  java_strings_grd_prebuilt("components_strings_grd") {
+    grit_output_dir = "$root_gen_dir/components/strings/java/res"
+    generated_files =
+        rebase_path(android_components_strings_java_resources, "java/res", ".")
+    deps = [
+      ":components_strings",
     ]
   }
 }

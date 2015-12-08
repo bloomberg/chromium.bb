@@ -65,6 +65,7 @@ android_resources("chrome_java_resources") {
     ":chrome_strings_grd",
     "//chrome/app:java_strings_grd",
     "//components/policy:app_restrictions_resources",
+    "//components/strings:components_strings_grd",
     "//content/public/android:content_java_resources",
     "//third_party/android_data_chart:android_data_chart_java_resources",
     "//third_party/android_media:android_media_resources",

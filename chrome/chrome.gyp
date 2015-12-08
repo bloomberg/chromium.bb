@@ -567,6 +567,7 @@
             '../components/components.gyp:signin_core_browser_java',
             '../components/components.gyp:variations_java',
             '../components/components.gyp:web_contents_delegate_android_java',
+            '../components/components_strings.gyp:components_strings',
             '../content/content.gyp:content_java',
             '../media/media.gyp:media_java',
             '../printing/printing.gyp:printing_java',
@@ -598,6 +599,7 @@
             'res_extra_dirs': [
               '<@(android_branding_res_dirs)',
               '<(SHARED_INTERMEDIATE_DIR)/chrome/java/res',
+              '<(SHARED_INTERMEDIATE_DIR)/components/strings/java/res',
             ],
             'res_extra_files': [
               '<!@(find <(android_branding_res_dirs) -type f)',
