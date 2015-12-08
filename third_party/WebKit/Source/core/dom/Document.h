@@ -1002,9 +1002,6 @@ public:
 
     void updateStyleInvalidationIfNeeded();
 
-    bool attemptedToDetermineEncodingFromContentSniffing() const;
-    bool encodingWasDetectedFromContentSniffing() const;
-
     DECLARE_VIRTUAL_TRACE();
 
     bool hasSVGFilterElementsRequiringLayerUpdate() const { return m_layerUpdateSVGFilterElements.size(); }

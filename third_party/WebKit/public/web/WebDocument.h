@@ -137,9 +137,6 @@ public:
     BLINK_EXPORT bool manifestUseCredentials() const;
     BLINK_EXPORT WebDistillabilityFeatures distillabilityFeatures();
 
-    BLINK_EXPORT bool attemptedToDetermineEncodingFromContentSniffing() const;
-    BLINK_EXPORT bool encodingWasDetectedFromContentSniffing() const;
-
 #if BLINK_IMPLEMENTATION
     WebDocument(const PassRefPtrWillBeRawPtr<Document>&);
     WebDocument& operator=(const PassRefPtrWillBeRawPtr<Document>&);

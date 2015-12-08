@@ -19,6 +19,7 @@
     Boston, MA 02110-1301, USA.
 */
 
+
 #include "config.h"
 #include "core/html/parser/TextResourceDecoder.h"
 
@@ -400,7 +401,9 @@ String TextResourceDecoder::decode(const char* data, size_t len)
         checkForMetaCharset(dataForDecode, lengthForDecode);
 
     if (shouldAutoDetect()) {
-        detectTextEncoding(data, len);
+        WTF::TextEncoding detectedEncoding;
+        if (detectTextEncoding(data, len, m_hintEncoding, &detectedEncoding))
+            setEncoding(detectedEncoding, EncodingFromContentSniffing);
     }
 
     ASSERT(m_encoding.isValid());
@@ -414,16 +417,6 @@ String TextResourceDecoder::decode(const char* data, size_t len)
     return result;
 }
 
-void TextResourceDecoder::detectTextEncoding(const char* data, size_t len)
-{
-    WTF::TextEncoding detectedEncoding;
-    bool detected = blink::detectTextEncoding(data, len, m_hintEncoding, &detectedEncoding);
-    if (detected && detectedEncoding != encoding())
-        setEncoding(detectedEncoding, EncodingFromContentSniffing);
-    else
-        setEncoding(detectedEncoding, DefaultEncodingAttemptedSniffing);
-}
-
 String TextResourceDecoder::flush()
 {
     // If we can not identify the encoding even after a document is completely
@@ -431,7 +424,9 @@ String TextResourceDecoder::flush()
     // autodetection is satisfied.
     if (m_buffer.size() && shouldAutoDetect()
         && ((!m_checkedForXMLCharset && (m_contentType == HTMLContent || m_contentType == XMLContent)) || (!m_checkedForCSSCharset && (m_contentType == CSSContent)))) {
-        detectTextEncoding(m_buffer.data(), m_buffer.size());
+        WTF::TextEncoding detectedEncoding;
+        if (detectTextEncoding(m_buffer.data(), m_buffer.size(), m_hintEncoding, &detectedEncoding))
+            setEncoding(detectedEncoding, EncodingFromContentSniffing);
     }
 
     if (!m_codec)

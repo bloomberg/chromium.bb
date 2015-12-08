@@ -46,8 +46,6 @@ DocumentEncodingData::DocumentEncodingData(const TextResourceDecoder& decoder)
 {
     m_encoding = decoder.encoding();
     m_wasDetectedHeuristically = decoder.encodingWasDetectedHeuristically();
-    m_attemptedToDetermineEncodingFromContentSniffing = decoder.attemptedToDetermineEncodingFromContentSniffing();
-    m_encodingWasDetectedFromContentSniffing = decoder.encodingWasDetectedFromContentSniffing();
     m_sawDecodingError = decoder.sawError();
 }
 
