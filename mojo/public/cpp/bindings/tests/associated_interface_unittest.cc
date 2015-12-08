@@ -308,7 +308,15 @@ class TestReceiver {
   base::Closure notify_finish_;
 };
 
-TEST_F(AssociatedInterfaceTest, MultiThreadAccess) {
+#if defined(OS_ANDROID)
+// TODO(yzshen): This test is occasionally failing on Android GN builds.
+// http://crbug.com/567395.
+#define MAYBE_MultiThreadAccess DISABLED_MultiThreadAccess
+#else
+#define MAYBE_MultiThreadAccess MultiThreadAccess
+#endif  // defined(OS_ANDROID)
+
+TEST_F(AssociatedInterfaceTest, MAYBE_MultiThreadAccess) {
   // Set up four associated interfaces on a message pipe. Use the inteface
   // pointers on four threads in parallel; run the interface implementations on
   // two threads. Test that multi-threaded access works.
