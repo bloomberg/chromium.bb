@@ -565,11 +565,14 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest,
   DetachFakeDevice();
 }
 
-// Test is flaky, it times out frequently on Win7 bots. See crbug.com/567212.
+// These two tests are flaky, they time out frequently on Win7 bots. See
+// crbug.com/567212.
 #if defined(OS_WIN)
 #define MAYBE_PicasaDefaultLocation DISABLED_PicasaDefaultLocation
+#define MAYBE_PicasaCustomLocation DISABLED_PicasaCustomLocation
 #else
 #define MAYBE_PicasaDefaultLocation PicasaDefaultLocation
+#define MAYBE_PicasaCustomLocation PicasaCustomLocation
 #endif
 #if defined(OS_WIN)|| defined(OS_MACOSX)
 IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest,
@@ -588,7 +591,7 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest,
-                       PicasaCustomLocation) {
+                       MAYBE_PicasaCustomLocation) {
   base::ScopedTempDir custom_picasa_app_data_root;
   ASSERT_TRUE(custom_picasa_app_data_root.CreateUniqueTempDir());
   ensure_media_directories_exists()->SetCustomPicasaAppDataPath(
