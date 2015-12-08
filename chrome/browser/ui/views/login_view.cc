@@ -20,7 +20,8 @@ using views::GridLayout;
 ///////////////////////////////////////////////////////////////////////////////
 // LoginView, public:
 
-LoginView::LoginView(const base::string16& explanation,
+LoginView::LoginView(const base::string16& authority,
+                     const base::string16& explanation,
                      LoginHandler::LoginModelData* login_model_data)
     : username_field_(new views::Textfield()),
       password_field_(new views::Textfield()),
@@ -28,12 +29,14 @@ LoginView::LoginView(const base::string16& explanation,
           l10n_util::GetStringUTF16(IDS_LOGIN_DIALOG_USERNAME_FIELD))),
       password_label_(new views::Label(
           l10n_util::GetStringUTF16(IDS_LOGIN_DIALOG_PASSWORD_FIELD))),
-      message_label_(new views::Label(explanation)),
+      authority_label_(new views::Label(authority)),
+      message_label_(nullptr),
       login_model_(login_model_data ? login_model_data->model : nullptr) {
   password_field_->SetTextInputType(ui::TEXT_INPUT_TYPE_PASSWORD);
-  message_label_->SetMultiLine(true);
-  message_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  message_label_->SetAllowCharacterBreak(true);
+
+  authority_label_->SetMultiLine(true);
+  authority_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  authority_label_->SetAllowCharacterBreak(true);
 
   // Initialize the Grid Layout Manager used for this dialog box.
   GridLayout* layout = GridLayout::CreatePanel(this);
@@ -59,7 +62,16 @@ LoginView::LoginView(const base::string16& explanation,
   column_set->AddPaddingColumn(0, kTextfieldStackHorizontalSpacing);
 
   layout->StartRow(0, single_column_view_set_id);
-  layout->AddView(message_label_);
+  layout->AddView(authority_label_);
+  if (!explanation.empty()) {
+    message_label_ = new views::Label(explanation);
+    message_label_->SetMultiLine(true);
+    message_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    message_label_->SetAllowCharacterBreak(true);
+    layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+    layout->StartRow(0, single_column_view_set_id);
+    layout->AddView(message_label_);
+  }
 
   layout->AddPaddingRow(0, views::kUnrelatedControlLargeVerticalSpacing);
 

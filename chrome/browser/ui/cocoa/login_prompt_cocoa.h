@@ -15,6 +15,7 @@ class LoginHandlerMac;
  @private
   IBOutlet NSTextField* nameField_;
   IBOutlet NSSecureTextField* passwordField_;
+  IBOutlet NSTextField* authorityField_;
   IBOutlet NSTextField* explanationField_;
   IBOutlet NSButton* loginButton_;
   IBOutlet NSButton* cancelButton_;
@@ -24,6 +25,7 @@ class LoginHandlerMac;
 - (IBAction)loginPressed:(id)sender;
 - (IBAction)cancelPressed:(id)sender;
 - (void)autofillLogin:(NSString*)login password:(NSString*)password;
+- (void)setAuthority:(NSString*)authority;
 - (void)setExplanation:(NSString*)explanation;
 @end
 

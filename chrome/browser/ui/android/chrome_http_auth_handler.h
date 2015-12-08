@@ -17,7 +17,8 @@
 // by, e.g., showing the user a login dialog.
 class ChromeHttpAuthHandler {
  public:
-  explicit ChromeHttpAuthHandler(const base::string16& explanation);
+  ChromeHttpAuthHandler(const base::string16& authority,
+                        const base::string16& explanation);
   ~ChromeHttpAuthHandler();
 
   // This must be called before using the object.
@@ -58,7 +59,7 @@ class ChromeHttpAuthHandler {
  private:
   LoginHandler* observer_;
   base::android::ScopedJavaGlobalRef<jobject> java_chrome_http_auth_handler_;
-  // e.g. "The server example.com:80 requires a username and password."
+  base::string16 authority_;
   base::string16 explanation_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeHttpAuthHandler);

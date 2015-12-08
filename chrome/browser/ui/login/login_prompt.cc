@@ -32,6 +32,7 @@
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/origin_util.h"
 #include "net/base/auth.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_util.h"
@@ -111,11 +112,6 @@ void ShowLoginPrompt(const GURL& request_url,
     return;
   }
 
-  // The realm is controlled by the remote server, so there is no reason
-  // to believe it is of a reasonable length.
-  base::string16 elided_realm;
-  gfx::ElideString(base::UTF8ToUTF16(auth_info->realm), 120, &elided_realm);
-
   std::string languages;
   content::WebContents* web_contents = handler->GetWebContentsForLogin();
   if (web_contents) {
@@ -125,21 +121,14 @@ void ShowLoginPrompt(const GURL& request_url,
       languages = profile->GetPrefs()->GetString(prefs::kAcceptLanguages);
   }
 
-  base::string16 authority =
-      url_formatter::FormatUrlForSecurityDisplay(request_url, languages);
+  base::string16 authority = l10n_util::GetStringFUTF16(
+      auth_info->is_proxy ? IDS_LOGIN_DIALOG_PROXY_AUTHORITY
+                          : IDS_LOGIN_DIALOG_AUTHORITY,
+      url_formatter::FormatUrlForSecurityDisplay(request_url, languages));
   base::string16 explanation;
-  if (auth_info->is_proxy) {
-    explanation = elided_realm.empty()
-        ? l10n_util::GetStringFUTF16(
-            IDS_LOGIN_DIALOG_DESCRIPTION_PROXY_NO_REALM, authority)
-        : l10n_util::GetStringFUTF16(IDS_LOGIN_DIALOG_DESCRIPTION_PROXY,
-                                     authority, elided_realm);
-  } else {
-    explanation = elided_realm.empty()
-        ? l10n_util::GetStringFUTF16(IDS_LOGIN_DIALOG_DESCRIPTION_NO_REALM,
-                                     authority)
-        : l10n_util::GetStringFUTF16(IDS_LOGIN_DIALOG_DESCRIPTION, authority,
-                                     elided_realm);
+  if (!content::IsOriginSecure(request_url)) {
+    explanation =
+        l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_NON_SECURE_TRANSPORT);
   }
 
   password_manager::PasswordManager* password_manager =
@@ -150,7 +139,7 @@ void ShowLoginPrompt(const GURL& request_url,
     // A WebContents in a <webview> (a GuestView type) does not have a password
     // manager, but still needs to be able to show login prompts.
     if (guest_view::GuestViewBase::FromWebContents(parent_contents)) {
-      handler->BuildViewWithoutPasswordManager(explanation);
+      handler->BuildViewWithoutPasswordManager(authority, explanation);
       return;
     }
 #endif
@@ -168,8 +157,8 @@ void ShowLoginPrompt(const GURL& request_url,
 
   PasswordForm observed_form(
       MakeInputForPasswordManager(request_url, auth_info));
-  handler->BuildViewWithPasswordManager(explanation, password_manager,
-                                        observed_form);
+  handler->BuildViewWithPasswordManager(authority, explanation,
+                                        password_manager, observed_form);
 }
 
 }  // namespace
@@ -225,18 +214,20 @@ void LoginHandler::OnRequestCancelled() {
 }
 
 void LoginHandler::BuildViewWithPasswordManager(
+    const base::string16& authority,
     const base::string16& explanation,
     password_manager::PasswordManager* password_manager,
     const autofill::PasswordForm& observed_form) {
   password_manager_ = password_manager;
   password_form_ = observed_form;
   LoginHandler::LoginModelData model_data(password_manager, observed_form);
-  BuildViewImpl(explanation, &model_data);
+  BuildViewImpl(authority, explanation, &model_data);
 }
 
 void LoginHandler::BuildViewWithoutPasswordManager(
+    const base::string16& authority,
     const base::string16& explanation) {
-  BuildViewImpl(explanation, nullptr);
+  BuildViewImpl(authority, explanation, nullptr);
 }
 
 WebContents* LoginHandler::GetWebContentsForLogin() const {

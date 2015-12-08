@@ -70,12 +70,14 @@ class LoginHandler : public content::ResourceDispatcherHostLoginDelegate,
   // Use this to build a view with password manager support. |password_manager|
   // must not be null.
   void BuildViewWithPasswordManager(
+      const base::string16& authority,
       const base::string16& explanation,
       password_manager::PasswordManager* password_manager,
       const autofill::PasswordForm& observed_form);
 
   // Use this to build a view without password manager support.
-  void BuildViewWithoutPasswordManager(const base::string16& explanation);
+  void BuildViewWithoutPasswordManager(const base::string16& authority,
+                                       const base::string16& explanation);
 
   // Returns the WebContents that needs authentication.
   content::WebContents* GetWebContentsForLogin() const;
@@ -111,7 +113,8 @@ class LoginHandler : public content::ResourceDispatcherHostLoginDelegate,
   // Implement this to initialize the underlying platform specific view. If
   // |login_model_data| is not null, the contained LoginModel and PasswordForm
   // can be used to register the view.
-  virtual void BuildViewImpl(const base::string16& explanation,
+  virtual void BuildViewImpl(const base::string16& authority,
+                             const base::string16& explanation,
                              LoginModelData* login_model_data) = 0;
 
   // Sets |model_data.model| as |login_model_| and registers |this| as an

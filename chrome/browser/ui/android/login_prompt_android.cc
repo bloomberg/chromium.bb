@@ -37,7 +37,8 @@ class LoginHandlerAndroid : public LoginHandler {
   }
   void OnLoginModelDestroying() override {}
 
-  void BuildViewImpl(const base::string16& explanation,
+  void BuildViewImpl(const base::string16& authority,
+                     const base::string16& explanation,
                      LoginModelData* login_model_data) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -49,7 +50,8 @@ class LoginHandlerAndroid : public LoginHandler {
 
     // Notify WindowAndroid that HTTP authentication is required.
     if (window_helper->GetWindowAndroid()) {
-      chrome_http_auth_handler_.reset(new ChromeHttpAuthHandler(explanation));
+      chrome_http_auth_handler_.reset(
+          new ChromeHttpAuthHandler(authority, explanation));
       chrome_http_auth_handler_->Init();
       chrome_http_auth_handler_->SetObserver(this);
       chrome_http_auth_handler_->ShowDialog(
