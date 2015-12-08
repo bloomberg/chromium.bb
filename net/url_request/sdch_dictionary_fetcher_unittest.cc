@@ -221,12 +221,14 @@ class SdchDictionaryFetcherTest : public ::testing::Test {
 
   // Block until there are no outstanding URLRequestSpecifiedResponseJobs.
   void WaitForNoJobs() {
-    if (jobs_outstanding_ == 0)
-      return;
-
-    run_loop_.reset(new base::RunLoop);
-    run_loop_->Run();
-    run_loop_.reset();
+    // A job may be started after the previous one was destroyed, with a brief
+    // period of 0 jobs in between, so may have to start the run loop multiple
+    // times.
+    while (jobs_outstanding_ != 0) {
+      run_loop_.reset(new base::RunLoop);
+      run_loop_->Run();
+      run_loop_.reset();
+    }
   }
 
   HttpResponseInfo* response_info_to_return() {

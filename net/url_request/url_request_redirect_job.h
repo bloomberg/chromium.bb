@@ -41,6 +41,8 @@ class NET_EXPORT URLRequestRedirectJob : public URLRequestJob {
                         ResponseCode response_code,
                         const std::string& redirect_reason);
 
+  ~URLRequestRedirectJob() override;
+
   // URLRequestJob implementation:
   void GetResponseInfo(HttpResponseInfo* info) override;
   void GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const override;
@@ -50,8 +52,6 @@ class NET_EXPORT URLRequestRedirectJob : public URLRequestJob {
   int GetResponseCode() const override;
 
  private:
-  ~URLRequestRedirectJob() override;
-
   void StartAsync();
 
   const GURL redirect_destination_;

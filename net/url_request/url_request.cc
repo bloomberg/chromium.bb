@@ -621,7 +621,7 @@ void URLRequest::StartJob(URLRequestJob* job) {
                  &url(), &method_, load_flags_, priority_,
                  upload_data_stream_ ? upload_data_stream_->identifier() : -1));
 
-  job_ = job;
+  job_.reset(job);
   job_->SetExtraRequestHeaders(extra_request_headers_);
   job_->SetPriority(priority_);
 
@@ -915,7 +915,6 @@ void URLRequest::OrphanJob() {
   //   NetworkDelegate::NotifyURLRequestDestroyed notifies the NetworkDelegate
   //   that the callback becomes invalid.
   job_->Kill();
-  job_->DetachRequest();  // ensures that the job will not call us again
   job_ = NULL;
 }
 

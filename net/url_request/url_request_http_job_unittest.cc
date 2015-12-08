@@ -42,14 +42,12 @@ class TestURLRequestHttpJob : public URLRequestHttpJob {
   explicit TestURLRequestHttpJob(URLRequest* request)
       : URLRequestHttpJob(request, request->context()->network_delegate(),
                           request->context()->http_user_agent_settings()) {}
+  ~TestURLRequestHttpJob() override {}
 
   using URLRequestHttpJob::SetPriority;
   using URLRequestHttpJob::Start;
   using URLRequestHttpJob::Kill;
   using URLRequestHttpJob::priority;
-
- protected:
-  ~TestURLRequestHttpJob() override {}
 };
 
 class URLRequestHttpJobTest : public ::testing::Test {
@@ -572,8 +570,7 @@ TEST_F(URLRequestHttpJobTest, TestCancelWhileReadingCookies) {
 // Make sure that SetPriority actually sets the URLRequestHttpJob's
 // priority, both before and after start.
 TEST_F(URLRequestHttpJobTest, SetPriorityBasic) {
-  scoped_refptr<TestURLRequestHttpJob> job(
-      new TestURLRequestHttpJob(req_.get()));
+  scoped_ptr<TestURLRequestHttpJob> job(new TestURLRequestHttpJob(req_.get()));
   EXPECT_EQ(DEFAULT_PRIORITY, job->priority());
 
   job->SetPriority(LOWEST);
@@ -592,8 +589,7 @@ TEST_F(URLRequestHttpJobTest, SetPriorityBasic) {
 // Make sure that URLRequestHttpJob passes on its priority to its
 // transaction on start.
 TEST_F(URLRequestHttpJobTest, SetTransactionPriorityOnStart) {
-  scoped_refptr<TestURLRequestHttpJob> job(
-      new TestURLRequestHttpJob(req_.get()));
+  scoped_ptr<TestURLRequestHttpJob> job(new TestURLRequestHttpJob(req_.get()));
   job->SetPriority(LOW);
 
   EXPECT_FALSE(network_layer_.last_transaction());
@@ -607,8 +603,7 @@ TEST_F(URLRequestHttpJobTest, SetTransactionPriorityOnStart) {
 // Make sure that URLRequestHttpJob passes on its priority updates to
 // its transaction.
 TEST_F(URLRequestHttpJobTest, SetTransactionPriority) {
-  scoped_refptr<TestURLRequestHttpJob> job(
-      new TestURLRequestHttpJob(req_.get()));
+  scoped_ptr<TestURLRequestHttpJob> job(new TestURLRequestHttpJob(req_.get()));
   job->SetPriority(LOW);
   job->Start();
   ASSERT_TRUE(network_layer_.last_transaction());
@@ -622,8 +617,7 @@ TEST_F(URLRequestHttpJobTest, SetTransactionPriority) {
 TEST_F(URLRequestHttpJobTest, SdchAdvertisementGet) {
   EnableSdch();
   req_->set_method("GET");  // Redundant with default.
-  scoped_refptr<TestURLRequestHttpJob> job(
-      new TestURLRequestHttpJob(req_.get()));
+  scoped_ptr<TestURLRequestHttpJob> job(new TestURLRequestHttpJob(req_.get()));
   job->Start();
   EXPECT_TRUE(TransactionAcceptsSdchEncoding());
 }
@@ -632,8 +626,7 @@ TEST_F(URLRequestHttpJobTest, SdchAdvertisementGet) {
 TEST_F(URLRequestHttpJobTest, SdchAdvertisementPost) {
   EnableSdch();
   req_->set_method("POST");
-  scoped_refptr<TestURLRequestHttpJob> job(
-      new TestURLRequestHttpJob(req_.get()));
+  scoped_ptr<TestURLRequestHttpJob> job(new TestURLRequestHttpJob(req_.get()));
   job->Start();
   EXPECT_FALSE(TransactionAcceptsSdchEncoding());
 }
@@ -774,8 +767,7 @@ class FakeWebSocketHandshakeStream : public WebSocketHandshakeStreamBase {
 };
 
 TEST_F(URLRequestHttpJobWebSocketTest, RejectedWithoutCreateHelper) {
-  scoped_refptr<TestURLRequestHttpJob> job(
-      new TestURLRequestHttpJob(req_.get()));
+  scoped_ptr<TestURLRequestHttpJob> job(new TestURLRequestHttpJob(req_.get()));
   job->Start();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(URLRequestStatus::FAILED, req_->status().status());
@@ -783,8 +775,7 @@ TEST_F(URLRequestHttpJobWebSocketTest, RejectedWithoutCreateHelper) {
 }
 
 TEST_F(URLRequestHttpJobWebSocketTest, CreateHelperPassedThrough) {
-  scoped_refptr<TestURLRequestHttpJob> job(
-      new TestURLRequestHttpJob(req_.get()));
+  scoped_ptr<TestURLRequestHttpJob> job(new TestURLRequestHttpJob(req_.get()));
   scoped_ptr<MockCreateHelper> create_helper(
       new ::testing::StrictMock<MockCreateHelper>());
   FakeWebSocketHandshakeStream* fake_handshake_stream(

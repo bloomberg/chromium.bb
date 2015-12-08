@@ -29,6 +29,8 @@ class STORAGE_EXPORT FileSystemDirURLRequestJob : public net::URLRequestJob {
       const std::string& storage_domain,
       FileSystemContext* file_system_context);
 
+  ~FileSystemDirURLRequestJob() override;
+
   // URLRequestJob methods:
   void Start() override;
   void Kill() override;
@@ -42,8 +44,6 @@ class STORAGE_EXPORT FileSystemDirURLRequestJob : public net::URLRequestJob {
 
  private:
   class CallbackDispatcher;
-
-  ~FileSystemDirURLRequestJob() override;
 
   void StartAsync();
   void DidAttemptAutoMount(base::File::Error result);

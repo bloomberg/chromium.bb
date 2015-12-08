@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
+#include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
@@ -175,13 +176,13 @@ class FileWriterDelegateTestJob : public net::URLRequestJob {
       : net::URLRequestJob(request, network_delegate),
         content_(content),
         remaining_bytes_(content.length()),
-        cursor_(0) {
-  }
+        cursor_(0),
+        weak_factory_(this) {}
 
   void Start() override {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(&FileWriterDelegateTestJob::NotifyHeadersComplete, this));
+        FROM_HERE, base::Bind(&FileWriterDelegateTestJob::NotifyHeadersComplete,
+                              weak_factory_.GetWeakPtr()));
   }
 
   int ReadRawData(net::IOBuffer* buf, int buf_size) override {
@@ -204,6 +205,8 @@ class FileWriterDelegateTestJob : public net::URLRequestJob {
   std::string content_;
   int remaining_bytes_;
   int cursor_;
+
+  base::WeakPtrFactory<FileWriterDelegateTestJob> weak_factory_;
 };
 
 class BlobURLRequestJobFactory : public net::URLRequestJobFactory {

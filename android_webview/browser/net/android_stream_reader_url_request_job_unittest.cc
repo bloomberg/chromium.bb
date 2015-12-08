@@ -166,13 +166,14 @@ class TestStreamReaderJob : public AndroidStreamReaderURLRequestJob {
     task_runner_ = base::ThreadTaskRunnerHandle::Get();
   }
 
+  ~TestStreamReaderJob() override {}
+
   scoped_ptr<InputStreamReader> CreateStreamReader(
       InputStream* stream) override {
     return stream_reader_.Pass();
   }
- protected:
-  ~TestStreamReaderJob() override {}
 
+ protected:
   base::TaskRunner* GetWorkerThreadRunner() override {
     return task_runner_.get();
   }
@@ -214,23 +215,15 @@ class AndroidStreamReaderURLRequestJobTest : public Test {
   void SetUpTestJob(scoped_ptr<InputStreamReader> stream_reader,
                     scoped_ptr<AndroidStreamReaderURLRequestJob::Delegate>
                         stream_reader_delegate) {
-    TestStreamReaderJob* test_stream_reader_job =
-        new TestStreamReaderJob(
-            req_.get(),
-            &network_delegate_,
-            stream_reader_delegate.Pass(),
-            stream_reader.Pass());
+    scoped_ptr<TestStreamReaderJob> test_stream_reader_job(
+        new TestStreamReaderJob(req_.get(), &network_delegate_,
+                                stream_reader_delegate.Pass(),
+                                stream_reader.Pass()));
     // The Interceptor is owned by the |factory_|.
-    TestJobInterceptor* protocol_handler = new TestJobInterceptor;
-    protocol_handler->set_main_intercept_job(test_stream_reader_job);
+    scoped_ptr<TestJobInterceptor> protocol_handler(new TestJobInterceptor);
+    protocol_handler->set_main_intercept_job(std::move(test_stream_reader_job));
     bool set_protocol =
-        factory_.SetProtocolHandler("http", make_scoped_ptr(protocol_handler));
-    DCHECK(set_protocol);
-
-    protocol_handler = new TestJobInterceptor;
-    protocol_handler->set_main_intercept_job(test_stream_reader_job);
-    set_protocol = factory_.SetProtocolHandler(
-        "content", make_scoped_ptr(protocol_handler));
+        factory_.SetProtocolHandler("content", std::move(protocol_handler));
     DCHECK(set_protocol);
   }
 

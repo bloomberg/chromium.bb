@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-#include "base/memory/ref_counted.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -45,15 +45,13 @@ class UploadDataStream;
 class URLRequestStatus;
 class X509Certificate;
 
-class NET_EXPORT URLRequestJob
-    : public base::RefCounted<URLRequestJob>,
-      public base::PowerObserver {
+class NET_EXPORT URLRequestJob : public base::PowerObserver {
  public:
   explicit URLRequestJob(URLRequest* request,
                          NetworkDelegate* network_delegate);
+  ~URLRequestJob() override;
 
-  // Returns the request that owns this job. THIS POINTER MAY BE NULL if the
-  // request was destroyed.
+  // Returns the request that owns this job.
   URLRequest* request() const {
     return request_;
   }
@@ -96,10 +94,6 @@ class NET_EXPORT URLRequestJob
   // The job should be prepared to receive multiple calls to kill it, but only
   // one notification must be issued.
   virtual void Kill();
-
-  // Called to detach the request from this Job.  Results in the Job being
-  // killed off eventually. The job must not use the request pointer any more.
-  void DetachRequest();
 
   // Called to read post-filtered data from this Job, returning the number of
   // bytes read, 0 when there is no more data, or -1 if there was an error.
@@ -258,9 +252,6 @@ class NET_EXPORT URLRequestJob
                                          const GURL& redirect_destination);
 
  protected:
-  friend class base::RefCounted<URLRequestJob>;
-  ~URLRequestJob() override;
-
   // Notifies the job that a certificate is requested.
   void NotifyCertificateRequested(SSLCertRequestInfo* cert_request_info);
 
@@ -371,8 +362,7 @@ class NET_EXPORT URLRequestJob
   // bytes read, or < 0 to indicate an error.
   void ReadRawDataComplete(int bytes_read);
 
-  // The request that initiated this job. This value MAY BE NULL if the
-  // request was released by DetachRequest().
+  // The request that initiated this job. This value will never be nullptr.
   URLRequest* request_;
 
  private:

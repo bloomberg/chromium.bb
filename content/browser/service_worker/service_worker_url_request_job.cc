@@ -135,6 +135,20 @@ ServiceWorkerURLRequestJob::ServiceWorkerURLRequestJob(
   DCHECK(delegate_) << "ServiceWorkerURLRequestJob requires a delegate";
 }
 
+ServiceWorkerURLRequestJob::~ServiceWorkerURLRequestJob() {
+  ClearStream();
+
+  if (!ShouldRecordResult())
+    return;
+  ServiceWorkerMetrics::URLRequestJobResult result =
+      ServiceWorkerMetrics::REQUEST_JOB_ERROR_KILLED;
+  if (response_body_type_ == STREAM)
+    result = ServiceWorkerMetrics::REQUEST_JOB_ERROR_KILLED_WITH_STREAM;
+  else if (response_body_type_ == BLOB)
+    result = ServiceWorkerMetrics::REQUEST_JOB_ERROR_KILLED_WITH_BLOB;
+  RecordResult(result);
+}
+
 void ServiceWorkerURLRequestJob::FallbackToNetwork() {
   DCHECK_EQ(NOT_DETERMINED, response_type_);
   response_type_ = FALLBACK_TO_NETWORK;
@@ -365,20 +379,6 @@ const net::HttpResponseInfo* ServiceWorkerURLRequestJob::http_info() const {
   if (range_response_info_)
     return range_response_info_.get();
   return http_response_info_.get();
-}
-
-ServiceWorkerURLRequestJob::~ServiceWorkerURLRequestJob() {
-  ClearStream();
-
-  if (!ShouldRecordResult())
-    return;
-  ServiceWorkerMetrics::URLRequestJobResult result =
-      ServiceWorkerMetrics::REQUEST_JOB_ERROR_KILLED;
-  if (response_body_type_ == STREAM)
-    result = ServiceWorkerMetrics::REQUEST_JOB_ERROR_KILLED_WITH_STREAM;
-  else if (response_body_type_ == BLOB)
-    result = ServiceWorkerMetrics::REQUEST_JOB_ERROR_KILLED_WITH_BLOB;
-  RecordResult(result);
 }
 
 void ServiceWorkerURLRequestJob::MaybeStartRequest() {

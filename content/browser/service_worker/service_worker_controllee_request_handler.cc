@@ -4,6 +4,7 @@
 
 #include "content/browser/service_worker/service_worker_controllee_request_handler.h"
 
+#include "base/memory/scoped_ptr.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
@@ -97,10 +98,10 @@ net::URLRequestJob* ServiceWorkerControlleeRequestHandler::MaybeCreateJob(
   }
 
   // It's for original request (A) or redirect case (B-a or B-b).
-  ServiceWorkerURLRequestJob* job = new ServiceWorkerURLRequestJob(
+  scoped_ptr<ServiceWorkerURLRequestJob> job(new ServiceWorkerURLRequestJob(
       request, network_delegate, blob_storage_context_, resource_context,
       request_mode_, credentials_mode_, redirect_mode_, is_main_resource_load_,
-      request_context_type_, frame_type_, body_, this);
+      request_context_type_, frame_type_, body_, this));
   job_ = job->GetWeakPtr();
 
   resource_context_ = resource_context;
@@ -120,15 +121,11 @@ net::URLRequestJob* ServiceWorkerControlleeRequestHandler::MaybeCreateJob(
     if (!is_main_resource_load_)
       use_network_ = true;
 
-    // TODO(mmenke): Make job a scoped_ptr once URLRequestJobs are no longer
-    // reference counted.
-    scoped_refptr<ServiceWorkerURLRequestJob> owned_job(job);
+    job.reset();
     ClearJob();
-
-    return NULL;
   }
 
-  return job;
+  return job.release();
 }
 
 void ServiceWorkerControlleeRequestHandler::GetExtraResponseInfo(

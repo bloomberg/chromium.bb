@@ -36,6 +36,8 @@ URLRequestRedirectJob::URLRequestRedirectJob(URLRequest* request,
   DCHECK(!redirect_reason_.empty());
 }
 
+URLRequestRedirectJob::~URLRequestRedirectJob() {}
+
 void URLRequestRedirectJob::GetResponseInfo(HttpResponseInfo* info) {
   // Should only be called after the URLRequest has been notified there's header
   // information.
@@ -82,8 +84,6 @@ int URLRequestRedirectJob::GetResponseCode() const {
   DCHECK(fake_headers_.get());
   return response_code_;
 }
-
-URLRequestRedirectJob::~URLRequestRedirectJob() {}
 
 void URLRequestRedirectJob::StartAsync() {
   DCHECK(request_);

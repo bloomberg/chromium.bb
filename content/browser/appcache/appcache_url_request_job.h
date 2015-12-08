@@ -44,6 +44,8 @@ class CONTENT_EXPORT AppCacheURLRequestJob
                         bool is_main_resource,
                         const OnPrepareToRestartCallback& restart_callback_);
 
+  ~AppCacheURLRequestJob() override;
+
   // Informs the job of what response it should deliver. Only one of these
   // methods should be called, and only once per job. A job will sit idle and
   // wait indefinitely until one of the deliver methods is called.
@@ -95,9 +97,6 @@ class CONTENT_EXPORT AppCacheURLRequestJob
   bool cache_entry_not_found() const {
     return cache_entry_not_found_;
   }
-
- protected:
-  ~AppCacheURLRequestJob() override;
 
  private:
   friend class AppCacheRequestHandlerTest;

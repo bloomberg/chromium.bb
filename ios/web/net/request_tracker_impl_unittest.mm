@@ -422,12 +422,12 @@ TEST_F(RequestTrackerTest, CaptureHeaders) {
       const_cast<char*>(headers.data())[i] = '\0';
   }
   net::URLRequest* request = GetRequest(0);
+  // TODO(mmenke):  This is really bizarre. Do something more reasonable.
   const_cast<net::HttpResponseInfo&>(request->response_info()).headers =
       new net::HttpResponseHeaders(headers);
-  // |job| will be owned by |request| and released from its destructor.
-  net::URLRequestTestJob* job = new net::URLRequestTestJob(
-      request, request->context()->network_delegate(), headers, "", false);
-  AddInterceptorToRequest(0)->set_main_intercept_job(job);
+  scoped_ptr<net::URLRequestTestJob> job(new net::URLRequestTestJob(
+      request, request->context()->network_delegate(), headers, "", false));
+  AddInterceptorToRequest(0)->set_main_intercept_job(std::move(job));
   request->Start();
 
   tracker_->StartRequest(request);

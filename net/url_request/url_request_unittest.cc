@@ -282,6 +282,27 @@ class TestPowerMonitorSource : public base::PowerMonitorSource {
   DISALLOW_COPY_AND_ASSIGN(TestPowerMonitorSource);
 };
 
+// Job that allows monitoring of its priority.
+class PriorityMonitoringURLRequestJob : public URLRequestTestJob {
+ public:
+  // The latest priority of the job is always written to |request_priority_|.
+  PriorityMonitoringURLRequestJob(URLRequest* request,
+                                  NetworkDelegate* network_delegate,
+                                  RequestPriority* request_priority)
+      : URLRequestTestJob(request, network_delegate),
+        request_priority_(request_priority) {
+    *request_priority_ = DEFAULT_PRIORITY;
+  }
+
+  void SetPriority(RequestPriority priority) override {
+    *request_priority_ = priority;
+    URLRequestTestJob::SetPriority(priority);
+  }
+
+ private:
+  RequestPriority* const request_priority_;
+};
+
 // Do a case-insensitive search through |haystack| for |needle|.
 bool ContainsString(const std::string& haystack, const char* needle) {
   std::string::const_iterator it = std::search(
@@ -2141,15 +2162,16 @@ TEST_F(URLRequestTest, SetJobPriorityBeforeJobStart) {
       GURL("http://test_intercept/foo"), DEFAULT_PRIORITY, &d));
   EXPECT_EQ(DEFAULT_PRIORITY, req->priority());
 
-  scoped_refptr<URLRequestTestJob> job =
-      new URLRequestTestJob(req.get(), &default_network_delegate_);
-  AddTestInterceptor()->set_main_intercept_job(job.get());
-  EXPECT_EQ(DEFAULT_PRIORITY, job->priority());
+  RequestPriority job_priority;
+  scoped_ptr<URLRequestJob> job(new PriorityMonitoringURLRequestJob(
+      req.get(), &default_network_delegate_, &job_priority));
+  AddTestInterceptor()->set_main_intercept_job(std::move(job));
+  EXPECT_EQ(DEFAULT_PRIORITY, job_priority);
 
   req->SetPriority(LOW);
 
   req->Start();
-  EXPECT_EQ(LOW, job->priority());
+  EXPECT_EQ(LOW, job_priority);
 }
 
 // Make sure that URLRequest passes on its priority updates to its
@@ -2159,17 +2181,18 @@ TEST_F(URLRequestTest, SetJobPriority) {
   scoped_ptr<URLRequest> req(default_context_.CreateRequest(
       GURL("http://test_intercept/foo"), DEFAULT_PRIORITY, &d));
 
-  scoped_refptr<URLRequestTestJob> job =
-      new URLRequestTestJob(req.get(), &default_network_delegate_);
-  AddTestInterceptor()->set_main_intercept_job(job.get());
+  RequestPriority job_priority;
+  scoped_ptr<URLRequestJob> job(new PriorityMonitoringURLRequestJob(
+      req.get(), &default_network_delegate_, &job_priority));
+  AddTestInterceptor()->set_main_intercept_job(std::move(job));
 
   req->SetPriority(LOW);
   req->Start();
-  EXPECT_EQ(LOW, job->priority());
+  EXPECT_EQ(LOW, job_priority);
 
   req->SetPriority(MEDIUM);
   EXPECT_EQ(MEDIUM, req->priority());
-  EXPECT_EQ(MEDIUM, job->priority());
+  EXPECT_EQ(MEDIUM, job_priority);
 }
 
 // Setting the IGNORE_LIMITS load flag should be okay if the priority
@@ -2180,9 +2203,10 @@ TEST_F(URLRequestTest, PriorityIgnoreLimits) {
       GURL("http://test_intercept/foo"), MAXIMUM_PRIORITY, &d));
   EXPECT_EQ(MAXIMUM_PRIORITY, req->priority());
 
-  scoped_refptr<URLRequestTestJob> job =
-      new URLRequestTestJob(req.get(), &default_network_delegate_);
-  AddTestInterceptor()->set_main_intercept_job(job.get());
+  RequestPriority job_priority;
+  scoped_ptr<URLRequestJob> job(new PriorityMonitoringURLRequestJob(
+      req.get(), &default_network_delegate_, &job_priority));
+  AddTestInterceptor()->set_main_intercept_job(std::move(job));
 
   req->SetLoadFlags(LOAD_IGNORE_LIMITS);
   EXPECT_EQ(MAXIMUM_PRIORITY, req->priority());
@@ -2192,7 +2216,7 @@ TEST_F(URLRequestTest, PriorityIgnoreLimits) {
 
   req->Start();
   EXPECT_EQ(MAXIMUM_PRIORITY, req->priority());
-  EXPECT_EQ(MAXIMUM_PRIORITY, job->priority());
+  EXPECT_EQ(MAXIMUM_PRIORITY, job_priority);
 }
 
 namespace {
@@ -6442,10 +6466,10 @@ TEST_F(URLRequestTestHTTP, RedirectJobWithReferenceFragment) {
   scoped_ptr<URLRequest> r(
       default_context_.CreateRequest(original_url, DEFAULT_PRIORITY, &d));
 
-  URLRequestRedirectJob* job = new URLRequestRedirectJob(
+  scoped_ptr<URLRequestRedirectJob> job(new URLRequestRedirectJob(
       r.get(), &default_network_delegate_, redirect_url,
-      URLRequestRedirectJob::REDIRECT_302_FOUND, "Very Good Reason");
-  AddTestInterceptor()->set_main_intercept_job(job);
+      URLRequestRedirectJob::REDIRECT_302_FOUND, "Very Good Reason"));
+  AddTestInterceptor()->set_main_intercept_job(std::move(job));
 
   r->Start();
   base::RunLoop().Run();
@@ -7169,11 +7193,11 @@ TEST_F(URLRequestTestHTTP, InterceptPost302RedirectGet) {
                     base::SizeTToString(arraysize(kData) - 1));
   req->SetExtraRequestHeaders(headers);
 
-  URLRequestRedirectJob* job = new URLRequestRedirectJob(
+  scoped_ptr<URLRequestRedirectJob> job(new URLRequestRedirectJob(
       req.get(), &default_network_delegate_,
       http_test_server()->GetURL("/echo"),
-      URLRequestRedirectJob::REDIRECT_302_FOUND, "Very Good Reason");
-  AddTestInterceptor()->set_main_intercept_job(job);
+      URLRequestRedirectJob::REDIRECT_302_FOUND, "Very Good Reason"));
+  AddTestInterceptor()->set_main_intercept_job(std::move(job));
 
   req->Start();
   base::RunLoop().Run();
@@ -7195,12 +7219,12 @@ TEST_F(URLRequestTestHTTP, InterceptPost307RedirectPost) {
                     base::SizeTToString(arraysize(kData) - 1));
   req->SetExtraRequestHeaders(headers);
 
-  URLRequestRedirectJob* job = new URLRequestRedirectJob(
+  scoped_ptr<URLRequestRedirectJob> job(new URLRequestRedirectJob(
       req.get(), &default_network_delegate_,
       http_test_server()->GetURL("/echo"),
       URLRequestRedirectJob::REDIRECT_307_TEMPORARY_REDIRECT,
-      "Very Good Reason");
-  AddTestInterceptor()->set_main_intercept_job(job);
+      "Very Good Reason"));
+  AddTestInterceptor()->set_main_intercept_job(std::move(job));
 
   req->Start();
   base::RunLoop().Run();
@@ -7396,23 +7420,24 @@ TEST_F(URLRequestTestHTTP, SetSubsequentJobPriority) {
       http_test_server()->GetURL("/defaultresponse"), DEFAULT_PRIORITY, &d));
   EXPECT_EQ(DEFAULT_PRIORITY, req->priority());
 
-  scoped_refptr<URLRequestRedirectJob> redirect_job = new URLRequestRedirectJob(
+  scoped_ptr<URLRequestRedirectJob> redirect_job(new URLRequestRedirectJob(
       req.get(), &default_network_delegate_,
       http_test_server()->GetURL("/echo"),
-      URLRequestRedirectJob::REDIRECT_302_FOUND, "Very Good Reason");
-  AddTestInterceptor()->set_main_intercept_job(redirect_job.get());
+      URLRequestRedirectJob::REDIRECT_302_FOUND, "Very Good Reason"));
+  AddTestInterceptor()->set_main_intercept_job(std::move(redirect_job));
 
   req->SetPriority(LOW);
   req->Start();
   EXPECT_TRUE(req->is_pending());
 
-  scoped_refptr<URLRequestTestJob> job =
-      new URLRequestTestJob(req.get(), &default_network_delegate_);
-  AddTestInterceptor()->set_main_intercept_job(job.get());
+  RequestPriority job_priority;
+  scoped_ptr<URLRequestJob> job(new PriorityMonitoringURLRequestJob(
+      req.get(), &default_network_delegate_, &job_priority));
+  AddTestInterceptor()->set_main_intercept_job(std::move(job));
 
   // Should trigger |job| to be started.
   base::RunLoop().Run();
-  EXPECT_EQ(LOW, job->priority());
+  EXPECT_EQ(LOW, job_priority);
 }
 
 // Check that creating a network request while entering/exiting suspend mode
@@ -9783,23 +9808,21 @@ TEST_F(URLRequestTest, NetworkAccessedSetOnHostResolutionFailure) {
   EXPECT_TRUE(req->response_info().network_accessed);
 }
 
-// Test that URLRequest is canceled correctly and with detached request
-// URLRequestRedirectJob does not crash in StartAsync.
+// Test that URLRequest is canceled correctly.
 // See http://crbug.com/508900
-TEST_F(URLRequestTest, URLRequestRedirectJobDetachRequestNoCrash) {
+TEST_F(URLRequestTest, URLRequestRedirectJobCancelRequest) {
   TestDelegate d;
   scoped_ptr<URLRequest> req(default_context_.CreateRequest(
       GURL("http://not-a-real-domain/"), DEFAULT_PRIORITY, &d));
 
-  URLRequestRedirectJob* job = new URLRequestRedirectJob(
+  scoped_ptr<URLRequestRedirectJob> job(new URLRequestRedirectJob(
       req.get(), &default_network_delegate_,
       GURL("http://this-should-never-be-navigated-to/"),
-      URLRequestRedirectJob::REDIRECT_307_TEMPORARY_REDIRECT, "Jumbo shrimp");
-  AddTestInterceptor()->set_main_intercept_job(job);
+      URLRequestRedirectJob::REDIRECT_307_TEMPORARY_REDIRECT, "Jumbo shrimp"));
+  AddTestInterceptor()->set_main_intercept_job(std::move(job));
 
   req->Start();
   req->Cancel();
-  job->DetachRequest();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(URLRequestStatus::CANCELED, req->status().status());
   EXPECT_EQ(0, d.received_redirect_count());

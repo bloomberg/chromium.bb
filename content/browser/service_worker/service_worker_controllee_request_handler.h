@@ -6,6 +6,9 @@
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_CONTROLLEE_REQUEST_HANDLER_H_
 
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "content/browser/service_worker/service_worker_request_handler.h"
 #include "content/browser/service_worker/service_worker_url_request_job.h"

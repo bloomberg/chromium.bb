@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_APPCACHE_APPCACHE_REQUEST_HANDLER_H_
 
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/supports_user_data.h"
 #include "content/browser/appcache/appcache_entry.h"
@@ -84,8 +85,9 @@ class CONTENT_EXPORT AppCacheRequestHandler
 
   // Helper method to create an AppCacheURLRequestJob and populate job_.
   // Caller takes ownership of returned value.
-  AppCacheURLRequestJob* CreateJob(net::URLRequest* request,
-                                   net::NetworkDelegate* network_delegate);
+  scoped_ptr<AppCacheURLRequestJob> CreateJob(
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate);
 
   // Helper to retrieve a pointer to the storage object.
   AppCacheStorage* storage() const;
@@ -97,7 +99,7 @@ class CONTENT_EXPORT AppCacheRequestHandler
   // Main-resource loading -------------------------------------
   // Frame and SharedWorker main resources are handled here.
 
-  AppCacheURLRequestJob* MaybeLoadMainResource(
+  scoped_ptr<AppCacheURLRequestJob> MaybeLoadMainResource(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate);
 
@@ -113,7 +115,7 @@ class CONTENT_EXPORT AppCacheRequestHandler
   // Sub-resource loading -------------------------------------
   // Dedicated worker and all manner of sub-resources are handled here.
 
-  AppCacheURLRequestJob* MaybeLoadSubResource(
+  scoped_ptr<AppCacheURLRequestJob> MaybeLoadSubResource(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate);
   void ContinueMaybeLoadSubResource();

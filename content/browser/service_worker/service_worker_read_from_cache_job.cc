@@ -152,7 +152,6 @@ const net::HttpResponseInfo* ServiceWorkerReadFromCacheJob::http_info() const {
 }
 
 void ServiceWorkerReadFromCacheJob::OnReadInfoComplete(int result) {
-  scoped_refptr<ServiceWorkerReadFromCacheJob> protect(this);
   if (!http_info_io_buffer_->http_info) {
     DCHECK_LT(result, 0);
     ServiceWorkerMetrics::CountReadResponseResult(

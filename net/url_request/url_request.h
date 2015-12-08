@@ -12,7 +12,6 @@
 
 #include "base/debug/leak_tracker.h"
 #include "base/logging.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/supports_user_data.h"
@@ -697,6 +696,7 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
   // paused).
   void BeforeRequestComplete(int error);
 
+  // TODO(mmenke):  Make this take a scoped_ptr.
   void StartJob(URLRequestJob* job);
 
   // Restarting involves replacing the current job with a new one such as what
@@ -759,7 +759,7 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
   // Tracks the time spent in various load states throughout this request.
   BoundNetLog net_log_;
 
-  scoped_refptr<URLRequestJob> job_;
+  scoped_ptr<URLRequestJob> job_;
   scoped_ptr<UploadDataStream> upload_data_stream_;
   // TODO(mmenke):  Make whether or not an upload is chunked transparent to the
   // URLRequest.

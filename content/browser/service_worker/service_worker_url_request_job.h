@@ -108,6 +108,8 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob
       scoped_refptr<ResourceRequestBody> body,
       Delegate* delegate);
 
+  ~ServiceWorkerURLRequestJob() override;
+
   // Sets the response type.
   void FallbackToNetwork();
   void ForwardToServiceWorker();
@@ -155,9 +157,6 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob
   void OnStreamRegistered(Stream* stream) override;
 
   base::WeakPtr<ServiceWorkerURLRequestJob> GetWeakPtr();
-
- protected:
-  ~ServiceWorkerURLRequestJob() override;
 
  private:
   enum ResponseType {

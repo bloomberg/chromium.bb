@@ -51,6 +51,11 @@ AppCacheURLRequestJob::AppCacheURLRequestJob(
   DCHECK(storage_);
 }
 
+AppCacheURLRequestJob::~AppCacheURLRequestJob() {
+  if (storage_)
+    storage_->CancelDelegateCallbacks(this);
+}
+
 void AppCacheURLRequestJob::DeliverAppCachedResponse(
     const GURL& manifest_url, int64 group_id, int64 cache_id,
     const AppCacheEntry& entry, bool is_fallback) {
@@ -268,11 +273,6 @@ void AppCacheURLRequestJob::BeginErrorDelivery(const char* message) {
   delivery_type_ = ERROR_DELIVERY;
   storage_ = NULL;
   BeginDelivery();
-}
-
-AppCacheURLRequestJob::~AppCacheURLRequestJob() {
-  if (storage_)
-    storage_->CancelDelegateCallbacks(this);
 }
 
 void AppCacheURLRequestJob::OnResponseInfoLoaded(

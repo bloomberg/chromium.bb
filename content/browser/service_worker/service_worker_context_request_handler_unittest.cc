@@ -95,8 +95,8 @@ TEST_F(ServiceWorkerContextRequestHandlerTest, UpdateBefore24Hours) {
           provider_host_,
           base::WeakPtr<storage::BlobStorageContext>(),
           RESOURCE_TYPE_SERVICE_WORKER));
-  scoped_refptr<net::URLRequestJob> job =
-      handler->MaybeCreateJob(request.get(), nullptr, nullptr);
+  scoped_ptr<net::URLRequestJob> job(
+      handler->MaybeCreateJob(request.get(), nullptr, nullptr));
   ASSERT_TRUE(job.get());
   ServiceWorkerWriteToCacheJob* sw_job =
       static_cast<ServiceWorkerWriteToCacheJob*>(job.get());
@@ -123,8 +123,8 @@ TEST_F(ServiceWorkerContextRequestHandlerTest, UpdateAfter24Hours) {
           provider_host_,
           base::WeakPtr<storage::BlobStorageContext>(),
           RESOURCE_TYPE_SERVICE_WORKER));
-  scoped_refptr<net::URLRequestJob> job =
-      handler->MaybeCreateJob(request.get(), nullptr, nullptr);
+  scoped_ptr<net::URLRequestJob> job(
+      handler->MaybeCreateJob(request.get(), nullptr, nullptr));
   ASSERT_TRUE(job.get());
   ServiceWorkerWriteToCacheJob* sw_job =
       static_cast<ServiceWorkerWriteToCacheJob*>(job.get());
@@ -150,8 +150,8 @@ TEST_F(ServiceWorkerContextRequestHandlerTest, UpdateForceBypassCache) {
           context()->AsWeakPtr(), provider_host_,
           base::WeakPtr<storage::BlobStorageContext>(),
           RESOURCE_TYPE_SERVICE_WORKER));
-  scoped_refptr<net::URLRequestJob> job =
-      handler->MaybeCreateJob(request.get(), nullptr, nullptr);
+  scoped_ptr<net::URLRequestJob> job(
+      handler->MaybeCreateJob(request.get(), nullptr, nullptr));
   ASSERT_TRUE(job.get());
   ServiceWorkerWriteToCacheJob* sw_job =
       static_cast<ServiceWorkerWriteToCacheJob*>(job.get());

@@ -398,14 +398,15 @@ class TestNetworkDelegate : public NetworkDelegateImpl {
 class TestJobInterceptor : public URLRequestJobFactory::ProtocolHandler {
  public:
   TestJobInterceptor();
+  ~TestJobInterceptor() override;
 
   URLRequestJob* MaybeCreateJob(
       URLRequest* request,
       NetworkDelegate* network_delegate) const override;
-  void set_main_intercept_job(URLRequestJob* job);
+  void set_main_intercept_job(scoped_ptr<URLRequestJob> job);
 
  private:
-  mutable URLRequestJob* main_intercept_job_;
+  mutable scoped_ptr<URLRequestJob> main_intercept_job_;
 };
 
 }  // namespace net

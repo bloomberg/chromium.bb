@@ -129,8 +129,8 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, DisallowServiceWorker) {
           FetchRedirectMode::FOLLOW_MODE, RESOURCE_TYPE_MAIN_FRAME,
           REQUEST_CONTEXT_TYPE_HYPERLINK, REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL,
           scoped_refptr<ResourceRequestBody>()));
-  scoped_refptr<net::URLRequestJob> job =
-      handler->MaybeCreateJob(request.get(), NULL, &mock_resource_context_);
+  scoped_ptr<net::URLRequestJob> job(
+      handler->MaybeCreateJob(request.get(), nullptr, &mock_resource_context_));
   ServiceWorkerURLRequestJob* sw_job =
       static_cast<ServiceWorkerURLRequestJob*>(job.get());
 
@@ -169,8 +169,8 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, ActivateWaitingVersion) {
           FetchRedirectMode::FOLLOW_MODE, RESOURCE_TYPE_MAIN_FRAME,
           REQUEST_CONTEXT_TYPE_HYPERLINK, REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL,
           scoped_refptr<ResourceRequestBody>()));
-  scoped_refptr<net::URLRequestJob> job =
-      handler->MaybeCreateJob(request.get(), NULL, &mock_resource_context_);
+  scoped_ptr<net::URLRequestJob> job(
+      handler->MaybeCreateJob(request.get(), nullptr, &mock_resource_context_));
   ServiceWorkerURLRequestJob* sw_job =
       static_cast<ServiceWorkerURLRequestJob*>(job.get());
 
@@ -217,8 +217,8 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, DeletedProviderHost) {
           FetchRedirectMode::FOLLOW_MODE, RESOURCE_TYPE_MAIN_FRAME,
           REQUEST_CONTEXT_TYPE_HYPERLINK, REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL,
           scoped_refptr<ResourceRequestBody>()));
-  scoped_refptr<net::URLRequestJob> job =
-      handler->MaybeCreateJob(request.get(), NULL, &mock_resource_context_);
+  scoped_ptr<net::URLRequestJob> job(
+      handler->MaybeCreateJob(request.get(), nullptr, &mock_resource_context_));
   ServiceWorkerURLRequestJob* sw_job =
       static_cast<ServiceWorkerURLRequestJob*>(job.get());
 

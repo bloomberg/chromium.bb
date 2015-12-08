@@ -9,6 +9,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
@@ -147,7 +148,8 @@ class MockClientCertURLRequestJob : public net::URLRequestTestJob {
  public:
   MockClientCertURLRequestJob(net::URLRequest* request,
                               net::NetworkDelegate* network_delegate)
-      : net::URLRequestTestJob(request, network_delegate) {}
+      : net::URLRequestTestJob(request, network_delegate),
+        weak_factory_(this) {}
 
   static std::vector<std::string> test_authorities() {
     return std::vector<std::string>(1, "dummy");
@@ -161,7 +163,7 @@ class MockClientCertURLRequestJob : public net::URLRequestTestJob {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&MockClientCertURLRequestJob::NotifyCertificateRequested,
-                   this, cert_request_info));
+                   weak_factory_.GetWeakPtr(), cert_request_info));
   }
 
   void ContinueWithCertificate(net::X509Certificate* cert,
@@ -171,6 +173,8 @@ class MockClientCertURLRequestJob : public net::URLRequestTestJob {
 
  private:
   ~MockClientCertURLRequestJob() override {}
+
+  base::WeakPtrFactory<MockClientCertURLRequestJob> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MockClientCertURLRequestJob);
 };

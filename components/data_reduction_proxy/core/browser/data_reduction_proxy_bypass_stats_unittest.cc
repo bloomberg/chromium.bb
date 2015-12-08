@@ -82,12 +82,12 @@ class DataReductionProxyBypassStatsTest : public testing::Test {
 
     // Create a test job that will fill in the given response headers for the
     // |fake_request|.
-    scoped_refptr<net::URLRequestTestJob> test_job(new net::URLRequestTestJob(
+    scoped_ptr<net::URLRequestTestJob> test_job(new net::URLRequestTestJob(
         fake_request.get(), context_.network_delegate(), response_headers,
         std::string(), true));
 
     // Configure the interceptor to use the test job to handle the next request.
-    test_job_interceptor_->set_main_intercept_job(test_job.get());
+    test_job_interceptor_->set_main_intercept_job(std::move(test_job));
     fake_request->Start();
     test_context_->RunUntilIdle();
 
