@@ -100,10 +100,12 @@ bool AccountConsistencyHandler::ShouldAllowResponse(NSURLResponse* response) {
       [delegate_ onGoIncognito:continue_url];
       break;
     }
-    case signin::GAIA_SERVICE_TYPE_SIGNOUT:
-    case signin::GAIA_SERVICE_TYPE_ADDSESSION:
-    case signin::GAIA_SERVICE_TYPE_REAUTH:
     case signin::GAIA_SERVICE_TYPE_SIGNUP:
+    case signin::GAIA_SERVICE_TYPE_ADDSESSION:
+      [delegate_ onAddAccount];
+      break;
+    case signin::GAIA_SERVICE_TYPE_SIGNOUT:
+    case signin::GAIA_SERVICE_TYPE_REAUTH:
     case signin::GAIA_SERVICE_TYPE_DEFAULT:
       [delegate_ onManageAccounts];
       break;

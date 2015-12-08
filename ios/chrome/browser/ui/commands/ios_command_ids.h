@@ -25,6 +25,7 @@
 #define IDC_FIND_CLOSE                                 40907
 #define IDC_FIND_UPDATE                                40908
 #define IDC_CLOSE_MODALS                               40909
+#define IDC_SHOW_ADD_ACCOUNT                           40910
 #define IDC_SHOW_PAGE_INFO                             40911
 #define IDC_HIDE_PAGE_INFO                             40912
 #define IDC_SHOW_SECURITY_HELP                         40913

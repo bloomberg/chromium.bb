@@ -10,8 +10,7 @@
 #include "ios/chrome/browser/signin/constants.h"
 #include "ios/chrome/browser/ui/commands/generic_chrome_command.h"
 
-typedef void (^ShowSigninCommandCompletionCallback)(BOOL succeeded,
-                                                    BOOL profileWasSwapped);
+typedef void (^ShowSigninCommandCompletionCallback)(BOOL succeeded);
 
 enum AuthenticationOperation {
   // Operation to cancel the current authentication operation and dismiss any
