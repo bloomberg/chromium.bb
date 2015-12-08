@@ -127,8 +127,8 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 @property(nonatomic, copy) NSString* MIMEType;
 // The navigation type for the load.
 @property(nonatomic, assign) WKNavigationType navigationType;
-// Whether the pending navigation has been directly cancelled in
-// |decidePolicyForNavigationAction| or |decidePolicyForNavigationResponse|.
+// Whether the pending navigation has been directly cancelled before the
+// navigation is committed.
 // Cancelled navigations should be simply discarded without handling any
 // specific error.
 @property(nonatomic, assign) BOOL cancelled;
@@ -666,6 +666,7 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 
 - (void)abortWebLoad {
   [_wkWebView stopLoading];
+  [_pendingNavigationInfo setCancelled:YES];
   _certVerificationErrors->Clear();
 }
 
