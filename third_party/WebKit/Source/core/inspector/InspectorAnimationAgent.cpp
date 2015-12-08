@@ -34,6 +34,7 @@
 
 namespace AnimationAgentState {
 static const char animationAgentEnabled[] = "animationAgentEnabled";
+static const char animationAgentPlaybackRate[] = "animationAgentPlaybackRate";
 }
 
 namespace blink {
@@ -53,6 +54,8 @@ void InspectorAnimationAgent::restore()
     if (m_state->getBoolean(AnimationAgentState::animationAgentEnabled)) {
         ErrorString error;
         enable(&error);
+        double playbackRate = m_state->getDouble(AnimationAgentState::animationAgentPlaybackRate, 1);
+        setPlaybackRate(nullptr, playbackRate);
     }
 }
 
@@ -83,6 +86,8 @@ void InspectorAnimationAgent::didCommitLoadForLocalFrame(LocalFrame* frame)
         m_idToAnimationClone.clear();
         m_clearedAnimations.clear();
     }
+    double playbackRate = m_state->getDouble(AnimationAgentState::animationAgentPlaybackRate, 1);
+    setPlaybackRate(nullptr, playbackRate);
 }
 
 static PassRefPtr<TypeBuilder::Animation::AnimationEffect> buildObjectForAnimationEffect(KeyframeEffect* effect, bool isTransition)
@@ -201,6 +206,7 @@ void InspectorAnimationAgent::setPlaybackRate(ErrorString*, double playbackRate)
 {
     for (LocalFrame* frame : *m_inspectedFrames)
         frame->document()->timeline().setPlaybackRate(playbackRate);
+    m_state->setDouble(AnimationAgentState::animationAgentPlaybackRate, playbackRate);
 }
 
 void InspectorAnimationAgent::getCurrentTime(ErrorString* errorString, const String& id, double* currentTime)
