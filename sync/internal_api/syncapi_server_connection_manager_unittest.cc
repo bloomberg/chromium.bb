@@ -72,10 +72,8 @@ TEST(SyncAPIServerConnectionManagerTest, VeryEarlyAbortPost) {
       "server", 0, true, new BlockingHttpPostFactory(), &signal);
 
   ServerConnectionManager::PostBufferParams params;
-  ScopedServerStatusWatcher watcher(&server, &params.response);
 
-  bool result = server.PostBufferToPath(
-      &params, "/testpath", "testauth", &watcher);
+  bool result = server.PostBufferToPath(&params, "/testpath", "testauth");
 
   EXPECT_FALSE(result);
   EXPECT_EQ(HttpResponse::CONNECTION_UNAVAILABLE,
@@ -89,11 +87,9 @@ TEST(SyncAPIServerConnectionManagerTest, EarlyAbortPost) {
       "server", 0, true, new BlockingHttpPostFactory(), &signal);
 
   ServerConnectionManager::PostBufferParams params;
-  ScopedServerStatusWatcher watcher(&server, &params.response);
 
   signal.Signal();
-  bool result = server.PostBufferToPath(
-      &params, "/testpath", "testauth", &watcher);
+  bool result = server.PostBufferToPath(&params, "/testpath", "testauth");
 
   EXPECT_FALSE(result);
   EXPECT_EQ(HttpResponse::CONNECTION_UNAVAILABLE,
@@ -107,7 +103,6 @@ TEST(SyncAPIServerConnectionManagerTest, AbortPost) {
       "server", 0, true, new BlockingHttpPostFactory(), &signal);
 
   ServerConnectionManager::PostBufferParams params;
-  ScopedServerStatusWatcher watcher(&server, &params.response);
 
   base::Thread abort_thread("Test_AbortThread");
   ASSERT_TRUE(abort_thread.Start());
@@ -117,8 +112,7 @@ TEST(SyncAPIServerConnectionManagerTest, AbortPost) {
                  base::Unretained(&signal)),
       TestTimeouts::tiny_timeout());
 
-  bool result = server.PostBufferToPath(
-      &params, "/testpath", "testauth", &watcher);
+  bool result = server.PostBufferToPath(&params, "/testpath", "testauth");
 
   EXPECT_FALSE(result);
   EXPECT_EQ(HttpResponse::CONNECTION_UNAVAILABLE,

@@ -77,16 +77,14 @@ message SyncEnums {
 
   enum ErrorType {
     SUCCESS               = 0;
-    ACCESS_DENIED         = 1;  // Returned when the user doesn't have access to
-                                // store (instead of HTTP 401).
+    DEPRECATED_ACCESS_DENIED = 1;
     NOT_MY_BIRTHDAY       = 2;  // Returned when the server and client disagree
                                 // on the store birthday.
     THROTTLED             = 3;  // Returned when the store has exceeded the
                                 // allowed bandwidth utilization.
-    AUTH_EXPIRED          = 4;  // Auth token or cookie has expired.
-    USER_NOT_ACTIVATED    = 5;  // User doesn't have the Chrome bit set on that
-                                // Google Account.
-    AUTH_INVALID          = 6;  // Auth token or cookie is otherwise invalid.
+    DEPRECATED_AUTH_EXPIRED = 4;
+    DEPRECATED_USER_NOT_ACTIVATED = 5;
+    DEPRECATED_AUTH_INVALID = 6;
     CLEAR_PENDING         = 7;  // A clear of the user data is pending (e.g.
                                 // initiated by privacy request).  Client should
                                 // come back later.

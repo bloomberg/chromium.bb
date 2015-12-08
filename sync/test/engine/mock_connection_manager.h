@@ -40,8 +40,7 @@ class MockConnectionManager : public ServerConnectionManager {
   // Overridden ServerConnectionManager functions.
   bool PostBufferToPath(PostBufferParams*,
                         const std::string& path,
-                        const std::string& auth_token,
-                        ScopedServerStatusWatcher* watcher) override;
+                        const std::string& auth_token) override;
 
   // Control of commit response.
   // NOTE: Commit callback is invoked only once then reset.
@@ -389,11 +388,6 @@ class MockConnectionManager : public ServerConnectionManager {
   // requests.
   // Protected by |response_code_override_lock_|.
   bool partialThrottling_;
-
-  // Whether we are failing all requests by returning
-  // ClientToServerResponse::AUTH_INVALID.
-  // Protected by |response_code_override_lock_|.
-  bool fail_with_auth_invalid_;
 
   base::Lock response_code_override_lock_;
 

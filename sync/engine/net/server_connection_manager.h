@@ -106,22 +106,6 @@ class SYNC_EXPORT_PRIVATE ServerConnectionEventListener {
   virtual ~ServerConnectionEventListener() {}
 };
 
-class ServerConnectionManager;
-// A helper class that automatically notifies when the status changes.
-// TODO(tim): This class shouldn't be exposed outside of the implementation,
-// bug 35060.
-class SYNC_EXPORT_PRIVATE ScopedServerStatusWatcher
-    : public base::NonThreadSafe {
- public:
-  ScopedServerStatusWatcher(ServerConnectionManager* conn_mgr,
-                            HttpResponse* response);
-  virtual ~ScopedServerStatusWatcher();
- private:
-  ServerConnectionManager* const conn_mgr_;
-  HttpResponse* const response_;
-  DISALLOW_COPY_AND_ASSIGN(ScopedServerStatusWatcher);
-};
-
 // Use this class to interact with the sync server.
 // The ServerConnectionManager currently supports POSTing protocol buffers.
 //
@@ -189,8 +173,7 @@ class SYNC_EXPORT_PRIVATE ServerConnectionManager : public CancelationObserver {
   // set auth token in our headers.
   //
   // Returns true if executed successfully.
-  virtual bool PostBufferWithCachedAuth(PostBufferParams* params,
-                                        ScopedServerStatusWatcher* watcher);
+  virtual bool PostBufferWithCachedAuth(PostBufferParams* params);
 
   void AddListener(ServerConnectionEventListener* listener);
   void RemoveListener(ServerConnectionEventListener* listener);
@@ -250,8 +233,7 @@ class SYNC_EXPORT_PRIVATE ServerConnectionManager : public CancelationObserver {
   // Internal PostBuffer base function.
   virtual bool PostBufferToPath(PostBufferParams*,
                                 const std::string& path,
-                                const std::string& auth_token,
-                                ScopedServerStatusWatcher* watcher);
+                                const std::string& auth_token);
 
   // An internal helper to clear our auth_token_ and cache the old version
   // in |previously_invalidated_token_| to shelter us from retrying with a
@@ -307,7 +289,6 @@ class SYNC_EXPORT_PRIVATE ServerConnectionManager : public CancelationObserver {
 
  private:
   friend class Connection;
-  friend class ScopedServerStatusWatcher;
 
   // A class to help deal with cleaning up active Connection objects when (for
   // ex) multiple early-exits are present in some scope. ScopedConnectionHelper

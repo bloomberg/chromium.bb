@@ -48,7 +48,6 @@ MockConnectionManager::MockConnectionManager(syncable::Directory* directory,
       mid_commit_observer_(NULL),
       throttling_(false),
       partialThrottling_(false),
-      fail_with_auth_invalid_(false),
       fail_non_periodic_get_updates_(false),
       next_position_in_parent_(2),
       use_legacy_bookmarks_protocol_(false),
@@ -76,9 +75,8 @@ void MockConnectionManager::SetMidCommitObserver(
 }
 
 bool MockConnectionManager::PostBufferToPath(PostBufferParams* params,
-    const string& path,
-    const string& auth_token,
-    ScopedServerStatusWatcher* watcher) {
+                                             const string& path,
+                                             const string& auth_token) {
   ClientToServerMessage post;
   CHECK(post.ParseFromString(params->buffer_in));
   CHECK(post.has_protocol_version());
@@ -171,9 +169,6 @@ bool MockConnectionManager::PostBufferToPath(PostBufferParams* params,
       }
       partialThrottling_ = false;
     }
-
-    if (fail_with_auth_invalid_)
-      response.set_error_code(SyncEnums::AUTH_INVALID);
   }
 
   response.SerializeToString(&params->buffer_out);

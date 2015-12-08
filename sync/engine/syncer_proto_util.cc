@@ -4,6 +4,8 @@
 
 #include "sync/engine/syncer_proto_util.h"
 
+#include <map>
+
 #include "base/format_macros.h"
 #include "base/strings/stringprintf.h"
 #include "google_apis/google_api_keys.h"
@@ -130,10 +132,6 @@ SyncProtocolErrorType PBErrorTypeToSyncProtocolErrorType(
       return CLIENT_DATA_OBSOLETE;
     case sync_pb::SyncEnums::UNKNOWN:
       return UNKNOWN_ERROR;
-    case sync_pb::SyncEnums::USER_NOT_ACTIVATED:
-    case sync_pb::SyncEnums::AUTH_INVALID:
-    case sync_pb::SyncEnums::ACCESS_DENIED:
-      return INVALID_CREDENTIAL;
     default:
       NOTREACHED();
       return UNKNOWN_ERROR;
@@ -345,28 +343,13 @@ bool SyncerProtoUtil::PostAndProcessHeaders(ServerConnectionManager* scm,
             ClientToServerMessage::default_instance().protocol_version());
   msg.SerializeToString(&params.buffer_in);
 
-  ScopedServerStatusWatcher server_status_watcher(scm, &params.response);
   // Fills in params.buffer_out and params.response.
-  if (!scm->PostBufferWithCachedAuth(&params, &server_status_watcher)) {
+  if (!scm->PostBufferWithCachedAuth(&params)) {
     LOG(WARNING) << "Error posting from syncer:" << params.response;
     return false;
   }
 
-  if (response->ParseFromString(params.buffer_out)) {
-    // TODO(tim): This is an egregious layering violation (bug 35060).
-    switch (response->error_code()) {
-      case sync_pb::SyncEnums::ACCESS_DENIED:
-      case sync_pb::SyncEnums::AUTH_INVALID:
-      case sync_pb::SyncEnums::USER_NOT_ACTIVATED:
-        // Fires on ScopedServerStatusWatcher
-        params.response.server_status = HttpResponse::SYNC_AUTH_ERROR;
-        return false;
-      default:
-        return true;
-    }
-  }
-
-  return false;
+  return response->ParseFromString(params.buffer_out);
 }
 
 base::TimeDelta SyncerProtoUtil::GetThrottleDelay(
