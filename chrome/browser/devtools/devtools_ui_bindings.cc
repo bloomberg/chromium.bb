@@ -286,6 +286,7 @@ class DevToolsUIBindings::FrontendWebContentsObserver
   void DidStartNavigationToPendingEntry(
       const GURL& url,
       content::NavigationController::ReloadType reload_type) override;
+  void DocumentAvailableInMainFrame() override;
   void DocumentOnLoadCompletedInMainFrame() override;
   void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
@@ -335,6 +336,11 @@ void DevToolsUIBindings::FrontendWebContentsObserver::
           web_contents()->GetMainFrame(),
           base::Bind(&DevToolsUIBindings::HandleMessageFromDevToolsFrontend,
                      base::Unretained(devtools_bindings_))));
+}
+
+void DevToolsUIBindings::FrontendWebContentsObserver::
+    DocumentAvailableInMainFrame() {
+  devtools_bindings_->DocumentAvailableInMainFrame();
 }
 
 void DevToolsUIBindings::FrontendWebContentsObserver::
@@ -484,6 +490,7 @@ DevToolsUIBindings::DevToolsUIBindings(content::WebContents* web_contents)
       delegate_(new DefaultBindingsDelegate(web_contents_)),
       devices_updates_enabled_(false),
       frontend_loaded_(false),
+      reattaching_(false),
       weak_factory_(this) {
   g_instances.Get().push_back(this);
   frontend_contents_observer_.reset(new FrontendWebContentsObserver(this));
@@ -1127,8 +1134,7 @@ void DevToolsUIBindings::AttachTo(
 
 void DevToolsUIBindings::Reattach() {
   DCHECK(agent_host_.get());
-  agent_host_->DetachClient();
-  agent_host_->AttachClient(this);
+  reattaching_ = true;
 }
 
 void DevToolsUIBindings::Detach() {
@@ -1172,6 +1178,14 @@ void DevToolsUIBindings::CallClientFunction(const std::string& function_name,
   javascript.append(");");
   web_contents_->GetMainFrame()->ExecuteJavaScript(
       base::UTF8ToUTF16(javascript));
+}
+
+void DevToolsUIBindings::DocumentAvailableInMainFrame() {
+  if (!reattaching_)
+    return;
+  reattaching_ = false;
+  agent_host_->DetachClient();
+  agent_host_->AttachClient(this);
 }
 
 void DevToolsUIBindings::DocumentOnLoadCompletedInMainFrame() {

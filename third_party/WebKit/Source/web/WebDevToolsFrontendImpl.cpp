@@ -44,17 +44,8 @@
 namespace blink {
 
 WebDevToolsFrontend* WebDevToolsFrontend::create(
-    WebView* view,
-    WebDevToolsFrontendClient* client,
-    const WebString& applicationLocale)
-{
-    return new WebDevToolsFrontendImpl(toWebLocalFrameImpl(view->mainFrame()), client);
-}
-
-WebDevToolsFrontend* WebDevToolsFrontend::create(
     WebLocalFrame* frame,
-    WebDevToolsFrontendClient* client,
-    const WebString& applicationLocale)
+    WebDevToolsFrontendClient* client)
 {
     return new WebDevToolsFrontendImpl(toWebLocalFrameImpl(frame), client);
 }
@@ -70,6 +61,8 @@ WebDevToolsFrontendImpl::WebDevToolsFrontendImpl(
 
 WebDevToolsFrontendImpl::~WebDevToolsFrontendImpl()
 {
+    if (m_devtoolsHost)
+        m_devtoolsHost->disconnectClient();
 }
 
 void WebDevToolsFrontendImpl::didClearWindowObject(WebLocalFrameImpl* frame)

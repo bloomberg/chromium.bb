@@ -45,8 +45,8 @@ class CONTENT_EXPORT DevToolsClient
   void OnDispatchOnInspectorFrontend(const std::string& message,
                                      uint32 total_size);
 
-  scoped_ptr<blink::WebDevToolsFrontend> web_tools_frontend_;
   std::string compatibility_script_;
+  scoped_ptr<blink::WebDevToolsFrontend> web_tools_frontend_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsClient);
 };

@@ -215,28 +215,6 @@ void DevToolsHost::showContextMenu(LocalFrame* targetFrame, float x, float y, co
         m_client->showContextMenu(targetFrame, x * zoom, y * zoom, menuProvider);
 }
 
-void DevToolsHost::showContextMenu(Event* event, const Vector<ContextMenuItem>& items)
-{
-    if (!event)
-        return;
-
-    ASSERT(m_frontendFrame);
-    ScriptState* frontendScriptState = ScriptState::forMainWorld(m_frontendFrame);
-    ScriptValue devtoolsApiObject = frontendScriptState->getFromGlobalObject("DevToolsAPI");
-    ASSERT(devtoolsApiObject.isObject());
-
-    Page* targetPage = m_frontendFrame->page();
-    if (event->target() && event->target()->executionContext() && event->target()->executionContext()->executingWindow()) {
-        LocalDOMWindow* window = event->target()->executionContext()->executingWindow();
-        if (window->document() && window->document()->page())
-            targetPage = window->document()->page();
-    }
-
-    RefPtrWillBeRawPtr<FrontendMenuProvider> menuProvider = FrontendMenuProvider::create(this, devtoolsApiObject, items);
-    targetPage->contextMenuController().showContextMenu(event, menuProvider);
-    m_menuProvider = menuProvider.get();
-}
-
 String DevToolsHost::getSelectionBackgroundColor()
 {
     return LayoutTheme::theme().activeSelectionBackgroundColor().serialized();

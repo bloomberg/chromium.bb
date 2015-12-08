@@ -112,29 +112,6 @@ static bool populateContextMenuItems(v8::Isolate* isolate, const v8::Local<v8::A
     return true;
 }
 
-void V8DevToolsHost::showContextMenuMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    if (info.Length() < 2)
-        return;
-
-    v8::Local<v8::Object> eventWrapper = v8::Local<v8::Object>::Cast(info[0]);
-    if (!V8MouseEvent::wrapperTypeInfo.equals(toWrapperTypeInfo(eventWrapper)))
-        return;
-
-    Event* event = V8Event::toImpl(eventWrapper);
-    if (!info[1]->IsArray())
-        return;
-
-    v8::Local<v8::Array> array = v8::Local<v8::Array>::Cast(info[1]);
-    ContextMenu menu;
-    if (!populateContextMenuItems(info.GetIsolate(), array, menu))
-        return;
-
-    DevToolsHost* devtoolsHost = V8DevToolsHost::toImpl(info.Holder());
-    Vector<ContextMenuItem> items = menu.items();
-    devtoolsHost->showContextMenu(event, items);
-}
-
 void V8DevToolsHost::showContextMenuAtPointMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (info.Length() < 3)
