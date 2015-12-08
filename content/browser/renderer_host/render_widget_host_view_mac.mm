@@ -2109,6 +2109,8 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
   // out-of-process iframes), pick the one that should process this event.
   if (widgetHost->delegate())
     widgetHost = widgetHost->delegate()->GetFocusedRenderWidgetHost(widgetHost);
+  if (!widgetHost)
+    return;
 
   // Suppress the escape key up event if necessary.
   if (event.windowsKeyCode == ui::VKEY_ESCAPE && suppressNextEscapeKeyUp_) {

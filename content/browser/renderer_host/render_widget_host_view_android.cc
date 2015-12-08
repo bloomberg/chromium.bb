@@ -1695,6 +1695,8 @@ void RenderWidgetHostViewAndroid::SendKeyEvent(
   // out-of-process iframes), pick the one that should process this event.
   if (host_->delegate())
     target_host = host_->delegate()->GetFocusedRenderWidgetHost(host_);
+  if (!target_host)
+    return;
 
   target_host->ForwardKeyboardEvent(event);
 }

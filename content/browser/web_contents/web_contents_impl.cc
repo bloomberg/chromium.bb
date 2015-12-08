@@ -1647,8 +1647,15 @@ RenderWidgetHostImpl* WebContentsImpl::GetFocusedRenderWidgetHost(
   if (!focused_frame)
     return receiving_widget;
 
-  return RenderWidgetHostImpl::From(
-      focused_frame->current_frame_host()->GetView()->GetRenderWidgetHost());
+  // The view may be null if a subframe's renderer process has crashed while
+  // the subframe has focus.  Drop the event in that case.  Do not give
+  // it to the main frame, so that the user doesn't unexpectedly type into the
+  // wrong frame if a focused subframe renderer crashes while they type.
+  RenderWidgetHostView* view = focused_frame->current_frame_host()->GetView();
+  if (!view)
+    return nullptr;
+
+  return RenderWidgetHostImpl::From(view->GetRenderWidgetHost());
 }
 
 void WebContentsImpl::EnterFullscreenMode(const GURL& origin) {
