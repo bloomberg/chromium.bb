@@ -917,6 +917,10 @@ public:
         NodeFilterIsFunction = 1059,
         NodeFilterIsObject = 1060,
         TextEncoderUTF16 = 1061,
+        CSSSelectorInternalPseudoListBox = 1062,
+        CSSSelectorInternalMediaControlsCastButton = 1063,
+        CSSSelectorInternalMediaControlsOverlayCastButton = 1064,
+        CSSSelectorInternalPseudoSpatialNavigationFocus = 1065,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

@@ -39,6 +39,22 @@ static void recordSelectorStats(const CSSParserContext& context, const CSSSelect
             case CSSSelector::PseudoFullScreen:
                 feature = UseCounter::CSSSelectorPseudoFullScreen;
                 break;
+            case CSSSelector::PseudoListBox:
+                if (context.mode() != UASheetMode)
+                    feature = UseCounter::CSSSelectorInternalPseudoListBox;
+                break;
+            case CSSSelector::PseudoWebKitCustomElement:
+                if (context.mode() != UASheetMode) {
+                    if (current->value() == "-internal-media-controls-cast-button")
+                        feature = UseCounter::CSSSelectorInternalMediaControlsCastButton;
+                    else if (current->value() == "-internal-media-controls-overlay-cast-button")
+                        feature = UseCounter::CSSSelectorInternalMediaControlsOverlayCastButton;
+                }
+                break;
+            case CSSSelector::PseudoSpatialNavigationFocus:
+                if (context.mode() != UASheetMode)
+                    feature = UseCounter::CSSSelectorInternalPseudoSpatialNavigationFocus;
+                break;
             default:
                 break;
             }
