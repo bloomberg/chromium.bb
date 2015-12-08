@@ -35,6 +35,9 @@ class Surface : public aura::Window, public ui::CompositorObserver {
   Surface();
   ~Surface() override;
 
+  // Type-checking downcast routine.
+  static Surface* AsSurface(aura::Window* window);
+
   // Set a buffer as the content of this surface. A buffer can only be attached
   // to one surface at a time.
   void Attach(Buffer* buffer);
