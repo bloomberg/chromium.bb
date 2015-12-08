@@ -26,6 +26,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/compositing_recorder.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icons_public.h"
@@ -456,9 +457,8 @@ void CardUnmaskPromptViews::InitIfNecessary() {
 
   error_icon_ = new views::ImageView();
   error_icon_->SetVisible(false);
-  // TODO(estade): revisit this color.
   error_icon_->SetImage(gfx::CreateVectorIcon(gfx::VectorIconId::WARNING, 16,
-                                              SkColorSetRGB(0xDB, 0x44, 0x37)));
+                                              gfx::kGoogleRed700));
   temporary_error->AddChildView(error_icon_);
 
   // Reserve vertical space for the error label, assuming it's one line.
