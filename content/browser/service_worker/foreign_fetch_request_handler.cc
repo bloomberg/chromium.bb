@@ -123,7 +123,7 @@ net::URLRequestJob* ForeignFetchRequestHandler::MaybeCreateJob(
       request_context_type_, frame_type_, body_, this);
   job_ = job->GetWeakPtr();
 
-  context_->FindRegistrationForDocument(
+  context_->FindReadyRegistrationForDocument(
       request->url(),
       base::Bind(&ForeignFetchRequestHandler::DidFindRegistration,
                  weak_factory_.GetWeakPtr(), job_));
@@ -166,12 +166,8 @@ void ForeignFetchRequestHandler::DidFindRegistration(
     return;
   }
 
-  // TODO(mek): Maybe this should activate a waiting version?
   ServiceWorkerVersion* active_version = registration->active_version();
-  if (!active_version) {
-    job->FallbackToNetwork();
-    return;
-  }
+  DCHECK(active_version);
 
   const GURL& request_url = job->request()->url();
   bool scope_matches = false;

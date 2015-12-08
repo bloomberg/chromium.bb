@@ -1086,7 +1086,7 @@ class ServiceWorkerBlackBoxBrowserTest : public ServiceWorkerBrowserTest {
   void FindRegistrationOnIO(const GURL& document_url,
                             ServiceWorkerStatusCode* status,
                             const base::Closure& continuation) {
-    wrapper()->FindRegistrationForDocument(
+    wrapper()->FindReadyRegistrationForDocument(
         document_url,
         base::Bind(&ServiceWorkerBlackBoxBrowserTest::FindRegistrationOnIO2,
                    this, status, continuation));

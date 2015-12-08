@@ -92,7 +92,7 @@ void OneShotPendingOnIOThread(
     const std::string& tag,
     const GURL& url,
     const base::Callback<void(bool)>& callback) {
-  sw_context->FindRegistrationForDocument(
+  sw_context->FindReadyRegistrationForDocument(
       url, base::Bind(&OneShotPendingDidGetSWRegistration, sync_context, tag,
                       callback));
 }

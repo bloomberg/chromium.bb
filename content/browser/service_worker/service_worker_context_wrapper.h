@@ -107,10 +107,18 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   void HasMainFrameProviderHost(const GURL& origin,
                                 const BoolCallback& callback) const;
 
-  // Returns the registration whose scope longest matches |document_url|.
-  // Returns ERROR_NOT_FOUND if it is not found.
-  void FindRegistrationForDocument(const GURL& document_url,
-                                   const FindRegistrationCallback& callback);
+  // Returns the registration whose scope longest matches |document_url|. It is
+  // guaranteed that the returned registration has the activated worker.
+  //
+  //  - If the registration is not found, returns ERROR_NOT_FOUND.
+  //  - If the registration has neither the waiting version nor the active
+  //    version, returns ERROR_NOT_FOUND.
+  //  - If the registration does not have the active version but has the waiting
+  //    version, activates the waiting version and runs |callback| when it is
+  //    activated.
+  void FindReadyRegistrationForDocument(
+      const GURL& document_url,
+      const FindRegistrationCallback& callback);
 
   // Returns the registration for |registration_id|. It is guaranteed that the
   // returned registration has the activated worker.

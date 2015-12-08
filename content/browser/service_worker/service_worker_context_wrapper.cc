@@ -493,7 +493,7 @@ void ServiceWorkerContextWrapper::HasMainFrameProviderHost(
   context_core_->HasMainFrameProviderHost(origin, callback);
 }
 
-void ServiceWorkerContextWrapper::FindRegistrationForDocument(
+void ServiceWorkerContextWrapper::FindReadyRegistrationForDocument(
     const GURL& document_url,
     const FindRegistrationCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -503,7 +503,9 @@ void ServiceWorkerContextWrapper::FindRegistrationForDocument(
     return;
   }
   context_core_->storage()->FindRegistrationForDocument(
-      net::SimplifyUrlForRequest(document_url), callback);
+      net::SimplifyUrlForRequest(document_url),
+      base::Bind(&ServiceWorkerContextWrapper::DidFindRegistrationForFindReady,
+                 this, callback));
 }
 
 void ServiceWorkerContextWrapper::FindReadyRegistrationForId(

@@ -80,7 +80,7 @@ void NavigatorConnectContextImpl::Connect(
   service_port.client_origin = origin;
 
   // Find the right service worker to service this connection.
-  service_worker_context_->FindRegistrationForDocument(
+  service_worker_context_->FindReadyRegistrationForDocument(
       target_url,
       base::Bind(&NavigatorConnectContextImpl::GotServiceWorkerRegistration,
                  this, callback, client_port_id, service_port_id));
@@ -143,12 +143,7 @@ void NavigatorConnectContextImpl::GotServiceWorkerRegistration(
   }
 
   ServiceWorkerVersion* active_version = registration->active_version();
-  if (!active_version) {
-    // No active version, reject connection attempt.
-    OnConnectResult(callback, client_port_id, service_port_id, registration,
-                     status, false, base::string16(), base::string16());
-    return;
-  }
+  DCHECK(active_version);
 
   Port& service_port = ports_[service_port_id];
   service_port.service_worker_registration_id = registration->id();
