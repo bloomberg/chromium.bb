@@ -19,7 +19,7 @@ protected:
 
     const QualifiedName& attribute() const { return property().svgAttribute(); }
 
-    virtual PassOwnPtr<InterpolationValue> maybeConvertNeutral(const UnderlyingValue&, ConversionCheckers&) const = 0;
+    virtual PassOwnPtr<InterpolationValue> maybeConvertNeutral(const UnderlyingValue&, ConversionCheckers&) const;
     virtual PassOwnPtr<InterpolationValue> maybeConvertSVGValue(const SVGPropertyBase&) const = 0;
     virtual PassRefPtrWillBeRawPtr<SVGPropertyBase> appliedSVGValue(const InterpolableValue&, const NonInterpolableValue*) const = 0;
 

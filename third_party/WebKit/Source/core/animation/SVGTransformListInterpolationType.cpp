@@ -8,6 +8,7 @@
 #include "core/animation/InterpolableValue.h"
 #include "core/animation/InterpolationEnvironment.h"
 #include "core/animation/NonInterpolableValue.h"
+#include "core/animation/StringKeyframe.h"
 #include "core/svg/SVGTransform.h"
 #include "core/svg/SVGTransformList.h"
 
@@ -168,46 +169,48 @@ PassRefPtrWillBeRawPtr<SVGTransform> fromInterpolableValue(const InterpolableVal
     return nullptr;
 }
 
+const Vector<SVGTransformType>& getTransformTypes(const InterpolationValue& value)
+{
+    return toSVGTransformNonInterpolableValue(value.nonInterpolableValue())->transformTypes();
+}
+
 bool transformTypesMatch(const InterpolationValue& first, const InterpolationValue& second)
 {
-    const Vector<SVGTransformType>& firstTransformTypes = toSVGTransformNonInterpolableValue(first.nonInterpolableValue())->transformTypes();
-    const Vector<SVGTransformType>& secondTransformTypes = toSVGTransformNonInterpolableValue(second.nonInterpolableValue())->transformTypes();
+    const Vector<SVGTransformType>& firstTransformTypes = getTransformTypes(first);
+    const Vector<SVGTransformType>& secondTransformTypes = getTransformTypes(second);
     return firstTransformTypes == secondTransformTypes;
 }
 
-class UnderlyingTypesChecker : public InterpolationType::ConversionChecker {
+class SVGTransformListChecker : public InterpolationType::ConversionChecker {
 public:
-    static PassOwnPtr<UnderlyingTypesChecker> create(const InterpolationType& type, const Vector<SVGTransformType>& underlyingTypes)
+    static PassOwnPtr<SVGTransformListChecker> create(const InterpolationType& type, const UnderlyingValue& underlyingValue)
     {
-        return adoptPtr(new UnderlyingTypesChecker(type, underlyingTypes));
+        return adoptPtr(new SVGTransformListChecker(type, underlyingValue));
     }
 
     bool isValid(const InterpolationEnvironment&, const UnderlyingValue& underlyingValue) const final
     {
-        return m_underlyingTypes == toSVGTransformNonInterpolableValue(underlyingValue->nonInterpolableValue())->transformTypes();
+        // TODO(suzyh): change maybeConvertSingle so we don't have to recalculate for changes to the interpolable values
+        if (!underlyingValue && !m_underlyingValue)
+            return true;
+        if (!underlyingValue || !m_underlyingValue)
+            return false;
+        return m_underlyingValue->interpolableValue().equals(underlyingValue->interpolableValue())
+            && getTransformTypes(*m_underlyingValue) == getTransformTypes(*underlyingValue.get());
     }
 
 private:
-    UnderlyingTypesChecker(const InterpolationType& type, const Vector<SVGTransformType>& underlyingTypes)
+    SVGTransformListChecker(const InterpolationType& type, const UnderlyingValue& underlyingValue)
         : ConversionChecker(type)
-        , m_underlyingTypes(underlyingTypes)
-    {}
+    {
+        if (underlyingValue)
+            m_underlyingValue = underlyingValue->clone();
+    }
 
-    Vector<SVGTransformType> m_underlyingTypes;
+    OwnPtr<InterpolationValue> m_underlyingValue;
 };
 
 } // namespace
-
-PassOwnPtr<InterpolationValue> SVGTransformListInterpolationType::maybeConvertNeutral(const UnderlyingValue& underlyingValue, ConversionCheckers& conversionCheckers) const
-{
-    Vector<SVGTransformType> underlyingTypes(toSVGTransformNonInterpolableValue(underlyingValue->nonInterpolableValue())->transformTypes());
-    conversionCheckers.append(UnderlyingTypesChecker::create(*this, underlyingTypes));
-    if (underlyingTypes.isEmpty())
-        return nullptr;
-    OwnPtr<InterpolationValue> result = underlyingValue->clone();
-    result->mutableComponent().interpolableValue = result->interpolableValue().cloneAndZero();
-    return result.release();
-}
 
 PassOwnPtr<InterpolationValue> SVGTransformListInterpolationType::maybeConvertSVGValue(const SVGPropertyBase& svgValue) const
 {
@@ -231,9 +234,42 @@ PassOwnPtr<InterpolationValue> SVGTransformListInterpolationType::maybeConvertSV
     return InterpolationValue::create(*this, result.release(), SVGTransformNonInterpolableValue::create(transformTypes));
 }
 
-PassOwnPtr<InterpolationValue> SVGTransformListInterpolationType::maybeConvertUnderlyingValue(const InterpolationEnvironment& environment) const
+PassOwnPtr<InterpolationValue> SVGTransformListInterpolationType::maybeConvertSingle(const PropertySpecificKeyframe& keyframe, const InterpolationEnvironment& environment, const UnderlyingValue& underlyingValue, ConversionCheckers& conversionCheckers) const
 {
-    return maybeConvertSVGValue(environment.svgBaseValue());
+    Vector<SVGTransformType> types;
+    Vector<OwnPtr<InterpolableValue>> interpolableParts;
+
+    if (keyframe.composite() == EffectModel::CompositeAdd) {
+        if (underlyingValue) {
+            types.appendVector(getTransformTypes(*underlyingValue.get()));
+            interpolableParts.append(underlyingValue->interpolableValue().clone());
+        }
+        conversionCheckers.append(SVGTransformListChecker::create(*this, underlyingValue));
+    } else {
+        ASSERT(!keyframe.isNeutral());
+    }
+
+    if (!keyframe.isNeutral()) {
+        RefPtrWillBeRawPtr<SVGPropertyBase> svgValue = environment.svgBaseValue().cloneForAnimation(toSVGPropertySpecificKeyframe(keyframe).value());
+        OwnPtr<InterpolationValue> interpolationValue = maybeConvertSVGValue(*svgValue);
+        if (!interpolationValue)
+            return nullptr;
+        types.appendVector(getTransformTypes(*interpolationValue));
+        interpolableParts.append(interpolationValue->mutableComponent().interpolableValue.release());
+    }
+
+    OwnPtr<InterpolableList> interpolableList = InterpolableList::create(types.size());
+    size_t interpolableListIndex = 0;
+    for (auto& part : interpolableParts) {
+        InterpolableList& list = toInterpolableList(*part);
+        for (size_t i = 0; i < list.length(); ++i) {
+            interpolableList->set(interpolableListIndex, list.getMutable(i).release());
+            ++interpolableListIndex;
+        }
+    }
+
+    OwnPtr<InterpolationValue> result = InterpolationValue::create(*this, interpolableList.release(), SVGTransformNonInterpolableValue::create(types));
+    return result.release();
 }
 
 PassRefPtrWillBeRawPtr<SVGPropertyBase> SVGTransformListInterpolationType::appliedSVGValue(const InterpolableValue& interpolableValue, const NonInterpolableValue* nonInterpolableValue) const
@@ -259,7 +295,6 @@ PassOwnPtr<PairwisePrimitiveInterpolation> SVGTransformListInterpolationType::me
 
 void SVGTransformListInterpolationType::composite(UnderlyingValue& underlyingValue, double underlyingFraction, const InterpolationValue& value) const
 {
-    // TODO(suzyh): Implement addition
     underlyingValue.set(&value);
 }
 

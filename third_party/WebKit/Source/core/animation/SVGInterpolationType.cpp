@@ -12,6 +12,13 @@
 
 namespace blink {
 
+PassOwnPtr<InterpolationValue> SVGInterpolationType::maybeConvertNeutral(const UnderlyingValue&, ConversionCheckers&) const
+{
+    ASSERT_NOT_REACHED();
+    // This function must be overridden, unless maybeConvertSingle is overridden to no longer need it.
+    return nullptr;
+}
+
 PassOwnPtr<InterpolationValue> SVGInterpolationType::maybeConvertSingle(const PropertySpecificKeyframe& keyframe, const InterpolationEnvironment& environment, const UnderlyingValue& underlyingValue, ConversionCheckers& conversionCheckers) const
 {
     if (keyframe.isNeutral())
