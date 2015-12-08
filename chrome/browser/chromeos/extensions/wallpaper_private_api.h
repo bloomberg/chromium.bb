@@ -11,6 +11,7 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/extensions/wallpaper_function_base.h"
 #include "chrome/common/extensions/api/wallpaper_private.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
 namespace chromeos {
@@ -72,7 +73,7 @@ class WallpaperPrivateSetWallpaperIfExistsFunction
       params;
 
   // User id of the active user when this api is been called.
-  std::string user_id_;
+  AccountId account_id_ = EmptyAccountId();
 
   // Sequence token associated with wallpaper operations. Shared with
   // WallpaperManager.
@@ -107,8 +108,8 @@ class WallpaperPrivateSetWallpaperFunction : public WallpaperFunctionBase {
   // FILE thread to resize and save wallpaper to disk.
   gfx::ImageSkia wallpaper_;
 
-  // User id of the active user when this api is been called.
-  std::string user_id_;
+  // User account id of the active user when this api is been called.
+  AccountId account_id_ = EmptyAccountId();
 
   // Sequence token associated with wallpaper operations. Shared with
   // WallpaperManager.
@@ -158,8 +159,8 @@ class WallpaperPrivateSetCustomWallpaperFunction
   scoped_ptr<extensions::api::wallpaper_private::SetCustomWallpaper::Params>
       params;
 
-  // User id of the active user when this api is been called.
-  std::string user_id_;
+  // User account id of the active user when this api is been called.
+  AccountId account_id_ = EmptyAccountId();
 
   // User id hash of the logged in user.
   std::string user_id_hash_;

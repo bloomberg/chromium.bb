@@ -677,10 +677,13 @@ void GaiaScreenHandler::ShowGaiaScreenIfReady() {
   }
 
   // Note that LoadAuthExtension clears |populated_email_|.
-  if (populated_email_.empty())
+  if (populated_email_.empty()) {
     Delegate()->LoadSigninWallpaper();
-  else
-    Delegate()->LoadWallpaper(populated_email_);
+  } else {
+    Delegate()->LoadWallpaper(
+        user_manager::UserManager::Get()->GetKnownUserAccountId(
+            populated_email_, std::string()));
+  }
 
   input_method::InputMethodManager* imm =
       input_method::InputMethodManager::Get();

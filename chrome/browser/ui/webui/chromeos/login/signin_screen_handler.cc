@@ -1030,7 +1030,7 @@ void SigninScreenHandler::HandleShutdownSystem() {
 
 void SigninScreenHandler::HandleLoadWallpaper(const AccountId& account_id) {
   if (delegate_)
-    delegate_->LoadWallpaper(account_id.GetUserEmail());
+    delegate_->LoadWallpaper(account_id);
 }
 
 void SigninScreenHandler::HandleRebootSystem() {
@@ -1222,7 +1222,7 @@ void SigninScreenHandler::HandleShowLoadingTimeoutError() {
 
 void SigninScreenHandler::HandleFocusPod(const AccountId& account_id) {
   SetUserInputMethod(account_id.GetUserEmail(), ime_state_.get());
-  WallpaperManager::Get()->SetUserWallpaperDelayed(account_id.GetUserEmail());
+  WallpaperManager::Get()->SetUserWallpaperDelayed(account_id);
   proximity_auth::ScreenlockBridge::Get()->SetFocusedUser(
       account_id.GetUserEmail());
   if (delegate_)

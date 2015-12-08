@@ -348,9 +348,9 @@ bool WallpaperPrivateSetWallpaperIfExistsFunction::RunAsync() {
   params = set_wallpaper_if_exists::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  // Gets email address from caller, ensuring multiprofile compatibility.
+  // Gets account id from the caller, ensuring multiprofile compatibility.
   const user_manager::User* user = GetUserFromBrowserContext(browser_context());
-  user_id_ = user->email();
+  account_id_ = user->GetAccountId();
 
   base::FilePath wallpaper_path;
   base::FilePath fallback_path;
@@ -423,16 +423,17 @@ void WallpaperPrivateSetWallpaperIfExistsFunction::OnWallpaperDecoded(
       wallpaper_base::ToString(params->layout));
 
   bool update_wallpaper =
-      user_id_ == user_manager::UserManager::Get()->GetActiveUser()->email();
-  wallpaper_manager->SetWallpaperFromImageSkia(
-      user_id_, image, layout, update_wallpaper);
+      account_id_ ==
+      user_manager::UserManager::Get()->GetActiveUser()->GetAccountId();
+  wallpaper_manager->SetWallpaperFromImageSkia(account_id_, image, layout,
+                                               update_wallpaper);
   bool is_persistent = !user_manager::UserManager::Get()
                             ->IsCurrentUserNonCryptohomeDataEphemeral();
   wallpaper::WallpaperInfo info = {params->url,
                                    layout,
                                    user_manager::User::ONLINE,
                                    base::Time::Now().LocalMidnight()};
-  wallpaper_manager->SetUserWallpaperInfo(user_id_, info, is_persistent);
+  wallpaper_manager->SetUserWallpaperInfo(account_id_, info, is_persistent);
   SetResult(new base::FundamentalValue(true));
   Profile* profile = Profile::FromBrowserContext(browser_context());
   // This API is only available to the component wallpaper picker. We do not
@@ -459,9 +460,9 @@ bool WallpaperPrivateSetWallpaperFunction::RunAsync() {
   params = set_wallpaper::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  // Gets email address from caller, ensuring multiprofile compatibility.
+  // Gets account id from the caller, ensuring multiprofile compatibility.
   const user_manager::User* user = GetUserFromBrowserContext(browser_context());
-  user_id_ = user->email();
+  account_id_ = user->GetAccountId();
 
   StartDecode(params->wallpaper);
 
@@ -533,9 +534,10 @@ void WallpaperPrivateSetWallpaperFunction::SetDecodedWallpaper(
       wallpaper_base::ToString(params->layout));
 
   bool update_wallpaper =
-      user_id_ == user_manager::UserManager::Get()->GetActiveUser()->email();
-  wallpaper_manager->SetWallpaperFromImageSkia(
-      user_id_, *image.get(), layout, update_wallpaper);
+      account_id_ ==
+      user_manager::UserManager::Get()->GetActiveUser()->GetAccountId();
+  wallpaper_manager->SetWallpaperFromImageSkia(account_id_, *image.get(),
+                                               layout, update_wallpaper);
 
   bool is_persistent = !user_manager::UserManager::Get()
                             ->IsCurrentUserNonCryptohomeDataEphemeral();
@@ -549,7 +551,7 @@ void WallpaperPrivateSetWallpaperFunction::SetDecodedWallpaper(
   // the pref to empty string.
   profile->GetPrefs()->SetString(prefs::kCurrentWallpaperAppName,
                                  std::string());
-  wallpaper_manager->SetUserWallpaperInfo(user_id_, info, is_persistent);
+  wallpaper_manager->SetUserWallpaperInfo(account_id_, info, is_persistent);
   SendResponse(true);
 }
 
@@ -564,8 +566,8 @@ bool WallpaperPrivateResetWallpaperFunction::RunAsync() {
       chromeos::WallpaperManager::Get();
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
 
-  std::string user_id = user_manager->GetActiveUser()->email();
-  wallpaper_manager->RemoveUserWallpaperInfo(user_id);
+  const AccountId& account_id = user_manager->GetActiveUser()->GetAccountId();
+  wallpaper_manager->RemoveUserWallpaperInfo(account_id);
 
   wallpaper::WallpaperInfo info = {std::string(),
                                    wallpaper::WALLPAPER_LAYOUT_CENTER,
@@ -573,9 +575,9 @@ bool WallpaperPrivateResetWallpaperFunction::RunAsync() {
                                    base::Time::Now().LocalMidnight()};
   bool is_persistent =
       !user_manager->IsCurrentUserNonCryptohomeDataEphemeral();
-  wallpaper_manager->SetUserWallpaperInfo(user_id, info, is_persistent);
+  wallpaper_manager->SetUserWallpaperInfo(account_id, info, is_persistent);
 
-  wallpaper_manager->SetDefaultWallpaperNow(user_id);
+  wallpaper_manager->SetDefaultWallpaperNow(account_id);
   Profile* profile = Profile::FromBrowserContext(browser_context());
   // This API is only available to the component wallpaper picker. We do not
   // need to show the app's name if it is the component wallpaper picker. So set
@@ -595,9 +597,9 @@ bool WallpaperPrivateSetCustomWallpaperFunction::RunAsync() {
   params = set_custom_wallpaper::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  // Gets email address from caller, ensuring multiprofile compatibility.
+  // Gets account id from the caller, ensuring multiprofile compatibility.
   const user_manager::User* user = GetUserFromBrowserContext(browser_context());
-  user_id_ = user->email();
+  account_id_ = user->GetAccountId();
   user_id_hash_ = user->username_hash();
 
   StartDecode(params->wallpaper);
@@ -624,14 +626,11 @@ void WallpaperPrivateSetCustomWallpaperFunction::OnWallpaperDecoded(
   wallpaper_api_util::RecordCustomWallpaperLayout(layout);
 
   bool update_wallpaper =
-      user_id_ == user_manager::UserManager::Get()->GetActiveUser()->email();
-  wallpaper_manager->SetCustomWallpaper(user_id_,
-                                        user_id_hash_,
-                                        params->file_name,
-                                        layout,
-                                        user_manager::User::CUSTOMIZED,
-                                        image,
-                                        update_wallpaper);
+      account_id_ ==
+      user_manager::UserManager::Get()->GetActiveUser()->GetAccountId();
+  wallpaper_manager->SetCustomWallpaper(
+      account_id_, user_id_hash_, params->file_name, layout,
+      user_manager::User::CUSTOMIZED, image, update_wallpaper);
   unsafe_wallpaper_decoder_ = NULL;
 
   Profile* profile = Profile::FromBrowserContext(browser_context());
@@ -706,15 +705,14 @@ bool WallpaperPrivateSetCustomWallpaperLayoutFunction::RunAsync() {
       wallpaper_base::ToString(params->layout));
   wallpaper_api_util::RecordCustomWallpaperLayout(info.layout);
 
-  std::string email =
-      user_manager::UserManager::Get()->GetActiveUser()->email();
+  const AccountId& account_id =
+      user_manager::UserManager::Get()->GetActiveUser()->GetAccountId();
   bool is_persistent = !user_manager::UserManager::Get()
                             ->IsCurrentUserNonCryptohomeDataEphemeral();
-  wallpaper_manager->SetUserWallpaperInfo(email, info, is_persistent);
+  wallpaper_manager->SetUserWallpaperInfo(account_id, info, is_persistent);
   wallpaper_manager->UpdateWallpaper(false /* clear_cache */);
   SendResponse(true);
 
-  // Gets email address while at UI thread.
   return true;
 }
 
@@ -758,8 +756,6 @@ bool WallpaperPrivateGetThumbnailFunction::RunAsync() {
   EXTENSION_FUNCTION_VALIDATE(params);
 
   base::FilePath thumbnail_path;
-  std::string email =
-      user_manager::UserManager::Get()->GetActiveUser()->email();
   if (params->source == wallpaper_private::WALLPAPER_SOURCE_ONLINE) {
     std::string file_name = GURL(params->url_or_file).ExtractFileName();
     CHECK(PathService::Get(chrome::DIR_CHROMEOS_WALLPAPER_THUMBNAILS,

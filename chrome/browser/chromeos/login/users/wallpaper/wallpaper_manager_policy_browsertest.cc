@@ -134,18 +134,20 @@ class WallpaperManagerPolicyTest
       : LoginManagerTest(true),
         wallpaper_change_count_(0),
         fake_session_manager_client_(new FakeSessionManagerClient) {
-    testUsers_[0] = LoginManagerTest::kEnterpriseUser1;
-    testUsers_[1] = LoginManagerTest::kEnterpriseUser2;
+    testUsers_.push_back(
+        AccountId::FromUserEmail(LoginManagerTest::kEnterpriseUser1));
+    testUsers_.push_back(
+        AccountId::FromUserEmail(LoginManagerTest::kEnterpriseUser2));
   }
 
   scoped_ptr<policy::UserPolicyBuilder> GetUserPolicyBuilder(
-      const std::string& user_id) {
+      const AccountId& account_id) {
     scoped_ptr<policy::UserPolicyBuilder>
         user_policy_builder(new policy::UserPolicyBuilder());
     base::FilePath user_keys_dir;
     EXPECT_TRUE(PathService::Get(DIR_USER_POLICY_KEYS, &user_keys_dir));
     const std::string sanitized_user_id =
-        CryptohomeClient::GetStubSanitizedUsername(user_id);
+        CryptohomeClient::GetStubSanitizedUsername(account_id.GetUserEmail());
     const base::FilePath user_key_file =
         user_keys_dir.AppendASCII(sanitized_user_id)
                      .AppendASCII("policy.pub");
@@ -158,7 +160,7 @@ class WallpaperManagerPolicyTest
                   reinterpret_cast<const char*>(user_key_bits.data()),
                   user_key_bits.size()),
               static_cast<int>(user_key_bits.size()));
-    user_policy_builder->policy_data().set_username(user_id);
+    user_policy_builder->policy_data().set_username(account_id.GetUserEmail());
     return user_policy_builder.Pass();
   }
 
@@ -233,7 +235,7 @@ class WallpaperManagerPolicyTest
   // empty |filename| to clear policy.
   void InjectPolicy(int user_number, const std::string& filename) {
     ASSERT_TRUE(user_number == 0 || user_number == 1);
-    const std::string user_id = testUsers_[user_number];
+    const AccountId& account_id = testUsers_[user_number];
     policy::UserPolicyBuilder* builder =
         user_policy_builders_[user_number].get();
     if (!filename.empty()) {
@@ -243,9 +245,10 @@ class WallpaperManagerPolicyTest
       builder->payload().Clear();
     }
     builder->Build();
-    fake_session_manager_client_->set_user_policy(user_id, builder->GetBlob());
-    const user_manager::User* user = user_manager::UserManager::Get()->FindUser(
-        AccountId::FromUserEmail(user_id));
+    fake_session_manager_client_->set_user_policy(account_id.GetUserEmail(),
+                                                  builder->GetBlob());
+    const user_manager::User* user =
+        user_manager::UserManager::Get()->FindUser(account_id);
     ASSERT_TRUE(user);
     policy::CloudPolicyStore* store = GetStoreForUser(user);
     ASSERT_TRUE(store);
@@ -267,15 +270,15 @@ class WallpaperManagerPolicyTest
   int wallpaper_change_count_;
   scoped_ptr<policy::UserPolicyBuilder> user_policy_builders_[2];
   FakeSessionManagerClient* fake_session_manager_client_;
-  const char* testUsers_[2];
+  std::vector<AccountId> testUsers_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WallpaperManagerPolicyTest);
 };
 
 IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest, PRE_SetResetClear) {
-  RegisterUser(testUsers_[0]);
-  RegisterUser(testUsers_[1]);
+  RegisterUser(testUsers_[0].GetUserEmail());
+  RegisterUser(testUsers_[1].GetUserEmail());
   StartupUtils::MarkOobeCompleted();
 }
 
@@ -285,7 +288,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest, PRE_SetResetClear) {
 // reverts to default.
 IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest, SetResetClear) {
   wallpaper::WallpaperInfo info;
-  LoginUser(testUsers_[0]);
+  LoginUser(testUsers_[0].GetUserEmail());
   base::RunLoop().RunUntilIdle();
 
   // First user: Wait until default wallpaper has been loaded (happens
@@ -326,14 +329,14 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest, SetResetClear) {
 
 IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest,
                        DISABLED_PRE_PRE_PRE_WallpaperOnLoginScreen) {
-  RegisterUser(testUsers_[0]);
-  RegisterUser(testUsers_[1]);
+  RegisterUser(testUsers_[0].GetUserEmail());
+  RegisterUser(testUsers_[1].GetUserEmail());
   StartupUtils::MarkOobeCompleted();
 }
 
 IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest,
                        DISABLED_PRE_PRE_WallpaperOnLoginScreen) {
-  LoginUser(testUsers_[0]);
+  LoginUser(testUsers_[0].GetUserEmail());
 
   // Wait until default wallpaper has been loaded.
   RunUntilWallpaperChangeCount(1);
@@ -348,7 +351,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest,
 
 IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest,
                        DISABLED_PRE_WallpaperOnLoginScreen) {
-  LoginUser(testUsers_[1]);
+  LoginUser(testUsers_[1].GetUserEmail());
 
   // Wait until default wallpaper has been loaded.
   RunUntilWallpaperChangeCount(1);
@@ -379,12 +382,12 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest,
 }
 
 IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest, PRE_PRE_PersistOverLogout) {
-  RegisterUser(testUsers_[0]);
+  RegisterUser(testUsers_[0].GetUserEmail());
   StartupUtils::MarkOobeCompleted();
 }
 
 IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest, PRE_PersistOverLogout) {
-  LoginUser(testUsers_[0]);
+  LoginUser(testUsers_[0].GetUserEmail());
 
   // Wait until default wallpaper has been loaded.
   RunUntilWallpaperChangeCount(1);
@@ -398,7 +401,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest, PRE_PersistOverLogout) {
 }
 
 IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest, PersistOverLogout) {
-  LoginUser(testUsers_[0]);
+  LoginUser(testUsers_[0].GetUserEmail());
 
   // Wait until wallpaper has been loaded.
   RunUntilWallpaperChangeCount(1);

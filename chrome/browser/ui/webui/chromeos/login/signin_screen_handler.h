@@ -160,8 +160,8 @@ class SigninScreenHandlerDelegate {
   // Cancels user adding.
   virtual void CancelUserAdding() = 0;
 
-  // Load wallpaper for given |username|.
-  virtual void LoadWallpaper(const std::string& username) = 0;
+  // Load wallpaper for given |account_id|.
+  virtual void LoadWallpaper(const AccountId& account_id) = 0;
 
   // Loads the default sign-in wallpaper.
   virtual void LoadSigninWallpaper() = 0;

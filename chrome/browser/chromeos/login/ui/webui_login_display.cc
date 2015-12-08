@@ -232,13 +232,12 @@ void WebUILoginDisplay::MigrateUserData(const std::string& old_password) {
     delegate_->MigrateUserData(old_password);
 }
 
-void WebUILoginDisplay::LoadWallpaper(const std::string& username) {
-  WallpaperManager::Get()->SetUserWallpaperDelayed(username);
+void WebUILoginDisplay::LoadWallpaper(const AccountId& account_id) {
+  WallpaperManager::Get()->SetUserWallpaperDelayed(account_id);
 }
 
 void WebUILoginDisplay::LoadSigninWallpaper() {
-  WallpaperManager::Get()->SetDefaultWallpaperDelayed(
-      login::SignInAccountId().GetUserEmail());
+  WallpaperManager::Get()->SetDefaultWallpaperDelayed(login::SignInAccountId());
 }
 
 void WebUILoginDisplay::OnSigninScreenReady() {

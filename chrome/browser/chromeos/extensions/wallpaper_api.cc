@@ -104,8 +104,9 @@ bool WallpaperSetWallpaperFunction::RunAsync() {
   params_ = set_wallpaper::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_);
 
-  // Gets email address and username hash while at UI thread.
-  user_id_ = user_manager::UserManager::Get()->GetLoggedInUser()->email();
+  // Gets account id and username hash while at UI thread.
+  account_id_ =
+      user_manager::UserManager::Get()->GetLoggedInUser()->GetAccountId();
   user_id_hash_ =
       user_manager::UserManager::Get()->GetLoggedInUser()->username_hash();
 
@@ -144,14 +145,11 @@ void WallpaperSetWallpaperFunction::OnWallpaperDecoded(
   wallpaper_api_util::RecordCustomWallpaperLayout(layout);
 
   bool update_wallpaper =
-      user_id_ == user_manager::UserManager::Get()->GetActiveUser()->email();
-  wallpaper_manager->SetCustomWallpaper(user_id_,
-                                        user_id_hash_,
-                                        params_->details.filename,
-                                        layout,
-                                        user_manager::User::CUSTOMIZED,
-                                        image,
-                                        update_wallpaper);
+      account_id_ ==
+      user_manager::UserManager::Get()->GetActiveUser()->GetAccountId();
+  wallpaper_manager->SetCustomWallpaper(
+      account_id_, user_id_hash_, params_->details.filename, layout,
+      user_manager::User::CUSTOMIZED, image, update_wallpaper);
   unsafe_wallpaper_decoder_ = NULL;
 
   if (params_->details.thumbnail) {

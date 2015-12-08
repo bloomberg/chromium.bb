@@ -144,7 +144,7 @@ void FakeChromeUserManager::RemoveUser(
     user_manager::RemoveUserDelegate* delegate) {}
 
 void FakeChromeUserManager::RemoveUserFromList(const AccountId& account_id) {
-  WallpaperManager::Get()->RemoveUserWallpaperInfo(account_id.GetUserEmail());
+  WallpaperManager::Get()->RemoveUserWallpaperInfo(account_id);
   FakeUserManager::RemoveUserFromList(account_id);
 }
 

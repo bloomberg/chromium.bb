@@ -109,7 +109,8 @@ class UserWallpaperDelegate : public ash::UserWallpaperDelegate {
         user_manager::UserManager::Get()->GetActiveUser();
     if (!user)
       return false;
-    if (chromeos::WallpaperManager::Get()->IsPolicyControlled(user->email()))
+    if (chromeos::WallpaperManager::Get()->IsPolicyControlled(
+            user->GetAccountId()))
       return false;
     return true;
   }

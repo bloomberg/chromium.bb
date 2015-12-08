@@ -1027,7 +1027,7 @@ void BrowserOptionsHandler::InitializePage() {
 
   OnWallpaperManagedChanged(
       chromeos::WallpaperManager::Get()->IsPolicyControlled(
-          user_manager::UserManager::Get()->GetActiveUser()->email()));
+          user_manager::UserManager::Get()->GetActiveUser()->GetAccountId()));
 
   policy::ConsumerManagementService* consumer_management =
       g_browser_process->platform_part()->browser_policy_connector_chromeos()->

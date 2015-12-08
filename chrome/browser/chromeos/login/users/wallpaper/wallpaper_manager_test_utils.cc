@@ -37,7 +37,7 @@ class TestWallpaperObserverPendingListEmpty
     wallpaper_manager_->RemoveObserver(this);
   }
 
-  void OnWallpaperAnimationFinished(const std::string& user_id) override {}
+  void OnWallpaperAnimationFinished(const AccountId& account_id) override {}
 
   void OnPendingListEmptyForTesting() override {
     empty_ = true;

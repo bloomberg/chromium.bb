@@ -64,7 +64,7 @@ class WebUILoginDisplay : public LoginDisplay,
 
   void OnSigninScreenReady() override;
   void CancelUserAdding() override;
-  void LoadWallpaper(const std::string& username) override;
+  void LoadWallpaper(const AccountId& account_id) override;
   void LoadSigninWallpaper() override;
   void ShowEnterpriseEnrollmentScreen() override;
   void ShowEnableDebuggingScreen() override;

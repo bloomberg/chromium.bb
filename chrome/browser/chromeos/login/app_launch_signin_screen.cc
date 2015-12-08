@@ -97,8 +97,7 @@ void AppLaunchSigninScreen::MigrateUserData(const std::string& old_password) {
   NOTREACHED();
 }
 
-void AppLaunchSigninScreen::LoadWallpaper(const std::string& username) {
-}
+void AppLaunchSigninScreen::LoadWallpaper(const AccountId& account_id) {}
 
 void AppLaunchSigninScreen::LoadSigninWallpaper() {
 }

@@ -8,6 +8,7 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/extensions/wallpaper_function_base.h"
 #include "chrome/common/extensions/api/wallpaper.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "net/url_request/url_request_status.h"
 
 // Implementation of chrome.wallpaper.setWallpaper API.
@@ -51,7 +52,7 @@ class WallpaperSetWallpaperFunction : public WallpaperFunctionBase {
   std::string file_name_;
 
   // User id of the user who initiate this API call.
-  std::string user_id_;
+  AccountId account_id_ = EmptyAccountId();
 
   // User id hash of the logged in user.
   std::string user_id_hash_;

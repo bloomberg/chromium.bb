@@ -67,7 +67,7 @@ class TestWallpaperObserver : public WallpaperManager::Observer {
     wallpaper_manager_->RemoveObserver(this);
   }
 
-  void OnWallpaperAnimationFinished(const std::string&) override {
+  void OnWallpaperAnimationFinished(const AccountId&) override {
     finished_ = true;
     base::MessageLoop::current()->QuitWhenIdle();
   }
@@ -260,7 +260,7 @@ class CustomizationWallpaperDownloaderBrowserTest
 IN_PROC_BROWSER_TEST_F(CustomizationWallpaperDownloaderBrowserTest,
                        OEMWallpaperIsPresent) {
   CreateCmdlineWallpapers();
-  WallpaperManager::Get()->SetDefaultWallpaperNow(std::string());
+  WallpaperManager::Get()->SetDefaultWallpaperNow(EmptyAccountId());
   wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();
   EXPECT_TRUE(wallpaper_manager_test_utils::ImageIsNearColor(
       controller_->GetWallpaper(),
@@ -289,7 +289,7 @@ IN_PROC_BROWSER_TEST_F(CustomizationWallpaperDownloaderBrowserTest,
 IN_PROC_BROWSER_TEST_F(CustomizationWallpaperDownloaderBrowserTest,
                        OEMWallpaperRetryFetch) {
   CreateCmdlineWallpapers();
-  WallpaperManager::Get()->SetDefaultWallpaperNow(std::string());
+  WallpaperManager::Get()->SetDefaultWallpaperNow(EmptyAccountId());
   wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();
   EXPECT_TRUE(wallpaper_manager_test_utils::ImageIsNearColor(
       controller_->GetWallpaper(),

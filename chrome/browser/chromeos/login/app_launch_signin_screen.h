@@ -59,7 +59,7 @@ class AppLaunchSigninScreen : public SigninScreenHandlerDelegate,
   void Login(const UserContext& user_context,
              const SigninSpecifics& specifics) override;
   void MigrateUserData(const std::string& old_password) override;
-  void LoadWallpaper(const std::string& username) override;
+  void LoadWallpaper(const AccountId& account_id) override;
   void LoadSigninWallpaper() override;
   void OnSigninScreenReady() override;
   void RemoveUser(const AccountId& account_id) override;
