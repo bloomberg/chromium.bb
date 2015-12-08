@@ -53,8 +53,9 @@ def main():
                       dest='build_type',
                       help='If set, run test suites under out/Release. '
                            'Default is env var BUILDTYPE or Debug.')
-  parser.add_argument('-d', '--device', dest='device',
-                      help='Target device for apk to install on.')
+  parser.add_argument('-d', '--device', dest='devices', action='append',
+                      help='Target device for apk to install on. Enter multiple'
+                           ' times for multiple devices.')
   parser.add_argument('--blacklist-file', help='Device blacklist JSON file.')
   parser.add_argument('-v', '--verbose', action='count',
                       help='Enable verbose logging.')
@@ -92,10 +93,10 @@ def main():
                else None)
   devices = device_utils.DeviceUtils.HealthyDevices(blacklist)
 
-  if args.device:
-    devices = [d for d in devices if d == args.device]
+  if args.devices:
+    devices = [d for d in devices if d in args.devices]
     if not devices:
-      raise device_errors.DeviceUnreachableError(args.device)
+      raise device_errors.DeviceUnreachableError(args.devices)
   elif not devices:
     raise device_errors.NoDevicesError()
 
