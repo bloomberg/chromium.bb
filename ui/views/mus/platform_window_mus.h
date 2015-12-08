@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "components/mus/public/cpp/input_event_handler.h"
 #include "components/mus/public/cpp/window_observer.h"
 #include "ui/platform_window/platform_window.h"
 #include "ui/views/mus/mus_export.h"
@@ -18,8 +17,7 @@ namespace views {
 
 class VIEWS_MUS_EXPORT PlatformWindowMus
     : public NON_EXPORTED_BASE(ui::PlatformWindow),
-      public mus::WindowObserver,
-      public mus::InputEventHandler {
+      public mus::WindowObserver {
  public:
   PlatformWindowMus(ui::PlatformWindowDelegate* delegate,
                     mus::Window* mus_window);
@@ -59,16 +57,13 @@ class VIEWS_MUS_EXPORT PlatformWindowMus
                             mus::Window* lost_focus) override;
   void OnWindowPredefinedCursorChanged(mus::Window* window,
                                        mus::mojom::Cursor cursor) override;
+  void OnWindowInputEvent(mus::Window* view,
+                          const mus::mojom::EventPtr& event) override;
   void OnWindowSharedPropertyChanged(
       mus::Window* window,
       const std::string& name,
       const std::vector<uint8_t>* old_data,
       const std::vector<uint8_t>* new_data) override;
-
-  // mus::InputEventHandler:
-  void OnWindowInputEvent(mus::Window* view,
-                          mus::mojom::EventPtr event,
-                          scoped_ptr<base::Closure>* ack_callback) override;
 
   ui::PlatformWindowDelegate* delegate_;
   mus::Window* mus_window_;

@@ -5,8 +5,6 @@
 #ifndef COMPONENTS_MUS_PUBLIC_CPP_TESTS_TEST_WINDOW_TREE_H_
 #define COMPONENTS_MUS_PUBLIC_CPP_TESTS_TEST_WINDOW_TREE_H_
 
-#include <set>
-
 #include "base/macros.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 
@@ -22,8 +20,6 @@ class TestWindowTree : public mojom::WindowTree {
   // functions. Returns false if one of the WindowTree functions has not been
   // invoked since the last GetAndClearChangeId().
   bool GetAndClearChangeId(uint32_t* change_id);
-
-  bool WasEventAcked(uint32_t event_id) const;
 
  private:
   // mojom::WindowTree:
@@ -82,7 +78,6 @@ class TestWindowTree : public mojom::WindowTree {
 
   bool got_change_;
   uint32_t change_id_;
-  std::set<uint32_t> acked_events_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWindowTree);
 };

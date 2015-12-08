@@ -7,8 +7,8 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "components/mus/public/cpp/input_event_handler.h"
 #include "components/mus/public/cpp/window.h"
+#include "components/mus/public/cpp/window_observer.h"
 #include "components/mus/public/cpp/window_tree_connection.h"
 #include "components/mus/public/cpp/window_tree_delegate.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
@@ -25,7 +25,7 @@ class InputHandlerManager;
 // explicited suffixed with OnMainThread.
 class CompositorMusConnection
     : public mus::WindowTreeDelegate,
-      public mus::InputEventHandler,
+      public mus::WindowObserver,
       public base::RefCountedThreadSafe<CompositorMusConnection> {
  public:
   // Created on main thread.
@@ -64,10 +64,9 @@ class CompositorMusConnection
   void OnConnectionLost(mus::WindowTreeConnection* connection) override;
   void OnEmbed(mus::Window* root) override;
 
-  // InputEventHandler implementation:
+  // WindowObserver implementation:
   void OnWindowInputEvent(mus::Window* window,
-                          mus::mojom::EventPtr event,
-                          scoped_ptr<base::Closure>* ack_callback) override;
+                          const mus::mojom::EventPtr& event) override;
 
   const int routing_id_;
   mus::Window* root_;

@@ -584,15 +584,11 @@ web_view::mojom::Frame* HTMLFrame::GetServerFrame() {
 }
 
 void HTMLFrame::SetWindow(mus::Window* window) {
-  if (window_) {
-    window_->set_input_event_handler(nullptr);
+  if (window_)
     window_->RemoveObserver(this);
-  }
   window_ = window;
-  if (window_) {
+  if (window_)
     window_->AddObserver(this);
-    window_->set_input_event_handler(this);
-  }
 }
 
 void HTMLFrame::CreateRootWebWidget() {
@@ -761,14 +757,8 @@ void HTMLFrame::OnWindowDestroyed(mus::Window* window) {
   Close();
 }
 
-void HTMLFrame::OnWindowFocusChanged(mus::Window* gained_focus,
-                                     mus::Window* lost_focus) {
-  UpdateFocus();
-}
-
 void HTMLFrame::OnWindowInputEvent(mus::Window* window,
-                                   mus::mojom::EventPtr event,
-                                   scoped_ptr<base::Closure>* ack_callback) {
+                                   const mus::mojom::EventPtr& event) {
   if (event->pointer_data && event->pointer_data->location) {
     // Blink expects coordintes to be in DIPs.
     event->pointer_data->location->x /= global_state()->device_pixel_ratio();
@@ -802,6 +792,11 @@ void HTMLFrame::OnWindowInputEvent(mus::Window* window,
       event.To<scoped_ptr<blink::WebInputEvent>>();
   if (web_event)
     web_widget->handleInputEvent(*web_event);
+}
+
+void HTMLFrame::OnWindowFocusChanged(mus::Window* gained_focus,
+                                     mus::Window* lost_focus) {
+  UpdateFocus();
 }
 
 void HTMLFrame::OnConnect(

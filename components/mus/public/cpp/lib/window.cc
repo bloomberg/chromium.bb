@@ -408,7 +408,6 @@ Window::Window()
       parent_(nullptr),
       stacking_target_(nullptr),
       transient_parent_(nullptr),
-      input_event_handler_(nullptr),
       viewport_metrics_(CreateEmptyViewportMetrics()),
       visible_(true),
       drawn_(false) {}

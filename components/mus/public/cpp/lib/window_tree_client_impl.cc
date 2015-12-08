@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "components/mus/common/util.h"
-#include "components/mus/public/cpp/input_event_handler.h"
 #include "components/mus/public/cpp/lib/in_flight_change.h"
 #include "components/mus/public/cpp/lib/window_private.h"
 #include "components/mus/public/cpp/window_manager_delegate.h"
@@ -641,18 +640,11 @@ void WindowTreeClientImpl::OnWindowInputEvent(uint32_t event_id,
                                               Id window_id,
                                               mojom::EventPtr event) {
   Window* window = GetWindowById(window_id);
-  if (!window || !window->input_event_handler_) {
-    tree_->OnWindowInputEventAck(event_id);
-    return;
+  if (window) {
+    FOR_EACH_OBSERVER(WindowObserver, *WindowPrivate(window).observers(),
+                      OnWindowInputEvent(window, event));
   }
-
-  scoped_ptr<base::Closure> ack_callback(
-      new base::Closure(base::Bind(&mojom::WindowTree::OnWindowInputEventAck,
-                                   base::Unretained(tree_), event_id)));
-  window->input_event_handler_->OnWindowInputEvent(window, std::move(event),
-                                                   &ack_callback);
-  if (ack_callback)
-    ack_callback->Run();
+  tree_->OnWindowInputEventAck(event_id);
 }
 
 void WindowTreeClientImpl::OnWindowFocused(Id focused_window_id) {

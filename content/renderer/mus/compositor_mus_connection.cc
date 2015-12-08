@@ -99,7 +99,7 @@ void CompositorMusConnection::OnConnectionLost(
 void CompositorMusConnection::OnEmbed(mus::Window* root) {
   DCHECK(compositor_task_runner_->BelongsToCurrentThread());
   root_ = root;
-  root_->set_input_event_handler(this);
+  root_->AddObserver(this);
   if (window_surface_binding_) {
     root->AttachSurface(mus::mojom::SURFACE_TYPE_DEFAULT,
                         std::move(window_surface_binding_));
@@ -108,8 +108,7 @@ void CompositorMusConnection::OnEmbed(mus::Window* root) {
 
 void CompositorMusConnection::OnWindowInputEvent(
     mus::Window* window,
-    mus::mojom::EventPtr event,
-    scoped_ptr<base::Closure>* ack_callback) {
+    const mus::mojom::EventPtr& event) {
   DCHECK(compositor_task_runner_->BelongsToCurrentThread());
   scoped_ptr<blink::WebInputEvent> web_event =
       event.To<scoped_ptr<blink::WebInputEvent>>();
@@ -119,7 +118,8 @@ void CompositorMusConnection::OnWindowInputEvent(
       routing_id_, web_event.get(), &info);
   if (ack_state != INPUT_EVENT_ACK_STATE_NOT_CONSUMED)
     return;
-  base::Closure ack;
+  // TODO(sad): Do something more useful once we can do async acks.
+  base::Closure ack = base::Bind(&base::DoNothing);
   const bool send_ack =
       WebInputEventTraits::WillReceiveAckFromRenderer(*web_event);
   if (send_ack) {
@@ -127,10 +127,8 @@ void CompositorMusConnection::OnWindowInputEvent(
     // thread-safe and lives on the compositor thread. For ACKs that are passed
     // to the main thread we pass them back to the compositor thread via
     // OnWindowInputEventAckOnMainThread.
-    ack =
-        base::Bind(&CompositorMusConnection::OnWindowInputEventAckOnMainThread,
-                   this, *ack_callback->get());
-    ack_callback->reset();
+    ack = base::Bind(
+        &CompositorMusConnection::OnWindowInputEventAckOnMainThread, this, ack);
   }
   main_task_runner_->PostTask(
       FROM_HERE,

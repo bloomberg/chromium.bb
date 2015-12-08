@@ -26,7 +26,6 @@ class Size;
 
 namespace mus {
 
-class InputEventHandler;
 class ServiceProviderImpl;
 class WindowObserver;
 class WindowSurface;
@@ -143,10 +142,6 @@ class Window {
   // shared with other mojo services.
   template <typename T>
   void ClearLocalProperty(const WindowProperty<T>* property);
-
-  void set_input_event_handler(InputEventHandler* input_event_handler) {
-    input_event_handler_ = input_event_handler;
-  }
 
   // Observation.
   void AddObserver(WindowObserver* observer);
@@ -287,7 +282,6 @@ class Window {
   Children transient_children_;
 
   base::ObserverList<WindowObserver> observers_;
-  InputEventHandler* input_event_handler_;
 
   gfx::Rect bounds_;
   gfx::Insets client_area_;
