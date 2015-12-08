@@ -261,6 +261,9 @@ public:
     // Exposed for tests.
     WebLayer* contentsLayer() const { return m_contentsLayer; }
 
+    void setElementId(uint64_t);
+    void setCompositorMutableProperties(uint32_t);
+
     static void setDrawDebugRedFillForTesting(bool);
     ContentLayerDelegate* contentLayerDelegateForTesting() const { return m_contentLayerDelegate.get(); }
 

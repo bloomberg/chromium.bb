@@ -258,6 +258,7 @@
       # crbug.com/353585
       'tests/ActivityLoggerTest.cpp',
       'tests/ChromeClientImplTest.cpp',
+      'tests/CompositorWorkerTest.cpp',
       'tests/DocumentLoaderTest.cpp',
       'tests/DocumentLoadingRenderingTest.cpp',
       'tests/FakeWebPlugin.cpp',

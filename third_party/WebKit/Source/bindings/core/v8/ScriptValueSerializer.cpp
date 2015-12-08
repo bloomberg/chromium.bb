@@ -209,7 +209,7 @@ void SerializedScriptValueWriter::writeCompositorProxy(const CompositorProxy& co
 {
     append(CompositorProxyTag);
     doWriteUint64(compositorProxy.elementId());
-    doWriteUint32(compositorProxy.bitfieldsSupported());
+    doWriteUint32(compositorProxy.compositorMutableProperties());
 }
 
 void SerializedScriptValueWriter::writeFile(const File& file)

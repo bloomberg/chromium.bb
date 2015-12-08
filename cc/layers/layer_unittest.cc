@@ -6,6 +6,7 @@
 
 #include "base/thread_task_runner_handle.h"
 #include "cc/animation/keyframed_animation_curve.h"
+#include "cc/animation/mutable_properties.h"
 #include "cc/base/math_util.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/layer_settings.h"
@@ -636,6 +637,9 @@ TEST_F(LayerTest, CheckPropertyChangeCausesCorrectBehavior) {
       gfx::Rect(10, 10)));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetForceRenderSurface(true));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetHideLayerAndSubtree(true));
+  EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetElementId(2));
+  EXPECT_SET_NEEDS_COMMIT(
+      1, test_layer->SetMutableProperties(kMutablePropertyTransform));
 
   EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, test_layer->SetMaskLayer(
       dummy_layer1.get()));
@@ -1702,6 +1706,28 @@ TEST_F(LayerTest, SimplePropertiesDeserialization) {
   layer->FromLayerPropertiesProto(properties);
   EXPECT_TRUE(layer->needs_push_properties());
   EXPECT_FALSE(layer->descendant_needs_push_properties());
+}
+
+TEST_F(LayerTest, ElementIdAndMutablePropertiesArePushed) {
+  scoped_refptr<Layer> test_layer = Layer::Create(layer_settings_);
+  scoped_ptr<LayerImpl> impl_layer =
+      LayerImpl::Create(host_impl_.active_tree(), 1);
+
+  EXPECT_SET_NEEDS_FULL_TREE_SYNC(1,
+                                  layer_tree_host_->SetRootLayer(test_layer));
+
+  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(2);
+
+  test_layer->SetElementId(2);
+  test_layer->SetMutableProperties(kMutablePropertyTransform);
+
+  EXPECT_EQ(0lu, impl_layer->element_id());
+  EXPECT_EQ(kMutablePropertyNone, impl_layer->mutable_properties());
+
+  test_layer->PushPropertiesTo(impl_layer.get());
+
+  EXPECT_EQ(2lu, impl_layer->element_id());
+  EXPECT_EQ(kMutablePropertyTransform, impl_layer->mutable_properties());
 }
 
 }  // namespace

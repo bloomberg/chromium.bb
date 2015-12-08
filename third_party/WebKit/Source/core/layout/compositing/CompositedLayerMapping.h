@@ -148,6 +148,7 @@ public:
     void finishAccumulatingSquashingLayers(size_t nextSquashedLayerIndex);
     void updateRenderingContext();
     void updateShouldFlattenTransform();
+    void updateElementIdAndCompositorMutableProperties();
 
     // GraphicsLayerClient interface
     void notifyAnimationStarted(const GraphicsLayer*, double monotonicTime, int group) override;

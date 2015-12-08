@@ -75,6 +75,7 @@
 #include "platform/scroll/ScrollAnimatorBase.h"
 #include "platform/scroll/ScrollbarTheme.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebCompositorMutableProperties.h"
 
 namespace blink {
 
@@ -1381,11 +1382,17 @@ bool PaintLayerScrollableArea::usesCompositedScrolling() const
 
 static bool layerNeedsCompositedScrolling(PaintLayerScrollableArea::LCDTextMode mode, const PaintLayer* layer)
 {
+    if (!layer->scrollsOverflow())
+        return false;
+
+    Node* node = layer->enclosingNode();
+    if (node && node->isElementNode() && (toElement(node)->compositorMutableProperties() & (WebCompositorMutablePropertyScrollTop | WebCompositorMutablePropertyScrollLeft)))
+        return true;
+
     if (mode == PaintLayerScrollableArea::ConsiderLCDText && !layer->compositor()->preferCompositingToLCDTextEnabled())
         return false;
 
-    return layer->scrollsOverflow()
-        && !layer->hasDescendantWithClipPath()
+    return !layer->hasDescendantWithClipPath()
         && !layer->hasAncestorWithClipPath()
         && !layer->layoutObject()->style()->hasBorderRadius();
 }

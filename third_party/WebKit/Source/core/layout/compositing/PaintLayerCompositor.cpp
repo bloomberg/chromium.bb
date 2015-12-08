@@ -63,6 +63,7 @@
 #include "platform/graphics/paint/PaintController.h"
 #include "platform/graphics/paint/TransformDisplayItem.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebCompositorMutableProperties.h"
 
 namespace blink {
 
@@ -391,6 +392,19 @@ void PaintLayerCompositor::updateIfNeeded()
     }
 
     if (updateType != CompositingUpdateNone) {
+        if (RuntimeEnabledFeatures::compositorWorkerEnabled() && m_scrollLayer) {
+            if (Element* scrollingElement = m_layoutView.document().scrollingElement()) {
+                uint64_t elementId = 0;
+                uint32_t mutableProperties = WebCompositorMutablePropertyNone;
+                if (scrollingElement->hasCompositorProxy()) {
+                    elementId = DOMNodeIds::idForNode(scrollingElement);
+                    mutableProperties = (WebCompositorMutablePropertyScrollLeft | WebCompositorMutablePropertyScrollTop) & scrollingElement->compositorMutableProperties();
+                }
+                m_scrollLayer->setElementId(elementId);
+                m_scrollLayer->setCompositorMutableProperties(mutableProperties);
+            }
+        }
+
         GraphicsLayerUpdater updater;
         updater.update(*updateRoot, layersNeedingPaintInvalidation);
 

@@ -1216,6 +1216,18 @@ PaintController* GraphicsLayer::paintController()
     return m_paintController.get();
 }
 
+void GraphicsLayer::setElementId(uint64_t id)
+{
+    if (WebLayer* layer = platformLayer())
+        layer->setElementId(id);
+}
+
+void GraphicsLayer::setCompositorMutableProperties(uint32_t properties)
+{
+    if (WebLayer* layer = platformLayer())
+        layer->setCompositorMutableProperties(properties);
+}
+
 } // namespace blink
 
 #ifndef NDEBUG

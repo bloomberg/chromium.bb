@@ -2458,6 +2458,8 @@
             'dom/PresentationAttributeStyle.h',
             'dom/ProcessingInstruction.cpp',
             'dom/ProcessingInstruction.h',
+            'dom/CompositorProxiedPropertySet.cpp',
+            'dom/CompositorProxiedPropertySet.h',
             'dom/PseudoElement.cpp',
             'dom/QualifiedName.cpp',
             'dom/Range.cpp',

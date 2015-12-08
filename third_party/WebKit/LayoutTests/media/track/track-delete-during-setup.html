@@ -1,5 +1,15 @@
         >
 
+        <script>
+            if (window.internals)
+            {
+                // This should not be necessary, but due to crbug.com/372245 style
+                // gets dirtied during layout in LayoutTextTrackContainer which
+                // causes assertions to fail when Document::scrollingElement is
+                // queried during compositing update (a valid request).
+                window.internals.settings.setCompositorWorkerEnabled(false);
+            }
+        </script>
         <script src=../media-file.js></script>
 <script></script>
 <script></script>

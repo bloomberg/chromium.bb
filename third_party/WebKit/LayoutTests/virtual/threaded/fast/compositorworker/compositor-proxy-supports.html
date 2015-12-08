@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<style>
+#container {
+  width: 100px;
+  height: 100px;
+  border: 1px solid black;
+  overflow: scroll;
+}
+
+#scrolled {
+  width: 80px;
+  height: 200px;
+  background: blue;
+}
+</style>
+<div id="container">
+  <div id="scrolled"></div>
+</div>
+<script src="../../../../resources/testharness.js"></script>
+<script src="../../../../resources/testharnessreport.js"></script>
+<script>
+test(function() {
+    var proxy = new CompositorProxy(document.getElementById('container'), ['opacity', 'transform', 'scrollTop', 'scrollLeft']);
+    assert_true(proxy.supports('opacity'));
+    assert_false(proxy.supports('opacit'));
+    assert_false(proxy.supports('opacitya'));
+
+    assert_true(proxy.supports('transform'));
+    assert_false(proxy.supports('transfor'));
+    assert_false(proxy.supports('transforma'));
+
+    assert_true(proxy.supports('scrollLeft'));
+    assert_false(proxy.supports('scrollLef'));
+    assert_false(proxy.supports('scrollLefta'));
+
+    assert_true(proxy.supports('scrollTop'));
+    assert_false(proxy.supports('scrollTo'));
+    assert_false(proxy.supports('scrollTopa'));
+
+    assert_false(proxy.supports('あ'));
+}, "This test ensures that supports correctly handles queries with strings that a prefix of a property or vice versa.");
+</script>

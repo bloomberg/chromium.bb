@@ -974,16 +974,34 @@ void Element::scrollFrameTo(const ScrollToOptions& scrollToOptions)
     viewport->setScrollPosition(DoublePoint(scaledLeft, scaledTop), ProgrammaticScroll, scrollBehavior);
 }
 
-void Element::incrementProxyCount()
+bool Element::hasCompositorProxy() const
 {
-    if (ensureElementRareData().incrementProxyCount() == 1)
+    return hasRareData() && elementRareData()->proxiedPropertyCounts();
+}
+
+void Element::incrementCompositorProxiedProperties(uint32_t mutableProperties)
+{
+    ElementRareData& rareData = ensureElementRareData();
+    if (!rareData.proxiedPropertyCounts())
+        setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::CompositorProxy));
+    rareData.incrementCompositorProxiedProperties(mutableProperties);
+}
+
+void Element::decrementCompositorProxiedProperties(uint32_t mutableProperties)
+{
+    ElementRareData& rareData = *elementRareData();
+    rareData.decrementCompositorProxiedProperties(mutableProperties);
+    if (!rareData.proxiedPropertyCounts())
         setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::CompositorProxy));
 }
 
-void Element::decrementProxyCount()
+uint32_t Element::compositorMutableProperties() const
 {
-    if (ensureElementRareData().decrementProxyCount() == 0)
-        setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::CompositorProxy));
+    if (!hasRareData())
+        return WebCompositorMutablePropertyNone;
+    if (CompositorProxiedPropertySet* set = elementRareData()->proxiedPropertyCounts())
+        return set->proxiedProperties();
+    return WebCompositorMutablePropertyNone;
 }
 
 bool Element::hasNonEmptyLayoutSize() const
@@ -1686,9 +1704,6 @@ PassRefPtr<ComputedStyle> Element::styleForLayoutObject()
         if (const StylePropertySet* inlineStyle = this->inlineStyle())
             style->setHasInlineTransform(inlineStyle->hasProperty(CSSPropertyTransform));
     }
-
-    if (hasRareData() && elementRareData()->proxyCount() > 0)
-        style->setHasCompositorProxy(true);
 
     document().didRecalculateStyleForElement();
     return style.release();

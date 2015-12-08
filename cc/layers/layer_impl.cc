@@ -10,6 +10,7 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/animation/animation_registrar.h"
+#include "cc/animation/mutable_properties.h"
 #include "cc/base/math_util.h"
 #include "cc/base/simple_enclosed_region.h"
 #include "cc/debug/debug_colors.h"
@@ -85,6 +86,8 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl,
       num_dependents_need_push_properties_(0),
       sorting_context_id_(0),
       current_draw_mode_(DRAW_MODE_NONE),
+      element_id_(0),
+      mutable_properties_(kMutablePropertyNone),
       force_render_surface_(false),
       num_layer_or_descendants_with_copy_request_(0),
       frame_timing_requests_dirty_(false),
@@ -597,6 +600,8 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->SetTransformAndInvertibility(transform_, transform_is_invertible_);
 
   layer->SetScrollClipLayer(scroll_clip_layer_id_);
+  layer->SetElementId(element_id_);
+  layer->SetMutableProperties(mutable_properties_);
   layer->set_user_scrollable_horizontal(user_scrollable_horizontal_);
   layer->set_user_scrollable_vertical(user_scrollable_vertical_);
 
@@ -1217,6 +1222,28 @@ bool LayerImpl::OpacityIsAnimatingOnImplOnly() const {
   return opacity_animation && opacity_animation->is_impl_only();
 }
 
+void LayerImpl::SetElementId(uint64_t element_id) {
+  if (element_id == element_id_)
+    return;
+
+  TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("compositor-worker"),
+               "LayerImpl::SetElementId", "id", element_id);
+
+  element_id_ = element_id;
+  SetNeedsPushProperties();
+}
+
+void LayerImpl::SetMutableProperties(uint32_t properties) {
+  if (mutable_properties_ == properties)
+    return;
+
+  TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("compositor-worker"),
+               "LayerImpl::SetMutableProperties", "properties", properties);
+
+  mutable_properties_ = properties;
+  SetNeedsPushProperties();
+}
+
 void LayerImpl::SetBlendMode(SkXfermode::Mode blend_mode) {
   if (blend_mode_ == blend_mode)
     return;
@@ -1636,6 +1663,11 @@ void LayerImpl::AsValueInto(base::trace_event::TracedValue* state) const {
   state->SetInteger("draws_content", DrawsContent());
   state->SetInteger("gpu_memory_usage",
                     base::saturated_cast<int>(GPUMemoryUsageInBytes()));
+
+  if (mutable_properties_ != kMutablePropertyNone) {
+    state->SetInteger("element_id", base::saturated_cast<int>(element_id_));
+    state->SetInteger("mutable_properties", mutable_properties_);
+  }
 
   MathUtil::AddToTracedValue(
       "scroll_offset", scroll_offset_ ? scroll_offset_->Current(IsActive())

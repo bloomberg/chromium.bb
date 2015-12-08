@@ -67,6 +67,7 @@
 #include "platform/graphics/paint/CullRect.h"
 #include "platform/graphics/paint/PaintController.h"
 #include "platform/graphics/paint/TransformDisplayItem.h"
+#include "public/platform/WebCompositorMutableProperties.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/text/StringBuilder.h"
 
@@ -559,6 +560,8 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration()
     if (layerConfigChanged || maskLayerChanged)
         updatePaintingPhases();
 
+    updateElementIdAndCompositorMutableProperties();
+
     return layerConfigChanged;
 }
 
@@ -746,6 +749,7 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry(const PaintLayer* compo
     updateContentsRect();
     updateBackgroundColor();
     updateDrawsContent();
+    updateElementIdAndCompositorMutableProperties();
     updateContentsOpaque();
     updateAfterPartResize();
     updateRenderingContext();
@@ -1515,6 +1519,38 @@ void CompositedLayerMapping::updateShouldFlattenTransform()
         m_scrollingContentsLayer->setShouldFlattenTransform(false);
         if (m_scrollingBlockSelectionLayer)
             m_scrollingBlockSelectionLayer->setShouldFlattenTransform(false);
+    }
+}
+
+void CompositedLayerMapping::updateElementIdAndCompositorMutableProperties()
+{
+    if (!RuntimeEnabledFeatures::compositorWorkerEnabled())
+        return;
+
+    TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("compositor-worker"), "CompositedLayerMapping::updateElementId()");
+
+    uint64_t elementId = 0;
+    uint32_t mainMutableProperties = WebCompositorMutablePropertyNone;
+    uint32_t scrollMutableProperties = WebCompositorMutablePropertyNone;
+
+    if (m_owningLayer.layoutObject()->style()->hasCompositorProxy()) {
+        if (Node* owningNode = m_owningLayer.layoutObject()->generatingNode()) {
+            if (owningNode->isElementNode()) {
+                Element* owningElement = toElement(owningNode);
+                uint32_t compositorMutableProperties = owningElement->compositorMutableProperties();
+                elementId = DOMNodeIds::idForNode(owningNode);
+                mainMutableProperties = (WebCompositorMutablePropertyOpacity | WebCompositorMutablePropertyTransform) & compositorMutableProperties;
+                scrollMutableProperties = (WebCompositorMutablePropertyScrollLeft | WebCompositorMutablePropertyScrollTop) & compositorMutableProperties;
+            }
+        }
+    }
+
+    m_graphicsLayer->setElementId(elementId);
+    m_graphicsLayer->setCompositorMutableProperties(mainMutableProperties);
+
+    if (m_scrollingContentsLayer.get()) {
+        m_scrollingContentsLayer->setElementId(elementId);
+        m_scrollingContentsLayer->setCompositorMutableProperties(scrollMutableProperties);
     }
 }
 

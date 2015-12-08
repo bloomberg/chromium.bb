@@ -31,17 +31,17 @@
 #include "config.h"
 #include "core/dom/ElementRareData.h"
 
+#include "core/dom/CompositorProxiedPropertySet.h"
 #include "core/style/ComputedStyle.h"
 
 namespace blink {
 
 struct SameSizeAsElementRareData : NodeRareData {
-    short indices[2];
+    short indices[1];
     LayoutSize sizeForResizing;
     IntSize scrollOffset;
-    void* pointer;
-    RawPtrWillBeMember<void*> willbeMember[11];
-    PersistentWillBeMember<void*> persistent[1];
+    void* pointers[13];
+    PersistentWillBeMember<void*> member[1];
 };
 
 CSSStyleDeclaration& ElementRareData::ensureInlineCSSStyleDeclaration(Element* ownerElement)

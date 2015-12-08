@@ -17,6 +17,7 @@
 #include "cc/animation/animation_registrar.h"
 #include "cc/animation/keyframed_animation_curve.h"
 #include "cc/animation/layer_animation_controller.h"
+#include "cc/animation/mutable_properties.h"
 #include "cc/base/simple_enclosed_region.h"
 #include "cc/debug/frame_viewer_instrumentation.h"
 #include "cc/layers/layer_client.h"
@@ -59,6 +60,8 @@ Layer::Layer(const LayerSettings& settings)
       clip_tree_index_(-1),
       property_tree_sequence_number_(-1),
       num_layer_or_descendants_with_copy_request_(0),
+      element_id_(0),
+      mutable_properties_(kMutablePropertyNone),
       should_flatten_transform_from_property_tree_(false),
       should_scroll_on_main_thread_(false),
       have_wheel_event_handlers_(false),
@@ -1241,6 +1244,8 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   layer->SetScrollClipLayer(scroll_clip_layer_id_);
   layer->set_user_scrollable_horizontal(user_scrollable_horizontal_);
   layer->set_user_scrollable_vertical(user_scrollable_vertical_);
+  layer->SetElementId(element_id_);
+  layer->SetMutableProperties(mutable_properties_);
 
   LayerImpl* scroll_parent = nullptr;
   if (scroll_parent_) {
@@ -1774,6 +1779,26 @@ void Layer::SetFrameTimingRequests(
     return;
   frame_timing_requests_ = requests;
   frame_timing_requests_dirty_ = true;
+  SetNeedsCommit();
+}
+
+void Layer::SetElementId(uint64_t id) {
+  DCHECK(IsPropertyChangeAllowed());
+  if (element_id_ == id)
+    return;
+  TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("compositor-worker"),
+               "Layer::SetElementId", "id", id);
+  element_id_ = id;
+  SetNeedsCommit();
+}
+
+void Layer::SetMutableProperties(uint32_t properties) {
+  DCHECK(IsPropertyChangeAllowed());
+  if (mutable_properties_ == properties)
+    return;
+  TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("compositor-worker"),
+               "Layer::SetMutableProperties", "properties", properties);
+  mutable_properties_ = properties;
   SetNeedsCommit();
 }
 

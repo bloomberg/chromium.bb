@@ -24,6 +24,7 @@
 
 #include "core/animation/ElementAnimations.h"
 #include "core/dom/Attr.h"
+#include "core/dom/CompositorProxiedPropertySet.h"
 #include "core/dom/DatasetDOMStringMap.h"
 #include "core/dom/NamedNodeMap.h"
 #include "core/dom/NodeRareData.h"
@@ -38,6 +39,7 @@
 namespace blink {
 
 class HTMLElement;
+class CompositorProxiedPropertySet;
 
 class ElementRareData : public NodeRareData {
 public:
@@ -110,13 +112,9 @@ public:
     bool hasPseudoElements() const;
     void clearPseudoElements();
 
-    uint32_t incrementProxyCount() { return ++m_proxyCount; }
-    uint32_t decrementProxyCount()
-    {
-        ASSERT(m_proxyCount);
-        return --m_proxyCount;
-    }
-    uint32_t proxyCount() const { return m_proxyCount; }
+    void incrementCompositorProxiedProperties(uint32_t properties);
+    void decrementCompositorProxiedProperties(uint32_t properties);
+    CompositorProxiedPropertySet* proxiedPropertyCounts() const { return m_proxiedProperties.get(); }
 
     void setCustomElementDefinition(PassRefPtrWillBeRawPtr<CustomElementDefinition> definition) { m_customElementDefinition = definition; }
     CustomElementDefinition* customElementDefinition() const { return m_customElementDefinition.get(); }
@@ -128,10 +126,10 @@ public:
     DECLARE_TRACE_AFTER_DISPATCH();
 
 private:
+    CompositorProxiedPropertySet& ensureCompositorProxiedPropertySet();
+    void clearCompositorProxiedPropertySet() { m_proxiedProperties = nullptr; }
+
     short m_tabindex;
-    // As m_proxyCount usually doesn't exceed 10bits (1024), if you want to add some booleans you
-    // can steal some bits from m_proxyCount by using bitfields to prevent ElementRareData bloat.
-    unsigned short m_proxyCount;
 
     LayoutSize m_minimumSizeForResizing;
     IntSize m_savedLayerScrollOffset;
@@ -143,6 +141,7 @@ private:
     OwnPtrWillBeMember<AttrNodeList> m_attrNodeList;
     PersistentWillBeMember<ElementAnimations> m_elementAnimations;
     OwnPtrWillBeMember<InlineCSSStyleDeclaration> m_cssomWrapper;
+    OwnPtrWillBeMember<CompositorProxiedPropertySet> m_proxiedProperties;
 
     RefPtr<ComputedStyle> m_computedStyle;
     RefPtrWillBeMember<CustomElementDefinition> m_customElementDefinition;
@@ -163,7 +162,6 @@ inline LayoutSize defaultMinimumSizeForResizing()
 inline ElementRareData::ElementRareData(LayoutObject* layoutObject)
     : NodeRareData(layoutObject)
     , m_tabindex(0)
-    , m_proxyCount(0)
     , m_minimumSizeForResizing(defaultMinimumSizeForResizing())
 {
     m_isElementRareData = true;
@@ -237,6 +235,25 @@ inline PseudoElement* ElementRareData::pseudoElement(PseudoId pseudoId) const
     default:
         return 0;
     }
+}
+
+inline void ElementRareData::incrementCompositorProxiedProperties(uint32_t properties)
+{
+    ensureCompositorProxiedPropertySet().increment(properties);
+}
+
+inline void ElementRareData::decrementCompositorProxiedProperties(uint32_t properties)
+{
+    m_proxiedProperties->decrement(properties);
+    if (m_proxiedProperties->isEmpty())
+        clearCompositorProxiedPropertySet();
+}
+
+inline CompositorProxiedPropertySet& ElementRareData::ensureCompositorProxiedPropertySet()
+{
+    if (!m_proxiedProperties)
+        m_proxiedProperties = CompositorProxiedPropertySet::create();
+    return *m_proxiedProperties;
 }
 
 } // namespace

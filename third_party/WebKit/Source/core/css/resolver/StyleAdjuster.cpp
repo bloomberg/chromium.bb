@@ -49,6 +49,7 @@
 #include "core/svg/SVGSVGElement.h"
 #include "platform/Length.h"
 #include "platform/transforms/TransformOperations.h"
+#include "public/platform/WebCompositorMutableProperties.h"
 #include "wtf/Assertions.h"
 
 namespace blink {
@@ -180,6 +181,9 @@ void StyleAdjuster::adjustComputedStyle(ComputedStyle& style, const ComputedStyl
     } else {
         adjustStyleForFirstLetter(style);
     }
+
+    if (element && element->hasCompositorProxy())
+        style.setHasCompositorProxy(true);
 
     // Make sure our z-index value is only applied if the object is positioned.
     if (style.position() == StaticPosition && !parentStyleForcesZIndexToCreateStackingContext(parentStyle))

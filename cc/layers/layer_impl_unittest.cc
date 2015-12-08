@@ -4,6 +4,7 @@
 
 #include "cc/layers/layer_impl.h"
 
+#include "cc/animation/mutable_properties.h"
 #include "cc/layers/painted_scrollbar_layer_impl.h"
 #include "cc/layers/solid_color_scrollbar_layer_impl.h"
 #include "cc/output/filter_operation.h"
@@ -196,12 +197,14 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
   // changed.
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetBounds(arbitrary_size));
 
-  // Changing this property does not cause the layer to be marked as changed
+  // Changing these properties does not cause the layer to be marked as changed
   // but does cause the layer to need to push properties.
   EXECUTE_AND_VERIFY_NEEDS_PUSH_PROPERTIES_AND_SUBTREE_DID_NOT_CHANGE(
       root->SetIsRootForIsolatedGroup(true));
-
-  // Changing these properties should cause the layer to need to push properties
+  EXECUTE_AND_VERIFY_NEEDS_PUSH_PROPERTIES_AND_SUBTREE_DID_NOT_CHANGE(
+      root->SetElementId(2));
+  EXECUTE_AND_VERIFY_NEEDS_PUSH_PROPERTIES_AND_SUBTREE_DID_NOT_CHANGE(
+      root->SetMutableProperties(kMutablePropertyOpacity));
   EXECUTE_AND_VERIFY_NEEDS_PUSH_PROPERTIES_AND_SUBTREE_DID_NOT_CHANGE(
       root->SetScrollParent(scroll_parent.get()));
   EXECUTE_AND_VERIFY_NEEDS_PUSH_PROPERTIES_AND_SUBTREE_DID_NOT_CHANGE(
@@ -377,6 +380,9 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(
       layer->SetTransform(arbitrary_transform));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetBounds(arbitrary_size));
+  VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetElementId(2));
+  VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(
+      layer->SetMutableProperties(kMutablePropertyTransform));
 }
 
 TEST(LayerImplTest, SafeOpaqueBackgroundColor) {

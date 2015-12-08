@@ -317,6 +317,12 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   bool HasPotentiallyRunningOpacityAnimation() const;
   bool OpacityIsAnimatingOnImplOnly() const;
 
+  void SetElementId(uint64_t element_id);
+  uint64_t element_id() const { return element_id_; }
+
+  void SetMutableProperties(uint32_t properties);
+  uint32_t mutable_properties() const { return mutable_properties_; }
+
   void SetBlendMode(SkXfermode::Mode);
   SkXfermode::Mode blend_mode() const { return blend_mode_; }
   void set_draw_blend_mode(SkXfermode::Mode blend_mode) {
@@ -847,6 +853,8 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   DrawMode current_draw_mode_;
 
  private:
+  uint64_t element_id_;
+  uint32_t mutable_properties_;
   // Rect indicating what was repainted/updated during update.
   // Note that plugin layers bypass this and leave it empty.
   // This is in the layer's space.

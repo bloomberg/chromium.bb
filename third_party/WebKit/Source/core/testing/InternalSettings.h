@@ -80,6 +80,7 @@ public:
         bool m_originalImageColorProfilesEnabled;
         ImageAnimationPolicy m_originalImageAnimationPolicy;
         bool m_originalScrollTopLeftInteropEnabled;
+        bool m_originalCompositorWorkerEnabled;
     };
 
     static PassRefPtrWillBeRawPtr<InternalSettings> create(Page& page)
@@ -116,6 +117,7 @@ public:
     void setTextAutosizingWindowSizeOverride(int width, int height, ExceptionState&);
     void setViewportEnabled(bool, ExceptionState&);
     void setViewportMetaEnabled(bool, ExceptionState&);
+    void setCompositorWorkerEnabled(bool, ExceptionState&);
 
     // FIXME: The following are RuntimeEnabledFeatures and likely
     // cannot be changed after process start. These setters should
