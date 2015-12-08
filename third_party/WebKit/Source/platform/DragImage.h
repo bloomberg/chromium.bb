@@ -68,8 +68,6 @@ public:
 private:
     DragImage(const SkBitmap&, float resolutionScale, InterpolationQuality);
 
-    DisplayItemClient displayItemClient() const { return toDisplayItemClient(this); }
-
     SkBitmap m_bitmap;
     float m_resolutionScale;
     InterpolationQuality m_interpolationQuality;

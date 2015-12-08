@@ -619,7 +619,7 @@ double LocalFrame::devicePixelRatio() const
 }
 
 PassOwnPtr<DragImage> LocalFrame::paintIntoDragImage(
-    const DisplayItemClientWrapper& displayItemClient,
+    const DisplayItemClient& displayItemClient,
     RespectImageOrientationEnum shouldRespectImageOrientation,
     const GlobalPaintFlags globalPaintFlags, IntRect paintingRect, float opacity)
 {

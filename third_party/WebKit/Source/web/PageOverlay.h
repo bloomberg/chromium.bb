@@ -47,7 +47,7 @@ class WebViewImpl;
 //
 // With Slimming Paint, internal clients can extract a GraphicsContext to add
 // to the PaintController owned by the GraphicsLayer
-class PageOverlay : public GraphicsLayerClient {
+class PageOverlay : public GraphicsLayerClient, public DisplayItemClient {
 public:
     class Delegate : public GarbageCollectedFinalized<Delegate> {
     public:
@@ -65,8 +65,7 @@ public:
     void update();
 
     GraphicsLayer* graphicsLayer() const { return m_layer.get(); }
-    DisplayItemClient displayItemClient() const { return toDisplayItemClient(this); }
-    String debugName() const { return "PageOverlay"; }
+    String debugName() const final { return "PageOverlay"; }
 
     // GraphicsLayerClient implementation
     IntRect computeInterestRect(const GraphicsLayer*, const IntRect&) const override;

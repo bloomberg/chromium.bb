@@ -2132,19 +2132,19 @@ struct InvalidateDisplayItemClientFunctor {
         layer->invalidateDisplayItemClient(displayItemClient, invalidationReason, visualRect ? &visualRectOnLayer : nullptr);
     }
 
-    const DisplayItemClientWrapper& displayItemClient;
+    const DisplayItemClient& displayItemClient;
     PaintInvalidationReason invalidationReason;
     const LayoutRect* visualRect;
     LayoutSize subpixelAccumulation;
 };
 
-void CompositedLayerMapping::invalidateDisplayItemClient(const DisplayItemClientWrapper& displayItemClient, PaintInvalidationReason paintInvalidationReason, const LayoutRect* visualRect)
+void CompositedLayerMapping::invalidateDisplayItemClient(const DisplayItemClient& displayItemClient, PaintInvalidationReason paintInvalidationReason, const LayoutRect* visualRect)
 {
     InvalidateDisplayItemClientFunctor functor = { displayItemClient, paintInvalidationReason, visualRect, m_owningLayer.subpixelAccumulation() };
     ApplyToGraphicsLayers(this, functor, ApplyToContentLayers);
 }
 
-void CompositedLayerMapping::invalidateDisplayItemClientOnScrollingContentsLayer(const DisplayItemClientWrapper& displayItemClient, PaintInvalidationReason paintInvalidationReason, const LayoutRect* visualRect)
+void CompositedLayerMapping::invalidateDisplayItemClientOnScrollingContentsLayer(const DisplayItemClient& displayItemClient, PaintInvalidationReason paintInvalidationReason, const LayoutRect* visualRect)
 {
     InvalidateDisplayItemClientFunctor functor = { displayItemClient, paintInvalidationReason, visualRect, m_owningLayer.subpixelAccumulation() };
     ApplyToGraphicsLayers(this, functor, ApplyToScrollingContentsLayer);
@@ -2187,7 +2187,7 @@ IntRect CompositedLayerMapping::localClipRectForSquashedLayer(const PaintLayer& 
     return parentClipRect;
 }
 
-void CompositedLayerMapping::doPaintTask(const GraphicsLayerPaintInfo& paintInfo, const PaintLayerFlags& paintLayerFlags, GraphicsContext* context,
+void CompositedLayerMapping::doPaintTask(const GraphicsLayerPaintInfo& paintInfo, const GraphicsLayer& graphicsLayer, const PaintLayerFlags& paintLayerFlags, GraphicsContext* context,
     const IntRect& clip /* In the coords of rootLayer */) const
 {
     FontCachePurgePreventer fontCachePurgePreventer;
@@ -2195,7 +2195,7 @@ void CompositedLayerMapping::doPaintTask(const GraphicsLayerPaintInfo& paintInfo
     IntSize offset = paintInfo.offsetFromLayoutObject;
     AffineTransform translation;
     translation.translate(-offset.width(), -offset.height());
-    TransformRecorder transformRecorder(*context, *this, translation);
+    TransformRecorder transformRecorder(*context, graphicsLayer, translation);
 
     // The dirtyRect is in the coords of the painting root.
     IntRect dirtyRect(clip);
@@ -2232,10 +2232,10 @@ void CompositedLayerMapping::doPaintTask(const GraphicsLayerPaintInfo& paintInfo
         // FIXME: Is it correct to clip to dirtyRect in slimming paint mode?
         // FIXME: Combine similar code here and LayerClipRecorder.
         dirtyRect.intersect(paintInfo.localClipRectForSquashedLayer);
-        context->paintController().createAndAppend<ClipDisplayItem>(*this, DisplayItem::ClipLayerOverflowControls, dirtyRect);
+        context->paintController().createAndAppend<ClipDisplayItem>(graphicsLayer, DisplayItem::ClipLayerOverflowControls, dirtyRect);
 
         PaintLayerPainter(*paintInfo.paintLayer).paintLayer(context, paintingInfo, paintLayerFlags);
-        context->paintController().endItem<EndClipDisplayItem>(*this, DisplayItem::clipTypeToEndClipType(DisplayItem::ClipLayerOverflowControls));
+        context->paintController().endItem<EndClipDisplayItem>(graphicsLayer, DisplayItem::clipTypeToEndClipType(DisplayItem::ClipLayerOverflowControls));
     }
 }
 
@@ -2402,10 +2402,10 @@ void CompositedLayerMapping::paintContents(const GraphicsLayer* graphicsLayer, G
         paintInfo.offsetFromLayoutObject = graphicsLayer->offsetFromLayoutObject();
 
         // We have to use the same root as for hit testing, because both methods can compute and cache clipRects.
-        doPaintTask(paintInfo, paintLayerFlags, &context, interestRect);
+        doPaintTask(paintInfo, *graphicsLayer, paintLayerFlags, &context, interestRect);
     } else if (graphicsLayer == m_squashingLayer.get()) {
         for (size_t i = 0; i < m_squashedLayers.size(); ++i)
-            doPaintTask(m_squashedLayers[i], paintLayerFlags, &context, interestRect);
+            doPaintTask(m_squashedLayers[i], *graphicsLayer, paintLayerFlags, &context, interestRect);
     } else if (graphicsLayer == layerForHorizontalScrollbar()) {
         paintScrollbar(m_owningLayer.scrollableArea()->horizontalScrollbar(), context, interestRect);
     } else if (graphicsLayer == layerForVerticalScrollbar()) {

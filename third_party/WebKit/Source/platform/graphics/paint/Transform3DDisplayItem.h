@@ -16,7 +16,7 @@ namespace blink {
 class PLATFORM_EXPORT BeginTransform3DDisplayItem final : public PairedBeginDisplayItem {
 public:
     BeginTransform3DDisplayItem(
-        const DisplayItemClientWrapper& client,
+        const DisplayItemClient& client,
         Type type,
         const TransformationMatrix& transform,
         const FloatPoint3D& transformOrigin)
@@ -52,7 +52,7 @@ private:
 
 class PLATFORM_EXPORT EndTransform3DDisplayItem final : public PairedEndDisplayItem {
 public:
-    EndTransform3DDisplayItem(const DisplayItemClientWrapper& client, Type type)
+    EndTransform3DDisplayItem(const DisplayItemClient& client, Type type)
         : PairedEndDisplayItem(client, type, sizeof(*this))
     {
         ASSERT(DisplayItem::isEndTransform3DType(type));

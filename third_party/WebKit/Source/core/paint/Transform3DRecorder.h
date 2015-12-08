@@ -19,7 +19,7 @@ class Transform3DRecorder {
 public:
     Transform3DRecorder(
         GraphicsContext&,
-        const DisplayItemClientWrapper&,
+        const DisplayItemClient&,
         DisplayItem::Type,
         const TransformationMatrix&,
         const FloatPoint3D& transformOrigin);
@@ -27,7 +27,7 @@ public:
 
 private:
     GraphicsContext& m_context;
-    DisplayItemClientWrapper m_client;
+    const DisplayItemClient& m_client;
     DisplayItem::Type m_type;
     bool m_skipRecordingForIdentityTransform;
 };

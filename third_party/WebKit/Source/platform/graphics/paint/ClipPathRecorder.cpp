@@ -11,7 +11,7 @@
 
 namespace blink {
 
-ClipPathRecorder::ClipPathRecorder(GraphicsContext& context, const DisplayItemClientWrapper& client, const Path& clipPath)
+ClipPathRecorder::ClipPathRecorder(GraphicsContext& context, const DisplayItemClient& client, const Path& clipPath)
     : m_context(context)
     , m_client(client)
 {

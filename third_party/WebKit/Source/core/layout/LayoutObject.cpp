@@ -132,7 +132,7 @@ LayoutObject::SetLayoutNeededForbiddenScope::~SetLayoutNeededForbiddenScope()
 
 struct SameSizeAsLayoutObject {
     virtual ~SameSizeAsLayoutObject() { } // Allocate vtable pointer.
-    void* pointers[5];
+    void* pointers[6];
 #if ENABLE(ASSERT)
     unsigned m_debugBitfields : 2;
 #endif
@@ -1229,7 +1229,7 @@ void LayoutObject::invalidatePaintUsingContainer(const LayoutBoxModelObject& pai
         paintInvalidationContainer.setBackingNeedsPaintInvalidationInRect(dirtyRect, invalidationReason);
 }
 
-void LayoutObject::invalidateDisplayItemClient(const DisplayItemClientWrapper& displayItemClient) const
+void LayoutObject::invalidateDisplayItemClient(const DisplayItemClient& displayItemClient) const
 {
     // TODO(wangxianzhu): Ensure correct bounds for the client will be or has been passed to PaintController. crbug.com/547119.
     // Not using enclosingCompositedContainer() directly because this object may be in an orphaned subtree.

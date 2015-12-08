@@ -75,7 +75,7 @@ typedef Vector<GraphicsLayer*, 64> GraphicsLayerVector;
 // GraphicsLayer is an abstraction for a rendering surface with backing store,
 // which may have associated transformation and animations.
 
-class PLATFORM_EXPORT GraphicsLayer : public GraphicsContextPainter, public WebCompositorAnimationDelegate, public WebLayerScrollClient, public cc::LayerClient {
+class PLATFORM_EXPORT GraphicsLayer : public GraphicsContextPainter, public WebCompositorAnimationDelegate, public WebLayerScrollClient, public cc::LayerClient, public DisplayItemClient {
     WTF_MAKE_NONCOPYABLE(GraphicsLayer); USING_FAST_MALLOC(GraphicsLayer);
 public:
     static PassOwnPtr<GraphicsLayer> create(GraphicsLayerFactory*, GraphicsLayerClient*);
@@ -193,7 +193,7 @@ public:
     // If |visualRect| is not nullptr, it contains all pixels within the GraphicsLayer which might be painted into by
     // the display item client, in coordinate space of the GraphicsLayer.
     // |visualRect| can be nullptr if we know it's unchanged and PaintController has cached the previous value.
-    void invalidateDisplayItemClient(const DisplayItemClientWrapper&, PaintInvalidationReason, const IntRect* visualRect);
+    void invalidateDisplayItemClient(const DisplayItemClient&, PaintInvalidationReason, const IntRect* visualRect);
 
     // Set that the position/size of the contents (image or video).
     void setContentsRect(const IntRect&);
@@ -267,8 +267,7 @@ public:
     static void setDrawDebugRedFillForTesting(bool);
     ContentLayerDelegate* contentLayerDelegateForTesting() const { return m_contentLayerDelegate.get(); }
 
-    DisplayItemClient displayItemClient() const { return toDisplayItemClient(this); }
-    String debugName() const { return m_client->debugName(this); }
+    String debugName() const final { return m_client->debugName(this); }
 
 protected:
     String debugName(cc::Layer*) const;

@@ -22,7 +22,7 @@ public:
     };
 #endif
 
-    DrawingDisplayItem(const DisplayItemClientWrapper& client
+    DrawingDisplayItem(const DisplayItemClient& client
         , Type type
         , PassRefPtr<const SkPicture> picture
 #if ENABLE(ASSERT)

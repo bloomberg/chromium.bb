@@ -170,7 +170,7 @@ ScrollbarPart ScrollbarTheme::hitTest(const ScrollbarThemeClient* scrollbar, con
     return result;
 }
 
-void ScrollbarTheme::paintScrollCorner(GraphicsContext* context, const DisplayItemClientWrapper& displayItemClient, const IntRect& cornerRect)
+void ScrollbarTheme::paintScrollCorner(GraphicsContext* context, const DisplayItemClient& displayItemClient, const IntRect& cornerRect)
 {
     if (cornerRect.isEmpty())
         return;

@@ -70,7 +70,7 @@ private:
         if (layoutObject.paintOffsetChanged(paintOffset))
             paintController.invalidatePaintOffset(layoutObject);
         else
-            ASSERT(!paintController.paintOffsetWasInvalidated(layoutObject.displayItemClient()) || !paintController.clientCacheIsValid(layoutObject.displayItemClient()));
+            ASSERT(!paintController.paintOffsetWasInvalidated(layoutObject) || !paintController.clientCacheIsValid(layoutObject));
 
         layoutObject.mutableForPainting().setPreviousPaintOffset(paintOffset);
     }

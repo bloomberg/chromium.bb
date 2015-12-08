@@ -42,7 +42,7 @@ class LayoutBox;
 class SVGImageChromeClient;
 class SVGImageForContainer;
 
-class SVGImage final : public Image {
+class SVGImage final : public Image, public DisplayItemClient {
 public:
     static PassRefPtr<SVGImage> create(ImageObserver* observer)
     {
@@ -77,8 +77,7 @@ public:
 
     void updateUseCounters(Document&) const;
 
-    DisplayItemClient displayItemClient() const { return toDisplayItemClient(this); }
-    String debugName() const { return "SVGImage"; }
+    String debugName() const final { return "SVGImage"; }
 
 private:
     friend class AXLayoutObject;

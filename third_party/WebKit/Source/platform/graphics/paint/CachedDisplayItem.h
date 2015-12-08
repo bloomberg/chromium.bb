@@ -15,7 +15,7 @@ namespace blink {
 // the cached DrawingDisplayItem/subtree when merging new paint list to cached paint list.
 class CachedDisplayItem final : public DisplayItem {
 public:
-    CachedDisplayItem(const DisplayItemClientWrapper& client, Type type)
+    CachedDisplayItem(const DisplayItemClient& client, Type type)
         : DisplayItem(client, type, sizeof(*this))
     {
         ASSERT(isCachedType(type));

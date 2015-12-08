@@ -43,14 +43,13 @@ const DisplayItem::Type foregroundDrawingType = static_cast<DisplayItem::Type>(D
 const DisplayItem::Type backgroundDrawingType = DisplayItem::DrawingPaintPhaseFirst;
 const DisplayItem::Type clipType = DisplayItem::ClipFirst;
 
-class TestDisplayItemClient {
+class TestDisplayItemClient : public DisplayItemClient {
 public:
     TestDisplayItemClient(const String& name)
         : m_name(name)
     { }
 
-    DisplayItemClient displayItemClient() const { return toDisplayItemClient(this); }
-    String debugName() const { return m_name; }
+    String debugName() const final { return m_name; }
 
 private:
     String m_name;
@@ -370,14 +369,14 @@ TEST_F(PaintControllerTest, CachedDisplayItems)
     EXPECT_DISPLAY_LIST(paintController().displayItemList(), 2,
         TestDisplayItem(first, backgroundDrawingType),
         TestDisplayItem(second, backgroundDrawingType));
-    EXPECT_TRUE(paintController().clientCacheIsValid(first.displayItemClient()));
-    EXPECT_TRUE(paintController().clientCacheIsValid(second.displayItemClient()));
+    EXPECT_TRUE(paintController().clientCacheIsValid(first));
+    EXPECT_TRUE(paintController().clientCacheIsValid(second));
     const SkPicture* firstPicture = static_cast<const DrawingDisplayItem&>(paintController().displayItemList()[0]).picture();
     const SkPicture* secondPicture = static_cast<const DrawingDisplayItem&>(paintController().displayItemList()[1]).picture();
 
     paintController().invalidate(first, PaintInvalidationFull, nullptr);
-    EXPECT_FALSE(paintController().clientCacheIsValid(first.displayItemClient()));
-    EXPECT_TRUE(paintController().clientCacheIsValid(second.displayItemClient()));
+    EXPECT_FALSE(paintController().clientCacheIsValid(first));
+    EXPECT_TRUE(paintController().clientCacheIsValid(second));
 
     drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 150, 150));
     drawRect(context, second, backgroundDrawingType, FloatRect(100, 100, 150, 150));
@@ -390,12 +389,12 @@ TEST_F(PaintControllerTest, CachedDisplayItems)
     EXPECT_NE(firstPicture, static_cast<const DrawingDisplayItem&>(paintController().displayItemList()[0]).picture());
     // The second display item should be cached.
     EXPECT_EQ(secondPicture, static_cast<const DrawingDisplayItem&>(paintController().displayItemList()[1]).picture());
-    EXPECT_TRUE(paintController().clientCacheIsValid(first.displayItemClient()));
-    EXPECT_TRUE(paintController().clientCacheIsValid(second.displayItemClient()));
+    EXPECT_TRUE(paintController().clientCacheIsValid(first));
+    EXPECT_TRUE(paintController().clientCacheIsValid(second));
 
     paintController().invalidateAll();
-    EXPECT_FALSE(paintController().clientCacheIsValid(first.displayItemClient()));
-    EXPECT_FALSE(paintController().clientCacheIsValid(second.displayItemClient()));
+    EXPECT_FALSE(paintController().clientCacheIsValid(first));
+    EXPECT_FALSE(paintController().clientCacheIsValid(second));
 }
 
 TEST_F(PaintControllerTest, ComplexUpdateSwapOrder)
@@ -666,7 +665,7 @@ TEST_F(PaintControllerTest, Scope)
     EXPECT_NE(picture1, picture2);
 
     // Draw again with nothing invalidated.
-    EXPECT_TRUE(paintController().clientCacheIsValid(multicol.displayItemClient()));
+    EXPECT_TRUE(paintController().clientCacheIsValid(multicol));
     drawRect(context, multicol, backgroundDrawingType, FloatRect(100, 200, 100, 100));
     paintController().beginScope();
     drawRect(context, content, foregroundDrawingType, rect1);

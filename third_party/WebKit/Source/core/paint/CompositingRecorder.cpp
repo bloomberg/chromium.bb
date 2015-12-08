@@ -13,7 +13,7 @@
 
 namespace blink {
 
-CompositingRecorder::CompositingRecorder(GraphicsContext& graphicsContext, const DisplayItemClientWrapper& client, const SkXfermode::Mode xferMode, const float opacity, const FloatRect* bounds, ColorFilter colorFilter)
+CompositingRecorder::CompositingRecorder(GraphicsContext& graphicsContext, const DisplayItemClient& client, const SkXfermode::Mode xferMode, const float opacity, const FloatRect* bounds, ColorFilter colorFilter)
     : m_client(client)
     , m_graphicsContext(graphicsContext)
 {
@@ -25,12 +25,12 @@ CompositingRecorder::~CompositingRecorder()
     endCompositing(m_graphicsContext, m_client);
 }
 
-void CompositingRecorder::beginCompositing(GraphicsContext& graphicsContext, const DisplayItemClientWrapper& client, const SkXfermode::Mode xferMode, const float opacity, const FloatRect* bounds, ColorFilter colorFilter)
+void CompositingRecorder::beginCompositing(GraphicsContext& graphicsContext, const DisplayItemClient& client, const SkXfermode::Mode xferMode, const float opacity, const FloatRect* bounds, ColorFilter colorFilter)
 {
     graphicsContext.paintController().createAndAppend<BeginCompositingDisplayItem>(client, xferMode, opacity, bounds, colorFilter);
 }
 
-void CompositingRecorder::endCompositing(GraphicsContext& graphicsContext, const DisplayItemClientWrapper& client)
+void CompositingRecorder::endCompositing(GraphicsContext& graphicsContext, const DisplayItemClient& client)
 {
     graphicsContext.paintController().endItem<EndCompositingDisplayItem>(client);
 }

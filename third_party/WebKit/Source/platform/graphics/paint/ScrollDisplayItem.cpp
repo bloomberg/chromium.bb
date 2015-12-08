@@ -19,7 +19,7 @@ void BeginScrollDisplayItem::replay(GraphicsContext& context) const
 
 void BeginScrollDisplayItem::appendToWebDisplayItemList(const IntRect& visualRect, WebDisplayItemList* list) const
 {
-    WebDisplayItemList::ScrollContainerId scrollContainerId = client();
+    WebDisplayItemList::ScrollContainerId scrollContainerId = &client();
     list->appendScrollItem(visualRect, m_currentOffset, scrollContainerId);
 }
 

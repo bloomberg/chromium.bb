@@ -41,7 +41,7 @@ void PaintController::removeLastDisplayItem()
 
 #if ENABLE(ASSERT)
     // Also remove the index pointing to the removed display item.
-    DisplayItemIndicesByClientMap::iterator it = m_newDisplayItemIndicesByClient.find(m_newDisplayItemList.last().client());
+    DisplayItemIndicesByClientMap::iterator it = m_newDisplayItemIndicesByClient.find(&m_newDisplayItemList.last().client());
     if (it != m_newDisplayItemIndicesByClient.end()) {
         Vector<size_t>& indices = it->value;
         if (!indices.isEmpty() && indices.last() == (m_newDisplayItemList.size() - 1))
@@ -117,7 +117,7 @@ void PaintController::endScope()
     endSkippingCache();
 }
 
-void PaintController::invalidate(const DisplayItemClientWrapper& client, PaintInvalidationReason paintInvalidationReason, const IntRect* visualRect)
+void PaintController::invalidate(const DisplayItemClient& client, PaintInvalidationReason paintInvalidationReason, const IntRect* visualRect)
 {
     invalidateClient(client);
 
@@ -126,25 +126,25 @@ void PaintController::invalidate(const DisplayItemClientWrapper& client, PaintIn
     }
 }
 
-void PaintController::invalidateClient(const DisplayItemClientWrapper& client)
+void PaintController::invalidateClient(const DisplayItemClient& client)
 {
 #if ENABLE(ASSERT)
     // Slimming paint v1 CompositedLayerMapping may invalidate client on extra layers.
-    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled() || clientCacheIsValid(client.displayItemClient()))
+    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled() || clientCacheIsValid(client))
         m_invalidations.append(client.debugName());
 #endif
 
-    invalidateUntracked(client.displayItemClient());
+    invalidateUntracked(client);
     if (RuntimeEnabledFeatures::slimmingPaintV2Enabled() && m_trackedPaintInvalidationObjects)
         m_trackedPaintInvalidationObjects->append(client.debugName());
 }
 
-void PaintController::invalidateUntracked(DisplayItemClient client)
+void PaintController::invalidateUntracked(const DisplayItemClient& client)
 {
     // This can be called during painting, but we can't invalidate already painted clients.
-    ASSERT(!m_newDisplayItemIndicesByClient.contains(client));
+    ASSERT(!m_newDisplayItemIndicesByClient.contains(&client));
     updateValidlyCachedClientsIfNeeded();
-    m_validlyCachedClients.remove(client);
+    m_validlyCachedClients.remove(&client);
 }
 
 void PaintController::invalidateAll()
@@ -159,36 +159,36 @@ void PaintController::invalidateAll()
         m_trackedPaintInvalidationObjects->append("##ALL##");
 }
 
-bool PaintController::clientCacheIsValid(DisplayItemClient client) const
+bool PaintController::clientCacheIsValid(const DisplayItemClient& client) const
 {
     if (skippingCache())
         return false;
     updateValidlyCachedClientsIfNeeded();
-    return m_validlyCachedClients.contains(client);
+    return m_validlyCachedClients.contains(&client);
 }
 
-void PaintController::invalidatePaintOffset(const DisplayItemClientWrapper& client)
+void PaintController::invalidatePaintOffset(const DisplayItemClient& client)
 {
     ASSERT(RuntimeEnabledFeatures::slimmingPaintOffsetCachingEnabled());
     invalidateClient(client);
 
 #if ENABLE(ASSERT)
-    ASSERT(!paintOffsetWasInvalidated(client.displayItemClient()));
-    m_clientsWithPaintOffsetInvalidations.add(client.displayItemClient());
+    ASSERT(!paintOffsetWasInvalidated(client));
+    m_clientsWithPaintOffsetInvalidations.add(&client);
 #endif
 }
 
 #if ENABLE(ASSERT)
-bool PaintController::paintOffsetWasInvalidated(DisplayItemClient client) const
+bool PaintController::paintOffsetWasInvalidated(const DisplayItemClient& client) const
 {
     ASSERT(RuntimeEnabledFeatures::slimmingPaintOffsetCachingEnabled());
-    return m_clientsWithPaintOffsetInvalidations.contains(client);
+    return m_clientsWithPaintOffsetInvalidations.contains(&client);
 }
 #endif
 
 size_t PaintController::findMatchingItemFromIndex(const DisplayItem::Id& id, const DisplayItemIndicesByClientMap& displayItemIndicesByClient, const DisplayItemList& list)
 {
-    DisplayItemIndicesByClientMap::const_iterator it = displayItemIndicesByClient.find(id.client);
+    DisplayItemIndicesByClientMap::const_iterator it = displayItemIndicesByClient.find(&id.client);
     if (it == displayItemIndicesByClient.end())
         return kNotFound;
 
@@ -208,9 +208,9 @@ void PaintController::addItemToIndexIfNeeded(const DisplayItem& displayItem, siz
     if (!displayItem.isCacheable())
         return;
 
-    DisplayItemIndicesByClientMap::iterator it = displayItemIndicesByClient.find(displayItem.client());
+    DisplayItemIndicesByClientMap::iterator it = displayItemIndicesByClient.find(&displayItem.client());
     Vector<size_t>& indices = it == displayItemIndicesByClient.end() ?
-        displayItemIndicesByClient.add(displayItem.client(), Vector<size_t>()).storedValue->value : it->value;
+        displayItemIndicesByClient.add(&displayItem.client(), Vector<size_t>()).storedValue->value : it->value;
     indices.append(index);
 }
 
@@ -435,12 +435,12 @@ void PaintController::updateValidlyCachedClientsIfNeeded() const
     m_validlyCachedClients.clear();
     m_validlyCachedClientsDirty = false;
 
-    DisplayItemClient lastAddedClient = nullptr;
+    const DisplayItemClient* lastAddedClient = nullptr;
     for (const DisplayItem& displayItem : m_currentPaintArtifact.displayItemList()) {
-        if (displayItem.client() == lastAddedClient)
+        if (&displayItem.client() == lastAddedClient)
             continue;
         if (displayItem.isCacheable()) {
-            lastAddedClient = displayItem.client();
+            lastAddedClient = &displayItem.client();
             m_validlyCachedClients.add(lastAddedClient);
         }
     }
@@ -509,7 +509,7 @@ void PaintController::checkCachedDisplayItemIsUnchanged(const char* messagePrefi
         ASSERT_NOT_REACHED();
     }
 
-    if (newItem.isCacheable() && !m_validlyCachedClients.contains(newItem.client())) {
+    if (newItem.isCacheable() && !m_validlyCachedClients.contains(&newItem.client())) {
         showUnderInvalidationError(messagePrefix, "ERROR: under-invalidation: invalidated in cached subsequence", &newItem, &oldItem);
         ASSERT_NOT_REACHED();
     }

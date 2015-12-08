@@ -20,10 +20,10 @@ class GraphicsContext;
 class CORE_EXPORT ScrollRecorder {
     USING_FAST_MALLOC(ScrollRecorder);
 public:
-    ScrollRecorder(GraphicsContext&, const DisplayItemClientWrapper&, PaintPhase, const IntSize& currentOffset);
+    ScrollRecorder(GraphicsContext&, const DisplayItemClient&, PaintPhase, const IntSize& currentOffset);
     ~ScrollRecorder();
 private:
-    DisplayItemClientWrapper m_client;
+    const DisplayItemClient& m_client;
     DisplayItem::Type m_beginItemType;
     GraphicsContext& m_context;
 };

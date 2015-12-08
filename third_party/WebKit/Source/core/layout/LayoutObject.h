@@ -204,7 +204,7 @@ const int showTreeCharacterOffset = 39;
 // preferredLogicalWidthsDirty.
 //
 // See the individual getters below for more details about what each width is.
-class CORE_EXPORT LayoutObject : public ImageResourceClient {
+class CORE_EXPORT LayoutObject : public ImageResourceClient, public DisplayItemClient {
     friend class LayoutObjectChildList;
     WTF_MAKE_NONCOPYABLE(LayoutObject);
 public:
@@ -1299,9 +1299,7 @@ public:
 
     virtual LayoutRect viewRect() const;
 
-    DisplayItemClient displayItemClient() const { return toDisplayItemClient(this); }
-
-    void invalidateDisplayItemClient(const DisplayItemClientWrapper&) const;
+    void invalidateDisplayItemClient(const DisplayItemClient&) const;
     void invalidateDisplayItemClientsIncludingNonCompositingDescendants(const LayoutBoxModelObject* paintInvalidationContainer, PaintInvalidationReason, const LayoutRect* paintInvalidationRect) const;
 
     // Called before anonymousChild.setStyle(). Override to set custom styles for the child.

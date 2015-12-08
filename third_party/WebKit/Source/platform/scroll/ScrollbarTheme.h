@@ -71,7 +71,7 @@ public:
     virtual bool invalidateOnMouseEnterExit() { return false; }
     virtual bool invalidateOnWindowActiveChange() const { return false; }
 
-    virtual void paintScrollCorner(GraphicsContext*, const DisplayItemClientWrapper&, const IntRect& cornerRect);
+    virtual void paintScrollCorner(GraphicsContext*, const DisplayItemClient&, const IntRect& cornerRect);
     virtual void paintTickmarks(GraphicsContext*, const ScrollbarThemeClient*, const IntRect&) { }
 
     virtual bool shouldCenterOnThumb(const ScrollbarThemeClient*, const PlatformMouseEvent&);

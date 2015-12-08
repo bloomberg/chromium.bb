@@ -39,7 +39,7 @@ namespace blink {
 
 class FontDescription;
 
-class WebFontImpl final : public WebFont {
+class WebFontImpl final : public WebFont, public DisplayItemClient {
 public:
     explicit WebFontImpl(const FontDescription&);
 
@@ -59,8 +59,7 @@ public:
     WebFloatRect selectionRectForText(const WebTextRun&, const WebFloatPoint& leftBaseline,
         int height, int from = 0, int to = -1) const override;
 
-    DisplayItemClient displayItemClient() const { return toDisplayItemClient(this); }
-    String debugName() const { return "WebFontImpl"; }
+    String debugName() const final { return "WebFontImpl"; }
 
 private:
     Font m_font;

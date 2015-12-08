@@ -335,7 +335,7 @@ WebPluginContainerImpl* WebLocalFrameImpl::pluginContainerFromNode(LocalFrame* f
 
 // Simple class to override some of PrintContext behavior. Some of the methods
 // made virtual so that they can be overridden by ChromePluginPrintContext.
-class ChromePrintContext : public PrintContext {
+class ChromePrintContext : public PrintContext, public DisplayItemClient {
     WTF_MAKE_NONCOPYABLE(ChromePrintContext);
 public:
     ChromePrintContext(LocalFrame* frame)
@@ -438,9 +438,7 @@ public:
         outputLinkedDestinations(canvas, allPagesRect);
     }
 
-    DisplayItemClient displayItemClient() const { return toDisplayItemClient(this); }
-
-    String debugName() const { return "ChromePrintContext"; }
+    String debugName() const final { return "ChromePrintContext"; }
 
 protected:
     // Spools the printed page, a subrect of frame(). Skip the scale step.

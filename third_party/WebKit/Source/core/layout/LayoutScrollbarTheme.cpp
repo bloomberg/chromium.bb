@@ -111,7 +111,7 @@ IntRect LayoutScrollbarTheme::constrainTrackRectToTrackPieces(const ScrollbarThe
     return result;
 }
 
-void LayoutScrollbarTheme::paintScrollCorner(GraphicsContext* context, const DisplayItemClientWrapper& displayItemClient, const IntRect& cornerRect)
+void LayoutScrollbarTheme::paintScrollCorner(GraphicsContext* context, const DisplayItemClient& displayItemClient, const IntRect& cornerRect)
 {
     if (DrawingRecorder::useCachedDrawingIfPossible(*context, displayItemClient, DisplayItem::ScrollbarCorner))
         return;

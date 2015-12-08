@@ -61,14 +61,13 @@ private:
     }
 };
 
-class DummyRectClient {
+class DummyRectClient : public DisplayItemClient {
 public:
     DummyRectClient(const SkRect& rect, SkColor color) : m_rect(rect), m_color(color) {}
     const SkRect& rect() const { return m_rect; }
     SkColor color() const { return m_color; }
     PassRefPtr<SkPicture> makePicture() const { return pictureWithRect(m_rect, m_color); }
-    DisplayItemClient displayItemClient() const { return toDisplayItemClient(this); }
-    String debugName() const { return "<dummy>"; }
+    String debugName() const final { return "<dummy>"; }
 
 private:
     SkRect m_rect;

@@ -26,16 +26,16 @@ class PLATFORM_EXPORT SubsequenceRecorder final {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     WTF_MAKE_NONCOPYABLE(SubsequenceRecorder);
 public:
-    static bool useCachedSubsequenceIfPossible(GraphicsContext&, const DisplayItemClientWrapper&);
+    static bool useCachedSubsequenceIfPossible(GraphicsContext&, const DisplayItemClient&);
 
-    SubsequenceRecorder(GraphicsContext&, const DisplayItemClientWrapper&);
+    SubsequenceRecorder(GraphicsContext&, const DisplayItemClient&);
     ~SubsequenceRecorder();
 
     void setUncacheable();
 
 private:
     PaintController& m_paintController;
-    DisplayItemClientWrapper m_client;
+    const DisplayItemClient& m_client;
     size_t m_beginSubsequenceIndex;
 };
 

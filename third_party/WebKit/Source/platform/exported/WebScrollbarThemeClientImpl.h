@@ -83,8 +83,7 @@ public:
     void setTrackNeedsRepaint(bool) override;
     bool thumbNeedsRepaint() const override;
     void setThumbNeedsRepaint(bool) override;
-    DisplayItemClient displayItemClient() const override;
-    String debugName() const override;
+    String debugName() const final;
 
 private:
     WebScrollbar* m_scrollbar;

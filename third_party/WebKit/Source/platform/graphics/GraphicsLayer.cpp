@@ -844,7 +844,7 @@ void GraphicsLayer::setSize(const FloatSize& size)
 #ifndef NDEBUG
     // The red debug fill needs to be invalidated if the layer resizes.
     if (m_paintController)
-        m_paintController->invalidateUntracked(displayItemClient());
+        m_paintController->invalidateUntracked(*this);
 #endif
 }
 
@@ -1045,7 +1045,7 @@ void GraphicsLayer::setNeedsDisplayInRect(const IntRect& rect, PaintInvalidation
         m_linkHighlights[i]->invalidate();
 }
 
-void GraphicsLayer::invalidateDisplayItemClient(const DisplayItemClientWrapper& displayItemClient, PaintInvalidationReason paintInvalidationReason, const IntRect* visualRect)
+void GraphicsLayer::invalidateDisplayItemClient(const DisplayItemClient& displayItemClient, PaintInvalidationReason paintInvalidationReason, const IntRect* visualRect)
 {
     paintController()->invalidate(displayItemClient, paintInvalidationReason, visualRect);
     if (isTrackingPaintInvalidations())

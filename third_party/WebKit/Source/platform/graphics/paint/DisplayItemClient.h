@@ -6,51 +6,20 @@
 #define DisplayItemClient_h
 
 #include "platform/PlatformExport.h"
-#include "platform/heap/Heap.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
-class DisplayItemClientInternalVoid;
-using DisplayItemClient = const DisplayItemClientInternalVoid*;
-
-inline DisplayItemClient toDisplayItemClient(const void* object) { return static_cast<DisplayItemClient>(object); }
-
-// Used to pass DisplayItemClient and debugName() (called only when needed) from
-// core/layout module etc. to platform/paint module.
-// The instance must not out-live the object. Long-time reference to a client must
-// use DisplayItemClient.
-class PLATFORM_EXPORT DisplayItemClientWrapper final {
-    DISALLOW_NEW(); // Allow allocated in stack or in another object only.
+// The interface for objects that can be associated with display items.
+class PLATFORM_EXPORT DisplayItemClient {
 public:
-    template <typename T>
-    DisplayItemClientWrapper(const T& object)
-        : m_displayItemClient(object.displayItemClient())
-        , m_object(reinterpret_cast<const GenericClass&>(object))
-        , m_debugNameInvoker(&invokeDebugName<T>)
-    { }
+    virtual ~DisplayItemClient() { }
 
-    DisplayItemClientWrapper(const DisplayItemClientWrapper& other)
-        : m_displayItemClient(other.m_displayItemClient)
-        , m_object(other.m_object)
-        , m_debugNameInvoker(other.m_debugNameInvoker)
-    { }
-
-    DisplayItemClient displayItemClient() const { return m_displayItemClient; }
-    String debugName() const { return m_debugNameInvoker(m_object); }
-
-private:
-    DisplayItemClientWrapper& operator=(const DisplayItemClientWrapper&) = delete;
-
-    class GenericClass;
-    template <typename T>
-    static String invokeDebugName(const GenericClass& object) { return reinterpret_cast<const T&>(object).debugName(); }
-
-    DisplayItemClient m_displayItemClient;
-    const GenericClass& m_object;
-    using DebugNameInvoker = String(*)(const GenericClass&);
-    DebugNameInvoker m_debugNameInvoker;
+    virtual String debugName() const = 0;
 };
+
+inline bool operator==(const DisplayItemClient& client1, const DisplayItemClient& client2) { return &client1 == &client2; }
+inline bool operator!=(const DisplayItemClient& client1, const DisplayItemClient& client2) { return &client1 != &client2; }
 
 }
 

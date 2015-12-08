@@ -19,10 +19,10 @@ class PLATFORM_EXPORT ClipRecorder {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     WTF_MAKE_NONCOPYABLE(ClipRecorder);
 public:
-    ClipRecorder(GraphicsContext&, const DisplayItemClientWrapper&, DisplayItem::Type, const LayoutRect& clipRect);
+    ClipRecorder(GraphicsContext&, const DisplayItemClient&, DisplayItem::Type, const LayoutRect& clipRect);
     ~ClipRecorder();
 private:
-    DisplayItemClientWrapper m_client;
+    const DisplayItemClient& m_client;
     GraphicsContext& m_context;
     DisplayItem::Type m_type;
 };

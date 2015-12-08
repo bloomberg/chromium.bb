@@ -76,7 +76,7 @@ class WebFrameHostScheduler;
 class WebFrameScheduler;
 template <typename Strategy> class PositionWithAffinityTemplate;
 
-class CORE_EXPORT LocalFrame : public Frame, public LocalFrameLifecycleNotifier, public WillBeHeapSupplementable<LocalFrame> {
+class CORE_EXPORT LocalFrame : public Frame, public LocalFrameLifecycleNotifier, public WillBeHeapSupplementable<LocalFrame>, public DisplayItemClient {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(LocalFrame);
 public:
     static PassRefPtrWillBeRawPtr<LocalFrame> create(FrameLoaderClient*, FrameHost*, FrameOwner*);
@@ -179,8 +179,8 @@ public:
     void unregisterPluginElement(HTMLPlugInElement*);
     void clearWeakMembers(Visitor*);
 #endif
-    DisplayItemClient displayItemClient() const { return toDisplayItemClient(this); }
-    String debugName() const { return "LocalFrame"; }
+
+    String debugName() const final { return "LocalFrame"; }
 
     bool shouldThrottleRendering() const;
 
@@ -204,7 +204,7 @@ private:
 
     // Paints the area for the given rect into a DragImage, with the given displayItemClient id attached.
     // The rect is in the coordinate space of the frame.
-    PassOwnPtr<DragImage> paintIntoDragImage(const DisplayItemClientWrapper&,
+    PassOwnPtr<DragImage> paintIntoDragImage(const DisplayItemClient&,
         RespectImageOrientationEnum shouldRespectImageOrientation, const GlobalPaintFlags,
         IntRect paintingRect, float opacity = 1);
 

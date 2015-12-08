@@ -156,13 +156,13 @@ private:
 // A good example of this is PaintLayerScrollableArea, which can only happen
 // be instanciated for LayoutBoxes. With the current design, it's hard to know
 // that by reading the code.
-class CORE_EXPORT PaintLayer {
+class CORE_EXPORT PaintLayer : public DisplayItemClient {
     WTF_MAKE_NONCOPYABLE(PaintLayer);
 public:
     PaintLayer(LayoutBoxModelObject*, PaintLayerType);
     ~PaintLayer();
 
-    String debugName() const;
+    String debugName() const final;
 
     LayoutBoxModelObject* layoutObject() const { return m_layoutObject; }
     LayoutBox* layoutBox() const { return m_layoutObject && m_layoutObject->isBox() ? toLayoutBox(m_layoutObject) : 0; }
@@ -617,9 +617,6 @@ public:
 
     ClipRects* previousPaintingClipRects() const { return m_previousPaintingClipRects.get(); }
     void setPreviousPaintingClipRects(ClipRects* clipRects) { m_previousPaintingClipRects = clipRects; }
-
-    // For subsequence display items.
-    DisplayItemClient displayItemClient() const { return toDisplayItemClient(this); }
 
     PaintTiming* paintTiming();
 

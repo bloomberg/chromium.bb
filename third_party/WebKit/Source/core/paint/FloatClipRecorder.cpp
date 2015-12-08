@@ -11,7 +11,7 @@
 
 namespace blink {
 
-FloatClipRecorder::FloatClipRecorder(GraphicsContext& context, const DisplayItemClientWrapper& client, PaintPhase paintPhase, const FloatRect& clipRect)
+FloatClipRecorder::FloatClipRecorder(GraphicsContext& context, const DisplayItemClient& client, PaintPhase paintPhase, const FloatRect& clipRect)
     : m_context(context)
     , m_client(client)
     , m_clipType(DisplayItem::paintPhaseToFloatClipType(paintPhase))

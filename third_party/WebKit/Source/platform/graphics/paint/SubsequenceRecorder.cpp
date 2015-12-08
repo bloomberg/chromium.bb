@@ -13,7 +13,7 @@
 
 namespace blink {
 
-bool SubsequenceRecorder::useCachedSubsequenceIfPossible(GraphicsContext& context, const DisplayItemClientWrapper& client)
+bool SubsequenceRecorder::useCachedSubsequenceIfPossible(GraphicsContext& context, const DisplayItemClient& client)
 {
     if (!RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled())
         return false;
@@ -21,7 +21,7 @@ bool SubsequenceRecorder::useCachedSubsequenceIfPossible(GraphicsContext& contex
     if (context.paintController().displayItemConstructionIsDisabled())
         return false;
 
-    if (!context.paintController().clientCacheIsValid(client.displayItemClient()))
+    if (!context.paintController().clientCacheIsValid(client))
         return false;
 
     context.paintController().createAndAppend<CachedDisplayItem>(client, DisplayItem::CachedSubsequence);
@@ -36,7 +36,7 @@ bool SubsequenceRecorder::useCachedSubsequenceIfPossible(GraphicsContext& contex
     return true;
 }
 
-SubsequenceRecorder::SubsequenceRecorder(GraphicsContext& context, const DisplayItemClientWrapper& client)
+SubsequenceRecorder::SubsequenceRecorder(GraphicsContext& context, const DisplayItemClient& client)
     : m_paintController(context.paintController())
     , m_client(client)
     , m_beginSubsequenceIndex(0)

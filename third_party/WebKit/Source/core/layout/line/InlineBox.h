@@ -39,7 +39,7 @@ enum MarkLineBoxes { MarkLineBoxesDirty, DontMarkLineBoxes };
 
 // InlineBox represents a rectangle that occurs on a line.  It corresponds to
 // some LayoutObject (i.e., it represents a portion of that LayoutObject).
-class InlineBox {
+class InlineBox : public DisplayItemClient {
     WTF_MAKE_NONCOPYABLE(InlineBox);
 public:
     InlineBox(LayoutObject& obj)
@@ -103,7 +103,7 @@ public:
 #endif
 
     virtual const char* boxName() const;
-    virtual String debugName() const;
+    String debugName() const override;
 
     bool isText() const { return m_bitfields.isText(); }
     void setIsText(bool isText) { m_bitfields.setIsText(isText); }
@@ -299,7 +299,6 @@ public:
     bool dirOverride() const { return m_bitfields.dirOverride(); }
     void setDirOverride(bool dirOverride) { m_bitfields.setDirOverride(dirOverride); }
 
-    DisplayItemClient displayItemClient() const { return toDisplayItemClient(this); }
     // Invalidate display item clients in the whole sub inline box tree.
     void invalidateDisplayItemClientsRecursively();
 

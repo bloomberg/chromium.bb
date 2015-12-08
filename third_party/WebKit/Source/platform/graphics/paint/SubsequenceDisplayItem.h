@@ -13,14 +13,14 @@ namespace blink {
 
 class BeginSubsequenceDisplayItem final : public PairedBeginDisplayItem {
 public:
-    BeginSubsequenceDisplayItem(const DisplayItemClientWrapper& client)
+    BeginSubsequenceDisplayItem(const DisplayItemClient& client)
         : PairedBeginDisplayItem(client, Subsequence, sizeof(*this))
     { }
 };
 
 class EndSubsequenceDisplayItem final : public PairedEndDisplayItem {
 public:
-    EndSubsequenceDisplayItem(const DisplayItemClientWrapper& client)
+    EndSubsequenceDisplayItem(const DisplayItemClient& client)
         : PairedEndDisplayItem(client, EndSubsequence, sizeof(*this))
     { }
 

@@ -24,9 +24,9 @@ class PLATFORM_EXPORT DrawingRecorder final {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     WTF_MAKE_NONCOPYABLE(DrawingRecorder);
 public:
-    static bool useCachedDrawingIfPossible(GraphicsContext&, const DisplayItemClientWrapper&, DisplayItem::Type);
+    static bool useCachedDrawingIfPossible(GraphicsContext&, const DisplayItemClient&, DisplayItem::Type);
 
-    DrawingRecorder(GraphicsContext&, const DisplayItemClientWrapper&, DisplayItem::Type, const FloatRect& cullRect);
+    DrawingRecorder(GraphicsContext&, const DisplayItemClient&, DisplayItem::Type, const FloatRect& cullRect);
     ~DrawingRecorder();
 
 #if ENABLE(ASSERT)
@@ -35,7 +35,7 @@ public:
 
 private:
     GraphicsContext& m_context;
-    DisplayItemClientWrapper m_displayItemClient;
+    const DisplayItemClient& m_displayItemClient;
     const DisplayItem::Type m_displayItemType;
 #if ENABLE(ASSERT)
     size_t m_displayItemPosition;

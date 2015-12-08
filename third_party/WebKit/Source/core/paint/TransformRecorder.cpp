@@ -11,7 +11,7 @@
 
 namespace blink {
 
-TransformRecorder::TransformRecorder(GraphicsContext& context, const DisplayItemClientWrapper& client, const AffineTransform& transform)
+TransformRecorder::TransformRecorder(GraphicsContext& context, const DisplayItemClient& client, const AffineTransform& transform)
     : m_context(context)
     , m_client(client)
 {

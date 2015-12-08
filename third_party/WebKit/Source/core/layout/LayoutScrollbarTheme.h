@@ -40,7 +40,7 @@ public:
 
     ScrollbarButtonsPlacement buttonsPlacement() const override { return ScrollbarTheme::theme()->buttonsPlacement(); }
 
-    void paintScrollCorner(GraphicsContext*, const DisplayItemClientWrapper&, const IntRect& cornerRect) override;
+    void paintScrollCorner(GraphicsContext*, const DisplayItemClient&, const IntRect& cornerRect) override;
 
     bool shouldCenterOnThumb(const ScrollbarThemeClient* scrollbar, const PlatformMouseEvent& event) override { return ScrollbarTheme::theme()->shouldCenterOnThumb(scrollbar, event); }
     bool shouldSnapBackToDragOrigin(const ScrollbarThemeClient* scrollbar, const PlatformMouseEvent& event) override { return ScrollbarTheme::theme()->shouldSnapBackToDragOrigin(scrollbar, event); }

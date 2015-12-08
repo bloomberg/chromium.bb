@@ -35,7 +35,6 @@
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/graphics/GraphicsTypes3D.h"
 #include "platform/graphics/ImageBufferSurface.h"
-#include "platform/graphics/paint/DisplayItemClient.h"
 #include "platform/transforms/AffineTransform.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "wtf/Forward.h"
@@ -129,9 +128,6 @@ public:
 
     PassRefPtr<SkImage> newSkImageSnapshot(AccelerationHint) const;
     PassRefPtr<Image> newImageSnapshot(AccelerationHint = PreferNoAcceleration) const;
-
-    DisplayItemClient displayItemClient() const { return toDisplayItemClient(this); }
-    String debugName() const { return "ImageBuffer"; }
 
     void draw(GraphicsContext*, const FloatRect&, const FloatRect*, SkXfermode::Mode);
 

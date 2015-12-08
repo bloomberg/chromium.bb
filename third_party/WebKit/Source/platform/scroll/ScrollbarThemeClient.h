@@ -39,7 +39,7 @@ namespace blink {
 
 class Widget;
 
-class PLATFORM_EXPORT ScrollbarThemeClient {
+class PLATFORM_EXPORT ScrollbarThemeClient : public DisplayItemClient {
 public:
     virtual int x() const = 0;
     virtual int y() const = 0;
@@ -95,9 +95,6 @@ public:
     virtual void setTrackNeedsRepaint(bool) = 0;
     virtual bool thumbNeedsRepaint() const = 0;
     virtual void setThumbNeedsRepaint(bool) = 0;
-
-    virtual DisplayItemClient displayItemClient() const = 0;
-    virtual String debugName() const = 0;
 
 protected:
     virtual ~ScrollbarThemeClient() { }

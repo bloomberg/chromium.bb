@@ -17,13 +17,13 @@ class FloatClipRecorder {
     USING_FAST_MALLOC(FloatClipRecorder);
     WTF_MAKE_NONCOPYABLE(FloatClipRecorder);
 public:
-    FloatClipRecorder(GraphicsContext&, const DisplayItemClientWrapper&, PaintPhase, const FloatRect&);
+    FloatClipRecorder(GraphicsContext&, const DisplayItemClient&, PaintPhase, const FloatRect&);
 
     ~FloatClipRecorder();
 
 private:
     GraphicsContext& m_context;
-    DisplayItemClientWrapper m_client;
+    const DisplayItemClient& m_client;
     DisplayItem::Type m_clipType;
 };
 

@@ -223,7 +223,7 @@ void DisplayItem::dumpPropertiesAsDebugString(WTF::StringBuilder& stringBuilder)
         return;
     }
 
-    stringBuilder.append(String::format("client: \"%p", client()));
+    stringBuilder.append(String::format("client: \"%p", &client()));
     if (!clientDebugString().isEmpty()) {
         stringBuilder.append(' ');
         stringBuilder.append(clientDebugString());

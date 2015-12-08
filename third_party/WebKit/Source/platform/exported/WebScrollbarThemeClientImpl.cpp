@@ -254,12 +254,6 @@ void WebScrollbarThemeClientImpl::setThumbNeedsRepaint(bool)
     ASSERT_NOT_REACHED();
 }
 
-DisplayItemClient WebScrollbarThemeClientImpl::displayItemClient() const
-{
-    ASSERT_NOT_REACHED();
-    return toDisplayItemClient(this);
-}
-
 String WebScrollbarThemeClientImpl::debugName() const
 {
     return "WebScrollbarThemeClientImpl";

@@ -19,17 +19,17 @@ class LayoutObject;
 class CompositingRecorder {
     USING_FAST_MALLOC(CompositingRecorder);
 public:
-    CompositingRecorder(GraphicsContext&, const DisplayItemClientWrapper&, const SkXfermode::Mode, const float opacity, const FloatRect* bounds = 0, ColorFilter = ColorFilterNone);
+    CompositingRecorder(GraphicsContext&, const DisplayItemClient&, const SkXfermode::Mode, const float opacity, const FloatRect* bounds = 0, ColorFilter = ColorFilterNone);
 
     ~CompositingRecorder();
 
     // FIXME: These helpers only exist to ease the transition to slimming paint
     //        and should be removed once slimming paint is enabled by default.
-    static void beginCompositing(GraphicsContext&, const DisplayItemClientWrapper&, const SkXfermode::Mode, const float opacity, const FloatRect* bounds = 0, ColorFilter = ColorFilterNone);
-    static void endCompositing(GraphicsContext&, const DisplayItemClientWrapper&);
+    static void beginCompositing(GraphicsContext&, const DisplayItemClient&, const SkXfermode::Mode, const float opacity, const FloatRect* bounds = 0, ColorFilter = ColorFilterNone);
+    static void endCompositing(GraphicsContext&, const DisplayItemClient&);
 
 private:
-    DisplayItemClientWrapper m_client;
+    const DisplayItemClient& m_client;
     GraphicsContext& m_graphicsContext;
 };
 
