@@ -47,21 +47,35 @@ bool HTMLLIElement::isPresentationAttribute(const QualifiedName& name) const
     return HTMLElement::isPresentationAttribute(name);
 }
 
+CSSValueID listTypeToCSSValueID(const AtomicString& value)
+{
+    if (value == "a")
+        return CSSValueLowerAlpha;
+    if (value == "A")
+        return CSSValueUpperAlpha;
+    if (value == "i")
+        return CSSValueLowerRoman;
+    if (value == "I")
+        return CSSValueUpperRoman;
+    if (value == "1")
+        return CSSValueDecimal;
+    if (equalIgnoringCase(value, "disc"))
+        return CSSValueDisc;
+    if (equalIgnoringCase(value, "circle"))
+        return CSSValueCircle;
+    if (equalIgnoringCase(value, "square"))
+        return CSSValueSquare;
+    if (equalIgnoringCase(value, "none"))
+        return CSSValueNone;
+    return CSSValueInvalid;
+}
+
 void HTMLLIElement::collectStyleForPresentationAttribute(const QualifiedName& name, const AtomicString& value, MutableStylePropertySet* style)
 {
     if (name == typeAttr) {
-        if (value == "a")
-            addPropertyToPresentationAttributeStyle(style, CSSPropertyListStyleType, CSSValueLowerAlpha);
-        else if (value == "A")
-            addPropertyToPresentationAttributeStyle(style, CSSPropertyListStyleType, CSSValueUpperAlpha);
-        else if (value == "i")
-            addPropertyToPresentationAttributeStyle(style, CSSPropertyListStyleType, CSSValueLowerRoman);
-        else if (value == "I")
-            addPropertyToPresentationAttributeStyle(style, CSSPropertyListStyleType, CSSValueUpperRoman);
-        else if (value == "1")
-            addPropertyToPresentationAttributeStyle(style, CSSPropertyListStyleType, CSSValueDecimal);
-        else
-            addPropertyToPresentationAttributeStyle(style, CSSPropertyListStyleType, value);
+        CSSValueID typeValue = listTypeToCSSValueID(value);
+        if (typeValue != CSSValueInvalid)
+            addPropertyToPresentationAttributeStyle(style, CSSPropertyListStyleType, typeValue);
     } else {
         HTMLElement::collectStyleForPresentationAttribute(name, value, style);
     }
