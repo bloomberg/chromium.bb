@@ -58,10 +58,6 @@ class QuicSpdyServerStream : public QuicSpdyStream {
  private:
   friend class test::QuicSpdyServerStreamPeer;
 
-  // Parses the request headers from |data| to |request_headers_|.
-  // Returns false if there was an error parsing the headers.
-  bool ParseRequestHeaders(const char* data, uint32 data_len);
-
   // The parsed headers received from the client.
   SpdyHeaderBlock request_headers_;
   int content_length_;

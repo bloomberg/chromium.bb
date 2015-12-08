@@ -347,7 +347,7 @@ void QuicSentPacketManager::RetransmitUnackedPackets(
     const RetransmittableFrames* frames = it->retransmittable_frames;
     if (frames != nullptr &&
         (retransmission_type == ALL_UNACKED_RETRANSMISSION ||
-         frames->encryption_level() == ENCRYPTION_INITIAL)) {
+         it->encryption_level == ENCRYPTION_INITIAL)) {
       MarkForRetransmission(packet_number, retransmission_type);
     } else if (it->is_fec_packet) {
       // Remove FEC packets from the packet map, since we can't retransmit them.
@@ -360,8 +360,8 @@ void QuicSentPacketManager::NeuterUnencryptedPackets() {
   QuicPacketNumber packet_number = unacked_packets_.GetLeastUnacked();
   for (QuicUnackedPacketMap::const_iterator it = unacked_packets_.begin();
        it != unacked_packets_.end(); ++it, ++packet_number) {
-    const RetransmittableFrames* frames = it->retransmittable_frames;
-    if (frames != nullptr && frames->encryption_level() == ENCRYPTION_NONE) {
+    if (it->retransmittable_frames != nullptr &&
+        it->encryption_level == ENCRYPTION_NONE) {
       // Once you're forward secure, no unencrypted packets will be sent, crypto
       // or otherwise. Unencrypted packets are neutered and abandoned, to ensure
       // they are not retransmitted or considered lost from a congestion control
@@ -465,6 +465,7 @@ QuicSentPacketManager::PendingRetransmission
 
   return PendingRetransmission(packet_number, transmission_type,
                                *transmission_info.retransmittable_frames,
+                               transmission_info.encryption_level,
                                transmission_info.packet_number_length);
 }
 

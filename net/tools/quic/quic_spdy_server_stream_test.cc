@@ -103,7 +103,8 @@ class QuicSpdyServerStreamTest : public ::testing::TestWithParam<QuicVersion> {
         kInitialStreamFlowControlWindowForTest);
     session_.config()->SetInitialSessionFlowControlWindowToSend(
         kInitialSessionFlowControlWindowForTest);
-    stream_ = new QuicSpdyServerStreamPeer(5, &session_);
+    stream_ = new QuicSpdyServerStreamPeer(::net::test::kClientDataStreamId1,
+                                           &session_);
     // Register stream_ in dynamic_stream_map_ and pass ownership to session_.
     session_.ActivateStream(stream_);
 
@@ -129,23 +130,14 @@ class QuicSpdyServerStreamTest : public ::testing::TestWithParam<QuicVersion> {
   string body_;
 };
 
-QuicConsumedData ConsumeAllData(
-    QuicStreamId /*id*/,
-    const QuicIOVector& data,
-    QuicStreamOffset /*offset*/,
-    bool fin,
-    FecProtection /*fec_protection_*/,
-    QuicAckListenerInterface* /*ack_notifier_delegate*/) {
-  return QuicConsumedData(data.total_length, fin);
-}
-
 INSTANTIATE_TEST_CASE_P(Tests,
                         QuicSpdyServerStreamTest,
                         ::testing::ValuesIn(QuicSupportedVersions()));
 
 TEST_P(QuicSpdyServerStreamTest, TestFraming) {
-  EXPECT_CALL(session_, WritevData(_, _, _, _, _, _)).Times(AnyNumber()).
-      WillRepeatedly(Invoke(ConsumeAllData));
+  EXPECT_CALL(session_, WritevData(_, _, _, _, _, _))
+      .Times(AnyNumber())
+      .WillRepeatedly(Invoke(MockQuicSpdySession::ConsumeAllData));
   stream_->OnStreamHeaders(headers_string_);
   stream_->OnStreamHeadersComplete(false, headers_string_.size());
   stream_->OnStreamFrame(
@@ -157,8 +149,9 @@ TEST_P(QuicSpdyServerStreamTest, TestFraming) {
 }
 
 TEST_P(QuicSpdyServerStreamTest, TestFramingOnePacket) {
-  EXPECT_CALL(session_, WritevData(_, _, _, _, _, _)).Times(AnyNumber()).
-      WillRepeatedly(Invoke(ConsumeAllData));
+  EXPECT_CALL(session_, WritevData(_, _, _, _, _, _))
+      .Times(AnyNumber())
+      .WillRepeatedly(Invoke(MockQuicSpdySession::ConsumeAllData));
 
   stream_->OnStreamHeaders(headers_string_);
   stream_->OnStreamHeadersComplete(false, headers_string_.size());
@@ -173,7 +166,7 @@ TEST_P(QuicSpdyServerStreamTest, TestFramingOnePacket) {
 TEST_P(QuicSpdyServerStreamTest, SendQuicRstStreamNoErrorInStopReading) {
   EXPECT_CALL(session_, WritevData(_, _, _, _, _, _))
       .Times(AnyNumber())
-      .WillRepeatedly(Invoke(ConsumeAllData));
+      .WillRepeatedly(Invoke(MockQuicSpdySession::ConsumeAllData));
 
   EXPECT_FALSE(stream_->fin_received());
   EXPECT_FALSE(stream_->rst_received());
@@ -193,8 +186,9 @@ TEST_P(QuicSpdyServerStreamTest, TestFramingExtraData) {
   string large_body = "hello world!!!!!!";
 
   // We'll automatically write out an error (headers + body)
-  EXPECT_CALL(session_, WritevData(_, _, _, _, _, _)).Times(AnyNumber()).
-      WillRepeatedly(Invoke(ConsumeAllData));
+  EXPECT_CALL(session_, WritevData(_, _, _, _, _, _))
+      .Times(2)
+      .WillRepeatedly(Invoke(MockQuicSpdySession::ConsumeAllData));
   EXPECT_CALL(session_, SendRstStream(_, QUIC_STREAM_NO_ERROR, _)).Times(0);
 
   stream_->OnStreamHeaders(headers_string_);
@@ -327,7 +321,7 @@ TEST_P(QuicSpdyServerStreamTest, InvalidMultipleContentLength) {
 
   EXPECT_CALL(session_, WritevData(_, _, _, _, _, _))
       .Times(AnyNumber())
-      .WillRepeatedly(Invoke(ConsumeAllData));
+      .WillRepeatedly(Invoke(MockQuicSpdySession::ConsumeAllData));
   stream_->OnStreamHeaders(headers_string_);
   stream_->OnStreamHeadersComplete(true, headers_string_.size());
 
@@ -347,7 +341,7 @@ TEST_P(QuicSpdyServerStreamTest, InvalidLeadingNullContentLength) {
 
   EXPECT_CALL(session_, WritevData(_, _, _, _, _, _))
       .Times(AnyNumber())
-      .WillRepeatedly(Invoke(ConsumeAllData));
+      .WillRepeatedly(Invoke(MockQuicSpdySession::ConsumeAllData));
   stream_->OnStreamHeaders(headers_string_);
   stream_->OnStreamHeadersComplete(true, headers_string_.size());
 

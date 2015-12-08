@@ -263,10 +263,11 @@ class TestQuicVisitor : public QuicFramerVisitorInterface {
     ++frame_count_;
     // Save a copy of the data so it is valid after the packet is processed.
     string* string_data = new string();
-    frame.data.AppendToString(string_data);
+    StringPiece(frame.frame_buffer, frame.frame_length)
+        .AppendToString(string_data);
     stream_data_.push_back(string_data);
-    stream_frames_.push_back(new QuicStreamFrame(
-        frame.stream_id, frame.fin, frame.offset, StringPiece(*string_data)));
+    stream_frames_.push_back(new QuicStreamFrame(frame.stream_id, frame.fin,
+                                                 frame.offset, *string_data));
     return true;
   }
 
@@ -444,7 +445,7 @@ class QuicFramerTest : public ::testing::TestWithParam<QuicVersion> {
 
   // Checks if the supplied string matches data in the supplied StreamFrame.
   void CheckStreamFrameData(string str, QuicStreamFrame* frame) {
-    EXPECT_EQ(str, frame->data);
+    EXPECT_EQ(str, string(frame->frame_buffer, frame->frame_length));
   }
 
   void CheckStreamFrameBoundaries(unsigned char* packet,
@@ -4540,7 +4541,8 @@ static char kTestString[] = "At least 20 characters.";
 static QuicStreamId kTestQuicStreamId = 1;
 static bool ExpectedStreamFrame(const QuicStreamFrame& frame) {
   return frame.stream_id == kTestQuicStreamId && !frame.fin &&
-         frame.offset == 0 && frame.data == kTestString;
+         frame.offset == 0 &&
+         string(frame.frame_buffer, frame.frame_length) == kTestString;
   // FIN is hard-coded false in ConstructEncryptedPacket.
   // Offset 0 is hard-coded in ConstructEncryptedPacket.
 }

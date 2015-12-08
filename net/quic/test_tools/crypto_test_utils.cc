@@ -635,7 +635,8 @@ void CryptoTestUtils::MovePackets(PacketSavingConnection* source_conn,
     }
 
     for (const QuicStreamFrame* stream_frame : framer.stream_frames()) {
-      ASSERT_TRUE(crypto_framer.ProcessInput(stream_frame->data));
+      ASSERT_TRUE(crypto_framer.ProcessInput(
+          StringPiece(stream_frame->frame_buffer, stream_frame->frame_length)));
       ASSERT_FALSE(crypto_visitor.error());
     }
   }

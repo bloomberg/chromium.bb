@@ -77,7 +77,7 @@ class NET_EXPORT_PRIVATE QuicSpdyStream : public ReliableQuicStream {
   virtual void OnStreamHeadersPriority(SpdyPriority priority);
 
   // Called by the session when decompressed headers have been completely
-  // delilvered to this stream.  If |fin| is true, then this stream
+  // delivered to this stream.  If |fin| is true, then this stream
   // should be closed; no more data will be sent by the peer.
   virtual void OnStreamHeadersComplete(bool fin, size_t frame_len);
 

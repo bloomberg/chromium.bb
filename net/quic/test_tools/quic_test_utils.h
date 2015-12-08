@@ -454,6 +454,16 @@ class MockQuicSpdySession : public QuicSpdySession {
 
   using QuicSession::ActivateStream;
 
+  // Returns a QuicConsumedData that indicates all of |data| (and |fin| if set)
+  // has been consumed.
+  static QuicConsumedData ConsumeAllData(
+      QuicStreamId id,
+      const QuicIOVector& data,
+      QuicStreamOffset offset,
+      bool fin,
+      FecProtection fec_protection,
+      QuicAckListenerInterface* ack_notifier_delegate);
+
  private:
   scoped_ptr<QuicCryptoStream> crypto_stream_;
 
@@ -693,10 +703,9 @@ class MockQuicConnectionDebugVisitor : public QuicConnectionDebugVisitor {
 
   MOCK_METHOD1(OnFrameAddedToPacket, void(const QuicFrame&));
 
-  MOCK_METHOD6(OnPacketSent,
+  MOCK_METHOD5(OnPacketSent,
                void(const SerializedPacket&,
                     QuicPacketNumber,
-                    EncryptionLevel,
                     TransmissionType,
                     size_t encrypted_length,
                     QuicTime));
@@ -711,6 +720,8 @@ class MockQuicConnectionDebugVisitor : public QuicConnectionDebugVisitor {
   MOCK_METHOD1(OnProtocolVersionMismatch, void(QuicVersion));
 
   MOCK_METHOD1(OnPacketHeader, void(const QuicPacketHeader& header));
+
+  MOCK_METHOD1(OnSuccessfulVersionNegotiation, void(const QuicVersion&));
 
   MOCK_METHOD1(OnStreamFrame, void(const QuicStreamFrame&));
 

@@ -113,6 +113,8 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
   bool fin_received() { return fin_received_; }
   bool fin_sent() { return fin_sent_; }
 
+  uint64 queued_data_bytes() const { return queued_data_bytes_; }
+
   uint64 stream_bytes_read() const { return stream_bytes_read_; }
   uint64 stream_bytes_written() const { return stream_bytes_written_; }
 
@@ -246,6 +248,8 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
   void MaybeSendBlocked();
 
   std::list<PendingData> queued_data_;
+  // How many bytes are queued?
+  uint64 queued_data_bytes_;
 
   QuicStreamSequencer sequencer_;
   QuicStreamId id_;

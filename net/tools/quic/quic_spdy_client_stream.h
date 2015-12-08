@@ -74,8 +74,6 @@ class QuicSpdyClientStream : public QuicSpdyStream {
   bool allow_bidirectional_data() const { return allow_bidirectional_data_; }
 
  private:
-  bool ParseResponseHeaders(const char* data, uint32 data_len);
-
   // The parsed headers received from the server.
   SpdyHeaderBlock response_headers_;
   // The parsed content-length, or -1 if none is specified.

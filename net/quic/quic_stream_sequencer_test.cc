@@ -145,7 +145,8 @@ class QuicStreamSequencerTest : public ::testing::TestWithParam<bool> {
     QuicStreamFrame frame;
     frame.stream_id = 1;
     frame.offset = byte_offset;
-    frame.data = StringPiece(data);
+    frame.frame_buffer = data;
+    frame.frame_length = strlen(data);
     frame.fin = true;
     sequencer_->OnStreamFrame(frame);
   }
@@ -154,7 +155,8 @@ class QuicStreamSequencerTest : public ::testing::TestWithParam<bool> {
     QuicStreamFrame frame;
     frame.stream_id = 1;
     frame.offset = byte_offset;
-    frame.data = StringPiece(data);
+    frame.frame_buffer = data;
+    frame.frame_length = strlen(data);
     frame.fin = false;
     sequencer_->OnStreamFrame(frame);
   }

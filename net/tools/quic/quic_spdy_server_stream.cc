@@ -32,8 +32,9 @@ QuicSpdyServerStream::~QuicSpdyServerStream() {
 
 void QuicSpdyServerStream::OnStreamHeadersComplete(bool fin, size_t frame_len) {
   QuicSpdyStream::OnStreamHeadersComplete(fin, frame_len);
-  if (!ParseRequestHeaders(decompressed_headers().data(),
-                           decompressed_headers().length())) {
+  if (!SpdyUtils::ParseHeaders(decompressed_headers().data(),
+                               decompressed_headers().length(),
+                               &content_length_, &request_headers_)) {
     DVLOG(1) << "Invalid headers";
     SendErrorResponse();
   }
@@ -87,40 +88,6 @@ void QuicSpdyServerStream::OnDataAvailable() {
   }
 
   SendResponse();
-}
-
-bool QuicSpdyServerStream::ParseRequestHeaders(const char* data,
-                                               uint32 data_len) {
-  DCHECK(headers_decompressed());
-  SpdyFramer framer(HTTP2);
-  if (!framer.ParseHeaderBlockInBuffer(data, data_len, &request_headers_) ||
-      request_headers_.empty()) {
-    return false;  // Headers were invalid.
-  }
-
-  if (ContainsKey(request_headers_, "content-length")) {
-    string delimiter;
-    delimiter.push_back('\0');
-    std::vector<string> values =
-        base::SplitString(request_headers_["content-length"], delimiter,
-                          base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
-
-    for (const string& value : values) {
-      int new_value;
-      if (!StringToInt(value, &new_value) || new_value < 0) {
-        return false;
-      }
-      if (content_length_ < 0) {
-        content_length_ = new_value;
-        continue;
-      }
-      if (new_value != content_length_) {
-        return false;
-      }
-    }
-  }
-
-  return true;
 }
 
 void QuicSpdyServerStream::SendResponse() {

@@ -91,7 +91,7 @@ QuicPacketCreator::QuicPacketCreator(QuicConnectionId connection_id,
       framer_(framer),
       random_bool_source_(new QuicRandomBoolSource(random_generator)),
       packet_number_(0),
-      should_fec_protect_(false),
+      should_fec_protect_next_packet_(false),
       fec_protect_(false),
       send_version_in_packet_(framer->perspective() == Perspective::IS_CLIENT),
       max_packet_length_(0),
@@ -251,10 +251,15 @@ bool QuicPacketCreator::ConsumeData(QuicStreamId id,
                                     QuicStreamOffset offset,
                                     bool fin,
                                     bool needs_padding,
-                                    QuicFrame* frame) {
+                                    QuicFrame* frame,
+                                    FecProtection fec_protection) {
   if (!HasRoomForStreamFrame(id, offset)) {
     Flush();
     return false;
+  }
+  if (fec_protection == MUST_FEC_PROTECT) {
+    should_fec_protect_next_packet_ = true;
+    MaybeStartFecProtection();
   }
   CreateStreamFrame(id, iov, iov_offset, offset, fin, frame);
   bool success = AddFrame(*frame,
@@ -321,10 +326,8 @@ size_t QuicPacketCreator::CreateStreamFrame(QuicStreamId id,
   bool set_fin = fin && bytes_consumed == data_size;  // Last frame.
   UniqueStreamBuffer buffer = NewStreamBuffer(bytes_consumed);
   CopyToBuffer(iov, iov_offset, bytes_consumed, buffer.get());
-  // TODO(zhongyi): figure out the lifetime of data. Crashes on windows only.
-  StringPiece data(buffer.get(), bytes_consumed);
-  *frame = QuicFrame(
-      new QuicStreamFrame(id, set_fin, offset, data, std::move(buffer)));
+  *frame = QuicFrame(new QuicStreamFrame(id, set_fin, offset, bytes_consumed,
+                                         std::move(buffer)));
   return bytes_consumed;
 }
 
@@ -394,6 +397,7 @@ void QuicPacketCreator::CopyToBuffer(QuicIOVector iov,
 
 SerializedPacket QuicPacketCreator::ReserializeAllFrames(
     const RetransmittableFrames& frames,
+    EncryptionLevel original_encryption_level,
     QuicPacketNumberLength original_length,
     char* buffer,
     size_t buffer_len) {
@@ -409,8 +413,13 @@ SerializedPacket QuicPacketCreator::ReserializeAllFrames(
   packet_number_length_ = original_length;
   next_packet_number_length_ = original_length;
   fec_protect_ = false;
-  encryption_level_ = frames.encryption_level();
   needs_padding_ = frames.needs_padding();
+  // Only preserve the original encryption level if it's a handshake packet or
+  // if we haven't gone forward secure.
+  if (frames.HasCryptoHandshake() ||
+      encryption_level_ != ENCRYPTION_FORWARD_SECURE) {
+    encryption_level_ = original_encryption_level;
+  }
 
   // Serialize the packet and restore the FEC and packet number length state.
   SerializedPacket serialized_packet =
@@ -590,7 +599,8 @@ SerializedPacket QuicPacketCreator::SerializePacket(
       header.packet_number, header.public_header.packet_number_length,
       encrypted_buffer, encrypted_length, /* owns_buffer*/ false,
       QuicFramer::GetPacketEntropyHash(header),
-      queued_retransmittable_frames_.release(), has_ack, has_stop_waiting);
+      queued_retransmittable_frames_.release(), has_ack, has_stop_waiting,
+      encryption_level_);
 }
 
 SerializedPacket QuicPacketCreator::SerializeFec(char* buffer,
@@ -620,10 +630,11 @@ SerializedPacket QuicPacketCreator::SerializeFec(char* buffer,
     LOG(DFATAL) << "Failed to encrypt packet number " << packet_number_;
     return NoPacket();
   }
-  SerializedPacket serialized(
-      header.packet_number, header.public_header.packet_number_length, buffer,
-      encrypted_length, /* owns_buffer */ false,
-      QuicFramer::GetPacketEntropyHash(header), nullptr, false, false);
+  SerializedPacket serialized(header.packet_number,
+                              header.public_header.packet_number_length, buffer,
+                              encrypted_length, /* owns_buffer */ false,
+                              QuicFramer::GetPacketEntropyHash(header), nullptr,
+                              false, false, encryption_level_);
   serialized.is_fec_packet = true;
   return serialized;
 }
@@ -689,8 +700,7 @@ bool QuicPacketCreator::AddFrame(const QuicFrame& frame,
 
   if (save_retransmittable_frames && ShouldRetransmit(frame)) {
     if (queued_retransmittable_frames_.get() == nullptr) {
-      queued_retransmittable_frames_.reset(
-          new RetransmittableFrames(encryption_level_));
+      queued_retransmittable_frames_.reset(new RetransmittableFrames());
     }
     queued_frames_.push_back(queued_retransmittable_frames_->AddFrame(frame));
   } else {
@@ -748,7 +758,7 @@ void QuicPacketCreator::MaybeSendFecPacketAndCloseGroup(bool force_send_fec,
     }
   }
 
-  if (!should_fec_protect_ && fec_protect_ && !IsFecGroupOpen()) {
+  if (!should_fec_protect_next_packet_ && fec_protect_ && !IsFecGroupOpen()) {
     StopFecProtectingPackets();
   }
 }

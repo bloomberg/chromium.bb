@@ -1291,17 +1291,21 @@ bool QuicFramer::ProcessStreamFrame(QuicDataReader* reader,
     return false;
   }
 
+  // TODO(ianswett): Don't use StringPiece as an intermediary.
+  StringPiece data;
   if (has_data_length) {
-    if (!reader->ReadStringPiece16(&frame->data)) {
+    if (!reader->ReadStringPiece16(&data)) {
       set_detailed_error("Unable to read frame data.");
       return false;
     }
   } else {
-    if (!reader->ReadStringPiece(&frame->data, reader->BytesRemaining())) {
+    if (!reader->ReadStringPiece(&data, reader->BytesRemaining())) {
       set_detailed_error("Unable to read frame data.");
       return false;
     }
   }
+  frame->frame_buffer = data.data();
+  frame->frame_length = static_cast<uint16>(data.length());
 
   return true;
 }
@@ -1768,7 +1772,7 @@ size_t QuicFramer::ComputeFrameLength(
       return GetMinStreamFrameSize(frame.stream_frame->stream_id,
                                    frame.stream_frame->offset,
                                    last_frame_in_packet, is_in_fec_group) +
-             frame.stream_frame->data.length();
+             frame.stream_frame->frame_length;
     case ACK_FRAME: {
       return GetAckFrameSize(*frame.ack_frame, packet_number_length);
     }
@@ -1886,14 +1890,14 @@ bool QuicFramer::AppendStreamFrame(const QuicStreamFrame& frame,
     return false;
   }
   if (!no_stream_frame_length) {
-    if ((frame.data.size() > numeric_limits<uint16>::max()) ||
-        !writer->WriteUInt16(static_cast<uint16>(frame.data.size()))) {
+    if ((frame.frame_length > numeric_limits<uint16>::max()) ||
+        !writer->WriteUInt16(static_cast<uint16>(frame.frame_length))) {
       LOG(DFATAL) << "Writing stream frame length failed";
       return false;
     }
   }
 
-  if (!writer->WriteBytes(frame.data.data(), frame.data.size())) {
+  if (!writer->WriteBytes(frame.frame_buffer, frame.frame_length)) {
     LOG(DFATAL) << "Writing frame data failed.";
     return false;
   }

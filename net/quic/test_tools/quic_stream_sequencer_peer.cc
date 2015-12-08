@@ -23,8 +23,8 @@ bool QuicStreamSequencerPeer::FrameOverlapsBufferedData(
     QuicFrameList* buffer,
     const QuicStreamFrame& frame) {
   list<QuicFrameList::FrameData>::iterator it =
-      buffer->FindInsertionPoint(frame.offset, frame.data.length());
-  return buffer->FrameOverlapsBufferedData(frame.offset, frame.data.length(),
+      buffer->FindInsertionPoint(frame.offset, frame.frame_length);
+  return buffer->FrameOverlapsBufferedData(frame.offset, frame.frame_length,
                                            it);
 }
 

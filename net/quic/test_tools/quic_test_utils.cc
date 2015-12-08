@@ -325,6 +325,17 @@ MockQuicSpdySession::MockQuicSpdySession(QuicConnection* connection)
 
 MockQuicSpdySession::~MockQuicSpdySession() {}
 
+// static
+QuicConsumedData MockQuicSpdySession::ConsumeAllData(
+    QuicStreamId /*id*/,
+    const QuicIOVector& data,
+    QuicStreamOffset /*offset*/,
+    bool fin,
+    FecProtection /*fec_protection*/,
+    QuicAckListenerInterface* /*ack_notifier_delegate*/) {
+  return QuicConsumedData(data.total_length, fin);
+}
+
 TestQuicSpdyServerSession::TestQuicSpdyServerSession(
     QuicConnection* connection,
     const QuicConfig& config,

@@ -49,13 +49,11 @@ scoped_ptr<base::Value> NetLogQuicPacketCallback(
 
 scoped_ptr<base::Value> NetLogQuicPacketSentCallback(
     const SerializedPacket& serialized_packet,
-    EncryptionLevel level,
     TransmissionType transmission_type,
     size_t packet_size,
     QuicTime sent_time,
     NetLogCaptureMode /* capture_mode */) {
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetInteger("encryption_level", level);
   dict->SetInteger("transmission_type", transmission_type);
   dict->SetString("packet_number",
                   base::Uint64ToString(serialized_packet.packet_number));
@@ -105,7 +103,7 @@ scoped_ptr<base::Value> NetLogQuicStreamFrameCallback(
   dict->SetInteger("stream_id", frame->stream_id);
   dict->SetBoolean("fin", frame->fin);
   dict->SetString("offset", base::Uint64ToString(frame->offset));
-  dict->SetInteger("length", frame->data.size());
+  dict->SetInteger("length", frame->frame_length);
   return dict.Pass();
 }
 
@@ -436,14 +434,13 @@ void QuicConnectionLogger::OnFrameAddedToPacket(const QuicFrame& frame) {
 void QuicConnectionLogger::OnPacketSent(
     const SerializedPacket& serialized_packet,
     QuicPacketNumber original_packet_number,
-    EncryptionLevel level,
     TransmissionType transmission_type,
     size_t encrypted_length,
     QuicTime sent_time) {
   if (original_packet_number == 0) {
     net_log_.AddEvent(
         NetLog::TYPE_QUIC_SESSION_PACKET_SENT,
-        base::Bind(&NetLogQuicPacketSentCallback, serialized_packet, level,
+        base::Bind(&NetLogQuicPacketSentCallback, serialized_packet,
                    transmission_type, encrypted_length, sent_time));
   }  else {
     net_log_.AddEvent(

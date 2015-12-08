@@ -52,14 +52,11 @@ class NET_EXPORT_PRIVATE QuicPacketCreator {
   // return true if an FEC group is open.
   bool ShouldSendFec(bool force_close) const;
 
-  // Turn on FEC protection for subsequent packets. If no FEC group is currently
-  // open, this method flushes current open packet and then turns FEC on.
-  void MaybeStartFecProtection();
-
   // If ShouldSendFec returns true, serializes currently constructed FEC packet
   // and calls the delegate on the packet. Resets current FEC group if FEC
   // protection policy is FEC_ALARM_TRIGGER but |is_fec_timeout| is false.
-  // Also tries to turn off FEC protection if should_fec_protect_ is false.
+  // Also tries to turn off FEC protection if should_fec_protect_next_packet is
+  // false.
   void MaybeSendFecPacketAndCloseGroup(bool force_send_fec,
                                        bool is_fec_timeout);
 
@@ -93,13 +90,15 @@ class NET_EXPORT_PRIVATE QuicPacketCreator {
   // If current packet is not full, converts a raw payload into a stream frame
   // that fits into the open packet and adds it to the packet.
   // The payload begins at |iov_offset| into the |iov|.
+  // Also tries to start FEC protection depends on |fec_protection|.
   bool ConsumeData(QuicStreamId id,
                    QuicIOVector iov,
                    size_t iov_offset,
                    QuicStreamOffset offset,
                    bool fin,
                    bool needs_padding,
-                   QuicFrame* frame);
+                   QuicFrame* frame,
+                   FecProtection fec_protection);
 
   // Returns true if current open packet can accommodate more stream frames of
   // stream |id| at |offset|, false otherwise.
@@ -117,10 +116,12 @@ class NET_EXPORT_PRIVATE QuicPacketCreator {
   // Used for retransmitting packets to ensure they aren't too long.
   // Caller must ensure that any open FEC group is closed before calling this
   // method.
-  SerializedPacket ReserializeAllFrames(const RetransmittableFrames& frames,
-                                        QuicPacketNumberLength original_length,
-                                        char* buffer,
-                                        size_t buffer_len);
+  SerializedPacket ReserializeAllFrames(
+      const RetransmittableFrames& frames,
+      EncryptionLevel original_encryption_level,
+      QuicPacketNumberLength original_length,
+      char* buffer,
+      size_t buffer_len);
 
   // Serializes all added frames into a single packet and invokes the delegate_
   // to further process the SerializedPacket.
@@ -229,10 +230,12 @@ class NET_EXPORT_PRIVATE QuicPacketCreator {
     rtt_multiplier_for_fec_timeout_ = rtt_multiplier_for_fec_timeout;
   }
 
-  bool should_fec_protect() { return should_fec_protect_; }
+  bool should_fec_protect_next_packet() {
+    return should_fec_protect_next_packet_;
+  }
 
-  void set_should_fec_protect(bool should_fec_protect) {
-    should_fec_protect_ = should_fec_protect;
+  void set_should_fec_protect_next_packet(bool should_fec_protect_next_packet) {
+    should_fec_protect_next_packet_ = should_fec_protect_next_packet;
   }
 
  private:
@@ -297,6 +300,10 @@ class NET_EXPORT_PRIVATE QuicPacketCreator {
   // Fails if |buffer_len| isn't long enough for the encrypted packet.
   SerializedPacket SerializePacket(char* encrypted_buffer, size_t buffer_len);
 
+  // Turn on FEC protection for subsequent packets. If no FEC group is currently
+  // open, this method flushes current open packet and then turns FEC on.
+  void MaybeStartFecProtection();
+
   // Turn on FEC protection for subsequently created packets. FEC should be
   // enabled first (max_packets_per_fec_group should be non-zero) for FEC
   // protection to start.
@@ -326,12 +333,13 @@ class NET_EXPORT_PRIVATE QuicPacketCreator {
   scoped_ptr<QuicRandomBoolSource> random_bool_source_;
   QuicPacketNumber packet_number_;
   // True when creator is requested to turn on FEC protection. False otherwise.
-  // There could be a time difference between should_fec_protect_ is true/false
-  // and FEC is actually turned on/off (e.g., The creator may have an open FEC
-  // group even if this variable is false).
-  bool should_fec_protect_;
+  // There is a time difference between should_fec_protect_next_packet is
+  // true/false and FEC is actually turned on/off (e.g., The creator may have an
+  // open FEC group even if this variable is false).
+  bool should_fec_protect_next_packet_;
   // If true, any created packets will be FEC protected.
-  // TODO(fayang): Combine should_fec_protect_ and fec_protect_ to one variable.
+  // TODO(fayang): Combine should_fec_protect_next_packet and fec_protect_ to
+  // one variable.
   bool fec_protect_;
   scoped_ptr<QuicFecGroup> fec_group_;
   // Controls whether protocol version should be included while serializing the

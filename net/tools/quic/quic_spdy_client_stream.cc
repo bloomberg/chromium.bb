@@ -44,11 +44,24 @@ void QuicSpdyClientStream::OnStreamHeadersComplete(bool fin,
                                                    size_t frame_len) {
   header_bytes_read_ = frame_len;
   QuicSpdyStream::OnStreamHeadersComplete(fin, frame_len);
-  if (!ParseResponseHeaders(decompressed_headers().data(),
-                            decompressed_headers().length())) {
+  if (!SpdyUtils::ParseHeaders(decompressed_headers().data(),
+                               decompressed_headers().length(),
+                               &content_length_, &response_headers_)) {
     Reset(QUIC_BAD_APPLICATION_PAYLOAD);
     return;
   }
+
+  string status = response_headers_[":status"].as_string();
+  size_t end = status.find(" ");
+  if (end != string::npos) {
+    status.erase(end);
+  }
+  if (!StringToInt(status, &response_code_)) {
+    // Invalid response code.
+    Reset(QUIC_BAD_APPLICATION_PAYLOAD);
+    return;
+  }
+
   MarkHeadersConsumed(decompressed_headers().length());
 }
 
@@ -75,31 +88,6 @@ void QuicSpdyClientStream::OnDataAvailable() {
   } else {
     sequencer()->SetUnblocked();
   }
-}
-
-bool QuicSpdyClientStream::ParseResponseHeaders(const char* data,
-                                                uint32 data_len) {
-  DCHECK(headers_decompressed());
-  SpdyFramer framer(HTTP2);
-  if (!framer.ParseHeaderBlockInBuffer(data, data_len, &response_headers_) ||
-      response_headers_.empty()) {
-    return false;  // Headers were invalid.
-  }
-
-  if (ContainsKey(response_headers_, "content-length") &&
-      !StringToInt(StringPiece(response_headers_["content-length"]),
-                   &content_length_)) {
-    return false;  // Invalid content-length.
-  }
-  string status = response_headers_[":status"].as_string();
-  size_t end = status.find(" ");
-  if (end != string::npos) {
-    status.erase(end);
-  }
-  if (!StringToInt(status, &response_code_)) {
-    return false;  // Invalid response code.
-  }
-  return true;
 }
 
 size_t QuicSpdyClientStream::SendRequest(const SpdyHeaderBlock& headers,

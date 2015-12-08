@@ -237,20 +237,16 @@ class MtuDiscoveryAckListener : public QuicAckListenerInterface {
 
 }  // namespace
 
-QuicConnection::QueuedPacket::QueuedPacket(SerializedPacket packet,
-                                           EncryptionLevel level)
+QuicConnection::QueuedPacket::QueuedPacket(SerializedPacket packet)
     : serialized_packet(packet),
-      encryption_level(level),
       transmission_type(NOT_RETRANSMISSION),
       original_packet_number(0) {}
 
 QuicConnection::QueuedPacket::QueuedPacket(
     SerializedPacket packet,
-    EncryptionLevel level,
     TransmissionType transmission_type,
     QuicPacketNumber original_packet_number)
     : serialized_packet(packet),
-      encryption_level(level),
       transmission_type(transmission_type),
       original_packet_number(original_packet_number) {}
 
@@ -623,6 +619,19 @@ bool QuicConnection::OnUnauthenticatedHeader(const QuicPacketHeader& header) {
   // routed to this QuicConnection has been redirected before control reaches
   // here.
   DCHECK_EQ(connection_id_, header.public_header.connection_id);
+
+  // If this packet has already been seen, or the sender has told us that it
+  // will not be retransmitted, then stop processing the packet.
+  if (!received_packet_manager_.IsAwaitingPacket(header.packet_number)) {
+    DVLOG(1) << ENDPOINT << "Packet " << header.packet_number
+             << " no longer being waited for.  Discarding.";
+    if (debug_visitor_ != nullptr) {
+      debug_visitor_->OnDuplicatePacket(header.packet_number);
+    }
+    ++stats_.packets_dropped;
+    return false;
+  }
+
   return true;
 }
 
@@ -678,7 +687,7 @@ bool QuicConnection::OnStreamFrame(const QuicStreamFrame& frame) {
     return false;
   }
   visitor_->OnStreamFrame(frame);
-  stats_.stream_bytes_received += frame.data.size();
+  stats_.stream_bytes_received += frame.frame_length;
   should_last_packet_instigate_acks_ = true;
   return connected_;
 }
@@ -1353,17 +1362,6 @@ bool QuicConnection::ProcessValidatedPacket(const QuicPacketHeader& header) {
     return false;
   }
 
-  // If this packet has already been seen, or the sender has told us that it
-  // will not be retransmitted, then stop processing the packet.
-  if (!received_packet_manager_.IsAwaitingPacket(header.packet_number)) {
-    DVLOG(1) << ENDPOINT << "Packet " << header.packet_number
-             << " no longer being waited for.  Discarding.";
-    if (debug_visitor_ != nullptr) {
-      debug_visitor_->OnDuplicatePacket(header.packet_number);
-    }
-    return false;
-  }
-
   if (version_negotiation_state_ != NEGOTIATED_VERSION) {
     if (perspective_ == Perspective::IS_SERVER) {
       if (!header.public_header.version_flag) {
@@ -1462,8 +1460,8 @@ void QuicConnection::WritePendingRetransmissions() {
     packet_generator_.FlushAllQueuedFrames();
     char buffer[kMaxPacketSize];
     SerializedPacket serialized_packet = packet_generator_.ReserializeAllFrames(
-        pending.retransmittable_frames, pending.packet_number_length, buffer,
-        kMaxPacketSize);
+        pending.retransmittable_frames, pending.encryption_level,
+        pending.packet_number_length, buffer, kMaxPacketSize);
     if (serialized_packet.packet == nullptr) {
       // We failed to serialize the packet, so close the connection.
       // CloseConnection does not send close packet, so no infinite loop here.
@@ -1473,9 +1471,8 @@ void QuicConnection::WritePendingRetransmissions() {
 
     DVLOG(1) << ENDPOINT << "Retransmitting " << pending.packet_number << " as "
              << serialized_packet.packet_number;
-    SendOrQueuePacket(QueuedPacket(
-        serialized_packet, pending.retransmittable_frames.encryption_level(),
-        pending.transmission_type, pending.packet_number));
+    SendOrQueuePacket(QueuedPacket(serialized_packet, pending.transmission_type,
+                                   pending.packet_number));
   }
 }
 
@@ -1601,7 +1598,8 @@ bool QuicConnection::WritePacketInner(QueuedPacket* packet) {
                           ? "data bearing "
                           : " ack only "))
            << ", encryption level: "
-           << QuicUtils::EncryptionLevelToString(packet->encryption_level)
+           << QuicUtils::EncryptionLevelToString(
+                  packet->serialized_packet.encryption_level)
            << ", encrypted length:" << encrypted->length();
   DVLOG(2) << ENDPOINT << "packet(" << packet_number << "): " << std::endl
            << QuicUtils::StringToHexASCIIDump(encrypted->AsStringPiece());
@@ -1632,8 +1630,7 @@ bool QuicConnection::WritePacketInner(QueuedPacket* packet) {
     // Pass the write result to the visitor.
     debug_visitor_->OnPacketSent(
         packet->serialized_packet, packet->original_packet_number,
-        packet->encryption_level, packet->transmission_type,
-        encrypted->length(), packet_send_time);
+        packet->transmission_type, encrypted->length(), packet_send_time);
   }
   if (packet->transmission_type == NOT_RETRANSMISSION) {
     time_of_last_sent_new_packet_ = packet_send_time;
@@ -1694,7 +1691,7 @@ bool QuicConnection::ShouldDiscardPacket(const QueuedPacket& packet) {
 
   QuicPacketNumber packet_number = packet.serialized_packet.packet_number;
   if (encryption_level_ == ENCRYPTION_FORWARD_SECURE &&
-      packet.encryption_level == ENCRYPTION_NONE) {
+      packet.serialized_packet.encryption_level == ENCRYPTION_NONE) {
     // Drop packets that are NULL encrypted since the peer won't accept them
     // anymore.
     DVLOG(1) << ENDPOINT << "Dropping NULL encrypted packet: " << packet_number
@@ -1735,7 +1732,7 @@ void QuicConnection::OnSerializedPacket(
     // If an FEC packet is serialized with the FEC alarm set, cancel the alarm.
     fec_alarm_->Cancel();
   }
-  SendOrQueuePacket(QueuedPacket(serialized_packet, encryption_level_));
+  SendOrQueuePacket(QueuedPacket(serialized_packet));
 }
 
 void QuicConnection::OnResetFecGroup() {

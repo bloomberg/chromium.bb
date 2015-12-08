@@ -728,7 +728,7 @@ struct NET_EXPORT_PRIVATE QuicStreamFrame {
   QuicStreamFrame(QuicStreamId stream_id,
                   bool fin,
                   QuicStreamOffset offset,
-                  base::StringPiece data,
+                  QuicPacketLength frame_length,
                   UniqueStreamBuffer buffer);
   ~QuicStreamFrame();
 
@@ -737,12 +737,20 @@ struct NET_EXPORT_PRIVATE QuicStreamFrame {
 
   QuicStreamId stream_id;
   bool fin;
+  QuicPacketLength frame_length;
+  const char* frame_buffer;
   QuicStreamOffset offset;  // Location of this data in the stream.
-  base::StringPiece data;
   // nullptr when the QuicStreamFrame is received, and non-null when sent.
   UniqueStreamBuffer buffer;
 
  private:
+  QuicStreamFrame(QuicStreamId stream_id,
+                  bool fin,
+                  QuicStreamOffset offset,
+                  const char* frame_buffer,
+                  QuicPacketLength frame_length,
+                  UniqueStreamBuffer buffer);
+
   DISALLOW_COPY_AND_ASSIGN(QuicStreamFrame);
 };
 static_assert(sizeof(QuicStreamFrame) <= 64,
@@ -1141,7 +1149,7 @@ class NET_EXPORT_PRIVATE QuicEncryptedPacket : public QuicData {
 
 class NET_EXPORT_PRIVATE RetransmittableFrames {
  public:
-  explicit RetransmittableFrames(EncryptionLevel level);
+  RetransmittableFrames();
   ~RetransmittableFrames();
 
   // Takes ownership of the frame inside |frame|.
@@ -1155,17 +1163,12 @@ class NET_EXPORT_PRIVATE RetransmittableFrames {
     return has_crypto_handshake_;
   }
 
-  EncryptionLevel encryption_level() const {
-    return encryption_level_;
-  }
-
   bool needs_padding() const { return needs_padding_; }
 
   void set_needs_padding(bool needs_padding) { needs_padding_ = needs_padding; }
 
  private:
   QuicFrames frames_;
-  const EncryptionLevel encryption_level_;
   IsHandshake has_crypto_handshake_;
   bool needs_padding_;
 
@@ -1197,13 +1200,15 @@ struct NET_EXPORT_PRIVATE SerializedPacket {
                    QuicPacketEntropyHash entropy_hash,
                    RetransmittableFrames* retransmittable_frames,
                    bool has_ack,
-                   bool has_stop_waiting);
+                   bool has_stop_waiting,
+                   EncryptionLevel level);
   ~SerializedPacket();
 
   QuicEncryptedPacket* packet;
   RetransmittableFrames* retransmittable_frames;
   QuicPacketNumber packet_number;
   QuicPacketNumberLength packet_number_length;
+  EncryptionLevel encryption_level;
   QuicPacketEntropyHash entropy_hash;
   bool is_fec_packet;
   bool has_ack;
@@ -1220,6 +1225,7 @@ struct NET_EXPORT_PRIVATE TransmissionInfo {
   // Constructs a Transmission with a new all_tranmissions set
   // containing |packet_number|.
   TransmissionInfo(RetransmittableFrames* retransmittable_frames,
+                   EncryptionLevel level,
                    QuicPacketNumberLength packet_number_length,
                    TransmissionType transmission_type,
                    QuicTime sent_time,
@@ -1229,6 +1235,7 @@ struct NET_EXPORT_PRIVATE TransmissionInfo {
   ~TransmissionInfo();
 
   RetransmittableFrames* retransmittable_frames;
+  EncryptionLevel encryption_level;
   QuicPacketNumberLength packet_number_length;
   QuicPacketLength bytes_sent;
   uint16 nack_count;

@@ -60,7 +60,8 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
   bool OnStreamFrame(const QuicStreamFrame& frame) override {
     // Save a copy of the data so it is valid after the packet is processed.
     string* string_data = new string();
-    frame.data.AppendToString(string_data);
+    StringPiece(frame.frame_buffer, frame.frame_length)
+        .AppendToString(string_data);
     stream_data_.push_back(string_data);
     // TODO(ianswett): A pointer isn't necessary with emplace_back.
     stream_frames_.push_back(new QuicStreamFrame(

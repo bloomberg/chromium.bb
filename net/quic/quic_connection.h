@@ -156,7 +156,6 @@ class NET_EXPORT_PRIVATE QuicConnectionDebugVisitor
   // Called when a packet has been sent.
   virtual void OnPacketSent(const SerializedPacket& serialized_packet,
                             QuicPacketNumber original_packet_number,
-                            EncryptionLevel level,
                             TransmissionType transmission_type,
                             size_t encrypted_length,
                             QuicTime sent_time) {}
@@ -632,17 +631,13 @@ class NET_EXPORT_PRIVATE QuicConnection
 
  protected:
   // Packets which have not been written to the wire.
-  // Owns the QuicPacket* packet.
   struct QueuedPacket {
+    explicit QueuedPacket(SerializedPacket packet);
     QueuedPacket(SerializedPacket packet,
-                 EncryptionLevel level);
-    QueuedPacket(SerializedPacket packet,
-                 EncryptionLevel level,
                  TransmissionType transmission_type,
                  QuicPacketNumber original_packet_number);
 
     SerializedPacket serialized_packet;
-    const EncryptionLevel encryption_level;
     TransmissionType transmission_type;
     // The packet's original packet number if it is a retransmission.
     // Otherwise it must be 0.

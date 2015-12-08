@@ -33,16 +33,16 @@ class QuicUnackedPacketMapTest : public ::testing::Test {
 
   SerializedPacket CreateRetransmittablePacket(QuicPacketNumber packet_number) {
     packets_.push_back(new QuicEncryptedPacket(nullptr, kDefaultLength));
-    return SerializedPacket(
-        packet_number, PACKET_1BYTE_PACKET_NUMBER, packets_.back(), 0,
-        new RetransmittableFrames(ENCRYPTION_NONE), false, false);
+    return SerializedPacket(packet_number, PACKET_1BYTE_PACKET_NUMBER,
+                            packets_.back(), 0, new RetransmittableFrames(),
+                            false, false);
   }
 
   SerializedPacket CreateRetransmittablePacketForStream(
       QuicPacketNumber packet_number,
       QuicStreamId stream_id) {
     packets_.push_back(new QuicEncryptedPacket(nullptr, kDefaultLength));
-    RetransmittableFrames* frames = new RetransmittableFrames(ENCRYPTION_NONE);
+    RetransmittableFrames* frames = new RetransmittableFrames();
     QuicStreamFrame* frame = new QuicStreamFrame();
     frame->stream_id = stream_id;
     frames->AddFrame(QuicFrame(frame));

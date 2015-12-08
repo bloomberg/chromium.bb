@@ -142,7 +142,7 @@ void QuicSession::OnStreamFrame(const QuicStreamFrame& frame) {
     // final stream byte offset sent by the peer. A frame with a FIN can give
     // us this offset.
     if (frame.fin) {
-      QuicStreamOffset final_byte_offset = frame.offset + frame.data.size();
+      QuicStreamOffset final_byte_offset = frame.offset + frame.frame_length;
       UpdateFlowControlOnFinalReceivedByteOffset(stream_id, final_byte_offset);
     }
     return;

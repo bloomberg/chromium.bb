@@ -185,7 +185,7 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<bool> {
     packets_.push_back(new QuicEncryptedPacket(nullptr, kDefaultLength));
     RetransmittableFrames* frames = nullptr;
     if (retransmittable) {
-      frames = new RetransmittableFrames(ENCRYPTION_NONE);
+      frames = new RetransmittableFrames();
       frames->AddFrame(
           QuicFrame(new QuicStreamFrame(kStreamId, false, 0, StringPiece())));
     }

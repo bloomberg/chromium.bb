@@ -66,6 +66,7 @@ class QuicInMemoryCache {
 
     SpecialResponseType response_type() const { return response_type_; }
     const SpdyHeaderBlock& headers() const { return headers_; }
+    const SpdyHeaderBlock& trailers() const { return trailers_; }
     const base::StringPiece body() const { return base::StringPiece(body_); }
 
     void set_response_type(SpecialResponseType response_type) {
@@ -74,6 +75,7 @@ class QuicInMemoryCache {
     void set_headers(const SpdyHeaderBlock& headers) {
       headers_ = headers;
     }
+    void set_trailers(const SpdyHeaderBlock& trailers) { trailers_ = trailers; }
     void set_body(base::StringPiece body) {
       body.CopyToString(&body_);
     }
@@ -81,7 +83,8 @@ class QuicInMemoryCache {
    private:
     SpecialResponseType response_type_;
     SpdyHeaderBlock headers_;
-    string body_;
+    SpdyHeaderBlock trailers_;
+    std::string body_;
 
     DISALLOW_COPY_AND_ASSIGN(Response);
   };
@@ -118,6 +121,13 @@ class QuicInMemoryCache {
                    const SpdyHeaderBlock& response_headers,
                    base::StringPiece response_body);
 
+  // Add a response, with trailers, to the cache.
+  void AddResponse(base::StringPiece host,
+                   base::StringPiece path,
+                   const SpdyHeaderBlock& response_headers,
+                   base::StringPiece response_body,
+                   const SpdyHeaderBlock& response_trailers);
+
   // Simulate a special behavior at a particular path.
   void AddSpecialResponse(base::StringPiece host,
                           base::StringPiece path,
@@ -148,7 +158,8 @@ class QuicInMemoryCache {
                        base::StringPiece path,
                        SpecialResponseType response_type,
                        const SpdyHeaderBlock& response_headers,
-                       base::StringPiece response_body);
+                       base::StringPiece response_body,
+                       const SpdyHeaderBlock& response_trailers);
 
   string GetKey(base::StringPiece host, base::StringPiece path) const;
 

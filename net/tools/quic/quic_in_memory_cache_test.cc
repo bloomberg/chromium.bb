@@ -76,6 +76,32 @@ TEST_F(QuicInMemoryCacheTest, AddSimpleResponseGetResponse) {
   EXPECT_EQ(response_body.size(), response->body().length());
 }
 
+TEST_F(QuicInMemoryCacheTest, AddResponse) {
+  const string kRequestHost = "www.foo.com";
+  const string kRequestPath = "/";
+  const string kResponseBody("hello response");
+
+  SpdyHeaderBlock response_headers;
+  response_headers[":version"] = "HTTP/1.1";
+  response_headers[":status"] = "200";
+  response_headers["content-length"] = IntToString(kResponseBody.size());
+
+  SpdyHeaderBlock response_trailers;
+  response_trailers["key-1"] = "value-1";
+  response_trailers["key-2"] = "value-2";
+  response_trailers["key-3"] = "value-3";
+
+  QuicInMemoryCache* cache = QuicInMemoryCache::GetInstance();
+  cache->AddResponse(kRequestHost, "/", response_headers, kResponseBody,
+                     response_trailers);
+
+  const QuicInMemoryCache::Response* response =
+      cache->GetResponse(kRequestHost, kRequestPath);
+  EXPECT_EQ(response->headers(), response_headers);
+  EXPECT_EQ(response->body(), kResponseBody);
+  EXPECT_EQ(response->trailers(), response_trailers);
+}
+
 TEST_F(QuicInMemoryCacheTest, ReadsCacheDir) {
   QuicInMemoryCache::GetInstance()->InitializeFromDirectory(CacheDirectory());
   const QuicInMemoryCache::Response* response =

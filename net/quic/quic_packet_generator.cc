@@ -118,11 +118,6 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(
     packet_creator_.Flush();
   }
 
-  if (fec_protection == MUST_FEC_PROTECT) {
-    packet_creator_.set_should_fec_protect(true);
-    packet_creator_.MaybeStartFecProtection();
-  }
-
   if (!fin && (iov.total_length == 0)) {
     LOG(DFATAL) << "Attempt to consume empty data without FIN.";
     return QuicConsumedData(0, false);
@@ -133,13 +128,13 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(
     QuicFrame frame;
     if (!packet_creator_.ConsumeData(id, iov, total_bytes_consumed,
                                      offset + total_bytes_consumed, fin,
-                                     has_handshake, &frame)) {
+                                     has_handshake, &frame, fec_protection)) {
       // Current packet is full and flushed.
       continue;
     }
 
     // A stream frame is created and added.
-    size_t bytes_consumed = frame.stream_frame->data.length();
+    size_t bytes_consumed = frame.stream_frame->frame_length;
     if (debug_delegate_ != nullptr) {
       debug_delegate_->OnFrameAddedToPacket(frame);
     }
@@ -167,7 +162,7 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(
       if (fec_protection == MUST_FEC_PROTECT) {
         // Turn off FEC protection when we're done writing protected data.
         DVLOG(1) << "Turning FEC protection OFF";
-        packet_creator_.set_should_fec_protect(false);
+        packet_creator_.set_should_fec_protect_next_packet(false);
       }
       break;
     }
@@ -364,11 +359,12 @@ QuicEncryptedPacket* QuicPacketGenerator::SerializeVersionNegotiationPacket(
 
 SerializedPacket QuicPacketGenerator::ReserializeAllFrames(
     const RetransmittableFrames& frames,
+    EncryptionLevel original_encryption_level,
     QuicPacketNumberLength original_length,
     char* buffer,
     size_t buffer_len) {
-  return packet_creator_.ReserializeAllFrames(frames, original_length, buffer,
-                                              buffer_len);
+  return packet_creator_.ReserializeAllFrames(
+      frames, original_encryption_level, original_length, buffer, buffer_len);
 }
 
 void QuicPacketGenerator::UpdateSequenceNumberLength(
@@ -404,7 +400,7 @@ void QuicPacketGenerator::OnSerializedPacket(
   if (serialized_packet->packet == nullptr) {
     LOG(DFATAL) << "Failed to SerializePacket. fec_policy:" << fec_send_policy()
                 << " should_fec_protect_:"
-                << packet_creator_.should_fec_protect();
+                << packet_creator_.should_fec_protect_next_packet();
     delegate_->CloseConnection(QUIC_FAILED_TO_SERIALIZE_PACKET, false);
     return;
   }

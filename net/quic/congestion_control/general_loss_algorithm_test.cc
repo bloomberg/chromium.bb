@@ -33,9 +33,9 @@ class GeneralLossAlgorithmTest : public ::testing::Test {
 
   void SendDataPacket(QuicPacketNumber packet_number) {
     packets_.push_back(new QuicEncryptedPacket(nullptr, kDefaultLength));
-    SerializedPacket packet(
-        packet_number, PACKET_1BYTE_PACKET_NUMBER, packets_.back(), 0,
-        new RetransmittableFrames(ENCRYPTION_NONE), false, false);
+    SerializedPacket packet(packet_number, PACKET_1BYTE_PACKET_NUMBER,
+                            packets_.back(), 0, new RetransmittableFrames(),
+                            false, false);
     unacked_packets_.AddSentPacket(&packet, 0, NOT_RETRANSMISSION, clock_.Now(),
                                    1000, true);
   }

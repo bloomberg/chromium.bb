@@ -158,10 +158,12 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator
   // Used for retransmitting packets to ensure they aren't too long.
   // Caller must ensure that any open FEC group is closed before calling this
   // method.
-  SerializedPacket ReserializeAllFrames(const RetransmittableFrames& frames,
-                                        QuicPacketNumberLength original_length,
-                                        char* buffer,
-                                        size_t buffer_len);
+  SerializedPacket ReserializeAllFrames(
+      const RetransmittableFrames& frames,
+      EncryptionLevel original_encryption_level,
+      QuicPacketNumberLength original_length,
+      char* buffer,
+      size_t buffer_len);
 
   // Update the packet number length to use in future packets as soon as it
   // can be safely changed.

@@ -195,6 +195,7 @@ TEST_F(ReliableQuicStreamTest, BlockIfOnlySomeDataConsumed) {
       .WillOnce(Return(QuicConsumedData(1, false)));
   stream_->WriteOrBufferData(StringPiece(kData1, 2), false, nullptr);
   ASSERT_EQ(1u, write_blocked_list_->NumBlockedStreams());
+  EXPECT_EQ(1u, stream_->queued_data_bytes());
 }
 
 TEST_F(ReliableQuicStreamTest, BlockIfFinNotConsumedWithData) {
@@ -724,16 +725,6 @@ TEST_F(ReliableQuicStreamTest, FecSendPolicyReceivedConnectionOption) {
   EXPECT_EQ(FEC_PROTECT_ALWAYS, stream_->fec_policy());
 }
 
-static QuicConsumedData ConsumeAllData(
-    QuicStreamId id,
-    const QuicIOVector& data,
-    QuicStreamOffset offset,
-    bool fin,
-    FecProtection fec_protection,
-    QuicAckListenerInterface* ack_notifier_delegate) {
-  return QuicConsumedData(data.total_length, fin);
-}
-
 TEST_F(ReliableQuicStreamTest, EarlyResponseFinHandling) {
   // Verify that if the server completes the response before reading the end of
   // the request, the received FIN is recorded.
@@ -741,7 +732,7 @@ TEST_F(ReliableQuicStreamTest, EarlyResponseFinHandling) {
   Initialize(kShouldProcessData);
   EXPECT_CALL(*connection_, SendConnectionClose(_)).Times(0);
   EXPECT_CALL(*session_, WritevData(_, _, _, _, _, _))
-      .WillRepeatedly(Invoke(ConsumeAllData));
+      .WillRepeatedly(Invoke(MockQuicSpdySession::ConsumeAllData));
 
   // Receive data for the request.
   QuicStreamFrame frame1(stream_->id(), false, 0, StringPiece("Start"));

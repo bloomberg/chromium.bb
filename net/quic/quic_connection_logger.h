@@ -42,7 +42,6 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
   // QuicConnectionDebugVisitorInterface
   void OnPacketSent(const SerializedPacket& serialized_packet,
                     QuicPacketNumber original_packet_number,
-                    EncryptionLevel level,
                     TransmissionType transmission_type,
                     size_t encrypted_length,
                     QuicTime sent_time) override;

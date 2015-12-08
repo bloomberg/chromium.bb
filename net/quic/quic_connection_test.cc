@@ -453,17 +453,17 @@ class TestConnection : public QuicConnection {
                   bool has_pending_frames) {
     RetransmittableFrames* retransmittable_frames =
         retransmittable == HAS_RETRANSMITTABLE_DATA
-            ? new RetransmittableFrames(ENCRYPTION_NONE)
+            ? new RetransmittableFrames()
             : nullptr;
     char buffer[kMaxPacketSize];
     size_t encrypted_length =
         QuicConnectionPeer::GetFramer(this)->EncryptPayload(
             ENCRYPTION_NONE, packet_number, *packet, buffer, kMaxPacketSize);
     delete packet;
-    OnSerializedPacket(
-        SerializedPacket(packet_number, PACKET_6BYTE_PACKET_NUMBER, buffer,
-                         encrypted_length, false, entropy_hash,
-                         retransmittable_frames, has_ack, has_pending_frames));
+    OnSerializedPacket(SerializedPacket(
+        packet_number, PACKET_6BYTE_PACKET_NUMBER, buffer, encrypted_length,
+        false, entropy_hash, retransmittable_frames, has_ack,
+        has_pending_frames, ENCRYPTION_NONE));
   }
 
   QuicConsumedData SendStreamDataWithString(
@@ -2374,7 +2374,7 @@ TEST_P(QuicConnectionTest, FramePackingSendv) {
   EXPECT_EQ(1u, writer_->stream_frames().size());
   QuicStreamFrame* frame = writer_->stream_frames()[0];
   EXPECT_EQ(1u, frame->stream_id);
-  EXPECT_EQ("ABCD", frame->data);
+  EXPECT_EQ("ABCD", StringPiece(frame->frame_buffer, frame->frame_length));
 }
 
 TEST_P(QuicConnectionTest, FramePackingSendvQueued) {
@@ -5377,6 +5377,8 @@ TEST_P(QuicConnectionTest, OnPacketHeaderDebugVisitor) {
       new MockQuicConnectionDebugVisitor());
   connection_.set_debug_visitor(debug_visitor.get());
   EXPECT_CALL(*debug_visitor, OnPacketHeader(Ref(header))).Times(1);
+  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_)).Times(1);
+  EXPECT_CALL(*debug_visitor, OnSuccessfulVersionNegotiation(_)).Times(1);
   connection_.OnPacketHeader(header);
 }
 

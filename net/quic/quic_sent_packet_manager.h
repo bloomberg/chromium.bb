@@ -77,15 +77,18 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
     PendingRetransmission(QuicPacketNumber packet_number,
                           TransmissionType transmission_type,
                           const RetransmittableFrames& retransmittable_frames,
+                          EncryptionLevel encryption_level,
                           QuicPacketNumberLength packet_number_length)
         : packet_number(packet_number),
           transmission_type(transmission_type),
           retransmittable_frames(retransmittable_frames),
+          encryption_level(encryption_level),
           packet_number_length(packet_number_length) {}
 
     QuicPacketNumber packet_number;
     TransmissionType transmission_type;
     const RetransmittableFrames& retransmittable_frames;
+    EncryptionLevel encryption_level;
     QuicPacketNumberLength packet_number_length;
   };
 
