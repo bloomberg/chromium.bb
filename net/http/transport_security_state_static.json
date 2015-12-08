@@ -2481,7 +2481,6 @@
     { "name": "ethercalc.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "ethercalc.org", "include_subdomains": true, "mode": "force-https" },
     { "name": "fluxfingers.net", "include_subdomains": true, "mode": "force-https" },
-    { "name": "haber1903.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "initrd.net", "include_subdomains": true, "mode": "force-https" },
     { "name": "integromat.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "lookyman.net", "include_subdomains": true, "mode": "force-https" },
@@ -3501,7 +3500,6 @@
     { "name": "sobabox.ru", "include_subdomains": true, "mode": "force-https" },
     { "name": "soply.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "sweetll.me", "include_subdomains": true, "mode": "force-https" },
-    { "name": "taskstream.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "thedreamtravelgroup.co.uk", "include_subdomains": true, "mode": "force-https" },
     { "name": "thehotfix.net", "include_subdomains": true, "mode": "force-https" },
     { "name": "tiffnix.com", "include_subdomains": true, "mode": "force-https" },
@@ -4829,7 +4827,11 @@
     { "name": "ze3kr.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "zett4.me", "include_subdomains": true, "mode": "force-https" },
     { "name": "zirtue.io", "include_subdomains": true, "mode": "force-https" },
-    { "name": "zoneminder.com", "include_subdomains": true, "mode": "force-https" }
+    { "name": "zoneminder.com", "include_subdomains": true, "mode": "force-https" },
+    { "name": "thundr.eu", "include_subdomains": true, "mode": "force-https" },
+    { "name": "cloudflare.com", "include_subdomains": false, "mode": "force-https" },
+    { "name": "www.cloudflare.com", "include_subdomains": false, "mode": "force-https" },
+    { "name": "api.cloudflare.com", "include_subdomains": false, "mode": "force-https" }
   ],
 
   // |ReportUMAOnPinFailure| uses these to report which domain was associated
