@@ -2264,10 +2264,18 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
     case CSSPropertyClip: {
         if (style.hasAutoClip())
             return cssValuePool().createIdentifierValue(CSSValueAuto);
-        RefPtrWillBeRawPtr<CSSPrimitiveValue> top = zoomAdjustedPixelValue(style.clip().top().value(), style);
-        RefPtrWillBeRawPtr<CSSPrimitiveValue> right = zoomAdjustedPixelValue(style.clip().right().value(), style);
-        RefPtrWillBeRawPtr<CSSPrimitiveValue> bottom = zoomAdjustedPixelValue(style.clip().bottom().value(), style);
-        RefPtrWillBeRawPtr<CSSPrimitiveValue> left = zoomAdjustedPixelValue(style.clip().left().value(), style);
+        RefPtrWillBeRawPtr<CSSPrimitiveValue> top = style.clip().top().isAuto()
+            ? cssValuePool().createIdentifierValue(CSSValueAuto)
+            : zoomAdjustedPixelValue(style.clip().top().value(), style);
+        RefPtrWillBeRawPtr<CSSPrimitiveValue> right = style.clip().right().isAuto()
+            ? cssValuePool().createIdentifierValue(CSSValueAuto)
+            : zoomAdjustedPixelValue(style.clip().right().value(), style);
+        RefPtrWillBeRawPtr<CSSPrimitiveValue> bottom = style.clip().bottom().isAuto()
+            ? cssValuePool().createIdentifierValue(CSSValueAuto)
+            : zoomAdjustedPixelValue(style.clip().bottom().value(), style);
+        RefPtrWillBeRawPtr<CSSPrimitiveValue> left = style.clip().left().isAuto()
+            ? cssValuePool().createIdentifierValue(CSSValueAuto)
+            : zoomAdjustedPixelValue(style.clip().left().value(), style);
         return CSSQuadValue::create(top.release(), right.release(), bottom.release(), left.release(), CSSQuadValue::SerializeAsRect);
     }
     case CSSPropertySpeak:
