@@ -382,7 +382,7 @@ void MidiManagerMac::SendMidiData(MidiManagerClient* client,
     MIDISend(coremidi_output_, destination, packet_list);
   }
 
-  client->AccumulateMidiBytesSent(data.size());
+  AccumulateMidiBytesSent(client, data.size());
 }
 
 }  // namespace midi
