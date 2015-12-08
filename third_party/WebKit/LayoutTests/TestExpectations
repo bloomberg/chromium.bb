@@ -1318,6 +1318,8 @@ crbug.com/567230 virtual/threaded/animations/restart-not-visible.html [ Timeout 
 
 crbug.com/525903 inspector/sources/debugger-ui/watch-expressions-preserve-expansion.html [ Failure Pass ]
 
+crbug.com/567419 inspector/elements/styles-2/metrics-box-sizing.html [ Skip ]
+
 crbug.com/457273 [ Mac ] http/tests/websocket/close.html [ Pass Timeout ]
 
 crbug.com/531286 virtual/gpu/fast/canvas/yuv-video-on-accelerated-canvas.html [ Failure ]
