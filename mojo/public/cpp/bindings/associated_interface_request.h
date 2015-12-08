@@ -18,7 +18,7 @@ class AssociatedInterfaceRequestHelper;
 // similar to InterfaceRequest except that it doesn't own a message pipe handle.
 template <typename Interface>
 class AssociatedInterfaceRequest {
-  MOVE_ONLY_TYPE_WITH_MOVE_CONSTRUCTOR_FOR_CPP_03(AssociatedInterfaceRequest);
+  DISALLOW_COPY_AND_ASSIGN_WITH_MOVE_FOR_BIND(AssociatedInterfaceRequest);
 
  public:
   // Constructs an empty AssociatedInterfaceRequest, representing that the

@@ -19,7 +19,7 @@ namespace mojo {
 // InterfacePtr, except that it doesn't own a message pipe handle.
 template <typename Interface>
 class AssociatedInterfacePtr {
-  MOVE_ONLY_TYPE_WITH_MOVE_CONSTRUCTOR_FOR_CPP_03(AssociatedInterfacePtr)
+  DISALLOW_COPY_AND_ASSIGN_WITH_MOVE_FOR_BIND(AssociatedInterfacePtr)
 
  public:
   // Constructs an unbound AssociatedInterfacePtr.

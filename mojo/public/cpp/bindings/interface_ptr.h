@@ -29,7 +29,7 @@ class AssociatedGroup;
 // create and bind a new InterfacePtr from that thread.
 template <typename Interface>
 class InterfacePtr {
-  MOVE_ONLY_TYPE_WITH_MOVE_CONSTRUCTOR_FOR_CPP_03(InterfacePtr)
+  DISALLOW_COPY_AND_ASSIGN_WITH_MOVE_FOR_BIND(InterfacePtr)
 
  public:
   // Constructs an unbound InterfacePtr.

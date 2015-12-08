@@ -9,50 +9,27 @@
 
 #include "base/compiler_specific.h"
 
-// Macro with the boilerplate that makes a type move-only in C++11.
+// TODO(crbug.com/566182): DEPRECATED!
+// Use DISALLOW_COPY_AND_ASSIGN instead, or if your type will be used in
+// Callbacks, use DISALLOW_COPY_AND_ASSIGN_WITH_MOVE_FOR_BIND instead.
+#define MOVE_ONLY_TYPE_FOR_CPP_03(type) \
+  DISALLOW_COPY_AND_ASSIGN_WITH_MOVE_FOR_BIND(type)
+
+// A macro to disallow the copy constructor and copy assignment functions.
+// This should be used in the private: declarations for a class.
 //
-// USAGE
+// Use this macro instead of DISALLOW_COPY_AND_ASSIGN if you want to pass
+// ownership of the type through a base::Callback without heap-allocating it
+// into a scoped_ptr.  The class must define a move constructor and move
+// assignment operator to make this work.
 //
-// This macro should be used instead of DISALLOW_COPY_AND_ASSIGN to create
-// a "move-only" type.  Unlike DISALLOW_COPY_AND_ASSIGN, this macro should be
-// the first line in a class declaration.
-//
-// A class using this macro must call .Pass() (or somehow be an r-value already)
-// before it can be:
-//
-//   * Passed as a function argument
-//   * Used as the right-hand side of an assignment
-//   * Returned from a function
-//
-// Each class will still need to define their own move constructor and move
-// operator= to make this useful.  Here's an example of the macro, the move
-// constructor, and the move operator= from a hypothetical scoped_ptr class:
-//
-//  template <typename T>
-//  class scoped_ptr {
-//    MOVE_ONLY_TYPE_WITH_MOVE_CONSTRUCTOR_FOR_CPP_03(type);
-//   public:
-//    scoped_ptr(scoped_ptr&& other) : ptr_(other.release()) { }
-//    scoped_ptr& operator=(scoped_ptr&& other) {
-//      reset(other.release());
-//      return *this;
-//    }
-//  };
-//
-//
-// WHY HAVE typedef void MoveOnlyTypeForCPP03
-//
-// Callback<>/Bind() needs to understand movable-but-not-copyable semantics
-// to call .Pass() appropriately when it is expected to transfer the value.
-// The cryptic typedef MoveOnlyTypeForCPP03 is added to make this check
-// easy and automatic in helper templates for Callback<>/Bind().
+// This version of the macro adds a Pass() function and a cryptic
+// MoveOnlyTypeForCPP03 typedef for the base::Callback implementation to use.
 // See IsMoveOnlyType template and its usage in base/callback_internal.h
 // for more details.
-
-#define MOVE_ONLY_TYPE_FOR_CPP_03(type) \
-  MOVE_ONLY_TYPE_WITH_MOVE_CONSTRUCTOR_FOR_CPP_03(type)
-
-#define MOVE_ONLY_TYPE_WITH_MOVE_CONSTRUCTOR_FOR_CPP_03(type)   \
+// TODO(crbug.com/566182): Remove this macro and use DISALLOW_COPY_AND_ASSIGN
+// everywhere instead.
+#define DISALLOW_COPY_AND_ASSIGN_WITH_MOVE_FOR_BIND(type)       \
  private:                                                       \
   type(const type&) = delete;                                   \
   void operator=(const type&) = delete;                         \

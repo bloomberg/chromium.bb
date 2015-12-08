@@ -14,7 +14,7 @@ namespace mojo {
 namespace edk {
 
 class MOJO_SYSTEM_IMPL_EXPORT ScopedPlatformHandle {
-  MOVE_ONLY_TYPE_WITH_MOVE_CONSTRUCTOR_FOR_CPP_03(ScopedPlatformHandle)
+  DISALLOW_COPY_AND_ASSIGN_WITH_MOVE_FOR_BIND(ScopedPlatformHandle)
 
  public:
   ScopedPlatformHandle() {}

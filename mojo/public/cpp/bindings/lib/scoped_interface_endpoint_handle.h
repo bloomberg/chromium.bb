@@ -18,8 +18,7 @@ class MultiplexRouter;
 // ScopedInterfaceEndpointHandle refers to one end of an interface, either the
 // implementation side or the client side.
 class ScopedInterfaceEndpointHandle {
-  MOVE_ONLY_TYPE_WITH_MOVE_CONSTRUCTOR_FOR_CPP_03(
-      ScopedInterfaceEndpointHandle);
+  DISALLOW_COPY_AND_ASSIGN_WITH_MOVE_FOR_BIND(ScopedInterfaceEndpointHandle);
 
  public:
   // Creates an invalid endpoint handle.

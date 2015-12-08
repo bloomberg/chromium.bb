@@ -19,7 +19,7 @@ class AssociatedInterfacePtrInfoHelper;
 // it doesn't own a message pipe handle.
 template <typename Interface>
 class AssociatedInterfacePtrInfo {
-  MOVE_ONLY_TYPE_WITH_MOVE_CONSTRUCTOR_FOR_CPP_03(AssociatedInterfacePtrInfo);
+  DISALLOW_COPY_AND_ASSIGN_WITH_MOVE_FOR_BIND(AssociatedInterfacePtrInfo);
 
  public:
   AssociatedInterfacePtrInfo() : version_(0u) {}

@@ -238,7 +238,7 @@ class scoped_ptr_impl {
 // types.
 template <class T, class D = std::default_delete<T>>
 class scoped_ptr {
-  MOVE_ONLY_TYPE_WITH_MOVE_CONSTRUCTOR_FOR_CPP_03(scoped_ptr)
+  DISALLOW_COPY_AND_ASSIGN_WITH_MOVE_FOR_BIND(scoped_ptr)
 
   static_assert(base::internal::IsNotRefCounted<T>::value,
                 "T is a refcounted type and needs a scoped_refptr");
@@ -403,7 +403,7 @@ class scoped_ptr {
 
 template <class T, class D>
 class scoped_ptr<T[], D> {
-  MOVE_ONLY_TYPE_WITH_MOVE_CONSTRUCTOR_FOR_CPP_03(scoped_ptr)
+  DISALLOW_COPY_AND_ASSIGN_WITH_MOVE_FOR_BIND(scoped_ptr)
 
  public:
   // The element and deleter types.

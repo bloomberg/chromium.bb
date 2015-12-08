@@ -416,45 +416,6 @@ class CheckSingletonInHeadersTest(unittest.TestCase):
     self.assertEqual(0, len(warnings))
 
 
-class CheckBaseMacrosInHeadersTest(unittest.TestCase):
-  def _make_h(self, macro, header, line_prefix=''):
-    return ("""
-#include "base/%s.h"
-
-class Thing {
- private:
-%sDISALLOW_%s(Thing);
-};
-""" % (macro, line_prefix, header)).splitlines()
-
-  def testBaseMacrosInHeadersBad(self):
-    mock_input_api = MockInputApi()
-    mock_input_api.files = [
-      MockAffectedFile('foo.h', self._make_h('not_macros', 'ASSIGN')),
-      MockAffectedFile('bar.h', self._make_h('not_macros', 'COPY')),
-      MockAffectedFile('baz.h', self._make_h('not_macros', 'COPY_AND_ASSIGN')),
-      MockAffectedFile('qux.h', self._make_h('not_macros', 'EVIL')),
-    ]
-    warnings = PRESUBMIT._CheckBaseMacrosInHeaders(mock_input_api,
-                                                   MockOutputApi())
-    self.assertEqual(1, len(warnings))
-    self.assertEqual(4, len(warnings[0].items))
-
-  def testBaseMacrosInHeadersGood(self):
-    mock_input_api = MockInputApi()
-    mock_input_api.files = [
-      MockAffectedFile('foo.h', self._make_h('macros', 'ASSIGN')),
-      MockAffectedFile('bar.h', self._make_h('macros', 'COPY')),
-      MockAffectedFile('baz.h', self._make_h('macros', 'COPY_AND_ASSIGN')),
-      MockAffectedFile('qux.h', self._make_h('macros', 'EVIL')),
-      MockAffectedFile('foz.h', self._make_h('not_macros', 'ASSIGN', '//')),
-      MockAffectedFile('foz.h', self._make_h('not_macros', 'ASSIGN', '  //')),
-    ]
-    warnings = PRESUBMIT._CheckBaseMacrosInHeaders(mock_input_api,
-                                                   MockOutputApi())
-    self.assertEqual(0, len(warnings))
-
-
 class InvalidOSMacroNamesTest(unittest.TestCase):
   def testInvalidOSMacroNames(self):
     lines = ['#if defined(OS_WINDOWS)',
