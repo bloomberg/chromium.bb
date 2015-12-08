@@ -824,8 +824,8 @@ class LayerTreeHostCopyRequestTestLostOutputSurface
 
   scoped_refptr<TestContextProvider> first_context_provider_;
   scoped_refptr<TestContextProvider> second_context_provider_;
-  size_t num_textures_without_readback_;
-  size_t num_textures_after_loss_;
+  size_t num_textures_without_readback_ = 0;
+  size_t num_textures_after_loss_ = 0;
   FakeContentLayerClient client_;
   scoped_refptr<FakePictureLayer> root_;
   scoped_refptr<FakePictureLayer> copy_layer_;
