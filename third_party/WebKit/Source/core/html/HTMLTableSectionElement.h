@@ -40,8 +40,6 @@ public:
     PassRefPtrWillBeRawPtr<HTMLElement> insertRow(int index, ExceptionState&);
     void deleteRow(int index, ExceptionState&);
 
-    int numRows() const;
-
     PassRefPtrWillBeRawPtr<HTMLCollection> rows();
 
 private:

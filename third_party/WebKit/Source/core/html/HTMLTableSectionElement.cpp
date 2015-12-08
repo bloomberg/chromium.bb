@@ -85,14 +85,6 @@ void HTMLTableSectionElement::deleteRow(int index, ExceptionState& exceptionStat
     }
 }
 
-int HTMLTableSectionElement::numRows() const
-{
-    int rowCount = 0;
-    for (const HTMLTableRowElement* row = Traversal<HTMLTableRowElement>::firstChild(*this); row; row = Traversal<HTMLTableRowElement>::nextSibling(*row))
-        ++rowCount;
-    return rowCount;
-}
-
 PassRefPtrWillBeRawPtr<HTMLCollection> HTMLTableSectionElement::rows()
 {
     return ensureCachedCollection<HTMLCollection>(TSectionRows);
