@@ -51,6 +51,7 @@
 #include "core/svg/properties/SVGProperty.h"
 #include "platform/JSONValues.h"
 #include "wtf/TemporaryChange.h"
+#include "wtf/Threading.h"
 
 namespace blink {
 
@@ -1007,7 +1008,9 @@ SVGElement::InstanceUpdateBlocker::~InstanceUpdateBlocker()
 #if ENABLE(ASSERT)
 bool SVGElement::isAnimatableAttribute(const QualifiedName& name) const
 {
-    DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, animatableAttributes, ());
+    // This static is atomically initialized to dodge a warning about
+    // a race when dumping debug data for a layer.
+    AtomicallyInitializedStaticReference(HashSet<QualifiedName>, animatableAttributes, new HashSet<QualifiedName>());
 
     if (animatableAttributes.isEmpty()) {
         const QualifiedName* const animatableAttrs[] = {
