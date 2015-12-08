@@ -557,22 +557,8 @@ void Tab::SetData(const TabRendererData& data) {
   if (data_.IsCrashed()) {
     if (!should_display_crashed_favicon_ && !crash_icon_animation_) {
       data_.media_state = TAB_MEDIA_STATE_NONE;
-      bool start_crash_animation = true;
-#if defined(OS_CHROMEOS)
-      // On Chrome OS, we reload killed tabs automatically when the user
-      // switches to them.  Don't display animations for these unless they're
-      // selected (i.e. in the foreground) -- we won't reload these
-      // automatically since we don't want to get into a crash loop.
-      start_crash_animation = IsSelected() ||
-          (data_.crashed_status !=
-              base::TERMINATION_STATUS_PROCESS_WAS_KILLED &&
-           data_.crashed_status !=
-              base::TERMINATION_STATUS_PROCESS_WAS_KILLED_BY_OOM);
-#endif
-      if (start_crash_animation) {
-        crash_icon_animation_.reset(new FaviconCrashAnimation(this));
-        crash_icon_animation_->Start();
-      }
+      crash_icon_animation_.reset(new FaviconCrashAnimation(this));
+      crash_icon_animation_->Start();
     }
   } else {
     if (crash_icon_animation_)
