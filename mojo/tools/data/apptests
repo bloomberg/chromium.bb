@@ -95,10 +95,11 @@ if config.target_os != config.OS_ANDROID:
       'test': 'mojo:sql_apptests',
       'type': 'gtest_isolated',
     },
-    {
-      'test': 'mojo:web_view_apptests',
-      'type': 'gtest_isolated',
-      'args': ['--use-x11-test-config',
-               '--override-use-gl-with-osmesa-for-tests']
-    },
+    # TODO(jam): flaky, http://crbug.com/567496
+    #{
+    #  'test': 'mojo:web_view_apptests',
+    #  'type': 'gtest_isolated',
+    #  'args': ['--use-x11-test-config',
+    #           '--override-use-gl-with-osmesa-for-tests']
+    #},
   ]
