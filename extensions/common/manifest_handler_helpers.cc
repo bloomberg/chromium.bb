@@ -32,37 +32,10 @@ bool NormalizeAndValidatePath(std::string* path) {
 }
 
 bool LoadIconsFromDictionary(const base::DictionaryValue* icons_value,
-                             const int* icon_sizes,
-                             size_t num_icon_sizes,
                              ExtensionIconSet* icons,
                              base::string16* error) {
   DCHECK(icons);
-  for (size_t i = 0; i < num_icon_sizes; ++i) {
-    std::string key = base::IntToString(icon_sizes[i]);
-    if (icons_value->HasKey(key)) {
-      std::string icon_path;
-      if (!icons_value->GetString(key, &icon_path)) {
-        *error = ErrorUtils::FormatErrorMessageUTF16(
-            errors::kInvalidIconPath, key);
-        return false;
-      }
-
-      if (!NormalizeAndValidatePath(&icon_path)) {
-        *error = ErrorUtils::FormatErrorMessageUTF16(
-            errors::kInvalidIconPath, key);
-        return false;
-      }
-
-      icons->Add(icon_sizes[i], icon_path);
-    }
-  }
-  return true;
-}
-
-bool LoadAllIconsFromDictionary(const base::DictionaryValue* icons_value,
-                                ExtensionIconSet* icons,
-                                base::string16* error) {
-  DCHECK(icons);
+  DCHECK(error);
   for (base::DictionaryValue::Iterator iterator(*icons_value);
        !iterator.IsAtEnd(); iterator.Advance()) {
     int size = 0;

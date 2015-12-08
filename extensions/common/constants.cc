@@ -61,20 +61,6 @@ const char kMimeTypePng[] = "image/png";
 
 namespace extension_misc {
 
-const int kExtensionIconSizes[] = {EXTENSION_ICON_GIGANTOR,     // 512
-                                   EXTENSION_ICON_EXTRA_LARGE,  // 256
-                                   EXTENSION_ICON_LARGE,        // 128
-                                   EXTENSION_ICON_MEDIUM,       // 48
-                                   EXTENSION_ICON_SMALL,        // 32
-                                   EXTENSION_ICON_SMALLISH,     // 24
-                                   EXTENSION_ICON_BITTY,        // 16
-                                   // Additional 2x resources to load.
-                                   2 * EXTENSION_ICON_MEDIUM,  // 96
-                                   2 * EXTENSION_ICON_SMALL    // 64
-};
-
-const size_t kNumExtensionIconSizes = arraysize(kExtensionIconSizes);
-
 const char kPdfExtensionId[] = "mhjfbmdgcfjbbpaeojofohoefgiehjai";
 const char kQuickOfficeComponentExtensionId[] =
     "bpmcpldpdmajfigpchkicefoigmkfalc";

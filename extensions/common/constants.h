@@ -190,10 +190,6 @@ enum ExtensionIcons {
   EXTENSION_ICON_INVALID = 0,
 };
 
-// List of sizes for extension icons that can be defined in the manifest.
-extern const int kExtensionIconSizes[];
-extern const size_t kNumExtensionIconSizes;
-
 // The extension id of the PDF extension.
 extern const char kPdfExtensionId[];
 

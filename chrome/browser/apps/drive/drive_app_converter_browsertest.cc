@@ -71,9 +71,9 @@ class DriveAppConverterTest : public ExtensionBrowserTest {
   drive::DriveAppInfo GetTestDriveApp() {
     // Define four icons. icon1.png is 16x16 and good to use. icon2.png is
     // 16x16 but claims to be 32x32 and should be dropped. icon3.png is 66x66
-    // and not a valid extension icon size and should be dropped too. The forth
-    // one is icon2.png with 16x16 but should be ignored because 16x16 already
-    // has icon1.png as its resource.
+    // and not a typical icon size but it should be allowed. The fourth one is
+    // icon2.png with 16x16 but should be ignored because 16x16 already has
+    // icon1.png as its resource.
     drive::DriveAppInfo::IconList app_icons;
     app_icons.push_back(std::make_pair(16, GetTestUrl("extensions/icon1.png")));
     app_icons.push_back(std::make_pair(32, GetTestUrl("extensions/icon2.png")));
@@ -117,7 +117,11 @@ IN_PROC_BROWSER_TEST_F(DriveAppConverterTest, GoodApp) {
   EXPECT_EQ(extensions::LAUNCH_CONTAINER_TAB,
             AppLaunchInfo::GetLaunchContainer(app));
   EXPECT_EQ(0u, app->permissions_data()->active_permissions().apis().size());
-  EXPECT_EQ(1u, extensions::IconsInfo::GetIcons(app).map().size());
+  const ExtensionIconSet& icons = extensions::IconsInfo::GetIcons(app);
+  EXPECT_EQ(2u, icons.map().size());
+  EXPECT_FALSE(icons.Get(16, ExtensionIconSet::MATCH_EXACTLY).empty());
+  EXPECT_TRUE(icons.Get(32, ExtensionIconSet::MATCH_EXACTLY).empty());
+  EXPECT_FALSE(icons.Get(66, ExtensionIconSet::MATCH_EXACTLY).empty());
 
   const Extension* installed = extensions::ExtensionSystem::Get(profile())
                                    ->extension_service()

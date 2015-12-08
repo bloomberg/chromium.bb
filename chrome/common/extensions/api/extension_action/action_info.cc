@@ -91,7 +91,7 @@ scoped_ptr<ActionInfo> ActionInfo::Load(const Extension* extension,
     const base::DictionaryValue* icons_value = NULL;
     std::string default_icon;
     if (dict->GetDictionary(keys::kPageActionDefaultIcon, &icons_value)) {
-      if (!manifest_handler_helpers::LoadAllIconsFromDictionary(
+      if (!manifest_handler_helpers::LoadIconsFromDictionary(
               icons_value, &result->default_icon, error)) {
         return scoped_ptr<ActionInfo>();
       }

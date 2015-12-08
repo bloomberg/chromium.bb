@@ -24,19 +24,11 @@ namespace manifest_handler_helpers {
 bool NormalizeAndValidatePath(std::string* path);
 
 // Loads icon paths defined in dictionary |icons_value| into ExtensionIconSet
-// |icons|. |icons_value| is a dictionary value {icon size -> icon path}. Icons
-// in |icons_value| whose size is not in |icon_sizes| will be ignored.
+// |icons|. |icons_value| is a dictionary value {icon size -> icon path}.
 // Returns success. If load fails, |error| will be set.
 bool LoadIconsFromDictionary(const base::DictionaryValue* icons_value,
-                             const int* icon_sizes,
-                             size_t num_icon_sizes,
                              ExtensionIconSet* icons,
                              base::string16* error);
-
-// As above, but loads all icons in |icons_value|.
-bool LoadAllIconsFromDictionary(const base::DictionaryValue* icons_value,
-                                ExtensionIconSet* icons,
-                                base::string16* error);
 
 }  // namespace manifest_handler_helpers
 }  // namespace extensions

@@ -435,17 +435,16 @@ BookmarkAppHelper::ResizeIconsAndGenerateMissing(
     std::vector<BookmarkAppHelper::BitmapAndSource> icons,
     std::set<int> sizes_to_generate,
     WebApplicationInfo* web_app_info) {
-  // Add the downloaded icons. Extensions only allow certain icon sizes. First
-  // populate icons that match the allowed sizes exactly and then downscale
-  // remaining icons to the closest allowed size that doesn't yet have an icon.
-  std::set<int> allowed_sizes(extension_misc::kExtensionIconSizes,
-                              extension_misc::kExtensionIconSizes +
-                                  extension_misc::kNumExtensionIconSizes);
-
-  // If there are icons that don't match the accepted icon sizes, find the
-  // closest bigger icon to the accepted sizes and resize the icon to it.
+  // Resize provided icons to make sure we have versions for each size in
+  // |sizes_to_generate|.
   std::map<int, BitmapAndSource> resized_bitmaps(
-      ConstrainBitmapsToSizes(icons, allowed_sizes));
+      ConstrainBitmapsToSizes(icons, sizes_to_generate));
+
+  // Also add all provided icon sizes.
+  for (const BitmapAndSource& icon : icons) {
+    if (resized_bitmaps.find(icon.bitmap.width()) == resized_bitmaps.end())
+      resized_bitmaps.insert(std::make_pair(icon.bitmap.width(), icon));
+  }
 
   // Determine the color that will be used for the icon's background. For this
   // the dominant color of the first icon found is used.
@@ -777,18 +776,15 @@ void GetWebApplicationInfoFromApp(
   web_app_info.title = base::UTF8ToUTF16(extension->non_localized_name());
   web_app_info.description = base::UTF8ToUTF16(extension->description());
 
+  const ExtensionIconSet& icon_set = extensions::IconsInfo::GetIcons(extension);
   std::vector<extensions::ImageLoader::ImageRepresentation> info_list;
-  for (size_t i = 0; i < extension_misc::kNumExtensionIconSizes; ++i) {
-    int size = extension_misc::kExtensionIconSizes[i];
+  for (const auto& iter : icon_set.map()) {
     extensions::ExtensionResource resource =
-        extensions::IconsInfo::GetIconResource(
-            extension, size, ExtensionIconSet::MATCH_EXACTLY);
+        extension->GetResource(iter.second);
     if (!resource.empty()) {
       info_list.push_back(extensions::ImageLoader::ImageRepresentation(
-          resource,
-          extensions::ImageLoader::ImageRepresentation::ALWAYS_RESIZE,
-          gfx::Size(size, size),
-          ui::SCALE_FACTOR_100P));
+          resource, extensions::ImageLoader::ImageRepresentation::ALWAYS_RESIZE,
+          gfx::Size(iter.first, iter.first), ui::SCALE_FACTOR_100P));
     }
   }
 

@@ -117,16 +117,11 @@ void DriveAppConverter::Start() {
   web_app_.title = base::UTF8ToUTF16(drive_app_info_.app_name);
   web_app_.app_url = drive_app_info_.create_url;
 
-  const std::set<int> allowed_sizes(extension_misc::kExtensionIconSizes,
-                                    extension_misc::kExtensionIconSizes +
-                                        extension_misc::kNumExtensionIconSizes);
   std::set<int> pending_sizes;
   for (size_t i = 0; i < drive_app_info_.app_icons.size(); ++i) {
     const int icon_size = drive_app_info_.app_icons[i].first;
-    if (allowed_sizes.find(icon_size) == allowed_sizes.end() ||
-        pending_sizes.find(icon_size) != pending_sizes.end()) {
+    if (pending_sizes.find(icon_size) != pending_sizes.end())
       continue;
-    }
 
     pending_sizes.insert(icon_size);
     const GURL& icon_url = drive_app_info_.app_icons[i].second;

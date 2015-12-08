@@ -64,11 +64,7 @@ bool IconsHandler::Parse(Extension* extension, base::string16* error) {
   }
 
   if (!manifest_handler_helpers::LoadIconsFromDictionary(
-          icons_dict,
-          extension_misc::kExtensionIconSizes,
-          extension_misc::kNumExtensionIconSizes,
-          &icons_info->icons,
-          error)) {
+          icons_dict, &icons_info->icons, error)) {
     return false;
   }
 
