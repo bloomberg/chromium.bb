@@ -97,6 +97,7 @@ private:
     IntSize m_size;
     int m_repetitionCount;
     bool m_hasColorProfile;
+    bool m_canYUVDecode;
 
     // Carries only frame state and other information. Does not carry bitmap.
     Vector<FrameData> m_frameData;

@@ -27,7 +27,6 @@
 #include "platform/graphics/DecodingImageGenerator.h"
 
 #include "platform/PlatformInstrumentation.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/SharedBuffer.h"
 #include "platform/TraceEvent.h"
 #include "platform/graphics/ImageFrameGenerator.h"
@@ -41,6 +40,7 @@ DecodingImageGenerator::DecodingImageGenerator(PassRefPtr<ImageFrameGenerator> f
     , m_frameGenerator(frameGenerator)
     , m_frameIndex(index)
     , m_generationId(0)
+    , m_canYUVDecode(false)
 {
 }
 
@@ -63,8 +63,7 @@ SkData* DecodingImageGenerator::onRefEncodedData()
     return 0;
 }
 
-bool DecodingImageGenerator::onGetPixels(const SkImageInfo& info, void* pixels, size_t rowBytes,
-    SkPMColor ctable[], int* ctableCount)
+bool DecodingImageGenerator::onGetPixels(const SkImageInfo& info, void* pixels, size_t rowBytes, SkPMColor table[], int* tableCount)
 {
     TRACE_EVENT1("blink", "DecodingImageGenerator::getPixels", "frame index", static_cast<int>(m_frameIndex));
 
@@ -73,8 +72,8 @@ bool DecodingImageGenerator::onGetPixels(const SkImageInfo& info, void* pixels, 
         return false;
 
     if (info.colorType() != getInfo().colorType()) {
-        // ImageFrame may have changed the owning SkBitmap to kOpaque_SkAlphaType after sniffing the encoded data, so if we see a request
-        // for opaque, that is ok even if our initial alphatype was not opaque.
+        // blink::ImageFrame may have changed the owning SkBitmap to kOpaque_SkAlphaType after fully decoding the image frame,
+        // so if we see a request for opaque, that is ok even if our initial alpha type was not opaque.
         return false;
     }
 
@@ -87,7 +86,7 @@ bool DecodingImageGenerator::onGetPixels(const SkImageInfo& info, void* pixels, 
 
 bool DecodingImageGenerator::onGetYUV8Planes(SkISize sizes[3], void* planes[3], size_t rowBytes[3], SkYUVColorSpace* colorSpace)
 {
-    if (!RuntimeEnabledFeatures::decodeToYUVEnabled())
+    if (!m_canYUVDecode)
         return false;
 
     bool requestingYUVSizes = !planes || !planes[0];
@@ -97,11 +96,12 @@ bool DecodingImageGenerator::onGetYUV8Planes(SkISize sizes[3], void* planes[3], 
     if (requestingYUVSizes)
         return m_frameGenerator->getYUVComponentSizes(sizes);
 
+    if (colorSpace)
+        *colorSpace = kJPEG_SkYUVColorSpace;
+
     PlatformInstrumentation::willDecodeLazyPixelRef(m_generationId);
     bool decoded = m_frameGenerator->decodeToYUV(sizes, planes, rowBytes);
     PlatformInstrumentation::didDecodeLazyPixelRef();
-    if (colorSpace)
-        *colorSpace = kJPEG_SkYUVColorSpace;
 
     return decoded;
 }

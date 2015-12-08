@@ -52,6 +52,7 @@ public:
     ~DecodingImageGenerator() override;
 
     void setGenerationId(size_t id) { m_generationId = id; }
+    void setCanYUVDecode(bool yes) { m_canYUVDecode = yes; }
 
 protected:
     SkData* onRefEncodedData() override;
@@ -64,6 +65,7 @@ private:
     RefPtr<ImageFrameGenerator> m_frameGenerator;
     size_t m_frameIndex;
     size_t m_generationId;
+    bool m_canYUVDecode;
 };
 
 } // namespace blink

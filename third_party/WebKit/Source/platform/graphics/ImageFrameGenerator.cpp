@@ -354,7 +354,7 @@ bool ImageFrameGenerator::getYUVComponentSizes(SkISize componentSizes[3])
 {
     ASSERT(componentSizes);
 
-    TRACE_EVENT2("webkit", "ImageFrameGenerator::getYUVComponentSizes", "width", m_fullSize.width(), "height", m_fullSize.height());
+    TRACE_EVENT2("blink", "ImageFrameGenerator::getYUVComponentSizes", "width", m_fullSize.width(), "height", m_fullSize.height());
 
     SharedBuffer* data = 0;
     bool allDataReceived = false;
@@ -366,11 +366,6 @@ bool ImageFrameGenerator::getYUVComponentSizes(SkISize componentSizes[3])
 
     OwnPtr<ImageDecoder> decoder = ImageDecoder::create(*data, ImageDecoder::AlphaPremultiplied, ImageDecoder::GammaAndColorProfileApplied);
     if (!decoder)
-        return false;
-
-    // JPEG images support YUV decoding: other decoders do not. So don't pump data into decoders
-    // that always return false to updateYUVComponentSizes() requests.
-    if (decoder->filenameExtension() != "jpg")
         return false;
 
     // Setting a dummy ImagePlanes object signals to the decoder that we want to do YUV decoding.

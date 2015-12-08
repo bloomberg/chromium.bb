@@ -26,6 +26,7 @@
 #include "config.h"
 #include "platform/graphics/DeferredImageDecoder.h"
 
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/DecodingImageGenerator.h"
 #include "platform/graphics/FrameData.h"
 #include "platform/graphics/ImageDecodingStore.h"
@@ -58,6 +59,7 @@ DeferredImageDecoder::DeferredImageDecoder(PassOwnPtr<ImageDecoder> actualDecode
     , m_actualDecoder(actualDecoder)
     , m_repetitionCount(cAnimationNone)
     , m_hasColorProfile(false)
+    , m_canYUVDecode(false)
 {
 }
 
@@ -214,9 +216,13 @@ void DeferredImageDecoder::activateLazyDecoding()
 {
     if (m_frameGenerator)
         return;
+
     m_size = m_actualDecoder->size();
     m_filenameExtension = m_actualDecoder->filenameExtension();
+    // JPEG images support YUV decoding: other decoders do not, WEBP could in future.
+    m_canYUVDecode = RuntimeEnabledFeatures::decodeToYUVEnabled() && (m_filenameExtension == "jpg");
     m_hasColorProfile = m_actualDecoder->hasColorProfile();
+
     const bool isSingleFrame = m_actualDecoder->repetitionCount() == cAnimationNone || (m_allDataReceived && m_actualDecoder->frameCount() == 1u);
     m_frameGenerator = ImageFrameGenerator::create(SkISize::Make(m_actualDecoder->decodedSize().width(), m_actualDecoder->decodedSize().height()), m_data, m_allDataReceived, !isSingleFrame);
 }
@@ -271,11 +277,13 @@ PassRefPtr<SkImage> DeferredImageDecoder::createFrameImageAtIndex(size_t index, 
     ASSERT(decodedSize.height() > 0);
 
     DecodingImageGenerator* generator = new DecodingImageGenerator(m_frameGenerator, imageInfoFrom(decodedSize, knownToBeOpaque), index);
-    RefPtr<SkImage> image = adoptRef(SkImage::NewFromGenerator(generator));
+    RefPtr<SkImage> image = adoptRef(SkImage::NewFromGenerator(generator)); // SkImage takes ownership of the generator.
     if (!image)
         return nullptr;
 
     generator->setGenerationId(image->uniqueID());
+    generator->setCanYUVDecode(m_canYUVDecode);
+
     return image.release();
 }
 
