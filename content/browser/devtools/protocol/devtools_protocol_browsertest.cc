@@ -126,7 +126,7 @@ class DevToolsProtocolTest : public ContentBrowserTest,
     if (root->GetInteger("id", &id)) {
       result_ids_.push_back(id);
       base::DictionaryValue* result;
-      EXPECT_TRUE(root->GetDictionary("result", &result));
+      ASSERT_TRUE(root->GetDictionary("result", &result));
       result_.reset(result->DeepCopy());
       in_dispatch_ = false;
       if (id && id == waiting_for_command_result_id_) {
