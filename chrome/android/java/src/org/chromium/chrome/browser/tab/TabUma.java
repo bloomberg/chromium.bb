@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.tab;
 import android.os.SystemClock;
 
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.net.NetError;
 
@@ -56,9 +55,6 @@ public class TabUma {
     // Counter of tab shows (as per onShow()) for all tabs.
     private static long sAllTabsShowCount = 0;
 
-    private final Tab mTab;
-    private final TabModel mTabModel;
-
     /**
      * State in which the tab was created. This can be used in metric accounting - e.g. to
      * distinguish reasons for a tab to be restored upon first display.
@@ -67,13 +63,14 @@ public class TabUma {
         LIVE_IN_FOREGROUND,
         LIVE_IN_BACKGROUND,
         FROZEN_ON_RESTORE,
-        FROZEN_FOR_LAZY_LOAD
+        FROZEN_FOR_LAZY_LOAD,
+        FROZEN_ON_RESTORE_FAILED,
     }
 
     private final TabCreationState mTabCreationState;
 
     // Timestamp when this tab was last shown.
-    private long mLastShowMillis = -1;
+    private long mLastShownTimestamp = -1;
 
     // Timestamp of the beginning of the current tab restore.
     private long mRestoreStartedAtMillis = -1;
@@ -83,14 +80,10 @@ public class TabUma {
 
     /**
      * Constructs a new UMA tracker for a specific tab.
-     * @param tab The tab whose metrics we want to track.
      * @param creationState In what state the tab was created.
-     * @param model The tab model that contains this tab.
      */
-    public TabUma(Tab tab, TabCreationState creationState, TabModel model) {
-        mTab = tab;
+    public TabUma(TabCreationState creationState) {
         mTabCreationState = creationState;
-        mTabModel = model;
 
         mLastTabStateChangeMillis = System.currentTimeMillis();
         if (mTabCreationState == TabCreationState.LIVE_IN_FOREGROUND
@@ -99,6 +92,11 @@ public class TabUma {
         } else if (mTabCreationState == TabCreationState.LIVE_IN_BACKGROUND
                 || mTabCreationState == TabCreationState.FROZEN_FOR_LAZY_LOAD) {
             updateTabState(TAB_STATE_INACTIVE);
+        } else if (mTabCreationState == TabCreationState.FROZEN_ON_RESTORE_FAILED) {
+            // A previous TabUma should have reported an active tab state. Initialize but avoid
+            // recording this as a state change.
+            mLastTabState = TAB_STATE_ACTIVE;
+            updateTabState(TAB_STATE_ACTIVE);
         }
     }
 
@@ -187,29 +185,29 @@ public class TabUma {
      * @param selectionType determines how the tab was being shown
      * @param previousTimestampMillis time of the previous display or creation time for the tabs
      *                                opened in background and not yet displayed
+     * @param rank The MRU rank for this tab within the model.
      */
-    void onShow(TabSelectionType selectionType, long previousTimestampMillis) {
+    void onShow(TabSelectionType selectionType, long previousTimestampMillis, int rank) {
         long now = SystemClock.elapsedRealtime();
         // Do not collect the tab switching data for the first switch to a tab after the cold start
         // and for the tab switches that were not user-originated (e.g. the user closes the last
         // incognito tab and the current normal mode tab is shown).
-        if (mLastShowMillis != -1 && selectionType == TabSelectionType.FROM_USER) {
-            long age = now - mLastShowMillis;
-            int rank = computeMRURank(mTab, mTabModel);
+        if (mLastShownTimestamp != -1 && selectionType == TabSelectionType.FROM_USER) {
+            long age = now - mLastShownTimestamp;
             RecordHistogram.recordCountHistogram("Tab.SwitchedToForegroundAge", (int) age);
             RecordHistogram.recordCountHistogram("Tab.SwitchedToForegroundMRURank", rank);
         }
 
         increaseTabShowCount();
         boolean isOnBrowserStartup = sAllTabsShowCount == 1;
-        boolean performsLazyLoad =
-                mTabCreationState == TabCreationState.FROZEN_FOR_LAZY_LOAD && mLastShowMillis == -1;
+        boolean performsLazyLoad = mTabCreationState == TabCreationState.FROZEN_FOR_LAZY_LOAD
+                && mLastShownTimestamp == -1;
 
         int status;
         if (mRestoreStartedAtMillis == -1 && !performsLazyLoad) {
             // The tab is *not* being restored or loaded lazily on first display.
             status = TAB_STATUS_MEMORY_RESIDENT;
-        } else if (mLastShowMillis == -1) {
+        } else if (mLastShownTimestamp == -1) {
             // This is first display and the tab is being restored or loaded lazily.
             if (isOnBrowserStartup) {
                 status = TAB_STATUS_RELOAD_COLD_START_FG;
@@ -236,7 +234,7 @@ public class TabUma {
         }
 
         // Record Tab.BackgroundLoadStatus.
-        if (mLastShowMillis == -1) {
+        if (mLastShownTimestamp == -1) {
             if (mTabCreationState == TabCreationState.LIVE_IN_BACKGROUND) {
                 if (mRestoreStartedAtMillis == -1) {
                     RecordHistogram.recordEnumeratedHistogram("Tab.BackgroundLoadStatus",
@@ -254,7 +252,7 @@ public class TabUma {
 
         // Record "tab age upon first display" metrics. previousTimestampMillis is persisted through
         // cold starts.
-        if (mLastShowMillis == -1 && previousTimestampMillis > 0) {
+        if (mLastShownTimestamp == -1 && previousTimestampMillis > 0) {
             if (isOnBrowserStartup) {
                 RecordHistogram.recordCountHistogram("Tabs.ForegroundTabAgeAtStartup",
                         (int) millisecondsToMinutes(System.currentTimeMillis()
@@ -266,7 +264,7 @@ public class TabUma {
             }
         }
 
-        mLastShowMillis = now;
+        mLastShownTimestamp = now;
 
         updateTabState(TAB_STATE_ACTIVE);
     }
@@ -289,10 +287,10 @@ public class TabUma {
         // Record only tab restores that the user became aware of. If the restore is triggered
         // speculatively and completes before the user switches to the tab, then this case is
         // reflected in Tab.StatusWhenSwitchedBackToForeground metric.
-        if (mRestoreStartedAtMillis != -1 && mLastShowMillis >= mRestoreStartedAtMillis) {
+        if (mRestoreStartedAtMillis != -1 && mLastShownTimestamp >= mRestoreStartedAtMillis) {
             long now = SystemClock.elapsedRealtime();
             long restoreTime = now - mRestoreStartedAtMillis;
-            long perceivedRestoreTime = now - mLastShowMillis;
+            long perceivedRestoreTime = now - mLastShownTimestamp;
             recordTabRestoreResult(true, restoreTime, perceivedRestoreTime, -1);
         }
         mRestoreStartedAtMillis = -1;
@@ -300,7 +298,7 @@ public class TabUma {
 
     /** Called when the correspoding tab fails a page load. */
     void onLoadFailed(int errorCode) {
-        if (mRestoreStartedAtMillis != -1 && mLastShowMillis >= mRestoreStartedAtMillis) {
+        if (mRestoreStartedAtMillis != -1 && mLastShownTimestamp >= mRestoreStartedAtMillis) {
             // Load time is ignored for failed loads.
             recordTabRestoreResult(false, -1, -1, errorCode);
         }
@@ -316,26 +314,18 @@ public class TabUma {
         }
     }
 
+    /**
+     * @return The timestamp for when this tab was last shown.
+     */
+    long getLastShownTimestamp() {
+        return mLastShownTimestamp;
+    }
+
     private static void increaseTabShowCount() {
         sAllTabsShowCount++;
     }
 
     private static long millisecondsToMinutes(long msec) {
         return msec / 1000 / 60;
-    }
-
-    /**
-     * @return The most recently used rank for this tab in [0 .. tabs.length - 1].
-     */
-    private static int computeMRURank(Tab tab, TabModel model) {
-        final long tabLastShow = tab.getTabUma().mLastShowMillis;
-        int mruRank = 0;
-        for (int i = 0; i < model.getCount(); i++) {
-            Tab otherTab = model.getTabAt(i);
-            if (otherTab != tab && otherTab.getTabUma().mLastShowMillis > tabLastShow) {
-                mruRank++;
-            }
-        }
-        return mruRank;
     }
 }

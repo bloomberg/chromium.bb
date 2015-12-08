@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.document;
 
-import android.app.Activity;
-
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.IntentHandler;
@@ -15,7 +13,6 @@ import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
-import org.chromium.chrome.browser.tab.TabUma;
 import org.chromium.chrome.browser.tab.TabUma.TabCreationState;
 import org.chromium.chrome.browser.tab.TabWebContentsDelegateAndroid;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -28,8 +25,6 @@ import org.chromium.ui.base.WindowAndroid;
  * A Tab child class with Chrome documents specific functionality.
  */
 public class DocumentTab extends Tab {
-    private boolean mDidRestoreState;
-
     /**
      * Standard constructor for the document tab.
      * @param activity The document activity that will hold on to this tab.
@@ -40,9 +35,9 @@ public class DocumentTab extends Tab {
      * @param initiallyHidden Whether or not the {@link WebContents} should be initially hidden.
      */
     private DocumentTab(DocumentActivity activity, boolean incognito, WindowAndroid windowAndroid,
-            String url, int parentTabId, boolean initiallyHidden) {
+            String url, int parentTabId, boolean initiallyHidden, TabCreationState creationState) {
         super(ActivityDelegate.getTabIdFromIntent(activity.getIntent()), parentTabId, incognito,
-                activity, windowAndroid, TabLaunchType.FROM_EXTERNAL_APP, null, null);
+                activity, windowAndroid, TabLaunchType.FROM_EXTERNAL_APP, creationState, null);
         initialize(url, null, activity.getTabContentManager(), false, initiallyHidden);
     }
 
@@ -56,9 +51,10 @@ public class DocumentTab extends Tab {
      * @param parentTabId The id of the parent tab.
      */
     private DocumentTab(DocumentActivity activity, boolean incognito,
-            WindowAndroid windowAndroid, String url, TabState tabState, int parentTabId) {
+            WindowAndroid windowAndroid, String url, TabState tabState, int parentTabId,
+            TabCreationState creationState) {
         super(ActivityDelegate.getTabIdFromIntent(activity.getIntent()), parentTabId, incognito,
-                activity, windowAndroid, TabLaunchType.FROM_RESTORE,  null, tabState);
+                activity, windowAndroid, TabLaunchType.FROM_RESTORE,  creationState, tabState);
         initialize(url, null, activity.getTabContentManager(), true, false);
     }
 
@@ -72,9 +68,11 @@ public class DocumentTab extends Tab {
      * @param webContents An optional {@link WebContents} object to use.
      */
     private DocumentTab(DocumentActivity activity, boolean incognito,
-            WindowAndroid windowAndroid, String url, int parentTabId, WebContents webContents) {
+            WindowAndroid windowAndroid, String url, int parentTabId, WebContents webContents,
+            TabCreationState creationState) {
         super(ActivityDelegate.getTabIdFromIntent(activity.getIntent()), parentTabId, incognito,
-                activity, windowAndroid, TabLaunchType.FROM_LONGPRESS_FOREGROUND, null, null);
+                activity, windowAndroid, TabLaunchType.FROM_LONGPRESS_FOREGROUND,
+                creationState, null);
         initialize(url, webContents, activity.getTabContentManager(), false, false);
     }
 
@@ -105,7 +103,7 @@ public class DocumentTab extends Tab {
                 return new DocumentTabWebContentsDelegateAndroid(DocumentTab.this, mActivity);
             }
         }, initiallyHidden);
-        if (unfreeze) mDidRestoreState = unfreezeContents();
+        if (unfreeze) unfreezeContents();
 
         getView().requestFocus();
     }
@@ -129,13 +127,6 @@ public class DocumentTab extends Tab {
     }
 
     /**
-     * @return Whether or not the tab's state was restored.
-     */
-    public boolean didRestoreState() {
-        return mDidRestoreState;
-    }
-
-    /**
      * Create a DocumentTab.
      * @param activity The activity the tab will be residing in.
      * @param incognito Whether the tab is incognito.
@@ -147,31 +138,23 @@ public class DocumentTab extends Tab {
      * @param initiallyHidden Whether or not the {@link WebContents} should be initially hidden.
      */
     static DocumentTab create(DocumentActivity activity, boolean incognito, WindowAndroid window,
-            String url, WebContents webContents, TabState tabState, boolean initiallyHidden) {
+            String url, WebContents webContents, TabState tabState, boolean initiallyHidden,
+            TabCreationState creationState) {
         int parentTabId = activity.getIntent().getIntExtra(
                 IntentHandler.EXTRA_PARENT_TAB_ID, Tab.INVALID_TAB_ID);
         if (webContents != null) {
             DocumentTab tab = new DocumentTab(
-                    activity, incognito, window, url, parentTabId, webContents);
+                    activity, incognito, window, url, parentTabId, webContents, creationState);
             webContents.resumeLoadingCreatedWebContents();
             return tab;
         }
 
         if (tabState == null) {
-            return new DocumentTab(activity, incognito, window, url, parentTabId, initiallyHidden);
+            return new DocumentTab(
+                    activity, incognito, window, url, parentTabId, initiallyHidden, creationState);
         } else {
-            return new DocumentTab(activity, incognito, window, "", tabState, parentTabId);
+            return new DocumentTab(
+                    activity, incognito, window, "", tabState, parentTabId, creationState);
         }
-    }
-
-    /**
-     * A helper function to create TabUma and set it to the tab.
-     * @param creationState In what state the tab was created.
-     */
-    public void initializeTabUma(TabCreationState creationState) {
-        Activity activity = getWindowAndroid().getActivity().get();
-        if (!(activity instanceof ChromeActivity)) return;
-        setTabUma(new TabUma(this, creationState,
-                ((ChromeActivity) activity).getTabModelSelector().getModel(isIncognito())));
     }
 }

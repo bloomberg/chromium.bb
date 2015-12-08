@@ -575,7 +575,7 @@ public class DocumentActivity extends ChromeActivity {
 
         mDocumentTab = DocumentTab.create(DocumentActivity.this, isIncognito(), getWindowAndroid(),
                 determineLastKnownUrl(), asyncParams != null ? asyncParams.getWebContents() : null,
-                tabState, isAffiliated);
+                tabState, isAffiliated, getTabCreationState(tabState != null, isAffiliated));
 
         if (asyncParams != null && asyncParams.getWebContents() != null) {
             Intent parentIntent = IntentUtils.safeGetParcelableExtra(getIntent(),
@@ -591,12 +591,7 @@ public class DocumentActivity extends ChromeActivity {
 
         getTabModelSelector().setTab(mDocumentTab);
 
-        TabCreationState creationState = isAffiliated
-                ? (SysUtils.isLowEndDevice() ? TabCreationState.FROZEN_FOR_LAZY_LOAD
-                        : TabCreationState.LIVE_IN_BACKGROUND)
-                        : TabCreationState.LIVE_IN_FOREGROUND;
-
-        if (!mDocumentTab.didRestoreState()
+        if (mDocumentTab.didFailToRestore()
                 || (asyncParams != null && asyncParams.getLoadUrlParams().getUrl() != null)) {
             if (!isCreatedWithWebContents) {
                 // Don't load tabs in the background on low end devices. We will call
@@ -619,10 +614,7 @@ public class DocumentActivity extends ChromeActivity {
             }
             mDocumentTab.setShouldPreserve(IntentUtils.safeGetBooleanExtra(getIntent(),
                     IntentHandler.EXTRA_PRESERVE_TASK, false));
-        } else {
-            creationState = TabCreationState.FROZEN_ON_RESTORE;
         }
-        mDocumentTab.initializeTabUma(creationState);
 
         ToolbarControlContainer controlContainer =
                 (ToolbarControlContainer) findViewById(R.id.control_container);
@@ -743,6 +735,19 @@ public class DocumentActivity extends ChromeActivity {
     @Override
     public TabDelegate getTabCreator(boolean incognito) {
         return (TabDelegate) super.getTabCreator(incognito);
+    }
+
+    /**
+     * This cannot return {@link TabCreationState#FROZEN_ON_RESTORE_FAILED} since the Tab has
+     * to be created first to even attempt restore.
+     */
+    private TabCreationState getTabCreationState(boolean hasTabState, boolean isAffiliated) {
+        if (hasTabState) return TabCreationState.FROZEN_ON_RESTORE;
+        if (isAffiliated) {
+            if (SysUtils.isLowEndDevice()) return TabCreationState.FROZEN_FOR_LAZY_LOAD;
+            return TabCreationState.LIVE_IN_BACKGROUND;
+        }
+        return TabCreationState.LIVE_IN_FOREGROUND;
     }
 
     @Override

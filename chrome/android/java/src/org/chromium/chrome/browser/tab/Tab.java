@@ -68,6 +68,7 @@ import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.ssl.ConnectionSecurityLevel;
 import org.chromium.chrome.browser.ssl.SecurityStateModel;
 import org.chromium.chrome.browser.tab.TabUma.TabCreationState;
+import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelImpl;
@@ -251,6 +252,11 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      * to null.
      */
     private WebContentsState mFrozenContentsState;
+
+    /**
+     * Whether the restoration from frozen state failed.
+     */
+    private boolean mFailedToRestore;
 
     /**
      * URL load to be performed lazily when the Tab is next shown.
@@ -590,6 +596,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         MediaSessionTabHelper.createForTab(this);
 
         if (creationState != null) {
+            mTabUma = new TabUma(creationState);
             if (frozenState == null) {
                 assert type != TabLaunchType.FROM_RESTORE
                         && creationState != TabCreationState.FROZEN_ON_RESTORE;
@@ -598,11 +605,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
                         && creationState == TabCreationState.FROZEN_ON_RESTORE;
             }
         }
-
-        if (mActivity != null && creationState != null) {
-            setTabUma(new TabUma(
-                    this, creationState, mActivity.getTabModelSelector().getModel(incognito)));
-        }
     }
 
     private void enableFullscreenAfterLoad() {
@@ -610,14 +612,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
 
         mIsFullscreenWaitingForLoad = false;
         updateFullscreenEnabledState();
-    }
-
-    /**
-     * Sets the mTabUma object for stats reporting.
-     * @param tabUma TabUma object to use to report UMA stats.
-     */
-    protected void setTabUma(TabUma tabUma) {
-        mTabUma = tabUma;
     }
 
     /**
@@ -1135,7 +1129,10 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
 
             if (mContentViewCore != null) mContentViewCore.onShow();
 
-            if (mTabUma != null) mTabUma.onShow(type, getTimestampMillis());
+            if (mTabUma != null) {
+                mTabUma.onShow(type, getTimestampMillis(),
+                        computeMRURank(this, mActivity.getTabModelSelector().getModel(mIncognito)));
+            }
 
             // If the NativePage was frozen while in the background (see NativePageAssassin),
             // recreate the NativePage now.
@@ -1914,7 +1911,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             assert mFrozenContentsState != null;
             assert getContentViewCore() == null;
 
-            boolean forceNavigate = false;
             WebContents webContents =
                     mFrozenContentsState.restoreContentsFromByteBuffer(isHidden());
             if (webContents == null) {
@@ -1922,20 +1918,28 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
                 // that can be done at this point. TODO(jcivelli) http://b/5910521 - we should show
                 // an error page instead of a blank page in that case (and the last loaded URL).
                 webContents = WebContentsFactory.createWebContents(isIncognito(), isHidden());
-                forceNavigate = true;
+                mTabUma = new TabUma(TabCreationState.FROZEN_ON_RESTORE_FAILED);
+                mFailedToRestore = true;
             }
 
             mFrozenContentsState = null;
             initContentViewCore(webContents);
 
-            if (forceNavigate) {
+            if (mFailedToRestore) {
                 String url = TextUtils.isEmpty(mUrl) ? UrlConstants.NTP_URL : mUrl;
                 loadUrl(new LoadUrlParams(url, PageTransition.GENERATED));
             }
-            return !forceNavigate;
+            return !mFailedToRestore;
         } finally {
             TraceEvent.end("Tab.unfreezeContents");
         }
+    }
+
+    /**
+     * @return Whether the unfreeze attempt from a saved tab state failed.
+     */
+    public boolean didFailToRestore() {
+        return mFailedToRestore;
     }
 
     /**
@@ -2680,6 +2684,21 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      */
     public TabUma getTabUma() {
         return mTabUma;
+    }
+
+    /**
+     * @return The most recently used rank for this tab in the given TabModel.
+     */
+    private static int computeMRURank(Tab tab, TabModel model) {
+        final long tabLastShow = tab.getTabUma().getLastShownTimestamp();
+        int mruRank = 0;
+        for (int i = 0; i < model.getCount(); i++) {
+            Tab otherTab = model.getTabAt(i);
+            if (otherTab != tab && otherTab.getTabUma().getLastShownTimestamp() > tabLastShow) {
+                mruRank++;
+            }
+        }
+        return mruRank;
     }
 
     /**
