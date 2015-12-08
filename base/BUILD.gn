@@ -159,7 +159,6 @@ component("base") {
     "atomic_ref_count.h",
     "atomic_sequence_num.h",
     "atomicops.h",
-    "atomicops_internals_mac.h",
     "atomicops_internals_portable.h",
     "atomicops_internals_x86_msvc.h",
     "auto_reset.h",
@@ -920,7 +919,6 @@ component("base") {
     set_sources_assignment_filter([])
 
     sources += [
-      "atomicops_internals_mac.h",
       "base_paths_mac.h",
       "base_paths_mac.mm",
       "file_version_info_mac.h",
