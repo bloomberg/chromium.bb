@@ -69,8 +69,9 @@ const ui::SystemUIResourceType kTestResourceType = ui::OVERSCROLL_GLOW;
 
 class MockLayerTreeHost : public cc::LayerTreeHost {
  public:
-  MockLayerTreeHost(cc::LayerTreeHost::InitParams* params)
-      : cc::LayerTreeHost(params) {}
+  MockLayerTreeHost(cc::LayerTreeHost::InitParams* params,
+                    cc::CompositorMode mode)
+      : cc::LayerTreeHost(params, mode) {}
 
   MOCK_METHOD1(CreateUIResource, cc::UIResourceId(cc::UIResourceClient*));
   MOCK_METHOD1(DeleteUIResource, void(cc::UIResourceId));
@@ -92,7 +93,8 @@ class ResourceManagerTest : public testing::Test {
     params.client = &fake_client_;
     params.settings = &settings;
     params.task_graph_runner = &task_graph_runner_;
-    host_.reset(new MockLayerTreeHost(&params));
+    host_.reset(new MockLayerTreeHost(&params,
+                                      cc::CompositorMode::SingleThreaded));
     resource_manager_.Init(host_.get());
   }
 

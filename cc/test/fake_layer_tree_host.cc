@@ -10,7 +10,7 @@
 namespace cc {
 FakeLayerTreeHost::FakeLayerTreeHost(FakeLayerTreeHostClient* client,
                                      LayerTreeHost::InitParams* params)
-    : LayerTreeHost(params),
+    : LayerTreeHost(params, CompositorMode::SingleThreaded),
       client_(client),
       host_impl_(*params->settings,
                  &task_runner_provider_,

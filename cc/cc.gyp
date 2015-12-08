@@ -533,6 +533,7 @@
         'trees/blocking_task_runner.h',
         'trees/channel_impl.h',
         'trees/channel_main.h',
+        'trees/compositor_mode.h',
         'trees/damage_tracker.cc',
         'trees/damage_tracker.h',
         'trees/draw_property_utils.cc',

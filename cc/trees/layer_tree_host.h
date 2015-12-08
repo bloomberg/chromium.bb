@@ -33,6 +33,7 @@
 #include "cc/resources/resource_format.h"
 #include "cc/resources/scoped_ui_resource.h"
 #include "cc/surfaces/surface_sequence.h"
+#include "cc/trees/compositor_mode.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_settings.h"
@@ -359,7 +360,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   bool HasActiveAnimation(const Layer* layer) const;
 
  protected:
-  explicit LayerTreeHost(InitParams* params);
+  LayerTreeHost(InitParams* params, CompositorMode mode);
   void InitializeThreaded(
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner,
@@ -397,6 +398,9 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
 
   bool AnimateLayersRecursive(Layer* current, base::TimeTicks time);
 
+  bool IsSingleThreaded() const;
+  bool IsThreaded() const;
+
   struct UIResourceClientData {
     UIResourceClient* client;
     gfx::Size size;
@@ -416,6 +420,8 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   void NotifySwapPromiseMonitorsOfSetNeedsCommit();
 
   void SetPropertyTreesNeedRebuild();
+
+  const CompositorMode compositor_mode_;
 
   bool needs_full_tree_sync_;
   bool needs_meta_info_recomputation_;

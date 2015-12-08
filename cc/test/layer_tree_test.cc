@@ -678,6 +678,7 @@ class LayerTreeHostForTesting : public LayerTreeHost {
  public:
   static scoped_ptr<LayerTreeHostForTesting> Create(
       TestHooks* test_hooks,
+      CompositorMode mode,
       LayerTreeHostClientForTesting* client,
       SharedBitmapManager* shared_bitmap_manager,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
@@ -693,11 +694,12 @@ class LayerTreeHostForTesting : public LayerTreeHost {
     params.task_graph_runner = task_graph_runner;
     params.settings = &settings;
     scoped_ptr<LayerTreeHostForTesting> layer_tree_host(
-        new LayerTreeHostForTesting(test_hooks, &params));
+        new LayerTreeHostForTesting(test_hooks, &params, mode));
     scoped_ptr<TaskRunnerProvider> task_runner_provider =
         TaskRunnerProvider::Create(main_task_runner, impl_task_runner);
     scoped_ptr<Proxy> proxy;
-    if (impl_task_runner.get()) {
+    if (mode == CompositorMode::Threaded) {
+      DCHECK(impl_task_runner.get());
       proxy = ThreadProxyForTest::Create(
           test_hooks, layer_tree_host.get(), task_runner_provider.get(),
           std::move(external_begin_frame_source));
@@ -735,8 +737,11 @@ class LayerTreeHostForTesting : public LayerTreeHost {
 
  private:
   LayerTreeHostForTesting(TestHooks* test_hooks,
-                          LayerTreeHost::InitParams* params)
-      : LayerTreeHost(params), test_hooks_(test_hooks), test_started_(false) {}
+                          LayerTreeHost::InitParams* params,
+                          CompositorMode mode)
+      : LayerTreeHost(params, mode),
+        test_hooks_(test_hooks),
+        test_started_(false) {}
 
   TestHooks* test_hooks_;
   bool test_started_;
@@ -915,8 +920,10 @@ void LayerTreeTest::DoBeginTest() {
   }
 
   DCHECK(!impl_thread_ || impl_thread_->task_runner().get());
+  CompositorMode mode =
+      impl_thread_ ? CompositorMode::Threaded : CompositorMode::SingleThreaded;
   layer_tree_host_ = LayerTreeHostForTesting::Create(
-      this, client_.get(), shared_bitmap_manager_.get(),
+      this, mode, client_.get(), shared_bitmap_manager_.get(),
       gpu_memory_buffer_manager_.get(), task_graph_runner_.get(), settings_,
       base::ThreadTaskRunnerHandle::Get(),
       impl_thread_ ? impl_thread_->task_runner() : NULL,

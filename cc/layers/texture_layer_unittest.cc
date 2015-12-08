@@ -74,7 +74,7 @@ class MockLayerTreeHost : public LayerTreeHost {
  private:
   MockLayerTreeHost(FakeLayerTreeHostClient* client,
                     LayerTreeHost::InitParams* params)
-      : LayerTreeHost(params) {
+      : LayerTreeHost(params, CompositorMode::SingleThreaded) {
     InitializeSingleThreaded(client, base::ThreadTaskRunnerHandle::Get(),
                              nullptr);
   }

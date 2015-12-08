@@ -66,7 +66,8 @@ scoped_ptr<LayerTreeHost> LayerTreeHost::CreateThreaded(
   DCHECK(params->main_task_runner.get());
   DCHECK(impl_task_runner.get());
   DCHECK(params->settings);
-  scoped_ptr<LayerTreeHost> layer_tree_host(new LayerTreeHost(params));
+  scoped_ptr<LayerTreeHost> layer_tree_host(
+      new LayerTreeHost(params, CompositorMode::Threaded));
   layer_tree_host->InitializeThreaded(
       params->main_task_runner, impl_task_runner,
       std::move(params->external_begin_frame_source));
@@ -77,16 +78,18 @@ scoped_ptr<LayerTreeHost> LayerTreeHost::CreateSingleThreaded(
     LayerTreeHostSingleThreadClient* single_thread_client,
     InitParams* params) {
   DCHECK(params->settings);
-  scoped_ptr<LayerTreeHost> layer_tree_host(new LayerTreeHost(params));
+  scoped_ptr<LayerTreeHost> layer_tree_host(
+      new LayerTreeHost(params, CompositorMode::SingleThreaded));
   layer_tree_host->InitializeSingleThreaded(
       single_thread_client, params->main_task_runner,
       std::move(params->external_begin_frame_source));
   return layer_tree_host;
 }
 
-LayerTreeHost::LayerTreeHost(InitParams* params)
+LayerTreeHost::LayerTreeHost(InitParams* params, CompositorMode mode)
     : micro_benchmark_controller_(this),
       next_ui_resource_id_(1),
+      compositor_mode_(mode),
       needs_full_tree_sync_(true),
       needs_meta_info_recomputation_(true),
       client_(params->client),
@@ -674,7 +677,7 @@ void LayerTreeHost::NotifyInputThrottledUntilCommit() {
 }
 
 void LayerTreeHost::LayoutAndUpdateLayers() {
-  DCHECK(!task_runner_provider_->HasImplThread());
+  DCHECK(IsSingleThreaded());
   // This function is only valid when not using the scheduler.
   DCHECK(!settings_.single_thread_proxy_scheduler);
   SingleThreadProxy* proxy = static_cast<SingleThreadProxy*>(proxy_.get());
@@ -692,7 +695,7 @@ void LayerTreeHost::LayoutAndUpdateLayers() {
 }
 
 void LayerTreeHost::Composite(base::TimeTicks frame_begin_time) {
-  DCHECK(!task_runner_provider_->HasImplThread());
+  DCHECK(IsSingleThreaded());
   // This function is only valid when not using the scheduler.
   DCHECK(!settings_.single_thread_proxy_scheduler);
   SingleThreadProxy* proxy = static_cast<SingleThreadProxy*>(proxy_.get());
@@ -732,9 +735,8 @@ static Layer* FindFirstScrollableLayer(Layer* layer) {
 
 void LayerTreeHost::RecordGpuRasterizationHistogram() {
   // Gpu rasterization is only supported for Renderer compositors.
-  // Checking for proxy_->HasImplThread() to exclude Browser compositors.
-  if (gpu_rasterization_histogram_recorded_ ||
-      !task_runner_provider_->HasImplThread())
+  // Checking for IsThreaded() to exclude Browser compositors.
+  if (gpu_rasterization_histogram_recorded_ || IsThreaded())
     return;
 
   // Record how widely gpu rasterization is enabled.
@@ -896,7 +898,7 @@ void LayerTreeHost::UpdateTopControlsState(TopControlsState constraints,
                                            TopControlsState current,
                                            bool animate) {
   // Top controls are only used in threaded mode.
-  DCHECK(task_runner_provider_->HasImplThread());
+  DCHECK(IsThreaded());
   proxy_->UpdateTopControlsState(constraints, current, animate);
 }
 
@@ -1245,6 +1247,18 @@ bool LayerTreeHost::HasAnyAnimation(const Layer* layer) const {
 bool LayerTreeHost::HasActiveAnimation(const Layer* layer) const {
   return animation_host_ ? animation_host_->HasActiveAnimation(layer->id())
                          : false;
+}
+
+bool LayerTreeHost::IsSingleThreaded() const {
+  DCHECK(compositor_mode_ != CompositorMode::SingleThreaded ||
+         !task_runner_provider_->HasImplThread());
+  return compositor_mode_ == CompositorMode::SingleThreaded;
+}
+
+bool LayerTreeHost::IsThreaded() const {
+  DCHECK(compositor_mode_ != CompositorMode::Threaded ||
+         task_runner_provider_->HasImplThread());
+  return compositor_mode_ == CompositorMode::Threaded;
 }
 
 }  // namespace cc
