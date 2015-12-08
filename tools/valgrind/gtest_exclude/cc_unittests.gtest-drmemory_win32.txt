@@ -38,3 +38,7 @@ ImageBackgroundFilter.BackgroundFilterRotated_GL
 # https://crbug.com/537621
 LayerTreeHostTestBeginMainFrameTimeIsAlsoImplTime.RunMultiThread_DelegatingRenderer
 LayerTreeHostTestBeginMainFrameTimeIsAlsoImplTime.RunMultiThread_DirectRenderer
+
+# https://crbug.com/567439
+LayerTreeHostCopyRequestCompletionCausesCommit.RunMultiThread_DirectRenderer
+LayerTreeHostCopyRequestTestLostOutputSurface.RunMultiThread_DirectRenderer
