@@ -160,8 +160,7 @@ var TrackInfo;
      * @private
      */
     ensureTrackInViewport_: function(trackIndex) {
-      var trackSelector = '::shadow .track[index="' + trackIndex + '"]';
-      var trackElement = this.querySelector(trackSelector);
+      var trackElement = this.$$('.track[index="' + trackIndex + '"]');
       if (trackElement) {
         var viewTop = this.scrollTop;
         var viewHeight = this.clientHeight;
