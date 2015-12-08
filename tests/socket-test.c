@@ -107,11 +107,11 @@ TEST(add_existing_socket)
 	ret = wl_display_add_socket(d, name);
 	assert(ret == 0);
 
-	/* this on should fail */
+	/* this one should fail */
 	ret = wl_display_add_socket(d, name);
 	assert(ret < 0);
 
-	/* the original socket should still exists,
+	/* the original socket should still exist.
 	 * this was a bug introduced in e2c0d47b0c77f18cd90e9c6eabb358c4d89681c8 */
 	len = snprintf(path, sizeof example_sockaddr_un.sun_path, "%s/%s",
 		       xdg_runtime_dir, name);
@@ -120,7 +120,7 @@ TEST(add_existing_socket)
 
 	assert(access(path, F_OK) != -1);
 
-	/* still should exists the original socket */
+	/* the original socket should still exist */
 	ret = wl_display_add_socket(d, name);
 	assert(ret < 0);
 
@@ -129,7 +129,9 @@ TEST(add_existing_socket)
 
 TEST(add_socket_auto)
 {
-	/* the number of auto sockets is currently 32 */
+	/* the number of auto sockets is currently 32,
+	 * set in wayland-server.c.
+	 */
 	const int MAX_SOCKETS = 32;
 
 	char path[sizeof example_sockaddr_un.sun_path];
@@ -153,7 +155,7 @@ TEST(add_socket_auto)
 		assert(len < sizeof example_sockaddr_un.sun_path
 		       && "Bug in test. Path too long");
 
-		/* was the socket? */
+		/* was the socket created correctly? */
 		assert(access(path, F_OK) != -1);
 
 		/* is the name sequential? */
