@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "components/mus/public/cpp/window.h"
-#include "components/mus/public/interfaces/input_events.mojom.h"
 
 namespace mus {
 
@@ -67,10 +66,6 @@ class WindowObserver {
 
   virtual void OnWindowPredefinedCursorChanged(Window* window,
                                                mojom::Cursor cursor) {}
-
-  virtual void OnWindowInputEvent(Window* window,
-                                  const mojom::EventPtr& event) {}
-
   virtual void OnWindowVisibilityChanging(Window* window) {}
   virtual void OnWindowVisibilityChanged(Window* window) {}
 

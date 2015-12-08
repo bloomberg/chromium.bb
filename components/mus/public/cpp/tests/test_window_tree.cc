@@ -4,6 +4,8 @@
 
 #include "components/mus/public/cpp/tests/test_window_tree.h"
 
+#include "testing/gtest/include/gtest/gtest.h"
+
 namespace mus {
 
 TestWindowTree::TestWindowTree() : got_change_(false), change_id_(0) {}
@@ -18,6 +20,10 @@ bool TestWindowTree::GetAndClearChangeId(uint32_t* change_id) {
     *change_id = change_id_;
   got_change_ = false;
   return true;
+}
+
+bool TestWindowTree::WasEventAcked(uint32_t event_id) const {
+  return acked_events_.count(event_id);
 }
 
 void TestWindowTree::NewWindow(
@@ -106,7 +112,10 @@ void TestWindowTree::SetImeVisibility(uint32_t window_id,
                                       bool visible,
                                       mojo::TextInputStatePtr state) {}
 
-void TestWindowTree::OnWindowInputEventAck(uint32_t event_id) {}
+void TestWindowTree::OnWindowInputEventAck(uint32_t event_id) {
+  EXPECT_FALSE(acked_events_.count(event_id));
+  acked_events_.insert(event_id);
+}
 void TestWindowTree::WmResponse(uint32_t change_id, bool response) {}
 
 }  // namespace mus
