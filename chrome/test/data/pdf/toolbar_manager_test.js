@@ -35,6 +35,15 @@ function makeTapEvent(x, y) {
   return e;
 }
 
+/**
+ * Mock version of ToolbarManager.getCurrentTimestamp_ which returns a timestamp
+ * which linearly increases each time it is called.
+ */
+function mockGetCurrentTimestamp() {
+  this.callCount = this.callCount + 1 || 1;
+  return 1449000000000 + this.callCount * 50;
+}
+
 var tests = [
   /**
    * Test that ToolbarManager.forceHideTopToolbar hides (or shows) the top
@@ -46,6 +55,7 @@ var tests = [
     var toolbar = Polymer.Base.create('viewer-pdf-toolbar');
     var zoomToolbar = Polymer.Base.create('viewer-zoom-toolbar');
     var toolbarManager = new ToolbarManager(mockWindow, toolbar, zoomToolbar);
+    toolbarManager.getCurrentTimestamp_ = mockGetCurrentTimestamp;
 
     var mouseMove = function(fromX, fromY, toX, toY, steps) {
       getMouseMoveEvents(fromX, fromY, toX, toY, steps).forEach(function(e) {
@@ -57,28 +67,28 @@ var tests = [
     // window. Top toolbar should not show.
     toolbarManager.forceHideTopToolbar();
     chrome.test.assertFalse(toolbar.opened);
-    mouseMove(1900, 1000, 100, 1000, 2);
-    chrome.test.assertFalse(toolbar.opened);
+    mouseMove(1900, 100, 100, 1000, 3);
+    chrome.test.assertFalse(toolbar.opened, 'Closed before move 1');
     // Move back into the zoom toolbar again. The top toolbar should still not
     // show.
-    mouseMove(100, 1000, 1900, 1000, 2);
-    chrome.test.assertFalse(toolbar.opened);
+    mouseMove(100, 500, 1900, 1000, 3);
+    chrome.test.assertFalse(toolbar.opened, 'Closed after move 1');
 
     // Hide the toolbar, wait for the timeout to expire, then move the mouse
     // quickly. The top toolbar should show.
     toolbarManager.forceHideTopToolbar();
-    chrome.test.assertFalse(toolbar.opened);
+    chrome.test.assertFalse(toolbar.opened, 'Closed before move 2');
     // Manually expire the timeout. This is the same as waiting 1 second.
     mockWindow.runTimeout();
-    mouseMove(1900, 1000, 100, 1000, 2);
-    chrome.test.assertTrue(toolbar.opened);
+    mouseMove(1900, 1000, 100, 1000, 3);
+    chrome.test.assertTrue(toolbar.opened, 'Opened after move 2');
 
     // Force hide the toolbar, then move the mouse to the top of the screen. The
     // top toolbar should show.
     toolbarManager.forceHideTopToolbar();
-    chrome.test.assertFalse(toolbar.opened);
-    mouseMove(1900, 1000, 1000, 30, 5);
-    chrome.test.assertTrue(toolbar.opened);
+    chrome.test.assertFalse(toolbar.opened, 'Closed before move 3');
+    mouseMove(1900, 1000, 1000, 30, 3);
+    chrome.test.assertTrue(toolbar.opened, 'Opened after move 3');
 
     chrome.test.succeed();
   },
@@ -114,6 +124,7 @@ var tests = [
         Polymer.Base.create('viewer-pdf-toolbar', {loadProgress: 100});
     var zoomToolbar = Polymer.Base.create('viewer-zoom-toolbar');
     var toolbarManager = new ToolbarManager(mockWindow, toolbar, zoomToolbar);
+    toolbarManager.getCurrentTimestamp_ = mockGetCurrentTimestamp;
 
     var mouseMove = function(fromX, fromY, toX, toY, steps) {
       getMouseMoveEvents(fromX, fromY, toX, toY, steps).forEach(function(e) {

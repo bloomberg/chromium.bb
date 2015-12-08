@@ -8,25 +8,19 @@
 var HIDE_TIMEOUT = 2000;
 /** Time in ms after force hide before toolbar is shown again. */
 var FORCE_HIDE_TIMEOUT = 1000;
-/** Velocity required in a mousemove to reveal the UI (pixels/sample). */
-var SHOW_VELOCITY = 25;
+/**
+ * Velocity required in a mousemove to reveal the UI (pixels/ms). This is
+ * intended to be high enough that a fast flick of the mouse is required to
+ * reach it.
+ */
+var SHOW_VELOCITY = 10;
 /** Distance from the top of the screen required to reveal the toolbars. */
 var TOP_TOOLBAR_REVEAL_DISTANCE = 100;
 /** Distance from the bottom-right of the screen required to reveal toolbars. */
 var SIDE_TOOLBAR_REVEAL_DISTANCE_RIGHT = 150;
 var SIDE_TOOLBAR_REVEAL_DISTANCE_BOTTOM = 250;
 
-/**
- * Whether a mousemove event is high enough velocity to reveal the toolbars.
- * @param {MouseEvent} e Event to test.
- * @return {boolean} true if the event is a high velocity mousemove, false
- * otherwise.
- */
-function isHighVelocityMouseMove(e) {
-  return e.type == 'mousemove' &&
-         e.movementX * e.movementX + e.movementY * e.movementY >
-             SHOW_VELOCITY * SHOW_VELOCITY;
-}
+
 
 /**
  * @param {MouseEvent} e Event to test.
@@ -72,6 +66,8 @@ function ToolbarManager(window, toolbar, zoomToolbar) {
 
   this.keyboardNavigationActive = false;
 
+  this.lastMovementTimestamp = null;
+
   this.window_.addEventListener('resize', this.resizeDropdowns_.bind(this));
   this.resizeDropdowns_();
 }
@@ -104,13 +100,47 @@ ToolbarManager.prototype = {
     // Show the toolbars if the mouse is near the top or bottom-right of the
     // screen, if the mouse moved fast, or if the touchscreen was tapped.
     if (this.isMouseNearTopToolbar_ || this.isMouseNearSideToolbar_ ||
-        isHighVelocityMouseMove(e) || touchInteractionActive) {
+        this.isHighVelocityMouseMove_(e) || touchInteractionActive) {
       if (this.sideToolbarAllowedOnly_)
         this.zoomToolbar_.show();
       else
         this.showToolbars();
     }
     this.hideToolbarsAfterTimeout();
+  },
+
+  /**
+   * Whether a mousemove event is high enough velocity to reveal the toolbars.
+   * @param {MouseEvent} e Event to test.
+   * @return {boolean} true if the event is a high velocity mousemove, false
+   * otherwise.
+   * @private
+   */
+  isHighVelocityMouseMove_: function(e) {
+    if (e.type == 'mousemove') {
+      if (this.lastMovementTimestamp == null) {
+        this.lastMovementTimestamp = this.getCurrentTimestamp_();
+      } else {
+        var movement =
+            Math.sqrt(e.movementX * e.movementX + e.movementY * e.movementY);
+        var newTime = this.getCurrentTimestamp_();
+        var interval = newTime - this.lastMovementTimestamp;
+        this.lastMovementTimestamp = newTime;
+
+        if (interval != 0)
+          return movement / interval > SHOW_VELOCITY;
+      }
+    }
+    return false;
+  },
+
+  /**
+   * Wrapper around Date.now() to make it easily replaceable for testing.
+   * @return {int}
+   * @private
+   */
+  getCurrentTimestamp_: function() {
+    return Date.now();
   },
 
   /**
