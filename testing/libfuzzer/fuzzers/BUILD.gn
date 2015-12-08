@@ -242,3 +242,13 @@ test("pdfium_fuzzer") {
   configs += [ "//third_party/pdfium:pdfium_config" ]
   configs += [ "//v8:external_config" ]
 }
+
+test("websocket_frame_parser_fuzzer") {
+  sources = [
+    "websocket_frame_parser_fuzzer.cc",
+  ]
+  deps = [
+    "//net",
+    "//testing/libfuzzer:libfuzzer_main",
+  ]
+}
