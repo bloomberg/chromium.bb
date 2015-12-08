@@ -106,7 +106,7 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
         }
         mTabStatusMap.clear();
 
-        DomDistillerUIUtils.destroy();
+        DomDistillerUIUtils.destroy(this);
 
         mChromeActivity = null;
         mReaderModePanel = null;
