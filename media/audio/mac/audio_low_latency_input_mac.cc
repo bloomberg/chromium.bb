@@ -769,11 +769,6 @@ void AUAudioInputStream::CheckInputStartupSuccess() {
       // Now when we know that startup has failed for some reason, add extra
       // UMA stats in an attempt to figure out the exact reason.
       AddHistogramsForFailedStartup();
-      // Kill the browser and create a crash log. This is just a temporary
-      // test (intended for Canary) where the goal is to gather some more
-      // detailed stats about how and why we can hit this problem.
-      // See crbug.com/549021 for details.
-      CHECK(false);
     }
   }
 }
