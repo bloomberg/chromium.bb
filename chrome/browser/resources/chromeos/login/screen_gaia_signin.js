@@ -489,7 +489,6 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       if (data.enterpriseInfoMessage)
         params.enterpriseInfoMessage = data.enterpriseInfoMessage;
 
-      params.chromeType = data.chromeType;
       params.isNewGaiaFlow = true;
 
       // Screen size could have been changed because of 'full-width' classes.

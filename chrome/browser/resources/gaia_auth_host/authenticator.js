@@ -84,6 +84,7 @@ cr.define('cr.login', function() {
     'enterpriseDomain',    // Domain in which hosting device is (or should be)
                            // enrolled.
     'emailDomain',         // Value used to prefill domain for email.
+    'chromeType',          // Type of Chrome OS device, e.g. "chromebox".
     'clientVersion',       // Version of the Chrome build.
     'platformVersion',     // Version of the OS build.
     'releaseChannel',      // Installation channel.
