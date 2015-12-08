@@ -33,6 +33,11 @@ applyToEachArglist(
      ["shape-image-threshold", "1", "-1", "0"],
      ["shape-image-threshold", "2", "1", "1"]]
 );
+
+shouldBeTrue("CSS.supports('shape-image-threshold', '0.8')")
+shouldBeTrue("CSS.supports('shape-image-threshold', '-0.5')")
+shouldBeTrue("CSS.supports('shape-image-threshold', '-34')")
+shouldBeFalse("CSS.supports('shape-image-threshold', '5px')")
 </script>
 </body>
 </html>

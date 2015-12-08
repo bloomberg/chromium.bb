@@ -2382,6 +2382,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
         return consumeClip(m_range, m_context.mode());
     case CSSPropertyTouchAction:
         return consumeTouchAction(m_range);
+    case CSSPropertyScrollSnapDestination:
     case CSSPropertyObjectPosition:
     case CSSPropertyPerspectiveOrigin:
         return consumePosition(m_range, m_context.mode(), UnitlessQuirk::Forbid);
@@ -2415,6 +2416,15 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
     case CSSPropertyAnimationTimingFunction:
     case CSSPropertyTransitionTimingFunction:
         return consumeAnimationPropertyList(property, m_range, m_context, unresolvedProperty == CSSPropertyAliasWebkitAnimationName);
+    case CSSPropertyGridColumnGap:
+    case CSSPropertyGridRowGap:
+        return consumeLength(m_range, m_context.mode(), ValueRangeNonNegative);
+    case CSSPropertyShapeMargin:
+        return consumeLengthOrPercent(m_range, m_context.mode(), ValueRangeNonNegative);
+    case CSSPropertyShapeImageThreshold:
+        return consumeNumber(m_range, ValueRangeAll);
+    case CSSPropertyWebkitBoxOrdinalGroup:
+        return consumePositiveInteger(m_range);
     case CSSPropertyOrphans:
     case CSSPropertyWidows:
         return consumeWidowsOrOrphans(m_range);

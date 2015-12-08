@@ -561,9 +561,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyWebkitBoxFlexGroup:
         validPrimitive = validUnit(value, FInteger | FNonNeg);
         break;
-    case CSSPropertyWebkitBoxOrdinalGroup:
-        validPrimitive = validUnit(value, FInteger | FNonNeg) && value->fValue;
-        break;
     case CSSPropertyOrder:
         validPrimitive = validUnit(value, FInteger);
         break;
@@ -618,12 +615,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyGridRowStart:
         ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
         parsedValue = parseGridPosition();
-        break;
-
-    case CSSPropertyGridColumnGap:
-    case CSSPropertyGridRowGap:
-        ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
-        validPrimitive = validUnit(value, FLength | FNonNeg);
         break;
 
     case CSSPropertyGridGap:
@@ -719,12 +710,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         else
             parsedValue = parseShapeProperty(propId);
         break;
-    case CSSPropertyShapeMargin:
-        validPrimitive = validUnit(value, FLength | FPercent | FNonNeg);
-        break;
-    case CSSPropertyShapeImageThreshold:
-        validPrimitive = validUnit(value, FNumber);
-        break;
 
     case CSSPropertyAlignContent:
         ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
@@ -792,6 +777,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyWebkitMinLogicalHeight:
     case CSSPropertyWebkitLogicalWidth:
     case CSSPropertyWebkitLogicalHeight:
+    case CSSPropertyScrollSnapDestination:
     case CSSPropertyObjectPosition:
     case CSSPropertyPerspectiveOrigin:
     case CSSPropertyClip:
@@ -820,6 +806,11 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyAnimationTimingFunction:
     case CSSPropertyTransitionTimingFunction:
     case CSSPropertyTransitionProperty:
+    case CSSPropertyGridColumnGap:
+    case CSSPropertyGridRowGap:
+    case CSSPropertyShapeMargin:
+    case CSSPropertyShapeImageThreshold:
+    case CSSPropertyWebkitBoxOrdinalGroup:
     case CSSPropertyOrphans:
     case CSSPropertyWidows:
     case CSSPropertyWebkitTapHighlightColor:
@@ -929,9 +920,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         break;
     case CSSPropertyScrollSnapCoordinate:
         parsedValue = parseScrollSnapCoordinate();
-        break;
-    case CSSPropertyScrollSnapDestination:
-        parsedValue = parsePosition(m_valueList);
         break;
 
     default:
