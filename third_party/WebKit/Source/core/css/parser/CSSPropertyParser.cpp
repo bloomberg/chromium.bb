@@ -26,6 +26,7 @@
 #include "core/css/CSSValuePool.h"
 #include "core/css/CSSVariableReferenceValue.h"
 #include "core/css/FontFace.h"
+#include "core/css/HashTools.h"
 #include "core/css/parser/CSSParserFastPaths.h"
 #include "core/css/parser/CSSParserValues.h"
 #include "core/css/parser/CSSVariableParser.h"
@@ -130,6 +131,115 @@ bool CSSPropertyParser::parseValueStart(CSSPropertyID unresolvedProperty, bool i
     }
 
     return false;
+}
+
+bool CSSPropertyParser::isColorKeyword(CSSValueID id)
+{
+    // Named colors and color keywords:
+    //
+    // <named-color>
+    //   'aqua', 'black', 'blue', ..., 'yellow' (CSS3: "basic color keywords")
+    //   'aliceblue', ..., 'yellowgreen'        (CSS3: "extended color keywords")
+    //   'transparent'
+    //
+    // 'currentcolor'
+    //
+    // <deprecated-system-color>
+    //   'ActiveBorder', ..., 'WindowText'
+    //
+    // WebKit proprietary/internal:
+    //   '-webkit-link'
+    //   '-webkit-activelink'
+    //   '-internal-active-list-box-selection'
+    //   '-internal-active-list-box-selection-text'
+    //   '-internal-inactive-list-box-selection'
+    //   '-internal-inactive-list-box-selection-text'
+    //   '-webkit-focus-ring-color'
+    //   '-webkit-text'
+    //
+    return (id >= CSSValueAqua && id <= CSSValueWebkitText)
+        || (id >= CSSValueAliceblue && id <= CSSValueYellowgreen)
+        || id == CSSValueMenu;
+}
+
+bool CSSPropertyParser::isSystemColor(CSSValueID id)
+{
+    return (id >= CSSValueActiveborder && id <= CSSValueWindowtext) || id == CSSValueMenu;
+}
+
+template <typename CharacterType>
+static CSSPropertyID unresolvedCSSPropertyID(const CharacterType* propertyName, unsigned length)
+{
+    char buffer[maxCSSPropertyNameLength + 1]; // 1 for null character
+
+    for (unsigned i = 0; i != length; ++i) {
+        CharacterType c = propertyName[i];
+        if (c == 0 || c >= 0x7F)
+            return CSSPropertyInvalid; // illegal character
+        buffer[i] = toASCIILower(c);
+    }
+    buffer[length] = '\0';
+
+    const char* name = buffer;
+    const Property* hashTableEntry = findProperty(name, length);
+    if (!hashTableEntry)
+        return CSSPropertyInvalid;
+    CSSPropertyID property = static_cast<CSSPropertyID>(hashTableEntry->id);
+    if (!CSSPropertyMetadata::isEnabledProperty(property))
+        return CSSPropertyInvalid;
+    return property;
+}
+
+CSSPropertyID unresolvedCSSPropertyID(const String& string)
+{
+    unsigned length = string.length();
+
+    if (!length)
+        return CSSPropertyInvalid;
+    if (length > maxCSSPropertyNameLength)
+        return CSSPropertyInvalid;
+
+    return string.is8Bit() ? unresolvedCSSPropertyID(string.characters8(), length) : unresolvedCSSPropertyID(string.characters16(), length);
+}
+
+CSSPropertyID unresolvedCSSPropertyID(const CSSParserString& string)
+{
+    unsigned length = string.length();
+
+    if (!length)
+        return CSSPropertyInvalid;
+    if (length > maxCSSPropertyNameLength)
+        return CSSPropertyInvalid;
+
+    return string.is8Bit() ? unresolvedCSSPropertyID(string.characters8(), length) : unresolvedCSSPropertyID(string.characters16(), length);
+}
+
+template <typename CharacterType>
+static CSSValueID cssValueKeywordID(const CharacterType* valueKeyword, unsigned length)
+{
+    char buffer[maxCSSValueKeywordLength + 1]; // 1 for null character
+
+    for (unsigned i = 0; i != length; ++i) {
+        CharacterType c = valueKeyword[i];
+        if (c == 0 || c >= 0x7F)
+            return CSSValueInvalid; // illegal character
+        buffer[i] = WTF::toASCIILower(c);
+    }
+    buffer[length] = '\0';
+
+    const Value* hashTableEntry = findValue(buffer, length);
+    return hashTableEntry ? static_cast<CSSValueID>(hashTableEntry->id) : CSSValueInvalid;
+}
+
+CSSValueID cssValueKeywordID(const CSSParserString& string)
+{
+    unsigned length = string.length();
+    if (!length)
+        return CSSValueInvalid;
+    if (length > maxCSSValueKeywordLength)
+        return CSSValueInvalid;
+
+    return string.is8Bit() ? cssValueKeywordID(string.characters8(), length) : cssValueKeywordID(string.characters16(), length);
 }
 
 bool CSSPropertyParser::consumeCSSWideKeyword(CSSPropertyID unresolvedProperty, bool important)
@@ -2558,21 +2668,21 @@ static PassRefPtrWillBeRawPtr<CSSValueList> consumeFontFaceUnicodeRange(CSSParse
     return values.release();
 }
 
-PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::consumeFontFaceSrcURI()
+static PassRefPtrWillBeRawPtr<CSSValue> consumeFontFaceSrcURI(CSSParserTokenRange& range, CSSParserContext context)
 {
-    String url = consumeUrl(m_range);
+    String url = consumeUrl(range);
     if (url.isNull())
         return nullptr;
-    RefPtrWillBeRawPtr<CSSFontFaceSrcValue> uriValue(CSSFontFaceSrcValue::create(m_context.completeURL(url), m_context.shouldCheckContentSecurityPolicy()));
-    uriValue->setReferrer(m_context.referrer());
+    RefPtrWillBeRawPtr<CSSFontFaceSrcValue> uriValue(CSSFontFaceSrcValue::create(context.completeURL(url), context.shouldCheckContentSecurityPolicy()));
+    uriValue->setReferrer(context.referrer());
 
-    if (m_range.peek().functionId() != CSSValueFormat)
+    if (range.peek().functionId() != CSSValueFormat)
         return uriValue.release();
 
     // FIXME: https://drafts.csswg.org/css-fonts says that format() contains a comma-separated list of strings,
     // but CSSFontFaceSrcValue stores only one format. Allowing one format for now.
     // FIXME: IdentToken should not be supported here.
-    CSSParserTokenRange args = consumeFunction(m_range);
+    CSSParserTokenRange args = consumeFunction(range);
     const CSSParserToken& arg = args.consumeIncludingWhitespace();
     if ((arg.type() != StringToken && arg.type() != IdentToken) || !args.atEnd())
         return nullptr;
@@ -2580,10 +2690,10 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::consumeFontFaceSrcURI()
     return uriValue.release();
 }
 
-PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::consumeFontFaceSrcLocal()
+static PassRefPtrWillBeRawPtr<CSSValue> consumeFontFaceSrcLocal(CSSParserTokenRange& range, CSSParserContext context)
 {
-    CSSParserTokenRange args = consumeFunction(m_range);
-    ContentSecurityPolicyDisposition shouldCheckContentSecurityPolicy = m_context.shouldCheckContentSecurityPolicy();
+    CSSParserTokenRange args = consumeFunction(range);
+    ContentSecurityPolicyDisposition shouldCheckContentSecurityPolicy = context.shouldCheckContentSecurityPolicy();
     if (args.peek().type() == StringToken) {
         const CSSParserToken& arg = args.consumeIncludingWhitespace();
         if (!args.atEnd())
@@ -2599,21 +2709,21 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::consumeFontFaceSrcLocal()
     return nullptr;
 }
 
-PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::consumeFontFaceSrc()
+static PassRefPtrWillBeRawPtr<CSSValueList> consumeFontFaceSrc(CSSParserTokenRange& range, CSSParserContext context)
 {
     RefPtrWillBeRawPtr<CSSValueList> values(CSSValueList::createCommaSeparated());
 
     do {
-        const CSSParserToken& token = m_range.peek();
+        const CSSParserToken& token = range.peek();
         RefPtrWillBeRawPtr<CSSValue> parsedValue = nullptr;
         if (token.functionId() == CSSValueLocal)
-            parsedValue = consumeFontFaceSrcLocal();
+            parsedValue = consumeFontFaceSrcLocal(range, context);
         else
-            parsedValue = consumeFontFaceSrcURI();
+            parsedValue = consumeFontFaceSrcURI(range, context);
         if (!parsedValue)
             return nullptr;
         values->append(parsedValue);
-    } while (consumeCommaIncludingWhitespace(m_range));
+    } while (consumeCommaIncludingWhitespace(range));
     return values.release();
 }
 
@@ -2627,7 +2737,7 @@ bool CSSPropertyParser::parseFontFaceDescriptor(CSSPropertyID propId)
         parsedValue = consumeFamilyName(m_range);
         break;
     case CSSPropertySrc: // This is a list of urls or local references.
-        parsedValue = consumeFontFaceSrc();
+        parsedValue = consumeFontFaceSrc(m_range, m_context);
         break;
     case CSSPropertyUnicodeRange:
         parsedValue = consumeFontFaceUnicodeRange(m_range);

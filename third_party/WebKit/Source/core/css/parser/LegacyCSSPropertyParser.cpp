@@ -49,7 +49,6 @@
 #include "core/css/CSSValuePair.h"
 #include "core/css/CSSValuePool.h"
 #include "core/css/CSSVariableReferenceValue.h"
-#include "core/css/HashTools.h"
 #include "core/css/parser/CSSParserFastPaths.h"
 #include "core/css/parser/CSSParserValues.h"
 #include "core/frame/UseCounter.h"
@@ -272,15 +271,6 @@ static inline bool isForwardSlashOperator(CSSParserValue* value)
 {
     ASSERT(value);
     return value->m_unit == CSSParserValue::Operator && value->iValue == '/';
-}
-
-static bool isGeneratedImageValue(CSSValueID id)
-{
-    return id == CSSValueLinearGradient || id == CSSValueRadialGradient
-        || id == CSSValueRepeatingLinearGradient || id == CSSValueRepeatingRadialGradient
-        || id == CSSValueWebkitLinearGradient || id == CSSValueWebkitRadialGradient
-        || id == CSSValueWebkitRepeatingLinearGradient || id == CSSValueWebkitRepeatingRadialGradient
-        || id == CSSValueWebkitGradient || id == CSSValueWebkitCrossFade;
 }
 
 inline PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSPropertyParser::parseValidPrimitive(CSSValueID identifier, CSSParserValue* value)
@@ -1292,7 +1282,7 @@ PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::parseContent()
                 parsedValue = parseCounterContent(args, true);
             } else if (val->function->id == CSSValueWebkitImageSet) {
                 parsedValue = parseImageSet(m_valueList);
-            } else if (isGeneratedImageValue(val->function->id)) {
+            } else if (CSSPropertyParser::isGeneratedImage(val->function->id)) {
                 if (!parseGeneratedImage(m_valueList, parsedValue))
                     return nullptr;
             }
@@ -1345,35 +1335,6 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseAttr(CSSParserValueList
     return attrValue.release();
 }
 
-bool CSSPropertyParser::isColorKeyword(CSSValueID id)
-{
-    // Named colors and color keywords:
-    //
-    // <named-color>
-    //   'aqua', 'black', 'blue', ..., 'yellow' (CSS3: "basic color keywords")
-    //   'aliceblue', ..., 'yellowgreen'        (CSS3: "extended color keywords")
-    //   'transparent'
-    //
-    // 'currentcolor'
-    //
-    // <deprecated-system-color>
-    //   'ActiveBorder', ..., 'WindowText'
-    //
-    // WebKit proprietary/internal:
-    //   '-webkit-link'
-    //   '-webkit-activelink'
-    //   '-internal-active-list-box-selection'
-    //   '-internal-active-list-box-selection-text'
-    //   '-internal-inactive-list-box-selection'
-    //   '-internal-inactive-list-box-selection-text'
-    //   '-webkit-focus-ring-color'
-    //   '-webkit-text'
-    //
-    return (id >= CSSValueAqua && id <= CSSValueWebkitText)
-        || (id >= CSSValueAliceblue && id <= CSSValueYellowgreen)
-        || id == CSSValueMenu;
-}
-
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseColor(const CSSParserValue* value, bool acceptQuirkyColors)
 {
     CSSValueID id = value->id;
@@ -1402,7 +1363,7 @@ bool CSSPropertyParser::parseFillImage(CSSParserValueList* valueList, RefPtrWill
     }
 
     if (valueList->current()->m_unit == CSSParserValue::Function) {
-        if (isGeneratedImageValue(valueList->current()->function->id))
+        if (CSSPropertyParser::isGeneratedImage(valueList->current()->function->id))
             return parseGeneratedImage(valueList, value);
 
         if (valueList->current()->function->id == CSSValueWebkitImageSet) {
@@ -3742,7 +3703,7 @@ bool CSSPropertyParser::buildBorderImageParseContext(CSSPropertyID propId, Borde
             if (val->m_unit == CSSParserValue::URI) {
                 context.commitImage(createCSSImageValueWithReferrer(val->string, m_context));
             } else if (val->m_unit == CSSParserValue::Function) {
-                if (isGeneratedImageValue(val->function->id)) {
+                if (CSSPropertyParser::isGeneratedImage(val->function->id)) {
                     RefPtrWillBeRawPtr<CSSValue> value = nullptr;
                     if (parseGeneratedImage(m_valueList, value))
                         context.commitImage(value.release());
@@ -4969,86 +4930,6 @@ bool CSSPropertyParser::parseCalculation(CSSParserValue* value, ValueRange range
         return false;
 
     return true;
-}
-
-template <typename CharacterType>
-static CSSPropertyID unresolvedCSSPropertyID(const CharacterType* propertyName, unsigned length)
-{
-    char buffer[maxCSSPropertyNameLength + 1]; // 1 for null character
-
-    for (unsigned i = 0; i != length; ++i) {
-        CharacterType c = propertyName[i];
-        if (c == 0 || c >= 0x7F)
-            return CSSPropertyInvalid; // illegal character
-        buffer[i] = toASCIILower(c);
-    }
-    buffer[length] = '\0';
-
-    const char* name = buffer;
-    const Property* hashTableEntry = findProperty(name, length);
-    if (!hashTableEntry)
-        return CSSPropertyInvalid;
-    CSSPropertyID property = static_cast<CSSPropertyID>(hashTableEntry->id);
-    if (!CSSPropertyMetadata::isEnabledProperty(property))
-        return CSSPropertyInvalid;
-    return property;
-}
-
-CSSPropertyID unresolvedCSSPropertyID(const String& string)
-{
-    unsigned length = string.length();
-
-    if (!length)
-        return CSSPropertyInvalid;
-    if (length > maxCSSPropertyNameLength)
-        return CSSPropertyInvalid;
-
-    return string.is8Bit() ? unresolvedCSSPropertyID(string.characters8(), length) : unresolvedCSSPropertyID(string.characters16(), length);
-}
-
-CSSPropertyID unresolvedCSSPropertyID(const CSSParserString& string)
-{
-    unsigned length = string.length();
-
-    if (!length)
-        return CSSPropertyInvalid;
-    if (length > maxCSSPropertyNameLength)
-        return CSSPropertyInvalid;
-
-    return string.is8Bit() ? unresolvedCSSPropertyID(string.characters8(), length) : unresolvedCSSPropertyID(string.characters16(), length);
-}
-
-template <typename CharacterType>
-static CSSValueID cssValueKeywordID(const CharacterType* valueKeyword, unsigned length)
-{
-    char buffer[maxCSSValueKeywordLength + 1]; // 1 for null character
-
-    for (unsigned i = 0; i != length; ++i) {
-        CharacterType c = valueKeyword[i];
-        if (c == 0 || c >= 0x7F)
-            return CSSValueInvalid; // illegal character
-        buffer[i] = WTF::toASCIILower(c);
-    }
-    buffer[length] = '\0';
-
-    const Value* hashTableEntry = findValue(buffer, length);
-    return hashTableEntry ? static_cast<CSSValueID>(hashTableEntry->id) : CSSValueInvalid;
-}
-
-CSSValueID cssValueKeywordID(const CSSParserString& string)
-{
-    unsigned length = string.length();
-    if (!length)
-        return CSSValueInvalid;
-    if (length > maxCSSValueKeywordLength)
-        return CSSValueInvalid;
-
-    return string.is8Bit() ? cssValueKeywordID(string.characters8(), length) : cssValueKeywordID(string.characters16(), length);
-}
-
-bool CSSPropertyParser::isSystemColor(CSSValueID id)
-{
-    return (id >= CSSValueActiveborder && id <= CSSValueWindowtext) || id == CSSValueMenu;
 }
 
 } // namespace blink

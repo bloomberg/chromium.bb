@@ -100,6 +100,16 @@ public:
         return imageValue;
     }
 
+    // TODO(rwlbuis): move to CSSPropertyParser.cpp once CSSParserToken conversion is done.
+    static bool isGeneratedImage(CSSValueID id)
+    {
+        return id == CSSValueLinearGradient || id == CSSValueRadialGradient
+            || id == CSSValueRepeatingLinearGradient || id == CSSValueRepeatingRadialGradient
+            || id == CSSValueWebkitLinearGradient || id == CSSValueWebkitRadialGradient
+            || id == CSSValueWebkitRepeatingLinearGradient || id == CSSValueWebkitRepeatingRadialGradient
+            || id == CSSValueWebkitGradient || id == CSSValueWebkitCrossFade;
+    }
+
 private:
     CSSPropertyParser(const CSSParserTokenRange&, const CSSParserContext&,
         WillBeHeapVector<CSSProperty, 256>&);
@@ -205,8 +215,6 @@ private:
     PassRefPtrWillBeRawPtr<CSSValue> parseColor(const CSSParserValue*, bool acceptQuirkyColors = false);
     bool parseColorFromValue(const CSSParserValue*, RGBA32&, bool acceptQuirkyColors = false);
 
-    PassRefPtrWillBeRawPtr<CSSValueList> consumeFontFaceSrc();
-
     // CSS3 Parsing Routines (for properties specific to CSS3)
     bool parseBorderImageShorthand(CSSPropertyID, bool important);
     PassRefPtrWillBeRawPtr<CSSValue> parseBorderImage(CSSPropertyID);
@@ -247,9 +255,6 @@ private:
     PassRefPtrWillBeRawPtr<CSSCustomIdentValue> createPrimitiveCustomIdentValue(CSSParserValue*);
 
     PassRefPtrWillBeRawPtr<CSSBasicShapeInsetValue> parseInsetRoundedCorners(PassRefPtrWillBeRawPtr<CSSBasicShapeInsetValue>, CSSParserValueList*);
-
-    PassRefPtrWillBeRawPtr<CSSValue> consumeFontFaceSrcURI();
-    PassRefPtrWillBeRawPtr<CSSValue> consumeFontFaceSrcLocal();
 
     class ImplicitScope {
         STACK_ALLOCATED();
