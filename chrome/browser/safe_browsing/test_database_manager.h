@@ -39,6 +39,7 @@ class TestSafeBrowsingDatabaseManager
   bool IsMalwareKillSwitchOn() override;
   bool IsCsdWhitelistKillSwitchOn() override;
   void CancelCheck(Client* client) override;
+  void CheckApiBlacklistUrl(const GURL& url, Client* client) override;
   void StartOnIOThread() override;
   void StopOnIOThread(bool shutdown) override;
 

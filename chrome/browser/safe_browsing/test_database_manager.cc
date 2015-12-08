@@ -107,6 +107,11 @@ void TestSafeBrowsingDatabaseManager::CancelCheck(Client* client) {
   NOTIMPLEMENTED();
 }
 
+void TestSafeBrowsingDatabaseManager::CheckApiBlacklistUrl(const GURL& url,
+                                                           Client* client) {
+  NOTIMPLEMENTED();
+}
+
 void TestSafeBrowsingDatabaseManager::StartOnIOThread() {
 }
 

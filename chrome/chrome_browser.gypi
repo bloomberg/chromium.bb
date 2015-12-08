@@ -2490,6 +2490,7 @@
     'chrome_browser_safe_browsing_mobile_sources': [
       'browser/renderer_host/safe_browsing_resource_throttle.cc',
       'browser/renderer_host/safe_browsing_resource_throttle.h',
+      'browser/safe_browsing/database_manager.cc',
       'browser/safe_browsing/database_manager.h',
       'browser/safe_browsing/remote_database_manager.cc',
       'browser/safe_browsing/remote_database_manager.h',
@@ -2517,6 +2518,7 @@
       'browser/safe_browsing/client_side_detection_service.h',
       'browser/safe_browsing/client_side_model_loader.cc',
       'browser/safe_browsing/client_side_model_loader.h',
+      'browser/safe_browsing/database_manager.cc',
       'browser/safe_browsing/database_manager.h',
       'browser/safe_browsing/download_feedback.cc',
       'browser/safe_browsing/download_feedback.h',
