@@ -37,6 +37,7 @@ class CORE_EXPORT TextResourceDecoder {
 public:
     enum EncodingSource {
         DefaultEncoding,
+        DefaultEncodingAttemptedSniffing,
         AutoDetectedEncoding,
         EncodingFromContentSniffing,
         EncodingFromXMLHeader,
@@ -57,6 +58,18 @@ public:
     bool encodingWasDetectedHeuristically() const
     {
         return m_source == AutoDetectedEncoding
+            || m_source == EncodingFromContentSniffing
+            || m_source == DefaultEncodingAttemptedSniffing;
+    }
+
+    bool encodingWasDetectedFromContentSniffing() const
+    {
+        return m_source == EncodingFromContentSniffing;
+    }
+
+    bool attemptedToDetermineEncodingFromContentSniffing() const
+    {
+        return m_source == DefaultEncodingAttemptedSniffing
             || m_source == EncodingFromContentSniffing;
     }
 
@@ -83,6 +96,7 @@ private:
     bool checkForXMLCharset(const char*, size_t, bool& movedDataToBuffer);
     void checkForMetaCharset(const char*, size_t);
     bool shouldAutoDetect() const;
+    void detectTextEncoding(const char*, size_t);
 
     ContentType m_contentType;
     WTF::TextEncoding m_encoding;

@@ -48,10 +48,14 @@ public:
     void setEncoding(const WTF::TextEncoding&);
     bool wasDetectedHeuristically() const { return m_wasDetectedHeuristically; }
     bool sawDecodingError() const { return m_sawDecodingError; }
+    bool attemptedToDetermineEncodingFromContentSniffing() const { return m_attemptedToDetermineEncodingFromContentSniffing; }
+    bool encodingWasDetectedFromContentSniffing() const { return m_encodingWasDetectedFromContentSniffing; }
 
 private:
     WTF::TextEncoding m_encoding;
     bool m_wasDetectedHeuristically;
+    bool m_attemptedToDetermineEncodingFromContentSniffing;
+    bool m_encodingWasDetectedFromContentSniffing;
     bool m_sawDecodingError;
 };
 
@@ -62,6 +66,8 @@ inline bool operator!=(const DocumentEncodingData& a, const DocumentEncodingData
 {
     return a.encoding() != b.encoding()
         || a.wasDetectedHeuristically() != b.wasDetectedHeuristically()
+        || a.attemptedToDetermineEncodingFromContentSniffing() != b.attemptedToDetermineEncodingFromContentSniffing()
+        || a.encodingWasDetectedFromContentSniffing() != b.encodingWasDetectedFromContentSniffing()
         || a.sawDecodingError() != b.sawDecodingError();
 }
 
