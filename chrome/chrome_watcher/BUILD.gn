@@ -33,6 +33,7 @@ shared_library("chrome_watcher") {
     ":chrome_watcher_resources",
     ":client",
     "//base",
+    "//base:base_static",
     "//build/config/sanitizers:deps",
     "//chrome/installer/util",
     "//components/browser_watcher",
