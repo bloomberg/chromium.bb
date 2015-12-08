@@ -1227,7 +1227,12 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   BrowserGpuChannelHostFactory::Initialize(established_gpu_channel);
   ImageTransportFactory::Initialize();
 #if defined(USE_AURA)
-  if (aura::Env::GetInstance()) {
+  bool use_mus_in_renderer = false;
+#if defined (MOJO_SHELL_CLIENT)
+  use_mus_in_renderer = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kUseMusInRenderer);
+#endif  // defined(MOJO_SHELL_CLIENT);
+  if (aura::Env::GetInstance() && !use_mus_in_renderer) {
     aura::Env::GetInstance()->set_context_factory(GetContextFactory());
   }
 #endif  // defined(USE_AURA)
