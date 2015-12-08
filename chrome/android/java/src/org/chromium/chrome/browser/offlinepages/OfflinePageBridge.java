@@ -248,7 +248,9 @@ public final class OfflinePageBridge {
         SavePageCallback callbackWrapper = new SavePageCallback() {
             @Override
             public void onSavePageDone(int savePageResult, String url) {
-                if (savePageResult == SavePageResult.SUCCESS) {
+                // TODO(fgorski): Eliminate call to getAllPages() here.
+                // See http://crbug.com/566939
+                if (savePageResult == SavePageResult.SUCCESS && isOfflinePageModelLoaded()) {
                     long totalPageSizeAfter = getTotalSize(getAllPages());
                     recordStorageHistograms(0, totalPageSizeAfter);
                 }
@@ -340,7 +342,9 @@ public final class OfflinePageBridge {
         return new DeletePageCallback() {
             @Override
             public void onDeletePageDone(int deletePageResult) {
-                if (deletePageResult == DeletePageResult.SUCCESS) {
+                // TODO(fgorski): Eliminate call to getAllPages() here.
+                // See http://crbug.com/566939
+                if (deletePageResult == DeletePageResult.SUCCESS && isOfflinePageModelLoaded()) {
                     long totalPageSizeAfter = getTotalSize(getAllPages());
                     recordStorageHistograms(totalPageSizeBefore, totalPageSizeAfter);
                 }

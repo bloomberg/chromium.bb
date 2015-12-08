@@ -233,6 +233,11 @@ public class EnhancedBookmarkEditActivity extends EnhancedBookmarkActivityBase {
 
     private void updateOfflineSection() {
         assert OfflinePageBridge.isEnabled();
+
+        // It is possible that callback arrives after the activity was dismissed.
+        // See http://crbug.com/566939
+        if (mEnhancedBookmarksModel == null) return;
+
         mEnhancedBookmarksModel.getOfflinePageBridge().checkOfflinePageMetadata();
 
         Button saveRemoveVisitButton = (Button) findViewById(R.id.offline_page_save_remove_button);
