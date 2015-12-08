@@ -27,6 +27,7 @@ class ShellContentClient : public ContentClient {
   base::RefCountedStaticMemory* GetDataResourceBytes(
       int resource_id) const override;
   gfx::Image& GetNativeImageNamed(int resource_id) const override;
+  bool IsSupplementarySiteIsolationModeEnabled() override;
 };
 
 }  // namespace content

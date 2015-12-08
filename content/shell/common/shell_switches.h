@@ -25,6 +25,7 @@ extern const char kAlwaysUseComplexText[];
 extern const char kEnableLeakDetection[];
 extern const char kEncodeBinary[];
 extern const char kExposeInternalsForTesting[];
+extern const char kIsolateSitesForTesting[];
 extern const char kRegisterFontFiles[];
 extern const char kRunLayoutTest[];
 extern const char kStableReleaseMode[];

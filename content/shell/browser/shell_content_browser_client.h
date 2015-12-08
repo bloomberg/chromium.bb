@@ -32,6 +32,8 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   // ContentBrowserClient overrides.
   BrowserMainParts* CreateBrowserMainParts(
       const MainFunctionParams& parameters) override;
+  bool DoesSiteRequireDedicatedProcess(BrowserContext* browser_context,
+                                       const GURL& effective_url) override;
   net::URLRequestContextGetter* CreateRequestContext(
       BrowserContext* browser_context,
       ProtocolHandlerMap* protocol_handlers,

@@ -91,4 +91,9 @@ gfx::Image& ShellContentClient::GetNativeImageNamed(int resource_id) const {
   return ResourceBundle::GetSharedInstance().GetNativeImageNamed(resource_id);
 }
 
+bool ShellContentClient::IsSupplementarySiteIsolationModeEnabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kIsolateSitesForTesting);
+}
+
 }  // namespace content
