@@ -283,6 +283,7 @@ void WebViewHelper::reset()
 {
     if (m_webView) {
         ASSERT(m_webView->mainFrame()->isWebRemoteFrame() || !testClientForFrame(m_webView->mainFrame())->isLoading());
+        m_webView->willCloseLayerTreeView();
         m_webView->close();
         m_webView = 0;
     }
