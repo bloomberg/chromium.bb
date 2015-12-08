@@ -20,7 +20,10 @@ void MemoryPressureController::OnMemoryMessageFilterAdded(
 
   // Add the message filter to the set of all memory message filters and check
   // that it wasn't there beforehand.
-  const bool success = memory_message_filters_.insert(filter).second;
+  const bool success =
+      memory_message_filters_.insert(
+                                 std::make_pair(filter->process_host(), filter))
+          .second;
   DCHECK(success);
 
   // There's no need to send a message to the child process if memory pressure
@@ -33,10 +36,12 @@ void MemoryPressureController::OnMemoryMessageFilterRemoved(
     MemoryMessageFilter* filter) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  // Remove the message filter from the set of all memory message filters and
-  // check that it was there beforehand.
-  const bool success = memory_message_filters_.erase(filter) == 1u;
-  DCHECK(success);
+  // Remove the message filter from the set of all memory message filters,
+  // ensuring that it was there beforehand.
+  auto it = memory_message_filters_.find(filter->process_host());
+  DCHECK(it != memory_message_filters_.end());
+  DCHECK_EQ(filter, it->second);
+  memory_message_filters_.erase(it);
 }
 
 // static
@@ -63,9 +68,8 @@ void MemoryPressureController::SetPressureNotificationsSuppressedInAllProcesses(
   base::MemoryPressureListener::SetNotificationsSuppressed(suppressed);
 
   // Enable/disable suppressing memory notifications in all child processes.
-  for (const scoped_refptr<MemoryMessageFilter>& filter :
-       memory_message_filters_)
-    filter->SendSetPressureNotificationsSuppressed(suppressed);
+  for (const auto& filter_pair : memory_message_filters_)
+    filter_pair.second->SendSetPressureNotificationsSuppressed(suppressed);
 }
 
 void MemoryPressureController::SimulatePressureNotificationInAllProcesses(
@@ -87,9 +91,44 @@ void MemoryPressureController::SimulatePressureNotificationInAllProcesses(
   base::MemoryPressureListener::SimulatePressureNotification(level);
 
   // Simulate memory pressure notification in all child processes.
-  for (const scoped_refptr<MemoryMessageFilter>& filter :
-       memory_message_filters_)
-    filter->SendSimulatePressureNotification(level);
+  for (const auto& filter_pair : memory_message_filters_)
+    filter_pair.second->SendSimulatePressureNotification(level);
+}
+
+void MemoryPressureController::SendPressureNotification(
+    const BrowserChildProcessHost* child_process_host,
+    base::MemoryPressureListener::MemoryPressureLevel level) {
+  SendPressureNotificationImpl(child_process_host, level);
+}
+
+void MemoryPressureController::SendPressureNotification(
+    const RenderProcessHost* render_process_host,
+    base::MemoryPressureListener::MemoryPressureLevel level) {
+  SendPressureNotificationImpl(render_process_host, level);
+}
+
+void MemoryPressureController::SendPressureNotificationImpl(
+    const void* child_process_host,
+    base::MemoryPressureListener::MemoryPressureLevel level) {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
+    // Note that passing base::Unretained(this) is safe here because the
+    // controller is a leaky singleton. It's also safe to pass an untyped
+    // child process pointer as the address is only used as a key for lookup in
+    // a map; at no point is it dereferenced.
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&MemoryPressureController::SendPressureNotificationImpl,
+                   base::Unretained(this), child_process_host, level));
+    return;
+  }
+
+  if (base::MemoryPressureListener::AreNotificationsSuppressed())
+    return;
+
+  // Find the appropriate message filter and dispatch the message.
+  auto it = memory_message_filters_.find(child_process_host);
+  if (it != memory_message_filters_.end())
+    it->second->SendPressureNotification(level);
 }
 
 }  // namespace content

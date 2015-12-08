@@ -38,8 +38,25 @@ MATCHER_P(IsSimulateMessage, level, "") {
   return level == base::get<0>(param);
 }
 
+MATCHER_P(IsPressureMessage, level, "") {
+  // Ensure that the message is deleted upon return.
+  scoped_ptr<IPC::Message> message(arg);
+  if (message == nullptr)
+    return false;
+  MemoryMsg_PressureNotification::Param param;
+  if (!MemoryMsg_PressureNotification::Read(message.get(), &param))
+    return false;
+  return level == base::get<0>(param);
+}
+
 class MemoryMessageFilterForTesting : public MemoryMessageFilter {
  public:
+  // Use this object itself as a fake RenderProcessHost pointer. The address is
+  // only used for looking up the message filter in the controller and is never
+  // actually dereferenced, so this is safe.
+  MemoryMessageFilterForTesting()
+      : MemoryMessageFilter(reinterpret_cast<RenderProcessHost*>(this)) {}
+
   MOCK_METHOD1(Send, bool(IPC::Message* message));
 
   void Add() {
@@ -91,7 +108,20 @@ class MemoryPressureControllerBrowserTest : public ContentBrowserTest {
         ->SimulatePressureNotificationInAllProcesses(level);
     RunAllPendingInMessageLoop(BrowserThread::IO);
   }
+
+  void SendPressureNotificationAndWait(
+      const void* fake_process_host,
+      base::MemoryPressureListener::MemoryPressureLevel level) {
+    MemoryPressureController::GetInstance()->SendPressureNotification(
+        reinterpret_cast<const RenderProcessHost*>(fake_process_host), level);
+    RunAllPendingInMessageLoop(BrowserThread::IO);
+  }
 };
+
+const auto MEMORY_PRESSURE_LEVEL_MODERATE =
+    base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE;
+const auto MEMORY_PRESSURE_LEVEL_CRITICAL =
+    base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL;
 
 IN_PROC_BROWSER_TEST_F(MemoryPressureControllerBrowserTest,
                        SetPressureNotificationsSuppressedInAllProcesses) {
@@ -108,6 +138,7 @@ IN_PROC_BROWSER_TEST_F(MemoryPressureControllerBrowserTest,
   EXPECT_CALL(*filter2, Send(testing::_)).Times(0);
   filter1->Add();
   EXPECT_FALSE(base::MemoryPressureListener::AreNotificationsSuppressed());
+  testing::Mock::VerifyAndClearExpectations(this);
 
   // Enable suppressing memory pressure notifications in all processes. The
   // first filter should send a message.
@@ -115,12 +146,22 @@ IN_PROC_BROWSER_TEST_F(MemoryPressureControllerBrowserTest,
   EXPECT_CALL(*filter2, Send(testing::_)).Times(0);
   SetPressureNotificationsSuppressedInAllProcessesAndWait(true);
   EXPECT_TRUE(base::MemoryPressureListener::AreNotificationsSuppressed());
+  testing::Mock::VerifyAndClearExpectations(this);
 
   // Add the second filter. It should send a message because notifications are
   // suppressed.
   EXPECT_CALL(*filter1, Send(testing::_)).Times(0);
   EXPECT_CALL(*filter2, Send(IsSetSuppressedMessage(true))).Times(1);
   filter2->Add();
+  testing::Mock::VerifyAndClearExpectations(this);
+
+  // Send a memory pressure event to the first child process. No messages should
+  // be sent as the notifications are suppressed.
+  EXPECT_CALL(*filter1, Send(testing::_)).Times(0);
+  EXPECT_CALL(*filter2, Send(testing::_)).Times(0);
+  SendPressureNotificationAndWait(filter1.get(),
+                                  MEMORY_PRESSURE_LEVEL_MODERATE);
+  testing::Mock::VerifyAndClearExpectations(this);
 
   // Disable suppressing memory pressure notifications in all processes. Both
   // filters should send a message.
@@ -128,11 +169,30 @@ IN_PROC_BROWSER_TEST_F(MemoryPressureControllerBrowserTest,
   EXPECT_CALL(*filter2, Send(IsSetSuppressedMessage(false))).Times(1);
   SetPressureNotificationsSuppressedInAllProcessesAndWait(false);
   EXPECT_FALSE(base::MemoryPressureListener::AreNotificationsSuppressed());
+  testing::Mock::VerifyAndClearExpectations(this);
+
+  // Send a memory pressure event to the first child process. A message should
+  // be received as messages are not being suppressed.
+  EXPECT_CALL(*filter1, Send(IsPressureMessage(MEMORY_PRESSURE_LEVEL_MODERATE)))
+      .Times(1);
+  EXPECT_CALL(*filter2, Send(testing::_)).Times(0);
+  SendPressureNotificationAndWait(filter1.get(),
+                                  MEMORY_PRESSURE_LEVEL_MODERATE);
+  testing::Mock::VerifyAndClearExpectations(this);
+
+  // Send a memory pressure event to a non-existing child process. No message
+  // should be sent.
+  EXPECT_CALL(*filter1, Send(testing::_)).Times(0);
+  EXPECT_CALL(*filter2, Send(testing::_)).Times(0);
+  SendPressureNotificationAndWait(reinterpret_cast<const void*>(0xF005BA11),
+                                  MEMORY_PRESSURE_LEVEL_MODERATE);
+  testing::Mock::VerifyAndClearExpectations(this);
 
   // Remove the first filter. No messages should be sent.
   EXPECT_CALL(*filter1, Send(testing::_)).Times(0);
   EXPECT_CALL(*filter2, Send(testing::_)).Times(0);
   filter1->Remove();
+  testing::Mock::VerifyAndClearExpectations(this);
 
   // Enable suppressing memory pressure notifications in all processes. The
   // second filter should send a message.
@@ -140,6 +200,7 @@ IN_PROC_BROWSER_TEST_F(MemoryPressureControllerBrowserTest,
   EXPECT_CALL(*filter2, Send(IsSetSuppressedMessage(true))).Times(1);
   SetPressureNotificationsSuppressedInAllProcessesAndWait(true);
   EXPECT_TRUE(base::MemoryPressureListener::AreNotificationsSuppressed());
+  testing::Mock::VerifyAndClearExpectations(this);
 
   // Remove the second filter and disable suppressing memory pressure
   // notifications in all processes. No messages should be sent.
@@ -148,15 +209,11 @@ IN_PROC_BROWSER_TEST_F(MemoryPressureControllerBrowserTest,
   filter2->Remove();
   SetPressureNotificationsSuppressedInAllProcessesAndWait(false);
   EXPECT_FALSE(base::MemoryPressureListener::AreNotificationsSuppressed());
+  testing::Mock::VerifyAndClearExpectations(this);
 }
 
 IN_PROC_BROWSER_TEST_F(MemoryPressureControllerBrowserTest,
                        SimulatePressureNotificationInAllProcesses) {
-  const auto MEMORY_PRESSURE_LEVEL_MODERATE =
-      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE;
-  const auto MEMORY_PRESSURE_LEVEL_CRITICAL =
-      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL;
-
   scoped_refptr<MemoryMessageFilterForTesting> filter(
       new MemoryMessageFilterForTesting);
   scoped_ptr<base::MemoryPressureListener> listener(
@@ -168,17 +225,26 @@ IN_PROC_BROWSER_TEST_F(MemoryPressureControllerBrowserTest,
 
   filter->Add();
 
+  // Send a memory pressure event to the first child process. It should send a
+  // pressure notification message.
+  EXPECT_CALL(*filter, Send(IsPressureMessage(MEMORY_PRESSURE_LEVEL_MODERATE)))
+      .Times(1);
+  SendPressureNotificationAndWait(filter.get(), MEMORY_PRESSURE_LEVEL_MODERATE);
+  testing::Mock::VerifyAndClearExpectations(this);
+
   EXPECT_CALL(*filter, Send(IsSimulateMessage(MEMORY_PRESSURE_LEVEL_CRITICAL)))
       .Times(1);
   EXPECT_CALL(*this, OnMemoryPressure(MEMORY_PRESSURE_LEVEL_CRITICAL)).Times(1);
   SimulatePressureNotificationInAllProcessesAndWait(
       MEMORY_PRESSURE_LEVEL_CRITICAL);
   RunAllPendingInMessageLoop();  // Wait for the listener to run.
+  testing::Mock::VerifyAndClearExpectations(this);
 
   // Enable suppressing memory pressure notifications in all processes. This
   // should have no impact on simulating memory pressure notifications.
   EXPECT_CALL(*filter, Send(IsSetSuppressedMessage(true))).Times(1);
   SetPressureNotificationsSuppressedInAllProcessesAndWait(true);
+  testing::Mock::VerifyAndClearExpectations(this);
 
   EXPECT_CALL(*filter, Send(IsSimulateMessage(MEMORY_PRESSURE_LEVEL_MODERATE)))
       .Times(1);
@@ -186,11 +252,13 @@ IN_PROC_BROWSER_TEST_F(MemoryPressureControllerBrowserTest,
   SimulatePressureNotificationInAllProcessesAndWait(
       MEMORY_PRESSURE_LEVEL_MODERATE);
   RunAllPendingInMessageLoop();  // Wait for the listener to run.
+  testing::Mock::VerifyAndClearExpectations(this);
 
   // Disable suppressing memory pressure notifications in all processes. This
   // should have no impact on simulating memory pressure notifications.
   EXPECT_CALL(*filter, Send(IsSetSuppressedMessage(false))).Times(1);
   SetPressureNotificationsSuppressedInAllProcessesAndWait(false);
+  testing::Mock::VerifyAndClearExpectations(this);
 
   EXPECT_CALL(*filter, Send(IsSimulateMessage(MEMORY_PRESSURE_LEVEL_MODERATE)))
       .Times(1);
@@ -198,6 +266,7 @@ IN_PROC_BROWSER_TEST_F(MemoryPressureControllerBrowserTest,
   SimulatePressureNotificationInAllProcessesAndWait(
       MEMORY_PRESSURE_LEVEL_MODERATE);
   RunAllPendingInMessageLoop();  // Wait for the listener to run.
+  testing::Mock::VerifyAndClearExpectations(this);
 
   filter->Remove();
 }

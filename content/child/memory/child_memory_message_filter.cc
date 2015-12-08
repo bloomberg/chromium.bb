@@ -19,6 +19,7 @@ bool ChildMemoryMessageFilter::OnMessageReceived(const IPC::Message& message) {
                         OnSetPressureNotificationsSuppressed)
     IPC_MESSAGE_HANDLER(MemoryMsg_SimulatePressureNotification,
                         OnSimulatePressureNotification)
+    IPC_MESSAGE_HANDLER(MemoryMsg_PressureNotification, OnPressureNotification)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
