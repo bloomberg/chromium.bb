@@ -116,6 +116,7 @@
 #include "content/renderer/shared_worker_repository.h"
 #include "content/renderer/skia_benchmarking_extension.h"
 #include "content/renderer/stats_collection_controller.h"
+#include "content/renderer/usb/web_usb_client_impl.h"
 #include "content/renderer/wake_lock/wake_lock_dispatcher.h"
 #include "content/renderer/web_frame_utils.h"
 #include "content/renderer/web_ui_extension.h"
@@ -190,7 +191,6 @@
 #include "content/renderer/media/android/webmediasession_android.h"
 #else
 #include "cc/blink/context_provider_web_context.h"
-#include "content/renderer/usb/web_usb_client_impl.h"
 #include "device/devices_app/public/cpp/constants.h"
 #endif
 
@@ -4030,11 +4030,9 @@ blink::WebBluetooth* RenderFrameImpl::bluetooth() {
 }
 
 blink::WebUSBClient* RenderFrameImpl::usbClient() {
-#if !defined(OS_ANDROID)
-  if (!usb_client_) {
+  if (!usb_client_)
     usb_client_.reset(new WebUSBClientImpl(GetServiceRegistry()));
-  }
-#endif
+
   return usb_client_.get();
 }
 

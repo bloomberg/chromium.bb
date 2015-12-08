@@ -41,6 +41,7 @@ source_set("renderer") {
     "//content/public/common:mojo_bindings",
     "//crypto:platform",
     "//device/battery:mojo_bindings",
+    "//device/devices_app/usb/public/interfaces",
     "//device/vibration:mojo_bindings",
     "//gin",
     "//gpu",
@@ -92,15 +93,7 @@ source_set("renderer") {
   }
 
   if (is_android) {
-    sources -= [
-      "media/audio_decoder.cc",
-      "usb/type_converters.cc",
-      "usb/type_converters.h",
-      "usb/web_usb_client_impl.cc",
-      "usb/web_usb_client_impl.h",
-      "usb/web_usb_device_impl.cc",
-      "usb/web_usb_device_impl.h",
-    ]
+    sources -= [ "media/audio_decoder.cc" ]
     sources += [
       "external_popup_menu.cc",
       "external_popup_menu.h",
@@ -114,8 +107,6 @@ source_set("renderer") {
       "//third_party/android_tools:cpu_features",
       "//third_party/libphonenumber",
     ]
-
-    deps -= [ "//components/webusb" ]
   } else {
     sources -= [
       "java/gin_java_bridge_dispatcher.cc",
@@ -126,11 +117,6 @@ source_set("renderer") {
       "java/gin_java_bridge_value_converter.h",
       "java/gin_java_function_invocation_helper.cc",
       "java/gin_java_function_invocation_helper.h",
-    ]
-
-    deps += [
-      "//device/devices_app/public/cpp",
-      "//device/devices_app/usb/public/interfaces",
     ]
   }
 

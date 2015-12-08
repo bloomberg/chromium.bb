@@ -15,6 +15,7 @@
     '../components/url_formatter/url_formatter.gyp:url_formatter',
     '../device/battery/battery.gyp:device_battery',
     '../device/battery/battery.gyp:device_battery_mojo_bindings',
+    '../device/devices_app/devices_app.gyp:device_usb_mojo_bindings_lib',
     '../device/vibration/vibration.gyp:device_vibration',
     '../device/vibration/vibration.gyp:device_vibration_mojo_bindings',
     '../gin/gin.gyp:gin',
@@ -805,12 +806,6 @@
     ['OS=="android"', {
       'sources!': [
         'renderer/media/audio_decoder.cc',
-        'renderer/usb/type_converters.cc',
-        'renderer/usb/type_converters.h',
-        'renderer/usb/web_usb_client_impl.cc',
-        'renderer/usb/web_usb_client_impl.h',
-        'renderer/usb/web_usb_device_impl.cc',
-        'renderer/usb/web_usb_device_impl.h',
       ],
       'sources': [
         'renderer/external_popup_menu.cc',
@@ -821,7 +816,6 @@
         '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber',
       ],
       'dependencies!': [
-        '../components/components.gyp:webusb',
         '../device/battery/battery.gyp:device_battery',
       ],
     }, {
@@ -836,8 +830,6 @@
         'renderer/java/gin_java_function_invocation_helper.h',
       ],
       'dependencies': [
-        '../device/devices_app/devices_app.gyp:device_usb_mojo_bindings_lib',
-        '../device/devices_app/devices_app.gyp:devices_app_public_cpp',
         '../media/cast/cast.gyp:cast_sender',
       ]
     }],
