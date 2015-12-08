@@ -36,8 +36,6 @@
         'pdf_engine.h',
         'preview_mode_client.cc',
         'preview_mode_client.h',
-        'resource.h',
-        'resource_consts.h',
       ],
       'conditions': [
         ['pdf_engine==0', {
