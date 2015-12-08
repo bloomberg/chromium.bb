@@ -65,4 +65,31 @@ TEST(RTreeTest, Overlap) {
   }
 }
 
+TEST(RTreeTest, GetBoundsEmpty) {
+  RTree rtree;
+  ASSERT_EQ(gfx::Rect(), rtree.GetBounds());
+}
+
+TEST(RTreeTest, GetBoundsNonOverlapping) {
+  std::vector<gfx::Rect> rects;
+  rects.push_back(gfx::Rect(5, 6, 7, 8));
+  rects.push_back(gfx::Rect(11, 12, 13, 14));
+
+  RTree rtree;
+  rtree.Build(rects);
+
+  ASSERT_EQ(gfx::Rect(5, 6, 19, 20), rtree.GetBounds());
+}
+
+TEST(RTreeTest, GetBoundsOverlapping) {
+  std::vector<gfx::Rect> rects;
+  rects.push_back(gfx::Rect(0, 0, 10, 10));
+  rects.push_back(gfx::Rect(5, 5, 5, 5));
+
+  RTree rtree;
+  rtree.Build(rects);
+
+  ASSERT_EQ(gfx::Rect(0, 0, 10, 10), rtree.GetBounds());
+}
+
 }  // namespace cc

@@ -75,6 +75,8 @@ class CC_EXPORT RTree {
 
   void Search(const gfx::Rect& query, std::vector<size_t>* results) const;
 
+  gfx::Rect GetBounds() const;
+
  private:
   // These values were empirically determined to produce reasonable performance
   // in most cases.

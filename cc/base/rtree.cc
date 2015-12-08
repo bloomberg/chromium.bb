@@ -107,4 +107,8 @@ void RTree::SearchRecursive(Node* node,
   }
 }
 
+gfx::Rect RTree::GetBounds() const {
+  return root_.bounds;
+}
+
 }  // namespace cc
