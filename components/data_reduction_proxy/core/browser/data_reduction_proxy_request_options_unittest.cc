@@ -150,14 +150,6 @@ class DataReductionProxyRequestOptionsTest : public testing::Test {
     request_options_->Init();
   }
 
-  void CreateRequest() {
-    net::URLRequestContext* context =
-        test_context_->request_context_getter()->GetURLRequestContext();
-    request_ = context->CreateRequest(GURL(), net::DEFAULT_PRIORITY, nullptr);
-  }
-
-  const net::URLRequest& request() { return *request_.get(); }
-
   TestDataReductionProxyParams* params() {
     return test_context_->config()->test_params();
   }
@@ -171,7 +163,6 @@ class DataReductionProxyRequestOptionsTest : public testing::Test {
     test_context_->RunUntilIdle();
     net::HttpRequestHeaders headers;
     request_options_->MaybeAddRequestHeader(
-        request_.get(),
         proxy_uri.empty() ? net::ProxyServer()
                           : net::ProxyServer::FromURI(
                                 proxy_uri, net::ProxyServer::SCHEME_HTTP),
@@ -189,7 +180,6 @@ class DataReductionProxyRequestOptionsTest : public testing::Test {
   base::MessageLoopForIO message_loop_;
   scoped_ptr<TestDataReductionProxyRequestOptions> request_options_;
   scoped_ptr<DataReductionProxyTestContext> test_context_;
-  scoped_ptr<net::URLRequest> request_;
 };
 
 TEST_F(DataReductionProxyRequestOptionsTest, AuthHashForSalt) {

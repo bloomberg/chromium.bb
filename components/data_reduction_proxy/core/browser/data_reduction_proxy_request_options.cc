@@ -195,7 +195,6 @@ void DataReductionProxyRequestOptions::RandBytes(void* output,
 }
 
 void DataReductionProxyRequestOptions::MaybeAddRequestHeader(
-    net::URLRequest* request,
     const net::ProxyServer& proxy_server,
     net::HttpRequestHeaders* request_headers) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -203,7 +202,7 @@ void DataReductionProxyRequestOptions::MaybeAddRequestHeader(
     return;
   if (proxy_server.is_direct())
     return;
-  MaybeAddRequestHeaderImpl(request, proxy_server.host_port_pair(), false,
+  MaybeAddRequestHeaderImpl(proxy_server.host_port_pair(), false,
                             request_headers);
 }
 
@@ -211,11 +210,10 @@ void DataReductionProxyRequestOptions::MaybeAddProxyTunnelRequestHandler(
     const net::HostPortPair& proxy_server,
     net::HttpRequestHeaders* request_headers) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  MaybeAddRequestHeaderImpl(nullptr, proxy_server, true, request_headers);
+  MaybeAddRequestHeaderImpl(proxy_server, true, request_headers);
 }
 
 void DataReductionProxyRequestOptions::SetHeader(
-    const net::URLRequest* request,
     net::HttpRequestHeaders* headers) {
   base::Time now = Now();
   // Authorization credentials must be regenerated if they are expired.
@@ -336,7 +334,6 @@ const std::string& DataReductionProxyRequestOptions::GetSecureSession() const {
 }
 
 void DataReductionProxyRequestOptions::MaybeAddRequestHeaderImpl(
-    const net::URLRequest* request,
     const net::HostPortPair& proxy_server,
     bool expect_ssl,
     net::HttpRequestHeaders* request_headers) {
@@ -345,7 +342,7 @@ void DataReductionProxyRequestOptions::MaybeAddRequestHeaderImpl(
   if (data_reduction_proxy_config_->IsDataReductionProxy(proxy_server, NULL) &&
       data_reduction_proxy_config_->UsingHTTPTunnel(proxy_server) ==
           expect_ssl) {
-    SetHeader(request, request_headers);
+    SetHeader(request_headers);
   }
 }
 

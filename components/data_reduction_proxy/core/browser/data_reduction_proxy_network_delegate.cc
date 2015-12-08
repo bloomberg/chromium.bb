@@ -189,7 +189,7 @@ void DataReductionProxyNetworkDelegate::OnBeforeSendProxyHeadersInternal(
 
   if (data_reduction_proxy_request_options_) {
     data_reduction_proxy_request_options_->MaybeAddRequestHeader(
-        request, proxy_info.proxy_server(), headers);
+        proxy_info.proxy_server(), headers);
   }
 }
 

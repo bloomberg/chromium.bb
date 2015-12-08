@@ -95,8 +95,7 @@ class DataReductionProxyRequestOptions {
   // proxy authentication credentials. Only adds this header if the
   // provided |proxy_server| is a data reduction proxy and not the data
   // reduction proxy's CONNECT server.
-  void MaybeAddRequestHeader(net::URLRequest* request,
-                             const net::ProxyServer& proxy_server,
+  void MaybeAddRequestHeader(const net::ProxyServer& proxy_server,
                              net::HttpRequestHeaders* request_headers);
 
   // Adds a 'Chrome-Proxy' header to |request_headers| with the data reduction
@@ -134,8 +133,7 @@ class DataReductionProxyRequestOptions {
   void Invalidate();
 
  protected:
-  void SetHeader(const net::URLRequest* request,
-                 net::HttpRequestHeaders* headers);
+  void SetHeader(net::HttpRequestHeaders* headers);
 
   // Returns a UTF16 string that's the hash of the configured authentication
   // |key| and |salt|. Returns an empty UTF16 string if no key is configured or
@@ -187,8 +185,7 @@ class DataReductionProxyRequestOptions {
   // |proxy_server| is a data reduction proxy used for ssl tunneling via
   // HTTP CONNECT, or |expect_ssl| is false and |proxy_server| is a data
   // reduction proxy for HTTP traffic.
-  void MaybeAddRequestHeaderImpl(const net::URLRequest* request,
-                                 const net::HostPortPair& proxy_server,
+  void MaybeAddRequestHeaderImpl(const net::HostPortPair& proxy_server,
                                  bool expect_ssl,
                                  net::HttpRequestHeaders* request_headers);
 
