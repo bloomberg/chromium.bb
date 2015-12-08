@@ -17,6 +17,7 @@
     "input",
     "inputMethodPrivate",
     "metricsPrivate",
+    "system.display",
     "tabs",
     "tts",
     "unlimitedStorage",
