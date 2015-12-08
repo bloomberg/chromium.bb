@@ -484,13 +484,13 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<chromeos::SlowTraceController>;
   if (url.host() == chrome::kChromeUIVoiceSearchHost)
     return &NewWebUI<VoiceSearchUI>;
-#endif  // defined(OS_CHROMEOS)
-#if !defined(OFFICIAL_BUILD) && defined(OS_CHROMEOS) && !defined(NDEBUG)
+#if !defined(GOOGLE_CHROME_BUILD) && !defined(NDEBUG)
   if (!base::SysInfo::IsRunningOnChromeOS()) {
     if (url.host() == chrome::kChromeUIDeviceEmulatorHost)
       return &NewWebUI<DeviceEmulatorUI>;
   }
-#endif // !defined(OFFICIAL_BUILD) && defined(OS_CHROMEOS) && !defined(NDEBUG)
+#endif  // !defined(GOOGLE_CHROME_BUILD) && !defined(NDEBUG)
+#endif  // defined(OS_CHROMEOS)
 #if defined(OS_ANDROID) || defined(OS_IOS)
   if (url.host() == chrome::kChromeUINetExportHost)
     return &NewWebUI<NetExportUI>;
