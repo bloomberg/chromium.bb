@@ -38,7 +38,7 @@ class TestRvaVisitor : public LabelManager::RvaVisitor {
 // Test version of LabelManager: Expose data to test implementation.
 class TestLabelManager : public LabelManager {
  public:
-  const size_t LabelCount() const { return labels_.size(); };
+  size_t LabelCount() const { return labels_.size(); };
 };
 
 void CheckLabelManagerContent(TestLabelManager* label_manager,
