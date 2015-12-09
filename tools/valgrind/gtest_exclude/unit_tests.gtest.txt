@@ -15,3 +15,9 @@ SyncFileSystemServiceTest.SimpleLocalSyncFlow
 
 # Failing on CrOS, see http://crbug.com/408013
 ProxyConfigServiceImplTest.*
+
+# Failing gMock expectations on both Valgrind and Dr. Memory. Possibly timeouts?
+# https://crbug.com/567866
+ExtensionServiceTestSupervised.UpdateWithPermissionIncreaseApprovalMatchingVersion
+ExtensionServiceTestSupervised.UpdateWithPermissionIncreaseApprovalNewVersion
+ExtensionServiceTestSupervised.UpdateWithPermissionIncreaseApprovalOldVersion
