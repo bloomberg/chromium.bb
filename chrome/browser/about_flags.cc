@@ -397,15 +397,6 @@ const FeatureEntry::Choice kDataSaverPromptChoices[] = {
     chromeos::switches::kDataSaverPromptDemoMode },
 };
 
-const FeatureEntry::Choice kDownloadNotificationChoices[] = {
-  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
-  { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
-    switches::kEnableDownloadNotification,
-    "enabled" },
-  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
-    switches::kEnableDownloadNotification,
-    "disabled" }
-};
 #endif
 
 const FeatureEntry::Choice kSupervisedUserSafeSitesChoices[] = {
@@ -803,11 +794,11 @@ const FeatureEntry kFeatureEntries[] = {
      kOsDesktop,
      SINGLE_VALUE_TYPE(switches::kEnableDownloadResumption)},
 #if defined(OS_CHROMEOS)
-    {"enable-download-notification",
+    {"download-notification",
      IDS_FLAGS_DOWNLOAD_NOTIFICATION_NAME,
      IDS_FLAGS_DOWNLOAD_NOTIFICATION_DESCRIPTION,
      kOsCrOS,
-     MULTI_VALUE_TYPE(kDownloadNotificationChoices)},
+     SINGLE_DISABLE_VALUE_TYPE(switches::kDisableDownloadNotification)},
 #endif
 #if defined(ENABLE_PLUGINS)
     {"allow-nacl-socket-api",

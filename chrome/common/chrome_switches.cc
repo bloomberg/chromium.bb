@@ -254,6 +254,9 @@ const char kDisableDinosaurEasterEgg[] = "disable-dinosaur-easter-egg";
 // Disables Domain Reliability Monitoring.
 const char kDisableDomainReliability[]      = "disable-domain-reliability";
 
+// Disable download notification.
+const char kDisableDownloadNotification[] = "disable-download-notification";
+
 // Disable extensions.
 const char kDisableExtensions[]             = "disable-extensions";
 
@@ -402,9 +405,6 @@ const char kEnableDeviceDiscoveryNotifications[] =
 
 // Enables Domain Reliability Monitoring.
 const char kEnableDomainReliability[] = "enable-domain-reliability";
-
-// Download Notification. (value is "", "enabled" or "disabled")
-const char kEnableDownloadNotification[] = "enable-download-notification";
 
 // Enables experimental hotword features specific to always-on.
 const char kEnableExperimentalHotwordHardware[] = "enable-hotword-hardware";

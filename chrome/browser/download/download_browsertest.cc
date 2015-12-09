@@ -3423,8 +3423,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, FeedbackService) {
 class DownloadTestWithShelf : public DownloadTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
 #if defined(OS_CHROMEOS)
-    command_line->AppendSwitchASCII(switches::kEnableDownloadNotification,
-                                    "disabled");
+    command_line->AppendSwitch(switches::kDisableDownloadNotification);
 #endif
     DownloadTest::SetUpCommandLine(command_line);
   }

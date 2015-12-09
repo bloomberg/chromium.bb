@@ -68058,6 +68058,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-48920737" label="enable-smooth-scrolling"/>
   <int value="-23090520" label="disable-search-button-in-omnibox"/>
   <int value="-22544408" label="enable-video-player-chromecast-support"/>
+  <int value="-13918890" label="disable-download-notification"/>
   <int value="-5052940" label="enable-simplified-fullscreen"/>
   <int value="-2371418" label="disable-display-list-2d-canvas"/>
   <int value="0" label="BAD_FLAG_FORMAT">

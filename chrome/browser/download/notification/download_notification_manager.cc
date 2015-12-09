@@ -24,16 +24,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 bool DownloadNotificationManager::IsEnabled() {
-  bool enable_download_notification = true;
-  std::string arg = base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-      switches::kEnableDownloadNotification);
-  if (!arg.empty()) {
-    if (arg == "enabled")
-      enable_download_notification = true;
-    else if (arg == "disabled")
-      enable_download_notification = false;
-  }
-  return enable_download_notification;
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableDownloadNotification);
 }
 
 DownloadNotificationManager::DownloadNotificationManager(Profile* profile)
