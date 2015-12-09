@@ -5,6 +5,7 @@
 package org.chromium.chromoting;
 
 import android.graphics.Point;
+import android.view.MotionEvent;
 
 import org.chromium.chromoting.jni.JniInterface;
 
@@ -15,31 +16,45 @@ import org.chromium.chromoting.jni.JniInterface;
  */
 public class TrackpadInputStrategy implements InputStrategyInterface {
     private final RenderData mRenderData;
-    private final DesktopViewInterface mViewer;
 
-    public TrackpadInputStrategy(DesktopViewInterface viewer, RenderData renderData) {
-        mViewer = viewer;
+    /** Mouse-button currently held down, or BUTTON_UNDEFINED otherwise. */
+    private int mHeldButton = TouchInputHandlerInterface.BUTTON_UNDEFINED;
+
+    public TrackpadInputStrategy(RenderData renderData) {
         mRenderData = renderData;
     }
 
     @Override
-    public void injectRemoteMoveEvent(int x, int y) {
-        injectRemoteButtonEvent(x, y, TouchInputHandlerInterface.BUTTON_UNDEFINED, false);
+    public boolean onTap(int button) {
+        injectMouseButtonEvent(button, true);
+        injectMouseButtonEvent(button, false);
+        return true;
     }
 
     @Override
-    public void injectRemoteButtonEvent(int button, boolean pressed) {
-        Point cursorPosition;
-        synchronized (mRenderData) {
-            cursorPosition = mRenderData.getCursorPosition();
+    public boolean onPressAndHold(int button) {
+        injectMouseButtonEvent(button, true);
+        mHeldButton = button;
+        return true;
+    }
+
+    @Override
+    public void onScroll(float distanceX, float distanceY) {
+        JniInterface.sendMouseWheelEvent((int) -distanceX, (int) -distanceY);
+    }
+
+    @Override
+    public void onMotionEvent(MotionEvent event) {
+        if (event.getActionMasked() == MotionEvent.ACTION_UP
+                && mHeldButton != TouchInputHandlerInterface.BUTTON_UNDEFINED) {
+            injectMouseButtonEvent(mHeldButton, false);
+            mHeldButton = TouchInputHandlerInterface.BUTTON_UNDEFINED;
         }
-
-        injectRemoteButtonEvent(cursorPosition.x, cursorPosition.y, button, pressed);
     }
 
     @Override
-    public void injectRemoteScrollEvent(int deltaX, int deltaY) {
-        JniInterface.sendMouseWheelEvent(deltaX, deltaY);
+    public void injectCursorMoveEvent(int x, int y) {
+        JniInterface.sendMouseEvent(x, y, TouchInputHandlerInterface.BUTTON_UNDEFINED, false);
     }
 
     @Override
@@ -53,29 +68,15 @@ public class TrackpadInputStrategy implements InputStrategyInterface {
     }
 
     @Override
-    public boolean centerCursorInView() {
+    public boolean isIndirectInputMode() {
         return true;
     }
 
-    @Override
-    public boolean invertCursorMovement() {
-        return true;
-    }
-
-    private void injectRemoteButtonEvent(int x, int y, int button, boolean pressed) {
-        boolean cursorMoved;
+    private void injectMouseButtonEvent(int button, boolean pressed) {
+        Point cursorPosition;
         synchronized (mRenderData) {
-            cursorMoved = mRenderData.setCursorPosition(x, y);
+            cursorPosition = mRenderData.getCursorPosition();
         }
-
-        if (button == TouchInputHandlerInterface.BUTTON_UNDEFINED && !cursorMoved) {
-            // No need to inject anything or repaint.
-            return;
-        }
-
-        JniInterface.sendMouseEvent(x, y, button, pressed);
-        if (cursorMoved) {
-            mViewer.transformationChanged();
-        }
+        JniInterface.sendMouseEvent(cursorPosition.x, cursorPosition.y, button, pressed);
     }
 }

@@ -52,9 +52,6 @@ public class TouchInputHandler implements TouchInputHandlerInterface {
      */
     private float mSwipeThreshold;
 
-    /** Mouse-button currently held down, or BUTTON_UNDEFINED otherwise. */
-    private int mHeldButton = BUTTON_UNDEFINED;
-
     /**
      * Set to true to prevent any further movement of the cursor, for example, when showing the
      * keyboard to prevent the cursor wandering from the area where keystrokes should be sent.
@@ -72,6 +69,12 @@ public class TouchInputHandler implements TouchInputHandlerInterface {
      * trigger more swipe actions.
      */
     private boolean mSwipeCompleted = false;
+
+    /**
+     * Set to true when a 1 finger pan gesture originates with a longpress.  This means the user
+     * is performing a drag operation.
+     */
+    private boolean mIsDragging = false;
 
     public TouchInputHandler(DesktopViewInterface viewer, Context context, RenderData renderData) {
         mViewer = viewer;
@@ -101,6 +104,11 @@ public class TouchInputHandler implements TouchInputHandlerInterface {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        // Give the underlying input strategy a chance to observe the current motion event before
+        // passing it to the gesture detectors.  This allows the input strategy to react to the
+        // event or save the payload for use in recreating the gesture remotely.
+        mInputStrategy.onMotionEvent(event);
+
         // Avoid short-circuit logic evaluation - ensure all gesture detectors see all events so
         // that they generate correct notifications.
         boolean handled = mScroller.onTouchEvent(event);
@@ -114,14 +122,11 @@ public class TouchInputHandler implements TouchInputHandlerInterface {
                 mSuppressCursorMovement = false;
                 mSuppressFling = false;
                 mSwipeCompleted = false;
+                mIsDragging = false;
                 break;
 
             case MotionEvent.ACTION_POINTER_DOWN:
                 mTotalMotionY = 0;
-                break;
-
-            case MotionEvent.ACTION_UP:
-                releaseAnyHeldButton();
                 break;
 
             default:
@@ -178,12 +183,11 @@ public class TouchInputHandler implements TouchInputHandlerInterface {
     @Override
     public void setInputStrategy(InputStrategyInterface inputStrategy) {
         mInputStrategy = inputStrategy;
-        mDesktopCanvas.setCenterCursorInView(mInputStrategy.centerCursorInView());
     }
 
     /** Moves the mouse-cursor relative to the current position. */
     private void moveCursorRelative(float deltaX, float deltaY) {
-        if (mInputStrategy.invertCursorMovement()) {
+        if (mInputStrategy.isIndirectInputMode() || mIsDragging) {
             deltaX = -deltaX;
             deltaY = -deltaY;
         }
@@ -208,12 +212,17 @@ public class TouchInputHandler implements TouchInputHandlerInterface {
                 newY = mRenderData.imageHeight;
             }
 
+            // Test if the cursor actually moved, which requires repainting the cursor and updating
+            // the position on the remote machine.
+            boolean cursorMoved = mRenderData.setCursorPosition((int) newX, (int) newY);
+            if (cursorMoved) {
+                mInputStrategy.injectCursorMoveEvent((int) newX, (int) newY);
+            }
+
             mDesktopCanvas.setCursorPosition(newX, newY);
         }
 
         mDesktopCanvas.repositionImage();
-
-        mInputStrategy.injectRemoteMoveEvent((int) newX, (int) newY);
     }
 
     /** Processes a (multi-finger) swipe gesture. */
@@ -232,14 +241,6 @@ public class TouchInputHandler implements TouchInputHandlerInterface {
         mSuppressFling = true;
         mSwipeCompleted = true;
         return true;
-    }
-
-    /** Injects a button-up event if the button is currently held down (during a drag event). */
-    private void releaseAnyHeldButton() {
-        if (mHeldButton != BUTTON_UNDEFINED) {
-            mInputStrategy.injectRemoteButtonEvent(mHeldButton, false);
-            mHeldButton = BUTTON_UNDEFINED;
-        }
     }
 
     /** Responds to touch events filtered by the gesture detectors. */
@@ -261,7 +262,7 @@ public class TouchInputHandler implements TouchInputHandlerInterface {
             }
 
             if (pointerCount == 2 && mSwipePinchDetector.isSwiping()) {
-                mInputStrategy.injectRemoteScrollEvent(-(int) distanceX, -(int) distanceY);
+                mInputStrategy.onScroll(distanceX, distanceY);
 
                 // Prevent the cursor being moved or flung by the gesture.
                 mSuppressCursorMovement = true;
@@ -360,22 +361,26 @@ public class TouchInputHandler implements TouchInputHandlerInterface {
             int button = mouseButtonFromPointerCount(pointerCount);
             if (button == BUTTON_UNDEFINED) {
                 return false;
-            } else {
-                mInputStrategy.injectRemoteButtonEvent(button, true);
-                mInputStrategy.injectRemoteButtonEvent(button, false);
-                mViewer.showInputFeedback(mInputStrategy.getShortPressFeedbackType());
-                return true;
             }
+
+            if (mInputStrategy.onTap(button)) {
+                mViewer.showInputFeedback(mInputStrategy.getShortPressFeedbackType());
+            }
+            return true;
         }
 
         /** Called when a long-press is triggered for one or more fingers. */
         @Override
         public void onLongPress(int pointerCount, float x, float y) {
-            mHeldButton = mouseButtonFromPointerCount(pointerCount);
-            if (mHeldButton != BUTTON_UNDEFINED) {
-                mInputStrategy.injectRemoteButtonEvent(mHeldButton, true);
+            int button = mouseButtonFromPointerCount(pointerCount);
+            if (button == BUTTON_UNDEFINED) {
+                return;
+            }
+
+            if (mInputStrategy.onPressAndHold(button)) {
                 mViewer.showInputFeedback(mInputStrategy.getLongPressFeedbackType());
                 mSuppressFling = true;
+                mIsDragging = true;
             }
         }
 

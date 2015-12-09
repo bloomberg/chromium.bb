@@ -412,7 +412,7 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
 
         switch (inputMode) {
             case TRACKPAD:
-                mInputHandler.setInputStrategy(new TrackpadInputStrategy(this, mRenderData));
+                mInputHandler.setInputStrategy(new TrackpadInputStrategy(mRenderData));
                 break;
 
             case TOUCH:

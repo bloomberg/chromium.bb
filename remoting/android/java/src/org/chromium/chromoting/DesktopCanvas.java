@@ -37,26 +37,36 @@ public class DesktopCanvas {
      */
     private int mInputMethodOffsetX = 0;
 
-    /** Used to determine whether the view should be locked to the cursor. */
-    private boolean mCenterCursorInView = true;
-
     public DesktopCanvas(DesktopViewInterface viewer, RenderData renderData) {
         mViewer = viewer;
         mRenderData = renderData;
     }
 
-    public void setCenterCursorInView(boolean centerCursor) {
-        mCenterCursorInView = centerCursor;
-    }
-
+    /**
+     * Returns the position of the cursor.
+     *
+     * @return A point representing the position of the cursor.
+     */
     public PointF getCursorPosition() {
         return new PointF(mCursorPosition.x, mCursorPosition.y);
     }
 
+    /**
+     * Sets the position of the cursor which is used for rendering.
+     *
+     * @param newX The new value of the x coordinate.
+     * @param newY The new value of the y coordinate
+     */
     public void setCursorPosition(float newX, float newY) {
         mCursorPosition.set(newX, newY);
     }
 
+    /**
+     * Sets the offset values used to calculate the space used by the current soft input method.
+     *
+     * @param offsetX The space used by the soft input method UI on the right edge of the screen.
+     * @param offsetY The space used by the soft input method UI on the bottom edge of the screen.
+     */
     public void setInputMethodOffsetValues(int offsetX, int offsetY) {
         mInputMethodOffsetX = offsetX;
         mInputMethodOffsetY = offsetY;
@@ -106,20 +116,14 @@ public class DesktopCanvas {
             float adjustedScreenWidth = mRenderData.screenWidth - mInputMethodOffsetX;
             float adjustedScreenHeight = mRenderData.screenHeight - mInputMethodOffsetY;
 
-            if (mCenterCursorInView) {
-                // For indirect input modes such as Trackpad emulation, we want to try to position
-                // the view so the cursor is centered.  We move it here and then make adjustments
-                // below as needed to keep as much of the image on screen as possible.
+            // Get the current cursor position in screen coordinates.
+            float[] cursorScreen = {mCursorPosition.x, mCursorPosition.y};
+            mRenderData.transform.mapPoints(cursorScreen);
 
-                // Get the current cursor position in screen coordinates.
-                float[] cursorScreen = {mCursorPosition.x, mCursorPosition.y};
-                mRenderData.transform.mapPoints(cursorScreen);
-
-                // Translate so the cursor is displayed in the middle of the screen.
-                mRenderData.transform.postTranslate(
-                        (float) adjustedScreenWidth / 2 - cursorScreen[0],
-                        (float) adjustedScreenHeight / 2 - cursorScreen[1]);
-            }
+            // Translate so the cursor is displayed in the middle of the screen.
+            mRenderData.transform.postTranslate(
+                    (float) adjustedScreenWidth / 2 - cursorScreen[0],
+                    (float) adjustedScreenHeight / 2 - cursorScreen[1]);
 
             // Get the coordinates of the desktop rectangle (top-left/bottom-right corners) in
             // screen coordinates. Order is: left, top, right, bottom.

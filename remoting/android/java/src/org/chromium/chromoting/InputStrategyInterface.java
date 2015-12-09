@@ -4,33 +4,74 @@
 
 package org.chromium.chromoting;
 
+import android.view.MotionEvent;
+
 /**
  * This interface defines the methods used to customize input handling for
  * a particular strategy.  The implementing class is responsible for sending
  * remote input events and defining implementation specific behavior.
  */
 public interface InputStrategyInterface {
-    /** Sends a pointer move event to the remote host. */
-    void injectRemoteMoveEvent(int x, int y);
+    /**
+     * Called when a user tap has been detected.
+     *
+     * @param button The button value for the tap event.
+     * @return A boolean representing whether the event was handled.
+     */
+    boolean onTap(int button);
 
-    /** Sends a pointer button event to the remote host. */
-    void injectRemoteButtonEvent(int button, boolean pressed);
+    /**
+     * Called when the user has put one or more fingers down on the screen for a period of time.
+     *
+     * @param button The button value for the tap event.
+     * @return A boolean representing whether the event was handled.
+     */
+    boolean onPressAndHold(int button);
 
-    /** Sends a scroll/pan event to the remote host. */
-    void injectRemoteScrollEvent(int deltaX, int deltaY);
+    /**
+     * Called when a MotionEvent is received.  This method allows the input strategy to store or
+     * react to specific MotionEvents as needed.
+     *
+     * @param event The original event for the current touch motion.
+     */
+    void onMotionEvent(MotionEvent event);
 
-    /** Returns the feedback animation type to use for a short press. */
+    /**
+     * Called when the user is attempting to scroll/pan the remote UI.
+     *
+     * @param distanceX The distance moved along the x-axis.
+     * @param distanceY The distance moved along the y-axis.
+     */
+    void onScroll(float distanceX, float distanceY);
+
+    /**
+     * Called to update the remote cursor position.
+     *
+     * @param x The new x coordinate of the cursor.
+     * @param y The new y coordinate of the cursor.
+     */
+    void injectCursorMoveEvent(int x, int y);
+
+    /**
+     * Returns the feedback animation type to use for a short press.
+     *
+     * @return The feedback to display when a short press occurs.
+     */
     DesktopView.InputFeedbackType getShortPressFeedbackType();
 
-    /** Returns the feedback animation type to use for a long press. */
+    /**
+     * Returns the feedback animation type to use for a long press.
+     *
+     * @return The feedback to display when a long press occurs.
+     */
     DesktopView.InputFeedbackType getLongPressFeedbackType();
 
     /**
-     * Indicates whether the view should be manipulated to keep the cursor in the center or if the
-     * view and cursor are not linked.
+     * Indicates whether this input mode is an indirect input mode.  Indirect input modes manipulate
+     * the cursor in a detached fashion (such as a trackpad) and direct input modes will update the
+     * cursor/screen position to match the location of the touch point.
+     *
+     * @return A boolean representing whether this input mode is indirect (true) or direct (false).
      */
-    boolean centerCursorInView();
-
-    /** Indicates whether to invert cursor movement for panning/scrolling. */
-    boolean invertCursorMovement();
+    boolean isIndirectInputMode();
 }
