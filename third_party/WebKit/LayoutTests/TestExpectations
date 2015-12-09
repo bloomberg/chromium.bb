@@ -890,7 +890,15 @@ crbug.com/396941 ietestcenter/css3/multicolumn/column-width-applies-to-015.htm [
 crbug.com/378610 [ Win ] svg/custom/focus-ring-text.svg [ Failure ]
 crbug.com/378610 [ Mac ] svg/custom/focus-ring-text.svg [ Failure Pass ]
 
-crbug.com/515454 css3/fonts/font-style-matching.html [ Skip ]
+crbug.com/523021 [ XP ] css3/fonts/font-style-matching-0.html [ Failure ]
+crbug.com/523021 [ XP ] css3/fonts/font-style-matching-1.html [ Failure ]
+crbug.com/523021 [ XP ] css3/fonts/font-style-matching-2.html [ Failure ]
+crbug.com/523021 [ XP ] css3/fonts/font-style-matching-3.html [ Failure ]
+crbug.com/523021 [ XP ] css3/fonts/font-style-matching-4.html [ Failure ]
+crbug.com/523021 [ XP ] css3/fonts/font-style-matching-5.html [ Failure ]
+crbug.com/523021 [ XP ] css3/fonts/font-style-matching-6.html [ Failure ]
+crbug.com/523021 [ XP ] css3/fonts/font-style-matching-7.html [ Failure ]
+crbug.com/523021 [ XP ] css3/fonts/font-style-matching-8.html [ Failure ]
 
 crbug.com/474987 [ Win Mac ] css3/flexbox/auto-margins.html [ Failure ]
 

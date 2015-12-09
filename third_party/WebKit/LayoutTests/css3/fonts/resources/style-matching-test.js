@@ -44,7 +44,14 @@ function updateAvailableFontFaceDeclarations(available)
                     makeFontFaceDeclaration(stretch, style, weight));
             }
 
-    document.fonts.ready.then(window.notifyInspectorFontsReady);
+    document.fonts.ready.then(() => {
+        // fonts.ready event fires too early, used fonts for rendering have not
+        // been updated yet. Force a layout to hopefully work around this.
+        // Remove this when crbug.com/516680 is fixed.
+        // https://drafts.csswg.org/css-font-loading/#font-face-set-ready
+        document.body.offsetTop;
+        window.notifyInspectorFontsReady()
+    });
 }
 
 function test()
@@ -53,6 +60,7 @@ function test()
     var documentNodeSelector;
     var allTestSelectors = [];
     var testSelectors = [];
+    var testGroup = 0;
 
     var stretches = [ 'condensed', 'expanded' ];
     var styles = [ 'normal', 'italic' ];
@@ -90,12 +98,33 @@ function test()
         }
     }
 
+    function subsetFontSetVariations() {
+        var NUM_GROUPS = 9;
+        var numVariations = fontSetVariations.length;
+        var groupLength = numVariations / NUM_GROUPS;
+        var start = testGroup * groupLength;
+        var end = start + groupLength;
+        InspectorTest.log("Testing font set variations " + start + " to " +
+            (end - 1) + " out of 0-" + (numVariations - 1));
+        fontSetVariations = fontSetVariations.slice(start, end);
+    }
+
     InspectorTest.requestDocumentNodeId(onDocumentNodeId);
 
     function onDocumentNodeId(nodeId)
     {
         documentNodeId = nodeId;
 
+        InspectorTest.evaluateInInspectedPage(
+            'JSON.stringify(document.location.href)',
+            extractTestGroup);
+    }
+
+    function extractTestGroup(result)
+    {
+        testGroup = /font-style-matching-(\d).html/.exec(
+            JSON.parse(result.result.result.value))[1];
+        subsetFontSetVariations();
         InspectorTest.evaluateInInspectedPage(
             'JSON.stringify(' +
                 'Array.prototype.map.call(' +
@@ -142,11 +171,7 @@ function test()
     window.onFontsLoaded = function(loadedFonts) {
         InspectorTest.log("Available fonts updated: " +
                           JSON.stringify(loadedFonts) + "\n");
-        // fonts.ready event fires too early, used fonts for rendering
-        // have not been updated yet. Remove this wehn crbug.com/516680
-        // is fixed.
-        // https://drafts.csswg.org/css-font-loading/#font-face-set-ready
-        setTimeout(nextTest, 100);
+        nextTest();
     }
 
     function testNextPageElement(result)
