@@ -63,12 +63,12 @@ void WorkQueue::PopTaskForTest() {
   work_queue_.pop();
 }
 
-void WorkQueue::Swap(std::queue<TaskQueueImpl::Task>& incoming_queue) {
+void WorkQueue::SwapLocked(std::queue<TaskQueueImpl::Task>& incoming_queue) {
   std::swap(work_queue_, incoming_queue);
 
   if (!work_queue_.empty())
     work_queue_sets_->OnPushQueue(this);
-  task_queue_->TraceQueueSize(false);
+  task_queue_->TraceQueueSize(true);
 }
 
 TaskQueueImpl::Task WorkQueue::TakeTaskFromWorkQueue() {

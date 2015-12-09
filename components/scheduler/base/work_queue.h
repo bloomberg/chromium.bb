@@ -46,8 +46,9 @@ class SCHEDULER_EXPORT WorkQueue {
                               int enqueue_order);
 
   // Swap the |work_queue_| with |incoming_queue| and informs the
-  // WorkQueueSets if the head changed.
-  void Swap(std::queue<TaskQueueImpl::Task>& incoming_queue);
+  // WorkQueueSets if the head changed. Assumes |task_queue_->any_thread_lock_|
+  // is locked.
+  void SwapLocked(std::queue<TaskQueueImpl::Task>& incoming_queue);
 
   size_t Size() const { return work_queue_.size(); }
 

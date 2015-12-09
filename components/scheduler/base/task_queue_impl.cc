@@ -335,7 +335,7 @@ void TaskQueueImpl::UpdateImmediateWorkQueue(bool should_trigger_wakeup,
   if (!ShouldAutoPumpQueueLocked(should_trigger_wakeup, previous_task))
     return;
 
-  main_thread_only().immediate_work_queue->Swap(
+  main_thread_only().immediate_work_queue->SwapLocked(
       any_thread().immediate_incoming_queue);
 
   // |any_thread().immediate_incoming_queue| is now empty so
@@ -350,6 +350,12 @@ void TaskQueueImpl::TraceQueueSize(bool is_locked) const {
                                      &is_tracing);
   if (!is_tracing)
     return;
+
+  // It's only safe to access the work queues from the main thread.
+  // TODO(alexclarke): We should find another way of tracing this
+  if (base::PlatformThread::CurrentId() != thread_id_)
+    return;
+
   if (!is_locked)
     any_thread_lock_.Acquire();
   else

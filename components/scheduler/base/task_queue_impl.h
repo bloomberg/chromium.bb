@@ -203,6 +203,7 @@ class SCHEDULER_EXPORT TaskQueueImpl final : public TaskQueue {
 
   void MoveReadyImmediateTasksToImmediateWorkQueueLocked();
 
+  // Note this does nothing if its not called from the main thread.
   void PumpQueueLocked(bool may_post_dowork);
   bool TaskIsOlderThanQueuedTasks(const Task* task);
   bool ShouldAutoPumpQueueLocked(bool should_trigger_wakeup,
