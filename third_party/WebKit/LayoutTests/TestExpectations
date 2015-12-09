@@ -339,6 +339,7 @@ crbug.com/561394 inspector/console/console-object-constructor-name.html [ NeedsM
 # ES6 makes (Native)Error.prototype not be an error instance
 crbug.com/568026 fast/dom/DOMException/XPathException.html [ NeedsManualRebaseline ]
 crbug.com/568026 fast/dom/DOMException/prototype-object.html [ NeedsManualRebaseline ]
+crbug.com/568026 storage/websql/transaction-error-callback.html [ NeedsManualRebaseline ]
 
 crbug.com/552433 svg/W3C-SVG-1.1/coords-units-02-b.svg [ Pass Failure ]
 crbug.com/552433 [ Linux Mac Win10 Win7 ] svg/dom/length-list-parser.html [ Failure Pass ]
