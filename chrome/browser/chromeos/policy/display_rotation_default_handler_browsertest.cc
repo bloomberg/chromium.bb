@@ -2,25 +2,67 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/policy/display_rotation_default_handler.h"
+#include <stdint.h>
 
 #include "ash/display/display_manager.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
+#include "chrome/browser/chromeos/policy/display_rotation_default_handler.h"
 #include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/dbus/cryptohome_client.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/fake_cryptohome_client.h"
+#include "chromeos/dbus/fake_session_manager_client.h"
+#include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/display.h"
 
 namespace em = enterprise_management;
+
+namespace {
+
+ash::DisplayManager* GetDisplayManager() {
+  return ash::Shell::GetInstance()->display_manager();
+}
+
+gfx::Display::Rotation GetRotationOfFirstDisplay() {
+  const ash::DisplayManager* const display_manager = GetDisplayManager();
+  const int64_t first_display_id = display_manager->first_display_id();
+  const gfx::Display& first_display =
+      display_manager->GetDisplayForId(first_display_id);
+  return first_display.rotation();
+}
+
+// Fails the test and returns ROTATE_0 if there is no second display.
+gfx::Display::Rotation GetRotationOfSecondDisplay() {
+  const ash::DisplayManager* const display_manager = GetDisplayManager();
+  if (display_manager->GetNumDisplays() < 2) {
+    ADD_FAILURE()
+        << "Requested rotation of second display while there was only one.";
+    return gfx::Display::ROTATE_0;
+  }
+  const ash::DisplayIdPair display_id_pair =
+      display_manager->GetCurrentDisplayIdPair();
+  const gfx::Display& second_display =
+      display_manager->GetDisplayForId(display_id_pair.second);
+  return second_display.rotation();
+}
+
+} // anonymous namespace
 
 namespace policy {
 
@@ -71,33 +113,6 @@ class DisplayRotationDefaultTest
     em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
     proto.clear_display_rotation_default();
     RefreshPolicyAndWaitUntilDeviceSettingsUpdated();
-  }
-
-  ash::DisplayManager* GetDisplayManager() const {
-    return ash::Shell::GetInstance()->display_manager();
-  }
-
-  gfx::Display::Rotation GetRotationOfFirstDisplay() const {
-    const ash::DisplayManager* const display_manager = GetDisplayManager();
-    const int64_t first_display_id = display_manager->first_display_id();
-    const gfx::Display& first_display =
-        display_manager->GetDisplayForId(first_display_id);
-    return first_display.rotation();
-  }
-
-  // Fails the test and returns ROTATE_0 if there is no second display.
-  gfx::Display::Rotation GetRotationOfSecondDisplay() const {
-    const ash::DisplayManager* const display_manager = GetDisplayManager();
-    if (display_manager->GetNumDisplays() < 2) {
-      ADD_FAILURE()
-          << "Requested rotation of second display while there was only one.";
-      return gfx::Display::ROTATE_0;
-    }
-    const ash::DisplayIdPair display_id_pair =
-        display_manager->GetCurrentDisplayIdPair();
-    const gfx::Display& second_display =
-        display_manager->GetDisplayForId(display_id_pair.second);
-    return second_display.rotation();
   }
 
   // Creates second display if there is none yet, or removes it if there is one.
@@ -231,4 +246,84 @@ INSTANTIATE_TEST_CASE_P(PolicyDisplayRotationDefault,
                                         gfx::Display::ROTATE_90,
                                         gfx::Display::ROTATE_180,
                                         gfx::Display::ROTATE_270));
+
+// This class tests that the policy is reapplied after a reboot. To persist from
+// PRE_Reboot to Reboot, the policy is inserted into a FakeSessionManagerClient.
+// From there, it travels to DeviceSettingsProvider, whose UpdateFromService()
+// method caches the policy (using device_settings_cache::Store()).
+// In the main test, the FakeSessionManagerClient is not fully initialized.
+// Thus, DeviceSettingsProvider falls back on the cached values (using
+// device_settings_cache::Retrieve()).
+class DisplayRotationBootTest
+    : public InProcessBrowserTest,
+      public testing::WithParamInterface<gfx::Display::Rotation> {
+ protected:
+  DisplayRotationBootTest()
+      : fake_session_manager_client_(new chromeos::FakeSessionManagerClient) {}
+  ~DisplayRotationBootTest() override {}
+
+  void SetUpInProcessBrowserTestFixture() override {
+    chromeos::DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
+        scoped_ptr<chromeos::SessionManagerClient>(
+            fake_session_manager_client_));
+    chromeos::DBusThreadManager::GetSetterForTesting()->SetCryptohomeClient(
+        scoped_ptr<chromeos::CryptohomeClient>(
+            new chromeos::FakeCryptohomeClient));
+
+    test_helper_.InstallOwnerKey();
+    test_helper_.MarkAsEnterpriseOwned();
+  }
+
+  chromeos::FakeSessionManagerClient* fake_session_manager_client_;
+  policy::DevicePolicyCrosTestHelper test_helper_;
+};
+
+IN_PROC_BROWSER_TEST_P(DisplayRotationBootTest, PRE_Reboot) {
+  const gfx::Display::Rotation policy_rotation = GetParam();
+  const gfx::Display::Rotation user_rotation = gfx::Display::ROTATE_180;
+
+  // Set policy.
+  policy::DevicePolicyBuilder* const device_policy(
+      test_helper_.device_policy());
+  em::ChromeDeviceSettingsProto& proto(device_policy->payload());
+  proto.mutable_display_rotation_default()->set_display_rotation_default(
+      static_cast<em::DisplayRotationDefaultProto::Rotation>(policy_rotation));
+  base::RunLoop run_loop;
+  scoped_ptr<chromeos::CrosSettings::ObserverSubscription> observer =
+      chromeos::CrosSettings::Get()->AddSettingsObserver(
+          chromeos::kDisplayRotationDefault, run_loop.QuitClosure());
+  device_policy->SetDefaultSigningKey();
+  device_policy->Build();
+  fake_session_manager_client_->set_device_policy(device_policy->GetBlob());
+  fake_session_manager_client_->OnPropertyChangeComplete(true);
+  run_loop.Run();
+
+  // Check the display's rotation.
+  ash::DisplayManager* const display_manager = GetDisplayManager();
+  const int64_t first_display_id = display_manager->first_display_id();
+  const gfx::Display& first_display =
+      display_manager->GetDisplayForId(first_display_id);
+  EXPECT_EQ(policy_rotation, first_display.rotation());
+
+  // Let the user rotate the display to a different orientation, to check that
+  // the policy value is restored after reboot.
+  display_manager->SetDisplayRotation(first_display_id, user_rotation,
+                                      gfx::Display::ROTATION_SOURCE_USER);
+  EXPECT_EQ(user_rotation, first_display.rotation());
+}
+
+IN_PROC_BROWSER_TEST_P(DisplayRotationBootTest, Reboot) {
+  const gfx::Display::Rotation policy_rotation = GetParam();
+
+  // Check that the policy rotation is restored.
+  EXPECT_EQ(policy_rotation, GetRotationOfFirstDisplay());
+}
+
+INSTANTIATE_TEST_CASE_P(PolicyDisplayRotationDefault,
+                        DisplayRotationBootTest,
+                        testing::Values(gfx::Display::ROTATE_0,
+                                        gfx::Display::ROTATE_90,
+                                        gfx::Display::ROTATE_180,
+                                        gfx::Display::ROTATE_270));
+
 }  // namespace policy
