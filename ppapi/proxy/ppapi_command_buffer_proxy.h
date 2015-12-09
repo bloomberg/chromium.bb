@@ -75,6 +75,7 @@ class PPAPI_PROXY_EXPORT PpapiCommandBufferProxy : public gpu::CommandBuffer,
   void SignalSyncToken(const gpu::SyncToken& sync_token,
                        const base::Closure& callback) override;
   bool CanWaitUnverifiedSyncToken(const gpu::SyncToken* sync_token) override;
+  int32_t GetExtraCommandBufferData() const override;
 
  private:
   bool Send(IPC::Message* msg);

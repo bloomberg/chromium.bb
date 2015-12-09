@@ -1204,6 +1204,7 @@ struct FuzzTraits<gpu::SyncToken> {
     bool verified_flush = false;
     gpu::CommandBufferNamespace namespace_id =
         gpu::CommandBufferNamespace::INVALID;
+    int32_t extra_data_field = 0;
     uint64_t command_buffer_id = 0;
     uint64_t release_count = 0;
 
@@ -1211,13 +1212,15 @@ struct FuzzTraits<gpu::SyncToken> {
       return false;
     if (!FuzzParam(&namespace_id, fuzzer))
       return false;
+    if (!FuzzParam(&extra_data_field, fuzzer))
+      return false;
     if (!FuzzParam(&command_buffer_id, fuzzer))
       return false;
     if (!FuzzParam(&release_count, fuzzer))
       return false;
 
     p->Clear();
-    p->Set(namespace_id, command_buffer_id, release_count);
+    p->Set(namespace_id, extra_data_field, command_buffer_id, release_count);
     if (verified_flush)
       p->SetVerifyFlush();
     return true;

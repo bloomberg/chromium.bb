@@ -79,7 +79,7 @@ bool ParamTraits<gpu::SyncToken>::Read(const Message* m,
     return false;
   }
 
-  p->Set(namespace_id, command_buffer_id, release_count);
+  p->Set(namespace_id, 0, command_buffer_id, release_count);
   if (p->HasData()) {
     if (!verified_flush)
       return false;

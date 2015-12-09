@@ -19,6 +19,7 @@ namespace gles2 {
 using namespace ::testing;
 
 static const SyncToken g_sync_token(gpu::CommandBufferNamespace::GPU_IO,
+                                    0,
                                     123,
                                     0);
 

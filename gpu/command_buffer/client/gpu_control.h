@@ -87,9 +87,13 @@ class GPU_EXPORT GpuControl {
 
   // The namespace and command buffer ID forms a unique pair for all existing
   // GpuControl (on client) and matches for the corresponding command buffer
-  // (on server) in a single server process.
+  // (on server) in a single server process. The extra command buffer data can
+  // be used for extra identification purposes. One usage is to store some
+  // extra field to identify unverified sync tokens for the implementation of
+  // the CanWaitUnverifiedSyncToken() function.
   virtual CommandBufferNamespace GetNamespaceID() const = 0;
   virtual uint64_t GetCommandBufferID() const = 0;
+  virtual int32_t GetExtraCommandBufferData() const = 0;
 
   // Fence Syncs use release counters at a context level, these fence syncs
   // need to be flushed before they can be shared with other contexts across

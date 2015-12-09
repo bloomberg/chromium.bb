@@ -88,7 +88,7 @@ class GpuChannelHost : public IPC::Sender,
       base::WaitableEvent* shutdown_event,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager);
 
-  static const int32 kDefaultStreamId = 0;
+  static const int32 kDefaultStreamId = -1;
   static const GpuStreamPriority kDefaultStreamPriority =
       GpuStreamPriority::NORMAL;
 
@@ -115,6 +115,8 @@ class GpuChannelHost : public IPC::Sender,
                            const std::vector<ui::LatencyInfo>& latency_info,
                            bool put_offset_changed,
                            bool do_flush);
+
+  void FlushPendingStream(int32 stream_id);
 
   // Create and connect to a command buffer in the GPU process.
   scoped_ptr<CommandBufferProxyImpl> CreateViewCommandBuffer(

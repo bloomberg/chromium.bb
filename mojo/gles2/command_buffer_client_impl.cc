@@ -413,6 +413,10 @@ uint64_t CommandBufferClientImpl::GetCommandBufferID() const {
   return sync_client_impl_->GetCommandBufferID();
 }
 
+int32_t CommandBufferClientImpl::GetExtraCommandBufferData() const {
+  return 0;
+}
+
 uint64_t CommandBufferClientImpl::GenerateFenceSyncRelease() {
   return next_fence_sync_release_++;
 }

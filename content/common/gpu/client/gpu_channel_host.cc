@@ -162,6 +162,17 @@ uint32_t GpuChannelHost::OrderingBarrier(
   return 0;
 }
 
+void GpuChannelHost::FlushPendingStream(int32 stream_id) {
+  AutoLock lock(context_lock_);
+  auto flush_info_iter = stream_flush_info_.find(stream_id);
+  if (flush_info_iter == stream_flush_info_.end())
+    return;
+
+  StreamFlushInfo& flush_info = flush_info_iter->second;
+  if (flush_info.flush_pending)
+    InternalFlush(&flush_info);
+}
+
 void GpuChannelHost::InternalFlush(StreamFlushInfo* flush_info) {
   context_lock_.AssertAcquired();
   DCHECK(flush_info);
@@ -396,7 +407,10 @@ int32 GpuChannelHost::GenerateRouteID() {
 }
 
 int32 GpuChannelHost::GenerateStreamID() {
-  return next_stream_id_.GetNext();
+  const int32 stream_id = next_stream_id_.GetNext();
+  DCHECK_NE(0, stream_id);
+  DCHECK_NE(kDefaultStreamId, stream_id);
+  return stream_id;
 }
 
 uint32_t GpuChannelHost::ValidateFlushIDReachedServer(int32 stream_id,
