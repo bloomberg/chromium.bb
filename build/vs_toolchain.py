@@ -195,7 +195,7 @@ def _GetDesiredVsToolchainHashes():
   """Load a list of SHA1s corresponding to the toolchains that we want installed
   to build with."""
   if os.environ.get('GYP_MSVS_VERSION') == '2015':
-    return ['581a25d2e438bb208c1e28f0e901c2318d3ebdd7'] # Update 1
+    return ['8c3265958030a53f93f9cf027cfa5d5d9717fbf6'] # Update 1
   else:
     # Default to VS2013.
     return ['9ff97c632ae1fee0c98bcd53e71770eb3a0d8deb']
