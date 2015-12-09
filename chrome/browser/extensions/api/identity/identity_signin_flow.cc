@@ -4,7 +4,6 @@
 
 #include "chrome/browser/extensions/api/identity/identity_signin_flow.h"
 
-#include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
@@ -28,12 +27,11 @@ void IdentitySigninFlow::Start() {
   DCHECK(delegate_);
 
 #if defined(OS_CHROMEOS)
-  // In normal mode (i.e. non-forced app mode), the user has to log out to
+  // In normal mode (i.e. non-kiosk mode), the user has to log out to
   // re-establish credentials. Let the global error popup handle everything.
-  if (!chrome::IsRunningInForcedAppMode()) {
-    delegate_->SigninFailed();
-    return;
-  }
+  // In kiosk mode, interactive sign-in is not supported.
+  delegate_->SigninFailed();
+  return;
 #endif
 
   ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)->AddObserver(this);

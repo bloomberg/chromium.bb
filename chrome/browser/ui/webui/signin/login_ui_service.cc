@@ -11,15 +11,10 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
-#include "chrome/browser/ui/sync/inline_login_dialog.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/common/url_constants.h"
 #include "components/signin/core/browser/signin_header_helper.h"
 #include "components/signin/core/common/profile_management_switches.h"
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/app_mode/app_mode_utils.h"
-#endif
 
 LoginUIService::LoginUIService(Profile* profile)
     : ui_(NULL), profile_(profile) {
@@ -62,8 +57,7 @@ void LoginUIService::UntrustedLoginUIShown() {
 
 void LoginUIService::ShowLoginPopup() {
 #if defined(OS_CHROMEOS)
-  if (chrome::IsRunningInForcedAppMode())
-    InlineLoginDialog::Show(profile_);
+  NOTREACHED();
 #else
   chrome::ScopedTabbedBrowserDisplayer displayer(
       profile_, chrome::GetActiveDesktop());

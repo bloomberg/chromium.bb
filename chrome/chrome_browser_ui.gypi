@@ -1706,8 +1706,6 @@
       'browser/ui/sync/browser_synced_window_delegate.h',
       'browser/ui/sync/browser_synced_window_delegates_getter.cc',
       'browser/ui/sync/browser_synced_window_delegates_getter.h',
-      'browser/ui/sync/inline_login_dialog.cc',
-      'browser/ui/sync/inline_login_dialog.h',
       'browser/ui/sync/sync_promo_ui.cc',
       'browser/ui/sync/sync_promo_ui.h',
       'browser/ui/tab_contents/tab_contents_iterator.cc',
