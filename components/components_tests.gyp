@@ -402,6 +402,7 @@
       'omnibox/browser/answers_cache_unittest.cc',
       'omnibox/browser/autocomplete_input_unittest.cc',
       'omnibox/browser/autocomplete_match_unittest.cc',
+      'omnibox/browser/autocomplete_provider_unittest.cc',
       'omnibox/browser/autocomplete_result_unittest.cc',
       'omnibox/browser/base_search_provider_unittest.cc',
       'omnibox/browser/clipboard_url_provider_unittest.cc',

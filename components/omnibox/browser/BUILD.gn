@@ -182,6 +182,7 @@ source_set("unit_tests") {
     "answers_cache_unittest.cc",
     "autocomplete_input_unittest.cc",
     "autocomplete_match_unittest.cc",
+    "autocomplete_provider_unittest.cc",
     "autocomplete_result_unittest.cc",
     "base_search_provider_unittest.cc",
     "clipboard_url_provider_unittest.cc",
