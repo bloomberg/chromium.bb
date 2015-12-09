@@ -8,10 +8,10 @@
 #include <map>
 #include <queue>
 #include <string>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/values.h"
@@ -201,7 +201,8 @@ class MockMojoProxyResolver : public interfaces::ProxyResolver {
 
   base::Closure quit_closure_;
 
-  ScopedVector<interfaces::ProxyResolverRequestClientPtr> blocked_clients_;
+  std::vector<scoped_ptr<interfaces::ProxyResolverRequestClientPtr>>
+      blocked_clients_;
   mojo::Binding<interfaces::ProxyResolver> binding_;
 };
 
@@ -275,8 +276,8 @@ void MockMojoProxyResolver::GetProxyForUrl(
       interfaces::HostResolverRequestClientPtr dns_client;
       mojo::GetProxy(&dns_client);
       client->ResolveDns(request.Pass(), dns_client.Pass());
-      blocked_clients_.push_back(
-          new interfaces::ProxyResolverRequestClientPtr(client.Pass()));
+      blocked_clients_.push_back(make_scoped_ptr(
+          new interfaces::ProxyResolverRequestClientPtr(std::move(client))));
       break;
     }
   }
@@ -351,9 +352,9 @@ class MockMojoProxyResolverFactory : public interfaces::ProxyResolverFactory {
 
   base::Closure quit_closure_;
 
-  ScopedVector<interfaces::ProxyResolverFactoryRequestClientPtr>
+  std::vector<scoped_ptr<interfaces::ProxyResolverFactoryRequestClientPtr>>
       blocked_clients_;
-  ScopedVector<mojo::InterfaceRequest<interfaces::ProxyResolver>>
+  std::vector<scoped_ptr<mojo::InterfaceRequest<interfaces::ProxyResolver>>>
       blocked_resolver_requests_;
   mojo::Binding<interfaces::ProxyResolverFactory> binding_;
 };
@@ -411,14 +412,15 @@ void MockMojoProxyResolverFactory::CreateResolver(
     case CreateProxyResolverAction::DROP_CLIENT: {
       // Save |request| so its pipe isn't closed.
       blocked_resolver_requests_.push_back(
-          new mojo::InterfaceRequest<interfaces::ProxyResolver>(
-              request.Pass()));
+          make_scoped_ptr(new mojo::InterfaceRequest<interfaces::ProxyResolver>(
+              std::move(request))));
       break;
     }
     case CreateProxyResolverAction::DROP_RESOLVER: {
       // Save |client| so its pipe isn't closed.
       blocked_clients_.push_back(
-          new interfaces::ProxyResolverFactoryRequestClientPtr(client.Pass()));
+          make_scoped_ptr(new interfaces::ProxyResolverFactoryRequestClientPtr(
+              std::move(client))));
       break;
     }
     case CreateProxyResolverAction::DROP_BOTH: {
@@ -438,7 +440,8 @@ void MockMojoProxyResolverFactory::CreateResolver(
       mojo::GetProxy(&dns_client);
       client->ResolveDns(request.Pass(), dns_client.Pass());
       blocked_clients_.push_back(
-          new interfaces::ProxyResolverFactoryRequestClientPtr(client.Pass()));
+          make_scoped_ptr(new interfaces::ProxyResolverFactoryRequestClientPtr(
+              std::move(client))));
       break;
     }
   }
