@@ -4,13 +4,14 @@
 
 #include "components/cronet/url_request_context_config.h"
 
-#include "base/basictypes.h"
 #include "base/json/json_reader.h"
+#include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/values.h"
 #include "net/cert/cert_verifier.h"
+#include "net/dns/host_resolver.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_utils.h"
 #include "net/url_request/url_request_context_builder.h"
@@ -29,9 +30,15 @@ const char kQuicMaxNumberOfLossyConnections[] =
     "max_number_of_lossy_connections";
 const char kQuicPacketLossThreshold[] = "packet_loss_threshold";
 
+// AsyncDNS experiment dictionary name.
+const char kAsyncDnsFieldTrialName[] = "AsyncDNS";
+// Name of boolean to enable AsyncDNS experiment.
+const char kAsyncDnsEnable[] = "enable";
+
 void ParseAndSetExperimentalOptions(
     const std::string& experimental_options,
-    net::URLRequestContextBuilder* context_builder) {
+    net::URLRequestContextBuilder* context_builder,
+    net::NetLog* net_log) {
   if (experimental_options.empty())
     return;
 
@@ -89,6 +96,22 @@ void ParseAndSetExperimentalOptions(
           quic_packet_loss_threshold);
     }
   }
+
+  const base::DictionaryValue* async_dns_args = nullptr;
+  if (dict->GetDictionary(kAsyncDnsFieldTrialName, &async_dns_args)) {
+    bool async_dns_enable = false;
+    if (async_dns_args->GetBoolean(kAsyncDnsEnable, &async_dns_enable) &&
+        async_dns_enable) {
+      if (net_log == nullptr) {
+        DCHECK(false) << "AsyncDNS experiment requires NetLog.";
+      } else {
+        scoped_ptr<net::HostResolver> host_resolver(
+            net::HostResolver::CreateDefaultResolver(net_log));
+        host_resolver->SetDnsClientEnabled(true);
+        context_builder->set_host_resolver(std::move(host_resolver));
+      }
+    }
+  }
 }
 
 }  // namespace
@@ -143,7 +166,8 @@ URLRequestContextConfig::URLRequestContextConfig(
 URLRequestContextConfig::~URLRequestContextConfig() {}
 
 void URLRequestContextConfig::ConfigureURLRequestContextBuilder(
-    net::URLRequestContextBuilder* context_builder) {
+    net::URLRequestContextBuilder* context_builder,
+    net::NetLog* net_log) {
   std::string config_cache;
   if (http_cache != DISABLED) {
     net::URLRequestContextBuilder::HttpCacheParams cache_params;
@@ -163,7 +187,8 @@ void URLRequestContextConfig::ConfigureURLRequestContextBuilder(
   context_builder->SetSpdyAndQuicEnabled(enable_spdy, enable_quic);
   context_builder->set_sdch_enabled(enable_sdch);
 
-  ParseAndSetExperimentalOptions(experimental_options, context_builder);
+  ParseAndSetExperimentalOptions(experimental_options, context_builder,
+                                 net_log);
 
   if (mock_cert_verifier)
     context_builder->SetCertVerifier(mock_cert_verifier.Pass());

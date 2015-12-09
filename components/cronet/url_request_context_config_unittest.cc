@@ -38,7 +38,8 @@ TEST(URLRequestContextConfigTest, SetQuicExperimentalOptions) {
       "\"delay_tcp_race\":true,"
       "\"max_number_of_lossy_connections\":10,"
       "\"packet_loss_threshold\":0.5,"
-      "\"connection_options\":\"TIME,TBBR,REJ\"}}",
+      "\"connection_options\":\"TIME,TBBR,REJ\"},"
+      "\"AsyncDNS\":{\"enable\":true}}",
       // Data reduction proxy key.
       "",
       // Data reduction proxy.
@@ -51,7 +52,8 @@ TEST(URLRequestContextConfigTest, SetQuicExperimentalOptions) {
       scoped_ptr<net::CertVerifier>());
 
   net::URLRequestContextBuilder builder;
-  config.ConfigureURLRequestContextBuilder(&builder);
+  net::NetLog net_log;
+  config.ConfigureURLRequestContextBuilder(&builder, &net_log);
   // Set a ProxyConfigService to avoid DCHECK failure when building.
   builder.set_proxy_config_service(make_scoped_ptr(
       new net::ProxyConfigServiceFixed(net::ProxyConfig::CreateDirect())));
@@ -74,6 +76,9 @@ TEST(URLRequestContextConfigTest, SetQuicExperimentalOptions) {
   // Check max_number_of_lossy_connections and packet_loss_threshold.
   EXPECT_EQ(10, params->quic_max_number_of_lossy_connections);
   EXPECT_FLOAT_EQ(0.5f, params->quic_packet_loss_threshold);
+
+  // Check AsyncDNS resolver is enabled.
+  EXPECT_NE(nullptr, context->host_resolver()->GetDnsConfigAsValue());
 }
 
 }  // namespace cronet

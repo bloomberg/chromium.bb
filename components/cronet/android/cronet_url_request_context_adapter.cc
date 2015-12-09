@@ -290,7 +290,7 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
   context_builder.set_proxy_service(
       net::ProxyService::CreateWithoutProxyResolver(
           proxy_config_service_.Pass(), net_log_.get()));
-  config->ConfigureURLRequestContextBuilder(&context_builder);
+  config->ConfigureURLRequestContextBuilder(&context_builder, net_log_.get());
 
   // Set up pref file if storage path is specified.
   if (!config->storage_path.empty()) {

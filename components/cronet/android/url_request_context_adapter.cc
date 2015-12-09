@@ -150,7 +150,7 @@ void URLRequestContextAdapter::InitRequestContextOnNetworkThread() {
   context_builder.set_network_delegate(
       make_scoped_ptr(new BasicNetworkDelegate()));
   context_builder.set_proxy_config_service(proxy_config_service_.Pass());
-  config_->ConfigureURLRequestContextBuilder(&context_builder);
+  config_->ConfigureURLRequestContextBuilder(&context_builder, nullptr);
 
   context_ = context_builder.Build().Pass();
 

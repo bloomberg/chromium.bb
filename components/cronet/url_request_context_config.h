@@ -14,6 +14,7 @@
 
 namespace net {
 class CertVerifier;
+class NetLog;
 class URLRequestContextBuilder;
 }  // namespace net
 
@@ -103,7 +104,8 @@ struct URLRequestContextConfig {
 
   // Configure |context_builder| based on |this|.
   void ConfigureURLRequestContextBuilder(
-      net::URLRequestContextBuilder* context_builder);
+      net::URLRequestContextBuilder* context_builder,
+      net::NetLog* net_log);
 
   // Enable QUIC.
   const bool enable_quic;
