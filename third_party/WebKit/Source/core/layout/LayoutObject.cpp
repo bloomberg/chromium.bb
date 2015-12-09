@@ -866,7 +866,7 @@ LayoutObject* LayoutObject::containerForAbsolutePosition(const LayoutBoxModelObj
     // we may not have one if we're part of an uninstalled
     // subtree. We'll climb as high as we can though.
     for (LayoutObject* object = parent(); object; object = object->parent()) {
-        if (object->style()->position() != StaticPosition)
+        if (object->isPositioned())
             return object;
 
         if (object->canContainFixedPositionObjects())

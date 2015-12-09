@@ -81,7 +81,7 @@ static bool iframeIsAbovePlugin(const Vector<const LayoutObject*>& iframeZstack,
 
             // If the plugin does not have an explicit z-index it stacks behind the iframe.
             // This is for maintaining compatibility with IE.
-            if (ro2->style()->position() == StaticPosition) {
+            if (!ro2->isPositioned()) {
                 // The 0'th elements of these LayoutObject arrays represent the plugin node and
                 // the iframe.
                 const LayoutObject* pluginLayoutObject = pluginZstack[0];

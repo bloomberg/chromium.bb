@@ -230,7 +230,7 @@ static void updateOutOfFlowContext(const LayoutObject& object, bool createdNewTr
     // uses transforms. Therefore, we only need to check createdNewTransform and isSVGRoot() to
     // ensure out-of-flow and fixed positioning is correct at the svg->html boundary.
 
-    if (object.styleRef().position() != StaticPosition || createdNewTransform || object.isSVGRoot()) {
+    if (object.isPositioned() || createdNewTransform || object.isSVGRoot()) {
         context.transformForOutOfFlowPositioned = context.currentTransform;
         context.paintOffsetForOutOfFlowPositioned = context.paintOffset;
     }

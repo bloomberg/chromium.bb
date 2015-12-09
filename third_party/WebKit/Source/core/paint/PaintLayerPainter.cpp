@@ -262,7 +262,7 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerContents(GraphicsCon
     LayoutRect rootRelativeBounds;
     bool rootRelativeBoundsComputed = false;
 
-    if (paintingInfo.ancestorHasClipPathClipping && m_paintLayer.layoutObject()->style()->position() != StaticPosition)
+    if (paintingInfo.ancestorHasClipPathClipping && m_paintLayer.layoutObject()->isPositioned())
         UseCounter::count(m_paintLayer.layoutObject()->document(), UseCounter::ClipPathOfPositionedElement);
 
     // These helpers output clip and compositing operations using a RAII pattern. Stack-allocated-varibles are destructed in the reverse order of construction,
@@ -461,7 +461,7 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerWithTransform(Graphi
             if (clipRectForFragment.isEmpty())
                 continue;
             if (needsToClip(paintingInfo, clipRectForFragment)) {
-                if (m_paintLayer.layoutObject()->style()->position() != StaticPosition && clipRectForFragment.isClippedByClipCss())
+                if (m_paintLayer.layoutObject()->isPositioned() && clipRectForFragment.isClippedByClipCss())
                     UseCounter::count(m_paintLayer.layoutObject()->document(), UseCounter::ClipCssOfPositionedElement);
                 clipRecorder.emplace(*context, *parentLayer->layoutObject(), DisplayItem::ClipLayerParent, clipRectForFragment, &paintingInfo, fragment.paginationOffset, paintFlags);
             }
