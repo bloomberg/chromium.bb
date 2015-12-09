@@ -3384,7 +3384,7 @@ void BrowserAccessibilityWin::UpdateStep1ComputeWinAttributes() {
   win_attributes_->name = GetString16Attribute(ui::AX_ATTR_NAME);
   win_attributes_->description = GetString16Attribute(ui::AX_ATTR_DESCRIPTION);
 
-  base::string16 value = GetString16Attribute(ui::AX_ATTR_VALUE);
+  base::string16 value = GetValue();
 
   // On Windows, the value of a document should be its url.
   if (GetRole() == ui::AX_ROLE_ROOT_WEB_AREA ||
@@ -3896,19 +3896,6 @@ void BrowserAccessibilityWin::GetSelectionOffsets(
   DCHECK(SUCCEEDED(hr));
   if (n_selections > 0)
     ++(*largest_offset);
-}
-
-base::string16 BrowserAccessibilityWin::GetNameRecursive() const {
-  if (!name().empty()) {
-    return name();
-  }
-
-  base::string16 result;
-  for (uint32 i = 0; i < PlatformChildCount(); ++i) {
-    result += PlatformGetChild(i)->ToBrowserAccessibilityWin()->
-        GetNameRecursive();
-  }
-  return result;
 }
 
 base::string16 BrowserAccessibilityWin::GetValueText() {

@@ -42,7 +42,10 @@ CONTENT_EXPORT ui::AXTreeUpdate MakeAXTreeUpdate(
     const ui::AXNodeData& node6 = ui::AXNodeData(),
     const ui::AXNodeData& node7 = ui::AXNodeData(),
     const ui::AXNodeData& node8 = ui::AXNodeData(),
-    const ui::AXNodeData& node9 = ui::AXNodeData());
+    const ui::AXNodeData& node9 = ui::AXNodeData(),
+    const ui::AXNodeData& node10 = ui::AXNodeData(),
+    const ui::AXNodeData& node11 = ui::AXNodeData(),
+    const ui::AXNodeData& node12 = ui::AXNodeData());
 
 // Class that can perform actions on behalf of the BrowserAccessibilityManager.
 // Note: BrowserAccessibilityManager should never cache any of the return

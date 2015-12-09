@@ -320,7 +320,7 @@ base::string16 BrowserAccessibilityAndroid::GetText() const {
 
   // First, always return the |value| attribute if this is an
   // input field.
-  base::string16 value = GetString16Attribute(ui::AX_ATTR_VALUE);
+  base::string16 value = GetValue();
   if (!value.empty()) {
     if (HasState(ui::AX_STATE_EDITABLE))
       return value;
@@ -646,7 +646,7 @@ int BrowserAccessibilityAndroid::GetSelectionEnd() const {
 }
 
 int BrowserAccessibilityAndroid::GetEditableTextLength() const {
-  base::string16 value = GetString16Attribute(ui::AX_ATTR_VALUE);
+  base::string16 value = GetValue();
   return value.length();
 }
 
@@ -915,7 +915,7 @@ void BrowserAccessibilityAndroid::OnDataChanged() {
   BrowserAccessibility::OnDataChanged();
 
   if (IsEditableText()) {
-    base::string16 value = GetString16Attribute(ui::AX_ATTR_VALUE);
+    base::string16 value = GetValue();
     if (value != new_value_) {
       old_value_ = new_value_;
       new_value_ = value;

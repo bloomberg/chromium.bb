@@ -820,9 +820,6 @@ BrowserAccessibilityWin
   // selection.)
   void GetSelectionOffsets(int* selection_start, int* selection_end) const;
 
-  // Append the accessible name from this node and its children.
-  base::string16 GetNameRecursive() const;
-
   // Get the value text, which might come from the floating-point
   // value for some roles.
   base::string16 GetValueText();

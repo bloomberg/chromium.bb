@@ -882,10 +882,144 @@ TEST_F(BrowserAccessibilityTest, TestIA2Attributes) {
   ASSERT_EQ(0, CountedBrowserAccessibility::num_instances());
 }
 
-/**
- * Ensures that ui::AX_ATTR_TEXT_SEL_START/END attributes are correctly used to
- * determine caret position and text selection in simple form fields.
- */
+TEST_F(BrowserAccessibilityTest, TestValueAttributeInTextControls) {
+  ui::AXNodeData root;
+  root.id = 1;
+  root.role = ui::AX_ROLE_ROOT_WEB_AREA;
+  root.state = (1 << ui::AX_STATE_READ_ONLY) | (1 << ui::AX_STATE_FOCUSABLE);
+
+  ui::AXNodeData combo_box, combo_box_text;
+  combo_box.id = 2;
+  combo_box_text.id = 3;
+  combo_box.SetName("Combo box:");
+  combo_box_text.SetName("Combo box text");
+  combo_box.role = ui::AX_ROLE_COMBO_BOX;
+  combo_box_text.role = ui::AX_ROLE_STATIC_TEXT;
+  combo_box.state = (1 << ui::AX_STATE_EDITABLE) |
+                    (1 << ui::AX_STATE_FOCUSABLE) | (1 << ui::AX_STATE_FOCUSED);
+  combo_box_text.state = 1 << ui::AX_STATE_EDITABLE;
+  combo_box.child_ids.push_back(combo_box_text.id);
+
+  ui::AXNodeData search_box, search_box_text, new_line;
+  search_box.id = 4;
+  search_box_text.id = 5;
+  new_line.id = 6;
+  search_box.SetName("Search for:");
+  search_box_text.SetName("Search box text");
+  new_line.SetName("\n");
+  search_box.role = ui::AX_ROLE_SEARCH_BOX;
+  search_box_text.role = ui::AX_ROLE_STATIC_TEXT;
+  new_line.role = ui::AX_ROLE_LINE_BREAK;
+  search_box.state = (1 << ui::AX_STATE_EDITABLE) |
+                     (1 << ui::AX_STATE_FOCUSABLE) |
+                     (1 << ui::AX_STATE_FOCUSED);
+  search_box_text.state = new_line.state = 1 << ui::AX_STATE_EDITABLE;
+  search_box.child_ids.push_back(search_box_text.id);
+  search_box.child_ids.push_back(new_line.id);
+
+  ui::AXNodeData text_field;
+  text_field.id = 7;
+  text_field.role = ui::AX_ROLE_TEXT_FIELD;
+  text_field.state =
+      (1 << ui::AX_STATE_EDITABLE) | (1 << ui::AX_STATE_FOCUSABLE);
+  text_field.SetValue("Text field text");
+
+  ui::AXNodeData link, link_text;
+  link.id = 8;
+  link_text.id = 9;
+  link_text.SetName("Link text");
+  link.role = ui::AX_ROLE_LINK;
+  link_text.role = ui::AX_ROLE_STATIC_TEXT;
+  link.state = link_text.state = 1 << ui::AX_STATE_READ_ONLY;
+  link.child_ids.push_back(link_text.id);
+
+  ui::AXNodeData slider, slider_text;
+  slider.id = 10;
+  slider_text.id = 11;
+  slider.AddFloatAttribute(ui::AX_ATTR_VALUE_FOR_RANGE, 5.0F);
+  slider_text.SetName("Slider text");
+  slider.role = ui::AX_ROLE_SLIDER;
+  slider_text.role = ui::AX_ROLE_STATIC_TEXT;
+  slider_text.state = 1 << ui::AX_STATE_READ_ONLY;
+  slider.child_ids.push_back(slider_text.id);
+
+  root.child_ids.push_back(2);   // Combo box.
+  root.child_ids.push_back(4);   // Search box.
+  root.child_ids.push_back(7);   // Text field.
+  root.child_ids.push_back(8);   // Link.
+  root.child_ids.push_back(10);  // Slider.
+
+  CountedBrowserAccessibility::reset();
+  scoped_ptr<BrowserAccessibilityManager> manager(
+      BrowserAccessibilityManager::Create(
+          MakeAXTreeUpdate(root, combo_box, combo_box_text, search_box,
+                           search_box_text, new_line, text_field, link,
+                           link_text, slider, slider_text),
+          nullptr, new CountedBrowserAccessibilityFactory()));
+  ASSERT_EQ(11, CountedBrowserAccessibility::num_instances());
+
+  ASSERT_NE(nullptr, manager->GetRoot());
+  BrowserAccessibilityWin* root_accessible =
+      manager->GetRoot()->ToBrowserAccessibilityWin();
+  ASSERT_NE(nullptr, root_accessible);
+  ASSERT_EQ(5U, root_accessible->PlatformChildCount());
+
+  BrowserAccessibilityWin* combo_box_accessible =
+      root_accessible->PlatformGetChild(0)->ToBrowserAccessibilityWin();
+  ASSERT_NE(nullptr, combo_box_accessible);
+  manager->SetFocus(combo_box_accessible, false /* notify */);
+  ASSERT_EQ(combo_box_accessible,
+            manager->GetFocus(root_accessible)->ToBrowserAccessibilityWin());
+  BrowserAccessibilityWin* search_box_accessible =
+      root_accessible->PlatformGetChild(1)->ToBrowserAccessibilityWin();
+  ASSERT_NE(nullptr, search_box_accessible);
+  BrowserAccessibilityWin* text_field_accessible =
+      root_accessible->PlatformGetChild(2)->ToBrowserAccessibilityWin();
+  ASSERT_NE(nullptr, text_field_accessible);
+  BrowserAccessibilityWin* link_accessible =
+      root_accessible->PlatformGetChild(3)->ToBrowserAccessibilityWin();
+  ASSERT_NE(nullptr, link_accessible);
+  BrowserAccessibilityWin* slider_accessible =
+      root_accessible->PlatformGetChild(4)->ToBrowserAccessibilityWin();
+  ASSERT_NE(nullptr, slider_accessible);
+
+  base::win::ScopedVariant childid_self(CHILDID_SELF);
+  base::win::ScopedVariant childid_slider(5);
+  base::win::ScopedBstr value;
+
+  HRESULT hr =
+      combo_box_accessible->get_accValue(childid_self, value.Receive());
+  EXPECT_EQ(S_OK, hr);
+  EXPECT_STREQ(L"Combo box text", value);
+  value.Reset();
+  hr = search_box_accessible->get_accValue(childid_self, value.Receive());
+  EXPECT_EQ(S_OK, hr);
+  EXPECT_STREQ(L"Search box text\n", value);
+  value.Reset();
+  hr = text_field_accessible->get_accValue(childid_self, value.Receive());
+  EXPECT_EQ(S_OK, hr);
+  EXPECT_STREQ(L"Text field text", value);
+  value.Reset();
+
+  // Other controls, such as links, should not use their inner text as their
+  // value. Only text entry controls.
+  hr = link_accessible->get_accValue(childid_self, value.Receive());
+  EXPECT_EQ(S_OK, hr);
+  EXPECT_EQ(0, value.Length());
+  value.Reset();
+
+  // Sliders and other range controls should expose their current value and not
+  // their inner text.
+  // Also, try accessing the slider via its child number instead of directly.
+  hr = root_accessible->get_accValue(childid_slider, value.Receive());
+  EXPECT_EQ(S_OK, hr);
+  EXPECT_STREQ(L"5", value);
+  value.Reset();
+
+  manager.reset();
+  ASSERT_EQ(0, CountedBrowserAccessibility::num_instances());
+}
+
 TEST_F(BrowserAccessibilityTest, TestCaretAndSelectionInSimpleFields) {
   ui::AXNodeData root;
   root.id = 1;

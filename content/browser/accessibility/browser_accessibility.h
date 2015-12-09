@@ -138,6 +138,10 @@ class CONTENT_EXPORT BrowserAccessibility {
   // the role is WebAXRoleStaticText.
   gfx::Rect GetGlobalBoundsForRange(int start, int len) const;
 
+  // This is to handle the cases such as ARIA textbox, where the value should
+  // be calculated from the object's inner text.
+  base::string16 GetValue() const;
+
   // Searches in the given text and from the given offset until the start of
   // the next or previous word is found and returns its position.
   // In case there is no word boundary before or after the given offset, it
@@ -314,9 +318,8 @@ class CONTENT_EXPORT BrowserAccessibility {
   ui::AXNode* node_;
 
  private:
-  // Return the sum of the lengths of all static text descendants,
-  // including this object if it's static text.
-  int GetStaticTextLenRecursive() const;
+  base::string16 GetInnerText() const;
+  int GetInnerTextLength() const;
 
   // If a bounding rectangle is empty, compute it based on the union of its
   // children, since most accessibility APIs don't like elements with no

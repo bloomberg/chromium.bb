@@ -605,8 +605,7 @@ bool InitializeAccessibilityTreeSearch(
 
   // If it's focusable but didn't have any other name or value, compute a name
   // from its descendants.
-  std::string value = browserAccessibility_->GetStringAttribute(
-      ui::AX_ATTR_VALUE);
+  base::string16 value = browserAccessibility_->GetValue();
   if (browserAccessibility_->HasState(ui::AX_STATE_FOCUSABLE) &&
       !browserAccessibility_->IsControl() &&
       value.empty() &&
@@ -841,8 +840,7 @@ bool InitializeAccessibilityTreeSearch(
 }
 
 - (NSNumber*)numberOfCharacters {
-  std::string value = browserAccessibility_->GetStringAttribute(
-      ui::AX_ATTR_VALUE);
+  base::string16 value = browserAccessibility_->GetValue();
   return [NSNumber numberWithInt:value.size()];
 }
 
@@ -1360,18 +1358,17 @@ bool InitializeAccessibilityTreeSearch(
                 red / 255., green / 255., blue / 255.];
   }
 
-  return NSStringForStringAttribute(
-      browserAccessibility_, ui::AX_ATTR_VALUE);
+  return base::SysUTF16ToNSString(browserAccessibility_->GetValue());
 }
 
 - (NSString*)valueDescription {
-  return NSStringForStringAttribute(
-      browserAccessibility_, ui::AX_ATTR_VALUE);
+  if (browserAccessibility_)
+    return base::SysUTF16ToNSString(browserAccessibility_->GetValue());
+  return nil;
 }
 
 - (NSValue*)visibleCharacterRange {
-  std::string value = browserAccessibility_->GetStringAttribute(
-      ui::AX_ATTR_VALUE);
+  base::string16 value = browserAccessibility_->GetValue();
   return [NSValue valueWithRange:NSMakeRange(0, value.size())];
 }
 
@@ -1441,8 +1438,7 @@ bool InitializeAccessibilityTreeSearch(
   if (!browserAccessibility_)
     return nil;
 
-  base::string16 value =
-      browserAccessibility_->GetString16Attribute(ui::AX_ATTR_VALUE);
+  base::string16 value = browserAccessibility_->GetValue();
   if (NSMaxRange(range) > value.size())
     return nil;
 
@@ -1481,8 +1477,7 @@ bool InitializeAccessibilityTreeSearch(
       return [NSNumber numberWithInt:static_cast<int>(line_breaks.size())];
     }
     if ([attribute isEqualToString:NSAccessibilitySelectedTextAttribute]) {
-      base::string16 value = browserAccessibility_->GetString16Attribute(
-          ui::AX_ATTR_VALUE);
+      base::string16 value = browserAccessibility_->GetValue();
       return base::SysUTF16ToNSString(value.substr(selStart, selLength));
     }
     if ([attribute isEqualToString:NSAccessibilitySelectedTextRangeAttribute]) {
@@ -1502,8 +1497,7 @@ bool InitializeAccessibilityTreeSearch(
   const std::vector<int32>& line_breaks =
       browserAccessibility_->GetIntListAttribute(
           ui::AX_ATTR_LINE_BREAKS);
-  std::string value = browserAccessibility_->GetStringAttribute(
-      ui::AX_ATTR_VALUE);
+  base::string16 value = browserAccessibility_->GetValue();
   int len = static_cast<int>(value.size());
 
   if ([attribute isEqualToString:

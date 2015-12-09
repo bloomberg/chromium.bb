@@ -256,7 +256,7 @@ gfx::Rect BrowserAccessibility::GetLocalBoundsForRange(int start, int len)
     gfx::Rect bounds;
     for (size_t i = 0; i < InternalChildCount(); ++i) {
       BrowserAccessibility* child = InternalGetChild(i);
-      int child_len = child->GetStaticTextLenRecursive();
+      int child_len = child->GetInnerTextLength();
       if (start < child_len && start + len > 0) {
         gfx::Rect child_rect = child->GetLocalBoundsForRange(start, len);
         bounds.Union(child_rect);
@@ -359,11 +359,18 @@ gfx::Rect BrowserAccessibility::GetGlobalBoundsForRange(int start, int len)
   return bounds;
 }
 
+base::string16 BrowserAccessibility::GetValue() const {
+  base::string16 value = GetString16Attribute(ui::AX_ATTR_VALUE);
+  if (value.empty() && IsSimpleTextControl())
+    value = GetInnerText();
+  return value;
+}
+
 int BrowserAccessibility::GetWordStartBoundary(
     int start, ui::TextBoundaryDirection direction) const {
   DCHECK_GE(start, -1);
   // Special offset that indicates that a word boundary has not been found.
-  int word_start_not_found = GetStaticTextLenRecursive();
+  int word_start_not_found = GetInnerTextLength();
   int word_start = word_start_not_found;
 
   switch (GetRole()) {
@@ -436,7 +443,7 @@ int BrowserAccessibility::GetWordStartBoundary(
       int child_start = 0;
       for (size_t i = 0; i < InternalChildCount(); ++i) {
         BrowserAccessibility* child = InternalGetChild(i);
-        int child_len = child->GetStaticTextLenRecursive();
+        int child_len = child->GetInnerTextLength();
         int child_word_start = child->GetWordStartBoundary(start, direction);
         if (child_word_start < child_len) {
           // We have found a possible word boundary.
@@ -763,16 +770,18 @@ std::string BrowserAccessibility::ComputeAccessibleNameFromDescendants() {
   return name;
 }
 
-int BrowserAccessibility::GetStaticTextLenRecursive() const {
-  if (GetRole() == ui::AX_ROLE_STATIC_TEXT ||
-      GetRole() == ui::AX_ROLE_LINE_BREAK) {
-    return static_cast<int>(GetStringAttribute(ui::AX_ATTR_NAME).size());
-  }
+base::string16 BrowserAccessibility::GetInnerText() const {
+  if (IsTextOnlyObject())
+    return GetString16Attribute(ui::AX_ATTR_NAME);
 
-  int len = 0;
+  base::string16 text;
   for (size_t i = 0; i < InternalChildCount(); ++i)
-    len += InternalGetChild(i)->GetStaticTextLenRecursive();
-  return len;
+    text += InternalGetChild(i)->GetInnerText();
+  return text;
+}
+
+int BrowserAccessibility::GetInnerTextLength() const {
+  return static_cast<int>(GetInnerText().size());
 }
 
 void BrowserAccessibility::FixEmptyBounds(gfx::Rect* bounds) const

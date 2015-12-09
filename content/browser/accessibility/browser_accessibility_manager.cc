@@ -49,7 +49,10 @@ ui::AXTreeUpdate MakeAXTreeUpdate(
     const ui::AXNodeData& node6 /* = ui::AXNodeData() */,
     const ui::AXNodeData& node7 /* = ui::AXNodeData() */,
     const ui::AXNodeData& node8 /* = ui::AXNodeData() */,
-    const ui::AXNodeData& node9 /* = ui::AXNodeData() */) {
+    const ui::AXNodeData& node9 /* = ui::AXNodeData() */,
+    const ui::AXNodeData& node10 /* = ui::AXNodeData() */,
+    const ui::AXNodeData& node11 /* = ui::AXNodeData() */,
+    const ui::AXNodeData& node12 /* = ui::AXNodeData() */) {
   CR_DEFINE_STATIC_LOCAL(ui::AXNodeData, empty_data, ());
   int32 no_id = empty_data.id;
 
@@ -71,6 +74,12 @@ ui::AXTreeUpdate MakeAXTreeUpdate(
     update.nodes.push_back(node8);
   if (node9.id != no_id)
     update.nodes.push_back(node9);
+  if (node10.id != no_id)
+    update.nodes.push_back(node10);
+  if (node11.id != no_id)
+    update.nodes.push_back(node11);
+  if (node12.id != no_id)
+    update.nodes.push_back(node12);
   return update;
 }
 
