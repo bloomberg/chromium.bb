@@ -66,11 +66,7 @@ public class QuicTest extends CronetTestBase {
         String[] commandLineArgs = {
                 CronetTestFramework.LIBRARY_INIT_KEY, CronetTestFramework.LibraryInitType.LEGACY};
         mTestFramework = new CronetTestFramework(null, commandLineArgs, getContext(), mBuilder);
-
-        long urlRequestContextAdapter = ((ChromiumUrlRequestFactory) mTestFramework.mRequestFactory)
-                                                .getRequestContext()
-                                                .getUrlRequestContextAdapter();
-        NativeTestServer.registerHostResolverProc(urlRequestContextAdapter, true);
+        registerHostResolver(mTestFramework, true);
         String quicURL = QuicTestServer.getServerURL() + "/simple.txt";
 
         HashMap<String, String> headers = new HashMap<String, String>();
@@ -94,14 +90,8 @@ public class QuicTest extends CronetTestBase {
     @LargeTest
     @Feature({"Cronet"})
     public void testQuicLoadUrl() throws Exception {
-        String[] commandLineArgs = {
-                CronetTestFramework.LIBRARY_INIT_KEY, CronetTestFramework.LibraryInitType.CRONET};
-        mTestFramework = new CronetTestFramework(null, commandLineArgs, getContext(), mBuilder);
-
-        long urlRequestContextAdapter = ((CronetUrlRequestContext) mTestFramework.mCronetEngine)
-                                                .getUrlRequestContextAdapter();
-        NativeTestServer.registerHostResolverProc(urlRequestContextAdapter, false);
-
+        mTestFramework = startCronetTestFrameworkWithUrlAndCronetEngineBuilder(null, mBuilder);
+        registerHostResolver(mTestFramework);
         String quicURL = QuicTestServer.getServerURL() + "/simple.txt";
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
 
@@ -145,13 +135,11 @@ public class QuicTest extends CronetTestBase {
         builder.enableHttpCache(CronetEngine.Builder.HTTP_CACHE_DISK, 1000 * 1024);
         builder.enableQUIC(true);
         builder.setMockCertVerifierForTesting(MockCertVerifier.createMockCertVerifier(CERTS_USED));
-        CronetEngine newEngine = new CronetUrlRequestContext(builder);
-        long newUrlRequestContextAdapter =
-                ((CronetUrlRequestContext) newEngine).getUrlRequestContextAdapter();
-        NativeTestServer.registerHostResolverProc(newUrlRequestContextAdapter, false);
+        mTestFramework = startCronetTestFrameworkWithUrlAndCronetEngineBuilder(null, builder);
+        registerHostResolver(mTestFramework);
         TestUrlRequestCallback callback2 = new TestUrlRequestCallback();
-        requestBuilder =
-                new UrlRequest.Builder(quicURL, callback2, callback2.getExecutor(), newEngine);
+        requestBuilder = new UrlRequest.Builder(
+                quicURL, callback2, callback2.getExecutor(), mTestFramework.mCronetEngine);
         requestBuilder.build().start();
         callback2.blockForDone();
         assertEquals(200, callback2.mResponseInfo.getHttpStatusCode());

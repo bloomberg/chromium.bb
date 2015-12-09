@@ -105,7 +105,6 @@ public class CronetTestFramework {
             String appUrl, String[] commandLine, Context context, CronetEngine.Builder builder) {
         mCommandLine = commandLine;
         mContext = context;
-        prepareTestStorage();
 
         // Print out extra arguments passed in starting this activity.
         if (commandLine != null) {
@@ -149,12 +148,12 @@ public class CronetTestFramework {
     /**
      * Prepares the path for the test storage (http cache, QUIC server info).
      */
-    private void prepareTestStorage() {
-        File storage = new File(getTestStorageDirectory(mContext));
+    public static void prepareTestStorage(Context context) {
+        File storage = new File(getTestStorageDirectory(context));
         if (storage.exists()) {
             assertTrue(recursiveDelete(storage));
         }
-        ensureTestStorageExists(mContext);
+        ensureTestStorageExists(context);
     }
 
     /**
@@ -185,7 +184,7 @@ public class CronetTestFramework {
     }
 
     @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
-    private boolean recursiveDelete(File path) {
+    private static boolean recursiveDelete(File path) {
         if (path.isDirectory()) {
             for (File c : path.listFiles()) {
                 if (!recursiveDelete(c)) {

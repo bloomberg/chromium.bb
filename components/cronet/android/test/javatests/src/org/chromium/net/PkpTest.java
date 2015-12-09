@@ -66,7 +66,7 @@ public class PkpTest extends CronetTestBase {
         byte[] nonMatchingHash = generateSomeSha256();
         addPkpSha256(mServerHost, nonMatchingHash, EXCLUDE_SUBDOMAINS, DISTANT_FUTURE);
         startCronetFramework();
-        registerHostResolver();
+        registerHostResolver(mTestFramework);
         sendRequestAndWaitForResult();
 
         assertErrorResponse();
@@ -87,7 +87,7 @@ public class PkpTest extends CronetTestBase {
 
         addPkpSha256(mServerHost, matchingHash, EXCLUDE_SUBDOMAINS, DISTANT_FUTURE);
         startCronetFramework();
-        registerHostResolver();
+        registerHostResolver(mTestFramework);
         sendRequestAndWaitForResult();
 
         assertSuccessfulResponse();
@@ -106,7 +106,7 @@ public class PkpTest extends CronetTestBase {
         byte[] nonMatchingHash = generateSomeSha256();
         addPkpSha256(mDomain, nonMatchingHash, INCLUDE_SUBDOMAINS, DISTANT_FUTURE);
         startCronetFramework();
-        registerHostResolver();
+        registerHostResolver(mTestFramework);
         sendRequestAndWaitForResult();
 
         assertErrorResponse();
@@ -125,7 +125,7 @@ public class PkpTest extends CronetTestBase {
         byte[] nonMatchingHash = generateSomeSha256();
         addPkpSha256(mDomain, nonMatchingHash, EXCLUDE_SUBDOMAINS, DISTANT_FUTURE);
         startCronetFramework();
-        registerHostResolver();
+        registerHostResolver(mTestFramework);
         sendRequestAndWaitForResult();
 
         assertSuccessfulResponse();
@@ -144,7 +144,7 @@ public class PkpTest extends CronetTestBase {
         byte[] nonMatchingHash = generateSomeSha256();
         addPkpSha256("otherhost.com", nonMatchingHash, INCLUDE_SUBDOMAINS, DISTANT_FUTURE);
         startCronetFramework();
-        registerHostResolver();
+        registerHostResolver(mTestFramework);
         sendRequestAndWaitForResult();
 
         assertSuccessfulResponse();
@@ -163,7 +163,7 @@ public class PkpTest extends CronetTestBase {
         byte[] nonMatchingHash = generateSomeSha256();
         addPkpSha256(mServerHost, nonMatchingHash, EXCLUDE_SUBDOMAINS, tenSecondsAhead);
         startCronetFramework();
-        registerHostResolver();
+        registerHostResolver(mTestFramework);
         sendRequestAndWaitForResult();
 
         assertErrorResponse();
@@ -182,7 +182,7 @@ public class PkpTest extends CronetTestBase {
         byte[] nonMatchingHash = generateSomeSha256();
         addPkpSha256(mServerHost, nonMatchingHash, EXCLUDE_SUBDOMAINS, oneSecondAgo);
         startCronetFramework();
-        registerHostResolver();
+        registerHostResolver(mTestFramework);
         sendRequestAndWaitForResult();
 
         assertSuccessfulResponse();
@@ -199,7 +199,7 @@ public class PkpTest extends CronetTestBase {
         byte[] nonMatchingHash = generateSomeSha256();
         addPkpSha256(mServerHost, nonMatchingHash, EXCLUDE_SUBDOMAINS, DISTANT_FUTURE);
         startCronetFramework();
-        registerHostResolver();
+        registerHostResolver(mTestFramework);
         sendRequestAndWaitForResult();
         assertErrorResponse();
         shutdownCronetEngine();
@@ -208,7 +208,7 @@ public class PkpTest extends CronetTestBase {
         // a successful response is expected.
         createCronetEngineBuilder();
         startCronetFramework();
-        registerHostResolver();
+        registerHostResolver(mTestFramework);
         sendRequestAndWaitForResult();
         assertSuccessfulResponse();
     }
@@ -345,12 +345,6 @@ public class PkpTest extends CronetTestBase {
         if (mTestFramework != null && mTestFramework.mCronetEngine != null) {
             mTestFramework.mCronetEngine.shutdown();
         }
-    }
-
-    private void registerHostResolver() {
-        long urlRequestContextAdapter = ((CronetUrlRequestContext) mTestFramework.mCronetEngine)
-                                                .getUrlRequestContextAdapter();
-        NativeTestServer.registerHostResolverProc(urlRequestContextAdapter, false);
     }
 
     private byte[] generateSomeSha256() {

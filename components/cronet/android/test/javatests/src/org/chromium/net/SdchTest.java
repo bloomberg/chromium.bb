@@ -55,10 +55,7 @@ public class SdchTest extends CronetTestBase {
         String[] args = new String[commandLineArgs.size()];
         mTestFramework = startCronetTestFrameworkWithUrlAndCommandLineArgs(
                 null, commandLineArgs.toArray(args));
-        long urlRequestContextAdapter = (api == Api.LEGACY)
-                ? getContextAdapter((ChromiumUrlRequestFactory) mTestFramework.mRequestFactory)
-                : getContextAdapter((CronetUrlRequestContext) mTestFramework.mCronetEngine);
-        NativeTestServer.registerHostResolverProc(urlRequestContextAdapter, api == Api.LEGACY);
+        registerHostResolver(mTestFramework, api == Api.LEGACY);
         // Start NativeTestServer.
         assertTrue(NativeTestServer.startNativeTestServer(getContext()));
     }
@@ -173,11 +170,11 @@ public class SdchTest extends CronetTestBase {
         assertTrue(fileContainsString("local_prefs.json", dictUrl));
 
         // Test persistence.
-        CronetUrlRequestContext newContext =
-                new CronetUrlRequestContext(mTestFramework.getCronetEngineBuilder());
-
+        mTestFramework = startCronetTestFrameworkWithUrlAndCronetEngineBuilder(
+                null, mTestFramework.getCronetEngineBuilder());
+        CronetUrlRequestContext newContext = (CronetUrlRequestContext) mTestFramework.mCronetEngine;
         long newContextAdapter = getContextAdapter(newContext);
-        NativeTestServer.registerHostResolverProc(newContextAdapter, false);
+        registerHostResolver(mTestFramework);
         DictionaryAddedObserver newObserver =
                 new DictionaryAddedObserver(targetUrl, newContextAdapter, false /** Legacy Api */);
         newObserver.waitForDictionaryAdded();

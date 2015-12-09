@@ -27,6 +27,7 @@ public class CronetTestBase extends AndroidTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX, getContext());
+        CronetTestFramework.prepareTestStorage(getContext());
     }
 
     /**
@@ -112,6 +113,31 @@ public class CronetTestBase extends AndroidTestCase {
         } catch (Throwable e) {
             throw new Throwable("CronetTestBase#runTest failed.", e);
         }
+    }
+
+    /**
+     * Registers test host resolver for testing with the new API.
+     */
+    protected void registerHostResolver(CronetTestFramework framework) {
+        registerHostResolver(framework, false);
+    }
+
+    /**
+     * Registers test host resolver.
+     *
+     * @param isLegacyAPI true if the test should use the legacy API.
+     */
+    protected void registerHostResolver(CronetTestFramework framework, boolean isLegacyAPI) {
+        long urlRequestContextAdapter;
+        if (isLegacyAPI) {
+            urlRequestContextAdapter = ((ChromiumUrlRequestFactory) framework.mRequestFactory)
+                                               .getRequestContext()
+                                               .getUrlRequestContextAdapter();
+        } else {
+            urlRequestContextAdapter = ((CronetUrlRequestContext) framework.mCronetEngine)
+                                               .getUrlRequestContextAdapter();
+        }
+        NativeTestServer.registerHostResolverProc(urlRequestContextAdapter, isLegacyAPI);
     }
 
     @Target(ElementType.METHOD)
