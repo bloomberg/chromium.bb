@@ -34,11 +34,8 @@
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/PaintArtifactToSkCanvas.h"
 #include "platform/graphics/paint/PaintController.h"
-#include "platform/transforms/AffineTransform.h"
-#include "platform/transforms/TransformationMatrix.h"
 #include "public/platform/WebDisplayItemList.h"
-#include "public/platform/WebFloatRect.h"
-#include "third_party/skia/include/core/SkCanvas.h"
+#include "public/platform/WebRect.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -62,8 +59,7 @@ static void paintArtifactToWebDisplayItemList(WebDisplayItemList* list, const Pa
         // one big flat SkPicture.
         SkRect skBounds = SkRect::MakeXYWH(bounds.x(), bounds.y(), bounds.width(), bounds.height());
         RefPtr<SkPicture> picture = paintArtifactToSkPicture(artifact, skBounds);
-        // TODO(wkorman): Pass actual visual rect with the drawing item.
-        list->appendDrawingItem(IntRect(), picture.get());
+        list->appendDrawingItem(WebRect(bounds.x(), bounds.y(), bounds.width(), bounds.height()), picture.get());
         return;
     }
     artifact.appendToWebDisplayItemList(list);
