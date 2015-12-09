@@ -35,19 +35,9 @@ function callback7()
 
 function callback8()
 {
-    var obj = {};
-    Object.observe(obj, callback9);
-    debugger;
-    obj.foo = 1; // <- StepIntoAsync
-    setTimeout(dummy);
-    return 8;
-}
-
-function callback9()
-{
     var iframe = document.getElementById("iframe");
     var win = iframe.contentWindow;
-    window.addEventListener("message", callback10, false);
+    window.addEventListener("message", callback9, false);
     debugger;
     win.postMessage("skip debugger", "*"); // <- StepIntoAsync
     setTimeout(dummy, 0);
@@ -55,9 +45,9 @@ function callback9()
     return 9;
 }
 
-function callback10()
+function callback9()
 {
-    window.removeEventListener("message", callback10, false);
+    window.removeEventListener("message", callback9, false);
     debugger;
     Promise.resolve({foo: 44}) // <- StepIntoAsync
         .then(
@@ -69,7 +59,7 @@ function callback10()
         .then(
             function inner2()
             {
-                return callback11();
+                return callback10();
             }
         )
         .then(dummy);
@@ -77,7 +67,7 @@ function callback10()
     return 10;
 }
 
-function callback11()
+function callback10()
 {
     return 11;
 }
@@ -107,13 +97,12 @@ function test()
             "StepIntoAsync", "Print", // at callback7
             "Resume", // now paused at debugger in inner()
             "StepOver", "StepOver", "StepIntoAsync", "Print", // at callback8
-            "Resume", "StepOver", "StepIntoAsync", "Print", // at callback9
             "Resume", "StepOver", "StepIntoAsync", "Print", // at onmessage handler in iframe
-            "Resume", // now paused at debugger in callback10
+            "Resume", // now paused at debugger in callback9
             "StepInto", "StepIntoAsync", "Print", // in inner1
             "StepIntoAsync", "Print", // in inner2
             // Test that StepIntoAsync is StepInto when there are no Async operations.
-            "StepIntoAsync", "StepIntoAsync", "Print", // in callback11
+            "StepIntoAsync", "StepIntoAsync", "Print", // in callback10
         ];
         InspectorTest.waitUntilPausedAndPerformSteppingActions(actions, step4);
     }
