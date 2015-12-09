@@ -190,6 +190,7 @@ class CONTENT_EXPORT BrowserAccessibility {
   // accessibility APIs.
   uint32 InternalChildCount() const;
   BrowserAccessibility* InternalGetChild(uint32 child_index) const;
+  BrowserAccessibility* InternalGetParent() const;
 
   BrowserAccessibility* GetParent() const;
   int32 GetIndexInParent() const;

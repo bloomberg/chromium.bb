@@ -119,11 +119,11 @@ BrowserAccessibility* BrowserAccessibility::PlatformGetChild(
 }
 
 bool BrowserAccessibility::PlatformIsChildOfLeaf() const {
-  BrowserAccessibility* ancestor = GetParent();
+  BrowserAccessibility* ancestor = InternalGetParent();
   while (ancestor) {
     if (ancestor->PlatformIsLeaf())
       return true;
-    ancestor = ancestor->GetParent();
+    ancestor = ancestor->InternalGetParent();
   }
 
   return false;
@@ -195,6 +195,16 @@ BrowserAccessibility* BrowserAccessibility::GetParent() const {
     return manager_->GetFromAXNode(parent);
 
   return manager_->GetParentNodeFromParentTree();
+}
+
+BrowserAccessibility* BrowserAccessibility::InternalGetParent() const {
+  if (!node_ || !manager_)
+    return nullptr;
+  ui::AXNode* parent = node_->parent();
+  if (parent)
+    return manager_->GetFromAXNode(parent);
+
+  return nullptr;
 }
 
 int32 BrowserAccessibility::GetIndexInParent() const {

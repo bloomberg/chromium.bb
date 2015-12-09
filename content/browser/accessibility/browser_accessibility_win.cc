@@ -3094,7 +3094,10 @@ STDMETHODIMP BrowserAccessibilityWin::QueryService(REFGUID guid_service,
     // Special Mozilla extension: return the accessible for the root document.
     // Screen readers use this to distinguish between a document loaded event
     // on the root document vs on an iframe.
-    return manager()->GetRoot()->ToBrowserAccessibilityWin()->QueryInterface(
+    BrowserAccessibility* node = this;
+    while (node->GetParent())
+      node = node->GetParent()->manager()->GetRoot();
+    return node->ToBrowserAccessibilityWin()->QueryInterface(
         IID_IAccessible2, object);
   }
 

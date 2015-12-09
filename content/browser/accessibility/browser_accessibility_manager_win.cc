@@ -17,6 +17,10 @@
 
 namespace content {
 
+// Map from unique_id_win to BrowserAccessibility
+using UniqueIDWinMap = base::hash_map<LONG, BrowserAccessibility*>;
+base::LazyInstance<UniqueIDWinMap> g_unique_id_map = LAZY_INSTANCE_INITIALIZER;
+
 // static
 BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
     const ui::AXTreeUpdate& initial_tree,
@@ -66,15 +70,17 @@ ui::AXTreeUpdate
 }
 
 HWND BrowserAccessibilityManagerWin::GetParentHWND() {
-  if (!delegate_)
+  BrowserAccessibilityDelegate* delegate = GetDelegateFromRootManager();
+  if (!delegate)
     return NULL;
-  return delegate_->AccessibilityGetAcceleratedWidget();
+  return delegate->AccessibilityGetAcceleratedWidget();
 }
 
 IAccessible* BrowserAccessibilityManagerWin::GetParentIAccessible() {
-  if (!delegate_)
+  BrowserAccessibilityDelegate* delegate = GetDelegateFromRootManager();
+  if (!delegate)
     return NULL;
-  return delegate_->AccessibilityGetNativeViewAccessible();
+  return delegate->AccessibilityGetNativeViewAccessible();
 }
 
 void BrowserAccessibilityManagerWin::MaybeCallNotifyWinEvent(
@@ -304,8 +310,7 @@ void BrowserAccessibilityManagerWin::OnNodeCreated(ui::AXTree* tree,
   if (!obj->IsNative())
     return;
   LONG unique_id_win = obj->ToBrowserAccessibilityWin()->unique_id_win();
-  unique_id_to_ax_id_map_[unique_id_win] = obj->GetId();
-  unique_id_to_ax_tree_id_map_[unique_id_win] = ax_tree_id_;
+  g_unique_id_map.Get()[unique_id_win] = obj;
 }
 
 void BrowserAccessibilityManagerWin::OnNodeWillBeDeleted(ui::AXTree* tree,
@@ -317,9 +322,7 @@ void BrowserAccessibilityManagerWin::OnNodeWillBeDeleted(ui::AXTree* tree,
     return;
   if (!obj->IsNative())
     return;
-  unique_id_to_ax_id_map_.erase(
-      obj->ToBrowserAccessibilityWin()->unique_id_win());
-  unique_id_to_ax_tree_id_map_.erase(
+  g_unique_id_map.Get().erase(
       obj->ToBrowserAccessibilityWin()->unique_id_win());
   if (obj == tracked_scroll_object_) {
     tracked_scroll_object_->Release();
@@ -392,31 +395,11 @@ void BrowserAccessibilityManagerWin::TrackScrollingObject(
 
 BrowserAccessibilityWin* BrowserAccessibilityManagerWin::GetFromUniqueIdWin(
     LONG unique_id_win) {
-  auto tree_iter = unique_id_to_ax_tree_id_map_.find(unique_id_win);
-  if (tree_iter == unique_id_to_ax_tree_id_map_.end())
+  auto iter = g_unique_id_map.Get().find(unique_id_win);
+  if (iter == g_unique_id_map.Get().end())
     return nullptr;
 
-  int tree_id = tree_iter->second;
-  if (tree_id != ax_tree_id_) {
-    BrowserAccessibilityManagerWin* manager =
-        BrowserAccessibilityManager::FromID(tree_id)
-            ->ToBrowserAccessibilityManagerWin();
-    if (!manager)
-      return nullptr;
-    if (manager != this)
-      return manager->GetFromUniqueIdWin(unique_id_win);
-    return nullptr;
-  }
-
-  auto iter = unique_id_to_ax_id_map_.find(unique_id_win);
-  if (iter == unique_id_to_ax_id_map_.end())
-    return nullptr;
-
-  BrowserAccessibility* result = GetFromID(iter->second);
-  if (result && result->IsNative())
-    return result->ToBrowserAccessibilityWin();
-
-  return nullptr;
+  return iter->second->ToBrowserAccessibilityWin();
 }
 
 }  // namespace content
