@@ -15,7 +15,6 @@
         {
           'action_name': 'ui_resources',
           'variables': {
-            'grit_whitelist': '',
             'grit_grd_file': 'ui_resources.grd',
           },
           'includes': [ '../../build/grit_action.gypi' ],
@@ -23,7 +22,6 @@
         {
           'action_name': 'webui_resources',
           'variables': {
-            'grit_whitelist': '',
             'grit_grd_file': '../webui/resources/webui_resources.grd',
           },
           'includes': [ '../../build/grit_action.gypi' ],
@@ -31,7 +29,6 @@
         {
           'action_name': 'ui_unscaled_resources',
           'variables': {
-            'grit_whitelist': '',
             'grit_grd_file': 'ui_unscaled_resources.grd',
           },
           'includes': [ '../../build/grit_action.gypi' ],

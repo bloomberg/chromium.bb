@@ -687,7 +687,6 @@
         {
           'action_name': 'net_resources',
           'variables': {
-            'grit_whitelist': '',
             'grit_grd_file': 'base/net_resources.grd',
           },
           'includes': [ '../build/grit_action.gypi' ],

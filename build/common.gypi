@@ -2136,9 +2136,6 @@
           '-t', 'ios',
           '--no-output-all-resource-defines',
         ],
-        # iOS uses a whitelist to filter resources.
-        'grit_whitelist%': '<(DEPTH)/build/ios/grit_whitelist.txt',
-
         # Enable host builds when generating with ninja-ios.
         'conditions': [
           ['"<(GENERATOR)"=="ninja"', {

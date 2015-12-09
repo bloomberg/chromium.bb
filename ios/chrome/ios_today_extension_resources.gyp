@@ -24,7 +24,6 @@
         {
           'action_name': 'generate_ios_today_extension_strings',
           'variables': {
-            'grit_whitelist': '',
             'grit_grd_file': 'today_extension/strings/ios_today_extension_strings.grd',
           },
           'includes': [ '../../build/grit_action.gypi' ],
