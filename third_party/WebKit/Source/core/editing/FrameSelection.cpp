@@ -338,6 +338,8 @@ void FrameSelection::setSelectionAlgorithm(const VisibleSelectionTemplate<Strate
     // Always clear the x position used for vertical arrow navigation.
     // It will be restored by the vertical arrow navigation code if necessary.
     m_selectionEditor->resetXPosForVerticalArrowNavigation();
+    RefPtrWillBeRawPtr<LocalFrame> protector(m_frame);
+    // This may dispatch a synchronous focus-related events.
     selectFrameElementInParentIfFullySelected();
     notifyLayoutObjectOfSelectionChange(userTriggered);
     // If the selections are same in the DOM tree but not in the composed tree,
@@ -805,7 +807,10 @@ void FrameSelection::selectFrameElementInParentIfFullySelected()
     // Focus on the parent frame, and then select from before this element to after.
     VisibleSelection newSelection(beforeOwnerElement, afterOwnerElement);
     page->focusController().setFocusedFrame(parent);
-    toLocalFrame(parent)->selection().setSelection(newSelection);
+    // setFocusedFrame can dispatch synchronous focus/blur events.  The document
+    // tree might be modified.
+    if (newSelection.isNonOrphanedCaretOrRange())
+        toLocalFrame(parent)->selection().setSelection(newSelection);
 }
 
 void FrameSelection::selectAll()
