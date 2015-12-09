@@ -52,6 +52,15 @@ public class PhysicalWeb {
         clearUrlsAsync(application);
     }
 
+    /**
+     * Upload the collected UMA stats.
+     * This method should be called only when the native library is loaded.
+     * @param context A valid instance of Context.
+     */
+    public static void uploadDeferredMetrics(final Context context) {
+        PhysicalWebUma.uploadDeferredMetrics(context);
+    }
+
     private static void clearUrlsAsync(final Context context) {
         Runnable task = new Runnable() {
             @Override

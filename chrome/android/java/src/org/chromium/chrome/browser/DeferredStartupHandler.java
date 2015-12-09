@@ -130,6 +130,7 @@ public class DeferredStartupHandler {
         // Start or stop Physical Web
         if (PhysicalWeb.featureIsEnabled()) {
             PhysicalWeb.startPhysicalWeb(application);
+            PhysicalWeb.uploadDeferredMetrics(application);
         } else {
             PhysicalWeb.stopPhysicalWeb(application);
         }

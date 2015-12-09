@@ -53,7 +53,7 @@ public class ListUrlsActivity extends AppCompatActivity implements AdapterView.O
         int referer = getIntent().getIntExtra(UrlManager.REFERER_KEY, 0);
         if (savedInstanceState == null  // Ensure this is a newly-created activity
                 && referer == UrlManager.NOTIFICATION_REFERER) {
-            PhysicalWebUma.onNotificationPressed();
+            PhysicalWebUma.onNotificationPressed(this);
         }
         mDisplayRecorded = false;
 
@@ -75,7 +75,8 @@ public class ListUrlsActivity extends AppCompatActivity implements AdapterView.O
         mPwsClient.resolve(urls, new PwsClient.ResolveScanCallback() {
             @Override
             public void onPwsResults(Collection<PwsResult> pwsResults) {
-                PhysicalWebUma.onPwsResponse(SystemClock.elapsedRealtime() - timestamp);
+                long duration = SystemClock.elapsedRealtime() - timestamp;
+                PhysicalWebUma.onPwsResponse(ListUrlsActivity.this, duration);
                 // filter out duplicate site URLs
                 Collection<String> siteUrls = new HashSet<>();
                 for (PwsResult pwsResult : pwsResults) {
@@ -97,7 +98,7 @@ public class ListUrlsActivity extends AppCompatActivity implements AdapterView.O
                 //             taken place and the displayed URLs are significantly different.
                 if (!mDisplayRecorded) {
                     mDisplayRecorded = true;
-                    PhysicalWebUma.onUrlsDisplayed(mAdapter.getCount());
+                    PhysicalWebUma.onUrlsDisplayed(ListUrlsActivity.this, mAdapter.getCount());
                 }
             }
         });
@@ -118,7 +119,7 @@ public class ListUrlsActivity extends AppCompatActivity implements AdapterView.O
      */
     @Override
     public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-        PhysicalWebUma.onUrlSelected();
+        PhysicalWebUma.onUrlSelected(this);
         PwsResult pwsResult = mAdapter.getItem(position);
         Intent intent = createNavigateToUrlIntent(pwsResult);
         startActivity(intent);
