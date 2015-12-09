@@ -24,12 +24,9 @@ bool IntersectsButDoesNotInclude(CGRect firstRect, CGRect secondRect) {
 @interface HardwareKeyboardWatcher () {
   base::scoped_nsobject<UIView> _accessoryView;
 }
-@property(nonatomic, assign) UIInterfaceOrientation orientation;
 @end
 
 @implementation HardwareKeyboardWatcher
-
-@synthesize orientation = _orientation;
 
 - (instancetype)init {
   NOTREACHED();
@@ -41,7 +38,6 @@ bool IntersectsButDoesNotInclude(CGRect firstRect, CGRect secondRect) {
   self = [super init];
   if (self) {
     _accessoryView.reset([accessoryView retain]);
-    _orientation = [UIApplication sharedApplication].statusBarOrientation;
     [[NSNotificationCenter defaultCenter]
         addObserver:self
            selector:@selector(keyboardWillChangeFrame:)
@@ -61,20 +57,21 @@ bool IntersectsButDoesNotInclude(CGRect firstRect, CGRect secondRect) {
   if ([_accessoryView window] == nil)
     return;
 
-  // Don't handle rotations as the reported keyboard frames are in the screen
-  // coordinates *prior* to the rotation, while the screen already has its
-  // new coordinates. http://crbug.com/511267
-  if (self.orientation !=
-      [UIApplication sharedApplication].statusBarOrientation) {
-    return;
-  }
-
   NSDictionary* userInfo = [notification userInfo];
   CGRect beginKeyboardFrame =
       [userInfo[UIKeyboardFrameBeginUserInfoKey] CGRectValue];
   CGRect endKeyboardFrame =
       [userInfo[UIKeyboardFrameEndUserInfoKey] CGRectValue];
   CGRect screenBounds = [UIScreen mainScreen].bounds;
+
+  // During rotations, the reported keyboard frames are in the screen
+  // coordinates *prior* to the rotation, while the screen already has its
+  // new coordinates. http://crbug.com/511267
+  // To alleviate that, switch the screen bounds width and height if needed.
+  if (CGRectGetHeight(screenBounds) == CGRectGetWidth(beginKeyboardFrame)) {
+    screenBounds.size =
+        CGSizeMake(CGRectGetHeight(screenBounds), CGRectGetWidth(screenBounds));
+  }
 
   // CGRectZero frames are seen when moving a split dock. Split keyboard means
   // software keyboard.
