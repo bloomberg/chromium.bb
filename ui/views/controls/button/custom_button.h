@@ -126,9 +126,9 @@ class VIEWS_EXPORT CustomButton : public Button,
   // state). This does not take into account enabled state.
   bool ShouldEnterHoveredState();
 
-  void SetInkDropDelegate(scoped_ptr<InkDropDelegate> ink_drop_delegate);
-  InkDropDelegate* ink_drop_delegate() const {
-    return ink_drop_delegate_.get();
+  InkDropDelegate* ink_drop_delegate() const { return ink_drop_delegate_; }
+  void set_ink_drop_delegate(InkDropDelegate* ink_drop_delegate) {
+    ink_drop_delegate_ = ink_drop_delegate;
   }
 
   // Overridden from View:
@@ -161,8 +161,10 @@ class VIEWS_EXPORT CustomButton : public Button,
   // See description above setter.
   bool request_focus_on_press_;
 
-  // Animation delegate for the ink drop ripple effect.
-  scoped_ptr<InkDropDelegate> ink_drop_delegate_;
+  // Animation delegate for the ink drop ripple effect. It is owned by a
+  // descendant class and needs to be reset before an instance of the concrete
+  // CustomButton is destroyed.
+  InkDropDelegate* ink_drop_delegate_;
 
   // The event on which the button should notify its listener.
   NotifyAction notify_action_;

@@ -67,10 +67,9 @@ ToolbarActionView::ToolbarActionView(
       called_register_command_(false),
       wants_to_run_(false),
       menu_(nullptr),
+      ink_drop_delegate_(new views::ButtonInkDropDelegate(this, this)),
       weak_factory_(this) {
-  scoped_ptr<views::InkDropDelegate> new_ink_drop_delegate(
-      new views::ButtonInkDropDelegate(this, this));
-  SetInkDropDelegate(new_ink_drop_delegate.Pass());
+  set_ink_drop_delegate(ink_drop_delegate_.get());
   set_id(VIEW_ID_BROWSER_ACTION);
   view_controller_->SetDelegate(this);
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
@@ -109,6 +108,8 @@ ToolbarActionView::~ToolbarActionView() {
   if (context_menu_owner == this)
     context_menu_owner = nullptr;
   view_controller_->SetDelegate(nullptr);
+  ink_drop_delegate_.reset();
+  set_ink_drop_delegate(nullptr);
 }
 
 void ToolbarActionView::GetAccessibleState(ui::AXViewState* state) {

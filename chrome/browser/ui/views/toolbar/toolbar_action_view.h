@@ -183,6 +183,8 @@ class ToolbarActionView : public views::MenuButton,
 
   content::NotificationRegistrar registrar_;
 
+  scoped_ptr<views::InkDropDelegate> ink_drop_delegate_;
+
   base::WeakPtrFactory<ToolbarActionView> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ToolbarActionView);

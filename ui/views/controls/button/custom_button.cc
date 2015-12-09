@@ -56,6 +56,9 @@ CustomButton* CustomButton::AsCustomButton(views::View* view) {
 }
 
 CustomButton::~CustomButton() {
+  // InkDropDelegate needs to be destroyed by now since it may need to call
+  // methods on |this| via InkDropHost.
+  DCHECK(!ink_drop_delegate_);
 }
 
 void CustomButton::SetState(ButtonState state) {
@@ -338,6 +341,7 @@ CustomButton::CustomButton(ButtonListener* listener)
       is_throbbing_(false),
       triggerable_event_flags_(ui::EF_LEFT_MOUSE_BUTTON),
       request_focus_on_press_(true),
+      ink_drop_delegate_(nullptr),
       notify_action_(NOTIFY_ON_RELEASE) {
   hover_animation_.reset(new gfx::ThrobAnimation(this));
   hover_animation_->SetSlideDuration(kHoverFadeDurationMs);
@@ -379,11 +383,6 @@ bool CustomButton::ShouldEnterHoveredState() {
 #endif
 
   return check_mouse_position && IsMouseHovered();
-}
-
-void CustomButton::SetInkDropDelegate(
-    scoped_ptr<InkDropDelegate> ink_drop_delegate) {
-  ink_drop_delegate_ = ink_drop_delegate.Pass();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
