@@ -19,13 +19,26 @@ protected:
     LayoutUnit flowThreadOffset() const { return m_flowThreadOffset; }
 
     // Return true if the specified offset is at the top of a column, as long as it's not the first
-    // column in the multicol container.
+    // column in the fragmentainer group.
     bool isFirstAfterBreak(LayoutUnit flowThreadOffset) const
     {
         if (flowThreadOffset != m_group.columnLogicalTopForOffset(flowThreadOffset))
             return false; // Not at the top of a column.
-        // The first column in the first group isn't after any break.
-        return flowThreadOffset > m_group.logicalTopInFlowThread() || !m_group.isFirstGroup();
+        // The first column in the fragmentainer group is either not after any break at all, or
+        // after a break that belongs to the previous fragmentainer group.
+        return flowThreadOffset > m_group.logicalTopInFlowThread();
+    }
+
+    bool isLogicalTopWithinBounds(LayoutUnit logicalTopInFlowThread) const
+    {
+        return (m_group.isFirstGroup() || logicalTopInFlowThread >= m_group.logicalTopInFlowThread())
+            && (m_group.isLastGroup() || logicalTopInFlowThread < m_group.logicalBottomInFlowThread());
+    }
+
+    bool isLogicalBottomWithinBounds(LayoutUnit logicalBottomInFlowThread) const
+    {
+        return (m_group.isFirstGroup() || logicalBottomInFlowThread > m_group.logicalTopInFlowThread())
+            && (m_group.isLastGroup() || logicalBottomInFlowThread <= m_group.logicalBottomInFlowThread());
     }
 
     // Examine and collect column balancing data from a layout box that has been found to intersect
