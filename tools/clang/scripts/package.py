@@ -66,11 +66,6 @@ def main():
       return 1
 
   parser = argparse.ArgumentParser(description='build and package clang')
-  parser.add_argument('--gcc-toolchain',
-                      help="the prefix for the GCC version used for building. "
-                           "For /opt/foo/bin/gcc, pass "
-                           "'--gcc-toolchain '/opt/foo'")
-
   args = parser.parse_args()
 
   with open('buildlog.txt', 'w') as log:
@@ -110,8 +105,6 @@ def main():
 
     build_cmd = [sys.executable, os.path.join(THIS_DIR, 'update.py'),
                  '--bootstrap', '--force-local-build', '--run-tests']
-    if args.gcc_toolchain is not None:
-      build_cmd.extend(['--gcc-toolchain', args.gcc_toolchain])
     TeeCmd(build_cmd, log)
 
   stamp = open(STAMP_FILE).read().rstrip()
@@ -146,6 +139,8 @@ def main():
                  'lib/clang/*/lib/darwin/*profile_osx*',
                  ])
   elif sys.platform.startswith('linux'):
+    # Copy the stdlibc++.so.6 we linked Clang against so it can run.
+    want.append('lib/libstdc++.so.6')
     # Copy only
     # lib/clang/*/lib/linux/libclang_rt.{[atm]san,san,ubsan,profile}-*.a ,
     # but not dfsan.
@@ -160,9 +155,6 @@ def main():
                  'lib/clang/*/lib/windows/clang_rt.asan*.lib',
                  'lib/clang/*/include_sanitizer/*',
                  ])
-  if args.gcc_toolchain is not None:
-    # Copy the stdlibc++.so.6 we linked Clang against so it can run.
-    want.append('lib/libstdc++.so.6')
 
   for root, dirs, files in os.walk(LLVM_RELEASE_DIR):
     # root: third_party/llvm-build/Release+Asserts/lib/..., rel_root: lib/...
