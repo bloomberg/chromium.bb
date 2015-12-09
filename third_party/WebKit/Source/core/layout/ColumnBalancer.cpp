@@ -114,13 +114,17 @@ void InitialColumnHeightFinder::examineBoxAfterEntering(const LayoutBox& box)
         if (box.isFloating())
             unsplittableLogicalHeight += box.marginBefore() + box.marginAfter();
         m_tallestUnbreakableLogicalHeight = std::max(m_tallestUnbreakableLogicalHeight, unsplittableLogicalHeight);
-    } else if (box.isLayoutBlockFlow()) {
-        if (LayoutMultiColumnFlowThread* innerFlowThread = toLayoutBlockFlow(box).multiColumnFlowThread()) {
-            LayoutUnit offsetInInnerFlowThread = flowThreadOffset() - innerFlowThread->blockOffsetInEnclosingFragmentationContext();
-            LayoutUnit innerUnbreakableHeight = innerFlowThread->tallestUnbreakableLogicalHeight(offsetInInnerFlowThread);
-            m_tallestUnbreakableLogicalHeight = std::max(m_tallestUnbreakableLogicalHeight, innerUnbreakableHeight);
-        }
+        return;
     }
+    // Need to examine inner multicol containers to find their tallest unbreakable piece of content.
+    if (!box.isLayoutBlockFlow())
+        return;
+    LayoutMultiColumnFlowThread* innerFlowThread = toLayoutBlockFlow(box).multiColumnFlowThread();
+    if (!innerFlowThread || innerFlowThread->isLayoutPagedFlowThread())
+        return;
+    LayoutUnit offsetInInnerFlowThread = flowThreadOffset() - innerFlowThread->blockOffsetInEnclosingFragmentationContext();
+    LayoutUnit innerUnbreakableHeight = innerFlowThread->tallestUnbreakableLogicalHeight(offsetInInnerFlowThread);
+    m_tallestUnbreakableLogicalHeight = std::max(m_tallestUnbreakableLogicalHeight, innerUnbreakableHeight);
 }
 
 void InitialColumnHeightFinder::examineBoxBeforeLeaving(const LayoutBox& box)
@@ -277,7 +281,7 @@ void MinimumSpaceShortageFinder::examineBoxAfterEntering(const LayoutBox& box)
     if (!box.isLayoutBlockFlow())
         return;
     LayoutMultiColumnFlowThread* flowThread = toLayoutBlockFlow(box).multiColumnFlowThread();
-    if (!flowThread)
+    if (!flowThread || flowThread->isLayoutPagedFlowThread())
         return;
     for (const LayoutMultiColumnSet* columnSet = flowThread->firstMultiColumnSet(); columnSet; columnSet = columnSet->nextSiblingMultiColumnSet()) {
         for (const MultiColumnFragmentainerGroup& row : columnSet->fragmentainerGroups()) {

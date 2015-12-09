@@ -436,6 +436,11 @@ bool LayoutMultiColumnFlowThread::removeSpannerPlaceholderIfNoLongerValid(Layout
 
 LayoutMultiColumnFlowThread* LayoutMultiColumnFlowThread::enclosingFlowThread() const
 {
+    if (isLayoutPagedFlowThread()) {
+        // Paged overflow containers should never be fragmented by enclosing fragmentation
+        // contexts. They are to be treated as unbreakable content.
+        return nullptr;
+    }
     if (multiColumnBlockFlow()->isInsideFlowThread())
         return toLayoutMultiColumnFlowThread(locateFlowThreadContainingBlockOf(*multiColumnBlockFlow()));
     return nullptr;
@@ -470,7 +475,7 @@ void LayoutMultiColumnFlowThread::appendNewFragmentainerGroupIfNeeded(LayoutUnit
         FragmentationContext* enclosingFragmentationContext = this->enclosingFragmentationContext();
         if (!enclosingFragmentationContext)
             return; // Not nested. We'll never need more rows than the one we already have then.
-
+        ASSERT(!isLayoutPagedFlowThread());
         // We have run out of columns here, so we add another row to hold more columns. When we add
         // a new row, it implicitly means that we're inserting another column in our enclosing
         // multicol container. That in turn may mean that we've run out of columns there too.
