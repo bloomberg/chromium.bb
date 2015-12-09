@@ -98,6 +98,7 @@
 #include "content/renderer/media/webmediaplayer_ms.h"
 #include "content/renderer/memory_benchmarking_extension.h"
 #include "content/renderer/mojo/service_registry_js_wrapper.h"
+#include "content/renderer/mojo_bindings_controller.h"
 #include "content/renderer/navigation_state_impl.h"
 #include "content/renderer/notification_permission_dispatcher.h"
 #include "content/renderer/npapi/plugin_channel_host.h"
@@ -889,6 +890,11 @@ void RenderFrameImpl::Initialize() {
     TRACE_EVENT2("navigation", "RenderFrameImpl::Initialize",
                  "id", routing_id_,
                  "parent", parent_id);
+  }
+
+  if (IsMainFrame() &&
+      RenderProcess::current()->GetEnabledBindings() & BINDINGS_POLICY_WEB_UI) {
+    EnableMojoBindings();
   }
 
 #if defined(ENABLE_PLUGINS)
@@ -5160,6 +5166,14 @@ void RenderFrameImpl::SendUpdateState() {
 
   Send(new FrameHostMsg_UpdateState(
       routing_id_, SingleHistoryItemToPageState(current_history_item_)));
+}
+
+void RenderFrameImpl::EnableMojoBindings() {
+  // If an MojoBindingsController already exists for this RenderFrameImpl, avoid
+  // creating another one. It is not kept as a member, as it deletes itself when
+  // the frame is destroyed.
+  if (!RenderFrameObserverTracker<MojoBindingsController>::Get(this))
+    new MojoBindingsController(this);
 }
 
 void RenderFrameImpl::SendFailedProvisionalLoad(

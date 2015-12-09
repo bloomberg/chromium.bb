@@ -621,6 +621,10 @@ class CONTENT_EXPORT RenderFrameImpl
   // Sends the current frame's navigation state to the browser.
   void SendUpdateState();
 
+  // Creates a MojoBindingsController to allow WebUI documents to communicate
+  // with the browser process.
+  void EnableMojoBindings();
+
  protected:
   explicit RenderFrameImpl(const CreateParams& params);
 
