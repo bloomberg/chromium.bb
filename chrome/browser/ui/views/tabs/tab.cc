@@ -26,9 +26,11 @@
 #include "grit/components_scaled_resources.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
+#include "third_party/skia/include/pathops/SkPathOps.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/list_selection_model.h"
+#include "ui/base/resource/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/animation/animation_container.h"
@@ -41,6 +43,7 @@
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/path.h"
+#include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/vector_icons_public.h"
 #include "ui/resources/grit/ui_resources.h"
@@ -436,6 +439,7 @@ Tab::ImageCacheEntry::~ImageCacheEntry() {}
 
 // static
 const char Tab::kViewClassName[] = "Tab";
+const SkColor Tab::kInactiveTabColor = SkColorSetRGB(0xD0, 0xD0, 0xD0);
 Tab::TabImages Tab::active_images_ = {0};
 Tab::TabImages Tab::inactive_images_ = {0};
 Tab::TabImages Tab::mask_images_ = {0};
@@ -648,10 +652,17 @@ int Tab::GetWidthOfLargestSelectableRegion() const {
 }
 
 gfx::Size Tab::GetMinimumInactiveSize() {
-  // Since we use images, the real minimum height of the image is
-  // defined most accurately by the height of the end cap images.
-  InitTabResources();
-  int height = active_images_.image_l->height();
+  int height;
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    const int kTabHeight = 29;
+    height = kTabHeight;
+  } else {
+    // Since we use images, the real minimum height of the image is
+    // defined most accurately by the height of the end cap images.
+    InitTabResources();
+    height = active_images_.image_l->height();
+  }
+
   return gfx::Size(GetLayoutInsets(TAB).width(), height);
 }
 
@@ -765,51 +776,58 @@ bool Tab::GetHitTestMask(gfx::Path* mask) const {
   const bool extend_to_top =
       widget && (widget->IsMaximized() || widget->IsFullscreen());
 
-  // Hit mask constants.
-  const SkScalar kTabCapWidth = 15;
-  const SkScalar kTabTopCurveWidth = 4;
-  const SkScalar kTabBottomCurveWidth = 3;
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    SkPath border;
+    const float scale = GetWidget()->GetCompositor()->device_scale_factor();
+    GetBorderPath(scale, extend_to_top, &border);
+    mask->addPath(border, SkMatrix::MakeScale(1 / scale));
+  } else {
+    // Hit mask constants.
+    const SkScalar kTabCapWidth = 15;
+    const SkScalar kTabTopCurveWidth = 4;
+    const SkScalar kTabBottomCurveWidth = 3;
 #if defined(OS_MACOSX)
-  // Mac's Cocoa UI doesn't have shadows.
-  const SkScalar kTabInset = 0;
+    // Mac's Cocoa UI doesn't have shadows.
+    const SkScalar kTabInset = 0;
 #elif defined(TOOLKIT_VIEWS)
-  // The views browser UI has shadows in the left, right and top parts of the
-  // tab.
-  const SkScalar kTabInset = 6;
+    // The views browser UI has shadows in the left, right and top parts of the
+    // tab.
+    const SkScalar kTabInset = 6;
 #endif
 
-  SkScalar left = kTabInset;
-  SkScalar top = GetLayoutConstant(TAB_TOP_EXCLUSION_HEIGHT);
-  SkScalar right = SkIntToScalar(width()) - kTabInset;
-  SkScalar bottom = SkIntToScalar(height());
+    SkScalar left = kTabInset;
+    SkScalar top = GetLayoutConstant(TAB_TOP_EXCLUSION_HEIGHT);
+    SkScalar right = SkIntToScalar(width()) - kTabInset;
+    SkScalar bottom = SkIntToScalar(height());
 
-  // Start in the lower-left corner.
-  mask->moveTo(left, bottom);
+    // Start in the lower-left corner.
+    mask->moveTo(left, bottom);
 
-  // Left end cap.
-  mask->lineTo(left + kTabBottomCurveWidth, bottom - kTabBottomCurveWidth);
-  mask->lineTo(left + kTabCapWidth - kTabTopCurveWidth,
-               top + kTabTopCurveWidth);
-  mask->lineTo(left + kTabCapWidth, top);
+    // Left end cap.
+    mask->lineTo(left + kTabBottomCurveWidth, bottom - kTabBottomCurveWidth);
+    mask->lineTo(left + kTabCapWidth - kTabTopCurveWidth,
+                 top + kTabTopCurveWidth);
+    mask->lineTo(left + kTabCapWidth, top);
 
-  // Extend over the top shadow area if we have one and the caller wants it.
-  if (top > 0 && extend_to_top) {
-    mask->lineTo(left + kTabCapWidth, 0);
-    mask->lineTo(right - kTabCapWidth, 0);
+    // Extend over the top shadow area if we have one and the caller wants it.
+    if (top > 0 && extend_to_top) {
+      mask->lineTo(left + kTabCapWidth, 0);
+      mask->lineTo(right - kTabCapWidth, 0);
+    }
+
+    // Connect to the right cap.
+    mask->lineTo(right - kTabCapWidth, top);
+
+    // Right end cap.
+    mask->lineTo(right - kTabCapWidth + kTabTopCurveWidth,
+                 top + kTabTopCurveWidth);
+    mask->lineTo(right - kTabBottomCurveWidth, bottom - kTabBottomCurveWidth);
+    mask->lineTo(right, bottom);
+
+    // Close out the path.
+    mask->lineTo(left, bottom);
+    mask->close();
   }
-
-  // Connect to the right cap.
-  mask->lineTo(right - kTabCapWidth, top);
-
-  // Right end cap.
-  mask->lineTo(right - kTabCapWidth + kTabTopCurveWidth,
-               top + kTabTopCurveWidth);
-  mask->lineTo(right - kTabBottomCurveWidth, bottom - kTabBottomCurveWidth);
-  mask->lineTo(right, bottom);
-
-  // Close out the path.
-  mask->lineTo(left, bottom);
-  mask->close();
 
   // It is possible for a portion of the tab to be occluded if tabs are
   // stacked, so modify the hit test mask to only include the visible
@@ -1240,15 +1258,26 @@ void Tab::PaintInactiveTabBackgroundWithTitleChange(gfx::Canvas* canvas) {
   }
   SkPoint p;
   p.set(SkDoubleToScalar(x), 0);
-  gfx::Canvas background_canvas(size(), canvas->image_scale(), false);
-  PaintInactiveTabBackground(&background_canvas);
-  gfx::ImageSkia background_image(background_canvas.ExtractImageRep());
-  canvas->DrawImageInt(background_image, 0, 0);
-  gfx::Canvas hover_canvas(size(), canvas->image_scale(), false);
-  DrawHighlight(&hover_canvas, p, SkFloatToScalar(radius), alpha);
-  gfx::ImageSkia hover_image = gfx::ImageSkiaOperations::CreateMaskedImage(
-      gfx::ImageSkia(hover_canvas.ExtractImageRep()), background_image);
-  canvas->DrawImageInt(hover_image, 0, 0);
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    PaintInactiveTabBackground(canvas);
+    gfx::ScopedCanvas scoped_canvas(canvas);
+    const float scale = canvas->UndoDeviceScaleFactor();
+    SkPath fill;
+    GetFillPath(scale, &fill);
+    canvas->ClipPath(fill, true);
+    p.scale(SkFloatToScalar(scale));
+    DrawHighlight(canvas, p, SkFloatToScalar(radius * scale), alpha);
+  } else {
+    gfx::Canvas background_canvas(size(), canvas->image_scale(), false);
+    PaintInactiveTabBackground(&background_canvas);
+    gfx::ImageSkia background_image(background_canvas.ExtractImageRep());
+    canvas->DrawImageInt(background_image, 0, 0);
+    gfx::Canvas hover_canvas(size(), canvas->image_scale(), false);
+    DrawHighlight(&hover_canvas, p, SkFloatToScalar(radius), alpha);
+    gfx::ImageSkia hover_image = gfx::ImageSkiaOperations::CreateMaskedImage(
+        gfx::ImageSkia(hover_canvas.ExtractImageRep()), background_image);
+    canvas->DrawImageInt(hover_image, 0, 0);
+  }
 }
 
 void Tab::PaintInactiveTabBackground(gfx::Canvas* canvas) {
@@ -1303,31 +1332,75 @@ void Tab::PaintTabBackgroundUsingFillId(gfx::Canvas* canvas,
   SkPoint hover_location(PointToSkPoint(hover_controller_.location()));
   const SkAlpha hover_alpha = hover_controller_.GetAlpha();
 
-  if (draw_hover) {
-    // Draw everything to a temporary canvas so we can extract an image for use
-    // in masking the hover glow.
-    gfx::Canvas background_canvas(size(), canvas->image_scale(), false);
-    PaintTabFill(&background_canvas, fill_image, x_offset, y_offset, is_active);
-    gfx::ImageSkia background_image(background_canvas.ExtractImageRep());
-    canvas->DrawImageInt(background_image, 0, 0);
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    gfx::ScopedCanvas scoped_canvas(canvas);
+    const float scale = canvas->UndoDeviceScaleFactor();
 
-    gfx::Canvas hover_canvas(size(), canvas->image_scale(), false);
-    DrawHighlight(&hover_canvas, hover_location, radius, hover_alpha);
-    gfx::ImageSkia result = gfx::ImageSkiaOperations::CreateMaskedImage(
-        gfx::ImageSkia(hover_canvas.ExtractImageRep()), background_image);
-    canvas->DrawImageInt(result, 0, 0);
+    // Draw the fill.
+    SkPath fill;
+    GetFillPath(scale, &fill);
+    SkPaint paint;
+    paint.setAntiAlias(true);
+    {
+      gfx::ScopedCanvas clip_scoper(canvas);
+      canvas->ClipPath(fill, true);
+      if (has_custom_image) {
+        gfx::ScopedCanvas scale_scoper(canvas);
+        canvas->sk_canvas()->scale(scale, scale);
+        canvas->TileImageInt(*fill_image, x_offset, y_offset, 0, 0, width(),
+                             height());
+      } else {
+        paint.setColor(
+            is_active ? SkColorSetRGB(0xF2, 0xF2, 0xF2) : kInactiveTabColor);
+        canvas->DrawRect(gfx::ScaleToEnclosingRect(GetLocalBounds(), scale),
+                         paint);
+      }
+      if (draw_hover) {
+        hover_location.scale(SkFloatToScalar(scale));
+        DrawHighlight(canvas, hover_location, radius * scale, hover_alpha);
+      }
+    }
+
+    // Draw the stroke.
+    SkPath stroke;
+    GetBorderPath(scale, false, &stroke);
+    Op(stroke, fill, kDifference_SkPathOp, &stroke);
+    if (!is_active) {
+      // Clip out the bottom line; this will be drawn for us by
+      // TabStrip::PaintChildren().
+      canvas->sk_canvas()->clipRect(
+          SkRect::MakeWH(width() * scale, height() * scale - 1));
+    }
+    paint.setARGB(0x40, 0x00, 0x00, 0x00);
+    canvas->DrawPath(stroke, paint);
   } else {
-    PaintTabFill(canvas, fill_image, x_offset, y_offset, is_active);
-  }
+    if (draw_hover) {
+      // Draw everything to a temporary canvas so we can extract an image for
+      // use in masking the hover glow.
+      gfx::Canvas background_canvas(size(), canvas->image_scale(), false);
+      PaintTabFill(&background_canvas, fill_image, x_offset, y_offset,
+                   is_active);
+      gfx::ImageSkia background_image(background_canvas.ExtractImageRep());
+      canvas->DrawImageInt(background_image, 0, 0);
 
-  // Now draw the stroke, highlights, and shadows around the tab edge.
-  TabImages* stroke_images = is_active ? &active_images_ : &inactive_images_;
-  canvas->DrawImageInt(*stroke_images->image_l, 0, 0);
-  canvas->TileImageInt(
-      *stroke_images->image_c, stroke_images->l_width, 0,
-      width() - stroke_images->l_width - stroke_images->r_width, height());
-  canvas->DrawImageInt(*stroke_images->image_r,
-                       width() - stroke_images->r_width, 0);
+      gfx::Canvas hover_canvas(size(), canvas->image_scale(), false);
+      DrawHighlight(&hover_canvas, hover_location, radius, hover_alpha);
+      gfx::ImageSkia result = gfx::ImageSkiaOperations::CreateMaskedImage(
+          gfx::ImageSkia(hover_canvas.ExtractImageRep()), background_image);
+      canvas->DrawImageInt(result, 0, 0);
+    } else {
+      PaintTabFill(canvas, fill_image, x_offset, y_offset, is_active);
+    }
+
+    // Now draw the stroke, highlights, and shadows around the tab edge.
+    TabImages* stroke_images = is_active ? &active_images_ : &inactive_images_;
+    canvas->DrawImageInt(*stroke_images->image_l, 0, 0);
+    canvas->TileImageInt(
+        *stroke_images->image_c, stroke_images->l_width, 0,
+        width() - stroke_images->l_width - stroke_images->r_width, height());
+    canvas->DrawImageInt(*stroke_images->image_r,
+                         width() - stroke_images->r_width, 0);
+  }
 }
 
 void Tab::PaintTabFill(gfx::Canvas* canvas,
@@ -1541,6 +1614,66 @@ void Tab::ScheduleIconPaint() {
     bounds.set_height(height() - bounds.y());
   bounds.set_x(GetMirroredXForRect(bounds));
   SchedulePaintInRect(bounds);
+}
+
+void Tab::GetFillPath(float scale, SkPath* fill) const {
+  const float right = width() * scale;
+  const float bottom = height() * scale;
+
+  fill->moveTo(right - 1, bottom);
+  fill->rCubicTo(-0.75 * scale, 0, -1.625 * scale, -0.5 * scale, -2 * scale,
+                 -1.5 * scale);
+  fill->lineTo(right - 1 - 13.5 * scale, 2.5 * scale);
+  // Prevent overdraw in the center near minimum width (only happens if
+  // scale < 2).  We could instead avoid this by increasing the tab inset
+  // values, but that would shift all the content inward as well, unless we
+  // then overlapped the content on the endcaps, by which point we'd have a
+  // huge mess.
+  const float total_endcap_width = 31 * scale + 2;
+  const float overlap = total_endcap_width - right;
+  const float offset = (overlap > 0) ? (overlap / 2) : 0;
+  fill->rCubicTo(-0.375 * scale, -1 * scale, -1.25 * scale + offset,
+                 -1.5 * scale, -2 * scale + offset, -1.5 * scale);
+  if (overlap < 0)
+    fill->lineTo(1 + 15.5 * scale, scale);
+  fill->rCubicTo(-0.75 * scale, 0, -1.625 * scale - offset, 0.5 * scale,
+                 -2 * scale - offset, 1.5 * scale);
+  fill->lineTo(1 + 2 * scale, bottom - 1.5 * scale);
+  fill->rCubicTo(-0.375 * scale, scale, -1.25 * scale, 1.5 * scale, -2 * scale,
+                 1.5 * scale);
+  fill->close();
+}
+
+void Tab::GetBorderPath(float scale, bool extend_to_top, SkPath* path) const {
+  const float top = scale - 1;
+  const float right = width() * scale;
+  const float bottom = height() * scale;
+
+  path->moveTo(0, bottom);
+  path->rLineTo(0, -1);
+  path->rCubicTo(0.75 * scale, 0, 1.625 * scale, -0.5 * scale, 2 * scale,
+                 -1.5 * scale);
+  path->lineTo(13.5 * scale, top + 1.5 * scale);
+  if (extend_to_top) {
+    // Create the vertical extension by extending the side diagonals until they
+    // reach the top of the bounds.
+    const float dy = 2.5 * scale - 1;
+    const float dx = 11.5 / 25 * dy;
+    path->rLineTo(dx, -dy);
+    path->lineTo(right - 13.5 * scale - dx, 0);
+    path->rLineTo(dx, dy);
+  } else {
+    path->rCubicTo(0.375 * scale, -scale, 1.25 * scale, -1.5 * scale, 2 * scale,
+                   -1.5 * scale);
+    path->lineTo(right - 15.5 * scale, top);
+    path->rCubicTo(0.75 * scale, 0, 1.625 * scale, 0.5 * scale, 2 * scale,
+                   1.5 * scale);
+  }
+  path->lineTo(right - 2 * scale, bottom - 1 - 1.5 * scale);
+  path->rCubicTo(0.375 * scale, scale, 1.25 * scale, 1.5 * scale, 2 * scale,
+                 1.5 * scale);
+  path->rLineTo(0, 1);
+  path->close();
 }
 
 gfx::Rect Tab::GetImmersiveBarRect() const {

@@ -51,6 +51,9 @@ class Tab : public gfx::AnimationDelegate,
   // The Tab's class name.
   static const char kViewClassName[];
 
+  // The color of an inactive tab.
+  static const SkColor kInactiveTabColor;
+
   explicit Tab(TabController* controller);
   ~Tab() override;
 
@@ -297,6 +300,16 @@ class Tab : public gfx::AnimationDelegate,
 
   // Schedules repaint task for icon.
   void ScheduleIconPaint();
+
+  // Computes a path corresponding to the tab's content region inside the outer
+  // stroke.
+  void GetFillPath(float scale, SkPath* path) const;
+
+  // Computes a path corresponding to the tab's outer border for a given |scale|
+  // and stores it in |path|.  If |extend_to_top| is true, the path is extended
+  // vertically to the top of the tab bounds.  The caller uses this for Fitts'
+  // Law purposes in maximized/fullscreen mode.
+  void GetBorderPath(float scale, bool extend_to_top, SkPath* path) const;
 
   // Returns the rectangle for the light bar in immersive mode.
   gfx::Rect GetImmersiveBarRect() const;

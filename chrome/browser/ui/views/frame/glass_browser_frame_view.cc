@@ -28,6 +28,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/icon_util.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/win/dpi.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/controls/label.h"
@@ -366,47 +367,76 @@ void GlassBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
         GetTopInset(false) + Tab::GetYInsetForActiveTabBackground();
     int w = toolbar_bounds.width();
 
-    // Background.  The top stroke is drawn using the IDR_CONTENT_TOP_XXX
-    // images, which overlay the toolbar.  The top 2 px of these images is the
-    // actual top stroke + shadow, and is partly transparent, so the toolbar
-    // background shouldn't be drawn over it.
-    const int split_point = std::min(kContentEdgeShadowThickness, h);
-    if (h > split_point) {
-      const int split_y = y + split_point;
-      canvas->TileImageInt(*bg, x + GetThemeBackgroundXInset(), split_y - bg_y,
-                           x, split_y, w, h - split_point);
+    if (md) {
+      // Background.  The top stroke is drawn above the toolbar bounds, so
+      // unlike in the non-Material Design code below, we don't need to exclude
+      // any region from having the background image drawn over it.
+      if (tp->HasCustomImage(IDR_THEME_TOOLBAR)) {
+        canvas->TileImageInt(*bg, x + GetThemeBackgroundXInset(), y - bg_y, x,
+                             y, w, h);
+      } else {
+        canvas->FillRect(toolbar_bounds,
+                         tp->GetColor(ThemeProperties::COLOR_TOOLBAR));
+      }
+
+      // Material Design has no corners to mask out.
+
+      // Top stroke.  For Material Design, the toolbar has no side strokes.
+      gfx::Rect separator_rect(x, y, w, 0);
+      gfx::ScopedCanvas scoped_canvas(canvas);
+      gfx::Rect tabstrip_bounds(
+          GetBoundsForTabStrip(browser_view()->tabstrip()));
+      tabstrip_bounds.set_x(GetMirroredXForRect(tabstrip_bounds));
+      canvas->sk_canvas()->clipRect(gfx::RectToSkRect(tabstrip_bounds),
+                                    SkRegion::kDifference_Op);
+      separator_rect.set_y(tabstrip_bounds.bottom());
+      BrowserView::Paint1pxHorizontalLine(
+          canvas, SkColorSetA(SK_ColorBLACK, 0x40), separator_rect, true);
+    } else {
+      // Background.  The top stroke is drawn using the IDR_CONTENT_TOP_XXX
+      // images, which overlay the toolbar.  The top 2 px of these images is the
+      // actual top stroke + shadow, and is partly transparent, so the toolbar
+      // background shouldn't be drawn over it.
+      const int split_point = std::min(kContentEdgeShadowThickness, h);
+      if (h > split_point) {
+        const int split_y = y + split_point;
+        canvas->TileImageInt(*bg, x + GetThemeBackgroundXInset(),
+                             split_y - bg_y, x, split_y, w, h - split_point);
+      }
+
+      // On Windows 10+ where we don't draw our own window border but rather go
+      // right to the system border, the toolbar has no corners or side strokes.
+      if (base::win::GetVersion() < base::win::VERSION_WIN10) {
+        // Mask out the corners.
+        gfx::ImageSkia* left =
+            tp->GetImageSkiaNamed(IDR_CONTENT_TOP_LEFT_CORNER);
+        const int img_w = left->width();
+        x -= kContentEdgeShadowThickness;
+        SkPaint paint;
+        paint.setXfermodeMode(SkXfermode::kDstIn_Mode);
+        canvas->DrawImageInt(
+            *tp->GetImageSkiaNamed(IDR_CONTENT_TOP_LEFT_CORNER_MASK), 0, 0,
+            img_w, h, x, y, img_w, h, false, paint);
+        const int right_x =
+            toolbar_bounds.right() + kContentEdgeShadowThickness - img_w;
+        canvas->DrawImageInt(
+            *tp->GetImageSkiaNamed(IDR_CONTENT_TOP_RIGHT_CORNER_MASK), 0, 0,
+            img_w, h, right_x, y, img_w, h, false, paint);
+
+        // Corner and side strokes.
+        canvas->DrawImageInt(*left, 0, 0, img_w, h, x, y, img_w, h, false);
+        canvas->DrawImageInt(
+            *tp->GetImageSkiaNamed(IDR_CONTENT_TOP_RIGHT_CORNER), 0, 0, img_w,
+            h, right_x, y, img_w, h, false);
+
+        x += img_w;
+        w = right_x - x;
+      }
+
+      // Top stroke.
+      canvas->TileImageInt(*tp->GetImageSkiaNamed(IDR_CONTENT_TOP_CENTER), x, y,
+                           w, split_point);
     }
-
-    // On Windows 10+ where we don't draw our own window border but rather go
-    // right to the system border, the toolbar has no corners or side strokes.
-    if (base::win::GetVersion() < base::win::VERSION_WIN10) {
-      // Mask out the corners.
-      gfx::ImageSkia* left = tp->GetImageSkiaNamed(IDR_CONTENT_TOP_LEFT_CORNER);
-      const int img_w = left->width();
-      x -= kContentEdgeShadowThickness;
-      SkPaint paint;
-      paint.setXfermodeMode(SkXfermode::kDstIn_Mode);
-      canvas->DrawImageInt(
-          *tp->GetImageSkiaNamed(IDR_CONTENT_TOP_LEFT_CORNER_MASK), 0, 0, img_w,
-          h, x, y, img_w, h, false, paint);
-      const int right_x =
-          toolbar_bounds.right() + kContentEdgeShadowThickness - img_w;
-      canvas->DrawImageInt(
-          *tp->GetImageSkiaNamed(IDR_CONTENT_TOP_RIGHT_CORNER_MASK), 0, 0,
-          img_w, h, right_x, y, img_w, h, false, paint);
-
-      // Corner and side strokes.
-      canvas->DrawImageInt(*left, 0, 0, img_w, h, x, y, img_w, h, false);
-      canvas->DrawImageInt(*tp->GetImageSkiaNamed(IDR_CONTENT_TOP_RIGHT_CORNER),
-                           0, 0, img_w, h, right_x, y, img_w, h, false);
-
-      x += img_w;
-      w = right_x - x;
-    }
-
-    // Top stroke.
-    canvas->TileImageInt(*tp->GetImageSkiaNamed(IDR_CONTENT_TOP_CENTER), x, y,
-                         w, split_point);
   }
 
   // Toolbar/content separator.
@@ -448,8 +478,11 @@ void GlassBrowserFrameView::PaintClientEdge(gfx::Canvas* canvas) {
     return;
 
   const int x = client_bounds.x();
-  y += toolbar_bounds.bottom();  // The side edges start below the toolbar.
-  const int img_y = y;
+  // Pre-Material Design, the client edge images start below the toolbar.  In MD
+  // the client edge images start at the top of the toolbar.
+  y += toolbar_bounds.bottom();
+  const int img_y = ui::MaterialDesignController::IsModeMaterial() ?
+      (y - toolbar_bounds.height()) : y;
   const int w = client_bounds.width();
   const int right = client_bounds.right();
   const int bottom = std::max(y, height() - NonClientBorderThickness(false));

@@ -17,23 +17,23 @@ int GetLayoutConstant(LayoutConstant constant) {
   const int kLocationBarHeight[] = {27, 28, 32};
   const int kLocationBarHorizontalPadding[] = {3, 6, 6};
   const int kLocationBarVerticalPadding[] = {2, 2, 2};
-  const int kNewTabButtonWidth[] = {34, 34, 34};
+  const int kNewTabButtonWidth[] = {34, 36, 36};
   const int kOmniboxDropdownBorderInterior[] = {6, 0, 0};
   const int kOmniboxFontPixelSize[] = {16, 14, 14};
-  const int kTabCloseButtonTrailingPaddingOverlap[] = {2, 2, 2};
-  const int kTabFaviconTitleSpacing[] = {4, 4, 4};
-  const int kTabMaximumTitleWidth[] = {175, 175, 175};
-  const int kTabPinnedContentWidth[] = {25, 25, 25};
+  const int kTabCloseButtonTrailingPaddingOverlap[] = {2, 0, 0};
+  const int kTabFaviconTitleSpacing[] = {4, 6, 6};
+  const int kTabMaximumTitleWidth[] = {175, 171, 171};
+  const int kTabPinnedContentWidth[] = {25, 23, 23};
 #if defined(OS_MACOSX)
   const int kTabTopExclusionHeight[] = {0, 0, 0};
-  const int kTabstripNewTabButtonOverlap[] = {8, 8, 8};
-  const int kTabstripTabOverlap[] = {19, 19, 19};
+  const int kTabstripNewTabButtonOverlap[] = {8, 5, 5};
+  const int kTabstripTabOverlap[] = {19, 16, 16};
 #else
-  const int kTabTopExclusionHeight[] = {2, 2, 2};
-  const int kTabstripNewTabButtonOverlap[] = {11, 11, 11};
-  const int kTabstripTabOverlap[] = {26, 26, 26};
+  const int kTabTopExclusionHeight[] = {2, 0, 0};
+  const int kTabstripNewTabButtonOverlap[] = {11, 5, 5};
+  const int kTabstripTabOverlap[] = {26, 16, 16};
 #endif
-  const int kTabstripToolbarOverlap[] = {3, 3, 3};
+  const int kTabstripToolbarOverlap[] = {3, 0, 0};
   const int kToolbarContentShadowHeight[] = {0, 0, 0};
   const int kToolbarContentShadowHeightAsh[] = {2, 0, 0};
   const int kToolbarElementPadding[] = {0, 0, 8};
@@ -104,10 +104,10 @@ gfx::Insets GetLayoutInsets(LayoutInset inset) {
   const int kOmniboxDropdownIconPadding[] = {2, 4, 8};
   const int kOmniboxDropdownPadding[] = {3, 4, 4};
   const int kOmniboxDropdownTextPadding[] = {3, 3, 3};
-  const int kTabBottomPadding[] = {2, 2, 2};
-  const int kTabLeftPadding[] = {20, 20, 20};
-  const int kTabRightPadding[] = {20, 20, 20};
-  const int kTabTopPadding[] = {4, 4, 4};
+  const int kTabBottomPadding[] = {2, 1, 1};
+  const int kTabLeftPadding[] = {20, 16, 16};
+  const int kTabRightPadding[] = {20, 16, 16};
+  const int kTabTopPadding[] = {4, 1, 1};
   const int kToolbarBottomPadding[] = {5, 5, 5};
   const int kToolbarButtonPadding[] = {2, 6, 6};
   const int kToolbarLeftPadding[] = {3, 4, 8};
