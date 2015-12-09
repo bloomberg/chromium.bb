@@ -1284,6 +1284,7 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 - (void)URLDidChangeWithoutDocumentChange:(const GURL&)newURL {
   DCHECK(newURL == net::GURLWithNSURL([_wkWebView URL]));
   DCHECK_EQ(_documentURL.host(), newURL.host());
+  DCHECK(_documentURL != newURL);
 
   // If called during window.history.pushState or window.history.replaceState
   // JavaScript evaluation, only update the document URL. This callback does not
@@ -1597,15 +1598,29 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
                        return;
                      }
                      GURL jsURL([result UTF8String]);
-                     // Make sure that the window location is as expected,
-                     // and re-check the origin and web view URL to prevent
-                     // race conditions.
-                     // TODO(crbug.com/563568): The third check may drop same
-                     // document URL changes if pending URL change occurs
-                     // immediately after. Revisit heuristics to prevent this.
-                     if (jsURL == url &&
-                         _documentURL.GetOrigin() == url.GetOrigin() &&
-                         net::GURLWithNSURL([_wkWebView URL]) == url) {
+                     // Check that window.location matches the new URL. If
+                     // it does not, this is a document-changing URL change as
+                     // the window location would not have changed to the new
+                     // URL when the script was called.
+                     BOOL windowLocationMatchesNewURL = jsURL == url;
+                     // Re-check origin in case navigaton has occured since
+                     // start of JavaScript evaluation.
+                     BOOL newURLOriginMatchesDocumentURLOrigin =
+                         _documentURL.GetOrigin() == url.GetOrigin();
+                     // Check that the web view URL still matches the new URL.
+                     // TODO(crbug.com/563568): webViewURLMatchesNewURL check
+                     // may drop same document URL changes if pending URL
+                     // change occurs immediately after. Revisit heuristics to
+                     // prevent this.
+                     BOOL webViewURLMatchesNewURL =
+                         net::GURLWithNSURL([_wkWebView URL]) == url;
+                     // Check that the new URL is different from the current
+                     // document URL. If not, URL change should not be reported.
+                     BOOL URLDidChangeFromDocumentURL = url != _documentURL;
+                     if (windowLocationMatchesNewURL &&
+                         newURLOriginMatchesDocumentURLOrigin &&
+                         webViewURLMatchesNewURL &&
+                         URLDidChangeFromDocumentURL) {
                        [self URLDidChangeWithoutDocumentChange:url];
                      }
                  }];
