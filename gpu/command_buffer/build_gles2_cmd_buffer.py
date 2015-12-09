@@ -4219,6 +4219,12 @@ _FUNCTION_INFO = {
     'extension': "CHROMIUM_sync_point",
     'chromium': True,
   },
+  'VerifySyncTokensCHROMIUM' : {
+    'type': 'Custom',
+    'impl_func': False,
+    'extension': "CHROMIUM_sync_point",
+    'chromium': True,
+  },
   'WaitSyncTokenCHROMIUM': {
     'type': 'Custom',
     'impl_func': False,

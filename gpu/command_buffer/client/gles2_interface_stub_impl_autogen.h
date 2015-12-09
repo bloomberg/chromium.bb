@@ -1017,6 +1017,8 @@ void GLES2InterfaceStub::GenSyncTokenCHROMIUM(GLuint64 /* fence_sync */,
 void GLES2InterfaceStub::GenUnverifiedSyncTokenCHROMIUM(
     GLuint64 /* fence_sync */,
     GLbyte* /* sync_token */) {}
+void GLES2InterfaceStub::VerifySyncTokensCHROMIUM(GLbyte** /* sync_tokens */,
+                                                  GLsizei /* count */) {}
 void GLES2InterfaceStub::WaitSyncTokenCHROMIUM(const GLbyte* /* sync_token */) {
 }
 void GLES2InterfaceStub::DrawBuffersEXT(GLsizei /* count */,

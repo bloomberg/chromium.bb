@@ -1668,6 +1668,11 @@ void MojoGLES2Impl::GenUnverifiedSyncTokenCHROMIUM(GLuint64 fence_sync,
   MojoGLES2MakeCurrent(context_);
   glGenUnverifiedSyncTokenCHROMIUM(fence_sync, sync_token);
 }
+void MojoGLES2Impl::VerifySyncTokensCHROMIUM(GLbyte** sync_tokens,
+                                             GLsizei count) {
+  MojoGLES2MakeCurrent(context_);
+  glVerifySyncTokensCHROMIUM(sync_tokens, count);
+}
 void MojoGLES2Impl::WaitSyncTokenCHROMIUM(const GLbyte* sync_token) {
   MojoGLES2MakeCurrent(context_);
   glWaitSyncTokenCHROMIUM(sync_token);

@@ -336,6 +336,10 @@ VISIT_GL_CALL(GenUnverifiedSyncTokenCHROMIUM,
               void,
               (GLuint64 fence_sync, GLbyte* sync_token),
               (fence_sync, sync_token))
+VISIT_GL_CALL(VerifySyncTokensCHROMIUM,
+              void,
+              (GLbyte * *sync_tokens, GLsizei count),
+              (sync_tokens, count))
 VISIT_GL_CALL(WaitSyncTokenCHROMIUM,
               void,
               (const GLbyte* sync_token),

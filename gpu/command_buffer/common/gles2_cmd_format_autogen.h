@@ -13601,6 +13601,44 @@ static_assert(
     offsetof(GenUnverifiedSyncTokenCHROMIUMImmediate, fence_sync) == 4,
     "offset of GenUnverifiedSyncTokenCHROMIUMImmediate fence_sync should be 4");
 
+struct VerifySyncTokensCHROMIUMImmediate {
+  typedef VerifySyncTokensCHROMIUMImmediate ValueType;
+  static const CommandId kCmdId = kVerifySyncTokensCHROMIUMImmediate;
+  static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize(uint32_t size_in_bytes) {
+    return static_cast<uint32_t>(sizeof(ValueType) +  // NOLINT
+                                 RoundSizeToMultipleOfEntries(size_in_bytes));
+  }
+
+  void SetHeader(uint32_t size_in_bytes) {
+    header.SetCmdByTotalSize<ValueType>(size_in_bytes);
+  }
+
+  void Init(GLsizei _count) {
+    uint32_t total_size = 0;  // WARNING: compute correct size.
+    SetHeader(total_size);
+    count = _count;
+  }
+
+  void* Set(void* cmd, GLsizei _count) {
+    uint32_t total_size = 0;  // WARNING: compute correct size.
+    static_cast<ValueType*>(cmd)->Init(_count);
+    return NextImmediateCmdAddressTotalSize<ValueType>(cmd, total_size);
+  }
+
+  gpu::CommandHeader header;
+  int32_t count;
+};
+
+static_assert(sizeof(VerifySyncTokensCHROMIUMImmediate) == 8,
+              "size of VerifySyncTokensCHROMIUMImmediate should be 8");
+static_assert(offsetof(VerifySyncTokensCHROMIUMImmediate, header) == 0,
+              "offset of VerifySyncTokensCHROMIUMImmediate header should be 0");
+static_assert(offsetof(VerifySyncTokensCHROMIUMImmediate, count) == 4,
+              "offset of VerifySyncTokensCHROMIUMImmediate count should be 4");
+
 struct WaitSyncTokenCHROMIUM {
   typedef WaitSyncTokenCHROMIUM ValueType;
   static const CommandId kCmdId = kWaitSyncTokenCHROMIUM;
