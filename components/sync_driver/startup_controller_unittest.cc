@@ -8,15 +8,11 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
-#include "chrome/browser/defaults.h"
-#include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/sync/supervised_user_signin_manager_wrapper.h"
-#include "chrome/test/base/testing_profile.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
+#include "components/sync_driver/signin_manager_wrapper.h"
 #include "components/sync_driver/sync_driver_switches.h"
 #include "components/sync_driver/sync_prefs.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "components/syncable_prefs/testing_pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace browser_sync {
@@ -50,22 +46,12 @@ class StartupControllerTest : public testing::Test {
   StartupControllerTest() : started_(false) {}
 
   void SetUp() override {
-    profile_.reset(new TestingProfile());
-    sync_prefs_.reset(new sync_driver::SyncPrefs(profile_->GetPrefs()));
-    token_service_.reset(static_cast<FakeProfileOAuth2TokenService*>(
-        BuildFakeProfileOAuth2TokenService(profile_.get()).release()));
+    sync_driver::SyncPrefs::RegisterProfilePrefs(pref_service_.registry());
+    sync_prefs_.reset(new sync_driver::SyncPrefs(&pref_service_));
+    token_service_.reset(new FakeProfileOAuth2TokenService());
     signin_.reset(new FakeSigninManagerWrapper());
 
-    ProfileSyncServiceStartBehavior behavior =
-        browser_defaults::kSyncAutoStarts ? AUTO_START : MANUAL_START;
-    base::Closure fake_start_backend = base::Bind(
-        &StartupControllerTest::FakeStartBackend, base::Unretained(this));
-    controller_.reset(new StartupController(behavior, token_service(),
-                                            sync_prefs_.get(), signin_.get(),
-                                            fake_start_backend));
-    controller_->Reset(syncer::UserTypes());
-    controller_->OverrideFallbackTimeoutForTest(
-        base::TimeDelta::FromSeconds(0));
+    SetUpController(AUTO_START);
   }
 
   void TearDown() override {
@@ -75,6 +61,18 @@ class StartupControllerTest : public testing::Test {
     token_service_.reset();
     sync_prefs_.reset();
     started_ = false;
+  }
+
+  void SetUpController(ProfileSyncServiceStartBehavior start_behavior) {
+    started_ = false;
+    base::Closure fake_start_backend = base::Bind(
+        &StartupControllerTest::FakeStartBackend, base::Unretained(this));
+    controller_.reset(new StartupController(start_behavior, token_service(),
+                                            sync_prefs_.get(), signin_.get(),
+                                            fake_start_backend));
+    controller_->Reset(syncer::UserTypes());
+    controller_->OverrideFallbackTimeoutForTest(
+        base::TimeDelta::FromSeconds(0));
   }
 
   void FakeStartBackend() {
@@ -89,16 +87,15 @@ class StartupControllerTest : public testing::Test {
     return token_service_.get();
   }
   sync_driver::SyncPrefs* sync_prefs() { return sync_prefs_.get(); }
-  Profile* profile() { return profile_.get(); }
 
  private:
   bool started_;
-  content::TestBrowserThreadBundle thread_bundle_;
+  base::MessageLoop message_loop_;
+  syncable_prefs::TestingPrefServiceSyncable pref_service_;
   scoped_ptr<StartupController> controller_;
   scoped_ptr<FakeSigninManagerWrapper> signin_;
   scoped_ptr<FakeProfileOAuth2TokenService> token_service_;
   scoped_ptr<sync_driver::SyncPrefs> sync_prefs_;
-  scoped_ptr<TestingProfile> profile_;
 };
 
 // Test that sync doesn't start until all conditions are met.
@@ -208,20 +205,26 @@ TEST_F(StartupControllerTest, FallbackTimerWaits) {
   EXPECT_FALSE(started());
 }
 
-// Test that sync starts when the user first asks to setup sync (which
-// may be implicit due to the platform).
-TEST_F(StartupControllerTest, FirstSetup) {
+// Test that sync starts without the user having to explicitly ask for
+// setup when AUTO_START is the startup behavior requested.
+TEST_F(StartupControllerTest, FirstSetupWithAutoStart) {
   signin()->set_account(kTestUser);
   token_service()->UpdateCredentials(kTestUser, kTestToken);
   controller()->TryStart();
+  EXPECT_TRUE(started());
+}
 
-  if (browser_defaults::kSyncAutoStarts) {
-    EXPECT_TRUE(started());
-  } else {
-    controller()->set_setup_in_progress(true);
-    controller()->TryStart();
-    EXPECT_TRUE(started());
-  }
+// Test that sync starts only after user explicitly asks for setup when
+// MANUAL_START is the startup behavior requested.
+TEST_F(StartupControllerTest, FirstSetupWithManualStart) {
+  signin()->set_account(kTestUser);
+  token_service()->UpdateCredentials(kTestUser, kTestToken);
+  SetUpController(MANUAL_START);
+  controller()->TryStart();
+  EXPECT_FALSE(started());
+  controller()->set_setup_in_progress(true);
+  controller()->TryStart();
+  EXPECT_TRUE(started());
 }
 
 TEST_F(StartupControllerTest, Reset) {

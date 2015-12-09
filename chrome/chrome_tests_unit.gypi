@@ -236,7 +236,6 @@
       'browser/sync/profile_sync_service_factory_unittest.cc',
       'browser/sync/profile_sync_service_startup_unittest.cc',
       'browser/sync/profile_sync_service_typed_url_unittest.cc',
-      'browser/sync/startup_controller_unittest.cc',
       'browser/sync/sync_startup_tracker_unittest.cc',
       'browser/sync/test/test_http_bridge_factory.cc',
       'browser/sync/test/test_http_bridge_factory.h',
