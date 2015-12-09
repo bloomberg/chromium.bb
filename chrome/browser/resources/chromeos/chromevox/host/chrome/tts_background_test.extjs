@@ -71,3 +71,23 @@ SYNC_TEST_F('CvoxTtsBackgroundTest', 'UpdateVoice', function() {
   tts.updateVoice_('French');
   assertEquals('French', tts.currentVoice);
 });
+
+SYNC_TEST_F('CvoxTtsBackgroundTest', 'EmptyStringCallsCallbacks', function() {
+  var tts = new cvox.TtsBackground(false);
+  chrome.tts.speak = assertNotReached.bind(
+      null, 'chrome.tts.speak shouldn\t be called.');
+
+  assertCallsCallbacks = function(text) {
+    var startCalls = 0;
+    var endCalls = 0;
+    tts.speak(text, cvox.QueueMode.QUEUE,
+              {startCallback: function() { ++startCalls; },
+               endCallback: function() { ++endCalls; }});
+    assertEquals(1, startCalls, text);
+    assertEquals(1, endCalls, text);
+  }.bind(this);
+
+  assertCallsCallbacks('');
+  assertCallsCallbacks('  ');
+  assertCallsCallbacks(' \u00a0 ');
+});
