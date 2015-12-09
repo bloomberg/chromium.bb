@@ -16,10 +16,10 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
+#include "components/password_manager/core/browser/password_manager_constants.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
 #include "jni/AccountChooserDialog_jni.h"
 #include "ui/android/window_android.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/range/range.h"
 
@@ -173,7 +173,7 @@ void AccountChooserDialogAndroid::CancelDialog(JNIEnv* env, jobject obj) {
 
 void AccountChooserDialogAndroid::OnLinkClicked(JNIEnv* env, jobject obj) {
   web_contents_->OpenURL(content::OpenURLParams(
-      GURL(l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SMART_LOCK_PAGE)),
+      GURL(password_manager::kPasswordManagerAccountDashboardURL),
       content::Referrer(), NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_LINK,
       false /* is_renderer_initiated */));
 }

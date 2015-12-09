@@ -12,6 +12,6 @@ const base::FilePath::CharType kLoginDataFileName[] =
     FILE_PATH_LITERAL("Login Data");
 
 const char kPasswordManagerAccountDashboardURL[] =
-    "https://passwords.google.com/settings/passwords";
+    "https://passwords.google.com";
 
 }  // namespace password_manager
