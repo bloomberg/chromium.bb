@@ -533,6 +533,27 @@ void Transform::TransformPointInternal(const SkMatrix44& xform,
   point->SetPoint(ToRoundedInt(p[0]), ToRoundedInt(p[1]));
 }
 
+bool Transform::ApproximatelyEqual(const gfx::Transform& transform) const {
+  static const float component_tolerance = 0.1f;
+
+  // We may have a larger discrepancy in the scroll components due to snapping
+  // (floating point error might round the other way).
+  static const float translation_tolerance = 1.f;
+
+  for (int row = 0; row < 4; row++) {
+    for (int col = 0; col < 4; col++) {
+      const float delta =
+          std::abs(matrix().get(row, col) - transform.matrix().get(row, col));
+      const float tolerance =
+          col == 3 && row < 3 ? translation_tolerance : component_tolerance;
+      if (delta > tolerance)
+        return false;
+    }
+  }
+
+  return true;
+}
+
 std::string Transform::ToString() const {
   return base::StringPrintf(
       "[ %+0.4f %+0.4f %+0.4f %+0.4f  \n"

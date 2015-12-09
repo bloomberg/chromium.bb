@@ -254,6 +254,7 @@ class GFX_EXPORT Transform {
   // Returns the underlying matrix.
   const SkMatrix44& matrix() const { return matrix_; }
   SkMatrix44& matrix() { return matrix_; }
+  bool ApproximatelyEqual(const gfx::Transform& transform) const;
 
   std::string ToString() const;
 

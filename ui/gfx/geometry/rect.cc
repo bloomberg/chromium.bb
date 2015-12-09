@@ -244,6 +244,13 @@ std::string Rect::ToString() const {
                             size().ToString().c_str());
 }
 
+bool Rect::ApproximatelyEqual(const Rect& rect, int tolerance) const {
+  return std::abs(x() - rect.x()) <= tolerance &&
+         std::abs(y() - rect.y()) <= tolerance &&
+         std::abs(right() - rect.right()) <= tolerance &&
+         std::abs(bottom() - rect.bottom()) <= tolerance;
+}
+
 Rect operator+(const Rect& lhs, const Vector2d& rhs) {
   Rect result(lhs);
   result += rhs;

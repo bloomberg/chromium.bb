@@ -115,6 +115,7 @@ class CC_EXPORT LayerTreeHostCommon {
                                       int current_render_surface_layer_list_id);
   };
 
+  static int CalculateFrameJitter(LayerImpl* scrolling_layer);
   static void CalculateDrawProperties(CalcDrawPropsMainInputs* inputs);
   static void PreCalculateMetaInformation(Layer* root_layer);
   static void PreCalculateMetaInformationForTesting(LayerImpl* root_layer);

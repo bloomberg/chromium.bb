@@ -9282,5 +9282,54 @@ TEST_F(LayerTreeHostImplTest, SubLayerScaleForNodeInSubtreeOfPageScaleLayer) {
   EXPECT_EQ(node->data.sublayer_scale, gfx::Vector2dF(2.f, 2.f));
 }
 
+TEST_F(LayerTreeHostImplTest, JitterTest) {
+  host_impl_->SetViewportSize(gfx::Size(100, 100));
+
+  host_impl_->CreatePendingTree();
+  CreateScrollAndContentsLayers(host_impl_->pending_tree(),
+                                gfx::Size(100, 100));
+
+  host_impl_->pending_tree()->PushPageScaleFromMainThread(1.f, 1.f, 1.f);
+  host_impl_->pending_tree()->BuildPropertyTreesForTesting();
+  const int scroll = 5;
+  int accumulated_scroll = 0;
+  for (int i = 0; i < host_impl_->pending_tree()->kFixedPointHitsThreshold + 1;
+       ++i) {
+    host_impl_->ActivateSyncTree();
+    host_impl_->ScrollBegin(gfx::Point(5, 5), InputHandler::GESTURE);
+    host_impl_->ScrollBy(gfx::Point(), gfx::Vector2dF(0, scroll));
+    accumulated_scroll += scroll;
+    host_impl_->ScrollEnd();
+    host_impl_->active_tree()->UpdateDrawProperties(false);
+
+    host_impl_->CreatePendingTree();
+    host_impl_->pending_tree()->set_source_frame_number(i + 1);
+    LayerImpl* content_layer = host_impl_->pending_tree()
+                                   ->OuterViewportScrollLayer()
+                                   ->children()[0]
+                                   .get();
+    // The scroll done on the active tree is undone on the pending tree.
+    gfx::Transform translate;
+    translate.Translate(0, accumulated_scroll);
+    content_layer->SetTransform(translate);
+
+    LayerTreeImpl* pending_tree = host_impl_->pending_tree();
+    pending_tree->PushPageScaleFromMainThread(1.f, 1.f, 1.f);
+    pending_tree->property_trees()->needs_rebuild = true;
+    pending_tree->BuildPropertyTreesForTesting();
+    pending_tree->set_needs_update_draw_properties();
+    pending_tree->UpdateDrawProperties(false);
+    LayerImpl* last_scrolled_layer = pending_tree->LayerById(
+        host_impl_->active_tree()->LastScrolledLayerId());
+    float jitter =
+        LayerTreeHostCommon::CalculateFrameJitter(last_scrolled_layer);
+    // There should not be any jitter measured till we hit the fixed point hits
+    // threshold.
+    float expected_jitter =
+        (i == pending_tree->kFixedPointHitsThreshold) ? 500 : 0;
+    EXPECT_EQ(jitter, expected_jitter);
+  }
+}
+
 }  // namespace
 }  // namespace cc

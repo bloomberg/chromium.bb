@@ -49,10 +49,12 @@ LayerTreeImpl::LayerTreeImpl(
     scoped_refptr<SyncedElasticOverscroll> elastic_overscroll)
     : layer_tree_host_impl_(layer_tree_host_impl),
       source_frame_number_(-1),
+      is_first_frame_after_commit_tracker_(-1),
       hud_layer_(0),
       background_color_(0),
       has_transparent_background_(false),
       currently_scrolling_layer_id_(Layer::INVALID_ID),
+      last_scrolled_layer_id_(Layer::INVALID_ID),
       overscroll_elasticity_layer_id_(Layer::INVALID_ID),
       page_scale_layer_id_(Layer::INVALID_ID),
       inner_viewport_scroll_layer_id_(Layer::INVALID_ID),
@@ -371,8 +373,15 @@ LayerImpl* LayerTreeImpl::CurrentlyScrollingLayer() const {
   return LayerById(currently_scrolling_layer_id_);
 }
 
+int LayerTreeImpl::LastScrolledLayerId() const {
+  return last_scrolled_layer_id_;
+}
+
 void LayerTreeImpl::SetCurrentlyScrollingLayer(LayerImpl* layer) {
   int new_id = layer ? layer->id() : Layer::INVALID_ID;
+  if (layer)
+    last_scrolled_layer_id_ = new_id;
+
   if (currently_scrolling_layer_id_ == new_id)
     return;
 

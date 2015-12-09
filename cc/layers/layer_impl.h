@@ -25,6 +25,7 @@
 #include "cc/layers/draw_properties.h"
 #include "cc/layers/layer_lists.h"
 #include "cc/layers/layer_position_constraint.h"
+#include "cc/layers/performance_properties.h"
 #include "cc/layers/render_surface_impl.h"
 #include "cc/layers/scroll_blocks_on.h"
 #include "cc/output/filter_operations.h"
@@ -395,6 +396,9 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
 
   gfx::Transform DrawTransform() const;
   gfx::Transform ScreenSpaceTransform() const;
+  PerformanceProperties<LayerImpl>& performance_properties() {
+    return performance_properties_;
+  }
 
   // The following are shortcut accessors to get various information from
   // draw_properties_
@@ -872,6 +876,7 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   // Group of properties that need to be computed based on the layer tree
   // hierarchy before layers can be drawn.
   DrawProperties draw_properties_;
+  PerformanceProperties<LayerImpl> performance_properties_;
 
   scoped_refptr<base::trace_event::ConvertableToTraceFormat> debug_info_;
   scoped_ptr<RenderSurfaceImpl> render_surface_;

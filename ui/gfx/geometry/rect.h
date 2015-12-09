@@ -179,6 +179,8 @@ class GFX_EXPORT Rect {
 
   std::string ToString() const;
 
+  bool ApproximatelyEqual(const Rect& rect, int tolerance) const;
+
  private:
   gfx::Point origin_;
   gfx::Size size_;

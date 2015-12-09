@@ -1299,6 +1299,37 @@ static bool SortChildrenForRecursion(std::vector<LayerImpl*>* out,
   return order_changed;
 }
 
+static bool CdpPerfTracingEnabled() {
+  bool tracing_enabled;
+  TRACE_EVENT_CATEGORY_GROUP_ENABLED(
+      TRACE_DISABLED_BY_DEFAULT("cc.debug.cdp-perf"), &tracing_enabled);
+  return tracing_enabled;
+}
+
+static float TranslationFromActiveTreeLayerScreenSpaceTransform(
+    LayerImpl* pending_tree_layer) {
+  LayerTreeImpl* layer_tree_impl = pending_tree_layer->layer_tree_impl();
+  if (layer_tree_impl) {
+    LayerImpl* active_tree_layer =
+        layer_tree_impl->FindActiveTreeLayerById(pending_tree_layer->id());
+    if (active_tree_layer) {
+      gfx::Transform active_tree_screen_space_transform =
+          active_tree_layer->draw_properties().screen_space_transform;
+      if (active_tree_screen_space_transform.IsIdentity())
+        return 0.f;
+      if (active_tree_screen_space_transform.ApproximatelyEqual(
+              pending_tree_layer->draw_properties().screen_space_transform))
+        return 0.f;
+      return (active_tree_layer->draw_properties()
+                  .screen_space_transform.To2dTranslation() -
+              pending_tree_layer->draw_properties()
+                  .screen_space_transform.To2dTranslation())
+          .Length();
+    }
+  }
+  return 0.f;
+}
+
 // Recursively walks the layer tree starting at the given node and computes all
 // the necessary transformations, clip rects, render surfaces, etc.
 static void CalculateDrawPropertiesInternal(
@@ -2068,37 +2099,50 @@ static void ProcessCalcDrawPropsInputs(
   data_for_recursion->subtree_is_visible_from_ancestor = true;
 }
 
+// A layer jitters if its screen space transform is same on two successive
+// commits, but has changed in between the commits. CalculateFrameJitter
+// computes the jitter in the entire frame.
+int LayerTreeHostCommon::CalculateFrameJitter(LayerImpl* layer) {
+  if (!layer)
+    return 0.f;
+  float jitter = 0.f;
+  layer->performance_properties().translation_from_last_frame = 0.f;
+  layer->performance_properties().last_commit_screen_space_transform =
+      layer->draw_properties().screen_space_transform;
 
-static bool ApproximatelyEqual(const gfx::Rect& r1, const gfx::Rect& r2) {
-  // TODO(vollick): This tolerance should be lower: crbug.com/471786
-  static const int tolerance = 1;
-
-  return std::abs(r1.x() - r2.x()) <= tolerance &&
-         std::abs(r1.y() - r2.y()) <= tolerance &&
-         std::abs(r1.right() - r2.right()) <= tolerance &&
-         std::abs(r1.bottom() - r2.bottom()) <= tolerance;
-}
-
-static bool ApproximatelyEqual(const gfx::Transform& a,
-                               const gfx::Transform& b) {
-  static const float component_tolerance = 0.1f;
-
-  // We may have a larger discrepancy in the scroll components due to snapping
-  // (floating point error might round the other way).
-  static const float translation_tolerance = 1.f;
-
-  for (int row = 0; row < 4; row++) {
-    for (int col = 0; col < 4; col++) {
-      const float delta =
-          std::abs(a.matrix().get(row, col) - b.matrix().get(row, col));
-      const float tolerance =
-          col == 3 && row < 3 ? translation_tolerance : component_tolerance;
-      if (delta > tolerance)
-        return false;
+  if (!layer->visible_layer_rect().IsEmpty()) {
+    if (layer->draw_properties().screen_space_transform.ApproximatelyEqual(
+            layer->performance_properties()
+                .last_commit_screen_space_transform)) {
+      float translation_from_last_commit =
+          TranslationFromActiveTreeLayerScreenSpaceTransform(layer);
+      if (translation_from_last_commit > 0.f) {
+        layer->performance_properties().num_fixed_point_hits++;
+        layer->performance_properties().translation_from_last_frame =
+            translation_from_last_commit;
+        if (layer->performance_properties().num_fixed_point_hits >
+            layer->layer_tree_impl()->kFixedPointHitsThreshold) {
+          // Jitter = Translation from fixed point * sqrt(Area of the layer).
+          // The square root of the area is used instead of the area to match
+          // the dimensions of both terms on the rhs.
+          jitter += translation_from_last_commit *
+                    sqrt(layer->visible_layer_rect().size().GetArea());
+        }
+      } else {
+        layer->performance_properties().num_fixed_point_hits = 0;
+      }
     }
   }
+  // Descendants of jittering layer will not contribute to unique jitter.
+  if (jitter > 0.f)
+    return jitter;
 
-  return true;
+  for (size_t i = 0; i < layer->children().size(); ++i) {
+    LayerImpl* child_layer =
+        LayerTreeHostCommon::get_layer_as_raw_ptr(layer->children(), i);
+    jitter += CalculateFrameJitter(child_layer);
+  }
+  return jitter;
 }
 
 void VerifyPropertyTreeValuesForSurface(RenderSurfaceImpl* render_surface,
@@ -2106,35 +2150,38 @@ void VerifyPropertyTreeValuesForSurface(RenderSurfaceImpl* render_surface,
   RenderSurfaceDrawProperties draw_properties;
   ComputeSurfaceDrawPropertiesUsingPropertyTrees(render_surface, property_trees,
                                                  &draw_properties);
+  // TODO(vollick): This tolerance should be lower: crbug.com/471786
+  const int tolerance = 1;
 
   // content_rect has to be computed recursively, so is computed separately from
   // other draw properties.
   draw_properties.content_rect =
       render_surface->content_rect_from_property_trees();
 
-  const bool render_surface_draw_transforms_match = ApproximatelyEqual(
-      render_surface->draw_transform(), draw_properties.draw_transform);
+  const bool render_surface_draw_transforms_match =
+      render_surface->draw_transform().ApproximatelyEqual(
+          draw_properties.draw_transform);
   CHECK(render_surface_draw_transforms_match)
       << "expected: " << render_surface->draw_transform().ToString()
       << " actual: " << draw_properties.draw_transform.ToString();
 
   const bool render_surface_screen_space_transform_match =
-      ApproximatelyEqual(render_surface->screen_space_transform(),
-                         draw_properties.screen_space_transform);
+      render_surface->screen_space_transform().ApproximatelyEqual(
+          draw_properties.screen_space_transform);
   CHECK(render_surface_screen_space_transform_match)
       << "expected: " << render_surface->screen_space_transform().ToString()
       << " actual: " << draw_properties.screen_space_transform.ToString();
 
   const bool render_surface_replica_draw_transforms_match =
-      ApproximatelyEqual(render_surface->replica_draw_transform(),
-                         draw_properties.replica_draw_transform);
+      render_surface->replica_draw_transform().ApproximatelyEqual(
+          draw_properties.replica_draw_transform);
   CHECK(render_surface_replica_draw_transforms_match)
       << "expected: " << render_surface->replica_draw_transform().ToString()
       << " actual: " << draw_properties.replica_draw_transform.ToString();
 
   const bool render_surface_replica_screen_space_transforms_match =
-      ApproximatelyEqual(render_surface->replica_screen_space_transform(),
-                         draw_properties.replica_screen_space_transform);
+      render_surface->replica_screen_space_transform().ApproximatelyEqual(
+          draw_properties.replica_screen_space_transform);
   CHECK(render_surface_replica_screen_space_transforms_match)
       << "expected: "
       << render_surface->replica_screen_space_transform().ToString()
@@ -2143,16 +2190,18 @@ void VerifyPropertyTreeValuesForSurface(RenderSurfaceImpl* render_surface,
 
   CHECK_EQ(render_surface->is_clipped(), draw_properties.is_clipped);
 
-  const bool render_surface_clip_rects_match = ApproximatelyEqual(
-      render_surface->clip_rect(), draw_properties.clip_rect);
+  const bool render_surface_clip_rects_match =
+      render_surface->clip_rect().ApproximatelyEqual(draw_properties.clip_rect,
+                                                     tolerance);
   CHECK(render_surface_clip_rects_match)
       << "expected: " << render_surface->clip_rect().ToString()
       << " actual: " << draw_properties.clip_rect.ToString();
 
   CHECK_EQ(render_surface->draw_opacity(), draw_properties.draw_opacity);
 
-  const bool render_surface_content_rects_match = ApproximatelyEqual(
-      render_surface->content_rect(), draw_properties.content_rect);
+  const bool render_surface_content_rects_match =
+      render_surface->content_rect().ApproximatelyEqual(
+          draw_properties.content_rect, tolerance);
   CHECK(render_surface_content_rects_match)
       << "expected: " << render_surface->content_rect().ToString()
       << " actual: " << draw_properties.content_rect.ToString();
@@ -2166,15 +2215,20 @@ void VerifyPropertyTreeValuesForLayer(LayerImpl* current_layer,
   ComputeLayerDrawPropertiesUsingPropertyTrees(
       current_layer, property_trees, layers_always_allowed_lcd_text,
       can_use_lcd_text, &draw_properties);
-  const bool visible_rects_match = ApproximatelyEqual(
-      current_layer->visible_layer_rect(), draw_properties.visible_layer_rect);
+  // TODO(vollick): This tolerance should be lower: crbug.com/471786
+  const int tolerance = 1;
+
+  const bool visible_rects_match =
+      current_layer->visible_layer_rect().ApproximatelyEqual(
+          draw_properties.visible_layer_rect, tolerance);
   CHECK(visible_rects_match)
       << "expected: " << current_layer->visible_layer_rect().ToString()
       << " actual: " << draw_properties.visible_layer_rect.ToString();
 
-  const bool draw_transforms_match = ApproximatelyEqual(
-      current_layer->draw_properties().target_space_transform,
-      draw_properties.target_space_transform);
+  const bool draw_transforms_match =
+      current_layer->draw_properties()
+          .target_space_transform.ApproximatelyEqual(
+              draw_properties.target_space_transform);
   CHECK(draw_transforms_match)
       << "expected: "
       << current_layer->draw_properties().target_space_transform.ToString()
@@ -2187,14 +2241,14 @@ void VerifyPropertyTreeValuesForLayer(LayerImpl* current_layer,
            draw_properties.screen_space_transform_is_animating);
 
   const bool drawable_content_rects_match =
-      ApproximatelyEqual(current_layer->drawable_content_rect(),
-                         draw_properties.drawable_content_rect);
+      current_layer->drawable_content_rect().ApproximatelyEqual(
+          draw_properties.drawable_content_rect, tolerance);
   CHECK(drawable_content_rects_match)
       << "expected: " << current_layer->drawable_content_rect().ToString()
       << " actual: " << draw_properties.drawable_content_rect.ToString();
 
-  const bool clip_rects_match =
-      ApproximatelyEqual(current_layer->clip_rect(), draw_properties.clip_rect);
+  const bool clip_rects_match = current_layer->clip_rect().ApproximatelyEqual(
+      draw_properties.clip_rect, tolerance);
   CHECK(clip_rects_match) << "expected: "
                           << current_layer->clip_rect().ToString()
                           << " actual: "
@@ -2700,6 +2754,25 @@ void LayerTreeHostCommon::CalculateDrawProperties(
 void LayerTreeHostCommon::CalculateDrawProperties(
     CalcDrawPropsImplInputs* inputs) {
   CalculateDrawPropertiesAndVerify(inputs, DONT_BUILD_PROPERTY_TREES);
+
+  if (CdpPerfTracingEnabled()) {
+    LayerTreeImpl* layer_tree_impl = inputs->root_layer->layer_tree_impl();
+    if (layer_tree_impl->IsPendingTree() &&
+        layer_tree_impl->is_first_frame_after_commit()) {
+      LayerImpl* active_tree_root =
+          layer_tree_impl->FindActiveTreeLayerById(inputs->root_layer->id());
+      float jitter = 0.f;
+      if (active_tree_root) {
+        LayerImpl* last_scrolled_layer = layer_tree_impl->LayerById(
+            active_tree_root->layer_tree_impl()->LastScrolledLayerId());
+        jitter = CalculateFrameJitter(last_scrolled_layer);
+      }
+      TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("cc.debug.cdp-perf"), "jitter",
+                     jitter);
+      inputs->root_layer->layer_tree_impl()->set_is_first_frame_after_commit(
+          false);
+    }
+  }
 }
 
 void LayerTreeHostCommon::CalculateDrawProperties(

@@ -585,14 +585,20 @@ class LayerTreeHostScrollTestCaseWithChild : public LayerTreeHostScrollTest {
     EXPECT_EQ(device_scale_factor_, impl->active_tree()->device_scale_factor());
     switch (impl->active_tree()->source_frame_number()) {
       case 0: {
-        // GESTURE scroll on impl thread.
+        // GESTURE scroll on impl thread. Also tests that the last scrolled
+        // layer id is stored even after the scrolling ends.
         InputHandler::ScrollStatus status = impl->ScrollBegin(
             gfx::ToCeiledPoint(expected_scroll_layer_impl->position() -
                                gfx::Vector2dF(0.5f, 0.5f)),
             InputHandler::GESTURE);
         EXPECT_EQ(InputHandler::SCROLL_STARTED, status);
         impl->ScrollBy(gfx::Point(), scroll_amount_);
+        LayerImpl* scrolling_layer = impl->CurrentlyScrollingLayer();
+        CHECK(scrolling_layer);
         impl->ScrollEnd();
+        CHECK(!impl->CurrentlyScrollingLayer());
+        EXPECT_EQ(scrolling_layer->id(),
+                  impl->active_tree()->LastScrolledLayerId());
 
         // Check the scroll is applied as a delta.
         EXPECT_VECTOR_EQ(initial_offset_,
