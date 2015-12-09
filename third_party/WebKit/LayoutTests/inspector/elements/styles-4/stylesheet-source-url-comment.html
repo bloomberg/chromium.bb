@@ -24,6 +24,13 @@ function addInlineStyleSheetNonRelative()
     document.head.appendChild(styleElement);
 }
 
+function addInlineStyleSheetMultiple()
+{
+    var styleElement = document.createElement("style");
+    styleElement.textContent = "\n/*# sourceURL=1.css */\nbody { color: red; }\n/*# sourceURL=2.css*/\n/*# sourceURL=css/addedInlineStylesheetMultiple.css */";
+    document.head.appendChild(styleElement);
+}
+
 function test()
 {
     function forEachHeaderMatchingURL(url, handler)
@@ -79,6 +86,19 @@ function test()
             {
                 InspectorTest.addResult(sourceFrame.textEditor.text());
                 forEachHeaderMatchingURL("nonRelativeInlineStyleSheet.css", checkHeaderHasSourceURL);
+                next();
+            }
+        },
+
+        function testMultiple(next)
+        {
+            InspectorTest.showScriptSource("css/addedInlineStylesheetMultiple.css", didShowSource);
+            InspectorTest.evaluateInPage("setTimeout(addInlineStyleSheetMultiple, 0)");
+
+            function didShowSource(sourceFrame)
+            {
+                InspectorTest.addResult(sourceFrame.textEditor.text());
+                forEachHeaderMatchingURL("addInlineStyleSheetMultiple.css", checkHeaderHasSourceURL);
                 next();
             }
         }

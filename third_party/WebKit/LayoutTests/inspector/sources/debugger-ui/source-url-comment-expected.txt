@@ -27,3 +27,9 @@ Running: testNonRelativeURL
 function relativeURLScript() {}
 hasSourceURL: true
 
+Running: testMultipleSourceURLComment
+
+//# sourceURL=evalURL2.js
+function keepAlive() {}
+hasSourceURL: true
+

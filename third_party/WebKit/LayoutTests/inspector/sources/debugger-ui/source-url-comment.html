@@ -30,6 +30,11 @@ function doURLAndMappingURL()
     eval("function keepAlive() {}\n//# sourceMappingURL=sourceMappingURL.map\n//# sourceURL=sourceURL.js");
 }
 
+function doEvalWithMultipleSourceURL()
+{
+    eval("\n//# sourceURL=evalURL2.js\nfunction keepAlive() {}\n//# sourceURL=evalMultipleURL.js");
+}
+
 function addScriptWithURL()
 {
     var script = document.createElement("script");
@@ -160,6 +165,19 @@ function test()
             {
                 InspectorTest.addResult(sourceFrame.textEditor.text());
                 forEachScriptMatchingURL("nonRelativeURL.js", checkScriptSourceURL);
+                next();
+            }
+        },
+
+        function testMultipleSourceURLComment(next)
+        {
+            InspectorTest.showScriptSource("evalMultipleURL.js", didShowScriptSource);
+            InspectorTest.evaluateInPage("setTimeout(doEvalWithMultipleSourceURL, 0)");
+
+            function didShowScriptSource(sourceFrame)
+            {
+                InspectorTest.addResult(sourceFrame.textEditor.text());
+                forEachScriptMatchingURL("evalMultipleURL.js", checkScriptSourceURL);
                 next();
             }
         }

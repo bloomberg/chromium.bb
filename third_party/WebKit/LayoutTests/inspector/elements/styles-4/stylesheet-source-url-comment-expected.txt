@@ -9,3 +9,9 @@ body { color: black; }
 Running: testNonRelativeURL
 body { color: red; }
 
+Running: testMultiple
+
+/*# sourceURL=1.css */
+body { color: red; }
+/*# sourceURL=2.css*/
+
