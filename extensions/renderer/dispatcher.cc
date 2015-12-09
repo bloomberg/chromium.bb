@@ -55,6 +55,7 @@
 #include "extensions/renderer/context_menus_custom_bindings.h"
 #include "extensions/renderer/css_native_handler.h"
 #include "extensions/renderer/dispatcher_delegate.h"
+#include "extensions/renderer/display_source_custom_bindings.h"
 #include "extensions/renderer/document_custom_bindings.h"
 #include "extensions/renderer/dom_activity_logger.h"
 #include "extensions/renderer/event_bindings.h"
@@ -681,6 +682,9 @@ std::vector<std::pair<std::string, int> > Dispatcher::GetJsResources() {
       std::make_pair("declarativeWebRequest",
                      IDR_DECLARATIVE_WEBREQUEST_CUSTOM_BINDINGS_JS));
   resources.push_back(
+      std::make_pair("displaySource",
+                     IDR_DISPLAY_SOURCE_CUSTOM_BINDINGS_JS));
+  resources.push_back(
       std::make_pair("contextMenus", IDR_CONTEXT_MENUS_CUSTOM_BINDINGS_JS));
   resources.push_back(
       std::make_pair("contextMenusHandlers", IDR_CONTEXT_MENUS_HANDLERS_JS));
@@ -824,6 +828,9 @@ void Dispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
       scoped_ptr<NativeHandler>(new IdGeneratorCustomBindings(context)));
   module_system->RegisterNativeHandler(
       "runtime", scoped_ptr<NativeHandler>(new RuntimeCustomBindings(context)));
+  module_system->RegisterNativeHandler(
+      "display_source",
+      scoped_ptr<NativeHandler>(new DisplaySourceCustomBindings(context)));
 }
 
 bool Dispatcher::OnControlMessageReceived(const IPC::Message& message) {

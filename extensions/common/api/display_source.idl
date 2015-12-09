@@ -89,7 +89,12 @@ namespace displaySource {
 
   callback GetSinksCallback = void (SinkInfo[] result);
   callback RequestAuthenticationCallback = void (AuthenticationInfo result);
-  callback TerminateSessionCallback = void ();
+
+  // The callback is used by <code>startSession, terminateSession</code>
+  // to signal completion. The callback is called with
+  // <code>chrome.runtime.lastError</code> set to error
+  // message if the call has failed.
+  [inline_doc] callback CallCompleteCallback = void ();
  
   interface Functions {
     // Queries the list of the currently available Display sinks.
@@ -123,13 +128,15 @@ namespace displaySource {
     // are required by the sink; otherwise its |data| field must contain the
     // required authentication data (e.g. PIN value) and its |method| field must
     // be the same as one obtained from ‘requestAuthentication’.
-    [nocompile] static void startSession(StartSessionInfo sessionInfo);
+    // |callback| : Called when the session is started.
+    [nocompile] static void startSession(
+        StartSessionInfo sessionInfo, optional CallCompleteCallback callback);
 
     // Terminates the active Display session.
     // |sinkId| : Id of the connected sink.
     // |callback| : Called when the session is terminated.
     [nocompile] static void terminateSession(
-        long sinkId, optional TerminateSessionCallback callback);
+        long sinkId, optional CallCompleteCallback callback);
   };
 
   interface Events {
