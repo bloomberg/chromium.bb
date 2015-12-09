@@ -66,7 +66,7 @@ public:
     {
     }
 
-    PlatformMouseEvent(const IntPoint& position, const IntPoint& globalPosition, MouseButton button, PlatformEvent::Type type, int clickCount, Modifiers modifiers, SyntheticEventType synthesized, double timestamp)
+    PlatformMouseEvent(const IntPoint& position, const IntPoint& globalPosition, MouseButton button, PlatformEvent::Type type, int clickCount, Modifiers modifiers, SyntheticEventType synthesized, double timestamp, WebPointerProperties::PointerType pointerType = WebPointerProperties::PointerType::Unknown)
         : PlatformEvent(type, modifiers, timestamp)
         , m_position(position)
         , m_globalPosition(globalPosition)
@@ -74,6 +74,7 @@ public:
         , m_clickCount(clickCount)
         , m_synthesized(synthesized)
     {
+        m_pointerProperties.pointerType = pointerType;
     }
 
     const WebPointerProperties& pointerProperties() const { return m_pointerProperties; }
