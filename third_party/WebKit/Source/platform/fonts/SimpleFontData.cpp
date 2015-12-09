@@ -236,11 +236,6 @@ void SimpleFontData::platformInit()
         m_avgCharWidth = xHeight;
         const Glyph xGlyph = glyphForCharacter('x');
         if (xGlyph) {
-            // In widthForGlyph(), xGlyph will be compared with
-            // m_zeroWidthSpaceGlyph, which isn't initialized yet here.
-            // Initialize it with zero to make sure widthForGlyph() returns
-            // the right width.
-            m_zeroWidthSpaceGlyph = 0;
             m_avgCharWidth = widthForGlyph(xGlyph);
         }
 #if !OS(MACOSX)
@@ -258,15 +253,10 @@ void SimpleFontData::platformGlyphInit()
         m_spaceGlyph = 0;
         m_spaceWidth = 0;
         m_zeroGlyph = 0;
-        m_zeroWidthSpaceGlyph = 0;
         m_missingGlyphData.fontData = this;
         m_missingGlyphData.glyph = 0;
         return;
     }
-
-    // Ask for the glyph for 0 to avoid paging in ZERO WIDTH SPACE. Control characters, including 0,
-    // are mapped to the ZERO WIDTH SPACE glyph.
-    m_zeroWidthSpaceGlyph = glyphForCharacter(0);
 
     // Nasty hack to determine if we should round or ceil space widths.
     // If the font is monospace or fake monospace we ceil to ensure that
@@ -276,14 +266,6 @@ void SimpleFontData::platformGlyphInit()
     m_spaceWidth = width;
     m_zeroGlyph = glyphForCharacter('0');
     m_fontMetrics.setZeroWidth(widthForGlyph(m_zeroGlyph));
-
-    // Force the glyph for ZERO WIDTH SPACE to have zero width, unless it is shared with SPACE.
-    // Helvetica is an example of a non-zero width ZERO WIDTH SPACE glyph.
-    // See <http://bugs.webkit.org/show_bug.cgi?id=13178>
-    if (m_zeroWidthSpaceGlyph == m_spaceGlyph) {
-        m_zeroWidthSpaceGlyph = 0;
-        WTF_LOG_ERROR("Font maps SPACE and ZERO WIDTH SPACE to the same glyph. Glyph width will not be overridden.");
-    }
 
     m_missingGlyphData.fontData = this;
     m_missingGlyphData.glyph = 0;

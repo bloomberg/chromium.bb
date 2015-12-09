@@ -673,11 +673,6 @@ void HarfBuzzShaper::insertRunIntoShapeResult(ShapeResult* result,
         if (isClusterEnd)
             spacing += adjustSpacing(run.get(), i, currentCharacterIndex, *directionOffset, totalAdvance);
 
-        if (currentFontData->isZeroWidthSpaceGlyph(glyph)) {
-            run->setGlyphAndPositions(i, glyph, 0, 0, 0);
-            continue;
-        }
-
         advance += spacing;
         if (m_textRun.rtl()) {
             // In RTL, spacing should be added to left side of glyphs.

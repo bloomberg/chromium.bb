@@ -41,6 +41,13 @@ crbug.com/527242 virtual/spv2/paint/invalidation/spv2/cached-change-row-border-w
 crbug.com/527242 virtual/spv2/paint/invalidation/spv2/cached-change-table-border-width.html [ Failure ]
 crbug.com/527242 virtual/spv2/paint/invalidation/spv2/cached-change-tbody-border-width.html [ Failure ]
 
+crbug.com/566031 fast/repaint/japanese-rl-selection-clear.html [ NeedsRebaseline ]
+crbug.com/566031 fast/repaint/japanese-rl-selection-repaint.html [ NeedsRebaseline ]
+crbug.com/566031 fast/writing-mode/japanese-lr-selection.html [ NeedsRebaseline ]
+crbug.com/566031 fast/writing-mode/japanese-rl-selection.html [ NeedsRebaseline ]
+crbug.com/566031 virtual/syncpaint/fast/repaint/japanese-rl-selection-clear.html [ NeedsRebaseline ]
+crbug.com/566031 virtual/syncpaint/fast/repaint/japanese-rl-selection-repaint.html [ NeedsRebaseline ]
+
 crbug.com/536138 virtual/spv2/paint/invalidation/repaint-subsequence-on-ancestor-clip-change.html [ Failure ]
 
 crbug.com/537172 [ Mac10.6 XP Win10 ] virtual/spv2/paint/invalidation/spv2/background-image-paint-invalidation.html [ Failure ]
