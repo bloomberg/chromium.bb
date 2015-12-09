@@ -385,15 +385,11 @@ public:
 
     bool startsWith(StringImpl* str, TextCaseSensitivity caseSensitivity = TextCaseSensitive) { return ((caseSensitivity == TextCaseSensitive) ? reverseFind(str, 0) : reverseFindIgnoringCase(str, 0)) == 0; }
     bool startsWith(UChar) const;
-    bool startsWith(const char*, unsigned matchLength, TextCaseSensitivity) const;
-    template<unsigned matchLength>
-    bool startsWith(const char (&prefix)[matchLength], TextCaseSensitivity caseSensitivity = TextCaseSensitive) const { return startsWith(prefix, matchLength - 1, caseSensitivity); }
+    bool startsWith(const char*, unsigned matchLength) const;
 
     bool endsWith(StringImpl*, TextCaseSensitivity = TextCaseSensitive);
     bool endsWith(UChar) const;
-    bool endsWith(const char*, unsigned matchLength, TextCaseSensitivity) const;
-    template<unsigned matchLength>
-    bool endsWith(const char (&prefix)[matchLength], TextCaseSensitivity caseSensitivity = TextCaseSensitive) const { return endsWith(prefix, matchLength - 1, caseSensitivity); }
+    bool endsWith(const char*, unsigned matchLength) const;
 
     PassRefPtr<StringImpl> replace(UChar, UChar);
     PassRefPtr<StringImpl> replace(UChar, StringImpl*);

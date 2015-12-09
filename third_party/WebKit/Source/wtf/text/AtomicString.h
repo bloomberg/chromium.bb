@@ -107,16 +107,16 @@ public:
     bool startsWith(UChar character) const
         { return m_string.startsWith(character); }
     template<unsigned matchLength>
-    bool startsWith(const char (&prefix)[matchLength], TextCaseSensitivity caseSensitivity = TextCaseSensitive) const
-        { return m_string.startsWith<matchLength>(prefix, caseSensitivity); }
+    bool startsWith(const char (&prefix)[matchLength]) const
+        { return m_string.startsWith<matchLength>(prefix); }
 
     bool endsWith(const String& s, TextCaseSensitivity caseSensitivity = TextCaseSensitive) const
         { return m_string.endsWith(s, caseSensitivity); }
     bool endsWith(UChar character) const
         { return m_string.endsWith(character); }
     template<unsigned matchLength>
-    bool endsWith(const char (&prefix)[matchLength], TextCaseSensitivity caseSensitivity = TextCaseSensitive) const
-        { return m_string.endsWith<matchLength>(prefix, caseSensitivity); }
+    bool endsWith(const char (&prefix)[matchLength]) const
+        { return m_string.endsWith<matchLength>(prefix); }
 
     AtomicString lower() const;
     AtomicString upper() const { return AtomicString(impl()->upper()); }
