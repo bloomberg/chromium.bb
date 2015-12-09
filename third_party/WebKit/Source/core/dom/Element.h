@@ -542,9 +542,10 @@ public:
 
     // Helpers for V8DOMActivityLogger::logEvent.  They call logEvent only if
     // the element is inDocument() and the context is an isolated world.
-    void logEventIfIsolatedWorldAndInDocument(const String& eventName, const String& arg1, const String& arg2);
-    void logEventIfIsolatedWorldAndInDocument(const String& eventName, const String& arg1, const String& arg2, const String& arg3);
-    void logEventIfIsolatedWorldAndInDocument(const String& eventName, const String& arg1, const String& arg2, const String& arg3, const String& arg4);
+    void logAddElementIfIsolatedWorldAndInDocument(const char element[], const QualifiedName& attr1);
+    void logAddElementIfIsolatedWorldAndInDocument(const char element[], const QualifiedName& attr1, const QualifiedName& attr2);
+    void logAddElementIfIsolatedWorldAndInDocument(const char element[], const QualifiedName& attr1, const QualifiedName& attr2, const QualifiedName& attr3);
+    void logUpdateAttributeIfIsolatedWorldAndInDocument(const char element[], const QualifiedName& attributeName, const AtomicString& oldValue, const AtomicString& newValue);
 
     DECLARE_VIRTUAL_TRACE();
 

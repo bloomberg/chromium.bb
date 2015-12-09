@@ -152,7 +152,7 @@ bool HTMLFormElement::layoutObjectIsNeeded(const ComputedStyle& style)
 Node::InsertionNotificationRequest HTMLFormElement::insertedInto(ContainerNode* insertionPoint)
 {
     HTMLElement::insertedInto(insertionPoint);
-    logEventIfIsolatedWorldAndInDocument("blinkAddElement", "form", fastGetAttribute(methodAttr), fastGetAttribute(actionAttr));
+    logAddElementIfIsolatedWorldAndInDocument("form", methodAttr, actionAttr);
     if (insertionPoint->inDocument())
         this->document().didAssociateFormControl(this);
     return InsertionDone;
@@ -508,7 +508,7 @@ void HTMLFormElement::parseAttribute(const QualifiedName& name, const AtomicStri
         KURL actionURL = document().completeURL(m_attributes.action().isEmpty() ? document().url().string() : m_attributes.action());
         if (MixedContentChecker::isMixedFormAction(document().frame(), actionURL))
             UseCounter::count(document().frame(), UseCounter::MixedContentFormPresent);
-        logEventIfIsolatedWorldAndInDocument("blinkSetAttribute", "form", actionAttr.toString(), oldValue, value);
+        logUpdateAttributeIfIsolatedWorldAndInDocument("form", actionAttr, oldValue, value);
     } else if (name == targetAttr) {
         m_attributes.setTarget(value);
     } else if (name == methodAttr) {

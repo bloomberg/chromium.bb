@@ -110,7 +110,7 @@ void HTMLIFrameElement::parseAttribute(const QualifiedName& name, const AtomicSt
             SecurityPolicy::referrerPolicyFromString(value, &m_referrerPolicy);
     } else {
         if (name == srcAttr)
-            logEventIfIsolatedWorldAndInDocument("blinkSetAttribute", "iframe", srcAttr.toString(), oldValue, value);
+            logUpdateAttributeIfIsolatedWorldAndInDocument("iframe", srcAttr, oldValue, value);
         HTMLFrameElementBase::parseAttribute(name, oldValue, value);
     }
 }
@@ -130,7 +130,7 @@ Node::InsertionNotificationRequest HTMLIFrameElement::insertedInto(ContainerNode
     InsertionNotificationRequest result = HTMLFrameElementBase::insertedInto(insertionPoint);
     if (insertionPoint->inDocument() && document().isHTMLDocument() && !insertionPoint->isInShadowTree())
         toHTMLDocument(document()).addExtraNamedItem(m_name);
-    logEventIfIsolatedWorldAndInDocument("blinkAddElement", "iframe", fastGetAttribute(srcAttr));
+    logAddElementIfIsolatedWorldAndInDocument("iframe", srcAttr);
     return result;
 }
 

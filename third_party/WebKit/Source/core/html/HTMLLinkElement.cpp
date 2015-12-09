@@ -168,7 +168,7 @@ void HTMLLinkElement::parseAttribute(const QualifiedName& name, const AtomicStri
         process();
     } else if (name == hrefAttr) {
         // Log href attribute before logging resource fetching in process().
-        logEventIfIsolatedWorldAndInDocument("blinkSetAttribute", "link", hrefAttr.toString(), oldValue, value);
+        logUpdateAttributeIfIsolatedWorldAndInDocument("link", hrefAttr, oldValue, value);
         process();
     } else if (name == typeAttr) {
         m_type = value;
@@ -261,7 +261,7 @@ void HTMLLinkElement::process()
 Node::InsertionNotificationRequest HTMLLinkElement::insertedInto(ContainerNode* insertionPoint)
 {
     HTMLElement::insertedInto(insertionPoint);
-    logEventIfIsolatedWorldAndInDocument("blinkAddElement", "link", fastGetAttribute(relAttr), fastGetAttribute(hrefAttr));
+    logAddElementIfIsolatedWorldAndInDocument("link", relAttr, hrefAttr);
     if (!insertionPoint->inDocument())
         return InsertionDone;
 

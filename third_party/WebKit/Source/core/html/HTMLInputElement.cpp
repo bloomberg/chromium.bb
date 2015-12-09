@@ -776,7 +776,7 @@ void HTMLInputElement::parseAttribute(const QualifiedName& name, const AtomicStr
         UseCounter::count(document(), UseCounter::PrefixedDirectoryAttribute);
     } else {
         if (name == formactionAttr)
-            logEventIfIsolatedWorldAndInDocument("blinkSetAttribute", "input", formactionAttr.toString(), oldValue, value);
+            logUpdateAttributeIfIsolatedWorldAndInDocument("input", formactionAttr, oldValue, value);
         HTMLTextFormControlElement::parseAttribute(name, oldValue, value);
     }
     m_inputTypeView->attributeChanged();
@@ -1511,7 +1511,7 @@ Node::InsertionNotificationRequest HTMLInputElement::insertedInto(ContainerNode*
     if (insertionPoint->inDocument() && !form())
         addToRadioButtonGroup();
     resetListAttributeTargetObserver();
-    logEventIfIsolatedWorldAndInDocument("blinkAddElement", "input", fastGetAttribute(typeAttr), fastGetAttribute(formactionAttr));
+    logAddElementIfIsolatedWorldAndInDocument("input", typeAttr, formactionAttr);
     return InsertionShouldCallDidNotifySubtreeInsertions;
 }
 

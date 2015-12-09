@@ -3585,7 +3585,7 @@ bool Element::supportsStyleSharing() const
     return true;
 }
 
-void Element::logEventIfIsolatedWorldAndInDocument(const String& eventName, const String& arg1, const String& arg2)
+void Element::logAddElementIfIsolatedWorldAndInDocument(const char element[], const QualifiedName& attr1)
 {
     if (!inDocument())
         return;
@@ -3593,12 +3593,12 @@ void Element::logEventIfIsolatedWorldAndInDocument(const String& eventName, cons
     if (!activityLogger)
         return;
     Vector<String, 2> argv;
-    argv.append(arg1);
-    argv.append(arg2);
-    activityLogger->logEvent(eventName, argv.size(), argv.data());
+    argv.append(element);
+    argv.append(fastGetAttribute(attr1));
+    activityLogger->logEvent("blinkAddElement", argv.size(), argv.data());
 }
 
-void Element::logEventIfIsolatedWorldAndInDocument(const String& eventName, const String& arg1, const String& arg2, const String& arg3)
+void Element::logAddElementIfIsolatedWorldAndInDocument(const char element[], const QualifiedName& attr1, const QualifiedName& attr2)
 {
     if (!inDocument())
         return;
@@ -3606,13 +3606,13 @@ void Element::logEventIfIsolatedWorldAndInDocument(const String& eventName, cons
     if (!activityLogger)
         return;
     Vector<String, 3> argv;
-    argv.append(arg1);
-    argv.append(arg2);
-    argv.append(arg3);
-    activityLogger->logEvent(eventName, argv.size(), argv.data());
+    argv.append(element);
+    argv.append(fastGetAttribute(attr1));
+    argv.append(fastGetAttribute(attr2));
+    activityLogger->logEvent("blinkAddElement", argv.size(), argv.data());
 }
 
-void Element::logEventIfIsolatedWorldAndInDocument(const String& eventName, const String& arg1, const String& arg2, const String& arg3, const String& arg4)
+void Element::logAddElementIfIsolatedWorldAndInDocument(const char element[], const QualifiedName& attr1, const QualifiedName& attr2, const QualifiedName& attr3)
 {
     if (!inDocument())
         return;
@@ -3620,11 +3620,26 @@ void Element::logEventIfIsolatedWorldAndInDocument(const String& eventName, cons
     if (!activityLogger)
         return;
     Vector<String, 4> argv;
-    argv.append(arg1);
-    argv.append(arg2);
-    argv.append(arg3);
-    argv.append(arg4);
-    activityLogger->logEvent(eventName, argv.size(), argv.data());
+    argv.append(element);
+    argv.append(fastGetAttribute(attr1));
+    argv.append(fastGetAttribute(attr2));
+    argv.append(fastGetAttribute(attr3));
+    activityLogger->logEvent("blinkAddElement", argv.size(), argv.data());
+}
+
+void Element::logUpdateAttributeIfIsolatedWorldAndInDocument(const char element[], const QualifiedName& attributeName, const AtomicString& oldValue, const AtomicString& newValue)
+{
+    if (!inDocument())
+        return;
+    V8DOMActivityLogger* activityLogger = V8DOMActivityLogger::currentActivityLoggerIfIsolatedWorld();
+    if (!activityLogger)
+        return;
+    Vector<String, 4> argv;
+    argv.append(element);
+    argv.append(attributeName.toString());
+    argv.append(oldValue);
+    argv.append(newValue);
+    activityLogger->logEvent("blinkSetAttribute", argv.size(), argv.data());
 }
 
 DEFINE_TRACE(Element)
