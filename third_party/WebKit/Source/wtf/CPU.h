@@ -176,9 +176,12 @@
 #define WTF_CPU_64BIT 1
 #endif
 
-/* This defines CPU(64BIT). */
-#if defined(__mips__) && (_MIPS_SIM == _ABI64)
+/* CPU(MIPS), CPU(MIPS64) */
+#if defined(__mips__) && (__mips == 64)
+#define WTF_CPU_MIPS64 1
 #define WTF_CPU_64BIT 1
+#elif defined(__mips__)
+#define WTF_CPU_MIPS 1
 #endif
 
 #if !defined(WTF_CPU_64BIT)
