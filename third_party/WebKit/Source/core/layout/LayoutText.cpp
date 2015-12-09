@@ -1870,7 +1870,7 @@ void LayoutText::momentarilyRevealLastTypedCharacter(unsigned lastTypedCharacter
 
 PassRefPtr<AbstractInlineTextBox> LayoutText::firstAbstractInlineTextBox()
 {
-    return AbstractInlineTextBox::getOrCreate(this, m_firstTextBox);
+    return AbstractInlineTextBox::getOrCreate(LineLayoutText(this), m_firstTextBox);
 }
 
 void LayoutText::invalidateDisplayItemClients(const LayoutBoxModelObject& paintInvalidationContainer, PaintInvalidationReason invalidationReason, const LayoutRect* paintInvalidationRect) const

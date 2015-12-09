@@ -334,6 +334,11 @@ public:
         return LineLayoutItem(m_layoutObject->previousInPreOrder(stayWithin));
     }
 
+    FloatQuad localToAbsoluteQuad(const FloatQuad& quad, MapCoordinatesFlags mode = 0, bool* wasFixed = nullptr) const
+    {
+        return m_layoutObject->localToAbsoluteQuad(quad, mode, wasFixed);
+    }
+
 #ifndef NDEBUG
 
     const char* name() const

@@ -33,7 +33,7 @@
 
 #include "core/CoreExport.h"
 #include "core/dom/Range.h"
-#include "core/layout/LayoutText.h"
+#include "core/layout/api/LineLayoutText.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "wtf/HashMap.h"
 #include "wtf/RefPtr.h"
@@ -46,13 +46,13 @@ class InlineTextBox;
 // get information about InlineTextBoxes without tight coupling.
 class CORE_EXPORT AbstractInlineTextBox : public RefCounted<AbstractInlineTextBox> {
 private:
-    AbstractInlineTextBox(LayoutText* layoutText, InlineTextBox* inlineTextBox)
-        : m_layoutText(layoutText)
+    AbstractInlineTextBox(LineLayoutText lineLayoutItem, InlineTextBox* inlineTextBox)
+        : m_lineLayoutItem(lineLayoutItem)
         , m_inlineTextBox(inlineTextBox)
     {
     }
 
-    static PassRefPtr<AbstractInlineTextBox> getOrCreate(LayoutText*, InlineTextBox*);
+    static PassRefPtr<AbstractInlineTextBox> getOrCreate(LineLayoutText, InlineTextBox*);
     static void willDestroy(InlineTextBox*);
 
     friend class LayoutText;
@@ -75,7 +75,7 @@ public:
 
     ~AbstractInlineTextBox();
 
-    LayoutText* layoutText() const { return m_layoutText; }
+    LineLayoutText lineLayoutItem() const { return m_lineLayoutItem; }
 
     PassRefPtr<AbstractInlineTextBox> nextInlineTextBox() const;
     LayoutRect bounds() const;
@@ -93,7 +93,7 @@ private:
     void detach();
 
     // Weak ptrs; these are nulled when InlineTextBox::destroy() calls AbstractInlineTextBox::willDestroy.
-    LayoutText* m_layoutText;
+    LineLayoutText m_lineLayoutItem;
     InlineTextBox* m_inlineTextBox;
 
     typedef HashMap<InlineTextBox*, RefPtr<AbstractInlineTextBox>> InlineToAbstractInlineTextBoxHashMap;

@@ -51,7 +51,6 @@ public:
         setIsText(true);
     }
 
-    LayoutText& layoutObject() const { return toLayoutText(InlineBox::layoutObject()); }
     LineLayoutText lineLayoutItem() const { return LineLayoutText(InlineBox::lineLayoutItem()); }
 
     void destroy() final;
