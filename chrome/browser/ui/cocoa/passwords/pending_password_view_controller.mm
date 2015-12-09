@@ -6,11 +6,11 @@
 
 #import "chrome/browser/ui/cocoa/passwords/pending_password_view_controller.h"
 
+#include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/ui/chrome_style.h"
 #import "chrome/browser/ui/cocoa/hover_close_button.h"
 #import "chrome/browser/ui/cocoa/passwords/passwords_bubble_utils.h"
-#import "chrome/browser/ui/cocoa/passwords/passwords_list_view_controller.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "chrome/grit/generated_resources.h"
 #include "skia/ext/skia_utils_mac.h"
@@ -20,12 +20,7 @@
 
 const SkColor kWarmWelcomeColor = SkColorSetRGB(0x64, 0x64, 0x64);
 
-@interface ManagePasswordsBubblePendingViewController ()
-- (void)onSaveClicked:(id)sender;
-- (void)onNeverForThisSiteClicked:(id)sender;
-@end
-
-@implementation ManagePasswordsBubblePendingViewController
+@implementation PendingPasswordViewController
 
 - (id)initWithModel:(ManagePasswordsBubbleModel*)model
            delegate:(id<ManagePasswordsBubbleContentViewDelegate>)delegate {
@@ -33,20 +28,6 @@ const SkColor kWarmWelcomeColor = SkColorSetRGB(0x64, 0x64, 0x64);
     model_ = model;
   }
   return self;
-}
-
-- (NSButton*)defaultButton {
-  return saveButton_;
-}
-
-- (void)onSaveClicked:(id)sender {
-  model_->OnSaveClicked();
-  [delegate_ viewShouldDismiss];
-}
-
-- (void)onNeverForThisSiteClicked:(id)sender {
-  model_->OnNeverForThisSiteClicked();
-  [delegate_ viewShouldDismiss];
 }
 
 - (BOOL)textView:(NSTextView*)textView
@@ -67,6 +48,22 @@ const SkColor kWarmWelcomeColor = SkColorSetRGB(0x64, 0x64, 0x64);
   return button;
 }
 
+- (NSView*)createPasswordView {
+  // Empty implementation, it should be implemented in child class.
+  NOTREACHED();
+  return nil;
+}
+
+- (BOOL)shouldShowGoogleSmartLockWelcome {
+  return NO;
+}
+
+- (NSArray*)createButtonsAndAddThemToView:(NSView*)view {
+  // Empty implementation, it should be implemented in child class.
+  NOTREACHED();
+  return nil;
+}
+
 - (void)loadView {
   base::scoped_nsobject<NSView> view([[NSView alloc] initWithFrame:NSZeroRect]);
 
@@ -74,7 +71,7 @@ const SkColor kWarmWelcomeColor = SkColorSetRGB(0x64, 0x64, 0x64);
   // |  Title                        x |
   // |  username   password            |
   // |  Smart Lock  welcome (optional) |
-  // |                [Never]  [Save]  |
+  // |            [Button1] [Button2]  |
   // -----------------------------------
 
   // The title text depends on whether the user is signed in and therefore syncs
@@ -136,16 +133,11 @@ const SkColor kWarmWelcomeColor = SkColorSetRGB(0x64, 0x64, 0x64);
 
   // Password item.
   // It should be at least as wide as the box without the padding.
-  std::vector<const autofill::PasswordForm*> password_forms;
-  password_forms.push_back(&model_->pending_password());
-  passwordItem_.reset([[PasswordsListViewController alloc]
-      initWithModel:model_
-              forms:password_forms]);
-  NSView* password = [passwordItem_ view];
+  NSView* password = [self createPasswordView];
   [view addSubview:password];
 
   base::scoped_nsobject<NSTextField> warm_welcome;
-  if (model_->ShouldShowGoogleSmartLockWelcome()) {
+  if ([self shouldShowGoogleSmartLockWelcome]) {
     NSString* label_text =
         l10n_util::GetNSString(IDS_PASSWORD_MANAGER_SMART_LOCK_WELCOME);
     warm_welcome.reset([[self addLabel:label_text
@@ -157,21 +149,7 @@ const SkColor kWarmWelcomeColor = SkColorSetRGB(0x64, 0x64, 0x64);
     [warm_welcome setTextColor:color];
   }
 
-  // Save button.
-  saveButton_.reset(
-      [[self addButton:l10n_util::GetNSString(IDS_PASSWORD_MANAGER_SAVE_BUTTON)
-                toView:view
-                target:self
-                action:@selector(onSaveClicked:)] retain]);
-
-  // Never button.
-  NSString* neverButtonText =
-      l10n_util::GetNSString(IDS_PASSWORD_MANAGER_BUBBLE_BLACKLIST_BUTTON);
-  neverButton_.reset(
-      [[self addButton:neverButtonText
-                toView:view
-                target:self
-                action:@selector(onNeverForThisSiteClicked:)] retain]);
+  NSArray* buttons = [self createButtonsAndAddThemToView:view];
 
   // Compute the bubble width using the password item.
   const CGFloat contentWidth =
@@ -182,16 +160,16 @@ const SkColor kWarmWelcomeColor = SkColorSetRGB(0x64, 0x64, 0x64);
 
   // Buttons go on the bottom row and are right-aligned.
   // Start with [Save].
-  CGFloat curX = width - kFramePadding - NSWidth([saveButton_ frame]);
+  CGFloat curX = width - kFramePadding + kRelatedControlHorizontalPadding;
   CGFloat curY = kFramePadding;
-  [saveButton_ setFrameOrigin:NSMakePoint(curX, curY)];
 
-  // [Never] goes to the left of [Save].
-  curX -= kRelatedControlHorizontalPadding + NSWidth([neverButton_ frame]);
-  [neverButton_ setFrameOrigin:NSMakePoint(curX, curY)];
+  for (NSButton* button in buttons) {
+    curX -= kRelatedControlHorizontalPadding + NSWidth([button frame]);
+    [button setFrameOrigin:NSMakePoint(curX, curY)];
+  }
 
   curX = kFramePadding;
-  curY = NSMaxY([saveButton_ frame]) + kUnrelatedControlVerticalPadding;
+  curY = NSMaxY([buttons.firstObject frame]) + kUnrelatedControlVerticalPadding;
   // The Smart Lock warm welcome is placed above after some padding.
   if (warm_welcome) {
     [warm_welcome setFrameOrigin:NSMakePoint(curX, curY)];
@@ -220,17 +198,13 @@ const SkColor kWarmWelcomeColor = SkColorSetRGB(0x64, 0x64, 0x64);
   [self setView:view];
 }
 
+- (ManagePasswordsBubbleModel*)model {
+  return model_;
+}
+
 @end
 
-@implementation ManagePasswordsBubblePendingViewController (Testing)
-
-- (NSButton*)saveButton {
-  return saveButton_.get();
-}
-
-- (NSButton*)neverButton {
-  return neverButton_.get();
-}
+@implementation PendingPasswordViewController (Testing)
 
 - (NSButton*)closeButton {
   return closeButton_.get();

@@ -13,23 +13,29 @@
 class ManagePasswordsBubbleModel;
 @class PasswordsListViewController;
 
-// Manages the view that offers to save the user's password.
-@interface ManagePasswordsBubblePendingViewController
+// Base class for the views that offer to save/update the user's password.
+@interface PendingPasswordViewController
     : ManagePasswordsBubbleContentViewController<NSTextViewDelegate> {
  @private
   ManagePasswordsBubbleModel* model_;  // weak
-  base::scoped_nsobject<NSButton> saveButton_;
-  base::scoped_nsobject<NSButton> neverButton_;
   base::scoped_nsobject<NSButton> closeButton_;
-  base::scoped_nsobject<PasswordsListViewController> passwordItem_;
 }
 - (id)initWithModel:(ManagePasswordsBubbleModel*)model
            delegate:(id<ManagePasswordsBubbleContentViewDelegate>)delegate;
+
+// Creates a controller for showing username/password and returns its view.
+- (NSView*)createPasswordView;
+
+// Returns whether GoogleSmartLock warm welcome should be shown.
+- (BOOL)shouldShowGoogleSmartLockWelcome;
+
+// Creates buttons that should be shown in the bubble and returns them.
+- (NSArray*)createButtonsAndAddThemToView:(NSView*)view;
+
+@property(readonly) ManagePasswordsBubbleModel* model;
 @end
 
-@interface ManagePasswordsBubblePendingViewController (Testing)
-@property(readonly) NSButton* saveButton;
-@property(readonly) NSButton* neverButton;
+@interface PendingPasswordViewController (Testing)
 @property(readonly) NSButton* closeButton;
 @end
 

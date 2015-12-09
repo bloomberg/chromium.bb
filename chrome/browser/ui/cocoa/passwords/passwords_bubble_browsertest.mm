@@ -12,7 +12,7 @@
 #include "chrome/browser/ui/cocoa/location_bar/manage_passwords_decoration.h"
 #include "chrome/browser/ui/cocoa/passwords/passwords_bubble_cocoa.h"
 #include "chrome/browser/ui/cocoa/passwords/passwords_bubble_controller.h"
-#include "chrome/browser/ui/cocoa/passwords/pending_password_view_controller.h"
+#include "chrome/browser/ui/cocoa/passwords/save_pending_password_view_controller.h"
 #include "chrome/browser/ui/passwords/manage_passwords_test.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/test/test_utils.h"
@@ -76,7 +76,7 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleTest,
   EXPECT_FALSE(ManagePasswordsBubbleCocoa::instance());
   DoWithSwizzledNSWindow(^{ SetupPendingPassword(); });
   EXPECT_TRUE(ManagePasswordsBubbleCocoa::instance());
-  EXPECT_EQ([ManagePasswordsBubblePendingViewController class],
+  EXPECT_EQ([SavePendingPasswordViewController class],
             [controller().currentController class]);
   EXPECT_TRUE(view()->active());
 }

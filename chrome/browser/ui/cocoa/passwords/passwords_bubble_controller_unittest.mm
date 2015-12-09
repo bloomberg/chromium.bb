@@ -14,7 +14,7 @@
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #include "chrome/browser/ui/cocoa/passwords/base_passwords_controller_test.h"
 #import "chrome/browser/ui/cocoa/passwords/manage_passwords_view_controller.h"
-#import "chrome/browser/ui/cocoa/passwords/pending_password_view_controller.h"
+#import "chrome/browser/ui/cocoa/passwords/save_pending_password_view_controller.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller_mock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -49,7 +49,7 @@ class ManagePasswordsBubbleControllerTest
 
 TEST_F(ManagePasswordsBubbleControllerTest, PendingStateShouldHavePendingView) {
   SetUpPendingState();
-  EXPECT_EQ([ManagePasswordsBubblePendingViewController class],
+  EXPECT_EQ([SavePendingPasswordViewController class],
             [[controller() currentController] class]);
 }
 

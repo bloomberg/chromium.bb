@@ -10,7 +10,7 @@
 #import "chrome/browser/ui/cocoa/bubble_combobox.h"
 #include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "chrome/browser/ui/cocoa/passwords/base_passwords_controller_test.h"
-#import "chrome/browser/ui/cocoa/passwords/pending_password_view_controller.h"
+#import "chrome/browser/ui/cocoa/passwords/save_pending_password_view_controller.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller_mock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -18,10 +18,10 @@
 
 namespace {
 
-class ManagePasswordsBubblePendingViewControllerTest
+class SavePendingPasswordViewControllerTest
     : public ManagePasswordsControllerTest {
  public:
-  ManagePasswordsBubblePendingViewControllerTest() {}
+  SavePendingPasswordViewControllerTest() {}
 
   void SetUp() override {
     ManagePasswordsControllerTest::SetUp();
@@ -31,9 +31,9 @@ class ManagePasswordsBubblePendingViewControllerTest
 
   ContentViewDelegateMock* delegate() { return delegate_.get(); }
 
-  ManagePasswordsBubblePendingViewController* controller() {
+  SavePendingPasswordViewController* controller() {
     if (!controller_) {
-      controller_.reset([[ManagePasswordsBubblePendingViewController alloc]
+      controller_.reset([[SavePendingPasswordViewController alloc]
           initWithModel:GetModelAndCreateIfNull()
                delegate:delegate()]);
       [controller_ loadView];
@@ -42,11 +42,11 @@ class ManagePasswordsBubblePendingViewControllerTest
   }
 
  private:
-  base::scoped_nsobject<ManagePasswordsBubblePendingViewController> controller_;
+  base::scoped_nsobject<SavePendingPasswordViewController> controller_;
   base::scoped_nsobject<ContentViewDelegateMock> delegate_;
 };
 
-TEST_F(ManagePasswordsBubblePendingViewControllerTest,
+TEST_F(SavePendingPasswordViewControllerTest,
        ShouldSavePasswordAndDismissWhenSaveClicked) {
   EXPECT_CALL(*ui_controller(), SavePassword());
   EXPECT_CALL(*ui_controller(), NeverSavePassword()).Times(0);
@@ -55,7 +55,7 @@ TEST_F(ManagePasswordsBubblePendingViewControllerTest,
   EXPECT_TRUE([delegate() dismissed]);
 }
 
-TEST_F(ManagePasswordsBubblePendingViewControllerTest,
+TEST_F(SavePendingPasswordViewControllerTest,
        ShouldNeverAndDismissWhenNeverClicked) {
   EXPECT_CALL(*ui_controller(), SavePassword()).Times(0);
   EXPECT_CALL(*ui_controller(), NeverSavePassword());
@@ -64,8 +64,7 @@ TEST_F(ManagePasswordsBubblePendingViewControllerTest,
   EXPECT_TRUE([delegate() dismissed]);
 }
 
-TEST_F(ManagePasswordsBubblePendingViewControllerTest,
-       ShouldDismissWhenCrossClicked) {
+TEST_F(SavePendingPasswordViewControllerTest, ShouldDismissWhenCrossClicked) {
   EXPECT_CALL(*ui_controller(), SavePassword()).Times(0);
   EXPECT_CALL(*ui_controller(), NeverSavePassword()).Times(0);
   [controller().closeButton performClick:nil];
