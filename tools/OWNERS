@@ -9,7 +9,7 @@ scottmg@chromium.org
 thakis@chromium.org
 
 
-per-file bisect*.py=rsesek@chromium.org
+per-file bisect*.py=anantha@chromium.org
 per-file bisect*.py=rmcilroy@chromium.org
 per-file run-bisect*.py=rmcilroy@chromium.org
 per-file prepare-bisect*.py=simonhatch@chromium.org
