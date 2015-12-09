@@ -456,8 +456,7 @@
     'chromium.webrtc.fyi': {
       'Android GN': 'android_gn_release_bot',
       'Android GN (dbg)': 'android_gn_debug_bot',
-      'Linux GN': 'gn_release_bot',
-      'Linux GN (dbg)': 'gn_debug_bot',
+      'Linux Builder': 'gn_release_bot',
       'Mac GN': 'gn_release_bot',
       'Mac GN (dbg)': 'gn_debug_static_bot',
       'Win x64 GN': 'gn_release_bot_minimal_symbols',
