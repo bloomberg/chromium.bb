@@ -80,6 +80,11 @@ class OzonePlatformCast : public OzonePlatform {
     cursor_factory_.reset(new CursorFactoryOzone());
     input_controller_ = CreateStubInputController();
     gpu_platform_support_host_.reset(CreateStubGpuPlatformSupportHost());
+
+    // Enable dummy software rendering support if GPU process disabled
+    // Note: switch is kDisableGpu from content/public/common/content_switches.h
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch("disable-gpu"))
+      surface_factory_.reset(new SurfaceFactoryCast());
   }
   void InitializeGPU() override {
     surface_factory_.reset(new SurfaceFactoryCast(egl_platform_.Pass()));

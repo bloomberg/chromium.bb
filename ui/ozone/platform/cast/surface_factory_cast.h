@@ -18,17 +18,20 @@ namespace ui {
 // SurfaceFactoryOzone implementation for OzonePlatformCast.
 class SurfaceFactoryCast : public SurfaceFactoryOzone {
  public:
+  SurfaceFactoryCast();
   explicit SurfaceFactoryCast(
       scoped_ptr<chromecast::CastEglPlatform> egl_platform);
   ~SurfaceFactoryCast() override;
 
   // SurfaceFactoryOzone implementation:
+  scoped_ptr<SurfaceOzoneCanvas> CreateCanvasForWidget(
+      gfx::AcceleratedWidget widget) override;
   intptr_t GetNativeDisplay() override;
   scoped_ptr<SurfaceOzoneEGL> CreateEGLSurfaceForWidget(
       gfx::AcceleratedWidget widget) override;
   const int32* GetEGLSurfaceProperties(const int32* desired_list) override;
   scoped_refptr<NativePixmap> CreateNativePixmap(
-      gfx::AcceleratedWidget w,
+      gfx::AcceleratedWidget widget,
       gfx::Size size,
       gfx::BufferFormat format,
       gfx::BufferUsage usage) override;
