@@ -62,14 +62,14 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
         private static final float TOTAL_DURATION_MS = 220;
 
         /** Start time of the animation, from {@link SystemClock#uptimeMillis()}. */
-        private long mStartTime = 0;
+        private long mStartTimeInMs = 0;
 
         private boolean mRunning = false;
 
         /** Contains the size of the feedback animation for the most recent request. */
         private float mFeedbackSizeInPixels;
 
-        /** Lock to allow multithreaded access to {@link #mStartTime} and {@link #mRunning}. */
+        /** Lock to allow multithreaded access to {@link #mStartTimeInMs} and {@link #mRunning}. */
         private final Object mLock = new Object();
 
         private Paint mPaint = new Paint();
@@ -92,7 +92,7 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
 
             synchronized (mLock) {
                 mRunning = true;
-                mStartTime = SystemClock.uptimeMillis();
+                mStartTimeInMs = SystemClock.uptimeMillis();
                 mFeedbackSizeInPixels = getInputFeedbackSizeInPixels(feedbackType);
             }
         }
@@ -102,7 +102,17 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
             float progress;
             float size;
             synchronized (mLock) {
-                progress = (SystemClock.uptimeMillis() - mStartTime) / TOTAL_DURATION_MS;
+                // |mStartTimeInMs| is set and accessed on different threads (hence the lock).  It
+                // is possible for |mStartTimeInMs| to be updated when an animation is in progress.
+                // When this occurs, |radius| will eventually be set to 0 and used to initialize
+                // RadialGradient which requires the radius to be > 0.  This will result in a crash.
+                // In order to avoid this problem, we return early if the elapsed time is 0.
+                float elapsedTimeInMs = SystemClock.uptimeMillis() - mStartTimeInMs;
+                if (elapsedTimeInMs < 1) {
+                    return;
+                }
+
+                progress = elapsedTimeInMs / TOTAL_DURATION_MS;
                 if (progress >= 1) {
                     mRunning = false;
                     return;
@@ -244,6 +254,7 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
         canvas.drawColor(Color.BLACK);
         canvas.drawBitmap(image, 0, 0, new Paint());
 
+        // TODO(joedow): Replace the custom animation code with a standard Android implementation.
         boolean feedbackAnimationRunning = mFeedbackAnimator.isAnimationRunning();
         if (feedbackAnimationRunning) {
             float scaleFactor;
