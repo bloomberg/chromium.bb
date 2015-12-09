@@ -278,10 +278,6 @@ void MediaRouterDialogControllerImpl::PopulateDialog(
   MediaRouterUI* media_router_ui = static_cast<MediaRouterUI*>(
       media_router_dialog->GetWebUI()->GetController());
   DCHECK(media_router_ui);
-  if (!media_router_ui) {
-    Reset();
-    return;
-  }
 
   scoped_ptr<CreatePresentationConnectionRequest> create_connection_request(
       TakeCreateConnectionRequest());
