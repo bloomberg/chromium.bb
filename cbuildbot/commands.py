@@ -392,7 +392,7 @@ def SetupBoard(buildroot, board, usepkg, chrome_binhost_only=False,
   RunBuildScript(buildroot, cmd, extra_env=extra_env, enter_chroot=True)
 
 
-class MissingBinpkg(failures_lib.InfrastructureFailure):
+class MissingBinpkg(failures_lib.StepFailure):
   """Error class for when we are missing an essential binpkg."""
 
 
