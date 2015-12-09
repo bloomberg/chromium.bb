@@ -80,21 +80,6 @@ void V8InjectedScriptHost::internalConstructorNameCallback(const v8::FunctionCal
     v8::Local<v8::Object> object = info[0].As<v8::Object>();
     v8::Local<v8::String> result = object->GetConstructorName();
 
-    if (!result.IsEmpty() && toCoreStringWithUndefinedOrNullCheck(result) == "Object") {
-        v8::Local<v8::String> constructorSymbol = v8AtomicString(info.GetIsolate(), "constructor");
-        if (object->HasRealNamedProperty(constructorSymbol) && !object->HasRealNamedCallbackProperty(constructorSymbol)) {
-            v8::TryCatch tryCatch(info.GetIsolate());
-            v8::Local<v8::Value> constructor = object->GetRealNamedProperty(constructorSymbol);
-            if (!constructor.IsEmpty() && constructor->IsFunction()) {
-                v8::Local<v8::String> constructorName = functionDisplayName(v8::Local<v8::Function>::Cast(constructor));
-                if (!constructorName.IsEmpty() && !tryCatch.HasCaught())
-                    result = constructorName;
-            }
-        }
-        if (toCoreStringWithUndefinedOrNullCheck(result) == "Object" && object->IsFunction())
-            result = v8AtomicString(info.GetIsolate(), "Function");
-    }
-
     v8SetReturnValue(info, result);
 }
 

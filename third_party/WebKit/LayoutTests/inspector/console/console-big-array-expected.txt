@@ -216,5 +216,5 @@ console-big-array.html:55 Uint8Array[64160003]
     [64000000 … 64160002]
         [64000000 … 64159999]
         [64160000 … 64160002]
-    __proto__: Uint8Array
+    __proto__: Object
 
