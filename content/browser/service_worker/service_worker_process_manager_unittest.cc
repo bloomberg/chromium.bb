@@ -6,6 +6,8 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "content/browser/service_worker/service_worker_process_manager.h"
+#include "content/public/test/mock_render_process_host.h"
+#include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -35,14 +37,24 @@ class ServiceWorkerProcessManagerTest : public testing::Test {
   ServiceWorkerProcessManagerTest() {}
 
   void SetUp() override {
-    process_manager_.reset(new ServiceWorkerProcessManager(NULL));
+    browser_context_.reset(new TestBrowserContext);
+    process_manager_.reset(
+        new ServiceWorkerProcessManager(browser_context_.get()));
     pattern_ = GURL("http://www.example.com/");
     script_url_ = GURL("http://www.example.com/sw.js");
   }
 
-  void TearDown() override { process_manager_.reset(); }
+  void TearDown() override {
+    process_manager_->Shutdown();
+    process_manager_.reset();
+  }
+
+  scoped_ptr<MockRenderProcessHost> CreateRenderProcessHost() {
+    return make_scoped_ptr(new MockRenderProcessHost(browser_context_.get()));
+  }
 
  protected:
+  scoped_ptr<TestBrowserContext> browser_context_;
   scoped_ptr<ServiceWorkerProcessManager> process_manager_;
   GURL pattern_;
   GURL script_url_;
@@ -53,7 +65,7 @@ class ServiceWorkerProcessManagerTest : public testing::Test {
 };
 
 TEST_F(ServiceWorkerProcessManagerTest, SortProcess) {
-  // Process 1 has 2 ref, 2 has 3 refs and 3 has 1 refs.
+  // Process 1 has 2 refs, 2 has 3 refs and 3 has 1 ref.
   process_manager_->AddProcessReferenceToPattern(pattern_, 1);
   process_manager_->AddProcessReferenceToPattern(pattern_, 1);
   process_manager_->AddProcessReferenceToPattern(pattern_, 2);
@@ -72,7 +84,40 @@ TEST_F(ServiceWorkerProcessManagerTest, SortProcess) {
               testing::ElementsAre(2, 3));
 }
 
+TEST_F(ServiceWorkerProcessManagerTest, FindAvailableProcess) {
+  scoped_ptr<MockRenderProcessHost> host1(CreateRenderProcessHost());
+  scoped_ptr<MockRenderProcessHost> host2(CreateRenderProcessHost());
+  scoped_ptr<MockRenderProcessHost> host3(CreateRenderProcessHost());
+
+  // Process 1 has 2 refs, 2 has 3 refs and 3 has 1 ref.
+  process_manager_->AddProcessReferenceToPattern(pattern_, host1->GetID());
+  process_manager_->AddProcessReferenceToPattern(pattern_, host1->GetID());
+  process_manager_->AddProcessReferenceToPattern(pattern_, host2->GetID());
+  process_manager_->AddProcessReferenceToPattern(pattern_, host2->GetID());
+  process_manager_->AddProcessReferenceToPattern(pattern_, host2->GetID());
+  process_manager_->AddProcessReferenceToPattern(pattern_, host3->GetID());
+
+  // When all processes are in foreground, process 2 that has the highest
+  // refcount should be chosen.
+  EXPECT_EQ(host2->GetID(), process_manager_->FindAvailableProcess(pattern_));
+
+  // Backgrounded process 2 should be deprioritized.
+  host2->set_is_process_backgrounded(true);
+  EXPECT_EQ(host1->GetID(), process_manager_->FindAvailableProcess(pattern_));
+
+  // When all processes are in background, process 2 that has the highest
+  // refcount should be chosen.
+  host1->set_is_process_backgrounded(true);
+  host3->set_is_process_backgrounded(true);
+  EXPECT_EQ(host2->GetID(), process_manager_->FindAvailableProcess(pattern_));
+
+  // Process 3 should be chosen because it is the only foreground process.
+  host3->set_is_process_backgrounded(false);
+  EXPECT_EQ(host3->GetID(), process_manager_->FindAvailableProcess(pattern_));
+}
+
 TEST_F(ServiceWorkerProcessManagerTest, AllocateWorkerProcess_InShutdown) {
+  process_manager_->Shutdown();
   ASSERT_TRUE(process_manager_->IsShutdown());
 
   base::RunLoop run_loop;

@@ -162,6 +162,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   scoped_refptr<media::MediaKeys> GetCdm(int render_frame_id,
                                          int cdm_id) const override;
 #endif
+  bool IsProcessBackgrounded() const override;
 
   // IPC::Sender via RenderProcessHost.
   bool Send(IPC::Message* msg) override;

@@ -1130,6 +1130,10 @@ scoped_refptr<media::MediaKeys> RenderProcessHostImpl::GetCdm(
 }
 #endif
 
+bool RenderProcessHostImpl::IsProcessBackgrounded() const {
+  return is_process_backgrounded_;
+}
+
 void RenderProcessHostImpl::AddRoute(int32 routing_id,
                                      IPC::Listener* listener) {
   CHECK(!listeners_.Lookup(routing_id)) << "Found Routing ID Conflict: "

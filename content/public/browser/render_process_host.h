@@ -293,6 +293,9 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
                                                  int cdm_id) const = 0;
 #endif
 
+  // Returns true if this process currently has backgrounded priority.
+  virtual bool IsProcessBackgrounded() const = 0;
+
   // Returns the current number of active views in this process.  Excludes
   // any RenderViewHosts that are swapped out.
   size_t GetActiveViewCount();

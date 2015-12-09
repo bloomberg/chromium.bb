@@ -77,6 +77,8 @@ class CONTENT_EXPORT ServiceWorkerProcessManager {
  private:
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerProcessManagerTest, SortProcess);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerProcessManagerTest,
+                           FindAvailableProcess);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerProcessManagerTest,
                            AllocateWorkerProcess_InShutdown);
 
   // Information about the process for an EmbeddedWorkerInstance.
@@ -108,6 +110,10 @@ class CONTENT_EXPORT ServiceWorkerProcessManager {
 
   // Returns a process vector sorted by the reference count for the |pattern|.
   std::vector<int> SortProcessesForPattern(const GURL& pattern) const;
+
+  // Returns the id of an available process for this pattern, or -1 if there is
+  // none.
+  int FindAvailableProcess(const GURL& pattern);
 
   // These fields are only accessed on the UI thread.
   BrowserContext* browser_context_;

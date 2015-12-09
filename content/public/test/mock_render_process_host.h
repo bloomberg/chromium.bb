@@ -96,6 +96,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   scoped_refptr<media::MediaKeys> GetCdm(int render_frame_id,
                                          int cdm_id) const override;
 #endif
+  bool IsProcessBackgrounded() const override;
 
   // IPC::Sender via RenderProcessHost.
   bool Send(IPC::Message* msg) override;
@@ -112,6 +113,10 @@ class MockRenderProcessHost : public RenderProcessHost {
 
   void set_is_for_guests_only(bool is_for_guests_only) {
     is_for_guests_only_ = is_for_guests_only;
+  }
+
+  void set_is_process_backgrounded(bool is_process_backgrounded) {
+    is_process_backgrounded_ = is_process_backgrounded;
   }
 
   void SetProcessHandle(scoped_ptr<base::ProcessHandle> new_handle) {
@@ -137,6 +142,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   bool fast_shutdown_started_;
   bool deletion_callback_called_;
   bool is_for_guests_only_;
+  bool is_process_backgrounded_;
   scoped_ptr<base::ProcessHandle> process_handle;
 
   DISALLOW_COPY_AND_ASSIGN(MockRenderProcessHost);

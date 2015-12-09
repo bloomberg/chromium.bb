@@ -27,15 +27,6 @@ struct SecondGreater {
 
 }  // namespace
 
-static bool IncrementWorkerRefCountByPid(int process_id) {
-  RenderProcessHost* rph = RenderProcessHost::FromID(process_id);
-  if (!rph || rph->FastShutdownStarted())
-    return false;
-
-  static_cast<RenderProcessHostImpl*>(rph)->IncrementWorkerRefCount();
-  return true;
-}
-
 ServiceWorkerProcessManager::ProcessInfo::ProcessInfo(
     const scoped_refptr<SiteInstance>& site_instance)
     : site_instance(site_instance),
@@ -176,10 +167,11 @@ void ServiceWorkerProcessManager::AllocateWorkerProcess(
   DCHECK(!ContainsKey(instance_info_, embedded_worker_id))
       << embedded_worker_id << " already has a process allocated";
 
-  std::vector<int> sorted_candidates = SortProcessesForPattern(pattern);
-  for (int process_id : sorted_candidates) {
-    if (!IncrementWorkerRefCountByPid(process_id))
-      continue;
+  int process_id = FindAvailableProcess(pattern);
+  if (process_id != -1) {
+    RenderProcessHost* rph = RenderProcessHost::FromID(process_id);
+    DCHECK(rph);
+    static_cast<RenderProcessHostImpl*>(rph)->IncrementWorkerRefCount();
     instance_info_.insert(
         std::make_pair(embedded_worker_id, ProcessInfo(process_id)));
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
@@ -192,6 +184,7 @@ void ServiceWorkerProcessManager::AllocateWorkerProcess(
   scoped_refptr<SiteInstance> site_instance =
       SiteInstance::CreateForURL(browser_context_, script_url);
   RenderProcessHost* rph = site_instance->GetProcess();
+
   // This Init() call posts a task to the IO thread that adds the RPH's
   // ServiceWorkerDispatcherHost to the
   // EmbeddedWorkerRegistry::process_sender_map_.
@@ -261,6 +254,8 @@ std::vector<int> ServiceWorkerProcessManager::SortProcessesForPattern(
   if (it == pattern_processes_.end())
     return std::vector<int>();
 
+  // Prioritize higher refcount processes to choose the process which has more
+  // tabs and is less likely to be backgrounded by user action like tab close.
   std::vector<std::pair<int, int> > counted(
       it->second.begin(), it->second.end());
   std::sort(counted.begin(), counted.end(), SecondGreater());
@@ -269,6 +264,33 @@ std::vector<int> ServiceWorkerProcessManager::SortProcessesForPattern(
   for (size_t i = 0; i < counted.size(); ++i)
     result[i] = counted[i].first;
   return result;
+}
+
+int ServiceWorkerProcessManager::FindAvailableProcess(const GURL& pattern) {
+  RenderProcessHost* backgrounded_candidate = nullptr;
+
+  // Try to find an available foreground process.
+  std::vector<int> sorted_candidates = SortProcessesForPattern(pattern);
+  for (int process_id : sorted_candidates) {
+    RenderProcessHost* rph = RenderProcessHost::FromID(process_id);
+    if (!rph || rph->FastShutdownStarted())
+      continue;
+
+    // Keep a backgrounded process for a suboptimal choice.
+    if (rph->IsProcessBackgrounded()) {
+      if (!backgrounded_candidate)
+        backgrounded_candidate = rph;
+      continue;
+    }
+
+    return process_id;
+  }
+
+  // No foreground processes available; choose a backgrounded one.
+  if (backgrounded_candidate)
+    return backgrounded_candidate->GetID();
+
+  return -1;
 }
 
 }  // namespace content
