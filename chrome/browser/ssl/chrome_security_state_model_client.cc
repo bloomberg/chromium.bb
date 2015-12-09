@@ -13,6 +13,7 @@
 #include "content/public/browser/cert_store.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/origin_util.h"
 #include "content/public/common/ssl_status.h"
 #include "net/cert/x509_certificate.h"
 
@@ -51,6 +52,10 @@ bool ChromeSecurityStateModelClient::UsedPolicyInstalledCertificate() {
     return true;
 #endif
   return false;
+}
+
+bool ChromeSecurityStateModelClient::IsOriginSecure(const GURL& url) {
+  return content::IsOriginSecure(url);
 }
 
 void ChromeSecurityStateModelClient::GetVisibleSecurityState(

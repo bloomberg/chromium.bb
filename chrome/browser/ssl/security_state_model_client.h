@@ -34,6 +34,9 @@ class SecurityStateModelClient {
   // certificate installed by the system administrator.
   virtual bool UsedPolicyInstalledCertificate() = 0;
 
+  // Returns true if the given |url|'s origin should be considered secure.
+  virtual bool IsOriginSecure(const GURL& url) = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(SecurityStateModelClient);
 };

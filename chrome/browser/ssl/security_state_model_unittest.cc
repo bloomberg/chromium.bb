@@ -8,6 +8,7 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/cert_store.h"
+#include "content/public/common/origin_util.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/test_data_directory.h"
@@ -73,6 +74,10 @@ class TestSecurityStateModelClient : public SecurityStateModelClient {
   }
 
   bool UsedPolicyInstalledCertificate() override { return false; }
+
+  bool IsOriginSecure(const GURL& url) override {
+    return content::IsOriginSecure(url);
+  }
 
  private:
   content::SecurityStyle initial_security_style_;

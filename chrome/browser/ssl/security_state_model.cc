@@ -7,21 +7,16 @@
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/ssl/security_state_model_client.h"
-#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/pref_names.h"
-#include "chrome/common/pref_names.h"
-#include "content/public/common/origin_util.h"
 #include "net/ssl/ssl_cipher_suite_names.h"
 #include "net/ssl/ssl_connection_status_flags.h"
 
 namespace {
 
-// TODO(estark): move this to SecurityStateModelClient as this is
-// embedder-specific logic. https://crbug.com/515071
 SecurityStateModel::SecurityLevel GetSecurityLevelForNonSecureFieldTrial() {
+  // TODO(estark): componentize switches::kMarkNonSecureAs.
+  // https://crbug.com/515071
   std::string choice =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kMarkNonSecureAs);
@@ -102,7 +97,7 @@ SecurityStateModel::SecurityLevel GetSecurityLevelForRequest(
       return SecurityStateModel::NONE;
 
     case content::SECURITY_STYLE_UNAUTHENTICATED: {
-      if (!content::IsOriginSecure(url) && url.IsStandard())
+      if (!client->IsOriginSecure(url) && url.IsStandard())
         return GetSecurityLevelForNonSecureFieldTrial();
       return SecurityStateModel::NONE;
     }
