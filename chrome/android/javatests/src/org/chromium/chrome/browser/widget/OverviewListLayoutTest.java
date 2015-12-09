@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.widget;
 
 import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_PHONE;
+import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_TABLET;
 
 import android.os.SystemClock;
 import android.test.suitebuilder.annotation.MediumTest;
@@ -19,6 +20,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.compositor.overlays.strip.StripLayoutTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -26,6 +28,7 @@ import org.chromium.chrome.browser.widget.accessibility.AccessibilityTabModelLis
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.MenuUtils;
+import org.chromium.chrome.test.util.TabStripUtils;
 import org.chromium.chrome.test.util.browser.TabLoadObserver;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.Criteria;
@@ -406,5 +409,34 @@ public class OverviewListLayoutTest extends ChromeTabbedActivityTestBase {
         // Bring the tab switcher forward and check the title.
         toggleTabSwitcher(true);
         assertEquals("Page 2", getTabTitleOfListItem(0));
+    }
+
+    @Restriction(RESTRICTION_TYPE_TABLET)
+    @MediumTest
+    @Feature({"Accessibility"})
+    public void testCloseTabThroughTabStrip() throws InterruptedException, TimeoutException {
+        setupTabs();
+
+        getListItemAndDisableAnimations(0);
+        final CallbackHelper didReceiveClosureCommittedHelper = new CallbackHelper();
+        final TabModel model = getActivity().getCurrentTabModel();
+        model.addObserver(new EmptyTabModelObserver() {
+            @Override
+            public void tabClosureCommitted(Tab tab) {
+                didReceiveClosureCommittedHelper.notifyCalled();
+            }
+        });
+
+        StripLayoutTab tab = TabStripUtils.findStripLayoutTab(getActivity(), false,
+                model.getTabAt(0).getId());
+        TabStripUtils.clickCompositorButton(tab.getCloseButton(), this);
+        didReceiveClosureCommittedHelper.waitForCallback(0);
+
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                assertEquals("Tab not closed", 3, getList().getChildCount());
+            }
+        });
     }
 }
