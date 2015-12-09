@@ -82,10 +82,10 @@ component("gin") {
   ]
   deps = [
     "//base/third_party/dynamic_annotations",
+    "//crypto",
   ]
   if (v8_use_external_startup_data && is_win) {
     public_deps += [ ":gin_v8_snapshot_fingerprint" ]
-    deps += [ "//crypto:crypto" ]
     sources += [ "$target_gen_dir/v8_snapshot_fingerprint.cc" ]
     defines += [ "V8_VERIFY_EXTERNAL_STARTUP_DATA" ]
   }

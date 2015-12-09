@@ -42,7 +42,7 @@ check_targets = [
   "//device/*",
 
   #"//extensions/*",  # Lots of errors.
-  #"//gin/*",  # Easy.
+  "//gin/*",
   "//google_apis/*",
   "//google_update/*",
 
