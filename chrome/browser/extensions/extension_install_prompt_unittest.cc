@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
@@ -98,15 +100,18 @@ TEST_F(ExtensionInstallPromptUnitTest, PromptShowsWithheldPermissions) {
       FeatureSwitch::scripts_require_action(), true);
 
   scoped_refptr<const Extension> extension =
-      ExtensionBuilder().SetManifest(
-          DictionaryBuilder().Set("name", "foo")
-                             .Set("version", "1.0")
-                             .Set("manifest_version", 2)
-                             .Set("description", "Random Ext")
-                             .Set("permissions",
-                                  ListBuilder().Append("http://*/*")
-                                               .Append("http://www.google.com/")
-                                               .Append("tabs"))).Build();
+      ExtensionBuilder()
+          .SetManifest(DictionaryBuilder()
+                           .Set("name", "foo")
+                           .Set("version", "1.0")
+                           .Set("manifest_version", 2)
+                           .Set("description", "Random Ext")
+                           .Set("permissions",
+                                std::move(ListBuilder()
+                                              .Append("http://*/*")
+                                              .Append("http://www.google.com/")
+                                              .Append("tabs"))))
+          .Build();
 
   content::TestWebContentsFactory factory;
   ExtensionInstallPrompt prompt(factory.CreateWebContents(profile()));
@@ -127,15 +132,17 @@ TEST_F(ExtensionInstallPromptUnitTest, PromptShowsWithheldPermissions) {
 TEST_F(ExtensionInstallPromptUnitTest,
        DelegatedPromptShowsOptionalPermissions) {
   scoped_refptr<const Extension> extension =
-      ExtensionBuilder().SetManifest(
-          DictionaryBuilder().Set("name", "foo")
-                             .Set("version", "1.0")
-                             .Set("manifest_version", 2)
-                             .Set("description", "Random Ext")
-                             .Set("permissions",
-                                  ListBuilder().Append("clipboardRead"))
-                             .Set("optional_permissions",
-                                  ListBuilder().Append("tabs"))).Build();
+      ExtensionBuilder()
+          .SetManifest(DictionaryBuilder()
+                           .Set("name", "foo")
+                           .Set("version", "1.0")
+                           .Set("manifest_version", 2)
+                           .Set("description", "Random Ext")
+                           .Set("permissions", std::move(ListBuilder().Append(
+                                                   "clipboardRead")))
+                           .Set("optional_permissions",
+                                std::move(ListBuilder().Append("tabs"))))
+          .Build();
 
   content::TestWebContentsFactory factory;
   ExtensionInstallPrompt prompt(factory.CreateWebContents(profile()));

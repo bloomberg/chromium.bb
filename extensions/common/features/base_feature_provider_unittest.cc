@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <set>
 #include <string>
+#include <utility>
 
 #include "base/stl_util.h"
 #include "extensions/common/extension_builder.h"
@@ -99,16 +100,16 @@ TEST(BaseFeatureProviderTest, PermissionFeatureAvailability) {
 
   scoped_refptr<const Extension> app =
       ExtensionBuilder()
-          .SetManifest(DictionaryBuilder()
-                           .Set("name", "test app")
-                           .Set("version", "1")
-                           .Set("app",
-                                DictionaryBuilder().Set(
-                                    "background",
-                                    DictionaryBuilder().Set(
-                                        "scripts",
-                                        ListBuilder().Append("background.js"))))
-                           .Set("permissions", ListBuilder().Append("power")))
+          .SetManifest(
+              DictionaryBuilder()
+                  .Set("name", "test app")
+                  .Set("version", "1")
+                  .Set("app", DictionaryBuilder().Set(
+                                  "background",
+                                  DictionaryBuilder().Set(
+                                      "scripts", std::move(ListBuilder().Append(
+                                                     "background.js")))))
+                  .Set("permissions", std::move(ListBuilder().Append("power"))))
           .Build();
   ASSERT_TRUE(app.get());
   ASSERT_TRUE(app->is_platform_app());

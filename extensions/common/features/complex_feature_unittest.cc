@@ -5,6 +5,7 @@
 #include "extensions/common/features/complex_feature.h"
 
 #include <string>
+#include <utility>
 
 #include "extensions/common/features/simple_feature.h"
 #include "extensions/common/manifest.h"
@@ -23,18 +24,19 @@ TEST(ComplexFeatureTest, MultipleRulesWhitelist) {
   scoped_ptr<SimpleFeature> simple_feature(new SimpleFeature);
   scoped_ptr<base::DictionaryValue> rule(
       DictionaryBuilder()
-      .Set("whitelist", ListBuilder().Append(kIdFoo))
-      .Set("extension_types", ListBuilder()
-          .Append("extension")).Build());
+          .Set("whitelist", std::move(ListBuilder().Append(kIdFoo)))
+          .Set("extension_types", std::move(ListBuilder().Append("extension")))
+          .Build());
   simple_feature->Parse(rule.get());
   features->push_back(simple_feature.Pass());
 
   // Rule: "legacy_packaged_app", whitelist "bar".
   simple_feature.reset(new SimpleFeature);
   rule = DictionaryBuilder()
-      .Set("whitelist", ListBuilder().Append(kIdBar))
-      .Set("extension_types", ListBuilder()
-          .Append("legacy_packaged_app")).Build();
+             .Set("whitelist", std::move(ListBuilder().Append(kIdBar)))
+             .Set("extension_types",
+                  std::move(ListBuilder().Append("legacy_packaged_app")))
+             .Build();
   simple_feature->Parse(rule.get());
   features->push_back(simple_feature.Pass());
 
@@ -84,8 +86,8 @@ TEST(ComplexFeatureTest, Dependencies) {
   scoped_ptr<SimpleFeature> simple_feature(new SimpleFeature);
   scoped_ptr<base::DictionaryValue> rule =
       DictionaryBuilder()
-          .Set("dependencies",
-               ListBuilder().Append("manifest:content_security_policy"))
+          .Set("dependencies", std::move(ListBuilder().Append(
+                                   "manifest:content_security_policy")))
           .Build();
   simple_feature->Parse(rule.get());
   features->push_back(simple_feature.Pass());
@@ -93,7 +95,8 @@ TEST(ComplexFeatureTest, Dependencies) {
   // Rule which depends on an platform-app-only feature (serial).
   simple_feature.reset(new SimpleFeature);
   rule = DictionaryBuilder()
-             .Set("dependencies", ListBuilder().Append("permission:serial"))
+             .Set("dependencies",
+                  std::move(ListBuilder().Append("permission:serial")))
              .Build();
   simple_feature->Parse(rule.get());
   features->push_back(simple_feature.Pass());

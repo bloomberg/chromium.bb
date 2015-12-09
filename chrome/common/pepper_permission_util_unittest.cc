@@ -6,6 +6,7 @@
 
 #include <set>
 #include <string>
+#include <utility>
 
 #include "chrome/common/extensions/features/feature_channel.h"
 #include "components/crx_file/id_util.h"
@@ -30,8 +31,8 @@ scoped_refptr<Extension> CreateExtensionImportingModule(
           .Set("name", "Has Dependent Modules")
           .Set("version", "1.0")
           .Set("manifest_version", 2)
-          .Set("import",
-               ListBuilder().Append(DictionaryBuilder().Set("id", import_id)))
+          .Set("import", std::move(ListBuilder().Append(
+                             DictionaryBuilder().Set("id", import_id))))
           .Build();
 
   return ExtensionBuilder()
@@ -92,10 +93,11 @@ TEST(PepperPermissionUtilTest, SharedModuleWhitelisting) {
           .Set("manifest_version", 2)
           .Set("export",
                DictionaryBuilder()
-                   .Set("resources", ListBuilder().Append("*"))
+                   .Set("resources", std::move(ListBuilder().Append("*")))
                    // Add the extension to the whitelist.  This
                    // restricts import to |whitelisted_id| only.
-                   .Set("whitelist", ListBuilder().Append(whitelisted_id)))
+                   .Set("whitelist",
+                        std::move(ListBuilder().Append(whitelisted_id))))
           .Build();
   scoped_refptr<Extension> shared_module =
       ExtensionBuilder().SetManifest(shared_module_manifest.Pass()).Build();

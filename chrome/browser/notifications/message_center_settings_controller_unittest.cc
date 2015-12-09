@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <string>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
@@ -205,13 +206,14 @@ TEST_F(MessageCenterSettingsControllerTest, NotifierSortOrder) {
           .Set("name", "Foo")
           .Set("version", "1.0.0")
           .Set("manifest_version", 2)
-          .Set("app", extensions::DictionaryBuilder().Set(
-                          "background",
-                          extensions::DictionaryBuilder().Set(
-                              "scripts", extensions::ListBuilder().Append(
-                                             "background.js"))))
+          .Set("app",
+               extensions::DictionaryBuilder().Set(
+                   "background",
+                   extensions::DictionaryBuilder().Set(
+                       "scripts", std::move(extensions::ListBuilder().Append(
+                                      "background.js")))))
           .Set("permissions",
-               extensions::ListBuilder().Append("notifications")));
+               std::move(extensions::ListBuilder().Append("notifications"))));
   foo_app.SetID(kFooId);
   extension_service->AddExtension(foo_app.Build().get());
 
@@ -221,13 +223,14 @@ TEST_F(MessageCenterSettingsControllerTest, NotifierSortOrder) {
           .Set("name", "Bar")
           .Set("version", "1.0.0")
           .Set("manifest_version", 2)
-          .Set("app", extensions::DictionaryBuilder().Set(
-                          "background",
-                          extensions::DictionaryBuilder().Set(
-                              "scripts", extensions::ListBuilder().Append(
-                                             "background.js"))))
+          .Set("app",
+               extensions::DictionaryBuilder().Set(
+                   "background",
+                   extensions::DictionaryBuilder().Set(
+                       "scripts", std::move(extensions::ListBuilder().Append(
+                                      "background.js")))))
           .Set("permissions",
-               extensions::ListBuilder().Append("notifications")));
+               std::move(extensions::ListBuilder().Append("notifications"))));
   bar_app.SetID(kBarId);
   extension_service->AddExtension(bar_app.Build().get());
 
@@ -237,11 +240,12 @@ TEST_F(MessageCenterSettingsControllerTest, NotifierSortOrder) {
           .Set("name", "baz")
           .Set("version", "1.0.0")
           .Set("manifest_version", 2)
-          .Set("app", extensions::DictionaryBuilder().Set(
-                          "background",
-                          extensions::DictionaryBuilder().Set(
-                              "scripts", extensions::ListBuilder().Append(
-                                             "background.js")))));
+          .Set("app",
+               extensions::DictionaryBuilder().Set(
+                   "background",
+                   extensions::DictionaryBuilder().Set(
+                       "scripts", std::move(extensions::ListBuilder().Append(
+                                      "background.js"))))));
   baz_app.SetID(kBazId);
   extension_service->AddExtension(baz_app.Build().get());
 
@@ -254,13 +258,13 @@ TEST_F(MessageCenterSettingsControllerTest, NotifierSortOrder) {
           .Set("app",
                extensions::DictionaryBuilder().Set(
                    "urls",
-                   extensions::ListBuilder().Append(
-                       "http://localhost/extensions/hosted_app/main.html")))
+                   std::move(extensions::ListBuilder().Append(
+                       "http://localhost/extensions/hosted_app/main.html"))))
           .Set("launch",
                extensions::DictionaryBuilder().Set(
                    "urls",
-                   extensions::ListBuilder().Append(
-                       "http://localhost/extensions/hosted_app/main.html"))));
+                   std::move(extensions::ListBuilder().Append(
+                       "http://localhost/extensions/hosted_app/main.html")))));
 
   baf_app.SetID(kBafId);
   extension_service->AddExtension(baf_app.Build().get());

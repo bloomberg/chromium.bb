@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
@@ -197,15 +199,15 @@ class ExtensionMessageBubbleTest : public BrowserWithTestWindowTest {
       const std::string& id,
       Manifest::Location location) {
     ExtensionBuilder builder;
-    builder.SetManifest(DictionaryBuilder()
-                            .Set("name", std::string("Extension " + index))
-                            .Set("version", "1.0")
-                            .Set("manifest_version", 2)
-                            .Set("chrome_settings_overrides",
-                                 DictionaryBuilder().Set(
-                                     "startup_pages",
-                                     ListBuilder().Append(
-                                         "http://www.google.com"))));
+    builder.SetManifest(
+        DictionaryBuilder()
+            .Set("name", std::string("Extension " + index))
+            .Set("version", "1.0")
+            .Set("manifest_version", 2)
+            .Set("chrome_settings_overrides",
+                 DictionaryBuilder().Set("startup_pages",
+                                         std::move(ListBuilder().Append(
+                                             "http://www.google.com")))));
     builder.SetLocation(location);
     builder.SetID(id);
     service_->AddExtension(builder.Build().get());
@@ -242,12 +244,12 @@ class ExtensionMessageBubbleTest : public BrowserWithTestWindowTest {
       const std::string& id,
       Manifest::Location location) {
     ExtensionBuilder builder;
-    builder.SetManifest(DictionaryBuilder()
-                            .Set("name", std::string("Extension " + index))
-                            .Set("version", "1.0")
-                            .Set("manifest_version", 2)
-                            .Set("permissions",
-                                 ListBuilder().Append("proxy")));
+    builder.SetManifest(
+        DictionaryBuilder()
+            .Set("name", std::string("Extension " + index))
+            .Set("version", "1.0")
+            .Set("manifest_version", 2)
+            .Set("permissions", std::move(ListBuilder().Append("proxy"))));
 
     builder.SetLocation(location);
     builder.SetID(id);

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/renderer/extensions/chrome_extensions_dispatcher_delegate.h"
@@ -49,10 +51,11 @@ class RendererPermissionsPolicyDelegateTest : public testing::Test {
 scoped_refptr<const Extension> CreateTestExtension(const std::string& id) {
   return ExtensionBuilder()
       .SetManifest(DictionaryBuilder()
-          .Set("name", "Extension with ID " + id)
-          .Set("version", "1.0")
-          .Set("manifest_version", 2)
-          .Set("permissions", ListBuilder().Append("<all_urls>")))
+                       .Set("name", "Extension with ID " + id)
+                       .Set("version", "1.0")
+                       .Set("manifest_version", 2)
+                       .Set("permissions",
+                            std::move(ListBuilder().Append("<all_urls>"))))
       .SetID(id)
       .Build();
 }

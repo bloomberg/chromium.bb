@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/json/json_file_value_serializer.h"
 #include "base/json/json_writer.h"
 #include "base/strings/string_util.h"
@@ -80,19 +82,19 @@ class ExtensionInfoGeneratorUnitTest : public ExtensionServiceTestBase {
 
   const scoped_refptr<const Extension> CreateExtension(
       const std::string& name,
-      ListBuilder& permissions) {
+      ListBuilder permissions) {
     const std::string kId = crx_file::id_util::GenerateId(name);
     scoped_refptr<const Extension> extension =
-        ExtensionBuilder().SetManifest(
-                               DictionaryBuilder()
-                                   .Set("name", name)
-                                   .Set("description", "an extension")
-                                   .Set("manifest_version", 2)
-                                   .Set("version", "1.0.0")
-                                   .Set("permissions", permissions))
-                          .SetLocation(Manifest::INTERNAL)
-                          .SetID(kId)
-                          .Build();
+        ExtensionBuilder()
+            .SetManifest(DictionaryBuilder()
+                             .Set("name", name)
+                             .Set("description", "an extension")
+                             .Set("manifest_version", 2)
+                             .Set("version", "1.0.0")
+                             .Set("permissions", std::move(permissions)))
+            .SetLocation(Manifest::INTERNAL)
+            .SetID(kId)
+            .Build();
 
     ExtensionRegistry::Get(profile())->AddEnabled(extension);
     PermissionsUpdater(profile()).InitializePermissions(extension.get());
@@ -177,12 +179,13 @@ TEST_F(ExtensionInfoGeneratorUnitTest, BasicInfoTest) {
   const char kVersion[] = "1.0.0.1";
   std::string id = crx_file::id_util::GenerateId("alpha");
   scoped_ptr<base::DictionaryValue> manifest =
-      DictionaryBuilder().Set("name", kName)
-                         .Set("version", kVersion)
-                         .Set("manifest_version", 2)
-                         .Set("description", "an extension")
-                         .Set("permissions",
-                              ListBuilder().Append("file://*/*")).Build();
+      DictionaryBuilder()
+          .Set("name", kName)
+          .Set("version", kVersion)
+          .Set("manifest_version", 2)
+          .Set("description", "an extension")
+          .Set("permissions", std::move(ListBuilder().Append("file://*/*")))
+          .Build();
   scoped_ptr<base::DictionaryValue> manifest_copy(manifest->DeepCopy());
   scoped_refptr<const Extension> extension =
       ExtensionBuilder().SetManifest(manifest.Pass())
@@ -345,9 +348,9 @@ TEST_F(ExtensionInfoGeneratorUnitTest, ExtensionInfoRunOnAllUrls) {
           FeatureSwitch::scripts_require_action(), true));
   // Two extensions - one with all urls, one without.
   scoped_refptr<const Extension> all_urls_extension = CreateExtension(
-      "all_urls", ListBuilder().Append(kAllHostsPermission).Pass());
+      "all_urls", std::move(ListBuilder().Append(kAllHostsPermission)));
   scoped_refptr<const Extension> no_urls_extension =
-      CreateExtension("no urls", ListBuilder().Pass());
+      CreateExtension("no urls", ListBuilder());
 
   scoped_ptr<developer::ExtensionInfo> info =
       GenerateExtensionInfo(all_urls_extension->id());
@@ -392,7 +395,7 @@ TEST_F(ExtensionInfoGeneratorUnitTest, ExtensionInfoRunOnAllUrls) {
 
   // Load another extension with all urls (so permissions get re-init'd).
   all_urls_extension = CreateExtension(
-      "all_urls_II", ListBuilder().Append(kAllHostsPermission).Pass());
+      "all_urls_II", std::move(ListBuilder().Append(kAllHostsPermission)));
 
   // Even though the extension has all_urls permission, the checkbox shouldn't
   // show up without the switch.

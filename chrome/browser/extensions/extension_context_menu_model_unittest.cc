@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 
+#include <utility>
+
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/active_script_controller.h"
@@ -159,7 +161,8 @@ const Extension* ExtensionContextMenuModelTest::AddExtensionWithHostPermission(
       .Set("manifest_version", 2)
       .Set(action_key, DictionaryBuilder().Pass());
   if (!host_permission.empty())
-    manifest.Set("permissions", ListBuilder().Append(host_permission));
+    manifest.Set("permissions",
+                 std::move(ListBuilder().Append(host_permission)));
   scoped_refptr<const Extension> extension =
       ExtensionBuilder()
           .SetManifest(manifest.Pass())

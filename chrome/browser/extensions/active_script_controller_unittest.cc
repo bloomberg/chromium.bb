@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <map>
+#include <utility>
 
 #include "base/values.h"
 #include "chrome/browser/extensions/active_script_controller.h"
@@ -99,18 +100,18 @@ ActiveScriptControllerUnitTest::~ActiveScriptControllerUnitTest() {
 
 const Extension* ActiveScriptControllerUnitTest::AddExtension() {
   const std::string kId = crx_file::id_util::GenerateId("all_hosts_extension");
-  extension_ = ExtensionBuilder()
-                   .SetManifest(
-                       DictionaryBuilder()
+  extension_ =
+      ExtensionBuilder()
+          .SetManifest(DictionaryBuilder()
                            .Set("name", "all_hosts_extension")
                            .Set("description", "an extension")
                            .Set("manifest_version", 2)
                            .Set("version", "1.0.0")
-                           .Set("permissions",
-                                ListBuilder().Append(kAllHostsPermission)))
-                   .SetLocation(Manifest::INTERNAL)
-                   .SetID(kId)
-                   .Build();
+                           .Set("permissions", std::move(ListBuilder().Append(
+                                                   kAllHostsPermission))))
+          .SetLocation(Manifest::INTERNAL)
+          .SetID(kId)
+          .Build();
 
   ExtensionRegistry::Get(profile())->AddEnabled(extension_);
   PermissionsUpdater(profile()).InitializePermissions(extension_.get());

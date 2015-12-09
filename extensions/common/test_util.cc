@@ -4,6 +4,8 @@
 
 #include "extensions/common/test_util.h"
 
+#include <utility>
+
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/value_builder.h"
@@ -29,8 +31,8 @@ ExtensionBuilder& BuildApp(ExtensionBuilder& builder) {
                extensions::DictionaryBuilder().Set(
                    "background",
                    extensions::DictionaryBuilder().Set(
-                       "scripts",
-                       extensions::ListBuilder().Append("background.js")))));
+                       "scripts", std::move(extensions::ListBuilder().Append(
+                                      "background.js"))))));
 }
 
 scoped_refptr<Extension> CreateEmptyExtension() {

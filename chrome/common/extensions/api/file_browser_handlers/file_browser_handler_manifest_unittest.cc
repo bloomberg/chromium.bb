@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/strings/string_number_conversions.h"
 #include "chrome/common/extensions/api/file_browser_handlers/file_browser_handler.h"
 #include "chrome/common/extensions/manifest_tests/chrome_manifest_test.h"
@@ -34,13 +36,14 @@ TEST_F(FileBrowserHandlerManifestTest, GetHandlersRequiresPermission) {
       .Set("version", "1.0.0")
       .Set("manifest_version", 2)
       .Set("file_browser_handlers",
-           extensions::ListBuilder().Append(
+           std::move(extensions::ListBuilder().Append(
                extensions::DictionaryBuilder()
                    .Set("id", "open")
                    .Set("default_title", "open")
-                   .Set("file_filters", extensions::ListBuilder()
-                                            .Append("filesystem:*.txt")
-                                            .Append("filesystem:*.html"))));
+                   .Set("file_filters",
+                        std::move(extensions::ListBuilder()
+                                      .Append("filesystem:*.txt")
+                                      .Append("filesystem:*.html"))))));
   scoped_ptr<base::DictionaryValue> bad_manifest_value(
       bad_manifest_builder.Build());
 
@@ -49,7 +52,8 @@ TEST_F(FileBrowserHandlerManifestTest, GetHandlersRequiresPermission) {
   extensions::DictionaryBuilder good_manifest_builder(
       *make_scoped_ptr(bad_manifest_value->DeepCopy()).get());
   good_manifest_builder.Set(
-      "permissions", extensions::ListBuilder().Append("fileBrowserHandler"));
+      "permissions",
+      std::move(extensions::ListBuilder().Append("fileBrowserHandler")));
 
   extensions::ExtensionBuilder bad_app_builder;
   bad_app_builder.SetManifest(bad_manifest_value.Pass());
@@ -98,21 +102,22 @@ TEST_F(FileBrowserHandlerManifestTest, InvalidFileBrowserHandlers) {
 TEST_F(FileBrowserHandlerManifestTest, ValidFileBrowserHandler) {
   scoped_refptr<const Extension> extension =
       ExtensionBuilder()
-          .SetManifest(
-               DictionaryBuilder()
-                   .Set("name", "file browser handler test")
-                   .Set("version", "1.0.0")
-                   .Set("manifest_version", 2)
-                   .Set("permissions",
-                        extensions::ListBuilder().Append("fileBrowserHandler"))
-                   .Set("file_browser_handlers",
-                        ListBuilder().Append(
-                            DictionaryBuilder()
-                                .Set("id", "ExtremelyCoolAction")
-                                .Set("default_title", "Be Amazed")
-                                .Set("default_icon", "icon.png")
-                                .Set("file_filters", ListBuilder().Append(
-                                                         "filesystem:*.txt")))))
+          .SetManifest(DictionaryBuilder()
+                           .Set("name", "file browser handler test")
+                           .Set("version", "1.0.0")
+                           .Set("manifest_version", 2)
+                           .Set("permissions",
+                                std::move(extensions::ListBuilder().Append(
+                                    "fileBrowserHandler")))
+                           .Set("file_browser_handlers",
+                                std::move(ListBuilder().Append(
+                                    DictionaryBuilder()
+                                        .Set("id", "ExtremelyCoolAction")
+                                        .Set("default_title", "Be Amazed")
+                                        .Set("default_icon", "icon.png")
+                                        .Set("file_filters",
+                                             std::move(ListBuilder().Append(
+                                                 "filesystem:*.txt")))))))
           .Build();
 
   ASSERT_TRUE(extension.get());
@@ -138,21 +143,22 @@ TEST_F(FileBrowserHandlerManifestTest, ValidFileBrowserHandlerMIMETypes) {
   scoped_refptr<const Extension> extension =
       ExtensionBuilder()
           .SetID(extension_misc::kQuickOfficeExtensionId)
-          .SetManifest(
-               DictionaryBuilder()
-                   .Set("name", "file browser handler test")
-                   .Set("version", "1.0.0")
-                   .Set("manifest_version", 2)
-                   .Set("permissions",
-                        extensions::ListBuilder().Append("fileBrowserHandler"))
-                   .Set("file_browser_handlers",
-                        ListBuilder().Append(
-                            DictionaryBuilder()
-                                .Set("id", "ID")
-                                .Set("default_title", "Default title")
-                                .Set("default_icon", "icon.png")
-                                .Set("file_filters", ListBuilder().Append(
-                                                         "filesystem:*.txt")))))
+          .SetManifest(DictionaryBuilder()
+                           .Set("name", "file browser handler test")
+                           .Set("version", "1.0.0")
+                           .Set("manifest_version", 2)
+                           .Set("permissions",
+                                std::move(extensions::ListBuilder().Append(
+                                    "fileBrowserHandler")))
+                           .Set("file_browser_handlers",
+                                std::move(ListBuilder().Append(
+                                    DictionaryBuilder()
+                                        .Set("id", "ID")
+                                        .Set("default_title", "Default title")
+                                        .Set("default_icon", "icon.png")
+                                        .Set("file_filters",
+                                             std::move(ListBuilder().Append(
+                                                 "filesystem:*.txt")))))))
           .Build();
 
   ASSERT_TRUE(extension.get());
@@ -171,23 +177,25 @@ TEST_F(FileBrowserHandlerManifestTest, ValidFileBrowserHandlerMIMETypes) {
 TEST_F(FileBrowserHandlerManifestTest, ValidFileBrowserHandlerWithCreate) {
   scoped_refptr<const Extension> extension =
       ExtensionBuilder()
-          .SetManifest(
-               DictionaryBuilder()
-                   .Set("name", "file browser handler test create")
-                   .Set("version", "1.0.0")
-                   .Set("manifest_version", 2)
-                   .Set("permissions",
-                        extensions::ListBuilder().Append("fileBrowserHandler"))
-                   .Set("file_browser_handlers",
-                        ListBuilder().Append(
-                            DictionaryBuilder()
-                                .Set("id", "ID")
-                                .Set("default_title", "Default title")
-                                .Set("default_icon", "icon.png")
-                                .Set("file_filters",
-                                     ListBuilder().Append("filesystem:*.txt"))
-                                .Set("file_access",
-                                     ListBuilder().Append("create")))))
+          .SetManifest(DictionaryBuilder()
+                           .Set("name", "file browser handler test create")
+                           .Set("version", "1.0.0")
+                           .Set("manifest_version", 2)
+                           .Set("permissions",
+                                std::move(extensions::ListBuilder().Append(
+                                    "fileBrowserHandler")))
+                           .Set("file_browser_handlers",
+                                std::move(ListBuilder().Append(
+                                    DictionaryBuilder()
+                                        .Set("id", "ID")
+                                        .Set("default_title", "Default title")
+                                        .Set("default_icon", "icon.png")
+                                        .Set("file_filters",
+                                             std::move(ListBuilder().Append(
+                                                 "filesystem:*.txt")))
+                                        .Set("file_access",
+                                             std::move(ListBuilder().Append(
+                                                 "create")))))))
           .Build();
 
   ASSERT_TRUE(extension.get());

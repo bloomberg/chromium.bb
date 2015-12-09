@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -40,19 +42,19 @@ scoped_refptr<const Extension> CreateExtensionWithPermissions(
   }
 
   DictionaryBuilder script;
-  script.Set("matches", scriptable_host_list.Pass())
-      .Set("js", ListBuilder().Append("foo.js"));
+  script.Set("matches", std::move(scriptable_host_list))
+      .Set("js", std::move(ListBuilder().Append("foo.js")));
 
   return ExtensionBuilder()
       .SetLocation(location)
-      .SetManifest(
-          DictionaryBuilder()
-              .Set("name", name)
-              .Set("description", "foo")
-              .Set("manifest_version", 2)
-              .Set("version", "0.1.2.3")
-              .Set("content_scripts", ListBuilder().Append(script.Pass()))
-              .Set("permissions", explicit_host_list.Pass()))
+      .SetManifest(DictionaryBuilder()
+                       .Set("name", name)
+                       .Set("description", "foo")
+                       .Set("manifest_version", 2)
+                       .Set("version", "0.1.2.3")
+                       .Set("content_scripts",
+                            std::move(ListBuilder().Append(script.Pass())))
+                       .Set("permissions", std::move(explicit_host_list)))
       .SetID(crx_file::id_util::GenerateId(name))
       .Build();
 }

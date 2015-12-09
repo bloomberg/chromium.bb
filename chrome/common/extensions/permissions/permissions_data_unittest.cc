@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
 #include <vector>
 
 #include "base/command_line.h"
@@ -60,14 +61,13 @@ scoped_refptr<const Extension> GetExtensionWithHostPermission(
     permissions.Append(host_permissions);
 
   return ExtensionBuilder()
-      .SetManifest(
-          DictionaryBuilder()
-              .Set("name", id)
-              .Set("description", "an extension")
-              .Set("manifest_version", 2)
-              .Set("version", "1.0.0")
-              .Set("permissions", permissions.Pass())
-              .Build())
+      .SetManifest(DictionaryBuilder()
+                       .Set("name", id)
+                       .Set("description", "an extension")
+                       .Set("manifest_version", 2)
+                       .Set("version", "1.0.0")
+                       .Set("permissions", std::move(permissions))
+                       .Build())
       .SetLocation(location)
       .SetID(id)
       .Build();

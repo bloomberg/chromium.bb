@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/webstore_installer.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -112,13 +114,13 @@ void WebstoreInstallerBrowserTest::OnExtensionInstallFailure(
 
 IN_PROC_BROWSER_TEST_F(WebstoreInstallerBrowserTest, WebstoreInstall) {
   scoped_ptr<base::DictionaryValue> manifest(
-      DictionaryBuilder().Set("name", kExtensionName)
-                         .Set("description", "Foo")
-                         .Set("manifest_version", 2)
-                         .Set("version", "1.0")
-                         .Set("permissions",
-                              ListBuilder().Append("tabs"))
-                         .Build());
+      DictionaryBuilder()
+          .Set("name", kExtensionName)
+          .Set("description", "Foo")
+          .Set("manifest_version", 2)
+          .Set("version", "1.0")
+          .Set("permissions", std::move(ListBuilder().Append("tabs")))
+          .Build());
 
   content::WebContents* active_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -153,13 +155,13 @@ IN_PROC_BROWSER_TEST_F(WebstoreInstallerBrowserTest, WebstoreInstall) {
 
 IN_PROC_BROWSER_TEST_F(WebstoreInstallerBrowserTest, SimultaneousInstall) {
   scoped_ptr<base::DictionaryValue> manifest(
-      DictionaryBuilder().Set("name", kExtensionName)
-                         .Set("description", "Foo")
-                         .Set("manifest_version", 2)
-                         .Set("version", "1.0")
-                         .Set("permissions",
-                              ListBuilder().Append("tabs"))
-                         .Build());
+      DictionaryBuilder()
+          .Set("name", kExtensionName)
+          .Set("description", "Foo")
+          .Set("manifest_version", 2)
+          .Set("version", "1.0")
+          .Set("permissions", std::move(ListBuilder().Append("tabs")))
+          .Build());
 
   content::WebContents* active_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();

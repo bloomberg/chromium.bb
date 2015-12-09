@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <string>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/macros.h"
@@ -63,12 +64,13 @@ IN_PROC_BROWSER_TEST_F(UberUIBrowserTest, HistoryOverride) {
 
   scoped_refptr<const extensions::Extension> extension =
       extensions::ExtensionBuilder()
-          .SetManifest(extensions::DictionaryBuilder()
-                           .Set("name", "History Override")
-                           .Set("version", "1")
-                           .Set("manifest_version", 2)
-                           .Set("permission",
-                                extensions::ListBuilder().Append("history")))
+          .SetManifest(
+              extensions::DictionaryBuilder()
+                  .Set("name", "History Override")
+                  .Set("version", "1")
+                  .Set("manifest_version", 2)
+                  .Set("permission",
+                       std::move(extensions::ListBuilder().Append("history"))))
           .Build();
 
   ExtensionService* service = extensions::ExtensionSystem::Get(

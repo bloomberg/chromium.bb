@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <string>
+#include <utility>
 
 #include "base/callback_forward.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -74,29 +75,31 @@ scoped_refptr<const Extension> GetTestExtension(bool platform_app) {
   if (platform_app) {
     app = ExtensionBuilder()
               .SetManifest(
-                   DictionaryBuilder()
-                       .Set("name", "test app")
-                       .Set("version", "1")
-                       .Set("app", DictionaryBuilder().Set(
-                                       "background",
-                                       DictionaryBuilder().Set(
-                                           "scripts", ListBuilder().Append(
-                                                          "background.js"))))
-                       .Set("permissions",
-                            ListBuilder().Append("unlimitedStorage")))
+                  DictionaryBuilder()
+                      .Set("name", "test app")
+                      .Set("version", "1")
+                      .Set("app",
+                           DictionaryBuilder().Set(
+                               "background",
+                               DictionaryBuilder().Set(
+                                   "scripts", std::move(ListBuilder().Append(
+                                                  "background.js")))))
+                      .Set("permissions",
+                           std::move(ListBuilder().Append("unlimitedStorage"))))
               .Build();
   } else {
-    app = ExtensionBuilder()
-              .SetManifest(DictionaryBuilder()
-                               .Set("name", "test app")
-                               .Set("version", "1")
-                               .Set("app", DictionaryBuilder().Set(
-                                               "launch",
-                                               DictionaryBuilder().Set(
-                                                   "local_path", "index.html")))
-                               .Set("permissions",
-                                    ListBuilder().Append("unlimitedStorage")))
-              .Build();
+    app =
+        ExtensionBuilder()
+            .SetManifest(
+                DictionaryBuilder()
+                    .Set("name", "test app")
+                    .Set("version", "1")
+                    .Set("app", DictionaryBuilder().Set(
+                                    "launch", DictionaryBuilder().Set(
+                                                  "local_path", "index.html")))
+                    .Set("permissions",
+                         std::move(ListBuilder().Append("unlimitedStorage"))))
+            .Build();
   }
   return app;
 }

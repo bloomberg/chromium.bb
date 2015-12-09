@@ -464,50 +464,48 @@ TEST_F(FileManagerFileTasksComplexTest, FindFileHandlerTasks) {
 
   // Foo.app can handle "text/plain" and "text/html".
   extensions::ExtensionBuilder foo_app;
-  foo_app.SetManifest(extensions::DictionaryBuilder()
-                      .Set("name", "Foo")
-                      .Set("version", "1.0.0")
-                      .Set("manifest_version", 2)
-                      .Set("app",
-                           extensions::DictionaryBuilder()
-                           .Set("background",
-                                extensions::DictionaryBuilder()
-                                .Set("scripts",
-                                     extensions::ListBuilder()
-                                     .Append("background.js"))))
-                      .Set("file_handlers",
-                           extensions::DictionaryBuilder()
-                           .Set("text",
-                                extensions::DictionaryBuilder()
-                                .Set("title", "Text")
-                                .Set("types",
-                                     extensions::ListBuilder()
-                                     .Append("text/plain")
-                                     .Append("text/html")))));
+  foo_app.SetManifest(
+      extensions::DictionaryBuilder()
+          .Set("name", "Foo")
+          .Set("version", "1.0.0")
+          .Set("manifest_version", 2)
+          .Set("app",
+               extensions::DictionaryBuilder().Set(
+                   "background",
+                   extensions::DictionaryBuilder().Set(
+                       "scripts", std::move(extensions::ListBuilder().Append(
+                                      "background.js")))))
+          .Set("file_handlers",
+               extensions::DictionaryBuilder().Set(
+                   "text",
+                   extensions::DictionaryBuilder()
+                       .Set("title", "Text")
+                       .Set("types", std::move(extensions::ListBuilder()
+                                                   .Append("text/plain")
+                                                   .Append("text/html"))))));
   foo_app.SetID(kFooId);
   extension_service_->AddExtension(foo_app.Build().get());
 
   // Bar.app can only handle "text/plain".
   extensions::ExtensionBuilder bar_app;
-  bar_app.SetManifest(extensions::DictionaryBuilder()
-                      .Set("name", "Bar")
-                      .Set("version", "1.0.0")
-                      .Set("manifest_version", 2)
-                      .Set("app",
-                           extensions::DictionaryBuilder()
-                           .Set("background",
-                                extensions::DictionaryBuilder()
-                                .Set("scripts",
-                                     extensions::ListBuilder()
-                                     .Append("background.js"))))
-                      .Set("file_handlers",
-                           extensions::DictionaryBuilder()
-                           .Set("text",
-                                extensions::DictionaryBuilder()
-                                .Set("title", "Text")
-                                .Set("types",
-                                     extensions::ListBuilder()
-                                     .Append("text/plain")))));
+  bar_app.SetManifest(
+      extensions::DictionaryBuilder()
+          .Set("name", "Bar")
+          .Set("version", "1.0.0")
+          .Set("manifest_version", 2)
+          .Set("app",
+               extensions::DictionaryBuilder().Set(
+                   "background",
+                   extensions::DictionaryBuilder().Set(
+                       "scripts", std::move(extensions::ListBuilder().Append(
+                                      "background.js")))))
+          .Set("file_handlers",
+               extensions::DictionaryBuilder().Set(
+                   "text",
+                   extensions::DictionaryBuilder()
+                       .Set("title", "Text")
+                       .Set("types", std::move(extensions::ListBuilder().Append(
+                                         "text/plain"))))));
   bar_app.SetID(kBarId);
   extension_service_->AddExtension(bar_app.Build().get());
 
@@ -574,17 +572,17 @@ TEST_F(FileManagerFileTasksComplexTest, FindFileBrowserHandlerTasks) {
           .Set("name", "Foo")
           .Set("version", "1.0.0")
           .Set("manifest_version", 2)
-          .Set("permissions",
-               extensions::ListBuilder().Append("fileBrowserHandler"))
-          .Set(
-              "file_browser_handlers",
-              extensions::ListBuilder().Append(
-                  extensions::DictionaryBuilder()
-                      .Set("id", "open")
-                      .Set("default_title", "open")
-                      .Set("file_filters", extensions::ListBuilder()
-                                               .Append("filesystem:*.txt")
-                                               .Append("filesystem:*.html")))));
+          .Set("permissions", std::move(extensions::ListBuilder().Append(
+                                  "fileBrowserHandler")))
+          .Set("file_browser_handlers",
+               std::move(extensions::ListBuilder().Append(
+                   extensions::DictionaryBuilder()
+                       .Set("id", "open")
+                       .Set("default_title", "open")
+                       .Set("file_filters",
+                            std::move(extensions::ListBuilder()
+                                          .Append("filesystem:*.txt")
+                                          .Append("filesystem:*.html")))))));
   foo_app.SetID(kFooId);
   extension_service_->AddExtension(foo_app.Build().get());
 
@@ -595,15 +593,16 @@ TEST_F(FileManagerFileTasksComplexTest, FindFileBrowserHandlerTasks) {
           .Set("name", "Bar")
           .Set("version", "1.0.0")
           .Set("manifest_version", 2)
-          .Set("permissions",
-               extensions::ListBuilder().Append("fileBrowserHandler"))
+          .Set("permissions", std::move(extensions::ListBuilder().Append(
+                                  "fileBrowserHandler")))
           .Set("file_browser_handlers",
-               extensions::ListBuilder().Append(
+               std::move(extensions::ListBuilder().Append(
                    extensions::DictionaryBuilder()
                        .Set("id", "open")
                        .Set("default_title", "open")
-                       .Set("file_filters", extensions::ListBuilder().Append(
-                                                "filesystem:*.txt")))));
+                       .Set("file_filters",
+                            std::move(extensions::ListBuilder().Append(
+                                "filesystem:*.txt")))))));
   bar_app.SetID(kBarId);
   extension_service_->AddExtension(bar_app.Build().get());
 
@@ -652,25 +651,24 @@ TEST_F(FileManagerFileTasksComplexTest, FindAllTypesOfTasks) {
   // Foo.app can handle "text/plain".
   // This is a packaged app (file handler).
   extensions::ExtensionBuilder foo_app;
-  foo_app.SetManifest(extensions::DictionaryBuilder()
-                      .Set("name", "Foo")
-                      .Set("version", "1.0.0")
-                      .Set("manifest_version", 2)
-                      .Set("app",
-                           extensions::DictionaryBuilder()
-                           .Set("background",
-                                extensions::DictionaryBuilder()
-                                .Set("scripts",
-                                     extensions::ListBuilder()
-                                     .Append("background.js"))))
-                      .Set("file_handlers",
-                           extensions::DictionaryBuilder()
-                           .Set("text",
-                                extensions::DictionaryBuilder()
-                                .Set("title", "Text")
-                                .Set("types",
-                                     extensions::ListBuilder()
-                                     .Append("text/plain")))));
+  foo_app.SetManifest(
+      extensions::DictionaryBuilder()
+          .Set("name", "Foo")
+          .Set("version", "1.0.0")
+          .Set("manifest_version", 2)
+          .Set("app",
+               extensions::DictionaryBuilder().Set(
+                   "background",
+                   extensions::DictionaryBuilder().Set(
+                       "scripts", std::move(extensions::ListBuilder().Append(
+                                      "background.js")))))
+          .Set("file_handlers",
+               extensions::DictionaryBuilder().Set(
+                   "text",
+                   extensions::DictionaryBuilder()
+                       .Set("title", "Text")
+                       .Set("types", std::move(extensions::ListBuilder().Append(
+                                         "text/plain"))))));
   foo_app.SetID(kFooId);
   extension_service_->AddExtension(foo_app.Build().get());
 
@@ -682,15 +680,16 @@ TEST_F(FileManagerFileTasksComplexTest, FindAllTypesOfTasks) {
           .Set("name", "Bar")
           .Set("version", "1.0.0")
           .Set("manifest_version", 2)
-          .Set("permissions",
-               extensions::ListBuilder().Append("fileBrowserHandler"))
+          .Set("permissions", std::move(extensions::ListBuilder().Append(
+                                  "fileBrowserHandler")))
           .Set("file_browser_handlers",
-               extensions::ListBuilder().Append(
+               std::move(extensions::ListBuilder().Append(
                    extensions::DictionaryBuilder()
                        .Set("id", "open")
                        .Set("default_title", "open")
-                       .Set("file_filters", extensions::ListBuilder().Append(
-                                                "filesystem:*.txt")))));
+                       .Set("file_filters",
+                            std::move(extensions::ListBuilder().Append(
+                                "filesystem:*.txt")))))));
   bar_app.SetID(kBarId);
   extension_service_->AddExtension(bar_app.Build().get());
 
@@ -773,15 +772,16 @@ TEST_F(FileManagerFileTasksComplexTest, FindAllTypesOfTasks_GoogleDocument) {
           .Set("name", "Bar")
           .Set("version", "1.0.0")
           .Set("manifest_version", 2)
-          .Set("permissions",
-               extensions::ListBuilder().Append("fileBrowserHandler"))
+          .Set("permissions", std::move(extensions::ListBuilder().Append(
+                                  "fileBrowserHandler")))
           .Set("file_browser_handlers",
-               extensions::ListBuilder().Append(
+               std::move(extensions::ListBuilder().Append(
                    extensions::DictionaryBuilder()
                        .Set("id", "open")
                        .Set("default_title", "open")
-                       .Set("file_filters", extensions::ListBuilder().Append(
-                                                "filesystem:*.gdoc")))));
+                       .Set("file_filters",
+                            std::move(extensions::ListBuilder().Append(
+                                "filesystem:*.gdoc")))))));
   bar_app.SetID(kBarId);
   extension_service_->AddExtension(bar_app.Build().get());
 
@@ -794,15 +794,16 @@ TEST_F(FileManagerFileTasksComplexTest, FindAllTypesOfTasks_GoogleDocument) {
           .Set("name", "Files")
           .Set("version", "1.0.0")
           .Set("manifest_version", 2)
-          .Set("permissions",
-               extensions::ListBuilder().Append("fileBrowserHandler"))
+          .Set("permissions", std::move(extensions::ListBuilder().Append(
+                                  "fileBrowserHandler")))
           .Set("file_browser_handlers",
-               extensions::ListBuilder().Append(
+               std::move(extensions::ListBuilder().Append(
                    extensions::DictionaryBuilder()
                        .Set("id", "open")
                        .Set("default_title", "open")
-                       .Set("file_filters", extensions::ListBuilder().Append(
-                                                "filesystem:*.gdoc")))));
+                       .Set("file_filters",
+                            std::move(extensions::ListBuilder().Append(
+                                "filesystem:*.gdoc")))))));
   files_app.SetID(kFileManagerAppId);
   extension_service_->AddExtension(files_app.Build().get());
 
@@ -837,87 +838,99 @@ TEST_F(FileManagerFileTasksComplexTest, FindFileHandlerTask_Generic) {
 
   // Foo app provides file handler for text/plain and all file types.
   extensions::ExtensionBuilder foo_app;
-  foo_app.SetManifest(extensions::DictionaryBuilder()
-                      .Set("name", "Foo")
-                      .Set("version", "1.0.0")
-                      .Set("manifest_version", 2)
-                      .Set("app", extensions::DictionaryBuilder()
-                           .Set("background", extensions::DictionaryBuilder()
-                                .Set("scripts", extensions::ListBuilder()
-                                    .Append("background.js"))))
-                      .Set("file_handlers",
-                           extensions::DictionaryBuilder()
-                           .Set("any",
-                                extensions::DictionaryBuilder()
-                                .Set("types", extensions::ListBuilder()
-                                     .Append("*/*")))
-                           .Set("text",
-                                extensions::DictionaryBuilder()
-                                .Set("types", extensions::ListBuilder()
-                                     .Append("text/plain")))));
+  foo_app.SetManifest(
+      extensions::DictionaryBuilder()
+          .Set("name", "Foo")
+          .Set("version", "1.0.0")
+          .Set("manifest_version", 2)
+          .Set("app",
+               extensions::DictionaryBuilder().Set(
+                   "background",
+                   extensions::DictionaryBuilder().Set(
+                       "scripts", std::move(extensions::ListBuilder().Append(
+                                      "background.js")))))
+          .Set("file_handlers",
+               extensions::DictionaryBuilder()
+                   .Set("any",
+                        extensions::DictionaryBuilder().Set(
+                            "types",
+                            std::move(extensions::ListBuilder().Append("*/*"))))
+                   .Set("text",
+                        extensions::DictionaryBuilder().Set(
+                            "types", std::move(extensions::ListBuilder().Append(
+                                         "text/plain"))))));
   foo_app.SetID(kFooId);
   extension_service_->AddExtension(foo_app.Build().get());
 
   // Bar app provides file handler for .txt and not provide generic file
   // handler.
   extensions::ExtensionBuilder bar_app;
-  bar_app.SetManifest(extensions::DictionaryBuilder()
-                      .Set("name", "Bar")
-                      .Set("version", "1.0.0")
-                      .Set("manifest_version", 2)
-                      .Set("app", extensions::DictionaryBuilder()
-                           .Set("background", extensions::DictionaryBuilder()
-                                .Set("scripts", extensions::ListBuilder()
-                                    .Append("background.js"))))
-                      .Set("file_handlers",
-                           extensions::DictionaryBuilder()
-                           .Set("text",
-                                extensions::DictionaryBuilder()
-                                .Set("extensions", extensions::ListBuilder()
-                                     .Append("txt")))));
+  bar_app.SetManifest(
+      extensions::DictionaryBuilder()
+          .Set("name", "Bar")
+          .Set("version", "1.0.0")
+          .Set("manifest_version", 2)
+          .Set("app",
+               extensions::DictionaryBuilder().Set(
+                   "background",
+                   extensions::DictionaryBuilder().Set(
+                       "scripts", std::move(extensions::ListBuilder().Append(
+                                      "background.js")))))
+          .Set("file_handlers",
+               extensions::DictionaryBuilder().Set(
+                   "text",
+                   extensions::DictionaryBuilder().Set(
+                       "extensions",
+                       std::move(extensions::ListBuilder().Append("txt"))))));
   bar_app.SetID(kBarId);
   extension_service_->AddExtension(bar_app.Build().get());
 
   // Baz app provides file handler for all extensions and images.
   extensions::ExtensionBuilder baz_app;
-  baz_app.SetManifest(extensions::DictionaryBuilder()
-                      .Set("name", "Baz")
-                      .Set("version", "1.0.0")
-                      .Set("manifest_version", 2)
-                      .Set("app", extensions::DictionaryBuilder()
-                           .Set("background", extensions::DictionaryBuilder()
-                                .Set("scripts", extensions::ListBuilder()
-                                    .Append("background.js"))))
-                      .Set("file_handlers",
-                           extensions::DictionaryBuilder()
-                           .Set("any",
-                                extensions::DictionaryBuilder()
-                                .Set("extensions", extensions::ListBuilder()
-                                     .Append("*")
-                                     .Append("bar")))
-                           .Set("image",
-                                extensions::DictionaryBuilder()
-                                .Set("types", extensions::ListBuilder()
-                                     .Append("image/*")))));
+  baz_app.SetManifest(
+      extensions::DictionaryBuilder()
+          .Set("name", "Baz")
+          .Set("version", "1.0.0")
+          .Set("manifest_version", 2)
+          .Set("app",
+               extensions::DictionaryBuilder().Set(
+                   "background",
+                   extensions::DictionaryBuilder().Set(
+                       "scripts", std::move(extensions::ListBuilder().Append(
+                                      "background.js")))))
+          .Set("file_handlers",
+               extensions::DictionaryBuilder()
+                   .Set("any",
+                        extensions::DictionaryBuilder().Set(
+                            "extensions", std::move(extensions::ListBuilder()
+                                                        .Append("*")
+                                                        .Append("bar"))))
+                   .Set("image",
+                        extensions::DictionaryBuilder().Set(
+                            "types", std::move(extensions::ListBuilder().Append(
+                                         "image/*"))))));
   baz_app.SetID(kBazId);
   extension_service_->AddExtension(baz_app.Build().get());
 
   // Qux app provides file handler for all types.
   extensions::ExtensionBuilder qux_app;
-  qux_app.SetManifest(extensions::DictionaryBuilder()
-                      .Set("name", "Qux")
-                      .Set("version", "1.0.0")
-                      .Set("manifest_version", 2)
-                      .Set("app", extensions::DictionaryBuilder()
-                           .Set("background", extensions::DictionaryBuilder()
-                                .Set("scripts", extensions::ListBuilder()
-                                    .Append("background.js"))))
-                      .Set("file_handlers",
-                           extensions::DictionaryBuilder()
-                           .Set("any",
-                                extensions::DictionaryBuilder()
-                                .Set("types", extensions::ListBuilder()
-                                     .Append("*")))));
+  qux_app.SetManifest(
+      extensions::DictionaryBuilder()
+          .Set("name", "Qux")
+          .Set("version", "1.0.0")
+          .Set("manifest_version", 2)
+          .Set("app",
+               extensions::DictionaryBuilder().Set(
+                   "background",
+                   extensions::DictionaryBuilder().Set(
+                       "scripts", std::move(extensions::ListBuilder().Append(
+                                      "background.js")))))
+          .Set("file_handlers",
+               extensions::DictionaryBuilder().Set(
+                   "any",
+                   extensions::DictionaryBuilder().Set(
+                       "types",
+                       std::move(extensions::ListBuilder().Append("*"))))));
   qux_app.SetID(kQuxId);
   extension_service_->AddExtension(qux_app.Build().get());
 

@@ -102,9 +102,10 @@ class ProcessManagerBrowserTest : public ExtensionBrowserTest {
         // To allow ExecuteScript* to work.
         .Set("content_security_policy",
              "script-src 'self' 'unsafe-eval'; object-src 'self'")
-        .Set("sandbox", DictionaryBuilder().Set(
-                            "pages", ListBuilder().Append("sandboxed.html")))
-        .Set("web_accessible_resources", ListBuilder().Append("*"));
+        .Set("sandbox",
+             DictionaryBuilder().Set(
+                 "pages", std::move(ListBuilder().Append("sandboxed.html"))))
+        .Set("web_accessible_resources", std::move(ListBuilder().Append("*")));
 
     if (has_background_process) {
       manifest.Set("background", DictionaryBuilder().Set("page", "bg.html"));

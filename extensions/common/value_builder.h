@@ -16,12 +16,8 @@
 // For methods that take other built types, you can pass the builder directly
 // to the setter without calling Build():
 //
-// DictionaryBuilder().Set("key", ListBuilder()
-//                         .Append("foo").Append("bar") /* No .Build() */);
-//
-// Because of limitations in C++03, and to avoid extra copies, you can't pass a
-// just-constructed Builder into another Builder's method directly. Use the
-// Pass() method.
+// DictionaryBuilder().Set("key", std::move(ListBuilder()
+//                         .Append("foo").Append("bar")) /* No .Build() */);
 //
 // The Build() method invalidates its builder, and returns ownership of the
 // built value.
@@ -35,9 +31,15 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
-#include "base/values.h"
+
+namespace base {
+class DictionaryValue;
+class ListValue;
+class Value;
+}
 
 namespace extensions {
 
@@ -51,6 +53,7 @@ class DictionaryBuilder {
 
   // Workaround to allow you to pass rvalue ExtensionBuilders by reference to
   // other functions.
+  // TODO(limasdf): Remove. Write move constructor instead.
   DictionaryBuilder& Pass() { return *this; }
 
   // Can only be called once, after which it's invalid to use the builder.
@@ -66,7 +69,7 @@ class DictionaryBuilder {
   DictionaryBuilder& Set(const std::string& path,
                          const base::string16& in_value);
   DictionaryBuilder& Set(const std::string& path, DictionaryBuilder& in_value);
-  DictionaryBuilder& Set(const std::string& path, ListBuilder& in_value);
+  DictionaryBuilder& Set(const std::string& path, ListBuilder in_value);
   DictionaryBuilder& Set(const std::string& path,
                          scoped_ptr<base::Value> in_value);
 
@@ -84,19 +87,19 @@ class ListBuilder {
   explicit ListBuilder(const base::ListValue& init);
   ~ListBuilder();
 
-  // Workaround to allow you to pass rvalue ExtensionBuilders by reference to
-  // other functions.
-  ListBuilder& Pass() { return *this; }
+  // Move constructor and operator=.
+  ListBuilder(ListBuilder&& other);
+  ListBuilder& operator=(ListBuilder&& other);
 
   // Can only be called once, after which it's invalid to use the builder.
-  scoped_ptr<base::ListValue> Build() { return list_.Pass(); }
+  scoped_ptr<base::ListValue> Build() { return std::move(list_); }
 
   ListBuilder& Append(int in_value);
   ListBuilder& Append(double in_value);
   ListBuilder& Append(const std::string& in_value);
   ListBuilder& Append(const base::string16& in_value);
   ListBuilder& Append(DictionaryBuilder& in_value);
-  ListBuilder& Append(ListBuilder& in_value);
+  ListBuilder& Append(ListBuilder in_value);
 
   // Named differently because overload resolution is too eager to
   // convert implicitly to bool.
@@ -104,6 +107,8 @@ class ListBuilder {
 
  private:
   scoped_ptr<base::ListValue> list_;
+
+  DISALLOW_COPY_AND_ASSIGN(ListBuilder);
 };
 
 }  // namespace extensions

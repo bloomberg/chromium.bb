@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <string>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
@@ -69,9 +70,9 @@ class LocationBarControllerUnitTest : public ChromeRenderViewHostTestHarness {
                                 const std::string& name) {
     DictionaryBuilder manifest;
     manifest.Set("name", name)
-            .Set("version", "1.0.0")
-            .Set("manifest_version", 2)
-            .Set("permissions", ListBuilder().Append("tabs"));
+        .Set("version", "1.0.0")
+        .Set("manifest_version", 2)
+        .Set("permissions", std::move(ListBuilder().Append("tabs")));
     if (has_page_actions) {
       manifest.Set("page_action", DictionaryBuilder()
               .Set("default_title", "Hello"));

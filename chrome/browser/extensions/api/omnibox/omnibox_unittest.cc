@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/values.h"
 #include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
 #include "chrome/common/extensions/api/omnibox.h"
@@ -41,21 +43,24 @@ void CompareClassification(const ACMatchClassifications& expected,
 // +       ddd
 // = nmmmmndddn
 TEST(ExtensionOmniboxTest, DescriptionStylesSimple) {
-  scoped_ptr<base::ListValue> list = ListBuilder()
-      .Append(42)
-      .Append(ListBuilder()
-        .Append(DictionaryBuilder()
-          .Set("content", "content")
-          .Set("description", "description")
-          .Set("descriptionStyles", ListBuilder()
-            .Append(DictionaryBuilder()
-              .Set("type", "match")
-              .Set("offset", 1)
-              .Set("length", 4))
-            .Append(DictionaryBuilder()
-              .Set("type", "dim")
-              .Set("offset", 6)
-              .Set("length", 3))))).Build();
+  scoped_ptr<base::ListValue> list =
+      ListBuilder()
+          .Append(42)
+          .Append(std::move(ListBuilder().Append(
+              DictionaryBuilder()
+                  .Set("content", "content")
+                  .Set("description", "description")
+                  .Set("descriptionStyles",
+                       std::move(ListBuilder()
+                                     .Append(DictionaryBuilder()
+                                                 .Set("type", "match")
+                                                 .Set("offset", 1)
+                                                 .Set("length", 4))
+                                     .Append(DictionaryBuilder()
+                                                 .Set("type", "dim")
+                                                 .Set("offset", 6)
+                                                 .Set("length", 3)))))))
+          .Build();
 
   ACMatchClassifications styles_expected;
   styles_expected.push_back(ACMatchClassification(0, kNone));
@@ -72,21 +77,24 @@ TEST(ExtensionOmniboxTest, DescriptionStylesSimple) {
       *params->suggest_results[0]));
 
   // Same input, but swap the order. Ensure it still works.
-  scoped_ptr<base::ListValue> swap_list = ListBuilder()
-      .Append(42)
-      .Append(ListBuilder()
-        .Append(DictionaryBuilder()
-          .Set("content", "content")
-          .Set("description", "description")
-          .Set("descriptionStyles", ListBuilder()
-            .Append(DictionaryBuilder()
-              .Set("type", "dim")
-              .Set("offset", 6)
-              .Set("length", 3))
-            .Append(DictionaryBuilder()
-              .Set("type", "match")
-              .Set("offset", 1)
-              .Set("length", 4))))).Build();
+  scoped_ptr<base::ListValue> swap_list =
+      ListBuilder()
+          .Append(42)
+          .Append(std::move(ListBuilder().Append(
+              DictionaryBuilder()
+                  .Set("content", "content")
+                  .Set("description", "description")
+                  .Set("descriptionStyles",
+                       std::move(ListBuilder()
+                                     .Append(DictionaryBuilder()
+                                                 .Set("type", "dim")
+                                                 .Set("offset", 6)
+                                                 .Set("length", 3))
+                                     .Append(DictionaryBuilder()
+                                                 .Set("type", "match")
+                                                 .Set("offset", 1)
+                                                 .Set("length", 4)))))))
+          .Build();
 
   scoped_ptr<SendSuggestions::Params> swapped_params(
       SendSuggestions::Params::Create(*swap_list));
@@ -104,33 +112,36 @@ TEST(ExtensionOmniboxTest, DescriptionStylesSimple) {
 // +  dd
 // = 3773unnnn66
 TEST(ExtensionOmniboxTest, DescriptionStylesCombine) {
-  scoped_ptr<base::ListValue> list = ListBuilder()
-      .Append(42)
-      .Append(ListBuilder()
-        .Append(DictionaryBuilder()
-          .Set("content", "content")
-          .Set("description", "description")
-          .Set("descriptionStyles", ListBuilder()
-            .Append(DictionaryBuilder()
-              .Set("type", "url")
-              .Set("offset", 0)
-              .Set("length", 5))
-            .Append(DictionaryBuilder()
-              .Set("type", "dim")
-              .Set("offset", 9)
-              .Set("length", 2))
-            .Append(DictionaryBuilder()
-              .Set("type", "match")
-              .Set("offset", 9)
-              .Set("length", 2))
-            .Append(DictionaryBuilder()
-              .Set("type", "match")
-              .Set("offset", 0)
-              .Set("length", 4))
-            .Append(DictionaryBuilder()
-              .Set("type", "dim")
-              .Set("offset", 1)
-              .Set("length", 2))))).Build();
+  scoped_ptr<base::ListValue> list =
+      ListBuilder()
+          .Append(42)
+          .Append(std::move(ListBuilder().Append(
+              DictionaryBuilder()
+                  .Set("content", "content")
+                  .Set("description", "description")
+                  .Set("descriptionStyles",
+                       std::move(ListBuilder()
+                                     .Append(DictionaryBuilder()
+                                                 .Set("type", "url")
+                                                 .Set("offset", 0)
+                                                 .Set("length", 5))
+                                     .Append(DictionaryBuilder()
+                                                 .Set("type", "dim")
+                                                 .Set("offset", 9)
+                                                 .Set("length", 2))
+                                     .Append(DictionaryBuilder()
+                                                 .Set("type", "match")
+                                                 .Set("offset", 9)
+                                                 .Set("length", 2))
+                                     .Append(DictionaryBuilder()
+                                                 .Set("type", "match")
+                                                 .Set("offset", 0)
+                                                 .Set("length", 4))
+                                     .Append(DictionaryBuilder()
+                                                 .Set("type", "dim")
+                                                 .Set("offset", 1)
+                                                 .Set("length", 2)))))))
+          .Build();
 
   ACMatchClassifications styles_expected;
   styles_expected.push_back(ACMatchClassification(0, kUrl | kMatch));
@@ -149,33 +160,36 @@ TEST(ExtensionOmniboxTest, DescriptionStylesCombine) {
 
   // Try moving the "dim/match" style pair at offset 9. Output should be the
   // same.
-  scoped_ptr<base::ListValue> moved_list = ListBuilder()
-      .Append(42)
-      .Append(ListBuilder()
-        .Append(DictionaryBuilder()
-          .Set("content", "content")
-          .Set("description", "description")
-          .Set("descriptionStyles", ListBuilder()
-            .Append(DictionaryBuilder()
-              .Set("type", "url")
-              .Set("offset", 0)
-              .Set("length", 5))
-            .Append(DictionaryBuilder()
-              .Set("type", "match")
-              .Set("offset", 0)
-              .Set("length", 4))
-            .Append(DictionaryBuilder()
-              .Set("type", "dim")
-              .Set("offset", 9)
-              .Set("length", 2))
-            .Append(DictionaryBuilder()
-              .Set("type", "match")
-              .Set("offset", 9)
-              .Set("length", 2))
-            .Append(DictionaryBuilder()
-              .Set("type", "dim")
-              .Set("offset", 1)
-              .Set("length", 2))))).Build();
+  scoped_ptr<base::ListValue> moved_list =
+      ListBuilder()
+          .Append(42)
+          .Append(std::move(ListBuilder().Append(
+              DictionaryBuilder()
+                  .Set("content", "content")
+                  .Set("description", "description")
+                  .Set("descriptionStyles",
+                       std::move(ListBuilder()
+                                     .Append(DictionaryBuilder()
+                                                 .Set("type", "url")
+                                                 .Set("offset", 0)
+                                                 .Set("length", 5))
+                                     .Append(DictionaryBuilder()
+                                                 .Set("type", "match")
+                                                 .Set("offset", 0)
+                                                 .Set("length", 4))
+                                     .Append(DictionaryBuilder()
+                                                 .Set("type", "dim")
+                                                 .Set("offset", 9)
+                                                 .Set("length", 2))
+                                     .Append(DictionaryBuilder()
+                                                 .Set("type", "match")
+                                                 .Set("offset", 9)
+                                                 .Set("length", 2))
+                                     .Append(DictionaryBuilder()
+                                                 .Set("type", "dim")
+                                                 .Set("offset", 1)
+                                                 .Set("length", 2)))))))
+          .Build();
 
   scoped_ptr<SendSuggestions::Params> moved_params(
       SendSuggestions::Params::Create(*moved_list));
@@ -193,33 +207,36 @@ TEST(ExtensionOmniboxTest, DescriptionStylesCombine) {
 // + ddd
 // = 77777nnnnn
 TEST(ExtensionOmniboxTest, DescriptionStylesCombine2) {
-  scoped_ptr<base::ListValue> list = ListBuilder()
-      .Append(42)
-      .Append(ListBuilder()
-        .Append(DictionaryBuilder()
-          .Set("content", "content")
-          .Set("description", "description")
-          .Set("descriptionStyles", ListBuilder()
-            .Append(DictionaryBuilder()
-              .Set("type", "url")
-              .Set("offset", 0)
-              .Set("length", 5))
-            .Append(DictionaryBuilder()
-              .Set("type", "match")
-              .Set("offset", 0)
-              .Set("length", 5))
-            .Append(DictionaryBuilder()
-              .Set("type", "match")
-              .Set("offset", 0)
-              .Set("length", 3))
-            .Append(DictionaryBuilder()
-              .Set("type", "dim")
-              .Set("offset", 2)
-              .Set("length", 3))
-            .Append(DictionaryBuilder()
-              .Set("type", "dim")
-              .Set("offset", 0)
-              .Set("length", 3))))).Build();
+  scoped_ptr<base::ListValue> list =
+      ListBuilder()
+          .Append(42)
+          .Append(std::move(ListBuilder().Append(
+              DictionaryBuilder()
+                  .Set("content", "content")
+                  .Set("description", "description")
+                  .Set("descriptionStyles",
+                       std::move(ListBuilder()
+                                     .Append(DictionaryBuilder()
+                                                 .Set("type", "url")
+                                                 .Set("offset", 0)
+                                                 .Set("length", 5))
+                                     .Append(DictionaryBuilder()
+                                                 .Set("type", "match")
+                                                 .Set("offset", 0)
+                                                 .Set("length", 5))
+                                     .Append(DictionaryBuilder()
+                                                 .Set("type", "match")
+                                                 .Set("offset", 0)
+                                                 .Set("length", 3))
+                                     .Append(DictionaryBuilder()
+                                                 .Set("type", "dim")
+                                                 .Set("offset", 2)
+                                                 .Set("length", 3))
+                                     .Append(DictionaryBuilder()
+                                                 .Set("type", "dim")
+                                                 .Set("offset", 0)
+                                                 .Set("length", 3)))))))
+          .Build();
 
   ACMatchClassifications styles_expected;
   styles_expected.push_back(ACMatchClassification(0, kUrl | kMatch | kDim));
@@ -242,30 +259,33 @@ TEST(ExtensionOmniboxTest, DescriptionStylesCombine2) {
 // = 77777nnnnn
 TEST(ExtensionOmniboxTest, DefaultSuggestResult) {
   // Default suggestions should not have a content parameter.
-  scoped_ptr<base::ListValue> list = ListBuilder()
-      .Append(DictionaryBuilder()
-        .Set("description", "description")
-        .Set("descriptionStyles", ListBuilder()
+  scoped_ptr<base::ListValue> list =
+      ListBuilder()
           .Append(DictionaryBuilder()
-            .Set("type", "url")
-            .Set("offset", 0)
-            .Set("length", 5))
-          .Append(DictionaryBuilder()
-            .Set("type", "match")
-            .Set("offset", 0)
-            .Set("length", 5))
-          .Append(DictionaryBuilder()
-            .Set("type", "match")
-            .Set("offset", 0)
-            .Set("length", 3))
-          .Append(DictionaryBuilder()
-            .Set("type", "dim")
-            .Set("offset", 2)
-            .Set("length", 3))
-          .Append(DictionaryBuilder()
-            .Set("type", "dim")
-            .Set("offset", 0)
-            .Set("length", 3)))).Build();
+                      .Set("description", "description")
+                      .Set("descriptionStyles",
+                           std::move(ListBuilder()
+                                         .Append(DictionaryBuilder()
+                                                     .Set("type", "url")
+                                                     .Set("offset", 0)
+                                                     .Set("length", 5))
+                                         .Append(DictionaryBuilder()
+                                                     .Set("type", "match")
+                                                     .Set("offset", 0)
+                                                     .Set("length", 5))
+                                         .Append(DictionaryBuilder()
+                                                     .Set("type", "match")
+                                                     .Set("offset", 0)
+                                                     .Set("length", 3))
+                                         .Append(DictionaryBuilder()
+                                                     .Set("type", "dim")
+                                                     .Set("offset", 2)
+                                                     .Set("length", 3))
+                                         .Append(DictionaryBuilder()
+                                                     .Set("type", "dim")
+                                                     .Set("offset", 0)
+                                                     .Set("length", 3)))))
+          .Build();
 
   scoped_ptr<SetDefaultSuggestion::Params> params(
       SetDefaultSuggestion::Params::Create(*list));

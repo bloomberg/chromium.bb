@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/files/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
@@ -529,7 +531,8 @@ TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateDeleteExtensionErrors) {
   args = ListBuilder()
              .Append(DictionaryBuilder()
                          .Set("extensionId", extension->id())
-                         .Set("errorIds", ListBuilder().Append(error_id)))
+                         .Set("errorIds",
+                              std::move(ListBuilder().Append(error_id))))
              .Build();
   function = new api::DeveloperPrivateDeleteExtensionErrorsFunction();
   EXPECT_TRUE(RunFunction(function, *args)) << function->GetError();

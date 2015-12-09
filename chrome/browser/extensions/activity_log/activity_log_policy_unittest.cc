@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/values.h"
 #include "chrome/browser/extensions/activity_log/activity_action_constants.h"
 #include "chrome/browser/extensions/activity_log/activity_actions.h"
@@ -47,8 +49,9 @@ TEST_F(ActivityLogPolicyUtilTest, StripPrivacySensitiveWebRequest) {
           .Set(activity_log_web_request_constants::kNewUrlKey,
                "http://www.youtube.com/")
           .Set(activity_log_web_request_constants::kAddedRequestHeadersKey,
-               ListBuilder().Append("arg"))
-          .Build().release());
+               std::move(ListBuilder().Append("arg")))
+          .Build()
+          .release());
 
   ActivityLogPolicy::Util::StripPrivacySensitiveFields(action);
 

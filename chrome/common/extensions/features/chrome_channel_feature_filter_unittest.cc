@@ -5,6 +5,7 @@
 #include "chrome/common/extensions/features/chrome_channel_feature_filter.h"
 
 #include <string>
+#include <utility>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
@@ -177,12 +178,17 @@ TEST_F(ChromeChannelFeatureFilterTest, SimpleFeatureAvailability) {
   scoped_ptr<base::DictionaryValue> rule(
       DictionaryBuilder()
           .Set("feature1",
-               ListBuilder()
-                   .Append(DictionaryBuilder().Set("channel", "beta").Set(
-                       "extension_types", ListBuilder().Append("extension")))
-                   .Append(DictionaryBuilder().Set("channel", "beta").Set(
-                       "extension_types",
-                       ListBuilder().Append("legacy_packaged_app"))))
+               std::move(ListBuilder()
+                             .Append(DictionaryBuilder()
+                                         .Set("channel", "beta")
+                                         .Set("extension_types",
+                                              std::move(ListBuilder().Append(
+                                                  "extension"))))
+                             .Append(DictionaryBuilder()
+                                         .Set("channel", "beta")
+                                         .Set("extension_types",
+                                              std::move(ListBuilder().Append(
+                                                  "legacy_packaged_app"))))))
           .Build());
 
   scoped_ptr<BaseFeatureProvider> provider(
@@ -234,18 +240,18 @@ TEST_F(ChromeChannelFeatureFilterTest, ComplexFeatureAvailability) {
   scoped_ptr<base::DictionaryValue> rule(
       DictionaryBuilder()
           .Set("channel", "trunk")
-          .Set("extension_types", ListBuilder().Append("extension"))
+          .Set("extension_types", std::move(ListBuilder().Append("extension")))
           .Build());
   simple_feature->Parse(rule.get());
   features->push_back(simple_feature.Pass());
 
   // Rule: "legacy_packaged_app", channel stable.
   simple_feature.reset(CreateFeature<SimpleFeature>());
-  rule =
-      DictionaryBuilder()
-          .Set("channel", "stable")
-          .Set("extension_types", ListBuilder().Append("legacy_packaged_app"))
-          .Build();
+  rule = DictionaryBuilder()
+             .Set("channel", "stable")
+             .Set("extension_types",
+                  std::move(ListBuilder().Append("legacy_packaged_app")))
+             .Build();
   simple_feature->Parse(rule.get());
   features->push_back(simple_feature.Pass());
 

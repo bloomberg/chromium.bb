@@ -5,6 +5,7 @@
 #include "extensions/common/value_builder.h"
 
 #include "base/json/json_writer.h"
+#include "base/values.h"
 
 namespace extensions {
 
@@ -55,7 +56,7 @@ DictionaryBuilder& DictionaryBuilder::Set(const std::string& path,
 }
 
 DictionaryBuilder& DictionaryBuilder::Set(const std::string& path,
-                                          ListBuilder& in_value) {
+                                          ListBuilder in_value) {
   dict_->SetWithoutPathExpansion(path, in_value.Build().Pass());
   return *this;
 }
@@ -79,6 +80,14 @@ ListBuilder::ListBuilder(const base::ListValue& init) : list_(init.DeepCopy()) {
 }
 ListBuilder::~ListBuilder() {}
 
+ListBuilder::ListBuilder(ListBuilder&& other)
+    : list_(other.Build().release()) {}
+
+ListBuilder& ListBuilder::operator=(ListBuilder&& other) {
+  list_.reset(other.Build().release());
+  return *this;
+}
+
 ListBuilder& ListBuilder::Append(int in_value) {
   list_->Append(new base::FundamentalValue(in_value));
   return *this;
@@ -100,12 +109,12 @@ ListBuilder& ListBuilder::Append(const base::string16& in_value) {
 }
 
 ListBuilder& ListBuilder::Append(DictionaryBuilder& in_value) {
-  list_->Append(in_value.Build().Pass());
+  list_->Append(in_value.Build());
   return *this;
 }
 
-ListBuilder& ListBuilder::Append(ListBuilder& in_value) {
-  list_->Append(in_value.Build().Pass());
+ListBuilder& ListBuilder::Append(ListBuilder in_value) {
+  list_->Append(in_value.Build());
   return *this;
 }
 

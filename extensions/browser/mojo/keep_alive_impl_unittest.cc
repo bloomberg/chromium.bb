@@ -4,6 +4,8 @@
 
 #include "extensions/browser/mojo/keep_alive_impl.h"
 
+#include <utility>
+
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "content/public/browser/notification_service.h"
@@ -25,17 +27,16 @@ class KeepAliveTest : public ExtensionsTest {
     message_loop_.reset(new base::MessageLoop);
     extension_ =
         ExtensionBuilder()
-            .SetManifest(
-                 DictionaryBuilder()
-                     .Set("name", "app")
-                     .Set("version", "1")
-                     .Set("manifest_version", 2)
-                     .Set("app",
-                          DictionaryBuilder().Set(
-                              "background",
-                              DictionaryBuilder().Set(
-                                  "scripts",
-                                  ListBuilder().Append("background.js")))))
+            .SetManifest(DictionaryBuilder()
+                             .Set("name", "app")
+                             .Set("version", "1")
+                             .Set("manifest_version", 2)
+                             .Set("app", DictionaryBuilder().Set(
+                                             "background",
+                                             DictionaryBuilder().Set(
+                                                 "scripts",
+                                                 std::move(ListBuilder().Append(
+                                                     "background.js"))))))
             .SetID("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
             .Build();
   }
@@ -107,15 +108,15 @@ TEST_F(KeepAliveTest, UnloadExtension) {
   scoped_refptr<const Extension> other_extension =
       ExtensionBuilder()
           .SetManifest(
-               DictionaryBuilder()
-                   .Set("name", "app")
-                   .Set("version", "1")
-                   .Set("manifest_version", 2)
-                   .Set("app", DictionaryBuilder().Set(
-                                   "background",
-                                   DictionaryBuilder().Set(
-                                       "scripts",
-                                       ListBuilder().Append("background.js")))))
+              DictionaryBuilder()
+                  .Set("name", "app")
+                  .Set("version", "1")
+                  .Set("manifest_version", 2)
+                  .Set("app", DictionaryBuilder().Set(
+                                  "background",
+                                  DictionaryBuilder().Set(
+                                      "scripts", std::move(ListBuilder().Append(
+                                                     "background.js"))))))
           .SetID("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb")
           .Build();
 

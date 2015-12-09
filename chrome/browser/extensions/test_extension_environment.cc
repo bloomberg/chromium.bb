@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/test_extension_environment.h"
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/json/json_writer.h"
 #include "base/run_loop.h"
@@ -59,8 +61,8 @@ scoped_ptr<base::DictionaryValue> MakePackagedAppManifest() {
       .Set("app", extensions::DictionaryBuilder().Set(
                       "background",
                       extensions::DictionaryBuilder().Set(
-                          "scripts",
-                          extensions::ListBuilder().Append("background.js"))))
+                          "scripts", std::move(extensions::ListBuilder().Append(
+                                         "background.js")))))
       .Build();
 }
 

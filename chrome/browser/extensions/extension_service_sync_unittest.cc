@@ -4,6 +4,7 @@
 
 #include <map>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -1800,16 +1801,17 @@ TEST_F(ExtensionServiceSyncTest, SyncExtensionHasAllhostsWithheld) {
   const std::string kName("extension");
   scoped_refptr<const Extension> extension =
       extensions::ExtensionBuilder()
-      .SetLocation(Manifest::INTERNAL)
-      .SetManifest(
-          extensions::DictionaryBuilder()
-              .Set("name", kName)
-              .Set("description", "foo")
-              .Set("manifest_version", 2)
-              .Set("version", "1.0")
-              .Set("permissions", extensions::ListBuilder().Append("*://*/*")))
-      .SetID(crx_file::id_util::GenerateId(kName))
-      .Build();
+          .SetLocation(Manifest::INTERNAL)
+          .SetManifest(
+              extensions::DictionaryBuilder()
+                  .Set("name", kName)
+                  .Set("description", "foo")
+                  .Set("manifest_version", 2)
+                  .Set("version", "1.0")
+                  .Set("permissions",
+                       std::move(extensions::ListBuilder().Append("*://*/*"))))
+          .SetID(crx_file::id_util::GenerateId(kName))
+          .Build();
 
   // Install and enable it.
   service()->AddExtension(extension.get());

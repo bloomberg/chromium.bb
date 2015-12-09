@@ -39,10 +39,10 @@ scoped_refptr<Extension> CreateExtensionWithBookmarksPermission(
     permissions.Append("bookmarks");
   return ExtensionBuilder()
       .SetManifest(DictionaryBuilder()
-                   .Set("name", "Test extension")
-                   .Set("version", "1.0")
-                   .Set("manifest_version", 2)
-                   .Set("permissions", permissions))
+                       .Set("name", "Test extension")
+                       .Set("version", "1.0")
+                       .Set("manifest_version", 2)
+                       .Set("permissions", std::move(permissions)))
       .Build();
 }
 

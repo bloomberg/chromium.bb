@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
@@ -331,8 +333,9 @@ TEST_F(PlatformNotificationServiceTest, ExtensionPermissionChecks) {
                            .Set("version", "1.0")
                            .Set("manifest_version", 2)
                            .Set("description", "Test Extension")
-                           .Set("permissions", extensions::ListBuilder().Append(
-                                                   "notifications")))
+                           .Set("permissions",
+                                std::move(extensions::ListBuilder().Append(
+                                    "notifications"))))
           .Build();
 
   // Install the extension on the faked extension service, and verify that it

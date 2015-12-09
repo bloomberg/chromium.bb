@@ -5,6 +5,7 @@
 #include "extensions/common/extension_api.h"
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/files/file_path.h"
@@ -199,14 +200,19 @@ TEST(ExtensionAPITest, APIFeatures) {
 }
 
 TEST(ExtensionAPITest, IsAnyFeatureAvailableToContext) {
-  scoped_refptr<const Extension> app = ExtensionBuilder()
-    .SetManifest(DictionaryBuilder()
-      .Set("name", "app")
-      .Set("app", DictionaryBuilder()
-        .Set("background", DictionaryBuilder()
-          .Set("scripts", ListBuilder().Append("background.js"))))
-      .Set("version", "1")
-      .Set("manifest_version", 2)).Build();
+  scoped_refptr<const Extension> app =
+      ExtensionBuilder()
+          .SetManifest(
+              DictionaryBuilder()
+                  .Set("name", "app")
+                  .Set("app", DictionaryBuilder().Set(
+                                  "background",
+                                  DictionaryBuilder().Set(
+                                      "scripts", std::move(ListBuilder().Append(
+                                                     "background.js")))))
+                  .Set("version", "1")
+                  .Set("manifest_version", 2))
+          .Build();
   scoped_refptr<const Extension> extension = ExtensionBuilder()
     .SetManifest(DictionaryBuilder()
       .Set("name", "extension")

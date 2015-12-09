@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_permissions_panel.h"
 
+#include <utility>
+
 #include "apps/saved_files_service.h"
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
@@ -46,8 +48,8 @@ class AppInfoPermissionsPanelTest : public testing::Test {
              extensions::DictionaryBuilder().Set(
                  "background",
                  extensions::DictionaryBuilder().Set(
-                     "scripts",
-                     extensions::ListBuilder().Append("background.js"))))
+                     "scripts", std::move(extensions::ListBuilder().Append(
+                                    "background.js")))))
         .Build();
   }
 
@@ -77,14 +79,15 @@ TEST_F(AppInfoPermissionsPanelTest, RequiredPermissionsObtainedCorrectly) {
           .SetManifest(ValidAppManifest())
           .MergeManifest(extensions::DictionaryBuilder().Set(
               "permissions",
-              extensions::ListBuilder()
-                  .Append("desktopCapture")  // A valid permission with a
-                                             // message
-                  .Append("bad_perm")        // An invalid permission
-                  .Append("notifications")   // An valid permission with
-                                             // no message
-                  .Append("serial")))        // Another valid permission with
-                                             // a message
+              std::move(
+                  extensions::ListBuilder()
+                      .Append("desktopCapture")  // A valid permission with a
+                                                 // message
+                      .Append("bad_perm")        // An invalid permission
+                      .Append("notifications")   // An valid permission with
+                                                 // no message
+                      .Append("serial"))))  // Another valid permission with
+                                            // a message
           .SetID(kTestExtensionId)
           .Build();
   AppInfoPermissionsPanel panel(&profile_, app.get());
@@ -104,14 +107,15 @@ TEST_F(AppInfoPermissionsPanelTest, OptionalPermissionsObtainedCorrectly) {
           .SetManifest(ValidAppManifest())
           .MergeManifest(extensions::DictionaryBuilder().Set(
               "optional_permissions",
-              extensions::ListBuilder()
-                  .Append("clipboardRead")  // A valid permission with a
-                                            // message
-                  .Append("bad_perm")       // An invalid permission
-                  .Append("idle")           // A valid permission with
-                                            // no message
-                  .Append("serial")))       // Another valid permission with
-                                            // a message
+              std::move(
+                  extensions::ListBuilder()
+                      .Append("clipboardRead")  // A valid permission with a
+                                                // message
+                      .Append("bad_perm")       // An invalid permission
+                      .Append("idle")           // A valid permission with
+                                                // no message
+                      .Append("serial"))))      // Another valid permission with
+                                                // a message
           .SetID(kTestExtensionId)
           .Build();
   AppInfoPermissionsPanel panel(&profile_, app.get());
@@ -131,10 +135,10 @@ TEST_F(AppInfoPermissionsPanelTest, RetainedFilePermissionsObtainedCorrectly) {
           .SetManifest(ValidAppManifest())
           .MergeManifest(extensions::DictionaryBuilder().Set(
               "permissions",
-              extensions::ListBuilder().Append(
+              std::move(extensions::ListBuilder().Append(
                   extensions::DictionaryBuilder().Set(
-                      "fileSystem",
-                      extensions::ListBuilder().Append("retainEntries")))))
+                      "fileSystem", std::move(extensions::ListBuilder().Append(
+                                        "retainEntries")))))))
           .SetID(kTestExtensionId)
           .Build();
   AppInfoPermissionsPanel panel(&profile_, app.get());

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -48,13 +50,14 @@ class PermissionMessagesUnittest : public testing::Test {
   ~PermissionMessagesUnittest() override {}
 
  protected:
-  void CreateAndInstallAppWithPermissions(ListBuilder& required_permissions,
-                                          ListBuilder& optional_permissions) {
+  void CreateAndInstallAppWithPermissions(ListBuilder required_permissions,
+                                          ListBuilder optional_permissions) {
     app_ = test_util::BuildApp(ExtensionBuilder().Pass())
                .MergeManifest(
-                    DictionaryBuilder()
-                        .Set("permissions", required_permissions)
-                        .Set("optional_permissions", optional_permissions))
+                   DictionaryBuilder()
+                       .Set("permissions", std::move(required_permissions))
+                       .Set("optional_permissions",
+                            std::move(optional_permissions)))
                .SetID(crx_file::id_util::GenerateId("app"))
                .SetLocation(Manifest::INTERNAL)
                .Build();
@@ -62,13 +65,14 @@ class PermissionMessagesUnittest : public testing::Test {
   }
 
   void CreateAndInstallExtensionWithPermissions(
-      ListBuilder& required_permissions,
-      ListBuilder& optional_permissions) {
+      ListBuilder required_permissions,
+      ListBuilder optional_permissions) {
     app_ = test_util::BuildExtension(ExtensionBuilder().Pass())
                .MergeManifest(
-                    DictionaryBuilder()
-                        .Set("permissions", required_permissions)
-                        .Set("optional_permissions", optional_permissions))
+                   DictionaryBuilder()
+                       .Set("permissions", std::move(required_permissions))
+                       .Set("optional_permissions",
+                            std::move(optional_permissions)))
                .SetID(crx_file::id_util::GenerateId("extension"))
                .SetLocation(Manifest::INTERNAL)
                .Build();
@@ -129,8 +133,7 @@ class PermissionMessagesUnittest : public testing::Test {
 // other (the 'history' permission has superset permissions).
 TEST_F(PermissionMessagesUnittest, HistoryHidesTabsMessage) {
   CreateAndInstallExtensionWithPermissions(
-      ListBuilder().Append("tabs").Append("history").Pass(),
-      ListBuilder().Pass());
+      std::move(ListBuilder().Append("tabs").Append("history")), ListBuilder());
 
   ASSERT_EQ(1U, required_permissions().size());
   EXPECT_EQ(
@@ -144,8 +147,8 @@ TEST_F(PermissionMessagesUnittest, HistoryHidesTabsMessage) {
 // permission, only the new coalesced message is displayed.
 TEST_F(PermissionMessagesUnittest, MixedPermissionMessagesCoalesceOnceGranted) {
   CreateAndInstallExtensionWithPermissions(
-      ListBuilder().Append("tabs").Pass(),
-      ListBuilder().Append("history").Pass());
+      std::move(ListBuilder().Append("tabs")),
+      std::move(ListBuilder().Append("history")));
 
   ASSERT_EQ(1U, required_permissions().size());
   EXPECT_EQ(
@@ -183,8 +186,8 @@ TEST_F(PermissionMessagesUnittest, MixedPermissionMessagesCoalesceOnceGranted) {
 TEST_F(PermissionMessagesUnittest,
        AntiTest_PromptCanRequestSubsetOfAlreadyGrantedPermissions) {
   CreateAndInstallExtensionWithPermissions(
-      ListBuilder().Append("history").Pass(),
-      ListBuilder().Append("tabs").Pass());
+      std::move(ListBuilder().Append("history")),
+      std::move(ListBuilder().Append("tabs")));
 
   ASSERT_EQ(1U, required_permissions().size());
   EXPECT_EQ(
@@ -224,8 +227,8 @@ TEST_F(PermissionMessagesUnittest,
 TEST_F(PermissionMessagesUnittest,
        AntiTest_PromptCanBeEmptyButCausesChangeInPermissions) {
   CreateAndInstallExtensionWithPermissions(
-      ListBuilder().Append("tabs").Pass(),
-      ListBuilder().Append("sessions").Pass());
+      std::move(ListBuilder().Append("tabs")),
+      std::move(ListBuilder().Append("sessions")));
 
   ASSERT_EQ(1U, required_permissions().size());
   EXPECT_EQ(

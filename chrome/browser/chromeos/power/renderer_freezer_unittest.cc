@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/power/renderer_freezer.h"
 
 #include <string>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
@@ -310,20 +311,20 @@ TEST_F(RendererFreezerTestWithExtensions, DoesNotFreezeGcmExtensionRenderers) {
   // First build the GCM extension.
   scoped_refptr<extensions::Extension> gcm_app =
       extensions::ExtensionBuilder()
-          .SetManifest(extensions::DictionaryBuilder()
-                       .Set("name", "GCM App")
-                       .Set("version", "1.0.0")
-                       .Set("manifest_version", 2)
-                       .Set("app",
-                            extensions::DictionaryBuilder()
-                            .Set("background",
-                                 extensions::DictionaryBuilder()
-                                 .Set("scripts",
-                                      extensions::ListBuilder()
-                                      .Append("background.js"))))
-                       .Set("permissions",
-                            extensions::ListBuilder()
-                            .Append("gcm")))
+          .SetManifest(
+              extensions::DictionaryBuilder()
+                  .Set("name", "GCM App")
+                  .Set("version", "1.0.0")
+                  .Set("manifest_version", 2)
+                  .Set("app",
+                       extensions::DictionaryBuilder().Set(
+                           "background",
+                           extensions::DictionaryBuilder().Set(
+                               "scripts",
+                               std::move(extensions::ListBuilder().Append(
+                                   "background.js")))))
+                  .Set("permissions",
+                       std::move(extensions::ListBuilder().Append("gcm"))))
           .Build();
 
   // Now install it and give it a renderer.
@@ -343,17 +344,18 @@ TEST_F(RendererFreezerTestWithExtensions, FreezesNonGcmExtensionRenderers) {
   // First build the extension.
   scoped_refptr<extensions::Extension> background_app =
       extensions::ExtensionBuilder()
-          .SetManifest(extensions::DictionaryBuilder()
-                       .Set("name", "Background App")
-                       .Set("version", "1.0.0")
-                       .Set("manifest_version", 2)
-                       .Set("app",
-                            extensions::DictionaryBuilder()
-                            .Set("background",
-                                 extensions::DictionaryBuilder()
-                                 .Set("scripts",
-                                      extensions::ListBuilder()
-                                      .Append("background.js")))))
+          .SetManifest(
+              extensions::DictionaryBuilder()
+                  .Set("name", "Background App")
+                  .Set("version", "1.0.0")
+                  .Set("manifest_version", 2)
+                  .Set("app",
+                       extensions::DictionaryBuilder().Set(
+                           "background",
+                           extensions::DictionaryBuilder().Set(
+                               "scripts",
+                               std::move(extensions::ListBuilder().Append(
+                                   "background.js"))))))
           .Build();
 
   // Now install it and give it a renderer.

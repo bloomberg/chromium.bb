@@ -89,18 +89,20 @@ class ExtensionEventObserverTest : public ::testing::Test {
     scoped_refptr<extensions::Extension> app =
         extensions::ExtensionBuilder()
             .SetManifest(
-                 extensions::DictionaryBuilder()
-                     .Set("name", name)
-                     .Set("version", "1.0.0")
-                     .Set("manifest_version", 2)
-                     .Set("app",
-                          extensions::DictionaryBuilder().Set(
-                              "background",
-                              extensions::DictionaryBuilder().Set(
-                                  "scripts", extensions::ListBuilder().Append(
-                                                 "background.js"))))
-                     .Set("permissions", extensions::ListBuilder().Append(
-                                             uses_gcm ? "gcm" : "")))
+                extensions::DictionaryBuilder()
+                    .Set("name", name)
+                    .Set("version", "1.0.0")
+                    .Set("manifest_version", 2)
+                    .Set("app",
+                         extensions::DictionaryBuilder().Set(
+                             "background",
+                             extensions::DictionaryBuilder().Set(
+                                 "scripts",
+                                 std::move(extensions::ListBuilder().Append(
+                                     "background.js")))))
+                    .Set("permissions",
+                         std::move(extensions::ListBuilder().Append(
+                             uses_gcm ? "gcm" : ""))))
             .Build();
 
     created_apps_.push_back(app);

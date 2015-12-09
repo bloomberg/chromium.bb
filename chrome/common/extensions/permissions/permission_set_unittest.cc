@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/logging.h"
@@ -1299,11 +1301,12 @@ TEST(PermissionsTest, GetWarningMessages_PlatformAppHosts) {
 testing::AssertionResult ShowsAllHostsWarning(const std::string& pattern) {
   scoped_refptr<Extension> extension =
       ExtensionBuilder()
-          .SetManifest(DictionaryBuilder()
-                           .Set("name", "TLDWildCardTest")
-                           .Set("version", "0.1.0")
-                           .Set("permissions", ListBuilder().Append(pattern))
-                           .Build())
+          .SetManifest(
+              DictionaryBuilder()
+                  .Set("name", "TLDWildCardTest")
+                  .Set("version", "0.1.0")
+                  .Set("permissions", std::move(ListBuilder().Append(pattern)))
+                  .Build())
           .Build();
 
   return VerifyHasPermissionMessage(
