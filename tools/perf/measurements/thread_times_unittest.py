@@ -41,6 +41,7 @@ class ThreadTimesUnitTest(page_test_test_case.PageTestTestCase):
         cpu_time = results.FindAllPageSpecificValuesNamed(cpu_time_name)
         self.assertEquals(len(cpu_time), 1)
 
+  @decorators.Disabled('win')       # crbug.com/568120
   @decorators.Disabled('chromeos')  # crbug.com/483212
   def testWithSilkDetails(self):
     ps = self.CreateStorySetFromFileInUnittestDataDir('scrollable_page.html')
