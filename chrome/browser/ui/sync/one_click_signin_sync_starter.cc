@@ -40,6 +40,7 @@
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/sync_driver/sync_prefs.h"
+#include "net/base/url_util.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -534,15 +535,17 @@ void OneClickSigninSyncStarter::ShowSettingsPage(bool configure_sync) {
     bool use_same_tab = false;
     if (web_contents()) {
       GURL current_url = web_contents()->GetLastCommittedURL();
+      std::string constrained_key;
+      net::GetValueForKeyInQuery(current_url, "constrained", &constrained_key);
+      bool is_constrained = (constrained_key == "1");
       bool is_chrome_signin_url =
           current_url.GetOrigin().spec() == chrome::kChromeUIChromeSigninURL;
       bool is_same_profile =
           Profile::FromBrowserContext(web_contents()->GetBrowserContext()) ==
           profile_;
-      use_same_tab =
-          is_chrome_signin_url &&
-          !signin::IsAutoCloseEnabledInURL(current_url) &&
-          is_same_profile;
+      use_same_tab = !is_constrained && is_chrome_signin_url &&
+                     !signin::IsAutoCloseEnabledInURL(current_url) &&
+                     is_same_profile;
     }
     if (profile_sync_service) {
       // Need to navigate to the settings page and display the sync UI.
