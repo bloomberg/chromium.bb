@@ -66,6 +66,40 @@ MojoResult MojoWaitMany(const MojoHandle* handles,
                           MakeUserPointer(signals_states));
 }
 
+MojoResult MojoCreateWaitSet(MojoHandle* wait_set_handle) {
+  if (UseNewEDK())
+    return MOJO_RESULT_UNIMPLEMENTED;
+  return g_core->CreateWaitSet(MakeUserPointer(wait_set_handle));
+}
+
+MojoResult MojoAddHandle(MojoHandle wait_set_handle,
+                         MojoHandle handle,
+                         MojoHandleSignals signals) {
+  if (UseNewEDK())
+    return MOJO_RESULT_UNIMPLEMENTED;
+  return g_core->AddHandle(wait_set_handle, handle, signals);
+}
+
+MojoResult MojoRemoveHandle(MojoHandle wait_set_handle,
+                            MojoHandle handle) {
+  if (UseNewEDK())
+    return MOJO_RESULT_UNIMPLEMENTED;
+  return g_core->RemoveHandle(wait_set_handle, handle);
+}
+
+MojoResult MojoGetReadyHandles(MojoHandle wait_set_handle,
+                               uint32_t* count,
+                               MojoHandle* handles,
+                               MojoResult* results,
+                               struct MojoHandleSignalsState *signals_states) {
+  if (UseNewEDK())
+    return MOJO_RESULT_UNIMPLEMENTED;
+  return g_core->GetReadyHandles(wait_set_handle, MakeUserPointer(count),
+                                 MakeUserPointer(handles),
+                                 MakeUserPointer(results),
+                                 MakeUserPointer(signals_states));
+}
+
 MojoResult MojoCreateMessagePipe(const MojoCreateMessagePipeOptions* options,
                                  MojoHandle* message_pipe_handle0,
                                  MojoHandle* message_pipe_handle1) {

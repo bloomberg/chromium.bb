@@ -69,6 +69,7 @@
         '../../mojo/public/c/system/message_pipe.h',
         '../../mojo/public/c/system/system_export.h',
         '../../mojo/public/c/system/types.h',
+        '../../mojo/public/c/system/wait_set.h',
       ],
     },
     {

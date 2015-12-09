@@ -185,6 +185,56 @@ MojoResult Core::WaitMany(UserPointer<const MojoHandle> handles,
   return rv;
 }
 
+MojoResult Core::CreateWaitSet(UserPointer<MojoHandle> wait_set_handle) {
+  if (wait_set_handle.IsNull())
+    return MOJO_RESULT_INVALID_ARGUMENT;
+
+  return MOJO_RESULT_UNIMPLEMENTED;
+}
+
+MojoResult Core::AddHandle(MojoHandle wait_set_handle,
+                           MojoHandle handle,
+                           MojoHandleSignals signals) {
+  scoped_refptr<Dispatcher> wait_set_dispatcher(GetDispatcher(wait_set_handle));
+  if (!wait_set_dispatcher)
+    return MOJO_RESULT_INVALID_ARGUMENT;
+
+  scoped_refptr<Dispatcher> dispatcher(GetDispatcher(handle));
+  if (!dispatcher)
+    return MOJO_RESULT_INVALID_ARGUMENT;
+
+  return MOJO_RESULT_UNIMPLEMENTED;
+}
+
+MojoResult Core::RemoveHandle(MojoHandle wait_set_handle,
+                              MojoHandle handle) {
+  scoped_refptr<Dispatcher> wait_set_dispatcher(GetDispatcher(wait_set_handle));
+  if (!wait_set_dispatcher)
+    return MOJO_RESULT_INVALID_ARGUMENT;
+
+  scoped_refptr<Dispatcher> dispatcher(GetDispatcher(handle));
+  if (!dispatcher)
+    return MOJO_RESULT_INVALID_ARGUMENT;
+
+  return MOJO_RESULT_UNIMPLEMENTED;
+}
+
+MojoResult Core::GetReadyHandles(
+    MojoHandle wait_set_handle,
+    UserPointer<uint32_t> count,
+    UserPointer<MojoHandle> handles,
+    UserPointer<MojoResult> results,
+    UserPointer<MojoHandleSignalsState> signals_states) {
+  scoped_refptr<Dispatcher> wait_set_dispatcher(GetDispatcher(wait_set_handle));
+  if (!wait_set_dispatcher)
+    return MOJO_RESULT_INVALID_ARGUMENT;
+
+  if (count.IsNull() || !count.Get() || handles.IsNull() || results.IsNull())
+    return MOJO_RESULT_INVALID_ARGUMENT;
+
+  return MOJO_RESULT_UNIMPLEMENTED;
+}
+
 MojoResult Core::CreateMessagePipe(
     UserPointer<const MojoCreateMessagePipeOptions> options,
     UserPointer<MojoHandle> message_pipe_handle0,

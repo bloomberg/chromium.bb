@@ -16,6 +16,7 @@ source_set("system") {
     "message_pipe.h",
     "system_export.h",
     "types.h",
+    "wait_set.h",
   ]
 }
 
