@@ -93,6 +93,14 @@ class RuntimeAPI : public BrowserContextKeyedAPI,
   // ProcessManagerObserver implementation:
   void OnBackgroundHostStartup(const Extension* extension) override;
 
+  // Pref related functions that deals with info about installed extensions that
+  // has not been loaded yet.
+  // Used to send chrome.runtime.onInstalled event upon loading the extensions.
+  bool ReadPendingOnInstallInfoFromPref(const ExtensionId& extension_id,
+                                        base::Version* previous_version);
+  void RemovePendingOnInstallInfoFromPref(const ExtensionId& extension_id);
+  void StorePendingOnInstallInfoToPref(const Extension* extension);
+
   scoped_ptr<RuntimeAPIDelegate> delegate_;
 
   content::BrowserContext* browser_context_;

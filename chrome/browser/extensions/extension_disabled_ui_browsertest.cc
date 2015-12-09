@@ -26,6 +26,7 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/common/extension.h"
+#include "extensions/test/extension_test_message_listener.h"
 #include "net/url_request/test_url_request_interceptor.h"
 #include "sync/protocol/extension_specifics.pb.h"
 #include "sync/protocol/sync.pb.h"
@@ -129,10 +130,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionDisabledGlobalErrorTest, AcceptPermissions) {
   ASSERT_TRUE(GetExtensionDisabledGlobalError());
   const size_t size_before = registry_->enabled_extensions().size();
 
+  ExtensionTestMessageListener listener("v2.onInstalled", false);
+  listener.set_failure_message("FAILED");
   service_->GrantPermissionsAndEnableExtension(extension);
   EXPECT_EQ(size_before + 1, registry_->enabled_extensions().size());
   EXPECT_EQ(0u, registry_->disabled_extensions().size());
   ASSERT_FALSE(GetExtensionDisabledGlobalError());
+  // Expect onInstalled event to fire.
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
 }
 
 // Tests uninstalling an extension that was disabled due to higher permissions.
