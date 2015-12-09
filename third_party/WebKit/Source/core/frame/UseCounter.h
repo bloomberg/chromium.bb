@@ -920,6 +920,12 @@ public:
         CSSSelectorInternalMediaControlsCastButton = 1063,
         CSSSelectorInternalMediaControlsOverlayCastButton = 1064,
         CSSSelectorInternalPseudoSpatialNavigationFocus = 1065,
+        SameOriginTextScript = 1066,
+        SameOriginApplicationScript = 1067,
+        SameOriginOtherScript = 1068,
+        CrossOriginTextScript = 1069,
+        CrossOriginApplicationScript = 1070,
+        CrossOriginOtherScript = 1071,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

@@ -333,6 +333,19 @@ bool isSVGScriptLoader(Element* element)
     return isSVGScriptElement(*element);
 }
 
+void ScriptLoader::logScriptMimetype(ScriptResource* resource, LocalFrame* frame, String mimetype)
+{
+    bool text = mimetype.lower().startsWith("text/");
+    bool application = mimetype.lower().startsWith("application/");
+    bool expectedJs = MIMETypeRegistry::isSupportedJavaScriptMIMEType(mimetype) || (text && isLegacySupportedJavaScriptLanguage(mimetype.substring(5)));
+    bool sameOrigin = m_element->document().securityOrigin()->canRequest(m_resource->url());
+    if (expectedJs) {
+        return;
+    }
+    UseCounter::Feature feature = sameOrigin ? (text ? UseCounter::SameOriginTextScript : application ? UseCounter::SameOriginApplicationScript : UseCounter::SameOriginOtherScript) : (text ? UseCounter::CrossOriginTextScript : application ? UseCounter::CrossOriginApplicationScript : UseCounter::CrossOriginOtherScript);
+    UseCounter::count(frame, feature);
+}
+
 bool ScriptLoader::executeScript(const ScriptSourceCode& sourceCode, double* compilationFinishTime)
 {
     ASSERT(m_alreadyStarted);
@@ -358,15 +371,20 @@ bool ScriptLoader::executeScript(const ScriptSourceCode& sourceCode, double* com
 
     if (m_isExternalScript) {
         ScriptResource* resource = m_resource ? m_resource.get() : sourceCode.resource();
-        if (resource && !resource->mimeTypeAllowedByNosniff()) {
-            contextDocument->addConsoleMessage(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, "Refused to execute script from '" + resource->url().elidedString() + "' because its MIME type ('" + resource->mimeType() + "') is not executable, and strict MIME type checking is enabled."));
-            return false;
-        }
+        if (resource) {
+            if (!resource->mimeTypeAllowedByNosniff()) {
+                contextDocument->addConsoleMessage(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, "Refused to execute script from '" + resource->url().elidedString() + "' because its MIME type ('" + resource->mimeType() + "') is not executable, and strict MIME type checking is enabled."));
+                return false;
+            }
 
-        if (resource && resource->mimeType().lower().startsWith("image/")) {
-            contextDocument->addConsoleMessage(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, "Refused to execute script from '" + resource->url().elidedString() + "' because its MIME type ('" + resource->mimeType() + "') is not executable."));
-            UseCounter::count(frame, UseCounter::BlockedSniffingImageToScript);
-            return false;
+            String mimetype = resource->mimeType();
+            if (mimetype.lower().startsWith("image/")) {
+                contextDocument->addConsoleMessage(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, "Refused to execute script from '" + resource->url().elidedString() + "' because its MIME type ('" + resource->mimeType() + "') is not executable."));
+                UseCounter::count(frame, UseCounter::BlockedSniffingImageToScript);
+                return false;
+            }
+
+            logScriptMimetype(resource, frame, mimetype);
         }
     }
 

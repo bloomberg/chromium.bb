@@ -35,7 +35,7 @@ namespace blink {
 class Element;
 class ScriptLoaderClient;
 class ScriptSourceCode;
-
+class LocalFrame;
 
 class CORE_EXPORT ScriptLoader : public NoBaseWillBeGarbageCollectedFinalized<ScriptLoader>, private ScriptResourceClient {
     USING_FAST_MALLOC_WILL_BE_REMOVED(ScriptLoader);
@@ -92,6 +92,7 @@ protected:
 private:
     bool ignoresLoadRequest() const;
     bool isScriptForEventSupported() const;
+    void logScriptMimetype(ScriptResource*, LocalFrame*, String);
 
     bool fetchScript(const String& sourceUrl, FetchRequest::DeferOption);
 
