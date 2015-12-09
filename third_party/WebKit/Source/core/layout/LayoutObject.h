@@ -1237,7 +1237,9 @@ public:
     // this object).
     LayoutRect previousPaintInvalidationRectIncludingCompositedScrolling(const LayoutBoxModelObject& paintInvalidationContainer) const;
     LayoutSize previousPaintInvalidationRectSize() const { return previousPaintInvalidationRect().size(); }
-    void setPreviousPaintInvalidationRect(const LayoutRect& rect) { m_previousPaintInvalidationRect = rect; }
+
+    // Called when the previous paint invalidation rect(s) is no longer valid.
+    virtual void clearPreviousPaintInvalidationRects();
 
     // Only adjusts if the paint invalidation container is not a composited scroller.
     void adjustPreviousPaintInvalidationForScrollIfNeeded(const DoubleSize& scrollDelta);
@@ -1432,6 +1434,8 @@ protected:
     // Add hit-test rects for this layoutObject only to the provided list. layerOffset is the offset
     // of this layoutObject within the current layer that should be used for each result.
     virtual void computeSelfHitTestRects(Vector<LayoutRect>&, const LayoutPoint& layerOffset) const { }
+
+    void setPreviousPaintInvalidationRect(const LayoutRect& rect) { m_previousPaintInvalidationRect = rect; }
 
     virtual PaintInvalidationReason paintInvalidationReason(const LayoutBoxModelObject& paintInvalidationContainer,
         const LayoutRect& oldPaintInvalidationRect, const LayoutPoint& oldPositionFromPaintInvalidationBacking,

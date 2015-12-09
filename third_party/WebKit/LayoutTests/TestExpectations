@@ -258,6 +258,18 @@ crbug.com/535408 fast/js/function-bind.html [ NeedsManualRebaseline ]
 
 crbug.com/552574 fast/js/regexp-caching.html [ NeedsManualRebaseline ]
 
+crbug.com/560418 compositing/squashing/iframe-inside-squashed-layer.html [ NeedsRebaseline ]
+crbug.com/560418 svg/as-object/nested-embedded-svg-size-changes-no-layout-triggers-1.html [ NeedsRebaseline ]
+crbug.com/560418 svg/as-object/nested-embedded-svg-size-changes-no-layout-triggers-2.html [ NeedsRebaseline ]
+crbug.com/560418 virtual/syncpaint/fast/repaint/details-open-repaint.html [ NeedsRebaseline ]
+crbug.com/560418 virtual/syncpaint/fast/repaint/overflow-scroll-body-appear.html [ NeedsRebaseline ]
+crbug.com/560418 virtual/syncpaint/fast/repaint/resize-scrollable-iframe.html [ NeedsRebaseline ]
+crbug.com/560418 fast/repaint/details-open-repaint.html [ NeedsRebaseline ]
+crbug.com/560418 fast/repaint/line-flow-with-floats-9.html [ NeedsRebaseline ]
+crbug.com/560418 fast/repaint/overflow-scroll-body-appear.html [ NeedsRebaseline ]
+crbug.com/560418 fast/repaint/resize-scrollable-iframe.html [ NeedsRebaseline ]
+crbug.com/560418 virtual/syncpaint/fast/repaint/line-flow-with-floats-9.html [ NeedsRebaseline ]
+
 crbug.com/498539 http/tests/inspector/elements/styles/selector-line.html [ Pass Timeout ]
 crbug.com/498539 http/tests/inspector/network/network-datareceived.html [ Pass Timeout ]
 crbug.com/498539 [ Win ] inspector/tracing/decode-resize.html [ Failure Timeout ]

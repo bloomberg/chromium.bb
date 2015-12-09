@@ -1517,6 +1517,11 @@ void LayoutObject::adjustPreviousPaintInvalidationForScrollIfNeeded(const Double
     m_previousPaintInvalidationRect.move(LayoutSize(scrollDelta));
 }
 
+void LayoutObject::clearPreviousPaintInvalidationRects()
+{
+    setPreviousPaintInvalidationRect(LayoutRect());
+}
+
 void LayoutObject::incrementallyInvalidatePaint(const LayoutBoxModelObject& paintInvalidationContainer, const LayoutRect& oldBounds, const LayoutRect& newBounds, const LayoutPoint& positionFromPaintInvalidationBacking)
 {
     ASSERT(oldBounds.location() == newBounds.location());
@@ -3423,7 +3428,7 @@ void LayoutObject::invalidatePaintOfPreviousPaintInvalidationRect(const LayoutBo
     // Clear previous paint invalidation rect on the original paint invalidation container to avoid
     // under-invalidation if the new paint invalidation rect on the new paint invalidation container
     // happens to be the same as the old one.
-    setPreviousPaintInvalidationRect(LayoutRect());
+    clearPreviousPaintInvalidationRects();
 }
 
 void LayoutObject::invalidatePaintIncludingNonCompositingDescendants()

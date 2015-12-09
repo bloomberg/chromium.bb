@@ -12,6 +12,7 @@
 #include "core/layout/LayoutScrollbarPart.h"
 #include "core/layout/PaintInvalidationState.h"
 #include "core/paint/PaintLayer.h"
+#include "platform/graphics/GraphicsLayer.h"
 
 namespace blink {
 
@@ -24,37 +25,81 @@ void PaintInvalidationCapableScrollableArea::willRemoveScrollbar(Scrollbar* scro
     ScrollableArea::willRemoveScrollbar(scrollbar, orientation);
 }
 
-// Returns true if the scroll control is invalidated.
-static bool invalidatePaintOfScrollControlIfNeeded(const IntRect& scrollControlRect, LayoutRect& previousPaintInvalidationRect, bool needsPaintInvalidation, LayoutBox& box, const PaintInvalidationState& paintInvalidationState, const LayoutBoxModelObject& paintInvalidationContainer)
+static LayoutRect scrollControlPaintInvalidationRect(const IntRect& scrollControlRect, const LayoutBox& box, const PaintInvalidationState& paintInvalidationState, const LayoutBoxModelObject& paintInvalidationContainer)
 {
     LayoutRect paintInvalidationRect(scrollControlRect);
     if (!paintInvalidationRect.isEmpty())
         PaintLayer::mapRectToPaintInvalidationBacking(&box, &paintInvalidationContainer, paintInvalidationRect, &paintInvalidationState);
+    return paintInvalidationRect;
+}
 
-    if (paintInvalidationRect != previousPaintInvalidationRect) {
+// Returns true if the scroll control is invalidated.
+static bool invalidatePaintOfScrollControlIfNeeded(const LayoutRect& newPaintInvalidationRect, const LayoutRect& previousPaintInvalidationRect, bool needsPaintInvalidation, LayoutBox& box, const LayoutBoxModelObject& paintInvalidationContainer)
+{
+    bool shouldInvalidateNewRect = needsPaintInvalidation;
+    if (newPaintInvalidationRect != previousPaintInvalidationRect) {
         box.invalidatePaintUsingContainer(paintInvalidationContainer, previousPaintInvalidationRect, PaintInvalidationScroll);
-        previousPaintInvalidationRect = paintInvalidationRect;
-        needsPaintInvalidation = true;
+        shouldInvalidateNewRect = true;
     }
-
-    if (needsPaintInvalidation) {
-        box.invalidatePaintUsingContainer(paintInvalidationContainer, paintInvalidationRect, PaintInvalidationScroll);
+    if (shouldInvalidateNewRect) {
+        box.invalidatePaintUsingContainer(paintInvalidationContainer, newPaintInvalidationRect, PaintInvalidationScroll);
+        box.enclosingLayer()->setNeedsRepaint();
         return true;
     }
-
     return false;
 }
 
-static void invalidatePaintOfScrollbarIfNeeded(Scrollbar* scrollbar, GraphicsLayer* scrollbarGraphicsLayer, LayoutRect& previousPaintInvalidationRect, bool needsPaintInvalidation, LayoutBox& box, const PaintInvalidationState& paintInvalidationState, const LayoutBoxModelObject& paintInvalidationContainer)
+struct ScrollbarPaintInvalidationData {
+    Scrollbar* scrollbar;
+    GraphicsLayer* graphicsLayer;
+    LayoutRect& previousPaintInvalidatioRect;
+
+};
+
+static void invalidatePaintOfScrollbarIfNeeded(Scrollbar* scrollbar, GraphicsLayer* graphicsLayer, bool& previouslyWasOverlay, LayoutRect& previousPaintInvalidationRect, bool needsPaintInvalidationArg, LayoutBox& box, const PaintInvalidationState& paintInvalidationState, const LayoutBoxModelObject& paintInvalidationContainer)
 {
-    IntRect scrollbarRect = scrollbar && !scrollbarGraphicsLayer ? scrollbar->frameRect() : IntRect();
-    if (!invalidatePaintOfScrollControlIfNeeded(scrollbarRect, previousPaintInvalidationRect, needsPaintInvalidation, box, paintInvalidationState, paintInvalidationContainer))
-        return;
-    if (!scrollbar)
+    bool isOverlay = scrollbar && scrollbar->isOverlayScrollbar();
+
+    // Calculate paint invalidation rect of the scrollbar, except overlay composited scrollbars because we invalidate the graphics layer only.
+    LayoutRect newPaintInvalidationRect;
+    if (scrollbar && !(graphicsLayer && isOverlay))
+        newPaintInvalidationRect = scrollControlPaintInvalidationRect(scrollbar->frameRect(), box, paintInvalidationState, paintInvalidationContainer);
+
+    bool needsPaintInvalidation = needsPaintInvalidationArg;
+    if (graphicsLayer && needsPaintInvalidation) {
+        graphicsLayer->setNeedsDisplay();
+        graphicsLayer->setContentsNeedsDisplay();
+        // If the scrollbar needs paint invalidation but didn't change location/size or the scrollbar is an
+        // overlay scrollbar (paint invalidation rect is empty), invalidating the graphics layer is enough.
+        // Otherwise invalidatePaintOfScrollControlIfNeeded() below will invalidate the old and new location
+        // of the scrollbar on the box's paint invalidation container to ensure newly expanded/shrunk areas
+        // of the box to be invalidated.
+        needsPaintInvalidation = false;
+    }
+
+    // Invalidate the box's display item client if the box's padding box size is affected by change of the
+    // non-overlay scrollbar width. We detect change of paint invalidation rect size instead of change of
+    // scrollbar width change, which may have some false-positives (e.g. the scrollbar changed length but
+    // not width) but won't invalidate more than expected because in the false-positive case the box must
+    // have changed size and have been invalidated.
+    LayoutSize newScrollbarUsedSpaceInBox;
+    if (!isOverlay)
+        newScrollbarUsedSpaceInBox = newPaintInvalidationRect.size();
+    LayoutSize previousScrollbarUsedSpaceInBox;
+    if (!previouslyWasOverlay)
+        previousScrollbarUsedSpaceInBox= previousPaintInvalidationRect.size();
+    if (newScrollbarUsedSpaceInBox != previousScrollbarUsedSpaceInBox)
+        paintInvalidationContainer.invalidateDisplayItemClientOnBacking(box, PaintInvalidationScroll, nullptr);
+
+    bool invalidated = invalidatePaintOfScrollControlIfNeeded(newPaintInvalidationRect, previousPaintInvalidationRect, needsPaintInvalidation, box, paintInvalidationContainer);
+
+    previousPaintInvalidationRect = newPaintInvalidationRect;
+    previouslyWasOverlay = isOverlay;
+
+    if (!invalidated || !scrollbar || graphicsLayer)
         return;
 
     paintInvalidationContainer.invalidateDisplayItemClientOnBacking(*scrollbar, PaintInvalidationScroll, &previousPaintInvalidationRect);
-    box.enclosingLayer()->setNeedsRepaint();
     if (scrollbar->isCustomScrollbar())
         toLayoutScrollbar(scrollbar)->invalidateDisplayItemClientsOfScrollbarParts(paintInvalidationContainer, previousPaintInvalidationRect);
 }
@@ -62,18 +107,12 @@ static void invalidatePaintOfScrollbarIfNeeded(Scrollbar* scrollbar, GraphicsLay
 void PaintInvalidationCapableScrollableArea::invalidatePaintOfScrollControlsIfNeeded(const PaintInvalidationState& paintInvalidationState, const LayoutBoxModelObject& paintInvalidationContainer)
 {
     LayoutBox& box = boxForScrollControlPaintInvalidation();
-    LayoutRect oldRect = m_horizontalScrollbarPreviousPaintInvalidationRect;
-    invalidatePaintOfScrollbarIfNeeded(horizontalScrollbar(), layerForHorizontalScrollbar(), m_horizontalScrollbarPreviousPaintInvalidationRect, horizontalScrollbarNeedsPaintInvalidation(), box, paintInvalidationState, paintInvalidationContainer);
-    bool scrollbarGeometryChanged = oldRect != m_horizontalScrollbarPreviousPaintInvalidationRect;
+    invalidatePaintOfScrollbarIfNeeded(horizontalScrollbar(), layerForHorizontalScrollbar(), m_horizontalScrollbarPreviouslyWasOverlay, m_horizontalScrollbarPreviousPaintInvalidationRect, horizontalScrollbarNeedsPaintInvalidation(), box, paintInvalidationState, paintInvalidationContainer);
+    invalidatePaintOfScrollbarIfNeeded(verticalScrollbar(), layerForVerticalScrollbar(), m_verticalScrollbarPreviouslyWasOverlay, m_verticalScrollbarPreviousPaintInvalidationRect, verticalScrollbarNeedsPaintInvalidation(), box, paintInvalidationState, paintInvalidationContainer);
 
-    oldRect = m_verticalScrollbarPreviousPaintInvalidationRect;
-    invalidatePaintOfScrollbarIfNeeded(verticalScrollbar(), layerForVerticalScrollbar(), m_verticalScrollbarPreviousPaintInvalidationRect, verticalScrollbarNeedsPaintInvalidation(), box, paintInvalidationState, paintInvalidationContainer);
-    scrollbarGeometryChanged |= oldRect != m_verticalScrollbarPreviousPaintInvalidationRect;
-
-    if (scrollbarGeometryChanged)
-        paintInvalidationContainer.invalidateDisplayItemClientOnBacking(box, PaintInvalidationScroll, nullptr);
-
-    if (invalidatePaintOfScrollControlIfNeeded(scrollCornerRect(), m_scrollCornerPreviousPaintInvalidationRect, scrollCornerNeedsPaintInvalidation(), box, paintInvalidationState, paintInvalidationContainer)) {
+    LayoutRect scrollCornerPaintInvalidationRect = scrollControlPaintInvalidationRect(scrollCornerRect(), box, paintInvalidationState, paintInvalidationContainer);
+    if (invalidatePaintOfScrollControlIfNeeded(scrollCornerPaintInvalidationRect, m_scrollCornerPreviousPaintInvalidationRect, scrollCornerNeedsPaintInvalidation(), box, paintInvalidationContainer)) {
+        m_scrollCornerPreviousPaintInvalidationRect = scrollCornerPaintInvalidationRect;
         if (LayoutScrollbarPart* scrollCorner = this->scrollCorner())
             scrollCorner->invalidateDisplayItemClientsIncludingNonCompositingDescendants(&paintInvalidationContainer, PaintInvalidationScroll, &m_scrollCornerPreviousPaintInvalidationRect);
         if (LayoutScrollbarPart* resizer = this->resizer())
@@ -81,6 +120,13 @@ void PaintInvalidationCapableScrollableArea::invalidatePaintOfScrollControlsIfNe
     }
 
     clearNeedsPaintInvalidationForScrollControls();
+}
+
+void PaintInvalidationCapableScrollableArea::clearPreviousPaintInvalidationRects()
+{
+    m_horizontalScrollbarPreviousPaintInvalidationRect = LayoutRect();
+    m_verticalScrollbarPreviousPaintInvalidationRect = LayoutRect();
+    m_scrollCornerPreviousPaintInvalidationRect = LayoutRect();
 }
 
 } // namespace blink

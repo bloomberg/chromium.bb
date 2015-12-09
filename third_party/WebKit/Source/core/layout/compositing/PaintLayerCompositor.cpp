@@ -333,11 +333,11 @@ void PaintLayerCompositor::updateWithoutAcceleratedCompositing(CompositingUpdate
 
 static void forceRecomputePaintInvalidationRectsIncludingNonCompositingDescendants(LayoutObject* layoutObject)
 {
-    // We clear the previous paint invalidation rect as it's wrong (paint invaliation container
+    // We clear the previous paint invalidation rect as it's wrong (paint invalidation container
     // changed, ...). Forcing a full invalidation will make us recompute it. Also we are not
     // changing the previous position from our paint invalidation container, which is fine as
     // we want a full paint invalidation anyway.
-    layoutObject->setPreviousPaintInvalidationRect(LayoutRect());
+    layoutObject->clearPreviousPaintInvalidationRects();
     layoutObject->setShouldDoFullPaintInvalidation();
 
     for (LayoutObject* child = layoutObject->slowFirstChild(); child; child = child->nextSibling()) {
