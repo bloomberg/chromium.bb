@@ -807,10 +807,12 @@ public class ContextualSearchManager extends ContextualSearchObservable
         // The primary language, according to the translation-service, always comes first.
         uniqueLanguages.add(trimLocaleToLanguage(getNativeTranslateServiceTargetLanguage()));
         // Merge in the IME locales, if possible.
-        Context context = mActivity.getApplicationContext();
-        if (context != null) {
-            for (String locale : UiUtils.getIMELocales(context)) {
-                uniqueLanguages.add(trimLocaleToLanguage(locale));
+        if (!ContextualSearchFieldTrial.disableKeyboardLanguagesForTranslation()) {
+            Context context = mActivity.getApplicationContext();
+            if (context != null) {
+                for (String locale : UiUtils.getIMELocales(context)) {
+                    uniqueLanguages.add(trimLocaleToLanguage(locale));
+                }
             }
         }
         return uniqueLanguages;
@@ -821,10 +823,12 @@ public class ContextualSearchManager extends ContextualSearchObservable
      * @return The {@link List} of languages the user understands or does not want translated.
      */
     private List<String> getAcceptLanguages() {
-        String acceptLanguages = getNativeAcceptLanguages();
         List<String> result = new ArrayList<String>();
-        for (String language : acceptLanguages.split(",")) {
-            result.add(language);
+        if (!ContextualSearchFieldTrial.disableAcceptLanguagesForTranslation()) {
+            String acceptLanguages = getNativeAcceptLanguages();
+            for (String language : acceptLanguages.split(",")) {
+                result.add(language);
+            }
         }
         return result;
     }

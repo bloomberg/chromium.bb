@@ -458,7 +458,8 @@ class ContextualSearchPolicy {
         // in one language and the one box translation in another, which might be confusing.
         // Also this logic should only apply on Android, where English setup is over used.
         if (targetLanguages.size() > 1
-                && TextUtils.equals(targetLanguages.get(0), Locale.ENGLISH.getLanguage())) {
+                && TextUtils.equals(targetLanguages.get(0), Locale.ENGLISH.getLanguage())
+                && !ContextualSearchFieldTrial.enableEnglishTargetTranslation()) {
             return targetLanguages.get(1);
         } else if (targetLanguages.size() > 0) {
             return targetLanguages.get(0);

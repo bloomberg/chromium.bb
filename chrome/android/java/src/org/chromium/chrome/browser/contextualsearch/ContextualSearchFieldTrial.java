@@ -36,6 +36,11 @@ public class ContextualSearchFieldTrial {
     @VisibleForTesting
     static final String DISABLE_AUTO_DETECT_TRANSLATION_ONEBOX =
             "disable_auto_detect_translation_onebox";
+    static final String DISABLE_KEYBOARD_LANGUAGES_FOR_TRANSLATION =
+            "disable_keyboard_languages_for_translation";
+    static final String DISABLE_ACCEPT_LANGUAGES_FOR_TRANSLATION =
+            "disable_accept_languages_for_translation";
+    static final String ENABLE_ENGLISH_TARGET_TRANSLATION = "enable_english_target_translation";
 
     // Cached values to avoid repeated and redundant JNI operations.
     private static Boolean sEnabled;
@@ -43,6 +48,9 @@ public class ContextualSearchFieldTrial {
     private static Integer sPeekPromoMaxCount;
     private static Boolean sDisableForceTranslationOnebox;
     private static Boolean sDisableAutoDetectTranslationOnebox;
+    private static Boolean sDisableAcceptLanguagesForTranslation;
+    private static Boolean sDisableKeyboardLanguagesForTranslation;
+    private static Boolean sEnableEnglishTaregetTranslation;
 
     /**
      * Don't instantiate.
@@ -153,6 +161,38 @@ public class ContextualSearchFieldTrial {
                     DISABLE_AUTO_DETECT_TRANSLATION_ONEBOX);
         }
         return sDisableAutoDetectTranslationOnebox.booleanValue();
+    }
+
+    /**
+     * @return Whether considering accept-languages for translation is disabled.
+     */
+    static boolean disableAcceptLanguagesForTranslation() {
+        if (sDisableAcceptLanguagesForTranslation == null) {
+            sDisableAcceptLanguagesForTranslation = getBooleanParam(
+                    DISABLE_ACCEPT_LANGUAGES_FOR_TRANSLATION);
+        }
+        return sDisableAcceptLanguagesForTranslation.booleanValue();
+    }
+
+    /**
+     * @return Whether considering keyboards for translation is disabled.
+     */
+    static boolean disableKeyboardLanguagesForTranslation() {
+        if (sDisableKeyboardLanguagesForTranslation == null) {
+            sDisableKeyboardLanguagesForTranslation =
+                    getBooleanParam(DISABLE_KEYBOARD_LANGUAGES_FOR_TRANSLATION);
+        }
+        return sDisableKeyboardLanguagesForTranslation.booleanValue();
+    }
+
+    /**
+     * @return Whether English-target translation should be enabled (default is disabled for 'en').
+     */
+    static boolean enableEnglishTargetTranslation() {
+        if (sEnableEnglishTaregetTranslation == null) {
+            sEnableEnglishTaregetTranslation = getBooleanParam(ENABLE_ENGLISH_TARGET_TRANSLATION);
+        }
+        return sEnableEnglishTaregetTranslation.booleanValue();
     }
 
     // --------------------------------------------------------------------------------------------
