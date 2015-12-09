@@ -442,10 +442,27 @@ void WebRtcLogUploader::UploadCompressedLog(
 
   scoped_ptr<net::URLFetcher> url_fetcher(net::URLFetcher::Create(
       GURL(chrome::kUploadURL), net::URLFetcher::POST, this));
-  url_fetcher->SetRequestContext(g_browser_process->system_request_context());
   url_fetcher->SetUploadData(content_type, *post_data);
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+      base::Bind(&WebRtcLogUploader::SetRequestContextOnUIThread,
+          base::Unretained(this), base::Unretained(url_fetcher.release()),
+          upload_done_data));
+}
+
+void WebRtcLogUploader::SetRequestContextOnUIThread(
+    net::URLFetcher* url_fetcher, const WebRtcLogUploadDoneData& data) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  url_fetcher->SetRequestContext(g_browser_process->system_request_context());
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+      base::Bind(&WebRtcLogUploader::StartAndTrackRequestContext,
+                 base::Unretained(this), base::Unretained(url_fetcher), data));
+}
+
+void WebRtcLogUploader::StartAndTrackRequestContext(
+    net::URLFetcher* url_fetcher, const WebRtcLogUploadDoneData& data) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   url_fetcher->Start();
-  upload_done_data_[url_fetcher.release()] = upload_done_data;
+  upload_done_data_[url_fetcher] = data;
 }
 
 void WebRtcLogUploader::DecreaseLogCount() {

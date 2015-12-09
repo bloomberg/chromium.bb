@@ -125,6 +125,13 @@ class WebRtcLogUploader : public net::URLFetcherDelegate {
       const WebRtcLogUploadDoneData& upload_done_data,
       scoped_ptr<std::string> post_data);
 
+  // A couple of helper functions due to having to hop to the UI thread
+  // to fetch the system_request_context and back again to the IO thread.
+  void SetRequestContextOnUIThread(
+      net::URLFetcher* url_fetcher, const WebRtcLogUploadDoneData& data);
+  void StartAndTrackRequestContext(
+      net::URLFetcher* url_fetcher, const WebRtcLogUploadDoneData& data);
+
   void DecreaseLogCount();
 
   void ShutdownOnIOThread();
