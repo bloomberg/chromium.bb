@@ -258,6 +258,7 @@ protected:
 
     PersistentHeapVectorWillBeHeapVector<Member<WebGLBuffer>> m_boundIndexedTransformFeedbackBuffers;
     PersistentHeapVectorWillBeHeapVector<Member<WebGLBuffer>> m_boundIndexedUniformBuffers;
+    GLint m_maxTransformFeedbackSeparateAttribs;
     size_t m_maxBoundUniformBufferIndex;
 
     PersistentWillBeMember<WebGLQuery> m_currentBooleanOcclusionQuery;

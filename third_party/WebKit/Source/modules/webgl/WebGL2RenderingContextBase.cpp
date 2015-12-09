@@ -158,10 +158,10 @@ void WebGL2RenderingContextBase::initializeNewContext()
     m_samplerUnits.clear();
     m_samplerUnits.resize(numCombinedTextureImageUnits);
 
-    GLint maxTransformFeedbackSeparateAttribs = 0;
-    webContext()->getIntegerv(GL_MAX_TRANSFORM_FEEDBACK_SEPARATE_ATTRIBS, &maxTransformFeedbackSeparateAttribs);
+    m_maxTransformFeedbackSeparateAttribs = 0;
+    webContext()->getIntegerv(GL_MAX_TRANSFORM_FEEDBACK_SEPARATE_ATTRIBS, &m_maxTransformFeedbackSeparateAttribs);
     m_boundIndexedTransformFeedbackBuffers.clear();
-    m_boundIndexedTransformFeedbackBuffers.resize(maxTransformFeedbackSeparateAttribs);
+    m_boundIndexedTransformFeedbackBuffers.resize(m_maxTransformFeedbackSeparateAttribs);
 
     GLint maxUniformBufferBindings = 0;
     webContext()->getIntegerv(GL_MAX_UNIFORM_BUFFER_BINDINGS, &maxUniformBufferBindings);
@@ -2176,6 +2176,20 @@ void WebGL2RenderingContextBase::transformFeedbackVaryings(WebGLProgram* program
 {
     if (isContextLost() || !validateWebGLObject("transformFeedbackVaryings", program))
         return;
+
+    switch (bufferMode) {
+    case GL_SEPARATE_ATTRIBS:
+        if (varyings.size() > static_cast<size_t>(m_maxTransformFeedbackSeparateAttribs)) {
+            synthesizeGLError(GL_INVALID_VALUE, "transformFeedbackVaryings", "too many varyings");
+            return;
+        }
+        break;
+    case GL_INTERLEAVED_ATTRIBS:
+        break;
+    default:
+        synthesizeGLError(GL_INVALID_ENUM, "transformFeedbackVaryings", "invalid buffer mode");
+        return;
+    }
 
     Vector<CString> keepAlive; // Must keep these instances alive while looking at their data
     Vector<const char*> varyingStrings;
