@@ -40,10 +40,10 @@
 #include "xf86drm.h"
 #include "xf86drmMode.h"
 
+#include "util/common.h"
+
 #include "buffers.h"
 #include "cursor.h"
-
-#define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
 
 struct cursor {
 	int fd;

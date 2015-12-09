@@ -1,0 +1,6 @@
+UTIL_FILES := \
+	common.h \
+	format.c \
+	format.h \
+	pattern.c \
+	pattern.h

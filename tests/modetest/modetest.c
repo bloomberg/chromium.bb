@@ -37,6 +37,7 @@
  * TODO: use cairo to write the mode info on the selected output once
  *       the mode has been programmed, along with possible test patterns.
  */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -58,6 +59,10 @@
 #include "xf86drm.h"
 #include "xf86drmMode.h"
 #include "drm_fourcc.h"
+
+#include "util/common.h"
+#include "util/format.h"
+#include "util/pattern.h"
 
 #include "buffers.h"
 #include "cursor.h"
@@ -116,7 +121,6 @@ struct device {
 	} mode;
 };
 
-#define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
 static inline int64_t U642I64(uint64_t val)
 {
 	return (int64_t)*((int64_t *)&val);
@@ -1047,7 +1051,7 @@ static int set_plane(struct device *dev, struct plane_arg *p)
 		p->w, p->h, p->format_str, plane_id);
 
 	plane_bo = bo_create(dev->fd, p->fourcc, p->w, p->h, handles,
-			     pitches, offsets, PATTERN_TILES);
+			     pitches, offsets, UTIL_PATTERN_TILES);
 	if (plane_bo == NULL)
 		return -1;
 
@@ -1123,8 +1127,9 @@ static void set_mode(struct device *dev, struct pipe_arg *pipes, unsigned int co
 			dev->mode.height = pipe->mode->vdisplay;
 	}
 
-	bo = bo_create(dev->fd, pipes[0].fourcc, dev->mode.width, dev->mode.height,
-		       handles, pitches, offsets, PATTERN_SMPTE);
+	bo = bo_create(dev->fd, pipes[0].fourcc, dev->mode.width,
+		       dev->mode.height, handles, pitches, offsets,
+		       UTIL_PATTERN_SMPTE);
 	if (bo == NULL)
 		return;
 
@@ -1202,7 +1207,7 @@ static void set_cursors(struct device *dev, struct pipe_arg *pipes, unsigned int
 	 * translucent alpha
 	 */
 	bo = bo_create(dev->fd, DRM_FORMAT_ARGB8888, cw, ch, handles, pitches,
-		       offsets, PATTERN_PLAIN);
+		       offsets, UTIL_PATTERN_PLAIN);
 	if (bo == NULL)
 		return;
 
@@ -1241,9 +1246,9 @@ static void test_page_flip(struct device *dev, struct pipe_arg *pipes, unsigned 
 	unsigned int i;
 	int ret;
 
-	other_bo = bo_create(dev->fd, pipes[0].fourcc,
-			     dev->mode.width, dev->mode.height,
-			     handles, pitches, offsets, PATTERN_PLAIN);
+	other_bo = bo_create(dev->fd, pipes[0].fourcc, dev->mode.width,
+			     dev->mode.height, handles, pitches, offsets,
+			     UTIL_PATTERN_PLAIN);
 	if (other_bo == NULL)
 		return;
 
@@ -1391,7 +1396,7 @@ static int parse_connector(struct pipe_arg *pipe, const char *arg)
 		pipe->format_str[4] = '\0';
 	}
 
-	pipe->fourcc = format_fourcc(pipe->format_str);
+	pipe->fourcc = util_format_fourcc(pipe->format_str);
 	if (pipe->fourcc == 0)  {
 		fprintf(stderr, "unknown format %s\n", pipe->format_str);
 		return -1;
@@ -1444,7 +1449,7 @@ static int parse_plane(struct plane_arg *plane, const char *p)
 		strcpy(plane->format_str, "XR24");
 	}
 
-	plane->fourcc = format_fourcc(plane->format_str);
+	plane->fourcc = util_format_fourcc(plane->format_str);
 	if (plane->fourcc == 0) {
 		fprintf(stderr, "unknown format %s\n", plane->format_str);
 		return -EINVAL;

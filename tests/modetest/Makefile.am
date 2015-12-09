@@ -4,6 +4,7 @@ AM_CFLAGS = $(filter-out -Wpointer-arith, $(WARN_CFLAGS))
 
 AM_CFLAGS += \
 	-I$(top_srcdir)/include/drm \
+	-I$(top_srcdir)/tests \
 	-I$(top_srcdir)
 
 if HAVE_INSTALL_TESTS
@@ -18,11 +19,8 @@ modetest_SOURCES = $(MODETEST_FILES)
 
 modetest_LDADD = \
 	$(top_builddir)/libdrm.la \
+	$(top_builddir)/tests/util/libutil.la \
+	$(CAIRO_LIBS) \
 	-lpthread
-
-if HAVE_CAIRO
-AM_CFLAGS += $(CAIRO_CFLAGS)
-modetest_LDADD += $(CAIRO_LIBS)
-endif
 
 EXTRA_DIST = Android.mk

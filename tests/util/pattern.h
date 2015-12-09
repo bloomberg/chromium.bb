@@ -1,5 +1,4 @@
 /*
- * DRM based mode setting test program
  * Copyright 2008 Tungsten Graphics
  *   Jakob Bornecrantz <jakob@tungstengraphics.com>
  * Copyright 2008 Intel Corporation
@@ -24,17 +23,17 @@
  * IN THE SOFTWARE.
  */
 
-#ifndef __BUFFERS_H__
-#define __BUFFERS_H__
+#ifndef UTIL_PATTERN_H
+#define UTIL_PATTERN_H
 
-#include "util/pattern.h"
+enum util_fill_pattern {
+	UTIL_PATTERN_TILES,
+	UTIL_PATTERN_PLAIN,
+	UTIL_PATTERN_SMPTE,
+};
 
-struct bo;
+void util_fill_pattern(uint32_t format, enum util_fill_pattern pattern,
+		       void *planes[3], unsigned int width,
+		       unsigned int height, unsigned int stride);
 
-struct bo *bo_create(int fd, unsigned int format,
-		   unsigned int width, unsigned int height,
-		   unsigned int handles[4], unsigned int pitches[4],
-		   unsigned int offsets[4], enum util_fill_pattern pattern);
-void bo_destroy(struct bo *bo);
-
-#endif
+#endif /* UTIL_PATTERN_H */

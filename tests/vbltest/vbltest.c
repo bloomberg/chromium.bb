@@ -54,7 +54,7 @@
 #include "xf86drm.h"
 #include "xf86drmMode.h"
 
-#define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
+#include "util/common.h"
 
 extern char *optarg;
 extern int optind, opterr, optopt;

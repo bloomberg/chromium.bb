@@ -1,5 +1,4 @@
 /*
- * DRM based mode setting test program
  * Copyright 2008 Tungsten Graphics
  *   Jakob Bornecrantz <jakob@tungstengraphics.com>
  * Copyright 2008 Intel Corporation
@@ -24,17 +23,43 @@
  * IN THE SOFTWARE.
  */
 
-#ifndef __BUFFERS_H__
-#define __BUFFERS_H__
+#ifndef UTIL_FORMAT_H
+#define UTIL_FORMAT_H
 
-#include "util/pattern.h"
+struct util_color_component {
+	unsigned int length;
+	unsigned int offset;
+};
 
-struct bo;
+struct util_rgb_info {
+	struct util_color_component red;
+	struct util_color_component green;
+	struct util_color_component blue;
+	struct util_color_component alpha;
+};
 
-struct bo *bo_create(int fd, unsigned int format,
-		   unsigned int width, unsigned int height,
-		   unsigned int handles[4], unsigned int pitches[4],
-		   unsigned int offsets[4], enum util_fill_pattern pattern);
-void bo_destroy(struct bo *bo);
+enum util_yuv_order {
+	YUV_YCbCr = 1,
+	YUV_YCrCb = 2,
+	YUV_YC = 4,
+	YUV_CY = 8,
+};
 
-#endif
+struct util_yuv_info {
+	enum util_yuv_order order;
+	unsigned int xsub;
+	unsigned int ysub;
+	unsigned int chroma_stride;
+};
+
+struct util_format_info {
+	uint32_t format;
+	const char *name;
+	const struct util_rgb_info rgb;
+	const struct util_yuv_info yuv;
+};
+
+uint32_t util_format_fourcc(const char *name);
+const struct util_format_info *util_format_info_find(uint32_t format);
+
+#endif /* UTIL_FORMAT_H */

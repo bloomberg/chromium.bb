@@ -35,7 +35,8 @@
 #include "xf86drm.h"
 #include "xf86drmMode.h"
 
-#define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
+#include "util/common.h"
+
 static inline int64_t U642I64(uint64_t val)
 {
 	return (int64_t)*((int64_t *)&val);

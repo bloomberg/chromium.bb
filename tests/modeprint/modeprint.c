@@ -41,7 +41,7 @@
 #include "xf86drm.h"
 #include "xf86drmMode.h"
 
-#define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
+#include "util/common.h"
 
 int current;
 int connectors;
