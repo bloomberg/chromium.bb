@@ -80,9 +80,9 @@ bool SyncBundle::HasPendingExtensionData(const std::string& id) const {
 }
 
 void SyncBundle::AddPendingExtensionData(
-    const std::string& id,
     const ExtensionSyncData& extension_sync_data) {
-  pending_sync_data_.insert(std::make_pair(id, extension_sync_data));
+  pending_sync_data_.insert(std::make_pair(extension_sync_data.id(),
+                                           extension_sync_data));
 }
 
 std::vector<ExtensionSyncData> SyncBundle::GetPendingExtensionData() const {

@@ -1409,6 +1409,40 @@ TEST_F(ExtensionServiceSyncTest, ProcessSyncDataPermissionApproval) {
   }
 }
 
+// Regression test for crbug.com/558299
+TEST_F(ExtensionServiceSyncTest, DontSyncThemes) {
+  InitializeEmptyExtensionService();
+
+  // The user has enabled sync.
+  ProfileSyncServiceFactory::GetForProfile(profile())->SetSyncSetupCompleted();
+  // Make sure ExtensionSyncService is created, so it'll be notified of changes.
+  extension_sync_service();
+
+  service()->Init();
+  ASSERT_TRUE(service()->is_ready());
+
+  syncer::FakeSyncChangeProcessor* processor =
+      new syncer::FakeSyncChangeProcessor;
+  extension_sync_service()->MergeDataAndStartSyncing(
+      syncer::EXTENSIONS,
+      syncer::SyncDataList(),
+      make_scoped_ptr(processor),
+      make_scoped_ptr(new syncer::SyncErrorFactoryMock));
+
+  processor->changes().clear();
+
+  // Sanity check: Installing an extension should result in a sync change.
+  InstallCRX(data_dir().AppendASCII("good.crx"), INSTALL_NEW);
+  EXPECT_EQ(1u, processor->changes().size());
+
+  processor->changes().clear();
+
+  // Installing a theme should not result in a sync change (themes are handled
+  // separately by ThemeSyncableService).
+  InstallCRX(data_dir().AppendASCII("theme.crx"), INSTALL_NEW);
+  EXPECT_TRUE(processor->changes().empty());
+}
+
 #if defined(ENABLE_SUPERVISED_USERS)
 
 class ExtensionServiceTestSupervised : public ExtensionServiceSyncTest,

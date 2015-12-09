@@ -1686,6 +1686,10 @@ void ExtensionService::OnExtensionInstalled(
       pending_extension_manager()->GetById(id);
   if (pending_extension_info) {
     if (!pending_extension_info->ShouldAllowInstall(extension)) {
+      // Hack for crbug.com/558299, see comment on DeleteThemeDoNotUse.
+      if (extension->is_theme() && pending_extension_info->is_from_sync())
+        ExtensionSyncService::Get(profile_)->DeleteThemeDoNotUse(*extension);
+
       pending_extension_manager()->Remove(id);
 
       LOG(WARNING) << "ShouldAllowInstall() returned false for "

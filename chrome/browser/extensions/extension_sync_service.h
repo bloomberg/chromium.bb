@@ -67,6 +67,12 @@ class ExtensionSyncService : public syncer::SyncableService,
   void SetSyncStartFlareForTesting(
       const syncer::SyncableService::StartSyncFlare& flare);
 
+  // Special hack: There was a bug where themes incorrectly ended up in the
+  // syncer::EXTENSIONS type. This is for cleaning up the data. crbug.com/558299
+  // DO NOT USE FOR ANYTHING ELSE!
+  // TODO(treib,devlin): Remove this after M52 or so.
+  void DeleteThemeDoNotUse(const extensions::Extension& theme);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(TwoClientAppsSyncTest, UnexpectedLaunchType);
   FRIEND_TEST_ALL_PREFIXES(ExtensionDisabledGlobalErrorTest,
@@ -116,6 +122,11 @@ class ExtensionSyncService : public syncer::SyncableService,
       syncer::ModelType type,
       bool include_everything,
       std::vector<extensions::ExtensionSyncData>* sync_data_list) const;
+
+  // Returns whether the given extension should be synced by this class.
+  // Filters out unsyncable extensions as well as themes (which are handled by
+  // ThemeSyncableService instead).
+  bool ShouldSync(const extensions::Extension& extension) const;
 
   // The normal profile associated with this ExtensionSyncService.
   Profile* profile_;
