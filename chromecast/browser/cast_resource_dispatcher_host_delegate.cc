@@ -8,13 +8,14 @@
 #include "chromecast/net/connectivity_checker.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request.h"
+#include "net/url_request/url_request_status.h"
 
 namespace chromecast {
 namespace shell {
 
 void CastResourceDispatcherHostDelegate::RequestComplete(
     net::URLRequest* url_request) {
-  if (!url_request->status().is_success()) {
+  if (url_request->status().status() == net::URLRequestStatus::FAILED) {
     LOG(ERROR) << "Failed to load resource " << url_request->url()
                << "; status:" << url_request->status().status() << ", error:"
                << net::ErrorToShortString(url_request->status().error());
