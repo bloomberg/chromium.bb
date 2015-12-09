@@ -62,6 +62,9 @@
 #     where the value of the policy can be entered. 'main' policies on
 #     Windows ignore this. Policies on Mac are using this instead of caption.
 #
+# Non-translateable strings should be tagged using <ph name="..."></ph> as
+# described in https://code.google.com/p/grit-i18n/wiki/GritUsersGuide.
+#
 # Generated grd names:
 #   Each name has two parts: the second part is either CAPTION, DESC or LABEL,
 #   and the first part identifies the item the text applies to:
@@ -154,7 +157,7 @@
 #   cloud), if the optional key 'default_for_enterprise_users' is set, its value
 #   is applied as mandatory policy unless a different setting is received from
 #   the cloud.
-#
+
   'risk_tag_definitions' : [
     # All following tags are ordered by severity of their impact.
     # TODO(fhorschig|tnagel): Revisit user-descriptions after reviews.
@@ -1916,11 +1919,11 @@
           },
           'example_value': 'com.example.spnego',
           'id': 305,
-          'caption': '''Account type for HTTP Negotiate authentication''',
+          'caption': '''Account type for <ph name="HTTP_NEGOTIATE">HTTP Negotiate</ph> authentication''',
           'tags': [],
-          'desc': '''Specifies the account type of the accounts provided by the Android authentication app that supports HTTP Negotiate authentication (e.g. Kerberos authentication). This information should be available from the supplier of the authentication app. For more details see https://goo.gl/hajyfN.
+          'desc': '''Specifies the account type of the accounts provided by the Android authentication app that supports <ph name="HTTP_NEGOTIATE">HTTP Negotiate</ph> authentication (e.g. Kerberos authentication). This information should be available from the supplier of the authentication app. For more details see https://goo.gl/hajyfN.
 
-          If no setting is provided, HTTP Negotiate authentication is disabled on Android.''',
+          If no setting is provided, <ph name="HTTP_NEGOTIATE">HTTP Negotiate</ph> authentication is disabled on Android.''',
         },
         {
           'name': 'AllowCrossOriginAuthPrompt',
@@ -4409,7 +4412,7 @@
         }
       }
 
-      Printers connected to Google Cloud Print are considered "cloud", the rest of the printers are classified as "local".
+      Printers connected to <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> are considered <ph name="PRINTER_TYPE_CLOUD">"cloud"</ph>, the rest of the printers are classified as <ph name="PRINTER_TYPE_LOCAL">"local"</ph>.
       Omitting a field means all values match, for example, not specifying connectivity will cause Print Preview to initiate the discovery of all kinds of printers, local and cloud.
       Regular expression patterns must follow the JavaScript RegExp syntax and matches are case sensistive.''',
     },
@@ -4426,9 +4429,9 @@
       'id': 118,
       'caption': '''Disable TLS False Start''',
       'tags': [],
-      'desc': '''Specifies whether the TLS False Start optimization should be disabled. For historical reasons, this policy is named DisableSSLRecordSplitting.
+      'desc': '''Specifies whether the <ph name="TLS_FALSE_START">TLS False Start</ph> optimization should be disabled. For historical reasons, this policy is named DisableSSLRecordSplitting.
 
-      If the policy is not set, or is set to false, then TLS False Start will be enabled. If it is set to true, TLS False Start will be disabled.''',
+      If the policy is not set, or is set to false, then <ph name="TLS_FALSE_START">TLS False Start</ph> will be enabled. If it is set to true, <ph name="TLS_FALSE_START">TLS False Start</ph> will be disabled.''',
     },
     {
       'name': 'EnableOnlineRevocationChecks',
@@ -7379,15 +7382,18 @@
       'desc': '''Configures a list of managed bookmarks.
 
       The policy consists of a list of bookmarks whereas each bookmark is a
-      dictionary containing the keys "name" and "url" which hold the bookmark's
-      name and its target. A subfolder may be configured by defining a bookmark
-      without an "url" key but with an additional "children" key which itself
-      contains a list of bookmarks as defined above (some of which may be
-      folders again). <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>
-      amends incomplete URLs as if they were submitted via the Omnibox, for
-      example "google.com" becomes "https://google.com/".
+      dictionary containing the keys <ph name="NAME">"name"</ph> and <ph
+      name="URL">"url"</ph> which hold the bookmark's name and its target. A
+      subfolder may be configured by defining a bookmark without an <ph
+      name="URL">"url"</ph> key but with an additional <ph
+      name="CHILDREN">"children"</ph> key which itself contains a list of
+      bookmarks as defined above (some of which may be folders again). <ph
+      name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> amends incomplete URLs
+      as if they were submitted via the Omnibox, for example <ph
+      name="GOOGLE_COM">"google.com"</ph> becomes <ph
+      name="HTTPS_GOOGLE_COM">"https://google.com/"</ph>.
 
-      These bookmarks are placed in a Managed bookmarks folder that can't be modified by the user, but the user can choose to hide it from the bookmark bar. Managed bookmarks are not synced to the user account and can't be modified by extensions.''',
+      These bookmarks are placed in a "Managed bookmarks" folder that can't be modified by the user, but the user can choose to hide it from the bookmark bar. Managed bookmarks are not synced to the user account and can't be modified by extensions.''',
     },
     {
       'name': 'DataCompressionProxyEnabled',
@@ -8115,7 +8121,7 @@
       'desc': '''Introduction text for the generated policy documentation''',
       'text': '''Both Chromium and Google Chrome support the same set of
       policies. Please note that this document may include policies that are
-      targeted for unreleased software versions (i.e. their 'supported on' entry
+      targeted for unreleased software versions (i.e. their 'Supported on' entry
       refers to an unreleased version) and that such policies are subject to
       change or removal without prior notice.
 
