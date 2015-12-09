@@ -3,10 +3,14 @@ Test window.CSS.escape()
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS CSS.escape('\0') threw exception InvalidCharacterError: Failed to execute 'escape' on 'CSS': The string contains an invalid character..
-PASS CSS.escape('a\0') threw exception InvalidCharacterError: Failed to execute 'escape' on 'CSS': The string contains an invalid character..
-PASS CSS.escape('\0b') threw exception InvalidCharacterError: Failed to execute 'escape' on 'CSS': The string contains an invalid character..
-PASS CSS.escape('a\0b') threw exception InvalidCharacterError: Failed to execute 'escape' on 'CSS': The string contains an invalid character..
+PASS CSS.escape('\0') is "�"
+PASS CSS.escape('a\0') is "a�"
+PASS CSS.escape('\0b') is "�b"
+PASS CSS.escape('a\0b') is "a�b"
+PASS CSS.escape('�') is "�"
+PASS CSS.escape('a�') is "a�"
+PASS CSS.escape('�b') is "�b"
+PASS CSS.escape('a�b') is "a�b"
 PASS CSS.escape() threw exception TypeError: Failed to execute 'escape' on 'CSS': 1 argument required, but only 0 present..
 PASS CSS.escape(true) is "true"
 PASS CSS.escape(false) is "false"

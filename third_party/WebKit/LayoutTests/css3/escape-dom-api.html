@@ -8,10 +8,15 @@
     // Test from https://github.com/mathiasbynens/CSS.escape
     description("Test window.CSS.escape()");
 
-    shouldThrow("CSS.escape('\0')");
-    shouldThrow("CSS.escape('a\0')");
-    shouldThrow("CSS.escape('\0b')");
-    shouldThrow("CSS.escape('a\0b')");
+    shouldBeEqualToString("CSS.escape('\0')", "\ufffd");
+    shouldBeEqualToString("CSS.escape('a\0')", "a\ufffd");
+    shouldBeEqualToString("CSS.escape('\0b')", "\ufffdb");
+    shouldBeEqualToString("CSS.escape('a\0b')", "a\ufffdb");
+
+    shouldBeEqualToString("CSS.escape('\ufffd')", "\ufffd");
+    shouldBeEqualToString("CSS.escape('a\ufffd')", "a\ufffd");
+    shouldBeEqualToString("CSS.escape('\ufffdb')", "\ufffdb");
+    shouldBeEqualToString("CSS.escape('a\ufffdb')", "a\ufffdb");
 
     shouldThrow("CSS.escape()");
     shouldBeEqualToString("CSS.escape(true)", "true");
