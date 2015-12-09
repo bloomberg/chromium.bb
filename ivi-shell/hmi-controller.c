@@ -224,10 +224,11 @@ mode_divided_into_tiling(struct hmi_controller *hmi_ctrl,
 	struct ivi_layout_surface **surfaces;
 	struct ivi_layout_surface **new_order;
 	const uint32_t duration = hmi_ctrl->hmi_setting->transition_duration;
+	struct ivi_layout_layer *ivilayer = NULL;
 
 	int32_t i = 0;
 	int32_t surf_num = 0;
-	uint32_t num = 1;
+	int32_t idx = 0;
 
 	surfaces = MEM_ALLOC(sizeof(*surfaces) * surface_length);
 	new_order = MEM_ALLOC(sizeof(*surfaces) * surface_length);
@@ -242,16 +243,23 @@ mode_divided_into_tiling(struct hmi_controller *hmi_ctrl,
 		surfaces[surf_num++] = ivisurf;
 	}
 
-	for (i = 0; i < surf_num; i++) {
-		ivisurf = surfaces[i];
-		new_order[i] = ivisurf;
+	wl_list_for_each_reverse(layer, layer_list, link) {
+		if (idx >= surf_num)
+			break;
 
-		if (num <= 8) {
-			if (num < 5) {
-				surface_x = (int32_t)((num - 1) * (surface_width));
+		ivilayer = layer->ivilayer;
+
+		for (i = 0; i < 8; i++, idx++) {
+			if (idx >= surf_num)
+				break;
+
+			ivisurf = surfaces[idx];
+			new_order[i] = ivisurf;
+			if (i < 4) {
+				surface_x = (int32_t)(i * (surface_width));
 				surface_y = 0;
 			} else {
-				surface_x = (int32_t)((num - 5) * (surface_width));
+				surface_x = (int32_t)((i - 4) * (surface_width));
 				surface_y = (int32_t)surface_height;
 			}
 
@@ -264,17 +272,15 @@ mode_divided_into_tiling(struct hmi_controller *hmi_ctrl,
 					(int32_t)surface_width,
 					(int32_t)surface_height);
 
-			num++;
-			continue;
 		}
-		ivi_layout_interface->surface_set_visibility(ivisurf, false);
-	}
+		ivi_layout_interface->layer_set_render_order(ivilayer, new_order, i);
 
-	if (surf_num > 0) {
-		ivi_layout_interface->layer_set_transition(layer->ivilayer,
-				IVI_LAYOUT_TRANSITION_LAYER_VIEW_ORDER,
-				duration);
+		ivi_layout_interface->layer_set_transition(ivilayer,
+					IVI_LAYOUT_TRANSITION_LAYER_VIEW_ORDER,
+					duration);
 	}
+	for (i = idx; i < surf_num; i++)
+		ivi_layout_interface->surface_set_visibility(surfaces[i], false);
 
 	free(surfaces);
 	free(new_order);
