@@ -43,23 +43,22 @@ void StyleInvalidator::invalidate(Document& document)
 void StyleInvalidator::scheduleInvalidationSetsForElement(const InvalidationLists& invalidationLists, Element& element)
 {
     ASSERT(element.inActiveDocument());
-    if (element.styleChangeType() >= SubtreeStyleChange)
-        return;
-
     bool requiresDescendantInvalidation = false;
 
-    for (auto& invalidationSet : invalidationLists.descendants) {
-        if (invalidationSet->wholeSubtreeInvalid()) {
-            element.setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::StyleInvalidator));
-            clearInvalidation(element);
-            return;
+    if (element.styleChangeType() < SubtreeStyleChange) {
+        for (auto& invalidationSet : invalidationLists.descendants) {
+            if (invalidationSet->wholeSubtreeInvalid()) {
+                element.setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::StyleInvalidator));
+                requiresDescendantInvalidation = false;
+                break;
+            }
+
+            if (invalidationSet->invalidatesSelf())
+                element.setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::StyleInvalidator));
+
+            if (!invalidationSet->isEmpty())
+                requiresDescendantInvalidation = true;
         }
-
-        if (invalidationSet->invalidatesSelf())
-            element.setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::StyleInvalidator));
-
-        if (!invalidationSet->isEmpty())
-            requiresDescendantInvalidation = true;
     }
 
     if (invalidationLists.siblings.isEmpty() && !requiresDescendantInvalidation)
