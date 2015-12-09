@@ -6,6 +6,7 @@
 #include "core/layout/LayoutTestHelper.h"
 
 #include "core/frame/FrameHost.h"
+#include "core/html/HTMLIFrameElement.h"
 #include "platform/graphics/test/FakeGraphicsLayerFactory.h"
 
 namespace blink {
@@ -42,10 +43,33 @@ void RenderingTest::SetUp()
 
 void RenderingTest::TearDown()
 {
+    if (m_subframe) {
+        m_subframe->detach(FrameDetachType::Remove);
+        static_cast<SingleChildFrameLoaderClient*>(document().frame()->client())->setChild(nullptr);
+        document().frame()->host()->decrementSubframeCount();
+    }
+
     // We need to destroy most of the Blink structure here because derived tests may restore
     // RuntimeEnabledFeatures setting during teardown, which happens before our destructor
     // getting invoked, breaking the assumption that REF can't change during Blink lifetime.
     m_pageHolder = nullptr;
+}
+
+Document& RenderingTest::setupChildIframe(const AtomicString& iframeElementId, const String& htmlContentOfIframe)
+{
+
+    HTMLIFrameElement& iframe = *toHTMLIFrameElement(document().getElementById(iframeElementId));
+    m_frameLoaderClient = FrameLoaderClientWithParent::create(document().frame());
+    m_subframe = LocalFrame::create(m_frameLoaderClient.get(), document().frame()->host(), &iframe);
+    m_subframe->setView(FrameView::create(m_subframe.get(), IntSize(500, 500)));
+    m_subframe->init();
+    static_cast<SingleChildFrameLoaderClient*>(document().frame()->client())->setChild(m_subframe.get());
+    document().frame()->host()->incrementSubframeCount();
+    Document& frameDocument = *iframe.contentDocument();
+
+    frameDocument.setBaseURLOverride(KURL(ParsedURLString, "http://test.com"));
+    frameDocument.body()->setInnerHTML(htmlContentOfIframe, ASSERT_NO_EXCEPTION);
+    return frameDocument;
 }
 
 } // namespace blink

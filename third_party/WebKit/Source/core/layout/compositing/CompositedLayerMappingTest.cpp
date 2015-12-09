@@ -6,11 +6,9 @@
 #include "core/layout/compositing/CompositedLayerMapping.h"
 
 #include "core/frame/FrameView.h"
-#include "core/html/HTMLIFrameElement.h"
 #include "core/layout/LayoutBoxModelObject.h"
 #include "core/layout/LayoutTestHelper.h"
 #include "core/layout/LayoutView.h"
-#include "core/loader/EmptyClients.h"
 #include "core/paint/PaintLayer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -63,6 +61,8 @@ private:
     {
         GraphicsLayer::setDrawDebugRedFillForTesting(true);
         RuntimeEnabledFeatures::setSlimmingPaintSynchronizedPaintingEnabled(m_originalSlimmingPaintSynchronizedPaintingEnabled);
+
+        RenderingTest::TearDown();
     }
 
     bool m_originalSlimmingPaintSynchronizedPaintingEnabled;
@@ -70,10 +70,11 @@ private:
 
 #define EXPECT_RECT_EQ(expected, actual) \
     do { \
-        EXPECT_EQ(expected.x(), actual.x()); \
-        EXPECT_EQ(expected.y(), actual.y()); \
-        EXPECT_EQ(expected.width(), actual.width()); \
-        EXPECT_EQ(expected.height(), actual.height()); \
+        const IntRect& actualRect = actual; \
+        EXPECT_EQ(expected.x(), actualRect.x()); \
+        EXPECT_EQ(expected.y(), actualRect.y()); \
+        EXPECT_EQ(expected.width(), actualRect.width()); \
+        EXPECT_EQ(expected.height(), actualRect.height()); \
     } while (false)
 
 TEST_F(CompositedLayerMappingTest, SimpleInterestRect)
@@ -512,7 +513,7 @@ TEST_F(CompositedLayerMappingTest, InterestRectOfSquashingLayerWithAncestorClip)
     EXPECT_RECT_EQ(IntRect(5600, 0, 4400, 1000), groupedMapping->computeInterestRect(groupedMapping->squashingLayer(), IntRect()));
 }
 
-TEST_F(CompositedLayerMappingTest, InterestRectOfScrolledIframe)
+TEST_F(CompositedLayerMappingTest, InterestRectOfIframeInScrolledDiv)
 {
     document().setBaseURLOverride(KURL(ParsedURLString, "http://test.com"));
     setBodyInnerHTML(
@@ -521,18 +522,7 @@ TEST_F(CompositedLayerMappingTest, InterestRectOfScrolledIframe)
         "<iframe id=frame src='http://test.com' width='500' height='500' frameBorder='0'>"
         "</iframe>");
 
-    HTMLIFrameElement& iframe = *toHTMLIFrameElement(document().getElementById("frame"));
-    OwnPtrWillBeRawPtr<FrameLoaderClient> frameLoaderClient = FrameLoaderClientWithParent::create(document().frame());
-    RefPtrWillBePersistent<LocalFrame> subframe = LocalFrame::create(frameLoaderClient.get(), document().frame()->host(), &iframe);
-    subframe->setView(FrameView::create(subframe.get(), IntSize(500, 500)));
-    subframe->init();
-    static_cast<SingleChildFrameLoaderClient*>(document().frame()->client())->setChild(subframe.get());
-    document().frame()->host()->incrementSubframeCount();
-    Document& frameDocument = *iframe.contentDocument();
-
-    frameDocument.setBaseURLOverride(KURL(ParsedURLString, "http://test.com"));
-    frameDocument.body()->setInnerHTML("<style>body { margin: 0; } #target { width: 200px; height: 200px; will-change: transform}</style><div id=target></div>",
-        ASSERT_NO_EXCEPTION);
+    Document& frameDocument = setupChildIframe("frame", "<style>body { margin: 0; } #target { width: 200px; height: 200px; will-change: transform}</style><div id=target></div>");
 
     // Scroll 8000 pixels down to move the iframe into view.
     document().view()->setScrollPosition(DoublePoint(0.0, 8000.0), ProgrammaticScroll);
@@ -542,10 +532,51 @@ TEST_F(CompositedLayerMappingTest, InterestRectOfScrolledIframe)
     ASSERT_TRUE(target);
 
     EXPECT_RECT_EQ(IntRect(0, 0, 200, 200), recomputeInterestRect(target->layoutObject()->enclosingLayer()->graphicsLayerBacking()));
+}
 
-    subframe->detach(FrameDetachType::Remove);
-    static_cast<SingleChildFrameLoaderClient*>(document().frame()->client())->setChild(nullptr);
-    document().frame()->host()->decrementSubframeCount();
+TEST_F(CompositedLayerMappingTest, InterestRectOfScrolledIframe)
+{
+    document().setBaseURLOverride(KURL(ParsedURLString, "http://test.com"));
+    document().frame()->settings()->setPreferCompositingToLCDTextEnabled(true);
+    setBodyInnerHTML(
+        "<style>body { margin: 0; }</style>"
+        "<iframe id=frame src='http://test.com' width='500' height='500' frameBorder='0'>"
+        "</iframe>");
+
+    Document& frameDocument = setupChildIframe("frame", "<style>body { margin: 0; } #target { width: 200px; height: 8000px;}</style><div id=target></div>");
+
+    document().view()->updateAllLifecyclePhases();
+
+    // Scroll 7500 pixels down to bring the scrollable area to the bottom.
+    frameDocument.view()->setScrollPosition(DoublePoint(0.0, 7500.0), ProgrammaticScroll);
+    document().view()->updateAllLifecyclePhases();
+
+    ASSERT_TRUE(frameDocument.view()->layoutView()->hasLayer());
+    // The width is 485 pixels due to the size of the scrollbar.
+    EXPECT_RECT_EQ(IntRect(0, 3500, 485, 4500), recomputeInterestRect(frameDocument.view()->layoutView()->enclosingLayer()->graphicsLayerBacking()));
+}
+
+TEST_F(CompositedLayerMappingTest, InterestRectOfIframeWithContentBoxOffset)
+{
+    document().setBaseURLOverride(KURL(ParsedURLString, "http://test.com"));
+    document().frame()->settings()->setPreferCompositingToLCDTextEnabled(true);
+    // Set a 10px border in order to have a contentBoxOffset for the iframe element.
+    setBodyInnerHTML(
+        "<style>body { margin: 0; } #frame { border: 10px solid black; }</style>"
+        "<iframe id=frame src='http://test.com' width='500' height='500' frameBorder='0'>"
+        "</iframe>");
+
+    Document& frameDocument = setupChildIframe("frame", "<style>body { margin: 0; } #target { width: 200px; height: 8000px;}</style> <div id=target></div>");
+
+    document().view()->updateAllLifecyclePhases();
+
+    // Scroll 3000 pixels down to bring the scrollable area to somewhere in the middle.
+    frameDocument.view()->setScrollPosition(DoublePoint(0.0, 3000.0), ProgrammaticScroll);
+    document().view()->updateAllLifecyclePhases();
+
+    ASSERT_TRUE(frameDocument.view()->layoutView()->hasLayer());
+    // The width is 485 pixels due to the size of the scrollbar.
+    EXPECT_RECT_EQ(IntRect(0, 0, 485, 7500), recomputeInterestRect(frameDocument.view()->layoutView()->enclosingLayer()->graphicsLayerBacking()));
 }
 
 } // namespace blink
