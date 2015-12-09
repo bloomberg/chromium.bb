@@ -208,6 +208,24 @@ TEST(DeviceLocalAccountManagementPolicyProviderTest, PublicSession) {
     error.clear();
   }
 
+  // Verify that a platform app with an unsafe manifest entry cannot be
+  // installed.  Since the program logic is based entirely on whitelists, there
+  // is no significant advantage in testing all unsafe manifest entries
+  // individually.
+  {
+    base::DictionaryValue values;
+    values.Set("commands", new base::DictionaryValue());
+    extension = CreatePlatformAppWithExtraValues(
+        &values,
+        extensions::Manifest::EXTERNAL_POLICY,
+        extensions::Extension::NO_FLAGS);
+    ASSERT_TRUE(extension);
+
+    EXPECT_FALSE(provider.UserMayLoad(extension.get(), &error));
+    EXPECT_NE(base::string16(), error);
+    error.clear();
+  }
+
   // Verify that a platform app with an unknown manifest entry under "app"
   // cannot be installed.
   {
@@ -224,8 +242,28 @@ TEST(DeviceLocalAccountManagementPolicyProviderTest, PublicSession) {
     error.clear();
   }
 
-  // Verify that a platform app with an unsafe permission entry cannot be
+  // Verify that a platform app with an unknown permission entry cannot be
   // installed.
+  {
+    base::ListValue* const permissions = new base::ListValue();
+    permissions->AppendString("not_whitelisted_permission");
+    base::DictionaryValue values;
+    values.Set(extensions::manifest_keys::kPermissions, permissions);
+
+    extension = CreatePlatformAppWithExtraValues(
+        &values,
+        extensions::Manifest::EXTERNAL_POLICY,
+        extensions::Extension::NO_FLAGS);
+    ASSERT_TRUE(extension);
+
+    EXPECT_FALSE(provider.UserMayLoad(extension.get(), &error));
+    EXPECT_NE(base::string16(), error);
+    error.clear();
+  }
+
+  // Verify that a platform app with an unsafe permission entry cannot be
+  // installed.  Since the program logic is based entirely on whitelists, there
+  // is no significant advantage in testing all unsafe permissions individually.
   {
     base::ListValue* const permissions = new base::ListValue();
     permissions->AppendString("audioCapture");

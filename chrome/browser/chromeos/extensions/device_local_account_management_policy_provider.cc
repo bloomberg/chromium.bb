@@ -206,8 +206,8 @@ const char* const kSafeManifestEntries[] = {
     // Descriptive statement about the app.
     emk::kRequirements,
 
-    // Execute some pages in a separate sandbox. (manifest_constants.cc only has
-    // constants for sub-keys.)
+    // Execute some pages in a separate sandbox.  (Note:
+    // extensions::manifest_keys only has constants for sub-keys.)
     "sandbox",
 
     // TBD, doc missing
@@ -216,8 +216,8 @@ const char* const kSafeManifestEntries[] = {
     // Network access.
     emk::kSockets,
 
-    // TBD
-    // emk::kIsolatedStorage,
+    // TBD.  (Note: extensions::manifest_keys only has constants for sub-keys.)
+    // "storage",
 
     // TBD, doc missing
     // emk::kSystemIndicator,
@@ -287,7 +287,7 @@ const char* const kSafePermissions[] = {
 
     // Possibly risky due to its experimental nature: not vetted for security,
     // potentially buggy, subject to change without notice.
-    // "experimental,"
+    // "experimental",
 
     // TBD
     // "fileSystem",
