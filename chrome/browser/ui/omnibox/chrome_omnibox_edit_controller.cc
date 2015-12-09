@@ -6,6 +6,7 @@
 
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/command_updater.h"
+#include "components/toolbar/toolbar_model.h"
 
 ChromeOmniboxEditController::ChromeOmniboxEditController(
     CommandUpdater* command_updater)
@@ -21,4 +22,9 @@ void ChromeOmniboxEditController::OnAutocompleteAccept(
                                               transition);
   if (command_updater_)
     command_updater_->ExecuteCommand(IDC_OPEN_CURRENT_URL);
+}
+
+void ChromeOmniboxEditController::OnInputInProgress(bool in_progress) {
+  GetToolbarModel()->set_input_in_progress(in_progress);
+  UpdateWithoutTabRestore();
 }

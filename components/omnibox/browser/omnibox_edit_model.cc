@@ -451,8 +451,7 @@ void OmniboxEditModel::SetInputInProgress(bool in_progress) {
     autocomplete_controller()->ResetSession();
   }
 
-  controller_->GetToolbarModel()->set_input_in_progress(in_progress);
-  controller_->UpdateWithoutTabRestore();
+  controller_->OnInputInProgress(in_progress);
 
   if (user_input_in_progress_ || !in_revert_)
     client_->OnInputStateChanged();

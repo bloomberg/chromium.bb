@@ -22,9 +22,7 @@ class OmniboxEditController {
                                     WindowOpenDisposition disposition,
                                     ui::PageTransition transition);
 
-  // Called when the the controller should update itself without restoring any
-  // tab state.
-  virtual void UpdateWithoutTabRestore() = 0;
+  virtual void OnInputInProgress(bool in_progress) = 0;
 
   // Called when anything has changed that might affect the layout or contents
   // of the views around the edit, including the text of the edit and the
