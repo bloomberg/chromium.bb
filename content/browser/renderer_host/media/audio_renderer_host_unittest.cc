@@ -31,12 +31,11 @@ namespace {
 const int kRenderProcessId = 1;
 const int kRenderFrameId = 5;
 const int kStreamId = 50;
-const url::Origin kSecurityOrigin(GURL("http://localhost"));
-const url::Origin kDefaultSecurityOrigin;
-const std::string kDefaultDeviceId;
-const std::string kBadDeviceId =
+const char kSecurityOrigin[] = "http://localhost";
+const char kDefaultDeviceId[] = "";
+const char kBadDeviceId[] =
     "badbadbadbadbadbadbadbadbadbadbadbadbadbadbadbadbadbadbadbadbad1";
-const std::string kInvalidDeviceId = "invalid-device-id";
+const char kInvalidDeviceId[] = "invalid-device-id";
 }  // namespace
 
 namespace content {
@@ -213,7 +212,7 @@ class AudioRendererHostTest : public testing::Test {
   }
 
  protected:
-  void Create() { Create(false, kDefaultDeviceId, kDefaultSecurityOrigin); }
+  void Create() { Create(false, kDefaultDeviceId, url::Origin()); }
 
   void Create(bool unified_stream,
               const std::string& device_id,
@@ -385,17 +384,17 @@ TEST_F(AudioRendererHostTest, SimulateErrorAndClose) {
 }
 
 TEST_F(AudioRendererHostTest, CreateUnifiedStreamAndClose) {
-  Create(true, kDefaultDeviceId, kDefaultSecurityOrigin);
+  Create(true, kDefaultDeviceId, url::Origin());
   Close();
 }
 
 TEST_F(AudioRendererHostTest, CreateUnauthorizedDevice) {
-  Create(false, kBadDeviceId, kSecurityOrigin);
+  Create(false, kBadDeviceId, url::Origin(GURL(kSecurityOrigin)));
   Close();
 }
 
 TEST_F(AudioRendererHostTest, CreateInvalidDevice) {
-  Create(false, kInvalidDeviceId, kSecurityOrigin);
+  Create(false, kInvalidDeviceId, url::Origin(GURL(kSecurityOrigin)));
   Close();
 }
 

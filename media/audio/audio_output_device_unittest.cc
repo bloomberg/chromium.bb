@@ -35,10 +35,9 @@ namespace media {
 
 namespace {
 
-const std::string kDefaultDeviceId;
-const std::string kNonDefaultDeviceId("valid-nondefault-device-id");
-const std::string kUnauthorizedDeviceId("unauthorized-device-id");
-const url::Origin kDefaultSecurityOrigin;
+const char kDefaultDeviceId[] = "";
+const char kNonDefaultDeviceId[] = "valid-nondefault-device-id";
+const char kUnauthorizedDeviceId[] = "unauthorized-device-id";
 
 class MockRenderCallback : public AudioRendererSink::RenderCallback {
  public:
@@ -136,7 +135,7 @@ void AudioOutputDeviceTest::SetDevice(const std::string& device_id) {
   audio_output_ipc_ = new MockAudioOutputIPC();
   audio_device_ = new AudioOutputDevice(
       scoped_ptr<AudioOutputIPC>(audio_output_ipc_), io_loop_.task_runner(), 0,
-      device_id, kDefaultSecurityOrigin);
+      device_id, url::Origin());
   EXPECT_CALL(*audio_output_ipc_,
               RequestDeviceAuthorization(audio_device_.get(), 0, device_id, _));
   audio_device_->RequestDeviceAuthorization();

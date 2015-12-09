@@ -35,11 +35,10 @@ const int kLowLatencyBufferSize = 256;
 // Number of full sine wave cycles for each Render() call.
 const int kSineCycles = 4;
 
-// Default device ID.
-const std::string kDefaultDeviceId;
-const url::Origin kDefaultSecurityOrigin;
+const char kDefaultDeviceId[] = "";
 
 // Input sample frequencies for testing.
+
 std::vector<int> kTestInputLower(1, 44100);
 std::vector<int> kTestInputHigher(1, 48000);
 const int kSampleRates[] = {22050, 44100, 48000};
@@ -119,7 +118,7 @@ class AudioRendererMixerTest
                        base::Unretained(this)),
             base::Bind(&AudioRendererMixerTest::RemoveMixer,
                        base::Unretained(this)),
-            kDefaultDeviceId, kDefaultSecurityOrigin));
+            kDefaultDeviceId, url::Origin()));
         mixer_inputs_[input]->Initialize(input_parameters_[i],
                                          fake_callbacks_[input]);
         mixer_inputs_[input]->SetVolume(1.0f);
@@ -471,7 +470,7 @@ TEST_P(AudioRendererMixerBehavioralTest, NoInitialize) {
           base::Bind(&AudioRendererMixerTest::GetMixer, base::Unretained(this)),
           base::Bind(&AudioRendererMixerTest::RemoveMixer,
                      base::Unretained(this)),
-          kDefaultDeviceId, kDefaultSecurityOrigin);
+          kDefaultDeviceId, url::Origin());
 }
 
 // Ensure the physical stream is paused after a certain amount of time with no
