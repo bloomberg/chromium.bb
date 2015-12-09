@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/location_bar/background_with_1_px_border.h"
 
-#include "chrome/browser/ui/views/layout_constants.h"
+#include "chrome/browser/ui/layout_constants.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/pathops/SkPathOps.h"

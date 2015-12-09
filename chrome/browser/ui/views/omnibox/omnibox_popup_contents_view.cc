@@ -8,7 +8,7 @@
 
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/themes/theme_properties.h"
-#include "chrome/browser/ui/views/layout_constants.h"
+#include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_result_view.h"
 #include "components/omnibox/browser/omnibox_view.h"

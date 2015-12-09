@@ -6,7 +6,7 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/profiles/profiles_state.h"
-#include "chrome/browser/ui/views/layout_constants.h"
+#include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/profiles/avatar_menu_button.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/signin/core/common/profile_management_switches.h"

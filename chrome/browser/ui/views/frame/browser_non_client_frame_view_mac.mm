@@ -5,10 +5,10 @@
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view_mac.h"
 
 #include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/browser_view_layout.h"
-#include "chrome/browser/ui/views/layout_constants.h"
 #include "grit/theme_resources.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/theme_provider.h"
