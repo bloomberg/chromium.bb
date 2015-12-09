@@ -87,6 +87,14 @@
             "group_name": "DontShowAndDontSend"
         }
     ],
+    "SafeBrowsingUnverifiedDownloads": [
+        {
+            "group_name": "DisableByParameterExe",
+            "params": {
+                "blacklist": ".exe"
+            }
+        }
+    ],
     "SdchPersistence": [
         {
             "group_name": "Enabled"

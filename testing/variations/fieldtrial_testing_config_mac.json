@@ -128,6 +128,14 @@
             "group_name": "Disabled"
         }
     ],
+    "SafeBrowsingUnverifiedDownloads": [
+        {
+            "group_name": "DisableByParameterExe",
+            "params": {
+                "blacklist": ".exe"
+            }
+        }
+    ],
     "SafeBrowsingUpdateFrequency": [
         {
             "group_name": "UpdateTime15m",
