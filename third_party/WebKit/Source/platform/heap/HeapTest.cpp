@@ -4568,10 +4568,16 @@ public:
     MixinA() : m_obj(IntWrapper::create(100)) { }
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
+        s_traceCount++;
         visitor->trace(m_obj);
     }
+
+    static int s_traceCount;
+
     Member<IntWrapper> m_obj;
 };
+
+int MixinA::s_traceCount = 0;
 
 class MixinB : public GarbageCollectedMixin {
 public:
@@ -4661,6 +4667,35 @@ TEST(HeapTest, DerivedMultipleMixins)
     }
     preciselyCollectGarbage();
     EXPECT_EQ(4, IntWrapper::s_destructorCalls);
+}
+
+class MixinInstanceWithoutTrace : public GarbageCollected<MixinInstanceWithoutTrace>, public MixinA {
+    USING_GARBAGE_COLLECTED_MIXIN(MixinInstanceWithoutTrace);
+public:
+    MixinInstanceWithoutTrace()
+    {
+    }
+};
+
+TEST(HeapTest, MixinInstanceWithoutTrace)
+{
+    // Verify that a mixin instance without any traceable
+    // references inherits the mixin's trace implementation.
+    clearOutOldGarbage();
+    MixinA::s_traceCount = 0;
+    MixinInstanceWithoutTrace* obj = new MixinInstanceWithoutTrace();
+    {
+        Persistent<MixinA> a = obj;
+        preciselyCollectGarbage();
+        EXPECT_EQ(1, MixinA::s_traceCount);
+    }
+    {
+        Persistent<MixinInstanceWithoutTrace> b = obj;
+        preciselyCollectGarbage();
+        EXPECT_EQ(2, MixinA::s_traceCount);
+    }
+    preciselyCollectGarbage();
+    EXPECT_EQ(2, MixinA::s_traceCount);
 }
 
 class GCParkingThreadTester {

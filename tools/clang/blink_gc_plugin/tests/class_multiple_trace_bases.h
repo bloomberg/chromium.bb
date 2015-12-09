@@ -14,14 +14,24 @@ public:
     virtual void trace(Visitor*);
 };
 
-class Mixin : public GarbageCollectedMixin {
+class Mixin1 : public GarbageCollectedMixin {
 public:
     void trace(Visitor*);
 };
 
-class Derived : public Base, public Mixin {
-    USING_GARBAGE_COLLECTED_MIXIN(HeapObject);
+class Mixin2 : public GarbageCollectedMixin {
+public:
+    void trace(Visitor*);
+};
+
+class Derived1 : public Base, public Mixin1 {
+    USING_GARBAGE_COLLECTED_MIXIN(Derived1);
     // Requires trace method.
+};
+
+class Derived2 : public Base, public Mixin1, public Mixin2 {
+    USING_GARBAGE_COLLECTED_MIXIN(Derived2);
+    void trace(Visitor*) override;
 };
 
 }

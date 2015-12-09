@@ -365,26 +365,6 @@ bool RecordInfo::DeclaresLocalTraceMethod() {
   return is_declaring_local_trace_;
 }
 
-bool RecordInfo::IsGCMixinInstance() {
-  assert(IsGCDerived());
-  if (record_->isAbstract())
-    return false;
-
-  assert(!IsGCMixin());
-
-  // true iff the class derives from GCMixin and
-  // one or more other GC base classes.
-  bool seen_gc_mixin = false;
-  bool seen_gc_derived = false;
-  for (const auto& gc_base : gc_base_names_) {
-    if (Config::IsGCMixinBase(gc_base))
-      seen_gc_mixin = true;
-    else if (Config::IsGCBase(gc_base))
-      seen_gc_derived = true;
-  }
-  return seen_gc_derived && seen_gc_mixin;
-}
-
 // A (non-virtual) class is considered abstract in Blink if it has
 // no public constructors and no create methods.
 bool RecordInfo::IsConsideredAbstract() {

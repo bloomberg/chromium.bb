@@ -8,8 +8,15 @@ namespace blink {
 
 void Base::trace(Visitor* visitor) { }
 
-void Mixin::trace(Visitor* visitor) { }
+void Mixin1::trace(Visitor* visitor) { }
 
-// Missing: Derived::trace(visitor)
+void Mixin2::trace(Visitor* visitor) { }
+
+// Missing: void Derived1::trace(Visitor* visitor);
+
+void Derived2::trace(Visitor* visitor) {
+    Base::trace(visitor);
+    Mixin1::trace(visitor);
+}
 
 }

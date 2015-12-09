@@ -11,10 +11,4 @@ class HeapObject : public GarbageCollected<HeapObject> {
 ./class_requires_trace_method.h:22:5: note: [blink-gc] Untraced field 'm_part' declared here:
     PartObject m_part;
     ^
-./class_requires_trace_method.h:31:1: warning: [blink-gc] Class 'HeapObjectMixin' which inherits from GarbageCollectedMixin must locally declare and override trace(Visitor*)
-class HeapObjectMixin : public GarbageCollected<HeapObjectMixin>, public Mixin {
-^
-./class_requires_trace_method.h:40:1: warning: [blink-gc] Class 'HeapObjectMixin2' which inherits from GarbageCollectedMixin must locally declare and override trace(Visitor*)
-class HeapObjectMixin2
-^
-4 warnings generated.
+2 warnings generated.

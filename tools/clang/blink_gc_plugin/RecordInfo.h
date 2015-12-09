@@ -93,7 +93,6 @@ class RecordInfo {
   bool IsStackAllocated();
   bool IsNonNewable();
   bool IsOnlyPlacementNewable();
-  bool IsGCMixinInstance();
   bool IsEagerlyFinalized();
   bool IsGCRefCounted();
 

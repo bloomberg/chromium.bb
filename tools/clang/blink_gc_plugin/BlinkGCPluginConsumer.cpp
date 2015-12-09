@@ -149,10 +149,6 @@ const char kBaseClassMustDeclareVirtualTrace[] =
     "[blink-gc] Left-most base class %0 of derived class %1"
     " must define a virtual trace method.";
 
-const char kClassMustDeclareGCMixinTraceMethod[] =
-    "[blink-gc] Class %0 which inherits from GarbageCollectedMixin must"
-    " locally declare and override trace(Visitor*)";
-
 // Use a local RAV implementation to simply collect all FunctionDecls marked for
 // late template parsing. This happens with the flag -fdelayed-template-parsing,
 // which is on by default in MSVC-compatible mode.
@@ -251,9 +247,6 @@ BlinkGCPluginConsumer::BlinkGCPluginConsumer(
       getErrorLevel(), kLeftMostBaseMustBePolymorphic);
   diag_base_class_must_declare_virtual_trace_ = diagnostic_.getCustomDiagID(
       getErrorLevel(), kBaseClassMustDeclareVirtualTrace);
-  diag_class_must_declare_gc_mixin_trace_method_ =
-      diagnostic_.getCustomDiagID(getErrorLevel(),
-                                  kClassMustDeclareGCMixinTraceMethod);
 
   // Register note messages.
   diag_base_requires_tracing_note_ = diagnostic_.getCustomDiagID(
@@ -444,13 +437,6 @@ void BlinkGCPluginConsumer::CheckClass(RecordInfo* info) {
       if (CXXMethodDecl* newop = info->DeclaresNewOperator())
         if (!Config::IsIgnoreAnnotated(newop))
           ReportClassOverridesNew(info, newop);
-      if (info->IsGCMixinInstance()) {
-        // Require that declared GCMixin implementations
-        // also provide a trace() override.
-        if (info->DeclaresGCMixinMethods()
-            && !info->DeclaresLocalTraceMethod())
-          ReportClassMustDeclareGCMixinTraceMethod(info);
-      }
     }
 
     {
@@ -1114,13 +1100,6 @@ void BlinkGCPluginConsumer::ReportClassDoesNotRequireFinalization(
     RecordInfo* info) {
   ReportDiagnostic(info->record()->getInnerLocStart(),
                    diag_class_does_not_require_finalization_)
-      << info->record();
-}
-
-void BlinkGCPluginConsumer::ReportClassMustDeclareGCMixinTraceMethod(
-    RecordInfo* info) {
-  ReportDiagnostic(info->record()->getInnerLocStart(),
-                   diag_class_must_declare_gc_mixin_trace_method_)
       << info->record();
 }
 
