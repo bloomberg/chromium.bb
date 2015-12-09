@@ -31,7 +31,6 @@ paper-material {
 paper-material,
 #placeholder {
   margin-bottom: 16px;
-  width: 605px;
 }
 
 :host(.neon-animating) paper-material {
