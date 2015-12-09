@@ -173,6 +173,7 @@ class SYNC_EXPORT_PRIVATE DirectoryBackingStore : public base::NonThreadSafe {
   bool MigrateVersion86To87();
   bool MigrateVersion87To88();
   bool MigrateVersion88To89();
+  bool MigrateVersion89To90();
 
   // Accessor for needs_column_refresh_.  Used in tests.
   bool needs_column_refresh() const;
@@ -249,7 +250,8 @@ class SYNC_EXPORT_PRIVATE DirectoryBackingStore : public base::NonThreadSafe {
 
   // Set to true if migration left some old columns around that need to be
   // discarded.
-  bool needs_column_refresh_;
+  bool needs_metas_column_refresh_;
+  bool needs_share_info_column_refresh_;
 
   // We keep a copy of the Closure so we reinstall it when the underlying
   // sql::Connection is destroyed/recreated.
