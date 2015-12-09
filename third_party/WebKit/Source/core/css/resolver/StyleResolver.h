@@ -202,13 +202,13 @@ private:
 
     void appendCSSStyleSheet(CSSStyleSheet&);
 
-    void collectPseudoRulesForElement(Element*, ElementRuleCollector&, PseudoId, unsigned rulesToInclude);
+    void collectPseudoRulesForElement(const Element&, ElementRuleCollector&, PseudoId, unsigned rulesToInclude);
     void matchRuleSet(ElementRuleCollector&, RuleSet*);
     void matchUARules(ElementRuleCollector&);
-    void matchAuthorRules(Element*, ElementRuleCollector&);
+    void matchAuthorRules(const Element&, ElementRuleCollector&);
     void matchAllRules(StyleResolverState&, ElementRuleCollector&, bool includeSMILProperties);
     void collectFeatures();
-    void collectTreeBoundaryCrossingRules(Element*, ElementRuleCollector&);
+    void collectTreeBoundaryCrossingRules(const Element&, ElementRuleCollector&);
     void resetRuleFeatures();
 
     void applyMatchedProperties(StyleResolverState&, const MatchResult&);
