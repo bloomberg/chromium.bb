@@ -1010,6 +1010,16 @@ void LayoutBoxModelObject::moveChildTo(LayoutBoxModelObject* toBoxModelObject, L
 
     ASSERT(this == child->parent());
     ASSERT(!beforeChild || toBoxModelObject == beforeChild->parent());
+
+    // If a child is moving from a block-flow to an inline-flow parent then any floats currently intruding into
+    // the child can no longer do so. This can happen if a block becomes floating or out-of-flow and is moved
+    // to an anonymous block. Remove all floats from their float-lists immediately as markAllDescendantsWithFloatsForLayout
+    // won't attempt to remove floats from parents that have inline-flow if we try later.
+    if (child->isLayoutBlockFlow() && toBoxModelObject->childrenInline() && !child->childrenInline() && !childrenInline()) {
+        toLayoutBlockFlow(child)->removeFloatingObjectsFromDescendants();
+        ASSERT(!toLayoutBlockFlow(child)->containsFloats());
+    }
+
     if (fullRemoveInsert && (toBoxModelObject->isLayoutBlock() || toBoxModelObject->isLayoutInline())) {
         // Takes care of adding the new child correctly if toBlock and fromBlock
         // have different kind of children (block vs inline).
