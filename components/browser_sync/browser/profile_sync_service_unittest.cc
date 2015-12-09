@@ -12,10 +12,9 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/sequenced_worker_pool_owner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/values.h"
-#include "chrome/browser/sync/profile_sync_test_util.h"
-#include "chrome/common/channel_info.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/browser_sync/common/browser_sync_switches.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
@@ -40,17 +39,13 @@
 #include "components/sync_driver/sync_util.h"
 #include "components/sync_sessions/fake_sync_sessions_client.h"
 #include "components/syncable_prefs/testing_pref_service_syncable.h"
+#include "components/version_info/version_info.h"
 #include "components/version_info/version_info_values.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
-
-namespace content {
-class BrowserContext;
-}
 
 namespace browser_sync {
 
@@ -58,6 +53,10 @@ namespace {
 
 const char kGaiaId[] = "12345";
 const char kEmail[] = "test_user@gmail.com";
+
+void EmptyNetworkTimeUpdate(const base::Time&,
+                            const base::TimeDelta&,
+                            const base::TimeDelta&) {}
 
 class FakeDataTypeManager : public sync_driver::DataTypeManager {
  public:
@@ -253,7 +252,7 @@ ACTION_P(ReturnNewMockHostCaptureClearServerData, captured_callback) {
 class ProfileSyncServiceTest : public ::testing::Test {
  protected:
   ProfileSyncServiceTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+      : worker_pool_owner_(2, "sync test worker pool"),
         components_factory_(NULL) {}
   ~ProfileSyncServiceTest() override {}
 
@@ -318,12 +317,10 @@ class ProfileSyncServiceTest : public ::testing::Test {
         make_scoped_ptr(new SigninManagerWrapper(signin_manager_.get())),
         auth_service_.get(), behavior, base::Bind(&EmptyNetworkTimeUpdate),
         base::FilePath(FILE_PATH_LITERAL("dummyPath")), url_request_context_,
-        "dummyDebugName", chrome::GetChannel(),
-        content::BrowserThread::GetMessageLoopProxyForThread(
-            content::BrowserThread::DB),
-        content::BrowserThread::GetMessageLoopProxyForThread(
-            content::BrowserThread::FILE),
-        content::BrowserThread::GetBlockingPool()));
+        "dummyDebugName", version_info::Channel::UNKNOWN,
+        base::ThreadTaskRunnerHandle::Get(),
+        base::ThreadTaskRunnerHandle::Get(),
+        worker_pool_owner_.pool().get()));
     service_->RegisterDataTypeController(
         new sync_driver::FakeDataTypeController(syncer::BOOKMARKS));
   }
@@ -460,7 +457,8 @@ class ProfileSyncServiceTest : public ::testing::Test {
   base::Time clear_browsing_date_start_;
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  base::MessageLoop message_loop_;
+  base::SequencedWorkerPoolOwner worker_pool_owner_;
   scoped_refptr<net::URLRequestContextGetter> url_request_context_;
   syncable_prefs::TestingPrefServiceSyncable pref_service_;
   scoped_ptr<TestSigninClient> signin_client_;

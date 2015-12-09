@@ -50,6 +50,7 @@ test("components_unittests") {
     "//components/autofill/core/common:unit_tests",
     "//components/bookmarks/browser:unit_tests",
     "//components/bookmarks/managed:unit_tests",
+    "//components/browser_sync/browser:unit_tests",
     "//components/compression:unit_tests",
     "//components/content_settings/core/browser:unit_tests",
     "//components/content_settings/core/common",

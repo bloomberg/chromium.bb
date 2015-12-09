@@ -42,3 +42,37 @@ source_set("browser") {
     "//ui/base",
   ]
 }
+
+source_set("unit_tests") {
+  testonly = true
+
+  sources = [
+    "profile_sync_service_unittest.cc",
+  ]
+
+  deps = [
+    ":browser",
+    "//base",
+    "//base/test:test_support",
+    "//components/browser_sync/common",
+    "//components/dom_distiller/core",
+    "//components/invalidation/impl",
+    "//components/invalidation/public",
+    "//components/signin/core/browser",
+    "//components/signin/core/browser:test_support",
+    "//components/strings",
+    "//components/sync_driver",
+    "//components/sync_driver:test_support",
+    "//components/sync_sessions",
+    "//components/sync_sessions:test_support",
+    "//components/syncable_prefs",
+    "//components/syncable_prefs:test_support",
+    "//components/version_info",
+    "//components/version_info:generate_version_info",
+    "//google_apis",
+    "//net",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//ui/base",
+  ]
+}

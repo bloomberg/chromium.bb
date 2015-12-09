@@ -74,6 +74,9 @@
       'bookmarks/browser/bookmark_utils_unittest.cc',
       'bookmarks/managed/managed_bookmarks_tracker_unittest.cc',
     ],
+    'browser_sync_unittest_sources': [
+      'browser_sync/browser/profile_sync_service_unittest.cc',
+    ],
     'browser_watcher_unittest_sources': [
       'browser_watcher/crash_reporting_metrics_win_unittest.cc',
       'browser_watcher/endsession_watcher_window_win_unittest.cc',
@@ -877,6 +880,7 @@
         '<@(auto_login_parser_unittest_sources)',
         '<@(autofill_unittest_sources)',
         '<@(bookmarks_unittest_sources)',
+        '<@(browser_sync_unittest_sources)',
         '<@(browser_watcher_unittest_sources)',
         '<@(bubble_unittest_sources)',
         '<@(captive_portal_unittest_sources)',
@@ -983,6 +987,7 @@
         'components.gyp:bookmarks_browser',
         'components.gyp:bookmarks_managed',
         'components.gyp:bookmarks_test_support',
+        'components.gyp:browser_sync_browser',
         'components.gyp:bubble',
         'components.gyp:captive_portal_test_support',
         'components.gyp:certificate_reporting',
