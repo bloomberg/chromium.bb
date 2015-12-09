@@ -75,7 +75,7 @@ crbug.com/463358 [ Mac Linux Debug ] fast/backgrounds/transformed-body-html-back
 crbug.com/463358 [ Mac Linux Debug ] css3/masking/clip-path-polygon-nonzero.html [ Failure ]
 crbug.com/463358 [ Mac Linux ] fast/transforms/transformed-caret.html [ Pass Failure ]
 crbug.com/463358 [ Mac Linux Debug ] fast/backgrounds/transformed-body-background.html [ Failure ]
-crbug.com/463358 [ Mac Linux ] svg/W3C-SVG-1.1/paths-data-02-t.svg [ Failure ]
+crbug.com/463358 [ Mac Linux Debug ] svg/W3C-SVG-1.1/paths-data-02-t.svg [ Failure ]
 crbug.com/463358 [ Mac Linux Debug ] css3/masking/clip-path-polygon.html [ Failure ]
 
 crbug.com/267206 [ Mac ] virtual/rootlayerscrolls/fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
@@ -779,7 +779,8 @@ crbug.com/396941 ietestcenter/css3/multicolumn/column-width-applies-to-009.htm [
 crbug.com/396941 ietestcenter/css3/multicolumn/column-width-applies-to-010.htm [ Failure ]
 crbug.com/396941 ietestcenter/css3/multicolumn/column-width-applies-to-012.htm [ Failure ]
 crbug.com/396941 ietestcenter/css3/multicolumn/column-width-applies-to-015.htm [ Failure ]
-crbug.com/378610 svg/custom/focus-ring-text.svg [ Failure ]
+crbug.com/378610 [ Win ] svg/custom/focus-ring-text.svg [ Failure ]
+crbug.com/378610 [ Mac ] svg/custom/focus-ring-text.svg [ Failure Pass ]
 
 crbug.com/515454 css3/fonts/font-style-matching.html [ Skip ]
 
@@ -926,7 +927,6 @@ crbug.com/466200 svg/custom/repaint-on-constant-size-change.svg [ Failure ]
 # Temporary until we start generating Trusty baselines.
 crbug.com/498021 [ Linux ] fast/text/unicode-fallback-font.html [ Failure ]
 crbug.com/498021 [ Linux ] http/tests/security/contentTypeOptions/nosniff-script-without-content-type-blocked.html [ Failure ]
-crbug.com/498021 [ Linux ] svg/custom/use-on-symbol-inside-pattern.svg [ Failure ]
 crbug.com/498021 [ Linux ] fast/forms/month/month-appearance-l10n.html [ Failure ]
 crbug.com/498021 [ Linux ] fast/text/ellipsis-stroked.html [ Failure ]
 crbug.com/498021 [ Linux ] fast/text/emphasis-complex.html [ Failure ]
@@ -934,9 +934,7 @@ crbug.com/498021 [ Linux ] fast/text/international/danda-space.html [ Failure ]
 crbug.com/498021 [ Linux ] fast/text/international/hindi-whitespace.html [ Failure ]
 crbug.com/498021 [ Linux ] fast/text/international/thai-line-breaks.html [ Failure ]
 crbug.com/498021 [ Linux ] fast/text/selection-multiple-runs.html [ Failure ]
-crbug.com/498021 [ Linux ] svg/W3C-SVG-1.1/paths-data-03-f.svg [ Failure ]
 crbug.com/498021 [ Linux ] svg/W3C-SVG-1.1/text-align-08-b.svg [ Failure ]
-crbug.com/498021 [ Linux ] svg/custom/control-points-for-S-and-T.svg [ Failure ]
 crbug.com/498021 [ Linux ] editing/pasteboard/4944770-2.html [ Failure ]
 crbug.com/498021 [ Linux ] fast/encoding/invalid-UTF-8.html [ Failure ]
 crbug.com/498021 [ Linux ] fast/text/emoticons.html [ Failure ]
@@ -1279,6 +1277,9 @@ crbug.com/521730 [ Win10 ] svg/text/bidi-tspans.svg [ Failure ]
 crbug.com/521730 [ Win10 ] svg/text/text-selection-fonts-01-t.svg [ Failure ]
 crbug.com/521730 [ Win10 ] svg/text/text-selection-intro-05-t.svg [ Failure ]
 
+# This test's results will be tweaked slightly by an upcoming Skia change.
+crbug.com/240827 svg/filters/feOffset.svg [ NeedsManualRebaseline ]
+
 crbug.com/550285 [ XP ] virtual/syncpaint/inspector/tracing/decode-resize.html [ Slow Pass Failure ]
 
 crbug.com/474759 fast/writing-mode/vertical-rl-replaced-selection.html [ Failure ]
@@ -1329,7 +1330,7 @@ crbug.com/538717 [ Win Mac Linux ] http/tests/permissions/chromium/test-request-
 crbug.com/538717 [ Win Mac Linux ] http/tests/permissions/chromium/test-request-multiple-worker.html [ Failure Pass Timeout ]
 crbug.com/538717 [ Win Mac Linux ] http/tests/permissions/chromium/test-request-multiple-sharedworker.html [ Failure Pass Timeout ]
 
-crbug.com/541601 svg/overflow/overflow-on-outermost-svg-element-in-xhtml-defaults.xhtml [ Failure ]
+crbug.com/541601 svg/overflow/overflow-on-outermost-svg-element-in-xhtml-defaults.xhtml [ NeedsRebaseline ]
 
 crbug.com/543369 [ Linux ] fast/forms/select/popup-menu-appearance-tall.html [ Failure ]
 
