@@ -15,6 +15,16 @@ namespace {
 
 int64_t kPacketSize = 1500;
 
+base::TimeDelta CalculateTickLength(double throughput) {
+  if (!throughput)
+    return base::TimeDelta();
+  int64_t us_tick_length = (1000000L * kPacketSize) / throughput;
+  DCHECK(us_tick_length != 0);
+  if (us_tick_length == 0)
+    us_tick_length = 1;
+  return base::TimeDelta::FromMicroseconds(us_tick_length);
+}
+
 }  // namespace
 
 DevToolsNetworkInterceptor::ThrottleRecord::ThrottleRecord() {
@@ -25,6 +35,8 @@ DevToolsNetworkInterceptor::ThrottleRecord::~ThrottleRecord() {
 
 DevToolsNetworkInterceptor::DevToolsNetworkInterceptor()
     : conditions_(new DevToolsNetworkConditions()),
+      download_last_tick_(0),
+      upload_last_tick_(0),
       weak_ptr_factory_(this) {
 }
 
@@ -34,6 +46,18 @@ DevToolsNetworkInterceptor::~DevToolsNetworkInterceptor() {
 base::WeakPtr<DevToolsNetworkInterceptor>
 DevToolsNetworkInterceptor::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
+}
+
+void DevToolsNetworkInterceptor::FinishRecords(
+    ThrottleRecords* records, bool offline) {
+  ThrottleRecords temp;
+  temp.swap(*records);
+  for (const ThrottleRecord& record : temp) {
+    bool failed = offline && !record.is_upload;
+    record.callback.Run(
+        failed ? net::ERR_INTERNET_DISCONNECTED : record.result,
+        record.bytes);
+  }
 }
 
 void DevToolsNetworkInterceptor::UpdateConditions(
@@ -48,37 +72,24 @@ void DevToolsNetworkInterceptor::UpdateConditions(
   bool offline = conditions_->offline();
   if (offline || !conditions_->IsThrottling()) {
     timer_.Stop();
-    ThrottleRecords throttled;
-    throttled.swap(throttled_);
-    for (const ThrottleRecord& record : throttled) {
-      bool failed = offline && !record.is_upload;
-      record.callback.Run(
-          failed ? net::ERR_INTERNET_DISCONNECTED : record.result,
-          record.bytes);
-    }
-
-    ThrottleRecords suspended;
-    suspended.swap(suspended_);
-    for (const ThrottleRecord& record : suspended) {
-      bool failed = offline && !record.is_upload;
-      record.callback.Run(
-          failed ? net::ERR_INTERNET_DISCONNECTED : record.result,
-          record.bytes);
-    }
-
+    FinishRecords(&download_, offline);
+    FinishRecords(&upload_, offline);
+    FinishRecords(&suspended_, offline);
     return;
   }
 
   // Throttling.
-  DCHECK(conditions_->download_throughput() != 0);
+  DCHECK(conditions_->download_throughput() != 0 ||
+         conditions_->upload_throughput() != 0);
   offset_ = now;
-  last_tick_ = 0;
-  int64_t us_tick_length =
-      (1000000L * kPacketSize) / conditions_->download_throughput();
-  DCHECK(us_tick_length != 0);
-  if (us_tick_length == 0)
-    us_tick_length = 1;
-  tick_length_ = base::TimeDelta::FromMicroseconds(us_tick_length);
+
+  download_last_tick_ = 0;
+  download_tick_length_ = CalculateTickLength(
+      conditions_->download_throughput());
+
+  upload_last_tick_ = 0;
+  upload_tick_length_ = CalculateTickLength(conditions_->upload_throughput());
+
   latency_length_ = base::TimeDelta();
   double latency = conditions_->latency();
   if (latency > 0)
@@ -86,78 +97,109 @@ void DevToolsNetworkInterceptor::UpdateConditions(
   ArmTimer(now);
 }
 
-void DevToolsNetworkInterceptor::UpdateThrottled(
-    base::TimeTicks now) {
-  int64_t last_tick = (now - offset_) / tick_length_;
-  int64_t ticks = last_tick - last_tick_;
-  last_tick_ = last_tick;
-
-  int64_t length = throttled_.size();
-  if (!length) {
-    UpdateSuspended(now);
-    return;
+uint64_t DevToolsNetworkInterceptor::UpdateThrottledRecords(
+    base::TimeTicks now,
+    ThrottleRecords* records,
+    uint64_t last_tick,
+    base::TimeDelta tick_length) {
+  if (tick_length.is_zero()) {
+    DCHECK(!records->size());
+    return last_tick;
   }
+
+  int64_t new_tick = (now - offset_) / tick_length;
+  int64_t ticks = new_tick - last_tick;
+
+  int64_t length = records->size();
+  if (!length)
+    return new_tick;
 
   int64_t shift = ticks % length;
   for (int64_t i = 0; i < length; ++i) {
-    throttled_[i].bytes -=
+    (*records)[i].bytes -=
         (ticks / length) * kPacketSize + (i < shift ? kPacketSize : 0);
   }
-  std::rotate(throttled_.begin(),
-      throttled_.begin() + shift, throttled_.end());
+  std::rotate(records->begin(), records->begin() + shift, records->end());
+  return new_tick;
+}
 
+void DevToolsNetworkInterceptor::UpdateThrottled(base::TimeTicks now) {
+  download_last_tick_ = UpdateThrottledRecords(
+      now, &download_, download_last_tick_, download_tick_length_);
+  upload_last_tick_ = UpdateThrottledRecords(
+      now, &upload_, upload_last_tick_, upload_tick_length_);
   UpdateSuspended(now);
 }
 
-void DevToolsNetworkInterceptor::UpdateSuspended(
-    base::TimeTicks now) {
+void DevToolsNetworkInterceptor::UpdateSuspended(base::TimeTicks now) {
   int64_t activation_baseline =
       (now - latency_length_ - base::TimeTicks()).InMicroseconds();
   ThrottleRecords suspended;
   for (const ThrottleRecord& record : suspended_) {
-    if (record.send_end <= activation_baseline)
-      throttled_.push_back(record);
-    else
+    if (record.send_end <= activation_baseline) {
+      if (record.is_upload)
+        upload_.push_back(record);
+      else
+        download_.push_back(record);
+    } else {
       suspended.push_back(record);
+    }
   }
   suspended_.swap(suspended);
+}
+
+void DevToolsNetworkInterceptor::CollectFinished(
+    ThrottleRecords* records, ThrottleRecords* finished) {
+  ThrottleRecords active;
+  for (const ThrottleRecord& record : *records) {
+    if (record.bytes < 0)
+      finished->push_back(record);
+    else
+      active.push_back(record);
+  }
+  records->swap(active);
 }
 
 void DevToolsNetworkInterceptor::OnTimer() {
   base::TimeTicks now = base::TimeTicks::Now();
   UpdateThrottled(now);
 
-  ThrottleRecords active;
   ThrottleRecords finished;
-  for (const ThrottleRecord& record : throttled_) {
-    if (record.bytes < 0)
-      finished.push_back(record);
-    else
-      active.push_back(record);
-  }
-  throttled_.swap(active);
-
+  CollectFinished(&download_, &finished);
+  CollectFinished(&upload_, &finished);
   for (const ThrottleRecord& record : finished)
     record.callback.Run(record.result, record.bytes);
 
   ArmTimer(now);
 }
 
-void DevToolsNetworkInterceptor::ArmTimer(base::TimeTicks now) {
-  size_t throttle_count = throttled_.size();
-  size_t suspend_count = suspended_.size();
-  if (!throttle_count && !suspend_count)
-    return;
+base::TimeTicks DevToolsNetworkInterceptor::CalculateDesiredTime(
+    const ThrottleRecords& records,
+    uint64_t last_tick,
+    base::TimeDelta tick_length) {
   int64_t min_ticks_left = 0x10000L;
-  for (size_t i = 0; i < throttle_count; ++i) {
-    int64_t packets_left = (throttled_[i].bytes +
-        kPacketSize - 1) / kPacketSize;
-    int64_t ticks_left = (i + 1) + throttle_count * (packets_left - 1);
+  size_t count = records.size();
+  for (size_t i = 0; i < count; ++i) {
+    int64_t packets_left = (records[i].bytes + kPacketSize - 1) / kPacketSize;
+    int64_t ticks_left = (i + 1) + count * (packets_left - 1);
     if (i == 0 || ticks_left < min_ticks_left)
       min_ticks_left = ticks_left;
   }
-  base::TimeTicks desired_time =
-      offset_ + tick_length_ * (last_tick_ + min_ticks_left);
+  return offset_ + tick_length * (last_tick + min_ticks_left);
+}
+
+void DevToolsNetworkInterceptor::ArmTimer(base::TimeTicks now) {
+  size_t suspend_count = suspended_.size();
+  if (!download_.size() && !upload_.size() && !suspend_count)
+    return;
+
+  base::TimeTicks desired_time = CalculateDesiredTime(
+      download_, download_last_tick_, download_tick_length_);
+
+  base::TimeTicks upload_time = CalculateDesiredTime(
+      upload_, upload_last_tick_, upload_tick_length_);
+  if (upload_time < desired_time)
+    desired_time = upload_time;
 
   int64_t min_baseline = std::numeric_limits<int64>::max();
   for (size_t i = 0; i < suspend_count; ++i) {
@@ -192,8 +234,10 @@ int DevToolsNetworkInterceptor::StartThrottle(
   if (conditions_->offline())
     return is_upload ? result : net::ERR_INTERNET_DISCONNECTED;
 
-  if (!conditions_->IsThrottling())
+  if ((is_upload && !conditions_->upload_throughput()) ||
+      (!is_upload && !conditions_->download_throughput())) {
     return result;
+  }
 
   ThrottleRecord record;
   record.result = result;
@@ -209,7 +253,10 @@ int DevToolsNetworkInterceptor::StartThrottle(
     suspended_.push_back(record);
     UpdateSuspended(now);
   } else {
-    throttled_.push_back(record);
+    if (is_upload)
+      upload_.push_back(record);
+    else
+      download_.push_back(record);
   }
   ArmTimer(now);
 
@@ -218,7 +265,8 @@ int DevToolsNetworkInterceptor::StartThrottle(
 
 void DevToolsNetworkInterceptor::StopThrottle(
     const ThrottleCallback& callback) {
-  RemoveRecord(&throttled_, callback);
+  RemoveRecord(&download_, callback);
+  RemoveRecord(&upload_, callback);
   RemoveRecord(&suspended_, callback);
 }
 
