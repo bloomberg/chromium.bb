@@ -58,7 +58,7 @@ def _CheckIdenticalFiles(input_api, output_api):
         return input_api.os_path.join(input_api.PresubmitLocalPath(), *s.split('/'))
 
     def _local_path(s):
-        return input_api.os_path.join('LayoutTests', *s.split('/'))
+        return input_api.os_path.join('third_party', 'WebKit', 'LayoutTests', *s.split('/'))
 
     errors = []
     for group in groups:
