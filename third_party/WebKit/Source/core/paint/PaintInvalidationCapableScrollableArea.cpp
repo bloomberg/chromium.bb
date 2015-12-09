@@ -49,13 +49,6 @@ static bool invalidatePaintOfScrollControlIfNeeded(const LayoutRect& newPaintInv
     return false;
 }
 
-struct ScrollbarPaintInvalidationData {
-    Scrollbar* scrollbar;
-    GraphicsLayer* graphicsLayer;
-    LayoutRect& previousPaintInvalidatioRect;
-
-};
-
 static void invalidatePaintOfScrollbarIfNeeded(Scrollbar* scrollbar, GraphicsLayer* graphicsLayer, bool& previouslyWasOverlay, LayoutRect& previousPaintInvalidationRect, bool needsPaintInvalidationArg, LayoutBox& box, const PaintInvalidationState& paintInvalidationState, const LayoutBoxModelObject& paintInvalidationContainer)
 {
     bool isOverlay = scrollbar && scrollbar->isOverlayScrollbar();
