@@ -11,6 +11,7 @@ component("blimp_common") {
     "compositor/blimp_task_graph_runner.h",
     "create_blimp_message.cc",
     "create_blimp_message.h",
+    "protocol_version.h",
   ]
 
   defines = [ "BLIMP_COMMON_IMPLEMENTATION=1" ]

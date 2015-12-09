@@ -13,6 +13,7 @@
 
 namespace blimp {
 
+class BlimpConnection;
 class BlimpTransport;
 class ConnectionHandler;
 
@@ -48,6 +49,9 @@ class BLIMP_NET_EXPORT ClientConnectionManager {
   // Callback invoked by transports_[transport_index] to indicate that it has a
   // connection ready to be authenticated or there is an error.
   void OnConnectResult(int transport_index, int result);
+
+  // Sends authentication message to the engine via |connection|.
+  void SendAuthenticationMessage(BlimpConnection* connection);
 
   ConnectionHandler* connection_handler_;
   std::vector<scoped_ptr<BlimpTransport>> transports_;

@@ -5,7 +5,11 @@
 #include "blimp/net/client_connection_manager.h"
 
 #include "base/logging.h"
+#include "blimp/common/create_blimp_message.h"
+#include "blimp/common/proto/blimp_message.pb.h"
+#include "blimp/common/protocol_version.h"
 #include "blimp/net/blimp_connection.h"
+#include "blimp/net/blimp_message_processor.h"
 #include "blimp/net/blimp_transport.h"
 #include "blimp/net/connection_handler.h"
 #include "net/base/net_errors.h"
@@ -48,12 +52,23 @@ void ClientConnectionManager::OnConnectResult(int transport_index, int result) {
   DCHECK_NE(result, net::ERR_IO_PENDING);
   const auto& transport = transports_[transport_index];
   if (result == net::OK) {
-    connection_handler_->HandleConnection(transport->TakeConnection());
+    scoped_ptr<BlimpConnection> connection = transport->TakeConnection();
+    SendAuthenticationMessage(connection.get());
+    connection_handler_->HandleConnection(std::move(connection));
   } else {
     DVLOG(1) << "Transport " << transport->GetName()
              << " failed to connect:" << net::ErrorToString(result);
     Connect(transport_index + 1);
   }
+}
+
+void ClientConnectionManager::SendAuthenticationMessage(
+    BlimpConnection* connection) {
+  // TODO(haibinlu): get client token.
+  const char* client_token = "";
+  connection->GetOutgoingMessageProcessor()->ProcessMessage(
+      CreateStartConnectionMessage(client_token, kProtocolVersion),
+      net::CompletionCallback());
 }
 
 }  // namespace blimp
