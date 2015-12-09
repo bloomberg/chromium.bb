@@ -13,6 +13,7 @@
 
 #include "gbm_priv.h"
 #include "helpers.h"
+#include "util.h"
 
 /*
  * GOB (Group Of Bytes) is the basic unit of the blocklinear layout.
@@ -48,26 +49,21 @@ static int compute_block_height_log2(int height)
 	return block_height_log2;
 }
 
-static inline uint32_t align_up(uint32_t value, uint32_t alignment)
-{
-	return (value + (alignment-1)) & ~(alignment-1);
-}
-
 static void compute_layout_blocklinear(int width, int height, int format,
 				       enum nv_mem_kind *kind,
 				       uint32_t *block_height_log2,
 				       uint32_t *stride, uint32_t *size)
 {
-	int pitch = width * gbm_bytes_from_format(format);
+	int pitch = gbm_stride_from_format(format, width);
 
 	/* Align to blocklinear blocks. */
-	pitch = align_up(pitch, NV_BLOCKLINEAR_GOB_WIDTH);
+	pitch = ALIGN(pitch, NV_BLOCKLINEAR_GOB_WIDTH);
 
 	/* Compute padded height. */
 	*block_height_log2 = compute_block_height_log2(height);
 	int block_height = 1 << *block_height_log2;
 	int padded_height =
-		align_up(height, NV_BLOCKLINEAR_GOB_HEIGHT * block_height);
+		ALIGN(height, NV_BLOCKLINEAR_GOB_HEIGHT * block_height);
 
 	int bytes = pitch * padded_height;
 
@@ -75,7 +71,7 @@ static void compute_layout_blocklinear(int width, int height, int format,
 	 * This will reduce the required page table size (see discussion in NV
 	 * bug 1321091), and also acts as a WAR for NV bug 1325421.
 	 */
-	bytes = align_up(bytes, NV_PREFERRED_PAGE_SIZE);
+	bytes = ALIGN(bytes, NV_PREFERRED_PAGE_SIZE);
 
 	*kind = NV_MEM_KIND_GENERIC_16Bx2;
 	*stride = pitch;
@@ -85,7 +81,7 @@ static void compute_layout_blocklinear(int width, int height, int format,
 static void compute_layout_linear(int width, int height, int format,
 				  uint32_t *stride, uint32_t *size)
 {
-	*stride = width * gbm_bytes_from_format(format);
+	*stride = gbm_stride_from_format(format, width);
 	*size = *stride * height;
 }
 
@@ -114,15 +110,16 @@ static int gbm_tegra_bo_create(struct gbm_bo *bo, uint32_t width,
 		return ret;
 	}
 
-	bo->handle.u32 = gem_create.handle;
-	bo->size = size;
-	bo->stride = stride;
+	bo->handles[0].u32 = gem_create.handle;
+	bo->offsets[0] = 0;
+	bo->sizes[0] = size;
+	bo->strides[0] = stride;
 
 	if (kind != NV_MEM_KIND_PITCH) {
 		struct drm_tegra_gem_set_tiling gem_tile;
 
 		memset(&gem_tile, 0, sizeof(gem_tile));
-		gem_tile.handle = bo->handle.u32;
+		gem_tile.handle = bo->handles[0].u32;
 		gem_tile.mode = DRM_TEGRA_GEM_TILING_MODE_BLOCK;
 		gem_tile.value = block_height_log2;
 

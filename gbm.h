@@ -71,7 +71,7 @@ union gbm_bo_handle {
 /** Format of the allocated buffer */
 enum gbm_bo_format {
    /** RGB with 8 bits per channel in a 32 bit value */
-   GBM_BO_FORMAT_XRGB8888, 
+   GBM_BO_FORMAT_XRGB8888,
    /** ARGB with 8 bits per channel in a 32 bit value */
    GBM_BO_FORMAT_ARGB8888
 };
@@ -272,6 +272,24 @@ gbm_bo_get_handle(struct gbm_bo *bo);
 
 int
 gbm_bo_get_fd(struct gbm_bo *bo);
+
+size_t
+gbm_bo_get_num_planes(struct gbm_bo *bo);
+
+union gbm_bo_handle
+gbm_bo_get_plane_handle(struct gbm_bo *bo, size_t plane);
+
+int
+gbm_bo_get_plane_fd(struct gbm_bo *bo, size_t plane);
+
+uint32_t
+gbm_bo_get_plane_offset(struct gbm_bo *bo, size_t plane);
+
+uint32_t
+gbm_bo_get_plane_size(struct gbm_bo *bo, size_t plane);
+
+uint32_t
+gbm_bo_get_plane_stride(struct gbm_bo *bo, size_t plane);
 
 int
 gbm_bo_write(struct gbm_bo *bo, const void *buf, size_t count);

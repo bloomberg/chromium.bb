@@ -11,5 +11,6 @@
 #define ARRAY_SIZE(A) (sizeof(A)/sizeof(*(A)))
 #define PUBLIC __attribute__((visibility("default")))
 #define ALIGN(A, B) (((A) + (B) - 1) / (B) * (B))
+#define DIV_ROUND_UP(n,d) (((n) + (d) - 1) / (d))
 
 #endif

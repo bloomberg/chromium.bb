@@ -12,6 +12,8 @@
 #include <stdlib.h>
 #include "gbm.h"
 
+#define GBM_MAX_PLANES 4
+
 struct gbm_device
 {
 	int fd;
@@ -28,11 +30,13 @@ struct gbm_bo
 	struct gbm_device *gbm;
 	uint32_t width;
 	uint32_t height;
-	uint32_t size;
-	uint32_t stride;
 	uint32_t format;
 	uint32_t tiling;
-	union gbm_bo_handle handle;
+	size_t num_planes;
+	union gbm_bo_handle handles[GBM_MAX_PLANES];
+	uint32_t offsets[GBM_MAX_PLANES];
+	uint32_t sizes[GBM_MAX_PLANES];
+	uint32_t strides[GBM_MAX_PLANES];
 	void *priv;
 	void *user_data;
 	void (*destroy_user_data)(struct gbm_bo *, void *);

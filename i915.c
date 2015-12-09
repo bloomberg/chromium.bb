@@ -123,7 +123,7 @@ int gbm_i915_bo_create(struct gbm_bo *bo, uint32_t width, uint32_t height,
 		       uint32_t format, uint32_t flags)
 {
 	struct gbm_device *gbm = bo->gbm;
-	int bpp = gbm_bytes_from_format(format);
+	int bpp = gbm_stride_from_format(format, 1);
 	struct drm_i915_gem_create gem_create;
 	struct drm_i915_gem_set_tiling gem_set_tiling;
 	uint32_t tiling_mode = I915_TILING_NONE;
@@ -139,9 +139,9 @@ int gbm_i915_bo_create(struct gbm_bo *bo, uint32_t width, uint32_t height,
 
 	i915_align_dimensions(gbm, tiling_mode, &width, &height, bpp);
 
-	bo->stride = width * bpp;
+	bo->strides[0] = width * bpp;
 
-	if (!i915_verify_dimensions(gbm, bo->stride, height))
+	if (!i915_verify_dimensions(gbm, bo->strides[0], height))
 		return EINVAL;
 
 	memset(&gem_create, 0, sizeof(gem_create));
@@ -154,21 +154,22 @@ int gbm_i915_bo_create(struct gbm_bo *bo, uint32_t width, uint32_t height,
 				"(size=%zu)\n", size);
 		return ret;
 	}
-	bo->handle.u32 = gem_create.handle;
-	bo->size = size;
+	bo->handles[0].u32 = gem_create.handle;
+	bo->sizes[0] = size;
+	bo->offsets[0] = 0;
 
 	memset(&gem_set_tiling, 0, sizeof(gem_set_tiling));
 	do {
-		gem_set_tiling.handle = bo->handle.u32;
+		gem_set_tiling.handle = bo->handles[0].u32;
 		gem_set_tiling.tiling_mode = tiling_mode;
-		gem_set_tiling.stride = bo->stride;
+		gem_set_tiling.stride = bo->strides[0];
 		ret = drmIoctl(gbm->fd, DRM_IOCTL_I915_GEM_SET_TILING,
 			       &gem_set_tiling);
 	} while (ret == -1 && (errno == EINTR || errno == EAGAIN));
 
 	if (ret == -1) {
 		struct drm_gem_close gem_close;
-		gem_close.handle = bo->handle.u32;
+		gem_close.handle = bo->handles[0].u32;
 		fprintf(stderr, "minigbm: DRM_IOCTL_I915_GEM_SET_TILING failed "
 				"errno=%x (handle=%x, tiling=%x, stride=%x)\n",
 				errno,

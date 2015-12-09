@@ -4,6 +4,7 @@
  * found in the LICENSE file.
  */
 
+#include <assert.h>
 #include <fcntl.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -189,22 +190,23 @@ PUBLIC void gbm_surface_release_buffer(struct gbm_surface *surface,
 
 static struct gbm_bo *gbm_bo_new(struct gbm_device *gbm,
 				 uint32_t width, uint32_t height,
-				 uint32_t format, uint32_t stride)
+				 uint32_t format)
 {
 	struct gbm_bo *bo;
 
-	bo = (struct gbm_bo*) malloc(sizeof(*bo));
+	bo = (struct gbm_bo*) calloc(1, sizeof(*bo));
 	if (!bo)
 		return NULL;
 
 	bo->gbm = gbm;
 	bo->width = width;
 	bo->height = height;
-	bo->stride = stride;
 	bo->format = format;
-	bo->handle.u32 = 0;
-	bo->destroy_user_data = NULL;
-	bo->user_data = NULL;
+	bo->num_planes = gbm_num_planes_from_format(format);
+	if (!bo->num_planes) {
+		free(bo);
+		return NULL;
+	}
 
 	return bo;
 }
@@ -216,8 +218,10 @@ PUBLIC struct gbm_bo *gbm_bo_create(struct gbm_device *gbm, uint32_t width,
 	struct gbm_bo *bo;
 	int ret;
 
-	bo = gbm_bo_new(gbm, width, height, format,
-			width * gbm_bytes_from_format(format));
+	if (!gbm_device_is_format_supported(gbm, format, 0))
+		return NULL;
+
+	bo = gbm_bo_new(gbm, width, height, format);
 	if (!bo)
 		return NULL;
 
@@ -257,8 +261,14 @@ gbm_bo_import(struct gbm_device *gbm, uint32_t type,
 	if (!gbm_device_is_format_supported(gbm, fd_data->format, usage))
 		return NULL;
 
-	bo = gbm_bo_new(gbm, fd_data->width, fd_data->height, fd_data->format,
-			fd_data->stride);
+	/* This function can support only single plane formats. */
+	/* If multi-plane import is desired, new function should be added. */
+	if (gbm_num_planes_from_format(fd_data->format) != 1)
+		return NULL;
+
+	bo = gbm_bo_new(gbm, fd_data->width, fd_data->height, fd_data->format);
+	bo->strides[0] = fd_data->stride;
+
 	if (!bo)
 		return NULL;
 
@@ -272,7 +282,7 @@ gbm_bo_import(struct gbm_device *gbm, uint32_t type,
 		return NULL;
 	}
 
-	bo->handle.u32 = prime_handle.handle;
+	bo->handles[0].u32 = prime_handle.handle;
 
 	return bo;
 }
@@ -292,13 +302,13 @@ gbm_bo_get_height(struct gbm_bo *bo)
 PUBLIC uint32_t
 gbm_bo_get_stride(struct gbm_bo *bo)
 {
-	return bo->stride;
+	return gbm_bo_get_plane_stride(bo, 0);
 }
 
 PUBLIC uint32_t
 gbm_bo_get_stride_or_tiling(struct gbm_bo *bo)
 {
-	return bo->tiling ? bo->tiling : bo->stride;
+	return bo->tiling ? bo->tiling : gbm_bo_get_stride(bo);
 }
 
 PUBLIC uint32_t
@@ -316,21 +326,63 @@ gbm_bo_get_device(struct gbm_bo *bo)
 PUBLIC union gbm_bo_handle
 gbm_bo_get_handle(struct gbm_bo *bo)
 {
-	return bo->handle;
+	return gbm_bo_get_plane_handle(bo, 0);
 }
 
 PUBLIC int
 gbm_bo_get_fd(struct gbm_bo *bo)
 {
-	int fd;
+	return gbm_bo_get_plane_fd(bo, 0);
+}
 
-	if (drmPrimeHandleToFD(gbm_device_get_fd(bo->gbm),
-				gbm_bo_get_handle(bo).u32,
-				DRM_CLOEXEC,
-				&fd))
+PUBLIC size_t
+gbm_bo_get_num_planes(struct gbm_bo *bo)
+{
+	return bo->num_planes;
+}
+
+PUBLIC union gbm_bo_handle
+gbm_bo_get_plane_handle(struct gbm_bo *bo, size_t plane)
+{
+	assert(plane < bo->num_planes);
+	return bo->handles[plane];
+}
+
+PUBLIC int
+gbm_bo_get_plane_fd(struct gbm_bo *bo, size_t plane)
+{
+	int fd;
+	assert(plane < bo->num_planes);
+
+	if (drmPrimeHandleToFD(
+			gbm_device_get_fd(bo->gbm),
+			gbm_bo_get_plane_handle(bo, plane).u32,
+			DRM_CLOEXEC,
+			&fd))
 		return -1;
 	else
 		return fd;
+}
+
+PUBLIC uint32_t
+gbm_bo_get_plane_offset(struct gbm_bo *bo, size_t plane)
+{
+	assert(plane < bo->num_planes);
+	return bo->offsets[plane];
+}
+
+PUBLIC uint32_t
+gbm_bo_get_plane_size(struct gbm_bo *bo, size_t plane)
+{
+	assert(plane < bo->num_planes);
+	return bo->sizes[plane];
+}
+
+PUBLIC uint32_t
+gbm_bo_get_plane_stride(struct gbm_bo *bo, size_t plane)
+{
+	assert(plane < bo->num_planes);
+	return bo->strides[plane];
 }
 
 PUBLIC void

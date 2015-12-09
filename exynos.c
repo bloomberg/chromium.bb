@@ -6,6 +6,8 @@
 
 #ifdef GBM_EXYNOS
 
+#include <assert.h>
+#include <errno.h>
 #include <stdio.h>
 #include <string.h>
 #include <xf86drm.h>
@@ -13,28 +15,53 @@
 
 #include "gbm_priv.h"
 #include "helpers.h"
+#include "util.h"
 
 int gbm_exynos_bo_create(struct gbm_bo *bo, uint32_t width, uint32_t height,
 			 uint32_t format, uint32_t flags)
 {
-	size_t size = width * height * gbm_bytes_from_format(format);
-	struct drm_exynos_gem_create gem_create;
-	int ret;
+	size_t plane;
 
-	memset(&gem_create, 0, sizeof(gem_create));
-	gem_create.size = size;
-	gem_create.flags = EXYNOS_BO_NONCONTIG;
-
-	ret = drmIoctl(bo->gbm->fd, DRM_IOCTL_EXYNOS_GEM_CREATE, &gem_create);
-	if (ret) {
-		fprintf(stderr, "minigbm: DRM_IOCTL_EXYNOS_GEM_CREATE failed "
-				"(size=%zu)\n", size);
-		return ret;
+	if (format == GBM_FORMAT_NV12) {
+		uint32_t chroma_height;
+		/* V4L2 s5p-mfc requires width to be 16 byte aligned and height 32. */
+		width = ALIGN(width, 16);
+		height = ALIGN(height, 32);
+		chroma_height = ALIGN(height / 2, 32);
+		bo->strides[0] = bo->strides[1] = width;
+		/* MFC v8+ requires 64 byte padding in the end of luma and chroma buffers. */
+		bo->sizes[0] = bo->strides[0] * height + 64;
+		bo->sizes[1] = bo->strides[1] * chroma_height + 64;
+		bo->offsets[0] = bo->offsets[1] = 0;
+	} else if (format == GBM_FORMAT_XRGB8888 || format == GBM_FORMAT_ARGB8888 ||
+			format == GBM_BO_FORMAT_XRGB8888 || format == GBM_BO_FORMAT_ARGB8888 ) {
+		bo->strides[0] = gbm_stride_from_format(format, width);
+		bo->sizes[0] = height * bo->strides[0];
+		bo->offsets[0] = 0;
+	} else {
+		fprintf(stderr, "minigbm: unsupported format %X\n", format);
+		assert(0);
+		return -EINVAL;
 	}
 
-	bo->handle.u32 = gem_create.handle;
-	bo->size = size;
-	bo->stride = width * gbm_bytes_from_format(format);
+	for (plane = 0; plane < bo->num_planes; plane++) {
+		size_t size = bo->sizes[plane];
+		struct drm_exynos_gem_create gem_create;
+		int ret;
+
+		memset(&gem_create, 0, sizeof(gem_create));
+		gem_create.size = size;
+		gem_create.flags = EXYNOS_BO_NONCONTIG;
+
+		ret = drmIoctl(bo->gbm->fd, DRM_IOCTL_EXYNOS_GEM_CREATE, &gem_create);
+		if (ret) {
+			fprintf(stderr, "minigbm: DRM_IOCTL_EXYNOS_GEM_CREATE failed "
+					"(size=%zu)\n", size);
+			return ret;
+		}
+
+		bo->handles[plane].u32 = gem_create.handle;
+	}
 
 	return 0;
 }
@@ -47,6 +74,7 @@ const struct gbm_driver gbm_driver_exynos =
 	.format_list = {
 		{GBM_FORMAT_XRGB8888, GBM_BO_USE_SCANOUT | GBM_BO_USE_CURSOR | GBM_BO_USE_RENDERING | GBM_BO_USE_WRITE},
 		{GBM_FORMAT_ARGB8888, GBM_BO_USE_SCANOUT | GBM_BO_USE_CURSOR | GBM_BO_USE_RENDERING | GBM_BO_USE_WRITE},
+		{GBM_FORMAT_NV12, GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING | GBM_BO_USE_WRITE},
 	}
 };
 
