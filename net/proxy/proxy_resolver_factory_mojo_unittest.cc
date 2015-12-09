@@ -438,7 +438,7 @@ void MockMojoProxyResolverFactory::CreateResolver(
       request->port = 12345;
       interfaces::HostResolverRequestClientPtr dns_client;
       mojo::GetProxy(&dns_client);
-      client->ResolveDns(request.Pass(), dns_client.Pass());
+      client->ResolveDns(request.Pass(), std::move(dns_client));
       blocked_clients_.push_back(
           make_scoped_ptr(new interfaces::ProxyResolverFactoryRequestClientPtr(
               std::move(client))));
