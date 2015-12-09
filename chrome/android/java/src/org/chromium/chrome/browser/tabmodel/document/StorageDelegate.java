@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.tabmodel.document;
 
 import android.content.Context;
 import android.os.AsyncTask;
-import android.os.StrictMode;
 import android.util.SparseArray;
 
 import com.google.protobuf.nano.MessageNano;
@@ -28,6 +27,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Contains functions for interacting with the file system.
@@ -43,6 +43,16 @@ public class StorageDelegate extends TabPersister {
 
     /** The buffer size to use when reading the DocumentTabModel file, set to 4k bytes. */
     private static final int BUF_SIZE = 0x1000;
+
+    /** Cached base state directory to prevent main-thread filesystem access in getStateDirectory().
+     */
+    private static AsyncTask<Void, Void, File> sBaseStateDirectoryFetchTask;
+
+    public StorageDelegate() {
+        // Warm up the state directory to prevent it from using filesystem on main thread in the
+        // future
+        preloadStateDirectory();
+    }
 
     /**
      * Reads the file containing the minimum info required to restore the state of the
@@ -104,17 +114,33 @@ public class StorageDelegate extends TabPersister {
         }
     }
 
+    private void preloadStateDirectory() {
+        if (sBaseStateDirectoryFetchTask != null) {
+            return;
+        }
+
+        sBaseStateDirectoryFetchTask = new AsyncTask<Void, Void, File>() {
+            @Override
+            protected File doInBackground(Void... params) {
+                return ApplicationStatus.getApplicationContext().getDir(
+                        STATE_DIRECTORY, Context.MODE_PRIVATE);
+            }
+        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
+
     /** @return The directory that stores the TabState files. */
     @Override
     public File getStateDirectory() {
-        // Temporarily allowing disk access while fixing. TODO: http://crbug.com/543201
-        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
         try {
-            return ApplicationStatus.getApplicationContext().getDir(
-                    STATE_DIRECTORY, Context.MODE_PRIVATE);
-        } finally {
-            StrictMode.setThreadPolicy(oldPolicy);
+            return sBaseStateDirectoryFetchTask.get();
+        } catch (InterruptedException e) {
+        } catch (ExecutionException e) {
         }
+
+        // If the AsyncTask failed for some reason, we have no choice but to fall back to
+        // main-thread disk access.
+        return ApplicationStatus.getApplicationContext().getDir(
+                STATE_DIRECTORY, Context.MODE_PRIVATE);
     }
 
     /**
