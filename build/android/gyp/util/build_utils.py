@@ -253,10 +253,10 @@ def AddToZipHermetic(zip_file, zip_path, src_path=None, data=None,
 
   # None converts to ZIP_STORED, when passed explicitly rather than the
   # default passed to the ZipFile constructor.
-  args = []
+  compress_type = zip_file.compression
   if compress is not None:
-    args.append(zipfile.ZIP_DEFLATED if compress else zipfile.ZIP_STORED)
-  zip_file.writestr(zipinfo, data, *args)
+    compress_type = zipfile.ZIP_DEFLATED if compress else zipfile.ZIP_STORED
+  zip_file.writestr(zipinfo, data, compress_type)
 
 
 def DoZip(inputs, output, base_dir=None):
