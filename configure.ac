@@ -499,6 +499,7 @@ AC_CONFIG_FILES([
 	tests/Makefile
 	tests/modeprint/Makefile
 	tests/modetest/Makefile
+	tests/kms/Makefile
 	tests/kmstest/Makefile
 	tests/proptest/Makefile
 	tests/radeon/Makefile
