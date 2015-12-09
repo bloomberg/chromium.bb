@@ -367,9 +367,10 @@ void LayoutReplaced::computePreferredLogicalWidths()
 {
     ASSERT(preferredLogicalWidthsDirty());
 
-    // We cannot resolve any percent logical width here as the available logical
-    // width may not be set on our containing block.
-    if (style()->logicalWidth().hasPercent())
+    // We cannot resolve some logical width here (i.e. percent, fill-available or fit-content)
+    // as the available logical width may not be set on our containing block.
+    const Length& logicalWidth = style()->logicalWidth();
+    if (logicalWidth.hasPercent() || logicalWidth.isFillAvailable() || logicalWidth.isFitContent())
         computeIntrinsicLogicalWidths(m_minPreferredLogicalWidth, m_maxPreferredLogicalWidth);
     else
         m_minPreferredLogicalWidth = m_maxPreferredLogicalWidth = computeReplacedLogicalWidth(ComputePreferred);
