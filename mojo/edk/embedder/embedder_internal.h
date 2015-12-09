@@ -38,7 +38,7 @@ extern PlatformSupport* g_platform_support;
 extern Core* g_core;
 extern base::TaskRunner* g_delegate_thread_task_runner;
 extern ProcessDelegate* g_process_delegate;
-extern base::TaskRunner* g_io_thread_task_runner;
+MOJO_SYSTEM_IMPL_EXPORT extern base::TaskRunner* g_io_thread_task_runner;
 
 // TODO(use_chrome_edk): temporary until we have only one SDK.
 MOJO_SYSTEM_IMPL_EXPORT Core* GetCore();
