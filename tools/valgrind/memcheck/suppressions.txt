@@ -3417,6 +3417,7 @@
    Memcheck:Uninitialized
    fun:_ZN5blink10PaintLayer24removeFilterInfoIfNeededEv
    fun:_ZN5blink10PaintLayerD1Ev
+   fun:_ZN5blink10PaintLayerD0Ev
    fun:_ZN3WTF15OwnedPtrDeleterIN5blink10PaintLayerEE9deletePtrEPS2_
    fun:_ZN3WTF6OwnPtrIN5blink10PaintLayerEE5clearEv
    fun:_ZN3WTF6OwnPtrIN5blink10PaintLayerEEaSEDn
