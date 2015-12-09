@@ -67,6 +67,7 @@
   justify-content: center;
   margin-left: 0;
   margin-right: 4px;
+  min-width: 0;
 }
 
 .track .data .data-title,
