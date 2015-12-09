@@ -34,7 +34,7 @@ public class TouchInputHandler implements TouchInputHandlerInterface {
     private ScaleGestureDetector mZoomer;
     private TapGestureDetector mTapDetector;
 
-    /** Used to calculate the physics for flinging the cursor. */
+    /** Used to calculate the physics for flinging the viewport across the desktop image. */
     private Scroller mFlingScroller;
 
     /** Used to disambiguate a 2-finger gesture as a swipe or a pinch. */
@@ -142,7 +142,7 @@ public class TouchInputHandler implements TouchInputHandlerInterface {
 
     @Override
     public void onHostSizeChanged(int width, int height) {
-        moveCursor((float) width / 2, (float) height / 2);
+        moveViewport((float) width / 2, (float) height / 2);
         mDesktopCanvas.resizeImageToFitScreen();
     }
 
@@ -177,7 +177,7 @@ public class TouchInputHandler implements TouchInputHandlerInterface {
             canvasToImage.mapVectors(delta);
         }
 
-        moveCursorRelative(-delta[0], -delta[1]);
+        moveViewportWithOffset(-delta[0], -delta[1]);
     }
 
     @Override
@@ -185,21 +185,21 @@ public class TouchInputHandler implements TouchInputHandlerInterface {
         mInputStrategy = inputStrategy;
     }
 
-    /** Moves the mouse-cursor relative to the current position. */
-    private void moveCursorRelative(float deltaX, float deltaY) {
+    /** Moves the desired center of the viewport using the specified deltas. */
+    private void moveViewportWithOffset(float deltaX, float deltaY) {
+        // If we are in an indirect mode or are in the middle of a drag operation, then we want to
+        // invert the direction of the operation (i.e. follow the motion of the finger).
         if (mInputStrategy.isIndirectInputMode() || mIsDragging) {
             deltaX = -deltaX;
             deltaY = -deltaY;
         }
 
-        PointF cursorPosition = mDesktopCanvas.getCursorPosition();
-        moveCursor(cursorPosition.x + deltaX, cursorPosition.y + deltaY);
-    }
-
-    /** Moves the mouse-cursor, injects a mouse-move event and repositions the image. */
-    private void moveCursor(float newX, float newY) {
+        // Constrain the coordinates to the image area.
+        PointF viewportPosition = mDesktopCanvas.getViewportPosition();
+        float newX = viewportPosition.x + deltaX;
+        float newY = viewportPosition.y + deltaY;
         synchronized (mRenderData) {
-            // Constrain cursor to the image area.
+            // Constrain viewport position to the image area.
             if (newX < 0) {
                 newX = 0;
             } else if (newX > mRenderData.imageWidth) {
@@ -211,18 +211,43 @@ public class TouchInputHandler implements TouchInputHandlerInterface {
             } else if (newY > mRenderData.imageHeight) {
                 newY = mRenderData.imageHeight;
             }
+        }
 
-            // Test if the cursor actually moved, which requires repainting the cursor and updating
-            // the position on the remote machine.
-            boolean cursorMoved = mRenderData.setCursorPosition((int) newX, (int) newY);
-            if (cursorMoved) {
-                mInputStrategy.injectCursorMoveEvent((int) newX, (int) newY);
-            }
+        moveViewport(newX, newY);
+    }
 
-            mDesktopCanvas.setCursorPosition(newX, newY);
+    /** Moves the desired center of the viewport to the specified position. */
+    private void moveViewport(float newX, float newY) {
+        mDesktopCanvas.setViewportPosition(newX, newY);
+
+        // If we are in an indirect mode or are in the middle of a drag operation, then we want to
+        // keep the cursor centered, if possible, as the viewport moves.
+        if (mInputStrategy.isIndirectInputMode() || mIsDragging) {
+            moveCursor((int) newX, (int) newY);
         }
 
         mDesktopCanvas.repositionImage();
+    }
+
+    /** Moves the cursor to the specified position on the screen. */
+    private void moveCursorToScreenPoint(float screenX, float screenY) {
+        float[] mappedValues = {screenX, screenY};
+        synchronized (mRenderData) {
+            Matrix canvasToImage = new Matrix();
+            mRenderData.transform.invert(canvasToImage);
+            canvasToImage.mapPoints(mappedValues);
+        }
+        moveCursor((int) mappedValues[0], (int) mappedValues[1]);
+    }
+
+    /** Moves the cursor to the specified position on the remote host. */
+    private void moveCursor(int newX, int newY) {
+        synchronized (mRenderData) {
+            boolean cursorMoved = mRenderData.setCursorPosition(newX, newY);
+            if (cursorMoved) {
+                mInputStrategy.injectCursorMoveEvent(newX, newY);
+            }
+        }
     }
 
     /** Processes a (multi-finger) swipe gesture. */
@@ -280,7 +305,7 @@ public class TouchInputHandler implements TouchInputHandlerInterface {
                 canvasToImage.mapVectors(delta);
             }
 
-            moveCursorRelative(delta[0], delta[1]);
+            moveViewportWithOffset(delta[0], delta[1]);
             return true;
         }
 
@@ -363,6 +388,10 @@ public class TouchInputHandler implements TouchInputHandlerInterface {
                 return false;
             }
 
+            if (!mInputStrategy.isIndirectInputMode()) {
+                moveCursorToScreenPoint(x, y);
+            }
+
             if (mInputStrategy.onTap(button)) {
                 mViewer.showInputFeedback(mInputStrategy.getShortPressFeedbackType());
             }
@@ -375,6 +404,10 @@ public class TouchInputHandler implements TouchInputHandlerInterface {
             int button = mouseButtonFromPointerCount(pointerCount);
             if (button == BUTTON_UNDEFINED) {
                 return;
+            }
+
+            if (!mInputStrategy.isIndirectInputMode()) {
+                moveCursorToScreenPoint(x, y);
             }
 
             if (mInputStrategy.onPressAndHold(button)) {

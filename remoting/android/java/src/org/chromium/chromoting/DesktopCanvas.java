@@ -20,10 +20,12 @@ public class DesktopCanvas {
     private final RenderData mRenderData;
 
     /**
-     * The current cursor position is stored here as a float so that the desktop image can be
-     * positioned with sub-pixel accuracy to give a smoother panning animation at high zoom levels.
+     * Represents the desired center of the viewport.  This value may not represent the actual
+     * center of the viewport as adjustments are made to ensure as much of the desktop is visible as
+     * possible.  This value needs to be a pair of floats so the desktop image can be positioned
+     * with sub-pixel accuracy for smoother panning animations at high zoom levels.
      */
-    private PointF mCursorPosition = new PointF();
+    private PointF mViewportPosition = new PointF();
 
     /**
      * Represents the amount of vertical space in pixels used by the soft input device and
@@ -43,22 +45,23 @@ public class DesktopCanvas {
     }
 
     /**
-     * Returns the position of the cursor.
+     * Returns the desired center position of the viewport.  Note that this may not represent the
+     * true center of the viewport as other calculations are done to maximize the viewable area.
      *
-     * @return A point representing the position of the cursor.
+     * @return A point representing the desired position of the viewport.
      */
-    public PointF getCursorPosition() {
-        return new PointF(mCursorPosition.x, mCursorPosition.y);
+    public PointF getViewportPosition() {
+        return new PointF(mViewportPosition.x, mViewportPosition.y);
     }
 
     /**
-     * Sets the position of the cursor which is used for rendering.
+     * Sets the desired center position of the viewport.
      *
-     * @param newX The new value of the x coordinate.
-     * @param newY The new value of the y coordinate
+     * @param newX The new x coordinate value for the desired center position.
+     * @param newY The new y coordinate value for the desired center position.
      */
-    public void setCursorPosition(float newX, float newY) {
-        mCursorPosition.set(newX, newY);
+    public void setViewportPosition(float newX, float newY) {
+        mViewportPosition.set(newX, newY);
     }
 
     /**
@@ -109,21 +112,26 @@ public class DesktopCanvas {
 
     /**
      * Repositions the image by translating it (without affecting the zoom level) to place the
-     * cursor close to the center of the screen.
+     * viewport close to the center of the screen.
      */
     public void repositionImage() {
         synchronized (mRenderData) {
             float adjustedScreenWidth = mRenderData.screenWidth - mInputMethodOffsetX;
             float adjustedScreenHeight = mRenderData.screenHeight - mInputMethodOffsetY;
 
-            // Get the current cursor position in screen coordinates.
-            float[] cursorScreen = {mCursorPosition.x, mCursorPosition.y};
-            mRenderData.transform.mapPoints(cursorScreen);
+            // The goal of the code below is to position the viewport as close to the desired center
+            // position as possible whilst keeping as much of the desktop in view as possible.
+            // To achieve these goals, we first position the desktop image at the desired center
+            // point and then re-position it to maximize the viewable area.
 
-            // Translate so the cursor is displayed in the middle of the screen.
+            // Map the current viewport position to screen coordinates.
+            float[] viewportPosition = {mViewportPosition.x, mViewportPosition.y};
+            mRenderData.transform.mapPoints(viewportPosition);
+
+            // Translate so the viewport is displayed in the middle of the screen.
             mRenderData.transform.postTranslate(
-                    (float) adjustedScreenWidth / 2 - cursorScreen[0],
-                    (float) adjustedScreenHeight / 2 - cursorScreen[1]);
+                    (float) adjustedScreenWidth / 2 - viewportPosition[0],
+                    (float) adjustedScreenHeight / 2 - viewportPosition[1]);
 
             // Get the coordinates of the desktop rectangle (top-left/bottom-right corners) in
             // screen coordinates. Order is: left, top, right, bottom.
