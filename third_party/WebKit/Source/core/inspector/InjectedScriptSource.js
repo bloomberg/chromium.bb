@@ -170,6 +170,8 @@ function isArrayLike(obj)
         return false;
     try {
         if (typeof obj.splice === "function") {
+            if (!InjectedScriptHost.suppressWarningsAndCallFunction(Object.prototype.hasOwnProperty, obj, ["length"]))
+                return false;
             var len = obj.length;
             return typeof len === "number" && isUInt32(len);
         }

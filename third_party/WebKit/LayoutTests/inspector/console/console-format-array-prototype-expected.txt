@@ -8,6 +8,7 @@ CONSOLE MESSAGE: line 9: 0,,,,,,,,,,10,,,,
 CONSOLE MESSAGE: line 9: ,,,4,,,,,,,,,,,
 CONSOLE MESSAGE: line 9: 0,1,2,3,4,5,6,7,8,9
 CONSOLE MESSAGE: line 9: ,1,2,3,4,,6,7,8,9,
+CONSOLE MESSAGE: line 9: [object Object]
 Tests that console logging dumps array values defined on Array.prototype[].
 
 a0
@@ -40,4 +41,7 @@ console-format-array-prototype.html:4 [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 a9
 [undefined × 1, 1, 2, 3, 4, undefined × 1, 6, 7, 8, 9, undefined × 1]
 console-format-array-prototype.html:4 [1: 1, 2: 2, 3: 3, 4: 4, 6: 6, 7: 7, 8: 8, 9: 9, foo: "bar"]
+a10
+Array {}
+console-format-array-prototype.html:4 Array {}
 
