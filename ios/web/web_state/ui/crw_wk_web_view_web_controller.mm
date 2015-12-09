@@ -1310,6 +1310,7 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 
   if (!_changingHistoryState) {
     [self didStartLoadingURL:_documentURL updateHistory:YES];
+    [self updateSSLStatusForCurrentNavigationItem];
     [self didFinishNavigation];
   }
 }
