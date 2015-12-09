@@ -8,6 +8,7 @@ import android.os.Handler;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.GestureStateListener;
@@ -109,21 +110,38 @@ public class ContextualSearchSelectionController {
     }
 
     /**
+     * Notifies that the base page has started loading a page.
+     */
+    void onBasePageLoadStarted() {
+        resetAllStates();
+    }
+
+    /**
+     * Notifies that the Contextual Search has ended.
+     * @param reason The reason for ending the Contextual Search.
+     */
+    void onSearchEnded(OverlayPanel.StateChangeReason reason) {
+        // If the user explicitly closes the panel after establishing a selection with long press,
+        // it should not reappear until a new selection is made. This prevents the panel from
+        // reappearing when a long press selection is modified after the user has taken action to
+        // get rid of the panel. See crbug.com/489461.
+        if (shouldPreventHandlingCurrentSelectionModification(reason)) {
+            preventHandlingCurrentSelectionModification();
+        }
+
+        // Long press selections should remain visible after ending a Contextual Search.
+        if (getSelectionType() == SelectionType.TAP) {
+            clearSelection();
+        }
+    }
+
+    /**
      * Returns a new {@code GestureStateListener} that will listen for events in the Base Page.
      * This listener will handle all Contextual Search-related interactions that go through the
      * listener.
      */
     public ContextualSearchGestureStateListener getGestureStateListener() {
         return new ContextualSearchGestureStateListener();
-    }
-
-    /**
-     * Temporarily prevents the controller from handling selection modification events on the
-     * current selection. Handling will be re-enabled when a new selection is made through either a
-     * tap or long press.
-     */
-    public void preventHandlingCurrentSelectionModification() {
-        mShouldHandleSelectionModification = false;
     }
 
     /**
@@ -361,6 +379,33 @@ public class ContextualSearchSelectionController {
     private void onInvalidTapDetectionTimeout() {
         mHandler.handleInvalidTap();
         mIsWaitingForInvalidTapDetection = false;
+    }
+
+    /**
+     * This method checks whether the selection modification should be handled. This method
+     * is needed to allow modifying selections that are occluded by the Panel.
+     * See crbug.com/489461.
+     *
+     * @param reason The reason the panel is closing.
+     * @return Whether the selection modification should be handled.
+     */
+    private boolean shouldPreventHandlingCurrentSelectionModification(
+            OverlayPanel.StateChangeReason reason) {
+        return getSelectionType() == SelectionType.LONG_PRESS
+                && (reason == OverlayPanel.StateChangeReason.BACK_PRESS
+                || reason == OverlayPanel.StateChangeReason.BASE_PAGE_SCROLL
+                || reason == OverlayPanel.StateChangeReason.SWIPE
+                || reason == OverlayPanel.StateChangeReason.FLING
+                || reason == OverlayPanel.StateChangeReason.CLOSE_BUTTON);
+    }
+
+    /**
+     * Temporarily prevents the controller from handling selection modification events on the
+     * current selection. Handling will be re-enabled when a new selection is made through either a
+     * tap or long press.
+     */
+    private void preventHandlingCurrentSelectionModification() {
+        mShouldHandleSelectionModification = false;
     }
 
     /**

@@ -71,6 +71,11 @@ public class ContextualSearchTabHelper extends EmptyTabObserver {
         // Add Contextual Search here in case it couldn't get added in onContentChanged() due to
         // being too early in initialization of Chrome (ContextualSearchManager being null).
         setContextualSearchHooks(mBaseContentViewCore);
+
+        ContextualSearchManager manager = getContextualSearchManager();
+        if (manager != null) {
+            manager.onBasePageLoadStarted();
+        }
     }
 
     @Override
@@ -100,12 +105,9 @@ public class ContextualSearchTabHelper extends EmptyTabObserver {
 
     @Override
     public void onToggleFullscreenMode(Tab tab, boolean enable) {
-        ContentViewCore cvc = tab.getContentViewCore();
-        if (cvc != null) {
-            ContextualSearchManager manager = getContextualSearchManager(cvc);
-            if (manager != null) {
-                manager.hideContextualSearch(StateChangeReason.UNKNOWN);
-            }
+        ContextualSearchManager manager = getContextualSearchManager();
+        if (manager != null) {
+            manager.hideContextualSearch(StateChangeReason.UNKNOWN);
         }
     }
 
@@ -141,9 +143,9 @@ public class ContextualSearchTabHelper extends EmptyTabObserver {
      */
     private void addContextualSearchHooks(ContentViewCore cvc) {
         if (mGestureStateListener == null) {
-            mGestureStateListener = getContextualSearchManager(cvc).getGestureStateListener();
+            mGestureStateListener = getContextualSearchManager().getGestureStateListener();
             cvc.addGestureStateListener(mGestureStateListener);
-            cvc.setContextualSearchClient(getContextualSearchManager(cvc));
+            cvc.setContextualSearchClient(getContextualSearchManager());
             TemplateUrlService.getInstance().addObserver(mTemplateUrlObserver);
         }
     }
@@ -167,20 +169,23 @@ public class ContextualSearchTabHelper extends EmptyTabObserver {
      * @return whether Contextual Search is enabled and active in this tab.
      */
     private boolean isContextualSearchActive(ContentViewCore cvc) {
-        return !cvc.getWebContents().isIncognito() && getContextualSearchManager(cvc) != null
+        ContextualSearchManager manager = getContextualSearchManager();
+        if (manager == null) return false;
+
+        return !cvc.getWebContents().isIncognito()
             && !PrefServiceBridge.getInstance().isContextualSearchDisabled()
             && TemplateUrlService.getInstance().isDefaultSearchEngineGoogle()
             // Svelte and Accessibility devices are incompatible with the first-run flow and
             // Talkback has poor interaction with tap to search (see http://crbug.com/399708 and
             // http://crbug.com/396934).
             // TODO(jeremycho): Handle these cases.
-            && !getContextualSearchManager(cvc).isRunningInCompatibilityMode();
+            && !manager.isRunningInCompatibilityMode();
     }
 
     /**
      * @return the Contextual Search manager.
      */
-    private ContextualSearchManager getContextualSearchManager(ContentViewCore cvc) {
+    private ContextualSearchManager getContextualSearchManager() {
         Activity activity = mTab.getWindowAndroid().getActivity().get();
         if (activity instanceof ChromeActivity) {
             return ((ChromeActivity) activity).getContextualSearchManager();

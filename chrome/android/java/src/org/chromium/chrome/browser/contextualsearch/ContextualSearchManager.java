@@ -333,6 +333,13 @@ public class ContextualSearchManager extends ContextualSearchObservable
     }
 
     /**
+     * Notifies that the base page has started loading a page.
+     */
+    public void onBasePageLoadStarted() {
+        mSelectionController.onBasePageLoadStarted();
+    }
+
+    /**
      * Hides the Contextual Search UX.
      * @param reason The {@link StateChangeReason} for hiding Contextual Search.
      */
@@ -346,24 +353,9 @@ public class ContextualSearchManager extends ContextualSearchObservable
 
     @Override
     public void onCloseContextualSearch(StateChangeReason reason) {
-        // If the user explicitly closes the panel after establishing a selection with long press,
-        // it should not reappear until a new selection is made. This prevents the panel from
-        // reappearing when a long press selection is modified after the user has taken action to
-        // get rid of the panel. See crbug.com/489461.
-        if (shouldPreventHandlingCurrentSelectionModification(reason)) {
-            mSelectionController.preventHandlingCurrentSelectionModification();
-        }
-
         if (mSearchPanel == null) return;
 
-        // NOTE(pedrosimonetti): hideContextualSearch() will also be called after swiping the
-        // Panel down in order to dismiss it. In this case, hideContextualSearch() will be called
-        // after completing the hide animation, and at that moment the Panel will not be showing
-        // anymore. Therefore, we need to always clear selection, regardless of when the Panel
-        // was still visible, in order to make sure the selection will be cleared appropriately.
-        if (mSelectionController.getSelectionType() == SelectionType.TAP) {
-            mSelectionController.clearSelection();
-        }
+        mSelectionController.onSearchEnded(reason);
 
         // Show the infobar container if it was visible before Contextual Search was shown.
         if (mWereInfoBarsHidden) {
@@ -397,20 +389,6 @@ public class ContextualSearchManager extends ContextualSearchObservable
         mIsShowingPromo = false;
         mSearchPanel.setIsPromoActive(false);
         notifyHideContextualSearch();
-    }
-
-    /**
-     * Returns true if the StateChangeReason corresponds to an explicit action used to close
-     * the Contextual Search panel.
-     * @param reason The reason the panel is closing.
-     */
-    private boolean shouldPreventHandlingCurrentSelectionModification(StateChangeReason reason) {
-        return mSelectionController.getSelectionType() == SelectionType.LONG_PRESS
-                && (reason == StateChangeReason.BACK_PRESS
-                || reason == StateChangeReason.BASE_PAGE_SCROLL
-                || reason == StateChangeReason.SWIPE
-                || reason == StateChangeReason.FLING
-                || reason == StateChangeReason.CLOSE_BUTTON);
     }
 
     /**
