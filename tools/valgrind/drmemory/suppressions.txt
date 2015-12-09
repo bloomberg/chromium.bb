@@ -425,8 +425,7 @@ skia.dll!HDCOffscreen::draw
 ...
 skia.dll!SkScalerContext::getImage
 skia.dll!SkGlyphCache::findImage
-skia.dll!D1G_RectClip
-skia.dll!SkDraw::draw*
+skia.dll!DrawOneGlyph::getImageData
 
 HANDLE LEAK
 name=http://crbug.com/346842
