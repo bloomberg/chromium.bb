@@ -22,6 +22,8 @@ public class CronetTestBase extends AndroidTestCase {
     private static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "cronet_test";
 
     private CronetTestFramework mCronetTestFramework;
+    // {@code true} when test is being run against system HttpURLConnection implementation.
+    private boolean mTestingSystemHttpURLConnection;
 
     @Override
     protected void setUp() throws Exception {
@@ -86,8 +88,16 @@ public class CronetTestBase extends AndroidTestCase {
         return mCronetTestFramework;
     }
 
+    /**
+     * Returns {@code true} when test is being run against system HttpURLConnection implementation.
+     */
+    protected boolean testingSystemHttpURLConnection() {
+        return mTestingSystemHttpURLConnection;
+    }
+
     @Override
     protected void runTest() throws Throwable {
+        mTestingSystemHttpURLConnection = false;
         if (!getClass().getPackage().getName().equals(
                 "org.chromium.net.urlconnection")) {
             super.runTest();
@@ -97,8 +107,10 @@ public class CronetTestBase extends AndroidTestCase {
             Method method = getClass().getMethod(getName(), (Class[]) null);
             if (method.isAnnotationPresent(CompareDefaultWithCronet.class)) {
                 // Run with the default HttpURLConnection implementation first.
+                mTestingSystemHttpURLConnection = true;
                 super.runTest();
                 // Use Cronet's implementation, and run the same test.
+                mTestingSystemHttpURLConnection = false;
                 URL.setURLStreamHandlerFactory(mCronetTestFramework.mStreamHandlerFactory);
                 super.runTest();
             } else if (method.isAnnotationPresent(

@@ -811,11 +811,15 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
         HttpURLConnection connection =
                 (HttpURLConnection) url.openConnection();
         connection.setInstanceFollowRedirects(false);
-        assertEquals(302, connection.getResponseCode());
-        assertEquals("Found", connection.getResponseMessage());
-        assertEquals("/success.txt", connection.getHeaderField("Location"));
-        assertEquals(NativeTestServer.getFileURL("/redirect.html"),
-                connection.getURL().toString());
+        // Redirect following control broken in Android Marshmallow:
+        // https://code.google.com/p/android/issues/detail?id=194495
+        if (!testingSystemHttpURLConnection() || Build.VERSION.SDK_INT != Build.VERSION_CODES.M) {
+            assertEquals(302, connection.getResponseCode());
+            assertEquals("Found", connection.getResponseMessage());
+            assertEquals("/success.txt", connection.getHeaderField("Location"));
+            assertEquals(
+                    NativeTestServer.getFileURL("/redirect.html"), connection.getURL().toString());
+        }
         connection.disconnect();
     }
 
@@ -827,11 +831,15 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
         URL url = new URL(NativeTestServer.getFileURL("/redirect.html"));
         HttpURLConnection connection =
                 (HttpURLConnection) url.openConnection();
-        assertEquals(302, connection.getResponseCode());
-        assertEquals("Found", connection.getResponseMessage());
-        assertEquals("/success.txt", connection.getHeaderField("Location"));
-        assertEquals(NativeTestServer.getFileURL("/redirect.html"),
-                connection.getURL().toString());
+        // Redirect following control broken in Android Marshmallow:
+        // https://code.google.com/p/android/issues/detail?id=194495
+        if (!testingSystemHttpURLConnection() || Build.VERSION.SDK_INT != Build.VERSION_CODES.M) {
+            assertEquals(302, connection.getResponseCode());
+            assertEquals("Found", connection.getResponseMessage());
+            assertEquals("/success.txt", connection.getHeaderField("Location"));
+            assertEquals(
+                    NativeTestServer.getFileURL("/redirect.html"), connection.getURL().toString());
+        }
         connection.disconnect();
     }
 
@@ -884,8 +892,16 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
         connection.setInstanceFollowRedirects(true);
         assertEquals(302, connection.getResponseCode());
         assertEquals("Found", connection.getResponseMessage());
-        // Redirect is not followed, but the url is updated to the Location header.
-        assertEquals("https://127.0.0.1:8000/success.txt", connection.getURL().toString());
+        // Behavior changed in Android Marshmallow to not update the URL.
+        if (testingSystemHttpURLConnection() && Build.VERSION.SDK_INT == Build.VERSION_CODES.M) {
+            // Redirected port is randomized, verify everything but port.
+            assertEquals(url.getProtocol(), connection.getURL().getProtocol());
+            assertEquals(url.getHost(), connection.getURL().getHost());
+            assertEquals(url.getFile(), connection.getURL().getFile());
+        } else {
+            // Redirect is not followed, but the url is updated to the Location header.
+            assertEquals("https://127.0.0.1:8000/success.txt", connection.getURL().toString());
+        }
         connection.disconnect();
     }
 
