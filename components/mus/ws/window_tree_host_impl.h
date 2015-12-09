@@ -135,7 +135,7 @@ class WindowTreeHostImpl : public DisplayManagerDelegate,
 
   // DisplayManagerDelegate:
   ServerWindow* GetRootWindow() override;
-  void OnEvent(mojom::EventPtr event) override;
+  void OnEvent(const ui::Event& event) override;
   void OnDisplayClosed() override;
   void OnViewportMetricsChanged(
       const mojom::ViewportMetrics& old_metrics,

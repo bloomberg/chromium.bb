@@ -25,6 +25,8 @@
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/services/network/public/interfaces/url_loader.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/events/event.h"
+#include "ui/events/event_utils.h"
 #include "ui/gfx/geometry/rect.h"
 
 using mojo::Array;
@@ -278,56 +280,31 @@ class TestDisplayManagerFactory : public DisplayManagerFactory {
   DISALLOW_COPY_AND_ASSIGN(TestDisplayManagerFactory);
 };
 
-EventPtr CreatePointerDownEvent(int x, int y) {
-  EventPtr event(Event::New());
-  event->action = mus::mojom::EVENT_TYPE_POINTER_DOWN;
-  event->pointer_data = PointerData::New();
-  event->pointer_data->pointer_id = 1u;
-  event->pointer_data->location = LocationData::New();
-  event->pointer_data->location->x = x;
-  event->pointer_data->location->y = y;
-  event->pointer_data->kind = mojom::POINTER_KIND_TOUCH;
-  return event;
+ui::TouchEvent CreatePointerDownEvent(int x, int y) {
+  return ui::TouchEvent(ui::ET_TOUCH_PRESSED, gfx::Point(x, y), 1,
+                        ui::EventTimeForNow());
 }
 
-EventPtr CreatePointerUpEvent(int x, int y) {
-  EventPtr event(Event::New());
-  event->action = mus::mojom::EVENT_TYPE_POINTER_UP;
-  event->pointer_data = PointerData::New();
-  event->pointer_data->pointer_id = 1u;
-  event->pointer_data->location = LocationData::New();
-  event->pointer_data->location->x = x;
-  event->pointer_data->location->y = y;
-  event->pointer_data->kind = mojom::POINTER_KIND_TOUCH;
-  return event;
+ui::TouchEvent CreatePointerUpEvent(int x, int y) {
+  return ui::TouchEvent(ui::ET_TOUCH_RELEASED, gfx::Point(x, y), 1,
+                        ui::EventTimeForNow());
 }
 
-EventPtr CreateMouseMoveEvent(int x, int y) {
-  EventPtr event(Event::New());
-  event->action = mus::mojom::EVENT_TYPE_POINTER_MOVE;
-  event->pointer_data = PointerData::New();
-  event->pointer_data->pointer_id = std::numeric_limits<uint32_t>::max();
-  event->pointer_data->location = LocationData::New();
-  event->pointer_data->location->x = x;
-  event->pointer_data->location->y = y;
-  event->pointer_data->kind = mojom::POINTER_KIND_MOUSE;
-  return event;
+ui::MouseEvent CreateMouseMoveEvent(int x, int y) {
+  return ui::MouseEvent(ui::ET_MOUSE_MOVED, gfx::Point(x, y), gfx::Point(x, y),
+                        ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
 }
 
-EventPtr CreateMouseDownEvent(int x, int y) {
-  EventPtr event = CreatePointerDownEvent(x, y);
-  event->flags = static_cast<mus::mojom::EventFlags>(
-      event->flags | mojom::EVENT_FLAGS_LEFT_MOUSE_BUTTON);
-  event->pointer_data->kind = mojom::POINTER_KIND_MOUSE;
-  return event;
+ui::MouseEvent CreateMouseDownEvent(int x, int y) {
+  return ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::Point(x, y),
+                        gfx::Point(x, y), ui::EventTimeForNow(),
+                        ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
 }
 
-EventPtr CreateMouseUpEvent(int x, int y) {
-  EventPtr event = CreatePointerUpEvent(x, y);
-  event->flags = static_cast<mus::mojom::EventFlags>(
-      event->flags | mojom::EVENT_FLAGS_LEFT_MOUSE_BUTTON);
-  event->pointer_data->kind = mojom::POINTER_KIND_MOUSE;
-  return event;
+ui::MouseEvent CreateMouseUpEvent(int x, int y) {
+  return ui::MouseEvent(ui::ET_MOUSE_RELEASED, gfx::Point(x, y),
+                        gfx::Point(x, y), ui::EventTimeForNow(),
+                        ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
 }
 
 }  // namespace
@@ -362,8 +339,8 @@ class WindowTreeTest : public testing::Test {
 
   TestWindowTreeHostConnection* host_connection() { return host_connection_; }
 
-  void DispatchEventWithoutAck(mojom::EventPtr event) {
-    host_connection()->window_tree_host()->OnEvent(std::move(event));
+  void DispatchEventWithoutAck(const ui::Event& event) {
+    host_connection()->window_tree_host()->OnEvent(event);
   }
 
   void AckPreviousEvent() {
@@ -372,8 +349,8 @@ class WindowTreeTest : public testing::Test {
         ->tree_awaiting_input_ack_->OnWindowInputEventAck(0);
   }
 
-  void DispatchEventAndAckImmediately(mojom::EventPtr event) {
-    DispatchEventWithoutAck(std::move(event));
+  void DispatchEventAndAckImmediately(const ui::Event& event) {
+    DispatchEventWithoutAck(event);
     AckPreviousEvent();
   }
 

@@ -15,6 +15,7 @@
 #include "components/mus/ws/window_tree_impl.h"
 #include "mojo/common/common_type_converters.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
+#include "mojo/converters/input_events/input_events_type_converters.h"
 
 namespace mus {
 namespace ws {
@@ -250,15 +251,16 @@ ServerWindow* WindowTreeHostImpl::GetRootWindow() {
   return root_.get();
 }
 
-void WindowTreeHostImpl::OnEvent(mojom::EventPtr event) {
+void WindowTreeHostImpl::OnEvent(const ui::Event& event) {
+  mojom::EventPtr mojo_event(mojom::Event::From(event));
   // If this is still waiting for an ack from a previously sent event, then
   // queue up the event to be dispatched once the ack is received.
   if (event_ack_timer_.IsRunning()) {
     // TODO(sad): Coalesce if possible.
-    event_queue_.push(std::move(event));
+    event_queue_.push(std::move(mojo_event));
     return;
   }
-  event_dispatcher_.OnEvent(std::move(event));
+  event_dispatcher_.OnEvent(std::move(mojo_event));
 }
 
 void WindowTreeHostImpl::OnDisplayClosed() {

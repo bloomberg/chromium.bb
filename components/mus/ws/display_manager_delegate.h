@@ -12,6 +12,10 @@ namespace cc {
 struct SurfaceId;
 }
 
+namespace ui {
+class Event;
+}
+
 namespace mus {
 
 namespace ws {
@@ -30,7 +34,7 @@ class DisplayManagerDelegate {
   virtual void OnDisplayClosed() = 0;
 
   // Called when an event arrives.
-  virtual void OnEvent(mojom::EventPtr event) = 0;
+  virtual void OnEvent(const ui::Event& event) = 0;
 
   // Signals that the metrics of this display's viewport has changed.
   virtual void OnViewportMetricsChanged(

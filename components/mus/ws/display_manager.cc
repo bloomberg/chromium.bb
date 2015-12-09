@@ -342,8 +342,7 @@ void DefaultDisplayManager::OnDamageRect(const gfx::Rect& damaged_region) {
 }
 
 void DefaultDisplayManager::DispatchEvent(ui::Event* event) {
-  mojom::EventPtr mojo_event(mojom::Event::From(*event));
-  delegate_->OnEvent(std::move(mojo_event));
+  delegate_->OnEvent(*event);
 
   switch (event->type()) {
     case ui::ET_MOUSE_PRESSED:
@@ -375,17 +374,10 @@ void DefaultDisplayManager::DispatchEvent(ui::Event* event) {
     ui::KeyEvent char_event(key_press_event->GetCharacter(),
                             key_press_event->key_code(),
                             key_press_event->flags());
-
     DCHECK_EQ(key_press_event->GetCharacter(), char_event.GetCharacter());
     DCHECK_EQ(key_press_event->key_code(), char_event.key_code());
     DCHECK_EQ(key_press_event->flags(), char_event.flags());
-
-    char_event.SetExtendedKeyEventData(
-        make_scoped_ptr(new mojo::MojoExtendedKeyEventData(
-            key_press_event->GetLocatedWindowsKeyboardCode(),
-            key_press_event->GetText(), key_press_event->GetUnmodifiedText())));
-
-    delegate_->OnEvent(mojom::Event::From(char_event));
+    delegate_->OnEvent(char_event);
   }
 #endif
 }
