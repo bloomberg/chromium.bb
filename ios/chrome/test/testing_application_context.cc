@@ -138,3 +138,8 @@ TestingApplicationContext::GetComponentUpdateService() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return nullptr;
 }
+
+CRLSetFetcher* TestingApplicationContext::GetCRLSetFetcher() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return nullptr;
+}

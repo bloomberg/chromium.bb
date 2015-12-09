@@ -64,6 +64,7 @@ class ApplicationContextImpl : public ApplicationContext {
   web_resource::PromoResourceService* GetPromoResourceService() override;
   component_updater::ComponentUpdateService* GetComponentUpdateService()
       override;
+  CRLSetFetcher* GetCRLSetFetcher() override;
 
  private:
   // Sets the locale used by the application.
@@ -85,6 +86,7 @@ class ApplicationContextImpl : public ApplicationContext {
   scoped_ptr<gcm::GCMDriver> gcm_driver_;
   scoped_ptr<web_resource::PromoResourceService> promo_resource_service_;
   scoped_ptr<component_updater::ComponentUpdateService> component_updater_;
+  scoped_refptr<CRLSetFetcher> crl_set_fetcher_;
   std::string application_locale_;
 
   // Sequenced task runner for local state related I/O tasks.
