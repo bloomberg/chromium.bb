@@ -4,8 +4,11 @@
 
 #include "chrome/renderer/extensions/cast_streaming_native_handler.h"
 
+#include <algorithm>
 #include <functional>
 #include <iterator>
+#include <string>
+#include <vector>
 
 #include "base/location.h"
 #include "base/logging.h"
@@ -89,6 +92,9 @@ bool ToCastRtpPayloadParamsOrThrow(v8::Isolate* isolate,
   cast_params->max_latency_ms = ext_params.max_latency;
   cast_params->min_latency_ms =
       ext_params.min_latency ? *ext_params.min_latency : ext_params.max_latency;
+  cast_params->animated_latency_ms = ext_params.animated_latency
+                                         ? *ext_params.animated_latency
+                                         : ext_params.max_latency;
   cast_params->codec_name = ext_params.codec_name;
   cast_params->ssrc = ext_params.ssrc;
   cast_params->feedback_ssrc = ext_params.feedback_ssrc;
@@ -126,6 +132,7 @@ void FromCastRtpPayloadParams(const CastRtpPayloadParams& cast_params,
   ext_params->payload_type = cast_params.payload_type;
   ext_params->max_latency = cast_params.max_latency_ms;
   ext_params->min_latency.reset(new int(cast_params.min_latency_ms));
+  ext_params->animated_latency.reset(new int(cast_params.animated_latency_ms));
   ext_params->codec_name = cast_params.codec_name;
   ext_params->ssrc = cast_params.ssrc;
   ext_params->feedback_ssrc = cast_params.feedback_ssrc;

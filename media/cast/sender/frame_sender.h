@@ -34,6 +34,7 @@ class FrameSender {
               double max_frame_rate,
               base::TimeDelta min_playout_delay,
               base::TimeDelta max_playout_delay,
+              base::TimeDelta animated_playout_delay,
               CongestionControl* congestion_control);
   virtual ~FrameSender();
 
@@ -107,15 +108,24 @@ class FrameSender {
   // Returns the number of frames that were sent but not yet acknowledged.
   int GetUnacknowledgedFrameCount() const;
 
-  // The total amount of time between a frame's capture/recording on the sender
-  // and its playback on the receiver (i.e., shown to a user).  This is fixed as
-  // a value large enough to give the system sufficient time to encode,
-  // transmit/retransmit, receive, decode, and render; given its run-time
-  // environment (sender/receiver hardware performance, network conditions,
-  // etc.).
+  // Playout delay represents total amount of time between a frame's
+  // capture/recording on the sender and its playback on the receiver
+  // (i.e., shown to a user).  This should be a value large enough to
+  // give the system sufficient time to encode, transmit/retransmit,
+  // receive, decode, and render; given its run-time environment
+  // (sender/receiver hardware performance, network conditions,etc.).
+
+  // The |target_playout delay_| is the current delay that is adaptively
+  // adjusted based on feedback from video capture engine and the congestion
+  // control. In case of interactive content, the target is adjusted to start
+  // at |min_playout_delay_| and in case of animated content, it starts out at
+  // |animated_playout_delay_| and then adaptively adjust based on feedback
+  // from congestion control.
   base::TimeDelta target_playout_delay_;
-  base::TimeDelta min_playout_delay_;
-  base::TimeDelta max_playout_delay_;
+  const base::TimeDelta min_playout_delay_;
+  const base::TimeDelta max_playout_delay_;
+  // Starting playout delay for animated content.
+  const base::TimeDelta animated_playout_delay_;
 
   // If true, we transmit the target playout delay to the receiver.
   bool send_target_playout_delay_;

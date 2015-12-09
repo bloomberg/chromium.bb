@@ -448,6 +448,8 @@ source_set("browser") {
     sources -= [
       "media/capture/cursor_renderer_aura.cc",
       "media/capture/cursor_renderer_aura.h",
+      "media/capture/window_activity_tracker_aura.cc",
+      "media/capture/window_activity_tracker_aura.h",
       "renderer_host/compositor_resize_lock_aura.cc",
       "renderer_host/compositor_resize_lock_aura.h",
       "renderer_host/input/synthetic_gesture_target_aura.cc",

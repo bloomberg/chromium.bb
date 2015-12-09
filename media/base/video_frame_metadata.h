@@ -5,6 +5,8 @@
 #ifndef MEDIA_BASE_VIDEO_FRAME_METADATA_H_
 #define MEDIA_BASE_VIDEO_FRAME_METADATA_H_
 
+#include <string>
+
 #include "base/compiler_specific.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -49,6 +51,14 @@ class MEDIA_EXPORT VideoFrameMetadata {
     // same for all frames in the same session.  Use Get/SetDouble() for this
     // key.
     FRAME_RATE,
+
+    // This is a boolean that signals that the video capture engine detects
+    // interactive content. One possible optimization that this signal can help
+    // with is remote content: adjusting end-to-end latency down to help the
+    // user better coordinate their actions.
+    //
+    // Use Get/SetBoolean for this key.
+    INTERACTIVE_CONTENT,
 
     // This field represents the local time at which either: 1) the frame was
     // generated, if it was done so locally; or 2) the targeted play-out time

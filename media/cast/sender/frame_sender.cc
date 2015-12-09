@@ -4,7 +4,9 @@
 
 #include "media/cast/sender/frame_sender.h"
 
+#include <algorithm>
 #include <limits>
+#include <vector>
 
 #include "base/trace_event/trace_event.h"
 #include "media/cast/cast_defines.h"
@@ -35,6 +37,7 @@ FrameSender::FrameSender(scoped_refptr<CastEnvironment> cast_environment,
                          double max_frame_rate,
                          base::TimeDelta min_playout_delay,
                          base::TimeDelta max_playout_delay,
+                         base::TimeDelta animated_playout_delay,
                          CongestionControl* congestion_control)
     : cast_environment_(cast_environment),
       transport_sender_(transport_sender),
@@ -43,6 +46,9 @@ FrameSender::FrameSender(scoped_refptr<CastEnvironment> cast_environment,
                              ? max_playout_delay
                              : min_playout_delay),
       max_playout_delay_(max_playout_delay),
+      animated_playout_delay_(animated_playout_delay == base::TimeDelta()
+                                  ? max_playout_delay
+                                  : animated_playout_delay),
       send_target_playout_delay_(false),
       max_frame_rate_(max_frame_rate),
       num_aggressive_rtcp_reports_sent_(0),
@@ -56,7 +62,13 @@ FrameSender::FrameSender(scoped_refptr<CastEnvironment> cast_environment,
   DCHECK(transport_sender_);
   DCHECK_GT(rtp_timebase_, 0);
   DCHECK(congestion_control_);
-  SetTargetPlayoutDelay(min_playout_delay_);
+  // We assume animated content to begin with since that is the common use
+  // case today.
+  VLOG(1) << SENDER_SSRC << "min latency "
+          << min_playout_delay_.InMilliseconds() << "max latency "
+          << max_playout_delay.InMilliseconds() << "animated latency "
+          << animated_playout_delay.InMilliseconds();
+  SetTargetPlayoutDelay(animated_playout_delay_);
   send_target_playout_delay_ = false;
   memset(frame_rtp_timestamps_, 0, sizeof(frame_rtp_timestamps_));
 }

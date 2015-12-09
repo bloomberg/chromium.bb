@@ -74,6 +74,9 @@ struct AudioSenderConfig {
   base::TimeDelta min_playout_delay;
   base::TimeDelta max_playout_delay;
 
+  // Starting playout delay when streaming animated content.
+  base::TimeDelta animated_playout_delay;
+
   // RTP payload type enum: Specifies the type/encoding of frame data.
   int rtp_payload_type;
 
@@ -108,6 +111,9 @@ struct VideoSenderConfig {
   // etc.).
   base::TimeDelta min_playout_delay;
   base::TimeDelta max_playout_delay;
+
+  // Starting playout delay when streaming animated content.
+  base::TimeDelta animated_playout_delay;
 
   // RTP payload type enum: Specifies the type/encoding of frame data.
   int rtp_payload_type;

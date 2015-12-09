@@ -68,6 +68,7 @@
 #include "content/browser/media/capture/cursor_renderer.h"
 #include "content/browser/media/capture/web_contents_capture_util.h"
 #include "content/browser/media/capture/web_contents_tracker.h"
+#include "content/browser/media/capture/window_activity_tracker.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/public/browser/browser_thread.h"
@@ -77,6 +78,7 @@
 #include "content/public/browser/web_contents.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/video_capture_types.h"
+#include "media/base/video_frame_metadata.h"
 #include "media/base/video_util.h"
 #include "media/capture/content/screen_capture_device_core.h"
 #include "media/capture/content/thread_safe_capture_oracle.h"
@@ -90,11 +92,20 @@
 
 #if defined(USE_AURA)
 #include "content/browser/media/capture/cursor_renderer_aura.h"
+#include "content/browser/media/capture/window_activity_tracker_aura.h"
 #endif
 
 namespace content {
 
 namespace {
+
+enum InteractiveModeSettings {
+  // Minimum amount of time for which there should be no animation detected
+  // to consider interactive mode being active. This is to prevent very brief
+  // periods of animated content not being detected (due to CPU fluctations for
+  // example) from causing a flip-flop on interactive mode.
+  kMinPeriodNoAnimationMillis = 3000
+};
 
 void DeleteOnWorkerThread(scoped_ptr<base::Thread> render_thread,
                           const base::Closure& callback) {
@@ -128,11 +139,13 @@ class FrameSubscriber : public RenderWidgetHostViewFrameSubscriber {
   FrameSubscriber(media::VideoCaptureOracle::Event event_type,
                   const scoped_refptr<media::ThreadSafeCaptureOracle>& oracle,
                   VideoFrameDeliveryLog* delivery_log,
-                  base::WeakPtr<content::CursorRenderer> cursor_renderer)
+                  base::WeakPtr<content::CursorRenderer> cursor_renderer,
+                  base::WeakPtr<content::WindowActivityTracker> tracker)
       : event_type_(event_type),
         oracle_proxy_(oracle),
         delivery_log_(delivery_log),
         cursor_renderer_(cursor_renderer),
+        window_activity_tracker_(tracker),
         weak_ptr_factory_(this) {}
 
   bool ShouldCaptureFrame(
@@ -151,6 +164,8 @@ class FrameSubscriber : public RenderWidgetHostViewFrameSubscriber {
       const gfx::Rect& region_in_frame,
       bool success);
 
+  bool IsUserInteractingWithContent();
+
  private:
   const media::VideoCaptureOracle::Event event_type_;
   scoped_refptr<media::ThreadSafeCaptureOracle> oracle_proxy_;
@@ -158,6 +173,9 @@ class FrameSubscriber : public RenderWidgetHostViewFrameSubscriber {
   // We need a weak pointer since FrameSubscriber is owned externally and
   // may outlive the cursor renderer.
   base::WeakPtr<CursorRenderer> cursor_renderer_;
+  // We need a weak pointer since FrameSubscriber is owned externally and
+  // may outlive the ui activity tracker.
+  base::WeakPtr<WindowActivityTracker> window_activity_tracker_;
   base::WeakPtrFactory<FrameSubscriber> weak_ptr_factory_;
 };
 
@@ -209,6 +227,10 @@ class ContentCaptureSubscription {
   // decisions and then render the mouse cursor on the video frame after
   // capture is completed.
   scoped_ptr<content::CursorRenderer> cursor_renderer_;
+
+  // Responsible for tracking the UI events and making a decision on whether
+  // user is actively interacting with content.
+  scoped_ptr<content::WindowActivityTracker> window_activity_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentCaptureSubscription);
 };
@@ -365,12 +387,36 @@ void FrameSubscriber::DidCaptureFrame(
     // experience in any particular scenarios. Doing it prior to capture may
     // require evaluating region_in_frame in this file.
     if (frame_subscriber_ && frame_subscriber_->cursor_renderer_) {
-      if (frame_subscriber_->cursor_renderer_->SnapshotCursorState(
-              region_in_frame))
-        frame_subscriber_->cursor_renderer_->RenderOnVideoFrame(frame);
+      CursorRenderer* cursor_renderer =
+          frame_subscriber_->cursor_renderer_.get();
+      if (cursor_renderer->SnapshotCursorState(region_in_frame))
+        cursor_renderer->RenderOnVideoFrame(frame);
+      frame->metadata()->SetBoolean(
+          media::VideoFrameMetadata::INTERACTIVE_CONTENT,
+          frame_subscriber_->IsUserInteractingWithContent());
     }
   }
   capture_frame_cb.Run(frame, timestamp, success);
+}
+
+bool FrameSubscriber::IsUserInteractingWithContent() {
+  bool interactive_mode = false;
+  bool ui_activity = false;
+  if (window_activity_tracker_.get()) {
+    ui_activity = window_activity_tracker_->IsUiInteractionActive();
+  }
+  if (cursor_renderer_.get()) {
+    bool animation_active =
+        (base::TimeTicks::Now() -
+         oracle_proxy_->last_time_animation_was_detected()) <
+        base::TimeDelta::FromMilliseconds(kMinPeriodNoAnimationMillis);
+    if (ui_activity && !animation_active) {
+      interactive_mode = true;
+    } else if (animation_active) {
+      window_activity_tracker_->Reset();
+    }
+  }
+  return interactive_mode;
 }
 
 ContentCaptureSubscription::ContentCaptureSubscription(
@@ -387,25 +433,36 @@ ContentCaptureSubscription::ContentCaptureSubscription(
   RenderWidgetHostView* const view = source.GetView();
 // TODO(isheriff): Cursor resources currently only available on linux. Remove
 // this once we add the necessary resources for windows.
+// https://crbug.com/554280 https://crbug.com/549182
 #if defined(USE_AURA) && defined(OS_LINUX)
-  if (view)
+  if (view) {
     cursor_renderer_.reset(
         new content::CursorRendererAura(view->GetNativeView()));
+  }
+#endif
+// TODO(isheriff): Needs implementation on non-aura platforms.
+// https://crbug.com/567735
+#if defined(USE_AURA)
+  window_activity_tracker_.reset(
+      new content::WindowActivityTrackerAura(view->GetNativeView()));
 #endif
   timer_subscriber_.reset(new FrameSubscriber(
       media::VideoCaptureOracle::kTimerPoll, oracle_proxy, &delivery_log_,
       cursor_renderer_ ? cursor_renderer_->GetWeakPtr()
-                       : base::WeakPtr<CursorRenderer>()));
+                       : base::WeakPtr<CursorRenderer>(),
+      window_activity_tracker_ ? window_activity_tracker_->GetWeakPtr()
+                               : base::WeakPtr<WindowActivityTracker>()));
 
   // Subscribe to compositor updates. These will be serviced directly by the
   // oracle.
   if (view) {
     scoped_ptr<RenderWidgetHostViewFrameSubscriber> subscriber(
-        new FrameSubscriber(media::VideoCaptureOracle::kCompositorUpdate,
-                            oracle_proxy, &delivery_log_,
-                            cursor_renderer_
-                                ? cursor_renderer_->GetWeakPtr()
-                                : base::WeakPtr<CursorRenderer>()));
+        new FrameSubscriber(
+            media::VideoCaptureOracle::kCompositorUpdate, oracle_proxy,
+            &delivery_log_, cursor_renderer_ ? cursor_renderer_->GetWeakPtr()
+                                             : base::WeakPtr<CursorRenderer>(),
+            window_activity_tracker_ ? window_activity_tracker_->GetWeakPtr()
+                                     : base::WeakPtr<WindowActivityTracker>()));
     view->BeginFrameSubscription(subscriber.Pass());
   }
 

@@ -13,6 +13,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "media/cast/cast_config.h"
+#include "media/cast/constants.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 
 namespace base {
@@ -36,36 +38,40 @@ struct CastCodecSpecificParams {
 // Defines the basic properties of a payload supported by cast transport.
 struct CastRtpPayloadParams {
   // RTP specific field that identifies the content type.
-  int payload_type;
+  int payload_type = media::cast::kDefaultRtpVideoPayloadType;
 
   // Maximum latency in milliseconds. Implemetation tries to keep latency
   // under this threshold.
-  int max_latency_ms;
+  int max_latency_ms = media::cast::kDefaultRtpMaxDelayMs;
 
   // Minimum latency.
   // Default value (0) means use max_latency_ms.
-  int min_latency_ms;
+  int min_latency_ms = 0;
+
+  // Starting latency on animated content.
+  // Default value (0) means use max_latency_ms.
+  int animated_latency_ms = 0;
 
   // RTP specific field to identify a stream.
-  int ssrc;
+  int ssrc = 1;
 
   // RTP specific field to idenfity the feedback stream.
-  int feedback_ssrc;
+  int feedback_ssrc = 2;
 
   // Update frequency of payload sample.
-  int clock_rate;
+  int clock_rate = media::cast::kVideoFrequency;
 
   // Maximum bitrate in kilobits per second.
-  int max_bitrate;
+  int max_bitrate = media::cast::kDefaultMaxVideoKbps;
 
   // Minimum bitrate in kilobits per second.
-  int min_bitrate;
+  int min_bitrate = media::cast::kDefaultMinVideoKbps;
 
   // Number of audio channels.
-  int channels;
+  int channels = 1;
 
   // The maximum frame rate.
-  double max_frame_rate;
+  double max_frame_rate = media::cast::kDefaultMaxFrameRate;
 
   // Name of the codec used.
   std::string codec_name;

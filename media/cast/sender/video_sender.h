@@ -98,6 +98,11 @@ class VideoSender : public FrameSender,
 
   PlayoutDelayChangeCB playout_delay_change_cb_;
 
+  // Indicates we are operating in a mode where the target playout latency is
+  // low for best user experience. When operating in low latency mode, we
+  // prefer dropping frames over increasing target playout time.
+  bool low_latency_mode_;
+
   // The video encoder's performance metrics as of the last call to
   // OnEncodedVideoFrame().  See header file comments for SenderEncodedFrame for
   // an explanation of these values.

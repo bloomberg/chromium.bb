@@ -163,18 +163,35 @@ bool ToAudioSenderConfig(const CastRtpParams& params,
                          AudioSenderConfig* config) {
   config->ssrc = params.payload.ssrc;
   config->receiver_ssrc = params.payload.feedback_ssrc;
-  if (config->ssrc == config->receiver_ssrc)
+  if (config->ssrc == config->receiver_ssrc) {
+    DVLOG(1) << "ssrc " << config->ssrc << " cannot be equal to receiver_ssrc";
     return false;
+  }
   config->min_playout_delay = base::TimeDelta::FromMilliseconds(
                                   params.payload.min_latency_ms ?
                                   params.payload.min_latency_ms :
                                   params.payload.max_latency_ms);
   config->max_playout_delay =
       base::TimeDelta::FromMilliseconds(params.payload.max_latency_ms);
-  if (config->min_playout_delay <= base::TimeDelta())
+  config->animated_playout_delay = base::TimeDelta::FromMilliseconds(
+      params.payload.animated_latency_ms ? params.payload.animated_latency_ms
+                                         : params.payload.max_latency_ms);
+  if (config->min_playout_delay <= base::TimeDelta()) {
+    DVLOG(1) << "min_playout_delay " << config->min_playout_delay
+             << " is too small";
     return false;
-  if (config->min_playout_delay > config->max_playout_delay)
+  }
+  if (config->min_playout_delay > config->max_playout_delay) {
+    DVLOG(1) << "min_playout_delay " << config->min_playout_delay
+             << " is too big";
     return false;
+  }
+  if (config->animated_playout_delay < config->min_playout_delay ||
+      config->animated_playout_delay > config->max_playout_delay) {
+    DVLOG(1) << "animated_playout_delay " << config->animated_playout_delay
+             << " is out of range";
+    return false;
+  }
   config->rtp_payload_type = params.payload.payload_type;
   config->use_external_encoder = false;
   config->frequency = params.payload.clock_rate;
@@ -187,16 +204,21 @@ bool ToAudioSenderConfig(const CastRtpParams& params,
     case 8000:
       break;
     default:
+      DVLOG(1) << "frequency " << config->frequency << " is invalid";
       return false;
   }
   config->channels = params.payload.channels;
-  if (config->channels < 1)
+  if (config->channels < 1) {
+    DVLOG(1) << "channels " << config->channels << " is invalid";
     return false;
+  }
   config->bitrate = params.payload.max_bitrate * kBitrateMultiplier;
-  if (params.payload.codec_name == kCodecNameOpus)
+  if (params.payload.codec_name == kCodecNameOpus) {
     config->codec = media::cast::CODEC_AUDIO_OPUS;
-  else
+  } else {
+    DVLOG(1) << "codec_name " << params.payload.codec_name << " is invalid";
     return false;
+  }
   config->aes_key = params.payload.aes_key;
   config->aes_iv_mask = params.payload.aes_iv_mask;
   return true;
@@ -206,29 +228,51 @@ bool ToVideoSenderConfig(const CastRtpParams& params,
                          VideoSenderConfig* config) {
   config->ssrc = params.payload.ssrc;
   config->receiver_ssrc = params.payload.feedback_ssrc;
-  if (config->ssrc == config->receiver_ssrc)
+  if (config->ssrc == config->receiver_ssrc) {
+    DVLOG(1) << "ssrc " << config->ssrc << " cannot be equal to receiver_ssrc";
     return false;
+  }
   config->min_playout_delay = base::TimeDelta::FromMilliseconds(
                                   params.payload.min_latency_ms ?
                                   params.payload.min_latency_ms :
                                   params.payload.max_latency_ms);
   config->max_playout_delay =
       base::TimeDelta::FromMilliseconds(params.payload.max_latency_ms);
-  if (config->min_playout_delay <= base::TimeDelta())
+  config->animated_playout_delay = base::TimeDelta::FromMilliseconds(
+      params.payload.animated_latency_ms ? params.payload.animated_latency_ms
+                                         : params.payload.max_latency_ms);
+  if (config->min_playout_delay <= base::TimeDelta()) {
+    DVLOG(1) << "min_playout_delay " << config->min_playout_delay
+             << " is too small";
     return false;
-  if (config->min_playout_delay > config->max_playout_delay)
+  }
+  if (config->min_playout_delay > config->max_playout_delay) {
+    DVLOG(1) << "min_playout_delay " << config->min_playout_delay
+             << " is too big";
     return false;
+  }
+  if (config->animated_playout_delay < config->min_playout_delay ||
+      config->animated_playout_delay > config->max_playout_delay) {
+    DVLOG(1) << "animated_playout_delay " << config->animated_playout_delay
+             << " is out of range";
+    return false;
+  }
   config->rtp_payload_type = params.payload.payload_type;
   config->min_bitrate = config->start_bitrate =
       params.payload.min_bitrate * kBitrateMultiplier;
   config->max_bitrate = params.payload.max_bitrate * kBitrateMultiplier;
-  if (config->min_bitrate > config->max_bitrate)
+  if (config->min_bitrate > config->max_bitrate) {
+    DVLOG(1) << "min_bitrate " << config->min_bitrate << " is larger than "
+             << "max_bitrate " << config->max_bitrate;
     return false;
+  }
   config->start_bitrate = config->min_bitrate;
   config->max_frame_rate = static_cast<int>(
       std::max(1.0, params.payload.max_frame_rate) + 0.5);
-  if (config->max_frame_rate > media::limits::kMaxFramesPerSecond)
+  if (config->max_frame_rate > media::limits::kMaxFramesPerSecond) {
+    DVLOG(1) << "max_frame_rate " << config->max_frame_rate << " is invalid";
     return false;
+  }
   if (params.payload.codec_name == kCodecNameVp8) {
     config->use_external_encoder = IsHardwareVP8EncodingSupported();
     config->codec = media::cast::CODEC_VIDEO_VP8;
@@ -236,6 +280,7 @@ bool ToVideoSenderConfig(const CastRtpParams& params,
     config->use_external_encoder = IsHardwareH264EncodingSupported();
     config->codec = media::cast::CODEC_VIDEO_H264;
   } else {
+    DVLOG(1) << "codec_name " << params.payload.codec_name << " is invalid";
     return false;
   }
   if (!config->use_external_encoder)

@@ -95,6 +95,7 @@ VideoSender::VideoSender(
           video_config.max_frame_rate,
           video_config.min_playout_delay,
           video_config.max_playout_delay,
+          video_config.animated_playout_delay,
           video_config.use_external_encoder
               ? NewFixedCongestionControl(
                     (video_config.min_bitrate + video_config.max_bitrate) / 2)
@@ -105,6 +106,7 @@ VideoSender::VideoSender(
       frames_in_encoder_(0),
       last_bitrate_(0),
       playout_delay_change_cb_(playout_delay_change_cb),
+      low_latency_mode_(false),
       last_reported_deadline_utilization_(-1.0),
       last_reported_lossy_utilization_(-1.0),
       weak_factory_(this) {
@@ -161,6 +163,16 @@ void VideoSender::InsertRawVideoFrame(
       "timestamp", reference_time.ToInternalValue(),
       "rtp_timestamp", rtp_timestamp);
 
+  bool low_latency_mode;
+  if (video_frame->metadata()->GetBoolean(
+          VideoFrameMetadata::INTERACTIVE_CONTENT, &low_latency_mode)) {
+    if (low_latency_mode && !low_latency_mode_) {
+      VLOG(1) << "Interactive mode playout time " << min_playout_delay_;
+      playout_delay_change_cb_.Run(min_playout_delay_);
+    }
+    low_latency_mode_ = low_latency_mode;
+  }
+
   // Drop the frame if either its RTP or reference timestamp is not an increase
   // over the last frame's.  This protects: 1) the duration calculations that
   // assume timestamps are monotonically non-decreasing, and 2) assumptions made
@@ -192,7 +204,18 @@ void VideoSender::InsertRawVideoFrame(
         current_round_trip_time_ * kRoundTripsNeeded +
         base::TimeDelta::FromMilliseconds(kConstantTimeMs),
         max_playout_delay_);
-    if (new_target_delay > target_playout_delay_) {
+    // In case of low latency mode, we prefer frame drops over increasing
+    // playout time.
+    if (!low_latency_mode_ && new_target_delay > target_playout_delay_) {
+      // In case we detect user is no longer in a low latency mode and there is
+      // a need to drop a frame, we ensure the playout delay is at-least the
+      // the starting value for playing animated content.
+      // This is intended to minimize freeze when moving from an interactive
+      // session to watching animating content while being limited by end-to-end
+      // delay.
+      VLOG(1) << "Ensure playout time is at least " << animated_playout_delay_;
+      if (new_target_delay < animated_playout_delay_)
+        new_target_delay = animated_playout_delay_;
       VLOG(1) << "New target delay: " << new_target_delay.InMilliseconds();
       playout_delay_change_cb_.Run(new_target_delay);
     }

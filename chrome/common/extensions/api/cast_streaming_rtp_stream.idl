@@ -27,6 +27,10 @@ namespace cast.streaming.rtpStream {
     // Minimum latency in milliseconds. Defaults to |maxLatency|.
     long? minLatency;
 
+    // Starting latency for animated content in milliseconds.
+    // Defaults to |maxLatency|.
+    long? animatedLatency;
+
     DOMString codecName;
 
     // Synchronization source identifier.

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_CAPTURE_VIDEO_CAPTURE_ORACLE_H_
-#define MEDIA_CAPTURE_VIDEO_CAPTURE_ORACLE_H_
+#ifndef MEDIA_CAPTURE_CONTENT_VIDEO_CAPTURE_ORACLE_H_
+#define MEDIA_CAPTURE_CONTENT_VIDEO_CAPTURE_ORACLE_H_
 
 #include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
@@ -97,6 +97,11 @@ class MEDIA_EXPORT VideoCaptureOracle {
   // calls to ObserveEventAndDecideCapture().  The oracle prevents too-frequent
   // changes to the capture size, to avoid stressing the end-to-end pipeline.
   gfx::Size capture_size() const { return capture_size_; }
+
+  // Returns the oracle's estimate of the last time animation was detected.
+  base::TimeTicks last_time_animation_was_detected() const {
+    return last_time_animation_was_detected_;
+  }
 
  private:
   // Retrieve/Assign a frame timestamp by capture |frame_number|.  Only valid
@@ -199,4 +204,4 @@ class MEDIA_EXPORT VideoCaptureOracle {
 
 }  // namespace media
 
-#endif  // MEDIA_CAPTURE_VIDEO_CAPTURE_ORACLE_H_
+#endif  // MEDIA_CAPTURE_CONTENT_VIDEO_CAPTURE_ORACLE_H_

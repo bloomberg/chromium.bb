@@ -25,6 +25,7 @@ AudioSender::AudioSender(scoped_refptr<CastEnvironment> cast_environment,
                   0,  // |max_frame_rate_| is set after encoder initialization.
                   audio_config.min_playout_delay,
                   audio_config.max_playout_delay,
+                  audio_config.animated_playout_delay,
                   NewFixedCongestionControl(audio_config.bitrate)),
       samples_in_encoder_(0),
       weak_factory_(this) {
