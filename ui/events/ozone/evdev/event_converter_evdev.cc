@@ -143,7 +143,8 @@ void EventConverterEvdev::SetTouchEventLoggingEnabled(bool enabled) {
 
 base::TimeDelta EventConverterEvdev::TimeDeltaFromInputEvent(
     const input_event& event) {
-  return base::TimeDelta::FromMicroseconds(event.time.tv_sec * 1000000 +
-                                           event.time.tv_usec);
+  return base::TimeDelta::FromMicroseconds(
+      static_cast<int64>(event.time.tv_sec) * 1000000L +
+      event.time.tv_usec);
 }
 }  // namespace ui
