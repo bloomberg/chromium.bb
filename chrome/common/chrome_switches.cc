@@ -1331,6 +1331,11 @@ const char kDisableAutoHidingToolbarThreshold[] =
     "disable-auto-hiding-toolbar-threshold";
 #endif // defined(OS_ANDROID)
 
+#if defined(OS_WIN) || defined(OS_LINUX)
+extern const char kEnableInputImeAPI[] = "enable-input-ime-api";
+extern const char kDisableInputImeAPI[] = "disable-input-ime-api";
+#endif
+
 bool AboutInSettingsEnabled() {
   return SettingsWindowEnabled() &&
          !base::CommandLine::ForCurrentProcess()->HasSwitch(

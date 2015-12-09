@@ -2059,6 +2059,13 @@ const FeatureEntry kFeatureEntries[] = {
       kOsDesktop,
       SINGLE_VALUE_TYPE(switches::kEnableMaterialDesignExtensions)},
 #endif
+#if defined(OS_WIN) || defined(OS_LINUX)
+     {"enable-input-ime-api", IDS_FLAGS_ENABLE_INPUT_IME_API_NAME,
+      IDS_FLAGS_ENABLE_INPUT_IME_API_DESCRIPTION,
+      kOsWin | kOsLinux,
+      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableInputImeAPI,
+                                switches::kDisableInputImeAPI)},
+#endif // defined(OS_WIN) || defined(OS_LINUX)
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.

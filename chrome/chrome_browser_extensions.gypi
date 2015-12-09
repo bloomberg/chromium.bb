@@ -21,6 +21,8 @@
       'browser/extensions/api/file_system/request_file_system_notification.h',
       'browser/extensions/api/input_ime/input_ime_api.cc',
       'browser/extensions/api/input_ime/input_ime_api.h',
+      'browser/extensions/api/input_ime/input_ime_api_chromeos.cc',
+      'browser/extensions/api/input_ime/input_ime_api_chromeos.h',
       'browser/extensions/api/log_private/filter_handler.cc',
       'browser/extensions/api/log_private/filter_handler.h',
       'browser/extensions/api/log_private/log_parser.cc',
@@ -1122,6 +1124,13 @@
           'sources': [
             'browser/extensions/display_info_provider_aura.cc',
             'browser/extensions/display_info_provider_aura.h',
+          ],
+        }],
+        ['OS=="win" or OS=="linux"', {
+          'sources': [
+            'browser/extensions/api/input_ime/input_ime_api.cc',
+            'browser/extensions/api/input_ime/input_ime_api.h',
+            'browser/extensions/api/input_ime/input_ime_api_nonchromeos.cc',
           ],
         }],
         ['enable_app_list==1', {

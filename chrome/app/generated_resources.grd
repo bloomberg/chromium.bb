@@ -6686,6 +6686,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_FORCE_UI_DIRECTION_RTL" desc="Name for the option to force right-to-left UI direction mode.">
           Right-to-left
       </message>
+      <if expr="is_win or is_linux">
+        <message name="IDS_FLAGS_ENABLE_INPUT_IME_API_NAME" desc="Name of the flag to enable che chrome.input.ime API.">
+          Enable Input IME API
+        </message>
+        <message name="IDS_FLAGS_ENABLE_INPUT_IME_API_DESCRIPTION" desc="Description of the flag to enable the chrome.input.ime API.">
+          Enable the use of chrome.input.ime API.
+        </message>
+      </if>
 
       <!-- WebRTC logs -->
       <message name="IDS_WEBRTC_LOGS_TITLE" desc="Title for the chrome://webrtc-logs page.">

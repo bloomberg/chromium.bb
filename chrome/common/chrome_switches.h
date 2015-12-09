@@ -397,6 +397,11 @@ extern const char kDisableNewTaskManager[];
 extern const char kEnableWaylandServer[];
 #endif
 
+#if defined(OS_WIN) || defined(OS_LINUX)
+extern const char kEnableInputImeAPI[];
+extern const char kDisableInputImeAPI[];
+#endif
+
 bool AboutInSettingsEnabled();
 bool MdExtensionsEnabled();
 bool MdHistoryEnabled();

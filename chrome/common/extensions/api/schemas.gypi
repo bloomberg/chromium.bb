@@ -172,6 +172,11 @@
           '<@(chromeos_non_compiled_schema_files)',
         ],
       }],
+      ['OS=="linux" or OS=="win"', {
+        'schema_files': [
+	  'input_ime.json',
+	],
+      }],
       ['enable_webrtc==1', {
         'schema_files': [
           '<@(webrtc_schema_files)',

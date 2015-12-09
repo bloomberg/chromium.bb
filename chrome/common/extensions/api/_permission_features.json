@@ -512,13 +512,19 @@
     "channel": "trunk",
     "extension_types": ["extension"]
   },
-  "input": {
+  "input": [{
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app"],
     // TODO(kalman): Um what does this inply?
     "inplies_full_url_access": true,
     "platforms": ["chromeos"]
-  },
+  }, {
+    "channel": "dev",
+    "extension_types": ["extension", "legacy_packaged_app"],
+    // TODO(kalman): Um what does this inply?
+    "inplies_full_url_access": true,
+    "platforms": ["win", "linux"]
+  }],
   "inputMethodPrivate": [{
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app", "platform_app"],
