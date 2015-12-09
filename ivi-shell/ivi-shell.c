@@ -414,6 +414,59 @@ ivi_shell_setting_create(struct ivi_shell_setting *dest,
 	return result;
 }
 
+static void
+activate_binding(struct weston_seat *seat,
+		 struct weston_view *focus_view)
+{
+	struct weston_surface *focus = focus_view->surface;
+	struct weston_surface *main_surface =
+		weston_surface_get_main_surface(focus);
+
+	if (get_ivi_shell_surface(main_surface) == NULL)
+		return;
+
+	weston_surface_activate(focus, seat);
+}
+
+static void
+click_to_activate_binding(struct weston_pointer *pointer, uint32_t time,
+			  uint32_t button, void *data)
+{
+	if (pointer->grab != &pointer->default_grab)
+		return;
+	if (pointer->focus == NULL)
+		return;
+
+	activate_binding(pointer->seat, pointer->focus);
+}
+
+static void
+touch_to_activate_binding(struct weston_touch *touch, uint32_t time,
+			  void *data)
+{
+	if (touch->grab != &touch->default_grab)
+		return;
+	if (touch->focus == NULL)
+		return;
+
+	activate_binding(touch->seat, touch->focus);
+}
+
+static void
+shell_add_bindings(struct weston_compositor *compositor,
+		   struct ivi_shell *shell)
+{
+	weston_compositor_add_button_binding(compositor, BTN_LEFT, 0,
+					     click_to_activate_binding,
+					     shell);
+	weston_compositor_add_button_binding(compositor, BTN_RIGHT, 0,
+					     click_to_activate_binding,
+					     shell);
+	weston_compositor_add_touch_binding(compositor, 0,
+					    touch_to_activate_binding,
+					    shell);
+}
+
 /*
  * Initialization of ivi-shell.
  */
@@ -450,6 +503,7 @@ module_init(struct weston_compositor *compositor,
 		goto out_settings;
 
 	ivi_layout_init_with_compositor(compositor);
+	shell_add_bindings(compositor, shell);
 
 	/* Call module_init of ivi-modules which are defined in weston.ini */
 	if (load_controller_modules(compositor, setting.ivi_module,
