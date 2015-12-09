@@ -794,7 +794,6 @@ public:
         HTMLImportsHasStyleSheets = 940,
         WebkitTextInClipProperty = 941,
         WebkitTextInColorProperty = 942,
-        HeaderValueNotMatchingRFC7230 = 943,
         ClipPathOfPositionedElement = 944,
         ClipCssOfPositionedElement = 945,
         NetInfoType = 946,

@@ -933,9 +933,6 @@ String UseCounter::deprecationMessage(Feature feature)
     case PrefixedPerformanceResourceTimingBufferFull:
         return replacedBy("Performance.onwebkitresourcetimingbufferfull", "Performance.onresourcetimingbufferfull");
 
-    case HeaderValueNotMatchingRFC7230:
-        return "Header values not matching to RFC 7230, will be deprecated (see: https://www.chromestatus.com/feature/6457425448140800).";
-
     case BluetoothDeviceInstanceId:
         return replacedBy("BluetoothDevice.instanceID", "BluetoothDevice.id");
 
