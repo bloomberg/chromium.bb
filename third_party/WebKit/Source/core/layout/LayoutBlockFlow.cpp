@@ -1751,6 +1751,7 @@ void LayoutBlockFlow::removeFloatingObjectsFromDescendants()
     if (!containsFloats())
         return;
     removeFloatingObjects();
+    setChildNeedsLayout(MarkOnlyThis);
 
     // If our children are inline, then the only boxes which could contain floats are atomic inlines (e.g. inline-block, float etc.)
     // and these create formatting contexts, so can't pick up intruding floats from ancestors/siblings - making them safe to skip.
