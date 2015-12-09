@@ -4,6 +4,8 @@
 
 package org.chromium.chromoting;
 
+import android.graphics.Point;
+
 import org.chromium.chromoting.jni.JniInterface;
 
 /**
@@ -27,14 +29,12 @@ public class TrackpadInputStrategy implements InputStrategyInterface {
 
     @Override
     public void injectRemoteButtonEvent(int button, boolean pressed) {
-        int x;
-        int y;
+        Point cursorPosition;
         synchronized (mRenderData) {
-            x = mRenderData.cursorPosition.x;
-            y = mRenderData.cursorPosition.y;
+            cursorPosition = mRenderData.getCursorPosition();
         }
 
-        injectRemoteButtonEvent(x, y, button, pressed);
+        injectRemoteButtonEvent(cursorPosition.x, cursorPosition.y, button, pressed);
     }
 
     @Override
@@ -63,18 +63,9 @@ public class TrackpadInputStrategy implements InputStrategyInterface {
     }
 
     private void injectRemoteButtonEvent(int x, int y, int button, boolean pressed) {
-        boolean cursorMoved = false;
+        boolean cursorMoved;
         synchronized (mRenderData) {
-            // Test if the cursor actually moved, which requires repainting the cursor. This
-            // requires that |mRenderData.cursorPosition| was not assigned to beforehand.
-            if (x != mRenderData.cursorPosition.x) {
-                mRenderData.cursorPosition.x = x;
-                cursorMoved = true;
-            }
-            if (y != mRenderData.cursorPosition.y) {
-                mRenderData.cursorPosition.y = y;
-                cursorMoved = true;
-            }
+            cursorMoved = mRenderData.setCursorPosition(x, y);
         }
 
         if (button == TouchInputHandlerInterface.BUTTON_UNDEFINED && !cursorMoved) {

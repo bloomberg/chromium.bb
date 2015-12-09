@@ -232,7 +232,7 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
         }
 
         Canvas canvas;
-        int x, y;
+        Point cursorPosition;
         synchronized (mRenderData) {
             mRepaintPending = false;
             // Don't try to lock the canvas before it is ready, as the implementation of
@@ -247,8 +247,7 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
                 return;
             }
             canvas.setMatrix(mRenderData.transform);
-            x = mRenderData.cursorPosition.x;
-            y = mRenderData.cursorPosition.y;
+            cursorPosition = mRenderData.getCursorPosition();
         }
 
         canvas.drawColor(Color.BLACK);
@@ -261,13 +260,14 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
             synchronized (mRenderData) {
                 scaleFactor = mRenderData.transform.mapRadius(1);
             }
-            mFeedbackAnimator.render(canvas, x, y, scaleFactor);
+            mFeedbackAnimator.render(canvas, cursorPosition.x, cursorPosition.y, scaleFactor);
         }
 
         Bitmap cursorBitmap = JniInterface.getCursorBitmap();
         if (cursorBitmap != null) {
             Point hotspot = JniInterface.getCursorHotspot();
-            canvas.drawBitmap(cursorBitmap, x - hotspot.x, y - hotspot.y, new Paint());
+            canvas.drawBitmap(cursorBitmap, cursorPosition.x - hotspot.x,
+                    cursorPosition.y - hotspot.y, new Paint());
         }
 
         getHolder().unlockCanvasAndPost(canvas);
