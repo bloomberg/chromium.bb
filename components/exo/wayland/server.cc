@@ -16,6 +16,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/exo/buffer.h"
 #include "components/exo/display.h"
+#include "components/exo/keyboard.h"
+#include "components/exo/keyboard_delegate.h"
 #include "components/exo/pointer.h"
 #include "components/exo/pointer_delegate.h"
 #include "components/exo/shared_memory.h"
@@ -24,9 +26,15 @@
 #include "components/exo/surface.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/aura/window_property.h"
+#include "ui/events/keycodes/dom/keycode_converter.h"
 
 #if defined(USE_OZONE)
 #include <wayland-drm-server-protocol.h>
+#endif
+
+#if defined(USE_XKBCOMMON)
+#include <xkbcommon/xkbcommon.h>
+#include "ui/events/keycodes/scoped_xkb.h"
 #endif
 
 DECLARE_WINDOW_PROPERTY_TYPE(wl_resource*);
@@ -382,10 +390,11 @@ void bind_shm(wl_client* client, void* data, uint32_t version, uint32_t id) {
     wl_shm_send_format(resource, supported_format.shm_format);
 }
 
+#if defined(USE_OZONE)
+
 ////////////////////////////////////////////////////////////////////////////////
 // wl_drm_interface:
 
-#if defined(USE_OZONE)
 const struct drm_supported_format {
   uint32_t drm_format;
   gfx::BufferFormat buffer_format;
@@ -1081,6 +1090,158 @@ void pointer_release(wl_client* client, wl_resource* resource) {
 const struct wl_pointer_interface pointer_implementation = {pointer_set_cursor,
                                                             pointer_release};
 
+#if defined(USE_XKBCOMMON)
+
+////////////////////////////////////////////////////////////////////////////////
+// wl_keyboard_interface:
+
+// Keyboard delegate class that accepts events for surfaces owned by the same
+// client as a keyboard resource.
+class WaylandKeyboardDelegate : public KeyboardDelegate {
+ public:
+  explicit WaylandKeyboardDelegate(wl_resource* keyboard_resource)
+      : keyboard_resource_(keyboard_resource),
+        xkb_context_(xkb_context_new(XKB_CONTEXT_NO_FLAGS)),
+        // TODO(reveman): Keep keymap synchronized with the keymap used by
+        // chromium and the host OS.
+        xkb_keymap_(xkb_keymap_new_from_names(xkb_context_.get(),
+                                              nullptr,
+                                              XKB_KEYMAP_COMPILE_NO_FLAGS)),
+        xkb_state_(xkb_state_new(xkb_keymap_.get())) {
+    scoped_ptr<char, base::FreeDeleter> keymap_string(
+        xkb_keymap_get_as_string(xkb_keymap_.get(), XKB_KEYMAP_FORMAT_TEXT_V1));
+    DCHECK(keymap_string.get());
+    size_t keymap_size = strlen(keymap_string.get()) + 1;
+    base::SharedMemory shared_keymap;
+    bool rv = shared_keymap.CreateAndMapAnonymous(keymap_size);
+    DCHECK(rv);
+    memcpy(shared_keymap.memory(), keymap_string.get(), keymap_size);
+    wl_keyboard_send_keymap(keyboard_resource_,
+                            WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1,
+                            shared_keymap.handle().fd, keymap_size);
+  }
+
+  // Overridden from KeyboardDelegate:
+  void OnKeyboardDestroying(Keyboard* keyboard) override { delete this; }
+  bool CanAcceptKeyboardEventsForSurface(Surface* surface) const override {
+    wl_resource* surface_resource = surface->GetProperty(kSurfaceResourceKey);
+    // We can accept events for this surface if the client is the same as the
+    // keyboard.
+    return surface_resource &&
+           wl_resource_get_client(surface_resource) == client();
+  }
+  void OnKeyboardEnter(Surface* surface,
+                       const std::vector<ui::DomCode>& pressed_keys) override {
+    wl_resource* surface_resource = surface->GetProperty(kSurfaceResourceKey);
+    DCHECK(surface_resource);
+    wl_array keys;
+    wl_array_init(&keys);
+    for (auto key : pressed_keys) {
+      uint32_t* value =
+          static_cast<uint32_t*>(wl_array_add(&keys, sizeof(uint32_t)));
+      DCHECK(value);
+      *value = DomCodeToKey(key);
+    }
+    wl_keyboard_send_enter(keyboard_resource_, next_serial(), surface_resource,
+                           &keys);
+    wl_array_release(&keys);
+    wl_client_flush(client());
+  }
+  void OnKeyboardLeave(Surface* surface) override {
+    wl_resource* surface_resource = surface->GetProperty(kSurfaceResourceKey);
+    DCHECK(surface_resource);
+    wl_keyboard_send_leave(keyboard_resource_, next_serial(), surface_resource);
+    wl_client_flush(client());
+  }
+  void OnKeyboardKey(base::TimeDelta time_stamp,
+                     ui::DomCode key,
+                     bool pressed) override {
+    wl_keyboard_send_key(keyboard_resource_, next_serial(),
+                         time_stamp.InMilliseconds(), DomCodeToKey(key),
+                         pressed ? WL_KEYBOARD_KEY_STATE_PRESSED
+                                 : WL_KEYBOARD_KEY_STATE_RELEASED);
+    wl_client_flush(client());
+  }
+  void OnKeyboardModifiers(int modifier_flags) override {
+    xkb_state_update_mask(xkb_state_.get(),
+                          ModifierFlagsToXkbModifiers(modifier_flags), 0, 0, 0,
+                          0, 0);
+    wl_keyboard_send_modifiers(
+        keyboard_resource_, next_serial(),
+        xkb_state_serialize_mods(xkb_state_.get(), XKB_STATE_MODS_DEPRESSED),
+        xkb_state_serialize_mods(xkb_state_.get(), XKB_STATE_MODS_LOCKED),
+        xkb_state_serialize_mods(xkb_state_.get(), XKB_STATE_MODS_LATCHED),
+        xkb_state_serialize_layout(xkb_state_.get(),
+                                   XKB_STATE_LAYOUT_EFFECTIVE));
+    wl_client_flush(client());
+  }
+
+ private:
+  // Returns the corresponding key given a dom code.
+  uint32_t DomCodeToKey(ui::DomCode code) const {
+    // This assumes KeycodeConverter has been built with evdev/xkb codes.
+    xkb_keycode_t xkb_keycode = static_cast<xkb_keycode_t>(
+        ui::KeycodeConverter::DomCodeToNativeKeycode(code));
+
+    // Keycodes are offset by 8 in Xkb.
+    DCHECK_GE(xkb_keycode, 8u);
+    return xkb_keycode - 8;
+  }
+
+  // Returns a set of Xkb modififers given a set of modifier flags.
+  uint32_t ModifierFlagsToXkbModifiers(int modifier_flags) {
+    struct {
+      ui::EventFlags flag;
+      const char* xkb_name;
+    } modifiers[] = {
+        {ui::EF_SHIFT_DOWN, XKB_MOD_NAME_SHIFT},
+        {ui::EF_CAPS_LOCK_DOWN, XKB_MOD_NAME_CAPS},
+        {ui::EF_CONTROL_DOWN, XKB_MOD_NAME_CTRL},
+        {ui::EF_ALT_DOWN, XKB_MOD_NAME_ALT},
+        {ui::EF_NUM_LOCK_DOWN, XKB_MOD_NAME_NUM},
+        {ui::EF_MOD3_DOWN, "Mod3"},
+        {ui::EF_COMMAND_DOWN, XKB_MOD_NAME_LOGO},
+        {ui::EF_ALTGR_DOWN, "Mod5"},
+    };
+    uint32_t xkb_modifiers = 0;
+    for (auto modifier : modifiers) {
+      if (modifier_flags & modifier.flag) {
+        xkb_modifiers |=
+            1 << xkb_keymap_mod_get_index(xkb_keymap_.get(), modifier.xkb_name);
+      }
+    }
+    return xkb_modifiers;
+  }
+
+  // The client who own this keyboard instance.
+  wl_client* client() const {
+    return wl_resource_get_client(keyboard_resource_);
+  }
+
+  // Returns the next serial to use for keyboard events.
+  uint32_t next_serial() const {
+    return wl_display_next_serial(wl_client_get_display(client()));
+  }
+
+  // The keyboard resource associated with the keyboard.
+  wl_resource* const keyboard_resource_;
+
+  // The Xkb state used for the keyboard.
+  scoped_ptr<xkb_context, ui::XkbContextDeleter> xkb_context_;
+  scoped_ptr<xkb_keymap, ui::XkbKeymapDeleter> xkb_keymap_;
+  scoped_ptr<xkb_state, ui::XkbStateDeleter> xkb_state_;
+
+  DISALLOW_COPY_AND_ASSIGN(WaylandKeyboardDelegate);
+};
+
+void keyboard_release(wl_client* client, wl_resource* resource) {
+  wl_resource_destroy(resource);
+}
+
+const struct wl_keyboard_interface keyboard_implementation = {keyboard_release};
+
+#endif
+
 ////////////////////////////////////////////////////////////////////////////////
 // wl_seat_interface:
 
@@ -1098,7 +1259,25 @@ void seat_get_pointer(wl_client* client, wl_resource* resource, uint32_t id) {
 }
 
 void seat_get_keyboard(wl_client* client, wl_resource* resource, uint32_t id) {
+#if defined(USE_XKBCOMMON)
+  uint32_t version = wl_resource_get_version(resource);
+  wl_resource* keyboard_resource =
+      wl_resource_create(client, &wl_keyboard_interface, version, id);
+  if (!keyboard_resource) {
+    wl_resource_post_no_memory(resource);
+    return;
+  }
+
+  SetImplementation(keyboard_resource, &keyboard_implementation,
+                    make_scoped_ptr(new Keyboard(
+                        new WaylandKeyboardDelegate(keyboard_resource))));
+
+  // TODO(reveman): Keep repeat info synchronized with chromium and the host OS.
+  if (version >= WL_KEYBOARD_REPEAT_INFO_SINCE_VERSION)
+    wl_keyboard_send_repeat_info(keyboard_resource, 40, 500);
+#else
   NOTIMPLEMENTED();
+#endif
 }
 
 void seat_get_touch(wl_client* client, wl_resource* resource, uint32_t id) {
@@ -1123,7 +1302,11 @@ void bind_seat(wl_client* client, void* data, uint32_t version, uint32_t id) {
   if (version >= WL_SEAT_NAME_SINCE_VERSION)
     wl_seat_send_name(resource, "default");
 
-  wl_seat_send_capabilities(resource, WL_SEAT_CAPABILITY_POINTER);
+  uint32_t capabilities = WL_SEAT_CAPABILITY_POINTER;
+#if defined(USE_XKBCOMMON)
+  capabilities |= WL_SEAT_CAPABILITY_KEYBOARD;
+#endif
+  wl_seat_send_capabilities(resource, capabilities);
 }
 
 }  // namespace

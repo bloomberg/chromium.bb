@@ -2,7 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/linux/pkg_config.gni")
 import("//build/config/ui.gni")
+
+if (use_xkbcommon) {
+  pkg_config("xkbcommon") {
+    packages = [ "xkbcommon" ]
+  }
+}
 
 source_set("wayland") {
   sources = [
@@ -20,10 +27,18 @@ source_set("wayland") {
     "//skia",
     "//third_party/wayland:wayland_server",
     "//third_party/wayland-protocols:xdg_shell_protocol",
+    "//ui/events:dom_keycode_converter",
+    "//ui/events:events_base",
   ]
 
   if (use_ozone) {
     deps += [ "//third_party/mesa:wayland_drm_protocol" ]
+  }
+
+  if (use_xkbcommon) {
+    configs += [ ":xkbcommon" ]
+
+    defines += [ "USE_XKBCOMMON" ]
   }
 }
 

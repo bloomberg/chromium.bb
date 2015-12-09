@@ -86,6 +86,7 @@ component("events_base") {
     sources += [
       "keycodes/keyboard_code_conversion_xkb.cc",
       "keycodes/keyboard_code_conversion_xkb.h",
+      "keycodes/scoped_xkb.h",
       "keycodes/xkb_keysym.h",
     ]
   }

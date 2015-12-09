@@ -30,6 +30,9 @@
         'exo/buffer.h',
         'exo/display.cc',
         'exo/display.h',
+        'exo/keyboard.cc',
+        'exo/keyboard.h',
+        'exo/keyboard_delegate.h',
         'exo/pointer.cc',
         'exo/pointer.h',
         'exo/pointer_delegate.h',
@@ -57,10 +60,12 @@
             '..',
           ],
           'dependencies': [
-             '../base/base.gyp:base',
+            '../base/base.gyp:base',
             '../skia/skia.gyp:skia',
-            '../third_party/wayland/wayland.gyp:wayland_server',
             '../third_party/wayland-protocols/wayland-protocols.gyp:xdg_shell_protocol',
+            '../third_party/wayland/wayland.gyp:wayland_server',
+            '../ui/events/events.gyp:dom_keycode_converter',
+            '../ui/events/events.gyp:events_base',
             'exo',
           ],
           'sources': [
@@ -74,6 +79,14 @@
             ['use_ozone==1', {
               'dependencies': [
                 '../third_party/mesa/mesa.gyp:wayland_drm_protocol',
+              ],
+            }],
+            ['use_xkbcommon==1', {
+              'dependencies': [
+                '../build/linux/system.gyp:xkbcommon',
+              ],
+              'defines': [
+                'USE_XKBCOMMON',
               ],
             }],
           ],

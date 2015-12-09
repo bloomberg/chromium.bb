@@ -20,7 +20,7 @@ namespace exo {
 class PointerDelegate;
 class Surface;
 
-// This class implementes a client pointer that represents one or more input
+// This class implements a client pointer that represents one or more input
 // devices, such as mice, which control the pointer location and pointer focus.
 class Pointer : public ui::EventHandler, public SurfaceObserver {
  public:
