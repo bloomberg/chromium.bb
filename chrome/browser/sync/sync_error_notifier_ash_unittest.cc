@@ -10,6 +10,7 @@
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
+#include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
@@ -110,7 +111,8 @@ class SyncErrorNotifierTest : public AshTestBase  {
     gfx::Screen::SetScreenTypeDelegate(&screen_type_delegate_);
 #endif
 
-    service_.reset(new NiceMock<ProfileSyncServiceMock>(profile_));
+    service_.reset(new ProfileSyncServiceMock(
+        CreateProfileSyncServiceParamsForTest(profile_)));
 
     FakeLoginUIService* login_ui_service = static_cast<FakeLoginUIService*>(
         LoginUIServiceFactory::GetInstance()->SetTestingFactoryAndUse(
@@ -173,15 +175,16 @@ class SyncErrorNotifierTest : public AshTestBase  {
   scoped_ptr<TestingProfileManager> profile_manager_;
   scoped_ptr<SyncErrorController> error_controller_;
   scoped_ptr<SyncErrorNotifier> error_notifier_;
-  scoped_ptr<NiceMock<ProfileSyncServiceMock> > service_;
+  scoped_ptr<ProfileSyncServiceMock> service_;
   TestingProfile* profile_;
   FakeLoginUI login_ui_;
   NotificationUIManager* notification_ui_manager_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(SyncErrorNotifierTest);
 };
 
-} // namespace
+}  // namespace
 
 // Test that SyncErrorNotifier shows an notification if a passphrase is
 // required.

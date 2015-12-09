@@ -230,19 +230,35 @@ class ProfileSyncService : public sync_driver::SyncService,
     ROLLBACK    // Backend for rollback.
   };
 
-  ProfileSyncService(
-      scoped_ptr<sync_driver::SyncClient> sync_client,
-      scoped_ptr<SigninManagerWrapper> signin_wrapper,
-      ProfileOAuth2TokenService* oauth2_token_service,
-      browser_sync::ProfileSyncServiceStartBehavior start_behavior,
-      const syncer::NetworkTimeUpdateCallback& network_time_update_callback,
-      base::FilePath base_directory,
-      scoped_refptr<net::URLRequestContextGetter> url_request_context,
-      std::string debug_identifier,
-      version_info::Channel channel,
-      scoped_refptr<base::SingleThreadTaskRunner> db_thread,
-      scoped_refptr<base::SingleThreadTaskRunner> file_thread,
-      base::SequencedWorkerPool* blocking_pool);
+  // Bundles the arguments for ProfileSyncService construction. This is a
+  // movable struct. Because of the non-POD data members, it needs out-of-line
+  // constructors, so in particular the move constructor needs to be
+  // explicitly defined.
+  struct InitParams {
+    InitParams();
+    ~InitParams();
+    InitParams(InitParams&& other);  // NOLINT
+
+    scoped_ptr<sync_driver::SyncClient> sync_client;
+    scoped_ptr<SigninManagerWrapper> signin_wrapper;
+    ProfileOAuth2TokenService* oauth2_token_service = nullptr;
+    browser_sync::ProfileSyncServiceStartBehavior start_behavior =
+        browser_sync::MANUAL_START;
+    syncer::NetworkTimeUpdateCallback network_time_update_callback;
+    base::FilePath base_directory;
+    scoped_refptr<net::URLRequestContextGetter> url_request_context;
+    std::string debug_identifier;
+    version_info::Channel channel = version_info::Channel::UNKNOWN;
+    scoped_refptr<base::SingleThreadTaskRunner> db_thread;
+    scoped_refptr<base::SingleThreadTaskRunner> file_thread;
+    base::SequencedWorkerPool* blocking_pool = nullptr;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(InitParams);
+  };
+
+  explicit ProfileSyncService(InitParams init_params);
+
   ~ProfileSyncService() override;
 
   // Initializes the object. This must be called at most once, and

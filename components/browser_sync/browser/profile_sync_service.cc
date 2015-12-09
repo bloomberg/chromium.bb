@@ -111,31 +111,31 @@ const char kSyncUnrecoverableErrorHistogram[] =
     "Sync.UnrecoverableErrors";
 
 const net::BackoffEntry::Policy kRequestAccessTokenBackoffPolicy = {
-  // Number of initial errors (in sequence) to ignore before applying
-  // exponential back-off rules.
-  0,
+    // Number of initial errors (in sequence) to ignore before applying
+    // exponential back-off rules.
+    0,
 
-  // Initial delay for exponential back-off in ms.
-  2000,
+    // Initial delay for exponential back-off in ms.
+    2000,
 
-  // Factor by which the waiting time will be multiplied.
-  2,
+    // Factor by which the waiting time will be multiplied.
+    2,
 
-  // Fuzzing percentage. ex: 10% will spread requests randomly
-  // between 90%-100% of the calculated time.
-  0.2, // 20%
+    // Fuzzing percentage. ex: 10% will spread requests randomly
+    // between 90%-100% of the calculated time.
+    0.2,  // 20%
 
-  // Maximum amount of time we are willing to delay our request in ms.
-  // TODO(pavely): crbug.com/246686 ProfileSyncService should retry
-  // RequestAccessToken on connection state change after backoff
-  1000 * 3600 * 4, // 4 hours.
+    // Maximum amount of time we are willing to delay our request in ms.
+    // TODO(pavely): crbug.com/246686 ProfileSyncService should retry
+    // RequestAccessToken on connection state change after backoff
+    1000 * 3600 * 4,  // 4 hours.
 
-  // Time to keep an entry from being discarded even when it
-  // has no significant state, -1 to never discard.
-  -1,
+    // Time to keep an entry from being discarded even when it
+    // has no significant state, -1 to never discard.
+    -1,
 
-  // Don't use initial delay unless the last request was an error.
-  false,
+    // Don't use initial delay unless the last request was an error.
+    false,
 };
 
 static const base::FilePath::CharType kSyncDataFolderName[] =
@@ -167,39 +167,46 @@ bool ShouldShowActionOnUI(
           error.action != syncer::RESET_LOCAL_SYNC_DATA);
 }
 
-ProfileSyncService::ProfileSyncService(
-    scoped_ptr<sync_driver::SyncClient> sync_client,
-    scoped_ptr<SigninManagerWrapper> signin_wrapper,
-    ProfileOAuth2TokenService* oauth2_token_service,
-    ProfileSyncServiceStartBehavior start_behavior,
-    const syncer::NetworkTimeUpdateCallback& network_time_update_callback,
-    base::FilePath base_directory,
-    scoped_refptr<net::URLRequestContextGetter> url_request_context,
-    std::string debug_identifier,
-    version_info::Channel channel,
-    scoped_refptr<base::SingleThreadTaskRunner> db_thread,
-    scoped_refptr<base::SingleThreadTaskRunner> file_thread,
-    base::SequencedWorkerPool* blocking_pool)
+ProfileSyncService::InitParams::InitParams() = default;
+ProfileSyncService::InitParams::~InitParams() = default;
+ProfileSyncService::InitParams::InitParams(InitParams&& other)  // NOLINT
+    : sync_client(std::move(other.sync_client)),
+      signin_wrapper(std::move(other.signin_wrapper)),
+      oauth2_token_service(other.oauth2_token_service),
+      start_behavior(other.start_behavior),
+      network_time_update_callback(
+          std::move(other.network_time_update_callback)),
+      base_directory(std::move(other.base_directory)),
+      url_request_context(std::move(other.url_request_context)),
+      debug_identifier(std::move(other.debug_identifier)),
+      channel(other.channel),
+      db_thread(std::move(other.db_thread)),
+      file_thread(std::move(other.file_thread)),
+      blocking_pool(other.blocking_pool) {}
+
+ProfileSyncService::ProfileSyncService(InitParams init_params)
     : OAuth2TokenService::Consumer("sync"),
       last_auth_error_(AuthError::AuthErrorNone()),
       passphrase_required_reason_(syncer::REASON_PASSPHRASE_NOT_REQUIRED),
-      sync_client_(sync_client.Pass()),
+      sync_client_(std::move(init_params.sync_client)),
       sync_prefs_(sync_client_->GetPrefService()),
       sync_service_url_(
-          GetSyncServiceURL(*base::CommandLine::ForCurrentProcess(), channel)),
-      network_time_update_callback_(network_time_update_callback),
-      base_directory_(base_directory),
-      url_request_context_(url_request_context),
-      debug_identifier_(debug_identifier),
-      channel_(channel),
-      db_thread_(db_thread),
-      file_thread_(file_thread),
-      blocking_pool_(blocking_pool),
+          GetSyncServiceURL(*base::CommandLine::ForCurrentProcess(),
+                            init_params.channel)),
+      network_time_update_callback_(
+          std::move(init_params.network_time_update_callback)),
+      base_directory_(init_params.base_directory),
+      url_request_context_(init_params.url_request_context),
+      debug_identifier_(std::move(init_params.debug_identifier)),
+      channel_(init_params.channel),
+      db_thread_(init_params.db_thread),
+      file_thread_(init_params.file_thread),
+      blocking_pool_(init_params.blocking_pool),
       is_first_time_sync_configure_(false),
       backend_initialized_(false),
       sync_disabled_by_admin_(false),
       is_auth_in_progress_(false),
-      signin_(signin_wrapper.Pass()),
+      signin_(std::move(init_params.signin_wrapper)),
       unrecoverable_error_reason_(ERROR_REASON_UNSET),
       expect_sync_configuration_aborted_(false),
       encrypted_types_(syncer::SyncEncryptionHandler::SensitiveTypes()),
@@ -207,12 +214,12 @@ ProfileSyncService::ProfileSyncService(
       encrypt_everything_(false),
       encryption_pending_(false),
       configure_status_(DataTypeManager::UNKNOWN),
-      oauth2_token_service_(oauth2_token_service),
+      oauth2_token_service_(init_params.oauth2_token_service),
       request_access_token_backoff_(&kRequestAccessTokenBackoffPolicy),
       connection_status_(syncer::CONNECTION_NOT_ATTEMPTED),
       last_get_token_error_(GoogleServiceAuthError::AuthErrorNone()),
       network_resources_(new syncer::HttpBridgeNetworkResources),
-      start_behavior_(start_behavior),
+      start_behavior_(init_params.start_behavior),
       backend_mode_(IDLE),
       need_backup_(false),
       backup_finished_(false),
@@ -2011,7 +2018,7 @@ base::Value* ProfileSyncService::GetTypeStatusMap() const {
   }
 
   SyncBackendHost::Status detailed_status = backend_->GetDetailedStatus();
-  ModelTypeSet &throttled_types(detailed_status.throttled_types);
+  ModelTypeSet& throttled_types(detailed_status.throttled_types);
   ModelTypeSet registered = GetRegisteredDataTypes();
   scoped_ptr<base::DictionaryValue> type_status_header(
       new base::DictionaryValue());

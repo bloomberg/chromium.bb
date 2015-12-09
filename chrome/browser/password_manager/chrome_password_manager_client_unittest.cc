@@ -14,7 +14,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/sync/profile_sync_service_mock.h"
+#include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
@@ -183,7 +183,7 @@ TEST_F(ChromePasswordManagerClientTest, GetPasswordSyncState) {
   ProfileSyncServiceMock* mock_sync_service =
       static_cast<ProfileSyncServiceMock*>(
           ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-              profile(), ProfileSyncServiceMock::BuildMockProfileSyncService));
+              profile(), BuildMockProfileSyncService));
 
   syncer::ModelTypeSet active_types;
   active_types.Put(syncer::PASSWORDS);

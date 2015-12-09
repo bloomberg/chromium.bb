@@ -48,27 +48,9 @@ namespace {
 class FakeProfileSyncService : public ProfileSyncService {
  public:
   explicit FakeProfileSyncService(Profile* profile)
-      : ProfileSyncService(
-            make_scoped_ptr(new browser_sync::ChromeSyncClient(profile)),
-            make_scoped_ptr<SigninManagerWrapper>(NULL),
-            ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
-            browser_sync::MANUAL_START,
-            base::Bind(&EmptyNetworkTimeUpdate),
-            profile->GetPath(),
-            profile->GetRequestContext(),
-            profile->GetDebugName(),
-            chrome::GetChannel(),
-            content::BrowserThread::GetMessageLoopProxyForThread(
-                content::BrowserThread::DB),
-            content::BrowserThread::GetMessageLoopProxyForThread(
-                content::BrowserThread::FILE),
-            content::BrowserThread::GetBlockingPool()),
+      : ProfileSyncService(CreateProfileSyncServiceParamsForTest(profile)),
         sync_initialized_(true),
-        initialized_state_violation_(false) {
-    static_cast<browser_sync::ChromeSyncClient*>(GetSyncClient())
-        ->SetSyncApiComponentFactoryForTesting(
-            make_scoped_ptr(new SyncApiComponentFactoryMock()));
-  }
+        initialized_state_violation_(false) {}
 
   ~FakeProfileSyncService() override {}
 

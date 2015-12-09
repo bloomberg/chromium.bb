@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -312,20 +314,30 @@ class ProfileSyncServiceTest : public ::testing::Test {
         components_factory.Pass(), &pref_service_,
         base::Bind(&ProfileSyncServiceTest::ClearBrowsingDataCallback,
                    base::Unretained(this))));
-    service_.reset(new ProfileSyncService(
-        sync_client.Pass(),
-        make_scoped_ptr(new SigninManagerWrapper(signin_manager_.get())),
-        auth_service_.get(), behavior, base::Bind(&EmptyNetworkTimeUpdate),
-        base::FilePath(FILE_PATH_LITERAL("dummyPath")), url_request_context_,
-        "dummyDebugName", version_info::Channel::UNKNOWN,
-        base::ThreadTaskRunnerHandle::Get(),
-        base::ThreadTaskRunnerHandle::Get(),
-        worker_pool_owner_.pool().get()));
+
+    ProfileSyncService::InitParams init_params;
+    init_params.signin_wrapper =
+        make_scoped_ptr(new SigninManagerWrapper(signin_manager_.get()));
+    init_params.oauth2_token_service = auth_service_.get();
+    init_params.start_behavior = behavior;
+    init_params.sync_client = std::move(sync_client);
+    init_params.network_time_update_callback =
+        base::Bind(&EmptyNetworkTimeUpdate);
+    init_params.base_directory = base::FilePath(FILE_PATH_LITERAL("dummyPath"));
+    init_params.url_request_context = url_request_context_;
+    init_params.debug_identifier = "dummyDebugName";
+    init_params.channel = version_info::Channel::UNKNOWN;
+    init_params.db_thread = base::ThreadTaskRunnerHandle::Get();
+    init_params.file_thread = base::ThreadTaskRunnerHandle::Get();
+    init_params.blocking_pool = worker_pool_owner_.pool().get();
+
+    service_.reset(new ProfileSyncService(std::move(init_params)));
     service_->RegisterDataTypeController(
         new sync_driver::FakeDataTypeController(syncer::BOOKMARKS));
   }
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+#if defined(OS_WIN) || defined(OS_MACOSX) || \
+    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
   void CreateServiceWithoutSignIn() {
     CreateService(browser_sync::AUTO_START);
     signin_manager_->SignOut(signin_metrics::SIGNOUT_TEST);

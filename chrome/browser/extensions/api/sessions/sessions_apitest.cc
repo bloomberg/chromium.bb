@@ -15,6 +15,7 @@
 #include "chrome/browser/sync/chrome_sync_client.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
+#include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -138,8 +139,10 @@ scoped_ptr<KeyedService> ExtensionSessionsTest::BuildProfileSyncService(
               "device_id")));
 
   Profile* profile = static_cast<Profile*>(context);
-  ProfileSyncServiceMock* sync_service = new ProfileSyncServiceMock(
-      make_scoped_ptr(new browser_sync::ChromeSyncClient(profile)), profile);
+  ProfileSyncServiceMock* sync_service =
+      new ProfileSyncServiceMock(CreateProfileSyncServiceParamsForTest(
+          make_scoped_ptr(new browser_sync::ChromeSyncClient(profile)),
+          profile));
   static_cast<browser_sync::ChromeSyncClient*>(sync_service->GetSyncClient())
       ->SetSyncApiComponentFactoryForTesting(factory.Pass());
   return make_scoped_ptr(sync_service);

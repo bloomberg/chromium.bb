@@ -16,6 +16,7 @@
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
+#include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/sync/browser_synced_window_delegates_getter.h"
@@ -118,14 +119,14 @@ class RecentTabsSubMenuModelTest
     : public BrowserWithTestWindowTest {
  public:
   RecentTabsSubMenuModelTest()
-      : sync_service_(&testing_profile_),
+      : sync_service_(CreateProfileSyncServiceParamsForTest(&testing_profile_)),
         local_device_(new sync_driver::LocalDeviceInfoProviderMock(
-                      "RecentTabsSubMenuModelTest",
-                      "Test Machine",
-                      "Chromium 10k",
-                      "Chrome 10k",
-                      sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
-                      "device_id")) {
+            "RecentTabsSubMenuModelTest",
+            "Test Machine",
+            "Chromium 10k",
+            "Chrome 10k",
+            sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
+            "device_id")) {
     sync_prefs_.reset(new sync_driver::SyncPrefs(testing_profile_.GetPrefs()));
     manager_.reset(new browser_sync::SessionsSyncManager(
         sync_service_.GetSyncClient()->GetSyncSessionsClient(),
@@ -163,7 +164,7 @@ class RecentTabsSubMenuModelTest
 
  private:
   TestingProfile testing_profile_;
-  testing::NiceMock<ProfileSyncServiceMock> sync_service_;
+  ProfileSyncServiceMock sync_service_;
   scoped_ptr<sync_driver::SyncPrefs> sync_prefs_;
   scoped_ptr<browser_sync::SessionsSyncManager> manager_;
   scoped_ptr<sync_driver::LocalDeviceInfoProviderMock> local_device_;

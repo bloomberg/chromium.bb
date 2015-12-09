@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <vector>
+
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/prefs/pref_service.h"
@@ -11,6 +13,7 @@
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
+#include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller_mock.h"
 #include "chrome/test/base/testing_profile.h"
@@ -44,7 +47,8 @@ const char kUIDismissalReasonMetric[] = "PasswordManager.UIDismissalReason";
 class TestSyncService : public ProfileSyncServiceMock {
  public:
   explicit TestSyncService(Profile* profile)
-      : ProfileSyncServiceMock(profile), smartlock_enabled_(false) {}
+      : ProfileSyncServiceMock(CreateProfileSyncServiceParamsForTest(profile)),
+        smartlock_enabled_(false) {}
   ~TestSyncService() override {}
 
   // FakeSyncService:

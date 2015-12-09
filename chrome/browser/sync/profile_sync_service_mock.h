@@ -8,10 +8,8 @@
 #include <string>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
-#include "chrome/test/base/testing_profile.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/sync_driver/change_processor.h"
 #include "components/sync_driver/data_type_controller.h"
@@ -21,27 +19,17 @@
 #include "sync/protocol/sync_protocol_error.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-using ::testing::Invoke;
-
-namespace sync_driver {
-class SyncClient;
-}
-
 class ProfileSyncServiceMock : public ProfileSyncService {
  public:
-  explicit ProfileSyncServiceMock(Profile* profile);
-  ProfileSyncServiceMock(scoped_ptr<sync_driver::SyncClient> sync_client,
-                         Profile* profile);
+  explicit ProfileSyncServiceMock(InitParams init_params);
+  // The second constructor defers to the first one. Use it when you need to
+  // create a StrictMock or NiceMock of ProfileSyncServiceMock, because those
+  // template classes cannot handle the input class having constructors with
+  // arguments passed by value. Otherwise use the constructor above for cleaner
+  // code.
+  explicit ProfileSyncServiceMock(InitParams* init_params);
+
   virtual ~ProfileSyncServiceMock();
-
-  // A utility used by sync tests to create a TestingProfile with a Google
-  // Services username stored in a (Testing)PrefService.
-  static TestingProfile* MakeSignedInTestingProfile();
-
-  // Helper routine to be used in conjunction with
-  // BrowserContextKeyedServiceFactory::SetTestingFactory().
-  static scoped_ptr<KeyedService> BuildMockProfileSyncService(
-      content::BrowserContext* profile);
 
   MOCK_METHOD4(OnBackendInitialized,
       void(const syncer::WeakHandle<syncer::JsBackend>&,

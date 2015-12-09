@@ -13,7 +13,7 @@
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/sync/profile_sync_service_mock.h"
+#include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
@@ -222,7 +222,7 @@ class WebHistoryServiceTest : public testing::Test {
 
   void SetUp() override {
     ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-      &profile_, &ProfileSyncServiceMock::BuildMockProfileSyncService);
+        &profile_, &BuildMockProfileSyncService);
     // Use SetTestingFactoryAndUse to force creation and initialization.
     WebHistoryServiceFactory::GetInstance()->SetTestingFactoryAndUse(
       &profile_, &BuildWebHistoryService);
@@ -250,7 +250,6 @@ class WebHistoryServiceTest : public testing::Test {
   }
 
  private:
-
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
 
