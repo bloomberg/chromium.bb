@@ -28,7 +28,9 @@ const blink::WebRTCKeyParams& RTCCertificate::keyParams() const {
 }
 
 double RTCCertificate::expires() const {
-  return static_cast<double>(certificate_->expires_timestamp_ns());
+  // TODO(hbos): A webrtc CL needs to land and roll and then we can use
+  // rtc::RTCCertificate::Expires here.
+  return 0.0;
 }
 
 const rtc::scoped_refptr<rtc::RTCCertificate>&
