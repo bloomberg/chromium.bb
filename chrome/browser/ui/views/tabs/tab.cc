@@ -81,7 +81,7 @@ const int kPinnedTabExtraWidthToRenderAsNormal = 30;
 const double kHoverOpacity = 0.33;
 
 // Opacity of the active tab background painted over inactive selected tabs.
-const double kSelectedTabOpacity = 0.45;
+const double kSelectedTabOpacity = 0.3;
 
 // Inactive selected tabs have their throb value scaled by this.
 const double kSelectedTabThrobScale = 0.95 - kSelectedTabOpacity;
