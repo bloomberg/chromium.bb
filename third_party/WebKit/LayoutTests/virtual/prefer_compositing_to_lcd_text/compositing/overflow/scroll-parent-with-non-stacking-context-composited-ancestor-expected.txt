@@ -16,15 +16,16 @@
           "children": [
             {
               "bounds": [102, 102],
+              "shouldFlattenTransform": false,
               "drawsContent": true,
               "children": [
                 {
                   "position": [1, 1],
                   "bounds": [100, 100],
+                  "shouldFlattenTransform": false,
                   "children": [
                     {
-                      "bounds": [100, 180],
-                      "shouldFlattenTransform": false
+                      "bounds": [100, 180]
                     }
                   ]
                 }

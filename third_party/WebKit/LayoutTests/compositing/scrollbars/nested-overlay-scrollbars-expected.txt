@@ -9,29 +9,31 @@
         {
           "position": [8, 8],
           "bounds": [404, 404],
+          "shouldFlattenTransform": false,
           "drawsContent": true,
           "children": [
             {
               "position": [2, 2],
               "bounds": [400, 400],
+              "shouldFlattenTransform": false,
               "children": [
                 {
                   "bounds": [400, 704],
-                  "shouldFlattenTransform": false,
                   "drawsContent": true,
                   "children": [
                     {
                       "position": [0, 500],
                       "bounds": [204, 204],
+                      "shouldFlattenTransform": false,
                       "drawsContent": true,
                       "children": [
                         {
                           "position": [2, 2],
                           "bounds": [200, 200],
+                          "shouldFlattenTransform": false,
                           "children": [
                             {
                               "bounds": [5000, 9000],
-                              "shouldFlattenTransform": false,
                               "drawsContent": true
                             }
                           ]

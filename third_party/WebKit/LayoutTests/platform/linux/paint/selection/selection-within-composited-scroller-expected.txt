@@ -14,6 +14,7 @@
           "position": [8, 8],
           "bounds": [200, 200],
           "contentsOpaque": true,
+          "shouldFlattenTransform": false,
           "drawsContent": true,
           "backgroundColor": "#D3D3D3",
           "repaintRects": [
@@ -25,10 +26,10 @@
           "children": [
             {
               "bounds": [185, 185],
+              "shouldFlattenTransform": false,
               "children": [
                 {
                   "bounds": [200, 1620],
-                  "shouldFlattenTransform": false,
                   "drawsContent": true,
                   "repaintRects": [
                     [0, 610, 21, 19]

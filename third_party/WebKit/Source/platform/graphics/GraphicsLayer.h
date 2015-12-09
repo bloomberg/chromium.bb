@@ -271,6 +271,7 @@ public:
 
 protected:
     String debugName(cc::Layer*) const;
+    bool shouldFlattenTransform() const { return m_shouldFlattenTransform; }
 
     explicit GraphicsLayer(GraphicsLayerClient*);
     // GraphicsLayerFactoryChromium that wants to create a GraphicsLayer need to be friends.
@@ -278,6 +279,7 @@ protected:
     // for testing
     friend class CompositedLayerMappingTest;
     friend class FakeGraphicsLayerFactory;
+    friend class CompositedLayerMappingTest;
 
 private:
     // Adds a child without calling updateChildList(), so that adding children

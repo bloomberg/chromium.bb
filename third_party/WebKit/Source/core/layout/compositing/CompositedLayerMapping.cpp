@@ -1511,12 +1511,13 @@ void CompositedLayerMapping::updateShouldFlattenTransform()
         }, ApplyToChildContainingLayers);
     }
 
-    // Regardless, mark the scrolling contents layer and scrolling block
+    // Regardless, mark the graphics layer, scrolling layer and scrolling block
     // selection layer (if they exist) as not flattening. Having them flatten
     // causes unclipped render surfaces which cause bugs.
     // http://crbug.com/521768
     if (hasScrollingLayer()) {
-        m_scrollingContentsLayer->setShouldFlattenTransform(false);
+        m_graphicsLayer->setShouldFlattenTransform(false);
+        m_scrollingLayer->setShouldFlattenTransform(false);
         if (m_scrollingBlockSelectionLayer)
             m_scrollingBlockSelectionLayer->setShouldFlattenTransform(false);
     }

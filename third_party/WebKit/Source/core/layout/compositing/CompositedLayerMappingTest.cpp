@@ -34,6 +34,11 @@ protected:
         return compositedLayerMapping->computeInterestRect(graphicsLayer, previousInterestRect);
     }
 
+    bool shouldFlattenTransform(const GraphicsLayer& layer) const
+    {
+        return layer.shouldFlattenTransform();
+    }
+
     bool interestRectChangedEnoughToRepaint(const IntRect& previousInterestRect, const IntRect& newInterestRect, const IntSize& layerSize)
     {
         return CompositedLayerMapping::interestRectChangedEnoughToRepaint(previousInterestRect, newInterestRect, layerSize);
@@ -262,6 +267,25 @@ TEST_F(CompositedLayerMappingTest, ClippingMaskLayer)
     document().view()->updateAllLifecyclePhases();
     EXPECT_FALSE(graphicsLayer->maskLayer());
     EXPECT_FALSE(graphicsLayer->contentsClippingMaskLayer());
+}
+
+TEST_F(CompositedLayerMappingTest, ScrollContentsFlattenForScroller)
+{
+    setBodyInnerHTML(
+        "<style>div::-webkit-scrollbar{ width: 5px; }</style>"
+        "<div id='scroller' style='width: 100px; height: 100px; overflow: scroll; will-change: transform'>"
+        "<div style='width: 1000px; height: 1000px;'>Foo</div>Foo</div>");
+
+    document().view()->updateAllLifecyclePhases();
+    Element* element = document().getElementById("scroller");
+    PaintLayer* paintLayer = toLayoutBoxModelObject(element->layoutObject())->layer();
+    CompositedLayerMapping* compositedLayerMapping = paintLayer->compositedLayerMapping();
+
+    ASSERT_TRUE(compositedLayerMapping);
+
+    EXPECT_FALSE(shouldFlattenTransform(*compositedLayerMapping->mainGraphicsLayer()));
+    EXPECT_FALSE(shouldFlattenTransform(*compositedLayerMapping->scrollingLayer()));
+    EXPECT_TRUE(shouldFlattenTransform(*compositedLayerMapping->scrollingContentsLayer()));
 }
 
 TEST_F(CompositedLayerMappingTest, InterestRectChangedEnoughToRepaintEmpty)
