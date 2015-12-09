@@ -61,8 +61,10 @@ class FFmpegDemuxerStream : public DemuxerStream {
   //
   // FFmpegDemuxerStream keeps a copy of |demuxer| and initializes itself using
   // information inside |stream|. Both parameters must outlive |this|.
-  static scoped_ptr<FFmpegDemuxerStream> Create(FFmpegDemuxer* demuxer,
-                                                AVStream* stream);
+  static scoped_ptr<FFmpegDemuxerStream> Create(
+      FFmpegDemuxer* demuxer,
+      AVStream* stream,
+      const scoped_refptr<MediaLog>& media_log);
 
   ~FFmpegDemuxerStream() override;
 

@@ -174,7 +174,8 @@ static int32_t GetCodecHash(const AVCodecContext* context) {
 
 scoped_ptr<FFmpegDemuxerStream> FFmpegDemuxerStream::Create(
     FFmpegDemuxer* demuxer,
-    AVStream* stream) {
+    AVStream* stream,
+    const scoped_refptr<MediaLog>& media_log) {
   if (!demuxer || !stream)
     return nullptr;
 
@@ -191,9 +192,14 @@ scoped_ptr<FFmpegDemuxerStream> FFmpegDemuxerStream::Create(
     // TODO(chcunningham): Change AVStreamToAudioDecoderConfig to check
     // IsValidConfig internally and return a null scoped_ptr if not valid.
     if (!AVStreamToAudioDecoderConfig(stream, audio_config.get()) ||
-        !audio_config->IsValidConfig())
+        !audio_config->IsValidConfig()) {
+      MEDIA_LOG(ERROR, media_log)
+          << "FFmpegDemuxer: failed creating audio stream";
       return nullptr;
+    }
 
+    MEDIA_LOG(INFO, media_log) << "FFmpegDemuxer: created audio stream, config "
+                               << audio_config->AsHumanReadableString();
   } else if (stream->codec->codec_type == AVMEDIA_TYPE_VIDEO) {
     video_config.reset(new VideoDecoderConfig());
 
@@ -203,8 +209,14 @@ scoped_ptr<FFmpegDemuxerStream> FFmpegDemuxerStream::Create(
     // TODO(chcunningham): Change AVStreamToVideoDecoderConfig to check
     // IsValidConfig internally and return a null scoped_ptr if not valid.
     if (!AVStreamToVideoDecoderConfig(stream, video_config.get()) ||
-        !video_config->IsValidConfig())
+        !video_config->IsValidConfig()) {
+      MEDIA_LOG(ERROR, media_log)
+          << "FFmpegDemuxer: failed creating video stream";
       return nullptr;
+    }
+
+    MEDIA_LOG(INFO, media_log) << "FFmpegDemuxer: created video stream, config "
+                               << video_config->AsHumanReadableString();
   }
 
   return make_scoped_ptr(new FFmpegDemuxerStream(
@@ -1108,7 +1120,7 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
     // return nullptr if the AVStream is invalid. Validity checks will verify
     // things like: codec, channel layout, sample/pixel format, etc...
     scoped_ptr<FFmpegDemuxerStream> demuxer_stream =
-        FFmpegDemuxerStream::Create(this, stream);
+        FFmpegDemuxerStream::Create(this, stream, media_log_);
     if (demuxer_stream.get()) {
       streams_[i] = demuxer_stream.release();
     } else {
