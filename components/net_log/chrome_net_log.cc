@@ -9,6 +9,8 @@
 #include "base/command_line.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
+#include "base/strings/stringprintf.h"
+#include "base/sys_info.h"
 #include "base/values.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
 #include "components/net_log/net_log_temp_file.h"
@@ -88,7 +90,11 @@ base::Value* ChromeNetLog::GetConstants(
     dict->SetString("version_mod", channel_string);
     dict->SetString("official", version_info::IsOfficialBuild() ? "official"
                                                                 : "unofficial");
-    dict->SetString("os_type", version_info::GetOSType());
+    std::string os_type = base::StringPrintf(
+        "%s: %s (%s)", base::SysInfo::OperatingSystemName().c_str(),
+        base::SysInfo::OperatingSystemVersion().c_str(),
+        base::SysInfo::OperatingSystemArchitecture().c_str());
+    dict->SetString("os_type", os_type);
     dict->SetString("command_line", command_line_string);
 
     constants_dict->Set("clientInfo", dict);
