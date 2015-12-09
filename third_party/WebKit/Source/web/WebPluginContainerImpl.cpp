@@ -819,9 +819,9 @@ void WebPluginContainerImpl::handleKeyboardEvent(KeyboardEvent* event)
 
     if (webEvent.type == WebInputEvent::KeyDown) {
 #if OS(MACOSX)
-        if (webEvent.modifiers == WebInputEvent::MetaKey
+        if ((webEvent.modifiers & WebInputEvent::InputModifiers) == WebInputEvent::MetaKey
 #else
-        if (webEvent.modifiers == WebInputEvent::ControlKey
+        if ((webEvent.modifiers & WebInputEvent::InputModifiers) == WebInputEvent::ControlKey
 #endif
             && (webEvent.windowsKeyCode == VKEY_C || webEvent.windowsKeyCode == VKEY_INSERT)
             // Only copy if there's a selection, so that we only ever do this

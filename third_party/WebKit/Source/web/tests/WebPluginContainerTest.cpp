@@ -287,9 +287,9 @@ TEST_F(WebPluginContainerTest, CopyInsertKeyboardEventsTest)
     runPendingTasks();
 
     WebElement pluginContainerOneElement = webView->mainFrame()->document().getElementById(WebString::fromUTF8("translated-plugin"));
-    PlatformEvent::Modifiers modifierKey = PlatformEvent::CtrlKey;
+    PlatformEvent::Modifiers modifierKey = static_cast<PlatformEvent::Modifiers>(PlatformEvent::CtrlKey | PlatformEvent::NumLockOn | PlatformEvent::IsLeft);
 #if OS(MACOSX)
-    modifierKey = PlatformEvent::MetaKey;
+    modifierKey = static_cast<PlatformEvent::Modifiers>(PlatformEvent::MetaKey | PlatformEvent::NumLockOn | PlatformEvent::IsLeft);
 #endif
     PlatformKeyboardEvent platformKeyboardEventC(PlatformEvent::RawKeyDown, "", "", "67", "", "", 67, 0, false, modifierKey, 0.0);
     RefPtrWillBeRawPtr<KeyboardEvent> keyEventC = KeyboardEvent::create(platformKeyboardEventC, 0);
