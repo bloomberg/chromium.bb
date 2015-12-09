@@ -1,5 +1,21 @@
 {
-  "Android MotoE Perf": {
+  "Android Galaxy S5 Perf (1)": {
+    "scripts": [
+      {
+        "name": "host_info",
+        "script": "host_info.py"
+      }
+    ]
+  },
+  "Android Galaxy S5 Perf (2)": {
+    "scripts": [
+      {
+        "name": "host_info",
+        "script": "host_info.py"
+      }
+    ]
+  },
+  "Android Galaxy S5 Perf (3)": {
     "scripts": [
       {
         "name": "host_info",
@@ -21,7 +37,15 @@
       }
     ]
   },
-  "Android Nexus10 Perf": {
+  "Android Nexus5 Perf (1)": {
+    "scripts": [
+      {
+        "name": "host_info",
+        "script": "host_info.py"
+      }
+    ]
+  },
+  "Android Nexus5 Perf (2)": {
     "scripts": [
       {
         "name": "host_info",
@@ -43,7 +67,30 @@
       }
     ]
   },
-  "Android Nexus4 Perf": {
+  "Android Nexus6 Perf (1)": {
+    "scripts": [
+      {
+        "name": "host_info",
+        "script": "host_info.py"
+      }
+    ]
+  },
+  "Android Nexus6 Perf (2)": {
+    "scripts": [
+      {
+        "name": "host_info",
+        "script": "host_info.py"
+      },
+      {
+        "args": [
+          "cc_perftests"
+        ],
+        "name": "cc_perftests",
+        "script": "gtest_perf_test.py"
+      }
+    ]
+  },
+  "Android Nexus7v2 Perf (1)": {
     "scripts": [
       {
         "name": "host_info",
@@ -65,7 +112,7 @@
       }
     ]
   },
-  "Android Nexus5 Perf": {
+  "Android Nexus7v2 Perf (2)": {
     "scripts": [
       {
         "name": "host_info",
@@ -87,44 +134,15 @@
       }
     ]
   },
-  "Android Nexus6 Perf": {
+  "Android Nexus9 Perf (1)": {
     "scripts": [
       {
         "name": "host_info",
         "script": "host_info.py"
-      },
-      {
-        "args": [
-          "cc_perftests"
-        ],
-        "name": "cc_perftests",
-        "script": "gtest_perf_test.py"
       }
     ]
   },
-  "Android Nexus7v2 Perf": {
-    "scripts": [
-      {
-        "name": "host_info",
-        "script": "host_info.py"
-      },
-      {
-        "args": [
-          "gpu_perftests"
-        ],
-        "name": "gpu_perftests",
-        "script": "gtest_perf_test.py"
-      },
-      {
-        "args": [
-          "cc_perftests"
-        ],
-        "name": "cc_perftests",
-        "script": "gtest_perf_test.py"
-      }
-    ]
-  },
-  "Android Nexus9 Perf": {
+  "Android Nexus9 Perf (2)": {
     "scripts": [
       {
         "name": "host_info",
@@ -146,7 +164,15 @@
       }
     ]
   },
-  "Android One Perf": {
+  "Android One Perf (1)": {
+    "scripts": [
+      {
+        "name": "host_info",
+        "script": "host_info.py"
+      }
+    ]
+  },
+  "Android One Perf (2)": {
     "scripts": [
       {
         "name": "host_info",
