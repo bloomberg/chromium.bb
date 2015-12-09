@@ -61,6 +61,11 @@ static bool shouldShowFullscreenButton(const HTMLMediaElement& mediaElement)
     return true;
 }
 
+static bool shouldShowCastButton(HTMLMediaElement& mediaElement)
+{
+    return !mediaElement.fastHasAttribute(HTMLNames::disableremoteplaybackAttr) && mediaElement.hasRemoteRoutes();
+}
+
 static bool preferHiddenVolumeControls(const Document& document)
 {
     return !document.settings() || document.settings()->preferHiddenVolumeControls();
@@ -455,43 +460,47 @@ void MediaControls::refreshCastButtonVisibility()
 
 void MediaControls::refreshCastButtonVisibilityWithoutUpdate()
 {
-    if (mediaElement().hasRemoteRoutes()) {
-        // The reason for the autoplay test is that some pages (e.g. vimeo.com) have an autoplay background video, which
-        // doesn't autoplay on Chrome for Android (we prevent it) so starts paused. In such cases we don't want to automatically
-        // show the cast button, since it looks strange and is unlikely to correspond with anything the user wants to do.
-        // If a user does want to cast a paused autoplay video then they can still do so by touching or clicking on the
-        // video, which will cause the cast button to appear.
-        if (!mediaElement().shouldShowControls() && !mediaElement().autoplay() && mediaElement().paused()) {
-            // Note that this is a case where we add the overlay cast button
-            // without wanting the panel cast button.  We depend on the fact
-            // that computeWhichControlsFit() won't change overlay cast button
-            // visibility in the case where the cast button isn't wanted.
-            // We don't call compute...() here, but it will be called as
-            // non-cast changes (e.g., resize) occur.  If the panel button
-            // is shown, however, compute...() will take control of the
-            // overlay cast button if it needs to hide it from the panel.
-            m_overlayCastButton->tryShowOverlay();
-            m_castButton->setIsWanted(false);
-        } else if (mediaElement().shouldShowControls()) {
-            m_overlayCastButton->setIsWanted(false);
-            m_castButton->setIsWanted(true);
-            // Check that the cast button actually fits on the bar.  For the
-            // newMediaPlaybackUiEnabled case, we let computeWhichControlsFit()
-            // handle this.
-            if ( !RuntimeEnabledFeatures::newMediaPlaybackUiEnabled()
-                && m_fullScreenButton->getBoundingClientRect()->right() > m_panel->getBoundingClientRect()->right()) {
-                m_castButton->setIsWanted(false);
-                m_overlayCastButton->tryShowOverlay();
-            }
-        }
-    } else {
+    if (!shouldShowCastButton(mediaElement())) {
         m_castButton->setIsWanted(false);
         m_overlayCastButton->setIsWanted(false);
+        return;
+    }
+
+    // The reason for the autoplay test is that some pages (e.g. vimeo.com) have an autoplay background video, which
+    // doesn't autoplay on Chrome for Android (we prevent it) so starts paused. In such cases we don't want to automatically
+    // show the cast button, since it looks strange and is unlikely to correspond with anything the user wants to do.
+    // If a user does want to cast a paused autoplay video then they can still do so by touching or clicking on the
+    // video, which will cause the cast button to appear.
+    if (!mediaElement().shouldShowControls() && !mediaElement().autoplay() && mediaElement().paused()) {
+        // Note that this is a case where we add the overlay cast button
+        // without wanting the panel cast button.  We depend on the fact
+        // that computeWhichControlsFit() won't change overlay cast button
+        // visibility in the case where the cast button isn't wanted.
+        // We don't call compute...() here, but it will be called as
+        // non-cast changes (e.g., resize) occur.  If the panel button
+        // is shown, however, compute...() will take control of the
+        // overlay cast button if it needs to hide it from the panel.
+        m_overlayCastButton->tryShowOverlay();
+        m_castButton->setIsWanted(false);
+    } else if (mediaElement().shouldShowControls()) {
+        m_overlayCastButton->setIsWanted(false);
+        m_castButton->setIsWanted(true);
+        // Check that the cast button actually fits on the bar.  For the
+        // newMediaPlaybackUiEnabled case, we let computeWhichControlsFit()
+        // handle this.
+        if ( !RuntimeEnabledFeatures::newMediaPlaybackUiEnabled()
+            && m_fullScreenButton->getBoundingClientRect()->right() > m_panel->getBoundingClientRect()->right()) {
+            m_castButton->setIsWanted(false);
+            m_overlayCastButton->tryShowOverlay();
+        }
     }
 }
 
-void MediaControls::showOverlayCastButton()
+void MediaControls::showOverlayCastButtonIfNeeded()
 {
+    if (mediaElement().shouldShowControls() || !shouldShowCastButton(mediaElement()))
+        return;
+
     m_overlayCastButton->tryShowOverlay();
     resetHideMediaControlsTimer();
 }

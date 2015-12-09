@@ -294,6 +294,7 @@ html element audio
     property currentTime
     property defaultMuted
     property defaultPlaybackRate
+    property disableRemotePlayback
     property duration
     property ended
     property error
@@ -1037,6 +1038,7 @@ html element video
     property currentTime
     property defaultMuted
     property defaultPlaybackRate
+    property disableRemotePlayback
     property duration
     property ended
     property error

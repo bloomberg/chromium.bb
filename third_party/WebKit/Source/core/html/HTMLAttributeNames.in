@@ -97,6 +97,7 @@ dir
 direction
 dirname
 disabled
+disableremoteplayback
 download
 draggable
 webkitdropzone

@@ -622,6 +622,7 @@ private:
     friend class Internals;
     friend class TrackDisplayUpdateScope;
     friend class AutoplayExperimentHelper;
+    friend class MediaControlsTest;
 
     AutoplayExperimentHelper m_autoplayHelper;
 

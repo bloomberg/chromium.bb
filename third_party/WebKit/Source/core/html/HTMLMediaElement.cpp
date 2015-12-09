@@ -508,6 +508,8 @@ void HTMLMediaElement::parseAttribute(const QualifiedName& name, const AtomicStr
         configureMediaControls();
     } else if (name == preloadAttr) {
         setPlayerPreload();
+    } else if (name == disableremoteplaybackAttr) {
+        UseCounter::count(document(), UseCounter::DisableRemotePlaybackAttribute);
     } else {
         HTMLElement::parseAttribute(name, oldValue, value);
     }
