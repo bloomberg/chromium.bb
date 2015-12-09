@@ -250,7 +250,7 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   virtual void BeginTest() = 0;
   virtual void SetupTree();
 
-  virtual void RunTest(bool threaded, bool delegating_renderer);
+  virtual void RunTest(CompositorMode mode, bool delegating_renderer);
 
   bool HasImplThread() { return !!impl_thread_; }
   base::SingleThreadTaskRunner* ImplThreadTaskRunner() {
@@ -297,6 +297,8 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   LayerTreeSettings settings_;
   LayerSettings layer_settings_;
 
+  CompositorMode mode_;
+
   scoped_ptr<LayerTreeHostClientForTesting> client_;
   scoped_ptr<LayerTreeHost> layer_tree_host_;
   FakeOutputSurface* output_surface_;
@@ -328,13 +330,13 @@ class LayerTreeTest : public testing::Test, public TestHooks {
 
 #define SINGLE_THREAD_DIRECT_RENDERER_TEST_F(TEST_FIXTURE_NAME) \
   TEST_F(TEST_FIXTURE_NAME, RunSingleThread_DirectRenderer) {   \
-    RunTest(false, false);                                      \
+    RunTest(CompositorMode::SingleThreaded, false);             \
   }                                                             \
   class SingleThreadDirectImplNeedsSemicolon##TEST_FIXTURE_NAME {}
 
 #define SINGLE_THREAD_DELEGATING_RENDERER_TEST_F(TEST_FIXTURE_NAME) \
   TEST_F(TEST_FIXTURE_NAME, RunSingleThread_DelegatingRenderer) {   \
-    RunTest(false, true);                                           \
+    RunTest(CompositorMode::SingleThreaded, true);                  \
   }                                                                 \
   class SingleThreadDelegatingImplNeedsSemicolon##TEST_FIXTURE_NAME {}
 
@@ -344,13 +346,13 @@ class LayerTreeTest : public testing::Test, public TestHooks {
 
 #define MULTI_THREAD_DIRECT_RENDERER_TEST_F(TEST_FIXTURE_NAME) \
   TEST_F(TEST_FIXTURE_NAME, RunMultiThread_DirectRenderer) {   \
-    RunTest(true, false);                                      \
+    RunTest(CompositorMode::Threaded, false);                  \
   }                                                            \
   class MultiThreadDirectImplNeedsSemicolon##TEST_FIXTURE_NAME {}
 
 #define MULTI_THREAD_DELEGATING_RENDERER_TEST_F(TEST_FIXTURE_NAME) \
   TEST_F(TEST_FIXTURE_NAME, RunMultiThread_DelegatingRenderer) {   \
-    RunTest(true, true);                                           \
+    RunTest(CompositorMode::Threaded, true);                       \
   }                                                                \
   class MultiThreadDelegatingImplNeedsSemicolon##TEST_FIXTURE_NAME {}
 

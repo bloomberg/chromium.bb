@@ -146,39 +146,39 @@ class LayerTreeHostCopyRequestTestMultipleRequests
 TEST_F(LayerTreeHostCopyRequestTestMultipleRequests,
        GLRenderer_RunSingleThread) {
   use_gl_renderer_ = true;
-  RunTest(false, false);
+  RunTest(CompositorMode::SingleThreaded, false);
 }
 
 TEST_F(LayerTreeHostCopyRequestTestMultipleRequests,
        GLRenderer_RunMultiThread) {
   use_gl_renderer_ = true;
-  RunTest(true, false);
+  RunTest(CompositorMode::Threaded, false);
 }
 
 TEST_F(LayerTreeHostCopyRequestTestMultipleRequests,
        GLRenderer_RunSingleThread_OutOfOrderCallbacks) {
   use_gl_renderer_ = true;
   out_of_order_callbacks_ = true;
-  RunTest(false, false);
+  RunTest(CompositorMode::SingleThreaded, false);
 }
 
 TEST_F(LayerTreeHostCopyRequestTestMultipleRequests,
        GLRenderer_RunMultiThread_OutOfOrderCallbacks) {
   use_gl_renderer_ = true;
   out_of_order_callbacks_ = true;
-  RunTest(true, false);
+  RunTest(CompositorMode::Threaded, false);
 }
 
 TEST_F(LayerTreeHostCopyRequestTestMultipleRequests,
        SoftwareRenderer_RunSingleThread) {
   use_gl_renderer_ = false;
-  RunTest(false, false);
+  RunTest(CompositorMode::SingleThreaded, false);
 }
 
 TEST_F(LayerTreeHostCopyRequestTestMultipleRequests,
        SoftwareRenderer_RunMultiThread) {
   use_gl_renderer_ = false;
-  RunTest(true, false);
+  RunTest(CompositorMode::Threaded, false);
 }
 
 // TODO(crbug.com/564832): Remove this test when the workaround it tests is no

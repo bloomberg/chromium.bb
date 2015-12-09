@@ -28,7 +28,9 @@ class ProxyTest : public LayerTreeTest {
     // We don't need to care about delegating mode.
     bool delegating_renderer = true;
 
-    RunTest(threaded, delegating_renderer);
+    CompositorMode mode =
+        threaded ? CompositorMode::Threaded : CompositorMode::SingleThreaded;
+    RunTest(mode, delegating_renderer);
   }
 
   void BeginTest() override {}

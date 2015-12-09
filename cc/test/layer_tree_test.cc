@@ -920,10 +920,8 @@ void LayerTreeTest::DoBeginTest() {
   }
 
   DCHECK(!impl_thread_ || impl_thread_->task_runner().get());
-  CompositorMode mode =
-      impl_thread_ ? CompositorMode::Threaded : CompositorMode::SingleThreaded;
   layer_tree_host_ = LayerTreeHostForTesting::Create(
-      this, mode, client_.get(), shared_bitmap_manager_.get(),
+      this, mode_, client_.get(), shared_bitmap_manager_.get(),
       gpu_memory_buffer_manager_.get(), task_graph_runner_.get(), settings_,
       base::ThreadTaskRunnerHandle::Get(),
       impl_thread_ ? impl_thread_->task_runner() : NULL,
@@ -1054,8 +1052,9 @@ void LayerTreeTest::DispatchCompositeImmediately() {
     layer_tree_host_->Composite(base::TimeTicks::Now());
 }
 
-void LayerTreeTest::RunTest(bool threaded, bool delegating_renderer) {
-  if (threaded) {
+void LayerTreeTest::RunTest(CompositorMode mode, bool delegating_renderer) {
+  mode_ = mode;
+  if (mode_ == CompositorMode::Threaded) {
     impl_thread_.reset(new base::Thread("Compositor"));
     ASSERT_TRUE(impl_thread_->Start());
   }

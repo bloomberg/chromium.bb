@@ -785,49 +785,49 @@ class LayerTreeHostContextTestLostContextAndEvictTextures
 TEST_F(LayerTreeHostContextTestLostContextAndEvictTextures,
        LoseAfterEvict_SingleThread_DirectRenderer) {
   lose_after_evict_ = true;
-  RunTest(false, false);
+  RunTest(CompositorMode::SingleThreaded, false);
 }
 
 TEST_F(LayerTreeHostContextTestLostContextAndEvictTextures,
        LoseAfterEvict_SingleThread_DelegatingRenderer) {
   lose_after_evict_ = true;
-  RunTest(false, true);
+  RunTest(CompositorMode::SingleThreaded, true);
 }
 
 TEST_F(LayerTreeHostContextTestLostContextAndEvictTextures,
        LoseAfterEvict_MultiThread_DirectRenderer) {
   lose_after_evict_ = true;
-  RunTest(true, false);
+  RunTest(CompositorMode::Threaded, false);
 }
 
 TEST_F(LayerTreeHostContextTestLostContextAndEvictTextures,
        LoseAfterEvict_MultiThread_DelegatingRenderer) {
   lose_after_evict_ = true;
-  RunTest(true, true);
+  RunTest(CompositorMode::Threaded, true);
 }
 
 TEST_F(LayerTreeHostContextTestLostContextAndEvictTextures,
        LoseBeforeEvict_SingleThread_DirectRenderer) {
   lose_after_evict_ = false;
-  RunTest(false, false);
+  RunTest(CompositorMode::SingleThreaded, false);
 }
 
 TEST_F(LayerTreeHostContextTestLostContextAndEvictTextures,
        LoseBeforeEvict_SingleThread_DelegatingRenderer) {
   lose_after_evict_ = false;
-  RunTest(false, true);
+  RunTest(CompositorMode::SingleThreaded, true);
 }
 
 TEST_F(LayerTreeHostContextTestLostContextAndEvictTextures,
        LoseBeforeEvict_MultiThread_DirectRenderer) {
   lose_after_evict_ = false;
-  RunTest(true, false);
+  RunTest(CompositorMode::Threaded, false);
 }
 
 TEST_F(LayerTreeHostContextTestLostContextAndEvictTextures,
        LoseBeforeEvict_MultiThread_DelegatingRenderer) {
   lose_after_evict_ = false;
-  RunTest(true, true);
+  RunTest(CompositorMode::Threaded, true);
 }
 
 class LayerTreeHostContextTestLayersNotified : public LayerTreeHostContextTest {
