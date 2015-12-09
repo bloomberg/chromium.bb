@@ -24,14 +24,15 @@ Lorem Ipsum
         {
           "position": [8, 62],
           "bounds": [300, 500],
+          "shouldFlattenTransform": false,
           "drawsContent": true,
           "children": [
             {
               "bounds": [285, 485],
+              "shouldFlattenTransform": false,
               "children": [
                 {
-                  "bounds": [285, 665],
-                  "shouldFlattenTransform": false
+                  "bounds": [285, 665]
                 }
               ]
             },
@@ -134,24 +135,25 @@ Lorem Ipsum
 *** iteration 2: ***
 
 {
-  "bounds": [785, 2508],
+  "bounds": [785, 2524],
   "children": [
     {
-      "bounds": [785, 2508],
+      "bounds": [785, 2524],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
         {
           "position": [8, 62],
           "bounds": [300, 500],
+          "shouldFlattenTransform": false,
           "drawsContent": true,
           "children": [
             {
               "bounds": [285, 485],
+              "shouldFlattenTransform": false,
               "children": [
                 {
-                  "bounds": [285, 665],
-                  "shouldFlattenTransform": false
+                  "bounds": [285, 665]
                 }
               ]
             },
@@ -254,24 +256,25 @@ Lorem Ipsum
 *** iteration 3: ***
 
 {
-  "bounds": [785, 4428],
+  "bounds": [785, 4460],
   "children": [
     {
-      "bounds": [785, 4428],
+      "bounds": [785, 4460],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
         {
           "position": [8, 62],
           "bounds": [300, 500],
+          "shouldFlattenTransform": false,
           "drawsContent": true,
           "children": [
             {
               "bounds": [285, 485],
+              "shouldFlattenTransform": false,
               "children": [
                 {
-                  "bounds": [285, 665],
-                  "shouldFlattenTransform": false
+                  "bounds": [285, 665]
                 }
               ]
             },

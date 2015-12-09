@@ -13,15 +13,16 @@
               "position": [8, 8],
               "bounds": [500, 500],
               "contentsOpaque": true,
+              "shouldFlattenTransform": false,
               "drawsContent": true,
               "backgroundColor": "#0000FF",
               "children": [
                 {
                   "bounds": [485, 485],
+                  "shouldFlattenTransform": false,
                   "children": [
                     {
                       "bounds": [485, 5000],
-                      "shouldFlattenTransform": false,
                       "drawsContent": true
                     }
                   ]

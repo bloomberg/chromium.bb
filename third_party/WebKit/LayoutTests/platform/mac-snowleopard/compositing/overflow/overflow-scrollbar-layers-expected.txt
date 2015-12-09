@@ -9,14 +9,15 @@
         {
           "position": [8, 13],
           "bounds": [100, 100],
+          "shouldFlattenTransform": false,
           "drawsContent": true,
           "children": [
             {
               "bounds": [85, 100],
+              "shouldFlattenTransform": false,
               "children": [
                 {
                   "bounds": [85, 200],
-                  "shouldFlattenTransform": false,
                   "children": [
                     {
                       "bounds": [10, 200]
@@ -40,14 +41,15 @@
         {
           "position": [8, 13],
           "bounds": [100, 100],
+          "shouldFlattenTransform": false,
           "drawsContent": true,
           "children": [
             {
               "bounds": [100, 85],
+              "shouldFlattenTransform": false,
               "children": [
                 {
                   "bounds": [200, 85],
-                  "shouldFlattenTransform": false,
                   "children": [
                     {
                       "bounds": [200, 10]
@@ -71,14 +73,15 @@
         {
           "position": [8, 13],
           "bounds": [100, 100],
+          "shouldFlattenTransform": false,
           "drawsContent": true,
           "children": [
             {
               "bounds": [85, 85],
+              "shouldFlattenTransform": false,
               "children": [
                 {
                   "bounds": [200, 200],
-                  "shouldFlattenTransform": false,
                   "children": [
                     {
                       "bounds": [200, 200]

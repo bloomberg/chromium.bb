@@ -9,6 +9,7 @@
         {
           "position": [8, 8],
           "bounds": [500, 500],
+          "shouldFlattenTransform": false,
           "drawsContent": true,
           "repaintRects": [
             [-2000, -2000, 5000, 5000]
@@ -16,10 +17,10 @@
           "children": [
             {
               "bounds": [485, 485],
+              "shouldFlattenTransform": false,
               "children": [
                 {
                   "bounds": [5000, 5000],
-                  "shouldFlattenTransform": false,
                   "drawsContent": true,
                   "repaintRects": [
                     [0, 0, 5000, 5000]

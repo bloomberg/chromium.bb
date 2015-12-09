@@ -23,14 +23,15 @@
             {
               "position": [108, 100],
               "bounds": [300, 300],
+              "shouldFlattenTransform": false,
               "drawsContent": true,
               "children": [
                 {
                   "bounds": [285, 300],
+                  "shouldFlattenTransform": false,
                   "children": [
                     {
-                      "bounds": [285, 1000],
-                      "shouldFlattenTransform": false
+                      "bounds": [285, 1000]
                     }
                   ]
                 },

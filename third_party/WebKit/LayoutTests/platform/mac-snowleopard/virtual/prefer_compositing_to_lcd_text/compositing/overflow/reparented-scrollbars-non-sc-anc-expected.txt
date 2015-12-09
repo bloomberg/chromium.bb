@@ -24,14 +24,15 @@
                       "children": [
                         {
                           "bounds": [1200, 1000],
+                          "shouldFlattenTransform": false,
                           "drawsContent": true,
                           "children": [
                             {
                               "bounds": [1200, 1000],
+                              "shouldFlattenTransform": false,
                               "children": [
                                 {
                                   "bounds": [1200, 10000],
-                                  "shouldFlattenTransform": false,
                                   "drawsContent": true
                                 }
                               ]
