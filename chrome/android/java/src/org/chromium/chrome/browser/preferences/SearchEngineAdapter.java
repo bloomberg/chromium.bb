@@ -124,26 +124,13 @@ public class SearchEngineAdapter extends BaseAdapter implements LoadListener, On
         // Report back what is selected.
         String name = "";
         if (mSelectedSearchEnginePosition > -1) {
-            TemplateUrl templateUrl = mSearchEngines.get(mSelectedSearchEnginePosition);
-            name = getSearchEngineNameAndDomain(mContext.getResources(), templateUrl);
+            name = mSearchEngines.get(mSelectedSearchEnginePosition).getShortName();
         }
         mCallback.currentSearchEngineDetermined(name);
     }
 
     private int toIndex(int position) {
         return mSearchEngines.get(position).getIndex();
-    }
-
-    /**
-     * @return The name of the search engine followed by the domain, e.g. "Google (google.co.uk)".
-     */
-    private static String getSearchEngineNameAndDomain(Resources res, TemplateUrl searchEngine) {
-        String title = searchEngine.getShortName();
-        if (!searchEngine.getKeyword().isEmpty()) {
-            title = res.getString(R.string.search_engine_name_and_domain, title,
-                    searchEngine.getKeyword());
-        }
-        return title;
     }
 
     // BaseAdapter:
@@ -156,7 +143,7 @@ public class SearchEngineAdapter extends BaseAdapter implements LoadListener, On
     @Override
     public Object getItem(int pos) {
         TemplateUrl templateUrl = mSearchEngines.get(pos);
-        return getSearchEngineNameAndDomain(mContext.getResources(), templateUrl);
+        return templateUrl.getShortName();
     }
 
     @Override
@@ -191,7 +178,7 @@ public class SearchEngineAdapter extends BaseAdapter implements LoadListener, On
         TextView description = (TextView) view.findViewById(R.id.description);
         TemplateUrl templateUrl = mSearchEngines.get(position);
         Resources resources = mContext.getResources();
-        description.setText(getSearchEngineNameAndDomain(resources, templateUrl));
+        description.setText(templateUrl.getShortName());
 
         // To improve the explore-by-touch experience, the radio button is hidden from accessibility
         // and instead, "checked" or "not checked" is read along with the search engine's name, e.g.
@@ -277,8 +264,7 @@ public class SearchEngineAdapter extends BaseAdapter implements LoadListener, On
 
         // Report the change back.
         TemplateUrl templateUrl = mSearchEngines.get(mSelectedSearchEnginePosition);
-        mCallback.currentSearchEngineDetermined(getSearchEngineNameAndDomain(
-                mContext.getResources(), templateUrl));
+        mCallback.currentSearchEngineDetermined(templateUrl.getShortName());
 
         notifyDataSetChanged();
     }

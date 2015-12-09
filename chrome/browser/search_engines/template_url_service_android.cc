@@ -122,9 +122,7 @@ TemplateUrlServiceAndroid::GetPrepopulatedTemplateUrlAt(JNIEnv* env,
       env,
       index,
       base::android::ConvertUTF16ToJavaString(
-          env, template_url->short_name()).obj(),
-      base::android::ConvertUTF16ToJavaString(
-          env, template_url->keyword()).obj());
+          env, template_url->short_name()).obj());
 }
 
 bool TemplateUrlServiceAndroid::IsPrepopulatedTemplate(TemplateURL* url) {

@@ -47,18 +47,16 @@ public class TemplateUrlService {
     public static class TemplateUrl {
         private final int mIndex;
         private final String mShortName;
-        private final String mKeyword;
 
         @CalledByNative("TemplateUrl")
         public static TemplateUrl create(
-                int id, String shortName, String keyword) {
-            return new TemplateUrl(id, shortName, keyword);
+                int id, String shortName) {
+            return new TemplateUrl(id, shortName);
         }
 
-        public TemplateUrl(int index, String shortName, String keyword) {
+        public TemplateUrl(int index, String shortName) {
             mIndex = index;
             mShortName = shortName;
-            mKeyword = keyword;
         }
 
         public int getIndex() {
@@ -69,16 +67,11 @@ public class TemplateUrlService {
             return mShortName;
         }
 
-        public String getKeyword() {
-            return mKeyword;
-        }
-
         @Override
         public int hashCode() {
             final int prime = 31;
             int result = 1;
             result = prime * result + mIndex;
-            result = prime * result + ((mKeyword == null) ? 0 : mKeyword.hashCode());
             result = prime * result + ((mShortName == null) ? 0 : mShortName.hashCode());
             return result;
         }
@@ -88,8 +81,7 @@ public class TemplateUrlService {
             if (!(other instanceof TemplateUrl)) return false;
             TemplateUrl otherTemplateUrl = (TemplateUrl) other;
             return mIndex == otherTemplateUrl.mIndex
-                    && TextUtils.equals(mShortName, otherTemplateUrl.mShortName)
-                    && TextUtils.equals(mKeyword, otherTemplateUrl.mKeyword);
+                    && TextUtils.equals(mShortName, otherTemplateUrl.mShortName);
         }
     }
 
