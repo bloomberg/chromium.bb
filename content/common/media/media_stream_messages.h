@@ -26,18 +26,17 @@ IPC_ENUM_TRAITS_MAX_VALUE(content::VideoFacingMode,
 IPC_ENUM_TRAITS_MAX_VALUE(content::MediaStreamRequestResult,
                           content::NUM_MEDIA_REQUEST_RESULTS - 1)
 
-IPC_STRUCT_TRAITS_BEGIN(content::StreamOptions::Constraint)
-  IPC_STRUCT_TRAITS_MEMBER(name)
-  IPC_STRUCT_TRAITS_MEMBER(value)
+IPC_STRUCT_TRAITS_BEGIN(content::TrackControls)
+  IPC_STRUCT_TRAITS_MEMBER(requested)
+  IPC_STRUCT_TRAITS_MEMBER(stream_source)
+  IPC_STRUCT_TRAITS_MEMBER(device_ids)
+  IPC_STRUCT_TRAITS_MEMBER(alternate_device_ids)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(content::StreamOptions)
-  IPC_STRUCT_TRAITS_MEMBER(audio_requested)
-  IPC_STRUCT_TRAITS_MEMBER(mandatory_audio)
-  IPC_STRUCT_TRAITS_MEMBER(optional_audio)
-  IPC_STRUCT_TRAITS_MEMBER(video_requested)
-  IPC_STRUCT_TRAITS_MEMBER(mandatory_video)
-  IPC_STRUCT_TRAITS_MEMBER(optional_video)
+IPC_STRUCT_TRAITS_BEGIN(content::StreamControls)
+  IPC_STRUCT_TRAITS_MEMBER(audio)
+  IPC_STRUCT_TRAITS_MEMBER(video)
+  IPC_STRUCT_TRAITS_MEMBER(hotword_enabled)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::StreamDeviceInfo)
@@ -102,7 +101,7 @@ IPC_MESSAGE_ROUTED1(MediaStreamMsg_DeviceOpenFailed,
 IPC_MESSAGE_CONTROL5(MediaStreamHostMsg_GenerateStream,
                      int /* render frame id */,
                      int /* request id */,
-                     content::StreamOptions /* components */,
+                     content::StreamControls /* controls */,
                      GURL /* security origin */,
                      bool /* user_gesture */)
 

@@ -102,7 +102,7 @@ class CONTENT_EXPORT MediaStreamManager
       int render_process_id,
       int render_frame_id,
       int page_request_id,
-      const StreamOptions& options,
+      const StreamControls& controls,
       const GURL& security_origin,
       const MediaRequestResponseCallback& callback);
 
@@ -115,7 +115,7 @@ class CONTENT_EXPORT MediaStreamManager
                       int render_frame_id,
                       const ResourceContext::SaltCallback& sc,
                       int page_request_id,
-                      const StreamOptions& components,
+                      const StreamControls& controls,
                       const GURL& security_origin,
                       bool user_gesture);
 
@@ -306,15 +306,15 @@ class CONTENT_EXPORT MediaStreamManager
   void SetupRequest(const std::string& label);
   // Prepare |request| of type MEDIA_DEVICE_AUDIO_CAPTURE and/or
   // MEDIA_DEVICE_VIDEO_CAPTURE for being posted to the UI by parsing
-  // StreamOptions::Constraints for requested device IDs.
+  // StreamControls for requested device IDs.
   bool SetupDeviceCaptureRequest(DeviceRequest* request);
   // Prepare |request| of type MEDIA_TAB_AUDIO_CAPTURE and/or
   // MEDIA_TAB_VIDEO_CAPTURE for being posted to the UI by parsing
-  // StreamOptions::Constraints for requested tab capture IDs.
+  // StreamControls for requested tab capture IDs.
   bool SetupTabCaptureRequest(DeviceRequest* request);
   // Prepare |request| of type MEDIA_DESKTOP_AUDIO_CAPTURE and/or
   // MEDIA_DESKTOP_VIDEO_CAPTURE for being posted to the UI by parsing
-  // StreamOptions::Constraints for the requested desktop ID.
+  // StreamControls for the requested desktop ID.
   bool SetupScreenCaptureRequest(DeviceRequest* request);
   // Called when a request has been setup and devices have been enumerated if
   // needed.
@@ -360,7 +360,19 @@ class CONTENT_EXPORT MediaStreamManager
   void StartMonitoringOnUIThread();
 #endif
 
-  // Finds the requested device id from constraints. The requested device type
+  // Picks a device ID from a list of required and alternate device IDs,
+  // presented as part of a TrackControls structure.
+  // Either the required device ID is picked (if present), or the first
+  // valid alternate device ID.
+  // Returns false if the required device ID is present and invalid.
+  // Otherwise, if no valid device is found, device_id is unchanged.
+  bool PickDeviceId(MediaStreamType type,
+                    const ResourceContext::SaltCallback& salt_callback,
+                    const GURL& security_origin,
+                    const TrackControls& controls,
+                    std::string* device_id) const;
+
+  // Finds the requested device id from request. The requested device type
   // must be MEDIA_DEVICE_AUDIO_CAPTURE or MEDIA_DEVICE_VIDEO_CAPTURE.
   bool GetRequestedDeviceCaptureId(const DeviceRequest* request,
                                    MediaStreamType type,

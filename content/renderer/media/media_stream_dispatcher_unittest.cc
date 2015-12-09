@@ -120,20 +120,21 @@ class MediaStreamDispatcherTest : public ::testing::Test {
   // Generates a request for a MediaStream and returns the request id that is
   // used in IPC. Use this returned id in CompleteGenerateStream to identify
   // the request.
-  int GenerateStream(const StreamOptions& options, int request_id) {
+  int GenerateStream(const StreamControls& controls, int request_id) {
     int next_ipc_id = dispatcher_->GetNextIpcIdForTest();
     dispatcher_->GenerateStream(request_id, handler_.get()->AsWeakPtr(),
-                                options, security_origin_);
+                                controls, security_origin_);
     return next_ipc_id;
   }
 
   // CompleteGenerateStream create a MediaStreamMsg_StreamGenerated instance
   // and call the MediaStreamDispathcer::OnMessageReceived. |ipc_id| must be the
   // the id returned by GenerateStream.
-  std::string CompleteGenerateStream(int ipc_id, const StreamOptions& options,
+  std::string CompleteGenerateStream(int ipc_id,
+                                     const StreamControls& controls,
                                      int request_id) {
-    StreamDeviceInfoArray audio_device_array(options.audio_requested ? 1 : 0);
-    if (options.audio_requested) {
+    StreamDeviceInfoArray audio_device_array(controls.audio.requested ? 1 : 0);
+    if (controls.audio.requested) {
       StreamDeviceInfo audio_device_info;
       audio_device_info.device.name = "Microphone";
       audio_device_info.device.type = kAudioType;
@@ -141,8 +142,8 @@ class MediaStreamDispatcherTest : public ::testing::Test {
       audio_device_array[0] = audio_device_info;
     }
 
-    StreamDeviceInfoArray video_device_array(options.video_requested ? 1 : 0);
-    if (options.video_requested) {
+    StreamDeviceInfoArray video_device_array(controls.video.requested ? 1 : 0);
+    if (controls.video.requested) {
       StreamDeviceInfo video_device_info;
       video_device_info.device.name = "Camera";
       video_device_info.device.type = kVideoType;
@@ -160,10 +161,10 @@ class MediaStreamDispatcherTest : public ::testing::Test {
     EXPECT_EQ(handler_->request_id_, request_id);
     EXPECT_EQ(handler_->label_, label);
 
-    if (options.audio_requested)
+    if (controls.audio.requested)
       EXPECT_EQ(dispatcher_->audio_session_id(label, 0), kAudioSessionId);
 
-    if (options.video_requested)
+    if (controls.video.requested)
       EXPECT_EQ(dispatcher_->video_session_id(label, 0), kVideoSessionId);
 
     return label;
@@ -180,19 +181,19 @@ class MediaStreamDispatcherTest : public ::testing::Test {
 }  // namespace
 
 TEST_F(MediaStreamDispatcherTest, GenerateStreamAndStopDevices) {
-  StreamOptions options(true, true);
+  StreamControls controls(true, true);
 
-  int ipc_request_id1 = GenerateStream(options, kRequestId1);
-  int ipc_request_id2 = GenerateStream(options, kRequestId2);
+  int ipc_request_id1 = GenerateStream(controls, kRequestId1);
+  int ipc_request_id2 = GenerateStream(controls, kRequestId2);
   EXPECT_NE(ipc_request_id1, ipc_request_id2);
 
   // Complete the creation of stream1.
-  const std::string& label1 = CompleteGenerateStream(ipc_request_id1, options,
-                                                     kRequestId1);
+  const std::string& label1 =
+      CompleteGenerateStream(ipc_request_id1, controls, kRequestId1);
 
   // Complete the creation of stream2.
-  const std::string& label2 = CompleteGenerateStream(ipc_request_id2, options,
-                                                     kRequestId2);
+  const std::string& label2 =
+      CompleteGenerateStream(ipc_request_id2, controls, kRequestId2);
 
   // Stop the actual audio device and verify that there is no valid
   // |session_id|.
@@ -304,7 +305,7 @@ TEST_F(MediaStreamDispatcherTest, TestFailure) {
   scoped_ptr<MediaStreamDispatcher> dispatcher(new MediaStreamDispatcher(NULL));
   scoped_ptr<MockMediaStreamDispatcherEventHandler>
       handler(new MockMediaStreamDispatcherEventHandler);
-  StreamOptions components(true, true);
+  StreamControls components(true, true);
   GURL security_origin;
 
   // Test failure when creating a stream.
@@ -351,7 +352,7 @@ TEST_F(MediaStreamDispatcherTest, CancelGenerateStream) {
   scoped_ptr<MediaStreamDispatcher> dispatcher(new MediaStreamDispatcher(NULL));
   scoped_ptr<MockMediaStreamDispatcherEventHandler>
       handler(new MockMediaStreamDispatcherEventHandler);
-  StreamOptions components(true, true);
+  StreamControls components(true, true);
   int ipc_request_id1 = dispatcher->next_ipc_id_;
 
   dispatcher->GenerateStream(kRequestId1, handler.get()->AsWeakPtr(),
@@ -390,11 +391,11 @@ TEST_F(MediaStreamDispatcherTest, CancelGenerateStream) {
 // Test that the MediaStreamDispatcherEventHandler is notified when the message
 // MediaStreamMsg_DeviceStopped is received.
 TEST_F(MediaStreamDispatcherTest, DeviceClosed) {
-  StreamOptions options(true, true);
+  StreamControls controls(true, true);
 
-  int ipc_request_id = GenerateStream(options, kRequestId1);
-  const std::string& label = CompleteGenerateStream(ipc_request_id, options,
-                                                    kRequestId1);
+  int ipc_request_id = GenerateStream(controls, kRequestId1);
+  const std::string& label =
+      CompleteGenerateStream(ipc_request_id, controls, kRequestId1);
 
   dispatcher_->OnMessageReceived(
       MediaStreamMsg_DeviceStopped(kRouteId, label, handler_->video_device_));

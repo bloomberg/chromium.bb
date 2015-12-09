@@ -190,13 +190,10 @@ class MediaStreamManagerTest : public ::testing::Test {
     MediaStreamManager::MediaRequestResponseCallback callback =
         base::Bind(&MediaStreamManagerTest::ResponseCallback,
                    base::Unretained(this), index);
-    StreamOptions options(true, true);
-    return media_stream_manager_->MakeMediaAccessRequest(render_process_id,
-                                                         render_frame_id,
-                                                         page_request_id,
-                                                         options,
-                                                         security_origin,
-                                                         callback);
+    StreamControls controls(true, true);
+    return media_stream_manager_->MakeMediaAccessRequest(
+        render_process_id, render_frame_id, page_request_id, controls,
+        security_origin, callback);
   }
 
   scoped_ptr<MockAudioManager> audio_manager_;
@@ -234,17 +231,13 @@ TEST_F(MediaStreamManagerTest, MakeMultipleRequests) {
   int render_frame_id = 2;
   int page_request_id = 2;
   GURL security_origin;
-  StreamOptions options(true, true);
+  StreamControls controls(true, true);
   MediaStreamManager::MediaRequestResponseCallback callback =
       base::Bind(&MediaStreamManagerTest::ResponseCallback,
                  base::Unretained(this), 1);
   std::string label2 = media_stream_manager_->MakeMediaAccessRequest(
-      render_process_id,
-      render_frame_id,
-      page_request_id,
-      options,
-      security_origin,
-      callback);
+      render_process_id, render_frame_id, page_request_id, controls,
+      security_origin, callback);
 
   // Expecting the callbackS from requests will be triggered and quit the test.
   // Note, the callbacks might come in a different order depending on the

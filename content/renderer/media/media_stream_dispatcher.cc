@@ -71,14 +71,14 @@ MediaStreamDispatcher::~MediaStreamDispatcher() {}
 void MediaStreamDispatcher::GenerateStream(
     int request_id,
     const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler,
-    const StreamOptions& components,
+    const StreamControls& controls,
     const GURL& security_origin) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(1) << "MediaStreamDispatcher::GenerateStream(" << request_id << ")";
 
   requests_.push_back(Request(event_handler, request_id, next_ipc_id_));
   Send(new MediaStreamHostMsg_GenerateStream(
-      routing_id(), next_ipc_id_++, components, security_origin,
+      routing_id(), next_ipc_id_++, controls, security_origin,
       blink::WebUserGestureIndicator::isProcessingUserGesture()));
 }
 

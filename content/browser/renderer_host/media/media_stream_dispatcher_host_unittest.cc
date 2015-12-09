@@ -76,12 +76,12 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
   // Accessor to private functions.
   void OnGenerateStream(int render_frame_id,
                         int page_request_id,
-                        const StreamOptions& components,
+                        const StreamControls& controls,
                         const GURL& security_origin,
                         const base::Closure& quit_closure) {
     quit_closures_.push(quit_closure);
     MediaStreamDispatcherHost::OnGenerateStream(
-        render_frame_id, page_request_id, components, security_origin, false);
+        render_frame_id, page_request_id, controls, security_origin, false);
   }
 
   void OnStopStreamDevice(int render_frame_id,
@@ -289,19 +289,17 @@ class MediaStreamDispatcherHostTest : public testing::Test {
 
   void GenerateStreamAndWaitForResult(int render_frame_id,
                                       int page_request_id,
-                                      const StreamOptions& options) {
+                                      const StreamControls& controls) {
     base::RunLoop run_loop;
     int expected_audio_array_size =
-        (options.audio_requested &&
-         physical_audio_devices_.size() > 0) ? 1 : 0;
+        (controls.audio.requested && !physical_audio_devices_.empty()) ? 1 : 0;
     int expected_video_array_size =
-        (options.video_requested &&
-         physical_video_devices_.size() > 0) ? 1 : 0;
+        (controls.video.requested && !physical_video_devices_.empty()) ? 1 : 0;
     EXPECT_CALL(*host_.get(), OnStreamGenerated(render_frame_id,
                                                 page_request_id,
                                                 expected_audio_array_size,
                                                 expected_video_array_size));
-    host_->OnGenerateStream(render_frame_id, page_request_id, options, origin_,
+    host_->OnGenerateStream(render_frame_id, page_request_id, controls, origin_,
                             run_loop.QuitClosure());
     run_loop.Run();
     EXPECT_FALSE(DoesContainRawIds(host_->audio_devices_));
@@ -311,16 +309,16 @@ class MediaStreamDispatcherHostTest : public testing::Test {
   }
 
   void GenerateStreamAndWaitForFailure(
-    int render_frame_id,
-    int page_request_id,
-    const StreamOptions& options,
-    MediaStreamRequestResult expected_result) {
+      int render_frame_id,
+      int page_request_id,
+      const StreamControls& controls,
+      MediaStreamRequestResult expected_result) {
       base::RunLoop run_loop;
       EXPECT_CALL(*host_.get(),
                   OnStreamGenerationFailed(render_frame_id,
                                            page_request_id,
                                            expected_result));
-      host_->OnGenerateStream(render_frame_id, page_request_id, options,
+      host_->OnGenerateStream(render_frame_id, page_request_id, controls,
                               origin_, run_loop.QuitClosure());
       run_loop.Run();
   }
@@ -419,12 +417,6 @@ class MediaStreamDispatcherHostTest : public testing::Test {
     return true;
   }
 
-  void AddSourceIdConstraint(const std::string& source_id,
-                             StreamOptions::Constraints* constraints) {
-    constraints->push_back(StreamOptions::Constraint(kMediaStreamSourceInfoId,
-                                                     source_id));
-  }
-
   scoped_refptr<MockMediaStreamDispatcherHost> host_;
   scoped_ptr<media::AudioManager> audio_manager_;
   scoped_ptr<MediaStreamManager> media_stream_manager_;
@@ -440,20 +432,20 @@ class MediaStreamDispatcherHostTest : public testing::Test {
 };
 
 TEST_F(MediaStreamDispatcherHostTest, GenerateStreamWithVideoOnly) {
-  StreamOptions options(false, true);
+  StreamControls controls(false, true);
 
   SetupFakeUI(true);
-  GenerateStreamAndWaitForResult(kRenderId, kPageRequestId, options);
+  GenerateStreamAndWaitForResult(kRenderId, kPageRequestId, controls);
 
   EXPECT_EQ(host_->audio_devices_.size(), 0u);
   EXPECT_EQ(host_->video_devices_.size(), 1u);
 }
 
 TEST_F(MediaStreamDispatcherHostTest, GenerateStreamWithAudioOnly) {
-  StreamOptions options(true, false);
+  StreamControls controls(true, false);
 
   SetupFakeUI(true);
-  GenerateStreamAndWaitForResult(kRenderId, kPageRequestId, options);
+  GenerateStreamAndWaitForResult(kRenderId, kPageRequestId, controls);
 
   EXPECT_EQ(host_->audio_devices_.size(), 1u);
   EXPECT_EQ(host_->video_devices_.size(), 0u);
@@ -463,20 +455,17 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateStreamWithAudioOnly) {
 // MediaStreamManager, so it will create an ordinary one which will not find
 // a RenderFrameHostDelegate. This normally should only be the case at shutdown.
 TEST_F(MediaStreamDispatcherHostTest, GenerateStreamWithNothing) {
-  StreamOptions options(false, false);
+  StreamControls controls(false, false);
 
-  GenerateStreamAndWaitForFailure(
-      kRenderId,
-      kPageRequestId,
-      options,
-      MEDIA_DEVICE_FAILED_DUE_TO_SHUTDOWN);
+  GenerateStreamAndWaitForFailure(kRenderId, kPageRequestId, controls,
+                                  MEDIA_DEVICE_FAILED_DUE_TO_SHUTDOWN);
 }
 
 TEST_F(MediaStreamDispatcherHostTest, GenerateStreamWithAudioAndVideo) {
-  StreamOptions options(true, true);
+  StreamControls controls(true, true);
 
   SetupFakeUI(true);
-  GenerateStreamAndWaitForResult(kRenderId, kPageRequestId, options);
+  GenerateStreamAndWaitForResult(kRenderId, kPageRequestId, controls);
 
   EXPECT_EQ(host_->audio_devices_.size(), 1u);
   EXPECT_EQ(host_->video_devices_.size(), 1u);
@@ -486,11 +475,11 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateStreamWithAudioAndVideo) {
 // id. The same capture device with the same device and session id is expected
 // to be used.
 TEST_F(MediaStreamDispatcherHostTest, GenerateStreamsFromSameRenderId) {
-  StreamOptions options(false, true);
+  StreamControls controls(false, true);
 
   // Generate first stream.
   SetupFakeUI(true);
-  GenerateStreamAndWaitForResult(kRenderId, kPageRequestId, options);
+  GenerateStreamAndWaitForResult(kRenderId, kPageRequestId, controls);
 
   // Check the latest generated stream.
   EXPECT_EQ(host_->audio_devices_.size(), 0u);
@@ -501,7 +490,7 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateStreamsFromSameRenderId) {
 
   // Generate second stream.
   SetupFakeUI(true);
-  GenerateStreamAndWaitForResult(kRenderId, kPageRequestId + 1, options);
+  GenerateStreamAndWaitForResult(kRenderId, kPageRequestId + 1, controls);
 
   // Check the latest generated stream.
   EXPECT_EQ(host_->audio_devices_.size(), 0u);
@@ -516,11 +505,11 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateStreamsFromSameRenderId) {
 
 TEST_F(MediaStreamDispatcherHostTest,
        GenerateStreamAndOpenDeviceFromSameRenderId) {
-  StreamOptions options(false, true);
+  StreamControls controls(false, true);
 
   // Generate first stream.
   SetupFakeUI(true);
-  GenerateStreamAndWaitForResult(kRenderId, kPageRequestId, options);
+  GenerateStreamAndWaitForResult(kRenderId, kPageRequestId, controls);
 
   EXPECT_EQ(host_->audio_devices_.size(), 0u);
   EXPECT_EQ(host_->video_devices_.size(), 1u);
@@ -544,11 +533,11 @@ TEST_F(MediaStreamDispatcherHostTest,
 // This test generates two streams with video only using two separate render
 // frame ids. The same device id but different session ids are expected.
 TEST_F(MediaStreamDispatcherHostTest, GenerateStreamsDifferentRenderId) {
-  StreamOptions options(false, true);
+  StreamControls controls(false, true);
 
   // Generate first stream.
   SetupFakeUI(true);
-  GenerateStreamAndWaitForResult(kRenderId, kPageRequestId, options);
+  GenerateStreamAndWaitForResult(kRenderId, kPageRequestId, controls);
 
   // Check the latest generated stream.
   EXPECT_EQ(host_->audio_devices_.size(), 0u);
@@ -559,7 +548,7 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateStreamsDifferentRenderId) {
 
   // Generate second stream from another render frame.
   SetupFakeUI(true);
-  GenerateStreamAndWaitForResult(kRenderId+1, kPageRequestId + 1, options);
+  GenerateStreamAndWaitForResult(kRenderId + 1, kPageRequestId + 1, controls);
 
   // Check the latest generated stream.
   EXPECT_EQ(host_->audio_devices_.size(), 0u);
@@ -576,7 +565,7 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateStreamsDifferentRenderId) {
 // stream to be generated before requesting the second.
 // The same device id and session ids are expected.
 TEST_F(MediaStreamDispatcherHostTest, GenerateStreamsWithoutWaiting) {
-  StreamOptions options(false, true);
+  StreamControls controls(false, true);
 
   // Generate first stream.
   SetupFakeUI(true);
@@ -591,9 +580,9 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateStreamsWithoutWaiting) {
   }
   base::RunLoop run_loop1;
   base::RunLoop run_loop2;
-  host_->OnGenerateStream(kRenderId, kPageRequestId, options, origin_,
+  host_->OnGenerateStream(kRenderId, kPageRequestId, controls, origin_,
                           run_loop1.QuitClosure());
-  host_->OnGenerateStream(kRenderId, kPageRequestId + 1, options, origin_,
+  host_->OnGenerateStream(kRenderId, kPageRequestId + 1, controls, origin_,
                           run_loop2.QuitClosure());
 
   run_loop1.Run();
@@ -614,11 +603,11 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateStreamsWithMandatorySourceId) {
         origin_,
         audio_it->unique_id);
     ASSERT_FALSE(source_id.empty());
-    StreamOptions options(true, true);
-    AddSourceIdConstraint(source_id, &options.mandatory_audio);
+    StreamControls controls(true, true);
+    controls.audio.device_ids.push_back(source_id);
 
     SetupFakeUI(true);
-    GenerateStreamAndWaitForResult(kRenderId, kPageRequestId, options);
+    GenerateStreamAndWaitForResult(kRenderId, kPageRequestId, controls);
     EXPECT_EQ(host_->audio_devices_[0].device.id, source_id);
   }
 
@@ -630,11 +619,11 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateStreamsWithMandatorySourceId) {
         origin_,
         video_it->id());
     ASSERT_FALSE(source_id.empty());
-    StreamOptions options(true, true);
-    AddSourceIdConstraint(source_id, &options.mandatory_video);
+    StreamControls controls(true, true);
+    controls.video.device_ids.push_back(source_id);
 
     SetupFakeUI(true);
-    GenerateStreamAndWaitForResult(kRenderId, kPageRequestId, options);
+    GenerateStreamAndWaitForResult(kRenderId, kPageRequestId, controls);
     EXPECT_EQ(host_->video_devices_[0].device.id, source_id);
   }
 }
@@ -653,11 +642,11 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateStreamsWithOptionalSourceId) {
         origin_,
         audio_it->unique_id);
     ASSERT_FALSE(source_id.empty());
-    StreamOptions options(true, true);
-    AddSourceIdConstraint(source_id, &options.optional_audio);
+    StreamControls controls(true, true);
+    controls.audio.device_ids.push_back(source_id);
 
     SetupFakeUI(true);
-    GenerateStreamAndWaitForResult(kRenderId, kPageRequestId, options);
+    GenerateStreamAndWaitForResult(kRenderId, kPageRequestId, controls);
     EXPECT_EQ(host_->audio_devices_[0].device.id, source_id);
   }
 
@@ -669,11 +658,11 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateStreamsWithOptionalSourceId) {
         origin_,
         video_it->id());
     ASSERT_FALSE(source_id.empty());
-    StreamOptions options(true, true);
-    AddSourceIdConstraint(source_id, &options.optional_video);
+    StreamControls controls(true, true);
+    controls.video.device_ids.push_back(source_id);
 
     SetupFakeUI(true);
-    GenerateStreamAndWaitForResult(kRenderId, kPageRequestId, options);
+    GenerateStreamAndWaitForResult(kRenderId, kPageRequestId, controls);
     EXPECT_EQ(host_->video_devices_[0].device.id, source_id);
   }
 }
@@ -681,59 +670,53 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateStreamsWithOptionalSourceId) {
 // Test that generating a stream with an invalid mandatory video source id fail.
 TEST_F(MediaStreamDispatcherHostTest,
        GenerateStreamsWithInvalidMandatoryVideoSourceId) {
-  StreamOptions options(true, true);
-  AddSourceIdConstraint("invalid source id", &options.mandatory_video);
+  StreamControls controls(true, true);
+  controls.video.device_ids.push_back("invalid source id");
 
-  GenerateStreamAndWaitForFailure(
-      kRenderId,
-      kPageRequestId,
-      options,
-      MEDIA_DEVICE_NO_HARDWARE);
+  GenerateStreamAndWaitForFailure(kRenderId, kPageRequestId, controls,
+                                  MEDIA_DEVICE_NO_HARDWARE);
 }
 
 // Test that generating a stream with an invalid mandatory audio source id fail.
 TEST_F(MediaStreamDispatcherHostTest,
        GenerateStreamsWithInvalidMandatoryAudioSourceId) {
-  StreamOptions options(true, true);
-  AddSourceIdConstraint("invalid source id", &options.mandatory_audio);
+  StreamControls controls(true, true);
+  controls.audio.device_ids.push_back("invalid source id");
 
-  GenerateStreamAndWaitForFailure(
-      kRenderId,
-      kPageRequestId,
-      options,
-      MEDIA_DEVICE_NO_HARDWARE);
+  GenerateStreamAndWaitForFailure(kRenderId, kPageRequestId, controls,
+                                  MEDIA_DEVICE_NO_HARDWARE);
 }
 
 // Test that generating a stream with an invalid optional video source id
 // succeed.
 TEST_F(MediaStreamDispatcherHostTest,
        GenerateStreamsWithInvalidOptionalVideoSourceId) {
-  StreamOptions options(true, true);
-  AddSourceIdConstraint("invalid source id", &options.optional_video);
+  StreamControls controls(true, true);
+  controls.video.alternate_device_ids.push_back("invalid source id");
 
   SetupFakeUI(true);
-  GenerateStreamAndWaitForResult(kRenderId, kPageRequestId, options);
+  GenerateStreamAndWaitForResult(kRenderId, kPageRequestId, controls);
 }
 
 // Test that generating a stream with an invalid optional audio source id
 // succeed.
 TEST_F(MediaStreamDispatcherHostTest,
        GenerateStreamsWithInvalidOptionalAudioSourceId) {
-  StreamOptions options(true, true);
-  AddSourceIdConstraint("invalid source id", &options.optional_audio);
+  StreamControls controls(true, true);
+  controls.video.alternate_device_ids.push_back("invalid source id");
 
   SetupFakeUI(true);
-  GenerateStreamAndWaitForResult(kRenderId, kPageRequestId, options);
+  GenerateStreamAndWaitForResult(kRenderId, kPageRequestId, controls);
 }
 
 TEST_F(MediaStreamDispatcherHostTest, GenerateStreamsNoAvailableVideoDevice) {
   physical_video_devices_.clear();
   video_capture_device_factory_->set_number_of_devices(0);
   video_capture_device_factory_->GetDeviceNames(&physical_video_devices_);
-  StreamOptions options(true, true);
+  StreamControls controls(true, true);
 
   SetupFakeUI(false);
-  GenerateStreamAndWaitForFailure(kRenderId, kPageRequestId, options,
+  GenerateStreamAndWaitForFailure(kRenderId, kPageRequestId, controls,
                                   MEDIA_DEVICE_NO_HARDWARE);
 }
 
@@ -741,10 +724,10 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateStreamsNoAvailableVideoDevice) {
 // been opened in a MediaStream and by pepper, the device is only stopped for
 // the MediaStream.
 TEST_F(MediaStreamDispatcherHostTest, StopDeviceInStream) {
-  StreamOptions options(false, true);
+  StreamControls controls(false, true);
 
   SetupFakeUI(true);
-  GenerateStreamAndWaitForResult(kRenderId, kPageRequestId, options);
+  GenerateStreamAndWaitForResult(kRenderId, kPageRequestId, controls);
 
   std::string stream_request_label = host_->label_;
   StreamDeviceInfo video_device_info = host_->video_devices_.front();
@@ -766,10 +749,10 @@ TEST_F(MediaStreamDispatcherHostTest, StopDeviceInStream) {
 }
 
 TEST_F(MediaStreamDispatcherHostTest, StopDeviceInStreamAndRestart) {
-  StreamOptions options(true, true);
+  StreamControls controls(true, true);
 
   SetupFakeUI(true);
-  GenerateStreamAndWaitForResult(kRenderId, kPageRequestId, options);
+  GenerateStreamAndWaitForResult(kRenderId, kPageRequestId, controls);
 
   std::string request_label1 = host_->label_;
   StreamDeviceInfo video_device_info = host_->video_devices_.front();
@@ -781,7 +764,7 @@ TEST_F(MediaStreamDispatcherHostTest, StopDeviceInStreamAndRestart) {
   EXPECT_EQ(1u, media_stream_manager_->GetDevicesOpenedByRequest(
       request_label1).size());
 
-  GenerateStreamAndWaitForResult(kRenderId, kPageRequestId, options);
+  GenerateStreamAndWaitForResult(kRenderId, kPageRequestId, controls);
   std::string request_label2 = host_->label_;
 
   StreamDeviceInfoArray request1_devices =
@@ -801,10 +784,10 @@ TEST_F(MediaStreamDispatcherHostTest, StopDeviceInStreamAndRestart) {
 
 TEST_F(MediaStreamDispatcherHostTest,
        GenerateTwoStreamsAndStopDeviceWhileWaitingForSecondStream) {
-  StreamOptions options(false, true);
+  StreamControls controls(false, true);
 
   SetupFakeUI(true);
-  GenerateStreamAndWaitForResult(kRenderId, kPageRequestId, options);
+  GenerateStreamAndWaitForResult(kRenderId, kPageRequestId, controls);
   EXPECT_EQ(host_->video_devices_.size(), 1u);
 
   // Generate a second stream.
@@ -812,7 +795,7 @@ TEST_F(MediaStreamDispatcherHostTest,
               OnStreamGenerated(kRenderId, kPageRequestId + 1, 0, 1));
 
   base::RunLoop run_loop1;
-  host_->OnGenerateStream(kRenderId, kPageRequestId + 1, options, origin_,
+  host_->OnGenerateStream(kRenderId, kPageRequestId + 1, controls, origin_,
                           run_loop1.QuitClosure());
 
   // Stop the video stream device from stream 1 while waiting for the
@@ -824,14 +807,14 @@ TEST_F(MediaStreamDispatcherHostTest,
 }
 
 TEST_F(MediaStreamDispatcherHostTest, CancelPendingStreamsOnChannelClosing) {
-  StreamOptions options(false, true);
+  StreamControls controls(false, true);
 
   base::RunLoop run_loop;
 
   // Create multiple GenerateStream requests.
   size_t streams = 5;
   for (size_t i = 1; i <= streams; ++i) {
-    host_->OnGenerateStream(kRenderId, kPageRequestId + i, options, origin_,
+    host_->OnGenerateStream(kRenderId, kPageRequestId + i, controls, origin_,
                             run_loop.QuitClosure());
   }
 
@@ -841,13 +824,13 @@ TEST_F(MediaStreamDispatcherHostTest, CancelPendingStreamsOnChannelClosing) {
 }
 
 TEST_F(MediaStreamDispatcherHostTest, StopGeneratedStreamsOnChannelClosing) {
-  StreamOptions options(false, true);
+  StreamControls controls(false, true);
 
   // Create first group of streams.
   size_t generated_streams = 3;
   for (size_t i = 0; i < generated_streams; ++i) {
     SetupFakeUI(true);
-    GenerateStreamAndWaitForResult(kRenderId, kPageRequestId + i, options);
+    GenerateStreamAndWaitForResult(kRenderId, kPageRequestId + i, controls);
   }
 
   // Calling OnChannelClosing() to cancel all the pending/generated streams.
@@ -856,7 +839,7 @@ TEST_F(MediaStreamDispatcherHostTest, StopGeneratedStreamsOnChannelClosing) {
 }
 
 TEST_F(MediaStreamDispatcherHostTest, CloseFromUI) {
-  StreamOptions options(false, true);
+  StreamControls controls(false, true);
 
   base::Closure close_callback;
   scoped_ptr<MockMediaStreamUIProxy> stream_ui(new MockMediaStreamUIProxy());
@@ -864,7 +847,7 @@ TEST_F(MediaStreamDispatcherHostTest, CloseFromUI) {
       .WillOnce(SaveArg<0>(&close_callback));
   media_stream_manager_->UseFakeUIForTests(stream_ui.Pass());
 
-  GenerateStreamAndWaitForResult(kRenderId, kPageRequestId, options);
+  GenerateStreamAndWaitForResult(kRenderId, kPageRequestId, controls);
 
   EXPECT_EQ(host_->audio_devices_.size(), 0u);
   EXPECT_EQ(host_->video_devices_.size(), 1u);
@@ -878,9 +861,9 @@ TEST_F(MediaStreamDispatcherHostTest, CloseFromUI) {
 // Test that the dispatcher is notified if a video device that is in use is
 // being unplugged.
 TEST_F(MediaStreamDispatcherHostTest, VideoDeviceUnplugged) {
-  StreamOptions options(true, true);
+  StreamControls controls(true, true);
   SetupFakeUI(true);
-  GenerateStreamAndWaitForResult(kRenderId, kPageRequestId, options);
+  GenerateStreamAndWaitForResult(kRenderId, kPageRequestId, controls);
   EXPECT_EQ(host_->audio_devices_.size(), 1u);
   EXPECT_EQ(host_->video_devices_.size(), 1u);
 

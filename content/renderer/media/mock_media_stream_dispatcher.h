@@ -21,7 +21,7 @@ class MockMediaStreamDispatcher : public MediaStreamDispatcher {
   void GenerateStream(
       int request_id,
       const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler,
-      const StreamOptions& components,
+      const StreamControls& controls,
       const GURL& url) override;
   void CancelGenerateStream(
       int request_id,

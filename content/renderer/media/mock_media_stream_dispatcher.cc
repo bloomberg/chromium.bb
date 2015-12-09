@@ -30,7 +30,7 @@ MockMediaStreamDispatcher::~MockMediaStreamDispatcher() {}
 void MockMediaStreamDispatcher::GenerateStream(
     int request_id,
     const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler,
-    const StreamOptions& components,
+    const StreamControls& controls,
     const GURL& url) {
   // Audio and video share the same request so we use |audio_input_request_id_|
   // only.
@@ -40,10 +40,10 @@ void MockMediaStreamDispatcher::GenerateStream(
   audio_input_array_.clear();
   video_array_.clear();
 
-  if (components.audio_requested) {
+  if (controls.audio.requested) {
     AddAudioInputDeviceToArray(false);
   }
-  if (components.video_requested) {
+  if (controls.video.requested) {
     AddVideoDeviceToArray(true);
   }
   ++request_stream_counter_;

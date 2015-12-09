@@ -88,22 +88,17 @@ std::string RandomLabel() {
   return label;
 }
 
-void ParseStreamType(const StreamOptions& options,
+void ParseStreamType(const StreamControls& controls,
                      MediaStreamType* audio_type,
                      MediaStreamType* video_type) {
   *audio_type = MEDIA_NO_SERVICE;
   *video_type = MEDIA_NO_SERVICE;
-  if (options.audio_requested) {
-     std::string audio_stream_source;
-     bool mandatory = false;
-     if (options.GetFirstAudioConstraintByName(kMediaStreamSource,
-                                               &audio_stream_source,
-                                               &mandatory)) {
-       DCHECK(mandatory);
+  if (controls.audio.requested) {
+    if (!controls.audio.stream_source.empty()) {
        // This is tab or screen capture.
-       if (audio_stream_source == kMediaStreamSourceTab) {
+       if (controls.audio.stream_source == kMediaStreamSourceTab) {
          *audio_type = content::MEDIA_TAB_AUDIO_CAPTURE;
-       } else if (audio_stream_source == kMediaStreamSourceSystem) {
+       } else if (controls.audio.stream_source == kMediaStreamSourceSystem) {
          *audio_type = content::MEDIA_DESKTOP_AUDIO_CAPTURE;
        }
      } else {
@@ -111,43 +106,36 @@ void ParseStreamType(const StreamOptions& options,
        *audio_type = MEDIA_DEVICE_AUDIO_CAPTURE;
      }
   }
-  if (options.video_requested) {
-     std::string video_stream_source;
-     bool mandatory = false;
-     if (options.GetFirstVideoConstraintByName(kMediaStreamSource,
-                                               &video_stream_source,
-                                               &mandatory)) {
-       DCHECK(mandatory);
-       // This is tab or screen capture.
-       if (video_stream_source == kMediaStreamSourceTab) {
-         *video_type = content::MEDIA_TAB_VIDEO_CAPTURE;
-       } else if (video_stream_source == kMediaStreamSourceScreen) {
-         *video_type = content::MEDIA_DESKTOP_VIDEO_CAPTURE;
-       } else if (video_stream_source == kMediaStreamSourceDesktop) {
-         *video_type = content::MEDIA_DESKTOP_VIDEO_CAPTURE;
-       }
-     } else {
-       // This is normal video device capture.
-       *video_type = MEDIA_DEVICE_VIDEO_CAPTURE;
-     }
+  if (controls.video.requested) {
+    if (!controls.video.stream_source.empty()) {
+      // This is tab or screen capture.
+      if (controls.video.stream_source == kMediaStreamSourceTab) {
+        *video_type = content::MEDIA_TAB_VIDEO_CAPTURE;
+      } else if (controls.video.stream_source == kMediaStreamSourceScreen) {
+        *video_type = content::MEDIA_DESKTOP_VIDEO_CAPTURE;
+      } else if (controls.video.stream_source == kMediaStreamSourceDesktop) {
+        *video_type = content::MEDIA_DESKTOP_VIDEO_CAPTURE;
+      }
+    } else {
+      // This is normal video device capture.
+      *video_type = MEDIA_DEVICE_VIDEO_CAPTURE;
+    }
   }
 }
 
 // Turns off available audio effects (removes the flag) if the options
 // explicitly turn them off.
-void FilterAudioEffects(const StreamOptions& options, int* effects) {
+void FilterAudioEffects(const StreamControls& controls, int* effects) {
   DCHECK(effects);
   // TODO(ajm): Should we handle ECHO_CANCELLER here?
 }
 
 // Unlike other effects, hotword is off by default, so turn it on if it's
 // requested and available.
-void EnableHotwordEffect(const StreamOptions& options, int* effects) {
+void EnableHotwordEffect(const StreamControls& controls, int* effects) {
   DCHECK(effects);
+  if (controls.hotword_enabled) {
 #if defined(OS_CHROMEOS)
-  std::string value;
-  if (options.GetFirstAudioConstraintByName(
-          kMediaStreamAudioHotword, &value, NULL) && value == "true") {
     chromeos::AudioDeviceList devices;
     chromeos::CrasAudioHandler::Get()->GetAudioDevices(&devices);
     // Only enable if a hotword device exists.
@@ -157,8 +145,8 @@ void EnableHotwordEffect(const StreamOptions& options, int* effects) {
         *effects |= media::AudioParameters::HOTWORD;
       }
     }
-  }
 #endif
+  }
 }
 
 // Private helper method to generate a string for the log message that lists the
@@ -212,7 +200,7 @@ class MediaStreamManager::DeviceRequest {
                 const GURL& security_origin,
                 bool user_gesture,
                 MediaStreamRequestType request_type,
-                const StreamOptions& options,
+                const StreamControls& controls,
                 const ResourceContext::SaltCallback& salt_callback)
       : requester(requester),
         requesting_process_id(requesting_process_id),
@@ -221,14 +209,13 @@ class MediaStreamManager::DeviceRequest {
         security_origin(security_origin),
         user_gesture(user_gesture),
         request_type(request_type),
-        options(options),
+        controls(controls),
         salt_callback(salt_callback),
         state_(NUM_MEDIA_TYPES, MEDIA_REQUEST_STATE_NOT_REQUESTED),
         audio_type_(MEDIA_NO_SERVICE),
         video_type_(MEDIA_NO_SERVICE),
         target_process_id_(-1),
-        target_frame_id_(-1) {
-  }
+        target_frame_id_(-1) {}
 
   ~DeviceRequest() {}
 
@@ -340,7 +327,7 @@ class MediaStreamManager::DeviceRequest {
 
   const MediaStreamRequestType request_type;
 
-  const StreamOptions options;
+  const StreamControls controls;
 
   ResourceContext::SaltCallback salt_callback;
 
@@ -457,22 +444,18 @@ std::string MediaStreamManager::MakeMediaAccessRequest(
     int render_process_id,
     int render_frame_id,
     int page_request_id,
-    const StreamOptions& options,
+    const StreamControls& controls,
     const GURL& security_origin,
     const MediaRequestResponseCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // TODO(perkj): The argument list with NULL parameters to DeviceRequest
   // suggests that this is the wrong design. Can this be refactored?
-  DeviceRequest* request = new DeviceRequest(NULL,
-                                             render_process_id,
-                                             render_frame_id,
-                                             page_request_id,
-                                             security_origin,
-                                             false,  // user gesture
-                                             MEDIA_DEVICE_ACCESS,
-                                             options,
-                                             base::Bind(&ReturnEmptySalt));
+  DeviceRequest* request = new DeviceRequest(
+      NULL, render_process_id, render_frame_id, page_request_id,
+      security_origin,
+      false,  // user gesture
+      MEDIA_DEVICE_ACCESS, controls, base::Bind(&ReturnEmptySalt));
 
   const std::string& label = AddRequest(request);
 
@@ -494,21 +477,15 @@ void MediaStreamManager::GenerateStream(MediaStreamRequester* requester,
                                         int render_frame_id,
                                         const ResourceContext::SaltCallback& sc,
                                         int page_request_id,
-                                        const StreamOptions& options,
+                                        const StreamControls& controls,
                                         const GURL& security_origin,
                                         bool user_gesture) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DVLOG(1) << "GenerateStream()";
 
-  DeviceRequest* request = new DeviceRequest(requester,
-                                             render_process_id,
-                                             render_frame_id,
-                                             page_request_id,
-                                             security_origin,
-                                             user_gesture,
-                                             MEDIA_GENERATE_STREAM,
-                                             options,
-                                             sc);
+  DeviceRequest* request = new DeviceRequest(
+      requester, render_process_id, render_frame_id, page_request_id,
+      security_origin, user_gesture, MEDIA_GENERATE_STREAM, controls, sc);
 
   const std::string& label = AddRequest(request);
 
@@ -688,15 +665,11 @@ std::string MediaStreamManager::EnumerateDevices(
          type == MEDIA_DEVICE_VIDEO_CAPTURE ||
          type == MEDIA_DEVICE_AUDIO_OUTPUT);
 
-  DeviceRequest* request = new DeviceRequest(requester,
-                                             render_process_id,
-                                             render_frame_id,
-                                             page_request_id,
-                                             security_origin,
-                                             false,  // user gesture
-                                             MEDIA_ENUMERATE_DEVICES,
-                                             StreamOptions(),
-                                             sc);
+  DeviceRequest* request =
+      new DeviceRequest(requester, render_process_id, render_frame_id,
+                        page_request_id, security_origin,
+                        false,  // user gesture
+                        MEDIA_ENUMERATE_DEVICES, StreamControls(), sc);
   if (IsAudioInputMediaType(type) || type == MEDIA_DEVICE_AUDIO_OUTPUT)
     request->SetAudioType(type);
   else if (IsVideoMediaType(type))
@@ -809,15 +782,13 @@ void MediaStreamManager::OpenDevice(MediaStreamRequester* requester,
   DCHECK(type == MEDIA_DEVICE_AUDIO_CAPTURE ||
          type == MEDIA_DEVICE_VIDEO_CAPTURE);
   DVLOG(1) << "OpenDevice ({page_request_id = " << page_request_id <<  "})";
-  StreamOptions options;
+  StreamControls controls;
   if (IsAudioInputMediaType(type)) {
-    options.audio_requested = true;
-    options.mandatory_audio.push_back(
-        StreamOptions::Constraint(kMediaStreamSourceInfoId, device_id));
+    controls.audio.requested = true;
+    controls.audio.device_ids.push_back(device_id);
   } else if (IsVideoMediaType(type)) {
-    options.video_requested = true;
-    options.mandatory_video.push_back(
-        StreamOptions::Constraint(kMediaStreamSourceInfoId, device_id));
+    controls.video.requested = true;
+    controls.video.device_ids.push_back(device_id);
   } else {
     NOTREACHED();
   }
@@ -825,7 +796,7 @@ void MediaStreamManager::OpenDevice(MediaStreamRequester* requester,
       new DeviceRequest(requester, render_process_id, render_frame_id,
                         page_request_id, security_origin,
                         false,  // user gesture
-                        MEDIA_OPEN_DEVICE_PEPPER_ONLY, options, sc);
+                        MEDIA_OPEN_DEVICE_PEPPER_ONLY, controls, sc);
 
   const std::string& label = AddRequest(request);
   // Post a task and handle the request asynchronously. The reason is that the
@@ -997,56 +968,55 @@ void MediaStreamManager::StartMonitoringOnUIThread() {
 }
 #endif
 
+// Pick the first valid (translatable) device ID from lists of required
+// and optional IDs.
+bool MediaStreamManager::PickDeviceId(
+    MediaStreamType type,
+    const ResourceContext::SaltCallback& salt_callback,
+    const GURL& security_origin,
+    const TrackControls& controls,
+    std::string* device_id) const {
+  if (!controls.device_ids.empty()) {
+    if (controls.device_ids.size() > 1) {
+      LOG(ERROR) << "Only one required device ID is supported";
+      return false;
+    }
+    const std::string& candidate_id = controls.device_ids[0];
+    if (!TranslateSourceIdToDeviceId(type, salt_callback, security_origin,
+                                     candidate_id, device_id)) {
+      LOG(WARNING) << "Invalid mandatory capture ID = " << candidate_id;
+      return false;
+    }
+    return true;
+  }
+  // We don't have a required ID. Look at the alternates.
+  for (const std::string& candidate_id : controls.alternate_device_ids) {
+    if (TranslateSourceIdToDeviceId(type, salt_callback, security_origin,
+                                    candidate_id, device_id)) {
+      return true;
+    } else {
+      LOG(WARNING) << "Invalid optional capture ID = " << candidate_id;
+    }
+  }
+  return true;  // If we get here, device_id is empty.
+}
+
 bool MediaStreamManager::GetRequestedDeviceCaptureId(
     const DeviceRequest* request,
     MediaStreamType type,
     std::string* device_id) const {
-  DCHECK(type == MEDIA_DEVICE_AUDIO_CAPTURE ||
-         type == MEDIA_DEVICE_VIDEO_CAPTURE);
-  const StreamOptions::Constraints* mandatory =
-      (type == MEDIA_DEVICE_AUDIO_CAPTURE) ?
-          &request->options.mandatory_audio : &request->options.mandatory_video;
-  const StreamOptions::Constraints* optional =
-      (type == MEDIA_DEVICE_AUDIO_CAPTURE) ?
-          &request->options.optional_audio : &request->options.optional_video;
-
-  std::vector<std::string> source_ids;
-  StreamOptions::GetConstraintsByName(*mandatory,
-                                      kMediaStreamSourceInfoId, &source_ids);
-  if (source_ids.size() > 1) {
-    LOG(ERROR) << "Only one mandatory " << kMediaStreamSourceInfoId
-        << " is supported.";
-    return false;
+  if (type == MEDIA_DEVICE_AUDIO_CAPTURE) {
+    return PickDeviceId(type, request->salt_callback, request->security_origin,
+                        request->controls.audio,
+                        device_id);
+  } else if (type == MEDIA_DEVICE_VIDEO_CAPTURE) {
+    return PickDeviceId(type, request->salt_callback, request->security_origin,
+                        request->controls.video,
+                        device_id);
+  } else {
+    NOTREACHED();
   }
-  // If a specific device has been requested we need to find the real device
-  // id.
-  if (source_ids.size() == 1 &&
-      !TranslateSourceIdToDeviceId(type,
-                                   request->salt_callback,
-                                   request->security_origin,
-                                   source_ids[0], device_id)) {
-    LOG(WARNING) << "Invalid mandatory " << kMediaStreamSourceInfoId
-                 << " = " << source_ids[0] << ".";
-    return false;
-  }
-  // Check for optional audio sourceIDs.
-  if (device_id->empty()) {
-    StreamOptions::GetConstraintsByName(*optional,
-                                        kMediaStreamSourceInfoId,
-                                        &source_ids);
-    // Find the first sourceID that translates to device. Note that only one
-    // device per type can call to GenerateStream is ever opened.
-    for (const std::string& source_id : source_ids) {
-      if (TranslateSourceIdToDeviceId(type,
-                                      request->salt_callback,
-                                      request->security_origin,
-                                      source_id,
-                                      device_id)) {
-        break;
-      }
-    }
-  }
-  return true;
+  return false;
 }
 
 void MediaStreamManager::TranslateDeviceIdToSourceId(
@@ -1211,7 +1181,7 @@ void MediaStreamManager::SetupRequest(const std::string& label) {
 
   MediaStreamType audio_type = MEDIA_NO_SERVICE;
   MediaStreamType video_type = MEDIA_NO_SERVICE;
-  ParseStreamType(request->options, &audio_type, &video_type);
+  ParseStreamType(request->controls, &audio_type, &video_type);
   request->SetAudioType(audio_type);
   request->SetVideoType(video_type);
 
@@ -1272,22 +1242,22 @@ bool MediaStreamManager::SetupDeviceCaptureRequest(DeviceRequest* request) {
          (request->video_type() == MEDIA_DEVICE_VIDEO_CAPTURE ||
           request->video_type() == MEDIA_NO_SERVICE));
   std::string audio_device_id;
-  if (request->options.audio_requested &&
+  if (request->controls.audio.requested &&
       !GetRequestedDeviceCaptureId(request, request->audio_type(),
-                                     &audio_device_id)) {
+                                   &audio_device_id)) {
     return false;
   }
 
   std::string video_device_id;
-  if (request->options.video_requested &&
+  if (request->controls.video.requested &&
       !GetRequestedDeviceCaptureId(request, request->video_type(),
                                    &video_device_id)) {
     return false;
   }
   request->CreateUIRequest(audio_device_id, video_device_id);
-  DVLOG(3) << "Audio requested " << request->options.audio_requested
-           << " device id = " << audio_device_id
-           << "Video requested " << request->options.video_requested
+  DVLOG(3) << "Audio requested " << request->controls.audio.requested
+           << " device id = " << audio_device_id << "Video requested "
+           << request->controls.video.requested
            << " device id = " << video_device_id;
   return true;
 }
@@ -1297,19 +1267,15 @@ bool MediaStreamManager::SetupTabCaptureRequest(DeviceRequest* request) {
          request->video_type() == MEDIA_TAB_VIDEO_CAPTURE);
 
   std::string capture_device_id;
-  bool mandatory_audio = false;
-  bool mandatory_video = false;
-  if (!request->options.GetFirstAudioConstraintByName(kMediaStreamSourceId,
-                                                      &capture_device_id,
-                                                      &mandatory_audio) &&
-      !request->options.GetFirstVideoConstraintByName(kMediaStreamSourceId,
-                                                      &capture_device_id,
-                                                      &mandatory_video)) {
+  if (!request->controls.audio.device_ids.empty()) {
+    capture_device_id = request->controls.audio.device_ids[0];
+  } else if (!request->controls.video.device_ids.empty()) {
+    capture_device_id = request->controls.video.device_ids[0];
+  } else {
     return false;
   }
-  DCHECK(mandatory_audio || mandatory_video);
 
-  // Customize options for a WebContents based capture.
+  // Customize controls for a WebContents based capture.
   int target_render_process_id = 0;
   int target_render_frame_id = 0;
 
@@ -1351,26 +1317,12 @@ bool MediaStreamManager::SetupScreenCaptureRequest(DeviceRequest* request) {
 
   std::string video_device_id;
   if (request->video_type() == MEDIA_DESKTOP_VIDEO_CAPTURE) {
-    std::string video_stream_source;
-    bool mandatory = false;
-    if (!request->options.GetFirstVideoConstraintByName(
-        kMediaStreamSource,
-        &video_stream_source,
-        &mandatory)) {
-      LOG(ERROR) << kMediaStreamSource << " not found.";
-      return false;
-    }
-    DCHECK(mandatory);
+    const std::string& video_stream_source =
+        request->controls.video.stream_source;
 
-    if (video_stream_source == kMediaStreamSourceDesktop) {
-      if (!request->options.GetFirstVideoConstraintByName(
-          kMediaStreamSourceId,
-          &video_device_id,
-          &mandatory)) {
-        LOG(ERROR) << kMediaStreamSourceId << " not found.";
-        return false;
-      }
-      DCHECK(mandatory);
+    if (video_stream_source == kMediaStreamSourceDesktop &&
+        !request->controls.video.device_ids.empty()) {
+      video_device_id = request->controls.video.device_ids[0];
     }
   }
 
@@ -1409,9 +1361,9 @@ bool MediaStreamManager::FindExistingRequestedDeviceInfo(
           *existing_device_info = device_info;
           // Make sure that the audio |effects| reflect what the request
           // is set to and not what the capabilities are.
-          FilterAudioEffects(request->options,
-              &existing_device_info->device.input.effects);
-          EnableHotwordEffect(request->options,
+          FilterAudioEffects(request->controls,
+                             &existing_device_info->device.input.effects);
+          EnableHotwordEffect(request->controls,
                               &existing_device_info->device.input.effects);
           *existing_request_state = request->state(device_info.device.type);
           return true;
@@ -1666,9 +1618,9 @@ void MediaStreamManager::Opened(MediaStreamType stream_type,
             // parameters to the default settings (including supported effects),
             // we need to adjust those settings here according to what the
             // request asks for.
-            FilterAudioEffects(request->options,
+            FilterAudioEffects(request->controls,
                                &device_info.device.input.effects);
-            EnableHotwordEffect(request->options,
+            EnableHotwordEffect(request->controls,
                                 &device_info.device.input.effects);
 
             device_info.device.matched_output = info->device.matched_output;

@@ -37,24 +37,80 @@
 namespace content {
 namespace {
 
-void CopyStreamConstraints(const blink::WebMediaConstraints& constraints,
-                           StreamOptions::Constraints* mandatory,
-                           StreamOptions::Constraints* optional) {
-  blink::WebVector<blink::WebMediaConstraint> mandatory_constraints;
-  constraints.getMandatoryConstraints(mandatory_constraints);
-  for (size_t i = 0; i < mandatory_constraints.size(); i++) {
-    mandatory->push_back(StreamOptions::Constraint(
-        mandatory_constraints[i].m_name.utf8(),
-        mandatory_constraints[i].m_value.utf8()));
-  }
+bool GetMandatory(const blink::WebMediaConstraints& constraints,
+                  const std::string& name,
+                  std::string* value) {
+  if (constraints.isNull())
+    return false;
+  blink::WebString temp;
+  bool found =
+      constraints.getMandatoryConstraintValue(base::UTF8ToUTF16(name), temp);
+  if (found)
+    *value = temp.utf8();
+  return found;
+}
 
-  blink::WebVector<blink::WebMediaConstraint> optional_constraints;
-  constraints.getOptionalConstraints(optional_constraints);
-  for (size_t i = 0; i < optional_constraints.size(); i++) {
-    optional->push_back(StreamOptions::Constraint(
-        optional_constraints[i].m_name.utf8(),
-        optional_constraints[i].m_value.utf8()));
+void GetMandatoryList(const blink::WebMediaConstraints& constraints,
+                      const std::string& name,
+                      std::vector<std::string>* values) {
+  if (constraints.isNull()) {
+    return;
   }
+  blink::WebString temp;
+  bool found =
+      constraints.getMandatoryConstraintValue(base::UTF8ToUTF16(name), temp);
+  if (found) {
+    values->push_back(temp.utf8());
+  }
+}
+
+void GetOptionalList(const blink::WebMediaConstraints constraints,
+                     const std::string& name,
+                     std::vector<std::string>* values) {
+  if (constraints.isNull()) {
+    return;
+  }
+  blink::WebVector<blink::WebMediaConstraint> constraint_list;
+  constraints.getOptionalConstraints(constraint_list);
+  blink::WebString web_name = base::UTF8ToUTF16(name);
+  for (const auto& pair : constraint_list) {
+    if (pair.m_name == web_name) {
+      values->push_back(pair.m_value.utf8());
+    }
+  }
+}
+
+void CopyBlinkRequestToStreamControls(const blink::WebUserMediaRequest& request,
+                                      StreamControls* controls) {
+  if (request.isNull()) {
+    return;
+  }
+  GetMandatory(request.audioConstraints(), kMediaStreamSource,
+               &controls->audio.stream_source);
+  GetMandatory(request.videoConstraints(), kMediaStreamSource,
+               &controls->video.stream_source);
+  GetMandatoryList(request.audioConstraints(), kMediaStreamSourceInfoId,
+                   &controls->audio.device_ids);
+  GetMandatoryList(request.videoConstraints(), kMediaStreamSourceInfoId,
+                   &controls->video.device_ids);
+  GetOptionalList(request.audioConstraints(), kMediaStreamSourceInfoId,
+                  &controls->audio.alternate_device_ids);
+  GetOptionalList(request.videoConstraints(), kMediaStreamSourceInfoId,
+                  &controls->video.alternate_device_ids);
+  GetMandatoryList(request.audioConstraints(), kMediaStreamSourceId,
+                   &controls->audio.device_ids);
+  GetMandatoryList(request.videoConstraints(), kMediaStreamSourceId,
+                   &controls->video.device_ids);
+  std::string hotword_string;
+  GetMandatory(request.audioConstraints(), kMediaStreamAudioHotword,
+               &hotword_string);
+  if (hotword_string == "true")
+    controls->hotword_enabled = true;
+  // DCHECK for some combinations that seem to be unusual/useless
+  // It should not be possible to have both MediaStreamSourceId
+  // and MediaStreamSourceInfoId on the same request.
+  DCHECK(controls->video.device_ids.size() <= 1);
+  DCHECK(controls->audio.device_ids.size() <= 1);
 }
 
 static int g_next_request_id  = 0;
@@ -138,7 +194,7 @@ void UserMediaClientImpl::requestUserMedia(
   }
 
   int request_id = g_next_request_id++;
-  StreamOptions options;
+  StreamControls controls;
   GURL security_origin;
   bool enable_automatic_output_device_selection = false;
 
@@ -146,30 +202,24 @@ void UserMediaClientImpl::requestUserMedia(
   // if it isNull.
   if (user_media_request.isNull()) {
     // We are in a test.
-    options.audio_requested = true;
-    options.video_requested = true;
+    controls.audio.requested = true;
+    controls.video.requested = true;
   } else {
     if (user_media_request.audio()) {
-      options.audio_requested = true;
-      CopyStreamConstraints(user_media_request.audioConstraints(),
-                            &options.mandatory_audio,
-                            &options.optional_audio);
-
+      controls.audio.requested = true;
       // Check if this input device should be used to select a matching output
       // device for audio rendering.
       std::string enable;
-      if (options.GetFirstAudioConstraintByName(
-              kMediaStreamRenderToAssociatedSink, &enable, NULL) &&
+      if (GetMandatory(user_media_request.audioConstraints(),
+                       kMediaStreamRenderToAssociatedSink, &enable) &&
           base::LowerCaseEqualsASCII(enable, "true")) {
         enable_automatic_output_device_selection = true;
       }
     }
     if (user_media_request.video()) {
-      options.video_requested = true;
-      CopyStreamConstraints(user_media_request.videoConstraints(),
-                            &options.mandatory_video,
-                            &options.optional_video);
+      controls.video.requested = true;
     }
+    CopyBlinkRequestToStreamControls(user_media_request, &controls);
 
     security_origin = GURL(user_media_request.securityOrigin().toString());
     DCHECK(render_frame()->GetWebFrame() ==
@@ -178,40 +228,50 @@ void UserMediaClientImpl::requestUserMedia(
   }
 
   DVLOG(1) << "UserMediaClientImpl::requestUserMedia(" << request_id << ", [ "
-           << "audio=" << (options.audio_requested)
+           << "audio=" << (controls.audio.requested)
            << " select associated sink: "
            << enable_automatic_output_device_selection
-           << ", video=" << (options.video_requested) << " ], "
+           << ", video=" << (controls.video.requested) << " ], "
            << security_origin.spec() << ")";
 
-  std::string audio_device_id;
-  bool mandatory_audio;
-  options.GetFirstAudioConstraintByName(kMediaStreamSourceInfoId,
-                                        &audio_device_id, &mandatory_audio);
-  std::string video_device_id;
-  bool mandatory_video;
-  options.GetFirstVideoConstraintByName(kMediaStreamSourceInfoId,
-                                        &video_device_id, &mandatory_video);
+  blink::WebString audio_device_id;
+  bool mandatory_audio = false;
+  if (!user_media_request.isNull() && user_media_request.audio()) {
+    mandatory_audio =
+        user_media_request.audioConstraints().getMandatoryConstraintValue(
+            base::UTF8ToUTF16(kMediaStreamSourceInfoId), audio_device_id);
+    if (!mandatory_audio) {
+      user_media_request.audioConstraints().getOptionalConstraintValue(
+          base::UTF8ToUTF16(kMediaStreamSourceInfoId), audio_device_id);
+    }
+  }
+
+  blink::WebString video_device_id;
+  bool mandatory_video = false;
+  if (!user_media_request.isNull() && user_media_request.video()) {
+    mandatory_video =
+        user_media_request.videoConstraints().getMandatoryConstraintValue(
+            base::UTF8ToUTF16(kMediaStreamSourceInfoId), video_device_id);
+    if (!mandatory_video) {
+      user_media_request.videoConstraints().getOptionalConstraintValue(
+          base::UTF8ToUTF16(kMediaStreamSourceInfoId), video_device_id);
+    }
+  }
 
   WebRtcLogMessage(base::StringPrintf(
       "MSI::requestUserMedia. request_id=%d"
       ", audio source id=%s mandatory= %s "
       ", video source id=%s mandatory= %s",
-      request_id,
-      audio_device_id.c_str(),
-      mandatory_audio ? "true":"false",
-      video_device_id.c_str(),
-      mandatory_video ? "true":"false"));
+      request_id, audio_device_id.utf8().c_str(),
+      mandatory_audio ? "true" : "false", video_device_id.utf8().c_str(),
+      mandatory_video ? "true" : "false"));
 
   user_media_requests_.push_back(
       new UserMediaRequestInfo(request_id, user_media_request,
                                enable_automatic_output_device_selection));
 
   media_stream_dispatcher_->GenerateStream(
-      request_id,
-      weak_factory_.GetWeakPtr(),
-      options,
-      security_origin);
+      request_id, weak_factory_.GetWeakPtr(), controls, security_origin);
 }
 
 void UserMediaClientImpl::cancelUserMediaRequest(
