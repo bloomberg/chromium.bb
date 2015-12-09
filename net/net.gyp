@@ -235,9 +235,9 @@
             'http/http_auth_handler_negotiate_unittest.cc',
           ],
         }],
-        [ 'use_openssl == 1 or (desktop_linux == 0 and chromeos == 0 and OS != "ios")', {
-          # Only include this test when on Posix and using NSS for
-          # cert verification or on iOS (which also uses NSS for certs).
+        [ 'use_nss_certs == 0 and OS != "ios"', {
+          # Only include this test when using system NSS for cert verification
+          # or on iOS (which also uses NSS for certs).
           'sources!': [
             'cert_net/nss_ocsp_unittest.cc',
           ],

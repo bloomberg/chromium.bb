@@ -1464,7 +1464,7 @@ test("net_unittests") {
     sources -= [ "http/http_auth_handler_negotiate_unittest.cc" ]
   }
 
-  if (use_openssl || (!is_desktop_linux && !is_chromeos && !is_ios)) {
+  if (!use_nss_certs && !is_ios) {
     # Only include this test when on Posix and using NSS for
     # cert verification or on iOS (which also uses NSS for certs).
     sources -= [ "cert_net/nss_ocsp_unittest.cc" ]
