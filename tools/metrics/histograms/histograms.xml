@@ -2054,6 +2054,30 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="AutodetectEncoding.Attempted" enum="BooleanAttempted">
+  <owner>jinsukkim@chromium.org</owner>
+  <summary>
+    Whether the text encoding auto detection logic was attempted for a web page.
+    The logic is triggered when the parser fails to find the encoding method
+    from other signals such as http header, meta tag, BOM, etc.
+
+    If the logic successfully detects a new encoding method which is different
+    from the default one, the result is reported through
+    AutodetectEncoding.Detected with the encoding method (see below). Otherwise
+    - i.e. detection logic somehow fails to work for the page or the detected
+    one is same as the default - no result is reported.
+  </summary>
+</histogram>
+
+<histogram name="AutodetectEncoding.Detected" enum="EncodingMethod"
+    units="pages">
+  <owner>jinsukkim@chromium.org</owner>
+  <summary>
+    The number of web pages whose encoding method is found by the auto detection
+    logic. Grouped by the encoding methods defined in EncodingMethod.
+  </summary>
+</histogram>
+
 <histogram name="Autofill.AddressBook.AccessSkipped" enum="BooleanSkipped">
   <obsolete>
     Deprecated as of 8/2015.
@@ -59529,6 +59553,46 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="7" label="THREAD_STARTED"/>
   <int value="8" label="SCRIPT_READ_STARTED"/>
   <int value="9" label="SCRIPT_READ_FINISHED"/>
+</enum>
+
+<enum name="EncodingMethod" type="int">
+  <int value="0" label="UNKNOWN"/>
+  <int value="1" label="Big5"/>
+  <int value="2" label="EUC-JP"/>
+  <int value="3" label="EUC-KR"/>
+  <int value="4" label="GBK"/>
+  <int value="5" label="IBM866"/>
+  <int value="6" label="ISO-2022-JP"/>
+  <int value="7" label="ISO-8859-10"/>
+  <int value="8" label="ISO-8859-13"/>
+  <int value="9" label="ISO-8859-14"/>
+  <int value="10" label="ISO-8859-15"/>
+  <int value="11" label="ISO-8859-16"/>
+  <int value="12" label="ISO-8859-2"/>
+  <int value="13" label="ISO-8859-3"/>
+  <int value="14" label="ISO-8859-4"/>
+  <int value="15" label="ISO-8859-5"/>
+  <int value="16" label="ISO-8859-6"/>
+  <int value="17" label="ISO-8859-7"/>
+  <int value="18" label="ISO-8859-8"/>
+  <int value="19" label="ISO-8859-8-I"/>
+  <int value="20" label="KOI8-R"/>
+  <int value="21" label="KOI8-U"/>
+  <int value="22" label="Shift_JIS"/>
+  <int value="23" label="UTF-16LE"/>
+  <int value="24" label="UTF-8"/>
+  <int value="25" label="gb18030"/>
+  <int value="26" label="macintosh"/>
+  <int value="27" label="windows-1250"/>
+  <int value="28" label="windows-1251"/>
+  <int value="29" label="windows-1252"/>
+  <int value="30" label="windows-1253"/>
+  <int value="31" label="windows-1254"/>
+  <int value="32" label="windows-1255"/>
+  <int value="33" label="windows-1256"/>
+  <int value="34" label="windows-1257"/>
+  <int value="35" label="windows-1258"/>
+  <int value="36" label="windows-874"/>
 </enum>
 
 <enum name="EnhancedBookmarkViewMode" type="int">
