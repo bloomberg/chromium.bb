@@ -91,12 +91,10 @@ void WebContentsViewMus::CreateView(const gfx::Size& initial_size,
 RenderWidgetHostViewBase* WebContentsViewMus::CreateViewForWidget(
     RenderWidgetHost* render_widget_host,
     bool is_guest_view_hack) {
-  RenderWidgetHostViewBase* platform_widget =
-      platform_view_->CreateViewForWidget(render_widget_host, true);
-
-  return new RenderWidgetHostViewMus(
-      window_->window(), RenderWidgetHostImpl::From(render_widget_host),
-      platform_widget->GetWeakPtr());
+  RenderWidgetHostViewBase* view = new RenderWidgetHostViewMus(
+      window_->window(), RenderWidgetHostImpl::From(render_widget_host));
+  view->InitAsChild(GetNativeView());
+  return view;
 }
 
 RenderWidgetHostViewBase* WebContentsViewMus::CreateViewForPopupWidget(

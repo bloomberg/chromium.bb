@@ -12,7 +12,9 @@
 #include "content/common/render_widget_window_tree_client_factory.mojom.h"
 #include "content/public/common/mojo_shell_connection.h"
 #include "mojo/application/public/cpp/application_impl.h"
+#include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/window.h"
+#include "ui/base/hit_test.h"
 
 namespace blink {
 struct WebScreenInfo;
@@ -20,17 +22,15 @@ struct WebScreenInfo;
 
 namespace content {
 
-RenderWidgetHostViewMus::RenderWidgetHostViewMus(
-    mus::Window* parent_window,
-    RenderWidgetHostImpl* host,
-    base::WeakPtr<RenderWidgetHostViewBase> platform_view)
-    : host_(host), platform_view_(platform_view) {
+RenderWidgetHostViewMus::RenderWidgetHostViewMus(mus::Window* parent_window,
+                                                 RenderWidgetHostImpl* host)
+    : host_(host), aura_window_(nullptr) {
   DCHECK(parent_window);
   mus::Window* window = parent_window->connection()->NewWindow();
   window->SetVisible(true);
   window->SetBounds(gfx::Rect(300, 300));
   parent_window->AddChild(window);
-  window_.reset(new mus::ScopedWindowPtr(window));
+  mus_window_.reset(new mus::ScopedWindowPtr(window));
   host_->SetView(this);
 
   // Connect to the renderer, pass it a WindowTreeClient interface request
@@ -42,10 +42,17 @@ RenderWidgetHostViewMus::RenderWidgetHostViewMus(
   mus::mojom::WindowTreeClientPtr window_tree_client;
   factory->CreateWindowTreeClientForRenderWidget(
       host_->GetRoutingID(), mojo::GetProxy(&window_tree_client));
-  window_->window()->Embed(window_tree_client.Pass());
+  mus_window_->window()->Embed(window_tree_client.Pass());
 }
 
 RenderWidgetHostViewMus::~RenderWidgetHostViewMus() {}
+
+void RenderWidgetHostViewMus::InternalSetBounds(const gfx::Rect& rect) {
+  aura_window_->SetBounds(rect);
+  gfx::Rect bounds = aura_window_->GetBoundsInRootWindow();
+  mus_window_->window()->SetBounds(bounds);
+  host_->WasResized();
+}
 
 void RenderWidgetHostViewMus::Show() {
   // TODO(fsamuel): Update visibility in Mus.
@@ -62,15 +69,28 @@ bool RenderWidgetHostViewMus::IsShowing() {
 }
 
 void RenderWidgetHostViewMus::SetSize(const gfx::Size& size) {
-  platform_view_->SetSize(size);
-  gfx::Rect bounds = platform_view_->GetNativeView()->GetBoundsInRootWindow();
-  window_->window()->SetBounds(bounds);
+  // For a SetSize operation, we don't care what coordinate system the origin
+  // of the window is in, it's only important to make sure that the origin
+  // remains constant after the operation.
+  InternalSetBounds(gfx::Rect(aura_window_->bounds().origin(), size));
 }
 
 void RenderWidgetHostViewMus::SetBounds(const gfx::Rect& rect) {
-  platform_view_->SetBounds(rect);
-  gfx::Rect bounds = platform_view_->GetNativeView()->GetBoundsInRootWindow();
-  window_->window()->SetBounds(bounds);
+  gfx::Point relative_origin(rect.origin());
+
+  // RenderWidgetHostViewMus::SetBounds() takes screen coordinates, but
+  // Window::SetBounds() takes parent coordinates, so do the conversion here.
+  aura::Window* root = aura_window_->GetRootWindow();
+  if (root) {
+    aura::client::ScreenPositionClient* screen_position_client =
+        aura::client::GetScreenPositionClient(root);
+    if (screen_position_client) {
+      screen_position_client->ConvertPointFromScreen(aura_window_->parent(),
+                                                     &relative_origin);
+    }
+  }
+
+  InternalSetBounds(gfx::Rect(relative_origin, rect.size()));
 }
 
 void RenderWidgetHostViewMus::Focus() {
@@ -89,7 +109,7 @@ bool RenderWidgetHostViewMus::IsSurfaceAvailableForCopy() const {
 }
 
 gfx::Rect RenderWidgetHostViewMus::GetViewBounds() const {
-  return platform_view_->GetViewBounds();
+  return aura_window_->GetBoundsInScreen();
 }
 
 gfx::Vector2dF RenderWidgetHostViewMus::GetLastScrollOffset() const {
@@ -98,13 +118,11 @@ gfx::Vector2dF RenderWidgetHostViewMus::GetLastScrollOffset() const {
 
 void RenderWidgetHostViewMus::RenderProcessGone(base::TerminationStatus status,
                                                 int error_code) {
-  // TODO(fsamuel): Figure out the interstitial lifetime issues here.
-  platform_view_->Destroy();
+  NOTIMPLEMENTED();
 }
 
 void RenderWidgetHostViewMus::Destroy() {
-  if (platform_view_)  // The platform view might have been destroyed already.
-    platform_view_->Destroy();
+  delete aura_window_;
 }
 
 gfx::Size RenderWidgetHostViewMus::GetPhysicalBackingSize() const {
@@ -112,7 +130,8 @@ gfx::Size RenderWidgetHostViewMus::GetPhysicalBackingSize() const {
 }
 
 base::string16 RenderWidgetHostViewMus::GetSelectedText() const {
-  return platform_view_->GetSelectedText();
+  NOTIMPLEMENTED();
+  return base::string16();
 }
 
 void RenderWidgetHostViewMus::SetTooltipText(
@@ -121,7 +140,14 @@ void RenderWidgetHostViewMus::SetTooltipText(
 }
 
 void RenderWidgetHostViewMus::InitAsChild(gfx::NativeView parent_view) {
-  platform_view_->InitAsChild(parent_view);
+  aura_window_ = new aura::Window(nullptr);
+  aura_window_->SetType(ui::wm::WINDOW_TYPE_CONTROL);
+  aura_window_->Init(ui::LAYER_SOLID_COLOR);
+  aura_window_->SetName("RenderWidgetHostViewMus");
+  aura_window_->layer()->SetColor(background_color_);
+
+  if (parent_view)
+    parent_view->AddChild(GetNativeView());
 }
 
 RenderWidgetHost* RenderWidgetHostViewMus::GetRenderWidgetHost() const {
@@ -140,7 +166,7 @@ void RenderWidgetHostViewMus::InitAsFullscreen(
 }
 
 gfx::NativeView RenderWidgetHostViewMus::GetNativeView() const {
-  return platform_view_->GetNativeView();
+  return aura_window_;
 }
 
 gfx::NativeViewId RenderWidgetHostViewMus::GetNativeViewId() const {
@@ -153,7 +179,6 @@ gfx::NativeViewAccessible RenderWidgetHostViewMus::GetNativeViewAccessible() {
 
 void RenderWidgetHostViewMus::MovePluginWindows(
     const std::vector<WebPluginGeometry>& moves) {
-  platform_view_->MovePluginWindows(moves);
 }
 
 void RenderWidgetHostViewMus::UpdateCursor(const WebCursor& cursor) {
@@ -162,7 +187,6 @@ void RenderWidgetHostViewMus::UpdateCursor(const WebCursor& cursor) {
 }
 
 void RenderWidgetHostViewMus::SetIsLoading(bool is_loading) {
-  platform_view_->SetIsLoading(is_loading);
 }
 
 void RenderWidgetHostViewMus::TextInputStateChanged(
@@ -183,7 +207,6 @@ void RenderWidgetHostViewMus::ImeCompositionRangeChanged(
 void RenderWidgetHostViewMus::SelectionChanged(const base::string16& text,
                                                size_t offset,
                                                const gfx::Range& range) {
-  platform_view_->SelectionChanged(text, offset, range);
 }
 
 void RenderWidgetHostViewMus::SelectionBoundsChanged(
@@ -242,21 +265,20 @@ bool RenderWidgetHostViewMus::GetScreenColorProfile(
 }
 
 gfx::Rect RenderWidgetHostViewMus::GetBoundsInRootWindow() {
-  return platform_view_->GetBoundsInRootWindow();
+  aura::Window* top_level = aura_window_->GetToplevelWindow();
+  gfx::Rect bounds(top_level->GetBoundsInScreen());
+  return bounds;
 }
 
 #if defined(OS_MACOSX)
 void RenderWidgetHostViewMus::SetActive(bool active) {
-  platform_view_->SetActive(active);
 }
 
 void RenderWidgetHostViewMus::SetWindowVisibility(bool visible) {
   // TODO(fsamuel): Propagate visibility to Mus?
-  platform_view_->SetWindowVisibility(visible);
 }
 
 void RenderWidgetHostViewMus::WindowFrameChanged() {
-  platform_view_->WindowFrameChanged();
 }
 
 void RenderWidgetHostViewMus::ShowDefinitionForSelection() {

@@ -28,13 +28,16 @@ struct NativeWebKeyboardEvent;
 // the renderer from Mus.
 class CONTENT_EXPORT RenderWidgetHostViewMus : public RenderWidgetHostViewBase {
  public:
-  RenderWidgetHostViewMus(
-      mus::Window* parent_window,
-      RenderWidgetHostImpl* widget,
-      base::WeakPtr<RenderWidgetHostViewBase> platform_view);
+  RenderWidgetHostViewMus(mus::Window* parent_window,
+                          RenderWidgetHostImpl* widget);
   ~RenderWidgetHostViewMus() override;
 
  private:
+  // Set the bounds of the window and handle size changes.  Assumes the caller
+  // has already adjusted the origin of |rect| to conform to whatever coordinate
+  // space is required by the aura::Window.
+  void InternalSetBounds(const gfx::Rect& rect);
+
   // RenderWidgetHostView implementation.
   void InitAsChild(gfx::NativeView parent_view) override;
   RenderWidgetHost* GetRenderWidgetHost() const override;
@@ -123,11 +126,10 @@ class CONTENT_EXPORT RenderWidgetHostViewMus : public RenderWidgetHostViewBase {
 #endif
 
   RenderWidgetHostImpl* host_;
-  scoped_ptr<mus::ScopedWindowPtr> window_;
-  // The platform view for this RenderWidgetHostView.
-  // RenderWidgetHostViewMus mostly only cares about stuff related to
-  // compositing, the rest are directly forwared to this |platform_view_|.
-  base::WeakPtr<RenderWidgetHostViewBase> platform_view_;
+
+  aura::Window* aura_window_;
+
+  scoped_ptr<mus::ScopedWindowPtr> mus_window_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewMus);
 };
