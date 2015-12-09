@@ -347,7 +347,6 @@ _arm_internal_release_boards = frozenset([
     'daisy',
     'daisy_skate',
     'daisy_spring',
-    'daisy_winter',
     'kayle',
     'nyan',
     'nyan_big',
@@ -360,7 +359,6 @@ _arm_internal_release_boards = frozenset([
     'purin',
     'smaug',
     'storm',
-    'rush',
     'rush_ryu',
     'veyron_brain',
     'veyron_danger',
@@ -388,10 +386,7 @@ _x86_internal_release_boards = frozenset([
     'auron',
     'auron_paine',
     'auron_yuna',
-    'bayleybay',
     'banjo',
-    'beltino',
-    'bobcat',
     'buddy',
     'butterfly',
     'candy',
@@ -529,12 +524,7 @@ _moblab_boards = frozenset([
     'guado_moblab',
 ])
 
-_minimal_profile_boards = frozenset([
-    'bobcat',
-])
-
 _nofactory_boards = frozenset([
-    'daisy_winter',
     'smaug',
 ])
 
@@ -597,8 +587,6 @@ _waterfall_config_map = {
         'storm-release-group',
 
         # Experimental Canaries
-        'bobcat-release',
-        'daisy_winter-release',
         'kayle-release',
         'lakitu_next-release',
         'nyan_freon-release',
@@ -1074,8 +1062,6 @@ def GetConfig():
         base.update(lakitu)
       if board in _moblab_boards:
         base.update(moblab)
-      if board in _minimal_profile_boards:
-        base.update(profile='minimal')
       if board in _nofactory_boards:
         base.update(factory=False)
         base.update(factory_toolkit=False)
@@ -2119,32 +2105,6 @@ def GetConfig():
       'parrot',
   ])
 
-  # bayleybay-release does not enable vm_tests or unittests due to the compiler
-  # flags enabled for baytrail.
-  site_config.AddConfig(
-      _release, 'bayleybay-release',
-      boards=['bayleybay'],
-      vm_tests=[],
-      unittests=False,
-  )
-
-  site_config.AddConfig(
-      _release, 'beltino-release',
-      boards=['beltino'],
-      vm_tests=[],
-  )
-
-  # bobcat-release does not enable vm_tests or unittests due to the compiler
-  # flags enabled for baytrail.
-  site_config.AddConfig(
-      _release, 'bobcat-release',
-      boards=['bobcat'],
-      profile='minimal',
-      # This build doesn't generate signed images, so don't try to release them.
-      paygen=False,
-      signer_tests=False,
-  )
-
   site_config.AddConfig(
       _release, 'gizmo-release',
       _base_configs['gizmo'],
@@ -2275,14 +2235,6 @@ def GetConfig():
   site_config.AddConfig(
       moblab_release, 'panther_moblab-release',
       _base_configs['panther_moblab'],
-  )
-
-  site_config.AddConfig(
-      _release, 'rush-release',
-      _base_configs['rush'],
-      # This build doesn't generate signed images, so don't try to release them.
-      paygen=False,
-      signer_tests=False,
   )
 
   site_config.AddConfig(
@@ -2702,8 +2654,6 @@ def GetConfig():
   _firmware_boards = frozenset([
       'auron',
       'banjo',
-      'bayleybay',
-      'beltino',
       'butterfly',
       'candy',
       'chell',
@@ -2757,7 +2707,6 @@ def GetConfig():
   _x86_depthcharge_firmware_boards = frozenset([
       'auron',
       'banjo',
-      'bayleybay',
       'candy',
       'clapper',
       'cyan',
