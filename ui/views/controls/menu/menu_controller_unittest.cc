@@ -235,6 +235,12 @@ class MenuControllerTest : public ViewsTestBase {
         parent, index, MenuController::INCREMENT_SELECTION_UP);
   }
 
+  internal::MenuControllerDelegate* GetCurrentDelegate() {
+    return menu_controller_->delegate_;
+  }
+
+  bool IsAsyncRun() { return menu_controller_->async_run_; }
+
   void SelectByChar(base::char16 character) {
     menu_controller_->SelectByChar(character);
   }
@@ -517,7 +523,7 @@ TEST_F(MenuControllerTest, SelectByChar) {
 // MenuControllerDelegate when Accept is called.
 TEST_F(MenuControllerTest, AsynchronousAccept) {
   MenuController* controller = menu_controller();
-  controller->set_async_run(true);
+  controller->SetAsyncRun(true);
 
   int mouse_event_flags = 0;
   MenuItemView* run_result =
@@ -542,7 +548,7 @@ TEST_F(MenuControllerTest, AsynchronousAccept) {
 // MenuControllerDelegate when CancelAll is called.
 TEST_F(MenuControllerTest, AsynchronousCancelAll) {
   MenuController* controller = menu_controller();
-  controller->set_async_run(true);
+  controller->SetAsyncRun(true);
 
   int mouse_event_flags = 0;
   MenuItemView* run_result =
@@ -558,6 +564,39 @@ TEST_F(MenuControllerTest, AsynchronousCancelAll) {
   EXPECT_EQ(0, delegate->on_menu_closed_mouse_event_flags());
   EXPECT_EQ(internal::MenuControllerDelegate::NOTIFY_DELEGATE,
             delegate->on_menu_closed_notify_type());
+  EXPECT_EQ(MenuController::EXIT_ALL, controller->exit_type());
+}
+
+// Tests that an asynchrnous menu nested within a synchronous menu restores the
+// previous MenuControllerDelegate and synchronous settings.
+TEST_F(MenuControllerTest, AsynchronousNestedDelegate) {
+  MenuController* controller = menu_controller();
+  TestMenuControllerDelegate* delegate = menu_controller_delegate();
+  scoped_ptr<TestMenuControllerDelegate> nested_delegate(
+      new TestMenuControllerDelegate());
+
+  ASSERT_FALSE(IsAsyncRun());
+  controller->AddNestedDelegate(nested_delegate.get());
+  controller->SetAsyncRun(true);
+
+  EXPECT_TRUE(IsAsyncRun());
+  EXPECT_EQ(nested_delegate.get(), GetCurrentDelegate());
+
+  int mouse_event_flags = 0;
+  MenuItemView* run_result =
+      controller->Run(owner(), nullptr, menu_item(), gfx::Rect(),
+                      MENU_ANCHOR_TOPLEFT, false, false, &mouse_event_flags);
+  EXPECT_EQ(run_result, nullptr);
+
+  controller->CancelAll();
+  EXPECT_FALSE(IsAsyncRun());
+  EXPECT_EQ(delegate, GetCurrentDelegate());
+  EXPECT_EQ(0, delegate->on_menu_closed_called());
+  EXPECT_EQ(1, nested_delegate->on_menu_closed_called());
+  EXPECT_EQ(nullptr, nested_delegate->on_menu_closed_menu());
+  EXPECT_EQ(0, nested_delegate->on_menu_closed_mouse_event_flags());
+  EXPECT_EQ(internal::MenuControllerDelegate::NOTIFY_DELEGATE,
+            nested_delegate->on_menu_closed_notify_type());
   EXPECT_EQ(MenuController::EXIT_ALL, controller->exit_type());
 }
 

@@ -88,6 +88,7 @@ MenuRunner::RunResult MenuRunnerImpl::RunMenuAt(Widget* parent,
         controller->CancelAll();
         controller = NULL;
       }
+      controller->AddNestedDelegate(this);
     } else {
       // There's some other menu open and we're not nested. Cancel the menu.
       controller->CancelAll();
@@ -113,7 +114,7 @@ MenuRunner::RunResult MenuRunnerImpl::RunMenuAt(Widget* parent,
     controller = new MenuController(!for_drop_, this);
     owns_controller_ = true;
   }
-  controller->set_async_run(async_);
+  controller->SetAsyncRun(async_);
   controller->set_is_combobox((run_types & MenuRunner::COMBOBOX) != 0);
   controller_ = controller;
   menu_->set_controller(controller_);

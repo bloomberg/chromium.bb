@@ -118,14 +118,22 @@ class VIEWS_EXPORT MenuController : public WidgetObserver {
   // An alternative to Cancel(EXIT_ALL) that can be used with a OneShotTimer.
   void CancelAll() { Cancel(EXIT_ALL); }
 
+  // When is_nested_run() this will add a delegate to the stack. The most recent
+  // delegate will be notified. It will be removed upon the exiting of the
+  // nested menu. Ownership is not taken.
+  void AddNestedDelegate(internal::MenuControllerDelegate* delegate);
+
+  // Sets whether the subsequent call to Run is asynchronous. When nesting calls
+  // to Run, if a new MenuControllerDelegate has been nested, the previous
+  // asynchronous state will be reapplied once nesting has ended.
+  void SetAsyncRun(bool is_async);
+
   // Returns the current exit type. This returns a value other than EXIT_NONE if
   // the menu is being canceled.
   ExitType exit_type() const { return exit_type_; }
 
   // Returns the time from the event which closed the menu - or 0.
   base::TimeDelta closing_event_time() const { return closing_event_time_; }
-
-  void set_async_run(bool is_async) { async_run_ = is_async; }
 
   void set_is_combobox(bool is_combobox) { is_combobox_ = is_combobox; }
 
@@ -581,6 +589,12 @@ class VIEWS_EXPORT MenuController : public WidgetObserver {
   // MenuController to restore the state when the nested run returns.
   typedef std::pair<State, linked_ptr<MenuButton::PressedLock> > NestedState;
   std::list<NestedState> menu_stack_;
+
+  // When Run is invoked during an active Run, it may be called from a separate
+  // MenuControllerDelegate. If not empty is means we are nested, and the
+  // stacked delegates should be notified instead of |delegate_|.
+  typedef std::pair<internal::MenuControllerDelegate*, bool> NestedDelegate;
+  std::list<NestedDelegate> delegate_stack_;
 
   // As the mouse moves around submenus are not opened immediately. Instead
   // they open after this timer fires.
