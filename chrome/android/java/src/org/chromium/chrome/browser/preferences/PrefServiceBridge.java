@@ -207,16 +207,16 @@ public final class PrefServiceBridge {
      */
     @CalledByNative
     public static String getAndroidPermissionForContentSetting(int contentSettingType) {
-        switch(contentSettingType) {
-            case ContentSettingsType.CONTENT_SETTINGS_TYPE_GEOLOCATION:
-                return android.Manifest.permission.ACCESS_FINE_LOCATION;
-            case ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
-                return android.Manifest.permission.RECORD_AUDIO;
-            case ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
-                return android.Manifest.permission.CAMERA;
-            default:
-                return null;
+        if (contentSettingType == ContentSettingsType.CONTENT_SETTINGS_TYPE_GEOLOCATION) {
+            return android.Manifest.permission.ACCESS_FINE_LOCATION;
         }
+        if (contentSettingType == ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC) {
+            return android.Manifest.permission.RECORD_AUDIO;
+        }
+        if (contentSettingType == ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA) {
+            return android.Manifest.permission.CAMERA;
+        }
+        return null;
     }
 
     public boolean isAcceptCookiesEnabled() {
