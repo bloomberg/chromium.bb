@@ -25,16 +25,6 @@ int TypeToPrefValue(SessionStartupPref::Type type) {
   }
 }
 
-void SetNewURLList(PrefService* prefs) {
-  if (prefs->IsUserModifiablePreference(prefs::kURLsToRestoreOnStartup)) {
-    base::ListValue new_url_pref_list;
-    base::StringValue* home_page =
-        new base::StringValue(prefs->GetString(prefs::kHomePage));
-    new_url_pref_list.Append(home_page);
-    prefs->Set(prefs::kURLsToRestoreOnStartup, new_url_pref_list);
-  }
-}
-
 void URLListToPref(const base::ListValue* url_list, SessionStartupPref* pref) {
   pref->urls.clear();
   for (size_t i = 0; i < url_list->GetSize(); ++i) {
@@ -57,7 +47,6 @@ void SessionStartupPref::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterListPref(prefs::kURLsToRestoreOnStartup,
                              user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterBooleanPref(prefs::kRestoreOnStartupMigrated, false);
 }
 
 // static
@@ -110,8 +99,6 @@ SessionStartupPref SessionStartupPref::GetStartupPref(Profile* profile) {
 SessionStartupPref SessionStartupPref::GetStartupPref(PrefService* prefs) {
   DCHECK(prefs);
 
-  MigrateIfNecessary(prefs);
-
   SessionStartupPref pref(
       PrefValueToType(prefs->GetInteger(prefs::kRestoreOnStartup)));
 
@@ -122,54 +109,6 @@ SessionStartupPref SessionStartupPref::GetStartupPref(PrefService* prefs) {
   URLListToPref(url_list, &pref);
 
   return pref;
-}
-
-// static
-void SessionStartupPref::MigrateIfNecessary(PrefService* prefs) {
-  DCHECK(prefs);
-
-  if (!prefs->GetBoolean(prefs::kRestoreOnStartupMigrated)) {
-    // Read existing values.
-    const base::Value* homepage_is_new_tab_page_value =
-        prefs->GetUserPrefValue(prefs::kHomePageIsNewTabPage);
-    bool homepage_is_new_tab_page = true;
-    if (homepage_is_new_tab_page_value) {
-      if (!homepage_is_new_tab_page_value->GetAsBoolean(
-              &homepage_is_new_tab_page))
-        NOTREACHED();
-    }
-
-    const base::Value* restore_on_startup_value =
-        prefs->GetUserPrefValue(prefs::kRestoreOnStartup);
-    int restore_on_startup = -1;
-    if (restore_on_startup_value) {
-      if (!restore_on_startup_value->GetAsInteger(&restore_on_startup))
-        NOTREACHED();
-    }
-
-    // If restore_on_startup has the deprecated value kPrefValueHomePage,
-    // migrate it to open the homepage on startup. If 'homepage is NTP' is set,
-    // that means just opening the NTP. If not, it means opening a one-item URL
-    // list containing the homepage.
-    if (restore_on_startup == kPrefValueHomePage) {
-      if (homepage_is_new_tab_page) {
-        prefs->SetInteger(prefs::kRestoreOnStartup, kPrefValueNewTab);
-      } else {
-        prefs->SetInteger(prefs::kRestoreOnStartup, kPrefValueURLs);
-        SetNewURLList(prefs);
-      }
-    } else if (!restore_on_startup_value && !homepage_is_new_tab_page &&
-               GetDefaultStartupType() == DEFAULT) {
-      // kRestoreOnStartup was never set by the user, but the homepage was set.
-      // Migrate to the list of URLs. (If restore_on_startup was never set,
-      // and homepage_is_new_tab_page is true, no action is needed. The new
-      // default value is "open the new tab page" which is what we want.)
-      prefs->SetInteger(prefs::kRestoreOnStartup, kPrefValueURLs);
-      SetNewURLList(prefs);
-    }
-
-    prefs->SetBoolean(prefs::kRestoreOnStartupMigrated, true);
-  }
 }
 
 // static
@@ -204,7 +143,6 @@ SessionStartupPref::Type SessionStartupPref::PrefValueToType(int pref_value) {
   switch (pref_value) {
     case kPrefValueLast:     return SessionStartupPref::LAST;
     case kPrefValueURLs:     return SessionStartupPref::URLS;
-    case kPrefValueHomePage: return SessionStartupPref::HOMEPAGE;
     default:                 return SessionStartupPref::DEFAULT;
   }
 }

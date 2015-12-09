@@ -32,45 +32,7 @@ void RestoreOnStartupPolicyHandler::ApplyPolicySettings(
     int restore_on_startup;
     if (!restore_on_startup_value->GetAsInteger(&restore_on_startup))
       return;
-
-    if (restore_on_startup == SessionStartupPref::kPrefValueHomePage)
-      ApplyPolicySettingsFromHomePage(policies, prefs);
-    else
-      prefs->SetInteger(prefs::kRestoreOnStartup, restore_on_startup);
-  }
-}
-
-void RestoreOnStartupPolicyHandler::ApplyPolicySettingsFromHomePage(
-    const PolicyMap& policies,
-    PrefValueMap* prefs) {
-  const base::Value* homepage_is_new_tab_page_value =
-      policies.GetValue(key::kHomepageIsNewTabPage);
-  if (!homepage_is_new_tab_page_value) {
-    // The policy is enforcing 'open the homepage on startup' but not
-    // enforcing what the homepage should be. Don't set any prefs.
-    return;
-  }
-
-  bool homepage_is_new_tab_page;
-  if (!homepage_is_new_tab_page_value->GetAsBoolean(&homepage_is_new_tab_page))
-    return;
-
-  if (homepage_is_new_tab_page) {
-    prefs->SetInteger(prefs::kRestoreOnStartup,
-                      SessionStartupPref::kPrefValueNewTab);
-  } else {
-    const base::Value* homepage_value =
-        policies.GetValue(key::kHomepageLocation);
-    if (!homepage_value || !homepage_value->IsType(base::Value::TYPE_STRING)) {
-      // The policy is enforcing 'open the homepage on startup' but not
-      // enforcing what the homepage should be. Don't set any prefs.
-      return;
-    }
-    scoped_ptr<base::ListValue> url_list(new base::ListValue());
-    url_list->Append(homepage_value->CreateDeepCopy());
-    prefs->SetInteger(prefs::kRestoreOnStartup,
-                      SessionStartupPref::kPrefValueURLs);
-    prefs->SetValue(prefs::kURLsToRestoreOnStartup, url_list.Pass());
+    prefs->SetInteger(prefs::kRestoreOnStartup, restore_on_startup);
   }
 }
 
@@ -86,7 +48,7 @@ bool RestoreOnStartupPolicyHandler::CheckPolicySettings(
     int restore_value;
     CHECK(restore_policy->GetAsInteger(&restore_value));  // Passed type check.
     switch (restore_value) {
-      case SessionStartupPref::kPrefValueHomePage:
+      case 0:  // Deprecated kPrefValueHomePage.
         errors->AddError(policy_name(), IDS_POLICY_VALUE_DEPRECATED);
         break;
       case SessionStartupPref::kPrefValueLast: {

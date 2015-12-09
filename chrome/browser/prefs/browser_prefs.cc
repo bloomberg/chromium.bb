@@ -242,6 +242,9 @@ const char kURLsToRestoreOnStartupOld[] = "session.urls_to_restore_on_startup";
 const char kRestoreStartupURLsMigrationTime[] =
   "session.startup_urls_migration_time";
 
+// Deprecated 12/2015.
+const char kRestoreOnStartupMigrated[] = "session.restore_on_startup_migrated";
+
 }  // namespace
 
 namespace chrome {
@@ -542,6 +545,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 
   registry->RegisterListPref(kURLsToRestoreOnStartupOld);
   registry->RegisterInt64Pref(kRestoreStartupURLsMigrationTime, 0);
+  registry->RegisterBooleanPref(kRestoreOnStartupMigrated, false);
 }
 
 void RegisterUserProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
@@ -593,6 +597,9 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   // Added 12/1015.
   profile_prefs->ClearPref(kURLsToRestoreOnStartupOld);
   profile_prefs->ClearPref(kRestoreStartupURLsMigrationTime);
+
+  // Added 12/2015.
+  profile_prefs->ClearPref(kRestoreOnStartupMigrated);
 }
 
 }  // namespace chrome

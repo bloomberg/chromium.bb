@@ -681,10 +681,6 @@ Browser* StartupBrowserCreatorImpl::ProcessSpecifiedURLs(
     // specified on the command line. Filter out any urls that are to be
     // restored by virtue of having been previously pinned.
     AddUniqueURLs(pref.urls, &tabs);
-  } else if (pref.type == SessionStartupPref::HOMEPAGE) {
-    // If 'homepage' selected, either by the user or by a policy, we should
-    // have migrated them to another value.
-    NOTREACHED() << "SessionStartupPref has deprecated type HOMEPAGE";
   }
 
   if (tabs.empty())

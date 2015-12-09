@@ -27,9 +27,6 @@ class RestoreOnStartupPolicyHandler : public TypeCheckingPolicyHandler {
                            PrefValueMap* prefs) override;
 
  private:
-  void ApplyPolicySettingsFromHomePage(const PolicyMap& policies,
-                                       PrefValueMap* prefs);
-
   DISALLOW_COPY_AND_ASSIGN(RestoreOnStartupPolicyHandler);
 };
 

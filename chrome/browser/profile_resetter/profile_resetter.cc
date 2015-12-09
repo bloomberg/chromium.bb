@@ -282,7 +282,6 @@ void ProfileResetter::ResetStartupPages() {
   else
     prefs->ClearPref(prefs::kRestoreOnStartup);
 
-  prefs->SetBoolean(prefs::kRestoreOnStartupMigrated, true);
   MarkAsDone(STARTUP_PAGES);
 }
 

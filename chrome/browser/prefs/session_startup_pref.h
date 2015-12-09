@@ -23,25 +23,18 @@ struct SessionStartupPref {
     // Indicates the user wants to open the New Tab page.
     DEFAULT,
 
-    // Deprecated. See comment in session_startup_pref.cc
-    HOMEPAGE,
-
     // Indicates the user wants to restore the last session.
     LAST,
 
     // Indicates the user wants to restore a specific set of URLs. The URLs
     // are contained in urls.
     URLS,
-
-    // Number of values in this enum.
-    TYPE_COUNT
   };
 
   // For historical reasons the enum and value registered in the prefs don't
   // line up. These are the values registered in prefs.
   // The values are also recorded in Settings.StartupPageLoadSettings histogram,
   // so make sure to update histograms.xml if you change these.
-  static const int kPrefValueHomePage = 0;  // Deprecated
   static const int kPrefValueLast = 1;
   static const int kPrefValueURLs = 4;
   static const int kPrefValueNewTab = 5;
@@ -58,11 +51,6 @@ struct SessionStartupPref {
                              const SessionStartupPref& pref);
   static SessionStartupPref GetStartupPref(Profile* profile);
   static SessionStartupPref GetStartupPref(PrefService* prefs);
-
-  // If the user had the "restore on startup" property set to the deprecated
-  // "Open the home page" value, this migrates them to a value that will have
-  // the same effect.
-  static void MigrateIfNecessary(PrefService* prefs);
 
   // Whether the startup type and URLs are managed via policy.
   static bool TypeIsManaged(PrefService* prefs);

@@ -29,7 +29,6 @@ extern const char kLastProfileResetTimestamp[];
 #endif
 extern const char kProfileIconVersion[];
 extern const char kRestoreOnStartup[];
-extern const char kRestoreOnStartupMigrated[];
 extern const char kSessionExitedCleanly[];
 extern const char kSessionExitType[];
 extern const char kSupervisedUserCustodianEmail[];

@@ -70,8 +70,7 @@ TEST_F(RestoreOnStartupPolicyHandlerTest, CheckPolicySettings_Unspecified) {
 
 TEST_F(RestoreOnStartupPolicyHandlerTest, CheckPolicySettings_UnknownValue) {
   // Specify an unknown value for the policy.
-  int impossible_value = SessionStartupPref::kPrefValueHomePage +
-                         SessionStartupPref::kPrefValueLast +
+  int impossible_value = SessionStartupPref::kPrefValueLast +
                          SessionStartupPref::kPrefValueURLs +
                          SessionStartupPref::kPrefValueNewTab;
   SetPolicyValue(key::kRestoreOnStartup,
@@ -89,7 +88,7 @@ TEST_F(RestoreOnStartupPolicyHandlerTest, CheckPolicySettings_HomePage) {
   // Specify the HomePage value.
   SetPolicyValue(
       key::kRestoreOnStartup,
-      new base::FundamentalValue(SessionStartupPref::kPrefValueHomePage));
+      new base::FundamentalValue(0));  // kPrefValueHomePage, deprecated.
   // Checking should succeed but add an error to the error map.
   EXPECT_TRUE(CheckPolicySettings());
   EXPECT_EQ(1U, errors().size());
@@ -114,6 +113,18 @@ TEST_F(RestoreOnStartupPolicyHandlerTest,
                 IDS_POLICY_OVERRIDDEN,
                 base::ASCIIToUTF16(key::kRestoreOnStartup)),
             errors().begin()->second);
+}
+
+TEST_F(RestoreOnStartupPolicyHandlerTest, ApplyPolicySettings_NotHomePage) {
+  // Specify anything except the HomePage value.
+  int not_home_page = 1;  // kPrefValueHomePage + 1, deprecated.
+  SetPolicyValue(key::kRestoreOnStartup,
+                 new base::FundamentalValue(not_home_page));
+  ApplyPolicySettings();
+  // The resulting prefs should have the value we specified.
+  int result;
+  EXPECT_TRUE(prefs().GetInteger(prefs::kRestoreOnStartup, &result));
+  EXPECT_EQ(not_home_page, result);
 }
 
 TEST_F(RestoreOnStartupPolicyHandlerTest,
@@ -176,118 +187,6 @@ TEST_F(RestoreOnStartupPolicyHandlerTest, ApplyPolicySettings_WrongType) {
   SetPolicyValue(key::kRestoreOnStartup, new base::FundamentalValue(false));
   // The resulting prefs should be empty.
   EXPECT_TRUE(prefs().begin() == prefs().end());
-}
-
-TEST_F(RestoreOnStartupPolicyHandlerTest, ApplyPolicySettings_NotHomePage) {
-  // Specify anything except the HomePage value.
-  int not_home_page = SessionStartupPref::kPrefValueHomePage + 1;
-  SetPolicyValue(key::kRestoreOnStartup,
-                 new base::FundamentalValue(not_home_page));
-  ApplyPolicySettings();
-  // The resulting prefs should have the value we specified.
-  int result;
-  EXPECT_TRUE(prefs().GetInteger(prefs::kRestoreOnStartup, &result));
-  EXPECT_EQ(not_home_page, result);
-}
-
-TEST_F(RestoreOnStartupPolicyHandlerTest,
-       ApplyPolicySettings_HomePage_NoHomePageValue) {
-  // Specify the HomePage value but no HomePageIsNewTabPage value.
-  SetPolicyValue(
-      key::kRestoreOnStartup,
-      new base::FundamentalValue(SessionStartupPref::kPrefValueHomePage));
-  ApplyPolicySettings();
-  // The resulting prefs should be empty.
-  EXPECT_TRUE(prefs().begin() == prefs().end());
-}
-
-TEST_F(RestoreOnStartupPolicyHandlerTest,
-       ApplyPolicySettings_HomePage_HomePageValueIsWrongType) {
-  // Specify the HomePage value and an integer for the home page value.
-  SetPolicyValue(
-      key::kRestoreOnStartup,
-      new base::FundamentalValue(SessionStartupPref::kPrefValueHomePage));
-  SetPolicyValue(
-      key::kHomepageIsNewTabPage,
-      new base::FundamentalValue(314159));
-  ApplyPolicySettings();
-  // The resulting prefs should be empty.
-  EXPECT_TRUE(prefs().begin() == prefs().end());
-}
-
-TEST_F(RestoreOnStartupPolicyHandlerTest,
-       ApplyPolicySettings_HomePage_HomePageIsNewTabPage) {
-  // Specify the HomePage value and the home page as the new tab page.
-  SetPolicyValue(
-      key::kRestoreOnStartup,
-      new base::FundamentalValue(SessionStartupPref::kPrefValueHomePage));
-  SetPolicyValue(
-      key::kHomepageIsNewTabPage,
-      new base::FundamentalValue(true));
-  ApplyPolicySettings();
-  // The resulting prefs should have the restore value as NTP.
-  int result;
-  EXPECT_TRUE(prefs().GetInteger(prefs::kRestoreOnStartup, &result));
-  int expected = SessionStartupPref::kPrefValueNewTab;
-  EXPECT_EQ(expected, result);
-}
-
-TEST_F(RestoreOnStartupPolicyHandlerTest,
-       ApplyPolicySettings_HomePage_HomePageIsNotNewTabPage_NotDefined) {
-  // Specify the HomePage value but don't specify the home page to use.
-  SetPolicyValue(
-      key::kRestoreOnStartup,
-      new base::FundamentalValue(SessionStartupPref::kPrefValueHomePage));
-  SetPolicyValue(
-      key::kHomepageIsNewTabPage,
-      new base::FundamentalValue(false));
-  ApplyPolicySettings();
-  // The resulting prefs should be empty.
-  EXPECT_TRUE(prefs().begin() == prefs().end());
-}
-
-TEST_F(RestoreOnStartupPolicyHandlerTest,
-       ApplyPolicySettings_HomePage_HomePageIsNotNewTabPage_WrongType) {
-  // Specify the HomePage value but specify a boolean as the home page.
-  SetPolicyValue(
-      key::kRestoreOnStartup,
-      new base::FundamentalValue(SessionStartupPref::kPrefValueHomePage));
-  SetPolicyValue(
-      key::kHomepageIsNewTabPage,
-      new base::FundamentalValue(false));
-  SetPolicyValue(
-      key::kHomepageLocation,
-      new base::FundamentalValue(false));
-  ApplyPolicySettings();
-  // The resulting prefs should be empty.
-  EXPECT_TRUE(prefs().begin() == prefs().end());
-}
-
-TEST_F(RestoreOnStartupPolicyHandlerTest,
-       ApplyPolicySettings_HomePage_HomePageIsNotNewTabPage) {
-  SetPolicyValue(
-      key::kRestoreOnStartup,
-      new base::FundamentalValue(SessionStartupPref::kPrefValueHomePage));
-  SetPolicyValue(key::kHomepageIsNewTabPage, new base::FundamentalValue(false));
-  SetPolicyValue(key::kHomepageLocation,
-                 new base::StringValue("http://foo.com"));
-  ApplyPolicySettings();
-
-  // The resulting prefs should have have URLs specified for startup.
-  int result;
-  EXPECT_TRUE(prefs().GetInteger(prefs::kRestoreOnStartup, &result));
-  int expected = SessionStartupPref::kPrefValueURLs;
-  EXPECT_EQ(expected, result);
-
-  // The resulting prefs should have the URL we specified as the home page.
-  base::Value* url_result;
-  EXPECT_TRUE(prefs().GetValue(prefs::kURLsToRestoreOnStartup, &url_result));
-  base::ListValue* url_list_result;
-  EXPECT_TRUE(url_result->GetAsList(&url_list_result));
-  EXPECT_EQ(1U, url_list_result->GetSize());
-  std::string expected_url;
-  EXPECT_TRUE(url_list_result->GetString(0, &expected_url));
-  EXPECT_EQ(std::string("http://foo.com"), expected_url);
 }
 
 }  // namespace policy
