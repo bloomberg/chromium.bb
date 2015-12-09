@@ -19,7 +19,7 @@ SurfacesScheduler::SurfacesScheduler()
                                       rendering_stats_instrumentation_.get()));
   scheduler_ = cc::Scheduler::Create(
       this, settings, 0, base::MessageLoop::current()->task_runner().get(),
-      nullptr, compositor_timing_history.Pass());
+      nullptr, std::move(compositor_timing_history));
   scheduler_->SetVisible(true);
   scheduler_->SetCanDraw(true);
   scheduler_->SetNeedsBeginMainFrame();

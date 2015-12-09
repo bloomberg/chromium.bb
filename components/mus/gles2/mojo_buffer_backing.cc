@@ -11,7 +11,7 @@ namespace mus {
 MojoBufferBacking::MojoBufferBacking(mojo::ScopedSharedBufferHandle handle,
                                      void* memory,
                                      size_t size)
-    : handle_(handle.Pass()), memory_(memory), size_(size) {}
+    : handle_(std::move(handle)), memory_(memory), size_(size) {}
 
 MojoBufferBacking::~MojoBufferBacking() {
   mojo::UnmapBuffer(memory_);
@@ -28,7 +28,7 @@ scoped_ptr<gpu::BufferBacking> MojoBufferBacking::Create(
     return scoped_ptr<BufferBacking>();
   DCHECK(memory);
   return scoped_ptr<BufferBacking>(
-      new MojoBufferBacking(handle.Pass(), memory, size));
+      new MojoBufferBacking(std::move(handle), memory, size));
 }
 void* MojoBufferBacking::GetMemory() const {
   return memory_;

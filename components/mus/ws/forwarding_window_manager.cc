@@ -25,7 +25,8 @@ mojom::WindowManager* ForwardingWindowManager::GetActiveWindowManager() {
 void ForwardingWindowManager::OpenWindow(
     mus::mojom::WindowTreeClientPtr client,
     mojo::Map<mojo::String, mojo::Array<uint8_t>> properties) {
-  GetActiveWindowManager()->OpenWindow(client.Pass(), properties.Pass());
+  GetActiveWindowManager()->OpenWindow(std::move(client),
+                                       std::move(properties));
 }
 
 void ForwardingWindowManager::GetConfig(const GetConfigCallback& callback) {

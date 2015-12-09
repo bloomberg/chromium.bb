@@ -75,8 +75,8 @@ void ServerWindow::RemoveObserver(ServerWindowObserver* observer) {
 void ServerWindow::CreateSurface(mojom::SurfaceType surface_type,
                                  mojo::InterfaceRequest<mojom::Surface> request,
                                  mojom::SurfaceClientPtr client) {
-  GetOrCreateSurfaceManager()->CreateSurface(surface_type, request.Pass(),
-                                             client.Pass());
+  GetOrCreateSurfaceManager()->CreateSurface(surface_type, std::move(request),
+                                             std::move(client));
 }
 
 void ServerWindow::Add(ServerWindow* child) {

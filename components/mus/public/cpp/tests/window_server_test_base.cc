@@ -99,7 +99,7 @@ void WindowServerTestBase::Create(
     mojo::ApplicationConnection* connection,
     mojo::InterfaceRequest<mojom::WindowTreeClient> request) {
   WindowTreeConnection::Create(
-      this, request.Pass(),
+      this, std::move(request),
       WindowTreeConnection::CreateType::DONT_WAIT_FOR_EMBED);
 }
 

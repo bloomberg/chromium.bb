@@ -83,7 +83,7 @@ WindowTreeConnection* WindowTreeConnection::Create(
     mojo::InterfaceRequest<mojom::WindowTreeClient> request,
     CreateType create_type) {
   WindowTreeClientImpl* client =
-      new WindowTreeClientImpl(delegate, nullptr, request.Pass());
+      new WindowTreeClientImpl(delegate, nullptr, std::move(request));
   if (create_type == CreateType::WAIT_FOR_EMBED)
     client->WaitForEmbed();
   return client;
@@ -95,7 +95,7 @@ WindowTreeConnection* WindowTreeConnection::CreateForWindowManager(
     CreateType create_type,
     WindowManagerDelegate* window_manager_delegate) {
   WindowTreeClientImpl* client = new WindowTreeClientImpl(
-      delegate, window_manager_delegate, request.Pass());
+      delegate, window_manager_delegate, std::move(request));
   if (create_type == CreateType::WAIT_FOR_EMBED)
     client->WaitForEmbed();
   return client;
@@ -118,7 +118,7 @@ WindowTreeClientImpl::WindowTreeClientImpl(
       in_destructor_(false) {
   // Allow for a null request in tests.
   if (request.is_pending())
-    binding_.Bind(request.Pass());
+    binding_.Bind(std::move(request));
 }
 
 WindowTreeClientImpl::~WindowTreeClientImpl() {
@@ -269,21 +269,21 @@ void WindowTreeClientImpl::SetProperty(Window* window,
   const uint32_t change_id = ScheduleInFlightChange(
       make_scoped_ptr(new InFlightPropertyChange(window, name, old_value)));
   tree_->SetWindowProperty(change_id, window->id(), mojo::String(name),
-                           data.Pass());
+                           std::move(data));
 }
 
 void WindowTreeClientImpl::SetWindowTextInputState(
     Id window_id,
     mojo::TextInputStatePtr state) {
   DCHECK(tree_);
-  tree_->SetWindowTextInputState(window_id, state.Pass());
+  tree_->SetWindowTextInputState(window_id, std::move(state));
 }
 
 void WindowTreeClientImpl::SetImeVisibility(Id window_id,
                                             bool visible,
                                             mojo::TextInputStatePtr state) {
   DCHECK(tree_);
-  tree_->SetImeVisibility(window_id, visible, state.Pass());
+  tree_->SetImeVisibility(window_id, visible, std::move(state));
 }
 
 void WindowTreeClientImpl::Embed(
@@ -292,7 +292,7 @@ void WindowTreeClientImpl::Embed(
     uint32_t policy_bitmask,
     const mojom::WindowTree::EmbedCallback& callback) {
   DCHECK(tree_);
-  tree_->Embed(window_id, client.Pass(), policy_bitmask, callback);
+  tree_->Embed(window_id, std::move(client), policy_bitmask, callback);
 }
 
 void WindowTreeClientImpl::AttachSurface(
@@ -301,7 +301,7 @@ void WindowTreeClientImpl::AttachSurface(
     mojo::InterfaceRequest<mojom::Surface> surface,
     mojom::SurfaceClientPtr client) {
   DCHECK(tree_);
-  tree_->AttachSurface(window_id, type, surface.Pass(), client.Pass());
+  tree_->AttachSurface(window_id, type, std::move(surface), std::move(client));
 }
 
 void WindowTreeClientImpl::LocalSetFocus(Window* focused) {
@@ -433,7 +433,7 @@ Window* WindowTreeClientImpl::NewWindow(
     transport_properties =
         mojo::Map<mojo::String, mojo::Array<uint8_t>>::From(*properties);
   }
-  tree_->NewWindow(change_id, window->id(), transport_properties.Pass());
+  tree_->NewWindow(change_id, window->id(), std::move(transport_properties));
   return window;
 }
 
@@ -463,9 +463,9 @@ void WindowTreeClientImpl::OnEmbed(ConnectionSpecificId connection_id,
                                    Id focused_window_id,
                                    uint32 access_policy) {
   DCHECK(!tree_ptr_);
-  tree_ptr_ = tree.Pass();
+  tree_ptr_ = std::move(tree);
   tree_ptr_.set_connection_error_handler([this]() { delete this; });
-  OnEmbedImpl(tree_ptr_.get(), connection_id, root_data.Pass(),
+  OnEmbedImpl(tree_ptr_.get(), connection_id, std::move(root_data),
               focused_window_id, access_policy);
 }
 
@@ -624,7 +624,7 @@ void WindowTreeClientImpl::OnWindowSharedPropertyChanged(
   if (ApplyServerChangeToExistingInFlightChange(new_change))
     return;
 
-  WindowPrivate(window).LocalSetSharedProperty(name, new_data.Pass());
+  WindowPrivate(window).LocalSetSharedProperty(name, std::move(new_data));
 }
 
 void WindowTreeClientImpl::OnWindowInputEvent(uint32_t event_id,

@@ -30,7 +30,7 @@ mojo::Array<uint8_t> Int32ToPropertyTransportValue(int32_t value) {
   mojo::Array<uint8_t> transport_value;
   transport_value.resize(bytes.size());
   memcpy(&transport_value.front(), &(bytes.front()), bytes.size());
-  return transport_value.Pass();
+  return transport_value;
 }
 
 class TestWindowTreeDelegate : public WindowTreeDelegate {
@@ -64,7 +64,7 @@ class WindowTreeClientImplPrivate {
     root_data->viewport_metrics->size_in_pixels =
         mojo::Size::From(gfx::Size(1000, 1000));
     root_data->viewport_metrics->device_pixel_ratio = 1;
-    tree_client_impl_->OnEmbedImpl(window_tree, 1, root_data.Pass(), 0,
+    tree_client_impl_->OnEmbedImpl(window_tree, 1, std::move(root_data), 0,
                                    access_policy);
   }
 

@@ -144,10 +144,10 @@ WindowTreeImpl* ConnectionManager::EmbedAtWindow(
   ClientConnection* client_connection =
       delegate_->CreateClientConnectionForEmbedAtWindow(
           this, GetProxy(&service_ptr), creator_id, window_id, policy_bitmask,
-          client.Pass());
+          std::move(client));
   AddConnection(client_connection);
   client_connection->service()->Init(client_connection->client(),
-                                     service_ptr.Pass());
+                                     std::move(service_ptr));
   OnConnectionMessagedClient(client_connection->service()->id());
 
   return client_connection->service();
@@ -206,7 +206,7 @@ mojom::ViewportMetricsPtr ConnectionManager::GetViewportMetricsForWindow(
 
   mojom::ViewportMetricsPtr metrics = mojom::ViewportMetrics::New();
   metrics->size_in_pixels = mojo::Size::New();
-  return metrics.Pass();
+  return metrics;
 }
 
 const WindowTreeImpl* ConnectionManager::GetConnectionWithRoot(

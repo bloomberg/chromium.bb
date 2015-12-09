@@ -39,11 +39,11 @@ WindowTreeHostImpl::WindowTreeHostImpl(
     mojom::WindowManagerPtr window_manager)
     : delegate_(nullptr),
       connection_manager_(connection_manager),
-      client_(client.Pass()),
+      client_(std::move(client)),
       event_dispatcher_(this),
       display_manager_(
           DisplayManager::Create(app_impl, gpu_state, surfaces_state)),
-      window_manager_(window_manager.Pass()),
+      window_manager_(std::move(window_manager)),
       tree_awaiting_input_ack_(nullptr),
       last_cursor_(0) {
   display_manager_->Init(this);
@@ -165,7 +165,7 @@ void WindowTreeHostImpl::AddAccelerator(
     uint32_t id,
     mojom::EventMatcherPtr event_matcher,
     const AddAcceleratorCallback& callback) {
-  bool success = event_dispatcher_.AddAccelerator(id, event_matcher.Pass());
+  bool success = event_dispatcher_.AddAccelerator(id, std::move(event_matcher));
   callback.Run(success);
 }
 
@@ -211,7 +211,7 @@ void WindowTreeHostImpl::OnClientClosed() {
   // can destroy the corresponding WindowTreeHostConnection, and |this|. So
   // setting it to nullptr afterwards in reset() ends up writing on free'd
   // memory. So transfer over to a local scoped_ptr<> before destroying it.
-  scoped_ptr<DisplayManager> temp = display_manager_.Pass();
+  scoped_ptr<DisplayManager> temp = std::move(display_manager_);
 }
 
 void WindowTreeHostImpl::OnEventAck(mojom::WindowTree* tree) {
@@ -234,9 +234,9 @@ void WindowTreeHostImpl::OnEventAckTimeout() {
 void WindowTreeHostImpl::DispatchNextEventFromQueue() {
   if (event_queue_.empty())
     return;
-  mojom::EventPtr next_event = event_queue_.front().Pass();
+  mojom::EventPtr next_event = std::move(event_queue_.front());
   event_queue_.pop();
-  event_dispatcher_.OnEvent(next_event.Pass());
+  event_dispatcher_.OnEvent(std::move(next_event));
 }
 
 void WindowTreeHostImpl::UpdateNativeCursor(int32_t cursor_id) {
@@ -255,10 +255,10 @@ void WindowTreeHostImpl::OnEvent(mojom::EventPtr event) {
   // queue up the event to be dispatched once the ack is received.
   if (event_ack_timer_.IsRunning()) {
     // TODO(sad): Coalesce if possible.
-    event_queue_.push(event.Pass());
+    event_queue_.push(std::move(event));
     return;
   }
-  event_dispatcher_.OnEvent(event.Pass());
+  event_dispatcher_.OnEvent(std::move(event));
 }
 
 void WindowTreeHostImpl::OnDisplayClosed() {
@@ -379,7 +379,7 @@ void WindowTreeHostImpl::OnFocusChanged(
 
 void WindowTreeHostImpl::OnAccelerator(uint32_t accelerator_id,
                                        mojom::EventPtr event) {
-  client()->OnAccelerator(accelerator_id, event.Pass());
+  client()->OnAccelerator(accelerator_id, std::move(event));
 }
 
 void WindowTreeHostImpl::SetFocusedWindowFromEventDispatcher(
@@ -415,7 +415,7 @@ void WindowTreeHostImpl::DispatchInputEventToWindow(ServerWindow* target,
     connection = connection_manager_->GetConnection(target->id().connection_id);
   }
   tree_awaiting_input_ack_ = connection;
-  connection->DispatchInputEvent(target, event.Pass());
+  connection->DispatchInputEvent(target, std::move(event));
 
   // TOOD(sad): Adjust this delay, possibly make this dynamic.
   const base::TimeDelta max_delay = base::debug::BeingDebugged()

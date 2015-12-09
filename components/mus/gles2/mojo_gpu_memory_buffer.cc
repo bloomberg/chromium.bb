@@ -17,7 +17,7 @@ MojoGpuMemoryBufferImpl::MojoGpuMemoryBufferImpl(
     scoped_ptr<base::SharedMemory> shared_memory)
     : size_(size),
       format_(format),
-      shared_memory_(shared_memory.Pass()),
+      shared_memory_(std::move(shared_memory)),
       mapped_(false) {}
 
 MojoGpuMemoryBufferImpl::~MojoGpuMemoryBufferImpl() {}
@@ -40,7 +40,7 @@ scoped_ptr<gfx::GpuMemoryBuffer> MojoGpuMemoryBufferImpl::Create(
 #endif  // defined(OS_MACOSX)
 
   return make_scoped_ptr<gfx::GpuMemoryBuffer>(
-      new MojoGpuMemoryBufferImpl(size, format, shared_memory.Pass()));
+      new MojoGpuMemoryBufferImpl(size, format, std::move(shared_memory)));
 }
 
 MojoGpuMemoryBufferImpl* MojoGpuMemoryBufferImpl::FromClientBuffer(

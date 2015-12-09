@@ -118,7 +118,7 @@ void InFlightPropertyChange::SetRevertValueFrom(const InFlightChange& change) {
 
 void InFlightPropertyChange::Revert() {
   WindowPrivate(window())
-      .LocalSetSharedProperty(property_name_, revert_value_.Pass());
+      .LocalSetSharedProperty(property_name_, std::move(revert_value_));
 }
 
 // InFlightPredefinedCursorChange ---------------------------------------------

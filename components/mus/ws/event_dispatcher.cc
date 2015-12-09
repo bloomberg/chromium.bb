@@ -203,18 +203,18 @@ void EventDispatcher::OnEvent(mojom::EventPtr event) {
       !event->key_data->is_char) {
     uint32_t accelerator = 0u;
     if (FindAccelerator(*event, &accelerator)) {
-      delegate_->OnAccelerator(accelerator, event.Pass());
+      delegate_->OnAccelerator(accelerator, std::move(event));
       return;
     }
   }
 
   if (event->key_data) {
-    ProcessKeyEvent(event.Pass());
+    ProcessKeyEvent(std::move(event));
     return;
   }
 
   if (event->pointer_data.get()) {
-    ProcessPointerEvent(event.Pass());
+    ProcessPointerEvent(std::move(event));
     return;
   }
 
@@ -225,7 +225,8 @@ void EventDispatcher::ProcessKeyEvent(mojom::EventPtr event) {
   ServerWindow* focused_window =
       delegate_->GetFocusedWindowForEventDispatcher();
   if (focused_window)
-    delegate_->DispatchInputEventToWindow(focused_window, false, event.Pass());
+    delegate_->DispatchInputEventToWindow(focused_window, false,
+                                          std::move(event));
 }
 
 void EventDispatcher::ProcessPointerEvent(mojom::EventPtr event) {
@@ -250,7 +251,7 @@ void EventDispatcher::ProcessPointerEvent(mojom::EventPtr event) {
     }
     if (is_mouse_event && !mouse_button_down_)
       mouse_cursor_source_window_ = pointer_target.window;
-    DispatchToPointerTarget(pointer_target, event.Pass());
+    DispatchToPointerTarget(pointer_target, std::move(event));
     return;
   }
 
@@ -298,7 +299,7 @@ void EventDispatcher::ProcessPointerEvent(mojom::EventPtr event) {
         FindDeepestVisibleWindowForEvents(root_, surface_id_, &location);
   }
 
-  DispatchToPointerTarget(pointer_targets_[pointer_id], event.Pass());
+  DispatchToPointerTarget(pointer_targets_[pointer_id], std::move(event));
 
   if (should_reset_target) {
     ServerWindow* target = pointer_targets_[pointer_id].window;
@@ -319,7 +320,7 @@ void EventDispatcher::DispatchToPointerTarget(const PointerTarget& target,
   event->pointer_data->location->x = location.x();
   event->pointer_data->location->y = location.y();
   delegate_->DispatchInputEventToWindow(target.window, target.in_nonclient_area,
-                                        event.Pass());
+                                        std::move(event));
 }
 
 void EventDispatcher::CancelPointerEventsToTarget(ServerWindow* window) {

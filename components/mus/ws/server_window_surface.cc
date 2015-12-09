@@ -37,8 +37,8 @@ ServerWindowSurface::ServerWindowSurface(
                            ->GetSurfacesState()
                            ->manager(),
                        this),
-      client_(client.Pass()),
-      binding_(this, request.Pass()) {
+      client_(std::move(client)),
+      binding_(this, std::move(request)) {
   surface_factory_.Create(surface_id_);
 }
 

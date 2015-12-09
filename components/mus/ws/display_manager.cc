@@ -270,8 +270,8 @@ void DefaultDisplayManager::Draw() {
   frame_pending_ = true;
   if (top_level_display_client_) {
     top_level_display_client_->SubmitCompositorFrame(
-        frame.Pass(), base::Bind(&DefaultDisplayManager::DidDraw,
-                                 weak_factory_.GetWeakPtr()));
+        std::move(frame), base::Bind(&DefaultDisplayManager::DidDraw,
+                                     weak_factory_.GetWeakPtr()));
   }
   dirty_rect_ = gfx::Rect();
 }
@@ -325,11 +325,11 @@ DefaultDisplayManager::GenerateCompositorFrame() {
 
   scoped_ptr<cc::DelegatedFrameData> frame_data(new cc::DelegatedFrameData);
   frame_data->device_scale_factor = metrics_.device_pixel_ratio;
-  frame_data->render_pass_list.push_back(render_pass.Pass());
+  frame_data->render_pass_list.push_back(std::move(render_pass));
 
   scoped_ptr<cc::CompositorFrame> frame(new cc::CompositorFrame);
-  frame->delegated_frame_data = frame_data.Pass();
-  return frame.Pass();
+  frame->delegated_frame_data = std::move(frame_data);
+  return frame;
 }
 
 void DefaultDisplayManager::OnBoundsChanged(const gfx::Rect& new_bounds) {
@@ -343,7 +343,7 @@ void DefaultDisplayManager::OnDamageRect(const gfx::Rect& damaged_region) {
 
 void DefaultDisplayManager::DispatchEvent(ui::Event* event) {
   mojom::EventPtr mojo_event(mojom::Event::From(*event));
-  delegate_->OnEvent(mojo_event.Pass());
+  delegate_->OnEvent(std::move(mojo_event));
 
   switch (event->type()) {
     case ui::ET_MOUSE_PRESSED:

@@ -12,14 +12,13 @@ namespace mus {
 
 GpuImpl::GpuImpl(mojo::InterfaceRequest<Gpu> request,
                  const scoped_refptr<GpuState>& state)
-    : binding_(this, request.Pass()), state_(state) {
-}
+    : binding_(this, std::move(request)), state_(state) {}
 
 GpuImpl::~GpuImpl() {}
 
 void GpuImpl::CreateOffscreenGLES2Context(
     mojo::InterfaceRequest<mojom::CommandBuffer> request) {
-  new CommandBufferImpl(request.Pass(), state_,
+  new CommandBufferImpl(std::move(request), state_,
                         make_scoped_ptr(new CommandBufferDriver(state_)));
 }
 

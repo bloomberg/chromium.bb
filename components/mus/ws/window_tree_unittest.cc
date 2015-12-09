@@ -54,7 +54,7 @@ class TestWindowTreeClient : public mus::mojom::WindowTreeClient {
   TestChangeTracker* tracker() { return &tracker_; }
 
   void Bind(mojo::InterfaceRequest<mojom::WindowTreeClient> request) {
-    binding_.Bind(request.Pass());
+    binding_.Bind(std::move(request));
   }
 
  private:
@@ -65,7 +65,7 @@ class TestWindowTreeClient : public mus::mojom::WindowTreeClient {
                Id focused_window_id,
                uint32_t access_policy) override {
     // TODO(sky): add test coverage of |focused_window_id|.
-    tracker_.OnEmbed(connection_id, root.Pass());
+    tracker_.OnEmbed(connection_id, std::move(root));
   }
   void OnEmbeddedAppDisconnected(uint32_t window) override {
     tracker_.OnEmbeddedAppDisconnected(window);
@@ -74,8 +74,8 @@ class TestWindowTreeClient : public mus::mojom::WindowTreeClient {
   void OnWindowBoundsChanged(uint32_t window,
                              mojo::RectPtr old_bounds,
                              mojo::RectPtr new_bounds) override {
-    tracker_.OnWindowBoundsChanged(window, old_bounds.Pass(),
-                                   new_bounds.Pass());
+    tracker_.OnWindowBoundsChanged(window, std::move(old_bounds),
+                                   std::move(new_bounds));
   }
   void OnClientAreaChanged(
       uint32_t window_id,
@@ -88,15 +88,15 @@ class TestWindowTreeClient : public mus::mojom::WindowTreeClient {
   void OnWindowViewportMetricsChanged(
       mojom::ViewportMetricsPtr old_metrics,
       mojom::ViewportMetricsPtr new_metrics) override {
-    tracker_.OnWindowViewportMetricsChanged(old_metrics.Pass(),
-                                            new_metrics.Pass());
+    tracker_.OnWindowViewportMetricsChanged(std::move(old_metrics),
+                                            std::move(new_metrics));
   }
   void OnWindowHierarchyChanged(uint32_t window,
                                 uint32_t new_parent,
                                 uint32_t old_parent,
                                 Array<WindowDataPtr> windows) override {
     tracker_.OnWindowHierarchyChanged(window, new_parent, old_parent,
-                                      windows.Pass());
+                                      std::move(windows));
   }
   void OnWindowReordered(uint32_t window_id,
                          uint32_t relative_window_id,
@@ -115,12 +115,12 @@ class TestWindowTreeClient : public mus::mojom::WindowTreeClient {
   void OnWindowSharedPropertyChanged(uint32_t window,
                                      const String& name,
                                      Array<uint8_t> new_data) override {
-    tracker_.OnWindowSharedPropertyChanged(window, name, new_data.Pass());
+    tracker_.OnWindowSharedPropertyChanged(window, name, std::move(new_data));
   }
   void OnWindowInputEvent(uint32_t event_id,
                           uint32_t window,
                           EventPtr event) override {
-    tracker_.OnWindowInputEvent(window, event.Pass());
+    tracker_.OnWindowInputEvent(window, std::move(event));
   }
   void OnWindowFocused(uint32_t focused_window_id) override {
     tracker_.OnWindowFocused(focused_window_id);
@@ -151,7 +151,7 @@ class TestWindowTreeClient : public mus::mojom::WindowTreeClient {
 class TestClientConnection : public ClientConnection {
  public:
   explicit TestClientConnection(scoped_ptr<WindowTreeImpl> service_impl)
-      : ClientConnection(service_impl.Pass(), &client_) {}
+      : ClientConnection(std::move(service_impl), &client_) {}
 
   TestWindowTreeClient* client() { return &client_; }
 
@@ -191,7 +191,7 @@ class TestConnectionManagerDelegate : public ConnectionManagerDelegate {
     // Used by ConnectionManager::AddRoot.
     scoped_ptr<WindowTreeImpl> service(new WindowTreeImpl(
         connection_manager, creator_id, root_id, policy_bitmask));
-    last_connection_ = new TestClientConnection(service.Pass());
+    last_connection_ = new TestClientConnection(std::move(service));
     return last_connection_;
   }
 
@@ -206,7 +206,7 @@ class TestWindowTreeHostConnection : public WindowTreeHostConnection {
  public:
   TestWindowTreeHostConnection(scoped_ptr<WindowTreeHostImpl> host_impl,
                                ConnectionManager* manager)
-      : WindowTreeHostConnection(host_impl.Pass(), manager) {}
+      : WindowTreeHostConnection(std::move(host_impl), manager) {}
   ~TestWindowTreeHostConnection() override {}
 
  private:
@@ -287,7 +287,7 @@ EventPtr CreatePointerDownEvent(int x, int y) {
   event->pointer_data->location->x = x;
   event->pointer_data->location->y = y;
   event->pointer_data->kind = mojom::POINTER_KIND_TOUCH;
-  return event.Pass();
+  return event;
 }
 
 EventPtr CreatePointerUpEvent(int x, int y) {
@@ -299,7 +299,7 @@ EventPtr CreatePointerUpEvent(int x, int y) {
   event->pointer_data->location->x = x;
   event->pointer_data->location->y = y;
   event->pointer_data->kind = mojom::POINTER_KIND_TOUCH;
-  return event.Pass();
+  return event;
 }
 
 EventPtr CreateMouseMoveEvent(int x, int y) {
@@ -311,7 +311,7 @@ EventPtr CreateMouseMoveEvent(int x, int y) {
   event->pointer_data->location->x = x;
   event->pointer_data->location->y = y;
   event->pointer_data->kind = mojom::POINTER_KIND_MOUSE;
-  return event.Pass();
+  return event;
 }
 
 EventPtr CreateMouseDownEvent(int x, int y) {
@@ -319,7 +319,7 @@ EventPtr CreateMouseDownEvent(int x, int y) {
   event->flags = static_cast<mus::mojom::EventFlags>(
       event->flags | mojom::EVENT_FLAGS_LEFT_MOUSE_BUTTON);
   event->pointer_data->kind = mojom::POINTER_KIND_MOUSE;
-  return event.Pass();
+  return event;
 }
 
 EventPtr CreateMouseUpEvent(int x, int y) {
@@ -327,7 +327,7 @@ EventPtr CreateMouseUpEvent(int x, int y) {
   event->flags = static_cast<mus::mojom::EventFlags>(
       event->flags | mojom::EVENT_FLAGS_LEFT_MOUSE_BUTTON);
   event->pointer_data->kind = mojom::POINTER_KIND_MOUSE;
-  return event.Pass();
+  return event;
 }
 
 }  // namespace
@@ -363,7 +363,7 @@ class WindowTreeTest : public testing::Test {
   TestWindowTreeHostConnection* host_connection() { return host_connection_; }
 
   void DispatchEventWithoutAck(mojom::EventPtr event) {
-    host_connection()->window_tree_host()->OnEvent(event.Pass());
+    host_connection()->window_tree_host()->OnEvent(std::move(event));
   }
 
   void AckPreviousEvent() {
@@ -373,7 +373,7 @@ class WindowTreeTest : public testing::Test {
   }
 
   void DispatchEventAndAckImmediately(mojom::EventPtr event) {
-    DispatchEventWithoutAck(event.Pass());
+    DispatchEventWithoutAck(std::move(event));
     AckPreviousEvent();
   }
 
@@ -430,9 +430,9 @@ void WindowTreeTest::SetupEventTargeting(
   mojom::WindowTreeClientPtr client;
   mojo::InterfaceRequest<mojom::WindowTreeClient> client_request =
       GetProxy(&client);
-  wm_client()->Bind(client_request.Pass());
+  wm_client()->Bind(std::move(client_request));
   ConnectionSpecificId connection_id = 0;
-  wm_connection()->Embed(embed_window_id, client.Pass(),
+  wm_connection()->Embed(embed_window_id, std::move(client),
                          mojom::WindowTree::ACCESS_POLICY_DEFAULT,
                          &connection_id);
   WindowTreeImpl* connection1 =
@@ -477,10 +477,9 @@ TEST_F(WindowTreeTest, FocusOnPointer) {
   mojom::WindowTreeClientPtr client;
   mojo::InterfaceRequest<mojom::WindowTreeClient> client_request =
       GetProxy(&client);
-  wm_client()->Bind(client_request.Pass());
+  wm_client()->Bind(std::move(client_request));
   ConnectionSpecificId connection_id = 0;
-  wm_connection()->Embed(embed_window_id,
-                         client.Pass(),
+  wm_connection()->Embed(embed_window_id, std::move(client),
                          mojom::WindowTree::ACCESS_POLICY_DEFAULT,
                          &connection_id);
   WindowTreeImpl* connection1 =

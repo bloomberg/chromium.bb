@@ -14,7 +14,7 @@ namespace ws {
 WindowTreeHostConnection::WindowTreeHostConnection(
     scoped_ptr<WindowTreeHostImpl> host_impl,
     ConnectionManager* manager)
-    : host_(host_impl.Pass()),
+    : host_(std::move(host_impl)),
       tree_(nullptr),
       connection_manager_(manager),
       connection_closed_(false) {}
@@ -53,9 +53,9 @@ WindowTreeHostConnectionImpl::WindowTreeHostConnectionImpl(
     scoped_ptr<WindowTreeHostImpl> host_impl,
     mojom::WindowTreeClientPtr client,
     ConnectionManager* manager)
-    : WindowTreeHostConnection(host_impl.Pass(), manager),
-      binding_(window_tree_host(), request.Pass()),
-      client_(client.Pass()) {}
+    : WindowTreeHostConnection(std::move(host_impl), manager),
+      binding_(window_tree_host(), std::move(request)),
+      client_(std::move(client)) {}
 
 WindowTreeHostConnectionImpl::~WindowTreeHostConnectionImpl() {}
 
@@ -63,7 +63,7 @@ void WindowTreeHostConnectionImpl::OnDisplayInitialized() {
   connection_manager()->AddHost(this);
   set_window_tree(connection_manager()->EmbedAtWindow(
       kInvalidConnectionId, window_tree_host()->root_window()->id(),
-      mojom::WindowTree::ACCESS_POLICY_EMBED_ROOT, client_.Pass()));
+      mojom::WindowTree::ACCESS_POLICY_EMBED_ROOT, std::move(client_)));
 }
 
 }  // namespace ws

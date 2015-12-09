@@ -60,16 +60,16 @@ void CommandBufferDriver::Initialize(
         loss_observer,
     mojo::ScopedSharedBufferHandle shared_state,
     mojo::Array<int32_t> attribs) {
-  sync_client_ = mojo::MakeProxy(sync_client.Pass());
-  loss_observer_ = mojo::MakeProxy(loss_observer.Pass());
-  bool success = DoInitialize(shared_state.Pass(), attribs.Pass());
+  sync_client_ = mojo::MakeProxy(std::move(sync_client));
+  loss_observer_ = mojo::MakeProxy(std::move(loss_observer));
+  bool success = DoInitialize(std::move(shared_state), std::move(attribs));
   mojom::GpuCapabilitiesPtr capabilities =
       success ? mojom::GpuCapabilities::From(decoder_->GetCapabilities())
               : nullptr;
   sync_client_->DidInitialize(success,
                               gpu::CommandBufferNamespace::MOJO,
                               command_buffer_id_,
-                              capabilities.Pass());
+                              std::move(capabilities));
 }
 
 bool CommandBufferDriver::MakeCurrent() {
@@ -158,11 +158,11 @@ bool CommandBufferDriver::DoInitialize(
 
   const size_t kSize = sizeof(gpu::CommandBufferSharedState);
   scoped_ptr<gpu::BufferBacking> backing(
-      MojoBufferBacking::Create(shared_state.Pass(), kSize));
+      MojoBufferBacking::Create(std::move(shared_state), kSize));
   if (!backing)
     return false;
 
-  command_buffer_->SetSharedStateBuffer(backing.Pass());
+  command_buffer_->SetSharedStateBuffer(std::move(backing));
   return true;
 }
 
@@ -194,12 +194,12 @@ void CommandBufferDriver::RegisterTransferBuffer(
   // Take ownership of the memory and map it into this process.
   // This validates the size.
   scoped_ptr<gpu::BufferBacking> backing(
-      MojoBufferBacking::Create(transfer_buffer.Pass(), size));
+      MojoBufferBacking::Create(std::move(transfer_buffer), size));
   if (!backing) {
     DVLOG(0) << "Failed to map shared memory.";
     return;
   }
-  command_buffer_->RegisterTransferBuffer(id, backing.Pass());
+  command_buffer_->RegisterTransferBuffer(id, std::move(backing));
 }
 
 void CommandBufferDriver::DestroyTransferBuffer(int32_t id) {

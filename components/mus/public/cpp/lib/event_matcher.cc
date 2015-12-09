@@ -23,7 +23,7 @@ mojom::EventMatcherPtr CreateKeyMatcher(mojom::KeyboardCode code,
   matcher->type_matcher->type = mus::mojom::EVENT_TYPE_KEY_PRESSED;
   matcher->flags_matcher->flags = flags;
   matcher->key_matcher->keyboard_code = code;
-  return matcher.Pass();
+  return matcher;
 }
 
 }  // namespace mus

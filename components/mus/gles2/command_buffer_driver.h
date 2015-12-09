@@ -48,7 +48,7 @@ class CommandBufferDriver {
 
   ~CommandBufferDriver();
 
-  void set_client(scoped_ptr<Client> client) { client_ = client.Pass(); }
+  void set_client(scoped_ptr<Client> client) { client_ = std::move(client); }
 
   void Initialize(
       mojo::InterfacePtrInfo<mojom::CommandBufferSyncClient> sync_client,

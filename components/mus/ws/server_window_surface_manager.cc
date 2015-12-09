@@ -35,7 +35,7 @@ void ServerWindowSurfaceManager::CreateSurface(
     mojo::InterfaceRequest<mojom::Surface> request,
     mojom::SurfaceClientPtr client) {
   type_to_surface_map_[surface_type] = make_scoped_ptr(new ServerWindowSurface(
-      this, surface_type, request.Pass(), client.Pass()));
+      this, surface_type, std::move(request), std::move(client)));
 }
 
 ServerWindowSurface* ServerWindowSurfaceManager::GetDefaultSurface() {

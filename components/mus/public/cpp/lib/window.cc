@@ -349,14 +349,14 @@ Window* Window::GetChildById(Id id) {
 
 void Window::SetTextInputState(mojo::TextInputStatePtr state) {
   if (connection_)
-    tree_client()->SetWindowTextInputState(id_, state.Pass());
+    tree_client()->SetWindowTextInputState(id_, std::move(state));
 }
 
 void Window::SetImeVisibility(bool visible, mojo::TextInputStatePtr state) {
   // SetImeVisibility() shouldn't be used if the window is not editable.
   DCHECK(state.is_null() || state->type != mojo::TEXT_INPUT_TYPE_NONE);
   if (connection_)
-    tree_client()->SetImeVisibility(id_, visible, state.Pass());
+    tree_client()->SetImeVisibility(id_, visible, std::move(state));
 }
 
 void Window::SetFocus() {
@@ -374,7 +374,7 @@ void Window::SetCanFocus(bool can_focus) {
 }
 
 void Window::Embed(mus::mojom::WindowTreeClientPtr client) {
-  Embed(client.Pass(), mus::mojom::WindowTree::ACCESS_POLICY_DEFAULT,
+  Embed(std::move(client), mus::mojom::WindowTree::ACCESS_POLICY_DEFAULT,
         base::Bind(&EmptyEmbedCallback));
 }
 
@@ -382,7 +382,7 @@ void Window::Embed(mus::mojom::WindowTreeClientPtr client,
                    uint32_t policy_bitmask,
                    const EmbedCallback& callback) {
   if (PrepareForEmbed())
-    tree_client()->Embed(id_, client.Pass(), policy_bitmask, callback);
+    tree_client()->Embed(id_, std::move(client), policy_bitmask, callback);
   else
     callback.Run(false, 0);
 }
@@ -395,9 +395,7 @@ namespace {
 mojom::ViewportMetricsPtr CreateEmptyViewportMetrics() {
   mojom::ViewportMetricsPtr metrics = mojom::ViewportMetrics::New();
   metrics->size_in_pixels = mojo::Size::New();
-  // TODO(vtl): The |.Pass()| below is only needed due to an MSVS bug; remove it
-  // once that's fixed.
-  return metrics.Pass();
+  return metrics;
 }
 
 }  // namespace
@@ -493,7 +491,7 @@ void Window::SetSharedPropertyInternal(const std::string& name,
         memcpy(&transport_value.front(), &(value->front()), value->size());
     }
     // TODO: add test coverage of this (450303).
-    tree_client()->SetProperty(this, name, transport_value.Pass());
+    tree_client()->SetProperty(this, name, std::move(transport_value));
   }
   LocalSetSharedProperty(name, value);
 }

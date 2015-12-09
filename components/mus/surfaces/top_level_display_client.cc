@@ -61,13 +61,13 @@ TopLevelDisplayClient::~TopLevelDisplayClient() {
 void TopLevelDisplayClient::SubmitCompositorFrame(
     scoped_ptr<cc::CompositorFrame> frame,
     const base::Closure& callback) {
-  pending_frame_ = frame.Pass();
+  pending_frame_ = std::move(frame);
 
   last_submitted_frame_size_ =
       pending_frame_->delegated_frame_data->render_pass_list.back()
           ->output_rect.size();
   display_->Resize(last_submitted_frame_size_);
-  factory_.SubmitCompositorFrame(cc_id_, pending_frame_.Pass(),
+  factory_.SubmitCompositorFrame(cc_id_, std::move(pending_frame_),
                                  base::Bind(&CallCallback, callback));
   surfaces_state_->scheduler()->SetNeedsDraw();
 }

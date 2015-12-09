@@ -102,7 +102,7 @@ void WindowTreeImpl::Init(mojom::WindowTreeClient* client,
   const Id focused_window_transport_id(WindowIdToTransportId(
       focused_window ? focused_window->id() : WindowId()));
 
-  client->OnEmbed(id_, WindowToWindowData(to_send.front()), tree.Pass(),
+  client->OnEmbed(id_, WindowToWindowData(to_send.front()), std::move(tree),
                   focused_window_transport_id,
                   is_embed_root_ ? WindowTree::ACCESS_POLICY_EMBED_ROOT
                                  : WindowTree::ACCESS_POLICY_DEFAULT);
@@ -219,7 +219,7 @@ bool WindowTreeImpl::Embed(const WindowId& window_id,
     return false;
   PrepareForEmbed(window_id);
   WindowTreeImpl* new_connection = connection_manager_->EmbedAtWindow(
-      id_, window_id, policy_bitmask, client.Pass());
+      id_, window_id, policy_bitmask, std::move(client));
   if (is_embed_root_)
     *connection_id = new_connection->id();
   return true;
@@ -309,7 +309,7 @@ void WindowTreeImpl::ProcessWindowPropertyChanged(
     data = Array<uint8_t>::From(*new_data);
 
   client()->OnWindowSharedPropertyChanged(WindowIdToTransportId(window->id()),
-                                          String(name), data.Pass());
+                                          String(name), std::move(data));
 }
 
 void WindowTreeImpl::ProcessWindowHierarchyChanged(
@@ -558,8 +558,8 @@ Array<mojom::WindowDataPtr> WindowTreeImpl::WindowsToWindowDatas(
     const std::vector<const ServerWindow*>& windows) {
   Array<mojom::WindowDataPtr> array(windows.size());
   for (size_t i = 0; i < windows.size(); ++i)
-    array[i] = WindowToWindowData(windows[i]).Pass();
-  return array.Pass();
+    array[i] = WindowToWindowData(windows[i]);
+  return array;
 }
 
 mojom::WindowDataPtr WindowTreeImpl::WindowToWindowData(
@@ -581,7 +581,7 @@ mojom::WindowDataPtr WindowTreeImpl::WindowToWindowData(
   window_data->drawn = window->IsDrawn();
   window_data->viewport_metrics =
       connection_manager_->GetViewportMetricsForWindow(window);
-  return window_data.Pass();
+  return window_data;
 }
 
 void WindowTreeImpl::GetWindowTreeImpl(
@@ -678,7 +678,7 @@ void WindowTreeImpl::DispatchInputEventImpl(ServerWindow* target,
   event_ack_id_ =
       0x1000000 | (reinterpret_cast<uintptr_t>(event.get()) & 0xffffff);
   client()->OnWindowInputEvent(
-      event_ack_id_, WindowIdToTransportId(target->id()), event.Pass());
+      event_ack_id_, WindowIdToTransportId(target->id()), std::move(event));
 }
 
 void WindowTreeImpl::NewWindow(
@@ -786,7 +786,7 @@ void WindowTreeImpl::SetWindowBounds(uint32_t change_id,
     const uint32_t wm_change_id =
         connection_manager_->GenerateWindowManagerChangeId(this, change_id);
     GetHost()->GetWindowTree()->client_->WmSetBounds(wm_change_id, window_id,
-                                                     bounds.Pass());
+                                                     std::move(bounds));
     return;
   }
 
@@ -816,7 +816,7 @@ void WindowTreeImpl::SetWindowProperty(uint32_t change_id,
     const uint32_t wm_change_id =
         connection_manager_->GenerateWindowManagerChangeId(this, change_id);
     GetHost()->GetWindowTree()->client_->WmSetProperty(wm_change_id, window_id,
-                                                       name, value.Pass());
+                                                       name, std::move(value));
     return;
   }
   const bool success = window && access_policy_->CanSetWindowProperties(window);
@@ -842,7 +842,7 @@ void WindowTreeImpl::AttachSurface(
       window && access_policy_->CanSetWindowSurface(window, type);
   if (!success)
     return;
-  window->CreateSurface(type, surface.Pass(), client.Pass());
+  window->CreateSurface(type, std::move(surface), std::move(client));
 }
 
 void WindowTreeImpl::SetWindowTextInputState(Id window_id,
@@ -913,7 +913,7 @@ void WindowTreeImpl::Embed(Id transport_window_id,
                            const EmbedCallback& callback) {
   ConnectionSpecificId connection_id = kInvalidConnectionId;
   const bool result = Embed(WindowIdFromTransportId(transport_window_id),
-                            client.Pass(), policy_bitmask, &connection_id);
+                            std::move(client), policy_bitmask, &connection_id);
   callback.Run(result, connection_id);
 }
 
