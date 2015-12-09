@@ -13,8 +13,8 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"
-#include "wtf/TypeTraits.h"
 #include "wtf/WeakPtr.h"
+#include <type_traits>
 
 namespace blink {
 
@@ -37,13 +37,13 @@ public:
     // variety, which will refer back to the owner heap object safely (but weakly.)
     //
     template<typename T>
-    static PassOwnPtr<CancellableTaskFactory> create(T* thisObject, void (T::*method)(), typename WTF::EnableIf<IsGarbageCollectedType<T>::value>::Type* = nullptr)
+    static PassOwnPtr<CancellableTaskFactory> create(T* thisObject, void (T::*method)(), typename std::enable_if<IsGarbageCollectedType<T>::value>::type* = nullptr)
     {
         return adoptPtr(new CancellableTaskFactory(WTF::bind(method, AllowCrossThreadWeakPersistent<T>(thisObject))));
     }
 
     template<typename T>
-    static PassOwnPtr<CancellableTaskFactory> create(T* thisObject, void (T::*method)(), typename WTF::EnableIf<!IsGarbageCollectedType<T>::value>::Type* = nullptr)
+    static PassOwnPtr<CancellableTaskFactory> create(T* thisObject, void (T::*method)(), typename std::enable_if<!IsGarbageCollectedType<T>::value>::type* = nullptr)
     {
         return adoptPtr(new CancellableTaskFactory(WTF::bind(method, thisObject)));
     }
