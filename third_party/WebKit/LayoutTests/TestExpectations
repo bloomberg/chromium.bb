@@ -168,10 +168,15 @@ crbug.com/518883 crbug.com/390452 http/tests/security/isolatedWorld/media-query-
 crbug.com/518987 http/tests/xmlhttprequest/navigation-abort-detaches-frame.html [ Pass Timeout ]
 crbug.com/518988 [ Win7 ] http/tests/xmlhttprequest/xmlhttprequest-50ms-download-dispatch.html [ Failure Pass ]
 crbug.com/518989 [ Mac ] imported/csswg-test/css-writing-modes-3/writing-mode-vertical-rl-002.xht [ Failure Pass Timeout ]
-crbug.com/518992 [ Win ] imported/web-platform-tests/user-timing/test_user_timing_measure.html [ Skip ]
-crbug.com/518993 [ Win ] imported/web-platform-tests/user-timing/test_user_timing_measure_navigation_timing.html [ Skip ]
 crbug.com/518995 media/track/media-element-move-to-new-document-assert.html [ Failure Pass ]
 crbug.com/518998 media/video-poster-after-loadedmetadata.html [ Failure Pass ]
+
+# These performance-sensitive user-timing tests are flaky in debug on all platforms, and flaky on all configurations of windows.
+# See: crbug.com/567965, crbug.com/518992, and crbug.com/518993
+crbug.com/567965 [ Debug ] imported/web-platform-tests/user-timing/test_user_timing_measure.html [ Skip ]
+crbug.com/518992 [ Win Release ] imported/web-platform-tests/user-timing/test_user_timing_measure.html [ Skip ]
+crbug.com/567965 [ Debug ] imported/web-platform-tests/user-timing/test_user_timing_mark.html [ Skip ]
+crbug.com/518993 [ Win ] imported/web-platform-tests/user-timing/test_user_timing_measure_navigation_timing.html [ Skip ]
 
 crbug.com/526594 [ Win ] plugins/webview-plugin-lifecycle.html [ Failure ]
 
