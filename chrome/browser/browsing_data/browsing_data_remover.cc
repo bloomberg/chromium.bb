@@ -95,7 +95,6 @@
 #endif
 
 #if defined(ENABLE_EXTENSIONS)
-#include "chrome/browser/apps/ephemeral_app_service.h"
 #include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
@@ -693,16 +692,6 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
 
     storage_partition_remove_mask |=
         content::StoragePartition::REMOVE_DATA_MASK_WEBRTC_IDENTITY;
-
-#if defined(ENABLE_EXTENSIONS)
-    // Clear the ephemeral apps cache. This is nullptr while testing. OTR
-    // Profile has neither apps nor an ExtensionService, so ClearCachedApps
-    // fails.
-    EphemeralAppService* ephemeral_app_service =
-        EphemeralAppService::Get(profile_);
-    if (ephemeral_app_service && !profile_->IsOffTheRecord())
-      ephemeral_app_service->ClearCachedApps();
-#endif
   }
 
   if (remove_mask & REMOVE_WEBRTC_IDENTITY) {

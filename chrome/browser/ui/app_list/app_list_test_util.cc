@@ -29,7 +29,6 @@ void AppListTestBase::SetUp() {
   // - 1 dummy extension (which should not be visible in the launcher)
   // - 2 packaged extension apps
   // - 1 hosted extension app
-  // - 1 ephemeral app (which should not be visible in the launcher)
   base::FilePath source_install_dir =
       data_dir().AppendASCII("app_list").AppendASCII("Extensions");
   base::FilePath pref_path = source_install_dir
@@ -38,6 +37,6 @@ void AppListTestBase::SetUp() {
   InitializeInstalledExtensionService(pref_path, source_install_dir);
   service_->Init();
 
-  // There should be 5 extensions in the test profile.
-  ASSERT_EQ(5U, registry()->enabled_extensions().size());
+  // There should be 4 extensions in the test profile.
+  ASSERT_EQ(4U, registry()->enabled_extensions().size());
 }

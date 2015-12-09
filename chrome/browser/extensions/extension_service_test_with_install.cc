@@ -399,7 +399,6 @@ void ExtensionServiceTestWithInstall::OnExtensionWillBeInstalled(
     content::BrowserContext* browser_context,
     const Extension* extension,
     bool is_update,
-    bool from_ephemeral,
     const std::string& old_name) {
   installed_ = extension;
   was_update_ = is_update;

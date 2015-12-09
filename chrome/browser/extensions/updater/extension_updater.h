@@ -221,7 +221,6 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
   void OnExtensionWillBeInstalled(content::BrowserContext* browser_context,
                                   const Extension* extension,
                                   bool is_update,
-                                  bool from_ephemeral,
                                   const std::string& old_name) override;
 
   // Send a notification that update checks are starting.

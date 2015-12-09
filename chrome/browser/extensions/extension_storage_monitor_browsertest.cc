@@ -97,11 +97,6 @@ class ExtensionStorageMonitorTest : public ExtensionBrowserTest {
     return storage_monitor_->initial_extension_threshold_;
   }
 
-  int64 GetInitialEphemeralThreshold() {
-    CHECK(storage_monitor_);
-    return storage_monitor_->initial_ephemeral_threshold_;
-  }
-
   void DisableForInstalledExtensions() {
     CHECK(storage_monitor_);
     storage_monitor_->enable_for_all_extensions_ = false;
@@ -110,19 +105,6 @@ class ExtensionStorageMonitorTest : public ExtensionBrowserTest {
   const Extension* InitWriteDataApp() {
     base::FilePath path = test_data_dir_.AppendASCII(kWriteDataApp);
     const Extension* extension = InstallExtension(path, 1);
-    EXPECT_TRUE(extension);
-    return extension;
-  }
-
-  const Extension* InitWriteDataEphemeralApp() {
-    // The threshold for installed extensions should be higher than ephemeral
-    // apps.
-    storage_monitor_->initial_extension_threshold_ =
-        storage_monitor_->initial_ephemeral_threshold_ * 4;
-
-    base::FilePath path = test_data_dir_.AppendASCII(kWriteDataApp);
-    const Extension* extension = InstallEphemeralAppWithSourceAndFlags(
-        path, 1, Manifest::INTERNAL, Extension::NO_FLAGS);
     EXPECT_TRUE(extension);
     return extension;
   }
@@ -160,7 +142,6 @@ class ExtensionStorageMonitorTest : public ExtensionBrowserTest {
     // to trigger notifications in these tests.
     storage_monitor_->enable_for_all_extensions_ = true;
     storage_monitor_->initial_extension_threshold_ = kInitialUsageThreshold;
-    storage_monitor_->initial_ephemeral_threshold_ = kInitialUsageThreshold;
 
     // To ensure storage events are dispatched from QuotaManager immediately.
     storage_monitor_->observer_rate_ = base::TimeDelta();
@@ -255,52 +236,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionStorageMonitorTest, UserDisabledNotifications) {
   ASSERT_GT(next_data_size, 0);
 
   WriteBytesNotExpectingNotification(extension, next_data_size);
-}
-
-// Verify that thresholds for ephemeral apps are reset when they are
-// promoted to regular installed apps.
-IN_PROC_BROWSER_TEST_F(ExtensionStorageMonitorTest, EphemeralAppLowUsage) {
-  const Extension* extension = InitWriteDataEphemeralApp();
-  ASSERT_TRUE(extension);
-  WriteBytesExpectingNotification(extension, GetInitialEphemeralThreshold());
-
-  // Store the number of bytes until the next threshold is reached.
-  int64 next_threshold = GetNextStorageThreshold(extension->id());
-  int64 next_data_size = next_threshold - GetInitialEphemeralThreshold();
-  ASSERT_GT(next_data_size, 0);
-  EXPECT_GE(GetInitialExtensionThreshold(), next_threshold);
-
-  // Promote the ephemeral app.
-  ExtensionService* service =
-      ExtensionSystem::Get(profile())->extension_service();
-  service->PromoteEphemeralApp(extension, false);
-
-  // The next threshold should now be equal to the initial threshold for
-  // extensions (which is higher than the initial threshold for ephemeral apps).
-  EXPECT_EQ(GetInitialExtensionThreshold(),
-            GetNextStorageThreshold(extension->id()));
-
-  // Since the threshold was increased, a notification should not be
-  // triggered.
-  WriteBytesNotExpectingNotification(extension, next_data_size);
-}
-
-// Verify that thresholds for ephemeral apps are not reset when they are
-// promoted to regular installed apps if their usage is higher than the initial
-// threshold for installed extensions.
-IN_PROC_BROWSER_TEST_F(ExtensionStorageMonitorTest, EphemeralAppWithHighUsage) {
-  const Extension* extension = InitWriteDataEphemeralApp();
-  ASSERT_TRUE(extension);
-  WriteBytesExpectingNotification(extension, GetInitialExtensionThreshold());
-  int64 saved_next_threshold = GetNextStorageThreshold(extension->id());
-
-  // Promote the ephemeral app.
-  ExtensionService* service =
-      ExtensionSystem::Get(profile())->extension_service();
-  service->PromoteEphemeralApp(extension, false);
-
-  // The next threshold should not have changed.
-  EXPECT_EQ(saved_next_threshold, GetNextStorageThreshold(extension->id()));
 }
 
 // Ensure that monitoring is disabled for installed extensions if

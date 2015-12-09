@@ -199,13 +199,7 @@ void RuntimeAPI::OnExtensionWillBeInstalled(
     content::BrowserContext* browser_context,
     const Extension* extension,
     bool is_update,
-    bool from_ephemeral,
     const std::string& old_name) {
-  // Ephemeral apps are not considered to be installed and do not receive
-  // the onInstalled() event.
-  if (util::IsEphemeralApp(extension->id(), browser_context_))
-    return;
-
   Version old_version = delegate_->GetPreviousExtensionVersion(extension);
 
   // Dispatch the onInstalled event.
@@ -222,11 +216,6 @@ void RuntimeAPI::OnExtensionUninstalled(
     content::BrowserContext* browser_context,
     const Extension* extension,
     UninstallReason reason) {
-  // Ephemeral apps are not considered to be installed, so the uninstall URL
-  // is not invoked when they are removed.
-  if (util::IsEphemeralApp(extension->id(), browser_context_))
-    return;
-
   RuntimeEventRouter::OnExtensionUninstalled(
       browser_context_, extension->id(), reason);
 }

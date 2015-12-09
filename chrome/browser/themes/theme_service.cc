@@ -125,7 +125,6 @@ class ThemeService::ThemeObserver
   void OnExtensionWillBeInstalled(content::BrowserContext* browser_context,
                                   const extensions::Extension* extension,
                                   bool is_update,
-                                  bool from_ephemeral,
                                   const std::string& old_name) override {
     if (extension->is_theme()) {
       // The theme may be initially disabled. Wait till it is loaded (if ever).

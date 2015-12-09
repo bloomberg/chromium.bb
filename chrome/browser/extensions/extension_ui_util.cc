@@ -31,8 +31,7 @@ namespace ui_util {
 
 bool ShouldDisplayInAppLauncher(const Extension* extension,
                                 content::BrowserContext* context) {
-  return CanDisplayInAppLauncher(extension, context) &&
-         !util::IsEphemeralApp(extension->id(), context);
+  return CanDisplayInAppLauncher(extension, context);
 }
 
 bool CanDisplayInAppLauncher(const Extension* extension,
@@ -44,20 +43,17 @@ bool CanDisplayInAppLauncher(const Extension* extension,
 bool ShouldDisplayInNewTabPage(const Extension* extension,
                                content::BrowserContext* context) {
   return extension->ShouldDisplayInNewTabPage() &&
-      !IsBlockedByPolicy(extension, context) &&
-      !util::IsEphemeralApp(extension->id(), context);
+      !IsBlockedByPolicy(extension, context);
 }
 
 bool ShouldDisplayInExtensionSettings(const Extension* extension,
                                       content::BrowserContext* context) {
-  return extension->ShouldDisplayInExtensionSettings() &&
-      !util::IsEphemeralApp(extension->id(), context);
+  return extension->ShouldDisplayInExtensionSettings();
 }
 
 bool ShouldNotBeVisible(const Extension* extension,
                         content::BrowserContext* context) {
-  return extension->ShouldNotBeVisible() ||
-      util::IsEphemeralApp(extension->id(), context);
+  return extension->ShouldNotBeVisible();
 }
 
 }  // namespace ui_util

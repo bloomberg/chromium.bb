@@ -246,12 +246,6 @@ scoped_ptr<management::ExtensionInfo> CreateExtensionInfo(
   return info.Pass();
 }
 
-bool ShouldNotBeVisible(const Extension* extension,
-                        content::BrowserContext* context) {
-  return (extension->ShouldNotBeVisible() ||
-          ExtensionPrefs::Get(context)->IsEphemeralApp(extension->id()));
-}
-
 void AddExtensionInfo(const ExtensionSet& extensions,
                       ExtensionInfoList* extension_list,
                       content::BrowserContext* context) {
@@ -259,7 +253,7 @@ void AddExtensionInfo(const ExtensionSet& extensions,
        iter != extensions.end(); ++iter) {
     const Extension& extension = *iter->get();
 
-    if (ShouldNotBeVisible(&extension, context))
+    if (extension.ShouldNotBeVisible())
       continue;  // Skip built-in extensions/apps.
 
     extension_list->push_back(make_linked_ptr<management::ExtensionInfo>(
@@ -434,7 +428,7 @@ ExtensionFunction::ResponseAction ManagementSetEnabledFunction::Run() {
 
   const Extension* extension =
       registry->GetExtensionById(extension_id_, ExtensionRegistry::EVERYTHING);
-  if (!extension || ShouldNotBeVisible(extension, browser_context()))
+  if (!extension || extension->ShouldNotBeVisible())
     return RespondNow(Error(keys::kNoExtensionError, extension_id_));
 
   bool enabled = params->enabled;
@@ -523,8 +517,7 @@ ExtensionFunction::ResponseAction ManagementUninstallFunctionBase::Uninstall(
       extensions::ExtensionRegistry::Get(browser_context())
           ->GetExtensionById(target_extension_id_,
                              ExtensionRegistry::EVERYTHING);
-  if (!target_extension ||
-      ShouldNotBeVisible(target_extension, browser_context())) {
+  if (!target_extension || target_extension->ShouldNotBeVisible()) {
     return RespondNow(Error(keys::kNoExtensionError, target_extension_id_));
   }
 
@@ -867,7 +860,7 @@ void ManagementEventRouter::BroadcastEvent(
     const Extension* extension,
     events::HistogramValue histogram_value,
     const char* event_name) {
-  if (ShouldNotBeVisible(extension, browser_context_))
+  if (extension->ShouldNotBeVisible())
     return;  // Don't dispatch events for built-in extenions.
   scoped_ptr<base::ListValue> args(new base::ListValue());
   if (event_name == management::OnUninstalled::kEventName) {

@@ -201,24 +201,7 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest {
                                     install_source,
                                     browser(),
                                     creation_flags,
-                                    false,
                                     false);
-  }
-
-  const extensions::Extension* InstallEphemeralAppWithSourceAndFlags(
-      const base::FilePath& path,
-      int expected_change,
-      extensions::Manifest::Location install_source,
-      extensions::Extension::InitFromValueFlags creation_flags) {
-    return InstallOrUpdateExtension(std::string(),
-                                    path,
-                                    INSTALL_UI_TYPE_NONE,
-                                    expected_change,
-                                    install_source,
-                                    browser(),
-                                    creation_flags,
-                                    false,
-                                    true);
   }
 
   // Begins install process but simulates a user cancel.
@@ -375,8 +358,7 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest {
       extensions::Manifest::Location install_source,
       Browser* browser,
       extensions::Extension::InitFromValueFlags creation_flags,
-      bool wait_for_idle,
-      bool is_ephemeral);
+      bool wait_for_idle);
 
   // Make the current channel "dev" for the duration of the test.
   extensions::ScopedCurrentChannel current_channel_;

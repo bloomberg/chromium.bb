@@ -31,7 +31,6 @@
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
-#include "extensions/browser/extension_util.h"
 #include "extensions/common/extension.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request.h"
@@ -207,8 +206,10 @@ WebstorePrivateBeginInstallWithManifest3Function::Run() {
 
   InstallTracker* tracker = InstallTracker::Get(browser_context());
   DCHECK(tracker);
-  if (util::IsExtensionInstalledPermanently(details().id, browser_context()) ||
-      tracker->GetActiveInstall(details().id)) {
+  bool is_installed =
+      extensions::ExtensionRegistry::Get(browser_context())->GetExtensionById(
+          details().id, extensions::ExtensionRegistry::EVERYTHING) != nullptr;
+  if (is_installed || tracker->GetActiveInstall(details().id)) {
     return RespondNow(BuildResponse(
         api::webstore_private::RESULT_ALREADY_INSTALLED,
         kAlreadyInstalledError));
@@ -426,26 +427,6 @@ WebstorePrivateCompleteInstallFunction::Run() {
         approval_->enable_launcher);
   }
 
-  // If the target extension has already been installed ephemerally and is
-  // up to date, it can be promoted to a regular installed extension and
-  // downloading from the Web Store is not necessary.
-  const Extension* extension = ExtensionRegistry::Get(browser_context())->
-      GetExtensionById(params->expected_id, ExtensionRegistry::EVERYTHING);
-  if (extension && approval_->dummy_extension.get() &&
-      util::IsEphemeralApp(extension->id(), browser_context()) &&
-      extension->version()->CompareTo(*approval_->dummy_extension->version()) >=
-          0) {
-    install_ui::ShowPostInstallUIForApproval(
-        browser_context(), *approval_, extension);
-
-    ExtensionService* extension_service =
-        ExtensionSystem::Get(browser_context())->extension_service();
-    extension_service->PromoteEphemeralApp(extension, false);
-    OnInstallSuccess(extension->id());
-    VLOG(1) << "Install success, sending response";
-    return RespondNow(NoArguments());
-  }
-
   // Balanced in OnExtensionInstallSuccess() or OnExtensionInstallFailure().
   AddRef();
 
@@ -544,7 +525,10 @@ void WebstorePrivateInstallBundleFunction::OnFetchComplete(
   BundleInstaller::ItemList items;
   for (const auto& entry : params_->contents) {
     // Skip already-installed items.
-    if (util::IsExtensionInstalledPermanently(entry->id, browser_context()) ||
+    bool is_installed =
+        extensions::ExtensionRegistry::Get(browser_context())->GetExtensionById(
+            entry->id, extensions::ExtensionRegistry::EVERYTHING) != nullptr;
+    if (is_installed ||
         InstallTracker::Get(browser_context())->GetActiveInstall(entry->id)) {
       continue;
     }

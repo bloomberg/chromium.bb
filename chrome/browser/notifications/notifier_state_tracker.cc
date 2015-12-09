@@ -162,10 +162,6 @@ void NotifierStateTracker::OnExtensionUninstalled(
   if (IsNotifierEnabled(notifier_id))
     return;
 
-  // The settings for ephemeral apps will be persisted across cache evictions.
-  if (extensions::util::IsEphemeralApp(extension->id(), profile_))
-    return;
-
   SetNotifierEnabled(notifier_id, true);
 }
 

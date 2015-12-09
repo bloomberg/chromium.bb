@@ -315,7 +315,6 @@ void CommandService::OnExtensionWillBeInstalled(
     content::BrowserContext* browser_context,
     const Extension* extension,
     bool is_update,
-    bool from_ephemeral,
     const std::string& old_name) {
   UpdateKeybindings(extension);
 }

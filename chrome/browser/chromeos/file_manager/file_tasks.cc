@@ -405,10 +405,6 @@ void FindFileHandlerTasks(
     if (!CanLaunchViaEvent(extension))
       continue;
 
-    // Ephemeral apps cannot be file handlers.
-    if (extensions::util::IsEphemeralApp(extension->id(), profile))
-      continue;
-
     if (profile->IsOffTheRecord() &&
         !extensions::util::IsIncognitoEnabled(extension->id(), profile))
       continue;

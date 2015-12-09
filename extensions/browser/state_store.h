@@ -92,7 +92,6 @@ class StateStore : public base::SupportsWeakPtr<StateStore>,
   void OnExtensionWillBeInstalled(content::BrowserContext* browser_context,
                                   const Extension* extension,
                                   bool is_update,
-                                  bool from_ephemeral,
                                   const std::string& old_name) override;
 
   // Path to our database, on disk. Empty during testing.

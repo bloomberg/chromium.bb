@@ -12,18 +12,6 @@
 namespace extensions {
 namespace util {
 
-bool IsExtensionInstalledPermanently(const std::string& extension_id,
-                                     content::BrowserContext* context) {
-  const Extension* extension = ExtensionRegistry::Get(context)->
-      GetExtensionById(extension_id, ExtensionRegistry::EVERYTHING);
-  return extension && !IsEphemeralApp(extension_id, context);
-}
-
-bool IsEphemeralApp(const std::string& extension_id,
-                    content::BrowserContext* context) {
-  return ExtensionPrefs::Get(context)->IsEphemeralApp(extension_id);
-}
-
 bool HasIsolatedStorage(const ExtensionInfo& info) {
   if (!info.extension_manifest.get())
     return false;

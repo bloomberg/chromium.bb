@@ -132,20 +132,6 @@ void RemoveBackgroundPermission(ExtensionService* service,
       .RemovePermissionsUnsafe(
           extension, extension->permissions_data()->active_permissions());
 }
-
-void AddEphemeralApp(const Extension* extension, ExtensionService* service) {
-  extensions::ExtensionPrefs* prefs =
-      extensions::ExtensionPrefs::Get(service->profile());
-  ASSERT_TRUE(prefs);
-  prefs->OnExtensionInstalled(extension,
-                              extensions::Extension::ENABLED,
-                              syncer::StringOrdinal(),
-                              extensions::kInstallFlagIsEphemeral,
-                              std::string());
-
-  service->AddExtension(extension);
-}
-
 }  // namespace
 
 // Crashes on Mac tryslaves.
@@ -226,32 +212,6 @@ TEST_F(BackgroundApplicationListModelTest, MAYBE_ExplicitTest) {
                                 base::Bind(&base::DoNothing), NULL);
   ASSERT_EQ(0U, registry()->enabled_extensions().size());
   ASSERT_EQ(0U, model->size());
-}
-
-// Verifies that an ephemeral app cannot trigger background mode.
-TEST_F(BackgroundApplicationListModelTest, EphemeralAppTest) {
-  InitializeAndLoadEmptyExtensionService();
-  ASSERT_TRUE(service()->is_ready());
-  ASSERT_TRUE(registry()->enabled_extensions().is_empty());
-  scoped_ptr<BackgroundApplicationListModel> model(
-      new BackgroundApplicationListModel(profile_.get()));
-  ASSERT_EQ(0U, model->size());
-
-  scoped_refptr<Extension> background = CreateExtension("background", true);
-
-  // An ephemeral app with the background permission should not trigger
-  // background mode.
-  AddEphemeralApp(background.get(), service());
-  ASSERT_FALSE(IsBackgroundApp(*background.get()));
-  ASSERT_EQ(1U, registry()->enabled_extensions().size());
-  ASSERT_EQ(0U, model->size());
-
-  // If the ephemeral app becomes promoted to an installed app, it can now
-  // trigger background mode.
-  service()->PromoteEphemeralApp(background.get(), false /*from sync*/);
-  ASSERT_TRUE(IsBackgroundApp(*background.get()));
-  ASSERT_EQ(1U, registry()->enabled_extensions().size());
-  ASSERT_EQ(1U, model->size());
 }
 
 // With minimal test logic, verifies behavior with dynamic permissions.

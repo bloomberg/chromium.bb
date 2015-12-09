@@ -834,7 +834,6 @@ class ExtensionInstallObserver : public content::NotificationObserver,
   void OnExtensionWillBeInstalled(content::BrowserContext* browser_context,
                                   const extensions::Extension* extension,
                                   bool is_update,
-                                  bool from_ephemeral,
                                   const std::string& old_name) override {
     if (waiting_extension_id_ == extension->id()) {
       observed_ = true;

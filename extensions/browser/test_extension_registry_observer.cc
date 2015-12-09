@@ -75,7 +75,6 @@ void TestExtensionRegistryObserver::OnExtensionWillBeInstalled(
     content::BrowserContext* browser_context,
     const Extension* extension,
     bool is_update,
-    bool from_ephemeral,
     const std::string& old_name) {
   if (extension_id_.empty() || extension->id() == extension_id_)
     will_be_installed_waiter_->OnObserved(extension);

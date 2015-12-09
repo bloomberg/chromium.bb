@@ -276,7 +276,6 @@ bool IsAppLaunchableWithoutEnabling(const std::string& extension_id,
 bool ShouldSync(const Extension* extension,
                 content::BrowserContext* context) {
   return sync_helper::IsSyncable(extension) &&
-         !util::IsEphemeralApp(extension->id(), context) &&
          !ExtensionPrefs::Get(context)->DoNotSync(extension->id());
 }
 

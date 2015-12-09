@@ -422,7 +422,6 @@ const Extension* ExtensionBrowserTest::UpdateExtensionWaitForIdle(
                                   Manifest::INTERNAL,
                                   browser(),
                                   Extension::NO_FLAGS,
-                                  false,
                                   false);
 }
 
@@ -431,7 +430,7 @@ const Extension* ExtensionBrowserTest::InstallExtensionFromWebstore(
     int expected_change) {
   return InstallOrUpdateExtension(
       std::string(), path, INSTALL_UI_TYPE_AUTO_CONFIRM, expected_change,
-      Manifest::INTERNAL, browser(), Extension::FROM_WEBSTORE, true, false);
+      Manifest::INTERNAL, browser(), Extension::FROM_WEBSTORE, true);
 }
 
 const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
@@ -446,8 +445,7 @@ const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
                                   Manifest::INTERNAL,
                                   browser(),
                                   Extension::NO_FLAGS,
-                                  true,
-                                  false);
+                                  true);
 }
 
 const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
@@ -464,8 +462,7 @@ const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
                                   Manifest::INTERNAL,
                                   browser,
                                   creation_flags,
-                                  true,
-                                  false);
+                                  true);
 }
 
 const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
@@ -481,8 +478,7 @@ const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
                                   install_source,
                                   browser(),
                                   Extension::NO_FLAGS,
-                                  true,
-                                  false);
+                                  true);
 }
 
 const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
@@ -493,8 +489,7 @@ const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
     Manifest::Location install_source,
     Browser* browser,
     Extension::InitFromValueFlags creation_flags,
-    bool install_immediately,
-    bool is_ephemeral) {
+    bool install_immediately) {
   ExtensionService* service =
       extensions::ExtensionSystem::Get(profile())->extension_service();
   ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
@@ -528,7 +523,6 @@ const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
     installer->set_creation_flags(creation_flags);
     installer->set_install_source(install_source);
     installer->set_install_immediately(install_immediately);
-    installer->set_is_ephemeral(is_ephemeral);
     if (!installer->is_gallery_install()) {
       installer->set_off_store_install_allow_reason(
           extensions::CrxInstaller::OffStoreInstallAllowedInTest);

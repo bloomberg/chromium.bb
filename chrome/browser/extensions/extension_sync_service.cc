@@ -438,12 +438,6 @@ void ExtensionSyncService::ApplySyncData(
       extension_prefs->ReplaceDisableReasons(id, disable_reasons);
   }
 
-  // If the target extension has already been installed ephemerally, it can
-  // be promoted to a regular installed extension and downloading from the Web
-  // Store is not necessary.
-  if (extension && extensions::util::IsEphemeralApp(id, profile_))
-    extension_service()->PromoteEphemeralApp(extension, true);
-
   // Update the incognito flag.
   extensions::util::SetIsIncognitoEnabled(
       id, profile_, extension_sync_data.incognito_enabled());

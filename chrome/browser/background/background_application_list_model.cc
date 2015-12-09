@@ -25,7 +25,6 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
-#include "extensions/browser/extension_util.h"
 #include "extensions/browser/image_loader.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/common/extension.h"
@@ -263,11 +262,6 @@ bool BackgroundApplicationListModel::IsBackgroundApp(
   // 1) It is an extension (not a hosted app).
   // 2) It is a hosted app, and has a background contents registered or in the
   //    manifest.
-
-  // Ephemeral apps are denied any background activity after their event page
-  // has been destroyed, thus they cannot be background apps.
-  if (extensions::util::IsEphemeralApp(extension.id(), profile))
-    return false;
 
   // Not a background app if we don't have the background permission.
   if (!extension.permissions_data()->HasAPIPermission(

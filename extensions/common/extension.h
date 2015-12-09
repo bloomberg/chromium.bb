@@ -102,10 +102,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     DISABLE_GREYLIST = 1 << 9,
     DISABLE_CORRUPTED = 1 << 10,
     DISABLE_REMOTE_INSTALL = 1 << 11,
-    DISABLE_INACTIVE_EPHEMERAL_APP = 1 << 12,  // Cached ephemeral apps are
-                                               // disabled to prevent activity.
-    DISABLE_EXTERNAL_EXTENSION = 1 << 13,      // External extensions might be
-                                               // disabled for user prompting.
+    // DISABLE_INACTIVE_EPHEMERAL_APP = 1 << 12,  // Deprecated.
+    DISABLE_EXTERNAL_EXTENSION = 1 << 13,  // External extensions might be
+                                           // disabled for user prompting.
     DISABLE_UPDATE_REQUIRED_BY_POLICY = 1 << 14,  // Doesn't meet minimum
                                                   // version requirement.
     DISABLE_REASON_LAST = 1 << 15,  // This should always be the last value

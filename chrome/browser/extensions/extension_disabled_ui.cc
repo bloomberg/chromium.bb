@@ -486,11 +486,6 @@ void AddExtensionDisabledErrorWithIcon(base::WeakPtr<ExtensionService> service,
 void AddExtensionDisabledError(ExtensionService* service,
                                const Extension* extension,
                                bool is_remote_install) {
-  // Do not display notifications for ephemeral apps that have been disabled.
-  // Instead, a prompt will be shown the next time the app is launched.
-  if (util::IsEphemeralApp(extension->id(), service->profile()))
-    return;
-
   extensions::ExtensionResource image = extensions::IconsInfo::GetIconResource(
       extension, kIconSize, ExtensionIconSet::MATCH_BIGGER);
   gfx::Size size(kIconSize, kIconSize);

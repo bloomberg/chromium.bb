@@ -120,9 +120,6 @@ FileBrowserHandlerList FindFileBrowserHandlersForURL(
     if (profile->IsOffTheRecord() &&
         !extensions::util::IsIncognitoEnabled(extension->id(), profile))
       continue;
-    if (extensions::util::IsEphemeralApp(extension->id(), profile))
-      continue;
-
     FileBrowserHandler::List* handler_list =
         FileBrowserHandler::GetHandlers(extension.get());
     if (!handler_list)

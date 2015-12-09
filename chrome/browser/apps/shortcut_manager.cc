@@ -12,7 +12,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_ui_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -25,7 +24,6 @@
 #include "content/public/common/content_switches.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
-#include "extensions/browser/extension_util.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/one_shot_event.h"
 
@@ -48,17 +46,10 @@ const int kUpdateShortcutsForAllAppsDelay = 10;
 void CreateShortcutsForApp(Profile* profile, const Extension* app) {
   web_app::ShortcutLocations creation_locations;
 
-  if (extensions::util::IsEphemeralApp(app->id(), profile)) {
-    // Ephemeral apps should not have visible shortcuts, but may still require
-    // platform-specific handling.
-    creation_locations.applications_menu_location =
-        web_app::APP_MENU_LOCATION_HIDDEN;
-  } else {
-    // Creates a shortcut for an app in the Chrome Apps subdir of the
-    // applications menu, if there is not already one present.
-    creation_locations.applications_menu_location =
-        web_app::APP_MENU_LOCATION_SUBDIR_CHROMEAPPS;
-  }
+  // Creates a shortcut for an app in the Chrome Apps subdir of the
+  // applications menu, if there is not already one present.
+  creation_locations.applications_menu_location =
+      web_app::APP_MENU_LOCATION_SUBDIR_CHROMEAPPS;
 
   web_app::CreateShortcuts(
       web_app::SHORTCUT_CREATION_AUTOMATED, creation_locations, profile, app);
@@ -119,7 +110,6 @@ void AppShortcutManager::OnExtensionWillBeInstalled(
     content::BrowserContext* browser_context,
     const Extension* extension,
     bool is_update,
-    bool from_ephemeral,
     const std::string& old_name) {
   if (!extension->is_app())
     return;
@@ -127,7 +117,7 @@ void AppShortcutManager::OnExtensionWillBeInstalled(
   // If the app is being updated, update any existing shortcuts but do not
   // create new ones. If it is being installed, automatically create a
   // shortcut in the applications menu (e.g., Start Menu).
-  if (is_update && !from_ephemeral) {
+  if (is_update) {
     web_app::UpdateAllShortcuts(
         base::UTF8ToUTF16(old_name), profile_, extension);
   } else {

@@ -65,7 +65,6 @@ class ExtensionStorageMonitor : public KeyedService,
   void OnExtensionWillBeInstalled(content::BrowserContext* browser_context,
                                   const Extension* extension,
                                   bool is_update,
-                                  bool from_ephemeral,
                                   const std::string& old_name) override;
   void OnExtensionUninstalled(content::BrowserContext* browser_context,
                               const Extension* extension,
@@ -118,10 +117,8 @@ class ExtensionStorageMonitor : public KeyedService,
   bool enable_for_all_extensions_;
 
   // The first notification is shown after the initial threshold is exceeded.
-  // Ephemeral apps have a lower threshold than fully installed extensions.
   // A lower threshold is set by tests.
   int64 initial_extension_threshold_;
-  int64 initial_ephemeral_threshold_;
 
   // The rate at which we would like to receive storage updates
   // from QuotaManager. Overridden in tests.

@@ -169,9 +169,6 @@ const char kPrefGeometryCache[] = "geometry_cache";
 // A preference that indicates when an extension is last launched.
 const char kPrefLastLaunchTime[] = "last_launch_time";
 
-// A preference indicating whether the extension is an ephemeral app.
-const char kPrefEphemeralApp[] = "ephemeral_app";
-
 // Am installation parameter bundled with an extension.
 const char kPrefInstallParam[] = "install_parameter";
 
@@ -1173,12 +1170,8 @@ void ExtensionPrefs::OnExtensionInstalled(
                              install_parameter,
                              extension_dict);
 
-  bool requires_sort_ordinal = extension->RequiresSortOrdinal() &&
-                               (install_flags & kInstallFlagIsEphemeral) == 0;
-  FinishExtensionInfoPrefs(extension->id(),
-                           install_time,
-                           requires_sort_ordinal,
-                           page_ordinal,
+  FinishExtensionInfoPrefs(extension->id(), install_time,
+                           extension->RequiresSortOrdinal(), page_ordinal,
                            extension_dict);
 }
 
@@ -1398,8 +1391,7 @@ void ExtensionPrefs::SetDelayedInstallInfo(
   // Add transient data that is needed by FinishDelayedInstallInfo(), but
   // should not be in the final extension prefs. All entries here should have
   // a corresponding Remove() call in FinishDelayedInstallInfo().
-  if (extension->RequiresSortOrdinal() &&
-      (install_flags & kInstallFlagIsEphemeral) == 0) {
+  if (extension->RequiresSortOrdinal()) {
     extension_dict->SetString(
         kPrefSuggestedPageOrdinal,
         page_ordinal.IsValid() ? page_ordinal.ToInternalValue()
@@ -1449,11 +1441,6 @@ bool ExtensionPrefs::FinishDelayedInstallInfo(
       kPrefInstallTime,
       new base::StringValue(
           base::Int64ToString(install_time.ToInternalValue())));
-
-  // Some extension pref values are written conditionally. If they are not
-  // present in the delayed install data, they should be removed when the
-  // delayed install is committed.
-  extension_dict->Remove(kPrefEphemeralApp, NULL);
 
   // Commit the delayed install data.
   for (base::DictionaryValue::Iterator it(*pending_install_dict); !it.IsAtEnd();
@@ -1514,33 +1501,6 @@ scoped_ptr<ExtensionPrefs::ExtensionsInfo> ExtensionPrefs::
   }
 
   return extensions_info.Pass();
-}
-
-bool ExtensionPrefs::IsEphemeralApp(const std::string& extension_id) const {
-  if (ReadPrefAsBooleanAndReturn(extension_id, kPrefEphemeralApp))
-    return true;
-
-  // Ephemerality was previously stored in the creation flags, so we must also
-  // check it for backcompatibility.
-  return (GetCreationFlags(extension_id) & Extension::IS_EPHEMERAL) != 0;
-}
-
-void ExtensionPrefs::OnEphemeralAppPromoted(const std::string& extension_id) {
-  DCHECK(IsEphemeralApp(extension_id));
-
-  UpdateExtensionPref(extension_id, kPrefEphemeralApp, NULL);
-
-  // Ephemerality was previously stored in the creation flags, so ensure the bit
-  // is cleared.
-  int creation_flags = Extension::NO_FLAGS;
-  if (ReadPrefAsInteger(extension_id, kPrefCreationFlags, &creation_flags)) {
-    if (creation_flags & Extension::IS_EPHEMERAL) {
-      creation_flags &= ~static_cast<int>(Extension::IS_EPHEMERAL);
-      UpdateExtensionPref(extension_id,
-                          kPrefCreationFlags,
-                          new base::FundamentalValue(creation_flags));
-    }
-  }
 }
 
 bool ExtensionPrefs::WasAppDraggedByUser(
@@ -1993,11 +1953,6 @@ void ExtensionPrefs::PopulateExtensionInfoPrefs(
                           base::Int64ToString(install_time.ToInternalValue())));
   if (install_flags & kInstallFlagIsBlacklistedForMalware)
     extension_dict->Set(kPrefBlacklist, new base::FundamentalValue(true));
-
-  if (install_flags & kInstallFlagIsEphemeral)
-    extension_dict->Set(kPrefEphemeralApp, new base::FundamentalValue(true));
-  else
-    extension_dict->Remove(kPrefEphemeralApp, NULL);
 
   base::FilePath::StringType path = MakePathRelative(install_directory_,
                                                      extension->path());

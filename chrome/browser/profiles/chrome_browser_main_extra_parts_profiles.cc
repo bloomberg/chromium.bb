@@ -63,7 +63,6 @@
 
 #if defined(ENABLE_EXTENSIONS)
 #include "apps/browser_context_keyed_service_factories.h"
-#include "chrome/browser/apps/ephemeral_app_service_factory.h"
 #include "chrome/browser/apps/shortcut_manager_factory.h"
 #include "chrome/browser/extensions/api/networking_private/networking_private_ui_delegate_factory_impl.h"
 #include "chrome/browser/extensions/api/networking_private/networking_private_verify_delegate_factory_impl.h"
@@ -175,7 +174,6 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   extensions::ExtensionManagementFactory::GetInstance();
   chrome_extensions::EnsureBrowserContextKeyedServiceFactoriesBuilt();
   AppShortcutManagerFactory::GetInstance();
-  EphemeralAppServiceFactory::GetInstance();
 #endif
 
 #if defined(ENABLE_APP_LIST)

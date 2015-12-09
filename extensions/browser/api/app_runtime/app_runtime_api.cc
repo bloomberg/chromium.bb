@@ -98,7 +98,7 @@ app_runtime::LaunchSource getLaunchSourceEnum(
       return app_runtime::LAUNCH_SOURCE_EXTENSIONS_PAGE;
     case extensions::SOURCE_MANAGEMENT_API:
       return app_runtime::LAUNCH_SOURCE_MANAGEMENT_API;
-    case extensions::SOURCE_EPHEMERAL_APP_UNUSED:
+    case extensions::SOURCE_EPHEMERAL_APP_DEPRECATED:
       return app_runtime::LAUNCH_SOURCE_EPHEMERAL_APP;
     case extensions::SOURCE_BACKGROUND:
       return app_runtime::LAUNCH_SOURCE_BACKGROUND;

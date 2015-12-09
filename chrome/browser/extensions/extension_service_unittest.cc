@@ -949,7 +949,6 @@ struct MockExtensionRegistryObserver
   void OnExtensionWillBeInstalled(content::BrowserContext* browser_context,
                                   const Extension* extension,
                                   bool is_update,
-                                  bool from_ephemeral,
                                   const std::string& old_name) override {
     last_extension_installed = extension->id();
   }

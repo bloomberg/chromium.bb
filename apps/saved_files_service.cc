@@ -17,7 +17,6 @@
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
-#include "extensions/browser/extension_util.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/permission_set.h"
@@ -261,8 +260,7 @@ const SavedFileEntry* SavedFilesService::GetFileEntry(
 
 void SavedFilesService::ClearQueueIfNoRetainPermission(
     const Extension* extension) {
-  if (extensions::util::IsEphemeralApp(extension->id(), profile_) ||
-      !extension->permissions_data()->active_permissions().HasAPIPermission(
+  if (!extension->permissions_data()->active_permissions().HasAPIPermission(
           APIPermission::kFileSystemRetainEntries)) {
     ClearQueue(extension);
   }

@@ -198,9 +198,6 @@ class CrxInstaller
   void set_install_immediately(bool val) {
     set_install_flag(kInstallFlagInstallImmediately, val);
   }
-  void set_is_ephemeral(bool val) {
-    set_install_flag(kInstallFlagIsEphemeral, val);
-  }
   void set_do_not_sync(bool val) {
     set_install_flag(kInstallFlagDoNotSync, val);
   }

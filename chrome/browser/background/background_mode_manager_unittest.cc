@@ -310,20 +310,6 @@ class BackgroundModeManagerWithExtensionsTest : public testing::Test {
     return false;
   }
 
-  void AddEphemeralApp(const extensions::Extension* extension,
-                       ExtensionService* service) {
-    extensions::ExtensionPrefs* prefs =
-        extensions::ExtensionPrefs::Get(service->profile());
-    ASSERT_TRUE(prefs);
-    prefs->OnExtensionInstalled(extension,
-                                extensions::Extension::ENABLED,
-                                syncer::StringOrdinal(),
-                                extensions::kInstallFlagIsEphemeral,
-                                std::string());
-
-    service->AddExtension(extension);
-  }
-
   scoped_ptr<TestBackgroundModeManager> manager_;
 
   scoped_ptr<base::CommandLine> command_line_;

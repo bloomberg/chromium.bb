@@ -46,11 +46,9 @@ namespace {
 // The rate at which we would like to observe storage events.
 const int kStorageEventRateSec = 30;
 
-// Set the thresholds for the first notification. Ephemeral apps have a lower
-// threshold than installed extensions and apps. Once a threshold is exceeded,
+// Set the thresholds for the first notification. Once a threshold is exceeded,
 // it will be doubled to throttle notifications.
 const int64 kMBytes = 1024 * 1024;
-const int64 kEphemeralAppInitialThreshold = 250 * kMBytes;
 const int64 kExtensionInitialThreshold = 1000 * kMBytes;
 
 // Notifications have an ID so that we can update them.
@@ -277,7 +275,6 @@ ExtensionStorageMonitor::ExtensionStorageMonitor(
     content::BrowserContext* context)
     : enable_for_all_extensions_(false),
       initial_extension_threshold_(kExtensionInitialThreshold),
-      initial_ephemeral_threshold_(kEphemeralAppInitialThreshold),
       observer_rate_(base::TimeDelta::FromSeconds(kStorageEventRateSec)),
       context_(context),
       extension_prefs_(ExtensionPrefs::Get(context)),
@@ -324,11 +321,8 @@ void ExtensionStorageMonitor::OnExtensionWillBeInstalled(
     content::BrowserContext* browser_context,
     const Extension* extension,
     bool is_update,
-    bool from_ephemeral,
     const std::string& old_name) {
-  // If an ephemeral app was promoted to a regular installed app, we may need to
-  // increase its next threshold.
-  if (!from_ephemeral || !ShouldMonitorStorageFor(extension))
+  if (!ShouldMonitorStorageFor(extension))
     return;
 
   if (!enable_for_all_extensions_) {
@@ -494,12 +488,8 @@ void ExtensionStorageMonitor::StartMonitoringStorage(
   if (!ShouldMonitorStorageFor(extension))
     return;
 
-  // First apply this feature only to experimental ephemeral apps. If it works
-  // well, roll it out to all extensions and apps.
-  bool should_enforce =
-      (enable_for_all_extensions_ ||
-       extension_prefs_->IsEphemeralApp(extension->id())) &&
-      IsStorageNotificationEnabled(extension->id());
+  bool should_enforce = (enable_for_all_extensions_) &&
+                        IsStorageNotificationEnabled(extension->id());
 
   bool for_metrics = ShouldGatherMetricsFor(extension);
 
@@ -616,9 +606,7 @@ int64 ExtensionStorageMonitor::GetNextStorageThreshold(
   if (next_threshold == 0) {
     // The next threshold is written to the prefs after the initial threshold is
     // exceeded.
-    next_threshold = extension_prefs_->IsEphemeralApp(extension_id)
-                         ? initial_ephemeral_threshold_
-                         : initial_extension_threshold_;
+    next_threshold = initial_extension_threshold_;
   }
   return next_threshold;
 }

@@ -20,7 +20,7 @@ enum InstallFlag {
   kInstallFlagIsBlacklistedForMalware = 1 << 1,
 
   // This is an ephemeral app.
-  kInstallFlagIsEphemeral = 1 << 2,
+  kInstallFlagIsEphemeral_Deprecated = 1 << 2,
 
   // Install the extension immediately, don't wait until idle.
   kInstallFlagInstallImmediately = 1 << 3,

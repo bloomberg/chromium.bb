@@ -18,7 +18,6 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
-#include "extensions/browser/extension_util.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_urls.h"
 #include "url/gurl.h"
@@ -209,28 +208,6 @@ void WebstoreStandaloneInstaller::InstallUIProceed() {
       // Don't install a blacklisted extension.
       install_result = webstore_install::BLACKLISTED;
       install_message = kExtensionIsBlacklisted;
-    } else if (util::IsEphemeralApp(installed_extension->id(), profile_)) {
-      // If the target extension has already been installed ephemerally and is
-      // up to date, it can be promoted to a regular installed extension and
-      // downloading from the Web Store is not necessary.
-      scoped_refptr<const Extension> extension_to_install =
-          GetLocalizedExtensionForDisplay();
-      if (!extension_to_install.get()) {
-        CompleteInstall(webstore_install::INVALID_MANIFEST,
-                        kInvalidManifestError);
-        return;
-      }
-
-      if (installed_extension->version()->CompareTo(
-              *extension_to_install->version()) < 0) {
-        // If the existing extension is out of date, proceed with the install
-        // to update the extension.
-        done = false;
-      } else {
-        install_ui::ShowPostInstallUIForApproval(
-            profile_, *approval, installed_extension);
-        extension_service->PromoteEphemeralApp(installed_extension, false);
-      }
     } else if (!extension_service->IsExtensionEnabled(id_)) {
       // If the extension is installed but disabled, and not blacklisted,
       // enable it.

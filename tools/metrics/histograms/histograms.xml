@@ -55331,7 +55331,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="11" label="SOURCE_KEYBOARD"/>
   <int value="12" label="SOURCE_EXTENSIONS_PAGE"/>
   <int value="13" label="SOURCE_MANAGEMENT_API"/>
-  <int value="14" label="SOURCE_EPHEMERAL_APP_UNUSED"/>
+  <int value="14" label="SOURCE_EPHEMERAL_APP_DEPRECATED"/>
   <int value="15" label="SOURCE_BACKGROUND"/>
   <int value="16" label="SOURCE_KIOSK"/>
   <int value="17" label="SOURCE_CHROME_INTERNAL"/>
@@ -60558,7 +60558,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="6" label="ERROR_ON_PRIVATE_KEY"/>
   <int value="7" label="WAS_INSTALLED_BY_DEFAULT"/>
   <int value="8" label="REQUIRE_PERMISSIONS_CONSENT"/>
-  <int value="9" label="IS_EPHEMERAL"/>
+  <int value="9" label="IS_EPHEMERAL_DEPRECATED"/>
   <int value="10" label="WAS_INSTALLED_BY_OEM"/>
 </enum>
 
@@ -60582,7 +60582,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="512" label="GREYLIST"/>
   <int value="1024" label="CORRUPTED"/>
   <int value="2048" label="REMOTE_INSTALL"/>
-  <int value="4096" label="INACTIVE_EPHEMERAL_APP"/>
+  <int value="4096" label="INACTIVE_EPHEMERAL_APP_DEPRECATED"/>
   <int value="8192" label="EXTERNAL_EXTENSION"/>
   <int value="16384" label="UPDATE_REQUIRED_BY_POLICY"/>
 </enum>

@@ -122,7 +122,6 @@ class ExtensionServiceTestWithInstall : public ExtensionServiceTestBase,
   void OnExtensionWillBeInstalled(content::BrowserContext* browser_context,
                                   const Extension* extension,
                                   bool is_update,
-                                  bool from_ephemeral,
                                   const std::string& old_name) override;
 
   // TODO(treib,devlin): Make these private and add accessors as needed.

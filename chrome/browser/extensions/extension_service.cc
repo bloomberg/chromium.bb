@@ -566,10 +566,8 @@ bool ExtensionService::UpdateExtension(const extensions::CRXFileInfo& file,
   if (extension && extension->was_installed_by_custodian())
     creation_flags |= Extension::WAS_INSTALLED_BY_CUSTODIAN;
 
-  if (extension) {
-    installer->set_is_ephemeral(extension_prefs_->IsEphemeralApp(id));
+  if (extension)
     installer->set_do_not_sync(extension_prefs_->DoNotSync(id));
-  }
 
   installer->set_creation_flags(creation_flags);
 
@@ -1512,12 +1510,9 @@ void ExtensionService::AddExtension(const Extension* extension) {
           extensions::ExtensionSystem::Get(GetBrowserContext())->app_sorting();
       app_sorting->SetExtensionVisible(
           extension->id(),
-          extension->ShouldDisplayInNewTabPage() &&
-              !extension_prefs_->IsEphemeralApp(extension->id()));
-      if (!extension_prefs_->IsEphemeralApp(extension->id())) {
-        app_sorting->EnsureValidOrdinals(extension->id(),
-                                         syncer::StringOrdinal());
-      }
+          extension->ShouldDisplayInNewTabPage());
+      app_sorting->EnsureValidOrdinals(extension->id(),
+                                       syncer::StringOrdinal());
     }
 
     registry_->AddEnabled(extension);
@@ -1762,12 +1757,6 @@ void ExtensionService::OnExtensionInstalled(
                               extension->GetType(), 100);
     UMA_HISTOGRAM_ENUMERATION("Extensions.UpdateSource",
                               extension->location(), Manifest::NUM_LOCATIONS);
-
-    // A fully installed app cannot be demoted to an ephemeral app.
-    if ((install_flags & extensions::kInstallFlagIsEphemeral) &&
-        !extension_prefs_->IsEphemeralApp(id)) {
-      install_flags &= ~static_cast<int>(extensions::kInstallFlagIsEphemeral);
-    }
   }
 
   const Extension::State initial_state =
@@ -1857,7 +1846,6 @@ void ExtensionService::AddNewOrUpdatedExtension(
     const syncer::StringOrdinal& page_ordinal,
     const std::string& install_parameter) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  bool was_ephemeral = extension_prefs_->IsEphemeralApp(extension->id());
   extension_prefs_->OnExtensionInstalled(
       extension, initial_state, page_ordinal, install_flags, install_parameter);
   delayed_installs_.Remove(extension->id());
@@ -1869,11 +1857,11 @@ void ExtensionService::AddNewOrUpdatedExtension(
     app_data_migrator_->DoMigrationAndReply(
         old, extension,
         base::Bind(&ExtensionService::FinishInstallation, AsWeakPtr(),
-                   make_scoped_refptr(extension), was_ephemeral));
+                   make_scoped_refptr(extension)));
     return;
   }
 
-  FinishInstallation(extension, was_ephemeral);
+  FinishInstallation(extension);
 }
 
 void ExtensionService::MaybeFinishDelayedInstallation(
@@ -1918,15 +1906,14 @@ void ExtensionService::FinishDelayedInstallation(
   CHECK(extension.get());
   delayed_installs_.Remove(extension_id);
 
-  bool was_ephemeral = extension_prefs_->IsEphemeralApp(extension->id());
   if (!extension_prefs_->FinishDelayedInstallInfo(extension_id))
     NOTREACHED();
 
-  FinishInstallation(extension.get(), was_ephemeral);
+  FinishInstallation(extension.get());
 }
 
 void ExtensionService::FinishInstallation(
-    const Extension* extension, bool was_ephemeral) {
+    const Extension* extension) {
   const extensions::Extension* existing_extension =
       GetInstalledExtension(extension->id());
   bool is_update = false;
@@ -1935,11 +1922,8 @@ void ExtensionService::FinishInstallation(
     is_update = true;
     old_name = existing_extension->name();
   }
-  bool from_ephemeral =
-      was_ephemeral && !extension_prefs_->IsEphemeralApp(extension->id());
-
   registry_->TriggerOnWillBeInstalled(
-      extension, is_update, from_ephemeral, old_name);
+      extension, is_update, old_name);
 
   // Unpacked extensions default to allowing file access, but if that has been
   // overridden, don't reset the value.
@@ -1957,72 +1941,6 @@ void ExtensionService::FinishInstallation(
   // was not available.
   if (SharedModuleInfo::IsSharedModule(extension))
     MaybeFinishDelayedInstallations();
-}
-
-void ExtensionService::PromoteEphemeralApp(
-    const extensions::Extension* extension, bool is_from_sync) {
-  DCHECK(GetInstalledExtension(extension->id()) &&
-         extension_prefs_->IsEphemeralApp(extension->id()));
-
-  if (extension->RequiresSortOrdinal()) {
-    AppSorting* app_sorting =
-        extensions::ExtensionSystem::Get(GetBrowserContext())->app_sorting();
-    app_sorting->SetExtensionVisible(extension->id(),
-                                     extension->ShouldDisplayInNewTabPage());
-
-    if (!is_from_sync) {
-      // Reset the sort ordinals of the app to ensure it is added to the default
-      // position, like newly installed apps would.
-      app_sorting->ClearOrdinals(extension->id());
-    }
-
-    app_sorting->EnsureValidOrdinals(extension->id(), syncer::StringOrdinal());
-  }
-
-  // Remove the ephemeral flags from the preferences.
-  extension_prefs_->OnEphemeralAppPromoted(extension->id());
-
-  // Fire install-related events to allow observers to handle the promotion
-  // of the ephemeral app.
-  registry_->TriggerOnWillBeInstalled(
-      extension,
-      true /* is update */,
-      true /* from ephemeral */,
-      extension->name() /* old name */);
-
-  if (registry_->enabled_extensions().Contains(extension->id())) {
-    // If the app is already enabled and loaded, fire the load events to allow
-    // observers to handle the promotion of the ephemeral app.
-    content::NotificationService::current()->Notify(
-        extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
-        content::Source<Profile>(profile_),
-        content::Details<const Extension>(extension));
-
-    registry_->TriggerOnLoaded(extension);
-  } else {
-    // Cached ephemeral apps may be updated and disabled due to permissions
-    // increase. The app can be enabled (as long as no other disable reasons
-    // exist) as the install was user-acknowledged.
-    int disable_mask = Extension::DISABLE_NONE;
-    if (!is_from_sync)
-      disable_mask |= Extension::DISABLE_PERMISSIONS_INCREASE;
-
-    int other_disable_reasons =
-        extension_prefs_->GetDisableReasons(extension->id()) & ~disable_mask;
-    if (!other_disable_reasons) {
-      if (extension_prefs_->DidExtensionEscalatePermissions(extension->id()))
-        GrantPermissionsAndEnableExtension(extension);
-      else
-        EnableExtension(extension->id());
-    }
-  }
-
-  registry_->TriggerOnInstalled(extension, true);
-
-  if (!is_from_sync) {
-    ExtensionSyncService::Get(profile_)->SyncExtensionChangeIfNeeded(
-        *extension);
-  }
 }
 
 const Extension* ExtensionService::GetPendingExtensionUpdate(

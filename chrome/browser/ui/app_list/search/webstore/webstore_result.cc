@@ -22,7 +22,6 @@
 #include "chrome/grit/generated_resources.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
-#include "extensions/browser/extension_util.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_urls.h"
 #include "grit/theme_resources.h"
@@ -127,7 +126,8 @@ void WebstoreResult::UpdateActions() {
 
   const bool is_otr = profile_->IsOffTheRecord();
   const bool is_installed =
-      extensions::util::IsExtensionInstalledPermanently(app_id_, profile_);
+      extension_registry_->GetExtensionById(
+          app_id_, extensions::ExtensionRegistry::EVERYTHING) != nullptr;
 
   if (!is_otr && !is_installed && !is_installing()) {
     actions.push_back(Action(
@@ -228,8 +228,8 @@ void WebstoreResult::OnExtensionInstalled(
   SetIsInstalling(false);
   UpdateActions();
 
-  if (extensions::util::IsExtensionInstalledPermanently(extension->id(),
-                                                        profile_)) {
+  if (extension_registry_->GetExtensionById(
+          app_id_, extensions::ExtensionRegistry::EVERYTHING)) {
     NotifyItemInstalled();
   }
 }

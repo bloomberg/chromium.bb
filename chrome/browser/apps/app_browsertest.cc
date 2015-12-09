@@ -975,7 +975,6 @@ class CheckExtensionInstalledObserver
   void OnExtensionWillBeInstalled(content::BrowserContext* browser_context,
                                   const extensions::Extension* extension,
                                   bool is_update,
-                                  bool from_ephemeral,
                                   const std::string& old_name) override {
     EXPECT_FALSE(seen_);
     seen_ = true;

@@ -206,8 +206,6 @@ std::string ExtensionInstallPrompt::PromptTypeToString(PromptType type) {
       return "EXTERNAL_INSTALL_PROMPT";
     case ExtensionInstallPrompt::POST_INSTALL_PERMISSIONS_PROMPT:
       return "POST_INSTALL_PERMISSIONS_PROMPT";
-    case ExtensionInstallPrompt::LAUNCH_PROMPT:
-      return "LAUNCH_PROMPT";
     case ExtensionInstallPrompt::REMOTE_INSTALL_PROMPT:
       return "REMOTE_INSTALL_PROMPT";
     case ExtensionInstallPrompt::REPAIR_PROMPT:
@@ -216,6 +214,9 @@ std::string ExtensionInstallPrompt::PromptTypeToString(PromptType type) {
       return "DELEGATED_PERMISSIONS_PROMPT";
     case ExtensionInstallPrompt::DELEGATED_BUNDLE_PERMISSIONS_PROMPT:
       return "DELEGATED_BUNDLE_PERMISSIONS_PROMPT";
+    case ExtensionInstallPrompt::LAUNCH_PROMPT_DEPRECATED:
+      NOTREACHED();
+      // fall through:
     case ExtensionInstallPrompt::UNSET_PROMPT_TYPE:
     case ExtensionInstallPrompt::NUM_PROMPT_TYPES:
       break;
@@ -727,13 +728,8 @@ void ExtensionInstallPrompt::ConfirmReEnable(Delegate* delegate,
       profile_ &&
       extensions::ExtensionPrefs::Get(profile_)->HasDisableReason(
           extension->id(), extensions::Extension::DISABLE_REMOTE_INSTALL);
-  bool is_ephemeral =
-      extensions::util::IsEphemeralApp(extension->id(), profile_);
-
   PromptType type = UNSET_PROMPT_TYPE;
-  if (is_ephemeral)
-    type = LAUNCH_PROMPT;
-  else if (is_remote_install)
+  if (is_remote_install)
     type = REMOTE_INSTALL_PROMPT;
   else
     type = RE_ENABLE_PROMPT;
@@ -900,7 +896,6 @@ void ExtensionInstallPrompt::ShowConfirmation() {
     case INLINE_INSTALL_PROMPT:
     case EXTERNAL_INSTALL_PROMPT:
     case INSTALL_PROMPT:
-    case LAUNCH_PROMPT:
     case POST_INSTALL_PERMISSIONS_PROMPT:
     case REMOTE_INSTALL_PROMPT:
     case REPAIR_PROMPT:
@@ -913,6 +908,7 @@ void ExtensionInstallPrompt::ShowConfirmation() {
       prompt_->set_bundle(bundle_);
       break;
     }
+    case LAUNCH_PROMPT_DEPRECATED:
     default:
       NOTREACHED() << "Unknown message";
       return;
