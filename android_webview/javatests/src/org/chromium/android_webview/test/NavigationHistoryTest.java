@@ -9,7 +9,6 @@ import android.test.suitebuilder.annotation.SmallTest;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.content.browser.test.util.HistoryUtils;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content_public.browser.NavigationEntry;
@@ -188,27 +187,20 @@ public class NavigationHistoryTest extends AwTestBase {
         assertEquals(0, list.getCurrentEntryIndex());
     }
 
-    /**
-     * Disabled until favicons are getting fetched when using ContentView.
-     *
-     * @SmallTest
-     * @throws Throwable
-     */
-    @DisabledTest
     public void testFavicon() throws Throwable {
-        NavigationHistory list = getNavigationHistory(mAwContents);
-
         mWebServer.setResponseBase64("/" + CommonResources.FAVICON_FILENAME,
                 CommonResources.FAVICON_DATA_BASE64, CommonResources.getImagePngHeaders(false));
         final String url = mWebServer.setResponse("/favicon.html",
                 CommonResources.FAVICON_STATIC_HTML, null);
 
+        NavigationHistory list = getNavigationHistory(mAwContents);
         assertEquals(0, list.getEntryCount());
         getAwSettingsOnUiThread(mAwContents).setImagesEnabled(true);
+        int faviconLoadCount = mContentsClient.getFaviconHelper().getCallCount();
         loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
+        mContentsClient.getFaviconHelper().waitForCallback(faviconLoadCount);
 
         list = getNavigationHistory(mAwContents);
-
         // Make sure the first entry is still okay.
         checkHistoryItem(list.getEntryAtIndex(0), url, url, "", false);
     }

@@ -4,6 +4,7 @@
 
 package org.chromium.android_webview.test;
 
+import android.graphics.Bitmap;
 import android.graphics.Picture;
 import android.net.http.SslError;
 import android.webkit.ConsoleMessage;
@@ -20,6 +21,7 @@ import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPage
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnReceivedErrorHelper;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -45,6 +47,8 @@ public class TestAwContentsClient extends NullContentsClient {
     private final ShouldOverrideUrlLoadingHelper mShouldOverrideUrlLoadingHelper;
     private final DoUpdateVisitedHistoryHelper mDoUpdateVisitedHistoryHelper;
     private final OnCreateWindowHelper mOnCreateWindowHelper;
+    private final FaviconHelper mFaviconHelper;
+    private final TouchIconHelper mTouchIconHelper;
 
     public TestAwContentsClient() {
         super(ThreadUtils.getUiThreadLooper());
@@ -66,6 +70,8 @@ public class TestAwContentsClient extends NullContentsClient {
         mShouldOverrideUrlLoadingHelper = new ShouldOverrideUrlLoadingHelper();
         mDoUpdateVisitedHistoryHelper = new DoUpdateVisitedHistoryHelper();
         mOnCreateWindowHelper = new OnCreateWindowHelper();
+        mFaviconHelper = new FaviconHelper();
+        mTouchIconHelper = new TouchIconHelper();
         mAllowSslError = true;
     }
 
@@ -142,6 +148,14 @@ public class TestAwContentsClient extends NullContentsClient {
 
     public OnCreateWindowHelper getOnCreateWindowHelper() {
         return mOnCreateWindowHelper;
+    }
+
+    public FaviconHelper getFaviconHelper() {
+        return mFaviconHelper;
+    }
+
+    public TouchIconHelper getTouchIconHelper() {
+        return mTouchIconHelper;
     }
 
     /**
@@ -580,5 +594,54 @@ public class TestAwContentsClient extends NullContentsClient {
     public void onReceivedHttpError(AwWebResourceRequest request, AwWebResourceResponse response) {
         super.onReceivedHttpError(request, response);
         mOnReceivedHttpErrorHelper.notifyCalled(request, response);
+    }
+
+    /**
+     * CallbackHelper for onReceivedIcon.
+     */
+    public static class FaviconHelper extends CallbackHelper {
+        private Bitmap mIcon;
+
+        public void notifyFavicon(Bitmap icon) {
+            mIcon = icon;
+            super.notifyCalled();
+        }
+
+        public Bitmap getIcon() {
+            assert getCallCount() > 0;
+            return mIcon;
+        }
+    }
+
+    @Override
+    public void onReceivedIcon(Bitmap bitmap) {
+        // We don't inform the API client about the URL of the icon.
+        mFaviconHelper.notifyFavicon(bitmap);
+    }
+
+    /**
+     * CallbackHelper for onReceivedTouchIconUrl.
+     */
+    public static class TouchIconHelper extends CallbackHelper {
+        private HashMap<String, Boolean> mTouchIcons = new HashMap<String, Boolean>();
+
+        public void notifyTouchIcon(String url, boolean precomposed) {
+            mTouchIcons.put(url, precomposed);
+            super.notifyCalled();
+        }
+
+        public int getTouchIconsCount() {
+            assert getCallCount() > 0;
+            return mTouchIcons.size();
+        }
+
+        public boolean hasTouchIcon(String url) {
+            return mTouchIcons.get(url);
+        }
+    }
+
+    @Override
+    public void onReceivedTouchIconUrl(String url, boolean precomposed) {
+        mTouchIconHelper.notifyTouchIcon(url, precomposed);
     }
 }
