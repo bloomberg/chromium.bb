@@ -509,153 +509,67 @@ uint32 GLES2Util::ComputeImageGroupSize(int format, int type) {
   return  bytes_per_element * elements_per_group;
 }
 
-bool GLES2Util::ComputeImageRowSizeHelper(
-    int width, uint32 bytes_per_group, int alignment,
-    uint32* rt_unpadded_row_size, uint32* rt_padded_row_size) {
-  DCHECK(alignment == 1 || alignment == 2 ||
-         alignment == 4 || alignment == 8);
+bool GLES2Util::ComputeImagePaddedRowSize(
+        int width, int format, int type, int unpack_alignment,
+        uint32* padded_row_size) {
+  DCHECK(unpack_alignment == 1 || unpack_alignment == 2 ||
+         unpack_alignment == 4 || unpack_alignment == 8);
+  uint32 bytes_per_group = ComputeImageGroupSize(format, type);
   uint32 unpadded_row_size;
   if (!SafeMultiplyUint32(width, bytes_per_group, &unpadded_row_size)) {
     return false;
   }
   uint32 temp;
-  if (!SafeAddUint32(unpadded_row_size, alignment - 1, &temp)) {
-    return false;
+  if (!SafeAddUint32(unpadded_row_size, unpack_alignment - 1, &temp)) {
+      return false;
   }
-  uint32 padded_row_size = (temp / alignment) * alignment;
-  if (rt_unpadded_row_size)
-    *rt_unpadded_row_size = unpadded_row_size;
-  if (rt_padded_row_size)
-    *rt_padded_row_size = padded_row_size;
+  *padded_row_size = (temp / unpack_alignment) * unpack_alignment;
   return true;
-}
-
-bool GLES2Util::ComputeImagePaddedRowSize(
-    int width, int format, int type, int alignment, uint32* padded_row_size) {
-  uint32 bytes_per_group = ComputeImageGroupSize(format, type);
-  return ComputeImageRowSizeHelper(
-      width, bytes_per_group, alignment, nullptr, padded_row_size);
 }
 
 // Returns the amount of data glTexImage*D or glTexSubImage*D will access.
 bool GLES2Util::ComputeImageDataSizes(
     int width, int height, int depth, int format, int type,
-    int alignment, uint32* size, uint32* opt_unpadded_row_size,
-    uint32* opt_padded_row_size) {
-  DCHECK(width >= 0 && height >= 0 && height >=0);
-  if (width == 0 || height == 0 || depth == 0) {
-    *size = 0;
-    return true;
-  }
-
+    int unpack_alignment, uint32* size, uint32* ret_unpadded_row_size,
+    uint32* ret_padded_row_size) {
+  DCHECK(unpack_alignment == 1 || unpack_alignment == 2 ||
+         unpack_alignment == 4 || unpack_alignment == 8);
   uint32 bytes_per_group = ComputeImageGroupSize(format, type);
-
-  uint32 unpadded_row_size;
-  uint32 padded_row_size;
-  if (!ComputeImageRowSizeHelper(width, bytes_per_group, alignment,
-                                 &unpadded_row_size, &padded_row_size)) {
+  uint32 row_size;
+  if (!SafeMultiplyUint32(width, bytes_per_group, &row_size)) {
     return false;
   }
   uint32 num_of_rows;
   if (!SafeMultiplyUint32(height, depth, &num_of_rows)) {
     return false;
   }
-  DCHECK(num_of_rows > 0);
-  uint32 size_of_all_but_last_row;
-  if (!SafeMultiplyUint32((num_of_rows - 1), padded_row_size,
-                          &size_of_all_but_last_row)) {
-    return false;
-  }
-  if (!SafeAddUint32(size_of_all_but_last_row, unpadded_row_size, size)) {
-    return false;
-  }
-  if (opt_padded_row_size) {
-    *opt_padded_row_size = padded_row_size;
-  }
-  if (opt_unpadded_row_size) {
-    *opt_unpadded_row_size = unpadded_row_size;
-  }
-
-  return true;
-}
-
-bool GLES2Util::ComputeImageDataSizesES3(
-    int width, int height, int depth, int format, int type,
-    const PixelStoreParams& params,
-    uint32_t* size, uint32_t* opt_unpadded_row_size,
-    uint32_t* opt_padded_row_size, uint32_t* opt_skip_size) {
-  DCHECK(width >= 0 && height >= 0 && height >=0);
-  if (width == 0 || height == 0 || depth == 0) {
-    *size = 0;
-    return true;
-  }
-
-  uint32 bytes_per_group = ComputeImageGroupSize(format, type);
-
-  uint32 unpadded_row_size;
-  uint32 padded_row_size;
-  if (!ComputeImageRowSizeHelper(width, bytes_per_group, params.alignment,
-                                 &unpadded_row_size, &padded_row_size)) {
-    return false;
-  }
-  if (params.row_length > 0 &&
-      !ComputeImageRowSizeHelper(params.row_length, bytes_per_group,
-                                 params.alignment, nullptr, &padded_row_size)) {
-    // Here we re-compute the padded_row_size, but the unpadded_row_size
-    // isn't affected. That is, the last row isn't affected by ROW_LENGTH.
-    return false;
-  }
-
-  int image_height = params.image_height > 0 ? params.image_height : height;
-  uint32 num_of_rows;
-  if (!SafeMultiplyUint32(image_height, depth - 1, &num_of_rows) ||
-      !SafeAddUint32(num_of_rows, height, &num_of_rows)) {
-    return false;
-  }
-  DCHECK(num_of_rows > 0);
-  uint32 size_of_all_but_last_row;
-  if (!SafeMultiplyUint32((num_of_rows - 1), padded_row_size,
-                          &size_of_all_but_last_row)) {
-    return false;
-  }
-  if (!SafeAddUint32(size_of_all_but_last_row, unpadded_row_size, size)) {
-    return false;
-  }
-
-  uint32 skip_size = 0;
-  if (params.skip_images > 0) {
-    uint32 image_size;
-    if (!SafeMultiplyUint32(image_height, padded_row_size, &image_size))
-      return false;
-    if (!SafeMultiplyUint32(image_size, params.skip_images, &skip_size))
-      return false;
-  }
-  if (params.skip_rows > 0) {
+  if (num_of_rows > 1) {
     uint32 temp;
-    if (!SafeMultiplyUint32(padded_row_size, params.skip_rows, &temp))
+    if (!SafeAddUint32(row_size, unpack_alignment - 1, &temp)) {
       return false;
-    if (!SafeAddUint32(skip_size, temp, &skip_size))
+    }
+    uint32 padded_row_size = (temp / unpack_alignment) * unpack_alignment;
+    uint32 size_of_all_but_last_row;
+    if (!SafeMultiplyUint32((num_of_rows - 1), padded_row_size,
+                            &size_of_all_but_last_row)) {
       return false;
+    }
+    if (!SafeAddUint32(size_of_all_but_last_row, row_size, size)) {
+      return false;
+    }
+    if (ret_padded_row_size) {
+      *ret_padded_row_size = padded_row_size;
+    }
+  } else {
+    *size = row_size;
+    if (ret_padded_row_size) {
+      *ret_padded_row_size = row_size;
+    }
   }
-  if (params.skip_pixels > 0) {
-    uint32 temp;
-    if (!SafeMultiplyUint32(bytes_per_group, params.skip_pixels, &temp))
-      return false;
-    if (!SafeAddUint32(skip_size, temp, &skip_size))
-      return false;
+  if (ret_unpadded_row_size) {
+    *ret_unpadded_row_size = row_size;
   }
-  uint32 total_size;
-  if (!SafeAddUint32(*size, skip_size, &total_size))
-    return false;
 
-  if (opt_padded_row_size) {
-    *opt_padded_row_size = padded_row_size;
-  }
-  if (opt_unpadded_row_size) {
-    *opt_unpadded_row_size = unpadded_row_size;
-  }
-  if (opt_skip_size)
-    *opt_skip_size = skip_size;
   return true;
 }
 

@@ -52,24 +52,6 @@ inline bool SafeAddInt32(int32_t a, int32_t b, int32_t* dst) {
   return checked.IsValid();
 }
 
-struct GLES2_UTILS_EXPORT PixelStoreParams {
-  PixelStoreParams()
-      : alignment(4),
-        row_length(0),
-        image_height(0),
-        skip_pixels(0),
-        skip_rows(0),
-        skip_images(0) {
-  }
-
-  int32_t alignment;
-  int32_t row_length;
-  int32_t image_height;
-  int32_t skip_pixels;
-  int32_t skip_rows;
-  int32_t skip_images;
-};
-
 // Utilties for GLES2 support.
 class GLES2_UTILS_EXPORT GLES2Util {
  public:
@@ -123,26 +105,17 @@ class GLES2_UTILS_EXPORT GLES2Util {
 
   // Computes the size of an image row including alignment padding
   static bool ComputeImagePaddedRowSize(
-      int width, int format, int type, int alignment,
+      int width, int format, int type, int unpack_alignment,
       uint32_t* padded_row_size);
 
   // Computes the size of image data for TexImage2D and TexSubImage2D.
-  // Optionally the unpadded and padded row sizes can be returned.
+  // Optionally the unpadded and padded row sizes can be returned. If height < 2
+  // then the padded_row_size will be the same as the unpadded_row_size since
+  // padding is not necessary.
   static bool ComputeImageDataSizes(
       int width, int height, int depth, int format, int type,
-      int alignment, uint32_t* size, uint32_t* opt_unpadded_row_size,
-      uint32_t* opt_padded_row_size);
-
-  // Similar to the above function, but taking into consideration all ES3
-  // pixel pack/unpack parameters.
-  // Optionally the skipped bytes in the beginning can be returned.
-  // Note the returned |size| does NOT include |skip_size|.
-  // TODO(zmo): merging ComputeImageDataSize and ComputeImageDataSizeES3.
-  static bool ComputeImageDataSizesES3(
-      int width, int height, int depth, int format, int type,
-      const PixelStoreParams& params,
-      uint32_t* size, uint32_t* opt_unpadded_row_size,
-      uint32_t* opt_padded_row_size, uint32_t* opt_skip_size);
+      int unpack_alignment, uint32_t* size, uint32_t* unpadded_row_size,
+      uint32_t* padded_row_size);
 
   static size_t RenderbufferBytesPerPixel(int format);
 
@@ -218,10 +191,6 @@ class GLES2_UTILS_EXPORT GLES2Util {
  private:
   static std::string GetQualifiedEnumString(
       const EnumToString* table, size_t count, uint32_t value);
-
-  static bool ComputeImageRowSizeHelper(
-      int width, uint32 bytes_per_group, int alignment,
-      uint32* rt_unpadded_row_size, uint32* rt_padded_row_size);
 
   static const EnumToString* const enum_to_string_table_;
   static const size_t enum_to_string_table_len_;
