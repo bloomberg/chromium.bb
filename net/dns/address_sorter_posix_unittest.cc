@@ -59,7 +59,14 @@ class TestUDPClientSocket : public DatagramClientSocket {
   }
   int BindToNetwork(NetworkChangeNotifier::NetworkHandle network) override {
     NOTIMPLEMENTED();
-    return OK;
+    return ERR_NOT_IMPLEMENTED;
+  }
+  int BindToDefaultNetwork() override {
+    NOTIMPLEMENTED();
+    return ERR_NOT_IMPLEMENTED;
+  }
+  NetworkChangeNotifier::NetworkHandle GetBoundNetwork() override {
+    return NetworkChangeNotifier::kInvalidNetworkHandle;
   }
 
   int Connect(const IPEndPoint& remote) override {

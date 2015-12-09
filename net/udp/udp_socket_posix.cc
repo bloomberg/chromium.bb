@@ -326,10 +326,12 @@ int UDPSocketPosix::Bind(const IPEndPoint& address) {
 
 int UDPSocketPosix::BindToNetwork(
     NetworkChangeNotifier::NetworkHandle network) {
-#if defined(OS_ANDROID)
   DCHECK_NE(socket_, kInvalidSocket);
   DCHECK(CalledOnValidThread());
   DCHECK(!is_connected());
+  if (network == NetworkChangeNotifier::kInvalidNetworkHandle)
+    return ERR_INVALID_ARGUMENT;
+#if defined(OS_ANDROID)
   // Android prior to Lollipop didn't have support for binding sockets to
   // networks.
   if (base::android::BuildInfo::GetInstance()->sdk_int() <
@@ -353,7 +355,13 @@ int UDPSocketPosix::BindToNetwork(
   }
   if (setNetworkForSocket == nullptr)
     return ERR_NOT_IMPLEMENTED;
-  return MapSystemError(setNetworkForSocket(network, socket_));
+  int rv = setNetworkForSocket(network, socket_);
+  // If |network| has since disconnected, |rv| will be ENONET.  Surface this as
+  // ERR_NETWORK_CHANGED, rather than MapSystemError(ENONET) which gives back
+  // the less descriptive ERR_FAILED.
+  if (rv == ENONET)
+    return ERR_NETWORK_CHANGED;
+  return MapSystemError(rv);
 #else
   NOTIMPLEMENTED();
   return ERR_NOT_IMPLEMENTED;

@@ -25,6 +25,15 @@ class NET_EXPORT_PRIVATE DatagramClientSocket : public DatagramSocket,
   // Returns a net error code.
   virtual int BindToNetwork(NetworkChangeNotifier::NetworkHandle network) = 0;
 
+  // Same as BindToNetwork, except that the current default network is used.
+  // Returns a net error code.
+  virtual int BindToDefaultNetwork() = 0;
+
+  // Returns the network that either BindToNetwork() or BindToDefaultNetwork()
+  // bound this socket to. Returns NetworkChangeNotifier::kInvalidNetworkHandle
+  // if not explicitly bound via BindToNetwork() or BindToDefaultNetwork().
+  virtual NetworkChangeNotifier::NetworkHandle GetBoundNetwork() = 0;
+
   // Initialize this socket as a client socket to server at |address|.
   // Returns a network error code.
   virtual int Connect(const IPEndPoint& address) = 0;

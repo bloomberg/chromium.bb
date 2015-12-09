@@ -1355,6 +1355,15 @@ int DeterministicMockUDPClientSocket::BindToNetwork(
   return ERR_NOT_IMPLEMENTED;
 }
 
+int DeterministicMockUDPClientSocket::BindToDefaultNetwork() {
+  return ERR_NOT_IMPLEMENTED;
+}
+
+NetworkChangeNotifier::NetworkHandle
+DeterministicMockUDPClientSocket::GetBoundNetwork() {
+  return NetworkChangeNotifier::kInvalidNetworkHandle;
+}
+
 int DeterministicMockUDPClientSocket::Connect(const IPEndPoint& address) {
   if (connected_)
     return OK;
@@ -1731,6 +1740,14 @@ const BoundNetLog& MockUDPClientSocket::NetLog() const {
 int MockUDPClientSocket::BindToNetwork(
     NetworkChangeNotifier::NetworkHandle network) {
   return ERR_NOT_IMPLEMENTED;
+}
+
+int MockUDPClientSocket::BindToDefaultNetwork() {
+  return ERR_NOT_IMPLEMENTED;
+}
+
+NetworkChangeNotifier::NetworkHandle MockUDPClientSocket::GetBoundNetwork() {
+  return NetworkChangeNotifier::kInvalidNetworkHandle;
 }
 
 int MockUDPClientSocket::Connect(const IPEndPoint& address) {
