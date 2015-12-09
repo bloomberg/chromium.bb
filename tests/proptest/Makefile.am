@@ -1,3 +1,5 @@
+include Makefile.sources
+
 AM_CFLAGS = \
 	$(WARN_CFLAGS)\
 	-I$(top_srcdir)/include/drm \
@@ -12,8 +14,8 @@ noinst_PROGRAMS = \
 	proptest
 endif
 
-proptest_SOURCES = \
-	proptest.c
+proptest_SOURCES = $(PROPTEST_FILES)
+
 proptest_LDADD = \
 	$(top_builddir)/libdrm.la \
 	$(top_builddir)/tests/util/libutil.la
