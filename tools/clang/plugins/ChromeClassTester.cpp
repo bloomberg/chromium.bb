@@ -204,11 +204,6 @@ void ChromeClassTester::BuildBannedLists() {
   banned_namespaces_.emplace("std");
   banned_namespaces_.emplace("__gnu_cxx");
 
-  if (!options_.enforce_overriding_blink) {
-    banned_namespaces_.emplace("blink");
-    banned_namespaces_.emplace("WTF");
-  }
-
   if (options_.enforce_in_thirdparty_webkit) {
     allowed_directories_.emplace("/third_party/WebKit/");
   }
