@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/shared_memory.h"
 #include "base/metrics/histogram.h"
@@ -31,6 +32,7 @@
 #include "content/public/common/content_switches.h"
 #include "media/audio/audio_device_name.h"
 #include "media/audio/audio_manager_base.h"
+#include "media/audio/audio_streams_tracker.h"
 #include "media/base/audio_bus.h"
 #include "media/base/limits.h"
 
@@ -40,6 +42,12 @@ using media::AudioManager;
 namespace content {
 
 namespace {
+
+// Tracks the maximum number of simultaneous output streams browser-wide.
+// Accessed on IO thread.
+base::LazyInstance<media::AudioStreamsTracker> g_audio_streams_tracker =
+    LAZY_INSTANCE_INITIALIZER;
+
 // TODO(aiolos): This is a temporary hack until the resource scheduler is
 // migrated to RenderFrames for the Site Isolation project. It's called in
 // response to low frequency playback state changes. http://crbug.com/472869
@@ -216,13 +224,20 @@ AudioRendererHost::AudioRendererHost(
 }
 
 AudioRendererHost::~AudioRendererHost() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(audio_entries_.empty());
 
-  // If we had any streams, report the maximum number of simultaneous streams as
-  // UMA stat.
+  // If we had any streams, report UMA stats for the maximum number of
+  // simultaneous streams for this render process and for the whole browser
+  // process since last reported.
   if (max_simultaneous_streams_ > 0) {
     UMA_HISTOGRAM_CUSTOM_COUNTS("Media.AudioRendererIpcStreams",
                                 max_simultaneous_streams_, 1, 50, 51);
+    UMA_HISTOGRAM_CUSTOM_COUNTS(
+        "Media.AudioRendererIpcStreamsTotal",
+        g_audio_streams_tracker.Get().max_stream_count(),
+        1, 100, 101);
+    g_audio_streams_tracker.Get().ResetMaxStreamCount();
   }
 }
 
@@ -550,6 +565,7 @@ void AudioRendererHost::DoCreateStream(int stream_id,
         render_process_id_, entry->render_frame_id(), entry->controller());
   }
   audio_entries_.insert(std::make_pair(stream_id, entry.release()));
+  g_audio_streams_tracker.Get().IncreaseStreamCount();
 
   audio_log_->OnCreated(stream_id, params, device_unique_id);
   MediaInternals::GetInstance()->SetWebContentsTitleForAudioLogEntry(
@@ -617,6 +633,7 @@ void AudioRendererHost::OnCloseStream(int stream_id) {
     return;
   scoped_ptr<AudioEntry> entry(i->second);
   audio_entries_.erase(i);
+  g_audio_streams_tracker.Get().DecreaseStreamCount();
 
   media::AudioOutputController* const controller = entry->controller();
   controller->Close(

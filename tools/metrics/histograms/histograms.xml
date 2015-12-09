@@ -18175,8 +18175,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="Media.AudioRendererIpcStreams">
   <owner>grunell@chromium.org</owner>
   <summary>
-    The maximum number of simultaneous audio render streams over IPC in a render
-    process. Logged at render process shutdown.
+    The maximum number of simultaneous audio render streams over IPC created in
+    AudioRendererHost for a render process. Logged at render process shutdown.
+  </summary>
+</histogram>
+
+<histogram name="Media.AudioRendererIpcStreamsTotal">
+  <owner>grunell@chromium.org</owner>
+  <summary>
+    The maximum number of simultaneous audio render streams over IPC created in
+    AudioRendererHost for all render processes. Logged at render process
+    shutdown.
   </summary>
 </histogram>
 
