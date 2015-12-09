@@ -54,7 +54,7 @@ String KeywordValue::cssString() const
     return keywordValue();
 }
 
-PassRefPtrWillBeRawPtr<CSSValue> KeywordValue::toCSSValue()
+PassRefPtrWillBeRawPtr<CSSValue> KeywordValue::toCSSValue() const
 {
     switch (m_keywordValue) {
     case Initial:

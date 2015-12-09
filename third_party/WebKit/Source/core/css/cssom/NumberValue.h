@@ -25,7 +25,7 @@ public:
 
     String cssString() const override { return String::number(m_value); }
 
-    PassRefPtrWillBeRawPtr<CSSValue> toCSSValue() override
+    PassRefPtrWillBeRawPtr<CSSValue> toCSSValue() const override
     {
         return cssValuePool().createValue(m_value, CSSPrimitiveValue::UnitType::
 Number);

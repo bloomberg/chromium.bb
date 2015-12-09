@@ -24,7 +24,7 @@ public:
     virtual const String& keywordValue() const;
 
     String cssString() const override;
-    PassRefPtrWillBeRawPtr<CSSValue> toCSSValue() override;
+    PassRefPtrWillBeRawPtr<CSSValue> toCSSValue() const override;
 
 protected:
     KeywordValue(const String& keyword) : m_keywordValue(keywordValueFromString(keyword)) {}
