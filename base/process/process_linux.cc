@@ -14,6 +14,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
+#include "base/threading/thread_restrictions.h"
 
 namespace base {
 
@@ -154,6 +155,46 @@ bool IsProcessBackgroundedCGroup(const StringPiece& cgroup_contents) {
   }
 
   return false;
+}
+#endif  // defined(OS_CHROMEOS)
+
+#if defined(OS_CHROMEOS)
+// Reads /proc/<pid>/status and returns the PID in its PID namespace.
+// If the process is not in a PID namespace or /proc/<pid>/status does not
+// report NSpid, kNullProcessId is returned.
+ProcessId Process::GetPidInNamespace() const {
+  std::string status;
+  {
+    // Synchronously reading files in /proc does not hit the disk.
+    ThreadRestrictions::ScopedAllowIO allow_io;
+    FilePath status_file =
+        FilePath("/proc").Append(IntToString(process_)).Append("status");
+    if (!ReadFileToString(status_file, &status)) {
+      return kNullProcessId;
+    }
+  }
+
+  StringPairs pairs;
+  SplitStringIntoKeyValuePairs(status, ':', '\n', &pairs);
+  for (const auto& pair : pairs) {
+    const std::string& key = pair.first;
+    const std::string& value_str = pair.second;
+    if (key == "NSpid") {
+      std::vector<StringPiece> split_value_str = SplitStringPiece(
+          value_str, "\t", TRIM_WHITESPACE, SPLIT_WANT_NONEMPTY);
+      if (split_value_str.size() <= 1) {
+        return kNullProcessId;
+      }
+      int value;
+      // The last value in the list is the PID in the namespace.
+      if (!StringToInt(split_value_str.back(), &value)) {
+        NOTREACHED();
+        return kNullProcessId;
+      }
+      return value;
+    }
+  }
+  return kNullProcessId;
 }
 #endif  // defined(OS_CHROMEOS)
 

@@ -123,6 +123,13 @@ class BASE_EXPORT Process {
   // of this value is OS dependent.
   int GetPriority() const;
 
+#if defined(OS_CHROMEOS)
+  // Get the PID in its PID namespace.
+  // If the process is not in a PID namespace or /proc/<pid>/status does not
+  // report NSpid, kNullProcessId is returned.
+  ProcessId GetPidInNamespace() const;
+#endif
+
  private:
 #if defined(OS_WIN)
   bool is_current_process_;
