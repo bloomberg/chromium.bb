@@ -689,42 +689,6 @@ blink::Platform::TraceEventHandle BlinkPlatformImpl::addTraceEvent(
   return result;
 }
 
-blink::Platform::TraceEventHandle BlinkPlatformImpl::addTraceEvent(
-    char phase,
-    const unsigned char* category_group_enabled,
-    const char* name,
-    unsigned long long id,
-    double timestamp,
-    int num_args,
-    const char** arg_names,
-    const unsigned char* arg_types,
-    const unsigned long long* arg_values,
-    blink::WebConvertableToTraceFormat* convertable_values,
-    unsigned char flags) {
-  scoped_refptr<base::trace_event::ConvertableToTraceFormat>
-      convertable_wrappers[2];
-  if (convertable_values) {
-    size_t size = std::min(static_cast<size_t>(num_args),
-                           arraysize(convertable_wrappers));
-    for (size_t i = 0; i < size; ++i) {
-      if (arg_types[i] == TRACE_VALUE_TYPE_CONVERTABLE) {
-        convertable_wrappers[i] =
-            new ConvertableToTraceFormatWrapper(convertable_values[i]);
-      }
-    }
-  }
-  base::TimeTicks timestamp_tt =
-      base::TimeTicks() + base::TimeDelta::FromSecondsD(timestamp);
-  base::trace_event::TraceEventHandle handle =
-      TRACE_EVENT_API_ADD_TRACE_EVENT_WITH_THREAD_ID_AND_TIMESTAMP(
-          phase, category_group_enabled, name, id, trace_event_internal::kNoId,
-          base::PlatformThread::CurrentId(), timestamp_tt, num_args, arg_names,
-          arg_types, arg_values, convertable_wrappers, flags);
-  blink::Platform::TraceEventHandle result;
-  memcpy(&result, &handle, sizeof(result));
-  return result;
-}
-
 void BlinkPlatformImpl::updateTraceEventDuration(
     const unsigned char* category_group_enabled,
     const char* name,
