@@ -35,31 +35,25 @@ const int kLowLatencyBufferSize = 256;
 // Number of full sine wave cycles for each Render() call.
 const int kSineCycles = 4;
 
-const char kDefaultDeviceId[] = "";
-
 // Input sample frequencies for testing.
+const int kTestInputLower = 44100;
+const int kTestInputHigher = 48000;
+const int kTestInput3Rates[] = {22050, 44100, 48000};
 
-std::vector<int> kTestInputLower(1, 44100);
-std::vector<int> kTestInputHigher(1, 48000);
-const int kSampleRates[] = {22050, 44100, 48000};
-std::vector<int> kTestInput3Rates(kSampleRates,
-                                  kSampleRates +
-                                      sizeof(kSampleRates) /
-                                          sizeof(kSampleRates[0]));
-
-// Tuple of <input sampling rates, output sampling rate, epsilon>.
-typedef std::tr1::tuple<std::vector<int>, int, double>
+// Tuple of <input sampling rates, number of input sample rates,
+// output sampling rate, epsilon>.
+typedef std::tr1::tuple<const int* const, size_t, int, double>
     AudioRendererMixerTestData;
 
 class AudioRendererMixerTest
     : public testing::TestWithParam<AudioRendererMixerTestData> {
  public:
   AudioRendererMixerTest()
-      : epsilon_(std::tr1::get<2>(GetParam())),
-        half_fill_(false) {
+      : epsilon_(std::tr1::get<3>(GetParam())), half_fill_(false) {
     // Create input parameters based on test parameters.
-    const std::vector<int>& sample_rates(std::tr1::get<0>(GetParam()));
-    for (size_t i = 0; i < sample_rates.size(); ++i)
+    const int* const sample_rates = std::tr1::get<0>(GetParam());
+    size_t sample_rates_count = std::tr1::get<1>(GetParam());
+    for (size_t i = 0; i < sample_rates_count; ++i)
       input_parameters_.push_back(AudioParameters(
           AudioParameters::AUDIO_PCM_LINEAR, kChannelLayout, sample_rates[i],
           kBitsPerChannel, kHighLatencyBufferSize));
@@ -67,7 +61,7 @@ class AudioRendererMixerTest
     // Create output parameters based on test parameters.
     output_parameters_ = AudioParameters(
         AudioParameters::AUDIO_PCM_LOW_LATENCY, kChannelLayout,
-        std::tr1::get<1>(GetParam()), 16, kLowLatencyBufferSize);
+        std::tr1::get<2>(GetParam()), 16, kLowLatencyBufferSize);
 
     sink_ = new MockAudioRendererSink();
     EXPECT_CALL(*sink_.get(), Start());
@@ -118,7 +112,8 @@ class AudioRendererMixerTest
                        base::Unretained(this)),
             base::Bind(&AudioRendererMixerTest::RemoveMixer,
                        base::Unretained(this)),
-            kDefaultDeviceId, url::Origin()));
+            // Default device ID and security origin.
+            std::string(), url::Origin()));
         mixer_inputs_[input]->Initialize(input_parameters_[i],
                                          fake_callbacks_[input]);
         mixer_inputs_[input]->SetVolume(1.0f);
@@ -470,7 +465,8 @@ TEST_P(AudioRendererMixerBehavioralTest, NoInitialize) {
           base::Bind(&AudioRendererMixerTest::GetMixer, base::Unretained(this)),
           base::Bind(&AudioRendererMixerTest::RemoveMixer,
                      base::Unretained(this)),
-          kDefaultDeviceId, url::Origin());
+          // Default device ID and security origin.
+          std::string(), url::Origin());
 }
 
 // Ensure the physical stream is paused after a certain amount of time with no
@@ -518,22 +514,31 @@ INSTANTIATE_TEST_CASE_P(
     AudioRendererMixerTest,
     testing::Values(
         // No resampling, 1 input sample rate.
-        std::tr1::make_tuple(kTestInputLower, kTestInputLower[0], 0.00000048),
+        std::tr1::make_tuple(&kTestInputLower, 1, kTestInputLower, 0.00000048),
 
         // Upsampling, 1 input sample rate.
-        std::tr1::make_tuple(kTestInputLower, kTestInputHigher[0], 0.01),
+        std::tr1::make_tuple(&kTestInputLower, 1, kTestInputHigher, 0.01),
 
         // Downsampling, 1 input sample rate.
-        std::tr1::make_tuple(kTestInputHigher, kTestInputLower[0], 0.01),
+        std::tr1::make_tuple(&kTestInputHigher, 1, kTestInputLower, 0.01),
 
         // Downsampling, multuple input sample rates.
-        std::tr1::make_tuple(kTestInput3Rates, kTestInput3Rates[0], 0.01),
+        std::tr1::make_tuple(static_cast<const int* const>(kTestInput3Rates),
+                             arraysize(kTestInput3Rates),
+                             kTestInput3Rates[0],
+                             0.01),
 
         // Upsampling, multiple sinput sample rates.
-        std::tr1::make_tuple(kTestInput3Rates, kTestInput3Rates[2], 0.01),
+        std::tr1::make_tuple(static_cast<const int* const>(kTestInput3Rates),
+                             arraysize(kTestInput3Rates),
+                             kTestInput3Rates[2],
+                             0.01),
 
         // Both downsampling and upsampling, multiple input sample rates
-        std::tr1::make_tuple(kTestInput3Rates, kTestInput3Rates[1], 0.01)));
+        std::tr1::make_tuple(static_cast<const int* const>(kTestInput3Rates),
+                             arraysize(kTestInput3Rates),
+                             kTestInput3Rates[1],
+                             0.01)));
 
 // Test cases for behavior which is independent of parameters.  Values() doesn't
 // support single item lists and we don't want these test cases to run for every
@@ -543,7 +548,8 @@ INSTANTIATE_TEST_CASE_P(
     AudioRendererMixerBehavioralTest,
     testing::ValuesIn(std::vector<AudioRendererMixerTestData>(
         1,
-        std::tr1::make_tuple(kTestInputLower,
-                             kTestInputLower[0],
+        std::tr1::make_tuple(&kTestInputLower,
+                             1,
+                             kTestInputLower,
                              0.00000048))));
 }  // namespace media
