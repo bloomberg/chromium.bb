@@ -338,7 +338,7 @@ void FrameSelection::setSelectionAlgorithm(const VisibleSelectionTemplate<Strate
     // Always clear the x position used for vertical arrow navigation.
     // It will be restored by the vertical arrow navigation code if necessary.
     m_selectionEditor->resetXPosForVerticalArrowNavigation();
-    RefPtrWillBeRawPtr<LocalFrame> protector(m_frame);
+    RefPtrWillBeRawPtr<LocalFrame> protector(m_frame.get());
     // This may dispatch a synchronous focus-related events.
     selectFrameElementInParentIfFullySelected();
     notifyLayoutObjectOfSelectionChange(userTriggered);
