@@ -30,5 +30,3 @@ Local Modifications (to be applied in this order):
 - Let COMPILE_ASSERT use static_assert if available, merges upstream
   2225f94df8ec
 - Merge upstream cc56ba02d9d2bdafa614ad5ebf564dde287625bb.
-- Suppress more unwanted reports from MemorySanitizer.
-  (patches/sparse-array-valgrind.patch)
