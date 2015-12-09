@@ -58585,6 +58585,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="13" label="File system directory content received"/>
   <int value="14" label="Style rule edited"/>
   <int value="15" label="Command evaluated in console panel"/>
+  <int value="16" label="DOM properties expanded"/>
 </enum>
 
 <enum name="DevToolsPanel" type="int">
