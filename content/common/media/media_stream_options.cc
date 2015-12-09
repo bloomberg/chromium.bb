@@ -30,10 +30,10 @@ TrackControls::TrackControls(bool request)
 TrackControls::~TrackControls() {}
 
 StreamControls::StreamControls()
-    : audio(false), video(false) {}
+    : audio(false), video(false), hotword_enabled(false) {}
 
 StreamControls::StreamControls(bool request_audio, bool request_video)
-    : audio(request_audio), video(request_video) {}
+    : audio(request_audio), video(request_video), hotword_enabled(false) {}
 
 StreamControls::~StreamControls() {}
 
