@@ -138,6 +138,11 @@ template <>
 GPU_EXPORT void Vec4::SetValues<GLuint>(const GLuint* values);
 
 struct GPU_EXPORT ContextState {
+  enum Dimension {
+    k2D,
+    k3D
+  };
+
   ContextState(FeatureInfo* feature_info,
                ErrorStateClient* error_state_client,
                Logger* logger);
@@ -219,6 +224,9 @@ struct GPU_EXPORT ContextState {
 
   void UnbindTexture(TextureRef* texture);
   void UnbindSampler(Sampler* sampler);
+
+  PixelStoreParams GetPackParams();
+  PixelStoreParams GetUnpackParams(Dimension dimension);
 
   #include "gpu/command_buffer/service/context_state_autogen.h"
 
