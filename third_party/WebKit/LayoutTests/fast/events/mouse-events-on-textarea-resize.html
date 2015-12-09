@@ -16,10 +16,9 @@ textarea {
 <script>
 description("Verifies that correct mouse events are fired and when resizing an element");
 
-var testEventList = ['focus', 'mousedown', 'mouseup', 'pointerdown', 'pointerup'];
+var testEventList = ['focus', 'mousedown', 'mouseup', 'click'];
+var preventDefaultList = ['mousedown', ''];
 var eventToPreventDefault = '';
-
-var seqNo = 0;
 
 function init() {
   var targetDiv = document.getElementById("target");
@@ -29,7 +28,7 @@ function init() {
       if (event.type == eventToPreventDefault) {
         event.preventDefault();
       }
-      debug(++seqNo + " Received " + event.type);
+      debug("Received " + event.type);
     });
   });
 }
@@ -39,25 +38,20 @@ function runTests() {
   var x = rect.right - 5;
   var y = rect.bottom - 5;
 
-  debug("--- mousedown preventDefault ---");
-  eventToPreventDefault = 'mousedown';
-  debug("--- move mouse into target ---");
-  eventSender.mouseMoveTo(x, y);
-  debug("--- start resizing ---");
-  eventSender.mouseDown();
-  eventSender.mouseMoveTo(x + 30, y + 30);
-  debug("--- mouse released ---");
-  eventSender.mouseUp();
 
-  debug("--- No preventDefault ---");
-  eventToPreventDefault = '';
-  debug("--- move mouse into target ---");
-  eventSender.mouseMoveTo(x, y);
-  debug("--- start resizing ---");
-  eventSender.mouseDown();
-  eventSender.mouseMoveTo(x + 30, y + 30);
-  debug("--- mouse released ---");
-  eventSender.mouseUp();
+  preventDefaultList.forEach(function(eventName) {
+    eventToPreventDefault = eventName;
+
+    debug("--- test with preventDefault on '" + eventName + "' ---");
+    debug("--- move mouse into target ---");
+    eventSender.mouseMoveTo(x, y);
+    debug("--- start resizing ---");
+    eventSender.mouseDown();
+    eventSender.mouseMoveTo(x + 30, y + 30);
+    debug("--- mouse released ---");
+    eventSender.mouseUp();
+    debug("");
+  });
 }
 
 init();

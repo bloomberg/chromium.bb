@@ -1062,11 +1062,9 @@ WebInputEventResult EventHandler::handleMousePressEvent(const PlatformMouseEvent
             m_resizeScrollableArea = layer->scrollableArea();
             m_resizeScrollableArea->setInResizeMode(true);
             m_offsetFromResizeCorner = LayoutSize(m_resizeScrollableArea->offsetFromResizeCorner(p));
-            invalidateClick();
             return WebInputEventResult::HandledSystem;
         }
     }
-
 
     // m_selectionInitiationState is initialized after dispatching mousedown
     // event in order not to keep the selection by DOM APIs Because we can't
