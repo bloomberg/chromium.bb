@@ -4732,6 +4732,11 @@ void RenderFrameImpl::NavigateInternal(
     cache_policy = WebURLRequest::ReloadIgnoringCacheData;
   }
 
+  // If the navigation is for "view source", the WebLocalFrame needs to be put
+  // in a special mode.
+  if (request_params.is_view_source)
+    frame_->enableViewSourceMode(true);
+
   pending_navigation_params_.reset(
       new NavigationParams(common_params, start_params, request_params));
 

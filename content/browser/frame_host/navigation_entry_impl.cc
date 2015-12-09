@@ -601,12 +601,13 @@ RequestNavigationParams NavigationEntryImpl::ConstructRequestNavigationParams(
     current_offset_to_send = -1;
     current_length_to_send = 0;
   }
+
   return RequestNavigationParams(
       GetIsOverridingUserAgent(), redirects, GetCanLoadLocalResources(),
       base::Time::Now(), frame_entry.page_state(), GetPageID(), GetUniqueID(),
       is_same_document_history_load, has_committed_real_load,
       intended_as_new_entry, pending_offset_to_send, current_offset_to_send,
-      current_length_to_send, should_clear_history_list());
+      current_length_to_send, IsViewSourceMode(), should_clear_history_list());
 }
 
 void NavigationEntryImpl::ResetForCommit() {

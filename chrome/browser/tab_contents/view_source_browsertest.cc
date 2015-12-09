@@ -131,3 +131,55 @@ IN_PROC_BROWSER_TEST_F(ViewSourceTest, DISABLED_TestViewSourceReload) {
   ASSERT_TRUE(browser()->tab_strip_model()->GetWebContentsAt(0)->
                   GetController().GetActiveEntry()->IsViewSourceMode());
 }
+
+// This test ensures that view-source session history navigations work
+// correctly when switching processes. See https://crbug.com/544868.
+IN_PROC_BROWSER_TEST_F(ViewSourceTest,
+                       ViewSourceCrossProcessAndBack) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL url_viewsource(content::kViewSourceScheme + std::string(":") +
+                      embedded_test_server()->GetURL(kTestHtml).spec());
+  ui_test_utils::NavigateToURL(browser(), url_viewsource);
+  EXPECT_FALSE(chrome::CanViewSource(browser()));
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
+
+  // Open another tab to the same origin, so the process is kept alive while
+  // the original tab is navigated cross-process. This is required for the
+  // original bug to reproduce.
+  {
+    GURL url = embedded_test_server()->GetURL("/title1.html");
+    ui_test_utils::UrlLoadObserver load_complete(
+        url, content::NotificationService::AllSources());
+    EXPECT_TRUE(content::ExecuteScript(
+        browser()->tab_strip_model()->GetActiveWebContents(),
+        "window.open('" + url.spec() + "');"));
+    load_complete.Wait();
+    EXPECT_EQ(2, browser()->tab_strip_model()->count());
+  }
+
+  // Switch back to the first tab and navigate it cross-process.
+  browser()->tab_strip_model()->ActivateTabAt(0, true);
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIVersionURL));
+  EXPECT_TRUE(chrome::CanViewSource(browser()));
+
+  // Navigate back in session history to ensure view-source mode is still
+  // active.
+  {
+    ui_test_utils::UrlLoadObserver load_complete(
+        url_viewsource, content::NotificationService::AllSources());
+    chrome::GoBack(browser(), CURRENT_TAB);
+    load_complete.Wait();
+  }
+
+  // Check whether the page is in view-source mode or not by checking if an
+  // expected element on the page exists or not. In view-source mode it
+  // should not be found.
+  bool result = false;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      "domAutomationController.send(document.getElementById('bar') === null);",
+      &result));
+  EXPECT_TRUE(result);
+  EXPECT_FALSE(chrome::CanViewSource(browser()));
+}

@@ -224,6 +224,7 @@ struct CONTENT_EXPORT RequestNavigationParams {
                           int pending_history_list_offset,
                           int current_history_list_offset,
                           int current_history_list_length,
+                          bool is_view_source,
                           bool should_clear_history_list);
   ~RequestNavigationParams();
 
@@ -282,6 +283,12 @@ struct CONTENT_EXPORT RequestNavigationParams {
   // size of the session history list.
   int current_history_list_offset;
   int current_history_list_length;
+
+  // Indicates whether the navigation is to a view-source:// scheme or not.
+  // It is a separate boolean as the view-source scheme is stripped from the
+  // URL before it is sent to the renderer process and the RenderFrame needs
+  // to be put in special view source mode.
+  bool is_view_source;
 
   // Whether session history should be cleared. In that case, the RenderView
   // needs to notify the browser that the clearing was succesful when the

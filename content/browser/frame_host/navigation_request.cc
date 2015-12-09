@@ -138,6 +138,7 @@ scoped_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
       false,                   // intended_as_new_entry
       -1,                      // pending_history_list_offset
       current_history_list_offset, current_history_list_length,
+      false,                   // is_view_source
       false);                  // should_clear_history_list
   scoped_ptr<NavigationRequest> navigation_request(
       new NavigationRequest(frame_tree_node, common_params, begin_params,
