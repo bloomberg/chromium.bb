@@ -892,7 +892,7 @@ bool PasswordFormManager::UploadPasswordForm(
 
   bool success = autofill_manager->download_manager()->StartUploadRequest(
       form_structure, false /* was_autofilled */, available_field_types,
-      login_form_signature);
+      login_form_signature, true /* observed_submission */);
 
   UMA_HISTOGRAM_BOOLEAN("PasswordGeneration.UploadStarted", success);
   return success;
@@ -970,7 +970,7 @@ bool PasswordFormManager::UploadChangePasswordForm(
 
   return autofill_manager->download_manager()->StartUploadRequest(
       form_structure, false /* was_autofilled */, available_field_types,
-      login_form_signature);
+      login_form_signature, true /* observed_submission */);
 }
 
 void PasswordFormManager::CreatePendingCredentials() {

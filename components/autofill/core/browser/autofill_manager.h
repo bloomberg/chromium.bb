@@ -217,8 +217,10 @@ class AutofillManager : public AutofillDownloadManager::Observer,
                   AutofillClient* client,
                   PersonalDataManager* personal_data);
 
-  // Uploads the form data to the Autofill server.
-  virtual void UploadFormData(const FormStructure& submitted_form);
+  // Uploads the form data to the Autofill server. |observed_submission|
+  // indicates that upload is the result of a submission event.
+  virtual void UploadFormData(const FormStructure& submitted_form,
+                              bool observed_submission);
 
   // Logs quality metrics for the |submitted_form| and uploads the form data
   // to the crowdsourcing server, if appropriate. |observed_submission|

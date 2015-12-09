@@ -167,7 +167,8 @@ IN_PROC_BROWSER_TEST_F(AutofillServerTest,
   // submission, with form fields matching those from the query request.
   const char kUploadRequest[] =
       "<?xml version=\"1.0\"?>\n"
-      "<autofillupload clientversion=\"6.1.1715.1442/en (GGLL)\""
+      "<autofillupload submission=\"true\""
+      " clientversion=\"6.1.1715.1442/en (GGLL)\""
       " formsignature=\"15916856893790176210\""
       " autofillused=\"false\""
       " datapresent=\"1f7e0003780000080004\""

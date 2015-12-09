@@ -234,14 +234,14 @@ TEST_F(AutofillDownloadTest, QueryAndUploadTest) {
   download_manager_.SetNegativeUploadRate(1.0);
   // Request with id 1.
   EXPECT_TRUE(download_manager_.StartUploadRequest(
-      *(form_structures[0]), true, ServerFieldTypeSet(), std::string()));
+      *(form_structures[0]), true, ServerFieldTypeSet(), std::string(), true));
   // Request with id 2.
   EXPECT_TRUE(download_manager_.StartUploadRequest(
-      *(form_structures[1]), false, ServerFieldTypeSet(), std::string()));
+      *(form_structures[1]), false, ServerFieldTypeSet(), std::string(), true));
   // Request with id 3. Upload request with a non-empty additional password form
   // signature.
-  EXPECT_TRUE(download_manager_.StartUploadRequest(*(form_structures[2]), false,
-                                                   ServerFieldTypeSet(), "42"));
+  EXPECT_TRUE(download_manager_.StartUploadRequest(
+      *(form_structures[2]), false, ServerFieldTypeSet(), "42", true));
 
   const char *responses[] = {
     "<autofillqueryresponse>"
@@ -306,9 +306,9 @@ TEST_F(AutofillDownloadTest, QueryAndUploadTest) {
   download_manager_.SetNegativeUploadRate(0.0);
   // No actual requests for the next two calls, as we set upload rate to 0%.
   EXPECT_FALSE(download_manager_.StartUploadRequest(
-      *(form_structures[0]), true, ServerFieldTypeSet(), std::string()));
+      *(form_structures[0]), true, ServerFieldTypeSet(), std::string(), true));
   EXPECT_FALSE(download_manager_.StartUploadRequest(
-      *(form_structures[1]), false, ServerFieldTypeSet(), std::string()));
+      *(form_structures[1]), false, ServerFieldTypeSet(), std::string(), true));
   fetcher = factory.GetFetcherByID(4);
   EXPECT_EQ(NULL, fetcher);
 
@@ -347,7 +347,7 @@ TEST_F(AutofillDownloadTest, QueryAndUploadTest) {
   form_structures[0]->upload_required_ = UPLOAD_REQUIRED;
   // Request with id 4.
   EXPECT_TRUE(download_manager_.StartUploadRequest(
-      *(form_structures[0]), true, ServerFieldTypeSet(), std::string()));
+      *(form_structures[0]), true, ServerFieldTypeSet(), std::string(), true));
   fetcher = factory.GetFetcherByID(5);
   ASSERT_TRUE(fetcher);
   fetcher->set_backoff_delay(TestTimeouts::action_max_timeout());
@@ -359,7 +359,7 @@ TEST_F(AutofillDownloadTest, QueryAndUploadTest) {
 
   // Upload requests should be ignored for the next 10 seconds.
   EXPECT_FALSE(download_manager_.StartUploadRequest(
-      *(form_structures[0]), true, ServerFieldTypeSet(), std::string()));
+      *(form_structures[0]), true, ServerFieldTypeSet(), std::string(), true));
   fetcher = factory.GetFetcherByID(6);
   EXPECT_EQ(NULL, fetcher);
 }
@@ -614,6 +614,8 @@ TEST_F(AutofillDownloadTest, QueryRequestIsGzipped) {
   EXPECT_EQ("gzip", header);
 
   // Expect that the compression is logged.
+  // NOTE: To get the expected value, run tests with --vmodule=autofill*=1 and
+  // watch for the VLOG which indicates compression.
   histogram.ExpectUniqueSample("Autofill.PayloadCompressionRatio.Query", 72, 1);
 }
 
@@ -621,7 +623,8 @@ TEST_F(AutofillDownloadTest, UploadRequestIsGzipped) {
   // Expected upload (uncompressed for visual verification).
   const char* kExpectedUploadXml =
       "<?xml version=\"1.0\"?>\n"
-      "<autofillupload clientversion=\"6.1.1715.1442/en (GGLL)\""
+      "<autofillupload submission=\"true\""
+      " clientversion=\"6.1.1715.1442/en (GGLL)\""
       " formsignature=\"14546501144368603154\" autofillused=\"true\""
       " datapresent=\"\"/>\n";
 
@@ -656,7 +659,7 @@ TEST_F(AutofillDownloadTest, UploadRequestIsGzipped) {
   base::HistogramTester histogram;
   // Request with id 0.
   EXPECT_TRUE(download_manager_.StartUploadRequest(
-      *(form_structures[0]), true, ServerFieldTypeSet(), std::string()));
+      *(form_structures[0]), true, ServerFieldTypeSet(), std::string(), true));
 
   // Request payload is gzipped.
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
@@ -671,7 +674,9 @@ TEST_F(AutofillDownloadTest, UploadRequestIsGzipped) {
   EXPECT_EQ("gzip", header);
 
   // Expect that the compression is logged.
-  histogram.ExpectUniqueSample("Autofill.PayloadCompressionRatio.Upload", 95,
+  // NOTE: To get the expected value, run tests with --vmodule=autofill*=1 and
+  // watch for the VLOG which indicates compression.
+  histogram.ExpectUniqueSample("Autofill.PayloadCompressionRatio.Upload", 90,
                                1);
 }
 

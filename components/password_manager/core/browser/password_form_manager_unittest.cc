@@ -102,11 +102,12 @@ class MockAutofillDownloadManager : public autofill::AutofillDownloadManager {
       autofill::AutofillDownloadManager::Observer* observer)
       : AutofillDownloadManager(driver, pref_service, observer) {}
 
-  MOCK_METHOD4(StartUploadRequest,
+  MOCK_METHOD5(StartUploadRequest,
                bool(const autofill::FormStructure&,
                     bool,
                     const autofill::ServerFieldTypeSet&,
-                    const std::string&));
+                    const std::string&,
+                    bool));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAutofillDownloadManager);
@@ -397,15 +398,15 @@ class PasswordFormManagerTest : public testing::Test {
           autofill::NOT_ACCOUNT_CREATION_PASSWORD;
     }
     if (field_type) {
-      EXPECT_CALL(
-          *client()->mock_driver()->mock_autofill_download_manager(),
-          StartUploadRequest(
-              CheckUploadFormStructure(pending_structure.FormSignature(),
-                                       expected_types),
-              false, expected_available_field_types, expected_login_signature));
+      EXPECT_CALL(*client()->mock_driver()->mock_autofill_download_manager(),
+                  StartUploadRequest(
+                      CheckUploadFormStructure(
+                          pending_structure.FormSignature(), expected_types),
+                      false, expected_available_field_types,
+                      expected_login_signature, true));
     } else {
       EXPECT_CALL(*client()->mock_driver()->mock_autofill_download_manager(),
-                  StartUploadRequest(_, _, _, _))
+                  StartUploadRequest(_, _, _, _, _))
           .Times(0);
     }
     form_manager.ProvisionallySave(
@@ -475,11 +476,11 @@ class PasswordFormManagerTest : public testing::Test {
       autofill::FormStructure pending_structure(saved_match()->form_data);
       expected_login_signature = pending_structure.FormSignature();
     }
-    EXPECT_CALL(
-        *client()->mock_driver()->mock_autofill_download_manager(),
-        StartUploadRequest(
-            CheckUploadFormStructure(observed_form_signature, expected_types),
-            false, expected_available_field_types, expected_login_signature));
+    EXPECT_CALL(*client()->mock_driver()->mock_autofill_download_manager(),
+                StartUploadRequest(CheckUploadFormStructure(
+                                       observed_form_signature, expected_types),
+                                   false, expected_available_field_types,
+                                   expected_login_signature, true));
 
     switch (field_type) {
       case autofill::NEW_PASSWORD:
@@ -735,8 +736,9 @@ TEST_F(PasswordFormManagerTest, PSLMatchedCredentialsMetadataUpdated) {
   autofill::ServerFieldTypeSet expected_available_field_types;
   expected_available_field_types.insert(autofill::USERNAME);
   expected_available_field_types.insert(autofill::ACCOUNT_CREATION_PASSWORD);
-  EXPECT_CALL(*client()->mock_driver()->mock_autofill_download_manager(),
-              StartUploadRequest(_, false, expected_available_field_types, _))
+  EXPECT_CALL(
+      *client()->mock_driver()->mock_autofill_download_manager(),
+      StartUploadRequest(_, false, expected_available_field_types, _, true))
       .Times(1);
   EXPECT_CALL(*mock_store(), AddLogin(_))
       .WillOnce(SaveArg<0>(&actual_saved_form));
@@ -1561,8 +1563,9 @@ TEST_F(PasswordFormManagerTest, UploadFormData_NewPassword) {
   autofill::ServerFieldTypeSet expected_available_field_types;
   expected_available_field_types.insert(autofill::USERNAME);
   expected_available_field_types.insert(autofill::PASSWORD);
-  EXPECT_CALL(*client()->mock_driver()->mock_autofill_download_manager(),
-              StartUploadRequest(_, false, expected_available_field_types, _));
+  EXPECT_CALL(
+      *client()->mock_driver()->mock_autofill_download_manager(),
+      StartUploadRequest(_, false, expected_available_field_types, _, true));
   form_manager.ProvisionallySave(
       form_to_save, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
   form_manager.Save();
@@ -1577,7 +1580,7 @@ TEST_F(PasswordFormManagerTest, UploadFormData_NewPassword) {
   expected_available_field_types.insert(autofill::USERNAME);
   expected_available_field_types.insert(autofill::PASSWORD);
   EXPECT_CALL(*client()->mock_driver()->mock_autofill_download_manager(),
-              StartUploadRequest(_, _, expected_available_field_types, _))
+              StartUploadRequest(_, _, expected_available_field_types, _, true))
       .Times(0);
   blacklist_form_manager.PermanentlyBlacklist();
   Mock::VerifyAndClearExpectations(&blacklist_form_manager);

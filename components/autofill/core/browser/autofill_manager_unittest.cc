@@ -547,7 +547,8 @@ class TestAutofillManager : public AutofillManager {
   // Wait for the asynchronous calls within StartUploadProcess() to complete.
   void WaitForAsyncUploadProcess() { run_loop_->Run(); }
 
-  void UploadFormData(const FormStructure& submitted_form) override {
+  void UploadFormData(const FormStructure& submitted_form,
+                      bool observed_submission) override {
     submitted_form_signature_ = submitted_form.FormSignature();
   }
 

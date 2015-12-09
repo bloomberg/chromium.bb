@@ -132,10 +132,12 @@ bool AutofillDownloadManager::StartUploadRequest(
     const FormStructure& form,
     bool form_was_autofilled,
     const ServerFieldTypeSet& available_field_types,
-    const std::string& login_form_signature) {
+    const std::string& login_form_signature,
+    bool observed_submission) {
   std::string form_xml;
   if (!form.EncodeUploadRequest(available_field_types, form_was_autofilled,
-                                login_form_signature, &form_xml))
+                                login_form_signature, observed_submission,
+                                &form_xml))
     return false;
 
   if (next_upload_request_ > base::Time::Now()) {
@@ -202,9 +204,10 @@ bool AutofillDownloadManager::StartRequest(
     return false;
   }
 
-  AutofillMetrics::LogPayloadCompressionRatio(
-      static_cast<int>(100 * compressed_data.size() / form_xml.size()),
-      request_data.request_type);
+  const int compression_ratio =
+      static_cast<int>(100 * compressed_data.size() / form_xml.size());
+  AutofillMetrics::LogPayloadCompressionRatio(compression_ratio,
+                                              request_data.request_type);
 
   // Id is ignored for regular chrome, in unit test id's for fake fetcher
   // factory will be 0, 1, 2, ...
@@ -228,8 +231,8 @@ bool AutofillDownloadManager::StartRequest(
   fetcher->Start();
 
   VLOG(1) << "Sending AutofillDownloadManager "
-           << RequestTypeToString(request_data.request_type)
-           << " request: " << form_xml;
+          << RequestTypeToString(request_data.request_type)
+          << " request (compression " << compression_ratio << "): " << form_xml;
 
   return true;
 }

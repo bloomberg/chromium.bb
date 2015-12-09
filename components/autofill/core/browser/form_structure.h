@@ -61,6 +61,7 @@ class FormStructure {
   bool EncodeUploadRequest(const ServerFieldTypeSet& available_field_types,
                            bool form_was_autofilled,
                            const std::string& login_form_signature,
+                           bool observed_submission,
                            std::string* encoded_xml) const;
 
   // Encodes a XML block contains autofill field type from this FormStructure.

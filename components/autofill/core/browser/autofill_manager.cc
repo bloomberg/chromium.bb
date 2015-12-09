@@ -1059,13 +1059,12 @@ void AutofillManager::UploadFormDataAsyncCallback(
         client_->GetRapporService(), did_show_suggestions_);
   }
 
-  // TODO(crbug.com/555015): Differentiate non-submission uploads in the
-  // uploaded payload.
   if (submitted_form->ShouldBeCrowdsourced())
-    UploadFormData(*submitted_form);
+    UploadFormData(*submitted_form, observed_submission);
 }
 
-void AutofillManager::UploadFormData(const FormStructure& submitted_form) {
+void AutofillManager::UploadFormData(const FormStructure& submitted_form,
+                                     bool observed_submission) {
   if (!download_manager_)
     return;
 
@@ -1084,7 +1083,7 @@ void AutofillManager::UploadFormData(const FormStructure& submitted_form) {
 
   download_manager_->StartUploadRequest(
       submitted_form, was_autofilled, non_empty_types,
-      std::string() /* login_form_signature */);
+      std::string() /* login_form_signature */, observed_submission);
 }
 
 void AutofillManager::Reset() {

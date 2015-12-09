@@ -43,6 +43,7 @@ namespace {
 const char kAttributeAutofillUsed[] = "autofillused";
 const char kAttributeAutofillType[] = "autofilltype";
 const char kAttributeClientVersion[] = "clientversion";
+const char kAttributeSubmission[] = "submission";
 const char kAttributeDataPresent[] = "datapresent";
 const char kAttributeFieldID[] = "fieldid";
 const char kAttributeFieldType[] = "fieldtype";
@@ -453,6 +454,7 @@ bool FormStructure::EncodeUploadRequest(
     const ServerFieldTypeSet& available_field_types,
     bool form_was_autofilled,
     const std::string& login_form_signature,
+    bool observed_submission,
     std::string* encoded_xml) const {
   DCHECK(encoded_xml);
   DCHECK(ShouldBeCrowdsourced());
@@ -471,6 +473,9 @@ bool FormStructure::EncodeUploadRequest(
   xml_writer.StartWriting();
   xml_writer.StopIndenting();
   if (!xml_writer.StartElement(kXMLElementAutofillUpload))
+    return false;
+  if (!xml_writer.AddAttribute(kAttributeSubmission,
+                               observed_submission ? "true" : "false"))
     return false;
   if (!xml_writer.AddAttribute(kAttributeClientVersion, kClientVersion))
     return false;
