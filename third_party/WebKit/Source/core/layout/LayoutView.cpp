@@ -38,6 +38,7 @@
 #include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutQuote.h"
 #include "core/layout/LayoutScrollbarPart.h"
+#include "core/layout/ViewFragmentationContext.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/page/Page.h"
 #include "core/paint/PaintLayer.h"
@@ -238,8 +239,15 @@ void LayoutView::layout()
     if (!document().paginated())
         setPageLogicalHeight(0);
 
-    if (shouldUsePrintingLayout())
+    if (shouldUsePrintingLayout()) {
         m_minPreferredLogicalWidth = m_maxPreferredLogicalWidth = logicalWidth();
+        // TODO(mstensho): Get rid of m_pageLogicalHeight zero check. Currently, pageProperty() in
+        // PrintContext starts printing with zero height, so we have to cope for now.
+        if (!m_fragmentationContext && m_pageLogicalHeight)
+            m_fragmentationContext = adoptPtr(new ViewFragmentationContext(*this));
+    } else if (m_fragmentationContext) {
+        m_fragmentationContext.clear();
+    }
 
     SubtreeLayoutScope layoutScope(*this);
 

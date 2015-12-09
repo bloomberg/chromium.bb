@@ -116,7 +116,7 @@ void InitialColumnHeightFinder::examineBoxAfterEntering(const LayoutBox& box)
         m_tallestUnbreakableLogicalHeight = std::max(m_tallestUnbreakableLogicalHeight, unsplittableLogicalHeight);
     } else if (box.isLayoutBlockFlow()) {
         if (LayoutMultiColumnFlowThread* innerFlowThread = toLayoutBlockFlow(box).multiColumnFlowThread()) {
-            LayoutUnit offsetInInnerFlowThread = flowThreadOffset() - innerFlowThread->blockOffsetInEnclosingFlowThread();
+            LayoutUnit offsetInInnerFlowThread = flowThreadOffset() - innerFlowThread->blockOffsetInEnclosingFragmentationContext();
             LayoutUnit innerUnbreakableHeight = innerFlowThread->tallestUnbreakableLogicalHeight(offsetInInnerFlowThread);
             m_tallestUnbreakableLogicalHeight = std::max(m_tallestUnbreakableLogicalHeight, innerUnbreakableHeight);
         }

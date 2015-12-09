@@ -1120,11 +1120,5 @@ dialog::backdrop {
     border-width: 0px;
 }
 
-/* Disable multicol in printing, since it's not implemented properly. See crbug.com/99358 */
-
-@media print {
-    * { -webkit-columns: auto !important; }
-}
-
 /* noscript is handled internally, as it depends on settings. */
 

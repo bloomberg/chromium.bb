@@ -40,6 +40,7 @@ class FrameView;
 class PaintLayerCompositor;
 class LayoutQuote;
 class LayoutMedia;
+class ViewFragmentationContext;
 
 // LayoutView is the root of the layout tree and the Document's LayoutObject.
 //
@@ -141,6 +142,8 @@ public:
     LayoutState* layoutState() const { return m_layoutState; }
 
     void updateHitTestResult(HitTestResult&, const LayoutPoint&) override;
+
+    ViewFragmentationContext* fragmentationContext() const { return m_fragmentationContext.get(); }
 
     LayoutUnit pageLogicalHeight() const { return m_pageLogicalHeight; }
     void setPageLogicalHeight(LayoutUnit height)
@@ -262,6 +265,7 @@ private:
     // See the class comment for more details.
     LayoutState* m_layoutState;
 
+    OwnPtr<ViewFragmentationContext> m_fragmentationContext;
     OwnPtr<PaintLayerCompositor> m_compositor;
     RefPtr<IntervalArena> m_intervalArena;
 

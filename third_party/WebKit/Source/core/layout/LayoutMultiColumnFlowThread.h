@@ -28,6 +28,7 @@
 #define LayoutMultiColumnFlowThread_h
 
 #include "core/CoreExport.h"
+#include "core/layout/FragmentationContext.h"
 #include "core/layout/LayoutFlowThread.h"
 
 namespace blink {
@@ -112,7 +113,7 @@ class LayoutMultiColumnSpannerPlaceholder;
 //
 // There's also some documentation online:
 // https://sites.google.com/a/chromium.org/dev/developers/design-documents/multi-column-layout
-class CORE_EXPORT LayoutMultiColumnFlowThread : public LayoutFlowThread {
+class CORE_EXPORT LayoutMultiColumnFlowThread : public LayoutFlowThread, public FragmentationContext {
 public:
     ~LayoutMultiColumnFlowThread() override;
 
@@ -190,12 +191,19 @@ public:
     bool removeSpannerPlaceholderIfNoLongerValid(LayoutBox* spannerObjectInFlowThread);
 
     LayoutMultiColumnFlowThread* enclosingFlowThread() const;
-    LayoutUnit blockOffsetInEnclosingFlowThread() const { ASSERT(enclosingFlowThread()); return m_blockOffsetInEnclosingFlowThread; }
+    FragmentationContext* enclosingFragmentationContext() const;
+    LayoutUnit blockOffsetInEnclosingFragmentationContext() const { ASSERT(enclosingFragmentationContext()); return m_blockOffsetInEnclosingFragmentationContext; }
 
     // If we've run out of columns in the last fragmentainer group (column row), we have to insert
     // another fragmentainer group in order to hold more columns. This means that we're moving to
     // the next outer column (in the enclosing fragmentation context).
     void appendNewFragmentainerGroupIfNeeded(LayoutUnit offsetInFlowThread);
+
+    // Implementing FragmentationContext:
+    bool isFragmentainerLogicalHeightKnown() final;
+    LayoutUnit fragmentainerLogicalHeightAt(LayoutUnit blockOffset) final;
+    LayoutUnit remainingLogicalHeightAt(LayoutUnit blockOffset) final;
+    LayoutMultiColumnFlowThread* associatedFlowThread() final { return this; }
 
     const char* name() const override { return "LayoutMultiColumnFlowThread"; }
 
@@ -231,9 +239,9 @@ private:
     unsigned m_columnCount; // The used value of column-count
     LayoutUnit m_columnHeightAvailable; // Total height available to columns, or 0 if auto.
 
-    // Cached block offset from this flow thread to the enclosing flow thread, if any. In the
-    // coordinate space of the enclosing flow thread.
-    LayoutUnit m_blockOffsetInEnclosingFlowThread;
+    // Cached block offset from this flow thread to the enclosing fragmentation context, if any. In
+    // the coordinate space of the enclosing fragmentation context.
+    LayoutUnit m_blockOffsetInEnclosingFragmentationContext;
 
     bool m_inBalancingPass; // Set when relayouting for column balancing.
     bool m_needsColumnHeightsRecalculation; // Set when we need to recalculate the column set heights after layout.

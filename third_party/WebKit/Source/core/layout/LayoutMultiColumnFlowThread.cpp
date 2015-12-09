@@ -28,7 +28,9 @@
 
 #include "core/layout/LayoutMultiColumnSet.h"
 #include "core/layout/LayoutMultiColumnSpannerPlaceholder.h"
+#include "core/layout/LayoutView.h"
 #include "core/layout/MultiColumnFragmentainerGroup.h"
+#include "core/layout/ViewFragmentationContext.h"
 
 namespace blink {
 
@@ -355,7 +357,7 @@ void LayoutMultiColumnFlowThread::layoutColumns(SubtreeLayoutScope& layoutScope)
 
     m_needsColumnHeightsRecalculation = false;
 
-    m_blockOffsetInEnclosingFlowThread = enclosingFlowThread() ? multiColumnBlockFlow()->offsetFromLogicalTopOfFirstPage() : LayoutUnit();
+    m_blockOffsetInEnclosingFragmentationContext = enclosingFragmentationContext() ? multiColumnBlockFlow()->offsetFromLogicalTopOfFirstPage() : LayoutUnit();
 
     for (LayoutBox* columnBox = firstMultiColumnBox(); columnBox; columnBox = columnBox->nextSiblingMultiColumnBox()) {
         if (!columnBox->isLayoutMultiColumnSet()) {
@@ -439,6 +441,13 @@ LayoutMultiColumnFlowThread* LayoutMultiColumnFlowThread::enclosingFlowThread() 
     return nullptr;
 }
 
+FragmentationContext* LayoutMultiColumnFlowThread::enclosingFragmentationContext() const
+{
+    if (LayoutMultiColumnFlowThread* enclosingFlowThread = this->enclosingFlowThread())
+        return enclosingFlowThread;
+    return view()->fragmentationContext();
+}
+
 void LayoutMultiColumnFlowThread::appendNewFragmentainerGroupIfNeeded(LayoutUnit offsetInFlowThread)
 {
     if (!isPageLogicalHeightKnown()) {
@@ -458,16 +467,32 @@ void LayoutMultiColumnFlowThread::appendNewFragmentainerGroupIfNeeded(LayoutUnit
     }
 
     if (!columnSet->hasFragmentainerGroupForColumnAt(offsetInFlowThread)) {
-        LayoutMultiColumnFlowThread* enclosingFlowThread = this->enclosingFlowThread();
-        if (!enclosingFlowThread)
+        FragmentationContext* enclosingFragmentationContext = this->enclosingFragmentationContext();
+        if (!enclosingFragmentationContext)
             return; // Not nested. We'll never need more rows than the one we already have then.
 
         // We have run out of columns here, so we add another row to hold more columns. When we add
         // a new row, it implicitly means that we're inserting another column in our enclosing
         // multicol container. That in turn may mean that we've run out of columns there too.
         const MultiColumnFragmentainerGroup& newRow = columnSet->appendNewFragmentainerGroup();
-        enclosingFlowThread->appendNewFragmentainerGroupIfNeeded(newRow.blockOffsetInEnclosingFlowThread());
+        if (LayoutMultiColumnFlowThread* enclosingFlowThread = enclosingFragmentationContext->associatedFlowThread())
+            enclosingFlowThread->appendNewFragmentainerGroupIfNeeded(newRow.blockOffsetInEnclosingFragmentationContext());
     }
+}
+
+bool LayoutMultiColumnFlowThread::isFragmentainerLogicalHeightKnown()
+{
+    return isPageLogicalHeightKnown();
+}
+
+LayoutUnit LayoutMultiColumnFlowThread::fragmentainerLogicalHeightAt(LayoutUnit blockOffset)
+{
+    return pageLogicalHeightForOffset(blockOffset);
+}
+
+LayoutUnit LayoutMultiColumnFlowThread::remainingLogicalHeightAt(LayoutUnit blockOffset)
+{
+    return pageRemainingLogicalHeightForOffset(blockOffset, AssociateWithLatterPage);
 }
 
 void LayoutMultiColumnFlowThread::calculateColumnCountAndWidth(LayoutUnit& width, unsigned& count) const
@@ -915,12 +940,12 @@ void LayoutMultiColumnFlowThread::contentWasLaidOut(LayoutUnit logicalTopInFlowT
 
     // First figure out if there's any chance that we're nested at all. If we can be sure that
     // we're not, bail early. This code is run very often, and since locating a containing flow
-    // thread has some cost (depending on tree depth), avoid calling enclosingFlowThread() right
-    // away. This test may give some false positives (hence the "mayBe"), if we're in an
-    // out-of-flow subtree and have an outer multicol container that doesn't affect us, but that's
-    // okay. We'll discover that further down the road when trying to locate our enclosing flow
-    // thread for real.
-    bool mayBeNested = multiColumnBlockFlow()->isInsideFlowThread();
+    // thread has some cost (depending on tree depth), avoid calling
+    // enclosingFragmentationContext() right away. This test may give some false positives (hence
+    // the "mayBe"), if we're in an out-of-flow subtree and have an outer multicol container that
+    // doesn't affect us, but that's okay. We'll discover that further down the road when trying to
+    // locate our enclosing flow thread for real.
+    bool mayBeNested = multiColumnBlockFlow()->isInsideFlowThread() || view()->fragmentationContext();
     if (!mayBeNested)
         return;
     appendNewFragmentainerGroupIfNeeded(logicalTopInFlowThreadAfterPagination);

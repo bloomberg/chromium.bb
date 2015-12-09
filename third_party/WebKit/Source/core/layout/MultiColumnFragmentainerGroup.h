@@ -44,9 +44,9 @@ public:
 
     LayoutSize offsetFromColumnSet() const;
 
-    // Return the block offset from the enclosing flow thread, if nested. In the coordinate space
-    // of the enclosing flow thread.
-    LayoutUnit blockOffsetInEnclosingFlowThread() const;
+    // Return the block offset from the enclosing fragmentation context, if nested. In the
+    // coordinate space of the enclosing fragmentation context.
+    LayoutUnit blockOffsetInEnclosingFragmentationContext() const;
 
     // The top of our flow thread portion
     LayoutUnit logicalTopInFlowThread() const { return m_logicalTopInFlowThread; }

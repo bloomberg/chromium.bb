@@ -29,11 +29,6 @@ element.style { ()
 div { (user agent stylesheet)
     display: block;
 
-[expanded] 
-* { (user agent stylesheet)
-    -webkit-column-width: auto;
-    -webkit-column-count: auto;
-
 tty media emulated:
 [expanded] 
 element.style { ()

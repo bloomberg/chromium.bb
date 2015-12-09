@@ -7,6 +7,7 @@
 #include "core/layout/MultiColumnFragmentainerGroup.h"
 
 #include "core/layout/ColumnBalancer.h"
+#include "core/layout/FragmentationContext.h"
 #include "core/layout/LayoutMultiColumnSet.h"
 
 namespace blink {
@@ -34,9 +35,9 @@ LayoutSize MultiColumnFragmentainerGroup::offsetFromColumnSet() const
     return offset;
 }
 
-LayoutUnit MultiColumnFragmentainerGroup::blockOffsetInEnclosingFlowThread() const
+LayoutUnit MultiColumnFragmentainerGroup::blockOffsetInEnclosingFragmentationContext() const
 {
-    return logicalTop() + m_columnSet.logicalTop() + m_columnSet.multiColumnFlowThread()->blockOffsetInEnclosingFlowThread();
+    return logicalTop() + m_columnSet.logicalTop() + m_columnSet.multiColumnFlowThread()->blockOffsetInEnclosingFragmentationContext();
 }
 
 void MultiColumnFragmentainerGroup::resetColumnHeight()
@@ -45,8 +46,8 @@ void MultiColumnFragmentainerGroup::resetColumnHeight()
 
     LayoutMultiColumnFlowThread* flowThread = m_columnSet.multiColumnFlowThread();
     if (m_columnSet.heightIsAuto()) {
-        LayoutMultiColumnFlowThread* enclosingFlowThread = flowThread->enclosingFlowThread();
-        if (enclosingFlowThread && enclosingFlowThread->isPageLogicalHeightKnown()) {
+        FragmentationContext* enclosingFragmentationContext = flowThread->enclosingFragmentationContext();
+        if (enclosingFragmentationContext && enclosingFragmentationContext->isFragmentainerLogicalHeightKnown()) {
             // Even if height is auto, we set an initial height, in order to tell how much content
             // this MultiColumnFragmentainerGroup can hold, and when we need to append a new one.
             m_columnHeight = m_maxColumnHeight;
@@ -114,11 +115,11 @@ LayoutSize MultiColumnFragmentainerGroup::flowThreadTranslationAtOffset(LayoutUn
         // Translation that would map points in the coordinate space of the outermost flow thread to
         // visual points in the first column in the first fragmentainer group (row) in our multicol
         // container.
-        LayoutSize enclosingTranslationOrigin = enclosingFlowThread->flowThreadTranslationAtOffset(flowThread->blockOffsetInEnclosingFlowThread());
+        LayoutSize enclosingTranslationOrigin = enclosingFlowThread->flowThreadTranslationAtOffset(flowThread->blockOffsetInEnclosingFragmentationContext());
 
         // Translation that would map points in the coordinate space of the outermost flow thread to
         // visual points in the first column in this fragmentainer group.
-        enclosingTranslation = enclosingFlowThread->flowThreadTranslationAtOffset(blockOffsetInEnclosingFlowThread());
+        enclosingTranslation = enclosingFlowThread->flowThreadTranslationAtOffset(blockOffsetInEnclosingFragmentationContext());
 
         // What we ultimately return from this method is a translation that maps points in the
         // coordinate space of our flow thread to a visual point in a certain column in this
@@ -323,11 +324,11 @@ LayoutUnit MultiColumnFragmentainerGroup::calculateMaxColumnHeight() const
             maxColumnHeight = logicalMaxHeight;
     }
     LayoutUnit maxHeight = heightAdjustedForRowOffset(maxColumnHeight);
-    if (LayoutMultiColumnFlowThread* enclosingFlowThread = flowThread->enclosingFlowThread()) {
-        if (enclosingFlowThread->isPageLogicalHeightKnown()) {
+    if (FragmentationContext* enclosingFragmentationContext = flowThread->enclosingFragmentationContext()) {
+        if (enclosingFragmentationContext->isFragmentainerLogicalHeightKnown()) {
             // We're nested inside another fragmentation context whose fragmentainer heights are
             // known. This constrains the max height.
-            LayoutUnit remainingOuterLogicalHeight = enclosingFlowThread->pageRemainingLogicalHeightForOffset(blockOffsetInEnclosingFlowThread(), LayoutBlock::AssociateWithLatterPage);
+            LayoutUnit remainingOuterLogicalHeight = enclosingFragmentationContext->remainingLogicalHeightAt(blockOffsetInEnclosingFragmentationContext());
             ASSERT(remainingOuterLogicalHeight > 0);
             if (maxHeight > remainingOuterLogicalHeight)
                 maxHeight = remainingOuterLogicalHeight;

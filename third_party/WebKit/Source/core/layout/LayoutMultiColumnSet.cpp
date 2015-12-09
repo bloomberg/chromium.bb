@@ -101,8 +101,8 @@ bool LayoutMultiColumnSet::isPageLogicalHeightKnown() const
 LayoutUnit LayoutMultiColumnSet::nextLogicalTopForUnbreakableContent(LayoutUnit flowThreadOffset, LayoutUnit contentLogicalHeight) const
 {
     ASSERT(pageLogicalTopForOffset(flowThreadOffset) == flowThreadOffset);
-    LayoutMultiColumnFlowThread* enclosingFlowThread = multiColumnFlowThread()->enclosingFlowThread();
-    if (!enclosingFlowThread) {
+    FragmentationContext* enclosingFragmentationContext = multiColumnFlowThread()->enclosingFragmentationContext();
+    if (!enclosingFragmentationContext) {
         // If there's no enclosing fragmentation context, there'll ever be only one row, and all
         // columns there will have the same height.
         return flowThreadOffset;
@@ -119,7 +119,7 @@ LayoutUnit LayoutMultiColumnSet::nextLogicalTopForUnbreakableContent(LayoutUnit 
     LayoutUnit firstRowLogicalBottomInFlowThread = firstRow.logicalTopInFlowThread() + firstRow.logicalHeight() * usedColumnCount();
     if (flowThreadOffset >= firstRowLogicalBottomInFlowThread)
         return flowThreadOffset; // We're not in the first row. Give up.
-    LayoutUnit newLogicalHeight = enclosingFlowThread->pageLogicalHeightForOffset(firstRowLogicalBottomInFlowThread);
+    LayoutUnit newLogicalHeight = enclosingFragmentationContext->fragmentainerLogicalHeightAt(firstRowLogicalBottomInFlowThread);
     if (contentLogicalHeight > newLogicalHeight) {
         // The next outer column or page doesn't have enough space either. Give up and stay where
         // we are.
@@ -255,7 +255,7 @@ LayoutUnit LayoutMultiColumnSet::pageLogicalTopForOffset(LayoutUnit offset) cons
 
 bool LayoutMultiColumnSet::recalculateColumnHeight()
 {
-    if (m_oldLogicalTop != logicalTop() && multiColumnFlowThread()->enclosingFlowThread()) {
+    if (m_oldLogicalTop != logicalTop() && multiColumnFlowThread()->enclosingFragmentationContext()) {
         // Preceding spanners or column sets have been moved or resized. This means that the
         // fragmentainer groups that we have inserted need to be re-inserted. Restart column
         // balancing.
