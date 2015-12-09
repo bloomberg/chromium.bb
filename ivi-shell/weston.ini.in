@@ -23,6 +23,7 @@ background-image=@abs_top_srcdir@/data/background.png
 background-id=1001
 panel-image=@abs_top_srcdir@/data/panel.png
 panel-id=1002
+surface-id-offset=10
 tiling-image=@abs_top_srcdir@/data/tiling.png
 tiling-id=1003
 sidebyside-image=@abs_top_srcdir@/data/sidebyside.png

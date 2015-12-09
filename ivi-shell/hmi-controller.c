@@ -105,6 +105,7 @@ struct ui_setting {
 	uint32_t random_id;
 	uint32_t home_id;
 	uint32_t workspace_background_id;
+	uint32_t surface_id_offset;
 };
 
 struct hmi_controller {
@@ -830,33 +831,37 @@ ivi_hmi_controller_set_background(struct hmi_controller *hmi_ctrl,
 				  uint32_t id_surface)
 {
 	struct ivi_layout_surface *ivisurf = NULL;
-	struct hmi_controller_layer *base_layer =
-					wl_container_of(hmi_ctrl->base_layer_list.prev,
-							base_layer,
-							link);
-	struct ivi_layout_layer   *ivilayer = base_layer->ivilayer;
+	struct hmi_controller_layer *base_layer = NULL;
+	struct ivi_layout_layer   *ivilayer = NULL;
 	const int32_t dstx = hmi_ctrl->application_layer.x;
 	const int32_t dsty = hmi_ctrl->application_layer.y;
 	const int32_t width  = hmi_ctrl->application_layer.width;
 	const int32_t height = hmi_ctrl->application_layer.height;
 	int32_t ret = 0;
+	int32_t i = 0;
 
-	uint32_t *add_surface_id = wl_array_add(&hmi_ctrl->ui_widgets,
-						sizeof(*add_surface_id));
-	*add_surface_id = id_surface;
+	wl_list_for_each_reverse(base_layer, &hmi_ctrl->base_layer_list, link) {
+		uint32_t *add_surface_id = wl_array_add(&hmi_ctrl->ui_widgets,
+							sizeof(*add_surface_id));
+		*add_surface_id = id_surface + (i * hmi_ctrl->ui_setting.surface_id_offset);
 
-	ivisurf = ivi_layout_interface->get_surface_from_id(id_surface);
-	assert(ivisurf != NULL);
+		ivilayer = base_layer->ivilayer;
 
-	ret = ivi_layout_interface->layer_add_surface(ivilayer, ivisurf);
-	assert(!ret);
+		ivisurf = ivi_layout_interface->get_surface_from_id(*add_surface_id);
+		assert(ivisurf != NULL);
 
-	ret = ivi_layout_interface->surface_set_destination_rectangle(ivisurf,
-					dstx, dsty, width, height);
-	assert(!ret);
+		ret = ivi_layout_interface->layer_add_surface(ivilayer, ivisurf);
+		assert(!ret);
 
-	ret = ivi_layout_interface->surface_set_visibility(ivisurf, true);
-	assert(!ret);
+		ret = ivi_layout_interface->surface_set_destination_rectangle(ivisurf,
+						dstx, dsty, width, height);
+		assert(!ret);
+
+		ret = ivi_layout_interface->surface_set_visibility(ivisurf, true);
+		assert(!ret);
+
+		i++;
+	}
 }
 
 /**
@@ -875,33 +880,37 @@ ivi_hmi_controller_set_panel(struct hmi_controller *hmi_ctrl,
 					wl_container_of(hmi_ctrl->base_layer_list.prev,
 							base_layer,
 							link);
-	struct ivi_layout_layer   *ivilayer = base_layer->ivilayer;
+	struct ivi_layout_layer   *ivilayer = NULL;
 	const int32_t width  = base_layer->width;
 	int32_t ret = 0;
-	int32_t panel_height = 0;
+	int32_t panel_height = hmi_ctrl->hmi_setting->panel_height;
 	const int32_t dstx = 0;
 	int32_t dsty = 0;
+	int32_t i = 0;
 
-	uint32_t *add_surface_id = wl_array_add(&hmi_ctrl->ui_widgets,
-						sizeof(*add_surface_id));
-	*add_surface_id = id_surface;
+	wl_list_for_each_reverse(base_layer, &hmi_ctrl->base_layer_list, link) {
+		uint32_t *add_surface_id = wl_array_add(&hmi_ctrl->ui_widgets,
+							sizeof(*add_surface_id));
+		*add_surface_id = id_surface + (i * hmi_ctrl->ui_setting.surface_id_offset);
 
-	ivisurf = ivi_layout_interface->get_surface_from_id(id_surface);
-	assert(ivisurf != NULL);
+		ivilayer = base_layer->ivilayer;
+		ivisurf = ivi_layout_interface->get_surface_from_id(*add_surface_id);
+		assert(ivisurf != NULL);
 
-	ret = ivi_layout_interface->layer_add_surface(ivilayer, ivisurf);
-	assert(!ret);
+		ret = ivi_layout_interface->layer_add_surface(ivilayer, ivisurf);
+		assert(!ret);
 
-	panel_height = hmi_ctrl->hmi_setting->panel_height;
+		dsty = base_layer->height - panel_height;
 
-	dsty = base_layer->height - panel_height;
+		ret = ivi_layout_interface->surface_set_destination_rectangle(
+			ivisurf, dstx, dsty, width, panel_height);
+		assert(!ret);
 
-	ret = ivi_layout_interface->surface_set_destination_rectangle(
-		ivisurf, dstx, dsty, width, panel_height);
-	assert(!ret);
+		ret = ivi_layout_interface->surface_set_visibility(ivisurf, true);
+		assert(!ret);
 
-	ret = ivi_layout_interface->surface_set_visibility(ivisurf, true);
-	assert(!ret);
+		i++;
+	}
 }
 
 /**
@@ -1816,6 +1825,7 @@ initialize(struct hmi_controller *hmi_ctrl)
 		{ "random-id", &hmi_ctrl->ui_setting.random_id },
 		{ "home-id", &hmi_ctrl->ui_setting.home_id },
 		{ "workspace-background-id", &hmi_ctrl->ui_setting.workspace_background_id },
+		{ "surface-id-offset", &hmi_ctrl->ui_setting.surface_id_offset },
 		{ NULL, NULL }
 	};
 
