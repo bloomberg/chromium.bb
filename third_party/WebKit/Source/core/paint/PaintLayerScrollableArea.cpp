@@ -677,6 +677,9 @@ void PaintLayerScrollableArea::finalizeScrollDimensions(const DoubleSize& origin
                 m_inOverflowRelayout = true;
                 SubtreeLayoutScope layoutScope(box());
                 layoutScope.setNeedsLayout(&box(), LayoutInvalidationReason::ScrollbarChanged);
+                // TODO(wangxianzhu): Remove the following statement when paint invalidation
+                // can detect client box changes. crbug.com/560418.
+                box().setShouldDoFullPaintInvalidation();
                 if (box().isLayoutBlock()) {
                     LayoutBlock& block = toLayoutBlock(box());
                     block.scrollbarsChanged(autoHorizontalScrollBarChanged, autoVerticalScrollBarChanged);

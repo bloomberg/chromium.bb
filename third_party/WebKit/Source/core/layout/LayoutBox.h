@@ -846,8 +846,6 @@ public:
     void mapLocalToContainer(const LayoutBoxModelObject* paintInvalidationContainer, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = nullptr, const PaintInvalidationState* = nullptr) const override;
     void mapAbsoluteToLocalPoint(MapCoordinatesFlags, TransformState&) const override;
 
-    void clearPreviousPaintInvalidationRects() override;
-
 protected:
     void willBeDestroyed() override;
 

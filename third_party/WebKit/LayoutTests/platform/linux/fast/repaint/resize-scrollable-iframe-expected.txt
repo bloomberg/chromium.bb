@@ -28,10 +28,9 @@
         "LayoutIFrame IFRAME id='iframe'",
         "LayoutView #document",
         "LayoutView #document",
-        "LayoutView #document",
         "HorizontalScrollbar",
-        "LayoutView #document",
-        "VerticalScrollbar"
+        "VerticalScrollbar",
+        "LayoutView #document"
       ]
     }
   ]

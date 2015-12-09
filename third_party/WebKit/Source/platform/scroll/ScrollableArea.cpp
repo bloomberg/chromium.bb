@@ -406,11 +406,21 @@ void ScrollableArea::setScrollbarOverlayStyle(ScrollbarOverlayStyle overlayStyle
 void ScrollableArea::setScrollbarNeedsPaintInvalidation(Scrollbar* scrollbar)
 {
     if (scrollbar == horizontalScrollbar()) {
+        if (GraphicsLayer* graphicsLayer = layerForHorizontalScrollbar()) {
+            graphicsLayer->setNeedsDisplay();
+            graphicsLayer->setContentsNeedsDisplay();
+            return;
+        }
         m_horizontalScrollbarNeedsPaintInvalidation = true;
         scrollControlWasSetNeedsPaintInvalidation();
         return;
     }
     if (scrollbar == verticalScrollbar()) {
+        if (GraphicsLayer* graphicsLayer = layerForVerticalScrollbar()) {
+            graphicsLayer->setNeedsDisplay();
+            graphicsLayer->setContentsNeedsDisplay();
+            return;
+        }
         m_verticalScrollbarNeedsPaintInvalidation = true;
         scrollControlWasSetNeedsPaintInvalidation();
         return;

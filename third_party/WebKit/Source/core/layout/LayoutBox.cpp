@@ -4856,11 +4856,4 @@ ShapeOutsideInfo* LayoutBox::shapeOutsideInfo() const
     return ShapeOutsideInfo::isEnabledFor(*this) ? ShapeOutsideInfo::info(*this) : nullptr;
 }
 
-void LayoutBox::clearPreviousPaintInvalidationRects()
-{
-    LayoutBoxModelObject::clearPreviousPaintInvalidationRects();
-    if (PaintLayerScrollableArea* scrollableArea = this->scrollableArea())
-        scrollableArea->clearPreviousPaintInvalidationRects();
-}
-
 } // namespace blink

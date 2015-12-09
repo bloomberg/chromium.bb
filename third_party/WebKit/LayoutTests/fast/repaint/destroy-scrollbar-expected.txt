@@ -6,10 +6,12 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
-        [185, 100, 15, 200]
+        [185, 100, 15, 200],
+        [0, 100, 200, 200]
       ],
       "paintInvalidationClients": [
         "VerticalScrollbar",
+        "LayoutBlockFlow (positioned) DIV",
         "LayoutBlockFlow (positioned) DIV"
       ]
     }
