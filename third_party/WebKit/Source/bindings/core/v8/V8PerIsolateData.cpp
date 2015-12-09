@@ -56,24 +56,35 @@ static bool runningUnitTest()
 
 static void useCounterCallback(v8::Isolate* isolate, v8::Isolate::UseCounterFeature feature)
 {
+    UseCounter::Feature blinkFeature;
     switch (feature) {
     case v8::Isolate::kUseAsm:
-        UseCounter::count(callingExecutionContext(isolate), UseCounter::UseAsm);
+        blinkFeature = UseCounter::UseAsm;
         break;
     case v8::Isolate::kBreakIterator:
-        UseCounter::count(callingExecutionContext(isolate), UseCounter::BreakIterator);
+        blinkFeature = UseCounter::BreakIterator;
         break;
     case v8::Isolate::kLegacyConst:
-        UseCounter::count(callingExecutionContext(isolate), UseCounter::LegacyConst);
+        blinkFeature = UseCounter::LegacyConst;
         break;
     case v8::Isolate::kObjectObserve:
-        UseCounter::count(callingExecutionContext(isolate), UseCounter::ObjectObserve);
+        blinkFeature = UseCounter::ObjectObserve;
+        break;
+    case v8::Isolate::kSloppyMode:
+        blinkFeature = UseCounter::V8SloppyMode;
+        break;
+    case v8::Isolate::kStrictMode:
+        blinkFeature = UseCounter::V8StrictMode;
+        break;
+    case v8::Isolate::kStrongMode:
+        blinkFeature = UseCounter::V8StrongMode;
         break;
     default:
         // This can happen if V8 has added counters that this version of Blink
         // does not know about. It's harmless.
-        break;
+        return;
     }
+    UseCounter::count(callingExecutionContext(isolate), blinkFeature);
 }
 
 V8PerIsolateData::V8PerIsolateData()

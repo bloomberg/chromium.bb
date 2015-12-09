@@ -929,6 +929,9 @@ public:
         SVG1DOMSVGTests = 1072,
         V8SVGViewElement_ViewTarget_AttributeGetter = 1073,
         DisableRemotePlaybackAttribute = 1074,
+        V8SloppyMode = 1075,
+        V8StrictMode = 1076,
+        V8StrongMode = 1077,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
