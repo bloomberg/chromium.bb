@@ -85,8 +85,8 @@ void EasyUnlockKeyManager::RefreshKeysWithTpmKeyPresent(
   EasyUnlockTpmKeyManager* tpm_key_manager =
       EasyUnlockTpmKeyManagerFactory::GetInstance()->GetForUser(
           user_context.GetAccountId().GetUserEmail());
-  const std::string tpm_public_key = tpm_key_manager->GetPublicTpmKey(
-      user_context.GetAccountId().GetUserEmail());
+  const std::string tpm_public_key =
+      tpm_key_manager->GetPublicTpmKey(user_context.GetAccountId());
 
   EasyUnlockDeviceKeyDataList devices;
   if (!RemoteDeviceListToDeviceDataList(*remote_devices, &devices))
@@ -110,7 +110,7 @@ void EasyUnlockKeyManager::GetDeviceDataList(
 
 // static
 void EasyUnlockKeyManager::DeviceDataToRemoteDeviceDictionary(
-    const std::string& user_id,
+    const AccountId& account_id,
     const EasyUnlockDeviceKeyData& data,
     base::DictionaryValue* dict) {
   dict->SetString(kKeyBluetoothAddress, data.bluetooth_address);
@@ -123,7 +123,7 @@ void EasyUnlockKeyManager::DeviceDataToRemoteDeviceDictionary(
   dict->SetString(kKeyPermitType, kPermitTypeLicence);
   dict->SetString(kKeyPermitPermitId,
                   base::StringPrintf(kPermitPermitIdFormat,
-                                     user_id.c_str()));
+                                     account_id.GetUserEmail().c_str()));
 }
 
 // static
@@ -161,14 +161,14 @@ bool EasyUnlockKeyManager::RemoteDeviceDictionaryToDeviceData(
 
 // static
 void EasyUnlockKeyManager::DeviceDataListToRemoteDeviceList(
-    const std::string& user_id,
+    const AccountId& account_id,
     const EasyUnlockDeviceKeyDataList& data_list,
     base::ListValue* device_list) {
   device_list->Clear();
   for (size_t i = 0; i < data_list.size(); ++i) {
     scoped_ptr<base::DictionaryValue> device_dict(new base::DictionaryValue);
-    DeviceDataToRemoteDeviceDictionary(
-        user_id, data_list[i], device_dict.get());
+    DeviceDataToRemoteDeviceDictionary(account_id, data_list[i],
+                                       device_dict.get());
     device_list->Append(device_dict.release());
   }
 }

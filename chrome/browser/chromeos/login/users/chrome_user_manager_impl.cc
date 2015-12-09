@@ -744,7 +744,7 @@ void ChromeUserManagerImpl::SupervisedUserLoggedIn(
 
 bool ChromeUserManagerImpl::HasPendingBootstrap(
     const AccountId& account_id) const {
-  return bootstrap_manager_->HasPendingBootstrap(account_id.GetUserEmail());
+  return bootstrap_manager_->HasPendingBootstrap(account_id);
 }
 
 void ChromeUserManagerImpl::PublicAccountUserLoggedIn(
@@ -870,7 +870,7 @@ void ChromeUserManagerImpl::RemoveNonCryptohomeData(
 
   multi_profile_user_controller_->RemoveCachedValues(account_id.GetUserEmail());
 
-  EasyUnlockService::ResetLocalStateForUser(account_id.GetUserEmail());
+  EasyUnlockService::ResetLocalStateForUser(account_id);
 }
 
 void
@@ -1100,8 +1100,7 @@ void ChromeUserManagerImpl::OnUserNotAllowed(const std::string& user_email) {
 }
 
 void ChromeUserManagerImpl::RemovePendingBootstrapUser(
-    const std::string& user_id) {
-  const AccountId account_id(AccountId::FromUserEmail(user_id));
+    const AccountId& account_id) {
   DCHECK(HasPendingBootstrap(account_id));
   RemoveNonOwnerUserInternal(account_id, nullptr);
 }

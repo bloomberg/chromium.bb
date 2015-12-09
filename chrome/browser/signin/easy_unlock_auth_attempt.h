@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "components/signin/core/account_id/account_id.h"
 
 class EasyUnlockAppManager;
 
@@ -28,18 +29,17 @@ class EasyUnlockAuthAttempt {
   };
 
   // A callback to be invoked after the auth attempt is finalized. |success|
-  // indicates whether the attempt is successful or not. |user_id| is the
+  // indicates whether the attempt is successful or not. |account_id| is the
   // associated user. |key_secret| is the user secret for a sign-in attempt
   // and |key_label| is the label of the corresponding cryptohome key.
   typedef base::Callback<void(Type auth_attempt_type,
                               bool success,
-                              const std::string& user_id,
+                              const AccountId& account_id,
                               const std::string& key_secret,
-                              const std::string& key_label)>
-      FinalizedCallback;
+                              const std::string& key_label)> FinalizedCallback;
 
   EasyUnlockAuthAttempt(EasyUnlockAppManager* app_manager,
-                        const std::string& user_id,
+                        const AccountId& account_id,
                         Type type,
                         const FinalizedCallback& finalized_callback);
   ~EasyUnlockAuthAttempt();
@@ -51,14 +51,14 @@ class EasyUnlockAuthAttempt {
   // Finalizes an unlock attempt. It unlocks the screen if |success| is true.
   // If |this| has TYPE_SIGNIN type, calling this method will cause signin
   // failure equivalent to cancelling the attempt.
-  void FinalizeUnlock(const std::string& user_id, bool success);
+  void FinalizeUnlock(const AccountId& account_id, bool success);
 
   // Finalizes signin attempt. It tries to log in using the secret derived from
   // |wrapped_secret| decrypted by |session_key|. If the decryption fails, it
   // fails the signin attempt.
   // If called on an object with TYPE_UNLOCK type, it will cause unlock failure
   // equivalent to cancelling the request.
-  void FinalizeSignin(const std::string& user_id,
+  void FinalizeSignin(const AccountId& account_id,
                       const std::string& wrapped_secret,
                       const std::string& session_key);
 
@@ -71,11 +71,11 @@ class EasyUnlockAuthAttempt {
   };
 
   // Cancels the attempt.
-  void Cancel(const std::string& user_id);
+  void Cancel(const AccountId& account_id);
 
   EasyUnlockAppManager* app_manager_;
   State state_;
-  std::string user_id_;
+  const AccountId account_id_;
   Type type_;
 
   FinalizedCallback finalized_callback_;

@@ -79,8 +79,8 @@ bool ScreenlockPrivateSetLockedFunction::RunAsync() {
     }
     proximity_auth::ScreenlockBridge::Get()->Lock();
   } else {
-    proximity_auth::ScreenlockBridge::Get()->Unlock(
-        service->proximity_auth_client()->GetAuthenticatedUsername());
+    proximity_auth::ScreenlockBridge::Get()->Unlock(AccountId::FromUserEmail(
+        service->proximity_auth_client()->GetAuthenticatedUsername()));
   }
   SendResponse(error_.empty());
   return true;
@@ -127,8 +127,7 @@ void ScreenlockPrivateEventRouter::OnScreenDidUnlock(
 }
 
 void ScreenlockPrivateEventRouter::OnFocusedUserChanged(
-    const std::string& user_id) {
-}
+    const AccountId& account_id) {}
 
 void ScreenlockPrivateEventRouter::DispatchEvent(
     events::HistogramValue histogram_value,

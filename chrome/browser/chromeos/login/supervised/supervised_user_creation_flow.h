@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/login/user_flow.h"
 #include "components/user_manager/user.h"
 
+class AccountId;
 class Profile;
 
 namespace chromeos {
@@ -18,7 +19,7 @@ namespace chromeos {
 // UserFlow implementation for creating new supervised user.
 class SupervisedUserCreationFlow : public ExtendedUserFlow {
  public:
-  explicit SupervisedUserCreationFlow(const std::string& manager_id);
+  explicit SupervisedUserCreationFlow(const AccountId& manager_id);
   ~SupervisedUserCreationFlow() override;
 
   bool CanLockScreen() override;

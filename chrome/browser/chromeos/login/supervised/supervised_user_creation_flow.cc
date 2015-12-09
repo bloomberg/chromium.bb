@@ -27,12 +27,12 @@ SupervisedUserCreationScreen* GetScreen(LoginDisplayHost* host) {
 } // namespace
 
 SupervisedUserCreationFlow::SupervisedUserCreationFlow(
-    const std::string& manager_id)
-        : ExtendedUserFlow(manager_id),
-        token_validated_(false),
-        logged_in_(false),
-        session_started_(false),
-        manager_profile_(NULL) {}
+    const AccountId& manager_id)
+    : ExtendedUserFlow(manager_id),
+      token_validated_(false),
+      logged_in_(false),
+      session_started_(false),
+      manager_profile_(NULL) {}
 
 SupervisedUserCreationFlow::~SupervisedUserCreationFlow() {
   LOG(ERROR) << "Destroyed " << this;

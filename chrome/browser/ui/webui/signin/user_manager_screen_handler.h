@@ -23,6 +23,7 @@
 #include "content/public/browser/web_ui_message_handler.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
 
+class AccountId;
 class GaiaAuthFetcher;
 
 namespace base {
@@ -40,10 +41,15 @@ class UserManagerScreenHandler
   UserManagerScreenHandler();
   ~UserManagerScreenHandler() override;
 
+  void GetLocalizedValues(base::DictionaryValue* localized_strings);
+
+ private:
+  // An observer for any changes to Profiles in the ProfileInfoCache so that
+  // all the visible user manager screens can be updated.
+  class ProfileUpdateObserver;
+
   // WebUIMessageHandler implementation.
   void RegisterMessages() override;
-
-  void GetLocalizedValues(base::DictionaryValue* localized_strings);
 
   // content::NotificationObserver implementation:
   void Observe(int type,
@@ -53,26 +59,21 @@ class UserManagerScreenHandler
   // proximity_auth::ScreenlockBridge::LockHandler implementation.
   void ShowBannerMessage(const base::string16& message) override;
   void ShowUserPodCustomIcon(
-      const std::string& user_email,
+      const AccountId& account_id,
       const proximity_auth::ScreenlockBridge::UserPodCustomIconOptions&
           icon_options) override;
-  void HideUserPodCustomIcon(const std::string& user_email) override;
+  void HideUserPodCustomIcon(const AccountId& account_id) override;
   void EnableInput() override;
   void SetAuthType(
-      const std::string& user_email,
+      const AccountId& account_id,
       proximity_auth::ScreenlockBridge::LockHandler::AuthType auth_type,
       const base::string16& auth_value) override;
-  AuthType GetAuthType(const std::string& user_email) const override;
+  AuthType GetAuthType(const AccountId& account_id) const override;
   ScreenType GetScreenType() const override;
-  void Unlock(const std::string& user_email) override;
-  void AttemptEasySignin(const std::string& user_email,
+  void Unlock(const AccountId& account_id) override;
+  void AttemptEasySignin(const AccountId& account_id,
                          const std::string& secret,
                          const std::string& key_label) override;
-
- private:
-  // An observer for any changes to Profiles in the ProfileInfoCache so that
-  // all the visible user manager screens can be updated.
-  class ProfileUpdateObserver;
 
   void HandleInitialize(const base::ListValue* args);
   void HandleAddUser(const base::ListValue* args);

@@ -56,8 +56,8 @@ class ScreenlockPrivateApiTest : public ExtensionApiTest,
         g_browser_process->profile_manager()->GetProfileInfoCache();
     size_t index = info_cache.GetIndexOfProfileWithPath(profile()->GetPath());
     ASSERT_NE(std::string::npos, index);
-    info_cache.SetAuthInfoOfProfileAtIndex(index, kTestGaiaId,
-                                           base::UTF8ToUTF16(kTestUser));
+    info_cache.SetAuthInfoOfProfileAtIndex(
+        index, kTestGaiaId, base::UTF8ToUTF16(test_account_id_.GetUserEmail()));
     ExtensionApiTest::SetUpOnMainThread();
   }
 
@@ -78,9 +78,10 @@ class ScreenlockPrivateApiTest : public ExtensionApiTest,
     const std::string& content = *content::Details<std::string>(details).ptr();
     if (content == kAttemptClickAuthMessage) {
       proximity_auth::ScreenlockBridge::Get()->lock_handler()->SetAuthType(
-          kTestUser, proximity_auth::ScreenlockBridge::LockHandler::USER_CLICK,
+          test_account_id_,
+          proximity_auth::ScreenlockBridge::LockHandler::USER_CLICK,
           base::string16());
-      EasyUnlockService::Get(profile())->AttemptAuth(kTestUser);
+      EasyUnlockService::Get(profile())->AttemptAuth(test_account_id_);
     }
   }
 
@@ -90,6 +91,8 @@ class ScreenlockPrivateApiTest : public ExtensionApiTest,
   }
 
  private:
+  const AccountId test_account_id_ =
+      AccountId::FromUserEmailGaiaId(kTestUser, kTestGaiaId);
   content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenlockPrivateApiTest);

@@ -234,7 +234,7 @@ void UnlockManager::OnScreenDidUnlock(
   OnScreenLockedOrUnlocked(false);
 }
 
-void UnlockManager::OnFocusedUserChanged(const std::string& user_id) {}
+void UnlockManager::OnFocusedUserChanged(const AccountId& account_id) {}
 
 void UnlockManager::OnScreenLockedOrUnlocked(bool is_locked) {
   // TODO(tengs): Chrome will only start connecting to the phone when

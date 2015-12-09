@@ -78,8 +78,9 @@ void ChromeProximityAuthClient::GetChallengeForUserAndDevice(
   }
 
   static_cast<EasyUnlockServiceSignin*>(easy_unlock_service)
-      ->WrapChallengeForUserAndDevice(user_id, remote_public_key,
-                                      channel_binding_data, callback);
+      ->WrapChallengeForUserAndDevice(AccountId::FromUserEmail(user_id),
+                                      remote_public_key, channel_binding_data,
+                                      callback);
 #else
   callback.Run(std::string());
 #endif

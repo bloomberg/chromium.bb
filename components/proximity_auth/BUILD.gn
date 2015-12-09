@@ -75,6 +75,7 @@ source_set("proximity_auth") {
     "//components/proximity_auth/ble",
     "//components/proximity_auth/cryptauth",
     "//components/proximity_auth/logging",
+    "//components/signin/core/account_id:account_id",
     "//device/bluetooth",
     "//net",
   ]

@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/signin/core/account_id/account_id.h"
 
 class EasyUnlockTpmKeyManager;
 
@@ -24,12 +25,12 @@ class EasyUnlockChallengeWrapper {
   // |challenge|: The raw challenge to wrap.
   // |channel_binding_data|: Data unique to the current secure channel such that
   //                         we can bind with a TPM signature.
-  // |user_id|: The id of the user who owns both devices.
+  // |account_id|: The id of the user who owns both devices.
   // |key_manager|: Responsible for signing some piece of data with the TPM.
   //                Not owned and should outlive this instance.
   EasyUnlockChallengeWrapper(const std::string& challenge,
                              const std::string& channel_binding_data,
-                             const std::string& user_id,
+                             const AccountId& account_id,
                              EasyUnlockTpmKeyManager* key_manager);
   virtual ~EasyUnlockChallengeWrapper();
 
@@ -59,7 +60,7 @@ class EasyUnlockChallengeWrapper {
   const std::string channel_binding_data_;
 
   // The id of the user who owns both devices.
-  const std::string user_id_;
+  const AccountId account_id_;
 
   // Responsible for signing data with the TPM. Not owned.
   EasyUnlockTpmKeyManager* key_manager_;

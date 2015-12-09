@@ -282,7 +282,7 @@ void WebUIScreenLocker::Signout() {
   chromeos::ScreenLocker::default_screen_locker()->Signout();
 }
 
-bool WebUIScreenLocker::IsUserWhitelisted(const std::string& user_id) {
+bool WebUIScreenLocker::IsUserWhitelisted(const AccountId& account_id) {
   NOTREACHED();
   return true;
 }

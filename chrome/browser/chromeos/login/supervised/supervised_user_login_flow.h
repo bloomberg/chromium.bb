@@ -20,7 +20,7 @@ class SupervisedUserLoginFlow
     : public ExtendedUserFlow,
       public ExtendedAuthenticator::NewAuthStatusConsumer {
  public:
-  explicit SupervisedUserLoginFlow(const std::string& user_id);
+  explicit SupervisedUserLoginFlow(const AccountId& account_id);
   ~SupervisedUserLoginFlow() override;
 
   // ExtendedUserFlow overrides.
@@ -51,9 +51,9 @@ class SupervisedUserLoginFlow
 
   scoped_refptr<ExtendedAuthenticator> authenticator_;
 
-  bool data_loaded_;
+  bool data_loaded_ = false;
   UserContext context_;
-  Profile* profile_;
+  Profile* profile_ = nullptr;
   base::WeakPtrFactory<SupervisedUserLoginFlow> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SupervisedUserLoginFlow);

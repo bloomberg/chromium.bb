@@ -206,7 +206,7 @@ class ChromeUserManagerImpl
   void OnUserNotAllowed(const std::string& user_email) override;
 
   // BootstrapManager::Delegate implementation:
-  void RemovePendingBootstrapUser(const std::string& user_id) override;
+  void RemovePendingBootstrapUser(const AccountId& account_id) override;
 
   // Update the number of users.
   void UpdateNumberOfUsers();

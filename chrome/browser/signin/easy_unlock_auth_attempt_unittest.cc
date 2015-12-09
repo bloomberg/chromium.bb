@@ -113,17 +113,13 @@ class TestLockHandler : public proximity_auth::ScreenlockBridge::LockHandler {
     STATE_SIGNIN_DONE
   };
 
-  explicit TestLockHandler(const std::string& user_id)
-      : state_(STATE_NONE), auth_type_(USER_CLICK), user_id_(user_id) {}
+  explicit TestLockHandler(const AccountId& account_id)
+      : state_(STATE_NONE), auth_type_(USER_CLICK), account_id_(account_id) {}
 
   ~TestLockHandler() override {}
 
   void set_state(AuthState value) { state_ = value; }
   AuthState state() const { return state_; }
-
-  // Changes the user associated with the lock handler.
-  // Caller should make sure that |state_| is also appropriately updated.
-  void set_user_id(const std::string& value) { user_id_ = value; }
 
   // Sets the secret that is expected to be sent to |AttemptEasySignin|
   void set_expected_secret(const std::string& value) {
@@ -139,13 +135,13 @@ class TestLockHandler : public proximity_auth::ScreenlockBridge::LockHandler {
   }
 
   void ShowUserPodCustomIcon(
-      const std::string& user_email,
+      const AccountId& account_id,
       const proximity_auth::ScreenlockBridge::UserPodCustomIconOptions& icon)
       override {
     ADD_FAILURE() << "Should not be reached.";
   }
 
-  void HideUserPodCustomIcon(const std::string& user_email) override {
+  void HideUserPodCustomIcon(const AccountId& account_id) override {
     ADD_FAILURE() << "Should not be reached.";
   }
 
@@ -154,13 +150,13 @@ class TestLockHandler : public proximity_auth::ScreenlockBridge::LockHandler {
     state_ = STATE_UNLOCK_CANCELED;
   }
 
-  void SetAuthType(const std::string& user_email,
+  void SetAuthType(const AccountId& account_id,
                    AuthType auth_type,
                    const base::string16& auth_value) override {
     ADD_FAILURE() << "Should not be reached.";
   }
 
-  AuthType GetAuthType(const std::string& user_email) const override {
+  AuthType GetAuthType(const AccountId& account_id) const override {
     return auth_type_;
   }
 
@@ -169,17 +165,21 @@ class TestLockHandler : public proximity_auth::ScreenlockBridge::LockHandler {
     return LOCK_SCREEN;
   }
 
-  void Unlock(const std::string& user_email) override {
-    ASSERT_EQ(user_id_, user_email);
+  void Unlock(const AccountId& account_id) override {
+    ASSERT_TRUE(account_id_ == account_id)
+        << "account_id_=" << account_id_.Serialize()
+        << " != " << account_id.Serialize();
     ASSERT_EQ(STATE_ATTEMPTING_UNLOCK, state_);
     state_ = STATE_UNLOCK_DONE;
   }
 
-  void AttemptEasySignin(const std::string& user_email,
+  void AttemptEasySignin(const AccountId& account_id,
                          const std::string& secret,
                          const std::string& key_label) override {
 #if defined(OS_CHROMEOS)
-    ASSERT_EQ(user_id_, user_email);
+    ASSERT_TRUE(account_id_ == account_id)
+        << "account_id_=" << account_id_.Serialize()
+        << " != " << account_id.Serialize();
 
     ASSERT_EQ(STATE_ATTEMPTING_SIGNIN, state_);
     if (secret.empty()) {
@@ -197,7 +197,7 @@ class TestLockHandler : public proximity_auth::ScreenlockBridge::LockHandler {
  private:
   AuthState state_;
   AuthType auth_type_;
-  std::string user_id_;
+  const AccountId account_id_;
   std::string expected_secret_;
 
   DISALLOW_COPY_AND_ASSIGN(TestLockHandler);
@@ -210,9 +210,10 @@ class EasyUnlockAuthAttemptUnlockTest : public testing::Test {
 
   void SetUp() override {
     app_manager_.reset(new FakeAppManager());
-    auth_attempt_.reset(new EasyUnlockAuthAttempt(
-        app_manager_.get(), kTestUser1, EasyUnlockAuthAttempt::TYPE_UNLOCK,
-        EasyUnlockAuthAttempt::FinalizedCallback()));
+    auth_attempt_.reset(
+        new EasyUnlockAuthAttempt(app_manager_.get(), test_account_id1_,
+                                  EasyUnlockAuthAttempt::TYPE_UNLOCK,
+                                  EasyUnlockAuthAttempt::FinalizedCallback()));
   }
 
   void TearDown() override {
@@ -222,7 +223,7 @@ class EasyUnlockAuthAttemptUnlockTest : public testing::Test {
 
  protected:
   void InitScreenLock() {
-    lock_handler_.reset(new TestLockHandler(kTestUser1));
+    lock_handler_.reset(new TestLockHandler(test_account_id1_));
     lock_handler_->set_state(TestLockHandler::STATE_ATTEMPTING_UNLOCK);
     proximity_auth::ScreenlockBridge::Get()->SetLockHandler(
         lock_handler_.get());
@@ -231,6 +232,9 @@ class EasyUnlockAuthAttemptUnlockTest : public testing::Test {
   scoped_ptr<EasyUnlockAuthAttempt> auth_attempt_;
   scoped_ptr<FakeAppManager> app_manager_;
   scoped_ptr<TestLockHandler> lock_handler_;
+
+  const AccountId test_account_id1_ = AccountId::FromUserEmail(kTestUser1);
+  const AccountId test_account_id2_ = AccountId::FromUserEmail(kTestUser2);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(EasyUnlockAuthAttemptUnlockTest);
@@ -296,7 +300,7 @@ TEST_F(EasyUnlockAuthAttemptUnlockTest, FinalizeUnlockFailure) {
   ASSERT_EQ(1u, app_manager_->auth_attempt_count());
   EXPECT_EQ(TestLockHandler::STATE_ATTEMPTING_UNLOCK, lock_handler_->state());
 
-  auth_attempt_->FinalizeUnlock(kTestUser1, false);
+  auth_attempt_->FinalizeUnlock(test_account_id1_, false);
 
   EXPECT_EQ(TestLockHandler::STATE_UNLOCK_CANCELED, lock_handler_->state());
 }
@@ -312,7 +316,7 @@ TEST_F(EasyUnlockAuthAttemptUnlockTest, FinalizeSigninCalled) {
   EXPECT_EQ(TestLockHandler::STATE_ATTEMPTING_UNLOCK, lock_handler_->state());
 
   // Wrapped secret and key should be irrelevant in this case.
-  auth_attempt_->FinalizeSignin(kTestUser1, GetWrappedSecret(),
+  auth_attempt_->FinalizeSignin(test_account_id1_, GetWrappedSecret(),
                                 GetSessionKey());
 
   EXPECT_EQ(TestLockHandler::STATE_UNLOCK_CANCELED, lock_handler_->state());
@@ -328,7 +332,7 @@ TEST_F(EasyUnlockAuthAttemptUnlockTest, UnlockSucceeds) {
   ASSERT_EQ(1u, app_manager_->auth_attempt_count());
   EXPECT_EQ(TestLockHandler::STATE_ATTEMPTING_UNLOCK, lock_handler_->state());
 
-  auth_attempt_->FinalizeUnlock(kTestUser1, true);
+  auth_attempt_->FinalizeUnlock(test_account_id1_, true);
 
   ASSERT_EQ(TestLockHandler::STATE_UNLOCK_DONE, lock_handler_->state());
 }
@@ -343,7 +347,7 @@ TEST_F(EasyUnlockAuthAttemptUnlockTest, FinalizeUnlockCalledForWrongUser) {
   ASSERT_EQ(1u, app_manager_->auth_attempt_count());
   EXPECT_EQ(TestLockHandler::STATE_ATTEMPTING_UNLOCK, lock_handler_->state());
 
-  auth_attempt_->FinalizeUnlock(kTestUser2, true);
+  auth_attempt_->FinalizeUnlock(test_account_id2_, true);
 
   // If FinalizeUnlock is called for an incorrect user, it should be ignored
   // rather than cancelling the authentication.
@@ -351,7 +355,7 @@ TEST_F(EasyUnlockAuthAttemptUnlockTest, FinalizeUnlockCalledForWrongUser) {
 
   // When FinalizeUnlock is called for the correct user, it should work as
   // expected.
-  auth_attempt_->FinalizeUnlock(kTestUser1, true);
+  auth_attempt_->FinalizeUnlock(test_account_id1_, true);
 
   ASSERT_EQ(TestLockHandler::STATE_UNLOCK_DONE, lock_handler_->state());
 }
@@ -364,9 +368,10 @@ class EasyUnlockAuthAttemptSigninTest : public testing::Test {
 
   void SetUp() override {
     app_manager_.reset(new FakeAppManager());
-    auth_attempt_.reset(new EasyUnlockAuthAttempt(
-        app_manager_.get(), kTestUser1, EasyUnlockAuthAttempt::TYPE_SIGNIN,
-        EasyUnlockAuthAttempt::FinalizedCallback()));
+    auth_attempt_.reset(
+        new EasyUnlockAuthAttempt(app_manager_.get(), test_account_id1_,
+                                  EasyUnlockAuthAttempt::TYPE_SIGNIN,
+                                  EasyUnlockAuthAttempt::FinalizedCallback()));
   }
 
   void TearDown() override {
@@ -376,7 +381,7 @@ class EasyUnlockAuthAttemptSigninTest : public testing::Test {
 
  protected:
   void InitScreenLock() {
-    lock_handler_.reset(new TestLockHandler(kTestUser1));
+    lock_handler_.reset(new TestLockHandler(test_account_id1_));
     lock_handler_->set_state(TestLockHandler::STATE_ATTEMPTING_SIGNIN);
     proximity_auth::ScreenlockBridge::Get()->SetLockHandler(
         lock_handler_.get());
@@ -385,6 +390,9 @@ class EasyUnlockAuthAttemptSigninTest : public testing::Test {
   scoped_ptr<EasyUnlockAuthAttempt> auth_attempt_;
   scoped_ptr<FakeAppManager> app_manager_;
   scoped_ptr<TestLockHandler> lock_handler_;
+
+  const AccountId test_account_id1_ = AccountId::FromUserEmail(kTestUser1);
+  const AccountId test_account_id2_ = AccountId::FromUserEmail(kTestUser2);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(EasyUnlockAuthAttemptSigninTest);
@@ -450,7 +458,7 @@ TEST_F(EasyUnlockAuthAttemptSigninTest, FinalizeSigninWithEmtpySecret) {
   ASSERT_EQ(1u, app_manager_->auth_attempt_count());
   EXPECT_EQ(TestLockHandler::STATE_ATTEMPTING_SIGNIN, lock_handler_->state());
 
-  auth_attempt_->FinalizeSignin(kTestUser1, "", GetSessionKey());
+  auth_attempt_->FinalizeSignin(test_account_id1_, "", GetSessionKey());
 
   EXPECT_EQ(TestLockHandler::STATE_SIGNIN_CANCELED, lock_handler_->state());
 }
@@ -465,7 +473,7 @@ TEST_F(EasyUnlockAuthAttemptSigninTest, FinalizeSigninWithEmtpyKey) {
   ASSERT_EQ(1u, app_manager_->auth_attempt_count());
   EXPECT_EQ(TestLockHandler::STATE_ATTEMPTING_SIGNIN, lock_handler_->state());
 
-  auth_attempt_->FinalizeSignin(kTestUser1, GetWrappedSecret(), "");
+  auth_attempt_->FinalizeSignin(test_account_id1_, GetWrappedSecret(), "");
 
   EXPECT_EQ(TestLockHandler::STATE_SIGNIN_CANCELED, lock_handler_->state());
 }
@@ -481,7 +489,7 @@ TEST_F(EasyUnlockAuthAttemptSigninTest, SigninSuccess) {
   EXPECT_EQ(TestLockHandler::STATE_ATTEMPTING_SIGNIN, lock_handler_->state());
 
   lock_handler_->set_expected_secret(GetSecret());
-  auth_attempt_->FinalizeSignin(kTestUser1, GetWrappedSecret(),
+  auth_attempt_->FinalizeSignin(test_account_id1_, GetWrappedSecret(),
                                 GetSessionKey());
 
   EXPECT_EQ(TestLockHandler::STATE_SIGNIN_DONE, lock_handler_->state());
@@ -497,7 +505,8 @@ TEST_F(EasyUnlockAuthAttemptSigninTest, WrongWrappedSecret) {
   ASSERT_EQ(1u, app_manager_->auth_attempt_count());
   EXPECT_EQ(TestLockHandler::STATE_ATTEMPTING_SIGNIN, lock_handler_->state());
 
-  auth_attempt_->FinalizeSignin(kTestUser1, "wrong_secret", GetSessionKey());
+  auth_attempt_->FinalizeSignin(test_account_id1_, "wrong_secret",
+                                GetSessionKey());
 
   EXPECT_EQ(TestLockHandler::STATE_SIGNIN_CANCELED, lock_handler_->state());
 }
@@ -512,7 +521,8 @@ TEST_F(EasyUnlockAuthAttemptSigninTest, InvalidSessionKey) {
   ASSERT_EQ(1u, app_manager_->auth_attempt_count());
   EXPECT_EQ(TestLockHandler::STATE_ATTEMPTING_SIGNIN, lock_handler_->state());
 
-  auth_attempt_->FinalizeSignin(kTestUser1, GetWrappedSecret(), "invalid_key");
+  auth_attempt_->FinalizeSignin(test_account_id1_, GetWrappedSecret(),
+                                "invalid_key");
 
   EXPECT_EQ(TestLockHandler::STATE_SIGNIN_CANCELED, lock_handler_->state());
 }
@@ -527,7 +537,7 @@ TEST_F(EasyUnlockAuthAttemptSigninTest, FinalizeUnlockCalled) {
   ASSERT_EQ(1u, app_manager_->auth_attempt_count());
   EXPECT_EQ(TestLockHandler::STATE_ATTEMPTING_SIGNIN, lock_handler_->state());
 
-  auth_attempt_->FinalizeUnlock(kTestUser1, true);
+  auth_attempt_->FinalizeUnlock(test_account_id1_, true);
 
   EXPECT_EQ(TestLockHandler::STATE_SIGNIN_CANCELED, lock_handler_->state());
 }
@@ -544,12 +554,12 @@ TEST_F(EasyUnlockAuthAttemptSigninTest, FinalizeSigninCalledForWrongUser) {
 
   lock_handler_->set_expected_secret(GetSecret());
 
-  auth_attempt_->FinalizeSignin(kTestUser2, GetWrappedSecret(),
+  auth_attempt_->FinalizeSignin(test_account_id2_, GetWrappedSecret(),
                                 GetSessionKey());
 
   EXPECT_EQ(TestLockHandler::STATE_ATTEMPTING_SIGNIN, lock_handler_->state());
 
-  auth_attempt_->FinalizeSignin(kTestUser1, GetWrappedSecret(),
+  auth_attempt_->FinalizeSignin(test_account_id1_, GetWrappedSecret(),
                                 GetSessionKey());
 
   EXPECT_EQ(TestLockHandler::STATE_SIGNIN_DONE, lock_handler_->state());

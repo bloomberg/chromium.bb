@@ -31,21 +31,22 @@ BootstrapManager::BootstrapManager(Delegate* delegate)
 BootstrapManager::~BootstrapManager() {
 }
 
-void BootstrapManager::AddPendingBootstrap(const std::string& user_id) {
-  DCHECK(!user_id.empty());
+void BootstrapManager::AddPendingBootstrap(const AccountId& account_id) {
+  DCHECK(account_id.is_valid());
   PrefService* local_state = g_browser_process->local_state();
 
   ListPrefUpdate update(local_state, kPendingEasyBootstrapUsers);
-  update->AppendString(user_id);
+  update->AppendString(account_id.GetUserEmail());
 }
 
-void BootstrapManager::FinishPendingBootstrap(const std::string& user_id) {
+void BootstrapManager::FinishPendingBootstrap(const AccountId& account_id) {
   PrefService* local_state = g_browser_process->local_state();
 
   ListPrefUpdate update(local_state, kPendingEasyBootstrapUsers);
   for (size_t i = 0; i < update->GetSize(); ++i) {
-    std::string current_user;
-    if (update->GetString(i, &current_user) && user_id == current_user) {
+    std::string current_user_email;
+    if (update->GetString(i, &current_user_email) &&
+        account_id.GetUserEmail() == current_user_email) {
       update->Remove(i, NULL);
       break;
     }
@@ -58,23 +59,27 @@ void BootstrapManager::RemoveAllPendingBootstrap() {
   const base::ListValue* users =
       local_state->GetList(kPendingEasyBootstrapUsers);
   for (size_t i = 0; i < users->GetSize(); ++i) {
-    std::string current_user;
-    if (users->GetString(i, &current_user))
-      delegate_->RemovePendingBootstrapUser(current_user);
+    std::string current_user_email;
+    if (users->GetString(i, &current_user_email)) {
+      delegate_->RemovePendingBootstrapUser(
+          user_manager::UserManager::Get()->GetKnownUserAccountId(
+              current_user_email, std::string() /* gaia_id */));
+    }
   }
 
   local_state->ClearPref(kPendingEasyBootstrapUsers);
   local_state->CommitPendingWrite();
 }
 
-bool BootstrapManager::HasPendingBootstrap(const std::string& user_id) const {
+bool BootstrapManager::HasPendingBootstrap(const AccountId& account_id) const {
   PrefService* local_state = g_browser_process->local_state();
 
   const base::ListValue* users =
       local_state->GetList(kPendingEasyBootstrapUsers);
   for (size_t i = 0; i < users->GetSize(); ++i) {
     std::string current_user;
-    if (users->GetString(i, &current_user) && user_id == current_user)
+    if (users->GetString(i, &current_user) &&
+        account_id.GetUserEmail() == current_user)
       return true;
   }
   return false;

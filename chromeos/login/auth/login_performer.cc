@@ -130,22 +130,21 @@ void LoginPerformer::PerformLogin(const UserContext& user_context,
 
 void LoginPerformer::DoPerformLogin(const UserContext& user_context,
                                     AuthorizationMode auth_mode) {
-  const std::string email =
-      gaia::CanonicalizeEmail(user_context.GetAccountId().GetUserEmail());
   bool wildcard_match = false;
 
-  if (!IsUserWhitelisted(email, &wildcard_match)) {
+  const AccountId& account_id = user_context.GetAccountId();
+  if (!IsUserWhitelisted(account_id, &wildcard_match)) {
     NotifyWhitelistCheckFailure();
     return;
   }
 
   if (user_context.GetAuthFlow() == UserContext::AUTH_FLOW_EASY_UNLOCK)
-    SetupEasyUnlockUserFlow(user_context.GetAccountId().GetUserEmail());
+    SetupEasyUnlockUserFlow(user_context.GetAccountId());
 
   switch (auth_mode_) {
     case AUTH_MODE_EXTENSION: {
       RunOnlineWhitelistCheck(
-          email, wildcard_match, user_context.GetRefreshToken(),
+          account_id, wildcard_match, user_context.GetRefreshToken(),
           base::Bind(&LoginPerformer::StartLoginCompletion,
                      weak_factory_.GetWeakPtr()),
           base::Bind(&LoginPerformer::NotifyWhitelistCheckFailure,
@@ -182,7 +181,7 @@ void LoginPerformer::TrustedLoginAsSupervisedUser(
     return;
   }
 
-  SetupSupervisedUserFlow(user_context.GetAccountId().GetUserEmail());
+  SetupSupervisedUserFlow(user_context.GetAccountId());
   UserContext user_context_copy = TransformSupervisedKey(user_context);
 
   if (UseExtendedAuthenticatorForSupervisedUser(user_context)) {
@@ -206,7 +205,7 @@ void LoginPerformer::TrustedLoginAsSupervisedUser(
 }
 
 void LoginPerformer::LoginAsPublicSession(const UserContext& user_context) {
-  if (!CheckPolicyForUser(user_context.GetAccountId().GetUserEmail())) {
+  if (!CheckPolicyForUser(user_context.GetAccountId())) {
     DCHECK(delegate_);
     if (delegate_)
       delegate_->PolicyLoadFailed();

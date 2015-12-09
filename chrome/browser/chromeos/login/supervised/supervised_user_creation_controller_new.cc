@@ -56,7 +56,7 @@ bool StoreSupervisedUserFiles(const std::string& token,
 
 SupervisedUserCreationControllerNew::SupervisedUserCreationControllerNew(
     SupervisedUserCreationControllerNew::StatusConsumer* consumer,
-    const std::string& manager_id)
+    const AccountId& manager_id)
     : SupervisedUserCreationController(consumer),
       stage_(STAGE_INITIAL),
       weak_factory_(this) {
@@ -163,7 +163,7 @@ void SupervisedUserCreationControllerNew::StartCreationImpl() {
 
   stage_ = TRANSACTION_STARTED;
 
-  manager->CreateUserRecord(creation_context_->manager_id,
+  manager->CreateUserRecord(creation_context_->manager_id.GetUserEmail(),
                             creation_context_->local_user_id,
                             creation_context_->sync_user_id,
                             creation_context_->display_name);

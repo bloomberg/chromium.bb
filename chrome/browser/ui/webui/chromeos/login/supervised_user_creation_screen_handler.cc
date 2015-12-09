@@ -398,8 +398,7 @@ void SupervisedUserCreationScreenHandler::HandleAuthenticateManager(
   const AccountId manager_account_id = AccountId::FromUserEmailGaiaId(
       gaia::SanitizeEmail(manager_raw_account_id.GetUserEmail()),
       manager_raw_account_id.GetGaiaId());
-  delegate_->AuthenticateManager(manager_account_id.GetUserEmail(),
-                                 manager_password);
+  delegate_->AuthenticateManager(manager_account_id, manager_password);
 }
 
 // TODO(antrim) : this is an explicit code duplications with UserImageScreen.

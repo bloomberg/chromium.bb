@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 
+class AccountId;
 class PrefRegistrySimple;
 
 namespace chromeos {
@@ -21,7 +22,7 @@ class BootstrapManager {
 
   class Delegate {
    public:
-    virtual void RemovePendingBootstrapUser(const std::string& user_id) = 0;
+    virtual void RemovePendingBootstrapUser(const AccountId& account_id) = 0;
 
    protected:
     virtual ~Delegate() {}
@@ -30,11 +31,11 @@ class BootstrapManager {
   explicit BootstrapManager(Delegate* delegate);
   ~BootstrapManager();
 
-  void AddPendingBootstrap(const std::string& user_id);
-  void FinishPendingBootstrap(const std::string& user_id);
+  void AddPendingBootstrap(const AccountId& account_id);
+  void FinishPendingBootstrap(const AccountId& account_id);
   void RemoveAllPendingBootstrap();
 
-  bool HasPendingBootstrap(const std::string& user_id) const;
+  bool HasPendingBootstrap(const AccountId& account_id) const;
 
  private:
   Delegate* delegate_;

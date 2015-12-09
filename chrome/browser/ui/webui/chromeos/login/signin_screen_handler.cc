@@ -287,7 +287,7 @@ SigninScreenHandler::~SigninScreenHandler() {
     max_mode_delegate_.reset(nullptr);
   }
   proximity_auth::ScreenlockBridge::Get()->SetLockHandler(nullptr);
-  proximity_auth::ScreenlockBridge::Get()->SetFocusedUser("");
+  proximity_auth::ScreenlockBridge::Get()->SetFocusedUser(EmptyAccountId());
 }
 
 // static
@@ -1223,8 +1223,7 @@ void SigninScreenHandler::HandleShowLoadingTimeoutError() {
 void SigninScreenHandler::HandleFocusPod(const AccountId& account_id) {
   SetUserInputMethod(account_id.GetUserEmail(), ime_state_.get());
   WallpaperManager::Get()->SetUserWallpaperDelayed(account_id);
-  proximity_auth::ScreenlockBridge::Get()->SetFocusedUser(
-      account_id.GetUserEmail());
+  proximity_auth::ScreenlockBridge::Get()->SetFocusedUser(account_id);
   if (delegate_)
     delegate_->CheckUserStatus(account_id);
   if (!test_focus_pod_callback_.is_null())

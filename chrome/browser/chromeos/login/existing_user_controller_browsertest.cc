@@ -321,8 +321,7 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerUntrustedTest,
   SupervisedUserCreationScreen supervised_user_creation_screen(
       &mock_base_screen_delegate, &supervised_user_creation_screen_handler);
 
-  supervised_user_creation_screen.AuthenticateManager(
-      account_id_.GetUserEmail(), kPassword);
+  supervised_user_creation_screen.AuthenticateManager(account_id_, kPassword);
 }
 
 MATCHER_P(HasDetails, expected, "") {

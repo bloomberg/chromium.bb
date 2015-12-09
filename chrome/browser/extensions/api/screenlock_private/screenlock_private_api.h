@@ -67,16 +67,16 @@ class ScreenlockPrivateEventRouter
   GetFactoryInstance();
   void Shutdown() override;
 
+ private:
+  friend class BrowserContextKeyedAPIFactory<ScreenlockPrivateEventRouter>;
+
   // proximity_auth::ScreenlockBridge::Observer
   void OnScreenDidLock(proximity_auth::ScreenlockBridge::LockHandler::ScreenType
                            screen_type) override;
   void OnScreenDidUnlock(
       proximity_auth::ScreenlockBridge::LockHandler::ScreenType screen_type)
       override;
-  void OnFocusedUserChanged(const std::string& user_id) override;
-
- private:
-  friend class BrowserContextKeyedAPIFactory<ScreenlockPrivateEventRouter>;
+  void OnFocusedUserChanged(const AccountId& account_id) override;
 
   // BrowserContextKeyedAPI
   static const char* service_name() {

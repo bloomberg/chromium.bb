@@ -10,6 +10,7 @@
 #include "base/strings/string16.h"
 #include "components/proximity_auth/screenlock_bridge.h"
 #include "components/proximity_auth/screenlock_state.h"
+#include "components/signin/core/account_id/account_id.h"
 
 class PrefService;
 
@@ -30,13 +31,13 @@ class EasyUnlockScreenlockStateHandler
                                // on a new Chromebook.
   };
 
-  // |user_email|: The email for the user associated with the profile to which
-  //     this class is attached.
+  // |account_id|: The account id of the user associated with the profile to
+  //     which this class is attached.
   // |initial_hardlock_state|: The initial hardlock state.
   // |screenlock_bridge|: The screenlock bridge used to update the screen lock
   //     state.
   EasyUnlockScreenlockStateHandler(
-      const std::string& user_email,
+      const AccountId& account_id,
       HardlockState initial_hardlock_state,
       proximity_auth::ScreenlockBridge* screenlock_bridge);
   ~EasyUnlockScreenlockStateHandler() override;
@@ -75,7 +76,7 @@ class EasyUnlockScreenlockStateHandler
   void OnScreenDidUnlock(
       proximity_auth::ScreenlockBridge::LockHandler::ScreenType screen_type)
       override;
-  void OnFocusedUserChanged(const std::string& user_id) override;
+  void OnFocusedUserChanged(const AccountId& account_id) override;
 
   // Forces refresh of the Easy Unlock screenlock UI.
   void RefreshScreenlockState();
@@ -94,20 +95,20 @@ class EasyUnlockScreenlockStateHandler
   void UpdateScreenlockAuthType();
 
   proximity_auth::ScreenlockState state_;
-  std::string user_email_;
+  const AccountId account_id_;
   proximity_auth::ScreenlockBridge* screenlock_bridge_;
 
   // State of hardlock.
   HardlockState hardlock_state_;
-  bool hardlock_ui_shown_;
+  bool hardlock_ui_shown_ = false;
 
   // Whether this is the trial Easy Unlock run. If this is the case, a
   // tutorial message should be shown and hard-locking be disabled. The trial
   // run should be set if the screen was locked by the Easy Unlock setup app.
-  bool is_trial_run_;
+  bool is_trial_run_ = false;
 
   // Whether the user's phone was ever locked while on the current lock screen.
-  bool did_see_locked_phone_;
+  bool did_see_locked_phone_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(EasyUnlockScreenlockStateHandler);
 };

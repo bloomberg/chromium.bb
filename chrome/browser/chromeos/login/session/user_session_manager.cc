@@ -952,7 +952,7 @@ void UserSessionManager::InitProfilePreferences(
         user_manager::UserManager::Get()->GetActiveUser();
     std::string supervised_user_sync_id =
         ChromeUserManager::Get()->GetSupervisedUserManager()->GetUserSyncId(
-            active_user->email());
+            active_user->GetAccountId().GetUserEmail());
     profile->GetPrefs()->SetString(prefs::kSupervisedUserId,
                                    supervised_user_sync_id);
   } else if (user_manager::UserManager::Get()->

@@ -8,6 +8,7 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/login/auth/auth_status_consumer.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user.h"
 
 namespace chromeos {
@@ -69,7 +70,7 @@ class DefaultUserFlow : public UserFlow {
 // UserFlow stub for non-regular flows.
 class ExtendedUserFlow : public UserFlow {
  public:
-  explicit ExtendedUserFlow(const std::string& user_id);
+  explicit ExtendedUserFlow(const AccountId& account_id);
   ~ExtendedUserFlow() override;
 
   void AppendAdditionalCommandLineSwitches() override;
@@ -80,12 +81,10 @@ class ExtendedUserFlow : public UserFlow {
  protected:
   // Subclasses can call this method to unregister flow in the next event.
   virtual void UnregisterFlowSoon();
-  std::string user_id() {
-    return user_id_;
-  }
+  const AccountId& account_id() { return account_id_; }
 
  private:
-  std::string user_id_;
+  const AccountId account_id_;
 };
 
 }  // namespace chromeos

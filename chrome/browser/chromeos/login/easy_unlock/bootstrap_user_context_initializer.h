@@ -17,6 +17,8 @@
 #include "chromeos/login/auth/user_context.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
 
+class AccountId;
+
 namespace chromeos {
 
 // Performs initialization work for adding a new account via Easy bootstrap.
@@ -52,7 +54,7 @@ class BootstrapUserContextInitializer final
                            const EasyUnlockDeviceKeyDataList& data_list);
   void OnEasyUnlockAuthenticated(EasyUnlockAuthAttempt::Type auth_attempt_type,
                                  bool success,
-                                 const std::string& user_id,
+                                 const AccountId& account_id,
                                  const std::string& key_secret,
                                  const std::string& key_label);
   void CreateRandomKey();

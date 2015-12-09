@@ -215,7 +215,7 @@ void AppLaunchSigninScreen::HandleGetUsers() {
 
 void AppLaunchSigninScreen::CheckUserStatus(const AccountId& account_id) {}
 
-bool AppLaunchSigninScreen::IsUserWhitelisted(const std::string& user_id) {
+bool AppLaunchSigninScreen::IsUserWhitelisted(const AccountId& account_id) {
   NOTREACHED();
   return true;
 }

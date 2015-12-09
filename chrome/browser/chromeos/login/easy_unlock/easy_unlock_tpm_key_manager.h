@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "crypto/scoped_nss_types.h"
 
 class PrefRegistrySimple;
@@ -25,14 +26,14 @@ class EasyUnlockTpmKeyManager : public KeyedService {
   static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
 
   // Clears local state for user. Should be called when a user is removed.
-  static void ResetLocalStateForUser(const std::string& user_id);
+  static void ResetLocalStateForUser(const AccountId& account_id);
 
-  // |user_id|: Id for the user associated with the service. Empty for sign-in
-  //     service.
+  // |account_id|: Id for the user associated with the service. Empty for
+  //     sign-in service.
   // |username_hash|: Username hash for the user associated with the service.
   //     Empty for sign-in service.
   // |local_state|: The local state prefs.
-  EasyUnlockTpmKeyManager(const std::string& user_id,
+  EasyUnlockTpmKeyManager(const AccountId& account_id,
                           const std::string& username_hash,
                           PrefService* local_state);
   ~EasyUnlockTpmKeyManager() override;
@@ -64,12 +65,12 @@ class EasyUnlockTpmKeyManager : public KeyedService {
   bool StartGetSystemSlotTimeoutMs(size_t timeout_ms);
 
   // Gets the public RSA key for user. The key is retrieved from local state.
-  std::string GetPublicTpmKey(const std::string& user_id);
+  std::string GetPublicTpmKey(const AccountId& account_id);
 
   // Signs |data| using private RSA key associated with |user_id| stored in TPM
   // system slot.
   void SignUsingTpmKey(
-      const std::string& user_id,
+      const AccountId& account_id,
       const std::string& data,
       const base::Callback<void(const std::string& data)> callback);
 
@@ -86,7 +87,7 @@ class EasyUnlockTpmKeyManager : public KeyedService {
 
   // Utility method for setting public key values in local state.
   // Note that the keys are saved base64 encoded.
-  void SetKeyInLocalState(const std::string& user_id,
+  void SetKeyInLocalState(const AccountId& account_id,
                           const std::string& value);
 
   // Called when TPM system slot is initialized and ready to be used.
@@ -128,7 +129,7 @@ class EasyUnlockTpmKeyManager : public KeyedService {
       const base::Callback<void(const std::string&)>& callback,
       const std::string& signature);
 
-  std::string user_id_;
+  const AccountId account_id_;
   std::string username_hash_;
 
   PrefService* local_state_;

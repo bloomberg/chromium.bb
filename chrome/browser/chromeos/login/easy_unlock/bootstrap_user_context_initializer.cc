@@ -98,14 +98,14 @@ void BootstrapUserContextInitializer::OnGetEasyUnlockData(
   service->AddObserver(this);
 
   static_cast<EasyUnlockServiceSignin*>(service)
-      ->SetCurrentUser(user_context_.GetAccountId().GetUserEmail());
+      ->SetCurrentUser(user_context_.GetAccountId());
   OnScreenlockStateChanged(service->GetScreenlockState());
 }
 
 void BootstrapUserContextInitializer::OnEasyUnlockAuthenticated(
     EasyUnlockAuthAttempt::Type auth_attempt_type,
     bool success,
-    const std::string& user_id,
+    const AccountId& account_id,
     const std::string& key_secret,
     const std::string& key_label) {
   DCHECK_EQ(EasyUnlockAuthAttempt::TYPE_SIGNIN, auth_attempt_type);
@@ -202,7 +202,7 @@ void BootstrapUserContextInitializer::OnScreenlockStateChanged(
   service->RemoveObserver(this);
 
   service->AttemptAuth(
-      user_context_.GetAccountId().GetUserEmail(),
+      user_context_.GetAccountId(),
       base::Bind(&BootstrapUserContextInitializer::OnEasyUnlockAuthenticated,
                  weak_ptr_factory_.GetWeakPtr()));
 }

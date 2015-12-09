@@ -7,6 +7,8 @@
 
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
 
+class AccountId;
+
 namespace chromeos {
 
 class UserBoardModel : public BaseScreen {

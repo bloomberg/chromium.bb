@@ -29,7 +29,7 @@ class TestableEasyUnlockChallengeWrapper : public EasyUnlockChallengeWrapper {
   TestableEasyUnlockChallengeWrapper()
       : EasyUnlockChallengeWrapper(kChallenge,
                                    kChannelBindingData,
-                                   kUserId,
+                                   AccountId::FromUserEmail(kUserId),
                                    nullptr) {}
   ~TestableEasyUnlockChallengeWrapper() override {}
 

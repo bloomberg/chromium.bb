@@ -13,6 +13,7 @@
 #include "components/proximity_auth/remote_device.h"
 #include "components/proximity_auth/remote_device_life_cycle.h"
 #include "components/proximity_auth/screenlock_bridge.h"
+#include "components/signin/core/account_id/account_id.h"
 
 namespace proximity_auth {
 
@@ -41,18 +42,19 @@ class ProximityAuthSystem : public RemoteDeviceLifeCycle::Observer,
   // Stops the system.
   void Stop();
 
-  // Registers a list of |remote_devices| for |user_id| that can be used for
+  // Registers a list of |remote_devices| for |account_id| that can be used for
   // sign-in/unlock. If devices were previously registered for the user, then
   // they will be replaced.
-  void SetRemoteDevicesForUser(const std::string& user_id,
+  void SetRemoteDevicesForUser(const AccountId& account_id,
                                const RemoteDeviceList& remote_devices);
 
-  // Returns the RemoteDevices registered for |user_id|. Returns an empty list
-  // if no devices are registered for |user_id|.
-  RemoteDeviceList GetRemoteDevicesForUser(const std::string& user_id) const;
+  // Returns the RemoteDevices registered for |account_id|. Returns an empty
+  // list
+  // if no devices are registered for |account_id|.
+  RemoteDeviceList GetRemoteDevicesForUser(const AccountId& account_id) const;
 
   // Called when the user clicks the user pod and attempts to unlock/sign-in.
-  void OnAuthAttempted(const std::string& user_id);
+  void OnAuthAttempted(const AccountId& account_id);
 
   // Called when the system suspends.
   void OnSuspend();
@@ -70,14 +72,14 @@ class ProximityAuthSystem : public RemoteDeviceLifeCycle::Observer,
       ScreenlockBridge::LockHandler::ScreenType screen_type) override;
   void OnScreenDidUnlock(
       ScreenlockBridge::LockHandler::ScreenType screen_type) override;
-  void OnFocusedUserChanged(const std::string& user_id) override;
+  void OnFocusedUserChanged(const AccountId& account_id) override;
 
   // Resumes |remote_device_life_cycle_| after device wakes up and waits a
   // timeout.
   void ResumeAfterWakeUpTimeout();
 
-  // Lists of remote devices, keyed by user id.
-  std::map<std::string, RemoteDeviceList> remote_devices_map_;
+  // Lists of remote devices, keyed by user account id.
+  std::map<AccountId, RemoteDeviceList> remote_devices_map_;
 
   // Delegate for Chrome dependent functionality.
   ProximityAuthClient* proximity_auth_client_;

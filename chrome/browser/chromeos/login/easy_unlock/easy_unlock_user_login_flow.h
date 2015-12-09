@@ -10,12 +10,14 @@
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/user_flow.h"
 
+class AccountId;
+
 // Handler for login flow initiazted by Easy Signin login attempt.
 // The only difference to the default login flow is hanlding of the auth
 // failure.
 class EasyUnlockUserLoginFlow : public chromeos::ExtendedUserFlow {
  public:
-  explicit EasyUnlockUserLoginFlow(const std::string& user_id);
+  explicit EasyUnlockUserLoginFlow(const AccountId& account_id);
   ~EasyUnlockUserLoginFlow() override;
 
  private:

@@ -86,7 +86,7 @@ class ReauthHandler : public content::NotificationObserver,
     DCHECK(lock_users.size() == 1);
     proximity_auth::ScreenlockBridge::Get()
         ->lock_handler()
-        ->ShowUserPodCustomIcon(lock_users[0]->email(), icon_options);
+        ->ShowUserPodCustomIcon(lock_users[0]->GetAccountId(), icon_options);
   }
 
   // chromeos::AuthStatusConsumer:

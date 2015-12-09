@@ -23,11 +23,11 @@ const char kSalt[] =
 EasyUnlockChallengeWrapper::EasyUnlockChallengeWrapper(
     const std::string& challenge,
     const std::string& channel_binding_data,
-    const std::string& user_id,
+    const AccountId& account_id,
     EasyUnlockTpmKeyManager* key_manager)
     : challenge_(challenge),
       channel_binding_data_(channel_binding_data),
-      user_id_(user_id),
+      account_id_(account_id),
       key_manager_(key_manager),
       weak_ptr_factory_(this) {}
 
@@ -62,7 +62,7 @@ void EasyUnlockChallengeWrapper::WrapChallenge(
 void EasyUnlockChallengeWrapper::SignUsingTpmKey(
     const std::string& data_to_sign,
     const base::Callback<void(const std::string&)>& callback) {
-  key_manager_->SignUsingTpmKey(user_id_, data_to_sign, callback);
+  key_manager_->SignUsingTpmKey(account_id_, data_to_sign, callback);
 }
 
 void EasyUnlockChallengeWrapper::OnChannelBindingDataSigned(

@@ -49,7 +49,7 @@ std::string UnwrapSecret(const std::string& wrapped_secret,
 void DefaultAuthAttemptFinalizedHandler(
     EasyUnlockAuthAttempt::Type auth_attempt_type,
     bool success,
-    const std::string& user_id,
+    const AccountId& account_id,
     const std::string& key_secret,
     const std::string& key_label) {
   if (!proximity_auth::ScreenlockBridge::Get()->IsLocked())
@@ -59,7 +59,7 @@ void DefaultAuthAttemptFinalizedHandler(
     case EasyUnlockAuthAttempt::TYPE_UNLOCK:
       if (success) {
         proximity_auth::ScreenlockBridge::Get()->lock_handler()->Unlock(
-            user_id);
+            account_id);
       } else {
         proximity_auth::ScreenlockBridge::Get()->lock_handler()->EnableInput();
       }
@@ -68,13 +68,13 @@ void DefaultAuthAttemptFinalizedHandler(
       if (success) {
         proximity_auth::ScreenlockBridge::Get()
             ->lock_handler()
-            ->AttemptEasySignin(user_id, key_secret, key_label);
+            ->AttemptEasySignin(account_id, key_secret, key_label);
       } else {
         // Attempting signin with an empty secret is equivalent to canceling the
         // attempt.
         proximity_auth::ScreenlockBridge::Get()
             ->lock_handler()
-            ->AttemptEasySignin(user_id, std::string(), std::string());
+            ->AttemptEasySignin(account_id, std::string(), std::string());
       }
       return;
   }
@@ -84,12 +84,12 @@ void DefaultAuthAttemptFinalizedHandler(
 
 EasyUnlockAuthAttempt::EasyUnlockAuthAttempt(
     EasyUnlockAppManager* app_manager,
-    const std::string& user_id,
+    const AccountId& account_id,
     Type type,
     const FinalizedCallback& finalized_callback)
     : app_manager_(app_manager),
       state_(STATE_IDLE),
-      user_id_(user_id),
+      account_id_(account_id),
       type_(type),
       finalized_callback_(finalized_callback) {
   if (finalized_callback_.is_null())
@@ -98,7 +98,7 @@ EasyUnlockAuthAttempt::EasyUnlockAuthAttempt(
 
 EasyUnlockAuthAttempt::~EasyUnlockAuthAttempt() {
   if (state_ == STATE_RUNNING)
-    Cancel(user_id_);
+    Cancel(account_id_);
 }
 
 bool EasyUnlockAuthAttempt::Start() {
@@ -109,10 +109,10 @@ bool EasyUnlockAuthAttempt::Start() {
 
   proximity_auth::ScreenlockBridge::LockHandler::AuthType auth_type =
       proximity_auth::ScreenlockBridge::Get()->lock_handler()->GetAuthType(
-          user_id_);
+          account_id_);
 
   if (auth_type != proximity_auth::ScreenlockBridge::LockHandler::USER_CLICK) {
-    Cancel(user_id_);
+    Cancel(account_id_);
     return false;
   }
 
@@ -128,47 +128,47 @@ bool EasyUnlockAuthAttempt::Start() {
   if (!app_manager_->SendAuthAttemptEvent() &&
       !base::CommandLine::ForCurrentProcess()->HasSwitch(
           proximity_auth::switches::kEnableBluetoothLowEnergyDiscovery)) {
-    Cancel(user_id_);
+    Cancel(account_id_);
     return false;
   }
 
   return true;
 }
 
-void EasyUnlockAuthAttempt::FinalizeUnlock(const std::string& user_id,
+void EasyUnlockAuthAttempt::FinalizeUnlock(const AccountId& account_id,
                                            bool success) {
-  if (state_ != STATE_RUNNING || user_id != user_id_)
+  if (state_ != STATE_RUNNING || account_id != account_id_)
     return;
 
   if (!proximity_auth::ScreenlockBridge::Get()->IsLocked())
     return;
 
   if (type_ != TYPE_UNLOCK) {
-    Cancel(user_id_);
+    Cancel(account_id_);
     return;
   }
 
-  finalized_callback_.Run(type_, success, user_id, std::string(),
+  finalized_callback_.Run(type_, success, account_id, std::string(),
                           std::string());
   state_ = STATE_DONE;
 }
 
-void EasyUnlockAuthAttempt::FinalizeSignin(const std::string& user_id,
+void EasyUnlockAuthAttempt::FinalizeSignin(const AccountId& account_id,
                                            const std::string& wrapped_secret,
                                            const std::string& raw_session_key) {
-  if (state_ != STATE_RUNNING || user_id != user_id_)
+  if (state_ != STATE_RUNNING || account_id != account_id_)
     return;
 
   if (!proximity_auth::ScreenlockBridge::Get()->IsLocked())
     return;
 
   if (type_ != TYPE_SIGNIN) {
-    Cancel(user_id_);
+    Cancel(account_id_);
     return;
   }
 
   if (wrapped_secret.empty()) {
-    Cancel(user_id_);
+    Cancel(account_id_);
     return;
   }
 
@@ -180,15 +180,15 @@ void EasyUnlockAuthAttempt::FinalizeSignin(const std::string& user_id,
 #endif  // defined(OS_CHROMEOS)
 
   const bool kSuccess = true;
-  finalized_callback_.Run(type_, kSuccess, user_id, unwrapped_secret,
+  finalized_callback_.Run(type_, kSuccess, account_id, unwrapped_secret,
                           key_label);
   state_ = STATE_DONE;
 }
 
-void EasyUnlockAuthAttempt::Cancel(const std::string& user_id) {
+void EasyUnlockAuthAttempt::Cancel(const AccountId& account_id) {
   state_ = STATE_DONE;
 
   const bool kFailure = false;
-  finalized_callback_.Run(type_, kFailure, user_id, std::string(),
+  finalized_callback_.Run(type_, kFailure, account_id, std::string(),
                           std::string());
 }

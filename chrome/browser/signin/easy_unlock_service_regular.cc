@@ -99,7 +99,7 @@ EasyUnlockServiceRegular::GetProximityAuthPrefManager() {
 
 void EasyUnlockServiceRegular::LoadRemoteDevices() {
   if (device_manager_->unlock_keys().empty()) {
-    SetProximityAuthDevices(GetUserEmail(), proximity_auth::RemoteDeviceList());
+    SetProximityAuthDevices(GetAccountId(), proximity_auth::RemoteDeviceList());
     return;
   }
 
@@ -115,7 +115,7 @@ void EasyUnlockServiceRegular::LoadRemoteDevices() {
 
 void EasyUnlockServiceRegular::OnRemoteDevicesLoaded(
     const proximity_auth::RemoteDeviceList& remote_devices) {
-  SetProximityAuthDevices(GetUserEmail(), remote_devices);
+  SetProximityAuthDevices(GetAccountId(), remote_devices);
 
 #if defined(OS_CHROMEOS)
   // We need to store a copy of |remote devices_| in the TPM, so it can be
@@ -153,7 +153,7 @@ EasyUnlockService::Type EasyUnlockServiceRegular::GetType() const {
   return EasyUnlockService::TYPE_REGULAR;
 }
 
-std::string EasyUnlockServiceRegular::GetUserEmail() const {
+AccountId EasyUnlockServiceRegular::GetAccountId() const {
   const SigninManagerBase* signin_manager =
       SigninManagerFactory::GetForProfileIfExists(profile());
   // |profile| has to be a signed-in profile with SigninManager already
@@ -161,7 +161,9 @@ std::string EasyUnlockServiceRegular::GetUserEmail() const {
   DCHECK(signin_manager);
   const std::string user_email =
       signin_manager->GetAuthenticatedAccountInfo().email;
-  return user_email.empty() ? user_email : gaia::CanonicalizeEmail(user_email);
+  return user_email.empty()
+             ? EmptyAccountId()
+             : AccountId::FromUserEmail(gaia::CanonicalizeEmail(user_email));
 }
 
 void EasyUnlockServiceRegular::LaunchSetup() {
@@ -212,7 +214,7 @@ void EasyUnlockServiceRegular::SetHardlockAfterKeyOperation(
     EasyUnlockScreenlockStateHandler::HardlockState state_on_success,
     bool success) {
   if (success)
-    SetHardlockStateForUser(GetUserEmail(), state_on_success);
+    SetHardlockStateForUser(GetAccountId(), state_on_success);
 
   // Even if the refresh keys operation suceeded, we still fetch and check the
   // cryptohome keys against the keys in local preferences as a sanity check.
@@ -369,13 +371,13 @@ std::string EasyUnlockServiceRegular::GetWrappedSecret() const {
 }
 
 void EasyUnlockServiceRegular::RecordEasySignInOutcome(
-    const std::string& user_id,
+    const AccountId& account_id,
     bool success) const {
   NOTREACHED();
 }
 
 void EasyUnlockServiceRegular::RecordPasswordLoginEvent(
-    const std::string& user_id) const {
+    const AccountId& account_id) const {
   NOTREACHED();
 }
 
@@ -543,7 +545,7 @@ void EasyUnlockServiceRegular::OnScreenDidUnlock(
 }
 
 void EasyUnlockServiceRegular::OnFocusedUserChanged(
-    const std::string& user_id) {
+    const AccountId& account_id) {
   // Nothing to do.
 }
 
@@ -589,8 +591,8 @@ void EasyUnlockServiceRegular::SyncProfilePrefsToLocalState() {
 
   DictionaryPrefUpdate update(local_state,
                               prefs::kEasyUnlockLocalStateUserPrefs);
-  std::string user_email = GetUserEmail();
-  update->SetWithoutPathExpansion(user_email, user_prefs_dict.Pass());
+  update->SetWithoutPathExpansion(GetAccountId().GetUserEmail(),
+                                  user_prefs_dict.Pass());
 }
 
 cryptauth::GcmDeviceInfo EasyUnlockServiceRegular::GetGcmDeviceInfo() {

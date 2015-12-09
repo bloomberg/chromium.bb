@@ -131,7 +131,7 @@ void ScreenlockBridge::SetLockHandler(LockHandler* lock_handler) {
   else
     screen_type = lock_handler->GetScreenType();
 
-  focused_user_id_ = std::string();
+  focused_account_id_ = EmptyAccountId();
   lock_handler_ = lock_handler;
   if (lock_handler_)
     FOR_EACH_OBSERVER(Observer, observers_, OnScreenDidLock(screen_type));
@@ -139,12 +139,12 @@ void ScreenlockBridge::SetLockHandler(LockHandler* lock_handler) {
     FOR_EACH_OBSERVER(Observer, observers_, OnScreenDidUnlock(screen_type));
 }
 
-void ScreenlockBridge::SetFocusedUser(const std::string& user_id) {
-  if (user_id == focused_user_id_)
+void ScreenlockBridge::SetFocusedUser(const AccountId& account_id) {
+  if (account_id == focused_account_id_)
     return;
-  PA_LOG(INFO) << "Focused user changed to " << user_id;
-  focused_user_id_ = user_id;
-  FOR_EACH_OBSERVER(Observer, observers_, OnFocusedUserChanged(user_id));
+  PA_LOG(INFO) << "Focused user changed to " << account_id.Serialize();
+  focused_account_id_ = account_id;
+  FOR_EACH_OBSERVER(Observer, observers_, OnFocusedUserChanged(account_id));
 }
 
 bool ScreenlockBridge::IsLocked() const {
@@ -161,9 +161,9 @@ void ScreenlockBridge::Lock() {
 #endif
 }
 
-void ScreenlockBridge::Unlock(const std::string& user_email) {
+void ScreenlockBridge::Unlock(const AccountId& account_id) {
   if (lock_handler_)
-    lock_handler_->Unlock(user_email);
+    lock_handler_->Unlock(account_id);
 }
 
 void ScreenlockBridge::AddObserver(Observer* observer) {
@@ -174,8 +174,8 @@ void ScreenlockBridge::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-ScreenlockBridge::ScreenlockBridge() : lock_handler_(nullptr) {
-}
+ScreenlockBridge::ScreenlockBridge()
+    : lock_handler_(nullptr), focused_account_id_(EmptyAccountId()) {}
 
 ScreenlockBridge::~ScreenlockBridge() {
 }

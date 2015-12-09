@@ -216,22 +216,21 @@ void SupervisedUserCreationScreen::HideFlow() {
 }
 
 void SupervisedUserCreationScreen::AuthenticateManager(
-    const std::string& manager_id,
+    const AccountId& manager_id,
     const std::string& manager_password) {
   if (manager_signin_in_progress_)
     return;
   manager_signin_in_progress_ = true;
 
   UserFlow* flow = new SupervisedUserCreationFlow(manager_id);
-  ChromeUserManager::Get()->SetUserFlow(AccountId::FromUserEmail(manager_id),
-                                        flow);
+  ChromeUserManager::Get()->SetUserFlow(manager_id, flow);
 
   // Make sure no two controllers exist at the same time.
   controller_.reset();
 
   controller_.reset(new SupervisedUserCreationControllerNew(this, manager_id));
 
-  UserContext user_context(AccountId::FromUserEmail(manager_id));
+  UserContext user_context(manager_id);
   user_context.SetKey(Key(manager_password));
   ExistingUserController::current_controller()->Login(user_context,
                                                       SigninSpecifics());

@@ -80,7 +80,7 @@ class AppLaunchSigninScreen : public SigninScreenHandlerDelegate,
   void Signout() override;
   void HandleGetUsers() override;
   void CheckUserStatus(const AccountId& account_id) override;
-  bool IsUserWhitelisted(const std::string& user_id) override;
+  bool IsUserWhitelisted(const AccountId& account_id) override;
 
   // AuthStatusConsumer implementation:
   void OnAuthFailure(const AuthFailure& error) override;

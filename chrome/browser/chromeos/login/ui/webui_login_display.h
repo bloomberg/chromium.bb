@@ -81,7 +81,7 @@ class WebUILoginDisplay : public LoginDisplay,
 
   void HandleGetUsers() override;
   void CheckUserStatus(const AccountId& account_id) override;
-  bool IsUserWhitelisted(const std::string& user_id) override;
+  bool IsUserWhitelisted(const AccountId& account_id) override;
 
   // ui::UserActivityDetector implementation:
   void OnUserActivity(const ui::Event* event) override;
@@ -89,17 +89,17 @@ class WebUILoginDisplay : public LoginDisplay,
  private:
 
   // Whether to show guest login.
-  bool show_guest_;
+  bool show_guest_ = false;
 
   // Weather to show the user pods or a GAIA sign in.
   // Public sessions are always shown.
-  bool show_users_;
+  bool show_users_ = false;
 
   // Whether to show add new user.
-  bool show_new_user_;
+  bool show_new_user_ = false;
 
   // Reference to the WebUI handling layer for the login screen
-  LoginDisplayWebUIHandler* webui_handler_;
+  LoginDisplayWebUIHandler* webui_handler_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(WebUILoginDisplay);
 };

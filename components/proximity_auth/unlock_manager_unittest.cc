@@ -114,19 +114,19 @@ class FakeLockHandler : public ScreenlockBridge::LockHandler {
   // LockHandler:
   void ShowBannerMessage(const base::string16& message) override {}
   void ShowUserPodCustomIcon(
-      const std::string& user_email,
+      const AccountId& account_id,
       const ScreenlockBridge::UserPodCustomIconOptions& icon) override {}
-  void HideUserPodCustomIcon(const std::string& user_email) override {}
+  void HideUserPodCustomIcon(const AccountId& account_id) override {}
   void EnableInput() override {}
-  void SetAuthType(const std::string& user_email,
+  void SetAuthType(const AccountId& account_id,
                    AuthType auth_type,
                    const base::string16& auth_value) override {}
-  AuthType GetAuthType(const std::string& user_email) const override {
+  AuthType GetAuthType(const AccountId& account_id) const override {
     return USER_CLICK;
   }
   ScreenType GetScreenType() const override { return LOCK_SCREEN; }
-  void Unlock(const std::string& user_email) override {}
-  void AttemptEasySignin(const std::string& user_email,
+  void Unlock(const AccountId& account_id) override {}
+  void AttemptEasySignin(const AccountId& account_id,
                          const std::string& secret,
                          const std::string& key_label) override {}
 

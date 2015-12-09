@@ -10,15 +10,6 @@
 
 namespace chromeos {
 
-namespace {
-
-void UnregisterFlow(const std::string& user_id) {
-  ChromeUserManager::Get()->ResetUserFlow(AccountId::FromUserEmail(user_id));
-}
-
-} // namespace
-
-
 UserFlow::UserFlow() : host_(NULL) {}
 
 UserFlow::~UserFlow() {}
@@ -70,9 +61,8 @@ void DefaultUserFlow::HandleOAuthTokenStatusChange(
 void DefaultUserFlow::LaunchExtraSteps(Profile* profile) {
 }
 
-ExtendedUserFlow::ExtendedUserFlow(const std::string& user_id)
-    : user_id_(user_id) {
-}
+ExtendedUserFlow::ExtendedUserFlow(const AccountId& account_id)
+    : account_id_(account_id) {}
 
 ExtendedUserFlow::~ExtendedUserFlow() {
 }
@@ -89,10 +79,10 @@ void ExtendedUserFlow::HandleOAuthTokenStatusChange(
 }
 
 void ExtendedUserFlow::UnregisterFlowSoon() {
-  std::string id_copy(user_id());
-  base::MessageLoop::current()->PostTask(FROM_HERE,
-      base::Bind(&UnregisterFlow,
-                 id_copy));
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&ChromeUserManager::ResetUserFlow,
+                 base::Unretained(ChromeUserManager::Get()), account_id()));
 }
 
 }  // namespace chromeos

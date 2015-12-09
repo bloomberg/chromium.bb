@@ -85,7 +85,7 @@ class UnlockManager : public MessengerObserver,
       ScreenlockBridge::LockHandler::ScreenType screen_type) override;
   void OnScreenDidUnlock(
       ScreenlockBridge::LockHandler::ScreenType screen_type) override;
-  void OnFocusedUserChanged(const std::string& user_id) override;
+  void OnFocusedUserChanged(const AccountId& account_id) override;
 
   // Called when the screenlock state changes.
   void OnScreenLockedOrUnlocked(bool is_locked);

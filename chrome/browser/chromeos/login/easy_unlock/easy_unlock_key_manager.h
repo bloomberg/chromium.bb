@@ -17,6 +17,8 @@
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_refresh_keys_operation.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_types.h"
 
+class AccountId;
+
 namespace base {
 class DictionaryValue;
 class ListValue;
@@ -54,7 +56,7 @@ class EasyUnlockKeyManager {
   // conversion fails (missing required propery). Note that
   // EasyUnlockDeviceKeyData contains a sub set of the remote device dictionary.
   static void DeviceDataToRemoteDeviceDictionary(
-      const std::string& user_id,
+      const AccountId& account_id,
       const EasyUnlockDeviceKeyData& data,
       base::DictionaryValue* dict);
   static bool RemoteDeviceDictionaryToDeviceData(
@@ -64,7 +66,7 @@ class EasyUnlockKeyManager {
   // Helpers to convert between EasyUnlockDeviceKeyDataList and remote devices
   // ListValue.
   static void DeviceDataListToRemoteDeviceList(
-      const std::string& user_id,
+      const AccountId& account_id,
       const EasyUnlockDeviceKeyDataList& data_list,
       base::ListValue* device_list);
   static bool RemoteDeviceListToDeviceDataList(

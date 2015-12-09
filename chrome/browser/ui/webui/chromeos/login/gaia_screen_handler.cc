@@ -368,9 +368,10 @@ void GaiaScreenHandler::OnPortalDetectionCompleted(
   LoadAuthExtension(true /* force */, false /* offline */);
 }
 
-void GaiaScreenHandler::HandleIdentifierEntered(
-    const std::string& account_identifier) {
-  if (!Delegate()->IsUserWhitelisted(account_identifier))
+void GaiaScreenHandler::HandleIdentifierEntered(const std::string& user_email) {
+  if (!Delegate()->IsUserWhitelisted(
+          user_manager::UserManager::Get()->GetKnownUserAccountId(
+              user_email, std::string() /* gaia_id */)))
     ShowWhitelistCheckFailedError();
 }
 

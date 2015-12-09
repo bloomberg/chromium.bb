@@ -93,7 +93,7 @@ class WebUIScreenLocker : public WebUILoginView,
   void ResyncUserData() override;
   void SetDisplayEmail(const std::string& email) override;
   void Signout() override;
-  bool IsUserWhitelisted(const std::string& user_id) override;
+  bool IsUserWhitelisted(const AccountId& account_id) override;
 
   // LockWindow::Observer:
   void OnLockWindowReady() override;

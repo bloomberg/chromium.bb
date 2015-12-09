@@ -189,7 +189,7 @@ class SigninScreenHandlerDelegate {
   virtual void CheckUserStatus(const AccountId& account_id) = 0;
 
   // Returns true if user is allowed to log in by domain policy.
-  virtual bool IsUserWhitelisted(const std::string& user_id) = 0;
+  virtual bool IsUserWhitelisted(const AccountId& account_id) = 0;
 
  protected:
   virtual ~SigninScreenHandlerDelegate() {}

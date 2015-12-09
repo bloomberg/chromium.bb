@@ -40,9 +40,10 @@ void ProximityAuthSystem::Start() {
     return;
   started_ = true;
   ScreenlockBridge::Get()->AddObserver(this);
-  std::string focused_user_id = ScreenlockBridge::Get()->focused_user_id();
-  if (!focused_user_id.empty())
-    OnFocusedUserChanged(focused_user_id);
+  const AccountId& focused_account_id =
+      ScreenlockBridge::Get()->focused_account_id();
+  if (focused_account_id.is_valid())
+    OnFocusedUserChanged(focused_account_id);
 }
 
 void ProximityAuthSystem::Stop() {
@@ -50,29 +51,30 @@ void ProximityAuthSystem::Stop() {
     return;
   started_ = false;
   ScreenlockBridge::Get()->RemoveObserver(this);
-  OnFocusedUserChanged(std::string());
+  OnFocusedUserChanged(EmptyAccountId());
 }
 
 void ProximityAuthSystem::SetRemoteDevicesForUser(
-    const std::string& user_id,
+    const AccountId& account_id,
     const RemoteDeviceList& remote_devices) {
-  remote_devices_map_[user_id] = remote_devices;
+  remote_devices_map_[account_id] = remote_devices;
   if (started_) {
-    std::string focused_user_id = ScreenlockBridge::Get()->focused_user_id();
-    if (!focused_user_id.empty())
-      OnFocusedUserChanged(focused_user_id);
+    const AccountId& focused_account_id =
+        ScreenlockBridge::Get()->focused_account_id();
+    if (focused_account_id.is_valid())
+      OnFocusedUserChanged(focused_account_id);
   }
 }
 
 RemoteDeviceList ProximityAuthSystem::GetRemoteDevicesForUser(
-    const std::string& user_id) const {
-  if (remote_devices_map_.find(user_id) == remote_devices_map_.end())
+    const AccountId& account_id) const {
+  if (remote_devices_map_.find(account_id) == remote_devices_map_.end())
     return RemoteDeviceList();
-  return remote_devices_map_.at(user_id);
+  return remote_devices_map_.at(account_id);
 }
 
-void ProximityAuthSystem::OnAuthAttempted(const std::string& user_id) {
-  // TODO(tengs): There is no reason to pass the |user_id| argument anymore.
+void ProximityAuthSystem::OnAuthAttempted(const AccountId& /* account_id */) {
+  // TODO(tengs): There is no reason to pass the |account_id| argument anymore.
   unlock_manager_->OnAuthAttempted(ScreenlockBridge::LockHandler::USER_CLICK);
 }
 
@@ -110,7 +112,7 @@ void ProximityAuthSystem::ResumeAfterWakeUpTimeout() {
   } else if (!started_) {
     PA_LOG(INFO) << "Suspend done, but not system started.";
   } else {
-    OnFocusedUserChanged(ScreenlockBridge::Get()->focused_user_id());
+    OnFocusedUserChanged(ScreenlockBridge::Get()->focused_account_id());
   }
 }
 
@@ -122,7 +124,7 @@ void ProximityAuthSystem::OnLifeCycleStateChanged(
 
 void ProximityAuthSystem::OnScreenDidLock(
     ScreenlockBridge::LockHandler::ScreenType screen_type) {
-  OnFocusedUserChanged(ScreenlockBridge::Get()->focused_user_id());
+  OnFocusedUserChanged(ScreenlockBridge::Get()->focused_account_id());
 }
 
 void ProximityAuthSystem::OnScreenDidUnlock(
@@ -131,28 +133,30 @@ void ProximityAuthSystem::OnScreenDidUnlock(
   remote_device_life_cycle_.reset();
 }
 
-void ProximityAuthSystem::OnFocusedUserChanged(const std::string& user_id) {
+void ProximityAuthSystem::OnFocusedUserChanged(const AccountId& account_id) {
   // Update the current RemoteDeviceLifeCycle to the focused user.
-  if (!user_id.empty() && remote_device_life_cycle_ &&
-      remote_device_life_cycle_->GetRemoteDevice().user_id != user_id) {
+  if (account_id.is_valid() && remote_device_life_cycle_ &&
+      remote_device_life_cycle_->GetRemoteDevice().user_id !=
+          account_id.GetUserEmail()) {
     PA_LOG(INFO) << "Focused user changed, destroying life cycle for "
-                 << user_id << ".";
+                 << account_id.Serialize() << ".";
     unlock_manager_->SetRemoteDeviceLifeCycle(nullptr);
     remote_device_life_cycle_.reset();
   }
 
-  if (remote_devices_map_.find(user_id) == remote_devices_map_.end() ||
-      remote_devices_map_[user_id].size() == 0) {
-    PA_LOG(INFO) << "User " << user_id << " does not have a RemoteDevice.";
+  if (remote_devices_map_.find(account_id) == remote_devices_map_.end() ||
+      remote_devices_map_[account_id].size() == 0) {
+    PA_LOG(INFO) << "User " << account_id.Serialize()
+                 << " does not have a RemoteDevice.";
     return;
   }
 
   // TODO(tengs): We currently assume each user has only one RemoteDevice, so we
   // can simply take the first item in the list.
-  RemoteDevice remote_device = remote_devices_map_[user_id][0];
+  RemoteDevice remote_device = remote_devices_map_[account_id][0];
   if (!suspended_) {
     PA_LOG(INFO) << "Creating RemoteDeviceLifeCycle for focused user: "
-                 << user_id;
+                 << account_id.Serialize();
     remote_device_life_cycle_.reset(
         new RemoteDeviceLifeCycleImpl(remote_device, proximity_auth_client_));
     unlock_manager_->SetRemoteDeviceLifeCycle(remote_device_life_cycle_.get());

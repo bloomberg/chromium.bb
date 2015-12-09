@@ -42,6 +42,7 @@
 #include "components/proximity_auth/screenlock_bridge.h"
 #include "components/proximity_auth/screenlock_state.h"
 #include "components/proximity_auth/switches.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
@@ -841,7 +842,7 @@ bool EasyUnlockPrivateGetSignInChallengeFunction::RunAsync() {
       return false;
     }
     key_manager->SignUsingTpmKey(
-        EasyUnlockService::Get(profile)->GetUserEmail(),
+        EasyUnlockService::Get(profile)->GetAccountId(),
         std::string(params->nonce.begin(), params->nonce.end()),
         base::Bind(&EasyUnlockPrivateGetSignInChallengeFunction::OnDone, this,
                    challenge));
@@ -893,22 +894,22 @@ bool EasyUnlockPrivateGetUserInfoFunction::RunSync() {
   EasyUnlockService* service =
       EasyUnlockService::Get(Profile::FromBrowserContext(browser_context()));
   std::vector<linked_ptr<easy_unlock_private::UserInfo> > users;
-  std::string user_id = service->GetUserEmail();
-  if (!user_id.empty()) {
+  const AccountId& account_id = service->GetAccountId();
+  if (account_id.is_valid()) {
     users.push_back(
         linked_ptr<easy_unlock_private::UserInfo>(
             new easy_unlock_private::UserInfo()));
-    users[0]->user_id = user_id;
+    users[0]->user_id = account_id.GetUserEmail();
     users[0]->logged_in = service->GetType() == EasyUnlockService::TYPE_REGULAR;
     users[0]->data_ready = users[0]->logged_in ||
                            service->GetRemoteDevices() != NULL;
 
     EasyUnlockService::UserSettings user_settings =
-        EasyUnlockService::GetUserSettings(user_id);
+        EasyUnlockService::GetUserSettings(account_id);
     users[0]->require_close_proximity = user_settings.require_close_proximity;
 
     users[0]->device_user_id = proximity_auth::CalculateDeviceUserId(
-        EasyUnlockService::GetDeviceId(), user_id);
+        EasyUnlockService::GetDeviceId(), account_id.GetUserEmail());
 
     users[0]->ble_discovery_enabled =
         base::CommandLine::ForCurrentProcess()->HasSwitch(

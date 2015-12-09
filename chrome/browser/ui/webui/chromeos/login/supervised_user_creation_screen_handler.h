@@ -32,7 +32,7 @@ class SupervisedUserCreationScreenHandler : public BaseScreenHandler {
 
     // Starts supervised user creation flow, with manager identified by
     // |manager_id| and |manager_password|.
-    virtual void AuthenticateManager(const std::string& manager_id,
+    virtual void AuthenticateManager(const AccountId& manager_account_id,
                                      const std::string& manager_password) = 0;
 
     // Starts supervised user creation flow, with supervised user that would

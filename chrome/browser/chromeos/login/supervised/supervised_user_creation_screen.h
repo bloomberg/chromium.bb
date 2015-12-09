@@ -88,7 +88,7 @@ class SupervisedUserCreationScreen
   void ImportSupervisedUser(const std::string& user_id) override;
   void ImportSupervisedUserWithPassword(const std::string& user_id,
                                         const std::string& password) override;
-  void AuthenticateManager(const std::string& manager_id,
+  void AuthenticateManager(const AccountId& manager_id,
                            const std::string& manager_password) override;
   void AbortFlow() override;
   void FinishFlow() override;

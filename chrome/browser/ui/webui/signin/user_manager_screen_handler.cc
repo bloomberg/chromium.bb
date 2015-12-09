@@ -39,6 +39,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/proximity_auth/screenlock_bridge.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -313,7 +314,7 @@ void UserManagerScreenHandler::ShowBannerMessage(
 }
 
 void UserManagerScreenHandler::ShowUserPodCustomIcon(
-    const std::string& user_email,
+    const AccountId& account_id,
     const proximity_auth::ScreenlockBridge::UserPodCustomIconOptions&
         icon_options) {
   scoped_ptr<base::DictionaryValue> icon = icon_options.ToDictionaryValue();
@@ -321,15 +322,14 @@ void UserManagerScreenHandler::ShowUserPodCustomIcon(
     return;
   web_ui()->CallJavascriptFunction(
       "login.AccountPickerScreen.showUserPodCustomIcon",
-      base::StringValue(user_email),
-      *icon);
+      base::StringValue(account_id.GetUserEmail()), *icon);
 }
 
 void UserManagerScreenHandler::HideUserPodCustomIcon(
-    const std::string& user_email) {
+    const AccountId& account_id) {
   web_ui()->CallJavascriptFunction(
       "login.AccountPickerScreen.hideUserPodCustomIcon",
-      base::StringValue(user_email));
+      base::StringValue(account_id.GetUserEmail()));
 }
 
 void UserManagerScreenHandler::EnableInput() {
@@ -337,24 +337,23 @@ void UserManagerScreenHandler::EnableInput() {
 }
 
 void UserManagerScreenHandler::SetAuthType(
-    const std::string& user_email,
+    const AccountId& account_id,
     proximity_auth::ScreenlockBridge::LockHandler::AuthType auth_type,
     const base::string16& auth_value) {
-  if (GetAuthType(user_email) ==
+  if (GetAuthType(account_id) ==
       proximity_auth::ScreenlockBridge::LockHandler::FORCE_OFFLINE_PASSWORD)
     return;
 
-  user_auth_type_map_[user_email] = auth_type;
-  web_ui()->CallJavascriptFunction(
-      "login.AccountPickerScreen.setAuthType",
-      base::StringValue(user_email),
-      base::FundamentalValue(auth_type),
-      base::StringValue(auth_value));
+  user_auth_type_map_[account_id.GetUserEmail()] = auth_type;
+  web_ui()->CallJavascriptFunction("login.AccountPickerScreen.setAuthType",
+                                   base::StringValue(account_id.GetUserEmail()),
+                                   base::FundamentalValue(auth_type),
+                                   base::StringValue(auth_value));
 }
 
 proximity_auth::ScreenlockBridge::LockHandler::AuthType
-UserManagerScreenHandler::GetAuthType(const std::string& user_email) const {
-  UserAuthTypeMap::const_iterator it = user_auth_type_map_.find(user_email);
+UserManagerScreenHandler::GetAuthType(const AccountId& account_id) const {
+  const auto it = user_auth_type_map_.find(account_id.GetUserEmail());
   if (it == user_auth_type_map_.end())
     return proximity_auth::ScreenlockBridge::LockHandler::OFFLINE_PASSWORD;
   return it->second;
@@ -365,20 +364,18 @@ UserManagerScreenHandler::GetScreenType() const {
   return proximity_auth::ScreenlockBridge::LockHandler::LOCK_SCREEN;
 }
 
-void UserManagerScreenHandler::Unlock(const std::string& user_email) {
-  base::FilePath path =
-      profiles::GetPathOfProfileWithEmail(g_browser_process->profile_manager(),
-                                          user_email);
+void UserManagerScreenHandler::Unlock(const AccountId& account_id) {
+  const base::FilePath path = profiles::GetPathOfProfileWithEmail(
+      g_browser_process->profile_manager(), account_id.GetUserEmail());
   if (!path.empty()) {
     authenticating_profile_path_ = path;
     ReportAuthenticationResult(true, ProfileMetrics::AUTH_LOCAL);
   }
 }
 
-void UserManagerScreenHandler::AttemptEasySignin(
-    const std::string& user_email,
-    const std::string& secret,
-    const std::string& key_label) {
+void UserManagerScreenHandler::AttemptEasySignin(const AccountId& account_id,
+                                                 const std::string& secret,
+                                                 const std::string& key_label) {
   NOTREACHED();
 }
 
@@ -550,18 +547,20 @@ void UserManagerScreenHandler::HandleAttemptUnlock(
     const base::ListValue* args) {
   std::string email;
   CHECK(args->GetString(0, &email));
-  GetScreenlockRouter(email)->OnAuthAttempted(GetAuthType(email), "");
+  GetScreenlockRouter(email)
+      ->OnAuthAttempted(GetAuthType(AccountId::FromUserEmail(email)), "");
 }
 
 void UserManagerScreenHandler::HandleHardlockUserPod(
     const base::ListValue* args) {
   std::string email;
   CHECK(args->GetString(0, &email));
+  const AccountId account_id = AccountId::FromUserEmail(email);
   SetAuthType(
-      email,
+      account_id,
       proximity_auth::ScreenlockBridge::LockHandler::FORCE_OFFLINE_PASSWORD,
       base::string16());
-  HideUserPodCustomIcon(email);
+  HideUserPodCustomIcon(account_id);
 }
 
 void UserManagerScreenHandler::HandleRemoveUserWarningLoadStats(

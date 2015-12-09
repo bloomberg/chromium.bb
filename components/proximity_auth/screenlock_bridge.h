@@ -15,6 +15,7 @@
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
 #include "base/values.h"
+#include "components/signin/core/account_id/account_id.h"
 
 namespace proximity_auth {
 
@@ -106,31 +107,31 @@ class ScreenlockBridge {
 
     // Shows a custom icon in the user pod on the lock screen.
     virtual void ShowUserPodCustomIcon(
-        const std::string& user_email,
+        const AccountId& account_id,
         const UserPodCustomIconOptions& icon) = 0;
 
     // Hides the custom icon in user pod for a user.
-    virtual void HideUserPodCustomIcon(const std::string& user_email) = 0;
+    virtual void HideUserPodCustomIcon(const AccountId& account_id) = 0;
 
     // (Re)enable lock screen UI.
     virtual void EnableInput() = 0;
 
     // Set the authentication type to be used on the lock screen.
-    virtual void SetAuthType(const std::string& user_email,
+    virtual void SetAuthType(const AccountId& account_id,
                              AuthType auth_type,
                              const base::string16& auth_value) = 0;
 
     // Returns the authentication type used for a user.
-    virtual AuthType GetAuthType(const std::string& user_email) const = 0;
+    virtual AuthType GetAuthType(const AccountId& account_id) const = 0;
 
     // Returns the type of the screen -- a signin or a lock screen.
     virtual ScreenType GetScreenType() const = 0;
 
     // Unlocks from easy unlock app for a user.
-    virtual void Unlock(const std::string& user_email) = 0;
+    virtual void Unlock(const AccountId& account_id) = 0;
 
     // Attempts to login the user using an easy unlock key.
-    virtual void AttemptEasySignin(const std::string& user_email,
+    virtual void AttemptEasySignin(const AccountId& account_id,
                                    const std::string& secret,
                                    const std::string& key_label) = 0;
 
@@ -147,7 +148,7 @@ class ScreenlockBridge {
     virtual void OnScreenDidUnlock(LockHandler::ScreenType screen_type) = 0;
 
     // Invoked when the user focused on the lock screen changes.
-    virtual void OnFocusedUserChanged(const std::string& user_id) = 0;
+    virtual void OnFocusedUserChanged(const AccountId& account_id) = 0;
 
    protected:
     virtual ~Observer() {}
@@ -156,20 +157,20 @@ class ScreenlockBridge {
   static ScreenlockBridge* Get();
 
   void SetLockHandler(LockHandler* lock_handler);
-  void SetFocusedUser(const std::string& user_id);
+  void SetFocusedUser(const AccountId& account_id);
 
   bool IsLocked() const;
   void Lock();
 
-  // Unlocks the screen for the authenticated user with the given |user_email|.
-  void Unlock(const std::string& user_email);
+  // Unlocks the screen for the authenticated user with the given |user_id|.
+  void Unlock(const AccountId& account_id);
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
   LockHandler* lock_handler() { return lock_handler_; }
 
-  std::string focused_user_id() const { return focused_user_id_; }
+  const AccountId& focused_account_id() const { return focused_account_id_; }
 
  private:
   friend struct base::DefaultLazyInstanceTraits<ScreenlockBridge>;
@@ -181,7 +182,7 @@ class ScreenlockBridge {
   LockHandler* lock_handler_;  // Not owned
 
   // The last focused user's id.
-  std::string focused_user_id_;
+  AccountId focused_account_id_;
   base::ObserverList<Observer, true> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenlockBridge);

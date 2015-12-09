@@ -125,8 +125,7 @@ void RecordPasswordLoginEvent(const UserContext& user_context) {
   if (user_context.GetUserType() == user_manager::USER_TYPE_REGULAR &&
       user_context.GetAuthFlow() == UserContext::AUTH_FLOW_OFFLINE &&
       easy_unlock_service) {
-    easy_unlock_service->RecordPasswordLoginEvent(
-        user_context.GetAccountId().GetUserEmail());
+    easy_unlock_service->RecordPasswordLoginEvent(user_context.GetAccountId());
   }
 }
 
@@ -438,12 +437,13 @@ void ExistingUserController::Signout() {
   NOTREACHED();
 }
 
-bool ExistingUserController::IsUserWhitelisted(const std::string& user_id) {
+bool ExistingUserController::IsUserWhitelisted(const AccountId& account_id) {
   bool wildcard_match = false;
   if (login_performer_.get())
-    return login_performer_->IsUserWhitelisted(user_id, &wildcard_match);
+    return login_performer_->IsUserWhitelisted(account_id, &wildcard_match);
 
-  return chromeos::CrosSettings::IsWhitelisted(user_id, &wildcard_match);
+  return chromeos::CrosSettings::IsWhitelisted(account_id.GetUserEmail(),
+                                               &wildcard_match);
 }
 
 void ExistingUserController::OnConsumerKioskAutoLaunchCheckCompleted(

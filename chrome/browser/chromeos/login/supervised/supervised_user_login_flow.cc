@@ -28,12 +28,8 @@ using content::BrowserThread;
 
 namespace chromeos {
 
-SupervisedUserLoginFlow::SupervisedUserLoginFlow(
-    const std::string& user_id)
-    : ExtendedUserFlow(user_id),
-      data_loaded_(false),
-      weak_factory_(this) {
-}
+SupervisedUserLoginFlow::SupervisedUserLoginFlow(const AccountId& account_id)
+    : ExtendedUserFlow(account_id), weak_factory_(this) {}
 
 SupervisedUserLoginFlow::~SupervisedUserLoginFlow() {}
 
@@ -86,9 +82,9 @@ void SupervisedUserLoginFlow::ConfigureSync(const std::string& token) {
   SupervisedUserAuthentication* auth =
       ChromeUserManager::Get()->GetSupervisedUserManager()->GetAuthentication();
 
-  if (auth->HasScheduledPasswordUpdate(user_id())) {
+  if (auth->HasScheduledPasswordUpdate(account_id().GetUserEmail())) {
     auth->LoadPasswordUpdateData(
-        user_id(),
+        account_id().GetUserEmail(),
         base::Bind(&SupervisedUserLoginFlow::OnPasswordChangeDataLoaded,
                    weak_factory_.GetWeakPtr()),
         base::Bind(&SupervisedUserLoginFlow::OnPasswordChangeDataLoadFailed,
@@ -108,9 +104,9 @@ void SupervisedUserLoginFlow::OnPasswordChangeDataLoaded(
   // Edge case, when manager has signed in and already updated the password.
   SupervisedUserAuthentication* auth =
       ChromeUserManager::Get()->GetSupervisedUserManager()->GetAuthentication();
-  if (!auth->NeedPasswordChange(user_id(), password_data)) {
-    VLOG(1) << "Password already changed for " << user_id();
-    auth->ClearScheduledPasswordUpdate(user_id());
+  if (!auth->NeedPasswordChange(account_id().GetUserEmail(), password_data)) {
+    VLOG(1) << "Password already changed for " << account_id().Serialize();
+    auth->ClearScheduledPasswordUpdate(account_id().GetUserEmail());
     Finish();
     return;
   }
@@ -148,7 +144,7 @@ void SupervisedUserLoginFlow::OnPasswordChangeDataLoaded(
 
   authenticator_ = ExtendedAuthenticator::Create(this);
   SupervisedUserAuthentication::Schema current_schema =
-      auth->GetPasswordSchema(user_id());
+      auth->GetPasswordSchema(account_id().GetUserEmail());
 
   key.revision = revision;
 
@@ -169,7 +165,7 @@ void SupervisedUserLoginFlow::OnPasswordChangeDataLoaded(
              current_schema) {
     VLOG(1) << "Updating the key";
 
-    if (auth->HasIncompleteKey(user_id())) {
+    if (auth->HasIncompleteKey(account_id().GetUserEmail())) {
       // We need to use Migrate instead of Authorized Update privilege.
       key.privileges = kCryptohomeSupervisedUserIncompleteKeyPrivileges;
     }
@@ -192,8 +188,8 @@ void SupervisedUserLoginFlow::OnNewKeyAdded(
   VLOG(1) << "New key added";
   SupervisedUserAuthentication* auth =
       ChromeUserManager::Get()->GetSupervisedUserManager()->GetAuthentication();
-  auth->StorePasswordData(user_id(), *password_data.get());
-  auth->MarkKeyIncomplete(user_id(), true /* incomplete */);
+  auth->StorePasswordData(account_id().GetUserEmail(), *password_data.get());
+  auth->MarkKeyIncomplete(account_id().GetUserEmail(), true /* incomplete */);
   authenticator_->RemoveKey(
       context_,
       kLegacyCryptohomeSupervisedUserKeyLabel,
@@ -239,10 +235,11 @@ void SupervisedUserLoginFlow::OnPasswordUpdated(
       ChromeUserManager::Get()->GetSupervisedUserManager()->GetAuthentication();
 
   // Incomplete state is not there in password_data, carry it from old state.
-  bool was_incomplete = auth->HasIncompleteKey(user_id());
-  auth->StorePasswordData(user_id(), *password_data.get());
+  const bool was_incomplete =
+      auth->HasIncompleteKey(account_id().GetUserEmail());
+  auth->StorePasswordData(account_id().GetUserEmail(), *password_data.get());
   if (was_incomplete)
-    auth->MarkKeyIncomplete(user_id(), true /* incomplete */);
+    auth->MarkKeyIncomplete(account_id().GetUserEmail(), true /* incomplete */);
 
   UMA_HISTOGRAM_ENUMERATION(
       "ManagedUsers.ChromeOS.PasswordChange",
