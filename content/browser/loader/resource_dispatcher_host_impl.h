@@ -128,6 +128,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // request from the renderer or another child process).
   void BeginSaveFile(const GURL& url,
                      const Referrer& referrer,
+                     int save_item_id,
                      int save_package_id,
                      int child_id,
                      int render_view_route_id,

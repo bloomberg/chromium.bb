@@ -1109,9 +1109,20 @@ IN_PROC_BROWSER_TEST_P(SavePageMultiFrameBrowserTest, RuntimeChanges) {
   };
   std::vector<std::string> expected_substrings(std::begin(arr), std::end(arr));
 
-  // TODO(lukasza): crbug.com/106364: Fix complete-html mode as well.
-  if (save_page_type == content::SAVE_PAGE_TYPE_AS_COMPLETE_HTML)
-    return;
+  if (save_page_type == content::SAVE_PAGE_TYPE_AS_COMPLETE_HTML) {
+    // TODO(lukasza): crbug.com/106364: Expand complete-html test beyond just
+    // being a crash test.  In particular, the |complete_html_arr| below should
+    // be the same as the |arr| above (and at this point the special-casing of
+    // complete-html can be removed).
+    // Draft CLs with fix proposals that should accomplish this:
+    // - crrev.com/1502563004
+    // - crrev.com/1500103002
+    std::string complete_html_arr[] = {
+        "frames-runtime-changes.htm: 4388232f-8d45-4d2e-9807-721b381be153",
+    };
+    expected_substrings = std::vector<std::string>(
+        std::begin(complete_html_arr), std::end(complete_html_arr));
+  }
 
   GURL url(embedded_test_server()->GetURL(
       "a.com", "/save_page/frames-runtime-changes.htm?do_runtime_changes=1"));

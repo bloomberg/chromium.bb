@@ -39,7 +39,7 @@ class SaveFile {
   std::string DebugString() const;
 
   // Accessors.
-  int save_id() const { return info_->save_id; }
+  int save_item_id() const { return info_->save_item_id; }
   int render_process_id() const { return info_->render_process_id; }
   int request_id() const { return info_->request_id; }
   SaveFileCreateInfo::SaveFileSource save_source() const {

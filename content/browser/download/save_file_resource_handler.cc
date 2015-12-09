@@ -17,13 +17,14 @@
 namespace content {
 
 SaveFileResourceHandler::SaveFileResourceHandler(net::URLRequest* request,
+                                                 int save_item_id,
                                                  int save_package_id,
                                                  int render_process_host_id,
                                                  int render_frame_routing_id,
                                                  const GURL& url,
                                                  SaveFileManager* manager)
     : ResourceHandler(request),
-      save_id_(-1),
+      save_item_id_(save_item_id),
       save_package_id_(save_package_id),
       render_process_id_(render_process_host_id),
       render_frame_routing_id_(render_frame_routing_id),
@@ -44,19 +45,11 @@ bool SaveFileResourceHandler::OnRequestRedirected(
 
 bool SaveFileResourceHandler::OnResponseStarted(ResourceResponse* response,
                                                 bool* defer) {
-  save_id_ = save_manager_->GetNextId();
   // |save_manager_| consumes (deletes):
-  SaveFileCreateInfo* info = new SaveFileCreateInfo;
-  info->url = url_;
-  info->final_url = final_url_;
-  info->total_bytes = content_length_;
-  info->save_id = save_id_;
-  info->save_package_id = save_package_id_;
-  info->render_process_id = render_process_id_;
-  info->render_frame_routing_id = render_frame_routing_id_;
-  info->request_id = GetRequestID();
-  info->content_disposition = content_disposition_;
-  info->save_source = SaveFileCreateInfo::SAVE_FILE_FROM_NET;
+  SaveFileCreateInfo* info = new SaveFileCreateInfo(
+      url_, final_url_, save_item_id_, save_package_id_, render_process_id_,
+      render_frame_routing_id_, GetRequestID(), content_disposition_,
+      content_length_);
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&SaveFileManager::StartSave, save_manager_, info));
@@ -91,8 +84,8 @@ bool SaveFileResourceHandler::OnReadCompleted(int bytes_read, bool* defer) {
   read_buffer_.swap(buffer);
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(&SaveFileManager::UpdateSaveProgress,
-          save_manager_, save_id_, buffer, bytes_read));
+      base::Bind(&SaveFileManager::UpdateSaveProgress, save_manager_,
+                 save_item_id_, buffer, bytes_read));
   return true;
 }
 
@@ -102,7 +95,7 @@ void SaveFileResourceHandler::OnResponseCompleted(
     bool* defer) {
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(&SaveFileManager::SaveFinished, save_manager_, save_id_, url_,
+      base::Bind(&SaveFileManager::SaveFinished, save_manager_, save_item_id_,
                  save_package_id_,
                  status.is_success() && !status.is_io_pending()));
   read_buffer_ = NULL;

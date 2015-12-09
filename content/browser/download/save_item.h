@@ -50,11 +50,10 @@ class SaveItem {
   // Update path for SaveItem, the actual file is renamed on the file thread.
   void Rename(const base::FilePath& full_path);
 
-  void SetSaveId(int32 save_id);
-
   void SetTotalBytes(int64 total_bytes);
 
   // Accessors.
+  int id() const { return save_item_id_; }
   SaveState state() const { return state_; }
   const base::FilePath& full_path() const { return full_path_; }
   const base::FilePath& file_name() const { return file_name_; }
@@ -62,7 +61,6 @@ class SaveItem {
   const Referrer& referrer() const { return referrer_; }
   int64 total_bytes() const { return total_bytes_; }
   int64 received_bytes() const { return received_bytes_; }
-  int32 save_id() const { return save_id_; }
   bool has_final_name() const { return has_final_name_; }
   bool success() const { return is_success_; }
   SaveFileCreateInfo::SaveFileSource save_source() const {
@@ -74,8 +72,8 @@ class SaveItem {
   // Internal helper for maintaining consistent received and total sizes.
   void UpdateSize(int64 size);
 
-  // Request ID assigned by the ResourceDispatcherHost.
-  int32 save_id_;
+  // Unique identifier for this SaveItem instance.
+  const int save_item_id_;
 
   // Full path to the save item file.
   base::FilePath full_path_;

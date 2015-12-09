@@ -22,6 +22,7 @@ class SaveFileManager;
 class SaveFileResourceHandler : public ResourceHandler {
  public:
   SaveFileResourceHandler(net::URLRequest* request,
+                          int save_item_id,
                           int save_package_id,
                           int render_process_host_id,
                           int render_frame_routing_id,
@@ -72,7 +73,7 @@ class SaveFileResourceHandler : public ResourceHandler {
   }
 
  private:
-  int save_id_;
+  int save_item_id_;
   int save_package_id_;
   int render_process_id_;
   int render_frame_routing_id_;

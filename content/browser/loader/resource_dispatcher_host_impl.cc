@@ -1709,6 +1709,7 @@ void ResourceDispatcherHostImpl::OnAudioRenderHostStreamStateChanged(
 // This function is only used for saving feature.
 void ResourceDispatcherHostImpl::BeginSaveFile(const GURL& url,
                                                const Referrer& referrer,
+                                               int save_item_id,
                                                int save_package_id,
                                                int child_id,
                                                int render_view_route_id,
@@ -1752,8 +1753,8 @@ void ResourceDispatcherHostImpl::BeginSaveFile(const GURL& url,
   extra_info->AssociateWithRequest(request.get());  // Request takes ownership.
 
   scoped_ptr<ResourceHandler> handler(new SaveFileResourceHandler(
-      request.get(), save_package_id, child_id, render_frame_route_id, url,
-      save_file_manager_.get()));
+      request.get(), save_item_id, save_package_id, child_id,
+      render_frame_route_id, url, save_file_manager_.get()));
 
   BeginRequestInternal(request.Pass(), handler.Pass());
 }

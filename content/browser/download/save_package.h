@@ -107,9 +107,8 @@ class CONTENT_EXPORT SavePackage
 
   // Notifications sent from the file thread to the UI thread.
   void StartSave(const SaveFileCreateInfo* info);
-  bool UpdateSaveProgress(int32 save_id, int64 size, bool write_success);
-  void SaveFinished(int32 save_id, int64 size, bool is_success);
-  void SaveFailed(const GURL& save_url);
+  bool UpdateSaveProgress(int32 save_item_id, int64 size, bool write_success);
+  void SaveFinished(int32 save_item_id, int64 size, bool is_success);
   void SaveCanceled(SaveItem* save_item);
 
   // Rough percent complete, -1 means we don't know (since we didn't receive a
@@ -186,9 +185,9 @@ class CONTENT_EXPORT SavePackage
   // and pending responses are counted/tracked by
   // CompleteSavableResourceLinksResponse.
   //
-  // OnSavableResourceLinksResponse creates of SaveItems for each savable
-  // resource and each subframe which get enqueued into |waiting_item_queue_|
-  // with the help of FindOrCreatePendingSaveItem, EnqueueSavableResource,
+  // OnSavableResourceLinksResponse creates SaveItems for each savable resource
+  // and each subframe - these SaveItems get enqueued into |waiting_item_queue_|
+  // with the help of CreatePendingSaveItem, EnqueueSavableResource,
   // EnqueueFrame.
   void GetSavableResourceLinks();
 
@@ -203,7 +202,15 @@ class CONTENT_EXPORT SavePackage
       const std::vector<SavableSubframe>& subframes);
 
   // Helper for finding or creating a SaveItem with the given parameters.
-  SaveItem* FindOrCreatePendingSaveItem(
+  SaveItem* CreatePendingSaveItem(
+      int container_frame_tree_node_id,
+      const GURL& url,
+      const Referrer& referrer,
+      SaveFileCreateInfo::SaveFileSource save_source);
+
+  // Helper for finding a SaveItem with the given url, or falling back to
+  // creating a SaveItem with the given parameters.
+  SaveItem* CreatePendingSaveItemDeduplicatingByUrl(
       int container_frame_tree_node_id,
       const GURL& url,
       const Referrer& referrer,
@@ -243,8 +250,8 @@ class CONTENT_EXPORT SavePackage
                                               const std::string& data,
                                               bool end_of_data);
 
-  // Look up SaveItem by save id from in progress map.
-  SaveItem* LookupItemInProcessBySaveId(int32 save_id);
+  // Look up SaveItem by save item id from in progress map.
+  SaveItem* LookupSaveItemInProcess(int32 save_item_id);
 
   // Remove SaveItem from in progress map and put it to saved map.
   void PutInProgressItemToSavedMap(SaveItem* save_item);
@@ -264,11 +271,12 @@ class CONTENT_EXPORT SavePackage
       SavePageType type,
       const SavePackageDownloadCreatedCallback& cb);
 
-  typedef base::hash_map<std::string, SaveItem*> SaveUrlItemMap;
+  // Map from SaveItem::id() (aka save_item_id) into a SaveItem.
+  typedef base::hash_map<int, SaveItem*> SaveItemIdMap;
   // in_progress_items_ is map of all saving job in in-progress state.
-  SaveUrlItemMap in_progress_items_;
+  SaveItemIdMap in_progress_items_;
   // saved_failed_items_ is map of all saving job which are failed.
-  SaveUrlItemMap saved_failed_items_;
+  SaveItemIdMap saved_failed_items_;
 
   // The number of in process SaveItems.
   int in_process_count() const {
