@@ -409,14 +409,32 @@ mode_random_replace(struct hmi_controller *hmi_ctrl,
 		    int32_t surface_length,
 		    struct wl_list *layer_list)
 {
-	struct hmi_controller_layer *layer = wl_container_of(layer_list->prev, layer, link);
-	const int32_t surface_width  = (int32_t)(layer->width * 0.25f);
-	const int32_t surface_height = (int32_t)(layer->height * 0.25f);
+	struct hmi_controller_layer *application_layer = NULL;
+	struct hmi_controller_layer **layers = NULL;
+	int32_t surface_width  = 0;
+	int32_t surface_height = 0;
 	int32_t surface_x = 0;
 	int32_t surface_y = 0;
 	struct ivi_layout_surface *ivisurf  = NULL;
 	const uint32_t duration = hmi_ctrl->hmi_setting->transition_duration;
 	int32_t i = 0;
+	int32_t layer_idx = 0;
+
+	layers = MEM_ALLOC(sizeof(*layers) * hmi_ctrl->screen_num);
+
+	wl_list_for_each(application_layer, layer_list, link) {
+		layers[layer_idx] = application_layer;
+		ivi_layout_interface->layer_set_render_order(layers[layer_idx]->ivilayer,
+							NULL, 0);
+		layer_idx++;
+	}
+
+	/*
+	 * This commit change is needed because ivisurface can not belongs to several layers
+	 * at the same time. So ivisurfaces shall be removed from layers once and then set them
+	 * to layers randomly.
+	 */
+	ivi_layout_interface->commit_changes();
 
 	for (i = 0; i < surface_length; i++) {
 		ivisurf = pp_surface[i];
@@ -425,19 +443,30 @@ mode_random_replace(struct hmi_controller *hmi_ctrl,
 		if (is_surf_in_ui_widget(hmi_ctrl, ivisurf))
 			continue;
 
+		/* surface determined at random a layer that belongs */
+		layer_idx = rand() % hmi_ctrl->screen_num;
+
 		ivi_layout_interface->surface_set_transition(ivisurf,
 					IVI_LAYOUT_TRANSITION_VIEW_DEFAULT,
 					duration);
+
 		ivi_layout_interface->surface_set_visibility(ivisurf, true);
-		surface_x = rand() % (layer->width - surface_width);
-		surface_y = rand() % (layer->height - surface_height);
+
+		surface_width  = (int32_t)(layers[layer_idx]->width * 0.25f);
+		surface_height = (int32_t)(layers[layer_idx]->height * 0.25f);
+		surface_x = rand() % (layers[layer_idx]->width - surface_width);
+		surface_y = rand() % (layers[layer_idx]->height - surface_height);
 
 		ivi_layout_interface->surface_set_destination_rectangle(ivisurf,
 							     surface_x,
 							     surface_y,
 							     surface_width,
 							     surface_height);
+
+		ivi_layout_interface->layer_add_surface(layers[layer_idx]->ivilayer, ivisurf);
 	}
+
+	free(layers);
 }
 
 static int32_t
