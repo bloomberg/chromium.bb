@@ -1,0 +1,54 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/elements-test.js"></script>
+<script src="./sass-test.js"></script>
+<style>
+pre {
+    font-family: monospace;
+}
+</style>
+<script>
+
+function test()
+{
+    InspectorTest.evaluateInPage("getSASS()", onSASS);
+
+    function onSASS(result)
+    {
+        InspectorTest.parseSCSS("", result.value)
+            .then(InspectorTest.dumpAST)
+            .then(InspectorTest.validateASTRanges)
+            .catch(console.error.bind(console))
+            .then(InspectorTest.completeTest);
+    }
+}
+
+function getSASS()
+{
+    return document.querySelector(".snippet").textContent;
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Verifies SCSS AST in case of variables.
+</p>
+<pre class="snippet">
+$my-color: red;
+$my-font: Arial;
+$class-slug: box;
+
+@for $i from 1 through 3 {
+    .#{$class-slug}#{$i} {
+        background-color: $my-color;
+        font-family: $my-font;
+        /* color: $my-color; */
+    }
+}
+
+</pre>
+</body>
+</html>
