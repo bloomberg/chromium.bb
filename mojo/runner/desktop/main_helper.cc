@@ -39,10 +39,8 @@ int RunnerMain(int argc, char** argv,
   InitializeLogging();
   WaitForDebuggerIfNecessary();
 
-#if !defined(OFFICIAL_BUILD)
-#if defined(OS_WIN)
+#if !defined(OFFICIAL_BUILD) && defined(OS_WIN)
   base::RouteStdioToConsole(false);
-#endif
 #endif
 
   if (command_line.HasSwitch(switches::kChildProcess))

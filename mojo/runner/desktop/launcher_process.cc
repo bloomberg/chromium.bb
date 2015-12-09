@@ -11,6 +11,7 @@
 #include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/debug/stack_trace.h"
 #include "base/files/file_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
@@ -24,6 +25,9 @@ namespace mojo {
 namespace runner {
 
 int LauncherProcessMain(const GURL& mojo_url, const base::Closure& callback) {
+#if !defined(OFFICIAL_BUILD)
+  base::debug::EnableInProcessStackDumping();
+#endif
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (!command_line->HasSwitch(switches::kMojoSingleProcess) &&
       !command_line->HasSwitch("gtest_list_tests"))

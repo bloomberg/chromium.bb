@@ -361,15 +361,14 @@ int ChildProcessMain() {
   base::i18n::InitializeICU();
   if (app_library)
     CallLibraryEarlyInitialization(app_library);
-#if defined(OS_LINUX) && !defined(OS_ANDROID)
-  if (command_line.HasSwitch(switches::kEnableSandbox)) {
 #if !defined(OFFICIAL_BUILD)
-    // Initialize stack dumping just before initializing sandbox to make
-    // sure symbol names in all loaded libraries will be cached.
-    base::debug::EnableInProcessStackDumping();
+  // Initialize stack dumping just before initializing sandbox to make
+  // sure symbol names in all loaded libraries will be cached.
+  base::debug::EnableInProcessStackDumping();
 #endif
+#if defined(OS_LINUX) && !defined(OS_ANDROID)
+  if (command_line.HasSwitch(switches::kEnableSandbox))
     sandbox = InitializeSandbox();
-  }
 #endif
 
   embedder::ScopedPlatformHandle platform_channel =

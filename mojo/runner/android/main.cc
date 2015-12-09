@@ -183,10 +183,6 @@ int main(int argc, char** argv) {
   base::AtExitManager at_exit;
   base::CommandLine::Init(argc, argv);
 
-#if !defined(OFFICIAL_BUILD)
-  base::debug::EnableInProcessStackDumping();
-#endif
-
   mojo::runner::InitializeLogging();
   return mojo::runner::ChildProcessMain();
 }

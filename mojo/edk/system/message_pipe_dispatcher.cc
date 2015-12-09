@@ -5,6 +5,7 @@
 #include "mojo/edk/system/message_pipe_dispatcher.h"
 
 #include "base/bind.h"
+#include "base/debug/stack_trace.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "mojo/edk/embedder/embedder_internal.h"
@@ -441,9 +442,12 @@ void MessagePipeDispatcher::SerializeInternal() {
   serialized_ = true;
   if (!transferable_) {
     CHECK(non_transferable_state_ == WAITING_FOR_READ_OR_WRITE)
-        << "Non transferable message pipe being sent after read/write. "
+        << "Non transferable message pipe being sent after read/write/waited. "
         << "MOJO_CREATE_MESSAGE_PIPE_OPTIONS_FLAG_TRANSFERABLE must be used if "
-        << "the pipe can be sent after it's read or written.";
+        << "the pipe can be sent after it's read or written. This message pipe "
+        << "was previously bound at:\n"
+        << non_transferable_bound_stack_->ToString();
+
     non_transferable_state_ = SERIALISED;
     return;
   }
@@ -611,12 +615,12 @@ MojoResult MessagePipeDispatcher::ReadMessageImplNoLock(
   if (channel_) {
     channel_->EnsureLazyInitialized();
   } else if (!transferable_) {
-      if (non_transferable_state_ == WAITING_FOR_READ_OR_WRITE) {
-        RequestNontransferableChannel();
-        return MOJO_RESULT_SHOULD_WAIT;
-      } else if (non_transferable_state_ == CONNECT_CALLED) {
-        return MOJO_RESULT_SHOULD_WAIT;
-      }
+    if (non_transferable_state_ == WAITING_FOR_READ_OR_WRITE) {
+      RequestNontransferableChannel();
+      return MOJO_RESULT_SHOULD_WAIT;
+    } else if (non_transferable_state_ == CONNECT_CALLED) {
+      return MOJO_RESULT_SHOULD_WAIT;
+    }
   }
 
   DCHECK(!dispatchers || dispatchers->empty());
@@ -983,6 +987,9 @@ void MessagePipeDispatcher::RequestNontransferableChannel() {
   CHECK(!transferable_);
   CHECK_EQ(non_transferable_state_, WAITING_FOR_READ_OR_WRITE);
   non_transferable_state_ = CONNECT_CALLED;
+#if !defined(OFFICIAL_BUILD)
+  non_transferable_bound_stack_.reset(new base::debug::StackTrace);
+#endif
 
   // PostTask since the broker can call us back synchronously.
   internal::g_io_thread_task_runner->PostTask(

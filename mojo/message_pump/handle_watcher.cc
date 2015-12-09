@@ -23,6 +23,7 @@
 #include "mojo/message_pump/message_pump_mojo.h"
 #include "mojo/message_pump/message_pump_mojo_handler.h"
 #include "mojo/message_pump/time_helper.h"
+#include "mojo/public/c/system/message_pipe.h"
 
 namespace mojo {
 namespace common {
@@ -457,6 +458,17 @@ void HandleWatcher::Start(const Handle& handle,
     state_.reset(new SameThreadWatchingState(
         this, handle, handle_signals, deadline, callback));
   } else {
+#if !defined(OFFICIAL_BUILD)
+    // Just for making debugging non-transferable message pipes easier. Since
+    // they can't be sent after they're read/written/listened to,
+    // MessagePipeDispatcher saves the callstack of when it's "bound" to a
+    // pipe id. Triggering a read here, instead of later in the PostTask, means
+    // we have a callstack that is useful to check if the pipe is erronously
+    // attempted to be sent.
+    uint32_t temp = 0;
+    MojoReadMessage(handle.value(), nullptr, &temp, nullptr, nullptr,
+                    MOJO_READ_MESSAGE_FLAG_NONE);
+#endif
     state_.reset(new SecondaryThreadWatchingState(
         this, handle, handle_signals, deadline, callback));
   }

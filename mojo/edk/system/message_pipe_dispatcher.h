@@ -14,6 +14,12 @@
 #include "mojo/edk/system/system_impl_export.h"
 #include "mojo/public/cpp/system/macros.h"
 
+namespace base {
+namespace debug {
+class StackTrace;
+}
+}
+
 namespace mojo {
 namespace edk {
 
@@ -141,7 +147,7 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipeDispatcher final
   // consumed through MojoReadMessage yet.
   MessageInTransitQueue message_queue_;
 
-  // The following members are only used when transferable_ is false;
+  // The following members are only used when transferable_ is true;
 
   // When sending MP, contains serialized message_queue_.
   std::vector<char> serialized_message_queue_;
@@ -155,7 +161,7 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipeDispatcher final
   size_t serialized_message_fds_length_;
   ScopedPlatformHandle serialized_platform_handle_;
 
-  // The following members are only used when transferable_ is true;
+  // The following members are only used when transferable_ is false;
 
   // The unique id shared by both ends of a non-transferable message pipe. This
   // is held on until a read or write are done, and at that point it's used to
@@ -173,6 +179,7 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipeDispatcher final
   NonTransferableState non_transferable_state_;
   // Messages that were written while we were waiting to get a RawChannel.
   MessageInTransitQueue non_transferable_outgoing_message_queue_;
+  scoped_ptr<base::debug::StackTrace> non_transferable_bound_stack_;
 
 
   // The following members are used for both modes of transferable_.
