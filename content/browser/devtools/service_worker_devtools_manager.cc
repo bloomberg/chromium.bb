@@ -107,7 +107,8 @@ void ServiceWorkerDevToolsManager::WorkerReadyForInspection(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   const WorkerId id(worker_process_id, worker_route_id);
   AgentHostMap::iterator it = workers_.find(id);
-  DCHECK(it != workers_.end());
+  if (it == workers_.end())
+    return;
   scoped_refptr<ServiceWorkerDevToolsAgentHost> host = it->second;
   host->WorkerReadyForInspection();
   FOR_EACH_OBSERVER(Observer, observer_list_,
@@ -132,7 +133,8 @@ void ServiceWorkerDevToolsManager::WorkerDestroyed(int worker_process_id,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   const WorkerId id(worker_process_id, worker_route_id);
   AgentHostMap::iterator it = workers_.find(id);
-  DCHECK(it != workers_.end());
+  if (it == workers_.end())
+    return;
   scoped_refptr<WorkerDevToolsAgentHost> agent_host(it->second);
   agent_host->WorkerDestroyed();
   FOR_EACH_OBSERVER(Observer, observer_list_, WorkerDestroyed(it->second));
