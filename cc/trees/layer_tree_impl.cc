@@ -1307,6 +1307,19 @@ void LayerTreeImpl::RemoveLayerWithCopyOutputRequest(LayerImpl* layer) {
   }
 }
 
+void LayerTreeImpl::AddSurfaceLayer(LayerImpl* layer) {
+  DCHECK(std::find(surface_layers_.begin(), surface_layers_.end(), layer) ==
+         surface_layers_.end());
+  surface_layers_.push_back(layer);
+}
+
+void LayerTreeImpl::RemoveSurfaceLayer(LayerImpl* layer) {
+  std::vector<LayerImpl*>::iterator it =
+      std::find(surface_layers_.begin(), surface_layers_.end(), layer);
+  DCHECK(it != surface_layers_.end());
+  surface_layers_.erase(it);
+}
+
 const std::vector<LayerImpl*>& LayerTreeImpl::LayersWithCopyOutputRequest()
     const {
   // Only the active tree needs to know about layers with copy requests, as

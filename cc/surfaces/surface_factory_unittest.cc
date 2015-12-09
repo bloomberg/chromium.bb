@@ -490,10 +490,10 @@ TEST_F(SurfaceFactoryTest, DestroyCycle) {
   // Give id2 a frame that references surface_id_.
   {
     scoped_ptr<RenderPass> render_pass(RenderPass::Create());
-    render_pass->referenced_surfaces.push_back(surface_id_);
     scoped_ptr<DelegatedFrameData> frame_data(new DelegatedFrameData);
     frame_data->render_pass_list.push_back(std::move(render_pass));
     scoped_ptr<CompositorFrame> frame(new CompositorFrame);
+    frame->metadata.referenced_surfaces.push_back(surface_id_);
     frame->delegated_frame_data = std::move(frame_data);
     factory_->SubmitCompositorFrame(id2, std::move(frame),
                                     SurfaceFactory::DrawCallback());
@@ -503,10 +503,10 @@ TEST_F(SurfaceFactoryTest, DestroyCycle) {
   // Give surface_id_ a frame that references id2.
   {
     scoped_ptr<RenderPass> render_pass(RenderPass::Create());
-    render_pass->referenced_surfaces.push_back(id2);
     scoped_ptr<DelegatedFrameData> frame_data(new DelegatedFrameData);
     frame_data->render_pass_list.push_back(std::move(render_pass));
     scoped_ptr<CompositorFrame> frame(new CompositorFrame);
+    frame->metadata.referenced_surfaces.push_back(id2);
     frame->delegated_frame_data = std::move(frame_data);
     factory_->SubmitCompositorFrame(surface_id_, std::move(frame),
                                     SurfaceFactory::DrawCallback());

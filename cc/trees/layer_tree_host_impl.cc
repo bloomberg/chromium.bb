@@ -43,6 +43,7 @@
 #include "cc/layers/painted_scrollbar_layer_impl.h"
 #include "cc/layers/render_surface_impl.h"
 #include "cc/layers/scrollbar_layer_impl_base.h"
+#include "cc/layers/surface_layer_impl.h"
 #include "cc/layers/viewport.h"
 #include "cc/output/compositor_frame_metadata.h"
 #include "cc/output/copy_output_request.h"
@@ -1588,6 +1589,10 @@ CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() const {
         !OuterViewportScrollLayer()->user_scrollable_vertical();
   }
 
+  for (LayerImpl* surface_layer : active_tree_->SurfaceLayers()) {
+    metadata.referenced_surfaces.push_back(
+        static_cast<SurfaceLayerImpl*>(surface_layer)->surface_id());
+  }
   if (!InnerViewportScrollLayer())
     return metadata;
 

@@ -52,7 +52,6 @@ class CCMessagesTest : public testing::Test {
     EXPECT_EQ(a->damage_rect.ToString(), b->damage_rect.ToString());
     EXPECT_EQ(a->transform_to_root_target, b->transform_to_root_target);
     EXPECT_EQ(a->has_transparent_background, b->has_transparent_background);
-    EXPECT_EQ(a->referenced_surfaces, b->referenced_surfaces);
   }
 
   void Compare(const SharedQuadState* a, const SharedQuadState* b) {
@@ -399,8 +398,6 @@ TEST_F(CCMessagesTest, AllQuads) {
                      arbitrary_surface_id);
   pass_cmp->CopyFromAndAppendDrawQuad(surface_in,
                                       surface_in->shared_quad_state);
-  pass_in->referenced_surfaces.push_back(arbitrary_surface_id);
-  pass_cmp->referenced_surfaces.push_back(arbitrary_surface_id);
 
   TextureDrawQuad* texture_in =
       pass_in->CreateAndAppendDrawQuad<TextureDrawQuad>();

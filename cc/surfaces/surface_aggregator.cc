@@ -58,6 +58,10 @@ SurfaceAggregator::~SurfaceAggregator() {
   ProcessAddedAndRemovedSurfaces();
 }
 
+SurfaceAggregator::PrewalkResult::PrewalkResult() {}
+
+SurfaceAggregator::PrewalkResult::~PrewalkResult() {}
+
 // Create a clip rect for an aggregated quad from the original clip rect and
 // the clip rect from the surface it's on.
 SurfaceAggregator::ClipData SurfaceAggregator::CalculateClipRect(
@@ -491,7 +495,8 @@ void SurfaceAggregator::ProcessAddedAndRemovedSurfaces() {
 // Walk the Surface tree from surface_id. Validate the resources of the current
 // surface and its descendants, check if there are any copy requests, and
 // return the combined damage rect.
-gfx::Rect SurfaceAggregator::PrewalkTree(SurfaceId surface_id) {
+gfx::Rect SurfaceAggregator::PrewalkTree(SurfaceId surface_id,
+                                         PrewalkResult* result) {
   if (referenced_surfaces_.count(surface_id))
     return gfx::Rect();
   Surface* surface = manager_->GetSurfaceForId(surface_id);
@@ -569,7 +574,7 @@ gfx::Rect SurfaceAggregator::PrewalkTree(SurfaceId surface_id) {
     provider_->DeclareUsedResourcesFromChild(child_id, referenced_resources);
 
   for (const auto& render_pass : frame_data->render_pass_list)
-    has_copy_requests_ |= !render_pass->copy_requests.empty();
+    result->has_copy_requests |= !render_pass->copy_requests.empty();
 
   gfx::Rect damage_rect;
   if (!frame_data->render_pass_list.empty()) {
@@ -583,12 +588,63 @@ gfx::Rect SurfaceAggregator::PrewalkTree(SurfaceId surface_id) {
   SurfaceSet::iterator it =
       referenced_surfaces_.insert(surface->surface_id()).first;
   for (const auto& surface_info : child_surfaces) {
-    gfx::Rect surface_damage = PrewalkTree(surface_info.first);
+    gfx::Rect surface_damage = PrewalkTree(surface_info.first, result);
     damage_rect.Union(
         MathUtil::MapEnclosingClippedRect(surface_info.second, surface_damage));
   }
+
+  for (const auto& surface_id : surface_frame->metadata.referenced_surfaces) {
+    if (!contained_surfaces_.count(surface_id)) {
+      result->undrawn_surfaces.insert(surface_id);
+      PrewalkTree(surface_id, result);
+    }
+  }
+
   referenced_surfaces_.erase(it);
   return damage_rect;
+}
+
+void SurfaceAggregator::CopyUndrawnSurfaces(PrewalkResult* prewalk_result) {
+  // undrawn_surfaces are Surfaces that were identified by prewalk as being
+  // referenced by a drawn Surface, but aren't contained in a SurfaceDrawQuad.
+  // They need to be iterated over to ensure that any copy requests on them
+  // (or on Surfaces they reference) are executed.
+  std::vector<SurfaceId> surfaces_to_copy(
+      prewalk_result->undrawn_surfaces.begin(),
+      prewalk_result->undrawn_surfaces.end());
+
+  for (size_t i = 0; i < surfaces_to_copy.size(); i++) {
+    SurfaceId surface_id = surfaces_to_copy[i];
+    Surface* surface = manager_->GetSurfaceForId(surface_id);
+    if (!surface)
+      continue;
+    const CompositorFrame* surface_frame = surface->GetEligibleFrame();
+    if (!surface_frame)
+      continue;
+    bool surface_has_copy_requests = false;
+    for (const auto& render_pass :
+         surface_frame->delegated_frame_data->render_pass_list) {
+      surface_has_copy_requests |= !render_pass->copy_requests.empty();
+    }
+    if (!surface_has_copy_requests) {
+      // Children are not necessarily included in undrawn_surfaces (because
+      // they weren't referenced directly from a drawn surface), but may have
+      // copy requests, so make sure to check them as well.
+      for (const auto& child_id : surface_frame->metadata.referenced_surfaces) {
+        // Don't iterate over the child Surface if it was already listed as a
+        // child of a different Surface, or in the case where there's infinite
+        // recursion.
+        if (!prewalk_result->undrawn_surfaces.count(child_id)) {
+          surfaces_to_copy.push_back(child_id);
+          prewalk_result->undrawn_surfaces.insert(child_id);
+        }
+      }
+    } else {
+      SurfaceSet::iterator it = referenced_surfaces_.insert(surface_id).first;
+      CopyPasses(surface_frame->delegated_frame_data.get(), surface);
+      referenced_surfaces_.erase(it);
+    }
+  }
 }
 
 scoped_ptr<CompositorFrame> SurfaceAggregator::Aggregate(SurfaceId surface_id) {
@@ -609,9 +665,11 @@ scoped_ptr<CompositorFrame> SurfaceAggregator::Aggregate(SurfaceId surface_id) {
   dest_pass_list_ = &frame->delegated_frame_data->render_pass_list;
 
   valid_surfaces_.clear();
-  has_copy_requests_ = false;
-  root_damage_rect_ = PrewalkTree(surface_id);
+  PrewalkResult prewalk_result;
+  root_damage_rect_ = PrewalkTree(surface_id, &prewalk_result);
+  has_copy_requests_ = prewalk_result.has_copy_requests;
 
+  CopyUndrawnSurfaces(&prewalk_result);
   SurfaceSet::iterator it = referenced_surfaces_.insert(surface_id).first;
   CopyPasses(root_surface_frame->delegated_frame_data.get(), surface);
   referenced_surfaces_.erase(it);

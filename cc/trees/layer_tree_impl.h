@@ -334,6 +334,12 @@ class CC_EXPORT LayerTreeImpl {
   void RemoveLayerWithCopyOutputRequest(LayerImpl* layer);
   const std::vector<LayerImpl*>& LayersWithCopyOutputRequest() const;
 
+  void AddSurfaceLayer(LayerImpl* layer);
+  void RemoveSurfaceLayer(LayerImpl* layer);
+  const std::vector<LayerImpl*>& SurfaceLayers() const {
+    return surface_layers_;
+  }
+
   int current_render_surface_list_id() const {
     return render_surface_layer_list_id_;
   }
@@ -464,6 +470,7 @@ class CC_EXPORT LayerTreeImpl {
 
   std::vector<PictureLayerImpl*> picture_layers_;
   std::vector<LayerImpl*> layers_with_copy_output_request_;
+  std::vector<LayerImpl*> surface_layers_;
 
   // List of visible layers for the most recently prepared frame.
   LayerImplList render_surface_layer_list_;

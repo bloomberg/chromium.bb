@@ -477,6 +477,112 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, RootCopyRequest) {
   factory_.Destroy(embedded_surface_id);
 }
 
+TEST_F(SurfaceAggregatorValidSurfaceTest, UnreferencedSurface) {
+  SurfaceId embedded_surface_id = allocator_.GenerateId();
+  SurfaceId nonexistent_surface_id = allocator_.GenerateId();
+  factory_.Create(embedded_surface_id);
+  Surface* embedded_surface = manager_.GetSurfaceForId(embedded_surface_id);
+  EXPECT_FALSE(surface_aggregator_client_.HasSurface(embedded_surface));
+
+  test::Quad embedded_quads[] = {test::Quad::SolidColorQuad(SK_ColorGREEN)};
+  test::Pass embedded_passes[] = {
+      test::Pass(embedded_quads, arraysize(embedded_quads))};
+
+  SubmitCompositorFrame(embedded_passes, arraysize(embedded_passes),
+                        embedded_surface_id);
+  scoped_ptr<CopyOutputRequest> copy_request(
+      CopyOutputRequest::CreateEmptyRequest());
+  CopyOutputRequest* copy_request_ptr = copy_request.get();
+  factory_.RequestCopyOfSurface(embedded_surface_id, copy_request.Pass());
+
+  SurfaceId parent_surface_id = allocator_.GenerateId();
+  factory_.Create(parent_surface_id);
+  Surface* parent_surface = manager_.GetSurfaceForId(parent_surface_id);
+
+  test::Quad parent_quads[] = {
+      test::Quad::SolidColorQuad(SK_ColorWHITE),
+      test::Quad::SurfaceQuad(embedded_surface_id, 1.f),
+      test::Quad::SolidColorQuad(SK_ColorBLACK)};
+  test::Pass parent_passes[] = {
+      test::Pass(parent_quads, arraysize(parent_quads))};
+
+  {
+    scoped_ptr<DelegatedFrameData> frame_data(new DelegatedFrameData);
+    AddPasses(&frame_data->render_pass_list, gfx::Rect(SurfaceSize()),
+              parent_passes, arraysize(parent_passes));
+
+    scoped_ptr<CompositorFrame> frame(new CompositorFrame);
+    frame->delegated_frame_data = frame_data.Pass();
+    frame->metadata.referenced_surfaces.push_back(embedded_surface_id);
+
+    factory_.SubmitCompositorFrame(parent_surface_id, frame.Pass(),
+                                   SurfaceFactory::DrawCallback());
+  }
+
+  test::Quad root_quads[] = {test::Quad::SolidColorQuad(SK_ColorWHITE),
+                             test::Quad::SolidColorQuad(SK_ColorBLACK)};
+  test::Pass root_passes[] = {test::Pass(root_quads, arraysize(root_quads))};
+
+  {
+    scoped_ptr<DelegatedFrameData> frame_data(new DelegatedFrameData);
+    AddPasses(&frame_data->render_pass_list, gfx::Rect(SurfaceSize()),
+              root_passes, arraysize(root_passes));
+
+    scoped_ptr<CompositorFrame> frame(new CompositorFrame);
+    frame->delegated_frame_data = frame_data.Pass();
+    frame->metadata.referenced_surfaces.push_back(parent_surface_id);
+    // Reference to Surface ID of a Surface that doesn't exist should be
+    // included in previous_contained_surfaces, but otherwise ignored.
+    frame->metadata.referenced_surfaces.push_back(nonexistent_surface_id);
+
+    factory_.SubmitCompositorFrame(root_surface_id_, frame.Pass(),
+                                   SurfaceFactory::DrawCallback());
+  }
+
+  EXPECT_FALSE(surface_aggregator_client_.HasSurface(root_surface_));
+  EXPECT_FALSE(surface_aggregator_client_.HasSurface(parent_surface));
+  EXPECT_FALSE(surface_aggregator_client_.HasSurface(embedded_surface));
+
+  scoped_ptr<CompositorFrame> aggregated_frame =
+      aggregator_.Aggregate(root_surface_id_);
+
+  EXPECT_TRUE(surface_aggregator_client_.HasSurface(root_surface_));
+  EXPECT_TRUE(surface_aggregator_client_.HasSurface(parent_surface));
+  EXPECT_TRUE(surface_aggregator_client_.HasSurface(embedded_surface));
+
+  ASSERT_TRUE(aggregated_frame);
+  ASSERT_TRUE(aggregated_frame->delegated_frame_data);
+
+  DelegatedFrameData* frame_data = aggregated_frame->delegated_frame_data.get();
+
+  // First pass should come from surface that had a copy request but was not
+  // referenced directly. The second pass comes from the root surface.
+  // parent_quad should be ignored because it is neither referenced through a
+  // SurfaceDrawQuad nor has a copy request on it.
+  test::Pass expected_passes[] = {
+      test::Pass(embedded_quads, arraysize(embedded_quads)),
+      test::Pass(root_quads, arraysize(root_quads))};
+  TestPassesMatchExpectations(expected_passes, arraysize(expected_passes),
+                              &frame_data->render_pass_list);
+  ASSERT_EQ(2u, frame_data->render_pass_list.size());
+  ASSERT_EQ(1u, frame_data->render_pass_list[0]->copy_requests.size());
+  DCHECK_EQ(copy_request_ptr,
+            frame_data->render_pass_list[0]->copy_requests[0].get());
+
+  SurfaceId surface_ids[] = {root_surface_id_, parent_surface_id,
+                             embedded_surface_id, nonexistent_surface_id};
+  EXPECT_EQ(arraysize(surface_ids),
+            aggregator_.previous_contained_surfaces().size());
+  for (size_t i = 0; i < arraysize(surface_ids); i++) {
+    EXPECT_TRUE(
+        aggregator_.previous_contained_surfaces().find(surface_ids[i]) !=
+        aggregator_.previous_contained_surfaces().end());
+  }
+
+  factory_.Destroy(parent_surface_id);
+  factory_.Destroy(embedded_surface_id);
+}
+
 // This tests referencing a surface that has multiple render passes.
 TEST_F(SurfaceAggregatorValidSurfaceTest, MultiPassSurfaceReference) {
   SurfaceId embedded_surface_id = child_allocator_.GenerateId();

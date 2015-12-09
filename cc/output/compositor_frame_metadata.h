@@ -9,6 +9,7 @@
 
 #include "cc/base/cc_export.h"
 #include "cc/output/viewport_selection_bound.h"
+#include "cc/surfaces/surface_id.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/events/latency_info.h"
 #include "ui/gfx/geometry/size_f.h"
@@ -57,6 +58,9 @@ class CC_EXPORT CompositorFrameMetadata {
   // A set of SurfaceSequences that this frame satisfies (always in the same
   // namespace as the current Surface).
   std::vector<uint32_t> satisfies_sequences;
+
+  // This is the set of Surfaces that are referenced by this frame.
+  std::vector<SurfaceId> referenced_surfaces;
 };
 
 }  // namespace cc
