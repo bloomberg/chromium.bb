@@ -46,8 +46,7 @@ class WindowManagerAppTest : public mojo::test::ApplicationTestBase,
   DISALLOW_COPY_AND_ASSIGN(WindowManagerAppTest);
 };
 
-// TODO(sky): flakey, http://crbug.com/559412 .
-TEST_F(WindowManagerAppTest, DISABLED_OpenWindow) {
+TEST_F(WindowManagerAppTest, OpenWindow) {
   mus::mojom::WindowManagerPtr connection;
   ConnectToWindowManager(&connection);
 
