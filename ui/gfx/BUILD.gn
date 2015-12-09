@@ -281,8 +281,8 @@ component("gfx") {
       "harfbuzz_font_skia.h",
       "render_text_harfbuzz.cc",
       "render_text_harfbuzz.h",
-      "render_text_mac.cc",
       "render_text_mac.h",
+      "render_text_mac.mm",
       "text_utils_skia.cc",
     ]
 

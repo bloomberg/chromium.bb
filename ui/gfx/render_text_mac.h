@@ -65,9 +65,7 @@ class GFX_EXPORT RenderTextMac : public RenderText {
     std::vector<uint16> glyphs;
     std::vector<SkPoint> glyph_positions;
     SkScalar width;
-    std::string font_name;
-    int font_style;
-    SkScalar text_size;
+    Font font;
     SkColor foreground;
     bool underline;
     bool strike;

@@ -68,7 +68,7 @@ struct GFX_EXPORT TextRunHarfBuzz {
   std::vector<uint32> glyph_to_char;
   size_t glyph_count;
 
-  std::string family;
+  Font font;
   skia::RefPtr<SkTypeface> skia_face;
   FontRenderParams render_params;
   int font_size;
@@ -215,15 +215,15 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
                          internal::TextRunList* run_list_out);
 
   // Helper method for ShapeRun() that calls ShapeRunWithFont() with |text|,
-  // |run|, |family|, and |render_params|, returning true if the family provides
+  // |run|, |font|, and |render_params|, returning true if the font provides
   // all the glyphs needed for |run|, and false otherwise. Additionally updates
-  // |best_family|, |best_render_params|, and |best_missing_glyphs| if |family|
+  // |best_font|, |best_render_params|, and |best_missing_glyphs| if |font|
   // has fewer than |best_missing_glyphs| missing glyphs.
   bool CompareFamily(const base::string16& text,
-                     const std::string& family,
+                     const Font& font,
                      const gfx::FontRenderParams& render_params,
                      internal::TextRunHarfBuzz* run,
-                     std::string* best_family,
+                     Font* best_font,
                      gfx::FontRenderParams* best_render_params,
                      size_t* best_missing_glyphs);
 
@@ -235,7 +235,7 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
   void ShapeRun(const base::string16& text,
                 internal::TextRunHarfBuzz* run);
   bool ShapeRunWithFont(const base::string16& text,
-                        const std::string& font_family,
+                        const Font& font,
                         const FontRenderParams& params,
                         internal::TextRunHarfBuzz* run);
 

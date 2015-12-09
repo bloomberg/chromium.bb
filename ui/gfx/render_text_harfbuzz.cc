@@ -20,6 +20,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/font.h"
 #include "ui/gfx/font_fallback.h"
 #include "ui/gfx/font_render_params.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
@@ -550,8 +551,9 @@ class HarfBuzzLineBreaker {
 
 // Function object for case insensitive string comparison.
 struct CaseInsensitiveCompare {
-  bool operator() (const std::string& a, const std::string& b) const {
-    return base::CompareCaseInsensitiveASCII(a, b) < 0;
+  bool operator() (const Font& a, const Font& b) const {
+    return base::CompareCaseInsensitiveASCII(a.GetFontName(), b.GetFontName()) <
+           0;
   }
 };
 
@@ -1303,18 +1305,18 @@ void RenderTextHarfBuzz::ItemizeTextToRuns(
 
 bool RenderTextHarfBuzz::CompareFamily(
     const base::string16& text,
-    const std::string& family,
+    const Font& font,
     const gfx::FontRenderParams& render_params,
     internal::TextRunHarfBuzz* run,
-    std::string* best_family,
+    Font* best_font,
     gfx::FontRenderParams* best_render_params,
     size_t* best_missing_glyphs) {
-  if (!ShapeRunWithFont(text, family, render_params, run))
+  if (!ShapeRunWithFont(text, font, render_params, run))
     return false;
 
   const size_t missing_glyphs = run->CountMissingGlyphs();
   if (missing_glyphs < *best_missing_glyphs) {
-    *best_family = family;
+    *best_font = font;
     *best_render_params = render_params;
     *best_missing_glyphs = missing_glyphs;
   }
@@ -1359,14 +1361,13 @@ void RenderTextHarfBuzz::ShapeRun(const base::string16& text,
     }
   }
 
-  std::string best_family;
+  Font best_font;
   FontRenderParams best_render_params;
   size_t best_missing_glyphs = std::numeric_limits<size_t>::max();
 
   for (const Font& font : font_list().GetFonts()) {
-    if (CompareFamily(text, font.GetFontName(), font.GetFontRenderParams(),
-                      run, &best_family, &best_render_params,
-                      &best_missing_glyphs))
+    if (CompareFamily(text, font, font.GetFontRenderParams(), run, &best_font,
+                      &best_render_params, &best_missing_glyphs))
       return;
   }
 
@@ -1377,22 +1378,20 @@ void RenderTextHarfBuzz::ShapeRun(const base::string16& text,
   if (GetUniscribeFallbackFont(primary_font, run_text, run->range.length(),
                                &uniscribe_font)) {
     uniscribe_family = uniscribe_font.GetFontName();
-    if (CompareFamily(text, uniscribe_family,
+    if (CompareFamily(text, uniscribe_font,
                       uniscribe_font.GetFontRenderParams(), run,
-                      &best_family, &best_render_params, &best_missing_glyphs))
+                      &best_font, &best_render_params, &best_missing_glyphs))
       return;
   }
 #endif
 
-  std::vector<std::string> fallback_families =
-      GetFallbackFontFamilies(primary_family);
+  std::vector<Font> fallback_font_list = GetFallbackFonts(primary_font);
 
 #if defined(OS_WIN)
   // Append fonts in the fallback list of the Uniscribe font.
   if (!uniscribe_family.empty()) {
-    std::vector<std::string> uniscribe_fallbacks =
-        GetFallbackFontFamilies(uniscribe_family);
-    fallback_families.insert(fallback_families.end(),
+    std::vector<Font> uniscribe_fallbacks = GetFallbackFonts(uniscribe_font);
+    fallback_font_list.insert(fallback_font_list.end(),
         uniscribe_fallbacks.begin(), uniscribe_fallbacks.end());
   }
 
@@ -1401,44 +1400,46 @@ void RenderTextHarfBuzz::ShapeRun(const base::string16& text,
   // http://crbug.com/467459. On some Windows configurations the default font
   // could be a raster font like System, which would not give us a reasonable
   // fallback font list.
-  if (!base::LowerCaseEqualsASCII(primary_family, "segoe ui") &&
+  if (!base::LowerCaseEqualsASCII(primary_font.GetFontName(), "segoe ui") &&
       !base::LowerCaseEqualsASCII(uniscribe_family, "segoe ui")) {
-    std::vector<std::string> default_fallback_families =
-        GetFallbackFontFamilies("Segoe UI");
-    fallback_families.insert(fallback_families.end(),
+    std::vector<Font> default_fallback_families =
+        GetFallbackFonts(Font("Segoe UI", 13));
+    fallback_font_list.insert(fallback_font_list.end(),
         default_fallback_families.begin(), default_fallback_families.end());
   }
 #endif
 
   // Use a set to track the fallback fonts and avoid duplicate entries.
-  std::set<std::string, CaseInsensitiveCompare> fallback_fonts;
+  std::set<Font, CaseInsensitiveCompare> fallback_fonts;
 
   // Try shaping with the fallback fonts.
-  for (const auto& family : fallback_families) {
-    if (family == primary_family)
+  for (const auto& font : fallback_font_list) {
+    std::string font_name = font.GetFontName();
+
+    if (font_name == primary_font.GetFontName())
       continue;
 #if defined(OS_WIN)
-    if (family == uniscribe_family)
+    if (font_name == uniscribe_family)
       continue;
 #endif
-    if (fallback_fonts.find(family) != fallback_fonts.end())
+    if (fallback_fonts.find(font) != fallback_fonts.end())
       continue;
 
-    fallback_fonts.insert(family);
+    fallback_fonts.insert(font);
 
     FontRenderParamsQuery query;
-    query.families.push_back(family);
+    query.families.push_back(font_name);
     query.pixel_size = run->font_size;
     query.style = run->font_style;
     FontRenderParams fallback_render_params = GetFontRenderParams(query, NULL);
-    if (CompareFamily(text, family, fallback_render_params, run, &best_family,
+    if (CompareFamily(text, font, fallback_render_params, run, &best_font,
                       &best_render_params, &best_missing_glyphs))
       return;
   }
 
-  if (!best_family.empty() &&
-      (best_family == run->family ||
-       ShapeRunWithFont(text, best_family, best_render_params, run)))
+  if (best_missing_glyphs != std::numeric_limits<size_t>::max() &&
+      (best_font.GetFontName() == run->font.GetFontName() ||
+       ShapeRunWithFont(text, best_font, best_render_params, run)))
     return;
 
   run->glyph_count = 0;
@@ -1446,15 +1447,15 @@ void RenderTextHarfBuzz::ShapeRun(const base::string16& text,
 }
 
 bool RenderTextHarfBuzz::ShapeRunWithFont(const base::string16& text,
-                                          const std::string& font_family,
+                                          const gfx::Font& font,
                                           const FontRenderParams& params,
                                           internal::TextRunHarfBuzz* run) {
   skia::RefPtr<SkTypeface> skia_face =
-      internal::CreateSkiaTypeface(font_family, run->font_style);
+      internal::CreateSkiaTypeface(font, run->font_style);
   if (skia_face == NULL)
     return false;
   run->skia_face = skia_face;
-  run->family = font_family;
+  run->font = font;
   run->render_params = params;
 
   hb_font_t* harfbuzz_font = CreateHarfBuzzFont(

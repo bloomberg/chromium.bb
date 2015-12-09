@@ -5,17 +5,16 @@
 #ifndef UI_GFX_FONT_FALLBACK_H_
 #define UI_GFX_FONT_FALLBACK_H_
 
-#include <string>
 #include <vector>
 
 #include "ui/gfx/gfx_export.h"
 
 namespace gfx {
 
-// Given a font family name, returns the names of font families that are
-// suitable for fallback.
-GFX_EXPORT std::vector<std::string> GetFallbackFontFamilies(
-    const std::string& font_family);
+class Font;
+
+// Given a font, returns the fonts that are suitable for fallback.
+GFX_EXPORT std::vector<Font> GetFallbackFonts(const Font& font);
 
 }  // namespace gfx
 

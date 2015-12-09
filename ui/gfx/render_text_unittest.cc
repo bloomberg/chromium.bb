@@ -2871,8 +2871,9 @@ TEST_F(RenderTextTest, HarfBuzz_NonExistentFont) {
   internal::TextRunList* run_list = render_text.GetRunList();
   ASSERT_EQ(1U, run_list->size());
   internal::TextRunHarfBuzz* run = run_list->runs()[0];
-  render_text.ShapeRunWithFont(
-      render_text.text(), "TheFontThatDoesntExist", FontRenderParams(), run);
+  render_text.ShapeRunWithFont(render_text.text(),
+                               Font("TheFontThatDoesntExist", 13),
+                               FontRenderParams(), run);
 }
 
 // Ensure an empty run returns sane values to queries.
@@ -2972,7 +2973,7 @@ TEST_F(RenderTextTest, HarfBuzz_UniscribeFallback) {
 }
 #endif  // defined(OS_WIN)
 
-// Ensure that the fallback fonts offered by gfx::GetFallbackFontFamilies() are
+// Ensure that the fallback fonts offered by gfx::GetFallbackFonts() are
 // tried. Note this test assumes the font "Arial" doesn't provide a unicode
 // glyph for a particular character, and that there exists a system fallback
 // font which does.

@@ -9,9 +9,8 @@
 
 namespace gfx {
 
-std::vector<std::string> GetFallbackFontFamilies(
-    const std::string& font_family) {
-  return std::vector<std::string>();
+std::vector<Font> GetFallbackFonts(const Font& font) {
+  return std::vector<Font>();
 }
 
 }  // namespace gfx

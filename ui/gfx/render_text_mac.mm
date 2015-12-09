@@ -5,23 +5,33 @@
 #include "ui/gfx/render_text_mac.h"
 
 #include <ApplicationServices/ApplicationServices.h>
+#import <AppKit/AppKit.h>
+#include <CoreText/CoreText.h>
 
 #include <algorithm>
 #include <cmath>
 #include <utility>
 
 #include "base/mac/foundation_util.h"
+#include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/strings/sys_string_conversions.h"
 #include "skia/ext/skia_utils_mac.h"
+#include "third_party/skia/include/ports/SkTypeface_mac.h"
 
 namespace {
 
-// This function makes a copy of |font| with the given symbolic traits. This
-// function is similar to CTFontCreateCopyWithSymbolicTraits, but this function
-// works on OSX 10.10, unlike CTFontCreateCopyWithSymbolicTraits.
+// This function makes a copy of |font| with the given symbolic traits. On OSX
+// 10.11, CTFontCreateCopyWithSymbolicTraits has the right behavior but
+// CTFontCreateWithFontDescriptor does not. The opposite holds true for OSX
+// 10.10.
 base::ScopedCFTypeRef<CTFontRef> CopyFontWithSymbolicTraits(CTFontRef font,
                                                             int sym_traits) {
+  if (base::mac::IsOSElCapitanOrLater()) {
+    return base::ScopedCFTypeRef<CTFontRef>(CTFontCreateCopyWithSymbolicTraits(
+        font, 0, nullptr, sym_traits, sym_traits));
+  }
+
   base::ScopedCFTypeRef<CTFontDescriptorRef> orig_desc(
       CTFontCopyFontDescriptor(font));
   base::ScopedCFTypeRef<CFDictionaryRef> orig_attributes(
@@ -52,12 +62,21 @@ base::ScopedCFTypeRef<CTFontRef> CopyFontWithSymbolicTraits(CTFontRef font,
 
 namespace gfx {
 
-RenderTextMac::RenderTextMac()
-    : common_baseline_(0), runs_valid_(false) {
+namespace internal {
+
+skia::RefPtr<SkTypeface> CreateSkiaTypeface(const gfx::Font& font, int style) {
+  gfx::Font font_with_style = font.Derive(0, style);
+  if (!font_with_style.GetNativeFont())
+    return nullptr;
+  return skia::AdoptRef(SkCreateTypefaceFromCTFont(
+      static_cast<CTFontRef>(font_with_style.GetNativeFont())));
 }
 
-RenderTextMac::~RenderTextMac() {
-}
+}  // namespace internal
+
+RenderTextMac::RenderTextMac() : common_baseline_(0), runs_valid_(false) {}
+
+RenderTextMac::~RenderTextMac() {}
 
 scoped_ptr<RenderText> RenderTextMac::CreateInstanceOfSameType() const {
   return make_scoped_ptr(new RenderTextMac);
@@ -93,10 +112,9 @@ std::vector<RenderText::FontSpan> RenderTextMac::GetFontSpansForTesting() {
 
   std::vector<RenderText::FontSpan> spans;
   for (size_t i = 0; i < runs_.size(); ++i) {
-    Font font(runs_[i].font_name, runs_[i].text_size);
     const CFRange cf_range = CTRunGetStringRange(runs_[i].ct_run);
     const Range range(cf_range.location, cf_range.location + cf_range.length);
-    spans.push_back(RenderText::FontSpan(font, range));
+    spans.push_back(RenderText::FontSpan(runs_[i].font, range));
   }
 
   return spans;
@@ -149,8 +167,7 @@ bool RenderTextMac::IsValidCursorIndex(size_t index) {
 void RenderTextMac::OnLayoutTextAttributeChanged(bool text_changed) {
   DCHECK(!multiline()) << "RenderTextMac does not support multi line";
   if (text_changed) {
-    if (elide_behavior() != NO_ELIDE &&
-        elide_behavior() != FADE_TAIL &&
+    if (elide_behavior() != NO_ELIDE && elide_behavior() != FADE_TAIL &&
         !layout_text().empty()) {
       UpdateDisplayText(std::ceil(GetLayoutTextWidth()));
     } else {
@@ -189,8 +206,18 @@ void RenderTextMac::DrawVisualText(internal::SkiaTextRenderer* renderer) {
   for (size_t i = 0; i < runs_.size(); ++i) {
     const TextRun& run = runs_[i];
     renderer->SetForegroundColor(run.foreground);
-    renderer->SetTextSize(run.text_size);
-    renderer->SetFontFamilyWithStyle(run.font_name, run.font_style);
+
+    CTFontRef ct_font = static_cast<CTFontRef>(run.font.GetNativeFont());
+    renderer->SetTextSize(CTFontGetSize(ct_font));
+
+    int font_style = Font::NORMAL;
+    CTFontSymbolicTraits traits = CTFontGetSymbolicTraits(ct_font);
+    if (traits & kCTFontBoldTrait)
+      font_style |= Font::BOLD;
+    if (traits & kCTFontItalicTrait)
+      font_style |= Font::ITALIC;
+    renderer->SetFontWithStyle(run.font, font_style);
+
     renderer->DrawPosText(&run.glyph_positions[0], &run.glyphs[0],
                           run.glyphs.size());
     renderer->DrawDecorations(run.origin.x(), run.origin.y(), run.width,
@@ -204,16 +231,12 @@ RenderTextMac::TextRun::TextRun()
     : ct_run(NULL),
       origin(SkPoint::Make(0, 0)),
       width(0),
-      font_style(Font::NORMAL),
-      text_size(0),
       foreground(SK_ColorBLACK),
       underline(false),
       strike(false),
-      diagonal_strike(false) {
-}
+      diagonal_strike(false) {}
 
-RenderTextMac::TextRun::~TextRun() {
-}
+RenderTextMac::TextRun::~TextRun() {}
 
 float RenderTextMac::GetLayoutTextWidth() {
   base::ScopedCFTypeRef<CFMutableArrayRef> attributes_owner;
@@ -239,29 +262,23 @@ gfx::SizeF RenderTextMac::GetCTLineSize(CTLineRef line, SkScalar* baseline) {
   ascent = std::max(ascent, font_list_baseline);
   descent = std::max(descent, font_list_height - font_list_baseline);
   *baseline = ascent;
-  return SizeF(
-      width, std::max(ascent + descent + leading,
-                      static_cast<CGFloat>(min_line_height())));
+  return SizeF(width, std::max(ascent + descent + leading,
+                               static_cast<CGFloat>(min_line_height())));
 }
 
 base::ScopedCFTypeRef<CTLineRef> RenderTextMac::EnsureLayoutInternal(
     const base::string16& text,
     base::ScopedCFTypeRef<CFMutableArrayRef>* attributes_owner) {
-  CTFontRef ct_font = base::mac::NSToCFCast(
-      font_list().GetPrimaryFont().GetNativeFont());
+  CTFontRef ct_font =
+      base::mac::NSToCFCast(font_list().GetPrimaryFont().GetNativeFont());
 
-  const void* keys[] = { kCTFontAttributeName };
-  const void* values[] = { ct_font };
+  const void* keys[] = {kCTFontAttributeName};
+  const void* values[] = {ct_font};
   base::ScopedCFTypeRef<CFDictionaryRef> attributes(
-      CFDictionaryCreate(NULL,
-                         keys,
-                         values,
-                         arraysize(keys),
-                         NULL,
+      CFDictionaryCreate(NULL, keys, values, arraysize(keys), NULL,
                          &kCFTypeDictionaryValueCallBacks));
 
-  base::ScopedCFTypeRef<CFStringRef> cf_text(
-      base::SysUTF16ToCFStringRef(text));
+  base::ScopedCFTypeRef<CFStringRef> cf_text(base::SysUTF16ToCFStringRef(text));
   base::ScopedCFTypeRef<CFAttributedStringRef> attr_text(
       CFAttributedStringCreate(NULL, cf_text, attributes));
   base::ScopedCFTypeRef<CFMutableAttributedStringRef> attr_text_mutable(
@@ -298,16 +315,15 @@ base::ScopedCFTypeRef<CFMutableArrayRef> RenderTextMac::ApplyStyles(
     base::ScopedCFTypeRef<CGColorRef> foreground(
         CGColorCreateFromSkColor(style.color()));
     CFAttributedStringSetAttribute(attr_string, range,
-        kCTForegroundColorAttributeName, foreground);
+                                   kCTForegroundColorAttributeName, foreground);
     CFArrayAppendValue(attributes, foreground);
 
     if (style.style(UNDERLINE)) {
       CTUnderlineStyle value = kCTUnderlineStyleSingle;
       base::ScopedCFTypeRef<CFNumberRef> underline_value(
           CFNumberCreate(NULL, kCFNumberSInt32Type, &value));
-      CFAttributedStringSetAttribute(attr_string, range,
-                                     kCTUnderlineStyleAttributeName,
-                                     underline_value);
+      CFAttributedStringSetAttribute(
+          attr_string, range, kCTUnderlineStyleAttributeName, underline_value);
       CFArrayAppendValue(attributes, underline_value);
     }
 
@@ -394,23 +410,12 @@ void RenderTextMac::ComputeRuns() {
     // TODO(asvitkine): Style boundaries are not necessarily per-run. Handle
     //                  this better. Also, support strike and diagonal_strike.
     CFDictionaryRef attributes = CTRunGetAttributes(ct_run);
-    CTFontRef ct_font =
-        base::mac::GetValueFromDictionary<CTFontRef>(attributes,
-                                                     kCTFontAttributeName);
-    base::ScopedCFTypeRef<CFStringRef> font_name_ref(
-        CTFontCopyFamilyName(ct_font));
-    run->font_name = base::SysCFStringRefToUTF8(font_name_ref);
-    run->text_size = CTFontGetSize(ct_font);
+    CTFontRef ct_font = base::mac::GetValueFromDictionary<CTFontRef>(
+        attributes, kCTFontAttributeName);
+    run->font = Font(static_cast<NSFont*>(ct_font));
 
-    CTFontSymbolicTraits traits = CTFontGetSymbolicTraits(ct_font);
-    if (traits & kCTFontBoldTrait)
-      run->font_style |= Font::BOLD;
-    if (traits & kCTFontItalicTrait)
-      run->font_style |= Font::ITALIC;
-
-    const CGColorRef foreground =
-        base::mac::GetValueFromDictionary<CGColorRef>(
-            attributes, kCTForegroundColorAttributeName);
+    const CGColorRef foreground = base::mac::GetValueFromDictionary<CGColorRef>(
+        attributes, kCTForegroundColorAttributeName);
     if (foreground)
       run->foreground = CGColorRefToSkColor(foreground);
 

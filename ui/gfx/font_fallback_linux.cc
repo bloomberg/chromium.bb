@@ -11,20 +11,21 @@
 #include <vector>
 
 #include "base/lazy_instance.h"
+#include "ui/gfx/font.h"
 
 namespace gfx {
 
 namespace {
 
-typedef std::map<std::string, std::vector<std::string> > FallbackCache;
+typedef std::map<std::string, std::vector<Font> > FallbackCache;
 base::LazyInstance<FallbackCache>::Leaky g_fallback_cache =
     LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
-std::vector<std::string> GetFallbackFontFamilies(
-    const std::string& font_family) {
-  std::vector<std::string>* fallback_fonts =
+std::vector<Font> GetFallbackFonts(const Font& font) {
+  std::string font_family = font.GetFontName();
+  std::vector<Font>* fallback_fonts =
       &g_fallback_cache.Get()[font_family];
   if (!fallback_fonts->empty())
     return *fallback_fonts;
@@ -45,8 +46,10 @@ std::vector<std::string> GetFallbackFontFamilies(
             reinterpret_cast<FcChar8**>(&name));
         // FontConfig returns multiple fonts with the same family name and
         // different configurations. Check to prevent duplicate family names.
-        if (fallback_fonts->empty() || fallback_fonts->back() != name)
-          fallback_fonts->push_back(std::string(name));
+        if (fallback_fonts->empty() ||
+            fallback_fonts->back().GetFontName() != name) {
+          fallback_fonts->push_back(Font(std::string(name), 13));
+        }
       }
       FcFontSetDestroy(fonts);
     }
@@ -54,7 +57,7 @@ std::vector<std::string> GetFallbackFontFamilies(
   FcPatternDestroy(pattern);
 
   if (fallback_fonts->empty())
-    fallback_fonts->push_back(font_family);
+    fallback_fonts->push_back(Font(font_family, 13));
 
   return *fallback_fonts;
 }

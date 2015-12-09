@@ -269,14 +269,15 @@ const std::vector<Font>* LinkedFontsIterator::GetLinkedFonts() const {
 
 }  // namespace internal
 
-std::vector<std::string> GetFallbackFontFamilies(
-    const std::string& font_family) {
+std::vector<Font> GetFallbackFonts(const Font& font) {
+  std::string font_family = font.GetFontName();
+
   // LinkedFontsIterator doesn't care about the font size, so we always pass 10.
   internal::LinkedFontsIterator linked_fonts(Font(font_family, 10));
-  std::vector<std::string> fallback_fonts;
+  std::vector<Font> fallback_fonts;
   Font current;
   while (linked_fonts.NextFont(&current))
-    fallback_fonts.push_back(current.GetFontName());
+    fallback_fonts.push_back(current);
   return fallback_fonts;
 }
 

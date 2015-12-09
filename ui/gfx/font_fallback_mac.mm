@@ -12,6 +12,7 @@
 #include "base/mac/foundation_util.h"
 #import "base/mac/mac_util.h"
 #import "base/strings/sys_string_conversions.h"
+#include "ui/gfx/font.h"
 
 // CTFontCopyDefaultCascadeListForLanguages() doesn't exist in the 10.6 SDK.
 // There is only the following. It doesn't exist in the public header files,
@@ -42,8 +43,7 @@ CFArrayRef CTFontCopyDefaultCascadeListForLanguagesWrapper(
 
 namespace gfx {
 
-std::vector<std::string> GetFallbackFontFamilies(
-    const std::string& font_family) {
+std::vector<Font> GetFallbackFonts(const Font& font) {
   // On Mac "There is a system default cascade list (which is polymorphic, based
   // on the user's language setting and current font)" - CoreText Programming
   // Guide.
@@ -51,50 +51,29 @@ std::vector<std::string> GetFallbackFontFamilies(
   // it requires a text string "hint", and the returned font can't be
   // represented by name for easy retrieval later.
   // In 10.8, CTFontCopyDefaultCascadeListForLanguages(font, language_list)
-  // showed up which is a good fit GetFallbackFontFamilies().
-
-  // Size doesn't matter for querying the cascade list.
-  const CGFloat font_size = 10.0;
-  base::ScopedCFTypeRef<CFStringRef> cfname(
-      base::SysUTF8ToCFStringRef(font_family));
-
-  // Using CTFontCreateWithName here works, but CoreText emits stderr spam along
-  // the lines of `CTFontCreateWithName() using name "Arial" and got font with
-  // PostScript name "ArialMT".` Instead, create a descriptor.
-  const void* attribute_keys[] = {kCTFontFamilyNameAttribute};
-  const void* attribute_values[] = {cfname.get()};
-  base::ScopedCFTypeRef<CFDictionaryRef> attributes(CFDictionaryCreate(
-      kCFAllocatorDefault, attribute_keys, attribute_values, 1,
-      &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks));
-  base::ScopedCFTypeRef<CTFontDescriptorRef> descriptor(
-      CTFontDescriptorCreateWithAttributes(attributes));
-  base::ScopedCFTypeRef<CTFontRef> base_font(
-      CTFontCreateWithFontDescriptor(descriptor, font_size, nullptr));
-
-  if (!base_font)
-    return std::vector<std::string>(1, font_family);
-
+  // showed up which is a good fit GetFallbackFonts().
   NSArray* languages = [[NSUserDefaults standardUserDefaults]
       stringArrayForKey:@"AppleLanguages"];
   CFArrayRef languages_cf = base::mac::NSToCFCast(languages);
   base::ScopedCFTypeRef<CFArrayRef> cascade_list(
-      CTFontCopyDefaultCascadeListForLanguagesWrapper(base_font, languages_cf));
+      CTFontCopyDefaultCascadeListForLanguagesWrapper(
+          static_cast<CTFontRef>(font.GetNativeFont()), languages_cf));
 
-  std::vector<std::string> fallback_fonts;
+  std::vector<Font> fallback_fonts;
 
   const CFIndex fallback_count = CFArrayGetCount(cascade_list);
   for (CFIndex i = 0; i < fallback_count; ++i) {
     CTFontDescriptorRef descriptor =
         base::mac::CFCastStrict<CTFontDescriptorRef>(
             CFArrayGetValueAtIndex(cascade_list, i));
-    base::ScopedCFTypeRef<CFStringRef> font_name(
-        base::mac::CFCastStrict<CFStringRef>(CTFontDescriptorCopyAttribute(
-            descriptor, kCTFontFamilyNameAttribute)));
-    fallback_fonts.push_back(base::SysCFStringRefToUTF8(font_name));
+    base::ScopedCFTypeRef<CTFontRef> font(
+        CTFontCreateWithFontDescriptor(descriptor, 0.0, nullptr));
+    if (font.get())
+      fallback_fonts.push_back(Font(static_cast<NSFont*>(font.get())));
   }
 
   if (fallback_fonts.empty())
-    return std::vector<std::string>(1, font_family);
+    return std::vector<Font>(1, font);
 
   return fallback_fonts;
 }
