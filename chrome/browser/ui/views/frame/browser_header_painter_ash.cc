@@ -15,6 +15,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
+#include "ui/base/resource/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/animation/slide_animation.h"
@@ -218,8 +219,12 @@ void BrowserHeaderPainterAsh::PaintHeader(gfx::Canvas* canvas, Mode mode) {
         ash::HeaderPainterUtil::GetThemeBackgroundXInset());
   }
 
-  if (!frame_->IsMaximized() && !frame_->IsFullscreen())
+  if (!ui::MaterialDesignController::IsModeMaterial() &&
+      !frame_->IsMaximized() &&
+      !frame_->IsFullscreen()) {
     PaintHighlightForRestoredWindow(canvas);
+  }
+
   if (frame_->widget_delegate() &&
       frame_->widget_delegate()->ShouldShowWindowTitle()) {
     PaintTitleBar(canvas);
