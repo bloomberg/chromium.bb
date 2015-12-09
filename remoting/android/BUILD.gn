@@ -4,6 +4,7 @@
 
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
+import("//remoting/android/client_java_tmpl.gni")
 import("//remoting/android/remoting_apk_tmpl.gni")
 import("//remoting/remoting_options.gni")
 import("//remoting/tools/build/remoting_localize.gni")
@@ -90,25 +91,8 @@ android_resources("remoting_android_client_java_resources") {
   ]
 }
 
-android_library("remoting_android_client_java") {
-  DEPRECATED_java_in_dir = "java/src"
-  java_files = []
-
-  if (enable_cast) {
-    java_files +=
-        [ "cast/src/org/chromium/chromoting/CastExtensionHandler.java" ]
-  }
-
-  deps = [
-    ":remoting_android_client_java_resources",
-    "//base:base_java",
-    "//third_party/android_tools:android_support_v13_java",
-    "//third_party/android_tools:android_support_v7_appcompat_java",
-    "//third_party/android_tools:android_support_v7_mediarouter_java",
-    "//third_party/cardboard-java",
-    "//ui/android:ui_java",
-    google_play_services_library,
-  ]
+remoting_android_client_java_tmpl("remoting_android_client_java") {
+  remoting_google_play_services_library = google_play_services_library
 }
 
 action("remoting_cardboard_extract_native_lib") {
