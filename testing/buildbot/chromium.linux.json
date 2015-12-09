@@ -193,7 +193,8 @@
           "--enable-local-file-accesses",
           "--enable-cma-media-pipeline",
           "--ozone-platform=cast",
-          "--no-sandbox"
+          "--no-sandbox",
+          "--test-launcher-jobs=1"
         ],
         "test": "cast_shell_browser_test"
       },

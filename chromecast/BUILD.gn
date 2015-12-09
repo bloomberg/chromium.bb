@@ -108,7 +108,9 @@ cast_test_group("cast_tests") {
       "//chromecast/media:cast_media_unittests",
     ]
 
-    filters += [ "cast_shell_browser_test --no-sandbox --enable-local-file-accesses --enable-cma-media-pipeline --ozone-platform=cast" ]
+    # --enable-local-file-accesses => to load sample media files
+    # --test-launcher-jobs=1 => so internal code can bind to port
+    filters += [ "cast_shell_browser_test --no-sandbox --enable-local-file-accesses --enable-cma-media-pipeline --ozone-platform=cast --test-launcher-jobs=1" ]
   }
 
   if (!disable_display) {
