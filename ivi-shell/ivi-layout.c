@@ -590,16 +590,17 @@ calc_surface_to_global_matrix_and_mask_to_weston_surface(
 }
 
 static void
-update_prop(struct ivi_layout_layer *ivilayer,
+update_prop(struct ivi_layout_screen  *iviscrn,
+	    struct ivi_layout_layer *ivilayer,
 	    struct ivi_layout_surface *ivisurf)
 {
 	struct weston_view *tmpview;
 	struct ivi_rectangle r;
 	bool can_calc = true;
 
-	if (!ivilayer->event_mask && !ivisurf->event_mask) {
+	/*In case of no prop change, this just returns*/
+	if (!ivilayer->event_mask && !ivisurf->event_mask)
 		return;
-	}
 
 	update_opacity(ivilayer, ivisurf);
 
@@ -646,8 +647,22 @@ commit_changes(struct ivi_layout *layout)
 
 	wl_list_for_each(iviscrn, &layout->screen_list, link) {
 		wl_list_for_each(ivilayer, &iviscrn->order.layer_list, order.link) {
+			/*
+			 * If ivilayer is invisible, weston_view of ivisurf doesn't
+			 * need to be modified.
+			 */
+			if (ivilayer->prop.visibility == false)
+				continue;
+
 			wl_list_for_each(ivisurf, &ivilayer->order.surface_list, order.link) {
-				update_prop(ivilayer, ivisurf);
+				/*
+				 * If ivilayer is invisible, weston_view of ivisurf doesn't
+				 * need to be modified.
+				 */
+				if (ivisurf->prop.visibility == false)
+					continue;
+
+				update_prop(iviscrn, ivilayer, ivisurf);
 			}
 		}
 	}
