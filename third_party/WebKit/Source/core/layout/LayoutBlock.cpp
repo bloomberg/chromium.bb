@@ -1677,21 +1677,24 @@ bool LayoutBlock::nodeAtPoint(HitTestResult& result, const HitTestLocation& loca
         }
     }
 
-    // If we have clipping, then we can't have any spillout.
-    bool useOverflowClip = hasOverflowClip() && !hasSelfPaintingLayer();
-    bool useClip = (hasControlClip() || useOverflowClip);
-    bool checkChildren = !useClip;
-    if (!checkChildren) {
-        if (hasControlClip()) {
-            checkChildren = locationInContainer.intersects(controlClipRect(adjustedLocation));
+    bool checkChildren = true;
+
+    // Self painting layers will handle overflow clip in most cases, but without one we need to
+    // check if overflip clip will affect child hit testing.
+    if (hasOverflowClip() && !hasSelfPaintingLayer()) {
+        if (style()->hasBorderRadius()) {
+            LayoutRect borderRect = borderBoxRect();
+            borderRect.moveBy(adjustedLocation);
+            checkChildren = locationInContainer.intersects(style()->getRoundedInnerBorderFor(borderRect));
         } else {
-            LayoutRect clipRect = overflowClipRect(adjustedLocation, IncludeOverlayScrollbarSize);
-            if (style()->hasBorderRadius())
-                checkChildren = locationInContainer.intersects(style()->getRoundedBorderFor(clipRect));
-            else
-                checkChildren = locationInContainer.intersects(clipRect);
+            checkChildren = locationInContainer.intersects(overflowClipRect(adjustedLocation, IncludeOverlayScrollbarSize));
         }
     }
+
+    // A control clip can also clip out child hit testing.
+    if (checkChildren && hasControlClip())
+        checkChildren = locationInContainer.intersects(controlClipRect(adjustedLocation));
+
     if (checkChildren) {
         // Hit test descendants first.
         LayoutSize scrolledOffset(localOffset);
@@ -1711,8 +1714,7 @@ bool LayoutBlock::nodeAtPoint(HitTestResult& result, const HitTestLocation& loca
     if (style()->hasBorderRadius()) {
         LayoutRect borderRect = borderBoxRect();
         borderRect.moveBy(adjustedLocation);
-        FloatRoundedRect border = style()->getRoundedBorderFor(borderRect);
-        if (!locationInContainer.intersects(border))
+        if (!locationInContainer.intersects(style()->getRoundedBorderFor(borderRect)))
             return false;
     }
 

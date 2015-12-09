@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<script src="../resources/js-test.js"></script>
+<script>
+var x, y;
+function test() {
+    var rectWithoutScrollbars = roundedBoxWithoutScrollbars.getBoundingClientRect();
+    x = rectWithoutScrollbars.left;
+    y = rectWithoutScrollbars.top;
+    // At top-left corner, outside the outer border radius.
+    shouldBe("document.elementFromPoint(x + 20, y + 20).id", "'container'");
+    // At top-left corner, inside outer border radius.
+    shouldBe("document.elementFromPoint(x + 35, y + 35).id", "'roundedBoxWithoutScrollbars'");
+    shouldBe("document.elementFromPoint(x + 60, y + 60).id", "'roundedBoxWithoutScrollbars'");
+    // At top-left corner, insider inner border radius.
+    shouldBe("document.elementFromPoint(x + 68, y + 68).id", "'roundedBoxChildWithoutScrollbars'");
+    // At top-left corner, fully inside border.
+    shouldBe("document.elementFromPoint(x + 80, y + 80).id", "'roundedBoxChildWithoutScrollbars'");
+    // At bottom-right corner, inside inner border radius.
+    shouldBe("document.elementFromPoint(x + 230, y + 230).id", "'roundedBoxChildWithoutScrollbars'");
+    // At bottom-right corner, insider inner border radius.
+    shouldBe("document.elementFromPoint(x + 240, y + 240).id", "'roundedBoxWithoutScrollbars'");
+    shouldBe("document.elementFromPoint(x + 265, y + 265).id", "'roundedBoxWithoutScrollbars'");
+    // At bottom-right corner, outside the outer border radius.
+    shouldBe("document.elementFromPoint(x + 275, y + 275).id", "'container'");
+
+    var rectWithScrollbars = roundedBoxWithScrollbars.getBoundingClientRect();
+    x = rectWithScrollbars.left;
+    y = rectWithScrollbars.top;
+    // At top-left corner with scrollbars, outside the outer border radius.
+    shouldBe("document.elementFromPoint(x + 20, y + 20).id", "'container'");
+    // At top-left corner with scrollbars, inside outer border radius.
+    shouldBe("document.elementFromPoint(x + 35, y + 35).id", "'roundedBoxWithScrollbars'");
+    shouldBe("document.elementFromPoint(x + 60, y + 60).id", "'roundedBoxWithScrollbars'");
+    // At top-left corner with scrollbars, insider inner border radius.
+    shouldBe("document.elementFromPoint(x + 68, y + 68).id", "'roundedBoxWithScrollbarsChild'");
+    // At top-left corner with scrollbars, fully inside border.
+    shouldBe("document.elementFromPoint(x + 80, y + 80).id", "'roundedBoxWithScrollbarsChild'");
+    // At bottom-right corner with scrollbars, inside inner border radius.
+    shouldBe("document.elementFromPoint(x + 230, y + 230).id", "'roundedBoxWithScrollbarsChild'");
+    // At bottom-right corner with scrollbars, insider inner border radius.
+    shouldBe("document.elementFromPoint(x + 265, y + 265).id", "'roundedBoxWithScrollbars'");
+    // At bottom-right corner with scrollbars, outside the outer border radius.
+    shouldBe("document.elementFromPoint(x + 275, y + 275).id", "'container'");
+}
+</script>
+<style>
+    #container {
+        display: inline-block;
+        background-color: black;
+    }
+    .roundedBox {
+        width: 200px;
+        height: 200px;
+        border-radius: 100px;
+        background-color: red;
+        border: 50px solid green;
+        display: inline-block;
+    }
+    .roundedBox:hover {
+        border-color: red;
+    }
+    .roundedBoxChild {
+        width: 200px;
+        height: 200px;
+        background-color: orange;
+    }
+    .roundedBoxChild:hover {
+        background-color: blue;
+    }
+    #roundedBoxWithoutScrollbars {
+        overflow: auto;
+    }
+    #roundedBoxWithScrollbars {
+        overflow: scroll;
+    }
+</style>
+<body onload="test()">
+    <p>The inner border radius clip should be respected for hit testing.</p>
+    <div id="container">
+        <div id="roundedBoxWithoutScrollbars" class="roundedBox">
+            <div id="roundedBoxChildWithoutScrollbars" class="roundedBoxChild"></div>
+        </div>
+        <div id="roundedBoxWithScrollbars" class="roundedBox">
+            <div id="roundedBoxWithScrollbarsChild" class="roundedBoxChild"></div>
+        </div>
+    </div>
+    <div id="console"></div>
+</body>
