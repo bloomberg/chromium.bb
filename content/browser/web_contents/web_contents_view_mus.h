@@ -15,29 +15,32 @@
 #include "content/browser/web_contents/web_contents_view.h"
 #include "content/common/content_export.h"
 #include "content/common/drag_event_source_info.h"
+#include "ui/aura/window_delegate.h"
 
 namespace content {
 
 class WebContents;
 class WebContentsImpl;
+class WebContentsViewDelegate;
 
 class WebContentsViewMus : public WebContentsView,
-                           public RenderViewHostDelegateView {
+                           public RenderViewHostDelegateView,
+                           public aura::WindowDelegate {
  public:
   // The corresponding WebContentsImpl is passed in the constructor, and manages
   // our lifetime. This doesn't need to be the case, but is this way currently
   // because that's what was easiest when they were split.
-  // WebContentsViewMus always has a backing platform dependent view,
-  // |platform_view|.
-  WebContentsViewMus(WebContentsImpl* web_contents,
-                     mus::Window* parent_window,
-                     scoped_ptr<WebContentsView> platform_view,
-                     RenderViewHostDelegateView** platform_view_delegate_view);
+  WebContentsViewMus(mus::Window* parent_window,
+                     WebContentsImpl* web_contents,
+                     WebContentsViewDelegate* delegate,
+                     RenderViewHostDelegateView** delegate_view);
   ~WebContentsViewMus() override;
 
   WebContents* web_contents();
 
  private:
+  void SizeChangedCommon(const gfx::Size& size);
+
   // WebContentsView implementation:
   gfx::NativeView GetNativeView() const override;
   gfx::NativeView GetContentNativeView() const override;
@@ -80,18 +83,32 @@ class WebContentsViewMus : public WebContentsView,
   void GotFocus() override;
   void TakeFocus(bool reverse) override;
 
+  // Overridden from aura::WindowDelegate:
+  gfx::Size GetMinimumSize() const override;
+  gfx::Size GetMaximumSize() const override;
+  void OnBoundsChanged(const gfx::Rect& old_bounds,
+                       const gfx::Rect& new_bounds) override;
+  gfx::NativeCursor GetCursor(const gfx::Point& point) override;
+  int GetNonClientComponent(const gfx::Point& point) const override;
+  bool ShouldDescendIntoChildForEventHandling(
+      aura::Window* child,
+      const gfx::Point& location) override;
+  bool CanFocus() override;
+  void OnCaptureLost() override;
+  void OnPaint(const ui::PaintContext& context) override;
+  void OnDeviceScaleFactorChanged(float device_scale_factor) override;
+  void OnWindowDestroying(aura::Window* window) override;
+  void OnWindowDestroyed(aura::Window* window) override;
+  void OnWindowTargetVisibilityChanged(bool visible) override;
+  bool HasHitTestMask() const override;
+  void GetHitTestMask(gfx::Path* mask) const override;
+
   // The WebContentsImpl whose contents we display.
   WebContentsImpl* web_contents_;
 
-  scoped_ptr<mus::ScopedWindowPtr> window_;
-
-  // The platform dependent view backing this WebContentsView.
-  // Calls to this WebContentsViewMus are forwarded to |platform_view_|.
-  scoped_ptr<WebContentsView> platform_view_;
-  gfx::Size size_;
-
-  // Delegate view for guest's platform view.
-  RenderViewHostDelegateView* platform_view_delegate_view_;
+  scoped_ptr<WebContentsViewDelegate> delegate_;
+  scoped_ptr<aura::Window> aura_window_;
+  scoped_ptr<mus::ScopedWindowPtr> mus_window_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsViewMus);
 };

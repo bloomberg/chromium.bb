@@ -1360,8 +1360,22 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
   WebContentsViewDelegate* delegate =
       GetContentClient()->browser()->GetWebContentsViewDelegate(this);
 
-  view_.reset(
-      CreateWebContentsView(this, delegate, &render_view_host_delegate_view_));
+#if defined(MOJO_SHELL_CLIENT)
+  if (MojoShellConnection::Get() &&
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kUseMusInRenderer)) {
+    mus::Window* mus_window = aura::GetMusWindow(params.context);
+    if (mus_window) {
+      view_.reset(new WebContentsViewMus(mus_window, this, delegate,
+                                         &render_view_host_delegate_view_));
+    }
+  }
+#endif
+
+  if (!view_) {
+    view_.reset(CreateWebContentsView(this, delegate,
+                                      &render_view_host_delegate_view_));
+  }
 
   if (browser_plugin_guest_ &&
       !BrowserPluginGuestMode::UseCrossProcessFramesForGuests()) {
@@ -1369,19 +1383,6 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
                                          view_.Pass(),
                                          &render_view_host_delegate_view_));
   }
-
-#if defined(MOJO_SHELL_CLIENT)
-  if (MojoShellConnection::Get() &&
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kUseMusInRenderer)) {
-    mus::Window* window = aura::GetMusWindow(params.context);
-    if (window) {
-      view_.reset(new WebContentsViewMus(this, window, view_.Pass(),
-                                         &render_view_host_delegate_view_));
-    }
-  }
-#endif
-
   CHECK(render_view_host_delegate_view_);
   CHECK(view_.get());
 
