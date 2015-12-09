@@ -69,7 +69,6 @@ crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/bidi-embed-002.
 crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/bidi-isolate-002.html [ Failure ]
 crbug.com/492664 [ Win ] imported/csswg-test/css-writing-modes-3/bidi-override-005.html [ Failure ]
 crbug.com/492664 [ Win ] imported/csswg-test/css-writing-modes-3/bidi-plaintext-001.html [ Failure ]
-crbug.com/492664 imported/csswg-test/css-transitions-2/transitioncancel-001.html [ Failure ]
 crbug.com/418091 [ Mac10.6 ] fast/text/aat-morx.html [ Failure ]
 crbug.com/463358 [ Linux Mac ] svg/transforms/text-with-pattern-inside-transformed-html.xhtml [ Failure ]
 crbug.com/463358 [ Mac Linux Debug ] fast/backgrounds/transformed-body-html-background.html [ Failure ]
@@ -1045,8 +1044,6 @@ crbug.com/445194 [ Debug ] fast/dom/shadow/focus-controller-recursion-crash.html
 crbug.com/505387 [ Win ] virtual/prefer_compositing_to_lcd_text/scrollbars/rtl/overflow-scroll-rtl.html [ Failure ]
 
 crbug.com/505415 [ XP ] accessibility/canvas-fallback-content-labels.html [ Failure ]
-
-crbug.com/506312 imported/csswg-test/css-pseudo-4/first-letter-001.html [ Failure ]
 
 # Mac10.10-specific failures that still need triaging.
 # Form controls need rebaseline because of the default font change.
