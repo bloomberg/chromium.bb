@@ -985,7 +985,7 @@ void RenderWidgetHostImpl::ForwardMouseEventWithLatencyInfo(
       return;
   }
 
-  if (IgnoreInputEvents())
+  if (ShouldDropInputEvents())
     return;
 
   if (touch_emulator_ && touch_emulator_->HandleMouseEvent(mouse_event))
@@ -1018,7 +1018,7 @@ void RenderWidgetHostImpl::ForwardWheelEventWithLatencyInfo(
   TRACE_EVENT2("input", "RenderWidgetHostImpl::ForwardWheelEvent",
                "dx", wheel_event.deltaX, "dy", wheel_event.deltaY);
 
-  if (IgnoreInputEvents())
+  if (ShouldDropInputEvents())
     return;
 
   if (touch_emulator_ && touch_emulator_->HandleMouseWheelEvent(wheel_event))
@@ -1039,7 +1039,7 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
     const ui::LatencyInfo& ui_latency) {
   TRACE_EVENT0("input", "RenderWidgetHostImpl::ForwardGestureEvent");
   // Early out if necessary, prior to performing latency logic.
-  if (IgnoreInputEvents())
+  if (ShouldDropInputEvents())
     return;
 
   // TODO(wjmaclean) Remove the code for supporting resending gesture events
@@ -1066,6 +1066,7 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
         CreateScrollBeginForWrapping(gesture_event), ui::LatencyInfo());
   }
 
+  // Delegate must be non-null, due to |ShouldDropInputEvents()| test.
   if (delegate_->PreHandleGestureEvent(gesture_event))
     return;
 
@@ -1118,7 +1119,7 @@ void RenderWidgetHostImpl::ForwardKeyboardEvent(
     return;
   }
 
-  if (IgnoreInputEvents())
+  if (ShouldDropInputEvents())
     return;
 
   if (!process_->HasConnection())
@@ -1889,7 +1890,7 @@ InputEventAckState RenderWidgetHostImpl::FilterInputEvent(
   // Don't ignore touch cancel events, since they may be sent while input
   // events are being ignored in order to keep the renderer from getting
   // confused about how many touches are active.
-  if (IgnoreInputEvents() && event.type != WebInputEvent::TouchCancel)
+  if (ShouldDropInputEvents() && event.type != WebInputEvent::TouchCancel)
     return INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS;
 
   if (!process_->HasConnection())
@@ -1992,7 +1993,7 @@ void RenderWidgetHostImpl::OnWheelEventAck(
 
   if (!is_hidden() && view_) {
     if (ack_result != INPUT_EVENT_ACK_STATE_CONSUMED &&
-        delegate_->HandleWheelEvent(wheel_event.event)) {
+        delegate_ && delegate_->HandleWheelEvent(wheel_event.event)) {
       ack_result = INPUT_EVENT_ACK_STATE_CONSUMED;
     }
     view_->WheelEventAck(wheel_event.event, ack_result);
@@ -2035,8 +2036,8 @@ void RenderWidgetHostImpl::OnSyntheticGestureCompleted(
   Send(new InputMsg_SyntheticGestureCompleted(GetRoutingID()));
 }
 
-bool RenderWidgetHostImpl::IgnoreInputEvents() const {
-  return ignore_input_events_ || process_->IgnoreInputEvents();
+bool RenderWidgetHostImpl::ShouldDropInputEvents() const {
+  return ignore_input_events_ || process_->IgnoreInputEvents() || !delegate_;
 }
 
 void RenderWidgetHostImpl::SetBackgroundOpaque(bool opaque) {

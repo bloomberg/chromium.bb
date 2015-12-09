@@ -352,9 +352,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
     return ignore_input_events_;
   }
 
-  // Whether forwarded WebInputEvents should be ignored.  True if either
-  // |ignore_input_events_| or |process_->IgnoreInputEvents()| is true.
-  bool IgnoreInputEvents() const;
+  // Whether forwarded WebInputEvents should be dropped.
+  bool ShouldDropInputEvents() const;
 
   bool has_touch_handler() const { return has_touch_handler_; }
 

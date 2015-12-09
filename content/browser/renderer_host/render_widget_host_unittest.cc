@@ -1653,4 +1653,24 @@ TEST_F(RenderWidgetHostInitialSizeTest, InitialSize) {
   EXPECT_TRUE(host_->resize_ack_pending_);
 }
 
+// Tests that event dispatch after the delegate has been detached doesn't cause
+// a crash. See crbug.com/563237.
+TEST_F(RenderWidgetHostTest, EventDispatchPostDetach) {
+  host_->OnMessageReceived(ViewHostMsg_HasTouchEventHandlers(0, true));
+  process_->sink().ClearMessages();
+
+  host_->DetachDelegate();
+
+  // Tests RWHI::ForwardGestureEventWithLatencyInfo().
+  SimulateGestureEventWithLatencyInfo(WebInputEvent::GestureScrollUpdate,
+                                      blink::WebGestureDeviceTouchscreen,
+                                      ui::LatencyInfo());
+
+
+  // Tests RWHI::ForwardWheelEventWithLatencyInfo().
+  SimulateWheelEventWithLatencyInfo(-5, 0, 0, true, ui::LatencyInfo());
+
+  ASSERT_FALSE(host_->input_router()->HasPendingEvents());
+}
+
 }  // namespace content
