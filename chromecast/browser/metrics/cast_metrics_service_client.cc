@@ -211,9 +211,13 @@ std::string CastMetricsServiceClient::GetVersionString() {
   version_string.append("-K");
   version_string.append(base::IntToString(build_number));
 
-  int is_official_build =
+  const ::metrics::SystemProfileProto::Channel channel = GetChannel();
+  CHECK(!CAST_IS_DEBUG_BUILD() ||
+        channel != ::metrics::SystemProfileProto::CHANNEL_STABLE);
+  const bool is_official_build =
       build_number > 0 &&
-      GetChannel() != ::metrics::SystemProfileProto::CHANNEL_UNKNOWN;
+      !CAST_IS_DEBUG_BUILD() &&
+      channel != ::metrics::SystemProfileProto::CHANNEL_UNKNOWN;
   if (!is_official_build)
     version_string.append("-devel");
 
