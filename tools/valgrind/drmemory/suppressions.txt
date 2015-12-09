@@ -435,7 +435,7 @@ system call NtGdiCreateDIBSection
 *!SkScalerContext_GDI::generateImage
 *!SkScalerContext::getImage
 *!SkGlyphCache::findImage
-*!D1G*RectClip
+*!DrawOneGlyph::getImageData
 
 HANDLE LEAK
 name=http://crbug.com/346993
