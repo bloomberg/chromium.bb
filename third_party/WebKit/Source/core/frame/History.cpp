@@ -43,6 +43,27 @@
 
 namespace blink {
 
+namespace {
+
+bool equalIgnoringPathQueryAndFragment(const KURL& a, const KURL& b)
+{
+    int aLength = a.pathStart();
+    int bLength = b.pathStart();
+
+    if (aLength != bLength)
+        return false;
+
+    const String& aString = a.string();
+    const String& bString = b.string();
+    for (int i = 0; i < aLength; ++i) {
+        if (aString[i] != bString[i])
+            return false;
+    }
+    return true;
+}
+
+}  // namespace
+
 History::History(LocalFrame* frame)
     : DOMWindowProperty(frame)
     , m_lastStateObjectRequested(nullptr)
@@ -162,15 +183,38 @@ KURL History::urlForState(const String& urlString)
     return KURL(document->baseURL(), urlString);
 }
 
+bool History::canChangeToUrl(const KURL& url)
+{
+    if (!url.isValid())
+        return false;
+
+    Document* document = m_frame->document();
+    SecurityOrigin* origin = document->securityOrigin();
+    if (origin->isGrantedUniversalAccess())
+        return true;
+
+    if (origin->isUnique())
+        return false;
+
+    if (!equalIgnoringPathQueryAndFragment(url, document->url()))
+        return false;
+
+    RefPtr<SecurityOrigin> requestedOrigin = SecurityOrigin::create(url);
+    if (requestedOrigin->isUnique() || !requestedOrigin->isSameSchemeHostPort(origin))
+        return false;
+
+    return true;
+}
+
 void History::stateObjectAdded(PassRefPtr<SerializedScriptValue> data, const String& /* title */, const String& urlString, HistoryScrollRestorationType restorationType, FrameLoadType type, ExceptionState& exceptionState)
 {
     if (!m_frame || !m_frame->page() || !m_frame->loader().documentLoader())
         return;
 
     KURL fullURL = urlForState(urlString);
-    if (!fullURL.isValid() || !m_frame->document()->securityOrigin()->canRequest(fullURL)) {
+    if (!canChangeToUrl(fullURL)) {
         // We can safely expose the URL to JavaScript, as a) no redirection takes place: JavaScript already had this URL, b) JavaScript can only access a same-origin History object.
-        exceptionState.throwSecurityError("A history state object with URL '" + fullURL.elidedString() + "' cannot be created in a document with origin '" + m_frame->document()->securityOrigin()->toString() + "'.");
+        exceptionState.throwSecurityError("A history state object with URL '" + fullURL.elidedString() + "' cannot be created in a document with origin '" + m_frame->document()->securityOrigin()->toString() + "' and URL '" + m_frame->document()->url().elidedString() + "'.");
         return;
     }
 

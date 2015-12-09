@@ -79,6 +79,7 @@ private:
     explicit History(LocalFrame*);
 
     KURL urlForState(const String& url);
+    bool canChangeToUrl(const KURL& url);
 
     void stateObjectAdded(PassRefPtr<SerializedScriptValue>, const String& title, const String& url, HistoryScrollRestorationType, FrameLoadType, ExceptionState&);
     SerializedScriptValue* stateInternal() const;
