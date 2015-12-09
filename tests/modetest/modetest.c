@@ -1503,7 +1503,6 @@ int main(int argc, char **argv)
 	int drop_master = 0;
 	int test_vsync = 0;
 	int test_cursor = 0;
-	const char *modules[] = { "i915", "radeon", "nouveau", "vmwgfx", "omapdrm", "exynos", "tilcdc", "msm", "sti", "tegra", "imx-drm", "rockchip", "atmel-hlcdc" };
 	char *device = NULL;
 	char *module = NULL;
 	unsigned int i;
@@ -1604,29 +1603,9 @@ int main(int argc, char **argv)
 	if (!args)
 		encoders = connectors = crtcs = planes = framebuffers = 1;
 
-	if (module) {
-		dev.fd = drmOpen(module, device);
-		if (dev.fd < 0) {
-			fprintf(stderr, "failed to open device '%s'.\n", module);
-			return 1;
-		}
-	} else {
-		for (i = 0; i < ARRAY_SIZE(modules); i++) {
-			printf("trying to open device '%s'...", modules[i]);
-			dev.fd = drmOpen(modules[i], device);
-			if (dev.fd < 0) {
-				printf("failed.\n");
-			} else {
-				printf("success.\n");
-				break;
-			}
-		}
-
-		if (dev.fd < 0) {
-			fprintf(stderr, "no device found.\n");
-			return 1;
-		}
-	}
+	dev.fd = util_open(module, device);
+	if (dev.fd < 0)
+		return -1;
 
 	if (test_vsync && !page_flipping_supported()) {
 		fprintf(stderr, "page flipping not supported by drm.\n");
