@@ -765,8 +765,6 @@ crbug.com/484370 [ Win Debug ] svg/custom/gradient-userSpaceOnUse-with-percentag
 crbug.com/377696 printing/setPrinting.html [ Skip ]
 crbug.com/377696 printing/width-overflow.html [ Skip ]
 
-crbug.com/567039 fast/block/skip-cleaning-up-anonymous-wrappers-when-subtree-being-destroyed.html [ Skip ]
-
 # Reftests that needs investigation.
 crbug.com/397232 [ XP ] css2.1/20110323/c541-word-sp-000.htm [ Failure ]
 crbug.com/397232 [ XP ] css2.1/20110323/vertical-align-boxes-001.htm [ Failure ]
@@ -888,8 +886,6 @@ crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollable-area-frame-v
 crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollable-area-frame-zero-size-and-border.html [ Failure ]
 crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollable-area-frame.html [ Failure ]
 crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollbar-tickmarks-styled.html [ Failure ]
-
-crbug.com/567884 editing/spelling/spelling-huge-text-sync.html [ Skip ]
 
 crbug.com/385014 accessibility/canvas-fallback-content-2.html [ Failure ]
 

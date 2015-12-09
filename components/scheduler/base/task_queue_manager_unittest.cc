@@ -22,6 +22,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 
 using testing::ElementsAre;
+using testing::ElementsAreArray;
 using testing::_;
 
 namespace scheduler {
@@ -1087,39 +1088,35 @@ void ExpensiveTestTask(int value,
   clock->Advance(base::TimeDelta::FromMilliseconds(1));
 }
 
-TEST_F(TaskQueueManagerTest, ImmediateAndDelayedTaskRoundRobbin) {
+TEST_F(TaskQueueManagerTest, ImmediateAndDelayedTaskInterleaving) {
   Initialize(1u);
 
   std::vector<int> run_order;
   base::TimeDelta delay = base::TimeDelta::FromMilliseconds(10);
-  runners_[0]->PostDelayedTask(
-      FROM_HERE, base::Bind(&ExpensiveTestTask, 10, now_src_.get(), &run_order),
-      delay);
-  runners_[0]->PostDelayedTask(
-      FROM_HERE, base::Bind(&ExpensiveTestTask, 11, now_src_.get(), &run_order),
-      delay);
-  runners_[0]->PostDelayedTask(
-      FROM_HERE, base::Bind(&ExpensiveTestTask, 12, now_src_.get(), &run_order),
-      delay);
-  runners_[0]->PostDelayedTask(
-      FROM_HERE, base::Bind(&ExpensiveTestTask, 13, now_src_.get(), &run_order),
-      delay);
+  for (int i = 10; i < 19; i++) {
+    runners_[0]->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&ExpensiveTestTask, i, now_src_.get(), &run_order),
+        delay);
+  }
 
   test_task_runner_->RunForPeriod(delay);
 
-  runners_[0]->PostTask(
-      FROM_HERE, base::Bind(&ExpensiveTestTask, 0, now_src_.get(), &run_order));
-  runners_[0]->PostTask(
-      FROM_HERE, base::Bind(&ExpensiveTestTask, 1, now_src_.get(), &run_order));
-  runners_[0]->PostTask(
-      FROM_HERE, base::Bind(&ExpensiveTestTask, 2, now_src_.get(), &run_order));
-  runners_[0]->PostTask(
-      FROM_HERE, base::Bind(&ExpensiveTestTask, 3, now_src_.get(), &run_order));
+  for (int i = 0; i < 9; i++) {
+    runners_[0]->PostTask(
+        FROM_HERE,
+        base::Bind(&ExpensiveTestTask, i, now_src_.get(), &run_order));
+  }
 
   test_task_runner_->SetAutoAdvanceNowToPendingTasks(true);
   test_task_runner_->RunUntilIdle();
 
-  EXPECT_THAT(run_order, ElementsAre(10, 0, 11, 1, 12, 2, 13, 3));
+  // Delayed tasks are not allowed to starve out immediate work which is why
+  // some of the immediate tasks run out of order.
+  int expected_run_order[] = {
+    10, 11, 12, 13, 0, 14, 15, 16, 1, 17, 18, 2, 3, 4, 5, 6, 7, 8
+  };
+  EXPECT_THAT(run_order, ElementsAreArray(expected_run_order));
 }
 
 TEST_F(TaskQueueManagerTest,
@@ -1593,7 +1590,8 @@ bool ShouldExit(QuadraticTask* quadratic_task, LinearTask* linear_task) {
 
 }  // namespace
 
-TEST_F(TaskQueueManagerTest, DelayedTasksDontStarveNonDelayedWork_SameQueue) {
+TEST_F(TaskQueueManagerTest,
+       DelayedTasksDontBadlyStarveNonDelayedWork_SameQueue) {
   Initialize(1u);
 
   QuadraticTask quadratic_delayed_task(
@@ -1614,7 +1612,7 @@ TEST_F(TaskQueueManagerTest, DelayedTasksDontStarveNonDelayedWork_SameQueue) {
   double ratio = static_cast<double>(linear_immediate_task.count()) /
                  static_cast<double>(quadratic_delayed_task.count());
 
-  EXPECT_GT(ratio, 0.9);
+  EXPECT_GT(ratio, 0.333);
   EXPECT_LT(ratio, 1.1);
 }
 
@@ -1647,7 +1645,7 @@ TEST_F(TaskQueueManagerTest, ImmediateWorkCanStarveDelayedTasks_SameQueue) {
 }
 
 TEST_F(TaskQueueManagerTest,
-       DelayedTasksDontStarveNonDelayedWork_DifferentQueue) {
+       DelayedTasksDontBadlyStarveNonDelayedWork_DifferentQueue) {
   Initialize(2u);
 
   QuadraticTask quadratic_delayed_task(
@@ -1668,7 +1666,7 @@ TEST_F(TaskQueueManagerTest,
   double ratio = static_cast<double>(linear_immediate_task.count()) /
                  static_cast<double>(quadratic_delayed_task.count());
 
-  EXPECT_GT(ratio, 0.9);
+  EXPECT_GT(ratio, 0.333);
   EXPECT_LT(ratio, 1.1);
 }
 

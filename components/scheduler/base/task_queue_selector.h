@@ -72,11 +72,15 @@ class SCHEDULER_EXPORT TaskQueueSelector {
  protected:
   // Return true if |out_queue| contains the queue with the oldest pending task
   // from the set of queues of |priority|, or false if all queues of that
-  // priority are empty.
+  // priority are empty. In addition |out_chose_delayed_over_immediate| is set
+  // to true iff we chose a delayed work queue in favour of an immediate work
+  // queue.  This method will force select an immediate task if those are being
+  // starved by delayed tasks.
   bool ChooseOldestWithPriority(TaskQueue::QueuePriority priority,
+                                bool* out_chose_delayed_over_immediate,
                                 WorkQueue** out_work_queue) const;
 
-  void SetForceSelectImmediateForTest(bool force_select_immediate);
+  void SetImmediateStarvationCountForTest(size_t immediate_starvation_count);
 
  private:
   // Returns the priority which is next after |priority|.
@@ -89,26 +93,36 @@ class SCHEDULER_EXPORT TaskQueueSelector {
   bool ChooseOldestDelayedTaskWithPriority(TaskQueue::QueuePriority priority,
                                            WorkQueue** out_work_queue) const;
 
+  // Return true if |out_queue| contains the queue with the oldest pending task
+  // from the set of queues of |priority|, or false if all queues of that
+  // priority are empty. In addition |out_chose_delayed_over_immediate| is set
+  // to true iff we chose a delayed work queue in favour of an immediate work
+  // queue.
   bool ChooseOldestImmediateOrDelayedTaskWithPriority(
       TaskQueue::QueuePriority priority,
+      bool* out_chose_delayed_over_immediate,
       WorkQueue** out_work_queue) const;
 
   // Called whenever the selector chooses a task queue for execution with the
   // priority |priority|.
-  void DidSelectQueueWithPriority(TaskQueue::QueuePriority priority);
+  void DidSelectQueueWithPriority(TaskQueue::QueuePriority priority,
+                                  bool chose_delayed_over_immediate);
 
   // Number of high priority tasks which can be run before a normal priority
   // task should be selected to prevent starvation.
   // TODO(rmcilroy): Check if this is a good value.
-  static const size_t kMaxStarvationTasks = 5;
+  static const size_t kMaxHighPriorityStarvationTasks = 5;
+
+  // Maximum number of delayed tasks tasks which can be run while there's a
+  // waiting non-delayed task.
+  static const size_t kMaxDelayedStarvationTasks = 3;
 
  private:
   base::ThreadChecker main_thread_checker_;
   WorkQueueSets delayed_work_queue_sets_;
   WorkQueueSets immediate_work_queue_sets_;
-  bool force_select_immediate_;
-
-  size_t starvation_count_;
+  size_t immediate_starvation_count_;
+  size_t high_priority_starvation_count_;
   Observer* task_queue_selector_observer_;  // NOT OWNED
   DISALLOW_COPY_AND_ASSIGN(TaskQueueSelector);
 };
