@@ -33,7 +33,7 @@ DeleteTreeWorkItem::DeleteTreeWorkItem(
     const std::vector<base::FilePath>& key_paths)
     : root_path_(root_path),
       temp_path_(temp_path),
-      copied_to_backup_(false) {
+      moved_to_backup_(false) {
   if (!SafeCast(key_paths.size(), &num_key_files_)) {
     NOTREACHED() << "Impossibly large key_paths collection";
   } else if (num_key_files_ != 0) {
@@ -111,31 +111,23 @@ bool DeleteTreeWorkItem::Do() {
   }
 
   // Now that we've taken care of the key files, take care of the rest.
-  if (!root_path_.empty() && base::PathExists(root_path_)) {
-    if (!ignore_failure_) {
-      if (!backup_path_.CreateUniqueTempDirUnderPath(temp_path_)) {
-        PLOG(ERROR) << "Failed to get backup path in folder "
-                    << temp_path_.value();
-        return false;
-      } else {
-        base::FilePath backup =
-            backup_path_.path().Append(root_path_.BaseName());
-        if (!base::CopyDirectory(root_path_, backup, true)) {
-          LOG(ERROR) << "can not copy " << root_path_.value()
-                     << " to backup path " << backup.value();
-          return false;
-        } else {
-          copied_to_backup_ = true;
-        }
-      }
-    }
-    if (!base::DeleteFile(root_path_, true)) {
-      LOG(ERROR) << "can not delete " << root_path_.value();
-      return ignore_failure_;
-    }
+  if (root_path_.empty() || !base::PathExists(root_path_))
+    return true;
+
+  if (ignore_failure_) {
+    if (DeleteRoot())
+      return true;
+    // The file cannot be removed, but perhaps it can be moved into
+    // the temporary backup path. Consumers are responsible for making
+    // a best-effort attempt to remove the backup path. SelfCleaningTempDir
+    // is generally used for the backup path, so in the
+    // worst case the file(s) will be removed after the next reboot.
+    MoveRootToBackup();
+    return true;
   }
 
-  return true;
+  // Attempt to move the root to the backup.
+  return MoveRootToBackup();
 }
 
 // If there are files in backup paths move them back.
@@ -143,9 +135,9 @@ void DeleteTreeWorkItem::Rollback() {
   if (ignore_failure_)
     return;
 
-  if (copied_to_backup_) {
-    DCHECK(!backup_path_.path().empty());
-    base::FilePath backup = backup_path_.path().Append(root_path_.BaseName());
+  if (moved_to_backup_) {
+    base::FilePath backup = GetBackupPath();
+    DCHECK(!backup.empty());
     if (base::PathExists(backup))
       base::Move(backup, root_path_);
   }
@@ -164,4 +156,35 @@ void DeleteTreeWorkItem::Rollback() {
       }
     }
   }
+}
+
+base::FilePath DeleteTreeWorkItem::GetBackupPath() {
+  if (backup_path_.path().empty() &&
+      !backup_path_.CreateUniqueTempDirUnderPath(temp_path_)) {
+    PLOG(ERROR) << "Failed to get backup path in folder " << temp_path_.value();
+    return base::FilePath();
+  }
+
+  DCHECK(!backup_path_.path().empty());
+  return backup_path_.path().Append(root_path_.BaseName());
+}
+
+bool DeleteTreeWorkItem::DeleteRoot() {
+  if (base::DeleteFile(root_path_, true))
+    return true;
+  LOG(ERROR) << "Failed to delete " << root_path_.value();
+  return false;
+}
+
+bool DeleteTreeWorkItem::MoveRootToBackup() {
+  base::FilePath backup = GetBackupPath();
+  if (backup.empty())
+    return false;
+  if (base::Move(root_path_, backup)) {
+    moved_to_backup_ = true;
+    return true;
+  }
+  PLOG(ERROR) << "Failed to move " << root_path_.value()
+              << " to backup path " << backup.value();
+  return false;
 }

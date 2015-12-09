@@ -207,6 +207,20 @@ TEST_F(DeleteTreeWorkItemTest, DeleteTreeInUse) {
     EXPECT_FALSE(work_item->Do());
   }
 
+  {
+    base::ScopedTempDir temp_dir;
+    ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+    // No key paths, the deletion should succeed.
+    std::vector<base::FilePath> key_paths;
+    scoped_ptr<DeleteTreeWorkItem> work_item(
+        WorkItem::CreateDeleteTreeWorkItem(dir_name_delete, temp_dir.path(),
+        key_paths));
+
+    EXPECT_TRUE(work_item->Do());
+    work_item->Rollback();
+  }
+
   // verify everything is still there.
   EXPECT_TRUE(base::PathExists(key_path));
   EXPECT_TRUE(base::PathExists(file_name_delete_1));
