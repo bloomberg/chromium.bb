@@ -102,7 +102,14 @@ public abstract class PathUtils {
 
     public static File getThumbnailCacheDirectory(Context appContext) {
         if (sThumbnailDirectory == null) {
-            sThumbnailDirectory = appContext.getDir(THUMBNAIL_DIRECTORY, Context.MODE_PRIVATE);
+            // Temporarily allowing disk access while fixing. TODO: http://crbug.com/473356
+            StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
+            StrictMode.allowThreadDiskWrites();
+            try {
+                sThumbnailDirectory = appContext.getDir(THUMBNAIL_DIRECTORY, Context.MODE_PRIVATE);
+            } finally {
+                StrictMode.setThreadPolicy(oldPolicy);
+            }
         }
         return sThumbnailDirectory;
     }
