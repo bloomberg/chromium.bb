@@ -665,11 +665,18 @@ void EventGenerator::DoDispatchEvent(ui::Event* event, bool async) {
     }
     pending_events_.push_back(pending_event);
   } else {
-    ui::EventSource* event_source = delegate()->GetEventSource(current_target_);
-    ui::EventSourceTestApi event_source_test(event_source);
-    ui::EventDispatchDetails details =
-        event_source_test.SendEventToProcessor(event);
-    CHECK(!details.dispatcher_destroyed);
+    if (event->IsKeyEvent()) {
+      delegate()->DispatchKeyEventToIME(current_target_,
+                                        static_cast<ui::KeyEvent*>(event));
+    }
+    if (!event->handled()) {
+      ui::EventSource* event_source =
+          delegate()->GetEventSource(current_target_);
+      ui::EventSourceTestApi event_source_test(event_source);
+      ui::EventDispatchDetails details =
+          event_source_test.SendEventToProcessor(event);
+      CHECK(!details.dispatcher_destroyed);
+    }
   }
 }
 

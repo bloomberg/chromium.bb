@@ -225,7 +225,17 @@ source_set("test_support") {
   }
 
   if (use_ash) {
-    public_deps += [ "//ash:test_support" ]
+    sources += [
+      "base/default_ash_event_generator_delegate.cc",
+      "base/default_ash_event_generator_delegate.h",
+    ]
+
+    public_deps += [
+      "//ash",
+      "//ash:test_support",
+      "//ui/aura",
+      "//ui/aura:test_support",
+    ]
   }
   if (toolkit_views) {
     public_deps += [ "//ui/views:test_support" ]

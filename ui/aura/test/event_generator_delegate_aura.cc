@@ -8,6 +8,7 @@
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/base/ime/input_method.h"
 
 namespace aura {
 namespace test {
@@ -61,7 +62,9 @@ const Window* WindowFromTarget(const ui::EventTarget* event_target) {
 }  // namespace
 
 void InitializeAuraEventGeneratorDelegate() {
-  DefaultEventGeneratorDelegate::GetInstance();
+  if (!ui::test::EventGenerator::default_delegate) {
+    DefaultEventGeneratorDelegate::GetInstance();
+  }
 }
 
 EventGeneratorDelegateAura::EventGeneratorDelegateAura() {
@@ -124,6 +127,12 @@ void EventGeneratorDelegateAura::ConvertPointFromHost(
     gfx::Point* point) const {
   const Window* window = WindowFromTarget(hosted_target);
   window->GetHost()->ConvertPointFromHost(point);
+}
+
+void EventGeneratorDelegateAura::DispatchKeyEventToIME(ui::EventTarget* target,
+                                                       ui::KeyEvent* event) {
+  Window* window = static_cast<Window*>(target);
+  window->GetHost()->GetInputMethod()->DispatchKeyEvent(event);
 }
 
 }  // namespace test

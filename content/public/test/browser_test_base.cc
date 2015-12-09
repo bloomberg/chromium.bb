@@ -144,11 +144,8 @@ BrowserTestBase::BrowserTestBase()
   base::mac::SetOverrideAmIBundled(true);
 #endif
 
-#if defined(USE_AURA)
-#if defined(USE_X11)
+#if defined(USE_AURA) && defined(USE_X11)
   aura::test::SetUseOverrideRedirectWindowByDefault(true);
-#endif
-  aura::test::InitializeAuraEventGeneratorDelegate();
 #endif
 
 #if defined(OS_POSIX)
@@ -215,6 +212,8 @@ void BrowserTestBase::SetUp() {
   // us to, or it's requested on the command line.
   if (!enable_pixel_output_ && !use_software_compositing_)
     command_line->AppendSwitch(switches::kDisableGLDrawingForTests);
+
+  aura::test::InitializeAuraEventGeneratorDelegate();
 #endif
 
   bool use_osmesa = true;

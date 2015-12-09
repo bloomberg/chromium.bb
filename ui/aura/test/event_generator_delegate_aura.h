@@ -45,6 +45,8 @@ class EventGeneratorDelegateAura : public ui::test::EventGeneratorDelegate {
                             gfx::Point* point) const override;
   void ConvertPointFromHost(const ui::EventTarget* hosted_target,
                             gfx::Point* point) const override;
+  void DispatchKeyEventToIME(ui::EventTarget* target,
+                             ui::KeyEvent* event) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(EventGeneratorDelegateAura);

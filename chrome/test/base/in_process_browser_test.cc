@@ -83,6 +83,10 @@
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #endif
 
+#if defined(USE_ASH)
+#include "chrome/test/base/default_ash_event_generator_delegate.h"
+#endif
+
 namespace {
 
 // Passed as value of kTestType.
@@ -195,6 +199,10 @@ InProcessBrowserTest::InProcessBrowserTest()
 
 #if defined(OS_MACOSX)
   bundle_swizzler_.reset(new ScopedBundleSwizzlerMac);
+#endif
+
+#if defined(USE_ASH)
+  DefaultAshEventGeneratorDelegate::GetInstance();
 #endif
 }
 

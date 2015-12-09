@@ -2006,6 +2006,17 @@
             'test/base/test_browser_window_aura.h',
           ],
         }],
+        ['use_ash==1', {
+          'sources': [
+            'test/base/default_ash_event_generator_delegate.cc',
+            'test/base/default_ash_event_generator_delegate.h',
+          ],
+          'dependencies': [
+            '../ash/ash.gyp:ash',
+            '../ui/aura/aura.gyp:aura',
+            '../ui/aura/aura.gyp:aura_test_support',
+          ],
+        }],
         ['configuration_policy==1', {
           'dependencies': [
             '../components/components.gyp:policy_component_test_support',

@@ -74,6 +74,12 @@ class EventGeneratorDelegate {
   // |hosted_target| into the root window's coordinate system.
   virtual void ConvertPointFromHost(const EventTarget* hosted_target,
                                     gfx::Point* point) const = 0;
+
+  // Detemines whether the input method should be the first to handle key events
+  // before dispathcing to Views. If it does, the given |event| will be
+  // dispatched and processed by the input method from the host of |target|.
+  virtual void DispatchKeyEventToIME(EventTarget* target,
+                                     ui::KeyEvent* event) = 0;
 };
 
 // ui::test::EventGenerator is a tool that generates and dispatches events.
