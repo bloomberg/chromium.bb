@@ -6,6 +6,7 @@
 
 #include "base/files/file_util.h"
 #include "breakpad/src/common/linux/libcurl_wrapper.h"
+#include "chromecast/base/scoped_temp_file.h"
 #include "chromecast/crash/cast_crashdump_uploader.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -54,11 +55,10 @@ TEST(CastCrashdumpUploaderTest, UploadSucceedsWithValidParameters) {
   testing::StrictMock<MockLibcurlWrapper> m;
 
   // Create a temporary file.
-  base::FilePath temp;
-  ASSERT_TRUE(base::CreateTemporaryFile(&temp));
+  ScopedTempFile minidump;
 
   EXPECT_CALL(m, Init()).Times(1).WillOnce(Return(true));
-  EXPECT_CALL(m, AddFile(temp.value(), _)).WillOnce(Return(true));
+  EXPECT_CALL(m, AddFile(minidump.path().value(), _)).WillOnce(Return(true));
   EXPECT_CALL(m, SendRequest("http://foo.com", _, _, _, _)).Times(1).WillOnce(
       Return(true));
 
@@ -68,7 +68,7 @@ TEST(CastCrashdumpUploaderTest, UploadSucceedsWithValidParameters) {
   data.guid = "AAA-BBB";
   data.email = "test@test.com";
   data.comments = "none";
-  data.minidump_pathname = temp.value();
+  data.minidump_pathname = minidump.path().value();
   data.crash_server = "http://foo.com";
   CastCrashdumpUploader uploader(data, &m);
 
@@ -97,8 +97,7 @@ TEST(CastCrashdumpUploaderTest, UploadFailsWithoutAllRequiredParameters) {
   testing::StrictMock<MockLibcurlWrapper> m;
 
   // Create a temporary file.
-  base::FilePath temp;
-  ASSERT_TRUE(base::CreateTemporaryFile(&temp));
+  ScopedTempFile minidump;
 
   // Has all the require fields for a crashdump.
   CastCrashdumpData data;
@@ -107,7 +106,7 @@ TEST(CastCrashdumpUploaderTest, UploadFailsWithoutAllRequiredParameters) {
   data.guid = "AAA-BBB";
   data.email = "test@test.com";
   data.comments = "none";
-  data.minidump_pathname = temp.value();
+  data.minidump_pathname = minidump.path().value();
   data.crash_server = "http://foo.com";
 
   // Test with empty product name.
@@ -135,11 +134,10 @@ TEST(CastCrashdumpUploaderTest, UploadFailsWithInvalidAttachment) {
   testing::StrictMock<MockLibcurlWrapper> m;
 
   // Create a temporary file.
-  base::FilePath minidump;
-  ASSERT_TRUE(base::CreateTemporaryFile(&minidump));
+  ScopedTempFile minidump;
 
   EXPECT_CALL(m, Init()).Times(1).WillOnce(Return(true));
-  EXPECT_CALL(m, AddFile(minidump.value(), _)).WillOnce(Return(true));
+  EXPECT_CALL(m, AddFile(minidump.path().value(), _)).WillOnce(Return(true));
 
   CastCrashdumpData data;
   data.product = "foobar";
@@ -147,7 +145,7 @@ TEST(CastCrashdumpUploaderTest, UploadFailsWithInvalidAttachment) {
   data.guid = "AAA-BBB";
   data.email = "test@test.com";
   data.comments = "none";
-  data.minidump_pathname = minidump.value();
+  data.minidump_pathname = minidump.path().value();
   data.crash_server = "http://foo.com";
   CastCrashdumpUploader uploader(data, &m);
 
@@ -160,16 +158,14 @@ TEST(CastCrashdumpUploaderTest, UploadSucceedsWithValidAttachment) {
   testing::StrictMock<MockLibcurlWrapper> m;
 
   // Create a temporary file.
-  base::FilePath minidump;
-  ASSERT_TRUE(base::CreateTemporaryFile(&minidump));
+  ScopedTempFile minidump;
 
   // Create a valid attachment.
-  base::FilePath attachment;
-  ASSERT_TRUE(base::CreateTemporaryFile(&attachment));
+  ScopedTempFile attachment;
 
   EXPECT_CALL(m, Init()).Times(1).WillOnce(Return(true));
-  EXPECT_CALL(m, AddFile(minidump.value(), _)).WillOnce(Return(true));
-  EXPECT_CALL(m, AddFile(attachment.value(), _)).WillOnce(Return(true));
+  EXPECT_CALL(m, AddFile(minidump.path().value(), _)).WillOnce(Return(true));
+  EXPECT_CALL(m, AddFile(attachment.path().value(), _)).WillOnce(Return(true));
   EXPECT_CALL(m, SendRequest(_, _, _, _, _)).Times(1).WillOnce(Return(true));
 
   CastCrashdumpData data;
@@ -178,12 +174,12 @@ TEST(CastCrashdumpUploaderTest, UploadSucceedsWithValidAttachment) {
   data.guid = "AAA-BBB";
   data.email = "test@test.com";
   data.comments = "none";
-  data.minidump_pathname = minidump.value();
+  data.minidump_pathname = minidump.path().value();
   data.crash_server = "http://foo.com";
   CastCrashdumpUploader uploader(data, &m);
 
-  // Add a file that does not exist as an attachment.
-  uploader.AddAttachment("label", attachment.value());
+  // Add a valid file as an attachment.
+  uploader.AddAttachment("label", attachment.path().value());
   ASSERT_TRUE(uploader.Upload(nullptr));
 }
 

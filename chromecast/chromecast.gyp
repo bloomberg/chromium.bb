@@ -111,6 +111,8 @@
         'base/pref_names.h',
         'base/process_utils.cc',
         'base/process_utils.h',
+        'base/scoped_temp_file.cc',
+        'base/scoped_temp_file.h',
         'base/serializers.cc',
         'base/serializers.h',
         'base/system_time_change_notifier.cc',

@@ -8,11 +8,13 @@
 #include "base/bind.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_vector.h"
 #include "base/test/scoped_path_override.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "chromecast/app/linux/cast_crash_reporter_client.h"
+#include "chromecast/base/scoped_temp_file.h"
 #include "chromecast/crash/app_state_tracker.h"
 #include "chromecast/crash/linux/crash_testing_utils.h"
 #include "chromecast/crash/linux/crash_util.h"
@@ -48,10 +50,10 @@ class CastCrashReporterClientTest : public testing::Test {
 
   // testing::Test implementation:
   void SetUp() override {
-    // Set up a temporary directory which will be used as our fake home dir.
-    ASSERT_TRUE(base::CreateNewTempDirectory("", &fake_home_dir_));
+    // Override the $HOME path.
+    ASSERT_TRUE(fake_home_dir_.CreateUniqueTempDir());
     home_override_.reset(
-        new base::ScopedPathOverride(base::DIR_HOME, fake_home_dir_));
+        new base::ScopedPathOverride(base::DIR_HOME, home_path()));
 
     // "Launch" YouTube.
     AppStateTracker::SetLastLaunchedApp("youtube");
@@ -65,12 +67,8 @@ class CastCrashReporterClientTest : public testing::Test {
     AppStateTracker::SetLastLaunchedApp("netflix");
     // Netflix crashed.
 
-    // A minidump file is created.
-    base::CreateTemporaryFile(&minidump_path_);
-    base::File minidump(minidump_path_,
-                        base::File::FLAG_OPEN | base::File::FLAG_APPEND);
-    minidump.Write(0, kFakeMinidumpContents, sizeof(kFakeMinidumpContents) - 1);
-    minidump.Close();
+    // A minidump file is written.
+    minidump_.Write(kFakeMinidumpContents);
   }
 
   void TearDown() override {
@@ -78,13 +76,13 @@ class CastCrashReporterClientTest : public testing::Test {
     base::ThreadRestrictions::SetIOAllowed(true);
 
     // Assert that the original file has been moved.
-    ASSERT_FALSE(base::PathExists(minidump_path_));
+    ASSERT_FALSE(base::PathExists(minidump_path()));
 
     // Assert that the file has been moved to "minidumps", with the expected
     // contents.
     std::string contents;
     base::FilePath new_minidump =
-        fake_home_dir_.Append("minidumps").Append(minidump_path_.BaseName());
+        home_path().Append("minidumps").Append(minidump_path().BaseName());
     ASSERT_TRUE(base::PathExists(new_minidump));
     ASSERT_TRUE(base::ReadFileToString(new_minidump, &contents));
     ASSERT_EQ(kFakeMinidumpContents, contents);
@@ -98,7 +96,7 @@ class CastCrashReporterClientTest : public testing::Test {
 
     // Assert that the lockfile has logged the correct information.
     base::FilePath lockfile =
-        fake_home_dir_.Append("minidumps").Append("lockfile");
+        home_path().Append("minidumps").Append("lockfile");
     ASSERT_TRUE(base::PathExists(lockfile));
     ScopedVector<DumpInfo> dumps;
     ASSERT_TRUE(FetchDumps(lockfile.value(), &dumps));
@@ -113,12 +111,15 @@ class CastCrashReporterClientTest : public testing::Test {
     EXPECT_EQ("netflix", dump_info.params().last_app_name);
   }
 
-  const base::FilePath& minidump_path() { return minidump_path_; }
+  base::FilePath minidump_path() { return minidump_.path(); }
+  base::FilePath home_path() { return fake_home_dir_.path(); }
 
  private:
-  base::FilePath fake_home_dir_;
-  base::FilePath minidump_path_;
+  base::ScopedTempDir fake_home_dir_;
+  ScopedTempFile minidump_;
   scoped_ptr<base::ScopedPathOverride> home_override_;
+
+  DISALLOW_COPY_AND_ASSIGN(CastCrashReporterClientTest);
 };
 
 #if ENABLE_THREAD_RESTRICTIONS

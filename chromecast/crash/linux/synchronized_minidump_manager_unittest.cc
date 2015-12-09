@@ -16,12 +16,14 @@
 #include "base/bind.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/process/launch.h"
 #include "base/test/scoped_path_override.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
+#include "chromecast/base/scoped_temp_file.h"
 #include "chromecast/crash/linux/crash_testing_utils.h"
 #include "chromecast/crash/linux/dump_info.h"
 #include "chromecast/crash/linux/synchronized_minidump_manager.h"
@@ -137,10 +139,11 @@ class SynchronizedMinidumpManagerTest : public testing::Test {
 
   void SetUp() override {
     // Set up a temporary directory which will be used as our fake home dir.
-    ASSERT_TRUE(base::CreateNewTempDirectory("", &fake_home_dir_));
+    ASSERT_TRUE(fake_home_dir_.CreateUniqueTempDir());
     path_override_.reset(
-        new base::ScopedPathOverride(base::DIR_HOME, fake_home_dir_));
-    minidump_dir_ = fake_home_dir_.Append(kMinidumpSubdir);
+        new base::ScopedPathOverride(base::DIR_HOME, fake_home_dir_.path()));
+
+    minidump_dir_ = fake_home_dir_.path().Append(kMinidumpSubdir);
     lockfile_ = minidump_dir_.Append(kLockfileName);
     metadata_ = minidump_dir_.Append(kMetadataName);
 
@@ -154,19 +157,13 @@ class SynchronizedMinidumpManagerTest : public testing::Test {
     ASSERT_TRUE(lockfile.IsValid());
   }
 
-  void TearDown() override {
-    // Remove the temp directory.
-    path_override_.reset();
-    ASSERT_TRUE(base::DeleteFile(fake_home_dir_, true));
-  }
-
  protected:
-  base::FilePath fake_home_dir_;  // Path to the test home directory.
   base::FilePath minidump_dir_;   // Path the the minidump directory.
   base::FilePath lockfile_;       // Path to the lockfile in |minidump_dir_|.
   base::FilePath metadata_;       // Path to the metadata in |minidump_dir_|.
 
  private:
+  base::ScopedTempDir fake_home_dir_;
   scoped_ptr<base::ScopedPathOverride> path_override_;
 };
 

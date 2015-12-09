@@ -55,6 +55,7 @@ test("cast_shell_unittests") {
     "//base",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
+    "//chromecast/base:test_support",
     "//chromecast/crash",
     "//chromecast/crash:test_support",
     "//testing/gtest",

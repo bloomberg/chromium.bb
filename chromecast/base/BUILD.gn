@@ -6,6 +6,7 @@ import("//chrome/version.gni")  # TODO layering violation!
 import("//chromecast/chromecast.gni")
 import("//testing/test.gni")
 
+# GYP target: chromecast.gyp:cast_base
 source_set("base") {
   sources = [
     "android/dumpstate_writer.cc",
@@ -47,6 +48,20 @@ source_set("base") {
   ]
 }
 
+# GYP target: n/a
+source_set("test_support") {
+  sources = [
+    "scoped_temp_file.cc",
+    "scoped_temp_file.h",
+  ]
+
+  public_deps = [
+    ":base",
+    "//base",
+  ]
+}
+
+# GYP target: chromecast_tests.gypi:cast_base_unittests
 test("cast_base_unittests") {
   sources = [
     "device_capabilities_impl_unittest.cc",
@@ -58,8 +73,7 @@ test("cast_base_unittests") {
   ]
 
   deps = [
-    ":base",
-    "//base",
+    ":test_support",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
     "//testing/gmock",

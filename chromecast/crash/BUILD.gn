@@ -65,6 +65,7 @@ if (is_linux) {
       "//base/test:run_all_unittests",
       "//base/test:test_support",
       "//breakpad:client",
+      "//chromecast/base:test_support",
       "//testing/gmock",
       "//testing/gtest",
     ]
