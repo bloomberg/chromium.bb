@@ -87,6 +87,11 @@ public:
         return toInline()->firstLineBoxIncludingCulling();
     }
 
+    LineBoxList* lineBoxes()
+    {
+        return toInline()->lineBoxes();
+    }
+
 protected:
     LayoutInline* toInline()
     {

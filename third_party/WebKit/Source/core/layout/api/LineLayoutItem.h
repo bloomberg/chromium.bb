@@ -214,6 +214,11 @@ public:
         return m_layoutObject->isInlineBlockOrInlineTable();
     }
 
+    bool isInlineElementContinuation() const
+    {
+        return m_layoutObject->isInlineElementContinuation();
+    }
+
     bool isLayoutBlock() const
     {
         return m_layoutObject->isLayoutBlock();
