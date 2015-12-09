@@ -416,6 +416,14 @@ Window::Window()
 Window::~Window() {
   FOR_EACH_OBSERVER(WindowObserver, observers_, OnWindowDestroying(this));
 
+  if (HasFocus()) {
+    // The focused window is being removed. When this happens the server
+    // advances focus. We don't want to randomly pick a Window to get focus, so
+    // we update local state only, and wait for the next focus change from the
+    // server.
+    tree_client()->LocalSetFocus(nullptr);
+  }
+
   // Remove from transient parent.
   if (transient_parent_)
     transient_parent_->LocalRemoveTransientWindow(this);
@@ -440,11 +448,6 @@ Window::~Window() {
     DCHECK(children_.empty() || children_.front() != child);
   }
 
-  // TODO(beng): It'd be better to do this via a destruction observer in the
-  //             WindowTreeClientImpl.
-  if (connection_)
-    tree_client()->RemoveWindow(id_);
-
   // Clear properties.
   for (auto& pair : prop_map_) {
     if (pair.second.deallocator)
@@ -454,8 +457,10 @@ Window::~Window() {
 
   FOR_EACH_OBSERVER(WindowObserver, observers_, OnWindowDestroyed(this));
 
-  if (connection_ && connection_->GetRoot() == this)
-    tree_client()->OnRootDestroyed(this);
+  // Invoke after observers so that can clean up any internal state observers
+  // may have changed.
+  if (tree_client())
+    tree_client()->OnWindowDestroyed(this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

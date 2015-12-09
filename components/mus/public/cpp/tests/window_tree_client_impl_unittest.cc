@@ -444,4 +444,43 @@ TEST_F(WindowTreeClientImplTest, FocusOnRemovedWindowWithInFlightFocusChange) {
   EXPECT_TRUE(child2->HasFocus());
 }
 
+class ToggleVisibilityFromDestroyedObserver : public WindowObserver {
+ public:
+  explicit ToggleVisibilityFromDestroyedObserver(Window* window)
+      : window_(window) {
+    window_->AddObserver(this);
+  }
+
+  ToggleVisibilityFromDestroyedObserver() { EXPECT_FALSE(window_); }
+
+  // WindowObserver:
+  void OnWindowDestroyed(Window* window) override {
+    window_->SetVisible(!window->visible());
+    window_->RemoveObserver(this);
+    window_ = nullptr;
+  }
+
+ private:
+  Window* window_;
+
+  DISALLOW_COPY_AND_ASSIGN(ToggleVisibilityFromDestroyedObserver);
+};
+
+TEST_F(WindowTreeClientImplTest, ToggleVisibilityFromWindowDestroyed) {
+  WindowTreeSetup setup;
+  Window* root = setup.window_tree_connection()->GetRoot();
+  ASSERT_TRUE(root);
+  Window* child1 = setup.window_tree_connection()->NewWindow();
+  root->AddChild(child1);
+  ToggleVisibilityFromDestroyedObserver toggler(child1);
+  // Destroying the window triggers
+  // ToggleVisibilityFromDestroyedObserver::OnWindowDestroyed(), which toggles
+  // the visibility of the window. Ack the change, which should not crash or
+  // trigger DCHECKs.
+  child1->Destroy();
+  uint32_t change_id;
+  ASSERT_TRUE(setup.window_tree()->GetAndClearChangeId(&change_id));
+  setup.window_tree_client()->OnChangeCompleted(change_id, true);
+}
+
 }  // namespace mus

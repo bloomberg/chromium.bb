@@ -96,14 +96,12 @@ class WindowTreeClientImpl : public WindowTreeConnection,
   // Start/stop tracking windows. While tracked, they can be retrieved via
   // WindowTreeConnection::GetWindowById.
   void AddWindow(Window* window);
-  void RemoveWindow(Id window_id);
 
   bool is_embed_root() const { return is_embed_root_; }
 
-  // Called after the root window's observers have been notified of destruction
-  // (as the last step of ~Window). This ordering ensures that the Window Server
-  // is torn down after the root.
-  void OnRootDestroyed(Window* root);
+  // Called after the window's observers have been notified of destruction (as
+  // the last step of ~Window).
+  void OnWindowDestroyed(Window* window);
 
  private:
   friend class WindowTreeClientImplPrivate;

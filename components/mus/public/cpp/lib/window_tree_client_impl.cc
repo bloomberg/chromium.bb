@@ -327,36 +327,25 @@ void WindowTreeClientImpl::AddWindow(Window* window) {
   windows_[window->id()] = window;
 }
 
-void WindowTreeClientImpl::RemoveWindow(Id window_id) {
-  if (focused_window_ && focused_window_->id() == window_id) {
-    // The focused window is being removed. When this happens the server
-    // advances focus. We don't want to randomly pick a Window to get focus, so
-    // we update local state only, and wait for the next focus change from the
-    // server.
-    LocalSetFocus(nullptr);
-  }
-
-  IdToWindowMap::iterator it = windows_.find(window_id);
-  if (it != windows_.end())
-    windows_.erase(it);
+void WindowTreeClientImpl::OnWindowDestroyed(Window* window) {
+  windows_.erase(window->id());
 
   // Remove any InFlightChanges associated with the window.
-  std::set<uint32_t> in_flight_change_ids;
+  std::set<uint32_t> in_flight_change_ids_to_remove;
   for (const auto& pair : in_flight_map_) {
-    if (pair.second->window() && pair.second->window()->id() == window_id)
-      in_flight_change_ids.insert(pair.first);
+    if (pair.second->window() == window)
+      in_flight_change_ids_to_remove.insert(pair.first);
   }
-  for (auto change_id : in_flight_change_ids)
+  for (auto change_id : in_flight_change_ids_to_remove)
     in_flight_map_.erase(change_id);
-}
 
-void WindowTreeClientImpl::OnRootDestroyed(Window* root) {
-  DCHECK_EQ(root, root_);
-  root_ = nullptr;
+  if (window == root_) {
+    root_ = nullptr;
 
-  // When the root is gone we can't do anything useful.
-  if (!in_destructor_)
-    delete this;
+    // When the root is gone we can't do anything useful.
+    if (!in_destructor_)
+      delete this;
+  }
 }
 
 InFlightChange* WindowTreeClientImpl::GetOldestInFlightChangeMatching(
@@ -373,6 +362,7 @@ InFlightChange* WindowTreeClientImpl::GetOldestInFlightChangeMatching(
 
 uint32_t WindowTreeClientImpl::ScheduleInFlightChange(
     scoped_ptr<InFlightChange> change) {
+  DCHECK(!change->window() || windows_.count(change->window()->id()) > 0);
   const uint32_t change_id = next_change_id_++;
   in_flight_map_[change_id] = std::move(change);
   return change_id;

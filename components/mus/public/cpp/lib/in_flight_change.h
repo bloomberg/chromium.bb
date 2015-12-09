@@ -131,7 +131,6 @@ class InFlightBoundsChange : public InFlightChange {
   void Revert() override;
 
  private:
-  Window* window_;
   gfx::Rect revert_bounds_;
 
   DISALLOW_COPY_AND_ASSIGN(InFlightBoundsChange);
@@ -221,7 +220,6 @@ class InFlightVisibleChange : public InFlightChange {
   void Revert() override;
 
  private:
-  Window* window_;
   bool revert_visible_;
 
   DISALLOW_COPY_AND_ASSIGN(InFlightVisibleChange);
