@@ -803,6 +803,31 @@ static void SetNetworkPredictionOptions(JNIEnv* env,
   GetPrefService()->SetInteger(prefs::kNetworkPredictionOptions, option);
 }
 
+static jboolean NetworkPredictionEnabledHasUserSetting(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  return GetPrefService()->GetUserPrefValue(
+      prefs::kNetworkPredictionEnabled) != NULL;
+}
+
+static jboolean NetworkPredictionOptionsHasUserSetting(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  return GetPrefService()->GetUserPrefValue(
+      prefs::kNetworkPredictionOptions) != NULL;
+}
+
+static jboolean GetNetworkPredictionEnabledUserPrefValue(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  const base::Value* network_prediction_enabled =
+      GetPrefService()->GetUserPrefValue(prefs::kNetworkPredictionEnabled);
+  DCHECK(network_prediction_enabled);
+  bool value = false;
+  DCHECK(network_prediction_enabled->GetAsBoolean(&value));
+  return value;
+}
+
 static void SetResolveNavigationErrorEnabled(JNIEnv* env,
                                              const JavaParamRef<jobject>& obj,
                                              jboolean enabled) {

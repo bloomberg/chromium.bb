@@ -511,6 +511,30 @@ public final class PrefServiceBridge {
     }
 
     /**
+     * @return whether there is a user set value for kNetworkPredictionEnabled.  This should only be
+     * used for preference migration.
+     */
+    public boolean networkPredictionEnabledHasUserSetting() {
+        return nativeNetworkPredictionEnabledHasUserSetting();
+    }
+
+    /**
+     * @return whether there is a user set value for kNetworkPredictionOptions.  This should only be
+     * used for preference migration.
+     */
+    public boolean networkPredictionOptionsHasUserSetting() {
+        return nativeNetworkPredictionOptionsHasUserSetting();
+    }
+
+    /**
+     * @return the user set value for kNetworkPredictionEnabled. This should only be used for
+     * preference migration.
+     */
+    public boolean getNetworkPredictionEnabledUserPrefValue() {
+        return nativeGetNetworkPredictionEnabledUserPrefValue();
+    }
+
+    /**
      * @return Network predictions preference.
      */
     public NetworkPredictionOptions getNetworkPredictionOptions() {
@@ -963,6 +987,9 @@ public final class PrefServiceBridge {
     private native void nativeSetSafeBrowsingEnabled(boolean enabled);
     private native boolean nativeGetSafeBrowsingManaged();
     private native boolean nativeGetNetworkPredictionManaged();
+    private native boolean nativeNetworkPredictionEnabledHasUserSetting();
+    private native boolean nativeNetworkPredictionOptionsHasUserSetting();
+    private native boolean nativeGetNetworkPredictionEnabledUserPrefValue();
     private native int nativeGetNetworkPredictionOptions();
     private native void nativeSetNetworkPredictionOptions(int option);
     private native void nativeSetResolveNavigationErrorEnabled(boolean enabled);
