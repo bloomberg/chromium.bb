@@ -20,6 +20,8 @@
 #include "mojo/application/public/interfaces/application_manager.mojom.h"
 #include "mojo/common/weak_binding_set.h"
 #include "mojo/converters/network/network_type_converters.h"
+#include "mojo/edk/embedder/embedder.h"
+#include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/runner/child/test_native_main.h"
 #include "mojo/runner/init.h"
 #include "mojo/shell/application_manager_apptests.mojom.h"
@@ -79,6 +81,19 @@ class TargetApplicationDelegate : public mojo::ApplicationDelegate,
                    weak_factory_.GetWeakPtr()),
         base::ThreadTaskRunnerHandle::Get()));
 
+    // The platform handle used for the new EDK's broker.
+    mojo::edk::PlatformChannelPair broker_channel_pair;
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch("use-new-edk")) {
+      std::string client_handle_as_string =
+          broker_channel_pair.PrepareToPassClientHandleToChildProcessAsString(
+              &handle_passing_info);
+      MojoResult rv = MojoWriteMessage(
+          handle.get().value(), client_handle_as_string.c_str(),
+          static_cast<uint32_t>(client_handle_as_string.size()), nullptr, 0,
+          MOJO_WRITE_MESSAGE_FLAG_NONE);
+      DCHECK_EQ(rv, MOJO_RESULT_OK);
+    }
+
     mojo::CapabilityFilterPtr filter(mojo::CapabilityFilter::New());
     mojo::Array<mojo::String> test_interfaces;
     test_interfaces.push_back(
@@ -99,6 +114,16 @@ class TargetApplicationDelegate : public mojo::ApplicationDelegate,
     options.fds_to_remap = &handle_passing_info;
   #endif
     target_ = base::LaunchProcess(child_command_line, options);
+
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch("use-new-edk")) {
+      MojoHandle platform_handle_wrapper;
+      MojoResult rv = mojo::edk::CreatePlatformHandleWrapper(
+          broker_channel_pair.PassServerHandle(), &platform_handle_wrapper);
+      DCHECK_EQ(rv, MOJO_RESULT_OK);
+      application_manager->RegisterProcessWithBroker(
+          target_.Pid(),
+          mojo::ScopedHandle(mojo::Handle(platform_handle_wrapper)));
+    }
   }
   bool ConfigureIncomingConnection(
       mojo::ApplicationConnection* connection) override {

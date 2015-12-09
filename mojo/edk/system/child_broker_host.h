@@ -10,7 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
-#include "base/process/process_handle.h"
+#include "base/process/process.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/system/raw_channel.h"
 #include "mojo/edk/system/system_impl_export.h"
@@ -30,11 +30,10 @@ class MOJO_SYSTEM_IMPL_EXPORT ChildBrokerHost
     {
 #endif
  public:
-  // |child_process| is a handle to the child process. It's not owned by this
-  // class but is guaranteed to be alive as long as the child process is
-  // running. |pipe| is a handle to the communication pipe to the child process,
-  // which is generated inside mojo::edk::ChildProcessLaunched. It is owned by
-  // this class.
+  // |child_process| is a handle to the child process. It will be duplicated by
+  // this object. |pipe| is a handle to the communication pipe to the child
+  // process, which is generated inside mojo::edk::ChildProcessLaunched. It is
+  // owned by this class.
   ChildBrokerHost(base::ProcessHandle child_process, ScopedPlatformHandle pipe);
 
   base::ProcessId GetProcessId();
@@ -76,7 +75,7 @@ class MOJO_SYSTEM_IMPL_EXPORT ChildBrokerHost
 
 #if defined(OS_WIN)
   // Handle to the child process, used for duplication of handles.
-  base::ProcessHandle child_process_;
+  base::Process child_process_;
 
   // Pipe used for synchronous messages from the child. Responses are written to
   // it as well.

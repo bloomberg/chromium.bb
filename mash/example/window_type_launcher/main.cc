@@ -49,6 +49,7 @@ int main(int argc, char** argv) {
 #endif
 
   {
+    mojo::embedder::PreInitializeChildProcess();
     mojo::embedder::Init();
 
     ProcessDelegate process_delegate;
@@ -61,16 +62,14 @@ int main(int argc, char** argv) {
                                    io_thread.task_runner().get(),
                                    mojo::embedder::ScopedPlatformHandle());
 
+    mojo::InterfaceRequest<mojo::Application> application_request;
+    scoped_ptr<mojo::runner::RunnerConnection> connection(
+        mojo::runner::RunnerConnection::ConnectToRunner(
+            &application_request, mojo::ScopedMessagePipeHandle()));
     base::MessageLoop loop(mojo::common::MessagePumpMojo::Create());
     WindowTypeLauncher delegate;
-    {
-      mojo::InterfaceRequest<mojo::Application> application_request;
-      scoped_ptr<mojo::runner::RunnerConnection> connection(
-          mojo::runner::RunnerConnection::ConnectToRunner(
-              &application_request, mojo::ScopedMessagePipeHandle()));
-      mojo::ApplicationImpl impl(&delegate, application_request.Pass());
-      loop.Run();
-    }
+    mojo::ApplicationImpl impl(&delegate, application_request.Pass());
+    loop.Run();
 
     mojo::embedder::ShutdownIPCSupport();
   }

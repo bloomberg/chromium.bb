@@ -2476,17 +2476,20 @@ void RenderProcessHostImpl::OnProcessLaunched() {
                                          Source<RenderProcessHost>(this),
                                          NotificationService::NoDetails());
 
-#if defined(MOJO_SHELL_CLIENT)
-  // Send the mojo shell handle to the renderer.
-  SendExternalMojoShellHandleToChild(GetHandle(), this);
-#endif
-
   if (base::CommandLine::ForCurrentProcess()->HasSwitch("use-new-edk") &&
       child_process_launcher_.get()) {
     base::ProcessHandle process_handle =
         child_process_launcher_->GetProcess().Handle();
-    mojo::embedder::ScopedPlatformHandle client_pipe =
-        mojo::embedder::ChildProcessLaunched(process_handle);
+    mojo::embedder::ScopedPlatformHandle client_pipe;
+#if defined(MOJO_SHELL_CLIENT)
+    if (IsRunningInMojoShell()) {
+      client_pipe = RegisterProcessWithBroker(
+          child_process_launcher_->GetProcess().Pid());
+    } else
+#endif
+    {
+      client_pipe = mojo::embedder::ChildProcessLaunched(process_handle);
+    }
     Send(new ChildProcessMsg_SetMojoParentPipeHandle(
         IPC::GetFileHandleForProcess(
 #if defined(OS_WIN)
@@ -2496,6 +2499,11 @@ void RenderProcessHostImpl::OnProcessLaunched() {
 #endif
                                      process_handle, true)));
   }
+
+#if defined(MOJO_SHELL_CLIENT)
+  // Send the mojo shell handle to the renderer.
+  SendExternalMojoShellHandleToChild(GetHandle(), this);
+#endif
 
   // Allow Mojo to be setup before the renderer sees any Chrome IPC messages.
   // This way, Mojo can be safely used from the renderer in response to any

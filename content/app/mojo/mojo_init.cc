@@ -11,6 +11,10 @@
 #include "ipc/ipc_channel.h"
 #include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
 
+#if defined(MOJO_SHELL_CLIENT)
+#include "content/common/mojo/mojo_shell_connection_impl.h"
+#endif
+
 namespace content {
 
 namespace {
@@ -21,9 +25,14 @@ class MojoInitializer {
     const base::CommandLine& command_line =
         *base::CommandLine::ForCurrentProcess();
     if (command_line.HasSwitch("use-new-edk")) {
-      std::string process_type =
-          command_line.GetSwitchValueASCII(switches::kProcessType);
-      if (process_type.empty()) {
+      bool initialize_as_parent =
+          command_line.GetSwitchValueASCII(switches::kProcessType).empty();
+#if defined(MOJO_SHELL_CLIENT)
+      if (IsRunningInMojoShell()) {
+        initialize_as_parent = false;
+      }
+#endif
+      if (initialize_as_parent) {
         mojo::embedder::PreInitializeParentProcess();
       } else {
         mojo::embedder::PreInitializeChildProcess();

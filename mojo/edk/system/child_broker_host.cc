@@ -30,7 +30,10 @@ ChildBrokerHost::ChildBrokerHost(base::ProcessHandle child_process,
 #if defined(OS_POSIX)
   parent_async_channel_handle = pipe.Pass();
 #else
-  child_process_ = child_process;
+  DuplicateHandle(GetCurrentProcess(), child_process,
+                  GetCurrentProcess(), &child_process,
+                  0, FALSE, DUPLICATE_SAME_ACCESS);
+  child_process_ = base::Process(child_process);
   sync_channel_ = pipe.Pass();
   memset(&read_context_.overlapped, 0, sizeof(read_context_.overlapped));
   read_context_.handler = this;
@@ -279,7 +282,7 @@ void ChildBrokerHost::OnIOCompleted(base::MessageLoopForIO::IOContext* context,
 HANDLE ChildBrokerHost::DuplicateToChild(HANDLE handle) {
   HANDLE rv = INVALID_HANDLE_VALUE;
   BOOL result = DuplicateHandle(base::GetCurrentProcessHandle(), handle,
-                                child_process_, &rv, 0, FALSE,
+                                child_process_.Handle(), &rv, 0, FALSE,
                                 DUPLICATE_SAME_ACCESS | DUPLICATE_CLOSE_SOURCE);
   DCHECK(result);
   return rv;
@@ -287,7 +290,7 @@ HANDLE ChildBrokerHost::DuplicateToChild(HANDLE handle) {
 
 HANDLE ChildBrokerHost::DuplicateFromChild(HANDLE handle) {
   HANDLE rv = INVALID_HANDLE_VALUE;
-  BOOL result = DuplicateHandle(child_process_, handle,
+  BOOL result = DuplicateHandle(child_process_.Handle(), handle,
                                 base::GetCurrentProcessHandle(), &rv, 0, FALSE,
                                 DUPLICATE_SAME_ACCESS | DUPLICATE_CLOSE_SOURCE);
   DCHECK(result);

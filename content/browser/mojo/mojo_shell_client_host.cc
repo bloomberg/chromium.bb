@@ -6,6 +6,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "content/browser/mojo/mojo_shell_client_host.h"
 #include "content/common/mojo/mojo_messages.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/mojo_shell_connection.h"
 #include "ipc/ipc_sender.h"
@@ -72,6 +73,16 @@ void SetMojoPlatformFile(RenderProcessHost* render_process_host,
                                    new InstanceShellHandle(platform_file));
 }
 
+void CallRegisterProcessWithBroker(base::ProcessId pid,
+                                   MojoHandle client_pipe) {
+  mojo::shell::mojom::ApplicationManagerPtr application_manager;
+  MojoShellConnection::Get()->GetApplication()->ConnectToService(
+      "mojo:shell", &application_manager);
+  application_manager->RegisterProcessWithBroker(
+      static_cast<uint32_t>(pid),
+      mojo::ScopedHandle(mojo::Handle(client_pipe)));
+}
+
 }  // namespace
 
 void RegisterChildWithExternalShell(int child_process_id,
@@ -134,6 +145,28 @@ void SendExternalMojoShellHandleToChild(
     return;
   render_process_host->Send(new MojoMsg_BindExternalMojoShellHandle(
       IPC::GetFileHandleForProcess(client_file->get(), process_handle, true)));
+}
+
+mojo::embedder::ScopedPlatformHandle RegisterProcessWithBroker(
+    base::ProcessId pid) {
+  mojo::embedder::PlatformChannelPair platform_channel_pair;
+
+  MojoHandle platform_handle_wrapper;
+  MojoResult rv = mojo::embedder::CreatePlatformHandleWrapper(
+      platform_channel_pair.PassServerHandle(), &platform_handle_wrapper);
+  CHECK_EQ(rv, MOJO_RESULT_OK);
+
+  if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    CallRegisterProcessWithBroker(pid, platform_handle_wrapper);
+  } else {
+    BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(CallRegisterProcessWithBroker, pid,
+                   platform_handle_wrapper));
+  }
+
+  return platform_channel_pair.PassClientHandle();
 }
 
 }  // namespace content

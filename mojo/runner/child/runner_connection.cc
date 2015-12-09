@@ -12,6 +12,8 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
+#include "mojo/edk/embedder/embedder.h"
+#include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/message_pump/message_pump_mojo.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/runner/child/child_controller.mojom.h"
@@ -215,9 +217,46 @@ bool RunnerConnectionImpl::WaitForApplicationRequest(
             *base::CommandLine::ForCurrentProcess());
     if (!platform_channel.is_valid())
       return false;
+    scoped_refptr<base::TaskRunner> task_runner;
+    if (!base::CommandLine::ForCurrentProcess()->HasSwitch("use-new-edk"))
+      task_runner = base::ThreadTaskRunnerHandle::Get();
     handle = embedder::CreateChannel(platform_channel.Pass(),
                                      base::Bind(&DidCreateChannel),
-                                     base::ThreadTaskRunnerHandle::Get());
+                                     task_runner);
+    // Copy of code in child_process.cc
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch("use-new-edk")) {
+      // When using the new Mojo EDK, each message pipe is backed by a platform
+      // handle. The one platform handle that comes on the command line is used
+      // to bind to the ChildController interface. However we also want a
+      // platform handle to setup the communication channel by which we exchange
+      // handles to/from tokens, which is needed for sandboxed Windows
+      // processes.
+      char broker_handle[10];
+      MojoHandleSignalsState state;
+      MojoResult rv =
+          MojoWait(handle.get().value(), MOJO_HANDLE_SIGNAL_READABLE,
+                   MOJO_DEADLINE_INDEFINITE, &state);
+      CHECK_EQ(MOJO_RESULT_OK, rv);
+      uint32_t num_bytes = arraysize(broker_handle);
+      rv = MojoReadMessage(handle.get().value(),
+                           broker_handle, &num_bytes, nullptr, 0,
+                           MOJO_READ_MESSAGE_FLAG_NONE);
+      CHECK_EQ(MOJO_RESULT_OK, rv);
+
+      edk::ScopedPlatformHandle broker_channel =
+          edk::PlatformChannelPair::PassClientHandleFromParentProcessFromString(
+              std::string(broker_handle, num_bytes));
+      CHECK(broker_channel.is_valid());
+      embedder::SetParentPipeHandle(
+          mojo::embedder::ScopedPlatformHandle(mojo::embedder::PlatformHandle(
+              broker_channel.release().
+#if defined(OS_WIN)
+                                      handle
+#else
+                                      fd
+#endif
+              )));
+    }
   }
 
   Blocker blocker;

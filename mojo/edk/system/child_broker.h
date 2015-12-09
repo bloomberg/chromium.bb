@@ -13,6 +13,7 @@
 #include "base/synchronization/lock_impl.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/system/broker.h"
+#include "mojo/edk/system/message_in_transit_queue.h"
 #include "mojo/edk/system/raw_channel.h"
 #include "mojo/edk/system/system_impl_export.h"
 
@@ -64,6 +65,12 @@ class MOJO_SYSTEM_IMPL_EXPORT ChildBroker
   // Callback for when a RoutedRawChannel is destroyed for cleanup.
   void ChannelDestructed(RoutedRawChannel* channel);
 
+  // Sends a message over |parent_async_channel_|, queueing it if necessary.
+  void WriteAsyncMessage(scoped_ptr<MessageInTransit> message);
+
+  // Initializes |parent_async_channel_|.
+  void InitAsyncChannel(ScopedPlatformHandle parent_async_channel_handle);
+
 #if defined(OS_WIN)
   // Helper method to write the given message and read back the result.
   bool WriteAndReadResponse(BrokerMessage* message,
@@ -73,17 +80,17 @@ class MOJO_SYSTEM_IMPL_EXPORT ChildBroker
   void CreatePlatformChannelPairNoLock(ScopedPlatformHandle* server,
                                        ScopedPlatformHandle* client);
 
+  // Guards access to |parent_sync_channel_|.
+  // We use LockImpl instead of Lock because the latter adds thread checking
+  // that we don't want (since we lock in the constructor and unlock on another
+  // thread.
+  base::internal::LockImpl sync_channel_lock_;
+
   // Pipe used for communication to the parent process. We use a pipe directly
   // instead of bindings or RawChannel because we need to send synchronous
   // messages with replies from any thread.
   ScopedPlatformHandle parent_sync_channel_;
 #endif
-
-  // Guards access to below.
-  // We use LockImpl instead of Lock because the latter adds thread checking
-  // that we don't want (since we lock in the constructor and unlock on another
-  // thread.
-  base::internal::LockImpl lock_;
 
   // RawChannel used for asynchronous communication to and from the parent
   // process. Since these messages are bidirectional, we can't use
@@ -95,10 +102,22 @@ class MOJO_SYSTEM_IMPL_EXPORT ChildBroker
   // bindings.
   RawChannel* parent_async_channel_;
 
+  // Queue of messages to |parent_async_channel_| that are sent before it is
+  // created.
+  MessageInTransitQueue async_channel_queue_;
+
+  // The following members are only used on the IO thread, so they don't need to
+  // be used under a lock.
+
   // Maps from routing ids to the MessagePipeDispatcher that have requested to
   // connect to them. When the parent replies with which process they should be
   // connected to, they will migrate to |connected_pipes_|.
   base::hash_map<uint64_t, MessagePipeDispatcher*> pending_connects_;
+
+  // These are MessagePipeDispatchers that are connected to other MPDs in this
+  // process, but they both connected before we had parent_sync_channel_ so we
+  // delayed connecting them.
+  base::hash_map<uint64_t, MessagePipeDispatcher*> pending_inprocess_connects_;
 
   // Map from MessagePipeDispatcher to its RoutedRawChannel. This is needed so
   // that when a MessagePipeDispatcher is closed we can remove the route for the

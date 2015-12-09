@@ -9,6 +9,7 @@
 
 #include "base/process/process_handle.h"
 #include "mojo/application/public/interfaces/shell.mojom.h"
+#include "third_party/mojo/src/mojo/edk/embedder/scoped_platform_handle.h"
 
 namespace content {
 
@@ -37,6 +38,10 @@ void SendExternalMojoShellHandleToChild(base::ProcessHandle process_handle,
 // renderer_capability_filter.cc so that it can be subject to specific security
 // review.
 mojo::CapabilityFilterPtr CreateCapabilityFilterForRenderer();
+
+// Used for the broker in the new EDK.
+mojo::embedder::ScopedPlatformHandle RegisterProcessWithBroker(
+    base::ProcessId pid);
 
 }  // namespace content
 

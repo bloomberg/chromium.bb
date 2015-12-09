@@ -38,6 +38,12 @@
 #include "content/browser/mach_broker_mac.h"
 #endif
 
+
+#if defined(MOJO_SHELL_CLIENT)
+#include "content/browser/mojo/mojo_shell_client_host.h"
+#include "content/common/mojo/mojo_shell_connection_impl.h"
+#endif
+
 namespace content {
 namespace {
 
@@ -402,8 +408,15 @@ void BrowserChildProcessHostImpl::OnProcessLaunched() {
   DCHECK(process.IsValid());
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch("use-new-edk")) {
-    mojo::embedder::ScopedPlatformHandle client_pipe =
-        mojo::embedder::ChildProcessLaunched(process.Handle());
+    mojo::embedder::ScopedPlatformHandle client_pipe;
+#if defined(MOJO_SHELL_CLIENT)
+    if (IsRunningInMojoShell()) {
+      client_pipe = RegisterProcessWithBroker(process.Pid());
+    } else
+#endif
+    {
+      client_pipe = mojo::embedder::ChildProcessLaunched(process.Handle());
+    }
     Send(new ChildProcessMsg_SetMojoParentPipeHandle(
         IPC::GetFileHandleForProcess(
 #if defined(OS_WIN)

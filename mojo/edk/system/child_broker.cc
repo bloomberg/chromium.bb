@@ -38,24 +38,21 @@ void ChildBroker::SetChildBrokerHostHandle(ScopedPlatformHandle handle)  {
                      sizeof(parent_handle), &bytes_read, NULL);
   CHECK(rv);
   parent_async_channel_handle.reset(PlatformHandle(parent_handle));
+  sync_channel_lock_.Unlock();
 #endif
 
-  parent_async_channel_ =
-      RawChannel::Create(parent_async_channel_handle.Pass());
   internal::g_io_thread_task_runner->PostTask(
       FROM_HERE,
-      base::Bind(&RawChannel::Init, base::Unretained(parent_async_channel_),
-                 this));
-
-  lock_.Unlock();
+      base::Bind(&ChildBroker::InitAsyncChannel, base::Unretained(this),
+                 base::Passed(&parent_async_channel_handle)));
 }
 
 #if defined(OS_WIN)
 void ChildBroker::CreatePlatformChannelPair(
     ScopedPlatformHandle* server, ScopedPlatformHandle* client) {
-  lock_.Lock();
+  sync_channel_lock_.Lock();
   CreatePlatformChannelPairNoLock(server, client);
-  lock_.Unlock();
+  sync_channel_lock_.Unlock();
 }
 
 void ChildBroker::HandleToToken(const PlatformHandle* platform_handles,
@@ -71,9 +68,9 @@ void ChildBroker::HandleToToken(const PlatformHandle* platform_handles,
     message->handles[i] = platform_handles[i].handle;
 
   uint32_t response_size = static_cast<int>(count) * sizeof(uint64_t);
-  lock_.Lock();
+  sync_channel_lock_.Lock();
   WriteAndReadResponse(message, tokens, response_size);
-  lock_.Unlock();
+  sync_channel_lock_.Unlock();
 }
 
 void ChildBroker::TokenToHandle(const uint64_t* tokens,
@@ -91,11 +88,11 @@ void ChildBroker::TokenToHandle(const uint64_t* tokens,
   std::vector<HANDLE> handles_temp(count);
   uint32_t response_size =
       static_cast<uint32_t>(handles_temp.size()) * sizeof(HANDLE);
-  lock_.Lock();
+  sync_channel_lock_.Lock();
   if (WriteAndReadResponse(message, &handles_temp[0], response_size)) {
     for (uint32_t i = 0; i < count; ++i)
       handles[i].handle = handles_temp[i];
-  lock_.Unlock();
+    sync_channel_lock_.Unlock();
   }
 }
 #endif
@@ -103,11 +100,19 @@ void ChildBroker::TokenToHandle(const uint64_t* tokens,
 void ChildBroker::ConnectMessagePipe(uint64_t pipe_id,
                                      MessagePipeDispatcher* message_pipe) {
   DCHECK(internal::g_io_thread_task_runner->RunsTasksOnCurrentThread());
-  lock_.Lock();
 
   ConnectMessagePipeMessage data;
   data.pipe_id = pipe_id;
   if (pending_connects_.find(pipe_id) != pending_connects_.end()) {
+    if (!parent_async_channel_) {
+      // On Windows, we can't create the local RoutedRawChannel yet because we
+      // don't have parent_sync_channel_. Treat all platforms the same and just
+      // queue this.
+      CHECK(pending_inprocess_connects_.find(pipe_id) ==
+            pending_inprocess_connects_.end());
+      pending_inprocess_connects_[pipe_id] = message_pipe;
+      return;
+    }
     // Both ends of the message pipe are in the same process.
     // First, tell the browser side that to remove its bookkeeping for a pending
     // connect, since it'll never get the other side.
@@ -115,7 +120,7 @@ void ChildBroker::ConnectMessagePipe(uint64_t pipe_id,
     data.type = CANCEL_CONNECT_MESSAGE_PIPE;
     scoped_ptr<MessageInTransit> message(new MessageInTransit(
         MessageInTransit::Type::MESSAGE, sizeof(data), &data));
-    parent_async_channel_->WriteMessage(message.Pass());
+    WriteAsyncMessage(message.Pass());
 
     if (!in_process_pipes_channel1_) {
       ScopedPlatformHandle server_handle, client_handle;
@@ -144,7 +149,6 @@ void ChildBroker::ConnectMessagePipe(uint64_t pipe_id,
         in_process_pipes_channel2_->channel());
 
     pending_connects_.erase(pipe_id);
-    lock_.Unlock();
     return;
   }
 
@@ -152,28 +156,27 @@ void ChildBroker::ConnectMessagePipe(uint64_t pipe_id,
   scoped_ptr<MessageInTransit> message(new MessageInTransit(
       MessageInTransit::Type::MESSAGE, sizeof(data), &data));
   pending_connects_[pipe_id] = message_pipe;
-  parent_async_channel_->WriteMessage(message.Pass());
-
-  lock_.Unlock();
+  WriteAsyncMessage(message.Pass());
 }
 
 void ChildBroker::CloseMessagePipe(
     uint64_t pipe_id, MessagePipeDispatcher* message_pipe) {
   DCHECK(internal::g_io_thread_task_runner->RunsTasksOnCurrentThread());
-  lock_.Lock();
   CHECK(connected_pipes_.find(message_pipe) != connected_pipes_.end());
   connected_pipes_[message_pipe]->RemoveRoute(pipe_id, message_pipe);
   connected_pipes_.erase(message_pipe);
-  lock_.Unlock();
 }
 
 ChildBroker::ChildBroker()
-    : in_process_pipes_channel1_(nullptr),
+    : parent_async_channel_(nullptr),
+      in_process_pipes_channel1_(nullptr),
       in_process_pipes_channel2_(nullptr) {
   DCHECK(!internal::g_broker);
   internal::g_broker = this;
+#if defined(OS_WIN)
   // Block any threads from calling this until we have a pipe to the parent.
-  lock_.Lock();
+  sync_channel_lock_.Lock();
+#endif
 }
 
 ChildBroker::~ChildBroker() {
@@ -183,7 +186,6 @@ void ChildBroker::OnReadMessage(
     const MessageInTransit::View& message_view,
     ScopedPlatformHandleVectorPtr platform_handles) {
   DCHECK(internal::g_io_thread_task_runner->RunsTasksOnCurrentThread());
-  lock_.Lock();
   MultiplexMessages type =
       *static_cast<const MultiplexMessages*>(message_view.bytes());
   if (type == CONNECT_TO_PROCESS) {
@@ -221,8 +223,6 @@ void ChildBroker::OnReadMessage(
   } else {
     NOTREACHED();
   }
-
-  lock_.Unlock();
 }
 
 void ChildBroker::OnError(Error error) {
@@ -231,14 +231,38 @@ void ChildBroker::OnError(Error error) {
 
 void ChildBroker::ChannelDestructed(RoutedRawChannel* channel) {
   DCHECK(internal::g_io_thread_task_runner->RunsTasksOnCurrentThread());
-  lock_.Lock();
   for (auto it : channels_) {
     if (it.second == channel) {
       channels_.erase(it.first);
       break;
     }
   }
-  lock_.Unlock();
+}
+
+void ChildBroker::WriteAsyncMessage(scoped_ptr<MessageInTransit> message) {
+  DCHECK(internal::g_io_thread_task_runner->RunsTasksOnCurrentThread());
+  if (parent_async_channel_) {
+    parent_async_channel_->WriteMessage(message.Pass());
+  } else {
+    async_channel_queue_.AddMessage(message.Pass());
+  }
+}
+
+void ChildBroker::InitAsyncChannel(
+    ScopedPlatformHandle parent_async_channel_handle) {
+  DCHECK(internal::g_io_thread_task_runner->RunsTasksOnCurrentThread());
+
+  parent_async_channel_ =
+      RawChannel::Create(parent_async_channel_handle.Pass());
+  parent_async_channel_->Init(this);
+  while (!async_channel_queue_.IsEmpty())
+    parent_async_channel_->WriteMessage(async_channel_queue_.GetMessage());
+
+  while (!pending_inprocess_connects_.empty()) {
+    ConnectMessagePipe(pending_inprocess_connects_.begin()->first,
+                       pending_inprocess_connects_.begin()->second);
+    pending_inprocess_connects_.erase(pending_inprocess_connects_.begin());
+  }
 }
 
 #if defined(OS_WIN)

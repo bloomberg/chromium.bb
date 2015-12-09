@@ -38,6 +38,7 @@ class ShellApplicationDelegate
   void CreateInstanceForHandle(ScopedHandle channel,
                                const String& url,
                                CapabilityFilterPtr filter) override;
+  void RegisterProcessWithBroker(uint32_t pid, ScopedHandle pipe) override;
 
   mojo::shell::ApplicationManager* manager_;
 
