@@ -240,6 +240,34 @@
         },
       ],
     }],
+    ['chromeos==1', {
+      'targets': [
+        {
+          # GN version: //components/metrics:leak_detector
+          'target_name': 'metrics_leak_detector',
+          'type': 'static_library',
+          'dependencies': [
+            '../base/base.gyp:base',
+          ],
+          'sources': [
+            'metrics/leak_detector/call_stack_manager.cc',
+            'metrics/leak_detector/call_stack_manager.h',
+            'metrics/leak_detector/call_stack_table.cc',
+            'metrics/leak_detector/call_stack_table.h',
+            'metrics/leak_detector/custom_allocator.cc',
+            'metrics/leak_detector/custom_allocator.h',
+            'metrics/leak_detector/leak_analyzer.cc',
+            'metrics/leak_detector/leak_analyzer.h',
+            'metrics/leak_detector/leak_detector_impl.cc',
+            'metrics/leak_detector/leak_detector_impl.h',
+            'metrics/leak_detector/leak_detector_value_type.cc',
+            'metrics/leak_detector/leak_detector_value_type.h',
+            'metrics/leak_detector/ranked_list.cc',
+            'metrics/leak_detector/ranked_list.h',
+          ],
+        },
+      ],
+    }],
     ['OS!="ios"', {
       'targets': [
         {
