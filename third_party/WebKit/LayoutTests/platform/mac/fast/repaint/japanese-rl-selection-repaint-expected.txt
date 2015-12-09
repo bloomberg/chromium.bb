@@ -6,7 +6,7 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
-        [420, 23, 352, 553]
+        [420, 23, 352, 560]
       ],
       "paintInvalidationClients": [
         "LayoutBlockFlow HTML",
