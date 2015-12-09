@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,13 +13,12 @@ namespace cc {
 // The ThreadedChannel tests are run only for threaded and direct mode.
 class ThreadedChannelTest : public LayerTreeTest {
  protected:
-  ThreadedChannelTest() : thread_proxy_(nullptr), calls_received_(0) {}
+  ThreadedChannelTest() : calls_received_(0) {}
 
   ~ThreadedChannelTest() override {}
 
   void BeginTest() override {
     DCHECK(HasImplThread());
-    thread_proxy_ = static_cast<ThreadProxy*>(proxy());
     BeginChannelTest();
   };
   virtual void BeginChannelTest() {}
@@ -36,9 +35,6 @@ class ThreadedChannelTest : public LayerTreeTest {
 
   void AfterTest() override {}
 
-  // TODO(khushalsagar): Remove this once ProxyImpl is added to the
-  // LayerTreeTest.
-  ThreadProxy* thread_proxy_;
   int calls_received_;
 
  private:
@@ -47,8 +43,6 @@ class ThreadedChannelTest : public LayerTreeTest {
 
 class ThreadedChannelTestInitializationAndShutdown
     : public ThreadedChannelTest {
-  void InitializeImplOnImpl() override { calls_received_++; }
-
   void SetVisibleOnImpl(bool visible) override { calls_received_++; }
 
   void ReceivedRequestNewOutputSurface() override { calls_received_++; }
@@ -69,10 +63,9 @@ class ThreadedChannelTestInitializationAndShutdown
     EndTest();
   }
 
-  void WillCloseLayerTreeHostOnImpl() override { calls_received_++; }
   void FinishGLOnImpl() override { calls_received_++; }
 
-  void AfterTest() override { EXPECT_EQ(8, calls_received_); }
+  void AfterTest() override { EXPECT_EQ(6, calls_received_); }
 };
 
 MULTI_THREAD_DIRECT_RENDERER_TEST_F(
@@ -246,7 +239,7 @@ class ThreadedChannelTestBeginMainFrameNotExpectedSoon
   void BeginChannelTest() override { PostOnImplThread(); }
 
   void StartTestOnImplThread() override {
-    thread_proxy_->SendBeginMainFrameNotExpectedSoon();
+    GetProxyImplForTest()->SendBeginMainFrameNotExpectedSoon();
   }
 
   void ReceivedBeginMainFrameNotExpectedSoon() override {
@@ -266,7 +259,7 @@ class ThreadedChannelTestSetAnimationEvents : public ThreadedChannelTest {
   void StartTestOnImplThread() override {
     scoped_ptr<AnimationEventsVector> events(
         make_scoped_ptr(new AnimationEventsVector));
-    thread_proxy_->PostAnimationEventsToMainThreadOnImplThread(
+    GetProxyImplForTest()->PostAnimationEventsToMainThreadOnImplThread(
         std::move(events));
   }
 
@@ -284,7 +277,7 @@ class ThreadedChannelTestLoseOutputSurface : public ThreadedChannelTest {
   void BeginChannelTest() override { PostOnImplThread(); }
 
   void StartTestOnImplThread() override {
-    thread_proxy_->DidLoseOutputSurfaceOnImplThread();
+    GetProxyImplForTest()->DidLoseOutputSurfaceOnImplThread();
   }
 
   void ReceivedDidLoseOutputSurface() override {
@@ -301,7 +294,7 @@ class ThreadedChannelTestPageScaleAnimation : public ThreadedChannelTest {
   void BeginChannelTest() override { PostOnImplThread(); }
 
   void StartTestOnImplThread() override {
-    thread_proxy_->DidCompletePageScaleAnimationOnImplThread();
+    GetProxyImplForTest()->DidCompletePageScaleAnimationOnImplThread();
   }
 
   void ReceivedDidCompletePageScaleAnimation() override {

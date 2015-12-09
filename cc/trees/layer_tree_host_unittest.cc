@@ -49,7 +49,6 @@
 #include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/single_thread_proxy.h"
-#include "cc/trees/thread_proxy.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "skia/ext/refptr.h"
 #include "testing/gmock/include/gmock/gmock.h"

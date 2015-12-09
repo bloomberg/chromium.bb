@@ -7,15 +7,16 @@
 #include "cc/test/fake_content_layer_client.h"
 #include "cc/test/fake_picture_layer.h"
 #include "cc/test/layer_tree_test.h"
-#include "cc/trees/thread_proxy.h"
+#include "cc/trees/proxy_impl.h"
+#include "cc/trees/proxy_main.h"
 
-#define THREAD_PROXY_TEST_F(TEST_FIXTURE_NAME) \
+#define PROXY_MAIN_THREADED_TEST_F(TEST_FIXTURE_NAME) \
   TEST_F(TEST_FIXTURE_NAME, MultiThread) { Run(true); }
 
-// Do common tests for single thread proxy and thread proxy.
+// Do common tests for single thread proxy and proxy main in threaded mode.
 // TODO(simonhong): Add SINGLE_THREAD_PROXY_TEST_F
 #define PROXY_TEST_SCHEDULED_ACTION(TEST_FIXTURE_NAME) \
-  THREAD_PROXY_TEST_F(TEST_FIXTURE_NAME);
+  PROXY_MAIN_THREADED_TEST_F(TEST_FIXTURE_NAME);
 
 namespace cc {
 
@@ -73,12 +74,12 @@ class ProxyTestScheduledActionsBasic : public ProxyTest {
 
 PROXY_TEST_SCHEDULED_ACTION(ProxyTestScheduledActionsBasic);
 
-class ThreadProxyTest : public ProxyTest {
+class ProxyMainThreaded : public ProxyTest {
  protected:
-  ThreadProxyTest()
+  ProxyMainThreaded()
       : update_check_layer_(
             FakePictureLayer::Create(layer_settings(), &client_)) {}
-  ~ThreadProxyTest() override {}
+  ~ProxyMainThreaded() override {}
 
   void SetupTree() override {
     layer_tree_host()->SetRootLayer(update_check_layer_);
@@ -86,83 +87,69 @@ class ThreadProxyTest : public ProxyTest {
     client_.set_bounds(update_check_layer_->bounds());
   }
 
-  const ThreadProxy::MainThreadOnly& ThreadProxyMainOnly() const {
-    DCHECK(task_runner_provider());
-    DCHECK(task_runner_provider()->HasImplThread());
-    DCHECK(proxy());
-    return static_cast<const ThreadProxy*>(proxy())->main();
-  }
-
-  const ThreadProxy::CompositorThreadOnly& ThreadProxyImplOnly() const {
-    DCHECK(task_runner_provider());
-    DCHECK(task_runner_provider()->HasImplThread());
-    DCHECK(proxy());
-    return static_cast<const ThreadProxy*>(proxy())->impl();
-  }
-
  protected:
   FakeContentLayerClient client_;
   scoped_refptr<FakePictureLayer> update_check_layer_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ThreadProxyTest);
+  DISALLOW_COPY_AND_ASSIGN(ProxyMainThreaded);
 };
 
-class ThreadProxyTestSetNeedsCommit : public ThreadProxyTest {
+class ProxyMainThreadedSetNeedsCommit : public ProxyMainThreaded {
  protected:
-  ThreadProxyTestSetNeedsCommit() {}
-  ~ThreadProxyTestSetNeedsCommit() override {}
+  ProxyMainThreadedSetNeedsCommit() {}
+  ~ProxyMainThreadedSetNeedsCommit() override {}
 
   void BeginTest() override {
-    EXPECT_EQ(ThreadProxy::NO_PIPELINE_STAGE,
-              ThreadProxyMainOnly().max_requested_pipeline_stage);
+    EXPECT_EQ(ProxyMain::NO_PIPELINE_STAGE,
+              GetProxyMainForTest()->max_requested_pipeline_stage());
 
     proxy()->SetNeedsCommit();
 
-    EXPECT_EQ(ThreadProxy::COMMIT_PIPELINE_STAGE,
-              ThreadProxyMainOnly().max_requested_pipeline_stage);
+    EXPECT_EQ(ProxyMain::COMMIT_PIPELINE_STAGE,
+              GetProxyMainForTest()->max_requested_pipeline_stage());
   }
 
   void DidBeginMainFrame() override {
-    EXPECT_EQ(ThreadProxy::NO_PIPELINE_STAGE,
-              ThreadProxyMainOnly().max_requested_pipeline_stage);
-    EXPECT_EQ(ThreadProxy::NO_PIPELINE_STAGE,
-              ThreadProxyMainOnly().current_pipeline_stage);
+    EXPECT_EQ(ProxyMain::NO_PIPELINE_STAGE,
+              GetProxyMainForTest()->max_requested_pipeline_stage());
+    EXPECT_EQ(ProxyMain::NO_PIPELINE_STAGE,
+              GetProxyMainForTest()->current_pipeline_stage());
   }
 
   void DidCommit() override {
     EXPECT_EQ(1, update_check_layer_->update_count());
-    EXPECT_EQ(ThreadProxy::NO_PIPELINE_STAGE,
-              ThreadProxyMainOnly().current_pipeline_stage);
+    EXPECT_EQ(ProxyMain::NO_PIPELINE_STAGE,
+              GetProxyMainForTest()->current_pipeline_stage());
     EndTest();
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ThreadProxyTestSetNeedsCommit);
+  DISALLOW_COPY_AND_ASSIGN(ProxyMainThreadedSetNeedsCommit);
 };
 
-THREAD_PROXY_TEST_F(ThreadProxyTestSetNeedsCommit);
+PROXY_MAIN_THREADED_TEST_F(ProxyMainThreadedSetNeedsCommit);
 
-class ThreadProxyTestSetNeedsAnimate : public ThreadProxyTest {
+class ProxyMainThreadedSetNeedsAnimate : public ProxyMainThreaded {
  protected:
-  ThreadProxyTestSetNeedsAnimate() {}
-  ~ThreadProxyTestSetNeedsAnimate() override {}
+  ProxyMainThreadedSetNeedsAnimate() {}
+  ~ProxyMainThreadedSetNeedsAnimate() override {}
 
   void BeginTest() override {
-    EXPECT_EQ(ThreadProxy::NO_PIPELINE_STAGE,
-              ThreadProxyMainOnly().max_requested_pipeline_stage);
+    EXPECT_EQ(ProxyMain::NO_PIPELINE_STAGE,
+              GetProxyMainForTest()->max_requested_pipeline_stage());
 
     proxy()->SetNeedsAnimate();
 
-    EXPECT_EQ(ThreadProxy::ANIMATE_PIPELINE_STAGE,
-              ThreadProxyMainOnly().max_requested_pipeline_stage);
+    EXPECT_EQ(ProxyMain::ANIMATE_PIPELINE_STAGE,
+              GetProxyMainForTest()->max_requested_pipeline_stage());
   }
 
   void DidBeginMainFrame() override {
-    EXPECT_EQ(ThreadProxy::NO_PIPELINE_STAGE,
-              ThreadProxyMainOnly().max_requested_pipeline_stage);
-    EXPECT_EQ(ThreadProxy::NO_PIPELINE_STAGE,
-              ThreadProxyMainOnly().current_pipeline_stage);
+    EXPECT_EQ(ProxyMain::NO_PIPELINE_STAGE,
+              GetProxyMainForTest()->max_requested_pipeline_stage());
+    EXPECT_EQ(ProxyMain::NO_PIPELINE_STAGE,
+              GetProxyMainForTest()->current_pipeline_stage());
   }
 
   void DidCommit() override {
@@ -171,31 +158,31 @@ class ThreadProxyTestSetNeedsAnimate : public ThreadProxyTest {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ThreadProxyTestSetNeedsAnimate);
+  DISALLOW_COPY_AND_ASSIGN(ProxyMainThreadedSetNeedsAnimate);
 };
 
-THREAD_PROXY_TEST_F(ThreadProxyTestSetNeedsAnimate);
+PROXY_MAIN_THREADED_TEST_F(ProxyMainThreadedSetNeedsAnimate);
 
-class ThreadProxyTestSetNeedsUpdateLayers : public ThreadProxyTest {
+class ProxyMainThreadedSetNeedsUpdateLayers : public ProxyMainThreaded {
  protected:
-  ThreadProxyTestSetNeedsUpdateLayers() {}
-  ~ThreadProxyTestSetNeedsUpdateLayers() override {}
+  ProxyMainThreadedSetNeedsUpdateLayers() {}
+  ~ProxyMainThreadedSetNeedsUpdateLayers() override {}
 
   void BeginTest() override {
-    EXPECT_EQ(ThreadProxy::NO_PIPELINE_STAGE,
-              ThreadProxyMainOnly().max_requested_pipeline_stage);
+    EXPECT_EQ(ProxyMain::NO_PIPELINE_STAGE,
+              GetProxyMainForTest()->max_requested_pipeline_stage());
 
     proxy()->SetNeedsUpdateLayers();
 
-    EXPECT_EQ(ThreadProxy::UPDATE_LAYERS_PIPELINE_STAGE,
-              ThreadProxyMainOnly().max_requested_pipeline_stage);
+    EXPECT_EQ(ProxyMain::UPDATE_LAYERS_PIPELINE_STAGE,
+              GetProxyMainForTest()->max_requested_pipeline_stage());
   }
 
   void DidBeginMainFrame() override {
-    EXPECT_EQ(ThreadProxy::NO_PIPELINE_STAGE,
-              ThreadProxyMainOnly().max_requested_pipeline_stage);
-    EXPECT_EQ(ThreadProxy::NO_PIPELINE_STAGE,
-              ThreadProxyMainOnly().current_pipeline_stage);
+    EXPECT_EQ(ProxyMain::NO_PIPELINE_STAGE,
+              GetProxyMainForTest()->max_requested_pipeline_stage());
+    EXPECT_EQ(ProxyMain::NO_PIPELINE_STAGE,
+              GetProxyMainForTest()->current_pipeline_stage());
   }
 
   void DidCommit() override {
@@ -204,40 +191,40 @@ class ThreadProxyTestSetNeedsUpdateLayers : public ThreadProxyTest {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ThreadProxyTestSetNeedsUpdateLayers);
+  DISALLOW_COPY_AND_ASSIGN(ProxyMainThreadedSetNeedsUpdateLayers);
 };
 
-THREAD_PROXY_TEST_F(ThreadProxyTestSetNeedsUpdateLayers);
+PROXY_MAIN_THREADED_TEST_F(ProxyMainThreadedSetNeedsUpdateLayers);
 
-class ThreadProxyTestSetNeedsUpdateLayersWhileAnimating
-    : public ThreadProxyTest {
+class ProxyMainThreadedSetNeedsUpdateLayersWhileAnimating
+    : public ProxyMainThreaded {
  protected:
-  ThreadProxyTestSetNeedsUpdateLayersWhileAnimating() {}
-  ~ThreadProxyTestSetNeedsUpdateLayersWhileAnimating() override {}
+  ProxyMainThreadedSetNeedsUpdateLayersWhileAnimating() {}
+  ~ProxyMainThreadedSetNeedsUpdateLayersWhileAnimating() override {}
 
   void BeginTest() override { proxy()->SetNeedsAnimate(); }
 
   void WillBeginMainFrame() override {
-    EXPECT_EQ(ThreadProxy::NO_PIPELINE_STAGE,
-              ThreadProxyMainOnly().max_requested_pipeline_stage);
-    EXPECT_EQ(ThreadProxy::ANIMATE_PIPELINE_STAGE,
-              ThreadProxyMainOnly().current_pipeline_stage);
-    EXPECT_EQ(ThreadProxy::ANIMATE_PIPELINE_STAGE,
-              ThreadProxyMainOnly().final_pipeline_stage);
+    EXPECT_EQ(ProxyMain::NO_PIPELINE_STAGE,
+              GetProxyMainForTest()->max_requested_pipeline_stage());
+    EXPECT_EQ(ProxyMain::ANIMATE_PIPELINE_STAGE,
+              GetProxyMainForTest()->current_pipeline_stage());
+    EXPECT_EQ(ProxyMain::ANIMATE_PIPELINE_STAGE,
+              GetProxyMainForTest()->final_pipeline_stage());
 
     proxy()->SetNeedsUpdateLayers();
 
-    EXPECT_EQ(ThreadProxy::NO_PIPELINE_STAGE,
-              ThreadProxyMainOnly().max_requested_pipeline_stage);
-    EXPECT_EQ(ThreadProxy::UPDATE_LAYERS_PIPELINE_STAGE,
-              ThreadProxyMainOnly().final_pipeline_stage);
+    EXPECT_EQ(ProxyMain::NO_PIPELINE_STAGE,
+              GetProxyMainForTest()->max_requested_pipeline_stage());
+    EXPECT_EQ(ProxyMain::UPDATE_LAYERS_PIPELINE_STAGE,
+              GetProxyMainForTest()->final_pipeline_stage());
   }
 
   void DidBeginMainFrame() override {
-    EXPECT_EQ(ThreadProxy::NO_PIPELINE_STAGE,
-              ThreadProxyMainOnly().max_requested_pipeline_stage);
-    EXPECT_EQ(ThreadProxy::NO_PIPELINE_STAGE,
-              ThreadProxyMainOnly().current_pipeline_stage);
+    EXPECT_EQ(ProxyMain::NO_PIPELINE_STAGE,
+              GetProxyMainForTest()->max_requested_pipeline_stage());
+    EXPECT_EQ(ProxyMain::NO_PIPELINE_STAGE,
+              GetProxyMainForTest()->current_pipeline_stage());
   }
 
   void DidCommit() override {
@@ -246,39 +233,39 @@ class ThreadProxyTestSetNeedsUpdateLayersWhileAnimating
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ThreadProxyTestSetNeedsUpdateLayersWhileAnimating);
+  DISALLOW_COPY_AND_ASSIGN(ProxyMainThreadedSetNeedsUpdateLayersWhileAnimating);
 };
 
-THREAD_PROXY_TEST_F(ThreadProxyTestSetNeedsUpdateLayersWhileAnimating);
+PROXY_MAIN_THREADED_TEST_F(ProxyMainThreadedSetNeedsUpdateLayersWhileAnimating);
 
-class ThreadProxyTestSetNeedsCommitWhileAnimating : public ThreadProxyTest {
+class ProxyMainThreadedSetNeedsCommitWhileAnimating : public ProxyMainThreaded {
  protected:
-  ThreadProxyTestSetNeedsCommitWhileAnimating() {}
-  ~ThreadProxyTestSetNeedsCommitWhileAnimating() override {}
+  ProxyMainThreadedSetNeedsCommitWhileAnimating() {}
+  ~ProxyMainThreadedSetNeedsCommitWhileAnimating() override {}
 
   void BeginTest() override { proxy()->SetNeedsAnimate(); }
 
   void WillBeginMainFrame() override {
-    EXPECT_EQ(ThreadProxy::NO_PIPELINE_STAGE,
-              ThreadProxyMainOnly().max_requested_pipeline_stage);
-    EXPECT_EQ(ThreadProxy::ANIMATE_PIPELINE_STAGE,
-              ThreadProxyMainOnly().current_pipeline_stage);
-    EXPECT_EQ(ThreadProxy::ANIMATE_PIPELINE_STAGE,
-              ThreadProxyMainOnly().final_pipeline_stage);
+    EXPECT_EQ(ProxyMain::NO_PIPELINE_STAGE,
+              GetProxyMainForTest()->max_requested_pipeline_stage());
+    EXPECT_EQ(ProxyMain::ANIMATE_PIPELINE_STAGE,
+              GetProxyMainForTest()->current_pipeline_stage());
+    EXPECT_EQ(ProxyMain::ANIMATE_PIPELINE_STAGE,
+              GetProxyMainForTest()->final_pipeline_stage());
 
     proxy()->SetNeedsCommit();
 
-    EXPECT_EQ(ThreadProxy::NO_PIPELINE_STAGE,
-              ThreadProxyMainOnly().max_requested_pipeline_stage);
-    EXPECT_EQ(ThreadProxy::COMMIT_PIPELINE_STAGE,
-              ThreadProxyMainOnly().final_pipeline_stage);
+    EXPECT_EQ(ProxyMain::NO_PIPELINE_STAGE,
+              GetProxyMainForTest()->max_requested_pipeline_stage());
+    EXPECT_EQ(ProxyMain::COMMIT_PIPELINE_STAGE,
+              GetProxyMainForTest()->final_pipeline_stage());
   }
 
   void DidBeginMainFrame() override {
-    EXPECT_EQ(ThreadProxy::NO_PIPELINE_STAGE,
-              ThreadProxyMainOnly().max_requested_pipeline_stage);
-    EXPECT_EQ(ThreadProxy::NO_PIPELINE_STAGE,
-              ThreadProxyMainOnly().current_pipeline_stage);
+    EXPECT_EQ(ProxyMain::NO_PIPELINE_STAGE,
+              GetProxyMainForTest()->max_requested_pipeline_stage());
+    EXPECT_EQ(ProxyMain::NO_PIPELINE_STAGE,
+              GetProxyMainForTest()->current_pipeline_stage());
   }
 
   void DidCommit() override {
@@ -287,15 +274,15 @@ class ThreadProxyTestSetNeedsCommitWhileAnimating : public ThreadProxyTest {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ThreadProxyTestSetNeedsCommitWhileAnimating);
+  DISALLOW_COPY_AND_ASSIGN(ProxyMainThreadedSetNeedsCommitWhileAnimating);
 };
 
-THREAD_PROXY_TEST_F(ThreadProxyTestSetNeedsCommitWhileAnimating);
+PROXY_MAIN_THREADED_TEST_F(ProxyMainThreadedSetNeedsCommitWhileAnimating);
 
-class ThreadProxyTestCommitWaitsForActivation : public ThreadProxyTest {
+class ProxyMainThreadedCommitWaitsForActivation : public ProxyMainThreaded {
  protected:
-  ThreadProxyTestCommitWaitsForActivation() : commits_completed_(0) {}
-  ~ThreadProxyTestCommitWaitsForActivation() override {}
+  ProxyMainThreadedCommitWaitsForActivation() : commits_completed_(0) {}
+  ~ProxyMainThreadedCommitWaitsForActivation() override {}
 
   void BeginTest() override { proxy()->SetNeedsCommit(); }
 
@@ -304,25 +291,25 @@ class ThreadProxyTestCommitWaitsForActivation : public ThreadProxyTest {
       case 0:
         // The first commit does not wait for activation. Verify that the
         // completion event is cleared.
-        EXPECT_FALSE(ThreadProxyImplOnly().commit_completion_event);
-        EXPECT_FALSE(ThreadProxyImplOnly().next_commit_waits_for_activation);
+        EXPECT_FALSE(GetProxyImplForTest()->HasCommitCompletionEvent());
+        EXPECT_FALSE(GetProxyImplForTest()->GetNextCommitWaitsForActivation());
         break;
       case 1:
         // The second commit should be held until activation.
-        EXPECT_TRUE(ThreadProxyImplOnly().commit_completion_event);
-        EXPECT_TRUE(ThreadProxyImplOnly().next_commit_waits_for_activation);
+        EXPECT_TRUE(GetProxyImplForTest()->HasCommitCompletionEvent());
+        EXPECT_TRUE(GetProxyImplForTest()->GetNextCommitWaitsForActivation());
         break;
       case 2:
         // The third commit should not wait for activation.
-        EXPECT_FALSE(ThreadProxyImplOnly().commit_completion_event);
-        EXPECT_FALSE(ThreadProxyImplOnly().next_commit_waits_for_activation);
+        EXPECT_FALSE(GetProxyImplForTest()->HasCommitCompletionEvent());
+        EXPECT_FALSE(GetProxyImplForTest()->GetNextCommitWaitsForActivation());
     }
   }
 
   void DidActivateSyncTree() override {
     // The next_commit_waits_for_activation should have been cleared after the
     // sync tree is activated.
-    EXPECT_FALSE(ThreadProxyImplOnly().next_commit_waits_for_activation);
+    EXPECT_FALSE(GetProxyImplForTest()->GetNextCommitWaitsForActivation());
   }
 
   void DidCommit() override {
@@ -349,9 +336,9 @@ class ThreadProxyTestCommitWaitsForActivation : public ThreadProxyTest {
  private:
   int commits_completed_;
 
-  DISALLOW_COPY_AND_ASSIGN(ThreadProxyTestCommitWaitsForActivation);
+  DISALLOW_COPY_AND_ASSIGN(ProxyMainThreadedCommitWaitsForActivation);
 };
 
-THREAD_PROXY_TEST_F(ThreadProxyTestCommitWaitsForActivation);
+PROXY_MAIN_THREADED_TEST_F(ProxyMainThreadedCommitWaitsForActivation);
 
 }  // namespace cc

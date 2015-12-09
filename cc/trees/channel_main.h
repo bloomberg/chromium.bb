@@ -9,10 +9,12 @@
 #include "cc/base/completion_event.h"
 #include "cc/input/top_controls_state.h"
 #include "cc/output/output_surface.h"
+#include "cc/scheduler/begin_frame_source.h"
 #include "cc/scheduler/commit_earlyout_reason.h"
 #include "cc/trees/proxy_common.h"
 
 namespace cc {
+
 // ChannelMain and ChannelImpl provide an abstract communication layer for
 // the main and impl side of the compositor.
 //
@@ -25,7 +27,9 @@ namespace cc {
 
 class CC_EXPORT ChannelMain {
  public:
-  // Interface for commands sent to the ProxyImpl
+  virtual ~ChannelMain() {}
+
+  // Interface for commands sent to ProxyImpl
   virtual void SetThrottleFrameProductionOnImpl(bool throttle) = 0;
   virtual void UpdateTopControlsStateOnImpl(TopControlsState constraints,
                                             TopControlsState current,
@@ -37,7 +41,6 @@ class CC_EXPORT ChannelMain {
   virtual void FinishAllRenderingOnImpl(CompletionEvent* completion) = 0;
   virtual void SetVisibleOnImpl(bool visible) = 0;
   virtual void ReleaseOutputSurfaceOnImpl(CompletionEvent* completion) = 0;
-  virtual void FinishGLOnImpl(CompletionEvent* completion) = 0;
   virtual void MainFrameWillHappenOnImplForTesting(
       CompletionEvent* completion,
       bool* main_frame_will_happen) = 0;
@@ -50,11 +53,14 @@ class CC_EXPORT ChannelMain {
                                  LayerTreeHost* layer_tree_host,
                                  base::TimeTicks main_thread_start_time,
                                  bool hold_commit_for_activation) = 0;
-  virtual void InitializeImplOnImpl(CompletionEvent* completion,
-                                    LayerTreeHost* layer_tree_host) = 0;
-  virtual void LayerTreeHostClosedOnImpl(CompletionEvent* completion) = 0;
 
-  virtual ~ChannelMain() {}
+  // Must be called before using the channel.
+  virtual void SynchronouslyInitializeImpl(
+      LayerTreeHost* layer_tree_host,
+      scoped_ptr<BeginFrameSource> external_begin_frame_source) = 0;
+
+  // Must be called before deleting the channel.
+  virtual void SynchronouslyCloseImpl() = 0;
 };
 
 }  // namespace cc

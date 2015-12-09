@@ -42,8 +42,8 @@
 #include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/layer_tree_impl.h"
+#include "cc/trees/proxy_main.h"
 #include "cc/trees/single_thread_proxy.h"
-#include "cc/trees/thread_proxy.h"
 #include "cc/trees/tree_synchronizer.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
@@ -143,8 +143,10 @@ void LayerTreeHost::InitializeThreaded(
     scoped_ptr<BeginFrameSource> external_begin_frame_source) {
   task_runner_provider_ =
       TaskRunnerProvider::Create(main_task_runner, impl_task_runner);
-  InitializeProxy(ThreadProxy::Create(this, task_runner_provider_.get(),
-                                      std::move(external_begin_frame_source)));
+  scoped_ptr<ProxyMain> proxy_main =
+      ProxyMain::CreateThreaded(this, task_runner_provider_.get(),
+                                std::move(external_begin_frame_source));
+  InitializeProxy(std::move(proxy_main));
 }
 
 void LayerTreeHost::InitializeSingleThreaded(
