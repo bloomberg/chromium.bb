@@ -49,14 +49,6 @@ class ProfileSyncServiceMock : public ProfileSyncService {
            const std::string&,
            bool));
   MOCK_METHOD0(OnSyncCycleCompleted, void());
-  MOCK_METHOD0(OnAuthError, void());
-  MOCK_METHOD4(OnUserSubmittedAuth,
-               void(const std::string& username,
-                    const std::string& password,
-                    const std::string& captcha,
-                    const std::string& access_code));
-  MOCK_METHOD0(OnUserCancelledDialog, void());
-  MOCK_CONST_METHOD0(GetAuthenticatedUsername, base::string16());
   MOCK_METHOD2(OnUserChoseDatatypes,
                void(bool sync_everything,
                     syncer::ModelTypeSet chosen_types));
@@ -64,7 +56,6 @@ class ProfileSyncServiceMock : public ProfileSyncService {
   MOCK_METHOD2(OnUnrecoverableError,
                void(const tracked_objects::Location& location,
                const std::string& message));
-  MOCK_METHOD1(DisableDatatype, void(const syncer::SyncError&));
   MOCK_CONST_METHOD0(GetUserShare, syncer::UserShare*());
   MOCK_METHOD0(RequestStart, void());
   MOCK_METHOD1(RequestStop, void(ProfileSyncService::SyncStopDataFate));
@@ -101,7 +92,6 @@ class ProfileSyncServiceMock : public ProfileSyncService {
   MOCK_CONST_METHOD1(IsDataTypeControllerRunning, bool(syncer::ModelType));
 
   // DataTypeManagerObserver mocks.
-  MOCK_METHOD0(OnConfigureBlocked, void());
   MOCK_METHOD1(OnConfigureDone,
                void(const sync_driver::DataTypeManager::ConfigureResult&));
   MOCK_METHOD0(OnConfigureStart, void());
@@ -114,7 +104,6 @@ class ProfileSyncServiceMock : public ProfileSyncService {
   MOCK_CONST_METHOD0(IsPassphraseRequiredForDecryption, bool());
   MOCK_CONST_METHOD0(IsUsingSecondaryPassphrase, bool());
   MOCK_CONST_METHOD0(GetPassphraseType, syncer::PassphraseType());
-  MOCK_CONST_METHOD0(GetPassphraseTime, base::Time());
   MOCK_CONST_METHOD0(GetExplicitPassphraseTime, base::Time());
 
   MOCK_METHOD1(SetDecryptionPassphrase, bool(const std::string& passphrase));
