@@ -7,11 +7,13 @@
       "drawsContent": true,
       "repaintRects": [
         [785, 585, 15, 15],
+        [785, 0, 15, 585],
         [8, 52, 784, 20],
         [8, 52, 769, 20],
         [8, 16, 2000, 2072],
         [8, 16, 784, 20],
         [8, 16, 769, 20],
+        [0, 585, 785, 15],
         [0, 0, 2008, 2096],
         [0, 0, 785, 585]
       ],
@@ -27,8 +29,8 @@
         "LayoutBlockFlow BODY",
         "LayoutBlockFlow P",
         "LayoutBlockFlow P",
-        "HorizontalScrollbar",
-        "VerticalScrollbar"
+        "LayoutView #document",
+        "LayoutView #document"
       ]
     }
   ]

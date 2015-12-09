@@ -17,9 +17,10 @@
       ],
       "paintInvalidationClients": [
         "LayoutBlockFlow DIV id='div'",
+        "LayoutBlockFlow DIV id='div'",
         "HorizontalScrollbar",
-        "VerticalScrollbar",
-        "LayoutBlockFlow DIV id='div'"
+        "LayoutBlockFlow DIV id='div'",
+        "VerticalScrollbar"
       ]
     }
   ]

@@ -21,14 +21,23 @@ class PaintInvalidationState;
 // TODO(wangxianzhu): Combine this into PaintLayerScrollableArea when root-layer-scrolls launches.
 class CORE_EXPORT PaintInvalidationCapableScrollableArea : public ScrollableArea {
 public:
+    PaintInvalidationCapableScrollableArea()
+        : m_horizontalScrollbarPreviouslyWasOverlay(false)
+        , m_verticalScrollbarPreviouslyWasOverlay(false) { }
+
     void willRemoveScrollbar(Scrollbar*, ScrollbarOrientation) override;
     void invalidatePaintOfScrollControlsIfNeeded(const PaintInvalidationState&, const LayoutBoxModelObject& paintInvalidationContainer);
+
+    // Should be called when the previous paint invalidation rects are no longer valid.
+    void clearPreviousPaintInvalidationRects();
 
 private:
     virtual LayoutBox& boxForScrollControlPaintInvalidation() const = 0;
     virtual LayoutScrollbarPart* scrollCorner() const = 0;
     virtual LayoutScrollbarPart* resizer() const = 0;
 
+    bool m_horizontalScrollbarPreviouslyWasOverlay;
+    bool m_verticalScrollbarPreviouslyWasOverlay;
     LayoutRect m_horizontalScrollbarPreviousPaintInvalidationRect;
     LayoutRect m_verticalScrollbarPreviousPaintInvalidationRect;
     LayoutRect m_scrollCornerPreviousPaintInvalidationRect;
