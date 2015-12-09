@@ -12,8 +12,8 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/channel_info.h"
+#include "chrome/common/pref_names.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/sync_driver/about_sync_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_registry.h"
@@ -172,10 +172,9 @@ void ChromeInternalLogSource::PopulateExtensionInfoLogs(
 void ChromeInternalLogSource::PopulateDataReductionProxyLogs(
     SystemLogsResponse* response) {
   PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
-  bool is_data_reduction_proxy_enabled = prefs->HasPrefPath(
-          data_reduction_proxy::prefs::kDataReductionProxyEnabled) &&
-      prefs->GetBoolean(
-          data_reduction_proxy::prefs::kDataReductionProxyEnabled);
+  bool is_data_reduction_proxy_enabled =
+      prefs->HasPrefPath(prefs::kDataSaverEnabled) &&
+      prefs->GetBoolean(prefs::kDataSaverEnabled);
   (*response)[kDataReductionProxyKey] = is_data_reduction_proxy_enabled ?
       "enabled" : "disabled";
 }

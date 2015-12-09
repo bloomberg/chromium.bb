@@ -27,8 +27,12 @@
 namespace cronet {
 namespace {
 
+// Name of the preference that governs enabling the Data Reduction Proxy.
+const char kDataReductionProxyEnabled[] = "data_reduction_proxy.enabled";
+
 scoped_ptr<PrefService> CreatePrefService() {
   scoped_refptr<PrefRegistrySimple> pref_registry(new PrefRegistrySimple());
+  pref_registry->RegisterBooleanPref(kDataReductionProxyEnabled, false);
   data_reduction_proxy::RegisterSimpleProfilePrefs(pref_registry.get());
   base::PrefServiceFactory pref_service_factory;
   pref_service_factory.set_user_prefs(
@@ -120,7 +124,8 @@ void CronetDataReductionProxy::Init(bool enable,
   io_data_->SetDataReductionProxyService(
       data_reduction_proxy_service->GetWeakPtr());
   settings_->InitDataReductionProxySettings(
-      prefs_.get(), io_data_.get(), data_reduction_proxy_service.Pass());
+      kDataReductionProxyEnabled, prefs_.get(), io_data_.get(),
+      data_reduction_proxy_service.Pass());
   settings_->SetDataReductionProxyEnabled(enable);
   settings_->MaybeActivateDataReductionProxy(true);
 }

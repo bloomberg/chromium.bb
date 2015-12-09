@@ -75,7 +75,7 @@ const char kConversionErrorMessage[] =
 
 PrefMappingEntry kPrefMapping[] = {
     {"spdy_proxy.enabled",
-     data_reduction_proxy::prefs::kDataReductionProxyEnabled,
+     prefs::kDataSaverEnabled,
      APIPermission::kDataReductionProxy, APIPermission::kDataReductionProxy},
     {"data_reduction.daily_original_length",
      data_reduction_proxy::prefs::kDailyHttpOriginalContentLength,

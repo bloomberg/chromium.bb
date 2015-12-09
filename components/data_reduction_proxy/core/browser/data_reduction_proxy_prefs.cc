@@ -30,7 +30,6 @@ namespace data_reduction_proxy {
 // Make sure any changes here that have the potential to impact android_webview
 // are reflected in RegisterSimpleProfilePrefs.
 void RegisterSyncableProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterBooleanPref(prefs::kDataReductionProxyEnabled, false);
   registry->RegisterBooleanPref(prefs::kDataReductionProxyWasEnabledBefore,
                                 false);
 
@@ -110,8 +109,6 @@ void RegisterSyncableProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 }
 
 void RegisterSimpleProfilePrefs(PrefRegistrySimple* registry) {
-  registry->RegisterBooleanPref(
-      prefs::kDataReductionProxyEnabled, false);
   registry->RegisterBooleanPref(
       prefs::kDataReductionProxyWasEnabledBefore, false);
 

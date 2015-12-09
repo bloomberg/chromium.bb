@@ -6,6 +6,7 @@
 
 #include <map>
 
+#include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/testing_pref_service.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_service_client.h"
@@ -34,6 +35,9 @@
 namespace {
 
 const char kTestKey[] = "test-key";
+
+// Name of the preference that governs enabling the Data Reduction Proxy.
+const char kDataReductionProxyEnabled[] = "data_reduction_proxy.enabled";
 
 const net::BackoffEntry::Policy kTestBackoffPolicy = {
     0,               // num_errors_to_ignore
@@ -436,12 +440,17 @@ DataReductionProxyTestContext::Builder::Build() {
 
   scoped_ptr<DataReductionProxySettings> settings(
       new DataReductionProxySettings());
-  if (skip_settings_initialization_)
+  if (skip_settings_initialization_) {
+    settings->set_data_reduction_proxy_enabled_pref_name_for_test(
+        kDataReductionProxyEnabled);
     test_context_flags |= SKIP_SETTINGS_INITIALIZATION;
+  }
 
   if (use_mock_service_)
     test_context_flags |= USE_MOCK_SERVICE;
 
+  pref_service->registry()->RegisterBooleanPref(kDataReductionProxyEnabled,
+                                                false);
   RegisterSimpleProfilePrefs(pref_service->registry());
 
   scoped_ptr<DataReductionProxyExperimentsStats> experiments_stats(
@@ -496,6 +505,24 @@ DataReductionProxyTestContext::~DataReductionProxyTestContext() {
   DestroySettings();
 }
 
+const char*
+DataReductionProxyTestContext::GetDataReductionProxyEnabledPrefName() const {
+  return kDataReductionProxyEnabled;
+}
+
+void DataReductionProxyTestContext::RegisterDataReductionProxyEnabledPref() {
+  simple_pref_service_->registry()->RegisterBooleanPref(
+      kDataReductionProxyEnabled, false);
+}
+
+void DataReductionProxyTestContext::SetDataReductionProxyEnabled(bool enabled) {
+  simple_pref_service_->SetBoolean(kDataReductionProxyEnabled, enabled);
+}
+
+bool DataReductionProxyTestContext::IsDataReductionProxyEnabled() const {
+  return simple_pref_service_->GetBoolean(kDataReductionProxyEnabled);
+}
+
 void DataReductionProxyTestContext::RunUntilIdle() {
   base::MessageLoop::current()->RunUntilIdle();
 }
@@ -517,7 +544,7 @@ void DataReductionProxyTestContext::DestroySettings() {
 
 void DataReductionProxyTestContext::InitSettingsWithoutCheck() {
   settings_->InitDataReductionProxySettings(
-      simple_pref_service_.get(), io_data_.get(),
+      kDataReductionProxyEnabled, simple_pref_service_.get(), io_data_.get(),
       CreateDataReductionProxyServiceInternal(settings_.get()));
   storage_delegate_->SetStorageDelegate(
       settings_->data_reduction_proxy_service()->event_store());
@@ -591,7 +618,7 @@ void DataReductionProxyTestContext::
   mock_socket_factory_->AddSocketDataProvider(&socket_data_provider);
 
   // Set the pref to cause the secure proxy check to be issued.
-  pref_service()->SetBoolean(prefs::kDataReductionProxyEnabled, true);
+  pref_service()->SetBoolean(kDataReductionProxyEnabled, true);
   RunUntilIdle();
 }
 

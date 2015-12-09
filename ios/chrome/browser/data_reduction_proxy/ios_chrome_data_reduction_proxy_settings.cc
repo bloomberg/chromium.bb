@@ -24,6 +24,7 @@
 #include "components/proxy_config/proxy_config_pref_names.h"
 #include "components/proxy_config/proxy_prefs.h"
 #include "ios/chrome/browser/metrics/ios_chrome_metrics_service_accessor.h"
+#include "ios/chrome/browser/pref_names.h"
 #include "net/base/host_port_pair.h"
 #include "net/proxy/proxy_config.h"
 #include "net/proxy/proxy_list.h"
@@ -193,7 +194,8 @@ void IOSChromeDataReductionProxySettings::InitDataReductionProxySettings(
           ui_task_runner, io_data->io_task_runner(), db_task_runner,
           commit_delay));
   data_reduction_proxy::DataReductionProxySettings::
-      InitDataReductionProxySettings(profile_prefs, io_data, service.Pass());
+      InitDataReductionProxySettings(prefs::kDataSaverEnabled, profile_prefs,
+                                     io_data, service.Pass());
   io_data->SetDataReductionProxyService(
       data_reduction_proxy_service()->GetWeakPtr());
 

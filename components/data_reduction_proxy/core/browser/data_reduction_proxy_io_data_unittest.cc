@@ -30,7 +30,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
-
 // Used only to verify that a wrapped network delegate gets called.
 class CountingNetworkDelegate : public net::NetworkDelegateImpl {
  public:
@@ -161,8 +160,7 @@ TEST_F(DataReductionProxyIODataTest, TestResetBadProxyListOnDisableDataSaver) {
           .SkipSettingsInitialization()
           .Build();
 
-  drp_test_context->pref_service()->SetBoolean(
-      prefs::kDataReductionProxyEnabled, true);
+  drp_test_context->SetDataReductionProxyEnabled(true);
   drp_test_context->InitSettings();
   DataReductionProxyIOData* io_data = drp_test_context->io_data();
   std::vector<net::ProxyServer> proxies;

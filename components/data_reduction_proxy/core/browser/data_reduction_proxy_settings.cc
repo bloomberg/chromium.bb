@@ -45,6 +45,7 @@ DataReductionProxySettings::DataReductionProxySettings()
       promo_allowed_(false),
       lo_fi_mode_active_(false),
       lo_fi_load_image_requested_(false),
+      data_reduction_proxy_enabled_pref_name_(),
       prefs_(NULL),
       config_(nullptr) {
   lo_fi_user_requests_for_images_per_session_ =
@@ -63,8 +64,7 @@ DataReductionProxySettings::~DataReductionProxySettings() {
 void DataReductionProxySettings::InitPrefMembers() {
   DCHECK(thread_checker_.CalledOnValidThread());
   spdy_proxy_auth_enabled_.Init(
-      prefs::kDataReductionProxyEnabled,
-      GetOriginalProfilePrefs(),
+      data_reduction_proxy_enabled_pref_name_, GetOriginalProfilePrefs(),
       base::Bind(&DataReductionProxySettings::OnProxyEnabledPrefChange,
                  base::Unretained(this)));
 }
@@ -76,14 +76,18 @@ void DataReductionProxySettings::UpdateConfigValues() {
 }
 
 void DataReductionProxySettings::InitDataReductionProxySettings(
+    const std::string& data_reduction_proxy_enabled_pref_name,
     PrefService* prefs,
     DataReductionProxyIOData* io_data,
     scoped_ptr<DataReductionProxyService> data_reduction_proxy_service) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(!data_reduction_proxy_enabled_pref_name.empty());
   DCHECK(prefs);
   DCHECK(io_data);
   DCHECK(io_data->config());
   DCHECK(data_reduction_proxy_service.get());
+  data_reduction_proxy_enabled_pref_name_ =
+      data_reduction_proxy_enabled_pref_name;
   prefs_ = prefs;
   config_ = io_data->config();
   data_reduction_proxy_service_ = data_reduction_proxy_service.Pass();

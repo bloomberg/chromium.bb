@@ -175,9 +175,6 @@ const char kDataReductionProxy[] = "auth.spdyproxy.origin";
 // String that specifies a persisted Data Reduction Proxy configuration.
 const char kDataReductionProxyConfig[] = "data_reduction.config";
 
-// A boolean specifying whether the data reduction proxy is enabled.
-const char kDataReductionProxyEnabled[] = "spdy_proxy.enabled";
-
 // A boolean specifying whether data usage should be collected for reporting.
 const char kDataUsageReportingEnabled[] = "data_usage_reporting.enabled";
 

@@ -60,6 +60,8 @@ const char kAuthServerWhitelist[] = "auth.server_whitelist";
 }  // namespace prefs
 
 namespace {
+// Name of the preference that governs enabling the Data Reduction Proxy.
+const char kDataReductionProxyEnabled[] = "data_reduction_proxy.enabled";
 
 // Shows notifications which correspond to PersistentPrefStore's reading errors.
 void HandleReadError(PersistentPrefStore::PrefReadError error) {
@@ -243,6 +245,7 @@ void AwBrowserContext::PreMainMessageLoopRun() {
 
   // TODO(dgn) lazy init, see http://crbug.com/521542
   data_reduction_proxy_settings_->InitDataReductionProxySettings(
+      kDataReductionProxyEnabled,
       user_pref_service_.get(), data_reduction_proxy_io_data_.get(),
       data_reduction_proxy_service_.Pass());
   data_reduction_proxy_settings_->MaybeActivateDataReductionProxy(true);
@@ -325,6 +328,7 @@ void AwBrowserContext::InitUserPrefService() {
       autofill::prefs::kAutofillPositiveUploadRate, 0.0);
   pref_registry->RegisterDoublePref(
       autofill::prefs::kAutofillNegativeUploadRate, 0.0);
+  pref_registry->RegisterBooleanPref(kDataReductionProxyEnabled, false);
   data_reduction_proxy::RegisterSimpleProfilePrefs(pref_registry);
   policy::URLBlacklistManager::RegisterProfilePrefs(pref_registry);
 

@@ -9,8 +9,8 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_experiments_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "ios/chrome/browser/data_reduction_proxy/ios_chrome_data_reduction_proxy_settings.h"
+#include "ios/chrome/browser/pref_names.h"
 #include "ios/web/public/web_client.h"
 
 using data_reduction_proxy::DataReductionProxyParams;
@@ -33,8 +33,7 @@ CreateIOSChromeDataReductionProxyIOData(
     flags |= DataReductionProxyParams::kHoldback;
 
   bool enabled =
-      prefs->GetBoolean(
-          data_reduction_proxy::prefs::kDataReductionProxyEnabled) ||
+      prefs->GetBoolean(prefs::kDataSaverEnabled) ||
       data_reduction_proxy::params::ShouldForceEnableDataReductionProxy();
   scoped_ptr<data_reduction_proxy::DataReductionProxyIOData>
       data_reduction_proxy_io_data(

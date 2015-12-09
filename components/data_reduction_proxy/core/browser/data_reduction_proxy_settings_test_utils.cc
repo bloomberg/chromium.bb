@@ -46,10 +46,10 @@ void DataReductionProxySettingsTestBase::SetUp() {
           .SkipSettingsInitialization()
           .Build();
 
+  test_context_->SetDataReductionProxyEnabled(false);
   TestingPrefServiceSimple* pref_service = test_context_->pref_service();
   pref_service->SetInt64(prefs::kDailyHttpContentLengthLastUpdateDate, 0L);
   pref_service->registry()->RegisterDictionaryPref(kProxy);
-  pref_service->SetBoolean(prefs::kDataReductionProxyEnabled, false);
   pref_service->SetBoolean(prefs::kDataReductionProxyWasEnabledBefore, false);
 
   //AddProxyToCommandLine();
@@ -125,10 +125,10 @@ void DataReductionProxySettingsTestBase::CheckOnPrefChange(
   ExpectSetProxyPrefs(expected_enabled, false);
   if (managed) {
     test_context_->pref_service()->SetManagedPref(
-        prefs::kDataReductionProxyEnabled, new base::FundamentalValue(enabled));
+        test_context_->GetDataReductionProxyEnabledPrefName(),
+        new base::FundamentalValue(enabled));
   } else {
-    test_context_->pref_service()->SetBoolean(prefs::kDataReductionProxyEnabled,
-                                              enabled);
+    test_context_->SetDataReductionProxyEnabled(enabled);
   }
   test_context_->RunUntilIdle();
   // Never expect the proxy to be restricted for pref change tests.
@@ -137,6 +137,7 @@ void DataReductionProxySettingsTestBase::CheckOnPrefChange(
 void DataReductionProxySettingsTestBase::InitDataReductionProxy(
     bool enabled_at_startup) {
   settings_->InitDataReductionProxySettings(
+      test_context_->GetDataReductionProxyEnabledPrefName(),
       test_context_->pref_service(), test_context_->io_data(),
       test_context_->CreateDataReductionProxyService(settings_.get()));
   settings_->data_reduction_proxy_service()->SetIOData(

@@ -69,6 +69,7 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   [OmniboxGeolocationLocalState registerLocalState:registry];
   [MemoryDebuggerManager registerLocalState:registry];
 
+  registry->RegisterBooleanPref(prefs::kDataSaverEnabled, false);
   data_reduction_proxy::RegisterPrefs(registry);
 
   // TODO(shreyasv): Remove this in M49 as almost all users would have the

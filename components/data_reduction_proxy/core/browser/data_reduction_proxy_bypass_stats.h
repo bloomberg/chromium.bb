@@ -109,7 +109,7 @@ class DataReductionProxyBypassStats
   // Given |data_reduction_proxy_enabled|, a |request|, and the
   // |data_reduction_proxy_config| records the number of bypassed bytes for that
   // |request| into UMAs based on bypass type. |data_reduction_proxy_enabled|
-  // tells us the state of the kDataReductionProxyEnabled preference.
+  // tells us the state of the Data Reduction Proxy enabling preference.
   void RecordBypassedBytesHistograms(
       const net::URLRequest& request,
       bool data_reduction_proxy_enabled,

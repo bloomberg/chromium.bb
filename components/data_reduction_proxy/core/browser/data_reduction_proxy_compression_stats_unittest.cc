@@ -450,6 +450,10 @@ class DataReductionProxyCompressionStatsTest : public testing::Test {
     return drp_test_context_->data_reduction_proxy_service();
   }
 
+  bool IsDataReductionProxyEnabled() {
+    return drp_test_context_->IsDataReductionProxyEnabled();
+  }
+
  private:
   base::MessageLoopForUI loop_;
   scoped_ptr<DataReductionProxyTestContext> drp_test_context_;
@@ -579,29 +583,23 @@ TEST_F(DataReductionProxyCompressionStatsTest, TotalLengths) {
   const int64 kReceivedLength = 100;
 
   compression_stats()->UpdateContentLengths(
-      kReceivedLength, kOriginalLength,
-      pref_service()->GetBoolean(
-          data_reduction_proxy::prefs::kDataReductionProxyEnabled),
+      kReceivedLength, kOriginalLength, IsDataReductionProxyEnabled(),
       UNKNOWN_TYPE, std::string(), std::string());
 
   EXPECT_EQ(kReceivedLength,
             GetInt64(data_reduction_proxy::prefs::kHttpReceivedContentLength));
-  EXPECT_FALSE(pref_service()->GetBoolean(
-      data_reduction_proxy::prefs::kDataReductionProxyEnabled));
+  EXPECT_FALSE(IsDataReductionProxyEnabled());
   EXPECT_EQ(kOriginalLength,
             GetInt64(data_reduction_proxy::prefs::kHttpOriginalContentLength));
 
   // Record the same numbers again, and total lengths should be doubled.
   compression_stats()->UpdateContentLengths(
-      kReceivedLength, kOriginalLength,
-      pref_service()->GetBoolean(
-          data_reduction_proxy::prefs::kDataReductionProxyEnabled),
+      kReceivedLength, kOriginalLength, IsDataReductionProxyEnabled(),
       UNKNOWN_TYPE, std::string(), std::string());
 
   EXPECT_EQ(kReceivedLength * 2,
             GetInt64(data_reduction_proxy::prefs::kHttpReceivedContentLength));
-  EXPECT_FALSE(pref_service()->GetBoolean(
-      data_reduction_proxy::prefs::kDataReductionProxyEnabled));
+  EXPECT_FALSE(IsDataReductionProxyEnabled());
   EXPECT_EQ(kOriginalLength * 2,
             GetInt64(data_reduction_proxy::prefs::kHttpOriginalContentLength));
 }
