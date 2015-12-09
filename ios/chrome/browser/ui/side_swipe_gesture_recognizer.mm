@@ -80,6 +80,13 @@ const CGFloat kMinSwipeXThreshold = 4;
     return;
   }
 
+  // On devices that support force presses a -touchesMoved fires when |force|
+  // changes and not the location of the touch. Ignore these events.
+  if (currentPoint.x == _startPoint.x) {
+    self.state = UIGestureRecognizerStatePossible;
+    return;
+  }
+
   // Don't recognize swipe in the wrong direction.
   if ((_direction == UISwipeGestureRecognizerDirectionRight &&
        currentPoint.x - _startPoint.x < 0) ||
