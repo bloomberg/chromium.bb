@@ -7,10 +7,8 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/tracked_objects.h"
-#include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "components/sync_driver/data_type_manager_mock.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "components/sync_driver/fake_sync_service.h"
 #include "sync/internal_api/public/base/model_type_test_util.h"
 #include "sync/internal_api/public/test/test_user_share.h"
 #include "sync/internal_api/public/write_transaction.h"
@@ -33,19 +31,15 @@ using syncer::sessions::SyncSessionSnapshot;
 
 class SyncBackendMigratorTest : public testing::Test {
  public:
-  SyncBackendMigratorTest() : service_(&profile_) { }
+  SyncBackendMigratorTest() { }
   virtual ~SyncBackendMigratorTest() { }
 
   virtual void SetUp() {
     test_user_share_.SetUp();
     Mock::VerifyAndClear(manager());
-    Mock::VerifyAndClear(&service_);
     preferred_types_.Put(syncer::BOOKMARKS);
     preferred_types_.Put(syncer::PREFERENCES);
     preferred_types_.Put(syncer::AUTOFILL);
-
-    ON_CALL(service_, GetPreferredDataTypes()).
-        WillByDefault(Return(preferred_types_));
 
     migrator_.reset(
         new BackendMigrator(
@@ -90,22 +84,18 @@ class SyncBackendMigratorTest : public testing::Test {
     run_loop.RunUntilIdle();
   }
 
-  ProfileSyncService* service() { return &service_; }
+  sync_driver::SyncService* service() { return &service_; }
   DataTypeManagerMock* manager() { return &manager_; }
   syncer::ModelTypeSet preferred_types() { return preferred_types_; }
   BackendMigrator* migrator() { return migrator_.get(); }
   void RemovePreferredType(syncer::ModelType type) {
     preferred_types_.Remove(type);
-    Mock::VerifyAndClear(&service_);
-    ON_CALL(service_, GetPreferredDataTypes()).
-        WillByDefault(Return(preferred_types_));
   }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  base::MessageLoop message_loop_;
   syncer::ModelTypeSet preferred_types_;
-  TestingProfile profile_;
-  NiceMock<ProfileSyncServiceMock> service_;
+  sync_driver::FakeSyncService service_;
   NiceMock<DataTypeManagerMock> manager_;
   syncer::TestUserShare test_user_share_;
   scoped_ptr<BackendMigrator> migrator_;

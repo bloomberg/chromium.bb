@@ -208,6 +208,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "about_sync_util_unittest.cc",
+    "backend_migrator_unittest.cc",
     "backup_rollback_controller_unittest.cc",
     "data_type_manager_impl_unittest.cc",
     "device_info_data_type_controller_unittest.cc",

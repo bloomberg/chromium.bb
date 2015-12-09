@@ -701,6 +701,7 @@
     ],
     'sync_driver_unittest_sources': [
       'sync_driver/about_sync_util_unittest.cc',
+      'sync_driver/backend_migrator_unittest.cc',
       'sync_driver/backup_rollback_controller_unittest.cc',
       'sync_driver/data_type_manager_impl_unittest.cc',
       'sync_driver/device_info_data_type_controller_unittest.cc',
