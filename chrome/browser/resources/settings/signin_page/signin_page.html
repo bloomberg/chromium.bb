@@ -19,8 +19,10 @@
         <div class="settings-box">
           <div class="split">
             <span class="start">
-              <!-- TODO(tommycli): Show current profile icon and name here.
-                                   To be done by December 2015. -->
+              <!-- TODO(tommycli): Investigate ChromeOS user pictures.
+                                   To be done by January 2015. -->
+              <img src="[[syncStatus.iconURL]]">
+              [[syncStatus.name]]
             </span>
             <span>
               <template is="dom-if" if="[[!syncStatus.signedIn]]">

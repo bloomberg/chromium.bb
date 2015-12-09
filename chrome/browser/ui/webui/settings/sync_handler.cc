@@ -15,8 +15,10 @@
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/profiles/profile_window.h"
@@ -48,7 +50,9 @@
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "net/base/url_util.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/webui/web_ui_util.h"
 
 #if defined(OS_CHROMEOS)
 #include "components/signin/core/browser/signin_manager_base.h"
@@ -765,6 +769,23 @@ scoped_ptr<base::DictionaryValue> SyncHandler::GetSyncStateDictionary() {
   sync_status->SetBoolean("signedIn", signin->IsAuthenticated());
   sync_status->SetBoolean("hasUnrecoverableError",
                           service && service->HasUnrecoverableError());
+
+  ProfileInfoCache& cache =
+      g_browser_process->profile_manager()->GetProfileInfoCache();
+  ProfileAttributesEntry* entry = nullptr;
+  if (cache.GetProfileAttributesWithPath(profile_->GetPath(), &entry)) {
+    sync_status->SetString("name", entry->GetName());
+
+    if (entry->IsUsingGAIAPicture() && entry->GetGAIAPicture()) {
+      gfx::Image icon =
+          profiles::GetAvatarIconForWebUI(entry->GetAvatarIcon(), true);
+      sync_status->SetString("iconURL",
+                             webui::GetBitmapDataUrl(icon.AsBitmap()));
+    } else {
+      sync_status->SetString("iconURL", profiles::GetDefaultAvatarIconUrl(
+                                            entry->GetAvatarIconIndex()));
+    }
+  }
 
   return sync_status.Pass();
 }
