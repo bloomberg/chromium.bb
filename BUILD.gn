@@ -204,6 +204,7 @@ source_set("ffmpeg_internal") {
         # TODO(hans) Enable integrated-as (crbug.com/124610).
         asmflags = [ "-fno-integrated-as" ]
         if (is_android) {
+          import("//build/config/android/config.gni")
           rebased_android_toolchain_root =
               rebase_path(android_toolchain_root, root_build_dir)
           # Else /usr/bin/as gets picked up.
