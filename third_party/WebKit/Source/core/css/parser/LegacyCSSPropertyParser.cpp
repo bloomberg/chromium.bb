@@ -3905,7 +3905,7 @@ bool CSSPropertyParser::parseBorderImageSlice(CSSPropertyID propId, RefPtrWillBe
     BorderImageSliceParseContext context;
     for (CSSParserValue* val = m_valueList->current(); val; val = m_valueList->next()) {
         // FIXME calc() http://webkit.org/b/16662 : calc is parsed but values are not created yet.
-        if (context.allowNumber() && !isCalculation(val) && validUnit(val, FInteger | FNonNeg | FPercent)) {
+        if (context.allowNumber() && !isCalculation(val) && validUnit(val, FNumber | FNonNeg | FPercent)) {
             context.commitNumber(createPrimitiveNumericValue(val));
         } else if (context.allowFill() && val->id == CSSValueFill) {
             context.commitFill();

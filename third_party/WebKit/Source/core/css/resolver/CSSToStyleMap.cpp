@@ -484,6 +484,13 @@ void CSSToStyleMap::mapNinePieceImage(StyleResolverState& state, CSSPropertyID p
     }
 }
 
+static Length convertBorderImageSliceSide(const CSSPrimitiveValue& value)
+{
+    if (value.isPercentage())
+        return Length(value.getDoubleValue(), Percent);
+    return Length(round(value.getDoubleValue()), Fixed);
+}
+
 void CSSToStyleMap::mapNinePieceImageSlice(StyleResolverState&, const CSSValue& value, NinePieceImage& image)
 {
     if (!value.isBorderImageSliceValue())
@@ -495,22 +502,10 @@ void CSSToStyleMap::mapNinePieceImageSlice(StyleResolverState&, const CSSValue& 
     // Set up a length box to represent our image slices.
     LengthBox box;
     CSSQuadValue* slices = borderImageSlice.slices();
-    if (slices->top()->isPercentage())
-        box.m_top = Length(slices->top()->getDoubleValue(), Percent);
-    else
-        box.m_top = Length(slices->top()->getIntValue(), Fixed);
-    if (slices->bottom()->isPercentage())
-        box.m_bottom = Length(slices->bottom()->getDoubleValue(), Percent);
-    else
-        box.m_bottom = Length(slices->bottom()->getIntValue(), Fixed);
-    if (slices->left()->isPercentage())
-        box.m_left = Length(slices->left()->getDoubleValue(), Percent);
-    else
-        box.m_left = Length(slices->left()->getIntValue(), Fixed);
-    if (slices->right()->isPercentage())
-        box.m_right = Length(slices->right()->getDoubleValue(), Percent);
-    else
-        box.m_right = Length(slices->right()->getIntValue(), Fixed);
+    box.m_top = convertBorderImageSliceSide(*slices->top());
+    box.m_bottom = convertBorderImageSliceSide(*slices->bottom());
+    box.m_left = convertBorderImageSliceSide(*slices->left());
+    box.m_right = convertBorderImageSliceSide(*slices->right());
     image.setImageSlices(box);
 
     // Set our fill mode.
