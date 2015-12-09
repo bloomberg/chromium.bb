@@ -39,8 +39,8 @@
                 "LayoutView #document",
                 "LayoutBlockFlow HTML",
                 "LayoutBlockFlow BODY",
-                "VerticalScrollbar",
-                "LayoutView #document"
+                "LayoutView #document",
+                "VerticalScrollbar"
               ]
             }
           ]

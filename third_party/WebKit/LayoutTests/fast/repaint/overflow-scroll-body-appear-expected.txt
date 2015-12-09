@@ -1,20 +1,20 @@
 {
-  "bounds": [2008, 2096],
+  "bounds": [2008, 2092],
   "children": [
     {
-      "bounds": [2008, 2096],
+      "bounds": [2008, 2092],
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
         [785, 585, 15, 15],
         [785, 0, 15, 585],
-        [8, 52, 784, 20],
-        [8, 52, 769, 20],
-        [8, 16, 2000, 2072],
-        [8, 16, 784, 20],
-        [8, 16, 769, 20],
+        [8, 50, 784, 18],
+        [8, 50, 769, 18],
+        [8, 16, 2000, 2068],
+        [8, 16, 784, 18],
+        [8, 16, 769, 18],
         [0, 585, 785, 15],
-        [0, 0, 2008, 2096],
+        [0, 0, 2008, 2092],
         [0, 0, 785, 585]
       ],
       "paintInvalidationClients": [
@@ -29,6 +29,7 @@
         "LayoutBlockFlow BODY",
         "LayoutBlockFlow P",
         "LayoutBlockFlow P",
+        "LayoutView #document",
         "LayoutView #document"
       ]
     }

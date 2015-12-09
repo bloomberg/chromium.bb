@@ -140,8 +140,8 @@
         "InlineTextBox 'me? They\u2019re dreadfully fond of beheading people'",
         "InlineTextBox 'here; the great\n'",
         "InlineTextBox 'wonder is, that there\u2018s any one left alive!\u2019'",
-        "VerticalScrollbar",
-        "LayoutView #document"
+        "LayoutView #document",
+        "VerticalScrollbar"
       ]
     }
   ]

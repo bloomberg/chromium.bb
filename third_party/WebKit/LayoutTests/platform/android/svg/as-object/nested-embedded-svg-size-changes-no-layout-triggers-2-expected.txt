@@ -51,7 +51,6 @@
         "LayoutSVGRect rect",
         "LayoutSVGRect rect",
         "LayoutText #text",
-        "LayoutView #document",
         "LayoutView #document"
       ]
     }
