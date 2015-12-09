@@ -243,8 +243,9 @@
     },
 
     'gpu_tests': {
-      'gn_args': '', # not needed in GN builds.
-      'gyp_defines': 'archive_gpu_tests=1',
+      # archive_gpu_tests=true is not needed in GN builds.
+      'gn_args': 'ffmpeg_branding="Chrome" proprietary_codecs=true',
+      'gyp_defines': 'archive_gpu_tests=1 ffmpeg_branding=Chrome proprietary_codecs=1',
     },
 
     'gyp': {'type': 'gyp'},
