@@ -130,6 +130,7 @@ class ThreadTimesKeyNoOpCases(_ThreadTimes):
     return 'per_frame' not in value.name and 'mean_frame' not in value.name
 
 
+@benchmark.Disabled('win') # crbug.com/568175
 class ThreadTimesToughScrollingCases(_ThreadTimes):
   """Measure timeline metrics while performing smoothness action on tough
   scrolling cases."""
