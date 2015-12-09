@@ -56,6 +56,10 @@ ServiceWorkerDispatcher::~ServiceWorkerDispatcher() {
 
 void ServiceWorkerDispatcher::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
+
+  // When you add a new message handler, you should consider adding a similar
+  // handler in ServiceWorkerMessageFilter to release references passed from
+  // the browser process in case we fail to post task to the thread.
   IPC_BEGIN_MESSAGE_MAP(ServiceWorkerDispatcher, msg)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_AssociateRegistration,
                         OnAssociateRegistration)

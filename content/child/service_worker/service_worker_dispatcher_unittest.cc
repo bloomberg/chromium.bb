@@ -17,6 +17,8 @@
 
 namespace content {
 
+namespace {
+
 class ServiceWorkerTestSender : public ThreadSafeSender {
  public:
   explicit ServiceWorkerTestSender(IPC::TestSink* ipc_sink)
@@ -34,6 +36,8 @@ class ServiceWorkerTestSender : public ThreadSafeSender {
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerTestSender);
 };
+
+}  // namespace
 
 class ServiceWorkerDispatcherTest : public testing::Test {
  public:
@@ -149,9 +153,6 @@ class MockWebServiceWorkerProviderClientImpl
   bool is_dispatch_message_event_called_ = false;
   ServiceWorkerDispatcher* dispatcher_;
 };
-
-// TODO(nhiroki): Add tests for message handlers especially to receive reference
-// counts.
 
 TEST_F(ServiceWorkerDispatcherTest, OnAssociateRegistration_NoProviderContext) {
   // Assume that these objects are passed from the browser process and own
