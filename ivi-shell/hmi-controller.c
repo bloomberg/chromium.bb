@@ -367,6 +367,10 @@ mode_fullscreen_someone(struct hmi_controller *hmi_ctrl,
 	struct ivi_layout_surface *ivisurf  = NULL;
 	int32_t i = 0;
 	const uint32_t duration = hmi_ctrl->hmi_setting->transition_duration;
+	int32_t surf_num = 0;
+	struct ivi_layout_surface **surfaces;
+
+	surfaces = MEM_ALLOC(sizeof(*surfaces) * surface_length);
 
 	for (i = 0; i < surface_length; i++) {
 		ivisurf = pp_surface[i];
@@ -374,6 +378,18 @@ mode_fullscreen_someone(struct hmi_controller *hmi_ctrl,
 		/* skip ui widgets */
 		if (is_surf_in_ui_widget(hmi_ctrl, ivisurf))
 			continue;
+
+		surfaces[surf_num++] = ivisurf;
+	}
+	ivi_layout_interface->layer_set_render_order(layer->ivilayer, surfaces, surf_num);
+
+	for (i = 0; i < surf_num; i++) {
+		ivisurf = surfaces[i];
+
+		if ((i > 0) && (i < hmi_ctrl->screen_num)) {
+			layer = wl_container_of(layer->link.prev, layer, link);
+			ivi_layout_interface->layer_set_render_order(layer->ivilayer, &ivisurf, 1);
+		}
 
 		ivi_layout_interface->surface_set_transition(ivisurf,
 					IVI_LAYOUT_TRANSITION_VIEW_DEFAULT,
@@ -383,6 +399,8 @@ mode_fullscreen_someone(struct hmi_controller *hmi_ctrl,
 							     surface_width,
 							     surface_height);
 	}
+
+	free(surfaces);
 }
 
 static void
