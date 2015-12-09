@@ -8,9 +8,6 @@ import page_sets
 from telemetry import benchmark
 
 
-# TODO(gabadie): Replaces start_with_url.* by start_with_url2.* after confirming
-# that both benchmarks produce the same results.
-
 # Disable accessing protected member for startup2._StartupPerfBenchmark. It
 # needs to be protected to not be listed in the list of benchmarks to run, even
 # though its purpose is only to factorise common code between startup
@@ -32,7 +29,7 @@ class StartWithUrlColdTBM(startup2._StartupPerfBenchmark):
 
   @classmethod
   def Name(cls):
-    return 'start_with_url2.cold.startup_pages'
+    return 'start_with_url.cold.startup_pages'
 
 
 @benchmark.Enabled('has tabs')
@@ -46,7 +43,7 @@ class StartWithUrlWarmTBM(startup2._StartupPerfBenchmark):
 
   @classmethod
   def Name(cls):
-    return 'start_with_url2.warm.startup_pages'
+    return 'start_with_url.warm.startup_pages'
 
   @classmethod
   def ValueCanBeAddedPredicate(cls, value, is_first_result):
