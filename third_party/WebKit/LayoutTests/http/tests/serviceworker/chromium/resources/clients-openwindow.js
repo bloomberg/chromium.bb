@@ -76,8 +76,9 @@ var TESTS = [
 
     function testOpenViewSource() {
         synthesizeNotificationClick().then(function(e) {
-            clients.openWindow('view-source://http://test.com').catch(function(c) {
+            clients.openWindow('view-source://http://test.com').catch(function(error) {
                 self.postMessage('openWindow() can not open view-source scheme');
+                self.postMessage('openWindow() error is: ' + error.name);
             }).then(runNextTestOrQuit);
         });
     },

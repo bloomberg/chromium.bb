@@ -118,7 +118,7 @@ ScriptPromise ServiceWorkerClients::openWindow(ScriptState* scriptState, const S
     }
 
     if (!context->securityOrigin()->canDisplay(parsedUrl)) {
-        resolver->reject(DOMException::create(SecurityError, "'" + parsedUrl.elidedString() + "' cannot be opened."));
+        resolver->reject(V8ThrowException::createTypeError(scriptState->isolate(), "'" + parsedUrl.elidedString() + "' cannot be opened."));
         return promise;
     }
 
