@@ -4562,9 +4562,13 @@
                   '-fsanitize=memory',
                   '-fsanitize-memory-track-origins=<(msan_track_origins)',
                   '-fsanitize-blacklist=<(msan_blacklist)',
+                  # TODO(eugenis): Remove when msan migrates to new ABI (crbug.com/560589).
+                  '-fPIC',
                 ],
                 'ldflags': [
                   '-fsanitize=memory',
+                  # TODO(eugenis): Remove when msan migrates to new ABI (crbug.com/560589).
+                  '-pie',
                 ],
                 'defines': [
                   'MEMORY_SANITIZER',

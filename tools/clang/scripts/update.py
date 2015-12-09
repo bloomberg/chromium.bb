@@ -8,6 +8,7 @@
 It is also used by package.py to build the prebuilt clang binaries."""
 
 import argparse
+import cStringIO
 import distutils.spawn
 import glob
 import os
@@ -19,13 +20,14 @@ import stat
 import sys
 import tarfile
 import tempfile
+import time
 import urllib2
 import zipfile
 
 # Do NOT CHANGE this if you don't know what you're doing -- see
 # https://code.google.com/p/chromium/wiki/UpdatingClang
 # Reverting problematic clang rolls is safe, though.
-CLANG_REVISION = '254793'
+CLANG_REVISION = '254049'
 
 use_head_revision = 'LLVM_FORCE_HEAD_REVISION' in os.environ
 if use_head_revision:
@@ -513,6 +515,10 @@ def UpdateClang(args):
   if use_head_revision:
     cflags += ['-DLLVM_FORCE_HEAD_REVISION']
     cxxflags += ['-DLLVM_FORCE_HEAD_REVISION']
+
+  # Pin MSan to the old ABI.
+  # TODO(eugenis): Remove when MSan migrates to new ABI (crbug.com/560589).
+  cxxflags += [ '-DMSAN_LINUX_X86_64_OLD_MAPPING' ]
 
   CreateChromeToolsShim()
 
