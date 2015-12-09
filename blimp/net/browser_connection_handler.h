@@ -27,6 +27,7 @@ class BlimpMessageProcessor;
 class BLIMP_NET_EXPORT BrowserConnectionHandler
     : public ConnectionHandler,
       public ConnectionErrorObserver {
+ public:
   BrowserConnectionHandler();
   ~BrowserConnectionHandler() override;
 

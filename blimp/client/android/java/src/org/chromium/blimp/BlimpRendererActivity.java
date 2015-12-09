@@ -13,6 +13,7 @@ import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.blimp.auth.RetryingTokenSource;
 import org.chromium.blimp.auth.TokenSource;
 import org.chromium.blimp.auth.TokenSourceImpl;
+import org.chromium.blimp.session.BlimpClientSession;
 import org.chromium.blimp.toolbar.Toolbar;
 import org.chromium.ui.widget.Toast;
 
@@ -28,6 +29,7 @@ public class BlimpRendererActivity extends Activity implements BlimpLibraryLoade
     private TokenSource mTokenSource;
     private BlimpView mBlimpView;
     private Toolbar mToolbar;
+    private BlimpClientSession mBlimpClientSession;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,6 +63,12 @@ public class BlimpRendererActivity extends Activity implements BlimpLibraryLoade
         if (mTokenSource != null) {
             mTokenSource.destroy();
             mTokenSource = null;
+        }
+
+        // Destroy the BlimpClientSession last, as all other features may rely on it.
+        if (mBlimpClientSession != null) {
+            mBlimpClientSession.destroy();
+            mBlimpClientSession = null;
         }
 
         super.onDestroy();
@@ -100,11 +108,13 @@ public class BlimpRendererActivity extends Activity implements BlimpLibraryLoade
 
         setContentView(R.layout.blimp_main);
 
+        mBlimpClientSession = new BlimpClientSession();
+
         mBlimpView = (BlimpView) findViewById(R.id.renderer);
-        mBlimpView.initializeRenderer();
+        mBlimpView.initializeRenderer(mBlimpClientSession);
 
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
-        mToolbar.initialize();
+        mToolbar.initialize(mBlimpClientSession);
     }
 
     // TokenSource.Callback implementation.

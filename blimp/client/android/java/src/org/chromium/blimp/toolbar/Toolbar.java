@@ -16,6 +16,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 
 import org.chromium.blimp.R;
+import org.chromium.blimp.session.BlimpClientSession;
 
 /**
  * A {@link View} that visually represents the Blimp toolbar, which lets users issue navigation
@@ -47,11 +48,13 @@ public class Toolbar extends LinearLayout implements UrlBar.UrlBarObserver,
     /**
      * To be called when the native library is loaded so that this class can initialize its native
      * components.
+     * @param blimpClientSession The {@link BlimpClientSession} that contains the content-lite
+     *                           features required by the native components of the Toolbar.
      */
-    public void initialize() {
+    public void initialize(BlimpClientSession blimpClientSession) {
         assert mNativeToolbarPtr == 0;
 
-        mNativeToolbarPtr = nativeInit();
+        mNativeToolbarPtr = nativeInit(blimpClientSession);
         sendUrlTextInternal(mUrlToLoad);
     }
 
@@ -151,7 +154,7 @@ public class Toolbar extends LinearLayout implements UrlBar.UrlBarObserver,
         // TODO(dtrainor): Add a UI for the loading state.
     }
 
-    private native long nativeInit();
+    private native long nativeInit(BlimpClientSession blimpClientSession);
     private native void nativeDestroy(long nativeToolbar);
     private native void nativeOnUrlTextEntered(long nativeToolbar, String text);
     private native void nativeOnReloadPressed(long nativeToolbar);

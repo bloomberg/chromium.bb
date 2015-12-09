@@ -7,6 +7,7 @@
 #include <android/native_window_jni.h>
 
 #include "blimp/client/compositor/blimp_compositor_android.h"
+#include "blimp/client/session/blimp_client_session_android.h"
 #include "jni/BlimpView_jni.h"
 #include "ui/events/android/motion_event_android.h"
 #include "ui/gfx/geometry/size.h"
@@ -16,11 +17,20 @@ namespace blimp {
 // static
 static jlong Init(JNIEnv* env,
                   const JavaParamRef<jobject>& jobj,
+                  const JavaParamRef<jobject>& blimp_client_session,
                   jint real_width,
                   jint real_height,
                   jint width,
                   jint height,
                   jfloat dp_to_px) {
+  BlimpClientSession* client_session =
+      BlimpClientSessionAndroid::FromJavaObject(env,
+                                                blimp_client_session.obj());
+
+  // TODO(dtrainor): Pull the feature object from the BlimpClientSession and
+  // pass it through to the BlimpCompositor.
+  ALLOW_UNUSED_LOCAL(client_session);
+
   return reinterpret_cast<intptr_t>(
       new BlimpView(env, jobj, gfx::Size(real_width, real_height),
                     gfx::Size(width, height), dp_to_px));

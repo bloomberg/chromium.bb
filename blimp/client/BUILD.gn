@@ -28,6 +28,8 @@ component("blimp_client") {
     "input/blimp_input_manager.h",
     "navigation_message_processor.cc",
     "navigation_message_processor.h",
+    "session/blimp_client_session.cc",
+    "session/blimp_client_session.h",
   ]
 
   defines = [ "BLIMP_CLIENT_IMPLEMENTATION=1" ]
@@ -102,6 +104,7 @@ if (is_android) {
     sources = [
       "android/java/src/org/chromium/blimp/BlimpLibraryLoader.java",
       "android/java/src/org/chromium/blimp/BlimpView.java",
+      "android/java/src/org/chromium/blimp/session/BlimpClientSession.java",
       "android/java/src/org/chromium/blimp/toolbar/Toolbar.java",
     ]
 
@@ -185,6 +188,7 @@ if (is_android) {
       "android/java/src/org/chromium/blimp/BlimpLibraryLoader.java",
       "android/java/src/org/chromium/blimp/BlimpRendererActivity.java",
       "android/java/src/org/chromium/blimp/BlimpView.java",
+      "android/java/src/org/chromium/blimp/session/BlimpClientSession.java",
       "android/java/src/org/chromium/blimp/toolbar/Toolbar.java",
       "android/java/src/org/chromium/blimp/toolbar/UrlBar.java",
     ]
@@ -230,6 +234,8 @@ if (is_android) {
       "android/toolbar.h",
       "compositor/blimp_compositor_android.cc",
       "compositor/blimp_compositor_android.h",
+      "session/blimp_client_session_android.cc",
+      "session/blimp_client_session_android.h",
     ]
 
     libs = [ "android" ]

@@ -15,6 +15,7 @@ import android.view.SurfaceView;
 import android.view.WindowManager;
 
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.blimp.session.BlimpClientSession;
 
 /**
  * A {@link View} that will visually represent the Blimp rendered content.  This {@link View} starts
@@ -38,8 +39,10 @@ public class BlimpView extends SurfaceView implements SurfaceHolder.Callback2 {
     /**
      * Starts up rendering for this {@link View}.  This will start up the native compositor and will
      * display it's contents.
+     * @param blimpClientSession The {@link BlimpClientSession} that contains the content-lite
+     *                           features required by the native components of the compositor.
      */
-    public void initializeRenderer() {
+    public void initializeRenderer(BlimpClientSession blimpClientSession) {
         assert mNativeBlimpViewPtr == 0;
 
         WindowManager windowManager =
@@ -52,8 +55,8 @@ public class BlimpView extends SurfaceView implements SurfaceHolder.Callback2 {
         }
         // TODO(dtrainor): Change 1.f to dpToPx once native fully supports dp.
         float compositorDensity = 1.f;
-        mNativeBlimpViewPtr = nativeInit(
-                physicalSize.x, physicalSize.y, displaySize.x, displaySize.y, compositorDensity);
+        mNativeBlimpViewPtr = nativeInit(blimpClientSession, physicalSize.x, physicalSize.y,
+                displaySize.x, displaySize.y, compositorDensity);
         getHolder().addCallback(this);
         setVisibility(VISIBLE);
     }
@@ -162,8 +165,8 @@ public class BlimpView extends SurfaceView implements SurfaceHolder.Callback2 {
     }
 
     // Native Methods
-    private native long nativeInit(int physicalWidth, int physicalHeight, int displayWidth,
-            int displayHeight, float dpToPixel);
+    private native long nativeInit(BlimpClientSession blimpClientSession, int physicalWidth,
+            int physicalHeight, int displayWidth, int displayHeight, float dpToPixel);
     private native void nativeDestroy(long nativeBlimpView);
     private native void nativeSetNeedsComposite(long nativeBlimpView);
     private native void nativeOnSurfaceChanged(
