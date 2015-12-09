@@ -1111,8 +1111,6 @@
       'browser/renderer_host/delegated_frame_evictor.h',
       'browser/renderer_host/dip_util.cc',
       'browser/renderer_host/dip_util.h',
-      'browser/renderer_host/dwrite_font_proxy_message_filter_win.cc',
-      'browser/renderer_host/dwrite_font_proxy_message_filter_win.h',
       'browser/renderer_host/event_with_latency_info.h',
       'browser/renderer_host/file_utilities_message_filter.cc',
       'browser/renderer_host/file_utilities_message_filter.h',
