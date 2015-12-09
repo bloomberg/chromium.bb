@@ -1700,7 +1700,6 @@ template("process_resources") {
   srcjar_path = invoker.srcjar_path
   r_text_path = invoker.r_text_path
   build_config = invoker.build_config
-  resource_dirs = invoker.resource_dirs
   android_manifest = invoker.android_manifest
 
   non_constant_id = true
@@ -1724,17 +1723,30 @@ template("process_resources") {
       r_text_path,
     ]
 
-    sources_build_rel = exec_script("//build/android/gyp/find.py",
-                                    rebase_path(resource_dirs, root_build_dir),
-                                    "list lines")
-    sources = rebase_path(sources_build_rel, ".", root_build_dir)
+    _all_resource_dirs = []
+    sources = []
+
+    if (defined(invoker.resource_dirs)) {
+      _all_resource_dirs += invoker.resource_dirs
+      sources_build_rel =
+          exec_script("//build/android/gyp/find.py",
+                      rebase_path(invoker.resource_dirs, root_build_dir),
+                      "list lines")
+      sources += rebase_path(sources_build_rel, ".", root_build_dir)
+    }
+
+    if (defined(invoker.generated_resource_dirs)) {
+      assert(defined(invoker.generated_resource_files))
+      _all_resource_dirs += invoker.generated_resource_dirs
+      sources += invoker.generated_resource_files
+    }
 
     inputs = [
       build_config,
       android_manifest,
     ]
 
-    rebase_resource_dirs = rebase_path(resource_dirs, root_build_dir)
+    _rebased_all_resource_dirs = rebase_path(_all_resource_dirs, root_build_dir)
     rebase_build_config = rebase_path(build_config, root_build_dir)
     args = [
       "--depfile",
@@ -1745,7 +1757,7 @@ template("process_resources") {
       android_aapt_path,
       "--android-manifest",
       rebase_path(android_manifest, root_build_dir),
-      "--resource-dirs=$rebase_resource_dirs",
+      "--resource-dirs=$_rebased_all_resource_dirs",
       "--srcjar-out",
       rebase_path(srcjar_path, root_build_dir),
       "--resource-zip-out",

@@ -5,6 +5,10 @@
 import("//remoting/remoting_locales.gni")
 import("//tools/grit/grit_rule.gni")
 
+if (is_android) {
+  import("//build/config/android/rules.gni")
+}
+
 group("resources") {
   public_deps = [
     ":copy_locales",
@@ -64,6 +68,14 @@ if (false) {
   }
 }  # if false
 
+if (is_android) {
+  android_string_outputs =
+      [ "remoting/android/res/values/remoting_strings.xml" ]
+  android_string_outputs += process_file_template(
+          remoting_android_locales,
+          [ "remoting/android/res/values-{{source_name_part}}/remoting_strings.xml" ])
+}
+
 grit("strings") {
   source = "remoting_strings.grd"
   output_name = "remoting_strings"
@@ -83,6 +95,21 @@ grit("strings") {
                             [ "remoting/resources/{{source_name_part}}.pak" ])
 
   outputs += remoting_webapp_locale_files
+
+  if (is_android) {
+    outputs += android_string_outputs
+  }
+}
+
+if (is_android) {
+  java_strings_grd_prebuilt("strings_java") {
+    grit_output_dir = "$root_gen_dir/remoting/android/res"
+    generated_files =
+        rebase_path(android_string_outputs, "remoting/android/res", ".")
+    deps = [
+      ":strings",
+    ]
+  }
 }
 
 action("copy_locales") {
