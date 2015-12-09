@@ -36,12 +36,7 @@ config("sanitizer_options_link_helper") {
     ldflags += [ "-fsanitize=thread" ]
   }
   if (is_msan) {
-    ldflags += [
-      "-fsanitize=memory",
-
-      # TODO(eugenis): Remove when msan migrates to new ABI (crbug.com/560589).
-      "-pie",
-    ]
+    ldflags += [ "-fsanitize=memory" ]
   }
   if (is_ubsan) {
     ldflags += [ "-fsanitize=undefined" ]
@@ -144,9 +139,6 @@ config("default_sanitizer_flags") {
         "-fsanitize=memory",
         "-fsanitize-memory-track-origins=$msan_track_origins",
         "-fsanitize-blacklist=$msan_blacklist_path",
-
-        # TODO(eugenis): Remove when msan migrates to new ABI (crbug.com/560589).
-        "-fPIC",
       ]
     }
     if (is_ubsan) {
