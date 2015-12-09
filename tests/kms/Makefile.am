@@ -21,11 +21,16 @@ libkms_test_la_LIBADD = \
 
 if HAVE_INSTALL_TESTS
 bin_PROGRAMS = \
-	kms-steal-crtc
+	kms-steal-crtc \
+	kms-universal-planes
 else
 noinst_PROGRAMS = \
-	kms-steal-crtc
+	kms-steal-crtc \
+	kms-universal-planes
 endif
 
 kms_steal_crtc_SOURCES = kms-steal-crtc.c
 kms_steal_crtc_LDADD = libkms-test.la ../util/libutil.la $(CAIRO_LIBS)
+
+kms_universal_planes_SOURCES = kms-universal-planes.c
+kms_universal_planes_LDADD = libkms-test.la $(CAIRO_LIBS)
