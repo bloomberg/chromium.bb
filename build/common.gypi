@@ -4138,7 +4138,7 @@
                       '-g',
                     ],
                     'ldflags': [
-                      # We want to statically link libstdc++/libgcc_s.
+                      # We want to statically link libstdc++/libgcc.
                       '-static-libstdc++',
                       '-static-libgcc',
                     ],
@@ -4149,6 +4149,34 @@
                       # '-mcpu=cortex-a9'). Remove these flags explicitly.
                       '-march=armv7-a',
                       '-mtune=cortex-a8',
+                    ],
+                    'target_conditions': [
+                      [ '_type=="executable" and OS!="android"', {
+                        # Statically link whole libstdc++ and libgcc in
+                        # executables to ensure only one copy at runtime.
+                        'ldflags': [
+                          # Note executables also get -static-stdlibc++/libgcc.
+                          # Despite including libstdc++/libgcc archives, we
+                          # still need to specify static linking for them in
+                          # order to prevent the executable from having a
+                          # dynamic dependency on them.
+
+                          # Export stdlibc++ and libgcc symbols to force shlibs
+                          # to refer to these symbols from the executable.
+                          '-Wl,--export-dynamic',
+
+                          '-lm', # stdlibc++ requires math.h
+
+                          # In case we redefined stdlibc++ symbols
+                          # (e.g. tc_malloc)
+                          '-Wl,--allow-multiple-definition',
+
+                          '-Wl,--whole-archive',
+                          '-l:libstdc++.a',
+                          '-l:libgcc.a',
+                          '-Wl,--no-whole-archive',
+                        ],
+                      }]
                     ],
                   }],
                 ],

@@ -180,12 +180,13 @@ executable("mini_installer") {
   # This target is special so we manually override most linker flags and
   # specify our own to keep the size down.
   configs -= [
+    "//build/config:executable_config",
     "//build/config/compiler:compiler",
-    "//build/config/win:common_linker_setup",
     "//build/config/win:console",
   ]
   configs += [
     ":mini_installer_compiler_flags",
+    "//build/config/win:sdk_link",
     "//build/config/win:windowed",
   ]
 

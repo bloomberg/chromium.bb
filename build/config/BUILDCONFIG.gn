@@ -497,12 +497,11 @@ if (is_debug) {
   _native_compiler_configs += [ "//build/config:release" ]
 }
 
-# Windows linker setup for EXEs and DLLs.
 if (is_win) {
+  # Many targets remove these configs, so they are not contained within
+  # //build/config:executable_config for easy removal.
   _windows_linker_configs = [
     "//build/config/win:default_incremental_linking",
-    "//build/config/win:sdk_link",
-    "//build/config/win:common_linker_setup",
 
     # Default to console-mode apps. Most of our targets are tests and such
     # that shouldn't use the windows subsystem.
@@ -511,20 +510,12 @@ if (is_win) {
 }
 
 # Executable defaults.
-_executable_configs =
-    _native_compiler_configs + [ "//build/config:default_libs" ]
+_executable_configs = _native_compiler_configs + [
+                        "//build/config:default_libs",
+                        "//build/config:executable_config",
+                      ]
 if (is_win) {
   _executable_configs += _windows_linker_configs
-} else if (is_mac) {
-  _executable_configs += [
-    "//build/config/mac:mac_dynamic_flags",
-    "//build/config/mac:mac_executable_flags",
-  ]
-} else if (is_linux || is_android) {
-  _executable_configs += [ "//build/config/gcc:executable_ldconfig" ]
-  if (is_android) {
-    _executable_configs += [ "//build/config/android:executable_config" ]
-  }
 }
 set_defaults("executable") {
   configs = _executable_configs
@@ -537,12 +528,12 @@ set_defaults("static_library") {
 
 # Shared library and loadable module defaults (also for components in component
 # mode).
-_shared_library_configs =
-    _native_compiler_configs + [ "//build/config:default_libs" ]
+_shared_library_configs = _native_compiler_configs + [
+                            "//build/config:default_libs",
+                            "//build/config:shared_library_config",
+                          ]
 if (is_win) {
   _shared_library_configs += _windows_linker_configs
-} else if (is_mac) {
-  _shared_library_configs += [ "//build/config/mac:mac_dynamic_flags" ]
 } else if (is_android) {
   # Strip native JNI exports from shared libraries by default. Binaries that
   # want this can remove this config.

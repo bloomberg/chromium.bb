@@ -4,6 +4,7 @@
 
 import("//build/config/allocator.gni")
 import("//build/config/chrome_build.gni")
+import("//build/config/chromecast_build.gni")
 import("//build/config/crypto.gni")
 import("//build/config/features.gni")
 import("//build/config/sanitizers/sanitizers.gni")
@@ -396,6 +397,52 @@ config("default_libs") {
     ]
   } else if (is_linux) {
     libs = [ "dl" ]
+  }
+}
+
+# Executable configs -----------------------------------------------------------
+
+# Windows linker setup for EXEs and DLLs.
+if (is_win) {
+  _windows_linker_configs = [
+    "//build/config/win:sdk_link",
+    "//build/config/win:common_linker_setup",
+  ]
+}
+
+# This config defines the configs applied to all executables.
+config("executable_config") {
+  configs = []
+
+  if (is_win) {
+    configs += _windows_linker_configs
+  } else if (is_mac) {
+    configs += [
+      "//build/config/mac:mac_dynamic_flags",
+      "//build/config/mac:mac_executable_flags",
+    ]
+  } else if (is_linux || is_android) {
+    configs += [ "//build/config/gcc:executable_ldconfig" ]
+    if (is_android) {
+      configs += [ "//build/config/android:executable_config" ]
+    } else if (is_chromecast) {
+      configs += [ "//build/config/chromecast:executable_config" ]
+    }
+  }
+}
+
+# Shared library configs -------------------------------------------------------
+
+# This config defines the configs applied to all shared libraries.
+config("shared_library_config") {
+  configs = []
+
+  if (is_win) {
+    configs += _windows_linker_configs
+  } else if (is_mac) {
+    configs += [ "//build/config/mac:mac_dynamic_flags" ]
+  } else if (is_chromecast) {
+    configs += [ "//build/config/chromecast:shared_library_config" ]
   }
 }
 
