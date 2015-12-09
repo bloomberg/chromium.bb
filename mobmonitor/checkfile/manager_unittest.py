@@ -15,9 +15,7 @@ import threading
 
 from cherrypy.process import plugins
 from chromite.lib import cros_test_lib
-from chromite.lib import osutils
 from chromite.mobmonitor.checkfile import manager
-from chromite.mobmonitor.rpc import rpc
 
 # Test health check and related attributes
 class TestHealthCheck(object):
@@ -909,106 +907,3 @@ class CheckFileManagerTest(cros_test_lib.MockTestCase):
                                  ['x', 'y'], {'z': 1})
     self.assertEquals(expect, cfm.ActionInfo(TEST_SERVICE_NAME,
                                              hcname, 'MixedParams'))
-
-
-@cros_test_lib.NetworkTest()
-class CheckFileModificationTest(cros_test_lib.MockTempDirTestCase):
-  """Unittests for checking when live changes are made to a checkfile."""
-
-  MOBMONITOR_BASENAME = 'mobmonitor'
-  MOBMONITOR_REL_CMD = 'scripts/mobmonitor.py'
-  SERVICE_DIR = 'test_service'
-  CHECKFILE_REL_PATH = 'test_check.py'
-  NOTACHECK_REL_PATH = 'notacheck.py'
-  CHERRYPY_RESTART_STR = 'ENGINE Restarting because %(checkfile)s changed.'
-  CHECKFILE_MOD_ATTEMPTS = 3
-  TIMEOUT_SEC = 5
-
-  def CreateFile(self, relpath, filestr):
-    """Create a file from a string in the temp dir."""
-    abspath = os.path.join(self.service_dir, relpath)
-    osutils.WriteFile(abspath, filestr, makedirs=True)
-    return abspath
-
-  def ResetDirectory(self):
-    """Reset files that are overwritten during test attempts."""
-    self.checkfile = self.CreateFile(self.CHECKFILE_REL_PATH,
-                                     CHECKFILE_MANY_SIMPLE)
-    self.notacheck = self.CreateFile(self.NOTACHECK_REL_PATH,
-                                     NOT_A_CHECKFILE)
-
-  def RunCheckfileMod(self, expect_handler, modpath, modfilestr):
-    """Test Mob* Monitor restart behaviour with checkfile modification."""
-    # Retry the test several times, each time with more relaxed timeouts,
-    # to try to control for flakiness as these testcases are dependent
-    # on cherrypy startup time and module change detection time.
-    for attempt in range(1, self.CHECKFILE_MOD_ATTEMPTS + 1):
-      # Prepare the test directory for the test attempt.
-      self.ResetDirectory()
-
-      # Set the current timeout.
-      timeout_sec = self.TIMEOUT_SEC * attempt
-
-      # Start the Mob* Monitor in a separate thread.
-      mobmon = RunCommand(self.cmd, timeout_sec)
-      mobmon.start()
-
-      # Wait for the monitor to start up fully.
-      time.sleep(timeout_sec)
-
-      # Get the list of services currently being monitored.
-      curlist = self.rpc.GetServiceList()
-
-      # Update the checkfile.
-      self.checkfile = self.CreateFile(modpath, modfilestr)
-
-      # Wait for the monitor to fully restart.
-      time.sleep(timeout_sec)
-
-      # Get the new list of monitored services.
-      newlist = self.rpc.GetServiceList()
-
-      # Stop the monitor and test the change in monitored services.
-      mobmon.Stop()
-      if expect_handler(curlist == newlist):
-        return True
-
-    # The test failed.
-    return False
-
-  def setUp(self):
-    """Setup the check directory and the Mob* Monitor process."""
-    # Create the test check directory and the test files.
-    self.checkdir = self.tempdir
-    self.service_dir = os.path.join(self.checkdir, self.SERVICE_DIR)
-    self.checkfile = self.CreateFile(self.CHECKFILE_REL_PATH,
-                                     CHECKFILE_MANY_SIMPLE)
-    self.notacheck = self.CreateFile(self.NOTACHECK_REL_PATH,
-                                     NOT_A_CHECKFILE)
-    self.CreateFile('__init__.py', '')
-
-    # Setup the Mob* Monitor command.
-    path = os.path.abspath(__file__)
-    while os.path.basename(path) != self.MOBMONITOR_BASENAME:
-      path = os.path.dirname(path)
-    path = os.path.join(path, self.MOBMONITOR_REL_CMD)
-    self.cmd = ['python', path, '-d', self.checkdir]
-
-    # Setup an rpc client for communicating with the Mob* Monitor.
-    self.rpc = rpc.RpcExecutor()
-
-  def testModifyCheckfile(self):
-    """Test restart behaviour when modifying an imported checkfile."""
-    expect_handler = lambda x: x == False
-
-    self.assertTrue(self.RunCheckfileMod(expect_handler,
-                                         self.CHECKFILE_REL_PATH,
-                                         NOT_A_CHECKFILE))
-
-  def testModifyNotACheckfile(self):
-    """Test that no restart occurs when a non-checkfile is modified."""
-    expect_handler = lambda x: x == True
-
-    self.assertTrue(self.RunCheckfileMod(expect_handler,
-                                         self.NOTACHECK_REL_PATH,
-                                         ANOTHER_NOT_A_CHECKFILE))
