@@ -100,7 +100,7 @@ Polymer({
     {
       url: '/startup',
       page: 'basic',
-      section: 'on-startup',
+      section: 'onStartup',
       subpage: ['startup-urls'],
       subpageTitles: ['onStartupSetPages'],
     },
