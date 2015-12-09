@@ -568,6 +568,13 @@ RenderFrameImpl::CreateRenderFrameImplFunction g_create_render_frame_impl =
 
 void OnGotContentHandlerID(uint32_t content_handler_id) {}
 
+WebString ConvertRelativePathToHtmlAttribute(const base::FilePath& path) {
+  DCHECK(!path.IsAbsolute());
+  return WebString::fromUTF8(
+      std::string("./") +
+      path.NormalizePathSeparatorsTo(FILE_PATH_LITERAL('/')).AsUTF8Unsafe());
+}
+
 }  // namespace
 
 // static
@@ -4637,25 +4644,20 @@ void RenderFrameImpl::OnGetSavableResourceLinks() {
 }
 
 void RenderFrameImpl::OnGetSerializedHtmlWithLocalLinks(
-    std::vector<GURL> original_urls,
-    std::vector<base::FilePath> equivalent_local_paths,
-    base::FilePath local_directory_path) {
-  // Only DCHECK, since the message comes from the trusted browser process.
-  DCHECK(original_urls.size() == equivalent_local_paths.size());
-
-  // Convert std::vector of GURLs to WebVector<WebURL>
-  WebVector<WebURL> weburl_links(original_urls);
-
-  // Convert std::vector of base::FilePath to WebVector<WebString>
-  WebVector<WebString> webstring_paths(equivalent_local_paths.size());
-  for (size_t i = 0; i < equivalent_local_paths.size(); i++)
-    webstring_paths[i] = equivalent_local_paths[i].AsUTF16Unsafe();
+    const std::map<GURL, base::FilePath>& url_to_local_path) {
+  // Convert input to the canonical way of passing a map into a Blink API.
+  std::vector<std::pair<WebURL, WebString>> weburl_to_local_path;
+  for (const auto& it : url_to_local_path) {
+    const GURL& url = it.first;
+    const base::FilePath& local_path = it.second;
+    weburl_to_local_path.push_back(std::make_pair(
+        WebURL(url), ConvertRelativePathToHtmlAttribute(local_path)));
+  }
 
   // Serialize the frame (without recursing into subframes).
   WebPageSerializer::serialize(GetWebFrame(),
-                               this,   // WebPageSerializerClient.
-                               weburl_links, webstring_paths,
-                               local_directory_path.AsUTF16Unsafe());
+                               this,  // WebPageSerializerClient.
+                               weburl_to_local_path);
 }
 
 void RenderFrameImpl::OpenURL(const GURL& url,

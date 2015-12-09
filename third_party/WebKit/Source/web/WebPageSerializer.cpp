@@ -206,14 +206,12 @@ WebCString WebPageSerializer::serializeToMHTMLUsingBinaryEncoding(WebView* view)
     return WebCString(mhtml->data(), mhtml->size());
 }
 
-bool WebPageSerializer::serialize(WebLocalFrame* frame,
-                                  WebPageSerializerClient* client,
-                                  const WebVector<WebURL>& links,
-                                  const WebVector<WebString>& localPaths,
-                                  const WebString& localDirectoryName)
+bool WebPageSerializer::serialize(
+    WebLocalFrame* frame,
+    WebPageSerializerClient* client,
+    const WebVector<std::pair<WebURL, WebString>>& urlsToLocalPaths)
 {
-    WebPageSerializerImpl serializerImpl(
-        frame, client, links, localPaths, localDirectoryName);
+    WebPageSerializerImpl serializerImpl(frame, client, urlsToLocalPaths);
     return serializerImpl.serialize();
 }
 

@@ -1067,26 +1067,25 @@ void SavePackage::GetSerializedHtmlWithLocalLinksForFrame(
   // SECURITY NOTE: We don't send *all* urls / local paths, but only
   // those that the given frame had access to already (because it contained
   // the savable resources / subframes associated with save items).
-  std::vector<GURL> saved_links;
-  std::vector<base::FilePath> saved_file_paths;
+  std::map<GURL, base::FilePath> url_to_local_path;
   auto it = frame_tree_node_id_to_contained_save_items_.find(
       target_frame_tree_node_id);
   if (it != frame_tree_node_id_to_contained_save_items_.end()) {
     for (SaveItem* save_item : it->second) {
       DCHECK(save_item->has_final_name());
-      saved_links.push_back(save_item->url());
-      saved_file_paths.push_back(save_item->file_name());
+      base::FilePath local_path(base::FilePath::kCurrentDirectory);
+      if (target_tree_node->IsMainFrame()) {
+        local_path = local_path.Append(saved_main_directory_path_.BaseName());
+      }
+      local_path = local_path.Append(save_item->file_name());
+      url_to_local_path[save_item->url()] = local_path;
     }
   }
-
-  base::FilePath directory = target_tree_node->IsMainFrame()
-                                 ? saved_main_directory_path_.BaseName()
-                                 : base::FilePath();
 
   // Ask target frame to serialize itself.
   RenderFrameHostImpl* target = target_tree_node->current_frame_host();
   target->Send(new FrameMsg_GetSerializedHtmlWithLocalLinks(
-      target->GetRoutingID(), saved_links, saved_file_paths, directory));
+      target->GetRoutingID(), url_to_local_path));
 }
 
 // Process the serialized HTML content data of a specified frame

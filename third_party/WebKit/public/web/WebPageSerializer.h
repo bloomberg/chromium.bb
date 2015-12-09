@@ -69,17 +69,12 @@ public:
     // The parameter client specifies the pointer of interface
     // WebPageSerializerClient providing a sink interface to receive the
     // individual chunks of data to be saved.
-    // The parameter links contain original URLs of all saved links.
-    // The parameter localPaths contain corresponding local file paths of all
-    // saved links, which matched with vector:links one by one.
-    // The parameter localDirectoryName is relative path of directory which
-    // contain all saved auxiliary files included all sub frames and resources.
+    // The parameter urlsToLocalPaths contains a mapping between original URLs
+    // of saved resources and corresponding local file paths.
     BLINK_EXPORT static bool serialize(
         WebLocalFrame*,
         WebPageSerializerClient*,
-        const WebVector<WebURL>& links,
-        const WebVector<WebString>& localPaths,
-        const WebString& localDirectoryName);
+        const WebVector<std::pair<WebURL, WebString>>& urlsToLocalPaths);
 
     // FIXME: The following are here for unit testing purposes. Consider
     // changing the unit tests instead.

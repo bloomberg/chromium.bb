@@ -763,9 +763,7 @@ class CONTENT_EXPORT RenderFrameImpl
                           int error_code);
   void OnGetSavableResourceLinks();
   void OnGetSerializedHtmlWithLocalLinks(
-      std::vector<GURL> original_urls,
-      std::vector<base::FilePath> equivalent_local_paths,
-      base::FilePath local_directory_path);
+      const std::map<GURL, base::FilePath>& url_to_local_path);
 
   // Requests that the browser process navigates to |url|. If
   // |is_history_navigation_in_new_child| is true, the browser process should

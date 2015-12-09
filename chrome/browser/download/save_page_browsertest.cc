@@ -993,9 +993,12 @@ class SavePageMultiFrameBrowserTest
   }
 };
 
-// Test coverage for OOPIFs for CompleteHtml (crbug.com/526786) and
-// MHTML (crbug.com/538766) as well as for redirected iframes saved
-// as MHTML (crbug.com/539936).
+// Test coverage for:
+// - crbug.com/526786: OOPIFs support for CompleteHtml
+// - crbug.com/538766: OOPIFs support for MHTML
+// - crbug.com/539936: Subframe gets redirected.
+// Test compares original-vs-saved for a page with cross-site frames
+// (subframes get redirected to a different domain - see frames-xsite.htm).
 IN_PROC_BROWSER_TEST_P(SavePageMultiFrameBrowserTest, CrossSite) {
   content::SavePageType save_page_type = GetParam();
 
@@ -1021,7 +1024,8 @@ IN_PROC_BROWSER_TEST_P(SavePageMultiFrameBrowserTest, CrossSite) {
                      skip_verification_of_original_page);
 }
 
-// Test for crbug.com/553478.
+// Test compares original-vs-saved for a page with <object> elements.
+// (see crbug.com/553478).
 IN_PROC_BROWSER_TEST_P(SavePageMultiFrameBrowserTest, ObjectElements) {
   content::SavePageType save_page_type = GetParam();
 
@@ -1049,6 +1053,9 @@ IN_PROC_BROWSER_TEST_P(SavePageMultiFrameBrowserTest, ObjectElements) {
                      expected_substrings);
 }
 
+// Test compares original-vs-saved for a page with frames at about:blank uri.
+// This tests handling of iframe elements without src attribute (only with
+// srcdoc attribute) and how they get saved / cross-referenced.
 IN_PROC_BROWSER_TEST_P(SavePageMultiFrameBrowserTest, AboutBlank) {
   content::SavePageType save_page_type = GetParam();
 
@@ -1066,7 +1073,9 @@ IN_PROC_BROWSER_TEST_P(SavePageMultiFrameBrowserTest, AboutBlank) {
   TestMultiFramePage(save_page_type, url, 4, expected_substrings);
 }
 
-// Test for crbug.com/554666.
+// Test compares original-vs-saved for a page with nested frames.
+// Two levels of nesting are especially good for verifying correct
+// link rewriting for subframes-vs-main-frame (see crbug.com/554666).
 IN_PROC_BROWSER_TEST_P(SavePageMultiFrameBrowserTest, NestedFrames) {
   content::SavePageType save_page_type = GetParam();
 

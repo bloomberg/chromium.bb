@@ -104,12 +104,10 @@ static const unsigned dataBufferCapacity = 65536;
 
 WebPageSerializerImpl::SerializeDomParam::SerializeDomParam(const KURL& url,
                                                             const WTF::TextEncoding& textEncoding,
-                                                            Document* document,
-                                                            const String& directoryName)
+                                                            Document* document)
     : url(url)
     , textEncoding(textEncoding)
     , document(document)
-    , directoryName(directoryName)
     , isHTMLDocument(document->isHTMLDocument())
     , haveSeenDocType(false)
     , haveAddedCharsetDeclaration(false)
@@ -316,11 +314,6 @@ void WebPageSerializerImpl::openTagToString(Element* element,
                     String completeURL = param->document->completeURL(attrValue);
                     // Check whether we have local files for those link.
                     if (m_localLinks.contains(completeURL)) {
-                        if (!param->directoryName.isEmpty()) {
-                            result.appendLiteral("./");
-                            result.append(param->directoryName);
-                            result.append('/');
-                        }
                         result.append(m_htmlEntities.convertEntitiesInString(m_localLinks.get(completeURL)));
                     } else {
                         result.append(m_htmlEntities.convertEntitiesInString(completeURL));
@@ -416,13 +409,11 @@ void WebPageSerializerImpl::buildContentForNode(Node* node,
     }
 }
 
-WebPageSerializerImpl::WebPageSerializerImpl(WebLocalFrame* frame,
-                                             WebPageSerializerClient* client,
-                                             const WebVector<WebURL>& links,
-                                             const WebVector<WebString>& localPaths,
-                                             const WebString& localDirectoryName)
+WebPageSerializerImpl::WebPageSerializerImpl(
+    WebLocalFrame* frame,
+    WebPageSerializerClient* client,
+    const WebVector<std::pair<WebURL, WebString>>& urlsToLocalPaths)
     : m_client(client)
-    , m_localDirectoryName(localDirectoryName)
     , m_htmlEntities(false)
     , m_xmlEntities(true)
 {
@@ -432,11 +423,10 @@ WebPageSerializerImpl::WebPageSerializerImpl(WebLocalFrame* frame,
     // Make sure we have non 0 client.
     ASSERT(client);
     // Build local resources map.
-    ASSERT(links.size() == localPaths.size());
-    for (size_t i = 0; i < links.size(); i++) {
-        KURL url = links[i];
+    for (const auto& it : urlsToLocalPaths) {
+        KURL url = it.first;
         ASSERT(!m_localLinks.contains(url.string()));
-        m_localLinks.set(url.string(), localPaths[i]);
+        m_localLinks.set(url.string(), it.second);
     }
 
     ASSERT(m_dataBuffer.isEmpty());
@@ -454,7 +444,7 @@ bool WebPageSerializerImpl::serialize()
 
         const WTF::TextEncoding& textEncoding = document->encoding().isValid() ? document->encoding() : UTF8Encoding();
 
-        SerializeDomParam param(url, textEncoding, document, m_localDirectoryName);
+        SerializeDomParam param(url, textEncoding, document);
 
         Element* documentElement = document->documentElement();
         if (documentElement)

@@ -85,10 +85,10 @@ protected:
         KURL parsedURL(ParsedURLString, url);
         URLTestHelpers::registerMockedURLLoad(parsedURL, fileName, "pageserialization/", "text/html");
         FrameTestHelpers::loadFrame(mainFrameImpl(), url.utf8().data());
-        WebVector<WebURL> links(&parsedURL, 1);
-        WebVector<WebString> localPaths(&"local", 1);
+        std::vector<std::pair<WebURL, WebString>> urlsToLocalPaths;
+        urlsToLocalPaths.push_back(std::make_pair(parsedURL, WebString("local")));
         SimpleWebPageSerializerClient serializerClient;
-        WebPageSerializer::serialize(mainFrameImpl(), &serializerClient, links, localPaths, "");
+        WebPageSerializer::serialize(mainFrameImpl(), &serializerClient, urlsToLocalPaths);
         return serializerClient.toString();
     }
 

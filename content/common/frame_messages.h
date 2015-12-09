@@ -715,10 +715,10 @@ IPC_MESSAGE_ROUTED0(FrameMsg_GetSavableResourceLinks)
 
 // Get html data by serializing the target frame and replacing all resource
 // links with a path to the local copy passed in the message payload.
-IPC_MESSAGE_ROUTED3(FrameMsg_GetSerializedHtmlWithLocalLinks,
-                    std::vector<GURL> /* urls that have local copy */,
-                    std::vector<base::FilePath> /* paths of local copy */,
-                    base::FilePath /* local directory path */)
+using FrameMsg_GetSerializedHtmlWithLocalLinks_Map =
+    std::map<GURL, base::FilePath>;
+IPC_MESSAGE_ROUTED1(FrameMsg_GetSerializedHtmlWithLocalLinks,
+                    FrameMsg_GetSerializedHtmlWithLocalLinks_Map);
 
 IPC_MESSAGE_ROUTED1(FrameMsg_SetFrameOwnerProperties,
                     blink::WebFrameOwnerProperties /* frame_owner_properties */)

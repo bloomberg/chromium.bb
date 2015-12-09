@@ -75,16 +75,12 @@ public:
     // The parameter delegate specifies the pointer of interface
     // DomSerializerDelegate provide sink interface which can receive the
     // individual chunks of data to be saved.
-    // The parameter links contain original URLs of all saved links.
-    // The parameter local_paths contain corresponding local file paths of all
-    // saved links, which matched with vector:links one by one.
-    // The parameter local_directory_name is relative path of directory which
-    // contain all saved auxiliary files included all sub frames and resources.
-    WebPageSerializerImpl(WebLocalFrame*,
-                          WebPageSerializerClient* client,
-                          const WebVector<WebURL>& links,
-                          const WebVector<WebString>& localPaths,
-                          const WebString& localDirectoryName);
+    // The parameter urlsToLocalPaths contains a mapping between original URLs
+    // of saved resources and corresponding local file paths.
+    WebPageSerializerImpl(
+        WebLocalFrame*,
+        WebPageSerializerClient*,
+        const WebVector<std::pair<WebURL, WebString>>& urlsToLocalPaths);
 
 private:
     // Specified frame which need to be serialized;
@@ -99,8 +95,6 @@ private:
     LinkLocalPathMap m_localLinks;
     // Data buffer for saving result of serialized DOM data.
     StringBuilder m_dataBuffer;
-    // Local directory name of all local resource files.
-    WTF::String m_localDirectoryName;
 
     // Web entities conversion maps.
     WebEntities m_htmlEntities;
@@ -109,12 +103,11 @@ private:
     class SerializeDomParam {
         STACK_ALLOCATED();
     public:
-        SerializeDomParam(const KURL&, const WTF::TextEncoding&, Document*, const WTF::String& directoryName);
+        SerializeDomParam(const KURL&, const WTF::TextEncoding&, Document*);
 
         const KURL& url;
         const WTF::TextEncoding& textEncoding;
         RawPtrWillBeMember<Document> document;
-        const WTF::String& directoryName;
         bool isHTMLDocument; // document.isHTMLDocument()
         bool haveSeenDocType;
         bool haveAddedCharsetDeclaration;

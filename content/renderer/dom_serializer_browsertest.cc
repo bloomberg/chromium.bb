@@ -77,9 +77,7 @@ class LoadObserver : public RenderViewObserver {
 class DomSerializerTests : public ContentBrowserTest,
                            public WebPageSerializerClient {
  public:
-  DomSerializerTests()
-      : serialization_reported_end_of_data_(false),
-        local_directory_name_(FILE_PATH_LITERAL("./dummy_files/")) {}
+  DomSerializerTests() : serialization_reported_end_of_data_(false) {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kSingleProcess);
@@ -161,18 +159,14 @@ class DomSerializerTests : public ContentBrowserTest,
     // Find corresponding WebFrame according to frame_url.
     WebFrame* web_frame = FindSubFrameByURL(frame_url);
     ASSERT_TRUE(web_frame != NULL);
-    WebVector<WebURL> links;
-    links.assign(&frame_url, 1);
     WebString file_path =
         base::FilePath(FILE_PATH_LITERAL("c:\\dummy.htm")).AsUTF16Unsafe();
-    WebVector<WebString> local_paths;
-    local_paths.assign(&file_path, 1);
+    std::vector<std::pair<WebURL, WebString>> url_to_local_path;
+    url_to_local_path.push_back(std::make_pair(WebURL(frame_url), file_path));
     // Start serializing DOM.
-    bool result = WebPageSerializer::serialize(web_frame->toWebLocalFrame(),
-       static_cast<WebPageSerializerClient*>(this),
-       links,
-       local_paths,
-       local_directory_name_.AsUTF16Unsafe());
+    bool result = WebPageSerializer::serialize(
+        web_frame->toWebLocalFrame(),
+        static_cast<WebPageSerializerClient*>(this), url_to_local_path);
     ASSERT_TRUE(result);
   }
 
@@ -615,9 +609,6 @@ class DomSerializerTests : public ContentBrowserTest,
   int32 render_view_routing_id_;
   std::string serialized_contents_;
   bool serialization_reported_end_of_data_;
-  // The local_directory_name_ is dummy relative path of directory which
-  // contain all saved auxiliary files included all sub frames and resources.
-  const base::FilePath local_directory_name_;
 };
 
 // If original contents have document type, the serialized contents also have
