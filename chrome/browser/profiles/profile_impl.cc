@@ -324,7 +324,6 @@ void ProfileImpl::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(prefs::kSavingBrowserHistoryDisabled, false);
   registry->RegisterBooleanPref(prefs::kAllowDeletingBrowserHistory, true);
-  registry->RegisterBooleanPref(prefs::kSigninAllowed, true);
   registry->RegisterBooleanPref(prefs::kForceGoogleSafeSearch, false);
   registry->RegisterBooleanPref(prefs::kForceYouTubeSafetyMode, false);
   registry->RegisterBooleanPref(prefs::kRecordHistory, false);

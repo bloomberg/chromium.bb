@@ -14,31 +14,21 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/values.h"
-#include "chrome/browser/invalidation/fake_invalidation_service.h"
-#include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
-#include "chrome/browser/signin/account_tracker_service_factory.h"
-#include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/sync/chrome_sync_client.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/common/channel_info.h"
-#include "chrome/common/chrome_switches.h"
-#include "chrome/common/pref_names.h"
-#include "chrome/test/base/testing_browser_process.h"
-#include "chrome/test/base/testing_profile.h"
-#include "chrome/test/base/testing_profile_manager.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/browser_sync/common/browser_sync_switches.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/invalidation/public/invalidation_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
-#include "components/signin/core/browser/signin_manager.h"
+#include "components/signin/core/browser/fake_signin_manager.h"
+#include "components/signin/core/browser/test_signin_client.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync_driver/data_type_manager.h"
 #include "components/sync_driver/data_type_manager_observer.h"
 #include "components/sync_driver/fake_data_type_controller.h"
+#include "components/sync_driver/fake_sync_client.h"
 #include "components/sync_driver/glue/sync_backend_host_mock.h"
 #include "components/sync_driver/pref_names.h"
 #include "components/sync_driver/signin_manager_wrapper.h"
@@ -48,10 +38,12 @@
 #include "components/sync_driver/sync_prefs.h"
 #include "components/sync_driver/sync_service_observer.h"
 #include "components/sync_driver/sync_util.h"
+#include "components/sync_sessions/fake_sync_sessions_client.h"
 #include "components/syncable_prefs/testing_pref_service_syncable.h"
 #include "components/version_info/version_info_values.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/gaia/gaia_constants.h"
+#include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -103,19 +95,26 @@ using testing::Return;
 using testing::StrictMock;
 using testing::_;
 
-class TestChromeSyncClient : public ChromeSyncClient {
+class TestSyncClient : public sync_driver::FakeSyncClient {
  public:
-  TestChromeSyncClient(
+  TestSyncClient(
       scoped_ptr<sync_driver::SyncApiComponentFactory> component_factory,
-      Profile* profile,
+      PrefService* pref_service,
       sync_driver::ClearBrowsingDataCallback callback)
-      : ChromeSyncClient(profile),
+      : sync_driver::FakeSyncClient(),
         callback_(callback),
+        pref_service_(pref_service),
         component_factory_(component_factory.Pass()) {}
-  ~TestChromeSyncClient() override {}
+  ~TestSyncClient() override {}
 
  private:
   // SyncClient:
+  PrefService* GetPrefService() override { return pref_service_; }
+
+  sync_sessions::SyncSessionsClient* GetSyncSessionsClient() override {
+    return &sync_sessions_client_;
+  }
+
   sync_driver::ClearBrowsingDataCallback GetClearBrowsingDataCallback()
       override {
     return callback_;
@@ -125,6 +124,8 @@ class TestChromeSyncClient : public ChromeSyncClient {
   }
 
   sync_driver::ClearBrowsingDataCallback callback_;
+  sync_sessions::FakeSyncSessionsClient sync_sessions_client_;
+  PrefService* pref_service_;
   scoped_ptr<sync_driver::SyncApiComponentFactory> component_factory_;
 };
 
@@ -244,13 +245,6 @@ ACTION_P(ReturnNewMockHostCaptureClearServerData, captured_callback) {
       &OnClearServerDataCalled, base::Unretained(captured_callback)));
 }
 
-scoped_ptr<KeyedService> BuildFakeProfileInvalidationProvider(
-    content::BrowserContext* context) {
-  return make_scoped_ptr(new invalidation::ProfileInvalidationProvider(
-      scoped_ptr<invalidation::InvalidationService>(
-          new invalidation::FakeInvalidationService)));
-}
-
 // A test harness that uses a real ProfileSyncService and in most cases a
 // MockSyncBackendHost.
 //
@@ -260,8 +254,6 @@ class ProfileSyncServiceTest : public ::testing::Test {
  protected:
   ProfileSyncServiceTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
-        profile_manager_(TestingBrowserProcess::GetGlobal()),
-        profile_(NULL),
         components_factory_(NULL) {}
   ~ProfileSyncServiceTest() override {}
 
@@ -269,20 +261,34 @@ class ProfileSyncServiceTest : public ::testing::Test {
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kSyncDeferredStartupTimeoutSeconds, "0");
 
-    CHECK(profile_manager_.SetUp());
+    // TODO(crbug.com/544972): Pull all this setup code out into helper classes
+    // and/or utils as needed to be reused by other //components-level sync
+    // tests.
+    sync_driver::SyncPrefs::RegisterProfilePrefs(pref_service_.registry());
+    AccountTrackerService::RegisterPrefs(pref_service_.registry());
+    SigninManagerBase::RegisterProfilePrefs(pref_service_.registry());
+    SigninManagerBase::RegisterPrefs(pref_service_.registry());
 
-    TestingProfile::TestingFactories testing_factories;
-    testing_factories.push_back(
-        std::make_pair(ProfileOAuth2TokenServiceFactory::GetInstance(),
-                       BuildAutoIssuingFakeProfileOAuth2TokenService));
-    testing_factories.push_back(std::make_pair(
-        invalidation::ProfileInvalidationProviderFactory::GetInstance(),
-        BuildFakeProfileInvalidationProvider));
+    url_request_context_ = new net::TestURLRequestContextGetter(
+        base::ThreadTaskRunnerHandle::Get());
 
-    profile_ = profile_manager_.CreateTestingProfile(
-        "sync-service-test", scoped_ptr<syncable_prefs::PrefServiceSyncable>(),
-        base::UTF8ToUTF16("sync-service-test"), 0, std::string(),
-        testing_factories);
+    auth_service_.reset(new FakeProfileOAuth2TokenService());
+    auth_service_->set_auto_post_fetch_response_on_message_loop(true);
+
+    signin_client_.reset(new TestSigninClient(prefs()));
+
+    account_tracker_.reset(new AccountTrackerService());
+    account_tracker_->Initialize(signin_client_.get());
+
+#if defined(OS_CHROMEOS)
+    signin_manager_.reset(new FakeSigninManagerBase(signin_client_.get(),
+                                                    account_tracker_.get()));
+#else
+    signin_manager_.reset(
+        new FakeSigninManager(signin_client_.get(), auth_service_.get(),
+                              account_tracker_.get(), nullptr));
+#endif
+    signin_manager_->Initialize(prefs());
   }
 
   void TearDown() override {
@@ -294,32 +300,25 @@ class ProfileSyncServiceTest : public ::testing::Test {
   }
 
   void IssueTestTokens() {
-    std::string account_id =
-        AccountTrackerServiceFactory::GetForProfile(profile_)
-            ->SeedAccountInfo(kGaiaId, kEmail);
-    ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)
-        ->UpdateCredentials(account_id, "oauth2_login_token");
+    std::string account_id = account_tracker_->SeedAccountInfo(kGaiaId, kEmail);
+    auth_service_->UpdateCredentials(account_id, "oauth2_login_token");
   }
 
   void CreateService(ProfileSyncServiceStartBehavior behavior) {
-    SigninManagerBase* signin =
-        SigninManagerFactory::GetForProfile(profile_);
-    signin->SetAuthenticatedAccountInfo(kGaiaId, kEmail);
-    ProfileOAuth2TokenService* oauth2_token_service =
-        ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
+    signin_manager_->SetAuthenticatedAccountInfo(kGaiaId, kEmail);
     scoped_ptr<SyncApiComponentFactoryMock> components_factory(
         new SyncApiComponentFactoryMock());
     components_factory_ = components_factory.get();
-    scoped_ptr<ChromeSyncClient> sync_client(new TestChromeSyncClient(
-        components_factory.Pass(), profile_,
+    scoped_ptr<sync_driver::SyncClient> sync_client(new TestSyncClient(
+        components_factory.Pass(), &pref_service_,
         base::Bind(&ProfileSyncServiceTest::ClearBrowsingDataCallback,
                    base::Unretained(this))));
     service_.reset(new ProfileSyncService(
         sync_client.Pass(),
-        make_scoped_ptr(new SigninManagerWrapper(signin)), oauth2_token_service,
-        behavior, base::Bind(&EmptyNetworkTimeUpdate), profile_->GetPath(),
-        profile_->GetRequestContext(), profile_->GetDebugName(),
-        chrome::GetChannel(),
+        make_scoped_ptr(new SigninManagerWrapper(signin_manager_.get())),
+        auth_service_.get(), behavior, base::Bind(&EmptyNetworkTimeUpdate),
+        base::FilePath(FILE_PATH_LITERAL("dummyPath")), url_request_context_,
+        "dummyDebugName", chrome::GetChannel(),
         content::BrowserThread::GetMessageLoopProxyForThread(
             content::BrowserThread::DB),
         content::BrowserThread::GetMessageLoopProxyForThread(
@@ -332,8 +331,7 @@ class ProfileSyncServiceTest : public ::testing::Test {
 #if defined(OS_WIN) || defined(OS_MACOSX) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
   void CreateServiceWithoutSignIn() {
     CreateService(browser_sync::AUTO_START);
-    SigninManagerFactory::GetForProfile(profile())->SignOut(
-        signin_metrics::SIGNOUT_TEST);
+    signin_manager_->SignOut(signin_metrics::SIGNOUT_TEST);
   }
 #endif
 
@@ -346,7 +344,8 @@ class ProfileSyncServiceTest : public ::testing::Test {
   void InitializeForNthSync() {
     // Set first sync time before initialize to disable backup and simulate
     // a complete sync setup.
-    sync_driver::SyncPrefs sync_prefs(profile()->GetPrefs());
+    sync_driver::SyncPrefs sync_prefs(
+        service_->GetSyncClient()->GetPrefService());
     sync_prefs.SetFirstSyncTime(base::Time::Now());
     sync_prefs.SetSyncSetupCompleted();
     sync_prefs.SetKeepEverythingSynced(true);
@@ -423,13 +422,23 @@ class ProfileSyncServiceTest : public ::testing::Test {
         .WillOnce(ReturnNewSyncBackendHostNoReturn());
   }
 
-  TestingProfile* profile() {
-    return profile_;
+  AccountTrackerService* account_tracker() { return account_tracker_.get(); }
+
+#if defined(OS_CHROMEOS)
+  SigninManagerBase* signin_manager() {
+#else
+  SigninManager* signin_manager() {
+#endif
+    return signin_manager_.get();
   }
+
+  ProfileOAuth2TokenService* auth_service() { return auth_service_.get(); }
 
   ProfileSyncService* service() {
     return service_.get();
   }
+
+  syncable_prefs::TestingPrefServiceSyncable* prefs() { return &pref_service_; }
 
   SyncApiComponentFactoryMock* components_factory() {
     return components_factory_;
@@ -452,8 +461,16 @@ class ProfileSyncServiceTest : public ::testing::Test {
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;
-  TestingProfileManager profile_manager_;
-  TestingProfile* profile_;
+  scoped_refptr<net::URLRequestContextGetter> url_request_context_;
+  syncable_prefs::TestingPrefServiceSyncable pref_service_;
+  scoped_ptr<TestSigninClient> signin_client_;
+  scoped_ptr<AccountTrackerService> account_tracker_;
+#if defined(OS_CHROMEOS)
+  scoped_ptr<SigninManagerBase> signin_manager_;
+#else
+  scoped_ptr<SigninManager> signin_manager_;
+#endif
+  scoped_ptr<FakeProfileOAuth2TokenService> auth_service_;
   scoped_ptr<ProfileSyncService> service_;
 
   // The current component factory used by sync. May be null if the server
@@ -472,8 +489,8 @@ TEST_F(ProfileSyncServiceTest, InitialState) {
 
 // Verify a successful initialization.
 TEST_F(ProfileSyncServiceTest, SuccessfulInitialization) {
-  profile()->GetTestingPrefService()->SetManagedPref(
-      sync_driver::prefs::kSyncManaged, new base::FundamentalValue(false));
+  prefs()->SetManagedPref(sync_driver::prefs::kSyncManaged,
+                          new base::FundamentalValue(false));
   IssueTestTokens();
   CreateService(browser_sync::AUTO_START);
   ExpectDataTypeManagerCreation(1, GetDefaultConfigureCalledCallback());
@@ -503,8 +520,8 @@ TEST_F(ProfileSyncServiceTest, SetupInProgress) {
 
 // Verify that disable by enterprise policy works.
 TEST_F(ProfileSyncServiceTest, DisabledByPolicyBeforeInit) {
-  profile()->GetTestingPrefService()->SetManagedPref(
-      sync_driver::prefs::kSyncManaged, new base::FundamentalValue(true));
+  prefs()->SetManagedPref(sync_driver::prefs::kSyncManaged,
+                          new base::FundamentalValue(true));
   IssueTestTokens();
   CreateService(browser_sync::AUTO_START);
   InitializeForNthSync();
@@ -524,8 +541,8 @@ TEST_F(ProfileSyncServiceTest, DisabledByPolicyAfterInit) {
   EXPECT_FALSE(service()->IsManaged());
   EXPECT_TRUE(service()->IsSyncActive());
 
-  profile()->GetTestingPrefService()->SetManagedPref(
-      sync_driver::prefs::kSyncManaged, new base::FundamentalValue(true));
+  prefs()->SetManagedPref(sync_driver::prefs::kSyncManaged,
+                          new base::FundamentalValue(true));
 
   EXPECT_TRUE(service()->IsManaged());
   EXPECT_FALSE(service()->IsSyncActive());
@@ -550,11 +567,11 @@ TEST_F(ProfileSyncServiceTest, EarlyRequestStop) {
   IssueTestTokens();
 
   service()->RequestStop(ProfileSyncService::KEEP_DATA);
-  EXPECT_TRUE(profile()->GetPrefs()->GetBoolean(
-      sync_driver::prefs::kSyncSuppressStart));
+  EXPECT_TRUE(prefs()->GetBoolean(sync_driver::prefs::kSyncSuppressStart));
 
   // Because of suppression, this should fail.
-  sync_driver::SyncPrefs sync_prefs(profile()->GetPrefs());
+  sync_driver::SyncPrefs sync_prefs(
+      service()->GetSyncClient()->GetPrefService());
   sync_prefs.SetFirstSyncTime(base::Time::Now());
   service()->Initialize();
   EXPECT_FALSE(service()->IsSyncActive());
@@ -564,8 +581,7 @@ TEST_F(ProfileSyncServiceTest, EarlyRequestStop) {
   ExpectSyncBackendHostCreation(1);
   service()->RequestStart();
   EXPECT_TRUE(service()->IsSyncActive());
-  EXPECT_FALSE(profile()->GetPrefs()->GetBoolean(
-      sync_driver::prefs::kSyncSuppressStart));
+  EXPECT_FALSE(prefs()->GetBoolean(sync_driver::prefs::kSyncSuppressStart));
 }
 
 // Test RequestStop() after we've initialized the backend.
@@ -577,23 +593,20 @@ TEST_F(ProfileSyncServiceTest, DisableAndEnableSyncTemporarily) {
   InitializeForNthSync();
 
   EXPECT_TRUE(service()->IsSyncActive());
-  EXPECT_FALSE(profile()->GetPrefs()->GetBoolean(
-      sync_driver::prefs::kSyncSuppressStart));
+  EXPECT_FALSE(prefs()->GetBoolean(sync_driver::prefs::kSyncSuppressStart));
 
   testing::Mock::VerifyAndClearExpectations(components_factory());
 
   service()->RequestStop(ProfileSyncService::KEEP_DATA);
   EXPECT_FALSE(service()->IsSyncActive());
-  EXPECT_TRUE(profile()->GetPrefs()->GetBoolean(
-      sync_driver::prefs::kSyncSuppressStart));
+  EXPECT_TRUE(prefs()->GetBoolean(sync_driver::prefs::kSyncSuppressStart));
 
   ExpectDataTypeManagerCreation(1, GetDefaultConfigureCalledCallback());
   ExpectSyncBackendHostCreation(1);
 
   service()->RequestStart();
   EXPECT_TRUE(service()->IsSyncActive());
-  EXPECT_FALSE(profile()->GetPrefs()->GetBoolean(
-      sync_driver::prefs::kSyncSuppressStart));
+  EXPECT_FALSE(prefs()->GetBoolean(sync_driver::prefs::kSyncSuppressStart));
 }
 
 // Certain ProfileSyncService tests don't apply to Chrome OS, for example
@@ -607,11 +620,9 @@ TEST_F(ProfileSyncServiceTest, EnableSyncAndSignOut) {
   InitializeForNthSync();
 
   EXPECT_TRUE(service()->IsSyncActive());
-  EXPECT_FALSE(profile()->GetPrefs()->GetBoolean(
-      sync_driver::prefs::kSyncSuppressStart));
+  EXPECT_FALSE(prefs()->GetBoolean(sync_driver::prefs::kSyncSuppressStart));
 
-  SigninManagerFactory::GetForProfile(profile())->SignOut(
-      signin_metrics::SIGNOUT_TEST);
+  signin_manager()->SignOut(signin_metrics::SIGNOUT_TEST);
   EXPECT_FALSE(service()->IsSyncActive());
 }
 #endif  // !defined(OS_CHROMEOS)
@@ -662,26 +673,21 @@ TEST_F(ProfileSyncServiceTest, RevokeAccessTokenFromTokenService) {
   EXPECT_TRUE(service()->IsSyncActive());
 
   std::string primary_account_id =
-      SigninManagerFactory::GetForProfile(profile())
-          ->GetAuthenticatedAccountId();
-  ProfileOAuth2TokenServiceFactory::GetForProfile(profile())
-      ->LoadCredentials(primary_account_id);
+      signin_manager()->GetAuthenticatedAccountId();
+  auth_service()->LoadCredentials(primary_account_id);
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(service()->GetAccessTokenForTest().empty());
 
   std::string secondary_account_gaiaid = "1234567";
   std::string secondary_account_name = "test_user2@gmail.com";
-  std::string secondary_account_id =
-      AccountTrackerServiceFactory::GetForProfile(profile())
-          ->SeedAccountInfo(secondary_account_gaiaid, secondary_account_name);
-  ProfileOAuth2TokenServiceFactory::GetForProfile(profile())
-      ->UpdateCredentials(secondary_account_id, "second_account_refresh_token");
-  ProfileOAuth2TokenServiceFactory::GetForProfile(profile())
-      ->RevokeCredentials(secondary_account_id);
+  std::string secondary_account_id = account_tracker()->SeedAccountInfo(
+      secondary_account_gaiaid, secondary_account_name);
+  auth_service()->UpdateCredentials(secondary_account_id,
+                                    "second_account_refresh_token");
+  auth_service()->RevokeCredentials(secondary_account_id);
   EXPECT_FALSE(service()->GetAccessTokenForTest().empty());
 
-  ProfileOAuth2TokenServiceFactory::GetForProfile(profile())
-      ->RevokeCredentials(primary_account_id);
+  auth_service()->RevokeCredentials(primary_account_id);
   EXPECT_TRUE(service()->GetAccessTokenForTest().empty());
 }
 
@@ -696,15 +702,12 @@ TEST_F(ProfileSyncServiceTest, SignOutRevokeAccessToken) {
   EXPECT_TRUE(service()->IsSyncActive());
 
   std::string primary_account_id =
-      SigninManagerFactory::GetForProfile(profile())
-          ->GetAuthenticatedAccountId();
-  ProfileOAuth2TokenServiceFactory::GetForProfile(profile())
-      ->LoadCredentials(primary_account_id);
+      signin_manager()->GetAuthenticatedAccountId();
+  auth_service()->LoadCredentials(primary_account_id);
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(service()->GetAccessTokenForTest().empty());
 
-  SigninManagerFactory::GetForProfile(profile())
-      ->SignOut(signin_metrics::SIGNOUT_TEST);
+  signin_manager()->SignOut(signin_metrics::SIGNOUT_TEST);
   EXPECT_TRUE(service()->GetAccessTokenForTest().empty());
 }
 #endif
@@ -724,8 +727,7 @@ TEST_F(ProfileSyncServiceTest, BackupBeforeFirstSync) {
   ExpectSyncBackendHostCreationCollectDeleteDir(2, &delete_dir_param);
   InitializeForFirstSync();
 
-  SigninManagerFactory::GetForProfile(profile())
-      ->SetAuthenticatedAccountInfo(kGaiaId, kEmail);
+  signin_manager()->SetAuthenticatedAccountInfo(kGaiaId, kEmail);
   IssueTestTokens();
   PumpLoop();
 
@@ -780,7 +782,8 @@ TEST_F(ProfileSyncServiceTest, Rollback) {
   EXPECT_EQ(ProfileSyncService::SYNC, service()->backend_mode());
 
   // First sync time should be recorded.
-  sync_driver::SyncPrefs sync_prefs(profile()->GetPrefs());
+  sync_driver::SyncPrefs sync_prefs(
+      service()->GetSyncClient()->GetPrefService());
   base::Time first_sync_time = sync_prefs.GetFirstSyncTime();
   EXPECT_FALSE(first_sync_time.is_null());
 
@@ -849,16 +852,16 @@ TEST_F(ProfileSyncServiceTest, MemoryPressureRecording) {
   InitializeForNthSync();
 
   EXPECT_TRUE(service()->IsSyncActive());
-  EXPECT_FALSE(profile()->GetPrefs()->GetBoolean(
-      sync_driver::prefs::kSyncSuppressStart));
+  EXPECT_FALSE(prefs()->GetBoolean(sync_driver::prefs::kSyncSuppressStart));
 
   testing::Mock::VerifyAndClearExpectations(components_factory());
 
-  sync_driver::SyncPrefs sync_prefs(profile()->GetPrefs());
+  sync_driver::SyncPrefs sync_prefs(
+      service()->GetSyncClient()->GetPrefService());
 
-  EXPECT_EQ(profile()->GetPrefs()->GetInteger(
-                sync_driver::prefs::kSyncMemoryPressureWarningCount),
-            0);
+  EXPECT_EQ(
+      prefs()->GetInteger(sync_driver::prefs::kSyncMemoryPressureWarningCount),
+      0);
   EXPECT_FALSE(sync_prefs.DidSyncShutdownCleanly());
 
   // Simulate memory pressure notification.
@@ -867,9 +870,9 @@ TEST_F(ProfileSyncServiceTest, MemoryPressureRecording) {
   base::RunLoop().RunUntilIdle();
 
   // Verify memory pressure recorded.
-  EXPECT_EQ(profile()->GetPrefs()->GetInteger(
-                sync_driver::prefs::kSyncMemoryPressureWarningCount),
-            1);
+  EXPECT_EQ(
+      prefs()->GetInteger(sync_driver::prefs::kSyncMemoryPressureWarningCount),
+      1);
   EXPECT_FALSE(sync_prefs.DidSyncShutdownCleanly());
 
   // Simulate memory pressure notification.
@@ -879,9 +882,9 @@ TEST_F(ProfileSyncServiceTest, MemoryPressureRecording) {
   ShutdownAndDeleteService();
 
   // Verify memory pressure and shutdown recorded.
-  EXPECT_EQ(profile()->GetPrefs()->GetInteger(
-                sync_driver::prefs::kSyncMemoryPressureWarningCount),
-            2);
+  EXPECT_EQ(
+      prefs()->GetInteger(sync_driver::prefs::kSyncMemoryPressureWarningCount),
+      2);
   EXPECT_TRUE(sync_prefs.DidSyncShutdownCleanly());
 }
 
@@ -1051,7 +1054,8 @@ TEST_F(ProfileSyncServiceTest, PassphrasePromptDueToVersion) {
   ExpectSyncBackendHostCreation(1);
   InitializeForNthSync();
 
-  sync_driver::SyncPrefs sync_prefs(profile()->GetPrefs());
+  sync_driver::SyncPrefs sync_prefs(
+      service()->GetSyncClient()->GetPrefService());
   EXPECT_EQ(PRODUCT_VERSION, sync_prefs.GetLastRunVersion());
 
   sync_prefs.SetPassphrasePrompted(true);

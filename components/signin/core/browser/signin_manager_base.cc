@@ -57,6 +57,7 @@ void SigninManagerBase::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kReverseAutologinEnabled, true);
   registry->RegisterListPref(prefs::kReverseAutologinRejectedEmailList,
                              new base::ListValue);
+  registry->RegisterBooleanPref(prefs::kSigninAllowed, true);
   registry->RegisterInt64Pref(prefs::kSignedInTime,
                               base::Time().ToInternalValue());
 

@@ -123,10 +123,10 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(
       prefs::kSearchSuggestEnabled, true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterBooleanPref(prefs::kSigninAllowed, true);
   registry->RegisterBooleanPref(prefs::kSavingBrowserHistoryDisabled, false);
   registry->RegisterBooleanPref(prefs::kAllowDeletingBrowserHistory, true);
   registry->RegisterIntegerPref(prefs::kNtpShownPage, 1 << 10);
+
   // This comes from components/bookmarks/core/browser/bookmark_model.h
   // Defaults to 3, which is the id of bookmarkModel_->mobile_node()
   registry->RegisterInt64Pref(prefs::kNtpShownBookmarksFolder, 3);
