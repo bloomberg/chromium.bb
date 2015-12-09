@@ -24,6 +24,7 @@
 #include "content/public/test/background_sync_test_util.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/extension_host.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/test/background_page_watcher.h"
 #include "extensions/test/extension_test_message_listener.h"
@@ -212,6 +213,44 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, RegisterFailsOnDev) {
       "origin ('chrome-extension://" +
           extension->id() + "') is not supported.",
       error);
+}
+
+IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, UpdateRefreshesServiceWorker) {
+  base::ScopedTempDir scoped_temp_dir;
+  ASSERT_TRUE(scoped_temp_dir.CreateUniqueTempDir());
+  base::FilePath pem_path = test_data_dir_.AppendASCII("service_worker")
+                                .AppendASCII("update")
+                                .AppendASCII("service_worker.pem");
+  base::FilePath path_v1 = PackExtensionWithOptions(
+      test_data_dir_.AppendASCII("service_worker")
+          .AppendASCII("update")
+          .AppendASCII("v1"),
+      scoped_temp_dir.path().AppendASCII("v1.crx"), pem_path, base::FilePath());
+  base::FilePath path_v2 = PackExtensionWithOptions(
+      test_data_dir_.AppendASCII("service_worker")
+          .AppendASCII("update")
+          .AppendASCII("v2"),
+      scoped_temp_dir.path().AppendASCII("v2.crx"), pem_path, base::FilePath());
+  const char* kId = "hfaanndiiilofhfokeanhddpkfffchdi";
+
+  ExtensionTestMessageListener listener_v1("Pong from version 1", false);
+  listener_v1.set_failure_message("FAILURE_V1");
+  // Install version 1.0 of the extension.
+  ASSERT_TRUE(InstallExtension(path_v1, 1));
+  EXPECT_TRUE(extensions::ExtensionRegistry::Get(profile())
+                  ->enabled_extensions()
+                  .GetByID(kId));
+  EXPECT_TRUE(listener_v1.WaitUntilSatisfied());
+
+  ExtensionTestMessageListener listener_v2("Pong from version 2", false);
+  listener_v2.set_failure_message("FAILURE_V2");
+
+  // Update to version 2.0.
+  EXPECT_TRUE(UpdateExtension(kId, path_v2, 0));
+  EXPECT_TRUE(extensions::ExtensionRegistry::Get(profile())
+                  ->enabled_extensions()
+                  .GetByID(kId));
+  EXPECT_TRUE(listener_v2.WaitUntilSatisfied());
 }
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, FetchArbitraryPaths) {
