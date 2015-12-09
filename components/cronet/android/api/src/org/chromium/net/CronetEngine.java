@@ -6,12 +6,7 @@ package org.chromium.net;
 
 import android.content.Context;
 import android.support.annotation.IntDef;
-import android.util.Base64;
 import android.util.Log;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.File;
 import java.lang.annotation.Retention;
@@ -24,6 +19,7 @@ import java.net.URLConnection;
 import java.net.URLStreamHandlerFactory;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -41,18 +37,72 @@ public abstract class CronetEngine {
      * then {@link #build} is called to create the {@code CronetEngine}.
      */
     public static class Builder {
+        // A hint that a host supports QUIC.
+        static class QuicHint {
+            // The host.
+            final String mHost;
+            // Port of the server that supports QUIC.
+            final int mPort;
+            // Alternate protocol port.
+            final int mAlternatePort;
+
+            QuicHint(String host, int port, int alternatePort) {
+                mHost = host;
+                mPort = port;
+                mAlternatePort = alternatePort;
+            }
+        }
+
+        // A public key pin.
+        static class Pkp {
+            // Host to pin for.
+            final String mHost;
+            // Array of SHA-256 hashes of keys.
+            final byte[][] mHashes;
+            // Should pin apply to subdomains?
+            final boolean mIncludeSubdomains;
+            // When the pin expires.
+            final Date mExpirationDate;
+
+            Pkp(String host, byte[][] hashes, boolean includeSubdomains, Date expirationDate) {
+                mHost = host;
+                mHashes = hashes;
+                mIncludeSubdomains = includeSubdomains;
+                mExpirationDate = expirationDate;
+            }
+        }
+
         private static final Pattern INVALID_PKP_HOST_NAME = Pattern.compile("^[0-9\\.]*$");
 
-        private final JSONObject mConfig;
+        // Private fields are simply storage of configuration for the resulting CronetEngine.
+        // See setters below for verbose descriptions.
         private final Context mContext;
+        private final List<QuicHint> mQuicHints = new LinkedList<QuicHint>();
+        private final List<Pkp> mPkps = new LinkedList<Pkp>();
+        private String mUserAgent;
+        private String mStoragePath;
+        private boolean mLegacyModeEnabled;
+        private String mLibraryName;
+        private boolean mQuicEnabled;
+        private boolean mHttp2Enabled;
+        private boolean mSdchEnabled;
+        private String mDataReductionProxyKey;
+        private String mDataReductionProxyPrimaryProxy;
+        private String mDataReductionProxyFallbackProxy;
+        private String mDataReductionProxySecureProxyCheckUrl;
+        private boolean mDisableCache;
+        private int mHttpCacheMode;
+        private long mHttpCacheMaxSize;
+        private String mExperimentalOptions;
+        private long mMockCertVerifier;
 
         /**
          * Default config enables SPDY, disables QUIC, SDCH and HTTP cache.
          * @param context Android {@link Context} for engine to use.
          */
         public Builder(Context context) {
-            mConfig = new JSONObject();
             mContext = context;
+            setLibraryName("cronet");
             enableLegacyMode(false);
             enableQUIC(false);
             enableHTTP2(true);
@@ -75,11 +125,12 @@ public abstract class CronetEngine {
          * @return the builder to facilitate chaining.
          */
         public Builder setUserAgent(String userAgent) {
-            return putString(CronetEngineBuilderList.USER_AGENT, userAgent);
+            mUserAgent = userAgent;
+            return this;
         }
 
         String getUserAgent() {
-            return mConfig.optString(CronetEngineBuilderList.USER_AGENT);
+            return mUserAgent;
         }
 
         /**
@@ -98,12 +149,12 @@ public abstract class CronetEngine {
                 throw new IllegalArgumentException(
                         "Storage path must be set to existing directory");
             }
-
-            return putString(CronetEngineBuilderList.STORAGE_PATH, value);
+            mStoragePath = value;
+            return this;
         }
 
         String storagePath() {
-            return mConfig.optString(CronetEngineBuilderList.STORAGE_PATH);
+            return mStoragePath;
         }
 
         /**
@@ -115,11 +166,12 @@ public abstract class CronetEngine {
          */
         @Deprecated
         public Builder enableLegacyMode(boolean value) {
-            return putBoolean(CronetEngineBuilderList.ENABLE_LEGACY_MODE, value);
+            mLegacyModeEnabled = value;
+            return this;
         }
 
         boolean legacyMode() {
-            return mConfig.optBoolean(CronetEngineBuilderList.ENABLE_LEGACY_MODE);
+            return mLegacyModeEnabled;
         }
 
         /**
@@ -127,11 +179,12 @@ public abstract class CronetEngine {
          * @return the builder to facilitate chaining.
          */
         Builder setLibraryName(String libName) {
-            return putString(CronetEngineBuilderList.NATIVE_LIBRARY_NAME, libName);
+            mLibraryName = libName;
+            return this;
         }
 
         String libraryName() {
-            return mConfig.optString(CronetEngineBuilderList.NATIVE_LIBRARY_NAME, "cronet");
+            return mLibraryName;
         }
 
         /**
@@ -140,7 +193,12 @@ public abstract class CronetEngine {
          * @return the builder to facilitate chaining.
          */
         public Builder enableQUIC(boolean value) {
-            return putBoolean(CronetEngineBuilderList.ENABLE_QUIC, value);
+            mQuicEnabled = value;
+            return this;
+        }
+
+        boolean quicEnabled() {
+            return mQuicEnabled;
         }
 
         /**
@@ -149,7 +207,12 @@ public abstract class CronetEngine {
          * @return the builder to facilitate chaining.
          */
         public Builder enableHTTP2(boolean value) {
-            return putBoolean(CronetEngineBuilderList.ENABLE_SPDY, value);
+            mHttp2Enabled = value;
+            return this;
+        }
+
+        boolean http2Enabled() {
+            return mHttp2Enabled;
         }
 
         /**
@@ -160,7 +223,12 @@ public abstract class CronetEngine {
          * @return the builder to facilitate chaining.
          */
         public Builder enableSDCH(boolean value) {
-            return putBoolean(CronetEngineBuilderList.ENABLE_SDCH, value);
+            mSdchEnabled = value;
+            return this;
+        }
+
+        boolean sdchEnabled() {
+            return mSdchEnabled;
         }
 
         /**
@@ -171,7 +239,12 @@ public abstract class CronetEngine {
          * @return the builder to facilitate chaining.
          */
         public Builder enableDataReductionProxy(String key) {
-            return (putString(CronetEngineBuilderList.DATA_REDUCTION_PROXY_KEY, key));
+            mDataReductionProxyKey = key;
+            return this;
+        }
+
+        String dataReductionProxyKey() {
+            return mDataReductionProxyKey;
         }
 
         /**
@@ -197,11 +270,22 @@ public abstract class CronetEngine {
                 throw new IllegalArgumentException(
                         "Primary and fallback proxies and check url must be set");
             }
-            putString(CronetEngineBuilderList.DATA_REDUCTION_PRIMARY_PROXY, primaryProxy);
-            putString(CronetEngineBuilderList.DATA_REDUCTION_FALLBACK_PROXY, fallbackProxy);
-            putString(CronetEngineBuilderList.DATA_REDUCTION_SECURE_PROXY_CHECK_URL,
-                    secureProxyCheckUrl);
+            mDataReductionProxyPrimaryProxy = primaryProxy;
+            mDataReductionProxyFallbackProxy = fallbackProxy;
+            mDataReductionProxySecureProxyCheckUrl = secureProxyCheckUrl;
             return this;
+        }
+
+        String dataReductionProxyPrimaryProxy() {
+            return mDataReductionProxyPrimaryProxy;
+        }
+
+        String dataReductionProxyFallbackProxy() {
+            return mDataReductionProxyFallbackProxy;
+        }
+
+        String dataReductionProxySecureProxyCheckUrl() {
+            return mDataReductionProxySecureProxyCheckUrl;
         }
 
         /** @deprecated not really deprecated but hidden. */
@@ -249,32 +333,45 @@ public abstract class CronetEngine {
          */
         public Builder enableHttpCache(@HttpCacheSetting int cacheMode, long maxSize) {
             if (cacheMode == HTTP_CACHE_DISK || cacheMode == HTTP_CACHE_DISK_NO_HTTP) {
-                if (storagePath().isEmpty()) {
+                if (storagePath() == null) {
                     throw new IllegalArgumentException("Storage path must be set");
                 }
             } else {
-                if (!storagePath().isEmpty()) {
-                    throw new IllegalArgumentException("Storage path must be empty");
+                if (storagePath() != null) {
+                    throw new IllegalArgumentException("Storage path must not be set");
                 }
             }
-            putBoolean(CronetEngineBuilderList.LOAD_DISABLE_CACHE,
-                    cacheMode == HTTP_CACHE_DISABLED || cacheMode == HTTP_CACHE_DISK_NO_HTTP);
-            putLong(CronetEngineBuilderList.HTTP_CACHE_MAX_SIZE, maxSize);
+            mDisableCache =
+                    (cacheMode == HTTP_CACHE_DISABLED || cacheMode == HTTP_CACHE_DISK_NO_HTTP);
+            mHttpCacheMaxSize = maxSize;
 
             switch (cacheMode) {
                 case HTTP_CACHE_DISABLED:
-                    return putString(CronetEngineBuilderList.HTTP_CACHE,
-                            CronetEngineBuilderList.HTTP_CACHE_DISABLED);
+                    mHttpCacheMode = HttpCacheType.DISABLED;
+                    break;
                 case HTTP_CACHE_DISK_NO_HTTP:
                 case HTTP_CACHE_DISK:
-                    return putString(CronetEngineBuilderList.HTTP_CACHE,
-                            CronetEngineBuilderList.HTTP_CACHE_DISK);
-
+                    mHttpCacheMode = HttpCacheType.DISK;
+                    break;
                 case HTTP_CACHE_IN_MEMORY:
-                    return putString(CronetEngineBuilderList.HTTP_CACHE,
-                            CronetEngineBuilderList.HTTP_CACHE_MEMORY);
+                    mHttpCacheMode = HttpCacheType.MEMORY;
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unknown cache mode");
             }
             return this;
+        }
+
+        boolean cacheDisabled() {
+            return mDisableCache;
+        }
+
+        long httpCacheMaxSize() {
+            return mHttpCacheMaxSize;
+        }
+
+        int httpCacheMode() {
+            return mHttpCacheMode;
         }
 
         /**
@@ -292,22 +389,12 @@ public abstract class CronetEngine {
             if (host.contains("/")) {
                 throw new IllegalArgumentException("Illegal QUIC Hint Host: " + host);
             }
-            try {
-                JSONArray quicHints = mConfig.optJSONArray(CronetEngineBuilderList.QUIC_HINTS);
-                if (quicHints == null) {
-                    quicHints = new JSONArray();
-                    mConfig.put(CronetEngineBuilderList.QUIC_HINTS, quicHints);
-                }
-
-                JSONObject hint = new JSONObject();
-                hint.put(CronetEngineBuilderList.QUIC_HINT_HOST, host);
-                hint.put(CronetEngineBuilderList.QUIC_HINT_PORT, port);
-                hint.put(CronetEngineBuilderList.QUIC_HINT_ALT_PORT, alternatePort);
-                quicHints.put(hint);
-            } catch (JSONException e) {
-                // Intentionally do nothing.
-            }
+            mQuicHints.add(new QuicHint(host, port, alternatePort));
             return this;
+        }
+
+        List<QuicHint> quicHints() {
+            return mQuicHints;
         }
 
         /**
@@ -363,51 +450,25 @@ public abstract class CronetEngine {
                 throw new NullPointerException("The pin expiration date cannot be null");
             }
             String idnHostName = validateHostNameForPinningAndConvert(hostName);
-            try {
-                // Add PKP_LIST JSON array element if it is not present.
-                JSONArray pkpList = mConfig.optJSONArray(CronetEngineBuilderList.PKP_LIST);
-                if (pkpList == null) {
-                    pkpList = new JSONArray();
-                    mConfig.put(CronetEngineBuilderList.PKP_LIST, pkpList);
+            // Convert the pin to BASE64 encoding. The hash set will eliminate duplications.
+            Set<byte[]> hashes = new HashSet<>(pinsSha256.size());
+            for (byte[] pinSha256 : pinsSha256) {
+                if (pinSha256 == null || pinSha256.length != 32) {
+                    throw new IllegalArgumentException("Public key pin is invalid");
                 }
-
-                // Convert the pin to BASE64 encoding. The hash set will eliminate duplications.
-                Set<String> hashes = new HashSet<>(pinsSha256.size());
-                for (byte[] pinSha256 : pinsSha256) {
-                    hashes.add(convertSha256ToBase64WithPrefix(pinSha256));
-                }
-
-                // Add new element to PKP_LIST JSON array.
-                JSONObject pkp = new JSONObject();
-                pkp.put(CronetEngineBuilderList.PKP_HOST, idnHostName);
-                pkp.put(CronetEngineBuilderList.PKP_PIN_HASHES, new JSONArray(hashes));
-                pkp.put(CronetEngineBuilderList.PKP_INCLUDE_SUBDOMAINS, includeSubdomains);
-                // The expiration time is passed as a double, in seconds since January 1, 1970.
-                pkp.put(CronetEngineBuilderList.PKP_EXPIRATION_DATE,
-                        (double) expirationDate.getTime() / 1000);
-                pkpList.put(pkp);
-            } catch (JSONException e) {
-                // This exception should never happen.
-                throw new RuntimeException(
-                        "Failed to add pubic key pins with the given arguments", e);
+                hashes.add(pinSha256);
             }
+            // Add new element to PKP list.
+            mPkps.add(new Pkp(idnHostName, hashes.toArray(new byte[hashes.size()][]),
+                    includeSubdomains, expirationDate));
             return this;
         }
 
         /**
-         * Converts a given SHA256 array of bytes to BASE64 encoded string and prepends
-         * {@code sha256/} prefix to it. The format corresponds to the format that is expected by
-         * {@code net::HashValue} class.
-         *
-         * @param sha256 SHA256 bytes to convert to BASE64.
-         * @return the BASE64 encoded SHA256 with the prefix.
-         * @throws IllegalArgumentException if the provided pin is invalid.
+         * Returns list of public key pins.
          */
-        private static String convertSha256ToBase64WithPrefix(byte[] sha256) {
-            if (sha256 == null || sha256.length != 32) {
-                throw new IllegalArgumentException("Public key pin is invalid");
-            }
-            return "sha256/" + Base64.encodeToString(sha256, Base64.NO_WRAP);
+        List<Pkp> publicKeyPins() {
+            return mPkps;
         }
 
         /**
@@ -446,22 +507,24 @@ public abstract class CronetEngine {
          * @return the builder to facilitate chaining.
          */
         public Builder setExperimentalOptions(String options) {
-            return putString(CronetEngineBuilderList.EXPERIMENTAL_OPTIONS, options);
+            mExperimentalOptions = options;
+            return this;
+        }
+
+        String experimentalOptions() {
+            return mExperimentalOptions;
         }
 
         /**
          * Sets a native MockCertVerifier for testing.
          */
         Builder setMockCertVerifierForTesting(long mockCertVerifier) {
-            return putString(
-                    CronetEngineBuilderList.MOCK_CERT_VERIFIER, String.valueOf(mockCertVerifier));
+            mMockCertVerifier = mockCertVerifier;
+            return this;
         }
 
-        /**
-         * Gets a JSON string representation of the builder.
-         */
-        String toJSONString() {
-            return mConfig.toString();
+        long mockCertVerifier() {
+            return mMockCertVerifier;
         }
 
         /**
@@ -474,55 +537,13 @@ public abstract class CronetEngine {
         }
 
         /**
-         * Sets a boolean value in the config. Returns a reference to the same
-         * config object, so you can chain put calls together.
-         * @return the builder to facilitate chaining.
-         */
-        private Builder putBoolean(String key, boolean value) {
-            try {
-                mConfig.put(key, value);
-            } catch (JSONException e) {
-                // Intentionally do nothing.
-            }
-            return this;
-        }
-
-        /**
-         * Sets a long value in the config. Returns a reference to the same
-         * config object, so you can chain put calls together.
-         * @return the builder to facilitate chaining.
-         */
-        private Builder putLong(String key, long value) {
-            try {
-                mConfig.put(key, value);
-            } catch (JSONException e) {
-                // Intentionally do nothing.
-            }
-            return this;
-        }
-
-        /**
-         * Sets a string value in the config. Returns a reference to the same
-         * config object, so you can chain put calls together.
-         * @return the builder to facilitate chaining.
-         */
-        private Builder putString(String key, String value) {
-            try {
-                mConfig.put(key, value);
-            } catch (JSONException e) {
-                // Intentionally do nothing.
-            }
-            return this;
-        }
-
-        /**
          * Build a {@link CronetEngine} using this builder's configuration.
          */
         public CronetEngine build() {
             CronetEngine engine = createContext(this);
             // Clear MOCK_CERT_VERIFIER reference if there is any, since
             // the ownership has been transferred to the engine.
-            mConfig.remove(CronetEngineBuilderList.MOCK_CERT_VERIFIER);
+            mMockCertVerifier = 0;
             return engine;
         }
     }
@@ -798,7 +819,7 @@ public abstract class CronetEngine {
     @Deprecated
     public static CronetEngine createContext(Builder builder) {
         CronetEngine cronetEngine = null;
-        if (builder.getUserAgent().isEmpty()) {
+        if (builder.getUserAgent() == null) {
             builder.setUserAgent(builder.getDefaultUserAgent());
         }
         if (!builder.legacyMode()) {

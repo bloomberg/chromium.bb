@@ -12,6 +12,7 @@ import android.os.Looper;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.PathUtils;
+import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.test.util.Feature;
 import org.chromium.net.TestUrlRequestCallback.ResponseStep;
 
@@ -26,6 +27,7 @@ import java.util.concurrent.Executor;
 /**
  * Test CronetEngine.
  */
+@JNINamespace("cronet")
 public class CronetUrlRequestContextTest extends CronetTestBase {
     // URLs used for tests.
     private static final String TEST_URL = "http://127.0.0.1:8000";
@@ -791,4 +793,30 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         assertTrue(delta2.length != 0);
         assertFalse(Arrays.equals(delta1, delta2));
     }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testCronetEngineBuilderConfig() throws Exception {
+        // This is to prompt load of native library.
+        startCronetTestFramework();
+        // Verify CronetEngine.Builder config is passed down accurately to native code.
+        CronetEngine.Builder builder = new CronetEngine.Builder(getContext());
+        builder.enableHTTP2(false);
+        builder.enableQUIC(true);
+        builder.enableSDCH(true);
+        builder.addQuicHint("example.com", 12, 34);
+        builder.enableHttpCache(CronetEngine.Builder.HTTP_CACHE_IN_MEMORY, 54321);
+        builder.enableDataReductionProxy("abcd");
+        builder.setUserAgent("efgh");
+        builder.setExperimentalOptions("ijkl");
+        builder.setDataReductionProxyOptions("mnop", "qrst", "uvwx");
+        builder.setStoragePath(CronetTestFramework.getTestStorage(getContext()));
+        nativeVerifyUrlRequestContextConfig(
+                CronetUrlRequestContext.createNativeUrlRequestContextConfig(builder),
+                CronetTestFramework.getTestStorage(getContext()));
+    }
+
+    // Verifies that CronetEngine.Builder config from testCronetEngineBuilderConfig() is properly
+    // translated to a native UrlRequestContextConfig.
+    private static native void nativeVerifyUrlRequestContextConfig(long config, String storagePath);
 }
