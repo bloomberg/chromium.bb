@@ -36,6 +36,7 @@
 #include "xf86drmMode.h"
 
 #include "util/common.h"
+#include "util/kms.h"
 
 static inline int64_t U642I64(uint64_t val)
 {
@@ -44,44 +45,6 @@ static inline int64_t U642I64(uint64_t val)
 
 int fd;
 drmModeResPtr res = NULL;
-
-static const char *connector_type_str(uint32_t type)
-{
-	switch (type) {
-	case DRM_MODE_CONNECTOR_Unknown:
-		return "Unknown";
-	case DRM_MODE_CONNECTOR_VGA:
-		return "VGA";
-	case DRM_MODE_CONNECTOR_DVII:
-		return "DVI-I";
-	case DRM_MODE_CONNECTOR_DVID:
-		return "DVI-D";
-	case DRM_MODE_CONNECTOR_DVIA:
-		return "DVI-A";
-	case DRM_MODE_CONNECTOR_Composite:
-		return "Composite";
-	case DRM_MODE_CONNECTOR_SVIDEO:
-		return "SVIDEO";
-	case DRM_MODE_CONNECTOR_LVDS:
-		return "LVDS";
-	case DRM_MODE_CONNECTOR_Component:
-		return "Component";
-	case DRM_MODE_CONNECTOR_9PinDIN:
-		return "9PinDin";
-	case DRM_MODE_CONNECTOR_DisplayPort:
-		return "DisplayPort";
-	case DRM_MODE_CONNECTOR_HDMIA:
-		return "HDMI-A";
-	case DRM_MODE_CONNECTOR_HDMIB:
-		return "HDMI-B";
-	case DRM_MODE_CONNECTOR_TV:
-		return "TV";
-	case DRM_MODE_CONNECTOR_eDP:
-		return "eDP";
-	default:
-		return "Invalid";
-	}
-}
 
 /* dump_blob and dump_prop shamelessly copied from ../modetest/modetest.c */
 static void
@@ -226,7 +189,7 @@ static void listConnectorProperties(void)
 		}
 
 		printf("Connector %u (%s-%u)\n", c->connector_id,
-		       connector_type_str(c->connector_type),
+		       util_lookup_connector_type_name(c->connector_type),
 		       c->connector_type_id);
 
 		listObjectProperties(c->connector_id,

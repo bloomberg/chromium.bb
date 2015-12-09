@@ -2,5 +2,7 @@ UTIL_FILES := \
 	common.h \
 	format.c \
 	format.h \
+	kms.c \
+	kms.h \
 	pattern.c \
 	pattern.h
