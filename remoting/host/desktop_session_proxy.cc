@@ -67,14 +67,6 @@ class DesktopSessionProxy::IpcSharedBufferCore
   int id() { return id_; }
   size_t size() { return size_; }
   void* memory() { return shared_memory_.memory(); }
-  webrtc::SharedMemory::Handle handle() {
-#if defined(OS_WIN)
-    return shared_memory_.handle().GetHandle();
-#else
-    return base::SharedMemory::GetFdFromSharedMemoryHandle(
-        shared_memory_.handle());
-#endif
-  }
 
  private:
   virtual ~IpcSharedBufferCore() {}
@@ -90,10 +82,8 @@ class DesktopSessionProxy::IpcSharedBufferCore
 class DesktopSessionProxy::IpcSharedBuffer : public webrtc::SharedMemory {
  public:
   IpcSharedBuffer(scoped_refptr<IpcSharedBufferCore> core)
-      : SharedMemory(core->memory(), core->size(),
-                     core->handle(), core->id()),
-        core_(core) {
-  }
+      : SharedMemory(core->memory(), core->size(), 0, core->id()),
+        core_(core) {}
 
  private:
   scoped_refptr<IpcSharedBufferCore> core_;

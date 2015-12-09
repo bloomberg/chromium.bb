@@ -89,23 +89,16 @@ class DesktopSessionAgent::SharedBuffer : public webrtc::SharedMemory {
 
   ~SharedBuffer() override { agent_->OnSharedBufferDeleted(id()); }
 
+  base::SharedMemory* shared_memory() { return shared_memory_.get(); }
+
  private:
   SharedBuffer(DesktopSessionAgent* agent,
                scoped_ptr<base::SharedMemory> memory,
                size_t size,
                int id)
-      : SharedMemory(memory->memory(),
-                     size,
-#if defined(OS_WIN)
-                     memory->handle().GetHandle(),
-#else
-                     base::SharedMemory::GetFdFromSharedMemoryHandle(
-                         memory->handle()),
-#endif
-                     id),
+      : SharedMemory(memory->memory(), size, 0, id),
         agent_(agent),
-        shared_memory_(memory.Pass()) {
-  }
+        shared_memory_(memory.Pass()) {}
 
   DesktopSessionAgent* agent_;
   scoped_ptr<base::SharedMemory> shared_memory_;
@@ -208,9 +201,11 @@ webrtc::SharedMemory* DesktopSessionAgent::CreateSharedMemory(size_t size) {
 
     IPC::PlatformFileForTransit handle;
 #if defined(OS_WIN)
-    handle = buffer->handle();
+    handle = buffer->shared_memory()->handle().GetHandle(),
 #else
-    handle = base::FileDescriptor(buffer->handle(), false);
+    handle =
+        base::FileDescriptor(base::SharedMemory::GetFdFromSharedMemoryHandle(
+            buffer->shared_memory()->handle()), false);
 #endif
     SendToNetwork(new ChromotingDesktopNetworkMsg_CreateSharedBuffer(
         buffer->id(), handle, buffer->size()));
