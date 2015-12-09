@@ -31,10 +31,10 @@ class BufferingController;
 class CodedFrameProvider;
 class VideoPipelineImpl;
 
-class MediaPipelineImpl : public MediaPipelineBackend::Delegate {
+class MediaPipelineImpl {
  public:
   MediaPipelineImpl();
-  ~MediaPipelineImpl() override;
+  ~MediaPipelineImpl();
 
   // Initialize the media pipeline: the pipeline is configured based on
   // |load_type|.
@@ -43,17 +43,6 @@ class MediaPipelineImpl : public MediaPipelineBackend::Delegate {
 
   void SetClient(const MediaPipelineClient& client);
   void SetCdm(int cdm_id);
-
-  // MediaPipelineBackendDelegate implementation:
-  void OnVideoResolutionChanged(MediaPipelineBackend::VideoDecoder* decoder,
-                                const Size& size) override;
-  void OnPushBufferComplete(MediaPipelineBackend::Decoder* decoder,
-                            MediaPipelineBackend::BufferStatus status) override;
-  void OnEndOfStream(MediaPipelineBackend::Decoder* decoder) override;
-  void OnDecoderError(MediaPipelineBackend::Decoder* decoder) override;
-  void OnKeyStatusChanged(const std::string& key_id,
-                          CastKeyStatus key_status,
-                          uint32_t system_code) override;
 
   void InitializeAudio(const ::media::AudioDecoderConfig& config,
                        const AvPipelineClient& client,

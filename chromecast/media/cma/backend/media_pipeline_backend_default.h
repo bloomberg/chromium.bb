@@ -24,7 +24,7 @@ class MediaPipelineBackendDefault : public MediaPipelineBackend {
   // MediaPipelineBackend implementation:
   AudioDecoder* CreateAudioDecoder() override;
   VideoDecoder* CreateVideoDecoder() override;
-  bool Initialize(Delegate* delegate) override;
+  bool Initialize() override;
   bool Start(int64_t start_pts) override;
   bool Stop() override;
   bool Pause() override;

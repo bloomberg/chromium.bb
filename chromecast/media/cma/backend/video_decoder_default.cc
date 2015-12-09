@@ -10,22 +10,21 @@
 namespace chromecast {
 namespace media {
 
-VideoDecoderDefault::VideoDecoderDefault() : delegate_(nullptr) {
-}
+VideoDecoderDefault::VideoDecoderDefault() : delegate_(nullptr) {}
 
-VideoDecoderDefault::~VideoDecoderDefault() {
-}
+VideoDecoderDefault::~VideoDecoderDefault() {}
 
-void VideoDecoderDefault::Initialize(MediaPipelineBackend::Delegate* delegate) {
+void VideoDecoderDefault::SetDelegate(Delegate* delegate) {
   DCHECK(delegate);
   delegate_ = delegate;
 }
 
 MediaPipelineBackend::BufferStatus VideoDecoderDefault::PushBuffer(
     CastDecoderBuffer* buffer) {
+  DCHECK(delegate_);
   DCHECK(buffer);
   if (buffer->end_of_stream())
-    delegate_->OnEndOfStream(this);
+    delegate_->OnEndOfStream();
   return MediaPipelineBackend::kBufferSuccess;
 }
 

@@ -122,48 +122,6 @@ void MediaPipelineImpl::SetCdm(int cdm_id) {
   // One possibility would be a GetCdmByIdCB that's passed in.
 }
 
-void MediaPipelineImpl::OnVideoResolutionChanged(
-    MediaPipelineBackend::VideoDecoder* decoder,
-    const Size& size) {
-  DCHECK(decoder == video_decoder_);
-  video_pipeline_->OnNaturalSizeChanged(size);
-}
-
-void MediaPipelineImpl::OnPushBufferComplete(
-    MediaPipelineBackend::Decoder* decoder,
-    MediaPipelineBackend::BufferStatus status) {
-  if (decoder == audio_decoder_) {
-    audio_pipeline_->OnBufferPushed(status);
-  } else if (decoder == video_decoder_) {
-    video_pipeline_->OnBufferPushed(status);
-  }
-}
-
-void MediaPipelineImpl::OnEndOfStream(MediaPipelineBackend::Decoder* decoder) {
-  if (decoder == audio_decoder_) {
-    audio_pipeline_->OnEndOfStream();
-  } else if (decoder == video_decoder_) {
-    video_pipeline_->OnEndOfStream();
-  }
-}
-
-void MediaPipelineImpl::OnDecoderError(MediaPipelineBackend::Decoder* decoder) {
-  if (decoder == audio_decoder_) {
-    audio_pipeline_->OnError();
-  } else if (decoder == video_decoder_) {
-    video_pipeline_->OnError();
-  }
-}
-
-void MediaPipelineImpl::OnKeyStatusChanged(const std::string& key_id,
-                                           CastKeyStatus key_status,
-                                           uint32_t system_code) {
-  CMALOG(kLogControl) << __FUNCTION__;
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(cdm_);
-  cdm_->SetKeyStatus(key_id, key_status, system_code);
-}
-
 void MediaPipelineImpl::SetCdm(BrowserCdmCast* cdm) {
   CMALOG(kLogControl) << __FUNCTION__;
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -222,7 +180,7 @@ void MediaPipelineImpl::StartPlayingFrom(base::TimeDelta time) {
 
   // Lazy initialise
   if (!backend_initialized_) {
-    backend_initialized_ = media_pipeline_backend_->Initialize(this);
+    backend_initialized_ = media_pipeline_backend_->Initialize();
     if (!backend_initialized_) {
       OnError(::media::PIPELINE_ERROR_ABORT);
       return;

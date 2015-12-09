@@ -32,12 +32,7 @@ MediaPipelineBackendDefault::CreateVideoDecoder() {
   return video_decoder_.get();
 }
 
-bool MediaPipelineBackendDefault::Initialize(Delegate* delegate) {
-  DCHECK(delegate);
-  if (audio_decoder_)
-    audio_decoder_->Initialize(delegate);
-  if (video_decoder_)
-    video_decoder_->Initialize(delegate);
+bool MediaPipelineBackendDefault::Initialize() {
   return true;
 }
 

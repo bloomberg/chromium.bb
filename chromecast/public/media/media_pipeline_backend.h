@@ -25,7 +25,7 @@ class DecryptContext;
 // If more backends are requested than the platform supports, the unsupported
 // extra backends may return nullptr for CreateAudioDecoder/CreateVideoDecoder.
 // The basic usage pattern is:
-//   * Decoder objects created, then Initialize called
+//   * Decoder objects created and delegates set, then Initialize called
 //   * Start/Stop/Pause/Resume used to manage playback state
 //   * Decoder objects are used to pass actual stream data buffers
 //   * Backend must make appropriate callbacks on the provided Delegate
@@ -42,7 +42,36 @@ class MediaPipelineBackend {
 
   class Decoder {
    public:
-    typedef MediaPipelineBackend::BufferStatus BufferStatus;
+    using BufferStatus = MediaPipelineBackend::BufferStatus;
+
+    // Delegate methods must be called on the main CMA thread.
+    class Delegate {
+     public:
+      using BufferStatus = MediaPipelineBackend::BufferStatus;
+
+      // See comments on PushBuffer.  Must not be called with kBufferPending.
+      virtual void OnPushBufferComplete(BufferStatus status) = 0;
+
+      // Must be called after an end-of-stream buffer has been rendered (ie, the
+      // last real buffer has been sent to the output hardware).
+      virtual void OnEndOfStream() = 0;
+
+      // May be called if a decoder error occurs. No more calls to PushBuffer()
+      // will be made after this is called.
+      virtual void OnDecoderError() = 0;
+
+      // Must be called when a decryption key status changes.
+      virtual void OnKeyStatusChanged(const std::string& key_id,
+                                      CastKeyStatus key_status,
+                                      uint32_t system_code) = 0;
+
+      // Must be called when video resolution change is detected by the decoder.
+      // Only relevant for video decoders.
+      virtual void OnVideoResolutionChanged(const Size& size) = 0;
+
+     protected:
+      virtual ~Delegate() {}
+    };
 
     // Statistics (computed since pipeline last started playing).
     // For video, a sample is defined as a frame.
@@ -52,13 +81,17 @@ class MediaPipelineBackend {
       uint64_t dropped_samples;
     };
 
+    // Provides the delegate for this decoder. Called once before the backend
+    // is initialized; is never called after the backend is initialized.
+    virtual void SetDelegate(Delegate* delegate) = 0;
+
     // Pushes a buffer of data for decoding and output.  If the implementation
     // cannot push the buffer now, it must store the buffer, return
     // |kBufferPending| and execute the push at a later time when it becomes
     // possible to do so.  The implementation must then invoke
-    // Delegate::OnPushBufferComplete.  Pushing a pending buffer should be
-    // aborted if Stop is called; OnPushAudioComplete need not be invoked in
-    // this case.
+    // Delegate::OnPushBufferComplete once the push has been completed.  Pushing
+    // a pending buffer should be aborted if Stop is called;
+    // OnPushBufferComplete need not be invoked in this case.
     // If |kBufferPending| is returned, the pipeline will stop pushing any
     // further buffers until OnPushBufferComplete is invoked.
     // OnPushBufferComplete should be only be invoked to indicate completion of
@@ -97,6 +130,7 @@ class MediaPipelineBackend {
 
     // Provides the audio configuration.  Called once before the backend is
     // initialized, and again any time the configuration changes (in any state).
+    // Note that SetConfig() may be called before SetDelegate() is called.
     // Returns true if the configuration is a supported configuration.
     virtual bool SetConfig(const AudioConfig& config) = 0;
 
@@ -120,39 +154,12 @@ class MediaPipelineBackend {
    public:
     // Provides the video configuration.  Called once before the backend is
     // initialized, and again any time the configuration changes (in any state).
+    // Note that SetConfig() may be called before SetDelegate() is called.
     // Returns true if the configuration is a supported configuration.
     virtual bool SetConfig(const VideoConfig& config) = 0;
 
    protected:
     ~VideoDecoder() override {}
-  };
-
-  // Delegate methods must be called on the main CMA thread.
-  class Delegate {
-   public:
-    // Must be called when video resolution change is detected by decoder.
-    virtual void OnVideoResolutionChanged(VideoDecoder* decoder,
-                                          const Size& size) = 0;
-
-    // See comments on PushBuffer.  Must not be called with kBufferPending.
-    virtual void OnPushBufferComplete(Decoder* decoder,
-                                      BufferStatus status) = 0;
-
-    // Must be called after an end-of-stream buffer has been rendered (ie, the
-    // last real buffer has been sent to the output hardware).
-    virtual void OnEndOfStream(Decoder* decoder) = 0;
-
-    // May be called if a decoder error occurs. No more calls to PushBuffer()
-    // will be made after this is called.
-    virtual void OnDecoderError(Decoder* decoder) = 0;
-
-    // Must be called when a decryption key status changes.
-    virtual void OnKeyStatusChanged(const std::string& key_id,
-                                    CastKeyStatus key_status,
-                                    uint32_t system_code) = 0;
-
-   protected:
-    virtual ~Delegate() {}
   };
 
   virtual ~MediaPipelineBackend() {}
@@ -178,7 +185,7 @@ class MediaPipelineBackend {
   // but before all other functions.  Hardware resources for all decoders should
   // be acquired here.  Backend is then considered in Initialized state.
   // Returns false for failure.
-  virtual bool Initialize(Delegate* delegate) = 0;
+  virtual bool Initialize() = 0;
 
   // Places pipeline into playing state.  Playback will start at given time once
   // buffers are pushed.  Called only when in Initialized state. |start_pts| is

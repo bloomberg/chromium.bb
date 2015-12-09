@@ -10,22 +10,21 @@
 namespace chromecast {
 namespace media {
 
-AudioDecoderDefault::AudioDecoderDefault() : delegate_(nullptr) {
-}
+AudioDecoderDefault::AudioDecoderDefault() : delegate_(nullptr) {}
 
-AudioDecoderDefault::~AudioDecoderDefault() {
-}
+AudioDecoderDefault::~AudioDecoderDefault() {}
 
-void AudioDecoderDefault::Initialize(MediaPipelineBackend::Delegate* delegate) {
+void AudioDecoderDefault::SetDelegate(Delegate* delegate) {
   DCHECK(delegate);
   delegate_ = delegate;
 }
 
 MediaPipelineBackend::BufferStatus AudioDecoderDefault::PushBuffer(
     CastDecoderBuffer* buffer) {
+  DCHECK(delegate_);
   DCHECK(buffer);
   if (buffer->end_of_stream())
-    delegate_->OnEndOfStream(this);
+    delegate_->OnEndOfStream();
   return MediaPipelineBackend::kBufferSuccess;
 }
 

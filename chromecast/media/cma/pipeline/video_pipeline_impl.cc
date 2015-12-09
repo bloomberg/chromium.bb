@@ -5,6 +5,7 @@
 #include "chromecast/media/cma/pipeline/video_pipeline_impl.h"
 
 #include "base/bind.h"
+#include "chromecast/media/cdm/browser_cdm_cast.h"
 #include "chromecast/media/cma/base/buffering_defs.h"
 #include "chromecast/media/cma/base/cma_logging.h"
 #include "chromecast/media/cma/base/coded_frame_provider.h"
@@ -22,106 +23,15 @@ const size_t kMaxVideoFrameSize = 1024 * 1024;
 }
 
 VideoPipelineImpl::VideoPipelineImpl(
-    MediaPipelineBackend::VideoDecoder* video_decoder,
+    MediaPipelineBackend::VideoDecoder* decoder,
     const VideoPipelineClient& client)
-    : video_decoder_(video_decoder),
-      video_client_(client),
-      weak_factory_(this) {
-  weak_this_ = weak_factory_.GetWeakPtr();
-  av_pipeline_impl_.reset(new AvPipelineImpl(
-      video_decoder_,
-      base::Bind(&VideoPipelineImpl::OnUpdateConfig, base::Unretained(this))));
+    : AvPipelineImpl(decoder, client.av_pipeline_client),
+      video_decoder_(decoder),
+      natural_size_changed_cb_(client.natural_size_changed_cb) {
+  DCHECK(video_decoder_);
 }
 
 VideoPipelineImpl::~VideoPipelineImpl() {
-}
-
-void VideoPipelineImpl::SetCodedFrameProvider(
-    scoped_ptr<CodedFrameProvider> frame_provider) {
-  av_pipeline_impl_->SetCodedFrameProvider(
-      frame_provider.Pass(), kAppVideoBufferSize, kMaxVideoFrameSize);
-}
-
-bool VideoPipelineImpl::StartPlayingFrom(
-    base::TimeDelta time,
-    const scoped_refptr<BufferingState>& buffering_state) {
-  CMALOG(kLogControl) << __FUNCTION__ << " t0=" << time.InMilliseconds();
-
-  // Reset the pipeline statistics.
-  previous_stats_ = ::media::PipelineStatistics();
-
-  // Start playing.
-  if (av_pipeline_impl_->GetState() == AvPipelineImpl::kError)
-    return false;
-  DCHECK_EQ(av_pipeline_impl_->GetState(), AvPipelineImpl::kFlushed);
-
-  if (!av_pipeline_impl_->StartPlayingFrom(time, buffering_state)) {
-    av_pipeline_impl_->TransitionToState(AvPipelineImpl::kError);
-    return false;
-  }
-  av_pipeline_impl_->TransitionToState(AvPipelineImpl::kPlaying);
-
-  return true;
-}
-
-bool VideoPipelineImpl::StartFlush() {
-  CMALOG(kLogControl) << __FUNCTION__;
-  if (av_pipeline_impl_->GetState() == AvPipelineImpl::kError) {
-    return false;
-  }
-  DCHECK_EQ(av_pipeline_impl_->GetState(), AvPipelineImpl::kPlaying);
-  av_pipeline_impl_->TransitionToState(AvPipelineImpl::kFlushing);
-  return true;
-}
-
-void VideoPipelineImpl::Flush(const ::media::PipelineStatusCB& status_cb) {
-  CMALOG(kLogControl) << __FUNCTION__;
-  DCHECK_EQ(av_pipeline_impl_->GetState(), AvPipelineImpl::kFlushing);
-  av_pipeline_impl_->Flush(
-      base::Bind(&VideoPipelineImpl::OnFlushDone, weak_this_, status_cb));
-}
-
-void VideoPipelineImpl::BackendStopped() {
-  CMALOG(kLogControl) << __FUNCTION__;
-  av_pipeline_impl_->BackendStopped();
-}
-
-void VideoPipelineImpl::OnFlushDone(
-    const ::media::PipelineStatusCB& status_cb) {
-  CMALOG(kLogControl) << __FUNCTION__;
-  if (av_pipeline_impl_->GetState() == AvPipelineImpl::kError) {
-    status_cb.Run(::media::PIPELINE_ERROR_ABORT);
-    return;
-  }
-  av_pipeline_impl_->TransitionToState(AvPipelineImpl::kFlushed);
-  status_cb.Run(::media::PIPELINE_OK);
-}
-
-void VideoPipelineImpl::Stop() {
-  CMALOG(kLogControl) << __FUNCTION__;
-  av_pipeline_impl_->Stop();
-  av_pipeline_impl_->TransitionToState(AvPipelineImpl::kStopped);
-}
-
-void VideoPipelineImpl::SetCdm(BrowserCdmCast* media_keys) {
-  av_pipeline_impl_->SetCdm(media_keys);
-}
-
-void VideoPipelineImpl::OnBufferPushed(
-    MediaPipelineBackend::BufferStatus status) {
-  av_pipeline_impl_->OnBufferPushed(status);
-}
-
-void VideoPipelineImpl::OnEndOfStream() {
-  if (!video_client_.av_pipeline_client.eos_cb.is_null())
-    video_client_.av_pipeline_client.eos_cb.Run();
-}
-
-void VideoPipelineImpl::OnError() {
-  if (!video_client_.av_pipeline_client.playback_error_cb.is_null()) {
-    video_client_.av_pipeline_client.playback_error_cb.Run(
-        ::media::PIPELINE_ERROR_COULD_NOT_RENDER);
-  }
 }
 
 void VideoPipelineImpl::Initialize(
@@ -134,8 +44,10 @@ void VideoPipelineImpl::Initialize(
                         << config.AsHumanReadableString();
   }
 
-  if (frame_provider)
-    SetCodedFrameProvider(frame_provider.Pass());
+  if (frame_provider) {
+    SetCodedFrameProvider(frame_provider.Pass(), kAppVideoBufferSize,
+                          kMaxVideoFrameSize);
+  }
 
   if (configs.empty()) {
      status_cb.Run(::media::PIPELINE_ERROR_INITIALIZATION_FAILED);
@@ -157,8 +69,17 @@ void VideoPipelineImpl::Initialize(
     status_cb.Run(::media::PIPELINE_ERROR_INITIALIZATION_FAILED);
     return;
   }
-  av_pipeline_impl_->TransitionToState(AvPipelineImpl::kFlushed);
+  TransitionToState(kFlushed);
   status_cb.Run(::media::PIPELINE_OK);
+}
+
+void VideoPipelineImpl::OnVideoResolutionChanged(const Size& size) {
+  if (state() != kPlaying)
+    return;
+
+  if (!natural_size_changed_cb_.is_null()) {
+    natural_size_changed_cb_.Run(gfx::Size(size.width, size.height));
+  }
 }
 
 void VideoPipelineImpl::OnUpdateConfig(
@@ -171,26 +92,13 @@ void VideoPipelineImpl::OnUpdateConfig(
 
     bool success = video_decoder_->SetConfig(
         DecoderConfigAdapter::ToCastVideoConfig(id, video_config));
-    if (!success &&
-        !video_client_.av_pipeline_client.playback_error_cb.is_null()) {
-      video_client_.av_pipeline_client.playback_error_cb.Run(
-          ::media::PIPELINE_ERROR_DECODE);
-    }
-  }
-}
-
-void VideoPipelineImpl::OnNaturalSizeChanged(const Size& size) {
-  if (av_pipeline_impl_->GetState() != AvPipelineImpl::kPlaying)
-    return;
-
-  if (!video_client_.natural_size_changed_cb.is_null()) {
-    video_client_.natural_size_changed_cb.Run(
-        gfx::Size(size.width, size.height));
+    if (!success && !client().playback_error_cb.is_null())
+      client().playback_error_cb.Run(::media::PIPELINE_ERROR_DECODE);
   }
 }
 
 void VideoPipelineImpl::UpdateStatistics() {
-  if (video_client_.av_pipeline_client.statistics_cb.is_null())
+  if (client().statistics_cb.is_null())
     return;
 
   MediaPipelineBackend::Decoder::Statistics device_stats;
@@ -211,7 +119,7 @@ void VideoPipelineImpl::UpdateStatistics() {
 
   previous_stats_ = current_stats;
 
-  video_client_.av_pipeline_client.statistics_cb.Run(delta_stats);
+  client().statistics_cb.Run(delta_stats);
 }
 
 }  // namespace media

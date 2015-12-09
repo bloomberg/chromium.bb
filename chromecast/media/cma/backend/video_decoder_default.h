@@ -16,16 +16,15 @@ class VideoDecoderDefault : public MediaPipelineBackend::VideoDecoder {
   VideoDecoderDefault();
   ~VideoDecoderDefault() override;
 
-  void Initialize(MediaPipelineBackend::Delegate* delegate);
-
   // MediaPipelineBackend::VideoDecoder implementation:
+  void SetDelegate(Delegate* delegate) override;
   MediaPipelineBackend::BufferStatus PushBuffer(
       CastDecoderBuffer* buffer) override;
   void GetStatistics(Statistics* statistics) override;
   bool SetConfig(const VideoConfig& config) override;
 
  private:
-  MediaPipelineBackend::Delegate* delegate_;
+  Delegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoDecoderDefault);
 };
