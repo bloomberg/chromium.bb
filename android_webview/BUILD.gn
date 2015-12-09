@@ -10,9 +10,11 @@ import("system_webview_apk_tmpl.gni")
 import("webview_repack_locales.gni")
 
 group("android_webview") {
-  deps = [
-    ":system_webview_apk",
-  ]
+  if (!use_webview_internal_framework) {
+    deps = [
+      ":system_webview_apk",
+    ]
+  }
 }
 
 jinja_template("system_webview_manifest") {
@@ -643,13 +645,15 @@ java_strings_grd("strings_grd") {
   ]
 }
 
-system_webview_apk_tmpl("system_webview_apk") {
-  android_manifest = get_target_outputs(":system_webview_manifest")
-  android_manifest = android_manifest[1]
-  android_manifest_dep = ":system_webview_manifest"
-  deps = [
-    ":system_webview_resources",
-    "//android_webview/glue",
-  ]
-  apk_name = "SystemWebView"
+if (!use_webview_internal_framework) {
+  system_webview_apk_tmpl("system_webview_apk") {
+    android_manifest = get_target_outputs(":system_webview_manifest")
+    android_manifest = android_manifest[1]
+    android_manifest_dep = ":system_webview_manifest"
+    deps = [
+      ":system_webview_resources",
+      "//android_webview/glue",
+    ]
+    apk_name = "SystemWebView"
+  }
 }

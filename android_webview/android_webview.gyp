@@ -469,21 +469,27 @@
       },
       'includes': [ 'apk/system_webview_glue_common.gypi' ],
     },
-    # GN version:  //android_webview:system_webview_apk
-    {
-      'target_name': 'system_webview_apk',
-      'dependencies': [
-        'system_webview_glue_java',
+  ],
+  'conditions': [
+    ['use_webview_internal_framework==0', {
+      'targets': [
+        # GN version:  //android_webview:system_webview_apk
+        {
+          'target_name': 'system_webview_apk',
+          'dependencies': [
+            'system_webview_glue_java',
+          ],
+          'variables': {
+            'apk_name': 'SystemWebView',
+            'android_sdk_jar': '../third_party/android_platform/webview/frameworks_6.0.jar',
+            'java_in_dir': '../build/android/empty',
+            'resource_dir': 'apk/java/res',
+            'android_manifest_template_vars': ['package=<(system_webview_package_name)'],
+          },
+          'includes': [ 'apk/system_webview_apk_common.gypi' ],
+        },
       ],
-      'variables': {
-        'apk_name': 'SystemWebView',
-        'android_sdk_jar': '../third_party/android_platform/webview/frameworks_6.0.jar',
-        'java_in_dir': '../build/android/empty',
-        'resource_dir': 'apk/java/res',
-        'android_manifest_template_vars': ['package=<(system_webview_package_name)'],
-      },
-      'includes': [ 'apk/system_webview_apk_common.gypi' ],
-    },
+    }]
   ],
   'includes': [
     'android_webview_tests.gypi',

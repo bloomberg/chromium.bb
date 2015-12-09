@@ -103,6 +103,9 @@ if (is_android) {
     # Adds intrumentation to each function. Writes a file with the order that
     # functions are called at startup.
     use_order_profiling = false
+
+    # Use the internal version of the framework to build Android WebView.
+    use_webview_internal_framework = false
   }
 
   # Host stuff -----------------------------------------------------------------

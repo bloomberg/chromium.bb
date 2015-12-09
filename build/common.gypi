@@ -1103,6 +1103,9 @@
       # do a developer build.
       'android_app_version_name%': 'Developer Build',
       'android_app_version_code%': 1,
+
+      # Use the internal version of the framework to build Android WebView.
+      'use_webview_internal_framework%': 0,
     },
 
     # Copy conditionally-set variables out one scope.
@@ -1257,6 +1260,7 @@
     'mac_views_browser%': '<(mac_views_browser)',
     'android_app_version_name%': '<(android_app_version_name)',
     'android_app_version_code%': '<(android_app_version_code)',
+    'use_webview_internal_framework%': '<(use_webview_internal_framework)',
     'enable_webvr%': '<(enable_webvr)',
 
     # Turns on compiler optimizations in V8 in Debug build.
