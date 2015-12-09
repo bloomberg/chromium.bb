@@ -41,9 +41,13 @@
 #include "config.h"
 #endif
 
+#include <errno.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
+#include "xf86drm.h"
 #include "xf86drmMode.h"
 
 #include "common.h"
@@ -119,4 +123,55 @@ const char *util_lookup_connector_type_name(unsigned int type)
 {
 	return util_lookup_type_name(type, connector_type_names,
 				     ARRAY_SIZE(connector_type_names));
+}
+
+static const char * const modules[] = {
+	"i915",
+	"radeon",
+	"nouveau",
+	"vmwgfx",
+	"omapdrm",
+	"exynos",
+	"tilcdc",
+	"msm",
+	"sti",
+	"tegra",
+	"imx-drm",
+	"rockchip",
+	"atmel-hlcdc",
+};
+
+int util_open(const char *device, const char *module)
+{
+	int fd;
+
+	if (module) {
+		fd = drmOpen(module, device);
+		if (fd < 0) {
+			fprintf(stderr, "failed to open device '%s': %s\n",
+				module, strerror(errno));
+			return -errno;
+		}
+	} else {
+		unsigned int i;
+
+		for (i = 0; i < ARRAY_SIZE(modules); i++) {
+			printf("trying to open device '%s'...", modules[i]);
+
+			fd = drmOpen(modules[i], device);
+			if (fd < 0) {
+				printf("failed\n");
+			} else {
+				printf("done\n");
+				break;
+			}
+		}
+
+		if (fd < 0) {
+			fprintf(stderr, "no device found\n");
+			return -ENODEV;
+		}
+	}
+
+	return fd;
 }
