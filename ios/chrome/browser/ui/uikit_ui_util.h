@@ -46,26 +46,36 @@ void AddBorderShadow(UIView* view, CGFloat offset, UIColor* color);
 // Adds a rounded-rectangle border shadow around a view.
 void AddRoundedBorderShadow(UIView* view, CGFloat radius, UIColor* color);
 
+enum CaptureViewOption {
+  kNoCaptureOption,      // Equivalent to calling CaptureView without options.
+  kAfterScreenUpdate,    // Require a synchronization with CA process which can
+                         // have side effects.
+  kClientSideRendering,  // Triggers a client side compositing, very slow.
+};
+
 // Captures and returns an autoreleased rendering of the |view|.
 // The |view| is assumed to be opaque and the returned image does
 // not have an alpha channel. The scale parameter is used as a scale factor
 // for the rendering context. Using 0.0 as scale will result in the device's
 // main screen scale to be used.
-// The CaptureViewWithOption function can be used with the afterScreenUpdate
-// parameter set to YES if some changes performed in the view and/or it's
-// subtree that have not yet been part of a committed implicit transaction must
-// be reflected in the snapshot. For example, it should be used if you just
-// performed changes in the view or its subviews before calling that function
-// and wants those changes to be reflected in the snapshot.
-// The CaptureView function will perform better then the afterScreenUpdate
-// version (when set to YES). If you only need to hide subviews consider
-// selectively rendering subviews in a bitmap context using
-// drawViewHierarchyInRect:afterScreenUpdates:NO.
-// On iOS < 9 this function is slow and always behave as the
-// CaptureViewWithOption function with afterScreenUpdate set to YES.
+// The CaptureViewWithOption function can be used with the |option|
+// parameter set to kAfterScreenUpdate if some changes performed in the view
+// and/or it's subtree that have not yet been part of a committed implicit
+// transaction must be reflected in the snapshot.
+// For example, it should be used if you just performed changes in the view or
+// its subviews before calling that function and wants those changes to be
+// reflected in the snapshot.
+// Calling CaptureView without option gives the best performances. If you only
+// need to hide subviews consider selectively rendering subviews in a bitmap
+// context using drawViewHierarchyInRect:afterScreenUpdates:NO.
+// The kClientSideRendering option can be used to directly re-render the view
+// client side instead of reusing the core animation layer's backing store, this
+// is slow.
+// On iOS < 9 this function is slow and always behave as if the option was set
+// to kClientSideRendering.
 UIImage* CaptureViewWithOption(UIView* view,
                                CGFloat scale,
-                               BOOL afterScreenUpdate);
+                               CaptureViewOption option);
 UIImage* CaptureView(UIView* view, CGFloat scale);
 
 // Converts input image and returns a grey scaled version.
