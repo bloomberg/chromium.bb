@@ -41,6 +41,8 @@
 #include "wtf/ThreadingPrimitives.h"
 #include "wtf/Vector.h"
 
+class SkData;
+
 namespace blink {
 
 class ImageDecoder;
@@ -75,8 +77,11 @@ public:
 
     void setData(PassRefPtr<SharedBuffer>, bool allDataReceived);
 
-    // Creates a new SharedBuffer containing the data received so far.
-    void copyData(RefPtr<SharedBuffer>*, bool* allDataReceived);
+    // Return our encoded image data. Caller takes ownership and must unref the data
+    // according to the contract SkImageGenerator::refEncodedData.
+    //
+    // Returns null if image is not fully received.
+    SkData* refEncodedData();
 
     const SkISize& getFullSize() const { return m_fullSize; }
 
@@ -104,7 +109,11 @@ private:
     bool decode(size_t index, ImageDecoder**, SkBitmap*);
 
     SkISize m_fullSize;
-    ThreadSafeDataTransport m_data;
+
+    // ThreadSafeDataTransport is referenced by this class and m_encodedData.
+    // In case that ImageFrameGenerator get's deleted before m_encodedData,
+    // m_encodedData would hold the reference to it (and underlying data).
+    RefPtr<ThreadSafeDataTransport> m_data;
     bool m_isMultiFrame;
     bool m_decodeFailedAndEmpty;
     Vector<bool> m_hasAlpha;
@@ -122,6 +131,9 @@ private:
 
     // Protect concurrent access to m_hasAlpha.
     Mutex m_alphaMutex;
+
+    // Our encoded image data returned in refEncodedData.
+    SkData* m_encodedData;
 
 #if COMPILER(MSVC)
     friend struct ::WTF::OwnedPtrDeleter<ExternalMemoryAllocator>;

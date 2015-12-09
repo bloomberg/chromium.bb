@@ -27,6 +27,7 @@
 
 #include "platform/graphics/ImageFrameGenerator.h"
 
+#include "SkData.h"
 #include "platform/SharedBuffer.h"
 #include "platform/TraceEvent.h"
 #include "platform/graphics/ImageDecodingStore.h"
@@ -101,30 +102,77 @@ static bool updateYUVComponentSizes(ImageDecoder* decoder, SkISize componentSize
 
 ImageFrameGenerator::ImageFrameGenerator(const SkISize& fullSize, PassRefPtr<SharedBuffer> data, bool allDataReceived, bool isMultiFrame)
     : m_fullSize(fullSize)
+    , m_data(adoptRef(new ThreadSafeDataTransport()))
     , m_isMultiFrame(isMultiFrame)
     , m_decodeFailedAndEmpty(false)
     , m_decodeCount(0)
     , m_frameCount(0)
+    , m_encodedData(nullptr)
 {
     setData(data.get(), allDataReceived);
 }
 
 ImageFrameGenerator::~ImageFrameGenerator()
 {
+    if (m_encodedData)
+        m_encodedData->unref();
     ImageDecodingStore::instance().removeCacheIndexedByGenerator(this);
 }
 
 void ImageFrameGenerator::setData(PassRefPtr<SharedBuffer> data, bool allDataReceived)
 {
-    m_data.setData(data.get(), allDataReceived);
+    m_data->setData(data.get(), allDataReceived);
 }
 
-void ImageFrameGenerator::copyData(RefPtr<SharedBuffer>* data, bool* allDataReceived)
+static void sharedSkDataReleaseCallback(const void* address, void* context)
 {
+    // This gets called when m_encodedData reference count becomes 0 - and it could happen in
+    // ImageFrameGenerator destructor or later when m_encodedData gets dereferenced.
+    // In this method, we deref ThreadSafeDataTransport, as ThreadSafeDataTransport is the owner
+    // of data returned via refEncodedData.
+
+    ThreadSafeDataTransport* dataTransport = static_cast<ThreadSafeDataTransport*>(context);
+#if ENABLE(ASSERT)
+    ASSERT(dataTransport);
     SharedBuffer* buffer = 0;
-    m_data.data(&buffer, allDataReceived);
-    if (buffer)
-        *data = buffer->copy();
+    bool allDataReceived = false;
+    dataTransport->data(&buffer, &allDataReceived);
+    ASSERT(allDataReceived && buffer && buffer->data() == address);
+#endif
+    // Dereference m_data now.
+    dataTransport->deref();
+}
+
+SkData* ImageFrameGenerator::refEncodedData()
+{
+    // SkData is returned only when full image (encoded) data is received. This is important
+    // since DeferredImageDecoder::setData is called only once with allDataReceived set to true,
+    // and after that m_data->m_readBuffer.data() is not changed. See also RELEASE_ASSERT used in
+    // ThreadSafeDataTransport::data().
+    SharedBuffer* buffer = 0;
+    bool allDataReceived = false;
+    m_data->data(&buffer, &allDataReceived);
+    if (!allDataReceived)
+        return nullptr;
+
+    {
+        // Prevents concurrent access to m_encodedData creation.
+        MutexLocker lock(m_decodeMutex);
+        if (m_encodedData) {
+            m_encodedData->ref();
+            return m_encodedData;
+        }
+        // m_encodedData is created with initial reference count == 1. ImageFrameGenerator always holds one
+        // reference to m_encodedData, as it prevents write access in SkData::writable_data.
+        m_encodedData = SkData::NewWithProc(buffer->data(), buffer->size(), sharedSkDataReleaseCallback, m_data.get());
+        // While m_encodedData is referenced, prevent disposing m_data and its content.
+        // it is dereferenced in sharedSkDataReleaseCallback, called when m_encodedData gets dereferenced.
+        m_data->ref();
+    }
+    // Increase the reference, caller must decrease it. One reference is always kept by ImageFrameGenerator and released
+    // in destructor.
+    m_encodedData->ref();
+    return m_encodedData;
 }
 
 bool ImageFrameGenerator::decodeAndScale(const SkImageInfo& info, size_t index, void* pixels, size_t rowBytes)
@@ -184,7 +232,7 @@ bool ImageFrameGenerator::decodeToYUV(SkISize componentSizes[3], void* planes[3]
 
     SharedBuffer* data = 0;
     bool allDataReceived = false;
-    m_data.data(&data, &allDataReceived);
+    m_data->data(&data, &allDataReceived);
 
     // FIXME: YUV decoding does not currently support progressive decoding.
     ASSERT(allDataReceived);
@@ -290,7 +338,7 @@ bool ImageFrameGenerator::decode(size_t index, ImageDecoder** decoder, SkBitmap*
     SharedBuffer* data = 0;
     bool allDataReceived = false;
     bool newDecoder = false;
-    m_data.data(&data, &allDataReceived);
+    m_data->data(&data, &allDataReceived);
 
     // Try to create an ImageDecoder if we are not given one.
     if (!*decoder) {
@@ -358,7 +406,7 @@ bool ImageFrameGenerator::getYUVComponentSizes(SkISize componentSizes[3])
 
     SharedBuffer* data = 0;
     bool allDataReceived = false;
-    m_data.data(&data, &allDataReceived);
+    m_data->data(&data, &allDataReceived);
 
     // FIXME: YUV decoding does not currently support progressive decoding.
     if (!allDataReceived)

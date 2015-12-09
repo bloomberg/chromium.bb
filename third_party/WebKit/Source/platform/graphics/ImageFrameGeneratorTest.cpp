@@ -96,10 +96,10 @@ protected:
         m_generator->setImageDecoderFactory(MockImageDecoderFactory::create(this, fullSize()));
     }
 
-    void addNewData()
+    void addNewData(bool allDataReceived = false)
     {
         m_data->append("g", 1);
-        m_generator->setData(m_data, false);
+        m_generator->setData(m_data, allDataReceived);
     }
 
     void setFrameStatus(ImageFrame::Status status)  { m_status = m_nextFrameStatus = status; }
@@ -164,6 +164,15 @@ static void decodeThreadMain(ImageFrameGenerator* generator)
     generator->decodeAndScale(imageInfo(), 0, buffer, 100 * 4);
 }
 
+static void decodeThreadWithRefEncodedMain(ImageFrameGenerator* generator)
+{
+    // Image must be complete - refEncodedData otherwise returns null.
+    char buffer[100 * 100 * 4];
+    SkData* data = generator->refEncodedData();
+    generator->decodeAndScale(imageInfo(), 0, buffer, 100 * 4);
+    data->unref();
+}
+
 TEST_F(ImageFrameGeneratorTest, incompleteDecodeBecomesCompleteMultiThreaded)
 {
     setFrameStatus(ImageFrame::FramePartial);
@@ -172,10 +181,16 @@ TEST_F(ImageFrameGeneratorTest, incompleteDecodeBecomesCompleteMultiThreaded)
     m_generator->decodeAndScale(imageInfo(), 0, buffer, 100 * 4);
     EXPECT_EQ(1, m_decodeRequestCount);
     EXPECT_EQ(0, m_decodersDestroyed);
+    SkData* data = m_generator->refEncodedData();
+    EXPECT_EQ(nullptr, data);
 
     // LocalFrame can now be decoded completely.
     setFrameStatus(ImageFrame::FrameComplete);
     addNewData();
+    // addNewData is calling m_generator->setData with allDataReceived == false, which means that
+    // refEncodedData should return null.
+    data = m_generator->refEncodedData();
+    EXPECT_EQ(nullptr, data);
     OwnPtr<WebThread> thread = adoptPtr(Platform::current()->createThread("DecodeThread"));
     thread->taskRunner()->postTask(BLINK_FROM_HERE, new Task(threadSafeBind(&decodeThreadMain, AllowCrossThreadAccess(m_generator.get()))));
     thread.clear();
@@ -185,6 +200,30 @@ TEST_F(ImageFrameGeneratorTest, incompleteDecodeBecomesCompleteMultiThreaded)
     // Decoder created again.
     m_generator->decodeAndScale(imageInfo(), 0, buffer, 100 * 4);
     EXPECT_EQ(3, m_decodeRequestCount);
+
+    addNewData(true);
+    data = m_generator->refEncodedData();
+    ASSERT_TRUE(data);
+    // To prevent data writting, SkData::unique() should be false.
+    ASSERT_TRUE(!data->unique());
+
+    // Thread will also ref and unref the data.
+    thread = adoptPtr(Platform::current()->createThread("RefEncodedDataThread"));
+    thread->taskRunner()->postTask(BLINK_FROM_HERE, new Task(threadSafeBind(&decodeThreadWithRefEncodedMain, AllowCrossThreadAccess(m_generator.get()))));
+    thread.clear();
+    EXPECT_EQ(4, m_decodeRequestCount);
+
+    data->unref();
+    // m_generator is holding the only reference to SkData now.
+    ASSERT_TRUE(data->unique());
+
+    data = m_generator->refEncodedData();
+    ASSERT_TRUE(data && !data->unique());
+
+    // Delete generator, and SkData should have the only reference.
+    m_generator = nullptr;
+    ASSERT_TRUE(data->unique());
+    data->unref();
 }
 
 TEST_F(ImageFrameGeneratorTest, frameHasAlpha)

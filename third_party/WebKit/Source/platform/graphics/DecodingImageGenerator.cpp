@@ -52,15 +52,7 @@ SkData* DecodingImageGenerator::onRefEncodedData()
 {
     TRACE_EVENT0("blink", "DecodingImageGenerator::refEncodedData");
 
-    // FIXME: If the image has been clipped or scaled, do not return the original
-    // encoded data, since on playback it will not be known how the clipping/scaling
-    // was done.
-    RefPtr<SharedBuffer> buffer = nullptr;
-    bool allDataReceived = false;
-    m_frameGenerator->copyData(&buffer, &allDataReceived);
-    if (buffer && allDataReceived)
-        return SkData::NewWithCopy(buffer->data(), buffer->size());
-    return 0;
+    return m_frameGenerator->refEncodedData();
 }
 
 bool DecodingImageGenerator::onGetPixels(const SkImageInfo& info, void* pixels, size_t rowBytes, SkPMColor table[], int* tableCount)
