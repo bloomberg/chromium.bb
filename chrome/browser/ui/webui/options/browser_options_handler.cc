@@ -80,6 +80,7 @@
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/signin/core/common/signin_pref_names.h"
+#include "components/strings/grit/components_strings.h"
 #include "components/ui/zoom/page_zoom.h"
 #include "components/user_manager/user_type.h"
 #include "content/public/browser/browser_thread.h"

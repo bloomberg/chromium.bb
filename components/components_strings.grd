@@ -186,8 +186,10 @@
       <part file="autofill_strings.grdp" />
       <part file="bookmark_bar_strings.grdp" />
       <part file="browser_sync_strings.grdp" />
+      <part file="components_settings_strings.grdp" />
       <part file="crash_strings.grdp" />
       <part file="data_reduction_proxy_strings.grdp" />
+      <part file="dialog_strings.grdp" />
       <part file="dom_distiller_strings.grdp" />
       <part file="enhanced_bookmarks_strings.grdp" />
       <part file="error_page_strings.grdp" />

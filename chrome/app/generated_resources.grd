@@ -9209,17 +9209,6 @@ I don't think this site should be blocked!
        Unlock
       </message>
 
-      <!-- HTTP POST Warning -->
-      <message name="IDS_HTTP_POST_WARNING_TITLE" desc="Title for dialog that warns users about a navigation that results in a repost">
-        Confirm Form Resubmission
-      </message>
-      <message name="IDS_HTTP_POST_WARNING" desc="Re-navigation to page that leads to HTTP POST" formatter_data="android_java">
-        The page that you're looking for used information that you entered. Returning to that page might cause any action you took to be repeated. Do you want to continue?
-      </message>
-      <message name="IDS_HTTP_POST_WARNING_RESEND" desc="Resend button for post warning" formatter_data="android_java">
-        Continue
-      </message>
-
       <!-- Menus -->
       <if expr="is_macosx">
         <message name="IDS_MENU_EMPTY_SUBMENU" desc="Used when a submenu has no entries">
@@ -10022,15 +10011,6 @@ I don't think this site should be blocked!
       </if>
 
       <!-- chrome://settings strings that are used by all platforms including Android -->
-      <message name="IDS_SETTINGS_TITLE" desc="Title for the settings tab.">
-        Settings
-      </message>
-      <message name="IDS_SETTINGS_HIDE_ADVANCED_SETTINGS" desc="Title for the link to hide advanced settings.">
-        Hide advanced settings...
-      </message>
-      <message name="IDS_SETTINGS_SHOW_ADVANCED_SETTINGS" desc="Title for the link to show advanced settings.">
-        Show advanced settings...
-      </message>
       <message name="IDS_OPTIONS_PASSWORDS_MANAGE_PASSWORDS_LINK" desc="The label of the 'Manage passwords' link">
         Manage passwords
       </message>
@@ -10232,11 +10212,6 @@ I don't think this site should be blocked!
       </if>
       <message name="IDS_THEMES_GALLERY_BUTTON" desc="The button to get more themes">
         Get themes
-      </message>
-
-      <!-- Misc advanced option description strings. -->
-      <message name="IDS_NETWORK_PREDICTION_ENABLED_DESCRIPTION" desc="In the advanced options tab, the text next to the checkbox that enables prediction of network actions.  Actions include DNS prefetching, TCP and SSL preconnection, and prerendering of webpages.">
-        Prefetch resources to load pages more quickly
       </message>
 
       <!-- Collected cookies window -->
@@ -11165,9 +11140,6 @@ The following application will be launched if you accept this request:
       </message>
       <message name="IDS_OPTIONS_FONTSETTINGS_CUSTOMIZE_FONTS_BUTTON" desc="The label of the 'Customize fonts' button">
         Customize fonts...
-      </message>
-      <message name="IDS_OPTIONS_PROXIES_CONFIGURE_BUTTON" desc="The label of the 'Configure proxy settings' button">
-        Change proxy settings...
       </message>
       <message name="IDS_OPTIONS_CERTIFICATES_MANAGE_BUTTON" desc="The label of the 'Manage Certificates' button">
         Manage certificates...
