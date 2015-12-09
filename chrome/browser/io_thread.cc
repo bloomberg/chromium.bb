@@ -1170,6 +1170,8 @@ void IOThread::InitializeNetworkSessionParamsFromGlobals(
       &params->quic_close_sessions_on_ip_change);
   globals.quic_idle_connection_timeout_seconds.CopyToIfSet(
       &params->quic_idle_connection_timeout_seconds);
+  globals.quic_disable_preconnect_if_0rtt.CopyToIfSet(
+      &params->quic_disable_preconnect_if_0rtt);
 
   globals.origin_to_force_quic_on.CopyToIfSet(
       &params->origin_to_force_quic_on);
@@ -1307,6 +1309,8 @@ void IOThread::ConfigureQuicGlobals(
       globals->quic_idle_connection_timeout_seconds.set(
           idle_connection_timeout_seconds);
     }
+    globals->quic_disable_preconnect_if_0rtt.set(
+        ShouldQuicDisablePreConnectIfZeroRtt(quic_trial_params));
   }
 
   size_t max_packet_length = GetQuicMaxPacketLength(command_line,
@@ -1557,6 +1561,13 @@ int IOThread::GetQuicIdleConnectionTimeoutSeconds(
     return value;
   }
   return 0;
+}
+
+bool IOThread::ShouldQuicDisablePreConnectIfZeroRtt(
+    const VariationParameters& quic_trial_params) {
+  return base::LowerCaseEqualsASCII(
+      GetVariationParam(quic_trial_params, "disable_preconnect_if_0rtt"),
+      "true");
 }
 
 size_t IOThread::GetQuicMaxPacketLength(

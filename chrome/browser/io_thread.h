@@ -232,6 +232,7 @@ class IOThread : public content::BrowserThreadDelegate {
     Optional<net::HostPortPair> origin_to_force_quic_on;
     Optional<bool> quic_close_sessions_on_ip_change;
     Optional<int> quic_idle_connection_timeout_seconds;
+    Optional<bool> quic_disable_preconnect_if_0rtt;
     bool enable_user_alternate_protocol_ports;
     // NetErrorTabHelper uses |dns_probe_service| to send DNS probes when a
     // main frame load fails with a DNS error in order to provide more useful
@@ -448,6 +449,10 @@ class IOThread : public content::BrowserThreadDelegate {
   // there is an error parsing any of the options, or if the default value
   // should be used.
   static int GetQuicIdleConnectionTimeoutSeconds(
+      const VariationParameters& quic_trial_params);
+
+  // Returns true if PreConnect should be disabled if QUIC can do 0RTT.
+  static bool ShouldQuicDisablePreConnectIfZeroRtt(
       const VariationParameters& quic_trial_params);
 
   // Returns the maximum length for QUIC packets, based on any flags in

@@ -231,6 +231,7 @@ TEST_F(IOThreadTest, EnableQuicFromFieldTrialGroup) {
   EXPECT_FALSE(params.quic_close_sessions_on_ip_change);
   EXPECT_EQ(net::kIdleConnectionTimeoutSeconds,
             params.quic_idle_connection_timeout_seconds);
+  EXPECT_FALSE(params.quic_disable_preconnect_if_0rtt);
   EXPECT_FALSE(IOThread::ShouldEnableQuicForDataReductionProxy());
 }
 
@@ -334,6 +335,15 @@ TEST_F(IOThreadTest, QuicIdleConnectionTimeoutSecondsFieldTrialParams) {
   net::HttpNetworkSession::Params params;
   InitializeNetworkSessionParams(&params);
   EXPECT_EQ(300, params.quic_idle_connection_timeout_seconds);
+}
+
+TEST_F(IOThreadTest, QuicDisablePreConnectIfZeroRtt) {
+  field_trial_group_ = "Enabled";
+  field_trial_params_["disable_preconnect_if_0rtt"] = "true";
+  ConfigureQuicGlobals();
+  net::HttpNetworkSession::Params params;
+  InitializeNetworkSessionParams(&params);
+  EXPECT_TRUE(params.quic_disable_preconnect_if_0rtt);
 }
 
 TEST_F(IOThreadTest, PacketLengthFromFieldTrialParams) {
