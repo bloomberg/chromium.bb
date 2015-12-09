@@ -18,3 +18,14 @@ libkms_test_la_SOURCES = \
 
 libkms_test_la_LIBADD = \
 	$(top_builddir)/libdrm.la
+
+if HAVE_INSTALL_TESTS
+bin_PROGRAMS = \
+	kms-steal-crtc
+else
+noinst_PROGRAMS = \
+	kms-steal-crtc
+endif
+
+kms_steal_crtc_SOURCES = kms-steal-crtc.c
+kms_steal_crtc_LDADD = libkms-test.la ../util/libutil.la $(CAIRO_LIBS)
