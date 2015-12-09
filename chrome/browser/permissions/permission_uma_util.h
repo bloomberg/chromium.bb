@@ -14,6 +14,8 @@ class Profile;
 // Provides a convenient way of logging UMA for permission related operations.
 class PermissionUmaUtil {
  public:
+  // TODO(lshang): Should use PermissionType in these functions below
+  // to make it more clear.
   static void PermissionRequested(ContentSettingsType permission,
                                   const GURL& requesting_origin,
                                   const GURL& embedding_origin,

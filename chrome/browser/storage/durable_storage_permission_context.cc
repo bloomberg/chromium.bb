@@ -17,6 +17,7 @@
 #include "components/content_settings/core/browser/website_settings_registry.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
+#include "content/public/browser/permission_type.h"
 #include "content/public/common/origin_util.h"
 #include "url/gurl.h"
 
@@ -24,7 +25,9 @@ using bookmarks::BookmarkModel;
 
 DurableStoragePermissionContext::DurableStoragePermissionContext(
     Profile* profile)
-    : PermissionContextBase(profile, CONTENT_SETTINGS_TYPE_DURABLE_STORAGE) {}
+    : PermissionContextBase(profile,
+                            content::PermissionType::DURABLE_STORAGE,
+                            CONTENT_SETTINGS_TYPE_DURABLE_STORAGE) {}
 
 void DurableStoragePermissionContext::DecidePermission(
     content::WebContents* web_contents,

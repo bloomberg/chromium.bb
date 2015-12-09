@@ -16,41 +16,45 @@
 PermissionBubbleRequestImpl::PermissionBubbleRequestImpl(
     const GURL& request_origin,
     bool user_gesture,
-    ContentSettingsType type,
+    content::PermissionType permission_type,
+    ContentSettingsType content_settings_type,
     const std::string& display_languages,
     const PermissionDecidedCallback& permission_decided_callback,
     const base::Closure delete_callback)
     : request_origin_(request_origin),
       user_gesture_(user_gesture),
-      type_(type),
+      permission_type_(permission_type),
+      content_settings_type_(content_settings_type),
       display_languages_(display_languages),
       permission_decided_callback_(permission_decided_callback),
       delete_callback_(delete_callback),
       is_finished_(false),
-      action_taken_(false) {
-}
+      action_taken_(false) {}
 
 PermissionBubbleRequestImpl::~PermissionBubbleRequestImpl() {
   DCHECK(is_finished_);
   if (!action_taken_)
-    PermissionUmaUtil::PermissionIgnored(type_, request_origin_);
+    // TODO(lshang): Should use permission_type_ here and remove
+    // content_settings_type_ in this class
+    PermissionUmaUtil::PermissionIgnored(content_settings_type_,
+                                         request_origin_);
 }
 
 gfx::VectorIconId PermissionBubbleRequestImpl::GetVectorIconId() const {
 #if !defined(OS_MACOSX)
-  switch (type_) {
-    case CONTENT_SETTINGS_TYPE_GEOLOCATION:
+  switch (permission_type_) {
+    case content::PermissionType::GEOLOCATION:
       return gfx::VectorIconId::LOCATION_ON;
 #if defined(ENABLE_NOTIFICATIONS)
-    case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
+    case content::PermissionType::NOTIFICATIONS:
       return gfx::VectorIconId::NOTIFICATIONS;
 #endif
 #if defined(OS_CHROMEOS)
     // TODO(xhwang): fix this icon, see crrev.com/863263007
-    case CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER:
+    case content::PermissionType::PROTECTED_MEDIA_IDENTIFIER:
       return gfx::VectorIconId::CHROME_PRODUCT;
 #endif
-    case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
+    case content::PermissionType::MIDI_SYSEX:
       return gfx::VectorIconId::MIDI;
     default:
       NOTREACHED();
@@ -64,16 +68,16 @@ gfx::VectorIconId PermissionBubbleRequestImpl::GetVectorIconId() const {
 int PermissionBubbleRequestImpl::GetIconId() const {
   int icon_id = IDR_INFOBAR_WARNING;
 #if defined(OS_MACOSX)
-  switch (type_) {
-    case CONTENT_SETTINGS_TYPE_GEOLOCATION:
+  switch (permission_type_) {
+    case content::PermissionType::GEOLOCATION:
       icon_id = IDR_INFOBAR_GEOLOCATION;
       break;
 #if defined(ENABLE_NOTIFICATIONS)
-    case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
+    case content::PermissionType::NOTIFICATIONS:
       icon_id = IDR_INFOBAR_DESKTOP_NOTIFICATIONS;
       break;
 #endif
-    case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
+    case content::PermissionType::MIDI_SYSEX:
       icon_id = IDR_ALLOWED_MIDI_SYSEX;
       break;
     default:
@@ -85,23 +89,23 @@ int PermissionBubbleRequestImpl::GetIconId() const {
 
 base::string16 PermissionBubbleRequestImpl::GetMessageText() const {
   int message_id;
-  switch (type_) {
-    case CONTENT_SETTINGS_TYPE_GEOLOCATION:
+  switch (permission_type_) {
+    case content::PermissionType::GEOLOCATION:
       message_id = IDS_GEOLOCATION_INFOBAR_QUESTION;
       break;
 #if defined(ENABLE_NOTIFICATIONS)
-    case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
+    case content::PermissionType::NOTIFICATIONS:
       message_id = IDS_NOTIFICATION_PERMISSIONS;
       break;
 #endif
-    case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
+    case content::PermissionType::MIDI_SYSEX:
       message_id = IDS_MIDI_SYSEX_INFOBAR_QUESTION;
       break;
-    case CONTENT_SETTINGS_TYPE_PUSH_MESSAGING:
+    case content::PermissionType::PUSH_MESSAGING:
       message_id = IDS_PUSH_MESSAGES_PERMISSION_QUESTION;
       break;
 #if defined(OS_CHROMEOS)
-    case CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER:
+    case content::PermissionType::PROTECTED_MEDIA_IDENTIFIER:
       message_id = IDS_PROTECTED_MEDIA_IDENTIFIER_INFOBAR_QUESTION;
       break;
 #endif
@@ -116,27 +120,27 @@ base::string16 PermissionBubbleRequestImpl::GetMessageText() const {
 
 base::string16 PermissionBubbleRequestImpl::GetMessageTextFragment() const {
   int message_id;
-  switch (type_) {
-    case CONTENT_SETTINGS_TYPE_GEOLOCATION:
+  switch (permission_type_) {
+    case content::PermissionType::GEOLOCATION:
       message_id = IDS_GEOLOCATION_INFOBAR_PERMISSION_FRAGMENT;
       break;
 #if defined(ENABLE_NOTIFICATIONS)
-    case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
+    case content::PermissionType::NOTIFICATIONS:
       message_id = IDS_NOTIFICATION_PERMISSIONS_FRAGMENT;
       break;
 #endif
-    case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
+    case content::PermissionType::MIDI_SYSEX:
       message_id = IDS_MIDI_SYSEX_PERMISSION_FRAGMENT;
       break;
-    case CONTENT_SETTINGS_TYPE_PUSH_MESSAGING:
+    case content::PermissionType::PUSH_MESSAGING:
       message_id = IDS_PUSH_MESSAGES_BUBBLE_FRAGMENT;
       break;
 #if defined(OS_CHROMEOS)
-    case CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER:
+    case content::PermissionType::PROTECTED_MEDIA_IDENTIFIER:
       message_id = IDS_PROTECTED_MEDIA_IDENTIFIER_PERMISSION_FRAGMENT;
       break;
 #endif
-    case CONTENT_SETTINGS_TYPE_DURABLE_STORAGE:
+    case content::PermissionType::DURABLE_STORAGE:
       message_id = IDS_DURABLE_STORAGE_BUBBLE_FRAGMENT;
       break;
     default:

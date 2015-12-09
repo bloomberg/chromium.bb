@@ -13,6 +13,7 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "content/public/browser/permission_type.h"
 #include "url/gurl.h"
 
 #if defined(OS_ANDROID)
@@ -55,7 +56,8 @@ using BrowserPermissionCallback = base::Callback<void(ContentSetting)>;
 class PermissionContextBase : public KeyedService {
  public:
   PermissionContextBase(Profile* profile,
-                        const ContentSettingsType permission_type);
+                        const content::PermissionType permission_type,
+                        const ContentSettingsType content_settings_type);
   ~PermissionContextBase() override;
 
   // A field trial used to enable the global permissions kill switch.
@@ -144,12 +146,19 @@ class PermissionContextBase : public KeyedService {
   // Whether the permission should be restricted to secure origins.
   virtual bool IsRestrictedToSecureOrigins() const = 0;
 
+ protected:
+  content::PermissionType permission_type() const { return permission_type_; }
+  ContentSettingsType content_settings_type() const {
+    return content_settings_type_;
+  }
+
  private:
   // Called when a bubble is no longer used so it can be cleaned up.
   void CleanUpBubble(const PermissionRequestID& id);
 
   Profile* profile_;
-  const ContentSettingsType permission_type_;
+  const content::PermissionType permission_type_;
+  const ContentSettingsType content_settings_type_;
 #if defined(OS_ANDROID)
   scoped_ptr<PermissionQueueController> permission_queue_controller_;
 #endif

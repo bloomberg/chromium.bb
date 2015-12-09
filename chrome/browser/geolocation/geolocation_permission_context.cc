@@ -10,15 +10,15 @@
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/geolocation_provider.h"
+#include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 
-
-GeolocationPermissionContext::GeolocationPermissionContext(
-    Profile* profile)
-    : PermissionContextBase(profile, CONTENT_SETTINGS_TYPE_GEOLOCATION),
-      extensions_context_(profile) {
-}
+GeolocationPermissionContext::GeolocationPermissionContext(Profile* profile)
+    : PermissionContextBase(profile,
+                            content::PermissionType::GEOLOCATION,
+                            CONTENT_SETTINGS_TYPE_GEOLOCATION),
+      extensions_context_(profile) {}
 
 GeolocationPermissionContext::~GeolocationPermissionContext() {
 }

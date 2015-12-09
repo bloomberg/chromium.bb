@@ -21,6 +21,7 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/variations/variations_associated_data.h"
+#include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/mock_render_process_host.h"
@@ -42,13 +43,14 @@ const char kPermissionsKillSwitchTestGroup[] = "TestGroup";
 class TestPermissionContext : public PermissionContextBase {
  public:
   TestPermissionContext(Profile* profile,
-                  const ContentSettingsType permission_type)
-   : PermissionContextBase(profile, permission_type),
-     permission_set_(false),
-     permission_granted_(false),
-     tab_context_updated_(false),
-     field_trial_list_(new base::FieldTrialList(new base::MockEntropyProvider))
-     {}
+                        const content::PermissionType permission_type,
+                        const ContentSettingsType content_settings_type)
+      : PermissionContextBase(profile, permission_type, content_settings_type),
+        permission_set_(false),
+        permission_granted_(false),
+        tab_context_updated_(false),
+        field_trial_list_(
+            new base::FieldTrialList(new base::MockEntropyProvider)) {}
 
   ~TestPermissionContext() override {}
 
@@ -126,7 +128,8 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
 
   void TestAskAndGrant_TestContent() {
     TestPermissionContext permission_context(
-        profile(), CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+        profile(), content::PermissionType::NOTIFICATIONS,
+        CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
     GURL url("http://www.google.com");
     content::WebContentsTester::For(web_contents())->NavigateAndCommit(url);
 
@@ -156,7 +159,8 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
 
   void TestAskAndDismiss_TestContent() {
     TestPermissionContext permission_context(
-        profile(), CONTENT_SETTINGS_TYPE_MIDI_SYSEX);
+        profile(), content::PermissionType::MIDI_SYSEX,
+        CONTENT_SETTINGS_TYPE_MIDI_SYSEX);
     GURL url("http://www.google.es");
     content::WebContentsTester::For(web_contents())->NavigateAndCommit(url);
 
@@ -184,8 +188,11 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
     EXPECT_EQ(CONTENT_SETTING_ASK, setting);
   }
 
-  void TestRequestPermissionInvalidUrl(ContentSettingsType type) {
-    TestPermissionContext permission_context(profile(), type);
+  void TestRequestPermissionInvalidUrl(
+      content::PermissionType permission_type,
+      ContentSettingsType content_settings_type) {
+    TestPermissionContext permission_context(profile(), permission_type,
+                                             content_settings_type);
     GURL url;
     ASSERT_FALSE(url.is_valid());
     content::WebContentsTester::For(web_contents())->NavigateAndCommit(url);
@@ -206,16 +213,16 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
 
     ContentSetting setting =
         HostContentSettingsMapFactory::GetForProfile(profile())
-            ->GetContentSetting(url.GetOrigin(),
-                                url.GetOrigin(),
-                                type,
-                                std::string());
+            ->GetContentSetting(url.GetOrigin(), url.GetOrigin(),
+                                content_settings_type, std::string());
     EXPECT_EQ(CONTENT_SETTING_ASK, setting);
   }
 
-  void TestGrantAndRevoke_TestContent(ContentSettingsType type,
+  void TestGrantAndRevoke_TestContent(content::PermissionType permission_type,
+                                      ContentSettingsType content_settings_type,
                                       ContentSetting expected_default) {
-    TestPermissionContext permission_context(profile(), type);
+    TestPermissionContext permission_context(profile(), permission_type,
+                                             content_settings_type);
     GURL url("https://www.google.com");
     content::WebContentsTester::For(web_contents())->NavigateAndCommit(url);
 
@@ -236,33 +243,32 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
 
     ContentSetting setting =
         HostContentSettingsMapFactory::GetForProfile(profile())
-            ->GetContentSetting(url.GetOrigin(),
-                                url.GetOrigin(),
-                                type,
-                                std::string());
+            ->GetContentSetting(url.GetOrigin(), url.GetOrigin(),
+                                content_settings_type, std::string());
     EXPECT_EQ(CONTENT_SETTING_ALLOW, setting);
 
     // Try to reset permission.
     permission_context.ResetPermission(url.GetOrigin(), url.GetOrigin());
     ContentSetting setting_after_reset =
         HostContentSettingsMapFactory::GetForProfile(profile())
-            ->GetContentSetting(url.GetOrigin(),
-                                url.GetOrigin(),
-                                type,
-                                std::string());
+            ->GetContentSetting(url.GetOrigin(), url.GetOrigin(),
+                                content_settings_type, std::string());
     ContentSetting default_setting =
         HostContentSettingsMapFactory::GetForProfile(profile())
-            ->GetDefaultContentSetting(type, nullptr);
+            ->GetDefaultContentSetting(content_settings_type, nullptr);
     EXPECT_EQ(default_setting, setting_after_reset);
   }
 
-  void TestGlobalPermissionsKillSwitch(ContentSettingsType type) {
-    TestPermissionContext permission_context(profile(), type);
+  void TestGlobalPermissionsKillSwitch(
+      content::PermissionType permission_type,
+      ContentSettingsType content_settings_type) {
+    TestPermissionContext permission_context(profile(), permission_type,
+                                             content_settings_type);
     permission_context.ResetFieldTrialList();
 
     EXPECT_FALSE(permission_context.IsPermissionKillSwitchOn());
     std::map<std::string, std::string> params;
-    params[PermissionUtil::GetPermissionString(type)] =
+    params[PermissionUtil::GetPermissionString(content_settings_type)] =
         kPermissionsKillSwitchBlockedValue;
     variations::AssociateVariationParams(
         kPermissionsKillSwitchFieldStudy, kPermissionsKillSwitchTestGroup,
@@ -301,12 +307,17 @@ TEST_F(PermissionContextBaseTests, TestAskAndDismiss) {
 // Simulates non-valid requesting URL.
 // The permission should be denied but not saved for future use.
 TEST_F(PermissionContextBaseTests, TestNonValidRequestingUrl) {
-  TestRequestPermissionInvalidUrl(CONTENT_SETTINGS_TYPE_GEOLOCATION);
-  TestRequestPermissionInvalidUrl(CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
-  TestRequestPermissionInvalidUrl(CONTENT_SETTINGS_TYPE_MIDI_SYSEX);
-  TestRequestPermissionInvalidUrl(CONTENT_SETTINGS_TYPE_PUSH_MESSAGING);
+  TestRequestPermissionInvalidUrl(content::PermissionType::GEOLOCATION,
+                                  CONTENT_SETTINGS_TYPE_GEOLOCATION);
+  TestRequestPermissionInvalidUrl(content::PermissionType::NOTIFICATIONS,
+                                  CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+  TestRequestPermissionInvalidUrl(content::PermissionType::MIDI_SYSEX,
+                                  CONTENT_SETTINGS_TYPE_MIDI_SYSEX);
+  TestRequestPermissionInvalidUrl(content::PermissionType::PUSH_MESSAGING,
+                                  CONTENT_SETTINGS_TYPE_PUSH_MESSAGING);
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
   TestRequestPermissionInvalidUrl(
+      content::PermissionType::PROTECTED_MEDIA_IDENTIFIER,
       CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER);
 #endif
 }
@@ -314,11 +325,14 @@ TEST_F(PermissionContextBaseTests, TestNonValidRequestingUrl) {
 #if defined(OS_ANDROID)
 // This test is specific to Android because other platforms use bubbles.
 TEST_F(PermissionContextBaseTests, TestGrantAndRevokeWithInfobars) {
-  TestGrantAndRevoke_TestContent(CONTENT_SETTINGS_TYPE_GEOLOCATION,
+  TestGrantAndRevoke_TestContent(content::PermissionType::GEOLOCATION,
+                                 CONTENT_SETTINGS_TYPE_GEOLOCATION,
                                  CONTENT_SETTING_ASK);
-  TestGrantAndRevoke_TestContent(CONTENT_SETTINGS_TYPE_MIDI_SYSEX,
+  TestGrantAndRevoke_TestContent(content::PermissionType::MIDI_SYSEX,
+                                 CONTENT_SETTINGS_TYPE_MIDI_SYSEX,
                                  CONTENT_SETTING_ASK);
   TestGrantAndRevoke_TestContent(
+      content::PermissionType::PROTECTED_MEDIA_IDENTIFIER,
       CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER, CONTENT_SETTING_ASK);
   // TODO(timvolodine): currently no test for
   // CONTENT_SETTINGS_TYPE_NOTIFICATIONS because notification permissions work
@@ -333,30 +347,42 @@ TEST_F(PermissionContextBaseTests, TestGrantAndRevokeWithInfobars) {
 // Simulates granting and revoking of permissions using permission bubbles.
 // This test shouldn't run on mobile because mobile platforms use infobars.
 TEST_F(PermissionContextBaseTests, TestGrantAndRevokeWithBubbles) {
-  TestGrantAndRevoke_TestContent(CONTENT_SETTINGS_TYPE_GEOLOCATION,
+  TestGrantAndRevoke_TestContent(content::PermissionType::GEOLOCATION,
+                                 CONTENT_SETTINGS_TYPE_GEOLOCATION,
                                  CONTENT_SETTING_ASK);
 #if defined(ENABLE_NOTIFICATIONS)
-  TestGrantAndRevoke_TestContent(CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+  TestGrantAndRevoke_TestContent(content::PermissionType::NOTIFICATIONS,
+                                 CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
                                  CONTENT_SETTING_ASK);
 #endif
-  TestGrantAndRevoke_TestContent(CONTENT_SETTINGS_TYPE_MIDI_SYSEX,
+  TestGrantAndRevoke_TestContent(content::PermissionType::MIDI_SYSEX,
+                                 CONTENT_SETTINGS_TYPE_MIDI_SYSEX,
                                  CONTENT_SETTING_ASK);
-  TestGrantAndRevoke_TestContent(CONTENT_SETTINGS_TYPE_PUSH_MESSAGING,
+  TestGrantAndRevoke_TestContent(content::PermissionType::PUSH_MESSAGING,
+                                 CONTENT_SETTINGS_TYPE_PUSH_MESSAGING,
                                  CONTENT_SETTING_ASK);
 }
 #endif
 
 // Tests the global kill switch by enabling/disabling the Field Trials.
 TEST_F(PermissionContextBaseTests, TestGlobalKillSwitch) {
-  TestGlobalPermissionsKillSwitch(CONTENT_SETTINGS_TYPE_GEOLOCATION);
-  TestGlobalPermissionsKillSwitch(CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
-  TestGlobalPermissionsKillSwitch(CONTENT_SETTINGS_TYPE_MIDI_SYSEX);
-  TestGlobalPermissionsKillSwitch(CONTENT_SETTINGS_TYPE_PUSH_MESSAGING);
-  TestGlobalPermissionsKillSwitch(CONTENT_SETTINGS_TYPE_DURABLE_STORAGE);
+  TestGlobalPermissionsKillSwitch(content::PermissionType::GEOLOCATION,
+                                  CONTENT_SETTINGS_TYPE_GEOLOCATION);
+  TestGlobalPermissionsKillSwitch(content::PermissionType::NOTIFICATIONS,
+                                  CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+  TestGlobalPermissionsKillSwitch(content::PermissionType::MIDI_SYSEX,
+                                  CONTENT_SETTINGS_TYPE_MIDI_SYSEX);
+  TestGlobalPermissionsKillSwitch(content::PermissionType::PUSH_MESSAGING,
+                                  CONTENT_SETTINGS_TYPE_PUSH_MESSAGING);
+  TestGlobalPermissionsKillSwitch(content::PermissionType::DURABLE_STORAGE,
+                                  CONTENT_SETTINGS_TYPE_DURABLE_STORAGE);
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
   TestGlobalPermissionsKillSwitch(
+      content::PermissionType::PROTECTED_MEDIA_IDENTIFIER,
       CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER);
 #endif
-  TestGlobalPermissionsKillSwitch(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC);
-  TestGlobalPermissionsKillSwitch(CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
+  TestGlobalPermissionsKillSwitch(content::PermissionType::AUDIO_CAPTURE,
+                                  CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC);
+  TestGlobalPermissionsKillSwitch(content::PermissionType::VIDEO_CAPTURE,
+                                  CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
 }

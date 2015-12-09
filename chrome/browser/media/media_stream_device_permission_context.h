@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "chrome/browser/permissions/permission_context_base.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "content/public/browser/permission_type.h"
 
 // Common class which handles the mic and camera permissions.
 // MediaStreamMicPermissionContextFactory and
@@ -17,6 +18,7 @@ class MediaStreamDevicePermissionContext : public PermissionContextBase {
  public:
   MediaStreamDevicePermissionContext(
       Profile* profile,
+      const content::PermissionType permission_type,
       const ContentSettingsType content_settings_type);
   ~MediaStreamDevicePermissionContext() override;
 

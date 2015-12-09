@@ -8,6 +8,7 @@
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "content/public/browser/permission_type.h"
 
 MediaStreamMicPermissionContextFactory::MediaStreamMicPermissionContextFactory()
     : PermissionContextFactoryBase(
@@ -20,7 +21,8 @@ MediaStreamMicPermissionContextFactory::
 KeyedService* MediaStreamMicPermissionContextFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return new MediaStreamDevicePermissionContext(
-      static_cast<Profile*>(profile), CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC);
+      static_cast<Profile*>(profile), content::PermissionType::AUDIO_CAPTURE,
+      CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC);
 }
 
 // static

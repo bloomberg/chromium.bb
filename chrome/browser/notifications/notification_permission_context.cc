@@ -6,10 +6,13 @@
 
 #include "chrome/browser/notifications/desktop_notification_profile_util.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
+#include "content/public/browser/permission_type.h"
 #include "url/gurl.h"
 
 NotificationPermissionContext::NotificationPermissionContext(Profile* profile)
-    : PermissionContextBase(profile, CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {}
+    : PermissionContextBase(profile,
+                            content::PermissionType::NOTIFICATIONS,
+                            CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {}
 
 NotificationPermissionContext::~NotificationPermissionContext() {}
 

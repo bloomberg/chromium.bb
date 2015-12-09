@@ -12,15 +12,15 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/permission_type.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/origin_util.h"
 
-const ContentSettingsType kPushSettingType =
-    CONTENT_SETTINGS_TYPE_PUSH_MESSAGING;
-
 PushMessagingPermissionContext::PushMessagingPermissionContext(Profile* profile)
-    : PermissionContextBase(profile, CONTENT_SETTINGS_TYPE_PUSH_MESSAGING),
+    : PermissionContextBase(profile,
+                            content::PermissionType::PUSH_MESSAGING,
+                            CONTENT_SETTINGS_TYPE_PUSH_MESSAGING),
       profile_(profile),
       weak_factory_ui_thread_(this) {}
 
@@ -111,12 +111,13 @@ void PushMessagingPermissionContext::DecidePushPermission(
   ContentSetting push_content_setting =
       HostContentSettingsMapFactory::GetForProfile(profile_)
           ->GetContentSettingAndMaybeUpdateLastUsage(
-              requesting_origin, embedding_origin, kPushSettingType,
+              requesting_origin, embedding_origin, content_settings_type(),
               std::string());
 
   if (push_content_setting == CONTENT_SETTING_BLOCK) {
     DVLOG(1) << "Push permission was explicitly blocked.";
-    PermissionUmaUtil::PermissionDenied(kPushSettingType, requesting_origin);
+    PermissionUmaUtil::PermissionDenied(content_settings_type(),
+                                        requesting_origin);
     NotifyPermissionSet(id, requesting_origin, embedding_origin, callback,
                         true /* persist */, CONTENT_SETTING_BLOCK);
     return;
@@ -129,7 +130,8 @@ void PushMessagingPermissionContext::DecidePushPermission(
     return;
   }
 
-  PermissionUmaUtil::PermissionGranted(kPushSettingType, requesting_origin);
+  PermissionUmaUtil::PermissionGranted(content_settings_type(),
+                                       requesting_origin);
   NotifyPermissionSet(id, requesting_origin, embedding_origin, callback,
                       true /* persist */, CONTENT_SETTING_ALLOW);
 }

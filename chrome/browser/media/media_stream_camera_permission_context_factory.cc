@@ -8,6 +8,7 @@
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "content/public/browser/permission_type.h"
 
 MediaStreamCameraPermissionContextFactory::
     MediaStreamCameraPermissionContextFactory()
@@ -22,7 +23,8 @@ KeyedService*
 MediaStreamCameraPermissionContextFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return new MediaStreamDevicePermissionContext(
-      static_cast<Profile*>(profile), CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
+      static_cast<Profile*>(profile), content::PermissionType::VIDEO_CAPTURE,
+      CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
 }
 
 // static

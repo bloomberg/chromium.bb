@@ -13,6 +13,7 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "content/public/browser/permission_type.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/web_contents_tester.h"
@@ -27,7 +28,12 @@ class TestPermissionContext : public MediaStreamDevicePermissionContext {
  public:
   TestPermissionContext(Profile* profile,
                         const ContentSettingsType permission_type)
-      : MediaStreamDevicePermissionContext(profile, permission_type) {}
+      : MediaStreamDevicePermissionContext(
+            profile,
+            permission_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA
+                ? content::PermissionType::VIDEO_CAPTURE
+                : content::PermissionType::AUDIO_CAPTURE,
+            permission_type) {}
 
   ~TestPermissionContext() override {}
 };
