@@ -15,4 +15,5 @@ endif
 vbltest_SOURCES = \
 	vbltest.c
 vbltest_LDADD = \
-	$(top_builddir)/libdrm.la
+	$(top_builddir)/libdrm.la \
+	$(top_builddir)/tests/util/libutil.la

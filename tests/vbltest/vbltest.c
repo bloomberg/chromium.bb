@@ -55,10 +55,11 @@
 #include "xf86drmMode.h"
 
 #include "util/common.h"
+#include "util/kms.h"
 
 extern char *optarg;
 extern int optind, opterr, optopt;
-static char optstr[] = "s";
+static char optstr[] = "D:M:s";
 
 int secondary = 0;
 
@@ -97,16 +98,19 @@ static void vblank_handler(int fd, unsigned int frame, unsigned int sec,
 
 static void usage(char *name)
 {
-	fprintf(stderr, "usage: %s [-s]\n", name);
-	fprintf(stderr, "\t-s\tuse secondary pipe\n");
+	fprintf(stderr, "usage: %s [-DMs]\n", name);
+	fprintf(stderr, "\n");
+	fprintf(stderr, "options:\n");
+	fprintf(stderr, "  -D DEVICE  open the given device\n");
+	fprintf(stderr, "  -M MODULE  open the given module\n");
+	fprintf(stderr, "  -s         use secondary pipe\n");
 	exit(0);
 }
 
 int main(int argc, char **argv)
 {
-	unsigned i;
+	const char *device = NULL, *module = NULL;
 	int c, fd, ret;
-	const char *modules[] = { "i915", "radeon", "nouveau", "vmwgfx", "exynos", "omapdrm", "tilcdc", "msm", "tegra", "imx-drm" , "rockchip" };
 	drmVBlank vbl;
 	drmEventContext evctx;
 	struct vbl_info handler_info;
@@ -114,6 +118,12 @@ int main(int argc, char **argv)
 	opterr = 0;
 	while ((c = getopt(argc, argv, optstr)) != -1) {
 		switch (c) {
+		case 'D':
+			device = optarg;
+			break;
+		case 'M':
+			module = optarg;
+			break;
 		case 's':
 			secondary = 1;
 			break;
@@ -123,21 +133,9 @@ int main(int argc, char **argv)
 		}
 	}
 
-	for (i = 0; i < ARRAY_SIZE(modules); i++) {
-		printf("trying to load module %s...", modules[i]);
-		fd = drmOpen(modules[i], NULL);
-		if (fd < 0) {
-			printf("failed.\n");
-		} else {
-			printf("success.\n");
-			break;
-		}
-	}
-
-	if (i == ARRAY_SIZE(modules)) {
-		fprintf(stderr, "failed to load any modules, aborting.\n");
-		return -1;
-	}
+	fd = util_open(module, device);
+	if (fd < 0)
+		return 1;
 
 	/* Get current count first */
 	vbl.request.type = DRM_VBLANK_RELATIVE;
