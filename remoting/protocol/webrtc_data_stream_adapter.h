@@ -20,15 +20,21 @@ class PeerConnectionInterface;
 namespace remoting {
 namespace protocol {
 
+// WebrtcDataStreamAdapter is a StreamChannelFactory that creates channels that
+// send and receive data over PeerConnection data channels.
 class WebrtcDataStreamAdapter : public StreamChannelFactory {
  public:
   WebrtcDataStreamAdapter();
   ~WebrtcDataStreamAdapter() override;
 
+  // Initializes the adapter for |peer_connection|. If |outgoing| is set to true
+  // all channels will be created as outgoing. Otherwise CreateChannel() will
+  // wait for the other end to create connection.
   void Initialize(
       rtc::scoped_refptr<webrtc::PeerConnectionInterface> peer_connection,
-      bool is_server);
+      bool outgoing);
 
+  // Called by WebrtcTransport.
   void OnIncomingDataChannel(webrtc::DataChannelInterface* data_channel);
 
   // StreamChannelFactory interface.
@@ -44,7 +50,7 @@ class WebrtcDataStreamAdapter : public StreamChannelFactory {
                           bool connected);
 
   rtc::scoped_refptr<webrtc::PeerConnectionInterface> peer_connection_;
-  bool is_server_ = false;
+  bool outgoing_ = false;
 
   std::map<std::string, Channel*> pending_channels_;
 

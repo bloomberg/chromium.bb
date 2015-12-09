@@ -90,7 +90,7 @@ class WebrtcTransportTest : public testing::Test {
     signal_strategy_.reset(new FakeSignalStrategy(kTestJid));
 
     host_transport_factory_.reset(new WebrtcTransportFactory(
-        signal_strategy_.get(),
+        jingle_glue::JingleThreadWrapper::current(), signal_strategy_.get(),
         ChromiumPortAllocatorFactory::Create(network_settings_, nullptr),
         TransportRole::SERVER));
     host_transport_ = host_transport_factory_->CreateTransport();
@@ -98,7 +98,7 @@ class WebrtcTransportTest : public testing::Test {
         FakeAuthenticator::HOST, 0, FakeAuthenticator::ACCEPT, false));
 
     client_transport_factory_.reset(new WebrtcTransportFactory(
-        signal_strategy_.get(),
+        jingle_glue::JingleThreadWrapper::current(), signal_strategy_.get(),
         ChromiumPortAllocatorFactory::Create(network_settings_, nullptr),
         TransportRole::CLIENT));
     client_transport_ = client_transport_factory_->CreateTransport();

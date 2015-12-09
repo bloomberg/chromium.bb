@@ -8,6 +8,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task_runner_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "jingle/glue/thread_wrapper.h"
 #include "third_party/libjingle/source/talk/app/webrtc/test/fakeconstraints.h"
 #include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
@@ -28,15 +29,6 @@ const int kTransportInfoSendDelayMs = 20;
 
 // XML namespace for the transport elements.
 const char kTransportNamespace[] = "google:remoting:webrtc";
-
-rtc::Thread* InitAndGetRtcThread() {
-  jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
-
-  // TODO(sergeyu): Investigate if it's possible to avoid Send().
-  jingle_glue::JingleThreadWrapper::current()->set_send_allowed(true);
-
-  return jingle_glue::JingleThreadWrapper::current();
-}
 
 // A webrtc::CreateSessionDescriptionObserver implementation used to receive the
 // results of creating descriptions for this end of the PeerConnection.
@@ -108,13 +100,13 @@ class SetSessionDescriptionObserver
 }  // namespace
 
 WebrtcTransport::WebrtcTransport(
+    rtc::Thread* worker_thread,
     rtc::scoped_refptr<webrtc::PortAllocatorFactoryInterface>
         port_allocator_factory,
-    TransportRole role,
-    scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner)
+    TransportRole role)
     : port_allocator_factory_(port_allocator_factory),
       role_(role),
-      worker_task_runner_(worker_task_runner),
+      worker_thread_(worker_thread),
       weak_factory_(this) {}
 
 WebrtcTransport::~WebrtcTransport() {}
@@ -126,10 +118,34 @@ void WebrtcTransport::Start(EventHandler* event_handler,
   event_handler_ = event_handler;
 
   // TODO(sergeyu): Use the |authenticator| to authenticate PeerConnection.
+  jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
 
-  base::PostTaskAndReplyWithResult(
-      worker_task_runner_.get(), FROM_HERE, base::Bind(&InitAndGetRtcThread),
-      base::Bind(&WebrtcTransport::DoStart, weak_factory_.GetWeakPtr()));
+  // TODO(sergeyu): Investigate if it's possible to avoid Send().
+  jingle_glue::JingleThreadWrapper::current()->set_send_allowed(true);
+
+  fake_audio_device_module_.reset(new webrtc::FakeAudioDeviceModule());
+
+  peer_connection_factory_ = webrtc::CreatePeerConnectionFactory(
+      worker_thread_, rtc::Thread::Current(),
+      fake_audio_device_module_.get(), nullptr, nullptr);
+
+  webrtc::PeerConnectionInterface::IceServer stun_server;
+  stun_server.urls.push_back("stun:stun.l.google.com:19302");
+  webrtc::PeerConnectionInterface::RTCConfiguration rtc_config;
+  rtc_config.servers.push_back(stun_server);
+
+  webrtc::FakeConstraints constraints;
+  constraints.AddMandatory(webrtc::MediaConstraintsInterface::kEnableDtlsSrtp,
+                           webrtc::MediaConstraintsInterface::kValueTrue);
+
+  peer_connection_ = peer_connection_factory_->CreatePeerConnection(
+      rtc_config, &constraints, port_allocator_factory_, nullptr, this);
+
+  data_stream_adapter_.Initialize(peer_connection_,
+                                  role_ == TransportRole::SERVER);
+
+  if (role_ == TransportRole::SERVER)
+    RequestNegotiation();
 }
 
 bool WebrtcTransport::ProcessTransportInfo(XmlElement* transport_info) {
@@ -145,7 +161,7 @@ bool WebrtcTransport::ProcessTransportInfo(XmlElement* transport_info) {
       QName(kTransportNamespace, "session-description"));
   if (session_description) {
     webrtc::PeerConnectionInterface::SignalingState expected_state =
-        role_ == TransportRole::SERVER
+        role_ == TransportRole::CLIENT
             ? webrtc::PeerConnectionInterface::kStable
             : webrtc::PeerConnectionInterface::kHaveLocalOffer;
     if (peer_connection_->signaling_state() != expected_state) {
@@ -156,7 +172,7 @@ bool WebrtcTransport::ProcessTransportInfo(XmlElement* transport_info) {
     std::string type = session_description->Attr(QName(std::string(), "type"));
     std::string sdp = session_description->BodyText();
     if (type.empty() || sdp.empty()) {
-      LOG(ERROR) << "Incorrect session_description format.";
+      LOG(ERROR) << "Incorrect session description format.";
       return false;
     }
 
@@ -164,15 +180,16 @@ bool WebrtcTransport::ProcessTransportInfo(XmlElement* transport_info) {
     scoped_ptr<webrtc::SessionDescriptionInterface> session_description(
         webrtc::CreateSessionDescription(type, sdp, &error));
     if (!session_description) {
-      LOG(ERROR) << "Failed to parse the offer: " << error.description
-                 << " line: " << error.line;
+      LOG(ERROR) << "Failed to parse the session description: "
+                 << error.description << " line: " << error.line;
       return false;
     }
 
     peer_connection_->SetRemoteDescription(
         SetSessionDescriptionObserver::Create(
             base::Bind(&WebrtcTransport::OnRemoteDescriptionSet,
-                       weak_factory_.GetWeakPtr())),
+                       weak_factory_.GetWeakPtr(),
+                       type == webrtc::SessionDescriptionInterface::kOffer)),
         session_description.release());
   }
 
@@ -225,54 +242,6 @@ StreamChannelFactory* WebrtcTransport::GetStreamChannelFactory() {
 StreamChannelFactory* WebrtcTransport::GetMultiplexedChannelFactory() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return GetStreamChannelFactory();
-}
-
-void WebrtcTransport::DoStart(rtc::Thread* worker_thread) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
-
-  // TODO(sergeyu): Investigate if it's possible to avoid Send().
-  jingle_glue::JingleThreadWrapper::current()->set_send_allowed(true);
-
-  fake_audio_device_module_.reset(new webrtc::FakeAudioDeviceModule());
-
-  peer_connection_factory_ = webrtc::CreatePeerConnectionFactory(
-      worker_thread, rtc::Thread::Current(),
-      fake_audio_device_module_.get(), nullptr, nullptr);
-
-  webrtc::PeerConnectionInterface::IceServer stun_server;
-  stun_server.urls.push_back("stun:stun.l.google.com:19302");
-  webrtc::PeerConnectionInterface::RTCConfiguration rtc_config;
-  rtc_config.servers.push_back(stun_server);
-
-  webrtc::FakeConstraints constraints;
-  constraints.AddMandatory(webrtc::MediaConstraintsInterface::kEnableDtlsSrtp,
-                           webrtc::MediaConstraintsInterface::kValueTrue);
-
-  peer_connection_ = peer_connection_factory_->CreatePeerConnection(
-      rtc_config, &constraints, port_allocator_factory_, nullptr, this);
-
-  data_stream_adapter_.Initialize(peer_connection_,
-                                  role_ == TransportRole::SERVER);
-
-  if (role_ == TransportRole::CLIENT) {
-    webrtc::FakeConstraints offer_config;
-    offer_config.AddMandatory(
-        webrtc::MediaConstraintsInterface::kOfferToReceiveVideo,
-        webrtc::MediaConstraintsInterface::kValueTrue);
-    offer_config.AddMandatory(
-        webrtc::MediaConstraintsInterface::kOfferToReceiveAudio,
-        webrtc::MediaConstraintsInterface::kValueFalse);
-    offer_config.AddMandatory(
-        webrtc::MediaConstraintsInterface::kEnableDtlsSrtp,
-        webrtc::MediaConstraintsInterface::kValueTrue);
-    peer_connection_->CreateOffer(
-        CreateSessionDescriptionObserver::Create(
-            base::Bind(&WebrtcTransport::OnLocalSessionDescriptionCreated,
-                       weak_factory_.GetWeakPtr())),
-        &offer_config);
-  }
 }
 
 void WebrtcTransport::OnLocalSessionDescriptionCreated(
@@ -329,7 +298,8 @@ void WebrtcTransport::OnLocalDescriptionSet(bool success,
   AddPendingCandidatesIfPossible();
 }
 
-void WebrtcTransport::OnRemoteDescriptionSet(bool success,
+void WebrtcTransport::OnRemoteDescriptionSet(bool send_answer,
+                                             bool success,
                                              const std::string& error) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -343,7 +313,7 @@ void WebrtcTransport::OnRemoteDescriptionSet(bool success,
   }
 
   // Create and send answer on the server.
-  if (role_ == TransportRole::SERVER) {
+  if (send_answer) {
     peer_connection_->CreateAnswer(
         CreateSessionDescriptionObserver::Create(
             base::Bind(&WebrtcTransport::OnLocalSessionDescriptionCreated,
@@ -389,7 +359,25 @@ void WebrtcTransport::OnDataChannel(
 
 void WebrtcTransport::OnRenegotiationNeeded() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  // TODO(sergeyu): Figure out what needs to happen here.
+
+  if (role_ == TransportRole::SERVER) {
+    RequestNegotiation();
+  } else {
+    // TODO(sergeyu): Is it necessary to support renegotiation initiated by the
+    // client?
+    NOTIMPLEMENTED();
+  }
+}
+
+void WebrtcTransport::RequestNegotiation() {
+  DCHECK(role_ == TransportRole::SERVER);
+
+  if (!negotiation_pending_) {
+    negotiation_pending_ = true;
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::Bind(&WebrtcTransport::SendOffer, weak_factory_.GetWeakPtr()));
+  }
 }
 
 void WebrtcTransport::OnIceConnectionChange(
@@ -446,6 +434,28 @@ void WebrtcTransport::EnsurePendingTransportInfoMessage() {
   }
 }
 
+void WebrtcTransport::SendOffer() {
+  DCHECK(role_ == TransportRole::SERVER);
+
+  DCHECK(negotiation_pending_);
+  negotiation_pending_ = false;
+
+  webrtc::FakeConstraints offer_config;
+  offer_config.AddMandatory(
+      webrtc::MediaConstraintsInterface::kOfferToReceiveVideo,
+      webrtc::MediaConstraintsInterface::kValueTrue);
+  offer_config.AddMandatory(
+      webrtc::MediaConstraintsInterface::kOfferToReceiveAudio,
+      webrtc::MediaConstraintsInterface::kValueFalse);
+  offer_config.AddMandatory(webrtc::MediaConstraintsInterface::kEnableDtlsSrtp,
+                            webrtc::MediaConstraintsInterface::kValueTrue);
+  peer_connection_->CreateOffer(
+      CreateSessionDescriptionObserver::Create(
+          base::Bind(&WebrtcTransport::OnLocalSessionDescriptionCreated,
+                     weak_factory_.GetWeakPtr())),
+      &offer_config);
+}
+
 void WebrtcTransport::SendTransportInfo() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(pending_transport_info_message_);
@@ -472,23 +482,21 @@ void WebrtcTransport::AddPendingCandidatesIfPossible() {
 }
 
 WebrtcTransportFactory::WebrtcTransportFactory(
+    rtc::Thread* worker_thread,
     SignalStrategy* signal_strategy,
     rtc::scoped_refptr<webrtc::PortAllocatorFactoryInterface>
         port_allocator_factory,
     TransportRole role)
-    : signal_strategy_(signal_strategy),
+    : worker_thread_(worker_thread),
+      signal_strategy_(signal_strategy),
       port_allocator_factory_(port_allocator_factory),
-      role_(role),
-      worker_thread_("ChromotingWebrtcWorkerThread") {
-  worker_thread_.StartWithOptions(
-      base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
-}
+      role_(role) {}
 
 WebrtcTransportFactory::~WebrtcTransportFactory() {}
 
 scoped_ptr<Transport> WebrtcTransportFactory::CreateTransport() {
-  return make_scoped_ptr(new WebrtcTransport(port_allocator_factory_, role_,
-                                             worker_thread_.task_runner()));
+  return make_scoped_ptr(
+      new WebrtcTransport(worker_thread_, port_allocator_factory_, role_));
 }
 
 }  // namespace protocol

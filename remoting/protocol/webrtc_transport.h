@@ -9,7 +9,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
-#include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "remoting/protocol/transport.h"
@@ -27,12 +26,18 @@ namespace protocol {
 class WebrtcTransport : public Transport,
                         public webrtc::PeerConnectionObserver {
  public:
-  WebrtcTransport(
-      rtc::scoped_refptr<webrtc::PortAllocatorFactoryInterface>
-          port_allocator_factory,
-      TransportRole role,
-      scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner);
+  WebrtcTransport(rtc::Thread* worker_thread,
+                  rtc::scoped_refptr<webrtc::PortAllocatorFactoryInterface>
+                      port_allocator_factory,
+                  TransportRole role);
   ~WebrtcTransport() override;
+
+  webrtc::PeerConnectionInterface* peer_connection() {
+    return peer_connection_;
+  }
+  webrtc::PeerConnectionFactoryInterface* peer_connection_factory() {
+    return peer_connection_factory_;
+  }
 
   // Transport interface.
   void Start(EventHandler* event_handler,
@@ -42,12 +47,13 @@ class WebrtcTransport : public Transport,
   StreamChannelFactory* GetMultiplexedChannelFactory() override;
 
  private:
-  void DoStart(rtc::Thread* worker_thread);
   void OnLocalSessionDescriptionCreated(
       scoped_ptr<webrtc::SessionDescriptionInterface> description,
       const std::string& error);
   void OnLocalDescriptionSet(bool success, const std::string& error);
-  void OnRemoteDescriptionSet(bool success, const std::string& error);
+  void OnRemoteDescriptionSet(bool send_answer,
+                              bool success,
+                              const std::string& error);
 
   // webrtc::PeerConnectionObserver interface.
   void OnSignalingChange(
@@ -62,6 +68,8 @@ class WebrtcTransport : public Transport,
       webrtc::PeerConnectionInterface::IceGatheringState new_state) override;
   void OnIceCandidate(const webrtc::IceCandidateInterface* candidate) override;
 
+  void RequestNegotiation();
+  void SendOffer();
   void EnsurePendingTransportInfoMessage();
   void SendTransportInfo();
   void AddPendingCandidatesIfPossible();
@@ -74,13 +82,15 @@ class WebrtcTransport : public Transport,
       port_allocator_factory_;
   TransportRole role_;
   EventHandler* event_handler_ = nullptr;
-  scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner_;
+  rtc::Thread* worker_thread_;
 
   scoped_ptr<webrtc::FakeAudioDeviceModule> fake_audio_device_module_;
 
   rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface>
       peer_connection_factory_;
   rtc::scoped_refptr<webrtc::PeerConnectionInterface> peer_connection_;
+
+  bool negotiation_pending_ = false;
 
   scoped_ptr<buzz::XmlElement> pending_transport_info_message_;
   base::OneShotTimer transport_info_timer_;
@@ -100,6 +110,7 @@ class WebrtcTransport : public Transport,
 class WebrtcTransportFactory : public TransportFactory {
  public:
   WebrtcTransportFactory(
+      rtc::Thread* worker_thread,
       SignalStrategy* signal_strategy,
       rtc::scoped_refptr<webrtc::PortAllocatorFactoryInterface>
           port_allocator_factory,
@@ -110,12 +121,11 @@ class WebrtcTransportFactory : public TransportFactory {
   scoped_ptr<Transport> CreateTransport() override;
 
  private:
+  rtc::Thread* worker_thread_;
   SignalStrategy* signal_strategy_;
   rtc::scoped_refptr<webrtc::PortAllocatorFactoryInterface>
       port_allocator_factory_;
   TransportRole role_;
-
-  base::Thread worker_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(WebrtcTransportFactory);
 };
