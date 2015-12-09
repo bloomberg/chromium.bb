@@ -88,7 +88,8 @@ enum LayoutConstant {
   // Additional horizontal padding between the elements in the toolbar.
   TOOLBAR_ELEMENT_PADDING,
 
-  // Padding between the right-edge of the location bar and browser actions.
+  // Padding between the right edge of the location bar and the left edge of the
+  // app menu icon when the browser actions container is not present.
   TOOLBAR_LOCATION_BAR_RIGHT_PADDING,
 
   // The horizontal space between most items in the toolbar.

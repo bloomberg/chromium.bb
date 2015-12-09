@@ -148,12 +148,6 @@ class ToolbarView : public views::AccessiblePaneView,
   const char* GetClassName() const override;
   bool AcceleratorPressed(const ui::Accelerator& acc) override;
 
-  enum {
-    // The apparent horizontal space between most items, and the vertical
-    // padding above and below them.
-    kStandardSpacing = 3,
-  };
-
  protected:
   // AccessiblePaneView:
   bool SetPaneFocusAndFocusDefault() override;

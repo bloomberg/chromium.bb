@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/extension_action_view_controller.h"
 #include "chrome/browser/ui/extensions/extension_message_bubble_factory.h"
+#include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/component_toolbar_actions_factory.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
@@ -37,13 +38,6 @@
 namespace {
 
 using WeakToolbarActions = std::vector<ToolbarActionViewController*>;
-
-// Matches ToolbarView::kStandardSpacing;
-const int kLeftPadding = 3;
-const int kRightPadding = kLeftPadding;
-const int kItemSpacing = kLeftPadding;
-const int kOverflowLeftPadding = kItemSpacing;
-const int kOverflowRightPadding = kItemSpacing;
 
 enum DimensionType { WIDTH, HEIGHT };
 
@@ -106,10 +100,8 @@ void SortContainer(std::vector<Type1>* to_sort,
 // static
 bool ToolbarActionsBar::disable_animations_for_testing_ = false;
 
-ToolbarActionsBar::PlatformSettings::PlatformSettings(bool in_overflow_mode)
-    : left_padding(in_overflow_mode ? kOverflowLeftPadding : kLeftPadding),
-      right_padding(in_overflow_mode ? kOverflowRightPadding : kRightPadding),
-      item_spacing(kItemSpacing),
+ToolbarActionsBar::PlatformSettings::PlatformSettings()
+    : item_spacing(GetLayoutConstant(TOOLBAR_STANDARD_SPACING)),
       icons_per_overflow_menu_row(1),
       chevron_enabled(!extensions::FeatureSwitch::extension_action_redesign()->
                           IsEnabled()) {
@@ -122,7 +114,7 @@ ToolbarActionsBar::ToolbarActionsBar(ToolbarActionsBarDelegate* delegate,
       browser_(browser),
       model_(ToolbarActionsModel::Get(browser_->profile())),
       main_bar_(main_bar),
-      platform_settings_(main_bar != nullptr),
+      platform_settings_(),
       popup_owner_(nullptr),
       model_observer_(this),
       suppress_layout_(false),
@@ -146,7 +138,8 @@ ToolbarActionsBar::~ToolbarActionsBar() {
 
 // static
 int ToolbarActionsBar::IconWidth(bool include_padding) {
-  return GetIconDimension(WIDTH) + (include_padding ? kItemSpacing : 0);
+  return GetIconDimension(WIDTH) +
+         (include_padding ? GetLayoutConstant(TOOLBAR_STANDARD_SPACING) : 0);
 }
 
 // static
@@ -189,8 +182,8 @@ gfx::Size ToolbarActionsBar::GetPreferredSize() const {
 
 int ToolbarActionsBar::GetMinimumWidth() const {
   if (!platform_settings_.chevron_enabled || toolbar_actions_.empty())
-    return kLeftPadding;
-  return kLeftPadding + delegate_->GetChevronWidth() + kRightPadding;
+    return platform_settings_.item_spacing;
+  return 2 * platform_settings_.item_spacing + delegate_->GetChevronWidth();
 }
 
 int ToolbarActionsBar::GetMaximumWidth() const {
@@ -200,17 +193,18 @@ int ToolbarActionsBar::GetMaximumWidth() const {
 int ToolbarActionsBar::IconCountToWidth(int icons) const {
   if (icons < 0)
     icons = toolbar_actions_.size();
-  bool display_chevron =
+  const bool display_chevron =
       platform_settings_.chevron_enabled &&
       static_cast<size_t>(icons) < toolbar_actions_.size();
   if (icons == 0 && !display_chevron)
-    return platform_settings_.left_padding;
-  int icons_size = (icons == 0) ? 0 :
+    return platform_settings_.item_spacing;
+
+  const int icons_size = (icons == 0) ? 0 :
       (icons * IconWidth(true)) - platform_settings_.item_spacing;
-  int chevron_size = display_chevron ? delegate_->GetChevronWidth() : 0;
-  int padding = platform_settings_.left_padding +
-                platform_settings_.right_padding;
-  return icons_size + chevron_size + padding;
+  const int chevron_size = display_chevron ? delegate_->GetChevronWidth() : 0;
+  const int side_padding = platform_settings_.item_spacing * 2;
+
+  return icons_size + chevron_size + side_padding;
 }
 
 size_t ToolbarActionsBar::WidthToIconCount(int pixels) const {
@@ -218,10 +212,9 @@ size_t ToolbarActionsBar::WidthToIconCount(int pixels) const {
   if (pixels >= IconCountToWidth(-1))
     return toolbar_actions_.size();
 
-  // We reserve space for the padding on either side of the toolbar...
-  int available_space = pixels -
-      (platform_settings_.left_padding + platform_settings_.right_padding);
-  // ... and, if the chevron is enabled, the chevron.
+  // We reserve space for the padding on either side of the toolbar and,
+  // if enabled, for the chevron.
+  int available_space = pixels - (platform_settings_.item_spacing * 2);
   if (platform_settings_.chevron_enabled)
     available_space -= delegate_->GetChevronWidth();
 
@@ -311,7 +304,7 @@ gfx::Rect ToolbarActionsBar::GetFrameForIndex(
   size_t index_in_row = in_overflow_mode() ?
       relative_index % icons_per_overflow_row : relative_index;
 
-  return gfx::Rect(platform_settings().left_padding +
+  return gfx::Rect(platform_settings().item_spacing +
                        index_in_row * IconWidth(true),
                    row_index * IconHeight(),
                    IconWidth(false),
@@ -436,7 +429,7 @@ bool ToolbarActionsBar::ShowToolbarActionPopup(const std::string& action_id,
 void ToolbarActionsBar::SetOverflowRowWidth(int width) {
   DCHECK(in_overflow_mode());
   platform_settings_.icons_per_overflow_menu_row =
-      std::max((width - kItemSpacing) / IconWidth(true), 1);
+      std::max((width - platform_settings_.item_spacing) / IconWidth(true), 1);
 }
 
 void ToolbarActionsBar::OnResizeComplete(int width) {

@@ -204,18 +204,18 @@ TEST_F(ToolbarActionsBarUnitTest, BasicToolbarActionsBarTest) {
 
   // By default, all three actions should be visible.
   EXPECT_EQ(3u, toolbar_actions_bar()->GetIconCount());
-  // Check the widths.
-  int expected_width = 3 * ToolbarActionsBar::IconWidth(true) -
-                       platform_settings.item_spacing +
-                       platform_settings.left_padding +
-                       platform_settings.right_padding;
+  // Check the widths. IconWidth(true) includes the spacing to the left of
+  // each icon and |item_spacing| accounts for the spacing to the right
+  // of the rightmost icon.
+  int expected_width =
+      3 * ToolbarActionsBar::IconWidth(true) + platform_settings.item_spacing;
   EXPECT_EQ(expected_width, toolbar_actions_bar()->GetPreferredSize().width());
   // Since all icons are showing, the current width should be the max width.
   int maximum_width = expected_width;
   EXPECT_EQ(maximum_width, toolbar_actions_bar()->GetMaximumWidth());
-  // The minimum width should be just enough for the chevron to be displayed.
-  int minimum_width = platform_settings.left_padding +
-                      platform_settings.right_padding +
+  // The minimum width should be just enough for the chevron to be displayed
+  // along with left and right padding.
+  int minimum_width = 2 * platform_settings.item_spacing +
                       toolbar_actions_bar()->delegate_for_test()->
                           GetChevronWidth();
   EXPECT_EQ(minimum_width, toolbar_actions_bar()->GetMinimumWidth());
@@ -226,10 +226,11 @@ TEST_F(ToolbarActionsBarUnitTest, BasicToolbarActionsBarTest) {
   EXPECT_EQ(2u, toolbar_actions_bar()->GetIconCount());
 
   // The current width should now be enough for two icons, and the chevron.
-  expected_width = 2 * ToolbarActionsBar::IconWidth(true) -
+  // IconWidth(true) includes the spacing to the left of each icon and
+  // |item_spacing| accounts for the spacing to the right of the rightmost
+  // icon.
+  expected_width = 2 * ToolbarActionsBar::IconWidth(true) +
                    platform_settings.item_spacing +
-                   platform_settings.left_padding +
-                   platform_settings.right_padding +
                    toolbar_actions_bar()->delegate_for_test()->
                        GetChevronWidth();
   EXPECT_EQ(expected_width, toolbar_actions_bar()->GetPreferredSize().width());

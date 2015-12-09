@@ -52,19 +52,20 @@ class ResizeArea;
 // layout is similar to this:
 //   rI_I_IcCs
 // Where the letters are as follows:
-//   r: An invisible resize area.  This is ToolbarView::kStandardSpacing pixels
-//      wide and directly adjacent to the omnibox. Only shown for the main
-//      container.
-//   I: An icon.  This is as wide as the IDR_BROWSER_ACTION image.
-//   _: kItemSpacing pixels of empty space.
-//   c: kChevronSpacing pixels of empty space.  Only present if C is present.
+//   r: An invisible resize area.  This is
+//      GetLayoutConstant(TOOLBAR_STANDARD_SPACING) pixels wide and directly
+//      adjacent to the omnibox. Only shown for the main container.
+//   I: An icon. In material design this has a width of 28. Otherwise it is as
+//      wide as the IDR_BROWSER_ACTION image.
+//   _: ToolbarActionsBar::PlatformSettings::item_spacing pixels of empty space.
+//   c: GetChevronSpacing() pixels of empty space. Only present if C is present.
 //   C: An optional chevron, as wide as the IDR_BROWSER_ACTIONS_OVERFLOW image,
 //      and visible only when both of the following statements are true:
 //      - The container is set to a width smaller than needed to show all icons.
 //      - There is no other container in 'overflow' mode to handle the
 //        non-visible icons for this container.
-//   s: ToolbarView::kStandardSpacing pixels of empty space (before the app
-//      menu).
+//   s: GetLayoutConstant(TOOLBAR_STANDARD_SPACING) pixels of empty space
+//      (before the app menu).
 // The reason the container contains the trailing space "s", rather than having
 // it be handled by the parent view, is so that when the chevron is invisible
 // and the user starts dragging an icon around, we have the space to draw the

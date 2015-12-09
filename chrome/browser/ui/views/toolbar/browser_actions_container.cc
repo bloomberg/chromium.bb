@@ -11,6 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/extensions/extension_toolbar_icon_surfacing_bubble_delegate.h"
+#include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
@@ -31,6 +32,7 @@
 #include "ui/base/dragdrop/drag_utils.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/nine_image_painter_factory.h"
+#include "ui/base/resource/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
@@ -44,7 +46,11 @@
 namespace {
 
 // Horizontal spacing before the chevron (if visible).
-const int kChevronSpacing = ToolbarView::kStandardSpacing - 2;
+// TODO(tdanderson): In material design, the chevron should have the same size
+//                   and vertical spacing as the other action buttons.
+int GetChevronSpacing() {
+  return GetLayoutConstant(TOOLBAR_STANDARD_SPACING) - 2;
+}
 
 // Returns the ToolbarView for the given |browser|.
 ToolbarView* GetToolbarView(Browser* browser) {
@@ -315,7 +321,8 @@ void BrowserActionsContainer::StopAnimating() {
 }
 
 int BrowserActionsContainer::GetChevronWidth() const {
-  return chevron_ ? chevron_->GetPreferredSize().width() + kChevronSpacing : 0;
+  return chevron_ ?
+      chevron_->GetPreferredSize().width() + GetChevronSpacing() : 0;
 }
 
 void BrowserActionsContainer::ShowExtensionMessageBubble(
@@ -417,7 +424,8 @@ void BrowserActionsContainer::Layout() {
     chevron_->SetVisible(true);
     gfx::Size chevron_size(chevron_->GetPreferredSize());
     chevron_->SetBounds(
-        width() - ToolbarView::kStandardSpacing - chevron_size.width(),
+        width() - GetLayoutConstant(TOOLBAR_STANDARD_SPACING) -
+            chevron_size.width(),
         0,
         chevron_size.width(),
         chevron_size.height());
@@ -466,11 +474,12 @@ int BrowserActionsContainer::OnDragUpdated(
   if (VisibleBrowserActions() != 0) {
     // Figure out where to display the indicator. This is a complex calculation:
 
-    // First, we subtract out the padding to the left of the icon area, which is
-    // ToolbarView::kStandardSpacing. If we're right-to-left, we also mirror the
-    // event.x() so that our calculations are consistent with left-to-right.
+    // First, we subtract out the padding to the left of the icon area. If
+    // we're right-to-left, we also mirror the event.x() so that our
+    // calculations are consistent with left-to-right.
     int offset_into_icon_area =
-        GetMirroredXInView(event.x()) - ToolbarView::kStandardSpacing;
+        GetMirroredXInView(event.x()) -
+            GetLayoutConstant(TOOLBAR_STANDARD_SPACING);
 
     // Next, figure out what row we're on. This only matters for overflow mode,
     // but the calculation is the same for both.
@@ -704,25 +713,20 @@ void BrowserActionsContainer::OnPaint(gfx::Canvas* canvas) {
 
     // Convert back to a pixel offset into the container.  First find the X
     // coordinate of the drop icon.
-    int drop_icon_x = ToolbarView::kStandardSpacing +
+    const int drop_icon_x = GetLayoutConstant(TOOLBAR_STANDARD_SPACING) +
         (drop_position_->icon_in_row * ToolbarActionsBar::IconWidth(true));
-    // Next, find the space before the drop icon. This will either be
-    // left padding or item spacing, depending on whether this is the first
-    // icon.
-    // NOTE: Right now, these are the same. But let's do this right for if they
-    // ever aren't.
-    int space_before_drop_icon = drop_position_->icon_in_row == 0 ?
-        platform_settings().left_padding : platform_settings().item_spacing;
+    // Next, find the space before the drop icon.
+    const int space_before_drop_icon = platform_settings().item_spacing;
     // Now place the drop indicator halfway between this and the end of the
     // previous icon.  If there is an odd amount of available space between the
     // two icons (or the icon and the address bar) after subtracting the drop
     // indicator width, this calculation puts the extra pixel on the left side
     // of the indicator, since when the indicator is between the address bar and
     // the first icon, it looks better closer to the icon.
-    int drop_indicator_x = drop_icon_x -
+    const int drop_indicator_x = drop_icon_x -
         ((space_before_drop_icon + kDropIndicatorWidth) / 2);
-    int row_height = ToolbarActionsBar::IconHeight();
-    int drop_indicator_y = row_height * drop_position_->row;
+    const int row_height = ToolbarActionsBar::IconHeight();
+    const int drop_indicator_y = row_height * drop_position_->row;
     gfx::Rect indicator_bounds(drop_indicator_x,
                                drop_indicator_y,
                                kDropIndicatorWidth,

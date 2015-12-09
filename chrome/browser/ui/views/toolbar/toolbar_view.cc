@@ -480,6 +480,8 @@ gfx::Size ToolbarView::GetPreferredSize() const {
     const int element_padding = GetLayoutConstant(TOOLBAR_ELEMENT_PADDING);
     const int browser_actions_width =
         browser_actions_->GetPreferredSize().width();
+    const int right_padding =
+        GetLayoutConstant(TOOLBAR_LOCATION_BAR_RIGHT_PADDING);
     const int content_width =
         GetLayoutInsets(TOOLBAR).width() +
         back_->GetPreferredSize().width() + element_padding +
@@ -489,9 +491,7 @@ gfx::Size ToolbarView::GetPreferredSize() const {
              ? element_padding + home_->GetPreferredSize().width()
              : 0) +
         GetLayoutConstant(TOOLBAR_STANDARD_SPACING) +
-        GetLayoutConstant(TOOLBAR_LOCATION_BAR_RIGHT_PADDING) +
-        browser_actions_width +
-        (browser_actions_width > 0 ? element_padding : 0) +
+        (browser_actions_width > 0 ? browser_actions_width : right_padding) +
         app_menu_button_->GetPreferredSize().width();
     size.Enlarge(content_width, 0);
   }
@@ -504,6 +504,8 @@ gfx::Size ToolbarView::GetMinimumSize() const {
     const int element_padding = GetLayoutConstant(TOOLBAR_ELEMENT_PADDING);
     const int browser_actions_width =
         browser_actions_->GetMinimumSize().width();
+    const int right_padding =
+        GetLayoutConstant(TOOLBAR_LOCATION_BAR_RIGHT_PADDING);
     const int content_width =
         GetLayoutInsets(TOOLBAR).width() +
         back_->GetMinimumSize().width() + element_padding +
@@ -513,9 +515,7 @@ gfx::Size ToolbarView::GetMinimumSize() const {
              ? element_padding + home_->GetMinimumSize().width()
              : 0) +
         GetLayoutConstant(TOOLBAR_STANDARD_SPACING) +
-        GetLayoutConstant(TOOLBAR_LOCATION_BAR_RIGHT_PADDING) +
-        browser_actions_width +
-        (browser_actions_width > 0 ? element_padding : 0) +
+        (browser_actions_width > 0 ? browser_actions_width : right_padding) +
         app_menu_button_->GetMinimumSize().width();
     size.Enlarge(content_width, 0);
   }
@@ -535,9 +535,9 @@ void ToolbarView::Layout() {
 
   // We assume all child elements except the location bar are the same height.
   // Set child_y such that buttons appear vertically centered.
-  int child_height =
+  const int child_height =
       std::min(back_->GetPreferredSize().height(), height());
-  int child_y = CenteredChildY(height(), child_height);
+  const int child_y = CenteredChildY(height(), child_height);
 
   // If the window is maximized, we extend the back button to the left so that
   // clicking on the left-most pixel will activate the back button.
@@ -546,8 +546,9 @@ void ToolbarView::Layout() {
   //                will be slightly the wrong size.  We should force a
   //                Layout() in this case.
   //                http://crbug.com/5540
-  bool maximized = browser_->window() && browser_->window()->IsMaximized();
-  int back_width = back_->GetPreferredSize().width();
+  const bool maximized =
+      browser_->window() && browser_->window()->IsMaximized();
+  const int back_width = back_->GetPreferredSize().width();
   const gfx::Insets insets(GetLayoutInsets(TOOLBAR));
   if (maximized) {
     back_->SetBounds(0, child_y, back_width + insets.left(), child_height);
@@ -580,36 +581,38 @@ void ToolbarView::Layout() {
   next_element_x =
       home_->bounds().right() + GetLayoutConstant(TOOLBAR_STANDARD_SPACING);
 
-  int browser_actions_desired_width =
-      browser_actions_->GetPreferredSize().width();
   int app_menu_width = app_menu_button_->GetPreferredSize().width();
-  const int location_bar_right_padding =
+  const int right_padding =
       GetLayoutConstant(TOOLBAR_LOCATION_BAR_RIGHT_PADDING);
 
+  // Note that the browser actions container has its own internal left and right
+  // padding to visually separate it from the location bar and app menu button.
+  // However if the container is empty we must account for the |right_padding|
+  // value used to visually separate the location bar and app menu button.
   int available_width = std::max(
-      0, width() - insets.right() - app_menu_width -
-             (browser_actions_desired_width > 0 ? element_padding : 0) -
-             location_bar_right_padding - next_element_x);
+      0,
+      width() - insets.right() - app_menu_width -
+      (browser_actions_->GetPreferredSize().IsEmpty() ? right_padding : 0) -
+      next_element_x);
   // Don't allow the omnibox to shrink to the point of non-existence, so
   // subtract its minimum width from the available width to reserve it.
-  int minimum_location_bar_width = location_bar_->GetMinimumSize().width();
-  int browser_actions_width = browser_actions_->GetWidthForMaxWidth(
-      available_width - minimum_location_bar_width);
+  const int browser_actions_width = browser_actions_->GetWidthForMaxWidth(
+      available_width - location_bar_->GetMinimumSize().width());
   available_width -= browser_actions_width;
-  int location_bar_width = available_width;
+  const int location_bar_width = available_width;
 
-  int location_height = location_bar_->GetPreferredSize().height();
-  int location_y = CenteredChildY(height(), location_height);
+  const int location_height = location_bar_->GetPreferredSize().height();
+  const int location_y = CenteredChildY(height(), location_height);
 
   location_bar_->SetBounds(next_element_x, location_y,
                            location_bar_width, location_height);
-  next_element_x = location_bar_->bounds().right() + location_bar_right_padding;
 
+  next_element_x = location_bar_->bounds().right();
   browser_actions_->SetBounds(
       next_element_x, child_y, browser_actions_width, child_height);
   next_element_x = browser_actions_->bounds().right();
-  if (browser_actions_width > 0)
-    next_element_x += element_padding;
+  if (!browser_actions_width)
+    next_element_x += right_padding;
 
   // The browser actions need to do a layout explicitly, because when an
   // extension is loaded/unloaded/changed, BrowserActionContainer removes and

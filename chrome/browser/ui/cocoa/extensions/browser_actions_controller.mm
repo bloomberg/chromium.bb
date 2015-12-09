@@ -940,7 +940,7 @@ void ToolbarActionsBarBridge::ShowExtensionMessageBubble(
 
 - (void)updateChevronPositionInFrame:(NSRect)frame {
   CGFloat xPos = NSWidth(frame) - kChevronWidth -
-      toolbarActionsBar_->platform_settings().right_padding;
+      toolbarActionsBar_->platform_settings().item_spacing;
   NSRect buttonFrame = NSMakeRect(xPos,
                                   0,
                                   kChevronWidth,
