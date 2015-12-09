@@ -188,7 +188,7 @@
     ],
     "SRTPromptFieldTrial": [
         {
-            "group_name": "Default"
+            "group_name": "On"
         }
     ],
     "SafeBrowsingReportPhishingErrorLink": [
