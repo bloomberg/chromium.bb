@@ -796,7 +796,7 @@ GpuControlList::GpuControlListEntry::GpuControlListEntry()
       disabled_(false),
       vendor_id_(0),
       multi_gpu_style_(kMultiGpuStyleNone),
-      multi_gpu_category_(kMultiGpuCategoryPrimary),
+      multi_gpu_category_(kMultiGpuCategoryActive),
       gl_type_(kGLTypeNone) {
 }
 
@@ -1146,7 +1146,7 @@ bool GpuControlList::GpuControlListEntry::Contains(
         candidates.push_back(gpu_info.gpu);
         break;
       case kMultiGpuCategoryActive:
-        if (gpu_info.gpu.active)
+        if (gpu_info.gpu.active || gpu_info.secondary_gpus.empty())
           candidates.push_back(gpu_info.gpu);
         for (size_t ii = 0; ii < gpu_info.secondary_gpus.size(); ++ii) {
           if (gpu_info.secondary_gpus[ii].active)

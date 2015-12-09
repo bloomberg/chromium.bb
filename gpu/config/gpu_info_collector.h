@@ -46,6 +46,10 @@ GPU_EXPORT void MergeGPUInfo(GPUInfo* basic_gpu_info,
 GPU_EXPORT void MergeGPUInfoGL(GPUInfo* basic_gpu_info,
                                const GPUInfo& context_gpu_info);
 
+// If more than one GPUs are identified, and GL strings are available,
+// identify the active GPU based on GL strings.
+GPU_EXPORT void IdentifyActiveGPU(GPUInfo* gpu_info);
+
 }  // namespace gpu
 
 #endif  // GPU_CONFIG_GPU_INFO_COLLECTOR_H_

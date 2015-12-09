@@ -13,6 +13,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
@@ -76,6 +77,20 @@ std::string GetVersionFromString(const std::string& version_string) {
       return pieces[0] + "." + pieces[1];
   }
   return std::string();
+}
+
+// Return the array index of the found name, or return -1.
+int StringContainsName(
+    const std::string& str, const std::string* names, size_t num_names) {
+  std::vector<std::string> tokens = base::SplitString(
+      str, " .,()-_", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  for (size_t ii = 0; ii < tokens.size(); ++ii) {
+    for (size_t name_index = 0; name_index < num_names; ++name_index) {
+      if (tokens[ii] == names[name_index])
+        return name_index;
+    }
+  }
+  return -1;
 }
 
 }  // namespace anonymous
@@ -149,12 +164,17 @@ CollectInfoResult CollectGraphicsInfoGL(GPUInfo* gpu_info) {
   gpu_info->pixel_shader_version = glsl_version;
   gpu_info->vertex_shader_version = glsl_version;
 
+  IdentifyActiveGPU(gpu_info);
   return CollectDriverInfoGL(gpu_info);
 }
 
 void MergeGPUInfoGL(GPUInfo* basic_gpu_info,
                     const GPUInfo& context_gpu_info) {
   DCHECK(basic_gpu_info);
+  // Copy over GPUs because which one is active could change.
+  basic_gpu_info->gpu = context_gpu_info.gpu;
+  basic_gpu_info->secondary_gpus = context_gpu_info.secondary_gpus;
+
   basic_gpu_info->gl_renderer = context_gpu_info.gl_renderer;
   basic_gpu_info->gl_vendor = context_gpu_info.gl_vendor;
   basic_gpu_info->gl_version = context_gpu_info.gl_version;
@@ -188,6 +208,64 @@ void MergeGPUInfoGL(GPUInfo* basic_gpu_info,
       context_gpu_info.video_encode_accelerator_supported_profiles;
   basic_gpu_info->jpeg_decode_accelerator_supported =
       context_gpu_info.jpeg_decode_accelerator_supported;
+}
+
+void IdentifyActiveGPU(GPUInfo* gpu_info) {
+  const std::string kNVidiaName = "nvidia";
+  const std::string kIntelName = "intel";
+  const std::string kAMDName = "amd";
+  const std::string kATIName = "ati";
+  const std::string kVendorNames[] = {
+      kNVidiaName, kIntelName, kAMDName, kATIName};
+
+  const uint32 kNVidiaID = 0x10de;
+  const uint32 kIntelID = 0x8086;
+  const uint32 kAMDID = 0x1002;
+  const uint32 kATIID = 0x1002;
+  const uint32 kVendorIDs[] = {
+      kNVidiaID, kIntelID, kAMDID, kATIID};
+
+  DCHECK(gpu_info);
+  if (gpu_info->secondary_gpus.size() == 0)
+    return;
+
+  uint32 active_vendor_id = 0;
+  if (!gpu_info->gl_vendor.empty()) {
+    std::string gl_vendor_lower = base::ToLowerASCII(gpu_info->gl_vendor);
+    int index = StringContainsName(
+        gl_vendor_lower, kVendorNames, arraysize(kVendorNames));
+    if (index >= 0) {
+      active_vendor_id = kVendorIDs[index];
+    }
+  }
+  if (active_vendor_id == 0 && !gpu_info->gl_renderer.empty()) {
+    std::string gl_renderer_lower = base::ToLowerASCII(gpu_info->gl_renderer);
+    int index = StringContainsName(
+        gl_renderer_lower, kVendorNames, arraysize(kVendorNames));
+    if (index >= 0) {
+      active_vendor_id = kVendorIDs[index];
+    }
+  }
+  if (active_vendor_id == 0) {
+    // We fail to identify the GPU vendor through GL_VENDOR/GL_RENDERER.
+    return;
+  }
+  gpu_info->gpu.active = false;
+  for (size_t ii = 0; ii < gpu_info->secondary_gpus.size(); ++ii)
+    gpu_info->secondary_gpus[ii].active = false;
+
+  // TODO(zmo): if two GPUs are from the same vendor, this code will always
+  // set the first GPU as active, which could be wrong.
+  if (active_vendor_id == gpu_info->gpu.vendor_id) {
+    gpu_info->gpu.active = true;
+    return;
+  }
+  for (size_t ii = 0; ii < gpu_info->secondary_gpus.size(); ++ii) {
+    if (active_vendor_id == gpu_info->secondary_gpus[ii].vendor_id) {
+      gpu_info->secondary_gpus[ii].active = true;
+      return;
+    }
+  }
 }
 
 }  // namespace gpu

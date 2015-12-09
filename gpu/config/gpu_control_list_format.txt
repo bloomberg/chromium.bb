@@ -30,7 +30,7 @@
 //      d) "amd_switchable_discrete": AMD dual GPU, discrete GPU is active
 //    c) and d) are only valid on Win, as on Mac we can switch GPU on the fly.
 // 6. "multi_gpu_category" is a string, valid values include "any", "primary",
-//    "secondary", and "active". If unspecified, the default value is "primary".
+//    "secondary", and "active". If unspecified, the default value is "active".
 //    See gpu_control_list.h for more details on the meanings of the strings.
 // 7. "driver_vendor" is a string pattern.
 // 8. "driver_version" is a VERSION structure (defined below).

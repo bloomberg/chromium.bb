@@ -1148,8 +1148,8 @@ TEST_F(GpuControlListEntryDualGPUTest, CategoryPrimarySecondary) {
         ]
       }
   );
-  // Default is primary.
-  EntryShouldNotApply(json_default);
+  // Default is active, and the secondary Intel GPU is active.
+  EntryShouldApply(json_default);
 }
 
 TEST_F(GpuControlListEntryDualGPUTest, ActiveSecondaryGPU) {

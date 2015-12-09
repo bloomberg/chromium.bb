@@ -482,6 +482,7 @@ void GpuDataManagerImplPrivate::SetGLStrings(const std::string& gl_vendor,
   gpu_info.gl_renderer = gl_renderer;
   gpu_info.gl_version = gl_version;
 
+  gpu::IdentifyActiveGPU(&gpu_info);
   gpu::CollectDriverInfoGL(&gpu_info);
 
   UpdateGpuInfo(gpu_info);

@@ -302,5 +302,57 @@ TEST_F(CollectDriverInfoGLTest, CollectDriverInfoGL) {
   }
 }
 
+TEST(MultiGPUsTest, IdentifyActiveGPU) {
+  GPUInfo::GPUDevice nvidia_gpu;
+  nvidia_gpu.vendor_id = 0x10de;
+  nvidia_gpu.device_id = 0x0df8;
+  GPUInfo::GPUDevice intel_gpu;
+  intel_gpu.vendor_id = 0x8086;
+  intel_gpu.device_id = 0x0416;
+
+  GPUInfo gpu_info;
+  gpu_info.gpu = nvidia_gpu;
+  gpu_info.secondary_gpus.push_back(intel_gpu);
+
+  EXPECT_FALSE(gpu_info.gpu.active);
+  EXPECT_FALSE(gpu_info.secondary_gpus[0].active);
+
+  IdentifyActiveGPU(&gpu_info);
+  EXPECT_FALSE(gpu_info.gpu.active);
+  EXPECT_FALSE(gpu_info.secondary_gpus[0].active);
+
+  gpu_info.gl_vendor = "Intel Open Source Technology Center";
+  gpu_info.gl_renderer = "Mesa DRI Intel(R) Haswell Mobile";
+  IdentifyActiveGPU(&gpu_info);
+  EXPECT_FALSE(gpu_info.gpu.active);
+  EXPECT_TRUE(gpu_info.secondary_gpus[0].active);
+
+  gpu_info.gl_vendor = "NVIDIA Corporation";
+  gpu_info.gl_renderer = "Quadro 600/PCIe/SSE2";
+  IdentifyActiveGPU(&gpu_info);
+  EXPECT_TRUE(gpu_info.gpu.active);
+  EXPECT_FALSE(gpu_info.secondary_gpus[0].active);
+}
+
+TEST(MultiGPUsTest, IdentifyActiveGPUAvoidFalseMatch) {
+  // Verify that "Corporation" won't be matched with "ati".
+  GPUInfo::GPUDevice amd_gpu;
+  amd_gpu.vendor_id = 0x1002;
+  amd_gpu.device_id = 0x0df8;
+  GPUInfo::GPUDevice intel_gpu;
+  intel_gpu.vendor_id = 0x8086;
+  intel_gpu.device_id = 0x0416;
+
+  GPUInfo gpu_info;
+  gpu_info.gpu = amd_gpu;
+  gpu_info.secondary_gpus.push_back(intel_gpu);
+
+  gpu_info.gl_vendor = "Google Corporation";
+  gpu_info.gl_renderer = "Chrome GPU Team";
+  IdentifyActiveGPU(&gpu_info);
+  EXPECT_FALSE(gpu_info.gpu.active);
+  EXPECT_FALSE(gpu_info.secondary_gpus[0].active);
+}
+
 }  // namespace gpu
 
