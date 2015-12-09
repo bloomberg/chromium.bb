@@ -14,7 +14,9 @@ namespace blimp {
 
 class BlimpMessage;
 class CompositorMessage;
+class ControlMessage;
 class InputMessage;
+class NavigationMessage;
 class RenderWidgetMessage;
 class StartConnectionMessage;
 
@@ -35,7 +37,14 @@ BLIMP_COMMON_EXPORT scoped_ptr<BlimpMessage> CreateBlimpMessage(
     int target_tab_id);
 
 BLIMP_COMMON_EXPORT scoped_ptr<BlimpMessage> CreateBlimpMessage(
+    ControlMessage** control_message);
+
+BLIMP_COMMON_EXPORT scoped_ptr<BlimpMessage> CreateBlimpMessage(
     InputMessage** input_message);
+
+BLIMP_COMMON_EXPORT scoped_ptr<BlimpMessage> CreateBlimpMessage(
+    NavigationMessage** navigation_message,
+    int target_tab_id);
 
 BLIMP_COMMON_EXPORT scoped_ptr<BlimpMessage> CreateBlimpMessage(
     RenderWidgetMessage** render_widget_message,

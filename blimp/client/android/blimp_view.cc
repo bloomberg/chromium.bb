@@ -31,9 +31,9 @@ static jlong Init(JNIEnv* env,
   // pass it through to the BlimpCompositor.
   ALLOW_UNUSED_LOCAL(client_session);
 
-  return reinterpret_cast<intptr_t>(
-      new BlimpView(env, jobj, gfx::Size(real_width, real_height),
-                    gfx::Size(width, height), dp_to_px));
+  return reinterpret_cast<intptr_t>(new BlimpView(
+      env, jobj, gfx::Size(real_width, real_height), gfx::Size(width, height),
+      dp_to_px, client_session->GetRenderWidgetFeature()));
 }
 
 // static
@@ -45,9 +45,13 @@ BlimpView::BlimpView(JNIEnv* env,
                      const JavaParamRef<jobject>& jobj,
                      const gfx::Size& real_size,
                      const gfx::Size& size,
-                     float dp_to_px)
+                     float dp_to_px,
+                     RenderWidgetFeature* render_widget_feature)
     : device_scale_factor_(dp_to_px),
-      compositor_(BlimpCompositorAndroid::Create(real_size, size, dp_to_px)),
+      compositor_(BlimpCompositorAndroid::Create(real_size,
+                                                 size,
+                                                 dp_to_px,
+                                                 render_widget_feature)),
       current_surface_format_(0),
       window_(gfx::kNullAcceleratedWidget) {
   java_obj_.Reset(env, jobj);

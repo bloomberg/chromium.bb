@@ -19,9 +19,6 @@ namespace {
 
 const int kDummyTabId = 0;
 
-base::LazyInstance<blimp::NullBlimpMessageProcessor>
-    g_null_message_processor = LAZY_INSTANCE_INITIALIZER;
-
 }  // namespace
 
 // static
@@ -32,11 +29,8 @@ static jlong Init(JNIEnv* env,
       BlimpClientSessionAndroid::FromJavaObject(env,
                                                 blimp_client_session.obj());
 
-  // TODO(dtrainor): Pull the feature object from the BlimpClientSession and
-  // use it instead of the NavigationMessageProcessor.
-  ALLOW_UNUSED_LOCAL(client_session);
-
-  return reinterpret_cast<intptr_t>(new Toolbar(env, jobj));
+  return reinterpret_cast<intptr_t>(
+      new Toolbar(env, jobj, client_session->GetNavigationFeature()));
 }
 
 // static
@@ -45,15 +39,16 @@ bool Toolbar::RegisterJni(JNIEnv* env) {
 }
 
 Toolbar::Toolbar(JNIEnv* env,
-                 const base::android::JavaParamRef<jobject>& jobj)
-    : navigation_message_processor_(g_null_message_processor.Pointer()) {
+                 const base::android::JavaParamRef<jobject>& jobj,
+                 NavigationFeature* navigation_feature)
+    : navigation_feature_(navigation_feature) {
   java_obj_.Reset(env, jobj);
 
-  navigation_message_processor_.SetDelegate(kDummyTabId, this);
+  navigation_feature_->SetDelegate(kDummyTabId, this);
 }
 
 Toolbar::~Toolbar() {
-  navigation_message_processor_.RemoveDelegate(kDummyTabId);
+  navigation_feature_->RemoveDelegate(kDummyTabId);
 }
 
 void Toolbar::Destroy(JNIEnv* env, jobject jobj) {
@@ -61,21 +56,20 @@ void Toolbar::Destroy(JNIEnv* env, jobject jobj) {
 }
 
 void Toolbar::OnUrlTextEntered(JNIEnv* env, jobject jobj, jstring text) {
-  navigation_message_processor_.NavigateToUrlText(
-      kDummyTabId,
-      base::android::ConvertJavaStringToUTF8(env, text));
+  navigation_feature_->NavigateToUrlText(
+      kDummyTabId, base::android::ConvertJavaStringToUTF8(env, text));
 }
 
 void Toolbar::OnReloadPressed(JNIEnv* env, jobject jobj) {
-  navigation_message_processor_.Reload(kDummyTabId);
+  navigation_feature_->Reload(kDummyTabId);
 }
 
 void Toolbar::OnForwardPressed(JNIEnv* env, jobject jobj) {
-  navigation_message_processor_.GoForward(kDummyTabId);
+  navigation_feature_->GoForward(kDummyTabId);
 }
 
 jboolean Toolbar::OnBackPressed(JNIEnv* env, jobject jobj) {
-  navigation_message_processor_.GoBack(kDummyTabId);
+  navigation_feature_->GoBack(kDummyTabId);
 
   // TODO(dtrainor): Find a way to determine whether or not we're at the end of
   // our history stack.

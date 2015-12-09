@@ -17,6 +17,7 @@ class Size;
 namespace blimp {
 
 class BlimpCompositorAndroid;
+class RenderWidgetFeature;
 
 // The native component of org.chromium.blimp.BlimpView.  This builds and
 // maintains a BlimpCompositorAndroid and handles notifying the compositor of
@@ -34,7 +35,8 @@ class BlimpView {
             const base::android::JavaParamRef<jobject>& jobj,
             const gfx::Size& real_size,
             const gfx::Size& size,
-            float dp_to_px);
+            float dp_to_px,
+            RenderWidgetFeature* render_widget_feature);
 
   // Methods called from Java via JNI.
   void Destroy(JNIEnv* env, jobject jobj);

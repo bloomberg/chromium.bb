@@ -20,21 +20,24 @@ namespace blimp {
 scoped_ptr<BlimpCompositorAndroid> BlimpCompositorAndroid::Create(
     const gfx::Size& real_size,
     const gfx::Size& size,
-    float dp_to_px) {
+    float dp_to_px,
+    RenderWidgetFeature* render_widget_feature) {
   gfx::Size device_size(real_size);
   bool real_size_supported = true;
   if (device_size.IsEmpty()) {
     real_size_supported = false;
     device_size = size;
   }
-  return make_scoped_ptr(
-      new BlimpCompositorAndroid(device_size, real_size_supported, dp_to_px));
+  return make_scoped_ptr(new BlimpCompositorAndroid(
+      device_size, real_size_supported, dp_to_px, render_widget_feature));
 }
 
-BlimpCompositorAndroid::BlimpCompositorAndroid(const gfx::Size& size,
-                                               bool real_size_supported,
-                                               float dp_to_px)
-    : BlimpCompositor(dp_to_px),
+BlimpCompositorAndroid::BlimpCompositorAndroid(
+    const gfx::Size& size,
+    bool real_size_supported,
+    float dp_to_px,
+    RenderWidgetFeature* render_widget_feature)
+    : BlimpCompositor(dp_to_px, render_widget_feature),
       portrait_width_(std::min(size.width(), size.height())),
       landscape_width_(std::max(size.width(), size.height())),
       real_size_supported_(real_size_supported) {}

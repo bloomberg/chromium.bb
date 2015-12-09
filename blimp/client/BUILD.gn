@@ -18,18 +18,18 @@ component("blimp_client") {
     "compositor/blimp_layer_tree_settings.h",
     "compositor/blimp_output_surface.cc",
     "compositor/blimp_output_surface.h",
-    "compositor/render_widget_message_processor.cc",
-    "compositor/render_widget_message_processor.h",
     "compositor/test/dummy_layer_driver.cc",
     "compositor/test/dummy_layer_driver.h",
     "input/blimp_input_handler_wrapper.cc",
     "input/blimp_input_handler_wrapper.h",
     "input/blimp_input_manager.cc",
     "input/blimp_input_manager.h",
-    "navigation_message_processor.cc",
-    "navigation_message_processor.h",
     "session/blimp_client_session.cc",
     "session/blimp_client_session.h",
+    "session/navigation_feature.cc",
+    "session/navigation_feature.h",
+    "session/render_widget_feature.cc",
+    "session/render_widget_feature.h",
   ]
 
   defines = [ "BLIMP_CLIENT_IMPLEMENTATION=1" ]
@@ -60,8 +60,8 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
-    "compositor/render_widget_message_processor_unittest.cc",
-    "navigation_message_processor_unittest.cc",
+    "session/navigation_feature_unittest.cc",
+    "session/render_widget_feature_unittest.cc",
   ]
 
   deps = [

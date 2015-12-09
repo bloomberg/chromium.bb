@@ -22,6 +22,8 @@ class LayerTreeHost;
 
 namespace blimp {
 
+class RenderWidgetFeature;
+
 // An Android specific version of the BlimpCompositor.  This class builds a
 // gfx::AcceleratedWidget out of an Android SurfaceView's surface.
 class BlimpCompositorAndroid : public BlimpCompositor {
@@ -31,9 +33,11 @@ class BlimpCompositorAndroid : public BlimpCompositor {
   // area not including system decorations (see android.view.Display.getSize()).
   // |dp_to_px| is the scale factor that is required to convert from dp device
   // pixels) to px.
-  static scoped_ptr<BlimpCompositorAndroid> Create(const gfx::Size& real_size,
-                                                   const gfx::Size& size,
-                                                   float dp_to_px);
+  static scoped_ptr<BlimpCompositorAndroid> Create(
+      const gfx::Size& real_size,
+      const gfx::Size& size,
+      float dp_to_px,
+      RenderWidgetFeature* render_widget_feature);
 
   ~BlimpCompositorAndroid() override;
 
@@ -44,7 +48,8 @@ class BlimpCompositorAndroid : public BlimpCompositor {
   // is required to convert from dp (device pixels) to px.
   BlimpCompositorAndroid(const gfx::Size& size,
                          bool real_size_supported,
-                         float dp_to_px);
+                         float dp_to_px,
+                         RenderWidgetFeature* render_widget_feature);
 
   // BlimpCompositor implementation.
   void GenerateLayerTreeSettings(cc::LayerTreeSettings* settings);

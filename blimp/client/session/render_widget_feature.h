@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BLIMP_CLIENT_COMPOSITOR_RENDER_WIDGET_MESSAGE_PROCESSOR_H_
-#define BLIMP_CLIENT_COMPOSITOR_RENDER_WIDGET_MESSAGE_PROCESSOR_H_
+#ifndef BLIMP_CLIENT_SESSION_RENDER_WIDGET_FEATURE_H_
+#define BLIMP_CLIENT_SESSION_RENDER_WIDGET_FEATURE_H_
 
 #include "base/containers/small_map.h"
 #include "base/macros.h"
@@ -30,11 +30,10 @@ namespace blimp {
 // notified of incoming messages. This class automatically attaches a specific
 // id so that the engine can drop stale RenderWidget related messages after it
 // sends a RenderWidgetMessage::INITIALIZE message.
-class BLIMP_CLIENT_EXPORT RenderWidgetMessageProcessor
-    : public BlimpMessageProcessor {
+class BLIMP_CLIENT_EXPORT RenderWidgetFeature : public BlimpMessageProcessor {
  public:
   // A delegate to be notified of specific RenderWidget related incoming events.
-  class RenderWidgetMessageDelegate {
+  class RenderWidgetFeatureDelegate {
    public:
     // Called when the engine's RenderWidget has changed for a particular
     // WebContents.  When this is received all state related to the existing
@@ -47,10 +46,18 @@ class BLIMP_CLIENT_EXPORT RenderWidgetMessageProcessor
         scoped_ptr<cc::proto::CompositorMessage> message) = 0;
   };
 
-  RenderWidgetMessageProcessor(
-      BlimpMessageProcessor* input_message_processor,
-      BlimpMessageProcessor* compositor_message_processor);
-  ~RenderWidgetMessageProcessor() override;
+  RenderWidgetFeature();
+  ~RenderWidgetFeature() override;
+
+  // Set the BlimpMessageProcessor that will be used to send BlimpMessage::INPUT
+  // messages to the engine.
+  void set_outgoing_input_message_processor(
+      scoped_ptr<BlimpMessageProcessor> processor);
+
+  // Set the BlimpMessageProcessor that will be used to send
+  // BlimpMessage::COMPOSITOR messages to the engine.
+  void set_outgoing_compositor_message_processor(
+      scoped_ptr<BlimpMessageProcessor> processor);
 
   // Sends a WebInputEvent for |tab_id| to the engine.
   void SendInputEvent(const int tab_id, const blink::WebInputEvent& event);
@@ -62,35 +69,38 @@ class BLIMP_CLIENT_EXPORT RenderWidgetMessageProcessor
   // Sets a RenderWidgetMessageDelegate to be notified of all incoming
   // RenderWidget related messages for |tab_id| from the engine.  There can only
   // be one RenderWidgetMessageDelegate per tab.
-  void SetDelegate(const int tab_id, RenderWidgetMessageDelegate* delegate);
+  void SetDelegate(const int tab_id, RenderWidgetFeatureDelegate* delegate);
   void RemoveDelegate(const int tab_id);
 
+ private:
   // BlimpMessageProcessor implementation.
   void ProcessMessage(scoped_ptr<BlimpMessage> message,
                       const net::CompletionCallback& callback) override;
 
- private:
   // Returns nullptr if no delegate is found.
-  RenderWidgetMessageDelegate* FindDelegate(const int tab_id);
+  RenderWidgetFeatureDelegate* FindDelegate(const int tab_id);
 
   // Returns 0 if no id is found.
   uint32_t GetRenderWidgetId(const int tab_id);
 
-  typedef base::SmallMap<std::map<int, RenderWidgetMessageDelegate*> >
+  typedef base::SmallMap<std::map<int, RenderWidgetFeatureDelegate*>>
       DelegateMap;
-  typedef base::SmallMap<std::map<int, uint32_t> > RenderWidgetIdMap;
+  typedef base::SmallMap<std::map<int, uint32_t>> RenderWidgetIdMap;
 
   DelegateMap delegates_;
   RenderWidgetIdMap render_widget_ids_;
 
   InputMessageGenerator input_message_generator_;
 
-  BlimpMessageProcessor* input_message_processor_;
-  BlimpMessageProcessor* compositor_message_processor_;
+  // Used to send BlimpMessage::INPUT type messages to the engine.
+  scoped_ptr<BlimpMessageProcessor> outgoing_input_message_processor_;
 
-  DISALLOW_COPY_AND_ASSIGN(RenderWidgetMessageProcessor);
+  // Used to send BlimpMessage::COMPOSITOR messages to the engine.
+  scoped_ptr<BlimpMessageProcessor> outgoing_compositor_message_processor_;
+
+  DISALLOW_COPY_AND_ASSIGN(RenderWidgetFeature);
 };
 
 }  // namespace blimp
 
-#endif  // BLIMP_CLIENT_COMPOSITOR_RENDER_WIDGET_MESSAGE_PROCESSOR_H_
+#endif  // BLIMP_CLIENT_SESSION_RENDER_WIDGET_FEATURE_H_

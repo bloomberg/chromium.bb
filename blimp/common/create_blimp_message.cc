@@ -24,11 +24,30 @@ scoped_ptr<BlimpMessage> CreateBlimpMessage(
   return output;
 }
 
+scoped_ptr<BlimpMessage> CreateBlimpMessage(ControlMessage** control_message) {
+  DCHECK(control_message);
+  scoped_ptr<BlimpMessage> output(new BlimpMessage);
+  output->set_type(BlimpMessage::CONTROL);
+  *control_message = output->mutable_control();
+  return output;
+}
+
 scoped_ptr<BlimpMessage> CreateBlimpMessage(InputMessage** input_message) {
   DCHECK(input_message);
   scoped_ptr<BlimpMessage> output(new BlimpMessage);
   output->set_type(BlimpMessage::INPUT);
   *input_message = output->mutable_input();
+  return output;
+}
+
+scoped_ptr<BlimpMessage> CreateBlimpMessage(
+    NavigationMessage** navigation_message,
+    int target_tab_id) {
+  DCHECK(navigation_message);
+  scoped_ptr<BlimpMessage> output(new BlimpMessage);
+  output->set_type(BlimpMessage::NAVIGATION);
+  output->set_target_tab_id(target_tab_id);
+  *navigation_message = output->mutable_navigation();
   return output;
 }
 

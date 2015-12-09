@@ -6,6 +6,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/strings/utf_string_conversions.h"
+#include "blimp/common/create_blimp_message.h"
 #include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/common/proto/control.pb.h"
 #include "blimp/engine/browser/blimp_browser_context.h"
@@ -299,11 +300,9 @@ void BlimpEngineSession::NavigationStateChanged(
   if (source != web_contents_.get() || !changed_flags)
     return;
 
-  scoped_ptr<BlimpMessage> message(new BlimpMessage);
-  message->set_type(BlimpMessage::NAVIGATION);
-  message->set_target_tab_id(kDummyTabId);
-
-  NavigationMessage* navigation_message = message->mutable_navigation();
+  NavigationMessage* navigation_message;
+  scoped_ptr<BlimpMessage> message =
+      CreateBlimpMessage(&navigation_message, kDummyTabId);
   navigation_message->set_type(NavigationMessage::NAVIGATION_STATE_CHANGED);
   NavigationStateChangeMessage* details =
       navigation_message->mutable_navigation_state_change();
