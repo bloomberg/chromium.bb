@@ -4,6 +4,11 @@
             "group_name": "Disabled"
         }
     ],
+    "AutodetectEncoding": [
+        {
+            "group_name": "Enabled"
+        }
+    ],
     "AutofillClassifier": [
         {
             "group_name": "Enabled"
