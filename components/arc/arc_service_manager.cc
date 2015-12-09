@@ -8,6 +8,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "components/arc/arc_bridge_bootstrap.h"
 #include "components/arc/arc_bridge_service_impl.h"
+#include "components/arc/input/arc_input_bridge.h"
 
 namespace arc {
 
@@ -22,6 +23,7 @@ ArcServiceManager::ArcServiceManager()
     : arc_bridge_service_(
           new ArcBridgeServiceImpl(ArcBridgeBootstrap::Create())) {
   DCHECK(!g_arc_service_manager);
+  arc_input_bridge_ = ArcInputBridge::Create(arc_bridge_service_.get());
   g_arc_service_manager = this;
 }
 

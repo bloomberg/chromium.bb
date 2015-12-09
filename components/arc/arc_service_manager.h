@@ -12,6 +12,7 @@
 namespace arc {
 
 class ArcBridgeService;
+class ArcInputBridge;
 
 // Manages creation and destruction of services that communicate with the ARC
 // instance via the ArcBridgeService.
@@ -31,6 +32,7 @@ class ArcServiceManager {
  private:
   base::ThreadChecker thread_checker_;
   scoped_ptr<ArcBridgeService> arc_bridge_service_;
+  scoped_ptr<ArcInputBridge> arc_input_bridge_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcServiceManager);
 };

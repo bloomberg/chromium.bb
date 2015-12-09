@@ -16,6 +16,8 @@
         '../base/base.gyp:base',
         '../chromeos/chromeos.gyp:chromeos',
         '../ipc/ipc.gyp:ipc',
+        '../ui/aura/aura.gyp:aura',
+        '../ui/events/events.gyp:events_base',
       ],
       'sources': [
         'arc/arc_bridge_bootstrap.cc',
@@ -26,6 +28,9 @@
         'arc/arc_bridge_service_impl.h',
         'arc/arc_service_manager.cc',
         'arc/arc_service_manager.h',
+        'arc/input/arc_input_bridge.h',
+        'arc/input/arc_input_bridge_impl.cc',
+        'arc/input/arc_input_bridge_impl.h',
       ],
     },
     {

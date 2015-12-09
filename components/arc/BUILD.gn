@@ -14,6 +14,9 @@ static_library("arc") {
     "arc_bridge_service_impl.h",
     "arc_service_manager.cc",
     "arc_service_manager.h",
+    "input/arc_input_bridge.h",
+    "input/arc_input_bridge_impl.cc",
+    "input/arc_input_bridge_impl.h",
   ]
 
   deps = [
@@ -24,6 +27,9 @@ static_library("arc") {
     "//ipc:ipc",
     "//ipc/mojo:mojo",
     "//third_party/mojo/src/mojo/edk/system",
+    "//ui/aura",
+    "//ui/events",
+    "//ui/events:dom_keycode_converter",
   ]
 }
 
@@ -65,5 +71,8 @@ source_set("unit_tests") {
     "//mojo/public/cpp/environment:environment",
     "//mojo/public/cpp/system:system",
     "//testing/gtest",
+    "//ui/aura",
+    "//ui/events",
+    "//ui/events:dom_keycode_converter",
   ]
 }
