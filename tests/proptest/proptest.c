@@ -27,6 +27,7 @@
 
 #include <assert.h>
 #include <errno.h>
+#include <getopt.h>
 #include <inttypes.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -232,28 +233,32 @@ static int setProperty(char *argv[])
 	uint32_t obj_id, obj_type, prop_id;
 	uint64_t value;
 
-	obj_id = atoi(argv[1]);
+	obj_id = atoi(argv[0]);
 
-	if (!strcmp(argv[2], "connector")) {
+	if (!strcmp(argv[1], "connector")) {
 		obj_type = DRM_MODE_OBJECT_CONNECTOR;
-	} else if (!strcmp(argv[2], "crtc")) {
+	} else if (!strcmp(argv[1], "crtc")) {
 		obj_type = DRM_MODE_OBJECT_CRTC;
 	} else {
 		fprintf(stderr, "Invalid object type.\n");
 		return 1;
 	}
 
-	prop_id = atoi(argv[3]);
-	value = atoll(argv[4]);
+	prop_id = atoi(argv[2]);
+	value = atoll(argv[3]);
 
 	return drmModeObjectSetProperty(fd, obj_id, obj_type, prop_id, value);
 }
 
-static void printUsage(void)
+static void usage(const char *program)
 {
 	printf("Usage:\n"
-"  proptest\n"
-"  proptest [obj id] [obj type] [prop id] [value]\n"
+"  %s [options]\n"
+"  %s [options] [obj id] [obj type] [prop id] [value]\n"
+"\n"
+"options:\n"
+"  -D DEVICE  use the given device\n"
+"  -M MODULE  use the given driver\n"
 "\n"
 "The first form just prints all the existing properties. The second one is\n"
 "used to set the value of a specified property. The object type can be one of\n"
@@ -262,26 +267,37 @@ static void printUsage(void)
 "\n"
 "Example:\n"
 "  proptest 7 connector 2 1\n"
-"will set property 2 of connector 7 to 1\n");
+"will set property 2 of connector 7 to 1\n", program, program);
 }
 
 int main(int argc, char *argv[])
 {
-	const char *modules[] = { "i915", "radeon", "nouveau", "vmwgfx", "omapdrm", "msm", "rockchip" };
-	unsigned int i, ret = 0;
+	static const char optstr[] = "D:M:";
+	int c, args, ret = 0;
+	char *device = NULL;
+	char *module = NULL;
 
-	for (i = 0; i < ARRAY_SIZE(modules); i++){
-		fd = drmOpen(modules[i], NULL);
-		if (fd >= 0) {
-			printf("Module %s loaded.\n", modules[i]);
+	while ((c = getopt(argc, argv, optstr)) != -1) {
+		switch (c) {
+		case 'D':
+			device = optarg;
+			break;
+
+		case 'M':
+			module = optarg;
+			break;
+
+		default:
+			usage(argv[0]);
 			break;
 		}
 	}
 
-	if (i == ARRAY_SIZE(modules)) {
-		fprintf(stderr, "Failed to load drm modules.\n");
+	args = argc - optind;
+
+	fd = util_open(module, device);
+	if (fd < 0)
 		return 1;
-	}
 
 	res = drmModeGetResources(fd);
 	if (!res) {
@@ -291,12 +307,12 @@ int main(int argc, char *argv[])
 		goto done;
 	}
 
-	if (argc < 2) {
+	if (args < 1) {
 		listAllProperties();
-	} else if (argc == 5) {
-		ret = setProperty(argv);
+	} else if (args == 4) {
+		ret = setProperty(&argv[optind]);
 	} else {
-		printUsage();
+		usage(argv[0]);
 		ret = 1;
 	}
 
