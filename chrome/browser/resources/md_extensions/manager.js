@@ -69,7 +69,8 @@ cr.define('extensions', function() {
 
     ready: function() {
       /** @type {extensions.Sidebar} */
-      this.sidebar = this.$$('extensions-sidebar');
+      this.sidebar =
+          /** @type {extensions.Sidebar} */(this.$$('extensions-sidebar'));
       this.service = extensions.Service.getInstance();
       this.service.managerReady(this);
       this.sidebar.setScrollDelegate(new ScrollHelper(this));
