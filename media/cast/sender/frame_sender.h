@@ -9,7 +9,9 @@
 #ifndef MEDIA_CAST_SENDER_FRAME_SENDER_H_
 #define MEDIA_CAST_SENDER_FRAME_SENDER_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
@@ -28,7 +30,7 @@ class FrameSender {
               bool is_audio,
               CastTransportSender* const transport_sender,
               int rtp_timebase,
-              uint32 ssrc,
+              uint32_t ssrc,
               double max_frame_rate,
               base::TimeDelta min_playout_delay,
               base::TimeDelta max_playout_delay,
@@ -73,7 +75,7 @@ class FrameSender {
   // network layer.
   CastTransportSender* const transport_sender_;
 
-  const uint32 ssrc_;
+  const uint32_t ssrc_;
 
  protected:
   // Schedule and execute periodic checks for re-sending packets.  If no
@@ -96,11 +98,11 @@ class FrameSender {
   // Warning: If a frame ID too far in the past is requested, the getters will
   // silently succeed but return incorrect values.  Be sure to respect
   // media::cast::kMaxUnackedFrames.
-  void RecordLatestFrameTimestamps(uint32 frame_id,
+  void RecordLatestFrameTimestamps(uint32_t frame_id,
                                    base::TimeTicks reference_time,
                                    RtpTimestamp rtp_timestamp);
-  base::TimeTicks GetRecordedReferenceTime(uint32 frame_id) const;
-  RtpTimestamp GetRecordedRtpTimestamp(uint32 frame_id) const;
+  base::TimeTicks GetRecordedReferenceTime(uint32_t frame_id) const;
+  RtpTimestamp GetRecordedRtpTimestamp(uint32_t frame_id) const;
 
   // Returns the number of frames that were sent but not yet acknowledged.
   int GetUnacknowledgedFrameCount() const;
@@ -133,12 +135,12 @@ class FrameSender {
   // The ID of the last frame sent.  Logic throughout FrameSender assumes this
   // can safely wrap-around.  This member is invalid until
   // |!last_send_time_.is_null()|.
-  uint32 last_sent_frame_id_;
+  uint32_t last_sent_frame_id_;
 
   // The ID of the latest (not necessarily the last) frame that has been
   // acknowledged.  Logic throughout AudioSender assumes this can safely
   // wrap-around.  This member is invalid until |!last_send_time_.is_null()|.
-  uint32 latest_acked_frame_id_;
+  uint32_t latest_acked_frame_id_;
 
   // Counts the number of duplicate ACK that are being received.  When this
   // number reaches a threshold, the sender will take this as a sign that the

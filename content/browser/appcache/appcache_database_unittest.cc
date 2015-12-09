@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <limits>
+
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -35,7 +37,7 @@ TEST(AppCacheDatabaseTest, LazyOpen) {
   EXPECT_FALSE(db.LazyOpen(false));
   EXPECT_TRUE(db.LazyOpen(true));
 
-  int64 group_id, cache_id, response_id, deleteable_response_rowid;
+  int64_t group_id, cache_id, response_id, deleteable_response_rowid;
   group_id = cache_id = response_id = deleteable_response_rowid = 0;
   EXPECT_TRUE(db.FindLastStorageIds(&group_id, &cache_id, &response_id,
                                     &deleteable_response_rowid));
@@ -135,7 +137,7 @@ TEST(AppCacheDatabaseTest, WasCorrutionDetected) {
   {
     sql::ScopedErrorIgnorer ignore_errors;
     ignore_errors.IgnoreError(SQLITE_CORRUPT);
-    std::map<GURL, int64> usage_map;
+    std::map<GURL, int64_t> usage_map;
     EXPECT_FALSE(db.GetAllOriginUsage(&usage_map));
     EXPECT_TRUE(db.was_corruption_detected());
     EXPECT_TRUE(base::PathExists(kDbFile));
@@ -680,20 +682,22 @@ TEST(AppCacheDatabaseTest, DeletableResponseIds) {
   // TODO(shess): See EntryRecords test.
   ignore_errors.IgnoreError(SQLITE_CONSTRAINT);
 
-  std::vector<int64> ids;
+  std::vector<int64_t> ids;
 
-  EXPECT_TRUE(db.GetDeletableResponseIds(&ids, kint64max, 100));
+  EXPECT_TRUE(db.GetDeletableResponseIds(
+      &ids, std::numeric_limits<int64_t>::max(), 100));
   EXPECT_TRUE(ids.empty());
   ids.push_back(0);
   EXPECT_TRUE(db.DeleteDeletableResponseIds(ids));
   EXPECT_TRUE(db.InsertDeletableResponseIds(ids));
 
   ids.clear();
-  EXPECT_TRUE(db.GetDeletableResponseIds(&ids, kint64max, 100));
+  EXPECT_TRUE(db.GetDeletableResponseIds(
+      &ids, std::numeric_limits<int64_t>::max(), 100));
   EXPECT_EQ(1U, ids.size());
   EXPECT_EQ(0, ids[0]);
 
-  int64 unused, deleteable_response_rowid;
+  int64_t unused, deleteable_response_rowid;
   unused = deleteable_response_rowid = 0;
   EXPECT_TRUE(db.FindLastStorageIds(&unused, &unused, &unused,
                                     &deleteable_response_rowid));
@@ -715,14 +719,16 @@ TEST(AppCacheDatabaseTest, DeletableResponseIds) {
   EXPECT_EQ(10, deleteable_response_rowid);
 
   ids.clear();
-  EXPECT_TRUE(db.GetDeletableResponseIds(&ids, kint64max, 100));
+  EXPECT_TRUE(db.GetDeletableResponseIds(
+      &ids, std::numeric_limits<int64_t>::max(), 100));
   EXPECT_EQ(10U, ids.size());
   for (int i = 0; i < 10; ++i)
     EXPECT_EQ(i, ids[i]);
 
   // Ensure the limit is respected.
   ids.clear();
-  EXPECT_TRUE(db.GetDeletableResponseIds(&ids, kint64max, 5));
+  EXPECT_TRUE(
+      db.GetDeletableResponseIds(&ids, std::numeric_limits<int64_t>::max(), 5));
   EXPECT_EQ(5U, ids.size());
   for (int i = 0; i < static_cast<int>(ids.size()); ++i)
     EXPECT_EQ(i, ids[i]);
@@ -737,7 +743,8 @@ TEST(AppCacheDatabaseTest, DeletableResponseIds) {
   // Ensure that we can delete from the table.
   EXPECT_TRUE(db.DeleteDeletableResponseIds(ids));
   ids.clear();
-  EXPECT_TRUE(db.GetDeletableResponseIds(&ids, kint64max, 100));
+  EXPECT_TRUE(db.GetDeletableResponseIds(
+      &ids, std::numeric_limits<int64_t>::max(), 100));
   EXPECT_EQ(5U, ids.size());
   for (int i = 0; i < static_cast<int>(ids.size()); ++i)
     EXPECT_EQ(i + 5, ids[i]);
@@ -808,7 +815,7 @@ TEST(AppCacheDatabaseTest, OriginUsage) {
   EXPECT_TRUE(db.FindCachesForOrigin(kOtherOrigin, &cache_records));
   EXPECT_EQ(1U, cache_records.size());
 
-  std::map<GURL, int64> usage_map;
+  std::map<GURL, int64_t> usage_map;
   EXPECT_TRUE(db.GetAllOriginUsage(&usage_map));
   EXPECT_EQ(2U, usage_map.size());
   EXPECT_EQ(1100, usage_map[kOrigin]);

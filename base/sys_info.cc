@@ -59,7 +59,7 @@ base::TimeDelta SysInfo::Uptime() {
   // This code relies on an implementation detail of TimeTicks::Now() - that
   // its return value happens to coincide with the system uptime value in
   // microseconds, on Win/Mac/iOS/Linux/ChromeOS and Android.
-  int64 uptime_in_microseconds = TimeTicks::Now().ToInternalValue();
+  int64_t uptime_in_microseconds = TimeTicks::Now().ToInternalValue();
   return base::TimeDelta::FromMicroseconds(uptime_in_microseconds);
 }
 

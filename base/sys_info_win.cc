@@ -6,6 +6,8 @@
 
 #include <windows.h>
 
+#include <limits>
+
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -15,7 +17,7 @@
 
 namespace {
 
-int64 AmountOfMemory(DWORDLONG MEMORYSTATUSEX::* memory_field) {
+int64_t AmountOfMemory(DWORDLONG MEMORYSTATUSEX::*memory_field) {
   MEMORYSTATUSEX memory_info;
   memory_info.dwLength = sizeof(memory_info);
   if (!GlobalMemoryStatusEx(&memory_info)) {
@@ -23,8 +25,8 @@ int64 AmountOfMemory(DWORDLONG MEMORYSTATUSEX::* memory_field) {
     return 0;
   }
 
-  int64 rv = static_cast<int64>(memory_info.*memory_field);
-  return rv < 0 ? kint64max : rv;
+  int64_t rv = static_cast<int64_t>(memory_info.*memory_field);
+  return rv < 0 ? std::numeric_limits<int64_t>::max() : rv;
 }
 
 }  // namespace
@@ -37,30 +39,30 @@ int SysInfo::NumberOfProcessors() {
 }
 
 // static
-int64 SysInfo::AmountOfPhysicalMemory() {
+int64_t SysInfo::AmountOfPhysicalMemory() {
   return AmountOfMemory(&MEMORYSTATUSEX::ullTotalPhys);
 }
 
 // static
-int64 SysInfo::AmountOfAvailablePhysicalMemory() {
+int64_t SysInfo::AmountOfAvailablePhysicalMemory() {
   return AmountOfMemory(&MEMORYSTATUSEX::ullAvailPhys);
 }
 
 // static
-int64 SysInfo::AmountOfVirtualMemory() {
+int64_t SysInfo::AmountOfVirtualMemory() {
   return AmountOfMemory(&MEMORYSTATUSEX::ullTotalVirtual);
 }
 
 // static
-int64 SysInfo::AmountOfFreeDiskSpace(const FilePath& path) {
+int64_t SysInfo::AmountOfFreeDiskSpace(const FilePath& path) {
   ThreadRestrictions::AssertIOAllowed();
 
   ULARGE_INTEGER available, total, free;
   if (!GetDiskFreeSpaceExW(path.value().c_str(), &available, &total, &free))
     return -1;
 
-  int64 rv = static_cast<int64>(available.QuadPart);
-  return rv < 0 ? kint64max : rv;
+  int64_t rv = static_cast<int64_t>(available.QuadPart);
+  return rv < 0 ? std::numeric_limits<int64_t>::max() : rv;
 }
 
 std::string SysInfo::OperatingSystemName() {
@@ -113,9 +115,9 @@ size_t SysInfo::VMAllocationGranularity() {
 }
 
 // static
-void SysInfo::OperatingSystemVersionNumbers(int32* major_version,
-                                            int32* minor_version,
-                                            int32* bugfix_version) {
+void SysInfo::OperatingSystemVersionNumbers(int32_t* major_version,
+                                            int32_t* minor_version,
+                                            int32_t* bugfix_version) {
   win::OSInfo* os_info = win::OSInfo::GetInstance();
   *major_version = os_info->version_number().major;
   *minor_version = os_info->version_number().minor;

@@ -4,6 +4,8 @@
 
 #include "ppapi/proxy/file_io_resource.h"
 
+#include <limits>
+
 #include "base/bind.h"
 #include "base/task_runner_util.h"
 #include "ipc/ipc_message.h"
@@ -289,8 +291,10 @@ int32_t FileIOResource::Write(int64_t offset,
       increase = bytes_to_write;
     } else {
       uint64_t max_offset = offset + bytes_to_write;
-      if (max_offset > static_cast<uint64_t>(kint64max))
+      if (max_offset >
+          static_cast<uint64_t>(std::numeric_limits<int64_t>::max())) {
         return PP_ERROR_FAILED;  // amount calculation would overflow.
+      }
       increase = static_cast<int64_t>(max_offset) - max_written_offset_;
     }
 

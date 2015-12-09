@@ -43,7 +43,7 @@ class AppCacheStorageImpl : public AppCacheStorage {
 
   // AppCacheStorage methods, see the base class for doc comments.
   void GetAllInfo(Delegate* delegate) override;
-  void LoadCache(int64 id, Delegate* delegate) override;
+  void LoadCache(int64_t id, Delegate* delegate) override;
   void LoadOrCreateGroup(const GURL& manifest_url, Delegate* delegate) override;
   void StoreGroupAndNewestCache(AppCacheGroup* group,
                                 AppCache* newest_cache,
@@ -56,23 +56,23 @@ class AppCacheStorageImpl : public AppCacheStorage {
                                  AppCacheEntry* found_entry,
                                  AppCacheEntry* found_fallback_entry,
                                  bool* found_network_namespace) override;
-  void MarkEntryAsForeign(const GURL& entry_url, int64 cache_id) override;
+  void MarkEntryAsForeign(const GURL& entry_url, int64_t cache_id) override;
   void MakeGroupObsolete(AppCacheGroup* group,
                          Delegate* delegate,
                          int response_code) override;
   void StoreEvictionTimes(AppCacheGroup* group) override;
   AppCacheResponseReader* CreateResponseReader(const GURL& manifest_url,
-                                               int64 group_id,
-                                               int64 response_id) override;
+                                               int64_t group_id,
+                                               int64_t response_id) override;
   AppCacheResponseWriter* CreateResponseWriter(const GURL& manifest_url,
-                                               int64 group_id) override;
+                                               int64_t group_id) override;
   AppCacheResponseMetadataWriter* CreateResponseMetadataWriter(
-      int64 group_id,
-      int64 response_id) override;
+      int64_t group_id,
+      int64_t response_id) override;
   void DoomResponses(const GURL& manifest_url,
-                     const std::vector<int64>& response_ids) override;
+                     const std::vector<int64_t>& response_ids) override;
   void DeleteResponses(const GURL& manifest_url,
-                       const std::vector<int64>& response_ids) override;
+                       const std::vector<int64_t>& response_ids) override;
 
  private:
   // The AppCacheStorageImpl class methods and datamembers may only be
@@ -97,25 +97,25 @@ class AppCacheStorageImpl : public AppCacheStorage {
   class UpdateEvictionTimesTask;
 
   typedef std::deque<DatabaseTask*> DatabaseTaskQueue;
-  typedef std::map<int64, CacheLoadTask*> PendingCacheLoads;
+  typedef std::map<int64_t, CacheLoadTask*> PendingCacheLoads;
   typedef std::map<GURL, GroupLoadTask*> PendingGroupLoads;
-  typedef std::deque<std::pair<GURL, int64> > PendingForeignMarkings;
+  typedef std::deque<std::pair<GURL, int64_t>> PendingForeignMarkings;
   typedef std::set<StoreGroupAndCacheTask*> PendingQuotaQueries;
 
   bool IsInitTaskComplete() {
     return last_cache_id_ != AppCacheStorage::kUnitializedId;
   }
 
-  CacheLoadTask* GetPendingCacheLoadTask(int64 cache_id);
+  CacheLoadTask* GetPendingCacheLoadTask(int64_t cache_id);
   GroupLoadTask* GetPendingGroupLoadTask(const GURL& manifest_url);
-  void GetPendingForeignMarkingsForCache(
-      int64 cache_id, std::vector<GURL>* urls);
+  void GetPendingForeignMarkingsForCache(int64_t cache_id,
+                                         std::vector<GURL>* urls);
 
   void ScheduleSimpleTask(const base::Closure& task);
   void RunOnePendingSimpleTask();
 
   void DelayedStartDeletingUnusedResponses();
-  void StartDeletingResponses(const std::vector<int64>& response_ids);
+  void StartDeletingResponses(const std::vector<int64_t>& response_ids);
   void ScheduleDeleteOneResponse();
   void DeleteOneResponse();
   void OnDeletedOneResponse(int rv);
@@ -136,11 +136,14 @@ class AppCacheStorageImpl : public AppCacheStorage {
       scoped_refptr<AppCache> newest_cache,
       scoped_refptr<DelegateReference> delegate_ref);
 
-  void CallOnMainResponseFound(
-      DelegateReferenceVector* delegates,
-      const GURL& url, const AppCacheEntry& entry,
-      const GURL& namespace_entry_url, const AppCacheEntry& fallback_entry,
-      int64 cache_id, int64 group_id, const GURL& manifest_url);
+  void CallOnMainResponseFound(DelegateReferenceVector* delegates,
+                               const GURL& url,
+                               const AppCacheEntry& entry,
+                               const GURL& namespace_entry_url,
+                               const AppCacheEntry& fallback_entry,
+                               int64_t cache_id,
+                               int64_t group_id,
+                               const GURL& manifest_url);
 
   CONTENT_EXPORT AppCacheDiskCache* disk_cache();
 
@@ -162,11 +165,11 @@ class AppCacheStorageImpl : public AppCacheStorage {
   PendingQuotaQueries pending_quota_queries_;
 
   // Structures to keep track of lazy response deletion.
-  std::deque<int64> deletable_response_ids_;
-  std::vector<int64> deleted_response_ids_;
+  std::deque<int64_t> deletable_response_ids_;
+  std::vector<int64_t> deleted_response_ids_;
   bool is_response_deletion_scheduled_;
   bool did_start_deleting_responses_;
-  int64 last_deletable_response_rowid_;
+  int64_t last_deletable_response_rowid_;
 
   // Created on the IO thread, but only used on the DB thread.
   AppCacheDatabase* database_;

@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
+#include <limits>
 #include <set>
 #include <string>
 #include <vector>
@@ -54,8 +57,8 @@ bool FileExists(const base::FilePath& path) {
   return base::PathExists(path) && !base::DirectoryExists(path);
 }
 
-int64 GetSize(const base::FilePath& path) {
-  int64 size;
+int64_t GetSize(const base::FilePath& path) {
+  int64_t size;
   EXPECT_TRUE(base::GetFileSize(path, &size));
   return size;
 }
@@ -182,7 +185,7 @@ class ObfuscatedFileUtilTest : public testing::Test {
   }
 
   scoped_ptr<FileSystemOperationContext> LimitedContext(
-      int64 allowed_bytes_growth) {
+      int64_t allowed_bytes_growth) {
     scoped_ptr<FileSystemOperationContext> context(
         sandbox_file_system_.NewOperationContext());
     context->set_allowed_bytes_growth(allowed_bytes_growth);
@@ -190,7 +193,7 @@ class ObfuscatedFileUtilTest : public testing::Test {
   }
 
   scoped_ptr<FileSystemOperationContext> UnlimitedContext() {
-    return LimitedContext(kint64max);
+    return LimitedContext(std::numeric_limits<int64_t>::max());
   }
 
   FileSystemOperationContext* NewContext(
@@ -253,13 +256,13 @@ class ObfuscatedFileUtilTest : public testing::Test {
     return GetTypeString(type_);
   }
 
-  int64 ComputeTotalFileSize() {
+  int64_t ComputeTotalFileSize() {
     return sandbox_file_system_.ComputeCurrentOriginUsage() -
         sandbox_file_system_.ComputeCurrentDirectoryDatabaseUsage();
   }
 
   void GetUsageFromQuotaManager() {
-    int64 quota = -1;
+    int64_t quota = -1;
     quota_status_ =
         AsyncFileTestHelper::GetUsageAndQuota(quota_manager_.get(),
                                               origin(),
@@ -274,13 +277,13 @@ class ObfuscatedFileUtilTest : public testing::Test {
     usage_cache()->Delete(sandbox_file_system_.GetUsageCachePath());
   }
 
-  int64 SizeByQuotaUtil() {
+  int64_t SizeByQuotaUtil() {
     return sandbox_file_system_.GetCachedOriginUsage();
   }
 
-  int64 SizeInUsageFile() {
+  int64_t SizeInUsageFile() {
     base::RunLoop().RunUntilIdle();
-    int64 usage = 0;
+    int64_t usage = 0;
     return usage_cache()->GetUsage(
         sandbox_file_system_.GetUsageCachePath(), &usage) ? usage : -1;
   }
@@ -298,7 +301,7 @@ class ObfuscatedFileUtilTest : public testing::Test {
     return AsyncFileTestHelper::DirectoryExists(file_system_context(), url);
   }
 
-  int64 usage() const { return usage_; }
+  int64_t usage() const { return usage_; }
   storage::FileSystemUsageCache* usage_cache() {
     return sandbox_file_system_.usage_cache();
   }
@@ -307,7 +310,7 @@ class ObfuscatedFileUtilTest : public testing::Test {
     return sandbox_file_system_.CreateURLFromUTF8(path);
   }
 
-  int64 PathCost(const FileSystemURL& url) {
+  int64_t PathCost(const FileSystemURL& url) {
     return ObfuscatedFileUtil::ComputeFilePathCost(url.path());
   }
 
@@ -393,7 +396,7 @@ class ObfuscatedFileUtilTest : public testing::Test {
    public:
     UsageVerifyHelper(scoped_ptr<FileSystemOperationContext> context,
                       SandboxFileSystemTestHelper* file_system,
-                      int64 expected_usage)
+                      int64_t expected_usage)
         : context_(context.Pass()),
           sandbox_file_system_(file_system),
           expected_usage_(expected_usage) {}
@@ -415,18 +418,19 @@ class ObfuscatedFileUtilTest : public testing::Test {
 
     scoped_ptr<FileSystemOperationContext> context_;
     SandboxFileSystemTestHelper* sandbox_file_system_;
-    int64 expected_usage_;
+    int64_t expected_usage_;
   };
 
-  scoped_ptr<UsageVerifyHelper> AllowUsageIncrease(int64 requested_growth) {
-    int64 usage = sandbox_file_system_.GetCachedOriginUsage();
+  scoped_ptr<UsageVerifyHelper> AllowUsageIncrease(int64_t requested_growth) {
+    int64_t usage = sandbox_file_system_.GetCachedOriginUsage();
     return scoped_ptr<UsageVerifyHelper>(new UsageVerifyHelper(
         LimitedContext(requested_growth),
         &sandbox_file_system_, usage + requested_growth));
   }
 
-  scoped_ptr<UsageVerifyHelper> DisallowUsageIncrease(int64 requested_growth) {
-    int64 usage = sandbox_file_system_.GetCachedOriginUsage();
+  scoped_ptr<UsageVerifyHelper> DisallowUsageIncrease(
+      int64_t requested_growth) {
+    int64_t usage = sandbox_file_system_.GetCachedOriginUsage();
     return scoped_ptr<UsageVerifyHelper>(new UsageVerifyHelper(
         LimitedContext(requested_growth - 1), &sandbox_file_system_, usage));
   }
@@ -544,7 +548,7 @@ class ObfuscatedFileUtilTest : public testing::Test {
     base::FilePath root_file_path = source_dir.path();
     base::FilePath src_file_path = root_file_path.AppendASCII("file_name");
     FileSystemURL dest_url = CreateURLFromUTF8("new file");
-    int64 src_file_length = 87;
+    int64_t src_file_length = 87;
 
     base::File file(src_file_path,
                     base::File::FLAG_CREATE | base::File::FLAG_WRITE);
@@ -567,7 +571,7 @@ class ObfuscatedFileUtilTest : public testing::Test {
       EXPECT_TRUE(change_observer()->HasNoChange());
     }
 
-    const int64 path_cost =
+    const int64_t path_cost =
         ObfuscatedFileUtil::ComputeFilePathCost(dest_url.path());
     if (!overwrite) {
       // Verify that file creation requires sufficient quota for the path.
@@ -779,7 +783,7 @@ class ObfuscatedFileUtilTest : public testing::Test {
     EXPECT_EQ(kFakeDirectoryData, origin_db_data);
   }
 
-  int64 ComputeCurrentUsage() {
+  int64_t ComputeCurrentUsage() {
     return sandbox_file_system_.ComputeCurrentOriginUsage() -
         sandbox_file_system_.ComputeCurrentDirectoryDatabaseUsage();
   }
@@ -802,7 +806,7 @@ class ObfuscatedFileUtilTest : public testing::Test {
   storage::FileSystemType type_;
   SandboxFileSystemTestHelper sandbox_file_system_;
   storage::QuotaStatusCode quota_status_;
-  int64 usage_;
+  int64_t usage_;
   storage::MockFileChangeObserver change_observer_;
   storage::ChangeObserverList change_observers_;
   base::WeakPtrFactory<ObfuscatedFileUtilTest> weak_factory_;
@@ -1264,7 +1268,7 @@ TEST_F(ObfuscatedFileUtilTest, TestPathQuotas) {
   EXPECT_EQ(base::File::FILE_OK,
             ofu()->EnsureFileExists(context.get(), url, &created));
   EXPECT_TRUE(created);
-  int64 path_cost = ObfuscatedFileUtil::ComputeFilePathCost(url.path());
+  int64_t path_cost = ObfuscatedFileUtil::ComputeFilePathCost(url.path());
   EXPECT_EQ(1024 - path_cost, context->allowed_bytes_growth());
 
   context->set_allowed_bytes_growth(1024);
@@ -1330,8 +1334,8 @@ TEST_F(ObfuscatedFileUtilTest, TestCopyOrMoveFileNotFound) {
 }
 
 TEST_F(ObfuscatedFileUtilTest, TestCopyOrMoveFileSuccess) {
-  const int64 kSourceLength = 5;
-  const int64 kDestLength = 50;
+  const int64_t kSourceLength = 5;
+  const int64_t kDestLength = 50;
 
   for (size_t i = 0; i < arraysize(kCopyMoveTestCases); ++i) {
     SCOPED_TRACE(testing::Message() << "kCopyMoveTestCase " << i);
@@ -1504,7 +1508,7 @@ TEST_F(ObfuscatedFileUtilTest, TestMovePathQuotasWithoutRename) {
       dir_url, src_url.path().value());
 
   bool is_copy = false;
-  int64 allowed_bytes_growth = -1000;  // Over quota, this should still work.
+  int64_t allowed_bytes_growth = -1000;  // Over quota, this should still work.
   // Move, no rename, no overwrite.
   context.reset(NewContext(NULL));
   context->set_allowed_bytes_growth(allowed_bytes_growth);
@@ -1655,7 +1659,7 @@ TEST_F(ObfuscatedFileUtilTest, TestOriginEnumerator) {
 TEST_F(ObfuscatedFileUtilTest, TestRevokeUsageCache) {
   scoped_ptr<FileSystemOperationContext> context(NewContext(NULL));
 
-  int64 expected_quota = 0;
+  int64_t expected_quota = 0;
 
   for (size_t i = 0; i < kRegularFileSystemTestCaseSize; ++i) {
     SCOPED_TRACE(testing::Message() << "Creating kRegularTestCase " << i);
@@ -2072,7 +2076,7 @@ TEST_F(ObfuscatedFileUtilTest, MAYBE_TestQuotaOnCopyFile) {
   FileSystemURL to_file2(CreateURLFromUTF8("tofile2"));
   bool created;
 
-  int64 expected_total_file_size = 0;
+  int64_t expected_total_file_size = 0;
   ASSERT_EQ(base::File::FILE_OK,
             ofu()->EnsureFileExists(
                 AllowUsageIncrease(PathCost(from_file))->context(),
@@ -2087,7 +2091,7 @@ TEST_F(ObfuscatedFileUtilTest, MAYBE_TestQuotaOnCopyFile) {
   ASSERT_TRUE(created);
   ASSERT_EQ(expected_total_file_size, ComputeTotalFileSize());
 
-  int64 from_file_size = 1020;
+  int64_t from_file_size = 1020;
   expected_total_file_size += from_file_size;
   ASSERT_EQ(base::File::FILE_OK,
             ofu()->Truncate(
@@ -2095,7 +2099,7 @@ TEST_F(ObfuscatedFileUtilTest, MAYBE_TestQuotaOnCopyFile) {
                 from_file, from_file_size));
   ASSERT_EQ(expected_total_file_size, ComputeTotalFileSize());
 
-  int64 obstacle_file_size = 1;
+  int64_t obstacle_file_size = 1;
   expected_total_file_size += obstacle_file_size;
   ASSERT_EQ(base::File::FILE_OK,
             ofu()->Truncate(
@@ -2103,7 +2107,7 @@ TEST_F(ObfuscatedFileUtilTest, MAYBE_TestQuotaOnCopyFile) {
                 obstacle_file, obstacle_file_size));
   ASSERT_EQ(expected_total_file_size, ComputeTotalFileSize());
 
-  int64 to_file1_size = from_file_size;
+  int64_t to_file1_size = from_file_size;
   expected_total_file_size += to_file1_size;
   ASSERT_EQ(base::File::FILE_OK,
             ofu()->CopyOrMoveFile(
@@ -2122,7 +2126,7 @@ TEST_F(ObfuscatedFileUtilTest, MAYBE_TestQuotaOnCopyFile) {
                 true /* copy */));
   ASSERT_EQ(expected_total_file_size, ComputeTotalFileSize());
 
-  int64 old_obstacle_file_size = obstacle_file_size;
+  int64_t old_obstacle_file_size = obstacle_file_size;
   obstacle_file_size = from_file_size;
   expected_total_file_size += obstacle_file_size - old_obstacle_file_size;
   ASSERT_EQ(base::File::FILE_OK,
@@ -2134,7 +2138,7 @@ TEST_F(ObfuscatedFileUtilTest, MAYBE_TestQuotaOnCopyFile) {
                 true /* copy */));
   ASSERT_EQ(expected_total_file_size, ComputeTotalFileSize());
 
-  int64 old_from_file_size = from_file_size;
+  int64_t old_from_file_size = from_file_size;
   from_file_size = old_from_file_size - 1;
   expected_total_file_size += from_file_size - old_from_file_size;
   ASSERT_EQ(base::File::FILE_OK,
@@ -2169,7 +2173,7 @@ TEST_F(ObfuscatedFileUtilTest, TestQuotaOnMoveFile) {
   FileSystemURL to_file(CreateURLFromUTF8("tofile"));
   bool created;
 
-  int64 expected_total_file_size = 0;
+  int64_t expected_total_file_size = 0;
   ASSERT_EQ(base::File::FILE_OK,
             ofu()->EnsureFileExists(
                 AllowUsageIncrease(PathCost(from_file))->context(),
@@ -2177,7 +2181,7 @@ TEST_F(ObfuscatedFileUtilTest, TestQuotaOnMoveFile) {
   ASSERT_TRUE(created);
   ASSERT_EQ(expected_total_file_size, ComputeTotalFileSize());
 
-  int64 from_file_size = 1020;
+  int64_t from_file_size = 1020;
   expected_total_file_size += from_file_size;
   ASSERT_EQ(base::File::FILE_OK,
             ofu()->Truncate(
@@ -2217,7 +2221,7 @@ TEST_F(ObfuscatedFileUtilTest, TestQuotaOnMoveFile) {
                 from_file, from_file_size));
   ASSERT_EQ(expected_total_file_size, ComputeTotalFileSize());
 
-  int64 obstacle_file_size = 1;
+  int64_t obstacle_file_size = 1;
   expected_total_file_size += obstacle_file_size;
   ASSERT_EQ(base::File::FILE_OK,
             ofu()->Truncate(
@@ -2225,7 +2229,7 @@ TEST_F(ObfuscatedFileUtilTest, TestQuotaOnMoveFile) {
                 obstacle_file, obstacle_file_size));
   ASSERT_EQ(expected_total_file_size, ComputeTotalFileSize());
 
-  int64 old_obstacle_file_size = obstacle_file_size;
+  int64_t old_obstacle_file_size = obstacle_file_size;
   obstacle_file_size = from_file_size;
   from_file_size = 0;
   expected_total_file_size -= old_obstacle_file_size;

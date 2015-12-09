@@ -195,7 +195,7 @@ class AppCacheStorageImplTest : public testing::Test {
           found_cache_id_(kAppCacheNoCacheId), test_(test) {
     }
 
-    void OnCacheLoaded(AppCache* cache, int64 cache_id) override {
+    void OnCacheLoaded(AppCache* cache, int64_t cache_id) override {
       loaded_cache_ = cache;
       loaded_cache_id_ = cache_id;
       test_->ScheduleNextTask();
@@ -232,8 +232,8 @@ class AppCacheStorageImplTest : public testing::Test {
                              const AppCacheEntry& entry,
                              const GURL& namespace_entry_url,
                              const AppCacheEntry& fallback_entry,
-                             int64 cache_id,
-                             int64 group_id,
+                             int64_t cache_id,
+                             int64_t group_id,
                              const GURL& manifest_url) override {
       found_url_ = url;
       found_entry_ = entry;
@@ -246,7 +246,7 @@ class AppCacheStorageImplTest : public testing::Test {
     }
 
     scoped_refptr<AppCache> loaded_cache_;
-    int64 loaded_cache_id_;
+    int64_t loaded_cache_id_;
     scoped_refptr<AppCacheGroup> loaded_group_;
     GURL loaded_manifest_url_;
     scoped_refptr<AppCache> loaded_groups_newest_cache_;
@@ -259,8 +259,8 @@ class AppCacheStorageImplTest : public testing::Test {
     AppCacheEntry found_entry_;
     GURL found_namespace_entry_url_;
     AppCacheEntry found_fallback_entry_;
-    int64 found_cache_id_;
-    int64 found_group_id_;
+    int64_t found_cache_id_;
+    int64_t found_group_id_;
     GURL found_manifest_url_;
     AppCacheStorageImplTest* test_;
   };
@@ -321,7 +321,7 @@ class AppCacheStorageImplTest : public testing::Test {
     void NotifyStorageModified(storage::QuotaClient::ID client_id,
                                const GURL& origin,
                                storage::StorageType type,
-                               int64 delta) override {
+                               int64_t delta) override {
       EXPECT_EQ(storage::QuotaClient::kAppcache, client_id);
       EXPECT_EQ(storage::kStorageTypeTemporary, type);
       ++notify_storage_modified_count_;
@@ -493,7 +493,7 @@ class AppCacheStorageImplTest : public testing::Test {
 
     // Setup some preconditions. Make an 'unstored' cache for
     // us to load. The ctor should put it in the working set.
-    int64 cache_id = storage()->NewCacheId();
+    int64_t cache_id = storage()->NewCacheId();
     scoped_refptr<AppCache> cache(new AppCache(storage(), cache_id));
 
     // Conduct the test.
@@ -764,7 +764,7 @@ class AppCacheStorageImplTest : public testing::Test {
 
     // Setup some preconditions. Create a group and newest cache that
     // appear to be "unstored" and big enough to exceed the 5M limit.
-    const int64 kTooBig = 10 * 1024 * 1024;  // 10M
+    const int64_t kTooBig = 10 * 1024 * 1024;  // 10M
     group_ = new AppCacheGroup(
         storage(), kManifestUrl, storage()->NewGroupId());
     cache_ = new AppCache(storage(), storage()->NewCacheId());
@@ -1837,9 +1837,10 @@ class AppCacheStorageImplTest : public testing::Test {
     return delegate_.get();
   }
 
-  void MakeCacheAndGroup(
-      const GURL& manifest_url, int64 group_id, int64 cache_id,
-      bool add_to_database) {
+  void MakeCacheAndGroup(const GURL& manifest_url,
+                         int64_t group_id,
+                         int64_t cache_id,
+                         bool add_to_database) {
     AppCacheEntry default_entry(
         AppCacheEntry::EXPLICIT, cache_id + kDefaultEntryIdOffset,
         kDefaultEntrySize);

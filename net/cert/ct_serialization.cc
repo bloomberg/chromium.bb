@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include <limits>
+
 #include "base/logging.h"
 
 namespace net {
@@ -360,7 +362,7 @@ bool DecodeSignedCertificateTimestamp(
     return false;
   }
 
-  if (timestamp > static_cast<uint64_t>(kint64max)) {
+  if (timestamp > static_cast<uint64_t>(std::numeric_limits<int64_t>::max())) {
     DVLOG(1) << "Timestamp value too big to cast to int64_t: " << timestamp;
     return false;
   }

@@ -5,11 +5,12 @@
 #ifndef BASE_SYS_INFO_H_
 #define BASE_SYS_INFO_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 
 #include "base/base_export.h"
-#include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -22,16 +23,16 @@ class BASE_EXPORT SysInfo {
   static int NumberOfProcessors();
 
   // Return the number of bytes of physical memory on the current machine.
-  static int64 AmountOfPhysicalMemory();
+  static int64_t AmountOfPhysicalMemory();
 
   // Return the number of bytes of current available physical memory on the
   // machine.
-  static int64 AmountOfAvailablePhysicalMemory();
+  static int64_t AmountOfAvailablePhysicalMemory();
 
   // Return the number of bytes of virtual memory of this process. A return
   // value of zero means that there is no limit on the available virtual
   // memory.
-  static int64 AmountOfVirtualMemory();
+  static int64_t AmountOfVirtualMemory();
 
   // Return the number of megabytes of physical memory on the current machine.
   static int AmountOfPhysicalMemoryMB() {
@@ -46,7 +47,7 @@ class BASE_EXPORT SysInfo {
 
   // Return the available disk space in bytes on the volume containing |path|,
   // or -1 on failure.
-  static int64 AmountOfFreeDiskSpace(const FilePath& path);
+  static int64_t AmountOfFreeDiskSpace(const FilePath& path);
 
   // Returns system uptime.
   static TimeDelta Uptime();
@@ -71,9 +72,9 @@ class BASE_EXPORT SysInfo {
   // an OS version check instead of a feature check, use the base::mac::IsOS*
   // family from base/mac/mac_util.h, or base::win::GetVersion from
   // base/win/windows_version.h.
-  static void OperatingSystemVersionNumbers(int32* major_version,
-                                            int32* minor_version,
-                                            int32* bugfix_version);
+  static void OperatingSystemVersionNumbers(int32_t* major_version,
+                                            int32_t* minor_version,
+                                            int32_t* bugfix_version);
 
   // Returns the architecture of the running operating system.
   // Exact return value may differ across platforms.
@@ -94,7 +95,7 @@ class BASE_EXPORT SysInfo {
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   // Returns the maximum SysV shared memory segment size, or zero if there is no
   // limit.
-  static uint64 MaxSharedMemorySize();
+  static uint64_t MaxSharedMemorySize();
 #endif  // defined(OS_POSIX) && !defined(OS_MACOSX)
 
 #if defined(OS_CHROMEOS)

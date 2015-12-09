@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
+#include <limits>
+
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -224,7 +227,7 @@ class BlobURLRequestJobTest : public testing::Test {
   }
 
   void TestSuccessNonrangeRequest(const std::string& expected_response,
-                                  int64 expected_content_length) {
+                                  int64_t expected_content_length) {
     expected_status_code_ = 200;
     expected_response_ = expected_response;
     TestRequest("GET", net::HttpRequestHeaders());
@@ -292,14 +295,14 @@ class BlobURLRequestJobTest : public testing::Test {
 
   // This only works if all the Blob items have a definite pre-computed length.
   // Otherwise, this will fail a CHECK.
-  int64 GetTotalBlobLength() {
-    int64 total = 0;
+  int64_t GetTotalBlobLength() {
+    int64_t total = 0;
     scoped_ptr<BlobDataSnapshot> data =
         GetHandleFromBuilder()->CreateSnapshot();
     const auto& items = data->items();
     for (const auto& item : items) {
-      int64 length = base::checked_cast<int64>(item->length());
-      CHECK(length <= kint64max - total);
+      int64_t length = base::checked_cast<int64_t>(item->length());
+      CHECK(length <= std::numeric_limits<int64_t>::max() - total);
       total += length;
     }
     return total;
@@ -342,7 +345,8 @@ TEST_F(BlobURLRequestJobTest, TestGetSimpleDataRequest) {
 }
 
 TEST_F(BlobURLRequestJobTest, TestGetSimpleFileRequest) {
-  blob_data_->AppendFile(temp_file1_, 0, kuint64max, base::Time());
+  blob_data_->AppendFile(temp_file1_, 0, std::numeric_limits<uint64_t>::max(),
+                         base::Time());
   TestSuccessNonrangeRequest(kTestFileData1, arraysize(kTestFileData1) - 1);
 }
 
@@ -356,14 +360,16 @@ TEST_F(BlobURLRequestJobTest, TestGetLargeFileRequest) {
   ASSERT_EQ(static_cast<int>(large_data.size()),
             base::WriteFile(large_temp_file, large_data.data(),
                             large_data.size()));
-  blob_data_->AppendFile(large_temp_file, 0, kuint64max, base::Time());
+  blob_data_->AppendFile(large_temp_file, 0,
+                         std::numeric_limits<uint64_t>::max(), base::Time());
   TestSuccessNonrangeRequest(large_data, large_data.size());
 }
 
 TEST_F(BlobURLRequestJobTest, TestGetNonExistentFileRequest) {
   base::FilePath non_existent_file =
       temp_file1_.InsertBeforeExtension(FILE_PATH_LITERAL("-na"));
-  blob_data_->AppendFile(non_existent_file, 0, kuint64max, base::Time());
+  blob_data_->AppendFile(non_existent_file, 0,
+                         std::numeric_limits<uint64_t>::max(), base::Time());
   TestErrorRequest(404);
 }
 
@@ -382,7 +388,8 @@ TEST_F(BlobURLRequestJobTest, TestGetSlicedFileRequest) {
 
 TEST_F(BlobURLRequestJobTest, TestGetSimpleFileSystemFileRequest) {
   SetUpFileSystem();
-  blob_data_->AppendFileSystemFile(temp_file_system_file1_, 0, kuint64max,
+  blob_data_->AppendFileSystemFile(temp_file_system_file1_, 0,
+                                   std::numeric_limits<uint64_t>::max(),
                                    base::Time());
   TestSuccessNonrangeRequest(kTestFileSystemFileData1,
                              arraysize(kTestFileSystemFileData1) - 1);
@@ -398,7 +405,8 @@ TEST_F(BlobURLRequestJobTest, TestGetLargeFileSystemFileRequest) {
   const char kFilename[] = "LargeBlob.dat";
   WriteFileSystemFile(kFilename, large_data.data(), large_data.size(), NULL);
 
-  blob_data_->AppendFileSystemFile(GetFileSystemURL(kFilename), 0, kuint64max,
+  blob_data_->AppendFileSystemFile(GetFileSystemURL(kFilename), 0,
+                                   std::numeric_limits<uint64_t>::max(),
                                    base::Time());
   TestSuccessNonrangeRequest(large_data, large_data.size());
 }
@@ -406,15 +414,16 @@ TEST_F(BlobURLRequestJobTest, TestGetLargeFileSystemFileRequest) {
 TEST_F(BlobURLRequestJobTest, TestGetNonExistentFileSystemFileRequest) {
   SetUpFileSystem();
   GURL non_existent_file = GetFileSystemURL("non-existent.dat");
-  blob_data_->AppendFileSystemFile(non_existent_file, 0, kuint64max,
-                                   base::Time());
+  blob_data_->AppendFileSystemFile(
+      non_existent_file, 0, std::numeric_limits<uint64_t>::max(), base::Time());
   TestErrorRequest(404);
 }
 
 TEST_F(BlobURLRequestJobTest, TestGetInvalidFileSystemFileRequest) {
   SetUpFileSystem();
   GURL invalid_file;
-  blob_data_->AppendFileSystemFile(invalid_file, 0, kuint64max, base::Time());
+  blob_data_->AppendFileSystemFile(
+      invalid_file, 0, std::numeric_limits<uint64_t>::max(), base::Time());
   TestErrorRequest(500);
 }
 
@@ -463,7 +472,7 @@ TEST_F(BlobURLRequestJobTest, TestGetRangeRequest1) {
 
   EXPECT_EQ(6, request_->response_headers()->GetContentLength());
 
-  int64 first = 0, last = 0, length = 0;
+  int64_t first = 0, last = 0, length = 0;
   EXPECT_TRUE(
       request_->response_headers()->GetContentRange(&first, &last, &length));
   EXPECT_EQ(5, first);
@@ -484,8 +493,8 @@ TEST_F(BlobURLRequestJobTest, TestGetRangeRequest2) {
 
   EXPECT_EQ(10, request_->response_headers()->GetContentLength());
 
-  int64 total = GetTotalBlobLength();
-  int64 first = 0, last = 0, length = 0;
+  int64_t total = GetTotalBlobLength();
+  int64_t first = 0, last = 0, length = 0;
   EXPECT_TRUE(
       request_->response_headers()->GetContentRange(&first, &last, &length));
   EXPECT_EQ(total - 10, first);
@@ -506,7 +515,7 @@ TEST_F(BlobURLRequestJobTest, TestGetRangeRequest3) {
 
   EXPECT_EQ(3, request_->response_headers()->GetContentLength());
 
-  int64 first = 0, last = 0, length = 0;
+  int64_t first = 0, last = 0, length = 0;
   EXPECT_TRUE(
       request_->response_headers()->GetContentRange(&first, &last, &length));
   EXPECT_EQ(0, first);

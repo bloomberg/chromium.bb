@@ -15,21 +15,21 @@
 
 namespace {
 
-int64 AmountOfMemory(int pages_name) {
+int64_t AmountOfMemory(int pages_name) {
   long pages = sysconf(pages_name);
   long page_size = sysconf(_SC_PAGESIZE);
   if (pages == -1 || page_size == -1) {
     NOTREACHED();
     return 0;
   }
-  return static_cast<int64>(pages) * page_size;
+  return static_cast<int64_t>(pages) * page_size;
 }
 
-int64 AmountOfPhysicalMemory() {
+int64_t AmountOfPhysicalMemory() {
   return AmountOfMemory(_SC_PHYS_PAGES);
 }
 
-uint64 MaxSharedMemorySize() {
+uint64_t MaxSharedMemorySize() {
   std::string contents;
   base::ReadFileToString(base::FilePath("/proc/sys/kernel/shmmax"), &contents);
   DCHECK(!contents.empty());
@@ -37,7 +37,7 @@ uint64 MaxSharedMemorySize() {
     contents.erase(contents.length() - 1);
   }
 
-  uint64 limit;
+  uint64_t limit;
   if (!base::StringToUint64(contents, &limit)) {
     limit = 0;
   }
@@ -46,10 +46,10 @@ uint64 MaxSharedMemorySize() {
 }
 
 base::LazyInstance<
-    base::internal::LazySysInfoValue<int64, AmountOfPhysicalMemory> >::Leaky
+    base::internal::LazySysInfoValue<int64_t, AmountOfPhysicalMemory>>::Leaky
     g_lazy_physical_memory = LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<
-    base::internal::LazySysInfoValue<uint64, MaxSharedMemorySize> >::Leaky
+    base::internal::LazySysInfoValue<uint64_t, MaxSharedMemorySize>>::Leaky
     g_lazy_max_shared_memory = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
@@ -57,17 +57,17 @@ base::LazyInstance<
 namespace base {
 
 // static
-int64 SysInfo::AmountOfAvailablePhysicalMemory() {
+int64_t SysInfo::AmountOfAvailablePhysicalMemory() {
   return AmountOfMemory(_SC_AVPHYS_PAGES);
 }
 
 // static
-int64 SysInfo::AmountOfPhysicalMemory() {
+int64_t SysInfo::AmountOfPhysicalMemory() {
   return g_lazy_physical_memory.Get().value();
 }
 
 // static
-uint64 SysInfo::MaxSharedMemorySize() {
+uint64_t SysInfo::MaxSharedMemorySize() {
   return g_lazy_max_shared_memory.Get().value();
 }
 

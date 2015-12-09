@@ -28,6 +28,5 @@ typedef uint64_t uint64;
 // http://crbug.com/138542
 const uint64 kuint64max =  0xFFFFFFFFFFFFFFFFULL;
 const  int32 kint32max  =  0x7FFFFFFF;
-const  int64 kint64max  =  0x7FFFFFFFFFFFFFFFLL;
 
 #endif  // BASE_BASICTYPES_H_

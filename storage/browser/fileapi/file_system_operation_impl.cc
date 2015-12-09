@@ -4,6 +4,8 @@
 
 #include "storage/browser/fileapi/file_system_operation_impl.h"
 
+#include <limits>
+
 #include "base/bind.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
@@ -198,7 +200,8 @@ void FileSystemOperationImpl::Write(
                  weak_factory_.GetWeakPtr(), url, callback));
 }
 
-void FileSystemOperationImpl::Truncate(const FileSystemURL& url, int64 length,
+void FileSystemOperationImpl::Truncate(const FileSystemURL& url,
+                                       int64_t length,
                                        const StatusCallback& callback) {
   DCHECK(SetPendingOperationType(kOperationTruncate));
 
@@ -393,7 +396,8 @@ void FileSystemOperationImpl::GetUsageAndQuotaThenRunTask(
       !file_system_context()->GetQuotaUtil(url.type())) {
     // If we don't have the quota manager or the requested filesystem type
     // does not support quota, we should be able to let it go.
-    operation_context_->set_allowed_bytes_growth(kint64max);
+    operation_context_->set_allowed_bytes_growth(
+        std::numeric_limits<int64_t>::max());
     task.Run();
     return;
   }
@@ -411,8 +415,8 @@ void FileSystemOperationImpl::DidGetUsageAndQuotaAndRunTask(
     const base::Closure& task,
     const base::Closure& error_callback,
     storage::QuotaStatusCode status,
-    int64 usage,
-    int64 quota) {
+    int64_t usage,
+    int64_t quota) {
   if (status != storage::kQuotaStatusOk) {
     LOG(WARNING) << "Got unexpected quota error : " << status;
     error_callback.Run();
@@ -483,7 +487,7 @@ void FileSystemOperationImpl::DoCopyInForeignFile(
 
 void FileSystemOperationImpl::DoTruncate(const FileSystemURL& url,
                                          const StatusCallback& callback,
-                                         int64 length) {
+                                         int64_t length) {
   async_file_util_->Truncate(
       operation_context_.Pass(), url, length,
       base::Bind(&FileSystemOperationImpl::DidFinishOperation,
@@ -572,7 +576,7 @@ void FileSystemOperationImpl::DidWrite(
     const FileSystemURL& url,
     const WriteCallback& write_callback,
     base::File::Error rv,
-    int64 bytes,
+    int64_t bytes,
     FileWriterDelegate::WriteProgressStatus write_status) {
   const bool complete = (
       write_status != FileWriterDelegate::SUCCESS_IO_PENDING);

@@ -12,14 +12,14 @@
 
 namespace {
 
-int64 AmountOfMemory(int pages_name) {
+int64_t AmountOfMemory(int pages_name) {
   long pages = sysconf(pages_name);
   long page_size = sysconf(_SC_PAGESIZE);
   if (pages == -1 || page_size == -1) {
     NOTREACHED();
     return 0;
   }
-  return static_cast<int64>(pages) * page_size;
+  return static_cast<int64_t>(pages) * page_size;
 }
 
 }  // namespace
@@ -39,17 +39,17 @@ int SysInfo::NumberOfProcessors() {
 }
 
 // static
-int64 SysInfo::AmountOfPhysicalMemory() {
+int64_t SysInfo::AmountOfPhysicalMemory() {
   return AmountOfMemory(_SC_PHYS_PAGES);
 }
 
 // static
-int64 SysInfo::AmountOfAvailablePhysicalMemory() {
+int64_t SysInfo::AmountOfAvailablePhysicalMemory() {
   return AmountOfMemory(_SC_AVPHYS_PAGES);
 }
 
 // static
-uint64 SysInfo::MaxSharedMemorySize() {
+uint64_t SysInfo::MaxSharedMemorySize() {
   int mib[] = { CTL_KERN, KERN_SHMINFO, KERN_SHMINFO_SHMMAX };
   size_t limit;
   size_t size = sizeof(limit);
@@ -57,7 +57,7 @@ uint64 SysInfo::MaxSharedMemorySize() {
     NOTREACHED();
     return 0;
   }
-  return static_cast<uint64>(limit);
+  return static_cast<uint64_t>(limit);
 }
 
 // static

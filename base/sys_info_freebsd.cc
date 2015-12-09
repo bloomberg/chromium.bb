@@ -10,7 +10,7 @@
 
 namespace base {
 
-int64 SysInfo::AmountOfPhysicalMemory() {
+int64_t SysInfo::AmountOfPhysicalMemory() {
   int pages, page_size;
   size_t size = sizeof(pages);
   sysctlbyname("vm.stats.vm.v_page_count", &pages, &size, NULL, 0);
@@ -19,18 +19,18 @@ int64 SysInfo::AmountOfPhysicalMemory() {
     NOTREACHED();
     return 0;
   }
-  return static_cast<int64>(pages) * page_size;
+  return static_cast<int64_t>(pages) * page_size;
 }
 
 // static
-uint64 SysInfo::MaxSharedMemorySize() {
+uint64_t SysInfo::MaxSharedMemorySize() {
   size_t limit;
   size_t size = sizeof(limit);
   if (sysctlbyname("kern.ipc.shmmax", &limit, &size, NULL, 0) < 0) {
     NOTREACHED();
     return 0;
   }
-  return static_cast<uint64>(limit);
+  return static_cast<uint64_t>(limit);
 }
 
 }  // namespace base

@@ -55,13 +55,13 @@ class MockQuotaManagerProxy : public QuotaManagerProxy {
   void NotifyStorageModified(QuotaClient::ID client_id,
                              const GURL& origin,
                              StorageType type,
-                             int64 delta) override;
+                             int64_t delta) override;
 
   int notify_storage_accessed_count() const { return storage_accessed_count_; }
   int notify_storage_modified_count() const { return storage_modified_count_; }
   GURL last_notified_origin() const { return last_notified_origin_; }
   StorageType last_notified_type() const { return last_notified_type_; }
-  int64 last_notified_delta() const { return last_notified_delta_; }
+  int64_t last_notified_delta() const { return last_notified_delta_; }
 
  protected:
   ~MockQuotaManagerProxy() override;
@@ -75,7 +75,7 @@ class MockQuotaManagerProxy : public QuotaManagerProxy {
   int storage_modified_count_;
   GURL last_notified_origin_;
   StorageType last_notified_type_;
-  int64 last_notified_delta_;
+  int64_t last_notified_delta_;
 
   QuotaClient* registered_client_;
 

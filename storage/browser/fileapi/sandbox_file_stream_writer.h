@@ -5,8 +5,11 @@
 #ifndef STORAGE_BROWSER_FILEAPI_SANDBOX_FILE_STREAM_WRITER_H_
 #define STORAGE_BROWSER_FILEAPI_SANDBOX_FILE_STREAM_WRITER_H_
 
+#include <stdint.h>
+
 #include "base/files/file.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "storage/browser/blob/shareable_file_reference.h"
 #include "storage/browser/fileapi/file_stream_writer.h"
@@ -28,7 +31,7 @@ class STORAGE_EXPORT SandboxFileStreamWriter
  public:
   SandboxFileStreamWriter(FileSystemContext* file_system_context,
                           const FileSystemURL& url,
-                          int64 initial_offset,
+                          int64_t initial_offset,
                           const UpdateObserverList& observers);
   ~SandboxFileStreamWriter() override;
 
@@ -40,9 +43,7 @@ class STORAGE_EXPORT SandboxFileStreamWriter
   int Flush(const net::CompletionCallback& callback) override;
 
   // Used only by tests.
-  void set_default_quota(int64 quota) {
-    default_quota_ = quota;
-  }
+  void set_default_quota(int64_t quota) { default_quota_ = quota; }
 
  private:
   // Performs quota calculation and calls local_file_writer_->Write().
@@ -59,8 +60,8 @@ class STORAGE_EXPORT SandboxFileStreamWriter
       const scoped_refptr<storage::ShareableFileReference>& file_ref);
   void DidGetUsageAndQuota(const net::CompletionCallback& callback,
                            storage::QuotaStatusCode status,
-                           int64 usage,
-                           int64 quota);
+                           int64_t usage,
+                           int64_t quota);
   void DidInitializeForWrite(net::IOBuffer* buf, int buf_len,
                              const net::CompletionCallback& callback,
                              int init_status);
@@ -73,19 +74,19 @@ class STORAGE_EXPORT SandboxFileStreamWriter
 
   scoped_refptr<FileSystemContext> file_system_context_;
   FileSystemURL url_;
-  int64 initial_offset_;
+  int64_t initial_offset_;
   scoped_ptr<FileStreamWriter> local_file_writer_;
   net::CompletionCallback cancel_callback_;
 
   UpdateObserverList observers_;
 
   base::FilePath file_path_;
-  int64 file_size_;
-  int64 total_bytes_written_;
-  int64 allowed_bytes_to_write_;
+  int64_t file_size_;
+  int64_t total_bytes_written_;
+  int64_t allowed_bytes_to_write_;
   bool has_pending_operation_;
 
-  int64 default_quota_;
+  int64_t default_quota_;
 
   base::WeakPtrFactory<SandboxFileStreamWriter> weak_factory_;
 

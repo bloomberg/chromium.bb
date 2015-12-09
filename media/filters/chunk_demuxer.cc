@@ -118,7 +118,7 @@ class SourceState {
   // spec's similarly named source buffer attributes that are used in coded
   // frame processing. |init_segment_received_cb| is run for each new fully
   // parsed initialization segment.
-  bool Append(const uint8* data,
+  bool Append(const uint8_t* data,
               size_t length,
               TimeDelta append_window_start,
               TimeDelta append_window_end,
@@ -325,7 +325,7 @@ void SourceState::SetGroupStartTimestampIfInSequenceMode(
 }
 
 bool SourceState::Append(
-    const uint8* data,
+    const uint8_t* data,
     size_t length,
     TimeDelta append_window_start,
     TimeDelta append_window_end,
@@ -1453,7 +1453,7 @@ bool ChunkDemuxer::EvictCodedFrames(const std::string& id,
 
 void ChunkDemuxer::AppendData(
     const std::string& id,
-    const uint8* data,
+    const uint8_t* data,
     size_t length,
     TimeDelta append_window_start,
     TimeDelta append_window_end,
@@ -1594,7 +1594,8 @@ void ChunkDemuxer::SetDuration(double duration) {
   // precision of TimeDelta.
   TimeDelta min_duration = TimeDelta::FromInternalValue(1);
   // Don't use TimeDelta::Max() here, as we want the largest finite time delta.
-  TimeDelta max_duration = TimeDelta::FromInternalValue(kint64max - 1);
+  TimeDelta max_duration =
+      TimeDelta::FromInternalValue(std::numeric_limits<int64_t>::max() - 1);
   double min_duration_in_seconds = min_duration.InSecondsF();
   double max_duration_in_seconds = max_duration.InSecondsF();
 

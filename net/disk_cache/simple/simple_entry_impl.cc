@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <cstring>
+#include <limits>
 #include <vector>
 
 #include "base/bind.h"
@@ -34,7 +35,7 @@ namespace {
 
 // An entry can store sparse data taking up to 1 / kMaxSparseDataSizeDivisor of
 // the cache.
-const int64 kMaxSparseDataSizeDivisor = 10;
+const int64_t kMaxSparseDataSizeDivisor = 10;
 
 // Used in histograms, please only add entries at the end.
 enum ReadResult {
@@ -164,7 +165,7 @@ SimpleEntryImpl::ActiveEntryProxy::~ActiveEntryProxy() {}
 
 SimpleEntryImpl::SimpleEntryImpl(net::CacheType cache_type,
                                  const FilePath& path,
-                                 const uint64 entry_hash,
+                                 const uint64_t entry_hash,
                                  OperationsMode operations_mode,
                                  SimpleBackendImpl* backend,
                                  net::NetLog* net_log)
@@ -181,8 +182,8 @@ SimpleEntryImpl::SimpleEntryImpl(net::CacheType cache_type,
       doomed_(false),
       state_(STATE_UNINITIALIZED),
       synchronous_entry_(NULL),
-      net_log_(net::BoundNetLog::Make(
-          net_log, net::NetLog::SOURCE_DISK_CACHE_ENTRY)),
+      net_log_(net::BoundNetLog::Make(net_log,
+                                      net::NetLog::SOURCE_DISK_CACHE_ENTRY)),
       stream_0_data_(new net::GrowableIOBuffer()) {
   static_assert(arraysize(data_size_) == arraysize(crc32s_end_offset_),
                 "arrays should be the same size");
@@ -333,7 +334,7 @@ Time SimpleEntryImpl::GetLastModified() const {
   return last_modified_;
 }
 
-int32 SimpleEntryImpl::GetDataSize(int stream_index) const {
+int32_t SimpleEntryImpl::GetDataSize(int stream_index) const {
   DCHECK(io_thread_checker_.CalledOnValidThread());
   DCHECK_LE(0, data_size_[stream_index]);
   return data_size_[stream_index];
@@ -471,7 +472,7 @@ int SimpleEntryImpl::WriteData(int stream_index,
   return ret_value;
 }
 
-int SimpleEntryImpl::ReadSparseData(int64 offset,
+int SimpleEntryImpl::ReadSparseData(int64_t offset,
                                     net::IOBuffer* buf,
                                     int buf_len,
                                     const CompletionCallback& callback) {
@@ -483,7 +484,7 @@ int SimpleEntryImpl::ReadSparseData(int64 offset,
   return net::ERR_IO_PENDING;
 }
 
-int SimpleEntryImpl::WriteSparseData(int64 offset,
+int SimpleEntryImpl::WriteSparseData(int64_t offset,
                                      net::IOBuffer* buf,
                                      int buf_len,
                                      const CompletionCallback& callback) {
@@ -495,9 +496,9 @@ int SimpleEntryImpl::WriteSparseData(int64 offset,
   return net::ERR_IO_PENDING;
 }
 
-int SimpleEntryImpl::GetAvailableRange(int64 offset,
+int SimpleEntryImpl::GetAvailableRange(int64_t offset,
                                        int len,
-                                       int64* start,
+                                       int64_t* start,
                                        const CompletionCallback& callback) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
 
@@ -765,7 +766,7 @@ void SimpleEntryImpl::CloseInternal() {
     for (int i = 0; i < kSimpleEntryStreamCount; ++i) {
       if (have_written_[i]) {
         if (GetDataSize(i) == crc32s_end_offset_[i]) {
-          int32 crc = GetDataSize(i) == 0 ? crc32(0, Z_NULL, 0) : crc32s_[i];
+          int32_t crc = GetDataSize(i) == 0 ? crc32(0, Z_NULL, 0) : crc32s_[i];
           crc32s_to_write->push_back(CRCRecord(i, true, crc));
         } else {
           crc32s_to_write->push_back(CRCRecord(i, false, 0));
@@ -858,7 +859,7 @@ void SimpleEntryImpl::ReadDataInternal(int stream_index,
   if (!doomed_ && backend_.get())
     backend_->index()->UseIfExists(entry_hash_);
 
-  scoped_ptr<uint32> read_crc32(new uint32());
+  scoped_ptr<uint32_t> read_crc32(new uint32_t());
   scoped_ptr<int> result(new int());
   scoped_ptr<SimpleEntryStat> entry_stat(
       new SimpleEntryStat(last_used_, last_modified_, data_size_,
@@ -927,7 +928,7 @@ void SimpleEntryImpl::WriteDataInternal(int stream_index,
 
   // Ignore zero-length writes that do not change the file size.
   if (buf_len == 0) {
-    int32 data_size = data_size_[stream_index];
+    int32_t data_size = data_size_[stream_index];
     if (truncate ? (offset == data_size) : (offset <= data_size)) {
       RecordWriteResult(cache_type_, WRITE_RESULT_FAST_EMPTY_RETURN);
       if (!callback.is_null()) {
@@ -983,7 +984,7 @@ void SimpleEntryImpl::WriteDataInternal(int stream_index,
 }
 
 void SimpleEntryImpl::ReadSparseDataInternal(
-    int64 sparse_offset,
+    int64_t sparse_offset,
     net::IOBuffer* buf,
     int buf_len,
     const CompletionCallback& callback) {
@@ -1011,7 +1012,7 @@ void SimpleEntryImpl::ReadSparseDataInternal(
 }
 
 void SimpleEntryImpl::WriteSparseDataInternal(
-    int64 sparse_offset,
+    int64_t sparse_offset,
     net::IOBuffer* buf,
     int buf_len,
     const CompletionCallback& callback) {
@@ -1021,9 +1022,9 @@ void SimpleEntryImpl::WriteSparseDataInternal(
   DCHECK_EQ(STATE_READY, state_);
   state_ = STATE_IO_PENDING;
 
-  uint64 max_sparse_data_size = kint64max;
+  uint64_t max_sparse_data_size = std::numeric_limits<int64_t>::max();
   if (backend_.get()) {
-    uint64 max_cache_size = backend_->index()->max_size();
+    uint64_t max_cache_size = backend_->index()->max_size();
     max_sparse_data_size = max_cache_size / kMaxSparseDataSizeDivisor;
   }
 
@@ -1051,9 +1052,9 @@ void SimpleEntryImpl::WriteSparseDataInternal(
 }
 
 void SimpleEntryImpl::GetAvailableRangeInternal(
-    int64 sparse_offset,
+    int64_t sparse_offset,
     int len,
-    int64* out_start,
+    int64_t* out_start,
     const CompletionCallback& callback) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
   ScopedOperationRunner operation_runner(this);
@@ -1166,7 +1167,7 @@ void SimpleEntryImpl::ReadOperationComplete(
     int stream_index,
     int offset,
     const CompletionCallback& completion_callback,
-    scoped_ptr<uint32> read_crc32,
+    scoped_ptr<uint32_t> read_crc32,
     scoped_ptr<SimpleEntryStat> entry_stat,
     scoped_ptr<int> result) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
@@ -1181,8 +1182,8 @@ void SimpleEntryImpl::ReadOperationComplete(
   }
 
   if (*result > 0 && crc32s_end_offset_[stream_index] == offset) {
-    uint32 current_crc = offset == 0 ? crc32(0, Z_NULL, 0)
-                                     : crc32s_[stream_index];
+    uint32_t current_crc =
+        offset == 0 ? crc32(0, Z_NULL, 0) : crc32s_[stream_index];
     crc32s_[stream_index] = crc32_combine(current_crc, *read_crc32, *result);
     crc32s_end_offset_[stream_index] += *result;
     if (!have_written_[stream_index] &&
@@ -1365,8 +1366,8 @@ void SimpleEntryImpl::UpdateDataFromEntryStat(
     backend_->index()->UpdateEntrySize(entry_hash_, GetDiskUsage());
 }
 
-int64 SimpleEntryImpl::GetDiskUsage() const {
-  int64 file_size = 0;
+int64_t SimpleEntryImpl::GetDiskUsage() const {
+  int64_t file_size = 0;
   for (int i = 0; i < kSimpleEntryStreamCount; ++i) {
     file_size +=
         simple_util::GetFileSizeFromKeyAndDataSize(key_, data_size_[i]);
@@ -1510,7 +1511,7 @@ void SimpleEntryImpl::AdvanceCrc(net::IOBuffer* buffer,
   // the crc of the data. When we write to an entry and close without having
   // done a sequential write, we don't check the CRC on read.
   if (offset == 0 || crc32s_end_offset_[stream_index] == offset) {
-    uint32 initial_crc =
+    uint32_t initial_crc =
         (offset != 0) ? crc32s_[stream_index] : crc32(0, Z_NULL, 0);
     if (length > 0) {
       crc32s_[stream_index] = crc32(

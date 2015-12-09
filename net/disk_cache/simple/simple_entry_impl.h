@@ -5,6 +5,8 @@
 #ifndef NET_DISK_CACHE_SIMPLE_SIMPLE_ENTRY_IMPL_H_
 #define NET_DISK_CACHE_SIMPLE_SIMPLE_ENTRY_IMPL_H_
 
+#include <stdint.h>
+
 #include <queue>
 #include <string>
 
@@ -57,7 +59,7 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
 
   SimpleEntryImpl(net::CacheType cache_type,
                   const base::FilePath& path,
-                  uint64 entry_hash,
+                  uint64_t entry_hash,
                   OperationsMode operations_mode,
                   SimpleBackendImpl* backend,
                   net::NetLog* net_log);
@@ -76,7 +78,7 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
   int DoomEntry(const CompletionCallback& callback);
 
   const std::string& key() const { return key_; }
-  uint64 entry_hash() const { return entry_hash_; }
+  uint64_t entry_hash() const { return entry_hash_; }
   void SetKey(const std::string& key);
 
   // From Entry:
@@ -85,7 +87,7 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
   std::string GetKey() const override;
   base::Time GetLastUsed() const override;
   base::Time GetLastModified() const override;
-  int32 GetDataSize(int index) const override;
+  int32_t GetDataSize(int index) const override;
   int ReadData(int stream_index,
                int offset,
                net::IOBuffer* buf,
@@ -97,17 +99,17 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
                 int buf_len,
                 const CompletionCallback& callback,
                 bool truncate) override;
-  int ReadSparseData(int64 offset,
+  int ReadSparseData(int64_t offset,
                      net::IOBuffer* buf,
                      int buf_len,
                      const CompletionCallback& callback) override;
-  int WriteSparseData(int64 offset,
+  int WriteSparseData(int64_t offset,
                       net::IOBuffer* buf,
                       int buf_len,
                       const CompletionCallback& callback) override;
-  int GetAvailableRange(int64 offset,
+  int GetAvailableRange(int64_t offset,
                         int len,
-                        int64* start,
+                        int64_t* start,
                         const CompletionCallback& callback) override;
   bool CouldBeSparse() const override;
   void CancelSparseIO() override;
@@ -193,19 +195,19 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
                          const CompletionCallback& callback,
                          bool truncate);
 
-  void ReadSparseDataInternal(int64 sparse_offset,
+  void ReadSparseDataInternal(int64_t sparse_offset,
                               net::IOBuffer* buf,
                               int buf_len,
                               const CompletionCallback& callback);
 
-  void WriteSparseDataInternal(int64 sparse_offset,
+  void WriteSparseDataInternal(int64_t sparse_offset,
                                net::IOBuffer* buf,
                                int buf_len,
                                const CompletionCallback& callback);
 
-  void GetAvailableRangeInternal(int64 sparse_offset,
+  void GetAvailableRangeInternal(int64_t sparse_offset,
                                  int len,
-                                 int64* out_start,
+                                 int64_t* out_start,
                                  const CompletionCallback& callback);
 
   void DoomEntryInternal(const CompletionCallback& callback);
@@ -236,7 +238,7 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
   void ReadOperationComplete(int stream_index,
                              int offset,
                              const CompletionCallback& completion_callback,
-                             scoped_ptr<uint32> read_crc32,
+                             scoped_ptr<uint32_t> read_crc32,
                              scoped_ptr<SimpleEntryStat> entry_stat,
                              scoped_ptr<int> result);
 
@@ -279,7 +281,7 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
   // index to make them available on next IO operations.
   void UpdateDataFromEntryStat(const SimpleEntryStat& entry_stat);
 
-  int64 GetDiskUsage() const;
+  int64_t GetDiskUsage() const;
 
   // Used to report histograms.
   void RecordReadIsParallelizable(const SimpleEntryOperation& operation) const;
@@ -312,7 +314,7 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
   const net::CacheType cache_type_;
   const scoped_refptr<base::TaskRunner> worker_pool_;
   const base::FilePath path_;
-  const uint64 entry_hash_;
+  const uint64_t entry_hash_;
   const bool use_optimistic_operations_;
   std::string key_;
 
@@ -321,8 +323,8 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
   // TODO(clamy): Unify last_used_ with data in the index.
   base::Time last_used_;
   base::Time last_modified_;
-  int32 data_size_[kSimpleEntryStreamCount];
-  int32 sparse_data_size_;
+  int32_t data_size_[kSimpleEntryStreamCount];
+  int32_t sparse_data_size_;
 
   // Number of times this object has been returned from Backend::OpenEntry() and
   // Backend::CreateEntry() without subsequent Entry::Close() calls. Used to
@@ -341,8 +343,8 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
   // a single entry reader that reads serially through the entire file.
   // Extending this to multiple readers is possible, but isn't currently worth
   // it; see http://crbug.com/488076#c3 for details.
-  int32 crc32s_end_offset_[kSimpleEntryStreamCount];
-  uint32 crc32s_[kSimpleEntryStreamCount];
+  int32_t crc32s_end_offset_[kSimpleEntryStreamCount];
+  uint32_t crc32s_[kSimpleEntryStreamCount];
 
   // If |have_written_[index]| is true, we have written to the file that
   // contains stream |index|.

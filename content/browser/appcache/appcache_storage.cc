@@ -15,7 +15,7 @@
 namespace content {
 
 // static
-const int64 AppCacheStorage::kUnitializedId = -1;
+const int64_t AppCacheStorage::kUnitializedId = -1;
 
 AppCacheStorage::AppCacheStorage(AppCacheServiceImpl* service)
     : last_cache_id_(kUnitializedId), last_group_id_(kUnitializedId),
@@ -41,8 +41,8 @@ AppCacheStorage::DelegateReference::~DelegateReference() {
 
 AppCacheStorage::ResponseInfoLoadTask::ResponseInfoLoadTask(
     const GURL& manifest_url,
-    int64 group_id,
-    int64 response_id,
+    int64_t group_id,
+    int64_t response_id,
     AppCacheStorage* storage)
     : storage_(storage),
       manifest_url_(manifest_url),
@@ -79,8 +79,10 @@ void AppCacheStorage::ResponseInfoLoadTask::OnReadComplete(int result) {
   delete this;
 }
 
-void AppCacheStorage::LoadResponseInfo(
-    const GURL& manifest_url, int64 group_id, int64 id, Delegate* delegate) {
+void AppCacheStorage::LoadResponseInfo(const GURL& manifest_url,
+                                       int64_t group_id,
+                                       int64_t id,
+                                       Delegate* delegate) {
   AppCacheResponseInfo* info = working_set_.GetResponseInfo(id);
   if (info) {
     delegate->OnResponseInfoLoaded(info, id);
@@ -95,10 +97,10 @@ void AppCacheStorage::LoadResponseInfo(
   info_load->StartIfNeeded();
 }
 
-void AppCacheStorage::UpdateUsageMapAndNotify(
-    const GURL& origin, int64 new_usage) {
+void AppCacheStorage::UpdateUsageMapAndNotify(const GURL& origin,
+                                              int64_t new_usage) {
   DCHECK_GE(new_usage, 0);
-  int64 old_usage = usage_map_[origin];
+  int64_t old_usage = usage_map_[origin];
   if (new_usage > 0)
     usage_map_[origin] = new_usage;
   else

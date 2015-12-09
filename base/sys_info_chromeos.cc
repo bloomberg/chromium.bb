@@ -4,7 +4,6 @@
 
 #include "base/sys_info.h"
 
-#include "base/basictypes.h"
 #include "base/environment.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
@@ -90,9 +89,9 @@ class ChromeOSVersionInfo {
     return true;
   }
 
-  void GetVersionNumbers(int32* major_version,
-                         int32* minor_version,
-                         int32* bugfix_version) {
+  void GetVersionNumbers(int32_t* major_version,
+                         int32_t* minor_version,
+                         int32_t* bugfix_version) {
     *major_version = major_version_;
     *minor_version = minor_version_;
     *bugfix_version = bugfix_version_;
@@ -154,9 +153,9 @@ class ChromeOSVersionInfo {
 
   Time lsb_release_time_;
   SysInfo::LsbReleaseMap lsb_release_map_;
-  int32 major_version_;
-  int32 minor_version_;
-  int32 bugfix_version_;
+  int32_t major_version_;
+  int32_t minor_version_;
+  int32_t bugfix_version_;
   bool is_running_on_chromeos_;
 };
 
@@ -170,9 +169,9 @@ ChromeOSVersionInfo& GetChromeOSVersionInfo() {
 }  // namespace
 
 // static
-void SysInfo::OperatingSystemVersionNumbers(int32* major_version,
-                                            int32* minor_version,
-                                            int32* bugfix_version) {
+void SysInfo::OperatingSystemVersionNumbers(int32_t* major_version,
+                                            int32_t* minor_version,
+                                            int32_t* bugfix_version) {
   return GetChromeOSVersionInfo().GetVersionNumbers(
       major_version, minor_version, bugfix_version);
 }

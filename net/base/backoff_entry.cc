@@ -8,7 +8,6 @@
 #include <cmath>
 #include <limits>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/numerics/safe_math.h"
 #include "base/rand_util.h"
@@ -145,7 +144,7 @@ base::TimeTicks BackoffEntry::CalculateReleaseTime() const {
   base::internal::CheckedNumeric<int64_t> backoff_duration_us = delay_ms + 0.5;
   backoff_duration_us *= base::Time::kMicrosecondsPerMillisecond;
   base::TimeDelta backoff_duration = base::TimeDelta::FromMicroseconds(
-      backoff_duration_us.ValueOrDefault(kint64max));
+      backoff_duration_us.ValueOrDefault(std::numeric_limits<int64_t>::max()));
   base::TimeTicks release_time = BackoffDurationToReleaseTime(backoff_duration);
 
   // Never reduce previously set release horizon, e.g. due to Retry-After
@@ -162,7 +161,8 @@ base::TimeTicks BackoffEntry::BackoffDurationToReleaseTime(
       backoff_duration.InMicroseconds();
   calculated_release_time_us += kTimeTicksNowUs;
 
-  base::internal::CheckedNumeric<int64_t> maximum_release_time_us = kint64max;
+  base::internal::CheckedNumeric<int64_t> maximum_release_time_us =
+      std::numeric_limits<int64_t>::max();
   if (policy_->maximum_backoff_ms >= 0) {
     maximum_release_time_us = policy_->maximum_backoff_ms;
     maximum_release_time_us *= base::Time::kMicrosecondsPerMillisecond;
@@ -171,9 +171,10 @@ base::TimeTicks BackoffEntry::BackoffDurationToReleaseTime(
 
   // Decide between maximum release time and calculated release time, accounting
   // for overflow with both.
-  int64_t release_time_us =
-      std::min(calculated_release_time_us.ValueOrDefault(kint64max),
-               maximum_release_time_us.ValueOrDefault(kint64max));
+  int64_t release_time_us = std::min(calculated_release_time_us.ValueOrDefault(
+                                         std::numeric_limits<int64_t>::max()),
+                                     maximum_release_time_us.ValueOrDefault(
+                                         std::numeric_limits<int64_t>::max()));
 
   return base::TimeTicks() + base::TimeDelta::FromMicroseconds(release_time_us);
 }

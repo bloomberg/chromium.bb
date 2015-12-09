@@ -5,6 +5,8 @@
 #ifndef STORAGE_BROWSER_QUOTA_QUOTA_MANAGER_H_
 #define STORAGE_BROWSER_QUOTA_QUOTA_MANAGER_H_
 
+#include <stdint.h>
+
 #include <deque>
 #include <list>
 #include <map>
@@ -13,9 +15,9 @@
 #include <utility>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -59,16 +61,16 @@ class UsageTracker;
 struct QuotaManagerDeleter;
 
 struct STORAGE_EXPORT UsageAndQuota {
-  int64 usage;
-  int64 global_limited_usage;
-  int64 quota;
-  int64 available_disk_space;
+  int64_t usage;
+  int64_t global_limited_usage;
+  int64_t quota;
+  int64_t available_disk_space;
 
   UsageAndQuota();
-  UsageAndQuota(int64 usage,
-                int64 global_limited_usage,
-                int64 quota,
-                int64 available_disk_space);
+  UsageAndQuota(int64_t usage,
+                int64_t global_limited_usage,
+                int64_t quota,
+                int64_t available_disk_space);
 };
 
 // TODO(calamity): Use this in the temporary storage eviction path.
@@ -83,8 +85,8 @@ class STORAGE_EXPORT QuotaEvictionPolicy {
   virtual void GetEvictionOrigin(
       const scoped_refptr<SpecialStoragePolicy>& special_storage_policy,
       const std::set<GURL>& exceptions,
-      const std::map<GURL, int64>& usage_map,
-      int64 global_quota,
+      const std::map<GURL, int64_t>& usage_map,
+      int64_t global_quota,
       const GetOriginCallback& callback) = 0;
 };
 
@@ -100,7 +102,7 @@ class STORAGE_EXPORT QuotaEvictionHandler {
   // no evictable origins.
   virtual void GetEvictionOrigin(StorageType type,
                                  const std::set<GURL>& extra_exceptions,
-                                 int64 global_quota,
+                                 int64_t global_quota,
                                  const GetOriginCallback& callback) = 0;
 
   virtual void EvictOriginData(
@@ -116,13 +118,11 @@ class STORAGE_EXPORT QuotaEvictionHandler {
 };
 
 struct UsageInfo {
-  UsageInfo(const std::string& host, StorageType type, int64 usage)
-      : host(host),
-        type(type),
-        usage(usage) {}
+  UsageInfo(const std::string& host, StorageType type, int64_t usage)
+      : host(host), type(type), usage(usage) {}
   std::string host;
   StorageType type;
-  int64 usage;
+  int64_t usage;
 };
 
 // The quota manager class.  This class is instantiated per profile and
@@ -134,12 +134,11 @@ class STORAGE_EXPORT QuotaManager
       public base::RefCountedThreadSafe<QuotaManager, QuotaManagerDeleter> {
  public:
   typedef base::Callback<void(QuotaStatusCode,
-                              int64 /* usage */,
-                              int64 /* quota */)>
-      GetUsageAndQuotaCallback;
+                              int64_t /* usage */,
+                              int64_t /* quota */)> GetUsageAndQuotaCallback;
 
-  static const int64 kIncognitoDefaultQuotaLimit;
-  static const int64 kNoLimit;
+  static const int64_t kIncognitoDefaultQuotaLimit;
+  static const int64_t kNoLimit;
 
   QuotaManager(
       bool is_incognito,
@@ -185,7 +184,7 @@ class STORAGE_EXPORT QuotaManager
   void NotifyStorageModified(QuotaClient::ID client_id,
                              const GURL& origin,
                              StorageType type,
-                             int64 delta);
+                             int64_t delta);
 
   // Used to avoid evicting origins with open pages.
   // A call to NotifyOriginInUse must be balanced by a later call
@@ -226,13 +225,13 @@ class STORAGE_EXPORT QuotaManager
   void GetTemporaryGlobalQuota(const QuotaCallback& callback);
 
   // Ok to call with NULL callback.
-  void SetTemporaryGlobalOverrideQuota(int64 new_quota,
+  void SetTemporaryGlobalOverrideQuota(int64_t new_quota,
                                        const QuotaCallback& callback);
 
   void GetPersistentHostQuota(const std::string& host,
                               const QuotaCallback& callback);
   void SetPersistentHostQuota(const std::string& host,
-                              int64 new_quota,
+                              int64_t new_quota,
                               const QuotaCallback& callback);
   void GetGlobalUsage(StorageType type, const GlobalUsageCallback& callback);
   void GetHostUsage(const std::string& host, StorageType type,
@@ -269,7 +268,7 @@ class STORAGE_EXPORT QuotaManager
   // utilized by a single host (ie. 5 for 20%).
   static const int kPerHostTemporaryPortion;
 
-  static const int64 kPerHostPersistentQuotaLimit;
+  static const int64_t kPerHostPersistentQuotaLimit;
 
   static const char kDatabaseName[];
 
@@ -284,8 +283,8 @@ class STORAGE_EXPORT QuotaManager
   // These are kept non-const so that test code can change the value.
   // TODO(kinuko): Make this a real const value and add a proper way to set
   // the quota for syncable storage. (http://crbug.com/155488)
-  static int64 kMinimumPreserveForSystem;
-  static int64 kSyncableStorageDefaultHostQuota;
+  static int64_t kMinimumPreserveForSystem;
+  static int64_t kSyncableStorageDefaultHostQuota;
 
  protected:
   ~QuotaManager() override;
@@ -319,7 +318,7 @@ class STORAGE_EXPORT QuotaManager
 
   // Function pointer type used to store the function which returns the
   // available disk space for the disk containing the given FilePath.
-  typedef int64 (*GetAvailableDiskSpaceFn)(const base::FilePath&);
+  typedef int64_t (*GetAvailableDiskSpaceFn)(const base::FilePath&);
 
   typedef base::Callback<void(const QuotaTableEntries&)>
       DumpQuotaTableCallback;
@@ -327,9 +326,9 @@ class STORAGE_EXPORT QuotaManager
       DumpOriginInfoTableCallback;
 
   typedef CallbackQueue<base::Closure> ClosureQueue;
-  typedef CallbackQueue<AvailableSpaceCallback, QuotaStatusCode, int64>
+  typedef CallbackQueue<AvailableSpaceCallback, QuotaStatusCode, int64_t>
       AvailableSpaceCallbackQueue;
-  typedef CallbackQueueMap<QuotaCallback, std::string, QuotaStatusCode, int64>
+  typedef CallbackQueueMap<QuotaCallback, std::string, QuotaStatusCode, int64_t>
       HostQuotaCallbackMap;
 
   struct EvictionContext {
@@ -367,12 +366,11 @@ class STORAGE_EXPORT QuotaManager
       const GURL& origin,
       StorageType type,
       base::Time accessed_time);
-  void NotifyStorageModifiedInternal(
-      QuotaClient::ID client_id,
-      const GURL& origin,
-      StorageType type,
-      int64 delta,
-      base::Time modified_time);
+  void NotifyStorageModifiedInternal(QuotaClient::ID client_id,
+                                     const GURL& origin,
+                                     StorageType type,
+                                     int64_t delta,
+                                     base::Time modified_time);
 
   void DumpQuotaTable(const DumpQuotaTableCallback& callback);
   void DumpOriginInfoTable(const DumpOriginInfoTableCallback& callback);
@@ -392,10 +390,10 @@ class STORAGE_EXPORT QuotaManager
   void DidOriginDataEvicted(QuotaStatusCode status);
 
   void ReportHistogram();
-  void DidGetTemporaryGlobalUsageForHistogram(int64 usage,
-                                              int64 unlimited_usage);
-  void DidGetPersistentGlobalUsageForHistogram(int64 usage,
-                                               int64 unlimited_usage);
+  void DidGetTemporaryGlobalUsageForHistogram(int64_t usage,
+                                              int64_t unlimited_usage);
+  void DidGetPersistentGlobalUsageForHistogram(int64_t usage,
+                                               int64_t unlimited_usage);
 
   std::set<GURL> GetEvictionOriginExceptions(
       const std::set<GURL>& extra_exceptions);
@@ -405,7 +403,7 @@ class STORAGE_EXPORT QuotaManager
   // QuotaEvictionHandler.
   void GetEvictionOrigin(StorageType type,
                          const std::set<GURL>& extra_exceptions,
-                         int64 global_quota,
+                         int64_t global_quota,
                          const GetOriginCallback& callback) override;
   void EvictOriginData(const GURL& origin,
                        StorageType type,
@@ -416,24 +414,24 @@ class STORAGE_EXPORT QuotaManager
   void GetLRUOrigin(StorageType type, const GetOriginCallback& callback);
 
   void DidSetTemporaryGlobalOverrideQuota(const QuotaCallback& callback,
-                                          const int64* new_quota,
+                                          const int64_t* new_quota,
                                           bool success);
   void DidGetPersistentHostQuota(const std::string& host,
-                                 const int64* quota,
+                                 const int64_t* quota,
                                  bool success);
   void DidSetPersistentHostQuota(const std::string& host,
                                  const QuotaCallback& callback,
-                                 const int64* new_quota,
+                                 const int64_t* new_quota,
                                  bool success);
-  void DidInitialize(int64* temporary_quota_override,
-                     int64* desired_available_space,
+  void DidInitialize(int64_t* temporary_quota_override,
+                     int64_t* desired_available_space,
                      bool success);
   void DidGetLRUOrigin(const GURL* origin,
                        bool success);
   void DidGetInitialTemporaryGlobalQuota(QuotaStatusCode status,
-                                         int64 quota_unused);
+                                         int64_t quota_unused);
   void DidInitializeTemporaryOriginsInfo(bool success);
-  void DidGetAvailableSpace(int64 space);
+  void DidGetAvailableSpace(int64_t space);
   void DidDatabaseWork(bool success);
 
   void DeleteOnCorrectThread() const;
@@ -474,9 +472,9 @@ class STORAGE_EXPORT QuotaManager
   HostQuotaCallbackMap persistent_host_quota_callbacks_;
 
   bool temporary_quota_initialized_;
-  int64 temporary_quota_override_;
+  int64_t temporary_quota_override_;
 
-  int64 desired_available_space_;
+  int64_t desired_available_space_;
 
   // Map from origin to count.
   std::map<GURL, int> origins_in_use_;

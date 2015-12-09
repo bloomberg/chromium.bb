@@ -11,7 +11,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/synchronization/lock.h"
 #include "media/base/byte_queue.h"
 #include "media/base/demuxer.h"
@@ -234,7 +234,9 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   // processing.
   // |init_segment_received_cb| is run for each newly successfully parsed
   // initialization segment.
-  void AppendData(const std::string& id, const uint8* data, size_t length,
+  void AppendData(const std::string& id,
+                  const uint8_t* data,
+                  size_t length,
                   base::TimeDelta append_window_start,
                   base::TimeDelta append_window_end,
                   base::TimeDelta* timestamp_offset,

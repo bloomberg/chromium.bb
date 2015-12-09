@@ -4,6 +4,8 @@
 
 #include "media/blink/websourcebuffer_impl.h"
 
+#include <stdint.h>
+
 #include <cmath>
 #include <limits>
 
@@ -25,7 +27,8 @@ static base::TimeDelta DoubleToTimeDelta(double time) {
 
   // Don't use base::TimeDelta::Max() here, as we want the largest finite time
   // delta.
-  base::TimeDelta max_time = base::TimeDelta::FromInternalValue(kint64max - 1);
+  base::TimeDelta max_time = base::TimeDelta::FromInternalValue(
+      std::numeric_limits<int64_t>::max() - 1);
   double max_time_in_seconds = max_time.InSecondsF();
 
   if (time >= max_time_in_seconds)

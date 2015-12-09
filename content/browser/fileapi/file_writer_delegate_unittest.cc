@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
+#include <limits>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/scoped_temp_dir.h"
@@ -53,12 +55,13 @@ class Result {
         write_status_(FileWriterDelegate::SUCCESS_IO_PENDING) {}
 
   base::File::Error status() const { return status_; }
-  int64 bytes_written() const { return bytes_written_; }
+  int64_t bytes_written() const { return bytes_written_; }
   FileWriterDelegate::WriteProgressStatus write_status() const {
     return write_status_;
   }
 
-  void DidWrite(base::File::Error status, int64 bytes,
+  void DidWrite(base::File::Error status,
+                int64_t bytes,
                 FileWriterDelegate::WriteProgressStatus write_status) {
     write_status_ = write_status;
     if (status == base::File::FILE_OK) {
@@ -75,7 +78,7 @@ class Result {
  private:
   // For post-operation status.
   base::File::Error status_;
-  int64 bytes_written_;
+  int64_t bytes_written_;
   FileWriterDelegate::WriteProgressStatus write_status_;
 };
 
@@ -91,13 +94,13 @@ class FileWriterDelegateTest : public PlatformTest {
   void SetUp() override;
   void TearDown() override;
 
-  int64 usage() {
+  int64_t usage() {
     return file_system_context_->GetQuotaUtil(kFileSystemType)
         ->GetOriginUsageOnFileTaskRunner(
               file_system_context_.get(), kOrigin, kFileSystemType);
   }
 
-  int64 GetFileSizeOnDisk(const char* test_file_path) {
+  int64_t GetFileSizeOnDisk(const char* test_file_path) {
     // There might be in-flight flush/write.
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                   base::Bind(&base::DoNothing));
@@ -116,10 +119,9 @@ class FileWriterDelegateTest : public PlatformTest {
         kOrigin, kFileSystemType, base::FilePath().FromUTF8Unsafe(file_name));
   }
 
-  FileWriterDelegate* CreateWriterDelegate(
-      const char* test_file_path,
-      int64 offset,
-      int64 allowed_growth) {
+  FileWriterDelegate* CreateWriterDelegate(const char* test_file_path,
+                                           int64_t offset,
+                                           int64_t allowed_growth) {
     storage::SandboxFileStreamWriter* writer =
         new storage::SandboxFileStreamWriter(
             file_system_context_.get(),
@@ -139,8 +141,8 @@ class FileWriterDelegateTest : public PlatformTest {
   // and creates a new FileWriterDelegate for the file.
   void PrepareForWrite(const char* test_file_path,
                        const GURL& blob_url,
-                       int64 offset,
-                       int64 allowed_growth) {
+                       int64_t offset,
+                       int64_t allowed_growth) {
     file_writer_delegate_.reset(
         CreateWriterDelegate(test_file_path, offset, allowed_growth));
     request_ = empty_context_.CreateRequest(
@@ -277,7 +279,7 @@ TEST_F(FileWriterDelegateTest, WriteSuccessWithoutQuotaLimit) {
   const GURL kBlobURL("blob:nolimit");
   content_ = kData;
 
-  PrepareForWrite("test", kBlobURL, 0, kint64max);
+  PrepareForWrite("test", kBlobURL, 0, std::numeric_limits<int64_t>::max());
 
   Result result;
   ASSERT_EQ(0, usage());
@@ -296,7 +298,7 @@ TEST_F(FileWriterDelegateTest, WriteSuccessWithoutQuotaLimit) {
 TEST_F(FileWriterDelegateTest, WriteSuccessWithJustQuota) {
   const GURL kBlobURL("blob:just");
   content_ = kData;
-  const int64 kAllowedGrowth = kDataSize;
+  const int64_t kAllowedGrowth = kDataSize;
   PrepareForWrite("test", kBlobURL, 0, kAllowedGrowth);
 
   Result result;
@@ -316,7 +318,7 @@ TEST_F(FileWriterDelegateTest, WriteSuccessWithJustQuota) {
 TEST_F(FileWriterDelegateTest, DISABLED_WriteFailureByQuota) {
   const GURL kBlobURL("blob:failure");
   content_ = kData;
-  const int64 kAllowedGrowth = kDataSize - 1;
+  const int64_t kAllowedGrowth = kDataSize - 1;
   PrepareForWrite("test", kBlobURL, 0, kAllowedGrowth);
 
   Result result;
@@ -337,7 +339,7 @@ TEST_F(FileWriterDelegateTest, DISABLED_WriteFailureByQuota) {
 TEST_F(FileWriterDelegateTest, WriteZeroBytesSuccessfullyWithZeroQuota) {
   const GURL kBlobURL("blob:zero");
   content_ = "";
-  int64 kAllowedGrowth = 0;
+  int64_t kAllowedGrowth = 0;
   PrepareForWrite("test", kBlobURL, 0, kAllowedGrowth);
 
   Result result;
@@ -367,10 +369,11 @@ TEST_F(FileWriterDelegateTest, WriteSuccessWithoutQuotaLimitConcurrent) {
   const GURL kBlobURL2("blob:nolimitconcurrent2");
   content_ = kData;
 
-  PrepareForWrite("test", kBlobURL, 0, kint64max);
+  PrepareForWrite("test", kBlobURL, 0, std::numeric_limits<int64_t>::max());
 
   // Credate another FileWriterDelegate for concurrent write.
-  file_writer_delegate2.reset(CreateWriterDelegate("test2", 0, kint64max));
+  file_writer_delegate2.reset(
+      CreateWriterDelegate("test2", 0, std::numeric_limits<int64_t>::max()));
   request2 = empty_context_.CreateRequest(
       kBlobURL2, net::DEFAULT_PRIORITY, file_writer_delegate2.get());
 
@@ -402,8 +405,8 @@ TEST_F(FileWriterDelegateTest, WritesWithQuotaAndOffset) {
   content_ = kData;
 
   // Writing kDataSize (=45) bytes data while allowed_growth is 100.
-  int64 offset = 0;
-  int64 allowed_growth = 100;
+  int64_t offset = 0;
+  int64_t allowed_growth = 100;
   ASSERT_LT(kDataSize, allowed_growth);
   PrepareForWrite("test", kBlobURL, offset, allowed_growth);
 
@@ -460,7 +463,7 @@ TEST_F(FileWriterDelegateTest, WritesWithQuotaAndOffset) {
   offset = 0;
   allowed_growth = -20;
   PrepareForWrite("test", kBlobURL, offset, allowed_growth);
-  int64 pre_write_usage = GetFileSizeOnDisk("test");
+  int64_t pre_write_usage = GetFileSizeOnDisk("test");
 
   {
     Result result;

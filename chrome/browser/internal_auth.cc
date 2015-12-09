@@ -4,8 +4,11 @@
 
 #include "chrome/browser/internal_auth.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 #include <deque>
+#include <limits>
 
 #include "base/base64.h"
 #include "base/lazy_instance.h"
@@ -26,7 +29,7 @@ typedef std::map<std::string, std::string> VarValueMap;
 // Size of a tick in microseconds. This determines upper bound for average
 // number of passports generated per time unit. This bound equals to
 // (kMicrosecondsPerSecond / TickUs) calls per second.
-const int64 kTickUs = 10000;
+const int64_t kTickUs = 10000;
 
 // Verification window size in ticks; that means any passport expires in
 // (kVerificationWindowTicks * TickUs / kMicrosecondsPerSecond) seconds.
@@ -77,11 +80,10 @@ const size_t kTickStringLength = 20;
 const size_t kPassportSize =
     BASE64_PER_RAW(kHMACSizeInBytes) + kTickStringLength;
 
-int64 GetCurrentTick() {
-  int64 tick = base::Time::Now().ToInternalValue() / kTickUs;
-  if (tick < kVerificationWindowTicks ||
-      tick < kKeyRegenerationHardTicks ||
-      tick > kint64max - kKeyRegenerationHardTicks) {
+int64_t GetCurrentTick() {
+  int64_t tick = base::Time::Now().ToInternalValue() / kTickUs;
+  if (tick < kVerificationWindowTicks || tick < kKeyRegenerationHardTicks ||
+      tick > std::numeric_limits<int64_t>::max() - kKeyRegenerationHardTicks) {
     return 0;
   }
   return tick;
@@ -142,7 +144,7 @@ void ConvertVarValueMapToBlob(const VarValueMap& map, std::string* out) {
 
 void CreatePassport(const std::string& domain,
                     const VarValueMap& map,
-                    int64 tick,
+                    int64_t tick,
                     const crypto::HMAC* engine,
                     std::string* out) {
   DCHECK(engine);
@@ -200,8 +202,8 @@ class InternalAuthVerificationService {
       const std::string& passport,
       const std::string& domain,
       const VarValueMap& map) {
-    int64 current_tick = GetCurrentTick();
-    int64 tick = PreVerifyPassport(passport, domain, current_tick);
+    int64_t current_tick = GetCurrentTick();
+    int64_t tick = PreVerifyPassport(passport, domain, current_tick);
     if (tick == 0)
       return false;
     if (!IsVarValueMapSane(map))
@@ -221,8 +223,8 @@ class InternalAuthVerificationService {
     }
 
     // Record used tick to prevent reuse.
-    std::deque<int64>::iterator it = std::lower_bound(
-        used_ticks_.begin(), used_ticks_.end(), tick);
+    std::deque<int64_t>::iterator it =
+        std::lower_bound(used_ticks_.begin(), used_ticks_.end(), tick);
     DCHECK(it == used_ticks_.end() || *it != tick);
     used_ticks_.insert(it, tick);
 
@@ -261,10 +263,9 @@ class InternalAuthVerificationService {
   }
 
   // Returns tick bound to given passport on success or zero on failure.
-  int64 PreVerifyPassport(
-    const std::string& passport,
-    const std::string& domain,
-    int64 current_tick) {
+  int64_t PreVerifyPassport(const std::string& passport,
+                            const std::string& domain,
+                            int64_t current_tick) {
     if (passport.size() != kPassportSize ||
         !base::IsStringASCII(passport) ||
         !IsDomainSane(domain) ||
@@ -279,7 +280,7 @@ class InternalAuthVerificationService {
     std::string tick_decimal =
         passport.substr(BASE64_PER_RAW(kHMACSizeInBytes));
     DCHECK(tick_decimal.size() == kTickStringLength);
-    int64 tick = 0;
+    int64_t tick = 0;
     if (!base::StringToInt64(tick_decimal, &tick) ||
         tick <= dark_tick_ ||
         tick > key_change_tick_ + kKeyRegenerationHardTicks ||
@@ -302,16 +303,16 @@ class InternalAuthVerificationService {
   scoped_ptr<crypto::HMAC> old_engine_;
 
   // Tick at a time of recent key regeneration.
-  int64 key_change_tick_;
+  int64_t key_change_tick_;
 
   // Keeps track of ticks of successfully verified passports to prevent their
   // reuse. Size of this container is kept reasonably low by purging outdated
   // ticks.
-  std::deque<int64> used_ticks_;
+  std::deque<int64_t> used_ticks_;
 
   // Some ticks before |dark_tick_| were purged from |used_ticks_| container.
   // That means that we must not trust any tick less than or equal to dark tick.
-  int64 dark_tick_;
+  int64_t dark_tick_;
 
   DISALLOW_COPY_AND_ASSIGN(InternalAuthVerificationService);
 };
@@ -348,7 +349,7 @@ class InternalAuthGenerationService : public base::ThreadChecker {
   }
 
   // Returns zero on failure.
-  int64 GetUnusedTick(const std::string& domain) {
+  int64_t GetUnusedTick(const std::string& domain) {
     DCHECK(CalledOnValidThread());
     if (engine_ == NULL) {
       NOTREACHED();
@@ -357,7 +358,7 @@ class InternalAuthGenerationService : public base::ThreadChecker {
     if (!IsDomainSane(domain))
       return 0;
 
-    int64 current_tick = GetCurrentTick();
+    int64_t current_tick = GetCurrentTick();
     if (!used_ticks_.empty() && used_ticks_.back() > current_tick)
       current_tick = used_ticks_.back();
     for (bool first_iteration = true;; first_iteration = false) {
@@ -378,9 +379,8 @@ class InternalAuthGenerationService : public base::ThreadChecker {
       // Average speed of GeneratePassport calls exceeds limit.
       return 0;
     }
-    for (int64 tick = current_tick;
-        tick > current_tick - kGenerationWindowTicks;
-        --tick) {
+    for (int64_t tick = current_tick;
+         tick > current_tick - kGenerationWindowTicks; --tick) {
       int idx = static_cast<int>(used_ticks_.size()) -
           static_cast<int>(current_tick - tick + 1);
       if (idx < 0 || used_ticks_[idx] != tick) {
@@ -393,8 +393,9 @@ class InternalAuthGenerationService : public base::ThreadChecker {
     return 0;
   }
 
-  std::string GeneratePassport(
-      const std::string& domain, const VarValueMap& map, int64 tick) {
+  std::string GeneratePassport(const std::string& domain,
+                               const VarValueMap& map,
+                               int64_t tick) {
     DCHECK(CalledOnValidThread());
     if (tick == 0) {
       tick = GetUnusedTick(domain);
@@ -417,8 +418,8 @@ class InternalAuthGenerationService : public base::ThreadChecker {
   }
 
   scoped_ptr<crypto::HMAC> engine_;
-  int64 key_regeneration_tick_;
-  std::deque<int64> used_ticks_;
+  int64_t key_regeneration_tick_;
+  std::deque<int64_t> used_ticks_;
 
   DISALLOW_COPY_AND_ASSIGN(InternalAuthGenerationService);
 };

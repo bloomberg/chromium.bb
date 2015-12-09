@@ -43,9 +43,10 @@ void MockQuotaManagerProxy::NotifyStorageAccessed(
   last_notified_type_ = type;
 }
 
-void MockQuotaManagerProxy::NotifyStorageModified(
-    QuotaClient::ID client_id, const GURL& origin,
-    StorageType type, int64 delta) {
+void MockQuotaManagerProxy::NotifyStorageModified(QuotaClient::ID client_id,
+                                                  const GURL& origin,
+                                                  StorageType type,
+                                                  int64_t delta) {
   ++storage_modified_count_;
   last_notified_origin_ = origin;
   last_notified_type_ = type;

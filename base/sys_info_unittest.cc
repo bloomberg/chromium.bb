@@ -43,9 +43,9 @@ TEST_F(SysInfoTest, AmountOfFreeDiskSpace) {
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
 TEST_F(SysInfoTest, OperatingSystemVersionNumbers) {
-  int32 os_major_version = -1;
-  int32 os_minor_version = -1;
-  int32 os_bugfix_version = -1;
+  int32_t os_major_version = -1;
+  int32_t os_minor_version = -1;
+  int32_t os_bugfix_version = -1;
   base::SysInfo::OperatingSystemVersionNumbers(&os_major_version,
                                                &os_minor_version,
                                                &os_bugfix_version);
@@ -75,9 +75,9 @@ TEST_F(SysInfoTest, HardwareModelName) {
 #if defined(OS_CHROMEOS)
 
 TEST_F(SysInfoTest, GoogleChromeOSVersionNumbers) {
-  int32 os_major_version = -1;
-  int32 os_minor_version = -1;
-  int32 os_bugfix_version = -1;
+  int32_t os_major_version = -1;
+  int32_t os_minor_version = -1;
+  int32_t os_bugfix_version = -1;
   const char kLsbRelease[] =
       "FOO=1234123.34.5\n"
       "CHROMEOS_RELEASE_VERSION=1.2.3.4\n";
@@ -91,9 +91,9 @@ TEST_F(SysInfoTest, GoogleChromeOSVersionNumbers) {
 }
 
 TEST_F(SysInfoTest, GoogleChromeOSVersionNumbersFirst) {
-  int32 os_major_version = -1;
-  int32 os_minor_version = -1;
-  int32 os_bugfix_version = -1;
+  int32_t os_major_version = -1;
+  int32_t os_minor_version = -1;
+  int32_t os_bugfix_version = -1;
   const char kLsbRelease[] =
       "CHROMEOS_RELEASE_VERSION=1.2.3.4\n"
       "FOO=1234123.34.5\n";
@@ -107,9 +107,9 @@ TEST_F(SysInfoTest, GoogleChromeOSVersionNumbersFirst) {
 }
 
 TEST_F(SysInfoTest, GoogleChromeOSNoVersionNumbers) {
-  int32 os_major_version = -1;
-  int32 os_minor_version = -1;
-  int32 os_bugfix_version = -1;
+  int32_t os_major_version = -1;
+  int32_t os_minor_version = -1;
+  int32_t os_bugfix_version = -1;
   const char kLsbRelease[] = "FOO=1234123.34.5\n";
   base::SysInfo::SetChromeOSVersionInfoForTest(kLsbRelease, base::Time());
   base::SysInfo::OperatingSystemVersionNumbers(&os_major_version,

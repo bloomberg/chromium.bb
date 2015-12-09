@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_QUOTA_MOCK_QUOTA_MANAGER_H_
 #define CONTENT_BROWSER_QUOTA_MOCK_QUOTA_MANAGER_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <set>
 #include <utility>
@@ -74,7 +76,7 @@ class MockQuotaManager : public QuotaManager {
                         const StatusCallback& callback) override;
 
   // Helper method for updating internal quota info.
-  void SetQuota(const GURL& origin, StorageType type, int64 quota);
+  void SetQuota(const GURL& origin, StorageType type, int64_t quota);
 
   // Helper methods for timed-deletion testing:
   // Adds an origin to the canned list that will be searched through via
@@ -123,15 +125,15 @@ class MockQuotaManager : public QuotaManager {
   struct StorageInfo {
     StorageInfo();
     ~StorageInfo();
-    int64 usage;
-    int64 quota;
+    int64_t usage;
+    int64_t quota;
   };
 
   typedef std::pair<GURL, StorageType> OriginAndType;
   typedef std::map<OriginAndType, StorageInfo> UsageAndQuotaMap;
 
   // This must be called via MockQuotaManagerProxy.
-  void UpdateUsage(const GURL& origin, StorageType type, int64 delta);
+  void UpdateUsage(const GURL& origin, StorageType type, int64_t delta);
   void DidGetModifiedSince(const GetOriginsCallback& callback,
                            std::set<GURL>* origins,
                            StorageType storage_type);

@@ -4,7 +4,10 @@
 
 #include "storage/browser/fileapi/file_system_usage_cache.h"
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
+#include <limits>
+
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop.h"
@@ -45,18 +48,18 @@ TEST_F(FileSystemUsageCacheTest, CreateTest) {
 }
 
 TEST_F(FileSystemUsageCacheTest, SetSizeTest) {
-  static const int64 size = 240122;
+  static const int64_t size = 240122;
   base::FilePath usage_file_path = GetUsageFilePath();
-  int64 usage = 0;
+  int64_t usage = 0;
   ASSERT_TRUE(usage_cache()->UpdateUsage(usage_file_path, size));
   EXPECT_TRUE(usage_cache()->GetUsage(usage_file_path, &usage));
   EXPECT_EQ(size, usage);
 }
 
 TEST_F(FileSystemUsageCacheTest, SetLargeSizeTest) {
-  static const int64 size = kint64max;
+  static const int64_t size = std::numeric_limits<int64_t>::max();
   base::FilePath usage_file_path = GetUsageFilePath();
-  int64 usage = 0;
+  int64_t usage = 0;
   ASSERT_TRUE(usage_cache()->UpdateUsage(usage_file_path, size));
   EXPECT_TRUE(usage_cache()->GetUsage(usage_file_path, &usage));
   EXPECT_EQ(size, usage);
@@ -64,8 +67,8 @@ TEST_F(FileSystemUsageCacheTest, SetLargeSizeTest) {
 
 TEST_F(FileSystemUsageCacheTest, IncAndGetSizeTest) {
   base::FilePath usage_file_path = GetUsageFilePath();
-  uint32 dirty = 0;
-  int64 usage = 0;
+  uint32_t dirty = 0;
+  int64_t usage = 0;
   ASSERT_TRUE(usage_cache()->UpdateUsage(usage_file_path, 98214));
   ASSERT_TRUE(usage_cache()->IncrementDirty(usage_file_path));
   EXPECT_TRUE(usage_cache()->GetDirty(usage_file_path, &dirty));
@@ -75,9 +78,9 @@ TEST_F(FileSystemUsageCacheTest, IncAndGetSizeTest) {
 }
 
 TEST_F(FileSystemUsageCacheTest, DecAndGetSizeTest) {
-  static const int64 size = 71839;
+  static const int64_t size = 71839;
   base::FilePath usage_file_path = GetUsageFilePath();
-  int64 usage = 0;
+  int64_t usage = 0;
   ASSERT_TRUE(usage_cache()->UpdateUsage(usage_file_path, size));
   // DecrementDirty for dirty = 0 is invalid. It returns false.
   ASSERT_FALSE(usage_cache()->DecrementDirty(usage_file_path));
@@ -86,9 +89,9 @@ TEST_F(FileSystemUsageCacheTest, DecAndGetSizeTest) {
 }
 
 TEST_F(FileSystemUsageCacheTest, IncDecAndGetSizeTest) {
-  static const int64 size = 198491;
+  static const int64_t size = 198491;
   base::FilePath usage_file_path = GetUsageFilePath();
-  int64 usage = 0;
+  int64_t usage = 0;
   ASSERT_TRUE(usage_cache()->UpdateUsage(usage_file_path, size));
   ASSERT_TRUE(usage_cache()->IncrementDirty(usage_file_path));
   ASSERT_TRUE(usage_cache()->DecrementDirty(usage_file_path));
@@ -98,8 +101,8 @@ TEST_F(FileSystemUsageCacheTest, IncDecAndGetSizeTest) {
 
 TEST_F(FileSystemUsageCacheTest, DecIncAndGetSizeTest) {
   base::FilePath usage_file_path = GetUsageFilePath();
-  uint32 dirty = 0;
-  int64 usage = 0;
+  uint32_t dirty = 0;
+  int64_t usage = 0;
   ASSERT_TRUE(usage_cache()->UpdateUsage(usage_file_path, 854238));
   // DecrementDirty for dirty = 0 is invalid. It returns false.
   ASSERT_FALSE(usage_cache()->DecrementDirty(usage_file_path));
@@ -113,9 +116,9 @@ TEST_F(FileSystemUsageCacheTest, DecIncAndGetSizeTest) {
 }
 
 TEST_F(FileSystemUsageCacheTest, ManyIncsSameDecsAndGetSizeTest) {
-  static const int64 size = 82412;
+  static const int64_t size = 82412;
   base::FilePath usage_file_path = GetUsageFilePath();
-  int64 usage = 0;
+  int64_t usage = 0;
   ASSERT_TRUE(usage_cache()->UpdateUsage(usage_file_path, size));
   for (int i = 0; i < 20; i++)
     ASSERT_TRUE(usage_cache()->IncrementDirty(usage_file_path));
@@ -126,8 +129,8 @@ TEST_F(FileSystemUsageCacheTest, ManyIncsSameDecsAndGetSizeTest) {
 }
 
 TEST_F(FileSystemUsageCacheTest, ManyIncsLessDecsAndGetSizeTest) {
-  uint32 dirty = 0;
-  int64 usage = 0;
+  uint32_t dirty = 0;
+  int64_t usage = 0;
   base::FilePath usage_file_path = GetUsageFilePath();
   ASSERT_TRUE(usage_cache()->UpdateUsage(usage_file_path, 19319));
   for (int i = 0; i < 20; i++)
@@ -141,7 +144,7 @@ TEST_F(FileSystemUsageCacheTest, ManyIncsLessDecsAndGetSizeTest) {
 }
 
 TEST_F(FileSystemUsageCacheTest, GetSizeWithoutCacheFileTest) {
-  int64 usage = 0;
+  int64_t usage = 0;
   base::FilePath usage_file_path = GetUsageFilePath();
   EXPECT_FALSE(usage_cache()->GetUsage(usage_file_path, &usage));
 }

@@ -4,6 +4,8 @@
 
 #include "content/browser/quota/mock_quota_manager.h"
 
+#include <limits>
+
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -28,7 +30,8 @@ MockQuotaManager::OriginInfo::OriginInfo(
 
 MockQuotaManager::OriginInfo::~OriginInfo() {}
 
-MockQuotaManager::StorageInfo::StorageInfo() : usage(0), quota(kint64max) {}
+MockQuotaManager::StorageInfo::StorageInfo()
+    : usage(0), quota(std::numeric_limits<int64_t>::max()) {}
 MockQuotaManager::StorageInfo::~StorageInfo() {}
 
 MockQuotaManager::MockQuotaManager(
@@ -53,8 +56,9 @@ void MockQuotaManager::GetUsageAndQuota(
   callback.Run(storage::kQuotaStatusOk, info.usage, info.quota);
 }
 
-void MockQuotaManager::SetQuota(const GURL& origin, StorageType type,
-                                int64 quota) {
+void MockQuotaManager::SetQuota(const GURL& origin,
+                                StorageType type,
+                                int64_t quota) {
   usage_and_quota_map_[std::make_pair(origin, type)].quota = quota;
 }
 
@@ -125,8 +129,9 @@ void MockQuotaManager::DeleteOriginData(
 
 MockQuotaManager::~MockQuotaManager() {}
 
-void MockQuotaManager::UpdateUsage(
-    const GURL& origin, StorageType type, int64 delta) {
+void MockQuotaManager::UpdateUsage(const GURL& origin,
+                                   StorageType type,
+                                   int64_t delta) {
   usage_and_quota_map_[std::make_pair(origin, type)].usage += delta;
 }
 
