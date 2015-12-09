@@ -430,6 +430,7 @@ source_set("browser") {
       "//ui/aura",
       "//ui/aura_extra",
       "//ui/strings",
+      "//ui/views/mus:for_component",
       "//ui/wm",
     ]
     sources += [
@@ -441,7 +442,6 @@ source_set("browser") {
       "web_contents/web_contents_view_mus.h",
     ]
     if (toolkit_views) {
-      deps += [ "//ui/views/mus:for_component" ]
       defines += [ "MOJO_RUNNER_CLIENT" ]
     }
   } else {  # Not aura.
