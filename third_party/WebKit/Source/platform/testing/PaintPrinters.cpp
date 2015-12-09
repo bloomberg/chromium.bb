@@ -35,8 +35,8 @@ void PrintTo(const ClipPaintPropertyNode& node, std::ostream* os)
 {
     *os << "ClipPaintPropertyNode(clip=";
     PrintTo(node.clipRect(), os);
-    *os << ", base=";
-    PrintPointer(node.base(), *os);
+    *os << ", localTransformSpace=";
+    PrintPointer(node.localTransformSpace(), *os);
     *os << ", parent=";
     PrintPointer(node.parent(), *os);
     *os << ")";

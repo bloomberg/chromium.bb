@@ -38,6 +38,7 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/Color.h"
+#include "platform/graphics/paint/ClipPaintPropertyNode.h"
 #include "platform/graphics/paint/TransformPaintPropertyNode.h"
 #include "platform/scroll/ScrollTypes.h"
 #include "platform/scroll/Scrollbar.h"
@@ -575,6 +576,9 @@ public:
     void setScrollTranslation(PassRefPtr<TransformPaintPropertyNode> scrollTranslation) { m_scrollTranslation = scrollTranslation; }
     const TransformPaintPropertyNode* scrollTranslation() const { return m_scrollTranslation.get(); }
 
+    void setContentClip(PassRefPtr<ClipPaintPropertyNode> contentClip) { m_contentClip = contentClip; }
+    const ClipPaintPropertyNode* contentClip() const { return m_contentClip.get(); }
+
     // TODO(ojan): Merge this with IntersectionObserver once it lands.
     IntRect computeVisibleArea();
 
@@ -881,9 +885,13 @@ private:
     // Paint properties for SPv2 Only.
     // The hierarchy of transform subtree created by a FrameView.
     // [ preTranslation ]               The offset from Widget::frameRect. Establishes viewport.
-    //     +---[ scrollTranslation ]    Frame scrolling. This is going away in favor of Settings::rootLayerScrolls.
+    //     +---[ scrollTranslation ]    Frame scrolling.
+    //                                  TODO(trchen): This is going away in favor of Settings::rootLayerScrolls.
     RefPtr<TransformPaintPropertyNode> m_preTranslation;
     RefPtr<TransformPaintPropertyNode> m_scrollTranslation;
+    // The content clip clips the document (= LayoutView) but not the scrollbars.
+    // TODO(trchen): Going away in favor of Settings::rootLayerScrolls too.
+    RefPtr<ClipPaintPropertyNode> m_contentClip;
 };
 
 inline void FrameView::incrementVisuallyNonEmptyCharacterCount(unsigned count)

@@ -5,6 +5,7 @@
 #ifndef ObjectPaintProperties_h
 #define ObjectPaintProperties_h
 
+#include "platform/graphics/paint/ClipPaintPropertyNode.h"
 #include "platform/graphics/paint/EffectPaintPropertyNode.h"
 #include "platform/graphics/paint/TransformPaintPropertyNode.h"
 #include "wtf/PassOwnPtr.h"
@@ -30,10 +31,11 @@ public:
         PassRefPtr<TransformPaintPropertyNode> paintOffsetTranslation,
         PassRefPtr<TransformPaintPropertyNode> transform,
         PassRefPtr<EffectPaintPropertyNode> effect,
+        PassRefPtr<ClipPaintPropertyNode> overflowClip,
         PassRefPtr<TransformPaintPropertyNode> perspective,
         PassRefPtr<TransformPaintPropertyNode> scrollTranslation)
     {
-        return adoptPtr(new ObjectPaintProperties(paintOffsetTranslation, transform, effect, perspective, scrollTranslation));
+        return adoptPtr(new ObjectPaintProperties(paintOffsetTranslation, transform, effect, overflowClip, perspective, scrollTranslation));
     }
 
     // The hierarchy of transform subtree created by a LayoutObject.
@@ -53,22 +55,27 @@ public:
 
     EffectPaintPropertyNode* effect() const { return m_effect.get(); }
 
+    ClipPaintPropertyNode* overflowClip() const { return m_overflowClip.get(); }
+
 private:
     ObjectPaintProperties(
         PassRefPtr<TransformPaintPropertyNode> paintOffsetTranslation,
         PassRefPtr<TransformPaintPropertyNode> transform,
         PassRefPtr<EffectPaintPropertyNode> effect,
+        PassRefPtr<ClipPaintPropertyNode> overflowClip,
         PassRefPtr<TransformPaintPropertyNode> perspective,
         PassRefPtr<TransformPaintPropertyNode> scrollTranslation)
         : m_paintOffsetTranslation(paintOffsetTranslation)
         , m_transform(transform)
         , m_effect(effect)
+        , m_overflowClip(overflowClip)
         , m_perspective(perspective)
         , m_scrollTranslation(scrollTranslation) { }
 
     RefPtr<TransformPaintPropertyNode> m_paintOffsetTranslation;
     RefPtr<TransformPaintPropertyNode> m_transform;
     RefPtr<EffectPaintPropertyNode> m_effect;
+    RefPtr<ClipPaintPropertyNode> m_overflowClip;
     RefPtr<TransformPaintPropertyNode> m_perspective;
     RefPtr<TransformPaintPropertyNode> m_scrollTranslation;
 };

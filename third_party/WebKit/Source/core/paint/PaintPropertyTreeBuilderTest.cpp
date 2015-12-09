@@ -57,12 +57,18 @@ TEST_F(PaintPropertyTreeBuilderTest, FixedPosition)
 {
     loadTestData("fixed-position.html");
 
+    FrameView* frameView = document().view();
+
     // target1 is a fixed-position element inside an absolute-position scrolling element.
     // It should be attached under the viewport to skip scrolling and offset of the parent.
     Element* target1 = document().getElementById("target1");
     ObjectPaintProperties* target1Properties = target1->layoutObject()->objectPaintProperties();
     EXPECT_EQ(TransformationMatrix().translate(200, 150), target1Properties->paintOffsetTranslation()->matrix());
-    EXPECT_EQ(document().view()->preTranslation(), target1Properties->paintOffsetTranslation()->parent());
+    EXPECT_EQ(frameView->preTranslation(), target1Properties->paintOffsetTranslation()->parent());
+    EXPECT_EQ(target1Properties->paintOffsetTranslation(), target1Properties->overflowClip()->localTransformSpace());
+    EXPECT_EQ(FloatRoundedRect(0, 0, 100, 100), target1Properties->overflowClip()->clipRect());
+    // Likewise, it inherits clip from the viewport, skipping overflow clip of the scroller.
+    EXPECT_EQ(frameView->contentClip(), target1Properties->overflowClip()->parent());
 
     // target2 is a fixed-position element inside a transformed scrolling element.
     // It should be attached under the scrolled box of the transformed element.
@@ -72,6 +78,9 @@ TEST_F(PaintPropertyTreeBuilderTest, FixedPosition)
     ObjectPaintProperties* scrollerProperties = scroller->layoutObject()->objectPaintProperties();
     EXPECT_EQ(TransformationMatrix().translate(200, 150), target2Properties->paintOffsetTranslation()->matrix());
     EXPECT_EQ(scrollerProperties->scrollTranslation(), target2Properties->paintOffsetTranslation()->parent());
+    EXPECT_EQ(target2Properties->paintOffsetTranslation(), target2Properties->overflowClip()->localTransformSpace());
+    EXPECT_EQ(FloatRoundedRect(0, 0, 100, 100), target2Properties->overflowClip()->clipRect());
+    EXPECT_EQ(scrollerProperties->overflowClip(), target2Properties->overflowClip()->parent());
 }
 
 TEST_F(PaintPropertyTreeBuilderTest, PositionAndScroll)
@@ -85,6 +94,9 @@ TEST_F(PaintPropertyTreeBuilderTest, PositionAndScroll)
     ObjectPaintProperties* scrollerProperties = scroller->layoutObject()->objectPaintProperties();
     EXPECT_EQ(TransformationMatrix().translate(0, -100), scrollerProperties->scrollTranslation()->matrix());
     EXPECT_EQ(frameView->scrollTranslation(), scrollerProperties->scrollTranslation()->parent());
+    EXPECT_EQ(frameView->scrollTranslation(), scrollerProperties->overflowClip()->localTransformSpace());
+    EXPECT_EQ(FloatRoundedRect(120, 340, 385, 285), scrollerProperties->overflowClip()->clipRect());
+    EXPECT_EQ(frameView->contentClip(), scrollerProperties->overflowClip()->parent());
 
     // The relative-positioned element should have accumulated box offset (exclude scrolling),
     // and should be affected by ancestor scroll transforms.
@@ -92,12 +104,18 @@ TEST_F(PaintPropertyTreeBuilderTest, PositionAndScroll)
     ObjectPaintProperties* relPosProperties = relPos->layoutObject()->objectPaintProperties();
     EXPECT_EQ(TransformationMatrix().translate(680, 1120), relPosProperties->paintOffsetTranslation()->matrix());
     EXPECT_EQ(scrollerProperties->scrollTranslation(), relPosProperties->paintOffsetTranslation()->parent());
+    EXPECT_EQ(relPosProperties->transform(), relPosProperties->overflowClip()->localTransformSpace());
+    EXPECT_EQ(FloatRoundedRect(0, 0, 385, 0), relPosProperties->overflowClip()->clipRect());
+    EXPECT_EQ(scrollerProperties->overflowClip(), relPosProperties->overflowClip()->parent());
 
     // The absolute-positioned element should not be affected by non-positioned scroller at all.
     Element* absPos = document().getElementById("abs-pos");
     ObjectPaintProperties* absPosProperties = absPos->layoutObject()->objectPaintProperties();
     EXPECT_EQ(TransformationMatrix().translate(123, 456), absPosProperties->paintOffsetTranslation()->matrix());
     EXPECT_EQ(frameView->scrollTranslation(), absPosProperties->paintOffsetTranslation()->parent());
+    EXPECT_EQ(absPosProperties->transform(), absPosProperties->overflowClip()->localTransformSpace());
+    EXPECT_EQ(FloatRoundedRect(), absPosProperties->overflowClip()->clipRect());
+    EXPECT_EQ(frameView->contentClip(), absPosProperties->overflowClip()->parent());
 }
 
 TEST_F(PaintPropertyTreeBuilderTest, FrameScrollingTraditional)
@@ -112,6 +130,9 @@ TEST_F(PaintPropertyTreeBuilderTest, FrameScrollingTraditional)
     EXPECT_EQ(nullptr, frameView->preTranslation()->parent());
     EXPECT_EQ(TransformationMatrix().translate(0, -100), frameView->scrollTranslation()->matrix());
     EXPECT_EQ(frameView->preTranslation(), frameView->scrollTranslation()->parent());
+    EXPECT_EQ(frameView->preTranslation(), frameView->contentClip()->localTransformSpace());
+    EXPECT_EQ(FloatRoundedRect(0, 0, 785, 600), frameView->contentClip()->clipRect());
+    EXPECT_EQ(nullptr, frameView->contentClip()->parent());
 
     LayoutView* layoutView = document().layoutView();
     ObjectPaintProperties* layoutViewProperties = layoutView->objectPaintProperties();
@@ -467,6 +488,73 @@ TEST_F(PaintPropertyTreeBuilderTest, FixedTransformAncestorAcrossSVGHTMLBoundary
     EXPECT_EQ(TransformationMatrix().translate(200, 150), fixedProperties->paintOffsetTranslation()->matrix());
     // Ensure the fixed position element is rooted at the nearest transform container.
     EXPECT_EQ(containerProperties->transform(), fixedProperties->paintOffsetTranslation()->parent());
+}
+
+TEST_F(PaintPropertyTreeBuilderTest, ControlClip)
+{
+    setBodyInnerHTML(
+        "<style>"
+        "  body {"
+        "    margin: 0;"
+        "  }"
+        "  input {"
+        "    border-width: 5px;"
+        "    padding: 0;"
+        "  }"
+        "</style>"
+        "<input id='button' type='button' style='width:345px; height:123px' value='some text'/>");
+
+    FrameView* frameView = document().view();
+    LayoutObject& button = *document().getElementById("button")->layoutObject();
+    ObjectPaintProperties* buttonProperties = button.objectPaintProperties();
+    EXPECT_EQ(frameView->scrollTranslation(), buttonProperties->overflowClip()->localTransformSpace());
+    EXPECT_EQ(FloatRoundedRect(5, 5, 335, 113), buttonProperties->overflowClip()->clipRect());
+    EXPECT_EQ(frameView->contentClip(), buttonProperties->overflowClip()->parent());
+}
+
+TEST_F(PaintPropertyTreeBuilderTest, BorderRadiusClip)
+{
+    setBodyInnerHTML(
+        "<style>"
+        " body {"
+        "   margin: 0px;"
+        " }"
+        " #div {"
+        "   border-radius: 12px 34px 56px 78px;"
+        "   border-top: 45px solid;"
+        "   border-right: 50px solid;"
+        "   border-bottom: 55px solid;"
+        "   border-left: 60px solid;"
+        "   width: 500px;"
+        "   height: 400px;"
+        "   overflow: scroll;"
+        " }"
+        "</style>"
+        "<div id='div'></div>");
+
+    FrameView* frameView = document().view();
+    LayoutObject& div = *document().getElementById("div")->layoutObject();
+    ObjectPaintProperties* divProperties = div.objectPaintProperties();
+    EXPECT_EQ(frameView->scrollTranslation(), divProperties->overflowClip()->localTransformSpace());
+    // The overflow clip rect includes only the padding box.
+    // padding box = border box(500+60+50, 400+45+55) - border outset(60+50, 45+55) - scrollbars(15, 15)
+    EXPECT_EQ(FloatRoundedRect(60, 45, 485, 385), divProperties->overflowClip()->clipRect());
+    const ClipPaintPropertyNode* borderRadiusClip = divProperties->overflowClip()->parent();
+    EXPECT_EQ(frameView->scrollTranslation(), borderRadiusClip->localTransformSpace());
+    // The border radius clip is the area enclosed by inner border edge, including the scrollbars.
+    // As the border-radius is specified in outer radius, the inner radius is calculated by:
+    // inner radius = max(outer radius - border width, 0)
+    // In the case that two adjacent borders have different width, the inner radius of the corner
+    // may transition from one value to the other. i.e. being an ellipse.
+    EXPECT_EQ(
+        FloatRoundedRect(
+            FloatRect(60, 45, 500, 400), // = border box(610, 500) - border outset(110, 100)
+            FloatSize(0, 0), //   (top left)     = max((12, 12) - (60, 45), (0, 0))
+            FloatSize(0, 0), //   (top right)    = max((34, 34) - (50, 45), (0, 0))
+            FloatSize(18, 23), // (bottom left)  = max((78, 78) - (60, 55), (0, 0))
+            FloatSize(6, 1)), //  (bottom right) = max((56, 56) - (50, 55), (0, 0))
+        borderRadiusClip->clipRect());
+    EXPECT_EQ(frameView->contentClip(), borderRadiusClip->parent());
 }
 
 } // namespace blink

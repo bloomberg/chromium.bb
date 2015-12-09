@@ -115,7 +115,7 @@ void paintArtifactToSkCanvas(const PaintArtifact& artifact, SkCanvas* canvas)
         // Setup the canvas clip state first because it clobbers matrix state.
         for (const ClipPaintPropertyNode* currentClipNode = chunk.properties.clip.get();
             currentClipNode; currentClipNode = currentClipNode->parent()) {
-            canvas->setMatrix(TransformationMatrix::toSkMatrix44(totalTransform(currentClipNode->base())));
+            canvas->setMatrix(TransformationMatrix::toSkMatrix44(totalTransform(currentClipNode->localTransformSpace())));
             canvas->clipRRect(currentClipNode->clipRect());
         }
 

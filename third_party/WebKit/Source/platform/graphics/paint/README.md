@@ -70,6 +70,21 @@ order to create the illusion of depth.
 TODO(jbroman): Explain flattening, etc., once it exists in the paint properties.
 ***
 
+### Clips
+
+Each paint chunk is associated with a [clip node](ClipPaintPropertyNode.h),
+which defines the raster region that will be applied on the canvas when
+the chunk is rastered.
+
+Each clip node has:
+
+* A float rect with (optionally) rounded corner radius.
+* An associated transform node, which the clip rect is based on.
+
+The raster region defined by a node is the rounded rect transformed to the
+root space, intersects with the raster region defined by its parent clip node
+(if not root).
+
 ### Effects
 
 Each paint chunk is associated with an [effect node](EffectPaintPropertyNode.h),

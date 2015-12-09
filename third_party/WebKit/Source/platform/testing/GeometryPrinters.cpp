@@ -105,9 +105,9 @@ void PrintTo(const FloatRoundedRect::Radii& radii, std::ostream* os)
     *os << ", ";
     PrintTo(radii.topRight(), os);
     *os << ", ";
-    PrintTo(radii.bottomRight(), os);
-    *os << ", ";
     PrintTo(radii.bottomLeft(), os);
+    *os << ", ";
+    PrintTo(radii.bottomRight(), os);
     *os << ")";
 }
 
