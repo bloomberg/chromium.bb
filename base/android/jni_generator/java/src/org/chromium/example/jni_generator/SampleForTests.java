@@ -125,14 +125,14 @@ class SampleForTests {
     // This is triggered by the @CalledByNative annotation; the methods may be named as you wish.
 
     // Exported to C++ as:
-    // Java_Example_javaMethod(JNIEnv* env, jobject caller, jint foo, jint bar)
+    // Java_SampleForTests_javaMethod(JNIEnv* env, jobject caller, jint foo, jint bar)
     // Typically the C++ code would have obtained the jobject via the Init() call described above.
     @CalledByNative
     public int javaMethod(int foo, int bar) {
         return 0;
     }
 
-    // Exported to C++ as Java_Example_staticJavaMethod(JNIEnv* env)
+    // Exported to C++ as Java_SampleForTests_staticJavaMethod(JNIEnv* env)
     // Note no jobject argument, as it is static.
     @CalledByNative
     public static boolean staticJavaMethod() {
