@@ -148,8 +148,7 @@ public:
 
     bool hasHandler()
     {
-        if (isCollected())
-            return false;
+        ASSERT(!isCollected());
         ScriptState::Scope scope(m_scriptState);
         v8::Local<v8::Value> value = m_promise.newLocal(m_scriptState->isolate());
         return v8::Local<v8::Promise>::Cast(value)->HasHandler();
@@ -275,6 +274,8 @@ void RejectedPromises::processQueueNow(PassOwnPtrWillBeRawPtr<MessageQueue> queu
 
     while (!queue->isEmpty()) {
         OwnPtrWillBeRawPtr<Message> message = queue->takeFirst();
+        if (message->isCollected())
+            continue;
         if (!message->hasHandler()) {
             message->report();
             message->makePromiseWeak();
