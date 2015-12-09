@@ -12,9 +12,12 @@
   "Linux Builder": {
     "additional_compile_targets": [
       "browser_tests",
-      "chromium_builder_webrtc",
       "content_browsertests",
-      "content_unittests"
+      "content_unittests",
+      "frame_analyzer",
+      "media_unittests",
+      "midi_unittests",
+      "rgba_to_i420_converter"
     ]
   },
   "Linux Tester": {
@@ -31,17 +34,23 @@
   "Mac GN": {
     "additional_compile_targets": [
       "browser_tests",
-      "chromium_builder_webrtc",
       "content_browsertests",
-      "content_unittests"
+      "content_unittests",
+      "frame_analyzer",
+      "media_unittests",
+      "midi_unittests",
+      "rgba_to_i420_converter"
     ]
   },
   "Mac GN (dbg)": {
     "additional_compile_targets": [
       "browser_tests",
-      "chromium_builder_webrtc",
       "content_browsertests",
-      "content_unittests"
+      "content_unittests",
+      "frame_analyzer",
+      "media_unittests",
+      "midi_unittests",
+      "rgba_to_i420_converter"
     ]
   },
   "Mac Tester": {
@@ -58,17 +67,25 @@
   "Win x64 GN": {
     "additional_compile_targets": [
       "browser_tests",
-      "chromium_builder_webrtc",
+      "crash_service",
       "content_browsertests",
-      "content_unittests"
+      "content_unittests",
+      "frame_analyzer",
+      "media_unittests",
+      "midi_unittests",
+      "rgba_to_i420_converter"
     ]
   },
   "Win x64 GN (dbg)": {
     "additional_compile_targets": [
       "browser_tests",
-      "chromium_builder_webrtc",
+      "crash_service",
       "content_browsertests",
-      "content_unittests"
+      "content_unittests",
+      "frame_analyzer",
+      "media_unittests",
+      "midi_unittests",
+      "rgba_to_i420_converter"
     ]
   },
   "Win10 Tester": {
