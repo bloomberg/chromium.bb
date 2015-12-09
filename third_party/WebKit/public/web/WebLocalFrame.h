@@ -70,6 +70,11 @@ public:
     // navigation.  This matches the in-process frame behavior.
     virtual void setFrameOwnerProperties(const WebFrameOwnerProperties&) = 0;
 
+    // Hierarchy ----------------------------------------------------------
+
+    // Get the highest-level LocalFrame in this frame's in-process subtree.
+    virtual WebLocalFrame* localRoot() = 0;
+
     // Navigation Ping --------------------------------------------------------
     virtual void sendPings(const WebNode& contextNode, const WebURL& destinationURL) = 0;
 

@@ -2083,6 +2083,17 @@ void WebLocalFrameImpl::setFrameOwnerProperties(const WebFrameOwnerProperties& f
     toRemoteBridgeFrameOwner(owner)->setMarginHeight(frameOwnerProperties.marginHeight);
 }
 
+WebLocalFrameImpl* WebLocalFrameImpl::localRoot()
+{
+    // This can't use the LocalFrame::localFrameRoot, since it may be called
+    // when the WebLocalFrame exists but the core LocalFrame does not.
+    // TODO(alexmos, dcheng): Clean this up to only calculate this in one place.
+    WebLocalFrameImpl* localRoot = this;
+    while (!localRoot->frameWidget())
+        localRoot = toWebLocalFrameImpl(localRoot->parent());
+    return localRoot;
+}
+
 void WebLocalFrameImpl::sendPings(const WebNode& contextNode, const WebURL& destinationURL)
 {
     ASSERT(frame());

@@ -923,14 +923,8 @@ void RenderFrameImpl::Initialize() {
 }
 
 RenderWidget* RenderFrameImpl::GetRenderWidget() {
-  RenderFrameImpl* local_root = this;
-
-  // By definition, a local frame without a widget must have a local frame
-  // ancestor with a widget. Keep iterating until we find the local root's
-  // widget.
-  while (!local_root->render_widget_)
-    local_root = RenderFrameImpl::FromWebFrame(local_root->frame_->parent());
-
+  RenderFrameImpl* local_root =
+      RenderFrameImpl::FromWebFrame(frame_->localRoot());
   return local_root->render_widget_.get();
 }
 
