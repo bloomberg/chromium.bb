@@ -139,6 +139,9 @@ bool WebGraphicsContext3DInProcessCommandBufferImpl::MaybeInitializeGL() {
   real_gl_ = context_->GetImplementation();
   setGLInterface(real_gl_);
 
+  real_gl_->TraceBeginCHROMIUM("WebGraphicsContext3D",
+                               "InProcessContext");
+
   initialized_ = true;
   return true;
 }

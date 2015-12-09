@@ -154,6 +154,8 @@ bool WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL() {
                  weak_ptr_factory_.GetWeakPtr()));
 
   real_gl_->SetErrorMessageCallback(getErrorMessageCallback());
+  real_gl_->TraceBeginCHROMIUM("WebGraphicsContext3D",
+                               "CommandBufferContext");
 
   visible_ = true;
   initialized_ = true;
