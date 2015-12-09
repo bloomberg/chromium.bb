@@ -204,6 +204,10 @@ class ContentSettingsPattern {
       const ContentSettingsPattern::PatternParts& parts,
       const ContentSettingsPattern::PatternParts& other_parts);
 
+  static Relation ComparePath(
+      const ContentSettingsPattern::PatternParts& parts,
+      const ContentSettingsPattern::PatternParts& other_parts);
+
   ContentSettingsPattern(const PatternParts& parts, bool valid);
 
   PatternParts parts_;

@@ -120,6 +120,9 @@ TEST(ContentSettingsPatternTest, FilesystemUrls) {
 
   EXPECT_STREQ("https://[*.]www.google.com:443", pattern2.ToString().c_str());
 
+  // TODO(msramek): Filesystem URLs do not return correct paths. For example,
+  // GURL("filesystem:file:///temporary/test.txt").inner_url().path() returns
+  // only '/temporary' instead of 'temporary/test.txt'. crbug.com/568110.
   pattern =
       ContentSettingsPattern::FromURL(
           GURL("filesystem:file:///temporary/foo/bar"));
@@ -130,7 +133,10 @@ TEST(ContentSettingsPatternTest, FilesystemUrls) {
   pattern2 =
       ContentSettingsPattern::FromURL(
           GURL("filesystem:file:///persistent/foo2/bar2"));
-  EXPECT_EQ(ContentSettingsPattern::IDENTITY, pattern.Compare(pattern2));
+  EXPECT_EQ(
+      ContentSettingsPattern::DISJOINT_ORDER_PRE, pattern.Compare(pattern2));
+  EXPECT_EQ(
+      ContentSettingsPattern::DISJOINT_ORDER_POST, pattern2.Compare(pattern));
 }
 
 TEST(ContentSettingsPatternTest, FromURLNoWildcard) {
@@ -248,6 +254,11 @@ TEST(ContentSettingsPatternTest, FromString_FilePatterns) {
   EXPECT_TRUE(Pattern("file:///*").IsValid());
   EXPECT_EQ("file:///*", Pattern("file:///*").ToString());
 
+  // It matches every file pattern.
+  ContentSettingsPattern file_wildcard = Pattern("file:///*");
+  EXPECT_TRUE(file_wildcard.Matches(GURL("file:///tmp/test.html")));
+  EXPECT_TRUE(file_wildcard.Matches(GURL("file://localhost/tmp/test.html")));
+
   // Wildcards are not allowed anywhere in the file path.
   EXPECT_FALSE(Pattern("file:///f*o/bar/file.html").IsValid());
   EXPECT_FALSE(Pattern("file:///*/bar/file.html").IsValid());
@@ -257,19 +268,42 @@ TEST(ContentSettingsPatternTest, FromString_FilePatterns) {
   EXPECT_FALSE(Pattern("file:///foo/bar/*.html").IsValid());
   EXPECT_FALSE(Pattern("file:///foo/bar/file.*").IsValid());
 
-  EXPECT_TRUE(Pattern("file:///tmp/test.html").IsValid());
-  EXPECT_EQ("file:///tmp/file.html",
-            Pattern("file:///tmp/file.html").ToString());
-  EXPECT_TRUE(Pattern("file:///tmp/test.html").Matches(
-      GURL("file:///tmp/test.html")));
-  EXPECT_FALSE(Pattern("file:///tmp/test.html").Matches(
-      GURL("file:///tmp/other.html")));
-  EXPECT_FALSE(Pattern("file:///tmp/test.html").Matches(
-      GURL("http://example.org/")));
+  // File patterns match URLs with the same path on any host.
+  EXPECT_TRUE(Pattern("file:///foo/bar/file.html").Matches(
+      GURL("file://localhost/foo/bar/file.html")));
+  EXPECT_TRUE(Pattern("file:///foo/bar/file.html").Matches(
+      GURL("file://example.com/foo/bar/file.html")));
+  EXPECT_FALSE(Pattern("file:///foo/bar/file.html").Matches(
+        GURL("file://localhost/foo/bar/other.html")));
+  EXPECT_FALSE(Pattern("file:///foo/bar/file.html").Matches(
+      GURL("file://example.com/foo/bar/other.html")));
 
-  EXPECT_TRUE(Pattern("file:///*").Matches(GURL("file:///tmp/test.html")));
-  EXPECT_TRUE(Pattern("file:///*").Matches(
-      GURL("file://localhost/tmp/test.html")));
+  ContentSettingsPattern pattern =
+      ContentSettingsPattern::FromURL(GURL("file:///tmp/test.html"));
+
+  EXPECT_TRUE(pattern.IsValid());
+  EXPECT_EQ("file:///tmp/test.html", pattern.ToString());
+  EXPECT_TRUE(pattern.Matches(GURL("file:///tmp/test.html")));
+  EXPECT_FALSE(pattern.Matches(GURL("file:///tmp/other.html")));
+  EXPECT_FALSE(pattern.Matches(GURL("http://example.org/")));
+
+  ContentSettingsPattern pattern2 =
+      ContentSettingsPattern::FromString("file:///tmp/test.html");
+  ContentSettingsPattern pattern3 =
+      ContentSettingsPattern::FromString("file:///tmp/other.html");
+
+  EXPECT_EQ(ContentSettingsPattern::IDENTITY,
+            pattern.Compare(pattern));
+  EXPECT_EQ(ContentSettingsPattern::IDENTITY,
+            pattern.Compare(pattern2));
+  EXPECT_EQ(ContentSettingsPattern::DISJOINT_ORDER_PRE,
+            pattern.Compare(pattern3));
+  EXPECT_EQ(ContentSettingsPattern::DISJOINT_ORDER_POST,
+            pattern3.Compare(pattern));
+  EXPECT_EQ(ContentSettingsPattern::SUCCESSOR,
+            file_wildcard.Compare(pattern));
+  EXPECT_EQ(ContentSettingsPattern::PREDECESSOR,
+            pattern.Compare(file_wildcard));
 }
 
 TEST(ContentSettingsPatternTest, FromString_ExtensionPatterns) {

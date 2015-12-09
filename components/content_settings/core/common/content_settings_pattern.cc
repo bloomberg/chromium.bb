@@ -240,9 +240,11 @@ bool ContentSettingsPattern::Builder::Canonicalize(PatternParts* parts) {
 
 // static
 bool ContentSettingsPattern::Builder::Validate(const PatternParts& parts) {
-  // Sanity checks first: {scheme, port} wildcards imply empty {scheme, port}.
+  // Sanity checks first: {scheme, port, path} wildcards imply
+  // empty {scheme, port, path}.
   if ((parts.is_scheme_wildcard && !parts.scheme.empty()) ||
-      (parts.is_port_wildcard && !parts.port.empty())) {
+      (parts.is_port_wildcard && !parts.port.empty()) ||
+      (parts.is_path_wildcard && !parts.path.empty())) {
     NOTREACHED();
     return false;
   }
@@ -366,7 +368,6 @@ ContentSettingsPattern ContentSettingsPattern::FromURL(
     const GURL& url) {
   scoped_ptr<ContentSettingsPattern::BuilderInterface> builder(
       ContentSettingsPattern::CreateBuilder(false));
-
   const GURL* local_url = &url;
   if (url.SchemeIsFileSystem() && url.inner_url()) {
     local_url = url.inner_url();
@@ -481,9 +482,8 @@ bool ContentSettingsPattern::Matches(
   // or if the path in the URL is identical to the one in the pattern.
   // For filesystem:file URLs, the path used is the filesystem type, so all
   // filesystem:file:///temporary/... are equivalent.
-  // TODO(markusheintz): Content settings should be defined for all files on
-  // a machine. Unless there is a good use case for supporting paths for file
-  // patterns, stop supporting path for file patterns.
+  // TODO(msramek): The file scheme should not behave differently when nested
+  // inside the filesystem scheme. Investigate and fix.
   if (!parts_.is_scheme_wildcard && scheme == url::kFileScheme)
     return parts_.is_path_wildcard ||
         parts_.path == std::string(local_url->path());
@@ -561,11 +561,18 @@ ContentSettingsPattern::Relation ContentSettingsPattern::Compare(
       scheme_relation == DISJOINT_ORDER_POST)
     return scheme_relation;
 
+  Relation path_relation = ComparePath(parts_, other.parts_);
+  if (path_relation == DISJOINT_ORDER_PRE ||
+      path_relation == DISJOINT_ORDER_POST)
+    return path_relation;
+
   if (host_relation != IDENTITY)
     return host_relation;
   if (port_relation != IDENTITY)
     return port_relation;
-  return scheme_relation;
+  if (scheme_relation != IDENTITY)
+    return scheme_relation;
+  return path_relation;
 }
 
 bool ContentSettingsPattern::operator==(
@@ -702,6 +709,30 @@ ContentSettingsPattern::Relation ContentSettingsPattern::ComparePort(
     return ContentSettingsPattern::PREDECESSOR;
 
   int result = parts.port.compare(other_parts.port);
+  if (result == 0)
+    return ContentSettingsPattern::IDENTITY;
+  if (result > 0)
+    return ContentSettingsPattern::DISJOINT_ORDER_PRE;
+  return ContentSettingsPattern::DISJOINT_ORDER_POST;
+}
+
+ContentSettingsPattern::Relation ContentSettingsPattern::ComparePath(
+    const ContentSettingsPattern::PatternParts& parts,
+    const ContentSettingsPattern::PatternParts& other_parts) {
+  // Path is only set (in builder methods) and checked (in |Matches()|) for
+  // file:// URLs. For all other schemes, path is completely disregarded,
+  // and thus the result of this comparison is identity.
+  if (parts.scheme != url::kFileScheme ||
+      other_parts.scheme != url::kFileScheme) {
+    return ContentSettingsPattern::IDENTITY;
+  }
+
+  if (parts.is_path_wildcard && !other_parts.is_path_wildcard)
+    return ContentSettingsPattern::SUCCESSOR;
+  if (!parts.is_path_wildcard && other_parts.is_path_wildcard)
+    return ContentSettingsPattern::PREDECESSOR;
+
+  int result = parts.path.compare(other_parts.path);
   if (result == 0)
     return ContentSettingsPattern::IDENTITY;
   if (result > 0)
