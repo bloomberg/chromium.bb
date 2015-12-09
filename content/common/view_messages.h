@@ -50,6 +50,7 @@
 #include "third_party/WebKit/public/web/WebMediaPlayerAction.h"
 #include "third_party/WebKit/public/web/WebPluginAction.h"
 #include "third_party/WebKit/public/web/WebPopupType.h"
+#include "third_party/WebKit/public/web/WebSharedWorkerCreationContextType.h"
 #include "third_party/WebKit/public/web/WebSharedWorkerCreationErrors.h"
 #include "third_party/WebKit/public/web/WebTextDirection.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -377,6 +378,10 @@ IPC_STRUCT_BEGIN(ViewHostMsg_CreateWorker_Params)
 
   // RenderFrame routing id used to send messages back to the parent.
   IPC_STRUCT_MEMBER(int, render_frame_route_id)
+
+  // The type (secure or nonsecure) of the context that created the worker.
+  IPC_STRUCT_MEMBER(blink::WebSharedWorkerCreationContextType,
+                    creation_context_type)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(ViewHostMsg_CreateWorker_Reply)

@@ -287,13 +287,10 @@ void SharedWorkerServiceImpl::CreateWorker(
     blink::WebWorkerCreationError* creation_error) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   *creation_error = blink::WebWorkerCreationErrorNone;
-  scoped_ptr<SharedWorkerInstance> instance(
-      new SharedWorkerInstance(params.url,
-                               params.name,
-                               params.content_security_policy,
-                               params.security_policy_type,
-                               resource_context,
-                               partition_id));
+  scoped_ptr<SharedWorkerInstance> instance(new SharedWorkerInstance(
+      params.url, params.name, params.content_security_policy,
+      params.security_policy_type, resource_context, partition_id,
+      params.creation_context_type));
   scoped_ptr<SharedWorkerPendingInstance::SharedWorkerPendingRequest> request(
       new SharedWorkerPendingInstance::SharedWorkerPendingRequest(
           filter,
@@ -304,6 +301,11 @@ void SharedWorkerServiceImpl::CreateWorker(
   if (SharedWorkerPendingInstance* pending = FindPendingInstance(*instance)) {
     if (params.url != pending->instance()->url()) {
       *creation_error = blink::WebWorkerCreationErrorURLMismatch;
+      return;
+    }
+    if (params.creation_context_type !=
+        pending->instance()->creation_context_type()) {
+      *creation_error = blink::WebWorkerCreationErrorSecureContextMismatch;
       return;
     }
     pending->AddRequest(request.Pass());
@@ -481,6 +483,12 @@ void SharedWorkerServiceImpl::ReserveRenderProcessToCreateWorker(
     if (pending_instance->instance()->url() != host->instance()->url()) {
       if (creation_error)
         *creation_error = blink::WebWorkerCreationErrorURLMismatch;
+      return;
+    }
+    if (pending_instance->instance()->creation_context_type() !=
+        host->instance()->creation_context_type()) {
+      if (creation_error)
+        *creation_error = blink::WebWorkerCreationErrorSecureContextMismatch;
       return;
     }
     worker_process_id = host->process_id();

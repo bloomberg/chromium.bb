@@ -130,13 +130,20 @@ void SharedWorkerRepositoryClientImpl::connect(SharedWorker* worker, PassOwnPtr<
     }
 
     WebWorkerCreationError creationError;
-    OwnPtr<WebSharedWorkerConnector> webWorkerConnector = adoptPtr(m_client->createSharedWorkerConnector(url, name, getId(document), header, headerType, &creationError));
+    String unusedSecureContextError;
+    bool isSecureContext = worker->executionContext()->isSecureContext(unusedSecureContextError);
+    OwnPtr<WebSharedWorkerConnector> webWorkerConnector = adoptPtr(m_client->createSharedWorkerConnector(url, name, getId(document), header, headerType, isSecureContext ? WebSharedWorkerCreationContextTypeSecure : WebSharedWorkerCreationContextTypeNonsecure, &creationError));
     if (!webWorkerConnector) {
-        // TODO(estark): This assertion will shortly go away and each
-        // different error type will be handled. https://crbug.com/561216
-        ASSERT(creationError == WebWorkerCreationErrorURLMismatch);
-        // Existing worker does not match this url, so return an error back to the caller.
-        exceptionState.throwDOMException(URLMismatchError, "The location of the SharedWorker named '" + name + "' does not exactly match the provided URL ('" + url.elidedString() + "').");
+        if (creationError == WebWorkerCreationErrorURLMismatch) {
+            // Existing worker does not match this url, so return an error back to the caller.
+            exceptionState.throwDOMException(URLMismatchError, "The location of the SharedWorker named '" + name + "' does not exactly match the provided URL ('" + url.elidedString() + "').");
+        } else if (creationError == WebWorkerCreationErrorSecureContextMismatch) {
+            if (isSecureContext) {
+                exceptionState.throwSecurityError("The SharedWorker named '" + name + "' was created from a nonsecure context and this context is secure.");
+            } else {
+                exceptionState.throwSecurityError("The SharedWorker named '" + name + "' was created from a secure context and this context is not secure.");
+            }
+        }
         return;
     }
 

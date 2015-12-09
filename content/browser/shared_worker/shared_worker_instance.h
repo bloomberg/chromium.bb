@@ -11,6 +11,7 @@
 #include "content/browser/shared_worker/worker_storage_partition.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/web/WebContentSecurityPolicy.h"
+#include "third_party/WebKit/public/web/WebSharedWorkerCreationContextType.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -20,12 +21,14 @@ class ResourceContext;
 // the UI thread and be used for comparison in SharedWorkerDevToolsManager.
 class CONTENT_EXPORT SharedWorkerInstance {
  public:
-  SharedWorkerInstance(const GURL& url,
-                       const base::string16& name,
-                       const base::string16& content_security_policy,
-                       blink::WebContentSecurityPolicyType security_policy_type,
-                       ResourceContext* resource_context,
-                       const WorkerStoragePartitionId& partition_id);
+  SharedWorkerInstance(
+      const GURL& url,
+      const base::string16& name,
+      const base::string16& content_security_policy,
+      blink::WebContentSecurityPolicyType security_policy_type,
+      ResourceContext* resource_context,
+      const WorkerStoragePartitionId& partition_id,
+      blink::WebSharedWorkerCreationContextType creation_context_type);
   SharedWorkerInstance(const SharedWorkerInstance& other);
   ~SharedWorkerInstance();
 
@@ -54,6 +57,9 @@ class CONTENT_EXPORT SharedWorkerInstance {
     return resource_context_;
   }
   const WorkerStoragePartitionId& partition_id() const { return partition_id_; }
+  blink::WebSharedWorkerCreationContextType creation_context_type() const {
+    return creation_context_type_;
+  }
 
  private:
   const GURL url_;
@@ -62,6 +68,7 @@ class CONTENT_EXPORT SharedWorkerInstance {
   const blink::WebContentSecurityPolicyType security_policy_type_;
   ResourceContext* const resource_context_;
   const WorkerStoragePartitionId partition_id_;
+  const blink::WebSharedWorkerCreationContextType creation_context_type_;
 };
 
 }  // namespace content

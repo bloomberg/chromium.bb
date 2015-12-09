@@ -27,6 +27,7 @@ SharedWorkerRepository::createSharedWorkerConnector(
     DocumentID document_id,
     const blink::WebString& content_security_policy,
     blink::WebContentSecurityPolicyType security_policy_type,
+    blink::WebSharedWorkerCreationContextType creation_context_type,
     blink::WebWorkerCreationError* error) {
   ViewHostMsg_CreateWorker_Params params;
   params.url = url;
@@ -35,6 +36,7 @@ SharedWorkerRepository::createSharedWorkerConnector(
   params.security_policy_type = security_policy_type;
   params.document_id = document_id;
   params.render_frame_route_id = render_frame()->GetRoutingID();
+  params.creation_context_type = creation_context_type;
   ViewHostMsg_CreateWorker_Reply reply;
   Send(new ViewHostMsg_CreateWorker(params, &reply));
   if (reply.route_id == MSG_ROUTING_NONE) {

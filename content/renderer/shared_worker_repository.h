@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "third_party/WebKit/public/web/WebContentSecurityPolicy.h"
+#include "third_party/WebKit/public/web/WebSharedWorkerCreationContextType.h"
 #include "third_party/WebKit/public/web/WebSharedWorkerRepositoryClient.h"
 
 namespace content {
@@ -29,6 +30,7 @@ class SharedWorkerRepository : public RenderFrameObserver,
       DocumentID document_id,
       const blink::WebString& content_security_policy,
       blink::WebContentSecurityPolicyType,
+      blink::WebSharedWorkerCreationContextType,
       blink::WebWorkerCreationError* error) override;
   void documentDetached(DocumentID document_id) override;
 

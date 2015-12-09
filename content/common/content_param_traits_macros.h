@@ -18,6 +18,7 @@
 #include "third_party/WebKit/public/web/WebCompositionUnderline.h"
 #include "third_party/WebKit/public/web/WebContentSecurityPolicy.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "third_party/WebKit/public/web/WebSharedWorkerCreationContextType.h"
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
@@ -32,6 +33,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(content::RequestContextFrameType,
                           content::REQUEST_CONTEXT_FRAME_TYPE_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebContentSecurityPolicyType,
                           blink::WebContentSecurityPolicyTypeLast)
+IPC_ENUM_TRAITS_MAX_VALUE(blink::WebSharedWorkerCreationContextType,
+                          blink::WebSharedWorkerCreationContextTypeLast)
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::WebInputEvent::Type,
                               blink::WebInputEvent::TypeFirst,
                               blink::WebInputEvent::TypeLast)

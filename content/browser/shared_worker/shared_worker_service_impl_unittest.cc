@@ -251,6 +251,8 @@ void PostCreateWorker(MockRendererProcessHost* renderer,
   params.security_policy_type = blink::WebContentSecurityPolicyTypeReport;
   params.document_id = document_id;
   params.render_frame_route_id = render_frame_route_id;
+  params.creation_context_type =
+      blink::WebSharedWorkerCreationContextTypeSecure;
   EXPECT_TRUE(
       renderer->OnMessageReceived(new ViewHostMsg_CreateWorker(params, reply)));
 }

@@ -32,6 +32,7 @@
 #define WebSharedWorkerRepositoryClient_h
 
 #include "WebSharedWorkerConnector.h"
+#include "WebSharedWorkerCreationContextType.h"
 #include "WebSharedWorkerCreationErrors.h"
 
 namespace blink {
@@ -46,7 +47,7 @@ public:
     typedef unsigned long long DocumentID;
 
     // Creates a new shared worker connector. This may return null.
-    virtual WebSharedWorkerConnector* createSharedWorkerConnector(const WebURL& url, const WebString& name, DocumentID id, const WebString& contentSecurityPolicy, WebContentSecurityPolicyType, WebWorkerCreationError* error) { return 0; }
+    virtual WebSharedWorkerConnector* createSharedWorkerConnector(const WebURL& url, const WebString& name, DocumentID id, const WebString& contentSecurityPolicy, WebContentSecurityPolicyType, WebSharedWorkerCreationContextType, WebWorkerCreationError* error) { return 0; }
 
     // Invoked when a document has been detached. DocumentID can be re-used after documentDetached() is invoked.
     virtual void documentDetached(DocumentID) { }
