@@ -73,7 +73,7 @@ class CONTENT_EXPORT FrameSwapMessageQueue
   //            messages.
   void DidNotSwap(int source_frame_number,
                   cc::SwapPromise::DidNotSwapReason reason,
-                  ScopedVector<IPC::Message>* messages);
+                  std::vector<scoped_ptr<IPC::Message>>* messages);
 
   // A SendMessageScope object must be held by the caller when this method is
   // called.
@@ -81,7 +81,7 @@ class CONTENT_EXPORT FrameSwapMessageQueue
   // |messages| vector to store messages, it's not cleared, only appended to.
   //            The method will append messages queued for frame numbers lower
   //            or equal to |source_frame_number|
-  void DrainMessages(ScopedVector<IPC::Message>* messages);
+  void DrainMessages(std::vector<scoped_ptr<IPC::Message>>* messages);
 
   // SendMessageScope is used to make sure that messages sent from different
   // threads (impl/main) are scheduled in the right order on the IO threads.
@@ -90,7 +90,7 @@ class CONTENT_EXPORT FrameSwapMessageQueue
   // |messages| is sent.
   scoped_ptr<SendMessageScope> AcquireSendMessageScope();
 
-  static void TransferMessages(ScopedVector<IPC::Message>& source,
+  static void TransferMessages(std::vector<scoped_ptr<IPC::Message>>* source,
                                std::vector<IPC::Message>* dest);
 
  private:
@@ -103,7 +103,7 @@ class CONTENT_EXPORT FrameSwapMessageQueue
   mutable base::Lock lock_;
   scoped_ptr<FrameSwapMessageSubQueue> visual_state_queue_;
   scoped_ptr<FrameSwapMessageSubQueue> swap_queue_;
-  ScopedVector<IPC::Message> next_drain_messages_;
+  std::vector<scoped_ptr<IPC::Message>> next_drain_messages_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameSwapMessageQueue);
 };

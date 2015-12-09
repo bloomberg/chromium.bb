@@ -4,6 +4,7 @@
 
 #include "content/renderer/gpu/frame_swap_message_queue.h"
 
+#include <algorithm>
 #include <limits>
 
 #include "base/containers/hash_tables.h"
@@ -23,8 +24,9 @@ class FrameSwapMessageSubQueue {
   virtual void QueueMessage(int source_frame_number,
                             scoped_ptr<IPC::Message> msg,
                             bool* is_first) = 0;
-  virtual void DrainMessages(int source_frame_number,
-                             ScopedVector<IPC::Message>* messages) = 0;
+  virtual void DrainMessages(
+      int source_frame_number,
+      std::vector<scoped_ptr<IPC::Message>>* messages) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FrameSwapMessageSubQueue);
@@ -65,11 +67,13 @@ class VisualStateQueue : public FrameSwapMessageSubQueue {
   }
 
   void DrainMessages(int source_frame_number,
-                     ScopedVector<IPC::Message>* messages) override {
-    VisualStateQueueMap::iterator end = queue_.upper_bound(source_frame_number);
-    for (VisualStateQueueMap::iterator i = queue_.begin(); i != end; i++) {
+                     std::vector<scoped_ptr<IPC::Message>>* messages) override {
+    auto end = queue_.upper_bound(source_frame_number);
+    for (auto i = queue_.begin(); i != end; i++) {
       DCHECK(i->first <= source_frame_number);
-      messages->insert(messages->end(), i->second.begin(), i->second.end());
+      for (IPC::Message* msg : i->second) {
+        messages->push_back(make_scoped_ptr(msg));
+      }
       i->second.clear();
     }
     queue_.erase(queue_.begin(), end);
@@ -93,17 +97,17 @@ class SwapQueue : public FrameSwapMessageSubQueue {
                     bool* is_first) override {
     if (is_first)
       *is_first = Empty();
-    queue_.push_back(msg.release());
+    queue_.push_back(msg.Pass());
   }
 
   void DrainMessages(int source_frame_number,
-                     ScopedVector<IPC::Message>* messages) override {
-    messages->insert(messages->end(), queue_.begin(), queue_.end());
-    queue_.weak_clear();
+                     std::vector<scoped_ptr<IPC::Message>>* messages) override {
+    std::move(queue_.begin(), queue_.end(), std::back_inserter(*messages));
+    queue_.clear();
   }
 
  private:
-  ScopedVector<IPC::Message> queue_;
+  std::vector<scoped_ptr<IPC::Message>> queue_;
 
   DISALLOW_COPY_AND_ASSIGN(SwapQueue);
 };
@@ -157,9 +161,10 @@ void FrameSwapMessageQueue::DidSwap(int source_frame_number) {
   swap_queue_->DrainMessages(0, &next_drain_messages_);
 }
 
-void FrameSwapMessageQueue::DidNotSwap(int source_frame_number,
-                                       cc::SwapPromise::DidNotSwapReason reason,
-                                       ScopedVector<IPC::Message>* messages) {
+void FrameSwapMessageQueue::DidNotSwap(
+    int source_frame_number,
+    cc::SwapPromise::DidNotSwapReason reason,
+    std::vector<scoped_ptr<IPC::Message>>* messages) {
   base::AutoLock lock(lock_);
   switch (reason) {
     case cc::SwapPromise::SWAP_FAILS:
@@ -178,12 +183,11 @@ void FrameSwapMessageQueue::DidNotSwap(int source_frame_number,
 }
 
 void FrameSwapMessageQueue::DrainMessages(
-    ScopedVector<IPC::Message>* messages) {
+    std::vector<scoped_ptr<IPC::Message>>* messages) {
   lock_.AssertAcquired();
-  messages->insert(messages->end(),
-                   next_drain_messages_.begin(),
-                   next_drain_messages_.end());
-  next_drain_messages_.weak_clear();
+  std::move(next_drain_messages_.begin(), next_drain_messages_.end(),
+            std::back_inserter(*messages));
+  next_drain_messages_.clear();
 }
 
 scoped_ptr<FrameSwapMessageQueue::SendMessageScope>
@@ -192,15 +196,13 @@ FrameSwapMessageQueue::AcquireSendMessageScope() {
 }
 
 // static
-void FrameSwapMessageQueue::TransferMessages(ScopedVector<IPC::Message>& source,
-                                             vector<IPC::Message>* dest) {
-  for (vector<IPC::Message*>::iterator i = source.begin(); i != source.end();
-       ++i) {
-    IPC::Message* m(*i);
-    dest->push_back(*m);
-    delete m;
+void FrameSwapMessageQueue::TransferMessages(
+    std::vector<scoped_ptr<IPC::Message>>* source,
+    vector<IPC::Message>* dest) {
+  for (const auto& msg : *source) {
+    dest->push_back(*msg.get());
   }
-  source.weak_clear();
+  source->clear();
 }
 
 }  // namespace content

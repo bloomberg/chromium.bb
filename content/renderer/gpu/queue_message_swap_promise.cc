@@ -53,14 +53,11 @@ void QueueMessageSwapPromise::DidNotSwap(DidNotSwapReason reason) {
 #if DCHECK_IS_ON()
   DCHECK(!completed_);
 #endif
-  ScopedVector<IPC::Message> messages;
+  std::vector<scoped_ptr<IPC::Message>> messages;
   message_queue_->DidNotSwap(source_frame_number_, reason, &messages);
-  for (ScopedVector<IPC::Message>::iterator i = messages.begin();
-       i != messages.end();
-       ++i) {
-    message_sender_->Send(*i);
+  for (auto& msg : messages) {
+    message_sender_->Send(msg.release());
   }
-  messages.weak_clear();
   PromiseCompleted();
 }
 

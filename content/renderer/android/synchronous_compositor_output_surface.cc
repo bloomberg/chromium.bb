@@ -263,7 +263,7 @@ void SynchronousCompositorOutputSurface::SetTreeActivationCallback(
 }
 
 void SynchronousCompositorOutputSurface::GetMessagesToDeliver(
-    ScopedVector<IPC::Message>* messages) {
+    std::vector<scoped_ptr<IPC::Message>>* messages) {
   DCHECK(CalledOnValidThread());
   scoped_ptr<FrameSwapMessageQueue::SendMessageScope> send_message_scope =
       frame_swap_message_queue_->AcquireSendMessageScope();

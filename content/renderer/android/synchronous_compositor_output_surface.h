@@ -82,7 +82,7 @@ class SynchronousCompositorOutputSurface
   scoped_ptr<cc::CompositorFrame> DemandDrawSw(SkCanvas* canvas);
   void SetMemoryPolicy(size_t bytes_limit);
   void SetTreeActivationCallback(const base::Closure& callback);
-  void GetMessagesToDeliver(ScopedVector<IPC::Message>* messages);
+  void GetMessagesToDeliver(std::vector<scoped_ptr<IPC::Message>>* messages);
 
   size_t GetMemoryPolicy() const {
     return memory_policy_.bytes_limit_when_visible;

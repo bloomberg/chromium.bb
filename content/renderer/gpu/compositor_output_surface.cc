@@ -139,12 +139,12 @@ void CompositorOutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
     return;
   } else {
     {
-      ScopedVector<IPC::Message> messages;
+      std::vector<scoped_ptr<IPC::Message>> messages;
       std::vector<IPC::Message> messages_to_deliver_with_frame;
       scoped_ptr<FrameSwapMessageQueue::SendMessageScope> send_message_scope =
           frame_swap_message_queue_->AcquireSendMessageScope();
       frame_swap_message_queue_->DrainMessages(&messages);
-      FrameSwapMessageQueue::TransferMessages(messages,
+      FrameSwapMessageQueue::TransferMessages(&messages,
                                               &messages_to_deliver_with_frame);
       Send(new ViewHostMsg_SwapCompositorFrame(routing_id_,
                                                output_surface_id_,

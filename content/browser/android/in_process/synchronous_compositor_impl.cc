@@ -298,13 +298,11 @@ bool SynchronousCompositorImpl::OnMessageReceived(const IPC::Message& message) {
 }
 
 void SynchronousCompositorImpl::DeliverMessages() {
-  ScopedVector<IPC::Message> messages;
+  std::vector<scoped_ptr<IPC::Message>> messages;
   output_surface_->GetMessagesToDeliver(&messages);
   RenderProcessHost* rph = rwhva_->GetRenderWidgetHost()->GetProcess();
-  for (ScopedVector<IPC::Message>::const_iterator i = messages.begin();
-       i != messages.end();
-       ++i) {
-    rph->OnMessageReceived(**i);
+  for (const auto& msg : messages) {
+    rph->OnMessageReceived(*msg);
   }
 }
 

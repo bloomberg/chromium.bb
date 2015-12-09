@@ -110,12 +110,11 @@ void SynchronousCompositorProxy::DidActivatePendingTree() {
 }
 
 void SynchronousCompositorProxy::DeliverMessages() {
-  ScopedVector<IPC::Message> messages;
+  std::vector<scoped_ptr<IPC::Message>> messages;
   output_surface_->GetMessagesToDeliver(&messages);
-  for (auto* message : messages) {
-    Send(message);
+  for (auto& msg : messages) {
+    Send(msg.release());
   }
-  messages.weak_clear();  // Don't double delete.
 }
 
 void SynchronousCompositorProxy::SendAsyncRendererStateIfNeeded() {
