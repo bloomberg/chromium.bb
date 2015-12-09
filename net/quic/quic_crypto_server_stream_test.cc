@@ -375,6 +375,7 @@ TEST_P(QuicCryptoServerStreamTest, ZeroRTT) {
 }
 
 TEST_P(QuicCryptoServerStreamTest, MessageAfterHandshake) {
+  FLAGS_quic_require_fix = false;
   Initialize();
   CompleteCryptoHandshake();
   EXPECT_CALL(
@@ -388,6 +389,7 @@ TEST_P(QuicCryptoServerStreamTest, MessageAfterHandshake) {
 }
 
 TEST_P(QuicCryptoServerStreamTest, BadMessageType) {
+  FLAGS_quic_require_fix = false;
   Initialize();
 
   message_.set_tag(kSHLO);

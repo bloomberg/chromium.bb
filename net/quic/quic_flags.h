@@ -34,5 +34,6 @@ NET_EXPORT_PRIVATE extern bool FLAGS_quic_track_single_retransmission;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_batch_writes;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_block_unencrypted_writes;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_never_write_unencrypted_data;
+NET_EXPORT_PRIVATE extern bool FLAGS_quic_require_fix;
 
 #endif  // NET_QUIC_QUIC_FLAGS_H_

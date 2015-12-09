@@ -168,6 +168,9 @@ const QuicTag kRSEQ = TAG('R', 'S', 'E', 'Q');   // Rejected packet number
 
 // Universal tags
 const QuicTag kPAD  = TAG('P', 'A', 'D', '\0');  // Padding
+
+// Sent by clients with the fix to crbug/566156
+const QuicTag kFIXD = TAG('F', 'I', 'X', 'D');   // Client hello
 // clang-format on
 
 // These tags have a special form so that they appear either at the beginning

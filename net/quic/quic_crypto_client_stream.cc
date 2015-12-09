@@ -4,6 +4,8 @@
 
 #include "net/quic/quic_crypto_client_stream.h"
 
+#include <vector>
+
 #include "base/metrics/histogram_macros.h"
 #include "net/quic/crypto/crypto_protocol.h"
 #include "net/quic/crypto/crypto_utils.h"
@@ -14,8 +16,29 @@
 #include "net/quic/quic_session.h"
 
 using std::string;
+using std::vector;
 
 namespace net {
+
+namespace {
+
+void AppendFixed(CryptoHandshakeMessage* message) {
+  vector<QuicTag> tags;
+  tags.push_back(kFIXD);
+
+  const QuicTag* received_tags;
+  size_t received_tags_length;
+  QuicErrorCode error =
+      message->GetTaglist(kCOPT, &received_tags, &received_tags_length);
+  if (error == QUIC_NO_ERROR) {
+    for (size_t i = 0; i < received_tags_length; ++i) {
+      tags.push_back(received_tags[i]);
+    }
+  }
+  message->SetVector(kCOPT, tags);
+}
+
+}  // namespace
 
 QuicCryptoClientStreamBase::QuicCryptoClientStreamBase(
     QuicClientSessionBase* session)
@@ -268,6 +291,12 @@ void QuicCryptoClientStream::DoSendCHLO(
   // Send all the options, regardless of whether we're sending an
   // inchoate or subsequent hello.
   session()->config()->ToHandshakeMessage(&out);
+
+  // This block and function should be removed after removing QUIC_VERSION_25.
+  if (FLAGS_quic_require_fix) {
+    AppendFixed(&out);
+  }
+
   if (!cached->IsComplete(session()->connection()->clock()->WallNow())) {
     crypto_config_->FillInchoateClientHello(
         server_id_,
