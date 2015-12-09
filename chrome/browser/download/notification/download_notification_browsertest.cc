@@ -1075,14 +1075,8 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, IncognitoDownloadFile) {
   chrome::CloseWindow(incognito_browser());
 }
 
-// TODO(yoshiki): Disabled due to crbug.com/560329
-#if defined(OS_CHROMEOS)
-#define MAYBE_SimultaneousIncognitoAndNormalDownloads DISABLED_SimultaneousIncognitoAndNormalDownloads
-#else
-#define MAYBE_SimultaneousIncognitoAndNormalDownloads SimultaneousIncognitoAndNormalDownloads
-#endif
 IN_PROC_BROWSER_TEST_F(DownloadNotificationTest,
-                       MAYBE_SimultaneousIncognitoAndNormalDownloads) {
+                       SimultaneousIncognitoAndNormalDownloads) {
   PrepareIncognitoBrowser();
 
   GURL url_incognito(net::URLRequestSlowDownloadJob::kUnknownSizeUrl);
@@ -1127,8 +1121,10 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest,
   // Confirms the types of download notifications are correct.
   EXPECT_EQ(message_center::NOTIFICATION_TYPE_PROGRESS,
             GetNotification(notification_id1)->type());
+  EXPECT_EQ(-1, GetNotification(notification_id1)->progress());
   EXPECT_EQ(message_center::NOTIFICATION_TYPE_PROGRESS,
             GetNotification(notification_id2)->type());
+  EXPECT_LE(0, GetNotification(notification_id2)->progress());
 
   EXPECT_TRUE(download_incognito->GetBrowserContext()->IsOffTheRecord());
   EXPECT_FALSE(download_normal->GetBrowserContext()->IsOffTheRecord());
@@ -1148,10 +1144,8 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest,
   // Confirms the types of download notifications are correct.
   EXPECT_EQ(message_center::NOTIFICATION_TYPE_BASE_FORMAT,
             GetNotification(notification_id1)->type());
-  EXPECT_EQ(-1, GetNotification(notification_id1)->progress());
   EXPECT_EQ(message_center::NOTIFICATION_TYPE_BASE_FORMAT,
             GetNotification(notification_id2)->type());
-  EXPECT_LE(0, GetNotification(notification_id1)->progress());
 
   chrome::CloseWindow(incognito_browser());
 }
