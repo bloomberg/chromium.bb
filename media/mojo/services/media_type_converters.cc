@@ -11,6 +11,7 @@
 #include "media/base/cdm_key_information.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/decrypt_config.h"
+#include "media/base/decryptor.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/media_keys.h"
 #include "media/base/video_decoder_config.h"
@@ -225,6 +226,20 @@ ASSERT_ENUM_EQ(VideoCodecProfile,
                ,
                VIDEO_CODEC_PROFILE_,
                VIDEO_CODEC_PROFILE_MAX);
+
+// Decryptor Status
+ASSERT_ENUM_EQ_RAW(Decryptor::Status,
+                   Decryptor::kSuccess,
+                   Decryptor::STATUS_SUCCESS);
+ASSERT_ENUM_EQ_RAW(Decryptor::Status,
+                   Decryptor::kNoKey,
+                   Decryptor::STATUS_NO_KEY);
+ASSERT_ENUM_EQ_RAW(Decryptor::Status,
+                   Decryptor::kNeedMoreData,
+                   Decryptor::STATUS_NEED_MORE_DATA);
+ASSERT_ENUM_EQ_RAW(Decryptor::Status,
+                   Decryptor::kError,
+                   Decryptor::STATUS_ERROR);
 
 // CdmException
 #define ASSERT_CDM_EXCEPTION(value)                                \

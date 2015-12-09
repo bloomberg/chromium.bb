@@ -55,6 +55,8 @@ source_set("proxy") {
     "mojo_cdm.h",
     "mojo_cdm_factory.cc",
     "mojo_cdm_factory.h",
+    "mojo_decryptor.cc",
+    "mojo_decryptor.h",
     "mojo_demuxer_stream_impl.cc",
     "mojo_demuxer_stream_impl.h",
     "mojo_renderer_factory.cc",

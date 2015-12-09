@@ -61,9 +61,3 @@ interface Decryptor {
   // The decoder can be reinitialized after it is deinitialized.
   DeinitializeDecoder(DemuxerStream.Type stream_type);
 };
-
-interface DecryptorClient {
-  // Indicates that a new usable key is available in the CDM associated with the
-  // Decryptor.
-  OnNewUsableKey();
-};

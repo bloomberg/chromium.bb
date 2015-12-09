@@ -13,6 +13,7 @@
 #include "media/base/cdm_promise.h"
 #include "media/mojo/interfaces/decryptor.mojom.h"
 #include "media/mojo/services/media_type_converters.h"
+#include "media/mojo/services/mojo_decryptor.h"
 #include "mojo/application/public/cpp/connect.h"
 #include "mojo/application/public/interfaces/service_provider.mojom.h"
 #include "url/gurl.h"
@@ -163,8 +164,12 @@ CdmContext* MojoCdm::GetCdmContext() {
 }
 
 media::Decryptor* MojoCdm::GetDecryptor() {
-  // TODO(jrummell): Return a decryptor using |decryptor_ptr_|.
-  return nullptr;
+  if (decryptor_ptr_) {
+    DCHECK(!decryptor_);
+    decryptor_.reset(new MojoDecryptor(std::move(decryptor_ptr_)));
+  }
+
+  return decryptor_.get();
 }
 
 int MojoCdm::GetCdmId() const {
@@ -209,6 +214,12 @@ void MojoCdm::OnSessionKeysChange(
     bool has_additional_usable_key,
     mojo::Array<interfaces::CdmKeyInformationPtr> keys_info) {
   DVLOG(2) << __FUNCTION__;
+
+  // TODO(jrummell): Handling resume playback should be done in the media
+  // player, not in the Decryptors. http://crbug.com/413413.
+  if (has_additional_usable_key && decryptor_)
+    decryptor_->OnKeyAdded();
+
   media::CdmKeysInfo key_data;
   key_data.reserve(keys_info.size());
   for (size_t i = 0; i < keys_info.size(); ++i) {

@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "media/base/cdm_context.h"
 #include "media/base/cdm_initialized_promise.h"
@@ -21,6 +22,8 @@ class ServiceProvider;
 }
 
 namespace media {
+
+class MojoDecryptor;
 
 // A MediaKeys that proxies to a interfaces::ContentDecryptionModule. That
 // interfaces::ContentDecryptionModule proxies back to the MojoCdm via the
@@ -123,7 +126,10 @@ class MojoCdm : public MediaKeys,
   mojo::Binding<ContentDecryptionModuleClient> binding_;
   int cdm_id_;
 
+  // Keep track of the DecryptorPtr in order to do lazy initialization of
+  // MojoDecryptor.
   interfaces::DecryptorPtr decryptor_ptr_;
+  scoped_ptr<MojoDecryptor> decryptor_;
 
   // Callbacks for firing session events.
   SessionMessageCB session_message_cb_;

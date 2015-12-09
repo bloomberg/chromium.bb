@@ -241,6 +241,7 @@ void MojoCdmService::OnSessionKeysChange(const std::string& session_id,
                                          bool has_additional_usable_key,
                                          CdmKeysInfo keys_info) {
   DVLOG(2) << __FUNCTION__;
+
   mojo::Array<interfaces::CdmKeyInformationPtr> keys_data;
   for (const auto& key : keys_info)
     keys_data.push_back(interfaces::CdmKeyInformation::From(*key));
