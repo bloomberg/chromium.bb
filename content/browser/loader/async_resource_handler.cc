@@ -335,6 +335,7 @@ bool AsyncResourceHandler::OnReadCompleted(int bytes_read, bool* defer) {
   // TODO(erikchen): Temporary debugging. http://crbug.com/527588.
   CHECK_LE(data_offset, kBufferSize);
 
+  filter->Send(new ResourceMsg_DataReceivedDebug(GetRequestID(), data_offset));
   filter->Send(new ResourceMsg_DataReceived(
       GetRequestID(), data_offset, bytes_read, encoded_data_length));
   ++pending_data_count_;

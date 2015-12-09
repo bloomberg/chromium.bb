@@ -346,6 +346,12 @@ IPC_MESSAGE_CONTROL4(ResourceMsg_SetDataBuffer,
                      int /* shm_size */,
                      base::ProcessId /* renderer_pid */)
 
+// A message that always precedes ResourceMsg_DataReceived. Exists to help debug
+// https://code.google.com/p/chromium/issues/detail?id=527588.
+IPC_MESSAGE_CONTROL2(ResourceMsg_DataReceivedDebug,
+                     int /* request_id */,
+                     int /* data_offset */)
+
 // Sent when some data from a resource request is ready.  The data offset and
 // length specify a byte range into the shared memory buffer provided by the
 // SetDataBuffer message.

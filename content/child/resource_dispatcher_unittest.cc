@@ -305,6 +305,8 @@ class ResourceDispatcherTest : public testing::Test, public IPC::Sender {
            data.length());
 
     EXPECT_TRUE(dispatcher_.OnMessageReceived(
+        ResourceMsg_DataReceivedDebug(request_id, 0)));
+    EXPECT_TRUE(dispatcher_.OnMessageReceived(
         ResourceMsg_DataReceived(request_id, 0, data.length(), data.length())));
   }
 

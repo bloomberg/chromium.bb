@@ -12,9 +12,9 @@
 namespace content {
 // TODO(erikchen): Temporary code to help track http://crbug.com/527588.
 void CheckContentsOfResourceMessage(const IPC::Message* message) {
-  if (message->type() == ResourceMsg_DataReceived::ID) {
-    ResourceMsg_DataReceived::Schema::Param arg;
-    bool success = ResourceMsg_DataReceived::Read(message, &arg);
+  if (message->type() == ResourceMsg_DataReceivedDebug::ID) {
+    ResourceMsg_DataReceivedDebug::Schema::Param arg;
+    bool success = ResourceMsg_DataReceivedDebug::Read(message, &arg);
     CHECK(success);
     int data_offset = base::get<1>(arg);
     CHECK_LE(data_offset, 512 * 1024);

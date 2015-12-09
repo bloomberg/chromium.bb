@@ -218,6 +218,15 @@ void ResourceDispatcher::OnSetDataBuffer(int request_id,
   request_info->buffer_size = shm_size;
 }
 
+void ResourceDispatcher::OnReceivedDataDebug(int request_id, int data_offset) {
+  PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
+  if (request_info) {
+    CHECK_GE(data_offset, 0);
+    CHECK_LE(data_offset, 512 * 1024);
+    request_info->data_offset = data_offset;
+  }
+}
+
 void ResourceDispatcher::OnReceivedData(int request_id,
                                         int data_offset,
                                         int data_length,
@@ -235,8 +244,9 @@ void ResourceDispatcher::OnReceivedData(int request_id,
     CHECK_LE(request_info->buffer_size, 512 * 1024);
     CHECK_GE(data_length, 0);
     CHECK_LE(data_length, 512 * 1024);
-    CHECK_GE(data_offset, 0);
-    CHECK_LE(data_offset, 512 * 1024);
+
+    int cached_data_offset = request_info->data_offset;
+    CHECK_EQ(cached_data_offset, data_offset);
 
     // Ensure that the SHM buffer remains valid for the duration of this scope.
     // It is possible for Cancel() to be called before we exit this scope.
@@ -488,7 +498,8 @@ ResourceDispatcher::PendingRequestInfo::PendingRequestInfo()
       resource_type(RESOURCE_TYPE_SUB_RESOURCE),
       is_deferred(false),
       download_to_file(false),
-      buffer_size(0) {
+      buffer_size(0),
+      data_offset(-1) {
 }
 
 ResourceDispatcher::PendingRequestInfo::PendingRequestInfo(
@@ -507,7 +518,8 @@ ResourceDispatcher::PendingRequestInfo::PendingRequestInfo(
       frame_origin(frame_origin),
       response_url(request_url),
       download_to_file(download_to_file),
-      request_start(base::TimeTicks::Now()) {
+      request_start(base::TimeTicks::Now()),
+      data_offset(-1) {
 }
 
 ResourceDispatcher::PendingRequestInfo::~PendingRequestInfo() {
@@ -523,6 +535,7 @@ void ResourceDispatcher::DispatchMessage(const IPC::Message& message) {
                         OnReceivedCachedMetadata)
     IPC_MESSAGE_HANDLER(ResourceMsg_ReceivedRedirect, OnReceivedRedirect)
     IPC_MESSAGE_HANDLER(ResourceMsg_SetDataBuffer, OnSetDataBuffer)
+    IPC_MESSAGE_HANDLER(ResourceMsg_DataReceivedDebug, OnReceivedDataDebug)
     IPC_MESSAGE_HANDLER(ResourceMsg_DataReceived, OnReceivedData)
     IPC_MESSAGE_HANDLER(ResourceMsg_DataDownloaded, OnDownloadedData)
     IPC_MESSAGE_HANDLER(ResourceMsg_RequestComplete, OnRequestComplete)
@@ -706,6 +719,7 @@ bool ResourceDispatcher::IsResourceDispatcherMessage(
     case ResourceMsg_ReceivedCachedMetadata::ID:
     case ResourceMsg_ReceivedRedirect::ID:
     case ResourceMsg_SetDataBuffer::ID:
+    case ResourceMsg_DataReceivedDebug::ID:
     case ResourceMsg_DataReceived::ID:
     case ResourceMsg_DataDownloaded::ID:
     case ResourceMsg_RequestComplete::ID:
