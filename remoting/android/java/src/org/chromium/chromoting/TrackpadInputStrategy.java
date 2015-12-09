@@ -22,6 +22,10 @@ public class TrackpadInputStrategy implements InputStrategyInterface {
 
     public TrackpadInputStrategy(RenderData renderData) {
         mRenderData = renderData;
+
+        synchronized (mRenderData) {
+            mRenderData.drawCursor = true;
+        }
     }
 
     @Override

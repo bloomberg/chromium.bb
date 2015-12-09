@@ -233,6 +233,7 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
 
         Canvas canvas;
         Point cursorPosition;
+        boolean drawCursor;
         synchronized (mRenderData) {
             mRepaintPending = false;
             // Don't try to lock the canvas before it is ready, as the implementation of
@@ -247,6 +248,7 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
                 return;
             }
             canvas.setMatrix(mRenderData.transform);
+            drawCursor = mRenderData.drawCursor;
             cursorPosition = mRenderData.getCursorPosition();
         }
 
@@ -263,11 +265,13 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
             mFeedbackAnimator.render(canvas, cursorPosition.x, cursorPosition.y, scaleFactor);
         }
 
-        Bitmap cursorBitmap = JniInterface.getCursorBitmap();
-        if (cursorBitmap != null) {
-            Point hotspot = JniInterface.getCursorHotspot();
-            canvas.drawBitmap(cursorBitmap, cursorPosition.x - hotspot.x,
-                    cursorPosition.y - hotspot.y, new Paint());
+        if (drawCursor) {
+            Bitmap cursorBitmap = JniInterface.getCursorBitmap();
+            if (cursorBitmap != null) {
+                Point hotspot = JniInterface.getCursorHotspot();
+                canvas.drawBitmap(cursorBitmap, cursorPosition.x - hotspot.x,
+                        cursorPosition.y - hotspot.y, new Paint());
+            }
         }
 
         getHolder().unlockCanvasAndPost(canvas);
@@ -427,5 +431,8 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
                 // Unreachable, but required by Google Java style and findbugs.
                 assert false : "Unreached";
         }
+
+        // Ensure the cursor state is updated appropriately.
+        requestRepaint();
     }
 }
