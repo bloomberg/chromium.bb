@@ -59,6 +59,8 @@ def main():
   parser.add_argument('--blacklist-file', help='Device blacklist JSON file.')
   parser.add_argument('-v', '--verbose', action='count',
                       help='Enable verbose logging.')
+  parser.add_argument('--downgrade', action='store_true',
+                      help='If set, allows downgrading of apk.')
 
   args = parser.parse_args()
 
@@ -103,9 +105,11 @@ def main():
   def blacklisting_install(device):
     try:
       if args.splits:
-        device.InstallSplitApk(apk, splits, reinstall=args.keep_data)
+        device.InstallSplitApk(apk, splits, reinstall=args.keep_data,
+                               allow_downgrade=args.downgrade)
       else:
-        device.Install(apk, reinstall=args.keep_data)
+        device.Install(apk, reinstall=args.keep_data,
+                       allow_downgrade=args.downgrade)
     except device_errors.CommandFailedError:
       logging.exception('Failed to install %s', args.apk_name)
       if blacklist:
