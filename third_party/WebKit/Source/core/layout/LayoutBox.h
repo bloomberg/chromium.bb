@@ -877,6 +877,7 @@ protected:
     void incrementallyInvalidatePaint(const LayoutBoxModelObject& paintInvalidationContainer, const LayoutRect& oldBounds, const LayoutRect& newBounds, const LayoutPoint& positionFromPaintInvalidationContainer) override;
 
     PaintInvalidationReason invalidatePaintIfNeeded(PaintInvalidationState&, const LayoutBoxModelObject& paintInvalidationContainer) override;
+    void invalidatePaintOfSubtreesIfNeeded(PaintInvalidationState& childPaintInvalidationState) override;
 
     bool hasNonCompositedScrollbars() const final;
     void excludeScrollbars(LayoutRect&, OverlayScrollbarSizeRelevancy = IgnoreOverlayScrollbarSize) const;

@@ -8,11 +8,13 @@
       "repaintRects": [
         [250, 280, 100, 100],
         [250, 280, 100, 100],
+        [250, 280, 100, 100],
         [250, 280, 100, 100]
       ],
       "paintInvalidationClients": [
         "LayoutBlockFlow (positioned) DIV id='moveMe' class='fixed clipped'",
         "LayoutBlockFlow (positioned) DIV class='absolute green reflected'",
+        "LayoutReplica (anonymous)",
         "LayoutBlockFlow (positioned) DIV class='absolute red'"
       ]
     }

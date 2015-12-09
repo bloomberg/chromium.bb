@@ -48,6 +48,7 @@
 #include "core/layout/LayoutListMarker.h"
 #include "core/layout/LayoutMultiColumnSpannerPlaceholder.h"
 #include "core/layout/LayoutPart.h"
+#include "core/layout/LayoutReplica.h"
 #include "core/layout/LayoutScrollbarPart.h"
 #include "core/layout/LayoutTableCell.h"
 #include "core/layout/LayoutView.h"
@@ -1454,6 +1455,16 @@ PaintInvalidationReason LayoutBox::invalidatePaintIfNeeded(PaintInvalidationStat
     // This is for the next invalidatePaintIfNeeded so must be at the end.
     savePreviousBoxSizesIfNeeded();
     return reason;
+}
+
+void LayoutBox::invalidatePaintOfSubtreesIfNeeded(PaintInvalidationState& childPaintInvalidationState)
+{
+    LayoutBoxModelObject::invalidatePaintOfSubtreesIfNeeded(childPaintInvalidationState);
+
+    if (PaintLayer* layer = this->layer()) {
+        if (PaintLayerReflectionInfo* reflectionInfo = layer->reflectionInfo())
+            reflectionInfo->reflection()->invalidateTreeIfNeeded(childPaintInvalidationState);
+    }
 }
 
 LayoutRect LayoutBox::overflowClipRect(const LayoutPoint& location, OverlayScrollbarSizeRelevancy relevancy) const
