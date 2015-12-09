@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/extensions/extension_install_dialog_view.h"
 
+#include <algorithm>
+#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -107,8 +109,16 @@ void ShowExtensionInstallDialogImpl(
                                      show_params->GetParentWebContents(),
                                      delegate,
                                      prompt);
-  constrained_window::CreateBrowserModalDialogViews(
-      dialog, show_params->GetParentWindow())->Show();
+  if (prompt->ShouldUseTabModalDialog()) {
+    content::WebContents* parent_web_contents =
+        show_params->GetParentWebContents();
+    if (parent_web_contents)
+      constrained_window::ShowWebModalDialogViews(dialog, parent_web_contents);
+  } else {
+    constrained_window::CreateBrowserModalDialogViews(
+        dialog, show_params->GetParentWindow())
+        ->Show();
+  }
 }
 
 // A custom scrollable view implementation for the dialog.
@@ -412,7 +422,7 @@ void ExtensionInstallDialogView::InitView() {
     scroll_layout->AddView(issue_advice_view);
   }
 
-  DCHECK(prompt_->type() >= 0);
+  DCHECK_GE(prompt_->type(), 0);
   UMA_HISTOGRAM_ENUMERATION("Extensions.InstallPrompt.Type",
                             prompt_->type(),
                             ExtensionInstallPrompt::NUM_PROMPT_TYPES);
@@ -598,7 +608,8 @@ bool ExtensionInstallDialogView::Accept() {
 }
 
 ui::ModalType ExtensionInstallDialogView::GetModalType() const {
-  return ui::MODAL_TYPE_WINDOW;
+  return prompt_->ShouldUseTabModalDialog() ? ui::MODAL_TYPE_CHILD
+                                            : ui::MODAL_TYPE_WINDOW;
 }
 
 void ExtensionInstallDialogView::LinkClicked(views::Link* source,

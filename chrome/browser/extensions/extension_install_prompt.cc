@@ -408,6 +408,13 @@ bool ExtensionInstallPrompt::Prompt::ShouldShowPermissions() const {
          type_ == POST_INSTALL_PERMISSIONS_PROMPT;
 }
 
+bool ExtensionInstallPrompt::Prompt::ShouldUseTabModalDialog() const {
+  // For inline install, we want the install prompt to be tab modal so that the
+  // dialog is always clearly associated with the page that made the inline
+  // install request.
+  return type_ == INLINE_INSTALL_PROMPT;
+}
+
 void ExtensionInstallPrompt::Prompt::AppendRatingStars(
     StarAppender appender, void* data) const {
   CHECK(appender);

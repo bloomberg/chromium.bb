@@ -128,6 +128,8 @@ class ExtensionInstallPrompt
 
     bool ShouldShowPermissions() const;
 
+    bool ShouldUseTabModalDialog() const;
+
     // Getters for webstore metadata. Only populated when the type is
     // INLINE_INSTALL_PROMPT, EXTERNAL_INSTALL_PROMPT, or REPAIR_PROMPT.
 
