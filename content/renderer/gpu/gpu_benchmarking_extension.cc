@@ -54,12 +54,12 @@ class PNGSerializer : public SkPixelSerializer {
  protected:
   bool onUseEncodedData(const void* data, size_t len) override { return true; }
 
-  SkData* onEncodePixels(const SkImageInfo& info,
-                         const void* pixels,
-                         size_t row_bytes) override {
+  SkData* onEncode(const SkPixmap& pixmap) override {
     SkBitmap bm;
     // The const_cast is fine, since we only read from the bitmap.
-    if (bm.installPixels(info, const_cast<void*>(pixels), row_bytes)) {
+    if (bm.installPixels(pixmap.info(),
+                         const_cast<void*>(pixmap.addr()),
+                         pixmap.rowBytes())) {
       std::vector<unsigned char> vector;
       if (gfx::PNGCodec::EncodeBGRASkBitmap(bm, false, &vector)) {
         return SkData::NewWithCopy(&vector.front(), vector.size());
