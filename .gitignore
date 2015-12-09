@@ -48,6 +48,7 @@ Session.vim
 tags
 Thumbs.db
 v8.log
+vs-chromium-project.txt
 # Settings directories for eclipse
 /.externalToolBuilders/
 /.settings/
