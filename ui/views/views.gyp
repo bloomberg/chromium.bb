@@ -346,9 +346,6 @@
       'window/window_shape.h',
     ],
     'views_win_sources': [
-      'controls/menu/menu_2.cc',
-      'controls/menu/menu_2.h',
-      'controls/menu/menu_wrapper.h',
       'widget/widget_hwnd_utils.cc',
       'widget/widget_hwnd_utils.h',
       'win/fullscreen_handler.cc',

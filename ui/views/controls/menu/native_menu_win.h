@@ -7,13 +7,9 @@
 
 #include <vector>
 
-#include "base/basictypes.h"
-#include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
-#include "base/observer_list.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
-#include "ui/views/controls/menu/menu_wrapper.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/views/views_export.h"
 
 namespace ui {
@@ -22,26 +18,19 @@ class MenuModel;
 
 namespace views {
 
-// A Windows implementation of MenuWrapper.
-// TODO(beng): rename to MenuWin once the old class is dead.
-class VIEWS_EXPORT NativeMenuWin : public MenuWrapper {
+class MenuInsertionDelegateWin;
+
+// A wrapper around a native Windows menu.
+class VIEWS_EXPORT NativeMenuWin {
  public:
   // Construct a NativeMenuWin, with a model and delegate. If |system_menu_for|
   // is non-NULL, the NativeMenuWin wraps the system menu for that window.
   // The caller owns the model and the delegate.
   NativeMenuWin(ui::MenuModel* model, HWND system_menu_for);
-  ~NativeMenuWin() override;
+  ~NativeMenuWin();
 
-  // Overridden from MenuWrapper:
-  void RunMenuAt(const gfx::Point& point, int alignment) override;
-  void CancelMenu() override;
-  void Rebuild(MenuInsertionDelegateWin* delegate) override;
-  void UpdateStates() override;
-  HMENU GetNativeMenu() const override;
-  MenuAction GetMenuAction() const override;
-  void AddMenuListener(MenuListener* listener) override;
-  void RemoveMenuListener(MenuListener* listener) override;
-  void SetMinimumWidth(int width) override;
+  void Rebuild(MenuInsertionDelegateWin* delegate);
+  void UpdateStates();
 
  private:
   // IMPORTANT: Note about indices.
@@ -55,8 +44,6 @@ class VIEWS_EXPORT NativeMenuWin : public MenuWrapper {
   //            at 0, but the insertion index into the existing menu is not.
   //            It is important to take this into consideration when editing the
   //            code in the functions in this class.
-
-  struct HighlightedMenuItemInfo;
 
   // Returns true if the item at the specified index is a separator.
   bool IsSeparatorItemAt(int menu_index) const;
@@ -84,28 +71,9 @@ class VIEWS_EXPORT NativeMenuWin : public MenuWrapper {
                                    int model_index,
                                    const base::string16& label);
 
-  // Returns the alignment flags to be passed to TrackPopupMenuEx, based on the
-  // supplied alignment and the UI text direction.
-  UINT GetAlignmentFlags(int alignment) const;
-
   // Resets the native menu stored in |menu_| by destroying any old menu then
   // creating a new empty one.
   void ResetNativeMenu();
-
-  // Creates the host window that receives notifications from the menu.
-  void CreateHostWindow();
-
-  // Callback from task to notify menu it was selected.
-  void DelayedSelect();
-
-  // Given a menu that's currently popped-up, find the currently highlighted
-  // item. Returns true if a highlighted item was found.
-  static bool GetHighlightedMenuItemInfo(HMENU menu,
-                                         HighlightedMenuItemInfo* info);
-
-  // Hook to receive keyboard events while the menu is open.
-  static LRESULT CALLBACK MenuMessageHook(
-      int n_code, WPARAM w_param, LPARAM l_param);
 
   // Our attached model and delegate.
   ui::MenuModel* model_;
@@ -121,31 +89,12 @@ class VIEWS_EXPORT NativeMenuWin : public MenuWrapper {
   struct ItemData;
   std::vector<ItemData*> items_;
 
-  // The window that receives notifications from the menu.
-  class MenuHostWindow;
-  friend MenuHostWindow;
-  scoped_ptr<MenuHostWindow> host_window_;
-
   // The HWND this menu is the system menu for, or NULL if the menu is not a
   // system menu.
   HWND system_menu_for_;
 
   // The index of the first item in the model in the menu.
   int first_item_index_;
-
-  // The action that took place during the call to RunMenuAt.
-  MenuAction menu_action_;
-
-  // A list of listeners to call when the menu opens.
-  base::ObserverList<MenuListener> listeners_;
-
-  // Keep track of whether the listeners have already been called at least
-  // once.
-  bool listeners_called_;
-
-  // See comment in MenuMessageHook for details on these.
-  NativeMenuWin* menu_to_select_;
-  int position_to_select_;
 
   // If we're a submenu, this is our parent.
   NativeMenuWin* parent_;
@@ -154,13 +103,6 @@ class VIEWS_EXPORT NativeMenuWin : public MenuWrapper {
   // the menu is showing. It is used to detect if the menu was deleted while
   // running.
   bool* destroyed_flag_;
-
-  base::WeakPtrFactory<NativeMenuWin> menu_to_select_factory_;
-
-  // Ugly: a static pointer to the instance of this class that currently
-  // has a menu open, because our hook function that receives keyboard
-  // events doesn't have a mechanism to get a user data pointer.
-  static NativeMenuWin* open_native_menu_win_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeMenuWin);
 };
