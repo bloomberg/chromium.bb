@@ -1028,6 +1028,9 @@ public class StripLayoutHelper {
                 break;
             }
         }
+
+        // 8. Invalidate the accessibility provider in case the visible virtual views have changed.
+        mRenderHost.invalidateAccessibilityProvider();
     }
 
     private void computeTabInitialPositions() {

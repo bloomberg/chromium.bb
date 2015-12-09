@@ -13,6 +13,7 @@ import android.graphics.RectF;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.view.ViewCompat;
+import android.support.v4.view.accessibility.AccessibilityEventCompat;
 import android.support.v4.view.accessibility.AccessibilityNodeInfoCompat;
 import android.support.v4.widget.ExploreByTouchHelper;
 import android.util.AttributeSet;
@@ -1017,6 +1018,8 @@ public class CompositorViewHolder extends FrameLayout
     @Override
     public void invalidateAccessibilityProvider() {
         if (mNodeProvider != null) {
+            mNodeProvider.sendEventForVirtualView(mNodeProvider.getFocusedVirtualView(),
+                    AccessibilityEventCompat.TYPE_VIEW_ACCESSIBILITY_FOCUS_CLEARED);
             mNodeProvider.invalidateRoot();
         }
     }
