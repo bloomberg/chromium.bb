@@ -96,6 +96,8 @@ BlimpConnection::BlimpConnection(scoped_ptr<PacketReader> reader,
   DCHECK(writer_);
 }
 
+BlimpConnection::BlimpConnection() {}
+
 BlimpConnection::~BlimpConnection() {}
 
 void BlimpConnection::SetConnectionErrorObserver(

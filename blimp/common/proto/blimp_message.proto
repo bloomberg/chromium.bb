@@ -28,6 +28,7 @@ import "compositor.proto";
 import "input.proto";
 import "navigation.proto";
 import "render_widget.proto";
+import "protocol_control.proto";
 
 package blimp;
 
@@ -39,6 +40,7 @@ message BlimpMessage {
     RENDER_WIDGET = 3;
     INPUT = 4;
     COMPOSITOR = 5;
+    PROTOCOL_CONTROL = 6;
   }
 
   // Sequence number of this message, used for message acknowledgement.
@@ -70,5 +72,6 @@ message BlimpMessage {
   optional RenderWidgetMessage render_widget = 1002;
   optional InputMessage input = 1003;
   optional CompositorMessage compositor = 1004;
+  optional ProtocolControlMessage protocol_control = 1005;
 }
 

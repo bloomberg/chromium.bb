@@ -27,15 +27,18 @@ class BLIMP_NET_EXPORT BlimpConnection {
   virtual ~BlimpConnection();
 
   // Lets |observer| know when the network connection encounters an error.
-  void SetConnectionErrorObserver(ConnectionErrorObserver* observer);
+  virtual void SetConnectionErrorObserver(ConnectionErrorObserver* observer);
 
   // Sets the processor which will take incoming messages for this connection.
   // Can be set multiple times, but previously set processors are discarded.
   // Caller retains the ownership of |processor|.
-  void SetIncomingMessageProcessor(BlimpMessageProcessor* processor);
+  virtual void SetIncomingMessageProcessor(BlimpMessageProcessor* processor);
 
   // Gets a processor for BrowserSession->BlimpConnection message routing.
-  BlimpMessageProcessor* GetOutgoingMessageProcessor() const;
+  virtual BlimpMessageProcessor* GetOutgoingMessageProcessor() const;
+
+ protected:
+  BlimpConnection();
 
  private:
   scoped_ptr<PacketReader> reader_;

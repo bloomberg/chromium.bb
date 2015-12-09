@@ -40,5 +40,20 @@ TEST(CreateBlimpMessageTest, RenderWidgetMessage) {
   EXPECT_EQ(kTabId, message->target_tab_id());
 }
 
+TEST(CreateBlimpMessageTest, StartConnectionMessage) {
+  const char* client_token = "token";
+  const int protocol_version = 1;
+  scoped_ptr<BlimpMessage> message =
+      CreateStartConnectionMessage(client_token, protocol_version);
+  EXPECT_NE(nullptr, message);
+  EXPECT_EQ(BlimpMessage::PROTOCOL_CONTROL, message->type());
+  EXPECT_EQ(ProtocolControlMessage::START_CONNECTION,
+            message->protocol_control().type());
+  EXPECT_EQ(client_token,
+            message->protocol_control().start_connection().client_token());
+  EXPECT_EQ(protocol_version,
+            message->protocol_control().start_connection().protocol_version());
+}
+
 }  // namespace
 }  // namespace blimp

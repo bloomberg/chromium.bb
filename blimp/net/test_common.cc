@@ -47,6 +47,10 @@ MockPacketWriter::MockPacketWriter() {}
 
 MockPacketWriter::~MockPacketWriter() {}
 
+MockBlimpConnection::MockBlimpConnection() {}
+
+MockBlimpConnection::~MockBlimpConnection() {}
+
 MockConnectionErrorObserver::MockConnectionErrorObserver() {}
 
 MockConnectionErrorObserver::~MockConnectionErrorObserver() {}

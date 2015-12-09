@@ -9,6 +9,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "blimp/common/proto/blimp_message.pb.h"
+#include "blimp/net/blimp_connection.h"
 #include "blimp/net/blimp_message_processor.h"
 #include "blimp/net/blimp_transport.h"
 #include "blimp/net/connection_error_observer.h"
@@ -163,6 +164,20 @@ class MockPacketWriter : public PacketWriter {
   MOCK_METHOD2(WritePacket,
                void(scoped_refptr<net::DrainableIOBuffer>,
                     const net::CompletionCallback&));
+};
+
+class MockBlimpConnection : public BlimpConnection {
+ public:
+  MockBlimpConnection();
+  ~MockBlimpConnection() override;
+
+  MOCK_METHOD1(SetConnectionErrorObserver,
+               void(ConnectionErrorObserver* observer));
+
+  MOCK_METHOD1(SetIncomingMessageProcessor,
+               void(BlimpMessageProcessor* processor));
+
+  MOCK_CONST_METHOD0(GetOutgoingMessageProcessor, BlimpMessageProcessor*());
 };
 
 class MockConnectionErrorObserver : public ConnectionErrorObserver {

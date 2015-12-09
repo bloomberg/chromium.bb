@@ -43,4 +43,21 @@ scoped_ptr<BlimpMessage> CreateBlimpMessage(
   return output;
 }
 
+scoped_ptr<BlimpMessage> CreateStartConnectionMessage(
+    const std::string& client_token,
+    int protocol_version) {
+  scoped_ptr<BlimpMessage> output(new BlimpMessage);
+  output->set_type(BlimpMessage::PROTOCOL_CONTROL);
+
+  ProtocolControlMessage* control_message = output->mutable_protocol_control();
+  control_message->set_type(ProtocolControlMessage::START_CONNECTION);
+
+  StartConnectionMessage* start_connection_message =
+      control_message->mutable_start_connection();
+  start_connection_message->set_client_token(client_token);
+  start_connection_message->set_protocol_version(protocol_version);
+
+  return output;
+}
+
 }  // namespace blimp

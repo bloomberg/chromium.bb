@@ -30,6 +30,7 @@ proto_library("proto_internal") {
     "control.proto",
     "input.proto",
     "navigation.proto",
+    "protocol_control.proto",
     "render_widget.proto",
     "size.proto",
   ]
