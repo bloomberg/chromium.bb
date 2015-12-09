@@ -5,9 +5,6 @@
 #include "chrome/utility/printing_handler.h"
 
 #include "base/files/file_util.h"
-#include "base/lazy_instance.h"
-#include "base/path_service.h"
-#include "base/scoped_native_library.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_utility_printing_messages.h"
 #include "chrome/utility/cloud_print/bitmap_image.h"
@@ -26,6 +23,8 @@
 #include "chrome/common/crash_keys.h"
 #include "printing/backend/print_backend.h"
 #endif
+
+namespace printing {
 
 namespace {
 
@@ -70,7 +69,7 @@ bool PrintingHandler::OnMessageReceived(const IPC::Message& message) {
 #if defined(OS_WIN)
 void PrintingHandler::OnRenderPDFPagesToMetafile(
     IPC::PlatformFileForTransit pdf_transit,
-    const printing::PdfRenderSettings& settings) {
+    const PdfRenderSettings& settings) {
   pdf_rendering_settings_ = settings;
   base::File pdf_file = IPC::PlatformFileForTransitToFile(pdf_transit);
   int page_count = LoadPDF(pdf_file.Pass());
@@ -98,8 +97,8 @@ void PrintingHandler::OnRenderPDFPagesToMetafileStop() {
 #if defined(ENABLE_PRINT_PREVIEW)
 void PrintingHandler::OnRenderPDFPagesToPWGRaster(
     IPC::PlatformFileForTransit pdf_transit,
-    const printing::PdfRenderSettings& settings,
-    const printing::PwgRasterSettings& bitmap_settings,
+    const PdfRenderSettings& settings,
+    const PwgRasterSettings& bitmap_settings,
     IPC::PlatformFileForTransit bitmap_transit) {
   base::File pdf = IPC::PlatformFileForTransitToFile(pdf_transit);
   base::File bitmap = IPC::PlatformFileForTransitToFile(bitmap_transit);
@@ -125,8 +124,8 @@ int PrintingHandler::LoadPDF(base::File pdf_file) {
     return 0;
 
   int total_page_count = 0;
-  if (!chrome_pdf::GetPDFDocInfo(
-          &pdf_data_.front(), pdf_data_.size(), &total_page_count, NULL)) {
+  if (!chrome_pdf::GetPDFDocInfo(&pdf_data_.front(), pdf_data_.size(),
+                                 &total_page_count, nullptr)) {
     return 0;
   }
   return total_page_count;
@@ -135,7 +134,7 @@ int PrintingHandler::LoadPDF(base::File pdf_file) {
 bool PrintingHandler::RenderPdfPageToMetafile(int page_number,
                                               base::File output_file,
                                               float* scale_factor) {
-  printing::Emf metafile;
+  Emf metafile;
   metafile.Init();
 
   // We need to scale down DC to fit an entire page into DC available area.
@@ -181,8 +180,8 @@ bool PrintingHandler::RenderPdfPageToMetafile(int page_number,
 #if defined(ENABLE_PRINT_PREVIEW)
 bool PrintingHandler::RenderPDFPagesToPWGRaster(
     base::File pdf_file,
-    const printing::PdfRenderSettings& settings,
-    const printing::PwgRasterSettings& bitmap_settings,
+    const PdfRenderSettings& settings,
+    const PwgRasterSettings& bitmap_settings,
     base::File bitmap_file) {
   bool autoupdate = true;
   base::File::Info info;
@@ -196,8 +195,8 @@ bool PrintingHandler::RenderPDFPagesToPWGRaster(
     return false;
 
   int total_page_count = 0;
-  if (!chrome_pdf::GetPDFDocInfo(data.data(), data_size,
-                                 &total_page_count, NULL)) {
+  if (!chrome_pdf::GetPDFDocInfo(data.data(), data_size, &total_page_count,
+                                 nullptr)) {
     return false;
   }
 
@@ -236,16 +235,16 @@ bool PrintingHandler::RenderPDFPagesToPWGRaster(
     // Transform odd pages.
     if (page_number % 2) {
       switch (bitmap_settings.odd_page_transform) {
-        case printing::TRANSFORM_NORMAL:
+        case TRANSFORM_NORMAL:
           break;
-        case printing::TRANSFORM_ROTATE_180:
+        case TRANSFORM_ROTATE_180:
           header_info.flipx = true;
           header_info.flipy = true;
           break;
-        case printing::TRANSFORM_FLIP_HORIZONTAL:
+        case TRANSFORM_FLIP_HORIZONTAL:
           header_info.flipx = true;
           break;
-        case printing::TRANSFORM_FLIP_VERTICAL:
+        case TRANSFORM_FLIP_VERTICAL:
           header_info.flipy = true;
           break;
       }
@@ -269,9 +268,9 @@ bool PrintingHandler::RenderPDFPagesToPWGRaster(
 
 void PrintingHandler::OnGetPrinterCapsAndDefaults(
     const std::string& printer_name) {
-  scoped_refptr<printing::PrintBackend> print_backend =
-      printing::PrintBackend::CreateInstance(NULL);
-  printing::PrinterCapsAndDefaults printer_info;
+  scoped_refptr<PrintBackend> print_backend =
+      PrintBackend::CreateInstance(nullptr);
+  PrinterCapsAndDefaults printer_info;
 
   crash_keys::ScopedPrinterInfo crash_key(
       print_backend->GetPrinterDriverInfo(printer_name));
@@ -288,9 +287,9 @@ void PrintingHandler::OnGetPrinterCapsAndDefaults(
 
 void PrintingHandler::OnGetPrinterSemanticCapsAndDefaults(
     const std::string& printer_name) {
-  scoped_refptr<printing::PrintBackend> print_backend =
-      printing::PrintBackend::CreateInstance(NULL);
-  printing::PrinterSemanticCapsAndDefaults printer_info;
+  scoped_refptr<PrintBackend> print_backend =
+      PrintBackend::CreateInstance(nullptr);
+  PrinterSemanticCapsAndDefaults printer_info;
 
   crash_keys::ScopedPrinterInfo crash_key(
       print_backend->GetPrinterDriverInfo(printer_name));
@@ -306,3 +305,5 @@ void PrintingHandler::OnGetPrinterSemanticCapsAndDefaults(
   ReleaseProcessIfNeeded();
 }
 #endif  // ENABLE_PRINT_PREVIEW
+
+}  // namespace printing

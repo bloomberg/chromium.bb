@@ -126,7 +126,7 @@ ChromeContentUtilityClient::ChromeContentUtilityClient()
 #endif
 
 #if defined(ENABLE_PRINT_PREVIEW) || defined(OS_WIN)
-  handlers_.push_back(new PrintingHandler());
+  handlers_.push_back(new printing::PrintingHandler());
 #endif
 
 #if defined(ENABLE_MDNS)
