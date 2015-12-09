@@ -100,6 +100,12 @@ public class ExternalEstimateProviderAndroid {
         return NO_VALUE;
     }
 
+    @CalledByNative
+    private static void onExit() {
+        sThreadCheck = null;
+        sExternalEstimateProviderAndroid = null;
+    }
+
     public native void nativeNotifyExternalEstimateProviderAndroidUpdate(
             long nativeExternalEstimateProviderAndroid);
 }

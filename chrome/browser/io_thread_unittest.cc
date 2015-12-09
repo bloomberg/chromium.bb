@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
 #include "base/prefs/pref_registry_simple.h"
@@ -669,6 +670,7 @@ class IOThreadTestWithIOThreadObject : public testing::Test {
   }
 
  private:
+  base::ShadowingAtExitManager at_exit_manager_;
   content::TestBrowserThreadBundle thread_bundle_;
   TestingPrefServiceSimple pref_service_;
 #if defined(ENABLE_EXTENSIONS)

@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include "base/at_exit.h"
 #include "base/test/histogram_tester.h"
 #include "base/time/time.h"
 #include "net/base/network_quality_estimator.h"
@@ -16,6 +17,7 @@ namespace {
 // Tests if the |ExternalEstimateProviderAndroid| APIs return false without the
 // downstream implementation.
 TEST(ExternalEstimateProviderAndroidTest, BasicsTest) {
+  base::ShadowingAtExitManager at_exit_manager;
   chrome::android::ExternalEstimateProviderAndroid external_estimate_provider;
 
   base::TimeDelta rtt;
@@ -71,6 +73,7 @@ class TestExternalEstimateProviderAndroid
 // Tests if the |ExternalEstimateProviderAndroid| notifies
 // |NetworkQualityEstimator|.
 TEST(ExternalEstimateProviderAndroidTest, DelegateTest) {
+  base::ShadowingAtExitManager at_exit_manager;
   base::HistogramTester histogram_tester;
   scoped_ptr<TestExternalEstimateProviderAndroid> external_estimate_provider;
   external_estimate_provider.reset(new TestExternalEstimateProviderAndroid());

@@ -7,12 +7,21 @@
 #include <stdint.h>
 
 #include "base/android/context_utils.h"
+#include "base/at_exit.h"
 #include "base/message_loop/message_loop.h"
 #include "content/public/browser/browser_thread.h"
 #include "jni/ExternalEstimateProviderAndroid_jni.h"
 
 namespace chrome {
 namespace android {
+
+namespace {
+// An exit manager is needed to clear up Java statics when unit testing.
+void OnExit(void* /*dummy*/) {
+  Java_ExternalEstimateProviderAndroid_onExit(
+      base::android::AttachCurrentThread());
+}
+}
 
 ExternalEstimateProviderAndroid::ExternalEstimateProviderAndroid()
     : task_runner_(nullptr), delegate_(nullptr), weak_factory_(this) {
@@ -24,6 +33,7 @@ ExternalEstimateProviderAndroid::ExternalEstimateProviderAndroid()
       Java_ExternalEstimateProviderAndroid_create(
           env, base::android::GetApplicationContext(),
           reinterpret_cast<intptr_t>(this)));
+  base::AtExitManager::RegisterCallback(OnExit, nullptr);
   DCHECK(!j_external_estimate_provider_.is_null());
   no_value_ = Java_ExternalEstimateProviderAndroid_getNoValue(env);
   net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
