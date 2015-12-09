@@ -170,6 +170,10 @@ void OfflinePageModel::MarkPageAccessed(int64 bookmark_id) {
   if (iter == offline_pages_.end())
     return;
 
+  // MarkPageAccessed should not be called for a page that is being marked for
+  // deletion.
+  DCHECK(!iter->second.IsMarkedForDeletion());
+
   // Make a copy of the cached item and update it. The cached item should only
   // be updated upon the successful store operation.
   OfflinePageItem offline_page_item = iter->second;
