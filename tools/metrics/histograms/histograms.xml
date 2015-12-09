@@ -58131,6 +58131,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
       label="TPM failed to load a key because of a bad key property"/>
   <int value="14" label="Failed to load a PKCS #11 token"/>
   <int value="15" label="Failed to encrypt with cryptohome TPM key"/>
+  <int value="16" label="TSS communication error"/>
+  <int value="17" label="TSS invalid handle"/>
 </enum>
 
 <enum name="CTRequirementCompliance" type="int">
