@@ -2319,11 +2319,34 @@ RenderFrameHostImpl* RenderFrameHostManager::UpdateStateForNavigate(
     bool dest_is_view_source_mode,
     const GlobalRequestID& transferred_request_id,
     int bindings) {
-  // Don't swap for subframes unless we are in --site-per-process.  We can get
-  // here in tests for subframes (e.g., NavigateFrameToURL).
-  if (!frame_tree_node_->IsMainFrame() &&
-      !SiteIsolationPolicy::AreCrossProcessFramesPossible()) {
-    return render_frame_host_.get();
+  if (!frame_tree_node_->IsMainFrame()) {
+    // Don't swap for subframes unless we are in an OOPIF-enabled mode.  We can
+    // get here in tests for subframes (e.g., NavigateFrameToURL).
+    if (!SiteIsolationPolicy::AreCrossProcessFramesPossible())
+      return render_frame_host_.get();
+
+    // If dest_url is a unique origin like about:blank, then the need for a swap
+    // is determined by the source_instance.
+    GURL resolved_url = dest_url;
+    if (url::Origin(resolved_url).unique()) {
+      // If there is no source_instance for a unique origin, then we should
+      // avoid a process swap.
+      if (!source_instance)
+        return render_frame_host_.get();
+
+      // Use source_instance to determine if a swap is needed.
+      resolved_url = source_instance->GetSiteURL();
+    }
+
+    // If we are in an OOPIF mode that only applies to some sites, only swap if
+    // the policy determines that a transfer would have been needed.  We can get
+    // here for session restore.
+    if (!IsRendererTransferNeededForNavigation(render_frame_host_.get(),
+                                               resolved_url)) {
+      DCHECK(!dest_instance ||
+             dest_instance == render_frame_host_->GetSiteInstance());
+      return render_frame_host_.get();
+    }
   }
 
   SiteInstance* current_instance = render_frame_host_->GetSiteInstance();
