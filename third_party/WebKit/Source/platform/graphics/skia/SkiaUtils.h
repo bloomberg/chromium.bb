@@ -116,7 +116,7 @@ InterpolationQuality computeInterpolationQuality(
 inline SkScalar skBlurRadiusToSigma(SkScalar radius)
 {
     SkASSERT(radius >= 0);
-    return 0.288675f * radius + 0.5f;
+    return 0.288675f * radius;
 }
 
 template<typename PrimitiveType>
