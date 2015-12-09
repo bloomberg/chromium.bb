@@ -4,6 +4,8 @@
 
 #include "media/renderers/skcanvas_video_renderer.h"
 
+#include <limits>
+
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
@@ -119,8 +121,15 @@ skia::RefPtr<SkImage> NewSkImageFromVideoFrameYUVTextures(
       source_textures[i] = texture_copy;
     }
   }
-  GrBackendObject handles[3] = {source_textures[0], source_textures[1],
-                                source_textures[2]};
+  DCHECK_LE(source_textures[0],
+            static_cast<unsigned>(std::numeric_limits<int>::max()));
+  DCHECK_LE(source_textures[1],
+            static_cast<unsigned>(std::numeric_limits<int>::max()));
+  DCHECK_LE(source_textures[2],
+            static_cast<unsigned>(std::numeric_limits<int>::max()));
+  GrBackendObject handles[3] = {static_cast<int>(source_textures[0]),
+                                static_cast<int>(source_textures[1]),
+                                static_cast<int>(source_textures[2])};
 
   SkISize yuvSizes[] = {
       {ya_tex_size.width(), ya_tex_size.height()},
@@ -180,7 +189,9 @@ skia::RefPtr<SkImage> NewSkImageFromVideoFrameNative(
   desc.fWidth = video_frame->coded_size().width();
   desc.fHeight = video_frame->coded_size().height();
   desc.fConfig = kRGBA_8888_GrPixelConfig;
-  desc.fTextureHandle = source_texture;
+  DCHECK_LE(source_texture,
+            static_cast<unsigned>(std::numeric_limits<int>::max()));
+  desc.fTextureHandle = static_cast<int>(source_texture);
   return skia::AdoptRef(
       SkImage::NewFromAdoptedTexture(context_3d.gr_context, desc));
 }
