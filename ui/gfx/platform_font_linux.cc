@@ -176,7 +176,7 @@ int PlatformFontLinux::GetStyle() const {
   return style_;
 }
 
-std::string PlatformFontLinux::GetFontName() const {
+const std::string& PlatformFontLinux::GetFontName() const {
   return font_family_;
 }
 

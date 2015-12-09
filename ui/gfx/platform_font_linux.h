@@ -45,7 +45,7 @@ class GFX_EXPORT PlatformFontLinux : public PlatformFont {
   int GetCapHeight() const override;
   int GetExpectedTextWidth(int length) const override;
   int GetStyle() const override;
-  std::string GetFontName() const override;
+  const std::string& GetFontName() const override;
   std::string GetActualFontNameForTesting() const override;
   int GetFontSize() const override;
   const FontRenderParams& GetFontRenderParams() override;

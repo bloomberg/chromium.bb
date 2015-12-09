@@ -67,7 +67,7 @@ int PlatformFontIOS::GetStyle() const {
   return style_;
 }
 
-std::string PlatformFontIOS::GetFontName() const {
+const std::string& PlatformFontIOS::GetFontName() const {
   return font_name_;
 }
 

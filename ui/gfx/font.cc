@@ -64,7 +64,7 @@ int Font::GetStyle() const {
   return platform_font_->GetStyle();
 }
 
-std::string Font::GetFontName() const {
+const std::string& Font::GetFontName() const {
   return platform_font_->GetFontName();
 }
 

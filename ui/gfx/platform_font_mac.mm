@@ -120,7 +120,7 @@ int PlatformFontMac::GetStyle() const {
   return font_style_;
 }
 
-std::string PlatformFontMac::GetFontName() const {
+const std::string& PlatformFontMac::GetFontName() const {
   return font_name_;
 }
 

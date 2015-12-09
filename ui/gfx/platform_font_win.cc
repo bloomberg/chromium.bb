@@ -387,7 +387,7 @@ int PlatformFontWin::GetStyle() const {
   return font_ref_->style();
 }
 
-std::string PlatformFontWin::GetFontName() const {
+const std::string& PlatformFontWin::GetFontName() const {
   return font_ref_->font_name();
 }
 

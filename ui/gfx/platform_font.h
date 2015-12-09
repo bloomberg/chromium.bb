@@ -57,7 +57,7 @@ class GFX_EXPORT PlatformFont : public base::RefCounted<PlatformFont> {
   virtual int GetStyle() const = 0;
 
   // Returns the specified font name in UTF-8.
-  virtual std::string GetFontName() const = 0;
+  virtual const std::string& GetFontName() const = 0;
 
   // Returns the actually used font name in UTF-8.
   virtual std::string GetActualFontNameForTesting() const = 0;
