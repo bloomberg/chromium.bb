@@ -124,6 +124,9 @@ struct hmi_controller {
 
 	struct wl_client                   *user_interface;
 	struct ui_setting                   ui_setting;
+
+	int32_t				    screen_num;
+	struct ivi_layout_screen	  **pp_screen;
 };
 
 struct launcher_info {
@@ -462,6 +465,39 @@ switch_mode(struct hmi_controller *hmi_ctrl,
 }
 
 /**
+ * Internal method to get screens from weston core
+ * TODO: shall support hotplug of screens
+ */
+static int32_t
+get_screens(struct hmi_controller *hmi_ctrl)
+{
+	hmi_ctrl->pp_screen = NULL;
+	hmi_ctrl->screen_num = 0;
+	ivi_layout_interface->get_screens(&hmi_ctrl->screen_num, &hmi_ctrl->pp_screen);
+
+	if (hmi_ctrl->pp_screen == NULL)
+		return -1;
+	else
+		return 0;
+}
+
+/**
+ * Internal method to get ivi_layout_screen
+ */
+static struct ivi_layout_screen *
+get_screen(int32_t screen_idx, struct hmi_controller *hmi_ctrl)
+{
+	struct ivi_layout_screen *iviscrn  = NULL;
+
+	if (screen_idx > hmi_ctrl->screen_num - 1)
+		weston_log("Invalid index. Return NULL\n");
+	else
+		iviscrn = hmi_ctrl->pp_screen[screen_idx];
+
+	return iviscrn;
+}
+
+/**
  * Internal method for transition
  */
 static void
@@ -646,6 +682,7 @@ hmi_controller_destroy(struct wl_listener *listener, void *data)
 
 	wl_array_release(&hmi_ctrl->ui_widgets);
 	free(hmi_ctrl->hmi_setting);
+	free(hmi_ctrl->pp_screen);
 	free(hmi_ctrl);
 }
 
@@ -667,9 +704,7 @@ hmi_controller_destroy(struct wl_listener *listener, void *data)
 static struct hmi_controller *
 hmi_controller_create(struct weston_compositor *ec)
 {
-	struct ivi_layout_screen **pp_screen = NULL;
 	struct ivi_layout_screen *iviscrn  = NULL;
-	int32_t screen_length  = 0;
 	int32_t screen_width   = 0;
 	int32_t screen_height  = 0;
 	struct link_layer *tmp_link_layer = NULL;
@@ -681,10 +716,14 @@ hmi_controller_create(struct weston_compositor *ec)
 	hmi_ctrl->hmi_setting = hmi_server_setting_create(ec);
 	hmi_ctrl->compositor = ec;
 
-	ivi_layout_interface->get_screens(&screen_length, &pp_screen);
+	/* TODO: shall support hotplug of screens */
+	if (get_screens(hmi_ctrl) < 0) {
+		weston_log("ivi-shell: Failed to get screens\n");
+		hmi_ctrl = NULL;
+		return hmi_ctrl;
+	}
 
-	iviscrn = pp_screen[0];
-
+	iviscrn = get_screen(0, hmi_ctrl);
 	ivi_layout_interface->get_screen_resolution(iviscrn, &screen_width,
 					 &screen_height);
 
@@ -743,9 +782,6 @@ hmi_controller_create(struct weston_compositor *ec)
 	hmi_ctrl->destroy_listener.notify = hmi_controller_destroy;
 	wl_signal_add(&hmi_ctrl->compositor->destroy_signal,
 		      &hmi_ctrl->destroy_listener);
-
-	free(pp_screen);
-	pp_screen = NULL;
 
 	return hmi_ctrl;
 }
@@ -998,8 +1034,6 @@ ivi_hmi_controller_add_launchers(struct hmi_controller *hmi_ctrl,
 
 	struct ivi_layout_screen *iviscrn = NULL;
 	struct link_layer *tmp_link_layer = NULL;
-	struct ivi_layout_screen **pp_screen = NULL;
-	int32_t screen_length  = 0;
 
 	if (0 == x_count)
 		x_count = 1;
@@ -1099,9 +1133,7 @@ ivi_hmi_controller_add_launchers(struct hmi_controller *hmi_ctrl,
 	hmi_ctrl->workspace_layer.id_layer =
 		hmi_ctrl->hmi_setting->workspace_layer_id;
 
-	ivi_layout_interface->get_screens(&screen_length, &pp_screen);
-	iviscrn = pp_screen[0];
-	free(pp_screen);
+	iviscrn = get_screen(0, hmi_ctrl);
 	create_layer(iviscrn, &hmi_ctrl->workspace_layer);
 	ivi_layout_interface->layer_set_opacity(hmi_ctrl->workspace_layer.ivilayer, 0);
 	ivi_layout_interface->layer_set_visibility(hmi_ctrl->workspace_layer.ivilayer,
@@ -1797,6 +1829,8 @@ controller_module_init(struct weston_compositor *ec,
 	ivi_layout_interface = interface;
 
 	hmi_ctrl = hmi_controller_create(ec);
+	if (hmi_ctrl == NULL)
+		return -1;
 
 	if (!initialize(hmi_ctrl)) {
 		return -1;
