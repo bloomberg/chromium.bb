@@ -169,8 +169,7 @@ Background.prototype = {
       } else {
         // When in compat mode, if the focus is within the desktop tree proper,
         // then do not disable content scripts.
-        if (this.currentRange_ &&
-            this.currentRange_.start.node.root.role == RoleType.desktop)
+        if (this.currentRange_ && !this.currentRange_.isWebRange())
           return;
 
         this.disableClassicChromeVox_();
@@ -196,7 +195,8 @@ Background.prototype = {
     if (mode != ChromeVoxMode.FORCE_NEXT) {
       if (this.isWhitelistedForNext_(url))
         mode = ChromeVoxMode.NEXT;
-      else if (this.isBlacklistedForClassic_(url))
+      else if (this.isBlacklistedForClassic_(url) || (this.currentRange_ &&
+          !this.currentRange_.isWebRange()))
         mode = ChromeVoxMode.COMPAT;
       else
         mode = ChromeVoxMode.CLASSIC;
@@ -440,9 +440,8 @@ Background.prototype = {
       case 'toggleChromeVoxVersion':
         var newMode;
         if (this.mode_ == ChromeVoxMode.FORCE_NEXT) {
-          var inViews =
-              this.currentRange_.start.node.root.role == RoleType.desktop;
-          newMode = inViews ? ChromeVoxMode.COMPAT : ChromeVoxMode.CLASSIC;
+          var inWeb = current.isWebRange();
+          newMode = inWeb ? ChromeVoxMode.CLASSIC : ChromeVoxMode.COMPAT;
         } else {
           newMode = ChromeVoxMode.FORCE_NEXT;
         }
@@ -573,7 +572,7 @@ Background.prototype = {
    * @private
    */
   isBlacklistedForClassic_: function(url) {
-    return url === '' || this.classicBlacklistRegExp_.test(url);
+    return this.classicBlacklistRegExp_.test(url);
   },
 
   /**

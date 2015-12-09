@@ -303,3 +303,13 @@ TEST_F('CursorsTest', 'WrappingCursors', function() {
     assertEquals(root.firstChild.firstChild, cursor.node);
   });
 });
+
+TEST_F('CursorsTest', 'IsInWebRange', function() {
+  this.runWithLoadedTree(this.simpleDoc, function(root) {
+    var para = root.firstChild;
+    var webRange = new cursors.Range.fromNode(para);
+    var auraRange = cursors.Range.fromNode(root.parent);
+    assertFalse(auraRange.isWebRange());
+    assertTrue(webRange.isWebRange());
+  });
+});
