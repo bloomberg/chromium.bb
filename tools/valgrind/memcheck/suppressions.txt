@@ -3154,12 +3154,6 @@
    fun:_ZN3net16HostResolverImpl16LoopbackProbeJob7DoProbeEv
 }
 {
-   bug_514439
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN8IOThread34InitSystemRequestContextOnIOThreadEv
-}
-{
    bug_514443
    Memcheck:Leak
    fun:_Znw*
@@ -3213,18 +3207,6 @@
    fun:_ZN3net2ct30CreateLogVerifiersForKnownLogsEv
 }
 {
-   bug_521656
-   Memcheck:Uninitialized
-   fun:_ZN5blink10TraceTraitINS_11WebGLObjectEE5traceEPNS_7VisitorEPv
-   fun:_ZN5blink13CallbackStack4Item4callEPNS_7VisitorE
-   fun:_ZN5blink4Heap25popAndInvokeTraceCallbackEPNS_7VisitorE
-   fun:_ZN5blink4Heap19processMarkingStackEPNS_7VisitorE
-   fun:_ZN5blink4Heap14collectGarbageENS_7BlinkGC10StackStateENS1_6GCTypeENS0_8GCReasonE
-   fun:_ZN5blink14V8GCController10gcEpilogueEN2v86GCTypeENS1_15GCCallbackFlagsE
-   fun:_ZN2v88internal4Heap23CallGCEpilogueCallbacksENS_6GCTypeENS_15GCCallbackFlagsE
-   fun:_ZN2v88internal4Heap24PerformGarbageCollectionENS0_16GarbageCollectorENS_15GCCallbackFlagsE
-}
-{
    bug_522049
    Memcheck:Unaddressable
    ...
@@ -3240,56 +3222,6 @@
    fun:_ZN2cc17SingleThreadProxy20CompositeImmediatelyEN4base9TimeTicksE
    fun:_ZN2cc13LayerTreeHost9CompositeEN4base9TimeTicksE
    fun:_ZN7content12_GLOBAL__N_135RenderWidgetCompositorOutputSurface20SynchronousCompositeEv
-}
-{
-   bug_522463
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN19KeyedServiceFactory20GetServiceForContextEPN4base16SupportsUserDataEb
-}
-{
-   bug_522468
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN14TestingProfile4InitEv
-   fun:_ZN14TestingProfileC1Ev
-   fun:_ZN12_GLOBAL__N_131PermissionManagerTestingProfileC2Ev
-   fun:_ZN21PermissionManagerTestC2Ev
-   fun:_ZN*PermissionManagerTest_*
-}
-{
-   bug_522514
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN4base8internal20PostTaskAndReplyImpl16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEESA_
-   fun:_ZN4base10WorkerPool16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEES9_b
-   fun:_ZN3net15CertVerifierJob5StartERK13scoped_refptrINS_14CertVerifyProcEERKS1_INS_15X509CertificateEERKSsSB_iRKS1_INS_6CRLSetEERKSt6vectorIS7_SaIS7_EE
-   fun:_ZN3net25MultiThreadedCertVerifier6VerifyEPNS_15X509CertificateERKSsS4_iPNS_6CRLSetEPNS_16CertVerifyResultERKN4base8CallbackIFviEEEP10scoped_ptrINS_12CertVerifier7RequestENS9_14DefaultDeleterISH_EEERKNS_11BoundNetLogE
-   fun:_ZN3net56MultiThreadedCertVerifierTest_CancelRequestThenQuit_Test8TestBodyEv
-}
-{
-   bug_522524
-   Memcheck:Leak
-   fun:calloc
-   ...
-   fun:CERT_NewTempCertificate
-   fun:_ZN3net15X509Certificate39CreateOSCertHandleFromBytesWithNicknameEPKciS2_
-   fun:_ZN3net15X509Certificate27CreateOSCertHandleFromBytesEPKci
-   fun:_ZN3net15X509Certificate30CreateCertificateListFromBytesEPKcii
-   fun:_ZN3net18ImportCertFromFileERKN4base8FilePathERKSs
-   fun:_ZN3net59CertVerifyProcTest_IsIssuedByKnownRootIgnoresTestRoots_Test8TestBodyEv
-}
-{
-   bug_522620
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN3IPC11SyncChannel23CreateSyncMessageFilterEv
-   fun:_ZN7content14GpuChannelHost7ConnectERKN3IPC13ChannelHandleEPN4base13WaitableEventE
-   fun:_ZN7content14GpuChannelHost6CreateEPNS_21GpuChannelHostFactoryERKN3gpu7GPUInfoERKN3IPC13ChannelHandleEPN4base13WaitableEventEPNS3_22GpuMemoryBufferManagerE
-   fun:_ZN7content28BrowserGpuChannelHostFactory21GpuChannelEstablishedEv
-   fun:_ZN7content28BrowserGpuChannelHostFactory16EstablishRequest12FinishOnMainEv
 }
 {
    bug_525328
@@ -3327,28 +3259,6 @@
    fun:_ZN7content21TestBrowserThreadImpl4InitEv
    fun:_ZN4base6Thread10ThreadMainEv
    fun:_ZN4base12_GLOBAL__N_110ThreadFuncEPv
-}
-{
-   bug_542563
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN7content21RenderProcessHostImpl4InitEv
-   fun:_ZN7content22RenderFrameHostManager14InitRenderViewEPNS_18RenderViewHostImplEi
-   fun:_ZN7content22RenderFrameHostManager8NavigateERK4GURLRKNS_20FrameNavigationEntryERKNS_19NavigationEntryImplE
-   fun:_ZN7content13NavigatorImpl15NavigateToEntryEPNS_13FrameTreeNodeERKNS_20FrameNavigationEntryERKNS_19NavigationEntryImplENS_20NavigationController10ReloadTypeEb
-   fun:_ZN7content13NavigatorImpl22NavigateToPendingEntryEPNS_13FrameTreeNodeERKNS_20FrameNavigationEntryENS_20NavigationController10ReloadTypeEb
-   fun:_ZN7content24NavigationControllerImpl30NavigateToPendingEntryInternalENS_20NavigationController10ReloadTypeE
-}
-{
-   bug_542875
-   Memcheck:Leak
-   fun:malloc
-   fun:_ZN3WTF10fastMallocEm
-   ...
-   fun:_ZN5blink13DOMTypedArrayIN3WTF17Uint8ClampedArrayEN2v817Uint8ClampedArrayEE12createOrNullEj
-   fun:_ZN5blink9ImageData6createERKNS_7IntSizeE
-   fun:_ZNK5blink17HTMLCanvasElement11toImageDataENS_19SourceDrawingBufferE
 }
 {
    bug_545259a
