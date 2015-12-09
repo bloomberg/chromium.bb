@@ -22,6 +22,7 @@
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/ui/search/search_ipc_router.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/webui/ntp/ntp_user_data_logger.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/ntp_logging_events.h"
 #include "chrome/common/render_messages.h"
@@ -314,6 +315,46 @@ TEST_F(SearchTabHelperTest, OnHistorySyncCheckNotSyncing) {
   ChromeViewMsg_HistorySyncCheckResult::Param params;
   ChromeViewMsg_HistorySyncCheckResult::Read(message, &params);
   ASSERT_FALSE(base::get<0>(params));
+}
+
+TEST_F(SearchTabHelperTest, OnMostVisitedItemsChangedFromServer) {
+  InstantMostVisitedItem item;
+  item.is_server_side_suggestion = true;
+  std::vector<InstantMostVisitedItem> items;
+  items.push_back(item);
+
+  SearchTabHelper* search_tab_helper =
+      SearchTabHelper::FromWebContents(web_contents());
+  ASSERT_NE(static_cast<SearchTabHelper*>(NULL), search_tab_helper);
+
+  auto logger = NTPUserDataLogger::GetOrCreateFromWebContents(web_contents());
+  ASSERT_FALSE(logger->has_server_side_suggestions_);
+  ASSERT_FALSE(logger->has_client_side_suggestions_);
+
+  search_tab_helper->MostVisitedItemsChanged(items);
+
+  ASSERT_TRUE(logger->has_server_side_suggestions_);
+  ASSERT_FALSE(logger->has_client_side_suggestions_);
+}
+
+TEST_F(SearchTabHelperTest, OnMostVisitedItemsChangedFromClient) {
+  InstantMostVisitedItem item;
+  item.is_server_side_suggestion = false;
+  std::vector<InstantMostVisitedItem> items;
+  items.push_back(item);
+
+  SearchTabHelper* search_tab_helper =
+      SearchTabHelper::FromWebContents(web_contents());
+  ASSERT_NE(static_cast<SearchTabHelper*>(NULL), search_tab_helper);
+
+  auto logger = NTPUserDataLogger::GetOrCreateFromWebContents(web_contents());
+  ASSERT_FALSE(logger->has_server_side_suggestions_);
+  ASSERT_FALSE(logger->has_client_side_suggestions_);
+
+  search_tab_helper->MostVisitedItemsChanged(items);
+
+  ASSERT_FALSE(logger->has_server_side_suggestions_);
+  ASSERT_TRUE(logger->has_client_side_suggestions_);
 }
 
 class TabTitleObserver : public content::WebContentsObserver {

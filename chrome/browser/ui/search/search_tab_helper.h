@@ -125,6 +125,10 @@ class SearchTabHelper : public content::WebContentsObserver,
                            OnHistorySyncCheckSyncing);
   FRIEND_TEST_ALL_PREFIXES(SearchTabHelperTest,
                            OnHistorySyncCheckNotSyncing);
+  FRIEND_TEST_ALL_PREFIXES(SearchTabHelperTest,
+                           OnMostVisitedItemsChangedFromServer);
+  FRIEND_TEST_ALL_PREFIXES(SearchTabHelperTest,
+                           OnMostVisitedItemsChangedFromClient);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest,
                            IgnoreMessageIfThePageIsNotActive);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest,
@@ -200,6 +204,10 @@ class SearchTabHelper : public content::WebContentsObserver,
 
   // Returns the OmniboxView for |web_contents_| or NULL if not available.
   OmniboxView* GetOmniboxView() const;
+
+  // Record whether each suggestion comes from server or client.
+  void LogMostVisitedItemsSource(
+      const std::vector<InstantMostVisitedItem>& items);
 
   typedef bool (*OmniboxHasFocusFn)(OmniboxView*);
 

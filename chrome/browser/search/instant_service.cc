@@ -331,6 +331,7 @@ void InstantService::OnSuggestionsAvailable(
     if (suggestion.has_click_url()) {
       item.click_url = GURL(suggestion.click_url());
     }
+    item.is_server_side_suggestion = true;
     new_suggestions_items.push_back(item);
   }
   suggestions_items_ = new_suggestions_items;
@@ -346,6 +347,7 @@ void InstantService::OnMostVisitedItemsReceived(
     InstantMostVisitedItem item;
     item.url = url.url;
     item.title = url.title;
+    item.is_server_side_suggestion = false;
     new_most_visited_items.push_back(item);
   }
 

@@ -300,10 +300,8 @@ var addTile = function(args) {
           window.devicePixelRatio + 'x/' + data.renderViewId + '/' + data.tid;
     }
     tiles.appendChild(renderTile(data));
-    logEvent(LOG_TYPE.NTP_CLIENT_SIDE_SUGGESTION);
   } else if (args.id) {
     tiles.appendChild(renderTile(args));
-    logEvent(LOG_TYPE.NTP_SERVER_SIDE_SUGGESTION);
   } else {
     tiles.appendChild(renderTile(null));
   }

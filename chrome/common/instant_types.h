@@ -142,6 +142,10 @@ struct InstantMostVisitedItem {
   // The external URL that should be pinged when this item is suggested/clicked.
   GURL impression_url;
   GURL click_url;
+
+  // True if it's a server side suggestion.
+  // Otherwise, it's a client side suggestion.
+  bool is_server_side_suggestion;
 };
 
 // An InstantMostVisitedItem along with its assigned restricted ID.
