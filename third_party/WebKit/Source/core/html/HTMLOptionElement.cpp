@@ -50,7 +50,6 @@ using namespace HTMLNames;
 
 HTMLOptionElement::HTMLOptionElement(Document& document)
     : HTMLElement(optionTag, document)
-    , m_disabled(false)
     , m_isSelected(false)
 {
     setHasCustomStyleCallbacks();
@@ -204,9 +203,7 @@ void HTMLOptionElement::parseAttribute(const QualifiedName& name, const AtomicSt
         if (HTMLDataListElement* dataList = ownerDataListElement())
             dataList->optionElementChildrenChanged();
     } else if (name == disabledAttr) {
-        bool oldDisabled = m_disabled;
-        m_disabled = !value.isNull();
-        if (oldDisabled != m_disabled) {
+        if (oldValue.isNull() != value.isNull()) {
             pseudoStateChanged(CSSSelector::PseudoDisabled);
             pseudoStateChanged(CSSSelector::PseudoEnabled);
             if (layoutObject())
@@ -366,6 +363,11 @@ String HTMLOptionElement::textIndentedToRespectGroupLabel() const
     if (parent && isHTMLOptGroupElement(*parent))
         return "    " + displayLabel();
     return displayLabel();
+}
+
+bool HTMLOptionElement::ownElementDisabled() const
+{
+    return fastHasAttribute(disabledAttr);
 }
 
 bool HTMLOptionElement::isDisabledFormControl() const

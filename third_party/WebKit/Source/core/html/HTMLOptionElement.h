@@ -67,7 +67,7 @@ public:
     String label() const;
     void setLabel(const AtomicString&);
 
-    bool ownElementDisabled() const { return m_disabled; }
+    bool ownElementDisabled() const;
 
     bool isDisabledFormControl() const override;
 
@@ -108,7 +108,6 @@ private:
 
     void updateLabel();
 
-    bool m_disabled;
     // Represents 'selectedness'.
     // https://html.spec.whatwg.org/multipage/forms.html#concept-option-selectedness
     bool m_isSelected;
