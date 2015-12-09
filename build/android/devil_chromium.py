@@ -16,9 +16,10 @@ _DEVIL_BUILD_PRODUCT_DEPS = {
   'forwarder_device': {
     'armeabi-v7a': 'forwarder_dist',
     'arm64-v8a': 'forwarder_dist',
-    'x86': 'forwarder_dist',
     'mips': 'forwarder_dist',
     'mips64': 'forwarder_dist',
+    'x86': 'forwarder_dist',
+    'x86_64': 'forwarder_dist',
   },
   'forwarder_host': {
     'any': 'host_forwarder',
@@ -26,9 +27,10 @@ _DEVIL_BUILD_PRODUCT_DEPS = {
   'md5sum_device': {
     'armeabi-v7a': 'md5sum_dist',
     'arm64-v8a': 'md5sum_dist',
-    'x86': 'md5sum_dist',
     'mips': 'md5sum_dist',
     'mips64': 'md5sum_dist',
+    'x86': 'md5sum_dist',
+    'x86_64': 'md5sum_dist',
   },
   'md5sum_host': {
     'any': 'md5sum_bin_host',
