@@ -56,14 +56,14 @@ const int kMaxRedirects = 20;
 // TODO(battre): Delete this, see http://crbug.com/89321:
 // This counter keeps track of the identifiers used for URL requests so far.
 // 0 is reserved to represent an invalid ID.
-uint64 g_next_url_request_identifier = 1;
+uint64_t g_next_url_request_identifier = 1;
 
 // This lock protects g_next_url_request_identifier.
 base::LazyInstance<base::Lock>::Leaky
     g_next_url_request_identifier_lock = LAZY_INSTANCE_INITIALIZER;
 
 // Returns an prior unused identifier for URL requests.
-uint64 GenerateURLRequestIdentifier() {
+uint64_t GenerateURLRequestIdentifier() {
   base::AutoLock lock(g_next_url_request_identifier_lock.Get());
   return g_next_url_request_identifier++;
 }
@@ -694,7 +694,7 @@ void URLRequest::DoCancel(int error, const SSLInfo& ssl_info) {
   // ~500,000 ERR_ABORTED < 100ms in Canary channel a day. Sample .01% to get
   // ~50 reports a day.
   // TODO(csharrison) Remove this code when crbug.com/557430 is resolved.
-  int64 request_time =
+  int64_t request_time =
       (base::TimeTicks::Now() - creation_time_).InMilliseconds();
   if (!has_notified_completion_ && error == ERR_ABORTED &&
       request_time <= 100 && load_flags_ & LOAD_MAIN_FRAME &&
@@ -1004,8 +1004,8 @@ const URLRequestContext* URLRequest::context() const {
   return context_;
 }
 
-int64 URLRequest::GetExpectedContentSize() const {
-  int64 expected_content_size = -1;
+int64_t URLRequest::GetExpectedContentSize() const {
+  int64_t expected_content_size = -1;
   if (job_.get())
     expected_content_size = job_->expected_content_size();
 

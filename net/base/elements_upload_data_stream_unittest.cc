@@ -4,7 +4,10 @@
 
 #include "net/base/elements_upload_data_stream.h"
 
+#include <stdint.h>
+
 #include <algorithm>
+#include <limits>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -183,8 +186,8 @@ TEST_F(ElementsUploadDataStreamTest, File) {
             base::WriteFile(temp_file_path, kTestData, kTestDataSize));
 
   element_readers_.push_back(make_scoped_ptr(new UploadFileElementReader(
-      base::ThreadTaskRunnerHandle::Get().get(), temp_file_path, 0, kuint64max,
-      base::Time())));
+      base::ThreadTaskRunnerHandle::Get().get(), temp_file_path, 0,
+      std::numeric_limits<uint64_t>::max(), base::Time())));
 
   TestCompletionCallback init_callback;
   scoped_ptr<UploadDataStream> stream(
@@ -219,8 +222,8 @@ TEST_F(ElementsUploadDataStreamTest, FileSmallerThanLength) {
       overriding_content_length(kFakeSize);
 
   element_readers_.push_back(make_scoped_ptr(new UploadFileElementReader(
-      base::ThreadTaskRunnerHandle::Get().get(), temp_file_path, 0, kuint64max,
-      base::Time())));
+      base::ThreadTaskRunnerHandle::Get().get(), temp_file_path, 0,
+      std::numeric_limits<uint64_t>::max(), base::Time())));
 
   TestCompletionCallback init_callback;
   scoped_ptr<UploadDataStream> stream(
@@ -569,8 +572,8 @@ TEST_F(ElementsUploadDataStreamTest, MultipleInit) {
   element_readers_.push_back(
       make_scoped_ptr(new UploadBytesElementReader(kTestData, kTestDataSize)));
   element_readers_.push_back(make_scoped_ptr(new UploadFileElementReader(
-      base::ThreadTaskRunnerHandle::Get().get(), temp_file_path, 0, kuint64max,
-      base::Time())));
+      base::ThreadTaskRunnerHandle::Get().get(), temp_file_path, 0,
+      std::numeric_limits<uint64_t>::max(), base::Time())));
   scoped_ptr<UploadDataStream> stream(
       new ElementsUploadDataStream(std::move(element_readers_), 0));
 
@@ -612,8 +615,8 @@ TEST_F(ElementsUploadDataStreamTest, MultipleInitAsync) {
   element_readers_.push_back(
       make_scoped_ptr(new UploadBytesElementReader(kTestData, kTestDataSize)));
   element_readers_.push_back(make_scoped_ptr(new UploadFileElementReader(
-      base::ThreadTaskRunnerHandle::Get().get(), temp_file_path, 0, kuint64max,
-      base::Time())));
+      base::ThreadTaskRunnerHandle::Get().get(), temp_file_path, 0,
+      std::numeric_limits<uint64_t>::max(), base::Time())));
   scoped_ptr<UploadDataStream> stream(
       new ElementsUploadDataStream(std::move(element_readers_), 0));
 
@@ -652,8 +655,8 @@ TEST_F(ElementsUploadDataStreamTest, InitToReset) {
   element_readers_.push_back(
       make_scoped_ptr(new UploadBytesElementReader(kTestData, kTestDataSize)));
   element_readers_.push_back(make_scoped_ptr(new UploadFileElementReader(
-      base::ThreadTaskRunnerHandle::Get().get(), temp_file_path, 0, kuint64max,
-      base::Time())));
+      base::ThreadTaskRunnerHandle::Get().get(), temp_file_path, 0,
+      std::numeric_limits<uint64_t>::max(), base::Time())));
   scoped_ptr<UploadDataStream> stream(
       new ElementsUploadDataStream(std::move(element_readers_), 0));
 
@@ -708,8 +711,8 @@ TEST_F(ElementsUploadDataStreamTest, InitDuringAsyncInit) {
   element_readers_.push_back(
       make_scoped_ptr(new UploadBytesElementReader(kTestData, kTestDataSize)));
   element_readers_.push_back(make_scoped_ptr(new UploadFileElementReader(
-      base::ThreadTaskRunnerHandle::Get().get(), temp_file_path, 0, kuint64max,
-      base::Time())));
+      base::ThreadTaskRunnerHandle::Get().get(), temp_file_path, 0,
+      std::numeric_limits<uint64_t>::max(), base::Time())));
   scoped_ptr<UploadDataStream> stream(
       new ElementsUploadDataStream(std::move(element_readers_), 0));
 
@@ -754,8 +757,8 @@ TEST_F(ElementsUploadDataStreamTest, InitDuringAsyncRead) {
   element_readers_.push_back(
       make_scoped_ptr(new UploadBytesElementReader(kTestData, kTestDataSize)));
   element_readers_.push_back(make_scoped_ptr(new UploadFileElementReader(
-      base::ThreadTaskRunnerHandle::Get().get(), temp_file_path, 0, kuint64max,
-      base::Time())));
+      base::ThreadTaskRunnerHandle::Get().get(), temp_file_path, 0,
+      std::numeric_limits<uint64_t>::max(), base::Time())));
   scoped_ptr<UploadDataStream> stream(
       new ElementsUploadDataStream(std::move(element_readers_), 0));
 

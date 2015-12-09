@@ -4,6 +4,8 @@
 
 #include "net/quic/congestion_control/send_algorithm_simulator.h"
 
+#include <stdint.h>
+
 #include <limits>
 
 #include "base/logging.h"
@@ -69,7 +71,7 @@ SendAlgorithmSimulator::SendAlgorithmSimulator(
       rtt_(rtt),
       buffer_size_(1000000),
       delayed_ack_timer_(QuicTime::Delta::FromMilliseconds(100)) {
-  uint32 seed = base::RandInt(0, std::numeric_limits<int32>::max());
+  uint32_t seed = base::RandInt(0, std::numeric_limits<int32_t>::max());
   DVLOG(1) << "Seeding SendAlgorithmSimulator with " << seed;
   simple_random_.set_seed(seed);
 }
@@ -89,7 +91,8 @@ void SendAlgorithmSimulator::AddTransfer(
 }
 
 void SendAlgorithmSimulator::TransferBytes() {
-  TransferBytes(kuint64max, QuicTime::Delta::Infinite());
+  TransferBytes(std::numeric_limits<uint64_t>::max(),
+                QuicTime::Delta::Infinite());
 }
 
 void SendAlgorithmSimulator::TransferBytes(QuicByteCount max_bytes,
@@ -186,8 +189,8 @@ QuicTime::Delta SendAlgorithmSimulator::FindNextAcked(Transfer* transfer) {
   Sender* sender = transfer->sender;
   if (sender->next_acked == sender->last_acked) {
     // Determine if the next ack is lost only once, to ensure determinism.
-    lose_next_ack_ =
-        reverse_loss_rate_ * kuint64max > simple_random_.RandUint64();
+    lose_next_ack_ = reverse_loss_rate_ * std::numeric_limits<uint64_t>::max() >
+                     simple_random_.RandUint64();
   }
 
   QuicPacketNumber next_acked = sender->last_acked;
@@ -357,10 +360,12 @@ void SendAlgorithmSimulator::SendDataNow(Transfer* transfer) {
     // TODO(ianswett): This buffer simulation is an approximation.
     // An ack time of zero means loss.
     bool packet_lost =
-        forward_loss_rate_ * kuint64max > simple_random_.RandUint64();
+        forward_loss_rate_ * std::numeric_limits<uint64_t>::max() >
+        simple_random_.RandUint64();
     // Handle correlated loss.
     if (!sent_packets_.empty() && sent_packets_.back().lost &&
-        loss_correlation_ * kuint64max > simple_random_.RandUint64()) {
+        loss_correlation_ * std::numeric_limits<uint64_t>::max() >
+            simple_random_.RandUint64()) {
       packet_lost = true;
     }
     DVLOG(1) << "losing packet:" << sender->last_sent

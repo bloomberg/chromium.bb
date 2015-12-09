@@ -12,8 +12,8 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <limits>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
@@ -323,8 +323,8 @@ void CheckSSLInfo(const SSLInfo& ssl_info) {
   EXPECT_GT(ssl_info.security_bits, 0);
 
   // The cipher suite TLS_NULL_WITH_NULL_NULL (0) must not be negotiated.
-  uint16 cipher_suite = SSLConnectionStatusToCipherSuite(
-      ssl_info.connection_status);
+  uint16_t cipher_suite =
+      SSLConnectionStatusToCipherSuite(ssl_info.connection_status);
   EXPECT_NE(0U, cipher_suite);
 }
 
@@ -835,7 +835,7 @@ TEST_F(URLRequestTest, FileTest) {
 
     base::RunLoop().Run();
 
-    int64 file_size = -1;
+    int64_t file_size = -1;
     EXPECT_TRUE(base::GetFileSize(app_path, &file_size));
 
     EXPECT_TRUE(!r->is_pending());
@@ -879,7 +879,7 @@ TEST_F(URLRequestTest, FileTestFullSpecifiedRange) {
   GURL temp_url = FilePathToFileURL(temp_path);
   EXPECT_TRUE(base::WriteFile(temp_path, buffer.get(), buffer_size));
 
-  int64 file_size;
+  int64_t file_size;
   EXPECT_TRUE(base::GetFileSize(temp_path, &file_size));
 
   const size_t first_byte_position = 500;
@@ -924,7 +924,7 @@ TEST_F(URLRequestTest, FileTestHalfSpecifiedRange) {
   GURL temp_url = FilePathToFileURL(temp_path);
   EXPECT_TRUE(base::WriteFile(temp_path, buffer.get(), buffer_size));
 
-  int64 file_size;
+  int64_t file_size;
   EXPECT_TRUE(base::GetFileSize(temp_path, &file_size));
 
   const size_t first_byte_position = 500;
@@ -968,7 +968,7 @@ TEST_F(URLRequestTest, FileTestMultipleRanges) {
   GURL temp_url = FilePathToFileURL(temp_path);
   EXPECT_TRUE(base::WriteFile(temp_path, buffer.get(), buffer_size));
 
-  int64 file_size;
+  int64_t file_size;
   EXPECT_TRUE(base::GetFileSize(temp_path, &file_size));
 
   TestDelegate d;
@@ -5578,9 +5578,9 @@ TEST_F(URLRequestTestHTTP, PostFileTest) {
     PathService::Get(base::DIR_SOURCE_ROOT, &path);
     path = path.Append(kTestFilePath);
     path = path.Append(FILE_PATH_LITERAL("with-headers.html"));
-    element_readers.push_back(make_scoped_ptr(
-        new UploadFileElementReader(base::ThreadTaskRunnerHandle::Get().get(),
-                                    path, 0, kuint64max, base::Time())));
+    element_readers.push_back(make_scoped_ptr(new UploadFileElementReader(
+        base::ThreadTaskRunnerHandle::Get().get(), path, 0,
+        std::numeric_limits<uint64_t>::max(), base::Time())));
     r->set_upload(make_scoped_ptr<UploadDataStream>(
         new ElementsUploadDataStream(std::move(element_readers), 0)));
 
@@ -5589,7 +5589,7 @@ TEST_F(URLRequestTestHTTP, PostFileTest) {
 
     base::RunLoop().Run();
 
-    int64 size64 = 0;
+    int64_t size64 = 0;
     ASSERT_EQ(true, base::GetFileSize(path, &size64));
     ASSERT_LE(size64, std::numeric_limits<int>::max());
     int size = static_cast<int>(size64);
@@ -5623,7 +5623,7 @@ TEST_F(URLRequestTestHTTP, PostUnreadableFileTest) {
         base::ThreadTaskRunnerHandle::Get().get(),
         base::FilePath(FILE_PATH_LITERAL(
             "c:\\path\\to\\non\\existant\\file.randomness.12345")),
-        0, kuint64max, base::Time())));
+        0, std::numeric_limits<uint64_t>::max(), base::Time())));
     r->set_upload(make_scoped_ptr<UploadDataStream>(
         new ElementsUploadDataStream(std::move(element_readers), 0)));
 
@@ -8561,11 +8561,9 @@ class TestSSLConfigService : public SSLConfigService {
         min_version_(kDefaultSSLVersionMin),
         fallback_min_version_(kDefaultSSLVersionFallbackMin) {}
 
-  void set_min_version(uint16 version) {
-    min_version_ = version;
-  }
+  void set_min_version(uint16_t version) { min_version_ = version; }
 
-  void set_fallback_min_version(uint16 version) {
+  void set_fallback_min_version(uint16_t version) {
     fallback_min_version_ = version;
   }
 
@@ -8591,8 +8589,8 @@ class TestSSLConfigService : public SSLConfigService {
   const bool ev_enabled_;
   const bool online_rev_checking_;
   const bool rev_checking_required_local_anchors_;
-  uint16 min_version_;
-  uint16 fallback_min_version_;
+  uint16_t min_version_;
+  uint16_t fallback_min_version_;
 };
 
 class FallbackTestURLRequestContext : public TestURLRequestContext {
@@ -8600,7 +8598,7 @@ class FallbackTestURLRequestContext : public TestURLRequestContext {
   explicit FallbackTestURLRequestContext(bool delay_initialization)
       : TestURLRequestContext(delay_initialization) {}
 
-  void set_fallback_min_version(uint16 version) {
+  void set_fallback_min_version(uint16_t version) {
     TestSSLConfigService *ssl_config_service =
         new TestSSLConfigService(true /* check for EV */,
                                  false /* online revocation checking */,
@@ -8635,7 +8633,7 @@ class HTTPSFallbackTest : public testing::Test {
     base::RunLoop().Run();
   }
 
-  void set_fallback_min_version(uint16 version) {
+  void set_fallback_min_version(uint16_t version) {
     context_.set_fallback_min_version(version);
   }
 

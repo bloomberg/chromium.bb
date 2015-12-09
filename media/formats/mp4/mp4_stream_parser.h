@@ -5,12 +5,14 @@
 #ifndef MEDIA_FORMATS_MP4_MP4_STREAM_PARSER_H_
 #define MEDIA_FORMATS_MP4_MP4_STREAM_PARSER_H_
 
+#include <stdint.h>
+
 #include <set>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "media/base/media_export.h"
 #include "media/base/stream_parser.h"
@@ -37,7 +39,7 @@ class MEDIA_EXPORT MP4StreamParser : public StreamParser {
             const base::Closure& end_of_segment_cb,
             const scoped_refptr<MediaLog>& media_log) override;
   void Flush() override;
-  bool Parse(const uint8* buf, int size) override;
+  bool Parse(const uint8_t* buf, int size) override;
 
  private:
   enum State {
@@ -63,13 +65,13 @@ class MEDIA_EXPORT MP4StreamParser : public StreamParser {
   // is the upper bound on what can be removed from |queue_|. Anything below
   // this offset is no longer needed by the parser.
   // Returns 'true' on success, 'false' if there was an error.
-  bool ReadAndDiscardMDATsUntil(int64 max_clear_offset);
+  bool ReadAndDiscardMDATsUntil(int64_t max_clear_offset);
 
   void ChangeState(State new_state);
 
   bool EmitConfigs();
   bool PrepareAACBuffer(const AAC& aac_config,
-                        std::vector<uint8>* frame_buf,
+                        std::vector<uint8_t>* frame_buf,
                         std::vector<SubsampleEntry>* subsamples) const;
   bool EnqueueSample(BufferQueue* audio_buffers,
                      BufferQueue* video_buffers,
@@ -104,23 +106,23 @@ class MEDIA_EXPORT MP4StreamParser : public StreamParser {
   // |moof_head_| is the offset of the start of the most recently parsed moof
   // block. All byte offsets in sample information are relative to this offset,
   // as mandated by the Media Source spec.
-  int64 moof_head_;
+  int64_t moof_head_;
   // |mdat_tail_| is the stream offset of the end of the current 'mdat' box.
   // Valid iff it is greater than the head of the queue.
-  int64 mdat_tail_;
+  int64_t mdat_tail_;
 
   // The highest end offset in the current moof. This offset is
   // relative to |moof_head_|. This value is used to make sure we have collected
   // enough bytes to parse all samples and aux_info in the current moof.
-  int64 highest_end_offset_;
+  int64_t highest_end_offset_;
 
   scoped_ptr<mp4::Movie> moov_;
   scoped_ptr<mp4::TrackRunIterator> runs_;
 
   bool has_audio_;
   bool has_video_;
-  uint32 audio_track_id_;
-  uint32 video_track_id_;
+  uint32_t audio_track_id_;
+  uint32_t video_track_id_;
   // The object types allowed for audio tracks.
   std::set<int> audio_object_types_;
   bool has_sbr_;

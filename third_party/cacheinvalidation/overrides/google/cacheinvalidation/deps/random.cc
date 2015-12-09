@@ -10,7 +10,7 @@ double Random::RandDouble() {
   return base::RandDouble();
 }
 
-uint64 Random::RandUint64() {
+uint64_t Random::RandUint64() {
   return base::RandUint64();
 }
 

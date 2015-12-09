@@ -4,6 +4,9 @@
 
 #include "content/browser/service_worker/service_worker_url_request_job.h"
 
+#include <stdint.h>
+
+#include <limits>
 #include <map>
 #include <string>
 #include <vector>
@@ -439,7 +442,7 @@ void ServiceWorkerURLRequestJob::StartRequest() {
 scoped_ptr<ServiceWorkerFetchRequest>
 ServiceWorkerURLRequestJob::CreateFetchRequest() {
   std::string blob_uuid;
-  uint64 blob_size = 0;
+  uint64_t blob_size = 0;
   CreateRequestBodyBlob(&blob_uuid, &blob_size);
   scoped_ptr<ServiceWorkerFetchRequest> request(
       new ServiceWorkerFetchRequest());
@@ -475,7 +478,7 @@ ServiceWorkerURLRequestJob::CreateFetchRequest() {
 }
 
 bool ServiceWorkerURLRequestJob::CreateRequestBodyBlob(std::string* blob_uuid,
-                                                       uint64* blob_size) {
+                                                       uint64_t* blob_size) {
   if (!body_.get() || !blob_storage_context_)
     return false;
 
@@ -505,15 +508,16 @@ bool ServiceWorkerURLRequestJob::CreateRequestBodyBlob(std::string* blob_uuid,
   }
 
   const std::string uuid(base::GenerateGUID());
-  uint64 total_size = 0;
+  uint64_t total_size = 0;
 
   storage::BlobDataBuilder blob_builder(uuid);
   for (size_t i = 0; i < resolved_elements.size(); ++i) {
     const ResourceRequestBody::Element& element = *resolved_elements[i];
-    if (total_size != kuint64max && element.length() != kuint64max)
+    if (total_size != std::numeric_limits<uint64_t>::max() &&
+        element.length() != std::numeric_limits<uint64_t>::max())
       total_size += element.length();
     else
-      total_size = kuint64max;
+      total_size = std::numeric_limits<uint64_t>::max();
     switch (element.type()) {
       case ResourceRequestBody::Element::TYPE_BYTES:
         blob_builder.AppendData(element.bytes(), element.length());

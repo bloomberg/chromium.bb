@@ -4,7 +4,9 @@
 
 #include "chrome/browser/media_galleries/win/snapshot_file_details.h"
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
+#include <limits>
 
 ///////////////////////////////////////////////////////////////////////////////
 //                       SnapshotRequestInfo                                 //
@@ -60,7 +62,7 @@ bool SnapshotFileDetails::IsSnapshotFileWriteComplete() const {
 
 bool SnapshotFileDetails::AddBytesWritten(DWORD bytes_written) {
   if ((bytes_written == 0) ||
-      (bytes_written_ > kuint64max - bytes_written) ||
+      (bytes_written_ > std::numeric_limits<uint64_t>::max() - bytes_written) ||
       (bytes_written_ + bytes_written > file_info_.size))
     return false;
 

@@ -4,6 +4,10 @@
 
 #include "content/child/web_url_request_util.h"
 
+#include <stdint.h>
+
+#include <limits>
+
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "net/base/load_flags.h"
@@ -245,13 +249,13 @@ scoped_refptr<ResourceRequestBody> GetRequestBodyForWebURLRequest(
       case WebHTTPBody::Element::TypeFile:
         if (element.fileLength == -1) {
           request_body->AppendFileRange(
-              base::FilePath::FromUTF16Unsafe(element.filePath),
-              0, kuint64max, base::Time());
+              base::FilePath::FromUTF16Unsafe(element.filePath), 0,
+              std::numeric_limits<uint64_t>::max(), base::Time());
         } else {
           request_body->AppendFileRange(
               base::FilePath::FromUTF16Unsafe(element.filePath),
-              static_cast<uint64>(element.fileStart),
-              static_cast<uint64>(element.fileLength),
+              static_cast<uint64_t>(element.fileStart),
+              static_cast<uint64_t>(element.fileLength),
               base::Time::FromDoubleT(element.modificationTime));
         }
         break;
@@ -259,9 +263,8 @@ scoped_refptr<ResourceRequestBody> GetRequestBodyForWebURLRequest(
         GURL file_system_url = element.fileSystemURL;
         DCHECK(file_system_url.SchemeIsFileSystem());
         request_body->AppendFileSystemFileRange(
-            file_system_url,
-            static_cast<uint64>(element.fileStart),
-            static_cast<uint64>(element.fileLength),
+            file_system_url, static_cast<uint64_t>(element.fileStart),
+            static_cast<uint64_t>(element.fileLength),
             base::Time::FromDoubleT(element.modificationTime));
         break;
       }

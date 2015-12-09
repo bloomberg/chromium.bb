@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
+#include <limits>
+
 #include "base/logging.h"
 #include "net/base/int128.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
 
 TEST(Int128, AllTests) {
   uint128 zero(0);
@@ -19,7 +21,7 @@ TEST(Int128, AllTests) {
   uint128 bigger(2001, 1);
   uint128 biggest(kuint128max);
   uint128 high_low(1, 0);
-  uint128 low_high(0, kuint64max);
+  uint128 low_high(0, std::numeric_limits<uint64_t>::max());
   EXPECT_LT(one, two);
   EXPECT_GT(two, one);
   EXPECT_LT(one, big);
@@ -58,8 +60,8 @@ TEST(Int128, AllTests) {
   EXPECT_EQ(zero, (one >> 80) << 80);
   EXPECT_EQ(zero, big >> 128);
   EXPECT_EQ(zero, big << 128);
-  EXPECT_EQ(Uint128High64(biggest), kuint64max);
-  EXPECT_EQ(Uint128Low64(biggest), kuint64max);
+  EXPECT_EQ(Uint128High64(biggest), std::numeric_limits<uint64_t>::max());
+  EXPECT_EQ(Uint128Low64(biggest), std::numeric_limits<uint64_t>::max());
   EXPECT_EQ(zero + one, one);
   EXPECT_EQ(one + one, two);
   EXPECT_EQ(big_minus_one + one, big);
@@ -68,13 +70,14 @@ TEST(Int128, AllTests) {
   EXPECT_EQ(zero - one, biggest);
   EXPECT_EQ(big - big, zero);
   EXPECT_EQ(big - one, big_minus_one);
-  EXPECT_EQ(big + kuint64max, bigger);
+  EXPECT_EQ(big + std::numeric_limits<uint64_t>::max(), bigger);
   EXPECT_EQ(biggest + 1, zero);
   EXPECT_EQ(zero - 1, biggest);
   EXPECT_EQ(high_low - one, low_high);
   EXPECT_EQ(low_high + one, high_low);
   EXPECT_EQ(Uint128High64((uint128(1) << 64) - 1), 0u);
-  EXPECT_EQ(Uint128Low64((uint128(1) << 64) - 1), kuint64max);
+  EXPECT_EQ(Uint128Low64((uint128(1) << 64) - 1),
+            std::numeric_limits<uint64_t>::max());
   EXPECT_TRUE(!!one);
   EXPECT_TRUE(!!high_low);
   EXPECT_FALSE(!!zero);

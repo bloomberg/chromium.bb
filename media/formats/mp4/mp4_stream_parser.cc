@@ -4,6 +4,7 @@
 
 #include "media/formats/mp4/mp4_stream_parser.h"
 
+#include <limits>
 #include <vector>
 
 #include "base/callback_helpers.h"
@@ -83,7 +84,7 @@ void MP4StreamParser::Flush() {
   ChangeState(kParsingBoxes);
 }
 
-bool MP4StreamParser::Parse(const uint8* buf, int size) {
+bool MP4StreamParser::Parse(const uint8_t* buf, int size) {
   DCHECK_NE(state_, kWaitingForInit);
 
   if (state_ == kError)
@@ -117,7 +118,7 @@ bool MP4StreamParser::Parse(const uint8* buf, int size) {
       case kEmittingSamples:
         result = EnqueueSample(&audio_buffers, &video_buffers, &err);
         if (result) {
-          int64 max_clear = runs_->GetMaxClearOffset() + moof_head_;
+          int64_t max_clear = runs_->GetMaxClearOffset() + moof_head_;
           err = !ReadAndDiscardMDATsUntil(max_clear);
         }
         break;
@@ -139,7 +140,7 @@ bool MP4StreamParser::Parse(const uint8* buf, int size) {
 }
 
 bool MP4StreamParser::ParseBox(bool* err) {
-  const uint8* buf;
+  const uint8_t* buf;
   int size;
   queue_.Peek(&buf, &size);
   if (!size) return false;
@@ -225,7 +226,7 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
         return false;
       }
 
-      uint8 audio_type = entry.esds.object_type;
+      uint8_t audio_type = entry.esds.object_type;
       DVLOG(1) << "audio_type " << std::hex << static_cast<int>(audio_type);
       if (audio_object_types_.find(audio_type) == audio_object_types_.end()) {
         MEDIA_LOG(ERROR, media_log_)
@@ -238,7 +239,7 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
       AudioCodec codec = kUnknownAudioCodec;
       ChannelLayout channel_layout = CHANNEL_LAYOUT_NONE;
       int sample_per_second = 0;
-      std::vector<uint8> extra_data;
+      std::vector<uint8_t> extra_data;
       // Check if it is MPEG4 AAC defined in ISO 14496 Part 3 or
       // supported MPEG2 AAC varients.
       if (ESDescriptor::IsAAC(audio_type)) {
@@ -325,7 +326,7 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
         moov_->extends.header.fragment_duration, moov_->header.timescale);
     params.liveness = DemuxerStream::LIVENESS_RECORDED;
   } else if (moov_->header.duration > 0 &&
-             moov_->header.duration != kuint64max) {
+             moov_->header.duration != std::numeric_limits<uint64_t>::max()) {
     params.duration =
         TimeDeltaFromRational(moov_->header.duration, moov_->header.timescale);
     params.liveness = DemuxerStream::LIVENESS_RECORDED;
@@ -376,7 +377,7 @@ void MP4StreamParser::OnEncryptedMediaInitData(
   for (size_t i = 0; i < headers.size(); i++)
     total_size += headers[i].raw_box.size();
 
-  std::vector<uint8> init_data(total_size);
+  std::vector<uint8_t> init_data(total_size);
   size_t pos = 0;
   for (size_t i = 0; i < headers.size(); i++) {
     memcpy(&init_data[pos], &headers[i].raw_box[0],
@@ -387,7 +388,8 @@ void MP4StreamParser::OnEncryptedMediaInitData(
 }
 
 bool MP4StreamParser::PrepareAACBuffer(
-    const AAC& aac_config, std::vector<uint8>* frame_buf,
+    const AAC& aac_config,
+    std::vector<uint8_t>* frame_buf,
     std::vector<SubsampleEntry>* subsamples) const {
   // Append an ADTS header to every audio sample.
   RCHECK(aac_config.ConvertEsdsToADTS(frame_buf));
@@ -432,7 +434,7 @@ bool MP4StreamParser::EnqueueSample(BufferQueue* audio_buffers,
 
   DCHECK(!(*err));
 
-  const uint8* buf;
+  const uint8_t* buf;
   int buf_size;
   queue_.Peek(&buf, &buf_size);
   if (!buf_size) return false;
@@ -474,7 +476,7 @@ bool MP4StreamParser::EnqueueSample(BufferQueue* audio_buffers,
     subsamples = decrypt_config->subsamples();
   }
 
-  std::vector<uint8> frame_buf(buf, buf + runs_->sample_size());
+  std::vector<uint8_t> frame_buf(buf, buf + runs_->sample_size());
   if (video) {
     DCHECK(runs_->video_description().frame_bitstream_converter);
     if (!runs_->video_description().frame_bitstream_converter->ConvertFrame(
@@ -562,11 +564,11 @@ bool MP4StreamParser::SendAndFlushSamples(BufferQueue* audio_buffers,
   return success;
 }
 
-bool MP4StreamParser::ReadAndDiscardMDATsUntil(int64 max_clear_offset) {
+bool MP4StreamParser::ReadAndDiscardMDATsUntil(int64_t max_clear_offset) {
   bool err = false;
-  int64 upper_bound = std::min(max_clear_offset, queue_.tail());
+  int64_t upper_bound = std::min(max_clear_offset, queue_.tail());
   while (mdat_tail_ < upper_bound) {
-    const uint8* buf = NULL;
+    const uint8_t* buf = NULL;
     int size = 0;
     queue_.PeekAt(mdat_tail_, &buf, &size);
 
@@ -610,12 +612,12 @@ bool MP4StreamParser::ComputeHighestEndOffset(const MovieFragment& moof) {
   RCHECK(runs.Init(moof));
 
   while (runs.IsRunValid()) {
-    int64 aux_info_end_offset = runs.aux_info_offset() + runs.aux_info_size();
+    int64_t aux_info_end_offset = runs.aux_info_offset() + runs.aux_info_size();
     if (aux_info_end_offset > highest_end_offset_)
       highest_end_offset_ = aux_info_end_offset;
 
     while (runs.IsSampleValid()) {
-      int64 sample_end_offset = runs.sample_offset() + runs.sample_size();
+      int64_t sample_end_offset = runs.sample_offset() + runs.sample_size();
       if (sample_end_offset > highest_end_offset_)
         highest_end_offset_ = sample_end_offset;
 

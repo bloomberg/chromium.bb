@@ -217,7 +217,7 @@ public:
         {
             if (!m_readerContext->m_blobDataHandleForDrain)
                 return nullptr;
-            if (blobSizePolicy == DisallowBlobWithInvalidSize && m_readerContext->m_blobDataHandleForDrain->size() == kuint64max)
+            if (blobSizePolicy == DisallowBlobWithInvalidSize && m_readerContext->m_blobDataHandleForDrain->size() == UINT64_MAX)
                 return nullptr;
             RefPtr<BlobDataHandle> blobDataHandle = m_readerContext->m_blobDataHandleForDrain;
             m_readerContext->setDrained();

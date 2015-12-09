@@ -4,7 +4,10 @@
 
 #include "content/child/blob_storage/blob_consolidation.h"
 
+#include <stdint.h>
+
 #include <algorithm>
+#include <limits>
 #include <string>
 
 using storage::DataElement;
@@ -17,9 +20,8 @@ using ReadStatus = BlobConsolidation::ReadStatus;
 BlobConsolidation::ConsolidatedItem::ConsolidatedItem()
     : type(DataElement::TYPE_UNKNOWN),
       offset(0),
-      length(kuint64max),
-      expected_modification_time(0) {
-}
+      length(std::numeric_limits<uint64_t>::max()),
+      expected_modification_time(0) {}
 
 BlobConsolidation::ConsolidatedItem::~ConsolidatedItem() {
 }

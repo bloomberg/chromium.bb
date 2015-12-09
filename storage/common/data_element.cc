@@ -14,14 +14,14 @@ DataElement::DataElement()
     : type_(TYPE_UNKNOWN),
       bytes_(NULL),
       offset_(0),
-      length_(kuint64max) {
-}
+      length_(std::numeric_limits<uint64_t>::max()) {}
 
 DataElement::~DataElement() {}
 
 void DataElement::SetToFilePathRange(
     const base::FilePath& path,
-    uint64 offset, uint64 length,
+    uint64_t offset,
+    uint64_t length,
     const base::Time& expected_modification_time) {
   type_ = TYPE_FILE;
   path_ = path;
@@ -30,9 +30,9 @@ void DataElement::SetToFilePathRange(
   expected_modification_time_ = expected_modification_time;
 }
 
-void DataElement::SetToBlobRange(
-    const std::string& blob_uuid,
-    uint64 offset, uint64 length) {
+void DataElement::SetToBlobRange(const std::string& blob_uuid,
+                                 uint64_t offset,
+                                 uint64_t length) {
   type_ = TYPE_BLOB;
   blob_uuid_ = blob_uuid;
   offset_ = offset;
@@ -41,7 +41,8 @@ void DataElement::SetToBlobRange(
 
 void DataElement::SetToFileSystemUrlRange(
     const GURL& filesystem_url,
-    uint64 offset, uint64 length,
+    uint64_t offset,
+    uint64_t length,
     const base::Time& expected_modification_time) {
   type_ = TYPE_FILE_FILESYSTEM;
   filesystem_url_ = filesystem_url;
@@ -50,18 +51,18 @@ void DataElement::SetToFileSystemUrlRange(
   expected_modification_time_ = expected_modification_time;
 }
 
-void DataElement::SetToDiskCacheEntryRange(uint64 offset, uint64 length) {
+void DataElement::SetToDiskCacheEntryRange(uint64_t offset, uint64_t length) {
   type_ = TYPE_DISK_CACHE_ENTRY;
   offset_ = offset;
   length_ = length;
 }
 
 void PrintTo(const DataElement& x, std::ostream* os) {
-  const uint64 kMaxDataPrintLength = 40;
+  const uint64_t kMaxDataPrintLength = 40;
   *os << "<DataElement>{type: ";
   switch (x.type()) {
     case DataElement::TYPE_BYTES: {
-      uint64 length = std::min(x.length(), kMaxDataPrintLength);
+      uint64_t length = std::min(x.length(), kMaxDataPrintLength);
       *os << "TYPE_BYTES, data: ["
           << base::HexEncode(x.bytes(), static_cast<size_t>(length));
       if (length < x.length()) {

@@ -19,8 +19,8 @@ namespace content {
 UploadFileSystemFileElementReader::UploadFileSystemFileElementReader(
     storage::FileSystemContext* file_system_context,
     const GURL& url,
-    uint64 range_offset,
-    uint64 range_length,
+    uint64_t range_offset,
+    uint64_t range_length,
     const base::Time& expected_modification_time)
     : file_system_context_(file_system_context),
       url_(url),
@@ -29,8 +29,7 @@ UploadFileSystemFileElementReader::UploadFileSystemFileElementReader(
       expected_modification_time_(expected_modification_time),
       stream_length_(0),
       position_(0),
-      weak_ptr_factory_(this) {
-}
+      weak_ptr_factory_(this) {}
 
 UploadFileSystemFileElementReader::~UploadFileSystemFileElementReader() {
 }
@@ -44,18 +43,16 @@ int UploadFileSystemFileElementReader::Init(
 
   // Initialize the stream reader and the length.
   stream_reader_ = file_system_context_->CreateFileStreamReader(
-      file_system_context_->CrackURL(url_),
-      range_offset_,
-      range_length_ == std::numeric_limits<uint64>::max()
+      file_system_context_->CrackURL(url_), range_offset_,
+      range_length_ == std::numeric_limits<uint64_t>::max()
           ? storage::kMaximumLength
-          : base::checked_cast<int64>(range_length_),
+          : base::checked_cast<int64_t>(range_length_),
       expected_modification_time_);
   DCHECK(stream_reader_);
 
-  const int64 result = stream_reader_->GetLength(
+  const int64_t result = stream_reader_->GetLength(
       base::Bind(&UploadFileSystemFileElementReader::OnGetLength,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 callback));
+                 weak_ptr_factory_.GetWeakPtr(), callback));
   if (result >= 0) {
     stream_length_ = result;
     return net::OK;
@@ -65,11 +62,11 @@ int UploadFileSystemFileElementReader::Init(
   return static_cast<int>(result);
 }
 
-uint64 UploadFileSystemFileElementReader::GetContentLength() const {
+uint64_t UploadFileSystemFileElementReader::GetContentLength() const {
   return std::min(stream_length_, range_length_);
 }
 
-uint64 UploadFileSystemFileElementReader::BytesRemaining() const {
+uint64_t UploadFileSystemFileElementReader::BytesRemaining() const {
   return GetContentLength() - position_;
 }
 
@@ -80,8 +77,8 @@ int UploadFileSystemFileElementReader::Read(
   DCHECK_LT(0, buf_length);
   DCHECK(stream_reader_);
 
-  const uint64 num_bytes_to_read =
-      std::min(BytesRemaining(), static_cast<uint64>(buf_length));
+  const uint64_t num_bytes_to_read =
+      std::min(BytesRemaining(), static_cast<uint64_t>(buf_length));
 
   if (num_bytes_to_read == 0)
     return 0;
@@ -98,7 +95,7 @@ int UploadFileSystemFileElementReader::Read(
 
 void UploadFileSystemFileElementReader::OnGetLength(
     const net::CompletionCallback& callback,
-    int64 result) {
+    int64_t result) {
   if (result >= 0) {
     stream_length_ = result;
     callback.Run(net::OK);

@@ -8,6 +8,7 @@
 #include <stdarg.h>
 #include <stdint.h>
 
+#include <limits>
 #include <string>
 #include <vector>
 
@@ -546,10 +547,9 @@ void FillLargeHeadersString(std::string* str, int size) {
 #if defined(NTLM_PORTABLE)
 // Alternative functions that eliminate randomness and dependency on the local
 // host name so that the generated NTLM messages are reproducible.
-void MockGenerateRandom1(uint8* output, size_t n) {
-  static const uint8 bytes[] = {
-    0x55, 0x29, 0x66, 0x26, 0x6b, 0x9c, 0x73, 0x54
-  };
+void MockGenerateRandom1(uint8_t* output, size_t n) {
+  static const uint8_t bytes[] = {0x55, 0x29, 0x66, 0x26,
+                                  0x6b, 0x9c, 0x73, 0x54};
   static size_t current_byte = 0;
   for (size_t i = 0; i < n; ++i) {
     output[i] = bytes[current_byte++];
@@ -557,11 +557,10 @@ void MockGenerateRandom1(uint8* output, size_t n) {
   }
 }
 
-void MockGenerateRandom2(uint8* output, size_t n) {
-  static const uint8 bytes[] = {
-    0x96, 0x79, 0x85, 0xe7, 0x49, 0x93, 0x70, 0xa1,
-    0x4e, 0xe7, 0x87, 0x45, 0x31, 0x5b, 0xd3, 0x1f
-  };
+void MockGenerateRandom2(uint8_t* output, size_t n) {
+  static const uint8_t bytes[] = {0x96, 0x79, 0x85, 0xe7, 0x49, 0x93,
+                                  0x70, 0xa1, 0x4e, 0xe7, 0x87, 0x45,
+                                  0x31, 0x5b, 0xd3, 0x1f};
   static size_t current_byte = 0;
   for (size_t i = 0; i < n; ++i) {
     output[i] = bytes[current_byte++];
@@ -1375,7 +1374,7 @@ void HttpNetworkTransactionTest::KeepAliveConnectionResendRequestTest(
     "hello", "world"
   };
 
-  uint32 first_socket_log_id = NetLog::Source::kInvalidId;
+  uint32_t first_socket_log_id = NetLog::Source::kInvalidId;
   for (int i = 0; i < 2; ++i) {
     TestCompletionCallback callback;
 
@@ -1903,7 +1902,7 @@ TEST_P(HttpNetworkTransactionTest, KeepAliveAfterUnreadBody) {
   const int kNumUnreadBodies = arraysize(data_writes) - 1;
   std::string response_lines[kNumUnreadBodies];
 
-  uint32 first_socket_log_id = NetLog::Source::kInvalidId;
+  uint32_t first_socket_log_id = NetLog::Source::kInvalidId;
   for (size_t i = 0; i < kNumUnreadBodies; ++i) {
     TestCompletionCallback callback;
 
@@ -9263,14 +9262,14 @@ TEST_P(HttpNetworkTransactionTest, LargeContentLengthThenClose) {
 TEST_P(HttpNetworkTransactionTest, UploadFileSmallerThanLength) {
   base::FilePath temp_file_path;
   ASSERT_TRUE(base::CreateTemporaryFile(&temp_file_path));
-  const uint64 kFakeSize = 100000;  // file is actually blank
+  const uint64_t kFakeSize = 100000;  // file is actually blank
   UploadFileElementReader::ScopedOverridingContentLengthForTests
       overriding_content_length(kFakeSize);
 
   std::vector<scoped_ptr<UploadElementReader>> element_readers;
   element_readers.push_back(make_scoped_ptr(new UploadFileElementReader(
-      base::ThreadTaskRunnerHandle::Get().get(), temp_file_path, 0, kuint64max,
-      base::Time())));
+      base::ThreadTaskRunnerHandle::Get().get(), temp_file_path, 0,
+      std::numeric_limits<uint64_t>::max(), base::Time())));
   ElementsUploadDataStream upload_data_stream(std::move(element_readers), 0);
 
   HttpRequestInfo request;
@@ -9322,9 +9321,9 @@ TEST_P(HttpNetworkTransactionTest, UploadUnreadableFile) {
   ASSERT_TRUE(base::MakeFileUnreadable(temp_file));
 
   std::vector<scoped_ptr<UploadElementReader>> element_readers;
-  element_readers.push_back(make_scoped_ptr(
-      new UploadFileElementReader(base::ThreadTaskRunnerHandle::Get().get(),
-                                  temp_file, 0, kuint64max, base::Time())));
+  element_readers.push_back(make_scoped_ptr(new UploadFileElementReader(
+      base::ThreadTaskRunnerHandle::Get().get(), temp_file, 0,
+      std::numeric_limits<uint64_t>::max(), base::Time())));
   ElementsUploadDataStream upload_data_stream(std::move(element_readers), 0);
 
   HttpRequestInfo request;
@@ -9365,8 +9364,8 @@ TEST_P(HttpNetworkTransactionTest, CancelDuringInitRequestBody) {
       callback_ = callback;
       return ERR_IO_PENDING;
     }
-    uint64 GetContentLength() const override { return 0; }
-    uint64 BytesRemaining() const override { return 0; }
+    uint64_t GetContentLength() const override { return 0; }
+    uint64_t BytesRemaining() const override { return 0; }
     int Read(IOBuffer* buf,
              int buf_length,
              const CompletionCallback& callback) override {

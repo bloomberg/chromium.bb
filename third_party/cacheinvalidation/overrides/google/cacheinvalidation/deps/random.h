@@ -5,6 +5,8 @@
 #ifndef GOOGLE_CACHEINVALIDATION_DEPS_RANDOM_H_
 #define GOOGLE_CACHEINVALIDATION_DEPS_RANDOM_H_
 
+#include <stdint.h>
+
 #include "base/rand_util.h"
 
 namespace invalidation {
@@ -12,14 +14,14 @@ namespace invalidation {
 class Random {
  public:
   // We don't actually use the seed.
-  explicit Random(int64 seed) {}
+  explicit Random(int64_t seed) {}
 
   virtual ~Random() {}
 
   // Returns a pseudorandom value between(inclusive) and(exclusive).
   virtual double RandDouble();
 
-  virtual uint64 RandUint64();
+  virtual uint64_t RandUint64();
 };
 
 }  // namespace invalidation

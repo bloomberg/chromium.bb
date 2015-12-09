@@ -4,8 +4,11 @@
 
 #include "content/browser/fileapi/sandbox_database_test_helper.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 #include <functional>
+#include <limits>
 #include <vector>
 
 #include "base/files/file.h"
@@ -26,22 +29,23 @@ void CorruptDatabase(const base::FilePath& db_path,
       base::FileEnumerator::DIRECTORIES | base::FileEnumerator::FILES);
   base::FilePath file_path;
   base::FilePath picked_file_path;
-  uint64 picked_file_number = kuint64max;
+  uint64_t picked_file_number = std::numeric_limits<uint64_t>::max();
 
   while (!(file_path = file_enum.Next()).empty()) {
-    uint64 number = kuint64max;
+    uint64_t number = std::numeric_limits<uint64_t>::max();
     leveldb::FileType file_type;
     EXPECT_TRUE(leveldb::ParseFileName(FilePathToString(file_path.BaseName()),
                                        &number, &file_type));
     if (file_type == type &&
-        (picked_file_number == kuint64max || picked_file_number < number)) {
+        (picked_file_number == std::numeric_limits<uint64_t>::max() ||
+         picked_file_number < number)) {
       picked_file_path = file_path;
       picked_file_number = number;
     }
   }
 
   EXPECT_FALSE(picked_file_path.empty());
-  EXPECT_NE(kuint64max, picked_file_number);
+  EXPECT_NE(std::numeric_limits<uint64_t>::max(), picked_file_number);
 
   base::File file(picked_file_path,
                   base::File::FLAG_OPEN | base::File::FLAG_READ |
@@ -78,7 +82,7 @@ void DeleteDatabaseFile(const base::FilePath& db_path,
       base::FileEnumerator::DIRECTORIES | base::FileEnumerator::FILES);
   base::FilePath file_path;
   while (!(file_path = file_enum.Next()).empty()) {
-    uint64 number = kuint64max;
+    uint64_t number = std::numeric_limits<uint64_t>::max();
     leveldb::FileType file_type;
     EXPECT_TRUE(leveldb::ParseFileName(FilePathToString(file_path.BaseName()),
                                        &number, &file_type));

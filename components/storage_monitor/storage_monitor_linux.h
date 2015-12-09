@@ -18,10 +18,10 @@
 #include <map>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/files/file_path_watcher.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/storage_monitor/mtab_watcher_linux.h"

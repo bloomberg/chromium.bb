@@ -7,11 +7,12 @@
 #include "components/storage_monitor/storage_monitor_linux.h"
 
 #include <mntent.h>
+#include <stdint.h>
 #include <stdio.h>
 
+#include <limits>
 #include <list>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/metrics/histogram.h"
 #include "base/process/kill.h"
@@ -97,8 +98,8 @@ class ScopedGetDeviceInfoResultRecorder {
 
 // Returns the storage partition size of the device specified by |device_path|.
 // If the requested information is unavailable, returns 0.
-uint64 GetDeviceStorageSize(const base::FilePath& device_path,
-                            struct udev_device* device) {
+uint64_t GetDeviceStorageSize(const base::FilePath& device_path,
+                              struct udev_device* device) {
   // sysfs provides the device size in units of 512-byte blocks.
   const std::string partition_size =
       device::UdevDeviceGetSysattrValue(device, kSizeSysAttr);
@@ -109,11 +110,12 @@ uint64 GetDeviceStorageSize(const base::FilePath& device_path,
       "RemovableDeviceNotificationsLinux.device_partition_size_available",
       !partition_size.empty());
 
-  uint64 total_size_in_bytes = 0;
+  uint64_t total_size_in_bytes = 0;
   if (!base::StringToUint64(partition_size, &total_size_in_bytes))
     return 0;
-  return (total_size_in_bytes <= kuint64max / 512) ?
-      total_size_in_bytes * 512 : 0;
+  return (total_size_in_bytes <= std::numeric_limits<uint64_t>::max() / 512)
+             ? total_size_in_bytes * 512
+             : 0;
 }
 
 // Gets the device information using udev library.

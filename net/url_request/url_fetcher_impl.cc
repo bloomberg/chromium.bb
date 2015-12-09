@@ -33,8 +33,8 @@ void URLFetcherImpl::SetUploadData(const std::string& upload_content_type,
 void URLFetcherImpl::SetUploadFilePath(
     const std::string& upload_content_type,
     const base::FilePath& file_path,
-    uint64 range_offset,
-    uint64 range_length,
+    uint64_t range_offset,
+    uint64_t range_length,
     scoped_refptr<base::TaskRunner> file_task_runner) {
   core_->SetUploadFilePath(upload_content_type,
                            file_path,

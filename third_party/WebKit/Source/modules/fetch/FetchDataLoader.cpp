@@ -39,7 +39,7 @@ private:
         m_reader = handle->obtainReader(this);
         RefPtr<BlobDataHandle> blobHandle = m_reader->drainAsBlobDataHandle();
         if (blobHandle) {
-            ASSERT(blobHandle->size() != kuint64max);
+            ASSERT(blobHandle->size() != UINT64_MAX);
             m_reader.clear();
             if (blobHandle->type() != m_mimeType) {
                 // A new BlobDataHandle is created to override the Blob's type.

@@ -4,6 +4,8 @@
 
 #include "content/browser/fileapi/upload_file_system_file_element_reader.h"
 
+#include <limits>
+
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -60,12 +62,9 @@ class UploadFileSystemFileElementReaderTest : public testing::Test {
                         &file_modification_time_);
 
     // Create and initialize a reader.
-    reader_.reset(
-        new UploadFileSystemFileElementReader(file_system_context_.get(),
-                                              file_url_,
-                                              0,
-                                              kuint64max,
-                                              file_modification_time_));
+    reader_.reset(new UploadFileSystemFileElementReader(
+        file_system_context_.get(), file_url_, 0,
+        std::numeric_limits<uint64_t>::max(), file_modification_time_));
     net::TestCompletionCallback callback;
     ASSERT_EQ(net::ERR_IO_PENDING, reader_->Init(callback.callback()));
     EXPECT_EQ(net::OK, callback.WaitForResult());
@@ -244,8 +243,8 @@ TEST_F(UploadFileSystemFileElementReaderTest, Range) {
   net::TestCompletionCallback init_callback;
   ASSERT_EQ(net::ERR_IO_PENDING, reader_->Init(init_callback.callback()));
   EXPECT_EQ(net::OK, init_callback.WaitForResult());
-  EXPECT_EQ(static_cast<uint64>(kLength), reader_->GetContentLength());
-  EXPECT_EQ(static_cast<uint64>(kLength), reader_->BytesRemaining());
+  EXPECT_EQ(static_cast<uint64_t>(kLength), reader_->GetContentLength());
+  EXPECT_EQ(static_cast<uint64_t>(kLength), reader_->BytesRemaining());
   scoped_refptr<net::IOBufferWithSize> buf = new net::IOBufferWithSize(kLength);
   net::TestCompletionCallback read_callback;
   ASSERT_EQ(net::ERR_IO_PENDING,
@@ -260,12 +259,9 @@ TEST_F(UploadFileSystemFileElementReaderTest, FileChanged) {
   // Expect one second before the actual modification time to simulate change.
   const base::Time expected_modification_time =
       file_modification_time_ - base::TimeDelta::FromSeconds(1);
-  reader_.reset(
-      new UploadFileSystemFileElementReader(file_system_context_.get(),
-                                            file_url_,
-                                            0,
-                                            kuint64max,
-                                            expected_modification_time));
+  reader_.reset(new UploadFileSystemFileElementReader(
+      file_system_context_.get(), file_url_, 0,
+      std::numeric_limits<uint64_t>::max(), expected_modification_time));
   net::TestCompletionCallback init_callback;
   ASSERT_EQ(net::ERR_IO_PENDING, reader_->Init(init_callback.callback()));
   EXPECT_EQ(net::ERR_UPLOAD_FILE_CHANGED, init_callback.WaitForResult());
@@ -274,7 +270,8 @@ TEST_F(UploadFileSystemFileElementReaderTest, FileChanged) {
 TEST_F(UploadFileSystemFileElementReaderTest, WrongURL) {
   const GURL wrong_url = GetFileSystemURL("wrong_file_name.dat");
   reader_.reset(new UploadFileSystemFileElementReader(
-      file_system_context_.get(), wrong_url, 0, kuint64max, base::Time()));
+      file_system_context_.get(), wrong_url, 0,
+      std::numeric_limits<uint64_t>::max(), base::Time()));
   net::TestCompletionCallback init_callback;
   ASSERT_EQ(net::ERR_IO_PENDING, reader_->Init(init_callback.callback()));
   EXPECT_EQ(net::ERR_FILE_NOT_FOUND, init_callback.WaitForResult());

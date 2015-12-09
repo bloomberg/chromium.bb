@@ -4,6 +4,10 @@
 
 #include "remoting/protocol/jingle_session.h"
 
+#include <stdint.h>
+
+#include <limits>
+
 #include "base/bind.h"
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
@@ -98,7 +102,8 @@ void JingleSession::StartConnection(const std::string& peer_jid,
   // concurrent session per host, so a random 64-bit integer provides
   // enough entropy. In the worst case connection will fail when two
   // clients generate the same session ID concurrently.
-  session_id_ = base::Uint64ToString(base::RandGenerator(kuint64max));
+  session_id_ = base::Uint64ToString(
+      base::RandGenerator(std::numeric_limits<uint64_t>::max()));
 
   transport_ = session_manager_->transport_factory_->CreateTransport();
 

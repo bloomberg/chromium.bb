@@ -18,8 +18,7 @@
 
 #include <string>
 
-#include "base/basictypes.h"
-#include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "net/base/net_export.h"
 #include "net/url_request/url_fetcher.h"
 
@@ -44,8 +43,8 @@ class NET_EXPORT_PRIVATE URLFetcherImpl : public URLFetcher {
   void SetUploadFilePath(
       const std::string& upload_content_type,
       const base::FilePath& file_path,
-      uint64 range_offset,
-      uint64 range_length,
+      uint64_t range_offset,
+      uint64_t range_length,
       scoped_refptr<base::TaskRunner> file_task_runner) override;
   void SetUploadStreamFactory(
       const std::string& upload_content_type,

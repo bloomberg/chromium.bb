@@ -8,6 +8,7 @@
 #include <string.h>
 
 #include <algorithm>
+#include <limits>
 #include <string>
 
 #include "base/bind.h"
@@ -118,8 +119,8 @@ class WaitingURLFetcherDelegate : public URLFetcherDelegate {
   }
 
   void OnURLFetchDownloadProgress(const URLFetcher* source,
-                                  int64 current,
-                                  int64 total) override {
+                                  int64_t current,
+                                  int64_t total) override {
     // Note that the current progress may be greater than the previous progress,
     // in the case of retrying the request.
     EXPECT_FALSE(did_complete_);
@@ -133,8 +134,8 @@ class WaitingURLFetcherDelegate : public URLFetcherDelegate {
   }
 
   void OnURLFetchUploadProgress(const URLFetcher* source,
-                                int64 current,
-                                int64 total) override {
+                                int64_t current,
+                                int64_t total) override {
     // Note that the current progress may be greater than the previous progress,
     // in the case of retrying the request.
     EXPECT_FALSE(did_complete_);
@@ -700,7 +701,8 @@ TEST_F(URLFetcherTest, PostEntireFile) {
   delegate.CreateFetcher(test_server_->GetURL("/echo"), URLFetcher::POST,
                          CreateSameThreadContextGetter());
   delegate.fetcher()->SetUploadFilePath("application/x-www-form-urlencoded",
-                                        upload_path, 0, kuint64max,
+                                        upload_path, 0,
+                                        std::numeric_limits<uint64_t>::max(),
                                         base::ThreadTaskRunnerHandle::Get());
   delegate.StartFetcherAndWait();
 
@@ -783,8 +785,8 @@ class CheckUploadProgressDelegate : public WaitingURLFetcherDelegate {
   ~CheckUploadProgressDelegate() override {}
 
   void OnURLFetchUploadProgress(const URLFetcher* source,
-                                int64 current,
-                                int64 total) override {
+                                int64_t current,
+                                int64_t total) override {
     // Run default checks.
     WaitingURLFetcherDelegate::OnURLFetchUploadProgress(source, current, total);
 
@@ -806,12 +808,14 @@ class CheckUploadProgressDelegate : public WaitingURLFetcherDelegate {
   }
 
  private:
-  int64 bytes_appended() const { return num_chunks_appended_ * chunk_.size(); }
+  int64_t bytes_appended() const {
+    return num_chunks_appended_ * chunk_.size();
+  }
 
   const std::string chunk_;
 
-  int64 num_chunks_appended_;
-  int64 last_seen_progress_;
+  int64_t num_chunks_appended_;
+  int64_t last_seen_progress_;
 
   DISALLOW_COPY_AND_ASSIGN(CheckUploadProgressDelegate);
 };
@@ -843,13 +847,13 @@ TEST_F(URLFetcherTest, UploadProgress) {
 // that file size is correctly reported.
 class CheckDownloadProgressDelegate : public WaitingURLFetcherDelegate {
  public:
-  CheckDownloadProgressDelegate(int64 file_size)
+  CheckDownloadProgressDelegate(int64_t file_size)
       : file_size_(file_size), last_seen_progress_(0) {}
   ~CheckDownloadProgressDelegate() override {}
 
   void OnURLFetchDownloadProgress(const URLFetcher* source,
-                                  int64 current,
-                                  int64 total) override {
+                                  int64_t current,
+                                  int64_t total) override {
     // Run default checks.
     WaitingURLFetcherDelegate::OnURLFetchDownloadProgress(source, current,
                                                           total);
@@ -860,8 +864,8 @@ class CheckDownloadProgressDelegate : public WaitingURLFetcherDelegate {
   }
 
  private:
-  int64 file_size_;
-  int64 last_seen_progress_;
+  int64_t file_size_;
+  int64_t last_seen_progress_;
 
   DISALLOW_COPY_AND_ASSIGN(CheckDownloadProgressDelegate);
 };
@@ -898,8 +902,8 @@ class CancelOnUploadProgressDelegate : public WaitingURLFetcherDelegate {
   ~CancelOnUploadProgressDelegate() override {}
 
   void OnURLFetchUploadProgress(const URLFetcher* source,
-                                int64 current,
-                                int64 total) override {
+                                int64_t current,
+                                int64_t total) override {
     CancelFetch();
   }
 
@@ -935,8 +939,8 @@ class CancelOnDownloadProgressDelegate : public WaitingURLFetcherDelegate {
   ~CancelOnDownloadProgressDelegate() override {}
 
   void OnURLFetchDownloadProgress(const URLFetcher* source,
-                                  int64 current,
-                                  int64 total) override {
+                                  int64_t current,
+                                  int64_t total) override {
     CancelFetch();
   }
 

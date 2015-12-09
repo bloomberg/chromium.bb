@@ -4,6 +4,7 @@
 
 #include "ppapi/proxy/websocket_resource.h"
 
+#include <limits>
 #include <set>
 #include <string>
 #include <vector>
@@ -26,8 +27,8 @@ const size_t kMinimumPayloadSizeWithTwoByteExtendedPayloadLength = 126;
 const size_t kMinimumPayloadSizeWithEightByteExtendedPayloadLength = 0x10000;
 
 uint64_t SaturateAdd(uint64_t a, uint64_t b) {
-  if (kuint64max - a < b)
-    return kuint64max;
+  if (std::numeric_limits<uint64_t>::max() - a < b)
+    return std::numeric_limits<uint64_t>::max();
   return a + b;
 }
 

@@ -607,7 +607,7 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
   const BoundNetLog& net_log() const { return net_log_; }
 
   // Returns the expected content size if available
-  int64 GetExpectedContentSize() const;
+  int64_t GetExpectedContentSize() const;
 
   // Returns the priority level for this request.
   RequestPriority priority() const { return priority_; }
@@ -630,14 +630,14 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
   void set_stack_trace(const base::debug::StackTrace& stack_trace);
   const base::debug::StackTrace* stack_trace() const;
 
-  void set_received_response_content_length(int64 received_content_length) {
+  void set_received_response_content_length(int64_t received_content_length) {
     received_response_content_length_ = received_content_length;
   }
 
   // The number of bytes in the raw response body (before any decompression,
   // etc.). This is only available after the final Read completes. Not available
   // for FTP responses.
-  int64 received_response_content_length() const {
+  int64_t received_response_content_length() const {
     return received_response_content_length_;
   }
 
@@ -818,7 +818,7 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
   // needs to be done outside of the URLRequest anyway. Therefore, this
   // identifier should be deleted here. http://crbug.com/89321
   // A globally unique identifier for this request.
-  const uint64 identifier_;
+  const uint64_t identifier_;
 
   // True if this request is currently calling a delegate, or is blocked waiting
   // for the URL request or network delegate to resume it.
@@ -847,7 +847,7 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
   AuthCredentials auth_credentials_;
   scoped_refptr<AuthChallengeInfo> auth_info_;
 
-  int64 received_response_content_length_;
+  int64_t received_response_content_length_;
 
   base::TimeTicks creation_time_;
 

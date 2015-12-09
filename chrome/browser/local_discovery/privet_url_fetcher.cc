@@ -4,7 +4,10 @@
 
 #include "chrome/browser/local_discovery/privet_url_fetcher.h"
 
+#include <stdint.h>
+
 #include <algorithm>
+#include <limits>
 
 #include "base/bind.h"
 #include "base/debug/dump_without_crashing.h"
@@ -175,10 +178,8 @@ void PrivetURLFetcher::Try() {
     if (request_type_ == net::URLFetcher::POST) {
       if (!upload_file_path_.empty()) {
         url_fetcher_->SetUploadFilePath(
-            upload_content_type_,
-            upload_file_path_,
-            0 /*offset*/,
-            kuint64max /*length*/,
+            upload_content_type_, upload_file_path_, 0 /*offset*/,
+            std::numeric_limits<uint64_t>::max() /*length*/,
             content::BrowserThread::GetMessageLoopProxyForThread(
                 content::BrowserThread::FILE));
       } else {
