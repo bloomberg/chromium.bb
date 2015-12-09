@@ -7,13 +7,22 @@
 
 #include "base/macros.h"
 #include "chrome/browser/ui/extensions/extension_installed_bubble.h"
+#include "chrome/browser/ui/sync/bubble_sync_promo_delegate.h"
 #include "components/bubble/bubble_reference.h"
 #include "ui/views/bubble/bubble_delegate.h"
+#include "ui/views/controls/button/button.h"
+#include "ui/views/controls/link_listener.h"
 
 class Browser;
+class BubbleSyncPromoView;
 
 namespace extensions {
 class Extension;
+}
+
+namespace views {
+class LabelButton;
+class Link;
 }
 
 // Provides feedback to the user upon successful installation of an
@@ -25,7 +34,10 @@ class Extension;
 //                      bar which is shown while the Bubble is shown.
 //    GENERIC        -> The app menu. This case includes pageActions that don't
 //                      specify a default icon.
-class ExtensionInstalledBubbleView : public views::BubbleDelegateView {
+class ExtensionInstalledBubbleView : public BubbleSyncPromoDelegate,
+                                     public views::BubbleDelegateView,
+                                     public views::ButtonListener,
+                                     public views::LinkListener {
  public:
   ExtensionInstalledBubbleView(ExtensionInstalledBubble* bubble,
                                BubbleReference bubble_reference);
@@ -34,6 +46,18 @@ class ExtensionInstalledBubbleView : public views::BubbleDelegateView {
   // Recalculate the anchor position for this bubble.
   void UpdateAnchorView();
 
+  void InitLayout(const ExtensionInstalledBubble& bubble);
+
+ private:
+  // The different options to show in the installed bubble.
+  enum Options {
+    NONE = 0,
+    HOW_TO_USE = 1 << 0,
+    HOW_TO_MANAGE = 1 << 1,
+    SHOW_KEYBINDING = 1 << 2,
+    SIGN_IN_PROMO = 1 << 3,
+  };
+
   // views::BubbleDelegateView:
   void WindowClosing() override;
   gfx::Rect GetAnchorRect() const override;
@@ -41,11 +65,31 @@ class ExtensionInstalledBubbleView : public views::BubbleDelegateView {
   void OnWidgetActivationChanged(views::Widget* widget, bool active) override;
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
 
- private:
+  // BubbleSyncPromoDelegate:
+  void OnSignInLinkClicked() override;
+
+  // views::LinkListener:
+  void LinkClicked(views::Link* source, int event_flags) override;
+
+  // views::ButtonListener:
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+
   BubbleReference bubble_reference_;
   const extensions::Extension* extension_;
   Browser* browser_;
   ExtensionInstalledBubble::BubbleType type_;
+
+  // A bitmask containing the various options of bubble sections to show.
+  int options_;
+
+  // The sync promo section of the bubble.
+  BubbleSyncPromoView* sync_promo_;
+
+  // The button to close the bubble.
+  views::LabelButton* close_;
+
+  // The shortcut to open the manage shortcuts page.
+  views::Link* manage_shortcut_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionInstalledBubbleView);
 };

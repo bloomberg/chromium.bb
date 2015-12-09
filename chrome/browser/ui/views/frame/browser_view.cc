@@ -42,7 +42,6 @@
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bar_constants.h"
-#include "chrome/browser/ui/bookmarks/bookmark_bubble_delegate.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bubble_sign_in_delegate.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
@@ -54,6 +53,7 @@
 #include "chrome/browser/ui/search/search_delegate.h"
 #include "chrome/browser/ui/search/search_model.h"
 #include "chrome/browser/ui/search/search_ui.h"
+#include "chrome/browser/ui/sync/bubble_sync_promo_delegate.h"
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/view_ids.h"
@@ -1298,7 +1298,7 @@ void BrowserView::ShowUpdateChromeDialog() {
 }
 
 void BrowserView::ShowBookmarkBubble(const GURL& url, bool already_bookmarked) {
-  scoped_ptr<BookmarkBubbleDelegate> delegate;
+  scoped_ptr<BubbleSyncPromoDelegate> delegate;
   delegate.reset(new BookmarkBubbleSignInDelegate(browser_.get()));
 
   BookmarkBubbleView::ShowBubble(GetToolbarView()->GetBookmarkBubbleAnchor(),

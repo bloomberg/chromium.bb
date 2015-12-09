@@ -56,6 +56,8 @@ class ExtensionInstalledBubbleObserver
                    content::Source<Browser>(bubble_->browser()));
   }
 
+  void Run() { OnExtensionLoaded(nullptr, bubble_->extension()); }
+
  private:
   ~ExtensionInstalledBubbleObserver() override {}
 
@@ -169,8 +171,13 @@ void ExtensionInstalledBubble::ShowBubble(
     const SkBitmap& icon) {
   // The ExtensionInstalledBubbleObserver will delete itself when the
   // ExtensionInstalledBubble is shown or when it can't be shown anymore.
-  new ExtensionInstalledBubbleObserver(
+  auto x = new ExtensionInstalledBubbleObserver(
       make_scoped_ptr(new ExtensionInstalledBubble(extension, browser, icon)));
+  extensions::ExtensionRegistry* reg =
+      extensions::ExtensionRegistry::Get(browser->profile());
+  if (reg->enabled_extensions().GetByID(extension->id())) {
+    x->Run();
+  }
 }
 
 ExtensionInstalledBubble::ExtensionInstalledBubble(const Extension* extension,

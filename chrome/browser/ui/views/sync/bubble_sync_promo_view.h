@@ -2,22 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_BOOKMARKS_BOOKMARK_SYNC_PROMO_VIEW_H_
-#define CHROME_BROWSER_UI_VIEWS_BOOKMARKS_BOOKMARK_SYNC_PROMO_VIEW_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_SYNC_BUBBLE_SYNC_PROMO_VIEW_H_
+#define CHROME_BROWSER_UI_VIEWS_SYNC_BUBBLE_SYNC_PROMO_VIEW_H_
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "ui/views/controls/styled_label_listener.h"
 #include "ui/views/view.h"
 
-class BookmarkBubbleDelegate;
+class BubbleSyncPromoDelegate;
 
 // Bookmark sync promo displayed at the bottom of the bookmark bubble.
-class BookmarkSyncPromoView : public views::StyledLabelListener,
-                              public views::View {
+class BubbleSyncPromoView : public views::StyledLabelListener,
+                            public views::View {
  public:
-  // |delegate| is not owned by BookmarkSyncPromoView.
-  explicit BookmarkSyncPromoView(BookmarkBubbleDelegate* delegate);
+  // |delegate| is not owned by BubbleSyncPromoView.
+  BubbleSyncPromoView(BubbleSyncPromoDelegate* delegate,
+                      int link_text_resource_id,
+                      int message_text_resource_id);
+  ~BubbleSyncPromoView() override;
 
  private:
   // views::StyledLabelListener:
@@ -29,9 +32,9 @@ class BookmarkSyncPromoView : public views::StyledLabelListener,
   const char* GetClassName() const override;
 
   // Delegate, to handle clicks on the sign in link.
-  BookmarkBubbleDelegate* delegate_;
+  BubbleSyncPromoDelegate* delegate_;
 
-  DISALLOW_COPY_AND_ASSIGN(BookmarkSyncPromoView);
+  DISALLOW_COPY_AND_ASSIGN(BubbleSyncPromoView);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_BOOKMARKS_BOOKMARK_SYNC_PROMO_VIEW_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_SYNC_BUBBLE_SYNC_PROMO_VIEW_H_

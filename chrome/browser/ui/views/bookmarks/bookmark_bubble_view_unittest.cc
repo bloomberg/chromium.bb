@@ -10,7 +10,7 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/signin/fake_signin_manager_builder.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/ui/bookmarks/bookmark_bubble_delegate.h"
+#include "chrome/browser/ui/sync/bubble_sync_promo_delegate.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
@@ -57,7 +57,7 @@ class BookmarkBubbleViewTest : public BrowserWithTestWindowTest {
  protected:
   // Creates a bookmark bubble view.
   void CreateBubbleView() {
-    scoped_ptr<BookmarkBubbleDelegate> delegate;
+    scoped_ptr<BubbleSyncPromoDelegate> delegate;
     bubble_.reset(new BookmarkBubbleView(NULL,
                                          NULL,
                                          delegate.Pass(),

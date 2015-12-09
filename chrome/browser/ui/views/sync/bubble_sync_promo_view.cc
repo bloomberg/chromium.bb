@@ -2,12 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/bookmarks/bookmark_sync_promo_view.h"
+#include "chrome/browser/ui/views/sync/bubble_sync_promo_view.h"
 
 #include "base/strings/string16.h"
-#include "chrome/browser/ui/bookmarks/bookmark_bubble_delegate.h"
-#include "chrome/grit/chromium_strings.h"
-#include "chrome/grit/generated_resources.h"
+#include "chrome/browser/ui/sync/bubble_sync_promo_delegate.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/font.h"
@@ -32,18 +30,17 @@ const SkColor kTextColor = SkColorSetRGB(102, 102, 102);
 
 }  // namespace
 
-BookmarkSyncPromoView::BookmarkSyncPromoView(BookmarkBubbleDelegate* delegate)
+BubbleSyncPromoView::BubbleSyncPromoView(BubbleSyncPromoDelegate* delegate,
+                                         int link_text_resource_id,
+                                         int message_text_resource_id)
     : delegate_(delegate) {
   set_background(views::Background::CreateSolidBackground(kBackgroundColor));
-  SetBorder(views::Border::CreateSolidSidedBorder(
-      kBorderWidth, 0, 0, 0, kBorderColor));
-  size_t offset;
-  base::string16 link_text =
-      l10n_util::GetStringUTF16(IDS_BOOKMARK_SYNC_PROMO_LINK);
-  base::string16 promo_text = l10n_util::GetStringFUTF16(
-      IDS_BOOKMARK_SYNC_PROMO_MESSAGE,
-      link_text,
-      &offset);
+  SetBorder(views::Border::CreateSolidSidedBorder(kBorderWidth, 0, 0, 0,
+                                                  kBorderColor));
+  size_t offset = 0;
+  base::string16 link_text = l10n_util::GetStringUTF16(link_text_resource_id);
+  base::string16 promo_text =
+      l10n_util::GetStringFUTF16(message_text_resource_id, link_text, &offset);
 
   views::StyledLabel* promo_label = new views::StyledLabel(promo_text, this);
   promo_label->SetDisplayedOnBackgroundColor(kBackgroundColor);
@@ -65,18 +62,19 @@ BookmarkSyncPromoView::BookmarkSyncPromoView(BookmarkBubbleDelegate* delegate)
 
   views::BoxLayout* layout = new views::BoxLayout(views::BoxLayout::kVertical,
                                                   views::kButtonHEdgeMarginNew,
-                                                  views::kPanelVertMargin,
-                                                  0);
+                                                  views::kPanelVertMargin, 0);
   SetLayoutManager(layout);
   AddChildView(promo_label);
 }
 
-void BookmarkSyncPromoView::StyledLabelLinkClicked(views::StyledLabel* label,
-                                                   const gfx::Range& range,
-                                                   int event_flags) {
+BubbleSyncPromoView::~BubbleSyncPromoView() {}
+
+void BubbleSyncPromoView::StyledLabelLinkClicked(views::StyledLabel* label,
+                                                 const gfx::Range& range,
+                                                 int event_flags) {
   delegate_->OnSignInLinkClicked();
 }
 
-const char* BookmarkSyncPromoView::GetClassName() const {
-  return "BookmarkSyncPromoView";
+const char* BubbleSyncPromoView::GetClassName() const {
+  return "BubbleSyncPromoView";
 }

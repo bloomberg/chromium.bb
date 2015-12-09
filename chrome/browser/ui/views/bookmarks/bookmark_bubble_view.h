@@ -10,8 +10,8 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/ui/bookmarks/bookmark_bubble_delegate.h"
 #include "chrome/browser/ui/bookmarks/recently_used_folders_combo_model.h"
+#include "chrome/browser/ui/sync/bubble_sync_promo_delegate.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/combobox/combobox_listener.h"
@@ -42,7 +42,7 @@ class BookmarkBubbleView : public views::BubbleDelegateView,
                          const gfx::Rect& anchor_rect,
                          gfx::NativeView parent_window,
                          bookmarks::BookmarkBubbleObserver* observer,
-                         scoped_ptr<BookmarkBubbleDelegate> delegate,
+                         scoped_ptr<BubbleSyncPromoDelegate> delegate,
                          Profile* profile,
                          const GURL& url,
                          bool already_bookmarked);
@@ -73,7 +73,7 @@ class BookmarkBubbleView : public views::BubbleDelegateView,
   // Creates a BookmarkBubbleView.
   BookmarkBubbleView(views::View* anchor_view,
                      bookmarks::BookmarkBubbleObserver* observer,
-                     scoped_ptr<BookmarkBubbleDelegate> delegate,
+                     scoped_ptr<BubbleSyncPromoDelegate> delegate,
                      Profile* profile,
                      const GURL& url,
                      bool newly_bookmarked);
@@ -107,7 +107,7 @@ class BookmarkBubbleView : public views::BubbleDelegateView,
   bookmarks::BookmarkBubbleObserver* observer_;
 
   // Delegate, to handle clicks on the sign in link.
-  scoped_ptr<BookmarkBubbleDelegate> delegate_;
+  scoped_ptr<BubbleSyncPromoDelegate> delegate_;
 
   // The profile.
   Profile* profile_;

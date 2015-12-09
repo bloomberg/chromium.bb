@@ -10,11 +10,11 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/test_extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
-#include "chrome/browser/ui/bookmarks/bookmark_bubble_delegate.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/singleton_tabs.h"
+#include "chrome/browser/ui/sync/bubble_sync_promo_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/profiles/profile_chooser_view.h"
 #include "chrome/common/chrome_switches.h"
@@ -58,7 +58,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkBubbleSignInDelegateTest, OnSignInLinkClicked) {
   ReplaceBlank(browser());
   int starting_tab_count = browser()->tab_strip_model()->count();
 
-  scoped_ptr<BookmarkBubbleDelegate> delegate;
+  scoped_ptr<BubbleSyncPromoDelegate> delegate;
   delegate.reset(new BookmarkBubbleSignInDelegate(browser()));
 
   delegate->OnSignInLinkClicked();
@@ -75,7 +75,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkBubbleSignInDelegateTest,
                        OnSignInLinkClickedReusesBlank) {
   int starting_tab_count = browser()->tab_strip_model()->count();
 
-  scoped_ptr<BookmarkBubbleDelegate> delegate;
+  scoped_ptr<BubbleSyncPromoDelegate> delegate;
   delegate.reset(new BookmarkBubbleSignInDelegate(browser()));
 
   delegate->OnSignInLinkClicked();
@@ -97,7 +97,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkBubbleSignInDelegateTest,
   int starting_tab_count_incognito =
       incognito_browser->tab_strip_model()->count();
 
-  scoped_ptr<BookmarkBubbleDelegate> delegate;
+  scoped_ptr<BubbleSyncPromoDelegate> delegate;
   delegate.reset(new BookmarkBubbleSignInDelegate(incognito_browser));
 
   delegate->OnSignInLinkClicked();
@@ -125,7 +125,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkBubbleSignInDelegateTest, BrowserRemoved) {
 
   int starting_tab_count = extra_browser->tab_strip_model()->count();
 
-  scoped_ptr<BookmarkBubbleDelegate> delegate;
+  scoped_ptr<BubbleSyncPromoDelegate> delegate;
   delegate.reset(new BookmarkBubbleSignInDelegate(browser()));
 
   BrowserList::SetLastActive(extra_browser);

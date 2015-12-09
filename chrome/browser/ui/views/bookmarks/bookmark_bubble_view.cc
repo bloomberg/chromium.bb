@@ -15,7 +15,8 @@
 #include "chrome/browser/ui/bookmarks/bookmark_editor.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
-#include "chrome/browser/ui/views/bookmarks/bookmark_sync_promo_view.h"
+#include "chrome/browser/ui/views/sync/bubble_sync_promo_view.h"
+#include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
@@ -64,14 +65,15 @@ class UnsizedCombobox : public views::Combobox {
 BookmarkBubbleView* BookmarkBubbleView::bookmark_bubble_ = NULL;
 
 // static
-void BookmarkBubbleView::ShowBubble(views::View* anchor_view,
-                                    const gfx::Rect& anchor_rect,
-                                    gfx::NativeView parent_window,
-                                    bookmarks::BookmarkBubbleObserver* observer,
-                                    scoped_ptr<BookmarkBubbleDelegate> delegate,
-                                    Profile* profile,
-                                    const GURL& url,
-                                    bool already_bookmarked) {
+void BookmarkBubbleView::ShowBubble(
+    views::View* anchor_view,
+    const gfx::Rect& anchor_rect,
+    gfx::NativeView parent_window,
+    bookmarks::BookmarkBubbleObserver* observer,
+    scoped_ptr<BubbleSyncPromoDelegate> delegate,
+    Profile* profile,
+    const GURL& url,
+    bool already_bookmarked) {
   if (bookmark_bubble_)
     return;
 
@@ -255,7 +257,9 @@ void BookmarkBubbleView::Init() {
                   0);
     layout->StartRow(0, SYNC_PROMO_COLUMN_SET_ID);
 
-    sync_promo_view_ = new BookmarkSyncPromoView(delegate_.get());
+    sync_promo_view_ =
+        new BubbleSyncPromoView(delegate_.get(), IDS_BOOKMARK_SYNC_PROMO_LINK,
+                                IDS_BOOKMARK_SYNC_PROMO_MESSAGE);
     layout->AddView(sync_promo_view_);
   }
 
@@ -275,7 +279,7 @@ views::View* BookmarkBubbleView::GetInitiallyFocusedView() {
 BookmarkBubbleView::BookmarkBubbleView(
     views::View* anchor_view,
     bookmarks::BookmarkBubbleObserver* observer,
-    scoped_ptr<BookmarkBubbleDelegate> delegate,
+    scoped_ptr<BubbleSyncPromoDelegate> delegate,
     Profile* profile,
     const GURL& url,
     bool newly_bookmarked)
@@ -285,10 +289,9 @@ BookmarkBubbleView::BookmarkBubbleView(
       profile_(profile),
       url_(url),
       newly_bookmarked_(newly_bookmarked),
-      parent_model_(
-          BookmarkModelFactory::GetForProfile(profile_),
-          BookmarkModelFactory::GetForProfile(profile_)->
-              GetMostRecentlyAddedUserNodeForURL(url)),
+      parent_model_(BookmarkModelFactory::GetForProfile(profile_),
+                    BookmarkModelFactory::GetForProfile(profile_)
+                        ->GetMostRecentlyAddedUserNodeForURL(url)),
       remove_button_(NULL),
       edit_button_(NULL),
       close_button_(NULL),
