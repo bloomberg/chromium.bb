@@ -164,6 +164,15 @@
             }
         }
     ],
+    "NTPPopularSites": [
+        {
+            "group_name": "Enabled",
+            "params": {
+                "country": "IN",
+                "version": "4"
+            }
+        }
+    ],
     "NetworkQualityEstimator": [
         {
             "group_name": "Enabled",
