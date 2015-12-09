@@ -45,6 +45,21 @@ cr.define('extensions', function() {
         type: Boolean,
         value: false,
       },
+
+      hideExtensionsButton: {
+        type: Boolean,
+        value: false,
+      },
+
+      hideAppsButton: {
+        type: Boolean,
+        value: false,
+      },
+
+      hideWebsitesButton: {
+        type: Boolean,
+        value: false,
+      },
     },
 
     behaviors: [

@@ -12,19 +12,26 @@
     <paper-header-panel id="panel">
       <extensions-toolbar class="paper-header" id="toolbar">
       </extensions-toolbar>
-      <extensions-sidebar in-dev-mode="[[inDevMode]]"></extensions-sidebar>
+      <extensions-sidebar in-dev-mode="[[inDevMode]]"
+          hide-extensions-button="[[computeListHidden_(extensions, extensions.splices)]]"
+          hide-apps-button="[[computeListHidden_(apps, apps.splices)]]"
+          hide-websites-button="[[computeListHidden_(websites, websites.splices)]]">
+      </extensions-sidebar>
       <div id="items">
         <extensions-item-list id="extensions-list" items="[[extensions]]"
             delegate="[[service]]" header="[[i18n('sidebarExtensions')]]"
-            in-dev-mode="[[inDevMode]]">
+            in-dev-mode="[[inDevMode]]"
+            hidden$="[[computeListHidden_(extensions, extensions.splices)]]">
         </extensions-item-list>
         <extensions-item-list id="apps-list" items="[[apps]]"
             delegate="[[service]]" header="[[i18n('sidebarApps')]]"
-            in-dev-mode="[[inDevMode]]">
+            in-dev-mode="[[inDevMode]]"
+            hidden$="[[computeListHidden_(apps, apps.splices)]]">
         </extensions-item-list>
         <extensions-item-list id="websites-list" items="[[websites]]"
             delegate="[[service]]" header="[[i18n('sidebarWebsites')]]"
-            in-dev-mode="[[inDevMode]]">
+            in-dev-mode="[[inDevMode]]"
+            hidden$="[[computeListHidden_(websites, websites.splices)]]">
         </extensions-item-list>
       </div>
     </paper-header-panel>

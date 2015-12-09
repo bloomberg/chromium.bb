@@ -164,3 +164,25 @@ TEST_F('CrExtensionsBrowserTest', 'ExtensionManagerItemOrderTest', function() {
   extension_manager_tests.registerTests();
   mocha.grep(assert(extension_manager_tests.TestNames.ItemOrder)).run();
 });
+
+TEST_F('CrExtensionsBrowserTestWithMultipleExtensionTypesInstalled',
+       'ExtensionManagerExtensionSectionVisibilityTest', function() {
+  extension_manager_tests.registerTests();
+  mocha.grep(
+      assert(extension_manager_tests.TestNames.ExtensionSectionVisibility)).
+          run();
+});
+
+TEST_F('CrExtensionsBrowserTestWithMultipleExtensionTypesInstalled',
+       'ExtensionManagerAppSectionVisibilityTest', function() {
+  extension_manager_tests.registerTests();
+  mocha.grep(
+      assert(extension_manager_tests.TestNames.AppSectionVisibility)).run();
+});
+
+TEST_F('CrExtensionsBrowserTestWithMultipleExtensionTypesInstalled',
+       'ExtensionManagerWebsiteSectionVisibilityTest', function() {
+  extension_manager_tests.registerTests();
+  mocha.grep(
+      assert(extension_manager_tests.TestNames.WebsiteSectionVisibility)).run();
+});

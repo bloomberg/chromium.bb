@@ -117,6 +117,14 @@ cr.define('extensions', function() {
     },
 
     /**
+     * @param {!Array<!chrome.developerPrivate.ExtensionInfo>} list
+     * @return {boolean} Whether the list should be visible.
+     */
+    computeListHidden_: function(list) {
+      return list.length == 0;
+    },
+
+    /**
      * Creates and adds a new extensions-item element to the list, inserting it
      * into its sorted position in the relevant section.
      * @param {!chrome.developerPrivate.ExtensionInfo} item The extension

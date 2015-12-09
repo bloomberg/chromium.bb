@@ -10,17 +10,17 @@
   <template>
     <paper-menu id="section-menu">
       <paper-item class="section-menu-item" id="sections-extensions"
-          on-tap="onExtensionsTap_">
+          on-tap="onExtensionsTap_" hidden$="[[hideExtensionsButton]]">
         <iron-icon icon="extension"></iron-icon>
         <span i18n-content="sidebarExtensions"></span>
       </paper-item>
       <paper-item class="section-menu-item" id="sections-apps"
-          on-tap="onAppsTap_">
+          on-tap="onAppsTap_" hidden$="[[hideAppsButton]]">
         <iron-icon icon="apps"></iron-icon>
         <span i18n-content="sidebarApps"></span>
       </paper-item>
       <paper-item class="section-menu-item" id="sections-websites"
-          on-tap="onWebsitesTap_">
+          on-tap="onWebsitesTap_" hidden$="[[hideWebsitesButton]]">
         <iron-icon icon="cloud"></iron-icon>
         <span i18n-content="sidebarWebsites"></span>
       </paper-item>
