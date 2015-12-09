@@ -60,10 +60,10 @@ class CC_EXPORT PictureLayer : public Layer {
   scoped_ptr<DisplayListRecordingSource> recording_source_;
   devtools_instrumentation::
       ScopedLayerObjectTracker instrumentation_object_tracker_;
+
   // Invalidation to use the next time update is called.
-  InvalidationRegion pending_invalidation_;
-  // Invalidation from the last time update was called.
-  Region recording_invalidation_;
+  InvalidationRegion invalidation_;
+
   gfx::Rect last_updated_visible_layer_rect_;
 
   int update_source_frame_number_;

@@ -351,6 +351,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   virtual bool DrawsContent() const;
 
   // This methods typically need to be overwritten by derived classes.
+  // TODO(chrishtr): Blink no longer resizes anything during paint. We can
+  // remove this.
   virtual void SavePaintProperties();
   // Returns true iff anything was updated that needs to be committed.
   virtual bool Update();

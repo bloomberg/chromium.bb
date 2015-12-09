@@ -78,9 +78,9 @@ void PictureLayer::PushPropertiesTo(LayerImpl* base_layer) {
       recording_source_->CreateRasterSource(can_use_lcd_text);
   layer_impl->set_gpu_raster_max_texture_size(
       layer_tree_host()->device_viewport_size());
-  layer_impl->UpdateRasterSource(raster_source, &recording_invalidation_,
+  layer_impl->UpdateRasterSource(raster_source, invalidation_.region(),
                                  nullptr);
-  DCHECK(recording_invalidation_.IsEmpty());
+  DCHECK(invalidation_.IsEmpty());
 }
 
 void PictureLayer::SetLayerTreeHost(LayerTreeHost* host) {
@@ -100,10 +100,10 @@ void PictureLayer::SetLayerTreeHost(LayerTreeHost* host) {
 }
 
 void PictureLayer::SetNeedsDisplayRect(const gfx::Rect& layer_rect) {
+  DCHECK(!layer_tree_host() || !layer_tree_host()->in_paint_layer_contents());
   if (!layer_rect.IsEmpty()) {
     // Clamp invalidation to the layer bounds.
-    pending_invalidation_.Union(
-        gfx::IntersectRects(layer_rect, gfx::Rect(bounds())));
+    invalidation_.Union(gfx::IntersectRects(layer_rect, gfx::Rect(bounds())));
   }
   Layer::SetNeedsDisplayRect(layer_rect);
 }
@@ -116,8 +116,7 @@ bool PictureLayer::Update() {
   gfx::Size layer_size = paint_properties().bounds;
 
   if (last_updated_visible_layer_rect_ == update_rect &&
-      recording_source_->GetSize() == layer_size &&
-      pending_invalidation_.IsEmpty()) {
+      recording_source_->GetSize() == layer_size && invalidation_.IsEmpty()) {
     // Only early out if the visible content rect of this layer hasn't changed.
     return updated;
   }
@@ -132,20 +131,13 @@ bool PictureLayer::Update() {
   devtools_instrumentation::ScopedLayerTreeTask update_layer(
       devtools_instrumentation::kUpdateLayer, id(), layer_tree_host()->id());
 
-  // Calling paint in Blink can sometimes cause invalidations, so save
-  // off the invalidation prior to calling update.
-  // TODO(chrishtr): Blink should no longer be invalidating during paint.
-  // Try to remove this code.
-  pending_invalidation_.Swap(&recording_invalidation_);
-  pending_invalidation_.Clear();
-
   // UpdateAndExpandInvalidation will give us an invalidation that covers
   // anything not explicitly recorded in this frame. We give this region
   // to the impl side so that it drops tiles that may not have a recording
   // for them.
   DCHECK(client_);
   updated |= recording_source_->UpdateAndExpandInvalidation(
-      client_, &recording_invalidation_, layer_size, update_rect,
+      client_, invalidation_.region(), layer_size, update_rect,
       update_source_frame_number_, DisplayListRecordingSource::RECORD_NORMALLY);
   last_updated_visible_layer_rect_ = visible_layer_rect();
 
@@ -154,7 +146,7 @@ bool PictureLayer::Update() {
   } else {
     // If this invalidation did not affect the recording source, then it can be
     // cleared as an optimization.
-    recording_invalidation_.Clear();
+    invalidation_.Clear();
   }
 
   return updated;
