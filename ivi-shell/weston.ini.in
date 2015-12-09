@@ -11,6 +11,8 @@ cursor-theme=default
 cursor-size=32
 
 base-layer-id=1000
+base-layer-id-offset=10000
+
 workspace-background-layer-id=2000
 workspace-layer-id=3000
 application-layer-id=4000
