@@ -953,7 +953,7 @@ void WebPluginContainerImpl::computeClipRectsForPlugin(
 
     // The frameRect is already in absolute space, except for scrolling of the root frame.
     windowRect = frameRect();
-    windowRect.moveBy(roundedIntPoint(-rootView->viewRect().location()));
+    windowRect = enclosingIntRect(m_element->document().view()->layoutView()->localToAbsoluteQuad(FloatQuad(FloatRect(frameRect())), TraverseDocumentBoundaries).boundingBox());
 
     clippedLocalRect = enclosingIntRect(unclippedAbsoluteRect);
     unclippedIntLocalRect = clippedLocalRect;

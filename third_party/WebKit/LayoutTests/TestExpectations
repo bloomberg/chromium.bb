@@ -41,6 +41,9 @@ crbug.com/527242 virtual/spv2/paint/invalidation/spv2/cached-change-row-border-w
 crbug.com/527242 virtual/spv2/paint/invalidation/spv2/cached-change-table-border-width.html [ Failure ]
 crbug.com/527242 virtual/spv2/paint/invalidation/spv2/cached-change-tbody-border-width.html [ Failure ]
 
+crbug.com/555381 plugins/webview-plugin-nested-iframe-scroll.html [ NeedsRebaseline ]
+crbug.com/555381 plugins/webview-plugin-scroll.html [ NeedsRebaseline ]
+
 crbug.com/536138 virtual/spv2/paint/invalidation/repaint-subsequence-on-ancestor-clip-change.html [ Failure ]
 
 crbug.com/537172 [ Mac10.6 XP Win10 ] virtual/spv2/paint/invalidation/spv2/background-image-paint-invalidation.html [ Failure ]
@@ -1342,4 +1345,4 @@ crbug.com/564109 [ Win7 XP ]  http/tests/webfont/font-display.html [ Pass Timeou
 crbug.com/558574 [ Win7 ] fast/forms/text/text-font-height-mismatch.html [ Failure ]
 crbug.com/558574 [ Win7 ] fast/text/emphasis.html [ Failure ]
 
-crbug.com/561595 [ XP ] plugins/webview-plugin-scroll.html [ Failure ]
+#crbug.com/561595 [ XP ] plugins/webview-plugin-scroll.html [ Failure ]
