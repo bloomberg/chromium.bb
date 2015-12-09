@@ -44,10 +44,15 @@ BrowserNonClientFrameView* CreateBrowserNonClientFrameView(
   }
 #endif
 
+#if defined(USE_ASH)
   BrowserNonClientFrameViewAsh* frame_view =
       new BrowserNonClientFrameViewAsh(frame, browser_view);
   frame_view->Init();
   return frame_view;
+#else
+  NOTREACHED();
+  return nullptr;
+#endif
 }
 
 }  // namespace chrome
