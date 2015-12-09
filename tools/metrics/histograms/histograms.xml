@@ -63886,6 +63886,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1063" label="CSSSelectorInternalMediaControlsCastButton"/>
   <int value="1064" label="CSSSelectorInternalMediaControlsOverlayCastButton"/>
   <int value="1065" label="CSSSelectorInternalPseudoSpatialNavigationFocus"/>
+  <int value="1066" label="SameOriginTextScript"/>
+  <int value="1067" label="SameOriginApplicationScript"/>
+  <int value="1068" label="SameOriginOtherScript"/>
+  <int value="1069" label="CrossOriginTextScript"/>
+  <int value="1070" label="CrossOriginApplicationScript"/>
+  <int value="1071" label="CrossOriginOtherScript"/>
+  <int value="1072" label="SVG1DOMSVGTests"/>
+  <int value="1073" label="V8SVGViewElement_ViewTarget_AttributeGetter"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">
