@@ -28,6 +28,7 @@
 #include "net/quic/test_tools/mock_clock.h"
 #include "net/quic/test_tools/mock_crypto_client_stream_factory.h"
 #include "net/quic/test_tools/mock_random.h"
+#include "net/quic/test_tools/quic_stream_factory_peer.h"
 #include "net/quic/test_tools/quic_test_packet_maker.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/quic/test_tools/test_task_runner.h"
@@ -79,112 +80,6 @@ vector<TestParams> GetTestParams() {
 }
 
 }  // namespace anonymous
-
-class QuicStreamFactoryPeer {
- public:
-  static const QuicConfig* GetConfig(QuicStreamFactory* factory) {
-    return &factory->config_;
-  }
-
-  static QuicCryptoClientConfig* GetCryptoConfig(QuicStreamFactory* factory) {
-    return &factory->crypto_config_;
-  }
-
-  static bool HasActiveSession(QuicStreamFactory* factory,
-                               const HostPortPair& host_port_pair) {
-    QuicServerId server_id(host_port_pair, PRIVACY_MODE_DISABLED);
-    return factory->HasActiveSession(server_id);
-  }
-
-  static QuicChromiumClientSession* GetActiveSession(
-      QuicStreamFactory* factory,
-      const HostPortPair& host_port_pair) {
-    QuicServerId server_id(host_port_pair, PRIVACY_MODE_DISABLED);
-    DCHECK(factory->HasActiveSession(server_id));
-    return factory->active_sessions_[server_id];
-  }
-
-  static scoped_ptr<QuicHttpStream> CreateFromSession(
-      QuicStreamFactory* factory,
-      QuicChromiumClientSession* session) {
-    return factory->CreateFromSession(session);
-  }
-
-  static bool IsLiveSession(QuicStreamFactory* factory,
-                            QuicChromiumClientSession* session) {
-    for (QuicStreamFactory::SessionIdMap::iterator it =
-             factory->all_sessions_.begin();
-         it != factory->all_sessions_.end(); ++it) {
-      if (it->first == session)
-        return true;
-    }
-    return false;
-  }
-
-  static void SetTaskRunner(QuicStreamFactory* factory,
-                            base::TaskRunner* task_runner) {
-    factory->task_runner_ = task_runner;
-  }
-
-  static int GetNumberOfLossyConnections(QuicStreamFactory* factory,
-                                         uint16 port) {
-    return factory->number_of_lossy_connections_[port];
-  }
-
-  static bool IsQuicDisabled(QuicStreamFactory* factory, uint16 port) {
-    return factory->IsQuicDisabled(port);
-  }
-
-  static bool GetDelayTcpRace(QuicStreamFactory* factory) {
-    return factory->delay_tcp_race_;
-  }
-
-  static void SetDelayTcpRace(QuicStreamFactory* factory, bool delay_tcp_race) {
-    factory->delay_tcp_race_ = delay_tcp_race;
-  }
-
-  static void SetYieldAfterPackets(QuicStreamFactory* factory,
-                                   int yield_after_packets) {
-    factory->yield_after_packets_ = yield_after_packets;
-  }
-
-  static void SetYieldAfterDuration(QuicStreamFactory* factory,
-                                    QuicTime::Delta yield_after_duration) {
-    factory->yield_after_duration_ = yield_after_duration;
-  }
-
-  static size_t GetNumberOfActiveJobs(QuicStreamFactory* factory,
-                                      const QuicServerId& server_id) {
-    return (factory->active_jobs_[server_id]).size();
-  }
-
-  static int GetNumTimeoutsWithOpenStreams(QuicStreamFactory* factory) {
-    return factory->num_timeouts_with_open_streams_;
-  }
-
-  static int GetNumPublicResetsPostHandshake(QuicStreamFactory* factory) {
-    return factory->num_public_resets_post_handshake_;
-  }
-
-  static void MaybeInitialize(QuicStreamFactory* factory) {
-    factory->MaybeInitialize();
-  }
-
-  static bool HasInitializedData(QuicStreamFactory* factory) {
-    return factory->has_initialized_data_;
-  }
-
-  static bool SupportsQuicAtStartUp(QuicStreamFactory* factory,
-                                    HostPortPair host_port_pair) {
-    return ContainsKey(factory->quic_supported_servers_at_startup_,
-                       host_port_pair);
-  }
-
-  static bool CryptoConfigCacheIsEmpty(QuicStreamFactory* factory,
-                                       QuicServerId& quic_server_id) {
-    return factory->CryptoConfigCacheIsEmpty(quic_server_id);
-  }
-};
 
 class MockQuicServerInfo : public QuicServerInfo {
  public:
@@ -2734,6 +2629,21 @@ TEST_P(QuicStreamFactoryTest, MaybeInitialize) {
   EXPECT_EQ(signature, cached->signature());
   ASSERT_EQ(1U, cached->certs().size());
   EXPECT_EQ(test_cert, cached->certs()[0]);
+}
+
+TEST_P(QuicStreamFactoryTest, QuicDoingZeroRTT) {
+  Initialize();
+
+  factory_->set_require_confirmation(true);
+  QuicServerId quic_server_id(host_port_pair_, PRIVACY_MODE_DISABLED);
+  EXPECT_FALSE(factory_->ZeroRTTEnabledFor(quic_server_id));
+
+  factory_->set_require_confirmation(false);
+  EXPECT_FALSE(factory_->ZeroRTTEnabledFor(quic_server_id));
+
+  // Load server config and verify QUIC will do 0RTT.
+  QuicStreamFactoryPeer::CacheDummyServerConfig(factory_.get(), quic_server_id);
+  EXPECT_TRUE(factory_->ZeroRTTEnabledFor(quic_server_id));
 }
 
 TEST_P(QuicStreamFactoryTest, YieldAfterPackets) {

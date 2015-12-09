@@ -1625,6 +1625,8 @@
       'quic/test_tools/quic_spdy_session_peer.h',
       'quic/test_tools/quic_spdy_stream_peer.cc',
       'quic/test_tools/quic_spdy_stream_peer.h',
+      'quic/test_tools/quic_stream_factory_peer.cc',
+      'quic/test_tools/quic_stream_factory_peer.h',
       'quic/test_tools/quic_stream_sequencer_peer.cc',
       'quic/test_tools/quic_stream_sequencer_peer.h',
       'quic/test_tools/quic_sustained_bandwidth_recorder_peer.cc',

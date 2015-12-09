@@ -27,6 +27,8 @@
 #include "net/log/net_log.h"
 #include "net/proxy/proxy_info.h"
 #include "net/proxy/proxy_service.h"
+#include "net/quic/quic_server_id.h"
+#include "net/quic/test_tools/quic_stream_factory_peer.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/mock_client_socket_pool_manager.h"
 #include "net/socket/next_proto.h"
@@ -115,7 +117,6 @@ class MockHttpStreamFactoryImplForPreconnect : public HttpStreamFactoryImpl {
       : HttpStreamFactoryImpl(session, for_websockets),
         preconnect_done_(false),
         waiting_for_preconnect_(false) {}
-
 
   void WaitForPreconnects() {
     while (!preconnect_done_) {
@@ -641,6 +642,7 @@ TEST_P(HttpStreamFactoryTest, UnreachableQuicProxyMarkedAsBad) {
 
     HttpNetworkSession::Params params;
     params.enable_quic = true;
+    params.quic_disable_preconnect_if_0rtt = false;
     params.enable_quic_for_proxies = true;
     scoped_refptr<SSLConfigServiceDefaults> ssl_config_service(
         new SSLConfigServiceDefaults);
@@ -702,6 +704,7 @@ TEST_P(HttpStreamFactoryTest, QuicLossyProxyMarkedAsBad) {
   HttpNetworkSession::Params params;
   params.enable_quic = true;
   params.enable_quic_for_proxies = true;
+  params.quic_disable_preconnect_if_0rtt = false;
   scoped_refptr<SSLConfigServiceDefaults> ssl_config_service(
       new SSLConfigServiceDefaults);
   HttpServerPropertiesImpl http_server_properties;
@@ -748,6 +751,105 @@ TEST_P(HttpStreamFactoryTest, QuicLossyProxyMarkedAsBad) {
 
   ProxyRetryInfoMap::const_iterator iter = retry_info.find("quic://bad:99");
   EXPECT_TRUE(iter != retry_info.end());
+}
+
+TEST_P(HttpStreamFactoryTest, UsePreConnectIfNoZeroRTT) {
+  for (int num_streams = 1; num_streams < 3; ++num_streams) {
+    GURL url = GURL("https://www.google.com");
+
+    // Set up QUIC as alternative_service.
+    HttpServerPropertiesImpl http_server_properties;
+    const AlternativeService alternative_service(QUIC, url.host().c_str(),
+                                                 url.IntPort());
+    AlternativeServiceInfoVector alternative_service_info_vector;
+    base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
+    alternative_service_info_vector.push_back(
+        AlternativeServiceInfo(alternative_service, 1.0, expiration));
+    HostPortPair host_port_pair(alternative_service.host_port_pair());
+    http_server_properties.SetAlternativeServices(
+        host_port_pair, alternative_service_info_vector);
+
+    SpdySessionDependencies session_deps(
+        GetParam(), ProxyService::CreateFixed("http_proxy"));
+
+    // Setup params to disable preconnect, but QUIC doesn't 0RTT.
+    HttpNetworkSession::Params params =
+        SpdySessionDependencies::CreateSessionParams(&session_deps);
+    params.enable_quic = true;
+    params.quic_disable_preconnect_if_0rtt = true;
+    params.http_server_properties = http_server_properties.GetWeakPtr();
+
+    scoped_ptr<HttpNetworkSession> session(new HttpNetworkSession(params));
+    HttpNetworkSessionPeer peer(session.get());
+    HostPortPair proxy_host("http_proxy", 80);
+    CapturePreconnectsHttpProxySocketPool* http_proxy_pool =
+        new CapturePreconnectsHttpProxySocketPool(
+            session_deps.host_resolver.get(), session_deps.cert_verifier.get());
+    CapturePreconnectsSSLSocketPool* ssl_conn_pool =
+        new CapturePreconnectsSSLSocketPool(session_deps.host_resolver.get(),
+                                            session_deps.cert_verifier.get());
+    scoped_ptr<MockClientSocketPoolManager> mock_pool_manager(
+        new MockClientSocketPoolManager);
+    mock_pool_manager->SetSocketPoolForHTTPProxy(proxy_host, http_proxy_pool);
+    mock_pool_manager->SetSocketPoolForSSLWithProxy(proxy_host, ssl_conn_pool);
+    peer.SetClientSocketPoolManager(mock_pool_manager.Pass());
+    PreconnectHelperForURL(num_streams, url, session.get());
+    EXPECT_EQ(num_streams, ssl_conn_pool->last_num_streams());
+  }
+}
+
+TEST_P(HttpStreamFactoryTest, QuicDisablePreConnectIfZeroRtt) {
+  for (int num_streams = 1; num_streams < 3; ++num_streams) {
+    GURL url = GURL("https://www.google.com");
+
+    // Set up QUIC as alternative_service.
+    HttpServerPropertiesImpl http_server_properties;
+    const AlternativeService alternative_service(QUIC, "www.google.com", 443);
+    AlternativeServiceInfoVector alternative_service_info_vector;
+    base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
+    alternative_service_info_vector.push_back(
+        AlternativeServiceInfo(alternative_service, 1.0, expiration));
+    HostPortPair host_port_pair(alternative_service.host_port_pair());
+    http_server_properties.SetAlternativeServices(
+        host_port_pair, alternative_service_info_vector);
+
+    SpdySessionDependencies session_deps(GetParam());
+
+    // Setup params to disable preconnect, but QUIC does 0RTT.
+    HttpNetworkSession::Params params =
+        SpdySessionDependencies::CreateSessionParams(&session_deps);
+    params.enable_quic = true;
+    params.quic_disable_preconnect_if_0rtt = true;
+    params.http_server_properties = http_server_properties.GetWeakPtr();
+
+    scoped_ptr<HttpNetworkSession> session(new HttpNetworkSession(params));
+
+    // Setup 0RTT for QUIC.
+    QuicStreamFactory* factory = session->quic_stream_factory();
+    factory->set_require_confirmation(false);
+    test::QuicStreamFactoryPeer::CacheDummyServerConfig(
+        factory, QuicServerId(host_port_pair, PRIVACY_MODE_DISABLED));
+
+    HttpNetworkSessionPeer peer(session.get());
+    CapturePreconnectsTransportSocketPool* transport_conn_pool =
+        new CapturePreconnectsTransportSocketPool(
+            session_deps.host_resolver.get(), session_deps.cert_verifier.get());
+    scoped_ptr<MockClientSocketPoolManager> mock_pool_manager(
+        new MockClientSocketPoolManager);
+    mock_pool_manager->SetTransportSocketPool(transport_conn_pool);
+    peer.SetClientSocketPoolManager(mock_pool_manager.Pass());
+
+    HttpRequestInfo request;
+    request.method = "GET";
+    request.url = url;
+    request.load_flags = 0;
+
+    SSLConfig ssl_config;
+    session->ssl_config_service()->GetSSLConfig(&ssl_config);
+    session->http_stream_factory()->PreconnectStreams(num_streams, request,
+                                                      ssl_config, ssl_config);
+    EXPECT_EQ(-1, transport_conn_pool->last_num_streams());
+  }
 }
 
 namespace {

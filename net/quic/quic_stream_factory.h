@@ -228,6 +228,8 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
 
   void set_require_confirmation(bool require_confirmation);
 
+  bool ZeroRTTEnabledFor(const QuicServerId& server_id);
+
   // It returns the amount of time waiting job should be delayed.
   base::TimeDelta GetTimeDelayForWaitingJob(const QuicServerId& server_id);
 

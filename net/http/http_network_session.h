@@ -174,6 +174,8 @@ class NET_EXPORT HttpNetworkSession
     bool quic_close_sessions_on_ip_change;
     // Specifes QUIC idle connection state lifetime.
     int quic_idle_connection_timeout_seconds;
+    // If true, disable preconnections if QUIC can do 0RTT.
+    bool quic_disable_preconnect_if_0rtt;
     ProxyDelegate* proxy_delegate;
   };
 

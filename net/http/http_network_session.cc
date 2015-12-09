@@ -124,6 +124,7 @@ HttpNetworkSession::Params::Params()
       quic_threshold_timeouts_streams_open(0),
       quic_close_sessions_on_ip_change(false),
       quic_idle_connection_timeout_seconds(kIdleConnectionTimeoutSeconds),
+      quic_disable_preconnect_if_0rtt(false),
       proxy_delegate(NULL) {
   quic_supported_versions.push_back(QUIC_VERSION_25);
 }

@@ -685,6 +685,10 @@ void QuicStreamFactory::set_require_confirmation(bool require_confirmation) {
   }
 }
 
+bool QuicStreamFactory::ZeroRTTEnabledFor(const QuicServerId& quic_server_id) {
+  return !(require_confirmation_ || CryptoConfigCacheIsEmpty(quic_server_id));
+}
+
 base::TimeDelta QuicStreamFactory::GetTimeDelayForWaitingJob(
     const QuicServerId& server_id) {
   if (!delay_tcp_race_ || require_confirmation_)

@@ -14,6 +14,7 @@
 #include "net/http/http_stream_factory_impl_job.h"
 #include "net/http/http_stream_factory_impl_request.h"
 #include "net/log/net_log.h"
+#include "net/quic/quic_server_id.h"
 #include "net/spdy/spdy_http_stream.h"
 #include "url/gurl.h"
 
@@ -134,6 +135,12 @@ void HttpStreamFactoryImpl::PreconnectStreams(
   if (!alternative_service_vector.empty()) {
     // TODO(bnc): Pass on multiple alternative services to Job.
     alternative_service = alternative_service_vector[0];
+    if (session_->params().quic_disable_preconnect_if_0rtt &&
+        alternative_service.protocol == QUIC &&
+        session_->quic_stream_factory()->ZeroRTTEnabledFor(QuicServerId(
+            alternative_service.host_port_pair(), request_info.privacy_mode))) {
+      return;
+    }
   }
 
   // Due to how the socket pools handle priorities and idle sockets, only IDLE
@@ -219,9 +226,8 @@ AlternativeServiceVector HttpStreamFactoryImpl::GetAlternativeServicesFor(
     if (session_->quic_stream_factory()->IsQuicDisabled(origin.port()))
       continue;
 
-    if (!original_url.SchemeIs("https")) {
+    if (!original_url.SchemeIs("https"))
       continue;
-    }
 
     enabled_alternative_service_vector.push_back(alternative_service);
   }
