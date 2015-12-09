@@ -183,15 +183,41 @@ class ProofVerifierChromiumTest : public ::testing::Test {
     certs->push_back(der_bytes);
   }
 
+  std::string GetSCTListForTesting() {
+    const std::string sct = ct::GetTestSignedCertificateTimestamp();
+    std::string sct_list;
+    ct::EncodeSCTListForTesting(sct, &sct_list);
+    return sct_list;
+  }
+
+  std::string GetCorruptSCTListForTesting() {
+    std::string sct = ct::GetTestSignedCertificateTimestamp();
+    sct[15] = 't';  // Corrupt a byte inside SCT.
+    std::string sct_list;
+    ct::EncodeSCTListForTesting(sct, &sct_list);
+    return sct_list;
+  }
+
+  bool CheckForSingleVerifiedSCTInResult(const ct::CTVerifyResult& result) {
+    return (result.verified_scts.size() == 1U) && result.invalid_scts.empty() &&
+           result.unknown_logs_scts.empty() &&
+           result.verified_scts[0]->log_description == kLogDescription;
+  }
+
+  bool CheckForSCTOrigin(const ct::CTVerifyResult& result,
+                         ct::SignedCertificateTimestamp::Origin origin) {
+    return (result.verified_scts.size() > 0) &&
+           (result.verified_scts[0]->origin == origin);
+  }
+
   void CheckSCT(bool sct_expected_ok) {
     ProofVerifyDetailsChromium* proof_details =
         reinterpret_cast<ProofVerifyDetailsChromium*>(details_.get());
     const ct::CTVerifyResult& ct_verify_result =
         proof_details->ct_verify_result;
     if (sct_expected_ok) {
-      ASSERT_TRUE(ct::CheckForSingleVerifiedSCTInResult(ct_verify_result,
-                                                        kLogDescription));
-      ASSERT_TRUE(ct::CheckForSCTOrigin(
+      ASSERT_TRUE(CheckForSingleVerifiedSCTInResult(ct_verify_result));
+      ASSERT_TRUE(CheckForSCTOrigin(
           ct_verify_result,
           ct::SignedCertificateTimestamp::SCT_FROM_TLS_EXTENSION));
     } else {
@@ -235,7 +261,7 @@ TEST_F(ProofVerifierChromiumTest, ValidSCTList) {
   scoped_ptr<DummyProofVerifierCallback> callback(
       new DummyProofVerifierCallback);
   QuicAsyncStatus status = proof_verifier.VerifyProof(
-      kTestHostname, kTestConfig, certs_, ct::GetSCTListForTesting(), "",
+      kTestHostname, kTestConfig, certs_, GetSCTListForTesting(), "",
       verify_context_.get(), &error_details_, &details_, callback.get());
   ASSERT_EQ(QUIC_FAILURE, status);
   CheckSCT(/*sct_expected_ok=*/true);
@@ -253,7 +279,7 @@ TEST_F(ProofVerifierChromiumTest, InvalidSCTList) {
   scoped_ptr<DummyProofVerifierCallback> callback(
       new DummyProofVerifierCallback);
   QuicAsyncStatus status = proof_verifier.VerifyProof(
-      kTestHostname, kTestConfig, certs_, ct::GetSCTListWithInvalidSCT(), "",
+      kTestHostname, kTestConfig, certs_, GetCorruptSCTListForTesting(), "",
       verify_context_.get(), &error_details_, &details_, callback.get());
   ASSERT_EQ(QUIC_FAILURE, status);
   CheckSCT(/*sct_expected_ok=*/false);
