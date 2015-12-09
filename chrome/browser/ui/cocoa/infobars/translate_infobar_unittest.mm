@@ -222,7 +222,9 @@ TEST_F(TranslationInfoBarTest, Bug36666) {
     .Times(0);
 
   int arbitrary_index = 2;
-  [infobar_controller_ sourceLanguageModified:arbitrary_index];
+  NSString* arbitrary_language = @"es";
+  [infobar_controller_ sourceLanguageModified:arbitrary_language
+                            withLanguageIndex:arbitrary_index];
   EXPECT_CALL(*infobar_delegate(), Translate())
     .Times(0);
 }

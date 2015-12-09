@@ -109,14 +109,14 @@ void TranslateInfoBarDelegate::Create(
     infobar_manager->AddInfoBar(infobar.Pass());
 }
 
-void TranslateInfoBarDelegate::UpdateOriginalLanguageIndex(
-    size_t language_index) {
-  ui_delegate_.UpdateOriginalLanguageIndex(language_index);
+void TranslateInfoBarDelegate::UpdateOriginalLanguage(
+    const std::string& language_code) {
+  ui_delegate_.UpdateOriginalLanguage(language_code);
 }
 
-void TranslateInfoBarDelegate::UpdateTargetLanguageIndex(
-    size_t language_index) {
-  ui_delegate_.UpdateTargetLanguageIndex(language_index);
+void TranslateInfoBarDelegate::UpdateTargetLanguage(
+    const std::string& language_code) {
+  ui_delegate_.UpdateTargetLanguage(language_code);
 }
 
 void TranslateInfoBarDelegate::Translate() {
@@ -190,10 +190,8 @@ void TranslateInfoBarDelegate::NeverTranslatePageLanguage() {
 
 base::string16 TranslateInfoBarDelegate::GetMessageInfoBarText() {
   if (step_ == translate::TRANSLATE_STEP_TRANSLATING) {
-    base::string16 target_language_name =
-        language_name_at(target_language_index());
     return l10n_util::GetStringFUTF16(IDS_TRANSLATE_INFOBAR_TRANSLATING_TO,
-                                      target_language_name);
+                                      target_language_name());
   }
 
   DCHECK_EQ(translate::TRANSLATE_STEP_TRANSLATE_ERROR, step_);
@@ -215,11 +213,10 @@ base::string16 TranslateInfoBarDelegate::GetMessageInfoBarText() {
     case TranslateErrors::UNSUPPORTED_LANGUAGE:
       return l10n_util::GetStringFUTF16(
           IDS_TRANSLATE_INFOBAR_UNSUPPORTED_PAGE_LANGUAGE,
-          language_name_at(target_language_index()));
+          target_language_name());
     case TranslateErrors::IDENTICAL_LANGUAGES:
       return l10n_util::GetStringFUTF16(
-          IDS_TRANSLATE_INFOBAR_ERROR_SAME_LANGUAGE,
-          language_name_at(target_language_index()));
+          IDS_TRANSLATE_INFOBAR_ERROR_SAME_LANGUAGE, target_language_name());
     default:
       NOTREACHED();
       return base::string16();

@@ -27,8 +27,14 @@ bool VerifyControlOrderAndSpacing(id before, id after);
 NSTextField* CreateLabel(NSRect bounds);
 
 // Adds an item with the specified properties to |menu|.
-void AddMenuItem(NSMenu *menu, id target, SEL selector, NSString* title,
-    int tag, bool enabled, bool checked);
+void AddMenuItem(NSMenu* menu,
+                 id target,
+                 SEL selector,
+                 NSString* title,
+                 int tag,
+                 bool enabled,
+                 bool checked,
+                 NSString* representedObj);
 
 }  // namespace InfoBarUtilities
 

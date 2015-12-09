@@ -559,7 +559,7 @@ TEST_F(TranslateManagerRenderViewHostTest, NormalTranslate) {
   // Simulate changing the original language and translating.
   process()->sink().ClearMessages();
   std::string new_original_lang = infobar->language_code_at(0);
-  infobar->UpdateOriginalLanguageIndex(0);
+  infobar->UpdateOriginalLanguage(new_original_lang);
   infobar->Translate();
   EXPECT_TRUE(GetTranslateMessage(&original_lang, &target_lang));
   EXPECT_EQ(new_original_lang, original_lang);
@@ -572,7 +572,7 @@ TEST_F(TranslateManagerRenderViewHostTest, NormalTranslate) {
   // Simulate changing the target language and translating.
   process()->sink().ClearMessages();
   std::string new_target_lang = infobar->language_code_at(1);
-  infobar->UpdateTargetLanguageIndex(1);
+  infobar->UpdateTargetLanguage(new_target_lang);
   infobar->Translate();
   EXPECT_TRUE(GetTranslateMessage(&original_lang, &target_lang));
   EXPECT_EQ(new_original_lang, original_lang);
@@ -589,7 +589,7 @@ TEST_F(TranslateManagerRenderViewHostTest, NormalTranslate) {
   ASSERT_TRUE(infobar != NULL);
   EXPECT_EQ(translate::TRANSLATE_STEP_BEFORE_TRANSLATE,
             infobar->translate_step());
-  infobar->UpdateTargetLanguageIndex(1);
+  infobar->UpdateTargetLanguage(new_target_lang);
   infobar->ToggleAlwaysTranslate();
   ReloadAndWait(true);
   infobar = GetTranslateInfoBar();

@@ -44,8 +44,8 @@
     [infoBarView addLeftIcon:icon.ToUIImage()];
   // Main text.
   const bool autodeterminedSourceLanguage =
-      _translateInfoBarDelegate->original_language_index() ==
-      translate::TranslateInfoBarDelegate::kNoIndex;
+      _translateInfoBarDelegate->original_language_code() ==
+      translate::kUnknownLanguageCode;
   bool swappedLanguageButtons;
   std::vector<base::string16> strings;
   translate::TranslateInfoBarDelegate::GetAfterTranslateStrings(
@@ -56,12 +56,11 @@
   NSString* label3 = autodeterminedSourceLanguage
                          ? @""
                          : base::SysUTF16ToNSString(strings[2]);
-  base::string16 stdOriginal = _translateInfoBarDelegate->language_name_at(
-      _translateInfoBarDelegate->original_language_index());
+  base::string16 stdOriginal =
+      _translateInfoBarDelegate->original_language_name();
   NSString* original = base::SysUTF16ToNSString(stdOriginal);
-  NSString* target =
-      base::SysUTF16ToNSString(_translateInfoBarDelegate->language_name_at(
-          _translateInfoBarDelegate->target_language_index()));
+  NSString* target = base::SysUTF16ToNSString(
+      _translateInfoBarDelegate->target_language_name());
   base::scoped_nsobject<NSString> label(
       [[NSString alloc] initWithFormat:@"%@ %@ %@%@ %@.", label1, original,
                                        label2, label3, target]);

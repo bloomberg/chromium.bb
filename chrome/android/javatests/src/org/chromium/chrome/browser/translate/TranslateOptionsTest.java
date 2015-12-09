@@ -10,21 +10,33 @@ import android.test.suitebuilder.annotation.SmallTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.infobar.TranslateOptions;
 
+import java.util.ArrayList;
+
 /**
  * Test for TranslateOptions.
  */
 public class TranslateOptionsTest extends AndroidTestCase {
-    private static final String[] LANGUAGES = {"English", "Spanish", "French"};
     private static final boolean ALWAYS_TRANSLATE = true;
+    private ArrayList<TranslateOptions.TranslateLanguagePair> mLanguages = null;
+
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
+        mLanguages = new ArrayList<TranslateOptions.TranslateLanguagePair>();
+        mLanguages.add(new TranslateOptions.TranslateLanguagePair("en", "English"));
+        mLanguages.add(new TranslateOptions.TranslateLanguagePair("es", "Spanish"));
+        mLanguages.add(new TranslateOptions.TranslateLanguagePair("fr", "French"));
+    }
 
     @SmallTest
     @Feature({"Translate"})
     public void testNoChanges() {
-        TranslateOptions options = new TranslateOptions(0, 1, LANGUAGES, ALWAYS_TRANSLATE, false);
-        assertEquals("English", options.sourceLanguage());
-        assertEquals("Spanish", options.targetLanguage());
-        assertEquals(0, options.sourceLanguageIndex());
-        assertEquals(1, options.targetLanguageIndex());
+        TranslateOptions options =
+                new TranslateOptions("en", "es", mLanguages, ALWAYS_TRANSLATE, false);
+        assertEquals("English", options.sourceLanguageName());
+        assertEquals("Spanish", options.targetLanguageName());
+        assertEquals("en", options.sourceLanguageCode());
+        assertEquals("es", options.targetLanguageCode());
         assertFalse(options.neverTranslateLanguageState());
         assertTrue(options.alwaysTranslateLanguageState());
         assertFalse(options.neverTranslateDomainState());
@@ -34,48 +46,52 @@ public class TranslateOptionsTest extends AndroidTestCase {
     @SmallTest
     @Feature({"Translate"})
     public void testBasicLanguageChanges() {
-        TranslateOptions options = new TranslateOptions(0, 1, LANGUAGES, !ALWAYS_TRANSLATE, true);
-        options.setTargetLanguage(2);
-        options.setSourceLanguage(1);
-        assertEquals("Spanish", options.sourceLanguage());
-        assertEquals("French", options.targetLanguage());
-        assertEquals(1, options.sourceLanguageIndex());
-        assertEquals(2, options.targetLanguageIndex());
+        TranslateOptions options =
+                new TranslateOptions("en", "es", mLanguages, !ALWAYS_TRANSLATE, true);
+        options.setTargetLanguage("fr");
+        options.setSourceLanguage("en");
+        assertEquals("English", options.sourceLanguageName());
+        assertEquals("French", options.targetLanguageName());
+        assertEquals("en", options.sourceLanguageCode());
+        assertEquals("fr", options.targetLanguageCode());
         assertTrue(options.triggeredFromMenu());
+
         assertTrue(options.optionsChanged());
 
         // Switch back to the original
-        options.setSourceLanguage(0);
-        options.setTargetLanguage(1);
+        options.setSourceLanguage("en");
+        options.setTargetLanguage("es");
         assertFalse(options.optionsChanged());
     }
 
     @SmallTest
     @Feature({"Translate"})
     public void testInvalidLanguageChanges() {
-        TranslateOptions options = new TranslateOptions(0, 1, LANGUAGES, ALWAYS_TRANSLATE, false);
+        TranslateOptions options =
+                new TranslateOptions("en", "es", mLanguages, ALWAYS_TRANSLATE, false);
 
         // Same target language as source
-        assertFalse(options.setTargetLanguage(0));
+        assertFalse(options.setTargetLanguage("en"));
         assertFalse(options.optionsChanged());
 
-        // Target language out of range
-        assertFalse(options.setTargetLanguage(23));
+        // Target language does not exist
+        assertFalse(options.setTargetLanguage("aaa"));
         assertFalse(options.optionsChanged());
 
         // Same source and target
-        assertFalse(options.setSourceLanguage(1));
+        assertFalse(options.setSourceLanguage("es"));
         assertFalse(options.optionsChanged());
 
-        // Source language out of range
-        assertFalse(options.setSourceLanguage(23));
+        // Source language does not exist
+        assertFalse(options.setSourceLanguage("bbb"));
         assertFalse(options.optionsChanged());
     }
 
     @SmallTest
     @Feature({"Translate"})
     public void testBasicOptionsChanges() {
-        TranslateOptions options = new TranslateOptions(0, 1, LANGUAGES, !ALWAYS_TRANSLATE, false);
+        TranslateOptions options =
+                new TranslateOptions("en", "es", mLanguages, !ALWAYS_TRANSLATE, false);
         assertFalse(options.optionsChanged());
         options.toggleNeverTranslateDomainState(true);
         assertTrue(options.neverTranslateDomainState());
@@ -99,9 +115,11 @@ public class TranslateOptionsTest extends AndroidTestCase {
     @SmallTest
     @Feature({"Translate"})
     public void testInvalidOptionsChanges() {
-        TranslateOptions options = new TranslateOptions(0, 1, LANGUAGES, ALWAYS_TRANSLATE, false);
+        TranslateOptions options =
+                new TranslateOptions("en", "es", mLanguages, ALWAYS_TRANSLATE, false);
 
-        // Never translate language should not work, but never translate domain should
+        // Never translate language should not work, but never translate domain
+        // should
         assertFalse(options.toggleNeverTranslateLanguageState(true));
         assertTrue(options.toggleNeverTranslateDomainState(true));
         assertTrue(options.optionsChanged());

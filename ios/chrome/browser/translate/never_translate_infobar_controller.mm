@@ -42,8 +42,8 @@
   if (!icon.IsEmpty())
     [infoBarView addLeftIcon:icon.ToUIImage()];
   // Main text.
-  base::string16 originalLanguage = translateInfoBarDelegate->language_name_at(
-      translateInfoBarDelegate->original_language_index());
+  base::string16 originalLanguage =
+      translateInfoBarDelegate->original_language_name();
   [infoBarView addLabel:l10n_util::GetNSStringF(
                             IDS_TRANSLATE_INFOBAR_NEVER_MESSAGE_IOS,
                             provider->GetStringProvider()->GetProductName(),

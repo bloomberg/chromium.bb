@@ -83,23 +83,25 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
 
   TranslateErrors::Type error_type() const { return error_type_; }
 
-  size_t original_language_index() const {
-    return ui_delegate_.GetOriginalLanguageIndex();
-  }
-  void UpdateOriginalLanguageIndex(size_t language_index);
-
-  size_t target_language_index() const {
-    return ui_delegate_.GetTargetLanguageIndex();
-  }
-  void UpdateTargetLanguageIndex(size_t language_index);
-
-  // Convenience methods.
   std::string original_language_code() const {
     return ui_delegate_.GetOriginalLanguageCode();
   }
+
+  base::string16 original_language_name() const {
+    return language_name_at(ui_delegate_.GetOriginalLanguageIndex());
+  }
+
+  void UpdateOriginalLanguage(const std::string& language_code);
+
   std::string target_language_code() const {
     return ui_delegate_.GetTargetLanguageCode();
   }
+
+  base::string16 target_language_name() const {
+    return language_name_at(ui_delegate_.GetTargetLanguageIndex());
+  }
+
+  void UpdateTargetLanguage(const std::string& language_code);
 
   // Returns true if the current infobar indicates an error (in which case it
   // should get a yellow background instead of a blue one).

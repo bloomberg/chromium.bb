@@ -24,12 +24,10 @@ public class TranslateAlwaysPanel implements TranslateSubPanel {
     @Override
     public void createContent(Context context, InfoBarLayout layout) {
         layout.setMessage(context.getString(
-                R.string.translate_infobar_translation_done, mOptions.targetLanguage()));
-
+                R.string.translate_infobar_translation_done, mOptions.targetLanguageName()));
         if (!mOptions.triggeredFromMenu()) {
             createAlwaysToggle(layout, mOptions);
         }
-
         layout.setButtons(context.getString(R.string.translate_button_done),
                 context.getString(R.string.translate_show_original));
     }
@@ -49,7 +47,7 @@ public class TranslateAlwaysPanel implements TranslateSubPanel {
     static void createAlwaysToggle(InfoBarLayout layout, TranslateOptions options) {
         InfoBarControlLayout controlLayout = layout.addControlLayout();
         String description = layout.getContext().getString(
-                R.string.translate_always_text, options.sourceLanguage());
+                R.string.translate_always_text, options.sourceLanguageName());
         controlLayout.addSwitch(0, description, R.id.translate_infobar_always_toggle,
                 options.alwaysTranslateLanguageState());
     }

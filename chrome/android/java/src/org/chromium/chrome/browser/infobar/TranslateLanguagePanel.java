@@ -22,7 +22,6 @@ import android.widget.TextView;
 import org.chromium.chrome.R;
 
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Language panel shown in the translate infobar.
@@ -92,8 +91,8 @@ public class TranslateLanguagePanel
     @Override
     public void onButtonClicked(boolean primary) {
         if (primary) {
-            mOptions.setSourceLanguage(mSessionOptions.sourceLanguageIndex());
-            mOptions.setTargetLanguage(mSessionOptions.targetLanguageIndex());
+            mOptions.setSourceLanguage(mSessionOptions.sourceLanguageCode());
+            mOptions.setTargetLanguage(mSessionOptions.targetLanguageCode());
         }
         mListener.onPanelClosed(ActionType.NONE);
     }
@@ -105,8 +104,8 @@ public class TranslateLanguagePanel
                 LANGUAGE_TYPE_TARGET);
 
         // Determine how wide each spinner needs to be to avoid truncating its children.
-        mSourceAdapter.addAll(createSpinnerLanguages(-1));
-        mTargetAdapter.addAll(createSpinnerLanguages(-1));
+        mSourceAdapter.addAll(createSpinnerLanguages(""));
+        mTargetAdapter.addAll(createSpinnerLanguages(""));
         mSourceAdapter.measureWidthRequiredForView();
         mTargetAdapter.measureWidthRequiredForView();
 
@@ -122,10 +121,8 @@ public class TranslateLanguagePanel
         mSourceAdapter.clear();
         mTargetAdapter.clear();
 
-        int sourceAvoidLanguage = mSessionOptions.targetLanguageIndex();
-        int targetAvoidLanguage = mSessionOptions.sourceLanguageIndex();
-        mSourceAdapter.addAll(createSpinnerLanguages(sourceAvoidLanguage));
-        mTargetAdapter.addAll(createSpinnerLanguages(targetAvoidLanguage));
+        mSourceAdapter.addAll(createSpinnerLanguages(mSessionOptions.targetLanguageCode()));
+        mTargetAdapter.addAll(createSpinnerLanguages(mSessionOptions.sourceLanguageCode()));
 
         int originalSourceSelection = mSourceSpinner.getSelectedItemPosition();
         int newSourceSelection = getSelectionPosition(LANGUAGE_TYPE_SOURCE);
@@ -141,14 +138,29 @@ public class TranslateLanguagePanel
     }
 
     private int getSelectionPosition(int languageType) {
-        int position = languageType == LANGUAGE_TYPE_SOURCE ? mSessionOptions.sourceLanguageIndex()
-                : mSessionOptions.targetLanguageIndex();
+        String position_code = languageType == LANGUAGE_TYPE_SOURCE
+                ? mSessionOptions.sourceLanguageCode()
+                : mSessionOptions.targetLanguageCode();
 
-        // Since the source and target languages cannot appear in both spinners, the index for the
-        // source language can be off by one if comes after the target language alphabetically (and
-        // vice versa).
-        int opposite = languageType == LANGUAGE_TYPE_SOURCE ? mSessionOptions.targetLanguageIndex()
-                : mSessionOptions.sourceLanguageIndex();
+        // Since the source and target languages cannot appear in both spinners,
+        // the index for the source language can be off by one if comes after the
+        // target language alphabetically (and vice versa).
+        String opposite_code = languageType == LANGUAGE_TYPE_SOURCE
+                ? mSessionOptions.targetLanguageCode()
+                : mSessionOptions.sourceLanguageCode();
+
+        int position = -1;
+        int opposite = -1;
+
+        for (int i = 0; i < mSessionOptions.allLanguages().size(); ++i) {
+            if (mSessionOptions.allLanguages().get(i).mLanguageCode.equals(position_code)) {
+                position = i;
+            }
+            if (mSessionOptions.allLanguages().get(i).mLanguageCode.equals(opposite_code)) {
+                opposite = i;
+            }
+            if (opposite > -1 && position > -1) break;
+        }
         if (opposite < position) position -= 1;
 
         return position;
@@ -157,11 +169,11 @@ public class TranslateLanguagePanel
     @Override
     public void onItemSelected(AdapterView<?> adapter, View view, int position, long id) {
         Spinner spinner = (Spinner) adapter;
-        int newId = ((SpinnerLanguageElement) spinner.getSelectedItem()).getLanguageId();
+        String newCode = ((SpinnerLanguageElement) spinner.getSelectedItem()).getLanguageCode();
         if (spinner == mSourceSpinner) {
-            mSessionOptions.setSourceLanguage(newId);
+            mSessionOptions.setSourceLanguage(newCode);
         } else {
-            mSessionOptions.setTargetLanguage(newId);
+            mSessionOptions.setTargetLanguage(newCode);
         }
         reloadSpinners();
     }
@@ -172,14 +184,15 @@ public class TranslateLanguagePanel
 
     /**
      * Determines what languages will be shown in the Spinner.
-     * @param avoidLanguage Index of the language to avoid.  Use -1 to display all languages.
+     * @param avoidCode ISO code of the language to avoid displaying.
+     * Use "" to display all languages.
      */
-    private ArrayList<SpinnerLanguageElement> createSpinnerLanguages(int avoidLanguage) {
+    private ArrayList<SpinnerLanguageElement> createSpinnerLanguages(String avoidCode) {
         ArrayList<SpinnerLanguageElement> result = new ArrayList<SpinnerLanguageElement>();
-        List<String> languages = mSessionOptions.allLanguages();
-        for (int i = 0; i <  languages.size(); ++i) {
-            if (i != avoidLanguage) {
-                result.add(new SpinnerLanguageElement(languages.get(i), i));
+        for (TranslateOptions.TranslateLanguagePair language : mSessionOptions.allLanguages()) {
+            if (!language.mLanguageCode.equals(avoidCode)) {
+                result.add(new SpinnerLanguageElement(
+                        language.mLanguageRepresentation, language.mLanguageCode));
             }
         }
         return result;
@@ -263,15 +276,15 @@ public class TranslateLanguagePanel
      */
     private static class SpinnerLanguageElement {
         private final String mLanguageName;
-        private final int mLanguageId;
+        private final String mLanguageCode;
 
-        public SpinnerLanguageElement(String languageName, int languageId) {
+        public SpinnerLanguageElement(String languageName, String languageCode) {
             mLanguageName = languageName;
-            mLanguageId = languageId;
+            mLanguageCode = languageCode;
         }
 
-        public int getLanguageId() {
-            return mLanguageId;
+        public String getLanguageCode() {
+            return mLanguageCode;
         }
 
         /**

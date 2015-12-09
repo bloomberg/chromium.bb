@@ -87,10 +87,13 @@
 - (void)removeOkCancelButtons;
 
 // Called when the source or target language selection changes in a menu.
+// |newLanguageCode| is the ISO language of the newly selected item.
 // |newLanguageIdx| is the index of the newly selected item in the appropriate
 // menu.
-- (void)sourceLanguageModified:(NSInteger)newLanguageIdx;
-- (void)targetLanguageModified:(NSInteger)newLanguageIdx;
+- (void)sourceLanguageModified:(NSString*)newLanguageCode
+             withLanguageIndex:(NSInteger)newLanguageIdx;
+- (void)targetLanguageModified:(NSString*)newLanguageCode
+             withLanguageIndex:(NSInteger)newLanguageIdx;
 
 // Called when an item in one of the toolbar's language or options
 // menus is selected.

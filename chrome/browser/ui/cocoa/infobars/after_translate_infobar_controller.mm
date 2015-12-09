@@ -6,6 +6,7 @@
 
 #include "base/strings/sys_string_conversions.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_utilities.h"
+#include "components/translate/core/common/translate_constants.h"
 
 using InfoBarUtilities::MoveControl;
 using InfoBarUtilities::VerifyControlOrderAndSpacing;
@@ -13,9 +14,8 @@ using InfoBarUtilities::VerifyControlOrderAndSpacing;
 @implementation AfterTranslateInfobarController
 
 - (void)loadLabelText {
-  autodeterminedSourceLanguage_ =
-      ([self delegate]->original_language_index() ==
-       translate::TranslateInfoBarDelegate::kNoIndex);
+  autodeterminedSourceLanguage_ = ([self delegate]->original_language_code() ==
+                                   translate::kUnknownLanguageCode);
   std::vector<base::string16> strings;
   translate::TranslateInfoBarDelegate::GetAfterTranslateStrings(
       &strings, &swappedLanugageButtons_, autodeterminedSourceLanguage_);

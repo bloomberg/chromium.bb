@@ -84,8 +84,14 @@ NSTextField* CreateLabel(NSRect bounds) {
 }
 
 // Adds an item with the specified properties to |menu|.
-void AddMenuItem(NSMenu *menu, id target, SEL selector, NSString* title,
-    int tag, bool enabled, bool checked) {
+void AddMenuItem(NSMenu* menu,
+                 id target,
+                 SEL selector,
+                 NSString* title,
+                 int tag,
+                 bool enabled,
+                 bool checked,
+                 NSString* representedObject) {
   if (tag == -1) {
     [menu addItem:[NSMenuItem separatorItem]];
   } else {
@@ -96,6 +102,9 @@ void AddMenuItem(NSMenu *menu, id target, SEL selector, NSString* title,
     [item setTag:tag];
     [menu addItem:item];
     [item setTarget:target];
+    if (representedObject != nil) {
+      [item setRepresentedObject:representedObject];
+    }
     if (checked)
       [item setState:NSOnState];
     if (!enabled)
