@@ -190,7 +190,8 @@ public class ContextualSearchManager extends ContextualSearchObservable
         mTabModelObserver = new EmptyTabModelObserver() {
             @Override
             public void didSelectTab(Tab tab, TabSelectionType type, int lastId) {
-                if (!mIsPromotingToTab && tab.getId() != lastId) {
+                if (!mIsPromotingToTab && tab.getId() != lastId
+                        || mActivity.getTabModelSelector().isIncognitoSelected()) {
                     hideContextualSearch(StateChangeReason.UNKNOWN);
                 }
             }
