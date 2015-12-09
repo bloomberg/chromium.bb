@@ -77,7 +77,7 @@ BitVector::OutOfLineBits* BitVector::OutOfLineBits::create(size_t numBits)
 {
     // Because of the way BitVector stores the pointer, memory tools
     // will erroneously report a leak here.
-    WTF_ANNOTATE_SCOPED_MEMORY_LEAK;
+    WTF_INTERNAL_LEAK_SANITIZER_DISABLED_SCOPE;
     numBits = (numBits + bitsInPointer() - 1) & ~(bitsInPointer() - 1);
     size_t size = sizeof(OutOfLineBits) + sizeof(uintptr_t) * (numBits / bitsInPointer());
     void* allocation = Partitions::bufferMalloc(size, WTF_HEAP_PROFILER_TYPE_NAME(OutOfLineBits));

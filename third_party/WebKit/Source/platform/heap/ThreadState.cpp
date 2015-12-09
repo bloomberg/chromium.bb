@@ -104,6 +104,9 @@ ThreadState::ThreadState()
 #if defined(ADDRESS_SANITIZER)
     , m_asanFakeStack(__asan_get_current_fake_stack())
 #endif
+#if defined(LEAK_SANITIZER)
+    , m_disabledStaticPersistentsRegistration(0)
+#endif
 {
     ASSERT(checkThread());
     ASSERT(!**s_threadSpecific);
@@ -1302,6 +1305,36 @@ void ThreadState::removeInterruptor(BlinkGCInterruptor* interruptor)
         m_interruptors.remove(index);
     }
 }
+
+#if defined(LEAK_SANITIZER)
+void ThreadState::registerStaticPersistentNode(PersistentNode* node)
+{
+    if (m_disabledStaticPersistentsRegistration)
+        return;
+
+    ASSERT(!m_staticPersistents.contains(node));
+    m_staticPersistents.add(node);
+}
+
+void ThreadState::releaseStaticPersistentNodes()
+{
+    for (PersistentNode* node : m_staticPersistents)
+        persistentRegion()->freePersistentNode(node);
+
+    m_staticPersistents.clear();
+}
+
+void ThreadState::enterStaticReferenceRegistrationDisabledScope()
+{
+    m_disabledStaticPersistentsRegistration++;
+}
+
+void ThreadState::leaveStaticReferenceRegistrationDisabledScope()
+{
+    ASSERT(m_disabledStaticPersistentsRegistration);
+    m_disabledStaticPersistentsRegistration--;
+}
+#endif
 
 ThreadState::AttachedThreadStateSet& ThreadState::attachedThreads()
 {
