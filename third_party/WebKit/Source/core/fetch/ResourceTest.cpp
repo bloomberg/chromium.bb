@@ -38,19 +38,19 @@ private:
     Vector<WebURL> m_cachedURLs;
 };
 
-ResourceResponse createTestResourceResponse()
+PassOwnPtr<ResourceResponse> createTestResourceResponse()
 {
-    ResourceResponse response;
-    response.setURL(URLTestHelpers::toKURL("https://example.com/"));
-    response.setHTTPStatusCode(200);
-    return response;
+    OwnPtr<ResourceResponse> response = adoptPtr(new ResourceResponse);
+    response->setURL(URLTestHelpers::toKURL("https://example.com/"));
+    response->setHTTPStatusCode(200);
+    return response.release();
 }
 
-void createTestResourceAndSetCachedMetadata(const ResourceResponse& response)
+void createTestResourceAndSetCachedMetadata(const ResourceResponse* response)
 {
     const char testData[] = "test data";
-    ResourcePtr<Resource> resource = new Resource(ResourceRequest(response.url()), Resource::Raw);
-    resource->setResponse(response);
+    ResourcePtr<Resource> resource = new Resource(ResourceRequest(response->url()), Resource::Raw);
+    resource->setResponse(*response);
     resource->cacheHandler()->setCachedMetadata(100, testData, sizeof(testData), CachedMetadataHandler::SendToPlatform);
     return;
 }
@@ -60,17 +60,17 @@ void createTestResourceAndSetCachedMetadata(const ResourceResponse& response)
 TEST(ResourceTest, SetCachedMetadata_SendsMetadataToPlatform)
 {
     MockPlatform mock;
-    ResourceResponse response(createTestResourceResponse());
-    createTestResourceAndSetCachedMetadata(response);
+    OwnPtr<ResourceResponse> response(createTestResourceResponse());
+    createTestResourceAndSetCachedMetadata(response.get());
     EXPECT_EQ(1u, mock.cachedURLs().size());
 }
 
 TEST(ResourceTest, SetCachedMetadata_DoesNotSendMetadataToPlatformWhenFetchedViaServiceWorker)
 {
     MockPlatform mock;
-    ResourceResponse response(createTestResourceResponse());
-    response.setWasFetchedViaServiceWorker(true);
-    createTestResourceAndSetCachedMetadata(response);
+    OwnPtr<ResourceResponse> response(createTestResourceResponse());
+    response->setWasFetchedViaServiceWorker(true);
+    createTestResourceAndSetCachedMetadata(response.get());
     EXPECT_EQ(0u, mock.cachedURLs().size());
 }
 

@@ -28,15 +28,13 @@
 #define ResourceError_h
 
 #include "platform/PlatformExport.h"
-#include "wtf/Allocator.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
 PLATFORM_EXPORT extern const char errorDomainBlinkInternal[]; // Used for errors that won't be exposed to clients.
 
-class PLATFORM_EXPORT ResourceError final {
-    DISALLOW_NEW();
+class PLATFORM_EXPORT ResourceError {
 public:
     static ResourceError cancelledError(const String& failingURL);
     static ResourceError cancelledDueToAccessCheckError(const String& failingURL);

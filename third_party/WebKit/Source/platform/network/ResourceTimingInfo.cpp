@@ -14,10 +14,10 @@ PassOwnPtr<ResourceTimingInfo> ResourceTimingInfo::adopt(PassOwnPtr<CrossThreadR
     OwnPtr<ResourceTimingInfo> info = ResourceTimingInfo::create(AtomicString(data->m_type), data->m_initialTime, data->m_isMainResource);
     info->m_originalTimingAllowOrigin = AtomicString(data->m_originalTimingAllowOrigin);
     info->m_loadFinishTime = data->m_loadFinishTime;
-    info->m_initialRequest = ResourceRequest(data->m_initialRequest.get());
-    info->m_finalResponse = ResourceResponse(data->m_finalResponse.get());
+    info->m_initialRequest = *ResourceRequest::adopt(data->m_initialRequest.release());
+    info->m_finalResponse = *ResourceResponse::adopt(data->m_finalResponse.release());
     for (auto& responseData : data->m_redirectChain)
-        info->m_redirectChain.append(ResourceResponse(responseData.get()));
+        info->m_redirectChain.append(*ResourceResponse::adopt(responseData.release()));
     return info.release();
 }
 

@@ -22,7 +22,6 @@
 
 #include "platform/blob/BlobData.h"
 #include "platform/weborigin/KURL.h"
-#include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
@@ -33,7 +32,6 @@ namespace blink {
 class BlobDataHandle;
 
 class PLATFORM_EXPORT FormDataElement final {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     FormDataElement() : m_type(data) { }
     explicit FormDataElement(const Vector<char>& array) : m_type(data), m_data(array) { }

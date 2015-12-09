@@ -33,7 +33,6 @@
 #define ParsedContentType_h
 
 #include "platform/PlatformExport.h"
-#include "wtf/Allocator.h"
 #include "wtf/HashMap.h"
 #include "wtf/text/StringHash.h"
 
@@ -44,8 +43,7 @@ typedef std::pair<unsigned, unsigned> SubstringRange;
 PLATFORM_EXPORT bool isValidContentType(const String&);
 
 // FIXME: add support for comments.
-class PLATFORM_EXPORT ParsedContentType final {
-    STACK_ALLOCATED();
+class PLATFORM_EXPORT ParsedContentType {
 public:
     explicit ParsedContentType(const String&);
 

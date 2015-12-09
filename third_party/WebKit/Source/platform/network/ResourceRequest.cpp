@@ -33,42 +33,44 @@ namespace blink {
 
 double ResourceRequest::s_defaultTimeoutInterval = INT_MAX;
 
-ResourceRequest::ResourceRequest(CrossThreadResourceRequestData* data)
-    : m_url(data->m_url)
-    , m_cachePolicy(data->m_cachePolicy)
-    , m_timeoutInterval(data->m_timeoutInterval)
-    , m_firstPartyForCookies(data->m_firstPartyForCookies)
-    , m_requestorOrigin(data->m_requestorOrigin)
-    , m_httpMethod(AtomicString(data->m_httpMethod))
-    , m_httpBody(data->m_httpBody)
-    , m_allowStoredCredentials(data->m_allowStoredCredentials)
-    , m_priority(data->m_priority)
-    , m_intraPriorityValue(data->m_intraPriorityValue)
+PassOwnPtr<ResourceRequest> ResourceRequest::adopt(PassOwnPtr<CrossThreadResourceRequestData> data)
 {
-    m_httpHeaderFields.adopt(data->m_httpHeaders.release());
+    OwnPtr<ResourceRequest> request = adoptPtr(new ResourceRequest());
+    request->setURL(data->m_url);
+    request->setCachePolicy(data->m_cachePolicy);
+    request->setTimeoutInterval(data->m_timeoutInterval);
+    request->setFirstPartyForCookies(data->m_firstPartyForCookies);
+    request->setRequestorOrigin(data->m_requestorOrigin);
+    request->setHTTPMethod(AtomicString(data->m_httpMethod));
+    request->setPriority(data->m_priority, data->m_intraPriorityValue);
 
-    setReportUploadProgress(data->m_reportUploadProgress);
-    setHasUserGesture(data->m_hasUserGesture);
-    setDownloadToFile(data->m_downloadToFile);
-    setUseStreamOnResponse(data->m_useStreamOnResponse);
-    setSkipServiceWorker(data->m_skipServiceWorker);
-    setShouldResetAppCache(data->m_shouldResetAppCache);
-    setRequestorID(data->m_requestorID);
-    setRequestorProcessID(data->m_requestorProcessID);
-    setAppCacheHostID(data->m_appCacheHostID);
-    setRequestContext(data->m_requestContext);
-    setFrameType(data->m_frameType);
-    setFetchRequestMode(data->m_fetchRequestMode);
-    setFetchCredentialsMode(data->m_fetchCredentialsMode);
-    setFetchRedirectMode(data->m_fetchRedirectMode);
-    setLoFiState(data->m_loFiState);
-    m_referrerPolicy = data->m_referrerPolicy;
-    m_didSetHTTPReferrer = data->m_didSetHTTPReferrer;
-    m_checkForBrowserSideNavigation = data->m_checkForBrowserSideNavigation;
-    m_uiStartTime = data->m_uiStartTime;
-    m_originatesFromReservedIPRange = data->m_originatesFromReservedIPRange;
-    m_inputPerfMetricReportPolicy = data->m_inputPerfMetricReportPolicy;
-    m_followedRedirect = data->m_followedRedirect;
+    request->m_httpHeaderFields.adopt(data->m_httpHeaders.release());
+
+    request->setHTTPBody(data->m_httpBody);
+    request->setAllowStoredCredentials(data->m_allowStoredCredentials);
+    request->setReportUploadProgress(data->m_reportUploadProgress);
+    request->setHasUserGesture(data->m_hasUserGesture);
+    request->setDownloadToFile(data->m_downloadToFile);
+    request->setUseStreamOnResponse(data->m_useStreamOnResponse);
+    request->setSkipServiceWorker(data->m_skipServiceWorker);
+    request->setShouldResetAppCache(data->m_shouldResetAppCache);
+    request->setRequestorID(data->m_requestorID);
+    request->setRequestorProcessID(data->m_requestorProcessID);
+    request->setAppCacheHostID(data->m_appCacheHostID);
+    request->setRequestContext(data->m_requestContext);
+    request->setFrameType(data->m_frameType);
+    request->setFetchRequestMode(data->m_fetchRequestMode);
+    request->setFetchCredentialsMode(data->m_fetchCredentialsMode);
+    request->setFetchRedirectMode(data->m_fetchRedirectMode);
+    request->setLoFiState(data->m_loFiState);
+    request->m_referrerPolicy = data->m_referrerPolicy;
+    request->m_didSetHTTPReferrer = data->m_didSetHTTPReferrer;
+    request->m_checkForBrowserSideNavigation = data->m_checkForBrowserSideNavigation;
+    request->m_uiStartTime = data->m_uiStartTime;
+    request->m_originatesFromReservedIPRange = data->m_originatesFromReservedIPRange;
+    request->m_inputPerfMetricReportPolicy = data->m_inputPerfMetricReportPolicy;
+    request->m_followedRedirect = data->m_followedRedirect;
+    return request.release();
 }
 
 PassOwnPtr<CrossThreadResourceRequestData> ResourceRequest::copyData() const

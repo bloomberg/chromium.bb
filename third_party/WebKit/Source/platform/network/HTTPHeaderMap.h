@@ -28,7 +28,6 @@
 #define HTTPHeaderMap_h
 
 #include "platform/PlatformExport.h"
-#include "wtf/Allocator.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
@@ -42,8 +41,7 @@ namespace blink {
 typedef Vector<std::pair<String, String>> CrossThreadHTTPHeaderMapData;
 
 // FIXME: Not every header fits into a map. Notably, multiple Set-Cookie header fields are needed to set multiple cookies.
-class PLATFORM_EXPORT HTTPHeaderMap final {
-    DISALLOW_NEW();
+class PLATFORM_EXPORT HTTPHeaderMap {
 public:
     HTTPHeaderMap();
     ~HTTPHeaderMap();

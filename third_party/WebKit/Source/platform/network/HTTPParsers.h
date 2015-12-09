@@ -32,7 +32,6 @@
 #define HTTPParsers_h
 
 #include "platform/PlatformExport.h"
-#include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 #include "wtf/HashSet.h"
 #include "wtf/Vector.h"
@@ -72,7 +71,6 @@ enum ReflectedXSSDisposition {
 using CommaDelimitedHeaderSet = HashSet<String, CaseFoldingHash>;
 
 struct CacheControlHeader {
-    DISALLOW_NEW();
     bool parsed : 1;
     bool containsNoCache : 1;
     bool containsNoStore : 1;

@@ -26,8 +26,6 @@
 #ifndef ResourceLoadPriority_h
 #define ResourceLoadPriority_h
 
-#include "wtf/Allocator.h"
-
 namespace blink {
 
 enum ResourceLoadPriority {
@@ -43,8 +41,7 @@ enum ResourceLoadPriority {
     ResourceLoadPriorityHighest = ResourceLoadPriorityVeryHigh,
 };
 
-struct ResourcePriority final {
-    STACK_ALLOCATED();
+struct ResourcePriority {
 public:
     enum VisibilityStatus {
         NotVisible,

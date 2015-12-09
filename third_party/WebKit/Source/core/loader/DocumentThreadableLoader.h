@@ -179,12 +179,12 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader, priv
 
         // Holds the original request for fallback in case the Service Worker
         // does not respond.
-        ResourceRequest m_fallbackRequestForServiceWorker;
+        OwnPtr<ResourceRequest> m_fallbackRequestForServiceWorker;
 
         // Holds the original request and options for it during preflight
         // request handling phase.
-        ResourceRequest m_actualRequest;
-        ResourceLoaderOptions m_actualOptions;
+        OwnPtr<ResourceRequest> m_actualRequest;
+        OwnPtr<ResourceLoaderOptions> m_actualOptions;
 
         HTTPHeaderMap m_simpleRequestHeaders; // stores simple request headers in case of a cross-origin redirect.
         Timer<DocumentThreadableLoader> m_timeoutTimer;

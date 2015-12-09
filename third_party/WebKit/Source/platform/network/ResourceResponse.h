@@ -43,8 +43,8 @@ namespace blink {
 
 struct CrossThreadResourceResponseData;
 
-class PLATFORM_EXPORT ResourceResponse final {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+class PLATFORM_EXPORT ResourceResponse {
+    USING_FAST_MALLOC(ResourceResponse);
 public:
     enum HTTPVersion { HTTPVersionUnknown,
         HTTPVersion_0_9,
@@ -60,7 +60,6 @@ public:
     };
 
     struct SecurityDetails {
-        DISALLOW_NEW();
         SecurityDetails() : certID(0) {}
         // All strings are human-readable values.
         String protocol;
@@ -77,7 +76,7 @@ public:
         virtual ~ExtraData() { }
     };
 
-    explicit ResourceResponse(CrossThreadResourceResponseData*);
+    static PassOwnPtr<ResourceResponse> adopt(PassOwnPtr<CrossThreadResourceResponseData>);
 
     // Gets a copy of the data suitable for passing to another thread.
     PassOwnPtr<CrossThreadResourceResponseData> copyData() const;

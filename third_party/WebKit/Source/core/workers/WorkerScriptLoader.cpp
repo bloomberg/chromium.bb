@@ -66,7 +66,10 @@ void WorkerScriptLoader::loadSynchronously(ExecutionContext& executionContext, c
 {
     m_url = url;
 
-    ResourceRequest request(createResourceRequest());
+    OwnPtr<ResourceRequest> request(createResourceRequest());
+    if (!request)
+        return;
+
     ASSERT_WITH_SECURITY_IMPLICATION(executionContext.isWorkerGlobalScope());
 
     ThreadableLoaderOptions options;
@@ -77,7 +80,7 @@ void WorkerScriptLoader::loadSynchronously(ExecutionContext& executionContext, c
     ResourceLoaderOptions resourceLoaderOptions;
     resourceLoaderOptions.allowCredentials = AllowStoredCredentials;
 
-    WorkerThreadableLoader::loadResourceSynchronously(toWorkerGlobalScope(executionContext), request, *this, options, resourceLoaderOptions);
+    WorkerThreadableLoader::loadResourceSynchronously(toWorkerGlobalScope(executionContext), *request, *this, options, resourceLoaderOptions);
 }
 
 void WorkerScriptLoader::loadAsynchronously(ExecutionContext& executionContext, const KURL& url, CrossOriginRequestPolicy crossOriginRequestPolicy, PassOwnPtr<Closure> responseCallback, PassOwnPtr<Closure> finishedCallback)
@@ -87,7 +90,10 @@ void WorkerScriptLoader::loadAsynchronously(ExecutionContext& executionContext, 
     m_finishedCallback = finishedCallback;
     m_url = url;
 
-    ResourceRequest request(createResourceRequest());
+    OwnPtr<ResourceRequest> request(createResourceRequest());
+    if (!request)
+        return;
+
     ThreadableLoaderOptions options;
     options.crossOriginRequestPolicy = crossOriginRequestPolicy;
 
@@ -100,7 +106,7 @@ void WorkerScriptLoader::loadAsynchronously(ExecutionContext& executionContext, 
     // (E.g. see crbug.com/524694 for why we can't easily remove this protect)
     RefPtr<WorkerScriptLoader> protect(this);
     m_needToCancel = true;
-    m_threadableLoader = ThreadableLoader::create(executionContext, this, request, options, resourceLoaderOptions);
+    m_threadableLoader = ThreadableLoader::create(executionContext, this, *request, options, resourceLoaderOptions);
     if (m_failed)
         notifyFinished();
 }
@@ -111,12 +117,12 @@ const KURL& WorkerScriptLoader::responseURL() const
     return m_responseURL;
 }
 
-ResourceRequest WorkerScriptLoader::createResourceRequest()
+PassOwnPtr<ResourceRequest> WorkerScriptLoader::createResourceRequest()
 {
-    ResourceRequest request(m_url);
-    request.setHTTPMethod("GET");
-    request.setRequestContext(m_requestContext);
-    return request;
+    OwnPtr<ResourceRequest> request = adoptPtr(new ResourceRequest(m_url));
+    request->setHTTPMethod("GET");
+    request->setRequestContext(m_requestContext);
+    return request.release();
 }
 
 void WorkerScriptLoader::didReceiveResponse(unsigned long identifier, const ResourceResponse& response, PassOwnPtr<WebDataConsumerHandle> handle)

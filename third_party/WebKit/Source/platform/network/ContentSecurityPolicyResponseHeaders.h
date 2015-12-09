@@ -27,15 +27,13 @@
 #define ContentSecurityPolicyResponseHeaders_h
 
 #include "platform/PlatformExport.h"
-#include "wtf/Allocator.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
 class ResourceResponse;
 
-class PLATFORM_EXPORT ContentSecurityPolicyResponseHeaders final {
-    STACK_ALLOCATED();
+class PLATFORM_EXPORT ContentSecurityPolicyResponseHeaders {
 public:
     ContentSecurityPolicyResponseHeaders() { }
     explicit ContentSecurityPolicyResponseHeaders(const ResourceResponse&);
