@@ -160,6 +160,9 @@ public:
     const CString& getSecurityInfo() const { return m_securityInfo; }
     void setSecurityInfo(const CString& securityInfo) { m_securityInfo = securityInfo; }
 
+    bool hasMajorCertificateErrors() const { return m_hasMajorCertificateErrors; }
+    void setHasMajorCertificateErrors(bool hasMajorCertificateErrors) { m_hasMajorCertificateErrors = hasMajorCertificateErrors; }
+
     SecurityStyle securityStyle() const { return m_securityStyle; }
     void setSecurityStyle(SecurityStyle securityStyle) { m_securityStyle = securityStyle; }
 
@@ -268,6 +271,10 @@ private:
     // string if not over HTTPS).
     CString m_securityInfo;
 
+    // True if the resource was retrieved by the embedder in spite of
+    // certificate errors.
+    bool m_hasMajorCertificateErrors;
+
     // The security style of the resource.
     // This only contains a valid value when the DevTools Network domain is
     // enabled. (Otherwise, it contains a default value of Unknown.)
@@ -357,6 +364,7 @@ public:
     time_t m_lastModifiedDate;
     RefPtr<ResourceLoadTiming> m_resourceLoadTiming;
     CString m_securityInfo;
+    bool m_hasMajorCertificateErrors;
     ResourceResponse::SecurityStyle m_securityStyle;
     ResourceResponse::SecurityDetails m_securityDetails;
     ResourceResponse::HTTPVersion m_httpVersion;

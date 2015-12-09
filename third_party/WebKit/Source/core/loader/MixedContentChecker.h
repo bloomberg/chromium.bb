@@ -31,6 +31,7 @@
 #ifndef MixedContentChecker_h
 #define MixedContentChecker_h
 
+#include "base/gtest_prod_util.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/network/ResourceRequest.h"
@@ -42,6 +43,7 @@ namespace blink {
 class FrameLoaderClient;
 class LocalFrame;
 class KURL;
+class ResourceResponse;
 class SecurityOrigin;
 
 class CORE_EXPORT MixedContentChecker final {
@@ -75,7 +77,10 @@ public:
     // for a mixed content check for the given frame type.
     static LocalFrame* effectiveFrameForFrameType(LocalFrame*, WebURLRequest::FrameType);
 
+    static void handleCertificateError(LocalFrame*, const ResourceRequest&, const ResourceResponse&);
+
 private:
+    FRIEND_TEST_ALL_PREFIXES(MixedContentCheckerTest, HandleCertificateError);
     enum MixedContentType {
         Display,
         Execution,

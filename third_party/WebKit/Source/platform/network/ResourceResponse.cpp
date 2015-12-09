@@ -48,6 +48,7 @@ ResourceResponse::ResourceResponse()
     , m_date(0.0)
     , m_expires(0.0)
     , m_lastModified(0.0)
+    , m_hasMajorCertificateErrors(false)
     , m_securityStyle(SecurityStyleUnknown)
     , m_httpVersion(HTTPVersionUnknown)
     , m_appCacheID(0)
@@ -84,6 +85,7 @@ ResourceResponse::ResourceResponse(const KURL& url, const AtomicString& mimeType
     , m_date(0.0)
     , m_expires(0.0)
     , m_lastModified(0.0)
+    , m_hasMajorCertificateErrors(false)
     , m_securityStyle(SecurityStyleUnknown)
     , m_httpVersion(HTTPVersionUnknown)
     , m_appCacheID(0)
@@ -116,6 +118,7 @@ PassOwnPtr<ResourceResponse> ResourceResponse::adopt(PassOwnPtr<CrossThreadResou
     response->setLastModifiedDate(data->m_lastModifiedDate);
     response->setResourceLoadTiming(data->m_resourceLoadTiming.release());
     response->m_securityInfo = data->m_securityInfo;
+    response->m_hasMajorCertificateErrors = data->m_hasMajorCertificateErrors;
     response->m_securityStyle = data->m_securityStyle;
     response->m_securityDetails.protocol = data->m_securityDetails.protocol;
     response->m_securityDetails.cipher = data->m_securityDetails.cipher;
@@ -161,6 +164,7 @@ PassOwnPtr<CrossThreadResourceResponseData> ResourceResponse::copyData() const
     if (m_resourceLoadTiming)
         data->m_resourceLoadTiming = m_resourceLoadTiming->deepCopy();
     data->m_securityInfo = CString(m_securityInfo.data(), m_securityInfo.length());
+    data->m_hasMajorCertificateErrors = m_hasMajorCertificateErrors;
     data->m_securityStyle = m_securityStyle;
     data->m_securityDetails.protocol = m_securityDetails.protocol.isolatedCopy();
     data->m_securityDetails.cipher = m_securityDetails.cipher.isolatedCopy();

@@ -305,6 +305,11 @@ void WebURLResponse::setSecurityInfo(const WebCString& securityInfo)
     m_private->m_resourceResponse->setSecurityInfo(securityInfo);
 }
 
+void WebURLResponse::setHasMajorCertificateErrors(bool value)
+{
+    m_private->m_resourceResponse->setHasMajorCertificateErrors(value);
+}
+
 WebURLResponse::SecurityStyle WebURLResponse::securityStyle() const
 {
     return static_cast<SecurityStyle>(m_private->m_resourceResponse->securityStyle());

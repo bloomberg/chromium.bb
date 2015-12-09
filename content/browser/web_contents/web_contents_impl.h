@@ -837,8 +837,14 @@ class CONTENT_EXPORT WebContentsImpl
                                         const std::string& mime_type,
                                         ResourceType resource_type);
   void OnDidDisplayInsecureContent();
-  void OnDidRunInsecureContent(const std::string& security_origin,
+  void OnDidRunInsecureContent(const GURL& security_origin,
                                const GURL& target_url);
+  void OnDidDisplayContentWithCertificateErrors(
+      const GURL& url,
+      const std::string& security_info);
+  void OnDidRunContentWithCertificateErrors(const GURL& security_origin,
+                                            const GURL& url,
+                                            const std::string& security_info);
   void OnDocumentLoadedInFrame();
   void OnDidFinishLoad(const GURL& url);
   void OnGoToEntryAtOffset(int offset);

@@ -67,6 +67,7 @@ class WebColorChooser;
 class WebColorChooserClient;
 class WebContentDecryptionModule;
 class WebCookieJar;
+class WebCString;
 class WebDataSource;
 class WebEncryptedMediaClient;
 class WebExternalPopupMenu;
@@ -448,6 +449,13 @@ public:
 
     // A PingLoader was created, and a request dispatched to a URL.
     virtual void didDispatchPingLoader(WebLocalFrame*, const WebURL&) { }
+
+    // This frame has displayed inactive content (such as an image) from
+    // a connection with certificate errors.
+    virtual void didDisplayContentWithCertificateErrors(const WebURL& url, const WebCString& securityInfo, const WebURL& mainResourceUrl, const WebCString& mainResourceSecurityInfo) {}
+    // This frame has run active content (such as a script) from a
+    // connection with certificate errors.
+    virtual void didRunContentWithCertificateErrors(const WebURL& url, const WebCString& securityInfo, const WebURL& mainResourceUrl, const WebCString& mainResourceSecurityInfo) {}
 
     // A performance timing event (e.g. first paint) occurred
     virtual void didChangePerformanceTiming() { }

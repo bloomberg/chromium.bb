@@ -34,6 +34,7 @@
 #include "bindings/core/v8/ScriptController.h"
 #include "core/dom/Document.h"
 #include "core/fetch/ClientHintsPreferences.h"
+#include "core/fetch/ResourceLoader.h"
 #include "core/fetch/UniqueIdentifier.h"
 #include "core/frame/FrameConsole.h"
 #include "core/frame/FrameHost.h"
@@ -238,6 +239,9 @@ void FrameFetchContext::dispatchDidReceiveResponse(unsigned long identifier, con
             fetcher = frame()->document()->fetcher();
         m_documentLoader->clientHintsPreferences().updateFromAcceptClientHintsHeader(response.httpHeaderField("accept-ch"), fetcher);
     }
+
+    if (response.hasMajorCertificateErrors() && resourceLoader)
+        MixedContentChecker::handleCertificateError(frame(), resourceLoader->originalRequest(), response);
 
     frame()->loader().progress().incrementProgress(identifier, response);
     frame()->loader().client()->dispatchDidReceiveResponse(m_documentLoader, identifier, response);

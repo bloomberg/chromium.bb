@@ -48,6 +48,7 @@
 #include "content/common/savable_subframe.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/common/site_isolation_policy.h"
+#include "content/common/ssl_status_serialization.h"
 #include "content/common/swapped_out_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/bindings_policy.h"
@@ -573,6 +574,38 @@ WebString ConvertRelativePathToHtmlAttribute(const base::FilePath& path) {
   return WebString::fromUTF8(
       std::string("./") +
       path.NormalizePathSeparatorsTo(FILE_PATH_LITERAL('/')).AsUTF8Unsafe());
+}
+
+bool IsContentWithCertificateErrorsRelevantToUI(
+    const blink::WebURL& url,
+    const blink::WebCString& security_info,
+    const blink::WebURL& main_resource_url,
+    const blink::WebCString& main_resource_security_info) {
+  content::SSLStatus ssl_status;
+  content::SSLStatus main_resource_ssl_status;
+  CHECK(DeserializeSecurityInfo(security_info, &ssl_status));
+  CHECK(DeserializeSecurityInfo(main_resource_security_info,
+                                &main_resource_ssl_status));
+
+  if (!GURL(main_resource_url).SchemeIsCryptographic())
+    return false;
+
+  // Do not handle subresource certificate errors if they are the same
+  // as errors that occured during the main page load. This compares
+  // most, but not all, fields of SSLStatus. For example, this check
+  // does not compare |content_status| because the navigation entry
+  // might have mixed content but also have the exact same SSL
+  // connection properties as the subresource, thereby making the
+  // subresource errors duplicative.
+  return (!url::Origin(GURL(url))
+               .IsSameOriginWith(url::Origin(GURL(main_resource_url))) ||
+          main_resource_ssl_status.security_style !=
+              ssl_status.security_style ||
+          main_resource_ssl_status.cert_id != ssl_status.cert_id ||
+          main_resource_ssl_status.cert_status != ssl_status.cert_status ||
+          main_resource_ssl_status.security_bits != ssl_status.security_bits ||
+          main_resource_ssl_status.connection_status !=
+              ssl_status.connection_status);
 }
 
 }  // namespace
@@ -3680,10 +3713,36 @@ void RenderFrameImpl::didRunInsecureContent(
     const blink::WebSecurityOrigin& origin,
     const blink::WebURL& target) {
   Send(new FrameHostMsg_DidRunInsecureContent(
-      routing_id_, origin.toString().utf8(), target));
+      routing_id_, GURL(origin.toString().utf8()), target));
   GetContentClient()->renderer()->RecordRapporURL(
       "ContentSettings.MixedScript.RanMixedScript",
       GURL(origin.toString().utf8()));
+}
+
+void RenderFrameImpl::didDisplayContentWithCertificateErrors(
+    const blink::WebURL& url,
+    const blink::WebCString& security_info,
+    const blink::WebURL& main_resource_url,
+    const blink::WebCString& main_resource_security_info) {
+  if (!IsContentWithCertificateErrorsRelevantToUI(
+          url, security_info, main_resource_url, main_resource_security_info)) {
+    return;
+  }
+  Send(new FrameHostMsg_DidDisplayContentWithCertificateErrors(routing_id_, url,
+                                                               security_info));
+}
+
+void RenderFrameImpl::didRunContentWithCertificateErrors(
+    const blink::WebURL& url,
+    const blink::WebCString& security_info,
+    const blink::WebURL& main_resource_url,
+    const blink::WebCString& main_resource_security_info) {
+  if (!IsContentWithCertificateErrorsRelevantToUI(
+          url, security_info, main_resource_url, main_resource_security_info)) {
+    return;
+  }
+  Send(new FrameHostMsg_DidRunContentWithCertificateErrors(
+      routing_id_, GURL(main_resource_url).GetOrigin(), url, security_info));
 }
 
 void RenderFrameImpl::didChangePerformanceTiming() {

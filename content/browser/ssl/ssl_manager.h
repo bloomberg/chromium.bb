@@ -31,6 +31,7 @@ struct LoadCommittedDetails;
 struct LoadFromMemoryCacheDetails;
 struct ResourceRedirectDetails;
 struct ResourceRequestDetails;
+struct SSLStatus;
 
 // The SSLManager SSLManager controls the SSL UI elements in a WebContents.  It
 // listens for various events that influence when these elements should or
@@ -88,8 +89,7 @@ class CONTENT_EXPORT SSLManager {
   void DidReceiveResourceRedirect(const ResourceRedirectDetails& details);
 
   // Insecure content entry point.
-  void DidDisplayInsecureContent();
-  void DidRunInsecureContent(const std::string& security_origin);
+  void DidRunInsecureContent(const GURL& security_origin);
 
  private:
   // Updates the NavigationEntry with our current state. This will

@@ -632,6 +632,10 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
                         OnDidDisplayInsecureContent)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidRunInsecureContent,
                         OnDidRunInsecureContent)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_DidDisplayContentWithCertificateErrors,
+                        OnDidDisplayContentWithCertificateErrors)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_DidRunContentWithCertificateErrors,
+                        OnDidRunContentWithCertificateErrors)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GoToEntryAtOffset, OnGoToEntryAtOffset)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateZoomLimits, OnUpdateZoomLimits)
     IPC_MESSAGE_HANDLER(ViewHostMsg_PageScaleFactorChanged,
@@ -3170,14 +3174,47 @@ void WebContentsImpl::OnDidDisplayInsecureContent() {
       GetController().GetBrowserContext());
 }
 
-void WebContentsImpl::OnDidRunInsecureContent(
-    const std::string& security_origin, const GURL& target_url) {
+void WebContentsImpl::OnDidRunInsecureContent(const GURL& security_origin,
+                                              const GURL& target_url) {
   LOG(WARNING) << security_origin << " ran insecure content from "
                << target_url.possibly_invalid_spec();
   RecordAction(base::UserMetricsAction("SSL.RanInsecureContent"));
-  if (base::EndsWith(security_origin, kDotGoogleDotCom,
+  if (base::EndsWith(security_origin.spec(), kDotGoogleDotCom,
                      base::CompareCase::INSENSITIVE_ASCII))
     RecordAction(base::UserMetricsAction("SSL.RanInsecureContentGoogle"));
+  controller_.ssl_manager()->DidRunInsecureContent(security_origin);
+  SSLManager::NotifySSLInternalStateChanged(
+      GetController().GetBrowserContext());
+}
+
+void WebContentsImpl::OnDidDisplayContentWithCertificateErrors(
+    const GURL& url,
+    const std::string& security_info) {
+  SSLStatus ssl;
+  if (!DeserializeSecurityInfo(security_info, &ssl)) {
+    bad_message::ReceivedBadMessage(
+        GetRenderProcessHost(),
+        bad_message::WC_CONTENT_WITH_CERT_ERRORS_BAD_SECURITY_INFO);
+    return;
+  }
+
+  displayed_insecure_content_ = true;
+  SSLManager::NotifySSLInternalStateChanged(
+      GetController().GetBrowserContext());
+}
+
+void WebContentsImpl::OnDidRunContentWithCertificateErrors(
+    const GURL& security_origin,
+    const GURL& url,
+    const std::string& security_info) {
+  SSLStatus ssl;
+  if (!DeserializeSecurityInfo(security_info, &ssl)) {
+    bad_message::ReceivedBadMessage(
+        GetRenderProcessHost(),
+        bad_message::WC_CONTENT_WITH_CERT_ERRORS_BAD_SECURITY_INFO);
+    return;
+  }
+
   controller_.ssl_manager()->DidRunInsecureContent(security_origin);
   SSLManager::NotifySSLInternalStateChanged(
       GetController().GetBrowserContext());

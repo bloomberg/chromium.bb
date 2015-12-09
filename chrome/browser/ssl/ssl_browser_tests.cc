@@ -555,6 +555,36 @@ class SSLUITest
   net::EmbeddedTestServer https_server_mismatched_;
   net::SpawnedTestServer wss_server_expired_;
 
+ protected:
+  // Navigates to an interstitial and clicks through the certificate
+  // error; then navigates to a page at |path| that loads unsafe content.
+  void SetUpUnsafeContentsWithUserException(const std::string& path) {
+    ASSERT_TRUE(https_server_.Start());
+    // Note that it is necessary to user https_server_mismatched_ here over the
+    // other invalid cert servers. This is because the test relies on the two
+    // servers having different hosts since SSL exceptions are per-host, not per
+    // origin, and https_server_mismatched_ uses 'localhost' rather than
+    // '127.0.0.1'.
+    ASSERT_TRUE(https_server_mismatched_.Start());
+
+    // Navigate to an unsafe site. Proceed with interstitial page to indicate
+    // the user approves the bad certificate.
+    ui_test_utils::NavigateToURL(
+        browser(), https_server_mismatched_.GetURL("/ssl/blank_page.html"));
+    WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+    CheckAuthenticationBrokenState(tab, net::CERT_STATUS_COMMON_NAME_INVALID,
+                                   AuthState::SHOWING_INTERSTITIAL);
+    ProceedThroughInterstitial(tab);
+    CheckAuthenticationBrokenState(tab, net::CERT_STATUS_COMMON_NAME_INVALID,
+                                   AuthState::NONE);
+
+    std::string replacement_path;
+    GetFilePathWithHostAndPortReplacement(
+        path, https_server_mismatched_.host_port_pair(), &replacement_path);
+    ui_test_utils::NavigateToURL(browser(),
+                                 https_server_.GetURL(replacement_path));
+  }
+
  private:
   typedef net::SpawnedTestServer::SSLOptions SSLOptions;
 
@@ -2125,10 +2155,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestUnsafeContentsInWorkerFiltered) {
 
 // This test, and the related test TestUnsafeContentsWithUserException, verify
 // that if unsafe content is loaded but the host of that unsafe content has a
-// user exception, the content runs and the security style remains
-// authenticated. This is not necessarily the behavior that should exist, but it
-// is verification that it does behave that way. See https://crbug.com/477868
-// for more inforamtion on this.
+// user exception, the content runs and the security style is downgraded.
 IN_PROC_BROWSER_TEST_F(SSLUITest, TestUnsafeContentsInWorkerWithUserException) {
   ASSERT_TRUE(https_server_.Start());
   // Note that it is necessary to user https_server_mismatched_ here over the
@@ -2158,44 +2185,19 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestUnsafeContentsInWorkerWithUserException) {
   ui_test_utils::NavigateToURL(
       browser(), https_server_.GetURL(page_with_unsafe_worker_path));
   CheckWorkerLoadResult(tab, true);  // Worker loads insecure content
-  CheckAuthenticatedState(tab, CertError::NONE);
+  CheckAuthenticationBrokenState(tab, CertError::NONE,
+                                 AuthState::RAN_INSECURE_CONTENT);
 }
 
 // Visits a page with unsafe content and makes sure that if a user exception to
 // the certificate error is present, the image is loaded and script executes.
-//
-// See the comment above SSLUITest.TestUnsafeContentsInWorkerWithUserException
-// for a discussion about the desired behavior.
 IN_PROC_BROWSER_TEST_F(SSLUITest, TestUnsafeContentsWithUserException) {
-  ASSERT_TRUE(https_server_.Start());
-  // Note that it is necessary to user https_server_mismatched_ here over the
-  // other invalid cert servers. This is because the test relies on the two
-  // servers having different hosts since SSL exceptions are per-host, not per
-  // origin, and https_server_mismatched_ uses 'localhost' rather than
-  // '127.0.0.1'.
-  ASSERT_TRUE(https_server_mismatched_.Start());
-
-  // Navigate to an unsafe site. Proceed with interstitial page to indicate
-  // the user approves the bad certificate.
-  ui_test_utils::NavigateToURL(
-      browser(), https_server_mismatched_.GetURL("/ssl/blank_page.html"));
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
-  CheckAuthenticationBrokenState(tab, net::CERT_STATUS_COMMON_NAME_INVALID,
-                                 AuthState::SHOWING_INTERSTITIAL);
-  ProceedThroughInterstitial(tab);
-  CheckAuthenticationBrokenState(tab, net::CERT_STATUS_COMMON_NAME_INVALID,
-                                 AuthState::NONE);
-
-  std::string replacement_path;
-  GetFilePathWithHostAndPortReplacement(
-      "/ssl/page_with_unsafe_contents.html",
-      https_server_mismatched_.host_port_pair(), &replacement_path);
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_.GetURL(replacement_path));
-
-  // When the bad content is filtered, the state is expected to be
-  // authenticated.
-  CheckAuthenticatedState(tab, AuthState::NONE);
+  ASSERT_NO_FATAL_FAILURE(SetUpUnsafeContentsWithUserException(
+      "/ssl/page_with_unsafe_contents.html"));
+  CheckAuthenticationBrokenState(
+      tab, CertError::NONE,
+      AuthState::RAN_INSECURE_CONTENT | AuthState::DISPLAYED_INSECURE_CONTENT);
 
   int img_width;
   EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
@@ -2209,7 +2211,38 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestUnsafeContentsWithUserException) {
   EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
       tab, "window.domAutomationController.send(IsFooSet());", &js_result));
   EXPECT_TRUE(js_result);
-  CheckAuthenticatedState(tab, CertError::NONE);
+
+  // Test that active subresources with the same certificate errors as
+  // the main resources don't cause mixed content UI downgrades. (Such
+  // errors would be confusing and duplicative.)
+  std::string replacement_path;
+  GetFilePathWithHostAndPortReplacement(
+      "/ssl/page_with_unsafe_contents.html",
+      https_server_mismatched_.host_port_pair(), &replacement_path);
+  ui_test_utils::NavigateToURL(
+      browser(), https_server_mismatched_.GetURL(replacement_path));
+  js_result = false;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      tab, "window.domAutomationController.send(IsFooSet());", &js_result));
+  EXPECT_TRUE(js_result);
+  CheckAuthenticationBrokenState(tab, net::CERT_STATUS_COMMON_NAME_INVALID,
+                                 AuthState::NONE);
+}
+
+// Like the test above, but only displaying inactive content (an image).
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestUnsafeImageWithUserException) {
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_NO_FATAL_FAILURE(
+      SetUpUnsafeContentsWithUserException("/ssl/page_with_unsafe_image.html"));
+  CheckAuthenticatedState(tab, AuthState::DISPLAYED_INSECURE_CONTENT);
+
+  int img_width;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
+      tab, "window.domAutomationController.send(ImageWidth());", &img_width));
+  // In order to check that the image was loaded, we check its width.
+  // The actual image (Google logo) is 114 pixels wide, so we assume a good
+  // image is greater than 100.
+  EXPECT_GT(img_width, 100);
 }
 
 // Test that when the browser blocks displaying insecure content (images), the

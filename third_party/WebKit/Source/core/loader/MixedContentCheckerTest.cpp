@@ -5,9 +5,12 @@
 #include "config.h"
 #include "core/loader/MixedContentChecker.h"
 
+#include "core/loader/EmptyClients.h"
 #include "core/testing/DummyPageHolder.h"
+#include "platform/network/ResourceResponse.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "testing/gmock/include/gmock/gmock-generated-function-mockers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/RefPtr.h"
 #include <base/macros.h>
@@ -65,6 +68,50 @@ TEST(MixedContentCheckerTest, ContextTypeForInspector)
     blockableMixedContent.setFrameType(WebURLRequest::FrameTypeAuxiliary);
     blockableMixedContent.setRequestContext(WebURLRequest::RequestContextImage);
     EXPECT_EQ(MixedContentChecker::ContextTypeOptionallyBlockable, MixedContentChecker::contextTypeForInspector(&dummyPageHolder->frame(), blockableMixedContent));
+}
+
+namespace {
+
+    class MockFrameLoaderClient : public EmptyFrameLoaderClient {
+    public:
+        MockFrameLoaderClient()
+            : EmptyFrameLoaderClient()
+        {
+        }
+        MOCK_METHOD4(didDisplayContentWithCertificateErrors, void(const KURL&, const CString&, const WebURL&, const CString&));
+        MOCK_METHOD4(didRunContentWithCertificateErrors, void(const KURL&, const CString&, const WebURL&, const CString&));
+    };
+
+} // namespace
+
+TEST(MixedContentCheckerTest, HandleCertificateError)
+{
+    MockFrameLoaderClient* client = new MockFrameLoaderClient;
+    OwnPtr<DummyPageHolder> dummyPageHolder = DummyPageHolder::create(IntSize(1, 1), nullptr, adoptPtrWillBeNoop(client));
+
+    KURL mainResourceUrl(KURL(), "https://example.test");
+    KURL displayedUrl(KURL(), "https://example-displayed.test");
+    KURL ranUrl(KURL(), "https://example-ran.test");
+
+    dummyPageHolder->frame().document()->setURL(mainResourceUrl);
+    ResourceRequest request1(ranUrl);
+    request1.setRequestContext(WebURLRequest::RequestContextScript);
+    request1.setFrameType(WebURLRequest::FrameTypeNone);
+    ResourceResponse response1;
+    response1.setURL(ranUrl);
+    response1.setSecurityInfo("security info1");
+    EXPECT_CALL(*client, didRunContentWithCertificateErrors(ranUrl, response1.getSecurityInfo(), WebURL(mainResourceUrl), CString()));
+    MixedContentChecker::handleCertificateError(&dummyPageHolder->frame(), request1, response1);
+
+    ResourceRequest request2(displayedUrl);
+    request2.setRequestContext(WebURLRequest::RequestContextImage);
+    request2.setFrameType(WebURLRequest::FrameTypeNone);
+    ResourceResponse response2;
+    ASSERT_EQ(MixedContentChecker::ContextTypeOptionallyBlockable, MixedContentChecker::contextTypeFromContext(request2.requestContext(), &dummyPageHolder->frame()));
+    response2.setURL(displayedUrl);
+    response2.setSecurityInfo("security info2");
+    EXPECT_CALL(*client, didDisplayContentWithCertificateErrors(displayedUrl, response2.getSecurityInfo(), WebURL(mainResourceUrl), CString()));
+    MixedContentChecker::handleCertificateError(&dummyPageHolder->frame(), request2, response2);
 }
 
 } // namespace blink
