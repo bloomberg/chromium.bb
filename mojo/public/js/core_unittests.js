@@ -156,6 +156,9 @@ define([
     expect(write.result).toBe(core.RESULT_OK);
     expect(write.numBytes).toBe(42);
 
+    var wait = core.wait(pipe.consumerHandle, core.HANDLE_SIGNAL_READABLE,
+                         core.DEADLINE_INDEFINITE);
+    expect(wait.result).toBe(core.RESULT_OK);
     var peeked = core.readData(
          pipe.consumerHandle,
          core.READ_DATA_FLAG_PEEK | core.READ_DATA_FLAG_ALL_OR_NONE);

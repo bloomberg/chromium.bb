@@ -24,7 +24,6 @@
         'mojo_public_system_unittests',
         'mojo_public_utility_unittests',
         'mojo_system_unittests',
-        'mojo_js_unittests',
         'mojo_js_integration_tests',
       ],
     },
@@ -253,24 +252,6 @@
         'src/mojo/edk/system/message_pipe_test_utils.h',
         'src/mojo/edk/system/test_utils.cc',
         'src/mojo/edk/system/test_utils.h',
-      ],
-    },
-    {
-      # GN version: //mojo/edk/js/test:js_unittests
-      'target_name': 'mojo_js_unittests',
-      'type': 'executable',
-      'dependencies': [
-        '../../gin/gin.gyp:gin_test',
-        'mojo_edk.gyp:mojo_common_test_support',
-        'mojo_edk.gyp:mojo_run_all_unittests',
-        'mojo_edk.gyp:mojo_js_lib',
-        'mojo_public.gyp:mojo_environment_standalone',
-        'mojo_public.gyp:mojo_public_test_interfaces',
-        'mojo_public.gyp:mojo_utility',
-      ],
-      'sources': [
-        'src/mojo/edk/js/handle_unittest.cc',
-        'src/mojo/edk/js/test/run_js_tests.cc',
       ],
     },
     {

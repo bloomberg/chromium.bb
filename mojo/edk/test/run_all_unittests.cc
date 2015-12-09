@@ -5,10 +5,12 @@
 #include <signal.h>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_io_thread.h"
 #include "base/test/test_suite.h"
 #include "mojo/edk/embedder/embedder.h"
+#include "mojo/edk/test/multiprocess_test_helper.h"
 #include "mojo/edk/test/scoped_ipc_support.h"
 #include "mojo/edk/test/test_support_impl.h"
 #include "mojo/public/tests/test_support_private.h"
@@ -32,10 +34,23 @@ int main(int argc, char** argv) {
 
   base::TestSuite test_suite(argc, argv);
 
+  // Must be run before mojo::edk::Init.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          mojo::edk::test::kBrokerHandleSwitch)) {
+    mojo::edk::PreInitializeChildProcess();
+  }
+
+  // TODO(use_chrome_edk): temporary to force new EDK.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch("--use-new-edk");
+
   mojo::edk::Init();
+
   mojo::test::TestSupport::Init(new mojo::edk::test::TestSupportImpl());
   base::TestIOThread test_io_thread(base::TestIOThread::kAutoStart);
-  mojo::edk::test::ScopedIPCSupport ipc_support(test_io_thread.task_runner());
+  // Leak this because its destructor calls mojo::edk::ShutdownIPCSupport which
+  // really does nothing in the new EDK but does depend on the current message
+  // loop, which is destructed inside base::LaunchUnitTests.
+  new mojo::edk::test::ScopedIPCSupport(test_io_thread.task_runner());
 
   return base::LaunchUnitTests(
       argc, argv,

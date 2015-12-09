@@ -4,15 +4,15 @@
 
 import("//testing/test.gni")
 
-# TODO(use_chrome_edk): remove "2"
-test("js_unittests2") {
+test("js_unittests") {
+  output_name = "mojo_js_unittests"
+
   deps = [
-    "../../js",
-    "../../js:js_unittests",
-    "../../test:run_all_unittests",
-    "../../test:test_support",
     "//base",
     "//gin:gin_test",
+    "//mojo/edk/js",
+    "//mojo/edk/test:run_all_unittests",
+    "//mojo/edk/test:test_support",
     "//mojo/environment:chromium",
     "//mojo/public/cpp/environment",
     "//mojo/public/cpp/system",

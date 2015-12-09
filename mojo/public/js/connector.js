@@ -110,8 +110,8 @@ define("mojo/public/js/connector", [
   };
 
   // The TestConnector subclass is only intended to be used in unit tests. It
-  // enables delivering a message to the pipe's handle without an async wait.
-
+  // doesn't automatically listen for input messages. Instead, you need to
+  // call waitForNextMessage to block and wait for the next incoming message.
   function TestConnector(handle) {
     Connector.call(this, handle);
   }
@@ -119,10 +119,12 @@ define("mojo/public/js/connector", [
   TestConnector.prototype = Object.create(Connector.prototype);
 
   TestConnector.prototype.waitToReadMore_ = function() {
-  };
+  }
 
-  TestConnector.prototype.deliverMessage = function() {
-    this.readMore_(core.RESULT_OK);
+  TestConnector.prototype.waitForNextMessage = function() {
+    var wait = core.wait(this.handle_, core.HANDLE_SIGNAL_READABLE,
+                         core.DEADLINE_INDEFINITE);
+    this.readMore_(wait.result);
   }
 
   var exports = {};

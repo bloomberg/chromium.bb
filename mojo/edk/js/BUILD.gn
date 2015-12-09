@@ -13,7 +13,7 @@ group("tests") {
   deps = [
     # TODO(use_chrome_edk): remove "2"
     "test:js_integration_tests2",
-    "test:js_unittests2",
+    "test:js_unittests",
   ]
 }
 
@@ -45,19 +45,5 @@ source_set("js") {
   deps = [
     "//mojo/public/cpp/environment",
     "//mojo/public/cpp/system",
-  ]
-}
-
-source_set("js_unittests") {
-  testonly = true
-  sources = [
-    "handle_unittest.cc",
-  ]
-
-  deps = [
-    "//mojo/edk/js",
-    "//mojo/edk/test:test_support",
-    "//mojo/public/cpp/system",
-    "//testing/gtest",
   ]
 }

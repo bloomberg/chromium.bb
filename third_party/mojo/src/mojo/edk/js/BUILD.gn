@@ -12,7 +12,6 @@ group("tests") {
   testonly = true
   deps = [
     "test:js_integration_tests",
-    "test:js_unittests",
   ]
 }
 

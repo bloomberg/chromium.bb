@@ -180,7 +180,7 @@ define([
     return null;
   }
 
-  function getMessageTestFiles(key) {
+  function getMessageTestFiles(prefix) {
     var sourceRoot = file.getSourceRootDirectory();
     expect(sourceRoot).not.toBeNull();
 
@@ -192,11 +192,9 @@ define([
 
     // The matching ".data" pathnames with the extension removed.
     return testFiles.filter(function(s) {
-      return s.substr(-5) == ".data";
+      return s.substr(-5) == ".data" && s.indexOf(prefix) == 0;
     }).map(function(s) {
       return testDir + s.slice(0, -5);
-    }).filter(function(s) {
-      return s.indexOf(key) != -1;
     });
   }
 
@@ -220,8 +218,8 @@ define([
     expect(actualResult).toEqual(expectedResult);
   }
 
-  function testMessageValidation(key, filters) {
-    var testFiles = getMessageTestFiles(key);
+  function testMessageValidation(prefix, filters) {
+    var testFiles = getMessageTestFiles(prefix);
     expect(testFiles.length).toBeGreaterThan(0);
 
     for (var i = 0; i < testFiles.length; i++) {
@@ -260,15 +258,35 @@ define([
         testInterface.ConformanceTestInterface.validateRequest]);
   }
 
-  function testIntegratedMessageValidation(testFilesPattern) {
+  function testBoundsCheckMessageValidation() {
+    testMessageValidation("boundscheck_", [
+        testInterface.BoundsCheckTestInterface.validateRequest]);
+  }
+
+  function testResponseConformanceMessageValidation() {
+    testMessageValidation("resp_conformance_", [
+        testInterface.ConformanceTestInterface.validateResponse]);
+  }
+
+  function testResponseBoundsCheckMessageValidation() {
+    testMessageValidation("resp_boundscheck_", [
+        testInterface.BoundsCheckTestInterface.validateResponse]);
+  }
+
+  function testIntegratedMessageValidation(testFilesPattern,
+                                           localFactory,
+                                           remoteFactory) {
     var testFiles = getMessageTestFiles(testFilesPattern);
     expect(testFiles.length).toBeGreaterThan(0);
+
+    var testMessagePipe = new core.createMessagePipe();
+    expect(testMessagePipe.result).toBe(core.RESULT_OK);
+    var testConnection = new connection.TestConnection(
+        testMessagePipe.handle1, localFactory, remoteFactory);
 
     for (var i = 0; i < testFiles.length; i++) {
       var testMessage = readTestMessage(testFiles[i]);
       var handles = new Array(testMessage.handleCount);
-      var testMessagePipe = new core.createMessagePipe();
-      expect(testMessagePipe.result).toBe(core.RESULT_OK);
 
       var writeMessageValue = core.writeMessage(
           testMessagePipe.handle0,
@@ -277,40 +295,52 @@ define([
           core.WRITE_MESSAGE_FLAG_NONE);
       expect(writeMessageValue).toBe(core.RESULT_OK);
 
-      var testConnection = new connection.TestConnection(
-          testMessagePipe.handle1,
-          testInterface.IntegrationTestInterface.stubClass,
-          testInterface.IntegrationTestInterface.proxyClass);
-
       var validationError = noError;
       testConnection.router_.validationErrorHandler = function(err) {
         validationError = err;
       }
 
-      testConnection.router_.connector_.deliverMessage();
+      testConnection.router_.connector_.waitForNextMessage();
       checkValidationResult(testFiles[i], validationError);
-
-      testConnection.close();
-      expect(core.close(testMessagePipe.handle0)).toBe(core.RESULT_OK);
     }
+
+    testConnection.close();
+    expect(core.close(testMessagePipe.handle0)).toBe(core.RESULT_OK);
   }
 
   function testIntegratedMessageHeaderValidation() {
-    testIntegratedMessageValidation("integration_msghdr");
+    testIntegratedMessageValidation(
+        "integration_msghdr",
+        testInterface.IntegrationTestInterface.stubClass,
+        undefined);
+    testIntegratedMessageValidation(
+        "integration_msghdr",
+        undefined,
+        testInterface.IntegrationTestInterface.proxyClass);
   }
 
   function testIntegratedRequestMessageValidation() {
-    testIntegratedMessageValidation("integration_intf_rqst");
+    testIntegratedMessageValidation(
+        "integration_intf_rqst",
+        testInterface.IntegrationTestInterface.stubClass,
+        undefined);
   }
 
   function testIntegratedResponseMessageValidation() {
-    testIntegratedMessageValidation("integration_intf_resp");
+    testIntegratedMessageValidation(
+        "integration_intf_resp",
+        undefined,
+        testInterface.IntegrationTestInterface.proxyClass);
   }
 
   expect(checkTestMessageParser()).toBeNull();
   testConformanceMessageValidation();
+  testBoundsCheckMessageValidation();
+  testResponseConformanceMessageValidation();
+  testResponseBoundsCheckMessageValidation();
   testIntegratedMessageHeaderValidation();
   testIntegratedResponseMessageValidation();
   testIntegratedRequestMessageValidation();
+
   this.result = "PASS";
 });

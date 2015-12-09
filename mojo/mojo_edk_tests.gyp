@@ -18,7 +18,7 @@
         # to be built.
         'mojo_message_pipe_perftests2',
         'mojo_system_unittests2',
-        'mojo_js_unittests2',
+        'mojo_js_unittests',
         'mojo_js_integration_tests2',
       ],
     },
@@ -94,7 +94,7 @@
     },
     {
       # GN version: //mojo/edk/js/test:js_unittests
-      'target_name': 'mojo_js_unittests2',
+      'target_name': 'mojo_js_unittests',
       'type': 'executable',
       'dependencies': [
         '../gin/gin.gyp:gin_test',

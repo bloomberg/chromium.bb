@@ -4,27 +4,6 @@
 
 import("//testing/test.gni")
 
-test("js_unittests") {
-  deps = [
-    "../../js",
-    "../../js:js_unittests",
-    "../../test:run_all_unittests",
-    "../../test:test_support",
-    "//base",
-    "//gin:gin_test",
-    "//mojo/environment:chromium",
-    "//mojo/public/cpp/environment",
-    "//mojo/public/cpp/system",
-    "//mojo/public/cpp/utility",
-    "//mojo/public/interfaces/bindings/tests:test_interfaces",
-    "//mojo/public/interfaces/bindings/tests:test_interfaces_experimental",
-  ]
-
-  sources = [
-    "run_js_tests.cc",
-  ]
-}
-
 test("js_integration_tests") {
   deps = [
     "../../js",

@@ -159,7 +159,6 @@ test("mojo_system_unittests2") {
     "options_validation_unittest.cc",
     "platform_handle_dispatcher_unittest.cc",
     "raw_channel_unittest.cc",
-    "run_all_unittests.cc",
     "shared_buffer_dispatcher_unittest.cc",
     "simple_dispatcher_unittest.cc",
     "waiter_test_utils.cc",
@@ -177,6 +176,7 @@ test("mojo_system_unittests2") {
     "../test:test_support",
     "//base",
     "//base/test:test_support",
+    "//mojo/edk/test:run_all_unittests",
     "//testing/gtest",
 
     # TODO(use_chrome_edk): temporary since the Mojo wrapper primitives are

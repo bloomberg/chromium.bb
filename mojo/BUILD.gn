@@ -74,9 +74,10 @@ group("tests") {
     "//mojo/application/public/cpp/tests:mojo_public_application_unittests",
     "//mojo/common:mojo_common_unittests",
     "//mojo/converters/surfaces/tests:mojo_surfaces_lib_unittests",
+    "//mojo/edk/js/test:js_unittests",
 
     # TODO(use_chrome_edk):
-    #"//mojo/edk/js/test:js_unittests",
+    #"//mojo/edk/js/test:js_integration_tests2",
     #"//mojo/edk/system:mojo_message_pipe_perftests",
     #"//mojo/edk/system:mojo_system_unittests",
     #"//mojo/edk/test:mojo_public_bindings_unittests",
@@ -84,7 +85,6 @@ group("tests") {
     #"//mojo/edk/test:mojo_public_system_perftests",
     #"//mojo/edk/test:mojo_public_system_unittests",
     #"//mojo/edk/test:mojo_public_utility_unittests",
-    "//third_party/mojo/src/mojo/edk/js/test:js_unittests",
     "//third_party/mojo/src/mojo/edk/system:mojo_message_pipe_perftests",
     "//third_party/mojo/src/mojo/edk/system:mojo_system_unittests",
     "//third_party/mojo/src/mojo/edk/test:mojo_public_bindings_unittests",
