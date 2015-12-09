@@ -24,7 +24,7 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/layout/LayoutView.h"
-#include "third_party/skia/include/core/SkAnnotation.h"
+#include "platform/graphics/GraphicsContext.h"
 
 namespace blink {
 
@@ -230,7 +230,7 @@ void PrintContext::collectLinkedDestinations(Node* node)
     }
 }
 
-void PrintContext::outputLinkedDestinations(SkCanvas* canvas, const IntRect& pageRect)
+void PrintContext::outputLinkedDestinations(GraphicsContext& context, const IntRect& pageRect)
 {
     if (!m_linkedDestinationsValid) {
         // Collect anchors in the top-level frame only because our PrintContext
@@ -247,13 +247,11 @@ void PrintContext::outputLinkedDestinations(SkCanvas* canvas, const IntRect& pag
         // TODO(bokan): boundingBox looks to be in content coordinates but
         // convertToRootFrame doesn't apply scroll offsets when converting up to
         // the root frame.
-        boundingBox = layoutObject->frameView()->convertToRootFrame(boundingBox);
-        if (!pageRect.intersects(boundingBox))
+        IntPoint point = layoutObject->frameView()->convertToRootFrame(boundingBox.location());
+        if (!pageRect.contains(point))
             continue;
-        IntPoint point = boundingBox.minXMinYCorner();
         point.clampNegativeToZero();
-        SkAutoDataUnref nameData(SkData::NewWithCString(entry.key.utf8().data()));
-        SkAnnotateNamedDestination(canvas, SkPoint::Make(point.x(), point.y()), nameData);
+        context.setURLDestinationLocation(entry.key, point);
     }
 }
 

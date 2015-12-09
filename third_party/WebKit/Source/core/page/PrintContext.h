@@ -28,14 +28,13 @@
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
-class SkCanvas;
-
 namespace blink {
 
 class Element;
 class LocalFrame;
 class FloatRect;
 class FloatSize;
+class GraphicsContext;
 class IntRect;
 class Node;
 
@@ -79,7 +78,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 protected:
-    void outputLinkedDestinations(SkCanvas*, const IntRect& pageRect);
+    void outputLinkedDestinations(GraphicsContext&, const IntRect& pageRect);
 
     RawPtrWillBeMember<LocalFrame> m_frame;
     Vector<IntRect> m_pageRects;

@@ -1191,6 +1191,16 @@ void GraphicsContext::setURLFragmentForRect(const String& destName, const IntRec
     SkAnnotateLinkToDestination(m_canvas, rect, skDestName.get());
 }
 
+void GraphicsContext::setURLDestinationLocation(const String& name, const IntPoint& location)
+{
+    if (contextDisabled())
+        return;
+    ASSERT(m_canvas);
+
+    SkAutoDataUnref skName(SkData::NewWithCString(name.utf8().data()));
+    SkAnnotateNamedDestination(m_canvas, SkPoint::Make(location.x(), location.y()), skName);
+}
+
 void GraphicsContext::concatCTM(const AffineTransform& affine)
 {
     concat(affineTransformToSkMatrix(affine));

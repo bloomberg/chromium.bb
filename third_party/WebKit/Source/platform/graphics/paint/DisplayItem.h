@@ -73,6 +73,7 @@ public:
         PopupListBoxBackground,
         PopupListBoxRow,
         PrintedContentBackground,
+        PrintedContentDestinationLocations,
         PrintedContentLineBoundary,
         PrintedContentPDFURLRect,
         Resizer,

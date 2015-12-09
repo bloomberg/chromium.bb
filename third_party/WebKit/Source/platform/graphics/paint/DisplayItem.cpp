@@ -83,6 +83,7 @@ static WTF::String specialDrawingTypeAsDebugString(DisplayItem::Type type)
         DEBUG_STRING_CASE(PopupListBoxBackground);
         DEBUG_STRING_CASE(PopupListBoxRow);
         DEBUG_STRING_CASE(PrintedContentBackground);
+        DEBUG_STRING_CASE(PrintedContentDestinationLocations);
         DEBUG_STRING_CASE(PrintedContentLineBoundary);
         DEBUG_STRING_CASE(PrintedContentPDFURLRect);
         DEBUG_STRING_CASE(Resizer);

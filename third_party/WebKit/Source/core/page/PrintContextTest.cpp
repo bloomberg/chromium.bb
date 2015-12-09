@@ -17,6 +17,7 @@
 #include "core/paint/PaintLayerPainter.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/graphics/paint/SkPictureBuilder.h"
 #include "platform/scroll/ScrollbarTheme.h"
 #include "platform/testing/SkiaForCoreTesting.h"
@@ -32,9 +33,9 @@ class MockPrintContext : public PrintContext {
 public:
     MockPrintContext(LocalFrame* frame) : PrintContext(frame) { }
 
-    void outputLinkedDestinations(SkCanvas* canvas, const IntRect& pageRect)
+    void outputLinkedDestinations(GraphicsContext& context, const IntRect& pageRect)
     {
-        PrintContext::outputLinkedDestinations(canvas, pageRect);
+        PrintContext::outputLinkedDestinations(context, pageRect);
     }
 };
 
@@ -100,8 +101,11 @@ protected:
         GraphicsContext& context = pictureBuilder.context();
         context.setPrinting(true);
         document().view()->paintContents(&context, GlobalPaintPrinting, pageRect);
+        {
+            DrawingRecorder recorder(context, *document().layoutView(), DisplayItem::PrintedContentDestinationLocations, pageRect);
+            printContext().outputLinkedDestinations(context, pageRect);
+        }
         pictureBuilder.endRecording()->playback(&canvas);
-        printContext().outputLinkedDestinations(&canvas, pageRect);
         printContext().end();
     }
 
@@ -120,10 +124,10 @@ protected:
         return ts.release();
     }
 
-    static String htmlForAnchor(int x, int y, const char* name)
+    static String htmlForAnchor(int x, int y, const char* name, const char* textContent)
     {
         TextStream ts;
-        ts << "<a name='" << name << "' style='position: absolute; left: " << x << "px; top: " << y << "px'>" << name << "</a>";
+        ts << "<a name='" << name << "' style='position: absolute; left: " << x << "px; top: " << y << "px'>" << textContent << "</a>";
         return ts.release();
     }
 
@@ -223,8 +227,24 @@ TEST_F(PrintContextTest, LinkedTarget)
     document().setBaseURLOverride(KURL(ParsedURLString, "http://a.com/"));
     setBodyInnerHTML(absoluteBlockHtmlForLink(50, 60, 70, 80, "#fragment") // Generates a Link_Named_Dest_Key annotation
         + absoluteBlockHtmlForLink(150, 160, 170, 180, "#not-found") // Generates no annotation
-        + htmlForAnchor(250, 260, "fragment") // Generates a Define_Named_Dest_Key annotation
-        + htmlForAnchor(350, 360, "fragment-not-used")); // Generates no annotation
+        + htmlForAnchor(250, 260, "fragment", "fragment") // Generates a Define_Named_Dest_Key annotation
+        + htmlForAnchor(350, 360, "fragment-not-used", "fragment-not-used")); // Generates no annotation
+    printSinglePage(canvas);
+
+    const Vector<MockCanvas::Operation>& operations = canvas.recordedOperations();
+    ASSERT_EQ(2u, operations.size());
+    EXPECT_EQ(MockCanvas::DrawRect, operations[0].type);
+    EXPECT_SKRECT_EQ(50, 60, 70, 80, operations[0].rect);
+    EXPECT_EQ(MockCanvas::DrawPoint, operations[1].type);
+    EXPECT_SKRECT_EQ(250, 260, 0, 0, operations[1].rect);
+}
+
+TEST_F(PrintContextTest, EmptyLinkedTarget)
+{
+    MockCanvas canvas;
+    document().setBaseURLOverride(KURL(ParsedURLString, "http://a.com/"));
+    setBodyInnerHTML(absoluteBlockHtmlForLink(50, 60, 70, 80, "#fragment")
+        + htmlForAnchor(250, 260, "fragment", ""));
     printSinglePage(canvas);
 
     const Vector<MockCanvas::Operation>& operations = canvas.recordedOperations();
