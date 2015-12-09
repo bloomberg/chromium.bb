@@ -243,7 +243,8 @@ PriorityClassChangeResult RelaunchAndDoProcessPriorityAdjustment() {
 
 // Launching a subprocess at normal priority class is a noop.
 TEST(SetupUtilTest, AdjustFromNormalPriority) {
-  ASSERT_EQ(NORMAL_PRIORITY_CLASS, ::GetPriorityClass(::GetCurrentProcess()));
+  ASSERT_EQ(static_cast<DWORD>(NORMAL_PRIORITY_CLASS),
+            ::GetPriorityClass(::GetCurrentProcess()));
   EXPECT_EQ(PCCR_UNCHANGED, RelaunchAndDoProcessPriorityAdjustment());
 }
 
@@ -599,14 +600,14 @@ TEST_F(DeleteRegistryKeyPartialTest, NonEmptyKeyWithPreserve) {
     RegKey key(root_, path_.c_str(), KEY_SET_VALUE);
     ASSERT_TRUE(key.Valid());
     ASSERT_EQ(ERROR_SUCCESS, key.WriteValue(nullptr, 5U));
-    ASSERT_EQ(
-        1, base::win::RegistryValueIterator(root_, path_.c_str()).ValueCount());
+    ASSERT_EQ(1u, base::win::RegistryValueIterator(root_, path_.c_str())
+                      .ValueCount());
     ASSERT_EQ(ERROR_SUCCESS, key.WriteValue(L"foo", L"bar"));
-    ASSERT_EQ(
-        2, base::win::RegistryValueIterator(root_, path_.c_str()).ValueCount());
+    ASSERT_EQ(2u, base::win::RegistryValueIterator(root_, path_.c_str())
+                      .ValueCount());
     ASSERT_EQ(ERROR_SUCCESS, key.WriteValue(L"baz", L"huh"));
-    ASSERT_EQ(
-        3, base::win::RegistryValueIterator(root_, path_.c_str()).ValueCount());
+    ASSERT_EQ(3u, base::win::RegistryValueIterator(root_, path_.c_str())
+                      .ValueCount());
   }
 
   ASSERT_TRUE(RegKey(root_, path_.c_str(), KEY_WRITE).Valid());
@@ -631,7 +632,7 @@ TEST_F(DeleteRegistryKeyPartialTest, NonEmptyKeyWithPreserve) {
   // Ensure that all values are absent.
   {
     base::win::RegistryValueIterator it(root_, path_.c_str());
-    ASSERT_EQ(0, it.ValueCount());
+    ASSERT_EQ(0u, it.ValueCount());
   }
 }
 

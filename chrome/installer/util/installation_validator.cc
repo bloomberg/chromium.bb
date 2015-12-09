@@ -146,7 +146,7 @@ void InstallationValidator::ValidateAppCommandFlags(
          app_cmd.is_run_as_user(),
          "be marked to run as user"},
   };
-  for (int i = 0; i < arraysize(check_list); ++i) {
+  for (size_t i = 0; i < arraysize(check_list); ++i) {
     bool expected = flags_exp.find(check_list[i].exp_key) != flags_exp.end();
     if (check_list[i].val != expected) {
       *is_valid = false;

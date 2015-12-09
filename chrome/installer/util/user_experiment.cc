@@ -350,7 +350,7 @@ bool CreateExperimentDetails(int flavor, ExperimentDetails* experiment) {
   if (!GoogleUpdateSettings::GetBrand(&brand))
     brand.clear();  // Could still be viable for catch-all rules
 
-  for (int i = 0; i < arraysize(kExperiments); ++i) {
+  for (size_t i = 0; i < arraysize(kExperiments); ++i) {
     base::string16 experiment_locale = kExperiments[i].locale;
     if (experiment_locale != locale && experiment_locale != L"*")
       continue;

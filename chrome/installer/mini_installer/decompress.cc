@@ -192,7 +192,7 @@ bool InitializeFdi() {
     };
 
     wchar_t path[MAX_PATH] = {0};
-    for (int i = 0; i < _countof(candidate_paths); ++i) {
+    for (size_t i = 0; i < _countof(candidate_paths); ++i) {
       path[0] = L'\0';
       DWORD result = ::ExpandEnvironmentStringsW(candidate_paths[i],
                                                  path, _countof(path));

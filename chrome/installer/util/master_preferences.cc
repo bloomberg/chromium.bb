@@ -146,7 +146,7 @@ void MasterPreferences::InitializeFromCommandLine(
   };
 
   std::string name(installer::master_preferences::kDistroDict);
-  for (int i = 0; i < arraysize(translate_switches); ++i) {
+  for (size_t i = 0; i < arraysize(translate_switches); ++i) {
     if (cmd_line.HasSwitch(translate_switches[i].cmd_line_switch)) {
       name.assign(installer::master_preferences::kDistroDict);
       name.append(".").append(translate_switches[i].distribution_switch);

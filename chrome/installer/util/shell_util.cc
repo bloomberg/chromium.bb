@@ -1640,8 +1640,7 @@ void ShellUtil::GetRegisteredBrowsers(
   // HKCU has precedence over HKLM for these registrations: http://goo.gl/xjczJ.
   // Look in HKCU second to override any identical values found in HKLM.
   const HKEY roots[] = { HKEY_LOCAL_MACHINE, HKEY_CURRENT_USER };
-  for (int i = 0; i < arraysize(roots); ++i) {
-    const HKEY root = roots[i];
+  for (const HKEY root : roots) {
     for (base::win::RegistryKeyIterator iter(root, base_key.c_str());
          iter.Valid(); ++iter) {
       client_path.assign(base_key).append(1, L'\\').append(iter.Name());

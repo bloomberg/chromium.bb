@@ -33,5 +33,5 @@ TEST(MiniDecompressTest, ExpandTest) {
   // Check if the expanded file is a valid executable.
   DWORD type = static_cast<DWORD>(-1);
   EXPECT_TRUE(GetBinaryType(dest_path.value().c_str(), &type));
-  EXPECT_EQ(SCS_32BIT_BINARY, type);
+  EXPECT_EQ(static_cast<DWORD>(SCS_32BIT_BINARY), type);
 }
