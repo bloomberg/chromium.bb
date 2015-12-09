@@ -49,7 +49,7 @@ def SmokeTestGenerator(benchmark):
 
     class SinglePageBenchmark(benchmark):  # pylint: disable=no-init
       def CreateStorySet(self, options):
-        # pylint: disable=E1002
+        # pylint: disable=super-on-old-class
         story_set = super(SinglePageBenchmark, self).CreateStorySet(options)
         for story in story_set.stories:
           story.skip_waits = True
