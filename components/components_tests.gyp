@@ -717,6 +717,7 @@
       'sync_driver/non_blocking_data_type_controller_unittest.cc',
       'sync_driver/non_frontend_data_type_controller_unittest.cc',
       'sync_driver/non_ui_data_type_controller_unittest.cc',
+      'sync_driver/profile_sync_auth_provider_unittest.cc',
       'sync_driver/shared_change_processor_unittest.cc',
       'sync_driver/sync_prefs_unittest.cc',
       'sync_driver/sync_stopped_reporter_unittest.cc',

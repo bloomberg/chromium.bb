@@ -3,18 +3,10 @@
 // found in the LICENSE file.
 
 #include "base/run_loop.h"
-#include "chrome/browser/signin/account_fetcher_service_factory.h"
-#include "chrome/browser/signin/chrome_signin_client_factory.h"
-#include "chrome/browser/signin/fake_account_fetcher_service_builder.h"
-#include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/test_signin_client_builder.h"
-#include "chrome/test/base/testing_profile.h"
 #include "components/signin/core/browser/fake_account_fetcher_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/sync_driver/profile_sync_auth_provider.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -28,23 +20,13 @@ class ProfileSyncAuthProviderTest : public ::testing::Test {
   ~ProfileSyncAuthProviderTest() override {}
 
   void SetUp() override {
-    TestingProfile::Builder builder;
-    builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),
-                              &BuildAutoIssuingFakeProfileOAuth2TokenService);
-    builder.AddTestingFactory(AccountFetcherServiceFactory::GetInstance(),
-                              FakeAccountFetcherServiceBuilder::BuildForTests);
-    builder.AddTestingFactory(ChromeSigninClientFactory::GetInstance(),
-                              signin::BuildTestSigninClient);
-
-    profile_ = builder.Build();
-
-    FakeProfileOAuth2TokenService* token_service =
-        (FakeProfileOAuth2TokenService*)
-        ProfileOAuth2TokenServiceFactory::GetForProfile(profile_.get());
-    token_service->UpdateCredentials(kAccountId, "fake_refresh_token");
+    token_service_.reset(new FakeProfileOAuth2TokenService());
+    token_service_->set_auto_post_fetch_response_on_message_loop(true);
+    token_service_->UpdateCredentials(kAccountId, "fake_refresh_token");
 
     auth_provider_frontend_.reset(new ProfileSyncAuthProvider(
-        token_service, kAccountId, GaiaConstants::kChromeSyncOAuth2Scope));
+        token_service_.get(), kAccountId,
+        GaiaConstants::kChromeSyncOAuth2Scope));
     auth_provider_backend_ =
         auth_provider_frontend_->CreateProviderForSyncThread().Pass();
   }
@@ -56,9 +38,9 @@ class ProfileSyncAuthProviderTest : public ::testing::Test {
   }
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
-  scoped_ptr<Profile> profile_;
+  base::MessageLoop message_loop_;
 
+  scoped_ptr<FakeProfileOAuth2TokenService> token_service_;
   scoped_ptr<ProfileSyncAuthProvider> auth_provider_frontend_;
   scoped_ptr<syncer::SyncAuthProvider> auth_provider_backend_;
 

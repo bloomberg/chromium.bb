@@ -231,7 +231,6 @@
       'browser/sync/abstract_profile_sync_service_test.h',
       'browser/sync/glue/search_engine_data_type_controller_unittest.cc',
       'browser/sync/glue/sync_backend_host_impl_unittest.cc',
-      'browser/sync/profile_sync_auth_provider_unittest.cc',
       'browser/sync/profile_sync_service_autofill_unittest.cc',
       'browser/sync/profile_sync_service_bookmark_unittest.cc',
       'browser/sync/profile_sync_service_factory_unittest.cc',
