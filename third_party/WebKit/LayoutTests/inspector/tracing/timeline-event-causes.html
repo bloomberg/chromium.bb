@@ -30,8 +30,8 @@ function test()
                 var linkifier = new WebInspector.Linkifier();
                 var record = InspectorTest.findFirstTimelineRecord("TimerFire");
                 InspectorTest.check(record, "Should receive a TimerFire record.");
-                var contentHelper = new WebInspector.TimelineDetailsContentHelper(InspectorTest.timelineModel().target(), linkifier, null, true);
-                WebInspector.TimelineUIUtils._generateCauses(record.traceEvent(), InspectorTest.timelineModel().target(), contentHelper);
+                var contentHelper = new WebInspector.TimelineDetailsContentHelper(InspectorTest.timelineModel().target(), linkifier, true);
+                WebInspector.TimelineUIUtils._generateCauses(record.traceEvent(), InspectorTest.timelineModel().target(), null, contentHelper);
                 var causes = contentHelper.element.deepTextContent();
                 InspectorTest.check(causes, "Should generate causes");
                 checkStringContains(causes, "Timer InstalledsetTimeoutFunction @ setTimeoutFunction.js:");
@@ -56,8 +56,8 @@ function test()
                 var linkifier = new WebInspector.Linkifier();
                 var record = InspectorTest.findFirstTimelineRecord("FireAnimationFrame");
                 InspectorTest.check(record, "Should receive a FireAnimationFrame record.");
-                var contentHelper = new WebInspector.TimelineDetailsContentHelper(InspectorTest.timelineModel().target(), linkifier, null, true);
-                WebInspector.TimelineUIUtils._generateCauses(record.traceEvent(), InspectorTest.timelineModel().target(), contentHelper);
+                var contentHelper = new WebInspector.TimelineDetailsContentHelper(InspectorTest.timelineModel().target(), linkifier, true);
+                WebInspector.TimelineUIUtils._generateCauses(record.traceEvent(), InspectorTest.timelineModel().target(), null, contentHelper);
                 var causes = contentHelper.element.deepTextContent();
                 InspectorTest.check(causes, "Should generate causes");
                 checkStringContains(causes, "Animation Frame RequestedrequestAnimationFrameFunction @ requestAnimationFrameFunction.js:");
@@ -84,8 +84,8 @@ function test()
                 var linkifier = new WebInspector.Linkifier();
                 var record = InspectorTest.findFirstTimelineRecord("UpdateLayoutTree");
                 InspectorTest.check(record, "Should receive a UpdateLayoutTree record.");
-                var contentHelper = new WebInspector.TimelineDetailsContentHelper(InspectorTest.timelineModel().target(), linkifier, null, true);
-                WebInspector.TimelineUIUtils._generateCauses(record.traceEvent(), InspectorTest.timelineModel().target(), contentHelper);
+                var contentHelper = new WebInspector.TimelineDetailsContentHelper(InspectorTest.timelineModel().target(), linkifier, true);
+                WebInspector.TimelineUIUtils._generateCauses(record.traceEvent(), InspectorTest.timelineModel().target(), null, contentHelper);
                 var causes = contentHelper.element.deepTextContent();
                 InspectorTest.check(causes, "Should generate causes");
                 checkStringContains(causes, "First InvalidatedstyleRecalcFunction @ styleRecalcFunction.js:");
@@ -112,8 +112,8 @@ function test()
                 var linkifier = new WebInspector.Linkifier();
                 var record = InspectorTest.findFirstTimelineRecord("Layout");
                 InspectorTest.check(record, "Should receive a Layout record.");
-                var contentHelper = new WebInspector.TimelineDetailsContentHelper(InspectorTest.timelineModel().target(), linkifier, null, true);
-                WebInspector.TimelineUIUtils._generateCauses(record.traceEvent(), InspectorTest.timelineModel().target(), contentHelper);
+                var contentHelper = new WebInspector.TimelineDetailsContentHelper(InspectorTest.timelineModel().target(), linkifier, true);
+                WebInspector.TimelineUIUtils._generateCauses(record.traceEvent(), InspectorTest.timelineModel().target(), null, contentHelper);
                 var causes = contentHelper.element.deepTextContent();
                 InspectorTest.check(causes, "Should generate causes");
                 checkStringContains(causes, "Layout ForcedlayoutFunction @ layoutFunction.js:");
