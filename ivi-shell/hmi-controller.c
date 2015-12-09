@@ -299,7 +299,14 @@ mode_divided_into_sidebyside(struct hmi_controller *hmi_ctrl,
 
 	const uint32_t duration = hmi_ctrl->hmi_setting->transition_duration;
 	int32_t i = 0;
-	int32_t num = 1;
+	struct ivi_layout_surface **surfaces;
+	struct ivi_layout_surface **new_order;
+	struct ivi_layout_layer *ivilayer = NULL;
+	int32_t surf_num = 0;
+	int32_t idx = 0;
+
+	surfaces = MEM_ALLOC(sizeof(*surfaces) * surface_length);
+	new_order = MEM_ALLOC(sizeof(*surfaces) * surface_length);
 
 	for (i = 0; i < surface_length; i++) {
 		ivisurf = pp_surface[i];
@@ -308,36 +315,44 @@ mode_divided_into_sidebyside(struct hmi_controller *hmi_ctrl,
 		if (is_surf_in_ui_widget(hmi_ctrl, ivisurf))
 			continue;
 
-		if (num == 1) {
-			ivi_layout_interface->surface_set_transition(ivisurf,
-					IVI_LAYOUT_TRANSITION_VIEW_DEFAULT,
-					duration);
-			ivi_layout_interface->surface_set_visibility(ivisurf, true);
-			ivi_layout_interface->surface_set_destination_rectangle(ivisurf,
-							0, 0,
-							surface_width,
-							surface_height);
-
-			num++;
-			continue;
-		} else if (num == 2) {
-			ivi_layout_interface->surface_set_transition(ivisurf,
-					IVI_LAYOUT_TRANSITION_VIEW_DEFAULT,
-					duration);
-			ivi_layout_interface->surface_set_visibility(ivisurf, true);
-			ivi_layout_interface->surface_set_destination_rectangle(ivisurf,
-							surface_width, 0,
-							surface_width,
-							surface_height);
-
-			num++;
-			continue;
-		}
-		ivi_layout_interface->surface_set_transition(ivisurf,
-					IVI_LAYOUT_TRANSITION_VIEW_FADE_ONLY,
-					duration);
-		ivi_layout_interface->surface_set_visibility(ivisurf, false);
+		surfaces[surf_num++] = ivisurf;
 	}
+
+	wl_list_for_each_reverse(layer, layer_list, link) {
+		if (idx >= surf_num)
+			break;
+
+		ivilayer = layer->ivilayer;
+
+		for (i = 0; i < 2; i++, idx++) {
+			if (idx >= surf_num)
+				break;
+
+			ivisurf = surfaces[idx];
+			new_order[i] = ivisurf;
+
+			ivi_layout_interface->surface_set_transition(ivisurf,
+					IVI_LAYOUT_TRANSITION_VIEW_DEFAULT,
+					duration);
+			ivi_layout_interface->surface_set_visibility(ivisurf, true);
+
+			ivi_layout_interface->surface_set_destination_rectangle(ivisurf,
+								i * surface_width, 0,
+								surface_width,
+								surface_height);
+		}
+		ivi_layout_interface->layer_set_render_order(ivilayer, new_order, i);
+	}
+
+	for (i = idx; i < surf_num; i++) {
+		ivi_layout_interface->surface_set_transition(surfaces[i],
+						IVI_LAYOUT_TRANSITION_VIEW_FADE_ONLY,
+						duration);
+		ivi_layout_interface->surface_set_visibility(surfaces[i], false);
+	}
+
+	free(surfaces);
+	free(new_order);
 }
 
 static void
