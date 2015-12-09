@@ -53,11 +53,13 @@ class SiteEngagementHelperTest : public BrowserWithTestWindowTest {
   }
 
   void MediaStartedPlaying(SiteEngagementHelper* helper) {
-    helper->media_tracker_.MediaStartedPlaying();
+    helper->media_tracker_.MediaStartedPlaying(
+        content::WebContentsObserver::MediaPlayerId(nullptr, 1));
   }
 
-  void MediaPaused(SiteEngagementHelper* helper) {
-    helper->media_tracker_.MediaPaused();
+  void MediaStoppedPlaying(SiteEngagementHelper* helper) {
+    helper->media_tracker_.MediaStoppedPlaying(
+        content::WebContentsObserver::MediaPlayerId(nullptr, 1));
   }
 
   // Set a pause timer on the input tracker for test purposes.
@@ -235,7 +237,7 @@ TEST_F(SiteEngagementHelperTest, MediaEngagement) {
   EXPECT_EQ(0, service->GetScore(url2));
   EXPECT_TRUE(media_tracker_timer->IsRunning());
 
-  MediaPaused(helper.get());
+  MediaStoppedPlaying(helper.get());
   media_tracker_timer->Fire();
   EXPECT_DOUBLE_EQ(0.53, service->GetScore(url1));
   EXPECT_EQ(0, service->GetScore(url2));
@@ -270,7 +272,7 @@ TEST_F(SiteEngagementHelperTest, MediaEngagement) {
   EXPECT_EQ(0.53, service->GetScore(url2));
   EXPECT_TRUE(media_tracker_timer->IsRunning());
 
-  MediaPaused(helper.get());
+  MediaStoppedPlaying(helper.get());
   web_contents->WasShown();
   media_tracker_timer->Fire();
   EXPECT_DOUBLE_EQ(0.55, service->GetScore(url1));

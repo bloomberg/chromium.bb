@@ -81,6 +81,8 @@ class WebContentsObserverSanityChecker : public WebContentsObserver,
                            const Referrer& referrer,
                            WindowOpenDisposition disposition,
                            ui::PageTransition transition) override;
+  void MediaStartedPlaying(const MediaPlayerId& id) override;
+  void MediaStoppedPlaying(const MediaPlayerId& id) override;
   bool OnMessageReceived(const IPC::Message& message,
                          RenderFrameHost* render_frame_host) override;
   void WebContentsDestroyed() override;
@@ -100,6 +102,7 @@ class WebContentsObserverSanityChecker : public WebContentsObserver,
   std::set<std::pair<int, int>> deleted_routes_;
 
   std::set<NavigationHandle*> ongoing_navigations_;
+  std::vector<MediaPlayerId> active_media_players_;
 
   bool web_contents_destroyed_;
 

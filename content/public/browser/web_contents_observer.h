@@ -424,11 +424,14 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
   // Invoked when theme color is changed to |theme_color|.
   virtual void DidChangeThemeColor(SkColor theme_color) {}
 
-  // Invoked when media is playing.
-  virtual void MediaStartedPlaying() {}
-
-  // Invoked when media is paused.
-  virtual void MediaPaused() {}
+  // Invoked when media is playing or paused.  |id| is unique per player and per
+  // RenderFrameHost.  There may be multiple players within a RenderFrameHost
+  // and subsequently within a WebContents.  MediaStartedPlaying() will always
+  // be followed by MediaStoppedPlaying() after player teardown.  Observers must
+  // release all stored copies of |id| when MediaStoppedPlaying() is received.
+  using MediaPlayerId = std::pair<RenderFrameHost*, int64_t>;
+  virtual void MediaStartedPlaying(const MediaPlayerId& id) {}
+  virtual void MediaStoppedPlaying(const MediaPlayerId& id) {}
 
   // Invoked when media session has changed its state.
   virtual void MediaSessionStateChanged(bool is_controllable,

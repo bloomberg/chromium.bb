@@ -1010,6 +1010,8 @@
       'browser/media/media_internals_proxy.h',
       'browser/media/media_internals_ui.cc',
       'browser/media/media_internals_ui.h',
+      'browser/media/media_web_contents_observer.cc',
+      'browser/media/media_web_contents_observer.h',
       'browser/media/midi_host.cc',
       'browser/media/midi_host.h',
       'browser/media/webrtc_identity_store.cc',
@@ -2175,9 +2177,6 @@
       'sources': [
         'browser/media/cdm/browser_cdm_manager.cc',
         'browser/media/cdm/browser_cdm_manager.h',
-        # This works on Android because enable_browser_cdms==1 on Android.
-        'browser/media/media_web_contents_observer.cc',
-        'browser/media/media_web_contents_observer.h',
       ],
     }],
     ['OS == "linux"', {

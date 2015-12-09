@@ -84,6 +84,10 @@ void WebContentsObserverSanityChecker::RenderFrameDeleted(
                  << " for which RenderFrameCreated was never called";
 #endif
   }
+
+  // All players should have been paused by this point.
+  for (const auto& id : active_media_players_)
+    CHECK_NE(id.first, render_frame_host);
 }
 
 void WebContentsObserverSanityChecker::RenderFrameForInterstitialPageCreated(
@@ -258,6 +262,24 @@ void WebContentsObserverSanityChecker::DidOpenRequestedURL(
   AssertRenderFrameExists(source_render_frame_host);
 }
 
+void WebContentsObserverSanityChecker::MediaStartedPlaying(
+    const MediaPlayerId& id) {
+  CHECK(!web_contents_destroyed_);
+  CHECK(std::find(active_media_players_.begin(), active_media_players_.end(),
+                  id) == active_media_players_.end());
+  active_media_players_.push_back(id);
+}
+
+void WebContentsObserverSanityChecker::MediaStoppedPlaying(
+    const MediaPlayerId& id) {
+  CHECK(!web_contents_destroyed_);
+  CHECK(std::find(active_media_players_.begin(), active_media_players_.end(),
+                  id) != active_media_players_.end());
+  active_media_players_.erase(std::remove(active_media_players_.begin(),
+                                          active_media_players_.end(), id),
+                              active_media_players_.end());
+}
+
 bool WebContentsObserverSanityChecker::OnMessageReceived(
     const IPC::Message& message,
     RenderFrameHost* render_frame_host) {
@@ -276,6 +298,7 @@ void WebContentsObserverSanityChecker::WebContentsDestroyed() {
   CHECK(!web_contents_destroyed_);
   web_contents_destroyed_ = true;
   CHECK(ongoing_navigations_.empty());
+  CHECK(active_media_players_.empty());
 }
 
 WebContentsObserverSanityChecker::WebContentsObserverSanityChecker(

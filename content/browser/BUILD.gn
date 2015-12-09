@@ -518,8 +518,6 @@ source_set("browser") {
     sources += [
       "media/cdm/browser_cdm_manager.cc",
       "media/cdm/browser_cdm_manager.h",
-      "media/media_web_contents_observer.cc",
-      "media/media_web_contents_observer.h",
     ]
   }
 

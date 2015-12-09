@@ -32,6 +32,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/page_importance_signals.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/common/resource_type.h"
@@ -69,7 +70,6 @@ class WakeLockServiceContext;
 class WebContentsAudioMuter;
 class WebContentsDelegate;
 class WebContentsImpl;
-class WebContentsObserver;
 class WebContentsView;
 class WebContentsViewDelegate;
 struct AXEventNotificationDetails;
@@ -714,19 +714,14 @@ class CONTENT_EXPORT WebContentsImpl
     return &audio_stream_monitor_;
   }
 
-  bool has_audio_power_save_blocker_for_testing() const {
-    return audio_power_save_blocker_;
-  }
+  // Called by MediaWebContentsObserver when playback starts or stops.  See the
+  // WebContentsObserver function stubs for more details.
+  void MediaStartedPlaying(const WebContentsObserver::MediaPlayerId& id);
+  void MediaStoppedPlaying(const WebContentsObserver::MediaPlayerId& id);
 
-  bool has_video_power_save_blocker_for_testing() const {
-    return video_power_save_blocker_;
-  }
-
-#if defined(ENABLE_BROWSER_CDMS)
   MediaWebContentsObserver* media_web_contents_observer() {
     return media_web_contents_observer_.get();
   }
-#endif
 
  private:
   friend class WebContentsObserver;
@@ -904,11 +899,6 @@ class CONTENT_EXPORT WebContentsImpl
 #endif  // defined(ENABLE_PLUGINS)
   void OnUpdateFaviconURL(const std::vector<FaviconURL>& candidates);
   void OnFirstVisuallyNonEmptyPaint();
-  void OnMediaPlayingNotification(int64 player_cookie,
-                                  bool has_video,
-                                  bool has_audio,
-                                  bool is_remote);
-  void OnMediaPausedNotification(int64 player_cookie);
   void OnShowValidationMessage(const gfx::Rect& anchor_in_root_view,
                                const base::string16& main_text,
                                const base::string16& sub_text);
@@ -996,22 +986,6 @@ class CONTENT_EXPORT WebContentsImpl
   // Removes browser plugin embedder if there is one.
   void RemoveBrowserPluginEmbedder();
 
-  // Clear |render_frame_host|'s tracking entry for its power save blockers.
-  void ClearPowerSaveBlockers(RenderFrameHost* render_frame_host);
-
-  // Clear tracking entries for all RenderFrameHosts, clears
-  // |audio_power_save_blocker_| and |video_power_save_blocker_|.
-  void ClearAllPowerSaveBlockers();
-
-  // Creates an audio or video power save blocker respectively.
-  void CreateAudioPowerSaveBlocker();
-  void CreateVideoPowerSaveBlocker();
-
-  // Releases the audio power save blockers if |active_audio_players_| is empty.
-  // Likewise, releases the video power save blockers if |active_video_players_|
-  // is empty.
-  void MaybeReleasePowerSaveBlockers();
-
   // Helper function to invoke WebContentsDelegate::GetSizeForNewRenderView().
   gfx::Size GetSizeForNewRenderView();
 
@@ -1021,18 +995,6 @@ class CONTENT_EXPORT WebContentsImpl
   // |preferred_size_for_capture_| changes, to propagate the new value to the
   // |delegate_|.
   void OnPreferredSizeChanged(const gfx::Size& old_size);
-
-  // Helper methods for adding or removing player entries in |player_map| under
-  // the key |render_frame_message_source_|.
-  typedef std::vector<int64> PlayerList;
-  typedef std::map<uintptr_t, PlayerList> ActiveMediaPlayerMap;
-  void AddMediaPlayerEntry(int64 player_cookie,
-                           ActiveMediaPlayerMap* player_map);
-  void RemoveMediaPlayerEntry(int64 player_cookie,
-                              ActiveMediaPlayerMap* player_map);
-  // Removes all entries from |player_map| for |render_frame_host|.
-  void RemoveAllMediaPlayerEntries(RenderFrameHost* render_frame_host,
-                                   ActiveMediaPlayerMap* player_map);
 
   // Internal helper to create WebUI objects associated with |this|. |url| is
   // used to determine which WebUI should be created (if any). |frame_name|
@@ -1084,12 +1046,6 @@ class CONTENT_EXPORT WebContentsImpl
 #endif
 
   // Helper classes ------------------------------------------------------------
-
-  // Tracking variables and associated power save blockers for media playback.
-  ActiveMediaPlayerMap active_audio_players_;
-  ActiveMediaPlayerMap active_video_players_;
-  scoped_ptr<PowerSaveBlocker> audio_power_save_blocker_;
-  scoped_ptr<PowerSaveBlocker> video_power_save_blocker_;
 
   // Manages the frame tree of the page and process swaps in each node.
   FrameTree frame_tree_;
@@ -1323,10 +1279,8 @@ class CONTENT_EXPORT WebContentsImpl
 
   bool virtual_keyboard_requested_;
 
-#if defined(ENABLE_BROWSER_CDMS)
-  // Manages all the media player and CDM managers and forwards IPCs to them.
+  // Manages media players, CDMs, and power save blockers for media.
   scoped_ptr<MediaWebContentsObserver> media_web_contents_observer_;
-#endif
 
   scoped_ptr<RenderWidgetHostInputEventRouter> rwh_input_event_router_;
 

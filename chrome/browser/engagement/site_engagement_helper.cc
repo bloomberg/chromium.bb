@@ -111,26 +111,32 @@ void SiteEngagementHelper::InputTracker::DidGetUserInteraction(
 SiteEngagementHelper::MediaTracker::MediaTracker(
     SiteEngagementHelper* helper,
     content::WebContents* web_contents)
-    : PeriodicTracker(helper), content::WebContentsObserver(web_contents),
-      is_hidden_(false),
-      is_playing_(false) {}
+    : PeriodicTracker(helper),
+      content::WebContentsObserver(web_contents),
+      is_hidden_(false) {}
+
+SiteEngagementHelper::MediaTracker::~MediaTracker() {}
 
 void SiteEngagementHelper::MediaTracker::TrackingStarted() {
-  if (is_playing_)
+  if (!active_media_players_.empty())
     helper()->RecordMediaPlaying(is_hidden_);
 
   Pause();
 }
 
-void SiteEngagementHelper::MediaTracker::MediaStartedPlaying() {
+void SiteEngagementHelper::MediaTracker::MediaStartedPlaying(
+    const MediaPlayerId& id) {
   // Only begin engagement detection when media actually starts playing.
-  is_playing_ = true;
+  active_media_players_.push_back(id);
   if (!IsTimerRunning())
     Start(base::TimeDelta::FromSeconds(g_seconds_delay_after_media_starts));
 }
 
-void SiteEngagementHelper::MediaTracker::MediaPaused() {
-  is_playing_ = false;
+void SiteEngagementHelper::MediaTracker::MediaStoppedPlaying(
+    const MediaPlayerId& id) {
+  active_media_players_.erase(std::remove(active_media_players_.begin(),
+                                          active_media_players_.end(), id),
+                              active_media_players_.end());
 }
 
 void SiteEngagementHelper::MediaTracker::WasShown() {

@@ -130,6 +130,7 @@ class SiteEngagementHelper
    public:
     MediaTracker(SiteEngagementHelper* helper,
                  content::WebContents* web_contents);
+    ~MediaTracker() override;
 
    private:
     friend class SiteEngagementHelperTest;
@@ -137,13 +138,13 @@ class SiteEngagementHelper
     void TrackingStarted() override;
 
     // content::WebContentsObserver overrides.
-    void MediaStartedPlaying() override;
-    void MediaPaused() override;
+    void MediaStartedPlaying(const MediaPlayerId& id) override;
+    void MediaStoppedPlaying(const MediaPlayerId& id) override;
     void WasShown() override;
     void WasHidden() override;
 
     bool is_hidden_;
-    bool is_playing_;
+    std::vector<MediaPlayerId> active_media_players_;
   };
 
   explicit SiteEngagementHelper(content::WebContents* web_contents);

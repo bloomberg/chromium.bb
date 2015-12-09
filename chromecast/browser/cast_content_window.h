@@ -46,8 +46,8 @@ class CastContentWindow : public content::WebContentsObserver {
 
   // content::WebContentsObserver implementation:
   void DidFirstVisuallyNonEmptyPaint() override;
-  void MediaPaused() override;
-  void MediaStartedPlaying() override;
+  void MediaStoppedPlaying(const MediaPlayerId& id) override;
+  void MediaStartedPlaying(const MediaPlayerId& id) override;
   void RenderViewCreated(content::RenderViewHost* render_view_host) override;
 
  private:
