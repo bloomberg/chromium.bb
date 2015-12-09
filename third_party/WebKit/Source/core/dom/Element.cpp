@@ -1208,7 +1208,7 @@ void Element::attributeChanged(const QualifiedName& name, const AtomicString& ol
         AtomicString newId = makeIdForStyleResolution(newValue, document().inQuirksMode());
         if (newId != oldId) {
             elementData()->setIdForStyleResolution(newId);
-            if (inActiveDocument() && styleResolver && styleChangeType() < SubtreeStyleChange)
+            if (inActiveDocument() && styleResolver)
                 document().styleEngine().idChangedForElement(oldId, newId, *this);
         }
     } else if (name == classAttr) {
@@ -1288,7 +1288,7 @@ static inline ClassStringContent classStringHasClassName(const AtomicString& new
 void Element::classAttributeChanged(const AtomicString& newClassString)
 {
     StyleResolver* styleResolver = document().styleResolver();
-    bool testShouldInvalidateStyle = inActiveDocument() && styleResolver && styleChangeType() < SubtreeStyleChange;
+    bool testShouldInvalidateStyle = inActiveDocument() && styleResolver;
 
     ASSERT(elementData());
     ClassStringContent classStringContentType = classStringHasClassName(newClassString);
@@ -1877,7 +1877,7 @@ void Element::pseudoStateChanged(CSSSelector::PseudoType pseudo)
     if (document().inStyleRecalc())
         return;
     StyleResolver* styleResolver = document().styleResolver();
-    if (inActiveDocument() && styleResolver && styleChangeType() < SubtreeStyleChange)
+    if (inActiveDocument() && styleResolver)
         document().styleEngine().pseudoStateChangedForElement(pseudo, *this);
 }
 
@@ -2073,8 +2073,6 @@ void Element::checkForEmptyStyleChange()
     const ComputedStyle* style = computedStyle();
 
     if (!style && !styleAffectedByEmpty())
-        return;
-    if (styleChangeType() >= SubtreeStyleChange)
         return;
     if (!inActiveDocument())
         return;
@@ -3133,7 +3131,7 @@ void Element::willModifyAttribute(const QualifiedName& name, const AtomicString&
     }
 
     if (oldValue != newValue) {
-        if (inActiveDocument() && document().styleResolver() && styleChangeType() < SubtreeStyleChange)
+        if (inActiveDocument() && document().styleResolver())
             document().styleEngine().attributeChangedForElement(name, *this);
 
         if (isUpgradedCustomElement())

@@ -1079,14 +1079,12 @@ void ContainerNode::focusStateChanged()
     if (!layoutObject())
         return;
 
-    if (styleChangeType() < SubtreeStyleChange) {
-        if (computedStyle()->affectedByFocus() && computedStyle()->hasPseudoStyle(FIRST_LETTER))
-            setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Focus));
-        else if (isElementNode() && toElement(this)->childrenOrSiblingsAffectedByFocus())
-            toElement(this)->pseudoStateChanged(CSSSelector::PseudoFocus);
-        else if (computedStyle()->affectedByFocus())
-            setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Focus));
-    }
+    if (computedStyle()->affectedByFocus() && computedStyle()->hasPseudoStyle(FIRST_LETTER))
+        setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Focus));
+    else if (isElementNode() && toElement(this)->childrenOrSiblingsAffectedByFocus())
+        toElement(this)->pseudoStateChanged(CSSSelector::PseudoFocus);
+    else if (computedStyle()->affectedByFocus())
+        setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Focus));
 
     LayoutTheme::theme().controlStateChanged(*layoutObject(), FocusControlState);
 }
@@ -1134,14 +1132,12 @@ void ContainerNode::setActive(bool down)
 
     // FIXME: Why does this not need to handle the display: none transition like :hover does?
     if (layoutObject()) {
-        if (styleChangeType() < SubtreeStyleChange) {
-            if (computedStyle()->affectedByActive() && computedStyle()->hasPseudoStyle(FIRST_LETTER))
-                setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Active));
-            else if (isElementNode() && toElement(this)->childrenOrSiblingsAffectedByActive())
-                toElement(this)->pseudoStateChanged(CSSSelector::PseudoActive);
-            else if (computedStyle()->affectedByActive())
-                setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Active));
-        }
+        if (computedStyle()->affectedByActive() && computedStyle()->hasPseudoStyle(FIRST_LETTER))
+            setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Active));
+        else if (isElementNode() && toElement(this)->childrenOrSiblingsAffectedByActive())
+            toElement(this)->pseudoStateChanged(CSSSelector::PseudoActive);
+        else if (computedStyle()->affectedByActive())
+            setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Active));
 
         LayoutTheme::theme().controlStateChanged(*layoutObject(), PressedControlState);
     }
@@ -1165,14 +1161,12 @@ void ContainerNode::setHovered(bool over)
         return;
     }
 
-    if (styleChangeType() < SubtreeStyleChange) {
-        if (computedStyle()->affectedByHover() && computedStyle()->hasPseudoStyle(FIRST_LETTER))
-            setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Hover));
-        else if (isElementNode() && toElement(this)->childrenOrSiblingsAffectedByHover())
-            toElement(this)->pseudoStateChanged(CSSSelector::PseudoHover);
-        else if (computedStyle()->affectedByHover())
-            setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Hover));
-    }
+    if (computedStyle()->affectedByHover() && computedStyle()->hasPseudoStyle(FIRST_LETTER))
+        setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Hover));
+    else if (isElementNode() && toElement(this)->childrenOrSiblingsAffectedByHover())
+        toElement(this)->pseudoStateChanged(CSSSelector::PseudoHover);
+    else if (computedStyle()->affectedByHover())
+        setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Hover));
 
     LayoutTheme::theme().controlStateChanged(*layoutObject(), HoverControlState);
 }
