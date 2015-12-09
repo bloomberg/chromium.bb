@@ -5,6 +5,7 @@
 import("//base/android/linker/config.gni")
 import("//build/config/android/config.gni")
 import("//build/config/android/internal_rules.gni")
+import("//build/config/sanitizers/sanitizers.gni")
 import("//build/toolchain/toolchain.gni")
 import("//third_party/android_platform/config.gni")
 import("//tools/grit/grit_rule.gni")
@@ -1330,7 +1331,7 @@ template("android_apk") {
   _native_libs_deps = []
 
   if (defined(invoker.native_libs) && invoker.native_libs != []) {
-    if (is_component_build) {
+    if (is_component_build || is_asan) {
       _native_libs += [ "$root_shlib_dir/libc++_shared.so" ]
       _native_libs_deps += [ "//build/android:cpplib_stripped" ]
     }

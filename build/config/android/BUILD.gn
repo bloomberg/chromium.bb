@@ -145,7 +145,9 @@ config("runtime_library") {
   lib_dirs = [ "$android_libcpp_root/libs/$android_app_abi" ]
 
   # The libc++ runtime library (must come first).
-  if (is_component_build) {
+  # ASan needs to dynamically link to libc++ even in static builds so
+  # that it can interpose operator new.
+  if (is_component_build || is_asan) {
     libs = [ "c++_shared" ]
   } else {
     libs = [ "c++_static" ]
