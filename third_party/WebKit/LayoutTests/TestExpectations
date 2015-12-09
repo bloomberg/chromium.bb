@@ -1491,8 +1491,6 @@ crbug.com/538717 [ Win Mac Linux ] http/tests/permissions/chromium/test-request-
 crbug.com/538717 [ Win Mac Linux ] http/tests/permissions/chromium/test-request-multiple-worker.html [ Failure Pass Timeout ]
 crbug.com/538717 [ Win Mac Linux ] http/tests/permissions/chromium/test-request-multiple-sharedworker.html [ Failure Pass Timeout ]
 
-crbug.com/541601 svg/overflow/overflow-on-outermost-svg-element-in-xhtml-defaults.xhtml [ NeedsRebaseline ]
-
 crbug.com/543369 [ Linux ] fast/forms/select/popup-menu-appearance-tall.html [ Failure ]
 
 crbug.com/545551 [ Win Mac ] svg/custom/repaint-shadow.svg [ Failure Pass ]
