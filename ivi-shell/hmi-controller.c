@@ -112,7 +112,7 @@ struct hmi_controller {
 	struct hmi_server_setting          *hmi_setting;
 	/* List of struct hmi_controller_layer */
 	struct wl_list                      base_layer_list;
-	struct hmi_controller_layer         application_layer;
+	struct wl_list                      application_layer_list;
 	struct hmi_controller_layer         workspace_background_layer;
 	struct hmi_controller_layer         workspace_layer;
 	enum ivi_hmi_controller_layout_mode layout_mode;
@@ -213,8 +213,9 @@ static void
 mode_divided_into_tiling(struct hmi_controller *hmi_ctrl,
 			 struct ivi_layout_surface **pp_surface,
 			 int32_t surface_length,
-			 struct hmi_controller_layer *layer)
+			 struct wl_list *layer_list)
 {
+	struct hmi_controller_layer *layer = wl_container_of(layer_list->prev, layer, link);
 	const float surface_width  = (float)layer->width * 0.25;
 	const float surface_height = (float)layer->height * 0.5;
 	int32_t surface_x = 0;
@@ -283,8 +284,9 @@ static void
 mode_divided_into_sidebyside(struct hmi_controller *hmi_ctrl,
 			     struct ivi_layout_surface **pp_surface,
 			     int32_t surface_length,
-			     struct hmi_controller_layer *layer)
+			     struct wl_list *layer_list)
 {
+	struct hmi_controller_layer *layer = wl_container_of(layer_list->prev, layer, link);
 	int32_t surface_width  = layer->width / 2;
 	int32_t surface_height = layer->height;
 	struct ivi_layout_surface *ivisurf  = NULL;
@@ -336,8 +338,9 @@ static void
 mode_fullscreen_someone(struct hmi_controller *hmi_ctrl,
 			struct ivi_layout_surface **pp_surface,
 			int32_t surface_length,
-			struct hmi_controller_layer *layer)
+			struct wl_list *layer_list)
 {
+	struct hmi_controller_layer *layer = wl_container_of(layer_list->prev, layer, link);
 	const int32_t  surface_width  = layer->width;
 	const int32_t  surface_height = layer->height;
 	struct ivi_layout_surface *ivisurf  = NULL;
@@ -365,8 +368,9 @@ static void
 mode_random_replace(struct hmi_controller *hmi_ctrl,
 		    struct ivi_layout_surface **pp_surface,
 		    int32_t surface_length,
-		    struct hmi_controller_layer *layer)
+		    struct wl_list *layer_list)
 {
+	struct hmi_controller_layer *layer = wl_container_of(layer_list->prev, layer, link);
 	const int32_t surface_width  = (int32_t)(layer->width * 0.25f);
 	const int32_t surface_height = (int32_t)(layer->height * 0.25f);
 	int32_t surface_x = 0;
@@ -426,7 +430,7 @@ static void
 switch_mode(struct hmi_controller *hmi_ctrl,
 	    enum ivi_hmi_controller_layout_mode layout_mode)
 {
-	struct hmi_controller_layer *layer = &hmi_ctrl->application_layer;
+	struct wl_list *layer = &hmi_ctrl->application_layer_list;
 	struct ivi_layout_surface **pp_surface = NULL;
 	int32_t surface_length = 0;
 	int32_t ret = 0;
@@ -560,8 +564,11 @@ set_notification_create_surface(struct ivi_layout_surface *ivisurf,
 				void *userdata)
 {
 	struct hmi_controller *hmi_ctrl = userdata;
-	struct ivi_layout_layer *application_layer =
-		hmi_ctrl->application_layer.ivilayer;
+	struct hmi_controller_layer *layer_link =
+					wl_container_of(hmi_ctrl->application_layer_list.prev,
+							layer_link,
+							link);
+	struct ivi_layout_layer *application_layer = layer_link->ivilayer;
 	int32_t ret = 0;
 
 	/* skip ui widgets */
@@ -586,8 +593,8 @@ set_notification_configure_surface(struct ivi_layout_surface *ivisurf,
 				   void *userdata)
 {
 	struct hmi_controller *hmi_ctrl = userdata;
-	struct ivi_layout_layer *application_layer =
-		hmi_ctrl->application_layer.ivilayer;
+	struct hmi_controller_layer *layer_link = NULL;
+	struct ivi_layout_layer *application_layer = NULL;
 	struct weston_surface *surface;
 	struct ivi_layout_surface **ivisurfs;
 	int32_t length = 0;
@@ -613,16 +620,19 @@ set_notification_configure_surface(struct ivi_layout_surface *ivisurf,
 	 *  search if the surface is already added to layer.
 	 *  If not yet, it is newly invoded application to go to switch_mode.
 	 */
-	ivi_layout_interface->get_surfaces_on_layer(application_layer,
+	wl_list_for_each_reverse(layer_link, &hmi_ctrl->application_layer_list, link) {
+		application_layer = layer_link->ivilayer;
+		ivi_layout_interface->get_surfaces_on_layer(application_layer,
 							&length, &ivisurfs);
-	for (i = 0; i < length; i++) {
-		if (ivisurf == ivisurfs[i]) {
-			/*
-			 * if it is non new invoked application, just call
-			 * commit_changes to apply source_rectangle.
-			 */
-			ivi_layout_interface->commit_changes();
-			return;
+		for (i = 0; i < length; i++) {
+			if (ivisurf == ivisurfs[i]) {
+				/*
+				 * if it is non new invoked application, just call
+				 * commit_changes to apply source_rectangle.
+				 */
+				ivi_layout_interface->commit_changes();
+				return;
+			}
 		}
 	}
 
@@ -689,8 +699,16 @@ hmi_controller_destroy(struct wl_listener *listener, void *data)
 		free(link);
 	}
 
+	/* clear base_layer_list */
 	wl_list_for_each_safe(ctrl_layer_link, ctrl_layer_next,
 			      &hmi_ctrl->base_layer_list, link) {
+		wl_list_remove(&ctrl_layer_link->link);
+		free(ctrl_layer_link);
+	}
+
+	/* clear application_layer_list */
+	wl_list_for_each_safe(ctrl_layer_link, ctrl_layer_next,
+			      &hmi_ctrl->application_layer_list, link) {
 		wl_list_remove(&ctrl_layer_link->link);
 		free(ctrl_layer_link);
 	}
@@ -726,6 +744,7 @@ hmi_controller_create(struct weston_compositor *ec)
 	int32_t panel_height = 0;
 	struct hmi_controller *hmi_ctrl = MEM_ALLOC(sizeof(*hmi_ctrl));
 	struct hmi_controller_layer *base_layer = NULL;
+	struct hmi_controller_layer *application_layer = NULL;
 
 	int32_t i = 0;
 
@@ -763,19 +782,30 @@ hmi_controller_create(struct weston_compositor *ec)
 		create_layer(get_screen(i, hmi_ctrl), base_layer);
 	}
 
-	ivi_layout_interface->get_screen_resolution(iviscrn, &screen_width,
-					 &screen_height);
 	panel_height = hmi_ctrl->hmi_setting->panel_height;
 
 	/* init application ivi_layer */
-	hmi_ctrl->application_layer.x = 0;
-	hmi_ctrl->application_layer.y = 0;
-	hmi_ctrl->application_layer.width = screen_width;
-	hmi_ctrl->application_layer.height = screen_height - panel_height;
-	hmi_ctrl->application_layer.id_layer =
-		hmi_ctrl->hmi_setting->application_layer_id;
+	wl_list_init(&hmi_ctrl->application_layer_list);
+	for (i = 0; i < hmi_ctrl->screen_num; i++) {
+		ivi_layout_interface->get_screen_resolution(get_screen(i, hmi_ctrl),
+						 &screen_width,
+						 &screen_height);
 
-	create_layer(iviscrn, &hmi_ctrl->application_layer);
+		application_layer = MEM_ALLOC(1 * sizeof(struct hmi_controller_layer));
+		application_layer->x = 0;
+		application_layer->y = 0;
+		application_layer->width = screen_width;
+		application_layer->height = screen_height - panel_height;
+		application_layer->id_layer =
+			hmi_ctrl->hmi_setting->application_layer_id +
+						(i * hmi_ctrl->hmi_setting->base_layer_id_offset);
+		wl_list_insert(&hmi_ctrl->application_layer_list, &application_layer->link);
+
+		create_layer(get_screen(i, hmi_ctrl), application_layer);
+	}
+
+	ivi_layout_interface->get_screen_resolution(iviscrn, &screen_width,
+					 &screen_height);
 
 	/* init workspace background ivi_layer */
 	hmi_ctrl->workspace_background_layer.x = 0;
@@ -833,10 +863,14 @@ ivi_hmi_controller_set_background(struct hmi_controller *hmi_ctrl,
 	struct ivi_layout_surface *ivisurf = NULL;
 	struct hmi_controller_layer *base_layer = NULL;
 	struct ivi_layout_layer   *ivilayer = NULL;
-	const int32_t dstx = hmi_ctrl->application_layer.x;
-	const int32_t dsty = hmi_ctrl->application_layer.y;
-	const int32_t width  = hmi_ctrl->application_layer.width;
-	const int32_t height = hmi_ctrl->application_layer.height;
+	struct hmi_controller_layer *application_layer =
+					wl_container_of(hmi_ctrl->application_layer_list.prev,
+							application_layer,
+							link);
+	const int32_t dstx = application_layer->x;
+	const int32_t dsty = application_layer->y;
+	const int32_t width  = application_layer->width;
+	const int32_t height = application_layer->height;
 	int32_t ret = 0;
 	int32_t i = 0;
 
