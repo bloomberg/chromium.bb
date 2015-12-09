@@ -58,9 +58,11 @@ class ManagePasswordsUIController
   void OnLoginsChanged(
       const password_manager::PasswordStoreChangeList& changes) override;
 
+#if !BUILDFLAG(ANDROID_JAVA_UI)
   // Set the state of the Omnibox icon, and possibly show the associated bubble
   // without user interaction.
   virtual void UpdateIconAndBubbleState(ManagePasswordsIconView* icon);
+#endif
 
   bool IsAutomaticallyOpeningBubble() const { return should_pop_up_bubble_; }
 

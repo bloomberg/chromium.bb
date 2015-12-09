@@ -15,7 +15,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
-#include "chrome/browser/ui/passwords/manage_passwords_icon_view.h"
 #include "chrome/browser/ui/tab_dialogs.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -27,6 +26,12 @@
 #include "components/password_manager/core/common/credential_manager_types.h"
 #include "content/public/browser/navigation_details.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if BUILDFLAG(ANDROID_JAVA_UI)
+#include "chrome/browser/android/chrome_application.h"
+#else
+#include "chrome/browser/ui/passwords/manage_passwords_icon_view.h"
+#endif
 
 using autofill::PasswordFormMap;
 using password_manager::PasswordFormManager;
@@ -144,6 +149,7 @@ void ManagePasswordsUIController::OnLoginsChanged(
     UpdateBubbleAndIconVisibility();
 }
 
+#if !BUILDFLAG(ANDROID_JAVA_UI)
 void ManagePasswordsUIController::UpdateIconAndBubbleState(
     ManagePasswordsIconView* icon) {
   if (should_pop_up_bubble_) {
@@ -155,6 +161,7 @@ void ManagePasswordsUIController::UpdateIconAndBubbleState(
     icon->SetState(GetState());
   }
 }
+#endif
 
 const GURL& ManagePasswordsUIController::GetOrigin() const {
   return passwords_data_.origin();
@@ -264,26 +271,38 @@ void ManagePasswordsUIController::ChooseCredential(
 }
 
 void ManagePasswordsUIController::NavigateToExternalPasswordManager() {
+#if BUILDFLAG(ANDROID_JAVA_UI)
+  NOTREACHED();
+#else
   chrome::NavigateParams params(
       chrome::FindBrowserWithWebContents(web_contents()),
       GURL(password_manager::kPasswordManagerAccountDashboardURL),
       ui::PAGE_TRANSITION_LINK);
   params.disposition = NEW_FOREGROUND_TAB;
   chrome::Navigate(&params);
+#endif
 }
 
 void ManagePasswordsUIController::NavigateToSmartLockHelpPage() {
+#if BUILDFLAG(ANDROID_JAVA_UI)
+  NOTREACHED();
+#else
   chrome::NavigateParams params(
       chrome::FindBrowserWithWebContents(web_contents()),
       GURL(chrome::kSmartLockHelpPage), ui::PAGE_TRANSITION_LINK);
   params.disposition = NEW_FOREGROUND_TAB;
   chrome::Navigate(&params);
+#endif
 }
 
 void ManagePasswordsUIController::NavigateToPasswordManagerSettingsPage() {
+#if BUILDFLAG(ANDROID_JAVA_UI)
+  chrome::android::ChromeApplication::ShowPasswordSettings();
+#else
   chrome::ShowSettingsSubPage(
       chrome::FindBrowserWithWebContents(web_contents()),
       chrome::kPasswordManagerSubPage);
+#endif
 }
 
 void ManagePasswordsUIController::SavePasswordInternal() {
@@ -321,12 +340,14 @@ void ManagePasswordsUIController::UpdateBubbleAndIconVisibility() {
     passwords_data_.OnInactive();
   }
 
+#if !BUILDFLAG(ANDROID_JAVA_UI)
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
   if (!browser)
     return;
   LocationBar* location_bar = browser->window()->GetLocationBar();
   DCHECK(location_bar);
   location_bar->UpdateManagePasswordsIconAndBubble();
+#endif
 }
 
 base::TimeDelta ManagePasswordsUIController::Elapsed() const {
@@ -354,17 +375,21 @@ void ManagePasswordsUIController::DidNavigateMainFrame(
 }
 
 void ManagePasswordsUIController::WasHidden() {
+#if !BUILDFLAG(ANDROID_JAVA_UI)
   TabDialogs::FromWebContents(web_contents())->HideManagePasswordsBubble();
+#endif
 }
 
 void ManagePasswordsUIController::ShowBubbleWithoutUserInteraction() {
   DCHECK(should_pop_up_bubble_);
+#if !BUILDFLAG(ANDROID_JAVA_UI)
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
   if (!browser || browser->toolbar_model()->input_in_progress())
     return;
 
   CommandUpdater* updater = browser->command_controller()->command_updater();
   updater->ExecuteCommand(IDC_MANAGE_PASSWORDS_FOR_PAGE);
+#endif
 }
 
 void ManagePasswordsUIController::WebContentsDestroyed() {
