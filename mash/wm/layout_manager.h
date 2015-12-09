@@ -24,9 +24,12 @@ class LayoutManager : public mus::WindowObserver {
  protected:
   explicit LayoutManager(mus::Window* owner);
 
+  void Uninstall();
+
   // Overridden from mus::WindowObserver:
   void OnTreeChanged(
       const mus::WindowObserver::TreeChangeParams& params) override;
+  void OnWindowDestroying(mus::Window* window) override;
   void OnWindowBoundsChanged(mus::Window* window,
                              const gfx::Rect& old_bounds,
                              const gfx::Rect& new_bounds) override;

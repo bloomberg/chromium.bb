@@ -154,6 +154,7 @@ source_set("unittests") {
 
   sources = [
     "frame/move_loop_unittest.cc",
+    "layout_manager_unittest.cc",
   ]
 
   deps = [
