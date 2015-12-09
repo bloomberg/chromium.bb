@@ -29,7 +29,6 @@ void ExecuteCalculateDrawProperties(LayerImpl* root,
   // Sanity check: The test itself should create the root layer's render
   //               surface, so that the surface (and its damage tracker) can
   //               persist across multiple calls to this function.
-  ASSERT_TRUE(root->render_surface());
   ASSERT_FALSE(render_surface_layer_list->size());
 
   FakeLayerTreeHostImpl::RecursiveUpdateNumChildren(root);
@@ -38,6 +37,7 @@ void ExecuteCalculateDrawProperties(LayerImpl* root,
       root, root->bounds(), render_surface_layer_list,
       root->layer_tree_impl()->current_render_surface_list_id());
   LayerTreeHostCommon::CalculateDrawProperties(&inputs);
+  ASSERT_TRUE(root->render_surface());
 }
 
 void ClearDamageForAllSurfaces(LayerImpl* layer) {
@@ -94,8 +94,7 @@ class DamageTrackerTest : public testing::Test {
     root->SetPosition(gfx::PointF());
     root->SetBounds(gfx::Size(500, 500));
     root->SetDrawsContent(true);
-    root->SetHasRenderSurface(true);
-    root->render_surface()->SetContentRect(gfx::Rect(0, 0, 500, 500));
+    root->SetForceRenderSurface(true);
 
     child->SetPosition(gfx::PointF(100.f, 100.f));
     child->SetBounds(gfx::Size(30, 30));
@@ -124,8 +123,7 @@ class DamageTrackerTest : public testing::Test {
     root->SetPosition(gfx::PointF());
     root->SetBounds(gfx::Size(500, 500));
     root->SetDrawsContent(true);
-    root->SetHasRenderSurface(true);
-    root->render_surface()->SetContentRect(gfx::Rect(0, 0, 500, 500));
+    root->SetForceRenderSurface(true);
 
     child1->SetPosition(gfx::PointF(100.f, 100.f));
     child1->SetBounds(gfx::Size(30, 30));
@@ -133,7 +131,7 @@ class DamageTrackerTest : public testing::Test {
     // its own RenderSurface. This layer does not draw, but is intended to
     // create its own RenderSurface.
     child1->SetDrawsContent(false);
-    child1->SetHasRenderSurface(true);
+    child1->SetForceRenderSurface(true);
 
     child2->SetPosition(gfx::PointF(11.f, 11.f));
     child2->SetBounds(gfx::Size(18, 18));
@@ -544,7 +542,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForImageFilter) {
 
   // Setting the filter will damage the whole surface.
   ClearDamageForAllSurfaces(root.get());
-  child->SetHasRenderSurface(true);
+  child->SetForceRenderSurface(true);
   child->SetFilters(filters);
   EmulateDrawingOneFrame(root.get());
   root_damage_rect =
@@ -937,7 +935,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForAddingAndRemovingRenderSurfaces) {
   // CASE 1: If a descendant surface disappears, its entire old area becomes
   //         exposed.
   ClearDamageForAllSurfaces(root.get());
-  child1->SetHasRenderSurface(false);
+  child1->SetForceRenderSurface(false);
   EmulateDrawingOneFrame(root.get());
 
   // Sanity check that there is only one surface now.
@@ -962,7 +960,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForAddingAndRemovingRenderSurfaces) {
 
   // Then change the tree so that the render surface is added back.
   ClearDamageForAllSurfaces(root.get());
-  child1->SetHasRenderSurface(true);
+  child1->SetForceRenderSurface(true);
 
   EmulateDrawingOneFrame(root.get());
 
@@ -1065,7 +1063,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForReplica) {
     reflection.Scale3d(-1.0, 1.0, 1.0);
     grand_child1_replica->SetTransform(reflection);
     grand_child1->SetReplicaLayer(std::move(grand_child1_replica));
-    grand_child1->SetHasRenderSurface(true);
+    grand_child1->SetForceRenderSurface(true);
   }
   EmulateDrawingOneFrame(root.get());
 
@@ -1116,7 +1114,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForReplica) {
   //         reflection to damage the target surface.
   ClearDamageForAllSurfaces(root.get());
   grand_child1->SetReplicaLayer(nullptr);
-  grand_child1->SetHasRenderSurface(false);
+  grand_child1->SetForceRenderSurface(false);
   EmulateDrawingOneFrame(root.get());
   ASSERT_EQ(old_content_rect.width(),
             child1->render_surface()->content_rect().width());
@@ -1150,7 +1148,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForMask) {
     mask_layer->SetPosition(child->position());
     mask_layer->SetBounds(child->bounds());
     child->SetMaskLayer(std::move(mask_layer));
-    child->SetHasRenderSurface(true);
+    child->SetForceRenderSurface(true);
   }
   LayerImpl* mask_layer = child->mask_layer();
 
@@ -1239,7 +1237,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForReplicaMask) {
     reflection.Scale3d(-1.0, 1.0, 1.0);
     grand_child1_replica->SetTransform(reflection);
     grand_child1->SetReplicaLayer(std::move(grand_child1_replica));
-    grand_child1->SetHasRenderSurface(true);
+    grand_child1->SetForceRenderSurface(true);
   }
   LayerImpl* grand_child1_replica = grand_child1->replica_layer();
 
@@ -1316,7 +1314,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForReplicaMaskWithTransformOrigin) {
     reflection.Scale3d(-1.0, 1.0, 1.0);
     grand_child1_replica->SetTransform(reflection);
     grand_child1->SetReplicaLayer(std::move(grand_child1_replica));
-    grand_child1->SetHasRenderSurface(true);
+    grand_child1->SetForceRenderSurface(true);
   }
   LayerImpl* grand_child1_replica = grand_child1->replica_layer();
 
@@ -1383,7 +1381,8 @@ TEST_F(DamageTrackerTest, VerifyDamageForEmptyLayerList) {
   // tracker does not crash when it receives an empty layer_list.
 
   scoped_ptr<LayerImpl> root = LayerImpl::Create(host_impl_.active_tree(), 1);
-  root->SetHasRenderSurface(true);
+  root->SetForceRenderSurface(true);
+  EmulateDrawingOneFrame(root.get());
   root->draw_properties().render_target = root.get();
 
   ASSERT_EQ(root.get(), root->render_target());

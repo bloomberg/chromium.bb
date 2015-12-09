@@ -202,7 +202,7 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
 
   // For compatibility with Layer.
   bool has_render_surface() const { return !!render_surface(); }
-
+  bool force_render_surface() const { return force_render_surface_; }
   void SetNumDescendantsThatDrawContent(int num_descendants);
   void SetClipParent(LayerImpl* ancestor);
 
@@ -386,6 +386,8 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   void ClearRenderSurfaceLayerList();
   void SetHasRenderSurface(bool has_render_surface);
 
+  void SetForceRenderSurface(bool has_render_surface);
+
   RenderSurfaceImpl* render_surface() const { return render_surface_.get(); }
 
   DrawProperties& draw_properties() { return draw_properties_; }
@@ -534,6 +536,7 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   bool HasPotentiallyRunningTransformAnimation() const;
   bool TransformIsAnimatingOnImplOnly() const;
   bool HasOnlyTranslationTransforms() const;
+  bool AnimationsPreserveAxisAlignment() const;
   void SetTransformAndInvertibility(const gfx::Transform& transform,
                                     bool transform_is_invertible);
   bool transform_is_invertible() const { return transform_is_invertible_; }
@@ -872,6 +875,8 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
 
   scoped_refptr<base::trace_event::ConvertableToTraceFormat> debug_info_;
   scoped_ptr<RenderSurfaceImpl> render_surface_;
+
+  bool force_render_surface_;
 
   std::vector<FrameTimingRequest> frame_timing_requests_;
   int num_layer_or_descendants_with_copy_request_;

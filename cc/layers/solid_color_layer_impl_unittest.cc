@@ -35,7 +35,7 @@ TEST(SolidColorLayerImplTest, VerifyTilingCompleteAndNoOverlap) {
       SolidColorLayerImpl::Create(host_impl.active_tree(), 1);
   layer->draw_properties().visible_layer_rect = visible_layer_rect;
   layer->SetBounds(layer_size);
-  layer->SetHasRenderSurface(true);
+  layer->SetForceRenderSurface(true);
   layer->draw_properties().render_target = layer.get();
 
   AppendQuadsData data;
@@ -62,7 +62,7 @@ TEST(SolidColorLayerImplTest, VerifyCorrectBackgroundColorInQuad) {
   layer->draw_properties().visible_layer_rect = visible_layer_rect;
   layer->SetBounds(layer_size);
   layer->SetBackgroundColor(test_color);
-  layer->SetHasRenderSurface(true);
+  layer->SetForceRenderSurface(true);
   layer->draw_properties().render_target = layer.get();
 
   AppendQuadsData data;
@@ -91,7 +91,7 @@ TEST(SolidColorLayerImplTest, VerifyCorrectOpacityInQuad) {
   layer->draw_properties().visible_layer_rect = visible_layer_rect;
   layer->SetBounds(layer_size);
   layer->draw_properties().opacity = opacity;
-  layer->SetHasRenderSurface(true);
+  layer->SetForceRenderSurface(true);
   layer->draw_properties().render_target = layer.get();
 
   AppendQuadsData data;
