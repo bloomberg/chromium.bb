@@ -1692,9 +1692,8 @@ void MenuController::BuildMenuItemPath(MenuItemView* item,
 }
 
 void MenuController::StartShowTimer() {
-  MenuItemView* item = pending_state_.item ? pending_state_.item : state_.item;
   show_timer_.Start(
-      FROM_HERE, TimeDelta::FromMilliseconds(item->GetMenuConfig().show_delay),
+      FROM_HERE, TimeDelta::FromMilliseconds(MenuConfig::instance().show_delay),
       this, &MenuController::CommitPendingSelection);
 }
 
@@ -1737,7 +1736,7 @@ gfx::Rect MenuController::CalculateMenuBounds(MenuItemView* item,
 
   int x, y;
 
-  const MenuConfig& menu_config = item->GetMenuConfig();
+  const MenuConfig& menu_config = MenuConfig::instance();
 
   if (!item->GetParentMenuItem()) {
     // First item, position relative to initial location.

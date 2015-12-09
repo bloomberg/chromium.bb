@@ -101,6 +101,8 @@
       'controls/menu/display_change_listener_mac.cc',
       'controls/menu/menu_config.cc',
       'controls/menu/menu_config.h',
+      'controls/menu/menu_config_chromeos.cc',
+      'controls/menu/menu_config_linux.cc',
       'controls/menu/menu_config_mac.mm',
       'controls/menu/menu_config_win.cc',
       'controls/menu/menu_controller.cc',
@@ -375,7 +377,6 @@
       'bubble/tray_bubble_view.cc',
       'bubble/tray_bubble_view.h',
       'controls/menu/display_change_listener_aura.cc',
-      'controls/menu/menu_config_aura.cc',
       'controls/menu/menu_event_dispatcher.cc',
       'controls/menu/menu_event_dispatcher.h',
       'controls/menu/menu_key_event_handler.cc',
@@ -502,10 +503,10 @@
       'test/focus_manager_test.h',
       'test/menu_runner_test_api.cc',
       'test/menu_runner_test_api.h',
-      'test/slider_test_api.cc',
-      'test/slider_test_api.h',
       'test/scoped_views_test_helper.cc',
       'test/scoped_views_test_helper.h',
+      'test/slider_test_api.cc',
+      'test/slider_test_api.h',
       'test/test_views.cc',
       'test/test_views.h',
       'test/test_views_delegate.h',
@@ -695,6 +696,9 @@
         }, { # OS=="linux" and chromeos==0
           'sources/': [
             ['exclude', 'linux_ui'],
+          ],
+          'sources!': [
+            'controls/menu/menu_config_linux.cc',
           ],
         }],
         ['OS=="win"', {

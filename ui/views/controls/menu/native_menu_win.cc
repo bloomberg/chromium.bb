@@ -271,8 +271,7 @@ class NativeMenuWin::MenuHostWindow {
                  data->native_menu_win->model_->IsItemCheckedAt(
                      data->model_index)) {
         // Manually render a checkbox.
-        ui::NativeThemeWin* native_theme = ui::NativeThemeWin::instance();
-        const MenuConfig& config = MenuConfig::instance(native_theme);
+        const MenuConfig& config = MenuConfig::instance();
         NativeTheme::State state;
         if (draw_item_struct->itemState & ODS_DISABLED) {
           state = NativeTheme::kDisabled;
@@ -288,6 +287,7 @@ class NativeMenuWin::MenuHostWindow {
         gfx::Rect bounds(0, 0, config.check_width, config.check_height);
 
         // Draw the background and the check.
+        ui::NativeThemeWin* native_theme = ui::NativeThemeWin::instance();
         native_theme->Paint(
             canvas.sk_canvas(), NativeTheme::kMenuCheckBackground,
             state, bounds, extra);

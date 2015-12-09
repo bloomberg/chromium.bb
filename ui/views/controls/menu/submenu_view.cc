@@ -160,10 +160,9 @@ gfx::Size SubmenuView::GetPreferredSize() const {
                                    child->GetPreferredSize().width());
     }
   }
-  if (max_minor_text_width_ > 0) {
-    max_minor_text_width_ +=
-        GetMenuItem()->GetMenuConfig().label_to_minor_text_padding;
-  }
+  if (max_minor_text_width_ > 0)
+    max_minor_text_width_ += MenuConfig::instance().label_to_minor_text_padding;
+
   // Finish calculating our optimum width.
   gfx::Insets insets = GetInsets();
   int width = std::max(max_complex_width,

@@ -6,14 +6,9 @@
 
 #import <AppKit/AppKit.h>
 
-#include "ui/gfx/image/image_skia.h"
-#include "ui/native_theme/native_theme_mac.h"
-#include "ui/views/controls/menu/menu_image_util.h"
-
 namespace views {
 
-void MenuConfig::Init(const ui::NativeTheme* theme) {
-  DCHECK_EQ(theme, ui::NativeThemeMac::instance());
+void MenuConfig::Init() {
   font_list = gfx::FontList(gfx::Font([NSFont menuFontOfSize:0.0]));
   menu_vertical_border_size = 4;
   item_top_margin = item_no_icon_top_margin = 1;
@@ -31,12 +26,6 @@ void MenuConfig::Init(const ui::NativeTheme* theme) {
   check_selected_combobox_item = true;
   corner_radius = 5;
   use_outer_border = false;
-}
-
-// static
-const MenuConfig& MenuConfig::instance(const ui::NativeTheme* theme) {
-  CR_DEFINE_STATIC_LOCAL(MenuConfig, mac_instance, (theme));
-  return mac_instance;
 }
 
 }  // namespace views
