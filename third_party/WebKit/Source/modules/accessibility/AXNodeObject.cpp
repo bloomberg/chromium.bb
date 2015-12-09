@@ -315,10 +315,11 @@ bool AXNodeObject::isDescendantOfElementType(const HTMLQualifiedName& tagName) c
     return false;
 }
 
-AccessibilityRole AXNodeObject::determineAccessibilityRoleUtil()
+AccessibilityRole AXNodeObject::nativeAccessibilityRoleIgnoringAria() const
 {
     if (!node())
         return UnknownRole;
+
     // HTMLAnchorElement sets isLink only when it has hrefAttr.
     // We assume that it is also LinkRole if it has event listners even though it doesn't have hrefAttr.
     if (node()->isLink() || (isHTMLAnchorElement(*node()) && isClickable()))
@@ -509,7 +510,7 @@ AccessibilityRole AXNodeObject::determineAccessibilityRole()
     if (node()->isTextNode())
         return StaticTextRole;
 
-    AccessibilityRole role = determineAccessibilityRoleUtil();
+    AccessibilityRole role = nativeAccessibilityRoleIgnoringAria();
     if (role != UnknownRole)
         return role;
     if (node()->isElementNode()) {
@@ -1825,8 +1826,15 @@ bool AXNodeObject::canHaveChildren() const
     if (node() && isHTMLMapElement(node()))
         return false;
 
-    // Elements that should not have children
-    switch (roleValue()) {
+    AccessibilityRole role = roleValue();
+
+    // If an element has an ARIA role of presentation, we need to consider the native
+    // role when deciding whether it can have children or not - otherwise giving something
+    // a role of presentation could expose inner implementation details.
+    if (isPresentational())
+        role = nativeAccessibilityRoleIgnoringAria();
+
+    switch (role) {
     case ImageRole:
     case ButtonRole:
     case PopUpButtonRole:

@@ -711,6 +711,7 @@ String AXObject::name(AXNameFrom& nameFrom, AXObject::AXObjectVector* nameObject
         for (size_t i = 0; i < relatedObjects.size(); i++)
             nameObjects->append(relatedObjects[i]->object);
     }
+
     return text;
 }
 

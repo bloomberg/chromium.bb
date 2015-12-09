@@ -63,6 +63,7 @@ public:
     bool shouldNotifyActiveDescendant() const;
     ScrollableArea* getScrollableAreaIfScrollable() const final;
     AccessibilityRole determineAccessibilityRole() override;
+    AccessibilityRole nativeAccessibilityRoleIgnoringAria() const override;
     void checkCachedElementRect() const;
     void updateCachedElementRect() const;
 

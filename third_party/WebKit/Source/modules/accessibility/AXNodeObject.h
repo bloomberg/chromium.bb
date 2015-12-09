@@ -61,7 +61,7 @@ protected:
     bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
     const AXObject* inheritsPresentationalRoleFrom() const override;
     virtual AccessibilityRole determineAccessibilityRole();
-    AccessibilityRole determineAccessibilityRoleUtil();
+    virtual AccessibilityRole nativeAccessibilityRoleIgnoringAria() const;
     String accessibilityDescriptionForElements(WillBeHeapVector<RawPtrWillBeMember<Element>> &elements) const;
     void alterSliderValue(bool increase);
     String ariaAccessibilityDescription() const;

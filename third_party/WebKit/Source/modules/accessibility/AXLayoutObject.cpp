@@ -275,14 +275,8 @@ static bool isImageOrAltText(LayoutBoxModelObject* box, Node* node)
     return false;
 }
 
-AccessibilityRole AXLayoutObject::determineAccessibilityRole()
+AccessibilityRole AXLayoutObject::nativeAccessibilityRoleIgnoringAria() const
 {
-    if (!m_layoutObject)
-        return UnknownRole;
-
-    if ((m_ariaRole = determineAriaRoleAttribute()) != UnknownRole)
-        return m_ariaRole;
-
     Node* node = m_layoutObject->node();
     LayoutBoxModelObject* cssBox = layoutBoxModelObject();
 
@@ -322,7 +316,18 @@ AccessibilityRole AXLayoutObject::determineAccessibilityRole()
     if (m_layoutObject->isHR())
         return SplitterRole;
 
-    AccessibilityRole role = AXNodeObject::determineAccessibilityRoleUtil();
+    return AXNodeObject::nativeAccessibilityRoleIgnoringAria();
+}
+
+AccessibilityRole AXLayoutObject::determineAccessibilityRole()
+{
+    if (!m_layoutObject)
+        return UnknownRole;
+
+    if ((m_ariaRole = determineAriaRoleAttribute()) != UnknownRole)
+        return m_ariaRole;
+
+    AccessibilityRole role = nativeAccessibilityRoleIgnoringAria();
     if (role != UnknownRole)
         return role;
 
