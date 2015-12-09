@@ -1348,4 +1348,9 @@ crbug.com/564109 [ Win7 XP ]  http/tests/webfont/font-display.html [ Pass Timeou
 crbug.com/558574 [ Win7 ] fast/forms/text/text-font-height-mismatch.html [ Failure ]
 crbug.com/558574 [ Win7 ] fast/text/emphasis.html [ Failure ]
 
-#crbug.com/561595 [ XP ] plugins/webview-plugin-scroll.html [ Failure ]
+crbug.com/561595 [ XP ] plugins/webview-plugin-scroll.html [ Failure ]
+crbug.com/561595 [ XP ] plugins/webview-plugin-nested-iframe-scroll.html [ Failure ]
+
+crbug.com/568157 [ XP ] virtual/syncpaint/fast/repaint/details-open-repaint.html [ Failure ]
+crbug.com/568157 [ XP ] virtual/syncpaint/fast/repaint/overflow-scroll-body-appear.html [ Failure ]
+crbug.com/568157 [ XP ] virtual/syncpaint/fast/repaint/resize-scrollable-iframe.html [ Failure ]
