@@ -73,7 +73,10 @@ const char* ArcAppItem::GetItemType() const {
 }
 
 void ArcAppItem::Activate(int event_flags) {
-  DCHECK(ready_);
+  if (!ready()) {
+    VLOG(2) << "Cannot launch not-ready app:" << id() << ".";
+    return;
+  }
 
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(context_);
   scoped_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(id());

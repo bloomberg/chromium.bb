@@ -290,6 +290,17 @@ TEST_F(ArcAppModelBuilderTest, LaunchApps) {
   EXPECT_EQ(true, launch_requests[0]->IsForApp(app_first));
   EXPECT_EQ(true, launch_requests[1]->IsForApp(app_last));
   EXPECT_EQ(true, launch_requests[2]->IsForApp(app_first));
+
+  // Test an attempt to launch of a not-ready app.
+  bridge_service()->SendRefreshAppList(std::vector<arc::AppInfo>());
+  item_first = FindArcItem(GetAppId(app_first));
+  ASSERT_NE(nullptr, item_first);
+  size_t launch_request_count_before =
+      bridge_service()->launch_requests().size();
+  item_first->Activate(0);
+  // Number of launch requests must not change.
+  EXPECT_EQ(launch_request_count_before,
+            bridge_service()->launch_requests().size());
 }
 
 TEST_F(ArcAppModelBuilderTest, RequestIcons) {

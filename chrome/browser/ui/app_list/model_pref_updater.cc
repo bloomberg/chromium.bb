@@ -10,6 +10,10 @@
 #include "ui/app_list/app_list_item.h"
 #include "ui/app_list/app_list_model.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/ui/app_list/arc/arc_app_item.h"
+#endif
+
 namespace app_list {
 
 ModelPrefUpdater::ModelPrefUpdater(AppListPrefs* app_list_prefs,
@@ -41,6 +45,10 @@ void ModelPrefUpdater::UpdatePrefsFromAppListItem(AppListItem* item) {
     info.item_type = AppListPrefs::AppListInfo::FOLDER_ITEM;
   else if (item->GetItemType() == ExtensionAppItem::kItemType)
     info.item_type = AppListPrefs::AppListInfo::APP_ITEM;
+#if defined(OS_CHROMEOS)
+  else if (item->GetItemType() == ArcAppItem::kItemType)
+    info.item_type = AppListPrefs::AppListInfo::APP_ITEM;
+#endif
   else
     NOTREACHED();
 
