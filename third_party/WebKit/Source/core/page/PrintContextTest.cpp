@@ -9,10 +9,8 @@
 
 #include "core/frame/FrameView.h"
 #include "core/html/HTMLElement.h"
-#include "core/html/HTMLIFrameElement.h"
 #include "core/layout/LayoutTestHelper.h"
 #include "core/layout/LayoutView.h"
-#include "core/loader/EmptyClients.h"
 #include "core/paint/PaintLayer.h"
 #include "core/paint/PaintLayerPainter.h"
 #include "core/testing/DummyPageHolder.h"
@@ -255,20 +253,9 @@ TEST_F(PrintContextFrameTest, WithSubframe)
         "<iframe id='frame' src='http://b.com/' width='500' height='500'"
         " style='border-width: 5px; margin: 5px; position: absolute; top: 90px; left: 90px'></iframe>");
 
-    HTMLIFrameElement& iframe = *toHTMLIFrameElement(document().getElementById("frame"));
-    OwnPtrWillBeRawPtr<FrameLoaderClient> frameLoaderClient = FrameLoaderClientWithParent::create(document().frame());
-    RefPtrWillBePersistent<LocalFrame> subframe = LocalFrame::create(frameLoaderClient.get(), document().frame()->host(), &iframe);
-    subframe->setView(FrameView::create(subframe.get(), IntSize(500, 500)));
-    subframe->init();
-    static_cast<SingleChildFrameLoaderClient*>(document().frame()->client())->setChild(subframe.get());
-    document().frame()->host()->incrementSubframeCount();
-
-    Document& frameDocument = *iframe.contentDocument();
-    frameDocument.setBaseURLOverride(KURL(ParsedURLString, "http://b.com/"));
-    frameDocument.body()->setInnerHTML(absoluteBlockHtmlForLink(50, 60, 70, 80, "#fragment")
+    setupChildIframe("frame", absoluteBlockHtmlForLink(50, 60, 70, 80, "#fragment")
         + absoluteBlockHtmlForLink(150, 160, 170, 180, "http://www.google.com")
-        + absoluteBlockHtmlForLink(250, 260, 270, 280, "http://www.google.com#fragment"),
-        ASSERT_NO_EXCEPTION);
+        + absoluteBlockHtmlForLink(250, 260, 270, 280, "http://www.google.com#fragment"));
 
     printSinglePage(canvas);
 
@@ -278,10 +265,6 @@ TEST_F(PrintContextFrameTest, WithSubframe)
     EXPECT_SKRECT_EQ(250, 260, 170, 180, operations[0].rect);
     EXPECT_EQ(MockCanvas::DrawRect, operations[1].type);
     EXPECT_SKRECT_EQ(350, 360, 270, 280, operations[1].rect);
-
-    subframe->detach(FrameDetachType::Remove);
-    static_cast<SingleChildFrameLoaderClient*>(document().frame()->client())->setChild(nullptr);
-    document().frame()->host()->decrementSubframeCount();
 }
 
 TEST_F(PrintContextFrameTest, WithScrolledSubframe)
@@ -292,24 +275,13 @@ TEST_F(PrintContextFrameTest, WithScrolledSubframe)
         "<iframe id='frame' src='http://b.com/' width='500' height='500'"
         " style='border-width: 5px; margin: 5px; position: absolute; top: 90px; left: 90px'></iframe>");
 
-    HTMLIFrameElement& iframe = *toHTMLIFrameElement(document().getElementById("frame"));
-    OwnPtrWillBeRawPtr<FrameLoaderClient> frameLoaderClient = FrameLoaderClientWithParent::create(document().frame());
-    RefPtrWillBePersistent<LocalFrame> subframe = LocalFrame::create(frameLoaderClient.get(), document().frame()->host(), &iframe);
-    subframe->setView(FrameView::create(subframe.get(), IntSize(500, 500)));
-    subframe->init();
-    static_cast<SingleChildFrameLoaderClient*>(document().frame()->client())->setChild(subframe.get());
-    document().frame()->host()->incrementSubframeCount();
-
-    Document& frameDocument = *iframe.contentDocument();
-    frameDocument.setBaseURLOverride(KURL(ParsedURLString, "http://b.com/"));
-    frameDocument.body()->setInnerHTML(
-        absoluteBlockHtmlForLink(10, 10, 20, 20, "http://invisible.com")
+    Document& frameDocument = setupChildIframe("frame", absoluteBlockHtmlForLink(10, 10, 20, 20, "http://invisible.com")
         + absoluteBlockHtmlForLink(50, 60, 70, 80, "http://partly.visible.com")
         + absoluteBlockHtmlForLink(150, 160, 170, 180, "http://www.google.com")
         + absoluteBlockHtmlForLink(250, 260, 270, 280, "http://www.google.com#fragment")
-        + absoluteBlockHtmlForLink(850, 860, 70, 80, "http://another.invisible.com"),
-        ASSERT_NO_EXCEPTION);
-    iframe.contentWindow()->scrollTo(100, 100);
+        + absoluteBlockHtmlForLink(850, 860, 70, 80, "http://another.invisible.com"));
+
+    frameDocument.domWindow()->scrollTo(100, 100);
 
     printSinglePage(canvas);
 
@@ -321,10 +293,6 @@ TEST_F(PrintContextFrameTest, WithScrolledSubframe)
     EXPECT_SKRECT_EQ(150, 160, 170, 180, operations[1].rect);
     EXPECT_EQ(MockCanvas::DrawRect, operations[2].type);
     EXPECT_SKRECT_EQ(250, 260, 270, 280, operations[2].rect);
-
-    subframe->detach(FrameDetachType::Remove);
-    static_cast<SingleChildFrameLoaderClient*>(document().frame()->client())->setChild(nullptr);
-    document().frame()->host()->decrementSubframeCount();
 }
 
 } // namespace blink

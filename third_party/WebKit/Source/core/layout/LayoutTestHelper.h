@@ -38,6 +38,9 @@ protected:
         document().view()->updateAllLifecyclePhases();
     }
 
+    // Returns the Document for the iframe.
+    Document& setupChildIframe(const AtomicString& iframeElementId, const String& htmlContentOfIframe);
+
     // Both enables compositing and runs the document lifecycle.
     void enableCompositing()
     {
@@ -46,6 +49,8 @@ protected:
     }
 
 private:
+    RefPtrWillBePersistent<LocalFrame> m_subframe;
+    OwnPtrWillBeRawPtr<FrameLoaderClient> m_frameLoaderClient;
     OwnPtr<DummyPageHolder> m_pageHolder;
 };
 
