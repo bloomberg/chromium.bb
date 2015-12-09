@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "blimp/client/blimp_client_export.h"
 #include "blimp/client/compositor/render_widget_message_processor.h"
+#include "blimp/client/input/blimp_input_manager.h"
 #include "cc/layers/layer_settings.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_settings.h"
@@ -42,8 +43,8 @@ class BlimpMessage;
 class BLIMP_CLIENT_EXPORT BlimpCompositor
     : public cc::LayerTreeHostClient,
       public cc::RemoteProtoChannel,
-      public RenderWidgetMessageProcessor::RenderWidgetMessageDelegate {
-
+      public RenderWidgetMessageProcessor::RenderWidgetMessageDelegate,
+      public BlimpInputManagerClient {
  public:
   ~BlimpCompositor() override;
 
@@ -72,6 +73,9 @@ class BLIMP_CLIENT_EXPORT BlimpCompositor
   // SetAcceleratedWidget() with the same gfx::AcceleratedWidget on another
   // compositor.
   void ReleaseAcceleratedWidget();
+
+  // Forwards the touch event to the |input_manager_|.
+  bool OnTouchEvent(const ui::MotionEvent& motion_event);
 
  protected:
   // |dp_to_px| is the scale factor required to move from dp (device pixels) to
@@ -117,6 +121,9 @@ class BLIMP_CLIENT_EXPORT BlimpCompositor
   void OnCompositorMessageReceived(
       scoped_ptr<cc::proto::CompositorMessage> message) override;
 
+  // BlimpInputManagerClient implementation.
+  void SendWebInputEvent(const blink::WebInputEvent& input_event) override;
+
   // Helper method to build the internal CC compositor instance from |message|.
   void CreateLayerTreeHost(scoped_ptr<cc::proto::CompositorMessage> message);
 
@@ -157,6 +164,13 @@ class BLIMP_CLIENT_EXPORT BlimpCompositor
   // TODO(dtrainor): Move this to a higher level once we start dealing with
   // multiple tabs.
   RenderWidgetMessageProcessor render_widget_processor_;
+
+  // Handles input events for the current render widget. The lifetime of the
+  // input manager is tied to the lifetime of the |host_| which owns the
+  // cc::InputHandler. The input events are forwarded to this input handler by
+  // the manager to be handled by the client compositor for the current render
+  // widget.
+  scoped_ptr<BlimpInputManager> input_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(BlimpCompositor);
 };

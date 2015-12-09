@@ -71,6 +71,10 @@ BlimpCompositor::~BlimpCompositor() {
   // tasks on |compositor_thread_|.
   host_.reset();
   settings_.reset();
+
+  // We must destroy |host_| before the |input_manager_|.
+  input_manager_.reset();
+
   if (compositor_thread_)
     compositor_thread_->Stop();
 }
@@ -131,6 +135,12 @@ void BlimpCompositor::ReleaseAcceleratedWidget() {
   window_ = gfx::kNullAcceleratedWidget;
 }
 
+bool BlimpCompositor::OnTouchEvent(const ui::MotionEvent& motion_event) {
+  if (input_manager_)
+    return input_manager_->OnTouchEvent(motion_event);
+  return false;
+}
+
 void BlimpCompositor::WillBeginMainFrame() {}
 
 void BlimpCompositor::DidBeginMainFrame() {}
@@ -189,6 +199,12 @@ void BlimpCompositor::OnRenderWidgetInitialized() {
   // Destroy the old LayerTreeHost state.
   host_.reset();
 
+  // Destroy the old input manager state.
+  // It is important to destroy the LayerTreeHost before destroying the input
+  // manager as it has a reference to the cc::InputHandlerClient owned by the
+  // BlimpInputManager.
+  input_manager_.reset();
+
   // Reset other state.
   output_surface_request_pending_ = false;
 
@@ -210,6 +226,11 @@ void BlimpCompositor::OnCompositorMessageReceived(
 void BlimpCompositor::GenerateLayerTreeSettings(
     cc::LayerTreeSettings* settings) {
   PopulateCommonLayerTreeSettings(settings);
+}
+
+void BlimpCompositor::SendWebInputEvent(
+    const blink::WebInputEvent& input_event) {
+  render_widget_processor_.SendInputEvent(kDummyTabId, input_event);
 }
 
 void BlimpCompositor::CreateLayerTreeHost(
@@ -244,6 +265,15 @@ void BlimpCompositor::CreateLayerTreeHost(
       cc::Layer::Create(BlimpCompositor::LayerSettings()));
   host_->SetRootLayer(root);
   g_dummy_layer_driver.Pointer()->SetParentLayer(root);
+
+  // TODO(khushalsagar): Create this after successful initialization of the
+  // remote client compositor when implemented.
+  DCHECK(!input_manager_);
+  input_manager_ =
+      BlimpInputManager::Create(this,
+                                base::ThreadTaskRunnerHandle::Get(),
+                                GetCompositorTaskRunner(),
+                                host_->GetInputHandler());
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>

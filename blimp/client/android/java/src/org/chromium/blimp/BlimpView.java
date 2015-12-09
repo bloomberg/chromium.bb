@@ -8,6 +8,7 @@ import android.content.Context;
 import android.graphics.Point;
 import android.os.Build;
 import android.util.AttributeSet;
+import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -86,6 +87,37 @@ public class BlimpView extends SurfaceView implements SurfaceHolder.Callback2 {
         nativeSetVisibility(mNativeBlimpViewPtr, visible);
     }
 
+    // View overrides.
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        if (mNativeBlimpViewPtr == 0) return false;
+
+        int eventAction = event.getActionMasked();
+
+        if (!isValidTouchEventActionForNative(eventAction)) return false;
+
+        int pointerCount = event.getPointerCount();
+        boolean consumed = nativeOnTouchEvent(mNativeBlimpViewPtr, event,
+                event.getEventTime(), eventAction,
+                pointerCount, event.getHistorySize(), event.getActionIndex(),
+                event.getX(), event.getY(),
+                pointerCount > 1 ? event.getX(1) : 0,
+                pointerCount > 1 ? event.getY(1) : 0,
+                event.getPointerId(0), pointerCount > 1 ? event.getPointerId(1) : -1,
+                event.getTouchMajor(), pointerCount > 1 ? event.getTouchMajor(1) : 0,
+                event.getTouchMinor(), pointerCount > 1 ? event.getTouchMinor(1) : 0,
+                event.getOrientation(), pointerCount > 1 ? event.getOrientation(1) : 0,
+                event.getAxisValue(MotionEvent.AXIS_TILT),
+                pointerCount > 1 ? event.getAxisValue(MotionEvent.AXIS_TILT, 1) : 0,
+                event.getRawX(), event.getRawY(),
+                event.getToolType(0),
+                pointerCount > 1 ? event.getToolType(1) : MotionEvent.TOOL_TYPE_UNKNOWN,
+                event.getButtonState(),
+                event.getMetaState());
+
+        return consumed;
+    }
+
     // SurfaceView overrides.
     @Override
     protected void onFinishInflate() {
@@ -117,6 +149,18 @@ public class BlimpView extends SurfaceView implements SurfaceHolder.Callback2 {
     @Override
     public void surfaceRedrawNeeded(SurfaceHolder holder) {}
 
+    private static boolean isValidTouchEventActionForNative(int eventAction) {
+        // Only these actions have any effect on gesture detection.  Other
+        // actions have no corresponding WebTouchEvent type and may confuse the
+        // touch pipline, so we ignore them entirely.
+        return eventAction == MotionEvent.ACTION_DOWN
+                || eventAction == MotionEvent.ACTION_UP
+                || eventAction == MotionEvent.ACTION_CANCEL
+                || eventAction == MotionEvent.ACTION_MOVE
+                || eventAction == MotionEvent.ACTION_POINTER_DOWN
+                || eventAction == MotionEvent.ACTION_POINTER_UP;
+    }
+
     // Native Methods
     private native long nativeInit(int physicalWidth, int physicalHeight, int displayWidth,
             int displayHeight, float dpToPixel);
@@ -127,4 +171,16 @@ public class BlimpView extends SurfaceView implements SurfaceHolder.Callback2 {
     private native void nativeOnSurfaceCreated(long nativeBlimpView);
     private native void nativeOnSurfaceDestroyed(long nativeBlimpView);
     private native void nativeSetVisibility(long nativeBlimpView, boolean visible);
+    private native boolean nativeOnTouchEvent(
+            long nativeBlimpView, MotionEvent event,
+            long timeMs, int action, int pointerCount, int historySize, int actionIndex,
+            float x0, float y0, float x1, float y1,
+            int pointerId0, int pointerId1,
+            float touchMajor0, float touchMajor1,
+            float touchMinor0, float touchMinor1,
+            float orientation0, float orientation1,
+            float tilt0, float tilt1,
+            float rawX, float rawY,
+            int androidToolType0, int androidToolType1,
+            int androidButtonState, int androidMetaState);
 }

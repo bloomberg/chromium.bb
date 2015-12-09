@@ -22,11 +22,19 @@ component("blimp_client") {
     "compositor/render_widget_message_processor.h",
     "compositor/test/dummy_layer_driver.cc",
     "compositor/test/dummy_layer_driver.h",
+    "input/blimp_input_handler_wrapper.cc",
+    "input/blimp_input_handler_wrapper.h",
+    "input/blimp_input_manager.cc",
+    "input/blimp_input_manager.h",
     "navigation_message_processor.cc",
     "navigation_message_processor.h",
   ]
 
   defines = [ "BLIMP_CLIENT_IMPLEMENTATION=1" ]
+
+  public_deps = [
+    "//ui/events",
+  ]
 
   deps = [
     "//base",
@@ -38,6 +46,8 @@ component("blimp_client") {
     "//gpu/command_buffer/client:gl_in_process_context",
     "//gpu/command_buffer/common:gles2_utils",
     "//gpu/skia_bindings",
+    "//ui/events/blink",
+    "//ui/events/gestures/blink",
     "//ui/gfx/geometry",
     "//ui/gl",
     "//url:url",
