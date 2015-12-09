@@ -1087,12 +1087,11 @@ TEST_P(HttpNetworkTransactionTest, Head) {
                 "Connection: keep-alive\r\n\r\n"),
   };
   MockRead data_reads1[] = {
-    MockRead("HTTP/1.1 404 Not Found\r\n"),
-    MockRead("Server: Blah\r\n"),
-    MockRead("Content-Length: 1234\r\n\r\n"),
+      MockRead("HTTP/1.1 404 Not Found\r\n"), MockRead("Server: Blah\r\n"),
+      MockRead("Content-Length: 1234\r\n\r\n"),
 
-    // No response body because the test stops reading here.
-    MockRead(SYNCHRONOUS, ERR_UNEXPECTED),  // Should not be reached.
+      // No response body because the test stops reading here.
+      MockRead(SYNCHRONOUS, ERR_UNEXPECTED),
   };
 
   StaticSocketDataProvider data1(data_reads1, arraysize(data_reads1),
@@ -2840,169 +2839,305 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthProxyNoKeepAliveHttp11) {
 // Test the request-challenge-retry sequence for basic auth, over a keep-alive
 // proxy connection with HTTP/1.0 responses, when setting up an SSL tunnel.
 TEST_P(HttpNetworkTransactionTest, BasicAuthProxyKeepAliveHttp10) {
-  HttpRequestInfo request;
-  request.method = "GET";
-  request.url = GURL("https://www.example.org/");
-  // Ensure that proxy authentication is attempted even
-  // when the no authentication data flag is set.
-  request.load_flags = LOAD_DO_NOT_SEND_AUTH_DATA;
+  // On the second pass, the body read of the auth challenge is synchronous, so
+  // IsConnectedAndIdle returns false.  The socket should still be drained and
+  // reused.  See http://crbug.com/544255.
+  for (int i = 0; i < 2; ++i) {
+    HttpRequestInfo request;
+    request.method = "GET";
+    request.url = GURL("https://www.example.org/");
+    // Ensure that proxy authentication is attempted even
+    // when the no authentication data flag is set.
+    request.load_flags = LOAD_DO_NOT_SEND_AUTH_DATA;
 
-  // Configure against proxy server "myproxy:70".
-  session_deps_.proxy_service = ProxyService::CreateFixed("myproxy:70");
-  BoundTestNetLog log;
-  session_deps_.net_log = log.bound().net_log();
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+    // Configure against proxy server "myproxy:70".
+    session_deps_.proxy_service = ProxyService::CreateFixed("myproxy:70");
+    BoundTestNetLog log;
+    session_deps_.net_log = log.bound().net_log();
+    scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
-  scoped_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
+    scoped_ptr<HttpTransaction> trans(
+        new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
-  // Since we have proxy, should try to establish tunnel.
-  MockWrite data_writes1[] = {
-      MockWrite("CONNECT www.example.org:443 HTTP/1.1\r\n"
-                "Host: www.example.org:443\r\n"
-                "Proxy-Connection: keep-alive\r\n\r\n"),
+    // Since we have proxy, should try to establish tunnel.
+    MockWrite data_writes1[] = {
+        MockWrite(ASYNC, 0,
+                  "CONNECT www.example.org:443 HTTP/1.1\r\n"
+                  "Host: www.example.org:443\r\n"
+                  "Proxy-Connection: keep-alive\r\n\r\n"),
 
-      // After calling trans->RestartWithAuth(), this is the request we should
-      // be issuing -- the final header line contains the credentials.
-      MockWrite("CONNECT www.example.org:443 HTTP/1.1\r\n"
-                "Host: www.example.org:443\r\n"
-                "Proxy-Connection: keep-alive\r\n"
-                "Proxy-Authorization: Basic Zm9vOmJheg==\r\n\r\n"),
-  };
+        // After calling trans->RestartWithAuth(), this is the request we should
+        // be issuing -- the final header line contains the credentials.
+        MockWrite(ASYNC, 3,
+                  "CONNECT www.example.org:443 HTTP/1.1\r\n"
+                  "Host: www.example.org:443\r\n"
+                  "Proxy-Connection: keep-alive\r\n"
+                  "Proxy-Authorization: Basic Zm9vOmJheg==\r\n\r\n"),
+    };
 
-  // The proxy responds to the connect with a 407, using a persistent
-  // connection. (Since it's HTTP/1.0, keep-alive has to be explicit.)
-  MockRead data_reads1[] = {
-      // No credentials.
-      MockRead("HTTP/1.0 407 Proxy Authentication Required\r\n"),
-      MockRead("Proxy-Authenticate: Basic realm=\"MyRealm1\"\r\n"),
-      MockRead("Proxy-Connection: keep-alive\r\n"),
-      MockRead("Content-Length: 10\r\n\r\n"),
-      MockRead("0123456789"),
+    // The proxy responds to the connect with a 407, using a persistent
+    // connection. (Since it's HTTP/1.0, keep-alive has to be explicit.)
+    MockRead data_reads1[] = {
+        // No credentials.
+        MockRead(ASYNC, 1,
+                 "HTTP/1.0 407 Proxy Authentication Required\r\n"
+                 "Proxy-Authenticate: Basic realm=\"MyRealm1\"\r\n"
+                 "Proxy-Connection: keep-alive\r\n"
+                 "Content-Length: 10\r\n\r\n"),
+        MockRead(i == 0 ? ASYNC : SYNCHRONOUS, 2, "0123456789"),
 
-      // Wrong credentials (wrong password).
-      MockRead("HTTP/1.0 407 Proxy Authentication Required\r\n"),
-      MockRead("Proxy-Authenticate: Basic realm=\"MyRealm1\"\r\n"),
-      MockRead("Proxy-Connection: keep-alive\r\n"),
-      MockRead("Content-Length: 10\r\n\r\n"),
-      // No response body because the test stops reading here.
-      MockRead(SYNCHRONOUS, ERR_UNEXPECTED),  // Should not be reached.
-  };
+        // Wrong credentials (wrong password).
+        MockRead(ASYNC, 4,
+                 "HTTP/1.0 407 Proxy Authentication Required\r\n"
+                 "Proxy-Authenticate: Basic realm=\"MyRealm1\"\r\n"
+                 "Proxy-Connection: keep-alive\r\n"
+                 "Content-Length: 10\r\n\r\n"),
+        // No response body because the test stops reading here.
+        MockRead(SYNCHRONOUS, ERR_UNEXPECTED, 5),
+    };
 
-  StaticSocketDataProvider data1(data_reads1, arraysize(data_reads1),
-                                 data_writes1, arraysize(data_writes1));
-  session_deps_.socket_factory->AddSocketDataProvider(&data1);
+    SequencedSocketData data1(data_reads1, arraysize(data_reads1), data_writes1,
+                              arraysize(data_writes1));
+    data1.set_busy_before_sync_reads(true);
+    session_deps_.socket_factory->AddSocketDataProvider(&data1);
 
-  TestCompletionCallback callback1;
+    TestCompletionCallback callback1;
 
-  int rv = trans->Start(&request, callback1.callback(), log.bound());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+    int rv = trans->Start(&request, callback1.callback(), log.bound());
+    EXPECT_EQ(OK, callback1.GetResult(rv));
 
-  rv = callback1.WaitForResult();
-  EXPECT_EQ(OK, rv);
-  TestNetLogEntry::List entries;
-  log.GetEntries(&entries);
-  size_t pos = ExpectLogContainsSomewhere(
-      entries, 0, NetLog::TYPE_HTTP_TRANSACTION_SEND_TUNNEL_HEADERS,
-      NetLog::PHASE_NONE);
-  ExpectLogContainsSomewhere(
-      entries, pos, NetLog::TYPE_HTTP_TRANSACTION_READ_TUNNEL_RESPONSE_HEADERS,
-      NetLog::PHASE_NONE);
+    TestNetLogEntry::List entries;
+    log.GetEntries(&entries);
+    size_t pos = ExpectLogContainsSomewhere(
+        entries, 0, NetLog::TYPE_HTTP_TRANSACTION_SEND_TUNNEL_HEADERS,
+        NetLog::PHASE_NONE);
+    ExpectLogContainsSomewhere(
+        entries, pos,
+        NetLog::TYPE_HTTP_TRANSACTION_READ_TUNNEL_RESPONSE_HEADERS,
+        NetLog::PHASE_NONE);
 
-  const HttpResponseInfo* response = trans->GetResponseInfo();
-  ASSERT_TRUE(response);
-  ASSERT_TRUE(response->headers);
-  EXPECT_TRUE(response->headers->IsKeepAlive());
-  EXPECT_EQ(407, response->headers->response_code());
-  EXPECT_EQ(10, response->headers->GetContentLength());
-  EXPECT_TRUE(HttpVersion(1, 0) == response->headers->GetHttpVersion());
-  EXPECT_TRUE(CheckBasicProxyAuth(response->auth_challenge.get()));
+    const HttpResponseInfo* response = trans->GetResponseInfo();
+    ASSERT_TRUE(response);
+    ASSERT_TRUE(response->headers);
+    EXPECT_TRUE(response->headers->IsKeepAlive());
+    EXPECT_EQ(407, response->headers->response_code());
+    EXPECT_EQ(10, response->headers->GetContentLength());
+    EXPECT_TRUE(HttpVersion(1, 0) == response->headers->GetHttpVersion());
+    EXPECT_TRUE(CheckBasicProxyAuth(response->auth_challenge.get()));
 
-  TestCompletionCallback callback2;
+    TestCompletionCallback callback2;
 
-  // Wrong password (should be "bar").
-  rv =
-      trans->RestartWithAuth(AuthCredentials(kFoo, kBaz), callback2.callback());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+    // Wrong password (should be "bar").
+    rv = trans->RestartWithAuth(AuthCredentials(kFoo, kBaz),
+                                callback2.callback());
+    EXPECT_EQ(OK, callback2.GetResult(rv));
 
-  rv = callback2.WaitForResult();
-  EXPECT_EQ(OK, rv);
+    response = trans->GetResponseInfo();
+    ASSERT_TRUE(response);
+    ASSERT_TRUE(response->headers);
+    EXPECT_TRUE(response->headers->IsKeepAlive());
+    EXPECT_EQ(407, response->headers->response_code());
+    EXPECT_EQ(10, response->headers->GetContentLength());
+    EXPECT_TRUE(HttpVersion(1, 0) == response->headers->GetHttpVersion());
+    EXPECT_TRUE(CheckBasicProxyAuth(response->auth_challenge.get()));
 
-  response = trans->GetResponseInfo();
-  ASSERT_TRUE(response);
-  ASSERT_TRUE(response->headers);
-  EXPECT_TRUE(response->headers->IsKeepAlive());
-  EXPECT_EQ(407, response->headers->response_code());
-  EXPECT_EQ(10, response->headers->GetContentLength());
-  EXPECT_TRUE(HttpVersion(1, 0) == response->headers->GetHttpVersion());
-  EXPECT_TRUE(CheckBasicProxyAuth(response->auth_challenge.get()));
-
-  // Flush the idle socket before the NetLog and HttpNetworkTransaction go
-  // out of scope.
-  session->CloseAllConnections();
+    // Flush the idle socket before the NetLog and HttpNetworkTransaction go
+    // out of scope.
+    session->CloseAllConnections();
+  }
 }
 
 // Test the request-challenge-retry sequence for basic auth, over a keep-alive
 // proxy connection with HTTP/1.1 responses, when setting up an SSL tunnel.
 TEST_P(HttpNetworkTransactionTest, BasicAuthProxyKeepAliveHttp11) {
+  // On the second pass, the body read of the auth challenge is synchronous, so
+  // IsConnectedAndIdle returns false.  The socket should still be drained and
+  // reused.  See http://crbug.com/544255.
+  for (int i = 0; i < 2; ++i) {
+    HttpRequestInfo request;
+    request.method = "GET";
+    request.url = GURL("https://www.example.org/");
+    // Ensure that proxy authentication is attempted even
+    // when the no authentication data flag is set.
+    request.load_flags = LOAD_DO_NOT_SEND_AUTH_DATA;
+
+    // Configure against proxy server "myproxy:70".
+    session_deps_.proxy_service = ProxyService::CreateFixed("myproxy:70");
+    BoundTestNetLog log;
+    session_deps_.net_log = log.bound().net_log();
+    scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+
+    scoped_ptr<HttpTransaction> trans(
+        new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
+
+    // Since we have proxy, should try to establish tunnel.
+    MockWrite data_writes1[] = {
+        MockWrite(ASYNC, 0,
+                  "CONNECT www.example.org:443 HTTP/1.1\r\n"
+                  "Host: www.example.org:443\r\n"
+                  "Proxy-Connection: keep-alive\r\n\r\n"),
+
+        // After calling trans->RestartWithAuth(), this is the request we should
+        // be issuing -- the final header line contains the credentials.
+        MockWrite(ASYNC, 3,
+                  "CONNECT www.example.org:443 HTTP/1.1\r\n"
+                  "Host: www.example.org:443\r\n"
+                  "Proxy-Connection: keep-alive\r\n"
+                  "Proxy-Authorization: Basic Zm9vOmJheg==\r\n\r\n"),
+    };
+
+    // The proxy responds to the connect with a 407, using a persistent
+    // connection. (Since it's HTTP/1.0, keep-alive has to be explicit.)
+    MockRead data_reads1[] = {
+        // No credentials.
+        MockRead(ASYNC, 1,
+                 "HTTP/1.1 407 Proxy Authentication Required\r\n"
+                 "Proxy-Authenticate: Basic realm=\"MyRealm1\"\r\n"
+                 "Content-Length: 10\r\n\r\n"),
+        MockRead(i == 0 ? ASYNC : SYNCHRONOUS, 2, "0123456789"),
+
+        // Wrong credentials (wrong password).
+        MockRead(ASYNC, 4,
+                 "HTTP/1.1 407 Proxy Authentication Required\r\n"
+                 "Proxy-Authenticate: Basic realm=\"MyRealm1\"\r\n"
+                 "Content-Length: 10\r\n\r\n"),
+        // No response body because the test stops reading here.
+        MockRead(SYNCHRONOUS, ERR_UNEXPECTED, 5),
+    };
+
+    SequencedSocketData data1(data_reads1, arraysize(data_reads1), data_writes1,
+                              arraysize(data_writes1));
+    data1.set_busy_before_sync_reads(true);
+    session_deps_.socket_factory->AddSocketDataProvider(&data1);
+
+    TestCompletionCallback callback1;
+
+    int rv = trans->Start(&request, callback1.callback(), log.bound());
+    EXPECT_EQ(OK, callback1.GetResult(rv));
+
+    TestNetLogEntry::List entries;
+    log.GetEntries(&entries);
+    size_t pos = ExpectLogContainsSomewhere(
+        entries, 0, NetLog::TYPE_HTTP_TRANSACTION_SEND_TUNNEL_HEADERS,
+        NetLog::PHASE_NONE);
+    ExpectLogContainsSomewhere(
+        entries, pos,
+        NetLog::TYPE_HTTP_TRANSACTION_READ_TUNNEL_RESPONSE_HEADERS,
+        NetLog::PHASE_NONE);
+
+    const HttpResponseInfo* response = trans->GetResponseInfo();
+    ASSERT_TRUE(response);
+    ASSERT_TRUE(response->headers);
+    EXPECT_TRUE(response->headers->IsKeepAlive());
+    EXPECT_EQ(407, response->headers->response_code());
+    EXPECT_EQ(10, response->headers->GetContentLength());
+    EXPECT_TRUE(HttpVersion(1, 1) == response->headers->GetHttpVersion());
+    EXPECT_TRUE(CheckBasicProxyAuth(response->auth_challenge.get()));
+
+    TestCompletionCallback callback2;
+
+    // Wrong password (should be "bar").
+    rv = trans->RestartWithAuth(AuthCredentials(kFoo, kBaz),
+                                callback2.callback());
+    EXPECT_EQ(OK, callback2.GetResult(rv));
+
+    response = trans->GetResponseInfo();
+    ASSERT_TRUE(response);
+    ASSERT_TRUE(response->headers);
+    EXPECT_TRUE(response->headers->IsKeepAlive());
+    EXPECT_EQ(407, response->headers->response_code());
+    EXPECT_EQ(10, response->headers->GetContentLength());
+    EXPECT_TRUE(HttpVersion(1, 1) == response->headers->GetHttpVersion());
+    EXPECT_TRUE(CheckBasicProxyAuth(response->auth_challenge.get()));
+
+    // Flush the idle socket before the NetLog and HttpNetworkTransaction go
+    // out of scope.
+    session->CloseAllConnections();
+  }
+}
+
+// Test the request-challenge-retry sequence for basic auth, over a keep-alive
+// proxy connection with HTTP/1.1 responses, when setting up an SSL tunnel, in
+// the case the server sends extra data on the original socket, so it can't be
+// reused.
+TEST_P(HttpNetworkTransactionTest, BasicAuthProxyKeepAliveExtraData) {
   HttpRequestInfo request;
   request.method = "GET";
   request.url = GURL("https://www.example.org/");
-  // Ensure that proxy authentication is attempted even
   // when the no authentication data flag is set.
   request.load_flags = LOAD_DO_NOT_SEND_AUTH_DATA;
 
   // Configure against proxy server "myproxy:70".
-  session_deps_.proxy_service = ProxyService::CreateFixed("myproxy:70");
+  session_deps_.proxy_service =
+      ProxyService::CreateFixedFromPacResult("PROXY myproxy:70");
   BoundTestNetLog log;
   session_deps_.net_log = log.bound().net_log();
   scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
-  scoped_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
-
   // Since we have proxy, should try to establish tunnel.
   MockWrite data_writes1[] = {
-      MockWrite("CONNECT www.example.org:443 HTTP/1.1\r\n"
+      MockWrite(ASYNC, 0,
+                "CONNECT www.example.org:443 HTTP/1.1\r\n"
                 "Host: www.example.org:443\r\n"
                 "Proxy-Connection: keep-alive\r\n\r\n"),
+  };
 
+  // The proxy responds to the connect with a 407, using a persistent, but sends
+  // extra data, so the socket cannot be reused.
+  MockRead data_reads1[] = {
+      // No credentials.
+      MockRead(ASYNC, 1,
+               "HTTP/1.1 407 Proxy Authentication Required\r\n"
+               "Proxy-Authenticate: Basic realm=\"MyRealm1\"\r\n"
+               "Content-Length: 10\r\n\r\n"),
+      MockRead(SYNCHRONOUS, 2, "0123456789"),
+      MockRead(SYNCHRONOUS, 3, "I'm broken!"),
+  };
+
+  MockWrite data_writes2[] = {
       // After calling trans->RestartWithAuth(), this is the request we should
       // be issuing -- the final header line contains the credentials.
-      MockWrite("CONNECT www.example.org:443 HTTP/1.1\r\n"
+      MockWrite(ASYNC, 0,
+                "CONNECT www.example.org:443 HTTP/1.1\r\n"
                 "Host: www.example.org:443\r\n"
                 "Proxy-Connection: keep-alive\r\n"
-                "Proxy-Authorization: Basic Zm9vOmJheg==\r\n\r\n"),
+                "Proxy-Authorization: Basic Zm9vOmJhcg==\r\n\r\n"),
+
+      MockWrite(ASYNC, 2,
+                "GET / HTTP/1.1\r\n"
+                "Host: www.example.org\r\n"
+                "Connection: keep-alive\r\n\r\n"),
   };
 
-  // The proxy responds to the connect with a 407, using a persistent
-  // connection.
-  MockRead data_reads1[] = {
-    // No credentials.
-    MockRead("HTTP/1.1 407 Proxy Authentication Required\r\n"),
-    MockRead("Proxy-Authenticate: Basic realm=\"MyRealm1\"\r\n"),
-    MockRead("Content-Length: 10\r\n\r\n"),
-    MockRead("0123456789"),
+  MockRead data_reads2[] = {
+      MockRead(ASYNC, 1, "HTTP/1.1 200 Connection Established\r\n\r\n"),
 
-    // Wrong credentials (wrong password).
-    MockRead("HTTP/1.1 407 Proxy Authentication Required\r\n"),
-    MockRead("Proxy-Authenticate: Basic realm=\"MyRealm1\"\r\n"),
-    MockRead("Content-Length: 10\r\n\r\n"),
-    // No response body because the test stops reading here.
-    MockRead(SYNCHRONOUS, ERR_UNEXPECTED),  // Should not be reached.
+      MockRead(ASYNC, 3,
+               "HTTP/1.1 200 OK\r\n"
+               "Content-Type: text/html; charset=iso-8859-1\r\n"
+               "Content-Length: 5\r\n\r\n"),
+      // No response body because the test stops reading here.
+      MockRead(SYNCHRONOUS, ERR_UNEXPECTED, 4),
   };
 
-  StaticSocketDataProvider data1(data_reads1, arraysize(data_reads1),
-                                 data_writes1, arraysize(data_writes1));
+  SequencedSocketData data1(data_reads1, arraysize(data_reads1), data_writes1,
+                            arraysize(data_writes1));
+  data1.set_busy_before_sync_reads(true);
   session_deps_.socket_factory->AddSocketDataProvider(&data1);
+  SequencedSocketData data2(data_reads2, arraysize(data_reads2), data_writes2,
+                            arraysize(data_writes2));
+  session_deps_.socket_factory->AddSocketDataProvider(&data2);
+  SSLSocketDataProvider ssl(ASYNC, OK);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
 
   TestCompletionCallback callback1;
 
-  int rv = trans->Start(&request, callback1.callback(), log.bound());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  scoped_ptr<HttpTransaction> trans(
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
-  rv = callback1.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  int rv = trans->Start(&request, callback1.callback(), log.bound());
+  EXPECT_EQ(OK, callback1.GetResult(rv));
+
   TestNetLogEntry::List entries;
   log.GetEntries(&entries);
   size_t pos = ExpectLogContainsSomewhere(
@@ -3018,31 +3153,33 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthProxyKeepAliveHttp11) {
   ASSERT_TRUE(response->headers);
   EXPECT_TRUE(response->headers->IsKeepAlive());
   EXPECT_EQ(407, response->headers->response_code());
-  EXPECT_EQ(10, response->headers->GetContentLength());
   EXPECT_TRUE(HttpVersion(1, 1) == response->headers->GetHttpVersion());
   EXPECT_TRUE(CheckBasicProxyAuth(response->auth_challenge.get()));
+
+  LoadTimingInfo load_timing_info;
+  // CONNECT requests and responses are handled at the connect job level, so
+  // the transaction does not yet have a connection.
+  EXPECT_FALSE(trans->GetLoadTimingInfo(&load_timing_info));
 
   TestCompletionCallback callback2;
 
-  // Wrong password (should be "bar").
-  rv = trans->RestartWithAuth(
-      AuthCredentials(kFoo, kBaz), callback2.callback());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  rv =
+      trans->RestartWithAuth(AuthCredentials(kFoo, kBar), callback2.callback());
+  EXPECT_EQ(OK, callback2.GetResult(rv));
 
-  rv = callback2.WaitForResult();
-  EXPECT_EQ(OK, rv);
-
-  response = trans->GetResponseInfo();
-  ASSERT_TRUE(response);
-  ASSERT_TRUE(response->headers);
   EXPECT_TRUE(response->headers->IsKeepAlive());
-  EXPECT_EQ(407, response->headers->response_code());
-  EXPECT_EQ(10, response->headers->GetContentLength());
+  EXPECT_EQ(200, response->headers->response_code());
+  EXPECT_EQ(5, response->headers->GetContentLength());
   EXPECT_TRUE(HttpVersion(1, 1) == response->headers->GetHttpVersion());
-  EXPECT_TRUE(CheckBasicProxyAuth(response->auth_challenge.get()));
 
-  // Flush the idle socket before the NetLog and HttpNetworkTransaction go
-  // out of scope.
+  // The password prompt info should not be set.
+  EXPECT_FALSE(response->auth_challenge);
+
+  EXPECT_TRUE(trans->GetLoadTimingInfo(&load_timing_info));
+  TestLoadTimingNotReusedWithPac(load_timing_info,
+                                 CONNECT_TIMING_HAS_SSL_TIMES);
+
+  trans.reset();
   session->CloseAllConnections();
 }
 
@@ -3165,7 +3302,7 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthProxyCancelTunnel) {
       MockRead("HTTP/1.1 407 Proxy Authentication Required\r\n"),
       MockRead("Proxy-Authenticate: Basic realm=\"MyRealm1\"\r\n"),
       MockRead("Content-Length: 10\r\n\r\n"),
-      MockRead("0123456789"),  // Should not be reached.
+      MockRead("0123456789"),
       MockRead(SYNCHRONOUS, ERR_UNEXPECTED),
   };
 
@@ -3226,7 +3363,7 @@ TEST_P(HttpNetworkTransactionTest, SanitizeProxyAuthHeaders) {
       MockRead("Set-Cookie: foo=bar\r\n"),
       MockRead("Proxy-Authenticate: Basic realm=\"MyRealm1\"\r\n"),
       MockRead("Content-Length: 10\r\n\r\n"),
-      MockRead(SYNCHRONOUS, ERR_UNEXPECTED),  // Should not be reached.
+      MockRead(SYNCHRONOUS, ERR_UNEXPECTED),
   };
 
   StaticSocketDataProvider data(data_reads, arraysize(data_reads), data_writes,
@@ -5009,10 +5146,9 @@ void HttpNetworkTransactionTest::ConnectStatusHelperWithExpectedStatus(
   };
 
   MockRead data_reads[] = {
-    status,
-    MockRead("Content-Length: 10\r\n\r\n"),
-    // No response body because the test stops reading here.
-    MockRead(SYNCHRONOUS, ERR_UNEXPECTED),  // Should not be reached.
+      status, MockRead("Content-Length: 10\r\n\r\n"),
+      // No response body because the test stops reading here.
+      MockRead(SYNCHRONOUS, ERR_UNEXPECTED),
   };
 
   StaticSocketDataProvider data(data_reads, arraysize(data_reads),
@@ -5736,9 +5872,9 @@ TEST_P(HttpNetworkTransactionTest,
   // connection. Usually a proxy would return 501 (not implemented),
   // or 200 (tunnel established).
   MockRead data_reads1[] = {
-    MockRead("HTTP/1.1 404 Not Found\r\n"),
-    MockRead("Content-Length: 10\r\n\r\n"),
-    MockRead(SYNCHRONOUS, ERR_UNEXPECTED),  // Should not be reached.
+      MockRead("HTTP/1.1 404 Not Found\r\n"),
+      MockRead("Content-Length: 10\r\n\r\n"),
+      MockRead(SYNCHRONOUS, ERR_UNEXPECTED),
   };
 
   StaticSocketDataProvider data1(data_reads1, arraysize(data_reads1),
