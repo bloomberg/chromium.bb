@@ -16,20 +16,21 @@ infobars::InfoBar* MidiPermissionInfoBarDelegateAndroid::Create(
     InfoBarService* infobar_service,
     const GURL& requesting_frame,
     const std::string& display_languages,
-    ContentSettingsType type,
     const PermissionSetCallback& callback) {
   return infobar_service->AddInfoBar(
       infobar_service->CreateConfirmInfoBar(scoped_ptr<ConfirmInfoBarDelegate>(
           new MidiPermissionInfoBarDelegateAndroid(
-              requesting_frame, display_languages, type, callback))));
+              requesting_frame, display_languages, callback))));
 }
 
 MidiPermissionInfoBarDelegateAndroid::MidiPermissionInfoBarDelegateAndroid(
     const GURL& requesting_frame,
     const std::string& display_languages,
-    ContentSettingsType type,
     const PermissionSetCallback& callback)
-    : PermissionInfobarDelegate(requesting_frame, type, callback),
+    : PermissionInfobarDelegate(requesting_frame,
+                                content::PermissionType::MIDI_SYSEX,
+                                CONTENT_SETTINGS_TYPE_MIDI_SYSEX,
+                                callback),
       requesting_frame_(requesting_frame),
       display_languages_(display_languages) {}
 

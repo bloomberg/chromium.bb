@@ -32,6 +32,7 @@ ProtectedMediaIdentifierInfoBarDelegateAndroid::
         const PermissionSetCallback& callback)
     : PermissionInfobarDelegate(
           requesting_frame,
+          content::PermissionType::PROTECTED_MEDIA_IDENTIFIER,
           CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER,
           callback),
       requesting_frame_(requesting_frame),

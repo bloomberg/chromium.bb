@@ -268,7 +268,7 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
 
     EXPECT_FALSE(permission_context.IsPermissionKillSwitchOn());
     std::map<std::string, std::string> params;
-    params[PermissionUtil::GetPermissionString(content_settings_type)] =
+    params[PermissionUtil::GetPermissionString(permission_type)] =
         kPermissionsKillSwitchBlockedValue;
     variations::AssociateVariationParams(
         kPermissionsKillSwitchFieldStudy, kPermissionsKillSwitchTestGroup,

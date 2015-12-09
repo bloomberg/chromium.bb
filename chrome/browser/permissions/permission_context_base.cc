@@ -44,8 +44,8 @@ PermissionContextBase::PermissionContextBase(
       content_settings_type_(content_settings_type),
       weak_factory_(this) {
 #if defined(OS_ANDROID)
-  permission_queue_controller_.reset(
-      new PermissionQueueController(profile_, content_settings_type_));
+  permission_queue_controller_.reset(new PermissionQueueController(
+      profile_, permission_type_, content_settings_type_));
 #endif
 }
 
@@ -68,9 +68,7 @@ void PermissionContextBase::RequestPermission(
         content::CONSOLE_MESSAGE_LEVEL_LOG,
         base::StringPrintf(
             "%s permission has been blocked.",
-            // TODO(lshang): Should use permission_type_ here.
-            PermissionUtil::GetPermissionString(content_settings_type_)
-                .c_str()));
+            PermissionUtil::GetPermissionString(permission_type_).c_str()));
     // The kill switch is enabled for this permission; Block all requests.
     callback.Run(CONTENT_SETTING_BLOCK);
     return;
@@ -114,8 +112,8 @@ void PermissionContextBase::RequestPermission(
     return;
   }
 
-  PermissionUmaUtil::PermissionRequested(
-      content_settings_type_, requesting_origin, embedding_origin, profile_);
+  PermissionUmaUtil::PermissionRequested(permission_type_, requesting_origin,
+                                         embedding_origin, profile_);
 
   DecidePermission(web_contents, id, requesting_origin, embedding_origin,
                    user_gesture, callback);
@@ -184,7 +182,6 @@ void PermissionContextBase::DecidePermission(
   scoped_ptr<PermissionBubbleRequest> request_ptr(
       new PermissionBubbleRequestImpl(
           requesting_origin, user_gesture, permission_type_,
-          content_settings_type_,
           profile_->GetPrefs()->GetString(prefs::kAcceptLanguages),
           base::Bind(&PermissionContextBase::PermissionDecided,
                      weak_factory_.GetWeakPtr(), id, requesting_origin,
@@ -223,15 +220,12 @@ void PermissionContextBase::PermissionDecided(
     DCHECK(content_setting == CONTENT_SETTING_ALLOW ||
            content_setting == CONTENT_SETTING_BLOCK);
     if (content_setting == CONTENT_SETTING_ALLOW)
-      PermissionUmaUtil::PermissionGranted(content_settings_type_,
-                                           requesting_origin);
+      PermissionUmaUtil::PermissionGranted(permission_type_, requesting_origin);
     else
-      PermissionUmaUtil::PermissionDenied(content_settings_type_,
-                                          requesting_origin);
+      PermissionUmaUtil::PermissionDenied(permission_type_, requesting_origin);
   } else {
     DCHECK_EQ(content_setting, CONTENT_SETTING_DEFAULT);
-    PermissionUmaUtil::PermissionDismissed(content_settings_type_,
-                                           requesting_origin);
+    PermissionUmaUtil::PermissionDismissed(permission_type_, requesting_origin);
   }
 #endif
 
@@ -297,7 +291,7 @@ void PermissionContextBase::UpdateContentSetting(
 bool PermissionContextBase::IsPermissionKillSwitchOn() const {
   const std::string param = variations::GetVariationParamValue(
       kPermissionsKillSwitchFieldStudy,
-      PermissionUtil::GetPermissionString(content_settings_type_));
+      PermissionUtil::GetPermissionString(permission_type_));
 
   return param == kPermissionsKillSwitchBlockedValue;
 }

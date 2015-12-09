@@ -24,13 +24,11 @@ class MidiPermissionInfoBarDelegateAndroid : public PermissionInfobarDelegate {
   static infobars::InfoBar* Create(InfoBarService* infobar_service,
                                    const GURL& requesting_frame,
                                    const std::string& display_languages,
-                                   ContentSettingsType type,
                                    const PermissionSetCallback& callback);
 
  private:
   MidiPermissionInfoBarDelegateAndroid(const GURL& requesting_frame,
                                        const std::string& display_languages,
-                                       ContentSettingsType type,
                                        const PermissionSetCallback& callback);
   ~MidiPermissionInfoBarDelegateAndroid() override;
 

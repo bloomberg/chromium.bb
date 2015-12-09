@@ -11,18 +11,19 @@
 
 PermissionInfobarDelegate::~PermissionInfobarDelegate() {
   if (!action_taken_)
-    PermissionUmaUtil::PermissionIgnored(type_, requesting_origin_);
+    PermissionUmaUtil::PermissionIgnored(permission_type_, requesting_origin_);
 }
 
 PermissionInfobarDelegate::PermissionInfobarDelegate(
     const GURL& requesting_origin,
-    ContentSettingsType type,
+    content::PermissionType permission_type,
+    ContentSettingsType content_settings_type,
     const base::Callback<void(bool, bool)>& callback)
     : requesting_origin_(requesting_origin),
       action_taken_(false),
-      type_(type),
-      callback_(callback) {
-}
+      permission_type_(permission_type),
+      content_settings_type_(content_settings_type),
+      callback_(callback) {}
 
 infobars::InfoBarDelegate::Type
 PermissionInfobarDelegate::GetInfoBarType() const {

@@ -8,13 +8,16 @@
 #include <string>
 
 #include "base/macros.h"
-#include "components/content_settings/core/common/content_settings_types.h"
+
+namespace content {
+enum class PermissionType;
+}  // namespace content
 
 // A utility class for permissions.
 class PermissionUtil {
  public:
-  // Returns the permission string for the given ContentSettingsType.
-  static std::string GetPermissionString(ContentSettingsType permission);
+  // Returns the permission string for the given PermissionType.
+  static std::string GetPermissionString(content::PermissionType permission);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(PermissionUtil);

@@ -8,6 +8,7 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
+#include "content/public/browser/permission_type.h"
 #include "content/public/browser/web_contents.h"
 
 class NavigationDetails;
@@ -20,11 +21,12 @@ class PermissionInfobarDelegate : public ConfirmInfoBarDelegate {
 
  public:
   using PermissionSetCallback = base::Callback<void(bool, bool)>;
-  ContentSettingsType content_setting() const { return type_; }
+  ContentSettingsType content_setting() const { return content_settings_type_; }
 
  protected:
   PermissionInfobarDelegate(const GURL& requesting_origin,
-                            ContentSettingsType type,
+                            content::PermissionType permission_type,
+                            ContentSettingsType content_settings_type,
                             const PermissionSetCallback& callback);
   ~PermissionInfobarDelegate() override;
 
@@ -41,7 +43,8 @@ class PermissionInfobarDelegate : public ConfirmInfoBarDelegate {
 
   GURL requesting_origin_;
   bool action_taken_;
-  ContentSettingsType type_;
+  content::PermissionType permission_type_;
+  ContentSettingsType content_settings_type_;
   const PermissionSetCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(PermissionInfobarDelegate);

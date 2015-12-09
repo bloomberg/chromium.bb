@@ -9,7 +9,6 @@
 #include "chrome/browser/permissions/permission_request_id.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_request.h"
 #include "components/content_settings/core/common/content_settings.h"
-#include "components/content_settings/core/common/content_settings_types.h"
 #include "content/public/browser/permission_type.h"
 
 class GURL;
@@ -26,7 +25,6 @@ class PermissionBubbleRequestImpl : public PermissionBubbleRequest {
       const GURL& request_origin,
       bool user_gesture,
       content::PermissionType permission_type,
-      ContentSettingsType content_settings_type,
       const std::string& display_languages,
       const PermissionDecidedCallback& permission_decided_callback,
       const base::Closure delete_callback);
@@ -57,9 +55,6 @@ class PermissionBubbleRequestImpl : public PermissionBubbleRequest {
   GURL request_origin_;
   bool user_gesture_;
   content::PermissionType permission_type_;
-  // TODO(lshang): content_settings_type_ should be removed as soon as its usage
-  // in the .cc are cleaned up.
-  ContentSettingsType content_settings_type_;
   std::string display_languages_;
 
   // Called once a decision is made about the permission.

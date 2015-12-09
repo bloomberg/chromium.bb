@@ -23,14 +23,12 @@ class DurableStoragePermissionInfoBarDelegateAndroid
   static infobars::InfoBar* Create(InfoBarService* infobar_service,
                                    const GURL& requesting_frame,
                                    const std::string& display_languages,
-                                   ContentSettingsType type,
                                    const PermissionSetCallback& callback);
 
  private:
   DurableStoragePermissionInfoBarDelegateAndroid(
       const GURL& requesting_frame,
       const std::string& display_languages,
-      ContentSettingsType type,
       const PermissionSetCallback& callback);
   ~DurableStoragePermissionInfoBarDelegateAndroid() override = default;
 

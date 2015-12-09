@@ -28,6 +28,7 @@ GeolocationInfoBarDelegateAndroid::GeolocationInfoBarDelegateAndroid(
     const std::string& display_languages,
     const PermissionSetCallback& callback)
     : PermissionInfobarDelegate(requesting_frame,
+                                content::PermissionType::GEOLOCATION,
                                 CONTENT_SETTINGS_TYPE_GEOLOCATION,
                                 callback),
       requesting_frame_(requesting_frame),

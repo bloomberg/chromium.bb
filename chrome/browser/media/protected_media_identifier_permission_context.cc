@@ -70,9 +70,11 @@ void ProtectedMediaIdentifierPermissionContext::RequestPermission(
     // Log to the developer console.
     web_contents->GetMainFrame()->AddMessageToConsole(
         content::CONSOLE_MESSAGE_LEVEL_LOG,
-        base::StringPrintf("%s permission has been blocked.",
+        base::StringPrintf(
+            "%s permission has been blocked.",
             PermissionUtil::GetPermissionString(
-                CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER).c_str()));
+                content::PermissionType::PROTECTED_MEDIA_IDENTIFIER)
+                .c_str()));
     // The kill switch is enabled for this permission; Block all requests and
     // run the callback immediately.
     callback.Run(CONTENT_SETTING_BLOCK);

@@ -5,33 +5,37 @@
 #include "chrome/browser/permissions/permission_util.h"
 
 #include "base/logging.h"
+#include "content/public/browser/permission_type.h"
+
+using content::PermissionType;
 
 // The returned strings must match the RAPPOR metrics in rappor.xml,
 // and any Field Trial configs for the Permissions kill switch e.g.
 // Permissions.Action.Geolocation etc..
 std::string PermissionUtil::GetPermissionString(
-    ContentSettingsType permission) {
+    content::PermissionType permission) {
   switch (permission) {
-    case CONTENT_SETTINGS_TYPE_GEOLOCATION:
+    case content::PermissionType::GEOLOCATION:
       return "Geolocation";
-    case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
+    case content::PermissionType::NOTIFICATIONS:
       return "Notifications";
-    case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
+    case content::PermissionType::MIDI_SYSEX:
       return "MidiSysEx";
-    case CONTENT_SETTINGS_TYPE_PUSH_MESSAGING:
+    case content::PermissionType::PUSH_MESSAGING:
       return "PushMessaging";
-    case CONTENT_SETTINGS_TYPE_DURABLE_STORAGE:
+    case content::PermissionType::DURABLE_STORAGE:
       return "DurableStorage";
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
-    case CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER:
+    case content::PermissionType::PROTECTED_MEDIA_IDENTIFIER:
       return "ProtectedMediaIdentifier";
-#endif
-    case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
+    case content::PermissionType::AUDIO_CAPTURE:
       return "AudioCapture";
-    case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
+    case content::PermissionType::VIDEO_CAPTURE:
       return "VideoCapture";
-    default:
-      NOTREACHED();
-      return std::string();
+    case content::PermissionType::MIDI:
+      return "Midi";
+    case content::PermissionType::NUM:
+      break;
   }
+  NOTREACHED();
+  return std::string();
 }

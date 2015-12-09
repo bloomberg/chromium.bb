@@ -29,6 +29,7 @@
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -53,33 +54,32 @@ namespace {
 
 // Returns true if the given ContentSettingsType is being requested in
 // |request|.
-bool ContentTypeIsRequested(ContentSettingsType type,
+bool ContentTypeIsRequested(content::PermissionType type,
                             const content::MediaStreamRequest& request) {
   if (request.request_type == content::MEDIA_OPEN_DEVICE_PEPPER_ONLY)
     return true;
 
-  if (type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC)
+  if (type == content::PermissionType::AUDIO_CAPTURE)
     return request.audio_type == content::MEDIA_DEVICE_AUDIO_CAPTURE;
 
-  if (type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA)
+  if (type == content::PermissionType::VIDEO_CAPTURE)
     return request.video_type == content::MEDIA_DEVICE_VIDEO_CAPTURE;
 
   return false;
 }
 
 using PermissionActionCallback =
-    base::Callback<void(ContentSettingsType, const GURL&)>;
+    base::Callback<void(content::PermissionType, const GURL&)>;
 
 // Calls |action_function| for each permission requested by |request|.
 void RecordPermissionAction(const content::MediaStreamRequest& request,
                             PermissionActionCallback callback) {
-  if (ContentTypeIsRequested(CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
-                             request)) {
-    callback.Run(CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
+  if (ContentTypeIsRequested(content::PermissionType::VIDEO_CAPTURE, request)) {
+    callback.Run(content::PermissionType::VIDEO_CAPTURE,
                  request.security_origin);
   }
-  if (ContentTypeIsRequested(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, request)) {
-    callback.Run(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
+  if (ContentTypeIsRequested(content::PermissionType::AUDIO_CAPTURE, request)) {
+    callback.Run(content::PermissionType::AUDIO_CAPTURE,
                  request.security_origin);
   }
 }
@@ -551,7 +551,15 @@ ContentSetting MediaStreamDevicesController::GetContentSetting(
     return CONTENT_SETTING_BLOCK;
   }
 
-  if (ContentTypeIsRequested(content_type, request)) {
+  content::PermissionType permission_type;
+  if (content_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC) {
+    permission_type = content::PermissionType::AUDIO_CAPTURE;
+  } else {
+    DCHECK(content_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
+    permission_type = content::PermissionType::VIDEO_CAPTURE;
+  }
+
+  if (ContentTypeIsRequested(permission_type, request)) {
     bool is_insecure_pepper_request =
         request.request_type == content::MEDIA_OPEN_DEVICE_PEPPER_ONLY &&
         request.security_origin.SchemeIs(url::kHttpScheme);

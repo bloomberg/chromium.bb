@@ -30,6 +30,7 @@ NotificationPermissionInfobarDelegate::NotificationPermissionInfobarDelegate(
     const std::string& display_languages,
     const base::Callback<void(bool, bool)>& callback)
     : PermissionInfobarDelegate(requesting_frame,
+                                content::PermissionType::NOTIFICATIONS,
                                 CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
                                 callback),
       requesting_frame_(requesting_frame),

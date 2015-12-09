@@ -17,14 +17,12 @@ PermissionBubbleRequestImpl::PermissionBubbleRequestImpl(
     const GURL& request_origin,
     bool user_gesture,
     content::PermissionType permission_type,
-    ContentSettingsType content_settings_type,
     const std::string& display_languages,
     const PermissionDecidedCallback& permission_decided_callback,
     const base::Closure delete_callback)
     : request_origin_(request_origin),
       user_gesture_(user_gesture),
       permission_type_(permission_type),
-      content_settings_type_(content_settings_type),
       display_languages_(display_languages),
       permission_decided_callback_(permission_decided_callback),
       delete_callback_(delete_callback),
@@ -34,10 +32,7 @@ PermissionBubbleRequestImpl::PermissionBubbleRequestImpl(
 PermissionBubbleRequestImpl::~PermissionBubbleRequestImpl() {
   DCHECK(is_finished_);
   if (!action_taken_)
-    // TODO(lshang): Should use permission_type_ here and remove
-    // content_settings_type_ in this class
-    PermissionUmaUtil::PermissionIgnored(content_settings_type_,
-                                         request_origin_);
+    PermissionUmaUtil::PermissionIgnored(permission_type_, request_origin_);
 }
 
 gfx::VectorIconId PermissionBubbleRequestImpl::GetVectorIconId() const {
