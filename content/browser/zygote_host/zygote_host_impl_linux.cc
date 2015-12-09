@@ -21,7 +21,6 @@
 #include "base/logging.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/path_service.h"
@@ -63,7 +62,7 @@ bool ReceiveFixedMessage(int fd,
                          size_t expect_len,
                          base::ProcessId* sender_pid) {
   char buf[expect_len + 1];
-  ScopedVector<base::ScopedFD> fds_vec;
+  std::vector<base::ScopedFD> fds_vec;
 
   const ssize_t len = base::UnixDomainSocket::RecvMsgWithPid(
       fd, buf, sizeof(buf), &fds_vec, sender_pid);
@@ -363,7 +362,7 @@ pid_t ZygoteHostImpl::ForkRequest(const std::vector<std::string>& argv,
 
     {
       char buf[sizeof(kZygoteChildPingMessage) + 1];
-      ScopedVector<base::ScopedFD> recv_fds;
+      std::vector<base::ScopedFD> recv_fds;
       base::ProcessId real_pid;
 
       ssize_t n = base::UnixDomainSocket::RecvMsgWithPid(

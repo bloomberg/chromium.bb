@@ -37,33 +37,33 @@ class SandboxIPCHandler : public base::DelegateSimpleThread::Delegate {
 
   void HandleFontMatchRequest(int fd,
                               base::PickleIterator iter,
-                              const std::vector<base::ScopedFD*>& fds);
+                              const std::vector<base::ScopedFD>& fds);
 
   void HandleFontOpenRequest(int fd,
                              base::PickleIterator iter,
-                             const std::vector<base::ScopedFD*>& fds);
+                             const std::vector<base::ScopedFD>& fds);
 
   void HandleGetFallbackFontForChar(int fd,
-                                  base::PickleIterator iter,
-                                  const std::vector<base::ScopedFD*>& fds);
+                                    base::PickleIterator iter,
+                                    const std::vector<base::ScopedFD>& fds);
 
   void HandleGetStyleForStrike(int fd,
                                base::PickleIterator iter,
-                               const std::vector<base::ScopedFD*>& fds);
+                               const std::vector<base::ScopedFD>& fds);
 
   void HandleLocaltime(int fd,
                        base::PickleIterator iter,
-                       const std::vector<base::ScopedFD*>& fds);
+                       const std::vector<base::ScopedFD>& fds);
 
   void HandleMakeSharedMemorySegment(int fd,
                                      base::PickleIterator iter,
-                                     const std::vector<base::ScopedFD*>& fds);
+                                     const std::vector<base::ScopedFD>& fds);
 
   void HandleMatchWithFallback(int fd,
                                base::PickleIterator iter,
-                               const std::vector<base::ScopedFD*>& fds);
+                               const std::vector<base::ScopedFD>& fds);
 
-  void SendRendererReply(const std::vector<base::ScopedFD*>& fds,
+  void SendRendererReply(const std::vector<base::ScopedFD>& fds,
                          const base::Pickle& reply,
                          int reply_fd);
 

@@ -7,6 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "content/public/app/content_main_delegate.h"
 
 namespace content {

@@ -13,6 +13,7 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+
 #include <utility>
 
 #include "base/command_line.h"
@@ -20,7 +21,6 @@
 #include "base/linux_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/pickle.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/posix/global_descriptors.h"
@@ -229,7 +229,7 @@ bool Zygote::UsingNSSandbox() const {
 }
 
 bool Zygote::HandleRequestFromBrowser(int fd) {
-  ScopedVector<base::ScopedFD> fds;
+  std::vector<base::ScopedFD> fds;
   char buf[kZygoteMaxMessageLength];
   const ssize_t len = base::UnixDomainSocket::RecvMsg(
       fd, buf, sizeof(buf), &fds);
@@ -237,21 +237,18 @@ bool Zygote::HandleRequestFromBrowser(int fd) {
   if (len == 0 || (len == -1 && errno == ECONNRESET)) {
     // EOF from the browser. We should die.
     // TODO(earthdok): call __sanititizer_cov_dump() here to obtain code
-    // coverage  for the Zygote. Currently it's not possible because of
+    // coverage for the Zygote. Currently it's not possible because of
     // confusion over who is responsible for closing the file descriptor.
-    for (std::vector<int>::iterator it = extra_fds_.begin();
-         it < extra_fds_.end(); ++it) {
-      PCHECK(0 == IGNORE_EINTR(close(*it)));
+    for (int fd : extra_fds_) {
+      PCHECK(0 == IGNORE_EINTR(close(fd)));
     }
 #if !defined(SANITIZER_COVERAGE)
     // TODO(earthdok): add watchdog thread before using this in builds not
     // using sanitizer coverage.
     CHECK(extra_children_.empty());
 #endif
-    for (std::vector<base::ProcessHandle>::iterator it =
-             extra_children_.begin();
-         it < extra_children_.end(); ++it) {
-      PCHECK(*it == HANDLE_EINTR(waitpid(*it, NULL, 0)));
+    for (base::ProcessHandle pid : extra_children_) {
+      PCHECK(pid == HANDLE_EINTR(waitpid(pid, NULL, 0)));
     }
     _exit(0);
     return false;
@@ -270,7 +267,7 @@ bool Zygote::HandleRequestFromBrowser(int fd) {
     switch (kind) {
       case kZygoteCommandFork:
         // This function call can return multiple times, once per fork().
-        return HandleForkRequest(fd, iter, fds.Pass());
+        return HandleForkRequest(fd, iter, std::move(fds));
 
       case kZygoteCommandReap:
         if (!fds.empty())
@@ -505,7 +502,7 @@ int Zygote::ForkWithRealPid(const std::string& process_type,
   // be invalid (see below).
   base::ProcessId real_pid;
   {
-    ScopedVector<base::ScopedFD> recv_fds;
+    std::vector<base::ScopedFD> recv_fds;
     char buf[kZygoteMaxMessageLength];
     const ssize_t len = base::UnixDomainSocket::RecvMsg(
         kZygoteSocketPairFd, buf, sizeof(buf), &recv_fds);
@@ -555,7 +552,7 @@ int Zygote::ForkWithRealPid(const std::string& process_type,
 }
 
 base::ProcessId Zygote::ReadArgsAndFork(base::PickleIterator iter,
-                                        ScopedVector<base::ScopedFD> fds,
+                                        std::vector<base::ScopedFD> fds,
                                         std::string* uma_name,
                                         int* uma_sample,
                                         int* uma_boundary_value) {
@@ -590,14 +587,14 @@ base::ProcessId Zygote::ReadArgsAndFork(base::PickleIterator iter,
   // First FD is the PID oracle socket.
   if (fds.size() < 1)
     return -1;
-  base::ScopedFD pid_oracle(std::move(*fds[0]));
+  base::ScopedFD pid_oracle(std::move(fds[0]));
 
   // Remaining FDs are for the global descriptor mapping.
   for (int i = 1; i < numfds; ++i) {
     base::GlobalDescriptors::Key key;
     if (!iter.ReadUInt32(&key))
       return -1;
-    mapping.push_back(base::GlobalDescriptors::Descriptor(key, fds[i]->get()));
+    mapping.push_back(base::GlobalDescriptors::Descriptor(key, fds[i].get()));
   }
 
   mapping.push_back(base::GlobalDescriptors::Descriptor(
@@ -614,9 +611,8 @@ base::ProcessId Zygote::ReadArgsAndFork(base::PickleIterator iter,
     PCHECK(0 == IGNORE_EINTR(close(kZygoteSocketPairFd)));
 
     // Pass ownership of file descriptors from fds to GlobalDescriptors.
-    for (ScopedVector<base::ScopedFD>::iterator i = fds.begin(); i != fds.end();
-         ++i)
-      ignore_result((*i)->release());
+    for (base::ScopedFD& fd : fds)
+      ignore_result(fd.release());
     base::GlobalDescriptors::GetInstance()->Reset(mapping);
 
     // Reset the process-wide command line to our new command line.
@@ -637,12 +633,12 @@ base::ProcessId Zygote::ReadArgsAndFork(base::PickleIterator iter,
 
 bool Zygote::HandleForkRequest(int fd,
                                base::PickleIterator iter,
-                               ScopedVector<base::ScopedFD> fds) {
+                               std::vector<base::ScopedFD> fds) {
   std::string uma_name;
   int uma_sample;
   int uma_boundary_value;
-  base::ProcessId child_pid = ReadArgsAndFork(
-      iter, fds.Pass(), &uma_name, &uma_sample, &uma_boundary_value);
+  base::ProcessId child_pid = ReadArgsAndFork(iter, std::move(fds), &uma_name,
+                                              &uma_sample, &uma_boundary_value);
   if (child_pid == 0)
     return true;
   // If there's no UMA report for this particular fork, then check if any

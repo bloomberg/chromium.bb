@@ -16,6 +16,7 @@
 #include <sys/types.h>
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/at_exit.h"
@@ -23,7 +24,6 @@
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/posix/global_descriptors.h"
@@ -132,7 +132,7 @@ void BecomeNaClLoader(base::ScopedFD browser_fd,
 }
 
 // Start the NaCl loader in a child created by the NaCl loader Zygote.
-void ChildNaClLoaderInit(ScopedVector<base::ScopedFD> child_fds,
+void ChildNaClLoaderInit(std::vector<base::ScopedFD> child_fds,
                          const NaClLoaderSystemInfo& system_info,
                          bool uses_nonsfi_mode,
                          nacl::NaClSandbox* nacl_sandbox,
@@ -143,25 +143,25 @@ void ChildNaClLoaderInit(ScopedVector<base::ScopedFD> child_fds,
 
   // Ping the PID oracle socket.
   CHECK(content::SendZygoteChildPing(
-      child_fds[content::ZygoteForkDelegate::kPIDOracleFDIndex]->get()));
+      child_fds[content::ZygoteForkDelegate::kPIDOracleFDIndex].get()));
 
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kProcessChannelID, channel_id);
 
   // Save the browser socket and close the rest.
   base::ScopedFD browser_fd(
-      child_fds[content::ZygoteForkDelegate::kBrowserFDIndex]->Pass());
+      std::move(child_fds[content::ZygoteForkDelegate::kBrowserFDIndex]));
   child_fds.clear();
 
-  BecomeNaClLoader(
-      browser_fd.Pass(), system_info, uses_nonsfi_mode, nacl_sandbox);
+  BecomeNaClLoader(std::move(browser_fd), system_info, uses_nonsfi_mode,
+                   nacl_sandbox);
   _exit(1);
 }
 
 // Handle a fork request from the Zygote.
 // Some of this code was lifted from
 // content/browser/zygote_main_linux.cc:ForkWithRealPid()
-bool HandleForkRequest(ScopedVector<base::ScopedFD> child_fds,
+bool HandleForkRequest(std::vector<base::ScopedFD> child_fds,
                        const NaClLoaderSystemInfo& system_info,
                        nacl::NaClSandbox* nacl_sandbox,
                        base::PickleIterator* input_iter,
@@ -207,11 +207,8 @@ bool HandleForkRequest(ScopedVector<base::ScopedFD> child_fds,
       // is fine.
       sandbox::NamespaceSandbox::InstallDefaultTerminationSignalHandlers();
     }
-    ChildNaClLoaderInit(child_fds.Pass(),
-                        system_info,
-                        uses_nonsfi_mode,
-                        nacl_sandbox,
-                        channel_id);
+    ChildNaClLoaderInit(std::move(child_fds), system_info, uses_nonsfi_mode,
+                        nacl_sandbox, channel_id);
     NOTREACHED();
   }
 
@@ -261,7 +258,7 @@ bool HandleGetTerminationStatusRequest(base::PickleIterator* input_iter,
 // Reply to the command on |reply_fds|.
 bool HonorRequestAndReply(int reply_fd,
                           int command_type,
-                          ScopedVector<base::ScopedFD> attached_fds,
+                          std::vector<base::ScopedFD> attached_fds,
                           const NaClLoaderSystemInfo& system_info,
                           nacl::NaClSandbox* nacl_sandbox,
                           base::PickleIterator* input_iter) {
@@ -270,11 +267,9 @@ bool HonorRequestAndReply(int reply_fd,
   // Commands must write anything to send back to |write_pickle|.
   switch (command_type) {
     case nacl::kNaClForkRequest:
-      have_to_reply = HandleForkRequest(attached_fds.Pass(),
-                                        system_info,
-                                        nacl_sandbox,
-                                        input_iter,
-                                        &write_pickle);
+      have_to_reply =
+          HandleForkRequest(std::move(attached_fds), system_info, nacl_sandbox,
+                            input_iter, &write_pickle);
       break;
     case nacl::kNaClGetTerminationStatusRequest:
       have_to_reply =
@@ -300,7 +295,7 @@ bool HonorRequestAndReply(int reply_fd,
 bool HandleZygoteRequest(int zygote_ipc_fd,
                          const NaClLoaderSystemInfo& system_info,
                          nacl::NaClSandbox* nacl_sandbox) {
-  ScopedVector<base::ScopedFD> fds;
+  std::vector<base::ScopedFD> fds;
   char buf[kNaClMaxIPCMessageLength];
   const ssize_t msglen = base::UnixDomainSocket::RecvMsg(zygote_ipc_fd,
       &buf, sizeof(buf), &fds);
@@ -327,12 +322,8 @@ bool HandleZygoteRequest(int zygote_ipc_fd,
     LOG(ERROR) << "Unable to read command from Zygote";
     return false;
   }
-  return HonorRequestAndReply(zygote_ipc_fd,
-                              command_type,
-                              fds.Pass(),
-                              system_info,
-                              nacl_sandbox,
-                              &read_iter);
+  return HonorRequestAndReply(zygote_ipc_fd, command_type, std::move(fds),
+                              system_info, nacl_sandbox, &read_iter);
 }
 
 #if !defined(OS_NACL_NONSFI)

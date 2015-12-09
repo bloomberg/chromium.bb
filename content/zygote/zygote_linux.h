@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include <string>
+#include <vector>
 
 #include "base/containers/small_map.h"
 #include "base/files/scoped_file.h"
@@ -104,7 +105,7 @@ class Zygote {
   // Returns -1 on error, otherwise returns twice, returning 0 to the child
   // process and the child process ID to the parent process, like fork().
   base::ProcessId ReadArgsAndFork(base::PickleIterator iter,
-                                  ScopedVector<base::ScopedFD> fds,
+                                  std::vector<base::ScopedFD> fds,
                                   std::string* uma_name,
                                   int* uma_sample,
                                   int* uma_boundary_value);
@@ -115,7 +116,7 @@ class Zygote {
   // child_pid of -1 on error.
   bool HandleForkRequest(int fd,
                          base::PickleIterator iter,
-                         ScopedVector<base::ScopedFD> fds);
+                         std::vector<base::ScopedFD> fds);
 
   bool HandleGetSandboxStatus(int fd,
                               base::PickleIterator iter);

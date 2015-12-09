@@ -174,7 +174,7 @@ BrokerHost::~BrokerHost() {
 // that we will then close.
 // A request should start with an int that will be used as the command type.
 BrokerHost::RequestStatus BrokerHost::HandleRequest() const {
-  ScopedVector<base::ScopedFD> fds;
+  std::vector<base::ScopedFD> fds;
   char buf[kMaxMessageLength];
   errno = 0;
   const ssize_t msg_len = base::UnixDomainSocket::RecvMsg(
@@ -187,13 +187,12 @@ BrokerHost::RequestStatus BrokerHost::HandleRequest() const {
 
   // The client should send exactly one file descriptor, on which we
   // will write the reply.
-  // TODO(mdempsky): ScopedVector doesn't have 'at()', only 'operator[]'.
-  if (msg_len < 0 || fds.size() != 1 || fds[0]->get() < 0) {
+  if (msg_len < 0 || fds.size() != 1 || fds[0].get() < 0) {
     PLOG(ERROR) << "Error reading message from the client";
     return RequestStatus::FAILURE;
   }
 
-  base::ScopedFD temporary_ipc(std::move(*fds[0]));
+  base::ScopedFD temporary_ipc(std::move(fds[0]));
 
   base::Pickle pickle(buf, msg_len);
   base::PickleIterator iter(pickle);

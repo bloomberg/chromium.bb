@@ -113,7 +113,7 @@ bool SendIPCRequestAndReadReply(int ipc_channel,
   }
 
   // Then read the remote reply.
-  ScopedVector<base::ScopedFD> received_fds;
+  std::vector<base::ScopedFD> received_fds;
   const ssize_t msg_len =
       base::UnixDomainSocket::RecvMsg(ipc_channel, reply_data_buffer,
                                       reply_data_buffer_size, &received_fds);

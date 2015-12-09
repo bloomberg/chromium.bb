@@ -14,7 +14,6 @@
 #include "base/files/scoped_file.h"
 #include "base/linux_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/memory/shared_memory.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/posix/unix_domain_socket_linux.h"
@@ -123,7 +122,7 @@ void SandboxIPCHandler::Run() {
 }
 
 void SandboxIPCHandler::HandleRequestFromRenderer(int fd) {
-  ScopedVector<base::ScopedFD> fds;
+  std::vector<base::ScopedFD> fds;
 
   // A FontConfigIPC::METHOD_MATCH message could be kMaxFontFamilyLength
   // bytes long (this is the largest message type).
@@ -149,19 +148,19 @@ void SandboxIPCHandler::HandleRequestFromRenderer(int fd) {
     return;
 
   if (kind == FontConfigIPC::METHOD_MATCH) {
-    HandleFontMatchRequest(fd, iter, fds.get());
+    HandleFontMatchRequest(fd, iter, fds);
   } else if (kind == FontConfigIPC::METHOD_OPEN) {
-    HandleFontOpenRequest(fd, iter, fds.get());
+    HandleFontOpenRequest(fd, iter, fds);
   } else if (kind == LinuxSandbox::METHOD_GET_FALLBACK_FONT_FOR_CHAR) {
-    HandleGetFallbackFontForChar(fd, iter, fds.get());
+    HandleGetFallbackFontForChar(fd, iter, fds);
   } else if (kind == LinuxSandbox::METHOD_LOCALTIME) {
-    HandleLocaltime(fd, iter, fds.get());
+    HandleLocaltime(fd, iter, fds);
   } else if (kind == LinuxSandbox::METHOD_GET_STYLE_FOR_STRIKE) {
-    HandleGetStyleForStrike(fd, iter, fds.get());
+    HandleGetStyleForStrike(fd, iter, fds);
   } else if (kind == LinuxSandbox::METHOD_MAKE_SHARED_MEMORY_SEGMENT) {
-    HandleMakeSharedMemorySegment(fd, iter, fds.get());
+    HandleMakeSharedMemorySegment(fd, iter, fds);
   } else if (kind == LinuxSandbox::METHOD_MATCH_WITH_FALLBACK) {
-    HandleMatchWithFallback(fd, iter, fds.get());
+    HandleMatchWithFallback(fd, iter, fds);
   }
 }
 
@@ -178,7 +177,7 @@ int SandboxIPCHandler::FindOrAddPath(const SkString& path) {
 void SandboxIPCHandler::HandleFontMatchRequest(
     int fd,
     base::PickleIterator iter,
-    const std::vector<base::ScopedFD*>& fds) {
+    const std::vector<base::ScopedFD>& fds) {
   uint32_t requested_style;
   std::string family;
   if (!iter.ReadString(&family) || !iter.ReadUInt32(&requested_style))
@@ -216,7 +215,7 @@ void SandboxIPCHandler::HandleFontMatchRequest(
 void SandboxIPCHandler::HandleFontOpenRequest(
     int fd,
     base::PickleIterator iter,
-    const std::vector<base::ScopedFD*>& fds) {
+    const std::vector<base::ScopedFD>& fds) {
   uint32_t index;
   if (!iter.ReadUInt32(&index))
     return;
@@ -244,7 +243,7 @@ void SandboxIPCHandler::HandleFontOpenRequest(
 void SandboxIPCHandler::HandleGetFallbackFontForChar(
     int fd,
     base::PickleIterator iter,
-    const std::vector<base::ScopedFD*>& fds) {
+    const std::vector<base::ScopedFD>& fds) {
   // The other side of this call is
   // content/common/child_process_sandbox_support_impl_linux.cc
 
@@ -284,7 +283,7 @@ void SandboxIPCHandler::HandleGetFallbackFontForChar(
 void SandboxIPCHandler::HandleGetStyleForStrike(
     int fd,
     base::PickleIterator iter,
-    const std::vector<base::ScopedFD*>& fds) {
+    const std::vector<base::ScopedFD>& fds) {
   std::string family;
   bool bold, italic;
   uint16 pixel_size;
@@ -322,7 +321,7 @@ void SandboxIPCHandler::HandleGetStyleForStrike(
 void SandboxIPCHandler::HandleLocaltime(
     int fd,
     base::PickleIterator iter,
-    const std::vector<base::ScopedFD*>& fds) {
+    const std::vector<base::ScopedFD>& fds) {
   // The other side of this call is in zygote_main_linux.cc
 
   std::string time_string;
@@ -352,7 +351,7 @@ void SandboxIPCHandler::HandleLocaltime(
 void SandboxIPCHandler::HandleMakeSharedMemorySegment(
     int fd,
     base::PickleIterator iter,
-    const std::vector<base::ScopedFD*>& fds) {
+    const std::vector<base::ScopedFD>& fds) {
   base::SharedMemoryCreateOptions options;
   uint32_t size;
   if (!iter.ReadUInt32(&size))
@@ -371,7 +370,7 @@ void SandboxIPCHandler::HandleMakeSharedMemorySegment(
 void SandboxIPCHandler::HandleMatchWithFallback(
     int fd,
     base::PickleIterator iter,
-    const std::vector<base::ScopedFD*>& fds) {
+    const std::vector<base::ScopedFD>& fds) {
   std::string face;
   bool is_bold, is_italic;
   uint32 charset, fallback_family;
@@ -397,7 +396,7 @@ void SandboxIPCHandler::HandleMatchWithFallback(
 }
 
 void SandboxIPCHandler::SendRendererReply(
-    const std::vector<base::ScopedFD*>& fds,
+    const std::vector<base::ScopedFD>& fds,
     const base::Pickle& reply,
     int reply_fd) {
   struct msghdr msg;
@@ -428,7 +427,7 @@ void SandboxIPCHandler::SendRendererReply(
     msg.msg_controllen = cmsg->cmsg_len;
   }
 
-  if (HANDLE_EINTR(sendmsg(fds[0]->get(), &msg, MSG_DONTWAIT)) < 0)
+  if (HANDLE_EINTR(sendmsg(fds[0].get(), &msg, MSG_DONTWAIT)) < 0)
     PLOG(ERROR) << "sendmsg";
 }
 

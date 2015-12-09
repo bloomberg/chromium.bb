@@ -11,7 +11,6 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/location.h"
-#include "base/memory/scoped_vector.h"
 #include "base/pickle.h"
 #include "base/posix/unix_domain_socket_linux.h"
 #include "base/single_thread_task_runner.h"
@@ -40,7 +39,7 @@ TEST(UnixDomainSocketTest, SendRecvMsgAbortOnReplyFDClose) {
            static_cast<uint8_t*>(NULL), 0U, static_cast<int*>(NULL), request));
 
   // Receive the message.
-  ScopedVector<ScopedFD> message_fds;
+  std::vector<ScopedFD> message_fds;
   uint8_t buffer[16];
   ASSERT_EQ(static_cast<int>(request.size()),
             UnixDomainSocket::RecvMsg(fds[0], buffer, sizeof(buffer),
@@ -95,7 +94,7 @@ TEST(UnixDomainSocketTest, RecvPid) {
   // sizeof(kHello) bytes and it wasn't just truncated to fit the buffer.
   char buf[sizeof(kHello) + 1];
   ProcessId sender_pid;
-  ScopedVector<ScopedFD> fd_vec;
+  std::vector<ScopedFD> fd_vec;
   const ssize_t nread = UnixDomainSocket::RecvMsgWithPid(
       recv_sock.get(), buf, sizeof(buf), &fd_vec, &sender_pid);
   ASSERT_EQ(sizeof(kHello), static_cast<size_t>(nread));
@@ -124,7 +123,7 @@ TEST(UnixDomainSocketTest, RecvPidWithMaxDescriptors) {
   // sizeof(kHello) bytes and it wasn't just truncated to fit the buffer.
   char buf[sizeof(kHello) + 1];
   ProcessId sender_pid;
-  ScopedVector<ScopedFD> recv_fds;
+  std::vector<ScopedFD> recv_fds;
   const ssize_t nread = UnixDomainSocket::RecvMsgWithPid(
       recv_sock.get(), buf, sizeof(buf), &recv_fds, &sender_pid);
   ASSERT_EQ(sizeof(kHello), static_cast<size_t>(nread));
@@ -148,7 +147,7 @@ TEST(UnixDomianSocketTest, RecvPidDisconnectedSocket) {
 
   char ch;
   ProcessId sender_pid;
-  ScopedVector<ScopedFD> recv_fds;
+  std::vector<ScopedFD> recv_fds;
   const ssize_t nread = UnixDomainSocket::RecvMsgWithPid(
       recv_sock.get(), &ch, sizeof(ch), &recv_fds, &sender_pid);
   ASSERT_EQ(0, nread);

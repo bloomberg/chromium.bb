@@ -12,7 +12,6 @@
 
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
-#include "base/memory/scoped_vector.h"
 #include "base/pickle.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/stl_util.h"
@@ -86,7 +85,7 @@ bool UnixDomainSocket::SendMsg(int fd,
 ssize_t UnixDomainSocket::RecvMsg(int fd,
                                   void* buf,
                                   size_t length,
-                                  ScopedVector<ScopedFD>* fds) {
+                                  std::vector<ScopedFD>* fds) {
   return UnixDomainSocket::RecvMsgWithPid(fd, buf, length, fds, NULL);
 }
 
@@ -94,7 +93,7 @@ ssize_t UnixDomainSocket::RecvMsg(int fd,
 ssize_t UnixDomainSocket::RecvMsgWithPid(int fd,
                                          void* buf,
                                          size_t length,
-                                         ScopedVector<ScopedFD>* fds,
+                                         std::vector<ScopedFD>* fds,
                                          ProcessId* pid) {
   return UnixDomainSocket::RecvMsgWithFlags(fd, buf, length, 0, fds, pid);
 }
@@ -104,7 +103,7 @@ ssize_t UnixDomainSocket::RecvMsgWithFlags(int fd,
                                            void* buf,
                                            size_t length,
                                            int flags,
-                                           ScopedVector<ScopedFD>* fds,
+                                           std::vector<ScopedFD>* fds,
                                            ProcessId* out_pid) {
   fds->clear();
 
@@ -165,7 +164,7 @@ ssize_t UnixDomainSocket::RecvMsgWithFlags(int fd,
 
   if (wire_fds) {
     for (unsigned i = 0; i < wire_fds_len; ++i)
-      fds->push_back(new ScopedFD(wire_fds[i]));
+      fds->push_back(ScopedFD(wire_fds[i]));  // TODO(mdempsky): emplace_back
   }
 
   if (out_pid) {
@@ -219,7 +218,7 @@ ssize_t UnixDomainSocket::SendRecvMsgWithFlags(int fd,
   // return EOF instead of hanging.
   send_sock.reset();
 
-  ScopedVector<ScopedFD> recv_fds;
+  std::vector<ScopedFD> recv_fds;
   // When porting to OSX keep in mind it doesn't support MSG_NOSIGNAL, so the
   // sender might get a SIGPIPE.
   const ssize_t reply_len = RecvMsgWithFlags(
@@ -236,7 +235,7 @@ ssize_t UnixDomainSocket::SendRecvMsgWithFlags(int fd,
   }
 
   if (result_fd)
-    *result_fd = recv_fds.empty() ? -1 : recv_fds[0]->release();
+    *result_fd = recv_fds.empty() ? -1 : recv_fds[0].release();
 
   return reply_len;
 }

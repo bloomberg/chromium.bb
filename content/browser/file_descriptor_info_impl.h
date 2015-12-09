@@ -5,8 +5,9 @@
 #ifndef CONTENT_BROWSER_FILE_DESCRIPTOR_INFO_IMPL_H_
 #define CONTENT_BROWSER_FILE_DESCRIPTOR_INFO_IMPL_H_
 
+#include <vector>
+
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/file_descriptor_info.h"
 
@@ -34,7 +35,7 @@ class FileDescriptorInfoImpl : public FileDescriptorInfo {
   void AddToMapping(int id, base::PlatformFile fd);
   bool HasID(int id) const;
   base::FileHandleMappingVector mapping_;
-  ScopedVector<base::ScopedFD> owned_descriptors_;
+  std::vector<base::ScopedFD> owned_descriptors_;
 };
 }
 
