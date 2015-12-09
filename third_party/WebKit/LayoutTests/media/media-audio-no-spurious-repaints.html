@@ -1,0 +1,44 @@
+<!doctype html>
+<title>Verifies there are no spurious repaints for audio in a video tag.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<video></video>
+<script>
+async_test(function(t) {
+    var video = document.querySelector('video');
+
+    video.addEventListener('canplaythrough', t.step_func(function() {
+        internals.startTrackingRepaints(document);
+        video.play();
+    }), false);
+
+    video.addEventListener('ended', t.step_func(function() {
+        var layerTree = internals.layerTreeAsText(
+            document, internals.LAYER_TREE_INCLUDES_REPAINT_RECTS);
+        var repaintRects = JSON.parse(layerTree).children[0].repaintRects;
+        internals.stopTrackingRepaints(document);
+
+        // Manually verify the number of repaints instead of using a repaint
+        // test since media playback is asynchronous by nature and its threading
+        // will cause a variance in the number of repaints on test bots.
+        var minExpected = 3, maxExpected = 4, expectedRect = [8, 8, 300, 150];
+
+        t.add_cleanup(function() {
+            if (t.status == t.PASS)
+                return;
+            console.log('FAIL! An unexpected number of repaints occurred;' +
+                        ' expected ' + minExpected + ' to ' + maxExpected +
+                        ' with rects of [' + expectedRect.join(', ') + '].' +
+                        ' Actual layer tree: ' + layerTree);
+        });
+
+        assert_between_inclusive(repaintRects.length, minExpected, maxExpected);
+        for (var i = 0; i < repaintRects.length; ++i)
+            assert_array_equals(repaintRects[i], expectedRect);
+
+        t.done();
+    }), false);
+
+    video.src = 'content/silence.wav';
+});
+</script>
