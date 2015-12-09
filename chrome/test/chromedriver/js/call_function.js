@@ -160,8 +160,17 @@ function wrap(value) {
     }
 
     var obj = (typeof(value.length) == 'number') ? [] : {};
-    for (var prop in value)
-      obj[prop] = wrap(value[prop]);
+    for (var prop in value) {
+      if (typeof(value[prop]) === 'function') {
+        // For functions, no need for further wrapping.
+        var wrapped = {};
+        wrapped[ELEMENT_KEY] = getPageCache().storeItem(value[prop]);
+        obj[prop] = wrapped;
+        continue;
+      }
+
+      obj[prop] = wrap(value[prop])
+    }
     return obj;
   }
   return value;
@@ -181,8 +190,14 @@ function unwrap(value, cache) {
       return cache.retrieveItem(value[ELEMENT_KEY]);
 
     var obj = (typeof(value.length) == 'number') ? [] : {};
-    for (var prop in value)
+    for (var prop in value) {
+      if (typeof(value[prop]) === 'function') {
+        obj[prop] = value[prop];
+        continue;
+      }
+
       obj[prop] = unwrap(value[prop], cache);
+    }
     return obj;
   }
   return value;
