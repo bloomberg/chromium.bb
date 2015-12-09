@@ -243,17 +243,11 @@
           ],
         }],
         [ 'use_openssl==1', {
-            # When building for OpenSSL, we need to exclude NSS specific tests
-            # or functionality not supported by OpenSSL yet.
-            # TODO(bulach): Add equivalent tests when the underlying
-            #               functionality is ported to OpenSSL.
             'sources!': [
-              'cert/x509_util_nss_unittest.cc',
               'quic/test_tools/crypto_test_utils_nss.cc',
             ],
           }, {  # else !use_openssl: remove the unneeded files and pull in NSS.
             'sources!': [
-              'cert/x509_util_openssl_unittest.cc',
               'quic/test_tools/crypto_test_utils_openssl.cc',
               'socket/ssl_client_socket_openssl_unittest.cc',
               'ssl/ssl_client_session_cache_openssl_unittest.cc',

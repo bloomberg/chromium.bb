@@ -180,19 +180,6 @@ bool CreateSelfSignedCert(crypto::RSAPrivateKey* key,
   return true;
 }
 
-bool IsSupportedValidityRange(base::Time not_valid_before,
-                              base::Time not_valid_after) {
-  CERTValidity* validity = CERT_CreateValidity(
-      crypto::BaseTimeToPRTime(not_valid_before),
-      crypto::BaseTimeToPRTime(not_valid_after));
-
-  if (!validity)
-    return false;
-
-  CERT_DestroyValidity(validity);
-  return true;
-}
-
 } // namespace x509_util
 
 } // namespace net

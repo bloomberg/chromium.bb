@@ -1350,7 +1350,6 @@
       'cert/test_root_certs_unittest.cc',
       'cert/x509_cert_types_unittest.cc',
       'cert/x509_certificate_unittest.cc',
-      'cert/x509_util_openssl_unittest.cc',
       'cert/x509_util_unittest.cc',
       'cert_net/cert_net_fetcher_impl_unittest.cc',
       'cert_net/nss_ocsp_unittest.cc',

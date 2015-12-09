@@ -30,14 +30,6 @@ enum DigestAlgorithm {
   DIGEST_SHA256
 };
 
-// Returns true if the times can be used to create an X.509 certificate.
-// Certificates can accept dates from Jan 1st, 1 to Dec 31, 9999.  A bug in NSS
-// limited the range to 1950-9999
-// (https://bugzilla.mozilla.org/show_bug.cgi?id=786531).  This function will
-// return whether it is supported by the currently used crypto library.
-NET_EXPORT_PRIVATE bool IsSupportedValidityRange(base::Time not_valid_before,
-                                                 base::Time not_valid_after);
-
 // Creates a public-private keypair and a self-signed certificate.
 // Subject, serial number and validity period are given as parameters.
 // The certificate is signed by the private key in |key|. The key length and
