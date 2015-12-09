@@ -8,6 +8,10 @@
 
 #include "components/autofill/core/browser/autofill_regex_constants.h"
 
+// This macro is to workaround the fact that RE2 library only supports ASCII
+// word boundaries and it is supposed to be the same as \b.
+#define WORDBREAK "(\\A|\\z|\\PL)"
+
 namespace autofill {
 
 /////////////////////////////////////////////////////////////////////////////
@@ -84,11 +88,11 @@ const char kZipCodeRe[] =
     "zip|postal|post.*code|pcode"
     "|pin.?code"  // en-IN
     "|postleitzahl"  // de-DE
-    "|\\bcp\\b"  // es
-    "|\\bcdp\\b"  // fr-FR
-    "|\\bcap\\b"  // it-IT
+    "|" WORDBREAK "cp" WORDBREAK  // es
+    "|" WORDBREAK "cdp" WORDBREAK  // fr-FR
+    "|" WORDBREAK "cap" WORDBREAK  // it-IT
     "|郵便番号"  // ja-JP
-    "|codigo|codpos|\\bcep\\b"  // pt-BR, pt-PT
+    "|codigo|codpos|" WORDBREAK "cep" WORDBREAK  // pt-BR, pt-PT
     "|Почтовый.?Индекс"  // ru
     "|邮政编码|邮编"  // zh-CN
     "|郵遞區號"  // zh-TW
@@ -98,7 +102,7 @@ const char kZip4Re[] =
     "|codpos2";  // pt-BR, pt-PT
 const char kCityRe[] =
     "city|town"
-    "|\\bort\\b|stadt"  // de-DE
+    "|" WORDBREAK "ort" WORDBREAK "|stadt"  // de-DE
     "|suburb"  // en-AU
     "|ciudad|provincia|localidad|poblacion"  // es
     "|ville|commune"  // fr-FR
@@ -110,7 +114,7 @@ const char kCityRe[] =
     "|分區"  // zh-TW
     "|^시[^도·・]|시[·・]?군[·・]?구";  // ko-KR
 const char kStateRe[] =
-    "(?<!united )state|county|region|province"
+    "state|county|region|province"
     "|land"  // de-DE
     "|county|principality"  // en-UK
     "|都道府県"  // ja-JP
@@ -124,7 +128,8 @@ const char kStateRe[] =
 // credit_card_field.cc
 /////////////////////////////////////////////////////////////////////////////
 const char kNameOnCardRe[] =
-    "card.?(holder|owner)|name.*\\bon\\b.*card|(card|cc).?name|cc.?full.?name"
+    "card.?(holder|owner)|name.*" WORDBREAK "on" WORDBREAK ".*card"
+    "|(card|cc).?name|cc.?full.?name"
     "|karteninhaber"  // de-DE
     "|nombre.*tarjeta"  // es
     "|nom.*carte"  // fr-FR
@@ -148,7 +153,7 @@ const char kCardNumberRe[] =
 const char kCardCvcRe[] =
     "verification|card identification|security code|card code"
     "|cvn|cvv|cvc|csc|cvd|cid|ccv"
-    "|\\bcid\\b";
+    "|" WORDBREAK "cid" WORDBREAK;
 
 // "Expiration date" is the most common label here, but some pages have
 // "Expires", "exp. date" or "exp. month" and "exp. year".  We also look
@@ -247,7 +252,8 @@ const char kFirstNameRe[] =
     "|nome"  // pt-BR, pt-PT
     "|Имя"  // ru
     "|이름";  // ko-KR
-const char kMiddleInitialRe[] = "middle.*initial|m\\.i\\.|mi$|\\bmi\\b";
+const char kMiddleInitialRe[] =
+    "middle.*initial|m\\.i\\.|mi$|" WORDBREAK "mi" WORDBREAK;
 const char kMiddleNameRe[] =
     "middle.*name|mname|middle$"
     "|apellido.?materno|lastlastname";  // es
@@ -293,7 +299,9 @@ const char kPhonePrefixRe[] =
 const char kPhoneSuffixRe[] =
     "suffix";
 const char kPhoneExtensionRe[] =
-    "\\bext|ext\\b|extension"
+    WORDBREAK "ext|ext" WORDBREAK "|extension"
     "|ramal";  // pt-BR, pt-PT
 
 }  // namespace autofill
+
+#undef WORDBREAK

@@ -38,8 +38,8 @@ TEST(AutofillRegexesTest, AutofillRegexes) {
     const TestCase& test_case = kPositiveCases[i];
     SCOPED_TRACE(test_case.input);
     SCOPED_TRACE(test_case.pattern);
-    EXPECT_TRUE(MatchesPattern(ASCIIToUTF16(test_case.input),
-                               ASCIIToUTF16(test_case.pattern)));
+    EXPECT_TRUE(
+        MatchesPattern(ASCIIToUTF16(test_case.input), test_case.pattern));
   }
 
   const TestCase kNegativeCases[] = {
@@ -58,8 +58,8 @@ TEST(AutofillRegexesTest, AutofillRegexes) {
     const TestCase& test_case = kNegativeCases[i];
     SCOPED_TRACE(test_case.input);
     SCOPED_TRACE(test_case.pattern);
-    EXPECT_FALSE(MatchesPattern(ASCIIToUTF16(test_case.input),
-                                ASCIIToUTF16(test_case.pattern)));
+    EXPECT_FALSE(
+        MatchesPattern(ASCIIToUTF16(test_case.input), test_case.pattern));
   }
 }
 

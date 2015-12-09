@@ -6,12 +6,9 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
-#include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_regex_constants.h"
 #include "components/autofill/core/browser/autofill_scanner.h"
 #include "components/autofill/core/browser/autofill_type.h"
-
-using base::UTF8ToUTF16;
 
 namespace autofill {
 namespace {
@@ -80,7 +77,7 @@ bool NameField::ClassifyField(ServerFieldTypeMap* map) const {
 scoped_ptr<FullNameField> FullNameField::Parse(AutofillScanner* scanner) {
   // Exclude e.g. "username" or "nickname" fields.
   scanner->SaveCursor();
-  bool should_ignore = ParseField(scanner, UTF8ToUTF16(kNameIgnoredRe), NULL);
+  bool should_ignore = ParseField(scanner, kNameIgnoredRe, NULL);
   scanner->Rewind();
   if (should_ignore)
     return NULL;
@@ -89,7 +86,7 @@ scoped_ptr<FullNameField> FullNameField::Parse(AutofillScanner* scanner) {
   // for example, Travelocity_Edit travel profile.html contains a field
   // "Travel Profile Name".
   AutofillField* field = NULL;
-  if (ParseField(scanner, UTF8ToUTF16(kNameRe), &field))
+  if (ParseField(scanner, kNameRe, &field))
     return make_scoped_ptr(new FullNameField(field));
 
   return NULL;
@@ -110,7 +107,7 @@ scoped_ptr<FirstLastNameField> FirstLastNameField::ParseSpecificName(
   scanner->SaveCursor();
 
   AutofillField* next = NULL;
-  if (ParseField(scanner, UTF8ToUTF16(kNameSpecificRe), &v->first_name_) &&
+  if (ParseField(scanner, kNameSpecificRe, &v->first_name_) &&
       ParseEmptyLabel(scanner, &next)) {
     if (ParseEmptyLabel(scanner, &v->last_name_)) {
       // There are three name fields; assume that the middle one is a
@@ -147,13 +144,12 @@ scoped_ptr<FirstLastNameField> FirstLastNameField::ParseComponentNames(
   // Allow name fields to appear in any order.
   while (!scanner->IsEnd()) {
     // Skip over any unrelated fields, e.g. "username" or "nickname".
-    if (ParseFieldSpecifics(scanner, UTF8ToUTF16(kNameIgnoredRe),
+    if (ParseFieldSpecifics(scanner, kNameIgnoredRe,
                             MATCH_DEFAULT | MATCH_SELECT, NULL)) {
           continue;
     }
 
-    if (!v->first_name_ &&
-        ParseField(scanner, UTF8ToUTF16(kFirstNameRe), &v->first_name_)) {
+    if (!v->first_name_ && ParseField(scanner, kFirstNameRe, &v->first_name_)) {
       continue;
     }
 
@@ -163,18 +159,17 @@ scoped_ptr<FirstLastNameField> FirstLastNameField::ParseComponentNames(
     // "txtmiddlename"); such a field probably actually represents a
     // middle initial.
     if (!v->middle_name_ &&
-        ParseField(scanner, UTF8ToUTF16(kMiddleInitialRe), &v->middle_name_)) {
+        ParseField(scanner, kMiddleInitialRe, &v->middle_name_)) {
       v->middle_initial_ = true;
       continue;
     }
 
     if (!v->middle_name_ &&
-        ParseField(scanner, UTF8ToUTF16(kMiddleNameRe), &v->middle_name_)) {
+        ParseField(scanner, kMiddleNameRe, &v->middle_name_)) {
       continue;
     }
 
-    if (!v->last_name_ &&
-        ParseField(scanner, UTF8ToUTF16(kLastNameRe), &v->last_name_)) {
+    if (!v->last_name_ && ParseField(scanner, kLastNameRe, &v->last_name_)) {
       continue;
     }
 

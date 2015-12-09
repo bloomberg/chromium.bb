@@ -8,8 +8,8 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
-#include "base/strings/string16.h"
-#include "third_party/icu/source/i18n/unicode/regex.h"
+#include "base/strings/utf_string_conversions.h"
+#include "third_party/re2/re2/re2.h"
 
 namespace {
 
@@ -19,7 +19,7 @@ class AutofillRegexes {
   static AutofillRegexes* GetInstance();
 
   // Returns the compiled regex matcher corresponding to |pattern|.
-  icu::RegexMatcher* GetMatcher(const base::string16& pattern);
+  re2::RE2* GetMatcher(const std::string& pattern);
 
  private:
   AutofillRegexes();
@@ -27,8 +27,7 @@ class AutofillRegexes {
   friend struct base::DefaultSingletonTraits<AutofillRegexes>;
 
   // Maps patterns to their corresponding regex matchers.
-  base::ScopedPtrHashMap<base::string16, scoped_ptr<icu::RegexMatcher>>
-      matchers_;
+  base::ScopedPtrHashMap<std::string, scoped_ptr<re2::RE2>> matchers_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillRegexes);
 };
@@ -44,16 +43,13 @@ AutofillRegexes::AutofillRegexes() {
 AutofillRegexes::~AutofillRegexes() {
 }
 
-icu::RegexMatcher* AutofillRegexes::GetMatcher(const base::string16& pattern) {
+re2::RE2* AutofillRegexes::GetMatcher(const std::string& pattern) {
   auto it = matchers_.find(pattern);
   if (it == matchers_.end()) {
-    const icu::UnicodeString icu_pattern(pattern.data(), pattern.length());
-
-    UErrorCode status = U_ZERO_ERROR;
-    scoped_ptr<icu::RegexMatcher> matcher(
-        new icu::RegexMatcher(icu_pattern, UREGEX_CASE_INSENSITIVE, status));
-    DCHECK(U_SUCCESS(status));
-
+    re2::RE2::Options options;
+    options.set_case_sensitive(false);
+    scoped_ptr<re2::RE2> matcher(new re2::RE2(pattern, options));
+    DCHECK(matcher->ok());
     auto result = matchers_.add(pattern, matcher.Pass());
     DCHECK(result.second);
     it = result.first;
@@ -65,17 +61,12 @@ icu::RegexMatcher* AutofillRegexes::GetMatcher(const base::string16& pattern) {
 
 namespace autofill {
 
-bool MatchesPattern(const base::string16& input,
-                    const base::string16& pattern) {
-  icu::RegexMatcher* matcher =
-      AutofillRegexes::GetInstance()->GetMatcher(pattern);
-  icu::UnicodeString icu_input(input.data(), input.length());
-  matcher->reset(icu_input);
-
-  UErrorCode status = U_ZERO_ERROR;
-  UBool match = matcher->find(0, status);
-  DCHECK(U_SUCCESS(status));
-  return match == TRUE;
+bool MatchesPattern(const base::string16& input, const std::string& pattern) {
+  // TODO(isherman): Run performance tests to determine whether caching regex
+  // matchers is still useful now that we've switched from ICU to RE2.
+  // http://crbug.com/470065
+  re2::RE2* matcher = AutofillRegexes::GetInstance()->GetMatcher(pattern);
+  return re2::RE2::PartialMatch(base::UTF16ToUTF8(input), *matcher);
 }
 
 }  // namespace autofill
