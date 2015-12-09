@@ -163,15 +163,15 @@ protected:
 
     ResourcePtr<Resource> createTestResource(const KURL& url, const KURL& allowOriginUrl, CorsStatus corsStatus)
     {
-        OwnPtr<ResourceResponse> response = adoptPtr(new ResourceResponse);
-        response->setURL(url);
-        response->setHTTPStatusCode(200);
+        ResourceResponse response;
+        response.setURL(url);
+        response.setHTTPStatusCode(200);
         if (corsStatus == WithCors) {
-            response->setHTTPHeaderField("access-control-allow-origin", SecurityOrigin::create(allowOriginUrl)->toAtomicString());
-            response->setHTTPHeaderField("access-control-allow-credentials", "true");
+            response.setHTTPHeaderField("access-control-allow-origin", SecurityOrigin::create(allowOriginUrl)->toAtomicString());
+            response.setHTTPHeaderField("access-control-allow-credentials", "true");
         }
-        ResourcePtr<Resource> resource = new Resource(ResourceRequest(response->url()), Resource::Raw);
-        resource->setResponse(*response);
+        ResourcePtr<Resource> resource = new Resource(ResourceRequest(response.url()), Resource::Raw);
+        resource->setResponse(response);
         return resource;
     }
 

@@ -100,50 +100,47 @@ ResourceResponse::ResourceResponse(const KURL& url, const AtomicString& mimeType
 {
 }
 
-PassOwnPtr<ResourceResponse> ResourceResponse::adopt(PassOwnPtr<CrossThreadResourceResponseData> data)
+ResourceResponse::ResourceResponse(CrossThreadResourceResponseData* data)
 {
-    OwnPtr<ResourceResponse> response = adoptPtr(new ResourceResponse);
-    response->setURL(data->m_url);
-    response->setMimeType(AtomicString(data->m_mimeType));
-    response->setExpectedContentLength(data->m_expectedContentLength);
-    response->setTextEncodingName(AtomicString(data->m_textEncodingName));
-    response->setSuggestedFilename(data->m_suggestedFilename);
+    setURL(data->m_url);
+    setMimeType(AtomicString(data->m_mimeType));
+    setExpectedContentLength(data->m_expectedContentLength);
+    setTextEncodingName(AtomicString(data->m_textEncodingName));
+    setSuggestedFilename(data->m_suggestedFilename);
 
-    response->setHTTPStatusCode(data->m_httpStatusCode);
-    response->setHTTPStatusText(AtomicString(data->m_httpStatusText));
+    setHTTPStatusCode(data->m_httpStatusCode);
+    setHTTPStatusText(AtomicString(data->m_httpStatusText));
 
-    response->m_httpHeaderFields.adopt(data->m_httpHeaders.release());
-    response->setLastModifiedDate(data->m_lastModifiedDate);
-    response->setResourceLoadTiming(data->m_resourceLoadTiming.release());
-    response->m_securityInfo = data->m_securityInfo;
-    response->m_securityStyle = data->m_securityStyle;
-    response->m_securityDetails.protocol = data->m_securityDetails.protocol;
-    response->m_securityDetails.cipher = data->m_securityDetails.cipher;
-    response->m_securityDetails.keyExchange = data->m_securityDetails.keyExchange;
-    response->m_securityDetails.mac = data->m_securityDetails.mac;
-    response->m_securityDetails.certID = data->m_securityDetails.certID;
-    response->m_httpVersion = data->m_httpVersion;
-    response->m_appCacheID = data->m_appCacheID;
-    response->m_appCacheManifestURL = data->m_appCacheManifestURL.copy();
-    response->m_isMultipartPayload = data->m_isMultipartPayload;
-    response->m_wasFetchedViaSPDY = data->m_wasFetchedViaSPDY;
-    response->m_wasNpnNegotiated = data->m_wasNpnNegotiated;
-    response->m_wasAlternateProtocolAvailable = data->m_wasAlternateProtocolAvailable;
-    response->m_wasFetchedViaProxy = data->m_wasFetchedViaProxy;
-    response->m_wasFetchedViaServiceWorker = data->m_wasFetchedViaServiceWorker;
-    response->m_wasFallbackRequiredByServiceWorker = data->m_wasFallbackRequiredByServiceWorker;
-    response->m_serviceWorkerResponseType = data->m_serviceWorkerResponseType;
-    response->m_originalURLViaServiceWorker = data->m_originalURLViaServiceWorker;
-    response->m_responseTime = data->m_responseTime;
-    response->m_remoteIPAddress = AtomicString(data->m_remoteIPAddress);
-    response->m_remotePort = data->m_remotePort;
-    response->m_downloadedFilePath = data->m_downloadedFilePath;
-    response->m_downloadedFileHandle = data->m_downloadedFileHandle;
+    m_httpHeaderFields.adopt(data->m_httpHeaders.release());
+    setLastModifiedDate(data->m_lastModifiedDate);
+    setResourceLoadTiming(data->m_resourceLoadTiming.release());
+    m_securityInfo = data->m_securityInfo;
+    m_securityStyle = data->m_securityStyle;
+    m_securityDetails.protocol = data->m_securityDetails.protocol;
+    m_securityDetails.cipher = data->m_securityDetails.cipher;
+    m_securityDetails.keyExchange = data->m_securityDetails.keyExchange;
+    m_securityDetails.mac = data->m_securityDetails.mac;
+    m_securityDetails.certID = data->m_securityDetails.certID;
+    m_httpVersion = data->m_httpVersion;
+    m_appCacheID = data->m_appCacheID;
+    m_appCacheManifestURL = data->m_appCacheManifestURL.copy();
+    m_isMultipartPayload = data->m_isMultipartPayload;
+    m_wasFetchedViaSPDY = data->m_wasFetchedViaSPDY;
+    m_wasNpnNegotiated = data->m_wasNpnNegotiated;
+    m_wasAlternateProtocolAvailable = data->m_wasAlternateProtocolAvailable;
+    m_wasFetchedViaProxy = data->m_wasFetchedViaProxy;
+    m_wasFetchedViaServiceWorker = data->m_wasFetchedViaServiceWorker;
+    m_wasFallbackRequiredByServiceWorker = data->m_wasFallbackRequiredByServiceWorker;
+    m_serviceWorkerResponseType = data->m_serviceWorkerResponseType;
+    m_originalURLViaServiceWorker = data->m_originalURLViaServiceWorker;
+    m_responseTime = data->m_responseTime;
+    m_remoteIPAddress = AtomicString(data->m_remoteIPAddress);
+    m_remotePort = data->m_remotePort;
+    m_downloadedFilePath = data->m_downloadedFilePath;
+    m_downloadedFileHandle = data->m_downloadedFileHandle;
 
     // Bug https://bugs.webkit.org/show_bug.cgi?id=60397 this doesn't support
     // whatever values may be present in the opaque m_extraData structure.
-
-    return response.release();
 }
 
 PassOwnPtr<CrossThreadResourceResponseData> ResourceResponse::copyData() const

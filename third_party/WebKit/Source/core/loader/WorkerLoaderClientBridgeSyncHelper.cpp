@@ -75,8 +75,8 @@ void WorkerLoaderClientBridgeSyncHelper::didSendData(unsigned long long bytesSen
 
 static void didReceiveResponseAdapter(ThreadableLoaderClientWrapper* client, unsigned long identifier, PassOwnPtr<CrossThreadResourceResponseData> responseData, PassOwnPtr<WebDataConsumerHandle> handle)
 {
-    OwnPtr<ResourceResponse> response(ResourceResponse::adopt(responseData));
-    client->didReceiveResponse(identifier, *response, handle);
+    ResourceResponse response(responseData.get());
+    client->didReceiveResponse(identifier, response, handle);
 }
 
 void WorkerLoaderClientBridgeSyncHelper::didReceiveResponse(unsigned long identifier, const ResourceResponse& response, PassOwnPtr<WebDataConsumerHandle> handle)
