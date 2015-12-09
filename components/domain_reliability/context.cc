@@ -89,6 +89,8 @@ void DomainReliabilityContext::OnBeacon(
   }
   // TODO(ttuttle): Histogram HTTP response code?
 
+  // Allow beacons about reports, but don't schedule an upload for more than
+  // one layer of recursion, to avoid infinite report loops.
   if (beacon->upload_depth <= kMaxUploadDepthToSchedule)
     scheduler_.OnBeaconAdded();
   beacons_.push_back(beacon.release());
