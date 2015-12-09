@@ -25564,6 +25564,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicSession.RejectLength">
+  <owner>rch@chromium.org</owner>
+  <summary>
+    The length in bytes of a QUIC REJ message received from the server.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicSession.RstStreamErrorCodeClient"
     enum="QuicRstStreamErrorCodes">
   <owner>rch@chromium.org</owner>

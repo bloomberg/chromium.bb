@@ -661,6 +661,12 @@ void QuicChromiumClientSession::OnCryptoHandshakeEvent(
 void QuicChromiumClientSession::OnCryptoHandshakeMessageSent(
     const CryptoHandshakeMessage& message) {
   logger_->OnCryptoHandshakeMessageSent(message);
+
+  if (message.tag() == kREJ || message.tag() == kSREJ) {
+    UMA_HISTOGRAM_CUSTOM_COUNTS("Net.QuicSession.RejectLength",
+                                message.GetSerialized().length(), 1000, 10000,
+                                50);
+  }
 }
 
 void QuicChromiumClientSession::OnCryptoHandshakeMessageReceived(
