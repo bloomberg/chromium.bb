@@ -38,11 +38,12 @@ protected:
         if (header->isMarked())
             return;
 
-#if ENABLE(ASSERT)
         ASSERT(ThreadState::current()->isInGC());
+#if !defined(NDEBUG)
         ASSERT(Heap::findPageFromAddress(header));
-        ASSERT(toDerived()->markingMode() != Visitor::WeakProcessing);
 #endif
+        ASSERT(toDerived()->markingMode() != Visitor::WeakProcessing);
+
         header->mark();
 
         if (callback)
