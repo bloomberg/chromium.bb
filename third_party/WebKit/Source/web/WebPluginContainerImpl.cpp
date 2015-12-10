@@ -951,9 +951,12 @@ void WebPluginContainerImpl::computeClipRectsForPlugin(
     LayoutRect unclippedAbsoluteRect(frameRectInOwnerElementSpace);
     box->mapRectToPaintInvalidationBacking(rootView, unclippedAbsoluteRect, nullptr);
 
-    // The frameRect is already in absolute space, except for scrolling of the root frame.
+    // The frameRect is already in absolute space of the local frame to the plugin.
     windowRect = frameRect();
+    // Map up to the root frame.
     windowRect = enclosingIntRect(m_element->document().view()->layoutView()->localToAbsoluteQuad(FloatQuad(FloatRect(frameRect())), TraverseDocumentBoundaries).boundingBox());
+    // Finally, adjust for scrolling of the root frame, which the above does not take into account.
+    windowRect.moveBy(roundedIntPoint(-rootView->viewRect().location()));
 
     clippedLocalRect = enclosingIntRect(unclippedAbsoluteRect);
     unclippedIntLocalRect = clippedLocalRect;
