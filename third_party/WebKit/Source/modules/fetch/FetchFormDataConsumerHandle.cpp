@@ -58,6 +58,18 @@ public:
         return ReaderImpl::create(this, client);
     }
 
+    PassRefPtr<BlobDataHandle> drainAsBlobDataHandle()
+    {
+        if (!m_formData)
+            return nullptr;
+        flatten();
+        OwnPtr<BlobData> blobData = BlobData::create();
+        blobData->appendBytes(m_flattenFormData.data(), m_flattenFormData.size());
+        m_flattenFormData.clear();
+        auto length = blobData->length();
+        return BlobDataHandle::create(blobData.release(), length);
+    }
+
     PassRefPtr<EncodedFormData> drainFormData()
     {
         ASSERT(!m_formData || m_formData->isSafeToSendToAnotherThread());
@@ -123,6 +135,11 @@ private:
         Result endRead(size_t read) override
         {
             return m_context->endRead(read);
+        }
+        PassRefPtr<BlobDataHandle> drainAsBlobDataHandle(BlobSizePolicy) override
+        {
+            // A "simple" FormData always has a finite known size.
+            return m_context->drainAsBlobDataHandle();
         }
         PassRefPtr<EncodedFormData> drainAsFormData() override
         {

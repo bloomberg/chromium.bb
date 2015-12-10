@@ -52,6 +52,7 @@ public:
         // function.
         // When |policy| is DisallowBlobWithInvalidSize, this function doesn't
         // return a non-null blob handle with unspecified size.
+        // The type of the returned handle may not be meaningful.
         virtual PassRefPtr<BlobDataHandle> drainAsBlobDataHandle(BlobSizePolicy = DisallowBlobWithInvalidSize) { return nullptr; }
 
         // Drains the data as an EncodedFormData.
