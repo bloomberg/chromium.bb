@@ -4436,7 +4436,7 @@ int LayoutBox::baselinePosition(FontBaseline baselineType, bool /*firstLine*/, L
 {
     ASSERT(linePositionMode == PositionOnContainingLine);
     if (isReplaced()) {
-        int result = direction == HorizontalLine ? marginHeight() + size().height() : marginWidth() + size().width();
+        int result = direction == HorizontalLine ? roundToInt(marginHeight() + size().height()) : roundToInt(marginWidth() + size().width());
         if (baselineType == AlphabeticBaseline)
             return result;
         return result - result / 2;

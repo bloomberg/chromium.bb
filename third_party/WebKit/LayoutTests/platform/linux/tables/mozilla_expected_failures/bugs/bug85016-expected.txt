@@ -12,7 +12,7 @@ layer at (0,0) size 800x2108 backgroundClip at (0,0) size 800x600 clip at (0,0) 
           text run at (0,0) width 506: "percentage height images in DIV with no height (red) in a DIV with no height (green)"
       LayoutBlockFlow {DIV} at (32,752) size 672x672 [border: (3px dotted #008000)]
         LayoutBlockFlow {DIV} at (35,35) size 602x602 [border: (1px solid #FF0000)]
-          LayoutImage {IMG} at (1,1) size 882x600
+          LayoutImage {IMG} at (1,1) size 882.34x600
           LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,1456) size 736x20
         LayoutText {#text} at (0,0) size 443x19

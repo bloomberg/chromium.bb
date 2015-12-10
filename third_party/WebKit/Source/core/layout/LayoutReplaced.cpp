@@ -289,7 +289,7 @@ LayoutUnit LayoutReplaced::computeReplacedLogicalWidth(ShouldComputePreferred sh
             // of 'width' is: (used height) * (intrinsic ratio)
             if (intrinsicRatio && ((computedHeightIsAuto && !hasIntrinsicWidth && hasIntrinsicHeight) || !computedHeightIsAuto)) {
                 LayoutUnit logicalHeight = computeReplacedLogicalHeight();
-                return computeReplacedLogicalWidthRespectingMinMaxWidth(roundToInt(round(logicalHeight * intrinsicRatio)), shouldComputePreferred);
+                return computeReplacedLogicalWidthRespectingMinMaxWidth(logicalHeight * intrinsicRatio, shouldComputePreferred);
             }
 
             // If 'height' and 'width' both have computed values of 'auto' and the element has an intrinsic ratio but no intrinsic height or width, then the used value of
@@ -347,7 +347,7 @@ LayoutUnit LayoutReplaced::computeReplacedLogicalHeight() const
     // Otherwise, if 'height' has a computed value of 'auto', and the element has an intrinsic ratio then the used value of 'height' is:
     // (used width) / (intrinsic ratio)
     if (intrinsicRatio)
-        return computeReplacedLogicalHeightRespectingMinMaxHeight(roundToInt(round(availableLogicalWidth() / intrinsicRatio)));
+        return computeReplacedLogicalHeightRespectingMinMaxHeight(availableLogicalWidth() / intrinsicRatio);
 
     // Otherwise, if 'height' has a computed value of 'auto', and the element has an intrinsic height, then that intrinsic height is the used value of 'height'.
     if (hasIntrinsicHeight)
