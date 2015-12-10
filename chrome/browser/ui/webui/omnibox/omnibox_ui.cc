@@ -30,6 +30,6 @@ OmniboxUI::~OmniboxUI() {}
 
 void OmniboxUI::BindUIHandler(
     mojo::InterfaceRequest<OmniboxUIHandlerMojo> request) {
-  // OmniboxUIHandler deletes itself when the pipe is closed.
-  new OmniboxUIHandler(Profile::FromWebUI(web_ui()), request.Pass());
+  omnibox_ui_handler_.reset(
+      new OmniboxUIHandler(Profile::FromWebUI(web_ui()), request.Pass()));
 }

@@ -14,7 +14,7 @@
 #include "components/omnibox/browser/autocomplete_controller_delegate.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/binding.h"
 
 class AutocompleteController;
 class Profile;
@@ -71,7 +71,7 @@ class OmniboxUIHandler : public AutocompleteControllerDelegate,
   // The Profile* handed to us in our constructor.
   Profile* profile_;
 
-  mojo::StrongBinding<OmniboxUIHandlerMojo> binding_;
+  mojo::Binding<OmniboxUIHandlerMojo> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxUIHandler);
 };

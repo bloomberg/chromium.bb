@@ -9,6 +9,8 @@
 #include "chrome/browser/ui/webui/mojo_web_ui_controller.h"
 #include "chrome/browser/ui/webui/omnibox/omnibox.mojom.h"
 
+class OmniboxUIHandler;
+
 // The UI for chrome://omnibox/
 class OmniboxUI : public MojoWebUIController<OmniboxUIHandlerMojo> {
  public:
@@ -19,6 +21,8 @@ class OmniboxUI : public MojoWebUIController<OmniboxUIHandlerMojo> {
   // MojoWebUIController overrides:
   void BindUIHandler(
       mojo::InterfaceRequest<OmniboxUIHandlerMojo> request) override;
+
+  scoped_ptr<OmniboxUIHandler> omnibox_ui_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxUI);
 };
