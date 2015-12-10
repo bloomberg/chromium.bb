@@ -822,6 +822,7 @@ def GetConfig():
 
   pfq = config_lib.BuildConfig(
       build_type=constants.PFQ_TYPE,
+      build_timeout=20 * 60,
       important=True,
       uprev=True,
       overlays=constants.PUBLIC_OVERLAYS,
@@ -1527,6 +1528,7 @@ def GetConfig():
       'test-ap',
       internal,
       default_hw_tests_override,
+      build_type=constants.INCREMENTAL_TYPE,
       description='WiFi AP images used in testing',
       profile='testbed-ap',
       vm_tests=[],
@@ -1941,6 +1943,7 @@ def GetConfig():
       internal,
       default_hw_tests_override,
       build_type=constants.CANARY_TYPE,
+      build_timeout=12 * 60 * 60 if IS_RELEASE_BRANCH else (7 * 60 + 50) * 60,
       useflags=append_useflags(['-cros-debug']),
       build_tests=True,
       afdo_use=True,
@@ -2832,6 +2835,7 @@ def GetConfig():
       'sync-test-cbuildbot',
       no_hwtest_builder,
       boards=[],
+      build_type=constants.INCREMENTAL_TYPE,
       builder_class_name='test_builders.ManifestVersionedSyncBuilder',
       chroot_replace=True,
   )

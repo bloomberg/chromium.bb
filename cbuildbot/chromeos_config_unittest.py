@@ -708,6 +708,20 @@ class CBuildBotTest(GenerateChromeosConfigTestBase):
         assert False, ('%s in _distinct_board_sets but not in _all_boards' %
                        board)
 
+  def testBuildTimeouts(self):
+    """Verify we get the expected timeout values."""
+    msg = ("%s doesn't have expected timout: (%s != %s)")
+    for build_name, config in self.all_configs.iteritems():
+      if config.build_type == constants.PFQ_TYPE:
+        expected = 20 * 60
+      elif config.build_type == constants.CANARY_TYPE:
+        expected = (7 * 60 + 50) * 60
+      else:
+        expected = 4 * 60 * 60
+
+      self.assertEqual(
+          config.build_timeout, expected,
+          msg % (build_name, config.build_timeout, expected))
 
 class OverrideForTrybotTest(GenerateChromeosConfigTestBase):
   """Test config override functionality."""
