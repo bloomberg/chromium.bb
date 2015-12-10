@@ -998,10 +998,7 @@ class CommitQueueSyncStage(MasterSlaveLKGMSyncStage):
     # start.
     build_id, db = self._run.GetCIDBHandle()
     if db:
-      timeout = constants.MASTER_BUILD_TIMEOUT_SECONDS.get(
-          self._run.config.build_type,
-          constants.MASTER_BUILD_TIMEOUT_DEFAULT_SECONDS)
-      db.ExtendDeadline(build_id, timeout)
+      db.ExtendDeadline(build_id, self._run.config.build_timeout)
 
     logging.info('Creating new candidate manifest.')
     manifest = self.manifest_manager.CreateNewCandidate(

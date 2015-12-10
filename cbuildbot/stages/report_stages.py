@@ -119,9 +119,7 @@ class BuildStartStage(generic_stages.BuilderStage):
     """
     timeout_seconds = self._run.options.timeout
     if self._run.config.master:
-      master_timeout = constants.MASTER_BUILD_TIMEOUT_SECONDS.get(
-          self._run.config.build_type,
-          constants.MASTER_BUILD_TIMEOUT_DEFAULT_SECONDS)
+      master_timeout = self._run.config.build_timeout
       if timeout_seconds > 0:
         master_timeout = min(master_timeout, timeout_seconds)
       return master_timeout

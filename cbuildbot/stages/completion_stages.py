@@ -170,7 +170,7 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
       if timeout is None:
         # Catch-all: This could happen if cidb is not setup, or the deadline
         # query fails.
-        timeout = constants.MASTER_BUILD_TIMEOUT_DEFAULT_SECONDS
+        timeout = self._run.config.build_timeout
 
       if self._run.options.debug:
         # For debug runs, wait for three minutes to ensure most code

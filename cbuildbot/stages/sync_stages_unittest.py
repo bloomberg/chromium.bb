@@ -356,7 +356,7 @@ class BaseCQTestCase(generic_stages_unittest.StageTestCase):
     build_id = self.fake_db.InsertBuild(
         'test_builder', constants.WATERFALL_TRYBOT, 666, 'test_config',
         'test_hostname',
-        timeout_seconds=constants.MASTER_BUILD_TIMEOUT_DEFAULT_SECONDS)
+        timeout_seconds=23456)
     self._run.attrs.metadata.UpdateWithDict({'build_id': build_id})
 
   def PerformSync(self, committed=False, num_patches=1, tree_open=True,
