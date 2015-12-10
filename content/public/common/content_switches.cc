@@ -519,6 +519,12 @@ const char kForceOverlayFullscreenVideo[]   = "force-overlay-fullscreen-video";
 // overrides this if present.
 const char kForceRendererAccessibility[]    = "force-renderer-accessibility";
 
+// For development / testing only. When running content_browsertests,
+// saves output of failing accessibility tests to their expectations files in
+// content/test/data/accessibility/, overwriting existing file content.
+const char kGenerateAccessibilityTestExpectations[] =
+    "generate-accessibility-test-expectations";
+
 // Passes gpu device_id from browser process to GPU process.
 const char kGpuDeviceID[]                   = "gpu-device-id";
 

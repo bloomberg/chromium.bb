@@ -8,10 +8,12 @@
 #include <string>
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/path_service.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/accessibility/accessibility_tree_formatter.h"
 #include "content/browser/accessibility/browser_accessibility.h"
@@ -20,6 +22,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_paths.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -132,7 +135,7 @@ void DumpAccessibilityTestBase::RunTest(
 
   // Output the test path to help anyone who encounters a failure and needs
   // to know where to look.
-  printf("Testing: %s\n", file_path.MaybeAsASCII().c_str());
+  LOG(INFO) << "Testing: " << file_path.LossyDisplayName();
 
   std::string html_contents;
   base::ReadFileToString(file_path, &html_contents);
@@ -140,8 +143,18 @@ void DumpAccessibilityTestBase::RunTest(
   // Read the expected file.
   std::string expected_contents_raw;
   base::FilePath expected_file =
-    base::FilePath(file_path.RemoveExtension().value() +
-                   AccessibilityTreeFormatter::GetExpectedFileSuffix());
+      base::FilePath(file_path.RemoveExtension().value() +
+                     AccessibilityTreeFormatter::GetExpectedFileSuffix());
+  if (!base::PathExists(expected_file)) {
+    LOG(INFO) << "File not found: " << expected_file.LossyDisplayName();
+    LOG(INFO) << "No expectation file present, ignoring test on this platform."
+              << " To run this test anyway, create "
+              << expected_file.LossyDisplayName()
+              << " (it can be empty) and then run content_browsertests "
+              << "with the switch: --"
+              << switches::kGenerateAccessibilityTestExpectations;
+    return;
+  }
   base::ReadFileToString(expected_file, &expected_contents_raw);
 
   // Tolerate Windows-style line endings (\r\n) in the expected file:
@@ -150,7 +163,7 @@ void DumpAccessibilityTestBase::RunTest(
   base::RemoveChars(expected_contents_raw, "\r", &expected_contents);
 
   if (!expected_contents.compare(0, strlen(kMarkSkipFile), kMarkSkipFile)) {
-    printf("Skipping this test on this platform.\n");
+    LOG(INFO) << "Skipping this test on this platform.";
     return;
   }
 
@@ -211,9 +224,11 @@ void DumpAccessibilityTestBase::RunTest(
   if (is_different) {
     OnDiffFailed();
 
+    std::string diff;
+
     // Mark the expected lines which did not match actual output with a *.
-    printf("* Line Expected\n");
-    printf("- ---- --------\n");
+    diff += "* Line Expected\n";
+    diff += "- ---- --------\n";
     for (int line = 0, diff_index = 0;
          line < static_cast<int>(expected_lines.size());
          ++line) {
@@ -223,25 +238,22 @@ void DumpAccessibilityTestBase::RunTest(
         is_diff = true;
         ++diff_index;
       }
-      printf("%1s %4d %s\n", is_diff? kSignalDiff : "", line + 1,
+      diff += base::StringPrintf(
+          "%1s %4d %s\n", is_diff? kSignalDiff : "", line + 1,
              expected_lines[line].c_str());
     }
-    printf("\nActual\n");
-    printf("------\n");
-    printf("%s\n", actual_contents.c_str());
-  }
+    diff += "\nActual\n";
+    diff += "------\n";
+    diff += actual_contents;
+    LOG(ERROR) << "Diff:\n" << diff;
 
-  if (!base::PathExists(expected_file)) {
-    base::FilePath actual_file =
-        base::FilePath(file_path.RemoveExtension().value() +
-                       AccessibilityTreeFormatter::GetActualFileSuffix());
-
-    EXPECT_TRUE(base::WriteFile(
-        actual_file, actual_contents.c_str(), actual_contents.size()));
-
-    ADD_FAILURE() << "No expectation found. Create it by doing:\n"
-                  << "mv " << actual_file.LossyDisplayName() << " "
-                  << expected_file.LossyDisplayName();
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kGenerateAccessibilityTestExpectations)) {
+      CHECK(base::WriteFile(
+          expected_file, actual_contents.c_str(), actual_contents.size()));
+      LOG(ERROR) << "Wrote expectations to: "
+                 << expected_file.LossyDisplayName();
+    }
   }
 }
 

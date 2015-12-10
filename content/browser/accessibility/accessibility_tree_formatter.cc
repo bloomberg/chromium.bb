@@ -115,12 +115,6 @@ void AccessibilityTreeFormatter::Initialize() {}
 
 // static
 const base::FilePath::StringType
-AccessibilityTreeFormatter::GetActualFileSuffix() {
-  return base::FilePath::StringType();
-}
-
-// static
-const base::FilePath::StringType
 AccessibilityTreeFormatter::GetExpectedFileSuffix() {
   return base::FilePath::StringType();
 }

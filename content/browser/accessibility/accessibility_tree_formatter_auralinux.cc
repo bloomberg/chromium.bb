@@ -79,12 +79,6 @@ void AccessibilityTreeFormatter::Initialize() {
 
 // static
 const base::FilePath::StringType
-AccessibilityTreeFormatter::GetActualFileSuffix() {
-  return FILE_PATH_LITERAL("-actual-auralinux.txt");
-}
-
-// static
-const base::FilePath::StringType
 AccessibilityTreeFormatter::GetExpectedFileSuffix() {
   return FILE_PATH_LITERAL("-expected-auralinux.txt");
 }

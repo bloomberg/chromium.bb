@@ -1,2 +1,0 @@
-#<skip -- need to generate expectation>
-ROLE_SYSTEM_DOCUMENT READONLY FOCUSABLE

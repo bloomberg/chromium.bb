@@ -152,6 +152,7 @@ CONTENT_EXPORT extern const char kForceDisplayList2dCanvas[];
 CONTENT_EXPORT extern const char kForceGpuRasterization[];
 CONTENT_EXPORT extern const char kForceOverlayFullscreenVideo[];
 CONTENT_EXPORT extern const char kForceRendererAccessibility[];
+CONTENT_EXPORT extern const char kGenerateAccessibilityTestExpectations[];
 extern const char kGpuDeviceID[];
 extern const char kGpuDriverVendor[];
 extern const char kGpuDriverVersion[];

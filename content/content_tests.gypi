@@ -1521,11 +1521,6 @@
                 '../base/allocator/allocator.gyp:allocator',
               ],
             }],
-            ['OS=="linux"', {
-              'sources!': [
-                'browser/accessibility/dump_accessibility_tree_browsertest.cc',
-              ],
-            }],
             ['OS=="android"', {
               'sources': [ '<@(content_browsertests_android_sources)' ],
               'sources!': [

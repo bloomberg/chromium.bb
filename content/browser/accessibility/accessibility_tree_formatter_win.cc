@@ -378,12 +378,6 @@ base::string16 AccessibilityTreeFormatter::ToString(
 
 // static
 const base::FilePath::StringType
-AccessibilityTreeFormatter::GetActualFileSuffix() {
-  return FILE_PATH_LITERAL("-actual-win.txt");
-}
-
-// static
-const base::FilePath::StringType
 AccessibilityTreeFormatter::GetExpectedFileSuffix() {
   return FILE_PATH_LITERAL("-expected-win.txt");
 }

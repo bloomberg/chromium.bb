@@ -86,8 +86,6 @@ class CONTENT_EXPORT AccessibilityTreeFormatter {
   // Example:
   // HTML test:      test-file.html
   // Expected:       test-file-expected-mac.txt.
-  // Auto-generated: test-file-actual-mac.txt
-  static const base::FilePath::StringType GetActualFileSuffix();
   static const base::FilePath::StringType GetExpectedFileSuffix();
 
   // A platform-specific string that indicates a given line in a file

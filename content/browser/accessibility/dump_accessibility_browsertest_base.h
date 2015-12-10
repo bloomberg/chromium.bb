@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 
+#include "base/debug/leak_annotations.h"
 #include "base/strings/string16.h"
 #include "content/browser/accessibility/accessibility_tree_formatter.h"
 #include "content/public/test/content_browser_test.h"
@@ -85,6 +86,11 @@ class DumpAccessibilityTestBase : public ContentBrowserTest {
 
   // The default filters plus the filters loaded from the test file.
   std::vector<AccessibilityTreeFormatter::Filter> filters_;
+
+#if defined(LEAK_SANITIZER) && !defined(OS_NACL)
+  // http://crbug.com/568674
+  ScopedLeakSanitizerDisabler lsan_disabler;
+#endif
 };
 
 }  // namespace content
