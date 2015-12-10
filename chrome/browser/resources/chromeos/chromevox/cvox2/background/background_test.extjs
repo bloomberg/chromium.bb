@@ -467,3 +467,41 @@ TEST_F('BackgroundTest', 'ActiveOrInactive', function() {
     }
   );
 });
+
+TEST_F('BackgroundTest', 'ModeSwitching', function() {
+  this.runWithLoadedTree('<button></button>', function(root) {
+    // Tests default to force next mode.
+    assertEquals('force_next', global.backgroundObj.mode);
+
+    // Force next mode stays set regardless of where the range lands.
+    global.backgroundObj.refreshMode('http://google.com');
+    assertEquals('force_next', global.backgroundObj.mode);
+    // Empty urls occur before document load or when root is desktop.
+    global.backgroundObj.refreshMode('');
+    assertEquals('force_next', global.backgroundObj.mode);
+
+    // Verify compat -> classic switching.
+    global.backgroundObj.setMode('compat');
+    global.backgroundObj.refreshMode('http://google.com');
+    assertEquals('classic', global.backgroundObj.mode);
+
+    // Ensure we switch to compat if our current range has focused
+    // state set and is not in web content.
+    assertTrue(root.parent.state.focused);
+    global.backgroundObj.setCurrentRange(cursors.Range.fromNode(root.parent));
+    global.backgroundObj.refreshMode('');
+    assertEquals('compat', global.backgroundObj.mode);
+
+    // And back to classic.
+    global.backgroundObj.setCurrentRange(cursors.Range.fromNode(root));
+    global.backgroundObj.refreshMode('');
+    assertEquals('classic', global.backgroundObj.mode);
+
+    // Now, try refreshing mode (which we call after tab switching) with a range
+    // that's not actually focused.
+    assertEquals(undefined, root.parent.parent.state.focused);
+    global.backgroundObj.setCurrentRange(cursors.Range.fromNode(root.parent.parent));
+    global.backgroundObj.refreshMode('');
+    assertEquals('classic', global.backgroundObj.mode);
+  }.bind(this));
+});
