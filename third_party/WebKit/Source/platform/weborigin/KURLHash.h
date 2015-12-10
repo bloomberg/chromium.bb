@@ -32,6 +32,10 @@
 
 namespace blink {
 
+// KURLHash doesn't support null KURLs.  get(), contains(), and add() on
+// HashMap<KURL,..., KURLHash> cause a null-pointer dereference when passed null
+// KURLs.
+
 struct KURLHash {
     static unsigned hash(const KURL& key)
     {

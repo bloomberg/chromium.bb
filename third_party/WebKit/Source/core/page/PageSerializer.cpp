@@ -268,7 +268,6 @@ void PageSerializer::serializeFrame(const LocalFrame& frame)
 
     CString frameHTML = document.encoding().encode(text, WTF::EntitiesForUnencodables);
     m_resources->append(SerializedResource(url, document.suggestedMIMEType(), SharedBuffer::create(frameHTML.data(), frameHTML.length())));
-    m_resourceURLs.add(url);
 
     for (Node* node: serializedNodes) {
         ASSERT(node);
