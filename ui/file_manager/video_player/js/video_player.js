@@ -494,8 +494,8 @@ VideoPlayer.prototype.onFirstVideoReady_ = function() {
 
   var oldLeft = window.screenX;
   var oldTop = window.screenY;
-  var oldWidth = window.outerWidth;
-  var oldHeight = window.outerHeight;
+  var oldWidth = window.innerWidth;
+  var oldHeight = window.innerHeight;
 
   if (!oldWidth && !oldHeight) {
     oldLeft = window.screen.availWidth / 2;
@@ -505,8 +505,10 @@ VideoPlayer.prototype.onFirstVideoReady_ = function() {
   var appWindow = chrome.app.window.current();
   appWindow.innerBounds.width = Math.round(newWidth);
   appWindow.innerBounds.height = Math.round(newHeight);
-  appWindow.outerBounds.left = Math.round(oldLeft - (newWidth - oldWidth) / 2);
-  appWindow.outerBounds.top = Math.round(oldTop - (newHeight - oldHeight) / 2);
+  appWindow.outerBounds.left = Math.max(
+      0, Math.round(oldLeft - (newWidth - oldWidth) / 2));
+  appWindow.outerBounds.top = Math.max(
+      0, Math.round(oldTop - (newHeight - oldHeight) / 2));
   appWindow.show();
 
   this.videoElement_.play();
