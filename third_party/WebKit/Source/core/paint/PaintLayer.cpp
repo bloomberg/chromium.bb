@@ -2165,7 +2165,7 @@ LayoutRect PaintLayer::boundingBoxForCompositing(const PaintLayer* ancestorLayer
 
     // The root layer is always just the size of the document.
     if (isRootLayer())
-        return LayoutRect(m_layoutObject->view()->unscaledDocumentRect());
+        return LayoutRect(m_layoutObject->view()->documentRect());
 
     // The layer created for the LayoutFlowThread is just a helper for painting and hit-testing,
     // and should not contribute to the bounding box. The LayoutMultiColumnSets will contribute

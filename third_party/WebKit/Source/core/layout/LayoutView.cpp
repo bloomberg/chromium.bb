@@ -314,7 +314,7 @@ LayoutRect LayoutView::visualOverflowRect() const
     // In normal compositing mode, LayoutView doesn't actually apply clipping
     // on its descendants. Instead their visual overflow is propagated to
     // compositor()->m_rootContentLayer for accelerated scrolling.
-    return LayoutRect(unscaledDocumentRect());
+    return LayoutRect(documentRect());
 }
 
 void LayoutView::mapLocalToContainer(const LayoutBoxModelObject* paintInvalidationContainer, TransformState& transformState, MapCoordinatesFlags mode, bool* wasFixed, const PaintInvalidationState* paintInvalidationState) const
@@ -854,7 +854,7 @@ LayoutRect LayoutView::overflowClipRect(const LayoutPoint& location, OverlayScro
     return rect;
 }
 
-IntRect LayoutView::unscaledDocumentRect() const
+IntRect LayoutView::documentRect() const
 {
     LayoutRect overflowRect(layoutOverflowRect());
     flipForWritingMode(overflowRect);
@@ -868,15 +868,7 @@ bool LayoutView::rootBackgroundIsEntirelyFixed() const
 
 LayoutRect LayoutView::backgroundRect(LayoutBox* backgroundLayoutObject) const
 {
-    return LayoutRect(unscaledDocumentRect());
-}
-
-IntRect LayoutView::documentRect() const
-{
-    FloatRect overflowRect(unscaledDocumentRect());
-    if (hasTransformRelatedProperty())
-        overflowRect = layer()->currentTransform().mapRect(overflowRect);
-    return IntRect(overflowRect);
+    return LayoutRect(documentRect());
 }
 
 IntSize LayoutView::layoutSize(IncludeScrollbarsInRect scrollbarInclusion) const

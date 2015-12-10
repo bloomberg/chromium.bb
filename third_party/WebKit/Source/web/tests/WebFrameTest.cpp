@@ -2034,7 +2034,7 @@ TEST_P(ParameterizedWebFrameTest, pageScaleFactorDoesNotApplyCssTransform)
 
     webViewHelper.webView()->setPageScaleFactor(2);
 
-    EXPECT_EQ(980, toLocalFrame(webViewHelper.webViewImpl()->page()->mainFrame())->contentLayoutObject()->unscaledDocumentRect().width());
+    EXPECT_EQ(980, toLocalFrame(webViewHelper.webViewImpl()->page()->mainFrame())->contentLayoutObject()->documentRect().width());
     EXPECT_EQ(980, webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->contentsSize().width());
 }
 

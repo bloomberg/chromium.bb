@@ -56,7 +56,7 @@ void ViewPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo)
     if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(context, m_layoutView, DisplayItem::BoxDecorationBackground, LayoutPoint()))
         return;
 
-    IntRect documentRect = m_layoutView.unscaledDocumentRect();
+    IntRect documentRect = m_layoutView.documentRect();
     const Document& document = m_layoutView.document();
     const FrameView& frameView = *m_layoutView.frameView();
     bool isMainFrame = !document.ownerElement();

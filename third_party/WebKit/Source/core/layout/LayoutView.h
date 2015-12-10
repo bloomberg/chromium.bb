@@ -161,9 +161,6 @@ public:
     PaintLayerCompositor* compositor();
     bool usesCompositing() const;
 
-    // TODO(trchen): All pinch-zoom implementation should now use compositor raster scale based zooming,
-    // instead of LayoutView transform. Check whether we can now unify unscaledDocumentRect and documentRect.
-    IntRect unscaledDocumentRect() const;
     LayoutRect backgroundRect(LayoutBox* backgroundLayoutObject) const;
 
     IntRect documentRect() const;
