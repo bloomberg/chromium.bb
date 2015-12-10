@@ -1490,16 +1490,60 @@ bool StringImpl::startsWith(const char* matchString, unsigned matchLength) const
     return equalInner(this, 0, reinterpret_cast<const LChar*>(matchString), matchLength);
 }
 
-bool StringImpl::endsWith(StringImpl* matchString, TextCaseSensitivity caseSensitivity)
+ALWAYS_INLINE static bool equalSubstring(const StringImpl* stringImpl, unsigned startOffset, const StringImpl* matchString)
 {
+    ASSERT(stringImpl);
     ASSERT(matchString);
-    if (m_length >= matchString->m_length) {
-        unsigned start = m_length - matchString->m_length;
-        if (caseSensitivity == TextCaseSensitive)
-            return find(matchString, start) == start;
-        return findIgnoringCase(matchString, start) == start;
+    ASSERT(matchString->length() <= stringImpl->length());
+    ASSERT(startOffset + matchString->length() <= stringImpl->length());
+
+    unsigned matchLength = matchString->length();
+    if (stringImpl->is8Bit()) {
+        const LChar* start = stringImpl->characters8() + startOffset;
+        if (matchString->is8Bit())
+            return equal(start, matchString->characters8(), matchLength);
+        return equal(start, matchString->characters16(), matchLength);
     }
-    return false;
+    const UChar* start = stringImpl->characters16() + startOffset;
+    if (matchString->is8Bit())
+        return equal(start, matchString->characters8(), matchLength);
+    return equal(start, matchString->characters16(), matchLength);
+}
+
+bool StringImpl::startsWith(const StringImpl* prefix) const
+{
+    ASSERT(prefix);
+    if (prefix->length() > length())
+        return false;
+    return equalSubstring(this, 0, prefix);
+}
+
+ALWAYS_INLINE static bool equalSubstringIgnoringCase(const StringImpl* stringImpl, unsigned startOffset, const StringImpl* matchString)
+{
+    ASSERT(stringImpl);
+    ASSERT(matchString);
+    ASSERT(matchString->length() <= stringImpl->length());
+    ASSERT(startOffset + matchString->length() <= stringImpl->length());
+
+    unsigned matchLength = matchString->length();
+    if (stringImpl->is8Bit()) {
+        const LChar* start = stringImpl->characters8() + startOffset;
+        if (matchString->is8Bit())
+            return equalIgnoringCase(start, matchString->characters8(), matchLength);
+        return equalIgnoringCase(start, matchString->characters16(), matchLength);
+    }
+    const UChar* start = stringImpl->characters16() + startOffset;
+    if (matchString->is8Bit())
+        return equalIgnoringCase(start, matchString->characters8(), matchLength);
+    return equalIgnoringCase(start, matchString->characters16(), matchLength);
+}
+
+bool StringImpl::startsWithIgnoringCase(const StringImpl* prefix) const
+{
+    ASSERT(prefix);
+    if (prefix->length() > length())
+        return false;
+    return equalSubstringIgnoringCase(this, 0, prefix);
 }
 
 bool StringImpl::endsWith(UChar character) const
@@ -1513,6 +1557,24 @@ bool StringImpl::endsWith(const char* matchString, unsigned matchLength) const
     if (matchLength > length())
         return false;
     return equalInner(this, length() - matchLength, reinterpret_cast<const LChar*>(matchString), matchLength);
+}
+
+bool StringImpl::endsWith(const StringImpl* suffix) const
+{
+    ASSERT(suffix);
+    unsigned suffixLength = suffix->length();
+    if (suffixLength > length())
+        return false;
+    return equalSubstring(this, length() - suffixLength, suffix);
+}
+
+bool StringImpl::endsWithIgnoringCase(const StringImpl* suffix) const
+{
+    ASSERT(suffix);
+    unsigned suffixLength = suffix->length();
+    if (suffixLength > length())
+        return false;
+    return equalSubstringIgnoringCase(this, length() - suffixLength, suffix);
 }
 
 PassRefPtr<StringImpl> StringImpl::replace(UChar oldC, UChar newC)

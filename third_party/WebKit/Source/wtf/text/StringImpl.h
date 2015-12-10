@@ -383,13 +383,15 @@ public:
 
     size_t count(LChar) const;
 
-    bool startsWith(StringImpl* str, TextCaseSensitivity caseSensitivity = TextCaseSensitive) { return ((caseSensitivity == TextCaseSensitive) ? reverseFind(str, 0) : reverseFindIgnoringCase(str, 0)) == 0; }
     bool startsWith(UChar) const;
     bool startsWith(const char*, unsigned matchLength) const;
+    bool startsWith(const StringImpl*) const;
+    bool startsWithIgnoringCase(const StringImpl*) const;
 
-    bool endsWith(StringImpl*, TextCaseSensitivity = TextCaseSensitive);
     bool endsWith(UChar) const;
     bool endsWith(const char*, unsigned matchLength) const;
+    bool endsWith(const StringImpl*) const;
+    bool endsWithIgnoringCase(const StringImpl*) const;
 
     PassRefPtr<StringImpl> replace(UChar, UChar);
     PassRefPtr<StringImpl> replace(UChar, StringImpl*);
