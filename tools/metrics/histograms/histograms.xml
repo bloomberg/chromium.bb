@@ -63953,6 +63953,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1072" label="SVG1DOMSVGTests"/>
   <int value="1073" label="V8SVGViewElement_ViewTarget_AttributeGetter"/>
   <int value="1074" label="DisableRemotePlaybackAttribute"/>
+  <int value="1075" label="V8SloppyMode"/>
+  <int value="1076" label="V8StrictMode"/>
+  <int value="1077" label="V8StrongMode"/>
+  <int value="1078" label="AudioNodeConnectToAudioNode"/>
+  <int value="1079" label="AudioNodeConnectToAudioParam"/>
+  <int value="1080" label="AudioNodeDisconnectFromAudioNode"/>
+  <int value="1081" label="AudioNodeDisconnectFromAudioParam"/>
+  <int value="1082" label="V8CSSFontFaceRule_Style_AttributeGetter"/>
+  <int value="1083" label="SelectionCollapseNull"/>
+  <int value="1084" label="SelectionSetBaseAndExtentNull"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">
