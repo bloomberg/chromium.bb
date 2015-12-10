@@ -55,7 +55,7 @@ def main():
     cmd.extend([
       '--skps', skps_dir,
       '--resourcePath', resource_path,
-      '--config', '8888',
+      '--config', '8888', 'gpu',
       '--outResultsFile', out_results_file,
       '--properties', 'gitHash', args.git_hash,
       '--key', 'arch', 'x86_64', 'compiler', 'GCC', 'cpu_or_gpu', 'CPU',
