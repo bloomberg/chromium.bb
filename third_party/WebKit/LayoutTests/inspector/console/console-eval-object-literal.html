@@ -1,0 +1,29 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/console-test.js"></script>
+<script>
+function test()
+{
+    var commands = ["{a:1, b:2}", "{a:1}", "{var a = 1; eval(\"{a :1, b:2 }\");}", "{ for (var i = 0; i < 5; ++i); }"];
+    var current = -1;
+    loopOverCommands();
+    function loopOverCommands()
+    {
+        ++current;
+        if (current < commands.length) {
+            InspectorTest.evaluateInConsole(commands[current], loopOverCommands);
+        } else {
+            InspectorTest.dumpConsoleMessagesIgnoreErrorStackFrames();
+            InspectorTest.completeTest();
+        }
+    }
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>
+Tests that evaluating object literal in the console correctly reported.
+</p>
+</body>
+</html>

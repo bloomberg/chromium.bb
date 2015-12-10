@@ -1,0 +1,11 @@
+Tests that evaluating object literal in the console correctly reported.
+
+{a:1, b:2}
+Object {a: 1, b: 2}
+{a:1}
+Object {a: 1}
+{var a = 1; eval("{a :1, b:2 }");}
+    VM:2 Uncaught SyntaxError: Unexpected identifier(…)
+{ for (var i = 0; i < 5; ++i); }
+    VM:2 Uncaught SyntaxError: Unexpected token var(…)
+
