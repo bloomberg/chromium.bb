@@ -5,7 +5,6 @@
 #ifndef UI_VIEWS_ANIMATION_INK_DROP_ANIMATION_OBSERVER_H_
 #define UI_VIEWS_ANIMATION_INK_DROP_ANIMATION_OBSERVER_H_
 
-#include <iosfwd>
 #include <string>
 
 #include "base/macros.h"

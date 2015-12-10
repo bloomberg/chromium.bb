@@ -4,7 +4,6 @@
 
 #include "ui/views/animation/ink_drop_animation_observer.h"
 
-#include <iostream>
 #include <string>
 
 #include "base/logging.h"

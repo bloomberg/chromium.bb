@@ -4,7 +4,7 @@
 
 #include "net/base/int128.h"
 
-#include <iostream>
+#include <ostream>
 
 const uint128_pod kuint128max = {static_cast<uint64_t>(0xFFFFFFFFFFFFFFFFULL),
                                  static_cast<uint64_t>(0xFFFFFFFFFFFFFFFFULL)};

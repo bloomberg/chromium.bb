@@ -5,7 +5,6 @@
 #ifndef UI_VIEWS_ANIMATION_INK_DROP_STATE_H_
 #define UI_VIEWS_ANIMATION_INK_DROP_STATE_H_
 
-#include <iosfwd>
 #include <string>
 
 #include "ui/views/views_export.h"
