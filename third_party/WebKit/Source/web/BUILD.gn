@@ -106,6 +106,20 @@ group("webkit_unit_tests_run") {
   ]
 }
 
+group("webkit_unit_tests_data") {
+  data = [
+    "tests/data/",
+    "../core/paint/test_data/",
+
+    # Required by some image decoder tests.
+    "../platform/image-decoders/testing/",
+    "../../LayoutTests/fast/images/resources/",
+
+    # Required by some font tests.
+    "../platform/testing/data/",
+  ]
+}
+
 # GYP version: WebKit/Source/web/web_tests.gyp:webkit_unit_tests
 test("webkit_unit_tests") {
   visibility = []  # Allow re-assignment of list.
@@ -127,6 +141,11 @@ test("webkit_unit_tests") {
     "//third_party/zlib",
     "//url",
     "//v8",
+  ]
+
+  data_deps = [
+    "//content/shell:pak",
+    ":webkit_unit_tests_data",
   ]
 
   sources = [
