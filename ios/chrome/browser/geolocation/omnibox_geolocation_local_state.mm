@@ -81,7 +81,7 @@
       authorizationState = geolocation::kAuthorizationStateDenied;
       break;
 
-    case kCLAuthorizationStatusAuthorized:
+    case kCLAuthorizationStatusAuthorizedAlways:
     case kCLAuthorizationStatusAuthorizedWhenInUse:
       break;
   }
