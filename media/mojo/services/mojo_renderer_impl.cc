@@ -21,7 +21,6 @@ MojoRendererImpl::MojoRendererImpl(
     interfaces::RendererPtr remote_renderer)
     : task_runner_(task_runner),
       remote_renderer_(remote_renderer.Pass()),
-      binding_(this),
       weak_factory_(this) {
   DVLOG(1) << __FUNCTION__;
 }
@@ -67,7 +66,8 @@ void MojoRendererImpl::Initialize(
     new MojoDemuxerStreamImpl(video, GetProxy(&video_stream));
 
   interfaces::RendererClientPtr client_ptr;
-  binding_.Bind(GetProxy(&client_ptr));
+  binding_.reset(
+      new mojo::Binding<RendererClient>(this, GetProxy(&client_ptr)));
   remote_renderer_->Initialize(
       client_ptr.Pass(), audio_stream.Pass(), video_stream.Pass(),
       BindToCurrentLoop(base::Bind(&MojoRendererImpl::OnInitialized,

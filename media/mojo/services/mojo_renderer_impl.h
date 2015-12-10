@@ -66,7 +66,7 @@ class MojoRendererImpl : public Renderer, public interfaces::RendererClient {
 
   DemuxerStreamProvider* demuxer_stream_provider_;
   interfaces::RendererPtr remote_renderer_;
-  mojo::Binding<RendererClient> binding_;
+  scoped_ptr<mojo::Binding<RendererClient>> binding_;
 
   // Callbacks passed to Initialize() that we forward messages from
   // |remote_renderer_| through.
