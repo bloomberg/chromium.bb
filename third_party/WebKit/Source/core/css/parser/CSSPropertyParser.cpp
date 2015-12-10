@@ -7,6 +7,7 @@
 
 #include "core/StylePropertyShorthand.h"
 #include "core/css/CSSCalculationValue.h"
+#include "core/css/CSSCrossfadeValue.h"
 #include "core/css/CSSCursorImageValue.h"
 #include "core/css/CSSCustomIdentValue.h"
 #include "core/css/CSSFontFaceSrcValue.h"
@@ -2403,6 +2404,217 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeCursor(CSSParserTokenRange& range
     if (cursorType)
         list->append(cursorType.release());
     return list.release();
+}
+
+static bool consumeGradientColorStops(CSSParserTokenRange& range, CSSParserMode cssParserMode, CSSGradientValue* gradient)
+{
+    bool supportsColorHints = gradient->gradientType() == CSSLinearGradient || gradient->gradientType() == CSSRadialGradient;
+
+    // The first color stop cannot be a color hint.
+    bool previousStopWasColorHint = true;
+    do {
+        CSSGradientColorStop stop;
+        stop.m_color = consumeColor(range, cssParserMode);
+        // Two hints in a row are not allowed.
+        if (!stop.m_color && (!supportsColorHints || previousStopWasColorHint))
+            return false;
+        previousStopWasColorHint = !stop.m_color;
+        stop.m_position = consumeLengthOrPercent(range, cssParserMode, ValueRangeAll);
+        if (!stop.m_color && !stop.m_position)
+            return false;
+        gradient->addStop(stop);
+    } while (consumeCommaIncludingWhitespace(range));
+
+    // The last color stop cannot be a color hint.
+    if (previousStopWasColorHint)
+        return false;
+
+    // Must have 2 or more stops to be valid.
+    return gradient->stopCount() >= 2;
+}
+
+static PassRefPtrWillBeRawPtr<CSSValue> consumeRadialGradient(CSSParserTokenRange& args, CSSParserMode cssParserMode, CSSGradientRepeat repeating)
+{
+    RefPtrWillBeRawPtr<CSSRadialGradientValue> result = CSSRadialGradientValue::create(repeating, CSSRadialGradient);
+
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> shape = nullptr;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> sizeKeyword = nullptr;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> horizontalSize = nullptr;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> verticalSize = nullptr;
+
+    // First part of grammar, the size/shape clause:
+    // [ circle || <length> ] |
+    // [ ellipse || [ <length> | <percentage> ]{2} ] |
+    // [ [ circle | ellipse] || <size-keyword> ]
+    for (int i = 0; i < 3; ++i) {
+        if (args.peek().type() == IdentToken) {
+            CSSValueID id = args.peek().id();
+            if (id == CSSValueCircle || id == CSSValueEllipse) {
+                if (shape)
+                    return nullptr;
+                shape = consumeIdent(args);
+            } else if (id == CSSValueClosestSide || id == CSSValueClosestCorner || id == CSSValueFarthestSide || id == CSSValueFarthestCorner) {
+                if (sizeKeyword)
+                    return nullptr;
+                sizeKeyword = consumeIdent(args);
+            } else {
+                break;
+            }
+        } else {
+            RefPtrWillBeRawPtr<CSSPrimitiveValue> center = consumeLengthOrPercent(args, cssParserMode, ValueRangeAll);
+            if (!center)
+                break;
+            if (horizontalSize)
+                return nullptr;
+            horizontalSize = center;
+            if ((center = consumeLengthOrPercent(args, cssParserMode, ValueRangeAll))) {
+                verticalSize = center.release();
+                ++i;
+            }
+        }
+    }
+
+    // You can specify size as a keyword or a length/percentage, not both.
+    if (sizeKeyword && horizontalSize)
+        return nullptr;
+    // Circles must have 0 or 1 lengths.
+    if (shape && shape->getValueID() == CSSValueCircle && verticalSize)
+        return nullptr;
+    // Ellipses must have 0 or 2 length/percentages.
+    if (shape && shape->getValueID() == CSSValueEllipse && horizontalSize && !verticalSize)
+        return nullptr;
+    // If there's only one size, it must be a length.
+    // TODO(timloh): Calcs with both lengths and percentages should be rejected.
+    if (!verticalSize && horizontalSize && horizontalSize->isPercentage())
+        return nullptr;
+
+    result->setShape(shape);
+    result->setSizingBehavior(sizeKeyword);
+    result->setEndHorizontalSize(horizontalSize);
+    result->setEndVerticalSize(verticalSize);
+
+    RefPtrWillBeRawPtr<CSSValue> centerX = nullptr;
+    RefPtrWillBeRawPtr<CSSValue> centerY = nullptr;
+    if (args.peek().id() == CSSValueAt) {
+        args.consumeIncludingWhitespace();
+        consumePosition(args, cssParserMode, UnitlessQuirk::Forbid, centerX, centerY);
+        if (!(centerX && centerY))
+            return nullptr;
+        result->setFirstX(centerX);
+        result->setFirstY(centerY);
+        // Right now, CSS radial gradients have the same start and end centers.
+        result->setSecondX(centerX);
+        result->setSecondY(centerY);
+    }
+
+    if ((shape || sizeKeyword || horizontalSize || centerX || centerY) && !consumeCommaIncludingWhitespace(args))
+        return nullptr;
+    if (!consumeGradientColorStops(args, cssParserMode, result.get()))
+        return nullptr;
+    return result.release();
+}
+
+static PassRefPtrWillBeRawPtr<CSSValue> consumeLinearGradient(CSSParserTokenRange& args, CSSParserMode cssParserMode, CSSGradientRepeat repeating, CSSGradientType gradientType)
+{
+    RefPtrWillBeRawPtr<CSSLinearGradientValue> result = CSSLinearGradientValue::create(repeating, gradientType);
+
+    bool expectComma = true;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> angle = consumeAngle(args, cssParserMode);
+    if (angle) {
+        result->setAngle(angle.release());
+    } else if (gradientType == CSSPrefixedLinearGradient || consumeIdent<CSSValueTo>(args)) {
+        RefPtrWillBeRawPtr<CSSPrimitiveValue> endX = consumeIdent<CSSValueLeft, CSSValueRight>(args);
+        RefPtrWillBeRawPtr<CSSPrimitiveValue> endY = consumeIdent<CSSValueBottom, CSSValueTop>(args);
+        if (!endX && !endY) {
+            if (gradientType == CSSLinearGradient)
+                return nullptr;
+            endY = cssValuePool().createIdentifierValue(CSSValueTop);
+            expectComma = false;
+        } else if (!endX) {
+            endX = consumeIdent<CSSValueLeft, CSSValueRight>(args);
+        }
+
+        result->setFirstX(endX.release());
+        result->setFirstY(endY.release());
+    } else {
+        expectComma = false;
+    }
+
+    if (expectComma && !consumeCommaIncludingWhitespace(args))
+        return nullptr;
+    if (!consumeGradientColorStops(args, cssParserMode, result.get()))
+        return nullptr;
+    return result.release();
+}
+
+static PassRefPtrWillBeRawPtr<CSSValue> consumeImage(CSSParserTokenRange&, CSSParserContext);
+
+static PassRefPtrWillBeRawPtr<CSSValue> consumeCrossFade(CSSParserTokenRange& args, CSSParserContext context)
+{
+    RefPtrWillBeRawPtr<CSSValue> fromImageValue = consumeImage(args, context);
+    if (!fromImageValue || !consumeCommaIncludingWhitespace(args))
+        return nullptr;
+    RefPtrWillBeRawPtr<CSSValue> toImageValue = consumeImage(args, context);
+    if (!toImageValue || !consumeCommaIncludingWhitespace(args))
+        return nullptr;
+
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> percentage = nullptr;
+    const CSSParserToken& percentageArg = args.consumeIncludingWhitespace();
+    if (percentageArg.type() == PercentageToken)
+        percentage = cssValuePool().createValue(clampTo<double>(percentageArg.numericValue() / 100, 0, 1), CSSPrimitiveValue::UnitType::Number);
+    else if (percentageArg.type() == NumberToken)
+        percentage = cssValuePool().createValue(clampTo<double>(percentageArg.numericValue(), 0, 1), CSSPrimitiveValue::UnitType::Number);
+
+    if (!percentage)
+        return nullptr;
+    return CSSCrossfadeValue::create(fromImageValue, toImageValue, percentage);
+}
+
+static PassRefPtrWillBeRawPtr<CSSValue> consumeGeneratedImage(CSSParserTokenRange& range, CSSParserContext context)
+{
+    CSSValueID id = range.peek().functionId();
+    CSSParserTokenRange rangeCopy = range;
+    CSSParserTokenRange args = consumeFunction(rangeCopy);
+    RefPtrWillBeRawPtr<CSSValue> result = nullptr;
+    if (id == CSSValueRadialGradient) {
+        result = consumeRadialGradient(args, context.mode(), NonRepeating);
+    } else if (id == CSSValueWebkitLinearGradient) {
+        // FIXME: This should send a deprecation message.
+        if (context.useCounter())
+            context.useCounter()->count(UseCounter::DeprecatedWebKitLinearGradient);
+        result = consumeLinearGradient(args, context.mode(), NonRepeating, CSSPrefixedLinearGradient);
+    } else if (id == CSSValueWebkitRepeatingLinearGradient) {
+        // FIXME: This should send a deprecation message.
+        if (context.useCounter())
+            context.useCounter()->count(UseCounter::DeprecatedWebKitRepeatingLinearGradient);
+        result = consumeLinearGradient(args, context.mode(), Repeating, CSSPrefixedLinearGradient);
+    } else if (id == CSSValueLinearGradient) {
+        result = consumeLinearGradient(args, context.mode(), NonRepeating, CSSLinearGradient);
+    } else if (id == CSSValueWebkitCrossFade) {
+        result = consumeCrossFade(args, context);
+    }
+    if (!result || !args.atEnd())
+        return nullptr;
+    range = rangeCopy;
+    return result;
+}
+
+static PassRefPtrWillBeRawPtr<CSSValue> consumeImage(CSSParserTokenRange& range, CSSParserContext context)
+{
+    if (range.peek().id() == CSSValueNone)
+        return consumeIdent(range);
+
+    AtomicString uri(consumeUrl(range));
+    if (!uri.isNull())
+        return CSSPropertyParser::createCSSImageValueWithReferrer(uri, context);
+    if (range.peek().type() == FunctionToken) {
+        CSSValueID id = range.peek().functionId();
+        if (id == CSSValueWebkitImageSet)
+            return consumeImageSet(range, context);
+        if (CSSPropertyParser::isGeneratedImage(id))
+            return consumeGeneratedImage(range, context);
+    }
+    return nullptr;
 }
 
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSPropertyID unresolvedProperty)
