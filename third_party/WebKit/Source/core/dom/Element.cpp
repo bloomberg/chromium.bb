@@ -1548,8 +1548,6 @@ void Element::removedFrom(ContainerNode* insertionPoint, Node* next)
         if (ElementAnimations* elementAnimations = data->elementAnimations())
             elementAnimations->cssAnimations().cancel();
     }
-
-    document().styleEngine().styleInvalidator().clearInvalidation(*this);
 }
 
 void Element::attach(const AttachContext& context)
@@ -1635,6 +1633,8 @@ void Element::detach(const AttachContext& context)
             document().activeChainNodeDetached(*this);
         document().userActionElements().didDetach(*this);
     }
+
+    document().styleEngine().styleInvalidator().clearInvalidation(*this);
 
     if (svgFilterNeedsLayerUpdate())
         document().unscheduleSVGFilterLayerUpdateHack(*this);
