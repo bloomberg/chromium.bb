@@ -125,6 +125,9 @@ class SVGPropertyTearOff : public SVGPropertyTearOffBase {
 public:
     Property* target()
     {
+        if (isAnimVal())
+            contextElement()->ensureAttributeAnimValUpdated();
+
         return m_target.get();
     }
 

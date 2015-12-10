@@ -98,6 +98,8 @@ void KeyframeEffect::attach(Animation* animation)
     if (m_target) {
         m_target->ensureElementAnimations().animations().add(animation);
         m_target->setNeedsAnimationStyleRecalc();
+        if (RuntimeEnabledFeatures::webAnimationsSVGEnabled() && m_target->isSVGElement())
+            toSVGElement(m_target)->setWebAnimationsPending();
     }
     AnimationEffect::attach(animation);
 }

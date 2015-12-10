@@ -207,19 +207,6 @@ function runPendingResponsiveTests() {
         setState(bindings, targets, property, before.state);
         var animations = createPausedAnimations(targets, keyframes, after.expect.map(expectation => expectation.at));
         stateTransitionTests.push({
-          // TODO(alancutter): Make SVG animations responsive when their interpolation fractions haven't changed.
-          wiggleFractionHack() {
-            return new Promise(resolve => {
-              animations.forEach(animation => {
-                var currentTime = animation.currentTime;
-                animation.currentTime = 1;
-                requestAnimationFrame(() => {
-                  animation.currentTime = currentTime;
-                });
-              });
-              requestAnimationFrame(resolve);
-            });
-          },
           applyStateTransition() {
             setState(bindings, targets, property, after.state);
           },
@@ -244,14 +231,12 @@ function runPendingResponsiveTests() {
         stateTransitionTest.applyStateTransition();
       }
 
-      Promise.all(stateTransitionTests.map(stateTransitionTest => stateTransitionTest.wiggleFractionHack())).then(() => {
-        requestAnimationFrame(() => {
-          for (var stateTransitionTest of stateTransitionTests) {
-            stateTransitionTest.assert();
-          }
-          resolve();
-        });
-      })
+      requestAnimationFrame(() => {
+        for (var stateTransitionTest of stateTransitionTests) {
+          stateTransitionTest.assert();
+        }
+        resolve();
+      });
     });
   });
 }

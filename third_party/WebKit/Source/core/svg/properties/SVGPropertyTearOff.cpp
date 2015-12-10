@@ -42,7 +42,7 @@ void SVGPropertyTearOffBase::commitChange()
         return;
     ASSERT(m_attributeName != QualifiedName::null());
     contextElement()->invalidateSVGAttributes();
-    contextElement()->svgAttributeChanged(m_attributeName);
+    contextElement()->svgAttributeBaseValChanged(m_attributeName);
 }
 
 } // namespace blink

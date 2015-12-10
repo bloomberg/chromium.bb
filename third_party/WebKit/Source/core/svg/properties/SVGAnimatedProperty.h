@@ -231,11 +231,12 @@ public:
 
         ASSERT(this->attributeName() != QualifiedName::null());
         this->contextElement()->invalidateSVGAttributes();
-        this->contextElement()->svgAttributeChanged(this->attributeName());
+        this->contextElement()->svgAttributeBaseValChanged(this->attributeName());
     }
 
     PrimitiveType animVal()
     {
+        this->contextElement()->ensureAttributeAnimValUpdated();
         return this->currentValue()->value();
     }
 
