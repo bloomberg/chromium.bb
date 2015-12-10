@@ -192,7 +192,7 @@ TEST_F(MetricsLogTest, HistogramBucketFields) {
   ranges.set_range(6, 11);
   ranges.set_range(7, 12);
 
-  base::SampleVector samples(&ranges);
+  base::SampleVector samples(1, &ranges);
   samples.Accumulate(3, 1);   // Bucket 1-5.
   samples.Accumulate(6, 1);   // Bucket 5-7.
   samples.Accumulate(8, 1);   // Bucket 8-9. (7-8 skipped)

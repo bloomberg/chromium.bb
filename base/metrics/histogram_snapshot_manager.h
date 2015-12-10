@@ -48,10 +48,12 @@ class BASE_EXPORT HistogramSnapshotManager {
 
   // For histograms, track what we've already recorded (as a sample for
   // each histogram) so that we can record only the delta with the next log.
-  std::map<std::string, HistogramSamples*> logged_samples_;
+  // The information is indexed by the hash of the histogram name.
+  std::map<uint64_t, HistogramSamples*> logged_samples_;
 
-  // List of histograms found to be corrupt, and their problems.
-  std::map<std::string, int> inconsistencies_;
+  // Set of histograms found to be corrupt and their problems, indexed
+  // by the hash of the histogram name.
+  std::map<uint64_t, int> inconsistencies_;
 
   // |histogram_flattener_| handles the logistics of recording the histogram
   // deltas.

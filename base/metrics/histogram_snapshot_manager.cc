@@ -41,13 +41,11 @@ void HistogramSnapshotManager::PrepareDelta(const HistogramBase& histogram) {
 
   // Get up-to-date snapshot of sample stats.
   scoped_ptr<HistogramSamples> snapshot(histogram.SnapshotSamples());
-  const std::string& histogram_name = histogram.histogram_name();
-
-  int corruption = histogram.FindCorruption(*snapshot);
 
   // Crash if we detect that our histograms have been overwritten.  This may be
   // a fair distance from the memory smasher, but we hope to correlate these
   // crashes with other events, such as plugins, or usage patterns, etc.
+  int corruption = histogram.FindCorruption(*snapshot);
   if (HistogramBase::BUCKET_ORDER_ERROR & corruption) {
     // The checksum should have caught this, so crash separately if it didn't.
     CHECK_NE(0, HistogramBase::RANGE_CHECKSUM_ERROR & corruption);
@@ -59,29 +57,29 @@ void HistogramSnapshotManager::PrepareDelta(const HistogramBase& histogram) {
   // Note, at this point corruption can only be COUNT_HIGH_ERROR or
   // COUNT_LOW_ERROR and they never arise together, so we don't need to extract
   // bits from corruption.
+  const uint64_t histogram_hash = histogram.name_hash();
   if (corruption) {
-    DLOG(ERROR) << "Histogram: " << histogram_name
+    DLOG(ERROR) << "Histogram: " << histogram.histogram_name()
                 << " has data corruption: " << corruption;
     histogram_flattener_->InconsistencyDetected(
         static_cast<HistogramBase::Inconsistency>(corruption));
     // Don't record corrupt data to metrics services.
-    int old_corruption = inconsistencies_[histogram_name];
+    int old_corruption = inconsistencies_[histogram_hash];
     if (old_corruption == (corruption | old_corruption))
       return;  // We've already seen this corruption for this histogram.
-    inconsistencies_[histogram_name] |= corruption;
+    inconsistencies_[histogram_hash] |= corruption;
     histogram_flattener_->UniqueInconsistencyDetected(
         static_cast<HistogramBase::Inconsistency>(corruption));
     return;
   }
 
   HistogramSamples* to_log;
-  std::map<std::string, HistogramSamples*>::iterator it =
-      logged_samples_.find(histogram_name);
+  auto it = logged_samples_.find(histogram_hash);
   if (it == logged_samples_.end()) {
     to_log = snapshot.release();
 
     // This histogram has not been logged before, add a new entry.
-    logged_samples_[histogram_name] = to_log;
+    logged_samples_[histogram_hash] = to_log;
   } else {
     HistogramSamples* already_logged = it->second;
     InspectLoggedSamplesInconsistency(*snapshot, already_logged);

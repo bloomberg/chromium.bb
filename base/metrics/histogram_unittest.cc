@@ -81,7 +81,7 @@ TEST_F(HistogramTest, NameMatchTest) {
 }
 
 TEST_F(HistogramTest, ExponentialRangesTest) {
-  // Check that we got a nice exponential when there was enough rooom.
+  // Check that we got a nice exponential when there was enough room.
   BucketRanges ranges(9);
   Histogram::InitializeBucketRanges(1, 64, &ranges);
   EXPECT_EQ(0, ranges.range(0));

@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_samples.h"
+#include "base/metrics/metrics_hashes.h"
 #include "base/metrics/sample_map.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/stl_util.h"
@@ -121,8 +122,10 @@ scoped_ptr<HistogramSamples> HistogramTester::GetHistogramSamplesSinceCreation(
   // response which is independent of the previously run tests, this method
   // creates empty samples in the absence of the histogram, rather than
   // returning null.
-  if (!histogram)
-    return scoped_ptr<HistogramSamples>(new SampleMap);
+  if (!histogram) {
+    return scoped_ptr<HistogramSamples>(
+        new SampleMap(HashMetricName(histogram_name)));
+  }
   scoped_ptr<HistogramSamples> named_samples(histogram->SnapshotSamples());
   auto original_samples_it = histograms_snapshot_.find(histogram_name);
   if (original_samples_it != histograms_snapshot_.end())
