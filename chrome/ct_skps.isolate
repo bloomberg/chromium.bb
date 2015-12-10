@@ -8,14 +8,17 @@
       'variables': {
         'files': [
           '../../skia/resources/',
-          '../../skia/out/Debug/dm',
-          '../content/test/ct/run_ct_dm.py',
+          '../../skia/out/Debug/<(TOOL_NAME)',
+          '../content/test/ct/run_ct_skps.py',
           '../../skps/slave<(SLAVE_NUM)/',
         ],
         'command': [
           'python',
-          '../content/test/ct/run_ct_dm.py',
-          '--slave_num=<(SLAVE_NUM)',
+          '../content/test/ct/run_ct_skps.py',
+          '--slave_num', '<(SLAVE_NUM)',
+          '--tool', '<(TOOL_NAME)',
+          '--git_hash', '<(GIT_HASH)',
+          '--isolated_outdir', '${ISOLATED_OUTDIR}',
         ],
       },
     }],
