@@ -96,6 +96,7 @@ source_set("test_support") {
       "//mojo/environment:chromium",
       "//storage/browser",
       "//storage/common",
+      "//third_party/mojo/src/mojo/edk/test:test_support",
       "//ui/compositor:test_support",
       "//ui/surface",
       "//v8",
@@ -245,6 +246,7 @@ if (!is_ios) {
       "//components/test_runner:test_runner",
       "//content/public/common",
       "//skia",
+      "//third_party/mojo/src/mojo/edk/test:test_support",
       "//ui/accessibility:ax_gen",
       "//v8",
     ]

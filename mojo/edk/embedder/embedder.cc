@@ -28,14 +28,6 @@
 namespace mojo {
 namespace edk {
 
-namespace {
-
-// Note: Called on the I/O thread.
-void ShutdownIPCSupportHelper() {
-}
-
-}  // namespace
-
 namespace internal {
 
 // Declared in embedder_internal.h.
@@ -150,11 +142,8 @@ void ShutdownIPCSupportOnIOThread() {
 }
 
 void ShutdownIPCSupport() {
-  internal::g_io_thread_task_runner->PostTaskAndReply(
-      FROM_HERE,
-      base::Bind(&ShutdownIPCSupportHelper),
-      base::Bind(&ProcessDelegate::OnShutdownComplete,
-                 base::Unretained(internal::g_process_delegate)));
+  // TODO(jam): remove ProcessDelegate from new EDK once the old EDK is gone.
+  internal::g_process_delegate->OnShutdownComplete();
 }
 
 ScopedMessagePipeHandle CreateMessagePipe(

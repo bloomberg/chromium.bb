@@ -926,6 +926,7 @@
             '../storage/storage_browser.gyp:storage',
             '../storage/storage_common.gyp:storage_common',
             '../third_party/WebKit/public/blink.gyp:blink',
+            '../third_party/mojo/mojo_edk.gyp:mojo_common_test_support',
             '../third_party/mojo/mojo_public.gyp:mojo_cpp_bindings',
             '../ui/compositor/compositor.gyp:compositor_test_support',
             '../ui/surface/surface.gyp:surface',

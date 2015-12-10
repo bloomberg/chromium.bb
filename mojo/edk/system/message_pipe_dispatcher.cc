@@ -418,10 +418,16 @@ MessagePipeDispatcher::~MessagePipeDispatcher() {
   // exception is if they posted a task to run CloseOnIO but the IO thread shut
   // down and so when it was deleting pending tasks it caused the last reference
   // to destruct this object. In that case, safe to destroy the channel.
-  if (channel_ && internal::g_io_thread_task_runner->RunsTasksOnCurrentThread())
-    channel_->Shutdown();
-  else
+  if (channel_ &&
+      internal::g_io_thread_task_runner->RunsTasksOnCurrentThread()) {
+    if (transferable_) {
+      channel_->Shutdown();
+    } else {
+      internal::g_broker->CloseMessagePipe(pipe_id_, this);
+    }
+  } else {
     DCHECK(!channel_);
+  }
 #if defined(OS_POSIX)
   ClosePlatformHandles(&serialized_fds_);
 #endif

@@ -24,13 +24,18 @@ class MojoInitializer {
   MojoInitializer() {
     const base::CommandLine& command_line =
         *base::CommandLine::ForCurrentProcess();
+    std::string process_type =
+        command_line.GetSwitchValueASCII(switches::kProcessType);
+    if (0 && process_type.empty() && !command_line.HasSwitch("use-old-edk")) {
+      base::CommandLine::ForCurrentProcess()->AppendSwitch(
+          "use-new-edk");
+    }
+
     if (command_line.HasSwitch("use-new-edk")) {
-      bool initialize_as_parent =
-          command_line.GetSwitchValueASCII(switches::kProcessType).empty();
+      bool initialize_as_parent = process_type.empty();
 #if defined(MOJO_SHELL_CLIENT)
-      if (IsRunningInMojoShell()) {
+      if (IsRunningInMojoShell())
         initialize_as_parent = false;
-      }
 #endif
       if (initialize_as_parent) {
         mojo::embedder::PreInitializeParentProcess();

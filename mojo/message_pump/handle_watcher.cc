@@ -271,6 +271,12 @@ void WatcherThreadManager::AddRequest(const RequestData& data) {
     if (!was_empty)
       return;
   }
+
+  // With the new Mojo EDK, the MojoMessagePump will destruct when it sees that
+  // the IO thread has gone away. So at shutdown this can be null.
+  if (!thread_.task_runner())
+    return;
+
   // We outlive |thread_|, so it's safe to use Unretained() here.
   thread_.task_runner()->PostTask(
       FROM_HERE,

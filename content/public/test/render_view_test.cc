@@ -276,6 +276,12 @@ void RenderViewTest::SetUp() {
 
 #if !defined(OS_IOS)
   InitializeMojo();
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch("use-new-edk")) {
+    test_io_thread_.reset(new base::TestIOThread(
+        base::TestIOThread::kAutoStart));
+    ipc_support_.reset(new mojo::test::ScopedIPCSupport(
+        test_io_thread_->task_runner()));
+  }
 #endif
 
   // This needs to pass the mock render thread to the view.
@@ -317,6 +323,9 @@ void RenderViewTest::TearDown() {
   platform_.reset();
   params_.reset();
   command_line_.reset();
+
+  test_io_thread_.reset();
+  ipc_support_.reset();
 }
 
 void RenderViewTest::onLeakDetectionComplete(const Result& result) {

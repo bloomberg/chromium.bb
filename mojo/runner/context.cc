@@ -287,7 +287,9 @@ void Context::Shutdown() {
   TRACE_EVENT0("mojo_shell", "Context::Shutdown");
   DCHECK_EQ(base::MessageLoop::current()->task_runner(),
             task_runners_->shell_runner());
-  embedder::ShutdownIPCSupport();
+  // Post a task in case OnShutdownComplete is called synchronously.
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE, base::Bind(embedder::ShutdownIPCSupport));
   // We'll quit when we get OnShutdownComplete().
   base::MessageLoop::current()->Run();
 }

@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string16.h"
+#include "base/test/test_io_thread.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/page_state.h"
@@ -19,6 +20,7 @@
 #include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebLeakDetector.h"
+#include "third_party/mojo/src/mojo/edk/test/scoped_ipc_support.h"
 
 struct ViewMsg_Resize_Params;
 
@@ -193,6 +195,10 @@ class RenderViewTest : public testing::Test, blink::WebLeakDetectorClient {
   scoped_ptr<RendererMainPlatformDelegate> platform_;
   scoped_ptr<MainFunctionParams> params_;
   scoped_ptr<base::CommandLine> command_line_;
+
+  // For Mojo.
+  scoped_ptr<base::TestIOThread> test_io_thread_;
+  scoped_ptr<mojo::test::ScopedIPCSupport> ipc_support_;
 
 #if defined(OS_MACOSX)
   scoped_ptr<base::mac::ScopedNSAutoreleasePool> autorelease_pool_;
