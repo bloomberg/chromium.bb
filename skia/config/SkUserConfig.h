@@ -245,6 +245,10 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
  */
 #define SK_DISABLE_OFFSETIMAGEFILTER_OPTIMIZATION
 
+/* Disable tight bounds for saveLayer offscreens in Skia until rebaselining is done.
+ */
+#define SK_SUPPORT_SRC_BOUNDS_BLOAT_FOR_IMAGEFILTERS
+
 /* This flag forces Skia not to use typographic metrics with GDI.
  */
 #define SK_GDI_ALWAYS_USE_TEXTMETRICS_FOR_FONT_METRICS
