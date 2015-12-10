@@ -7,17 +7,15 @@
 #include <cstddef>
 
 #include "base/files/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
-#include "chrome/browser/sync/profile_sync_test_util.h"
-#include "chrome/test/base/testing_browser_process.h"
-#include "chrome/test/base/testing_profile.h"
-#include "chrome/test/base/testing_profile_manager.h"
 #include "components/invalidation/impl/invalidator_storage.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/invalidation/public/invalidator_state.h"
@@ -27,9 +25,7 @@
 #include "components/sync_driver/sync_frontend.h"
 #include "components/sync_driver/sync_prefs.h"
 #include "components/syncable_prefs/pref_service_syncable.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/test/test_browser_thread_bundle.h"
-#include "content/public/test/test_utils.h"
+#include "components/syncable_prefs/testing_pref_service_syncable.h"
 #include "google/cacheinvalidation/include/types.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "net/url_request/test_url_fetcher_factory.h"
@@ -53,7 +49,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-using content::BrowserThread;
 using syncer::FakeSyncManager;
 using syncer::SyncManager;
 using ::testing::InvokeWithoutArgs;
@@ -64,14 +59,16 @@ namespace browser_sync {
 
 namespace {
 
-const char kTestProfileName[] = "test-profile";
-
 static const base::FilePath::CharType kTestSyncDir[] =
     FILE_PATH_LITERAL("sync-test");
 
 ACTION_P(Signal, event) {
   event->Signal();
 }
+
+void EmptyNetworkTimeUpdate(const base::Time&,
+                            const base::TimeDelta&,
+                            const base::TimeDelta&) {}
 
 void QuitMessageLoop() {
   base::MessageLoop::current()->QuitWhenIdle();
@@ -171,24 +168,23 @@ class BackendSyncClient : public sync_driver::FakeSyncClient {
 class SyncBackendHostTest : public testing::Test {
  protected:
   SyncBackendHostTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD),
-        profile_manager_(TestingBrowserProcess::GetGlobal()),
-        fake_manager_(NULL) {}
+      : fake_manager_(NULL) {
+   }
 
   ~SyncBackendHostTest() override {}
 
   void SetUp() override {
-    ASSERT_TRUE(profile_manager_.SetUp());
-    profile_ = profile_manager_.CreateTestingProfile(kTestProfileName);
-    sync_prefs_.reset(new sync_driver::SyncPrefs(profile_->GetPrefs()));
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+
+    sync_driver::SyncPrefs::RegisterProfilePrefs(pref_service_.registry());
+
+    sync_prefs_.reset(new sync_driver::SyncPrefs(&pref_service_));
     backend_.reset(new SyncBackendHostImpl(
-        profile_->GetDebugName(), &sync_client_,
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-        invalidation::ProfileInvalidationProviderFactory::GetForProfile(
-            profile_)
-            ->GetInvalidationService(),
+        "dummyDebugName", &sync_client_,
+        base::ThreadTaskRunnerHandle::Get(),
+        nullptr,
         sync_prefs_->AsWeakPtr(),
-        profile_->GetPath().Append(base::FilePath(kTestSyncDir))));
+        temp_dir_.path().Append(base::FilePath(kTestSyncDir))));
     credentials_.email = "user@example.com";
     credentials_.sync_token = "sync_token";
     credentials_.scope_set.insert(GaiaConstants::kChromeSyncOAuth2Scope);
@@ -216,13 +212,7 @@ class SyncBackendHostTest : public testing::Test {
     }
     backend_.reset();
     sync_prefs_.reset();
-    profile_ = NULL;
-    profile_manager_.DeleteTestingProfile(kTestProfileName);
-    // Pump messages posted by the sync thread (which may end up
-    // posting on the IO thread).
-    base::RunLoop().RunUntilIdle();
-    content::RunAllPendingInMessageLoop(BrowserThread::IO);
-    // Pump any messages posted by the IO thread.
+    // Pump messages posted by the sync thread.
     base::RunLoop().RunUntilIdle();
   }
 
@@ -234,21 +224,21 @@ class SyncBackendHostTest : public testing::Test {
         http_post_provider_factory_getter =
             base::Bind(&syncer::NetworkResources::GetHttpPostProviderFactory,
                        base::Unretained(network_resources_.get()),
-                       make_scoped_refptr(profile_->GetRequestContext()),
+                       nullptr,
                        base::Bind(&EmptyNetworkTimeUpdate));
     backend_->Initialize(
         &mock_frontend_, scoped_ptr<base::Thread>(),
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
+        base::ThreadTaskRunnerHandle::Get(),
+        base::ThreadTaskRunnerHandle::Get(),
         syncer::WeakHandle<syncer::JsEventHandler>(), GURL(std::string()),
         std::string(), credentials_, true, fake_manager_factory_.Pass(),
         MakeWeakHandle(test_unrecoverable_error_handler_.GetWeakPtr()),
         base::Closure(), http_post_provider_factory_getter,
         saved_nigori_state_.Pass());
     base::RunLoop run_loop;
-    BrowserThread::PostDelayedTask(BrowserThread::UI, FROM_HERE,
-                                   run_loop.QuitClosure(),
-                                   TestTimeouts::action_timeout());
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(FROM_HERE,
+        run_loop.QuitClosure(),
+        TestTimeouts::action_timeout());
     run_loop.Run();
     // |fake_manager_factory_|'s fake_manager() is set on the sync
     // thread, but we can rely on the message loop barriers to
@@ -281,9 +271,9 @@ class SyncBackendHostTest : public testing::Test {
         base::Bind(&SyncBackendHostTest::OnDownloadRetry,
                    base::Unretained(this)));
     base::RunLoop run_loop;
-    BrowserThread::PostDelayedTask(BrowserThread::UI, FROM_HERE,
-                                   run_loop.QuitClosure(),
-                                   TestTimeouts::action_timeout());
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(FROM_HERE,
+        run_loop.QuitClosure(),
+        TestTimeouts::action_timeout());
     run_loop.Run();
     return ready_types;
   }
@@ -298,11 +288,11 @@ class SyncBackendHostTest : public testing::Test {
     NOTIMPLEMENTED();
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  base::MessageLoop message_loop_;
+  base::ScopedTempDir temp_dir_;
+  syncable_prefs::TestingPrefServiceSyncable pref_service_;
   StrictMock<MockSyncFrontend> mock_frontend_;
   syncer::SyncCredentials credentials_;
-  TestingProfileManager profile_manager_;
-  TestingProfile* profile_;
   BackendSyncClient sync_client_;
   syncer::TestUnrecoverableErrorHandler test_unrecoverable_error_handler_;
   scoped_ptr<sync_driver::SyncPrefs> sync_prefs_;
@@ -739,8 +729,8 @@ TEST_F(SyncBackendHostTest, DownloadControlTypesRestart) {
 // setup hasn't been completed. This test ensures that cleanup happens.
 TEST_F(SyncBackendHostTest, TestStartupWithOldSyncData) {
   const char* nonsense = "slon";
-  base::FilePath temp_directory =
-      profile_->GetPath().Append(base::FilePath(kTestSyncDir));
+  base::FilePath temp_directory = temp_dir_.path().Append(
+      base::FilePath(kTestSyncDir));
   base::FilePath sync_file = temp_directory.AppendASCII("SyncData.sqlite3");
   ASSERT_TRUE(base::CreateDirectory(temp_directory));
   ASSERT_NE(-1, base::WriteFile(sync_file, nonsense, strlen(nonsense)));

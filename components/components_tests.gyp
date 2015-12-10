@@ -709,6 +709,7 @@
       'sync_driver/device_info_sync_service_unittest.cc',
       'sync_driver/frontend_data_type_controller_unittest.cc',
       'sync_driver/generic_change_processor_unittest.cc',
+      'sync_driver/glue/sync_backend_host_impl_unittest.cc',
       'sync_driver/glue/browser_thread_model_worker_unittest.cc',
       'sync_driver/glue/sync_backend_registrar_unittest.cc',
       'sync_driver/glue/ui_model_worker_unittest.cc',
