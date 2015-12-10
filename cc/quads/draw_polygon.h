@@ -59,9 +59,13 @@ class CC_EXPORT DrawPolygon {
   bool is_split() const { return is_split_; }
   scoped_ptr<DrawPolygon> CreateCopy();
 
+  void RecomputeNormalForTesting();
+
  private:
   void ApplyTransform(const gfx::Transform& transform);
   void ApplyTransformToNormal(const gfx::Transform& transform);
+
+  void ConstructNormal();
 
   std::vector<gfx::Point3F> points_;
   // Normalized, necessitated by distance calculations and tests of coplanarity.

@@ -891,6 +891,12 @@ crbug.com/356957 [ Win Mac ] editing/spelling/spellcheck-editable-on-focus.html 
 crbug.com/564403 http/tests/inspector/service-workers/service-worker-manager.html [ Failure Pass ]
 crbug.com/365400 [ Mac ] compositing/images/direct-pdf-image.html [ Failure ]
 
+crbug.com/565758 transforms/3d/point-mapping/3d-point-mapping-deep.html [ NeedsRebaseline ]
+crbug.com/565758 transforms/3d/point-mapping/3d-point-mapping-2.html [ NeedsRebaseline ]
+#Rebaseline will burn crbug.com/567940 into 3d-point-mapping-preserve-3d.html expectations.
+crbug.com/565758 transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ NeedsRebaseline ]
+crbug.com/565758 [ Win XP Mac ] compositing/perpendicular-layer-sorting.html [ NeedsRebaseline ]
+
 crbug.com/306222 fast/hidpi/image-srcset-relative-svg-canvas.html [ Skip ]
 crbug.com/306222 fast/hidpi/image-srcset-relative-svg-canvas-2x.html [ Skip ]
 

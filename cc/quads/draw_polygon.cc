@@ -70,7 +70,7 @@ DrawPolygon::DrawPolygon(const DrawQuad* original_ref,
   for (int i = 0; i < num_vertices_in_clipped_quad; i++) {
     points_.push_back(points[i]);
   }
-  ApplyTransformToNormal(transform);
+  ConstructNormal();
 }
 
 DrawPolygon::~DrawPolygon() {
@@ -87,6 +87,37 @@ scoped_ptr<DrawPolygon> DrawPolygon::CreateCopy() {
   new_polygon->normal_.set_z(normal_.z());
   return new_polygon;
 }
+
+//
+// If this were to be more generally used and expected to be applicable
+// replacing this with Newell's algorithm (or an improvement thereof)
+// would be preferable, but usually this is coming in from a rectangle
+// that has been transformed to screen space and clipped.
+// Averaging a few near diagonal cross products is pretty good in that case.
+//
+void DrawPolygon::ConstructNormal() {
+  normal_.set_x(0.0f);
+  normal_.set_y(0.0f);
+  normal_.set_z(0.0f);
+  int delta = points_.size() / 2;
+  for (size_t i = 1; i + delta < points_.size(); i++) {
+    normal_ +=
+        CrossProduct(points_[i] - points_[0], points_[i + delta] - points_[0]);
+  }
+  float normal_magnitude = normal_.Length();
+  if (normal_magnitude != 0 && normal_magnitude != 1) {
+    normal_.Scale(1.0f / normal_magnitude);
+  }
+}
+
+#if defined(OS_WIN)
+//
+// Allows the unittest to invoke this for the more general constructor.
+//
+void DrawPolygon::RecomputeNormalForTesting() {
+  ConstructNormal();
+}
+#endif
 
 float DrawPolygon::SignedPointDistance(const gfx::Point3F& point) const {
   return gfx::DotProduct(point - points_[0], normal_);
@@ -210,7 +241,7 @@ void DrawPolygon::ApplyTransform(const gfx::Transform& transform) {
 // be transformed along with the vertices.
 void DrawPolygon::TransformToScreenSpace(const gfx::Transform& transform) {
   ApplyTransform(transform);
-  ApplyTransformToNormal(transform);
+  ConstructNormal();
 }
 
 // In the case of TransformToLayerSpace, we assume that we are giving the
