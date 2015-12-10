@@ -600,6 +600,8 @@
       'graphics/ThreadSafeDataTransport.h',
       'graphics/UnacceleratedImageBufferSurface.cpp',
       'graphics/UnacceleratedImageBufferSurface.h',
+      'graphics/compositing/PaintArtifactCompositor.cpp',
+      'graphics/compositing/PaintArtifactCompositor.h',
       'graphics/cpu/arm/WebGLImageConversionNEON.h',
       'graphics/cpu/x86/WebGLImageConversionSSE.h',
       'graphics/filters/DistantLightSource.cpp',

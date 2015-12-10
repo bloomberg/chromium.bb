@@ -1076,6 +1076,11 @@ void PaintLayerCompositor::attachRootLayer(RootLayerAttachment attachment)
     if (!m_rootContentLayer)
         return;
 
+    // In Slimming Paint v2, PaintArtifactCompositor is responsible for the root
+    // layer.
+    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+        return;
+
     switch (attachment) {
     case RootLayerUnattached:
         ASSERT_NOT_REACHED();

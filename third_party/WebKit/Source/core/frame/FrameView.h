@@ -643,6 +643,8 @@ private:
     void synchronizedPaint();
     void synchronizedPaintRecursively(GraphicsLayer*);
 
+    void pushPaintArtifactToCompositor();
+
     void reset();
     void init();
 

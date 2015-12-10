@@ -36,6 +36,7 @@
 #include "platform/geometry/IntPoint.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/GraphicsLayer.h"
+#include "platform/graphics/compositing/PaintArtifactCompositor.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebCompositorAnimationTimeline.h"
 #include "public/platform/WebDisplayMode.h"
@@ -525,6 +526,17 @@ public:
 
     WebViewScheduler* scheduler() const { return m_scheduler.get(); }
 
+    // Attaches the PaintArtifactCompositor's tree to this WebView's layer tree
+    // view.
+    void attachPaintArtifactCompositor();
+
+    // Detaches the PaintArtifactCompositor and clears the layer tree view's
+    // root layer.
+    void detachPaintArtifactCompositor();
+
+    // Use in Slimming Paint v2 to update the layer tree for the content.
+    PaintArtifactCompositor& paintArtifactCompositor() { return m_paintArtifactCompositor; }
+
 private:
     InspectorOverlay* inspectorOverlay();
 
@@ -756,6 +768,9 @@ private:
     WebPageImportanceSignals m_pageImportanceSignals;
 
     const OwnPtr<WebViewScheduler> m_scheduler;
+
+    // Manages the layer tree created for this page in Slimming Paint v2.
+    PaintArtifactCompositor m_paintArtifactCompositor;
 };
 
 DEFINE_TYPE_CASTS(WebViewImpl, WebWidget, widget, widget->isWebView(), widget.isWebView());

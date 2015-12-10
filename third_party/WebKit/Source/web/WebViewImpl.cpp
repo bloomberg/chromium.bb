@@ -2755,6 +2755,8 @@ void WebViewImpl::setTextDirection(WebTextDirection direction)
 
 bool WebViewImpl::isAcceleratedCompositingActive() const
 {
+    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+        return m_paintArtifactCompositor.webLayer();
     return m_rootLayer;
 }
 
@@ -2769,7 +2771,11 @@ void WebViewImpl::willCloseLayerTreeView()
     if (m_layerTreeView)
         page()->willCloseLayerTreeView(*m_layerTreeView);
 
-    setRootGraphicsLayer(nullptr);
+    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+        detachPaintArtifactCompositor();
+    else
+        setRootGraphicsLayer(nullptr);
+
     m_layerTreeView = nullptr;
 }
 
@@ -4245,6 +4251,10 @@ void WebViewImpl::setRootGraphicsLayer(GraphicsLayer* layer)
     if (!m_layerTreeView)
         return;
 
+    // In SPv2, we attach layers via PaintArtifactCompositor, rather than
+    // supplying a root GraphicsLayer from PaintLayerCompositor.
+    ASSERT(!RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+
     VisualViewport& visualViewport = page()->frameHost().visualViewport();
     visualViewport.attachToLayerTree(layer, graphicsLayerFactory());
     if (layer) {
@@ -4570,6 +4580,38 @@ void WebViewImpl::updatePageOverlays()
         if (inspectorPageOverlay)
             inspectorPageOverlay->update();
     }
+}
+
+void WebViewImpl::attachPaintArtifactCompositor()
+{
+    if (!m_layerTreeView)
+        return;
+
+    // Otherwise, PaintLayerCompositor is expected to supply a root
+    // GraphicsLayer via setRootGraphicsLayer.
+    ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+
+    // TODO(jbroman): This should probably have hookups for overlays, visual
+    // viewport, etc.
+
+    m_paintArtifactCompositor.initializeIfNeeded();
+    WebLayer* rootLayer = m_paintArtifactCompositor.webLayer();
+    ASSERT(rootLayer);
+    m_layerTreeView->setRootLayer(*rootLayer);
+
+    // TODO(jbroman): This is cargo-culted from setRootGraphicsLayer. Is it
+    // necessary?
+    bool visible = page()->visibilityState() == PageVisibilityStateVisible;
+    m_layerTreeView->setVisible(visible);
+}
+
+void WebViewImpl::detachPaintArtifactCompositor()
+{
+    if (!m_layerTreeView)
+        return;
+
+    m_layerTreeView->setDeferCommits(true);
+    m_layerTreeView->clearRootLayer();
 }
 
 } // namespace blink

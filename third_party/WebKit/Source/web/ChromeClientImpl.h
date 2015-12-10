@@ -120,6 +120,8 @@ public:
     // Pass 0 as the GraphicsLayer to detatch the root layer.
     void attachRootGraphicsLayer(GraphicsLayer*, LocalFrame* localRoot) override;
 
+    void didPaint(const PaintArtifact&) override;
+
     void attachCompositorAnimationTimeline(WebCompositorAnimationTimeline*, LocalFrame* localRoot) override;
     void detachCompositorAnimationTimeline(WebCompositorAnimationTimeline*, LocalFrame* localRoot) override;
 

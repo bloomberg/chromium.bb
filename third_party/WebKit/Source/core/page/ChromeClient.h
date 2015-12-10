@@ -62,6 +62,7 @@ class IntRect;
 class LocalFrame;
 class Node;
 class Page;
+class PaintArtifact;
 class PopupOpeningObserver;
 class WebCompositorAnimationTimeline;
 class WebFrameScheduler;
@@ -186,6 +187,10 @@ public:
     // This sets the graphics layer for the LocalFrame's WebWidget, if it has
     // one. Otherwise it sets it for the WebViewImpl.
     virtual void attachRootGraphicsLayer(GraphicsLayer*, LocalFrame* localRoot) = 0;
+
+    // In Slimming Paint v2, called when the paint artifact is updated, to allow
+    // the underlying web widget to composite it.
+    virtual void didPaint(const PaintArtifact&) { }
 
     virtual void attachCompositorAnimationTimeline(WebCompositorAnimationTimeline*, LocalFrame* localRoot) { }
     virtual void detachCompositorAnimationTimeline(WebCompositorAnimationTimeline*, LocalFrame* localRoot) { }

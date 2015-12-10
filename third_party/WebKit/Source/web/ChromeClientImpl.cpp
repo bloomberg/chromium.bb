@@ -753,6 +753,17 @@ void ChromeClientImpl::attachRootGraphicsLayer(GraphicsLayer* rootLayer, LocalFr
     }
 }
 
+void ChromeClientImpl::didPaint(const PaintArtifact& paintArtifact)
+{
+    // TODO(jbroman): This doesn't handle OOPIF correctly. We probably need a
+    // branch for WebFrameWidget, like attachRootGraphicsLayer.
+
+    // TODO(jbroman): We shouldn't reattach the root layer every time.
+    m_webView->attachPaintArtifactCompositor();
+
+    m_webView->paintArtifactCompositor().update(paintArtifact);
+}
+
 void ChromeClientImpl::attachCompositorAnimationTimeline(WebCompositorAnimationTimeline* compositorTimeline, LocalFrame* localRoot)
 {
     // FIXME: For top-level frames we still use the WebView as a WebWidget. This

@@ -2411,6 +2411,9 @@ void FrameView::updateLifecyclePhasesInternal(LifeCycleUpdateOption phases)
             if (RuntimeEnabledFeatures::frameTimingSupportEnabled())
                 updateFrameTimingRequestsIfNeeded();
 
+            if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+                pushPaintArtifactToCompositor();
+
             ASSERT(!view->hasPendingSelection());
             ASSERT(lifecycle().state() == DocumentLifecycle::PaintInvalidationClean
                 || (RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled() && lifecycle().state() == DocumentLifecycle::PaintClean));
@@ -2477,6 +2480,27 @@ void FrameView::synchronizedPaintRecursively(GraphicsLayer* graphicsLayer)
 
     for (auto& child : graphicsLayer->children())
         synchronizedPaintRecursively(child);
+}
+
+void FrameView::pushPaintArtifactToCompositor()
+{
+    ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+
+    LayoutView* view = layoutView();
+    ASSERT(view);
+
+    // TODO(jbroman): Simplify the path to PaintController.
+    PaintLayer* layer = view->layer();
+    ASSERT(layer);
+    if (!layer->hasCompositedLayerMapping())
+        return;
+    GraphicsLayer* rootGraphicsLayer = layer->compositedLayerMapping()->mainGraphicsLayer();
+    const PaintArtifact& paintArtifact = rootGraphicsLayer->paintController()->paintArtifact();
+
+    Page* page = frame().page();
+    if (!page)
+        return;
+    page->chromeClient().didPaint(paintArtifact);
 }
 
 void FrameView::updateFrameTimingRequestsIfNeeded()

@@ -63,6 +63,9 @@ enum CompositingStateTransitionType {
 // GraphicsLayers based on the Layer painting order.
 //
 // There is one PaintLayerCompositor per LayoutView.
+//
+// In Slimming Paint v2, PaintLayerCompositor will be eventually replaced by
+// PaintArtifactCompositor.
 
 class CORE_EXPORT PaintLayerCompositor final : public GraphicsLayerClient {
     USING_FAST_MALLOC(PaintLayerCompositor);

@@ -254,6 +254,7 @@
       'WebEmbeddedWorkerImplTest.cpp',
       'WebNodeTest.cpp',
       'WebElementTest.cpp',
+      'WebViewImplPaintArtifactCompositorTest.cpp',
       # FIXME: Move the tests from web/tests/ to appropriate places.
       # crbug.com/353585
       'tests/ActivityLoggerTest.cpp',
