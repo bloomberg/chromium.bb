@@ -136,7 +136,7 @@ class CONTENT_EXPORT MediaSession
   // Setup the JNI.
   void Initialize();
 
-  void OnSuspendInternal(SuspendType type);
+  void OnSuspendInternal(SuspendType type, State new_state);
   void OnResumeInternal(SuspendType type);
 
   // Requests audio focus to Android using |j_media_session_|.

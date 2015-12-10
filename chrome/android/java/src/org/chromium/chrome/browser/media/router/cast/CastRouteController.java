@@ -239,7 +239,7 @@ public class CastRouteController implements RouteController, MediaNotificationLi
                             } else {
                                 mNotificationBuilder.setActions(MediaNotificationInfo.ACTION_STOP);
                             }
-                            MediaNotificationManager.show(context, mNotificationBuilder);
+                            MediaNotificationManager.show(context, mNotificationBuilder.build());
                         }
                     });
         }
@@ -256,7 +256,7 @@ public class CastRouteController implements RouteController, MediaNotificationLi
                 .setActions(MediaNotificationInfo.ACTION_STOP)
                 .setId(R.id.presentation_notification)
                 .setListener(this);
-        MediaNotificationManager.show(context, mNotificationBuilder);
+        MediaNotificationManager.show(context, mNotificationBuilder.build());
 
         synchronized (INIT_LOCK) {
             if (sMediaOverloadedMessageTypes == null) {

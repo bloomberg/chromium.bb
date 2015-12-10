@@ -29,10 +29,11 @@ import android.view.View;
 import android.widget.RemoteViews;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.tab.Tab;
+
+import javax.annotation.Nullable;
 
 /**
  * A class for notifications that provide information and optional media controls for a given media.
@@ -63,16 +64,6 @@ public class MediaNotificationManager {
                 "MediaNotificationManager.ListenerService.PAUSE";
         private static final String ACTION_STOP =
                 "MediaNotificationManager.ListenerService.STOP";
-        private static final String EXTRA_NOTIFICATION_ID =
-                MediaButtonReceiver.EXTRA_NOTIFICATION_ID;
-
-        // The notification id this service instance corresponds to.
-        private int mNotificationId = MediaNotificationInfo.INVALID_ID;
-
-        private PendingIntent getPendingIntent(String action) {
-            Intent intent = getIntent(this, mNotificationId).setAction(action);
-            return PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
-        }
 
         @Override
         public IBinder onBind(Intent intent) {
@@ -83,10 +74,10 @@ public class MediaNotificationManager {
         public void onDestroy() {
             super.onDestroy();
 
-            MediaNotificationManager manager = getManager(mNotificationId);
+            MediaNotificationManager manager = getManager();
             if (manager == null) return;
 
-            manager.onServiceDestroyed(mNotificationId);
+            manager.onServiceDestroyed();
         }
 
         @Override
@@ -96,27 +87,13 @@ public class MediaNotificationManager {
             return START_NOT_STICKY;
         }
 
+        @Nullable
+        protected abstract MediaNotificationManager getManager();
+
         private boolean processIntent(Intent intent) {
             if (intent == null) return false;
 
-            int notificationId = intent.getIntExtra(
-                    EXTRA_NOTIFICATION_ID, MediaNotificationInfo.INVALID_ID);
-
-            // The notification id must always be valid and should match the first notification id
-            // the service got via the intent.
-            if (notificationId == MediaNotificationInfo.INVALID_ID
-                    || (mNotificationId != MediaNotificationInfo.INVALID_ID
-                        && mNotificationId != notificationId)) {
-                Log.w(TAG, "The service intent's notification id is invalid: ", notificationId);
-                return false;
-            }
-
-            // Either the notification id matches or it's the first intent we've got.
-            mNotificationId = notificationId;
-
-            assert mNotificationId != MediaNotificationInfo.INVALID_ID;
-
-            MediaNotificationManager manager = getManager(mNotificationId);
+            MediaNotificationManager manager = getManager();
             if (manager == null || manager.mMediaNotificationInfo == null) return false;
 
             manager.onServiceStarted(this);
@@ -191,6 +168,12 @@ public class MediaNotificationManager {
             super.onDestroy();
         }
 
+        @Override
+        @Nullable
+        protected MediaNotificationManager getManager() {
+            return MediaNotificationManager.getManager(NOTIFICATION_ID);
+        }
+
         private BroadcastReceiver mAudioBecomingNoisyReceiver = new BroadcastReceiver() {
                 @Override
                 public void onReceive(Context context, Intent intent) {
@@ -200,7 +183,6 @@ public class MediaNotificationManager {
 
                     Intent i = new Intent(context, PlaybackListenerService.class);
                     i.setAction(intent.getAction());
-                    i.putExtra(ListenerService.EXTRA_NOTIFICATION_ID, NOTIFICATION_ID);
                     context.startService(i);
                 }
             };
@@ -211,6 +193,12 @@ public class MediaNotificationManager {
      */
     public static final class PresentationListenerService extends ListenerService {
         private static final int NOTIFICATION_ID = R.id.presentation_notification;
+
+        @Override
+        @Nullable
+        protected MediaNotificationManager getManager() {
+            return MediaNotificationManager.getManager(NOTIFICATION_ID);
+        }
     }
 
     // Two classes to specify the right notification id in the intent.
@@ -220,8 +208,8 @@ public class MediaNotificationManager {
      */
     public static final class PlaybackMediaButtonReceiver extends MediaButtonReceiver {
         @Override
-        public int getNotificationId() {
-            return PlaybackListenerService.NOTIFICATION_ID;
+        public String getServiceClassName() {
+            return PlaybackListenerService.class.getName();
         }
     }
 
@@ -230,29 +218,33 @@ public class MediaNotificationManager {
      */
     public static final class PresentationMediaButtonReceiver extends MediaButtonReceiver {
         @Override
-        public int getNotificationId() {
-            return PresentationListenerService.NOTIFICATION_ID;
+        public String getServiceClassName() {
+            return PresentationListenerService.class.getName();
         }
     }
 
-    private static Intent getIntent(Context context, int notificationId) {
+    private Intent createIntent(Context context) {
         Intent intent = null;
-        if (notificationId == PlaybackListenerService.NOTIFICATION_ID) {
+        if (mMediaNotificationInfo.id == PlaybackListenerService.NOTIFICATION_ID) {
             intent = new Intent(context, PlaybackListenerService.class);
-        } else if (notificationId == PresentationListenerService.NOTIFICATION_ID) {
+        } else if (mMediaNotificationInfo.id == PresentationListenerService.NOTIFICATION_ID) {
             intent = new Intent(context, PresentationListenerService.class);
-        } else {
-            return null;
         }
-        return intent.putExtra(ListenerService.EXTRA_NOTIFICATION_ID, notificationId);
+        return intent;
     }
 
-    private static String getButtonReceiverClassName(int notificationId) {
-        if (notificationId == PlaybackListenerService.NOTIFICATION_ID) {
+    private PendingIntent createPendingIntent(String action) {
+        assert mService != null;
+        Intent intent = createIntent(mService).setAction(action);
+        return PendingIntent.getService(mService, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+    }
+
+    private String getButtonReceiverClassName() {
+        if (mMediaNotificationInfo.id == PlaybackListenerService.NOTIFICATION_ID) {
             return PlaybackMediaButtonReceiver.class.getName();
         }
 
-        if (notificationId == PresentationListenerService.NOTIFICATION_ID) {
+        if (mMediaNotificationInfo.id == PresentationListenerService.NOTIFICATION_ID) {
             return PresentationMediaButtonReceiver.class.getName();
         }
 
@@ -266,24 +258,22 @@ public class MediaNotificationManager {
      * changed from the last one.
      *
      * @param applicationContext context to create the notification with
-     * @param notificationInfoBuilder information to show in the notification
+     * @param notificationInfo information to show in the notification
      */
     public static void show(Context applicationContext,
-                            MediaNotificationInfo.Builder notificationInfoBuilder) {
+                            MediaNotificationInfo notificationInfo) {
         synchronized (LOCK) {
             if (sManagers == null) {
                 sManagers = new SparseArray<MediaNotificationManager>();
             }
         }
 
-        MediaNotificationInfo notificationInfo = notificationInfoBuilder.build();
         MediaNotificationManager manager = sManagers.get(notificationInfo.id);
         if (manager == null) {
-            manager = new MediaNotificationManager(applicationContext);
+            manager = new MediaNotificationManager(applicationContext, notificationInfo.id);
             sManagers.put(notificationInfo.id, manager);
         }
 
-        manager.mNotificationInfoBuilder = notificationInfoBuilder;
         manager.showNotification(notificationInfo);
     }
 
@@ -352,8 +342,8 @@ public class MediaNotificationManager {
 
     private final Bitmap mMediaSessionIcon;
 
+    // |mMediaNotificationInfo| should be not null if and only if the notification is showing.
     private MediaNotificationInfo mMediaNotificationInfo;
-    private MediaNotificationInfo.Builder mNotificationInfoBuilder;
 
     private MediaSessionCompat mMediaSession;
 
@@ -377,7 +367,7 @@ public class MediaNotificationManager {
 
     private final MediaSessionCallback mMediaSessionCallback = new MediaSessionCallback(this);
 
-    private MediaNotificationManager(Context context) {
+    private MediaNotificationManager(Context context, int notificationId) {
         mContext = context;
         mPlayDescription = context.getResources().getString(R.string.accessibility_play);
         mPauseDescription = context.getResources().getString(R.string.accessibility_pause);
@@ -403,69 +393,51 @@ public class MediaNotificationManager {
     /**
      * Handles the service destruction destruction.
      */
-    private void onServiceDestroyed(int notificationId) {
+    private void onServiceDestroyed() {
+        // Service already detached
         if (mService == null) return;
+        // Notification is not showing
+        if (mMediaNotificationInfo == null) return;
 
-        if (notificationId != -1) clear(notificationId);
+        clear(mMediaNotificationInfo.id);
 
         mNotificationBuilder = null;
         mService = null;
     }
 
     private void onPlay(int actionSource) {
-        if (!mMediaNotificationInfo.isPaused) return;
-
-        mMediaNotificationInfo = mNotificationInfoBuilder.setPaused(false).build();
-        updateNotification();
-
         mMediaNotificationInfo.listener.onPlay(actionSource);
     }
 
     private void onPause(int actionSource) {
-        if (mMediaNotificationInfo.isPaused) return;
-
-        mMediaNotificationInfo = mNotificationInfoBuilder.setPaused(true).build();
-        updateNotification();
-
         mMediaNotificationInfo.listener.onPause(actionSource);
     }
 
     private void onStop(int actionSource) {
-        // hideNotification() below will clear |mMediaNotificationInfo| but {@link
-        // MediaNotificationListener}.onStop() might also clear it so keep the listener and call it
-        // later.
-        // TODO(avayvod): make the notification delegate update its state, not the notification
-        // manager. See https://crbug.com/546981
-        MediaNotificationListener listener = mMediaNotificationInfo.listener;
-
-        hideNotification(mMediaNotificationInfo.tabId);
-
-        listener.onStop(actionSource);
+        mMediaNotificationInfo.listener.onStop(actionSource);
     }
 
     private void showNotification(MediaNotificationInfo mediaNotificationInfo) {
-        mContext.startService(getIntent(mContext, mediaNotificationInfo.id));
-
         if (mediaNotificationInfo.equals(mMediaNotificationInfo)) return;
 
         mMediaNotificationInfo = mediaNotificationInfo;
+        mContext.startService(createIntent(mContext));
+
         updateNotification();
     }
 
     private void clearNotification() {
         if (mMediaNotificationInfo == null) return;
 
-        int notificationId = mMediaNotificationInfo.id;
-
         NotificationManagerCompat manager = NotificationManagerCompat.from(mContext);
-        manager.cancel(notificationId);
+        manager.cancel(mMediaNotificationInfo.id);
 
         if (mMediaSession != null) {
             mMediaSession.setActive(false);
             mMediaSession.release();
             mMediaSession = null;
         }
-        mContext.stopService(getIntent(mContext, notificationId));
+        mContext.stopService(createIntent(mContext));
         mMediaNotificationInfo = null;
     }
 
@@ -486,7 +458,7 @@ public class MediaNotificationManager {
                 && Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP
                 || mMediaNotificationInfo.supportsStop()) {
             contentView.setOnClickPendingIntent(R.id.button1,
-                    mService.getPendingIntent(ListenerService.ACTION_STOP));
+                    createPendingIntent(ListenerService.ACTION_STOP));
             contentView.setContentDescription(R.id.button1, mStopDescription);
 
             // If the play/pause needs to be shown, it moves over to the second button from the end.
@@ -506,13 +478,13 @@ public class MediaNotificationManager {
                 contentView.setImageViewResource(playPauseButtonId, R.drawable.ic_vidcontrol_play);
                 contentView.setContentDescription(playPauseButtonId, mPlayDescription);
                 contentView.setOnClickPendingIntent(playPauseButtonId,
-                        mService.getPendingIntent(ListenerService.ACTION_PLAY));
+                        createPendingIntent(ListenerService.ACTION_PLAY));
             } else {
                 // If we're here, the notification supports play/pause button and is playing.
                 contentView.setImageViewResource(playPauseButtonId, R.drawable.ic_vidcontrol_pause);
                 contentView.setContentDescription(playPauseButtonId, mPauseDescription);
                 contentView.setOnClickPendingIntent(playPauseButtonId,
-                        mService.getPendingIntent(ListenerService.ACTION_PAUSE));
+                        createPendingIntent(ListenerService.ACTION_PAUSE));
             }
 
             contentView.setViewVisibility(playPauseButtonId, View.VISIBLE);
@@ -547,11 +519,7 @@ public class MediaNotificationManager {
     private void updateNotification() {
         if (mService == null) return;
 
-        if (mMediaNotificationInfo == null) {
-            // Notification was hidden before we could update it.
-            assert mNotificationBuilder == null;
-            return;
-        }
+        if (mMediaNotificationInfo == null) return;
 
         // Android doesn't badge the icons for RemoteViews automatically when
         // running the app under the Work profile.
@@ -566,7 +534,7 @@ public class MediaNotificationManager {
                 .setSmallIcon(mMediaNotificationInfo.icon)
                 .setAutoCancel(false)
                 .setLocalOnly(true)
-                .setDeleteIntent(mService.getPendingIntent(ListenerService.ACTION_STOP));
+                .setDeleteIntent(createPendingIntent(ListenerService.ACTION_STOP));
         }
 
         if (mMediaNotificationInfo.supportsSwipeAway()) {
@@ -624,7 +592,7 @@ public class MediaNotificationManager {
                 mContext,
                 mContext.getString(R.string.app_name),
                 new ComponentName(mContext.getPackageName(),
-                        getButtonReceiverClassName(mMediaNotificationInfo.id)),
+                        getButtonReceiverClassName()),
                 null);
         mediaSession.setFlags(MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS
                 | MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS);

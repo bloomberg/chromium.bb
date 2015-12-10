@@ -121,14 +121,9 @@ void MediaSession::OnSuspend(JNIEnv* env,
   if (audio_focus_state_ != State::ACTIVE)
     return;
 
-  OnSuspendInternal(SuspendType::SYSTEM);
-  if (!temporary)
-    SetAudioFocusState(State::INACTIVE);
+  OnSuspendInternal(SuspendType::SYSTEM,
+                    temporary ? State::SUSPENDED : State::INACTIVE);
 
-  uma_helper_.RecordSessionSuspended(
-      temporary ? MediaSessionSuspendedSource::SystemTransient
-                : MediaSessionSuspendedSource::SystemPermanent);
-  UpdateWebContents();
 }
 
 void MediaSession::OnResume(JNIEnv* env, const JavaParamRef<jobject>& obj) {
@@ -136,7 +131,6 @@ void MediaSession::OnResume(JNIEnv* env, const JavaParamRef<jobject>& obj) {
     return;
 
   OnResumeInternal(SuspendType::SYSTEM);
-  UpdateWebContents();
 }
 
 void MediaSession::Resume() {
@@ -158,14 +152,14 @@ void MediaSession::Resume() {
 void MediaSession::Suspend() {
   DCHECK(!IsSuspended());
 
-  OnSuspendInternal(SuspendType::UI);
+  OnSuspendInternal(SuspendType::UI, State::SUSPENDED);
 }
 
 void MediaSession::Stop() {
   DCHECK(audio_focus_state_ != State::INACTIVE);
 
   if (audio_focus_state_ != State::SUSPENDED)
-    OnSuspendInternal(SuspendType::UI);
+    OnSuspendInternal(SuspendType::UI, State::SUSPENDED);
 
   DCHECK(audio_focus_state_ == State::SUSPENDED);
   players_.clear();
@@ -204,17 +198,35 @@ void MediaSession::RemoveAllPlayersForTest() {
   AbandonSystemAudioFocusIfNeeded();
 }
 
-void MediaSession::OnSuspendInternal(SuspendType type) {
-  // SuspendType::System will handle the UMA recording at the calling point
-  // because there are more than one type.
+void MediaSession::OnSuspendInternal(SuspendType type, State new_state) {
+  DCHECK(new_state == State::SUSPENDED || new_state == State::INACTIVE);
+  // UI suspend cannot use State::INACTIVE.
+  DCHECK(type == SuspendType::SYSTEM || new_state == State::SUSPENDED);
+
   if (type == SuspendType::UI)
     uma_helper_.RecordSessionSuspended(MediaSessionSuspendedSource::UI);
+  if (type == SuspendType::SYSTEM) {
+    switch (new_state) {
+      case State::SUSPENDED:
+        uma_helper_.RecordSessionSuspended(
+            MediaSessionSuspendedSource::SystemTransient);
+        break;
+      case State::INACTIVE:
+        uma_helper_.RecordSessionSuspended(
+            MediaSessionSuspendedSource::SystemPermanent);
+        break;
+      default:
+        break;
+    }
+  }
 
-  SetAudioFocusState(State::SUSPENDED);
+  SetAudioFocusState(new_state);
   suspend_type_ = type;
 
   for (const auto& it : players_)
     it.observer->OnSuspend(it.player_id);
+
+  UpdateWebContents();
 }
 
 void MediaSession::OnResumeInternal(SuspendType type) {
@@ -225,6 +237,8 @@ void MediaSession::OnResumeInternal(SuspendType type) {
 
   for (const auto& it : players_)
     it.observer->OnResume(it.player_id);
+
+  UpdateWebContents();
 }
 
 MediaSession::MediaSession(WebContents* web_contents)

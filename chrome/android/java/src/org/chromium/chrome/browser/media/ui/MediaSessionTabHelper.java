@@ -35,6 +35,7 @@ public class MediaSessionTabHelper {
     private WebContents mWebContents;
     private WebContentsObserver mWebContentsObserver;
     private int mPreviousVolumeControlStream = AudioManager.USE_DEFAULT_STREAM_TYPE;
+    private MediaNotificationInfo.Builder mNotificationInfoBuilder = null;
 
     private MediaNotificationListener mControlsListener = new MediaNotificationListener() {
         @Override
@@ -71,18 +72,14 @@ public class MediaSessionTabHelper {
         if (activity != null) {
             activity.setVolumeControlStream(mPreviousVolumeControlStream);
         }
+        mNotificationInfoBuilder = null;
     }
 
     private WebContentsObserver createWebContentsObserver(WebContents webContents) {
         return new WebContentsObserver(webContents) {
             @Override
             public void destroy() {
-                if (mTab == null) {
-                    MediaNotificationManager.clear(R.id.media_playback_notification);
-                } else {
-                    hideNotification();
-                }
-
+                hideNotification();
                 super.destroy();
             }
 
@@ -100,25 +97,27 @@ public class MediaSessionTabHelper {
                             + "Showing the full URL instead.");
                 }
 
+                mNotificationInfoBuilder = new MediaNotificationInfo.Builder()
+                        .setTitle(sanitizeMediaTitle(mTab.getTitle()))
+                        .setPaused(isPaused)
+                        .setOrigin(origin)
+                        .setTabId(mTab.getId())
+                        .setPrivate(mTab.isIncognito())
+                        .setIcon(R.drawable.audio_playing)
+                        .setActions(MediaNotificationInfo.ACTION_PLAY_PAUSE
+                                | MediaNotificationInfo.ACTION_SWIPEAWAY)
+                        .setId(R.id.media_playback_notification)
+                        .setListener(mControlsListener);
+
                 MediaNotificationManager.show(ApplicationStatus.getApplicationContext(),
-                        new MediaNotificationInfo.Builder()
-                                .setTitle(sanitizeMediaTitle(mTab.getTitle()))
-                                .setPaused(isPaused)
-                                .setOrigin(origin)
-                                .setTabId(mTab.getId())
-                                .setPrivate(mTab.isIncognito())
-                                .setIcon(R.drawable.audio_playing)
-                                .setActions(MediaNotificationInfo.ACTION_PLAY_PAUSE
-                                        | MediaNotificationInfo.ACTION_SWIPEAWAY)
-                                .setId(R.id.media_playback_notification)
-                                .setListener(mControlsListener));
+                        mNotificationInfoBuilder.build());
+
                 Activity activity = getActivityFromTab(mTab);
                 if (activity != null) {
                     activity.setVolumeControlStream(AudioManager.STREAM_MUSIC);
                 }
             }
         };
-
     }
 
     private void setWebContents(WebContents webContents) {

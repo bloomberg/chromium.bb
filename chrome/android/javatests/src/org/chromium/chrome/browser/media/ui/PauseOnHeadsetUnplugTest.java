@@ -67,8 +67,6 @@ public class PauseOnHeadsetUnplugTest extends ChromeActivityTestCaseBase<ChromeA
         Intent i = new Intent(getInstrumentation().getTargetContext(),
                               MediaNotificationManager.PlaybackListenerService.class);
         i.setAction(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
-        i.putExtra(MediaButtonReceiver.EXTRA_NOTIFICATION_ID,
-                   R.id.media_playback_notification);
 
         getInstrumentation().getContext().startService(i);
     }
