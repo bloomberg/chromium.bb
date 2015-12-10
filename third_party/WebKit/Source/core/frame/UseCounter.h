@@ -957,7 +957,7 @@ public:
     static void countIfNotPrivateScript(v8::Isolate*, const Document&, Feature);
     static void countIfNotPrivateScript(v8::Isolate*, const ExecutionContext*, Feature);
 
-    void count(CSSParserContext, CSSPropertyID);
+    void count(CSSParserMode, CSSPropertyID);
     void count(Feature);
 
     // "countDeprecation" sets the bit for this feature to 1, and sends a deprecation

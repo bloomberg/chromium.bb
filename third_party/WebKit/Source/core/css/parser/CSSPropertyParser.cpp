@@ -83,7 +83,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
 
     // This doesn't count UA style sheets
     if (parseSuccess && context.useCounter())
-        context.useCounter()->count(context, unresolvedProperty);
+        context.useCounter()->count(context.mode(), unresolvedProperty);
 
     if (!parseSuccess)
         parser.rollbackLastProperties(parsedProperties.size() - parsedPropertiesSize);
@@ -691,11 +691,11 @@ static bool parseColorFunction(CSSParserTokenRange& range, RGBA32& result)
     return true;
 }
 
-static PassRefPtrWillBeRawPtr<CSSValue> consumeColor(CSSParserTokenRange& range, const CSSParserContext& context, bool acceptQuirkyColors = false)
+static PassRefPtrWillBeRawPtr<CSSValue> consumeColor(CSSParserTokenRange& range, CSSParserMode cssParserMode, bool acceptQuirkyColors = false)
 {
     CSSValueID id = range.peek().id();
     if (CSSPropertyParser::isColorKeyword(id)) {
-        if (!isValueAllowedInMode(id, context.mode()))
+        if (!isValueAllowedInMode(id, cssParserMode))
             return nullptr;
         return consumeIdent(range);
     }
@@ -1758,7 +1758,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeZIndex(CSSParserTokenRange& range
     return consumeInteger(range);
 }
 
-static PassRefPtrWillBeRawPtr<CSSShadowValue> parseSingleShadow(CSSParserTokenRange& range, const CSSParserContext& context, bool allowInset, bool allowSpread)
+static PassRefPtrWillBeRawPtr<CSSShadowValue> parseSingleShadow(CSSParserTokenRange& range, CSSParserMode cssParserMode, bool allowInset, bool allowSpread)
 {
     RefPtrWillBeRawPtr<CSSPrimitiveValue> style = nullptr;
     RefPtrWillBeRawPtr<CSSValue> color = nullptr;
@@ -1770,29 +1770,29 @@ static PassRefPtrWillBeRawPtr<CSSShadowValue> parseSingleShadow(CSSParserTokenRa
             return nullptr;
         style = consumeIdent(range);
     }
-    color = consumeColor(range, context);
+    color = consumeColor(range, cssParserMode);
 
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> horizontalOffset = consumeLength(range, context.mode(), ValueRangeAll);
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> horizontalOffset = consumeLength(range, cssParserMode, ValueRangeAll);
     if (!horizontalOffset)
         return nullptr;
 
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> verticalOffset = consumeLength(range, context.mode(), ValueRangeAll);
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> verticalOffset = consumeLength(range, cssParserMode, ValueRangeAll);
     if (!verticalOffset)
         return nullptr;
 
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> blurRadius = consumeLength(range, context.mode(), ValueRangeAll);
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> blurRadius = consumeLength(range, cssParserMode, ValueRangeAll);
     RefPtrWillBeRawPtr<CSSPrimitiveValue> spreadDistance = nullptr;
     if (blurRadius) {
         // Blur radius must be non-negative.
         if (blurRadius->getDoubleValue() < 0)
             return nullptr;
         if (allowSpread)
-            spreadDistance = consumeLength(range, context.mode(), ValueRangeAll);
+            spreadDistance = consumeLength(range, cssParserMode, ValueRangeAll);
     }
 
     if (!range.atEnd()) {
         if (!color)
-            color = consumeColor(range, context);
+            color = consumeColor(range, cssParserMode);
         if (range.peek().id() == CSSValueInset) {
             if (!allowInset || style)
                 return nullptr;
@@ -1803,14 +1803,14 @@ static PassRefPtrWillBeRawPtr<CSSShadowValue> parseSingleShadow(CSSParserTokenRa
         spreadDistance.release(), style.release(), color.release());
 }
 
-static PassRefPtrWillBeRawPtr<CSSValue> consumeShadow(CSSParserTokenRange& range, const CSSParserContext& context, bool isBoxShadowProperty)
+static PassRefPtrWillBeRawPtr<CSSValue> consumeShadow(CSSParserTokenRange& range, CSSParserMode cssParserMode, bool isBoxShadowProperty)
 {
     if (range.peek().id() == CSSValueNone)
         return consumeIdent(range);
 
     RefPtrWillBeRawPtr<CSSValueList> shadowValueList = CSSValueList::createCommaSeparated();
     do {
-        if (RefPtrWillBeRawPtr<CSSShadowValue> shadowValue = parseSingleShadow(range, context, isBoxShadowProperty, isBoxShadowProperty))
+        if (RefPtrWillBeRawPtr<CSSShadowValue> shadowValue = parseSingleShadow(range, cssParserMode, isBoxShadowProperty, isBoxShadowProperty))
             shadowValueList->append(shadowValue.release());
         else
             return nullptr;
@@ -1818,7 +1818,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeShadow(CSSParserTokenRange& range
     return shadowValueList;
 }
 
-static PassRefPtrWillBeRawPtr<CSSFunctionValue> consumeFilterFunction(CSSParserTokenRange& range, const CSSParserContext& context)
+static PassRefPtrWillBeRawPtr<CSSFunctionValue> consumeFilterFunction(CSSParserTokenRange& range, CSSParserMode cssParserMode)
 {
     CSSValueID filterType = range.peek().functionId();
     if (filterType < CSSValueInvert || filterType > CSSValueDropShadow)
@@ -1828,7 +1828,7 @@ static PassRefPtrWillBeRawPtr<CSSFunctionValue> consumeFilterFunction(CSSParserT
     RefPtrWillBeRawPtr<CSSValue> parsedValue = nullptr;
 
     if (filterType == CSSValueDropShadow) {
-        parsedValue = parseSingleShadow(args, context, false, false);
+        parsedValue = parseSingleShadow(args, cssParserMode, false, false);
     } else {
         // TODO(timloh): Add UseCounters for empty filter arguments.
         if (args.atEnd())
@@ -1839,7 +1839,7 @@ static PassRefPtrWillBeRawPtr<CSSFunctionValue> consumeFilterFunction(CSSParserT
             if (!parsedValue)
                 parsedValue = consumeNumber(args, ValueRangeAll);
         } else if (filterType == CSSValueHueRotate) {
-            parsedValue = consumeAngle(args, context.mode());
+            parsedValue = consumeAngle(args, cssParserMode);
         } else if (filterType == CSSValueBlur) {
             parsedValue = consumeLength(args, HTMLStandardMode, ValueRangeNonNegative);
         } else {
@@ -1860,7 +1860,7 @@ static PassRefPtrWillBeRawPtr<CSSFunctionValue> consumeFilterFunction(CSSParserT
     return filterValue.release();
 }
 
-static PassRefPtrWillBeRawPtr<CSSValue> consumeFilter(CSSParserTokenRange& range, const CSSParserContext& context)
+static PassRefPtrWillBeRawPtr<CSSValue> consumeFilter(CSSParserTokenRange& range, CSSParserMode cssParserMode)
 {
     if (range.peek().id() == CSSValueNone)
         return consumeIdent(range);
@@ -1873,7 +1873,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeFilter(CSSParserTokenRange& range
             filterValue = CSSFunctionValue::create(CSSValueUrl);
             filterValue->append(CSSSVGDocumentValue::create(url));
         } else {
-            filterValue = consumeFilterFunction(range, context);
+            filterValue = consumeFilterFunction(range, cssParserMode);
             if (!filterValue)
                 return nullptr;
         }
@@ -1993,13 +1993,13 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeTextEmphasisStyle(CSSParserTokenR
     return nullptr;
 }
 
-static PassRefPtrWillBeRawPtr<CSSValue> consumeOutlineColor(CSSParserTokenRange& range, const CSSParserContext& context)
+static PassRefPtrWillBeRawPtr<CSSValue> consumeOutlineColor(CSSParserTokenRange& range, CSSParserMode cssParserMode)
 {
     // Outline color has "invert" as additional keyword.
     // Also, we want to allow the special focus color even in HTML Standard parsing mode.
     if (range.peek().id() == CSSValueInvert || range.peek().id() == CSSValueWebkitFocusRingColor)
         return consumeIdent(range);
-    return consumeColor(range, context);
+    return consumeColor(range, cssParserMode);
 }
 
 static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeLineWidth(CSSParserTokenRange& range, CSSParserMode cssParserMode)
@@ -2202,7 +2202,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumePositionY(CSSParserTokenRange& ra
     return consumePositionLonghand<CSSValueTop, CSSValueBottom>(range, cssParserMode);
 }
 
-static PassRefPtrWillBeRawPtr<CSSValue> consumePaint(CSSParserTokenRange& range, CSSParserContext context)
+static PassRefPtrWillBeRawPtr<CSSValue> consumePaint(CSSParserTokenRange& range, CSSParserMode cssParserMode)
 {
     if (range.peek().id() == CSSValueNone)
         return consumeIdent(range);
@@ -2212,7 +2212,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumePaint(CSSParserTokenRange& range,
         if (range.peek().id() == CSSValueNone)
             parsedValue = consumeIdent(range);
         else
-            parsedValue = consumeColor(range, context);
+            parsedValue = consumeColor(range, cssParserMode);
         if (parsedValue) {
             RefPtrWillBeRawPtr<CSSValueList> values = CSSValueList::createSpaceSeparated();
             values->append(CSSURIValue::create(url));
@@ -2221,7 +2221,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumePaint(CSSParserTokenRange& range,
         }
         return CSSURIValue::create(url);
     }
-    return consumeColor(range, context);
+    return consumeColor(range, cssParserMode);
 }
 
 static PassRefPtrWillBeRawPtr<CSSValue> consumePaintOrder(CSSParserTokenRange& range)
@@ -2317,7 +2317,7 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeBaselineShift(CSSParserT
     return consumeLengthOrPercent(range, SVGAttributeMode, ValueRangeAll, UnitlessQuirk::Forbid);
 }
 
-static PassRefPtrWillBeRawPtr<CSSValue> consumeImageSet(CSSParserTokenRange& range, CSSParserContext context)
+static PassRefPtrWillBeRawPtr<CSSValue> consumeImageSet(CSSParserTokenRange& range, const CSSParserContext& context)
 {
     CSSParserTokenRange rangeCopy = range;
     CSSParserTokenRange args = consumeFunction(rangeCopy);
@@ -2347,7 +2347,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeImageSet(CSSParserTokenRange& ran
     return imageSet.release();
 }
 
-static PassRefPtrWillBeRawPtr<CSSValue> consumeCursor(CSSParserTokenRange& range, CSSParserContext context, bool inQuirksMode)
+static PassRefPtrWillBeRawPtr<CSSValue> consumeCursor(CSSParserTokenRange& range, const CSSParserContext& context, bool inQuirksMode)
 {
     RefPtrWillBeRawPtr<CSSValueList> list = nullptr;
     while (!range.atEnd()) {
@@ -2540,7 +2540,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
         return consumeWidowsOrOrphans(m_range);
     case CSSPropertyTextDecorationColor:
         ASSERT(RuntimeEnabledFeatures::css3TextDecorationsEnabled());
-        return consumeColor(m_range, m_context);
+        return consumeColor(m_range, m_context.mode());
     case CSSPropertyWebkitTextStrokeWidth:
         return consumeTextStrokeWidth(m_range, m_context.mode());
     case CSSPropertyWebkitTextFillColor:
@@ -2555,9 +2555,9 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
     case CSSPropertyFloodColor:
     case CSSPropertyLightingColor:
     case CSSPropertyWebkitColumnRuleColor:
-        return consumeColor(m_range, m_context);
+        return consumeColor(m_range, m_context.mode());
     case CSSPropertyColor:
-        return consumeColor(m_range, m_context, inQuirksMode());
+        return consumeColor(m_range, m_context.mode(), inQuirksMode());
     case CSSPropertyWebkitBorderStartWidth:
     case CSSPropertyWebkitBorderEndWidth:
     case CSSPropertyWebkitBorderBeforeWidth:
@@ -2567,10 +2567,10 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
         return consumeZIndex(m_range);
     case CSSPropertyTextShadow: // CSS2 property, dropped in CSS2.1, back in CSS3, so treat as CSS3
     case CSSPropertyBoxShadow:
-        return consumeShadow(m_range, m_context, property == CSSPropertyBoxShadow);
+        return consumeShadow(m_range, m_context.mode(), property == CSSPropertyBoxShadow);
     case CSSPropertyWebkitFilter:
     case CSSPropertyBackdropFilter:
-        return consumeFilter(m_range, m_context);
+        return consumeFilter(m_range, m_context.mode());
     case CSSPropertyWebkitTextDecorationsInEffect:
     case CSSPropertyTextDecorationLine:
         return consumeTextDecorationLine(m_range);
@@ -2583,7 +2583,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
     case CSSPropertyWebkitTextEmphasisStyle:
         return consumeTextEmphasisStyle(m_range);
     case CSSPropertyOutlineColor:
-        return consumeOutlineColor(m_range, m_context);
+        return consumeOutlineColor(m_range, m_context.mode());
     case CSSPropertyOutlineOffset:
         return consumeLength(m_range, m_context.mode(), ValueRangeAll);
     case CSSPropertyOutlineWidth:
@@ -2600,7 +2600,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
         return consumeLength(m_range, m_context.mode(), ValueRangeAll);
     case CSSPropertyFill:
     case CSSPropertyStroke:
-        return consumePaint(m_range, m_context);
+        return consumePaint(m_range, m_context.mode());
     case CSSPropertyPaintOrder:
         return consumePaintOrder(m_range);
     case CSSPropertyMarkerStart:
@@ -2668,7 +2668,7 @@ static PassRefPtrWillBeRawPtr<CSSValueList> consumeFontFaceUnicodeRange(CSSParse
     return values.release();
 }
 
-static PassRefPtrWillBeRawPtr<CSSValue> consumeFontFaceSrcURI(CSSParserTokenRange& range, CSSParserContext context)
+static PassRefPtrWillBeRawPtr<CSSValue> consumeFontFaceSrcURI(CSSParserTokenRange& range, const CSSParserContext& context)
 {
     String url = consumeUrl(range);
     if (url.isNull())
@@ -2690,7 +2690,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeFontFaceSrcURI(CSSParserTokenRang
     return uriValue.release();
 }
 
-static PassRefPtrWillBeRawPtr<CSSValue> consumeFontFaceSrcLocal(CSSParserTokenRange& range, CSSParserContext context)
+static PassRefPtrWillBeRawPtr<CSSValue> consumeFontFaceSrcLocal(CSSParserTokenRange& range, const CSSParserContext& context)
 {
     CSSParserTokenRange args = consumeFunction(range);
     ContentSecurityPolicyDisposition shouldCheckContentSecurityPolicy = context.shouldCheckContentSecurityPolicy();
@@ -2709,7 +2709,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeFontFaceSrcLocal(CSSParserTokenRa
     return nullptr;
 }
 
-static PassRefPtrWillBeRawPtr<CSSValueList> consumeFontFaceSrc(CSSParserTokenRange& range, CSSParserContext context)
+static PassRefPtrWillBeRawPtr<CSSValueList> consumeFontFaceSrc(CSSParserTokenRange& range, const CSSParserContext& context)
 {
     RefPtrWillBeRawPtr<CSSValueList> values(CSSValueList::createCommaSeparated());
 

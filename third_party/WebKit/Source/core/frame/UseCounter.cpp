@@ -960,12 +960,12 @@ String UseCounter::deprecationMessage(Feature feature)
     }
 }
 
-void UseCounter::count(CSSParserContext context, CSSPropertyID feature)
+void UseCounter::count(CSSParserMode cssParserMode, CSSPropertyID feature)
 {
     ASSERT(feature >= firstCSSProperty);
     ASSERT(feature <= lastUnresolvedCSSProperty);
 
-    if (!isUseCounterEnabledForMode(context.mode()))
+    if (!isUseCounterEnabledForMode(cssParserMode))
         return;
 
     m_CSSFeatureBits.quickSet(feature);
