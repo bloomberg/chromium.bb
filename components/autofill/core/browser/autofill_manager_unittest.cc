@@ -470,7 +470,7 @@ class TestAutofillManager : public AutofillManager {
       : AutofillManager(driver, client, personal_data),
         personal_data_(personal_data),
         autofill_enabled_(true),
-        credit_card_upload_enabled_(true),
+        credit_card_upload_enabled_(false),
         credit_card_was_uploaded_(false),
         expect_all_unknown_possible_types_(false),
         expected_observed_submission_(true) {
@@ -3763,6 +3763,8 @@ TEST_F(AutofillManagerTest, FillInUpdatedExpirationDate) {
 }
 
 TEST_F(AutofillManagerTest, UploadCreditCard) {
+  autofill_manager_->set_credit_card_upload_enabled(true);
+
   // Create, fill and submit an address form in order to establish a recent
   // profile which can be selected for the upload request.
   FormData address_form;
@@ -3817,6 +3819,8 @@ TEST_F(AutofillManagerTest, DontUploadCreditCardIfFeatureNotEnabled) {
 }
 
 TEST_F(AutofillManagerTest, DontUploadCreditCardIfCvcUnavailable) {
+  autofill_manager_->set_credit_card_upload_enabled(true);
+
   // Create, fill and submit an address form in order to establish a recent
   // profile which can be selected for the upload request.
   FormData address_form;
@@ -3837,13 +3841,15 @@ TEST_F(AutofillManagerTest, DontUploadCreditCardIfCvcUnavailable) {
   credit_card_form.fields[3].value = ASCIIToUTF16("2017");
   credit_card_form.fields[4].value = ASCIIToUTF16("");  // CVC MISSING
 
-  // The save prompt should be shown instead of doing an upload.
-  EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_)).Times(1);
+  // Neither a local save nor an upload should happen in this case.
+  EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_)).Times(0);
   FormSubmitted(credit_card_form);
   EXPECT_FALSE(autofill_manager_->credit_card_was_uploaded());
 }
 
 TEST_F(AutofillManagerTest, DontUploadCreditCardIfNoMatchingProfileAvailable) {
+  autofill_manager_->set_credit_card_upload_enabled(true);
+
   // Create, fill and submit an address form in order to establish a recent
   // profile which can be selected for the upload request.
   FormData address_form;
@@ -3865,13 +3871,15 @@ TEST_F(AutofillManagerTest, DontUploadCreditCardIfNoMatchingProfileAvailable) {
   credit_card_form.fields[3].value = ASCIIToUTF16("2017");
   credit_card_form.fields[4].value = ASCIIToUTF16("123");
 
-  // The save prompt should be shown instead of doing an upload.
-  EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_)).Times(1);
+  // Neither a local save nor an upload should happen in this case.
+  EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_)).Times(0);
   FormSubmitted(credit_card_form);
   EXPECT_FALSE(autofill_manager_->credit_card_was_uploaded());
 }
 
 TEST_F(AutofillManagerTest, DontUploadCreditCardIfUploadDetailsFails) {
+  autofill_manager_->set_credit_card_upload_enabled(true);
+
   // Anything other than "en-US" will cause GetUploadDetails to return a failure
   // response.
   autofill_manager_->set_app_locale("pt-BR");

@@ -885,7 +885,17 @@ void AutofillManager::OnDidGetUploadDetails(
     client_->LoadRiskData(base::Bind(&AutofillManager::OnDidGetUploadRiskData,
                                      weak_ptr_factory_.GetWeakPtr()));
   } else {
-    // Since the upload details request failed, fallback to a local save.
+    // If the upload details request failed, fall back to a local save. The
+    // reasoning here is as follows:
+    // - This will sometimes fail intermittently, in which case it might be
+    // better to not fall back, because sometimes offering upload and sometimes
+    // offering local save is a poor user experience.
+    // - However, in some cases, our local configuration limiting the feature to
+    // countries that Payments is known to support will not match Payments' own
+    // determination of what country the user is located in. In these cases,
+    // the upload details request will consistently fail and if we don't fall
+    // back to a local save then the user will never be offered any kind of
+    // credit card save.
     client_->ConfirmSaveCreditCardLocally(base::Bind(
         base::IgnoreResult(&PersonalDataManager::SaveImportedCreditCard),
         base::Unretained(personal_data_), upload_request_.card));
@@ -1001,14 +1011,15 @@ void AutofillManager::ImportFormData(const FormStructure& submitted_form) {
       // names.
       upload_request_.profiles =
           GetProfilesForCreditCardUpload(*imported_credit_card);
-    }
 
-    if (!upload_request_.cvc.empty() && !upload_request_.profiles.empty()) {
-      upload_request_.card = *imported_credit_card;
-      payments_client_->GetUploadDetails(app_locale_);
+      // If the necessary conditions don't exist, do nothing. We could fall back
+      // to a local save here but we believe that sometimes offering upload and
+      // sometimes offering local save is a confusing user experience.
+      if (!upload_request_.cvc.empty() && !upload_request_.profiles.empty()) {
+        upload_request_.card = *imported_credit_card;
+        payments_client_->GetUploadDetails(app_locale_);
+      }
     } else {
-      // If upload isn't enabled or not possible, prompt the user for local
-      // save.
       client_->ConfirmSaveCreditCardLocally(base::Bind(
           base::IgnoreResult(&PersonalDataManager::SaveImportedCreditCard),
           base::Unretained(personal_data_), *imported_credit_card));
