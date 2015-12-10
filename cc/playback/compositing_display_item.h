@@ -20,23 +20,30 @@ namespace cc {
 
 class CC_EXPORT CompositingDisplayItem : public DisplayItem {
  public:
-  CompositingDisplayItem();
+  CompositingDisplayItem(uint8_t alpha,
+                         SkXfermode::Mode xfermode,
+                         SkRect* bounds,
+                         skia::RefPtr<SkColorFilter> color_filter);
+  explicit CompositingDisplayItem(const proto::DisplayItem& proto);
   ~CompositingDisplayItem() override;
 
-  void SetNew(uint8_t alpha,
-              SkXfermode::Mode xfermode,
-              SkRect* bounds,
-              skia::RefPtr<SkColorFilter> color_filter);
-
   void ToProtobuf(proto::DisplayItem* proto) const override;
-  void FromProtobuf(const proto::DisplayItem& proto) override;
   void Raster(SkCanvas* canvas,
               const gfx::Rect& canvas_target_playback_rect,
               SkPicture::AbortCallback* callback) const override;
   void AsValueInto(const gfx::Rect& visual_rect,
                    base::trace_event::TracedValue* array) const override;
+  size_t ExternalMemoryUsage() const override;
+
+  int ApproximateOpCount() const { return 1; }
+  bool IsSuitableForGpuRasterization() const { return true; }
 
  private:
+  void SetNew(uint8_t alpha,
+              SkXfermode::Mode xfermode,
+              SkRect* bounds,
+              skia::RefPtr<SkColorFilter> color_filter);
+
   uint8_t alpha_;
   SkXfermode::Mode xfermode_;
   bool has_bounds_;
@@ -47,6 +54,7 @@ class CC_EXPORT CompositingDisplayItem : public DisplayItem {
 class CC_EXPORT EndCompositingDisplayItem : public DisplayItem {
  public:
   EndCompositingDisplayItem();
+  explicit EndCompositingDisplayItem(const proto::DisplayItem& proto);
   ~EndCompositingDisplayItem() override;
 
   static scoped_ptr<EndCompositingDisplayItem> Create() {
@@ -54,12 +62,15 @@ class CC_EXPORT EndCompositingDisplayItem : public DisplayItem {
   }
 
   void ToProtobuf(proto::DisplayItem* proto) const override;
-  void FromProtobuf(const proto::DisplayItem& proto) override;
   void Raster(SkCanvas* canvas,
               const gfx::Rect& canvas_target_playback_rect,
               SkPicture::AbortCallback* callback) const override;
   void AsValueInto(const gfx::Rect& visual_rect,
                    base::trace_event::TracedValue* array) const override;
+  size_t ExternalMemoryUsage() const override;
+
+  int ApproximateOpCount() const { return 0; }
+  bool IsSuitableForGpuRasterization() const { return true; }
 };
 
 }  // namespace cc

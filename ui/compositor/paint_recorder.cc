@@ -41,10 +41,10 @@ PaintRecorder::~PaintRecorder() {
 #if DCHECK_IS_ON()
   context_.inside_paint_recorder_ = false;
 #endif
-
-  auto* item = context_.list_->CreateAndAppendItem<cc::DrawingDisplayItem>(
-      bounds_in_layer_);
-  item->SetNew(skia::AdoptRef(context_.recorder_->endRecordingAsPicture()));
+  const auto& item =
+      context_.list_->CreateAndAppendItem<cc::DrawingDisplayItem>(
+          bounds_in_layer_,
+          skia::AdoptRef(context_.recorder_->endRecordingAsPicture()));
   if (cache_)
     cache_->SetCache(item);
 }

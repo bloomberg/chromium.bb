@@ -58,12 +58,8 @@ class MaskContentLayerClient : public ContentLayerClient {
 
     scoped_refptr<DisplayItemList> display_list =
         DisplayItemList::Create(PaintableRegion(), DisplayItemListSettings());
-    auto* item = display_list->CreateAndAppendItem<DrawingDisplayItem>(
-        PaintableRegion());
-
-    skia::RefPtr<SkPicture> picture =
-        skia::AdoptRef(recorder.endRecordingAsPicture());
-    item->SetNew(std::move(picture));
+    display_list->CreateAndAppendItem<DrawingDisplayItem>(
+        PaintableRegion(), skia::AdoptRef(recorder.endRecordingAsPicture()));
 
     display_list->Finalize();
     return display_list;
@@ -337,12 +333,8 @@ class CheckerContentLayerClient : public ContentLayerClient {
 
     scoped_refptr<DisplayItemList> display_list =
         DisplayItemList::Create(PaintableRegion(), DisplayItemListSettings());
-    auto* item = display_list->CreateAndAppendItem<DrawingDisplayItem>(
-        PaintableRegion());
-
-    skia::RefPtr<SkPicture> picture =
-        skia::AdoptRef(recorder.endRecordingAsPicture());
-    item->SetNew(std::move(picture));
+    display_list->CreateAndAppendItem<DrawingDisplayItem>(
+        PaintableRegion(), skia::AdoptRef(recorder.endRecordingAsPicture()));
 
     display_list->Finalize();
     return display_list;
@@ -379,11 +371,8 @@ class CircleContentLayerClient : public ContentLayerClient {
 
     scoped_refptr<DisplayItemList> display_list =
         DisplayItemList::Create(PaintableRegion(), DisplayItemListSettings());
-    auto* item = display_list->CreateAndAppendItem<DrawingDisplayItem>(
-        PaintableRegion());
-    skia::RefPtr<SkPicture> picture =
-        skia::AdoptRef(recorder.endRecordingAsPicture());
-    item->SetNew(std::move(picture));
+    display_list->CreateAndAppendItem<DrawingDisplayItem>(
+        PaintableRegion(), skia::AdoptRef(recorder.endRecordingAsPicture()));
 
     display_list->Finalize();
     return display_list;

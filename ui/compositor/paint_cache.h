@@ -30,7 +30,7 @@ class COMPOSITOR_EXPORT PaintCache {
   // Only PaintRecorder can modify these.
   friend PaintRecorder;
 
-  void SetCache(const cc::DrawingDisplayItem* item);
+  void SetCache(const cc::DrawingDisplayItem& item);
 
   bool has_cache_;
   cc::DrawingDisplayItem display_item_;

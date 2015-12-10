@@ -13,7 +13,17 @@
 
 namespace cc {
 
-FloatClipDisplayItem::FloatClipDisplayItem() {
+FloatClipDisplayItem::FloatClipDisplayItem(const gfx::RectF& clip_rect) {
+  SetNew(clip_rect);
+}
+
+FloatClipDisplayItem::FloatClipDisplayItem(const proto::DisplayItem& proto) {
+  DCHECK_EQ(proto::DisplayItem::Type_FloatClip, proto.type());
+
+  const proto::FloatClipDisplayItem& details = proto.float_clip_item();
+  gfx::RectF clip_rect = ProtoToRectF(details.clip_rect());
+
+  SetNew(clip_rect);
 }
 
 FloatClipDisplayItem::~FloatClipDisplayItem() {
@@ -21,9 +31,6 @@ FloatClipDisplayItem::~FloatClipDisplayItem() {
 
 void FloatClipDisplayItem::SetNew(const gfx::RectF& clip_rect) {
   clip_rect_ = clip_rect;
-
-  DisplayItem::SetNew(true /* suitable_for_gpu_raster */, 1 /* op_count */,
-                      0 /* external_memory_usage */);
 }
 
 void FloatClipDisplayItem::ToProtobuf(proto::DisplayItem* proto) const {
@@ -31,15 +38,6 @@ void FloatClipDisplayItem::ToProtobuf(proto::DisplayItem* proto) const {
 
   proto::FloatClipDisplayItem* details = proto->mutable_float_clip_item();
   RectFToProto(clip_rect_, details->mutable_clip_rect());
-}
-
-void FloatClipDisplayItem::FromProtobuf(const proto::DisplayItem& proto) {
-  DCHECK_EQ(proto::DisplayItem::Type_FloatClip, proto.type());
-
-  const proto::FloatClipDisplayItem& details = proto.float_clip_item();
-  gfx::RectF clip_rect = ProtoToRectF(details.clip_rect());
-
-  SetNew(clip_rect);
 }
 
 void FloatClipDisplayItem::Raster(SkCanvas* canvas,
@@ -57,9 +55,15 @@ void FloatClipDisplayItem::AsValueInto(
       clip_rect_.ToString().c_str(), visual_rect.ToString().c_str()));
 }
 
-EndFloatClipDisplayItem::EndFloatClipDisplayItem() {
-  DisplayItem::SetNew(true /* suitable_for_gpu_raster */, 0 /* op_count */,
-                      0 /* external_memory_usage */);
+size_t FloatClipDisplayItem::ExternalMemoryUsage() const {
+  return 0;
+}
+
+EndFloatClipDisplayItem::EndFloatClipDisplayItem() {}
+
+EndFloatClipDisplayItem::EndFloatClipDisplayItem(
+    const proto::DisplayItem& proto) {
+  DCHECK_EQ(proto::DisplayItem::Type_EndFloatClip, proto.type());
 }
 
 EndFloatClipDisplayItem::~EndFloatClipDisplayItem() {
@@ -67,10 +71,6 @@ EndFloatClipDisplayItem::~EndFloatClipDisplayItem() {
 
 void EndFloatClipDisplayItem::ToProtobuf(proto::DisplayItem* proto) const {
   proto->set_type(proto::DisplayItem::Type_EndFloatClip);
-}
-
-void EndFloatClipDisplayItem::FromProtobuf(const proto::DisplayItem& proto) {
-  DCHECK_EQ(proto::DisplayItem::Type_EndFloatClip, proto.type());
 }
 
 void EndFloatClipDisplayItem::Raster(
@@ -86,6 +86,10 @@ void EndFloatClipDisplayItem::AsValueInto(
   array->AppendString(
       base::StringPrintf("EndFloatClipDisplayItem visualRect: [%s]",
                          visual_rect.ToString().c_str()));
+}
+
+size_t EndFloatClipDisplayItem::ExternalMemoryUsage() const {
+  return 0;
 }
 
 }  // namespace cc

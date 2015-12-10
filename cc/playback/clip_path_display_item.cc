@@ -12,7 +12,27 @@
 
 namespace cc {
 
-ClipPathDisplayItem::ClipPathDisplayItem() {
+ClipPathDisplayItem::ClipPathDisplayItem(const SkPath& clip_path,
+                                         SkRegion::Op clip_op,
+                                         bool antialias) {
+  SetNew(clip_path, clip_op, antialias);
+}
+
+ClipPathDisplayItem::ClipPathDisplayItem(const proto::DisplayItem& proto) {
+  DCHECK_EQ(proto::DisplayItem::Type_ClipPath, proto.type());
+
+  const proto::ClipPathDisplayItem& details = proto.clip_path_item();
+  SkRegion::Op clip_op = SkRegionOpFromProto(details.clip_op());
+  bool antialias = details.antialias();
+
+  SkPath clip_path;
+  if (details.has_clip_path()) {
+    size_t bytes_read = clip_path.readFromMemory(details.clip_path().data(),
+                                                 details.clip_path().size());
+    DCHECK_EQ(details.clip_path().size(), bytes_read);
+  }
+
+  SetNew(clip_path, clip_op, antialias);
 }
 
 ClipPathDisplayItem::~ClipPathDisplayItem() {
@@ -24,11 +44,6 @@ void ClipPathDisplayItem::SetNew(const SkPath& clip_path,
   clip_path_ = clip_path;
   clip_op_ = clip_op;
   antialias_ = antialias;
-
-  // The size of SkPath's external storage is not currently accounted for (and
-  // may well be shared anyway).
-  DisplayItem::SetNew(true /* suitable_for_gpu_raster */, 1 /* op_count */,
-                      0 /* external_memory_usage */);
 }
 
 void ClipPathDisplayItem::ToProtobuf(proto::DisplayItem* proto) const {
@@ -47,23 +62,6 @@ void ClipPathDisplayItem::ToProtobuf(proto::DisplayItem* proto) const {
   }
 }
 
-void ClipPathDisplayItem::FromProtobuf(const proto::DisplayItem& proto) {
-  DCHECK_EQ(proto::DisplayItem::Type_ClipPath, proto.type());
-
-  const proto::ClipPathDisplayItem& details = proto.clip_path_item();
-  SkRegion::Op clip_op = SkRegionOpFromProto(details.clip_op());
-  bool antialias = details.antialias();
-
-  SkPath clip_path;
-  if (details.has_clip_path()) {
-    size_t bytes_read = clip_path.readFromMemory(details.clip_path().data(),
-                                                 details.clip_path().size());
-    DCHECK_EQ(details.clip_path().size(), bytes_read);
-  }
-
-  SetNew(clip_path, clip_op, antialias);
-}
-
 void ClipPathDisplayItem::Raster(SkCanvas* canvas,
                                  const gfx::Rect& canvas_target_playback_rect,
                                  SkPicture::AbortCallback* callback) const {
@@ -79,9 +77,17 @@ void ClipPathDisplayItem::AsValueInto(
       clip_path_.countPoints(), visual_rect.ToString().c_str()));
 }
 
-EndClipPathDisplayItem::EndClipPathDisplayItem() {
-  DisplayItem::SetNew(true /* suitable_for_gpu_raster */, 0 /* op_count */,
-                      0 /* external_memory_usage */);
+size_t ClipPathDisplayItem::ExternalMemoryUsage() const {
+  // The size of SkPath's external storage is not currently accounted for (and
+  // may well be shared anyway).
+  return 0;
+}
+
+EndClipPathDisplayItem::EndClipPathDisplayItem() {}
+
+EndClipPathDisplayItem::EndClipPathDisplayItem(
+    const proto::DisplayItem& proto) {
+  DCHECK_EQ(proto::DisplayItem::Type_EndClipPath, proto.type());
 }
 
 EndClipPathDisplayItem::~EndClipPathDisplayItem() {
@@ -89,10 +95,6 @@ EndClipPathDisplayItem::~EndClipPathDisplayItem() {
 
 void EndClipPathDisplayItem::ToProtobuf(proto::DisplayItem* proto) const {
   proto->set_type(proto::DisplayItem::Type_EndClipPath);
-}
-
-void EndClipPathDisplayItem::FromProtobuf(const proto::DisplayItem& proto) {
-  DCHECK_EQ(proto::DisplayItem::Type_EndClipPath, proto.type());
 }
 
 void EndClipPathDisplayItem::Raster(
@@ -108,6 +110,10 @@ void EndClipPathDisplayItem::AsValueInto(
   array->AppendString(
       base::StringPrintf("EndClipPathDisplayItem visualRect: [%s]",
                          visual_rect.ToString().c_str()));
+}
+
+size_t EndClipPathDisplayItem::ExternalMemoryUsage() const {
+  return 0;
 }
 
 }  // namespace cc

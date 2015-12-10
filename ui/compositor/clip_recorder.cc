@@ -48,9 +48,8 @@ static gfx::Rect PathToEnclosingRect(const gfx::Path& path) {
 
 void ClipRecorder::ClipRect(const gfx::Rect& clip_rect) {
   gfx::Rect clip_in_layer_space = context_.ToLayerSpaceRect(clip_rect);
-  auto* item = context_.list_->CreateAndAppendItem<cc::ClipDisplayItem>(
-      clip_in_layer_space);
-  item->SetNew(clip_rect, std::vector<SkRRect>());
+  context_.list_->CreateAndAppendItem<cc::ClipDisplayItem>(
+      clip_in_layer_space, clip_rect, std::vector<SkRRect>());
   RecordCloser(clip_in_layer_space, CLIP_RECT);
 }
 
@@ -58,9 +57,8 @@ void ClipRecorder::ClipPath(const gfx::Path& clip_path) {
   bool anti_alias = false;
   gfx::Rect clip_in_layer_space =
       context_.ToLayerSpaceRect(PathToEnclosingRect(clip_path));
-  auto* item = context_.list_->CreateAndAppendItem<cc::ClipPathDisplayItem>(
-      clip_in_layer_space);
-  item->SetNew(clip_path, SkRegion::kIntersect_Op, anti_alias);
+  context_.list_->CreateAndAppendItem<cc::ClipPathDisplayItem>(
+      clip_in_layer_space, clip_path, SkRegion::kIntersect_Op, anti_alias);
   RecordCloser(clip_in_layer_space, CLIP_PATH);
 }
 
@@ -68,9 +66,8 @@ void ClipRecorder::ClipPathWithAntiAliasing(const gfx::Path& clip_path) {
   bool anti_alias = true;
   gfx::Rect clip_in_layer_space =
       context_.ToLayerSpaceRect(PathToEnclosingRect(clip_path));
-  auto* item = context_.list_->CreateAndAppendItem<cc::ClipPathDisplayItem>(
-      clip_in_layer_space);
-  item->SetNew(clip_path, SkRegion::kIntersect_Op, anti_alias);
+  context_.list_->CreateAndAppendItem<cc::ClipPathDisplayItem>(
+      clip_in_layer_space, clip_path, SkRegion::kIntersect_Op, anti_alias);
   RecordCloser(clip_in_layer_space, CLIP_PATH);
 }
 

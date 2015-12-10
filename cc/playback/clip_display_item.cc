@@ -17,36 +17,13 @@
 
 namespace cc {
 
-ClipDisplayItem::ClipDisplayItem() {
+ClipDisplayItem::ClipDisplayItem(
+    const gfx::Rect& clip_rect,
+    const std::vector<SkRRect>& rounded_clip_rects) {
+  SetNew(clip_rect, rounded_clip_rects);
 }
 
-ClipDisplayItem::~ClipDisplayItem() {
-}
-
-void ClipDisplayItem::SetNew(gfx::Rect clip_rect,
-                             const std::vector<SkRRect>& rounded_clip_rects) {
-  clip_rect_ = clip_rect;
-  rounded_clip_rects_ = rounded_clip_rects;
-
-  size_t external_memory_usage =
-      rounded_clip_rects_.capacity() * sizeof(rounded_clip_rects_[0]);
-
-  DisplayItem::SetNew(true /* suitable_for_gpu_raster */, 1 /* op_count */,
-                      external_memory_usage);
-}
-
-void ClipDisplayItem::ToProtobuf(proto::DisplayItem* proto) const {
-  proto->set_type(proto::DisplayItem::Type_Clip);
-
-  proto::ClipDisplayItem* details = proto->mutable_clip_item();
-  RectToProto(clip_rect_, details->mutable_clip_rect());
-  DCHECK_EQ(0, details->rounded_rects_size());
-  for (const auto& rrect : rounded_clip_rects_) {
-    SkRRectToProto(rrect, details->add_rounded_rects());
-  }
-}
-
-void ClipDisplayItem::FromProtobuf(const proto::DisplayItem& proto) {
+ClipDisplayItem::ClipDisplayItem(const proto::DisplayItem& proto) {
   DCHECK_EQ(proto::DisplayItem::Type_Clip, proto.type());
 
   const proto::ClipDisplayItem& details = proto.clip_item();
@@ -57,6 +34,25 @@ void ClipDisplayItem::FromProtobuf(const proto::DisplayItem& proto) {
     rounded_clip_rects.push_back(ProtoToSkRRect(details.rounded_rects(i)));
   }
   SetNew(clip_rect, rounded_clip_rects);
+}
+
+void ClipDisplayItem::SetNew(const gfx::Rect& clip_rect,
+                             const std::vector<SkRRect>& rounded_clip_rects) {
+  clip_rect_ = clip_rect;
+  rounded_clip_rects_ = rounded_clip_rects;
+}
+
+ClipDisplayItem::~ClipDisplayItem() {}
+
+void ClipDisplayItem::ToProtobuf(proto::DisplayItem* proto) const {
+  proto->set_type(proto::DisplayItem::Type_Clip);
+
+  proto::ClipDisplayItem* details = proto->mutable_clip_item();
+  RectToProto(clip_rect_, details->mutable_clip_rect());
+  DCHECK_EQ(0, details->rounded_rects_size());
+  for (const auto& rrect : rounded_clip_rects_) {
+    SkRRectToProto(rrect, details->add_rounded_rects());
+  }
 }
 
 void ClipDisplayItem::Raster(SkCanvas* canvas,
@@ -104,9 +100,14 @@ void ClipDisplayItem::AsValueInto(const gfx::Rect& visual_rect,
   array->AppendString(value);
 }
 
-EndClipDisplayItem::EndClipDisplayItem() {
-  DisplayItem::SetNew(true /* suitable_for_gpu_raster */, 0 /* op_count */,
-                      0 /* external_memory_usage */);
+size_t ClipDisplayItem::ExternalMemoryUsage() const {
+  return rounded_clip_rects_.capacity() * sizeof(rounded_clip_rects_[0]);
+}
+
+EndClipDisplayItem::EndClipDisplayItem() {}
+
+EndClipDisplayItem::EndClipDisplayItem(const proto::DisplayItem& proto) {
+  DCHECK_EQ(proto::DisplayItem::Type_EndClip, proto.type());
 }
 
 EndClipDisplayItem::~EndClipDisplayItem() {
@@ -114,10 +115,6 @@ EndClipDisplayItem::~EndClipDisplayItem() {
 
 void EndClipDisplayItem::ToProtobuf(proto::DisplayItem* proto) const {
   proto->set_type(proto::DisplayItem::Type_EndClip);
-}
-
-void EndClipDisplayItem::FromProtobuf(const proto::DisplayItem& proto) {
-  DCHECK_EQ(proto::DisplayItem::Type_EndClip, proto.type());
 }
 
 void EndClipDisplayItem::Raster(SkCanvas* canvas,
@@ -131,6 +128,10 @@ void EndClipDisplayItem::AsValueInto(
     base::trace_event::TracedValue* array) const {
   array->AppendString(base::StringPrintf("EndClipDisplayItem visualRect: [%s]",
                                          visual_rect.ToString().c_str()));
+}
+
+size_t EndClipDisplayItem::ExternalMemoryUsage() const {
+  return 0;
 }
 
 }  // namespace cc

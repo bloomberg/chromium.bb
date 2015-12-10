@@ -22,6 +22,8 @@ class SkCanvas;
 class SkPictureRecorder;
 
 namespace cc {
+class DisplayItem;
+class DrawingDisplayItem;
 
 namespace proto {
 class DisplayItemList;
@@ -60,20 +62,23 @@ class CC_EXPORT DisplayItemList
   // is_suitable_for_gpu_rasterization_ and approximate_op_count_.
   void RasterIntoCanvas(const DisplayItem& display_item);
 
-  template <typename DisplayItemType>
-  DisplayItemType* CreateAndAppendItem(const gfx::Rect& visual_rect) {
-#if DCHECK_IS_ON()
-    needs_process_ = true;
-#endif
+  // Because processing happens in this function, all the set up for
+  // this item should be done via the args, which is why the return
+  // type needs to be const, to prevent set-after-processing mistakes.
+  template <typename DisplayItemType, typename... Args>
+  const DisplayItemType& CreateAndAppendItem(const gfx::Rect& visual_rect,
+                                             const Args&... args) {
     visual_rects_.push_back(visual_rect);
-    ProcessAppendedItemsOnTheFly();
-    return &items_.AllocateAndConstruct<DisplayItemType>();
+    // TODO(enne): This should forward the args.
+    auto* item = &items_.AllocateAndConstruct<DisplayItemType>(args...);
+    approximate_op_count_ += item->ApproximateOpCount();
+    // TODO(crbug.com/513016): None of the items might individually trigger a
+    // veto even though they collectively have enough "bad" operations that a
+    // corresponding flattened Picture would get vetoed.
+    is_suitable_for_gpu_rasterization_ &= item->IsSuitableForGpuRasterization();
+    ProcessAppendedItem(item);
+    return *item;
   }
-
-  // Removes the last item. This cannot be called on lists with cached pictures
-  // (since the data may already have been incorporated into cached picture
-  // sizes, etc).
-  void RemoveLast();
 
   // Called after all items are appended, to process the items and, if
   // applicable, create an internally cached SkPicture.
@@ -104,16 +109,7 @@ class CC_EXPORT DisplayItemList
                   bool retain_individual_display_items);
   ~DisplayItemList();
 
-  // While appending new items, if they are not being retained, this can process
-  // periodically to avoid retaining all the items and processing at the end.
-  void ProcessAppendedItemsOnTheFly();
-  void ProcessAppendedItems();
-#if DCHECK_IS_ON()
-  bool ProcessAppendedItemsCalled() const { return !needs_process_; }
-  bool needs_process_;
-#else
-  bool ProcessAppendedItemsCalled() const { return true; }
-#endif
+  void ProcessAppendedItem(const DisplayItem* item);
 
   ContiguousContainer<DisplayItem> items_;
   // The visual rects associated with each of the display items in the
@@ -135,9 +131,6 @@ class CC_EXPORT DisplayItemList
 
   // Memory usage due to the cached SkPicture.
   size_t picture_memory_usage_;
-
-  // Memory usage due to external data held by display items.
-  size_t external_memory_usage_;
 
   DiscardableImageMap image_map_;
 

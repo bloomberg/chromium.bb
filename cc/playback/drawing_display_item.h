@@ -19,21 +19,27 @@ namespace cc {
 class CC_EXPORT DrawingDisplayItem : public DisplayItem {
  public:
   DrawingDisplayItem();
+  explicit DrawingDisplayItem(skia::RefPtr<SkPicture> picture);
+  explicit DrawingDisplayItem(const proto::DisplayItem& proto);
+  explicit DrawingDisplayItem(const DrawingDisplayItem& item);
   ~DrawingDisplayItem() override;
 
-  void SetNew(skia::RefPtr<SkPicture> picture);
-
   void ToProtobuf(proto::DisplayItem* proto) const override;
-  void FromProtobuf(const proto::DisplayItem& proto) override;
   void Raster(SkCanvas* canvas,
               const gfx::Rect& canvas_playback_rect,
               SkPicture::AbortCallback* callback) const override;
   void AsValueInto(const gfx::Rect& visual_rect,
                    base::trace_event::TracedValue* array) const override;
+  size_t ExternalMemoryUsage() const override;
+
+  int ApproximateOpCount() const;
+  bool IsSuitableForGpuRasterization() const;
 
   void CloneTo(DrawingDisplayItem* item) const;
 
  private:
+  void SetNew(skia::RefPtr<SkPicture> picture);
+
   skia::RefPtr<SkPicture> picture_;
 };
 

@@ -17,20 +17,24 @@ namespace cc {
 
 class CC_EXPORT FilterDisplayItem : public DisplayItem {
  public:
-  FilterDisplayItem();
+  FilterDisplayItem(const FilterOperations& filters, const gfx::RectF& bounds);
+  explicit FilterDisplayItem(const proto::DisplayItem& proto);
   ~FilterDisplayItem() override;
 
-  void SetNew(const FilterOperations& filters, const gfx::RectF& bounds);
-
   void ToProtobuf(proto::DisplayItem* proto) const override;
-  void FromProtobuf(const proto::DisplayItem& proto) override;
   void Raster(SkCanvas* canvas,
               const gfx::Rect& canvas_target_playback_rect,
               SkPicture::AbortCallback* callback) const override;
   void AsValueInto(const gfx::Rect& visual_rect,
                    base::trace_event::TracedValue* array) const override;
+  size_t ExternalMemoryUsage() const override;
+
+  int ApproximateOpCount() const { return 1; }
+  bool IsSuitableForGpuRasterization() const { return true; }
 
  private:
+  void SetNew(const FilterOperations& filters, const gfx::RectF& bounds);
+
   FilterOperations filters_;
   gfx::RectF bounds_;
 };
@@ -38,6 +42,7 @@ class CC_EXPORT FilterDisplayItem : public DisplayItem {
 class CC_EXPORT EndFilterDisplayItem : public DisplayItem {
  public:
   EndFilterDisplayItem();
+  explicit EndFilterDisplayItem(const proto::DisplayItem& proto);
   ~EndFilterDisplayItem() override;
 
   static scoped_ptr<EndFilterDisplayItem> Create() {
@@ -45,12 +50,15 @@ class CC_EXPORT EndFilterDisplayItem : public DisplayItem {
   }
 
   void ToProtobuf(proto::DisplayItem* proto) const override;
-  void FromProtobuf(const proto::DisplayItem& proto) override;
   void Raster(SkCanvas* canvas,
               const gfx::Rect& canvas_target_playback_rect,
               SkPicture::AbortCallback* callback) const override;
   void AsValueInto(const gfx::Rect& visual_rect,
                    base::trace_event::TracedValue* array) const override;
+  size_t ExternalMemoryUsage() const override;
+
+  int ApproximateOpCount() const { return 0; }
+  bool IsSuitableForGpuRasterization() const { return true; }
 };
 
 }  // namespace cc

@@ -130,13 +130,8 @@ class BlueYellowClient : public ContentLayerClient {
     paint.setColor(SK_ColorYELLOW);
     canvas->drawRect(gfx::RectToSkRect(yellow_rect), paint);
 
-    skia::RefPtr<SkPicture> picture =
-        skia::AdoptRef(recorder.endRecordingAsPicture());
-
-    auto* item = display_list->CreateAndAppendItem<DrawingDisplayItem>(
-        PaintableRegion());
-    item->SetNew(std::move(picture));
-
+    display_list->CreateAndAppendItem<DrawingDisplayItem>(
+        PaintableRegion(), skia::AdoptRef(recorder.endRecordingAsPicture()));
     display_list->Finalize();
     return display_list;
   }

@@ -16,26 +16,31 @@ namespace cc {
 
 class CC_EXPORT TransformDisplayItem : public DisplayItem {
  public:
-  TransformDisplayItem();
+  explicit TransformDisplayItem(const gfx::Transform& transform);
+  explicit TransformDisplayItem(const proto::DisplayItem& proto);
   ~TransformDisplayItem() override;
 
-  void SetNew(const gfx::Transform& transform);
-
   void ToProtobuf(proto::DisplayItem* proto) const override;
-  void FromProtobuf(const proto::DisplayItem& proto) override;
   void Raster(SkCanvas* canvas,
               const gfx::Rect& canvas_target_playback_rect,
               SkPicture::AbortCallback* callback) const override;
   void AsValueInto(const gfx::Rect& visual_rect,
                    base::trace_event::TracedValue* array) const override;
+  size_t ExternalMemoryUsage() const override;
+
+  int ApproximateOpCount() const { return 1; }
+  bool IsSuitableForGpuRasterization() const { return true; }
 
  private:
+  void SetNew(const gfx::Transform& transform);
+
   gfx::Transform transform_;
 };
 
 class CC_EXPORT EndTransformDisplayItem : public DisplayItem {
  public:
   EndTransformDisplayItem();
+  explicit EndTransformDisplayItem(const proto::DisplayItem& proto);
   ~EndTransformDisplayItem() override;
 
   static scoped_ptr<EndTransformDisplayItem> Create() {
@@ -43,12 +48,15 @@ class CC_EXPORT EndTransformDisplayItem : public DisplayItem {
   }
 
   void ToProtobuf(proto::DisplayItem* proto) const override;
-  void FromProtobuf(const proto::DisplayItem& proto) override;
   void Raster(SkCanvas* canvas,
               const gfx::Rect& canvas_target_playback_rect,
               SkPicture::AbortCallback* callback) const override;
   void AsValueInto(const gfx::Rect& visual_rect,
                    base::trace_event::TracedValue* array) const override;
+  size_t ExternalMemoryUsage() const override;
+
+  int ApproximateOpCount() const { return 0; }
+  bool IsSuitableForGpuRasterization() const { return true; }
 };
 
 }  // namespace cc

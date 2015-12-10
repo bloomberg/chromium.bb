@@ -20,10 +20,9 @@ CompositingRecorder::CompositingRecorder(const PaintContext& context,
   if (!saved_)
     return;
 
-  auto* item = context_.list_->CreateAndAppendItem<cc::CompositingDisplayItem>(
-      bounds_in_layer_);
-  item->SetNew(alpha, SkXfermode::kSrcOver_Mode, nullptr /* no bounds */,
-               skia::RefPtr<SkColorFilter>());
+  context_.list_->CreateAndAppendItem<cc::CompositingDisplayItem>(
+      bounds_in_layer_, alpha, SkXfermode::kSrcOver_Mode,
+      nullptr /* no bounds */, skia::RefPtr<SkColorFilter>());
 }
 
 CompositingRecorder::~CompositingRecorder() {

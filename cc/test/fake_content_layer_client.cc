@@ -52,7 +52,6 @@ FakeContentLayerClient::PaintContentsToDisplayList(
       DisplayItemList::Create(PaintableRegion(), settings);
   SkPictureRecorder recorder;
   skia::RefPtr<SkCanvas> canvas;
-  skia::RefPtr<SkPicture> picture;
 
   for (RectPaintVector::const_iterator it = draw_rects_.begin();
        it != draw_rects_.end(); ++it) {
@@ -61,27 +60,23 @@ FakeContentLayerClient::PaintContentsToDisplayList(
     canvas =
         skia::SharePtr(recorder.beginRecording(gfx::RectFToSkRect(draw_rect)));
     canvas->drawRect(gfx::RectFToSkRect(draw_rect), paint);
-    picture = skia::AdoptRef(recorder.endRecordingAsPicture());
-    auto* item = display_list->CreateAndAppendItem<DrawingDisplayItem>(
-        ToEnclosingRect(draw_rect));
-    item->SetNew(std::move(picture));
+    display_list->CreateAndAppendItem<DrawingDisplayItem>(
+        ToEnclosingRect(draw_rect),
+        skia::AdoptRef(recorder.endRecordingAsPicture()));
   }
 
   for (ImageVector::const_iterator it = draw_images_.begin();
        it != draw_images_.end(); ++it) {
     if (!it->transform.IsIdentity()) {
-      auto* item = display_list->CreateAndAppendItem<TransformDisplayItem>(
-          PaintableRegion());
-      item->SetNew(it->transform);
+      display_list->CreateAndAppendItem<TransformDisplayItem>(PaintableRegion(),
+                                                              it->transform);
     }
     canvas = skia::SharePtr(
         recorder.beginRecording(it->image->width(), it->image->height()));
     canvas->drawImage(it->image.get(), it->point.x(), it->point.y(),
                       &it->paint);
-    picture = skia::AdoptRef(recorder.endRecordingAsPicture());
-    auto* item = display_list->CreateAndAppendItem<DrawingDisplayItem>(
-        PaintableRegion());
-    item->SetNew(std::move(picture));
+    display_list->CreateAndAppendItem<DrawingDisplayItem>(
+        PaintableRegion(), skia::AdoptRef(recorder.endRecordingAsPicture()));
     if (!it->transform.IsIdentity()) {
       display_list->CreateAndAppendItem<EndTransformDisplayItem>(
           PaintableRegion());
@@ -97,10 +92,8 @@ FakeContentLayerClient::PaintContentsToDisplayList(
       canvas =
           skia::SharePtr(recorder.beginRecording(gfx::RectToSkRect(draw_rect)));
       canvas->drawIRect(gfx::RectToSkIRect(draw_rect), paint);
-      picture = skia::AdoptRef(recorder.endRecordingAsPicture());
-      auto* item =
-          display_list->CreateAndAppendItem<DrawingDisplayItem>(draw_rect);
-      item->SetNew(std::move(picture));
+      display_list->CreateAndAppendItem<DrawingDisplayItem>(
+          draw_rect, skia::AdoptRef(recorder.endRecordingAsPicture()));
       draw_rect.Inset(1, 1);
     }
   }

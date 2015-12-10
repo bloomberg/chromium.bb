@@ -17,20 +17,24 @@ namespace cc {
 
 class CC_EXPORT ClipPathDisplayItem : public DisplayItem {
  public:
-  ClipPathDisplayItem();
+  ClipPathDisplayItem(const SkPath& path, SkRegion::Op clip_op, bool antialias);
+  explicit ClipPathDisplayItem(const proto::DisplayItem& proto);
   ~ClipPathDisplayItem() override;
 
-  void SetNew(const SkPath& path, SkRegion::Op clip_op, bool antialias);
-
   void ToProtobuf(proto::DisplayItem* proto) const override;
-  void FromProtobuf(const proto::DisplayItem& proto) override;
   void Raster(SkCanvas* canvas,
               const gfx::Rect& canvas_target_playback_rect,
               SkPicture::AbortCallback* callback) const override;
   void AsValueInto(const gfx::Rect& visual_rect,
                    base::trace_event::TracedValue* array) const override;
+  size_t ExternalMemoryUsage() const override;
+
+  int ApproximateOpCount() const { return 1; }
+  bool IsSuitableForGpuRasterization() const { return true; }
 
  private:
+  void SetNew(const SkPath& path, SkRegion::Op clip_op, bool antialias);
+
   SkPath clip_path_;
   SkRegion::Op clip_op_;
   bool antialias_;
@@ -39,6 +43,7 @@ class CC_EXPORT ClipPathDisplayItem : public DisplayItem {
 class CC_EXPORT EndClipPathDisplayItem : public DisplayItem {
  public:
   EndClipPathDisplayItem();
+  explicit EndClipPathDisplayItem(const proto::DisplayItem& proto);
   ~EndClipPathDisplayItem() override;
 
   static scoped_ptr<EndClipPathDisplayItem> Create() {
@@ -46,12 +51,15 @@ class CC_EXPORT EndClipPathDisplayItem : public DisplayItem {
   }
 
   void ToProtobuf(proto::DisplayItem* proto) const override;
-  void FromProtobuf(const proto::DisplayItem& proto) override;
   void Raster(SkCanvas* canvas,
               const gfx::Rect& canvas_target_playback_rect,
               SkPicture::AbortCallback* callback) const override;
   void AsValueInto(const gfx::Rect& visual_rect,
                    base::trace_event::TracedValue* array) const override;
+  size_t ExternalMemoryUsage() const override;
+
+  int ApproximateOpCount() const { return 0; }
+  bool IsSuitableForGpuRasterization() const { return true; }
 };
 
 }  // namespace cc

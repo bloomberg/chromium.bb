@@ -23,37 +23,17 @@ class CC_EXPORT DisplayItem {
  public:
   virtual ~DisplayItem() {}
 
-  void SetNew(bool is_suitable_for_gpu_rasterization,
-              int approximate_op_count,
-              size_t external_memory_usage) {
-    is_suitable_for_gpu_rasterization_ = is_suitable_for_gpu_rasterization;
-    approximate_op_count_ = approximate_op_count;
-    external_memory_usage_ = external_memory_usage;
-  }
-
   virtual void ToProtobuf(proto::DisplayItem* proto) const = 0;
-  virtual void FromProtobuf(const proto::DisplayItem& proto) = 0;
   virtual void Raster(SkCanvas* canvas,
                       const gfx::Rect& canvas_target_playback_rect,
                       SkPicture::AbortCallback* callback) const = 0;
   virtual void AsValueInto(const gfx::Rect& visual_rect,
                            base::trace_event::TracedValue* array) const = 0;
-
-  bool is_suitable_for_gpu_rasterization() const {
-    return is_suitable_for_gpu_rasterization_;
-  }
-  int approximate_op_count() const { return approximate_op_count_; }
-  size_t external_memory_usage() const { return external_memory_usage_; }
+  // For tracing.
+  virtual size_t ExternalMemoryUsage() const = 0;
 
  protected:
   DisplayItem();
-
-  bool is_suitable_for_gpu_rasterization_;
-  int approximate_op_count_;
-
-  // The size, in bytes, of the memory owned by this display item but not
-  // allocated within it (e.g. held through scoped_ptr or vector).
-  size_t external_memory_usage_;
 };
 
 }  // namespace cc

@@ -21,14 +21,13 @@ bool PaintCache::UseCache(const PaintContext& context,
     return false;
   DCHECK(context.list_);
   gfx::Rect bounds_in_layer = context.ToLayerSpaceBounds(size_in_context);
-  auto* item = context.list_->CreateAndAppendItem<cc::DrawingDisplayItem>(
-      bounds_in_layer);
-  display_item_.CloneTo(item);
+  context.list_->CreateAndAppendItem<cc::DrawingDisplayItem>(bounds_in_layer,
+                                                             display_item_);
   return true;
 }
 
-void PaintCache::SetCache(const cc::DrawingDisplayItem* item) {
-  item->CloneTo(&display_item_);
+void PaintCache::SetCache(const cc::DrawingDisplayItem& item) {
+  item.CloneTo(&display_item_);
   has_cache_ = true;
 }
 

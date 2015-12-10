@@ -21,7 +21,29 @@
 
 namespace cc {
 
-DrawingDisplayItem::DrawingDisplayItem() {
+DrawingDisplayItem::DrawingDisplayItem() {}
+
+DrawingDisplayItem::DrawingDisplayItem(skia::RefPtr<SkPicture> picture) {
+  SetNew(std::move(picture));
+}
+
+DrawingDisplayItem::DrawingDisplayItem(const proto::DisplayItem& proto) {
+  DCHECK_EQ(proto::DisplayItem::Type_Drawing, proto.type());
+
+  skia::RefPtr<SkPicture> picture;
+  const proto::DrawingDisplayItem& details = proto.drawing_item();
+  if (details.has_picture()) {
+    SkMemoryStream stream(details.picture().data(), details.picture().size());
+
+    // TODO(dtrainor, nyquist): Add an image decoder.
+    picture = skia::AdoptRef(SkPicture::CreateFromStream(&stream, nullptr));
+  }
+
+  SetNew(std::move(picture));
+}
+
+DrawingDisplayItem::DrawingDisplayItem(const DrawingDisplayItem& item) {
+  item.CloneTo(this);
 }
 
 DrawingDisplayItem::~DrawingDisplayItem() {
@@ -29,9 +51,6 @@ DrawingDisplayItem::~DrawingDisplayItem() {
 
 void DrawingDisplayItem::SetNew(skia::RefPtr<SkPicture> picture) {
   picture_ = std::move(picture);
-  DisplayItem::SetNew(picture_->suitableForGpuRasterization(NULL),
-                      picture_->approximateOpCount(),
-                      SkPictureUtils::ApproximateBytesUsed(picture_.get()));
 }
 
 void DrawingDisplayItem::ToProtobuf(proto::DisplayItem* proto) const {
@@ -51,21 +70,6 @@ void DrawingDisplayItem::ToProtobuf(proto::DisplayItem* proto) const {
       details->set_picture(data->data(), data->size());
     }
   }
-}
-
-void DrawingDisplayItem::FromProtobuf(const proto::DisplayItem& proto) {
-  DCHECK_EQ(proto::DisplayItem::Type_Drawing, proto.type());
-
-  skia::RefPtr<SkPicture> picture;
-  const proto::DrawingDisplayItem& details = proto.drawing_item();
-  if (details.has_picture()) {
-    SkMemoryStream stream(details.picture().data(), details.picture().size());
-
-    // TODO(dtrainor, nyquist): Add an image decoder.
-    picture = skia::AdoptRef(SkPicture::CreateFromStream(&stream, nullptr));
-  }
-
-  SetNew(std::move(picture));
 }
 
 void DrawingDisplayItem::Raster(SkCanvas* canvas,
@@ -117,6 +121,18 @@ void DrawingDisplayItem::AsValueInto(
 
 void DrawingDisplayItem::CloneTo(DrawingDisplayItem* item) const {
   item->SetNew(picture_);
+}
+
+size_t DrawingDisplayItem::ExternalMemoryUsage() const {
+  return SkPictureUtils::ApproximateBytesUsed(picture_.get());
+}
+
+int DrawingDisplayItem::ApproximateOpCount() const {
+  return picture_->approximateOpCount();
+}
+
+bool DrawingDisplayItem::IsSuitableForGpuRasterization() const {
+  return picture_->suitableForGpuRasterization(NULL);
 }
 
 }  // namespace cc

@@ -39,11 +39,9 @@ SolidColorContentLayerClient::PaintContentsToDisplayList(
   settings.use_cached_picture = false;
   scoped_refptr<DisplayItemList> display_list =
       DisplayItemList::Create(clip, settings);
-  auto* item = display_list->CreateAndAppendItem<DrawingDisplayItem>(clip);
 
-  skia::RefPtr<SkPicture> picture =
-      skia::AdoptRef(recorder.endRecordingAsPicture());
-  item->SetNew(std::move(picture));
+  display_list->CreateAndAppendItem<DrawingDisplayItem>(
+      clip, skia::AdoptRef(recorder.endRecordingAsPicture()));
 
   display_list->Finalize();
   return display_list;

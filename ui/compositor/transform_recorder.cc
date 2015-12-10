@@ -23,9 +23,8 @@ void TransformRecorder::Transform(const gfx::Transform& transform,
                                   const gfx::Size& size_in_context) {
   DCHECK(!transformed_);
   bounds_in_layer_ = context_.ToLayerSpaceBounds(size_in_context);
-  auto* item = context_.list_->CreateAndAppendItem<cc::TransformDisplayItem>(
-      bounds_in_layer_);
-  item->SetNew(transform);
+  context_.list_->CreateAndAppendItem<cc::TransformDisplayItem>(
+      bounds_in_layer_, transform);
   transformed_ = true;
 }
 
