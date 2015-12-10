@@ -2228,8 +2228,7 @@
               'clang_dynlib_flags%': '',
             }],
           ],
-          'clang_plugin_args%': '-Xclang -plugin-arg-find-bad-constructs -Xclang check-templates '
-          '-Xclang -plugin-arg-find-bad-constructs -Xclang enforce-overriding-blink ',
+          'clang_plugin_args%': '-Xclang -plugin-arg-find-bad-constructs -Xclang check-templates',
         },
         # If you change these, also change build/config/clang/BUILD.gn.
         'clang_chrome_plugins_flags%':
