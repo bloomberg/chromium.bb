@@ -395,8 +395,9 @@ void LayoutView::mapAbsoluteToLocalPoint(MapCoordinatesFlags mode, TransformStat
     if (mode & TraverseDocumentBoundaries) {
         if (LayoutPart* parentDocLayoutObject = frame()->ownerLayoutObject()) {
             parentDocLayoutObject->mapAbsoluteToLocalPoint(mode, transformState);
-            transformState.move(parentDocLayoutObject->contentBoxOffset());
-            transformState.move(-frame()->view()->scrollOffset());
+
+            transformState.move(-parentDocLayoutObject->contentBoxOffset());
+            transformState.move(frame()->view()->scrollOffset());
         }
     }
 }
