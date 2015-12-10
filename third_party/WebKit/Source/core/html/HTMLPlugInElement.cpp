@@ -223,7 +223,7 @@ void HTMLPlugInElement::updateWidget()
     }
 }
 
-void HTMLPlugInElement::removedFrom(ContainerNode* insertionPoint)
+void HTMLPlugInElement::removedFrom(ContainerNode* insertionPoint, Node* next)
 {
     // If we've persisted the plugin and we're removed from the tree then
     // make sure we cleanup the persistance pointer.
@@ -231,7 +231,7 @@ void HTMLPlugInElement::removedFrom(ContainerNode* insertionPoint)
         HTMLFrameOwnerElement::UpdateSuspendScope suspendWidgetHierarchyUpdates;
         setPersistedPluginWidget(nullptr);
     }
-    HTMLFrameOwnerElement::removedFrom(insertionPoint);
+    HTMLFrameOwnerElement::removedFrom(insertionPoint, next);
 }
 
 void HTMLPlugInElement::requestPluginCreationWithoutLayoutObjectIfPossible()

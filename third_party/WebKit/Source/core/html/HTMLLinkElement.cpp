@@ -282,9 +282,9 @@ Node::InsertionNotificationRequest HTMLLinkElement::insertedInto(ContainerNode* 
     return InsertionDone;
 }
 
-void HTMLLinkElement::removedFrom(ContainerNode* insertionPoint)
+void HTMLLinkElement::removedFrom(ContainerNode* insertionPoint, Node* next)
 {
-    HTMLElement::removedFrom(insertionPoint);
+    HTMLElement::removedFrom(insertionPoint, next);
     if (!insertionPoint->inDocument())
         return;
 

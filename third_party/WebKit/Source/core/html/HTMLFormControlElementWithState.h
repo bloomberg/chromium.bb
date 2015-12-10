@@ -49,7 +49,7 @@ protected:
 
     void finishParsingChildren() override;
     InsertionNotificationRequest insertedInto(ContainerNode*) override;
-    void removedFrom(ContainerNode*) override;
+    void removedFrom(ContainerNode* insertionPoint, Node* next) override;
     bool isFormControlElementWithState() const final;
 };
 

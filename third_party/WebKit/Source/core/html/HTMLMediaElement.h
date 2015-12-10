@@ -292,7 +292,7 @@ private:
     LayoutObject* createLayoutObject(const ComputedStyle&) override;
     InsertionNotificationRequest insertedInto(ContainerNode*) final;
     void didNotifySubtreeInsertionsToDocument() override;
-    void removedFrom(ContainerNode*) final;
+    void removedFrom(ContainerNode* insertionPoint, Node* next) final;
     void didRecalcStyle(StyleRecalcChange) final;
 
     bool canStartSelection() const override { return false; }

@@ -85,7 +85,7 @@ private:
     PassRefPtrWillBeRawPtr<Node> cloneNode(bool deep) override;
 
     InsertionNotificationRequest insertedInto(ContainerNode*) override;
-    void removedFrom(ContainerNode*) override;
+    void removedFrom(ContainerNode* insertionPoint, Node* next) override;
 
     bool checkStyleSheet(String& href, String& charset);
     void process(const String& href, const String& charset);

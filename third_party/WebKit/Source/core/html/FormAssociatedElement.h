@@ -99,7 +99,7 @@ protected:
     FormAssociatedElement();
 
     void insertedInto(ContainerNode*);
-    void removedFrom(ContainerNode*);
+    void removedFrom(ContainerNode* insertionPoint, Node* next);
     void didMoveToNewDocument(Document& oldDocument);
 
     // FIXME: Remove usage of setForm. resetFormOwner should be enough, and

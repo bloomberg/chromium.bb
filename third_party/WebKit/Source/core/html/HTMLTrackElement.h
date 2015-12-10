@@ -65,7 +65,7 @@ private:
 
     InsertionNotificationRequest insertedInto(ContainerNode*) override;
 
-    void removedFrom(ContainerNode*) override;
+    void removedFrom(ContainerNode* insertionPoint, Node* next) override;
     bool isURLAttribute(const Attribute&) const override;
 
     // TextTrackLoaderClient

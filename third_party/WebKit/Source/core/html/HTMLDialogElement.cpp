@@ -171,9 +171,9 @@ void HTMLDialogElement::showModal(ExceptionState& exceptionState)
     setFocusForDialog(this);
 }
 
-void HTMLDialogElement::removedFrom(ContainerNode* insertionPoint)
+void HTMLDialogElement::removedFrom(ContainerNode* insertionPoint, Node* next)
 {
-    HTMLElement::removedFrom(insertionPoint);
+    HTMLElement::removedFrom(insertionPoint, next);
     setNotCentered();
     // FIXME: We should call inertSubtreesChanged() here.
 }

@@ -150,9 +150,9 @@ Node::InsertionNotificationRequest SVGTextPathElement::insertedInto(ContainerNod
     return InsertionDone;
 }
 
-void SVGTextPathElement::removedFrom(ContainerNode* rootParent)
+void SVGTextPathElement::removedFrom(ContainerNode* rootParent, Node* next)
 {
-    SVGTextContentElement::removedFrom(rootParent);
+    SVGTextContentElement::removedFrom(rootParent, next);
     if (rootParent->inDocument())
         clearResourceReferences();
 }

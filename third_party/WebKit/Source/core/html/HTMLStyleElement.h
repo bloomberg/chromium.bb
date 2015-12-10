@@ -57,7 +57,7 @@ private:
     void parseAttribute(const QualifiedName&, const AtomicString&, const AtomicString&) override;
     InsertionNotificationRequest insertedInto(ContainerNode*) override;
     void didNotifySubtreeInsertionsToDocument() override;
-    void removedFrom(ContainerNode*) override;
+    void removedFrom(ContainerNode* insertionPoint, Node* next) override;
     void childrenChanged(const ChildrenChange&) override;
 
     void finishParsingChildren() override;

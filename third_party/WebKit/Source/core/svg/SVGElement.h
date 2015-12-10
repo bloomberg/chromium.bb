@@ -200,7 +200,7 @@ protected:
     void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
 
     InsertionNotificationRequest insertedInto(ContainerNode*) override;
-    void removedFrom(ContainerNode*) override;
+    void removedFrom(ContainerNode* insertionPoint, Node* next) override;
     void childrenChanged(const ChildrenChange&) override;
 
     static CSSPropertyID cssPropertyIdForSVGAttributeName(const QualifiedName&);

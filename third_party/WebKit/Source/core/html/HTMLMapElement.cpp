@@ -117,11 +117,11 @@ Node::InsertionNotificationRequest HTMLMapElement::insertedInto(ContainerNode* i
     return HTMLElement::insertedInto(insertionPoint);
 }
 
-void HTMLMapElement::removedFrom(ContainerNode* insertionPoint)
+void HTMLMapElement::removedFrom(ContainerNode* insertionPoint, Node* next)
 {
     if (insertionPoint->inDocument())
         treeScope().removeImageMap(this);
-    HTMLElement::removedFrom(insertionPoint);
+    HTMLElement::removedFrom(insertionPoint, next);
 }
 
 }

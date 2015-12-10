@@ -14,7 +14,7 @@ class HTMLPictureElement final : public HTMLElement {
 public:
     DECLARE_NODE_FACTORY(HTMLPictureElement);
 
-    void sourceOrMediaChanged();
+    void sourceOrMediaChanged(HTMLElement*, Node* next = nullptr);
 
 protected:
     explicit HTMLPictureElement(Document&);

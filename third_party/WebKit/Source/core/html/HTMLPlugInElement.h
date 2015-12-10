@@ -69,7 +69,7 @@ public:
     void requestPluginCreationWithoutLayoutObjectIfPossible();
     void createPluginWithoutLayoutObject();
 
-    void removedFrom(ContainerNode* insertionPoint) override;
+    void removedFrom(ContainerNode* insertionPoint, Node* next) override;
 
 protected:
     HTMLPlugInElement(const QualifiedName& tagName, Document&, bool createdByParser, PreferPlugInsForImagesOption);

@@ -532,7 +532,7 @@ void ContainerNode::addChildNodesToDeletionQueue(Node*& head, Node*& tail, Conta
             RefPtrWillBeRawPtr<Node> protect(n); // removedFromDocument may remove all references to this node.
             container.document().adoptIfNeeded(*n);
             if (n->inDocument())
-                container.notifyNodeRemoved(*n);
+                container.notifyNodeRemoved(*n, next);
         }
     }
 
@@ -591,7 +591,7 @@ PassRefPtrWillBeRawPtr<Node> ContainerNode::removeChild(PassRefPtrWillBeRawPtr<N
         Node* prev = child->previousSibling();
         Node* next = child->nextSibling();
         removeBetween(prev, next, *child);
-        notifyNodeRemoved(*child);
+        notifyNodeRemoved(*child, next);
         childrenChanged(ChildrenChange::forRemoval(*child, prev, next, ChildrenChangeSourceAPI));
     }
     dispatchSubtreeModifiedEvent();
@@ -643,7 +643,7 @@ void ContainerNode::parserRemoveChild(Node& oldChild)
     Node* next = oldChild.nextSibling();
     removeBetween(prev, next, oldChild);
 
-    notifyNodeRemoved(oldChild);
+    notifyNodeRemoved(oldChild, next);
     childrenChanged(ChildrenChange::forRemoval(oldChild, prev, next, ChildrenChangeSourceParser));
 }
 
@@ -695,11 +695,12 @@ void ContainerNode::removeChildren(SubtreeModificationAction action)
             removedChildren.reserveInitialCapacity(countChildren());
 #endif
             while (RefPtrWillBeRawPtr<Node> child = m_firstChild) {
-                removeBetween(0, child->nextSibling(), *child);
+                Node* next = child->nextSibling();
+                removeBetween(nullptr, next, *child);
 #if !ENABLE(OILPAN)
                 removedChildren.append(child.get());
 #endif
-                notifyNodeRemoved(*child);
+                notifyNodeRemoved(*child, next);
             }
         }
 
@@ -847,7 +848,7 @@ void ContainerNode::notifyNodeInsertedInternal(Node& root, NodeVector& postInser
     }
 }
 
-void ContainerNode::notifyNodeRemoved(Node& root)
+void ContainerNode::notifyNodeRemoved(Node& root, Node* next)
 {
     ScriptForbiddenScope forbidScript;
     EventDispatchForbiddenScope assertNoEventDispatch;
@@ -858,9 +859,9 @@ void ContainerNode::notifyNodeRemoved(Node& root)
         // call to removedFrom is not needed.
         if (!node.isContainerNode() && !node.isInTreeScope())
             continue;
-        node.removedFrom(this);
+        node.removedFrom(this, node == root ? next : node.nextSibling());
         for (ShadowRoot* shadowRoot = node.youngestShadowRoot(); shadowRoot; shadowRoot = shadowRoot->olderShadowRoot())
-            notifyNodeRemoved(*shadowRoot);
+            notifyNodeRemoved(*shadowRoot, next);
     }
 }
 

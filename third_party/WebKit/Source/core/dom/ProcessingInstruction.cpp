@@ -274,9 +274,9 @@ Node::InsertionNotificationRequest ProcessingInstruction::insertedInto(Container
     return InsertionDone;
 }
 
-void ProcessingInstruction::removedFrom(ContainerNode* insertionPoint)
+void ProcessingInstruction::removedFrom(ContainerNode* insertionPoint, Node* next)
 {
-    CharacterData::removedFrom(insertionPoint);
+    CharacterData::removedFrom(insertionPoint, next);
     if (!insertionPoint->inDocument())
         return;
 

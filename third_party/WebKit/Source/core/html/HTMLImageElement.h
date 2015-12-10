@@ -148,7 +148,7 @@ private:
     bool draggable() const override;
 
     InsertionNotificationRequest insertedInto(ContainerNode*) override;
-    void removedFrom(ContainerNode*) override;
+    void removedFrom(ContainerNode* insertionPoint, Node* next) override;
     bool shouldRegisterAsNamedItem() const override { return true; }
     bool shouldRegisterAsExtraNamedItem() const override { return true; }
     bool isInteractiveContent() const override;

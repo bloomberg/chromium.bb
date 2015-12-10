@@ -43,7 +43,7 @@ public:
     void closeDialog(const String& returnValue = String());
     void show();
     void showModal(ExceptionState&);
-    void removedFrom(ContainerNode*) override;
+    void removedFrom(ContainerNode* insertionPoint, Node* next) override;
 
     // NotCentered means do not center the dialog. Centered means the dialog has
     // been centered and centeredPosition() is set. NeedsCentering means attempt

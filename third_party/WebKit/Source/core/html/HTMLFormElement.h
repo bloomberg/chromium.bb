@@ -123,7 +123,7 @@ private:
 
     bool layoutObjectIsNeeded(const ComputedStyle&) override;
     InsertionNotificationRequest insertedInto(ContainerNode*) override;
-    void removedFrom(ContainerNode*) override;
+    void removedFrom(ContainerNode* insertionPoint, Node* next) override;
     void finishParsingChildren() override;
 
     void handleLocalEvents(Event&) override;

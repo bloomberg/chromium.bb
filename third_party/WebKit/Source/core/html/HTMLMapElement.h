@@ -50,7 +50,7 @@ private:
     void parseAttribute(const QualifiedName&, const AtomicString&, const AtomicString&) override;
 
     InsertionNotificationRequest insertedInto(ContainerNode*) override;
-    void removedFrom(ContainerNode*) override;
+    void removedFrom(ContainerNode* insertionPoint, Node* next) override;
 
     AtomicString m_name;
 };

@@ -577,7 +577,7 @@ public:
     // This is a dual of insertedInto(), and is similar to the DOMNodeRemovedFromDocument DOM event, but does not require the overhead of event
     // dispatching, and is called _after_ the node is removed from the tree.
     //
-    virtual void removedFrom(ContainerNode* insertionPoint);
+    virtual void removedFrom(ContainerNode* insertionPoint, Node* next);
 
     // FIXME(dominicc): This method is not debug-only--it is used by
     // Tracing--rename it to something indicative.

@@ -75,7 +75,7 @@ protected:
     bool layoutObjectIsNeeded(const ComputedStyle&) override;
     void childrenChanged(const ChildrenChange&) override;
     InsertionNotificationRequest insertedInto(ContainerNode*) override;
-    void removedFrom(ContainerNode*) override;
+    void removedFrom(ContainerNode* insertionPoint, Node* next) override;
     void willRecalcStyle(StyleRecalcChange) override;
 
 private:

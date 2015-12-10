@@ -1515,12 +1515,12 @@ Node::InsertionNotificationRequest HTMLInputElement::insertedInto(ContainerNode*
     return InsertionShouldCallDidNotifySubtreeInsertions;
 }
 
-void HTMLInputElement::removedFrom(ContainerNode* insertionPoint)
+void HTMLInputElement::removedFrom(ContainerNode* insertionPoint, Node* next)
 {
     m_inputTypeView->closePopupView();
     if (insertionPoint->inDocument() && !form())
         removeFromRadioButtonGroup();
-    HTMLTextFormControlElement::removedFrom(insertionPoint);
+    HTMLTextFormControlElement::removedFrom(insertionPoint, next);
     ASSERT(!inDocument());
     resetListAttributeTargetObserver();
 }

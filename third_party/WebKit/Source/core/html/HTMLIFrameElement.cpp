@@ -134,9 +134,9 @@ Node::InsertionNotificationRequest HTMLIFrameElement::insertedInto(ContainerNode
     return result;
 }
 
-void HTMLIFrameElement::removedFrom(ContainerNode* insertionPoint)
+void HTMLIFrameElement::removedFrom(ContainerNode* insertionPoint, Node* next)
 {
-    HTMLFrameElementBase::removedFrom(insertionPoint);
+    HTMLFrameElementBase::removedFrom(insertionPoint, next);
     if (insertionPoint->inDocument() && document().isHTMLDocument() && !insertionPoint->isInShadowTree())
         toHTMLDocument(document()).removeExtraNamedItem(m_name);
 }

@@ -9,6 +9,7 @@
 #include "core/dom/ElementTraversal.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLImageElement.h"
+#include "core/html/HTMLSourceElement.h"
 #include "core/loader/ImageLoader.h"
 
 namespace blink {
@@ -22,10 +23,19 @@ inline HTMLPictureElement::HTMLPictureElement(Document& document)
 
 DEFINE_NODE_FACTORY(HTMLPictureElement)
 
-void HTMLPictureElement::sourceOrMediaChanged()
+void HTMLPictureElement::sourceOrMediaChanged(HTMLElement* sourceElement, Node* next)
 {
-    for (HTMLImageElement* imageElement = Traversal<HTMLImageElement>::firstChild(*this); imageElement; imageElement = Traversal<HTMLImageElement>::nextSibling(*imageElement)) {
-        imageElement->selectSourceURL(ImageLoader::UpdateNormal);
+    bool seenSource = false;
+    Node* node;
+    NodeVector potentialSourceNodes;
+    getChildNodes(*this, potentialSourceNodes);
+
+    for (unsigned i = 0; i < potentialSourceNodes.size(); ++i) {
+        node = potentialSourceNodes[i].get();
+        if (sourceElement == node || (next && node == next))
+            seenSource = true;
+        if (isHTMLImageElement(node) && seenSource)
+            toHTMLImageElement(node)->selectSourceURL(ImageLoader::UpdateNormal);
     }
 }
 

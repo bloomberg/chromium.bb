@@ -120,9 +120,9 @@ Node::InsertionNotificationRequest SVGUseElement::insertedInto(ContainerNode* ro
     return InsertionDone;
 }
 
-void SVGUseElement::removedFrom(ContainerNode* rootParent)
+void SVGUseElement::removedFrom(ContainerNode* rootParent, Node* next)
 {
-    SVGGraphicsElement::removedFrom(rootParent);
+    SVGGraphicsElement::removedFrom(rootParent, next);
     if (rootParent->inDocument()) {
         clearShadowTree();
         cancelShadowTreeRecreation();

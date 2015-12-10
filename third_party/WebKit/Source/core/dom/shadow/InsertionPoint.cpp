@@ -221,7 +221,7 @@ Node::InsertionNotificationRequest InsertionPoint::insertedInto(ContainerNode* i
     return InsertionDone;
 }
 
-void InsertionPoint::removedFrom(ContainerNode* insertionPoint)
+void InsertionPoint::removedFrom(ContainerNode* insertionPoint, Node* next)
 {
     ShadowRoot* root = containingShadowRoot();
     if (!root)
@@ -248,7 +248,7 @@ void InsertionPoint::removedFrom(ContainerNode* insertionPoint)
         }
     }
 
-    HTMLElement::removedFrom(insertionPoint);
+    HTMLElement::removedFrom(insertionPoint, next);
 }
 
 DEFINE_TRACE(InsertionPoint)

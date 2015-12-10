@@ -277,7 +277,7 @@ private:
     void willChangeForm() final;
     void didChangeForm() final;
     InsertionNotificationRequest insertedInto(ContainerNode*) override;
-    void removedFrom(ContainerNode*) final;
+    void removedFrom(ContainerNode* insertionPoint, Node* next) final;
     void didMoveToNewDocument(Document& oldDocument) final;
     void removeAllEventListeners() final;
 

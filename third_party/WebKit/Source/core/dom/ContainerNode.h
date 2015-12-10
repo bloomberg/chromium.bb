@@ -247,7 +247,7 @@ private:
 
     void notifyNodeInserted(Node&, ChildrenChangeSource = ChildrenChangeSourceAPI);
     void notifyNodeInsertedInternal(Node&, NodeVector& postInsertionNotificationTargets);
-    void notifyNodeRemoved(Node&);
+    void notifyNodeRemoved(Node& root, Node* next);
 
     bool hasRestyleFlag(DynamicRestyleFlags mask) const { return hasRareData() && hasRestyleFlagInternal(mask); }
     bool hasRestyleFlags() const { return hasRareData() && hasRestyleFlagsInternal(); }

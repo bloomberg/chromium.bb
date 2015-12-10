@@ -50,11 +50,11 @@ Node::InsertionNotificationRequest HTMLFormControlElementWithState::insertedInto
     return HTMLFormControlElement::insertedInto(insertionPoint);
 }
 
-void HTMLFormControlElementWithState::removedFrom(ContainerNode* insertionPoint)
+void HTMLFormControlElementWithState::removedFrom(ContainerNode* insertionPoint, Node* next)
 {
     if (insertionPoint->inDocument() && !containingShadowRoot() && !insertionPoint->containingShadowRoot())
         document().formController().unregisterStatefulFormControl(*this);
-    HTMLFormControlElement::removedFrom(insertionPoint);
+    HTMLFormControlElement::removedFrom(insertionPoint, next);
 }
 
 bool HTMLFormControlElementWithState::shouldAutocomplete() const
