@@ -27,6 +27,9 @@ source_set("exo") {
     "surface.h",
     "surface_delegate.h",
     "surface_observer.h",
+    "touch.cc",
+    "touch.h",
+    "touch_delegate.h",
   ]
 
   deps = [
@@ -79,6 +82,7 @@ source_set("unit_tests") {
     "shell_surface_unittest.cc",
     "sub_surface_unittest.cc",
     "surface_unittest.cc",
+    "touch_unittest.cc",
   ]
 
   deps = [

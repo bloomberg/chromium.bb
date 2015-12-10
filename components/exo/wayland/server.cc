@@ -24,6 +24,8 @@
 #include "components/exo/shell_surface.h"
 #include "components/exo/sub_surface.h"
 #include "components/exo/surface.h"
+#include "components/exo/touch.h"
+#include "components/exo/touch_delegate.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/aura/window_property.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
@@ -1243,6 +1245,76 @@ const struct wl_keyboard_interface keyboard_implementation = {keyboard_release};
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////
+// wl_touch_interface:
+
+// Touch delegate class that accepts events for surfaces owned by the same
+// client as a touch resource.
+class WaylandTouchDelegate : public TouchDelegate {
+ public:
+  explicit WaylandTouchDelegate(wl_resource* touch_resource)
+      : touch_resource_(touch_resource) {}
+
+  // Overridden from TouchDelegate:
+  void OnTouchDestroying(Touch* touch) override { delete this; }
+  bool CanAcceptTouchEventsForSurface(Surface* surface) const override {
+    wl_resource* surface_resource = surface->GetProperty(kSurfaceResourceKey);
+    // We can accept events for this surface if the client is the same as the
+    // touch resource.
+    return surface_resource &&
+           wl_resource_get_client(surface_resource) == client();
+  }
+  void OnTouchDown(Surface* surface,
+                   base::TimeDelta time_stamp,
+                   int id,
+                   const gfx::Point& location) override {
+    wl_resource* surface_resource = surface->GetProperty(kSurfaceResourceKey);
+    DCHECK(surface_resource);
+    wl_touch_send_down(touch_resource_, next_serial(),
+                       time_stamp.InMilliseconds(), surface_resource, id,
+                       wl_fixed_from_int(location.x()),
+                       wl_fixed_from_int(location.y()));
+    wl_client_flush(client());
+  }
+  void OnTouchUp(base::TimeDelta time_stamp, int id) override {
+    wl_touch_send_up(touch_resource_, next_serial(),
+                     time_stamp.InMilliseconds(), id);
+    wl_client_flush(client());
+  }
+  void OnTouchMotion(base::TimeDelta time_stamp,
+                     int id,
+                     const gfx::Point& location) override {
+    wl_touch_send_motion(touch_resource_, time_stamp.InMilliseconds(), id,
+                         wl_fixed_from_int(location.x()),
+                         wl_fixed_from_int(location.y()));
+    wl_client_flush(client());
+  }
+  void OnTouchCancel() override {
+    wl_touch_send_cancel(touch_resource_);
+    wl_client_flush(client());
+  }
+
+ private:
+  // The client who own this touch instance.
+  wl_client* client() const { return wl_resource_get_client(touch_resource_); }
+
+  // Returns the next serial to use for keyboard events.
+  uint32_t next_serial() const {
+    return wl_display_next_serial(wl_client_get_display(client()));
+  }
+
+  // The touch resource associated with the touch.
+  wl_resource* const touch_resource_;
+
+  DISALLOW_COPY_AND_ASSIGN(WaylandTouchDelegate);
+};
+
+void touch_release(wl_client* client, wl_resource* resource) {
+  wl_resource_destroy(resource);
+}
+
+const struct wl_touch_interface touch_implementation = {touch_release};
+
+////////////////////////////////////////////////////////////////////////////////
 // wl_seat_interface:
 
 void seat_get_pointer(wl_client* client, wl_resource* resource, uint32_t id) {
@@ -1281,7 +1353,16 @@ void seat_get_keyboard(wl_client* client, wl_resource* resource, uint32_t id) {
 }
 
 void seat_get_touch(wl_client* client, wl_resource* resource, uint32_t id) {
-  NOTIMPLEMENTED();
+  wl_resource* touch_resource = wl_resource_create(
+      client, &wl_touch_interface, wl_resource_get_version(resource), id);
+  if (!touch_resource) {
+    wl_resource_post_no_memory(resource);
+    return;
+  }
+
+  SetImplementation(
+      touch_resource, &touch_implementation,
+      make_scoped_ptr(new Touch(new WaylandTouchDelegate(touch_resource))));
 }
 
 const struct wl_seat_interface seat_implementation = {
@@ -1302,7 +1383,7 @@ void bind_seat(wl_client* client, void* data, uint32_t version, uint32_t id) {
   if (version >= WL_SEAT_NAME_SINCE_VERSION)
     wl_seat_send_name(resource, "default");
 
-  uint32_t capabilities = WL_SEAT_CAPABILITY_POINTER;
+  uint32_t capabilities = WL_SEAT_CAPABILITY_POINTER | WL_SEAT_CAPABILITY_TOUCH;
 #if defined(USE_XKBCOMMON)
   capabilities |= WL_SEAT_CAPABILITY_KEYBOARD;
 #endif
