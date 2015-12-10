@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "components/page_load_metrics/browser/page_load_metrics_observer.h"
 #include "components/page_load_metrics/common/page_load_timing.h"
 
 namespace page_load_metrics {
@@ -18,5 +19,11 @@ base::TimeDelta GetFirstContentfulPaint(const PageLoadTiming& timing) {
   return std::min(timing.first_text_paint, timing.first_image_paint);
 }
 
-}  // namespace page_load_metrics
+bool EventOccurredInForeground(const base::TimeDelta& event,
+                               const PageLoadExtraInfo& info) {
+  return info.started_in_foreground && !event.is_zero() &&
+         (info.first_background_time.is_zero() ||
+          event < info.first_background_time);
+}
 
+}  // namespace page_load_metrics
