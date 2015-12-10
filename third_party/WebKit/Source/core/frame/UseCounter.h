@@ -932,6 +932,10 @@ public:
         V8SloppyMode = 1075,
         V8StrictMode = 1076,
         V8StrongMode = 1077,
+        AudioNodeConnectToAudioNode = 1078,
+        AudioNodeConnectToAudioParam = 1079,
+        AudioNodeDisconnectFromAudioNode = 1080,
+        AudioNodeDisconnectFromAudioParam = 1081,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
