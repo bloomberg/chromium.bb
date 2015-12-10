@@ -38,13 +38,9 @@ struct __sse_data {
   __m128i* red;
 };
 
-// Commonly used registers throughout the code.
-static const __m128i __sse_zero = _mm_set1_epi32(0);
-static const __m128i __sse_max_int = _mm_set1_epi32(0x7FFFFFFF);
-
 inline __m128i AddAndClamp(const __m128i x, const __m128i y) {
   static const __m128i color_max = _mm_set1_epi32(0xFF);
-  return _mm_max_epi16(__sse_zero,
+  return _mm_max_epi16(_mm_setzero_si128(),
                        _mm_min_epi16(_mm_add_epi16(x, y), color_max));
 }
 
@@ -72,7 +68,7 @@ inline uint32_t GetVerticalError(const __sse_data* data,
                                  const __m128i* green_avg,
                                  const __m128i* red_avg,
                                  uint32_t* verror) {
-  __m128i error = __sse_zero;
+  __m128i error = _mm_setzero_si128();
 
   for (int i = 0; i < 4; i++) {
     error = _mm_add_epi32(error, GetColorErrorSSE(data->blue[i], blue_avg[0]));
@@ -94,7 +90,7 @@ inline uint32_t GetHorizontalError(const __sse_data* data,
                                    const __m128i* green_avg,
                                    const __m128i* red_avg,
                                    uint32_t* verror) {
-  __m128i error = __sse_zero;
+  __m128i error = _mm_setzero_si128();
   int first_index, second_index;
 
   for (int i = 0; i < 2; i++) {
@@ -301,11 +297,11 @@ void ComputeLuminance(uint8_t* block,
     test_green = AddAndClamp(tmp, base_green);
     test_red = AddAndClamp(tmp, base_red);
 
-    first_half_min = __sse_max_int;
-    second_half_min = __sse_max_int;
+    first_half_min = _mm_set1_epi32(0x7FFFFFFF);
+    second_half_min = _mm_set1_epi32(0x7FFFFFFF);
 
-    first_half_pattern = __sse_zero;
-    second_half_pattern = __sse_zero;
+    first_half_pattern = _mm_setzero_si128();
+    second_half_pattern = _mm_setzero_si128();
 
     for (uint8_t imm8 : shuffle_mask) {
       switch (imm8) {
