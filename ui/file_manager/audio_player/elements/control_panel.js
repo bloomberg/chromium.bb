@@ -51,6 +51,15 @@
       },
 
       /**
+       * Current seeking position on the time slider in millisecond.
+       */
+      seekingTime: {
+        type: Number,
+        value: 0,
+        readOnly: true
+      },
+
+      /**
        * Total length of the current music in millisecond.
        */
       duration: {
@@ -122,8 +131,10 @@
       timeSlider.addEventListener('change', function() {
         if (this.dragging)
           this.dragging = false;
+        this._setSeekingTime(0);
       }.bind(this));
       timeSlider.addEventListener('immediate-value-change', function() {
+        this._setSeekingTime(timeSlider.immediateValue);
         if (!this.dragging)
           this.dragging = true;
       }.bind(this));
@@ -190,6 +201,23 @@
      */
     computeTimeString_: function(time, duration) {
       return this.time2string_(time) + ' / ' + this.time2string_(duration);
+    },
+
+    /**
+     * Computes string representation of displayed time. If a user is dragging
+     * the knob of seek bar, seeking position should be shown. Otherwise,
+     * playing position should be shown.
+     * @param {boolean} dragging Whether the know of seek bar is being dragged.
+     * @param {number} time Time corresponding to the playing position.
+     * @param {number} seekingTime Time corresponding to the seeking position.
+     * @param {number} duration Duration of the audio file.
+     * @return {string} String representation to be displayed as current time.
+     */
+    computeDisplayTimeString_: function(dragging, time, seekingTime, duration) {
+      if (dragging)
+        return this.computeTimeString_(seekingTime, duration);
+      else
+        return this.computeTimeString_(time, duration);
     },
 
     /**
