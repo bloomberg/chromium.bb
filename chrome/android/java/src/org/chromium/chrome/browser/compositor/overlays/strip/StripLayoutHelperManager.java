@@ -235,6 +235,11 @@ public class StripLayoutHelperManager implements SceneOverlay {
     }
 
     @Override
+    public void tabStateInitialized() {
+        updateModelSwitcherButton();
+    }
+
+    @Override
     public void tabModelSwitched(boolean incognito) {
         if (incognito == mIsIncognito) return;
         mIsIncognito = incognito;

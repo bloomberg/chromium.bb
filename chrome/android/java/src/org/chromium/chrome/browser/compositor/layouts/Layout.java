@@ -815,6 +815,15 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
     }
 
     /**
+     * Called when the TabModelSelector has been initialized with an accurate tab count.
+     */
+    public void onTabStateInitialized() {
+        for (int i = 0; i < mSceneOverlays.size(); i++) {
+            mSceneOverlays.get(i).tabStateInitialized();
+        }
+    }
+
+    /**
      * Called when the current tabModel switched (e.g. standard -> incognito).
      *
      * @param incognito True if the new model is incognito.

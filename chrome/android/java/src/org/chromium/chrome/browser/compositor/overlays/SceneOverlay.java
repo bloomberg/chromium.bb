@@ -65,6 +65,11 @@ public interface SceneOverlay {
     void tabTitleChanged(int tabId, String title);
 
     /**
+     * Called when the TabModelSelector has been initialized with an accurate tab count.
+     */
+    void tabStateInitialized();
+
+    /**
      * Called when the active {@link TabModel} switched (e.g. standard -> incognito).
      * @param incognito Whether or not the new active model is incognito.
      */
