@@ -244,13 +244,15 @@ const char* const kSafeManifestEntries[] = {
     emk::kWebview,
 };
 
-// List of permissions based on [1].  Since Public Session users may be fully
-// unaware of any apps being installed, their consent to access any kind of
-// sensitive information cannot be assumed.  Therefore only APIs are whitelisted
-// which should not leak sensitive data to the caller.  Since the privacy
-// boundary is drawn at the API level, no safeguards are required to prevent
-// exfiltration and thus apps may communicate freely over any kind of network.
+// List of permissions based on [1] and [2].  Since Public Session users may be
+// fully unaware of any apps being installed, their consent to access any kind
+// of sensitive information cannot be assumed.  Therefore only APIs are
+// whitelisted which should not leak sensitive data to the caller.  Since the
+// privacy boundary is drawn at the API level, no safeguards are required to
+// prevent exfiltration and thus apps may communicate freely over any kind of
+// network.
 // [1] https://developer.chrome.com/apps/declare_permissions
+// [2] https://developer.chrome.com/apps/api_other
 const char* const kSafePermissions[] = {
     // Risky: Reading accessibility settings could allow to infer health
     // information.
@@ -293,6 +295,15 @@ const char* const kSafePermissions[] = {
     // Possibly risky due to its experimental nature: not vetted for security,
     // potentially buggy, subject to change without notice.
     // "experimental",
+
+    // Fullscreen is a no-op for Public Session.  Whitelisting nevertheless to
+    // broaden the range of supported apps.  (The recommended permission names
+    // are "app.window.*" but their unprefixed counterparts are still
+    // supported.)
+    "app.window.fullscreen",
+    "app.window.fullscreen.overrideEsc",
+    "fullscreen",
+    "overrideEscFullscreen",
 
     // TBD
     // "fileSystem",
@@ -545,8 +556,8 @@ bool DeviceLocalAccountManagementPolicyProvider::UserMayLoad(
       return true;
     }
   } else if (account_type_ == policy::DeviceLocalAccount::TYPE_KIOSK_APP) {
-    // For single-app kiosk sessions, allow platform apps, extesions and
-    // shared modules.
+    // For single-app kiosk sessions, allow platform apps, extesions and shared
+    // modules.
     if (extension->GetType() == extensions::Manifest::TYPE_PLATFORM_APP ||
         extension->GetType() == extensions::Manifest::TYPE_SHARED_MODULE ||
         extension->GetType() == extensions::Manifest::TYPE_EXTENSION) {
