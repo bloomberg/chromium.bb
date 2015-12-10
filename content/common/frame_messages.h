@@ -40,6 +40,15 @@
 #include "content/common/pepper_renderer_instance_data.h"
 #endif
 
+// Singly-included section for type definitions.
+#ifndef CONTENT_COMMON_FRAME_MESSAGES_H_
+#define CONTENT_COMMON_FRAME_MESSAGES_H_
+
+using FrameMsg_GetSerializedHtmlWithLocalLinks_Map =
+    std::map<GURL, base::FilePath>;
+
+#endif  // CONTENT_COMMON_FRAME_MESSAGES_H_
+
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 
@@ -715,10 +724,8 @@ IPC_MESSAGE_ROUTED0(FrameMsg_GetSavableResourceLinks)
 
 // Get html data by serializing the target frame and replacing all resource
 // links with a path to the local copy passed in the message payload.
-using FrameMsg_GetSerializedHtmlWithLocalLinks_Map =
-    std::map<GURL, base::FilePath>;
 IPC_MESSAGE_ROUTED1(FrameMsg_GetSerializedHtmlWithLocalLinks,
-                    FrameMsg_GetSerializedHtmlWithLocalLinks_Map);
+                    FrameMsg_GetSerializedHtmlWithLocalLinks_Map)
 
 IPC_MESSAGE_ROUTED1(FrameMsg_SetFrameOwnerProperties,
                     blink::WebFrameOwnerProperties /* frame_owner_properties */)
