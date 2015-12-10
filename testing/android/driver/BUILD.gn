@@ -11,6 +11,7 @@ android_apk("driver_apk") {
   testonly = true
 
   deps = [
+    "//base:base_java",
     "//base:base_java_test_support",
     "//testing/android/appurify_support:appurify_support_java",
     "//testing/android/broker:broker_java",
