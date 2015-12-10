@@ -594,28 +594,6 @@ void ContextState::UnbindSampler(Sampler* sampler) {
   }
 }
 
-PixelStoreParams ContextState::GetPackParams() {
-  PixelStoreParams params;
-  params.alignment = pack_alignment;
-  params.row_length = pack_row_length;
-  params.skip_pixels = pack_skip_pixels;
-  params.skip_rows = pack_skip_rows;
-  return params;
-}
-
-PixelStoreParams ContextState::GetUnpackParams(Dimension dimension) {
-  PixelStoreParams params;
-  params.alignment = unpack_alignment;
-  params.row_length = unpack_row_length;
-  params.skip_pixels = unpack_skip_pixels;
-  params.skip_rows = unpack_skip_rows;
-  if (dimension == k3D) {
-    params.image_height = unpack_image_height;
-    params.skip_images = unpack_skip_images;
-  }
-  return params;
-}
-
 // Include the auto-generated part of this file. We split this because it means
 // we can easily edit the non-auto generated parts right here in this file
 // instead of having to edit some template or the code generator.
