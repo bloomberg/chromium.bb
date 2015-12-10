@@ -435,7 +435,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest,
   notification_listener.Reset();
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalUrlUpdate) {
+// Temporarily disabled in official builds. See crbug.com/567497 for details.
+#if defined(GOOGLE_CHROME_BUILD) && defined(OS_WIN)
+#define MAYBE_ExternalUrlUpdate DISABLED_ExternalUrlUpdate
+#else
+#define MAYBE_ExternalUrlUpdate ExternalUrlUpdate
+#endif  // defined(GOOGLE_CHROME_BUILD) && defined(OS_WIN)
+IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, MAYBE_ExternalUrlUpdate) {
   ExtensionService* service = extensions::ExtensionSystem::Get(
       browser()->profile())->extension_service();
   const char kExtensionId[] = "ogjcoiohnmldgjemafoockdghcjciccf";
