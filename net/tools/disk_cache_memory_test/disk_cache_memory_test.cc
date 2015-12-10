@@ -15,7 +15,6 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -105,7 +104,7 @@ scoped_ptr<Backend> CreateAndInitBackend(const CacheSpec& spec) {
   if (!succeeded) {
     LOG(ERROR) << "Could not initialize backend in "
                << spec.path.LossyDisplayName();
-    return result.Pass();
+    return result;
   }
   // For the simple cache, the index may not be initialized yet.
   if (spec.backend_type == net::CACHE_BACKEND_SIMPLE) {
@@ -125,12 +124,12 @@ scoped_ptr<Backend> CreateAndInitBackend(const CacheSpec& spec) {
     if (!succeeded) {
       LOG(ERROR) << "Could not initialize Simple Cache in "
                  << spec.path.LossyDisplayName();
-      return result.Pass();
+      return result;
     }
   }
   DCHECK(backend);
   result.swap(backend);
-  return result.Pass();
+  return result;
 }
 
 // Parses range lines from /proc/<PID>/smaps, e.g. (anonymous read write):
@@ -224,16 +223,15 @@ uint64 GetMemoryConsumption() {
   return total_size;
 }
 
-bool CacheMemTest(const ScopedVector<CacheSpec>& specs) {
-  ScopedVector<Backend> backends;
-  ScopedVector<CacheSpec>::const_iterator it;
-  for (it = specs.begin(); it != specs.end(); ++it) {
-    scoped_ptr<Backend> backend = CreateAndInitBackend(**it);
+bool CacheMemTest(const std::vector<scoped_ptr<CacheSpec>>& specs) {
+  std::vector<scoped_ptr<Backend>> backends;
+  for (const auto& it : specs) {
+    scoped_ptr<Backend> backend = CreateAndInitBackend(*it);
     if (!backend)
       return false;
-    std::cout << "Number of entries in " << (*it)->path.LossyDisplayName()
-              << " : " << backend->GetEntryCount() << std::endl;
-    backends.push_back(backend.release());
+    std::cout << "Number of entries in " << it->path.LossyDisplayName() << " : "
+              << backend->GetEntryCount() << std::endl;
+    backends.push_back(std::move(backend));
   }
   const uint64 memory_consumption = GetMemoryConsumption();
   std::cout << "Private dirty memory: " << memory_consumption << " kB"
@@ -254,13 +252,13 @@ void PrintUsage(std::ostream* stream) {
 }
 
 bool ParseAndStoreSpec(const std::string& spec_str,
-                       ScopedVector<CacheSpec>* specs) {
+                       std::vector<scoped_ptr<CacheSpec>>* specs) {
   scoped_ptr<CacheSpec> spec = CacheSpec::Parse(spec_str);
   if (!spec) {
     PrintUsage(&std::cerr);
     return false;
   }
-  specs->push_back(spec.release());
+  specs->push_back(std::move(spec));
   return true;
 }
 
@@ -282,7 +280,7 @@ bool Main(int argc, char** argv) {
     PrintUsage(&std::cerr);
     return false;
   }
-  ScopedVector<CacheSpec> specs;
+  std::vector<scoped_ptr<CacheSpec>> specs;
   const std::string spec_str_1 = command_line.GetSwitchValueASCII("spec-1");
   if (!ParseAndStoreSpec(spec_str_1, &specs))
     return false;
