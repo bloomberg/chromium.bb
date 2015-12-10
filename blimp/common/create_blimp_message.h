@@ -18,6 +18,7 @@ class ControlMessage;
 class InputMessage;
 class NavigationMessage;
 class RenderWidgetMessage;
+class SizeMessage;
 class StartConnectionMessage;
 
 // Suite of helper methods to simplify the repetitive task of creating
@@ -49,6 +50,9 @@ BLIMP_COMMON_EXPORT scoped_ptr<BlimpMessage> CreateBlimpMessage(
 BLIMP_COMMON_EXPORT scoped_ptr<BlimpMessage> CreateBlimpMessage(
     RenderWidgetMessage** render_widget_message,
     int target_tab_id);
+
+BLIMP_COMMON_EXPORT scoped_ptr<BlimpMessage> CreateBlimpMessage(
+    SizeMessage** size_message);
 
 BLIMP_COMMON_EXPORT scoped_ptr<BlimpMessage> CreateStartConnectionMessage(
     const std::string& client_token,

@@ -8,8 +8,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/common/proto/compositor.pb.h"
+#include "blimp/common/proto/control.pb.h"
 #include "blimp/common/proto/input.pb.h"
 #include "blimp/common/proto/render_widget.pb.h"
+#include "blimp/common/proto/size.pb.h"
 
 namespace blimp {
 
@@ -59,6 +61,15 @@ scoped_ptr<BlimpMessage> CreateBlimpMessage(
   output->set_type(BlimpMessage::RENDER_WIDGET);
   output->set_target_tab_id(target_tab_id);
   *render_widget_message = output->mutable_render_widget();
+  return output;
+}
+
+scoped_ptr<BlimpMessage> CreateBlimpMessage(SizeMessage** size_message) {
+  DCHECK(size_message);
+  ControlMessage* control_message;
+  scoped_ptr<BlimpMessage> output = CreateBlimpMessage(&control_message);
+  control_message->set_type(ControlMessage::SIZE);
+  *size_message = control_message->mutable_size();
   return output;
 }
 

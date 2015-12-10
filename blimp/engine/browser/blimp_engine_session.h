@@ -74,7 +74,7 @@ class BlimpEngineSession
   // Creates a new WebContents, which will be indexed by |target_tab_id|.
   void CreateWebContents(const int target_tab_id);
   void CloseWebContents(const int target_tab_id);
-  void HandleResize(const gfx::Size& size);
+  void HandleResize(float device_pixel_ratio, const gfx::Size& size);
 
   // NavigationMessage handler methods.
   // Navigates the target tab to the |url|.

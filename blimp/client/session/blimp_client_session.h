@@ -14,6 +14,7 @@ namespace blimp {
 class BrowserConnectionHandler;
 class NavigationFeature;
 class RenderWidgetFeature;
+class TabControlFeature;
 
 // BlimpClientSession represents a single active session of Blimp on the client
 // regardless of whether or not the client application is in the background or
@@ -27,6 +28,7 @@ class BLIMP_CLIENT_EXPORT BlimpClientSession {
  public:
   BlimpClientSession();
 
+  TabControlFeature* GetTabControlFeature() const;
   NavigationFeature* GetNavigationFeature() const;
   RenderWidgetFeature* GetRenderWidgetFeature() const;
 
@@ -38,6 +40,7 @@ class BLIMP_CLIENT_EXPORT BlimpClientSession {
   // glue the feature-specific handlers to the actual network connection.
   scoped_ptr<BrowserConnectionHandler> connection_handler_;
 
+  scoped_ptr<TabControlFeature> tab_control_feature_;
   scoped_ptr<NavigationFeature> navigation_feature_;
   scoped_ptr<RenderWidgetFeature> render_widget_feature_;
 

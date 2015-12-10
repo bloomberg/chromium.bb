@@ -10,23 +10,17 @@ namespace engine {
 namespace {
 
 const int64 kDisplayId = 1;
-const float kDefaultScale = 1.0f;
 const int kNumDisplays = 1;
 
 }  // namespace
 
-const int BlimpScreen::kDefaultDisplayWidth = 800;
-const int BlimpScreen::kDefaultDisplayHeight = 600;
-
-BlimpScreen::BlimpScreen() : display_(kDisplayId) {
-  display_.SetScaleAndBounds(
-      kDefaultScale, gfx::Rect(kDefaultDisplayWidth, kDefaultDisplayHeight));
-}
+BlimpScreen::BlimpScreen() : display_(kDisplayId) {}
 
 BlimpScreen::~BlimpScreen() {}
 
-void BlimpScreen::UpdateDisplaySize(const gfx::Size& size) {
-  display_.SetScaleAndBounds(kDefaultScale, gfx::Rect(size));
+void BlimpScreen::UpdateDisplayScaleAndSize(float scale,
+                                            const gfx::Size& size) {
+  display_.SetScaleAndBounds(scale, gfx::Rect(size));
 }
 
 gfx::Point BlimpScreen::GetCursorScreenPoint() {

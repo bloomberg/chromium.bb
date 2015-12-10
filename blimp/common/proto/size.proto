@@ -13,5 +13,6 @@ package blimp;
 message SizeMessage {
   optional uint64 width = 1;
   optional uint64 height = 2;
+  optional float device_pixel_ratio = 3;
 }
 

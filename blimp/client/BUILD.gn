@@ -30,6 +30,8 @@ component("blimp_client") {
     "session/navigation_feature.h",
     "session/render_widget_feature.cc",
     "session/render_widget_feature.h",
+    "session/tab_control_feature.cc",
+    "session/tab_control_feature.h",
   ]
 
   defines = [ "BLIMP_CLIENT_IMPLEMENTATION=1" ]
@@ -62,6 +64,7 @@ source_set("unit_tests") {
   sources = [
     "session/navigation_feature_unittest.cc",
     "session/render_widget_feature_unittest.cc",
+    "session/tab_control_feature_unittest.cc",
   ]
 
   deps = [
@@ -105,6 +108,7 @@ if (is_android) {
       "android/java/src/org/chromium/blimp/BlimpLibraryLoader.java",
       "android/java/src/org/chromium/blimp/BlimpView.java",
       "android/java/src/org/chromium/blimp/session/BlimpClientSession.java",
+      "android/java/src/org/chromium/blimp/session/TabControlFeature.java",
       "android/java/src/org/chromium/blimp/toolbar/Toolbar.java",
     ]
 
@@ -189,6 +193,7 @@ if (is_android) {
       "android/java/src/org/chromium/blimp/BlimpRendererActivity.java",
       "android/java/src/org/chromium/blimp/BlimpView.java",
       "android/java/src/org/chromium/blimp/session/BlimpClientSession.java",
+      "android/java/src/org/chromium/blimp/session/TabControlFeature.java",
       "android/java/src/org/chromium/blimp/toolbar/Toolbar.java",
       "android/java/src/org/chromium/blimp/toolbar/UrlBar.java",
     ]
@@ -236,6 +241,8 @@ if (is_android) {
       "compositor/blimp_compositor_android.h",
       "session/blimp_client_session_android.cc",
       "session/blimp_client_session_android.h",
+      "session/tab_control_feature_android.cc",
+      "session/tab_control_feature_android.h",
     ]
 
     libs = [ "android" ]

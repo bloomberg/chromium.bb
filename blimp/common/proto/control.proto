@@ -28,5 +28,6 @@ message ControlMessage {
 
   // Feature-specific messages follow.
   // Only one of these fields may be set per ControlMessage.
-  optional SizeMessage resize = 1000;
+  // TODO(kmarshall): use a 'oneof' union when it's supported in Chromium.
+  optional SizeMessage size = 1000;
 }

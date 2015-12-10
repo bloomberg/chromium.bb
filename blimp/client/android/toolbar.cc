@@ -5,9 +5,7 @@
 #include "blimp/client/android/toolbar.h"
 
 #include "base/android/jni_string.h"
-#include "base/lazy_instance.h"
 #include "blimp/client/session/blimp_client_session_android.h"
-#include "blimp/net/null_blimp_message_processor.h"
 #include "jni/Toolbar_jni.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/android/java_bitmap.h"
@@ -21,7 +19,6 @@ const int kDummyTabId = 0;
 
 }  // namespace
 
-// static
 static jlong Init(JNIEnv* env,
                   const JavaParamRef<jobject>& jobj,
                   const JavaParamRef<jobject>& blimp_client_session) {

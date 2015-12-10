@@ -24,10 +24,10 @@ public class BlimpClientSession {
      * Destroys the native BlimpClientSession.  This class should not be used after this is called.
      */
     public void destroy() {
-        if (mNativeBlimpClientSessionAndroidPtr != 0) {
-            nativeDestroy(mNativeBlimpClientSessionAndroidPtr);
-            mNativeBlimpClientSessionAndroidPtr = 0;
-        }
+        if (mNativeBlimpClientSessionAndroidPtr == 0) return;
+
+        nativeDestroy(mNativeBlimpClientSessionAndroidPtr);
+        mNativeBlimpClientSessionAndroidPtr = 0;
     }
 
     // Methods that are called by native via JNI.

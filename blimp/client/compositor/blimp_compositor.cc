@@ -19,8 +19,6 @@
 #include "blimp/client/compositor/test/dummy_layer_driver.h"
 #include "blimp/client/session/render_widget_feature.h"
 #include "blimp/common/compositor/blimp_task_graph_runner.h"
-#include "blimp/net/blimp_message_multiplexer.h"
-#include "blimp/net/null_blimp_message_processor.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_settings.h"
 #include "cc/output/output_surface.h"

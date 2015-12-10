@@ -9,6 +9,7 @@
 #include "blimp/client/android/blimp_view.h"
 #include "blimp/client/android/toolbar.h"
 #include "blimp/client/session/blimp_client_session_android.h"
+#include "blimp/client/session/tab_control_feature_android.h"
 
 namespace {
 
@@ -18,6 +19,7 @@ base::android::RegistrationMethod kBlimpRegistrationMethods[] = {
     {"BlimpView", blimp::BlimpView::RegisterJni},
     {"BlimpClientSessionAndroid",
      blimp::BlimpClientSessionAndroid::RegisterJni},
+    {"TabControlFeatureAndroid", blimp::TabControlFeatureAndroid::RegisterJni},
 };
 
 }  // namespace

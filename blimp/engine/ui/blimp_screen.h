@@ -21,7 +21,7 @@ class BlimpScreen : public gfx::Screen {
   ~BlimpScreen() override;
 
   // Updates the size reported by the primary display.
-  void UpdateDisplaySize(const gfx::Size& size);
+  void UpdateDisplayScaleAndSize(float scale, const gfx::Size& size);
 
   // gfx::Screen implementation.
   gfx::Point GetCursorScreenPoint() override;
@@ -35,9 +35,6 @@ class BlimpScreen : public gfx::Screen {
   gfx::Display GetPrimaryDisplay() const override;
   void AddObserver(gfx::DisplayObserver* observer) override;
   void RemoveObserver(gfx::DisplayObserver* observer) override;
-
-  static const int kDefaultDisplayWidth;
-  static const int kDefaultDisplayHeight;
 
  private:
   gfx::Display display_;

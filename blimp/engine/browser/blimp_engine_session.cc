@@ -41,6 +41,9 @@ namespace engine {
 namespace {
 
 const int kDummyTabId = 0;
+const float kDefaultScaleFactor = 1.f;
+const int kDefaultDisplayWidth = 800;
+const int kDefaultDisplayHeight = 600;
 
 base::LazyInstance<blimp::NullBlimpMessageProcessor> g_blimp_message_processor =
     LAZY_INSTANCE_INITIALIZER;
@@ -68,6 +71,9 @@ BlimpEngineSession::BlimpEngineSession(
       // TODO(dtrainor, haibinlu): Properly pull these from the BlimpMessageMux.
       render_widget_processor_(g_blimp_message_processor.Pointer(),
                                g_blimp_message_processor.Pointer()) {
+  screen_->UpdateDisplayScaleAndSize(kDefaultScaleFactor,
+                                     gfx::Size(kDefaultDisplayWidth,
+                                               kDefaultDisplayHeight));
   render_widget_processor_.SetDelegate(kDummyTabId, this);
 }
 
@@ -121,9 +127,13 @@ void BlimpEngineSession::CloseWebContents(const int target_tab_id) {
   web_contents_->Close();
 }
 
-void BlimpEngineSession::HandleResize(const gfx::Size& size) {
-  // TODO(dtrainor, haibinlu): Set the proper size on the WebContents/save for
-  // future WebContents objects.
+void BlimpEngineSession::HandleResize(float device_pixel_ratio,
+                                      const gfx::Size& size) {
+  screen_->UpdateDisplayScaleAndSize(device_pixel_ratio, size);
+  if (web_contents_ && web_contents_->GetRenderViewHost() &&
+      web_contents_->GetRenderViewHost()->GetWidget()) {
+    web_contents_->GetRenderViewHost()->GetWidget()->WasResized();
+  }
 }
 
 void BlimpEngineSession::LoadUrl(const int target_tab_id, const GURL& url) {
@@ -198,8 +208,9 @@ void BlimpEngineSession::ProcessMessage(
       case ControlMessage::CLOSE_TAB:
         CloseWebContents(message->target_tab_id());
       case ControlMessage::SIZE:
-        HandleResize(gfx::Size(message->control().resize().width(),
-                               message->control().resize().height()));
+        HandleResize(message->control().size().device_pixel_ratio(),
+                     gfx::Size(message->control().size().width(),
+                               message->control().size().height()));
         break;
       default:
         NOTIMPLEMENTED();

@@ -6,15 +6,20 @@
 
 #include "blimp/client/session/navigation_feature.h"
 #include "blimp/client/session/render_widget_feature.h"
+#include "blimp/client/session/tab_control_feature.h"
 #include "blimp/net/browser_connection_handler.h"
 
 namespace blimp {
 
 BlimpClientSession::BlimpClientSession()
     : connection_handler_(new BrowserConnectionHandler),
+      tab_control_feature_(new TabControlFeature),
       navigation_feature_(new NavigationFeature),
       render_widget_feature_(new RenderWidgetFeature) {
   // Connect the features with the network layer.
+  tab_control_feature_->set_outgoing_message_processor(
+        connection_handler_->RegisterFeature(BlimpMessage::CONTROL,
+                                             tab_control_feature_.get()));
   navigation_feature_->set_outgoing_message_processor(
       connection_handler_->RegisterFeature(BlimpMessage::NAVIGATION,
                                            navigation_feature_.get()));
@@ -31,6 +36,10 @@ BlimpClientSession::BlimpClientSession()
 }
 
 BlimpClientSession::~BlimpClientSession() {}
+
+TabControlFeature* BlimpClientSession::GetTabControlFeature() const {
+  return tab_control_feature_.get();
+}
 
 NavigationFeature* BlimpClientSession::GetNavigationFeature() const {
   return navigation_feature_.get();

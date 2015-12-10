@@ -9,6 +9,7 @@
 #include "blimp/common/proto/input.pb.h"
 #include "blimp/common/proto/navigation.pb.h"
 #include "blimp/common/proto/render_widget.pb.h"
+#include "blimp/common/proto/size.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blimp {
@@ -57,6 +58,15 @@ TEST(CreateBlimpMessageTest, RenderWidgetMessage) {
   EXPECT_NE(nullptr, message);
   EXPECT_EQ(details, message->mutable_render_widget());
   EXPECT_EQ(kTabId, message->target_tab_id());
+}
+
+TEST(CreateBlimpMessageTest, SizeMessage) {
+  SizeMessage* details = nullptr;
+  scoped_ptr<BlimpMessage> message = CreateBlimpMessage(&details);
+  EXPECT_NE(nullptr, details);
+  EXPECT_NE(nullptr, message);
+  EXPECT_EQ(ControlMessage::SIZE, message->mutable_control()->type());
+  EXPECT_EQ(details, message->mutable_control()->mutable_size());
 }
 
 TEST(CreateBlimpMessageTest, StartConnectionMessage) {

@@ -14,7 +14,6 @@
 
 namespace blimp {
 
-// static
 static jlong Init(JNIEnv* env,
                   const JavaParamRef<jobject>& jobj,
                   const JavaParamRef<jobject>& blimp_client_session,
