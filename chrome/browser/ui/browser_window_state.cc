@@ -112,6 +112,13 @@ bool ShouldSaveWindowPlacement(const Browser* browser) {
     ((browser->type() == Browser::TYPE_POPUP) && browser->is_trusted_source());
 }
 
+bool SavedBoundsAreContentBounds(const Browser* browser) {
+  // Pop ups such as devtools or bookmark app windows should behave as per other
+  // windows with persisted sizes - treating the saved bounds as window bounds.
+  return browser->is_type_popup() && !browser->is_app() &&
+         !browser->is_trusted_source();
+}
+
 void SaveWindowPlacement(const Browser* browser,
                          const gfx::Rect& bounds,
                          ui::WindowShowState show_state) {

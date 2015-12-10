@@ -1821,9 +1821,7 @@ bool BrowserView::GetSavedWindowPlacement(
     ui::WindowShowState* show_state) const {
   chrome::GetSavedWindowBoundsAndShowState(browser_.get(), bounds, show_state);
 
-  if (browser_->is_type_popup() &&
-      !browser_->is_app() &&
-      !browser_->is_trusted_source()) {
+  if (chrome::SavedBoundsAreContentBounds(browser_.get())) {
     // This is normal non-app popup window. The value passed in |bounds|
     // represents two pieces of information:
     // - the position of the window, in screen coordinates (outer position).

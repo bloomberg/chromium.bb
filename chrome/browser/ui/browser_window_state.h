@@ -41,6 +41,10 @@ const base::DictionaryValue* GetWindowPlacementDictionaryReadOnly(
 
 bool ShouldSaveWindowPlacement(const Browser* browser);
 
+// Returns true if the saved bounds for this window should be treated as the
+// bounds of the content area, not the whole window.
+bool SavedBoundsAreContentBounds(const Browser* browser);
+
 void SaveWindowPlacement(const Browser* browser,
                          const gfx::Rect& bounds,
                          ui::WindowShowState show_state);
