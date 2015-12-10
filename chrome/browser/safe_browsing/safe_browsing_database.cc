@@ -111,47 +111,6 @@ int EncodeChunkId(const int chunk, const int list_id) {
   return chunk << 1 | list_id % 2;
 }
 
-// Generate the set of full hashes to check for |url|.  If
-// |include_whitelist_hashes| is true we will generate additional path-prefixes
-// to match against the csd whitelist.  E.g., if the path-prefix /foo is on the
-// whitelist it should also match /foo/bar which is not the case for all the
-// other lists.  We'll also always add a pattern for the empty path.
-// TODO(shess): This function is almost the same as
-// |CompareFullHashes()| in safe_browsing_util.cc, except that code
-// does an early exit on match.  Since match should be the infrequent
-// case (phishing or malware found), consider combining this function
-// with that one.
-void UrlToFullHashes(const GURL& url,
-                     bool include_whitelist_hashes,
-                     std::vector<SBFullHash>* full_hashes) {
-  std::vector<std::string> hosts;
-  if (url.HostIsIPAddress()) {
-    hosts.push_back(url.host());
-  } else {
-    GenerateHostsToCheck(url, &hosts);
-  }
-
-  std::vector<std::string> paths;
-  GeneratePathsToCheck(url, &paths);
-
-  for (size_t i = 0; i < hosts.size(); ++i) {
-    for (size_t j = 0; j < paths.size(); ++j) {
-      const std::string& path = paths[j];
-      full_hashes->push_back(
-          SBFullHashForString(hosts[i] + path));
-
-      // We may have /foo as path-prefix in the whitelist which should
-      // also match with /foo/bar and /foo?bar.  Hence, for every path
-      // that ends in '/' we also add the path without the slash.
-      if (include_whitelist_hashes && path.size() > 1 &&
-          path[path.size() - 1] == '/') {
-        full_hashes->push_back(SBFullHashForString(
-            hosts[i] + path.substr(0, path.size() - 1)));
-      }
-    }
-  }
-}
-
 // Helper function to compare addprefixes in |store| with |prefixes|.
 // The |list_bit| indicates which list (url or hash) to compare.
 //
