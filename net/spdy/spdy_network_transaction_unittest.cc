@@ -346,41 +346,42 @@ class SpdyNetworkTransactionTest
 
       session_deps_->socket_factory->AddSSLSocketDataProvider(
           ssl_provider.get());
-      ssl_vector_.push_back(ssl_provider.release());
+      ssl_vector_.push_back(std::move(ssl_provider));
 
       session_deps_->socket_factory->AddSocketDataProvider(data);
       if (test_params_.ssl_type == HTTP_SPDY_VIA_ALT_SVC) {
         MockConnect hanging_connect(SYNCHRONOUS, ERR_IO_PENDING);
-        StaticSocketDataProvider* hanging_non_alt_svc_socket =
-            new StaticSocketDataProvider(NULL, 0, NULL, 0);
+        scoped_ptr<StaticSocketDataProvider> hanging_non_alt_svc_socket(
+            make_scoped_ptr(new StaticSocketDataProvider(NULL, 0, NULL, 0)));
         hanging_non_alt_svc_socket->set_connect_data(hanging_connect);
         session_deps_->socket_factory->AddSocketDataProvider(
-            hanging_non_alt_svc_socket);
-        alternate_vector_.push_back(hanging_non_alt_svc_socket);
+            hanging_non_alt_svc_socket.get());
+        alternate_vector_.push_back(std::move(hanging_non_alt_svc_socket));
       }
     }
 
     void AddDeterministicData(DeterministicSocketData* data) {
       DCHECK(deterministic_);
       deterministic_data_vector_.push_back(data);
-      SSLSocketDataProvider* ssl_provider =
-          new SSLSocketDataProvider(ASYNC, OK);
+      scoped_ptr<SSLSocketDataProvider> ssl_provider(
+          make_scoped_ptr(new SSLSocketDataProvider(ASYNC, OK)));
       ssl_provider->SetNextProto(test_params_.protocol);
       ssl_provider->cert =
           ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
-      ssl_vector_.push_back(ssl_provider);
       session_deps_->deterministic_socket_factory->AddSSLSocketDataProvider(
-          ssl_provider);
+          ssl_provider.get());
+      ssl_vector_.push_back(std::move(ssl_provider));
 
       session_deps_->deterministic_socket_factory->AddSocketDataProvider(data);
       if (test_params_.ssl_type == HTTP_SPDY_VIA_ALT_SVC) {
         MockConnect hanging_connect(SYNCHRONOUS, ERR_IO_PENDING);
-        DeterministicSocketData* hanging_non_alt_svc_socket =
-            new DeterministicSocketData(NULL, 0, NULL, 0);
+        scoped_ptr<DeterministicSocketData> hanging_non_alt_svc_socket(
+            make_scoped_ptr(new DeterministicSocketData(NULL, 0, NULL, 0)));
         hanging_non_alt_svc_socket->set_connect_data(hanging_connect);
         session_deps_->deterministic_socket_factory->AddSocketDataProvider(
-            hanging_non_alt_svc_socket);
-        alternate_deterministic_vector_.push_back(hanging_non_alt_svc_socket);
+            hanging_non_alt_svc_socket.get());
+        alternate_deterministic_vector_.push_back(
+            std::move(hanging_non_alt_svc_socket));
       }
     }
 
@@ -403,9 +404,10 @@ class SpdyNetworkTransactionTest
    private:
     typedef std::vector<SocketDataProvider*> DataVector;
     typedef std::vector<DeterministicSocketData*> DeterministicDataVector;
-    typedef ScopedVector<SSLSocketDataProvider> SSLVector;
-    typedef ScopedVector<SocketDataProvider> AlternateVector;
-    typedef ScopedVector<DeterministicSocketData> AlternateDeterministicVector;
+    typedef std::vector<scoped_ptr<SSLSocketDataProvider>> SSLVector;
+    typedef std::vector<scoped_ptr<SocketDataProvider>> AlternateVector;
+    typedef std::vector<scoped_ptr<DeterministicSocketData>>
+        AlternateDeterministicVector;
     HttpRequestInfo request_;
     RequestPriority priority_;
     scoped_ptr<SpdySessionDependencies> session_deps_;
