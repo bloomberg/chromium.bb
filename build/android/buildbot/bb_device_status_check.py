@@ -210,10 +210,10 @@ def RecoverDevices(devices, blacklist):
   should_restart_usb = set(
       status['serial'] for status in statuses
       if (not status['usb_status']
-          or status['adb_status'] == 'unknown'))
+          or status['adb_status'] in ('offline', 'unknown')))
   should_restart_adb = should_restart_usb.union(set(
       status['serial'] for status in statuses
-      if status['adb_status'] in ('offline', 'unauthorized')))
+      if status['adb_status'] == 'unauthorized'))
   should_reboot_device = should_restart_adb.union(set(
       status['serial'] for status in statuses
       if status['blacklisted']))
