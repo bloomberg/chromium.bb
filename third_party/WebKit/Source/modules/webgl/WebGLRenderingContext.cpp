@@ -113,7 +113,7 @@ void WebGLRenderingContext::registerContextExtensions()
     registerExtension<ANGLEInstancedArrays>(m_angleInstancedArrays);
     registerExtension<CHROMIUMSubscribeUniform>(m_chromiumSubscribeUniform);
     registerExtension<EXTBlendMinMax>(m_extBlendMinMax);
-    registerExtension<EXTDisjointTimerQuery>(m_extDisjointTimerQuery, DraftExtension);
+    registerExtension<EXTDisjointTimerQuery>(m_extDisjointTimerQuery);
     registerExtension<EXTFragDepth>(m_extFragDepth);
     registerExtension<EXTShaderTextureLOD>(m_extShaderTextureLOD);
     registerExtension<EXTsRGB>(m_extsRGB);

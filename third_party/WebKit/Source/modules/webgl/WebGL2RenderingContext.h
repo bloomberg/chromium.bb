@@ -41,6 +41,7 @@ protected:
 
     PersistentWillBeMember<CHROMIUMSubscribeUniform> m_chromiumSubscribeUniform;
     PersistentWillBeMember<EXTColorBufferFloat> m_extColorBufferFloat;
+    PersistentWillBeMember<EXTDisjointTimerQuery> m_extDisjointTimerQuery;
     PersistentWillBeMember<EXTTextureFilterAnisotropic> m_extTextureFilterAnisotropic;
     PersistentWillBeMember<OESTextureFloatLinear> m_oesTextureFloatLinear;
     PersistentWillBeMember<WebGLCompressedTextureASTC> m_webglCompressedTextureASTC;
