@@ -252,3 +252,13 @@ test("websocket_frame_parser_fuzzer") {
     "//testing/libfuzzer:libfuzzer_main",
   ]
 }
+
+test("http_chunked_decoder_fuzzer") {
+  sources = [
+    "http_chunked_decoder_fuzzer.cc",
+  ]
+  deps = [
+    "//net",
+    "//testing/libfuzzer:libfuzzer_main",
+  ]
+}
