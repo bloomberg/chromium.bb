@@ -748,6 +748,7 @@ function createConfigLine(port, location) {
     var newSelection = line.nextElementSibling;
     line.parentNode.removeChild(line);
     selectLine(newSelection);
+    commitPortForwardingConfig(false);
   });
   line.appendChild(lineDelete);
 
