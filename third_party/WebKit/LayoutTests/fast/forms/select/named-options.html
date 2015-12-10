@@ -1,3 +1,10 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+<head>
+<script src="../../../resources/js-test.js"></script>
+</head>
+<body>
+<script>
 description("This tests that option elements are accessible using namedItem from both HTMLSelectElement and HTMLOptionsCollection as well as using the getter from the HTMLOptionsCollection");
 
 var select1 = document.createElement("select");
@@ -30,3 +37,6 @@ shouldBeEqualToString("select2.options.test[1].value", "Value2");
 // Clean up after ourselves
 document.body.removeChild(select1);
 document.body.removeChild(select2);
+</script>
+</body>
+</html>
