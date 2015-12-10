@@ -36,4 +36,6 @@ Polymer({
       notify: true,
     },
   },
+
+  behaviors: [SettingsPageVisibility],
 });

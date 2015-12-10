@@ -8,6 +8,15 @@
 
 /** @polymerBehavior */
 var SiteSettingsBehaviorImpl = {
+  properties: {
+    /**
+     * The ID of the category this element is displaying data for.
+     */
+    category: {
+      type: Number,
+    },
+  },
+
   /**
    * Returns whether the category default is set to enabled or not.
    * @param {number} category The category to check.

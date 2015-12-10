@@ -47,12 +47,6 @@ Polymer({
     },
 
     /**
-     * The ID of the category this widget is displaying data for.
-     * See site_settings/constants.js for possible values.
-     */
-    category: Number,
-
-    /**
       * The type of category this widget is displaying data for. Normally
       * either ALLOW or BLOCK, representing which sites are allowed or blocked
       * respectively.

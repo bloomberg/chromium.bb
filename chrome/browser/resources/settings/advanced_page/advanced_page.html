@@ -4,6 +4,7 @@
 <link rel="import" href="chrome://md-settings/passwords_and_forms_page/passwords_and_forms_page.html">
 <link rel="import" href="chrome://md-settings/privacy_page/privacy_page.html">
 <link rel="import" href="chrome://md-settings/reset_page/reset_page.html">
+<link rel="import" href="chrome://md-settings/settings_page/settings_page_visibility.html">
 <link rel="import" href="chrome://md-settings/settings_page/settings_section.html">
 <link rel="import" href="chrome://md-settings/site_settings/constants.html">
 <link rel="import" href="chrome://md-settings/site_settings/site_settings_category.html">
@@ -18,67 +19,81 @@
   <link rel="import" type="css" href="advanced_page.css">
   <template>
 <if expr="chromeos">
-    <settings-section i18n-values="page-title:dateTimePageTitle"
-        current-route="[[currentRoute]]" section="dateTime">
-      <settings-date-time-page prefs="{{prefs}}">
-      </settings-date-time-page>
-    </settings-section>
+    <template is="dom-if" if="[[showPage(pageVisibility.dateTime)]]" restamp>
+      <settings-section i18n-values="page-title:dateTimePageTitle"
+          current-route="[[currentRoute]]" section="dateTime">
+        <settings-date-time-page prefs="{{prefs}}">
+        </settings-date-time-page>
+      </settings-section>
+    </template>
 </if>
-    <settings-section i18n-values="page-title:siteSettingsLocation"
-        current-route="[[currentRoute]]" section="location">
-      <site-settings-category id="locationCategory" prefs="{{prefs}}"
-        current-route="{{currentRoute}}">
-      </site-settings-category>
-    </settings-section>
-
-    <settings-section i18n-values="page-title:privacyPageTitle"
-        current-route="[[currentRoute]]" section="privacy">
-      <settings-privacy-page prefs="{{prefs}}"
-        current-route="{{currentRoute}}">
-      </settings-privacy-page>
-    </settings-section>
-
+    <template is="dom-if" if="[[showPage(pageVisibility.location)]]" restamp>
+      <settings-section i18n-values="page-title:siteSettingsLocation"
+          current-route="[[currentRoute]]" section="location">
+        <site-settings-category prefs="{{prefs}}"
+          current-route="{{currentRoute}}"
+          category="[[locationCategory]]">
+        </site-settings-category>
+      </settings-section>
+    </template>
+    <template is="dom-if" if="[[showPage(pageVisibility.privacy)]]" restamp>
+      <settings-section i18n-values="page-title:privacyPageTitle"
+          current-route="[[currentRoute]]" section="privacy">
+        <settings-privacy-page prefs="{{prefs}}"
+          current-route="{{currentRoute}}">
+        </settings-privacy-page>
+      </settings-section>
+    </template>
 <if expr="chromeos">
-    <settings-section i18n-values="page-title:bluetoothPageTitle"
-        current-route="[[currentRoute]]" section="bluetooth">
-      <settings-bluetooth-page current-route="{{currentRoute}}">
-      </settings-bluetooth-page>
-    </settings-section>
+    <template is="dom-if" if="[[showPage(pageVisibility.bluetooth)]]" restamp>
+      <settings-section i18n-values="page-title:bluetoothPageTitle"
+          current-route="[[currentRoute]]" section="bluetooth">
+        <settings-bluetooth-page current-route="{{currentRoute}}">
+        </settings-bluetooth-page>
+      </settings-section>
+    </template>
 </if>
 
-    <settings-section
-        i18n-values="page-title:passwordsAndAutofillPageTitle"
-        current-route="[[currentRoute]]" section="passwordsAndForms">
-      <settings-passwords-and-forms-page prefs="{{prefs}}"
-          current-route="{{currentRoute}}">
-      </settings-passwords-and-forms-page>
-    </settings-section>
-
-    <settings-section i18n-values="page-title:languagesPageTitle"
-        current-route="[[currentRoute]]" section="languages">
-      <settings-languages-page prefs="{{prefs}}"
-          current-route="{{currentRoute}}">
-      </settings-languages-page>
-    </settings-section>
-
-    <settings-section i18n-values="page-title:downloadsPageTitle"
-        current-route="[[currentRoute]]" section="downloads">
-      <settings-downloads-page prefs="{{prefs}}">
-      </settings-downloads-page>
-    </settings-section>
-
-    <settings-section i18n-values="page-title:resetPageTitle"
-        current-route="[[currentRoute]]" section="reset">
-      <settings-reset-page></settings-reset-page>
-    </settings-section>
-
+    <template is="dom-if" if="[[showPage(pageVisibility.passwordsAndForms)]]"
+        restamp>
+      <settings-section
+          i18n-values="page-title:passwordsAndAutofillPageTitle"
+          current-route="[[currentRoute]]" section="passwordsAndForms">
+        <settings-passwords-and-forms-page prefs="{{prefs}}"
+            current-route="{{currentRoute}}">
+        </settings-passwords-and-forms-page>
+      </settings-section>
+    </template>
+    <template is="dom-if" if="[[showPage(pageVisibility.languages)]]" restamp>
+      <settings-section i18n-values="page-title:languagesPageTitle"
+          current-route="[[currentRoute]]" section="languages">
+        <settings-languages-page prefs="{{prefs}}"
+            current-route="{{currentRoute}}">
+        </settings-languages-page>
+      </settings-section>
+    </template>
+    <template is="dom-if" if="[[showPage(pageVisibility.downloads)]]" restamp>
+      <settings-section i18n-values="page-title:downloadsPageTitle"
+          current-route="[[currentRoute]]" section="downloads">
+        <settings-downloads-page prefs="{{prefs}}">
+        </settings-downloads-page>
+      </settings-section>
+    </template>
+    <template is="dom-if" if="[[showPage(pageVisibility.reset)]]" restamp>
+      <settings-section i18n-values="page-title:resetPageTitle"
+          current-route="[[currentRoute]]" section="reset">
+        <settings-reset-page></settings-reset-page>
+      </settings-section>
+    </template>
 <if expr="chromeos">
     <!-- TODO(dbeam): find somewhere to stuff "Add more accessibility features"
          on desktop. -->
-    <settings-section i18n-values="page-title:a11yPageTitle"
-        current-route="[[currentRoute]]" section="a11y">
-      <settings-a11y-page prefs="{{prefs}}"></settings-a11y-page>
-    </settings-section>
+    <template is="dom-if" if="[[showPage(pageVisibility.a11y)]]" restamp>
+      <settings-section i18n-values="page-title:a11yPageTitle"
+          current-route="[[currentRoute]]" section="a11y">
+        <settings-a11y-page prefs="{{prefs}}"></settings-a11y-page>
+      </settings-section>
+    </template>
 </if>
   </template>
   <script src="chrome://md-settings/advanced_page/advanced_page.js"></script>

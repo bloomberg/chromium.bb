@@ -40,13 +40,6 @@ Polymer({
     },
 
     /**
-     * The ID of the category this widget is displaying data for.
-     */
-    category: {
-      type: Number,
-    },
-
-    /**
      * The origin that was selected by the user in the dropdown list.
      */
     selectedOrigin: {

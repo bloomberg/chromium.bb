@@ -31,11 +31,6 @@ Polymer({
     },
 
     /**
-     * The ID of the category this widget is displaying data for.
-     */
-    category: Number,
-
-    /**
      * The origin, which this permission affects.
      */
     origin: {

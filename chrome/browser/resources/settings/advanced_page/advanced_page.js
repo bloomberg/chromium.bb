@@ -37,10 +37,15 @@ Polymer({
       type: Object,
       notify: true,
     },
+
+    /**
+     * The site-settings-category type for the location page.
+     */
+    locationCategory: {
+      type: Number,
+      value: settings.ContentSettingsTypes.GEOLOCATION,
+    },
   },
 
-  ready: function() {
-    this.$.locationCategory.category =
-        settings.ContentSettingsTypes.GEOLOCATION;
-  },
+  behaviors: [SettingsPageVisibility],
 });
