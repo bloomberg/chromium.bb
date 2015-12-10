@@ -1568,13 +1568,14 @@ PassRefPtr<TypeBuilder::DOM::Node> InspectorDOMAgent::buildObjectForNode(Node* n
                 value->setPseudoElements(pseudoElements.release());
                 forcePushChildren = true;
             }
+            if (!element->ownerDocument()->xmlVersion().isEmpty())
+                value->setXmlVersion(element->ownerDocument()->xmlVersion());
         }
 
         if (element->isInsertionPoint()) {
             value->setDistributedNodes(buildArrayForDistributedNodes(toInsertionPoint(element)));
             forcePushChildren = true;
         }
-
     } else if (node->isDocumentNode()) {
         Document* document = toDocument(node);
         value->setDocumentURL(documentURLString(document));

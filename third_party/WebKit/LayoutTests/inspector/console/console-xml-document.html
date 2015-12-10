@@ -7,6 +7,8 @@
 function onload()
 {
     console.dirxml((new DOMParser()).parseFromString("<MixedCase> Test </MixedCase>", "text/xml"));
+    var danglingNode = document.implementation.createDocument("", "books");
+    console.dirxml(danglingNode.createElement("Book"));
     runTest();
 }
 //# sourceURL=console-xml-document.html
