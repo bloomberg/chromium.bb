@@ -36,7 +36,7 @@ public abstract class ContextualSearchPanelAnimation extends ContextualSearchPan
      * The base duration of animations in milliseconds. This value is based on
      * the Kennedy specification for slow animations.
      */
-    static final long BASE_ANIMATION_DURATION_MS = 218;
+    protected static final long BASE_ANIMATION_DURATION_MS = 218;
 
     /**
      * The maximum animation duration in milliseconds.

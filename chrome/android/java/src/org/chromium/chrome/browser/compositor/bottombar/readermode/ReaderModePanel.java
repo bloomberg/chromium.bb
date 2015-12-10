@@ -236,6 +236,18 @@ public class ReaderModePanel extends OverlayPanel {
     }
 
     @Override
+    protected void maximizePanel(StateChangeReason reason) {
+        long duration = BASE_ANIMATION_DURATION_MS;
+        // Extend animation time when animating from PEEKED state to MAXIMIZED.
+        // TODO(mdjones): This check will be unnecessary after the expanded state is removed.
+        if (getPanelState() == PanelState.PEEKED) {
+            duration += 150;
+        }
+
+        super.animatePanelToState(PanelState.MAXIMIZED, reason, duration);
+    }
+
+    @Override
     public float getArrowIconOpacity() {
         // TODO(mdjones): This will not be needed once Reader Mode has its own scene layer.
         // Never show the arrow icon.
