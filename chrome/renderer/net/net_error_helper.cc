@@ -112,6 +112,11 @@ void NetErrorHelper::DidStartProvisionalLoad() {
 
 void NetErrorHelper::DidCommitProvisionalLoad(bool is_new_navigation,
                                               bool is_same_page_navigation) {
+  // If this is a "same page" navigation, it's not a real navigation.  There
+  // wasn't a start event for it, either, so just ignore it.
+  if (is_same_page_navigation)
+    return;
+
   // Invalidate weak pointers from old error page controllers. If loading a new
   // error page, the controller has not yet been attached, so this won't affect
   // it.
