@@ -126,7 +126,6 @@ mojo_native_application("apptests") {
   testonly = true
 
   sources = [
-    "accelerator_registrar_apptest.cc",
     "window_manager_apptest.cc",
   ]
 
