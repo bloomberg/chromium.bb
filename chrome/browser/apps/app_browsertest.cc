@@ -877,29 +877,11 @@ void PlatformAppDevToolsBrowserTest::RunTestWithDevTools(
 
 }  // namespace
 
-// http://crbug.com/246634
-#if defined(OS_CHROMEOS)
-#define MAYBE_ReOpenedWithID DISABLED_ReOpenedWithID
-#else
-#define MAYBE_ReOpenedWithID ReOpenedWithID
-#endif
-IN_PROC_BROWSER_TEST_F(PlatformAppDevToolsBrowserTest, MAYBE_ReOpenedWithID) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshBrowserTests))
-    return;
-#endif
+IN_PROC_BROWSER_TEST_F(PlatformAppDevToolsBrowserTest, ReOpenedWithID) {
   RunTestWithDevTools("minimal_id", RELAUNCH | HAS_ID);
 }
 
-// http://crbug.com/246999
-#if defined(OS_CHROMEOS) || defined(OS_WIN)
-#define MAYBE_ReOpenedWithURL DISABLED_ReOpenedWithURL
-#else
-#define MAYBE_ReOpenedWithURL ReOpenedWithURL
-#endif
-IN_PROC_BROWSER_TEST_F(PlatformAppDevToolsBrowserTest, MAYBE_ReOpenedWithURL) {
+IN_PROC_BROWSER_TEST_F(PlatformAppDevToolsBrowserTest, ReOpenedWithURL) {
   RunTestWithDevTools("minimal", RELAUNCH);
 }
 
