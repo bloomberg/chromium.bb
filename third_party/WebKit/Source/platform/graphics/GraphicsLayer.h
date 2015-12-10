@@ -279,7 +279,6 @@ protected:
     // for testing
     friend class CompositedLayerMappingTest;
     friend class FakeGraphicsLayerFactory;
-    friend class CompositedLayerMappingTest;
 
 private:
     // Adds a child without calling updateChildList(), so that adding children
