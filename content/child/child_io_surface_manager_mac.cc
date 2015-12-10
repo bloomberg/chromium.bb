@@ -99,10 +99,7 @@ IOSurfaceRef ChildIOSurfaceManager::AcquireIOSurface(
   mach_port_t reply_port;
   kern_return_t kr = mach_port_allocate(mach_task_self(),
                                         MACH_PORT_RIGHT_RECEIVE, &reply_port);
-  if (kr != KERN_SUCCESS) {
-    MACH_LOG(ERROR, kr) << "mach_port_allocate";
-    return nullptr;
-  }
+  CHECK_EQ(KERN_SUCCESS, kr);
   base::mac::ScopedMachReceiveRight scoped_receive_right(reply_port);
 
   union {
@@ -128,16 +125,21 @@ IOSurfaceRef ChildIOSurfaceManager::AcquireIOSurface(
     MACH_LOG(ERROR, kr) << "mach_msg";
     return nullptr;
   }
-  if (!data.reply.msg.result) {
-    DLOG(ERROR) << "Browser refused AcquireIOSurface request";
-    return nullptr;
-  }
+  // TODO(crbug.com/554541): Remove this check. This error should be fatal for
+  // renderer processes, but not for the GPU process.
+  CHECK(data.reply.msg.result);
 
   // Deallocate the right after creating an IOSurface reference.
   base::mac::ScopedMachSendRight scoped_io_surface_right(
       data.reply.msg.io_surface_port.name);
 
-  return IOSurfaceLookupFromMachPort(scoped_io_surface_right.get());
+  // If a port was successfully received, it should be valid, and opening it
+  // should not fail.
+  CHECK(scoped_io_surface_right.is_valid());
+  IOSurfaceRef io_surface = IOSurfaceLookupFromMachPort(
+      scoped_io_surface_right.get());
+  CHECK(io_surface);
+  return io_surface;
 }
 
 ChildIOSurfaceManager::ChildIOSurfaceManager() {}
