@@ -144,6 +144,7 @@
       'trees/layer_tree_host_unittest_scroll.cc',
       'trees/layer_tree_host_unittest_video.cc',
       'trees/layer_tree_impl_unittest.cc',
+      'trees/layer_tree_settings_unittest.cc',
       'trees/occlusion_tracker_unittest.cc',
       'trees/occlusion_unittest.cc',
       'trees/property_tree_unittest.cc',

@@ -18,10 +18,21 @@
 
 namespace cc {
 
+namespace proto {
+class LayerTreeSettings;
+}  // namespace proto
+
 class CC_EXPORT LayerTreeSettings {
  public:
   LayerTreeSettings();
   virtual ~LayerTreeSettings();
+
+  bool operator==(const LayerTreeSettings& other) const;
+
+  void ToProtobuf(proto::LayerTreeSettings* proto) const;
+  void FromProtobuf(const proto::LayerTreeSettings& proto);
+
+  SchedulerSettings ToSchedulerSettings() const;
 
   RendererSettings renderer_settings;
   bool single_thread_proxy_scheduler;
@@ -80,8 +91,6 @@ class CC_EXPORT LayerTreeSettings {
   ManagedMemoryPolicy memory_policy_;
 
   LayerTreeDebugState initial_debug_state;
-
-  SchedulerSettings ToSchedulerSettings() const;
 };
 
 }  // namespace cc
