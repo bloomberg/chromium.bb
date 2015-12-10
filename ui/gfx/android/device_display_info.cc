@@ -15,39 +15,39 @@ DeviceDisplayInfo::DeviceDisplayInfo() {
 DeviceDisplayInfo::~DeviceDisplayInfo() {
 }
 
-int DeviceDisplayInfo::GetDisplayHeight() {
+int DeviceDisplayInfo::GetDisplayHeight() const {
   return SharedDeviceDisplayInfo::GetInstance()->GetDisplayHeight();
 }
 
-int DeviceDisplayInfo::GetDisplayWidth() {
+int DeviceDisplayInfo::GetDisplayWidth() const {
   return SharedDeviceDisplayInfo::GetInstance()->GetDisplayWidth();
 }
 
-int DeviceDisplayInfo::GetPhysicalDisplayHeight() {
+int DeviceDisplayInfo::GetPhysicalDisplayHeight() const {
   return SharedDeviceDisplayInfo::GetInstance()->GetPhysicalDisplayHeight();
 }
 
-int DeviceDisplayInfo::GetPhysicalDisplayWidth() {
+int DeviceDisplayInfo::GetPhysicalDisplayWidth() const {
   return SharedDeviceDisplayInfo::GetInstance()->GetPhysicalDisplayWidth();
 }
 
-int DeviceDisplayInfo::GetBitsPerPixel() {
+int DeviceDisplayInfo::GetBitsPerPixel() const {
   return SharedDeviceDisplayInfo::GetInstance()->GetBitsPerPixel();
 }
 
-int DeviceDisplayInfo::GetBitsPerComponent() {
+int DeviceDisplayInfo::GetBitsPerComponent() const {
   return SharedDeviceDisplayInfo::GetInstance()->GetBitsPerComponent();
 }
 
-double DeviceDisplayInfo::GetDIPScale() {
+double DeviceDisplayInfo::GetDIPScale() const {
   return SharedDeviceDisplayInfo::GetInstance()->GetDIPScale();
 }
 
-int DeviceDisplayInfo::GetSmallestDIPWidth() {
+int DeviceDisplayInfo::GetSmallestDIPWidth() const {
   return SharedDeviceDisplayInfo::GetInstance()->GetSmallestDIPWidth();
 }
 
-int DeviceDisplayInfo::GetRotationDegrees() {
+int DeviceDisplayInfo::GetRotationDegrees() const {
   return SharedDeviceDisplayInfo::GetInstance()->GetRotationDegrees();
 }
 

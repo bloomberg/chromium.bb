@@ -21,40 +21,40 @@ class GFX_EXPORT DeviceDisplayInfo {
   ~DeviceDisplayInfo();
 
   // Returns display height in physical pixels.
-  int GetDisplayHeight();
+  int GetDisplayHeight() const;
 
   // Returns display width in physical pixels.
-  int GetDisplayWidth();
+  int GetDisplayWidth() const;
 
   // Returns real display height in physical pixels.
   // This version does not subtract window decorations etc.
   // WARNING: This is only supported on JB-MR1 (sdk >= 17). Either
   //          check the SDK-level, or check for '0' being returned.
-  int GetPhysicalDisplayHeight();
+  int GetPhysicalDisplayHeight() const;
 
   // Returns real display width in physical pixels.
   // This version does not subtract window decorations etc.
   // WARNING: This is only supported on JB-MR1 (sdk >= 17). Either
   //          check the SDK-level, or check for '0' being returned.
-  int GetPhysicalDisplayWidth();
+  int GetPhysicalDisplayWidth() const;
 
   // Returns number of bits per pixel.
-  int GetBitsPerPixel();
+  int GetBitsPerPixel() const;
 
   // Returns number of bits per component.
-  int GetBitsPerComponent();
+  int GetBitsPerComponent() const;
 
   // Returns a scaling factor for Density Independent Pixel unit
   // (1.0 is 160dpi, 0.75 is 120dpi, 2.0 is 320dpi).
-  double GetDIPScale();
+  double GetDIPScale() const;
 
   // Smallest possible screen size in density-independent pixels.
-  int GetSmallestDIPWidth();
+  int GetSmallestDIPWidth() const;
 
   // Returns the display rotation angle from its natural orientation. Expected
   // values are one of { 0, 90, 180, 270 }.
   // See DeviceDispayInfo.java for more information.
-  int GetRotationDegrees();
+  int GetRotationDegrees() const;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DeviceDisplayInfo);
