@@ -10,7 +10,7 @@
  * Example:
  *
  *    <settings-animated-pages current-route="{{currentRoute}}"
-          route-root="advanced/privacy" redirect-root-route-to="advanced">
+ *        section="privacy">
  *      <!-- Insert your section controls here -->
  *    </settings-animated-pages>
  *
@@ -34,6 +34,8 @@ Polymer({
      * Routes with this section activate this element. For instance, if this
      * property is 'search', and currentRoute.section is also set to 'search',
      * this element will display the subpage in currentRoute.subpage.
+     *
+     * The section name must match the name specified in settings_router.js.
      */
     section: {
       type: String,

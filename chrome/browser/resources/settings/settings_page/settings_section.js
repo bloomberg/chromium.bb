@@ -9,7 +9,7 @@
  *
  * Example:
  *
- *    <settings-section page-title="[[pageTitle]]">
+ *    <settings-section page-title="[[pageTitle]]" section="privacy">
  *      <!-- Insert your section controls here -->
  *    </settings-section>
  *
@@ -35,6 +35,8 @@ Polymer({
     /**
      * The section is expanded to a full-page view when this property matches
      * currentRoute.section.
+     *
+     * The section name must match the name specified in settings_router.js.
      */
     section: {
       type: String,
