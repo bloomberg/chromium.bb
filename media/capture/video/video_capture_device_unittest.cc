@@ -297,7 +297,7 @@ TEST_F(VideoCaptureDeviceTest, MAYBE_OpenInvalidDevice) {
 TEST_P(VideoCaptureDeviceTest, CaptureWithSize) {
   names_ = EnumerateDevices();
   if (names_->empty()) {
-    DVLOG(1) << "No camera available. Exiting test.";
+    VLOG(1) << "No camera available. Exiting test.";
     return;
   }
 
@@ -338,7 +338,7 @@ INSTANTIATE_TEST_CASE_P(VideoCaptureDeviceTests,
 TEST_F(VideoCaptureDeviceTest, MAYBE_AllocateBadSize) {
   names_ = EnumerateDevices();
   if (names_->empty()) {
-    DVLOG(1) << "No camera available. Exiting test.";
+    VLOG(1) << "No camera available. Exiting test.";
     return;
   }
   scoped_ptr<VideoCaptureDevice> device(
@@ -366,7 +366,7 @@ TEST_F(VideoCaptureDeviceTest, MAYBE_AllocateBadSize) {
 TEST_F(VideoCaptureDeviceTest, DISABLED_ReAllocateCamera) {
   names_ = EnumerateDevices();
   if (names_->empty()) {
-    DVLOG(1) << "No camera available. Exiting test.";
+    VLOG(1) << "No camera available. Exiting test.";
     return;
   }
 
@@ -410,7 +410,7 @@ TEST_F(VideoCaptureDeviceTest, DISABLED_ReAllocateCamera) {
 TEST_F(VideoCaptureDeviceTest, DeAllocateCameraWhileRunning) {
   names_ = EnumerateDevices();
   if (names_->empty()) {
-    DVLOG(1) << "No camera available. Exiting test.";
+    VLOG(1) << "No camera available. Exiting test.";
     return;
   }
   scoped_ptr<VideoCaptureDevice> device(
@@ -437,7 +437,7 @@ TEST_F(VideoCaptureDeviceTest, MAYBE_CaptureMjpeg) {
   scoped_ptr<VideoCaptureDevice::Name> name =
       GetFirstDeviceNameSupportingPixelFormat(PIXEL_FORMAT_MJPEG);
   if (!name) {
-    DVLOG(1) << "No camera supports MJPEG format. Exiting test.";
+    VLOG(1) << "No camera supports MJPEG format. Exiting test.";
     return;
   }
   scoped_ptr<VideoCaptureDevice> device(
