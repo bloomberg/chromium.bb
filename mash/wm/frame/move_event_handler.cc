@@ -5,6 +5,7 @@
 #include "mash/wm/frame/move_event_handler.h"
 
 #include "components/mus/public/cpp/window.h"
+#include "components/mus/public/interfaces/cursor.mojom.h"
 #include "mash/wm/frame/move_loop.h"
 #include "mojo/converters/input_events/input_events_type_converters.h"
 #include "ui/aura/window.h"
@@ -14,6 +15,32 @@
 
 namespace mash {
 namespace wm {
+namespace {
+
+mus::mojom::Cursor CursorForWindowComponent(int window_component) {
+  switch (window_component) {
+    case HTBOTTOM:
+      return mus::mojom::Cursor::CURSOR_SOUTH_RESIZE;
+    case HTBOTTOMLEFT:
+      return mus::mojom::Cursor::CURSOR_SOUTH_WEST_RESIZE;
+    case HTBOTTOMRIGHT:
+      return mus::mojom::Cursor::CURSOR_SOUTH_EAST_RESIZE;
+    case HTLEFT:
+      return mus::mojom::Cursor::CURSOR_WEST_RESIZE;
+    case HTRIGHT:
+      return mus::mojom::Cursor::CURSOR_EAST_RESIZE;
+    case HTTOP:
+      return mus::mojom::Cursor::CURSOR_NORTH_RESIZE;
+    case HTTOPLEFT:
+      return mus::mojom::Cursor::CURSOR_NORTH_WEST_RESIZE;
+    case HTTOPRIGHT:
+      return mus::mojom::Cursor::CURSOR_NORTH_EAST_RESIZE;
+    default:
+      return mus::mojom::Cursor::CURSOR_NULL;
+  }
+}
+
+}  // namespace
 
 MoveEventHandler::MoveEventHandler(mus::Window* mus_window,
                                    aura::Window* aura_window)
@@ -35,18 +62,22 @@ void MoveEventHandler::ProcessLocatedEvent(ui::LocatedEvent* event) {
       move_loop_.reset();
   } else if (event->type() == ui::ET_MOUSE_PRESSED ||
              event->type() == ui::ET_TOUCH_PRESSED) {
-    const int ht_location = ShouldStartMoveLoop(event);
+    const int ht_location = GetNonClientComponentForEvent(event);
     if (ht_location != HTNOWHERE) {
       // TODO(sky): convert MoveLoop to take ui::Event.
       move_loop_ = MoveLoop::Create(mus_window_, ht_location,
                                     *mus::mojom::Event::From(*ui_event));
     }
+  } else if (event->type() == ui::ET_MOUSE_MOVED) {
+    const int ht_location = GetNonClientComponentForEvent(event);
+    mus_window_->SetPredefinedCursor(CursorForWindowComponent(ht_location));
   }
   if (had_move_loop || move_loop_)
     event->SetHandled();
 }
 
-int MoveEventHandler::ShouldStartMoveLoop(const ui::LocatedEvent* event) {
+int MoveEventHandler::GetNonClientComponentForEvent(
+    const ui::LocatedEvent* event) {
   return aura_window_->delegate()->GetNonClientComponent(event->location());
 }
 

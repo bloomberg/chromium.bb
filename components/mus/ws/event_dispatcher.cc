@@ -248,6 +248,8 @@ void EventDispatcher::ProcessPointerEvent(mojom::EventPtr event) {
       gfx::Point location(EventLocationToPoint(*event));
       pointer_target.window =
           FindDeepestVisibleWindowForEvents(root_, surface_id_, &location);
+      pointer_target.in_nonclient_area =
+          IsLocationInNonclientArea(pointer_target.window, location);
     }
     if (is_mouse_event && !mouse_button_down_)
       mouse_cursor_source_window_ = pointer_target.window;

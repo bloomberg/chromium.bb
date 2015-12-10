@@ -35,7 +35,7 @@ class MoveEventHandler : public ui::EventHandler, public aura::WindowObserver {
 
  private:
   void ProcessLocatedEvent(ui::LocatedEvent* event);
-  int ShouldStartMoveLoop(const ui::LocatedEvent* event);
+  int GetNonClientComponentForEvent(const ui::LocatedEvent* event);
 
   // Overridden from ui::EventHandler:
   void OnMouseEvent(ui::MouseEvent* event) override;
