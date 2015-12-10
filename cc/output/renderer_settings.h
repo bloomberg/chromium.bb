@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "cc/base/cc_export.h"
+#include "cc/resources/resource_format.h"
 
 namespace cc {
 
@@ -29,9 +30,9 @@ class CC_EXPORT RendererSettings {
   bool delay_releasing_overlay_resources;
   double refresh_rate;
   int highp_threshold_min;
-  bool use_rgba_4444_textures;
   size_t texture_id_allocation_chunk_size;
   bool use_gpu_memory_buffer_resources;
+  ResourceFormat preferred_tile_format;
 
   void ToProtobuf(proto::RendererSettings* proto) const;
   void FromProtobuf(const proto::RendererSettings& proto);

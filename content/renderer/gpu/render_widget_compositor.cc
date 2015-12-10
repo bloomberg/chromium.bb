@@ -405,14 +405,16 @@ void RenderWidgetCompositor::Initialize() {
   // low end, so always use default policy.
   bool use_low_memory_policy =
       base::SysInfo::IsLowEndDevice() && !using_synchronous_compositor;
-  // RGBA_4444 textures are only enabled by default for low end devices
-  // and are disabled for Android WebView as it doesn't support the format.
-  settings.renderer_settings.use_rgba_4444_textures = use_low_memory_policy;
   if (use_low_memory_policy) {
     // On low-end we want to be very carefull about killing other
     // apps. So initially we use 50% more memory to avoid flickering
     // or raster-on-demand.
     settings.max_memory_for_prepaint_percentage = 67;
+
+    // RGBA_4444 textures are only enabled by default for low end devices
+    // and are disabled for Android WebView as it doesn't support the format.
+    if (!cmd->HasSwitch(switches::kDisableRGBA4444Textures))
+      settings.renderer_settings.preferred_tile_format = cc::RGBA_4444;
   } else {
     // On other devices we have increased memory excessively to avoid
     // raster-on-demand already, so now we reserve 50% _only_ to avoid
@@ -448,10 +450,14 @@ void RenderWidgetCompositor::Initialize() {
   if (cmd->HasSwitch(cc::switches::kEnableBeginFrameScheduling))
     settings.use_external_begin_frame_source = true;
 
-  settings.renderer_settings.use_rgba_4444_textures |=
-      cmd->HasSwitch(switches::kEnableRGBA4444Textures);
-  settings.renderer_settings.use_rgba_4444_textures &=
-      !cmd->HasSwitch(switches::kDisableRGBA4444Textures);
+  if (cmd->HasSwitch(switches::kEnableRGBA4444Textures) &&
+      !cmd->HasSwitch(switches::kDisableRGBA4444Textures)) {
+    settings.renderer_settings.preferred_tile_format = cc::RGBA_4444;
+  }
+
+  if (cmd->HasSwitch(cc::switches::kEnableTileCompression)) {
+    settings.renderer_settings.preferred_tile_format = cc::ETC1;
+  }
 
   if (widget_->for_oopif()) {
     // TODO(simonhong): Apply BeginFrame scheduling for OOPIF.

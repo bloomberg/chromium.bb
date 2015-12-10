@@ -106,6 +106,8 @@ class CC_EXPORT ResourceProvider
   }
   size_t num_resources() const { return resources_.size(); }
 
+  bool IsResourceFormatSupported(ResourceFormat format) const;
+
   // Checks whether a resource is in use by a consumer.
   bool InUseByConsumer(ResourceId id);
 

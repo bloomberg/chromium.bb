@@ -139,8 +139,8 @@ Compositor::Compositor(ui::ContextFactory* context_factory,
     settings.use_property_trees = false;
   settings.use_zero_copy = IsUIZeroCopyEnabled();
 
-  settings.renderer_settings.use_rgba_4444_textures =
-      command_line->HasSwitch(switches::kUIEnableRGBA4444Textures);
+  if (command_line->HasSwitch(switches::kUIEnableRGBA4444Textures))
+    settings.renderer_settings.preferred_tile_format = cc::RGBA_4444;
 
   // UI compositor always uses partial raster if not using zero-copy. Zero copy
   // doesn't currently support partial raster.
