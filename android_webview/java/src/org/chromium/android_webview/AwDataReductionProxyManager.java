@@ -15,6 +15,7 @@ import android.os.Handler;
 import android.util.Log;
 
 import org.chromium.base.CommandLine;
+import org.chromium.base.ThreadUtils;
 
 import java.lang.reflect.Field;
 
@@ -108,21 +109,23 @@ public final class AwDataReductionProxyManager {
 
     private static void applyDataReductionProxySettingsAsync(
             final Context context, final String key) {
-        AsyncTask<Void, Void, Boolean> task = new AsyncTask<Void, Void, Boolean>() {
+        AsyncTask.THREAD_POOL_EXECUTOR.execute(new Runnable() {
             @Override
-            protected Boolean doInBackground(Void... params) {
-                return isDataReductionProxyEnabled(context);
+            public void run() {
+                final boolean enabled = isDataReductionProxyEnabled(context);
+
+                ThreadUtils.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (enabled) {
+                            // Set the data reduction proxy key.
+                            AwContentsStatics.setDataReductionProxyKey(key);
+                        }
+                        AwContentsStatics.setDataReductionProxyEnabled(enabled);
+                    }
+                });
             }
-            @Override
-            protected void onPostExecute(Boolean enabled) {
-                if (enabled) {
-                    // Set the data reduction proxy key.
-                    AwContentsStatics.setDataReductionProxyKey(key);
-                }
-                AwContentsStatics.setDataReductionProxyEnabled(enabled);
-            }
-        };
-        task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        });
     }
 
     private static boolean isDataReductionProxyEnabled(Context context) {

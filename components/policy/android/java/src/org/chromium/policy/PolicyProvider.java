@@ -6,6 +6,7 @@ package org.chromium.policy;
 
 import android.os.Bundle;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 
 /**
@@ -18,6 +19,7 @@ public abstract class PolicyProvider {
     protected PolicyProvider() {}
 
     public void notifySettingsAvailable(Bundle settings) {
+        ThreadUtils.assertOnUiThread();
         mCombinedPolicyProvider.onSettingsAvailable(mSource, settings);
     }
 
