@@ -260,11 +260,11 @@
             ['OS=="mac" or OS=="android"', {'defines': ['_REENTRANT']}],
             ['OS=="win"', {
               'product_name': 'libxml2',
-              # Disable unimportant 'unused variable' warning, and
-              # signed/unsigned comparison warning. The signed/unsigned (4101)
-              # is fixed upstream and can be removed eventually.
+              # Disable unimportant 'unused variable' warning.
               # TODO(jschuh): http://crbug.com/167187 size_t -> int
-              'msvs_disabled_warnings': [ 4018, 4101, 4267 ],
+              # TODO(brucedawson): http://crbug.com/554200 fix C4311 warnings
+              # C4311 is a VS 2015 64-bit warning for pointer truncation
+              'msvs_disabled_warnings': [ 4018, 4267, 4311, ],
             }, {  # else: OS!="win"
               'product_name': 'xml2',
             }],

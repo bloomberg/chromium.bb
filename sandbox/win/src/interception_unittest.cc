@@ -93,7 +93,7 @@ TEST(InterceptionManagerTest, GetGranularAlignedRandomOffset) {
   // ciel(log2(544)) = 10.
   // Alignment must be 2^10 = 1024.
   const size_t kAlignmentBits = base::bits::Log2Ceiling(kThunkBytes);
-  const size_t kAlignment = 1 << kAlignmentBits;
+  const size_t kAlignment = static_cast<size_t>(1) << kAlignmentBits;
 
   const size_t kAllocGranularity = 65536;
 

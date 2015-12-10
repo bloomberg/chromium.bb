@@ -14,6 +14,10 @@
 #include "sandbox/win/tests/common/controller.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_WIN)
+#include "base/win/win_util.h"
+#endif
+
 namespace sandbox {
 
 #define BINDNTDLL(name) \
@@ -384,8 +388,7 @@ TEST(PolicyTargetTest, ShareHandleTest) {
   base::string16 arguments(L"\"");
   arguments += prog_name;
   arguments += L"\" -child 0 shared_memory_handle ";
-  arguments += base::UintToString16(
-      reinterpret_cast<unsigned int>(shared_handle));
+  arguments += base::UintToString16(base::win::HandleToUint32(shared_handle));
 
   // Launch the app.
   ResultCode result = SBOX_ALL_OK;

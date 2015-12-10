@@ -79,6 +79,7 @@ BitVector::OutOfLineBits* BitVector::OutOfLineBits::create(size_t numBits)
     // will erroneously report a leak here.
     WTF_INTERNAL_LEAK_SANITIZER_DISABLED_SCOPE;
     numBits = (numBits + bitsInPointer() - 1) & ~(bitsInPointer() - 1);
+    numBits = (numBits + bitsInPointer() - 1) & ~(bitsInPointer() - static_cast<size_t>(1));
     size_t size = sizeof(OutOfLineBits) + sizeof(uintptr_t) * (numBits / bitsInPointer());
     void* allocation = Partitions::bufferMalloc(size, WTF_HEAP_PROFILER_TYPE_NAME(OutOfLineBits));
     OutOfLineBits* result = new (NotNull, allocation) OutOfLineBits(numBits);

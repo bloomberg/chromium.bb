@@ -27,7 +27,7 @@ String TracedLayoutObject::asTraceFormat() const
 }
 
 TracedLayoutObject::TracedLayoutObject(const LayoutObject& object, bool traceGeometry)
-    : m_address((unsigned long) &object)
+    : m_address(reinterpret_cast<uintptr_t>(&object))
     , m_isAnonymous(object.isAnonymous())
     , m_isPositioned(object.isOutOfFlowPositioned())
     , m_isRelPositioned(object.isRelPositioned())

@@ -27,7 +27,7 @@ private:
 
     PassRefPtr<JSONObject> toJSON() const;
 
-    unsigned long m_address;
+    uintptr_t m_address;
     bool m_isAnonymous;
     bool m_isPositioned;
     bool m_isRelPositioned;

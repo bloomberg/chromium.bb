@@ -594,7 +594,8 @@ void WebPluginDelegateImpl::ThrottleMessage(WNDPROC proc, HWND hwnd,
                                             UINT message, WPARAM wParam,
                                             LPARAM lParam) {
   MSG msg;
-  msg.time = reinterpret_cast<DWORD>(proc);
+  // Cast through uintptr_t and then DWORD to make the truncation explicit.
+  msg.time = static_cast<DWORD>(reinterpret_cast<uintptr_t>(proc));
   msg.hwnd = hwnd;
   msg.message = message;
   msg.wParam = wParam;

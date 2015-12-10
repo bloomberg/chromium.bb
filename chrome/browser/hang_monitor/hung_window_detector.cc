@@ -8,6 +8,7 @@
 #include <atlbase.h>
 
 #include "base/logging.h"
+#include "base/win/win_util.h"
 #include "chrome/browser/hang_monitor/hang_crash_dump_win.h"
 #include "content/public/common/result_codes.h"
 
@@ -88,10 +89,8 @@ bool HungWindowDetector::CheckChildWindow(HWND child_window) {
     // The message timeout for a child window starts of with a default
     // value specified by the message_response_timeout_ member. It is
     // tracked by a property on the child window.
-#pragma warning(disable:4311)
-    int child_window_message_timeout =
-        reinterpret_cast<int>(GetProp(child_window, kHungChildWindowTimeout));
-#pragma warning(default:4311)
+    int child_window_message_timeout = base::win::HandleToUint32(
+        GetProp(child_window, kHungChildWindowTimeout));
     if (!child_window_message_timeout) {
       child_window_message_timeout = message_response_timeout_;
     }

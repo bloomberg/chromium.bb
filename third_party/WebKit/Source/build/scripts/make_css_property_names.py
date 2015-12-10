@@ -87,6 +87,13 @@ GPERF_TEMPLATE = """
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/WTFString.h"
 
+#ifdef _MSC_VER
+// Disable the warnings from casting a 64-bit pointer to 32-bit long
+// warning C4302: 'type cast': truncation from 'char (*)[28]' to 'long'
+// warning C4311: 'type cast': pointer truncation from 'char (*)[18]' to 'long'
+#pragma warning(disable : 4302 4311)
+#endif
+
 namespace blink {
 static const char propertyNameStringsPool[] = {
 %(property_name_strings)s

@@ -25,6 +25,10 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
+#if defined(OS_WIN)
+#include "base/win/win_util.h"
+#endif
+
 namespace content {
 class PageState;
 }
@@ -81,8 +85,7 @@ struct ParamTraits<gfx::NativeWindow> {
   typedef gfx::NativeWindow param_type;
   static void Write(Message* m, const param_type& p) {
 #if defined(OS_WIN)
-    // HWNDs are always 32 bits on Windows, even on 64 bit systems.
-    m->WriteUInt32(reinterpret_cast<uint32>(p));
+    m->WriteUInt32(base::win::HandleToUint32(p));
 #else
     m->WriteData(reinterpret_cast<const char*>(&p), sizeof(p));
 #endif

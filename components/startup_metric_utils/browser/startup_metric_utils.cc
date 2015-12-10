@@ -16,6 +16,7 @@
 
 #if defined(OS_WIN)
 #include <winternl.h>
+#include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #endif
 
@@ -146,7 +147,7 @@ bool GetHardFaultCountForCurrentProcess(uint32_t* hard_fault_count,
     DCHECK_LE(index + sizeof(SYSTEM_PROCESS_INFORMATION_EX), buffer.size());
     SYSTEM_PROCESS_INFORMATION_EX* proc_info =
         reinterpret_cast<SYSTEM_PROCESS_INFORMATION_EX*>(buffer.data() + index);
-    if (reinterpret_cast<DWORD>(proc_info->UniqueProcessId) == proc_id) {
+    if (base::win::HandleToUint32(proc_info->UniqueProcessId) == proc_id) {
       *hard_fault_count = proc_info->HardFaultCount;
       return true;
     }

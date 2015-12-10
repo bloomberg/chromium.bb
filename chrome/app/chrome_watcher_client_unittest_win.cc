@@ -20,6 +20,7 @@
 #include "base/threading/simple_thread.h"
 #include "base/time/time.h"
 #include "base/win/scoped_handle.h"
+#include "base/win/win_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/multiprocess_func_list.h"
 
@@ -170,12 +171,12 @@ class ChromeWatcherClientThread : public base::SimpleThread {
     base::CommandLine ret = base::GetMultiProcessTestChildBaseCommandLine();
     ret.AppendSwitchASCII(switches::kTestChildProcess,
                           "ChromeWatcherClientTestProcess");
-    ret.AppendSwitchASCII(kEventHandle,
-                          base::UintToString(reinterpret_cast<unsigned int>(
-                              on_initialized_event)));
+    ret.AppendSwitchASCII(
+        kEventHandle,
+        base::UintToString(base::win::HandleToUint32(on_initialized_event)));
     ret.AppendSwitchASCII(
         kParentHandle,
-        base::UintToString(reinterpret_cast<unsigned int>(parent_handle)));
+        base::UintToString(base::win::HandleToUint32(parent_handle)));
 
     // Our child does not actually need the main thread ID, but we verify here
     // that the correct ID is being passed from the client.

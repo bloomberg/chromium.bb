@@ -269,8 +269,8 @@ public:
     typedef MangleBehavior<false> DontMangle;
     typedef MangleBehavior<true> ForceMangle;
 
-    TraceID(const void* id, unsigned* flags) :
-        m_data(static_cast<unsigned long long>(reinterpret_cast<unsigned long>(id)))
+    TraceID(const void* id, unsigned* flags)
+        : m_data(static_cast<unsigned long long>(reinterpret_cast<uintptr_t>(id)))
     {
         *flags |= TRACE_EVENT_FLAG_MANGLE_ID;
     }

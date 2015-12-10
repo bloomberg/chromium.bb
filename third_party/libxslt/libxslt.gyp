@@ -109,6 +109,9 @@
           'msvs_disabled_warnings': [
             # size_t to int conversion.
             4267,
+            # TODO(brucedawson): http://crbug.com/554200 4311 is a VS
+            # 2015 64-bit warning for pointer truncation
+            4311,
           ],
           'variables': {
             'clang_warning_flags': [

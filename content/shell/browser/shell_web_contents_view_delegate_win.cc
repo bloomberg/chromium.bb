@@ -82,7 +82,8 @@ void ShellWebContentsViewDelegate::ShowContextMenu(
 
   HMENU menu = CreateMenu();
   HMENU sub_menu = CreatePopupMenu();
-  AppendMenu(menu, MF_STRING | MF_POPUP, (UINT)sub_menu, L"");
+  AppendMenu(menu, MF_STRING | MF_POPUP, reinterpret_cast<UINT_PTR>(sub_menu),
+             L"");
 
   int index = 0;
   if (params_.media_type == WebContextMenuData::MediaTypeNone &&

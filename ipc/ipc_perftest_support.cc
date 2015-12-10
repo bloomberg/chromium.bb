@@ -348,7 +348,7 @@ scoped_refptr<base::TaskRunner> PingPongTestClient::task_runner() {
 LockThreadAffinity::LockThreadAffinity(int cpu_number)
     : affinity_set_ok_(false) {
 #if defined(OS_WIN)
-  const DWORD_PTR thread_mask = 1 << cpu_number;
+  const DWORD_PTR thread_mask = static_cast<DWORD_PTR>(1) << cpu_number;
   old_affinity_ = SetThreadAffinityMask(GetCurrentThread(), thread_mask);
   affinity_set_ok_ = old_affinity_ != 0;
 #elif defined(OS_LINUX)

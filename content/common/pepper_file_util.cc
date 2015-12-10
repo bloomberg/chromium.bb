@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/common/pepper_file_util.h"
+#include "ppapi/shared_impl/platform_file.h"
 
 namespace content {
 
@@ -22,13 +23,7 @@ storage::FileSystemType PepperFileSystemTypeToFileSystemType(
 
 int IntegerFromSyncSocketHandle(
     const base::SyncSocket::Handle& socket_handle) {
-#if defined(OS_WIN)
-  return reinterpret_cast<int>(socket_handle);
-#elif defined(OS_POSIX)
-  return socket_handle;
-#else
-#error Platform not supported.
-#endif
+  return ppapi::PlatformFileToInt(socket_handle);
 }
 
 }  // namespace content

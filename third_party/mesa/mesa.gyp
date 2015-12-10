@@ -271,6 +271,9 @@
       # Mesa is ever rolled and the warnings are fixed.
       'msvs_disabled_warnings': [
           4005, 4018, 4090, 4099, 4146, 4291, 4305, 4334, 4748, 4267,
+          # TODO(brucedawson): http://crbug.com/554200 4311 is a VS
+          # 2015 64-bit warning for pointer truncation
+          4311,
       ],
       'variables': {
         'clang_warning_flags': [

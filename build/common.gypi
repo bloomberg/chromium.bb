@@ -3160,6 +3160,7 @@
               '_SCL_SECURE_NO_DEPRECATE',
             ],
             'msvs_disabled_warnings': [
+              # forcing value to bool 'true' or 'false' (performance warning)
               4800,
             ],
             'msvs_settings': {
@@ -5660,7 +5661,7 @@
             # it's enabled. This will generally only be true for system-level
             # installed Express users.
             'msvs_disabled_warnings': [
-              4702,
+              4702, # unreachable code
             ],
           }],
         ],
@@ -5744,6 +5745,10 @@
           # should work through these at some point -- they may be removed from
           # the RTM release in the /W4 set.
           4456, 4457, 4458, 4459,
+
+          # TODO(brucedawson): http://crbug.com/554200 4312 is a VS
+          # 2015 64-bit warning for integer to larger pointer
+          4312,
         ],
         'msvs_settings': {
           'VCCLCompilerTool': {

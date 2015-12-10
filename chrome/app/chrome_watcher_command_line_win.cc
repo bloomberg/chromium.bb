@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/win/win_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/common/content_switches.h"
 
@@ -24,7 +25,7 @@ void AppendHandleSwitch(const std::string& switch_name,
                         HANDLE handle,
                         base::CommandLine* command_line) {
   command_line->AppendSwitchASCII(
-      switch_name, base::UintToString(reinterpret_cast<uint32_t>(handle)));
+      switch_name, base::UintToString(base::win::HandleToUint32(handle)));
 }
 
 uint32_t ReadUintSwitch(const base::CommandLine& command_line,

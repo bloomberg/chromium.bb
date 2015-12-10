@@ -8,6 +8,7 @@
 
 #include "base/metrics/histogram.h"
 #include "base/version.h"
+#include "base/win/win_util.h"
 #include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/grit/generated_resources.h"
@@ -123,11 +124,8 @@ bool HungPluginAction::OnHungWindowDetected(HWND hung_window,
         // exists. The property is deleted if the window becomes
         // responsive.
         continue_hang_detection = false;
-#pragma warning(disable:4311)
-        int child_window_message_timeout =
-            reinterpret_cast<int>(GetProp(
-                hung_window, HungWindowDetector::kHungChildWindowTimeout));
-#pragma warning(default:4311)
+        int child_window_message_timeout = base::win::HandleToUint32(
+            GetProp(hung_window, HungWindowDetector::kHungChildWindowTimeout));
         if (child_window_message_timeout) {
           child_window_message_timeout *= 2;
 #pragma warning(disable:4312)

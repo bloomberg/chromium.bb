@@ -24,6 +24,7 @@
 #include "base/win/iat_patch_function.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/scoped_process_information.h"
+#include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "content/common/content_switches_internal.h"
 #include "content/public/common/content_client.h"
@@ -743,8 +744,9 @@ base::Process StartSandboxedProcess(
       if (direct_write_font_cache_section.Open(name, true)) {
         void* shared_handle = policy->AddHandleToShare(
             direct_write_font_cache_section.handle().GetHandle());
-        cmd_line->AppendSwitchASCII(switches::kFontCacheSharedHandle,
-            base::UintToString(reinterpret_cast<unsigned int>(shared_handle)));
+        cmd_line->AppendSwitchASCII(
+            switches::kFontCacheSharedHandle,
+            base::UintToString(base::win::HandleToUint32(shared_handle)));
       }
     }
   }
