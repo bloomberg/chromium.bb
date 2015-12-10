@@ -122,14 +122,6 @@ int LaunchChromeTests(int default_jobs,
   crash_reporter::SetCrashReporterClient(crash_client);
 #endif
 
-#if defined(OS_WIN)
-  base::CommandLine::Init(0, nullptr);
-  std::string process_type =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kProcessType);
-  crash_reporter::InitializeCrashpad(process_type.empty(), process_type);
-#endif
-
   ChromeTestLauncherDelegate launcher_delegate(runner);
   return content::LaunchTests(&launcher_delegate, default_jobs, argc, argv);
 }
