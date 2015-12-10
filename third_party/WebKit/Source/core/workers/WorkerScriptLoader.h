@@ -96,7 +96,7 @@ private:
     WorkerScriptLoader();
     ~WorkerScriptLoader() override;
 
-    PassOwnPtr<ResourceRequest> createResourceRequest();
+    ResourceRequest createResourceRequest();
     void notifyError();
     void notifyFinished();
 

@@ -37,7 +37,8 @@
 
 namespace blink {
 
-class DummyParsedContentType {
+class DummyParsedContentType final {
+    STACK_ALLOCATED();
 public:
     void setContentType(const SubstringRange&) const { }
     void setContentTypeParameter(const SubstringRange&, const SubstringRange&) const { }

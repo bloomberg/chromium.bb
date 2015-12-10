@@ -65,8 +65,8 @@ enum InputToLoadPerfMetricReportPolicy {
 
 struct CrossThreadResourceRequestData;
 
-class PLATFORM_EXPORT ResourceRequest {
-    USING_FAST_MALLOC(ResourceRequest);
+class PLATFORM_EXPORT ResourceRequest final {
+    DISALLOW_NEW();
 public:
     class ExtraData : public RefCounted<ExtraData> {
     public:
@@ -88,7 +88,7 @@ public:
         initialize(url);
     }
 
-    static PassOwnPtr<ResourceRequest> adopt(PassOwnPtr<CrossThreadResourceRequestData>);
+    explicit ResourceRequest(CrossThreadResourceRequestData*);
 
     // Gets a copy of the data suitable for passing to another thread.
     PassOwnPtr<CrossThreadResourceRequestData> copyData() const;

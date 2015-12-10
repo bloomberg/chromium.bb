@@ -142,14 +142,14 @@ void WorkerThreadableLoader::MainThreadBridge::mainThreadCreateLoader(PassOwnPtr
     ASSERT(isMainThread());
     Document* document = toDocument(context);
 
-    OwnPtr<ResourceRequest> request(ResourceRequest::adopt(requestData));
-    if (!request->didSetHTTPReferrer())
-        request->setHTTPReferrer(SecurityPolicy::generateReferrer(referrerPolicy, request->url(), outgoingReferrer));
+    ResourceRequest request(requestData.get());
+    if (!request.didSetHTTPReferrer())
+        request.setHTTPReferrer(SecurityPolicy::generateReferrer(referrerPolicy, request.url(), outgoingReferrer));
     resourceLoaderOptions.requestInitiatorContext = WorkerContext;
-    m_mainThreadLoader = DocumentThreadableLoader::create(*document, this, *request, options, resourceLoaderOptions);
+    m_mainThreadLoader = DocumentThreadableLoader::create(*document, this, request, options, resourceLoaderOptions);
     if (!m_mainThreadLoader) {
         // DocumentThreadableLoader::create may return 0 when the document loader has been already changed.
-        didFail(ResourceError(errorDomainBlinkInternal, 0, request->url().string(), "Can't create DocumentThreadableLoader"));
+        didFail(ResourceError(errorDomainBlinkInternal, 0, request.url().string(), "Can't create DocumentThreadableLoader"));
     }
 }
 

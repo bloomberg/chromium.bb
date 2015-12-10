@@ -42,7 +42,7 @@ namespace blink {
 
 class HTTPHeaderMap;
 
-class PLATFORM_EXPORT WebSocketHandshakeRequest : public RefCounted<WebSocketHandshakeRequest> {
+class PLATFORM_EXPORT WebSocketHandshakeRequest final : public RefCounted<WebSocketHandshakeRequest> {
 public:
     static PassRefPtr<WebSocketHandshakeRequest> create(const KURL& url) { return adoptRef(new WebSocketHandshakeRequest(url)); }
     static PassRefPtr<WebSocketHandshakeRequest> create() { return adoptRef(new WebSocketHandshakeRequest); }

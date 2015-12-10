@@ -65,6 +65,7 @@ void HTTPHeaderMap::adopt(PassOwnPtr<CrossThreadHTTPHeaderMapData> data)
 
 // Adapter that allows the HashMap to take C strings as keys.
 struct CaseFoldingCStringTranslator {
+    STATIC_ONLY(CaseFoldingCStringTranslator);
     static unsigned hash(const char* cString)
     {
         return CaseFoldingHash::hash(cString, strlen(cString));

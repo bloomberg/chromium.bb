@@ -31,7 +31,7 @@ public:
 
     void TearDown() override
     {
-        m_resourceRequest.clear();
+        m_resourceRequest = ResourceRequest();
         m_resource.clear();
     }
 
@@ -73,14 +73,14 @@ public:
 
     void setEmptyResource()
     {
-        m_resourceRequest = WTF::adoptPtr(new ResourceRequest);
-        m_resource = new ScriptResource(*m_resourceRequest.get(), "UTF-8");
+        m_resourceRequest = ResourceRequest();
+        m_resource = new ScriptResource(m_resourceRequest, "UTF-8");
     }
 
     void setResource()
     {
-        m_resourceRequest = WTF::adoptPtr(new ResourceRequest(url()));
-        m_resource = new ScriptResource(*m_resourceRequest.get(), "UTF-8");
+        m_resourceRequest = ResourceRequest(url());
+        m_resource = new ScriptResource(m_resourceRequest, "UTF-8");
     }
 
     CachedMetadataHandler* cacheHandler()
@@ -89,7 +89,7 @@ public:
     }
 
 protected:
-    WTF::OwnPtr<ResourceRequest> m_resourceRequest;
+    ResourceRequest m_resourceRequest;
     ResourcePtr<ScriptResource> m_resource;
     V8TestingScope m_scope;
 
