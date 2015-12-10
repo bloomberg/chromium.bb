@@ -421,7 +421,8 @@ void RenderFrameMessageFilter::CheckPolicyForCookies(
   net::URLRequestContext* context = GetRequestContextForURL(url);
   // Check the policy for get cookies, and pass cookie_list to the
   // TabSpecificContentSetting for logging purpose.
-  if (GetContentClient()->browser()->AllowGetCookie(
+  if (context &&
+      GetContentClient()->browser()->AllowGetCookie(
           url, first_party_for_cookies, cookie_list, resource_context_,
           render_process_id_, render_frame_id)) {
     // Gets the cookies from cookie store if allowed.
