@@ -186,13 +186,6 @@ char kTSanDefaultSuppressions[] =
 // http://crbug.com/345240
 "race:WTF::s_shutdown\n"
 
-// http://crbug.com/345245
-"race:jingle_glue::JingleThreadWrapper::~JingleThreadWrapper\n"
-"race:webrtc::voe::Channel::UpdatePacketDelay\n"
-"race:webrtc::voe::Channel::GetDelayEstimate\n"
-"race:webrtc::VCMCodecDataBase::DeregisterReceiveCodec\n"
-"race:webrtc::GainControlImpl::set_stream_analog_level\n"
-
 // http://crbug.com/345618
 "race:WebCore::AudioDestinationNode::render\n"
 
