@@ -194,7 +194,11 @@ void NativeWidgetMac::ReorderNativeViews() {
 }
 
 void NativeWidgetMac::ViewRemoved(View* view) {
-  NOTIMPLEMENTED();
+  // TODO(tapted): Something for drag and drop might be needed here in future.
+  // See http://crbug.com/464581. A NOTIMPLEMENTED() here makes a lot of spam,
+  // so only emit it when a drag and drop could be likely.
+  if (IsMouseButtonDown())
+    NOTIMPLEMENTED();
 }
 
 void NativeWidgetMac::SetNativeWindowProperty(const char* name, void* value) {
