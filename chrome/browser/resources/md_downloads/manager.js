@@ -93,11 +93,8 @@ cr.define('downloads', function() {
         downloads.ActionService.getInstance().undo();
     },
 
-    /**
-     * @param {Event} e
-     * @private
-     */
-    onListScroll_: function(e) {
+    /** @private */
+    onListScroll_: function() {
       var list = this.$['downloads-list'];
       if (list.scrollHeight - list.scrollTop - list.offsetHeight <= 100) {
         // Approaching the end of the scrollback. Attempt to load more items.
