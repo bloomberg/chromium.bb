@@ -22,10 +22,20 @@ RemoteFontFaceSource::RemoteFontFaceSource(FontResource* font, PassRefPtrWillBeR
     , m_display(display)
     , m_period(display == FontDisplaySwap ? SwapPeriod : BlockPeriod)
 {
+#if ENABLE(OILPAN)
+    ThreadState::current()->registerPreFinalizer(this);
+#endif
     m_font->addClient(this);
 }
 
 RemoteFontFaceSource::~RemoteFontFaceSource()
+{
+#if !ENABLE(OILPAN)
+    dispose();
+#endif
+}
+
+void RemoteFontFaceSource::dispose()
 {
     m_font->removeClient(this);
     pruneTable();

@@ -23,11 +23,13 @@ enum FontDisplay {
 };
 
 class RemoteFontFaceSource final : public CSSFontFaceSource, public FontResourceClient {
+    WILL_BE_USING_PRE_FINALIZER(RemoteFontFaceSource, dispose);
 public:
     enum DisplayPeriod { BlockPeriod, SwapPeriod, FailurePeriod };
 
     explicit RemoteFontFaceSource(FontResource*, PassRefPtrWillBeRawPtr<FontLoader>, FontDisplay);
     ~RemoteFontFaceSource() override;
+    void dispose();
 
     FontResource* resource() override { return m_font.get(); }
     bool isLoading() const override;
