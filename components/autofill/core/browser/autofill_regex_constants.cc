@@ -10,7 +10,7 @@
 
 // This macro is to workaround the fact that RE2 library only supports ASCII
 // word boundaries and it is supposed to be the same as \b.
-#define WORDBREAK "(\\A|\\z|\\PL)"
+#define WORDBREAK "(?:\\A|\\z|\\PL)"
 
 namespace autofill {
 
@@ -34,7 +34,7 @@ const char kCompanyRe[] =
     "|회사|직장";  // ko-KR
 const char kAddressLine1Re[] =
     "address.*line|address1|addr1|street"
-    "|(shipping|billing)address$"
+    "|(?:shipping|billing)address$"
     "|strasse|straße|hausnummer|housenumber"  // de-DE
     "|house.?name"  // en-GB
     "|direccion|dirección"  // es
@@ -128,8 +128,8 @@ const char kStateRe[] =
 // credit_card_field.cc
 /////////////////////////////////////////////////////////////////////////////
 const char kNameOnCardRe[] =
-    "card.?(holder|owner)|name.*" WORDBREAK "on" WORDBREAK ".*card"
-    "|(card|cc).?name|cc.?full.?name"
+    "card.?(?:holder|owner)|name.*" WORDBREAK "on" WORDBREAK ".*card"
+    "|(?:card|cc).?name|cc.?full.?name"
     "|karteninhaber"  // de-DE
     "|nombre.*tarjeta"  // es
     "|nom.*carte"  // fr-FR
@@ -141,7 +141,7 @@ const char kNameOnCardRe[] =
 const char kNameOnCardContextualRe[] =
     "name";
 const char kCardNumberRe[] =
-    "(card|cc|acct).?(number|#|no|num)"
+    "(?:card|cc|acct).?(?:number|#|no|num)"
     "|nummer"  // de-DE
     "|credito|numero|número"  // es
     "|numéro"  // fr-FR
@@ -179,7 +179,7 @@ const char kExpirationMonthRe[] =
     "|月";  // zh-CN
 const char kExpirationYearRe[] =
     "exp|^/|year"
-    "|ablaufdatum|gueltig|gültig|yahr"  // de-DE
+    "|ablaufdatum|gueltig|gültig|jahr"  // de-DE
     "|fecha"  // es
     "|scadenza"  // it-IT
     "|有効期限"  // ja-JP
@@ -189,7 +189,7 @@ const char kExpirationYearRe[] =
 
 // The "yy" portion of the regex is just looking for two adjacent y's.
 const char kExpirationDate2DigitYearRe[] =
-    "(exp.*date.*|mm\\s*[-/]\\s*)[^y]yy([^y]|$)";
+    "(?:exp.*date.*|mm\\s*[-/]\\s*)[^y]yy([^y]|$)";
 const char kExpirationDate4DigitYearRe[] =
     "^mm\\s*[-/]\\syyyy$";
 const char kExpirationDateRe[] =
@@ -204,7 +204,7 @@ const char kExpirationDateRe[] =
 const char kGiftCardRe[] =
     "gift.?card";
 const char kDebitGiftCardRe[] =
-    "(visa|mastercard|discover|amex|american express).*gift.?card";
+    "(?:visa|mastercard|discover|amex|american express).*gift.?card";
 const char kDebitCardRe[] =
     "debit.*card";
 
@@ -219,7 +219,7 @@ const char kEmailRe[] =
     "|Электронной.?Почты"  // ru
     "|邮件|邮箱"  // zh-CN
     "|電郵地址"  // zh-TW
-    "|(이메일|전자.?우편|[Ee]-?mail)(.?주소)?";  // ko-KR
+    "|(?:이메일|전자.?우편|[Ee]-?mail)(.?주소)?";  // ko-KR
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -229,7 +229,7 @@ const char kNameIgnoredRe[] =
     "user.?name|user.?id|nickname|maiden name|title|prefix|suffix"
     "|vollständiger.?name"  // de-DE
     "|用户名"  // zh-CN
-    "|(사용자.?)?아이디|사용자.?ID";  // ko-KR
+    "|(?:사용자.?)?아이디|사용자.?ID";  // ko-KR
 const char kNameRe[] =
     "^name|full.?name|your.?name|customer.?name|bill.?name|ship.?name"
     "|name.*first.*last|firstandlastname"
@@ -280,7 +280,7 @@ const char kPhoneRe[] =
     "|telefone|telemovel"  // pt-BR, pt-PT
     "|телефон"  // ru
     "|电话"  // zh-CN
-    "|(전화|핸드폰|휴대폰|휴대전화)(.?번호)?";  // ko-KR
+    "|(?:전화|핸드폰|휴대폰|휴대전화)(?:.?번호)?";  // ko-KR
 const char kCountryCodeRe[] =
     "country.*code|ccode|_cc";
 const char kAreaCodeNotextRe[] =

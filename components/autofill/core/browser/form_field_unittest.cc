@@ -88,7 +88,7 @@ TEST(FormFieldTest, Match) {
   EXPECT_TRUE(FormField::Match(&field, "head_tail", FormField::MATCH_LABEL));
 
   // Word boundaries.
-  const std::string kWordBoundary = "(\\A|\\z|\\PL)";
+  const std::string kWordBoundary = "(?:\\A|\\z|\\PL)";
   field.label = ASCIIToUTF16("contains word:");
   EXPECT_TRUE(FormField::Match(&field, kWordBoundary + "word" + kWordBoundary,
                                FormField::MATCH_LABEL));
