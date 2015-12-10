@@ -75,7 +75,7 @@ void SVGRootInlineBox::layoutChildBoxes(InlineFlowBox* start, LayoutRect* childR
     for (InlineBox* child = start->firstChild(); child; child = child->nextOnLine()) {
         LayoutRect boxRect;
         if (child->isSVGInlineTextBox()) {
-            ASSERT(child->layoutObject().isSVGInlineText());
+            ASSERT(child->lineLayoutItem().isSVGInlineText());
 
             SVGInlineTextBox* textBox = toSVGInlineTextBox(child);
             boxRect = textBox->calculateBoundaries();
@@ -85,7 +85,7 @@ void SVGRootInlineBox::layoutChildBoxes(InlineFlowBox* start, LayoutRect* childR
             textBox->setLogicalHeight(boxRect.height());
         } else {
             // Skip generated content.
-            if (!child->layoutObject().node())
+            if (!child->lineLayoutItem().node())
                 continue;
 
             SVGInlineFlowBox* flowBox = toSVGInlineFlowBox(child);
@@ -114,7 +114,7 @@ void SVGRootInlineBox::layoutRootBox(const LayoutRect& childRect)
     // Position all children relative to the parent block.
     for (InlineBox* child = firstChild(); child; child = child->nextOnLine()) {
         // Skip generated content.
-        if (!child->layoutObject().node())
+        if (!child->lineLayoutItem().node())
             continue;
         child->move(LayoutSize(-childRect.x(), -childRect.y()));
     }
