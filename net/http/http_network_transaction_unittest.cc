@@ -11481,13 +11481,13 @@ TEST_P(HttpNetworkTransactionTest, GenerateAuthToken) {
             &ssl_socket_data_provider);
     }
 
-    ScopedVector<StaticSocketDataProvider> data_providers;
+    std::vector<scoped_ptr<StaticSocketDataProvider>> data_providers;
     for (size_t i = 0; i < mock_reads.size(); ++i) {
-      data_providers.push_back(new StaticSocketDataProvider(
+      data_providers.push_back(make_scoped_ptr(new StaticSocketDataProvider(
           mock_reads[i].data(), mock_reads[i].size(), mock_writes[i].data(),
-          mock_writes[i].size()));
+          mock_writes[i].size())));
       session_deps_.socket_factory->AddSocketDataProvider(
-          data_providers.back());
+          data_providers.back().get());
     }
 
     // Transaction must be created after DataProviders, so it's destroyed before
