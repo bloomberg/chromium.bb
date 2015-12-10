@@ -103,8 +103,13 @@ std::string AlternativeService::ToString() const {
 }
 
 std::string AlternativeServiceInfo::ToString() const {
-  return base::StringPrintf("%s, p=%f", alternative_service.ToString().c_str(),
-                            probability);
+  base::Time::Exploded exploded;
+  expiration.LocalExplode(&exploded);
+  return base::StringPrintf("%s, p=%f, expires %04d-%02d-%02d %02d:%02d:%02d",
+                            alternative_service.ToString().c_str(), probability,
+                            exploded.year, exploded.month,
+                            exploded.day_of_month, exploded.hour,
+                            exploded.minute, exploded.second);
 }
 
 // static
