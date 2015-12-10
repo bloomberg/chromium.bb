@@ -1267,13 +1267,6 @@
         "test": "blink_platform_unittests"
       },
       {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 5
-        },
-        "test": "browser_tests"
-      },
-      {
         "test": "cacheinvalidation_unittests"
       },
       {
@@ -1295,12 +1288,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "content_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "crypto_unittests"
       },
       {
@@ -1311,9 +1298,6 @@
       },
       {
         "test": "extensions_browsertests"
-      },
-      {
-        "test": "extensions_unittests"
       },
       {
         "test": "gcm_unit_tests"
@@ -1331,32 +1315,13 @@
         "test": "gpu_unittests"
       },
       {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "interactive_ui_tests"
-      },
-      {
-        "test": "ipc_tests"
-      },
-      {
         "test": "jingle_unittests"
       },
       {
         "test": "media_blink_unittests"
       },
       {
-        "test": "media_unittests"
-      },
-      {
         "test": "midi_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 4
-        },
-        "test": "net_unittests"
       },
       {
         "test": "ppapi_unittests"
@@ -1377,9 +1342,6 @@
         "test": "sql_unittests"
       },
       {
-        "test": "sync_unit_tests"
-      },
-      {
         "test": "ui_base_unittests"
       },
       {
@@ -1391,18 +1353,6 @@
       },
       {
         "test": "url_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "webkit_unit_tests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "wtf_unittests"
       }
     ]
   },
