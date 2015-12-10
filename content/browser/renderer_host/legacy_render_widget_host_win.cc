@@ -166,7 +166,7 @@ LRESULT LegacyRenderWidgetHostHWND::OnGetObject(UINT message,
     return static_cast<LRESULT>(0L);
   }
 
-  if (OBJID_CLIENT != obj_id || !host_)
+  if (static_cast<DWORD>(OBJID_CLIENT) != obj_id || !host_)
     return static_cast<LRESULT>(0L);
 
   RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(

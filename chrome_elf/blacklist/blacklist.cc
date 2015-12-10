@@ -243,7 +243,9 @@ bool IsBlacklistInitialized() {
 }
 
 int GetBlacklistIndex(const wchar_t* dll_name) {
-  for (int i = 0; i < kTroublesomeDllsMaxCount && g_troublesome_dlls[i]; ++i) {
+  for (int i = 0;
+       i < static_cast<int>(kTroublesomeDllsMaxCount) && g_troublesome_dlls[i];
+       ++i) {
     if (_wcsicmp(dll_name, g_troublesome_dlls[i]) == 0)
       return i;
   }
@@ -253,7 +255,7 @@ int GetBlacklistIndex(const wchar_t* dll_name) {
 bool AddDllToBlacklist(const wchar_t* dll_name) {
   int blacklist_size = BlacklistSize();
   // We need to leave one space at the end for the null pointer.
-  if (blacklist_size + 1 >= kTroublesomeDllsMaxCount)
+  if (blacklist_size + 1 >= static_cast<int>(kTroublesomeDllsMaxCount))
     return false;
   for (int i = 0; i < blacklist_size; ++i) {
     if (!_wcsicmp(g_troublesome_dlls[i], dll_name))

@@ -62,25 +62,25 @@ TEST(EtwTracePropertiesTest, Initialization) {
   EXPECT_EQ(0u, p->Wnode.HistoricalContext);
 
   EXPECT_TRUE(kGuidNull == p->Wnode.Guid);
-  EXPECT_EQ(0, p->Wnode.ClientContext);
-  EXPECT_EQ(WNODE_FLAG_TRACED_GUID, p->Wnode.Flags);
+  EXPECT_EQ(0u, p->Wnode.ClientContext);
+  EXPECT_EQ(static_cast<ULONG>(WNODE_FLAG_TRACED_GUID), p->Wnode.Flags);
 
-  EXPECT_EQ(0, p->BufferSize);
-  EXPECT_EQ(0, p->MinimumBuffers);
-  EXPECT_EQ(0, p->MaximumBuffers);
-  EXPECT_EQ(0, p->MaximumFileSize);
-  EXPECT_EQ(0, p->LogFileMode);
-  EXPECT_EQ(0, p->FlushTimer);
-  EXPECT_EQ(0, p->EnableFlags);
+  EXPECT_EQ(0u, p->BufferSize);
+  EXPECT_EQ(0u, p->MinimumBuffers);
+  EXPECT_EQ(0u, p->MaximumBuffers);
+  EXPECT_EQ(0u, p->MaximumFileSize);
+  EXPECT_EQ(0u, p->LogFileMode);
+  EXPECT_EQ(0u, p->FlushTimer);
+  EXPECT_EQ(0u, p->EnableFlags);
   EXPECT_EQ(0, p->AgeLimit);
 
-  EXPECT_EQ(0, p->NumberOfBuffers);
-  EXPECT_EQ(0, p->FreeBuffers);
-  EXPECT_EQ(0, p->EventsLost);
-  EXPECT_EQ(0, p->BuffersWritten);
-  EXPECT_EQ(0, p->LogBuffersLost);
-  EXPECT_EQ(0, p->RealTimeBuffersLost);
-  EXPECT_EQ(0, p->LoggerThreadId);
+  EXPECT_EQ(0u, p->NumberOfBuffers);
+  EXPECT_EQ(0u, p->FreeBuffers);
+  EXPECT_EQ(0u, p->EventsLost);
+  EXPECT_EQ(0u, p->BuffersWritten);
+  EXPECT_EQ(0u, p->LogBuffersLost);
+  EXPECT_EQ(0u, p->RealTimeBuffersLost);
+  EXPECT_EQ(0u, p->LoggerThreadId);
   EXPECT_NE(0u, p->LogFileNameOffset);
   EXPECT_NE(0u, p->LoggerNameOffset);
 }
@@ -133,7 +133,7 @@ class EtwTraceControllerTest : public testing::Test {
 TEST_F(EtwTraceControllerTest, Initialize) {
   EtwTraceController controller;
 
-  EXPECT_EQ(NULL, controller.session());
+  EXPECT_EQ(0u, controller.session());
   EXPECT_STREQ(L"", controller.session_name());
 }
 
@@ -148,11 +148,11 @@ TEST_F(EtwTraceControllerTest, StartRealTimeSession) {
     return;
   }
 
-  EXPECT_TRUE(NULL != controller.session());
+  EXPECT_NE(0u, controller.session());
   EXPECT_STREQ(session_name_.c_str(), controller.session_name());
 
   EXPECT_HRESULT_SUCCEEDED(controller.Stop(NULL));
-  EXPECT_EQ(NULL, controller.session());
+  EXPECT_EQ(0u, controller.session());
   EXPECT_STREQ(L"", controller.session_name());
 }
 
@@ -171,11 +171,11 @@ TEST_F(EtwTraceControllerTest, StartFileSession) {
     return;
   }
 
-  EXPECT_TRUE(NULL != controller.session());
+  EXPECT_NE(0u, controller.session());
   EXPECT_STREQ(session_name_.c_str(), controller.session_name());
 
   EXPECT_HRESULT_SUCCEEDED(controller.Stop(NULL));
-  EXPECT_EQ(NULL, controller.session());
+  EXPECT_EQ(0u, controller.session());
   EXPECT_STREQ(L"", controller.session_name());
   base::DeleteFile(temp, false);
 }
@@ -184,8 +184,8 @@ TEST_F(EtwTraceControllerTest, StartFileSession) {
 TEST_F(EtwTraceControllerTest, DISABLED_EnableDisable) {
   TestingProvider provider(test_provider_);
 
-  EXPECT_EQ(ERROR_SUCCESS, provider.Register());
-  EXPECT_EQ(NULL, provider.session_handle());
+  EXPECT_EQ(static_cast<DWORD>(ERROR_SUCCESS), provider.Register());
+  EXPECT_EQ(0u, provider.session_handle());
 
   EtwTraceController controller;
   HRESULT hr = controller.StartRealtimeSession(session_name_.c_str(),
@@ -208,9 +208,9 @@ TEST_F(EtwTraceControllerTest, DISABLED_EnableDisable) {
   provider.WaitForCallback();
 
   EXPECT_EQ(0, provider.enable_level());
-  EXPECT_EQ(0, provider.enable_flags());
+  EXPECT_EQ(0u, provider.enable_flags());
 
-  EXPECT_EQ(ERROR_SUCCESS, provider.Unregister());
+  EXPECT_EQ(static_cast<DWORD>(ERROR_SUCCESS), provider.Unregister());
 
   // Enable the provider again, before registering.
   EXPECT_HRESULT_SUCCEEDED(controller.EnableProvider(test_provider_,
@@ -218,7 +218,7 @@ TEST_F(EtwTraceControllerTest, DISABLED_EnableDisable) {
 
   // Register the provider again, the settings above
   // should take immediate effect.
-  EXPECT_EQ(ERROR_SUCCESS, provider.Register());
+  EXPECT_EQ(static_cast<DWORD>(ERROR_SUCCESS), provider.Register());
 
   EXPECT_EQ(TRACE_LEVEL_VERBOSE, provider.enable_level());
   EXPECT_EQ(kTestProviderFlags, provider.enable_flags());
@@ -235,7 +235,7 @@ TEST_F(EtwTraceControllerTest, DISABLED_EnableDisable) {
 
     // Session should have wound down.
     EXPECT_EQ(0, provider.enable_level());
-    EXPECT_EQ(0, provider.enable_flags());
+    EXPECT_EQ(0u, provider.enable_flags());
   }
 }
 

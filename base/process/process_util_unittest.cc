@@ -278,7 +278,7 @@ TEST_F(ProcessUtilTest, MAYBE_GetTerminationStatusCrash) {
   EXPECT_EQ(base::TERMINATION_STATUS_PROCESS_CRASHED, status);
 
 #if defined(OS_WIN)
-  EXPECT_EQ(0xc0000005, exit_code);
+  EXPECT_EQ(static_cast<int>(0xc0000005), exit_code);
 #elif defined(OS_POSIX)
   int signaled = WIFSIGNALED(exit_code);
   EXPECT_NE(0, signaled);

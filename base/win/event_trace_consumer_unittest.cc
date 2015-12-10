@@ -209,7 +209,8 @@ TEST_F(EtwTraceConsumerRealtimeTest, ConsumerReturnsWhenSessionClosed) {
   ASSERT_HRESULT_SUCCEEDED(StartConsumerThread());
 
   // Wait around for the consumer_ thread a bit.
-  ASSERT_EQ(WAIT_TIMEOUT, ::WaitForSingleObject(consumer_thread_.Get(), 50));
+  ASSERT_EQ(static_cast<DWORD>(WAIT_TIMEOUT),
+            ::WaitForSingleObject(consumer_thread_.Get(), 50));
   ASSERT_HRESULT_SUCCEEDED(controller.Stop(NULL));
 
   // The consumer_ returns success on session stop.
@@ -237,14 +238,14 @@ TEST_F(EtwTraceConsumerRealtimeTest, ConsumeEvent) {
       test_provider_, TRACE_LEVEL_VERBOSE, 0xFFFFFFFF));
 
   EtwTraceProvider provider(test_provider_);
-  ASSERT_EQ(ERROR_SUCCESS, provider.Register());
+  ASSERT_EQ(static_cast<DWORD>(ERROR_SUCCESS), provider.Register());
 
   // Start the consumer_.
   ASSERT_HRESULT_SUCCEEDED(StartConsumerThread());
-  ASSERT_EQ(0, TestConsumer::events_.size());
+  ASSERT_EQ(0u, TestConsumer::events_.size());
 
   EtwMofEvent<1> event(kTestEventType, 1, TRACE_LEVEL_ERROR);
-  EXPECT_EQ(ERROR_SUCCESS, provider.Log(&event.header));
+  EXPECT_EQ(static_cast<DWORD>(ERROR_SUCCESS), provider.Log(&event.header));
   EXPECT_EQ(WAIT_OBJECT_0,
             ::WaitForSingleObject(TestConsumer::sank_event_.Get(), INFINITE));
   ASSERT_HRESULT_SUCCEEDED(controller.Stop(NULL));
@@ -294,9 +295,9 @@ class EtwTraceConsumerDataTest: public EtwTraceConsumerBaseTest {
 
     EtwTraceProvider provider(test_provider_);
     // Then register our provider, means we get a session handle immediately.
-    EXPECT_EQ(ERROR_SUCCESS, provider.Register());
+    EXPECT_EQ(static_cast<DWORD>(ERROR_SUCCESS), provider.Register());
     // Trace the event, it goes to the temp file.
-    EXPECT_EQ(ERROR_SUCCESS, provider.Log(header));
+    EXPECT_EQ(static_cast<DWORD>(ERROR_SUCCESS), provider.Log(header));
     EXPECT_HRESULT_SUCCEEDED(controller.DisableProvider(test_provider_));
     EXPECT_HRESULT_SUCCEEDED(provider.Unregister());
     EXPECT_HRESULT_SUCCEEDED(controller.Flush(NULL));

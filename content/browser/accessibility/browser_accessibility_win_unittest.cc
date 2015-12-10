@@ -484,7 +484,7 @@ TEST_F(BrowserAccessibilityTest, TestTextBoundaries) {
 TEST_F(BrowserAccessibilityTest, TestSimpleHypertext) {
   const std::string text1_name = "One two three.";
   const std::string text2_name = " Four five six.";
-  const size_t text_name_len = text1_name.length() + text2_name.length();
+  const long text_name_len = text1_name.length() + text2_name.length();
 
   ui::AXNodeData text1;
   text1.id = 11;
@@ -567,7 +567,7 @@ TEST_F(BrowserAccessibilityTest, TestComplexHypertext) {
   const base::string16 embed(1, BrowserAccessibilityWin::kEmbeddedCharacter);
   const base::string16 root_hypertext =
       text1_name + embed + text2_name + embed + embed + embed;
-  const size_t root_hypertext_len = root_hypertext.length();
+  const long root_hypertext_len = root_hypertext.length();
 
   ui::AXNodeData text1;
   text1.id = 11;

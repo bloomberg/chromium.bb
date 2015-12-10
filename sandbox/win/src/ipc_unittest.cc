@@ -68,11 +68,11 @@ TEST(IPCTest, ChannelMaker) {
   size_t channel_start = 0;
   IPCControl* client_control = MakeChannels(12 * 64, 4096, &channel_start);
   ASSERT_TRUE(NULL != client_control);
-  EXPECT_EQ(5, client_control->channels_count);
+  EXPECT_EQ(5u, client_control->channels_count);
 #if defined(_WIN64)
-  EXPECT_EQ(216, channel_start);
+  EXPECT_EQ(216u, channel_start);
 #else
-  EXPECT_EQ(108, channel_start);
+  EXPECT_EQ(108u, channel_start);
 #endif
   delete[] reinterpret_cast<char*>(client_control);
 }
@@ -166,7 +166,7 @@ TEST(IPCTest, CrossCallStrPacking) {
 
   CrossCall(client, tag1, text, &answer);
   actual_params = reinterpret_cast<CrossCallParamsEx*>(client.GetBuffer());
-  EXPECT_EQ(1, actual_params->GetParamsCount());
+  EXPECT_EQ(1u, actual_params->GetParamsCount());
   EXPECT_EQ(tag1, actual_params->GetTag());
   EXPECT_TRUE(actual_params->GetParameterStr(0, &copied_text));
   EXPECT_STREQ(text, copied_text.c_str());
@@ -176,13 +176,13 @@ TEST(IPCTest, CrossCallStrPacking) {
   const wchar_t* null_text = NULL;
   CrossCall(client, tag2, null_text, &answer);
   actual_params = reinterpret_cast<CrossCallParamsEx*>(client.GetBuffer());
-  EXPECT_EQ(1, actual_params->GetParamsCount());
+  EXPECT_EQ(1u, actual_params->GetParamsCount());
   EXPECT_EQ(tag2, actual_params->GetTag());
   uint32_t param_size = 1;
   ArgType type = INVALID_TYPE;
   void* param_addr = actual_params->GetRawParameter(0, &param_size, &type);
   EXPECT_TRUE(NULL != param_addr);
-  EXPECT_EQ(0, param_size);
+  EXPECT_EQ(0u, param_size);
   EXPECT_EQ(WCHAR_TYPE, type);
   EXPECT_TRUE(actual_params->GetParameterStr(0, &copied_text));
 
@@ -193,12 +193,12 @@ TEST(IPCTest, CrossCallStrPacking) {
   // Check with an empty string and a non-empty string.
   CrossCall(client, tag3, null_text, text, &answer);
   actual_params = reinterpret_cast<CrossCallParamsEx*>(client.GetBuffer());
-  EXPECT_EQ(2, actual_params->GetParamsCount());
+  EXPECT_EQ(2u, actual_params->GetParamsCount());
   EXPECT_EQ(tag3, actual_params->GetTag());
   type = INVALID_TYPE;
   param_addr = actual_params->GetRawParameter(0, &param_size, &type);
   EXPECT_TRUE(NULL != param_addr);
-  EXPECT_EQ(0, param_size);
+  EXPECT_EQ(0u, param_size);
   EXPECT_EQ(WCHAR_TYPE, type);
   EXPECT_TRUE(actual_params->GetParameterStr(0, &copied_text));
   EXPECT_TRUE(actual_params->GetParameterStr(1, &copied_text));
@@ -210,7 +210,7 @@ TEST(IPCTest, CrossCallStrPacking) {
   const wchar_t *text2 = L"AeFG";
   CrossCall(client, tag1, text2, null_text, text, &answer);
   actual_params = reinterpret_cast<CrossCallParamsEx*>(client.GetBuffer());
-  EXPECT_EQ(3, actual_params->GetParamsCount());
+  EXPECT_EQ(3u, actual_params->GetParamsCount());
   EXPECT_EQ(tag1, actual_params->GetTag());
   EXPECT_TRUE(actual_params->GetParameterStr(0, &copied_text_p0));
   EXPECT_STREQ(text2, copied_text_p0.c_str());
@@ -219,7 +219,7 @@ TEST(IPCTest, CrossCallStrPacking) {
   type = INVALID_TYPE;
   param_addr = actual_params->GetRawParameter(1, &param_size, &type);
   EXPECT_TRUE(NULL != param_addr);
-  EXPECT_EQ(0, param_size);
+  EXPECT_EQ(0u, param_size);
   EXPECT_EQ(WCHAR_TYPE, type);
 
   CloseChannelEvents(client_control);
@@ -246,7 +246,7 @@ TEST(IPCTest, CrossCallIntPacking) {
   DWORD dw = 0xE6578;
   CrossCall(client, tag2, dw, &answer);
   actual_params = reinterpret_cast<CrossCallParamsEx*>(client.GetBuffer());
-  EXPECT_EQ(1, actual_params->GetParamsCount());
+  EXPECT_EQ(1u, actual_params->GetParamsCount());
   EXPECT_EQ(tag2, actual_params->GetTag());
   ArgType type = INVALID_TYPE;
   uint32_t param_size = 1;
@@ -260,7 +260,7 @@ TEST(IPCTest, CrossCallIntPacking) {
   HANDLE h = HANDLE(0x70000500);
   CrossCall(client, tag1, text, h, &answer);
   actual_params = reinterpret_cast<CrossCallParamsEx*>(client.GetBuffer());
-  EXPECT_EQ(2, actual_params->GetParamsCount());
+  EXPECT_EQ(2u, actual_params->GetParamsCount());
   EXPECT_EQ(tag1, actual_params->GetTag());
   type = INVALID_TYPE;
   param_addr = actual_params->GetRawParameter(1, &param_size, &type);
@@ -272,7 +272,7 @@ TEST(IPCTest, CrossCallIntPacking) {
   // Check combination of 32 and 64 bits.
   CrossCall(client, tag2, h, dw, h, &answer);
   actual_params = reinterpret_cast<CrossCallParamsEx*>(client.GetBuffer());
-  EXPECT_EQ(3, actual_params->GetParamsCount());
+  EXPECT_EQ(3u, actual_params->GetParamsCount());
   EXPECT_EQ(tag2, actual_params->GetTag());
   type = INVALID_TYPE;
   param_addr = actual_params->GetRawParameter(0, &param_size, &type);
@@ -313,7 +313,7 @@ TEST(IPCTest, CrossCallValidation) {
   ASSERT_TRUE(NULL != ccp);
   EXPECT_TRUE(ccp->GetBuffer() != buffer);
   EXPECT_EQ(kTag, ccp->GetTag());
-  EXPECT_EQ(1, ccp->GetParamsCount());
+  EXPECT_EQ(1u, ccp->GetParamsCount());
   delete[] (reinterpret_cast<char*>(ccp));
 
   // Test that we handle integer overflow on the number of params
@@ -434,7 +434,7 @@ TEST(IPCTest, ClientFastServer) {
   EXPECT_EQ(kBusyChannel, client_control->channels[1].state);
   EXPECT_EQ(kFreeChannel, client_control->channels[2].state);
 
-  EXPECT_EQ(0, client_control->channels[1].ipc_tag);
+  EXPECT_EQ(0u, client_control->channels[1].ipc_tag);
 
   uint32_t tag = 7654;
   CrossCallReturn answer;

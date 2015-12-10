@@ -98,7 +98,7 @@ void GetClientCertsImpl(HCERTSTORE cert_store,
                                          &find_by_issuer_para,
                                          chain_context);
     if (!chain_context) {
-      if (GetLastError() != CRYPT_E_NOT_FOUND)
+      if (GetLastError() != static_cast<DWORD>(CRYPT_E_NOT_FOUND))
         DPLOG(ERROR) << "CertFindChainInStore failed: ";
       break;
     }

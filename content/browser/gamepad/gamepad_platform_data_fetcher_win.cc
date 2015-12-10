@@ -34,7 +34,7 @@ float NormalizeXInputAxis(SHORT value) {
   return ((value + 32768.f) / 32767.5f) - 1.f;
 }
 
-const WebUChar* const GamepadSubTypeName(BYTE sub_type) {
+const WebUChar* GamepadSubTypeName(BYTE sub_type) {
   switch (sub_type) {
     case kDeviceSubTypeGamepad: return L"GAMEPAD";
     case kDeviceSubTypeWheel: return L"WHEEL";

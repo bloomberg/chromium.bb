@@ -392,7 +392,7 @@ TEST(PolicyEngineTest, ThreeRulesTest) {
   EXPECT_TRUE(pr_pipe.AddNumberMatch(IF, 2, FILE_ATTRIBUTE_NORMAL, EQUAL));
 
   size_t opc1 = pr_pipe.GetOpcodeCount();
-  EXPECT_EQ(3, opc1);
+  EXPECT_EQ(3u, opc1);
 
   PolicyRule pr_dump(ASK_BROKER);
   EXPECT_TRUE(pr_dump.AddStringMatch(IF, 0, L"\\\\/?/?\\*\\Crash Reports\\*",
@@ -401,7 +401,7 @@ TEST(PolicyEngineTest, ThreeRulesTest) {
   EXPECT_TRUE(pr_dump.AddNumberMatch(IF, 2, FILE_ATTRIBUTE_NORMAL, EQUAL));
 
   size_t opc2 = pr_dump.GetOpcodeCount();
-  EXPECT_EQ(4, opc2);
+  EXPECT_EQ(4u, opc2);
 
   PolicyRule pr_winexe(SIGNAL_ALARM);
   EXPECT_TRUE(pr_winexe.AddStringMatch(IF, 0, L"\\\\/?/?\\C:\\Windows\\*.exe",
@@ -409,7 +409,7 @@ TEST(PolicyEngineTest, ThreeRulesTest) {
   EXPECT_TRUE(pr_winexe.AddNumberMatch(IF, 2, FILE_ATTRIBUTE_NORMAL, EQUAL));
 
   size_t opc3 = pr_winexe.GetOpcodeCount();
-  EXPECT_EQ(3, opc3);
+  EXPECT_EQ(3u, opc3);
 
   PolicyRule pr_adobe(GIVE_CACHED);
   EXPECT_TRUE(pr_adobe.AddStringMatch(IF, 0, L"c:\\adobe\\ver?.?\\",
@@ -417,14 +417,14 @@ TEST(PolicyEngineTest, ThreeRulesTest) {
   EXPECT_TRUE(pr_adobe.AddNumberMatch(IF, 2, FILE_ATTRIBUTE_NORMAL, EQUAL));
 
   size_t opc4 = pr_adobe.GetOpcodeCount();
-  EXPECT_EQ(4, opc4);
+  EXPECT_EQ(4u, opc4);
 
   PolicyRule pr_none(GIVE_FIRST);
   EXPECT_TRUE(pr_none.AddNumberMatch(IF, 2, FILE_ATTRIBUTE_READONLY, AND));
   EXPECT_TRUE(pr_none.AddNumberMatch(IF, 2, FILE_ATTRIBUTE_SYSTEM, AND));
 
   size_t opc5 = pr_none.GetOpcodeCount();
-  EXPECT_EQ(2, opc5);
+  EXPECT_EQ(2u, opc5);
 
   PolicyGlobal* policy = MakePolicyMemory();
 

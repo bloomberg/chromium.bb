@@ -60,7 +60,7 @@ std::string GetLocaleString(LCID Locale_id, LCTYPE locale_type) {
   //|chars_written| includes NUL terminator.
   const int chars_written =
       GetLocaleInfo(Locale_id, locale_type, buffer, arraysize(buffer));
-  if (chars_written <= 1 || arraysize(buffer) < chars_written)
+  if (chars_written <= 1 || static_cast<int>(arraysize(buffer)) < chars_written)
     return std::string();
   std::string result;
   base::WideToUTF8(buffer, chars_written - 1, &result);

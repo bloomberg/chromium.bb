@@ -167,7 +167,7 @@ TEST_F(RegistryTest, TruncatedCharTest) {
   const wchar_t kName[] = L"name";
   // kData size is not a multiple of sizeof(wchar_t).
   const uint8 kData[] = { 1, 2, 3, 4, 5 };
-  EXPECT_EQ(5, arraysize(kData));
+  EXPECT_EQ(5u, arraysize(kData));
   ASSERT_EQ(ERROR_SUCCESS, key.WriteValue(kName, kData,
                                           arraysize(kData), REG_BINARY));
 

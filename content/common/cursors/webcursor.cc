@@ -192,9 +192,9 @@ static WebCursorInfo::Type ToCursorType(HCURSOR cursor) {
     { LoadCursor(NULL, IDC_APPSTARTING), WebCursorInfo::TypeProgress },
     { LoadCursor(NULL, IDC_NO),          WebCursorInfo::TypeNotAllowed },
   };
-  for (int i = 0; i < arraysize(kStandardCursors); ++i) {
-    if (cursor == kStandardCursors[i].cursor)
-      return kStandardCursors[i].type;
+  for (const auto& kStandardCursor : kStandardCursors) {
+    if (cursor == kStandardCursor.cursor)
+      return kStandardCursor.type;
   }
   return WebCursorInfo::TypeCustom;
 }

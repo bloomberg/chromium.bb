@@ -193,7 +193,7 @@ UINT CALLBACK CabinetCallback(PVOID data,
   if (notification == SPFILENOTIFY_FILEINCABINET) {
     FILE_IN_CABINET_INFO* info =
         reinterpret_cast<FILE_IN_CABINET_INFO*>(param1);
-    for (int i = 0; i < arraysize(kDependencyList); i++) {
+    for (size_t i = 0; i < arraysize(kDependencyList); i++) {
       base::FilePath base_name(info->NameInCabinet);
       base_name = base_name.BaseName();
       if (base::FilePath::CompareEqualIgnoreCase(base_name.value().c_str(),

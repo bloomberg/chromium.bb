@@ -169,7 +169,7 @@ FARPROC WebPluginIMEWin::GetProcAddress(LPCSTR name) {
         reinterpret_cast<FARPROC>(ImmSetCandidateWindow) },
     { "ImmSetOpenStatus", reinterpret_cast<FARPROC>(ImmSetOpenStatus) },
   };
-  for (int i = 0; i < arraysize(kImm32Functions); ++i) {
+  for (size_t i = 0; i < arraysize(kImm32Functions); ++i) {
     if (!lstrcmpiA(name, kImm32Functions[i].name))
       return kImm32Functions[i].function;
   }

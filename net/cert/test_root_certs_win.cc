@@ -148,7 +148,7 @@ bool TestRootCerts::Add(X509Certificate* certificate) {
       CERT_STORE_ADD_NEW, NULL);
   if (!ok) {
     // If the certificate is already added, return successfully.
-    return GetLastError() == CRYPT_E_EXISTS;
+    return GetLastError() == static_cast<DWORD>(CRYPT_E_EXISTS);
   }
 
   empty_ = false;

@@ -30,8 +30,8 @@ TEST(IUnknownImplTest, IUnknownImpl) {
 
   EXPECT_EQ(1, TestIUnknownImplSubclass::instance_count);
 
-  EXPECT_EQ(1, u->AddRef());
-  EXPECT_EQ(1, u->AddRef());
+  EXPECT_EQ(1u, u->AddRef());
+  EXPECT_EQ(1u, u->AddRef());
 
   IUnknown* other = NULL;
   EXPECT_EQ(E_NOINTERFACE, u->QueryInterface(
@@ -40,8 +40,8 @@ TEST(IUnknownImplTest, IUnknownImpl) {
       IID_IUnknown, reinterpret_cast<void**>(&other)));
   other->Release();
 
-  EXPECT_EQ(1, u->Release());
-  EXPECT_EQ(0, u->Release());
+  EXPECT_EQ(1u, u->Release());
+  EXPECT_EQ(0u, u->Release());
   EXPECT_EQ(0, TestIUnknownImplSubclass::instance_count);
 }
 

@@ -51,7 +51,7 @@ bool ImportRawKey(HCRYPTPROV provider,
                   ALG_ID alg,
                   const void* key_data, size_t key_size,
                   ScopedHCRYPTKEY* key) {
-  DCHECK_GT(key_size, 0);
+  DCHECK_GT(key_size, 0u);
 
   DWORD actual_size =
       static_cast<DWORD>(sizeof(PlaintextBlobHeader) + key_size);
@@ -314,7 +314,7 @@ SymmetricKey::~SymmetricKey() {
 // static
 SymmetricKey* SymmetricKey::GenerateRandomKey(Algorithm algorithm,
                                               size_t key_size_in_bits) {
-  DCHECK_GE(key_size_in_bits, 8);
+  DCHECK_GE(key_size_in_bits, 8u);
 
   ScopedHCRYPTPROV provider;
   ScopedHCRYPTKEY key;
@@ -412,7 +412,7 @@ SymmetricKey* SymmetricKey::DeriveKeyFromPassword(Algorithm algorithm,
 
   // 1. If dkLen > (2^32 - 1) * hLen, output "derived key too long" and stop.
   size_t dkLen = key_size_in_bits / 8;
-  DCHECK_GT(dkLen, 0);
+  DCHECK_GT(dkLen, 0u);
 
   if ((dkLen / hLen) > 0xFFFFFFFF) {
     DLOG(ERROR) << "Derived key too long.";
@@ -423,7 +423,7 @@ SymmetricKey* SymmetricKey::DeriveKeyFromPassword(Algorithm algorithm,
   //    rounding up, and let r be the number of octets in the last
   //    block:
   size_t L = (dkLen + hLen - 1) / hLen;
-  DCHECK_GT(L, 0);
+  DCHECK_GT(L, 0u);
 
   size_t total_generated_size = L * hLen;
   std::vector<BYTE> generated_key(total_generated_size);

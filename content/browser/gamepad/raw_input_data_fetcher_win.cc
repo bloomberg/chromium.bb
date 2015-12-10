@@ -58,9 +58,9 @@ void RawInputDataFetcher::WillDestroyCurrentMessageLoop() {
 }
 
 RAWINPUTDEVICE* RawInputDataFetcher::GetRawInputDevices(DWORD flags) {
-  int usage_count = arraysize(DeviceUsages);
+  size_t usage_count = arraysize(DeviceUsages);
   scoped_ptr<RAWINPUTDEVICE[]> devices(new RAWINPUTDEVICE[usage_count]);
-  for (int i = 0; i < usage_count; ++i) {
+  for (size_t i = 0; i < usage_count; ++i) {
     devices[i].dwFlags = flags;
     devices[i].usUsagePage = 1;
     devices[i].usUsage = DeviceUsages[i];
@@ -200,8 +200,8 @@ RawGamepadInfo* RawInputDataFetcher::ParseGamepadInfo(HANDLE hDevice) {
 
   // Make sure this device is of a type that we want to observe.
   bool valid_type = false;
-  for (int i = 0; i < arraysize(DeviceUsages); ++i) {
-    if (device_info->hid.usUsage == DeviceUsages[i]) {
+  for (USHORT device_usage : DeviceUsages) {
+    if (device_info->hid.usUsage == device_usage) {
       valid_type = true;
       break;
     }
@@ -389,8 +389,10 @@ void RawInputDataFetcher::UpdateGamepad(
       for (uint32_t j = 0; j < buttons_length; j++) {
         int32_t button_index = usages[j].Usage - 1;
         if (button_index >= 0 &&
-            button_index < blink::WebGamepad::buttonsLengthCap)
+            button_index <
+                static_cast<int>(blink::WebGamepad::buttonsLengthCap)) {
           gamepad_info->buttons[button_index] = true;
+        }
       }
     }
   }

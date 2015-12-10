@@ -779,16 +779,6 @@ config("default_warnings") {
       ]
     }
   } else {
-    # Common GCC warning setup.
-    cflags += [
-      # Enables.
-      "-Wendif-labels",  # Weird old-style text after an #endif.
-
-      # Disables.
-      "-Wno-missing-field-initializers",  # "struct foo f = {0};"
-      "-Wno-unused-parameter",  # Unused function parameters.
-    ]
-
     if (treat_warnings_as_errors) {
       cflags += [ "-Werror" ]
     }
@@ -828,6 +818,18 @@ config("default_warnings") {
       # TODO: remove this flag once all builds work. See crbug.com/227506
       cflags += [ "-Wno-unused-local-typedefs" ]
     }
+  }
+
+  # Common Clang and GCC warning setup.
+  if (!is_win || is_clang) {
+    cflags += [
+      # Enables.
+      "-Wendif-labels",  # Weird old-style text after an #endif.
+
+      # Disables.
+      "-Wno-missing-field-initializers",  # "struct foo f = {0};"
+      "-Wno-unused-parameter",  # Unused function parameters.
+    ]
   }
 
   if (is_clang) {

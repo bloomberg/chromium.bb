@@ -180,7 +180,7 @@ LRESULT UserInputMonitorWinCore::OnInput(HRAWINPUT input_handle) {
   UINT size = 0;
   UINT result = GetRawInputData(
       input_handle, RID_INPUT, NULL, &size, sizeof(RAWINPUTHEADER));
-  if (result == -1) {
+  if (result == static_cast<UINT>(-1)) {
     PLOG(ERROR) << "GetRawInputData() failed";
     return 0;
   }
@@ -191,7 +191,7 @@ LRESULT UserInputMonitorWinCore::OnInput(HRAWINPUT input_handle) {
   RAWINPUT* input = reinterpret_cast<RAWINPUT*>(buffer.get());
   result = GetRawInputData(
       input_handle, RID_INPUT, buffer.get(), &size, sizeof(RAWINPUTHEADER));
-  if (result == -1) {
+  if (result == static_cast<UINT>(-1)) {
     PLOG(ERROR) << "GetRawInputData() failed";
     return 0;
   }

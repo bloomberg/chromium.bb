@@ -169,7 +169,7 @@ std::wstring GetKeyPath(HKEY key) {
   DWORD size = 0;
   DWORD result = 0;
   result = func(key, KeyNameInformation, 0, 0, &size);
-  if (result != STATUS_BUFFER_TOO_SMALL)
+  if (result != static_cast<DWORD>(STATUS_BUFFER_TOO_SMALL))
     return L"";
 
   scoped_ptr<char[]> buffer(new char[size]);
@@ -177,7 +177,7 @@ std::wstring GetKeyPath(HKEY key) {
     return L"";
 
   result = func(key, KeyNameInformation, buffer.get(), size, &size);
-  if (result != STATUS_SUCCESS)
+  if (result != static_cast<DWORD>(STATUS_SUCCESS))
     return L"";
 
   KEY_NAME_INFORMATION* info =

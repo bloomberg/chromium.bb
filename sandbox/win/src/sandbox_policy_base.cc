@@ -635,7 +635,7 @@ const AppContainerAttributes* PolicyBase::GetAppContainer() const {
   return appcontainer_list_.get();
 }
 
-const PSID PolicyBase::GetLowBoxSid() const {
+PSID PolicyBase::GetLowBoxSid() const {
   return lowbox_sid_;
 }
 

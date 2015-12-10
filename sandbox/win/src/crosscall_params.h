@@ -114,7 +114,7 @@ class CrossCallParams {
   }
 
   // Returns how many parameter this IPC call should have.
-  const uint32_t GetParamsCount() const { return params_count_; }
+  uint32_t GetParamsCount() const { return params_count_; }
 
   // Returns a pointer to the CrossCallReturn structure.
   CrossCallReturn* GetCallReturn() {
@@ -122,9 +122,7 @@ class CrossCallParams {
   }
 
   // Returns TRUE if this call contains InOut parameters.
-  const bool IsInOut() const {
-    return (1 == is_in_out_);
-  }
+  bool IsInOut() const { return (1 == is_in_out_); }
 
   // Tells the CrossCall object if it contains InOut parameters.
   void SetIsInOut(bool value) {

@@ -183,7 +183,7 @@ std::string KeygenHandler::GenKeyAndSignChallenge() {
             CRYPT_SILENT | CRYPT_NEWKEYSET))
       break;
 
-    if (GetLastError() != NTE_BAD_KEYSET) {
+    if (GetLastError() != static_cast<DWORD>(NTE_BAD_KEYSET)) {
       LOG(ERROR) << "Keygen failed: Couldn't acquire a CryptoAPI provider "
                     "context: " << GetLastError();
       return std::string();

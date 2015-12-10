@@ -45,7 +45,7 @@ class SystemMessageWindowWin::DeviceNotifications {
     filter.dbcc_size = sizeof(filter);
     filter.dbcc_devicetype = DBT_DEVTYP_DEVICEINTERFACE;
     bool core_audio_support = media::CoreAudioUtil::IsSupported();
-    for (int i = 0; i < arraysize(kDeviceCategoryMap); ++i) {
+    for (size_t i = 0; i < arraysize(kDeviceCategoryMap); ++i) {
       // If CoreAudio is supported, AudioDeviceListenerWin will
       // take care of monitoring audio devices.
       if (core_audio_support &&
@@ -63,7 +63,7 @@ class SystemMessageWindowWin::DeviceNotifications {
   }
 
   void Unregister() {
-    for (int i = 0; i < arraysize(notifications_); ++i) {
+    for (size_t i = 0; i < arraysize(notifications_); ++i) {
       if (notifications_[i]) {
         UnregisterDeviceNotification(notifications_[i]);
         notifications_[i] = NULL;
@@ -122,7 +122,7 @@ LRESULT SystemMessageWindowWin::OnDeviceChange(UINT event_type, LPARAM data) {
           reinterpret_cast<DEV_BROADCAST_DEVICEINTERFACE*>(data);
       if (device_interface->dbcc_devicetype != DBT_DEVTYP_DEVICEINTERFACE)
         return TRUE;
-      for (int i = 0; i < arraysize(kDeviceCategoryMap); ++i) {
+      for (size_t i = 0; i < arraysize(kDeviceCategoryMap); ++i) {
         if (kDeviceCategoryMap[i].device_category ==
             device_interface->dbcc_classguid) {
           device_type = kDeviceCategoryMap[i].device_type;

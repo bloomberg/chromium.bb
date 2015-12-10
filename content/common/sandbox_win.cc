@@ -814,7 +814,7 @@ base::Process StartSandboxedProcess(
 
   delegate->PostSpawnTarget(target.process_handle());
 
-  CHECK(ResumeThread(target.thread_handle()) != -1);
+  CHECK(ResumeThread(target.thread_handle()) != static_cast<DWORD>(-1));
   return base::Process(target.TakeProcessHandle());
 }
 

@@ -245,8 +245,8 @@ class ScopedSuspendThread {
 
 ScopedSuspendThread::ScopedSuspendThread(HANDLE thread_handle)
     : thread_handle_(thread_handle),
-      was_successful_(::SuspendThread(thread_handle) != -1) {
-}
+      was_successful_(::SuspendThread(thread_handle) !=
+                      static_cast<DWORD>(-1)) {}
 
 ScopedSuspendThread::~ScopedSuspendThread() {
   if (!was_successful_)
@@ -263,7 +263,8 @@ ScopedSuspendThread::~ScopedSuspendThread() {
   // before priority boost is reenabled. The measured length of this window is
   // ~100us, so this should occur fairly rarely.
   ScopedDisablePriorityBoost disable_priority_boost(thread_handle_);
-  bool resume_thread_succeeded = ::ResumeThread(thread_handle_) != -1;
+  bool resume_thread_succeeded =
+      ::ResumeThread(thread_handle_) != static_cast<DWORD>(-1);
   CHECK(resume_thread_succeeded) << "ResumeThread failed: " << GetLastError();
 }
 

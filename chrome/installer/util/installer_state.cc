@@ -521,7 +521,7 @@ void InstallerState::GetExistingExeVersions(
     installer::kChromeOldExe,
   };
 
-  for (int i = 0; i < arraysize(kChromeFilenames); ++i) {
+  for (size_t i = 0; i < arraysize(kChromeFilenames); ++i) {
     base::FilePath chrome_exe(target_path().Append(kChromeFilenames[i]));
     scoped_ptr<FileVersionInfo> file_version_info(
         FileVersionInfo::CreateFileVersionInfo(chrome_exe));

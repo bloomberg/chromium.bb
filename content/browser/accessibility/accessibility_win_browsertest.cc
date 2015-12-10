@@ -126,7 +126,7 @@ void AccessibilityWinBrowserTest::SetUpInputField(
   base::win::ScopedComPtr<IAccessible> document(GetRendererAccessible());
   std::vector<base::win::ScopedVariant> document_children =
       GetAllAccessibleChildren(document.get());
-  ASSERT_EQ(1, document_children.size());
+  ASSERT_EQ(1u, document_children.size());
 
   base::win::ScopedComPtr<IAccessible2> form;
   HRESULT hr = QueryIAccessible2(GetAccessibleFromVariant(
@@ -134,7 +134,7 @@ void AccessibilityWinBrowserTest::SetUpInputField(
   ASSERT_EQ(S_OK, hr);
   std::vector<base::win::ScopedVariant> form_children =
       GetAllAccessibleChildren(form.get());
-  ASSERT_EQ(2, form_children.size());
+  ASSERT_EQ(2u, form_children.size());
 
   // Find the input text field.
   base::win::ScopedComPtr<IAccessible2> input;
@@ -178,7 +178,7 @@ void AccessibilityWinBrowserTest::SetUpTextareaField(
   base::win::ScopedComPtr<IAccessible> document(GetRendererAccessible());
   std::vector<base::win::ScopedVariant> document_children =
       GetAllAccessibleChildren(document.get());
-  ASSERT_EQ(1, document_children.size());
+  ASSERT_EQ(1u, document_children.size());
 
   base::win::ScopedComPtr<IAccessible2> section;
   HRESULT hr = QueryIAccessible2(GetAccessibleFromVariant(
@@ -186,7 +186,7 @@ void AccessibilityWinBrowserTest::SetUpTextareaField(
   ASSERT_EQ(S_OK, hr);
   std::vector<base::win::ScopedVariant> section_children =
       GetAllAccessibleChildren(section.get());
-  ASSERT_EQ(1, section_children.size());
+  ASSERT_EQ(1u, section_children.size());
 
   // Find the textarea text field.
   base::win::ScopedComPtr<IAccessible2> textarea;
@@ -905,7 +905,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
       &unique_id, &node_type);
   ASSERT_EQ(S_OK, hr);
   EXPECT_EQ(NODETYPE_DOCUMENT, node_type);
-  EXPECT_EQ(1, num_children);
+  EXPECT_EQ(1u, num_children);
   node_name.Reset();
   node_value.Reset();
 
@@ -919,7 +919,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   ASSERT_EQ(S_OK, hr);
   EXPECT_EQ(L"body", std::wstring(node_name, node_name.Length()));
   EXPECT_EQ(NODETYPE_ELEMENT, node_type);
-  EXPECT_EQ(1, num_children);
+  EXPECT_EQ(1u, num_children);
   node_name.Reset();
   node_value.Reset();
 
@@ -933,7 +933,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   ASSERT_EQ(S_OK, hr);
   EXPECT_EQ(L"input", std::wstring(node_name, node_name.Length()));
   EXPECT_EQ(NODETYPE_ELEMENT, node_type);
-  EXPECT_EQ(0, num_children);
+  EXPECT_EQ(0u, num_children);
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestRoleGroup) {

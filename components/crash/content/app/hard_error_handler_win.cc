@@ -33,8 +33,9 @@ DWORD FacilityFromException(DWORD exception_code) {
 // This is not a generic function. It only works with some |nt_status| values.
 // Check the strings here http://msdn.microsoft.com/en-us/library/cc704588.aspx
 // before attempting to use this function.
-void RaiseHardErrorMsg(long nt_status, const std::string& p1,
-                                       const std::string& p2) {
+void RaiseHardErrorMsg(DWORD nt_status,
+                       const std::string& p1,
+                       const std::string& p2) {
   // If headless just exit silently.
   if (GetCrashReporterClient()->IsRunningUnattended())
     return;
@@ -95,7 +96,7 @@ bool HardErrorHandler(EXCEPTION_POINTERS* ex_info) {
   if (!ex_info->ExceptionRecord)
     return false;
 
-  long exception = ex_info->ExceptionRecord->ExceptionCode;
+  DWORD exception = ex_info->ExceptionRecord->ExceptionCode;
   if (exception == kExceptionModuleNotFound) {
     ModuleNotFoundHardError(ex_info->ExceptionRecord);
     return true;

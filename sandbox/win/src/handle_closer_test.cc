@@ -86,8 +86,8 @@ SBOX_TESTS_COMMAND int CheckForFileHandles(int argc, wchar_t **argv) {
     case BEFORE_INIT:
       // Create a unique marker file that is open while the test is running.
       // The handles leak, but it will be closed by the test or on exit.
-      for (int i = 0; i < arraysize(kFileExtensions); ++i)
-        CHECK_NE(GetMarkerFile(kFileExtensions[i]), INVALID_HANDLE_VALUE);
+      for (const wchar_t* kExtension : kFileExtensions)
+        CHECK_NE(GetMarkerFile(kExtension), INVALID_HANDLE_VALUE);
       return SBOX_TEST_SUCCEEDED;
 
     case AFTER_REVERT: {
@@ -134,8 +134,8 @@ SBOX_TESTS_COMMAND int CheckForEventHandles(int argc, wchar_t** argv) {
   switch (state++) {
     case BEFORE_INIT:
       // Create a unique marker file that is open while the test is running.
-      for (int i = 0; i < arraysize(kFileExtensions); ++i) {
-        HANDLE handle = GetMarkerFile(kFileExtensions[i]);
+      for (const wchar_t* kExtension : kFileExtensions) {
+        HANDLE handle = GetMarkerFile(kExtension);
         CHECK_NE(handle, INVALID_HANDLE_VALUE);
         to_check.push_back(handle);
       }
@@ -195,9 +195,9 @@ TEST(HandleCloserTest, CheckForMarkerFiles) {
   runner.SetTestState(EVERY_STATE);
 
   base::string16 command = base::string16(L"CheckForFileHandles Y");
-  for (int i = 0; i < arraysize(kFileExtensions); ++i) {
+  for (const wchar_t* kExtension : kFileExtensions) {
     base::string16 handle_name;
-    base::win::ScopedHandle marker(GetMarkerFile(kFileExtensions[i]));
+    base::win::ScopedHandle marker(GetMarkerFile(kExtension));
     CHECK(marker.IsValid());
     CHECK(sandbox::GetHandleName(marker.Get(), &handle_name));
     command += (L" ");
@@ -215,9 +215,9 @@ TEST(HandleCloserTest, CloseMarkerFiles) {
   sandbox::TargetPolicy* policy = runner.GetPolicy();
 
   base::string16 command = base::string16(L"CheckForFileHandles N");
-  for (int i = 0; i < arraysize(kFileExtensions); ++i) {
+  for (const wchar_t* kExtension : kFileExtensions) {
     base::string16 handle_name;
-    base::win::ScopedHandle marker(GetMarkerFile(kFileExtensions[i]));
+    base::win::ScopedHandle marker(GetMarkerFile(kExtension));
     CHECK(marker.IsValid());
     CHECK(sandbox::GetHandleName(marker.Get(), &handle_name));
     CHECK_EQ(policy->AddKernelObjectToClose(L"File", handle_name.c_str()),
@@ -236,9 +236,9 @@ TEST(HandleCloserTest, CheckStuffedHandle) {
   runner.SetTestState(EVERY_STATE);
   sandbox::TargetPolicy* policy = runner.GetPolicy();
 
-  for (int i = 0; i < arraysize(kFileExtensions); ++i) {
+  for (const wchar_t* kExtension : kFileExtensions) {
     base::string16 handle_name;
-    base::win::ScopedHandle marker(GetMarkerFile(kFileExtensions[i]));
+    base::win::ScopedHandle marker(GetMarkerFile(kExtension));
     CHECK(marker.IsValid());
     CHECK(sandbox::GetHandleName(marker.Get(), &handle_name));
     CHECK_EQ(policy->AddKernelObjectToClose(L"File", handle_name.c_str()),

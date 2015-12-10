@@ -54,11 +54,9 @@ class OverscrollWindowDelegateTest : public aura::test::AuraTestBase,
 
   OverscrollMode current_mode() { return current_mode_; }
 
-  const float touch_start_threshold() {
-    return touch_start_threshold_;
-  }
+  float touch_start_threshold() { return touch_start_threshold_; }
 
-  const float touch_complete_threshold() {
+  float touch_complete_threshold() {
     return kTestWindowWidth * touch_complete_threshold_;
   }
 

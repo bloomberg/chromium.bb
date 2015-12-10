@@ -150,11 +150,7 @@ TEST(TimeTicks, TimeGetTimeCaps) {
 
   TIMECAPS caps;
   MMRESULT status = timeGetDevCaps(&caps, sizeof(caps));
-  EXPECT_EQ(TIMERR_NOERROR, status);
-  if (status != TIMERR_NOERROR) {
-    printf("Could not get timeGetDevCaps\n");
-    return;
-  }
+  ASSERT_EQ(static_cast<MMRESULT>(MMSYSERR_NOERROR), status);
 
   EXPECT_GE(static_cast<int>(caps.wPeriodMin), 1);
   EXPECT_GT(static_cast<int>(caps.wPeriodMax), 1);

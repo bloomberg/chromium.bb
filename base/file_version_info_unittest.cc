@@ -93,7 +93,7 @@ TEST(FileVersionInfoTest, IsOfficialBuild) {
   // Test consistency check.
   ASSERT_EQ(arraysize(kDLLNames), arraysize(kExpected));
 
-  for (int i = 0; i < arraysize(kDLLNames); ++i) {
+  for (size_t i = 0; i < arraysize(kDLLNames); ++i) {
     FilePath dll_path = GetTestDataPath();
     dll_path = dll_path.Append(kDLLNames[i]);
 

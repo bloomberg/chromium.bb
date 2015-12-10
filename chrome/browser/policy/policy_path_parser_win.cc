@@ -77,7 +77,7 @@ base::FilePath::StringType ExpandPathVariables(
     result = result.substr(1, result.length() - 2);
   }
   // First translate all path variables we recognize.
-  for (int i = 0; i < arraysize(win_folder_mapping); ++i) {
+  for (size_t i = 0; i < arraysize(win_folder_mapping); ++i) {
     size_t position = result.find(win_folder_mapping[i].name);
     if (position != std::wstring::npos) {
       WCHAR path[MAX_PATH];

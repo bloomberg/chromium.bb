@@ -177,7 +177,7 @@ TraceEventETWExport::TraceEventETWExport()
   // modifications will be made by the background thread and only affect the
   // values of the keys (no key addition/deletion). Therefore, the map does not
   // require a lock for access.
-  for (int i = 0; i < ARRAYSIZE(kFilteredEventGroupNames); i++)
+  for (size_t i = 0; i < ARRAYSIZE(kFilteredEventGroupNames); i++)
     categories_status_[kFilteredEventGroupNames[i]] = false;
   categories_status_[kOtherEventsGroupName] = false;
   categories_status_[kDisabledOtherEventsGroupName] = false;
@@ -376,7 +376,7 @@ bool TraceEventETWExport::UpdateEnabledCategories() {
   // recording tools) using the ETW infrastructure. This value will be set in
   // all Chrome processes that have registered their ETW provider.
   etw_match_any_keyword_ = CHROME_Context.MatchAnyKeyword;
-  for (int i = 0; i < ARRAYSIZE(kFilteredEventGroupNames); i++) {
+  for (size_t i = 0; i < ARRAYSIZE(kFilteredEventGroupNames); i++) {
     if (etw_match_any_keyword_ & (1ULL << i)) {
       categories_status_[kFilteredEventGroupNames[i]] = true;
     } else {

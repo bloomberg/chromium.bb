@@ -139,13 +139,11 @@ TEST(UTFStringConversionsTest, ConvertUTF16ToUTF8) {
     {L"\x597d\xd800", "\xe5\xa5\xbd\xef\xbf\xbd", false},
   };
 
-  for (int i = 0; i < arraysize(convert_cases); i++) {
+  for (const auto& test : convert_cases) {
     std::string converted;
-    EXPECT_EQ(convert_cases[i].success,
-              WideToUTF8(convert_cases[i].utf16,
-                         wcslen(convert_cases[i].utf16),
-                         &converted));
-    std::string expected(convert_cases[i].utf8);
+    EXPECT_EQ(test.success,
+              WideToUTF8(test.utf16, wcslen(test.utf16), &converted));
+    std::string expected(test.utf8);
     EXPECT_EQ(expected, converted);
   }
 }
@@ -172,13 +170,11 @@ TEST(UTFStringConversionsTest, ConvertUTF32ToUTF8) {
     {L"\xdc01Hello", "\xef\xbf\xbdHello", false},
   };
 
-  for (size_t i = 0; i < arraysize(convert_cases); i++) {
+  for (const auto& test : convert_cases) {
     std::string converted;
-    EXPECT_EQ(convert_cases[i].success,
-              WideToUTF8(convert_cases[i].utf32,
-                         wcslen(convert_cases[i].utf32),
-                         &converted));
-    std::string expected(convert_cases[i].utf8);
+    EXPECT_EQ(test.success,
+              WideToUTF8(test.utf32, wcslen(test.utf32), &converted));
+    std::string expected(test.utf8);
     EXPECT_EQ(expected, converted);
   }
 }

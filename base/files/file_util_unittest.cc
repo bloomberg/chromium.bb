@@ -353,7 +353,8 @@ TEST_F(FileUtilTest, NormalizeFilePathReparsePoints) {
 
   FilePath long_name = sub_a.Append(FilePath(long_name_str));
   FilePath deep_file = long_name.Append(sub_long_rel).Append(deep_txt);
-  ASSERT_EQ(MAX_PATH - kCreateDirLimit, deep_file.value().length());
+  ASSERT_EQ(static_cast<size_t>(MAX_PATH - kCreateDirLimit),
+            deep_file.value().length());
 
   FilePath sub_long = deep_file.DirName();
   ASSERT_TRUE(CreateDirectory(sub_long));

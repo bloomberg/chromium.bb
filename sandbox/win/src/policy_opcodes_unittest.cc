@@ -122,7 +122,7 @@ TEST(PolicyEngineTest, TrueFalseOpcodes) {
   context.position = 1;
   context.options = kPolUseOREval;
   EXPECT_EQ(EVAL_TRUE, op5->Evaluate(&ppb1, 1, &context));
-  EXPECT_EQ(0, context.position);
+  EXPECT_EQ(0u, context.position);
   MatchContext context2;
   EXPECT_EQ(context2.options, context.options);
 }
@@ -280,7 +280,7 @@ TEST(PolicyEngineTest, WCharOpcodes1) {
                                                       kPolClearContext);
   ASSERT_NE(nullptr, op4);
   EXPECT_EQ(EVAL_TRUE, op4->Evaluate(&pp_tc1, 1, &mc1));
-  EXPECT_EQ(0, mc1.position);
+  EXPECT_EQ(0u, mc1.position);
 
   // Test that we can properly match the last part of the string
   PolicyOpcode* op4b = opcode_maker.MakeOpWStringMatch(0, txt4, kSeekToEnd,
@@ -288,7 +288,7 @@ TEST(PolicyEngineTest, WCharOpcodes1) {
                                                        kPolClearContext);
   ASSERT_NE(nullptr, op4b);
   EXPECT_EQ(EVAL_TRUE, op4b->Evaluate(&pp_tc1, 1, &mc1));
-  EXPECT_EQ(0, mc1.position);
+  EXPECT_EQ(0u, mc1.position);
 
   // Test matching 'jumps over' over the entire string. This is the
   // primitive we build '*' from.
@@ -296,7 +296,7 @@ TEST(PolicyEngineTest, WCharOpcodes1) {
                                                       CASE_SENSITIVE, kPolNone);
   ASSERT_NE(nullptr, op5);
   EXPECT_EQ(EVAL_TRUE, op5->Evaluate(&pp_tc1, 1, &mc1));
-  EXPECT_EQ(24, mc1.position);
+  EXPECT_EQ(24u, mc1.position);
 
   // Test that we don't match because it is not at the end of the string
   PolicyOpcode* op5b = opcode_maker.MakeOpWStringMatch(0, txt5, kSeekToEnd,
@@ -304,7 +304,7 @@ TEST(PolicyEngineTest, WCharOpcodes1) {
                                                        kPolNone);
   ASSERT_NE(nullptr, op5b);
   EXPECT_EQ(EVAL_FALSE, op5b->Evaluate(&pp_tc1, 1, &mc1));
-  EXPECT_EQ(24, mc1.position);
+  EXPECT_EQ(24u, mc1.position);
 
   // Test that we function if the string does not fit. In this case we
   // try to match 'the lazy dog' against 'he lazy dog'.
@@ -319,12 +319,12 @@ TEST(PolicyEngineTest, WCharOpcodes1) {
                                                       CASE_SENSITIVE, kPolNone);
   ASSERT_NE(nullptr, op7);
   EXPECT_EQ(EVAL_TRUE, op7->Evaluate(&pp_tc1, 1, &mc2));
-  EXPECT_EQ(37, mc2.position);
+  EXPECT_EQ(37u, mc2.position);
 
   // Trying to match again should fail since we are in the last char.
   // This also covers a couple of boundary conditions.
   EXPECT_EQ(EVAL_FALSE, op7->Evaluate(&pp_tc1, 1, &mc2));
-  EXPECT_EQ(37, mc2.position);
+  EXPECT_EQ(37u, mc2.position);
 }
 
 TEST(PolicyEngineTest, WCharOpcodes2) {
@@ -350,7 +350,7 @@ TEST(PolicyEngineTest, WCharOpcodes2) {
   ASSERT_NE(nullptr, op1i);
   EXPECT_EQ(EVAL_FALSE, op1s->Evaluate(&pp_tc1, 1, &mc1));
   EXPECT_EQ(EVAL_TRUE, op1i->Evaluate(&pp_tc1, 1, &mc1));
-  EXPECT_EQ(35, mc1.position);
+  EXPECT_EQ(35u, mc1.position);
 }
 
 TEST(PolicyEngineTest, ActionOpcodes) {

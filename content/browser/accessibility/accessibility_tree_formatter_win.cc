@@ -298,8 +298,7 @@ base::string16 AccessibilityTreeFormatter::ToString(
   dict.GetString("role", &role_value);
   WriteAttribute(true, base::UTF16ToUTF8(role_value), &line);
 
-  for (int i = 0; i < arraysize(ALL_ATTRIBUTES); i++) {
-    const char* attribute_name = ALL_ATTRIBUTES[i];
+  for (const char* attribute_name : ALL_ATTRIBUTES) {
     const base::Value* value;
     if (!dict.Get(attribute_name, &value))
       continue;

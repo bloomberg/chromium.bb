@@ -356,10 +356,8 @@ void NativeThemeWin::OnSysColorChange() {
 }
 
 void NativeThemeWin::UpdateSystemColors() {
-  for (int i = 0; i < arraysize(kSystemColors); ++i) {
-    system_colors_[kSystemColors[i]] =
-        color_utils::GetSysSkColor(kSystemColors[i]);
-  }
+  for (int kSystemColor : kSystemColors)
+    system_colors_[kSystemColor] = color_utils::GetSysSkColor(kSystemColor);
 }
 
 void NativeThemeWin::PaintDirect(SkCanvas* canvas,

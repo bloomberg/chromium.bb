@@ -90,7 +90,7 @@ class PolicyBase : public Dispatcher, public TargetPolicy {
 
   const AppContainerAttributes* GetAppContainer() const;
 
-  const PSID GetLowBoxSid() const;
+  PSID GetLowBoxSid() const;
 
   // Adds a target process to the internal list of targets. Internally a
   // call to TargetProcess::Init() is issued.

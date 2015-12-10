@@ -256,9 +256,10 @@ TEST(PolicyTargetTest, DesktopPolicy) {
   if (result == SBOX_ALL_OK)
     target.Set(temp_process_info);
 
-  EXPECT_EQ(1, ::ResumeThread(target.thread_handle()));
+  EXPECT_EQ(1u, ::ResumeThread(target.thread_handle()));
 
-  EXPECT_EQ(WAIT_TIMEOUT, ::WaitForSingleObject(target.process_handle(), 2000));
+  EXPECT_EQ(static_cast<DWORD>(WAIT_TIMEOUT),
+            ::WaitForSingleObject(target.process_handle(), 2000));
 
   EXPECT_NE(::GetThreadDesktop(target.thread_id()),
             ::GetThreadDesktop(::GetCurrentThreadId()));
@@ -319,9 +320,10 @@ TEST(PolicyTargetTest, WinstaPolicy) {
   if (result == SBOX_ALL_OK)
     target.Set(temp_process_info);
 
-  EXPECT_EQ(1, ::ResumeThread(target.thread_handle()));
+  EXPECT_EQ(1u, ::ResumeThread(target.thread_handle()));
 
-  EXPECT_EQ(WAIT_TIMEOUT, ::WaitForSingleObject(target.process_handle(), 2000));
+  EXPECT_EQ(static_cast<DWORD>(WAIT_TIMEOUT),
+            ::WaitForSingleObject(target.process_handle(), 2000));
 
   EXPECT_NE(::GetThreadDesktop(target.thread_id()),
             ::GetThreadDesktop(::GetCurrentThreadId()));
@@ -399,9 +401,9 @@ TEST(PolicyTargetTest, ShareHandleTest) {
   if (result == SBOX_ALL_OK)
     target.Set(temp_process_info);
 
-  EXPECT_EQ(1, ::ResumeThread(target.thread_handle()));
+  EXPECT_EQ(1u, ::ResumeThread(target.thread_handle()));
 
-  EXPECT_EQ(WAIT_TIMEOUT,
+  EXPECT_EQ(static_cast<DWORD>(WAIT_TIMEOUT),
             ::WaitForSingleObject(target.process_handle(), 2000));
 
   EXPECT_TRUE(::TerminateProcess(target.process_handle(), 0));

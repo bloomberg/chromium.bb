@@ -89,7 +89,7 @@ TEST_F(RegistryOverrideManagerTest, Basic) {
             read_key.Open(HKEY_CURRENT_USER, kTestKeyPath, KEY_READ));
   EXPECT_TRUE(read_key.Valid());
   EXPECT_EQ(ERROR_SUCCESS, read_key.ReadValueDW(kTestValueName, &value));
-  EXPECT_EQ(42, value);
+  EXPECT_EQ(42u, value);
   read_key.Close();
 
   manager_.reset();

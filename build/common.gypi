@@ -5828,6 +5828,13 @@
             ['clang==1', {
               'VCCLCompilerTool': {
                 'AdditionalOptions': [
+                  # Don't warn about unused function parameters.
+                  # (This is also used on other platforms.)
+                  '-Wno-unused-parameter',
+                  # Don't warn about the "struct foo f = {0};" initialization
+                  # pattern.
+                  '-Wno-missing-field-initializers',
+
                   # Many files use intrinsics without including this header.
                   # TODO(hans): Fix those files, or move this to sub-GYPs.
                   '/FIIntrin.h',

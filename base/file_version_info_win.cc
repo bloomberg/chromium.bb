@@ -149,7 +149,7 @@ bool FileVersionInfoWin::is_official_build() {
 bool FileVersionInfoWin::GetValue(const wchar_t* name,
                                   std::wstring* value_str) {
   WORD lang_codepage[8];
-  int i = 0;
+  size_t i = 0;
   // Use the language and codepage from the DLL.
   lang_codepage[i++] = language_;
   lang_codepage[i++] = code_page_;

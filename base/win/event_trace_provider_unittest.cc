@@ -31,10 +31,10 @@ TEST(EtwTraceProviderTest, ToleratesPreCreateInvocations) {
   char buf[sizeof(EtwTraceProvider)] = {0};
   EtwTraceProvider& provider = reinterpret_cast<EtwTraceProvider&>(buf);
 
-  EXPECT_EQ(NULL, provider.registration_handle());
-  EXPECT_EQ(NULL, provider.session_handle());
-  EXPECT_EQ(0, provider.enable_flags());
-  EXPECT_EQ(0, provider.enable_level());
+  EXPECT_EQ(0u, provider.registration_handle());
+  EXPECT_EQ(0u, provider.session_handle());
+  EXPECT_EQ(0u, provider.enable_flags());
+  EXPECT_EQ(0u, provider.enable_level());
 
   EXPECT_FALSE(provider.ShouldLog(TRACE_LEVEL_FATAL, 0xfffffff));
 
@@ -51,16 +51,16 @@ TEST(EtwTraceProviderTest, ToleratesPreCreateInvocations) {
   new (buf) EtwTraceProvider(kTestProvider);
 
   // Registration is now safe.
-  EXPECT_EQ(ERROR_SUCCESS, provider.Register());
+  EXPECT_EQ(static_cast<ULONG>(ERROR_SUCCESS), provider.Register());
 
   // Destruct the instance, this should unregister it.
   provider.EtwTraceProvider::~EtwTraceProvider();
 
   // And post-destruction, all of the above should still be safe.
-  EXPECT_EQ(NULL, provider.registration_handle());
-  EXPECT_EQ(NULL, provider.session_handle());
-  EXPECT_EQ(0, provider.enable_flags());
-  EXPECT_EQ(0, provider.enable_level());
+  EXPECT_EQ(0u, provider.registration_handle());
+  EXPECT_EQ(0u, provider.session_handle());
+  EXPECT_EQ(0u, provider.enable_flags());
+  EXPECT_EQ(0u, provider.enable_level());
 
   EXPECT_FALSE(provider.ShouldLog(TRACE_LEVEL_FATAL, 0xfffffff));
 
@@ -73,19 +73,19 @@ TEST(EtwTraceProviderTest, ToleratesPreCreateInvocations) {
 TEST(EtwTraceProviderTest, Initialize) {
   EtwTraceProvider provider(kTestProvider);
 
-  EXPECT_EQ(NULL, provider.registration_handle());
-  EXPECT_EQ(NULL, provider.session_handle());
-  EXPECT_EQ(0, provider.enable_flags());
-  EXPECT_EQ(0, provider.enable_level());
+  EXPECT_EQ(0u, provider.registration_handle());
+  EXPECT_EQ(0u, provider.session_handle());
+  EXPECT_EQ(0u, provider.enable_flags());
+  EXPECT_EQ(0u, provider.enable_level());
 }
 
 TEST(EtwTraceProviderTest, Register) {
   EtwTraceProvider provider(kTestProvider);
 
-  ASSERT_EQ(ERROR_SUCCESS, provider.Register());
-  EXPECT_NE(NULL, provider.registration_handle());
-  ASSERT_EQ(ERROR_SUCCESS, provider.Unregister());
-  EXPECT_EQ(NULL, provider.registration_handle());
+  ASSERT_EQ(static_cast<ULONG>(ERROR_SUCCESS), provider.Register());
+  EXPECT_NE(0u, provider.registration_handle());
+  ASSERT_EQ(static_cast<ULONG>(ERROR_SUCCESS), provider.Unregister());
+  EXPECT_EQ(0u, provider.registration_handle());
 }
 
 TEST(EtwTraceProviderTest, RegisterWithNoNameFails) {
@@ -97,14 +97,14 @@ TEST(EtwTraceProviderTest, RegisterWithNoNameFails) {
 TEST(EtwTraceProviderTest, Enable) {
   EtwTraceProvider provider(kTestProvider);
 
-  ASSERT_EQ(ERROR_SUCCESS, provider.Register());
-  EXPECT_NE(NULL, provider.registration_handle());
+  ASSERT_EQ(static_cast<ULONG>(ERROR_SUCCESS), provider.Register());
+  EXPECT_NE(0u, provider.registration_handle());
 
   // No session so far.
-  EXPECT_EQ(NULL, provider.session_handle());
-  EXPECT_EQ(0, provider.enable_flags());
-  EXPECT_EQ(0, provider.enable_level());
+  EXPECT_EQ(0u, provider.session_handle());
+  EXPECT_EQ(0u, provider.enable_flags());
+  EXPECT_EQ(0u, provider.enable_level());
 
-  ASSERT_EQ(ERROR_SUCCESS, provider.Unregister());
-  EXPECT_EQ(NULL, provider.registration_handle());
+  ASSERT_EQ(static_cast<ULONG>(ERROR_SUCCESS), provider.Unregister());
+  EXPECT_EQ(0u, provider.registration_handle());
 }

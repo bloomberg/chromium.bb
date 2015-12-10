@@ -144,19 +144,19 @@ TEST(ScopedVariantTest, ScopedVariant) {
 
   var.Set(static_cast<uint8>(123));
   EXPECT_EQ(VT_UI1, var.type());
-  EXPECT_EQ(123, V_UI1(var.ptr()));
+  EXPECT_EQ(123u, V_UI1(var.ptr()));
 
   var.Set(static_cast<unsigned short>(123));
   EXPECT_EQ(VT_UI2, var.type());
-  EXPECT_EQ(123, V_UI2(var.ptr()));
+  EXPECT_EQ(123u, V_UI2(var.ptr()));
 
   var.Set(static_cast<uint32>(123));
   EXPECT_EQ(VT_UI4, var.type());
-  EXPECT_EQ(123, V_UI4(var.ptr()));
+  EXPECT_EQ(123u, V_UI4(var.ptr()));
 
   var.Set(static_cast<uint64>(123));
   EXPECT_EQ(VT_UI8, var.type());
-  EXPECT_EQ(123, V_UI8(var.ptr()));
+  EXPECT_EQ(123u, V_UI8(var.ptr()));
 
   var.Set(123.123f);
   EXPECT_EQ(VT_R4, var.type());
