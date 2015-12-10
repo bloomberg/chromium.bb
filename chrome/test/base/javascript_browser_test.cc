@@ -16,6 +16,10 @@ const base::FilePath::CharType
         FILE_PATH_LITERAL("third_party/accessibility-audit/axs_testing.js");
 
 // static
+const base::FilePath::CharType JavaScriptBrowserTest::kChaiJSPath[] =
+    FILE_PATH_LITERAL("third_party/chaijs/chai.js");
+
+// static
 const base::FilePath::CharType JavaScriptBrowserTest::kMockJSPath[] =
     FILE_PATH_LITERAL("chrome/third_party/mock4js/mock4js.js");
 
@@ -53,6 +57,7 @@ void JavaScriptBrowserTest::SetUpOnMainThread() {
   library_search_paths_.push_back(source_root_directory);
 
   AddLibrary(base::FilePath(kMockJSPath));
+  AddLibrary(base::FilePath(kChaiJSPath));
   AddLibrary(base::FilePath(kWebUILibraryJS));
 }
 

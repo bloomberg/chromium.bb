@@ -9,53 +9,38 @@ WebUIAssertionsTest.prototype = {
   browsePreload: DUMMY_URL,
 };
 
-function testTwoExpects() {
-  expectTrue(false);
-  expectTrue(0);
-}
-
 TEST_F('WebUIAssertionsTest', 'testTwoExpects', function() {
-  var result = runTestFunction('testTwoExpects', testTwoExpects, []);
+  var result = runTestFunction('testTwoExpects', function() {
+    expectTrue(false);
+    expectFalse(true);
+  }, []);
   resetTestState();
-
-  expectFalse(result[0]);
-  expectTrue(!!result[1].match(/expectTrue\(false\): false/));
-  expectTrue(!!result[1].match(/expectTrue\(0\): 0/));
+  assertFalse(result[0]);
+  assertNotEquals(-1, result[1].indexOf('expected false to be true'));
+  assertNotEquals(-1, result[1].indexOf('expected true to be false'));
 });
 
-function twoExpects() {
-  expectTrue(false, 'message1');
-  expectTrue(false, 'message2');
-}
-
-function testCallTestTwice() {
-  twoExpects();
-  twoExpects();
-}
-
-TEST_F('WebUIAssertionsTest', 'testCallTestTwice', function() {
-  var result = runTestFunction('testCallTestTwice', testCallTestTwice, []);
+TEST_F('WebUIAssertionsTest', 'testTwoIdenticalExpects', function() {
+  var result = runTestFunction('testTwoIdenticalExpects', function() {
+    expectTrue(false, 'message1');
+    expectTrue(false, 'message1');
+  }, []);
   resetTestState();
-
-  expectFalse(result[0]);
-  expectEquals(2, result[1].match(
-      /expectTrue\(false, 'message1'\): message1: false/g).length);
-  expectEquals(2, result[1].match(
-      /expectTrue\(false, 'message2'\): message2: false/g).length);
+  assertFalse(result[0]);
+  assertEquals(2, result[1].match(
+      /message1: expected false to be true/g).length);
 });
-
-function testConstructMessage() {
-  var message = 1 + ' ' + 2;
-  assertTrue(false, message);
-}
 
 TEST_F('WebUIAssertionsTest', 'testConstructedMessage', function() {
+  var message = 'myErrorMessage';
   var result = runTestFunction(
-      'testConstructMessage', testConstructMessage, []);
+      'testConstructMessage',
+      function() {
+        assertTrue(false, message);
+      }, []);
   resetTestState();
-
-  expectEquals(
-      1, result[1].match(/assertTrue\(false, message\): 1 2: false/g).length);
+  assertNotEquals(
+      -1, result[1].indexOf(message + ': expected false to be true'));
 });
 
 /**

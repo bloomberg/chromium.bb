@@ -151,6 +151,10 @@ void V8UnitTest::InitPathsAndLibraries() {
                      .AppendASCII("mock4js.js"));
 
   AddLibrary(src_root.AppendASCII("third_party")
+                     .AppendASCII("chaijs")
+                     .AppendASCII("chai.js"));
+
+  AddLibrary(src_root.AppendASCII("third_party")
                      .AppendASCII("accessibility-audit")
                      .AppendASCII("axs_testing.js"));
 

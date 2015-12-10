@@ -731,101 +731,6 @@ var testing = {};
   }
 
   /**
-   * Provides a mechanism for assert* and expect* methods to fetch the signature
-   * of their caller. Assert* methods should |registerCall| and expect* methods
-   * should set |isExpect| and |expectName| properties to indicate that the
-   * interesting caller is one more level up the stack.
-   */
-  function CallHelper() {
-    this.__proto__ = CallHelper.prototype;
-  }
-
-  CallHelper.prototype = {
-    /**
-     * Holds the mapping of (callerCallerString, callerName) -> count of times
-     * called.
-     * @type {Object<string, Object<string, number>>}
-     */
-    counts_: {},
-
-    /**
-     * This information about the caller is needed from most of the following
-     * routines.
-     * @param {Function} caller the caller of the assert* routine.
-     * @return {{callerName: string, callercallerString: string}} stackInfo
-     * @private
-     */
-    getCallerInfo_: function(caller) {
-      var callerName = caller.name;
-      var callerCaller = caller.caller;
-      if (callerCaller['isExpect']) {
-        callerName = callerCaller.expectName;
-        callerCaller = callerCaller.caller;
-      }
-      var callerCallerString = callerCaller.toString();
-      return {
-        callerName: callerName,
-        callerCallerString: callerCallerString,
-      };
-    },
-
-    /**
-     * Register a call to an assertion class.
-     */
-    registerCall: function() {
-      var stackInfo = this.getCallerInfo_(arguments.callee.caller);
-      if (!(stackInfo.callerCallerString in this.counts_))
-        this.counts_[stackInfo.callerCallerString] = {};
-      if (!(stackInfo.callerName in this.counts_[stackInfo.callerCallerString]))
-        this.counts_[stackInfo.callerCallerString][stackInfo.callerName] = 0;
-      ++this.counts_[stackInfo.callerCallerString][stackInfo.callerName];
-    },
-
-    /**
-     * Get the call signature of this instance of the caller's call to this
-     * function.
-     * @param {Function} caller The caller of the assert* routine.
-     * @return {String} Call signature.
-     * @private
-     */
-    getCall_: function(caller) {
-      var stackInfo = this.getCallerInfo_(caller);
-      var count =
-          this.counts_[stackInfo.callerCallerString][stackInfo.callerName];
-
-      // Allow pattern to match multiple lines for text wrapping.
-      var callerRegExp =
-          new RegExp(stackInfo.callerName + '\\((.|\\n|\\r)*?\\);', 'g');
-
-      // Find all matches allowing wrap around such as when a helper function
-      // calls assert/expect calls and that helper function is called multiple
-      // times.
-      var matches = stackInfo.callerCallerString.match(callerRegExp);
-      var match = matches[(count - 1) % matches.length];
-
-      // Chop off the trailing ';'.
-      return match.substring(0, match.length-1);
-    },
-
-    /**
-     * Returns the text of the call signature and any |message|.
-     * @param {string=} message Addtional message text from caller.
-     */
-    getCallMessage: function(message) {
-      var callMessage = this.getCall_(arguments.callee.caller);
-      if (message)
-        callMessage += ': ' + message;
-      return callMessage;
-    },
-  };
-
-  /**
-   * Help register calls for better error reporting.
-   * @type {CallHelper}
-   */
-  var helper = new CallHelper();
-
-  /**
    * true when testDone has been called.
    * @type {boolean}
    */
@@ -924,136 +829,91 @@ var testing = {};
 
   // Asserts.
   // Use the following assertions to verify a condition within a test.
-  // If assertion fails, throw an Error with information pertinent to the test.
 
   /**
-   * When |test| !== true, aborts the current test.
-   * @param {boolean} test The predicate to check against |expected|.
-   * @param {string=} message The message to include in the Error thrown.
-   * @throws {Error} upon failure.
+   * @param {boolean} value The value to check.
+   * @param {string=} opt_message Additional error message.
+   * @throws {Error}
    */
-  function assertTrue(test, message) {
-    helper.registerCall();
-    if (test !== true)
-      throw new Error(
-          'Test Error ' + helper.getCallMessage(message) + ': ' + test);
+  function assertTrue(value, opt_message) {
+    chai.assert.isTrue(value, opt_message);
   }
 
   /**
-   * When |test| !== false, aborts the current test.
-   * @param {boolean} test The predicate to check against |expected|.
-   * @param {string=} message The message to include in the Error thrown.
-   * @throws {Error} upon failure.
+   * @param {boolean} value The value to check.
+   * @param {string=} opt_message Additional error message.
+   * @throws {Error}
    */
-  function assertFalse(test, message) {
-    helper.registerCall();
-    if (test !== false)
-      throw new Error(
-          'Test Error ' + helper.getCallMessage(message) + ': ' + test);
+  function assertFalse(value, opt_message) {
+    chai.assert.isFalse(value, opt_message);
   }
 
   /**
-   * When |val1| < |val2|, aborts the current test.
-   * @param {number} val1 The number expected to be >= |val2|.
-   * @param {number} val2 The number expected to be < |val1|.
-   * @param {string=} message The message to include in the Error thrown.
+   * @param {number} value1 The first operand.
+   * @param {number} value2 The second operand.
+   * @param {string=} opt_message Additional error message.
+   * @throws {Error}
    */
-  function assertGE(val1, val2, message) {
-    helper.registerCall();
-    if (val1 < val2) {
-      throw new Error(
-          'Test Error ' + helper.getCallMessage(message) + val1 + '<' + val2);
-    }
+  function assertGE(value1, value2, opt_message) {
+    chai.expect(value1).to.be.at.least(value2, opt_message);
   }
 
   /**
-   * When |val1| <= |val2|, aborts the current test.
-   * @param {number} val1 The number expected to be > |val2|.
-   * @param {number} val2 The number expected to be <= |val1|.
-   * @param {string=} message The message to include in the Error thrown.
+   * @param {number} value1 The first operand.
+   * @param {number} value2 The second operand.
+   * @param {string=} opt_message Additional error message.
+   * @throws {Error}
    */
-  function assertGT(val1, val2, message) {
-    helper.registerCall();
-    if (val1 <= val2) {
-      throw new Error(
-          'Test Error ' + helper.getCallMessage(message) + val1 + '<=' + val2);
-    }
+  function assertGT(value1, value2, opt_message) {
+    chai.assert.isAbove(value1, value2, opt_message);
   }
 
   /**
-   * When |expected| !== |actual|, aborts the current test.
-   * @param {*} expected The expected value of |actual|.
-   * @param {*} actual The predicate to check against |expected|.
-   * @param {string=} message The message to include in the Error thrown.
-   * @throws {Error} upon failure.
+   * @param {*} expected The expected value.
+   * @param {*} actual The actual value.
+   * @param {string=} opt_message Additional error message.
+   * @throws {Error}
    */
-  function assertEquals(expected, actual, message) {
-    helper.registerCall();
-    if (expected != actual) {
-      throw new Error(
-          'Test Error ' + helper.getCallMessage(message) +
-          '\nActual: ' + actual + '\nExpected: ' + expected);
-    }
-    if (typeof expected !== typeof actual) {
-      throw new Error(
-          'Test Error (type mismatch) ' + helper.getCallMessage(message) +
-          '\nActual Type: ' + typeof actual +
-          '\nExpected Type:' + typeof expected);
-    }
+  function assertEquals(expected, actual, opt_message) {
+    chai.assert.strictEqual(actual, expected, opt_message);
   }
 
   /**
-   * When |val1| > |val2|, aborts the current test.
-   * @param {number} val1 The number expected to be <= |val2|.
-   * @param {number} val2 The number expected to be > |val1|.
-   * @param {string=} message The message to include in the Error thrown.
+   * @param {number} value1 The first operand.
+   * @param {number} value2 The second operand.
+   * @param {string=} opt_message Additional error message.
+   * @throws {Error}
    */
-  function assertLE(val1, val2, message) {
-    helper.registerCall();
-    if (val1 > val2) {
-      throw new Error(
-          'Test Error ' + helper.getCallMessage(message) + val1 + '>' + val2);
-    }
+  function assertLE(value1, value2, opt_message) {
+    chai.expect(value1).to.be.at.most(value2, opt_message);
   }
 
   /**
-   * When |val1| >= |val2|, aborts the current test.
-   * @param {number} val1 The number expected to be < |val2|.
-   * @param {number} val2 The number expected to be >= |val1|.
-   * @param {string=} message The message to include in the Error thrown.
+   * @param {number} value1 The first operand.
+   * @param {number} value2 The second operand.
+   * @param {string=} opt_message Additional error message.
+   * @throws {Error}
    */
-  function assertLT(val1, val2, message) {
-    helper.registerCall();
-    if (val1 >= val2) {
-      throw new Error(
-          'Test Error ' + helper.getCallMessage(message) + val1 + '>=' + val2);
-    }
+  function assertLT(value1, value2, opt_message) {
+    chai.assert.isBelow(value1, value2, opt_message);
   }
 
   /**
-   * When |notExpected| === |actual|, aborts the current test.
-   * @param {*} notExpected The expected value of |actual|.
-   * @param {*} actual The predicate to check against |notExpected|.
-   * @param {string=} message The message to include in the Error thrown.
-   * @throws {Error} upon failure.
+   * @param {*} expected The expected value.
+   * @param {*} actual The actual value.
+   * @param {string=} opt_message Additional error message.
+   * @throws {Error}
    */
-  function assertNotEquals(notExpected, actual, message) {
-    helper.registerCall();
-    if (notExpected === actual) {
-      throw new Error(
-          'Test Error ' + helper.getCallMessage(message) +
-          '\nActual: ' + actual + '\nnotExpected: ' + notExpected);
-    }
+  function assertNotEquals(expected, actual, opt_message) {
+    chai.assert.notStrictEqual(actual, expected, opt_message);
   }
 
   /**
-   * Always aborts the current test.
-   * @param {string=} message The message to include in the Error thrown.
-   * @throws {Error} always.
+   * @param {string=} opt_message Additional error message.
+   * @throws {Error}
    */
-  function assertNotReached(message) {
-    helper.registerCall();
-    throw new Error(helper.getCallMessage(message));
+  function assertNotReached(opt_message) {
+    chai.assert.fail(null, null, opt_message);
   }
 
   /**
@@ -1100,7 +960,6 @@ var testing = {};
    * @param {Array=} opt_results Array to fill with results, if desired.
    */
   function assertAccessibilityOk(opt_results) {
-    helper.registerCall();
     var a11yResults = opt_results || [];
     var auditConfig = currentTestCase.fixture.accessibilityAuditConfig;
     if (!runAccessibilityAudit(a11yResults, auditConfig))
@@ -1119,7 +978,7 @@ var testing = {};
    * @see runTestFunction
    */
   function createExpect(assertFunc) {
-    var expectFunc = function() {
+    return function() {
       try {
         assertFunc.apply(null, arguments);
       } catch (e) {
@@ -1128,9 +987,6 @@ var testing = {};
       }
       return true;
     };
-    expectFunc.isExpect = true;
-    expectFunc.expectName = assertFunc.name.replace(/^assert/, 'expect');
-    return expectFunc;
   }
 
   /**
@@ -1789,35 +1645,62 @@ var testing = {};
     return new MatchToString(expectedValue);
   }
 
+  /**
+   * Exports assertion methods. All assertion methods delegate to the chai.js
+   * assertion library.
+   */
+  function exportChaiAsserts() {
+    exports.assertTrue = assertTrue;
+    exports.assertFalse = assertFalse;
+    exports.assertGE = assertGE;
+    exports.assertGT = assertGT;
+    exports.assertEquals = assertEquals;
+    exports.assertLE = assertLE;
+    exports.assertLT = assertLT;
+    exports.assertNotEquals = assertNotEquals;
+    exports.assertNotReached = assertNotReached;
+  }
+
+  /**
+   * Exports expect methods. 'expect*' methods allow tests to run until the end
+   * even in the presence of failures.
+   */
+  function exportExpects() {
+    exports.expectTrue = createExpect(assertTrue);
+    exports.expectFalse = createExpect(assertFalse);
+    exports.expectGE = createExpect(assertGE);
+    exports.expectGT = createExpect(assertGT);
+    exports.expectEquals = createExpect(assertEquals);
+    exports.expectLE = createExpect(assertLE);
+    exports.expectLT = createExpect(assertLT);
+    exports.expectNotEquals = createExpect(assertNotEquals);
+    exports.expectNotReached = createExpect(assertNotReached);
+    exports.expectAccessibilityOk = createExpect(assertAccessibilityOk);
+  }
+
+  /**
+   * Exports methods related to Mock4JS mocking.
+   */
+  function exportMock4JsHelpers() {
+    exports.callFunction = callFunction;
+    exports.callFunctionWithSavedArgs = callFunctionWithSavedArgs;
+    exports.callGlobalWithSavedArgs = callGlobalWithSavedArgs;
+    exports.eqJSON = eqJSON;
+    exports.eqToString = eqToString;
+    exports.invokeCallback = invokeCallback;
+    exports.SaveMockArguments = SaveMockArguments;
+
+    // Import the Mock4JS helpers.
+    Mock4JS.addMockSupport(exports);
+  }
+
   // Exports.
   testing.Test = Test;
   exports.testDone = testDone;
-  exports.assertTrue = assertTrue;
-  exports.assertFalse = assertFalse;
-  exports.assertGE = assertGE;
-  exports.assertGT = assertGT;
-  exports.assertEquals = assertEquals;
-  exports.assertLE = assertLE;
-  exports.assertLT = assertLT;
-  exports.assertNotEquals = assertNotEquals;
-  exports.assertNotReached = assertNotReached;
+  exportChaiAsserts();
   exports.assertAccessibilityOk = assertAccessibilityOk;
-  exports.callFunction = callFunction;
-  exports.callFunctionWithSavedArgs = callFunctionWithSavedArgs;
-  exports.callGlobalWithSavedArgs = callGlobalWithSavedArgs;
-  exports.eqJSON = eqJSON;
-  exports.eqToString = eqToString;
-  exports.expectTrue = createExpect(assertTrue);
-  exports.expectFalse = createExpect(assertFalse);
-  exports.expectGE = createExpect(assertGE);
-  exports.expectGT = createExpect(assertGT);
-  exports.expectEquals = createExpect(assertEquals);
-  exports.expectLE = createExpect(assertLE);
-  exports.expectLT = createExpect(assertLT);
-  exports.expectNotEquals = createExpect(assertNotEquals);
-  exports.expectNotReached = createExpect(assertNotReached);
-  exports.expectAccessibilityOk = createExpect(assertAccessibilityOk);
-  exports.invokeCallback = invokeCallback;
+  exportExpects();
+  exportMock4JsHelpers();
   exports.preloadJavascriptLibraries = preloadJavascriptLibraries;
   exports.registerMessageCallback = registerMessageCallback;
   exports.registerMockGlobals = registerMockGlobals;
@@ -1828,7 +1711,6 @@ var testing = {};
   exports.runAllActionsAsync = runAllActionsAsync;
   exports.runTest = runTest;
   exports.runTestFunction = runTestFunction;
-  exports.SaveMockArguments = SaveMockArguments;
   exports.DUMMY_URL = DUMMY_URL;
   exports.TEST = TEST;
   exports.TEST_F = TEST_F;
@@ -1836,7 +1718,4 @@ var testing = {};
   exports.GEN = GEN;
   exports.GEN_INCLUDE = GEN_INCLUDE;
   exports.WhenTestDone = WhenTestDone;
-
-  // Import the Mock4JS helpers.
-  Mock4JS.addMockSupport(exports);
 })(this);

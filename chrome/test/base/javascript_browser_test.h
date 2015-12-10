@@ -14,6 +14,7 @@
 class JavaScriptBrowserTest : public InProcessBrowserTest {
  public:
   static const base::FilePath::CharType kA11yAuditLibraryJSPath[];
+  static const base::FilePath::CharType kChaiJSPath[];
   static const base::FilePath::CharType kMockJSPath[];
   static const base::FilePath::CharType kWebUILibraryJS[];
   static const base::FilePath::CharType kWebUITestFolder[];

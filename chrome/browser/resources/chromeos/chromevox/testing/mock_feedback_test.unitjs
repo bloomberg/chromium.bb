@@ -154,7 +154,7 @@ TEST_F('MockFeedbackUnitTest', 'expectAfterReplayThrows', function() {
   mock.replay();
   assertException('', function() {
     mock.expectSpeech('hello');
-  }, 'Error');
+  }, 'AssertionError');
 });
 
 TEST_F('MockFeedbackUnitTest', 'NoMatchDoesNotFinish', function() {
