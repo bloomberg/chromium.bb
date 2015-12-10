@@ -22,6 +22,10 @@ namespace buzz {
 class XmlElement;
 }  // namespace buzz
 
+namespace webrtc {
+class PeerConnectionInterface;
+}  // namespace webrtc
+
 namespace remoting {
 namespace protocol {
 
@@ -29,6 +33,7 @@ class Authenticator;
 class DatagramChannelFactory;
 class P2PDatagramSocket;
 class StreamChannelFactory;
+class WebrtcTransport;
 
 enum class TransportRole {
   SERVER,
@@ -91,6 +96,15 @@ class Transport {
   // Returns a factory that creates multiplexed channels over a single stream
   // channel.
   virtual StreamChannelFactory* GetMultiplexedChannelFactory() = 0;
+
+  // Returns the transport as WebrtcTransport or nullptr if this is not a
+  // WebrtcTransport.
+  //
+  // TODO(sergeyu): Move creation and ownership of Transport objects to the
+  // Connection classes. That way the Connection classes will be able to ensure
+  // that correct transport implementation is used for the connection and this
+  // method will not be necessary.
+  virtual WebrtcTransport* AsWebrtcTransport();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Transport);

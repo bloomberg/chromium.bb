@@ -212,12 +212,16 @@
       'protocol/ice_connection_to_client.h',
       'protocol/video_frame_pump.cc',
       'protocol/video_frame_pump.h',
+      'protocol/webrtc_connection_to_client.cc',
+      'protocol/webrtc_connection_to_client.h',
       'protocol/webrtc_data_stream_adapter.cc',
       'protocol/webrtc_data_stream_adapter.h',
       'protocol/webrtc_transport.cc',
       'protocol/webrtc_transport.h',
       'protocol/webrtc_video_capturer_adapter.cc',
       'protocol/webrtc_video_capturer_adapter.h',
+      'protocol/webrtc_video_stream.cc',
+      'protocol/webrtc_video_stream.h',
     ],
 
     'remoting_signaling_sources': [

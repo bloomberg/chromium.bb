@@ -409,7 +409,8 @@ void JingleSession::OnIncomingMessage(const JingleMessage& message,
       break;
 
     case JingleMessage::TRANSPORT_INFO:
-      if (transport_->ProcessTransportInfo(message.transport_info.get())) {
+      if (message.transport_info &&
+          transport_->ProcessTransportInfo(message.transport_info.get())) {
         reply_callback.Run(JingleMessageReply::NONE);
       } else {
         reply_callback.Run(JingleMessageReply::BAD_REQUEST);

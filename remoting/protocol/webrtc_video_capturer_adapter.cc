@@ -9,7 +9,7 @@
 namespace remoting {
 
 // Number of frames to be captured per second.
-const int kFramesPerSec = 10;
+const int kFramesPerSec = 30;
 
 WebrtcVideoCapturerAdapter::WebrtcVideoCapturerAdapter(
     scoped_ptr<webrtc::DesktopCapturer> capturer)
@@ -157,13 +157,13 @@ void WebrtcVideoCapturerAdapter::Stop() {
   DCHECK_NE(capture_state(), cricket::CS_STOPPED);
 
   capture_timer_.reset();
+  desktop_capturer_.reset();
 
   SetCaptureFormat(nullptr);
   SetCaptureState(cricket::CS_STOPPED);
 
   VLOG(1) << "WebrtcVideoCapturerAdapter stopped.";
 }
-
 
 bool WebrtcVideoCapturerAdapter::IsRunning() {
   DCHECK(thread_checker_.CalledOnValidThread());

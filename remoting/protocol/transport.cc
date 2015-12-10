@@ -23,10 +23,11 @@ std::string TransportRoute::GetTypeString(RouteType type) {
   return std::string();
 }
 
-TransportRoute::TransportRoute() : type(DIRECT) {
-}
+TransportRoute::TransportRoute() : type(DIRECT) {}
+TransportRoute::~TransportRoute() {}
 
-TransportRoute::~TransportRoute() {
+WebrtcTransport* Transport::AsWebrtcTransport() {
+  return nullptr;
 }
 
 }  // namespace protocol

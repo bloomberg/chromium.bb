@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_PROTOCOL_ICE_CONNECTION_TO_CLIENT_H_
-#define REMOTING_PROTOCOL_ICE_CONNECTION_TO_CLIENT_H_
+#ifndef REMOTING_PROTOCOL_WEBRTC_CONNECTION_TO_CLIENT_H_
+#define REMOTING_PROTOCOL_WEBRTC_CONNECTION_TO_CLIENT_H_
 
 #include <string>
 
@@ -17,24 +17,15 @@
 namespace remoting {
 namespace protocol {
 
-class AudioWriter;
 class HostControlDispatcher;
 class HostEventDispatcher;
-class HostVideoDispatcher;
-class VideoFeedbackStub;
-class VideoFramePump;
 
-// This class represents a remote viewer connection to the chromoting
-// host. It sets up all protocol channels and connects them to the
-// stubs.
-class IceConnectionToClient : public ConnectionToClient,
-                              public Session::EventHandler,
-                              public ChannelDispatcherBase::EventHandler {
+class WebrtcConnectionToClient : public ConnectionToClient,
+                                 public Session::EventHandler,
+                                 public ChannelDispatcherBase::EventHandler {
  public:
-  IceConnectionToClient(
-      scoped_ptr<Session> session,
-      scoped_refptr<base::SingleThreadTaskRunner> video_encode_task_runner);
-  ~IceConnectionToClient() override;
+  explicit WebrtcConnectionToClient(scoped_ptr<Session> session);
+  ~WebrtcConnectionToClient() override;
 
   // ConnectionToClient interface.
   void SetEventHandler(
@@ -61,31 +52,20 @@ class IceConnectionToClient : public ConnectionToClient,
                       ErrorCode error) override;
 
  private:
-  void NotifyIfChannelsReady();
-
-  void Close(ErrorCode error);
-
-  // Stops writing in the channels.
-  void CloseChannels();
-
   base::ThreadChecker thread_checker_;
 
   // Event handler for handling events sent from this object.
-  ConnectionToClient::EventHandler* event_handler_;
+  ConnectionToClient::EventHandler* event_handler_ = nullptr;
 
   scoped_ptr<Session> session_;
 
-  scoped_refptr<base::SingleThreadTaskRunner> video_encode_task_runner_;
-
   scoped_ptr<HostControlDispatcher> control_dispatcher_;
   scoped_ptr<HostEventDispatcher> event_dispatcher_;
-  scoped_ptr<HostVideoDispatcher> video_dispatcher_;
-  scoped_ptr<AudioWriter> audio_writer_;
 
-  DISALLOW_COPY_AND_ASSIGN(IceConnectionToClient);
+  DISALLOW_COPY_AND_ASSIGN(WebrtcConnectionToClient);
 };
 
 }  // namespace protocol
 }  // namespace remoting
 
-#endif  // REMOTING_PROTOCOL_ICE_CONNECTION_TO_CLIENT_H_
+#endif  // REMOTING_PROTOCOL_WEBRTC_CONNECTION_TO_CLIENT_H_

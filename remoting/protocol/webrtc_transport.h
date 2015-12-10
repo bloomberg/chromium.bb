@@ -45,6 +45,7 @@ class WebrtcTransport : public Transport,
   bool ProcessTransportInfo(buzz::XmlElement* transport_info) override;
   StreamChannelFactory* GetStreamChannelFactory() override;
   StreamChannelFactory* GetMultiplexedChannelFactory() override;
+  WebrtcTransport* AsWebrtcTransport() override;
 
  private:
   void OnLocalSessionDescriptionCreated(

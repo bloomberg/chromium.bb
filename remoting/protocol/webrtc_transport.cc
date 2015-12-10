@@ -244,6 +244,10 @@ StreamChannelFactory* WebrtcTransport::GetMultiplexedChannelFactory() {
   return GetStreamChannelFactory();
 }
 
+WebrtcTransport* WebrtcTransport::AsWebrtcTransport() {
+  return this;
+}
+
 void WebrtcTransport::OnLocalSessionDescriptionCreated(
     scoped_ptr<webrtc::SessionDescriptionInterface> description,
     const std::string& error) {
