@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/sparse_histogram.h"
 #include "net/quic/crypto/crypto_protocol.h"
 #include "net/quic/crypto/crypto_utils.h"
 #include "net/quic/crypto/null_encrypter.h"
@@ -395,6 +396,31 @@ void QuicCryptoClientStream::DoReceiveREJ(
                                "Expected REJ");
     return;
   }
+
+  const uint32* reject_reasons;
+  size_t num_reject_reasons;
+  static_assert(sizeof(QuicTag) == sizeof(uint32), "header out of sync");
+  if (in->GetTaglist(kRREJ, &reject_reasons, &num_reject_reasons) ==
+      QUIC_NO_ERROR) {
+    uint32 packed_error = 0;
+    for (size_t i = 0; i < num_reject_reasons; ++i) {
+      // HANDSHAKE_OK is 0 and don't report that as error.
+      if (reject_reasons[i] == HANDSHAKE_OK || reject_reasons[i] >= 32) {
+        continue;
+      }
+      HandshakeFailureReason reason =
+          static_cast<HandshakeFailureReason>(reject_reasons[i]);
+      packed_error |= 1 << (reason - 1);
+    }
+    DVLOG(1) << "Reasons for rejection: " << packed_error;
+    if (num_client_hellos_ == kMaxClientHellos) {
+      UMA_HISTOGRAM_SPARSE_SLOWLY("Net.QuicClientHelloRejectReasons.TooMany",
+                                  packed_error);
+    }
+    UMA_HISTOGRAM_SPARSE_SLOWLY("Net.QuicClientHelloRejectReasons.Secure",
+                                packed_error);
+  }
+
   stateless_reject_received_ = in->tag() == kSREJ;
   string error_details;
   QuicErrorCode error = crypto_config_->ProcessRejection(

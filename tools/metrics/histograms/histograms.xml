@@ -81239,6 +81239,8 @@ To add a new entry, add it with any value and run test to compute valid value.
     </obsolete>
   </suffix>
   <suffix name="Secure" label="for secure QUIC."/>
+  <suffix name="TooMany"
+      label="for secure QUIC when there were too many rejects."/>
   <affected-histogram name="Net.QuicClientHelloRejectReasons"/>
 </histogram_suffixes>
 
