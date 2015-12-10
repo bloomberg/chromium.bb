@@ -9,11 +9,14 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/ash_test_helper.h"
 #include "ash/test/test_screenshot_delegate.h"
+#include "ash/test/test_session_state_delegate.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
@@ -131,6 +134,41 @@ TEST_F(AcceleratorFilterTest, CanConsumeSystemKeys) {
   dispatch_helper.set_target(child.get());
   filter.OnKeyEvent(&press_volume_up);
   EXPECT_FALSE(press_volume_up.stopped_propagation());
+}
+
+TEST_F(AcceleratorFilterTest, SearchKeyShortcutsAreAlwaysHandled) {
+  TestSessionStateDelegate* session_state_delegate =
+      AshTestHelper::GetTestSessionStateDelegate();
+  EXPECT_FALSE(session_state_delegate->IsScreenLocked());
+
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+
+  // We can lock the screen (Search+L) if a window is not present.
+  generator.PressKey(ui::VKEY_L, ui::EF_COMMAND_DOWN);
+  generator.ReleaseKey(ui::VKEY_L, ui::EF_COMMAND_DOWN);
+  EXPECT_TRUE(session_state_delegate->IsScreenLocked());
+  UnblockUserSession();
+  EXPECT_FALSE(session_state_delegate->IsScreenLocked());
+
+  // Search+L is processed when the app_list target visibility is false.
+  Shell::GetInstance()->DismissAppList();
+  EXPECT_FALSE(Shell::GetInstance()->GetAppListTargetVisibility());
+  generator.PressKey(ui::VKEY_L, ui::EF_COMMAND_DOWN);
+  generator.ReleaseKey(ui::VKEY_L, ui::EF_COMMAND_DOWN);
+  EXPECT_TRUE(session_state_delegate->IsScreenLocked());
+  UnblockUserSession();
+  EXPECT_FALSE(session_state_delegate->IsScreenLocked());
+
+  // Search+L is also processed when there is a full screen window.
+  aura::test::TestWindowDelegate window_delegate;
+  scoped_ptr<aura::Window> window(CreateTestWindowInShellWithDelegate(
+      &window_delegate, 0, gfx::Rect(200, 200)));
+  window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
+  generator.PressKey(ui::VKEY_L, ui::EF_COMMAND_DOWN);
+  generator.ReleaseKey(ui::VKEY_L, ui::EF_COMMAND_DOWN);
+  EXPECT_TRUE(session_state_delegate->IsScreenLocked());
+  UnblockUserSession();
+  EXPECT_FALSE(session_state_delegate->IsScreenLocked());
 }
 #endif  // defined(OS_CHROMEOS)
 

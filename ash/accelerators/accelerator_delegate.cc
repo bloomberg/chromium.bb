@@ -51,6 +51,11 @@ bool AcceleratorDelegate::CanConsumeSystemKeys(const ui::KeyEvent& event) {
 bool AcceleratorDelegate::ShouldProcessAcceleratorNow(
     const ui::KeyEvent& event,
     const ui::Accelerator& accelerator) {
+  // On ChromeOS, If the accelerator is Search+<key(s)> then it must never be
+  // intercepted by apps or windows.
+  if (accelerator.IsCmdDown())
+    return true;
+
   aura::Window* target = static_cast<aura::Window*>(event.target());
   DCHECK(target);
 
