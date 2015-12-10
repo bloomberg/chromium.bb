@@ -37,7 +37,8 @@
     # dont need aura as it is implied by chromeos and ozone.
     'gn_blimp_debug': ['gn', 'chromeos', 'ozone', 'debug'],
 
-    'gn_cfi_bot': ['gn', 'cfi', 'release_bot'],
+    'gn_cfi_release_bot': ['gn', 'cfi', 'release_bot'],
+    'gn_cfi_release_trybot': ['gn', 'cfi', 'release_trybot'],
     'gn_debug_bot': ['gn', 'debug_bot'],
     'gn_debug_bot_minimal_symbols': ['gn', 'debug_bot_minimal_symbols'],
     'gn_debug_bot_minimal_symbols_x86': ['gn', 'debug_bot_minimal_symbols', 'x86'],
@@ -514,7 +515,7 @@
       'WebKit Android (Nexus4)': 'gyp_release_bot_android',
     },
     'chromium.fyi': {
-      'CFI Linux': 'gn_cfi_bot',
+      'CFI Linux': 'gn_cfi_release_bot',
       'CrWinClang64(dbg)': 'win_clang_debug_bot',
       'Libfuzzer Upload Linux': 'libfuzzer_upload_bot',
       'Site Isolation Linux': 'gn_release_trybot',
@@ -587,6 +588,7 @@
       'linux_site_isolation': 'gn_release_trybot',
       'linux_chromium_compile_rel_ng': 'swarming_gn_release_trybot',
       'linux_chromium_rel_ng': 'swarming_gpu_tests_gn_release_trybot',
+      'linux_chromium_cfi_rel_ng': 'gn_cfi_release_trybot',
       'linux_chromium_gn_rel': 'gn_release_trybot',
       'linux_chromium_gn_chromeos_rel': 'chromeos_ozone_gn_release_trybot',
       'android_chromium_gn_compile_rel': 'android_gn_release_trybot',
