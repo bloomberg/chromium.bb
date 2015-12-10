@@ -17,7 +17,7 @@ namespace media {
 class MojoCdmService;
 
 // A class that creates, owns and manages all MojoCdmService instances.
-class MEDIA_EXPORT MojoCdmServiceContext : public CdmContextProvider {
+class MojoCdmServiceContext : public CdmContextProvider {
  public:
   MojoCdmServiceContext();
   ~MojoCdmServiceContext() override;

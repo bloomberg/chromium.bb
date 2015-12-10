@@ -35,8 +35,7 @@ class VideoRendererSink;
 
 // A interfaces::Renderer implementation that uses media::AudioRenderer to
 // decode and render audio to a sink obtained from the ApplicationConnection.
-class MEDIA_EXPORT MojoRendererService
-    : NON_EXPORTED_BASE(interfaces::Renderer) {
+class MojoRendererService : interfaces::Renderer {
  public:
   // |cdm_context_provider| can be used to find the CdmContext to support
   // encrypted media. If null, encrypted media is not supported.
