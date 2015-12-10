@@ -76,7 +76,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest, Race) {
 
 IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest,
                        SetPassphraseAndAddPassword) {
-  GetFakeServer()->EnableImplicitPermanentFolderCreation();
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   SetEncryptionPassphrase(0, kValidPassphrase, ProfileSyncService::EXPLICIT);

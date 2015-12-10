@@ -1980,7 +1980,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
 
 IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
                        FirstClientEnablesEncryptionWithPassSecondChanges) {
-  GetFakeServer()->EnableImplicitPermanentFolderCreation();
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllModelsMatchVerifier());
 

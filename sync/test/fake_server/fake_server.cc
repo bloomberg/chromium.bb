@@ -160,22 +160,6 @@ bool IsDeletedOrPermanent(const FakeServerEntity& entity) {
   return entity.IsDeleted() || entity.IsPermanent();
 }
 
-// This is a hack to add the parent ID string if it has not been set inside
-// FakeServer::SerializeAsProto (this method only adds the parent ID to the
-// proto if FakeServerEntity::RequiresParentId returns true).
-//
-// In the case where FakeServer::enable_implicit_permanent_folder_creation_ is
-// true, we must add the parent ID to the proto.
-//
-// TODO(pvalenzuela): Remove this when creation of explicit, non-required
-// permanent folders is no longer supported. When this feature transition
-// happens, these non-required parent IDs will no longer be necessary.
-void AddParentIdIfNecessary(const FakeServerEntity& entity,
-                            sync_pb::SyncEntity* entity_proto) {
-  if (!entity_proto->has_parent_id_string())
-    entity_proto->set_parent_id_string(entity.GetParentId());
-}
-
 }  // namespace
 
 FakeServer::FakeServer() : version_(0),
@@ -185,7 +169,6 @@ FakeServer::FakeServer() : version_(0),
                            alternate_triggered_errors_(false),
                            request_counter_(0),
                            network_enabled_(true),
-                           enable_implicit_permanent_folder_creation_(false),
                            weak_ptr_factory_(this) {
   Init();
 }
@@ -216,8 +199,7 @@ bool FakeServer::CreateDefaultPermanentItems() {
   // Permanent folders are always required for Bookmarks (hierarchical
   // structure) and Nigori (data stored in permanent root folder).
   ModelTypeSet permanent_folder_types =
-      enable_implicit_permanent_folder_creation_ ?
-      ModelTypeSet(syncer::BOOKMARKS, syncer::NIGORI) : syncer::ProtocolTypes();
+      ModelTypeSet(syncer::BOOKMARKS, syncer::NIGORI);
 
   for (ModelTypeSet::Iterator it = permanent_folder_types.First(); it.Good();
        it.Inc()) {
@@ -362,8 +344,6 @@ bool FakeServer::HandleGetUpdatesRequest(
     if (sieve->ClientWantsItem(entity)) {
       sync_pb::SyncEntity* response_entity = response->add_entries();
       entity.SerializeAsProto(response_entity);
-      if (!enable_implicit_permanent_folder_creation_)
-        AddParentIdIfNecessary(entity, response_entity);
 
       max_response_version = std::max(max_response_version,
                                       response_entity->version());
@@ -564,8 +544,6 @@ std::vector<sync_pb::SyncEntity> FakeServer::GetSyncEntitiesByModelType(
     if (!IsDeletedOrPermanent(entity) && entity.GetModelType() == model_type) {
       sync_pb::SyncEntity sync_entity;
       entity.SerializeAsProto(&sync_entity);
-      if (!enable_implicit_permanent_folder_creation_)
-        AddParentIdIfNecessary(entity, &sync_entity);
       sync_entities.push_back(sync_entity);
     }
   }
@@ -721,10 +699,6 @@ std::string FakeServer::GetBookmarkBarFolderId() const {
   }
   NOTREACHED() << "Bookmark Bar entity not found.";
   return "";
-}
-
-void FakeServer::EnableImplicitPermanentFolderCreation() {
-  enable_implicit_permanent_folder_creation_ = true;
 }
 
 base::WeakPtr<FakeServer> FakeServer::AsWeakPtr() {

@@ -138,13 +138,6 @@ class FakeServer {
   // Returns the entity ID of the Bookmark Bar folder.
   std::string GetBookmarkBarFolderId() const;
 
-  // Instructs the server to not create explicit permanent folders.
-  // This method should be called before syncing begins.
-  //
-  // TODO(pvalenzuela): Remove this method when this feature becomes the
-  // default in the real sync server.
-  void EnableImplicitPermanentFolderCreation();
-
   // Returns the current FakeServer as a WeakPtr.
   base::WeakPtr<FakeServer> AsWeakPtr();
 
@@ -251,15 +244,6 @@ class FakeServer {
   // When true, the server operates normally. When false, a failure is returned
   // on every request. This is used to simulate a network failure on the client.
   bool network_enabled_;
-
-  // Whether the implicit permanent folder feature should be enabled. When true,
-  // permanent folders are only created for the required types (Bookmarks and
-  // Nigori). When false, permanent folders are created for all types. The plan
-  // (as of late 2015) is to migrate the real sync server to use this feature.
-  //
-  // TODO(pvalenzuela): Remove this boolean and make this behavior the default
-  // when it becomes normal operation in the real server.
-  bool enable_implicit_permanent_folder_creation_;
 
   // Used to verify that FakeServer is only used from one thread.
   base::ThreadChecker thread_checker_;
