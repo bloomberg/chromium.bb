@@ -13,6 +13,9 @@
   </message>
 
   <!-- Cast Modes -->
+  <message name="IDS_MEDIA_ROUTER_AUTO_CAST_MODE" desc="Title for auto cast mode that appears as the header of a list of devices. This represents the mode that will be initially shown, if the list of sinks supports more than one of the cast modes below. Note that auto mode is not a real cast mode and merely serves as a proxy for the other cast modes. This is NOT shown as a dropdown option.">
+    Cast to
+  </message>
   <message name="IDS_MEDIA_ROUTER_DEFAULT_CAST_MODE" desc="Title for the default cast mode, which is used when the host is cast enabled. This is shown as a dropdown option, and if selected, also appears as the header of a list of devices.">
     Cast <ph name="HOST_NAME">$1<ex>google.com</ex></ph>
   </message>

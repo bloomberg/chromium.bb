@@ -56,11 +56,11 @@ scoped_ptr<base::ListValue> SinksToValue(
     if (!sink.description().empty())
       sink_val->SetString("description", sink.description());
 
-    scoped_ptr<base::ListValue> cast_modes_val(new base::ListValue);
+    int cast_mode_bits = 0;
     for (MediaCastMode cast_mode : sink_with_cast_modes.cast_modes)
-      cast_modes_val->AppendInteger(cast_mode);
+      cast_mode_bits |= cast_mode;
 
-    sink_val->Set("castModes", cast_modes_val.Pass());
+    sink_val->SetInteger("castModes", cast_mode_bits);
     value->Append(sink_val.release());
   }
 
@@ -279,10 +279,6 @@ void MediaRouterWebUIMessageHandler::OnRequestInitialData(
       CastModesToValue(cast_modes,
                        media_router_ui_->GetPresentationRequestSourceName()));
   initial_data.Set("castModes", cast_modes_list.release());
-  if (!cast_modes.empty()) {
-    initial_data.SetInteger("initialCastModeType",
-                            GetPreferredCastMode(cast_modes));
-  }
 
   web_ui()->CallJavascriptFunction(kSetInitialData, initial_data);
   media_router_ui_->UIInitialized();
@@ -308,6 +304,7 @@ void MediaRouterWebUIMessageHandler::OnCreateRoute(
   }
 
   if (!IsValidCastModeNum(cast_mode_num)) {
+    // TODO(imcheng): Record error condition with UMA.
     DVLOG(1) << "Invalid cast mode: " << cast_mode_num << ". Aborting.";
     return;
   }

@@ -8,13 +8,19 @@ cr.define('media_router', function() {
   'use strict';
 
   /**
-   * This corresponds to the C++ MediaCastMode.
+   * This corresponds to the C++ MediaCastMode, with the exception of AUTO.
+   * See below for details. Note to support fast bitset operations, the values
+   * here are (1 << [corresponding value in MR]).
    * @enum {number}
    */
   var CastModeType = {
-    DEFAULT: 0,
-    TAB_MIRROR: 1,
-    DESKTOP_MIRROR: 2,
+    // Note: AUTO mode is only used to configure the sink list container to show
+    // all sinks. Individual sinks are configured with a specific cast mode
+    // (DEFAULT, TAB_MIRROR, DESKTOP_MIRROR).
+    AUTO: -1,
+    DEFAULT: 0x1,
+    TAB_MIRROR: 0x2,
+    DESKTOP_MIRROR: 0x4,
   };
 
   /**
@@ -55,7 +61,7 @@ cr.define('media_router', function() {
   /**
    * @param {media_router.CastModeType} type The type of cast mode.
    * @param {string} description The description of the cast mode.
-   * @param {string} host The hostname of the site to cast.
+   * @param {?string} host The hostname of the site to cast.
    * @constructor
    * @struct
    */
@@ -66,9 +72,16 @@ cr.define('media_router', function() {
     /** @type {string} */
     this.description = description;
 
-    /** @type {string} */
+    /** @type {?string} */
     this.host = host || null;
   };
+
+  /**
+   * Placeholder object for AUTO cast mode. See comment in CastModeType.
+   * @const {!media_router.CastMode}
+   */
+  var AUTO_CAST_MODE = new CastMode(CastModeType.AUTO,
+      loadTimeData.getString('autoCastMode'), null);
 
 
   /**
@@ -153,7 +166,7 @@ cr.define('media_router', function() {
    * @param {?string} description Optional description of the sink.
    * @param {media_router.SinkIconType} iconType the type of icon for the sink.
    * @param {media_router.SinkStatus} status The readiness state of the sink.
-   * @param {!Array<number>} castModes Cast modes compatible with the sink.
+   * @param {number} castModes Bitset of cast modes compatible with the sink.
    * @constructor
    * @struct
    */
@@ -173,7 +186,7 @@ cr.define('media_router', function() {
     /** @type {media_router.SinkStatus} */
     this.status = status;
 
-    /** @type {!Array<number>} */
+    /** @type {number} */
     this.castModes = castModes;
   };
 
@@ -193,6 +206,7 @@ cr.define('media_router', function() {
   };
 
   return {
+    AUTO_CAST_MODE: AUTO_CAST_MODE,
     CastModeType: CastModeType,
     MediaRouterView: MediaRouterView,
     SinkIconType: SinkIconType,

@@ -113,15 +113,15 @@ cr.define('media_router_container', function() {
 
         // Initialize local variables.
         fakeCastModeList = [
-          new media_router.CastMode(0, 'Description 0', 'google.com'),
-          new media_router.CastMode(1, 'Description 1', null),
-          new media_router.CastMode(2, 'Description 2', null),
+          new media_router.CastMode(0x1, 'Description 0', 'google.com'),
+          new media_router.CastMode(0x2, 'Description 1', null),
+          new media_router.CastMode(0x4, 'Description 2', null),
         ];
 
         fakeCastModeListWithNonDefaultModesOnly = [
-          new media_router.CastMode(1, 'Description 1', null),
-          new media_router.CastMode(2, 'Description 2', null),
-          new media_router.CastMode(3, 'Description 3', null),
+          new media_router.CastMode(0x2, 'Description 1', null),
+          new media_router.CastMode(0x4, 'Description 2', null),
+          new media_router.CastMode(0x8, 'Description 3', null),
         ];
 
         fakeRouteList = [
@@ -134,18 +134,17 @@ cr.define('media_router_container', function() {
           new media_router.Route('id 2', 'sink id 2', 'Title 2', 1, true),
         ];
 
-        // Note: These need to be in-order by name to prevent shuffling.
-        // Sorting of sinks by name is tested separately.
+        var castModeBitset = 0x2 | 0x4 | 0x8;
         fakeSinkList = [
           new media_router.Sink('sink id 1', 'Sink 1', null,
               media_router.SinkIconType.CAST,
-              media_router.SinkStatus.ACTIVE, [1, 2, 3]),
+              media_router.SinkStatus.ACTIVE, castModeBitset),
           new media_router.Sink('sink id 2', 'Sink 2', null,
               media_router.SinkIconType.CAST,
-              media_router.SinkStatus.ACTIVE, [1, 2, 3]),
+              media_router.SinkStatus.ACTIVE, castModeBitset),
           new media_router.Sink('sink id 3', 'Sink 3', null,
               media_router.SinkIconType.CAST,
-              media_router.SinkStatus.PENDING, [1, 2, 3]),
+              media_router.SinkStatus.PENDING, castModeBitset),
         ];
 
         fakeBlockingIssue = new media_router.Issue(
@@ -156,8 +155,7 @@ cr.define('media_router_container', function() {
             'issue id 2', 'Issue Title 2', 'Issue Message 2', 0, 1,
             'route id 2', false, 1234);
 
-        container.initializeCastModes(
-            fakeCastModeList, fakeCastModeList[1].type);
+        container.castModeList = fakeCastModeList;
 
         // Allow for the media router container to be created and attached.
         setTimeout(done);
@@ -172,9 +170,15 @@ cr.define('media_router_container', function() {
           var sinkList =
               container.$['sink-list'].querySelectorAll('paper-item');
           container.addEventListener('create-route', function(data) {
+            // Container is initially in auto mode since a cast mode has not
+            // been selected.
+            assertEquals(media_router.CastModeType.AUTO,
+                container.shownCastModeValue_);
             assertEquals(fakeSinkList[2].id, data.detail.sinkId);
-            assertEquals(container.selectedCastModeValue_,
-                data.detail.selectedCastModeValue);
+
+            // The preferred compatible cast mode on the sink is used, since
+            // the we did not choose a cast mode on the container.
+            assertEquals(0x2, data.detail.selectedCastModeValue);
             done();
           });
           // Tap on a sink without a route, which should fire a 'create-route'
@@ -240,7 +244,13 @@ cr.define('media_router_container', function() {
       test('header text with no default cast modes', function(done) {
         assertEquals(loadTimeData.getString('selectCastModeHeader'),
             container.selectCastModeHeaderText_);
-        assertEquals(fakeCastModeList[1].description, container.headerText);
+
+        // The container is currently in auto cast mode, since we have not
+        // picked a cast mode explicitly, and the sinks is not compatible
+        // with exactly one cast mode.
+        assertEquals(media_router.AUTO_CAST_MODE.description,
+            container.headerText);
+        assertFalse(container.userHasSelectedCastMode_);
 
         container.castModeList = fakeCastModeListWithNonDefaultModesOnly;
         setTimeout(function() {
@@ -503,20 +513,83 @@ cr.define('media_router_container', function() {
         });
       });
 
+      // Tests all sinks are always shown in auto mode, and that the mode will
+      // switch if the sinks support only 1 case mode.
+      test('sink list in auto mode', function(done) {
+        container.allSinks = fakeSinkList;
+        setTimeout(function() {
+          // Container is initially in auto mode since a cast mode has not been
+          // selected.
+          assertEquals(media_router.AUTO_CAST_MODE.description,
+              container.headerText);
+          assertEquals(media_router.CastModeType.AUTO,
+              container.shownCastModeValue_);
+          assertFalse(container.userHasSelectedCastMode_);
+          var sinkList =
+              container.$['sink-list'].querySelectorAll('paper-item');
+
+          // All sinks are shown in auto mode.
+          assertEquals(3, sinkList.length);
+
+          // When sink list changes to only 1 compatible cast mode, the mode is
+          // switched, and all sinks are shown.
+          container.allSinks = [
+            new media_router.Sink('sink id 10', 'Sink 10', null,
+                media_router.SinkIconType.CAST,
+                media_router.SinkStatus.ACTIVE, 0x4),
+            new media_router.Sink('sink id 20', 'Sink 20', null,
+                media_router.SinkIconType.CAST,
+                media_router.SinkStatus.ACTIVE, 0x4),
+            new media_router.Sink('sink id 30', 'Sink 30', null,
+                media_router.SinkIconType.CAST,
+                media_router.SinkStatus.PENDING, 0x4),
+          ];
+
+          setTimeout(function() {
+            assertEquals(fakeCastModeList[2].description, container.headerText);
+            assertEquals(fakeCastModeList[2].type,
+                container.shownCastModeValue_);
+            assertFalse(container.userHasSelectedCastMode_);
+
+            var sinkList =
+                container.$['sink-list'].querySelectorAll('paper-item');
+            assertEquals(3, sinkList.length);
+
+            // When compatible cast modes size is no longer exactly 1, switch
+            // back to auto mode, and all sinks are shown.
+            container.allSinks = fakeSinkList;
+            setTimeout(function() {
+              assertEquals(media_router.AUTO_CAST_MODE.description,
+                  container.headerText);
+              assertEquals(media_router.CastModeType.AUTO,
+                  container.shownCastModeValue_);
+              assertFalse(container.userHasSelectedCastMode_);
+              var sinkList =
+                  container.$['sink-list'].querySelectorAll('paper-item');
+
+              // All sinks are shown in auto mode.
+              assertEquals(3, sinkList.length);
+
+              done();
+            });
+          });
+        });
+      });
+
       // Tests that the sink list does not contain any sinks that are not
-      // compatible with the current cast mode and are not associated with a
+      // compatible with the selected cast mode and are not associated with a
       // route.
-      test('sink list filtering based on initial cast mode', function(done) {
+      test('sink list in user selected cast mode', function(done) {
         var newSinks = [
           new media_router.Sink('sink id 10', 'Sink 10', null,
               media_router.SinkIconType.CAST,
-              media_router.SinkStatus.ACTIVE, [2, 3]),
+              media_router.SinkStatus.ACTIVE, 0x4 | 0x8),
           new media_router.Sink('sink id 20', 'Sink 20', null,
               media_router.SinkIconType.CAST,
-              media_router.SinkStatus.ACTIVE, [1, 2, 3]),
+              media_router.SinkStatus.ACTIVE, 0x2 | 0x4 | 0x8),
           new media_router.Sink('sink id 30', 'Sink 30', null,
               media_router.SinkIconType.CAST,
-              media_router.SinkStatus.PENDING, [2, 3]),
+              media_router.SinkStatus.PENDING, 0x4 | 0x8),
         ];
 
         container.allSinks = newSinks;
@@ -528,21 +601,124 @@ cr.define('media_router_container', function() {
           var sinkList =
               container.$['sink-list'].querySelectorAll('paper-item');
 
-          // newSinks[0] got filtered out since it is not compatible with cast
-          // mode 1.
-          // 'Sink 20' should be on the list because it contains the selected
-          // cast mode. (sinkList[0] = newSinks[1])
-          // 'Sink 30' should be on the list because it has a route.
-          // (sinkList[1] = newSinks[2])
-          assertEquals(2, sinkList.length);
-          checkElementText(newSinks[1].name, sinkList[0]);
+          // Since we haven't selected a cast mode, we don't filter sinks.
+          assertEquals(3, sinkList.length);
 
-          // |sinkList[1]| contains route title in addition to sink name.
-          assertTrue(sinkList[1].textContent.trim().startsWith(
-              newSinks[2].name.trim()));
+          // Cast mode 1 is selected, and the sink list is filtered.
+          var castModeList =
+              container.$['cast-mode-list'].querySelectorAll('paper-item');
+          MockInteractions.tap(castModeList[1]);
+          assertEquals(fakeCastModeList[1].description, container.headerText);
+          assertEquals(fakeCastModeList[1].type, container.shownCastModeValue_);
 
+          setTimeout(function() {
+            var sinkList =
+                container.$['sink-list'].querySelectorAll('paper-item');
+
+            // newSinks[0] got filtered out since it is not compatible with cast
+            // mode 1.
+            // 'Sink 20' should be on the list because it contains the selected
+            // cast mode. (sinkList[0] = newSinks[1])
+            // 'Sink 30' should be on the list because it has a route.
+            // (sinkList[1] = newSinks[2])
+            assertEquals(2, sinkList.length);
+            checkElementText(newSinks[1].name, sinkList[0]);
+
+            // |sinkList[1]| contains route title in addition to sink name.
+            assertTrue(sinkList[1].textContent.trim().startsWith(
+                newSinks[2].name.trim()));
+
+            // Cast mode is not switched back even if there are no sinks
+            // compatible with selected cast mode, because we explicitly
+            // selected that cast mode.
+            container.allSinks = [];
+            setTimeout(function() {
+              assertEquals(fakeCastModeList[1].description,
+                  container.headerText);
+              assertEquals(fakeCastModeList[1].type,
+                  container.shownCastModeValue_);
+              var sinkList =
+                  container.$['sink-list'].querySelectorAll('paper-item');
+              assertEquals(0, sinkList.length);
+              done();
+            });
+          });
+        });
+      });
+
+      // Container remains in auto mode even if the cast mode list changed.
+      test('cast mode list updated in auto mode', function(done) {
+        assertEquals(media_router.AUTO_CAST_MODE.description,
+            container.headerText);
+        assertEquals(media_router.CastModeType.AUTO,
+            container.shownCastModeValue_);
+        assertFalse(container.userHasSelectedCastMode_);
+
+        container.castModeList = fakeCastModeList.slice(1);
+        setTimeout(function() {
+          assertEquals(media_router.AUTO_CAST_MODE.description,
+              container.headerText);
+          assertEquals(media_router.CastModeType.AUTO,
+              container.shownCastModeValue_);
+          assertFalse(container.userHasSelectedCastMode_);
           done();
         });
+      });
+
+      // If the container is not in auto mode, and the mode it is currently in
+      // no longer exists in the list of cast modes, then switch back to auto
+      // mode.
+      test('cast mode list updated in selected cast mode', function(done) {
+        assertEquals(media_router.AUTO_CAST_MODE.description,
+            container.headerText);
+        assertEquals(media_router.CastModeType.AUTO,
+            container.shownCastModeValue_);
+        assertFalse(container.userHasSelectedCastMode_);
+
+        var castModeList =
+              container.$['cast-mode-list'].querySelectorAll('paper-item');
+        MockInteractions.tap(castModeList[0]);
+        setTimeout(function() {
+          assertEquals(fakeCastModeList[0].description, container.headerText);
+          assertEquals(fakeCastModeList[0].type, container.shownCastModeValue_);
+          assertTrue(container.userHasSelectedCastMode_);
+          container.castModeList = fakeCastModeList.slice(1);
+          setTimeout(function() {
+            assertEquals(media_router.AUTO_CAST_MODE.description,
+                container.headerText);
+            assertEquals(media_router.CastModeType.AUTO,
+                container.shownCastModeValue_);
+            assertFalse(container.userHasSelectedCastMode_);
+            done();
+          });
+        });
+      });
+
+      test('creating route with selected cast mode', function(done) {
+        container.allSinks = fakeSinkList;
+
+        // Select cast mode 2.
+        var castModeList =
+            container.$['cast-mode-list'].querySelectorAll('paper-item');
+        MockInteractions.tap(castModeList[1]);
+        assertEquals(fakeCastModeList[1].description, container.headerText);
+        setTimeout(function() {
+          var sinkList =
+              container.$['sink-list'].querySelectorAll('paper-item');
+          container.addEventListener('create-route', function(data) {
+            assertEquals(fakeSinkList[2].id, data.detail.sinkId);
+            // Cast mode 2 is used, since we selected it explicitly.
+            assertEquals(fakeCastModeList[1].type,
+                         data.detail.selectedCastModeValue);
+            done();
+          });
+          // All sinks are compatible with cast mode 2.
+          assertEquals(fakeSinkList.length, sinkList.length);
+          // Tap on a sink without a route, which should fire a 'create-route'
+          // event.
+          MockInteractions.tap(sinkList[2]);
+        });
+
       });
 
       // Tests that after a different cast mode is selected, the sink list will
@@ -572,61 +748,6 @@ cr.define('media_router_container', function() {
             done();
           });
          });
-      });
-
-      // Tests that sinks provided in some random order will be sorted by name
-      // when shown to the user.
-      test('sinks are shown sorted by name', function(done) {
-        var outOfOrderSinks = [
-          new media_router.Sink('6543', 'Sleepy', null,
-              media_router.SinkIconType.CAST,
-              media_router.SinkStatus.ACTIVE, [1]),
-          new media_router.Sink('543', 'Happy', null,
-              media_router.SinkIconType.CAST,
-              media_router.SinkStatus.ACTIVE, [1]),
-          new media_router.Sink('43', 'Bashful', null,
-              media_router.SinkIconType.CAST,
-              media_router.SinkStatus.ACTIVE, [1]),
-          new media_router.Sink('2', 'George', null,
-              media_router.SinkIconType.CAST_AUDIO,
-              media_router.SinkStatus.ACTIVE, [1]),
-          new media_router.Sink('1', 'George', null,
-              media_router.SinkIconType.CAST,
-              media_router.SinkStatus.ACTIVE, [1]),
-          new media_router.Sink('3', 'George', null,
-              media_router.SinkIconType.HANGOUT,
-              media_router.SinkStatus.ACTIVE, [1]),
-        ];
-
-        container.allSinks = outOfOrderSinks;
-
-        setTimeout(function() {
-          var sinkList =
-              container.$['sink-list'].querySelectorAll('paper-item');
-
-          assertEquals(6, sinkList.length);
-          checkElementText('Bashful', sinkList[0]);
-          checkElementText('George', sinkList[1]);
-          checkElementText('George', sinkList[2]);
-          checkElementText('George', sinkList[3]);
-          checkElementText('Happy', sinkList[4]);
-          checkElementText('Sleepy', sinkList[5]);
-
-          // There are three George's, so check that the first has id '1', the
-          // second has id '2', and the third has id '3'.  The icons are used to
-          // determine which is which.
-          assertEquals(
-              container.computeSinkIcon_(outOfOrderSinks[4]),
-              sinkList[1].querySelector('iron-icon').icon);
-          assertEquals(
-              container.computeSinkIcon_(outOfOrderSinks[3]),
-              sinkList[2].querySelector('iron-icon').icon);
-          assertEquals(
-              container.computeSinkIcon_(outOfOrderSinks[5]),
-              sinkList[3].querySelector('iron-icon').icon);
-
-          done();
-        });
       });
     });
   }

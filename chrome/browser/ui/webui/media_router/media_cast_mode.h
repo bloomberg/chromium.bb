@@ -16,15 +16,13 @@ namespace media_router {
 enum MediaCastMode {
   // The default presentation for the WebContents.  Only available when the
   // document has provided a default presentation URL.
-  DEFAULT,
+  DEFAULT = 0x1,
   // Capture the rendered WebContents and stream it to a media sink.  Always
   // available.
-  TAB_MIRROR,
+  TAB_MIRROR = 0x2,
   // Capture the entire desktop and stream it to a media sink.  Always
   // available.
-  DESKTOP_MIRROR,
-  // The number of cast modes; not a valid cast mode.  Add new cast modes above.
-  NUM_CAST_MODES,
+  DESKTOP_MIRROR = 0x4,
 };
 
 using CastModeSet = std::set<MediaCastMode>;
@@ -36,10 +34,6 @@ std::string MediaCastModeToDescription(MediaCastMode mode,
 
 // Returns true if |cast_mode_num| is a valid MediaCastMode, false otherwise.
 bool IsValidCastModeNum(int cast_mode_num);
-
-// Returns the preferred cast mode from the current set of cast modes.
-// There must be at least one cast mode in |cast_modes|.
-MediaCastMode GetPreferredCastMode(const CastModeSet& cast_modes);
 
 }  // namespace media_router
 

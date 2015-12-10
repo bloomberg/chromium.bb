@@ -31,16 +31,14 @@ std::string MediaCastModeToDescription(
 }
 
 bool IsValidCastModeNum(int cast_mode_num) {
-  return cast_mode_num >= MediaCastMode::DEFAULT &&
-         cast_mode_num < MediaCastMode::NUM_CAST_MODES;
-}
-
-MediaCastMode GetPreferredCastMode(const CastModeSet& cast_modes) {
-  if (cast_modes.empty()) {
-    LOG(ERROR) << "Called with empty cast_modes!";
-    return MediaCastMode::DEFAULT;
+  switch (cast_mode_num) {
+    case MediaCastMode::DEFAULT:
+    case MediaCastMode::TAB_MIRROR:
+    case MediaCastMode::DESKTOP_MIRROR:
+      return true;
+    default:
+      return false;
   }
-  return *cast_modes.begin();
 }
 
 }  // namespace media_router

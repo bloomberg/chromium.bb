@@ -22,14 +22,19 @@
 #include "chrome/browser/ui/webui/media_router/media_sink_with_cast_modes.h"
 #include "chrome/browser/ui/webui/media_router/query_result_manager.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "third_party/icu/source/common/unicode/uversion.h"
 
 namespace content {
 class WebContents;
-}  // namespace content
+}
 
 namespace extensions {
 class ExtensionRegistry;
-}  // namespace extensions
+}
+
+namespace U_ICU_NAMESPACE {
+class Collator;
+}
 
 namespace media_router {
 
@@ -122,6 +127,7 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
   virtual const std::string& GetRouteProviderExtensionId() const;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(MediaRouterUITest, SortedSinks);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterUITest,
                            UIMediaRoutesObserverFiltersNonDisplayRoutes);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterUITest, GetExtensionNameExtensionPresent);
@@ -211,6 +217,10 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
   // Sequential counter for route requests. Used to update
   // |current_route_request_id_| when there is a new route request.
   int route_request_counter_;
+
+  // Used for locale-aware sorting of sinks by name. Set during |InitCommon()|
+  // using the current locale. Set to null
+  scoped_ptr<icu::Collator> collator_;
 
   std::vector<MediaSinkWithCastModes> sinks_;
   std::vector<MediaRoute> routes_;

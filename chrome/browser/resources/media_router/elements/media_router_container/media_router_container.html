@@ -29,7 +29,7 @@
       </issue-banner>
     </template>
     <paper-menu id="cast-mode-list"
-        hidden$="[[computeCastModeHidden_(currentView_)]]">
+        hidden$="[[computeCastModeListHidden_(currentView_)]]">
       <template is="dom-repeat" id="defaultCastModeList"
           items="[[computeDefaultCastModeList_(castModeList)]]">
         <paper-item on-click="onCastModeClick_">

@@ -12,47 +12,21 @@ using testing::HasSubstr;
 
 namespace media_router {
 
-TEST(MediaCastModeTest, PreferredCastMode) {
-  CastModeSet cast_modes;
-
-  EXPECT_EQ(MediaCastMode::DEFAULT, GetPreferredCastMode(cast_modes));
-
-  cast_modes.insert(MediaCastMode::DESKTOP_MIRROR);
-  EXPECT_EQ(MediaCastMode::DESKTOP_MIRROR,
-            GetPreferredCastMode(cast_modes));
-
-  cast_modes.insert(MediaCastMode::TAB_MIRROR);
-  EXPECT_EQ(MediaCastMode::TAB_MIRROR,
-            GetPreferredCastMode(cast_modes));
-
-  cast_modes.insert(MediaCastMode::DEFAULT);
-  EXPECT_EQ(MediaCastMode::DEFAULT,
-            GetPreferredCastMode(cast_modes));
-
-  cast_modes.erase(MediaCastMode::TAB_MIRROR);
-  EXPECT_EQ(MediaCastMode::DEFAULT,
-            GetPreferredCastMode(cast_modes));
-
-  cast_modes.erase(MediaCastMode::DESKTOP_MIRROR);
-  EXPECT_EQ(MediaCastMode::DEFAULT,
-            GetPreferredCastMode(cast_modes));
-}
-
 TEST(MediaCastModeTest, MediaCastModeToDescription) {
-  for (int cast_mode = MediaCastMode::DEFAULT;
-       cast_mode < MediaCastMode::NUM_CAST_MODES; cast_mode++) {
-    EXPECT_TRUE(!MediaCastModeToDescription(
-        static_cast<MediaCastMode>(cast_mode), "youtube.com").empty());
-  }
+  EXPECT_FALSE(MediaCastModeToDescription(MediaCastMode::DEFAULT, "youtube.com")
+                   .empty());
+  EXPECT_FALSE(
+      MediaCastModeToDescription(MediaCastMode::TAB_MIRROR, "").empty());
+  EXPECT_FALSE(
+      MediaCastModeToDescription(MediaCastMode::DESKTOP_MIRROR, "").empty());
 }
 
 TEST(MediaCastModeTest, IsValidCastModeNum) {
-  for (int cast_mode = MediaCastMode::DEFAULT;
-       cast_mode < MediaCastMode::NUM_CAST_MODES; cast_mode++) {
-    EXPECT_TRUE(IsValidCastModeNum(cast_mode));
-  }
-  EXPECT_FALSE(IsValidCastModeNum(MediaCastMode::NUM_CAST_MODES));
+  EXPECT_TRUE(IsValidCastModeNum(MediaCastMode::DEFAULT));
+  EXPECT_TRUE(IsValidCastModeNum(MediaCastMode::TAB_MIRROR));
+  EXPECT_TRUE(IsValidCastModeNum(MediaCastMode::DESKTOP_MIRROR));
   EXPECT_FALSE(IsValidCastModeNum(-1));
+  EXPECT_FALSE(IsValidCastModeNum(666));
 }
 
 }  // namespace media_router

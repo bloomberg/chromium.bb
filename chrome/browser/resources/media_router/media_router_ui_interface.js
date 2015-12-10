@@ -53,22 +53,18 @@ cr.define('media_router.ui', function() {
    * @param {deviceMissingUrl: string,
    *         sinks: !Array<!media_router.Sink>,
    *         routes: !Array<!media_router.Route>,
-   *         castModes: !Array<!media_router.CastMode>,
-   *         initialCastModeType: number} data
+   *         castModes: !Array<!media_router.CastMode>} data
    * Parameters in data:
    *   deviceMissingUrl - url to be opened on "Device missing?" clicked.
    *   sinks - list of sinks to be displayed.
    *   routes - list of routes that are associated with the sinks.
    *   castModes - list of available cast modes.
-   *   initialCastModeType - cast mode to show initially. Expected to be
-   *       included in |castModes|.
    */
   function setInitialData(data) {
     container.deviceMissingUrl = data['deviceMissingUrl'];
+    container.castModeList = data['castModes'];
     container.allSinks = data['sinks'];
     container.routeList = data['routes'];
-    container.initializeCastModes(data['castModes'],
-        data['initialCastModeType']);
   }
 
   /**

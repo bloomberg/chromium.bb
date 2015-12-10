@@ -162,14 +162,6 @@ Polymer({
     },
 
     /**
-     * The value of the selected cast mode in |castModeList|.
-     * @private {number}
-     */
-    selectedCastModeValue_: {
-      type: Number,
-    },
-
-    /**
      * The subheading text for the non-cast-enabled app cast mode list.
      * @private {string}
      */
@@ -177,6 +169,25 @@ Polymer({
       type: String,
       readOnly: true,
       value: loadTimeData.getString('shareYourScreenSubheading'),
+    },
+
+    /**
+     * The cast mode shown to the user. Initially set to auto mode. (See
+     * media_router.CastMode documentation for details on auto mode.)
+     * This value may be changed in one of the following ways:
+     * 1) The user explicitly selected a cast mode.
+     * 2) The user selected cast mode is no longer available for the associated
+     *    WebContents. In this case, the container will reset to auto mode. Note
+     *    that |userHasSelectedCastMode_| will switch back to false.
+     * 3) The sink list changed, and the user had not explicitly selected a cast
+     *    mode. If the sinks support exactly 1 cast mode, the container will
+     *    switch to that cast mode. Otherwise, the container will reset to auto
+     *    mode.
+     * @private {number}
+     */
+    shownCastModeValue_: {
+      type: Number,
+      value: media_router.AUTO_CAST_MODE.type,
     },
 
     /**
@@ -215,6 +226,15 @@ Polymer({
       type: Array,
       value: [],
     },
+
+    /**
+     * Whether the user has explicitly selected a cast mode.
+     * @private {boolean}
+     */
+    userHasSelectedCastMode_: {
+      type: Boolean,
+      value: false,
+    },
   },
 
   listeners: {
@@ -243,10 +263,41 @@ Polymer({
    * cast mode to the first available cast mode on the list.
    */
   checkCurrentCastMode_: function() {
-    if (this.castModeList.length > 0 &&
-        !this.findCastModeByType_(this.selectedCastModeValue_)) {
-      this.setSelectedCastMode_(this.castModeList[0]);
+    if (!this.castModeList.length)
+      return;
+
+    // If we are currently showing auto mode, then nothing needs to be done.
+    // Otherwise, if the cast mode currently shown no longer exists (regardless
+    // of whether it was selected by user), then switch back to auto cast mode.
+    if (this.shownCastModeValue_ != media_router.CastModeType.AUTO &&
+        !this.findCastModeByType_(this.shownCastModeValue_)) {
+      this.setShownCastMode_(media_router.AUTO_CAST_MODE);
+      this.rebuildSinksToShow_();
     }
+  },
+
+  /**
+   * If |allSinks| supports only a single cast mode, returns that cast mode.
+   * Otherwise, returns AUTO_MODE. Only called if |userHasSelectedCastMode_| is
+   * |false|.
+   * @return {!media_router.CastMode} The single cast mode supported by
+   *                                  |allSinks|, or AUTO_MODE.
+   */
+  computeCastMode_: function() {
+    var allCastModes = this.allSinks.reduce(function(castModesSoFar, sink) {
+      return castModesSoFar | sink.castModes;
+    }, 0);
+
+    // This checks whether |castModes| does not consist of exactly 1 cast mode.
+    if (!allCastModes || allCastModes & (allCastModes - 1))
+      return media_router.AUTO_CAST_MODE;
+
+    var castMode = this.findCastModeByType_(allCastModes);
+    if (castMode)
+      return castMode;
+
+    console.error('Cast mode ' + allCastModes + ' not in castModeList');
+    return media_router.AUTO_CAST_MODE;
   },
 
   /**
@@ -254,7 +305,7 @@ Polymer({
    * @return {boolean} Whether or not to hide the cast mode list.
    * @private
    */
-  computeCastModeHidden_: function(view) {
+  computeCastModeListHidden_: function(view) {
     return view != media_router.MediaRouterView.CAST_MODE_LIST;
   },
 
@@ -521,23 +572,6 @@ Polymer({
   },
 
   /**
-   * Sets the list of available cast modes and the initial cast mode.
-   *
-   * @param {!Array<!media_router.CastMode>} availableCastModes The list
-   *     of available cast modes.
-   * @param {number} initialCastModeType The initial cast mode when dialog is
-   *     opened.
-   */
-  initializeCastModes: function(availableCastModes, initialCastModeType) {
-    this.castModeList = availableCastModes;
-    var castMode = this.findCastModeByType_(initialCastModeType);
-    if (!castMode)
-      return;
-
-    this.setSelectedCastMode_(castMode);
-  },
-
-  /**
    * Returns whether given string is null, empty, or whitespaces only.
    * @param {?string} str String to be tested.
    * @return {boolean} |true| if the string is null, empty, or whitespaces.
@@ -572,7 +606,7 @@ Polymer({
 
   /**
    * Handles a cast mode selection. Updates |headerText|, |headerTextTooltip|,
-   * and |selectedCastModeValue_|.
+   * and |shownCastModeValue_|.
    *
    * @param {!Event} event The event object.
    * @private
@@ -587,7 +621,15 @@ Polymer({
     if (!clickedMode)
       return;
 
-    this.setSelectedCastMode_(clickedMode);
+    this.userHasSelectedCastMode_ = true;
+
+    // The list of sinks to show will be the same if the shown cast mode did
+    // not change, regardless of whether the user selected it explicitly.
+    if (clickedMode.type != this.shownCastModeValue_) {
+      this.setShownCastMode_(clickedMode);
+      this.rebuildSinksToShow_();
+    }
+
     this.showSinkList_();
   },
 
@@ -718,22 +760,22 @@ Polymer({
    */
   rebuildSinksToShow_: function() {
     var sinksToShow = [];
-    this.allSinks.forEach(function(element) {
-      if (element.castModes.indexOf(this.selectedCastModeValue_) != -1 ||
-          this.sinkToRouteMap_[element.id]) {
-        sinksToShow.push(element);
-      }
-    }, this);
-
-    // Sort the |sinksToShow| by name.  If any two devices have the same name,
-    // use their IDs to stabilize the ordering.
-    sinksToShow.sort(function(a, b) {
-      var ordering = a.name.localeCompare(b.name);
-      if (ordering != 0) {
-        return ordering;
-      }
-      return (a.id < b.id) ? -1 : ((a.id == b.id) ? 0 : 1);
-    });
+    if (this.userHasSelectedCastMode_) {
+      // If user explicitly selected a cast mode, then we show only sinks that
+      // are compatible with current cast mode or sinks that are active.
+      sinksToShow = this.allSinks.filter(function(element) {
+        return (element.castModes & this.shownCastModeValue_) ||
+               this.sinkToRouteMap_[element.id];
+      }, this);
+    } else {
+      // If user did not select a cast mode, then:
+      // - If all sinks support only a single cast mode, then the cast mode is
+      //   switched to that mode.
+      // - Otherwise, the cast mode becomes auto mode.
+      // Either way, all sinks will be shown.
+      this.setShownCastMode_(this.computeCastMode_());
+      sinksToShow = this.allSinks;
+    }
 
     this.sinksToShow_ = sinksToShow;
   },
@@ -754,18 +796,21 @@ Polymer({
   },
 
   /**
-   * Updates the selected cast mode, and updates the header text fields
-   * according to the cast mode.
+   * Updates the shown cast mode, and updates the header text fields
+   * according to the cast mode. If |castMode| type is AUTO, then set
+   * |userHasSelectedCastMode_| to false.
    *
    * @param {!media_router.CastMode} castMode
    */
-  setSelectedCastMode_: function(castMode) {
-    if (castMode.type != this.selectedCastModeValue_) {
-      this.headerText = castMode.description;
-      this.headerTextTooltip = castMode.host;
-      this.selectedCastModeValue_ = castMode.type;
-      this.rebuildSinksToShow_();
-    }
+  setShownCastMode_: function(castMode) {
+    if (this.shownCastMode_ == castMode.type)
+      return;
+
+    this.shownCastModeValue_ = castMode.type;
+    this.headerText = castMode.description;
+    this.headerTextTooltip = castMode.host;
+    if (castMode.type == media_router.CastModeType.AUTO)
+      this.userHasSelectedCastMode_ = false;
   },
 
   /**
@@ -792,7 +837,13 @@ Polymer({
       // Allow one launch at a time.
       this.fire('create-route', {
         sinkId: sink.id,
-        selectedCastModeValue: this.selectedCastModeValue_
+        // If user selected a cast mode, then we will create a route using that
+        // cast mode. Otherwise, the UI is in "auto" cast mode and will use the
+        // preferred cast mode compatible with the sink. The preferred cast mode
+        // value is the least significant bit on the bitset.
+        selectedCastModeValue:
+            this.shownCastModeValue_ == media_router.CastModeType.AUTO ?
+                sink.castModes & -sink.castModes : this.shownCastModeValue_
       });
       this.currentLaunchingSinkId_ = sink.id;
     }

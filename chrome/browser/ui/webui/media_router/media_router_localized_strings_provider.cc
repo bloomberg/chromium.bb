@@ -34,6 +34,8 @@ void AddIssuesStrings(content::WebUIDataSource* html_source) {
 }
 
 void AddMediaRouterContainerStrings(content::WebUIDataSource* html_source) {
+  html_source->AddLocalizedString("autoCastMode",
+                                  IDS_MEDIA_ROUTER_AUTO_CAST_MODE);
   html_source->AddLocalizedString("deviceMissing",
                                   IDS_MEDIA_ROUTER_DEVICE_MISSING);
   html_source->AddLocalizedString("selectCastModeHeader",
