@@ -154,24 +154,30 @@ void AccountChooserDialogAndroid::ShowDialog() {
                local_credentials_forms().size(), request_context);
 }
 
-void AccountChooserDialogAndroid::OnCredentialClicked(JNIEnv* env,
-                                                      jobject obj,
-                                                      jint credential_item,
-                                                      jint credential_type) {
+void AccountChooserDialogAndroid::OnCredentialClicked(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    jint credential_item,
+    jint credential_type) {
   ChooseCredential(
       credential_item,
       static_cast<password_manager::CredentialType>(credential_type));
 }
 
-void AccountChooserDialogAndroid::Destroy(JNIEnv* env, jobject obj) {
+void AccountChooserDialogAndroid::Destroy(JNIEnv* env,
+                                          const JavaParamRef<jobject>& obj) {
   delete this;
 }
 
-void AccountChooserDialogAndroid::CancelDialog(JNIEnv* env, jobject obj) {
+void AccountChooserDialogAndroid::CancelDialog(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   ChooseCredential(-1, password_manager::CredentialType::CREDENTIAL_TYPE_EMPTY);
 }
 
-void AccountChooserDialogAndroid::OnLinkClicked(JNIEnv* env, jobject obj) {
+void AccountChooserDialogAndroid::OnLinkClicked(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   web_contents_->OpenURL(content::OpenURLParams(
       GURL(password_manager::kPasswordManagerAccountDashboardURL),
       content::Referrer(), NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_LINK,

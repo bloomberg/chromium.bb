@@ -51,13 +51,14 @@ InterestsService::InterestsService(Profile* profile)
 
 InterestsService::~InterestsService() {}
 
-void InterestsService::Destroy(JNIEnv* env, jobject obj) {
+void InterestsService::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   delete this;
 }
 
-void InterestsService::GetInterests(JNIEnv* env,
-                                    jobject obj,
-                                    jobject j_callback_obj) {
+void InterestsService::GetInterests(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& j_callback_obj) {
   ScopedJavaGlobalRef<jobject> j_callback(env, j_callback_obj);
 
   scoped_ptr<InterestsFetcher> fetcher =

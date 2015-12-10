@@ -55,10 +55,11 @@ class OAuth2TokenServiceDelegateAndroid : public OAuth2TokenServiceDelegate {
   // Lists account names at the OS level.
   std::vector<std::string> GetSystemAccountNames();
 
-  void ValidateAccounts(JNIEnv* env,
-                        jobject obj,
-                        jstring current_account,
-                        jboolean force_notifications);
+  void ValidateAccounts(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jstring>& current_account,
+      jboolean force_notifications);
 
   // Takes a the signed in sync account as well as all the other
   // android account ids and check the token status of each.  If
@@ -70,17 +71,21 @@ class OAuth2TokenServiceDelegateAndroid : public OAuth2TokenServiceDelegate {
   // Triggers a notification to all observers of the OAuth2TokenService that a
   // refresh token is now available. This may cause observers to retry
   // operations that require authentication.
-  virtual void FireRefreshTokenAvailableFromJava(JNIEnv* env,
-                                                 jobject obj,
-                                                 const jstring account_name);
+  virtual void FireRefreshTokenAvailableFromJava(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jstring>& account_name);
   // Triggers a notification to all observers of the OAuth2TokenService that a
   // refresh token is now available.
-  virtual void FireRefreshTokenRevokedFromJava(JNIEnv* env,
-                                               jobject obj,
-                                               const jstring account_name);
+  virtual void FireRefreshTokenRevokedFromJava(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jstring>& account_name);
   // Triggers a notification to all observers of the OAuth2TokenService that all
   // refresh tokens have now been loaded.
-  virtual void FireRefreshTokensLoadedFromJava(JNIEnv* env, jobject obj);
+  virtual void FireRefreshTokensLoadedFromJava(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
 
   // Overridden from OAuth2TokenService to complete signout of all
   // OA2TService aware accounts.

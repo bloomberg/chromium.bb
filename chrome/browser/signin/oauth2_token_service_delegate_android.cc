@@ -286,8 +286,8 @@ void OAuth2TokenServiceDelegateAndroid::InvalidateAccessToken(
 
 void OAuth2TokenServiceDelegateAndroid::ValidateAccounts(
     JNIEnv* env,
-    jobject obj,
-    jstring j_current_acc,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& j_current_acc,
     jboolean j_force_notifications) {
   std::string signed_in_account_name;
   DVLOG(1) << "OAuth2TokenServiceDelegateAndroid::ValidateAccounts from java";
@@ -435,8 +435,8 @@ bool OAuth2TokenServiceDelegateAndroid::ValidateAccounts(
 
 void OAuth2TokenServiceDelegateAndroid::FireRefreshTokenAvailableFromJava(
     JNIEnv* env,
-    jobject obj,
-    const jstring account_name) {
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& account_name) {
   std::string account_id =
       MapAccountNameToAccountId(ConvertJavaStringToUTF8(env, account_name));
   // Notify native observers.
@@ -462,8 +462,8 @@ void OAuth2TokenServiceDelegateAndroid::FireRefreshTokenAvailable(
 
 void OAuth2TokenServiceDelegateAndroid::FireRefreshTokenRevokedFromJava(
     JNIEnv* env,
-    jobject obj,
-    const jstring account_name) {
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& account_name) {
   std::string account_id =
       MapAccountNameToAccountId(ConvertJavaStringToUTF8(env, account_name));
   // Notify native observers.
@@ -489,7 +489,7 @@ void OAuth2TokenServiceDelegateAndroid::FireRefreshTokenRevoked(
 
 void OAuth2TokenServiceDelegateAndroid::FireRefreshTokensLoadedFromJava(
     JNIEnv* env,
-    jobject obj) {
+    const JavaParamRef<jobject>& obj) {
   // Notify native observers.
   FireRefreshTokensLoaded();
 }

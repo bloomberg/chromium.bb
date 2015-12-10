@@ -31,21 +31,23 @@ class AccountChooserDialogAndroid {
       const ManagePasswordsState::CredentialsCallback& callback);
 
   ~AccountChooserDialogAndroid();
-  void Destroy(JNIEnv* env, jobject obj);
+  void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
 
   void ShowDialog();
 
   // Closes the dialog and propagates that no credentials was chosen.
-  void CancelDialog(JNIEnv* env, jobject obj);
+  void CancelDialog(JNIEnv* env,
+                    const base::android::JavaParamRef<jobject>& obj);
 
   // Propagates the credentials chosen by the user.
   void OnCredentialClicked(JNIEnv* env,
-                           jobject obj,
+                           const base::android::JavaParamRef<jobject>& obj,
                            jint credential_item,
                            jint credential_type);
 
   // Opens new tab with page which explains the Smart Lock branding.
-  void OnLinkClicked(JNIEnv* env, jobject obj);
+  void OnLinkClicked(JNIEnv* env,
+                     const base::android::JavaParamRef<jobject>& obj);
 
  private:
   const std::vector<const autofill::PasswordForm*>& local_credentials_forms()

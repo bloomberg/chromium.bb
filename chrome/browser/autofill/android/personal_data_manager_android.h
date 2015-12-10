@@ -23,13 +23,14 @@ class PersonalDataManagerAndroid : public PersonalDataManagerObserver {
   // -------------------------
 
   // Returns the number of web and auxiliary profiles.
-  jint GetProfileCount(JNIEnv* unused_env, jobject unused_obj);
+  jint GetProfileCount(JNIEnv* unused_env,
+                       const base::android::JavaParamRef<jobject>& unused_obj);
 
   // Returns the profile as indexed by |index| in the PersonalDataManager's
   // |GetProfiles()| collection.
   base::android::ScopedJavaLocalRef<jobject> GetProfileByIndex(
       JNIEnv* env,
-      jobject unused_obj,
+      const base::android::JavaParamRef<jobject>& unused_obj,
       jint index);
 
   // Returns the profile with the specified |jguid|, or NULL if there is no
@@ -37,55 +38,63 @@ class PersonalDataManagerAndroid : public PersonalDataManagerObserver {
   // be returned.
   base::android::ScopedJavaLocalRef<jobject> GetProfileByGUID(
       JNIEnv* env,
-      jobject unused_obj,
-      jstring jguid);
+      const base::android::JavaParamRef<jobject>& unused_obj,
+      const base::android::JavaParamRef<jstring>& jguid);
 
   // Adds or modifies a profile.  If |jguid| is an empty string, we are creating
   // a new profile.  Else we are updating an existing profile.  Always returns
   // the GUID for this profile; the GUID it may have just been created.
-  base::android::ScopedJavaLocalRef<jstring> SetProfile(JNIEnv* env,
-                                                        jobject unused_obj,
-                                                        jobject jprofile);
+  base::android::ScopedJavaLocalRef<jstring> SetProfile(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& unused_obj,
+      const base::android::JavaParamRef<jobject>& jprofile);
 
   // Gets the labels for all known profiles. These labels are useful for
   // distinguishing the profiles from one another.
   base::android::ScopedJavaLocalRef<jobjectArray> GetProfileLabels(
       JNIEnv* env,
-      jobject unused_obj);
+      const base::android::JavaParamRef<jobject>& unused_obj);
 
   // These functions act on local credit cards.
   // --------------------
 
   // Returns the number of credit cards.
-  jint GetCreditCardCount(JNIEnv* unused_env, jobject unused_obj);
+  jint GetCreditCardCount(
+      JNIEnv* unused_env,
+      const base::android::JavaParamRef<jobject>& unused_obj);
 
   // Returns the credit card as indexed by |index| in the PersonalDataManager's
   // |GetCreditCards()| collection.
   base::android::ScopedJavaLocalRef<jobject> GetCreditCardByIndex(
       JNIEnv* env,
-      jobject unused_obj,
+      const base::android::JavaParamRef<jobject>& unused_obj,
       jint index);
 
   // Returns the credit card with the specified |jguid|, or NULL if there is
   // no credit card with the specified |jguid|.
   base::android::ScopedJavaLocalRef<jobject> GetCreditCardByGUID(
       JNIEnv* env,
-      jobject unused_obj,
-      jstring jguid);
+      const base::android::JavaParamRef<jobject>& unused_obj,
+      const base::android::JavaParamRef<jstring>& jguid);
 
   // Adds or modifies a credit card.  If |jguid| is an empty string, we are
   // creating a new profile.  Else we are updating an existing profile.  Always
   // returns the GUID for this profile; the GUID it may have just been created.
   base::android::ScopedJavaLocalRef<jstring> SetCreditCard(
       JNIEnv* env,
-      jobject unused_obj,
-      jobject jcard);
+      const base::android::JavaParamRef<jobject>& unused_obj,
+      const base::android::JavaParamRef<jobject>& jcard);
 
   // Removes the profile or credit card represented by |jguid|.
-  void RemoveByGUID(JNIEnv* env, jobject unused_obj, jstring jguid);
+  void RemoveByGUID(JNIEnv* env,
+                    const base::android::JavaParamRef<jobject>& unused_obj,
+                    const base::android::JavaParamRef<jstring>& jguid);
 
   // Resets the given unmasked card back to the masked state.
-  void ClearUnmaskedCache(JNIEnv* env, jobject unused_obj, jstring jguid);
+  void ClearUnmaskedCache(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& unused_obj,
+      const base::android::JavaParamRef<jstring>& jguid);
 
   // PersonalDataManagerObserver:
   void OnPersonalDataChanged() override;

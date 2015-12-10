@@ -169,14 +169,15 @@ PersonalDataManagerAndroid::~PersonalDataManagerAndroid() {
   personal_data_manager_->RemoveObserver(this);
 }
 
-jint PersonalDataManagerAndroid::GetProfileCount(JNIEnv* unused_env,
-                                                 jobject unused_obj) {
+jint PersonalDataManagerAndroid::GetProfileCount(
+    JNIEnv* unused_env,
+    const JavaParamRef<jobject>& unused_obj) {
   return personal_data_manager_->GetProfiles().size();
 }
 
 ScopedJavaLocalRef<jobject> PersonalDataManagerAndroid::GetProfileByIndex(
     JNIEnv* env,
-    jobject unused_obj,
+    const JavaParamRef<jobject>& unused_obj,
     jint index) {
   const std::vector<AutofillProfile*>& profiles =
       personal_data_manager_->GetProfiles();
@@ -187,8 +188,8 @@ ScopedJavaLocalRef<jobject> PersonalDataManagerAndroid::GetProfileByIndex(
 
 ScopedJavaLocalRef<jobject> PersonalDataManagerAndroid::GetProfileByGUID(
     JNIEnv* env,
-    jobject unused_obj,
-    jstring jguid) {
+    const JavaParamRef<jobject>& unused_obj,
+    const JavaParamRef<jstring>& jguid) {
   AutofillProfile* profile = personal_data_manager_->GetProfileByGUID(
       ConvertJavaStringToUTF8(env, jguid));
   if (!profile)
@@ -199,8 +200,8 @@ ScopedJavaLocalRef<jobject> PersonalDataManagerAndroid::GetProfileByGUID(
 
 ScopedJavaLocalRef<jstring> PersonalDataManagerAndroid::SetProfile(
     JNIEnv* env,
-    jobject unused_obj,
-    jobject jprofile) {
+    const JavaParamRef<jobject>& unused_obj,
+    const JavaParamRef<jobject>& jprofile) {
   std::string guid = ConvertJavaStringToUTF8(
       env,
       Java_AutofillProfile_getGUID(env, jprofile).obj());
@@ -220,7 +221,7 @@ ScopedJavaLocalRef<jstring> PersonalDataManagerAndroid::SetProfile(
 
 ScopedJavaLocalRef<jobjectArray> PersonalDataManagerAndroid::GetProfileLabels(
     JNIEnv* env,
-    jobject unused_obj) {
+    const JavaParamRef<jobject>& unused_obj) {
   std::vector<base::string16> labels;
   AutofillProfile::CreateInferredLabels(
       personal_data_manager_->GetProfiles(), NULL, NAME_FULL, 2,
@@ -229,14 +230,15 @@ ScopedJavaLocalRef<jobjectArray> PersonalDataManagerAndroid::GetProfileLabels(
   return base::android::ToJavaArrayOfStrings(env, labels);
 }
 
-jint PersonalDataManagerAndroid::GetCreditCardCount(JNIEnv* unused_env,
-                                                    jobject unused_obj) {
+jint PersonalDataManagerAndroid::GetCreditCardCount(
+    JNIEnv* unused_env,
+    const JavaParamRef<jobject>& unused_obj) {
   return personal_data_manager_->GetCreditCards().size();
 }
 
 ScopedJavaLocalRef<jobject> PersonalDataManagerAndroid::GetCreditCardByIndex(
     JNIEnv* env,
-    jobject unused_obj,
+    const JavaParamRef<jobject>& unused_obj,
     jint index) {
   const std::vector<CreditCard*>& credit_cards =
       personal_data_manager_->GetCreditCards();
@@ -247,8 +249,8 @@ ScopedJavaLocalRef<jobject> PersonalDataManagerAndroid::GetCreditCardByIndex(
 
 ScopedJavaLocalRef<jobject> PersonalDataManagerAndroid::GetCreditCardByGUID(
     JNIEnv* env,
-    jobject unused_obj,
-    jstring jguid) {
+    const JavaParamRef<jobject>& unused_obj,
+    const JavaParamRef<jstring>& jguid) {
   CreditCard* card = personal_data_manager_->GetCreditCardByGUID(
           ConvertJavaStringToUTF8(env, jguid));
   if (!card)
@@ -259,8 +261,8 @@ ScopedJavaLocalRef<jobject> PersonalDataManagerAndroid::GetCreditCardByGUID(
 
 ScopedJavaLocalRef<jstring> PersonalDataManagerAndroid::SetCreditCard(
     JNIEnv* env,
-    jobject unused_obj,
-    jobject jcard) {
+    const JavaParamRef<jobject>& unused_obj,
+    const JavaParamRef<jobject>& jcard) {
   std::string guid = ConvertJavaStringToUTF8(
        env,
        Java_CreditCard_getGUID(env, jcard).obj());
@@ -277,15 +279,17 @@ ScopedJavaLocalRef<jstring> PersonalDataManagerAndroid::SetCreditCard(
   return ConvertUTF8ToJavaString(env, card.guid());
 }
 
-void PersonalDataManagerAndroid::RemoveByGUID(JNIEnv* env,
-                                              jobject unused_obj,
-                                              jstring jguid) {
+void PersonalDataManagerAndroid::RemoveByGUID(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& unused_obj,
+    const JavaParamRef<jstring>& jguid) {
   personal_data_manager_->RemoveByGUID(ConvertJavaStringToUTF8(env, jguid));
 }
 
-void PersonalDataManagerAndroid::ClearUnmaskedCache(JNIEnv* env,
-                                                    jobject unused_obj,
-                                                    jstring guid) {
+void PersonalDataManagerAndroid::ClearUnmaskedCache(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& unused_obj,
+    const JavaParamRef<jstring>& guid) {
   personal_data_manager_->ResetFullServerCard(
       ConvertJavaStringToUTF8(env, guid));
 }

@@ -40,90 +40,144 @@ class ProfileSyncServiceAndroid : public sync_driver::SyncServiceObserver {
   void OnStateChanged() override;
 
   // Pure ProfileSyncService calls.
-  jboolean IsSyncRequested(JNIEnv* env, jobject obj);
-  void RequestStart(JNIEnv* env, jobject obj);
-  void RequestStop(JNIEnv* env, jobject obj);
-  void SignOutSync(JNIEnv* env, jobject obj);
-  jboolean IsSyncActive(JNIEnv* env, jobject obj);
-  jboolean IsBackendInitialized(JNIEnv* env, jobject obj);
-  jboolean IsFirstSetupInProgress(JNIEnv* env, jobject obj);
-  void SetSetupInProgress(JNIEnv* env, jobject obj, jboolean in_progress);
-  jboolean HasSyncSetupCompleted(JNIEnv* env, jobject obj);
-  void SetSyncSetupCompleted(JNIEnv* env, jobject obj);
-  base::android::ScopedJavaLocalRef<jintArray> GetActiveDataTypes(JNIEnv* env,
-                                                                  jobject obj);
+  jboolean IsSyncRequested(JNIEnv* env,
+                           const base::android::JavaParamRef<jobject>& obj);
+  void RequestStart(JNIEnv* env,
+                    const base::android::JavaParamRef<jobject>& obj);
+  void RequestStop(JNIEnv* env,
+                   const base::android::JavaParamRef<jobject>& obj);
+  void SignOutSync(JNIEnv* env,
+                   const base::android::JavaParamRef<jobject>& obj);
+  jboolean IsSyncActive(JNIEnv* env,
+                        const base::android::JavaParamRef<jobject>& obj);
+  jboolean IsBackendInitialized(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+  jboolean IsFirstSetupInProgress(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+  void SetSetupInProgress(JNIEnv* env,
+                          const base::android::JavaParamRef<jobject>& obj,
+                          jboolean in_progress);
+  jboolean HasSyncSetupCompleted(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+  void SetSyncSetupCompleted(JNIEnv* env,
+                             const base::android::JavaParamRef<jobject>& obj);
+  base::android::ScopedJavaLocalRef<jintArray> GetActiveDataTypes(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
   base::android::ScopedJavaLocalRef<jintArray> GetPreferredDataTypes(
       JNIEnv* env,
-      jobject obj);
-  void SetPreferredDataTypes(JNIEnv* env,
-                             jobject obj,
-                             jboolean sync_everything,
-                             jintArray model_type_selection);
-  jboolean IsCryptographerReady(JNIEnv* env, jobject);
-  jboolean IsEncryptEverythingAllowed(JNIEnv* env, jobject obj);
-  jboolean IsEncryptEverythingEnabled(JNIEnv* env, jobject obj);
-  void EnableEncryptEverything(JNIEnv* env, jobject obj);
+      const base::android::JavaParamRef<jobject>& obj);
+  void SetPreferredDataTypes(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      jboolean sync_everything,
+      const base::android::JavaParamRef<jintArray>& model_type_selection);
+  jboolean IsCryptographerReady(JNIEnv* env,
+                                const base::android::JavaParamRef<jobject>&);
+  jboolean IsEncryptEverythingAllowed(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+  jboolean IsEncryptEverythingEnabled(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+  void EnableEncryptEverything(JNIEnv* env,
+                               const base::android::JavaParamRef<jobject>& obj);
   jboolean IsPassphraseRequired(JNIEnv* env, jobject obj);
-  jboolean IsPassphraseRequiredForDecryption(JNIEnv* env, jobject obj);
-  jboolean IsUsingSecondaryPassphrase(JNIEnv* env, jobject obj);
+  jboolean IsPassphraseRequiredForDecryption(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+  jboolean IsUsingSecondaryPassphrase(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
   base::android::ScopedJavaLocalRef<jbyteArray> GetCustomPassphraseKey(
       JNIEnv* env,
-      jobject obj);
-  jint GetPassphraseType(JNIEnv* env, jobject obj);
-  void SetEncryptionPassphrase(JNIEnv* env,
-                               jobject obj,
-                               jstring passphrase);
-  jboolean SetDecryptionPassphrase(JNIEnv* env,
-                                   jobject obj,
-                                   jstring passphrase);
-  jboolean HasExplicitPassphraseTime(JNIEnv* env, jobject);
-  jlong GetExplicitPassphraseTime(JNIEnv* env, jobject);
-  void FlushDirectory(JNIEnv* env, jobject obj);
+      const base::android::JavaParamRef<jobject>& obj);
+  jint GetPassphraseType(JNIEnv* env,
+                         const base::android::JavaParamRef<jobject>& obj);
+  void SetEncryptionPassphrase(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jstring>& passphrase);
+  jboolean SetDecryptionPassphrase(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jstring>& passphrase);
+  jboolean HasExplicitPassphraseTime(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>&);
+  jlong GetExplicitPassphraseTime(JNIEnv* env,
+                                  const base::android::JavaParamRef<jobject>&);
+  void FlushDirectory(JNIEnv* env,
+                      const base::android::JavaParamRef<jobject>& obj);
   base::android::ScopedJavaLocalRef<jstring> QuerySyncStatusSummary(
-      JNIEnv* env, jobject obj);
-  void GetAllNodes(JNIEnv* env, jobject obj, jobject callback);
-  jint GetAuthError(JNIEnv* env, jobject obj);
-  jboolean HasUnrecoverableError(JNIEnv* env, jobject obj);
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+  void GetAllNodes(JNIEnv* env,
+                   const base::android::JavaParamRef<jobject>& obj,
+                   const base::android::JavaParamRef<jobject>& callback);
+  jint GetAuthError(JNIEnv* env,
+                    const base::android::JavaParamRef<jobject>& obj);
+  jboolean HasUnrecoverableError(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
 
   // Pure SyncPrefs calls.
-  jboolean IsPassphrasePrompted(JNIEnv* env, jobject obj);
-  void SetPassphrasePrompted(JNIEnv* env, jobject obj, jboolean prompted);
-  void SetSyncSessionsId(JNIEnv* env, jobject obj, jstring tag);
-  jboolean HasKeepEverythingSynced(JNIEnv* env, jobject obj);
+  jboolean IsPassphrasePrompted(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+  void SetPassphrasePrompted(JNIEnv* env,
+                             const base::android::JavaParamRef<jobject>& obj,
+                             jboolean prompted);
+  void SetSyncSessionsId(JNIEnv* env,
+                         const base::android::JavaParamRef<jobject>& obj,
+                         const base::android::JavaParamRef<jstring>& tag);
+  jboolean HasKeepEverythingSynced(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
 
   // UI string getters.
 
   base::android::ScopedJavaLocalRef<jstring>
-      GetSyncEnterGooglePassphraseBodyWithDateText(
-          JNIEnv* env, jobject);
+  GetSyncEnterGooglePassphraseBodyWithDateText(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>&);
 
   base::android::ScopedJavaLocalRef<jstring>
-      GetSyncEnterCustomPassphraseBodyWithDateText(
-          JNIEnv* env, jobject);
+  GetSyncEnterCustomPassphraseBodyWithDateText(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>&);
+
+  base::android::ScopedJavaLocalRef<jstring> GetCurrentSignedInAccountText(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>&);
 
   base::android::ScopedJavaLocalRef<jstring>
-      GetCurrentSignedInAccountText(
-          JNIEnv* env, jobject);
-
-  base::android::ScopedJavaLocalRef<jstring>
-      GetSyncEnterCustomPassphraseBodyText(
-          JNIEnv* env, jobject);
+  GetSyncEnterCustomPassphraseBodyText(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>&);
 
   // Functionality only available for testing purposes.
 
   // Returns sync internals in a JSON-formatted Java string.
-  base::android::ScopedJavaLocalRef<jstring> GetAboutInfoForTest(JNIEnv* env,
-                                                                 jobject obj);
+  base::android::ScopedJavaLocalRef<jstring> GetAboutInfoForTest(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
 
   // Returns a timestamp for when a sync was last executed. The return value is
   // the internal value of base::Time.
-  jlong GetLastSyncedTimeForTest(JNIEnv* env, jobject obj);
+  jlong GetLastSyncedTimeForTest(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
 
   // Overrides ProfileSyncService's NetworkResources object. This is used to
   // set up the Sync FakeServer for testing.
-  void OverrideNetworkResourcesForTest(JNIEnv* env,
-                                       jobject obj,
-                                       jlong network_resources);
+  void OverrideNetworkResourcesForTest(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      jlong network_resources);
 
   static ProfileSyncServiceAndroid* GetProfileSyncServiceAndroid();
 
