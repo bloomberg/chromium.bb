@@ -6,6 +6,7 @@ recordActionTaken:
     AuditsStarted : 7
     CommandEvaluatedInConsolePanel : 15
     ConsoleEvaluated : 8
+    DOMPropertiesExpanded : 16
     DeviceModeEnabled : 10
     FileSavedInWorkspace : 9
     FileSystemDirectoryContentReceived : 13
