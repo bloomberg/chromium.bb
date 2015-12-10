@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.ntp;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
+import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -39,5 +40,13 @@ public class IconMostVisitedItemView extends FrameLayout {
     public void setIcon(Drawable icon) {
         ImageView iconView = (ImageView) findViewById(R.id.most_visited_icon);
         iconView.setImageDrawable(icon);
+    }
+
+    /**
+     * Sets whether the page is available offline.
+     */
+    public void setOfflineAvailable(boolean offlineAvailable) {
+        findViewById(R.id.offline_badge).setVisibility(
+                offlineAvailable ? View.VISIBLE : View.INVISIBLE);
     }
 }

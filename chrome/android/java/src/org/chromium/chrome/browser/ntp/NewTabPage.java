@@ -45,6 +45,7 @@ import org.chromium.chrome.browser.ntp.BookmarksPage.BookmarkSelectedListener;
 import org.chromium.chrome.browser.ntp.LogoBridge.Logo;
 import org.chromium.chrome.browser.ntp.LogoBridge.LogoObserver;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
+import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.preferences.DocumentModeManager;
 import org.chromium.chrome.browser.preferences.DocumentModePreference;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
@@ -111,6 +112,7 @@ public class NewTabPage
     private String mOnLogoClickUrl;
     private String mAnimatedLogoUrl;
     private FakeboxDelegate mFakeboxDelegate;
+    private OfflinePageBridge mOfflinePageBridge;
 
     // The timestamp at which the constructor was called.
     private final long mConstructedTimeNs;
@@ -426,6 +428,13 @@ public class NewTabPage
         }
 
         @Override
+        public boolean isOfflineAvailable(String pageUrl) {
+            if (mIsDestroyed || !OfflinePageBridge.isEnabled()) return false;
+            if (mOfflinePageBridge == null) mOfflinePageBridge = new OfflinePageBridge(mProfile);
+            return mOfflinePageBridge.getPageByOnlineURL(pageUrl) != null;
+        }
+
+        @Override
         public void onLogoClicked(boolean isAnimatedLogoShowing) {
             if (mIsDestroyed) return;
 
@@ -664,6 +673,10 @@ public class NewTabPage
         assert !mIsDestroyed;
         assert getView().getParent() == null : "Destroy called before removed from window";
         if (mIsVisible) recordNTPInteractionTime();
+        if (mOfflinePageBridge != null) {
+            mOfflinePageBridge.destroy();
+            mOfflinePageBridge = null;
+        }
         if (mFaviconHelper != null) {
             mFaviconHelper.destroy();
             mFaviconHelper = null;

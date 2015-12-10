@@ -48,6 +48,11 @@ class OfflinePageBridge : public OfflinePageModel::Observer {
       const base::android::JavaParamRef<jobject>& obj,
       jlong bookmark_id);
 
+  base::android::ScopedJavaLocalRef<jobject> GetPageByOnlineURL(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jstring>& online_url);
+
   void SavePage(JNIEnv* env,
                 const base::android::JavaParamRef<jobject>& obj,
                 const base::android::JavaParamRef<jobject>& j_callback_obj,
@@ -75,6 +80,10 @@ class OfflinePageBridge : public OfflinePageModel::Observer {
 
  private:
   void NotifyIfDoneLoading() const;
+
+  base::android::ScopedJavaLocalRef<jobject> CreateOfflinePageItem(
+      JNIEnv* env,
+      const OfflinePageItem& offline_page) const;
 
   JavaObjectWeakGlobalRef weak_java_ref_;
   // Not owned.

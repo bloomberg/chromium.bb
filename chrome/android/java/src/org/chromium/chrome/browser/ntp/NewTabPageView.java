@@ -48,6 +48,7 @@ import org.chromium.chrome.browser.ntp.LogoBridge.LogoObserver;
 import org.chromium.chrome.browser.ntp.MostVisitedItem.MostVisitedItemManager;
 import org.chromium.chrome.browser.ntp.NewTabPage.OnSearchBoxScrollListener;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsManager;
+import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.preferences.DocumentModeManager;
 import org.chromium.chrome.browser.profiles.MostVisitedSites.MostVisitedURLsObserver;
 import org.chromium.chrome.browser.profiles.MostVisitedSites.ThumbnailCallback;
@@ -184,6 +185,12 @@ public class NewTabPageView extends FrameLayout
          */
         void ensureIconIsAvailable(String pageUrl, String iconUrl, boolean isLargeIcon,
                 IconAvailabilityCallback callback);
+
+        /**
+         * Checks if the page with the given URL is available offline.
+         * @param pageUrl The URL of the site whose offline availability is requested.
+         */
+        boolean isOfflineAvailable(String pageUrl);
 
         /**
          * Called when the user clicks on the logo.
@@ -949,6 +956,8 @@ public class NewTabPageView extends FrameLayout
             final IconMostVisitedItemView view = (IconMostVisitedItemView) inflater.inflate(
                     R.layout.icon_most_visited_item, mMostVisitedLayout, false);
             view.setTitle(displayTitle);
+            view.setOfflineAvailable(mManager.isOfflineAvailable(url)
+                    && !OfflinePageUtils.isConnected(getContext()));
 
             LargeIconCallback iconCallback = new LargeIconCallbackImpl(item, isInitialLoad);
             if (isInitialLoad) mPendingLoadTasks++;
