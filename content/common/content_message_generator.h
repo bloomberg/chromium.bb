@@ -73,3 +73,7 @@
 #include "content/common/gin_java_bridge_messages.h"
 #include "content/common/media/media_player_messages_android.h"
 #endif  // defined(OS_ANDROID)
+
+#if defined(OS_WIN)
+#include "content/common/dwrite_font_proxy_messages.h"
+#endif  // defined(OS_WIN)
