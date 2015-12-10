@@ -2102,6 +2102,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
 
     @CalledByNative
     protected void onFaviconAvailable(Bitmap icon) {
+        if (icon == null) return;
         String url = getUrl();
         boolean pageUrlChanged = !url.equals(mFaviconUrl);
         // This method will be called multiple times if the page has more than one favicon.
