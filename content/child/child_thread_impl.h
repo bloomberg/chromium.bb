@@ -190,10 +190,6 @@ class CONTENT_EXPORT ChildThreadImpl
   virtual bool OnControlMessageReceived(const IPC::Message& msg);
   virtual void OnProcessBackgrounded(bool backgrounded);
 
-  void set_on_channel_error_called(bool on_channel_error_called) {
-    on_channel_error_called_ = on_channel_error_called;
-  }
-
   // IPC::Listener implementation:
   bool OnMessageReceived(const IPC::Message& msg) override;
   void OnChannelConnected(int32 peer_pid) override;

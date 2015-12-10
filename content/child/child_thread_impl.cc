@@ -563,7 +563,7 @@ void ChildThreadImpl::OnChannelConnected(int32 peer_pid) {
 }
 
 void ChildThreadImpl::OnChannelError() {
-  set_on_channel_error_called(true);
+  on_channel_error_called_ = true;
   base::MessageLoop::current()->QuitWhenIdle();
 }
 
@@ -751,10 +751,8 @@ void ChildThreadImpl::ShutdownThread() {
 #endif
 
 void ChildThreadImpl::OnProcessFinalRelease() {
-  if (on_channel_error_called_) {
-    base::MessageLoop::current()->QuitWhenIdle();
+  if (on_channel_error_called_)
     return;
-  }
 
   // The child process shutdown sequence is a request response based mechanism,
   // where we send out an initial feeler request to the child process host
