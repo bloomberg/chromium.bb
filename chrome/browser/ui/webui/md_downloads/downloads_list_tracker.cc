@@ -92,9 +92,10 @@ DownloadsListTracker::DownloadsListTracker(
 
 DownloadsListTracker::~DownloadsListTracker() {}
 
-void DownloadsListTracker::CallClearAll() {
+void DownloadsListTracker::Reset() {
   if (sending_updates_)
     web_ui_->CallJavascriptFunction("downloads.Manager.clearAll");
+  sent_to_page_ = 0u;
 }
 
 bool DownloadsListTracker::SetSearchTerms(const base::ListValue& search_terms) {
@@ -108,21 +109,30 @@ bool DownloadsListTracker::SetSearchTerms(const base::ListValue& search_terms) {
     return false;
 
   search_terms_.swap(new_terms);
-  RebuildSortedSet();
+  RebuildSortedItems();
   return true;
 }
 
-void DownloadsListTracker::Start() {
+void DownloadsListTracker::StartAndSendChunk() {
   sending_updates_ = true;
 
-  // TODO(dbeam): paging and limiting logic.
+  CHECK_LE(sent_to_page_, sorted_items_.size());
+
+  SortedSet::iterator it = sorted_items_.begin();
+  std::advance(it, sent_to_page_);
 
   base::ListValue list;
-  for (auto* item : sorted_visible_items_)
-    list.Append(CreateDownloadItemValue(item).Pass());
+  while (it != sorted_items_.end() && list.GetSize() < chunk_size_) {
+    list.Append(CreateDownloadItemValue(*it).Pass());
+    ++it;
+  }
 
-  web_ui_->CallJavascriptFunction("downloads.Manager.insertItems",
-                                  base::FundamentalValue(0), list);
+  web_ui_->CallJavascriptFunction(
+      "downloads.Manager.insertItems",
+      base::FundamentalValue(static_cast<int>(sent_to_page_)),
+      list);
+
+  sent_to_page_ += list.GetSize();
 }
 
 void DownloadsListTracker::Stop() {
@@ -139,28 +149,29 @@ DownloadManager* DownloadsListTracker::GetOriginalNotifierManager() const {
 
 void DownloadsListTracker::OnDownloadCreated(DownloadManager* manager,
                                              DownloadItem* download_item) {
+  DCHECK_EQ(0u, sorted_items_.count(download_item));
   if (should_show_.Run(*download_item))
-    CallInsertItem(sorted_visible_items_.insert(download_item).first);
+    InsertItem(sorted_items_.insert(download_item).first);
 }
 
 void DownloadsListTracker::OnDownloadUpdated(DownloadManager* manager,
                                              DownloadItem* download_item) {
-  auto current_position = sorted_visible_items_.find(download_item);
-  bool is_showing = current_position != sorted_visible_items_.end();
+  auto current_position = sorted_items_.find(download_item);
+  bool is_showing = current_position != sorted_items_.end();
   bool should_show = should_show_.Run(*download_item);
 
   if (!is_showing && should_show)
-    CallInsertItem(sorted_visible_items_.insert(download_item).first);
+    InsertItem(sorted_items_.insert(download_item).first);
   else if (is_showing && !should_show)
     RemoveItem(current_position);
   else if (is_showing)
-    CallUpdateItem(current_position);
+    UpdateItem(current_position);
 }
 
 void DownloadsListTracker::OnDownloadRemoved(DownloadManager* manager,
                                              DownloadItem* download_item) {
-  auto current_position = sorted_visible_items_.find(download_item);
-  if (current_position != sorted_visible_items_.end())
+  auto current_position = sorted_items_.find(download_item);
+  if (current_position != sorted_items_.end())
     RemoveItem(current_position);
 }
 
@@ -307,12 +318,17 @@ bool DownloadsListTracker::IsIncognito(const DownloadItem& item) const {
 
 const DownloadItem* DownloadsListTracker::GetItemForTesting(size_t index)
     const {
-  if (index >= sorted_visible_items_.size())
+  if (index >= sorted_items_.size())
     return nullptr;
 
-  SortedSet::iterator it = sorted_visible_items_.begin();
+  SortedSet::iterator it = sorted_items_.begin();
   std::advance(it, index);
   return *it;
+}
+
+void DownloadsListTracker::SetChunkSizeForTesting(size_t chunk_size) {
+  CHECK_EQ(0u, sent_to_page_);
+  chunk_size_ = chunk_size;
 }
 
 bool DownloadsListTracker::ShouldShow(const DownloadItem& item) const {
@@ -338,10 +354,10 @@ void DownloadsListTracker::Init() {
         BrowserContext::GetDownloadManager(original_profile), this));
   }
 
-  RebuildSortedSet();
+  RebuildSortedItems();
 }
 
-void DownloadsListTracker::RebuildSortedSet() {
+void DownloadsListTracker::RebuildSortedItems() {
   DownloadVector all_items, visible_items;
 
   GetMainNotifierManager()->GetAllDownloads(&all_items);
@@ -353,40 +369,53 @@ void DownloadsListTracker::RebuildSortedSet() {
   query.AddFilter(should_show_);
   query.Search(all_items.begin(), all_items.end(), &visible_items);
 
-  SortedSet sorted_visible_items(visible_items.begin(), visible_items.end());
-  sorted_visible_items_.swap(sorted_visible_items);
+  SortedSet sorted_items(visible_items.begin(), visible_items.end());
+  sorted_items_.swap(sorted_items);
 }
 
-void DownloadsListTracker::CallInsertItem(const SortedSet::iterator& insert) {
+void DownloadsListTracker::InsertItem(const SortedSet::iterator& insert) {
   if (!sending_updates_)
+    return;
+
+  size_t index = GetIndex(insert);
+  if (index >= chunk_size_ && index >= sent_to_page_)
     return;
 
   base::ListValue list;
   list.Append(CreateDownloadItemValue(*insert).Pass());
 
-  web_ui_->CallJavascriptFunction("downloads.Manager.insertItems",
-                                  base::FundamentalValue(GetIndex(insert)),
-                                  list);
+  web_ui_->CallJavascriptFunction(
+      "downloads.Manager.insertItems",
+      base::FundamentalValue(static_cast<int>(index)),
+      list);
+
+  sent_to_page_++;
 }
 
-void DownloadsListTracker::CallUpdateItem(const SortedSet::iterator& update) {
-  if (!sending_updates_)
+void DownloadsListTracker::UpdateItem(const SortedSet::iterator& update) {
+  if (!sending_updates_ || GetIndex(update) >= sent_to_page_)
     return;
 
-  web_ui_->CallJavascriptFunction("downloads.Manager.updateItem",
-                                  base::FundamentalValue(GetIndex(update)),
-                                  *CreateDownloadItemValue(*update));
+  web_ui_->CallJavascriptFunction(
+      "downloads.Manager.updateItem",
+      base::FundamentalValue(static_cast<int>(GetIndex(update))),
+      *CreateDownloadItemValue(*update));
 }
 
-int DownloadsListTracker::GetIndex(const SortedSet::iterator& position) const {
-  // TODO(dbeam): this could be log(N) if |position| was random access.
-  return std::distance(sorted_visible_items_.begin(), position);
+size_t DownloadsListTracker::GetIndex(const SortedSet::iterator& item) const {
+  // TODO(dbeam): this could be log(N) if |item| was random access.
+  return std::distance(sorted_items_.begin(), item);
 }
 
 void DownloadsListTracker::RemoveItem(const SortedSet::iterator& remove) {
   if (sending_updates_) {
-    web_ui_->CallJavascriptFunction("downloads.Manager.removeItem",
-                                    base::FundamentalValue(GetIndex(remove)));
+    size_t index = GetIndex(remove);
+    if (index < sent_to_page_) {
+      web_ui_->CallJavascriptFunction(
+          "downloads.Manager.removeItem",
+          base::FundamentalValue(static_cast<int>(index)));
+      sent_to_page_--;
+    }
   }
-  sorted_visible_items_.erase(remove);
+  sorted_items_.erase(remove);
 }

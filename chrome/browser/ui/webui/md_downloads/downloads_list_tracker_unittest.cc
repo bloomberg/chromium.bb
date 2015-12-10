@@ -79,6 +79,7 @@ class TestDownloadsListTracker : public DownloadsListTracker {
 
   using DownloadsListTracker::IsIncognito;
   using DownloadsListTracker::GetItemForTesting;
+  using DownloadsListTracker::SetChunkSizeForTesting;
 
  protected:
   scoped_ptr<base::DictionaryValue> CreateDownloadItemValue(
@@ -94,6 +95,7 @@ class TestDownloadsListTracker : public DownloadsListTracker {
 class DownloadsListTrackerTest : public testing::Test {
  public:
   DownloadsListTrackerTest() {}
+
   ~DownloadsListTrackerTest() override {
     for (auto* mock_item : mock_items_)
       testing::Mock::VerifyAndClear(mock_item);
@@ -173,7 +175,7 @@ TEST_F(DownloadsListTrackerTest, StartCallsInsertItems) {
   ASSERT_TRUE(tracker()->GetItemForTesting(0));
   EXPECT_TRUE(web_ui()->call_data().empty());
 
-  tracker()->Start();
+  tracker()->StartAndSendChunk();
   ASSERT_FALSE(web_ui()->call_data().empty());
 
   EXPECT_EQ("downloads.Manager.insertItems",
@@ -193,7 +195,7 @@ TEST_F(DownloadsListTrackerTest, EmptyGetAllItemsStillCallsInsertItems) {
   ASSERT_FALSE(tracker()->GetItemForTesting(0));
   ASSERT_TRUE(web_ui()->call_data().empty());
 
-  tracker()->Start();
+  tracker()->StartAndSendChunk();
 
   ASSERT_FALSE(web_ui()->call_data().empty());
   EXPECT_EQ("downloads.Manager.insertItems",
@@ -204,7 +206,7 @@ TEST_F(DownloadsListTrackerTest, EmptyGetAllItemsStillCallsInsertItems) {
 
 TEST_F(DownloadsListTrackerTest, OnDownloadCreatedCallsInsertItems) {
   CreateTracker();
-  tracker()->Start();
+  tracker()->StartAndSendChunk();
   web_ui()->ClearTrackedCalls();
 
   ASSERT_FALSE(tracker()->GetItemForTesting(0));
@@ -225,7 +227,7 @@ TEST_F(DownloadsListTrackerTest, OnDownloadRemovedCallsRemoveItem) {
   DownloadItem* first_item = CreateNextItem();
 
   CreateTracker();
-  tracker()->Start();
+  tracker()->StartAndSendChunk();
   web_ui()->ClearTrackedCalls();
 
   EXPECT_TRUE(tracker()->GetItemForTesting(0));
@@ -243,7 +245,7 @@ TEST_F(DownloadsListTrackerTest, OnDownloadUpdatedCallsRemoveItem) {
   DownloadItem* first_item = CreateNextItem();
 
   CreateTracker();
-  tracker()->Start();
+  tracker()->StartAndSendChunk();
   web_ui()->ClearTrackedCalls();
 
   EXPECT_TRUE(tracker()->GetItemForTesting(0));
@@ -265,7 +267,7 @@ TEST_F(DownloadsListTrackerTest, StartExcludesHiddenItems) {
   DownloadItemModel(first_item).SetShouldShowInShelf(false);
 
   CreateTracker();
-  tracker()->Start();
+  tracker()->StartAndSendChunk();
 
   ASSERT_FALSE(web_ui()->call_data().empty());
 
@@ -286,4 +288,72 @@ TEST_F(DownloadsListTrackerTest, Incognito) {
 
   TestDownloadsListTracker tracker(&incognito_manager, web_ui());
   EXPECT_TRUE(tracker.IsIncognito(item));
+}
+
+TEST_F(DownloadsListTrackerTest, OnlySendSomeItems) {
+  CreateNextItem();
+  CreateNextItem();
+  CreateNextItem();
+  CreateNextItem();
+  CreateNextItem();
+
+  CreateTracker();
+  tracker()->SetChunkSizeForTesting(3);
+  tracker()->StartAndSendChunk();
+
+  ASSERT_FALSE(web_ui()->call_data().empty());
+
+  EXPECT_EQ("downloads.Manager.insertItems",
+            web_ui()->call_data()[0]->function_name());
+  EXPECT_EQ(0, GetIndex(web_ui()->call_data()[0]->arg1()));
+  EXPECT_EQ(3u, GetIds(web_ui()->call_data()[0]->arg2()).size());
+
+  tracker()->StartAndSendChunk();
+  ASSERT_GE(2u, web_ui()->call_data().size());
+
+  EXPECT_EQ("downloads.Manager.insertItems",
+            web_ui()->call_data()[1]->function_name());
+  EXPECT_EQ(3, GetIndex(web_ui()->call_data()[1]->arg1()));
+  EXPECT_EQ(2u, GetIds(web_ui()->call_data()[1]->arg2()).size());
+}
+
+TEST_F(DownloadsListTrackerTest, IgnoreUnsentItemUpdates) {
+  DownloadItem* unsent_item = CreateNextItem();
+  CreateNextItem();
+
+  CreateTracker();
+  tracker()->SetChunkSizeForTesting(1);
+  tracker()->StartAndSendChunk();
+
+  ASSERT_FALSE(web_ui()->call_data().empty());
+
+  EXPECT_EQ("downloads.Manager.insertItems",
+            web_ui()->call_data()[0]->function_name());
+  EXPECT_EQ(1u, GetIds(web_ui()->call_data()[0]->arg2()).size());
+
+  tracker()->OnDownloadUpdated(manager(), unsent_item);
+  EXPECT_EQ(1u, web_ui()->call_data().size());
+}
+
+TEST_F(DownloadsListTrackerTest, IgnoreUnsentItemRemovals) {
+  DownloadItem* unsent_item = CreateNextItem();
+  CreateNextItem();
+
+  CreateTracker();
+  tracker()->SetChunkSizeForTesting(1);
+  tracker()->StartAndSendChunk();
+
+  ASSERT_FALSE(web_ui()->call_data().empty());
+
+  EXPECT_EQ("downloads.Manager.insertItems",
+            web_ui()->call_data()[0]->function_name());
+  EXPECT_EQ(1u, GetIds(web_ui()->call_data()[0]->arg2()).size());
+
+  DownloadItemModel(unsent_item).SetShouldShowInShelf(false);
+  tracker()->OnDownloadUpdated(manager(), unsent_item);
+  EXPECT_EQ(1u, web_ui()->call_data().size());
+
+  DownloadItemModel(unsent_item).SetShouldShowInShelf(true);
+  tracker()->OnDownloadUpdated(manager(), unsent_item);
+  EXPECT_EQ(1u, web_ui()->call_data().size());
 }

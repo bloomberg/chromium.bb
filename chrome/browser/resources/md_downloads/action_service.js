@@ -36,6 +36,9 @@ cr.define('downloads', function() {
   };
 
   ActionService.prototype = {
+    /** @private {Array<string>} */
+    searchTerms_: [],
+
     /** @param {string} id ID of the download to cancel. */
     cancel: chromeSendWithId('cancel'),
 
@@ -61,15 +64,17 @@ cr.define('downloads', function() {
     /** @param {string} id ID of the download that the user started dragging. */
     drag: chromeSendWithId('drag'),
 
-    /** @private {boolean} */
-    isSearching_: false,
+    /** Loads more downloads with the current search terms. */
+    loadMore: function() {
+      chrome.send('getDownloads', this.searchTerms_);
+    },
 
     /**
      * @return {boolean} Whether the user is currently searching for downloads
      *     (i.e. has a non-empty search term).
      */
     isSearching: function() {
-      return this.isSearching_;
+      return this.searchTerms_.length > 0;
     },
 
     /** Opens the current local destination for downloads. */
@@ -97,15 +102,19 @@ cr.define('downloads', function() {
 
     /** @param {string} searchText What to search for. */
     search: function(searchText) {
-      if (this.searchText_ == searchText)
+      var searchTerms = ActionService.splitTerms(searchText);
+      var sameTerms = searchTerms.length == this.searchTerms_.length;
+
+      for (var i = 0; sameTerms && i < searchTerms.length; ++i) {
+        if (searchTerms[i] != this.searchTerms_[i])
+          sameTerms = false;
+      }
+
+      if (sameTerms)
         return;
 
-      this.searchText_ = searchText;
-
-      var terms = ActionService.splitTerms(searchText);
-      this.isSearching_ = terms.length > 0;
-
-      chrome.send('getDownloads', terms);
+      this.searchTerms_ = searchTerms;
+      this.loadMore();
     },
 
     /**

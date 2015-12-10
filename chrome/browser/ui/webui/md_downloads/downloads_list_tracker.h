@@ -34,15 +34,18 @@ class DownloadsListTracker : public AllDownloadItemNotifier::Observer {
                        content::WebUI* web_ui);
   ~DownloadsListTracker() override;
 
-  // Clears all downloads on the page (if it's ready).
-  void CallClearAll();
+  // Clears all downloads on the page if currently sending updates and resets
+  // chunk tracking data.
+  void Reset();
 
-  // Shows only downloads that match |search_terms|. An empty list shows all
-  // downloads. Returns whether |search_terms.Equals(&search_terms_)|.
+  // This class only cares about downloads that match |search_terms|.
+  // An empty list shows all downloads (the default). Returns true if
+  // |search_terms| differ from the current ones.
   bool SetSearchTerms(const base::ListValue& search_terms);
 
-  // Sends all downloads and enables updates.
-  void Start();
+  // Starts sending updates and sends a capped amount of downloads. Tracks which
+  // downloads have been sent. Re-call this to send more.
+  void StartAndSendChunk();
 
   // Stops sending updates to the page.
   void Stop();
@@ -73,6 +76,8 @@ class DownloadsListTracker : public AllDownloadItemNotifier::Observer {
 
   const content::DownloadItem* GetItemForTesting(size_t index) const;
 
+  void SetChunkSizeForTesting(size_t chunk_size);
+
  private:
   struct StartTimeComparator {
     bool operator() (const content::DownloadItem* a,
@@ -83,24 +88,23 @@ class DownloadsListTracker : public AllDownloadItemNotifier::Observer {
   // Called by both constructors to initialize common state.
   void Init();
 
-  // Clears and re-inserts all visible items in a sorted order into
-  // |sorted_visible_items_|.
-  void RebuildSortedSet();
+  // Clears and re-inserts all downloads items into |sorted_items_|.
+  void RebuildSortedItems();
 
   // Whether |item| should show on the current page.
   bool ShouldShow(const content::DownloadItem& item) const;
 
-  // Gets a page index for |position| from |sorted_visible_items_|.
-  int GetIndex(const SortedSet::iterator& position) const;
+  // Returns the index of |item| in |sorted_items_|.
+  size_t GetIndex(const SortedSet::iterator& item) const;
 
-  // Calls "insertItems" if |sending_updates_|.
-  void CallInsertItem(const SortedSet::iterator& insert);
+  // Calls "insertItems" if sending updates and the page knows about |insert|.
+  void InsertItem(const SortedSet::iterator& insert);
 
-  // Calls "updateItem" if |sending_updates_|.
-  void CallUpdateItem(const SortedSet::iterator& update);
+  // Calls "updateItem" if sending updates and the page knows about |update|.
+  void UpdateItem(const SortedSet::iterator& update);
 
-  // Removes the item that corresponds to |remove| and sends a "removeItems"
-  // message to the page if |sending_updates_|.
+  // Removes the item that corresponds to |remove| and sends "removeItems"
+  // if sending updates.
   void RemoveItem(const SortedSet::iterator& remove);
 
   AllDownloadItemNotifier main_notifier_;
@@ -117,7 +121,13 @@ class DownloadsListTracker : public AllDownloadItemNotifier::Observer {
   // via JavaScript.
   bool sending_updates_ = false;
 
-  SortedSet sorted_visible_items_;
+  SortedSet sorted_items_;
+
+  // The number of items sent to the page so far.
+  size_t sent_to_page_ = 0u;
+
+  // The maximum number of items sent to the page at a time.
+  size_t chunk_size_ = 20u;
 
   // Current search terms.
   std::vector<base::string16> search_terms_;

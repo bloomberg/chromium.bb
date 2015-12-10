@@ -22,6 +22,10 @@ cr.define('downloads', function() {
       loading: true,
     },
 
+    listeners: {
+      'downloads-list.scroll': 'onListScroll_',
+    },
+
     observers: [
       'itemsChanged_(items_.*)',
     ],
@@ -89,14 +93,25 @@ cr.define('downloads', function() {
         downloads.ActionService.getInstance().undo();
     },
 
+    /**
+     * @param {Event} e
+     * @private
+     */
+    onListScroll_: function(e) {
+      var list = this.$['downloads-list'];
+      if (list.scrollHeight - list.scrollTop - list.offsetHeight <= 100) {
+        // Approaching the end of the scrollback. Attempt to load more items.
+        downloads.ActionService.getInstance().loadMore();
+      }
+    },
+
     /** @private */
     onLoad_: function() {
       cr.ui.decorate('command', cr.ui.Command);
       document.addEventListener('canExecute', this.onCanExecute_.bind(this));
       document.addEventListener('command', this.onCommand_.bind(this));
 
-      // Shows all downloads.
-      downloads.ActionService.getInstance().search('');
+      downloads.ActionService.getInstance().loadMore();
     },
 
     /**
@@ -106,6 +121,7 @@ cr.define('downloads', function() {
     removeItem_: function(index) {
       this.splice('items_', index, 1);
       this.updateHideDates_(index, index);
+      this.onListScroll_();
     },
 
     /**

@@ -90,10 +90,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     };
 
     --layout-horizontal: {
-      /* @apply(--layout); */
-      display: -ms-flexbox;
-      display: -webkit-flex;
-      display: flex;
+      @apply(--layout);
 
       -ms-flex-direction: row;
       -webkit-flex-direction: row;
@@ -101,16 +98,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     };
 
     --layout-horizontal-reverse: {
+      @apply(--layout);
+
       -ms-flex-direction: row-reverse;
       -webkit-flex-direction: row-reverse;
       flex-direction: row-reverse;
     };
 
     --layout-vertical: {
-      /* @apply(--layout); */
-      display: -ms-flexbox;
-      display: -webkit-flex;
-      display: flex;
+      @apply(--layout);
 
       -ms-flex-direction: column;
       -webkit-flex-direction: column;
@@ -118,6 +114,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     };
 
     --layout-vertical-reverse: {
+      @apply(--layout);
+
       -ms-flex-direction: column-reverse;
       -webkit-flex-direction: column-reverse;
       flex-direction: column-reverse;
@@ -274,13 +272,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     };
 
     --layout-center-center: {
-      /* @apply(--layout-center --layout-center-justified); */
-      -ms-flex-align: center;
-      -webkit-align-items: center;
-      align-items: center;
-      -ms-flex-pack: center;
-      -webkit-justify-content: center;
-      justify-content: center;
+      @apply(--layout-center);
+      @apply(--layout-center-justified);
     };
 
     /* self alignment */
@@ -341,7 +334,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     --layout-fullbleed: {
       margin: 0;
       height: 100vh;
-    }
+    };
 
     /* fixed position */
 
@@ -2386,7 +2379,7 @@ paper-button {
       .input-content {
         position: relative;
         @apply(--layout-horizontal);
-        @apply(--layout-end);
+        @apply(--layout-center);
       }
 
       .input-content ::content label,

@@ -1553,6 +1553,9 @@ cr.define('downloads', function() {
   };
 
   ActionService.prototype = {
+    /** @private {Array<string>} */
+    searchTerms_: [],
+
     /** @param {string} id ID of the download to cancel. */
     cancel: chromeSendWithId('cancel'),
 
@@ -1578,15 +1581,17 @@ cr.define('downloads', function() {
     /** @param {string} id ID of the download that the user started dragging. */
     drag: chromeSendWithId('drag'),
 
-    /** @private {boolean} */
-    isSearching_: false,
+    /** Loads more downloads with the current search terms. */
+    loadMore: function() {
+      chrome.send('getDownloads', this.searchTerms_);
+    },
 
     /**
      * @return {boolean} Whether the user is currently searching for downloads
      *     (i.e. has a non-empty search term).
      */
     isSearching: function() {
-      return this.isSearching_;
+      return this.searchTerms_.length > 0;
     },
 
     /** Opens the current local destination for downloads. */
@@ -1614,15 +1619,19 @@ cr.define('downloads', function() {
 
     /** @param {string} searchText What to search for. */
     search: function(searchText) {
-      if (this.searchText_ == searchText)
+      var searchTerms = ActionService.splitTerms(searchText);
+      var sameTerms = searchTerms.length == this.searchTerms_.length;
+
+      for (var i = 0; sameTerms && i < searchTerms.length; ++i) {
+        if (searchTerms[i] != this.searchTerms_[i])
+          sameTerms = false;
+      }
+
+      if (sameTerms)
         return;
 
-      this.searchText_ = searchText;
-
-      var terms = ActionService.splitTerms(searchText);
-      this.isSearching_ = terms.length > 0;
-
-      chrome.send('getDownloads', terms);
+      this.searchTerms_ = searchTerms;
+      this.loadMore();
     },
 
     /**
@@ -10974,46 +10983,10 @@ Polymer({
      * Values taken from: http://www.w3.org/TR/2007/WD-DOM-Level-3-Events-20071221/keyset.html#KeySet-Set
      */
     var KEY_IDENTIFIER = {
+      'U+0008': 'backspace',
       'U+0009': 'tab',
       'U+001B': 'esc',
       'U+0020': 'space',
-      'U+002A': '*',
-      'U+0030': '0',
-      'U+0031': '1',
-      'U+0032': '2',
-      'U+0033': '3',
-      'U+0034': '4',
-      'U+0035': '5',
-      'U+0036': '6',
-      'U+0037': '7',
-      'U+0038': '8',
-      'U+0039': '9',
-      'U+0041': 'a',
-      'U+0042': 'b',
-      'U+0043': 'c',
-      'U+0044': 'd',
-      'U+0045': 'e',
-      'U+0046': 'f',
-      'U+0047': 'g',
-      'U+0048': 'h',
-      'U+0049': 'i',
-      'U+004A': 'j',
-      'U+004B': 'k',
-      'U+004C': 'l',
-      'U+004D': 'm',
-      'U+004E': 'n',
-      'U+004F': 'o',
-      'U+0050': 'p',
-      'U+0051': 'q',
-      'U+0052': 'r',
-      'U+0053': 's',
-      'U+0054': 't',
-      'U+0055': 'u',
-      'U+0056': 'v',
-      'U+0057': 'w',
-      'U+0058': 'x',
-      'U+0059': 'y',
-      'U+005A': 'z',
       'U+007F': 'del'
     };
 
@@ -11025,6 +10998,7 @@ Polymer({
      * Values from: https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent.keyCode#Value_of_keyCode
      */
     var KEY_CODE = {
+      8: 'backspace',
       9: 'tab',
       13: 'enter',
       27: 'esc',
@@ -11054,16 +11028,6 @@ Polymer({
     };
 
     /**
-     * KeyboardEvent.key is mostly represented by printable character made by
-     * the keyboard, with unprintable keys labeled nicely.
-     *
-     * However, on OS X, Alt+char can make a Unicode character that follows an
-     * Apple-specific mapping. In this case, we
-     * fall back to .keyCode.
-     */
-    var KEY_CHAR = /[a-z0-9*]/;
-
-    /**
      * Matches a keyIdentifier string.
      */
     var IDENT_CHAR = /U\+/;
@@ -11083,14 +11047,12 @@ Polymer({
       var validKey = '';
       if (key) {
         var lKey = key.toLowerCase();
-        if (lKey.length == 1) {
-          if (KEY_CHAR.test(lKey)) {
-            validKey = lKey;
-          }
+        if (lKey === ' ' || SPACE_KEY.test(lKey)) {
+          validKey = 'space';
+        } else if (lKey.length == 1) {
+          validKey = lKey;
         } else if (ARROW_KEY.test(lKey)) {
           validKey = lKey.replace('arrow', '');
-        } else if (SPACE_KEY.test(lKey)) {
-          validKey = 'space';
         } else if (lKey == 'multiply') {
           // numpad '*' can map to Multiply on IE/Windows
           validKey = '*';
@@ -11104,8 +11066,11 @@ Polymer({
     function transformKeyIdentifier(keyIdent) {
       var validKey = '';
       if (keyIdent) {
-        if (IDENT_CHAR.test(keyIdent)) {
+        if (keyIdent in KEY_IDENTIFIER) {
           validKey = KEY_IDENTIFIER[keyIdent];
+        } else if (IDENT_CHAR.test(keyIdent)) {
+          keyIdent = parseInt(keyIdent.replace('U+', '0x'), 16);
+          validKey = String.fromCharCode(keyIdent).toLowerCase();
         } else {
           validKey = keyIdent.toLowerCase();
         }
@@ -11145,15 +11110,24 @@ Polymer({
         transformKey(keyEvent.detail.key) || '';
     }
 
-    function keyComboMatchesEvent(keyCombo, keyEvent) {
-      return normalizedKeyForEvent(keyEvent) === keyCombo.key &&
-        !!keyEvent.shiftKey === !!keyCombo.shiftKey &&
-        !!keyEvent.ctrlKey === !!keyCombo.ctrlKey &&
-        !!keyEvent.altKey === !!keyCombo.altKey &&
-        !!keyEvent.metaKey === !!keyCombo.metaKey;
+    function keyComboMatchesEvent(keyCombo, event, eventKey) {
+      return eventKey === keyCombo.key &&
+        (!keyCombo.hasModifiers || (
+          !!event.shiftKey === !!keyCombo.shiftKey &&
+          !!event.ctrlKey === !!keyCombo.ctrlKey &&
+          !!event.altKey === !!keyCombo.altKey &&
+          !!event.metaKey === !!keyCombo.metaKey)
+        );
     }
 
     function parseKeyComboString(keyComboString) {
+      if (keyComboString.length === 1) {
+        return {
+          combo: keyComboString,
+          key: keyComboString,
+          event: 'keydown'
+        };
+      }
       return keyComboString.split('+').reduce(function(parsedKeyCombo, keyComboPart) {
         var eventParts = keyComboPart.split(':');
         var keyName = eventParts[0];
@@ -11161,6 +11135,7 @@ Polymer({
 
         if (keyName in MODIFIER_KEYS) {
           parsedKeyCombo[MODIFIER_KEYS[keyName]] = true;
+          parsedKeyCombo.hasModifiers = true;
         } else {
           parsedKeyCombo.key = keyName;
           parsedKeyCombo.event = event || 'keydown';
@@ -11173,11 +11148,10 @@ Polymer({
     }
 
     function parseEventString(eventString) {
-      return eventString.split(' ').map(function(keyComboString) {
+      return eventString.trim().split(' ').map(function(keyComboString) {
         return parseKeyComboString(keyComboString);
       });
     }
-
 
     /**
      * `Polymer.IronA11yKeysBehavior` provides a normalized interface for processing
@@ -11274,14 +11248,12 @@ Polymer({
 
       keyboardEventMatchesKeys: function(event, eventString) {
         var keyCombos = parseEventString(eventString);
-        var index;
-
-        for (index = 0; index < keyCombos.length; ++index) {
-          if (keyComboMatchesEvent(keyCombos[index], event)) {
+        var eventKey = normalizedKeyForEvent(event);
+        for (var i = 0; i < keyCombos.length; ++i) {
+          if (keyComboMatchesEvent(keyCombos[i], event, eventKey)) {
             return true;
           }
         }
-
         return false;
       },
 
@@ -11308,6 +11280,15 @@ Polymer({
 
         for (var eventString in this._imperativeKeyBindings) {
           this._addKeyBinding(eventString, this._imperativeKeyBindings[eventString]);
+        }
+
+        // Give precedence to combos with modifiers to be checked first.
+        for (var eventName in this._keyBindings) {
+          this._keyBindings[eventName].sort(function (kb1, kb2) {
+            var b1 = kb1[0].hasModifiers;
+            var b2 = kb2[0].hasModifiers;
+            return (b1 === b2) ? 0 : b1 ? -1 : 1;
+          })
         }
       },
 
@@ -11364,14 +11345,23 @@ Polymer({
           event.stopPropagation();
         }
 
-        keyBindings.forEach(function(keyBinding) {
-          var keyCombo = keyBinding[0];
-          var handlerName = keyBinding[1];
+        // if event has been already prevented, don't do anything
+        if (event.defaultPrevented) {
+          return;
+        }
 
-          if (!event.defaultPrevented && keyComboMatchesEvent(keyCombo, event)) {
+        var eventKey = normalizedKeyForEvent(event);
+        for (var i = 0; i < keyBindings.length; i++) {
+          var keyCombo = keyBindings[i][0];
+          var handlerName = keyBindings[i][1];
+          if (keyComboMatchesEvent(keyCombo, event, eventKey)) {
             this._triggerKeyHandler(keyCombo, handlerName, event);
+            // exit the loop if eventDefault was prevented
+            if (event.defaultPrevented) {
+              return;
+            }
           }
-        }, this);
+        }
       },
 
       _triggerKeyHandler: function(keyCombo, handlerName, keyboardEvent) {
@@ -11609,7 +11599,7 @@ Polymer({
 
       // Ignore the event if this is coming from a focused light child, since that
       // element will deal with it.
-      if (this.isLightDescendant(target))
+      if (this.isLightDescendant(/** @type {Node} */(target)))
         return;
 
       keyboardEvent.preventDefault();
@@ -11626,7 +11616,7 @@ Polymer({
 
       // Ignore the event if this is coming from a focused light child, since that
       // element will deal with it.
-      if (this.isLightDescendant(target))
+      if (this.isLightDescendant(/** @type {Node} */(target)))
         return;
 
       if (this.pressed) {
@@ -12579,6 +12569,15 @@ Polymer({
         Polymer.PaperButtonBehaviorImpl._calculateElevation.apply(this);
       }
     }
+    /**
+
+    Fired when the animation finishes.
+    This is useful if you want to wait until
+    the ripple animation finishes to perform some action.
+
+    @event transitionend
+    @param {{node: Object}} detail Contains the animated node.
+    */
   });
 /**
  * `iron-range-behavior` provides the behavior for something with a minimum to maximum range.
@@ -13762,6 +13761,7 @@ Polymer({
       for (var i = 0, item; item = this.items[i]; i++) {
         var attr = this.attrForItemTitle || 'textContent';
         var title = item[attr] || item.getAttribute(attr);
+
         if (title && title.trim().charAt(0).toLowerCase() === String.fromCharCode(event.keyCode).toLowerCase()) {
           this._setFocusedItem(item);
           break;
@@ -13802,7 +13802,6 @@ Polymer({
       } else {
         item.removeAttribute('aria-selected');
       }
-
       Polymer.IronSelectableBehavior._applySelection.apply(this, arguments);
     },
 
@@ -13850,18 +13849,18 @@ Polymer({
      * @param {CustomEvent} event A key combination event.
      */
     _onShiftTabDown: function(event) {
-      var oldTabIndex;
+      var oldTabIndex = this.getAttribute('tabindex');
 
       Polymer.IronMenuBehaviorImpl._shiftTabPressed = true;
 
-      oldTabIndex = this.getAttribute('tabindex');
+      this._setFocusedItem(null);
 
       this.setAttribute('tabindex', '-1');
 
       this.async(function() {
         this.setAttribute('tabindex', oldTabIndex);
         Polymer.IronMenuBehaviorImpl._shiftTabPressed = false;
-      // NOTE(cdata): polymer/polymer#1305
+        // NOTE(cdata): polymer/polymer#1305
       }, 1);
     },
 
@@ -13872,23 +13871,27 @@ Polymer({
      */
     _onFocus: function(event) {
       if (Polymer.IronMenuBehaviorImpl._shiftTabPressed) {
+        // do not focus the menu itself
         return;
       }
-      // do not focus the menu itself
+
       this.blur();
+
       // clear the cached focus item
-      this._setFocusedItem(null);
       this._defaultFocusAsync = this.async(function() {
         // focus the selected item when the menu receives focus, or the first item
         // if no item is selected
         var selectedItem = this.multi ? (this.selectedItems && this.selectedItems[0]) : this.selectedItem;
+
+        this._setFocusedItem(null);
+
         if (selectedItem) {
           this._setFocusedItem(selectedItem);
         } else {
           this._setFocusedItem(this.items[0]);
         }
-      // async 100ms to wait for `select` to get called from `_itemActivate`
-      }, 100);
+      // async 1ms to wait for `select` to get called from `_itemActivate`
+      }, 1);
     },
 
     /**
@@ -13926,12 +13929,17 @@ Polymer({
      * @param {KeyboardEvent} event A keyboard event.
      */
     _onKeydown: function(event) {
-      if (this.keyboardEventMatchesKeys(event, 'up down esc')) {
-        return;
+      if (!this.keyboardEventMatchesKeys(event, 'up down esc')) {
+        // all other keys focus the menu item starting with that character
+        this._focusWithKeyboardEvent(event);
       }
+      event.stopPropagation();
+    },
 
-      // all other keys focus the menu item starting with that character
-      this._focusWithKeyboardEvent(event);
+    // override _activateHandler
+    _activateHandler: function(event) {
+      Polymer.IronSelectableBehavior._activateHandler.call(this, event);
+      event.stopPropagation();
     }
   };
 
@@ -16976,6 +16984,10 @@ cr.define('downloads', function() {
       loading: true,
     },
 
+    listeners: {
+      'downloads-list.scroll': 'onListScroll_',
+    },
+
     observers: [
       'itemsChanged_(items_.*)',
     ],
@@ -17043,14 +17055,25 @@ cr.define('downloads', function() {
         downloads.ActionService.getInstance().undo();
     },
 
+    /**
+     * @param {Event} e
+     * @private
+     */
+    onListScroll_: function(e) {
+      var list = this.$['downloads-list'];
+      if (list.scrollHeight - list.scrollTop - list.offsetHeight <= 100) {
+        // Approaching the end of the scrollback. Attempt to load more items.
+        downloads.ActionService.getInstance().loadMore();
+      }
+    },
+
     /** @private */
     onLoad_: function() {
       cr.ui.decorate('command', cr.ui.Command);
       document.addEventListener('canExecute', this.onCanExecute_.bind(this));
       document.addEventListener('command', this.onCommand_.bind(this));
 
-      // Shows all downloads.
-      downloads.ActionService.getInstance().search('');
+      downloads.ActionService.getInstance().loadMore();
     },
 
     /**
@@ -17060,6 +17083,7 @@ cr.define('downloads', function() {
     removeItem_: function(index) {
       this.splice('items_', index, 1);
       this.updateHideDates_(index, index);
+      this.onListScroll_();
     },
 
     /**
