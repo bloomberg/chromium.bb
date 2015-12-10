@@ -303,7 +303,6 @@ vs-chromium-project.txt
 /third_party/class-dump/src
 /third_party/cld_2/src
 /third_party/colorama/src
-/third_party/crashpad/crashpad
 /third_party/cros
 /third_party/cros_system_api
 /third_party/custom_tabs_client/src
