@@ -489,6 +489,8 @@
       'browser/indexed_db/mock_indexed_db_database_callbacks.h',
       'browser/indexed_db/mock_indexed_db_factory.cc',
       'browser/indexed_db/mock_indexed_db_factory.h',
+      'browser/loader/async_revalidation_driver_unittest.cc',
+      'browser/loader/async_revalidation_manager_unittest.cc',
       'browser/loader/mime_type_resource_handler_unittest.cc',
       'browser/loader/navigation_url_loader_unittest.cc',
       'browser/loader/resource_buffer_unittest.cc',

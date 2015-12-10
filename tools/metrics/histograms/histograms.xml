@@ -22137,6 +22137,33 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.AsyncRevalidation.ReadError" enum="NetErrorCodes">
+  <owner>ricea@chromium.org</owner>
+  <summary>
+    Counts of error codes received while reading the body of an async
+    revalidation before getting a response. Only async revalidations that had a
+    read error are counted.
+  </summary>
+</histogram>
+
+<histogram name="Net.AsyncRevalidation.ResponseError" enum="NetErrorCodes">
+  <owner>ricea@chromium.org</owner>
+  <summary>
+    Counts of error codes received while performing an async revalidation before
+    getting a response. Only async revalidations that had in a response error
+    are counted.
+  </summary>
+</histogram>
+
+<histogram name="Net.AsyncRevalidation.Result" enum="AsyncRevalidationResult">
+  <owner>ricea@chromium.org</owner>
+  <summary>
+    The result of an async revalidation resulting from application of the
+    Cache-Control: stale-while-revalidate directive. All async revalidations are
+    counted.
+  </summary>
+</histogram>
+
 <histogram name="Net.AuthGenerateToken_basic" units="milliseconds">
   <obsolete>
     Deprecated 01/2011 in https://crrev.com/70740
@@ -55572,6 +55599,30 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </int>
   <int value="3" label="FAILED_CONFIG">Failed during watching config.</int>
   <int value="4" label="FAILED_HOSTS">Failed during watching HOSTS.</int>
+</enum>
+
+<enum name="AsyncRevalidationResult" type="int">
+  <int value="0" label="LOADED">A new entry was stored in the cache.</int>
+  <int value="1" label="REVALIDATED">
+    The existing cache entry was revalidated.
+  </int>
+  <int value="2" label="NET_ERROR">
+    An error occurred before a response was received.
+  </int>
+  <int value="3" label="READ_ERROR">
+    An error occurred while reading the response body.
+  </int>
+  <int value="4" label="GOT_REDIRECT">A redirect response was received.</int>
+  <int value="5" label="AUTH_FAILED">
+    A request for authentication was received, and no cached credentials were
+    available.
+  </int>
+  <int value="6" label="RESPONSE_TIMEOUT">
+    Timed out before a response was received.
+  </int>
+  <int value="7" label="BODY_TIMEOUT">
+    Timed out while reading the response body.
+  </int>
 </enum>
 
 <enum name="AudioCodec" type="int">

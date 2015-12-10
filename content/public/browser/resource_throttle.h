@@ -5,17 +5,15 @@
 #ifndef CONTENT_PUBLIC_BROWSER_RESOURCE_THROTTLE_H_
 #define CONTENT_PUBLIC_BROWSER_RESOURCE_THROTTLE_H_
 
-#include <vector>
-
-class GURL;
-
 namespace net {
 struct RedirectInfo;
 }
 
 namespace content {
 
+class AsyncRevalidationDriver;
 class ResourceController;
+class ThrottlingResourceHandler;
 
 // A ResourceThrottle gets notified at various points during the process of
 // loading a resource.  At each stage, it has the opportunity to defer the
@@ -56,6 +54,7 @@ class ResourceThrottle {
   ResourceController* controller() { return controller_; }
 
  private:
+  friend class AsyncRevalidationDriver;
   friend class ThrottlingResourceHandler;
   void set_controller(ResourceController* c) { controller_ = c; }
 

@@ -60,6 +60,7 @@ class ShareableFileReference;
 
 namespace content {
 class AppCacheService;
+class AsyncRevalidationManager;
 class NavigationURLLoaderImplCore;
 class ResourceContext;
 class ResourceDispatcherHostDelegate;
@@ -281,6 +282,10 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       const NavigationRequestInfo& info,
       NavigationURLLoaderImplCore* loader,
       ServiceWorkerNavigationHandleCore* service_worker_handle_core);
+
+  // Turns on stale-while-revalidate support, regardless of command-line flags
+  // or experiment status. For unit tests only.
+  void EnableStaleWhileRevalidateForTesting();
 
  private:
   friend class ResourceDispatcherHostTest;
@@ -589,6 +594,10 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   ResourceDispatcherHostDelegate* delegate_;
 
   bool allow_cross_origin_auth_prompt_;
+
+  // AsyncRevalidationManager is non-NULL if and only if
+  // stale-while-revalidate is enabled.
+  scoped_ptr<AsyncRevalidationManager> async_revalidation_manager_;
 
   // http://crbug.com/90971 - Assists in tracking down use-after-frees on
   // shutdown.

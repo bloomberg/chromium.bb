@@ -66,7 +66,8 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
       base::WeakPtr<ResourceMessageFilter> filter,
       bool report_raw_headers,
       bool is_async,
-      bool is_using_lofi);
+      bool is_using_lofi,
+      const std::string& original_headers);
   ~ResourceRequestInfoImpl() override;
 
   // ResourceRequestInfo implementation:
@@ -183,6 +184,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   void set_do_not_prompt_for_login(bool do_not_prompt) {
     do_not_prompt_for_login_ = do_not_prompt;
   }
+  const std::string& original_headers() const { return original_headers_; }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ResourceDispatcherHostTest,
@@ -225,6 +227,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   bool report_raw_headers_;
   bool is_async_;
   bool is_using_lofi_;
+  const std::string original_headers_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceRequestInfoImpl);
 };

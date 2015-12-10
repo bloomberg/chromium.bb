@@ -89,7 +89,8 @@ void ResourceRequestInfo::AllocateForTesting(net::URLRequest* request,
           base::WeakPtr<ResourceMessageFilter>(),  // filter
           false,                             // report_raw_headers
           is_async,                          // is_async
-          is_using_lofi);                    // is_using_lofi
+          is_using_lofi,                     // is_using_lofi
+          std::string());                    // original_headers
   info->AssociateWithRequest(request);
 }
 
@@ -149,7 +150,8 @@ ResourceRequestInfoImpl::ResourceRequestInfoImpl(
     base::WeakPtr<ResourceMessageFilter> filter,
     bool report_raw_headers,
     bool is_async,
-    bool is_using_lofi)
+    bool is_using_lofi,
+    const std::string& original_headers)
     : cross_site_handler_(NULL),
       detachable_handler_(NULL),
       process_type_(process_type),
@@ -181,7 +183,8 @@ ResourceRequestInfoImpl::ResourceRequestInfoImpl(
       filter_(filter),
       report_raw_headers_(report_raw_headers),
       is_async_(is_async),
-      is_using_lofi_(is_using_lofi) {
+      is_using_lofi_(is_using_lofi),
+      original_headers_(original_headers) {
 }
 
 ResourceRequestInfoImpl::~ResourceRequestInfoImpl() {

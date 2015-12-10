@@ -19,10 +19,12 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/stl_util.h"
+#include "base/strings/string_util.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "base/time/time.h"
 #include "content/browser/appcache/appcache_interceptor.h"
@@ -37,6 +39,7 @@
 #include "content/browser/frame_host/navigation_request_info.h"
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/loader/async_resource_handler.h"
+#include "content/browser/loader/async_revalidation_manager.h"
 #include "content/browser/loader/cross_site_resource_handler.h"
 #include "content/browser/loader/detachable_resource_handler.h"
 #include "content/browser/loader/mime_type_resource_handler.h"
@@ -483,6 +486,24 @@ ResourceDispatcherHostImpl::ResourceDispatcherHostImpl()
                                      base::Unretained(this)));
 
   update_load_states_timer_.reset(new base::RepeatingTimer());
+
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  // This needs to be called to mark the trial as active, even if the result
+  // isn't used.
+  std::string stale_while_revalidate_trial_group =
+      base::FieldTrialList::FindFullName("StaleWhileRevalidate");
+  // stale-while-revalidate currently doesn't work with browser-side navigation.
+  // Only enable stale-while-revalidate if browser navigation is not enabled.
+  //
+  // TODO(ricea): Make stale-while-revalidate and browser-side navigation work
+  // together. Or disable stale-while-revalidate completely before browser-side
+  // navigation becomes the default. crbug.com/561610
+  if (!command_line->HasSwitch(switches::kEnableBrowserSideNavigation) &&
+      (base::StartsWith(stale_while_revalidate_trial_group, "Enabled",
+                        base::CompareCase::SENSITIVE) ||
+       command_line->HasSwitch(switches::kEnableStaleWhileRevalidate))) {
+    async_revalidation_manager_.reset(new AsyncRevalidationManager);
+  }
 }
 
 ResourceDispatcherHostImpl::~ResourceDispatcherHostImpl() {
@@ -587,6 +608,13 @@ void ResourceDispatcherHostImpl::CancelRequestsForContext(
 #endif
 
   loaders_to_cancel.clear();
+
+  if (async_revalidation_manager_) {
+    // Cancelling async revalidations should not result in the creation of new
+    // requests. Do it before the CHECKs to ensure this does not happen.
+    async_revalidation_manager_->CancelAsyncRevalidationsForResourceContext(
+        context);
+  }
 
   // Validate that no more requests for this context were added.
   for (LoaderMap::const_iterator i = pending_loaders_.begin();
@@ -836,6 +864,28 @@ void ResourceDispatcherHostImpl::DidReceiveRedirect(ResourceLoader* loader,
   if (!info->GetAssociatedRenderFrame(&render_process_id, &render_frame_host))
     return;
 
+  net::URLRequest* request = loader->request();
+  if (request->response_info().async_revalidation_required) {
+    // Async revalidation is only supported for the first redirect leg.
+    DCHECK_EQ(request->url_chain().size(), 1u);
+    DCHECK(async_revalidation_manager_);
+
+    async_revalidation_manager_->BeginAsyncRevalidation(*request,
+                                                        scheduler_.get());
+  }
+
+  // Remove the LOAD_SUPPORT_ASYNC_REVALIDATION flag if it is present.
+  // It is difficult to create a URLRequest with the correct flags and headers
+  // for redirect legs other than the first one. Since stale-while-revalidate in
+  // combination with redirects isn't needed for experimental use, punt on it
+  // for now.
+  // TODO(ricea): Fix this before launching the feature.
+  if (request->load_flags() & net::LOAD_SUPPORT_ASYNC_REVALIDATION) {
+    int new_load_flags =
+        request->load_flags() & ~net::LOAD_SUPPORT_ASYNC_REVALIDATION;
+    request->SetLoadFlags(new_load_flags);
+  }
+
   // Don't notify WebContents observers for requests known to be
   // downloads; they aren't really associated with the Webcontents.
   // Note that not all downloads are known before content sniffing.
@@ -862,6 +912,12 @@ void ResourceDispatcherHostImpl::DidReceiveResponse(ResourceLoader* loader) {
       request->url().SchemeIs(url::kHttpScheme)) {
     scheduler_->OnReceivedSpdyProxiedHttpResponse(
         info->GetChildID(), info->GetRouteID());
+  }
+
+  if (request->response_info().async_revalidation_required) {
+    DCHECK(async_revalidation_manager_);
+    async_revalidation_manager_->BeginAsyncRevalidation(*request,
+                                                        scheduler_.get());
   }
 
   int render_process_id, render_frame_host;
@@ -1323,6 +1379,13 @@ void ResourceDispatcherHostImpl::BeginRequest(
     load_flags |= net::LOAD_DO_NOT_USE_EMBEDDED_IDENTITY;
   }
 
+  bool support_async_revalidation =
+      !is_sync_load && async_revalidation_manager_ &&
+      AsyncRevalidationManager::QualifiesForAsyncRevalidation(request_data);
+
+  if (support_async_revalidation)
+    load_flags |= net::LOAD_SUPPORT_ASYNC_REVALIDATION;
+
   // Sync loads should have maximum priority and should be the only
   // requets that have the ignore limits flag set.
   if (is_sync_load) {
@@ -1359,7 +1422,8 @@ void ResourceDispatcherHostImpl::BeginRequest(
       report_raw_headers,
       !is_sync_load,
       IsUsingLoFi(request_data.lofi_state, delegate_,
-                  *new_request, resource_context));
+                  *new_request, resource_context),
+      support_async_revalidation ? request_data.headers : std::string());
   // Request takes ownership.
   extra_info->AssociateWithRequest(new_request.get());
 
@@ -1660,7 +1724,8 @@ ResourceRequestInfoImpl* ResourceDispatcherHostImpl::CreateRequestInfo(
       base::WeakPtr<ResourceMessageFilter>(),  // filter
       false,                                   // report_raw_headers
       true,                                    // is_async
-      false);                                  // is_using_lofi
+      false,                                   // is_using_lofi
+      std::string());                          // original_headers
 }
 
 void ResourceDispatcherHostImpl::OnRenderViewHostCreated(int child_id,
@@ -2101,9 +2166,15 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
       blink::WebPageVisibilityStateVisible, resource_context,
       base::WeakPtr<ResourceMessageFilter>(),  // filter
       false,  // request_data.report_raw_headers
-      true,
+      true,   // is_async
       IsUsingLoFi(info.common_params.lofi_state, delegate_,
-                  *new_request, resource_context));
+                  *new_request, resource_context),
+      // The original_headers field is for stale-while-revalidate but the
+      // feature doesn't work with PlzNavigate, so it's just a placeholder
+      // here.
+      // TODO(ricea): Make the feature work with stale-while-revalidate
+      // and clean this up.
+      std::string());  // original_headers
   // Request takes ownership.
   extra_info->AssociateWithRequest(new_request.get());
 
@@ -2139,6 +2210,11 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
                                 handler.Pass());
 
   BeginRequestInternal(new_request.Pass(), handler.Pass());
+}
+
+void ResourceDispatcherHostImpl::EnableStaleWhileRevalidateForTesting() {
+  if (!async_revalidation_manager_)
+    async_revalidation_manager_.reset(new AsyncRevalidationManager);
 }
 
 // static
