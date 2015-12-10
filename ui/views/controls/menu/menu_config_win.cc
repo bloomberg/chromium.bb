@@ -13,6 +13,7 @@
 #include "base/win/win_util.h"
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/native_theme/native_theme_aura.h"
 #include "ui/native_theme/native_theme_win.h"
 
 using ui::NativeTheme;
@@ -20,7 +21,12 @@ using ui::NativeThemeWin;
 
 namespace views {
 
-void MenuConfig::Init() {
+void MenuConfig::Init(const NativeTheme* theme) {
+  if (theme == ui::NativeThemeAura::instance()) {
+    InitAura(theme);
+    return;
+  }
+
   arrow_color = color_utils::GetSysSkColor(COLOR_MENUTEXT);
 
   NONCLIENTMETRICS_XP metrics;
@@ -70,6 +76,21 @@ void MenuConfig::Init() {
 
   separator_upper_height = 5;
   separator_lower_height = 7;
+}
+
+// static
+const MenuConfig& MenuConfig::instance(const ui::NativeTheme* theme) {
+  // NOTE: |theme| may be NULL if used before the menu is running.
+  if (!theme || theme == NativeThemeWin::instance()) {
+    static MenuConfig* win_instance = NULL;
+    if (!win_instance)
+      win_instance = new MenuConfig(NativeThemeWin::instance());
+    return *win_instance;
+  }
+  static MenuConfig* views_instance = NULL;
+  if (!views_instance)
+    views_instance = new MenuConfig(theme);
+  return *views_instance;
 }
 
 }  // namespace views

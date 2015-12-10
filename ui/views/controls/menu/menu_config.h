@@ -9,15 +9,19 @@
 #include "ui/gfx/font_list.h"
 #include "ui/views/views_export.h"
 
+namespace ui {
+class NativeTheme;
+}
+
 namespace views {
 
 // Layout type information for menu items. Use the instance() method to obtain
 // the MenuConfig for the current platform.
 struct VIEWS_EXPORT MenuConfig {
-  MenuConfig();
+  explicit MenuConfig(const ui::NativeTheme* theme);
   ~MenuConfig();
 
-  static const MenuConfig& instance();
+  static const MenuConfig& instance(const ui::NativeTheme* theme);
 
   // Font list used by menus.
   gfx::FontList font_list;
@@ -121,7 +125,10 @@ struct VIEWS_EXPORT MenuConfig {
 
  private:
   // Configures a MenuConfig as appropriate for the current platform.
-  void Init();
+  void Init(const ui::NativeTheme* theme);
+
+  // TODO: temporary until we standardize.
+  void InitAura(const ui::NativeTheme* theme);
 };
 
 }  // namespace views

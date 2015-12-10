@@ -41,7 +41,7 @@ void MenuHost::InitMenuHost(Widget* parent,
   Widget::InitParams params(Widget::InitParams::TYPE_MENU);
   const MenuController* menu_controller =
       submenu_->GetMenuItem()->GetMenuController();
-  const MenuConfig& menu_config = MenuConfig::instance();
+  const MenuConfig& menu_config = submenu_->GetMenuItem()->GetMenuConfig();
   bool rounded_border = menu_controller && menu_config.corner_radius > 0;
   bool bubble_border = submenu_->GetScrollViewContainer() &&
                        submenu_->GetScrollViewContainer()->HasBubbleBorder();

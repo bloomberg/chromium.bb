@@ -72,7 +72,6 @@ component("views") {
 
   if (is_chromeos) {
     sources -= [
-      "controls/menu/menu_config_linux.cc",
       "linux_ui/status_icon_linux.cc",
       "linux_ui/status_icon_linux.h",
     ]

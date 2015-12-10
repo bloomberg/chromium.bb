@@ -4,11 +4,11 @@
 
 #include "ui/views/controls/menu/menu_config.h"
 
-#include "base/macros.h"
+#include "build/build_config.h"
 
 namespace views {
 
-MenuConfig::MenuConfig()
+MenuConfig::MenuConfig(const ui::NativeTheme* theme)
     : arrow_color(SK_ColorBLACK),
       menu_vertical_border_size(3),
       menu_horizontal_border_size(0),
@@ -42,15 +42,9 @@ MenuConfig::MenuConfig()
       check_selected_combobox_item(false),
       show_delay(400),
       corner_radius(0) {
-  Init();
+  Init(theme);
 }
 
 MenuConfig::~MenuConfig() {}
-
-// static
-const MenuConfig& MenuConfig::instance() {
-  CR_DEFINE_STATIC_LOCAL(MenuConfig, instance, ());
-  return instance;
-}
 
 }  // namespace views

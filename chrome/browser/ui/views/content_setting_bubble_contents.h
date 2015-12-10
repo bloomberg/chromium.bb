@@ -76,6 +76,9 @@ class ContentSettingBubbleContents : public content::WebContentsObserver,
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) override;
 
+  // views::View:
+  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
+
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
@@ -87,7 +90,7 @@ class ContentSettingBubbleContents : public content::WebContentsObserver,
                            const gfx::Point& point) override;
 
   // Helper to get the preferred width of the media menu.
-  void UpdateMenuButtonSizes();
+  void UpdateMenuButtonSizes(const ui::NativeTheme* theme);
 
   // Provides data for this bubble.
   scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model_;

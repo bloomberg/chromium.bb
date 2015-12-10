@@ -337,7 +337,7 @@ void ContentSettingBubbleContents::Init() {
     }
   }
 
-  UpdateMenuButtonSizes();
+  UpdateMenuButtonSizes(GetNativeTheme());
 
   const gfx::FontList& domain_font =
       ui::ResourceBundle::GetSharedInstance().GetFontList(
@@ -409,6 +409,12 @@ void ContentSettingBubbleContents::DidNavigateMainFrame(
   GetWidget()->Close();
 }
 
+void ContentSettingBubbleContents::OnNativeThemeChanged(
+    const ui::NativeTheme* theme) {
+  views::BubbleDelegateView::OnNativeThemeChanged(theme);
+  UpdateMenuButtonSizes(theme);
+}
+
 void ContentSettingBubbleContents::ButtonPressed(views::Button* sender,
                                                  const ui::Event& event) {
   RadioGroup::const_iterator i(
@@ -466,8 +472,9 @@ void ContentSettingBubbleContents::OnMenuButtonClicked(
                                 ui::MENU_SOURCE_NONE));
 }
 
-void ContentSettingBubbleContents::UpdateMenuButtonSizes() {
-  const views::MenuConfig& config = views::MenuConfig::instance();
+void ContentSettingBubbleContents::UpdateMenuButtonSizes(
+    const ui::NativeTheme* theme) {
+  const views::MenuConfig config = views::MenuConfig(theme);
   const int margins = config.item_left_margin + config.check_width +
                       config.label_to_arrow_padding + config.arrow_width +
                       config.arrow_to_edge_padding;

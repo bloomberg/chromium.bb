@@ -272,7 +272,6 @@ class InMenuButton : public LabelButton {
     set_background(in_menu_background_);
     SetBorder(views::Border::CreateEmptyBorder(0, kHorizontalPadding, 0,
                                                kHorizontalPadding));
-    SetFontList(MenuConfig::instance().font_list);
   }
 
   void SetOtherButtons(const InMenuButton* left, const InMenuButton* right) {
@@ -281,6 +280,9 @@ class InMenuButton : public LabelButton {
 
   // views::LabelButton
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override {
+    const MenuConfig& menu_config = MenuConfig::instance(theme);
+    SetFontList(menu_config.font_list);
+
     if (theme) {
       SetTextColor(
           views::Button::STATE_DISABLED,
@@ -594,9 +596,10 @@ class AppMenu::ZoomView : public AppMenuView {
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override {
     AppMenuView::OnNativeThemeChanged(theme);
 
+    const MenuConfig& menu_config = MenuConfig::instance(theme);
     zoom_label_->SetBorder(views::Border::CreateEmptyBorder(
         0, kZoomLabelHorizontalPadding, 0, kZoomLabelHorizontalPadding));
-    zoom_label_->SetFontList(MenuConfig::instance().font_list);
+    zoom_label_->SetFontList(menu_config.font_list);
     zoom_label_max_width_valid_ = false;
 
     if (theme) {
@@ -1112,7 +1115,7 @@ void AppMenu::PopulateMenu(MenuItemView* parent, MenuModel* model) {
 
     if (model->GetCommandIdAt(i) == IDC_EDIT_MENU ||
         model->GetCommandIdAt(i) == IDC_ZOOM_MENU) {
-      const MenuConfig& config = views::MenuConfig::instance();
+      const MenuConfig& config = item->GetMenuConfig();
       int top_margin = config.item_top_margin + config.separator_height / 2;
       int bottom_margin =
           config.item_bottom_margin + config.separator_height / 2;

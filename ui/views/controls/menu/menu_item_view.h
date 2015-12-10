@@ -324,6 +324,9 @@ class VIEWS_EXPORT MenuItemView : public View {
     use_right_margin_ = use_right_margin;
   }
 
+  // Returns a reference to MenuConfig to be used with this menu.
+  const MenuConfig& GetMenuConfig() const;
+
  protected:
   // Creates a MenuItemView. This is used by the various AddXXX methods.
   MenuItemView(MenuItemView* parent, int command, Type type);
