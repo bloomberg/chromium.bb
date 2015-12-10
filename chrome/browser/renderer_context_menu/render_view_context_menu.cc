@@ -1017,6 +1017,7 @@ void RenderViewContextMenu::AppendSearchWebForImageItems() {
 }
 
 void RenderViewContextMenu::AppendAudioItems() {
+  AppendMediaItems();
   menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENAVNEWTAB,
                                   IDS_CONTENT_CONTEXT_OPENAUDIONEWTAB);
@@ -1035,6 +1036,7 @@ void RenderViewContextMenu::AppendCanvasItems() {
 }
 
 void RenderViewContextMenu::AppendVideoItems() {
+  AppendMediaItems();
   menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENAVNEWTAB,
                                   IDS_CONTENT_CONTEXT_OPENVIDEONEWTAB);
@@ -1043,6 +1045,13 @@ void RenderViewContextMenu::AppendVideoItems() {
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_COPYAVLOCATION,
                                   IDS_CONTENT_CONTEXT_COPYVIDEOLOCATION);
   AppendMediaRouterItem();
+}
+
+void RenderViewContextMenu::AppendMediaItems() {
+  menu_model_.AddCheckItemWithStringId(IDC_CONTENT_CONTEXT_LOOP,
+                                       IDS_CONTENT_CONTEXT_LOOP);
+  menu_model_.AddCheckItemWithStringId(IDC_CONTENT_CONTEXT_CONTROLS,
+                                       IDS_CONTENT_CONTEXT_CONTROLS);
 }
 
 void RenderViewContextMenu::AppendPluginItems() {

@@ -119,6 +119,7 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   void AppendAudioItems();
   void AppendCanvasItems();
   void AppendVideoItems();
+  void AppendMediaItems();
   void AppendPluginItems();
   void AppendPageItems();
   void AppendCopyItem();
