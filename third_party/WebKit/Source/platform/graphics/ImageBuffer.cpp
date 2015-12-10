@@ -89,8 +89,6 @@ ImageBuffer::~ImageBuffer()
 
 SkCanvas* ImageBuffer::canvas() const
 {
-    if (!isSurfaceValid())
-        return nullptr;
     return m_surface->canvas();
 }
 

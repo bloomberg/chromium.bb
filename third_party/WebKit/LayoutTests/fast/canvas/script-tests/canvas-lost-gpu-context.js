@@ -13,8 +13,12 @@ if (window.internals && window.testRunner) {
     document.body.appendChild(ctx.canvas);
     verifyContextLost(false);
     window.internals.loseSharedGraphicsContext3D();
-    // for the canvas to realize it Graphics context was lost we must try to use the canvas
+    // for the canvas to realize its Graphics context was lost we must try to
+    // use the contents of the canvas -- that is, we must either try to present
+    // the canvas or read from it (e.g. by calling getImageData)
     ctx.fillRect(0, 0, 1, 1);
+    shouldBeFalse('ctx.isContextLost()');
+    var imageData = ctx.getImageData(0, 0, 1, 1);
     if (!ctx.isContextLost()) {
         debug('<span>Aborting test: Graphics context loss did not destroy canvas contents. This is expected if canvas is not accelerated.</span>');
     } else {
