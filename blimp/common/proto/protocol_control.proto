@@ -8,6 +8,11 @@ option optimize_for = LITE_RUNTIME;
 
 package blimp;
 
+// Indicates the message-Id that the peer has most-recently processed.
+message CheckpointAckMessage {
+  optional int64 checkpoint_id = 1;
+}
+
 // Contains Client->Engine information to establish an authenticated connection.
 message StartConnectionMessage {
   optional string client_token = 1;
@@ -20,9 +25,15 @@ message ProtocolControlMessage {
 
     // Client => Server types.
     START_CONNECTION = 1;
+
+    // Server => Client types will start from 100.
+
+    // Bi-directional types.
+    CHECKPOINT_ACK = 200;
   }
 
   optional Type type = 1;
 
-  optional StartConnectionMessage start_connection = 1000;
+  optional StartConnectionMessage start_connection = 1001;
+  optional CheckpointAckMessage checkpoint_ack = 1200;
 }

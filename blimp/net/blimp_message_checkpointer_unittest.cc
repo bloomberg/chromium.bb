@@ -1,0 +1,157 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "blimp/net/blimp_message_checkpointer.h"
+
+#include "base/memory/ref_counted.h"
+#include "base/test/test_mock_time_task_runner.h"
+#include "base/thread_task_runner_handle.h"
+#include "blimp/net/test_common.h"
+#include "net/base/net_errors.h"
+#include "net/base/test_completion_callback.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
+
+using testing::_;
+using testing::InvokeArgument;
+using testing::Return;
+using testing::SaveArg;
+
+namespace blimp {
+
+static scoped_ptr<BlimpMessage> CreateExpectedAckMessage(int64 id) {
+  scoped_ptr<BlimpMessage> message = make_scoped_ptr(new BlimpMessage);
+  message->set_type(BlimpMessage::PROTOCOL_CONTROL);
+  ProtocolControlMessage* protocol_control =
+      message->mutable_protocol_control();
+  protocol_control->set_type(ProtocolControlMessage::CHECKPOINT_ACK);
+  CheckpointAckMessage* checkpoint_ack =
+      protocol_control->mutable_checkpoint_ack();
+  checkpoint_ack->set_checkpoint_id(id);
+  return message;
+}
+
+class BlimpMessageCheckpointerTest : public testing::Test {
+ public:
+  BlimpMessageCheckpointerTest()
+      : runner_(new base::TestMockTimeTaskRunner), runner_handle_(runner_) {}
+
+  ~BlimpMessageCheckpointerTest() override {}
+
+  int64 SimulateIncomingMessage() {
+    scoped_ptr<BlimpMessage> message(new BlimpMessage);
+    message->set_message_id(++message_id_);
+    message->set_type(BlimpMessage::INPUT);
+    checkpointer_->ProcessMessage(
+        std::move(message),
+        base::Bind(&BlimpMessageCheckpointerTest::IncomingCompletionCallback,
+                   base::Unretained(this)));
+    return message_id_;
+  }
+
+  void SetUp() override {
+    checkpointer_ = make_scoped_ptr(new BlimpMessageCheckpointer(
+        &incoming_processor_, &outgoing_processor_));
+  }
+
+  MOCK_METHOD1(IncomingCompletionCallback, void(int));
+
+ protected:
+  // Used to verify timing-specific behaviours.
+  scoped_refptr<base::TestMockTimeTaskRunner> runner_;
+  base::ThreadTaskRunnerHandle runner_handle_;
+
+  int64 message_id_ = 0;
+
+  MockBlimpMessageProcessor incoming_processor_;
+  MockBlimpMessageProcessor outgoing_processor_;
+  net::CompletionCallback captured_cb_;
+
+  scoped_ptr<BlimpMessageCheckpointer> checkpointer_;
+};
+
+TEST_F(BlimpMessageCheckpointerTest, CallbackPropagates) {
+  EXPECT_CALL(incoming_processor_, MockableProcessMessage(_, _))
+      .WillOnce(SaveArg<1>(&captured_cb_));
+  EXPECT_CALL(outgoing_processor_, MockableProcessMessage(_, _)).Times(0);
+  EXPECT_CALL(*this, IncomingCompletionCallback(_));
+
+  // Simulate an incoming message.
+  SimulateIncomingMessage();
+
+  // Verify TestCompletionCallback called on completion.
+  captured_cb_.Run(net::OK);
+}
+
+TEST_F(BlimpMessageCheckpointerTest, DeleteWhileProcessing) {
+  EXPECT_CALL(incoming_processor_, MockableProcessMessage(_, _))
+      .WillOnce(SaveArg<1>(&captured_cb_));
+  EXPECT_CALL(outgoing_processor_, MockableProcessMessage(_, _)).Times(0);
+  EXPECT_CALL(*this, IncomingCompletionCallback(_)).Times(0);
+
+  // Simulate an incoming message.
+  SimulateIncomingMessage();
+
+  // Delete the checkpointer, then simulate completion of processing.
+  // TestCompletionCallback should not fire, so no expectations.
+  checkpointer_ = nullptr;
+  captured_cb_.Run(net::OK);
+}
+
+TEST_F(BlimpMessageCheckpointerTest, SingleMessageAck) {
+  EXPECT_CALL(incoming_processor_, MockableProcessMessage(_, _))
+      .WillOnce(SaveArg<1>(&captured_cb_));
+  scoped_ptr<BlimpMessage> expected_ack = CreateExpectedAckMessage(1);
+  EXPECT_CALL(outgoing_processor_,
+              MockableProcessMessage(EqualsProto(*expected_ack), _));
+
+  // Simulate an incoming message.
+  SimulateIncomingMessage();
+
+  // Fast-forward time to verify that an ACK message is sent.
+  captured_cb_.Run(net::OK);
+  runner_->FastForwardBy(base::TimeDelta::FromSeconds(2));
+}
+
+TEST_F(BlimpMessageCheckpointerTest, BatchMessageAck) {
+  EXPECT_CALL(incoming_processor_, MockableProcessMessage(_, _))
+      .Times(10)
+      .WillRepeatedly(SaveArg<1>(&captured_cb_));
+  scoped_ptr<BlimpMessage> expected_ack = CreateExpectedAckMessage(10);
+  EXPECT_CALL(outgoing_processor_,
+              MockableProcessMessage(EqualsProto(*expected_ack), _));
+
+  // Simulate ten incoming messages.
+  for (int i = 0; i < 10; ++i) {
+    SimulateIncomingMessage();
+    captured_cb_.Run(net::OK);
+  }
+
+  // Fast-forward time to verify that only a single ACK message is sent.
+  runner_->FastForwardBy(base::TimeDelta::FromSeconds(2));
+}
+
+TEST_F(BlimpMessageCheckpointerTest, MultipleAcks) {
+  EXPECT_CALL(incoming_processor_, MockableProcessMessage(_, _))
+      .Times(2)
+      .WillRepeatedly(SaveArg<1>(&captured_cb_));
+  scoped_ptr<BlimpMessage> expected_ack1 = CreateExpectedAckMessage(1);
+  EXPECT_CALL(outgoing_processor_,
+              MockableProcessMessage(EqualsProto(*expected_ack1), _));
+  scoped_ptr<BlimpMessage> expected_ack2 = CreateExpectedAckMessage(2);
+  EXPECT_CALL(outgoing_processor_,
+              MockableProcessMessage(EqualsProto(*expected_ack2), _));
+
+  // Simulate an incoming messages and fast-forward to get the ACK.
+  SimulateIncomingMessage();
+  captured_cb_.Run(net::OK);
+  runner_->FastForwardBy(base::TimeDelta::FromSeconds(2));
+
+  // And do it again to verify we get a fresh ACK.
+  SimulateIncomingMessage();
+  captured_cb_.Run(net::OK);
+  runner_->FastForwardBy(base::TimeDelta::FromSeconds(2));
+}
+
+}  // namespace blimp

@@ -58,6 +58,9 @@ BLIMP_COMMON_EXPORT scoped_ptr<BlimpMessage> CreateStartConnectionMessage(
     const std::string& client_token,
     int protocol_version);
 
+BLIMP_COMMON_EXPORT scoped_ptr<BlimpMessage> CreateCheckpointAckMessage(
+    int64 checkpoint_id);
+
 }  // namespace blimp
 
 #endif  // BLIMP_COMMON_CREATE_BLIMP_MESSAGE_H_

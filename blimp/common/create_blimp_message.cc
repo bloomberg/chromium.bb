@@ -90,4 +90,18 @@ scoped_ptr<BlimpMessage> CreateStartConnectionMessage(
   return output;
 }
 
+scoped_ptr<BlimpMessage> CreateCheckpointAckMessage(int64 checkpoint_id) {
+  scoped_ptr<BlimpMessage> output(new BlimpMessage);
+  output->set_type(BlimpMessage::PROTOCOL_CONTROL);
+
+  ProtocolControlMessage* control_message = output->mutable_protocol_control();
+  control_message->set_type(ProtocolControlMessage::CHECKPOINT_ACK);
+
+  CheckpointAckMessage* checkpoint_ack_message =
+      control_message->mutable_checkpoint_ack();
+  checkpoint_ack_message->set_checkpoint_id(checkpoint_id);
+
+  return output;
+}
+
 }  // namespace blimp
