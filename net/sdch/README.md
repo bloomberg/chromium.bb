@@ -63,9 +63,8 @@ and guarantee that the SdchManager outlive the SdchOwner.
 
 Note the layering of the above classes:
 
-1. The SdchManager and SdchOwner classes have no knowledge of
-   URLRequests.  URLRequest is dependent on those classes, not the
-   reverse.
+1. The SdchManager class has no knowledge of URLRequests.  URLRequest
+   is dependent on that class, not the reverse.
 2. SdchDictionaryFetcher is dependent on URLRequest, but is still a
    utility class exported by the net/ library for use by higher levels.
 3. SdchOwner manages the entire system on behalf of the embedder.  The
