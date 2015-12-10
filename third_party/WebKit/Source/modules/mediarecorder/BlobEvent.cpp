@@ -41,9 +41,8 @@ DEFINE_TRACE(BlobEvent)
 
 BlobEvent::BlobEvent(const AtomicString& type, const BlobEventInit& initializer)
     : Event(type, initializer)
+    , m_blob(initializer.data())
 {
-    if (initializer.hasBlob())
-        m_blob = initializer.blob();
 }
 
 BlobEvent::BlobEvent(const AtomicString& type, Blob* blob)

@@ -3,5 +3,5 @@
 // found in the LICENSE file.
 
 dictionary BlobEventInit : EventInit {
-    Blob? blob = null;
+    required Blob data;
 };

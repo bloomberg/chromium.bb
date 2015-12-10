@@ -18,4 +18,16 @@ test(function() {
 
 }, 'check BlobEvent creation and content management');
 
+test(function() {
+  assert_throws(null,
+                function() { var blobEvent = new BlobEvent('BlobEvent'); });
+}, 'check BlobEvent needs two constructor parameters, type and BlobEventInit');
+
+test(function() {
+  assert_throws(null,
+                function() {
+                  var blobEvent = new BlobEvent('BlobEvent', {data : "blergh"});
+                });
+}, 'check BlobEvent needs the second constructor parameter to be a BlobEventInit');
+
 </script>

@@ -4,22 +4,20 @@
 
 // https://w3c.github.io/mediacapture-record/MediaRecorder.html#MediaRecorderAPI
 
-enum RecordingStateEnum { "inactive", "recording", "paused" };
+enum RecordingState { "inactive", "recording", "paused" };
 
 [
     GarbageCollected,
     ActiveDOMObject,
     // TODO(mcasas): consider changing |mimeType| to a dictionary with said key, see https://github.com/w3c/mediacapture-record/issues/19
-    // TODO(mcasas): Remove [TreatUndefinedAs], see https://github.com/w3c/mediacapture-record/issues/7
-    Constructor(MediaStream stream, [TreatUndefinedAs=Missing] optional DOMString mimeType),
+    Constructor(MediaStream stream, optional DOMString mimeType),
     ConstructorCallWith=ExecutionContext,
     RaisesException=Constructor,
     RuntimeEnabled=MediaRecorder,
 ] interface MediaRecorder : EventTarget {
     readonly attribute MediaStream stream;
     readonly attribute DOMString mimeType;
-    readonly attribute RecordingStateEnum state;
-    attribute boolean ignoreMutedMedia;
+    readonly attribute RecordingState state;
 
     attribute EventHandler onstart;
     attribute EventHandler onstop;
@@ -27,6 +25,7 @@ enum RecordingStateEnum { "inactive", "recording", "paused" };
     attribute EventHandler onpause;
     attribute EventHandler onresume;
     attribute EventHandler onerror;
+    attribute boolean ignoreMutedMedia;
 
     [RaisesException] void start(optional long timeslice);
     [RaisesException] void stop();

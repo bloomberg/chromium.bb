@@ -5,9 +5,7 @@
 // https://w3c.github.io/mediacapture-record/MediaRecorder.html#blob-event
 
 [
-    // This constructor is yet to be added to the specification, see:
-    // https://github.com/w3c/mediacapture-record/issues/11
-    Constructor(DOMString type, optional BlobEventInit eventInit),
+    Constructor(DOMString type, BlobEventInit eventInitDict),
     RuntimeEnabled=MediaRecorder
 ]
 interface BlobEvent : Event {
