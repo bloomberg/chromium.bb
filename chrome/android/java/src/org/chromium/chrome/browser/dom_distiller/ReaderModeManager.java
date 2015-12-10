@@ -276,15 +276,9 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
 
     @Override
     public void onCloseButtonPressed() {
-        int currentTabId = mTabModelSelector.getCurrentTabId();
-        if (currentTabId == Tab.INVALID_TAB_ID) return;
-
-        if (!mTabStatusMap.containsKey(currentTabId)) return;
-        ReaderModeTabInfo tabInfo = mTabStatusMap.get(currentTabId);
-        tabInfo.setIsDismissed(true);
-        if (tabInfo.getWebContentsObserver() != null) {
-            tabInfo.getWebContentsObserver().destroy();
-        }
+        // TODO(mdjones): Add user metrics for using the close button in the panel bar here.
+        // TODO(mdjones): If it is decided that Reader Mode cannot be permanently dismissed for a
+        // tab, remove that remaining logic from this class.
     }
 
     @Override
