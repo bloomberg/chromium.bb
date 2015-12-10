@@ -37,7 +37,6 @@
 
 namespace blink {
 
-class ExceptionState;
 class PlatformSpeechSynthesizerClient;
 
 class MODULES_EXPORT SpeechSynthesis final : public RefCountedGarbageCollectedEventTargetWithInlineData<SpeechSynthesis>, public PlatformSpeechSynthesizerClient, public ContextLifecycleObserver {
@@ -51,7 +50,7 @@ public:
     bool speaking() const;
     bool paused() const;
 
-    void speak(SpeechSynthesisUtterance*, ExceptionState&);
+    void speak(SpeechSynthesisUtterance*);
     void cancel();
     void pause();
     void resume();

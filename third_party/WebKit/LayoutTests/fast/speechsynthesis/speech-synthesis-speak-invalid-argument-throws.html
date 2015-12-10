@@ -14,12 +14,12 @@
 
     description("This tests that passing an argument other than a SpeechSynthesisUtterance to speechSynthesis.speak throws a TypeError exception.");
 
-    shouldThrow("speechSynthesis.speak()", '"TypeError: Failed to execute \'speak\' on \'SpeechSynthesis\': 1 argument required, but only 0 present."');
-    shouldThrow("speechSynthesis.speak(0)", '"TypeError: Failed to execute \'speak\' on \'SpeechSynthesis\': Invalid utterance argument"');
-    shouldThrow("speechSynthesis.speak('')", '"TypeError: Failed to execute \'speak\' on \'SpeechSynthesis\': Invalid utterance argument"');
-    shouldThrow("speechSynthesis.speak(document.body)", '"TypeError: Failed to execute \'speak\' on \'SpeechSynthesis\': Invalid utterance argument"');
-    shouldThrow("speechSynthesis.speak({})", '"TypeError: Failed to execute \'speak\' on \'SpeechSynthesis\': Invalid utterance argument"');
-    shouldThrow("speechSynthesis.speak((new SpeechSynthesisUtterance()).text = 'hello')", '"TypeError: Failed to execute \'speak\' on \'SpeechSynthesis\': Invalid utterance argument"');
+    shouldThrow("speechSynthesis.speak()");
+    shouldThrow("speechSynthesis.speak(0)");
+    shouldThrow("speechSynthesis.speak('')");
+    shouldThrow("speechSynthesis.speak(document.body)");
+    shouldThrow("speechSynthesis.speak({})");
+    shouldThrow("speechSynthesis.speak((new SpeechSynthesisUtterance()).text = 'hello')");
 
 </script>
 

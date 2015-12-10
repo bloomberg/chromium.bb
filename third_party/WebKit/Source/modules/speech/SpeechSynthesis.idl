@@ -31,7 +31,7 @@
     readonly attribute boolean speaking;
     readonly attribute boolean paused;
 
-    [RaisesException, LegacyInterfaceTypeChecking] void speak(SpeechSynthesisUtterance utterance);
+    void speak(SpeechSynthesisUtterance utterance);
     void cancel();
     void pause();
     void resume();
