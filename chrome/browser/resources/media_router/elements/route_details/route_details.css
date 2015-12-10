@@ -5,8 +5,8 @@
 #close-route-button {
   -webkit-padding-end: 24px;
   background-color: white;
-  line-height: 32px;
-  margin: 0;
+  line-height: 12px;
+  margin: 12px 0;
   text-align: end;
   width: 100%;
 }
@@ -18,10 +18,9 @@
 }
 
 #route-information {
-  -webkit-padding-start: 30px;
+  -webkit-padding-start: 44px;
   background-color: white;
   font-size: 1.2em;
-  height: 40px;
+  margin-top: 16px;
   overflow: hidden;
-  padding: 20px 30px;
 }
