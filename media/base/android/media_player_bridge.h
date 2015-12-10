@@ -186,6 +186,8 @@ class MEDIA_EXPORT MediaPlayerBridge : public MediaPlayerAndroid {
 
   base::RepeatingTimer time_update_timer_;
 
+  base::TimeDelta last_time_update_timestamp_;
+
   // Volume of playback.
   double volume_;
 

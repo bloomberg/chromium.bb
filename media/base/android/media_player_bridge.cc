@@ -504,8 +504,12 @@ bool MediaPlayerBridge::SeekInternal(base::TimeDelta current_time,
 }
 
 void MediaPlayerBridge::OnTimeUpdateTimerFired() {
-  manager()->OnTimeUpdate(
-      player_id(), GetCurrentTime(), base::TimeTicks::Now());
+  base::TimeDelta current_timestamp = GetCurrentTime();
+  if (last_time_update_timestamp_ == current_timestamp)
+    return;
+  manager()->OnTimeUpdate(player_id(), current_timestamp,
+                          base::TimeTicks::Now());
+  last_time_update_timestamp_ = current_timestamp;
 }
 
 bool MediaPlayerBridge::RegisterMediaPlayerBridge(JNIEnv* env) {
