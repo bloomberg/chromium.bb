@@ -531,6 +531,7 @@
           ],
           'dependencies': [
              '../base/base.gyp:base',
+             '../components/components.gyp:startup_metric_utils_browser',
           ],
         },
       ],

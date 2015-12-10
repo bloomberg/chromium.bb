@@ -5,9 +5,11 @@
 #ifndef COMPONENTS_STARTUP_METRIC_UTILS_BROWSER_STARTUP_METRIC_UTILS_H_
 #define COMPONENTS_STARTUP_METRIC_UTILS_BROWSER_STARTUP_METRIC_UTILS_H_
 
+#include <stdint.h>
 #include <string>
 
 #include "base/time/time.h"
+#include "build/build_config.h"
 
 // Utility functions to support metric collection for browser startup. Timings
 // should use TimeTicks whenever possible. OS-provided timings are still
@@ -33,6 +35,12 @@ enum StartupTemperature {
   // This must be last.
   STARTUP_TEMPERATURE_MAX
 };
+
+#if defined(OS_WIN)
+// Gets the hard fault count of the current process through |hard_fault_count|.
+// Returns true on success.
+bool GetHardFaultCountForCurrentProcess(uint32_t* hard_fault_count);
+#endif  // defined(OS_WIN)
 
 // Returns true if any UI other than the browser window has been displayed
 // so far.  Useful to test if UI has been displayed before the first browser

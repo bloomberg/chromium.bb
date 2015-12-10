@@ -20,13 +20,18 @@ using RegisterPreReadSyntheticFieldTrialCallback =
     const base::Callback<bool(const std::string&, const std::string&)>;
 
 // Get DLL pre-reading options. |product_registry_path| is the registry path
-// under which the registry key for this field trial resides. The
-// |should_pre_read| option is set if DLLs should be pre-read before being used.
-// The |should_pre_read_high_priority| option is set if this pre-reading should
-// be done with a high thread priority.
+// under which the registry key for this field trial resides. The |no_pre_read|
+// option is set if DLLs should not be pre-read. The |high_priority| option is
+// set if pre-reading should be done with a high thread priority. The
+// |only_if_cold| option is set if only cold DLLs should be pre-read. The
+// |prefetch_virtual_memory| option is set if the
+// ::PrefetchVirtualMemory function should be used to pre-read DLLs, if
+// available.
 void GetPreReadOptions(const base::string16& product_registry_path,
-                       bool* should_pre_read,
-                       bool* should_pre_read_high_priority);
+                       bool* no_pre_read,
+                       bool* high_priority,
+                       bool* only_if_cold,
+                       bool* prefetch_virtual_memory);
 
 // Updates DLL pre-reading options in the registry with the latest info for the
 // next startup. |product_registry_path| is the registry path under which the

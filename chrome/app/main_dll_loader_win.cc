@@ -13,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/environment.h"
+#include "base/files/memory_mapped_file.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -63,26 +64,44 @@ HMODULE LoadModuleWithDirectory(const base::FilePath& module, bool pre_read) {
   ::SetCurrentDirectoryW(module.DirName().value().c_str());
 
   // Get pre-read options from the PreRead field trial.
-  bool trial_should_pre_read = true;
-  bool trial_should_pre_read_high_priority = false;
+  bool trial_no_pre_read = false;
+  bool trial_high_priority = false;
+  bool trial_only_if_cold = false;
+  bool trial_prefetch_virtual_memory = false;
   startup_metric_utils::GetPreReadOptions(
       BrowserDistribution::GetDistribution()->GetRegistryPath(),
-      &trial_should_pre_read, &trial_should_pre_read_high_priority);
+      &trial_no_pre_read, &trial_high_priority, &trial_only_if_cold,
+      &trial_prefetch_virtual_memory);
 
-  if (pre_read && trial_should_pre_read) {
+  // Pre-read the binary to warm the memory caches (avoids a lot of random IO).
+  if (pre_read && !trial_no_pre_read) {
     base::ThreadPriority previous_priority = base::ThreadPriority::NORMAL;
-    if (trial_should_pre_read_high_priority) {
+    if (trial_high_priority) {
       previous_priority = base::PlatformThread::GetCurrentThreadPriority();
       base::PlatformThread::SetCurrentThreadPriority(
           base::ThreadPriority::DISPLAY);
     }
 
-    // We pre-read the binary to warm the memory caches (fewer hard faults to
-    // page parts of the binary in).
-    const size_t kStepSize = 1024 * 1024;
-    PreReadFile(module, kStepSize);
+    if (trial_only_if_cold) {
+      base::MemoryMappedFile module_memory_map;
+      const bool map_initialize_success = module_memory_map.Initialize(module);
+      DCHECK(map_initialize_success);
+      if (!IsMemoryMappedFileWarm(module_memory_map)) {
+        if (trial_prefetch_virtual_memory)
+          PreReadMemoryMappedFile(module_memory_map, module);
+        else
+          PreReadFile(module);
+      }
+    } else if (trial_prefetch_virtual_memory) {
+      base::MemoryMappedFile module_memory_map;
+      const bool map_initialize_success = module_memory_map.Initialize(module);
+      DCHECK(map_initialize_success);
+      PreReadMemoryMappedFile(module_memory_map, module);
+    } else {
+      PreReadFile(module);
+    }
 
-    if (trial_should_pre_read_high_priority)
+    if (trial_high_priority)
       base::PlatformThread::SetCurrentThreadPriority(previous_priority);
   }
 

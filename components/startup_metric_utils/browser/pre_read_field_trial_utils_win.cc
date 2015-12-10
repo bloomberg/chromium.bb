@@ -10,6 +10,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/registry.h"
+#include "components/variations/variations_associated_data.h"
 
 namespace startup_metric_utils {
 
@@ -24,10 +25,12 @@ const char kPreReadFieldTrialName[] = "PreRead";
 // annotated with the pre-read group that is actually used during this startup.
 const char kPreReadSyntheticFieldTrialName[] = "SyntheticPreRead";
 
-// Group names for the PreRead field trial.
-const base::char16 kPreReadDisabledGroupName[] = L"Disabled";
-const base::char16 kPreReadEnabledHighPriorityGroupName[] =
-    L"EnabledHighPriority";
+// Variation names for the PreRead field trial.
+const base::char16 kNoPreReadVariationName[] = L"NoPreRead";
+const base::char16 kHighPriorityVariationName[] = L"HighPriority";
+const base::char16 kOnlyIfColdVariationName[] = L"OnlyIfCold";
+const base::char16 kPrefetchVirtualMemoryVariationName[] =
+    L"PrefetchVirtualMemory";
 
 // Registry key in which the PreRead field trial group is stored.
 const base::char16 kPreReadFieldTrialRegistryKey[] = L"\\PreReadFieldTrial";
@@ -38,43 +41,42 @@ base::string16 GetPreReadRegistryPath(
   return product_registry_path + kPreReadFieldTrialRegistryKey;
 }
 
-// Returns the PreRead group stored in the registry, or an empty string if no
-// group is stored in the registry.
-base::string16 GetPreReadGroup(const base::string16& product_registry_path) {
-  const base::string16 registry_path =
-      GetPreReadRegistryPath(product_registry_path);
-  const base::win::RegKey registry_key(HKEY_CURRENT_USER, registry_path.c_str(),
-                                       KEY_QUERY_VALUE);
-  base::string16 group;
-  registry_key.ReadValue(L"", &group);
-  return group;
-}
-
 }  // namespace
 
 void GetPreReadOptions(const base::string16& product_registry_path,
-                       bool* should_pre_read,
-                       bool* should_pre_read_high_priority) {
+                       bool* no_pre_read,
+                       bool* high_priority,
+                       bool* only_if_cold,
+                       bool* prefetch_virtual_memory) {
   DCHECK(!product_registry_path.empty());
-  DCHECK(should_pre_read);
-  DCHECK(should_pre_read_high_priority);
+  DCHECK(no_pre_read);
+  DCHECK(high_priority);
+  DCHECK(only_if_cold);
+  DCHECK(prefetch_virtual_memory);
 
-  // Read the pre-read group from the registry.
-  const base::string16 group = GetPreReadGroup(product_registry_path);
+  // Open the PreRead field trial's registry key.
+  const base::string16 registry_path =
+      GetPreReadRegistryPath(product_registry_path);
+  const base::win::RegKey key(HKEY_CURRENT_USER, registry_path.c_str(),
+                              KEY_QUERY_VALUE);
 
-  // Set pre-read options according to the group.
-  if (base::StartsWith(group, kPreReadDisabledGroupName,
-                       base::CompareCase::SENSITIVE)) {
-    *should_pre_read = false;
-    *should_pre_read_high_priority = false;
-  } else if (base::StartsWith(group, kPreReadEnabledHighPriorityGroupName,
-                              base::CompareCase::SENSITIVE)) {
-    *should_pre_read = true;
-    *should_pre_read_high_priority = true;
-  } else {
-    // Default behavior.
-    *should_pre_read = true;
-    *should_pre_read_high_priority = false;
+  // Set the PreRead field trial's options.
+  struct VariationMapping {
+    const base::char16* name;
+    bool* variable;
+  } const variations_mappings[] = {
+      {kNoPreReadVariationName, no_pre_read},
+      {kHighPriorityVariationName, high_priority},
+      {kOnlyIfColdVariationName, only_if_cold},
+      {kPrefetchVirtualMemoryVariationName, prefetch_virtual_memory},
+  };
+
+  for (const auto& mapping : variations_mappings) {
+    // Set the option variable to true if the corresponding value is found in
+    // the registry. Set to false otherwise (default behavior).
+    DWORD value = 0;
+    *mapping.variable = key.ReadValueDW(mapping.name, &value) == ERROR_SUCCESS;
+    DCHECK(!*mapping.variable || value == 1);
   }
 }
 
@@ -83,18 +85,42 @@ void UpdatePreReadOptions(const base::string16& product_registry_path) {
 
   const base::string16 registry_path =
       GetPreReadRegistryPath(product_registry_path);
-  const std::string group =
-      base::FieldTrialList::FindFullName(kPreReadFieldTrialName);
-  if (group.empty()) {
-    // Clear the registry key. That way, when the trial is shut down, the
-    // registry will be cleaned automatically.
-    base::win::RegKey(HKEY_CURRENT_USER, registry_path.c_str(), KEY_SET_VALUE)
-        .DeleteKey(L"");
-  } else {
-    // Write the group in the registry.
-    base::win::RegKey(HKEY_CURRENT_USER, registry_path.c_str(), KEY_SET_VALUE)
-        .WriteValue(L"", base::UTF8ToUTF16(group).c_str());
+
+  // Clear the experiment key. That way, when the trial is shut down, the
+  // registry will be cleaned automatically. Also, this prevents variation
+  // params from the previous group to stay in the registry when the group is
+  // updated.
+  base::win::RegKey(HKEY_CURRENT_USER, registry_path.c_str(), KEY_SET_VALUE)
+      .DeleteKey(L"");
+
+  // Read variation params for the new group.
+  std::map<std::string, std::string> variation_params;
+  if (!variations::GetVariationParams(kPreReadFieldTrialName,
+                                      &variation_params))
+    return;
+
+  // Open the registry key.
+  base::win::RegKey key(HKEY_CURRENT_USER, registry_path.c_str(),
+                        KEY_SET_VALUE);
+
+  // Write variation params in the registry.
+  for (const auto& variation_param : variation_params) {
+    if (!variation_param.second.empty()) {
+      if (key.WriteValue(base::UTF8ToUTF16(variation_param.first).c_str(), 1) !=
+          ERROR_SUCCESS) {
+        // Abort on failure to prevent the group name from being written in the
+        // registry if not all variation params have been written. No synthetic
+        // field trial is registered when there is no group name in the
+        // registry.
+        return;
+      }
+    }
   }
+
+  // Write the new group name in the registry.
+  key.WriteValue(L"", base::UTF8ToUTF16(base::FieldTrialList::FindFullName(
+                                            kPreReadFieldTrialName))
+                          .c_str());
 }
 
 void RegisterPreReadSyntheticFieldTrial(
@@ -103,9 +129,16 @@ void RegisterPreReadSyntheticFieldTrial(
         register_synthetic_field_trial) {
   DCHECK(!product_registry_path.empty());
 
-  register_synthetic_field_trial.Run(
-      kPreReadSyntheticFieldTrialName,
-      base::UTF16ToUTF8(GetPreReadGroup(product_registry_path)));
+  const base::win::RegKey key(
+      HKEY_CURRENT_USER, GetPreReadRegistryPath(product_registry_path).c_str(),
+      KEY_QUERY_VALUE);
+  base::string16 group;
+  key.ReadValue(L"", &group);
+
+  if (!group.empty()) {
+    register_synthetic_field_trial.Run(kPreReadSyntheticFieldTrialName,
+                                       base::UTF16ToUTF8(group));
+  }
 }
 
 }  // namespace startup_metric_utils

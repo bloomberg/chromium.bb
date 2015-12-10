@@ -543,6 +543,7 @@ if (is_win) {
     ]
     deps = [
       "//base",
+      "//components/startup_metric_utils/browser:lib",
     ]
   }
 }

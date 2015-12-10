@@ -14,6 +14,7 @@
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
+        'components.gyp:variations',
       ],
       'include_dirs': [
         '..',

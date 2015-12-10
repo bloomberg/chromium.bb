@@ -46192,6 +46192,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="Startup.BrowserMessageLoopStartHardFaultCount.Success"
     enum="BooleanSuccess">
   <owner>chrisha@chromium.org</owner>
+  <obsolete>
+    Deprecated 12/2015. No longer tracked because values collected on stable
+    show that the function pretty much never fails (succeeds 99.9996% of the
+    time).
+  </obsolete>
   <summary>
     If OS support was detected (Windows 7 and greater) indicates whether it was
     possible to determine the number of hard faults that have occurred in the
