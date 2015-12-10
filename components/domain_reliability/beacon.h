@@ -68,6 +68,8 @@ struct DOMAIN_RELIABILITY_EXPORT DomainReliabilityBeacon {
   // caused by an upload that itself contained no beacons caused by uploads,
   // et cetera.
   int upload_depth;
+  // The probability that this request had of being reported ("sample rate").
+  double sample_rate;
 
   // Okay to copy and assign.
 };

@@ -32,7 +32,7 @@ struct DOMAIN_RELIABILITY_EXPORT DomainReliabilityConfig {
 
   bool IsValid() const;
 
-  bool DecideIfShouldReportRequest(bool success) const;
+  double GetSampleRate(bool request_successful) const;
 
   // Registers with the JSONValueConverter so it will know how to convert the
   // JSON for a config into the struct.

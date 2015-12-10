@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
+#include "base/rand_util.h"
 #include "base/values.h"
 #include "components/domain_reliability/dispatcher.h"
 #include "components/domain_reliability/uploader.h"
@@ -69,16 +70,17 @@ DomainReliabilityContext::~DomainReliabilityContext() {
 void DomainReliabilityContext::OnBeacon(
     scoped_ptr<DomainReliabilityBeacon> beacon) {
   bool success = (beacon->status == "ok");
-
-  bool reported = config().DecideIfShouldReportRequest(success);
-  UMA_HISTOGRAM_BOOLEAN("DomainReliability.BeaconReported", reported);
-  if (!reported) {
+  double sample_rate = config().GetSampleRate(success);
+  bool should_report = base::RandDouble() < sample_rate;
+  UMA_HISTOGRAM_BOOLEAN("DomainReliability.BeaconReported", should_report);
+  if (!should_report) {
     // If the beacon isn't queued to be reported, it definitely cannot evict
     // an older beacon. (This histogram is also logged below based on whether
     // an older beacon was actually evicted.)
     LogOnBeaconDidEvictHistogram(false);
     return;
   }
+  beacon->sample_rate = sample_rate;
 
   UMA_HISTOGRAM_SPARSE_SLOWLY("DomainReliability.ReportedBeaconError",
                               -beacon->chrome_error);
@@ -94,11 +96,11 @@ void DomainReliabilityContext::OnBeacon(
   if (beacon->upload_depth <= kMaxUploadDepthToSchedule)
     scheduler_.OnBeaconAdded();
   beacons_.push_back(beacon.release());
-  bool evicted = beacons_.size() > kMaxQueuedBeacons;
-  if (evicted)
+  bool should_evict = beacons_.size() > kMaxQueuedBeacons;
+  if (should_evict)
     RemoveOldestBeacon();
 
-  LogOnBeaconDidEvictHistogram(evicted);
+  LogOnBeaconDidEvictHistogram(should_evict);
 }
 
 void DomainReliabilityContext::ClearBeacons() {

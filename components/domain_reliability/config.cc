@@ -14,7 +14,6 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_value_converter.h"
 #include "base/profiler/scoped_tracker.h"
-#include "base/rand_util.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
 
@@ -77,9 +76,8 @@ bool DomainReliabilityConfig::IsValid() const {
   return true;
 }
 
-bool DomainReliabilityConfig::DecideIfShouldReportRequest(bool success) const {
-  double sample_rate = success ? success_sample_rate : failure_sample_rate;
-  return base::RandDouble() < sample_rate;
+double DomainReliabilityConfig::GetSampleRate(bool request_successful) const {
+  return request_successful ? success_sample_rate : failure_sample_rate;
 }
 
 // static

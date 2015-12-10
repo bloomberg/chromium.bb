@@ -41,6 +41,7 @@ scoped_ptr<DomainReliabilityBeacon> MakeBeacon(MockableTime* time) {
   beacon->elapsed = base::TimeDelta::FromMilliseconds(250);
   beacon->start_time = time->NowTicks() - beacon->elapsed;
   beacon->upload_depth = 0;
+  beacon->sample_rate = 1.0;
   return beacon.Pass();
 }
 
@@ -60,9 +61,10 @@ struct HasValue {
   }
 };
 
-HasValue<std::string, &DictionaryValue::GetString> HasStringValue;
-HasValue<int, &DictionaryValue::GetInteger> HasIntegerValue;
 HasValue<bool, &DictionaryValue::GetBoolean> HasBooleanValue;
+HasValue<double, &DictionaryValue::GetDouble> HasDoubleValue;
+HasValue<int, &DictionaryValue::GetInteger> HasIntegerValue;
+HasValue<std::string, &DictionaryValue::GetString> HasStringValue;
 
 bool GetEntryFromReport(const Value* report,
                         size_t index,
@@ -85,18 +87,22 @@ class DomainReliabilityContextTest : public testing::Test {
         uploader_(base::Bind(&DomainReliabilityContextTest::OnUploadRequest,
                              base::Unretained(this))),
         upload_reporter_string_("test-reporter"),
-        context_(&time_,
-                 params_,
-                 upload_reporter_string_,
-                 &last_network_change_time_,
-                 &dispatcher_,
-                 &uploader_,
-                 MakeTestConfig().Pass()),
         upload_pending_(false) {
     // Make sure that the last network change does not overlap requests
     // made in test cases, which start 250ms in the past (see |MakeBeacon|).
     last_network_change_time_ = time_.NowTicks();
     time_.Advance(base::TimeDelta::FromSeconds(1));
+  }
+
+  void InitContext(scoped_ptr<const DomainReliabilityConfig> config) {
+    context_.reset(new DomainReliabilityContext(
+        &time_,
+        params_,
+        upload_reporter_string_,
+        &last_network_change_time_,
+        &dispatcher_,
+        &uploader_,
+        config.Pass()));
   }
 
   TimeDelta min_delay() const { return params_.minimum_upload_delay; }
@@ -129,7 +135,7 @@ class DomainReliabilityContextTest : public testing::Test {
 
   bool CheckNoBeacons() {
     BeaconVector beacons;
-    context_.GetQueuedBeaconsForTesting(&beacons);
+    context_->GetQueuedBeaconsForTesting(&beacons);
     return beacons.empty();
   }
 
@@ -139,7 +145,7 @@ class DomainReliabilityContextTest : public testing::Test {
   DomainReliabilityScheduler::Params params_;
   MockUploader uploader_;
   std::string upload_reporter_string_;
-  DomainReliabilityContext context_;
+  scoped_ptr<DomainReliabilityContext> context_;
 
  private:
   void OnUploadRequest(
@@ -163,25 +169,28 @@ class DomainReliabilityContextTest : public testing::Test {
 };
 
 TEST_F(DomainReliabilityContextTest, Create) {
+  InitContext(MakeTestConfig());
   EXPECT_TRUE(CheckNoBeacons());
 }
 
 TEST_F(DomainReliabilityContextTest, Report) {
-  context_.OnBeacon(MakeBeacon(&time_));
+  InitContext(MakeTestConfig());
+  context_->OnBeacon(MakeBeacon(&time_));
 
   BeaconVector beacons;
-  context_.GetQueuedBeaconsForTesting(&beacons);
+  context_->GetQueuedBeaconsForTesting(&beacons);
   EXPECT_EQ(1u, beacons.size());
 }
 
 TEST_F(DomainReliabilityContextTest, MaxNestedBeaconSchedules) {
+  InitContext(MakeTestConfig());
   GURL url("http://example/always_report");
   scoped_ptr<DomainReliabilityBeacon> beacon = MakeBeacon(&time_);
   beacon->upload_depth = DomainReliabilityContext::kMaxUploadDepthToSchedule;
-  context_.OnBeacon(beacon.Pass());
+  context_->OnBeacon(beacon.Pass());
 
   BeaconVector beacons;
-  context_.GetQueuedBeaconsForTesting(&beacons);
+  context_->GetQueuedBeaconsForTesting(&beacons);
   EXPECT_EQ(1u, beacons.size());
 
   time_.Advance(max_delay());
@@ -189,14 +198,15 @@ TEST_F(DomainReliabilityContextTest, MaxNestedBeaconSchedules) {
 }
 
 TEST_F(DomainReliabilityContextTest, OverlyNestedBeaconDoesNotSchedule) {
+  InitContext(MakeTestConfig());
   GURL url("http://example/always_report");
   scoped_ptr<DomainReliabilityBeacon> beacon = MakeBeacon(&time_);
   beacon->upload_depth =
       DomainReliabilityContext::kMaxUploadDepthToSchedule + 1;
-  context_.OnBeacon(beacon.Pass());
+  context_->OnBeacon(beacon.Pass());
 
   BeaconVector beacons;
-  context_.GetQueuedBeaconsForTesting(&beacons);
+  context_->GetQueuedBeaconsForTesting(&beacons);
   EXPECT_EQ(1u, beacons.size());
 
   time_.Advance(max_delay());
@@ -205,14 +215,15 @@ TEST_F(DomainReliabilityContextTest, OverlyNestedBeaconDoesNotSchedule) {
 
 TEST_F(DomainReliabilityContextTest,
     MaxNestedBeaconAfterOverlyNestedBeaconSchedules) {
+  InitContext(MakeTestConfig());
   // Add a beacon for a report that's too nested to schedule a beacon.
   scoped_ptr<DomainReliabilityBeacon> beacon = MakeBeacon(&time_);
   beacon->upload_depth =
       DomainReliabilityContext::kMaxUploadDepthToSchedule + 1;
-  context_.OnBeacon(beacon.Pass());
+  context_->OnBeacon(beacon.Pass());
 
   BeaconVector beacons;
-  context_.GetQueuedBeaconsForTesting(&beacons);
+  context_->GetQueuedBeaconsForTesting(&beacons);
   EXPECT_EQ(1u, beacons.size());
 
   time_.Advance(max_delay());
@@ -222,9 +233,9 @@ TEST_F(DomainReliabilityContextTest,
   // doesn't schedule until the deadline.
   beacon = MakeBeacon(&time_);
   beacon->upload_depth = DomainReliabilityContext::kMaxUploadDepthToSchedule;
-  context_.OnBeacon(beacon.Pass());
+  context_->OnBeacon(beacon.Pass());
 
-  context_.GetQueuedBeaconsForTesting(&beacons);
+  context_->GetQueuedBeaconsForTesting(&beacons);
   EXPECT_EQ(2u, beacons.size());
 
   time_.Advance(max_delay());
@@ -239,10 +250,11 @@ TEST_F(DomainReliabilityContextTest,
 }
 
 TEST_F(DomainReliabilityContextTest, ReportUpload) {
-  context_.OnBeacon(MakeBeacon(&time_));
+  InitContext(MakeTestConfig());
+  context_->OnBeacon(MakeBeacon(&time_));
 
   BeaconVector beacons;
-  context_.GetQueuedBeaconsForTesting(&beacons);
+  context_->GetQueuedBeaconsForTesting(&beacons);
   EXPECT_EQ(1u, beacons.size());
 
   time_.Advance(max_delay());
@@ -261,6 +273,7 @@ TEST_F(DomainReliabilityContextTest, ReportUpload) {
   // N.B.: Assumes max_delay is 5 minutes.
   EXPECT_TRUE(HasIntegerValue(*entry, "request_age_ms", 300250));
   EXPECT_TRUE(HasIntegerValue(*entry, "request_elapsed_ms", 250));
+  EXPECT_TRUE(HasDoubleValue(*entry, "sample_rate", 1.0));
   EXPECT_TRUE(HasStringValue(*entry, "server_ip", "127.0.0.1"));
   EXPECT_TRUE(HasStringValue(*entry, "status", "tcp.connection_reset"));
   EXPECT_TRUE(HasStringValue(*entry, "url", "https://localhost/"));
@@ -274,10 +287,11 @@ TEST_F(DomainReliabilityContextTest, ReportUpload) {
 }
 
 TEST_F(DomainReliabilityContextTest, NetworkChanged) {
-  context_.OnBeacon(MakeBeacon(&time_));
+  InitContext(MakeTestConfig());
+  context_->OnBeacon(MakeBeacon(&time_));
 
   BeaconVector beacons;
-  context_.GetQueuedBeaconsForTesting(&beacons);
+  context_->GetQueuedBeaconsForTesting(&beacons);
   EXPECT_EQ(1u, beacons.size());
 
   // Simulate a network change after the request but before the upload.
@@ -297,6 +311,127 @@ TEST_F(DomainReliabilityContextTest, NetworkChanged) {
   CallUploadCallback(result);
 
   EXPECT_TRUE(CheckNoBeacons());
+}
+
+TEST_F(DomainReliabilityContextTest, ZeroSampleRate) {
+  scoped_ptr<DomainReliabilityConfig> config(MakeTestConfig());
+  config->failure_sample_rate = 0.0;
+  InitContext(config.Pass());
+
+  BeaconVector beacons;
+  for (int i = 0; i < 100; i++) {
+    context_->OnBeacon(MakeBeacon(&time_));
+    EXPECT_TRUE(CheckNoBeacons());
+  }
+}
+
+TEST_F(DomainReliabilityContextTest, FractionalSampleRate) {
+  scoped_ptr<DomainReliabilityConfig> config(MakeTestConfig());
+  config->failure_sample_rate = 0.5;
+  InitContext(config.Pass());
+
+  BeaconVector beacons;
+  do {
+    context_->OnBeacon(MakeBeacon(&time_));
+    context_->GetQueuedBeaconsForTesting(&beacons);
+  } while (beacons.empty());
+  EXPECT_EQ(1u, beacons.size());
+
+  time_.Advance(max_delay());
+  EXPECT_TRUE(upload_pending());
+  EXPECT_EQ(0, upload_max_depth());
+  EXPECT_EQ(GURL("https://exampleuploader/upload"), upload_url());
+
+  scoped_ptr<Value> value = base::JSONReader::Read(upload_report());
+  const DictionaryValue* entry;
+  ASSERT_TRUE(GetEntryFromReport(value.get(), 0, &entry));
+  EXPECT_TRUE(HasDoubleValue(*entry, "sample_rate", 0.5));
+
+  DomainReliabilityUploader::UploadResult result;
+  result.status = DomainReliabilityUploader::UploadResult::SUCCESS;
+  CallUploadCallback(result);
+
+  EXPECT_TRUE(CheckNoBeacons());
+}
+
+TEST_F(DomainReliabilityContextTest, FailureSampleOnly) {
+  scoped_ptr<DomainReliabilityConfig> config(MakeTestConfig());
+  config->success_sample_rate = 0.0;
+  config->failure_sample_rate = 1.0;
+  InitContext(config.Pass());
+
+  BeaconVector beacons;
+
+  context_->OnBeacon(MakeBeacon(&time_));
+  context_->GetQueuedBeaconsForTesting(&beacons);
+  EXPECT_EQ(1u, beacons.size());
+
+  scoped_ptr<DomainReliabilityBeacon> beacon(MakeBeacon(&time_));
+  beacon->status = "ok";
+  beacon->chrome_error = net::OK;
+  context_->OnBeacon(beacon.Pass());
+  context_->GetQueuedBeaconsForTesting(&beacons);
+  EXPECT_EQ(1u, beacons.size());
+}
+
+TEST_F(DomainReliabilityContextTest, SuccessSampleOnly) {
+  scoped_ptr<DomainReliabilityConfig> config(MakeTestConfig());
+  config->success_sample_rate = 1.0;
+  config->failure_sample_rate = 0.0;
+  InitContext(config.Pass());
+
+  BeaconVector beacons;
+
+  context_->OnBeacon(MakeBeacon(&time_));
+  context_->GetQueuedBeaconsForTesting(&beacons);
+  EXPECT_EQ(0u, beacons.size());
+
+  scoped_ptr<DomainReliabilityBeacon> beacon(MakeBeacon(&time_));
+  beacon->status = "ok";
+  beacon->chrome_error = net::OK;
+  context_->OnBeacon(beacon.Pass());
+  context_->GetQueuedBeaconsForTesting(&beacons);
+  EXPECT_EQ(1u, beacons.size());
+}
+
+TEST_F(DomainReliabilityContextTest, SampleAllBeacons) {
+  scoped_ptr<DomainReliabilityConfig> config(MakeTestConfig());
+  config->success_sample_rate = 1.0;
+  config->failure_sample_rate = 1.0;
+  InitContext(config.Pass());
+
+  BeaconVector beacons;
+
+  context_->OnBeacon(MakeBeacon(&time_));
+  context_->GetQueuedBeaconsForTesting(&beacons);
+  EXPECT_EQ(1u, beacons.size());
+
+  scoped_ptr<DomainReliabilityBeacon> beacon(MakeBeacon(&time_));
+  beacon->status = "ok";
+  beacon->chrome_error = net::OK;
+  context_->OnBeacon(beacon.Pass());
+  context_->GetQueuedBeaconsForTesting(&beacons);
+  EXPECT_EQ(2u, beacons.size());
+}
+
+TEST_F(DomainReliabilityContextTest, SampleNoBeacons) {
+  scoped_ptr<DomainReliabilityConfig> config(MakeTestConfig());
+  config->success_sample_rate = 0.0;
+  config->failure_sample_rate = 0.0;
+  InitContext(config.Pass());
+
+  BeaconVector beacons;
+
+  context_->OnBeacon(MakeBeacon(&time_));
+  context_->GetQueuedBeaconsForTesting(&beacons);
+  EXPECT_EQ(0u, beacons.size());
+
+  scoped_ptr<DomainReliabilityBeacon> beacon(MakeBeacon(&time_));
+  beacon->status = "ok";
+  beacon->chrome_error = net::OK;
+  context_->OnBeacon(beacon.Pass());
+  context_->GetQueuedBeaconsForTesting(&beacons);
+  EXPECT_EQ(0u, beacons.size());
 }
 
 // TODO(ttuttle): Add beacon_unittest.cc to test serialization.

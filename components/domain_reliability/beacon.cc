@@ -44,6 +44,7 @@ scoped_ptr<Value> DomainReliabilityBeacon::ToValue(
   beacon_value->SetInteger("request_age_ms", request_age.InMilliseconds());
   bool network_changed = last_network_change_time > start_time;
   beacon_value->SetBoolean("network_changed", network_changed);
+  beacon_value->SetDouble("sample_rate", sample_rate);
   return beacon_value.Pass();
 }
 
