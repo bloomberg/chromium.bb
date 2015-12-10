@@ -11,34 +11,40 @@
 namespace autofill {
 namespace l10n {
 
-CaseInsensitiveCompare::CaseInsensitiveCompare()
-    : CaseInsensitiveCompare(icu::Locale::getDefault()) {}
-
-CaseInsensitiveCompare::CaseInsensitiveCompare(const icu::Locale& locale) {
-  UErrorCode error = U_ZERO_ERROR;
-  collator_.reset(icu::Collator::createInstance(locale, error));
-  if (!collator_) {
+icu::Collator* GetCollatorForLocale(const icu::Locale& locale) {
+  UErrorCode ignored = U_ZERO_ERROR;
+  icu::Collator* collator(icu::Collator::createInstance(locale, ignored));
+  if (!collator) {
     // On some systems, the default locale is invalid to the eyes of the ICU
     // library. This could be due to a device-specific issue (has been seen in
-    // the wild on Android devices). In the failure case, |collator_| will be
-    // null. See http://crbug.com/558625.
+    // the wild on Android and iOS devices). In the failure case, |collator|
+    // will be null. See http://crbug.com/558625.
     icu::UnicodeString name;
     std::string locale_name;
     locale.getDisplayName(name).toUTF8String(locale_name);
-    LOG(ERROR) << "Failed to initialize the ICU Collator for "
-               << "CaseInsensitiveCompare with locale" << locale_name;
+    LOG(ERROR) << "Failed to initialize the ICU Collator with locale "
+               << locale_name;
+
     // Attempt to load the English locale.
-    collator_.reset(icu::Collator::createInstance(icu::Locale::getEnglish(),
-                    error));
+    collator =
+        icu::Collator::createInstance(icu::Locale::getEnglish(), ignored);
+    if (!collator) {
+      LOG(ERROR) << "Failed to initialize the ICU Collator with the English "
+                 << "locale.";
+    }
   }
 
-  if (collator_) {
+  UMA_HISTOGRAM_BOOLEAN("Autofill.IcuCollatorCreationSuccess", !!collator);
+  return collator;
+}
+
+CaseInsensitiveCompare::CaseInsensitiveCompare()
+    : CaseInsensitiveCompare(icu::Locale::getDefault()) {}
+
+CaseInsensitiveCompare::CaseInsensitiveCompare(const icu::Locale& locale)
+    : collator_(GetCollatorForLocale(locale)) {
+  if (collator_)
     collator_->setStrength(icu::Collator::PRIMARY);
-  } else {
-    LOG(ERROR) << "Failed to initialize the ICU Collator for "
-               << "CaseInsensitiveCompare with the English locale.";
-  }
-  UMA_HISTOGRAM_BOOLEAN("Autofill.IcuCollatorCreationSuccess", !!collator_);
 }
 
 CaseInsensitiveCompare::~CaseInsensitiveCompare() {

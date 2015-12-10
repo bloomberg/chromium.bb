@@ -15,6 +15,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/autofill/core/common/autofill_l10n_util.h"
 #include "grit/components_strings.h"
 #include "third_party/icu/source/common/unicode/locid.h"
 #include "third_party/icu/source/common/unicode/uloc.h"
@@ -869,7 +870,7 @@ class CountryNames {
       const std::string& locale);
 
   // Returns an ICU collator -- i.e. string comparator -- appropriate for the
-  // given |locale|.
+  // given |locale|, or null if no collator is available.
   icu::Collator* GetCollatorForLocale(const std::string& locale);
 
   // Returns the ICU sort key corresponding to |str| for the given |collator|.
@@ -985,6 +986,9 @@ const std::string CountryNames::GetCountryCodeForLocalizedName(
   AddLocalizedNamesForLocale(locale);
 
   icu::Collator* collator = GetCollatorForLocale(locale);
+  // In very rare cases, the collator fails to initialize.
+  if (!collator)
+    return std::string();
 
   // As recommended[1] by ICU, initialize the buffer size to four times the
   // source string length.
@@ -1009,12 +1013,13 @@ const std::string CountryNames::GetCountryCodeForLocalizedName(
 
 icu::Collator* CountryNames::GetCollatorForLocale(const std::string& locale) {
   if (!collators_.count(locale)) {
-    icu::Locale icu_locale(locale.c_str());
-    UErrorCode ignored = U_ZERO_ERROR;
-    icu::Collator* collator(icu::Collator::createInstance(icu_locale, ignored));
+    icu::Collator* collator(
+        autofill::l10n::GetCollatorForLocale(icu::Locale(locale.c_str())));
+    if (!collator)
+      return nullptr;
 
     // Compare case-insensitively and ignoring punctuation.
-    ignored = U_ZERO_ERROR;
+    UErrorCode ignored = U_ZERO_ERROR;
     collator->setAttribute(UCOL_STRENGTH, UCOL_SECONDARY, ignored);
     ignored = U_ZERO_ERROR;
     collator->setAttribute(UCOL_ALTERNATE_HANDLING, UCOL_SHIFTED, ignored);
