@@ -1,0 +1,18 @@
+<script src="../../resources/js-test.js"></script>
+<script type='text/javascript'>
+description("Test the handling of invalid arguments in canvas toBlob().");
+
+var canvas = document.createElement('canvas');
+var ctx = canvas.getContext("2d"); 
+ctx.strokeStyle = "red";
+ctx.strokeRect(0, 0, 50, 50);
+
+shouldThrow("canvas.toBlob();");
+shouldThrow("canvas.toBlob(null);");
+shouldThrow("canvas.toBlob(undefined);");
+// Passing the callback argument without blob handle silently fails.
+shouldNotThrow("canvas.toBlob(function() {});");
+
+// Invalid quality argument will fall back to default value
+shouldNotThrow("canvas.toBlob(function(blob) {}, 'image/jpeg', 500)");
+</script>
