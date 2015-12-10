@@ -915,7 +915,6 @@
             'animation/SVGIntegerInterpolationType.h',
             'animation/SVGIntegerOptionalIntegerInterpolationType.cpp',
             'animation/SVGIntegerOptionalIntegerInterpolationType.h',
-            'animation/SVGInterpolation.cpp',
             'animation/SVGInterpolation.h',
             'animation/SVGInterpolationType.cpp',
             'animation/SVGInterpolationType.h',

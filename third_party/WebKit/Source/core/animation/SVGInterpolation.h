@@ -24,7 +24,10 @@ public:
         return PropertyHandle(attributeName());
     }
 
-    void apply(SVGElement&) const;
+    void apply(SVGElement& targetElement) const
+    {
+        targetElement.setWebAnimatedAttribute(attributeName(), interpolatedValue(targetElement));
+    }
 
     virtual PassRefPtrWillBeRawPtr<SVGPropertyBase> interpolatedValue(SVGElement&) const = 0;
 
