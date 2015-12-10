@@ -135,7 +135,7 @@ ChromeIOSTranslateClient::GetTranslateAcceptLanguages() {
 }
 
 int ChromeIOSTranslateClient::GetInfobarIconID() const {
-  return IDR_INFOBAR_TRANSLATE_IOS;
+  return IDR_IOS_INFOBAR_TRANSLATE;
 }
 
 bool ChromeIOSTranslateClient::IsTranslatableURL(const GURL& url) {

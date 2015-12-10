@@ -25,8 +25,8 @@
       <!-- KEEP THESE IN ALPHABETICAL ORDER!  DO NOT ADD TO RANDOM PLACES JUST
            BECAUSE YOUR RESOURCES ARE FUNCTIONALLY RELATED OR FALL UNDER THE
            SAME CONDITIONALS. -->
-      <structure type="chrome_scaled_image" name="IDR_INFOBAR_TRANSLATE_IOS" file="infobar_translate.png" />
-      <structure type="chrome_scaled_image" name="IDR_INFOBAR_AUTOLOGIN_IOS" file="infobar_autologin.png" />
+      <structure type="chrome_scaled_image" name="IDR_IOS_INFOBAR_TRANSLATE" file="infobar_translate.png" />
+      <structure type="chrome_scaled_image" name="IDR_IOS_INFOBAR_AUTOLOGIN" file="infobar_autologin.png" />
     </structures>
   </release>
 </grit>
