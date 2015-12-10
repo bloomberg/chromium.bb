@@ -72,6 +72,7 @@ AnimationTimeline::AnimationTimeline(Document* document, PlatformTiming* timing)
     , m_playbackRate(1)
     , m_lastCurrentTimeInternal(0)
 {
+    ThreadState::current()->registerPreFinalizer(this);
     if (!timing)
         m_timing = new AnimationTimelineTiming(this);
     else
@@ -87,6 +88,17 @@ AnimationTimeline::AnimationTimeline(Document* document, PlatformTiming* timing)
 
 AnimationTimeline::~AnimationTimeline()
 {
+}
+
+void AnimationTimeline::dispose()
+{
+    // The Animation objects depend on using this AnimationTimeline to
+    // unregister from its underlying compositor timeline. To arrange
+    // for that safely, this dispose() method will return first
+    // during prefinalization, notifying each Animation object of
+    // impending destruction.
+    for (const auto& animation : m_animations)
+        animation->dispose();
 }
 
 bool AnimationTimeline::isActive()

@@ -68,8 +68,9 @@ public:
         Finished
     };
 
-    ~Animation();
     static Animation* create(AnimationEffect*, AnimationTimeline*);
+    ~Animation();
+    void dispose();
 
     // Returns whether the animation is finished.
     bool update(TimingUpdateReason);
@@ -230,6 +231,7 @@ private:
 
     Member<AnimationEffect> m_content;
     Member<AnimationTimeline> m_timeline;
+
     // Reflects all pausing, including via pauseForTesting().
     bool m_paused;
     bool m_held;

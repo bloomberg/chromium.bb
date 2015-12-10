@@ -114,6 +114,15 @@ Animation::~Animation()
     destroyCompositorPlayer();
 }
 
+void Animation::dispose()
+{
+    destroyCompositorPlayer();
+    // If the AnimationTimeline and its Animation objects are
+    // finalized by the same GC, we have to eagerly clear out
+    // this Animation object's compositor player registration.
+    ASSERT(!m_compositorPlayer);
+}
+
 double Animation::effectEnd() const
 {
     return m_content ? m_content->endTimeInternal() : 0;
@@ -929,8 +938,8 @@ void Animation::destroyCompositorPlayer()
     if (m_compositorPlayer) {
         detachCompositorTimeline();
         m_compositorPlayer->setAnimationDelegate(nullptr);
+        m_compositorPlayer.clear();
     }
-    m_compositorPlayer.clear();
 }
 
 void Animation::attachCompositorTimeline()
