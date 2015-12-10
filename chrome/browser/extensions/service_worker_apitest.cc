@@ -40,6 +40,43 @@ std::string* const kExpectSuccess = nullptr;
 
 void DoNothingWithBool(bool b) {}
 
+// Returns the newly added WebContents.
+content::WebContents* AddTab(Browser* browser, const GURL& url) {
+  int starting_tab_count = browser->tab_strip_model()->count();
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser, url, NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  int tab_count = browser->tab_strip_model()->count();
+  EXPECT_EQ(starting_tab_count + 1, tab_count);
+  return browser->tab_strip_model()->GetActiveWebContents();
+}
+
+class WebContentsLoadStopObserver : content::WebContentsObserver {
+ public:
+  explicit WebContentsLoadStopObserver(content::WebContents* web_contents)
+      : content::WebContentsObserver(web_contents),
+        load_stop_observed_(false) {}
+
+  void WaitForLoadStop() {
+    if (load_stop_observed_)
+      return;
+    message_loop_runner_ = new content::MessageLoopRunner;
+    message_loop_runner_->Run();
+  }
+
+ private:
+  void DidStopLoading() override {
+    load_stop_observed_ = true;
+    if (message_loop_runner_)
+      message_loop_runner_->Quit();
+  }
+
+  bool load_stop_observed_;
+  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebContentsLoadStopObserver);
+};
+
 }  // namespace
 
 class ServiceWorkerTest : public ExtensionApiTest {
@@ -251,6 +288,75 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, UpdateRefreshesServiceWorker) {
                   ->enabled_extensions()
                   .GetByID(kId));
   EXPECT_TRUE(listener_v2.WaitUntilSatisfied());
+}
+
+IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, UpdateWithoutSkipWaiting) {
+  base::ScopedTempDir scoped_temp_dir;
+  ASSERT_TRUE(scoped_temp_dir.CreateUniqueTempDir());
+  base::FilePath pem_path = test_data_dir_.AppendASCII("service_worker")
+                                .AppendASCII("update_without_skip_waiting")
+                                .AppendASCII("update_without_skip_waiting.pem");
+  base::FilePath path_v1 = PackExtensionWithOptions(
+      test_data_dir_.AppendASCII("service_worker")
+          .AppendASCII("update_without_skip_waiting")
+          .AppendASCII("v1"),
+      scoped_temp_dir.path().AppendASCII("v1.crx"), pem_path, base::FilePath());
+  base::FilePath path_v2 = PackExtensionWithOptions(
+      test_data_dir_.AppendASCII("service_worker")
+          .AppendASCII("update_without_skip_waiting")
+          .AppendASCII("v2"),
+      scoped_temp_dir.path().AppendASCII("v2.crx"), pem_path, base::FilePath());
+  const char* kId = "mhnnnflgagdakldgjpfcofkiocpdmogl";
+
+  // Install version 1.0 of the extension.
+  ASSERT_TRUE(InstallExtension(path_v1, 1));
+  EXPECT_TRUE(extensions::ExtensionRegistry::Get(profile())
+                  ->enabled_extensions()
+                  .GetByID(kId));
+  const Extension* extension = extensions::ExtensionRegistry::Get(profile())
+                                   ->enabled_extensions()
+                                   .GetByID(kId);
+
+  ExtensionTestMessageListener listener1("Pong from version 1", false);
+  listener1.set_failure_message("FAILURE");
+  content::WebContents* web_contents =
+      AddTab(browser(), extension->GetResourceURL("page.html"));
+  EXPECT_TRUE(listener1.WaitUntilSatisfied());
+
+  // Update to version 2.0.
+  EXPECT_TRUE(UpdateExtension(kId, path_v2, 0));
+  EXPECT_TRUE(extensions::ExtensionRegistry::Get(profile())
+                  ->enabled_extensions()
+                  .GetByID(kId));
+  const Extension* extension_after_update =
+      extensions::ExtensionRegistry::Get(profile())
+          ->enabled_extensions()
+          .GetByID(kId);
+
+  // Service worker version 2 would be installed but it won't be controlling
+  // the extension page yet.
+  ExtensionTestMessageListener listener2("Pong from version 1", false);
+  listener2.set_failure_message("FAILURE");
+  web_contents =
+      AddTab(browser(), extension_after_update->GetResourceURL("page.html"));
+  EXPECT_TRUE(listener2.WaitUntilSatisfied());
+
+  // Navigate the tab away from the extension page so that no clients are
+  // using the service worker.
+  // Note that just closing the tab with WebContentsDestroyedWatcher doesn't
+  // seem to be enough because it returns too early.
+  WebContentsLoadStopObserver navigate_away_observer(web_contents);
+  web_contents->GetController().LoadURL(
+      GURL(url::kAboutBlankURL), content::Referrer(), ui::PAGE_TRANSITION_TYPED,
+      std::string());
+  navigate_away_observer.WaitForLoadStop();
+
+  // Now expect service worker version 2 to control the extension page.
+  ExtensionTestMessageListener listener3("Pong from version 2", false);
+  listener3.set_failure_message("FAILURE");
+  web_contents =
+      AddTab(browser(), extension_after_update->GetResourceURL("page.html"));
+  EXPECT_TRUE(listener3.WaitUntilSatisfied());
 }
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, FetchArbitraryPaths) {
