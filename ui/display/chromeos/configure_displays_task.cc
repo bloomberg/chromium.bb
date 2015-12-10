@@ -6,6 +6,7 @@
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
+#include "ui/display/chromeos/display_util.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/display/types/native_display_delegate.h"
 
@@ -74,9 +75,15 @@ void ConfigureDisplaysTask::Run() {
       size_t index = pending_request_indexes_.front();
       DisplayConfigureRequest* request = &requests_[index];
       pending_request_indexes_.pop();
-      delegate_->Configure(*request->display, request->mode, request->origin,
-                           base::Bind(&ConfigureDisplaysTask::OnConfigured,
-                                      weak_ptr_factory_.GetWeakPtr(), index));
+      // Non-native displays do not require configuration through the
+      // NativeDisplayDelegate.
+      if (!IsPhysicalDisplayType(request->display->type())) {
+        OnConfigured(index, true);
+      } else {
+        delegate_->Configure(*request->display, request->mode, request->origin,
+                             base::Bind(&ConfigureDisplaysTask::OnConfigured,
+                                        weak_ptr_factory_.GetWeakPtr(), index));
+      }
     }
   }
 

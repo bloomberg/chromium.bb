@@ -13711,6 +13711,9 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       <message name="IDS_DESKTOP_MEDIA_PICKER_MULTIPLE_SCREEN_NAME" desc="Name for screens in the desktop media picker UI when there are multiple monitors.">
         Screen <ph name="SCREEN_INDEX">$1<ex>1</ex></ph>
       </message>
+      <message name="IDS_DESTOP_MEDIA_PICKER_VIRTUAL_SCREEN_NAME" desc="The name of the virtual display which is shown in the picker">
+        Virtual Display
+      </message>
 
       <!-- Local Device Discovery display strings -->
       <if expr="enable_service_discovery">

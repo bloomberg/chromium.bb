@@ -53,6 +53,8 @@
         'chromeos/display_configurator.cc',
         'chromeos/display_configurator.h',
         'chromeos/display_layout_manager.h',
+        'chromeos/display_snapshot_virtual.cc',
+        'chromeos/display_snapshot_virtual.h',
         'chromeos/display_util.cc',
         'chromeos/display_util.h',
         'chromeos/ozone/display_configurator_ozone.cc',
@@ -193,6 +195,7 @@
         '../../base/base.gyp:run_all_unittests',
         '../../testing/gtest.gyp:gtest',
         '../../ui/gfx/gfx.gyp:gfx_geometry',
+        '../../ui/gfx/gfx.gyp:gfx_test_support',
         'display_util',
       ],
       'include_dirs': [

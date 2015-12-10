@@ -218,10 +218,18 @@ void DisplayChangeObserver::OnDisplayModeChanged(
     }
     gfx::Rect display_bounds(state->origin(), mode_info->size());
 
-    std::string name =
-        state->type() == ui::DISPLAY_CONNECTION_TYPE_INTERNAL
-            ? l10n_util::GetStringUTF8(IDS_ASH_INTERNAL_DISPLAY_NAME)
-            : state->display_name();
+    std::string name;
+    switch (state->type()) {
+      case ui::DISPLAY_CONNECTION_TYPE_INTERNAL:
+        name = l10n_util::GetStringUTF8(IDS_ASH_INTERNAL_DISPLAY_NAME);
+        break;
+      case ui::DISPLAY_CONNECTION_TYPE_VIRTUAL:
+        name = l10n_util::GetStringUTF8(IDS_ASH_VIRTUAL_DISPLAY_NAME);
+        break;
+      default:
+        name = state->display_name();
+    }
+
     if (name.empty())
       name = l10n_util::GetStringUTF8(IDS_ASH_STATUS_TRAY_UNKNOWN_DISPLAY_NAME);
 

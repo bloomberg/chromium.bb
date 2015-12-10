@@ -366,6 +366,9 @@ Press Ctrl+Alt+Z to disable.
       <message name="IDS_ASH_INTERNAL_DISPLAY_NAME" desc="The name of the internal display which is shown in the display settings.">
         Internal Display
       </message>
+      <message name="IDS_ASH_VIRTUAL_DISPLAY_NAME" desc="The name of the virtual display which is shown in the display settings.">
+        Virtual Display
+      </message>
       <message name="IDS_ASH_EXIT_WARNING_POPUP_TEXT" desc="The text of the popup when the user preses the exit shortcut.">
         Press Ctrl+Shift+Q twice to quit.
       </message>

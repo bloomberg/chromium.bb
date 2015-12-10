@@ -35,6 +35,12 @@ class DISPLAY_EXPORT UpdateDisplayConfigurationTask {
                                  const ResponseCallback& callback);
   ~UpdateDisplayConfigurationTask();
 
+  // The pointers to the DisplaySnapshots in this vector are owned by
+  // DisplayConfigurator.
+  void set_virtual_display_snapshots(std::vector<DisplaySnapshot*> snapshots) {
+    virtual_display_snapshots_ = snapshots;
+  }
+
   void Run();
 
  private:
@@ -91,6 +97,9 @@ class DISPLAY_EXPORT UpdateDisplayConfigurationTask {
 
   // List of updated displays.
   std::vector<DisplaySnapshot*> cached_displays_;
+
+  // Vector of unowned VirtualDisplaySnapshots to be added when doing the task.
+  std::vector<DisplaySnapshot*> virtual_display_snapshots_;
 
   gfx::Size framebuffer_size_;
 

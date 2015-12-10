@@ -48,6 +48,11 @@ void UpdateDisplayConfigurationTask::OnDisplaysUpdated(
     const std::vector<DisplaySnapshot*>& displays) {
   cached_displays_ = displays;
 
+  // Add virtual displays after retrieving the physical displays from the NDD.
+  cached_displays_.insert(cached_displays_.end(),
+                          virtual_display_snapshots_.begin(),
+                          virtual_display_snapshots_.end());
+
   if (cached_displays_.size() > 1 && background_color_argb_)
     delegate_->SetBackgroundColor(background_color_argb_);
 

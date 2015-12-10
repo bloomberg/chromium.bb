@@ -28,6 +28,7 @@ bool GetHDCPCapableDisplays(
       case DISPLAY_CONNECTION_TYPE_INTERNAL:
       case DISPLAY_CONNECTION_TYPE_VGA:
       case DISPLAY_CONNECTION_TYPE_NETWORK:
+      case DISPLAY_CONNECTION_TYPE_VIRTUAL:
         // No protections for these types. Do nothing.
         break;
       case DISPLAY_CONNECTION_TYPE_NONE:

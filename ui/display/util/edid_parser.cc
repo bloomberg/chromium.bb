@@ -9,25 +9,12 @@
 #include "base/hash.h"
 #include "base/strings/string_util.h"
 #include "base/sys_byteorder.h"
+#include "ui/display/util/display_util.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace ui {
 
 namespace {
-
-// Returns 64-bit persistent ID for the specified manufacturer's ID and
-// product_code_hash, and the index of the output it is connected to.
-// |output_index| is used to distinguish the displays of the same type. For
-// example, swapping two identical display between two outputs will not be
-// treated as swap. The 'serial number' field in EDID isn't used here because
-// it is not guaranteed to have unique number and it may have the same fixed
-// value (like 0).
-int64_t GetID(uint16_t manufacturer_id,
-              uint32_t product_code_hash,
-              uint8_t output_index) {
-  return ((static_cast<int64_t>(manufacturer_id) << 40) |
-          (static_cast<int64_t>(product_code_hash) << 8) | output_index);
-}
 
 // Returns a 32-bit identifier for this model of display, using
 // |manufacturer_id| and |product_code|.
@@ -58,8 +45,8 @@ bool GetDisplayIdFromEDID(const std::vector<uint8_t>& edid,
         product_name.empty() ? 0 : base::Hash(product_name);
     // An ID based on display's index will be assigned later if this call
     // fails.
-    *display_id_out = GetID(
-        manufacturer_id, product_code_hash, output_index);
+    *display_id_out =
+        GenerateDisplayID(manufacturer_id, product_code_hash, output_index);
     // product_id is 64-bit signed so it can store -1 as kInvalidProductID and
     // not match a valid product id which will all be in the lowest 32-bits.
     if (product_id_out)

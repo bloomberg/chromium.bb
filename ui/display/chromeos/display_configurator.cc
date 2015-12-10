@@ -11,12 +11,15 @@
 #include "base/time/time.h"
 #include "ui/display/chromeos/apply_content_protection_task.h"
 #include "ui/display/chromeos/display_layout_manager.h"
+#include "ui/display/chromeos/display_snapshot_virtual.h"
 #include "ui/display/chromeos/display_util.h"
 #include "ui/display/chromeos/update_display_configuration_task.h"
 #include "ui/display/display_switches.h"
 #include "ui/display/types/display_mode.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/display/types/native_display_delegate.h"
+#include "ui/display/util/display_util.h"
+#include "ui/gfx/display.h"
 
 namespace ui {
 
@@ -33,6 +36,9 @@ const int kConfigureDelayMs = 500;
 // is used to wait until the hardware had a chance to update the display state
 // such that we read an up to date state.
 const int kResumeDelayMs = 500;
+
+// The EDID specification marks the top bit of the manufacturer id as reserved.
+const int16_t kReservedManufacturerID = 1 << 15;
 
 struct DisplayState {
   DisplaySnapshot* display = nullptr;  // Not owned.
@@ -661,6 +667,16 @@ void DisplayConfigurator::QueryContentProtectionStatus(
     ContentProtectionClientId client_id,
     int64_t display_id,
     const QueryProtectionCallback& callback) {
+  // Exclude virtual displays so that protected content will not be recaptured
+  // through the cast stream.
+  for (const DisplaySnapshot* display : cached_displays_) {
+    if (display->display_id() == display_id &&
+        !IsPhysicalDisplayType(display->type())) {
+      callback.Run(QueryProtectionResponse());
+      return;
+    }
+  }
+
   if (!configure_display_ || display_externally_controlled_) {
     callback.Run(QueryProtectionResponse());
     return;
@@ -779,7 +795,8 @@ DisplayConfigurator::GetAvailableColorCalibrationProfiles(int64_t display_id) {
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableDisplayColorCalibration)) {
     for (const DisplaySnapshot* display : cached_displays_) {
-      if (display->display_id() == display_id) {
+      if (display->display_id() == display_id &&
+          IsPhysicalDisplayType(display->type())) {
         return native_display_delegate_->GetAvailableColorCalibrationProfiles(
             *display);
       }
@@ -793,7 +810,8 @@ bool DisplayConfigurator::SetColorCalibrationProfile(
     int64_t display_id,
     ui::ColorCalibrationProfile new_profile) {
   for (const DisplaySnapshot* display : cached_displays_) {
-    if (display->display_id() == display_id) {
+    if (display->display_id() == display_id &&
+        IsPhysicalDisplayType(display->type())) {
       return native_display_delegate_->SetColorCalibrationProfile(*display,
                                                                   new_profile);
     }
@@ -964,6 +982,8 @@ void DisplayConfigurator::RunPendingConfiguration() {
       requested_display_state_, requested_power_state_, requested_power_flags_,
       0, force_configure_, base::Bind(&DisplayConfigurator::OnConfigured,
                                       weak_ptr_factory_.GetWeakPtr())));
+  configuration_task_->set_virtual_display_snapshots(
+      virtual_display_snapshots_.get());
 
   // Reset the flags before running the task; otherwise it may end up scheduling
   // another configuration.
@@ -1077,6 +1097,45 @@ void DisplayConfigurator::NotifyObservers(
         Observer, observers_, OnDisplayModeChangeFailed(cached_displays_,
                                                         attempted_state));
   }
+}
+
+int64_t DisplayConfigurator::AddVirtualDisplay(gfx::Size display_size) {
+  if (last_virtual_display_id_ == 0xff) {
+    LOG(WARNING) << "Exceeded virtual display id limit";
+    return gfx::Display::kInvalidDisplayID;
+  }
+
+  DisplaySnapshotVirtual* virtual_snapshot =
+      new DisplaySnapshotVirtual(GenerateDisplayID(kReservedManufacturerID, 0x0,
+                                                   ++last_virtual_display_id_),
+                                 display_size);
+  virtual_display_snapshots_.push_back(virtual_snapshot);
+  ConfigureDisplays();
+
+  return virtual_snapshot->display_id();
+}
+
+bool DisplayConfigurator::RemoveVirtualDisplay(int64_t display_id) {
+  bool display_found = false;
+  for (auto it = virtual_display_snapshots_.begin();
+       it != virtual_display_snapshots_.end(); ++it) {
+    if ((*it)->display_id() == display_id) {
+      virtual_display_snapshots_.erase(it);
+      ConfigureDisplays();
+      display_found = true;
+      break;
+    }
+  }
+
+  if (!display_found)
+    return false;
+
+  int64_t max_display_id = 0;
+  for (const auto& display : virtual_display_snapshots_)
+    max_display_id = std::max(max_display_id, display->display_id());
+  last_virtual_display_id_ = max_display_id & 0xff;
+
+  return true;
 }
 
 }  // namespace ui

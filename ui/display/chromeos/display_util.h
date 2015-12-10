@@ -30,6 +30,11 @@ GetDisplayPower(const std::vector<DisplaySnapshot*>& displays,
                 chromeos::DisplayPowerState state,
                 std::vector<bool>* display_power);
 
+// Returns whether the DisplayConnectionType |type| is a physically connected
+// display. Currently DISPLAY_CONNECTION_TYPE_VIRTUAL and
+// DISPLAY_CONNECTION_TYPE_NETWORK return false. All other types return true.
+bool IsPhysicalDisplayType(ui::DisplayConnectionType type);
+
 }  // namespace ui
 
 #endif  // UI_DISPLAY_CHROMEOS_DISPLAY_UTIL_H_

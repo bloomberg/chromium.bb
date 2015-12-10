@@ -68,4 +68,11 @@ float GetScaleFactor(const gfx::Size& physical_size_in_mm,
   return (dpi > threshold) ? 2.0f : 1.0f;
 }
 
+int64_t GenerateDisplayID(uint16_t manufacturer_id,
+                          uint32_t product_code_hash,
+                          uint8_t output_index) {
+  return ((static_cast<int64_t>(manufacturer_id) << 40) |
+          (static_cast<int64_t>(product_code_hash) << 8) | output_index);
+}
+
 }  // namespace ui

@@ -14,14 +14,17 @@
 
 #include "base/event_types.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
+#include "ui/display/chromeos/display_snapshot_virtual.h"
 #include "ui/display/chromeos/query_content_protection_task.h"
 #include "ui/display/display_export.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/display/types/native_display_observer.h"
+#include "ui/display/util/display_util.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace gfx {
@@ -269,6 +272,10 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
   bool SetGammaRamp(int64_t display_id,
                     const std::vector<GammaRampRGBEntry>& lut);
 
+  // Enables/disables virtual display.
+  int64_t AddVirtualDisplay(gfx::Size display_size);
+  bool RemoveVirtualDisplay(int64_t display_id);
+
  private:
   class DisplayLayoutManagerImpl;
 
@@ -420,6 +427,12 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
 
   // Whether the displays are currently suspended.
   bool displays_suspended_;
+
+  // Virtual display control.
+  ScopedVector<DisplaySnapshot> virtual_display_snapshots_;
+
+  // Last used virtual display id.
+  uint8_t last_virtual_display_id_ = 0;
 
   scoped_ptr<DisplayLayoutManager> layout_manager_;
 

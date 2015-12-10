@@ -55,6 +55,7 @@ int GetDisplayPower(const std::vector<DisplaySnapshot*>& displays,
   for (size_t i = 0; i < displays.size(); ++i) {
     bool internal = displays[i]->type() == DISPLAY_CONNECTION_TYPE_INTERNAL;
     bool on =
+        displays[i]->type() == DISPLAY_CONNECTION_TYPE_VIRTUAL ||
         state == chromeos::DISPLAY_POWER_ALL_ON ||
         (state == chromeos::DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON &&
          !internal) ||
@@ -65,6 +66,11 @@ int GetDisplayPower(const std::vector<DisplaySnapshot*>& displays,
       num_on_displays++;
   }
   return num_on_displays;
+}
+
+bool IsPhysicalDisplayType(ui::DisplayConnectionType type) {
+  return !(type &
+           (DISPLAY_CONNECTION_TYPE_NETWORK | DISPLAY_CONNECTION_TYPE_VIRTUAL));
 }
 
 }  // namespace ui
