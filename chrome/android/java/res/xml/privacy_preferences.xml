@@ -28,6 +28,7 @@
     <org.chromium.chrome.browser.preferences.privacy.NetworkPredictionPreference
         android:key="network_predictions"
         android:title="@string/network_predictions_title"
+        android:persistent="false"
         android:entries="@array/bandwidth_entries"
         android:entryValues="@array/bandwidth_entry_values"
         android:defaultValue="@string/network_prediction_wifi_only_value" />
