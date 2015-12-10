@@ -8,7 +8,6 @@ from gpu_tests import gpu_test_base
 from gpu_tests import path_util
 from gpu_tests import screenshot_sync_expectations
 
-from telemetry import benchmark
 from telemetry.page import page_test
 from telemetry.story import story_set as story_set_module
 from telemetry.util import image_util
@@ -55,7 +54,6 @@ class ScreenshotSyncPage(gpu_test_base.PageBase):
       expectations=expectations)
 
 
-@benchmark.Disabled('linux', 'mac', 'win')
 class ScreenshotSyncProcess(gpu_test_base.TestBase):
   """Tests that screenhots are properly synchronized with the frame one which
   they were requested"""

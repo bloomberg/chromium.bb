@@ -80,6 +80,9 @@ def main():
 
     if not valid and not failures:
       failures = ['(entire test suite)']
+      if rc == 0:
+        rc = 1  # Signal an abnormal exit.
+
     json.dump({
         'valid': valid,
         'failures': failures,
