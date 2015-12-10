@@ -6,6 +6,7 @@
 
 #include "base/trace_event/trace_event.h"
 #include "cc/playback/display_list_raster_source.h"
+#include "cc/raster/texture_compressor.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkDrawFilter.h"
@@ -40,11 +41,11 @@ static bool IsSupportedPlaybackToMemoryFormat(ResourceFormat format) {
     case RGBA_4444:
     case RGBA_8888:
     case BGRA_8888:
+    case ETC1:
       return true;
     case ALPHA_8:
     case LUMINANCE_8:
     case RGB_565:
-    case ETC1:
     case RED_8:
       return false;
   }
@@ -81,8 +82,6 @@ void TileTaskWorkerPool::PlaybackToMemory(
   // Uses kPremul_SkAlphaType since the result is not known to be opaque.
   SkImageInfo info =
       SkImageInfo::MakeN32(size.width(), size.height(), kPremul_SkAlphaType);
-  SkColorType buffer_color_type = ResourceFormatToSkColorType(format);
-  bool needs_copy = buffer_color_type != info.colorType();
 
   // Use unknown pixel geometry to disable LCD text.
   SkSurfaceProps surface_props(0, kUnknown_SkPixelGeometry);
@@ -99,33 +98,59 @@ void TileTaskWorkerPool::PlaybackToMemory(
   if (!include_images)
     image_filter = skia::AdoptRef(new SkipImageFilter);
 
-  if (!needs_copy) {
-    skia::RefPtr<SkSurface> surface = skia::AdoptRef(
-        SkSurface::NewRasterDirect(info, memory, stride, &surface_props));
-    skia::RefPtr<SkCanvas> canvas = skia::SharePtr(surface->getCanvas());
-    canvas->setDrawFilter(image_filter.get());
-    raster_source->PlaybackToCanvas(canvas.get(), canvas_bitmap_rect,
-                                    canvas_playback_rect, scale);
-    return;
-  }
-
-  skia::RefPtr<SkSurface> surface =
-      skia::AdoptRef(SkSurface::NewRaster(info, &surface_props));
-  skia::RefPtr<SkCanvas> canvas = skia::SharePtr(surface->getCanvas());
-  canvas->setDrawFilter(image_filter.get());
-  // TODO(reveman): Improve partial raster support by reducing the size of
-  // playback rect passed to PlaybackToCanvas. crbug.com/519070
-  raster_source->PlaybackToCanvas(canvas.get(), canvas_bitmap_rect,
-                                  canvas_bitmap_rect, scale);
-
   {
     TRACE_EVENT0("cc", "TileTaskWorkerPool::PlaybackToMemory::ConvertPixels");
 
-    SkImageInfo dst_info =
-        SkImageInfo::Make(info.width(), info.height(), buffer_color_type,
-                          info.alphaType(), info.profileType());
-    bool rv = canvas->readPixels(dst_info, memory, stride, 0, 0);
-    DCHECK(rv);
+    switch (format) {
+      case RGBA_8888:
+      case BGRA_8888: {
+        skia::RefPtr<SkSurface> surface = skia::AdoptRef(
+            SkSurface::NewRasterDirect(info, memory, stride, &surface_props));
+        skia::RefPtr<SkCanvas> canvas = skia::SharePtr(surface->getCanvas());
+        canvas->setDrawFilter(image_filter.get());
+        raster_source->PlaybackToCanvas(canvas.get(), canvas_bitmap_rect,
+                                        canvas_playback_rect, scale);
+        return;
+      }
+      case RGBA_4444:
+      case ETC1: {
+        skia::RefPtr<SkSurface> surface =
+            skia::AdoptRef(SkSurface::NewRaster(info, &surface_props));
+        skia::RefPtr<SkCanvas> canvas = skia::SharePtr(surface->getCanvas());
+        canvas->setDrawFilter(image_filter.get());
+        // TODO(reveman): Improve partial raster support by reducing the size of
+        // playback rect passed to PlaybackToCanvas. crbug.com/519070
+        raster_source->PlaybackToCanvas(canvas.get(), canvas_bitmap_rect,
+                                        canvas_bitmap_rect, scale);
+
+        if (format == ETC1) {
+          DCHECK_EQ(size.width() % 4, 0);
+          DCHECK_EQ(size.height() % 4, 0);
+          scoped_ptr<TextureCompressor> texture_compressor =
+              TextureCompressor::Create(TextureCompressor::kFormatETC1);
+          texture_compressor->Compress(
+              reinterpret_cast<const uint8_t*>(
+                  surface->peekPixels(nullptr, nullptr)),
+              reinterpret_cast<uint8_t*>(memory), size.width(), size.height(),
+              TextureCompressor::kQualityHigh);
+        } else {
+          SkImageInfo dst_info = SkImageInfo::Make(
+              info.width(), info.height(), ResourceFormatToSkColorType(format),
+              info.alphaType(), info.profileType());
+          bool rv = canvas->readPixels(dst_info, memory, stride, 0, 0);
+          DCHECK(rv);
+        }
+        return;
+      }
+      case ALPHA_8:
+      case LUMINANCE_8:
+      case RGB_565:
+      case RED_8:
+        NOTREACHED();
+        return;
+    }
+
+    NOTREACHED();
   }
 }
 

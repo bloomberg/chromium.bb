@@ -65,22 +65,22 @@ scoped_ptr<TileTaskWorkerPool> ZeroCopyTileTaskWorkerPool::Create(
     base::SequencedTaskRunner* task_runner,
     TaskGraphRunner* task_graph_runner,
     ResourceProvider* resource_provider,
-    bool use_rgba_4444_texture_format) {
-  return make_scoped_ptr<TileTaskWorkerPool>(new ZeroCopyTileTaskWorkerPool(
-      task_runner, task_graph_runner, resource_provider,
-      use_rgba_4444_texture_format));
+    ResourceFormat preferred_tile_format) {
+  return make_scoped_ptr<TileTaskWorkerPool>(
+      new ZeroCopyTileTaskWorkerPool(task_runner, task_graph_runner,
+                                     resource_provider, preferred_tile_format));
 }
 
 ZeroCopyTileTaskWorkerPool::ZeroCopyTileTaskWorkerPool(
     base::SequencedTaskRunner* task_runner,
     TaskGraphRunner* task_graph_runner,
     ResourceProvider* resource_provider,
-    bool use_rgba_4444_texture_format)
+    ResourceFormat preferred_tile_format)
     : task_runner_(task_runner),
       task_graph_runner_(task_graph_runner),
       namespace_token_(task_graph_runner->GetNamespaceToken()),
       resource_provider_(resource_provider),
-      use_rgba_4444_texture_format_(use_rgba_4444_texture_format) {}
+      preferred_tile_format_(preferred_tile_format) {}
 
 ZeroCopyTileTaskWorkerPool::~ZeroCopyTileTaskWorkerPool() {
 }
@@ -122,9 +122,13 @@ void ZeroCopyTileTaskWorkerPool::CheckForCompletedTasks() {
 
 ResourceFormat ZeroCopyTileTaskWorkerPool::GetResourceFormat(
     bool must_support_alpha) const {
-  return use_rgba_4444_texture_format_
-             ? RGBA_4444
-             : resource_provider_->best_texture_format();
+  if (resource_provider_->IsResourceFormatSupported(preferred_tile_format_) &&
+      (DoesResourceFormatSupportAlpha(preferred_tile_format_) ||
+       !must_support_alpha)) {
+    return preferred_tile_format_;
+  }
+
+  return resource_provider_->best_texture_format();
 }
 
 bool ZeroCopyTileTaskWorkerPool::GetResourceRequiresSwizzle(

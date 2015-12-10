@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "cc/proto/renderer_settings.pb.h"
+#include "cc/resources/platform_color.h"
 
 namespace cc {
 
@@ -22,9 +23,9 @@ RendererSettings::RendererSettings()
       delay_releasing_overlay_resources(false),
       refresh_rate(60.0),
       highp_threshold_min(0),
-      use_rgba_4444_textures(false),
       texture_id_allocation_chunk_size(64),
-      use_gpu_memory_buffer_resources(false) {}
+      use_gpu_memory_buffer_resources(false),
+      preferred_tile_format(PlatformColor::BestTextureFormat()) {}
 
 RendererSettings::~RendererSettings() {
 }
@@ -41,9 +42,9 @@ void RendererSettings::ToProtobuf(proto::RendererSettings* proto) const {
       delay_releasing_overlay_resources);
   proto->set_refresh_rate(refresh_rate);
   proto->set_highp_threshold_min(highp_threshold_min);
-  proto->set_use_rgba_4444_textures(use_rgba_4444_textures);
   proto->set_texture_id_allocation_chunk_size(texture_id_allocation_chunk_size);
   proto->set_use_gpu_memory_buffer_resources(use_gpu_memory_buffer_resources);
+  proto->set_preferred_tile_format(preferred_tile_format);
 }
 
 void RendererSettings::FromProtobuf(const proto::RendererSettings& proto) {
@@ -57,9 +58,13 @@ void RendererSettings::FromProtobuf(const proto::RendererSettings& proto) {
   delay_releasing_overlay_resources = proto.delay_releasing_overlay_resources();
   refresh_rate = proto.refresh_rate();
   highp_threshold_min = proto.highp_threshold_min();
-  use_rgba_4444_textures = proto.use_rgba_4444_textures();
   texture_id_allocation_chunk_size = proto.texture_id_allocation_chunk_size();
   use_gpu_memory_buffer_resources = proto.use_gpu_memory_buffer_resources();
+
+  DCHECK_LE(proto.preferred_tile_format(),
+            static_cast<uint32_t>(RESOURCE_FORMAT_MAX));
+  preferred_tile_format =
+      static_cast<ResourceFormat>(proto.preferred_tile_format());
 }
 
 bool RendererSettings::operator==(const RendererSettings& other) const {
@@ -74,11 +79,11 @@ bool RendererSettings::operator==(const RendererSettings& other) const {
              other.delay_releasing_overlay_resources &&
          refresh_rate == other.refresh_rate &&
          highp_threshold_min == other.highp_threshold_min &&
-         use_rgba_4444_textures == other.use_rgba_4444_textures &&
          texture_id_allocation_chunk_size ==
              other.texture_id_allocation_chunk_size &&
          use_gpu_memory_buffer_resources ==
-             other.use_gpu_memory_buffer_resources;
+             other.use_gpu_memory_buffer_resources &&
+         preferred_tile_format == other.preferred_tile_format;
 }
 
 }  // namespace cc

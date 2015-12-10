@@ -66,12 +66,13 @@ void PopulateCommonLayerTreeSettings(cc::LayerTreeSettings* settings) {
   settings->renderer_settings.highp_threshold_min = 2048;
   settings->ignore_root_layer_flings = false;
   bool use_low_memory_policy = base::SysInfo::IsLowEndDevice();
-  settings->renderer_settings.use_rgba_4444_textures = use_low_memory_policy;
   if (use_low_memory_policy) {
     // On low-end we want to be very carefull about killing other
     // apps. So initially we use 50% more memory to avoid flickering
     // or raster-on-demand.
     settings->max_memory_for_prepaint_percentage = 67;
+
+    settings->renderer_settings.preferred_tile_format = cc::RGBA_4444;
   } else {
     // On other devices we have increased memory excessively to avoid
     // raster-on-demand already, so now we reserve 50% _only_ to avoid

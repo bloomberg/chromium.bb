@@ -48,6 +48,10 @@ const int kMinHeightForGpuRasteredTile = 256;
 // of using the same tile size.
 const int kTileRoundUp = 64;
 
+// For performance reasons and to support compressed tile textures, tile
+// width and height should be an even multiple of 4 in size.
+const int kTileMinimalAlignment = 4;
+
 }  // namespace
 
 namespace cc {
@@ -766,6 +770,10 @@ gfx::Size PictureLayerImpl::CalculateTileSize(
     tile_height = MathUtil::UncheckedRoundUp(tile_height, kTileRoundUp);
     tile_height = std::min(tile_height, default_tile_height);
   }
+
+  // Ensure that tile width and height are properly aligned.
+  tile_width = MathUtil::UncheckedRoundUp(tile_width, kTileMinimalAlignment);
+  tile_height = MathUtil::UncheckedRoundUp(tile_height, kTileMinimalAlignment);
 
   // Under no circumstance should we be larger than the max texture size.
   tile_width = std::min(tile_width, max_texture_size);
