@@ -1111,8 +1111,6 @@ source_set("test_support") {
     "signin/fake_signin_manager_builder.h",
     "ssl/ssl_client_auth_requestor_mock.cc",
     "ssl/ssl_client_auth_requestor_mock.h",
-    "sync/profile_sync_service_mock.cc",
-    "sync/profile_sync_service_mock.h",
     "sync/profile_sync_test_util.cc",
     "sync/profile_sync_test_util.h",
   ]
@@ -1129,6 +1127,7 @@ source_set("test_support") {
     "//chrome/browser",
     "//chrome/common",
     "//chrome/common/safe_browsing:proto",
+    "//components/browser_sync/browser:test_support",
     "//components/invalidation/impl",
     "//components/invalidation/impl:test_support",
     "//components/password_manager/core/browser:test_support",

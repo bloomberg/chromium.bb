@@ -76,3 +76,19 @@ source_set("unit_tests") {
     "//ui/base",
   ]
 }
+
+source_set("test_support") {
+  testonly = true
+  sources = [
+    "profile_sync_service_mock.cc",
+    "profile_sync_service_mock.h",
+  ]
+
+  deps = [
+    ":browser",
+    "//base",
+    "//components/sync_driver:test_support",
+    "//google_apis",
+    "//testing/gmock",
+  ]
+}

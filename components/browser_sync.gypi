@@ -64,5 +64,25 @@
         'browser_sync/common/browser_sync_switches.h',
       ],
     },
+    {
+      # GN version: //components/browser_sync/browser:test_support
+      'target_name': 'browser_sync_browser_test_support',
+      'type': 'static_library',
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../google_apis/google_apis.gyp:google_apis',
+        '../sync/sync.gyp:sync',
+        '../testing/gmock.gyp:gmock',
+        'sync_driver_test_support',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        # Note: file list duplicated in GN build.
+        'browser_sync/browser/profile_sync_service_mock.cc',
+        'browser_sync/browser/profile_sync_service_mock.h',
+      ],
+    }
   ],
 }

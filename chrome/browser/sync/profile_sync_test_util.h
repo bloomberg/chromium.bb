@@ -11,7 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/synchronization/waitable_event.h"
-#include "chrome/browser/sync/profile_sync_service_mock.h"
+#include "components/browser_sync/browser/profile_sync_service_mock.h"
 #include "components/sync_driver/sync_service_observer.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
