@@ -26,20 +26,22 @@ public interface AccountManagerDelegate {
     void getAccountsByType(String type, Callback<Account[]> callback);
 
     /**
+     * Get an auth token. This should only be called on a background thread.
+     *
      * @param account The {@link Account} for which the auth token is requested.
      * @param authTokenScope The scope of the authToken being requested.
      * @return The auth token fetched from the authenticator.
-     * The authenticator can throw an {@link AuthException} to indicate a failure in fetching the
-     * auth token perhaps due to a transient error or when user intervention is required (like
-     * confirming the credentials) which is expressed as an {@link Intent} to the handler.
-     * This should only be called on a background thread.
+     * @throws AuthException Indicates a failure in fetching the auth token perhaps due to a
+     * transient error or when user intervention is required (like confirming the credentials)
+     * which is expressed as an {@link Intent} to the handler.
      */
     String getAuthToken(Account account, String authTokenScope) throws AuthException;
 
     /**
-     * Invalidate the {@code authToken} associated with account type {@code accountType}.
+     * @param authToken The auth token to invalidate.
+     * @throws AuthException Indicates a failure clearing the auth token; can be transient.
      */
-    void invalidateAuthToken(String accountType, String authToken);
+    void invalidateAuthToken(String authToken) throws AuthException;
 
     /**
      * Get all the available authenticator types.

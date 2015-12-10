@@ -13,11 +13,11 @@ import android.accounts.AuthenticatorException;
 import android.accounts.OperationCanceledException;
 import android.content.Context;
 import android.os.AsyncTask;
-import android.os.StrictMode;
 import android.os.SystemClock;
 
 import com.google.android.gms.auth.GoogleAuthException;
 import com.google.android.gms.auth.GoogleAuthUtil;
+import com.google.android.gms.auth.GooglePlayServicesAvailabilityException;
 import com.google.android.gms.auth.UserRecoverableAuthException;
 
 import org.chromium.base.Callback;
@@ -89,14 +89,15 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
     }
 
     @Override
-    public void invalidateAuthToken(String accountType, String authToken) {
-        // Temporarily allowing disk access while fixing. TODO: http://crbug.com/535320
-        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
-        StrictMode.allowThreadDiskReads();
+    public void invalidateAuthToken(String authToken) throws AuthException {
         try {
-            mAccountManager.invalidateAuthToken(accountType, authToken);
-        } finally {
-            StrictMode.setThreadPolicy(oldPolicy);
+            GoogleAuthUtil.clearToken(mApplicationContext, authToken);
+        } catch (GooglePlayServicesAvailabilityException ex) {
+            throw new AuthException(false /* isTransientError */, null, ex);
+        } catch (GoogleAuthException ex) {
+            throw new AuthException(false /* isTransientError */, null, ex);
+        } catch (IOException ex) {
+            throw new AuthException(true /* isTransientError */, null, ex);
         }
     }
 

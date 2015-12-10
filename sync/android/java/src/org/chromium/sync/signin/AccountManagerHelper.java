@@ -11,7 +11,6 @@ import android.accounts.AuthenticatorDescription;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Process;
 
 import org.chromium.base.Callback;
@@ -49,8 +48,6 @@ public class AccountManagerHelper {
     @VisibleForTesting public static final String FEATURE_IS_CHILD_ACCOUNT_KEY = "service_uca";
 
     private static final Object sLock = new Object();
-
-    private static final int MAX_TRIES = 3;
 
     private static AccountManagerHelper sAccountManagerHelper;
 
@@ -301,98 +298,24 @@ public class AccountManagerHelper {
      *
      * - Assumes that the account is a valid account.
      */
-    public void getAuthToken(Account account, String authTokenType, GetAuthTokenCallback callback) {
-        AtomicInteger numTries = new AtomicInteger(0);
-        AtomicBoolean isTransientError = new AtomicBoolean(false);
-        getAuthTokenAsynchronously(
-                account, authTokenType, callback, numTries, isTransientError, null);
-    }
-
-    private class ConnectionRetry implements NetworkChangeNotifier.ConnectionTypeObserver {
-        private final Account mAccount;
-        private final String mAuthTokenType;
-        private final GetAuthTokenCallback mCallback;
-        private final AtomicInteger mNumTries;
-        private final AtomicBoolean mIsTransientError;
-
-        ConnectionRetry(Account account, String authTokenType, GetAuthTokenCallback callback,
-                AtomicInteger numTries, AtomicBoolean isTransientError) {
-            mAccount = account;
-            mAuthTokenType = authTokenType;
-            mCallback = callback;
-            mNumTries = numTries;
-            mIsTransientError = isTransientError;
-        }
-
-        @Override
-        public void onConnectionTypeChanged(int connectionType) {
-            assert mNumTries.get() <= MAX_TRIES;
-            if (mNumTries.get() == MAX_TRIES) {
-                NetworkChangeNotifier.removeConnectionTypeObserver(this);
-                return;
+    public void getAuthToken(final Account account, final String authTokenType,
+            final GetAuthTokenCallback callback) {
+        ConnectionRetry.runAuthTask(new AuthTask<String>() {
+            public String run() throws AuthException {
+                return mAccountManager.getAuthToken(account, authTokenType);
             }
-            if (NetworkChangeNotifier.isOnline()) {
-                NetworkChangeNotifier.removeConnectionTypeObserver(this);
-                getAuthTokenAsynchronously(
-                        mAccount, mAuthTokenType, mCallback, mNumTries, mIsTransientError, this);
+            public void onSuccess(String token) {
+                callback.tokenAvailable(token);
             }
-        }
-    }
-
-    private boolean hasUseCredentialsPermission() {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
-                || mApplicationContext.checkPermission("android.permission.USE_CREDENTIALS",
-                Process.myPid(), Process.myUid()) == PackageManager.PERMISSION_GRANTED;
+            public void onFailure(boolean isTransientError) {
+                callback.tokenUnavailable(isTransientError);
+            }
+        });
     }
 
     public boolean hasGetAccountsPermission() {
         return mApplicationContext.checkPermission(Manifest.permission.GET_ACCOUNTS,
                 Process.myPid(), Process.myUid()) == PackageManager.PERMISSION_GRANTED;
-    }
-
-    private void getAuthTokenAsynchronously(final Account account, final String authTokenType,
-            final GetAuthTokenCallback callback, final AtomicInteger numTries,
-            final AtomicBoolean isTransientError, final ConnectionRetry retry) {
-        isTransientError.set(false);
-        new AsyncTask<Void, Void, String>() {
-            @Override
-            public String doInBackground(Void... params) {
-                try {
-                    return mAccountManager.getAuthToken(account, authTokenType);
-                } catch (AuthException ex) {
-                    // TODO(547048): Handle the recovery intent if it is present.
-                    isTransientError.set(ex.isTransientError());
-                    Log.e(TAG, "Failed to getAuthToken", ex);
-                }
-                return null;
-            }
-            @Override
-            public void onPostExecute(String authToken) {
-                onGotAuthTokenResult(account, authTokenType, authToken, callback, numTries,
-                        isTransientError, retry);
-            }
-        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-    }
-
-    private void onGotAuthTokenResult(Account account, String authTokenType, String authToken,
-            GetAuthTokenCallback callback, AtomicInteger numTries, AtomicBoolean isTransientError,
-            ConnectionRetry retry) {
-        if (authToken != null) {
-            callback.tokenAvailable(authToken);
-            return;
-        } else if (!isTransientError.get()
-                || numTries.incrementAndGet() == MAX_TRIES
-                || !NetworkChangeNotifier.isInitialized()) {
-            callback.tokenUnavailable(isTransientError.get());
-            return;
-        }
-        if (retry == null) {
-            ConnectionRetry newRetry = new ConnectionRetry(account, authTokenType, callback,
-                    numTries, isTransientError);
-            NetworkChangeNotifier.addConnectionTypeObserver(newRetry);
-        } else {
-            NetworkChangeNotifier.addConnectionTypeObserver(retry);
-        }
     }
 
     /**
@@ -403,27 +326,108 @@ public class AccountManagerHelper {
     public void getNewAuthToken(Account account, String authToken, String authTokenType,
             GetAuthTokenCallback callback) {
         invalidateAuthToken(authToken);
-        AtomicInteger numTries = new AtomicInteger(0);
-        AtomicBoolean isTransientError = new AtomicBoolean(false);
-        getAuthTokenAsynchronously(
-                account, authTokenType, callback, numTries, isTransientError, null);
+        getAuthToken(account, authTokenType, callback);
     }
 
     /**
-     * Removes an auth token from the AccountManager's cache.
+     * Clear an auth token from the local cache with respect to the ApplicationContext.
      */
-    public void invalidateAuthToken(String authToken) {
-        // Cancel operation for no USE_CREDENTIALS permission.
-        if (!hasUseCredentialsPermission()) {
+    public void invalidateAuthToken(final String authToken) {
+        if (authToken == null || authToken.isEmpty()) {
             return;
         }
-        if (authToken != null && !authToken.isEmpty()) {
-            mAccountManager.invalidateAuthToken(GOOGLE_ACCOUNT_TYPE, authToken);
-        }
+        ConnectionRetry.runAuthTask(new AuthTask<Boolean>() {
+            public Boolean run() throws AuthException {
+                mAccountManager.invalidateAuthToken(authToken);
+                return true;
+            }
+            public void onSuccess(Boolean result) {}
+            public void onFailure(boolean isTransientError) {
+                Log.e(TAG, "Failed to invalidate auth token: " + authToken);
+            }
+        });
     }
 
     public void checkChildAccount(Account account, Callback<Boolean> callback) {
         String[] features = {FEATURE_IS_CHILD_ACCOUNT_KEY};
         mAccountManager.hasFeatures(account, features, callback);
+    }
+
+    private interface AuthTask<T> {
+        T run() throws AuthException;
+        void onSuccess(T result);
+        void onFailure(boolean isTransientError);
+    }
+
+    /**
+     * A helper class to encapsulate network connection retry logic for AuthTasks.
+     *
+     * The task will be run on the background thread. If it encounters a transient error, it will
+     * wait for a network change and retry up to MAX_TRIES times.
+     */
+    private static class ConnectionRetry<T>
+            implements NetworkChangeNotifier.ConnectionTypeObserver {
+        private static final int MAX_TRIES = 3;
+
+        private final AuthTask<T> mAuthTask;
+        private final AtomicInteger mNumTries;
+        private final AtomicBoolean mIsTransientError;
+
+        public static <T> void runAuthTask(AuthTask<T> authTask) {
+            new ConnectionRetry<T>(authTask).attempt();
+        }
+
+        private ConnectionRetry(AuthTask<T> authTask) {
+            mAuthTask = authTask;
+            mNumTries = new AtomicInteger(0);
+            mIsTransientError = new AtomicBoolean(false);
+        }
+
+        /**
+         * Tries running the {@link AuthTask} in the background. This object is never registered
+         * as a {@link ConnectionTypeObserver} when this method is called.
+         */
+        private void attempt() {
+            // Clear any transient error.
+            mIsTransientError.set(false);
+            new AsyncTask<Void, Void, T>() {
+                @Override
+                public T doInBackground(Void... params) {
+                    try {
+                        return mAuthTask.run();
+                    } catch (AuthException ex) {
+                        // TODO(547048): Handle the recovery intent if it is present.
+                        Log.e(TAG, "Failed to perform auth task", ex);
+                        mIsTransientError.set(ex.isTransientError());
+                    }
+                    return null;
+                }
+                @Override
+                public void onPostExecute(T result) {
+                    if (result != null) {
+                        mAuthTask.onSuccess(result);
+                    } else if (!mIsTransientError.get()
+                            || mNumTries.incrementAndGet() >= MAX_TRIES
+                            || !NetworkChangeNotifier.isInitialized()) {
+                        // Permanent error, ran out of tries, or we can't listen for network
+                        // change events; give up.
+                        mAuthTask.onFailure(mIsTransientError.get());
+                    } else {
+                        // Transient error with tries left; register for another attempt.
+                        NetworkChangeNotifier.addConnectionTypeObserver(ConnectionRetry.this);
+                    }
+                }
+            }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        }
+
+        @Override
+        public void onConnectionTypeChanged(int connectionType) {
+            assert mNumTries.get() < MAX_TRIES;
+            if (NetworkChangeNotifier.isOnline()) {
+                // The network is back; stop listening and try again.
+                NetworkChangeNotifier.removeConnectionTypeObserver(this);
+                attempt();
+            }
+        }
     }
 }

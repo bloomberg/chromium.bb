@@ -179,10 +179,7 @@ public class MockAccountManager implements AccountManagerDelegate {
     }
 
     @Override
-    public void invalidateAuthToken(String accountScope, String authToken) {
-        if (!AccountManagerHelper.GOOGLE_ACCOUNT_TYPE.equals(accountScope)) {
-            throw new IllegalArgumentException("Invalid account type: " + accountScope);
-        }
+    public void invalidateAuthToken(String authToken) {
         if (authToken == null) {
             throw new IllegalArgumentException("AuthToken can not be null");
         }
