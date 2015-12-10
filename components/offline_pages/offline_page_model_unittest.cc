@@ -9,9 +9,10 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/test_mock_time_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/offline_pages/offline_page_item.h"
@@ -74,12 +75,10 @@ class OfflinePageModelTest
   void ResetModel();
 
   // Utility methods.
+  // Runs until all of the tasks that are not delayed are gone from the task
+  // queue.
   void PumpLoop();
   void ResetResults();
-
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner() {
-    return message_loop_.task_runner();
-  }
 
   OfflinePageModel* model() { return model_.get(); }
 
@@ -100,7 +99,8 @@ class OfflinePageModelTest
   const base::FilePath& last_archiver_path() { return last_archiver_path_; }
 
  private:
-  base::MessageLoop message_loop_;
+  scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
+  base::ThreadTaskRunnerHandle task_runner_handle_;
   base::ScopedTempDir temp_dir_;
 
   scoped_ptr<OfflinePageModel> model_;
@@ -111,7 +111,9 @@ class OfflinePageModelTest
 };
 
 OfflinePageModelTest::OfflinePageModelTest()
-    : last_save_result_(SavePageResult::CANCELLED),
+    : task_runner_(new base::TestMockTimeTaskRunner),
+      task_runner_handle_(task_runner_),
+      last_save_result_(SavePageResult::CANCELLED),
       last_delete_result_(DeletePageResult::CANCELLED),
       last_deleted_bookmark_id_(-1) {
 }
@@ -123,12 +125,12 @@ void OfflinePageModelTest::SetUp() {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   model_ = BuildModel(BuildStore().Pass()).Pass();
   model_->AddObserver(this);
-  base::RunLoop().RunUntilIdle();
+  PumpLoop();
 }
 
 void OfflinePageModelTest::TearDown() {
   model_->RemoveObserver(this);
-  base::RunLoop().RunUntilIdle();
+  PumpLoop();
 }
 
 void OfflinePageModelTest::OfflinePageModelLoaded(OfflinePageModel* model) {
@@ -158,7 +160,7 @@ void OfflinePageModelTest::OnDeletePageDone(DeletePageResult result) {
 }
 
 void OfflinePageModelTest::OnClearAllDone() {
-  base::RunLoop().RunUntilIdle();
+  PumpLoop();
 }
 
 void OfflinePageModelTest::OnStoreUpdateDone(bool /* success - ignored */) {
@@ -168,18 +170,18 @@ scoped_ptr<OfflinePageTestArchiver> OfflinePageModelTest::BuildArchiver(
     const GURL& url,
     OfflinePageArchiver::ArchiverResult result) {
   return scoped_ptr<OfflinePageTestArchiver>(new OfflinePageTestArchiver(
-      this, url, result, kTestFileSize, task_runner()));
+      this, url, result, kTestFileSize, base::ThreadTaskRunnerHandle::Get()));
 }
 
 scoped_ptr<OfflinePageMetadataStore> OfflinePageModelTest::BuildStore() {
   return scoped_ptr<OfflinePageMetadataStore>(
-      new OfflinePageTestStore(task_runner()));
+      new OfflinePageTestStore(base::ThreadTaskRunnerHandle::Get()));
 }
 
 scoped_ptr<OfflinePageModel> OfflinePageModelTest::BuildModel(
     scoped_ptr<OfflinePageMetadataStore> store) {
-  return scoped_ptr<OfflinePageModel>(
-      new OfflinePageModel(store.Pass(), temp_dir_.path(), task_runner()));
+  return scoped_ptr<OfflinePageModel>(new OfflinePageModel(
+      store.Pass(), temp_dir_.path(), base::ThreadTaskRunnerHandle::Get()));
 }
 
 void OfflinePageModelTest::ResetModel() {
@@ -193,7 +195,7 @@ void OfflinePageModelTest::ResetModel() {
 }
 
 void OfflinePageModelTest::PumpLoop() {
-  base::RunLoop().RunUntilIdle();
+  task_runner_->RunUntilIdle();
 }
 
 void OfflinePageModelTest::ResetResults() {
@@ -226,7 +228,6 @@ TEST_F(OfflinePageModelTest, SavePageSuccessful) {
   EXPECT_EQ(archiver_path, store->last_saved_page().file_path);
   EXPECT_EQ(kTestFileSize, store->last_saved_page().file_size);
   EXPECT_EQ(SavePageResult::SUCCESS, last_save_result());
-
   ResetResults();
 
   const std::vector<OfflinePageItem>& offline_pages = model()->GetAllPages();
@@ -401,7 +402,7 @@ TEST_F(OfflinePageModelTest, MarkPageAccessed) {
 
   // This will increase access_count by one.
   model()->MarkPageAccessed(kTestPageBookmarkId1);
-  base::RunLoop().RunUntilIdle();
+  PumpLoop();
 
   const std::vector<OfflinePageItem>& offline_pages = model()->GetAllPages();
 
@@ -441,7 +442,7 @@ TEST_F(OfflinePageModelTest, MarkPageForDeletion) {
 
   // Undo the deletion.
   model()->UndoPageDeletion(kTestPageBookmarkId1);
-  base::RunLoop().RunUntilIdle();
+  PumpLoop();
 
   // GetAllPages will now return the restored page.
   const std::vector<OfflinePageItem>& offline_pages_after_undo =

@@ -64,6 +64,7 @@ source_set("unit_tests") {
     ":offline_pages",
     ":test_support",
     "//base",
+    "//base/test:test_support",
     "//components/bookmarks/browser",
     "//components/leveldb_proto",
     "//components/offline_pages/proto:offline_pages_proto",

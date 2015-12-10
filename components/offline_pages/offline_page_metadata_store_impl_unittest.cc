@@ -8,9 +8,9 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
-#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/test_simple_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "components/leveldb_proto/proto_database_impl.h"
 #include "components/offline_pages/offline_page_item.h"
 #include "components/offline_pages/proto/offline_pages.pb.h"
@@ -36,7 +36,10 @@ class OfflinePageMetadataStoreImplTest : public testing::Test {
   OfflinePageMetadataStoreImplTest();
   ~OfflinePageMetadataStoreImplTest() override;
 
-  void TearDown() override { message_loop_.RunUntilIdle(); }
+  void TearDown() override {
+    // Wait for all the pieces of the store to delete itself properly.
+    PumpLoop();
+  }
 
   scoped_ptr<OfflinePageMetadataStoreImpl> BuildStore();
   void PumpLoop();
@@ -53,12 +56,15 @@ class OfflinePageMetadataStoreImplTest : public testing::Test {
   std::vector<OfflinePageItem> offline_pages_;
 
   base::ScopedTempDir temp_directory_;
-  base::MessageLoop message_loop_;
-  scoped_ptr<base::RunLoop> run_loop_;
+  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
+  base::ThreadTaskRunnerHandle task_runner_handle_;
 };
 
 OfflinePageMetadataStoreImplTest::OfflinePageMetadataStoreImplTest()
-    : last_called_callback_(NONE), last_status_(STATUS_NONE) {
+    : last_called_callback_(NONE),
+      last_status_(STATUS_NONE),
+      task_runner_(new base::TestSimpleTaskRunner),
+      task_runner_handle_(task_runner_) {
   EXPECT_TRUE(temp_directory_.CreateUniqueTempDir());
 }
 
@@ -66,13 +72,13 @@ OfflinePageMetadataStoreImplTest::~OfflinePageMetadataStoreImplTest() {
 }
 
 void OfflinePageMetadataStoreImplTest::PumpLoop() {
-  base::RunLoop().RunUntilIdle();
+  task_runner_->RunUntilIdle();
 }
 
 scoped_ptr<OfflinePageMetadataStoreImpl>
 OfflinePageMetadataStoreImplTest::BuildStore() {
   scoped_ptr<OfflinePageMetadataStoreImpl> store(
-      new OfflinePageMetadataStoreImpl(message_loop_.task_runner(),
+      new OfflinePageMetadataStoreImpl(base::ThreadTaskRunnerHandle::Get(),
                                        temp_directory_.path()));
   store->Load(base::Bind(&OfflinePageMetadataStoreImplTest::LoadCallback,
                          base::Unretained(this)));
