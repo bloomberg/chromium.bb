@@ -78,6 +78,7 @@ public:
     BLINK_COMMON_EXPORT void assign(const WebUChar* data, size_t len);
 
     BLINK_COMMON_EXPORT bool equals(const WebString&) const;
+    BLINK_COMMON_EXPORT bool equals(const char* characters) const;
 
     BLINK_COMMON_EXPORT size_t length() const;
 
@@ -174,6 +175,26 @@ private:
 
     WebPrivatePtr<WTF::StringImpl> m_private;
 };
+
+inline bool operator==(const WebString& a, const char* b)
+{
+    return a.equals(b);
+}
+
+inline bool operator!=(const WebString& a, const char* b)
+{
+    return !(a == b);
+}
+
+inline bool operator==(const char* a, const WebString& b)
+{
+    return b.equals(a);
+}
+
+inline bool operator!=(const char* a, const WebString& b)
+{
+    return !(a == b);
+}
 
 inline bool operator==(const WebString& a, const WebString& b)
 {

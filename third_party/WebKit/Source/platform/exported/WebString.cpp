@@ -120,6 +120,11 @@ bool WebString::equals(const WebString& s) const
     return equal(m_private.get(), s.m_private.get());
 }
 
+bool WebString::equals(const char* characters) const
+{
+    return equal(m_private.get(), reinterpret_cast<const LChar*>(characters));
+}
+
 WebString::WebString(const WTF::String& s)
     : m_private(s.impl())
 {
