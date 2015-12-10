@@ -142,8 +142,9 @@ const char* const kSafeManifestEntries[] = {
     // Just UX.
     emk::kIcons,
 
-    // No constant in manifest_constants.cc.
-    // "author",
+    // Documented in https://developer.chrome.com/extensions/manifest but not
+    // implemented anywhere.  Still, a lot of apps use it.
+    "author",
 
     // TBD
     // emk::kBluetooth,
