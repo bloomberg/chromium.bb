@@ -1,0 +1,93 @@
+Verifies CSS AST property diff.
+
+.change-property-name {
+    color: red;
+}
+
+.change-property-value::before {
+    margin: 10px 10px;
+}
+
+.change-inside-disabled-property {
+    /* width: 100px; */
+}
+
+.toggle-property {
+    border: 1px solid black;
+}
+
+.add-property {
+    font-family: "Arial";
+}
+
+.remove-property {
+    display: inline-flex;
+    position: static;
+}
+
+.complex-composite-change {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    display: flex;
+    /* align-items: center; */
+}
+.change-property-name {
+    background: red;
+}
+
+.change-property-value::before {
+    margin: 10px 0 0 10px;
+}
+
+.change-inside-disabled-property {
+    /* height: 10px; */
+}
+
+.toggle-property {
+    /* border: 1px solid black; */
+}
+
+.add-property {
+    font-family: "Arial";
+    font-size: 16px;
+}
+
+.remove-property {
+    display: inline-flex;
+}
+
+.complex-composite-change {
+    /* position: absolute; */
+    left: 10px;
+    margin: 0;
+    padding: 22px;
+    display: flex;
+    align-items: center;
+}
+=== Diff ===
+Changes for rule: .change-property-name
+    [M] color: red
+Changes for rule: .change-property-value::before
+        margin: [M] 10px 10px
+Changes for rule: .change-inside-disabled-property
+    [M] width: [M] 100px
+Changes for rule: .toggle-property
+    [T] border: 1px solid black
+Changes for rule: .add-property
+        font-family: "Arial"
+    [+] font-size: 16px
+Changes for rule: .remove-property
+        display: inline-flex
+    [-] position: static
+Changes for rule: .complex-composite-change
+    [T] position: absolute
+        left: [M] 0
+    [M] right: 0
+    [M] top: [M] 0
+    [-] bottom: 0
+        display: flex
+    [T] align-items: center
+

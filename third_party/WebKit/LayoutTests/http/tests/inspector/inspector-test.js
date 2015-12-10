@@ -49,6 +49,11 @@ InspectorTest.evaluateInPage = function(code, callback)
     InspectorTest.RuntimeAgent.evaluate(code, "console", false, mycallback);
 }
 
+InspectorTest.evaluateInPagePromise = function(code)
+{
+    return new Promise(succ => InspectorTest.evaluateInPage(code, succ));
+}
+
 InspectorTest.evaluateInPageWithTimeout = function(code)
 {
     // FIXME: we need a better way of waiting for chromium events to happen

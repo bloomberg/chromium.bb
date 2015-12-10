@@ -44,9 +44,68 @@ InspectorTest.dumpAST = function(ast)
         return [String.sprintf("range: %s", textNode.range.toString())];
     }
 
-    function indent(lines)
+}
+
+function indent(lines)
+{
+    return lines.map(line => "    " + line);
+}
+
+InspectorTest.dumpASTDiff = function(diff)
+{
+    InspectorTest.addResult("=== Diff ===");
+    var changesPerRule = new Map();
+    for (var change of diff.changes) {
+        var oldRule = change.oldRule;
+        var ruleChanges = changesPerRule.get(oldRule);
+        if (!ruleChanges) {
+            ruleChanges = [];
+            changesPerRule.set(oldRule, ruleChanges);
+        }
+        ruleChanges.push(change);
+    }
+    var T = WebInspector.SASSSupport.PropertyChangeType;
+    for (var rule of changesPerRule.keys()) {
+        var changes = changesPerRule.get(rule);
+        var names = [];
+        var values = [];
+        for (var property of rule.properties) {
+            names.push(str(property.name, "    "));
+            values.push(str(property.value));
+        }
+        for (var i = changes.length - 1; i >= 0; --i) {
+            var change = changes[i];
+            var newProperty = change.newRule.properties[change.newPropertyIndex];
+            var oldProperty = change.oldRule.properties[change.oldPropertyIndex];
+            switch (change.type) {
+            case T.PropertyAdded:
+                names.splice(change.oldPropertyIndex, 0, str(newProperty.name, "[+] "));
+                values.splice(change.oldPropertyIndex, 0, str(newProperty.value));
+                break;
+            case T.PropertyRemoved:
+                names[change.oldPropertyIndex] = str(oldProperty.name, "[-] ");
+                break;
+            case T.PropertyToggled:
+                names[change.oldPropertyIndex] = str(oldProperty.name, "[T] ");
+                break;
+            case T.NameChanged:
+                names[change.oldPropertyIndex] = str(oldProperty.name, "[M] ");
+                break;
+            case T.ValueChanged:
+                values[change.oldPropertyIndex] = str(oldProperty.value, "[M] ");
+                break;
+            }
+        }
+        InspectorTest.addResult("Changes for rule: " + rule.selector);
+        names = indent(names);
+        for (var i = 0; i < names.length; ++i)
+            InspectorTest.addResult(names[i] + ": " + values[i]);
+    }
+
+    function str(node, prefix)
     {
-        return lines.map(line => "    " + line);
+        prefix = prefix || "";
+        return prefix + node.text.trim();
     }
 }
 
