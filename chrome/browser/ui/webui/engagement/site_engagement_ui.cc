@@ -12,7 +12,7 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "grit/browser_resources.h"
 #include "mojo/common/url_type_converters.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/binding.h"
 
 namespace {
 
@@ -51,7 +51,7 @@ class SiteEngagementUIHandlerImpl : public SiteEngagementUIHandler {
   // The Profile* handed to us in our constructor.
   Profile* profile_;
 
-  mojo::StrongBinding<SiteEngagementUIHandler> binding_;
+  mojo::Binding<SiteEngagementUIHandler> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(SiteEngagementUIHandlerImpl);
 };
@@ -83,6 +83,6 @@ SiteEngagementUI::~SiteEngagementUI() {}
 
 void SiteEngagementUI::BindUIHandler(
     mojo::InterfaceRequest<SiteEngagementUIHandler> request) {
-  // SiteEngagementUIHandlerImpl deletes itself when the pipe is closed.
-  new SiteEngagementUIHandlerImpl(Profile::FromWebUI(web_ui()), request.Pass());
+  ui_handler_.reset(new SiteEngagementUIHandlerImpl(
+      Profile::FromWebUI(web_ui()), request.Pass()));
 }

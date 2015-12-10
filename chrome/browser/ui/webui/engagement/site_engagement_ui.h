@@ -20,6 +20,8 @@ class SiteEngagementUI : public MojoWebUIController<SiteEngagementUIHandler> {
   void BindUIHandler(
       mojo::InterfaceRequest<SiteEngagementUIHandler> request) override;
 
+  scoped_ptr<SiteEngagementUIHandler> ui_handler_;
+
   DISALLOW_COPY_AND_ASSIGN(SiteEngagementUI);
 };
 
