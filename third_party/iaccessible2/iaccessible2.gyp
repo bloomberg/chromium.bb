@@ -34,26 +34,5 @@
         ],
       },
     },
-    {
-      'target_name': 'IAccessible2Proxy',
-      'type': 'shared_library',
-      'defines': [ 'REGISTER_PROXY_DLL' ],
-      'dependencies': [ 'iaccessible2' ],
-      'sources': [
-        'IAccessible2Proxy.def',
-        '<(midl_out_dir)/dlldata.c',
-        '<(midl_out_dir)/ia2_api_all_p.c',
-      ],
-      'link_settings': {
-        'libraries': [
-          '-lrpcrt4.lib',
-        ],
-      },
-      'variables': {
-        'clang_warning_flags': [
-          '-Wno-incompatible-pointer-types',
-        ]
-      },
-    },
   ],
 }

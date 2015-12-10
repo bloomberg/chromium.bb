@@ -11,35 +11,3 @@ midl("iaccessible2") {
     "ia2_api_all.idl",
   ]
 }
-
-config("IAccessible2Proxy_warnings") {
-  if (is_clang) {
-    cflags = [
-      # MIDL generated code has a habit of omitting optional braces.
-      "-Wno-missing-braces",
-      "-Wno-incompatible-pointer-types",
-    ]
-  }
-}
-
-# Generate a proxy DLL from the generated code.
-shared_library("IAccessible2Proxy") {
-  sources = [
-    "$target_gen_dir/ia2_api_all.dlldata.c",
-    "$target_gen_dir/ia2_api_all_p.c",
-    "IAccessible2Proxy.def",
-  ]
-
-  configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [ "//build/config/compiler:no_chromium_code" ]
-  configs += [ ":IAccessible2Proxy_warnings" ]
-
-  defines = [ "REGISTER_PROXY_DLL" ]
-
-  libs = [ "rpcrt4.lib" ]
-
-  deps = [
-    ":iaccessible2",
-    "//build/config/sanitizers:deps",
-  ]
-}
