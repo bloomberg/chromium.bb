@@ -444,7 +444,7 @@ const std::pair<base::string16, base::string16> CreditCard::LabelPieces()
 
 void CreditCard::SetInfoForMonthInputType(const base::string16& value) {
   // Check if |text| is "yyyy-mm" format first, and check normal month format.
-  if (!MatchesPattern(value, "^[0-9]{4}-[0-9]{1,2}$"))
+  if (!MatchesPattern(value, base::UTF8ToUTF16("^[0-9]{4}-[0-9]{1,2}$")))
     return;
 
   std::vector<base::StringPiece16> year_month = base::SplitStringPiece(

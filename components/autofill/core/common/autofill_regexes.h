@@ -5,8 +5,6 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_COMMON_AUTOFILL_REGEXES_H_
 #define COMPONENTS_AUTOFILL_CORE_COMMON_AUTOFILL_REGEXES_H_
 
-#include <string>
-
 #include "base/strings/string16.h"
 
 // Parsing utilities.
@@ -15,7 +13,7 @@ namespace autofill {
 // Case-insensitive regular expression matching.
 // Returns true if |pattern| is found in |input|.
 bool MatchesPattern(const base::string16& input,
-                    const std::string& pattern);
+                    const base::string16& pattern);
 
 }  // namespace autofill
 

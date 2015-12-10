@@ -11,6 +11,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_regex_constants.h"
@@ -30,7 +31,7 @@ const size_t kMaxValidCardNumberSize = 19;
 
 // Look for the vector |regex_needles| in |haystack|. Returns true if a
 // consecutive section of |haystack| matches |regex_needles|.
-bool FindConsecutiveStrings(const std::vector<std::string>& regex_needles,
+bool FindConsecutiveStrings(const std::vector<base::string16>& regex_needles,
                             const std::vector<base::string16>& haystack) {
   if (regex_needles.empty() ||
       haystack.empty() ||
@@ -90,7 +91,9 @@ scoped_ptr<FormField> CreditCardField::Parse(AutofillScanner* scanner) {
       break;
 
     if (!credit_card_field->cardholder_) {
-      if (ParseField(scanner, kNameOnCardRe, &credit_card_field->cardholder_)) {
+      if (ParseField(scanner,
+                     base::UTF8ToUTF16(kNameOnCardRe),
+                     &credit_card_field->cardholder_)) {
         continue;
       }
 
@@ -100,8 +103,10 @@ scoped_ptr<FormField> CreditCardField::Parse(AutofillScanner* scanner) {
       // fields. So we search for "name" only when we've already parsed at
       // least one other credit card field and haven't yet parsed the
       // expiration date (which usually appears at the end).
-      if (fields > 0 && !credit_card_field->expiration_month_ &&
-          ParseField(scanner, kNameOnCardContextualRe,
+      if (fields > 0 &&
+          !credit_card_field->expiration_month_ &&
+          ParseField(scanner,
+                     base::UTF8ToUTF16(kNameOnCardContextualRe),
                      &credit_card_field->cardholder_)) {
         continue;
       }
@@ -124,7 +129,7 @@ scoped_ptr<FormField> CreditCardField::Parse(AutofillScanner* scanner) {
     const int kMatchNumAndTel = MATCH_DEFAULT | MATCH_NUMBER | MATCH_TELEPHONE;
     if (!credit_card_field->verification_ &&
         ParseFieldSpecifics(scanner,
-                            kCardCvcRe,
+                            base::UTF8ToUTF16(kCardCvcRe),
                             kMatchNumAndTel | MATCH_PASSWORD,
                             &credit_card_field->verification_)) {
       continue;
@@ -132,7 +137,7 @@ scoped_ptr<FormField> CreditCardField::Parse(AutofillScanner* scanner) {
 
     AutofillField* current_number_field;
     if (ParseFieldSpecifics(scanner,
-                            kCardNumberRe,
+                            base::UTF8ToUTF16(kCardNumberRe),
                             kMatchNumAndTel,
                             &current_number_field)) {
       // Avoid autofilling any credit card number field having very low or high
@@ -209,7 +214,8 @@ bool CreditCardField::LikelyCardMonthSelectField(AutofillScanner* scanner) {
     return false;
 
   // Filter out years.
-  const char kNumericalYearRe[] = "[1-9][0-9][0-9][0-9]";
+  const base::string16 kNumericalYearRe =
+      base::ASCIIToUTF16("[1-9][0-9][0-9][0-9]");
   for (const auto& value : field->option_values) {
     if (MatchesPattern(value, kNumericalYearRe))
       return false;
@@ -220,7 +226,7 @@ bool CreditCardField::LikelyCardMonthSelectField(AutofillScanner* scanner) {
   }
 
   // Look for numerical months.
-  const char kNumericalMonthRe[] = "12";
+  const base::string16 kNumericalMonthRe = base::ASCIIToUTF16("12");
   if (MatchesPattern(field->option_values.back(), kNumericalMonthRe) ||
       MatchesPattern(field->option_contents.back(), kNumericalMonthRe)) {
     return true;
@@ -246,11 +252,11 @@ bool CreditCardField::LikelyCardYearSelectField(AutofillScanner* scanner) {
   time_now.UTCExplode(&time_exploded);
 
   const int kYearsToMatch = 3;
-  std::vector<std::string> years_to_check;
+  std::vector<base::string16> years_to_check;
   for (int year = time_exploded.year;
        year < time_exploded.year + kYearsToMatch;
        ++year) {
-    years_to_check.push_back(base::IntToString(year));
+    years_to_check.push_back(base::IntToString16(year));
   }
   return (FindConsecutiveStrings(years_to_check, field->option_values) ||
           FindConsecutiveStrings(years_to_check, field->option_contents));
@@ -279,16 +285,16 @@ bool CreditCardField::IsGiftCardField(AutofillScanner* scanner) {
     return false;
 
   size_t saved_cursor = scanner->SaveCursor();
-  if (ParseField(scanner, kDebitCardRe, nullptr)) {
+  if (ParseField(scanner, base::UTF8ToUTF16(kDebitCardRe), nullptr)) {
     scanner->RewindTo(saved_cursor);
     return false;
   }
-  if (ParseField(scanner, kDebitGiftCardRe, nullptr)) {
+  if (ParseField(scanner, base::UTF8ToUTF16(kDebitGiftCardRe), nullptr)) {
     scanner->RewindTo(saved_cursor);
     return false;
   }
 
-  return ParseField(scanner, kGiftCardRe, nullptr);
+  return ParseField(scanner, base::UTF8ToUTF16(kGiftCardRe), nullptr);
 }
 
 CreditCardField::CreditCardField()
@@ -370,11 +376,11 @@ bool CreditCardField::ParseExpirationDate(AutofillScanner* scanner) {
   scanner->RewindTo(month_year_saved_cursor);
   const int kMatchTelAndSelect = MATCH_DEFAULT | MATCH_TELEPHONE | MATCH_SELECT;
   if (ParseFieldSpecifics(scanner,
-                          kExpirationMonthRe,
+                          base::UTF8ToUTF16(kExpirationMonthRe),
                           kMatchTelAndSelect,
                           &expiration_month_) &&
       ParseFieldSpecifics(scanner,
-                          kExpirationYearRe,
+                          base::UTF8ToUTF16(kExpirationYearRe),
                           kMatchTelAndSelect,
                           &expiration_year_)) {
     return true;
@@ -383,11 +389,11 @@ bool CreditCardField::ParseExpirationDate(AutofillScanner* scanner) {
   // If that fails, look for just MM/YY(YY).
   scanner->RewindTo(month_year_saved_cursor);
   if (ParseFieldSpecifics(scanner,
-                          "^mm$",
+                          base::ASCIIToUTF16("^mm$"),
                           kMatchTelAndSelect,
                           &expiration_month_) &&
       ParseFieldSpecifics(scanner,
-                          "^(yy|yyyy)$",
+                          base::ASCIIToUTF16("^(yy|yyyy)$"),
                           kMatchTelAndSelect,
                           &expiration_year_)) {
     return true;
@@ -406,7 +412,7 @@ bool CreditCardField::ParseExpirationDate(AutofillScanner* scanner) {
 
   // Try to look for a 2-digit year expiration date.
   if (ParseFieldSpecifics(scanner,
-                          kExpirationDate2DigitYearRe,
+                          base::UTF8ToUTF16(kExpirationDate2DigitYearRe),
                           kMatchTelAndSelect,
                           &expiration_date_)) {
     exp_year_type_ = CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR;
@@ -416,7 +422,7 @@ bool CreditCardField::ParseExpirationDate(AutofillScanner* scanner) {
 
   // Try to look for a generic expiration date field. (2 or 4 digit year)
   if (ParseFieldSpecifics(scanner,
-                          kExpirationDateRe,
+                          base::UTF8ToUTF16(kExpirationDateRe),
                           kMatchTelAndSelect,
                           &expiration_date_)) {
     // If such a field exists, but it cannot fit a 4-digit year expiration
@@ -434,7 +440,7 @@ bool CreditCardField::ParseExpirationDate(AutofillScanner* scanner) {
   if (FieldCanFitDataForFieldType(current_field_max_length,
                                   CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR) &&
       ParseFieldSpecifics(scanner,
-                          kExpirationDate4DigitYearRe,
+                          base::UTF8ToUTF16(kExpirationDate4DigitYearRe),
                           kMatchTelAndSelect,
                           &expiration_date_)) {
     expiration_month_ = nullptr;

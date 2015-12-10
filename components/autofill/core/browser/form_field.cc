@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/address_field.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_scanner.h"
@@ -83,14 +84,14 @@ void FormField::ParseFormFields(const std::vector<AutofillField*>& fields,
 
 // static
 bool FormField::ParseField(AutofillScanner* scanner,
-                           const std::string& pattern,
+                           const base::string16& pattern,
                            AutofillField** match) {
   return ParseFieldSpecifics(scanner, pattern, MATCH_DEFAULT, match);
 }
 
 // static
 bool FormField::ParseFieldSpecifics(AutofillScanner* scanner,
-                                    const std::string& pattern,
+                                    const base::string16& pattern,
                                     int match_type,
                                     AutofillField** match) {
   if (scanner->IsEnd())
@@ -107,7 +108,7 @@ bool FormField::ParseFieldSpecifics(AutofillScanner* scanner,
 // static
 FormField::ParseNameLabelResult FormField::ParseNameAndLabelSeparately(
     AutofillScanner* scanner,
-    const std::string& pattern,
+    const base::string16& pattern,
     int match_type,
     AutofillField** match) {
   if (scanner->IsEnd())
@@ -142,7 +143,7 @@ FormField::ParseNameLabelResult FormField::ParseNameAndLabelSeparately(
 bool FormField::ParseEmptyLabel(AutofillScanner* scanner,
                                 AutofillField** match) {
   return ParseFieldSpecifics(scanner,
-                             "^$",
+                             base::ASCIIToUTF16("^$"),
                              MATCH_LABEL | MATCH_ALL_INPUTS,
                              match);
 }
@@ -160,7 +161,7 @@ bool FormField::AddClassification(const AutofillField* field,
 
 // static.
 bool FormField::MatchAndAdvance(AutofillScanner* scanner,
-                                const std::string& pattern,
+                                const base::string16& pattern,
                                 int match_type,
                                 AutofillField** match) {
   AutofillField* field = scanner->Cursor();
@@ -176,7 +177,7 @@ bool FormField::MatchAndAdvance(AutofillScanner* scanner,
 
 // static
 bool FormField::Match(const AutofillField* field,
-                      const std::string& pattern,
+                      const base::string16& pattern,
                       int match_type) {
   if ((match_type & FormField::MATCH_LABEL) &&
       MatchesPattern(field->label, pattern)) {

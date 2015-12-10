@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_regex_constants.h"
 #include "components/autofill/core/browser/autofill_scanner.h"
@@ -275,8 +276,10 @@ std::string PhoneField::GetRegExp(RegexType regex_id) {
 bool PhoneField::ParsePhoneField(AutofillScanner* scanner,
                                  const std::string& regex,
                                  AutofillField** field) {
-  return ParseFieldSpecifics(
-      scanner, regex, MATCH_DEFAULT | MATCH_TELEPHONE | MATCH_NUMBER, field);
+  return ParseFieldSpecifics(scanner,
+                             base::UTF8ToUTF16(regex),
+                             MATCH_DEFAULT | MATCH_TELEPHONE | MATCH_NUMBER,
+                             field);
 }
 
 }  // namespace autofill
