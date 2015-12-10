@@ -137,7 +137,6 @@ int TestDataReductionProxyConfigServiceClient::GetBackoffErrorCount() {
 void TestDataReductionProxyConfigServiceClient::SetConfigServiceURL(
     const GURL& service_url) {
   config_service_url_ = service_url;
-  use_local_config_ = !config_service_url_.is_valid();
 }
 
 base::Time TestDataReductionProxyConfigServiceClient::Now() {

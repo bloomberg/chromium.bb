@@ -12,7 +12,6 @@
 #include "base/metrics/field_trial.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
-#include "components/data_reduction_proxy/proto/client_config.pb.h"
 #include "components/variations/variations_associated_data.h"
 #include "net/proxy/proxy_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -329,25 +328,6 @@ TEST_F(DataReductionProxyParamsTest, SecureProxyCheckDefault) {
         << test_index;
     test_index++;
   }
-}
-
-TEST_F(DataReductionProxyParamsTest, PopulateConfigResponse) {
-  DataReductionProxyParams params(DataReductionProxyParams::kAllowed |
-                                  DataReductionProxyParams::kFallbackAllowed);
-  ClientConfig config;
-  params.PopulateConfigResponse(&config);
-  EXPECT_TRUE(config.has_proxy_config());
-  EXPECT_EQ(2, config.proxy_config().http_proxy_servers_size());
-  const std::vector<net::ProxyServer>& proxies_for_http =
-      params.proxies_for_http();
-  EXPECT_EQ(proxies_for_http[0].host_port_pair().host(),
-            config.proxy_config().http_proxy_servers(0).host());
-  EXPECT_EQ(proxies_for_http[0].host_port_pair().host(),
-            config.proxy_config().http_proxy_servers(0).host());
-  EXPECT_EQ(proxies_for_http[1].host_port_pair().host(),
-            config.proxy_config().http_proxy_servers(1).host());
-  EXPECT_EQ(proxies_for_http[1].host_port_pair().host(),
-            config.proxy_config().http_proxy_servers(1).host());
 }
 
 TEST_F(DataReductionProxyParamsTest, GetConfigServiceURL) {

@@ -32,40 +32,6 @@ class DataReductionProxyClientConfigParserTest : public testing::Test {
   base::Time future_time_;
 };
 
-TEST_F(DataReductionProxyClientConfigParserTest, TimetoTimestamp) {
-  const struct {
-    std::string test_name;
-    base::Time time;
-    int64 expected_seconds;
-    int32 expected_nanos;
-  } tests[] = {
-      {
-       "Epoch", base::Time::UnixEpoch(), 0, 0,
-      },
-      {
-       "One day minus one second",
-       base::Time::UnixEpoch() + base::TimeDelta::FromDays(1) -
-           base::TimeDelta::FromMicroseconds(1),
-       24 * 60 * 60 - 1,
-       0,
-      },
-      {
-       "Future time",
-       GetFutureTime(),
-       // 2020-12-31T23:59:59.001Z
-       1609459199,
-       0,
-      },
-  };
-
-  for (const auto& test : tests) {
-    Timestamp ts;
-    config_parser::TimetoTimestamp(test.time, &ts);
-    EXPECT_EQ(test.expected_seconds, ts.seconds()) << test.test_name;
-    EXPECT_EQ(test.expected_nanos, ts.nanos()) << test.test_name;
-  }
-}
-
 TEST_F(DataReductionProxyClientConfigParserTest, TimeDeltaToFromDuration) {
   const struct {
     std::string test_name;
@@ -89,41 +55,6 @@ TEST_F(DataReductionProxyClientConfigParserTest, TimeDeltaToFromDuration) {
     duration.set_seconds(test.seconds);
     duration.set_nanos(test.nanos);
     EXPECT_EQ(test.time_delta, config_parser::DurationToTimeDelta(duration))
-        << test.test_name;
-  }
-}
-
-TEST_F(DataReductionProxyClientConfigParserTest, TimestampToTime) {
-  const struct {
-    std::string test_name;
-    int64 timestamp_seconds;
-    int32 timestamp_nanos;
-    base::Time expected_time;
-  } tests[] = {
-      {
-       "Epoch", 0, 0, base::Time::UnixEpoch(),
-      },
-      {
-       "One day minus one second",
-       24 * 60 * 60 - 1,
-       base::Time::kNanosecondsPerSecond - 1,
-       base::Time::UnixEpoch() + base::TimeDelta::FromDays(1) -
-           base::TimeDelta::FromMicroseconds(1),
-      },
-      {
-       "Future time",
-       // 2020-12-31T23:59:59.001Z
-       1609459199,
-       1000000,
-       GetFutureTime(),
-      },
-  };
-
-  for (const auto& test : tests) {
-    Timestamp ts;
-    ts.set_seconds(test.timestamp_seconds);
-    ts.set_nanos(test.timestamp_nanos);
-    EXPECT_EQ(test.expected_time, config_parser::TimestampToTime(ts))
         << test.test_name;
   }
 }

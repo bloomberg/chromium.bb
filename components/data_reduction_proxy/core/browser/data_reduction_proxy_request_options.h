@@ -56,28 +56,11 @@ typedef enum {
 } Client;
 #undef CLIENT_ENUM
 
-class ClientConfig;
 class DataReductionProxyConfig;
 
 class DataReductionProxyRequestOptions {
  public:
   static bool IsKeySetOnCommandLine();
-
-  // A pair of functions to convert the session and credentials for the Data
-  // Reduction Proxy to and from a single string; they are used to encode the
-  // session and credentials values into the |session_key| field of the
-  // ClientConfig protocol buffer. The delimiter used is '|', as it is not a
-  // valid character in a session or credentials string.
-  //
-  // CreateLocalSessionKey joins session and credentials with the delimiter.
-  static std::string CreateLocalSessionKey(const std::string& session,
-                                           const std::string& credentials);
-
-  // ParseLocalSessionKey splits the output of CreateLocalSessionKey into its
-  // two components. |session| and |credentials| must not be null.
-  static bool ParseLocalSessionKey(const std::string& session_key,
-                                   std::string* session,
-                                   std::string* credentials);
 
   // Constructs a DataReductionProxyRequestOptions object with the given
   // client type, and config.
@@ -114,14 +97,6 @@ class DataReductionProxyRequestOptions {
   // this. The caller needs to make sure |this| pointer is valid when
   // SetKeyOnIO is called.
   void SetKeyOnIO(const std::string& key);
-
-  // Populates |response| with the Data Reduction Proxy authentication info.
-  // Virtualized for testing.
-  virtual void PopulateConfigResponse(ClientConfig* config) const;
-
-  // Sets the credentials for sending to the Data Reduction Proxy.
-  void SetCredentials(const std::string& session,
-                      const std::string& credentials);
 
   // Sets the credentials for sending to the Data Reduction Proxy.
   void SetSecureSession(const std::string& secure_session);

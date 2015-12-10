@@ -105,6 +105,8 @@ class TestDataReductionProxyConfigServiceClient
 
   ~TestDataReductionProxyConfigServiceClient() override;
 
+  using DataReductionProxyConfigServiceClient::OnIPAddressChanged;
+
   void SetNow(const base::Time& time);
 
   void SetCustomReleaseTime(const base::TimeTicks& release_time);
@@ -114,9 +116,6 @@ class TestDataReductionProxyConfigServiceClient
   int GetBackoffErrorCount();
 
   void SetConfigServiceURL(const GURL& service_url);
-
-  using DataReductionProxyConfigServiceClient::
-      minimum_refresh_interval_on_success;
 
  protected:
   // Overrides of DataReductionProxyConfigServiceClient

@@ -23,9 +23,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_client_config_parser.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_creator.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
-#include "components/variations/variations_associated_data.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -77,10 +75,6 @@ const net::BackoffEntry::Policy kDefaultBackoffPolicy = {
     -1,              // entry_lifetime_ms
     true,            // always_use_initial_delay
 };
-
-// Default value for |minimum_refresh_interval_on_success_|. This is used if
-// the value through client config field trial is unavailable.
-const int64_t kMinDelayOnSuccessMilliseconds = 5 * 60 * 1000;  // 5 minutes
 
 // Extracts the list of Data Reduction Proxy servers to use for HTTP requests.
 std::vector<net::ProxyServer> GetProxiesForHTTP(
@@ -137,17 +131,15 @@ DataReductionProxyConfigServiceClient::DataReductionProxyConfigServiceClient(
       backoff_entry_(&backoff_policy),
       config_service_url_(AddApiKeyToUrl(params::GetConfigServiceURL())),
       enabled_(false),
-      use_local_config_(!config_service_url_.is_valid()),
       remote_config_applied_(false),
       url_request_context_getter_(nullptr),
-      previous_request_failed_authentication_(false),
-      minimum_refresh_interval_on_success_(
-          base::TimeDelta::FromMilliseconds(kMinDelayOnSuccessMilliseconds)) {
+      previous_request_failed_authentication_(false) {
   DCHECK(request_options);
   DCHECK(config_values);
   DCHECK(config);
   DCHECK(event_creator);
   DCHECK(net_log);
+  DCHECK(config_service_url_.is_valid());
   // Constructed on the UI thread, but should be checked on the IO thread.
   thread_checker_.DetachFromThread();
 }
@@ -164,28 +156,10 @@ DataReductionProxyConfigServiceClient::CalculateNextConfigRefreshTime(
     const base::TimeDelta& backoff_delay) const {
   DCHECK(backoff_delay >= base::TimeDelta());
   if (fetch_succeeded) {
-    return std::max(backoff_delay,
-                    std::max(config_expiration_delta,
-                             minimum_refresh_interval_on_success()));
+    return std::max(backoff_delay, config_expiration_delta);
   }
 
   return backoff_delay;
-}
-
-void DataReductionProxyConfigServiceClient::PopulateClientConfigParams() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  std::string field_trial = params::GetClientConfigFieldTrialName();
-
-  uint64_t minimum_refresh_interval_on_success_milliseconds =
-      kMinDelayOnSuccessMilliseconds;
-  std::string variation_value = variations::GetVariationParamValue(
-      field_trial, "minimum_refresh_interval_on_success_msec");
-  if (!variation_value.empty() &&
-      base::StringToUint64(variation_value,
-                           &minimum_refresh_interval_on_success_milliseconds)) {
-    minimum_refresh_interval_on_success_ = base::TimeDelta::FromMilliseconds(
-        minimum_refresh_interval_on_success_milliseconds);
-  }
 }
 
 void DataReductionProxyConfigServiceClient::InitializeOnIOThread(
@@ -197,8 +171,6 @@ void DataReductionProxyConfigServiceClient::InitializeOnIOThread(
 
 void DataReductionProxyConfigServiceClient::SetEnabled(bool enabled) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (enabled)
-    PopulateClientConfigParams();
   enabled_ = enabled;
 }
 
@@ -216,10 +188,6 @@ void DataReductionProxyConfigServiceClient::RetrieveConfig() {
       config_service_url_.ReplaceComponents(replacements);
   event_creator_->BeginConfigRequest(bound_net_log_, base_config_service_url);
   config_fetch_start_time_ = base::Time::Now();
-  if (use_local_config_) {
-    ReadAndApplyStaticConfig();
-    return;
-  }
 
   RetrieveRemoteConfig();
 }
@@ -227,9 +195,6 @@ void DataReductionProxyConfigServiceClient::RetrieveConfig() {
 void DataReductionProxyConfigServiceClient::ApplySerializedConfig(
     const std::string& config_value) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (use_local_config_)
-    return;
-
   if (remote_config_applied_)
     return;
 
@@ -244,11 +209,11 @@ void DataReductionProxyConfigServiceClient::ApplySerializedConfig(
 bool DataReductionProxyConfigServiceClient::ShouldRetryDueToAuthFailure(
     const net::HttpResponseHeaders* response_headers,
     const net::HostPortPair& proxy_server) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(response_headers);
   if (config_->IsDataReductionProxy(proxy_server, nullptr)) {
     if (response_headers->response_code() ==
         net::HTTP_PROXY_AUTHENTICATION_REQUIRED) {
-      DCHECK(!use_local_config_);
       // The default backoff logic is to increment the failure count (and
       // increase the backoff time) with each response failure to the remote
       // config service, and to decrement the failure count (and decrease the
@@ -276,17 +241,13 @@ bool DataReductionProxyConfigServiceClient::ShouldRetryDueToAuthFailure(
 }
 
 net::BackoffEntry* DataReductionProxyConfigServiceClient::GetBackoffEntry() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   return &backoff_entry_;
-}
-
-base::TimeDelta
-DataReductionProxyConfigServiceClient::minimum_refresh_interval_on_success()
-    const {
-  return minimum_refresh_interval_on_success_;
 }
 
 void DataReductionProxyConfigServiceClient::SetConfigRefreshTimer(
     const base::TimeDelta& delay) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(delay >= base::TimeDelta());
   config_refresh_timer_.Stop();
   config_refresh_timer_.Start(
@@ -298,23 +259,15 @@ base::Time DataReductionProxyConfigServiceClient::Now() {
   return base::Time::Now();
 }
 
-std::string
-DataReductionProxyConfigServiceClient::ConstructStaticResponse() const {
-  std::string response;
-  ClientConfig config;
-  params_->PopulateConfigResponse(&config);
-  request_options_->PopulateConfigResponse(&config);
-  config.SerializeToString(&response);
-  return response;
-}
-
 void DataReductionProxyConfigServiceClient::OnIPAddressChanged() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   GetBackoffEntry()->Reset();
   RetrieveConfig();
 }
 
 void DataReductionProxyConfigServiceClient::OnURLFetchComplete(
     const net::URLFetcher* source) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(source == fetcher_.get());
   net::URLRequestStatus status = source->GetStatus();
   std::string response;
@@ -322,12 +275,8 @@ void DataReductionProxyConfigServiceClient::OnURLFetchComplete(
   HandleResponse(response, status, source->GetResponseCode());
 }
 
-void DataReductionProxyConfigServiceClient::ReadAndApplyStaticConfig() {
-  std::string static_response = ConstructStaticResponse();
-  HandleResponse(static_response, net::URLRequestStatus(), net::HTTP_OK);
-}
-
 void DataReductionProxyConfigServiceClient::RetrieveRemoteConfig() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   CreateClientConfigRequest request;
   std::string serialized_request;
   const std::string& session_key = request_options_->GetSecureSession();
@@ -348,10 +297,8 @@ void DataReductionProxyConfigServiceClient::RetrieveRemoteConfig() {
 }
 
 void DataReductionProxyConfigServiceClient::InvalidateConfig() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   GetBackoffEntry()->InformOfRequest(false);
-  if (use_local_config_)
-    return;
-
   config_storer_.Run(std::string());
   request_options_->Invalidate();
   config_values_->Invalidate();
@@ -362,6 +309,7 @@ scoped_ptr<net::URLFetcher>
 DataReductionProxyConfigServiceClient::GetURLFetcherForConfig(
     const GURL& secure_proxy_check_url,
     const std::string& request_body) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   scoped_ptr<net::URLFetcher> fetcher(net::URLFetcher::Create(
       secure_proxy_check_url, net::URLFetcher::POST, this));
   fetcher->SetLoadFlags(net::LOAD_BYPASS_PROXY);
@@ -379,13 +327,12 @@ void DataReductionProxyConfigServiceClient::HandleResponse(
     const std::string& config_data,
     const net::URLRequestStatus& status,
     int response_code) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   ClientConfig config;
   bool succeeded = false;
 
-  if (!use_local_config_) {
-    UMA_HISTOGRAM_SPARSE_SLOWLY(kUMAConfigServiceFetchResponseCode,
-                                response_code);
-  }
+  UMA_HISTOGRAM_SPARSE_SLOWLY(kUMAConfigServiceFetchResponseCode,
+                              response_code);
 
   if (status.status() == net::URLRequestStatus::SUCCESS &&
       response_code == net::HTTP_OK && config.ParseFromString(config_data)) {
@@ -396,9 +343,7 @@ void DataReductionProxyConfigServiceClient::HandleResponse(
   if (succeeded) {
     expiration_time_delta =
         config_parser::DurationToTimeDelta(config.refresh_duration());
-  }
 
-  if (!use_local_config_ && succeeded) {
     base::TimeDelta configuration_fetch_latency =
         base::Time::Now() - config_fetch_start_time_;
     RecordAuthExpiredHistogram(false);
@@ -423,13 +368,14 @@ void DataReductionProxyConfigServiceClient::HandleResponse(
 
 bool DataReductionProxyConfigServiceClient::ParseAndApplyProxyConfig(
     const ClientConfig& config) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (!config.has_proxy_config())
     return false;
 
   std::vector<net::ProxyServer> proxies =
       GetProxiesForHTTP(config.proxy_config());
 
-  if (params_ && params::IsDevRolloutEnabled() && !use_local_config_) {
+  if (params_ && params::IsDevRolloutEnabled()) {
     // If dev rollout is enabled, proxies returned by client config API are
     // discarded.
     proxies.clear();
@@ -442,32 +388,18 @@ bool DataReductionProxyConfigServiceClient::ParseAndApplyProxyConfig(
   if (proxies.empty())
     return false;
 
-  if (!use_local_config_) {
-    request_options_->SetSecureSession(config.session_key());
-    // If QUIC is enabled, the scheme of the first proxy (if it is HTTPS) would
-    // be changed to QUIC.
-    if (proxies[0].scheme() == net::ProxyServer::SCHEME_HTTPS && params_ &&
-        params_->quic_enabled()) {
-      proxies[0] = net::ProxyServer(net::ProxyServer::SCHEME_QUIC,
-                                    proxies[0].host_port_pair());
-      DCHECK_EQ(net::ProxyServer::SCHEME_QUIC, proxies[0].scheme());
-    }
-    config_values_->UpdateValues(proxies);
-    config_->ReloadConfig();
-    remote_config_applied_ = true;
-    return true;
+  request_options_->SetSecureSession(config.session_key());
+  // If QUIC is enabled, the scheme of the first proxy (if it is HTTPS) would
+  // be changed to QUIC.
+  if (proxies[0].scheme() == net::ProxyServer::SCHEME_HTTPS && params_ &&
+      params_->quic_enabled()) {
+    proxies[0] = net::ProxyServer(net::ProxyServer::SCHEME_QUIC,
+                                  proxies[0].host_port_pair());
+    DCHECK_EQ(net::ProxyServer::SCHEME_QUIC, proxies[0].scheme());
   }
-
-  std::string session;
-  std::string credentials;
-  if (!DataReductionProxyRequestOptions::ParseLocalSessionKey(
-          config.session_key(), &session, &credentials)) {
-    return false;
-  }
-
-  request_options_->SetCredentials(session, credentials);
   config_values_->UpdateValues(proxies);
   config_->ReloadConfig();
+  remote_config_applied_ = true;
   return true;
 }
 

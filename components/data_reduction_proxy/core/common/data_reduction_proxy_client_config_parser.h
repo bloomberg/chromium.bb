@@ -24,14 +24,6 @@ net::ProxyServer::Scheme SchemeFromProxyScheme(
 // Returns the ProxyServer_ProxyScheme for a |net::ProxyServer::Scheme|.
 ProxyServer_ProxyScheme ProxySchemeFromScheme(net::ProxyServer::Scheme scheme);
 
-// Returns the |Timestamp| representation of |time|.
-// As an optimization, this currently does not population timestamp.nanos;
-// the resolution is seconds.
-void TimetoTimestamp(const base::Time& time, Timestamp* timestamp);
-
-// Returns the |base::Time| representation of |timestamp|.
-base::Time TimestampToTime(const Timestamp& timestamp);
-
 // Returns the |Duration| representation of |time_delta|.
 // As an optimization, this currently does not population duration.nanos;
 // the resolution is seconds.

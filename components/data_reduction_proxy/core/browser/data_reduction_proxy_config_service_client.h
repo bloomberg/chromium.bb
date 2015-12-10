@@ -79,12 +79,12 @@ class DataReductionProxyConfigServiceClient
 
   // Takes a serialized Data Reduction Proxy configuration and sets it as the
   // current Data Reduction Proxy configuration. If a remote configuration has
-  // already been retrieved, the remote configuration takes precedence. If using
-  // a local configuration, then this method has no effect.
+  // already been retrieved, the remote configuration takes precedence.
   void ApplySerializedConfig(const std::string& config_value);
 
   // Examines |response_headers| to determine if an authentication failure
-  // occurred on a Data Reduction Proxy.
+  // occurred on a Data Reduction Proxy. Returns true if authentication failure
+  // occured and fetches a new config.
   bool ShouldRetryDueToAuthFailure(
       const net::HttpResponseHeaders* response_headers,
       const net::HostPortPair& proxy_server);
@@ -102,20 +102,7 @@ class DataReductionProxyConfigServiceClient
   // configuration.
   void SetConfigRefreshTimer(const base::TimeDelta& delay);
 
-  // Constructs a synthetic response based on |params_|.
-  std::string ConstructStaticResponse() const;
-
-  base::TimeDelta minimum_refresh_interval_on_success() const;
-
  private:
-  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigServiceClientTest,
-                           TestConstructStaticResponse);
-  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigServiceClientTest,
-                           OnIPAddressChange);
-  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigServiceClientTest,
-                           OnIPAddressChangeDisabled);
-  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigServiceClientTest,
-                           ClientConfigFieldTrialParams);
   friend class TestDataReductionProxyConfigServiceClient;
 
   // Returns the duration after which the Data Reduction Proxy configuration
@@ -125,18 +112,11 @@ class DataReductionProxyConfigServiceClient
       const base::TimeDelta& config_expiration,
       const base::TimeDelta& backoff_delay) const;
 
-  // Populates the parameters for the client config field trial if the session
-  // is part of client config field trial.
-  void PopulateClientConfigParams();
-
   // Override of net::NetworkChangeNotifier::IPAddressObserver.
   void OnIPAddressChanged() override;
 
   // Override of net::URLFetcherDelegate.
   void OnURLFetchComplete(const net::URLFetcher* source) override;
-
-  // Retrieves the Data Reduction Proxy configuration from |params_|.
-  void ReadAndApplyStaticConfig();
 
   // Retrieves the Data Reduction Proxy configuration from a remote service.
   void RetrieveRemoteConfig();
@@ -161,10 +141,10 @@ class DataReductionProxyConfigServiceClient
 
   // Parses out the proxy configuration portion of |config| and applies it to
   // |config_| and |request_options_|. Takes into account the field trials that
-  // this session belongs to.
+  // this session belongs to. Returns true if the |config| was successfully
+  // parsed and applied.
   bool ParseAndApplyProxyConfig(const ClientConfig& config);
 
-  // Contains the static configuration data to use.
   scoped_ptr<DataReductionProxyParams> params_;
 
   // The caller must ensure that the |request_options_| outlives this instance.
@@ -194,11 +174,6 @@ class DataReductionProxyConfigServiceClient
   // True if the Data Reduction Proxy configuration should be retrieved.
   bool enabled_;
 
-  // Whether to use |params_| to obtain the Data Reduction Proxy configuration
-  // or the remote server specified by |config_service_url_|.
-  // TODO(jeremyim): Remove this as part of bug 479282.
-  bool use_local_config_;
-
   // True if a remote Data Reduction Proxy configuration has been retrieved and
   // successfully applied.
   bool remote_config_applied_;
@@ -226,10 +201,6 @@ class DataReductionProxyConfigServiceClient
   // failed to authenticate, since the new configuration marks |backoff_entry_|
   // with a success, resulting in no net increase in the backoff timer.
   bool previous_request_failed_authentication_;
-
-  // If the config is fetched successfully, next config can be proactively
-  // fetched only after at least |minimum_refresh_interval_on_success_|.
-  base::TimeDelta minimum_refresh_interval_on_success_;
 
   // Enforce usage on the IO thread.
   base::ThreadChecker thread_checker_;
