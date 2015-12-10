@@ -153,11 +153,10 @@ int32_t PepperPDFHost::OnHostMsgSaveAs(
     return PP_ERROR_FAILED;
   GURL url = instance->GetPluginURL();
   content::RenderView* render_view = instance->GetRenderView();
-  blink::WebLocalFrame* frame =
-      render_view->GetWebView()->mainFrame()->toWebLocalFrame();
-  content::Referrer referrer = content::Referrer::SanitizeForRequest(
-      url, content::Referrer(frame->document().url(),
-                             frame->document().referrerPolicy()));
+  content::Referrer referrer;
+  referrer.url = url;
+  referrer.policy = blink::WebReferrerPolicyDefault;
+  referrer = content::Referrer::SanitizeForRequest(url, referrer);
   render_view->Send(
       new PDFHostMsg_PDFSaveURLAs(render_view->GetRoutingID(), url, referrer));
   return PP_OK;
