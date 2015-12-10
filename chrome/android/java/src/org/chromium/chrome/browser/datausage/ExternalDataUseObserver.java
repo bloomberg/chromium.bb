@@ -88,8 +88,10 @@ public class ExternalDataUseObserver {
      * @param bytesDownloaded number of bytes downloaded by Chromium.
      * @param bytesUploaded number of bytes uploaded by Chromium.
      * The result of this request is returned asynchronously via
-     * {@link #nativeOnReportDataUseDone}. A new report should be submitted only after the
-     * result has been returned via {@link #nativeOnReportDataUseDone}.
+     * {@link #nativeOnReportDataUseDone}. A new report should preferably be submitted only after
+     * the result of the previous report has been returned via {@link #nativeOnReportDataUseDone}.
+     * Submitting another data use report while the previous is pending may cause the previous
+     * report to be lost.
      */
     @CalledByNative
     protected void reportDataUse(String label, int networkType, String mccMnc,

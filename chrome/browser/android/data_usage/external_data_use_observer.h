@@ -45,6 +45,20 @@ class ExternalDataUseObserverBridge;
 // only be accessed on IO thread.
 class ExternalDataUseObserver : public data_usage::DataUseAggregator::Observer {
  public:
+  // Result of data usage report submission.  This enum must remain synchronized
+  // with the enum of the same name in metrics/histograms/histograms.xml.
+  enum DataUsageReportSubmissionResult {
+    // Submission of data use report to the external observer was successful.
+    DATAUSAGE_REPORT_SUBMISSION_SUCCESSFUL = 0,
+    // Submission of data use report to the external observer returned error.
+    DATAUSAGE_REPORT_SUBMISSION_FAILED = 1,
+    // Submission of data use report to the external observer timed out.
+    DATAUSAGE_REPORT_SUBMISSION_TIMED_OUT = 2,
+    // Data use report was lost before an attempt was made to submit it.
+    DATAUSAGE_REPORT_SUBMISSION_LOST = 3,
+    DATAUSAGE_REPORT_SUBMISSION_MAX = 4
+  };
+
   // External data use observer field trial name.
   static const char kExternalDataUseObserverFieldTrial[];
 
@@ -83,6 +97,7 @@ class ExternalDataUseObserver : public data_usage::DataUseAggregator::Observer {
   friend class ExternalDataUseObserverTest;
   FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, BufferDataUseReports);
   FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, BufferSize);
+  FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, DataUseReportTimedOut);
   FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, HashFunction);
   FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, LabelRemoved);
   FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, MultipleMatchingRules);
@@ -188,8 +203,14 @@ class ExternalDataUseObserver : public data_usage::DataUseAggregator::Observer {
   // True if callback from |FetchMatchingRulesDone| is currently pending.
   bool matching_rules_fetch_pending_;
 
-  // True if callback from |SubmitDataUseReportCallback| is currently pending.
-  bool submit_data_report_pending_;
+  // Time when the currently pending data use report was submitted.
+  // |last_data_report_submitted_ticks_| is null if no data use report is
+  // currently pending.
+  base::TimeTicks last_data_report_submitted_ticks_;
+
+  // |pending_report_bytes_| is the total byte count in the data use report that
+  // is currently pending.
+  int64_t pending_report_bytes_;
 
   // Buffered data reports that need to be submitted to the
   // |external_data_use_observer_bridge_|.
@@ -220,6 +241,10 @@ class ExternalDataUseObserver : public data_usage::DataUseAggregator::Observer {
   // Minimum number of bytes that should be buffered before a data use report is
   // submitted.
   const int64_t data_use_report_min_bytes_;
+
+  // If a data use report is pending for more than |data_report_submit_timeout_|
+  // duration, it is considered as timed out.
+  const base::TimeDelta data_report_submit_timeout_;
 
   base::ThreadChecker thread_checker_;
 

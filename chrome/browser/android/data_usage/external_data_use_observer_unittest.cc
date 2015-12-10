@@ -13,18 +13,33 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/histogram_tester.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/android/data_usage/data_use_tab_model_test_utils.h"
 #include "components/data_usage/core/data_use.h"
 #include "components/data_usage/core/data_use_aggregator.h"
 #include "components/data_usage/core/data_use_amortizer.h"
 #include "components/data_usage/core/data_use_annotator.h"
+#include "components/sessions/core/session_id.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/network_change_notifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+
+namespace {
+
+const char kDefaultLabel[] = "label";
+const SessionID::id_type kDefaultTabId = 0;
+const char kDefaultURL[] = "http://www.google.com/#q=abc";
+const char kFooMccMnc[] = "foo_mccmnc";
+const char kBarMccMnc[] = "bar_mccmnc";
+const char kBazMccMnc[] = "baz_mccmnc";
+const char kFooLabel[] = "foo_label";
+const char kBarLabel[] = "bar_label";
+
+}  // namespace
 
 namespace chrome {
 
@@ -52,14 +67,27 @@ class ExternalDataUseObserverTest : public testing::Test {
         test_data_use_tab_model_);
   }
 
-  scoped_ptr<ExternalDataUseObserver> Create() const {
-    scoped_ptr<ExternalDataUseObserver> external_data_use_observer(
-        new ExternalDataUseObserver(data_use_aggregator_.get(),
-                                    io_task_runner_.get(),
-                                    ui_task_runner_.get()));
-    // Wait for |external_data_use_observer| to create the Java object.
-    base::RunLoop().RunUntilIdle();
-    return external_data_use_observer;
+  // Replaces |external_data_use_observer_| with a new ExternalDataUseObserver.
+  void ReplaceExternalDataUseObserver(
+      std::map<std::string, std::string> variation_params) {
+    variations::testing::ClearAllVariationParams();
+    ASSERT_TRUE(variations::AssociateVariationParams(
+        ExternalDataUseObserver::kExternalDataUseObserverFieldTrial, "Enabled",
+        variation_params));
+
+    base::FieldTrialList field_trial_list(nullptr);
+
+    base::FieldTrialList::CreateFieldTrial(
+        ExternalDataUseObserver::kExternalDataUseObserverFieldTrial, "Enabled");
+
+    external_data_use_observer_.reset(new ExternalDataUseObserver(
+        data_use_aggregator_.get(), io_task_runner_.get(),
+        ui_task_runner_.get()));
+    // |test_data_use_tab_model| is owned by |observer|.
+    TestDataUseTabModel* test_data_use_tab_model(
+        new TestDataUseTabModel(ui_task_runner_.get()));
+    external_data_use_observer_->data_use_tab_model_.reset(
+        test_data_use_tab_model);
   }
 
   void FetchMatchingRulesDone(const std::vector<std::string>& app_package_name,
@@ -67,6 +95,32 @@ class ExternalDataUseObserverTest : public testing::Test {
                               const std::vector<std::string>& label) {
     external_data_use_observer_->FetchMatchingRulesDone(
         &app_package_name, &domain_path_regex, &label);
+  }
+
+  // Adds a default matching rule to |external_data_use_observer_|.
+  void AddDefaultMatchingRule() {
+    std::vector<std::string> url_regexes;
+    url_regexes.push_back(
+        "http://www[.]google[.]com/#q=.*|https://www[.]google[.]com/#q=.*");
+    FetchMatchingRulesDone(
+        std::vector<std::string>(url_regexes.size(), std::string()),
+        url_regexes,
+        std::vector<std::string>(url_regexes.size(), kDefaultLabel));
+  }
+
+  // Notifies DataUseTabModel that tab tracking has started on kDefaultTabId.
+  void TriggerTabTrackingOnDefaultTab() {
+    external_data_use_observer_->GetDataUseTabModel()->OnNavigationEvent(
+        kDefaultTabId, DataUseTabModel::TRANSITION_OMNIBOX_SEARCH,
+        GURL(kDefaultURL), std::string());
+  }
+
+  // Returns a default data_usage::DataUse object.
+  data_usage::DataUse default_data_use() {
+    return data_usage::DataUse(
+        GURL(kDefaultURL), base::TimeTicks::Now(), GURL(), kDefaultTabId,
+        net::NetworkChangeNotifier::CONNECTION_UNKNOWN, "",
+        default_upload_bytes(), default_download_bytes());
   }
 
   ExternalDataUseObserver* external_data_use_observer() const {
@@ -79,6 +133,12 @@ class ExternalDataUseObserverTest : public testing::Test {
 
   const ExternalDataUseObserver::DataUseReports& buffered_data_reports() const {
     return external_data_use_observer_->buffered_data_reports_;
+  }
+
+  int64_t default_upload_bytes() const { return 1; }
+
+  int64_t default_download_bytes() const {
+    return external_data_use_observer_->data_use_report_min_bytes_;
   }
 
  private:
@@ -119,74 +179,59 @@ TEST_F(ExternalDataUseObserverTest, LabelRemoved) {
 
 // Verifies that buffer size does not exceed the specified limit.
 TEST_F(ExternalDataUseObserverTest, BufferSize) {
-  const char kLabel[] = "label";
+  base::HistogramTester histogram_tester;
 
-  std::vector<std::string> url_regexes;
-  url_regexes.push_back(
-      "http://www[.]google[.]com/#q=.*|https://www[.]google[.]com/#q=.*");
-
-  FetchMatchingRulesDone(
-      std::vector<std::string>(url_regexes.size(), std::string()), url_regexes,
-      std::vector<std::string>(url_regexes.size(), kLabel));
-
-  const int64_t bytes_downloaded =
-      external_data_use_observer()->data_use_report_min_bytes_;
-  const int64_t bytes_uploaded = 1;
+  AddDefaultMatchingRule();
 
   // Push more entries than the buffer size. Buffer size should not be exceeded.
   for (size_t i = 0; i < ExternalDataUseObserver::kMaxBufferSize * 2; ++i) {
-    data_usage::DataUse data_use(
-        GURL("http://www.google.com/#q=abc"), base::TimeTicks::Now(), GURL(), 0,
-        net::NetworkChangeNotifier::CONNECTION_UNKNOWN,
-        "mccmnc" + base::Int64ToString(i), bytes_uploaded, bytes_downloaded);
+    data_usage::DataUse data_use = default_data_use();
+    data_use.mcc_mnc = "mccmnc" + base::Int64ToString(i);
     external_data_use_observer()->OnDataUse(data_use);
   }
 
   EXPECT_LE(0, external_data_use_observer()->total_bytes_buffered_);
 
   // Verify that total buffered bytes is computed correctly.
-  EXPECT_EQ(static_cast<int64_t>(ExternalDataUseObserver::kMaxBufferSize *
-                                 (bytes_downloaded + bytes_uploaded)),
-            external_data_use_observer()->total_bytes_buffered_);
+  EXPECT_EQ(
+      static_cast<int64_t>(ExternalDataUseObserver::kMaxBufferSize *
+                           (default_upload_bytes() + default_download_bytes())),
+      external_data_use_observer()->total_bytes_buffered_);
   EXPECT_EQ(ExternalDataUseObserver::kMaxBufferSize,
             buffered_data_reports().size());
 
   // Verify the label of the data use report.
   for (const auto& it : buffered_data_reports())
-    EXPECT_EQ(kLabel, it.first.label);
+    EXPECT_EQ(kDefaultLabel, it.first.label);
+
+  // Verify that metrics were updated correctly for the lost reports.
+  histogram_tester.ExpectUniqueSample(
+      "DataUsage.ReportSubmissionResult",
+      ExternalDataUseObserver::DATAUSAGE_REPORT_SUBMISSION_LOST,
+      ExternalDataUseObserver::kMaxBufferSize - 1);
+  histogram_tester.ExpectUniqueSample(
+      "DataUsage.ReportSubmission.Bytes.Lost",
+      default_upload_bytes() + default_download_bytes(),
+      ExternalDataUseObserver::kMaxBufferSize - 1);
 }
 
 // Tests that buffered data use reports are merged correctly.
 TEST_F(ExternalDataUseObserverTest, ReportsMergedCorrectly) {
-  const char kLabel[] = "label";
-
-  std::vector<std::string> url_regexes;
-  url_regexes.push_back(
-      "http://www[.]google[.]com/#q=.*|https://www[.]google[.]com/#q=.*");
-
-  FetchMatchingRulesDone(
-      std::vector<std::string>(url_regexes.size(), std::string()), url_regexes,
-      std::vector<std::string>(url_regexes.size(), kLabel));
+  AddDefaultMatchingRule();
 
   const size_t num_iterations = ExternalDataUseObserver::kMaxBufferSize * 2;
 
   for (size_t i = 0; i < num_iterations; ++i) {
-    data_usage::DataUse data_use_foo(
-        GURL("http://www.google.com/#q=abc"), base::TimeTicks::Now(), GURL(), 0,
-        net::NetworkChangeNotifier::CONNECTION_UNKNOWN, "mccmnc_foo",
-        external_data_use_observer()->data_use_report_min_bytes_, 1);
+    data_usage::DataUse data_use_foo = default_data_use();
+    data_use_foo.mcc_mnc = kFooMccMnc;
     external_data_use_observer()->OnDataUse(data_use_foo);
 
-    data_usage::DataUse data_use_bar(
-        GURL("http://www.google.com/#q=abc"), base::TimeTicks::Now(), GURL(), 0,
-        net::NetworkChangeNotifier::CONNECTION_UNKNOWN, "mccmnc_bar",
-        external_data_use_observer()->data_use_report_min_bytes_, 1);
+    data_usage::DataUse data_use_bar = default_data_use();
+    data_use_bar.mcc_mnc = kBarMccMnc;
     external_data_use_observer()->OnDataUse(data_use_bar);
 
-    data_usage::DataUse data_use_baz(
-        GURL("http://www.google.com/#q=abc"), base::TimeTicks::Now(), GURL(), 0,
-        net::NetworkChangeNotifier::CONNECTION_UNKNOWN, "mccmnc_baz",
-        external_data_use_observer()->data_use_report_min_bytes_, 1);
+    data_usage::DataUse data_use_baz = default_data_use();
+    data_use_baz.mcc_mnc = kBazMccMnc;
     external_data_use_observer()->OnDataUse(data_use_baz);
   }
 
@@ -198,47 +243,36 @@ TEST_F(ExternalDataUseObserverTest, ReportsMergedCorrectly) {
   const struct {
     std::string mcc_mnc;
     size_t number_of_merged_reports;
-  } expected_data_use_reports[] = {{"mccmnc_foo", num_iterations - 1},
-                                   {"mccmnc_bar", num_iterations},
-                                   {"mccmnc_baz", num_iterations}};
+  } expected_data_use_reports[] = {{kFooMccMnc, num_iterations - 1},
+                                   {kBarMccMnc, num_iterations},
+                                   {kBazMccMnc, num_iterations}};
 
   for (const auto& expected_report : expected_data_use_reports) {
     const ExternalDataUseObserver::DataUseReportKey key(
-        kLabel, net::NetworkChangeNotifier::CONNECTION_UNKNOWN,
+        kDefaultLabel, net::NetworkChangeNotifier::CONNECTION_UNKNOWN,
         expected_report.mcc_mnc);
 
     EXPECT_NE(buffered_data_reports().end(), buffered_data_reports().find(key));
-    EXPECT_EQ(static_cast<int64_t>(expected_report.number_of_merged_reports),
+    EXPECT_EQ(static_cast<int64_t>(expected_report.number_of_merged_reports) *
+                  (default_download_bytes()),
               buffered_data_reports().find(key)->second.bytes_downloaded);
-    EXPECT_EQ(static_cast<int64_t>(
-                  expected_report.number_of_merged_reports *
-                  external_data_use_observer()->data_use_report_min_bytes_),
+    EXPECT_EQ(static_cast<int64_t>(expected_report.number_of_merged_reports *
+                                   (default_upload_bytes())),
               buffered_data_reports().find(key)->second.bytes_uploaded);
   }
 }
 
 // Tests that timestamps of merged reports is correct.
 TEST_F(ExternalDataUseObserverTest, TimestampsMergedCorrectly) {
-  const char kLabel[] = "label";
-
-  std::vector<std::string> url_regexes;
-  url_regexes.push_back(
-      "http://www[.]google[.]com/#q=.*|https://www[.]google[.]com/#q=.*");
-
-  FetchMatchingRulesDone(
-      std::vector<std::string>(url_regexes.size(), std::string()), url_regexes,
-      std::vector<std::string>(url_regexes.size(), kLabel));
+  AddDefaultMatchingRule();
 
   const size_t num_iterations = ExternalDataUseObserver::kMaxBufferSize * 2;
 
   base::Time start_timestamp = base::Time::UnixEpoch();
   base::Time end_timestamp = start_timestamp + base::TimeDelta::FromSeconds(1);
   for (size_t i = 0; i < num_iterations; ++i) {
-    data_usage::DataUse data_use_foo(
-        GURL("http://www.google.com/#q=abc"), base::TimeTicks::Now(), GURL(), 0,
-        net::NetworkChangeNotifier::CONNECTION_UNKNOWN, "mccmnc_foo", 1, 2);
     external_data_use_observer()->BufferDataUseReport(
-        data_use_foo, kLabel, start_timestamp, end_timestamp);
+        default_data_use(), kDefaultLabel, start_timestamp, end_timestamp);
 
     start_timestamp += base::TimeDelta::FromSeconds(1);
     end_timestamp += base::TimeDelta::FromSeconds(1);
@@ -261,10 +295,8 @@ TEST_F(ExternalDataUseObserverTest, MultipleMatchingRules) {
       "http://www[.]bar[.]com/#q=.*|https://www[.]bar[.]com/#q=.*");
 
   std::vector<std::string> labels;
-  const char kLabelFoo[] = "label_foo";
-  const char kLabelBar[] = "label_bar";
-  labels.push_back(kLabelFoo);
-  labels.push_back(kLabelBar);
+  labels.push_back(kFooLabel);
+  labels.push_back(kBarLabel);
 
   std::vector<std::string> app_package_names;
   const char kAppFoo[] = "com.example.foo";
@@ -274,44 +306,27 @@ TEST_F(ExternalDataUseObserverTest, MultipleMatchingRules) {
 
   FetchMatchingRulesDone(app_package_names, url_regexes, labels);
   EXPECT_EQ(0U, external_data_use_observer()->buffered_data_reports_.size());
-  EXPECT_FALSE(external_data_use_observer()->submit_data_report_pending_);
+  EXPECT_TRUE(external_data_use_observer()
+                  ->last_data_report_submitted_ticks_.is_null());
   EXPECT_FALSE(external_data_use_observer()->matching_rules_fetch_pending_);
 
   // Check |kLabelFoo| matching rule.
-  data_usage::DataUse data_foo_1(
-      GURL("http://www.foo.com/#q=abc"), base::TimeTicks::Now(), GURL(), 0,
-      net::NetworkChangeNotifier::CONNECTION_UNKNOWN, "mccmnc_1",
-      external_data_use_observer()->data_use_report_min_bytes_, 0);
-  external_data_use_observer()->OnDataUse(data_foo_1);
-  data_usage::DataUse data_foo_2(
-      GURL("http://www.foo.com/#q=abc"), base::TimeTicks::Now(), GURL(), 0,
-      net::NetworkChangeNotifier::CONNECTION_UNKNOWN, "mccmnc_2",
-      external_data_use_observer()->data_use_report_min_bytes_, 0);
-  external_data_use_observer()->OnDataUse(data_foo_2);
-
-  // The foo1 report should have been submitted.
-  EXPECT_TRUE(external_data_use_observer()->submit_data_report_pending_);
-
-  // Only the foo2 report should be present.
-  EXPECT_EQ(1U, buffered_data_reports().size());
-  const ExternalDataUseObserver::DataUseReportKey key_foo_2(
-      kLabelFoo, net::NetworkChangeNotifier::CONNECTION_UNKNOWN, "mccmnc_2");
-  EXPECT_NE(buffered_data_reports().end(),
-            buffered_data_reports().find(key_foo_2));
+  data_usage::DataUse data_foo = default_data_use();
+  data_foo.url = GURL("http://www.foo.com/#q=abc");
+  data_foo.mcc_mnc = kFooMccMnc;
+  external_data_use_observer()->OnDataUse(data_foo);
 
   // Check |kLabelBar| matching rule.
-  data_usage::DataUse data_bar(
-      GURL("http://www.bar.com/#q=abc"), base::TimeTicks::Now(), GURL(), 0,
-      net::NetworkChangeNotifier::CONNECTION_UNKNOWN, "mccmnc", 0, 0);
+  data_usage::DataUse data_bar = default_data_use();
+  data_bar.url = GURL("http://www.bar.com/#q=abc");
+  data_bar.mcc_mnc = kBarMccMnc;
   external_data_use_observer()->OnDataUse(data_bar);
 
-  // Both the foo2 and bar reports should be present.
-  EXPECT_EQ(2U, buffered_data_reports().size());
-  EXPECT_NE(buffered_data_reports().end(),
-            buffered_data_reports().find(key_foo_2));
+  // bar report should be present.
+  EXPECT_EQ(1U, buffered_data_reports().size());
 
   const ExternalDataUseObserver::DataUseReportKey key_bar(
-      kLabelBar, net::NetworkChangeNotifier::CONNECTION_UNKNOWN, "mccmnc");
+      kBarLabel, net::NetworkChangeNotifier::CONNECTION_UNKNOWN, kBarMccMnc);
   EXPECT_NE(buffered_data_reports().end(),
             buffered_data_reports().find(key_bar));
 }
@@ -322,16 +337,13 @@ TEST_F(ExternalDataUseObserverTest, HashFunction) {
   ExternalDataUseObserver::DataUseReportKeyHash hash;
 
   ExternalDataUseObserver::DataUseReportKey foo(
-      "foo_label", net::NetworkChangeNotifier::CONNECTION_UNKNOWN,
-      "foo_mcc_mnc");
+      kFooLabel, net::NetworkChangeNotifier::CONNECTION_UNKNOWN, kFooMccMnc);
   ExternalDataUseObserver::DataUseReportKey bar_label(
-      "bar_label", net::NetworkChangeNotifier::CONNECTION_UNKNOWN,
-      "foo_mcc_mnc");
+      kBarLabel, net::NetworkChangeNotifier::CONNECTION_UNKNOWN, kFooMccMnc);
   ExternalDataUseObserver::DataUseReportKey bar_network_type(
-      "foo_label", net::NetworkChangeNotifier::CONNECTION_WIFI, "foo_mcc_mnc");
+      kFooLabel, net::NetworkChangeNotifier::CONNECTION_WIFI, kFooMccMnc);
   ExternalDataUseObserver::DataUseReportKey bar_mcc_mnc(
-      "foo_label", net::NetworkChangeNotifier::CONNECTION_UNKNOWN,
-      "bar_mcc_mnc");
+      kFooLabel, net::NetworkChangeNotifier::CONNECTION_UNKNOWN, kBarMccMnc);
 
   EXPECT_NE(hash(foo), hash(bar_label));
   EXPECT_NE(hash(foo), hash(bar_label));
@@ -341,15 +353,7 @@ TEST_F(ExternalDataUseObserverTest, HashFunction) {
 
 // Tests if matching rules are fetched periodically.
 TEST_F(ExternalDataUseObserverTest, PeriodicFetchMatchingRules) {
-  const char kLabel[] = "label";
-
-  std::vector<std::string> url_regexes;
-  url_regexes.push_back(
-      "http://www[.]google[.]com/#q=.*|https://www[.]google[.]com/#q=.*");
-
-  FetchMatchingRulesDone(
-      std::vector<std::string>(url_regexes.size(), std::string()), url_regexes,
-      std::vector<std::string>(url_regexes.size(), kLabel));
+  AddDefaultMatchingRule();
 
   EXPECT_FALSE(external_data_use_observer()->matching_rules_fetch_pending_);
   EXPECT_FALSE(
@@ -365,11 +369,7 @@ TEST_F(ExternalDataUseObserverTest, PeriodicFetchMatchingRules) {
             external_data_use_observer()->fetch_matching_rules_duration_);
 
   // OnDataUse should trigger fetching of matching rules.
-  data_usage::DataUse data_use_foo(
-      GURL("http://www.google.com/#q=abc"), base::TimeTicks::Now(), GURL(), 0,
-      net::NetworkChangeNotifier::CONNECTION_UNKNOWN, "mccmnc_foo",
-      external_data_use_observer()->data_use_report_min_bytes_, 1);
-  external_data_use_observer()->OnDataUse(data_use_foo);
+  external_data_use_observer()->OnDataUse(default_data_use());
 
   // Matching rules should not be expired.
   EXPECT_LT(base::TimeTicks::Now() -
@@ -380,15 +380,8 @@ TEST_F(ExternalDataUseObserverTest, PeriodicFetchMatchingRules) {
 // Tests if data use reports are sent only after the total bytes send/received
 // across all buffered reports have reached the specified threshold.
 TEST_F(ExternalDataUseObserverTest, BufferDataUseReports) {
-  const char kLabel[] = "label";
-
-  std::vector<std::string> url_regexes;
-  url_regexes.push_back(
-      "http://www[.]google[.]com/#q=.*|https://www[.]google[.]com/#q=.*");
-
-  FetchMatchingRulesDone(
-      std::vector<std::string>(url_regexes.size(), std::string()), url_regexes,
-      std::vector<std::string>(url_regexes.size(), kLabel));
+  AddDefaultMatchingRule();
+  TriggerTabTrackingOnDefaultTab();
 
   // This tests reports 1024 bytes in each loop iteration. For the test to work
   // properly, |data_use_report_min_bytes_| should be a multiple of 1024.
@@ -398,64 +391,103 @@ TEST_F(ExternalDataUseObserverTest, BufferDataUseReports) {
       external_data_use_observer()->data_use_report_min_bytes_ / 1024;
 
   for (size_t i = 0; i < num_iterations; ++i) {
-    data_usage::DataUse data_use_foo(
-        GURL("http://www.google.com/#q=abc"), base::TimeTicks::Now(), GURL(), 0,
-        net::NetworkChangeNotifier::CONNECTION_UNKNOWN, "mccmnc_foo", 1024, 0);
-    external_data_use_observer()->OnDataUse(data_use_foo);
+    data_usage::DataUse data_use = default_data_use();
+    data_use.tx_bytes = 1024;
+    data_use.rx_bytes = 0;
+    external_data_use_observer()->OnDataUse(data_use);
 
     if (i != num_iterations - 1) {
       // Total buffered bytes is less than the minimum threshold. Data use
       // report should not be send.
-      EXPECT_FALSE(external_data_use_observer()->submit_data_report_pending_);
+      EXPECT_TRUE(external_data_use_observer()
+                      ->last_data_report_submitted_ticks_.is_null());
       EXPECT_EQ(static_cast<int64_t>(i + 1),
                 external_data_use_observer()->total_bytes_buffered_ / 1024);
+      EXPECT_EQ(0, external_data_use_observer()->pending_report_bytes_);
 
     } else {
       // Total bytes is at least the minimum threshold. This should trigger
       // submitting of the buffered data use report.
-      EXPECT_TRUE(external_data_use_observer()->submit_data_report_pending_);
+      EXPECT_FALSE(external_data_use_observer()
+                       ->last_data_report_submitted_ticks_.is_null());
       EXPECT_EQ(0, external_data_use_observer()->total_bytes_buffered_);
     }
   }
   EXPECT_EQ(0, external_data_use_observer()->total_bytes_buffered_);
+  EXPECT_EQ(static_cast<int64_t>(num_iterations),
+            external_data_use_observer()->pending_report_bytes_ / 1024);
+
+  base::HistogramTester histogram_tester;
+  external_data_use_observer()->OnReportDataUseDone(true);
+
+  // Verify that metrics were updated correctly for the report that was
+  // successfully submitted.
+  histogram_tester.ExpectUniqueSample(
+      "DataUsage.ReportSubmissionResult",
+      ExternalDataUseObserver::DATAUSAGE_REPORT_SUBMISSION_SUCCESSFUL, 1);
+  histogram_tester.ExpectUniqueSample(
+      "DataUsage.ReportSubmission.Bytes.Successful",
+      external_data_use_observer()->data_use_report_min_bytes_, 1);
+
+  // Verify that metrics were updated correctly for the report that was not
+  // successfully submitted.
+  external_data_use_observer()->OnDataUse(default_data_use());
+  external_data_use_observer()->OnReportDataUseDone(false);
+  histogram_tester.ExpectTotalCount("DataUsage.ReportSubmissionResult", 2);
+  histogram_tester.ExpectBucketCount(
+      "DataUsage.ReportSubmissionResult",
+      ExternalDataUseObserver::DATAUSAGE_REPORT_SUBMISSION_FAILED, 1);
+  histogram_tester.ExpectUniqueSample(
+      "DataUsage.ReportSubmission.Bytes.Failed",
+      external_data_use_observer()->data_use_report_min_bytes_, 1);
 }
 
 // Tests if the parameters from the field trial are populated correctly.
 TEST_F(ExternalDataUseObserverTest, Variations) {
-  EXPECT_EQ(base::TimeDelta::FromSeconds(60 * 15),
-            external_data_use_observer()->fetch_matching_rules_duration_);
-  EXPECT_EQ(100 * 1024,
-            external_data_use_observer()->data_use_report_min_bytes_);
-
-  variations::testing::ClearAllVariationParams();
   std::map<std::string, std::string> variation_params;
 
   const int kFetchMatchingRulesDurationSeconds = 10000;
+  const int kDefaultMaxDataReportSubmitWaitMsec = 20000;
   const int64_t kDataUseReportMinBytes = 5000;
   variation_params["fetch_matching_rules_duration_seconds"] =
       base::Int64ToString(kFetchMatchingRulesDurationSeconds);
+  variation_params["data_report_submit_timeout_msec"] =
+      base::Int64ToString(kDefaultMaxDataReportSubmitWaitMsec);
   variation_params["data_use_report_min_bytes"] =
       base::Int64ToString(kDataUseReportMinBytes);
 
-  ASSERT_TRUE(variations::AssociateVariationParams(
-      ExternalDataUseObserver::kExternalDataUseObserverFieldTrial, "Enabled",
-      variation_params));
-
-  base::FieldTrialList field_trial_list(nullptr);
-
-  base::FieldTrialList::CreateFieldTrial(
-      ExternalDataUseObserver::kExternalDataUseObserverFieldTrial, "Enabled");
-
-  // Create another ExternalDataUseObserver object. This would fetch variation
-  // params.
-  scoped_ptr<ExternalDataUseObserver>
-      external_data_use_obsever_with_variations = Create();
+  // Create another ExternalDataUseObserver object.
+  ReplaceExternalDataUseObserver(variation_params);
   EXPECT_EQ(base::TimeDelta::FromSeconds(kFetchMatchingRulesDurationSeconds),
-            external_data_use_obsever_with_variations
-                ->fetch_matching_rules_duration_);
+            external_data_use_observer()->fetch_matching_rules_duration_);
   EXPECT_EQ(
-      kDataUseReportMinBytes,
-      external_data_use_obsever_with_variations->data_use_report_min_bytes_);
+      base::TimeDelta::FromMilliseconds(kDefaultMaxDataReportSubmitWaitMsec),
+      external_data_use_observer()->data_report_submit_timeout_);
+  EXPECT_EQ(kDataUseReportMinBytes,
+            external_data_use_observer()->data_use_report_min_bytes_);
+}
+
+// Tests if the metrics are recorded correctly.
+TEST_F(ExternalDataUseObserverTest, DataUseReportTimedOut) {
+  std::map<std::string, std::string> variation_params;
+  variation_params["data_report_submit_timeout_msec"] = "0";
+  variation_params["data_use_report_min_bytes"] = "0";
+
+  // Create another ExternalDataUseObserver object.
+  ReplaceExternalDataUseObserver(variation_params);
+  AddDefaultMatchingRule();
+
+  base::HistogramTester histogram_tester;
+  TriggerTabTrackingOnDefaultTab();
+  external_data_use_observer()->OnDataUse(default_data_use());
+  external_data_use_observer()->OnDataUse(default_data_use());
+  // First data use report should be marked as timed out.
+  histogram_tester.ExpectUniqueSample(
+      "DataUsage.ReportSubmissionResult",
+      ExternalDataUseObserver::DATAUSAGE_REPORT_SUBMISSION_TIMED_OUT, 1);
+  histogram_tester.ExpectUniqueSample(
+      "DataUsage.ReportSubmission.Bytes.TimedOut",
+      default_upload_bytes() + default_download_bytes(), 1);
 }
 
 }  // namespace android

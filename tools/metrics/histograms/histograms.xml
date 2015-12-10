@@ -6467,6 +6467,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="DataUsage.ReportSubmission.Bytes" units="bytes">
+  <owner>bengr@chromium.org</owner>
+  <owner>tbansal@chromium.org</owner>
+  <summary>
+    Count of bytes in the data use reports that were intended to be submitted to
+    the platform external data use observer.
+  </summary>
+</histogram>
+
+<histogram name="DataUsage.ReportSubmissionResult"
+    enum="DataUsageReportSubmissionResult">
+  <owner>bengr@chromium.org</owner>
+  <owner>tbansal@chromium.org</owner>
+  <summary>Result of data usage report submission.</summary>
+</histogram>
+
 <histogram name="DataUse.MessageSize" units="bytes">
   <owner>amohammadkhan@chromium.org</owner>
   <owner>bengr@chromium.org</owner>
@@ -58512,6 +58528,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="10" label="Diabled directly from the First Run Experience"/>
 </enum>
 
+<enum name="DataUsageReportSubmissionResult" type="int">
+  <int value="0" label="Successful"/>
+  <int value="1" label="Failed"/>
+  <int value="2" label="Timed out"/>
+  <int value="3" label="Lost"/>
+</enum>
+
 <enum name="DataUseServices" type="int">
   <int value="0" label="Not Tagged"/>
   <int value="1" label="Suggestions"/>
@@ -80267,6 +80290,22 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="Fallback" label="Fallback data reduction proxy"/>
   <affected-histogram
       name="DataReductionProxy.RequestCompletionErrorCodes.MainFrame"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="DataUsageReportSubmissionBytes" separator=".">
+  <suffix name="Failed"
+      label="Platform external data use observer reported the submission as
+             failed"/>
+  <suffix name="Lost"
+      label="Lost before it could be submitted to platform external data use
+             observer"/>
+  <suffix name="Successful"
+      label="Platform external data use observer reported the submission as
+             successful"/>
+  <suffix name="TimedOut"
+      label="Submission of the report to the platform external data use
+             observer timed out"/>
+  <affected-histogram name="DataUsage.ReportSubmission.Bytes"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="DataUse.Dimensions" separator=".">

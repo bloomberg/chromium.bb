@@ -9,7 +9,8 @@
 #include "base/containers/hash_tables.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
-#include "base/single_thread_task_runner.h"
+#include "base/metrics/histogram_base.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/android/data_usage/data_use_tab_model.h"
 #include "chrome/browser/android/data_usage/external_data_use_observer_bridge.h"
@@ -17,11 +18,55 @@
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
 
+namespace chrome {
+
+namespace android {
+
 namespace {
+
+// Record the result of data use report submission. |bytes| is the sum of send
+// and received bytes in the report.
+void RecordDataUsageReportSubmission(
+    ExternalDataUseObserver::DataUsageReportSubmissionResult result,
+    int64_t bytes) {
+  DCHECK_LE(0, bytes);
+  UMA_HISTOGRAM_ENUMERATION(
+      "DataUsage.ReportSubmissionResult", result,
+      ExternalDataUseObserver::DATAUSAGE_REPORT_SUBMISSION_MAX);
+  // Cap to the maximum sample value.
+  const int32_t bytes_capped = bytes <= base::HistogramBase::kSampleType_MAX - 1
+                                   ? bytes
+                                   : base::HistogramBase::kSampleType_MAX - 1;
+  switch (result) {
+    case ExternalDataUseObserver::DATAUSAGE_REPORT_SUBMISSION_SUCCESSFUL:
+      UMA_HISTOGRAM_COUNTS("DataUsage.ReportSubmission.Bytes.Successful",
+                           bytes_capped);
+      break;
+    case ExternalDataUseObserver::DATAUSAGE_REPORT_SUBMISSION_FAILED:
+      UMA_HISTOGRAM_COUNTS("DataUsage.ReportSubmission.Bytes.Failed",
+                           bytes_capped);
+      break;
+    case ExternalDataUseObserver::DATAUSAGE_REPORT_SUBMISSION_TIMED_OUT:
+      UMA_HISTOGRAM_COUNTS("DataUsage.ReportSubmission.Bytes.TimedOut",
+                           bytes_capped);
+      break;
+    case ExternalDataUseObserver::DATAUSAGE_REPORT_SUBMISSION_LOST:
+      UMA_HISTOGRAM_COUNTS("DataUsage.ReportSubmission.Bytes.Lost",
+                           bytes_capped);
+      break;
+    default:
+      NOTIMPLEMENTED();
+      break;
+  }
+}
 
 // Default duration after which matching rules are periodically fetched. May be
 // overridden by the field trial.
 const int kDefaultFetchMatchingRulesDurationSeconds = 60 * 15;  // 15 minutes.
+
+// Default duration after which a pending data use report is considered timed
+// out. May be overridden by the field trial.
+const int kDefaultDataUseReportSubmitTimeoutMsec = 60 * 2 * 1000;  // 2 minutes.
 
 // Default value of the minimum number of bytes that should be buffered before
 // a data use report is submitted. May be overridden by the field trial.
@@ -30,7 +75,7 @@ const int64_t kDefaultDataUseReportMinBytes = 100 * 1024;  // 100 KB.
 // Populates various parameters from the values specified in the field trial.
 int32_t GetFetchMatchingRulesDurationSeconds() {
   int32_t duration_seconds = -1;
-  std::string variation_value = variations::GetVariationParamValue(
+  const std::string variation_value = variations::GetVariationParamValue(
       chrome::android::ExternalDataUseObserver::
           kExternalDataUseObserverFieldTrial,
       "fetch_matching_rules_duration_seconds");
@@ -43,9 +88,24 @@ int32_t GetFetchMatchingRulesDurationSeconds() {
 }
 
 // Populates various parameters from the values specified in the field trial.
+int32_t GetDataReportSubmitTimeoutMsec() {
+  int32_t duration_seconds = -1;
+  const std::string variation_value = variations::GetVariationParamValue(
+      chrome::android::ExternalDataUseObserver::
+          kExternalDataUseObserverFieldTrial,
+      "data_report_submit_timeout_msec");
+  if (!variation_value.empty() &&
+      base::StringToInt(variation_value, &duration_seconds)) {
+    DCHECK_LE(0, duration_seconds);
+    return duration_seconds;
+  }
+  return kDefaultDataUseReportSubmitTimeoutMsec;
+}
+
+// Populates various parameters from the values specified in the field trial.
 int64_t GetMinBytes() {
   int64_t min_bytes = -1;
-  std::string variation_value = variations::GetVariationParamValue(
+  const std::string variation_value = variations::GetVariationParamValue(
       chrome::android::ExternalDataUseObserver::
           kExternalDataUseObserverFieldTrial,
       "data_use_report_min_bytes");
@@ -58,10 +118,6 @@ int64_t GetMinBytes() {
 }
 
 }  // namespace
-
-namespace chrome {
-
-namespace android {
 
 // static
 const char ExternalDataUseObserver::kExternalDataUseObserverFieldTrial[] =
@@ -76,7 +132,8 @@ ExternalDataUseObserver::ExternalDataUseObserver(
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner)
     : data_use_aggregator_(data_use_aggregator),
       matching_rules_fetch_pending_(false),
-      submit_data_report_pending_(false),
+      last_data_report_submitted_ticks_(base::TimeTicks()),
+      pending_report_bytes_(0),
       ui_task_runner_(ui_task_runner),
       previous_report_time_(base::Time::Now()),
       last_matching_rules_fetch_time_(base::TimeTicks::Now()),
@@ -85,10 +142,13 @@ ExternalDataUseObserver::ExternalDataUseObserver(
       fetch_matching_rules_duration_(
           base::TimeDelta::FromSeconds(GetFetchMatchingRulesDurationSeconds())),
       data_use_report_min_bytes_(GetMinBytes()),
+      data_report_submit_timeout_(
+          base::TimeDelta::FromMilliseconds(GetDataReportSubmitTimeoutMsec())),
       weak_factory_(this) {
   DCHECK(data_use_aggregator_);
   DCHECK(io_task_runner);
   DCHECK(ui_task_runner_);
+  DCHECK(last_data_report_submitted_ticks_.is_null());
 
   // Initialize the ExternalDataUseObserverBridge object. Initialization will
   // also trigger the fetching of matching rules. It is okay to use
@@ -134,11 +194,18 @@ void ExternalDataUseObserver::FetchMatchingRulesDone(
 
 void ExternalDataUseObserver::OnReportDataUseDone(bool success) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(submit_data_report_pending_);
+  DCHECK(!last_data_report_submitted_ticks_.is_null());
 
-  // TODO(tbansal): If not successful, record UMA.
+  if (success) {
+    RecordDataUsageReportSubmission(DATAUSAGE_REPORT_SUBMISSION_SUCCESSFUL,
+                                    pending_report_bytes_);
+  } else {
+    RecordDataUsageReportSubmission(DATAUSAGE_REPORT_SUBMISSION_FAILED,
+                                    pending_report_bytes_);
+  }
 
-  submit_data_report_pending_ = false;
+  last_data_report_submitted_ticks_ = base::TimeTicks();
+  pending_report_bytes_ = 0;
 
   SubmitBufferedDataUseReport();
 }
@@ -185,7 +252,8 @@ void ExternalDataUseObserver::BufferDataUseReport(
   DCHECK(!label.empty());
   DCHECK_LE(0, data_use.rx_bytes);
   DCHECK_LE(0, data_use.tx_bytes);
-  if (data_use.rx_bytes < 0 || data_use.tx_bytes < 0)
+  // Skip if the |data_use| does not report any network traffic.
+  if (data_use.rx_bytes == 0 && data_use.tx_bytes == 0)
     return;
 
   DataUseReportKey data_use_report_key =
@@ -200,7 +268,8 @@ void ExternalDataUseObserver::BufferDataUseReport(
   if (it == buffered_data_reports_.end()) {
     // Limit the buffer size.
     if (buffered_data_reports_.size() == kMaxBufferSize) {
-      // TODO(tbansal): Add UMA to track impact of lost reports.
+      RecordDataUsageReportSubmission(DATAUSAGE_REPORT_SUBMISSION_LOST,
+                                      data_use.rx_bytes + data_use.tx_bytes);
       return;
     }
     buffered_data_reports_.insert(std::make_pair(data_use_report_key, report));
@@ -217,28 +286,50 @@ void ExternalDataUseObserver::BufferDataUseReport(
   }
   total_bytes_buffered_ += (data_use.rx_bytes + data_use.tx_bytes);
 
+  DCHECK_LT(0U, buffered_data_reports_.size());
   DCHECK_LE(buffered_data_reports_.size(), kMaxBufferSize);
 }
 
 void ExternalDataUseObserver::SubmitBufferedDataUseReport() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (submit_data_report_pending_ || buffered_data_reports_.empty())
+  const base::TimeTicks ticks_now = base::TimeTicks::Now();
+
+  // Return if a data use report has been pending for less than
+  // |data_report_submit_timeout_| duration.
+  if (!last_data_report_submitted_ticks_.is_null() &&
+      ticks_now - last_data_report_submitted_ticks_ <
+          data_report_submit_timeout_) {
+    return;
+  }
+
+  if (buffered_data_reports_.empty())
     return;
 
   if (total_bytes_buffered_ < data_use_report_min_bytes_)
     return;
+
+  if (!last_data_report_submitted_ticks_.is_null()) {
+    // Mark the pending DataUsage report as timed out.
+    RecordDataUsageReportSubmission(DATAUSAGE_REPORT_SUBMISSION_TIMED_OUT,
+                                    pending_report_bytes_);
+    pending_report_bytes_ = 0;
+    last_data_report_submitted_ticks_ = base::TimeTicks();
+  }
 
   // Send one data use report.
   DataUseReports::iterator it = buffered_data_reports_.begin();
   DataUseReportKey key = it->first;
   DataUseReport report = it->second;
 
+  DCHECK_EQ(0, pending_report_bytes_);
+  DCHECK(last_data_report_submitted_ticks_.is_null());
+  pending_report_bytes_ = report.bytes_downloaded + report.bytes_uploaded;
+  last_data_report_submitted_ticks_ = ticks_now;
+
   // Remove the entry from the map.
   buffered_data_reports_.erase(it);
   total_bytes_buffered_ -= (report.bytes_downloaded + report.bytes_uploaded);
-
-  submit_data_report_pending_ = true;
 
   // It is okay to use base::Unretained here since
   // |external_data_use_observer_bridge_| is owned by |this|, and is destroyed
