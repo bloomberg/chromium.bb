@@ -4,9 +4,10 @@
 
 #include "net/url_request/url_request_ftp_job.h"
 
+#include <vector>
+
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/run_loop.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_states.h"
@@ -256,19 +257,19 @@ class URLRequestFtpJobTest : public testing::Test {
 
   void AddSocket(MockRead* reads, size_t reads_size,
                  MockWrite* writes, size_t writes_size) {
-    SequencedSocketData* socket_data =
-        new SequencedSocketData(reads, reads_size, writes, writes_size);
+    scoped_ptr<SequencedSocketData> socket_data(make_scoped_ptr(
+        new SequencedSocketData(reads, reads_size, writes, writes_size)));
     socket_data->set_connect_data(MockConnect(SYNCHRONOUS, OK));
-    socket_factory_.AddSocketDataProvider(socket_data);
+    socket_factory_.AddSocketDataProvider(socket_data.get());
 
-    socket_data_.push_back(socket_data);
+    socket_data_.push_back(std::move(socket_data));
   }
 
   FtpTestURLRequestContext* request_context() { return &request_context_; }
   TestNetworkDelegate* network_delegate() { return &network_delegate_; }
 
  private:
-  ScopedVector<SequencedSocketData> socket_data_;
+  std::vector<scoped_ptr<SequencedSocketData>> socket_data_;
   MockClientSocketFactory socket_factory_;
   TestNetworkDelegate network_delegate_;
   MockFtpTransactionFactory ftp_transaction_factory_;
