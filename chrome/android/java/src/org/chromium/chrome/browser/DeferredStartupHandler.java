@@ -57,10 +57,10 @@ public class DeferredStartupHandler {
      * the necessary initialization has been completed. Any calls requiring network access should
      * probably go here.
      * @param application The application object to use for context.
-     * @param crashDumpUploadingDisabled Whether crash dump uploading should be disabled.
+     * @param crashDumpUploadingCommandLineDisabled Whether crash dump uploading should be disabled.
      */
     public void onDeferredStartup(final ChromeApplication application,
-            final boolean crashDumpUploadingDisabled) {
+            final boolean crashDumpUploadingCommandLineDisabled) {
         if (mDeferredStartupComplete) return;
         ThreadUtils.assertOnUiThread();
 
@@ -70,9 +70,9 @@ public class DeferredStartupHandler {
             protected Void doInBackground(Void... params) {
                 try {
                     TraceEvent.begin("ChromeBrowserInitializer.onDeferredStartup.doInBackground");
-                    if (crashDumpUploadingDisabled) {
-                        PrivacyPreferencesManager.getInstance(application).disableCrashUploading();
-                    } else {
+                    if (!crashDumpUploadingCommandLineDisabled) {
+                        PrivacyPreferencesManager.getInstance(application)
+                                .enablePotentialCrashUploading();
                         MinidumpUploadService.tryUploadAllCrashDumps(application);
                     }
                     CrashFileManager crashFileManager =

@@ -115,12 +115,14 @@ public class MinidumpUploadCallableTest extends CrashTestCase {
             implements CrashReportingPermissionManager {
         private final boolean mIsPermitted;
         private final boolean mIsUserPermitted;
+        private final boolean mIsCommandLineDisabled;
         private final boolean mIsLimited;
 
         MockCrashReportingPermissionManager(boolean isPermitted,
-                boolean isUserPermitted, boolean isLimited) {
+                boolean isUserPermitted, boolean isCommandLineDisabled, boolean isLimited) {
             mIsPermitted = isPermitted;
             mIsUserPermitted = isUserPermitted;
+            mIsCommandLineDisabled = isCommandLineDisabled;
             mIsLimited = isLimited;
         }
 
@@ -132,6 +134,11 @@ public class MinidumpUploadCallableTest extends CrashTestCase {
         @Override
         public boolean isUploadUserPermitted() {
             return mIsUserPermitted;
+        }
+
+        @Override
+        public boolean isUploadCommandLineDisabled() {
+            return mIsCommandLineDisabled;
         }
 
         @Override
@@ -181,7 +188,7 @@ public class MinidumpUploadCallableTest extends CrashTestCase {
     @Feature({"Android-AppBase"})
     public void testCallWhenCurrentlyPermitted() throws Exception {
         CrashReportingPermissionManager testPermManager =
-                new MockCrashReportingPermissionManager(true, true, false);
+                new MockCrashReportingPermissionManager(true, true, false, false);
 
         HttpURLConnectionFactory httpURLConnectionFactory = new TestHttpURLConnectionFactory();
 
@@ -197,22 +204,37 @@ public class MinidumpUploadCallableTest extends CrashTestCase {
     @Feature({"Android-AppBase"})
     public void testCallNotPermittedByUser() throws Exception {
         CrashReportingPermissionManager testPermManager =
-                new MockCrashReportingPermissionManager(false, false, false);
+                new MockCrashReportingPermissionManager(false, false, false, false);
 
         HttpURLConnectionFactory httpURLConnectionFactory = new FailHttpURLConnectionFactory();
 
         MinidumpUploadCallable minidumpUploadCallable =
                 new MockMinidumpUploadCallable(httpURLConnectionFactory, testPermManager);
-        assertEquals(MinidumpUploadCallable.UPLOAD_DISABLED,
+        assertEquals(MinidumpUploadCallable.UPLOAD_USER_DISABLED,
                 minidumpUploadCallable.call().intValue());
         assertTrue(mExpectedFileAfterUpload.exists());
     }
 
     @SmallTest
     @Feature({"Android-AppBase"})
+    public void testCallNotPermittedByCommandLine() throws Exception {
+        CrashReportingPermissionManager testPermManager =
+                new MockCrashReportingPermissionManager(true, true, true, false);
+
+        HttpURLConnectionFactory httpURLConnectionFactory = new FailHttpURLConnectionFactory();
+
+        MinidumpUploadCallable minidumpUploadCallable =
+                new MockMinidumpUploadCallable(httpURLConnectionFactory, testPermManager);
+        assertEquals(MinidumpUploadCallable.UPLOAD_COMMANDLINE_DISABLED,
+                minidumpUploadCallable.call().intValue());
+        assertFalse(mExpectedFileAfterUpload.exists());
+    }
+
+    @SmallTest
+    @Feature({"Android-AppBase"})
     public void testCallPermittedButNotUnderCurrentCircumstances() throws Exception {
         CrashReportingPermissionManager testPermManager =
-                new MockCrashReportingPermissionManager(false, true, false);
+                new MockCrashReportingPermissionManager(false, true, false, false);
 
         HttpURLConnectionFactory httpURLConnectionFactory = new FailHttpURLConnectionFactory();
 
@@ -227,7 +249,7 @@ public class MinidumpUploadCallableTest extends CrashTestCase {
     @Feature({"Android-AppBase"})
     public void testCrashUploadConstrainted() throws Exception {
         CrashReportingPermissionManager testPermManager =
-                new MockCrashReportingPermissionManager(true, true, true);
+                new MockCrashReportingPermissionManager(true, true, false, true);
 
         HttpURLConnectionFactory httpURLConnectionFactory = new TestHttpURLConnectionFactory();
 

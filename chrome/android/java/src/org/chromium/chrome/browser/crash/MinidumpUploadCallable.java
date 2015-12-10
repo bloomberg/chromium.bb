@@ -55,12 +55,14 @@ public class MinidumpUploadCallable implements Callable<Integer> {
     @IntDef({
         UPLOAD_SUCCESS,
         UPLOAD_FAILURE,
-        UPLOAD_DISABLED,
+        UPLOAD_USER_DISABLED,
+        UPLOAD_COMMANDLINE_DISABLED
     })
     public @interface MinidumpUploadStatus {}
     public static final int UPLOAD_SUCCESS = 0;
     public static final int UPLOAD_FAILURE = 1;
-    public static final int UPLOAD_DISABLED = 2;
+    public static final int UPLOAD_USER_DISABLED = 2;
+    public static final int UPLOAD_COMMANDLINE_DISABLED = 3;
 
     private final File mFileToUpload;
     private final File mLogfile;
@@ -84,11 +86,17 @@ public class MinidumpUploadCallable implements Callable<Integer> {
 
     @Override
     public Integer call() {
+        // TODO(jchinlee): address proper cleanup procedures for command line flag-disabled uploads.
+        if (mPermManager.isUploadCommandLineDisabled()) {
+            Log.i(TAG, "Minidump upload is disabled by command line flag. Retaining file.");
+            return UPLOAD_COMMANDLINE_DISABLED;
+        }
+
         if (!mPermManager.isUploadUserPermitted()) {
             Log.i(TAG, "Minidump upload is not permitted by user. Marking file as uploaded for "
                     + "cleanup to prevent future uploads.");
             cleanupMinidumpFile();
-            return UPLOAD_DISABLED;
+            return UPLOAD_USER_DISABLED;
         }
 
         boolean isLimited = mPermManager.isUploadLimited();

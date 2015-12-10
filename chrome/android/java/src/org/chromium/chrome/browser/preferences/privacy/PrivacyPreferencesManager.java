@@ -37,7 +37,7 @@ public class PrivacyPreferencesManager implements CrashReportingPermissionManage
     private final Context mContext;
     private final SharedPreferences mSharedPreferences;
 
-    private boolean mCrashUploadingEnabled;
+    private boolean mCrashUploadingCommandLineDisabled;
     private final String mCrashDumpNeverUpload;
     private final String mCrashDumpWifiOnlyUpload;
     private final String mCrashDumpAlwaysUpload;
@@ -46,7 +46,13 @@ public class PrivacyPreferencesManager implements CrashReportingPermissionManage
     PrivacyPreferencesManager(Context context) {
         mContext = context;
         mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-        mCrashUploadingEnabled = true;
+
+        // Crash dump uploading preferences.
+        // We default the command line flag to disable uploads unless altered on deferred startup
+        // to prevent unwanted uploads at startup. If the command line flag to enable uploading is
+        // turned on, the other options for when to upload (depending on user/network preferences
+        // apply.
+        mCrashUploadingCommandLineDisabled = true;
         mCrashDumpNeverUpload = context.getString(R.string.crash_dump_never_upload_value);
         mCrashDumpWifiOnlyUpload = context.getString(R.string.crash_dump_only_with_wifi_value);
         mCrashDumpAlwaysUpload = context.getString(R.string.crash_dump_always_upload_value);
@@ -287,11 +293,14 @@ public class PrivacyPreferencesManager implements CrashReportingPermissionManage
     }
 
     /**
-     * Provides a way to disable crash uploading entirely, regardless of the preferences.
-     * Used by tests that trigger crashers intentionally, so these crashers are not uploaded.
+     * Provides a way to remove disabling crash uploading entirely.
+     * Enable crash uploading based on user's preference when an overriding flag
+     * does not exist in commandline.
+     * Used to differentiate from tests that trigger crashers intentionally, so these crashers are
+     * not uploaded.
      */
-    public void disableCrashUploading() {
-        mCrashUploadingEnabled = false;
+    public void enablePotentialCrashUploading() {
+        mCrashUploadingCommandLineDisabled = false;
     }
 
     /**
@@ -350,20 +359,33 @@ public class PrivacyPreferencesManager implements CrashReportingPermissionManage
      */
     @Override
     public boolean isUploadPermitted() {
-        return mCrashUploadingEnabled && isNetworkAvailable() && (allowUploadCrashDump()
-                || CommandLine.getInstance().hasSwitch(ChromeSwitches.FORCE_CRASH_DUMP_UPLOAD));
+        return !mCrashUploadingCommandLineDisabled && isNetworkAvailable()
+                && (allowUploadCrashDump() || CommandLine.getInstance().hasSwitch(
+                        ChromeSwitches.FORCE_CRASH_DUMP_UPLOAD));
+    }
+
+    /**
+     * Check whether not to disable uploading crash dump by command line flag.
+     * If command line flag disables crash dump uploading, do not retry, but also do not delete.
+     * TODO(jchinlee): this is not quite a boolean. Depending on other refactoring, change to enum.
+     *
+     * @return whether experimental flag doesn't disable uploading crash dump.
+     */
+    @Override
+    public boolean isUploadCommandLineDisabled() {
+        return mCrashUploadingCommandLineDisabled;
     }
 
     /**
      * Check whether the user allows uploading.
-     * This doesn't take network condition into consideration.
+     * This doesn't take network condition or experimental state (i.e. disabling upload) into
+     * consideration.
      * A crash dump may be retried if this check passes.
      *
      * @return whether user's preference allows uploading crash dump.
      */
     @Override
     public boolean isUploadUserPermitted() {
-        if (!mCrashUploadingEnabled) return false;
         if (isCellularExperimentEnabled()) return isUsageAndCrashReportingEnabled();
 
         if (isMobileNetworkCapable()) {

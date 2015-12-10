@@ -153,6 +153,7 @@ public class PrivacyPreferencesManagerTest extends InstrumentationTestCase {
         PrivacyPreferencesManager preferenceManager =
                 new MockPrivacyPreferencesManager(context, mobileCapable, isConnected, wifiOn,
                         hasSetMetricsReporting, isMetricsReportinEnabled);
+        preferenceManager.enablePotentialCrashUploading();
         preferenceManager.setCellularExperiment(experimentEnabled);
 
         for (int i = 0; i < REPS; i++) {
