@@ -309,9 +309,8 @@ void OAuth2TokenServiceDelegateAndroid::ValidateAccounts(
   std::vector<std::string> curr_ids;
   for (const std::string& curr_name : GetSystemAccountNames()) {
     std::string curr_id(MapAccountNameToAccountId(curr_name));
-    // TODO(knn): Convert to DCHECK after https://crbug.com/535211
-    CHECK(!curr_id.empty());
-    curr_ids.push_back(curr_id);
+    if (!curr_id.empty())
+      curr_ids.push_back(curr_id);
   }
 
   std::vector<std::string> prev_ids;
