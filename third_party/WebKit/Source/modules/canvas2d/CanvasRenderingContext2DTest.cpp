@@ -79,6 +79,8 @@ protected:
     HTMLDocument& document() const { return *m_document; }
     HTMLCanvasElement& canvasElement() const { return *m_canvasElement; }
     CanvasRenderingContext2D* context2d() const { return static_cast<CanvasRenderingContext2D*>(canvasElement().renderingContext()); }
+    intptr_t getGlobalGPUMemoryUsage() const { return ImageBuffer::getGlobalGPUMemoryUsage(); }
+    intptr_t getCurrentGPUMemoryUsage() const { return canvasElement().buffer()->getGPUMemoryUsage(); }
 
     void createContext(OpacityMode);
     void TearDown();
@@ -171,6 +173,25 @@ void CanvasRenderingContext2DTest::TearDown()
     Heap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);
     replaceMemoryCacheForTesting(m_globalMemoryCache.release());
 }
+
+//============================================================================
+
+class FakeAcceleratedImageBufferSurfaceForTesting : public UnacceleratedImageBufferSurface {
+public:
+    FakeAcceleratedImageBufferSurfaceForTesting(const IntSize& size, OpacityMode mode)
+        : UnacceleratedImageBufferSurface(size, mode)
+        , m_isAccelerated(true) { }
+    ~FakeAcceleratedImageBufferSurfaceForTesting() override { }
+    bool isAccelerated() const override { return m_isAccelerated; }
+    void setIsAccelerated(bool isAccelerated)
+    {
+        if (isAccelerated != m_isAccelerated)
+            m_isAccelerated = isAccelerated;
+    }
+
+private:
+    bool m_isAccelerated;
+};
 
 //============================================================================
 
@@ -627,6 +648,46 @@ TEST_F(CanvasRenderingContext2DTest, ImageResourceLifetime)
     CanvasImageSourceUnion imageSource;
     imageSource.setImageBitmap(imageBitmapDerived);
     context->drawImage(imageSource, 0, 0, exceptionState);
+}
+
+TEST_F(CanvasRenderingContext2DTest, GPUMemoryUpdateForAcceleratedCanvas)
+{
+    createContext(NonOpaque);
+
+    OwnPtr<FakeAcceleratedImageBufferSurfaceForTesting> fakeAccelerateSurface = adoptPtr(new FakeAcceleratedImageBufferSurfaceForTesting(IntSize(10, 10), NonOpaque));
+    FakeAcceleratedImageBufferSurfaceForTesting* fakeAccelerateSurfacePtr = fakeAccelerateSurface.get();
+    canvasElement().createImageBufferUsingSurfaceForTesting(fakeAccelerateSurface.release());
+    // 800 = 10 * 10 * 4 * 2 where 10*10 is canvas size, 4 is num of bytes per pixel per buffer,
+    // and 2 is an estimate of num of gpu buffers required
+    EXPECT_EQ(800, getCurrentGPUMemoryUsage());
+    EXPECT_EQ(800, getGlobalGPUMemoryUsage());
+
+    // Switching accelerated mode to non-accelerated mode
+    fakeAccelerateSurfacePtr->setIsAccelerated(false);
+    canvasElement().buffer()->updateGPUMemoryUsage();
+    EXPECT_EQ(0, getCurrentGPUMemoryUsage());
+    EXPECT_EQ(0, getGlobalGPUMemoryUsage());
+
+    // Switching non-accelerated mode to accelerated mode
+    fakeAccelerateSurfacePtr->setIsAccelerated(true);
+    canvasElement().buffer()->updateGPUMemoryUsage();
+    EXPECT_EQ(800, getCurrentGPUMemoryUsage());
+    EXPECT_EQ(800, getGlobalGPUMemoryUsage());
+
+    // Creating a different accelerated image buffer
+    OwnPtr<FakeAcceleratedImageBufferSurfaceForTesting> fakeAccelerateSurface2 = adoptPtr(new FakeAcceleratedImageBufferSurfaceForTesting(IntSize(10, 5), NonOpaque));
+    OwnPtr<ImageBuffer> imageBuffer2 = ImageBuffer::create(fakeAccelerateSurface2.release());
+    EXPECT_EQ(800, getCurrentGPUMemoryUsage());
+    EXPECT_EQ(1200, getGlobalGPUMemoryUsage());
+
+    // Tear down the first image buffer that resides in current canvas element
+    canvasElement().setSize(IntSize(20, 20));
+    Mock::VerifyAndClearExpectations(fakeAccelerateSurfacePtr);
+    EXPECT_EQ(400, getGlobalGPUMemoryUsage());
+
+    // Tear down the second image buffer
+    imageBuffer2.clear();
+    EXPECT_EQ(0, getGlobalGPUMemoryUsage());
 }
 
 } // namespace blink

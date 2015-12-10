@@ -80,8 +80,24 @@ const int MaxCanvasArea = 32768 * 8192; // Maximum canvas area in CSS pixels
 // In Skia, we will also limit width/height to 32767.
 const int MaxSkiaDim = 32767; // Maximum width/height in CSS pixels.
 
+// We estimate the max limit of GPU allocated memory for canvases before Chrome
+// becomes laggy by setting the total allocated memory for accelerated canvases
+// to be equivalent to memory used by 80 accelerated canvases, each has a size
+// of 1000*500 and 2d context.
+// Each such canvas occupies 4000000 = 1000 * 500 * 2 * 4 bytes, where 2 is the
+// gpuBufferCount in ImageBuffer::updateGPUMemoryUsage() and 4 means four bytes
+// per pixel per buffer.
+#if !OS(ANDROID)
+const int MaxGlobalGPUMemoryUsage = 4000000 * 80;
+#else
+// We estimate that the max limit for android phones is a quarter of that for
+// desktops based on local experimental results on Android One.,
+const int MaxGlobalGPUMemoryUsage = 4000000 * 20;
+#endif
+
 // A default value of quality argument for toDataURL and toBlob
-// It is in an invalid range (outside 0.0 - 1.0) so that it will not be misinterpreted as a user-input value
+// It is in an invalid range (outside 0.0 - 1.0) so that it will not be
+// misinterpreted as a user-input value
 const int UndefinedQualityValue = -1.0;
 
 // Default image mime type for toDataURL and toBlob functions
@@ -652,6 +668,13 @@ bool HTMLCanvasElement::shouldAccelerate(const IntSize& size) const
         return false;
 
     if (!Platform::current()->canAccelerate2dCanvas())
+        return false;
+
+    // When GPU allocated memory runs low (due to having created too many
+    // accelerated canvases), the compositor starves and browser becomes laggy.
+    // Thus, we should stop allocating more GPU memory to new canvases created
+    // when the current memory usage exceeds the threshold.
+    if (ImageBuffer::getGlobalGPUMemoryUsage() >= MaxGlobalGPUMemoryUsage)
         return false;
 
     return true;

@@ -131,6 +131,10 @@ public:
 
     void draw(GraphicsContext&, const FloatRect&, const FloatRect*, SkXfermode::Mode);
 
+    void updateGPUMemoryUsage() const;
+    static intptr_t getGlobalGPUMemoryUsage() { return s_globalGPUMemoryUsage; }
+    intptr_t getGPUMemoryUsage() { return m_gpuMemoryUsage; }
+
 private:
     ImageBuffer(PassOwnPtr<ImageBufferSurface>);
 
@@ -142,6 +146,9 @@ private:
     mutable SnapshotState m_snapshotState;
     OwnPtr<ImageBufferSurface> m_surface;
     ImageBufferClient* m_client;
+
+    mutable intptr_t m_gpuMemoryUsage;
+    static intptr_t s_globalGPUMemoryUsage;
 };
 
 struct ImageDataBuffer {

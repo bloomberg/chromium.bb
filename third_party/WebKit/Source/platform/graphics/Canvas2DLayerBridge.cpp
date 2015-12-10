@@ -195,6 +195,9 @@ SkSurface* Canvas2DLayerBridge::getOrCreateSurface(AccelerationHint hint)
             GraphicsLayer::registerContentsLayer(m_layer->layer());
             m_layer->setNearestNeighbor(m_filterQuality == kNone_SkFilterQuality);
         }
+
+        if (m_imageBuffer)
+            m_imageBuffer->updateGPUMemoryUsage();
     }
     return m_surface.get();
 }
@@ -406,6 +409,8 @@ bool Canvas2DLayerBridge::restoreSurface()
             // FIXME: draw sad canvas picture into new buffer crbug.com/243842
         }
     }
+    if (m_imageBuffer)
+        m_imageBuffer->updateGPUMemoryUsage();
 
     return m_surface;
 }

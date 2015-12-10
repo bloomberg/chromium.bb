@@ -79,12 +79,17 @@ ImageBuffer::ImageBuffer(PassOwnPtr<ImageBufferSurface> surface)
     : m_snapshotState(InitialSnapshotState)
     , m_surface(surface)
     , m_client(0)
+    , m_gpuMemoryUsage(0)
 {
     m_surface->setImageBuffer(this);
+    updateGPUMemoryUsage();
 }
+
+intptr_t ImageBuffer::s_globalGPUMemoryUsage = 0;
 
 ImageBuffer::~ImageBuffer()
 {
+    ImageBuffer::s_globalGPUMemoryUsage -= m_gpuMemoryUsage;
 }
 
 SkCanvas* ImageBuffer::canvas() const
@@ -341,6 +346,28 @@ void ImageBuffer::putByteArray(Multiply multiplied, const unsigned char* source,
     SkAlphaType alphaType = (multiplied == Premultiplied) ? kPremul_SkAlphaType : kUnpremul_SkAlphaType;
     SkImageInfo info = SkImageInfo::Make(sourceRect.width(), sourceRect.height(), kRGBA_8888_SkColorType, alphaType);
     m_surface->writePixels(info, srcAddr, srcBytesPerRow, destX, destY);
+}
+
+void ImageBuffer::updateGPUMemoryUsage() const
+{
+    if (this->isAccelerated()) {
+        // If image buffer is accelerated, we should keep track of GPU memory usage.
+        int gpuBufferCount = 2;
+        Checked<intptr_t, RecordOverflow> checkedGPUUsage = 4 * gpuBufferCount;
+        checkedGPUUsage *= this->size().width();
+        checkedGPUUsage *= this->size().height();
+        intptr_t gpuMemoryUsage;
+        if (checkedGPUUsage.safeGet(gpuMemoryUsage) == CheckedState::DidOverflow)
+            gpuMemoryUsage = std::numeric_limits<intptr_t>::max();
+
+        s_globalGPUMemoryUsage += (gpuMemoryUsage - m_gpuMemoryUsage);
+        m_gpuMemoryUsage = gpuMemoryUsage;
+    } else if (m_gpuMemoryUsage > 0) {
+        // In case of switching from accelerated to non-accelerated mode,
+        // the GPU memory usage needs to be updated too.
+        s_globalGPUMemoryUsage -= m_gpuMemoryUsage;
+        m_gpuMemoryUsage = 0;
+    }
 }
 
 bool ImageDataBuffer::encodeImage(const String& mimeType, const double& quality, Vector<unsigned char>* encodedImage) const
