@@ -148,6 +148,7 @@ class AudioVideoPipelineDeviceTest : public testing::Test {
   scoped_ptr<MediaPipelineBackend> backend_;
   scoped_ptr<BufferFeeder> audio_feeder_;
   scoped_ptr<BufferFeeder> video_feeder_;
+  bool stopped_;
 
   // Current media time.
   base::TimeDelta pause_time_;
@@ -286,7 +287,7 @@ scoped_ptr<BufferFeeder> BufferFeeder::LoadVideo(MediaPipelineBackend* backend,
 }  // namespace
 
 AudioVideoPipelineDeviceTest::AudioVideoPipelineDeviceTest()
-    : pause_pattern_() {}
+    : stopped_(false), pause_pattern_() {}
 
 AudioVideoPipelineDeviceTest::~AudioVideoPipelineDeviceTest() {}
 
@@ -338,6 +339,7 @@ void AudioVideoPipelineDeviceTest::ConfigureForFile(
 void AudioVideoPipelineDeviceTest::Start() {
   pause_time_ = base::TimeDelta();
   pause_pattern_idx_ = 0;
+  stopped_ = false;
 
   if (audio_feeder_)
     audio_feeder_->Start();
@@ -355,6 +357,7 @@ void AudioVideoPipelineDeviceTest::OnEndOfStream() {
   if ((!audio_feeder_ || audio_feeder_->eos()) &&
       (!video_feeder_ || video_feeder_->eos())) {
     bool success = backend_->Stop();
+    stopped_ = true;
     ASSERT_TRUE(success);
     base::MessageLoop::current()->QuitWhenIdle();
   }
@@ -362,7 +365,7 @@ void AudioVideoPipelineDeviceTest::OnEndOfStream() {
 
 void AudioVideoPipelineDeviceTest::MonitorLoop() {
   // Backend is stopped, no need to monitor the loop any more.
-  if (!audio_feeder_ && !video_feeder_)
+  if (stopped_)
     return;
 
   base::TimeDelta media_time =
