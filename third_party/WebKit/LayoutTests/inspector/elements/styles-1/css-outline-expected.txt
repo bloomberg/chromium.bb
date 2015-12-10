@@ -53,7 +53,7 @@ The test verifies the CSS outline functionality.
                 startColumn : 6
                 startLine : 19
             }
-            value : "red"
+            value : " red "
             valueRange : {
                 endColumn : 17
                 endLine : 19
@@ -82,7 +82,7 @@ The test verifies the CSS outline functionality.
                 startColumn : 4
                 startLine : 21
             }
-            value : "1px solid black"
+            value : " 1px solid black"
             valueRange : {
                 endColumn : 27
                 endLine : 21
@@ -104,7 +104,7 @@ The test verifies the CSS outline functionality.
                 startColumn : 4
                 startLine : 22
             }
-            value : "1"
+            value : " 1"
             valueRange : {
                 endColumn : 14
                 endLine : 22
@@ -127,7 +127,7 @@ The test verifies the CSS outline functionality.
                 startColumn : 4
                 startLine : 23
             }
-            value : "rgb(1, 2, 3)"
+            value : " rgb(1, 2, 3) "
             valueRange : {
                 endColumn : 47
                 endLine : 23
@@ -156,7 +156,7 @@ The test verifies the CSS outline functionality.
                 startColumn : 25
                 startLine : 25
             }
-            value : "ellipsis"
+            value : " ellipsis"
             valueRange : {
                 endColumn : 48
                 endLine : 25
@@ -185,7 +185,7 @@ The test verifies the CSS outline functionality.
                 startColumn : 4
                 startLine : 27
             }
-            value : "blue"
+            value : " blue"
             valueRange : {
                 endColumn : 22
                 endLine : 27
@@ -207,7 +207,8 @@ The test verifies the CSS outline functionality.
                 startColumn : 4
                 startLine : 28
             }
-            value : ""dogs""
+            value : " "dogs" 
+"
             valueRange : {
                 endColumn : 0
                 endLine : 29
@@ -241,7 +242,7 @@ The test verifies the CSS outline functionality.
                 startColumn : 4
                 startLine : 39
             }
-            value : "underline"
+            value : " underline"
             valueRange : {
                 endColumn : 30
                 endLine : 39
@@ -276,7 +277,7 @@ The test verifies the CSS outline functionality.
                 startColumn : 0
                 startLine : 44
             }
-            value : "Times New Roman"
+            value : " Times New Roman"
             valueRange : {
                 endColumn : 36
                 endLine : 44
@@ -298,7 +299,7 @@ The test verifies the CSS outline functionality.
                 startColumn : 8
                 startLine : 45
             }
-            value : "10px"
+            value : " 10px"
             valueRange : {
                 endColumn : 35
                 endLine : 45
@@ -320,7 +321,8 @@ The test verifies the CSS outline functionality.
                 startColumn : 8
                 startLine : 46
             }
-            value : ""Example Font""
+            value : " "Example Font"
+    "
             valueRange : {
                 endColumn : 4
                 endLine : 47

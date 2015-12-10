@@ -86,5 +86,14 @@ InspectorTest.parseSCSS = function(url, text)
     }
 }
 
+var cssParser = null;
+
+InspectorTest.parseCSS = function(url, text)
+{
+    if (!cssParser)
+        cssParser = new WebInspector.CSSParser();
+    return WebInspector.SASSSupport.parseCSS(cssParser, url, text);
+}
+
 }
 
