@@ -67,7 +67,7 @@ public:
     void resize(int w, int h) { setFrameRect(IntRect(x(), y(), w, h)); }
     void resize(const IntSize& s) { setFrameRect(IntRect(location(), s)); }
 
-    virtual void paint(GraphicsContext*, const CullRect&) const { }
+    virtual void paint(GraphicsContext&, const CullRect&) const { }
     void invalidate() { invalidateRect(boundsRect()); }
     virtual void invalidateRect(const IntRect&) = 0;
 

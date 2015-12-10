@@ -98,7 +98,7 @@ protected:
         SkPictureBuilder pictureBuilder(pageRect);
         GraphicsContext& context = pictureBuilder.context();
         context.setPrinting(true);
-        document().view()->paintContents(&context, GlobalPaintPrinting, pageRect);
+        document().view()->paintContents(context, GlobalPaintPrinting, pageRect);
         {
             DrawingRecorder recorder(context, *document().layoutView(), DisplayItem::PrintedContentDestinationLocations, pageRect);
             printContext().outputLinkedDestinations(context, pageRect);

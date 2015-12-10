@@ -643,7 +643,7 @@ PassOwnPtr<DragImage> LocalFrame::paintIntoDragImage(
         transform.translate(-paintingRect.x(), -paintingRect.y());
         TransformRecorder transformRecorder(paintContext, displayItemClient, transform);
 
-        m_view->paintContents(&paintContext, globalPaintFlags, paintingRect);
+        m_view->paintContents(paintContext, globalPaintFlags, paintingRect);
 
     }
     RefPtr<const SkPicture> recording = pictureBuilder.endRecording();

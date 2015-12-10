@@ -114,7 +114,7 @@ void WebPluginContainerImpl::layoutIfNeeded()
     m_webPlugin->layoutIfNeeded();
 }
 
-void WebPluginContainerImpl::paint(GraphicsContext* context, const CullRect& cullRect) const
+void WebPluginContainerImpl::paint(GraphicsContext& context, const CullRect& cullRect) const
 {
     if (!parent())
         return;
@@ -123,11 +123,11 @@ void WebPluginContainerImpl::paint(GraphicsContext* context, const CullRect& cul
     if (!cullRect.intersectsCullRect(frameRect()))
         return;
 
-    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*context, *m_element->layoutObject(), DisplayItem::Type::WebPlugin, LayoutPoint()))
+    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(context, *m_element->layoutObject(), DisplayItem::Type::WebPlugin, LayoutPoint()))
         return;
 
-    LayoutObjectDrawingRecorder drawingRecorder(*context, *m_element->layoutObject(), DisplayItem::Type::WebPlugin, cullRect.m_rect, LayoutPoint());
-    context->save();
+    LayoutObjectDrawingRecorder drawingRecorder(context, *m_element->layoutObject(), DisplayItem::Type::WebPlugin, cullRect.m_rect, LayoutPoint());
+    context.save();
 
     ASSERT(parent()->isFrameView());
     FrameView* view =  toFrameView(parent());
@@ -135,14 +135,14 @@ void WebPluginContainerImpl::paint(GraphicsContext* context, const CullRect& cul
     // The plugin is positioned in the root frame's coordinates, so it needs to
     // be painted in them too.
     IntPoint origin = view->contentsToRootFrame(IntPoint(0, 0));
-    context->translate(static_cast<float>(-origin.x()), static_cast<float>(-origin.y()));
+    context.translate(static_cast<float>(-origin.x()), static_cast<float>(-origin.y()));
 
-    WebCanvas* canvas = context->canvas();
+    WebCanvas* canvas = context.canvas();
 
     IntRect windowRect = view->contentsToRootFrame(cullRect.m_rect);
     m_webPlugin->paint(canvas, windowRect);
 
-    context->restore();
+    context.restore();
 }
 
 void WebPluginContainerImpl::invalidateRect(const IntRect& rect)

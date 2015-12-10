@@ -316,7 +316,7 @@ void SVGImage::drawInternal(SkCanvas* canvas, const SkPaint& paint, const FloatR
         TransformRecorder transformRecorder(imagePicture.context(), *this, transform);
 
         view->updateAllLifecyclePhases();
-        view->paint(&imagePicture.context(), CullRect(enclosingIntRect(srcRect)));
+        view->paint(imagePicture.context(), CullRect(enclosingIntRect(srcRect)));
         ASSERT(!view->needsLayout());
     }
 

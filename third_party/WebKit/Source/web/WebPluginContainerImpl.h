@@ -81,7 +81,7 @@ public:
 
     // Widget methods
     void setFrameRect(const IntRect&) override;
-    void paint(GraphicsContext*, const CullRect&) const override;
+    void paint(GraphicsContext&, const CullRect&) const override;
     void invalidateRect(const IntRect&) override;
     void setFocus(bool, WebFocusType) override;
     void show() override;

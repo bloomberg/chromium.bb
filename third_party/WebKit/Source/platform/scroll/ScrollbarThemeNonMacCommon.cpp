@@ -35,24 +35,24 @@
 
 namespace blink {
 
-bool ScrollbarThemeNonMacCommon::hasThumb(const ScrollbarThemeClient* scrollbar)
+bool ScrollbarThemeNonMacCommon::hasThumb(const ScrollbarThemeClient& scrollbar)
 {
     // This method is just called as a paint-time optimization to see if
     // painting the thumb can be skipped. We don't have to be exact here.
     return thumbLength(scrollbar) > 0;
 }
 
-IntRect ScrollbarThemeNonMacCommon::backButtonRect(const ScrollbarThemeClient* scrollbar, ScrollbarPart part, bool)
+IntRect ScrollbarThemeNonMacCommon::backButtonRect(const ScrollbarThemeClient& scrollbar, ScrollbarPart part, bool)
 {
     // Windows and Linux just have single arrows.
     if (part == BackButtonEndPart)
         return IntRect();
 
     IntSize size = buttonSize(scrollbar);
-    return IntRect(scrollbar->x(), scrollbar->y(), size.width(), size.height());
+    return IntRect(scrollbar.x(), scrollbar.y(), size.width(), size.height());
 }
 
-IntRect ScrollbarThemeNonMacCommon::forwardButtonRect(const ScrollbarThemeClient* scrollbar, ScrollbarPart part, bool)
+IntRect ScrollbarThemeNonMacCommon::forwardButtonRect(const ScrollbarThemeClient& scrollbar, ScrollbarPart part, bool)
 {
     // Windows and Linux just have single arrows.
     if (part == ForwardButtonStartPart)
@@ -60,41 +60,41 @@ IntRect ScrollbarThemeNonMacCommon::forwardButtonRect(const ScrollbarThemeClient
 
     IntSize size = buttonSize(scrollbar);
     int x, y;
-    if (scrollbar->orientation() == HorizontalScrollbar) {
-        x = scrollbar->x() + scrollbar->width() - size.width();
-        y = scrollbar->y();
+    if (scrollbar.orientation() == HorizontalScrollbar) {
+        x = scrollbar.x() + scrollbar.width() - size.width();
+        y = scrollbar.y();
     } else {
-        x = scrollbar->x();
-        y = scrollbar->y() + scrollbar->height() - size.height();
+        x = scrollbar.x();
+        y = scrollbar.y() + scrollbar.height() - size.height();
     }
     return IntRect(x, y, size.width(), size.height());
 }
 
-IntRect ScrollbarThemeNonMacCommon::trackRect(const ScrollbarThemeClient* scrollbar, bool)
+IntRect ScrollbarThemeNonMacCommon::trackRect(const ScrollbarThemeClient& scrollbar, bool)
 {
     // The track occupies all space between the two buttons.
     IntSize bs = buttonSize(scrollbar);
-    int thickness = scrollbarThickness(scrollbar->controlSize());
-    if (scrollbar->orientation() == HorizontalScrollbar) {
-        if (scrollbar->width() <= 2 * bs.width())
+    int thickness = scrollbarThickness(scrollbar.controlSize());
+    if (scrollbar.orientation() == HorizontalScrollbar) {
+        if (scrollbar.width() <= 2 * bs.width())
             return IntRect();
-        return IntRect(scrollbar->x() + bs.width(), scrollbar->y(), scrollbar->width() - 2 * bs.width(), thickness);
+        return IntRect(scrollbar.x() + bs.width(), scrollbar.y(), scrollbar.width() - 2 * bs.width(), thickness);
     }
-    if (scrollbar->height() <= 2 * bs.height())
+    if (scrollbar.height() <= 2 * bs.height())
         return IntRect();
-    return IntRect(scrollbar->x(), scrollbar->y() + bs.height(), thickness, scrollbar->height() - 2 * bs.height());
+    return IntRect(scrollbar.x(), scrollbar.y() + bs.height(), thickness, scrollbar.height() - 2 * bs.height());
 }
 
-void ScrollbarThemeNonMacCommon::paintTrackBackground(GraphicsContext* context, const ScrollbarThemeClient* scrollbar, const IntRect& rect)
+void ScrollbarThemeNonMacCommon::paintTrackBackground(GraphicsContext& context, const ScrollbarThemeClient& scrollbar, const IntRect& rect)
 {
     // Just assume a forward track part. We only paint the track as a single piece when there is no thumb.
     if (!hasThumb(scrollbar))
         paintTrackPiece(context, scrollbar, rect, ForwardTrackPart);
 }
 
-void ScrollbarThemeNonMacCommon::paintTickmarks(GraphicsContext* context, const ScrollbarThemeClient* scrollbar, const IntRect& rect)
+void ScrollbarThemeNonMacCommon::paintTickmarks(GraphicsContext& context, const ScrollbarThemeClient& scrollbar, const IntRect& rect)
 {
-    if (scrollbar->orientation() != VerticalScrollbar)
+    if (scrollbar.orientation() != VerticalScrollbar)
         return;
 
     if (rect.height() <= 0 || rect.width() <= 0)
@@ -102,29 +102,29 @@ void ScrollbarThemeNonMacCommon::paintTickmarks(GraphicsContext* context, const 
 
     // Get the tickmarks for the frameview.
     Vector<IntRect> tickmarks;
-    scrollbar->getTickmarks(tickmarks);
+    scrollbar.getTickmarks(tickmarks);
     if (!tickmarks.size())
         return;
 
-    if (DrawingRecorder::useCachedDrawingIfPossible(*context, *scrollbar, DisplayItem::ScrollbarTickmarks))
+    if (DrawingRecorder::useCachedDrawingIfPossible(context, scrollbar, DisplayItem::ScrollbarTickmarks))
         return;
 
-    DrawingRecorder recorder(*context, *scrollbar, DisplayItem::ScrollbarTickmarks, rect);
-    GraphicsContextStateSaver stateSaver(*context);
-    context->setShouldAntialias(false);
+    DrawingRecorder recorder(context, scrollbar, DisplayItem::ScrollbarTickmarks, rect);
+    GraphicsContextStateSaver stateSaver(context);
+    context.setShouldAntialias(false);
 
     for (Vector<IntRect>::const_iterator i = tickmarks.begin(); i != tickmarks.end(); ++i) {
         // Calculate how far down (in %) the tick-mark should appear.
-        const float percent = static_cast<float>(i->y()) / scrollbar->totalSize();
+        const float percent = static_cast<float>(i->y()) / scrollbar.totalSize();
 
         // Calculate how far down (in pixels) the tick-mark should appear.
         const int yPos = rect.y() + (rect.height() * percent);
 
         FloatRect tickRect(rect.x(), yPos, rect.width(), 3);
-        context->fillRect(tickRect, Color(0xCC, 0xAA, 0x00, 0xFF));
+        context.fillRect(tickRect, Color(0xCC, 0xAA, 0x00, 0xFF));
 
         FloatRect tickStroke(rect.x(), yPos + 1, rect.width(), 1);
-        context->fillRect(tickStroke, Color(0xFF, 0xDD, 0x00, 0xFF));
+        context.fillRect(tickStroke, Color(0xFF, 0xDD, 0x00, 0xFF));
     }
 }
 

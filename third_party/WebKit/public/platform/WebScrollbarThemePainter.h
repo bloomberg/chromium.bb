@@ -71,7 +71,7 @@ public:
     BLINK_PLATFORM_EXPORT bool thumbNeedsRepaint() const;
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT WebScrollbarThemePainter(ScrollbarTheme*, Scrollbar*, float deviceScaleFactor);
+    BLINK_PLATFORM_EXPORT WebScrollbarThemePainter(ScrollbarTheme&, Scrollbar&, float deviceScaleFactor);
 #endif
 
 private:

@@ -102,7 +102,7 @@ PaintLayerScrollableArea::PaintLayerScrollableArea(PaintLayer& layer)
         Element* element = toElement(node);
         m_scrollOffset = element->savedLayerScrollOffset();
         if (!m_scrollOffset.isZero())
-            scrollAnimator()->setCurrentPosition(FloatPoint(m_scrollOffset.width(), m_scrollOffset.height()));
+            scrollAnimator().setCurrentPosition(FloatPoint(m_scrollOffset.width(), m_scrollOffset.height()));
         element->setSavedLayerScrollOffset(IntSize());
     }
     updateResizerAreaSet();
@@ -239,7 +239,7 @@ static IntRect cornerRect(const LayoutBox& box, const Scrollbar* horizontalScrol
     if (!verticalScrollbar && !horizontalScrollbar) {
         // FIXME: This isn't right. We need to know the thickness of custom scrollbars
         // even when they don't exist in order to set the resizer square size properly.
-        horizontalThickness = ScrollbarTheme::theme()->scrollbarThickness();
+        horizontalThickness = ScrollbarTheme::theme().scrollbarThickness();
         verticalThickness = horizontalThickness;
     } else if (verticalScrollbar && !horizontalScrollbar) {
         horizontalThickness = verticalScrollbar->width();
@@ -271,7 +271,7 @@ IntRect PaintLayerScrollableArea::scrollCornerRect() const
     return IntRect();
 }
 
-IntRect PaintLayerScrollableArea::convertFromScrollbarToContainingWidget(const Scrollbar* scrollbar, const IntRect& scrollbarRect) const
+IntRect PaintLayerScrollableArea::convertFromScrollbarToContainingWidget(const Scrollbar& scrollbar, const IntRect& scrollbarRect) const
 {
     LayoutView* view = box().view();
     if (!view)
@@ -283,7 +283,7 @@ IntRect PaintLayerScrollableArea::convertFromScrollbarToContainingWidget(const S
     return view->frameView()->convertFromLayoutObject(box(), rect);
 }
 
-IntRect PaintLayerScrollableArea::convertFromContainingWidgetToScrollbar(const Scrollbar* scrollbar, const IntRect& parentRect) const
+IntRect PaintLayerScrollableArea::convertFromContainingWidgetToScrollbar(const Scrollbar& scrollbar, const IntRect& parentRect) const
 {
     LayoutView* view = box().view();
     if (!view)
@@ -294,7 +294,7 @@ IntRect PaintLayerScrollableArea::convertFromContainingWidgetToScrollbar(const S
     return rect;
 }
 
-IntPoint PaintLayerScrollableArea::convertFromScrollbarToContainingWidget(const Scrollbar* scrollbar, const IntPoint& scrollbarPoint) const
+IntPoint PaintLayerScrollableArea::convertFromScrollbarToContainingWidget(const Scrollbar& scrollbar, const IntPoint& scrollbarPoint) const
 {
     LayoutView* view = box().view();
     if (!view)
@@ -305,7 +305,7 @@ IntPoint PaintLayerScrollableArea::convertFromScrollbarToContainingWidget(const 
     return view->frameView()->convertFromLayoutObject(box(), point);
 }
 
-IntPoint PaintLayerScrollableArea::convertFromContainingWidgetToScrollbar(const Scrollbar* scrollbar, const IntPoint& parentPoint) const
+IntPoint PaintLayerScrollableArea::convertFromContainingWidgetToScrollbar(const Scrollbar& scrollbar, const IntPoint& parentPoint) const
 {
     LayoutView* view = box().view();
     if (!view)
@@ -909,13 +909,13 @@ LayoutUnit PaintLayerScrollableArea::horizontalScrollbarStart(int minX) const
     return x;
 }
 
-IntSize PaintLayerScrollableArea::scrollbarOffset(const Scrollbar* scrollbar) const
+IntSize PaintLayerScrollableArea::scrollbarOffset(const Scrollbar& scrollbar) const
 {
-    if (scrollbar == verticalScrollbar())
+    if (&scrollbar == verticalScrollbar())
         return IntSize(verticalScrollbarStart(0, box().size().width()), box().borderTop());
 
-    if (scrollbar == horizontalScrollbar())
-        return IntSize(horizontalScrollbarStart(0), box().size().height() - box().borderBottom() - scrollbar->height());
+    if (&scrollbar == horizontalScrollbar())
+        return IntSize(horizontalScrollbarStart(0), box().size().height() - box().borderBottom() - scrollbar.height());
 
     ASSERT_NOT_REACHED();
     return IntSize();
@@ -985,8 +985,7 @@ void PaintLayerScrollableArea::setHasHorizontalScrollbar(bool hasScrollbar)
     if (hasScrollbar == hasHorizontalScrollbar())
         return;
 
-    setScrollbarNeedsPaintInvalidation(horizontalScrollbar());
-
+    setScrollbarNeedsPaintInvalidation(HorizontalScrollbar);
 
     m_scrollbarManager.setHasHorizontalScrollbar(hasScrollbar);
 
@@ -1008,7 +1007,7 @@ void PaintLayerScrollableArea::setHasVerticalScrollbar(bool hasScrollbar)
     if (hasScrollbar == hasVerticalScrollbar())
         return;
 
-    setScrollbarNeedsPaintInvalidation(verticalScrollbar());
+    setScrollbarNeedsPaintInvalidation(VerticalScrollbar);
 
     m_scrollbarManager.setHasVerticalScrollbar(hasScrollbar);
 
@@ -1485,23 +1484,23 @@ void PaintLayerScrollableArea::ScrollbarManager::setHasVerticalScrollbar(bool ha
 PassRefPtrWillBeRawPtr<Scrollbar> PaintLayerScrollableArea::ScrollbarManager::createScrollbar(ScrollbarOrientation orientation)
 {
     ASSERT(orientation == HorizontalScrollbar ? !m_hBarIsAttached : !m_vBarIsAttached);
-    RefPtrWillBeRawPtr<Scrollbar> widget = nullptr;
+    RefPtrWillBeRawPtr<Scrollbar> scrollbar = nullptr;
     const LayoutObject& actualLayoutObject = layoutObjectForScrollbar(m_scrollableArea->box());
     bool hasCustomScrollbarStyle = actualLayoutObject.isBox() && actualLayoutObject.styleRef().hasPseudoStyle(SCROLLBAR);
     if (hasCustomScrollbarStyle) {
-        widget = LayoutScrollbar::createCustomScrollbar(m_scrollableArea.get(), orientation, actualLayoutObject.node());
+        scrollbar = LayoutScrollbar::createCustomScrollbar(m_scrollableArea.get(), orientation, actualLayoutObject.node());
     } else {
         ScrollbarControlSize scrollbarSize = RegularScrollbar;
         if (actualLayoutObject.styleRef().hasAppearance())
             scrollbarSize = LayoutTheme::theme().scrollbarControlSizeForPart(actualLayoutObject.styleRef().appearance());
-        widget = Scrollbar::create(m_scrollableArea.get(), orientation, scrollbarSize);
+        scrollbar = Scrollbar::create(m_scrollableArea.get(), orientation, scrollbarSize);
         if (orientation == HorizontalScrollbar)
-            m_scrollableArea->didAddScrollbar(widget.get(), HorizontalScrollbar);
+            m_scrollableArea->didAddScrollbar(*scrollbar, HorizontalScrollbar);
         else
-            m_scrollableArea->didAddScrollbar(widget.get(), VerticalScrollbar);
+            m_scrollableArea->didAddScrollbar(*scrollbar, VerticalScrollbar);
     }
-    m_scrollableArea->box().document().view()->addChild(widget.get());
-    return widget.release();
+    m_scrollableArea->box().document().view()->addChild(scrollbar.get());
+    return scrollbar.release();
 }
 
 void PaintLayerScrollableArea::ScrollbarManager::destroyScrollbar(ScrollbarOrientation orientation)
@@ -1511,10 +1510,10 @@ void PaintLayerScrollableArea::ScrollbarManager::destroyScrollbar(ScrollbarOrien
     if (!scrollbar)
         return;
 
-    m_scrollableArea->setScrollbarNeedsPaintInvalidation(scrollbar.get());
+    m_scrollableArea->setScrollbarNeedsPaintInvalidation(orientation);
 
     if (!scrollbar->isCustomScrollbar())
-        m_scrollableArea->willRemoveScrollbar(scrollbar.get(), orientation);
+        m_scrollableArea->willRemoveScrollbar(*scrollbar, orientation);
 
     toFrameView(scrollbar->parent())->removeChild(scrollbar.get());
     scrollbar->disconnectFromScrollableArea();

@@ -100,8 +100,8 @@ private:
     void mouseEnteredContentArea() const override;
     void mouseExitedContentArea() const override;
     void mouseMovedInContentArea() const override;
-    void mouseEnteredScrollbar(Scrollbar*) const override;
-    void mouseExitedScrollbar(Scrollbar*) const override;
+    void mouseEnteredScrollbar(Scrollbar&) const override;
+    void mouseExitedScrollbar(Scrollbar&) const override;
     void willStartLiveResize() override;
     void contentsResized() const override;
     void willEndLiveResize() override;
@@ -113,12 +113,12 @@ private:
 
     void finishCurrentScrollAnimations() override;
 
-    void didAddVerticalScrollbar(Scrollbar*) override;
-    void willRemoveVerticalScrollbar(Scrollbar*) override;
-    void didAddHorizontalScrollbar(Scrollbar*) override;
-    void willRemoveHorizontalScrollbar(Scrollbar*) override;
+    void didAddVerticalScrollbar(Scrollbar&) override;
+    void willRemoveVerticalScrollbar(Scrollbar&) override;
+    void didAddHorizontalScrollbar(Scrollbar&) override;
+    void willRemoveHorizontalScrollbar(Scrollbar&) override;
 
-    bool shouldScrollbarParticipateInHitTesting(Scrollbar*) override;
+    bool shouldScrollbarParticipateInHitTesting(Scrollbar&) override;
 
     void notifyContentAreaScrolled(const FloatSize& delta) override;
 

@@ -22,13 +22,13 @@ class FramePainter {
 public:
     explicit FramePainter(const FrameView& frameView) : m_frameView(&frameView) { }
 
-    void paint(GraphicsContext*, const GlobalPaintFlags, const CullRect&);
-    void paintScrollbars(GraphicsContext*, const IntRect&);
-    void paintContents(GraphicsContext*, const GlobalPaintFlags, const IntRect&);
-    void paintScrollCorner(GraphicsContext*, const IntRect& cornerRect);
+    void paint(GraphicsContext&, const GlobalPaintFlags, const CullRect&);
+    void paintScrollbars(GraphicsContext&, const IntRect&);
+    void paintContents(GraphicsContext&, const GlobalPaintFlags, const IntRect&);
+    void paintScrollCorner(GraphicsContext&, const IntRect& cornerRect);
 
 private:
-    void paintScrollbar(GraphicsContext*, Scrollbar*, const IntRect&);
+    void paintScrollbar(GraphicsContext&, Scrollbar&, const IntRect&);
 
     const FrameView& frameView();
 

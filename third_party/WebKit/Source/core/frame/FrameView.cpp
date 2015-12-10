@@ -1502,16 +1502,16 @@ void FrameView::didUpdateElasticOverscroll()
         float delta = elasticOverscroll.width() - m_horizontalScrollbar->elasticOverscroll();
         if (delta != 0) {
             m_horizontalScrollbar->setElasticOverscroll(elasticOverscroll.width());
-            scrollAnimator()->notifyContentAreaScrolled(FloatSize(delta, 0));
-            setScrollbarNeedsPaintInvalidation(m_horizontalScrollbar.get());
+            scrollAnimator().notifyContentAreaScrolled(FloatSize(delta, 0));
+            setScrollbarNeedsPaintInvalidation(HorizontalScrollbar);
         }
     }
     if (m_verticalScrollbar) {
         float delta = elasticOverscroll.height() - m_verticalScrollbar->elasticOverscroll();
         if (delta != 0) {
             m_verticalScrollbar->setElasticOverscroll(elasticOverscroll.height());
-            scrollAnimator()->notifyContentAreaScrolled(FloatSize(0, delta));
-            setScrollbarNeedsPaintInvalidation(m_verticalScrollbar.get());
+            scrollAnimator().notifyContentAreaScrolled(FloatSize(0, delta));
+            setScrollbarNeedsPaintInvalidation(VerticalScrollbar);
         }
     }
 }
@@ -2079,7 +2079,7 @@ void FrameView::invalidatePaintForTickmarks()
 {
     if (Scrollbar* scrollbar = verticalScrollbar()) {
         scrollbar->setTrackNeedsRepaint(true);
-        setScrollbarNeedsPaintInvalidation(scrollbar);
+        setScrollbarNeedsPaintInvalidation(VerticalScrollbar);
     }
 }
 
@@ -2978,7 +2978,7 @@ void FrameView::setLayoutSizeInternal(const IntSize& size)
     contentsResized();
 }
 
-void FrameView::didAddScrollbar(Scrollbar* scrollbar, ScrollbarOrientation orientation)
+void FrameView::didAddScrollbar(Scrollbar& scrollbar, ScrollbarOrientation orientation)
 {
     ScrollableArea::didAddScrollbar(scrollbar, orientation);
     if (AXObjectCache* cache = axObjectCache())
@@ -3016,10 +3016,10 @@ void FrameView::setHasHorizontalScrollbar(bool hasBar)
     if (hasBar) {
         m_horizontalScrollbar = createScrollbar(HorizontalScrollbar);
         addChild(m_horizontalScrollbar.get());
-        didAddScrollbar(m_horizontalScrollbar.get(), HorizontalScrollbar);
+        didAddScrollbar(*m_horizontalScrollbar, HorizontalScrollbar);
         m_horizontalScrollbar->styleChanged();
     } else {
-        willRemoveScrollbar(m_horizontalScrollbar.get(), HorizontalScrollbar);
+        willRemoveScrollbar(*m_horizontalScrollbar, HorizontalScrollbar);
         if (AXObjectCache* cache = axObjectCache())
             cache->remove(m_horizontalScrollbar.get());
         // If the scrollbar has been marked as overlapping the window resizer,
@@ -3044,10 +3044,10 @@ void FrameView::setHasVerticalScrollbar(bool hasBar)
     if (hasBar) {
         m_verticalScrollbar = createScrollbar(VerticalScrollbar);
         addChild(m_verticalScrollbar.get());
-        didAddScrollbar(m_verticalScrollbar.get(), VerticalScrollbar);
+        didAddScrollbar(*m_verticalScrollbar, VerticalScrollbar);
         m_verticalScrollbar->styleChanged();
     } else {
-        willRemoveScrollbar(m_verticalScrollbar.get(), VerticalScrollbar);
+        willRemoveScrollbar(*m_verticalScrollbar, VerticalScrollbar);
         if (AXObjectCache* cache = axObjectCache())
             cache->remove(m_verticalScrollbar.get());
         // If the scrollbar has been marked as overlapping the window resizer,
@@ -3227,9 +3227,9 @@ void FrameView::updateScrollbarGeometry()
             height() - m_horizontalScrollbar->height(),
             width() - (m_verticalScrollbar ? m_verticalScrollbar->width() : 0),
             m_horizontalScrollbar->height());
-        m_horizontalScrollbar->setFrameRect(adjustScrollbarRectForResizer(hBarRect, m_horizontalScrollbar.get()));
+        m_horizontalScrollbar->setFrameRect(adjustScrollbarRectForResizer(hBarRect, *m_horizontalScrollbar));
         if (oldRect != m_horizontalScrollbar->frameRect())
-            setScrollbarNeedsPaintInvalidation(m_horizontalScrollbar.get());
+            setScrollbarNeedsPaintInvalidation(HorizontalScrollbar);
 
         m_horizontalScrollbar->setEnabled(contentsWidth() > clientWidth);
         m_horizontalScrollbar->setProportion(clientWidth, contentsWidth());
@@ -3243,9 +3243,9 @@ void FrameView::updateScrollbarGeometry()
             0,
             m_verticalScrollbar->width(),
             height() - (m_horizontalScrollbar ? m_horizontalScrollbar->height() : 0));
-        m_verticalScrollbar->setFrameRect(adjustScrollbarRectForResizer(vBarRect, m_verticalScrollbar.get()));
+        m_verticalScrollbar->setFrameRect(adjustScrollbarRectForResizer(vBarRect, *m_verticalScrollbar));
         if (oldRect != m_verticalScrollbar->frameRect())
-            setScrollbarNeedsPaintInvalidation(m_verticalScrollbar.get());
+            setScrollbarNeedsPaintInvalidation(VerticalScrollbar);
 
         m_verticalScrollbar->setEnabled(contentsHeight() > clientHeight);
         m_verticalScrollbar->setProportion(clientHeight, contentsHeight());
@@ -3253,7 +3253,7 @@ void FrameView::updateScrollbarGeometry()
     }
 }
 
-IntRect FrameView::adjustScrollbarRectForResizer(const IntRect& rect, Scrollbar* scrollbar)
+IntRect FrameView::adjustScrollbarRectForResizer(const IntRect& rect, Scrollbar& scrollbar)
 {
     // Get our window resizer rect and see if we overlap. Adjust to avoid the overlap
     // if necessary.
@@ -3262,7 +3262,7 @@ IntRect FrameView::adjustScrollbarRectForResizer(const IntRect& rect, Scrollbar*
     if (!rect.isEmpty() && !windowResizerRect().isEmpty()) {
         IntRect resizerRect = convertFromRootFrame(windowResizerRect());
         if (rect.intersects(resizerRect)) {
-            if (scrollbar->orientation() == HorizontalScrollbar) {
+            if (scrollbar.orientation() == HorizontalScrollbar) {
                 int overlap = rect.maxX() - resizerRect.x();
                 if (overlap > 0 && resizerRect.maxX() >= rect.maxX()) {
                     adjustedRect.setWidth(rect.width() - overlap);
@@ -3277,8 +3277,8 @@ IntRect FrameView::adjustScrollbarRectForResizer(const IntRect& rect, Scrollbar*
             }
         }
     }
-    if (overlapsResizer != scrollbar->overlapsResizer()) {
-        scrollbar->setOverlapsResizer(overlapsResizer);
+    if (overlapsResizer != scrollbar.overlapsResizer()) {
+        scrollbar.setOverlapsResizer(overlapsResizer);
         adjustScrollbarsAvoidingResizerCount(overlapsResizer ? 1 : -1);
     }
     return adjustedRect;
@@ -3685,12 +3685,12 @@ ScrollBehavior FrameView::scrollBehaviorStyle() const
     return ScrollBehaviorInstant;
 }
 
-void FrameView::paint(GraphicsContext* context, const CullRect& cullRect) const
+void FrameView::paint(GraphicsContext& context, const CullRect& cullRect) const
 {
     paint(context, GlobalPaintNormalPhase, cullRect);
 }
 
-void FrameView::paint(GraphicsContext* context, const GlobalPaintFlags globalPaintFlags, const CullRect& cullRect) const
+void FrameView::paint(GraphicsContext& context, const GlobalPaintFlags globalPaintFlags, const CullRect& cullRect) const
 {
     // TODO(skyostil): Remove this early-out in favor of painting cached scrollbars.
     if (shouldThrottleRendering())
@@ -3698,7 +3698,7 @@ void FrameView::paint(GraphicsContext* context, const GlobalPaintFlags globalPai
     FramePainter(*this).paint(context, globalPaintFlags, cullRect);
 }
 
-void FrameView::paintContents(GraphicsContext* context, const GlobalPaintFlags globalPaintFlags, const IntRect& damageRect) const
+void FrameView::paintContents(GraphicsContext& context, const GlobalPaintFlags globalPaintFlags, const IntRect& damageRect) const
 {
     if (shouldThrottleRendering())
         return;
@@ -3733,36 +3733,36 @@ bool FrameView::scrollbarCornerPresent() const
         || (m_verticalScrollbar && height() - m_verticalScrollbar->height() > 0);
 }
 
-IntRect FrameView::convertFromScrollbarToContainingWidget(const Scrollbar* scrollbar, const IntRect& localRect) const
+IntRect FrameView::convertFromScrollbarToContainingWidget(const Scrollbar& scrollbar, const IntRect& localRect) const
 {
     // Scrollbars won't be transformed within us
     IntRect newRect = localRect;
-    newRect.moveBy(scrollbar->location());
+    newRect.moveBy(scrollbar.location());
     return newRect;
 }
 
-IntRect FrameView::convertFromContainingWidgetToScrollbar(const Scrollbar* scrollbar, const IntRect& parentRect) const
+IntRect FrameView::convertFromContainingWidgetToScrollbar(const Scrollbar& scrollbar, const IntRect& parentRect) const
 {
     IntRect newRect = parentRect;
     // Scrollbars won't be transformed within us
-    newRect.moveBy(-scrollbar->location());
+    newRect.moveBy(-scrollbar.location());
     return newRect;
 }
 
 // FIXME: test these on windows
-IntPoint FrameView::convertFromScrollbarToContainingWidget(const Scrollbar* scrollbar, const IntPoint& localPoint) const
+IntPoint FrameView::convertFromScrollbarToContainingWidget(const Scrollbar& scrollbar, const IntPoint& localPoint) const
 {
     // Scrollbars won't be transformed within us
     IntPoint newPoint = localPoint;
-    newPoint.moveBy(scrollbar->location());
+    newPoint.moveBy(scrollbar.location());
     return newPoint;
 }
 
-IntPoint FrameView::convertFromContainingWidgetToScrollbar(const Scrollbar* scrollbar, const IntPoint& parentPoint) const
+IntPoint FrameView::convertFromContainingWidgetToScrollbar(const Scrollbar& scrollbar, const IntPoint& parentPoint) const
 {
     IntPoint newPoint = parentPoint;
     // Scrollbars won't be transformed within us
-    newPoint.moveBy(-scrollbar->location());
+    newPoint.moveBy(-scrollbar.location());
     return newPoint;
 }
 

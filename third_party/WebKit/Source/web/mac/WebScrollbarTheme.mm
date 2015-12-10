@@ -47,11 +47,11 @@ void WebScrollbarTheme::updateScrollbarsWithNSDefaults(
     float initialButtonDelay, float autoscrollButtonDelay,
     ScrollerStyle preferredScrollerStyle, bool redraw, bool scrollAnimationEnabled, ScrollbarButtonsPlacement buttonPlacement)
 {
-    ScrollbarTheme* theme = ScrollbarTheme::theme();
-    if (theme->isMockTheme())
+    ScrollbarTheme& theme = ScrollbarTheme::theme();
+    if (theme.isMockTheme())
         return;
 
-    static_cast<ScrollbarThemeMacCommon*>(ScrollbarTheme::theme())->preferencesChanged(
+    static_cast<ScrollbarThemeMacCommon&>(theme).preferencesChanged(
         initialButtonDelay, autoscrollButtonDelay,
         static_cast<NSScrollerStyle>(preferredScrollerStyle),
         redraw, scrollAnimationEnabled, buttonPlacement);

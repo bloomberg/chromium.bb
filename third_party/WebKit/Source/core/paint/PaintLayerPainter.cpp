@@ -567,7 +567,7 @@ void PaintLayerPainter::paintOverflowControlsForFragments(const PaintLayerFragme
             clipRecorder.emplace(*context, *m_paintLayer.layoutObject(), DisplayItem::ClipLayerOverflowControls, fragment.backgroundRect, &localPaintingInfo, fragment.paginationOffset, paintFlags);
         if (PaintLayerScrollableArea* scrollableArea = m_paintLayer.scrollableArea()) {
             CullRect cullRect(pixelSnappedIntRect(fragment.backgroundRect.rect()));
-            ScrollableAreaPainter(*scrollableArea).paintOverflowControls(context, roundedIntPoint(toPoint(fragment.layerBounds.location() - m_paintLayer.layoutBoxLocation())), cullRect, true);
+            ScrollableAreaPainter(*scrollableArea).paintOverflowControls(*context, roundedIntPoint(toPoint(fragment.layerBounds.location() - m_paintLayer.layoutBoxLocation())), cullRect, true);
         }
     }
 }

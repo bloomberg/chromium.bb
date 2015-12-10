@@ -104,7 +104,7 @@ public:
     void setProportion(int visibleSize, int totalSize);
     void setPressedPos(int p) { m_pressedPos = p; }
 
-    void paint(GraphicsContext*, const CullRect&) const final;
+    void paint(GraphicsContext&, const CullRect&) const final;
 
     bool isOverlayScrollbar() const override;
     bool shouldParticipateInHitTesting();
@@ -125,7 +125,7 @@ public:
     void mouseUp(const PlatformMouseEvent&);
     void mouseDown(const PlatformMouseEvent&);
 
-    ScrollbarTheme* theme() const { return m_theme; }
+    ScrollbarTheme& theme() const { return m_theme; }
 
     IntRect convertToContainingWidget(const IntRect&) const override;
     IntRect convertFromContainingWidget(const IntRect&) const override;
@@ -177,7 +177,7 @@ protected:
     RawPtrWillBeMember<ScrollableArea> m_scrollableArea;
     ScrollbarOrientation m_orientation;
     ScrollbarControlSize m_controlSize;
-    ScrollbarTheme* m_theme;
+    ScrollbarTheme& m_theme;
 
     int m_visibleSize;
     int m_totalSize;

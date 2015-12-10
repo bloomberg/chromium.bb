@@ -23,8 +23,8 @@ class ScrollbarPainter {
 public:
     explicit ScrollbarPainter(const LayoutScrollbar& layoutScrollbar) : m_layoutScrollbar(&layoutScrollbar) { }
 
-    void paintPart(GraphicsContext*, ScrollbarPart, const IntRect&);
-    static void paintIntoRect(const LayoutScrollbarPart&, GraphicsContext*, const LayoutPoint& paintOffset, const LayoutRect&);
+    void paintPart(GraphicsContext&, ScrollbarPart, const IntRect&);
+    static void paintIntoRect(const LayoutScrollbarPart&, GraphicsContext&, const LayoutPoint& paintOffset, const LayoutRect&);
 
 private:
     RawPtrWillBeMember<const LayoutScrollbar> m_layoutScrollbar;

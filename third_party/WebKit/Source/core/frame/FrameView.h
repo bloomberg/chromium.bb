@@ -324,7 +324,7 @@ public:
     bool isActive() const override;
 
     // Override scrollbar notifications to update the AXObject cache.
-    void didAddScrollbar(Scrollbar*, ScrollbarOrientation) override;
+    void didAddScrollbar(Scrollbar&, ScrollbarOrientation) override;
 
     // FIXME: This should probably be renamed as the 'inSubtreeLayout' parameter
     // passed around the FrameView layout methods can be true while this returns
@@ -512,9 +512,9 @@ public:
     }
 
     // Widget override. Handles painting of the contents of the view as well as the scrollbars.
-    void paint(GraphicsContext*, const CullRect&) const override;
-    void paint(GraphicsContext*, const GlobalPaintFlags, const CullRect&) const;
-    void paintContents(GraphicsContext*, const GlobalPaintFlags, const IntRect& damageRect) const;
+    void paint(GraphicsContext&, const CullRect&) const override;
+    void paint(GraphicsContext&, const GlobalPaintFlags, const CullRect&) const;
+    void paintContents(GraphicsContext&, const GlobalPaintFlags, const IntRect& damageRect) const;
 
     // Widget overrides to ensure that our children's visibility status is kept up to date when we get shown and hidden.
     void show() override;
@@ -525,10 +525,10 @@ public:
     bool scrollbarCornerPresent() const;
     IntRect scrollCornerRect() const override;
 
-    IntRect convertFromScrollbarToContainingWidget(const Scrollbar*, const IntRect&) const override;
-    IntRect convertFromContainingWidgetToScrollbar(const Scrollbar*, const IntRect&) const override;
-    IntPoint convertFromScrollbarToContainingWidget(const Scrollbar*, const IntPoint&) const override;
-    IntPoint convertFromContainingWidgetToScrollbar(const Scrollbar*, const IntPoint&) const override;
+    IntRect convertFromScrollbarToContainingWidget(const Scrollbar&, const IntRect&) const override;
+    IntRect convertFromContainingWidgetToScrollbar(const Scrollbar&, const IntRect&) const override;
+    IntPoint convertFromScrollbarToContainingWidget(const Scrollbar&, const IntPoint&) const override;
+    IntPoint convertFromContainingWidgetToScrollbar(const Scrollbar&, const IntPoint&) const override;
 
     bool isFrameView() const override { return true; }
 
@@ -605,7 +605,7 @@ protected:
     };
     void computeScrollbarExistence(bool& newHasHorizontalScrollbar, bool& newHasVerticalScrollbar, const IntSize& docSize, ComputeScrollbarExistenceOption = FirstPass) const;
     void updateScrollbarGeometry();
-    IntRect adjustScrollbarRectForResizer(const IntRect&, Scrollbar*);
+    IntRect adjustScrollbarRectForResizer(const IntRect&, Scrollbar&);
 
     // Called to update the scrollbars to accurately reflect the state of the view.
     void updateScrollbars(const DoubleSize& desiredOffset);

@@ -39,7 +39,7 @@ class PLATFORM_EXPORT WebScrollbarThemeClientImpl : public ScrollbarThemeClient 
 public:
     // Caller must retain ownership of this pointer and ensure that its lifetime
     // exceeds this instance.
-    WebScrollbarThemeClientImpl(WebScrollbar*);
+    WebScrollbarThemeClientImpl(WebScrollbar&);
     ~WebScrollbarThemeClientImpl() override;
 
     // Implement ScrollbarThemeClient interface
@@ -86,7 +86,7 @@ public:
     String debugName() const final;
 
 private:
-    WebScrollbar* m_scrollbar;
+    WebScrollbar& m_scrollbar;
 };
 
 } // namespace blink

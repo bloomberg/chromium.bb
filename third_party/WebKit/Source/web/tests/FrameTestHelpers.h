@@ -87,7 +87,7 @@ public:
     {
         Settings::setMockScrollbarsEnabled(true);
         RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(true);
-        EXPECT_TRUE(ScrollbarTheme::theme()->usesOverlayScrollbars());
+        EXPECT_TRUE(ScrollbarTheme::theme().usesOverlayScrollbars());
     }
 
     ~UseMockScrollbarSettings()

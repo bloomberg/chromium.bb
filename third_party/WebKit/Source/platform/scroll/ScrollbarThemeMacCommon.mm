@@ -69,34 +69,31 @@ static float gAutoscrollButtonDelay = 0.05f;
 static NSScrollerStyle gPreferredScrollerStyle = NSScrollerStyleLegacy;
 static bool gScrollAnimationEnabledForSystem = false;
 
-ScrollbarTheme* ScrollbarTheme::nativeTheme()
+ScrollbarTheme& ScrollbarTheme::nativeTheme()
 {
-    static ScrollbarThemeMacCommon* theme = NULL;
-    if (theme)
-        return theme;
     if (ScrollbarThemeMacCommon::isOverlayAPIAvailable()) {
         DEFINE_STATIC_LOCAL(ScrollbarThemeMacOverlayAPI, overlayTheme, ());
-        theme = &overlayTheme;
-    } else {
-        DEFINE_STATIC_LOCAL(ScrollbarThemeMacNonOverlayAPI, nonOverlayTheme, ());
-        theme = &nonOverlayTheme;
+        return overlayTheme;
     }
-    return theme;
+    {
+        DEFINE_STATIC_LOCAL(ScrollbarThemeMacNonOverlayAPI, nonOverlayTheme, ());
+        return nonOverlayTheme;
+    }
 }
 
-void ScrollbarThemeMacCommon::registerScrollbar(ScrollbarThemeClient* scrollbar)
+void ScrollbarThemeMacCommon::registerScrollbar(ScrollbarThemeClient& scrollbar)
 {
-    scrollbarSet().add(scrollbar);
+    scrollbarSet().add(&scrollbar);
 }
 
-void ScrollbarThemeMacCommon::unregisterScrollbar(ScrollbarThemeClient* scrollbar)
+void ScrollbarThemeMacCommon::unregisterScrollbar(ScrollbarThemeClient& scrollbar)
 {
-    scrollbarSet().remove(scrollbar);
+    scrollbarSet().remove(&scrollbar);
 }
 
-void ScrollbarThemeMacCommon::paintGivenTickmarks(SkCanvas* canvas, const ScrollbarThemeClient* scrollbar, const IntRect& rect, const Vector<IntRect>& tickmarks)
+void ScrollbarThemeMacCommon::paintGivenTickmarks(SkCanvas* canvas, const ScrollbarThemeClient& scrollbar, const IntRect& rect, const Vector<IntRect>& tickmarks)
 {
-    if (scrollbar->orientation() != VerticalScrollbar)
+    if (scrollbar.orientation() != VerticalScrollbar)
         return;
 
     if (rect.height() <= 0 || rect.width() <= 0)
@@ -119,7 +116,7 @@ void ScrollbarThemeMacCommon::paintGivenTickmarks(SkCanvas* canvas, const Scroll
 
     for (Vector<IntRect>::const_iterator i = tickmarks.begin(); i != tickmarks.end(); ++i) {
         // Calculate how far down (in %) the tick-mark should appear.
-        const float percent = static_cast<float>(i->y()) / scrollbar->totalSize();
+        const float percent = static_cast<float>(i->y()) / scrollbar.totalSize();
         if (percent < 0.0 || percent > 1.0)
             continue;
 
@@ -133,30 +130,30 @@ void ScrollbarThemeMacCommon::paintGivenTickmarks(SkCanvas* canvas, const Scroll
     }
 }
 
-void ScrollbarThemeMacCommon::paintTickmarks(GraphicsContext* context, const ScrollbarThemeClient* scrollbar, const IntRect& rect)
+void ScrollbarThemeMacCommon::paintTickmarks(GraphicsContext& context, const ScrollbarThemeClient& scrollbar, const IntRect& rect)
 {
     // Note: This is only used for css-styled scrollbars on mac.
-    if (scrollbar->orientation() != VerticalScrollbar)
+    if (scrollbar.orientation() != VerticalScrollbar)
         return;
 
     if (rect.height() <= 0 || rect.width() <= 0)
         return;
 
     Vector<IntRect> tickmarks;
-    scrollbar->getTickmarks(tickmarks);
+    scrollbar.getTickmarks(tickmarks);
     if (!tickmarks.size())
         return;
 
-    if (DrawingRecorder::useCachedDrawingIfPossible(*context, *scrollbar, DisplayItem::ScrollbarTickmarks))
+    if (DrawingRecorder::useCachedDrawingIfPossible(context, scrollbar, DisplayItem::ScrollbarTickmarks))
         return;
 
-    DrawingRecorder recorder(*context, *scrollbar, DisplayItem::ScrollbarTickmarks, rect);
+    DrawingRecorder recorder(context, scrollbar, DisplayItem::ScrollbarTickmarks, rect);
 
     // Inset a bit.
     IntRect tickmarkTrackRect = rect;
     tickmarkTrackRect.setX(tickmarkTrackRect.x() + 1);
     tickmarkTrackRect.setWidth(tickmarkTrackRect.width() - 2);
-    paintGivenTickmarks(context->canvas(), scrollbar, tickmarkTrackRect, tickmarks);
+    paintGivenTickmarks(context.canvas(), scrollbar, tickmarkTrackRect, tickmarks);
 }
 
 ScrollbarThemeMacCommon::~ScrollbarThemeMacCommon()
@@ -201,7 +198,7 @@ double ScrollbarThemeMacCommon::autoscrollTimerDelay()
     return gAutoscrollButtonDelay;
 }
 
-bool ScrollbarThemeMacCommon::shouldDragDocumentInsteadOfThumb(const ScrollbarThemeClient*, const PlatformMouseEvent& event)
+bool ScrollbarThemeMacCommon::shouldDragDocumentInsteadOfThumb(const ScrollbarThemeClient&, const PlatformMouseEvent& event)
 {
     return event.altKey();
 }

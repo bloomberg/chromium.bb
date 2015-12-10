@@ -45,21 +45,22 @@ public:
     int scrollbarMargin() const override;
     bool usesOverlayScrollbars() const override;
 
-    int thumbPosition(const ScrollbarThemeClient*) override;
-    int thumbLength(const ScrollbarThemeClient*) override;
+    int thumbPosition(const ScrollbarThemeClient&) override;
+    int thumbLength(const ScrollbarThemeClient&) override;
 
-    bool hasButtons(const ScrollbarThemeClient*) override { return false; }
-    bool hasThumb(const ScrollbarThemeClient*) override;
+    bool hasButtons(const ScrollbarThemeClient&) override { return false; }
+    bool hasThumb(const ScrollbarThemeClient&) override;
 
-    IntRect backButtonRect(const ScrollbarThemeClient*, ScrollbarPart, bool painting = false) override;
-    IntRect forwardButtonRect(const ScrollbarThemeClient*, ScrollbarPart, bool painting = false) override;
-    IntRect trackRect(const ScrollbarThemeClient*, bool painting = false) override;
-    int thumbThickness(const ScrollbarThemeClient*) override;
+    IntRect backButtonRect(const ScrollbarThemeClient&, ScrollbarPart, bool painting = false) override;
+    IntRect forwardButtonRect(const ScrollbarThemeClient&, ScrollbarPart, bool painting = false) override;
+    IntRect trackRect(const ScrollbarThemeClient&, bool painting = false) override;
+    int thumbThickness(const ScrollbarThemeClient&) override;
+    int thumbThickness() { return m_thumbThickness; }
 
-    void paintThumb(GraphicsContext*, const ScrollbarThemeClient*, const IntRect&) override;
-    ScrollbarPart hitTest(const ScrollbarThemeClient*, const IntPoint&) override;
+    void paintThumb(GraphicsContext&, const ScrollbarThemeClient&, const IntRect&) override;
+    ScrollbarPart hitTest(const ScrollbarThemeClient&, const IntPoint&) override;
 
-    static ScrollbarTheme* mobileTheme();
+    static ScrollbarThemeOverlay& mobileTheme();
 
 private:
     int m_thumbThickness;

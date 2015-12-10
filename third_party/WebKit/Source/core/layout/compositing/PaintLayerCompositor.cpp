@@ -804,7 +804,7 @@ static void paintScrollbar(const Scrollbar* scrollbar, GraphicsContext& context,
     translation.translate(-paintOffset.x(), -paintOffset.y());
     TransformRecorder transformRecorder(context, *scrollbar, translation);
 
-    scrollbar->paint(&context, CullRect(transformedClip));
+    scrollbar->paint(context, CullRect(transformedClip));
 }
 
 IntRect PaintLayerCompositor::computeInterestRect(const GraphicsLayer* graphicsLayer, const IntRect&) const
@@ -819,7 +819,7 @@ void PaintLayerCompositor::paintContents(const GraphicsLayer* graphicsLayer, Gra
     else if (graphicsLayer == layerForVerticalScrollbar())
         paintScrollbar(m_layoutView.frameView()->verticalScrollbar(), context, interestRect);
     else if (graphicsLayer == layerForScrollCorner())
-        FramePainter(*m_layoutView.frameView()).paintScrollCorner(&context, interestRect);
+        FramePainter(*m_layoutView.frameView()).paintScrollCorner(context, interestRect);
 }
 
 bool PaintLayerCompositor::supportsFixedRootBackgroundCompositing() const
@@ -1044,8 +1044,7 @@ void PaintLayerCompositor::destroyRootLayer()
         m_layerForHorizontalScrollbar = nullptr;
         if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
             scrollingCoordinator->scrollableAreaScrollbarLayerDidChange(m_layoutView.frameView(), HorizontalScrollbar);
-        if (Scrollbar* horizontalScrollbar = m_layoutView.frameView()->horizontalScrollbar())
-            m_layoutView.frameView()->setScrollbarNeedsPaintInvalidation(horizontalScrollbar);
+        m_layoutView.frameView()->setScrollbarNeedsPaintInvalidation(HorizontalScrollbar);
     }
 
     if (m_layerForVerticalScrollbar) {
@@ -1053,8 +1052,7 @@ void PaintLayerCompositor::destroyRootLayer()
         m_layerForVerticalScrollbar = nullptr;
         if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
             scrollingCoordinator->scrollableAreaScrollbarLayerDidChange(m_layoutView.frameView(), VerticalScrollbar);
-        if (Scrollbar* verticalScrollbar = m_layoutView.frameView()->verticalScrollbar())
-            m_layoutView.frameView()->setScrollbarNeedsPaintInvalidation(verticalScrollbar);
+        m_layoutView.frameView()->setScrollbarNeedsPaintInvalidation(VerticalScrollbar);
     }
 
     if (m_layerForScrollCorner) {

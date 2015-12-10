@@ -242,7 +242,7 @@ void LayoutScrollbar::updateScrollbarPart(ScrollbarPart partType, bool destroy)
 
     if (needLayoutObject && partStyle->display() != BLOCK) {
         // See if we are a button that should not be visible according to OS settings.
-        ScrollbarButtonsPlacement buttonsPlacement = theme()->buttonsPlacement();
+        ScrollbarButtonsPlacement buttonsPlacement = theme().buttonsPlacement();
         switch (partType) {
         case BackButtonStartPart:
             needLayoutObject = (buttonsPlacement == ScrollbarButtonsPlacementSingle || buttonsPlacement == ScrollbarButtonsPlacementDoubleStart

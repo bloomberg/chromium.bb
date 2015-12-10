@@ -49,15 +49,15 @@ static bool useMockTheme()
     return LayoutTestSupport::isRunningLayoutTest();
 }
 
-ScrollbarTheme* ScrollbarTheme::nativeTheme()
+ScrollbarTheme& ScrollbarTheme::nativeTheme()
 {
     if (RuntimeEnabledFeatures::overlayScrollbarsEnabled()) {
         DEFINE_STATIC_LOCAL(ScrollbarThemeOverlay, theme, (10, 0, ScrollbarThemeOverlay::AllowHitTest));
-        return &theme;
+        return theme;
     }
 
     DEFINE_STATIC_LOCAL(ScrollbarThemeAura, theme, ());
-    return &theme;
+    return theme;
 }
 
 int ScrollbarThemeAura::scrollbarThickness(ScrollbarControlSize controlSize)
@@ -70,17 +70,17 @@ int ScrollbarThemeAura::scrollbarThickness(ScrollbarControlSize controlSize)
     return scrollbarSize.width();
 }
 
-void ScrollbarThemeAura::paintTrackPiece(GraphicsContext* gc, const ScrollbarThemeClient* scrollbar, const IntRect& rect, ScrollbarPart partType)
+void ScrollbarThemeAura::paintTrackPiece(GraphicsContext& gc, const ScrollbarThemeClient& scrollbar, const IntRect& rect, ScrollbarPart partType)
 {
     DisplayItem::Type displayItemType = trackPiecePartToDisplayItemType(partType);
-    if (DrawingRecorder::useCachedDrawingIfPossible(*gc, *scrollbar, displayItemType))
+    if (DrawingRecorder::useCachedDrawingIfPossible(gc, scrollbar, displayItemType))
         return;
 
-    DrawingRecorder recorder(*gc, *scrollbar, displayItemType, rect);
+    DrawingRecorder recorder(gc, scrollbar, displayItemType, rect);
 
-    WebThemeEngine::State state = scrollbar->hoveredPart() == partType ? WebThemeEngine::StateHover : WebThemeEngine::StateNormal;
+    WebThemeEngine::State state = scrollbar.hoveredPart() == partType ? WebThemeEngine::StateHover : WebThemeEngine::StateNormal;
 
-    if (useMockTheme() && !scrollbar->enabled())
+    if (useMockTheme() && !scrollbar.enabled())
         state = WebThemeEngine::StateDisabled;
 
     IntRect alignRect = trackRect(scrollbar, false);
@@ -90,17 +90,17 @@ void ScrollbarThemeAura::paintTrackPiece(GraphicsContext* gc, const ScrollbarThe
     extraParams.scrollbarTrack.trackY = alignRect.y();
     extraParams.scrollbarTrack.trackWidth = alignRect.width();
     extraParams.scrollbarTrack.trackHeight = alignRect.height();
-    Platform::current()->themeEngine()->paint(gc->canvas(), scrollbar->orientation() == HorizontalScrollbar ? WebThemeEngine::PartScrollbarHorizontalTrack : WebThemeEngine::PartScrollbarVerticalTrack, state, WebRect(rect), &extraParams);
+    Platform::current()->themeEngine()->paint(gc.canvas(), scrollbar.orientation() == HorizontalScrollbar ? WebThemeEngine::PartScrollbarHorizontalTrack : WebThemeEngine::PartScrollbarVerticalTrack, state, WebRect(rect), &extraParams);
 }
 
-void ScrollbarThemeAura::paintButton(GraphicsContext* gc, const ScrollbarThemeClient* scrollbar, const IntRect& rect, ScrollbarPart part)
+void ScrollbarThemeAura::paintButton(GraphicsContext& gc, const ScrollbarThemeClient& scrollbar, const IntRect& rect, ScrollbarPart part)
 {
     WebThemeEngine::Part paintPart;
     WebThemeEngine::State state = WebThemeEngine::StateNormal;
     bool checkMin = false;
     bool checkMax = false;
 
-    if (scrollbar->orientation() == HorizontalScrollbar) {
+    if (scrollbar.orientation() == HorizontalScrollbar) {
         if (part == BackButtonStartPart) {
             paintPart = WebThemeEngine::PartScrollbarLeftArrow;
             checkMin = true;
@@ -123,58 +123,58 @@ void ScrollbarThemeAura::paintButton(GraphicsContext* gc, const ScrollbarThemeCl
     }
 
     DisplayItem::Type displayItemType = buttonPartToDisplayItemType(part);
-    if (DrawingRecorder::useCachedDrawingIfPossible(*gc, *scrollbar, displayItemType))
+    if (DrawingRecorder::useCachedDrawingIfPossible(gc, scrollbar, displayItemType))
         return;
 
-    DrawingRecorder recorder(*gc, *scrollbar, displayItemType, rect);
+    DrawingRecorder recorder(gc, scrollbar, displayItemType, rect);
 
-    if (useMockTheme() && !scrollbar->enabled()) {
+    if (useMockTheme() && !scrollbar.enabled()) {
         state = WebThemeEngine::StateDisabled;
-    } else if (!useMockTheme() && ((checkMin && (scrollbar->currentPos() <= 0))
-        || (checkMax && scrollbar->currentPos() >= scrollbar->maximum()))) {
+    } else if (!useMockTheme() && ((checkMin && (scrollbar.currentPos() <= 0))
+        || (checkMax && scrollbar.currentPos() >= scrollbar.maximum()))) {
         state = WebThemeEngine::StateDisabled;
     } else {
-        if (part == scrollbar->pressedPart())
+        if (part == scrollbar.pressedPart())
             state = WebThemeEngine::StatePressed;
-        else if (part == scrollbar->hoveredPart())
+        else if (part == scrollbar.hoveredPart())
             state = WebThemeEngine::StateHover;
     }
-    Platform::current()->themeEngine()->paint(gc->canvas(), paintPart, state, WebRect(rect), 0);
+    Platform::current()->themeEngine()->paint(gc.canvas(), paintPart, state, WebRect(rect), 0);
 }
 
-void ScrollbarThemeAura::paintThumb(GraphicsContext* gc, const ScrollbarThemeClient* scrollbar, const IntRect& rect)
+void ScrollbarThemeAura::paintThumb(GraphicsContext& gc, const ScrollbarThemeClient& scrollbar, const IntRect& rect)
 {
-    if (DrawingRecorder::useCachedDrawingIfPossible(*gc, *scrollbar, DisplayItem::ScrollbarThumb))
+    if (DrawingRecorder::useCachedDrawingIfPossible(gc, scrollbar, DisplayItem::ScrollbarThumb))
         return;
 
-    DrawingRecorder recorder(*gc, *scrollbar, DisplayItem::ScrollbarThumb, rect);
+    DrawingRecorder recorder(gc, scrollbar, DisplayItem::ScrollbarThumb, rect);
 
     WebThemeEngine::State state;
-    WebCanvas* canvas = gc->canvas();
-    if (scrollbar->pressedPart() == ThumbPart)
+    WebCanvas* canvas = gc.canvas();
+    if (scrollbar.pressedPart() == ThumbPart)
         state = WebThemeEngine::StatePressed;
-    else if (scrollbar->hoveredPart() == ThumbPart)
+    else if (scrollbar.hoveredPart() == ThumbPart)
         state = WebThemeEngine::StateHover;
     else
         state = WebThemeEngine::StateNormal;
-    Platform::current()->themeEngine()->paint(canvas, scrollbar->orientation() == HorizontalScrollbar ? WebThemeEngine::PartScrollbarHorizontalThumb : WebThemeEngine::PartScrollbarVerticalThumb, state, WebRect(rect), 0);
+    Platform::current()->themeEngine()->paint(canvas, scrollbar.orientation() == HorizontalScrollbar ? WebThemeEngine::PartScrollbarHorizontalThumb : WebThemeEngine::PartScrollbarVerticalThumb, state, WebRect(rect), 0);
 }
 
-IntSize ScrollbarThemeAura::buttonSize(const ScrollbarThemeClient* scrollbar)
+IntSize ScrollbarThemeAura::buttonSize(const ScrollbarThemeClient& scrollbar)
 {
-    if (scrollbar->orientation() == VerticalScrollbar) {
+    if (scrollbar.orientation() == VerticalScrollbar) {
         IntSize size = Platform::current()->themeEngine()->getSize(WebThemeEngine::PartScrollbarUpArrow);
-        return IntSize(size.width(), scrollbar->height() < 2 * size.height() ? scrollbar->height() / 2 : size.height());
+        return IntSize(size.width(), scrollbar.height() < 2 * size.height() ? scrollbar.height() / 2 : size.height());
     }
 
     // HorizontalScrollbar
     IntSize size = Platform::current()->themeEngine()->getSize(WebThemeEngine::PartScrollbarLeftArrow);
-    return IntSize(scrollbar->width() < 2 * size.width() ? scrollbar->width() / 2 : size.width(), size.height());
+    return IntSize(scrollbar.width() < 2 * size.width() ? scrollbar.width() / 2 : size.width(), size.height());
 }
 
-int ScrollbarThemeAura::minimumThumbLength(const ScrollbarThemeClient* scrollbar)
+int ScrollbarThemeAura::minimumThumbLength(const ScrollbarThemeClient& scrollbar)
 {
-    if (scrollbar->orientation() == VerticalScrollbar) {
+    if (scrollbar.orientation() == VerticalScrollbar) {
         IntSize size = Platform::current()->themeEngine()->getSize(WebThemeEngine::PartScrollbarVerticalThumb);
         return size.height();
     }

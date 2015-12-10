@@ -92,7 +92,7 @@ void PartPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffs
     }
 
     if (m_layoutPart.canResize())
-        ScrollableAreaPainter(*m_layoutPart.layer()->scrollableArea()).paintResizer(paintInfo.context, roundedIntPoint(adjustedPaintOffset), paintInfo.cullRect());
+        ScrollableAreaPainter(*m_layoutPart.layer()->scrollableArea()).paintResizer(*paintInfo.context, roundedIntPoint(adjustedPaintOffset), paintInfo.cullRect());
 }
 
 void PartPainter::paintContents(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
@@ -115,7 +115,7 @@ void PartPainter::paintContents(const PaintInfo& paintInfo, const LayoutPoint& p
         AffineTransform::translation(widgetPaintOffset.width(), widgetPaintOffset.height()));
 
     CullRect adjustedCullRect(paintInfo.cullRect(), -widgetPaintOffset);
-    widget->paint(paintInfo.context, adjustedCullRect);
+    widget->paint(*paintInfo.context, adjustedCullRect);
 }
 
 } // namespace blink

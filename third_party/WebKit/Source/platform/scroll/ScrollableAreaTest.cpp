@@ -126,7 +126,7 @@ TEST_F(ScrollableAreaTest, ScrollAnimatorCurrentPositionShouldBeSync)
 {
     OwnPtrWillBeRawPtr<MockScrollableArea> scrollableArea = MockScrollableArea::create(IntPoint(0, 100));
     scrollableArea->setScrollPosition(IntPoint(0, 10000), CompositorScroll);
-    EXPECT_EQ(100.0, scrollableArea->scrollAnimator()->currentPosition().y());
+    EXPECT_EQ(100.0, scrollableArea->scrollAnimator().currentPosition().y());
 }
 
 TEST_F(ScrollableAreaTest, ScrollbarTrackAndThumbRepaint)

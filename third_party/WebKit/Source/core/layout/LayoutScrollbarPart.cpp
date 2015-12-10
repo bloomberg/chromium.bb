@@ -120,7 +120,7 @@ static int calcScrollbarThicknessUsing(SizeType sizeType, const Length& length, 
 {
     if (!length.isIntrinsicOrAuto() || (sizeType == MinSize && length.isAuto()))
         return minimumValueForLength(length, containingLength);
-    return ScrollbarTheme::theme()->scrollbarThickness();
+    return ScrollbarTheme::theme().scrollbarThickness();
 }
 
 void LayoutScrollbarPart::computeScrollbarWidth()

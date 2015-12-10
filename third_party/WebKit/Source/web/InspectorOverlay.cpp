@@ -119,7 +119,7 @@ public:
         DisplayItemCacheSkipper cacheSkipper(graphicsContext);
         FrameView* view = m_overlay->overlayMainFrame()->view();
         ASSERT(!view->needsLayout());
-        view->paint(&graphicsContext, CullRect(IntRect(0, 0, view->width(), view->height())));
+        view->paint(graphicsContext, CullRect(IntRect(0, 0, view->width(), view->height())));
     }
 
 private:

@@ -56,7 +56,7 @@ static inline bool shouldPaintScrollbarPart(const IntRect& partRect, const CullR
     return (!partRect.isEmpty()) || cullRect.intersectsCullRect(partRect);
 }
 
-bool ScrollbarTheme::paint(const ScrollbarThemeClient* scrollbar, GraphicsContext* graphicsContext, const CullRect& cullRect)
+bool ScrollbarTheme::paint(const ScrollbarThemeClient& scrollbar, GraphicsContext& graphicsContext, const CullRect& cullRect)
 {
     // Create the ScrollbarControlPartMask based on the cullRect
     ScrollbarControlPartMask scrollMask = NoPart;
@@ -130,16 +130,16 @@ bool ScrollbarTheme::paint(const ScrollbarThemeClient* scrollbar, GraphicsContex
     return true;
 }
 
-ScrollbarPart ScrollbarTheme::hitTest(const ScrollbarThemeClient* scrollbar, const IntPoint& positionInRootFrame)
+ScrollbarPart ScrollbarTheme::hitTest(const ScrollbarThemeClient& scrollbar, const IntPoint& positionInRootFrame)
 {
     ScrollbarPart result = NoPart;
-    if (!scrollbar->enabled())
+    if (!scrollbar.enabled())
         return result;
 
-    IntPoint testPosition = scrollbar->convertFromRootFrame(positionInRootFrame);
-    testPosition.move(scrollbar->x(), scrollbar->y());
+    IntPoint testPosition = scrollbar.convertFromRootFrame(positionInRootFrame);
+    testPosition.move(scrollbar.x(), scrollbar.y());
 
-    if (!scrollbar->frameRect().contains(testPosition))
+    if (!scrollbar.frameRect().contains(testPosition))
         return NoPart;
 
     result = ScrollbarBGPart;
@@ -170,57 +170,57 @@ ScrollbarPart ScrollbarTheme::hitTest(const ScrollbarThemeClient* scrollbar, con
     return result;
 }
 
-void ScrollbarTheme::paintScrollCorner(GraphicsContext* context, const DisplayItemClient& displayItemClient, const IntRect& cornerRect)
+void ScrollbarTheme::paintScrollCorner(GraphicsContext& context, const DisplayItemClient& displayItemClient, const IntRect& cornerRect)
 {
     if (cornerRect.isEmpty())
         return;
 
-    if (DrawingRecorder::useCachedDrawingIfPossible(*context, displayItemClient, DisplayItem::ScrollbarCorner))
+    if (DrawingRecorder::useCachedDrawingIfPossible(context, displayItemClient, DisplayItem::ScrollbarCorner))
         return;
 
-    DrawingRecorder recorder(*context, displayItemClient, DisplayItem::ScrollbarCorner, cornerRect);
+    DrawingRecorder recorder(context, displayItemClient, DisplayItem::ScrollbarCorner, cornerRect);
 #if OS(MACOSX)
-    context->fillRect(cornerRect, Color::white);
+    context.fillRect(cornerRect, Color::white);
 #else
-    Platform::current()->themeEngine()->paint(context->canvas(), WebThemeEngine::PartScrollbarCorner, WebThemeEngine::StateNormal, WebRect(cornerRect), 0);
+    Platform::current()->themeEngine()->paint(context.canvas(), WebThemeEngine::PartScrollbarCorner, WebThemeEngine::StateNormal, WebRect(cornerRect), 0);
 #endif
 }
 
-bool ScrollbarTheme::shouldCenterOnThumb(const ScrollbarThemeClient* scrollbar, const PlatformMouseEvent& evt)
+bool ScrollbarTheme::shouldCenterOnThumb(const ScrollbarThemeClient& scrollbar, const PlatformMouseEvent& evt)
 {
     return Platform::current()->scrollbarBehavior()->shouldCenterOnThumb(static_cast<WebScrollbarBehavior::Button>(evt.button()), evt.shiftKey(), evt.altKey());
 }
 
-bool ScrollbarTheme::shouldSnapBackToDragOrigin(const ScrollbarThemeClient* scrollbar, const PlatformMouseEvent& evt)
+bool ScrollbarTheme::shouldSnapBackToDragOrigin(const ScrollbarThemeClient& scrollbar, const PlatformMouseEvent& evt)
 {
-    IntPoint mousePosition = scrollbar->convertFromRootFrame(evt.position());
-    mousePosition.move(scrollbar->x(), scrollbar->y());
-    return Platform::current()->scrollbarBehavior()->shouldSnapBackToDragOrigin(mousePosition, trackRect(scrollbar), scrollbar->orientation() == HorizontalScrollbar);
+    IntPoint mousePosition = scrollbar.convertFromRootFrame(evt.position());
+    mousePosition.move(scrollbar.x(), scrollbar.y());
+    return Platform::current()->scrollbarBehavior()->shouldSnapBackToDragOrigin(mousePosition, trackRect(scrollbar), scrollbar.orientation() == HorizontalScrollbar);
 }
 
-int ScrollbarTheme::thumbPosition(const ScrollbarThemeClient* scrollbar)
+int ScrollbarTheme::thumbPosition(const ScrollbarThemeClient& scrollbar)
 {
-    if (scrollbar->enabled()) {
-        float size = scrollbar->totalSize() - scrollbar->visibleSize();
+    if (scrollbar.enabled()) {
+        float size = scrollbar.totalSize() - scrollbar.visibleSize();
         // Avoid doing a floating point divide by zero and return 1 when usedTotalSize == visibleSize.
         if (!size)
             return 0;
-        float pos = std::max(0.0f, scrollbar->currentPos()) * (trackLength(scrollbar) - thumbLength(scrollbar)) / size;
+        float pos = std::max(0.0f, scrollbar.currentPos()) * (trackLength(scrollbar) - thumbLength(scrollbar)) / size;
         return (pos < 1 && pos > 0) ? 1 : pos;
     }
     return 0;
 }
 
-int ScrollbarTheme::thumbLength(const ScrollbarThemeClient* scrollbar)
+int ScrollbarTheme::thumbLength(const ScrollbarThemeClient& scrollbar)
 {
-    if (!scrollbar->enabled())
+    if (!scrollbar.enabled())
         return 0;
 
-    float overhang = fabsf(scrollbar->elasticOverscroll());
+    float overhang = fabsf(scrollbar.elasticOverscroll());
     float proportion = 0.0f;
-    float totalSize = scrollbar->totalSize();
+    float totalSize = scrollbar.totalSize();
     if (totalSize > 0.0f) {
-        proportion = (scrollbar->visibleSize() - overhang) / totalSize;
+        proportion = (scrollbar.visibleSize() - overhang) / totalSize;
     }
     int trackLen = trackLength(scrollbar);
     int length = round(proportion * trackLen);
@@ -230,19 +230,19 @@ int ScrollbarTheme::thumbLength(const ScrollbarThemeClient* scrollbar)
     return length;
 }
 
-int ScrollbarTheme::trackPosition(const ScrollbarThemeClient* scrollbar)
+int ScrollbarTheme::trackPosition(const ScrollbarThemeClient& scrollbar)
 {
     IntRect constrainedTrackRect = constrainTrackRectToTrackPieces(scrollbar, trackRect(scrollbar));
-    return (scrollbar->orientation() == HorizontalScrollbar) ? constrainedTrackRect.x() - scrollbar->x() : constrainedTrackRect.y() - scrollbar->y();
+    return (scrollbar.orientation() == HorizontalScrollbar) ? constrainedTrackRect.x() - scrollbar.x() : constrainedTrackRect.y() - scrollbar.y();
 }
 
-int ScrollbarTheme::trackLength(const ScrollbarThemeClient* scrollbar)
+int ScrollbarTheme::trackLength(const ScrollbarThemeClient& scrollbar)
 {
     IntRect constrainedTrackRect = constrainTrackRectToTrackPieces(scrollbar, trackRect(scrollbar));
-    return (scrollbar->orientation() == HorizontalScrollbar) ? constrainedTrackRect.width() : constrainedTrackRect.height();
+    return (scrollbar.orientation() == HorizontalScrollbar) ? constrainedTrackRect.width() : constrainedTrackRect.height();
 }
 
-IntRect ScrollbarTheme::thumbRect(const ScrollbarThemeClient* scrollbar)
+IntRect ScrollbarTheme::thumbRect(const ScrollbarThemeClient& scrollbar)
 {
     if (!hasThumb(scrollbar))
         return IntRect();
@@ -256,44 +256,44 @@ IntRect ScrollbarTheme::thumbRect(const ScrollbarThemeClient* scrollbar)
     return thumbRect;
 }
 
-int ScrollbarTheme::thumbThickness(const ScrollbarThemeClient* scrollbar)
+int ScrollbarTheme::thumbThickness(const ScrollbarThemeClient& scrollbar)
 {
     IntRect track = trackRect(scrollbar);
-    return scrollbar->orientation() == HorizontalScrollbar ? track.height() : track.width();
+    return scrollbar.orientation() == HorizontalScrollbar ? track.height() : track.width();
 }
 
-int ScrollbarTheme::minimumThumbLength(const ScrollbarThemeClient* scrollbar)
+int ScrollbarTheme::minimumThumbLength(const ScrollbarThemeClient& scrollbar)
 {
-    return scrollbarThickness(scrollbar->controlSize());
+    return scrollbarThickness(scrollbar.controlSize());
 }
 
-void ScrollbarTheme::splitTrack(const ScrollbarThemeClient* scrollbar, const IntRect& unconstrainedTrackRect, IntRect& beforeThumbRect, IntRect& thumbRect, IntRect& afterThumbRect)
+void ScrollbarTheme::splitTrack(const ScrollbarThemeClient& scrollbar, const IntRect& unconstrainedTrackRect, IntRect& beforeThumbRect, IntRect& thumbRect, IntRect& afterThumbRect)
 {
     // This function won't even get called unless we're big enough to have some combination of these three rects where at least
     // one of them is non-empty.
     IntRect trackRect = constrainTrackRectToTrackPieces(scrollbar, unconstrainedTrackRect);
     int thumbPos = thumbPosition(scrollbar);
-    if (scrollbar->orientation() == HorizontalScrollbar) {
-        thumbRect = IntRect(trackRect.x() + thumbPos, trackRect.y(), thumbLength(scrollbar), scrollbar->height());
+    if (scrollbar.orientation() == HorizontalScrollbar) {
+        thumbRect = IntRect(trackRect.x() + thumbPos, trackRect.y(), thumbLength(scrollbar), scrollbar.height());
         beforeThumbRect = IntRect(trackRect.x(), trackRect.y(), thumbPos + thumbRect.width() / 2, trackRect.height());
         afterThumbRect = IntRect(trackRect.x() + beforeThumbRect.width(), trackRect.y(), trackRect.maxX() - beforeThumbRect.maxX(), trackRect.height());
     } else {
-        thumbRect = IntRect(trackRect.x(), trackRect.y() + thumbPos, scrollbar->width(), thumbLength(scrollbar));
+        thumbRect = IntRect(trackRect.x(), trackRect.y() + thumbPos, scrollbar.width(), thumbLength(scrollbar));
         beforeThumbRect = IntRect(trackRect.x(), trackRect.y(), trackRect.width(), thumbPos + thumbRect.height() / 2);
         afterThumbRect = IntRect(trackRect.x(), trackRect.y() + beforeThumbRect.height(), trackRect.width(), trackRect.maxY() - beforeThumbRect.maxY());
     }
 }
 
-ScrollbarTheme* ScrollbarTheme::theme()
+ScrollbarTheme& ScrollbarTheme::theme()
 {
     if (ScrollbarTheme::mockScrollbarsEnabled()) {
         if (RuntimeEnabledFeatures::overlayScrollbarsEnabled()) {
             DEFINE_STATIC_LOCAL(ScrollbarThemeOverlayMock, overlayMockTheme, ());
-            return &overlayMockTheme;
+            return overlayMockTheme;
         }
 
         DEFINE_STATIC_LOCAL(ScrollbarThemeMock, mockTheme, ());
-        return &mockTheme;
+        return mockTheme;
     }
     return nativeTheme();
 }

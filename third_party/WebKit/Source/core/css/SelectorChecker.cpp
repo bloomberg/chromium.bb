@@ -1160,7 +1160,7 @@ bool SelectorChecker::checkScrollbarPseudoClass(const SelectorCheckingContext& c
         return part == BackButtonEndPart || part == ForwardButtonEndPart || part == ForwardTrackPart;
     case CSSSelector::PseudoDoubleButton:
         {
-            ScrollbarButtonsPlacement buttonsPlacement = scrollbar->theme()->buttonsPlacement();
+            ScrollbarButtonsPlacement buttonsPlacement = scrollbar->theme().buttonsPlacement();
             if (part == BackButtonStartPart || part == ForwardButtonStartPart || part == BackTrackPart)
                 return buttonsPlacement == ScrollbarButtonsPlacementDoubleStart || buttonsPlacement == ScrollbarButtonsPlacementDoubleBoth;
             if (part == BackButtonEndPart || part == ForwardButtonEndPart || part == ForwardTrackPart)
@@ -1169,14 +1169,14 @@ bool SelectorChecker::checkScrollbarPseudoClass(const SelectorCheckingContext& c
         }
     case CSSSelector::PseudoSingleButton:
         {
-            ScrollbarButtonsPlacement buttonsPlacement = scrollbar->theme()->buttonsPlacement();
+            ScrollbarButtonsPlacement buttonsPlacement = scrollbar->theme().buttonsPlacement();
             if (part == BackButtonStartPart || part == ForwardButtonEndPart || part == BackTrackPart || part == ForwardTrackPart)
                 return buttonsPlacement == ScrollbarButtonsPlacementSingle;
             return false;
         }
     case CSSSelector::PseudoNoButton:
         {
-            ScrollbarButtonsPlacement buttonsPlacement = scrollbar->theme()->buttonsPlacement();
+            ScrollbarButtonsPlacement buttonsPlacement = scrollbar->theme().buttonsPlacement();
             if (part == BackTrackPart)
                 return buttonsPlacement == ScrollbarButtonsPlacementNone || buttonsPlacement == ScrollbarButtonsPlacementDoubleEnd;
             if (part == ForwardTrackPart)

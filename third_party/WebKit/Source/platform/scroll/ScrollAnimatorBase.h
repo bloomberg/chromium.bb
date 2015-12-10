@@ -80,8 +80,8 @@ public:
     virtual void mouseEnteredContentArea() const { }
     virtual void mouseExitedContentArea() const { }
     virtual void mouseMovedInContentArea() const { }
-    virtual void mouseEnteredScrollbar(Scrollbar*) const { }
-    virtual void mouseExitedScrollbar(Scrollbar*) const { }
+    virtual void mouseEnteredScrollbar(Scrollbar&) const { }
+    virtual void mouseExitedScrollbar(Scrollbar&) const { }
     virtual void willStartLiveResize() { }
     virtual void updateAfterLayout() { }
     virtual void contentsResized() const { }
@@ -91,12 +91,12 @@ public:
 
     virtual void finishCurrentScrollAnimations() { }
 
-    virtual void didAddVerticalScrollbar(Scrollbar*) { }
-    virtual void willRemoveVerticalScrollbar(Scrollbar*) { }
-    virtual void didAddHorizontalScrollbar(Scrollbar*) { }
-    virtual void willRemoveHorizontalScrollbar(Scrollbar*) { }
+    virtual void didAddVerticalScrollbar(Scrollbar&) { }
+    virtual void willRemoveVerticalScrollbar(Scrollbar&) { }
+    virtual void didAddHorizontalScrollbar(Scrollbar&) { }
+    virtual void willRemoveHorizontalScrollbar(Scrollbar&) { }
 
-    virtual bool shouldScrollbarParticipateInHitTesting(Scrollbar*) { return true; }
+    virtual bool shouldScrollbarParticipateInHitTesting(Scrollbar&) { return true; }
 
     virtual void notifyContentAreaScrolled(const FloatSize&) { }
 

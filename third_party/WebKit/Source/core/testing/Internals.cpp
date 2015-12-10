@@ -2517,11 +2517,7 @@ bool Internals::setScrollbarVisibilityInScrollableArea(Node* node, bool visible)
     ScrollableArea* scrollableArea = layer->scrollableArea();
     if (!scrollableArea)
         return false;
-    ScrollAnimatorBase* animator = layer->scrollableArea()->scrollAnimator();
-    if (!animator)
-        return false;
-
-    return animator->setScrollbarsVisibleForTesting(visible);
+    return layer->scrollableArea()->scrollAnimator().setScrollbarsVisibleForTesting(visible);
 }
 
 void Internals::forceRestrictIFramePermissions()

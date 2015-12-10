@@ -22,12 +22,12 @@ RootFrameViewport::RootFrameViewport(ScrollableArea& visualViewport, ScrollableA
 
 void RootFrameViewport::updateScrollAnimator()
 {
-    scrollAnimator()->setCurrentPosition(toFloatPoint(scrollOffsetFromScrollAnimators()));
+    scrollAnimator().setCurrentPosition(toFloatPoint(scrollOffsetFromScrollAnimators()));
 }
 
 DoublePoint RootFrameViewport::scrollOffsetFromScrollAnimators() const
 {
-    return visualViewport().scrollAnimator()->currentPosition() + layoutViewport().scrollAnimator()->currentPosition();
+    return visualViewport().scrollAnimator().currentPosition() + layoutViewport().scrollAnimator().currentPosition();
 }
 
 DoubleRect RootFrameViewport::visibleContentRectDouble(IncludeScrollbarsInRect scrollbarInclusion) const
@@ -101,7 +101,7 @@ LayoutRect RootFrameViewport::scrollIntoView(const LayoutRect& rectInContent, co
     // ScrollAnimatorBase::currentPosition and construct a LayoutRect from that.
 
     LayoutRect frameRectInContent = LayoutRect(
-        layoutViewport().scrollAnimator()->currentPosition(),
+        layoutViewport().scrollAnimator().currentPosition(),
         layoutViewport().visibleContentRect().size());
     LayoutRect visualRectInContent = LayoutRect(
         scrollOffsetFromScrollAnimators(),
@@ -144,19 +144,19 @@ void RootFrameViewport::distributeScrollBetweenViewports(const DoublePoint& offs
     ScrollableArea& primary = !m_invertScrollOrder ? layoutViewport() : visualViewport();
     ScrollableArea& secondary = !m_invertScrollOrder ? visualViewport() : layoutViewport();
 
-    DoublePoint targetPosition = primary.clampScrollPosition(primary.scrollAnimator()->currentPosition() + delta);
+    DoublePoint targetPosition = primary.clampScrollPosition(primary.scrollAnimator().currentPosition() + delta);
     primary.setScrollPosition(targetPosition, scrollType, behavior);
 
     // Scroll the secondary viewport if all of the scroll was not applied to the
     // primary viewport.
-    DoublePoint updatedPosition = secondary.scrollAnimator()->currentPosition() + FloatPoint(targetPosition);
+    DoublePoint updatedPosition = secondary.scrollAnimator().currentPosition() + FloatPoint(targetPosition);
     DoubleSize applied = updatedPosition - oldPosition;
     delta -= applied;
 
     if (delta.isZero())
         return;
 
-    targetPosition = secondary.clampScrollPosition(secondary.scrollAnimator()->currentPosition() + delta);
+    targetPosition = secondary.clampScrollPosition(secondary.scrollAnimator().currentPosition() + delta);
     secondary.setScrollPosition(targetPosition, scrollType, behavior);
 }
 

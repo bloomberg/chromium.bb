@@ -36,43 +36,43 @@ class LayoutScrollbarTheme final : public ScrollbarTheme {
 public:
     ~LayoutScrollbarTheme() override { }
 
-    int scrollbarThickness(ScrollbarControlSize controlSize) override { return ScrollbarTheme::theme()->scrollbarThickness(controlSize); }
+    int scrollbarThickness(ScrollbarControlSize controlSize) override { return ScrollbarTheme::theme().scrollbarThickness(controlSize); }
 
-    ScrollbarButtonsPlacement buttonsPlacement() const override { return ScrollbarTheme::theme()->buttonsPlacement(); }
+    ScrollbarButtonsPlacement buttonsPlacement() const override { return ScrollbarTheme::theme().buttonsPlacement(); }
 
-    void paintScrollCorner(GraphicsContext*, const DisplayItemClient&, const IntRect& cornerRect) override;
+    void paintScrollCorner(GraphicsContext&, const DisplayItemClient&, const IntRect& cornerRect) override;
 
-    bool shouldCenterOnThumb(const ScrollbarThemeClient* scrollbar, const PlatformMouseEvent& event) override { return ScrollbarTheme::theme()->shouldCenterOnThumb(scrollbar, event); }
-    bool shouldSnapBackToDragOrigin(const ScrollbarThemeClient* scrollbar, const PlatformMouseEvent& event) override { return ScrollbarTheme::theme()->shouldSnapBackToDragOrigin(scrollbar, event); }
+    bool shouldCenterOnThumb(const ScrollbarThemeClient& scrollbar, const PlatformMouseEvent& event) override { return ScrollbarTheme::theme().shouldCenterOnThumb(scrollbar, event); }
+    bool shouldSnapBackToDragOrigin(const ScrollbarThemeClient& scrollbar, const PlatformMouseEvent& event) override { return ScrollbarTheme::theme().shouldSnapBackToDragOrigin(scrollbar, event); }
 
-    double initialAutoscrollTimerDelay() override { return ScrollbarTheme::theme()->initialAutoscrollTimerDelay(); }
-    double autoscrollTimerDelay() override { return ScrollbarTheme::theme()->autoscrollTimerDelay(); }
+    double initialAutoscrollTimerDelay() override { return ScrollbarTheme::theme().initialAutoscrollTimerDelay(); }
+    double autoscrollTimerDelay() override { return ScrollbarTheme::theme().autoscrollTimerDelay(); }
 
-    void registerScrollbar(ScrollbarThemeClient* scrollbar) override { return ScrollbarTheme::theme()->registerScrollbar(scrollbar); }
-    void unregisterScrollbar(ScrollbarThemeClient* scrollbar) override { return ScrollbarTheme::theme()->unregisterScrollbar(scrollbar); }
+    void registerScrollbar(ScrollbarThemeClient& scrollbar) override { return ScrollbarTheme::theme().registerScrollbar(scrollbar); }
+    void unregisterScrollbar(ScrollbarThemeClient& scrollbar) override { return ScrollbarTheme::theme().unregisterScrollbar(scrollbar); }
 
-    int minimumThumbLength(const ScrollbarThemeClient*) override;
+    int minimumThumbLength(const ScrollbarThemeClient&) override;
 
-    void buttonSizesAlongTrackAxis(const ScrollbarThemeClient*, int& beforeSize, int& afterSize);
+    void buttonSizesAlongTrackAxis(const ScrollbarThemeClient&, int& beforeSize, int& afterSize);
 
     static LayoutScrollbarTheme* layoutScrollbarTheme();
 
 protected:
-    bool hasButtons(const ScrollbarThemeClient*) override;
-    bool hasThumb(const ScrollbarThemeClient*) override;
+    bool hasButtons(const ScrollbarThemeClient&) override;
+    bool hasThumb(const ScrollbarThemeClient&) override;
 
-    IntRect backButtonRect(const ScrollbarThemeClient*, ScrollbarPart, bool painting = false) override;
-    IntRect forwardButtonRect(const ScrollbarThemeClient*, ScrollbarPart, bool painting = false) override;
-    IntRect trackRect(const ScrollbarThemeClient*, bool painting = false) override;
+    IntRect backButtonRect(const ScrollbarThemeClient&, ScrollbarPart, bool painting = false) override;
+    IntRect forwardButtonRect(const ScrollbarThemeClient&, ScrollbarPart, bool painting = false) override;
+    IntRect trackRect(const ScrollbarThemeClient&, bool painting = false) override;
 
-    void paintScrollbarBackground(GraphicsContext*, const ScrollbarThemeClient*) override;
-    void paintTrackBackground(GraphicsContext*, const ScrollbarThemeClient*, const IntRect&) override;
-    void paintTrackPiece(GraphicsContext*, const ScrollbarThemeClient*, const IntRect&, ScrollbarPart) override;
-    void paintButton(GraphicsContext*, const ScrollbarThemeClient*, const IntRect&, ScrollbarPart) override;
-    void paintThumb(GraphicsContext*, const ScrollbarThemeClient*, const IntRect&) override;
-    void paintTickmarks(GraphicsContext*, const ScrollbarThemeClient*, const IntRect&) override;
+    void paintScrollbarBackground(GraphicsContext&, const ScrollbarThemeClient&) override;
+    void paintTrackBackground(GraphicsContext&, const ScrollbarThemeClient&, const IntRect&) override;
+    void paintTrackPiece(GraphicsContext&, const ScrollbarThemeClient&, const IntRect&, ScrollbarPart) override;
+    void paintButton(GraphicsContext&, const ScrollbarThemeClient&, const IntRect&, ScrollbarPart) override;
+    void paintThumb(GraphicsContext&, const ScrollbarThemeClient&, const IntRect&) override;
+    void paintTickmarks(GraphicsContext&, const ScrollbarThemeClient&, const IntRect&) override;
 
-    IntRect constrainTrackRectToTrackPieces(const ScrollbarThemeClient*, const IntRect&) override;
+    IntRect constrainTrackRectToTrackPieces(const ScrollbarThemeClient&, const IntRect&) override;
 };
 
 } // namespace blink

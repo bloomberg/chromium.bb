@@ -16,11 +16,11 @@
 
 namespace blink {
 
-void PaintInvalidationCapableScrollableArea::willRemoveScrollbar(Scrollbar* scrollbar, ScrollbarOrientation orientation)
+void PaintInvalidationCapableScrollableArea::willRemoveScrollbar(Scrollbar& scrollbar, ScrollbarOrientation orientation)
 {
-    if (!scrollbar->isCustomScrollbar()
+    if (!scrollbar.isCustomScrollbar()
         && !(orientation == HorizontalScrollbar ? layerForHorizontalScrollbar() : layerForVerticalScrollbar()))
-        boxForScrollControlPaintInvalidation().invalidateDisplayItemClient(*scrollbar);
+        boxForScrollControlPaintInvalidation().invalidateDisplayItemClient(scrollbar);
 
     ScrollableArea::willRemoveScrollbar(scrollbar, orientation);
 }

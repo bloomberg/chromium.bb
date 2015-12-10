@@ -210,7 +210,7 @@ void VisualViewport::setScaleAndLocation(float scale, const FloatPoint& location
 
     if (clampedOffset != m_offset) {
         m_offset = clampedOffset;
-        scrollAnimator()->setCurrentPosition(m_offset);
+        scrollAnimator().setCurrentPosition(m_offset);
 
         // SVG runs with accelerated compositing disabled so no ScrollingCoordinator.
         if (ScrollingCoordinator* coordinator = frameHost().page().scrollingCoordinator())
@@ -364,10 +364,10 @@ void VisualViewport::setupScrollbar(WebScrollbar::Orientation orientation)
     OwnPtr<WebScrollbarLayer>& webScrollbarLayer = isHorizontal ?
         m_webOverlayScrollbarHorizontal : m_webOverlayScrollbarVertical;
 
-    ScrollbarTheme* theme = ScrollbarThemeOverlay::mobileTheme();
-    int thumbThickness = theme->thumbThickness(0);
-    int scrollbarThickness = theme->scrollbarThickness(RegularScrollbar);
-    int scrollbarMargin = theme->scrollbarMargin();
+    ScrollbarThemeOverlay& theme = ScrollbarThemeOverlay::mobileTheme();
+    int thumbThickness = theme.thumbThickness();
+    int scrollbarThickness = theme.scrollbarThickness(RegularScrollbar);
+    int scrollbarMargin = theme.scrollbarMargin();
 
     if (!webScrollbarLayer) {
         ScrollingCoordinator* coordinator = frameHost().page().scrollingCoordinator();

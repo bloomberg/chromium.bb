@@ -25,7 +25,8 @@ public:
         : m_horizontalScrollbarPreviouslyWasOverlay(false)
         , m_verticalScrollbarPreviouslyWasOverlay(false) { }
 
-    void willRemoveScrollbar(Scrollbar*, ScrollbarOrientation) override;
+    void willRemoveScrollbar(Scrollbar&, ScrollbarOrientation) override;
+
     void invalidatePaintOfScrollControlsIfNeeded(const PaintInvalidationState&, const LayoutBoxModelObject& paintInvalidationContainer);
 
     // Should be called when the previous paint invalidation rects are no longer valid.

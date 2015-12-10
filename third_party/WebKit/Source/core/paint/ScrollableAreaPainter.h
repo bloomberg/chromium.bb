@@ -21,12 +21,12 @@ class ScrollableAreaPainter {
 public:
     explicit ScrollableAreaPainter(PaintLayerScrollableArea& paintLayerScrollableArea) : m_scrollableArea(&paintLayerScrollableArea) { }
 
-    void paintResizer(GraphicsContext*, const IntPoint& paintOffset, const CullRect&);
-    void paintOverflowControls(GraphicsContext*, const IntPoint& paintOffset, const CullRect&, bool paintingOverlayControls);
-    void paintScrollCorner(GraphicsContext*, const IntPoint&, const CullRect&);
+    void paintResizer(GraphicsContext&, const IntPoint& paintOffset, const CullRect&);
+    void paintOverflowControls(GraphicsContext&, const IntPoint& paintOffset, const CullRect&, bool paintingOverlayControls);
+    void paintScrollCorner(GraphicsContext&, const IntPoint&, const CullRect&);
 
 private:
-    void drawPlatformResizerImage(GraphicsContext*, IntRect resizerCornerRect);
+    void drawPlatformResizerImage(GraphicsContext&, IntRect resizerCornerRect);
     bool overflowControlsIntersectRect(const CullRect&) const;
 
     PaintLayerScrollableArea& scrollableArea() const;

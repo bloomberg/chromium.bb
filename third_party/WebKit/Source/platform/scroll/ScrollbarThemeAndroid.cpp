@@ -30,7 +30,7 @@
 
 namespace blink {
 
-ScrollbarTheme* ScrollbarTheme::nativeTheme()
+ScrollbarTheme& ScrollbarTheme::nativeTheme()
 {
     return ScrollbarThemeOverlay::mobileTheme();
 }

@@ -201,7 +201,6 @@ TEST(LinkHighlightImplTest, resetLayerTreeView)
 
     // Mimic the logic from RenderWidget::Close:
     webViewImpl->willCloseLayerTreeView();
-    webViewClient.clear();
     webViewHelper.reset();
 
     Platform::current()->unitTestSupport()->unregisterAllMockedURLs();

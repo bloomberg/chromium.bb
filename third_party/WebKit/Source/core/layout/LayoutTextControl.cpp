@@ -111,7 +111,7 @@ void LayoutTextControl::updateFromElement()
 int LayoutTextControl::scrollbarThickness() const
 {
     // FIXME: We should get the size of the scrollbar from the LayoutTheme instead.
-    return ScrollbarTheme::theme()->scrollbarThickness();
+    return ScrollbarTheme::theme().scrollbarThickness();
 }
 
 void LayoutTextControl::computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues& computedValues) const

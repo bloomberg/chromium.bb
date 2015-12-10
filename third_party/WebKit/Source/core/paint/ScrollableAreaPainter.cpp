@@ -18,7 +18,7 @@
 
 namespace blink {
 
-void ScrollableAreaPainter::paintResizer(GraphicsContext* context, const IntPoint& paintOffset, const CullRect& cullRect)
+void ScrollableAreaPainter::paintResizer(GraphicsContext& context, const IntPoint& paintOffset, const CullRect& cullRect)
 {
     if (scrollableArea().box().style()->resize() == RESIZE_NONE)
         return;
@@ -35,28 +35,28 @@ void ScrollableAreaPainter::paintResizer(GraphicsContext* context, const IntPoin
         return;
     }
 
-    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*context, scrollableArea().box(), DisplayItem::Resizer, paintOffset))
+    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(context, scrollableArea().box(), DisplayItem::Resizer, paintOffset))
         return;
 
-    LayoutObjectDrawingRecorder recorder(*context, scrollableArea().box(), DisplayItem::Resizer, absRect, paintOffset);
+    LayoutObjectDrawingRecorder recorder(context, scrollableArea().box(), DisplayItem::Resizer, absRect, paintOffset);
 
     drawPlatformResizerImage(context, absRect);
 
     // Draw a frame around the resizer (1px grey line) if there are any scrollbars present.
     // Clipping will exclude the right and bottom edges of this frame.
     if (!scrollableArea().hasOverlayScrollbars() && scrollableArea().hasScrollbar()) {
-        GraphicsContextStateSaver stateSaver(*context);
-        context->clip(absRect);
+        GraphicsContextStateSaver stateSaver(context);
+        context.clip(absRect);
         IntRect largerCorner = absRect;
         largerCorner.setSize(IntSize(largerCorner.width() + 1, largerCorner.height() + 1));
-        context->setStrokeColor(Color(217, 217, 217));
-        context->setStrokeThickness(1.0f);
-        context->setFillColor(Color::transparent);
-        context->drawRect(largerCorner);
+        context.setStrokeColor(Color(217, 217, 217));
+        context.setStrokeThickness(1.0f);
+        context.setFillColor(Color::transparent);
+        context.drawRect(largerCorner);
     }
 }
 
-void ScrollableAreaPainter::drawPlatformResizerImage(GraphicsContext* context, IntRect resizerCornerRect)
+void ScrollableAreaPainter::drawPlatformResizerImage(GraphicsContext& context, IntRect resizerCornerRect)
 {
     float deviceScaleFactor = blink::deviceScaleFactor(scrollableArea().box().frame());
 
@@ -74,18 +74,18 @@ void ScrollableAreaPainter::drawPlatformResizerImage(GraphicsContext* context, I
     }
 
     if (scrollableArea().box().shouldPlaceBlockDirectionScrollbarOnLogicalLeft()) {
-        context->save();
-        context->translate(resizerCornerRect.x() + cornerResizerSize.width(), resizerCornerRect.y() + resizerCornerRect.height() - cornerResizerSize.height());
-        context->scale(-1.0, 1.0);
-        context->drawImage(resizeCornerImage.get(), IntRect(IntPoint(), cornerResizerSize));
-        context->restore();
+        context.save();
+        context.translate(resizerCornerRect.x() + cornerResizerSize.width(), resizerCornerRect.y() + resizerCornerRect.height() - cornerResizerSize.height());
+        context.scale(-1.0, 1.0);
+        context.drawImage(resizeCornerImage.get(), IntRect(IntPoint(), cornerResizerSize));
+        context.restore();
         return;
     }
     IntRect imageRect(resizerCornerRect.maxXMaxYCorner() - cornerResizerSize, cornerResizerSize);
-    context->drawImage(resizeCornerImage.get(), imageRect);
+    context.drawImage(resizeCornerImage.get(), imageRect);
 }
 
-void ScrollableAreaPainter::paintOverflowControls(GraphicsContext* context, const IntPoint& paintOffset, const CullRect& cullRect, bool paintingOverlayControls)
+void ScrollableAreaPainter::paintOverflowControls(GraphicsContext& context, const IntPoint& paintOffset, const CullRect& cullRect, bool paintingOverlayControls)
 {
     // Don't do anything if we have no overflow.
     if (!scrollableArea().box().hasOverflowClip())
@@ -127,11 +127,11 @@ void ScrollableAreaPainter::paintOverflowControls(GraphicsContext* context, cons
 
     {
         if (scrollableArea().horizontalScrollbar() && !scrollableArea().layerForHorizontalScrollbar()) {
-            TransformRecorder translateRecorder(*context, *scrollableArea().horizontalScrollbar(), AffineTransform::translation(adjustedPaintOffset.x(), adjustedPaintOffset.y()));
+            TransformRecorder translateRecorder(context, *scrollableArea().horizontalScrollbar(), AffineTransform::translation(adjustedPaintOffset.x(), adjustedPaintOffset.y()));
             scrollableArea().horizontalScrollbar()->paint(context, adjustedCullRect);
         }
         if (scrollableArea().verticalScrollbar() && !scrollableArea().layerForVerticalScrollbar()) {
-            TransformRecorder translateRecorder(*context, *scrollableArea().verticalScrollbar(), AffineTransform::translation(adjustedPaintOffset.x(), adjustedPaintOffset.y()));
+            TransformRecorder translateRecorder(context, *scrollableArea().verticalScrollbar(), AffineTransform::translation(adjustedPaintOffset.x(), adjustedPaintOffset.y()));
             scrollableArea().verticalScrollbar()->paint(context, adjustedCullRect);
         }
     }
@@ -166,7 +166,7 @@ bool ScrollableAreaPainter::overflowControlsIntersectRect(const CullRect& cullRe
     return false;
 }
 
-void ScrollableAreaPainter::paintScrollCorner(GraphicsContext* context, const IntPoint& paintOffset, const CullRect& adjustedCullRect)
+void ScrollableAreaPainter::paintScrollCorner(GraphicsContext& context, const IntPoint& paintOffset, const CullRect& adjustedCullRect)
 {
     IntRect absRect = scrollableArea().scrollCornerRect();
     if (absRect.isEmpty())
@@ -185,11 +185,11 @@ void ScrollableAreaPainter::paintScrollCorner(GraphicsContext* context, const In
     if (scrollableArea().hasOverlayScrollbars())
         return;
 
-    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*context, scrollableArea().box(), DisplayItem::ScrollbarCorner, paintOffset))
+    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(context, scrollableArea().box(), DisplayItem::ScrollbarCorner, paintOffset))
         return;
 
-    LayoutObjectDrawingRecorder recorder(*context, scrollableArea().box(), DisplayItem::ScrollbarCorner, absRect, paintOffset);
-    context->fillRect(absRect, Color::white);
+    LayoutObjectDrawingRecorder recorder(context, scrollableArea().box(), DisplayItem::ScrollbarCorner, absRect, paintOffset);
+    context.fillRect(absRect, Color::white);
 }
 
 PaintLayerScrollableArea& ScrollableAreaPainter::scrollableArea() const

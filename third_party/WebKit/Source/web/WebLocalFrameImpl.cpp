@@ -458,7 +458,7 @@ protected:
 
         ClipRecorder clipRecorder(context, *this, DisplayItem::ClipPrintedPage, LayoutRect(pageRect));
 
-        frame()->view()->paintContents(&context, GlobalPaintNormalPhase, pageRect);
+        frame()->view()->paintContents(context, GlobalPaintNormalPhase, pageRect);
 
         {
             DrawingRecorder lineBoundaryRecorder(context, *this, DisplayItem::PrintedContentDestinationLocations, pageRect);

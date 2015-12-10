@@ -41,13 +41,13 @@ LayoutScrollbarTheme* LayoutScrollbarTheme::layoutScrollbarTheme()
     return &theme;
 }
 
-void LayoutScrollbarTheme::buttonSizesAlongTrackAxis(const ScrollbarThemeClient* scrollbar, int& beforeSize, int& afterSize)
+void LayoutScrollbarTheme::buttonSizesAlongTrackAxis(const ScrollbarThemeClient& scrollbar, int& beforeSize, int& afterSize)
 {
     IntRect firstButton = backButtonRect(scrollbar, BackButtonStartPart);
     IntRect secondButton = forwardButtonRect(scrollbar, ForwardButtonStartPart);
     IntRect thirdButton = backButtonRect(scrollbar, BackButtonEndPart);
     IntRect fourthButton = forwardButtonRect(scrollbar, ForwardButtonEndPart);
-    if (scrollbar->orientation() == HorizontalScrollbar) {
+    if (scrollbar.orientation() == HorizontalScrollbar) {
         beforeSize = firstButton.width() + secondButton.width();
         afterSize = thirdButton.width() + fourthButton.width();
     } else {
@@ -56,52 +56,52 @@ void LayoutScrollbarTheme::buttonSizesAlongTrackAxis(const ScrollbarThemeClient*
     }
 }
 
-bool LayoutScrollbarTheme::hasButtons(const ScrollbarThemeClient* scrollbar)
+bool LayoutScrollbarTheme::hasButtons(const ScrollbarThemeClient& scrollbar)
 {
     int startSize;
     int endSize;
     buttonSizesAlongTrackAxis(scrollbar, startSize, endSize);
-    return (startSize + endSize) <= (scrollbar->orientation() == HorizontalScrollbar ? scrollbar->width() : scrollbar->height());
+    return (startSize + endSize) <= (scrollbar.orientation() == HorizontalScrollbar ? scrollbar.width() : scrollbar.height());
 }
 
-bool LayoutScrollbarTheme::hasThumb(const ScrollbarThemeClient* scrollbar)
+bool LayoutScrollbarTheme::hasThumb(const ScrollbarThemeClient& scrollbar)
 {
     return trackLength(scrollbar) - thumbLength(scrollbar) >= 0;
 }
 
-int LayoutScrollbarTheme::minimumThumbLength(const ScrollbarThemeClient* scrollbar)
+int LayoutScrollbarTheme::minimumThumbLength(const ScrollbarThemeClient& scrollbar)
 {
-    return toLayoutScrollbar(scrollbar)->minimumThumbLength();
+    return toLayoutScrollbar(scrollbar).minimumThumbLength();
 }
 
-IntRect LayoutScrollbarTheme::backButtonRect(const ScrollbarThemeClient* scrollbar, ScrollbarPart partType, bool)
+IntRect LayoutScrollbarTheme::backButtonRect(const ScrollbarThemeClient& scrollbar, ScrollbarPart partType, bool)
 {
-    return toLayoutScrollbar(scrollbar)->buttonRect(partType);
+    return toLayoutScrollbar(scrollbar).buttonRect(partType);
 }
 
-IntRect LayoutScrollbarTheme::forwardButtonRect(const ScrollbarThemeClient* scrollbar, ScrollbarPart partType, bool)
+IntRect LayoutScrollbarTheme::forwardButtonRect(const ScrollbarThemeClient& scrollbar, ScrollbarPart partType, bool)
 {
-    return toLayoutScrollbar(scrollbar)->buttonRect(partType);
+    return toLayoutScrollbar(scrollbar).buttonRect(partType);
 }
 
-IntRect LayoutScrollbarTheme::trackRect(const ScrollbarThemeClient* scrollbar, bool)
+IntRect LayoutScrollbarTheme::trackRect(const ScrollbarThemeClient& scrollbar, bool)
 {
     if (!hasButtons(scrollbar))
-        return scrollbar->frameRect();
+        return scrollbar.frameRect();
 
     int startLength;
     int endLength;
     buttonSizesAlongTrackAxis(scrollbar, startLength, endLength);
 
-    return toLayoutScrollbar(scrollbar)->trackRect(startLength, endLength);
+    return toLayoutScrollbar(scrollbar).trackRect(startLength, endLength);
 }
 
-IntRect LayoutScrollbarTheme::constrainTrackRectToTrackPieces(const ScrollbarThemeClient* scrollbar, const IntRect& rect)
+IntRect LayoutScrollbarTheme::constrainTrackRectToTrackPieces(const ScrollbarThemeClient& scrollbar, const IntRect& rect)
 {
-    IntRect backRect = toLayoutScrollbar(scrollbar)->trackPieceRectWithMargins(BackTrackPart, rect);
-    IntRect forwardRect = toLayoutScrollbar(scrollbar)->trackPieceRectWithMargins(ForwardTrackPart, rect);
+    IntRect backRect = toLayoutScrollbar(scrollbar).trackPieceRectWithMargins(BackTrackPart, rect);
+    IntRect forwardRect = toLayoutScrollbar(scrollbar).trackPieceRectWithMargins(ForwardTrackPart, rect);
     IntRect result = rect;
-    if (scrollbar->orientation() == HorizontalScrollbar) {
+    if (scrollbar.orientation() == HorizontalScrollbar) {
         result.setX(backRect.x());
         result.setWidth(forwardRect.maxX() - backRect.x());
     } else {
@@ -111,44 +111,44 @@ IntRect LayoutScrollbarTheme::constrainTrackRectToTrackPieces(const ScrollbarThe
     return result;
 }
 
-void LayoutScrollbarTheme::paintScrollCorner(GraphicsContext* context, const DisplayItemClient& displayItemClient, const IntRect& cornerRect)
+void LayoutScrollbarTheme::paintScrollCorner(GraphicsContext& context, const DisplayItemClient& displayItemClient, const IntRect& cornerRect)
 {
-    if (DrawingRecorder::useCachedDrawingIfPossible(*context, displayItemClient, DisplayItem::ScrollbarCorner))
+    if (DrawingRecorder::useCachedDrawingIfPossible(context, displayItemClient, DisplayItem::ScrollbarCorner))
         return;
 
-    DrawingRecorder recorder(*context, displayItemClient, DisplayItem::ScrollbarCorner, cornerRect);
+    DrawingRecorder recorder(context, displayItemClient, DisplayItem::ScrollbarCorner, cornerRect);
     // FIXME: Implement.
-    context->fillRect(cornerRect, Color::white);
+    context.fillRect(cornerRect, Color::white);
 }
 
-void LayoutScrollbarTheme::paintScrollbarBackground(GraphicsContext* context, const ScrollbarThemeClient* scrollbar)
+void LayoutScrollbarTheme::paintScrollbarBackground(GraphicsContext& context, const ScrollbarThemeClient& scrollbar)
 {
-    ScrollbarPainter(*toLayoutScrollbar(scrollbar)).paintPart(context, ScrollbarBGPart, scrollbar->frameRect());
+    ScrollbarPainter(toLayoutScrollbar(scrollbar)).paintPart(context, ScrollbarBGPart, scrollbar.frameRect());
 }
 
-void LayoutScrollbarTheme::paintTrackBackground(GraphicsContext* context, const ScrollbarThemeClient* scrollbar, const IntRect& rect)
+void LayoutScrollbarTheme::paintTrackBackground(GraphicsContext& context, const ScrollbarThemeClient& scrollbar, const IntRect& rect)
 {
-    ScrollbarPainter(*toLayoutScrollbar(scrollbar)).paintPart(context, TrackBGPart, rect);
+    ScrollbarPainter(toLayoutScrollbar(scrollbar)).paintPart(context, TrackBGPart, rect);
 }
 
-void LayoutScrollbarTheme::paintTrackPiece(GraphicsContext* context, const ScrollbarThemeClient* scrollbar, const IntRect& rect, ScrollbarPart part)
+void LayoutScrollbarTheme::paintTrackPiece(GraphicsContext& context, const ScrollbarThemeClient& scrollbar, const IntRect& rect, ScrollbarPart part)
 {
-    ScrollbarPainter(*toLayoutScrollbar(scrollbar)).paintPart(context, part, rect);
+    ScrollbarPainter(toLayoutScrollbar(scrollbar)).paintPart(context, part, rect);
 }
 
-void LayoutScrollbarTheme::paintButton(GraphicsContext* context, const ScrollbarThemeClient* scrollbar, const IntRect& rect, ScrollbarPart part)
+void LayoutScrollbarTheme::paintButton(GraphicsContext& context, const ScrollbarThemeClient& scrollbar, const IntRect& rect, ScrollbarPart part)
 {
-    ScrollbarPainter(*toLayoutScrollbar(scrollbar)).paintPart(context, part, rect);
+    ScrollbarPainter(toLayoutScrollbar(scrollbar)).paintPart(context, part, rect);
 }
 
-void LayoutScrollbarTheme::paintThumb(GraphicsContext* context, const ScrollbarThemeClient* scrollbar, const IntRect& rect)
+void LayoutScrollbarTheme::paintThumb(GraphicsContext& context, const ScrollbarThemeClient& scrollbar, const IntRect& rect)
 {
-    ScrollbarPainter(*toLayoutScrollbar(scrollbar)).paintPart(context, ThumbPart, rect);
+    ScrollbarPainter(toLayoutScrollbar(scrollbar)).paintPart(context, ThumbPart, rect);
 }
 
-void LayoutScrollbarTheme::paintTickmarks(GraphicsContext* context, const ScrollbarThemeClient* scrollbar, const IntRect& rect)
+void LayoutScrollbarTheme::paintTickmarks(GraphicsContext& context, const ScrollbarThemeClient& scrollbar, const IntRect& rect)
 {
-    ScrollbarTheme::theme()->paintTickmarks(context, scrollbar, rect);
+    ScrollbarTheme::theme().paintTickmarks(context, scrollbar, rect);
 }
 
 }
