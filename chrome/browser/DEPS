@@ -31,6 +31,7 @@ include_rules = [
   "+components/component_updater",
   "+components/compression",
   "+components/content_settings",
+  "+components/contextual_search/browser",
   "+components/copresence",
   "+components/crash",
   "+components/crx_file",

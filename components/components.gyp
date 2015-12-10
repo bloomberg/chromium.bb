@@ -22,6 +22,7 @@
     'component_updater.gypi',
     'compression.gypi',
     'content_settings.gypi',
+    'contextual_search.gypi',
     'cookie_config.gypi',
     'crash.gypi',
     'cronet.gypi',

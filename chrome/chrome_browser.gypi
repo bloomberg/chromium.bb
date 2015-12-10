@@ -3240,6 +3240,7 @@
             '../components/components.gyp:autofill_content_browser',
             '../components/components.gyp:browsing_data',
             '../components/components.gyp:certificate_reporting',
+            '../components/components.gyp:contextual_search_browser',
             '../components/components.gyp:cookie_config',
             '../components/components.gyp:data_reduction_proxy_content_browser',
             '../components/components.gyp:data_use_measurement_content',

@@ -57,6 +57,7 @@
 #include "components/autofill/content/renderer/password_autofill_agent.h"
 #include "components/autofill/content/renderer/password_generation_agent.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
+#include "components/contextual_search/renderer/overlay_js_render_frame_observer.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/dom_distiller/content/renderer/distillability_agent.h"
 #include "components/dom_distiller/content/renderer/distiller_js_render_frame_observer.h"
@@ -534,6 +535,9 @@ void ChromeContentRendererClient::RenderFrameCreated(
   // Create DistillabilityAgent to send distillability updates to
   // DistillabilityDriver in the browser process.
   new dom_distiller::DistillabilityAgent(render_frame);
+
+  // Set up a mojo service to test if this page is a contextual search page.
+  new contextual_search::OverlayJsRenderFrameObserver(render_frame);
 
   PasswordAutofillAgent* password_autofill_agent =
       new PasswordAutofillAgent(render_frame);

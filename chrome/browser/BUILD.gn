@@ -318,6 +318,7 @@ source_set("browser") {
       "//components/app_modal",
       "//components/autofill/content/browser",
       "//components/browsing_data",
+      "//components/contextual_search:browser",
       "//components/data_reduction_proxy/content/browser",
       "//components/data_use_measurement/content",
       "//components/devtools_discovery",

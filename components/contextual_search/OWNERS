@@ -1,0 +1,9 @@
+donnd@chromium.org
+pedrosimonetti@chromium.org
+twellington@chromium.org
+
+# Changes to Mojo interfaces require a security review to avoid
+# introducing new sandbox escapes.
+per-file *.mojom=set noparent
+per-file *.mojom=palmer@chromium.org
+per-file *.mojom=tsepez@chromium.org
