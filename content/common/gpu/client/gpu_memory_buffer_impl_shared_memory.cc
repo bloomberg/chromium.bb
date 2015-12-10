@@ -87,8 +87,7 @@ GpuMemoryBufferImplSharedMemory::CreateFromHandle(
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
     const DestructionCallback& callback) {
-  if (!base::SharedMemory::IsHandleValid(handle.handle))
-    return nullptr;
+  DCHECK(base::SharedMemory::IsHandleValid(handle.handle));
 
   return make_scoped_ptr(new GpuMemoryBufferImplSharedMemory(
       handle.id, size, format, callback,
