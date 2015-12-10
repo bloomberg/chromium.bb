@@ -20,12 +20,13 @@ AutofillProfileDataTypeController::AutofillProfileDataTypeController(
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
     const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
     const base::Closure& error_callback,
-    sync_driver::SyncClient* sync_client)
+    sync_driver::SyncClient* sync_client,
+    const scoped_refptr<autofill::AutofillWebDataService>& web_data_service)
     : NonUIDataTypeController(ui_thread, error_callback, sync_client),
       ui_thread_(ui_thread),
       db_thread_(db_thread),
       sync_client_(sync_client),
-      personal_data_(NULL),
+      web_data_service_(web_data_service),
       callback_registered_(false) {}
 
 syncer::ModelType AutofillProfileDataTypeController::type() const {
@@ -47,16 +48,14 @@ void AutofillProfileDataTypeController::OnPersonalDataChanged() {
   DCHECK_EQ(state(), MODEL_STARTING);
 
   sync_client_->GetPersonalDataManager()->RemoveObserver(this);
-  scoped_refptr<autofill::AutofillWebDataService> web_data_service =
-      sync_client_->GetWebDataService();
 
-  if (!web_data_service)
+  if (!web_data_service_)
     return;
 
-  if (web_data_service->IsDatabaseLoaded()) {
+  if (web_data_service_->IsDatabaseLoaded()) {
     OnModelLoaded();
   } else if (!callback_registered_) {
-    web_data_service->RegisterDBLoadedCallback(base::Bind(
+    web_data_service_->RegisterDBLoadedCallback(base::Bind(
         &AutofillProfileDataTypeController::WebDatabaseLoaded, this));
     callback_registered_ = true;
   }
@@ -84,17 +83,14 @@ bool AutofillProfileDataTypeController::StartModels() {
     return false;
   }
 
-  scoped_refptr<autofill::AutofillWebDataService> web_data_service =
-      sync_client_->GetWebDataService();
-
-  if (!web_data_service)
+  if (!web_data_service_)
     return false;
 
-  if (web_data_service->IsDatabaseLoaded())
+  if (web_data_service_->IsDatabaseLoaded())
     return true;
 
   if (!callback_registered_) {
-    web_data_service->RegisterDBLoadedCallback(base::Bind(
+    web_data_service_->RegisterDBLoadedCallback(base::Bind(
         &AutofillProfileDataTypeController::WebDatabaseLoaded, this));
     callback_registered_ = true;
   }

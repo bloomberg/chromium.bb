@@ -30,7 +30,8 @@ class PasswordDataTypeController : public sync_driver::NonUIDataTypeController,
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
       const base::Closure& error_callback,
       sync_driver::SyncClient* sync_client,
-      const base::Closure& state_changed_callback);
+      const base::Closure& state_changed_callback,
+      const scoped_refptr<password_manager::PasswordStore>& password_store);
 
   // NonFrontendDataTypeController implementation
   syncer::ModelType type() const override;
@@ -50,8 +51,8 @@ class PasswordDataTypeController : public sync_driver::NonUIDataTypeController,
 
  private:
   sync_driver::SyncClient* const sync_client_;
-  scoped_refptr<password_manager::PasswordStore> password_store_;
   const base::Closure state_changed_callback_;
+  scoped_refptr<password_manager::PasswordStore> password_store_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordDataTypeController);
 };

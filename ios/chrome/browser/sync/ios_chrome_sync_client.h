@@ -9,8 +9,16 @@
 #include "base/memory/weak_ptr.h"
 #include "components/sync_driver/sync_client.h"
 
+namespace autofill {
+class AutofillWebDataService;
+}
+
 namespace ios {
 class ChromeBrowserState;
+}
+
+namespace password_manager {
+class PasswordStore;
 }
 
 namespace sync_driver {
@@ -30,7 +38,6 @@ class IOSChromeSyncClient : public sync_driver::SyncClient {
   bookmarks::BookmarkModel* GetBookmarkModel() override;
   favicon::FaviconService* GetFaviconService() override;
   history::HistoryService* GetHistoryService() override;
-  scoped_refptr<password_manager::PasswordStore> GetPasswordStore() override;
   sync_driver::ClearBrowsingDataCallback GetClearBrowsingDataCallback()
       override;
   base::Closure GetPasswordStateChangedCallback() override;
@@ -38,7 +45,6 @@ class IOSChromeSyncClient : public sync_driver::SyncClient {
   GetRegisterPlatformTypesCallback() override;
   autofill::PersonalDataManager* GetPersonalDataManager() override;
   invalidation::InvalidationService* GetInvalidationService() override;
-  scoped_refptr<autofill::AutofillWebDataService> GetWebDataService() override;
   BookmarkUndoService* GetBookmarkUndoServiceIfExists() override;
   scoped_refptr<syncer::ExtensionsActivity> GetExtensionsActivity() override;
   sync_sessions::SyncSessionsClient* GetSyncSessionsClient() override;

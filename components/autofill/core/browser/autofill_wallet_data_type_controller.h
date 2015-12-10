@@ -9,6 +9,10 @@
 #include "base/prefs/pref_change_registrar.h"
 #include "components/sync_driver/non_ui_data_type_controller.h"
 
+namespace autofill {
+class AutofillWebDataService;
+}
+
 namespace browser_sync {
 
 // Controls syncing of either AUTOFILL_WALLET or AUTOFILL_WALLET_METADATA.
@@ -21,7 +25,8 @@ class AutofillWalletDataTypeController
       const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
       const base::Closure& error_callback,
       sync_driver::SyncClient* sync_client,
-      syncer::ModelType model_type);
+      syncer::ModelType model_type,
+      const scoped_refptr<autofill::AutofillWebDataService>& web_data_service);
 
   // NonUIDataTypeController implementation.
   syncer::ModelType type() const override;
@@ -50,9 +55,17 @@ class AutofillWalletDataTypeController
   // A reference to the DB thread's task runner.
   const scoped_refptr<base::SingleThreadTaskRunner> db_thread_;
 
+  // A pointer to the sync client.
   sync_driver::SyncClient* const sync_client_;
+
+  // Whether the database loaded callback has been registered.
   bool callback_registered_;
+
+  // The model type for this DTC; can be AUTOFILL_WALLET_DATA or _METADATA.
   syncer::ModelType model_type_;
+
+  // A reference to the AutofillWebDataService for this controller.
+  scoped_refptr<autofill::AutofillWebDataService> web_data_service_;
 
   // Stores whether we're currently syncing wallet data. This is the last
   // value computed by IsEnabled.

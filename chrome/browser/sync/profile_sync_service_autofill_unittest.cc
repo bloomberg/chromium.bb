@@ -163,9 +163,6 @@ class TestSyncClient : public sync_driver::FakeSyncClient {
     DCHECK(sync_service_);
     return sync_service_;
   }
-  scoped_refptr<autofill::AutofillWebDataService> GetWebDataService() override {
-    return web_data_service_;
-  }
   base::WeakPtr<syncer::SyncableService> GetSyncableServiceForType(
       syncer::ModelType type) override {
     DCHECK(type == AUTOFILL || type == AUTOFILL_PROFILE);
@@ -680,12 +677,12 @@ class ProfileSyncServiceAutofillTest
       return new AutofillDataTypeController(
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
-          base::Bind(&base::DoNothing), sync_client_.get());
+          base::Bind(&base::DoNothing), sync_client_.get(), web_data_service_);
     } else {
       return new AutofillProfileDataTypeController(
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
-          base::Bind(&base::DoNothing), sync_client_.get());
+          base::Bind(&base::DoNothing), sync_client_.get(), web_data_service_);
     }
   }
 

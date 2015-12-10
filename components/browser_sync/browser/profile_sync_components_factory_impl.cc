@@ -11,6 +11,7 @@
 #include "components/autofill/core/browser/autofill_wallet_data_type_controller.h"
 #include "components/autofill/core/browser/webdata/autofill_data_type_controller.h"
 #include "components/autofill/core/browser/webdata/autofill_profile_data_type_controller.h"
+#include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
@@ -20,6 +21,7 @@
 #include "components/history/core/browser/typed_url_change_processor.h"
 #include "components/history/core/browser/typed_url_data_type_controller.h"
 #include "components/history/core/browser/typed_url_model_associator.h"
+#include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/sync/browser/password_data_type_controller.h"
 #include "components/sync_bookmarks/bookmark_change_processor.h"
 #include "components/sync_bookmarks/bookmark_data_type_controller.h"
@@ -95,7 +97,9 @@ ProfileSyncComponentsFactoryImpl::ProfileSyncComponentsFactoryImpl(
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
     const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
     OAuth2TokenService* token_service,
-    net::URLRequestContextGetter* url_request_context_getter)
+    net::URLRequestContextGetter* url_request_context_getter,
+    const scoped_refptr<autofill::AutofillWebDataService>& web_data_service,
+    const scoped_refptr<password_manager::PasswordStore>& password_store)
     : sync_client_(sync_client),
       channel_(channel),
       version_(version),
@@ -107,6 +111,8 @@ ProfileSyncComponentsFactoryImpl::ProfileSyncComponentsFactoryImpl(
       db_thread_(db_thread),
       token_service_(token_service),
       url_request_context_getter_(url_request_context_getter),
+      web_data_service_(web_data_service),
+      password_store_(password_store),
       weak_factory_(this) {
   DCHECK(token_service_);
   DCHECK(url_request_context_getter_);
@@ -140,8 +146,9 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
   // Autofill sync is enabled by default.  Register unless explicitly
   // disabled.
   if (!disabled_types.Has(syncer::AUTOFILL)) {
-    sync_service->RegisterDataTypeController(new AutofillDataTypeController(
-        ui_thread_, db_thread_, error_callback, sync_client_));
+    sync_service->RegisterDataTypeController(
+        new AutofillDataTypeController(ui_thread_, db_thread_, error_callback,
+                                       sync_client_, web_data_service_));
   }
 
   // Autofill profile sync is enabled by default.  Register unless explicitly
@@ -149,7 +156,8 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
   if (!disabled_types.Has(syncer::AUTOFILL_PROFILE)) {
     sync_service->RegisterDataTypeController(
         new AutofillProfileDataTypeController(ui_thread_, db_thread_,
-                                              error_callback, sync_client_));
+                                              error_callback, sync_client_,
+                                              web_data_service_));
   }
 
   // Wallet data sync is enabled by default, but behind a syncer experiment
@@ -159,7 +167,7 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
     sync_service->RegisterDataTypeController(
         new browser_sync::AutofillWalletDataTypeController(
             ui_thread_, db_thread_, error_callback, sync_client_,
-            syncer::AUTOFILL_WALLET_DATA));
+            syncer::AUTOFILL_WALLET_DATA, web_data_service_));
   }
 
   // Wallet metadata sync depends on Wallet data sync. Register if Wallet data
@@ -169,7 +177,7 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
     sync_service->RegisterDataTypeController(
         new browser_sync::AutofillWalletDataTypeController(
             ui_thread_, db_thread_, error_callback, sync_client_,
-            syncer::AUTOFILL_WALLET_METADATA));
+            syncer::AUTOFILL_WALLET_METADATA, web_data_service_));
   }
 
   // Bookmark sync is enabled by default.  Register unless explicitly
@@ -228,7 +236,7 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
   if (!disabled_types.Has(syncer::PASSWORDS)) {
     sync_service->RegisterDataTypeController(new PasswordDataTypeController(
         ui_thread_, error_callback, sync_client_,
-        sync_client_->GetPasswordStateChangedCallback()));
+        sync_client_->GetPasswordStateChangedCallback(), password_store_));
   }
 
   if (!disabled_types.Has(syncer::PRIORITY_PREFERENCES)) {

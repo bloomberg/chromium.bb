@@ -194,8 +194,6 @@ source_set("test_support") {
 
   deps = [
     "//base",
-    "//components/autofill/core/browser",
-    "//components/password_manager/core/browser",
     "//components/version_info",
     "//google_apis",
     "//sync:test_support_sync_internal_api",

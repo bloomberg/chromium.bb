@@ -1,9 +1,7 @@
 include_rules = [
-  "+components/autofill/core/browser",
   "+components/data_use_measurement/core",
   "+components/invalidation",
   "+components/os_crypt",
-  "+components/password_manager/core/browser",
   "+components/policy",
   "+components/pref_registry",
   "+components/signin/core/browser",

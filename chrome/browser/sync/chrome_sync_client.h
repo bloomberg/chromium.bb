@@ -12,6 +12,14 @@
 
 class Profile;
 
+namespace autofill {
+class AutofillWebDataService;
+}
+
+namespace password_manager {
+class PasswordStore;
+}
+
 namespace sync_driver {
 class SyncApiComponentFactory;
 class SyncService;
@@ -31,7 +39,6 @@ class ChromeSyncClient : public sync_driver::SyncClient {
   bookmarks::BookmarkModel* GetBookmarkModel() override;
   favicon::FaviconService* GetFaviconService() override;
   history::HistoryService* GetHistoryService() override;
-  scoped_refptr<password_manager::PasswordStore> GetPasswordStore() override;
   sync_driver::ClearBrowsingDataCallback GetClearBrowsingDataCallback()
       override;
   base::Closure GetPasswordStateChangedCallback() override;
@@ -39,7 +46,6 @@ class ChromeSyncClient : public sync_driver::SyncClient {
   GetRegisterPlatformTypesCallback() override;
   autofill::PersonalDataManager* GetPersonalDataManager() override;
   invalidation::InvalidationService* GetInvalidationService() override;
-  scoped_refptr<autofill::AutofillWebDataService> GetWebDataService() override;
   BookmarkUndoService* GetBookmarkUndoServiceIfExists() override;
   scoped_refptr<syncer::ExtensionsActivity> GetExtensionsActivity() override;
   sync_sessions::SyncSessionsClient* GetSyncSessionsClient() override;

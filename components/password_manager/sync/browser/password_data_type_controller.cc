@@ -16,10 +16,12 @@ PasswordDataTypeController::PasswordDataTypeController(
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
     const base::Closure& error_callback,
     sync_driver::SyncClient* sync_client,
-    const base::Closure& state_changed_callback)
+    const base::Closure& state_changed_callback,
+    const scoped_refptr<password_manager::PasswordStore>& password_store)
     : NonUIDataTypeController(ui_thread, error_callback, sync_client),
       sync_client_(sync_client),
-      state_changed_callback_(state_changed_callback) {}
+      state_changed_callback_(state_changed_callback),
+      password_store_(password_store) {}
 
 syncer::ModelType PasswordDataTypeController::type() const {
   return syncer::PASSWORDS;
@@ -48,7 +50,6 @@ bool PasswordDataTypeController::StartModels() {
 
   OnStateChanged();
 
-  password_store_ = sync_client_->GetPasswordStore();
   return !!password_store_.get();
 }
 

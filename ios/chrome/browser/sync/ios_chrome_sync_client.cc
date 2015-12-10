@@ -134,6 +134,14 @@ IOSChromeSyncClient::~IOSChromeSyncClient() {}
 
 void IOSChromeSyncClient::Initialize(sync_driver::SyncService* sync_service) {
   DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+
+  web_data_service_ =
+      ios::WebDataServiceFactory::GetAutofillWebDataForBrowserState(
+          browser_state_, ServiceAccessType::EXPLICIT_ACCESS);
+  // TODO(crbug.com/558320) Is EXPLICIT_ACCESS appropriate here?
+  password_store_ = IOSChromePasswordStoreFactory::GetForBrowserState(
+      browser_state_, ServiceAccessType::EXPLICIT_ACCESS);
+
   // Component factory may already be set in tests.
   if (!GetSyncApiComponentFactory()) {
     const GURL sync_service_url = GetSyncServiceURL(
@@ -151,11 +159,10 @@ void IOSChromeSyncClient::Initialize(sync_driver::SyncService* sync_service) {
         prefs::kSavingBrowserHistoryDisabled, sync_service_url,
         web::WebThread::GetTaskRunnerForThread(web::WebThread::UI),
         web::WebThread::GetTaskRunnerForThread(web::WebThread::DB),
-        token_service, url_request_context_getter));
+        token_service, url_request_context_getter, web_data_service_,
+        password_store_));
   }
   sync_service_ = sync_service;
-  web_data_service_ = GetWebDataService();
-  password_store_ = GetPasswordStore();
 }
 
 sync_driver::SyncService* IOSChromeSyncClient::GetSyncService() {
@@ -192,14 +199,6 @@ autofill::PersonalDataManager* IOSChromeSyncClient::GetPersonalDataManager() {
   return PersonalDataManagerFactory::GetForBrowserState(browser_state_);
 }
 
-scoped_refptr<password_manager::PasswordStore>
-IOSChromeSyncClient::GetPasswordStore() {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
-  // TODO(crbug.com/558320) Is EXPLICIT_ACCESS appropriate here?
-  return IOSChromePasswordStoreFactory::GetForBrowserState(
-      browser_state_, ServiceAccessType::EXPLICIT_ACCESS);
-}
-
 sync_driver::ClearBrowsingDataCallback
 IOSChromeSyncClient::GetClearBrowsingDataCallback() {
   return base::Bind(&IOSChromeSyncClient::ClearBrowsingData,
@@ -216,13 +215,6 @@ sync_driver::SyncApiComponentFactory::RegisterDataTypesMethod
 IOSChromeSyncClient::GetRegisterPlatformTypesCallback() {
   // The iOS port does not have any platform-specific datatypes.
   return sync_driver::SyncApiComponentFactory::RegisterDataTypesMethod();
-}
-
-scoped_refptr<autofill::AutofillWebDataService>
-IOSChromeSyncClient::GetWebDataService() {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
-  return ios::WebDataServiceFactory::GetAutofillWebDataForBrowserState(
-      browser_state_, ServiceAccessType::EXPLICIT_ACCESS);
 }
 
 BookmarkUndoService* IOSChromeSyncClient::GetBookmarkUndoServiceIfExists() {
@@ -366,11 +358,9 @@ IOSChromeSyncClient::CreateModelWorkerForGroup(
           web::WebThread::GetTaskRunnerForThread(web::WebThread::UI), observer);
     }
     case syncer::GROUP_PASSWORD: {
-      scoped_refptr<password_manager::PasswordStore> password_store =
-          GetPasswordStore();
-      if (!password_store)
+      if (!password_store_)
         return nullptr;
-      return new browser_sync::PasswordModelWorker(password_store, observer);
+      return new browser_sync::PasswordModelWorker(password_store_, observer);
     }
     default:
       return nullptr;

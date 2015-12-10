@@ -24,13 +24,11 @@ class FakeSyncClient : public SyncClient {
   bookmarks::BookmarkModel* GetBookmarkModel() override;
   favicon::FaviconService* GetFaviconService() override;
   history::HistoryService* GetHistoryService() override;
-  scoped_refptr<password_manager::PasswordStore> GetPasswordStore() override;
   ClearBrowsingDataCallback GetClearBrowsingDataCallback() override;
   base::Closure GetPasswordStateChangedCallback() override;
   sync_driver::SyncApiComponentFactory::RegisterDataTypesMethod
   GetRegisterPlatformTypesCallback() override;
   autofill::PersonalDataManager* GetPersonalDataManager() override;
-  scoped_refptr<autofill::AutofillWebDataService> GetWebDataService() override;
   BookmarkUndoService* GetBookmarkUndoServiceIfExists() override;
   invalidation::InvalidationService* GetInvalidationService() override;
   scoped_refptr<syncer::ExtensionsActivity> GetExtensionsActivity() override;

@@ -25,6 +25,7 @@ source_set("browser") {
     "//components/invalidation/impl",
     "//components/invalidation/public",
     "//components/keyed_service/core",
+    "//components/password_manager/core/browser",
     "//components/password_manager/sync/browser",
     "//components/pref_registry",
     "//components/signin/core/browser",

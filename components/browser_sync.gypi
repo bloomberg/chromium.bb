@@ -24,6 +24,7 @@
         'invalidation_impl',
         'invalidation_public',
         'keyed_service_core',
+        'password_manager_core_browser',
         'password_manager_sync_browser',
         'pref_registry',
         'signin_core_browser',

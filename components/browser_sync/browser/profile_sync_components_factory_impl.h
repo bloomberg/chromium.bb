@@ -19,6 +19,14 @@
 class OAuth2TokenService;
 class Profile;
 
+namespace autofill {
+class AutofillWebDataService;
+}
+
+namespace password_manager {
+class PasswordStore;
+}
+
 namespace net {
 class URLRequestContextGetter;
 }
@@ -45,7 +53,9 @@ class ProfileSyncComponentsFactoryImpl
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
       const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
       OAuth2TokenService* token_service,
-      net::URLRequestContextGetter* url_request_context_getter);
+      net::URLRequestContextGetter* url_request_context_getter,
+      const scoped_refptr<autofill::AutofillWebDataService>& web_data_service,
+      const scoped_refptr<password_manager::PasswordStore>& password_store);
   ~ProfileSyncComponentsFactoryImpl() override;
 
   // SyncApiComponentFactory implementation:
@@ -104,6 +114,8 @@ class ProfileSyncComponentsFactoryImpl
   const scoped_refptr<base::SingleThreadTaskRunner> db_thread_;
   OAuth2TokenService* const token_service_;
   net::URLRequestContextGetter* const url_request_context_getter_;
+  const scoped_refptr<autofill::AutofillWebDataService> web_data_service_;
+  const scoped_refptr<password_manager::PasswordStore> password_store_;
 
   base::WeakPtrFactory<ProfileSyncComponentsFactoryImpl> weak_factory_;
 

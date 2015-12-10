@@ -182,6 +182,13 @@ ChromeSyncClient::~ChromeSyncClient() {
 
 void ChromeSyncClient::Initialize(sync_driver::SyncService* sync_service) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  web_data_service_ = WebDataServiceFactory::GetAutofillWebDataForProfile(
+      profile_, ServiceAccessType::EXPLICIT_ACCESS);
+  // TODO(crbug.com/558320) Is EXPLICIT_ACCESS appropriate here?
+  password_store_ = PasswordStoreFactory::GetForProfile(
+      profile_, ServiceAccessType::EXPLICIT_ACCESS);
+
   // Component factory may already be set in tests.
   if (!GetSyncApiComponentFactory()) {
     const GURL sync_service_url = GetSyncServiceURL(
@@ -200,11 +207,10 @@ void ChromeSyncClient::Initialize(sync_driver::SyncService* sync_service) {
             content::BrowserThread::UI),
         content::BrowserThread::GetMessageLoopProxyForThread(
             content::BrowserThread::DB),
-        token_service, url_request_context_getter));
+        token_service, url_request_context_getter, web_data_service_,
+        password_store_));
   }
   sync_service_ = sync_service;
-  web_data_service_ = GetWebDataService();
-  password_store_ = GetPasswordStore();
 }
 
 sync_driver::SyncService* ChromeSyncClient::GetSyncService() {
@@ -241,13 +247,6 @@ autofill::PersonalDataManager* ChromeSyncClient::GetPersonalDataManager() {
   return autofill::PersonalDataManagerFactory::GetForProfile(profile_);
 }
 
-scoped_refptr<password_manager::PasswordStore>
-ChromeSyncClient::GetPasswordStore() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return PasswordStoreFactory::GetForProfile(
-      profile_, ServiceAccessType::EXPLICIT_ACCESS);
-}
-
 sync_driver::ClearBrowsingDataCallback
 ChromeSyncClient::GetClearBrowsingDataCallback() {
   return base::Bind(&ChromeSyncClient::ClearBrowsingData,
@@ -269,13 +268,6 @@ ChromeSyncClient::GetRegisterPlatformTypesCallback() {
       &ChromeSyncClient::RegisterDesktopDataTypes,
 #endif  // BUILDFLAG(ANDROID_JAVA_UI)
       weak_ptr_factory_.GetWeakPtr());
-}
-
-scoped_refptr<autofill::AutofillWebDataService>
-ChromeSyncClient::GetWebDataService() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return WebDataServiceFactory::GetAutofillWebDataForProfile(
-      profile_, ServiceAccessType::EXPLICIT_ACCESS);
 }
 
 BookmarkUndoService* ChromeSyncClient::GetBookmarkUndoServiceIfExists() {
@@ -454,11 +446,9 @@ ChromeSyncClient::CreateModelWorkerForGroup(
           observer);
     }
     case syncer::GROUP_PASSWORD: {
-      scoped_refptr<password_manager::PasswordStore> password_store =
-          GetPasswordStore();
-      if (!password_store.get())
+      if (!password_store_.get())
         return nullptr;
-      return new PasswordModelWorker(password_store, observer);
+      return new PasswordModelWorker(password_store_, observer);
     }
     default:
       return nullptr;

@@ -62,8 +62,12 @@ class FakeWebDataService : public AutofillWebDataService {
     StartSyncableService();
     is_database_loaded_ = true;
 
-    if (!db_loaded_callback_.is_null())
+    if (!db_loaded_callback_.is_null()) {
       db_loaded_callback_.Run();
+      // Clear the callback here or the WDS and DTC will have refs to each other
+      // and create a memory leak.
+      db_loaded_callback_ = base::Callback<void(void)>();
+    }
   }
 
   bool IsDatabaseLoaded() override { return is_database_loaded_; }
@@ -102,8 +106,7 @@ class FakeWebDataService : public AutofillWebDataService {
   DISALLOW_COPY_AND_ASSIGN(FakeWebDataService);
 };
 
-class SyncAutofillDataTypeControllerTest : public testing::Test,
-                                           public sync_driver::FakeSyncClient {
+class SyncAutofillDataTypeControllerTest : public testing::Test {
  public:
   SyncAutofillDataTypeControllerTest()
       : db_thread_("DB_Thread"),
@@ -111,18 +114,13 @@ class SyncAutofillDataTypeControllerTest : public testing::Test,
         weak_ptr_factory_(this) {}
   ~SyncAutofillDataTypeControllerTest() override {}
 
-  // FakeSyncClient overrides.
-  scoped_refptr<autofill::AutofillWebDataService> GetWebDataService() override {
-    return web_data_service_;
-  }
-
   void SetUp() override {
     db_thread_.Start();
     web_data_service_ = new FakeWebDataService(
         base::ThreadTaskRunnerHandle::Get(), db_thread_.task_runner());
     autofill_dtc_ = new AutofillDataTypeController(
         base::ThreadTaskRunnerHandle::Get(), db_thread_.task_runner(),
-        base::Bind(&base::DoNothing), this);
+        base::Bind(&base::DoNothing), &sync_client_, web_data_service_);
   }
 
   void TearDown() override {
@@ -159,6 +157,7 @@ class SyncAutofillDataTypeControllerTest : public testing::Test,
  protected:
   base::MessageLoop message_loop_;
   base::Thread db_thread_;
+  sync_driver::FakeSyncClient sync_client_;
   scoped_refptr<AutofillDataTypeController> autofill_dtc_;
   scoped_refptr<FakeWebDataService> web_data_service_;
 

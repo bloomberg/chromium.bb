@@ -26,7 +26,8 @@ class AutofillDataTypeController : public sync_driver::NonUIDataTypeController {
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
       const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
       const base::Closure& error_callback,
-      sync_driver::SyncClient* sync_client);
+      sync_driver::SyncClient* sync_client,
+      const scoped_refptr<autofill::AutofillWebDataService>& web_data_service);
 
   // NonUIDataTypeController implementation.
   syncer::ModelType type() const override;
@@ -52,10 +53,14 @@ class AutofillDataTypeController : public sync_driver::NonUIDataTypeController {
   // Callback once WebDatabase has loaded.
   void WebDatabaseLoaded();
 
+  // A pointer to the sync client.
   sync_driver::SyncClient* const sync_client_;
 
   // A reference to the DB thread's task runner.
   const scoped_refptr<base::SingleThreadTaskRunner> db_thread_;
+
+  // A reference to the AutofillWebDataService for this controller.
+  scoped_refptr<autofill::AutofillWebDataService> web_data_service_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillDataTypeController);
 };

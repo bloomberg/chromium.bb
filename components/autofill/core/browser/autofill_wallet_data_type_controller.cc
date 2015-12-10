@@ -21,13 +21,15 @@ AutofillWalletDataTypeController::AutofillWalletDataTypeController(
     const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
     const base::Closure& error_callback,
     sync_driver::SyncClient* sync_client,
-    syncer::ModelType model_type)
+    syncer::ModelType model_type,
+    const scoped_refptr<autofill::AutofillWebDataService>& web_data_service)
     : NonUIDataTypeController(ui_thread, error_callback, sync_client),
       ui_thread_(ui_thread),
       db_thread_(db_thread),
       sync_client_(sync_client),
       callback_registered_(false),
       model_type_(model_type),
+      web_data_service_(web_data_service),
       currently_enabled_(IsEnabled()) {
   DCHECK(ui_thread_->BelongsToCurrentThread());
   DCHECK(model_type_ == syncer::AUTOFILL_WALLET_DATA ||
@@ -65,17 +67,14 @@ bool AutofillWalletDataTypeController::StartModels() {
   DCHECK(ui_thread_->BelongsToCurrentThread());
   DCHECK_EQ(state(), MODEL_STARTING);
 
-  scoped_refptr<autofill::AutofillWebDataService> web_data_service =
-      sync_client_->GetWebDataService();
-
-  if (!web_data_service)
+  if (!web_data_service_)
     return false;
 
-  if (web_data_service->IsDatabaseLoaded())
+  if (web_data_service_->IsDatabaseLoaded())
     return true;
 
   if (!callback_registered_) {
-    web_data_service->RegisterDBLoadedCallback(
+    web_data_service_->RegisterDBLoadedCallback(
         base::Bind(&AutofillWalletDataTypeController::OnModelLoaded, this));
     callback_registered_ = true;
   }

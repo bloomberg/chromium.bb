@@ -19,7 +19,6 @@ class BookmarkUndoService;
 class PrefService;
 
 namespace autofill {
-class AutofillWebDataService;
 class AutocompleteSyncableService;
 class PersonalDataManager;
 }  // namespace autofill
@@ -39,10 +38,6 @@ class HistoryService;
 namespace invalidation {
 class InvalidationService;
 }  // namespace invalidation
-
-namespace password_manager {
-class PasswordStore;
-}  // namespace password_manager
 
 namespace syncer {
 class SyncableService;
@@ -82,7 +77,6 @@ class SyncClient {
   virtual bookmarks::BookmarkModel* GetBookmarkModel() = 0;
   virtual favicon::FaviconService* GetFaviconService() = 0;
   virtual history::HistoryService* GetHistoryService() = 0;
-  virtual scoped_refptr<password_manager::PasswordStore> GetPasswordStore() = 0;
 
   // Returns a callback that will be invoked when the sync service wishes to
   // have browsing data cleared.
@@ -98,8 +92,6 @@ class SyncClient {
   virtual base::Closure GetPasswordStateChangedCallback() = 0;
 
   virtual autofill::PersonalDataManager* GetPersonalDataManager() = 0;
-  virtual scoped_refptr<autofill::AutofillWebDataService>
-  GetWebDataService() = 0;
   virtual BookmarkUndoService* GetBookmarkUndoServiceIfExists() = 0;
   virtual invalidation::InvalidationService* GetInvalidationService() = 0;
   virtual scoped_refptr<syncer::ExtensionsActivity> GetExtensionsActivity() = 0;
