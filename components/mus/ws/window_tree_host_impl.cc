@@ -29,6 +29,28 @@ base::TimeDelta GetDefaultAckTimerDelay() {
 #endif
 }
 
+bool EventsCanBeCoalesced(const mojom::Event& one, const mojom::Event& two) {
+  if (one.action != two.action || one.flags != two.flags)
+    return false;
+  // TODO(sad): wheel events can also be merged.
+  if (one.action != mojom::EVENT_TYPE_POINTER_MOVE)
+    return false;
+  DCHECK(one.pointer_data);
+  DCHECK(two.pointer_data);
+  if (one.pointer_data->kind != two.pointer_data->kind ||
+      one.pointer_data->pointer_id != two.pointer_data->pointer_id)
+    return false;
+
+  return true;
+}
+
+mojom::EventPtr CoalesceEvents(mojom::EventPtr first, mojom::EventPtr second) {
+  DCHECK_EQ(first->action, mojom::EVENT_TYPE_POINTER_MOVE)
+      << " Non-move events cannot be merged yet.";
+  // For mouse moves, the new event just replaces the old event.
+  return second;
+}
+
 }  // namespace
 
 WindowTreeHostImpl::WindowTreeHostImpl(
@@ -256,7 +278,12 @@ void WindowTreeHostImpl::OnEvent(const ui::Event& event) {
   // If this is still waiting for an ack from a previously sent event, then
   // queue up the event to be dispatched once the ack is received.
   if (event_ack_timer_.IsRunning()) {
-    // TODO(sad): Coalesce if possible.
+    if (!event_queue_.empty() &&
+        EventsCanBeCoalesced(*event_queue_.back(), *mojo_event)) {
+      event_queue_.back() =
+          CoalesceEvents(std::move(event_queue_.back()), std::move(mojo_event));
+      return;
+    }
     event_queue_.push(std::move(mojo_event));
     return;
   }
