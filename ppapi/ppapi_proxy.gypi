@@ -264,8 +264,6 @@
               'nacl_irt/irt_start.cc',
               'nacl_irt/manifest_service.cc',
               'nacl_irt/manifest_service.h',
-              'nacl_irt/plugin_main.cc',
-              'nacl_irt/plugin_main.h',
               'nacl_irt/plugin_startup.cc',
               'nacl_irt/plugin_startup.h',
               'nacl_irt/ppapi_dispatcher.cc',

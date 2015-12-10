@@ -7,9 +7,9 @@
 #include "ppapi/native_client/src/untrusted/pnacl_irt_shim/irt_shim_ppapi.h"
 
 #include "native_client/src/untrusted/irt/irt.h"
+#include "ppapi/nacl_irt/irt_ppapi.h"
 #include "ppapi/nacl_irt/public/irt_ppapi.h"
 #include "ppapi/native_client/src/untrusted/pnacl_irt_shim/pnacl_shim.h"
-#include "ppapi/nacl_irt/plugin_main.h"
 
 /*
  * Defines a version of the version irt_ppapi_start and of the irt_ppapihook
@@ -48,7 +48,6 @@ int (*real_irt_ppapi_start)(const struct PP_StartFunctions *) = NULL;
   * Otherwise, when linking directly into the IRT, we can refer to the
   * real irt_ppapi_start from irt_ppapi.
   */
-extern int irt_ppapi_start(const struct PP_StartFunctions *);
 static int (* const real_irt_ppapi_start)(const struct PP_StartFunctions *) =
     &irt_ppapi_start;
 #endif

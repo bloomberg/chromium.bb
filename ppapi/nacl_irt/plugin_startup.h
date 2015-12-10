@@ -17,8 +17,8 @@ namespace ppapi {
 class ManifestService;
 
 // Sets the IPC channels for the browser and the renderer by the given FD
-// numbers. This will be used for non-SFI mode. Must be called before
-// PpapiPluginMain is called.
+// numbers. This will be used for non-SFI mode. Must be called before the
+// ppapi_start() IRT interface is called.
 PPAPI_PROXY_EXPORT void SetIPCFileDescriptors(
     int browser_ipc_fd, int renderer_ipc_fd, int manifest_service_fd);
 
