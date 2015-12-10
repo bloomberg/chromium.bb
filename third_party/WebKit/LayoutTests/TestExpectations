@@ -1312,3 +1312,4 @@ crbug.com/568157 [ XP ] virtual/syncpaint/fast/repaint/overflow-scroll-body-appe
 crbug.com/568157 [ XP ] virtual/syncpaint/fast/repaint/resize-scrollable-iframe.html [ Failure ]
 
 crbug.com/568678 [ XP ] virtual/gpu/fast/canvas/canvas-scale-strokePath-shadow.html [ Failure ]
+crbug.com/568740 [ Mac10.8 Win7 ] svg/custom/repaint-shadow.svg [ Failure ]
