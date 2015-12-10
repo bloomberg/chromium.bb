@@ -178,8 +178,9 @@ template <typename T> struct IsPolymorphic {
     static const bool value = __is_polymorphic(T);
 };
 
-#if COMPILER(MSVC) && !COMPILER(CLANG)
+#if (COMPILER(MSVC) || !GCC_VERSION_AT_LEAST(4, 9, 0)) && !COMPILER(CLANG)
 // FIXME: MSVC bug workaround. Remove once MSVC STL is fixed.
+// FIXME: GCC before 4.9.0 seems to have the same issue.
 // C++ 2011 Spec (ISO/IEC 14882:2011(E)) 20.9.6.2 Table 51 states that
 // the template parameters shall be a complete type if they are different types.
 // However, MSVC checks for type completeness even if they are the same type.
