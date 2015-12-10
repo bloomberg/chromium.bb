@@ -1425,47 +1425,6 @@ size_t StringImpl::reverseFind(StringImpl* matchString, unsigned index)
     return reverseFindInner(characters16(), matchString->characters16(), index, ourLength, matchLength);
 }
 
-template <typename SearchCharacterType, typename MatchCharacterType>
-ALWAYS_INLINE static size_t reverseFindIgnoringCaseInner(const SearchCharacterType* searchCharacters, const MatchCharacterType* matchCharacters, unsigned index, unsigned length, unsigned matchLength)
-{
-    // delta is the number of additional times to test; delta == 0 means test only once.
-    unsigned delta = min(index, length - matchLength);
-
-    // keep looping until we match
-    while (!equalIgnoringCase(searchCharacters + delta, matchCharacters, matchLength)) {
-        if (!delta)
-            return kNotFound;
-        --delta;
-    }
-    return delta;
-}
-
-size_t StringImpl::reverseFindIgnoringCase(StringImpl* matchString, unsigned index)
-{
-    // Check for null or empty string to match against
-    if (!matchString)
-        return kNotFound;
-    unsigned matchLength = matchString->length();
-    unsigned ourLength = length();
-    if (!matchLength)
-        return min(index, ourLength);
-
-    // Check index & matchLength are in range.
-    if (matchLength > ourLength)
-        return kNotFound;
-
-    if (is8Bit()) {
-        if (matchString->is8Bit())
-            return reverseFindIgnoringCaseInner(characters8(), matchString->characters8(), index, ourLength, matchLength);
-        return reverseFindIgnoringCaseInner(characters8(), matchString->characters16(), index, ourLength, matchLength);
-    }
-
-    if (matchString->is8Bit())
-        return reverseFindIgnoringCaseInner(characters16(), matchString->characters8(), index, ourLength, matchLength);
-
-    return reverseFindIgnoringCaseInner(characters16(), matchString->characters16(), index, ourLength, matchLength);
-}
-
 ALWAYS_INLINE static bool equalInner(const StringImpl* stringImpl, unsigned startOffset, const LChar* matchString, unsigned matchLength)
 {
     ASSERT(stringImpl);

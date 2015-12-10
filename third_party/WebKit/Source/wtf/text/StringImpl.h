@@ -379,7 +379,6 @@ public:
 
     size_t reverseFind(UChar, unsigned index = UINT_MAX);
     size_t reverseFind(StringImpl*, unsigned index = UINT_MAX);
-    size_t reverseFindIgnoringCase(StringImpl*, unsigned index = UINT_MAX);
 
     size_t count(LChar) const;
 

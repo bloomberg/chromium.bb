@@ -235,16 +235,12 @@ public:
         { return m_impl ? m_impl->findIgnoringCase(str, start) : kNotFound; }
     size_t findIgnoringCase(const String& str, unsigned start = 0) const
         { return m_impl ? m_impl->findIgnoringCase(str.impl(), start) : kNotFound; }
-    size_t reverseFindIgnoringCase(const String& str, unsigned start = UINT_MAX) const
-        { return m_impl ? m_impl->reverseFindIgnoringCase(str.impl(), start) : kNotFound; }
 
-    // Wrappers for find & reverseFind adding dynamic sensitivity check.
+    // Wrappers for find adding dynamic sensitivity check.
     size_t find(const LChar* str, unsigned start, TextCaseSensitivity caseSensitivity) const
         { return DISPATCH_CASE_OP(caseSensitivity, find, (str, start)); }
     size_t find(const String& str, unsigned start, TextCaseSensitivity caseSensitivity) const
         { return DISPATCH_CASE_OP(caseSensitivity, find, (str, start)); }
-    size_t reverseFind(const String& str, unsigned start, TextCaseSensitivity caseSensitivity) const
-        { return (caseSensitivity == TextCaseSensitive) ? reverseFind(str, start) : reverseFindIgnoringCase(str, start); }
 
     Vector<UChar> charactersWithNullTermination() const;
     unsigned copyTo(UChar* buffer, unsigned pos, unsigned maxLength) const;
