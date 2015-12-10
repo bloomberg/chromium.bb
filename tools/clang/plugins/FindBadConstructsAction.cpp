@@ -59,6 +59,8 @@ bool FindBadConstructsAction::ParseArgs(const CompilerInstance& instance,
       options_.with_ast_visitor = true;
     } else if (args[i] == "check-templates") {
       options_.check_templates = true;
+    } else if (args[i] == "follow-macro-expansion") {
+      options_.follow_macro_expansion = true;
     } else {
       parsed = false;
       llvm::errs() << "Unknown clang plugin argument: " << args[i] << "\n";

@@ -20,6 +20,7 @@ struct Options {
   bool check_enum_last_value;
   bool with_ast_visitor;
   bool check_templates;
+  bool follow_macro_expansion = false;
 };
 
 }  // namespace chrome_checker

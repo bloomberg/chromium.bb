@@ -41,6 +41,8 @@ do_testcase() {
 
   flags="${flags} -Xclang -plugin-arg-find-bad-constructs \
       -Xclang with-ast-visitor"
+  flags="${flags} -Xclang -plugin-arg-find-bad-constructs \
+      -Xclang follow-macro-expansion"
 
   local output="$("${CLANG_PATH}" -fsyntax-only -Wno-c++11-extensions \
       -Wno-inconsistent-missing-override \

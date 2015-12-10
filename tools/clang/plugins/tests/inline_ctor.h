@@ -18,6 +18,19 @@ class InlineCtorsArentOKInHeader {
   std::vector<std::string> two_;
 };
 
+#define INLINE_CTORS_IN_A_MACRO(CLASS_NAME) \
+  class CLASS_NAME {                        \
+   public:                                  \
+    CLASS_NAME() {}                         \
+    ~CLASS_NAME() {}                        \
+                                            \
+   private:                                 \
+    std::vector<int> one_;                  \
+    std::vector<std::string> two_;          \
+  }
+INLINE_CTORS_IN_A_MACRO(InlineCtorsBehindAMacroArentOKInHeader);
+MACRO_FROM_CPP;
+
 class DeletedMembersInHeaderAreOKThough {
  public:
   DeletedMembersInHeaderAreOKThough() = delete;
