@@ -4,8 +4,6 @@
  * found in the LICENSE file.
  */
 
-#define NACL_LOG_MODULE_NAME "Plugin_ServiceRuntime"
-
 #include "components/nacl/renderer/plugin/service_runtime.h"
 
 #include <string.h>
@@ -13,6 +11,7 @@
 #include <utility>
 
 #include "base/compiler_specific.h"
+#include "base/logging.h"
 #include "components/nacl/renderer/plugin/plugin.h"
 #include "components/nacl/renderer/plugin/plugin_error.h"
 #include "components/nacl/renderer/plugin/sel_ldr_launcher_chrome.h"
@@ -23,7 +22,6 @@
 #include "native_client/src/include/portability_io.h"
 #include "native_client/src/include/portability_string.h"
 #include "native_client/src/public/imc_types.h"
-#include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
 #include "native_client/src/trusted/service_runtime/nacl_error_code.h"
 #include "ppapi/c/pp_errors.h"
@@ -44,9 +42,6 @@ ServiceRuntime::ServiceRuntime(Plugin* plugin,
 }
 
 bool ServiceRuntime::SetupCommandChannel() {
-  NaClLog(4, "ServiceRuntime::SetupCommand (this=%p, subprocess=%p)\n",
-          static_cast<void*>(this),
-          static_cast<void*>(subprocess_.get()));
   // Set up the bootstrap channel in our subprocess so that we can establish
   // SRPC.
   subprocess_->set_channel(bootstrap_channel_);
@@ -75,12 +70,10 @@ bool ServiceRuntime::SetupCommandChannel() {
 
 void ServiceRuntime::StartSelLdr(const SelLdrStartParams& params,
                                  pp::CompletionCallback callback) {
-  NaClLog(4, "ServiceRuntime::Start\n");
-
   nacl::scoped_ptr<SelLdrLauncherChrome>
       tmp_subprocess(new SelLdrLauncherChrome());
   if (NULL == tmp_subprocess.get()) {
-    NaClLog(LOG_ERROR, "ServiceRuntime::Start (subprocess create failed)\n");
+    LOG(ERROR) << "ServiceRuntime::Start (subprocess create failed)";
     ErrorInfo error_info;
     error_info.SetReport(
         PP_NACL_ERROR_SEL_LDR_CREATE_LAUNCHER,
@@ -103,10 +96,7 @@ void ServiceRuntime::StartSelLdr(const SelLdrStartParams& params,
 }
 
 void ServiceRuntime::StartNexe() {
-  bool ok = SetupCommandChannel();
-  if (ok) {
-    NaClLog(4, "ServiceRuntime::StartNexe (success)\n");
-  }
+  SetupCommandChannel();
 }
 
 void ServiceRuntime::ReportLoadError(const ErrorInfo& error_info) {
@@ -116,18 +106,12 @@ void ServiceRuntime::ReportLoadError(const ErrorInfo& error_info) {
 }
 
 SrpcClient* ServiceRuntime::SetupAppChannel() {
-  NaClLog(4, "ServiceRuntime::SetupAppChannel (subprocess_=%p)\n",
-          reinterpret_cast<void*>(subprocess_.get()));
   nacl::DescWrapper* connect_desc = subprocess_->socket_addr()->Connect();
   if (NULL == connect_desc) {
-    NaClLog(LOG_ERROR, "ServiceRuntime::SetupAppChannel (connect failed)\n");
+    LOG(ERROR) << "ServiceRuntime::SetupAppChannel (connect failed)";
     return NULL;
   } else {
-    NaClLog(4, "ServiceRuntime::SetupAppChannel (connect_desc=%p)\n",
-            static_cast<void*>(connect_desc));
     SrpcClient* srpc_client = SrpcClient::New(connect_desc);
-    NaClLog(4, "ServiceRuntime::SetupAppChannel (srpc_client=%p)\n",
-            static_cast<void*>(srpc_client));
     delete connect_desc;
     return srpc_client;
   }
@@ -146,8 +130,6 @@ void ServiceRuntime::Shutdown() {
 }
 
 ServiceRuntime::~ServiceRuntime() {
-  NaClLog(4, "ServiceRuntime::~ServiceRuntime (this=%p)\n",
-          static_cast<void*>(this));
   // We do this just in case Shutdown() was not called.
   subprocess_.reset(NULL);
 }
