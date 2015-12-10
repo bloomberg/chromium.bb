@@ -6020,6 +6020,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_SAVE_PASSWORD" desc="The title of the save password bubble when a password can be saved.">
         Do you want <ph name="PASSWORD_MANAGER_BRAND">$1<ex>Google Chrome</ex></ph> to save your password for this site?
       </message>
+      <message name="IDS_SAVE_ACCOUNT" desc="The title of the save password bubble when a federated credential can be saved.">
+        Do you want <ph name="PASSWORD_MANAGER_BRAND">$1<ex>Google Chrome</ex></ph> to save your account for this site?
+      </message>
       <message name="IDS_UPDATE_PASSWORD" desc="The title of the save password bubble when a password can be updated.">
         Do you want <ph name="PASSWORD_MANAGER_BRAND">$1<ex>Google Chrome</ex></ph> to update your password for this site?
       </message>
@@ -7437,16 +7440,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Enable with no field highlighting
       </message>
       <if expr="not is_android">
-        <if expr="use_titlecase">
-          <message name="IDS_PASSWORD_MANAGER_SAVE_BUTTON" desc="Save button text for password manager">
-            Save Password
-          </message>
-        </if>
-        <if expr="not use_titlecase">
-          <message name="IDS_PASSWORD_MANAGER_SAVE_BUTTON" desc="Save button text for password manager">
-            Save password
-          </message>
-        </if>
+        <message name="IDS_PASSWORD_MANAGER_SAVE_BUTTON" desc="Save button text for password manager">
+          Save
+        </message>
         <message name="IDS_PASSWORD_MANAGER_UPDATE_BUTTON" desc="Update button text for password manager">
           Update password
         </message>

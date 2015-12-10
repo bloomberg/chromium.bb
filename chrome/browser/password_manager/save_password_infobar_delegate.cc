@@ -102,9 +102,14 @@ SavePasswordInfoBarDelegate::SavePasswordInfoBarDelegate(
   }
   base::string16 message;
   gfx::Range message_link_range = gfx::Range();
+  PasswordTittleType type =
+      form_to_save_->pending_credentials().federation_url.is_empty()
+      ? PasswordTittleType::SAVE_PASSWORD
+      : PasswordTittleType::UPDATE_PASSWORD;
   GetSavePasswordDialogTitleTextAndLinkRange(
       web_contents->GetVisibleURL(), form_to_save_->observed_form().origin,
-      is_smartlock_branding_enabled, false, &message, &message_link_range);
+      is_smartlock_branding_enabled, type,
+      &message, &message_link_range);
   SetMessage(message);
   SetMessageLinkRange(message_link_range);
 }
