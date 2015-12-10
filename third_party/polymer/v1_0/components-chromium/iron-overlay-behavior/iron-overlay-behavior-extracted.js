@@ -122,7 +122,6 @@ context. You should place this element as a child of `<body>` whenever possible.
     },
 
     listeners: {
-      'tap': '_onClick',
       'iron-resize': '_onIronResize'
     },
 
@@ -144,6 +143,10 @@ context. You should place this element as a child of `<body>` whenever possible.
 
     ready: function() {
       this._ensureSetup();
+    },
+
+    attached: function() {
+      // Call _openedChanged here so that position can be computed correctly.
       if (this._callOpenedWhenReady) {
         this._openedChanged();
       }
@@ -375,20 +378,10 @@ context. You should place this element as a child of `<body>` whenever possible.
     },
 
     _onCaptureClick: function(event) {
-      // attempt to close asynchronously and prevent the close of a tap event is immediately heard
-      // on target. This is because in shadow dom due to event retargetting event.target is not
-      // useful.
-      if (!this.noCancelOnOutsideClick && (this._manager.currentOverlay() == this)) {
-        this._cancelJob = this.async(function() {
-          this.cancel();
-        }, 10);
-      }
-    },
-
-    _onClick: function(event) {
-      if (this._cancelJob) {
-        this.cancelAsync(this._cancelJob);
-        this._cancelJob = null;
+      if (!this.noCancelOnOutsideClick &&
+          this._manager.currentOverlay() === this &&
+          Polymer.dom(event).path.indexOf(this) === -1) {
+        this.cancel();
       }
     },
 
@@ -397,6 +390,7 @@ context. You should place this element as a child of `<body>` whenever possible.
       if (!this.noCancelOnEscKey && (event.keyCode === ESC)) {
         this.cancel();
         event.stopPropagation();
+        event.stopImmediatePropagation();
       }
     },
 

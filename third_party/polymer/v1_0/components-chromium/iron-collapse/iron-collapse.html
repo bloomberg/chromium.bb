@@ -54,14 +54,11 @@ and instead put a div inside and style that.
     :host {
       display: block;
       transition-duration: 300ms;
+      overflow: auto;
     }
 
     :host(.iron-collapse-closed) {
       display: none;
-    }
-
-    :host(:not(.iron-collapse-opened)) {
-      overflow: hidden;
     }
 
   </style>

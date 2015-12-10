@@ -95,7 +95,7 @@ Polymer({
         newIndex = (newIndex - 1 + length) % length;
       } while (this.items[newIndex].disabled)
 
-      this.select(this._indexToValue(newIndex));
+      this._itemActivate(this._indexToValue(newIndex), this.items[newIndex]);
     },
 
     /**
@@ -110,6 +110,6 @@ Polymer({
         newIndex = (newIndex + 1 + length) % length;
       } while (this.items[newIndex].disabled)
 
-      this.select(this._indexToValue(newIndex));
+      this._itemActivate(this._indexToValue(newIndex), this.items[newIndex]);
     },
   });

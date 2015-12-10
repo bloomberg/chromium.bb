@@ -54,7 +54,7 @@ find components/iron-selector -type f -exec chmod -x {} \;
 # Remove carriage returns to make CQ happy.
 find components -type f \( -name \*.html -o -name \*.css -o -name \*.js\
   -o -name \*.md -o -name \*.sh -o -name \*.json -o -name \*.gitignore\
-  -o -name \*.bat \) -print0 | xargs -0 sed -i -e $'s/\r$//g'
+  -o -name \*.bat -o -name \*.svg \) -print0 | xargs -0 sed -i -e $'s/\r$//g'
 
 # Resolve a unicode encoding issue in dom-innerHTML.html.
 NBSP=$(python -c 'print u"\u00A0".encode("utf-8")')

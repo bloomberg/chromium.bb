@@ -157,6 +157,8 @@ Polymer({
         } else if (alignBottom) {
           return 'align-bottom';
         }
+
+        return '';
       },
 
       // TODO(cdata): Add `track` response back in when gesture lands.

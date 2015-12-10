@@ -19,7 +19,7 @@ Polymer({
 
     _calculateElevation: function() {
       if (!this.raised) {
-        this.elevation = 0;
+        this._setElevation(0);
       } else {
         Polymer.PaperButtonBehaviorImpl._calculateElevation.apply(this);
       }

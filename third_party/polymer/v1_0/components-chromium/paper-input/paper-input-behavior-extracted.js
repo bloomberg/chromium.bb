@@ -9,7 +9,6 @@
    * @polymerBehavior Polymer.PaperInputBehavior
    */
   Polymer.PaperInputBehaviorImpl = {
-
     properties: {
       /**
        * Fired when the input changes due to user interaction.
@@ -393,6 +392,7 @@
         this._shiftTabPressed = false;
       }, 1);
     },
+
     /**
      * If `autoValidate` is true, then validates the element.
      */
@@ -473,7 +473,6 @@
         });
       }
     }
-
   };
 
   /** @polymerBehavior */
