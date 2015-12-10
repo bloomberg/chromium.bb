@@ -84,7 +84,7 @@ class BrowserActionsContainerViewSizeDelegate {
   BOOL resizable_;
 
   // Whether or not the container is the overflow container, and is shown in the
-  // wrench menu.
+  // app menu.
   BOOL isOverflow_;
 
   // Whether the user is allowed to drag the grippy to the left. NO if all

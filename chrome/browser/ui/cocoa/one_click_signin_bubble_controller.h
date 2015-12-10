@@ -24,12 +24,12 @@
 
 @property(readonly, nonatomic) OneClickSigninViewController* viewController;
 
-// Initializes with a browser window |controller|, under whose wrench
-// menu this bubble will be displayed, and callbacks which are called
-// if the user clicks the corresponding link. |errorMessage| is an
-// alternate message that will be displayed in the case of an authentication
-// error, and |syncCallback| is called to start sync. |webContents| is used
-// to open the Learn More and Advanced links
+// Initializes with a browser window |controller|, under whose app menu this
+// bubble will be displayed, and callbacks which are called if the user clicks
+// the corresponding link. |errorMessage| is an alternate message that will be
+// displayed in the case of an authentication error, and |syncCallback| is
+// called to start sync. |webContents| is used to open the Learn More and
+// Advanced links.
 //
 // The bubble is not automatically displayed; call showWindow:id to
 // display.  The bubble is auto-released on close.

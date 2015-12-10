@@ -88,8 +88,8 @@ const CGFloat kToolbarElementTopPadding = 2.0;
 // The minimum width of the location bar in pixels.
 const CGFloat kMinimumLocationBarWidth = 100.0;
 
-// The amount of left padding that the wrench menu should have.
-const CGFloat kWrenchMenuLeftPadding = 3.0;
+// The amount of left padding that the app menu should have.
+const CGFloat kAppMenuLeftPadding = 3.0;
 
 class BrowserActionsContainerDelegate :
     public BrowserActionsContainerViewSizeDelegate {
@@ -145,8 +145,8 @@ CGFloat BrowserActionsContainerDelegate::GetMaxAllowedWidth() {
 - (void)browserActionsVisibilityChanged:(NSNotification*)notification;
 - (void)browserActionsContainerWillAnimate:(NSNotification*)notification;
 - (void)adjustLocationSizeBy:(CGFloat)dX animate:(BOOL)animate;
-- (void)updateWrenchButtonSeverity:(AppMenuIconPainter::Severity)severity
-                           animate:(BOOL)animate;
+- (void)updateAppMenuButtonSeverity:(AppMenuIconPainter::Severity)severity
+                            animate:(BOOL)animate;
 @end
 
 namespace ToolbarControllerInternal {
@@ -193,7 +193,7 @@ class NotificationBridge : public AppMenuBadgeController::Delegate {
   void UpdateBadgeSeverity(AppMenuBadgeController::BadgeType type,
                            AppMenuIconPainter::Severity severity,
                            bool animate) override {
-    [controller_ updateWrenchButtonSeverity:severity animate:animate];
+    [controller_ updateAppMenuButtonSeverity:severity animate:animate];
   }
 
   void OnPreferenceChanged(const std::string& pref_name) {
@@ -298,18 +298,18 @@ class NotificationBridge : public AppMenuBadgeController::Delegate {
   [[homeButton_ cell] setImageID:IDR_HOME_P
                   forButtonState:image_button_cell::kPressedState];
 
-  [[wrenchButton_ cell] setImageID:IDR_TOOLS
-                    forButtonState:image_button_cell::kDefaultState];
-  [[wrenchButton_ cell] setImageID:IDR_TOOLS_H
-                    forButtonState:image_button_cell::kHoverState];
-  [[wrenchButton_ cell] setImageID:IDR_TOOLS_P
-                    forButtonState:image_button_cell::kPressedState];
+  [[appMenuButton_ cell] setImageID:IDR_TOOLS
+                     forButtonState:image_button_cell::kDefaultState];
+  [[appMenuButton_ cell] setImageID:IDR_TOOLS_H
+                     forButtonState:image_button_cell::kHoverState];
+  [[appMenuButton_ cell] setImageID:IDR_TOOLS_P
+                     forButtonState:image_button_cell::kPressedState];
 
   notificationBridge_.reset(
       new ToolbarControllerInternal::NotificationBridge(self));
   notificationBridge_->UpdateBadgeSeverity();
 
-  [wrenchButton_ setOpenMenuOnClick:YES];
+  [appMenuButton_ setOpenMenuOnClick:YES];
 
   [backButton_ setOpenMenuOnRightClick:YES];
   [forwardButton_ setOpenMenuOnRightClick:YES];
@@ -335,7 +335,7 @@ class NotificationBridge : public AppMenuBadgeController::Delegate {
           &ToolbarControllerInternal::NotificationBridge::OnPreferenceChanged,
           base::Unretained(notificationBridge_.get())));
   [self showOptionalHomeButton];
-  [self installWrenchMenu];
+  [self installAppMenu];
 
   [self pinLocationBarToLeftOfBrowserActionsContainerAndAnimate:NO];
 
@@ -375,7 +375,7 @@ class NotificationBridge : public AppMenuBadgeController::Delegate {
   view_id_util::SetID(backButton_, VIEW_ID_BACK_BUTTON);
   view_id_util::SetID(forwardButton_, VIEW_ID_FORWARD_BUTTON);
   view_id_util::SetID(homeButton_, VIEW_ID_HOME_BUTTON);
-  view_id_util::SetID(wrenchButton_, VIEW_ID_APP_MENU);
+  view_id_util::SetID(appMenuButton_, VIEW_ID_APP_MENU);
 
   [self addAccessibilityDescriptions];
 }
@@ -407,7 +407,7 @@ class NotificationBridge : public AppMenuBadgeController::Delegate {
   view_id_util::UnsetID(backButton_);
   view_id_util::UnsetID(forwardButton_);
   view_id_util::UnsetID(homeButton_);
-  view_id_util::UnsetID(wrenchButton_);
+  view_id_util::UnsetID(appMenuButton_);
 
   // Make sure any code in the base class which assumes [self view] is
   // the "parent" view continues to work.
@@ -461,7 +461,7 @@ class NotificationBridge : public AppMenuBadgeController::Delegate {
       accessibilitySetOverrideValue:description
                        forAttribute:NSAccessibilityDescriptionAttribute];
   description = l10n_util::GetNSStringWithFixup(IDS_ACCNAME_APP);
-  [[wrenchButton_ cell]
+  [[appMenuButton_ cell]
       accessibilitySetOverrideValue:description
                        forAttribute:NSAccessibilityDescriptionAttribute];
 }
@@ -626,8 +626,8 @@ class NotificationBridge : public AppMenuBadgeController::Delegate {
 // Returns an array of views in the order of the outlets above.
 - (NSArray*)toolbarViews {
   return [NSArray arrayWithObjects:backButton_, forwardButton_, reloadButton_,
-             homeButton_, wrenchButton_, locationBar_,
-             browserActionsContainerView_, nil];
+                                   homeButton_, appMenuButton_, locationBar_,
+                                   browserActionsContainerView_, nil];
 }
 
 // Moves |rect| to the right by |delta|, keeping the right side fixed by
@@ -660,22 +660,22 @@ class NotificationBridge : public AppMenuBadgeController::Delegate {
   [homeButton_ setHidden:hide];
 }
 
-// Install the menu wrench buttons. Calling this repeatedly is inexpensive so it
+// Install the app menu buttons. Calling this repeatedly is inexpensive so it
 // can be done every time the buttons are shown.
-- (void)installWrenchMenu {
+- (void)installAppMenu {
   if (appMenuController_.get())
     return;
 
   appMenuController_.reset(
       [[AppMenuController alloc] initWithBrowser:browser_]);
   [appMenuController_ setUseWithPopUpButtonCell:YES];
-  [wrenchButton_ setAttachedMenu:[appMenuController_ menu]];
+  [appMenuButton_ setAttachedMenu:[appMenuController_ menu]];
 }
 
-- (void)updateWrenchButtonSeverity:(AppMenuIconPainter::Severity)severity
-                           animate:(BOOL)animate {
+- (void)updateAppMenuButtonSeverity:(AppMenuIconPainter::Severity)severity
+                            animate:(BOOL)animate {
   AppToolbarButtonCell* cell =
-      base::mac::ObjCCastStrict<AppToolbarButtonCell>([wrenchButton_ cell]);
+      base::mac::ObjCCastStrict<AppToolbarButtonCell>([appMenuButton_ cell]);
   [cell setSeverity:severity shouldAnimate:animate];
 }
 
@@ -758,8 +758,8 @@ class NotificationBridge : public AppMenuBadgeController::Delegate {
   CGFloat leftDistance = 0.0;
 
   if ([browserActionsContainerView_ isHidden]) {
-    CGFloat edgeXPos = [wrenchButton_ frame].origin.x;
-    leftDistance = edgeXPos - locationBarXPos - kWrenchMenuLeftPadding;
+    CGFloat edgeXPos = [appMenuButton_ frame].origin.x;
+    leftDistance = edgeXPos - locationBarXPos - kAppMenuLeftPadding;
   } else {
     leftDistance = NSMinX([browserActionsContainerView_ animationEndFrame]) -
         locationBarXPos;
@@ -835,7 +835,7 @@ class NotificationBridge : public AppMenuBadgeController::Delegate {
   }
 }
 
-// Hide the back, forward, reload, home, and wrench buttons of the toolbar.
+// Hide the back, forward, reload, home, and app menu buttons of the toolbar.
 // This allows the location bar to occupy the entire width. There is no way to
 // undo this operation, and once it is called, no other programmatic changes
 // to the toolbar or location bar width should be made. This message is
@@ -857,7 +857,7 @@ class NotificationBridge : public AppMenuBadgeController::Delegate {
   [backButton_ setHidden:YES];
   [forwardButton_ setHidden:YES];
   [reloadButton_ setHidden:YES];
-  [wrenchButton_ setHidden:YES];
+  [appMenuButton_ setHidden:YES];
   [homeButton_ setHidden:YES];
 }
 
@@ -879,7 +879,7 @@ class NotificationBridge : public AppMenuBadgeController::Delegate {
     return locationBarView_->GetBookmarkBubblePoint();
 
   // Grab bottom middle of hotdogs.
-  NSRect frame = wrenchButton_.frame;
+  NSRect frame = appMenuButton_.frame;
   NSPoint point = NSMakePoint(NSMidX(frame), NSMinY(frame));
   // Inset to account for the whitespace around the hotdogs.
   point.y += app_menu_controller::kAppMenuBubblePointOffsetY;
@@ -913,8 +913,8 @@ class NotificationBridge : public AppMenuBadgeController::Delegate {
   return browserActionsController_.get();
 }
 
-- (NSView*)wrenchButton {
-  return wrenchButton_;
+- (NSView*)appMenuButton {
+  return appMenuButton_;
 }
 
 - (AppMenuController*)appMenuController {

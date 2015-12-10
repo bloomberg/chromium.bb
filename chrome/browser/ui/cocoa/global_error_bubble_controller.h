@@ -21,7 +21,7 @@ namespace GlobalErrorBubbleControllerInternal {
 class Bridge;
 }
 
-// This is a bubble view shown from the wrench menu to display information
+// This is a bubble view shown from the app menu to display information
 // about a global error.
 @interface GlobalErrorBubbleController : BaseBubbleController {
  @private

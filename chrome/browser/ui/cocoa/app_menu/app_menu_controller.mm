@@ -588,7 +588,7 @@ class ToolbarActionsBarObserverHelper : public ToolbarActionsBarObserver {
 @synthesize overflowActionsContainerView = overflowActionsContainerView_;
 
 - (id)initWithController:(AppMenuController*)controller {
-  if ((self = [super initWithNibName:@"WrenchMenu"
+  if ((self = [super initWithNibName:@"AppMenu"
                               bundle:base::mac::FrameworkBundle()])) {
     propertyReleaser_.Init(self, [AppMenuButtonViewController class]);
     controller_ = controller;

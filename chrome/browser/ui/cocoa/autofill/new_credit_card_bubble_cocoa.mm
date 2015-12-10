@@ -24,7 +24,7 @@
 
 namespace {
 
-const CGFloat kWrenchBubblePointOffsetY = 6;
+const CGFloat kAppMenuBubblePointOffsetY = 6;
 const CGFloat kVerticalSpacing = 8;
 const CGFloat kHorizontalSpacing = 4;
 const CGFloat kInset = 20.0;
@@ -210,10 +210,10 @@ void NewCreditCardBubbleCocoa::Show() {
   NSPoint anchor_point;
   NSView* anchor_view;
   if ([bwc isTabbedWindow]) {
-    anchor_view = [[bwc toolbarController] wrenchButton];
+    anchor_view = [[bwc toolbarController] appMenuButton];
     anchor_point = NSMakePoint(
         NSMidX([anchor_view bounds]),
-        NSMinY([anchor_view bounds]) + kWrenchBubblePointOffsetY);
+        NSMinY([anchor_view bounds]) + kAppMenuBubblePointOffsetY);
     [[bubbleController_ bubble] setArrowLocation:info_bubble::kTopRight];
     [[bubbleController_ bubble] setAlignment:info_bubble::kAlignArrowToAnchor];
   } else {

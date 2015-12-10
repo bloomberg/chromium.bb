@@ -54,7 +54,7 @@ class NotificationBridge;
   IBOutlet MenuButton* forwardButton_;
   IBOutlet ReloadButton* reloadButton_;
   IBOutlet ToolbarButton* homeButton_;
-  IBOutlet MenuButton* wrenchButton_;
+  IBOutlet MenuButton* appMenuButton_;
   IBOutlet AutocompleteTextField* locationBar_;
   IBOutlet BrowserActionsContainerView* browserActionsContainerView_;
 
@@ -171,8 +171,8 @@ class NotificationBridge;
 // Return the BrowserActionsController for this toolbar.
 - (BrowserActionsController*)browserActionsController;
 
-// Returns the wrench button.
-- (NSButton*)wrenchButton;
+// Returns the app menu button.
+- (NSButton*)appMenuButton;
 
 // Returns the app menu controller.
 - (AppMenuController*)appMenuController;
@@ -184,7 +184,7 @@ class NotificationBridge;
 // Returns an array of views in the order of the outlets above.
 - (NSArray*)toolbarViews;
 - (void)showOptionalHomeButton;
-- (void)installWrenchMenu;
+- (void)installAppMenu;
 // Return a hover button for the current event.
 - (NSButton*)hoverButtonForEvent:(NSEvent*)theEvent;
 @end

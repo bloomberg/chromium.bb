@@ -486,7 +486,7 @@ const LocalizedErrorMap* LookupErrorMap(const std::string& error_domain,
 }
 
 // Returns a dictionary containing the strings for the settings menu under the
-// wrench, and the advanced settings button.
+// app menu, and the advanced settings button.
 base::DictionaryValue* GetStandardMenuItemsText() {
   base::DictionaryValue* standard_menu_items_text = new base::DictionaryValue();
   standard_menu_items_text->SetString("settingsTitle",

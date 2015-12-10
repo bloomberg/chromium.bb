@@ -184,8 +184,8 @@ Browser* FindBrowserForSender(id sender, NSWindow* window) {
     case IDC_BOOKMARK_PAGE: {
       // Extensions have the ability to hide the bookmark page menu item.
       // This only affects the bookmark page menu item under the main menu.
-      // The bookmark page menu item under the wrench menu has its
-      // visibility controlled by AppMenuModel.
+      // The bookmark page menu item under the app menu has its visibility
+      // controlled by AppMenuModel.
       bool shouldHide =
           chrome::ShouldRemoveBookmarkThisPageUI(browser->profile());
       NSMenuItem* menuItem = base::mac::ObjCCast<NSMenuItem>(item);
@@ -195,7 +195,7 @@ Browser* FindBrowserForSender(id sender, NSWindow* window) {
     case IDC_BOOKMARK_ALL_TABS: {
       // Extensions have the ability to hide the bookmark all tabs menu
       // item.  This only affects the bookmark page menu item under the main
-      // menu.  The bookmark page menu item under the wrench menu has its
+      // menu.  The bookmark page menu item under the app menu has its
       // visibility controlled by AppMenuModel.
       bool shouldHide =
           chrome::ShouldRemoveBookmarkOpenPagesUI(browser->profile());

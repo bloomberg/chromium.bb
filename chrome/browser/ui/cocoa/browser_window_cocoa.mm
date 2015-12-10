@@ -849,7 +849,7 @@ void BrowserWindowCocoa::ShowAvatarBubbleFromAvatarButton(
   AvatarBaseController* controller = [controller_ avatarButtonController];
   NSView* anchor = [controller buttonView];
   if ([anchor isHiddenOrHasHiddenAncestor])
-    anchor = [[controller_ toolbarController] wrenchButton];
+    anchor = [[controller_ toolbarController] appMenuButton];
   [controller showAvatarBubbleAnchoredAt:anchor
                                 withMode:mode
                          withServiceType:manage_accounts_params.service_type

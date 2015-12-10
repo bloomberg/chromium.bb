@@ -28,7 +28,7 @@ enum HelpSource {
   // Keyboard accelerators.
   HELP_SOURCE_KEYBOARD,
 
-  // Menus (e.g. wrench menu or Chrome OS system menu).
+  // Menus (e.g. app menu or Chrome OS system menu).
   HELP_SOURCE_MENU,
 
   // WebUI (the "About" page).

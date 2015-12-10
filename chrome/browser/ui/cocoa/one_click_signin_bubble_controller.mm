@@ -36,11 +36,11 @@ void PerformClose(OneClickSigninBubbleController* controller) {
 
   NSWindow* parentWindow = [controller window];
 
-  // Set the anchor point to right below the wrench menu.
-  NSView* wrenchButton = [[controller toolbarController] wrenchButton];
-  const NSRect bounds = [wrenchButton bounds];
+  // Set the anchor point to right below the app menu.
+  NSView* appMenuButton = [[controller toolbarController] appMenuButton];
+  const NSRect bounds = [appMenuButton bounds];
   NSPoint anchorPoint = NSMakePoint(NSMidX(bounds), NSMaxY(bounds));
-  anchorPoint = [wrenchButton convertPoint:anchorPoint toView:nil];
+  anchorPoint = [appMenuButton convertPoint:anchorPoint toView:nil];
   anchorPoint = [parentWindow convertBaseToScreen:anchorPoint];
 
   // Create an empty window into which content is placed.

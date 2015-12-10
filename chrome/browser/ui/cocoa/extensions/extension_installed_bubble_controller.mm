@@ -303,12 +303,12 @@ void ExtensionInstalledBubbleBridge::UpdateAnchorPosition() {
   } else {
     DCHECK(type_ == extension_installed_bubble::kBundle ||
            type_ == extension_installed_bubble::kGeneric);
-    // Point at the bottom of the wrench menu.
-    NSView* wrenchButton =
-        [[window->cocoa_controller() toolbarController] wrenchButton];
-    const NSRect bounds = [wrenchButton bounds];
+    // Point at the bottom of the app menu.
+    NSView* appMenuButton =
+        [[window->cocoa_controller() toolbarController] appMenuButton];
+    const NSRect bounds = [appMenuButton bounds];
     NSPoint anchor = NSMakePoint(NSMidX(bounds), NSMaxY(bounds));
-    arrowPoint = [wrenchButton convertPoint:anchor toView:nil];
+    arrowPoint = [appMenuButton convertPoint:anchor toView:nil];
   }
   return arrowPoint;
 }

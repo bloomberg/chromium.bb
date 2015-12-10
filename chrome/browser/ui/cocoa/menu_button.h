@@ -17,11 +17,11 @@
 // There are two different behaviors of this button depending on the value of
 // the |openMenuOnClick| property. If YES, the target-action mechanism will be
 // handled internally to always show the menu when clicked. This behavior is
-// used for the Wrench menu, for example. When the property is NO, the button
-// can have a separate target-action but will open the menu when clicked and
-// held. This is used for the toolbar back/forward buttons, which have a
-// primary action and the menu as a secondary click-hold action. The default
-// value is NO so that custom actions can be hooked up in Interface Builder.
+// used for the App menu, for example. When the property is NO, the button can
+// have a separate target-action but will open the menu when clicked and held.
+// This is used for the toolbar back/forward buttons, which have a primary
+// action and the menu as a secondary click-hold action. The default value is NO
+// so that custom actions can be hooked up in Interface Builder.
 @interface MenuButton : ToolbarButton {
  @private
   base::scoped_nsobject<NSMenu> attachedMenu_;

@@ -72,7 +72,7 @@ class ToolbarControllerTest : public CocoaProfileTest {
   // |-toolbarViews| method.
   enum SubviewIndex {
     kBackIndex, kForwardIndex, kReloadIndex, kHomeIndex,
-    kWrenchIndex, kLocationIndex, kBrowserActionContainerViewIndex
+    kAppMenuIndex, kLocationIndex, kBrowserActionContainerViewIndex
   };
 
   void SetUp() override {
@@ -172,7 +172,7 @@ TEST_F(ToolbarControllerTest, UpdateVisibility) {
   EXPECT_FALSE([GetSubviewAt(kBackIndex) isHidden]);
   EXPECT_FALSE([GetSubviewAt(kForwardIndex) isHidden]);
   EXPECT_FALSE([GetSubviewAt(kReloadIndex) isHidden]);
-  EXPECT_FALSE([GetSubviewAt(kWrenchIndex) isHidden]);
+  EXPECT_FALSE([GetSubviewAt(kAppMenuIndex) isHidden]);
   EXPECT_TRUE([GetSubviewAt(kHomeIndex) isHidden]);
   EXPECT_TRUE([GetSubviewAt(kBrowserActionContainerViewIndex) isHidden]);
 
@@ -183,7 +183,7 @@ TEST_F(ToolbarControllerTest, UpdateVisibility) {
   EXPECT_FALSE([GetSubviewAt(kBackIndex) isHidden]);
   EXPECT_FALSE([GetSubviewAt(kForwardIndex) isHidden]);
   EXPECT_FALSE([GetSubviewAt(kReloadIndex) isHidden]);
-  EXPECT_FALSE([GetSubviewAt(kWrenchIndex) isHidden]);
+  EXPECT_FALSE([GetSubviewAt(kAppMenuIndex) isHidden]);
   EXPECT_TRUE([GetSubviewAt(kHomeIndex) isHidden]);
   EXPECT_TRUE([GetSubviewAt(kBrowserActionContainerViewIndex) isHidden]);
 
@@ -199,7 +199,7 @@ TEST_F(ToolbarControllerTest, UpdateVisibility) {
   EXPECT_TRUE([GetSubviewAt(kBackIndex) isHidden]);
   EXPECT_TRUE([GetSubviewAt(kForwardIndex) isHidden]);
   EXPECT_TRUE([GetSubviewAt(kReloadIndex) isHidden]);
-  EXPECT_TRUE([GetSubviewAt(kWrenchIndex) isHidden]);
+  EXPECT_TRUE([GetSubviewAt(kAppMenuIndex) isHidden]);
   EXPECT_TRUE([GetSubviewAt(kHomeIndex) isHidden]);
   EXPECT_TRUE([GetSubviewAt(kBrowserActionContainerViewIndex) isHidden]);
 
@@ -215,7 +215,7 @@ TEST_F(ToolbarControllerTest, UpdateVisibility) {
   EXPECT_TRUE([GetSubviewAt(kBackIndex) isHidden]);
   EXPECT_TRUE([GetSubviewAt(kForwardIndex) isHidden]);
   EXPECT_TRUE([GetSubviewAt(kReloadIndex) isHidden]);
-  EXPECT_TRUE([GetSubviewAt(kWrenchIndex) isHidden]);
+  EXPECT_TRUE([GetSubviewAt(kAppMenuIndex) isHidden]);
   EXPECT_TRUE([GetSubviewAt(kHomeIndex) isHidden]);
   EXPECT_TRUE([GetSubviewAt(kBrowserActionContainerViewIndex) isHidden]);
 
@@ -241,7 +241,7 @@ TEST_F(ToolbarControllerTest, UpdateVisibility) {
   EXPECT_TRUE([GetSubviewAt(kBackIndex) isHidden]);
   EXPECT_TRUE([GetSubviewAt(kForwardIndex) isHidden]);
   EXPECT_TRUE([GetSubviewAt(kReloadIndex) isHidden]);
-  EXPECT_TRUE([GetSubviewAt(kWrenchIndex) isHidden]);
+  EXPECT_TRUE([GetSubviewAt(kAppMenuIndex) isHidden]);
   EXPECT_TRUE([GetSubviewAt(kHomeIndex) isHidden]);
   EXPECT_TRUE([GetSubviewAt(kBrowserActionContainerViewIndex) isHidden]);
 }

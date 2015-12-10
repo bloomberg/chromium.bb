@@ -9,6 +9,7 @@
 {
   'variables': {
     'mac_translated_xibs': [
+      'app/nibs/AppMenu.xib',
       'app/nibs/AvatarMenuItem.xib',
       'app/nibs/BookmarkAllTabs.xib',
       'app/nibs/BookmarkBar.xib',
@@ -18,12 +19,12 @@
       'app/nibs/CollectedCookies.xib',
       'app/nibs/ContentBlockedCookies.xib',
       'app/nibs/ContentBlockedDownloads.xib',
-      'app/nibs/ContentBlockedMIDISysEx.xib',
+      'app/nibs/ContentBlockedGeolocation.xib',
       'app/nibs/ContentBlockedMedia.xib',
+      'app/nibs/ContentBlockedMIDISysEx.xib',
       'app/nibs/ContentBlockedMixedScript.xib',
       'app/nibs/ContentBlockedPlugins.xib',
       'app/nibs/ContentBlockedPopups.xib',
-      'app/nibs/ContentBlockedGeolocation.xib',
       'app/nibs/ContentBlockedSimple.xib',
       'app/nibs/ContentProtocolHandlers.xib',
       'app/nibs/CookieDetailsView.xib',
@@ -31,11 +32,11 @@
       'app/nibs/DownloadShelf.xib',
       'app/nibs/EditSearchEngine.xib',
       'app/nibs/ExclusiveAccessBubble.xib',
-      'app/nibs/ExtensionInstallPrompt.xib',
+      'app/nibs/ExtensionInstalledBubble.xib',
       'app/nibs/ExtensionInstallPromptBundle.xib',
       'app/nibs/ExtensionInstallPromptNoWarnings.xib',
       'app/nibs/ExtensionInstallPromptWebstoreData.xib',
-      'app/nibs/ExtensionInstalledBubble.xib',
+      'app/nibs/ExtensionInstallPrompt.xib',
       'app/nibs/FirstRunBubble.xib',
       'app/nibs/FirstRunDialog.xib',
       'app/nibs/HttpAuthLoginSheet.xib',
@@ -47,7 +48,6 @@
       'app/nibs/SaveAccessoryView.xib',
       'app/nibs/TaskManager.xib',
       'app/nibs/Toolbar.xib',
-      'app/nibs/WrenchMenu.xib',
     ],  # mac_translated_xibs
     'mac_untranslated_xibs': [
       'app/nibs/ActionBoxMenuItem.xib',

@@ -96,7 +96,7 @@ class LocationBarViewMac : public LocationBar,
   // false when the change in zoom for the active tab wasn't an explicit user
   // action (e.g. switching tabs, creating a new tab, creating a new browser).
   // Additionally, |can_show_bubble| will only be true when the bubble wouldn't
-  // be obscured by other UI (wrench menu) or redundant (+/- from wrench).
+  // be obscured by other UI (app menu) or redundant (+/- from app menu).
   void ZoomChangedForActiveTab(bool can_show_bubble);
 
   // Checks if the bookmark star should be enabled or not.

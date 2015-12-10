@@ -96,7 +96,7 @@ void ExtensionMessageBubbleBrowserTestMac::CheckBubble(
       anchorView = [actionsController buttonWithIndex:0];
       break;
     case ANCHOR_APP_MENU:
-      anchorView = [toolbarController wrenchButton];
+      anchorView = [toolbarController appMenuButton];
       break;
   }
   CheckBubbleAndReferenceView(bubble, anchorView);

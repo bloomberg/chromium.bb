@@ -156,7 +156,7 @@ class BrowserActionButtonUiTest : public ExtensionBrowserTest {
   ToolbarController* toolbarController() { return toolbarController_; }
   AppMenuController* appMenuController() { return appMenuController_; }
   ToolbarActionsModel* model() { return model_; }
-  NSView* wrenchButton() { return [toolbarController_ wrenchButton]; }
+  NSView* appMenuButton() { return [toolbarController_ appMenuButton]; }
 
  private:
   scoped_ptr<extensions::FeatureSwitch::ScopedOverride> enable_redesign_;
@@ -263,8 +263,8 @@ IN_PROC_BROWSER_TEST_F(BrowserActionButtonUiTest,
   model()->SetVisibleIconCount(0);
   EXPECT_EQ(nil, [actionButton superview]);
 
-  // Move the mouse over the app button.
-  MoveMouseToCenter(wrenchButton());
+  // Move the mouse over the app menu button.
+  MoveMouseToCenter(appMenuButton());
 
   {
     // No menu yet (on the browser action).
@@ -287,10 +287,10 @@ IN_PROC_BROWSER_TEST_F(BrowserActionButtonUiTest,
 }
 
 // Checks the layout of the overflow bar in the app menu.
-void CheckWrenchMenuLayout(ToolbarController* toolbarController,
-                           int overflowStartIndex,
-                           const std::string& error_message,
-                           const base::Closure& closure) {
+void CheckAppMenuLayout(ToolbarController* toolbarController,
+                        int overflowStartIndex,
+                        const std::string& error_message,
+                        const base::Closure& closure) {
   AppMenuController* appMenuController =
       [toolbarController appMenuController];
   // The app menu should start as open (since that's where the overflowed
@@ -370,19 +370,19 @@ IN_PROC_BROWSER_TEST_F(BrowserActionButtonUiTest, TestOverflowContainerLayout) {
   ASSERT_EQ(kNumExtensions, static_cast<int>(model()->toolbar_items().size()));
 
   // A helper function to open the app menu and call the check function.
-  auto resizeAndActivateWrench = [this](int visible_count,
-                                        const std::string& error_message) {
+  auto resizeAndActivateAppMenu = [this](int visible_count,
+                                         const std::string& error_message) {
     model()->SetVisibleIconCount(kNumExtensions - visible_count);
-    MoveMouseToCenter(wrenchButton());
+    MoveMouseToCenter(appMenuButton());
 
     {
       base::RunLoop runLoop;
       // Click on the app menu, and pass in a callback to continue the test in
-      // CheckWrenchMenuLayout (due to the blocking nature of Cocoa menus,
+      // CheckAppMenuLayout (due to the blocking nature of Cocoa menus,
       // passing in runLoop.QuitClosure() is not sufficient here.)
       ui_controls::SendMouseEventsNotifyWhenDone(
           ui_controls::LEFT, ui_controls::DOWN | ui_controls::UP,
-          base::Bind(&CheckWrenchMenuLayout,
+          base::Bind(&CheckAppMenuLayout,
                      base::Unretained(toolbarController()),
                      kNumExtensions - visible_count,
                      error_message,
@@ -393,7 +393,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionButtonUiTest, TestOverflowContainerLayout) {
 
   // Test the layout with gradually more extensions hidden.
   for (int i = 1; i <= kNumExtensions; ++i)
-    resizeAndActivateWrench(i, base::StringPrintf("Normal: %d", i));
+    resizeAndActivateAppMenu(i, base::StringPrintf("Normal: %d", i));
 
   // Adding a global error adjusts the app menu size, and has been known to mess
   // up the overflow container's bounds (crbug.com/511326).
@@ -404,9 +404,9 @@ IN_PROC_BROWSER_TEST_F(BrowserActionButtonUiTest, TestOverflowContainerLayout) {
   // It's probably excessive to test every level of the overflow here. Test
   // having all actions overflowed, some actions overflowed, and one action
   // overflowed.
-  resizeAndActivateWrench(kNumExtensions, "GlobalError Full");
-  resizeAndActivateWrench(kNumExtensions / 2, "GlobalError Half");
-  resizeAndActivateWrench(1, "GlobalError One");
+  resizeAndActivateAppMenu(kNumExtensions, "GlobalError Full");
+  resizeAndActivateAppMenu(kNumExtensions / 2, "GlobalError Half");
+  resizeAndActivateAppMenu(1, "GlobalError One");
 }
 
 void AddExtensionWithMenuOpen(ToolbarController* toolbarController,
@@ -443,7 +443,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionButtonUiTest,
   ASSERT_EQ(1, static_cast<int>(model()->toolbar_items().size()));
   model()->SetVisibleIconCount(0);
 
-  MoveMouseToCenter(wrenchButton());
+  MoveMouseToCenter(appMenuButton());
 
   base::RunLoop runLoop;
   // Click on the app menu, and pass in a callback to continue the test in

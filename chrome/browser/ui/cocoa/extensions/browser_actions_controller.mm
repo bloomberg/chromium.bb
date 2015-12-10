@@ -161,7 +161,7 @@ const CGFloat kBrowserActionBubbleYOffset = 3.0;
 // Returns the associated ToolbarController.
 - (ToolbarController*)toolbarController;
 
-// Creates a message bubble anchored to the given |anchorAction|, or the wrench
+// Creates a message bubble anchored to the given |anchorAction|, or the app
 // menu if no |anchorAction| is null.
 - (ToolbarActionsBarBubbleMac*)createMessageBubble:
     (scoped_ptr<ToolbarActionsBarBubbleDelegate>)delegate
@@ -438,7 +438,7 @@ void ToolbarActionsBarBridge::ShowExtensionMessageBubble(
   NSView* referenceButton = button;
   if ([button superview] != containerView_ || isOverflow_) {
     referenceButton = toolbarActionsBar_->platform_settings().chevron_enabled ?
-         chevronMenuButton_.get() : [[self toolbarController] wrenchButton];
+         chevronMenuButton_.get() : [[self toolbarController] appMenuButton];
     bounds = [referenceButton bounds];
   } else {
     bounds = [button convertRect:[button frameAfterAnimation]
@@ -1023,7 +1023,7 @@ void ToolbarActionsBarBridge::ShowExtensionMessageBubble(
     anchorToSelf:(BOOL)anchorToSelf {
   DCHECK_GE([buttons_ count], 0u);
   NSView* anchorView =
-      anchorToSelf ? containerView_ : [[self toolbarController] wrenchButton];
+      anchorToSelf ? containerView_ : [[self toolbarController] appMenuButton];
   NSPoint anchor = [self popupPointForView:anchorView
                                 withBounds:[anchorView bounds]];
 

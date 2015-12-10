@@ -982,7 +982,7 @@ void AppMenuModel::CreateCutCopyPasteMenu() {
   AddSeparator(ui::LOWER_SEPARATOR);
 
   // WARNING: Mac does not use the ButtonMenuItemModel, but instead defines the
-  // layout for this menu item in WrenchMenu.xib. It does, however, use the
+  // layout for this menu item in AppMenu.xib. It does, however, use the
   // command_id value from AddButtonItem() to identify this special item.
   edit_menu_item_model_.reset(new ui::ButtonMenuItemModel(IDS_EDIT, this));
   edit_menu_item_model_->AddGroupItemWithStringId(IDC_CUT, IDS_CUT);
@@ -998,7 +998,7 @@ void AppMenuModel::CreateZoomMenu() {
   AddSeparator(ui::LOWER_SEPARATOR);
 
   // WARNING: Mac does not use the ButtonMenuItemModel, but instead defines the
-  // layout for this menu item in WrenchMenu.xib. It does, however, use the
+  // layout for this menu item in AppMenu.xib. It does, however, use the
   // command_id value from AddButtonItem() to identify this special item.
   zoom_menu_item_model_.reset(
       new ui::ButtonMenuItemModel(IDS_ZOOM_MENU, this));

@@ -15,7 +15,7 @@
                 <outlet property="locationBar_" destination="4" id="31"/>
                 <outlet property="reloadButton_" destination="3" id="19"/>
                 <outlet property="view" destination="1" id="22"/>
-                <outlet property="wrenchButton_" destination="38" id="41"/>
+                <outlet property="appMenuButton_" destination="38" id="41"/>
             </connections>
         </customObject>
         <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>

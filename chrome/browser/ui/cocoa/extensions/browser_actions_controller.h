@@ -119,7 +119,7 @@ extern NSString* const kBrowserActionVisibilityChangedNotification;
 // Returns the associated ToolbarActionsBar.
 - (ToolbarActionsBar*)toolbarActionsBar;
 
-// Sets whether or not the overflow container is focused in the wrench menu.
+// Sets whether or not the overflow container is focused in the app menu.
 - (void)setFocusedInOverflow:(BOOL)focused;
 
 // Returns the size for the provided |maxWidth| of the overflow menu.
