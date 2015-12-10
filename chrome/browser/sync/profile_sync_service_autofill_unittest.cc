@@ -16,7 +16,7 @@
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
@@ -529,7 +529,9 @@ class ProfileSyncServiceAutofillTest
 
     sync_service_->RegisterDataTypeController(CreateDataTypeController(type));
     sync_service_->Initialize();
-    base::MessageLoop::current()->Run();
+
+    base::RunLoop run_loop;
+    run_loop.Run();
 
     // It's possible this test triggered an unrecoverable error, in which case
     // we can't get the sync count.
@@ -1269,8 +1271,7 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeRemoveProfile) {
   ASSERT_EQ(0U, new_sync_profiles.size());
 }
 
-// http://crbug.com/57884
-TEST_F(ProfileSyncServiceAutofillTest, DISABLED_ServerChangeRace) {
+TEST_F(ProfileSyncServiceAutofillTest, ServerChangeRace) {
   // Once for MergeDataAndStartSyncing() and twice for ProcessSyncChanges(), via
   // LoadAutofillData().
   EXPECT_CALL(autofill_table_, GetAllAutofillEntries(_)).
@@ -1306,6 +1307,10 @@ TEST_F(ProfileSyncServiceAutofillTest, DISABLED_ServerChangeRace) {
   // Make another entry to ensure nothing broke afterwards and wait for finish
   // to clean up.
   updater->CreateNewEntryAndWait(MakeAutofillEntry("server2", "entry2", 3));
+
+  // Let callbacks posted on UI thread execute.
+  base::RunLoop run_loop;
+  run_loop.RunUntilIdle();
 
   std::vector<AutofillEntry> sync_entries;
   std::vector<AutofillProfile> sync_profiles;
