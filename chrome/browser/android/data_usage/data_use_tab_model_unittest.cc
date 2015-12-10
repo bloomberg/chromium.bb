@@ -8,6 +8,8 @@
 
 #include <string>
 
+#include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
@@ -58,8 +60,8 @@ class DataUseTabModelNowTest : public DataUseTabModel {
  public:
   DataUseTabModelNowTest(
       const ExternalDataUseObserver* data_use_observer,
-      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
-      : DataUseTabModel(data_use_observer, ui_task_runner) {}
+      const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner)
+      : DataUseTabModel(ui_task_runner) {}
 
   ~DataUseTabModelNowTest() override {}
 
@@ -80,13 +82,11 @@ class DataUseTabModelNowTest : public DataUseTabModel {
 
 class DataUseTabModelTest : public testing::Test {
  public:
-  DataUseTabModelTest() {}
+  DataUseTabModelTest()
+      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {}
 
  protected:
   void SetUp() override {
-    thread_bundle_.reset(new content::TestBrowserThreadBundle(
-        content::TestBrowserThreadBundle::IO_MAINLOOP));
-
     data_use_aggregator_.reset(new data_usage::DataUseAggregator(
         scoped_ptr<data_usage::DataUseAnnotator>(),
         scoped_ptr<data_usage::DataUseAmortizer>()));
@@ -181,8 +181,8 @@ class DataUseTabModelTest : public testing::Test {
       const std::vector<std::string>& app_package_names,
       const std::vector<std::string>& domain_regexes,
       const std::vector<std::string>& labels) {
-    data_use_observer_->RegisterURLRegexes(&app_package_names, &domain_regexes,
-                                           &labels);
+    data_use_tab_model_->RegisterURLRegexes(&app_package_names, &domain_regexes,
+                                            &labels);
   }
 
   scoped_ptr<data_usage::DataUseAggregator> data_use_aggregator_;
@@ -192,7 +192,7 @@ class DataUseTabModelTest : public testing::Test {
   DataUseTabModelNowTest* data_use_tab_model_;
 
  private:
-  scoped_ptr<content::TestBrowserThreadBundle> thread_bundle_;
+  content::TestBrowserThreadBundle thread_bundle_;
 
   DISALLOW_COPY_AND_ASSIGN(DataUseTabModelTest);
 };

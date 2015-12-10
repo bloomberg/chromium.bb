@@ -18,13 +18,10 @@ namespace chrome {
 
 namespace android {
 
-class ExternalDataUseObserver;
-
 class TestDataUseTabModel : public DataUseTabModel {
  public:
-  TestDataUseTabModel(
-      const ExternalDataUseObserver* data_use_observer,
-      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
+  explicit TestDataUseTabModel(
+      const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner);
 
   ~TestDataUseTabModel() override;
 

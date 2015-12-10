@@ -33,8 +33,8 @@ class TestDataUseTabModel : public DataUseTabModel {
  public:
   TestDataUseTabModel(
       ExternalDataUseObserver* external_data_use_observer,
-      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
-      : DataUseTabModel(external_data_use_observer, ui_task_runner) {}
+      const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner)
+      : DataUseTabModel(ui_task_runner) {}
 
   ~TestDataUseTabModel() override {}
 
@@ -56,11 +56,11 @@ class DataUseUITabModelTest : public testing::Test {
     return data_use_tab_model_.get();
   }
 
-  void FetchMatchingRulesDone(const std::vector<std::string>& app_package_name,
-                              const std::vector<std::string>& domain_path_regex,
-                              const std::vector<std::string>& label) {
-    external_data_use_observer_->FetchMatchingRulesDone(
-        &app_package_name, &domain_path_regex, &label);
+  void RegisterURLRegexes(const std::vector<std::string>& app_package_name,
+                          const std::vector<std::string>& domain_path_regex,
+                          const std::vector<std::string>& label) {
+    data_use_tab_model_->RegisterURLRegexes(&app_package_name,
+                                            &domain_path_regex, &label);
   }
 
  protected:
@@ -111,9 +111,9 @@ TEST_F(DataUseUITabModelTest, ReportTabEventsTest) {
   std::vector<std::string> url_regexes;
   url_regexes.push_back(
       "http://www[.]foo[.]com/#q=.*|https://www[.]foo[.]com/#q=.*");
-  FetchMatchingRulesDone(
-      std::vector<std::string>(url_regexes.size(), kFooPackage), url_regexes,
-      std::vector<std::string>(url_regexes.size(), kFooLabel));
+  RegisterURLRegexes(std::vector<std::string>(url_regexes.size(), kFooPackage),
+                     url_regexes,
+                     std::vector<std::string>(url_regexes.size(), kFooLabel));
 
   const struct {
     ui::PageTransition transition_type;

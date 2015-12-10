@@ -696,6 +696,8 @@
       'browser/android/contextualsearch/resolved_search_term.h',
       'browser/android/cookies/cookies_fetcher.cc',
       'browser/android/cookies/cookies_fetcher.h',
+      'browser/android/data_usage/data_use_matcher.cc',
+      'browser/android/data_usage/data_use_matcher.h',
       'browser/android/data_usage/data_use_tab_helper.cc',
       'browser/android/data_usage/data_use_tab_helper.h',
       'browser/android/data_usage/data_use_tab_model.cc',

@@ -21,18 +21,12 @@
 #include "components/data_usage/core/data_use_aggregator.h"
 #include "net/base/network_change_notifier.h"
 
-class GURL;
-
 namespace base {
 class SingleThreadTaskRunner;
 }
 
 namespace data_usage {
 struct DataUse;
-}
-
-namespace re2 {
-class RE2;
 }
 
 namespace chrome {
@@ -56,20 +50,9 @@ class ExternalDataUseObserver : public data_usage::DataUseAggregator::Observer {
 
   ExternalDataUseObserver(
       data_usage::DataUseAggregator* data_use_aggregator,
-      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
+      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
+      const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner);
   ~ExternalDataUseObserver() override;
-
-  // Returns true if the |gurl| matches the registered regular expressions.
-  // |label| must not be null. If a match is found, the |label| is set to the
-  // matching rule's label.
-  bool Matches(const GURL& gurl, std::string* label) const;
-
-  // Returns true if the |app_package_name| matches the registered package
-  // names. |label| must not be null. If a match is found, the |label| is set
-  // to the matching rule's label.
-  bool MatchesAppPackageName(const std::string& app_package_name,
-                             std::string* label) const;
 
   DataUseTabModel* GetDataUseTabModel() const;
 
@@ -100,19 +83,15 @@ class ExternalDataUseObserver : public data_usage::DataUseAggregator::Observer {
   friend class ExternalDataUseObserverTest;
   FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, BufferDataUseReports);
   FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, BufferSize);
-  FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, ChangeRegex);
   FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, HashFunction);
   FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, LabelRemoved);
   FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, MultipleMatchingRules);
-  FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, MultipleRegex);
   FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest,
                            PeriodicFetchMatchingRules);
   FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, ReportsMergedCorrectly);
   FRIEND_TEST_ALL_PREFIXES(DataUseUITabModelTest, ReportTabEventsTest);
-  FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, SingleRegex);
   FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest,
                            TimestampsMergedCorrectly);
-  FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, TwoRegex);
   FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, Variations);
 
   // DataUseReportKey is a unique identifier for a data use report.
@@ -174,31 +153,6 @@ class ExternalDataUseObserver : public data_usage::DataUseAggregator::Observer {
   typedef base::hash_map<DataUseReportKey, DataUseReport, DataUseReportKeyHash>
       DataUseReports;
 
-  // Stores the matching rules.
-  class MatchingRule {
-   public:
-    MatchingRule(const std::string& app_package_name,
-                 scoped_ptr<re2::RE2> pattern,
-                 const std::string& label);
-    ~MatchingRule();
-
-    const re2::RE2* pattern() const;
-    const std::string& app_package_name() const;
-    const std::string& label() const;
-
-   private:
-    // Package name of the app that should be matched.
-    const std::string app_package_name_;
-
-    // RE2 pattern to match against URLs.
-    scoped_ptr<re2::RE2> pattern_;
-
-    // Opaque label that uniquely identifies this matching rule.
-    const std::string label_;
-
-    DISALLOW_COPY_AND_ASSIGN(MatchingRule);
-  };
-
   // Maximum buffer size. If an entry needs to be added to the buffer that has
   // size |kMaxBufferSize|, then the oldest entry will be removed.
   static const size_t kMaxBufferSize;
@@ -223,14 +177,6 @@ class ExternalDataUseObserver : public data_usage::DataUseAggregator::Observer {
   // submitted is the oldest one buffered.
   void SubmitBufferedDataUseReport();
 
-  // Registers multiple case-insensitive regular expressions. If the url of the
-  // data use request matches any of the regular expression, the observation is
-  // passed to the |external_data_use_observer_bridge_|. All vectors must be
-  // non-null and are owned by the caller.
-  void RegisterURLRegexes(const std::vector<std::string>* app_package_name,
-                          const std::vector<std::string>* domain_path_regex,
-                          const std::vector<std::string>* label);
-
   base::WeakPtr<ExternalDataUseObserver> GetWeakPtr();
 
   // Aggregator that sends data use observations to |this|.
@@ -245,15 +191,9 @@ class ExternalDataUseObserver : public data_usage::DataUseAggregator::Observer {
   // True if callback from |SubmitDataUseReportCallback| is currently pending.
   bool submit_data_report_pending_;
 
-  // Contains matching rules.
-  std::vector<scoped_ptr<MatchingRule>> matching_rules_;
-
   // Buffered data reports that need to be submitted to the
   // |external_data_use_observer_bridge_|.
   DataUseReports buffered_data_reports_;
-
-  // True if |this| is currently registered as a data use observer.
-  bool registered_as_observer_;
 
   // |ui_task_runner_| is used to call ExternalDataUseObserverBridge methods on
   // UI thread.

@@ -16,8 +16,6 @@
 #include "components/data_usage/core/data_use.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
-#include "third_party/re2/re2/re2.h"
-#include "url/gurl.h"
 
 namespace {
 
@@ -74,12 +72,11 @@ const size_t ExternalDataUseObserver::kMaxBufferSize = 100;
 
 ExternalDataUseObserver::ExternalDataUseObserver(
     data_usage::DataUseAggregator* data_use_aggregator,
-    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
+    const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
+    const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner)
     : data_use_aggregator_(data_use_aggregator),
       matching_rules_fetch_pending_(false),
       submit_data_report_pending_(false),
-      registered_as_observer_(false),
       ui_task_runner_(ui_task_runner),
       previous_report_time_(base::Time::Now()),
       last_matching_rules_fetch_time_(base::TimeTicks::Now()),
@@ -104,18 +101,16 @@ ExternalDataUseObserver::ExternalDataUseObserver(
                  io_task_runner, GetWeakPtr()));
 
   // |this| owns and must outlive the |data_use_tab_model_|.
-  data_use_tab_model_.reset(new DataUseTabModel(this, ui_task_runner_));
+  data_use_tab_model_.reset(new DataUseTabModel(ui_task_runner_));
 
   matching_rules_fetch_pending_ = true;
   data_use_aggregator_->AddObserver(this);
-  registered_as_observer_ = true;
 }
 
 ExternalDataUseObserver::~ExternalDataUseObserver() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (registered_as_observer_)
-    data_use_aggregator_->RemoveObserver(this);
+  data_use_aggregator_->RemoveObserver(this);
 
   // Delete |external_data_use_observer_bridge_| on the UI thread.
   if (!ui_task_runner_->DeleteSoon(FROM_HERE,
@@ -131,7 +126,8 @@ void ExternalDataUseObserver::FetchMatchingRulesDone(
     const std::vector<std::string>* label) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  RegisterURLRegexes(app_package_name, domain_path_regex, label);
+  data_use_tab_model_->RegisterURLRegexes(app_package_name, domain_path_regex,
+                                          label);
   matching_rules_fetch_pending_ = false;
   // Process buffered reports.
 }
@@ -256,92 +252,9 @@ void ExternalDataUseObserver::SubmitBufferedDataUseReport() {
                  report.bytes_uploaded));
 }
 
-void ExternalDataUseObserver::RegisterURLRegexes(
-    const std::vector<std::string>* app_package_name,
-    const std::vector<std::string>* domain_path_regex,
-    const std::vector<std::string>* label) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK_EQ(app_package_name->size(), domain_path_regex->size());
-  DCHECK_EQ(app_package_name->size(), label->size());
-
-  base::hash_set<std::string> removed_matching_rule_labels;
-
-  for (const auto& matching_rule : matching_rules_)
-    removed_matching_rule_labels.insert(matching_rule->label());
-
-  matching_rules_.clear();
-  re2::RE2::Options options(re2::RE2::DefaultOptions);
-  options.set_case_sensitive(false);
-
-  for (size_t i = 0; i < domain_path_regex->size(); ++i) {
-    const std::string& url_regex = domain_path_regex->at(i);
-    if (url_regex.empty() && app_package_name[i].empty())
-      continue;
-    scoped_ptr<re2::RE2> pattern(new re2::RE2(url_regex, options));
-    if (!pattern->ok())
-      continue;
-    DCHECK(!label->at(i).empty());
-    matching_rules_.push_back(make_scoped_ptr(new MatchingRule(
-        app_package_name->at(i), pattern.Pass(), label->at(i))));
-
-    removed_matching_rule_labels.erase(label->at(i));
-  }
-
-  for (std::string label : removed_matching_rule_labels)
-    data_use_tab_model_->OnTrackingLabelRemoved(label);
-
-  if (matching_rules_.size() == 0 && registered_as_observer_) {
-    // Unregister as an observer if no regular expressions were received.
-    data_use_aggregator_->RemoveObserver(this);
-    registered_as_observer_ = false;
-  } else if (matching_rules_.size() > 0 && !registered_as_observer_) {
-    // Register as an observer if regular expressions were received.
-    data_use_aggregator_->AddObserver(this);
-    registered_as_observer_ = true;
-  }
-}
-
 base::WeakPtr<ExternalDataUseObserver> ExternalDataUseObserver::GetWeakPtr() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return weak_factory_.GetWeakPtr();
-}
-
-bool ExternalDataUseObserver::Matches(const GURL& gurl,
-                                      std::string* label) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  *label = "";
-
-  if (!gurl.is_valid() || gurl.is_empty())
-    return false;
-
-  for (const auto& matching_rule : matching_rules_) {
-    const re2::RE2* pattern = matching_rule->pattern();
-    if (re2::RE2::FullMatch(gurl.spec(), *pattern)) {
-      *label = matching_rule->label();
-      return true;
-    }
-  }
-
-  return false;
-}
-
-bool ExternalDataUseObserver::MatchesAppPackageName(
-    const std::string& app_package_name,
-    std::string* label) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  *label = "";
-
-  if (app_package_name.empty())
-    return false;
-
-  for (const auto& matching_rule : matching_rules_) {
-    if (app_package_name == matching_rule->app_package_name()) {
-      *label = matching_rule->label();
-      return true;
-    }
-  }
-
-  return false;
 }
 
 DataUseTabModel* ExternalDataUseObserver::GetDataUseTabModel() const {
@@ -386,29 +299,6 @@ size_t ExternalDataUseObserver::DataUseReportKeyHash::operator()(
   hash = hash * 43 + k.connection_type;
   hash = hash * 83 + hash_function(k.mcc_mnc);
   return hash;
-}
-
-ExternalDataUseObserver::MatchingRule::MatchingRule(
-    const std::string& app_package_name,
-    scoped_ptr<re2::RE2> pattern,
-    const std::string& label)
-    : app_package_name_(app_package_name),
-      pattern_(pattern.Pass()),
-      label_(label) {}
-
-ExternalDataUseObserver::MatchingRule::~MatchingRule() {}
-
-const re2::RE2* ExternalDataUseObserver::MatchingRule::pattern() const {
-  return pattern_.get();
-}
-
-const std::string& ExternalDataUseObserver::MatchingRule::app_package_name()
-    const {
-  return app_package_name_;
-}
-
-const std::string& ExternalDataUseObserver::MatchingRule::label() const {
-  return label_;
 }
 
 }  // namespace android

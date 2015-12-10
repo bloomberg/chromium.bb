@@ -7,11 +7,13 @@
 
 #include <list>
 #include <string>
+#include <vector>
 
 #include "base/containers/hash_tables.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
@@ -32,7 +34,7 @@ namespace chrome {
 
 namespace android {
 
-class ExternalDataUseObserver;
+class DataUseMatcher;
 
 // Models tracking and labeling of data usage within each Tab. Within each tab,
 // the model tracks the data use of a sequence of navigations in a "tracking
@@ -76,8 +78,8 @@ class DataUseTabModel {
     virtual void NotifyTrackingEnding(SessionID::id_type tab_id) = 0;
   };
 
-  DataUseTabModel(const ExternalDataUseObserver* data_use_observer,
-                  scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
+  explicit DataUseTabModel(
+      const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner);
 
   virtual ~DataUseTabModel();
 
@@ -112,6 +114,12 @@ class DataUseTabModel {
   // |observer| is notified on UI thread.
   // TODO(tbansal): Remove observers that have been destroyed.
   void AddObserver(base::WeakPtr<TabDataUseObserver> observer);
+
+  // Called by ExternalDataUseObserver to register multiple case-insensitive
+  // regular expressions.
+  void RegisterURLRegexes(const std::vector<std::string>* app_package_name,
+                          const std::vector<std::string>* domain_path_regex,
+                          const std::vector<std::string>* label);
 
  protected:
   // Notifies the observers that a data usage tracking session started for
@@ -161,10 +169,6 @@ class DataUseTabModel {
   // size is |kMaxTabEntries|.
   void CompactTabEntries();
 
-  // Contains the ExternalDataUseObserver. The caller must ensure that the
-  // |data_use_observer_| outlives this instance.
-  const ExternalDataUseObserver* data_use_observer_;
-
   // Collection of observers that receive tracking session start and end
   // notifications. Notifications are posted on UI thread.
   std::list<base::WeakPtr<TabDataUseObserver>> observers_;
@@ -177,6 +181,9 @@ class DataUseTabModel {
 
   // |ui_task_runner_| is used to notify TabDataUseObserver on UI thread.
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
+
+  // Stores the matching patterns.
+  scoped_ptr<DataUseMatcher> data_use_matcher_;
 
   base::ThreadChecker thread_checker_;
 

@@ -8,6 +8,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
+#include "chrome/browser/android/data_usage/data_use_matcher.h"
 #include "chrome/browser/android/data_usage/external_data_use_observer.h"
 #include "components/data_usage/core/data_use.h"
 #include "components/variations/variations_associated_data.h"
@@ -52,13 +53,12 @@ namespace chrome {
 namespace android {
 
 DataUseTabModel::DataUseTabModel(
-    const ExternalDataUseObserver* data_use_observer,
-    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
-    : data_use_observer_(data_use_observer),
-      max_tab_entries_(GetMaxTabEntries()),
+    const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner)
+    : max_tab_entries_(GetMaxTabEntries()),
       ui_task_runner_(ui_task_runner),
       weak_factory_(this) {
   DCHECK(ui_task_runner_);
+  data_use_matcher_.reset(new DataUseMatcher(weak_factory_.GetWeakPtr()));
 }
 
 DataUseTabModel::~DataUseTabModel() {
@@ -93,13 +93,13 @@ void DataUseTabModel::OnNavigationEvent(SessionID::id_type tab_id,
       if (transition == TRANSITION_FROM_EXTERNAL_APP) {
         // Package name should match, for transitions from external app.
         if (!package.empty() &&
-            data_use_observer_->MatchesAppPackageName(package, &label)) {
+            data_use_matcher_->MatchesAppPackageName(package, &label)) {
           DCHECK(!label.empty());
           start_tracking = true;
         }
       }
       if (!start_tracking && !url.is_empty() &&
-          data_use_observer_->Matches(url, &label)) {
+          data_use_matcher_->MatchesURL(url, &label)) {
         DCHECK(!label.empty());
         start_tracking = true;
       }
@@ -164,6 +164,14 @@ bool DataUseTabModel::GetLabelForDataUse(const data_usage::DataUse& data_use,
 void DataUseTabModel::AddObserver(base::WeakPtr<TabDataUseObserver> observer) {
   DCHECK(thread_checker_.CalledOnValidThread());
   observers_.push_back(observer);
+}
+
+void DataUseTabModel::RegisterURLRegexes(
+    const std::vector<std::string>* app_package_name,
+    const std::vector<std::string>* domain_path_regex,
+    const std::vector<std::string>* label) {
+  data_use_matcher_->RegisterURLRegexes(app_package_name, domain_path_regex,
+                                        label);
 }
 
 base::TimeTicks DataUseTabModel::Now() const {

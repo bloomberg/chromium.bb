@@ -1,0 +1,116 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/android/data_usage/data_use_matcher.h"
+
+#include "base/memory/weak_ptr.h"
+#include "third_party/re2/re2/re2.h"
+#include "url/gurl.h"
+
+namespace chrome {
+
+namespace android {
+
+DataUseMatcher::DataUseMatcher(
+    const base::WeakPtr<DataUseTabModel>& data_use_tab_model)
+    : data_use_tab_model_(data_use_tab_model) {}
+
+DataUseMatcher::~DataUseMatcher() {}
+
+void DataUseMatcher::RegisterURLRegexes(
+    const std::vector<std::string>* app_package_name,
+    const std::vector<std::string>* domain_path_regex,
+    const std::vector<std::string>* label) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_EQ(app_package_name->size(), domain_path_regex->size());
+  DCHECK_EQ(app_package_name->size(), label->size());
+
+  base::hash_set<std::string> removed_matching_rule_labels;
+
+  for (const auto& matching_rule : matching_rules_)
+    removed_matching_rule_labels.insert(matching_rule->label());
+
+  matching_rules_.clear();
+  re2::RE2::Options options(re2::RE2::DefaultOptions);
+  options.set_case_sensitive(false);
+
+  for (size_t i = 0; i < domain_path_regex->size(); ++i) {
+    const std::string& url_regex = domain_path_regex->at(i);
+    if (url_regex.empty() && app_package_name->at(i).empty())
+      continue;
+    scoped_ptr<re2::RE2> pattern(new re2::RE2(url_regex, options));
+    if (!pattern->ok())
+      continue;
+    DCHECK(!label->at(i).empty());
+    matching_rules_.push_back(make_scoped_ptr(new MatchingRule(
+        app_package_name->at(i), pattern.Pass(), label->at(i))));
+
+    removed_matching_rule_labels.erase(label->at(i));
+  }
+
+  for (const std::string& label : removed_matching_rule_labels) {
+    if (data_use_tab_model_)
+      data_use_tab_model_->OnTrackingLabelRemoved(label);
+  }
+}
+
+bool DataUseMatcher::MatchesURL(const GURL& url, std::string* label) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  *label = "";
+
+  if (!url.is_valid() || url.is_empty())
+    return false;
+
+  for (const auto& matching_rule : matching_rules_) {
+    if (re2::RE2::FullMatch(url.spec(), *(matching_rule->pattern()))) {
+      *label = matching_rule->label();
+      return true;
+    }
+  }
+
+  return false;
+}
+
+bool DataUseMatcher::MatchesAppPackageName(const std::string& app_package_name,
+                                           std::string* label) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  *label = "";
+
+  if (app_package_name.empty())
+    return false;
+
+  for (const auto& matching_rule : matching_rules_) {
+    if (app_package_name == matching_rule->app_package_name()) {
+      *label = matching_rule->label();
+      return true;
+    }
+  }
+
+  return false;
+}
+
+DataUseMatcher::MatchingRule::MatchingRule(const std::string& app_package_name,
+                                           scoped_ptr<re2::RE2> pattern,
+                                           const std::string& label)
+    : app_package_name_(app_package_name),
+      pattern_(pattern.Pass()),
+      label_(label) {}
+
+DataUseMatcher::MatchingRule::~MatchingRule() {}
+
+const re2::RE2* DataUseMatcher::MatchingRule::pattern() const {
+  return pattern_.get();
+}
+
+const std::string& DataUseMatcher::MatchingRule::app_package_name() const {
+  return app_package_name_;
+}
+
+const std::string& DataUseMatcher::MatchingRule::label() const {
+  return label_;
+}
+
+}  // namespace android
+
+}  // namespace chrome
