@@ -63,14 +63,15 @@ class AttestationPolicyObserver {
   // Gets the existing EMK certificate and sends it to CheckCertificateExpiry.
   void GetExistingCertificate();
 
-  // Checks if the given certificate is expired and, if so, get a new one.
-  void CheckCertificateExpiry(const std::string& certificate);
+  // Checks if any certificate in the given pem_certificate_chain is expired
+  // and, if so, gets a new one. If not renewing, calls CheckIfUploaded.
+  void CheckCertificateExpiry(const std::string& pem_certificate_chain);
 
   // Uploads a certificate to the policy server.
-  void UploadCertificate(const std::string& certificate);
+  void UploadCertificate(const std::string& pem_certificate_chain);
 
   // Checks if a certificate has already been uploaded and, if not, upload.
-  void CheckIfUploaded(const std::string& certificate,
+  void CheckIfUploaded(const std::string& pem_certificate_chain,
                        const std::string& key_payload);
 
   // Gets the payload associated with the EMK and sends it to |callback|.

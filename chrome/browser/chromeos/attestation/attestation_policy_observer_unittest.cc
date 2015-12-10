@@ -177,7 +177,7 @@ TEST_F(AttestationPolicyObserverTest, NewCertificate) {
 
 TEST_F(AttestationPolicyObserverTest, KeyExistsNotUploaded) {
   std::string certificate;
-  ASSERT_TRUE(GetFakeCertificateDER(base::TimeDelta::FromDays(kCertValid),
+  ASSERT_TRUE(GetFakeCertificatePEM(base::TimeDelta::FromDays(kCertValid),
                                     &certificate));
   SetupMocks(MOCK_KEY_EXISTS, certificate);
   Run();
@@ -185,7 +185,7 @@ TEST_F(AttestationPolicyObserverTest, KeyExistsNotUploaded) {
 
 TEST_F(AttestationPolicyObserverTest, KeyExistsAlreadyUploaded) {
   std::string certificate;
-  ASSERT_TRUE(GetFakeCertificateDER(base::TimeDelta::FromDays(kCertValid),
+  ASSERT_TRUE(GetFakeCertificatePEM(base::TimeDelta::FromDays(kCertValid),
                                     &certificate));
   SetupMocks(MOCK_KEY_EXISTS | MOCK_KEY_UPLOADED, certificate);
   Run();
@@ -193,7 +193,7 @@ TEST_F(AttestationPolicyObserverTest, KeyExistsAlreadyUploaded) {
 
 TEST_F(AttestationPolicyObserverTest, KeyExistsCertExpiringSoon) {
   std::string certificate;
-  ASSERT_TRUE(GetFakeCertificateDER(
+  ASSERT_TRUE(GetFakeCertificatePEM(
       base::TimeDelta::FromDays(kCertExpiringSoon), &certificate));
   SetupMocks(MOCK_KEY_EXISTS | MOCK_KEY_UPLOADED | MOCK_NEW_KEY, certificate);
   Run();
@@ -201,7 +201,7 @@ TEST_F(AttestationPolicyObserverTest, KeyExistsCertExpiringSoon) {
 
 TEST_F(AttestationPolicyObserverTest, KeyExistsCertExpired) {
   std::string certificate;
-  ASSERT_TRUE(GetFakeCertificateDER(base::TimeDelta::FromDays(kCertExpired),
+  ASSERT_TRUE(GetFakeCertificatePEM(base::TimeDelta::FromDays(kCertExpired),
                                     &certificate));
   SetupMocks(MOCK_KEY_EXISTS | MOCK_KEY_UPLOADED | MOCK_NEW_KEY, certificate);
   Run();

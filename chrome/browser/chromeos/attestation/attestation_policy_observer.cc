@@ -23,6 +23,7 @@
 #include "components/policy/core/common/cloud/cloud_policy_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
+#include "net/cert/pem_tokenizer.h"
 #include "net/cert/x509_certificate.h"
 
 namespace {
@@ -210,13 +211,25 @@ void AttestationPolicyObserver::GetExistingCertificate() {
 }
 
 void AttestationPolicyObserver::CheckCertificateExpiry(
-    const std::string& certificate) {
-  scoped_refptr<net::X509Certificate> x509(
-      net::X509Certificate::CreateFromBytes(certificate.data(),
-                                            certificate.length()));
-  if (!x509.get() || x509->valid_expiry().is_null()) {
-    LOG(WARNING) << "Failed to parse certificate, cannot check expiry.";
-  } else {
+    const std::string& pem_certificate_chain) {
+  int num_certificates = 0;
+  net::PEMTokenizer pem_tokenizer(pem_certificate_chain, {"CERTIFICATE"});
+  while (pem_tokenizer.GetNext()) {
+    ++num_certificates;
+    scoped_refptr<net::X509Certificate> x509 =
+        net::X509Certificate::CreateFromBytes(pem_tokenizer.data().data(),
+                                              pem_tokenizer.data().length());
+    if (!x509.get() || x509->valid_expiry().is_null()) {
+      // This logic intentionally fails open. In theory this should not happen
+      // but in practice parsing X.509 can be brittle and there are a lot of
+      // factors including which underlying module is parsing the certificate,
+      // whether that module performs more checks than just ASN.1/DER format,
+      // and the server module that generated the certificate(s). Renewal is
+      // expensive so we only renew certificates with good evidence that they
+      // have expired or will soon expire; if we don't know, we don't renew.
+      LOG(WARNING) << "Failed to parse certificate, cannot check expiry.";
+      continue;
+    }
     const base::TimeDelta threshold =
         base::TimeDelta::FromDays(kExpiryThresholdInDays);
     if ((base::Time::Now() + threshold) > x509->valid_expiry()) {
@@ -225,23 +238,25 @@ void AttestationPolicyObserver::CheckCertificateExpiry(
       return;
     }
   }
-
+  if (num_certificates == 0) {
+    LOG(WARNING) << "Failed to parse certificate chain, cannot check expiry.";
+  }
   // Get the payload and check if the certificate has already been uploaded.
   GetKeyPayload(base::Bind(&AttestationPolicyObserver::CheckIfUploaded,
                            weak_factory_.GetWeakPtr(),
-                           certificate));
+                           pem_certificate_chain));
 }
 
 void AttestationPolicyObserver::UploadCertificate(
-    const std::string& certificate) {
+    const std::string& pem_certificate_chain) {
   policy_client_->UploadCertificate(
-      certificate,
+      pem_certificate_chain,
       base::Bind(&AttestationPolicyObserver::OnUploadComplete,
                  weak_factory_.GetWeakPtr()));
 }
 
 void AttestationPolicyObserver::CheckIfUploaded(
-    const std::string& certificate,
+    const std::string& pem_certificate_chain,
     const std::string& key_payload) {
   AttestationKeyPayload payload_pb;
   if (!key_payload.empty() &&
@@ -250,7 +265,7 @@ void AttestationPolicyObserver::CheckIfUploaded(
     // Already uploaded... nothing more to do.
     return;
   }
-  UploadCertificate(certificate);
+  UploadCertificate(pem_certificate_chain);
 }
 
 void AttestationPolicyObserver::GetKeyPayload(
