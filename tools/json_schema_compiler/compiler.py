@@ -25,6 +25,7 @@ from cpp_bundle_generator import CppBundleGenerator
 from cpp_generator import CppGenerator
 from cpp_type_generator import CppTypeGenerator
 from js_externs_generator import JsExternsGenerator
+from js_interface_generator import JsInterfaceGenerator
 import json_schema
 from cpp_namespace_environment import CppNamespaceEnvironment
 from model import Model
@@ -32,7 +33,9 @@ from schema_loader import SchemaLoader
 
 # Names of supported code generators, as specified on the command-line.
 # First is default.
-GENERATORS = ['cpp', 'cpp-bundle-registration', 'cpp-bundle-schema', 'externs']
+GENERATORS = [
+  'cpp', 'cpp-bundle-registration', 'cpp-bundle-schema', 'externs', 'interface'
+]
 
 def GenerateSchema(generator_name,
                    file_paths,
@@ -122,6 +125,10 @@ def GenerateSchema(generator_name,
     generators = [
       ('%s_externs.js' % namespace.unix_name, JsExternsGenerator())
     ]
+  elif generator_name == 'interface':
+    generators = [
+      ('%s_interface.js' % namespace.unix_name, JsInterfaceGenerator())
+    ]
   else:
     raise Exception('Unrecognised generator %s' % generator_name)
 
@@ -139,7 +146,11 @@ def GenerateSchema(generator_name,
         os.makedirs(output_dir)
       with open(os.path.join(output_dir, filename), 'w') as f:
         f.write(code)
-    output_code += [filename, '', code, '']
+    # If multiple files are being output, add the filename for each file.
+    if len(generators) > 1:
+      output_code += [filename, '', code, '']
+    else:
+      output_code += [code]
 
   return '\n'.join(output_code)
 
