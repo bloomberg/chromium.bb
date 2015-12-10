@@ -1,20 +1,6 @@
 if (self.importScripts) {
   importScripts('/fetch/resources/fetch-test-helpers.js');
-}
-
-function read_until_end(reader) {
-  var chunks = [];
-  function consume() {
-    return reader.read().then(function(r) {
-        if (r.done) {
-          return chunks;
-        } else {
-          chunks.push(r.value);
-          return consume();
-        }
-      });
-  }
-  return consume();
+  importScripts('/streams/resources/rs-utils.js');
 }
 
 promise_test(function(t) {
@@ -31,7 +17,7 @@ promise_test(function(t) {
 promise_test(function(t) {
     return fetch('/fetch/resources/doctype.html').then(function(res) {
         var reader = res.body.getReader();
-        return read_until_end(reader);
+        return readableStreamToArray(res.body, reader);
       }).then(function(chunks) {
         var size = 0;
         for (var chunk of chunks) {

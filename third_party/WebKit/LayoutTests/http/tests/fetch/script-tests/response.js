@@ -1,19 +1,6 @@
 if (self.importScripts) {
   importScripts('../resources/fetch-test-helpers.js');
-}
-
-function consume(reader) {
-  var chunks = [];
-  function rec(reader) {
-    return reader.read().then(function(r) {
-        if (r.done) {
-          return chunks;
-        }
-        chunks.push(r.value);
-        return rec(reader);
-      });
-  }
-  return rec(reader);
+  importScripts('/streams/resources/rs-utils.js');
 }
 
 function decode(chunks) {
@@ -294,12 +281,12 @@ promise_test(function(t) {
     assert_not_equals(res.body, clone.body);
     assert_not_equals(body, clone.body);
     assert_throws({name: 'TypeError'}, function() { body.getReader(); });
-    var reader1 = res.body.getReader();
-    var reader2 = clone.body.getReader();
-    return Promise.all([consume(reader1), consume(reader2)]).then(function(r) {
-        assert_equals(decode(r[0]), 'hello');
-        assert_equals(decode(r[1]), 'hello');
-      });
+    return Promise.all(
+      [readableStreamToArray(res.body), readableStreamToArray(clone.body)])
+      .then(r => {
+          assert_equals(decode(r[0]), 'hello');
+          assert_equals(decode(r[1]), 'hello');
+        });
   }, 'Clone on Response (manual read)');
 
 test(() => {

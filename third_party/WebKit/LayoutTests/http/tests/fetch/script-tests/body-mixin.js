@@ -1,15 +1,6 @@
 if (self.importScripts) {
   importScripts('../resources/fetch-test-helpers.js');
-}
-
-function readStream(reader, values) {
-  reader.read().then(function(r) {
-      if (!r.done) {
-        values.push(r.value);
-        readStream(reader, values);
-      }
-    });
-  return reader.closed;
+  importScripts('/streams/resources/rs-utils.js');
 }
 
 function isLocked(stream) {
@@ -35,14 +26,13 @@ promise_test(function(test) {
     }, 'FetchTextAfterAccessingStreamTest');
 
 promise_test(function(test) {
-    var chunks = [];
     var actual = '';
     return fetch('/fetch/resources/doctype.html')
       .then(function(response) {
           r = response;
-          return readStream(response.body.getReader(), chunks);
+          return readableStreamToArray(response.body);
         })
-      .then(function() {
+      .then(function(chunks) {
           var decoder = new TextDecoder();
           for (var chunk of chunks) {
             actual += decoder.decode(chunk, {stream: true});
