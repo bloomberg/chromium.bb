@@ -113,17 +113,21 @@ template("generate_nmf") {
 # Variables:
 #   executable: Non-SFI .nexe executable to generate nmf for
 #   nmf: the name and the path of the output file
+#   nmfflags: additional flags for the nmf generator
 template("generate_nonsfi_test_nmf") {
   assert(defined(invoker.executable), "Must define executable")
   assert(defined(invoker.nmf), "Must define nmf")
 
   action(target_name) {
+    nmfflags = []
+
     forward_variables_from(invoker,
                            [
                              "deps",
                              "data_deps",
                              "executable",
                              "nmf",
+                             "nmfflags",
                              "testonly",
                              "public_deps",
                            ])
@@ -147,9 +151,9 @@ template("generate_nonsfi_test_nmf") {
       arch = target_cpu
     }
     args = [
-      "--program=" + rebase_path(executable, root_build_dir),
-      "--arch=${arch}",
-      "--output=" + rebase_path(nmf, root_build_dir),
-    ]
+             "--program=" + rebase_path(executable, root_build_dir),
+             "--arch=${arch}",
+             "--output=" + rebase_path(nmf, root_build_dir),
+           ] + nmfflags
   }
 }

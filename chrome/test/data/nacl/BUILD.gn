@@ -10,6 +10,7 @@ group("nacl") {
   newlib = "//build/toolchain/nacl:clang_newlib_${target_cpu}"
   glibc = "//build/toolchain/nacl:glibc_${target_cpu}"
   pnacl = "//build/toolchain/nacl:newlib_pnacl"
+  nonsfi = "//build/toolchain/nacl:newlib_pnacl_nonsfi"
   deps = [
     ":exit_status_test($glibc)",
     ":exit_status_test($newlib)",
@@ -18,8 +19,10 @@ group("nacl") {
     ":extension_validation_cache($newlib)",
     ":irt_exception_test($glibc)",
     ":irt_exception_test($newlib)",
+    ":irt_exception_test($nonsfi)",
     ":irt_exception_test($pnacl)",
     ":irt_manifest_file($newlib)",
+    ":irt_manifest_file($nonsfi)",
     ":partly_invalid($newlib)",
     ":pnacl_debug_url_test($pnacl)",
     ":pnacl_dyncode_syscall_disabled_test($pnacl)",
@@ -65,6 +68,7 @@ group("nacl") {
     ":ppapi_progress_events($pnacl)",
     ":shared_test_files($glibc)",
     ":shared_test_files($newlib)",
+    ":shared_test_files($nonsfi)",
     ":shared_test_files($pnacl)",
     ":simple_test($glibc)",
     ":simple_test($newlib)",
@@ -73,12 +77,19 @@ group("nacl") {
     ":sysconf_nprocessors_onln_test($newlib)",
     ":sysconf_nprocessors_onln_test($pnacl)",
   ]
+  if (is_linux && is_clang) {
+    deps += [ ":nonsfi_libc_free" ]
+  }
 }
 
 if (is_nacl) {
   template("nacl_test_data") {
     if (current_cpu == "pnacl") {
-      variant = "pnacl"
+      if (is_nacl_nonsfi) {
+        variant = "nonsfi"
+      } else {
+        variant = "pnacl"
+      }
     } else if (is_nacl_glibc) {
       variant = "glibc"
     } else {
@@ -113,6 +124,9 @@ if (is_nacl) {
       }
 
       nexe_target_name = target_name + "_nexe"
+      if (is_nacl_nonsfi) {
+        pexe_translate_target_name = target_name + "_translate_pexe"
+      }
       nexe_copy_target_name = target_name + "_copy_nexe"
       if (generate_nmf) {
         nmf_target_name = target_name + "_nmf"
@@ -154,8 +168,58 @@ if (is_nacl) {
         }
       }
 
+      if (is_nacl_nonsfi) {
+        action(pexe_translate_target_name) {
+          # We specify the toolchain explicitly because in the Non-SFI case, we
+          # still want to use the pexe built using the newlib_pnacl toolchain.
+          tests = ":$nexe_target_name(//build/toolchain/nacl:newlib_pnacl)"
+
+          pexe = get_label_info(tests, "root_out_dir") +
+                 "/${suffixed_target_name}.pexe"
+          if (target_cpu == "x86" || target_cpu == "x64") {
+            nmf_cpu = "x32"
+          } else {
+            nmf_cpu = target_cpu
+          }
+          nexe = "${root_out_dir}/${base_target_name}_pnacl_newlib_${nmf_cpu}_nonsfi.nexe"
+
+          script = "${nacl_toolchain_bindir}/pydir/loader.py"
+          sources = [
+            pexe,
+          ]
+          outputs = [
+            nexe,
+          ]
+
+          if (target_cpu == "x86" || target_cpu == "x64") {
+            arch = "x86-32-nonsfi"
+          } else if (target_cpu == "arm") {
+            arch = "arm-nonsfi"
+          }
+
+          pnacl_irt_shim = "//ppapi/native_client/src/untrusted/pnacl_irt_shim:aot(//build/toolchain/nacl:newlib_pnacl_nonsfi)"
+
+          args = [
+            "pnacl-translate",
+            rebase_path(pexe, root_build_dir),
+            "-o",
+            rebase_path(nexe, root_build_dir),
+            "-arch",
+            arch,
+            "-Wl,-L" +
+                rebase_path(get_label_info(pnacl_irt_shim, "target_out_dir")),
+          ]
+          deps = [
+            ":$nexe_target_name(//build/toolchain/nacl:newlib_pnacl)",
+          ]
+          data_deps = [
+            pnacl_irt_shim,
+          ]
+        }
+      }
+
       copy(nexe_copy_target_name) {
-        if (current_cpu == "pnacl") {
+        if (current_cpu == "pnacl" && !is_nacl_nonsfi) {
           if (defined(invoker.nonstable_pexe) && invoker.nonstable_pexe) {
             sources = [
               "${root_out_dir}/exe.unstripped/${suffixed_target_name}.pexe",
@@ -165,6 +229,8 @@ if (is_nacl) {
               "${root_out_dir}/${suffixed_target_name}.pexe",
             ]
           }
+        } else if (is_nacl_nonsfi) {
+          sources = get_target_outputs(":${pexe_translate_target_name}")
         } else {
           sources = [
             "${root_out_dir}/${suffixed_target_name}.nexe",
@@ -173,30 +239,51 @@ if (is_nacl) {
         outputs = [
           "${root_build_dir}/${destination_dir}/${variant}/{{source_file_part}}",
         ]
-        deps = [
-          ":${nexe_target_name}",
-        ]
+        if (is_nacl_nonsfi) {
+          deps = [
+            ":${pexe_translate_target_name}",
+          ]
+        } else {
+          deps = [
+            ":${nexe_target_name}",
+          ]
+        }
       }
     }
 
     if (defined(invoker.sources) && generate_nmf) {
-      generate_nmf(nmf_target_name) {
-        nmf = "${root_build_dir}/${destination_dir}/${variant}/${base_target_name}.nmf"
-        if (current_cpu == "pnacl") {
-          executables = [ "${root_build_dir}/${destination_dir}/${variant}/${suffixed_target_name}.pexe" ]
-        } else {
-          executables = [ "${root_build_dir}/${destination_dir}/${variant}/${suffixed_target_name}.nexe" ]
+      if (is_nacl_nonsfi) {
+        generate_nonsfi_test_nmf(nmf_target_name) {
+          nmf = "${root_build_dir}/${destination_dir}/${variant}/${base_target_name}.nmf"
+          files = get_target_outputs(":${nexe_copy_target_name}")
+          executable = files[0]
+          if (defined(invoker.nmfflags)) {
+            nmfflags = invoker.nmfflags
+          }
+          deps = [
+            ":${nexe_copy_target_name}",
+          ]
         }
-        if (is_nacl_glibc) {
-          lib_prefix = "${base_target_name}_libs"
-          stage_dependencies = "${root_build_dir}/${destination_dir}/${variant}"
+      } else {
+        generate_nmf(nmf_target_name) {
+          nmf = "${root_build_dir}/${destination_dir}/${variant}/${base_target_name}.nmf"
+          if (current_cpu == "pnacl") {
+            executables = [ "${root_build_dir}/${destination_dir}/${variant}/${suffixed_target_name}.pexe" ]
+          } else {
+            executables = [ "${root_build_dir}/${destination_dir}/${variant}/${suffixed_target_name}.nexe" ]
+          }
+          if (is_nacl_glibc) {
+            lib_prefix = "${base_target_name}_libs"
+            stage_dependencies =
+                "${root_build_dir}/${destination_dir}/${variant}"
+          }
+          if (defined(invoker.nmfflags)) {
+            nmfflags = invoker.nmfflags
+          }
+          deps = [
+            ":${nexe_copy_target_name}",
+          ]
         }
-        if (defined(invoker.nmfflags)) {
-          nmfflags = invoker.nmfflags
-        }
-        deps = [
-          ":${nexe_copy_target_name}",
-        ]
       }
     }
 
@@ -206,10 +293,12 @@ if (is_nacl) {
         outputs = [
           "${root_build_dir}/${destination_dir}/${variant}/{{source_file_part}}",
         ]
+        deps = []
         if (defined(invoker.sources)) {
-          deps = [
-            ":${nexe_target_name}",
-          ]
+          deps += [ ":${nexe_target_name}" ]
+        }
+        if (defined(invoker.files_deps)) {
+          deps += invoker.files_deps
         }
       }
     }
@@ -256,6 +345,54 @@ if (is_nacl) {
     ]
   }
 
+  source_set("ppapi_test_lib") {
+    sources = [
+      # TODO(ncbray) move these files once SCons no longer depends on them.
+      "//ppapi/native_client/tests/ppapi_test_lib/get_browser_interface.cc",
+      "//ppapi/native_client/tests/ppapi_test_lib/get_browser_interface.h",
+      "//ppapi/native_client/tests/ppapi_test_lib/internal_utils.cc",
+      "//ppapi/native_client/tests/ppapi_test_lib/internal_utils.h",
+      "//ppapi/native_client/tests/ppapi_test_lib/module_instance.cc",
+      "//ppapi/native_client/tests/ppapi_test_lib/test_interface.cc",
+      "//ppapi/native_client/tests/ppapi_test_lib/test_interface.h",
+      "//ppapi/native_client/tests/ppapi_test_lib/testable_callback.cc",
+      "//ppapi/native_client/tests/ppapi_test_lib/testable_callback.h",
+    ]
+    deps = [
+      "//native_client/src/shared/gio",
+      "//native_client/src/shared/platform",
+      "//ppapi/native_client:ppapi_lib",
+    ]
+  }
+
+  nacl_test_data("irt_manifest_file") {
+    sources = [
+      "manifest_file/irt_manifest_file_test.cc",
+    ]
+    nmfflags = [
+      "-xtest_file:test_file.txt",
+      "-xnmf says hello world:test_file.txt",
+
+      # There is no dummy_test_file.txt file intentionally. This is just for
+      # a test case where there is a manifest entry, but no actual file.
+      "-xdummy_test_file:dummy_test_file.txt",
+    ]
+    test_files = [ "manifest_file/irt_manifest_file_test.html" ]
+  }
+
+  nacl_test_data("irt_exception_test") {
+    sources = [
+      "irt_exception/irt_exception_test.cc",
+    ]
+    deps = [
+      ":ppapi_test_lib",
+      "//native_client/src/untrusted/nacl:nacl_exception",
+    ]
+    test_files = [ "irt_exception/irt_exception_test.html" ]
+  }
+}
+
+if (is_nacl && !is_nacl_nonsfi) {
   nacl_test_data("simple_test") {
     output_name = "simple"
     sources = [
@@ -302,26 +439,6 @@ if (is_nacl) {
     ]
     test_files =
         [ "sysconf_nprocessors_onln/sysconf_nprocessors_onln_test.html" ]
-  }
-
-  source_set("ppapi_test_lib") {
-    sources = [
-      # TODO(ncbray) move these files once SCons no longer depends on them.
-      "//ppapi/native_client/tests/ppapi_test_lib/get_browser_interface.cc",
-      "//ppapi/native_client/tests/ppapi_test_lib/get_browser_interface.h",
-      "//ppapi/native_client/tests/ppapi_test_lib/internal_utils.cc",
-      "//ppapi/native_client/tests/ppapi_test_lib/internal_utils.h",
-      "//ppapi/native_client/tests/ppapi_test_lib/module_instance.cc",
-      "//ppapi/native_client/tests/ppapi_test_lib/test_interface.cc",
-      "//ppapi/native_client/tests/ppapi_test_lib/test_interface.h",
-      "//ppapi/native_client/tests/ppapi_test_lib/testable_callback.cc",
-      "//ppapi/native_client/tests/ppapi_test_lib/testable_callback.h",
-    ]
-    deps = [
-      "//native_client/src/shared/gio",
-      "//native_client/src/shared/platform",
-      "//ppapi/native_client:ppapi_lib",
-    ]
   }
 
   nacl_test_data("ppapi_progress_events") {
@@ -416,32 +533,6 @@ if (is_nacl) {
     deps = [
       ":ppapi_test_lib",
     ]
-  }
-
-  nacl_test_data("irt_manifest_file") {
-    sources = [
-      "manifest_file/irt_manifest_file_test.cc",
-    ]
-    nmfflags = [
-      "-xtest_file:test_file.txt",
-      "-xnmf says hello world:test_file.txt",
-
-      # There is no dummy_test_file.txt file intentionally. This is just for
-      # a test case where there is a manifest entry, but no actual file.
-      "-xdummy_test_file:dummy_test_file.txt",
-    ]
-    test_files = [ "manifest_file/irt_manifest_file_test.html" ]
-  }
-
-  nacl_test_data("irt_exception_test") {
-    sources = [
-      "irt_exception/irt_exception_test.cc",
-    ]
-    deps = [
-      ":ppapi_test_lib",
-      "//native_client/src/untrusted/nacl:nacl_exception",
-    ]
-    test_files = [ "irt_exception/irt_exception_test.html" ]
   }
 
   nacl_test_data("ppapi_extension_mime_handler") {
@@ -592,6 +683,86 @@ if (is_nacl) {
       }
     }
   }
+}
 
-  # TODO(phosek): convert the non-SFI tests.
+if (is_linux && is_clang) {
+  if (target_cpu == "x86") {
+    arch = "x86_32"
+  } else if (target_cpu == "x64") {
+    arch = "x86_64"
+  } else {
+    arch = target_cpu
+  }
+
+  config("nonsfi_libc_free_nexe_config") {
+    cflags = [
+      "-Wno-sign-compare",
+
+      # Stack-Smashing protector does not work with libc-free context.
+      "-fno-stack-protector",
+
+      # Optimizers may translate the original code to code which
+      # requires builtin functions and/or relocations. Specifically,
+      # the LLVM's optimizer translates for-loop based zero
+      # clear to memset.
+      "-O0",
+
+      # ARM GCC emits symbols like __aeabi_unwind_cpp_pr0 in
+      # .exidx sections without this flag.
+      "-fno-unwind-tables",
+    ]
+  }
+
+  executable("nonsfi_libc_free_nexe") {
+    output_name = "libc_free_$arch"
+    output_extension = "nexe"
+    sources = [
+      "nonsfi/libc_free.c",
+    ]
+
+    # Here, we would like to link a relocatable, libc-free executable.
+    # -shared/-fPIC make this binary relocatable. -nostdlib ensures
+    # this is libc-free.
+    # The program does not apply any dynamic relocations at start up,
+    # so it cannot rely on relocations having been applied.
+    # In addition, -fvisibility=hidden avoids creating some types
+    # of relocation.
+    cflags = [
+      "-fPIC",
+      "-fvisibility=hidden",
+    ]
+    ldflags = [
+      "-nostdlib",
+      "-shared",
+
+      # This binary cannot relocate itself, so we should have no
+      # undefined references left.
+      "-Wl,--no-undefined",
+
+      # Silence the warning about the unused '-pthread' argument.
+      "-Qunused-arguments",
+    ]
+    defines = [ "NACL_LINUX=1" ]
+    include_dirs = [ "../../../.." ]
+    configs += [ ":nonsfi_libc_free_nexe_config" ]
+  }
+
+  copy("nonsfi_libc_free") {
+    sources = [
+      "${root_out_dir}/libc_free_${arch}.nexe",
+
+      # TODO(ncbray) move into chrome/test/data/nacl when all tests are
+      # converted.
+      "//ppapi/native_client/tools/browser_tester/browserdata/nacltest.js",
+      "nonsfi/irt_test.html",
+      "nonsfi/libc_free.html",
+      "nonsfi/libc_free.nmf",
+    ]
+    outputs = [
+      "${root_build_dir}/nacl_test_data/libc-free/{{source_file_part}}",
+    ]
+    deps = [
+      ":nonsfi_libc_free_nexe",
+    ]
+  }
 }
