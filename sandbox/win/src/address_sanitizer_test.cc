@@ -40,7 +40,7 @@ SBOX_TESTS_COMMAND int AddressSanitizerTests_Report(int argc, wchar_t** argv) {
   // AddressSanitizer should detect an out of bounds write (heap buffer
   // overflow) in this code.
   volatile int idx = 42;
-  int *blah = new int[42];
+  int *volatile blah = new int[42];
   blah[idx] = 42;
   delete [] blah;
   return SBOX_TEST_FAILED;
