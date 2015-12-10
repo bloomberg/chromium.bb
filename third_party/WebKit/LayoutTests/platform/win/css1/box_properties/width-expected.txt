@@ -22,7 +22,7 @@ layer at (0,0) size 785x1381 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutText {#text} at (0,0) size 292x17
           text run at (0,0) width 292: "The square above should be fifty pixels wide."
       LayoutBlockFlow (anonymous) at (0,205) size 769x385
-        LayoutImage {IMG} at (0,0) size 384.50x385
+        LayoutImage {IMG} at (0,0) size 384.50x384.50
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,606) size 769x18
         LayoutText {#text} at (0,0) size 683x17

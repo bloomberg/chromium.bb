@@ -1,7 +1,7 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x186
-  LayoutBlockFlow {HTML} at (0,0) size 800x186
+  LayoutBlockFlow {HTML} at (0,0) size 800x185.59
     LayoutBlockFlow {BODY} at (8,16) size 784x36
       LayoutBlockFlow {P} at (0,0) size 784x36
         LayoutText {#text} at (0,0) size 108x17
@@ -22,12 +22,12 @@ layer at (0,0) size 800x186
         LayoutText {#text} at (58,18) size 455x17
           text run at (58,18) width 455: " to each other. This should still remain true even after a window resize."
       LayoutBlockFlow {DIV} at (0,52) size 784x0
-        LayoutImage (floating) {IMG} at (0,0) size 117.59x118
+        LayoutImage (floating) {IMG} at (0,0) size 117.59x117.59
         LayoutImage (floating) {IMG} at (117.59,0) size 5x5
-        LayoutImage (floating) {IMG} at (122.59,0) size 117.59x118
+        LayoutImage (floating) {IMG} at (122.59,0) size 117.59x117.59
         LayoutImage (floating) {IMG} at (240.19,0) size 5x5
-        LayoutImage (floating) {IMG} at (245.19,0) size 117.59x118
+        LayoutImage (floating) {IMG} at (245.19,0) size 117.59x117.59
         LayoutImage (floating) {IMG} at (362.78,0) size 5x5
-        LayoutImage (floating) {IMG} at (367.78,0) size 117.59x118
+        LayoutImage (floating) {IMG} at (367.78,0) size 117.59x117.59
         LayoutImage (floating) {IMG} at (485.38,0) size 5x5
-        LayoutImage (floating) {IMG} at (490.38,0) size 117.59x118
+        LayoutImage (floating) {IMG} at (490.38,0) size 117.59x117.59

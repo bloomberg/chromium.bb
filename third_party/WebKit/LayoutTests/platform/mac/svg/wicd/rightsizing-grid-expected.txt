@@ -1,9 +1,9 @@
-layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 1435
+layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 1360
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 785x1435 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
-  LayoutBlockFlow {html} at (0,0) size 785x1435.14
+layer at (0,0) size 785x1360 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+  LayoutBlockFlow {html} at (0,0) size 785x1360.38
     LayoutBlockFlow {body} at (8,8) size 769x0
-      LayoutBlockFlow (floating) {div} at (0,0) size 769x1427.14
+      LayoutBlockFlow (floating) {div} at (0,0) size 769x1352.38
         LayoutBlockFlow {h1} at (0,21.44) size 769x37
           LayoutText {#text} at (0,0) size 443x37
             text run at (0,0) width 443: "SVG grid with percentage width"
@@ -11,52 +11,48 @@ layer at (0,0) size 785x1435 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           LayoutText {#text} at (0,0) size 149x18
             text run at (0,0) width 149: "WICD Core 1.0 #20-3"
         LayoutBlockFlow {p} at (0,119.14) size 769x0
-          LayoutBlockFlow (floating) {div} at (256.30,128) size 256.30x448
+          LayoutBlockFlow (floating) {div} at (256.30,128.16) size 256.30x448.52
             LayoutBR {br} at (256,0) size 1x18
-          LayoutBlockFlow (floating) {div} at (512.59,128) size 256.30x448
-          LayoutBlockFlow (floating) {div} at (384.50,704) size 384.50x192
-          LayoutBlockFlow (floating) {div} at (0,896) size 384.50x192
-          LayoutBlockFlow (floating) {div} at (384.50,1024) size 384.50x128
-        LayoutBlockFlow {p} at (0,119.14) size 769x594 [color=#FFFFFF]
+          LayoutBlockFlow (floating) {div} at (512.59,128.16) size 256.30x448.52
+          LayoutBlockFlow (floating) {div} at (0,704.83) size 384.50x192.25
+          LayoutBlockFlow (floating) {div} at (384.50,704.83) size 384.50x192.25
+          LayoutBlockFlow (floating) {div} at (384.50,897.08) size 384.50x128.16
+        LayoutBlockFlow {p} at (0,119.14) size 769x1043.23 [color=#FFFFFF]
           LayoutBR {br} at (769,0) size 0x18
-          LayoutText {#text} at (640,576) size 9x18
-            text run at (640,576) width 9: ".."
-        LayoutBlockFlow {p} at (0,729.14) size 769x578
-          LayoutText {#text} at (640,0) size 763x578
-            text run at (640,0) width 123: "Above, you should"
-            text run at (640,18) width 100: "see a grid of 17"
-            text run at (640,36) width 69: "SVG child"
-            text run at (640,54) width 107: "elements sticked"
-            text run at (640,72) width 107: "together to build"
-            text run at (0,542) width 124: "one rectangle grid. "
-            text run at (123,542) width 622: "You should be able to resize your browser window and the grid rendering should adjust to it. The"
-            text run at (0,560) width 352: "outcome should look like in these sample screenshots: "
+          LayoutText {#text} at (0,1025) size 8x18
+            text run at (0,1025) width 8: ".."
+        LayoutBlockFlow {p} at (0,1178.38) size 769x54
+          LayoutText {#text} at (0,0) size 766x54
+            text run at (0,0) width 644: "Above, you should see a grid of 17 SVG child elements sticked together to build one rectangle grid. "
+            text run at (643,0) width 123: "You should be able"
+            text run at (0,18) width 764: "to resize your browser window and the grid rendering should adjust to it. The outcome should look like in these sample"
+            text run at (0,36) width 83: "screenshots: "
           LayoutInline {a} at (0,0) size 35x18 [color=#0000EE]
-            LayoutText {#text} at (351,560) size 35x18
-              text run at (351,560) width 35: "small"
-          LayoutText {#text} at (385,560) size 9x18
-            text run at (385,560) width 9: ", "
+            LayoutText {#text} at (82,36) size 35x18
+              text run at (82,36) width 35: "small"
+          LayoutText {#text} at (116,36) size 9x18
+            text run at (116,36) width 9: ", "
           LayoutInline {a} at (0,0) size 42x18 [color=#0000EE]
-            LayoutText {#text} at (393,560) size 42x18
-              text run at (393,560) width 42: "bigger"
-          LayoutText {#text} at (434,560) size 32x18
-            text run at (434,560) width 32: " and "
+            LayoutText {#text} at (124,36) size 42x18
+              text run at (124,36) width 42: "bigger"
+          LayoutText {#text} at (165,36) size 32x18
+            text run at (165,36) width 32: " and "
           LayoutInline {a} at (0,0) size 22x18 [color=#0000EE]
-            LayoutText {#text} at (465,560) size 22x18
-              text run at (465,560) width 22: "big"
-          LayoutText {#text} at (486,560) size 5x18
-            text run at (486,560) width 5: "."
-        LayoutBlockFlow {p} at (0,1323.14) size 769x36
+            LayoutText {#text} at (196,36) size 22x18
+              text run at (196,36) width 22: "big"
+          LayoutText {#text} at (217,36) size 5x18
+            text run at (217,36) width 5: "."
+        LayoutBlockFlow {p} at (0,1248.38) size 769x36
           LayoutText {#text} at (0,0) size 762x36
             text run at (0,0) width 762: "The test is successful, if all SVG elements resize exacly dependend on the width of the browser window, but keep their"
             text run at (0,18) width 636: "aspect ratio and relative position. The complete grid should always show a perfect rectangle object."
-        LayoutBlockFlow {p} at (0,1375.14) size 769x36
+        LayoutBlockFlow {p} at (0,1300.38) size 769x36
           LayoutBR {br} at (0,0) size 0x18
           LayoutInline {a} at (0,0) size 33x18 [color=#0000EE]
             LayoutText {#text} at (0,18) size 33x18
               text run at (0,18) width 33: "Back"
 layer at (8,127) size 385x128
-  LayoutEmbeddedObject (floating) {object} at (0,0) size 384.50x128
+  LayoutEmbeddedObject (floating) {object} at (0,0) size 384.50x128.16
     layer at (0,0) size 385x128
       LayoutView at (0,0) size 385x128
     layer at (0,0) size 385x128
@@ -70,7 +66,7 @@ layer at (8,127) size 385x128
           LayoutSVGInlineText {#text} at (0,0) size 15x24
             chunk 1 (middle anchor) text run 1 at (52.78,27.00) startOffset 0 endOffset 1 width 14.44: "A"
 layer at (393,127) size 384x128
-  LayoutEmbeddedObject (floating) {object} at (384.50,0) size 384.50x128
+  LayoutEmbeddedObject (floating) {object} at (384.50,0) size 384.50x128.16
     layer at (0,0) size 385x128
       LayoutView at (0,0) size 385x128
     layer at (0,0) size 385x128
@@ -84,7 +80,7 @@ layer at (393,127) size 384x128
           LayoutSVGInlineText {#text} at (0,0) size 13x24
             chunk 1 (middle anchor) text run 1 at (53.89,27.00) startOffset 0 endOffset 1 width 12.22: "L"
 layer at (8,255) size 256x449 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
-  LayoutEmbeddedObject (floating) {object} at (0,128) size 256.30x449
+  LayoutEmbeddedObject (floating) {object} at (0,128.16) size 256.30x448.52
     layer at (0,0) size 256x449
       LayoutView at (0,0) size 256x449
     layer at (0,0) size 256x449
@@ -118,7 +114,7 @@ layer at (8,255) size 256x449 backgroundClip at (0,0) size 785x600 clip at (0,0)
             LayoutSVGInlineText {#text} at (0,0) size 13x24
               chunk 1 (middle anchor) text run 1 at (53.89,127.00) startOffset 0 endOffset 1 width 12.22: "E"
 layer at (264,255) size 256x256
-  LayoutEmbeddedObject (floating) {object} at (0,0) size 256.30x256
+  LayoutEmbeddedObject (floating) {object} at (0,0) size 256.30x256.30
     layer at (0,0) size 256x256
       LayoutView at (0,0) size 256x256
     layer at (0,0) size 256x256
@@ -131,8 +127,8 @@ layer at (264,255) size 256x256
         LayoutSVGText {text} at (32,28) size 16x24 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 15x24
             chunk 1 (middle anchor) text run 1 at (32.78,47.00) startOffset 0 endOffset 1 width 14.44: "K"
-layer at (264,511) size 256x192 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
-  LayoutEmbeddedObject (floating) {object} at (0,256) size 256.30x192
+layer at (264,512) size 256x193 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+  LayoutEmbeddedObject (floating) {object} at (0,256.30) size 256.30x192.22
     layer at (0,0) size 256x192
       LayoutView at (0,0) size 256x192
     layer at (0,0) size 256x192
@@ -146,7 +142,7 @@ layer at (264,511) size 256x192 backgroundClip at (0,0) size 785x600 clip at (0,
           LayoutSVGInlineText {#text} at (0,0) size 8x24
             chunk 1 (middle anchor) text run 1 at (36.11,37.00) startOffset 0 endOffset 1 width 7.78: "J"
 layer at (521,255) size 256x256
-  LayoutEmbeddedObject (floating) {object} at (0,0) size 256.30x256
+  LayoutEmbeddedObject (floating) {object} at (0,0) size 256.30x256.30
     layer at (0,0) size 256x256
       LayoutView at (0,0) size 256x256
     layer at (0,0) size 256x256
@@ -175,8 +171,8 @@ layer at (521,255) size 256x256
           LayoutSVGText {text} at (52,48) size 16x24 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 15x24
               chunk 1 (middle anchor) text run 1 at (52.78,67.00) startOffset 0 endOffset 1 width 14.44: "O"
-layer at (521,511) size 256x192 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
-  LayoutEmbeddedObject (floating) {object} at (0,256) size 256.30x192
+layer at (521,512) size 256x193 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+  LayoutEmbeddedObject (floating) {object} at (0,256.30) size 256.30x192.22
     layer at (0,0) size 256x192
       LayoutView at (0,0) size 256x192
     layer at (0,0) size 256x192
@@ -189,8 +185,8 @@ layer at (521,511) size 256x192 backgroundClip at (0,0) size 785x600 clip at (0,
         LayoutSVGText {text} at (32,18) size 16x24 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 15x24
             chunk 1 (middle anchor) text run 1 at (32.78,37.00) startOffset 0 endOffset 1 width 14.44: "Q"
-layer at (264,703) size 385x128 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
-  LayoutEmbeddedObject (floating) {object} at (256.30,576) size 384.50x128
+layer at (8,704) size 385x128 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+  LayoutEmbeddedObject (floating) {object} at (0,576.67) size 384.50x128.16
     layer at (0,0) size 385x128
       LayoutView at (0,0) size 385x128
     layer at (0,0) size 385x128
@@ -203,8 +199,8 @@ layer at (264,703) size 385x128 backgroundClip at (0,0) size 785x600 clip at (0,
         LayoutSVGText {text} at (54,8) size 12x24 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 12x24
             chunk 1 (middle anchor) text run 1 at (54.44,27.00) startOffset 0 endOffset 1 width 11.12: "F"
-layer at (8,831) size 385x128 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
-  LayoutEmbeddedObject (floating) {object} at (0,704) size 384.50x128
+layer at (393,704) size 384x128 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+  LayoutEmbeddedObject (floating) {object} at (384.50,576.67) size 384.50x128.16
     layer at (0,0) size 385x128
       LayoutView at (0,0) size 385x128
     layer at (0,0) size 385x128
@@ -217,8 +213,8 @@ layer at (8,831) size 385x128 backgroundClip at (0,0) size 785x600 clip at (0,0)
         LayoutSVGText {text} at (56,8) size 8x24 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 7x24
             chunk 1 (middle anchor) text run 1 at (56.67,27.00) startOffset 0 endOffset 1 width 6.66: "I"
-layer at (393,831) size 96x192 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
-  LayoutEmbeddedObject (floating) {object} at (0,0) size 96.13x192
+layer at (8,832) size 96x192 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+  LayoutEmbeddedObject (floating) {object} at (0,0) size 96.13x192.25
     layer at (0,0) size 96x192
       LayoutView at (0,0) size 96x192
     layer at (0,0) size 96x192
@@ -228,8 +224,8 @@ layer at (393,831) size 96x192 backgroundClip at (0,0) size 785x600 clip at (0,0
             LayoutSVGGradientStop {stop} [offset=0.00] [color=#FFFFFF]
             LayoutSVGGradientStop {stop} [offset=1.00] [color=#FFEEAA]
         LayoutSVGRect {rect} at (0,0) size 96x192 [stroke={[type=SOLID] [color=#FFCC33] [stroke width=2.00]}] [fill={[type=LINEAR-GRADIENT] [id="surface"]}] [x=1.00] [y=1.00] [width=28.00] [height=58.00]
-layer at (489,831) size 289x192 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
-  LayoutEmbeddedObject (floating) {object} at (96.13,0) size 288.38x192
+layer at (104,832) size 289x192 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+  LayoutEmbeddedObject (floating) {object} at (96.13,0) size 288.38x192.25
     layer at (0,0) size 288x192
       LayoutView at (0,0) size 288x192
     layer at (0,0) size 288x192
@@ -242,8 +238,8 @@ layer at (489,831) size 289x192 backgroundClip at (0,0) size 785x600 clip at (0,
         LayoutSVGText {text} at (37,18) size 16x24 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 15x24
             chunk 1 (middle anchor) text run 1 at (37.78,37.00) startOffset 0 endOffset 1 width 14.44: "G"
-layer at (8,1023) size 192x192 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
-  LayoutEmbeddedObject (floating) {object} at (0,0) size 192.25x192
+layer at (393,832) size 192x192 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+  LayoutEmbeddedObject (floating) {object} at (0,0) size 192.25x192.25
     layer at (0,0) size 192x192
       LayoutView at (0,0) size 192x192
     layer at (0,0) size 192x192
@@ -256,8 +252,8 @@ layer at (8,1023) size 192x192 backgroundClip at (0,0) size 785x600 clip at (0,0
         LayoutSVGText {text} at (22,18) size 16x24 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 15x24
             chunk 1 (middle anchor) text run 1 at (22.78,37.00) startOffset 0 endOffset 1 width 14.44: "H"
-layer at (200,1023) size 193x192 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
-  LayoutEmbeddedObject (floating) {object} at (192.25,0) size 192.25x192
+layer at (585,832) size 193x192 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+  LayoutEmbeddedObject (floating) {object} at (192.25,0) size 192.25x192.25
     layer at (0,0) size 192x192
       LayoutView at (0,0) size 192x192
     layer at (0,0) size 192x192
@@ -270,8 +266,8 @@ layer at (200,1023) size 193x192 backgroundClip at (0,0) size 785x600 clip at (0
         LayoutSVGText {text} at (23,18) size 14x24 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 14x24
             chunk 1 (middle anchor) text run 1 at (23.33,37.00) startOffset 0 endOffset 1 width 13.34: "R"
-layer at (393,1023) size 192x128 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
-  LayoutEmbeddedObject (floating) {object} at (384.50,896) size 192.25x128
+layer at (8,1024) size 192x128 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+  LayoutEmbeddedObject (floating) {object} at (0,897.08) size 192.25x128.16
     layer at (0,0) size 192x128
       LayoutView at (0,0) size 192x128
     layer at (0,0) size 192x128
@@ -281,8 +277,8 @@ layer at (393,1023) size 192x128 backgroundClip at (0,0) size 785x600 clip at (0
             LayoutSVGGradientStop {stop} [offset=0.00] [color=#FFFFFF]
             LayoutSVGGradientStop {stop} [offset=1.00] [color=#FFEEAA]
         LayoutSVGEllipse {ellipse} at (0,0) size 192x128 [stroke={[type=SOLID] [color=#FFCC33] [stroke width=2.00]}] [fill={[type=LINEAR-GRADIENT] [id="surface"]}] [cx=30.00] [cy=20.00] [rx=29.00] [ry=19.00]
-layer at (585,1023) size 192x128 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
-  LayoutEmbeddedObject (floating) {object} at (576.75,896) size 192.25x128
+layer at (200,1024) size 193x128 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+  LayoutEmbeddedObject (floating) {object} at (192.25,897.08) size 192.25x128.16
     layer at (0,0) size 192x128
       LayoutView at (0,0) size 192x128
     layer at (0,0) size 192x128
@@ -292,8 +288,8 @@ layer at (585,1023) size 192x128 backgroundClip at (0,0) size 785x600 clip at (0
             LayoutSVGGradientStop {stop} [offset=0.00] [color=#FFFFFF]
             LayoutSVGGradientStop {stop} [offset=1.00] [color=#FFEEAA]
         LayoutSVGEllipse {ellipse} at (0,0) size 192x128 [stroke={[type=SOLID] [color=#FFCC33] [stroke width=2.00]}] [fill={[type=LINEAR-GRADIENT] [id="surface"]}] [cx=30.00] [cy=20.00] [rx=29.00] [ry=19.00]
-layer at (393,1151) size 288x128 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
-  LayoutEmbeddedObject (floating) {object} at (0,0) size 288.38x128
+layer at (393,1024) size 288x128 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+  LayoutEmbeddedObject (floating) {object} at (0,0) size 288.38x128.16
     layer at (0,0) size 288x128
       LayoutView at (0,0) size 288x128
     layer at (0,0) size 288x128
@@ -306,8 +302,8 @@ layer at (393,1151) size 288x128 backgroundClip at (0,0) size 785x600 clip at (0
         LayoutSVGText {text} at (39,8) size 12x24 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 12x24
             chunk 1 (middle anchor) text run 1 at (39.44,27.00) startOffset 0 endOffset 1 width 11.12: "S"
-layer at (681,1151) size 97x128 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
-  LayoutEmbeddedObject (floating) {object} at (288.38,0) size 96.13x128
+layer at (681,1024) size 97x128 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+  LayoutEmbeddedObject (floating) {object} at (288.38,0) size 96.13x128.16
     layer at (0,0) size 96x128
       LayoutView at (0,0) size 96x128
     layer at (0,0) size 96x128

@@ -1,16 +1,16 @@
-layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 764
+layer at (0,0) size 800x600 scrollHeight 764
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 785x600
-  LayoutBlockFlow {HTML} at (0,0) size 785x600
-    LayoutBlockFlow {BODY} at (8,8) size 769x584
-      LayoutBlockFlow {P} at (0,0) size 769x20
+layer at (0,0) size 800x600
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {P} at (0,0) size 784x20
         LayoutText {#text} at (0,0) size 147x19
           text run at (0,0) width 147: "Test controls placement."
-      LayoutBlockFlow {DIV} at (0,36) size 769x240
+      LayoutBlockFlow {DIV} at (0,36) size 784x240
         LayoutText {#text} at (0,0) size 0x0
-      LayoutBlockFlow {DIV} at (0,276) size 769x240
+      LayoutBlockFlow {DIV} at (0,276) size 784x240
         LayoutText {#text} at (0,0) size 0x0
-      LayoutBlockFlow {DIV} at (0,516) size 769x0
+      LayoutBlockFlow {DIV} at (0,516) size 784x0
 layer at (8,44) size 320x240
   LayoutVideo {VIDEO} at (0,0) size 320x240
 layer at (8,284) size 320x240
@@ -59,9 +59,9 @@ layer at (13,489) size 310x30
         LayoutBlockFlow {DIV} at (1,-8) size 43.42x24
           LayoutBlockFlow {DIV} at (12.42,0) size 24x24
     LayoutButton {INPUT} at (271,0) size 30x30
-layer at (8,524) size 320x240 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+layer at (8,524) size 320x240 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
   LayoutVideo (positioned) {VIDEO} at (8,524) size 320x240
-layer at (8,524) size 320x240 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+layer at (8,524) size 320x240 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
   LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 320x240
     LayoutBlockFlow {DIV} at (0,205) size 320x35
 layer at (8,524) size 320x205 backgroundClip at (8,524) size 320x76 clip at (8,524) size 320x76

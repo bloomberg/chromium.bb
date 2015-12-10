@@ -9,7 +9,7 @@
         [11, 71, 125, 13],
         [8, 68, 784, 19],
         [8, 68, 131, 19],
-        [8, 54, 11, 11]
+        [8, 53, 11, 11]
       ],
       "paintInvalidationClients": [
         "LayoutDetailsMarker DIV id='details-marker'",

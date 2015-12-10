@@ -1,6 +1,6 @@
 layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 1449
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 785x1449 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+layer at (0,0) size 785x1449 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   LayoutBlockFlow {html} at (0,0) size 785x1449.14
     LayoutBlockFlow {body} at (8,8) size 769x0
       LayoutBlockFlow (floating) {div} at (0,0) size 769x1441.14
@@ -82,7 +82,7 @@ layer at (393,129) size 384x128
         LayoutSVGText {text} at (54,8) size 12x24 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 12x23
             chunk 1 (middle anchor) text run 1 at (54.06,27.00) startOffset 0 endOffset 1 width 11.88: "L"
-layer at (8,257) size 256x449 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+layer at (8,257) size 256x449 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   LayoutEmbeddedObject (floating) {object} at (0,128) size 256.30x449
     layer at (0,0) size 256x449
       LayoutView at (0,0) size 256x449
@@ -130,7 +130,7 @@ layer at (264,257) size 256x256
         LayoutSVGText {text} at (32,28) size 16x24 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 15x23
             chunk 1 (middle anchor) text run 1 at (32.81,47.00) startOffset 0 endOffset 1 width 14.38: "K"
-layer at (264,513) size 256x192 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+layer at (264,513) size 256x192 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   LayoutEmbeddedObject (floating) {object} at (0,256) size 256.30x192
     layer at (0,0) size 256x192
       LayoutView at (0,0) size 256x192
@@ -174,7 +174,7 @@ layer at (521,257) size 256x256
           LayoutSVGText {text} at (52,48) size 16x24 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 15x23
               chunk 1 (middle anchor) text run 1 at (52.81,67.00) startOffset 0 endOffset 1 width 14.38: "O"
-layer at (521,513) size 256x192 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+layer at (521,513) size 256x192 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   LayoutEmbeddedObject (floating) {object} at (0,256) size 256.30x192
     layer at (0,0) size 256x192
       LayoutView at (0,0) size 256x192
@@ -188,7 +188,7 @@ layer at (521,513) size 256x192 backgroundClip at (0,0) size 785x600 clip at (0,
         LayoutSVGText {text} at (32,18) size 16x24 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 15x23
             chunk 1 (middle anchor) text run 1 at (32.81,37.00) startOffset 0 endOffset 1 width 14.38: "Q"
-layer at (264,705) size 385x128 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+layer at (264,705) size 385x128 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   LayoutEmbeddedObject (floating) {object} at (256.30,576) size 384.50x128
     layer at (0,0) size 385x128
       LayoutView at (0,0) size 385x128
@@ -202,7 +202,7 @@ layer at (264,705) size 385x128 backgroundClip at (0,0) size 785x600 clip at (0,
         LayoutSVGText {text} at (54,8) size 12x24 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 11x23
             chunk 1 (middle anchor) text run 1 at (54.53,27.00) startOffset 0 endOffset 1 width 10.94: "F"
-layer at (8,833) size 385x128 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+layer at (8,833) size 385x128 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   LayoutEmbeddedObject (floating) {object} at (0,704) size 384.50x128
     layer at (0,0) size 385x128
       LayoutView at (0,0) size 385x128
@@ -216,7 +216,7 @@ layer at (8,833) size 385x128 backgroundClip at (0,0) size 785x600 clip at (0,0)
         LayoutSVGText {text} at (56,8) size 8x24 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 7x23
             chunk 1 (middle anchor) text run 1 at (56.88,27.00) startOffset 0 endOffset 1 width 6.25: "I"
-layer at (393,833) size 96x192 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+layer at (393,833) size 96x192 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   LayoutEmbeddedObject (floating) {object} at (0,0) size 96.13x192
     layer at (0,0) size 96x192
       LayoutView at (0,0) size 96x192
@@ -227,7 +227,7 @@ layer at (393,833) size 96x192 backgroundClip at (0,0) size 785x600 clip at (0,0
             LayoutSVGGradientStop {stop} [offset=0.00] [color=#FFFFFF]
             LayoutSVGGradientStop {stop} [offset=1.00] [color=#FFEEAA]
         LayoutSVGRect {rect} at (0,0) size 96x192 [stroke={[type=SOLID] [color=#FFCC33] [stroke width=2.00]}] [fill={[type=LINEAR-GRADIENT] [id="surface"]}] [x=1.00] [y=1.00] [width=28.00] [height=58.00]
-layer at (489,833) size 289x192 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+layer at (489,833) size 289x192 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   LayoutEmbeddedObject (floating) {object} at (96.13,0) size 288.38x192
     layer at (0,0) size 288x192
       LayoutView at (0,0) size 288x192
@@ -241,7 +241,7 @@ layer at (489,833) size 289x192 backgroundClip at (0,0) size 785x600 clip at (0,
         LayoutSVGText {text} at (37,18) size 16x24 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 15x23
             chunk 1 (middle anchor) text run 1 at (37.81,37.00) startOffset 0 endOffset 1 width 14.38: "G"
-layer at (8,1025) size 192x192 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+layer at (8,1025) size 192x192 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   LayoutEmbeddedObject (floating) {object} at (0,0) size 192.25x192
     layer at (0,0) size 192x192
       LayoutView at (0,0) size 192x192
@@ -255,7 +255,7 @@ layer at (8,1025) size 192x192 backgroundClip at (0,0) size 785x600 clip at (0,0
         LayoutSVGText {text} at (22,18) size 16x24 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 15x23
             chunk 1 (middle anchor) text run 1 at (22.81,37.00) startOffset 0 endOffset 1 width 14.38: "H"
-layer at (200,1025) size 193x192 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+layer at (200,1025) size 193x192 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   LayoutEmbeddedObject (floating) {object} at (192.25,0) size 192.25x192
     layer at (0,0) size 192x192
       LayoutView at (0,0) size 192x192
@@ -269,7 +269,7 @@ layer at (200,1025) size 193x192 backgroundClip at (0,0) size 785x600 clip at (0
         LayoutSVGText {text} at (23,18) size 14x24 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 14x23
             chunk 1 (middle anchor) text run 1 at (23.28,37.00) startOffset 0 endOffset 1 width 13.44: "R"
-layer at (393,1025) size 192x128 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+layer at (393,1025) size 192x128 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   LayoutEmbeddedObject (floating) {object} at (384.50,896) size 192.25x128
     layer at (0,0) size 192x128
       LayoutView at (0,0) size 192x128
@@ -280,7 +280,7 @@ layer at (393,1025) size 192x128 backgroundClip at (0,0) size 785x600 clip at (0
             LayoutSVGGradientStop {stop} [offset=0.00] [color=#FFFFFF]
             LayoutSVGGradientStop {stop} [offset=1.00] [color=#FFEEAA]
         LayoutSVGEllipse {ellipse} at (0,0) size 192x128 [stroke={[type=SOLID] [color=#FFCC33] [stroke width=2.00]}] [fill={[type=LINEAR-GRADIENT] [id="surface"]}] [cx=30.00] [cy=20.00] [rx=29.00] [ry=19.00]
-layer at (585,1025) size 192x128 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+layer at (585,1025) size 192x128 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   LayoutEmbeddedObject (floating) {object} at (576.75,896) size 192.25x128
     layer at (0,0) size 192x128
       LayoutView at (0,0) size 192x128
@@ -291,7 +291,7 @@ layer at (585,1025) size 192x128 backgroundClip at (0,0) size 785x600 clip at (0
             LayoutSVGGradientStop {stop} [offset=0.00] [color=#FFFFFF]
             LayoutSVGGradientStop {stop} [offset=1.00] [color=#FFEEAA]
         LayoutSVGEllipse {ellipse} at (0,0) size 192x128 [stroke={[type=SOLID] [color=#FFCC33] [stroke width=2.00]}] [fill={[type=LINEAR-GRADIENT] [id="surface"]}] [cx=30.00] [cy=20.00] [rx=29.00] [ry=19.00]
-layer at (393,1153) size 288x128 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+layer at (393,1153) size 288x128 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   LayoutEmbeddedObject (floating) {object} at (0,0) size 288.38x128
     layer at (0,0) size 288x128
       LayoutView at (0,0) size 288x128
@@ -305,7 +305,7 @@ layer at (393,1153) size 288x128 backgroundClip at (0,0) size 785x600 clip at (0
         LayoutSVGText {text} at (39,8) size 12x24 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 12x23
             chunk 1 (middle anchor) text run 1 at (39.38,27.00) startOffset 0 endOffset 1 width 11.25: "S"
-layer at (681,1153) size 97x128 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+layer at (681,1153) size 97x128 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   LayoutEmbeddedObject (floating) {object} at (288.38,0) size 96.13x128
     layer at (0,0) size 96x128
       LayoutView at (0,0) size 96x128

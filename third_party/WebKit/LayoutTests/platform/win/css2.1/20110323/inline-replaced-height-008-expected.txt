@@ -22,17 +22,17 @@ layer at (0,0) size 800x198
         LayoutText {#text} at (58,18) size 455x17
           text run at (58,18) width 455: " to each other. This should still remain true even after a window resize."
       LayoutBlockFlow {DIV} at (0,52) size 784x122
-        LayoutImage {IMG} at (0,0) size 117.59x118
+        LayoutImage {IMG} at (0,0) size 117.59x117.59
         LayoutText {#text} at (117,104) size 5x17
           text run at (117,104) width 5: " "
-        LayoutImage {IMG} at (121.59,0) size 117.59x118
+        LayoutImage {IMG} at (121.59,0) size 117.59x117.59
         LayoutText {#text} at (239,104) size 5x17
           text run at (239,104) width 5: " "
-        LayoutImage {IMG} at (243.19,0) size 117.59x118
+        LayoutImage {IMG} at (243.19,0) size 117.59x117.59
         LayoutText {#text} at (360,104) size 5x17
           text run at (360,104) width 5: " "
-        LayoutImage {IMG} at (364.78,0) size 117.59x118
+        LayoutImage {IMG} at (364.78,0) size 117.59x117.59
         LayoutText {#text} at (482,104) size 5x17
           text run at (482,104) width 5: " "
-        LayoutImage {IMG} at (486.38,0) size 117.59x118
+        LayoutImage {IMG} at (486.38,0) size 117.59x117.59
         LayoutText {#text} at (0,0) size 0x0

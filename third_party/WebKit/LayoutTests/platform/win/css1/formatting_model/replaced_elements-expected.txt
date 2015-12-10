@@ -1,8 +1,8 @@
-layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 2349
+layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 2347
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 785x2349 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
-  LayoutBlockFlow {HTML} at (0,0) size 785x2349
-    LayoutBlockFlow {BODY} at (8,8) size 769x2333 [bgcolor=#CCCCCC]
+layer at (0,0) size 785x2347 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+  LayoutBlockFlow {HTML} at (0,0) size 785x2347
+    LayoutBlockFlow {BODY} at (8,8) size 769x2331 [bgcolor=#CCCCCC]
       LayoutBlockFlow {P} at (0,0) size 769x18
         LayoutText {#text} at (0,0) size 363x17
           text run at (0,0) width 363: "The style declarations which apply to the text below are:"
@@ -37,30 +37,30 @@ layer at (0,0) size 785x2349 backgroundClip at (0,0) size 785x600 clip at (0,0) 
       LayoutBlockFlow {P} at (0,324) size 769x18
         LayoutText {#text} at (0,0) size 406x17
           text run at (0,0) width 406: "The above image should be a 15px square aligned at the center."
-      LayoutImage {IMG} at (192.25,358) size 384.50x385
-      LayoutBlockFlow {P} at (0,759) size 769x36
+      LayoutImage {IMG} at (192.25,358) size 384.50x384.50
+      LayoutBlockFlow {P} at (0,758.50) size 769x36
         LayoutText {#text} at (0,0) size 738x35
           text run at (0,0) width 738: "The above image should be a square resized so its width is 50% of the its parent element, and centered horizontally"
           text run at (0,18) width 172: "within the parent element: "
           text run at (171,18) width 404: "the document body in the first half, and the table in the second."
-      LayoutImage {IMG} at (384.50,811) size 384.50x385
-      LayoutBlockFlow {P} at (0,1212) size 769x36
+      LayoutImage {IMG} at (384.50,810.50) size 384.50x384.50
+      LayoutBlockFlow {P} at (0,1211) size 769x36
         LayoutText {#text} at (0,0) size 750x35
           text run at (0,0) width 750: "The above image should be a square resized so its width is 50% of its parent element, and aligned at the right edge of"
           text run at (0,18) width 127: "the parent element: "
           text run at (126,18) width 405: "the document body in the first half, and the table in the second."
-      LayoutTable {TABLE} at (0,1264) size 769x1069 [border: (1px outset #808080)]
-        LayoutTableSection {TBODY} at (1,1) size 767x1067
+      LayoutTable {TABLE} at (0,1263) size 769x1068 [border: (1px outset #808080)]
+        LayoutTableSection {TBODY} at (1,1) size 767x1066
           LayoutTableRow {TR} at (0,0) size 767x26
             LayoutTableCell {TD} at (0,0) size 767x26 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
               LayoutInline {STRONG} at (0,0) size 161x17
                 LayoutText {#text} at (4,4) size 161x17
                   text run at (4,4) width 161: "TABLE Testing Section"
-          LayoutTableRow {TR} at (0,26) size 767x1041
+          LayoutTableRow {TR} at (0,26) size 767x1040
             LayoutTableCell {TD} at (0,533) size 12x26 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
               LayoutText {#text} at (4,4) size 4x17
                 text run at (4,4) width 4: " "
-            LayoutTableCell {TD} at (12,26) size 755x1041 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (12,26) size 755x1040 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
               LayoutBlockFlow {P} at (4,4) size 747x19
                 LayoutImage {IMG} at (0,0) size 15x15
                 LayoutText {#text} at (15,1) size 442x17
@@ -73,14 +73,14 @@ layer at (0,0) size 785x2349 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               LayoutBlockFlow {P} at (4,135) size 747x18
                 LayoutText {#text} at (0,0) size 406x17
                   text run at (0,0) width 406: "The above image should be a 15px square aligned at the center."
-              LayoutImage {IMG} at (190.75,169) size 373.50x374
-              LayoutBlockFlow {P} at (4,559) size 747x36
+              LayoutImage {IMG} at (190.75,169) size 373.50x373.50
+              LayoutBlockFlow {P} at (4,558.50) size 747x36
                 LayoutText {#text} at (0,0) size 738x35
                   text run at (0,0) width 738: "The above image should be a square resized so its width is 50% of the its parent element, and centered horizontally"
                   text run at (0,18) width 172: "within the parent element: "
                   text run at (171,18) width 404: "the document body in the first half, and the table in the second."
-              LayoutImage {IMG} at (377.50,611) size 373.50x374
-              LayoutBlockFlow {P} at (4,1001) size 747x36
+              LayoutImage {IMG} at (377.50,610.50) size 373.50x373.50
+              LayoutBlockFlow {P} at (4,1000) size 747x36
                 LayoutText {#text} at (0,0) size 733x35
                   text run at (0,0) width 733: "The above image should be a square resized so its width is 50% of its parent element, and aligned at the right edge"
                   text run at (0,18) width 144: "of the parent element: "

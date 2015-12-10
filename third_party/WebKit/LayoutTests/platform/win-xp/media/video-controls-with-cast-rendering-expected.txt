@@ -1,16 +1,16 @@
-layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 782
+layer at (0,0) size 800x600 scrollHeight 782
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 785x550
-  LayoutBlockFlow {HTML} at (0,0) size 785x550
-    LayoutBlockFlow {BODY} at (8,16) size 769x526
-      LayoutBlockFlow {P} at (0,0) size 769x20
+layer at (0,0) size 800x550
+  LayoutBlockFlow {HTML} at (0,0) size 800x550
+    LayoutBlockFlow {BODY} at (8,16) size 784x526
+      LayoutBlockFlow {P} at (0,0) size 784x20
         LayoutText {#text} at (0,0) size 241x19
           text run at (0,0) width 241: "Test controls rendering with cast button."
-      LayoutBlockFlow {DIV} at (0,36) size 769x245
+      LayoutBlockFlow {DIV} at (0,36) size 784x245
         LayoutText {#text} at (0,0) size 0x0
-      LayoutBlockFlow {DIV} at (0,281) size 769x245
+      LayoutBlockFlow {DIV} at (0,281) size 784x245
         LayoutText {#text} at (0,0) size 0x0
-      LayoutBlockFlow {DIV} at (0,526) size 769x0
+      LayoutBlockFlow {DIV} at (0,526) size 784x0
 layer at (8,52) size 320x240
   LayoutVideo {VIDEO} at (0,0) size 320x240
 layer at (8,297) size 320x240
@@ -61,9 +61,9 @@ layer at (13,502) size 310x30
           LayoutBlockFlow {DIV} at (-4,0) size 24x24
     LayoutButton {INPUT} at (237,0) size 30x30
     LayoutButton {INPUT} at (271,0) size 30x30
-layer at (8,542) size 320x240 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+layer at (8,542) size 320x240 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
   LayoutVideo (positioned) {VIDEO} at (8,542) size 320x240
-layer at (8,542) size 320x240 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+layer at (8,542) size 320x240 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
   LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 320x240
     LayoutBlockFlow {DIV} at (0,205) size 320x35
 layer at (8,542) size 320x205 backgroundClip at (8,542) size 320x58 clip at (8,542) size 320x58

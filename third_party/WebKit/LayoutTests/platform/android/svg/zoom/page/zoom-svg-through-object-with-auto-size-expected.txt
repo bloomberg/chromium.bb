@@ -1,0 +1,256 @@
+88
+finished layout: LayoutImage logicalHeight: 34.7188
+placeBoxesInBlockDirection object: LayoutEmbeddedObject, linebox height: 34.7188
+finished layout: LayoutEmbeddedObject logicalHeight: 34.7188
+placeBoxesInBlockDirection object: LayoutText, linebox height: 14
+placeBoxesInBlockDirection object: LayoutImage, linebox height: 34.7188
+finished layout: LayoutImage logicalHeight: 34.7188
+placeBoxesInBlockDirection object: LayoutEmbeddedObject, linebox height: 34.7188
+finished layout: LayoutEmbeddedObject logicalHeight: 34.7188
+placeBoxesInBlockDirection object: LayoutText, linebox height: 14
+placeBoxesInBlockDirection object: LayoutText, linebox height: 14
+placeBoxesInBlockDirection object: LayoutText, linebox height: 14
+placeBoxesInBlockDirection object: LayoutText, linebox height: 14
+placeBoxesInBlockDirection object: LayoutText, linebox height: 14
+placeBoxesInBlockDirection object: LayoutText, linebox height: 14
+placeBoxesInBlockDirection object: LayoutText, linebox height: 14
+placeBoxesInBlockDirection object: LayoutText, linebox height: 14
+0x2cd10882cc10 pre logicalHeight: 35
+0x2cd10882cc10 logicalHeight: 29
+0x2cd10882cc10 final logicalHeight: 29
+0x2cd10882cd90 pre logicalHeight: 35
+0x2cd10882cd90 logicalHeight: 29
+0x2cd10882cd90 final logicalHeight: 29
+0x2cd10882cf10 pre logicalHeight: 35
+0x2cd10882cf10 logicalHeight: 29
+0x2cd10882cf10 final logicalHeight: 29
+0x2cd10882d090 pre logicalHeight: 35
+0x2cd10882d090 logicalHeight: 29
+0x2cd10882d090 final logicalHeight: 29
+0x2cd10882d210 pre logicalHeight: 35
+0x2cd10882d210 logicalHeight: 29
+0x2cd10882d210 final logicalHeight: 29
+0x2cd10882d390 pre logicalHeight: 35
+0x2cd10882d390 logicalHeight: 29
+0x2cd10882d390 final logicalHeight: 29
+0x2cd10882d510 pre logicalHeight: 35
+0x2cd10882d510 logicalHeight: 29
+0x2cd10882d510 final logicalHeight: 29
+0x2cd10882d690 pre logicalHeight: 35
+0x2cd10882d690 logicalHeight: 29
+0x2cd10882d690 final logicalHeight: 29
+placeBoxesInBlockDirection object: LayoutEmbeddedObject, linebox height: 34.7188
+finished layout: LayoutEmbeddedObject logicalHeight: 34.7188
+0x2cd10882cc10 pre logicalHeight: 29
+0x2cd10882cc10 logicalHeight: 29
+0x2cd10882cc10 final logicalHeight: 29
+placeBoxesInBlockDirection object: LayoutEmbeddedObject, linebox height: 34.7188
+finished layout: LayoutEmbeddedObject logicalHeight: 34.7188
+0x2cd10882cd90 pre logicalHeight: 29
+0x2cd10882cd90 logicalHeight: 29
+0x2cd10882cd90 final logicalHeight: 29
+placeBoxesInBlockDirection object: LayoutEmbeddedObject, linebox height: 34.7188
+finished layout: LayoutEmbeddedObject logicalHeight: 34.7188
+0x2cd10882cf10 pre logicalHeight: 29
+0x2cd10882cf10 logicalHeight: 29
+0x2cd10882cf10 final logicalHeight: 29
+placeBoxesInBlockDirection object: LayoutEmbeddedObject, linebox height: 34.7188
+finished layout: LayoutEmbeddedObject logicalHeight: 34.7188
+0x2cd10882d090 pre logicalHeight: 29
+0x2cd10882d090 logicalHeight: 29
+0x2cd10882d090 final logicalHeight: 29
+placeBoxesInBlockDirection object: LayoutEmbeddedObject, linebox height: 34.7188
+finished layout: LayoutEmbeddedObject logicalHeight: 34.7188
+0x2cd10882d210 pre logicalHeight: 29
+0x2cd10882d210 logicalHeight: 29
+0x2cd10882d210 final logicalHeight: 29
+placeBoxesInBlockDirection object: LayoutEmbeddedObject, linebox height: 34.7188
+finished layout: LayoutEmbeddedObject logicalHeight: 34.7188
+0x2cd10882d390 pre logicalHeight: 29
+0x2cd10882d390 logicalHeight: 29
+0x2cd10882d390 final logicalHeight: 29
+placeBoxesInBlockDirection object: LayoutEmbeddedObject, linebox height: 34.7188
+finished layout: LayoutEmbeddedObject logicalHeight: 34.7188
+0x2cd10882d510 pre logicalHeight: 29
+0x2cd10882d510 logicalHeight: 29
+0x2cd10882d510 final logicalHeight: 29
+placeBoxesInBlockDirection object: LayoutEmbeddedObject, linebox height: 34.7188
+finished layout: LayoutEmbeddedObject logicalHeight: 34.7188
+0x2cd10882d690 pre logicalHeight: 29
+0x2cd10882d690 logicalHeight: 29
+0x2cd10882d690 final logicalHeight: 29
+placeBoxesInBlockDirection object: LayoutText, linebox height: 19
+placeBoxesInBlockDirection object: LayoutText, linebox height: 19
+placeBoxesInBlockDirection object: LayoutText, linebox height: 19
+placeBoxesInBlockDirection object: LayoutText, linebox height: 19
+placeBoxesInBlockDirection object: LayoutText, linebox height: 19
+placeBoxesInBlockDirection object: LayoutImage, linebox height: 50
+finished layout: LayoutImage logicalHeight: 50
+placeBoxesInBlockDirection object: LayoutEmbeddedObject, linebox height: 50
+finished layout: LayoutEmbeddedObject logicalHeight: 50
+placeBoxesInBlockDirection object: LayoutText, linebox height: 19
+placeBoxesInBlockDirection object: LayoutImage, linebox height: 50
+finished layout: LayoutImage logicalHeight: 50
+placeBoxesInBlockDirection object: LayoutEmbeddedObject, linebox height: 50
+finished layout: LayoutEmbeddedObject logicalHeight: 50
+placeBoxesInBlockDirection object: LayoutText, linebox height: 19
+placeBoxesInBlockDirection object: LayoutImage, linebox height: 50
+finished layout: LayoutImage logicalHeight: 50
+placeBoxesInBlockDirection object: LayoutEmbeddedObject, linebox height: 50
+finished layout: LayoutEmbeddedObject logicalHeight: 50
+placeBoxesInBlockDirection object: LayoutText, linebox height: 19
+placeBoxesInBlockDirection object: LayoutImage, linebox height: 50
+finished layout: LayoutImage logicalHeight: 50
+placeBoxesInBlockDirection object: LayoutEmbeddedObject, linebox height: 50
+finished layout: LayoutEmbeddedObject logicalHeight: 50
+placeBoxesInBlockDirection object: LayoutText, linebox height: 19
+placeBoxesInBlockDirection object: LayoutImage, linebox height: 50
+finished layout: LayoutImage logicalHeight: 50
+placeBoxesInBlockDirection object: LayoutEmbeddedObject, linebox height: 50
+finished layout: LayoutEmbeddedObject logicalHeight: 50
+placeBoxesInBlockDirection object: LayoutText, linebox height: 19
+placeBoxesInBlockDirection object: LayoutImage, linebox height: 50
+finished layout: LayoutImage logicalHeight: 50
+placeBoxesInBlockDirection object: LayoutEmbeddedObject, linebox height: 50
+finished layout: LayoutEmbeddedObject logicalHeight: 50
+placeBoxesInBlockDirection object: LayoutText, linebox height: 19
+placeBoxesInBlockDirection object: LayoutImage, linebox height: 50
+finished layout: LayoutImage logicalHeight: 50
+placeBoxesInBlockDirection object: LayoutEmbeddedObject, linebox height: 50
+finished layout: LayoutEmbeddedObject logicalHeight: 50
+placeBoxesInBlockDirection object: LayoutText, linebox height: 19
+placeBoxesInBlockDirection object: LayoutImage, linebox height: 50
+finished layout: LayoutImage logicalHeight: 50
+placeBoxesInBlockDirection object: LayoutEmbeddedObject, linebox height: 50
+finished layout: LayoutEmbeddedObject logicalHeight: 50
+placeBoxesInBlockDirection object: LayoutText, linebox height: 19
+placeBoxesInBlockDirection object: LayoutText, linebox height: 19
+placeBoxesInBlockDirection object: LayoutText, linebox height: 19
+placeBoxesInBlockDirection object: LayoutText, linebox height: 19
+placeBoxesInBlockDirection object: LayoutText, linebox height: 19
+placeBoxesInBlockDirection object: LayoutText, linebox height: 19
+placeBoxesInBlockDirection object: LayoutText, linebox height: 19
+placeBoxesInBlockDirection object: LayoutText, linebox height: 19
+0x2cd10882cc10 pre logicalHeight: 29
+0x2cd10882cc10 logicalHeight: 42
+0x2cd10882cc10 final logicalHeight: 42
+0x2cd10882cd90 pre logicalHeight: 29
+0x2cd10882cd90 logicalHeight: 42
+0x2cd10882cd90 final logicalHeight: 42
+0x2cd10882cf10 pre logicalHeight: 29
+0x2cd10882cf10 logicalHeight: 42
+0x2cd10882cf10 final logicalHeight: 42
+0x2cd10882d090 pre logicalHeight: 29
+0x2cd10882d090 logicalHeight: 42
+0x2cd10882d090 final logicalHeight: 42
+0x2cd10882d210 pre logicalHeight: 29
+0x2cd10882d210 logicalHeight: 42
+0x2cd10882d210 final logicalHeight: 42
+0x2cd10882d390 pre logicalHeight: 29
+0x2cd10882d390 logicalHeight: 42
+0x2cd10882d390 final logicalHeight: 42
+0x2cd10882d510 pre logicalHeight: 29
+0x2cd10882d510 logicalHeight: 42
+0x2cd10882d510 final logicalHeight: 42
+0x2cd10882d690 pre logicalHeight: 29
+0x2cd10882d690 logicalHeight: 42
+0x2cd10882d690 final logicalHeight: 42
+placeBoxesInBlockDirection object: LayoutEmbeddedObject, linebox height: 160
+placeBoxesInBlockDirection object: LayoutText, linebox height: 19
+placeBoxesInBlockDirection object: LayoutEmbeddedObject, linebox height: 230
+finished layout: LayoutEmbeddedObject logicalHeight: 160
+finished layout: LayoutEmbeddedObject logicalHeight: 230
+placeBoxesInBlockDirection object: LayoutEmbeddedObject, linebox height: 160
+placeBoxesInBlockDirection object: LayoutText, linebox height: 19
+placeBoxesInBlockDirection object: LayoutEmbeddedObject, linebox height: 230
+finished layout: LayoutEmbeddedObject logicalHeight: 160
+finished layout: LayoutEmbeddedObject logicalHeight: 230
+placeBoxesInBlockDirection object: LayoutEmbeddedObject, linebox height: 160
+placeBoxesInBlockDirection object: LayoutText, linebox height: 19
+placeBoxesInBlockDirection object: LayoutEmbeddedObject, linebox height: 230
+finished layout: LayoutEmbeddedObject logicalHeight: 160
+finished layout: LayoutEmbeddedObject logicalHeight: 230
+0x2cd10882d690 pre logicalHeight: 0
+0x2cd10882d690 logicalHeight: 220
+0x2cd10882d690 final logicalHeight: 220
+placeBoxesInBlockDirection object: LayoutEmbeddedObject, linebox height: 230
+placeBoxesInBlockDirection object: LayoutText, linebox height: 19
+placeBoxesInBlockDirection object: LayoutEmbeddedObject, linebox height: 230
+finished layout: LayoutEmbeddedObject logicalHeight: 230
+finished layout: LayoutEmbeddedObject logicalHeight: 230
+0x2cd10882d510 pre logicalHeight: 0
+0x2cd10882d510 logicalHeight: 220
+0x2cd10882d510 final logicalHeight: 220
+placeBoxesInBlockDirection object: LayoutEmbeddedObject, linebox height: 230
+placeBoxesInBlockDirection object: LayoutText, linebox height: 19
+placeBoxesInBlockDirection object: LayoutEmbeddedObject, linebox height: 230
+finished layout: LayoutEmbeddedObject logicalHeight: 230
+finished layout: LayoutEmbeddedObject logicalHeight: 230
+0x2cd10882d690 pre logicalHeight: 220
+0x2cd10882d690 logicalHeight: 220
+0x2cd10882d690 final logicalHeight: 220
+placeBoxesInBlockDirection object: LayoutEmbeddedObject, linebox height: 230
+placeBoxesInBlockDirection object: LayoutText, linebox height: 19
+placeBoxesInBlockDirection object: LayoutEmbeddedObject, linebox height: 230
+finished layout: LayoutEmbeddedObject logicalHeight: 230
+finished layout: LayoutEmbeddedObject logicalHeight: 230
+0x2cd10882d510 pre logicalHeight: 220
+0x2cd10882d510 logicalHeight: 220
+0x2cd10882d510 final logicalHeight: 220
+placeBoxesInBlockDirection object: LayoutEmbeddedObject, linebox height: 190.328
+placeBoxesInBlockDirection object: LayoutText, linebox height: 15
+placeBoxesInBlockDirection object: LayoutEmbeddedObject, linebox height: 190.328
+finished layout: LayoutEmbeddedObject logicalHeight: 190.328
+finished layout: LayoutEmbeddedObject logicalHeight: 190.328
+0x2cd10882d690 pre logicalHeight: 220
+0x2cd10882d690 logicalHeight: 183
+0x2cd10882d690 final logicalHeight: 183
+0x2cd10882d510 pre logicalHeight: 220
+0x2cd10882d510 logicalHeight: 183
+0x2cd10882d510 final logicalHeight: 183
+placeBoxesInBlockDirection object: LayoutEmbeddedObject, linebox height: 190.328
+placeBoxesInBlockDirection object: LayoutText, linebox height: 15
+placeBoxesInBlockDirection object: LayoutEmbeddedObject, linebox height: 190.328
+finished layout: LayoutEmbeddedObject logicalHeight: 190.328
+finished layout: LayoutEmbeddedObject logicalHeight: 190.328
+0x2cd10882d690 pre logicalHeight: 183
+0x2cd10882d690 logicalHeight: 183
+0x2cd10882d690 final logicalHeight: 183
+placeBoxesInBlockDirection object: LayoutEmbeddedObject, linebox height: 190.328
+placeBoxesInBlockDirection object: LayoutText, linebox height: 15
+placeBoxesInBlockDirection object: LayoutEmbeddedObject, linebox height: 190.328
+finished layout: LayoutEmbeddedObject logicalHeight: 190.328
+finished layout: LayoutEmbeddedObject logicalHeight: 190.328
+0x2cd10882d510 pre logicalHeight: 183
+0x2cd10882d510 logicalHeight: 183
+0x2cd10882d510 final logicalHeight: 183
+placeBoxesInBlockDirection object: LayoutEmbeddedObject, linebox height: 158.922
+placeBoxesInBlockDirection object: LayoutText, linebox height: 14
+placeBoxesInBlockDirection object: LayoutEmbeddedObject, linebox height: 158.922
+finished layout: Content-Type: text/plain
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x173
+  LayoutBlockFlow {HTML} at (0,0) size 800x173.09
+    LayoutBlockFlow {BODY} at (5.55,5.55) size 788.91x162
+      LayoutText {#text} at (158,148) size 4x14
+        text run at (158,148) width 4: " "
+      LayoutText {#text} at (0,0) size 0x0
+      LayoutText {#text} at (0,0) size 0x0
+      LayoutText {#text} at (0,0) size 0x0
+      LayoutText {#text} at (0,0) size 0x0
+      LayoutText {#text} at (0,0) size 0x0
+layer at (6,6) size 159x159
+  LayoutEmbeddedObject {OBJECT} at (0,0) size 158.92x158.92 [border: (1px dashed #800000)]
+    layer at (0,0) size 153x153
+      LayoutView at (0,0) size 153x153
+    layer at (0,0) size 153x153
+      LayoutSVGRoot {svg} at (0,0) size 153x153
+        LayoutSVGEllipse {circle} at (0,0) size 153x153 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#D9BB7A] [fill rule=EVEN-ODD]}] [cx=110.00] [cy=110.00] [r=110.00]
+layer at (167,6) size 159x159
+  LayoutEmbeddedObject {OBJECT} at (161.92,0) size 158.92x158.92 [border: (1px dashed #800000)]
+    layer at (0,0) size 153x153
+      LayoutView at (0,0) size 153x153
+    layer at (0,0) size 153x153
+      LayoutSVGRoot {svg} at (0,0) size 153x153
+        LayoutSVGEllipse {circle} at (0,0) size 153x153 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#D9BB7A] [fill rule=EVEN-ODD]}] [cx=110.00] [cy=110.00] [r=110.00]
