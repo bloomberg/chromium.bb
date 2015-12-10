@@ -4,6 +4,7 @@
 # found in the LICENSE file.
 
 import argparse
+import os
 import re
 import sys
 
@@ -25,9 +26,29 @@ On Windows, the message is simply a message via __pragma(message(...)).
 
 """
 
+COMPONENTS_STRINGS_HEADER = 'gen/components/strings/grit/components_strings.h'
+
+# We don't want the resources are different between 32-bit and 64-bit build,
+# added arch related resources even they are not used.
+ARCH_SPECIFIC_RESOURCES = [
+  'IDS_VERSION_UI_64BIT',
+  'IDS_VERSION_UI_32BIT',
+]
+
+def FindResourceIds(header, resource_names):
+  """Returns the numerical resource IDs that correspond to the given resource
+     names, as #defined in the given header file."
+  """
+  pattern = re.compile(r'^#define (%s) (\d+)$' % '|'.join(resource_names))
+  with open(header, 'r') as f:
+    res_ids = [ int(pattern.match(line).group(2))
+                 for line in f if pattern.match(line) ]
+  if len(res_ids) != len(resource_names):
+    raise Exception("Find resource id failed: the result is " + res_ids)
+  return set(res_ids)
 
 def GetResourceIdsInPragmaWarnings(input):
-  """Returns sorted set of resource ids that are inside unknown pragma warnings
+  """Returns set of resource ids that are inside unknown pragma warnings
      for the given input.
   """
   used_resources = set()
@@ -38,7 +59,7 @@ def GetResourceIdsInPragmaWarnings(input):
     if match:
       resource_id = int(match.group('resource_id'))
       used_resources.add(resource_id)
-  return sorted(used_resources)
+  return used_resources
 
 def Main():
   parser = argparse.ArgumentParser(usage=USAGE)
@@ -48,11 +69,18 @@ def Main():
   parser.add_argument(
       '-o', '--output', type=argparse.FileType('w'), default=sys.stdout,
       help='The resource list path to write (default stdout)')
+  parser.add_argument('--out-dir', required=True,
+      help='The out target directory, for example out/Release')
+
   args = parser.parse_args()
 
 
   used_resources = GetResourceIdsInPragmaWarnings(args.input)
-  for resource_id in used_resources:
+  used_resources |= FindResourceIds(
+      os.path.join(args.out_dir, COMPONENTS_STRINGS_HEADER),
+      ARCH_SPECIFIC_RESOURCES)
+
+  for resource_id in sorted(used_resources):
     args.output.write('%d\n' % resource_id)
 
 if __name__ == '__main__':
