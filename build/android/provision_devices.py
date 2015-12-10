@@ -27,6 +27,7 @@ from devil.android import device_blacklist
 from devil.android import device_errors
 from devil.android import device_temp_file
 from devil.android import device_utils
+from devil.android.sdk import keyevent
 from devil.android.sdk import version_codes
 from devil.utils import run_tests_helper
 from devil.utils import timeout_retry
@@ -104,8 +105,8 @@ def ProvisionDevice(device, blacklist, options):
 
   try:
     if should_run_phase(_PHASES.WIPE):
-      if (options.chrome_specific_wipe or device.build_version_sdk >=
-          version_codes.MARSHMALLOW):
+      if (options.chrome_specific_wipe or device.IsUserBuild() or
+          device.build_version_sdk >= version_codes.MARSHMALLOW):
         run_phase(WipeChromeData)
       else:
         run_phase(WipeDevice)
@@ -175,19 +176,25 @@ def WipeChromeData(device, options):
     return
 
   try:
-    device.EnableRoot()
-    _UninstallIfMatch(device, _CHROME_PACKAGE_REGEX,
-                      constants.PACKAGE_INFO['chrome_stable'].package)
-    _WipeUnderDirIfMatch(device, '/data/app-lib/', _CHROME_PACKAGE_REGEX)
-    _WipeUnderDirIfMatch(device, '/data/tombstones/', _TOMBSTONE_REGEX)
+    if device.IsUserBuild():
+      _UninstallIfMatch(device, _CHROME_PACKAGE_REGEX,
+                        constants.PACKAGE_INFO['chrome_stable'].package)
+      device.RunShellCommand('rm -rf %s/*' % device.GetExternalStoragePath(),
+                             check_return=True)
+      device.RunShellCommand('rm -rf /data/local/tmp/*', check_return=True)
+    else:
+      device.EnableRoot()
+      _UninstallIfMatch(device, _CHROME_PACKAGE_REGEX,
+                        constants.PACKAGE_INFO['chrome_stable'].package)
+      _WipeUnderDirIfMatch(device, '/data/app-lib/', _CHROME_PACKAGE_REGEX)
+      _WipeUnderDirIfMatch(device, '/data/tombstones/', _TOMBSTONE_REGEX)
 
-    _WipeFileOrDir(device, '/data/local.prop')
-    _WipeFileOrDir(device, '/data/local/chrome-command-line')
-    _WipeFileOrDir(device, '/data/local/.config/')
-    _WipeFileOrDir(device, '/data/local/tmp/')
-
-    device.RunShellCommand('rm -rf %s/*' % device.GetExternalStoragePath(),
-                           check_return=True)
+      _WipeFileOrDir(device, '/data/local.prop')
+      _WipeFileOrDir(device, '/data/local/chrome-command-line')
+      _WipeFileOrDir(device, '/data/local/.config/')
+      _WipeFileOrDir(device, '/data/local/tmp/')
+      device.RunShellCommand('rm -rf %s/*' % device.GetExternalStoragePath(),
+                             check_return=True)
   except device_errors.CommandFailedError:
     logging.exception('Possible failure while wiping the device. '
                       'Attempting to continue.')
@@ -250,7 +257,10 @@ def SetProperties(device, options):
   except device_errors.CommandFailedError as e:
     logging.warning(str(e))
 
-  _ConfigureLocalProperties(device, options.enable_java_debug)
+  if not device.IsUserBuild():
+    _ConfigureLocalProperties(device, options.enable_java_debug)
+  else:
+    logging.warning('Cannot configure properties in user builds.')
   device_settings.ConfigureContentSettings(
       device, device_settings.DETERMINISTIC_DEVICE_SETTINGS)
   if options.disable_location:
@@ -315,6 +325,11 @@ def _ConfigureLocalProperties(device, java_debug=True):
 
 
 def FinishProvisioning(device, options):
+  # The lockscreen can't be disabled on user builds, so send a keyevent
+  # to unlock it.
+  if device.IsUserBuild():
+    device.SendKeyEvent(keyevent.KEYCODE_MENU)
+
   if options.min_battery_level is not None:
     try:
       battery = battery_utils.BatteryUtils(device)
@@ -355,10 +370,14 @@ def FinishProvisioning(device, options):
       return False
 
   # Sometimes the date is not set correctly on the devices. Retry on failure.
-  if not timeout_retry.WaitFor(_set_and_verify_date, wait_period=1,
-                               max_tries=2):
-    raise device_errors.CommandFailedError(
-        'Failed to set date & time.', device_serial=str(device))
+  if device.IsUserBuild():
+    # TODO(bpastene): Figure out how to set the date & time on user builds.
+    pass
+  else:
+    if not timeout_retry.WaitFor(
+        _set_and_verify_date, wait_period=1, max_tries=2):
+      raise device_errors.CommandFailedError(
+          'Failed to set date & time.', device_serial=str(device))
 
   props = device.RunShellCommand('getprop', check_return=True)
   for prop in props:
