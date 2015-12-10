@@ -113,9 +113,6 @@ class FrameAndStyleLock {
   // The initial origin of the content view.
   NSPoint initialContentViewOrigin_;
 
-  // The initial value of the content view's autoresizeSubviews property.
-  BOOL initialContentViewAutoresizesSubviews_;
-
   // Whether the instance is in the process of changing the size of
   // |primaryWindow_|.
   BOOL changingPrimaryWindowSize_;
@@ -331,14 +328,6 @@ class FrameAndStyleLock {
                    finalFrame_.size.width, finalFrame_.size.height);
     [primaryWindow_ forceContentViewFrame:relativeContentFinalFrame];
 
-    // In OSX 10.11, when the NSFullScreenWindowMask is added or removed,
-    // the window's frame and layer changes slightly which causes a janky
-    // movement. As a result, we should disable the content view's autoresize
-    // at the beginning of the animation and set it back to its original value
-    // at the end of the animation.
-    initialContentViewAutoresizesSubviews_ = [contentView autoresizesSubviews];
-    [contentView setAutoresizesSubviews:NO];
-
     fullscreenTabStripBackgroundView_.reset(
         [[FullscreenTabStripBackgroundView alloc]
             initWithFrame:finalFrame_
@@ -491,7 +480,6 @@ class FrameAndStyleLock {
       NSView* content = [primaryWindow_ contentView];
       [content setFrameOrigin:initialContentViewOrigin_];
       [self changePrimaryWindowToFinalFrame];
-      [content setAutoresizesSubviews:initialContentViewAutoresizesSubviews_];
 
       [tabStripBackgroundView_ setHidden:NO];
       [fullscreenTabStripBackgroundView_ removeFromSuperview];

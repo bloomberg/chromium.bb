@@ -180,6 +180,10 @@ class WebContents;
 - (void)windowDidExitFullScreen:(NSNotification*)notification;
 - (void)windowWillExitFullScreen:(NSNotification*)notification;
 
+// Hides or unhides any displayed modal sheet for fullscreen transition.
+// Modal sheets should be hidden at the beginning and then shown at the end.
+- (void)setSheetHiddenForFullscreenTransition:(BOOL)shoudHide;
+
 // Adjusts the UI and destroys the exit bubble when we are exiting fullscreen.
 - (void)adjustUIForExitingFullscreen;
 

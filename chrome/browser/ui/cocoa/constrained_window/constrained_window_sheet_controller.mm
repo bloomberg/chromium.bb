@@ -198,6 +198,22 @@ NSRect GetSheetParentBoundsForParentView(NSView* view) {
   activeView_.reset();
 }
 
+- (void)hideSheetForFullscreenTransition {
+  if (ConstrainedWindowSheetInfo* sheetInfo =
+          [self findSheetInfoForParentView:activeView_]) {
+    [sheetInfo hideSheet];
+    isSheetHiddenForFullscreen_ = YES;
+  }
+}
+
+- (void)unhideSheetForFullscreenTransition {
+  isSheetHiddenForFullscreen_ = NO;
+  if (ConstrainedWindowSheetInfo* sheetInfo =
+          [self findSheetInfoForParentView:activeView_]) {
+    [self showSheet:[sheetInfo sheet] forParentView:activeView_];
+  }
+}
+
 - (NSPoint)originForSheet:(id<ConstrainedWindowSheet>)sheet
            withWindowSize:(NSSize)size {
   ConstrainedWindowSheetInfo* info = [self findSheetInfoForSheet:sheet];
@@ -267,6 +283,9 @@ NSRect GetSheetParentBoundsForParentView(NSView* view) {
 }
 
 - (void)onParentWindowSizeDidChange:(NSNotification*)note {
+  if (isSheetHiddenForFullscreen_)
+    return;
+
   [self updateSheetPosition:activeView_];
 }
 

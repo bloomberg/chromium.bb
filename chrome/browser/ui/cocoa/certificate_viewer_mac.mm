@@ -167,20 +167,11 @@ void ShowCertificateViewer(content::WebContents* web_contents,
 
   oldResizesSubviews_ = [[sheetWindow contentView] autoresizesSubviews];
   [[sheetWindow contentView] setAutoresizesSubviews:NO];
-
-  oldSheetFrame_ = [sheetWindow frame];
-  NSRect overlayFrame = [overlayWindow_ frame];
-  oldSheetFrame_.origin.x -= NSMinX(overlayFrame);
-  oldSheetFrame_.origin.y -= NSMinY(overlayFrame);
-  [sheetWindow setFrame:ui::kWindowSizeDeterminedLater display:NO];
 }
 
 - (void)unhideSheet {
   NSWindow* sheetWindow = [overlayWindow_ attachedSheet];
-  NSRect overlayFrame = [overlayWindow_ frame];
-  oldSheetFrame_.origin.x += NSMinX(overlayFrame);
-  oldSheetFrame_.origin.y += NSMinY(overlayFrame);
-  [sheetWindow setFrame:oldSheetFrame_ display:NO];
+
   [[sheetWindow contentView] setAutoresizesSubviews:oldResizesSubviews_];
   [[overlayWindow_ attachedSheet] setAlphaValue:1.0];
 }

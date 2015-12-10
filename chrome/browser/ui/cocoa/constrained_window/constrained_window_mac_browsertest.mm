@@ -10,6 +10,8 @@
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_sheet.h"
+#include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
+#include "chrome/browser/ui/exclusive_access/fullscreen_controller_test.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/web_contents.h"
@@ -153,4 +155,30 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowMacTest, TabClose) {
   EXPECT_TRUE(tab_strip->CloseWebContentsAt(1,
                                             TabStripModel::CLOSE_USER_GESTURE));
   EXPECT_EQ(1, tab_strip->count());
+}
+
+// Test that the sheet is still visible after entering and exiting fullscreen.
+IN_PROC_BROWSER_TEST_F(ConstrainedWindowMacTest, BrowserWindowFullscreen) {
+  NiceMock<ConstrainedWindowDelegateMock> delegate;
+  ConstrainedWindowMac dialog(&delegate, tab1_, sheet_);
+  EXPECT_EQ(1.0, [sheet_window_ alphaValue]);
+
+  // Toggle fullscreen twice: one for entering and one for exiting.
+  // Check to see if the sheet is visible.
+  for (int i = 0; i < 2; i++) {
+    {
+      // NOTIFICATION_FULLSCREEN_CHANGED is sent asynchronously. Wait for the
+      // notification before testing the sheet's visibility.
+      scoped_ptr<FullscreenNotificationObserver> waiter(
+          new FullscreenNotificationObserver());
+      browser()
+          ->exclusive_access_manager()
+          ->fullscreen_controller()
+          ->ToggleBrowserFullscreenMode();
+      waiter->Wait();
+    }
+    EXPECT_EQ(1.0, [sheet_window_ alphaValue]);
+  }
+
+  dialog.CloseWebContentsModalDialog();
 }

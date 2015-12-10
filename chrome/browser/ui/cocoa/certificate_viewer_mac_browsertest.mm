@@ -71,7 +71,7 @@ IN_PROC_BROWSER_TEST_F(SSLCertificateViewerCocoaTest, HideShow) {
   // Switch to another tab and verify that the sheet is hidden.
   AddBlankTabAndShow(browser());
   EXPECT_EQ(0.0, [sheetWindow alphaValue]);
-  EXPECT_NSEQ(ui::kWindowSizeDeterminedLater, [sheetWindow frame]);
+  EXPECT_NSEQ(sheetFrame, [sheetWindow frame]);
 
   // Switch back and verify that the sheet is shown.
   chrome::SelectNumberedTab(browser(), 0);

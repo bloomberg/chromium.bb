@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/browser_window_state.h"
 #import "chrome/browser/ui/cocoa/browser_window_fullscreen_transition.h"
 #import "chrome/browser/ui/cocoa/browser_window_layout.h"
+#import "chrome/browser/ui/cocoa/constrained_window/constrained_window_sheet_controller.h"
 #import "chrome/browser/ui/cocoa/custom_frame_view.h"
 #import "chrome/browser/ui/cocoa/dev_tools_controller.h"
 #import "chrome/browser/ui/cocoa/fast_resize_view.h"
@@ -700,6 +701,8 @@ willPositionSheet:(NSWindow*)sheet
   enteringAppKitFullscreenOnPrimaryScreen_ =
       [[[self window] screen] isEqual:[[NSScreen screens] firstObject]];
 
+  [self setSheetHiddenForFullscreenTransition:YES];
+
   // If we are using custom fullscreen animations, the layout will resize
   // in startCustomAnimationToEnterFullScreenWithDuration. In order to prevent
   // multiple resizing messages from being sent to the renderer, we should call
@@ -758,15 +761,17 @@ willPositionSheet:(NSWindow*)sheet
     base::MessageLoop::current()->PostTask(FROM_HERE, callback);
   }
 
+  [self setSheetHiddenForFullscreenTransition:NO];
+
   if (notification)  // For System Fullscreen when non-nil.
     [self deregisterForContentViewResizeNotifications];
+
   enteringAppKitFullscreen_ = NO;
   enteringImmersiveFullscreen_ = NO;
   enteringPresentationMode_ = NO;
   isUsingCustomAnimation_ = NO;
 
   [self showFullscreenExitBubbleIfNecessary];
-  [self layoutSubviews];
   browser_->WindowFullscreenStateChanged();
 }
 
@@ -778,10 +783,19 @@ willPositionSheet:(NSWindow*)sheet
   // Like windowWillEnterFullScreen, if we use custom animations,
   // adjustUIForExitingFullscreen should be called after the layout resizes in
   // startCustomAnimationToExitFullScreenWithDuration.
-  if (isUsingCustomAnimation_)
+  if (isUsingCustomAnimation_) {
     blockLayoutSubviews_ = YES;
-  else
+    [self setSheetHiddenForFullscreenTransition:YES];
+
+    // In OSX 10.11, when the NSFullScreenWindowMask is added or removed,
+    // the window's frame and layer changes slightly which causes a janky
+    // movement. As a result, we should disable the content view's autoresize
+    // at the beginning of the animation and set it back to its original value
+    // at the end of the animation.
+    [self.chromeContentView setAutoresizesSubviews:NO];
+  } else {
     [self adjustUIForExitingFullscreen];
+  }
 }
 
 - (void)windowDidExitFullScreen:(NSNotification*)notification {
@@ -791,6 +805,9 @@ willPositionSheet:(NSWindow*)sheet
     [self deregisterForContentViewResizeNotifications];
 
   browser_->WindowFullscreenStateChanged();
+  [self.chromeContentView setAutoresizesSubviews:YES];
+
+  [self setSheetHiddenForFullscreenTransition:NO];
 
   exitingAppKitFullscreen_ = NO;
   isUsingCustomAnimation_ = NO;
@@ -814,8 +831,23 @@ willPositionSheet:(NSWindow*)sheet
   fullscreenTransition_.reset();
   isUsingCustomAnimation_ = NO;
   blockLayoutSubviews_ = NO;
+
   // Force a relayout to try and get the window back into a reasonable state.
+  [self.chromeContentView setAutoresizesSubviews:YES];
   [self layoutSubviews];
+}
+
+- (void)setSheetHiddenForFullscreenTransition:(BOOL)shoudHide {
+  if (!isUsingCustomAnimation_)
+    return;
+
+  ConstrainedWindowSheetController* sheetController =
+      [ConstrainedWindowSheetController
+          controllerForParentWindow:[self window]];
+  if (shoudHide)
+    [sheetController hideSheetForFullscreenTransition];
+  else
+    [sheetController unhideSheetForFullscreenTransition];
 }
 
 - (void)adjustUIForExitingFullscreen {
@@ -1166,7 +1198,7 @@ willPositionSheet:(NSWindow*)sheet
 
   NSArray* customWindows =
       [fullscreenTransition_ customWindowsForFullScreenTransition];
-  isUsingCustomAnimation_ = !customWindows;
+  isUsingCustomAnimation_ = customWindows != nil;
   return customWindows;
 }
 
@@ -1185,7 +1217,7 @@ willPositionSheet:(NSWindow*)sheet
 
   NSArray* customWindows =
       [fullscreenTransition_ customWindowsForFullScreenTransition];
-  isUsingCustomAnimation_ = !customWindows;
+  isUsingCustomAnimation_ = customWindows != nil;
   return customWindows;
 }
 
