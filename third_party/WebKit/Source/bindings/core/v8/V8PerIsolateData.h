@@ -31,7 +31,6 @@
 #include "bindings/core/v8/V8HiddenValue.h"
 #include "bindings/core/v8/WrapperTypeInfo.h"
 #include "core/CoreExport.h"
-#include "core/inspector/ScriptDebuggerBase.h"
 #include "gin/public/isolate_holder.h"
 #include "gin/public/v8_idle_task_runner.h"
 #include "wtf/HashMap.h"
@@ -43,6 +42,7 @@
 namespace blink {
 
 class DOMDataStore;
+class MainThreadDebugger;
 class StringCache;
 class V8Debugger;
 struct WrapperTypeInfo;
@@ -123,7 +123,7 @@ public:
     void runEndOfScopeTasks();
     void clearEndOfScopeTasks();
 
-    void setScriptDebugger(PassOwnPtr<ScriptDebuggerBase>);
+    void setScriptDebugger(PassOwnPtr<MainThreadDebugger>);
 
 private:
     V8PerIsolateData();
@@ -158,7 +158,7 @@ private:
     bool m_performingMicrotaskCheckpoint;
 
     Vector<OwnPtr<EndOfScopeTask>> m_endOfScopeTasks;
-    OwnPtr<ScriptDebuggerBase> m_scriptDebugger;
+    OwnPtr<MainThreadDebugger> m_scriptDebugger;
 };
 
 } // namespace blink

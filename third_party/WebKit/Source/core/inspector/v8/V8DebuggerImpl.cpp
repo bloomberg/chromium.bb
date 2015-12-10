@@ -35,8 +35,8 @@
 #include "bindings/core/v8/V8ScriptRunner.h"
 #include "core/inspector/v8/JavaScriptCallFrame.h"
 #include "core/inspector/v8/ScriptBreakpoint.h"
+#include "core/inspector/v8/V8DebuggerAgentImpl.h"
 #include "core/inspector/v8/V8DebuggerClient.h"
-#include "core/inspector/v8/V8DebuggerListener.h"
 #include "core/inspector/v8/V8JavaScriptCallFrame.h"
 #include "platform/JSONValues.h"
 #include "wtf/Vector.h"
@@ -123,44 +123,44 @@ static int getGroupId(v8::Local<v8::Context> context)
     return dataString.left(commaPos).toInt();
 }
 
-void V8DebuggerImpl::addListener(int contextGroupId, V8DebuggerListener* listener)
+void V8DebuggerImpl::addAgent(int contextGroupId, V8DebuggerAgentImpl* agent)
 {
     ASSERT(contextGroupId);
-    ASSERT(!m_listenersMap.contains(contextGroupId));
-    if (m_listenersMap.isEmpty())
+    ASSERT(!m_agentsMap.contains(contextGroupId));
+    if (m_agentsMap.isEmpty())
         enable();
-    m_listenersMap.set(contextGroupId, listener);
+    m_agentsMap.set(contextGroupId, agent);
 
-    Vector<V8DebuggerListener::ParsedScript> compiledScripts;
+    Vector<V8DebuggerParsedScript> compiledScripts;
     getCompiledScripts(contextGroupId, compiledScripts);
     for (size_t i = 0; i < compiledScripts.size(); i++)
-        listener->didParseSource(compiledScripts[i]);
+        agent->didParseSource(compiledScripts[i]);
 }
 
-void V8DebuggerImpl::removeListener(int contextGroupId)
+void V8DebuggerImpl::removeAgent(int contextGroupId)
 {
     ASSERT(contextGroupId);
-    if (!m_listenersMap.contains(contextGroupId))
+    if (!m_agentsMap.contains(contextGroupId))
         return;
 
     if (!m_pausedContext.IsEmpty() && getGroupId(m_pausedContext) == contextGroupId)
         continueProgram();
 
-    m_listenersMap.remove(contextGroupId);
+    m_agentsMap.remove(contextGroupId);
 
-    if (m_listenersMap.isEmpty())
+    if (m_agentsMap.isEmpty())
         disable();
 }
 
-V8DebuggerListener* V8DebuggerImpl::getListenerForContext(v8::Local<v8::Context> context)
+V8DebuggerAgentImpl* V8DebuggerImpl::getAgentForContext(v8::Local<v8::Context> context)
 {
     int groupId = getGroupId(context);
     if (!groupId)
         return nullptr;
-    return m_listenersMap.get(groupId);
+    return m_agentsMap.get(groupId);
 }
 
-void V8DebuggerImpl::getCompiledScripts(int contextGroupId, Vector<V8DebuggerListener::ParsedScript>& result)
+void V8DebuggerImpl::getCompiledScripts(int contextGroupId, Vector<V8DebuggerParsedScript>& result)
 {
     v8::HandleScope scope(m_isolate);
     v8::Context::Scope contextScope(debuggerContext());
@@ -176,7 +176,7 @@ void V8DebuggerImpl::getCompiledScripts(int contextGroupId, Vector<V8DebuggerLis
     v8::Local<v8::Array> scriptsArray = v8::Local<v8::Array>::Cast(value);
     result.reserveCapacity(scriptsArray->Length());
     for (unsigned i = 0; i < scriptsArray->Length(); ++i)
-        result.append(createParsedScript(v8::Local<v8::Object>::Cast(scriptsArray->Get(v8::Integer::New(m_isolate, i))), CompileSuccess));
+        result.append(createParsedScript(v8::Local<v8::Object>::Cast(scriptsArray->Get(v8::Integer::New(m_isolate, i))), true));
 }
 
 String V8DebuggerImpl::setBreakpoint(const String& sourceID, const ScriptBreakpoint& scriptBreakpoint, int* actualLineNumber, int* actualColumnNumber, bool interstatementLocation)
@@ -531,8 +531,8 @@ void V8DebuggerImpl::handleProgramBreak(v8::Local<v8::Context> pausedContext, v8
     if (m_runningNestedMessageLoop)
         return;
 
-    V8DebuggerListener* listener = getListenerForContext(pausedContext);
-    if (!listener)
+    V8DebuggerAgentImpl* agent = getAgentForContext(pausedContext);
+    if (!agent)
         return;
 
     Vector<String> breakpointIds;
@@ -547,28 +547,28 @@ void V8DebuggerImpl::handleProgramBreak(v8::Local<v8::Context> pausedContext, v8
 
     m_pausedContext = pausedContext;
     m_executionState = executionState;
-    V8DebuggerListener::SkipPauseRequest result = listener->didPause(pausedContext, currentCallFrames(), exception, breakpointIds, isPromiseRejection);
-    if (result == V8DebuggerListener::NoSkip) {
+    V8DebuggerAgentImpl::SkipPauseRequest result = agent->didPause(pausedContext, currentCallFrames(), exception, breakpointIds, isPromiseRejection);
+    if (result == V8DebuggerAgentImpl::RequestNoSkip) {
         m_runningNestedMessageLoop = true;
         int groupId = getGroupId(pausedContext);
         ASSERT(groupId);
         m_client->runMessageLoopOnPause(groupId);
-        // The listener may have been removed in the nested loop.
-        listener = getListenerForContext(pausedContext);
-        if (listener)
-            listener->didContinue();
+        // The agent may have been removed in the nested loop.
+        agent = getAgentForContext(pausedContext);
+        if (agent)
+            agent->didContinue();
         m_runningNestedMessageLoop = false;
     }
     m_pausedContext.Clear();
     m_executionState.Clear();
 
-    if (result == V8DebuggerListener::StepFrame) {
+    if (result == V8DebuggerAgentImpl::RequestStepFrame) {
         v8::Local<v8::Value> argv[] = { executionState };
         callDebuggerMethod("stepFrameStatement", 1, argv);
-    } else if (result == V8DebuggerListener::StepInto) {
+    } else if (result == V8DebuggerAgentImpl::RequestStepInto) {
         v8::Local<v8::Value> argv[] = { executionState };
         callDebuggerMethod(stepIntoV8MethodName, 1, argv);
-    } else if (result == V8DebuggerListener::StepOut) {
+    } else if (result == V8DebuggerAgentImpl::RequestStepOut) {
         v8::Local<v8::Value> argv[] = { executionState };
         callDebuggerMethod(stepOutV8MethodName, 1, argv);
     }
@@ -598,8 +598,8 @@ void V8DebuggerImpl::handleV8DebugEvent(const v8::Debug::EventDetails& eventDeta
     v8::Local<v8::Context> eventContext = eventDetails.GetEventContext();
     ASSERT(!eventContext.IsEmpty());
 
-    V8DebuggerListener* listener = getListenerForContext(eventContext);
-    if (listener) {
+    V8DebuggerAgentImpl* agent = getAgentForContext(eventContext);
+    if (agent) {
         v8::HandleScope scope(m_isolate);
         if (event == v8::AfterCompile || event == v8::CompileError) {
             v8::Context::Scope contextScope(debuggerContext());
@@ -607,7 +607,7 @@ void V8DebuggerImpl::handleV8DebugEvent(const v8::Debug::EventDetails& eventDeta
             v8::Local<v8::Value> value = callDebuggerMethod("getAfterCompileScript", 1, argv).ToLocalChecked();
             ASSERT(value->IsObject());
             v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(value);
-            listener->didParseSource(createParsedScript(object, event != v8::AfterCompile ? CompileError : CompileSuccess));
+            agent->didParseSource(createParsedScript(object, event == v8::AfterCompile));
         } else if (event == v8::Exception) {
             v8::Local<v8::Object> eventData = eventDetails.GetEventData();
             v8::Local<v8::Value> exception = callInternalGetterFunction(eventData, "exception");
@@ -620,16 +620,16 @@ void V8DebuggerImpl::handleV8DebugEvent(const v8::Debug::EventDetails& eventDeta
             ASSERT(hitBreakpoints->IsArray());
             handleProgramBreak(eventContext, eventDetails.GetExecutionState(), v8::Local<v8::Value>(), hitBreakpoints.As<v8::Array>());
         } else if (event == v8::AsyncTaskEvent) {
-            if (listener->v8AsyncTaskEventsEnabled())
-                handleV8AsyncTaskEvent(listener, eventContext, eventDetails.GetExecutionState(), eventDetails.GetEventData());
+            if (agent->v8AsyncTaskEventsEnabled())
+                handleV8AsyncTaskEvent(agent, eventContext, eventDetails.GetExecutionState(), eventDetails.GetEventData());
         } else if (event == v8::PromiseEvent) {
-            if (listener->v8PromiseEventsEnabled())
-                handleV8PromiseEvent(listener, eventContext, eventDetails.GetExecutionState(), eventDetails.GetEventData());
+            if (agent->v8PromiseEventsEnabled())
+                handleV8PromiseEvent(agent, eventContext, eventDetails.GetExecutionState(), eventDetails.GetEventData());
         }
     }
 }
 
-void V8DebuggerImpl::handleV8AsyncTaskEvent(V8DebuggerListener* listener, v8::Local<v8::Context> context, v8::Local<v8::Object> executionState, v8::Local<v8::Object> eventData)
+void V8DebuggerImpl::handleV8AsyncTaskEvent(V8DebuggerAgentImpl* agent, v8::Local<v8::Context> context, v8::Local<v8::Object> executionState, v8::Local<v8::Object> eventData)
 {
     String type = toCoreStringWithUndefinedOrNullCheck(callInternalGetterFunction(eventData, "type"));
     String name = toCoreStringWithUndefinedOrNullCheck(callInternalGetterFunction(eventData, "name"));
@@ -637,12 +637,12 @@ void V8DebuggerImpl::handleV8AsyncTaskEvent(V8DebuggerListener* listener, v8::Lo
 
     m_pausedContext = context;
     m_executionState = executionState;
-    listener->didReceiveV8AsyncTaskEvent(context, type, name, id);
+    agent->didReceiveV8AsyncTaskEvent(context, type, name, id);
     m_pausedContext.Clear();
     m_executionState.Clear();
 }
 
-void V8DebuggerImpl::handleV8PromiseEvent(V8DebuggerListener* listener, v8::Local<v8::Context> context, v8::Local<v8::Object> executionState, v8::Local<v8::Object> eventData)
+void V8DebuggerImpl::handleV8PromiseEvent(V8DebuggerAgentImpl* agent, v8::Local<v8::Context> context, v8::Local<v8::Object> executionState, v8::Local<v8::Object> eventData)
 {
     v8::Local<v8::Value> argv[] = { eventData };
     v8::Local<v8::Value> value = callDebuggerMethod("getPromiseDetails", 1, argv).ToLocalChecked();
@@ -654,17 +654,17 @@ void V8DebuggerImpl::handleV8PromiseEvent(V8DebuggerListener* listener, v8::Loca
 
     m_pausedContext = context;
     m_executionState = executionState;
-    listener->didReceiveV8PromiseEvent(context, promise, parentPromise, status);
+    agent->didReceiveV8PromiseEvent(context, promise, parentPromise, status);
     m_pausedContext.Clear();
     m_executionState.Clear();
 }
 
-V8DebuggerListener::ParsedScript V8DebuggerImpl::createParsedScript(v8::Local<v8::Object> object, CompileResult compileResult)
+V8DebuggerParsedScript V8DebuggerImpl::createParsedScript(v8::Local<v8::Object> object, bool success)
 {
     v8::Local<v8::Value> id = object->Get(v8InternalizedString("id"));
     ASSERT(!id.IsEmpty() && id->IsInt32());
 
-    V8DebuggerListener::ParsedScript parsedScript;
+    V8DebuggerParsedScript parsedScript;
     parsedScript.scriptId = String::number(id->Int32Value());
     parsedScript.script.setURL(toCoreStringWithUndefinedOrNullCheck(object->Get(v8InternalizedString("name"))))
         .setSourceURL(toCoreStringWithUndefinedOrNullCheck(object->Get(v8InternalizedString("sourceURL"))))
@@ -677,7 +677,7 @@ V8DebuggerListener::ParsedScript V8DebuggerImpl::createParsedScript(v8::Local<v8
         .setIsContentScript(object->Get(v8InternalizedString("isContentScript"))->ToBoolean(m_isolate)->Value())
         .setIsInternalScript(object->Get(v8InternalizedString("isInternalScript"))->ToBoolean(m_isolate)->Value())
         .setIsLiveEdit(inLiveEditScope);
-    parsedScript.compileResult = compileResult;
+    parsedScript.success = success;
     return parsedScript;
 }
 

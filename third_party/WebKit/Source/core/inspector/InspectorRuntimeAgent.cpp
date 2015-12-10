@@ -163,9 +163,9 @@ void InspectorRuntimeAgent::disable(ErrorString* errorString)
     m_v8RuntimeAgent->disable(errorString);
 }
 
-void InspectorRuntimeAgent::addExecutionContextToFrontend(int executionContextId, const String& type, const String& origin, const String& humanReadableName, const String& frameId)
+void InspectorRuntimeAgent::reportExecutionContextCreated(int executionContextId, const String& type, const String& origin, const String& humanReadableName, const String& frameId)
 {
-    m_v8RuntimeAgent->addExecutionContextToFrontend(executionContextId, type, origin, humanReadableName, frameId);
+    m_v8RuntimeAgent->reportExecutionContextCreated(executionContextId, type, origin, humanReadableName, frameId);
 }
 
 } // namespace blink

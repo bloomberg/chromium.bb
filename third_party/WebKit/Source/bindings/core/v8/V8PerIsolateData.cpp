@@ -34,7 +34,7 @@
 #include "bindings/core/v8/V8RecursionScope.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
 #include "core/frame/UseCounter.h"
-#include "core/inspector/ScriptDebuggerBase.h"
+#include "core/inspector/MainThreadDebugger.h"
 #include "public/platform/Platform.h"
 #include "wtf/MainThread.h"
 
@@ -288,7 +288,7 @@ void V8PerIsolateData::clearEndOfScopeTasks()
     m_endOfScopeTasks.clear();
 }
 
-void V8PerIsolateData::setScriptDebugger(PassOwnPtr<ScriptDebuggerBase> debugger)
+void V8PerIsolateData::setScriptDebugger(PassOwnPtr<MainThreadDebugger> debugger)
 {
     ASSERT(!m_scriptDebugger);
     m_scriptDebugger = debugger;

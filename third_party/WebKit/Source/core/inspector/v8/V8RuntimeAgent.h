@@ -64,7 +64,7 @@ public:
     virtual void setCustomObjectFormatterEnabled(ErrorString*, bool) = 0;
 
     // Embedder callbacks.
-    virtual void addExecutionContextToFrontend(int executionContextId, const String& type, const String& origin, const String& humanReadableName, const String& frameId) = 0;
+    virtual void reportExecutionContextCreated(int executionContextId, const String& type, const String& origin, const String& humanReadableName, const String& frameId) = 0;
 };
 
 } // namespace blink

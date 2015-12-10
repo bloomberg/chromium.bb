@@ -34,7 +34,7 @@
 #include "core/CoreExport.h"
 #include "core/InspectorTypeBuilder.h"
 #include "core/inspector/v8/V8Debugger.h"
-#include "core/inspector/v8/V8DebuggerListener.h"
+#include "core/inspector/v8/V8DebuggerScript.h"
 #include "wtf/Forward.h"
 #include "wtf/PassOwnPtr.h"
 
@@ -43,7 +43,7 @@
 
 namespace blink {
 
-class V8DebuggerListener;
+class V8DebuggerAgentImpl;
 class JavaScriptCallFrame;
 
 class CORE_EXPORT V8DebuggerImpl : public V8Debugger {
@@ -54,8 +54,8 @@ public:
 
     bool enabled() const override;
 
-    void addListener(int contextGroupId, V8DebuggerListener*);
-    void removeListener(int contextGroupId);
+    void addAgent(int contextGroupId, V8DebuggerAgentImpl*);
+    void removeAgent(int contextGroupId);
 
     String setBreakpoint(const String& sourceID, const ScriptBreakpoint&, int* actualLineNumber, int* actualColumnNumber, bool interstatementLocation);
     void removeBreakpoint(const String& breakpointId);
@@ -96,15 +96,15 @@ private:
     // Each script inherits debug data from v8::Context where it has been compiled.
     // Only scripts whose debug data matches |contextGroupId| will be reported.
     // Passing 0 will result in reporting all scripts.
-    void getCompiledScripts(int contextGroupId, Vector<V8DebuggerListener::ParsedScript>&);
-    V8DebuggerListener* getListenerForContext(v8::Local<v8::Context>);
+    void getCompiledScripts(int contextGroupId, Vector<V8DebuggerParsedScript>&);
+    V8DebuggerAgentImpl* getAgentForContext(v8::Local<v8::Context>);
 
     void compileDebuggerScript();
     v8::MaybeLocal<v8::Value> callDebuggerMethod(const char* functionName, int argc, v8::Local<v8::Value> argv[]);
     v8::Local<v8::Context> debuggerContext() const;
     void clearBreakpoints();
 
-    V8DebuggerListener::ParsedScript createParsedScript(v8::Local<v8::Object> sourceObject, CompileResult);
+    V8DebuggerParsedScript createParsedScript(v8::Local<v8::Object> sourceObject, bool success);
 
     static void breakProgramCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     void handleProgramBreak(v8::Local<v8::Context> pausedContext, v8::Local<v8::Object> executionState, v8::Local<v8::Value> exception, v8::Local<v8::Array> hitBreakpoints, bool isPromiseRejection = false);
@@ -121,13 +121,13 @@ private:
     };
     v8::Local<v8::Object> currentCallFramesInner(ScopeInfoDetails);
     PassRefPtr<JavaScriptCallFrame> wrapCallFrames(int maximumLimit, ScopeInfoDetails);
-    void handleV8AsyncTaskEvent(V8DebuggerListener*, v8::Local<v8::Context>, v8::Local<v8::Object> executionState, v8::Local<v8::Object> eventData);
-    void handleV8PromiseEvent(V8DebuggerListener*, v8::Local<v8::Context>, v8::Local<v8::Object> executionState, v8::Local<v8::Object> eventData);
+    void handleV8AsyncTaskEvent(V8DebuggerAgentImpl*, v8::Local<v8::Context>, v8::Local<v8::Object> executionState, v8::Local<v8::Object> eventData);
+    void handleV8PromiseEvent(V8DebuggerAgentImpl*, v8::Local<v8::Context>, v8::Local<v8::Object> executionState, v8::Local<v8::Object> eventData);
 
     v8::Isolate* m_isolate;
     V8DebuggerClient* m_client;
-    using ListenersMap = HashMap<int, V8DebuggerListener*>;
-    ListenersMap m_listenersMap;
+    using AgentsMap = HashMap<int, V8DebuggerAgentImpl*>;
+    AgentsMap m_agentsMap;
     bool m_breakpointsActivated;
     v8::UniquePersistent<v8::FunctionTemplate> m_breakProgramCallbackTemplate;
     v8::UniquePersistent<v8::Object> m_debuggerScript;

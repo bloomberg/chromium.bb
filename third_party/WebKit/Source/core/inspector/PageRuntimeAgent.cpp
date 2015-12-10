@@ -172,7 +172,7 @@ void PageRuntimeAgent::reportExecutionContext(ScriptState* scriptState, bool isP
     DOMWrapperWorld& world = scriptState->world();
     String humanReadableName = world.isIsolatedWorld() ? world.isolatedWorldHumanReadableName() : "";
     String type = isPageContext ? "" : "Extension";
-    InspectorRuntimeAgent::addExecutionContextToFrontend(executionContextId, type, origin, humanReadableName, frameId);
+    InspectorRuntimeAgent::reportExecutionContextCreated(executionContextId, type, origin, humanReadableName, frameId);
 }
 
 } // namespace blink

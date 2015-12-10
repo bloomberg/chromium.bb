@@ -206,7 +206,7 @@ void V8RuntimeAgentImpl::disable(ErrorString* errorString)
 {
 }
 
-void V8RuntimeAgentImpl::addExecutionContextToFrontend(int executionContextId, const String& type, const String& origin, const String& humanReadableName, const String& frameId)
+void V8RuntimeAgentImpl::reportExecutionContextCreated(int executionContextId, const String& type, const String& origin, const String& humanReadableName, const String& frameId)
 {
     RefPtr<ExecutionContextDescription> description = ExecutionContextDescription::create()
         .setId(executionContextId)

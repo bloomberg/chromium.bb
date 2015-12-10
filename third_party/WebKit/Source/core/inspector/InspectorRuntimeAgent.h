@@ -109,7 +109,7 @@ protected:
     virtual ScriptState* defaultScriptState() = 0;
 
     InjectedScriptManager* injectedScriptManager() { return m_injectedScriptManager; }
-    void addExecutionContextToFrontend(int executionContextId, const String& type, const String& origin, const String& humanReadableName, const String& frameId);
+    void reportExecutionContextCreated(int executionContextId, const String& type, const String& origin, const String& humanReadableName, const String& frameId);
 
     bool m_enabled;
 

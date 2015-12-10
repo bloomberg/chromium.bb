@@ -93,7 +93,7 @@ public:
 
 private:
     InjectedScriptManager* injectedScriptManager() { return m_injectedScriptManager; }
-    void addExecutionContextToFrontend(int executionContextId, const String& type, const String& origin, const String& humanReadableName, const String& frameId) override;
+    void reportExecutionContextCreated(int executionContextId, const String& type, const String& origin, const String& humanReadableName, const String& frameId) override;
 
     RawPtrWillBeWeakPersistent<InspectorState> m_state;
     InspectorFrontend::Runtime* m_frontend;

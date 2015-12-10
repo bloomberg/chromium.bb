@@ -31,7 +31,8 @@
 #ifndef WorkerThreadDebugger_h
 #define WorkerThreadDebugger_h
 
-#include "core/inspector/ScriptDebuggerBase.h"
+#include "core/inspector/v8/V8Debugger.h"
+#include "core/inspector/v8/V8DebuggerClient.h"
 #include "wtf/Forward.h"
 
 #include <v8.h>
@@ -40,7 +41,7 @@ namespace blink {
 
 class WorkerThread;
 
-class WorkerThreadDebugger final : public ScriptDebuggerBase {
+class WorkerThreadDebugger final : public V8DebuggerClient {
     WTF_MAKE_NONCOPYABLE(WorkerThreadDebugger);
 public:
     explicit WorkerThreadDebugger(WorkerThread*);
@@ -49,10 +50,16 @@ public:
     static void setContextDebugData(v8::Local<v8::Context>);
     static int contextGroupId();
 
+    V8Debugger* debugger() const { return m_debugger.get(); }
+
+    // V8DebuggerClient implementation.
+    v8::Local<v8::Object> compileDebuggerScript() override;
     void runMessageLoopOnPause(int contextGroupId) override;
     void quitMessageLoopOnPause() override;
 
 private:
+    v8::Isolate* m_isolate;
+    OwnPtr<V8Debugger> m_debugger;
     WorkerThread* m_workerThread;
     bool m_paused;
 };
