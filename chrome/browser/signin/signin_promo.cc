@@ -202,8 +202,13 @@ GURL GetPromoURL(signin_metrics::AccessPoint access_point,
                  bool is_constrained) {
   CHECK_LT(static_cast<int>(access_point),
            static_cast<int>(signin_metrics::AccessPoint::ACCESS_POINT_MAX));
+  CHECK_NE(
+      static_cast<int>(access_point),
+      static_cast<int>(signin_metrics::AccessPoint::ACCESS_POINT_UNSPECIFIED));
   CHECK_LT(static_cast<int>(reason),
            static_cast<int>(signin_metrics::Reason::REASON_MAX));
+  CHECK_NE(static_cast<int>(reason),
+           static_cast<int>(signin_metrics::Reason::REASON_UNSPECIFIED));
 
   std::string url(chrome::kChromeUIChromeSigninURL);
   base::StringAppendF(&url, "?%s=%d", kSignInPromoQueryKeyAccessPoint,
@@ -286,7 +291,7 @@ signin_metrics::AccessPoint GetAccessPointForPromoURL(const GURL& url) {
   std::string value;
   if (!net::GetValueForKeyInQuery(url, kSignInPromoQueryKeyAccessPoint,
                                   &value)) {
-    return signin_metrics::AccessPoint::ACCESS_POINT_MAX;
+    return signin_metrics::AccessPoint::ACCESS_POINT_UNSPECIFIED;
   }
 
   int access_point = 0;
@@ -302,7 +307,7 @@ signin_metrics::AccessPoint GetAccessPointForPromoURL(const GURL& url) {
 signin_metrics::Reason GetSigninReasonForPromoURL(const GURL& url) {
   std::string value;
   if (!net::GetValueForKeyInQuery(url, kSignInPromoQueryKeyReason, &value))
-    return signin_metrics::Reason::REASON_MAX;
+    return signin_metrics::Reason::REASON_UNSPECIFIED;
 
   int reason = 0;
   CHECK(base::StringToInt(value, &reason));

@@ -75501,6 +75501,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="14" label="Content area"/>
   <int value="15" label="Signin promo"/>
   <int value="16" label="Recent tabs"/>
+  <int value="17" label="Typed URL w/o specifying access point"/>
 </enum>
 
 <enum name="SigninAccountReconcilorState" type="int">
@@ -75572,6 +75573,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1" label="Add secondary account"/>
   <int value="2" label="Reauthentication"/>
   <int value="3" label="Unlock profile"/>
+  <int value="4" label="Typed URL w/o specifying reason"/>
 </enum>
 
 <enum name="SigninReauthStates" type="int">
