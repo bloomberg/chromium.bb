@@ -26,4 +26,18 @@ void MediaRouterMetrics::RecordMediaRouteProviderWakeReason(
       static_cast<int>(MediaRouteProviderWakeReason::TOTAL_COUNT));
 }
 
+// static
+void MediaRouterMetrics::RecordMediaRouterDialogPaint(
+    const base::TimeDelta delta) {
+  UMA_HISTOGRAM_TIMES("MediaRouter.Ui.Dialog.Paint",
+                      delta);
+}
+
+// static
+void MediaRouterMetrics::RecordMediaRouterDialogLoaded(
+    const base::TimeDelta delta) {
+  UMA_HISTOGRAM_TIMES("MediaRouter.Ui.Dialog.LoadedWithData",
+                      delta);
+}
+
 }  // namespace media_router

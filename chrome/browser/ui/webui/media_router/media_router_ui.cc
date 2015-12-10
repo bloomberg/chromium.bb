@@ -19,6 +19,7 @@
 #include "chrome/browser/media/router/media_route.h"
 #include "chrome/browser/media/router/media_router.h"
 #include "chrome/browser/media/router/media_router_factory.h"
+#include "chrome/browser/media/router/media_router_metrics.h"
 #include "chrome/browser/media/router/media_router_mojo_impl.h"
 #include "chrome/browser/media/router/media_routes_observer.h"
 #include "chrome/browser/media/router/media_sink.h"
@@ -479,6 +480,26 @@ std::string MediaRouterUI::GetTruncatedPresentationRequestSourceName() const {
 
 const std::string& MediaRouterUI::GetRouteProviderExtensionId() const {
   return router_->media_route_provider_extension_id();
+}
+
+void MediaRouterUI::SetUIInitializationTimer(const base::Time& start_time) {
+  DCHECK(!start_time.is_null());
+  start_time_ = start_time;
+}
+
+void MediaRouterUI::OnUIInitiallyLoaded() {
+  if (!start_time_.is_null()) {
+    MediaRouterMetrics::RecordMediaRouterDialogPaint(
+        base::Time::Now() - start_time_);
+  }
+}
+
+void MediaRouterUI::OnUIInitialDataReceived() {
+  if (!start_time_.is_null()) {
+    MediaRouterMetrics::RecordMediaRouterDialogLoaded(
+        base::Time::Now() - start_time_);
+    start_time_ = base::Time();
+  }
 }
 
 }  // namespace media_router

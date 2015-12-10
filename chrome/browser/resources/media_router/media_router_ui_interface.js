@@ -65,6 +65,7 @@ cr.define('media_router.ui', function() {
     container.castModeList = data['castModes'];
     container.allSinks = data['sinks'];
     container.routeList = data['routes'];
+    media_router.browserApi.onInitialDataReceived();
   }
 
   /**
@@ -140,6 +141,13 @@ cr.define('media_router.browserApi', function() {
   }
 
   /**
+   * Indicates that the initial data has been received.
+   */
+  function onInitialDataReceived() {
+    chrome.send('onInitialDataReceived');
+  }
+
+  /**
    * Reports the current number of sinks.
    *
    * @param {number} sinkCount
@@ -172,6 +180,7 @@ cr.define('media_router.browserApi', function() {
     actOnIssue: actOnIssue,
     closeDialog: closeDialog,
     closeRoute: closeRoute,
+    onInitialDataReceived: onInitialDataReceived,
     reportSinkCount: reportSinkCount,
     requestInitialData: requestInitialData,
     requestRoute: requestRoute,

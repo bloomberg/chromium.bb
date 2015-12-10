@@ -126,6 +126,11 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
   // Marked virtual for tests.
   virtual const std::string& GetRouteProviderExtensionId() const;
 
+  // Called to track UI metrics.
+  void SetUIInitializationTimer(const base::Time& start_time);
+  void OnUIInitiallyLoaded();
+  void OnUIInitialDataReceived();
+
  private:
   FRIEND_TEST_ALL_PREFIXES(MediaRouterUITest, SortedSinks);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterUITest,
@@ -252,6 +257,10 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
 
   // Timer used to implement a timeout on a create route request.
   base::OneShotTimer route_creation_timer_;
+
+  // The start time for UI initialization metrics timer. When a dialog has been
+  // been painted and initialized with initial data, this should be cleared.
+  base::Time start_time_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   // Therefore |weak_factory_| must be placed at the end.

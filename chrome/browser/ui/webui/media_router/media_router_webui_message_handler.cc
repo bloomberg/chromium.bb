@@ -29,6 +29,7 @@ const char kActOnIssue[] = "actOnIssue";
 const char kCloseRoute[] = "closeRoute";
 const char kCloseDialog[] = "closeDialog";
 const char kReportSinkCount[] = "reportSinkCount";
+const char kOnInitialDataReceived[] = "onInitialDataReceived";
 
 // JS function names.
 const char kSetInitialData[] = "media_router.ui.setInitialData";
@@ -256,11 +257,16 @@ void MediaRouterWebUIMessageHandler::RegisterMessages() {
       kReportSinkCount,
       base::Bind(&MediaRouterWebUIMessageHandler::OnReportSinkCount,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      kOnInitialDataReceived,
+      base::Bind(&MediaRouterWebUIMessageHandler::OnInitialDataReceived,
+                 base::Unretained(this)));
 }
 
 void MediaRouterWebUIMessageHandler::OnRequestInitialData(
     const base::ListValue* args) {
   DVLOG(1) << "OnRequestInitialData";
+  media_router_ui_->OnUIInitiallyLoaded();
   base::DictionaryValue initial_data;
 
   // "No Cast devices found?" Chromecast help center page.
@@ -390,6 +396,12 @@ void MediaRouterWebUIMessageHandler::OnReportSinkCount(
     return;
   }
   UMA_HISTOGRAM_COUNTS_100("MediaRouter.Ui.Device.Count", sink_count);
+}
+
+void MediaRouterWebUIMessageHandler::OnInitialDataReceived(
+    const base::ListValue* args) {
+  DVLOG(1) << "OnInitialDataReceived";
+  media_router_ui_->OnUIInitialDataReceived();
 }
 
 bool MediaRouterWebUIMessageHandler::ActOnIssueType(

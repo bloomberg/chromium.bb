@@ -197,6 +197,7 @@ void MediaRouterDialogControllerImpl::CloseMediaRouterDialog() {
 void MediaRouterDialogControllerImpl::CreateMediaRouterDialog() {
   DCHECK(!dialog_observer_.get());
 
+  base::Time dialog_creation_time = base::Time::Now();
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("media_router", "UI", initiator());
 
   Profile* profile =
@@ -231,6 +232,15 @@ void MediaRouterDialogControllerImpl::CreateMediaRouterDialog() {
   TRACE_EVENT_NESTABLE_ASYNC_INSTANT1("media_router", "UI", initiator(),
                                       "WebContents created",
                                       media_router_dialog);
+
+  // |media_router_ui| is created when |constrained_delegate| is created.
+  // For tests, GetWebUI() returns a nullptr.
+  if (media_router_dialog->GetWebUI()) {
+    MediaRouterUI* media_router_ui = static_cast<MediaRouterUI*>(
+        media_router_dialog->GetWebUI()->GetController());
+    DCHECK(media_router_ui);
+    media_router_ui->SetUIInitializationTimer(dialog_creation_time);
+  }
 
   media_router_dialog_pending_ = true;
 

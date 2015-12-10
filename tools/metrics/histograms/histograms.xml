@@ -19457,6 +19457,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="MediaRouter.Ui.Dialog.LoadedWithData" units="milliseconds">
+  <owner>apacible@chromium.org</owner>
+  <summary>
+    Duration in milliseconds taken from the user click to open the Media Router
+    dialog to initializing the dialog with data.
+  </summary>
+</histogram>
+
+<histogram name="MediaRouter.Ui.Dialog.Paint" units="milliseconds">
+  <owner>apacible@chromium.org</owner>
+  <summary>
+    Duration in milliseconds taken from a user click to open the dialog to the
+    initial paint.
+  </summary>
+</histogram>
+
 <histogram name="Memory.BackingStore">
   <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
