@@ -26,6 +26,11 @@ class FakeLayerTreeHost : public LayerTreeHost {
       FakeLayerTreeHostClient* client,
       TestTaskGraphRunner* task_graph_runner,
       const LayerTreeSettings& settings);
+  static scoped_ptr<FakeLayerTreeHost> Create(
+      FakeLayerTreeHostClient* client,
+      TestTaskGraphRunner* task_graph_runner,
+      const LayerTreeSettings& settings,
+      CompositorMode mode);
 
   ~FakeLayerTreeHost() override;
 
@@ -47,6 +52,8 @@ class FakeLayerTreeHost : public LayerTreeHost {
   using LayerTreeHost::SetOutputSurfaceLostForTesting;
   using LayerTreeHost::InitializeSingleThreaded;
   using LayerTreeHost::InitializeForTesting;
+  using LayerTreeHost::RecordGpuRasterizationHistogram;
+
   void UpdateLayers() { LayerTreeHost::UpdateLayers(); }
 
   MicroBenchmarkController* GetMicroBenchmarkController() {
@@ -62,7 +69,8 @@ class FakeLayerTreeHost : public LayerTreeHost {
 
  protected:
   FakeLayerTreeHost(FakeLayerTreeHostClient* client,
-                    LayerTreeHost::InitParams* params);
+                    LayerTreeHost::InitParams* params,
+                    CompositorMode mode);
 
  private:
   FakeImplTaskRunnerProvider task_runner_provider_;

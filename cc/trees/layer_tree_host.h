@@ -143,6 +143,10 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
     return meta_information_sequence_number_;
   }
 
+  bool gpu_rasterization_histogram_recorded() const {
+    return gpu_rasterization_histogram_recorded_;
+  }
+
   void IncrementMetaInformationSequenceNumber() {
     meta_information_sequence_number_++;
   }
@@ -374,6 +378,8 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   void SetOutputSurfaceLostForTesting(bool is_lost) {
     output_surface_lost_ = is_lost;
   }
+  void SetTaskRunnerProviderForTesting(
+      scoped_ptr<TaskRunnerProvider> task_runner_provider);
 
   // shared_bitmap_manager(), gpu_memory_buffer_manager(), and
   // task_graph_runner() return valid values only until the LayerTreeHostImpl is
@@ -389,6 +395,8 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   MicroBenchmarkController micro_benchmark_controller_;
 
   void OnCommitForSwapPromises();
+
+  void RecordGpuRasterizationHistogram();
 
  private:
   void InitializeProxy(scoped_ptr<Proxy> proxy);
@@ -414,7 +422,6 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   typedef std::vector<UIResourceRequest> UIResourceRequestQueue;
   UIResourceRequestQueue ui_resource_request_queue_;
 
-  void RecordGpuRasterizationHistogram();
   void CalculateLCDTextMetricsCallback(Layer* layer);
 
   void NotifySwapPromiseMonitorsOfSetNeedsCommit();

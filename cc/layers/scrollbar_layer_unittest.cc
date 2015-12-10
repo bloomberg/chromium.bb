@@ -63,7 +63,7 @@ class FakeResourceTrackingLayerTreeHost : public FakeLayerTreeHost {
  public:
   FakeResourceTrackingLayerTreeHost(FakeLayerTreeHostClient* client,
                                     LayerTreeHost::InitParams* params)
-      : FakeLayerTreeHost(client, params),
+      : FakeLayerTreeHost(client, params, CompositorMode::SingleThreaded),
         next_id_(1),
         total_ui_resource_created_(0),
         total_ui_resource_deleted_(0) {

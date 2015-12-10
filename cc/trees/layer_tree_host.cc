@@ -166,6 +166,12 @@ void LayerTreeHost::InitializeForTesting(
   InitializeProxy(std::move(proxy_for_testing));
 }
 
+void LayerTreeHost::SetTaskRunnerProviderForTesting(
+    scoped_ptr<TaskRunnerProvider> task_runner_provider) {
+  DCHECK(!task_runner_provider_);
+  task_runner_provider_ = std::move(task_runner_provider);
+}
+
 void LayerTreeHost::InitializeProxy(scoped_ptr<Proxy> proxy) {
   TRACE_EVENT0("cc", "LayerTreeHost::InitializeForReal");
 
@@ -737,8 +743,8 @@ static Layer* FindFirstScrollableLayer(Layer* layer) {
 
 void LayerTreeHost::RecordGpuRasterizationHistogram() {
   // Gpu rasterization is only supported for Renderer compositors.
-  // Checking for IsThreaded() to exclude Browser compositors.
-  if (gpu_rasterization_histogram_recorded_ || IsThreaded())
+  // Checking for IsSingleThreaded() to exclude Browser compositors.
+  if (gpu_rasterization_histogram_recorded_ || IsSingleThreaded())
     return;
 
   // Record how widely gpu rasterization is enabled.

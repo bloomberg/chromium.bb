@@ -9,8 +9,9 @@
 
 namespace cc {
 FakeLayerTreeHost::FakeLayerTreeHost(FakeLayerTreeHostClient* client,
-                                     LayerTreeHost::InitParams* params)
-    : LayerTreeHost(params, CompositorMode::SingleThreaded),
+                                     LayerTreeHost::InitParams* params,
+                                     CompositorMode mode)
+    : LayerTreeHost(params, mode),
       client_(client),
       host_impl_(*params->settings,
                  &task_runner_provider_,
@@ -18,6 +19,11 @@ FakeLayerTreeHost::FakeLayerTreeHost(FakeLayerTreeHostClient* client,
                  params->task_graph_runner),
       needs_commit_(false),
       renderer_capabilities_set(false) {
+  scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner =
+      mode == CompositorMode::Threaded ? base::ThreadTaskRunnerHandle::Get()
+                                       : nullptr;
+  SetTaskRunnerProviderForTesting(TaskRunnerProvider::Create(
+      base::ThreadTaskRunnerHandle::Get(), impl_task_runner));
   client_->SetLayerTreeHost(this);
 }
 
@@ -33,11 +39,20 @@ scoped_ptr<FakeLayerTreeHost> FakeLayerTreeHost::Create(
     FakeLayerTreeHostClient* client,
     TestTaskGraphRunner* task_graph_runner,
     const LayerTreeSettings& settings) {
+  return Create(client, task_graph_runner, settings,
+                CompositorMode::SingleThreaded);
+}
+
+scoped_ptr<FakeLayerTreeHost> FakeLayerTreeHost::Create(
+    FakeLayerTreeHostClient* client,
+    TestTaskGraphRunner* task_graph_runner,
+    const LayerTreeSettings& settings,
+    CompositorMode mode) {
   LayerTreeHost::InitParams params;
   params.client = client;
   params.settings = &settings;
   params.task_graph_runner = task_graph_runner;
-  return make_scoped_ptr(new FakeLayerTreeHost(client, &params));
+  return make_scoped_ptr(new FakeLayerTreeHost(client, &params, mode));
 }
 
 FakeLayerTreeHost::~FakeLayerTreeHost() {
