@@ -141,7 +141,15 @@ MediaStreamRendererFactoryImpl::GetAudioRenderer(
   // and mixes audio from all the tracks that belong to the media stream.
   // For now, we have separate renderers depending on if the first audio track
   // in the stream is local or remote.
-  if (MediaStreamTrack::GetTrack(audio_tracks[0])->is_local_track()) {
+  MediaStreamTrack* audio_track = MediaStreamTrack::GetTrack(audio_tracks[0]);
+  if (!audio_track) {
+    // This can happen if the track was cloned.
+    // TODO(tommi, perkj): Fix cloning of tracks to handle extra data too.
+    LOG(ERROR) << "No native track for WebMediaStreamTrack.";
+    return nullptr;
+  }
+
+  if (audio_track->is_local_track()) {
     // TODO(xians): Add support for the case where the media stream contains
     // multiple audio tracks.
     return CreateLocalAudioRenderer(audio_tracks[0], render_frame_id, device_id,
