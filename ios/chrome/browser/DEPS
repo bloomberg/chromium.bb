@@ -1,6 +1,7 @@
 include_rules = [
   "+breakpad/src/client/ios",
   "+breakpad/src/common",
+  "+components/about_handler",
   "+components/autofill/core/browser",
   "+components/autofill/core/common",
   "+components/autofill/ios/browser",
@@ -9,6 +10,7 @@ include_rules = [
   "+components/browser_sync/common",
   "+components/component_updater",
   "+components/content_settings/core",
+  "+components/cookie_config",
   "+components/crash/core/browser",
   "+components/crash/core/common",
   "+components/data_reduction_proxy/core/browser",

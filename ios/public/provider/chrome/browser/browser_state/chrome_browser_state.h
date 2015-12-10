@@ -13,11 +13,16 @@
 #include "base/memory/ref_counted.h"
 #include "ios/web/public/browser_state.h"
 
+class PrefProxyConfigTracker;
 class PrefService;
 
 namespace base {
 class SequencedTaskRunner;
 class Time;
+}
+
+namespace net {
+class SSLConfigService;
 }
 
 namespace syncable_prefs {
@@ -29,6 +34,11 @@ class WebUIIOS;
 }
 
 namespace ios {
+
+enum class ChromeBrowserStateType {
+  REGULAR_BROWSER_STATE,
+  INCOGNITO_BROWSER_STATE,
+};
 
 // This class is a Chrome-specific extension of the BrowserState interface.
 class ChromeBrowserState : public web::BrowserState {
@@ -83,6 +93,13 @@ class ChromeBrowserState : public web::BrowserState {
 
   // Returns an identifier of the browser state for debugging.
   std::string GetDebugName();
+
+  // Returns the helper object that provides the proxy configuration service
+  // access to the the proxy configuration possibly defined by preferences.
+  virtual PrefProxyConfigTracker* GetProxyConfigTracker() = 0;
+
+  // Returns the SSLConfigService for this browser state.
+  virtual net::SSLConfigService* GetSSLConfigService() = 0;
 
  protected:
   ChromeBrowserState() {}
