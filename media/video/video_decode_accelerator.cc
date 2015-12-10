@@ -38,11 +38,13 @@ GLenum VideoDecodeAccelerator::GetSurfaceInternalFormat() const {
 }
 
 VideoDecodeAccelerator::SupportedProfile::SupportedProfile()
-    : profile(media::VIDEO_CODEC_PROFILE_UNKNOWN) {
-}
+    : profile(media::VIDEO_CODEC_PROFILE_UNKNOWN) {}
 
-VideoDecodeAccelerator::SupportedProfile::~SupportedProfile() {
-}
+VideoDecodeAccelerator::SupportedProfile::~SupportedProfile() {}
+
+VideoDecodeAccelerator::Capabilities::Capabilities() : flags(NO_FLAGS) {}
+
+VideoDecodeAccelerator::Capabilities::~Capabilities() {}
 
 } // namespace media
 

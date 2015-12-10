@@ -31,6 +31,17 @@ STATIC_ASSERT_ENUM_MATCH(VP9PROFILE_ANY);
 STATIC_ASSERT_ENUM_MATCH(VIDEO_CODEC_PROFILE_MAX);
 
 // static
+media::VideoDecodeAccelerator::Capabilities
+GpuVideoAcceleratorUtil::ConvertGpuToMediaDecodeCapabilities(
+    const gpu::VideoDecodeAcceleratorCapabilities& gpu_capabilities) {
+  media::VideoDecodeAccelerator::Capabilities capabilities;
+  capabilities.supported_profiles =
+      ConvertGpuToMediaDecodeProfiles(gpu_capabilities.supported_profiles);
+  capabilities.flags = gpu_capabilities.flags;
+  return capabilities;
+}
+
+// static
 media::VideoDecodeAccelerator::SupportedProfiles
 GpuVideoAcceleratorUtil::ConvertGpuToMediaDecodeProfiles(const
     gpu::VideoDecodeAcceleratorSupportedProfiles& gpu_profiles) {
@@ -44,6 +55,17 @@ GpuVideoAcceleratorUtil::ConvertGpuToMediaDecodeProfiles(const
     profiles.push_back(profile);
   }
   return profiles;
+}
+
+// static
+gpu::VideoDecodeAcceleratorCapabilities
+GpuVideoAcceleratorUtil::ConvertMediaToGpuDecodeCapabilities(
+    const media::VideoDecodeAccelerator::Capabilities& media_capabilities) {
+  gpu::VideoDecodeAcceleratorCapabilities capabilities;
+  capabilities.supported_profiles =
+      ConvertMediaToGpuDecodeProfiles(media_capabilities.supported_profiles);
+  capabilities.flags = media_capabilities.flags;
+  return capabilities;
 }
 
 // static

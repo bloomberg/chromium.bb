@@ -33,7 +33,10 @@ TEST(GPUInfoBasicTest, EmptyGPUInfo) {
 #if defined(OS_WIN)
   EXPECT_EQ(gpu_info.dx_diagnostics_info_state, kCollectInfoNone);
 #endif
-  EXPECT_EQ(gpu_info.video_decode_accelerator_supported_profiles.size(), 0u);
+  EXPECT_EQ(gpu_info.video_decode_accelerator_capabilities.flags, 0u);
+  EXPECT_EQ(
+      gpu_info.video_decode_accelerator_capabilities.supported_profiles.size(),
+      0u);
   EXPECT_EQ(gpu_info.video_encode_accelerator_supported_profiles.size(), 0u);
 }
 

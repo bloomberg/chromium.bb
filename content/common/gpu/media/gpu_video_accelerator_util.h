@@ -15,10 +15,20 @@ namespace content {
 
 class GpuVideoAcceleratorUtil {
  public:
+  // Convert decoder gpu capabilities to media capabilities.
+  static media::VideoDecodeAccelerator::Capabilities
+  ConvertGpuToMediaDecodeCapabilities(
+      const gpu::VideoDecodeAcceleratorCapabilities& gpu_capabilities);
+
   // Convert decoder gpu profiles to media profiles.
   static media::VideoDecodeAccelerator::SupportedProfiles
       ConvertGpuToMediaDecodeProfiles(const
           gpu::VideoDecodeAcceleratorSupportedProfiles& gpu_profiles);
+
+  // Convert decoder media capabilities to gpu capabilities.
+  static gpu::VideoDecodeAcceleratorCapabilities
+  ConvertMediaToGpuDecodeCapabilities(
+      const media::VideoDecodeAccelerator::Capabilities& media_capabilities);
 
   // Convert decoder media profiles to gpu profiles.
   static gpu::VideoDecodeAcceleratorSupportedProfiles

@@ -97,9 +97,10 @@ class MEDIA_EXPORT GpuVideoAcceleratorFactories {
   // Returns the task runner the video accelerator runs on.
   virtual scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() = 0;
 
-  // Returns the supported codec profiles of video decode accelerator.
-  virtual VideoDecodeAccelerator::SupportedProfiles
-      GetVideoDecodeAcceleratorSupportedProfiles() = 0;
+  // Return the capabilities of video decode accelerator, which includes the
+  // supported codec profiles.
+  virtual VideoDecodeAccelerator::Capabilities
+  GetVideoDecodeAcceleratorCapabilities() = 0;
 
   // Returns the supported codec profiles of video encode accelerator.
   virtual VideoEncodeAccelerator::SupportedProfiles

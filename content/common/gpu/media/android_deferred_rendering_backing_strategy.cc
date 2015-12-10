@@ -18,11 +18,6 @@
 
 namespace content {
 
-// TODO(liberato): This is an entirely made-up number.  It depends on how
-// many decoded buffers that the MediaCodec is willing to have outstanding
-// at any one time.  Only one is guaranteed.  crbug.com/531606.
-enum { kNumPictureBuffers = 3 };
-
 AndroidDeferredRenderingBackingStrategy::
     AndroidDeferredRenderingBackingStrategy()
     : state_provider_(nullptr), media_codec_(nullptr) {}
@@ -45,10 +40,6 @@ void AndroidDeferredRenderingBackingStrategy::Cleanup(
       avImage->SetMediaCodec(nullptr);
     }
   }
-}
-
-uint32 AndroidDeferredRenderingBackingStrategy::GetNumPictureBuffers() const {
-  return kNumPictureBuffers;
 }
 
 uint32 AndroidDeferredRenderingBackingStrategy::GetTextureTarget() const {

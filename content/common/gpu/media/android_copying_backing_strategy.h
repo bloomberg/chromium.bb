@@ -32,7 +32,6 @@ class CONTENT_EXPORT AndroidCopyingBackingStrategy
   // AndroidVideoDecodeAccelerator::BackingStrategy
   void Initialize(AVDAStateProvider*) override;
   void Cleanup(const AndroidVideoDecodeAccelerator::OutputBufferMap&) override;
-  uint32 GetNumPictureBuffers() const override;
   uint32 GetTextureTarget() const override;
   scoped_refptr<gfx::SurfaceTexture> CreateSurfaceTexture() override;
   void UseCodecBufferForPictureBuffer(int32 codec_buffer_index,
@@ -40,6 +39,11 @@ class CONTENT_EXPORT AndroidCopyingBackingStrategy
   void CodecChanged(
       media::VideoCodecBridge*,
       const AndroidVideoDecodeAccelerator::OutputBufferMap&) override;
+
+  static media::VideoDecodeAccelerator::Capabilities::Flags
+  GetCapabilitiesFlags() {
+    return media::VideoDecodeAccelerator::Capabilities::NO_FLAGS;
+  }
 
  private:
   // Used for copy the texture from surface texture to picture buffers.

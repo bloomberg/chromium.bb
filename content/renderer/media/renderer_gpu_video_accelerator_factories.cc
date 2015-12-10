@@ -246,12 +246,10 @@ RendererGpuVideoAcceleratorFactories::GetTaskRunner() {
   return task_runner_;
 }
 
-media::VideoDecodeAccelerator::SupportedProfiles
-RendererGpuVideoAcceleratorFactories::
-    GetVideoDecodeAcceleratorSupportedProfiles() {
-  return GpuVideoAcceleratorUtil::ConvertGpuToMediaDecodeProfiles(
-      gpu_channel_host_->gpu_info()
-          .video_decode_accelerator_supported_profiles);
+media::VideoDecodeAccelerator::Capabilities
+RendererGpuVideoAcceleratorFactories::GetVideoDecodeAcceleratorCapabilities() {
+  return GpuVideoAcceleratorUtil::ConvertGpuToMediaDecodeCapabilities(
+      gpu_channel_host_->gpu_info().video_decode_accelerator_capabilities);
 }
 
 media::VideoEncodeAccelerator::SupportedProfiles

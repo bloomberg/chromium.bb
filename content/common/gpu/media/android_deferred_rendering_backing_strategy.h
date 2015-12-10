@@ -36,7 +36,6 @@ class CONTENT_EXPORT AndroidDeferredRenderingBackingStrategy
   // AndroidVideoDecodeAccelerator::BackingStrategy
   void Initialize(AVDAStateProvider*) override;
   void Cleanup(const AndroidVideoDecodeAccelerator::OutputBufferMap&) override;
-  uint32 GetNumPictureBuffers() const override;
   uint32 GetTextureTarget() const override;
   scoped_refptr<gfx::SurfaceTexture> CreateSurfaceTexture() override;
   void UseCodecBufferForPictureBuffer(int32 codec_buffer_index,
@@ -47,6 +46,12 @@ class CONTENT_EXPORT AndroidDeferredRenderingBackingStrategy
   void CodecChanged(
       media::VideoCodecBridge*,
       const AndroidVideoDecodeAccelerator::OutputBufferMap&) override;
+
+  static media::VideoDecodeAccelerator::Capabilities::Flags
+  GetCapabilitiesFlags() {
+    return media::VideoDecodeAccelerator::Capabilities::
+        NEEDS_ALL_PICTURE_BUFFERS_TO_DECODE;
+  }
 
  private:
   // Release any codec buffer that is associated with the given picture buffer

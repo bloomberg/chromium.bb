@@ -10,6 +10,8 @@
 #include "base/metrics/histogram.h"
 #include "base/trace_event/trace_event.h"
 #include "content/common/gpu/gpu_channel.h"
+#include "content/common/gpu/media/android_copying_backing_strategy.h"
+#include "content/common/gpu/media/android_deferred_rendering_backing_strategy.h"
 #include "content/common/gpu/media/avda_return_on_failure.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "media/base/bitstream_buffer.h"
@@ -27,6 +29,13 @@
 #endif
 
 namespace content {
+
+// TODO(liberato): It is unclear if we have an issue with deadlock during
+// playback if we lower this.  Previously (crbug.com/176036), a deadlock
+// could occur during preroll.  More recent tests have shown some
+// instability with kNumPictureBuffers==2 with similar symptoms
+// during playback.  crbug.com/531588 .
+enum { kNumPictureBuffers = media::limits::kMaxVideoFrames + 1 };
 
 // Max number of bitstreams notified to the client with
 // NotifyEndOfBitstreamBuffer() before getting output from the bitstream.
@@ -50,6 +59,10 @@ static const media::VideoCodecProfile kSupportedH264Profiles[] = {
   media::H264PROFILE_STEREOHIGH,
   media::H264PROFILE_MULTIVIEWHIGH
 };
+
+#define BACKING_STRATEGY AndroidDeferredRenderingBackingStrategy
+#else
+#define BACKING_STRATEGY AndroidCopyingBackingStrategy
 #endif
 
 // Because MediaCodec is thread-hostile (must be poked on a single thread) and
@@ -76,8 +89,7 @@ static inline const base::TimeDelta NoWaitTimeOut() {
 
 AndroidVideoDecodeAccelerator::AndroidVideoDecodeAccelerator(
     const base::WeakPtr<gpu::gles2::GLES2Decoder> decoder,
-    const base::Callback<bool(void)>& make_context_current,
-    scoped_ptr<BackingStrategy> strategy)
+    const base::Callback<bool(void)>& make_context_current)
     : client_(NULL),
       make_context_current_(make_context_current),
       codec_(media::kCodecH264),
@@ -85,7 +97,7 @@ AndroidVideoDecodeAccelerator::AndroidVideoDecodeAccelerator(
       state_(NO_ERROR),
       picturebuffers_requested_(false),
       gl_decoder_(decoder),
-      strategy_(strategy.Pass()),
+      strategy_(new BACKING_STRATEGY()),
       weak_this_factory_(this) {}
 
 AndroidVideoDecodeAccelerator::~AndroidVideoDecodeAccelerator() {
@@ -434,7 +446,7 @@ void AndroidVideoDecodeAccelerator::Decode(
 }
 
 void AndroidVideoDecodeAccelerator::RequestPictureBuffers() {
-  client_->ProvidePictureBuffers(strategy_->GetNumPictureBuffers(), size_,
+  client_->ProvidePictureBuffers(kNumPictureBuffers, size_,
                                  strategy_->GetTextureTarget());
 }
 
@@ -460,9 +472,8 @@ void AndroidVideoDecodeAccelerator::AssignPictureBuffers(
   }
   TRACE_COUNTER1("media", "AVDA::FreePictureIds", free_picture_ids_.size());
 
-  RETURN_ON_FAILURE(
-      this, output_picture_buffers_.size() >= strategy_->GetNumPictureBuffers(),
-      "Invalid picture buffers were passed.", INVALID_ARGUMENT);
+  RETURN_ON_FAILURE(this, output_picture_buffers_.size() >= kNumPictureBuffers,
+                    "Invalid picture buffers were passed.", INVALID_ARGUMENT);
 
   DoIOTask();
 }
@@ -634,9 +645,10 @@ void AndroidVideoDecodeAccelerator::NotifyError(
 }
 
 // static
-media::VideoDecodeAccelerator::SupportedProfiles
-AndroidVideoDecodeAccelerator::GetSupportedProfiles() {
-  SupportedProfiles profiles;
+media::VideoDecodeAccelerator::Capabilities
+AndroidVideoDecodeAccelerator::GetCapabilities() {
+  Capabilities capabilities;
+  SupportedProfiles& profiles = capabilities.supported_profiles;
 
   if (!media::VideoCodecBridge::IsKnownUnaccelerated(
           media::kCodecVP8, media::MEDIA_CODEC_DECODER)) {
@@ -669,7 +681,9 @@ AndroidVideoDecodeAccelerator::GetSupportedProfiles() {
   }
 #endif
 
-  return profiles;
+  capabilities.flags = BACKING_STRATEGY::GetCapabilitiesFlags();
+
+  return capabilities;
 }
 
 }  // namespace content

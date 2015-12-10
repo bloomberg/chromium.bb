@@ -51,9 +51,6 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
     // the last call that the BackingStrategy receives.
     virtual void Cleanup(const OutputBufferMap& buffer_map) = 0;
 
-    // Return the number of picture buffers that we can support.
-    virtual uint32 GetNumPictureBuffers() const = 0;
-
     // Return the GL texture target that the PictureBuffer textures use.
     virtual uint32 GetTextureTarget() const = 0;
 
@@ -89,8 +86,7 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
 
   AndroidVideoDecodeAccelerator(
       const base::WeakPtr<gpu::gles2::GLES2Decoder> decoder,
-      const base::Callback<bool(void)>& make_context_current,
-      scoped_ptr<BackingStrategy> strategy);
+      const base::Callback<bool(void)>& make_context_current);
 
   ~AndroidVideoDecodeAccelerator() override;
 
@@ -113,8 +109,7 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
   void PostError(const ::tracked_objects::Location& from_here,
                  media::VideoDecodeAccelerator::Error error) override;
 
-  static media::VideoDecodeAccelerator::SupportedProfiles
-      GetSupportedProfiles();
+  static media::VideoDecodeAccelerator::Capabilities GetCapabilities();
 
  private:
   enum State {

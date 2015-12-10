@@ -46,6 +46,11 @@ void EnumerateVideoEncodeAcceleratorSupportedProfile(
 
 namespace gpu {
 
+VideoDecodeAcceleratorCapabilities::VideoDecodeAcceleratorCapabilities()
+    : flags(0) {}
+
+VideoDecodeAcceleratorCapabilities::~VideoDecodeAcceleratorCapabilities() {}
+
 GPUInfo::GPUDevice::GPUDevice()
     : vendor_id(0),
       device_id(0),
@@ -114,8 +119,7 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
     CollectInfoResult dx_diagnostics_info_state;
     DxDiagNode dx_diagnostics;
 #endif
-    VideoDecodeAcceleratorSupportedProfiles
-        video_decode_accelerator_supported_profiles;
+    VideoDecodeAcceleratorCapabilities video_decode_accelerator_capabilities;
     VideoEncodeAcceleratorSupportedProfiles
         video_encode_accelerator_supported_profiles;
     bool jpeg_decode_accelerator_supported;
@@ -175,7 +179,10 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
   enumerator->AddInt("DxDiagnosticsInfoState", dx_diagnostics_info_state);
 #endif
   // TODO(kbr): add dx_diagnostics on Windows.
-  for (const auto& profile : video_decode_accelerator_supported_profiles)
+  enumerator->AddInt("videoDecodeAcceleratorFlags",
+                     video_decode_accelerator_capabilities.flags);
+  for (const auto& profile :
+       video_decode_accelerator_capabilities.supported_profiles)
     EnumerateVideoDecodeAcceleratorSupportedProfile(profile, enumerator);
   for (const auto& profile : video_encode_accelerator_supported_profiles)
     EnumerateVideoEncodeAcceleratorSupportedProfile(profile, enumerator);

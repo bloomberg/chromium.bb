@@ -652,10 +652,10 @@ void RTCVideoDecoder::ReusePictureBuffer(int64 picture_buffer_id) {
 
 bool RTCVideoDecoder::IsProfileSupported(media::VideoCodecProfile profile) {
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
-  media::VideoDecodeAccelerator::SupportedProfiles supported_profiles =
-      factories_->GetVideoDecodeAcceleratorSupportedProfiles();
+  media::VideoDecodeAccelerator::Capabilities capabilities =
+      factories_->GetVideoDecodeAcceleratorCapabilities();
 
-  for (const auto& supported_profile : supported_profiles) {
+  for (const auto& supported_profile : capabilities.supported_profiles) {
     if (profile == supported_profile.profile) {
       min_resolution_ = supported_profile.min_resolution;
       max_resolution_ = supported_profile.max_resolution;

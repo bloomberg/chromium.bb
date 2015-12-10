@@ -17,13 +17,6 @@
 
 namespace content {
 
-// TODO(liberato): It is unclear if we have an issue with deadlock during
-// playback if we lower this.  Previously (crbug.com/176036), a deadlock
-// could occur during preroll.  More recent tests have shown some
-// instability with kNumPictureBuffers==2 with similar symptoms
-// during playback.  crbug.com/:531588 .
-enum { kNumPictureBuffers = media::limits::kMaxVideoFrames + 1 };
-
 const static GLfloat kIdentityMatrix[16] = {1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f,
                                             0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f,
                                             0.0f, 0.0f, 0.0f, 1.0f};
@@ -46,10 +39,6 @@ void AndroidCopyingBackingStrategy::Cleanup(
 
   if (surface_texture_id_)
     glDeleteTextures(1, &surface_texture_id_);
-}
-
-uint32 AndroidCopyingBackingStrategy::GetNumPictureBuffers() const {
-  return kNumPictureBuffers;
 }
 
 uint32 AndroidCopyingBackingStrategy::GetTextureTarget() const {

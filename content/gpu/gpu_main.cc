@@ -364,8 +364,8 @@ int GpuMain(const MainFunctionParams& parameters) {
     gpu_info.sandboxed = Sandbox::SandboxIsCurrentlyActive();
 #endif
 
-    gpu_info.video_decode_accelerator_supported_profiles =
-        content::GpuVideoDecodeAccelerator::GetSupportedProfiles();
+    gpu_info.video_decode_accelerator_capabilities =
+        content::GpuVideoDecodeAccelerator::GetCapabilities();
     gpu_info.video_encode_accelerator_supported_profiles =
         content::GpuVideoEncodeAccelerator::GetSupportedProfiles();
     gpu_info.jpeg_decode_accelerator_supported =

@@ -60,8 +60,16 @@ struct GPU_EXPORT VideoDecodeAcceleratorSupportedProfile {
   gfx::Size max_resolution;
   gfx::Size min_resolution;
 };
+
 using VideoDecodeAcceleratorSupportedProfiles =
     std::vector<VideoDecodeAcceleratorSupportedProfile>;
+
+struct GPU_EXPORT VideoDecodeAcceleratorCapabilities {
+  VideoDecodeAcceleratorCapabilities();
+  ~VideoDecodeAcceleratorCapabilities();
+  VideoDecodeAcceleratorSupportedProfiles supported_profiles;
+  uint32_t flags;
+};
 
 // Specification of an encoding profile supported by a hardware encoder.
 struct GPU_EXPORT VideoEncodeAcceleratorSupportedProfile {
@@ -220,8 +228,7 @@ struct GPU_EXPORT GPUInfo {
   DxDiagNode dx_diagnostics;
 #endif
 
-  VideoDecodeAcceleratorSupportedProfiles
-      video_decode_accelerator_supported_profiles;
+  VideoDecodeAcceleratorCapabilities video_decode_accelerator_capabilities;
   VideoEncodeAcceleratorSupportedProfiles
       video_encode_accelerator_supported_profiles;
   bool jpeg_decode_accelerator_supported;

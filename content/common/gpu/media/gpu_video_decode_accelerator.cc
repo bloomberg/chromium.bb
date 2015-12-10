@@ -46,8 +46,6 @@
 #elif defined(USE_OZONE)
 #include "media/ozone/media_ozone_platform.h"
 #elif defined(OS_ANDROID)
-#include "content/common/gpu/media/android_copying_backing_strategy.h"
-#include "content/common/gpu/media/android_deferred_rendering_backing_strategy.h"
 #include "content/common/gpu/media/android_video_decode_accelerator.h"
 #endif
 
@@ -152,36 +150,42 @@ GpuVideoDecodeAccelerator::~GpuVideoDecodeAccelerator() {
 }
 
 // static
-gpu::VideoDecodeAcceleratorSupportedProfiles
-GpuVideoDecodeAccelerator::GetSupportedProfiles() {
-  media::VideoDecodeAccelerator::SupportedProfiles profiles;
+gpu::VideoDecodeAcceleratorCapabilities
+GpuVideoDecodeAccelerator::GetCapabilities() {
+  media::VideoDecodeAccelerator::Capabilities capabilities;
   const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   if (cmd_line->HasSwitch(switches::kDisableAcceleratedVideoDecode))
-    return gpu::VideoDecodeAcceleratorSupportedProfiles();
+    return gpu::VideoDecodeAcceleratorCapabilities();
 
   // Query supported profiles for each VDA. The order of querying VDAs should
   // be the same as the order of initializing VDAs. Then the returned profile
   // can be initialized by corresponding VDA successfully.
 #if defined(OS_WIN)
-  profiles = DXVAVideoDecodeAccelerator::GetSupportedProfiles();
+  capabilities.supported_profiles =
+      DXVAVideoDecodeAccelerator::GetSupportedProfiles();
 #elif defined(OS_CHROMEOS)
   media::VideoDecodeAccelerator::SupportedProfiles vda_profiles;
 #if defined(USE_V4L2_CODEC)
   vda_profiles = V4L2VideoDecodeAccelerator::GetSupportedProfiles();
-  GpuVideoAcceleratorUtil::InsertUniqueDecodeProfiles(vda_profiles, &profiles);
+  GpuVideoAcceleratorUtil::InsertUniqueDecodeProfiles(
+      vda_profiles, &capabilities.supported_profiles);
   vda_profiles = V4L2SliceVideoDecodeAccelerator::GetSupportedProfiles();
-  GpuVideoAcceleratorUtil::InsertUniqueDecodeProfiles(vda_profiles, &profiles);
+  GpuVideoAcceleratorUtil::InsertUniqueDecodeProfiles(
+      vda_profiles, &capabilities.supported_profiles);
 #endif
 #if defined(ARCH_CPU_X86_FAMILY)
   vda_profiles = VaapiVideoDecodeAccelerator::GetSupportedProfiles();
-  GpuVideoAcceleratorUtil::InsertUniqueDecodeProfiles(vda_profiles, &profiles);
+  GpuVideoAcceleratorUtil::InsertUniqueDecodeProfiles(
+      vda_profiles, &capabilities.supported_profiles);
 #endif
 #elif defined(OS_MACOSX)
-  profiles = VTVideoDecodeAccelerator::GetSupportedProfiles();
+  capabilities.supported_profiles =
+      VTVideoDecodeAccelerator::GetSupportedProfiles();
 #elif defined(OS_ANDROID)
-  profiles = AndroidVideoDecodeAccelerator::GetSupportedProfiles();
+  capabilities = AndroidVideoDecodeAccelerator::GetCapabilities();
 #endif
-  return GpuVideoAcceleratorUtil::ConvertMediaToGpuDecodeProfiles(profiles);
+  return GpuVideoAcceleratorUtil::ConvertMediaToGpuDecodeCapabilities(
+      capabilities);
 }
 
 bool GpuVideoDecodeAccelerator::OnMessageReceived(const IPC::Message& msg) {
@@ -473,15 +477,8 @@ scoped_ptr<media::VideoDecodeAccelerator>
 GpuVideoDecodeAccelerator::CreateAndroidVDA() {
   scoped_ptr<media::VideoDecodeAccelerator> decoder;
 #if defined(OS_ANDROID)
-  decoder.reset(new AndroidVideoDecodeAccelerator(
-      stub_->decoder()->AsWeakPtr(), make_context_current_,
-      make_scoped_ptr(
-#if defined(ENABLE_MEDIA_PIPELINE_ON_ANDROID)
-          new AndroidDeferredRenderingBackingStrategy()
-#else
-          new AndroidCopyingBackingStrategy()
-#endif
-              )));
+  decoder.reset(new AndroidVideoDecodeAccelerator(stub_->decoder()->AsWeakPtr(),
+                                                  make_context_current_));
 #endif
   return decoder.Pass();
 }

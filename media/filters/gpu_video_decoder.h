@@ -135,9 +135,12 @@ class MEDIA_EXPORT GpuVideoDecoder
   // Destroy all PictureBuffers in |buffers|, and delete their textures.
   void DestroyPictureBuffers(PictureBufferMap* buffers);
 
-  // Returns true if the video decoder can support |profile| and |coded_size|.
-  bool IsProfileSupported(VideoCodecProfile profile,
-                          const gfx::Size& coded_size);
+  // Returns true if the video decoder with |capabilities| can support
+  // |profile| and |coded_size|.
+  bool IsProfileSupported(
+      const VideoDecodeAccelerator::Capabilities& capabilities,
+      VideoCodecProfile profile,
+      const gfx::Size& coded_size);
 
   // Assert the contract that this class is operated on the right thread.
   void DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent() const;
@@ -202,6 +205,12 @@ class MEDIA_EXPORT GpuVideoDecoder
   // Set during ProvidePictureBuffers(), used for checking and implementing
   // HasAvailableOutputFrames().
   int available_pictures_;
+
+  // If true, the client cannot expect the VDA to produce any new decoded
+  // frames, until it returns all PictureBuffers it may be holding back to the
+  // VDA. In other words, the VDA may require all PictureBuffers to be able to
+  // proceed with decoding the next frame.
+  bool needs_all_picture_buffers_to_decode_;
 
   // Bound to factories_->GetMessageLoop().
   // NOTE: Weak pointers must be invalidated before all other member variables.

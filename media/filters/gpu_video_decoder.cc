@@ -68,6 +68,7 @@ GpuVideoDecoder::GpuVideoDecoder(GpuVideoAcceleratorFactories* factories)
       next_picture_buffer_id_(0),
       next_bitstream_buffer_id_(0),
       available_pictures_(0),
+      needs_all_picture_buffers_to_decode_(false),
       weak_factory_(this) {
   DCHECK(factories_);
 }
@@ -154,7 +155,10 @@ void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
     return;
   }
 
-  if (!IsProfileSupported(config.profile(), config.coded_size())) {
+  VideoDecodeAccelerator::Capabilities capabilities =
+      factories_->GetVideoDecodeAcceleratorCapabilities();
+  if (!IsProfileSupported(capabilities, config.profile(),
+                          config.coded_size())) {
     DVLOG(1) << "Profile " << config.profile() << " or coded size "
              << config.coded_size().ToString() << " not supported.";
     bound_init_cb.Run(false);
@@ -162,6 +166,9 @@ void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
   }
 
   config_ = config;
+  needs_all_picture_buffers_to_decode_ =
+      capabilities.flags &
+      VideoDecodeAccelerator::Capabilities::NEEDS_ALL_PICTURE_BUFFERS_TO_DECODE;
   needs_bitstream_conversion_ = (config.codec() == kCodecH264);
   output_cb_ = BindToCurrentLoop(output_cb);
 
@@ -354,9 +361,11 @@ bool GpuVideoDecoder::NeedsBitstreamConversion() const {
 
 bool GpuVideoDecoder::CanReadWithoutStalling() const {
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
-  return
-      next_picture_buffer_id_ == 0 ||  // Decode() will ProvidePictureBuffers().
-      available_pictures_ > 0;
+  return next_picture_buffer_id_ ==
+             0 ||  // Decode() will ProvidePictureBuffers().
+         (!needs_all_picture_buffers_to_decode_ && available_pictures_ > 0) ||
+         available_pictures_ ==
+             static_cast<int>(assigned_picture_buffers_.size());
 }
 
 int GpuVideoDecoder::GetMaxDecodeRequests() const {
@@ -645,12 +654,12 @@ void GpuVideoDecoder::NotifyError(media::VideoDecodeAccelerator::Error error) {
   DestroyVDA();
 }
 
-bool GpuVideoDecoder::IsProfileSupported(VideoCodecProfile profile,
-                                         const gfx::Size& coded_size) {
+bool GpuVideoDecoder::IsProfileSupported(
+    const VideoDecodeAccelerator::Capabilities& capabilities,
+    VideoCodecProfile profile,
+    const gfx::Size& coded_size) {
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
-  VideoDecodeAccelerator::SupportedProfiles supported_profiles =
-      factories_->GetVideoDecodeAcceleratorSupportedProfiles();
-  for (const auto& supported_profile : supported_profiles) {
+  for (const auto& supported_profile : capabilities.supported_profiles) {
     if (profile == supported_profile.profile) {
       return IsCodedSizeSupported(coded_size,
                                   supported_profile.min_resolution,

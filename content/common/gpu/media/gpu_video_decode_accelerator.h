@@ -38,10 +38,10 @@ class GpuVideoDecodeAccelerator
       GpuCommandBufferStub* stub,
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner);
 
-  // Static query for supported profiles. This query calls the appropriate
-  // platform-specific version. The returned supported profiles vector will
-  // not contain duplicates.
-  static gpu::VideoDecodeAcceleratorSupportedProfiles GetSupportedProfiles();
+  // Static query for the capabilities, which includes the supported profiles.
+  // This query calls the appropriate platform-specific version.  The returned
+  // capabilities will not contain duplicate supported profile entries.
+  static gpu::VideoDecodeAcceleratorCapabilities GetCapabilities();
 
   // IPC::Listener implementation.
   bool OnMessageReceived(const IPC::Message& message) override;

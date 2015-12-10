@@ -81,8 +81,8 @@ class CONTENT_EXPORT RendererGpuVideoAcceleratorFactories
   scoped_ptr<base::SharedMemory> CreateSharedMemory(size_t size) override;
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() override;
 
-  std::vector<media::VideoDecodeAccelerator::SupportedProfile>
-      GetVideoDecodeAcceleratorSupportedProfiles() override;
+  media::VideoDecodeAccelerator::Capabilities
+  GetVideoDecodeAcceleratorCapabilities() override;
   std::vector<media::VideoEncodeAccelerator::SupportedProfile>
       GetVideoEncodeAcceleratorSupportedProfiles() override;
 
