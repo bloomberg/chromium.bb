@@ -89,8 +89,8 @@ bool TaskQueueSelector::ChooseOldestImmediateOrDelayedTaskWithPriority(
     WorkQueue* delayed_queue;
     if (delayed_work_queue_sets_.GetOldestQueueInSet(priority,
                                                      &delayed_queue)) {
-      int immediate_enqueue_order;
-      int delayed_enqueue_order;
+      EnqueueOrder immediate_enqueue_order;
+      EnqueueOrder delayed_enqueue_order;
       bool have_immediate_task =
           immediate_queue->GetFrontTaskEnqueueOrder(&immediate_enqueue_order);
       bool have_delayed_task =

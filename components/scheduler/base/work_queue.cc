@@ -31,7 +31,7 @@ void WorkQueue::Clear() {
   work_queue_ = std::queue<TaskQueueImpl::Task>();
 }
 
-bool WorkQueue::GetFrontTaskEnqueueOrder(int* enqueue_order) const {
+bool WorkQueue::GetFrontTaskEnqueueOrder(EnqueueOrder* enqueue_order) const {
   if (work_queue_.empty())
     return false;
   *enqueue_order = work_queue_.front().enqueue_order();
@@ -50,7 +50,7 @@ void WorkQueue::PushTaskForTest(const TaskQueueImpl::Task&& task) {
 }
 
 void WorkQueue::PushAndSetEnqueueOrder(const TaskQueueImpl::Task&& task,
-                                       int enqueue_order) {
+                                       EnqueueOrder enqueue_order) {
   bool was_empty = work_queue_.empty();
   work_queue_.push(task);
   work_queue_.back().set_enqueue_order(enqueue_order);

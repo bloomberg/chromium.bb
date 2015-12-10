@@ -16,7 +16,7 @@ WorkQueueSets::WorkQueueSets(size_t num_sets)
 WorkQueueSets::~WorkQueueSets() {}
 
 void WorkQueueSets::RemoveQueue(WorkQueue* work_queue) {
-  int enqueue_order;
+  EnqueueOrder enqueue_order;
   bool has_enqueue_order = work_queue->GetFrontTaskEnqueueOrder(&enqueue_order);
   if (!has_enqueue_order)
     return;
@@ -30,7 +30,7 @@ void WorkQueueSets::RemoveQueue(WorkQueue* work_queue) {
 
 void WorkQueueSets::AssignQueueToSet(WorkQueue* work_queue, size_t set_index) {
   DCHECK_LT(set_index, enqueue_order_to_work_queue_maps_.size());
-  int enqueue_order;
+  EnqueueOrder enqueue_order;
   bool has_enqueue_order = work_queue->GetFrontTaskEnqueueOrder(&enqueue_order);
   size_t old_set = work_queue->work_queue_set_index();
   DCHECK_LT(old_set, enqueue_order_to_work_queue_maps_.size());
@@ -43,7 +43,7 @@ void WorkQueueSets::AssignQueueToSet(WorkQueue* work_queue, size_t set_index) {
 }
 
 void WorkQueueSets::OnPushQueue(WorkQueue* work_queue) {
-  int enqueue_order;
+  EnqueueOrder enqueue_order;
   bool has_enqueue_order = work_queue->GetFrontTaskEnqueueOrder(&enqueue_order);
   DCHECK(has_enqueue_order);
   size_t set_index = work_queue->work_queue_set_index();
@@ -64,7 +64,7 @@ void WorkQueueSets::OnPopQueue(WorkQueue* work_queue) {
   // O(1) amortised.
   enqueue_order_to_work_queue_maps_[set_index].erase(
       enqueue_order_to_work_queue_maps_[set_index].begin());
-  int enqueue_order;
+  EnqueueOrder enqueue_order;
   bool has_enqueue_order = work_queue->GetFrontTaskEnqueueOrder(&enqueue_order);
   if (!has_enqueue_order)
     return;

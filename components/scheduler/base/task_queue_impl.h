@@ -11,6 +11,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
+#include "components/scheduler/base/enqueue_order.h"
 #include "components/scheduler/base/task_queue.h"
 #include "components/scheduler/scheduler_export.h"
 
@@ -37,24 +38,24 @@ class SCHEDULER_EXPORT TaskQueueImpl final : public TaskQueue {
     Task(const tracked_objects::Location& posted_from,
          const base::Closure& task,
          base::TimeTicks desired_run_time,
-         int sequence_number,
+         EnqueueOrder sequence_number,
          bool nestable);
 
     Task(const tracked_objects::Location& posted_from,
          const base::Closure& task,
          base::TimeTicks desired_run_time,
-         int sequence_number,
+         EnqueueOrder sequence_number,
          bool nestable,
-         int enqueue_order);
+         EnqueueOrder enqueue_order);
 
-    int enqueue_order() const {
+    EnqueueOrder enqueue_order() const {
 #ifndef NDEBUG
       DCHECK(enqueue_order_set_);
 #endif
       return enqueue_order_;
     }
 
-    void set_enqueue_order(int enqueue_order) {
+    void set_enqueue_order(EnqueueOrder enqueue_order) {
 #ifndef NDEBUG
       DCHECK(!enqueue_order_set_);
       enqueue_order_set_ = true;
@@ -69,7 +70,7 @@ class SCHEDULER_EXPORT TaskQueueImpl final : public TaskQueue {
     // Similar to sequence number, but the |enqueue_order| is set by
     // EnqueueTasksLocked and is not initially defined for delayed tasks until
     // they are enqueued on the |immediate_incoming_queue_|.
-    int enqueue_order_;
+    EnqueueOrder enqueue_order_;
   };
 
   // TaskQueue implementation.

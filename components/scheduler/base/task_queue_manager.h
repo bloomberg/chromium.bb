@@ -15,6 +15,7 @@
 #include "base/pending_task.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
+#include "components/scheduler/base/enqueue_order.h"
 #include "components/scheduler/base/task_queue_impl.h"
 #include "components/scheduler/base/task_queue_selector.h"
 #include "components/scheduler/scheduler_export.h"
@@ -176,7 +177,7 @@ class SCHEDULER_EXPORT TaskQueueManager
                                   const base::Closure& task,
                                   base::TimeDelta delay);
 
-  int GetNextSequenceNumber();
+  internal::EnqueueOrder GetNextSequenceNumber();
 
   bool TryAdvanceTimeDomains();
 
@@ -193,8 +194,7 @@ class SCHEDULER_EXPORT TaskQueueManager
   // raw pointers and doesn't expect the rug to be pulled out from underneath.
   std::set<scoped_refptr<internal::TaskQueueImpl>> queues_to_delete_;
 
-
-  base::AtomicSequenceNumber task_sequence_num_;
+  internal::EnqueueOrderGenerator enqueue_order_generator_;
   base::debug::TaskAnnotator task_annotator_;
 
   base::ThreadChecker main_thread_checker_;

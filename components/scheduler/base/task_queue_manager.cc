@@ -312,8 +312,8 @@ const scoped_refptr<TaskQueueManagerDelegate>& TaskQueueManager::delegate()
   return delegate_;
 }
 
-int TaskQueueManager::GetNextSequenceNumber() {
-  return task_sequence_num_.GetNext();
+internal::EnqueueOrder TaskQueueManager::GetNextSequenceNumber() {
+  return enqueue_order_generator_.GenerateNext();
 }
 
 LazyNow TaskQueueManager::CreateLazyNow() const {

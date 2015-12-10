@@ -34,6 +34,8 @@
       'base/pollable_thread_safe_flag.h',
       'base/virtual_time_domain.cc',
       'base/virtual_time_domain.h',
+      'base/enqueue_order.h',
+      'base/enqueue_order.cc',
       'child/child_scheduler.h',
       'child/idle_helper.cc',
       'child/idle_helper.h',
