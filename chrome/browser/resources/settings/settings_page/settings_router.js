@@ -98,13 +98,6 @@ Polymer({
       subpageTitles: ['customizeFonts'],
     },
     {
-      url: '/startup',
-      page: 'basic',
-      section: 'onStartup',
-      subpage: ['startup-urls'],
-      subpageTitles: ['onStartupSetPages'],
-    },
-    {
       url: '/searchEngines',
       page: 'basic',
       section: 'search',
