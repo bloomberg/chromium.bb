@@ -1,0 +1,70 @@
+/* Copyright 2015 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+/**
+ * @fileoverview
+ * Common dialog styles for Material Design settings.
+ */
+
+#dialog-content {
+  -webkit-padding-end: 0;
+  -webkit-padding-start: 0;
+  margin-bottom: 0;
+  margin-top: 0;
+}
+
+paper-dialog .top-row {
+  align-items: center;
+  border-bottom: 1px solid gainsboro;
+  display: flex;
+  padding-bottom: 5px;
+  padding-top: 5px;
+}
+
+paper-dialog .title {
+  flex: 1;
+  font-size: 1.13em;
+}
+
+paper-dialog .body {
+  font-size: 1em;
+  margin: 20px 0;
+}
+
+paper-dialog .title,
+paper-dialog .body {
+  -webkit-padding-end: 24px;
+  -webkit-padding-start: 24px;
+}
+
+paper-dialog .action-button {
+  -webkit-margin-start: 10px;
+  background-color: rgb(66, 133, 244);
+  color: white;
+  font-weight: 500;
+}
+
+paper-dialog .cancel-button {
+  color: rgb(109, 109, 109);
+  font-weight: 500;
+}
+
+paper-dialog .explanation {
+  margin-bottom: 35px;
+}
+
+paper-dialog .button-container {
+  display: flex;
+  flex: 1;
+  justify-content: flex-end;
+}
+
+paper-dialog paper-button {
+  margin: 0;
+  min-width: auto;
+}
+
+paper-dialog paper-button[toggles][active] {
+  background-color: LightGray;
+}

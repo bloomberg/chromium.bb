@@ -6,16 +6,17 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 
 <dom-module id="settings-powerwash-dialog">
+  <link rel="import" type="css" href="chrome://md-settings/settings_dialog.css">
   <link rel="import" type="css" href="reset_page_dialog.css">
   <template>
     <paper-dialog modal id="dialog">
       <div id="dialog-content">
-        <div class="dialog-top-row">
-          <span class="dialog-title" i18n-content="powerwashDialogTitle"></span>
+        <div class="top-row">
+          <span class="title" i18n-content="powerwashDialogTitle"></span>
           <paper-icon-button icon="clear" on-tap="onCancelTap_" id="close">
           </paper-icon-button>
         </div>
-        <div class="dialog-body">
+        <div class="body">
           <div class="explanation">
             <span i18n-content="powerwashDialogExplanation"></span>
             <a i18n-values="href:powerwashLearnMoreUrl"

@@ -4,6 +4,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-icon-item.html">
 
 <dom-module id="settings-startup-urls-page">
+  <link rel="import" type="css" href="chrome://md-settings/settings_dialog.css">
   <link rel="import" type="css" href="chrome://md-settings/settings_shared.css">
   <link rel="import" type="css" href="on_startup_shared.css">
   <template>
@@ -30,15 +31,17 @@
 
     <paper-dialog modal id="addUrlDialog" class="layout vertical">
       <div id="dialog-content">
-        <div class="dialog-title"
-            i18n-content="onStartupSetPages"></div>
-        <div class="dialog-body">
-          <paper-icon-item class="start">
-            <div i18n-content="onStartupAddPage"></div>&nbsp;
-            <paper-input class="flex" no-label-float
+        <div class="top-row">
+          <div class="title" i18n-content="onStartupAddPage"></div>
+          <paper-icon-button icon="clear" on-tap="onCancelTap_" id="close">
+          </paper-icon-button>
+        </div>
+        <div class="body">
+          <div class="explanation">
+            <paper-input class="flex" always-float-label
                 i18n-values="label:onStartupEnterUrl" value="{{newUrl}}">
             </paper-input>
-          </paper-icon-item>
+          </div>
           <div class="button-container">
             <div class="action-buttons">
               <paper-button class="cancel-button" on-tap="onCancelTap_"
