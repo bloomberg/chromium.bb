@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "ui/gfx/font.h"
 #include "ui/gfx/gfx_export.h"
 
 namespace gfx {
