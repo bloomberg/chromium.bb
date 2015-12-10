@@ -12,7 +12,7 @@ var selection = window.getSelection();
 
 function testNull()
 {
-    selection.addRange(null);
+    shouldThrow('selection.addRange(null)');
 }
 
 function testDetachedRange()

@@ -393,14 +393,10 @@ void DOMSelection::removeAllRanges()
 
 void DOMSelection::addRange(Range* newRange)
 {
+    ASSERT(newRange);
+
     if (!m_frame)
         return;
-
-    // FIXME: Should we throw DOMException for error cases below?
-    if (!newRange) {
-        addConsoleError("The given range is null.");
-        return;
-    }
 
     if (!newRange->inDocument()) {
         addConsoleError("The given range isn't in document.");

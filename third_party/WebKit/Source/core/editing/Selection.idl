@@ -42,7 +42,7 @@
     [MeasureAs=SelectionRangeCount] readonly attribute long rangeCount;
     [MeasureAs=SelectionType] readonly attribute DOMString type;
     [MeasureAs=SelectionGetRangeAt, RaisesException] Range getRangeAt(long index);
-    [MeasureAs=SelectionAddRange, LegacyInterfaceTypeChecking] void addRange(Range range);
+    [MeasureAs=SelectionAddRange] void addRange(Range range);
     // TODO(yoichio): Implement removeRange. crbug.com/391673
     //void removeRange(Range range);
     [MeasureAs=SelectionRemoveAllRanges] void removeAllRanges();
