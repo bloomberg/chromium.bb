@@ -643,7 +643,7 @@ class CONTENT_EXPORT WebContentsImpl
   bool FocusLocationBarByDefault() override;
   void SetFocusToLocationBar(bool select_all) override;
   bool IsHidden() override;
-  int GetOuterDelegateFrameTreeNodeID() override;
+  int GetOuterDelegateFrameTreeNodeId() override;
 
   // NotificationObserver ------------------------------------------------------
 

@@ -168,7 +168,7 @@ class CONTENT_EXPORT RenderFrameHostManager {
     // FrameTreeNode ID of the frame in the outer WebContents which hosts
     // the inner WebContents. Returns FrameTreeNode::kFrameTreeNodeInvalidID
     // if the delegate does not have an outer WebContents.
-    virtual int GetOuterDelegateFrameTreeNodeID() = 0;
+    virtual int GetOuterDelegateFrameTreeNodeId() = 0;
 
    protected:
     virtual ~Delegate() {}

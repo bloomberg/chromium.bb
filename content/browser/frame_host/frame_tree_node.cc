@@ -25,9 +25,9 @@ namespace {
 
 // This is a global map between frame_tree_node_ids and pointers to
 // FrameTreeNodes.
-typedef base::hash_map<int, FrameTreeNode*> FrameTreeNodeIDMap;
+typedef base::hash_map<int, FrameTreeNode*> FrameTreeNodeIdMap;
 
-base::LazyInstance<FrameTreeNodeIDMap> g_frame_tree_node_id_map =
+base::LazyInstance<FrameTreeNodeIdMap> g_frame_tree_node_id_map =
     LAZY_INSTANCE_INITIALIZER;
 
 // These values indicate the loading progress status. The minimum progress
@@ -62,8 +62,8 @@ int FrameTreeNode::next_frame_tree_node_id_ = 1;
 // static
 FrameTreeNode* FrameTreeNode::GloballyFindByID(int frame_tree_node_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  FrameTreeNodeIDMap* nodes = g_frame_tree_node_id_map.Pointer();
-  FrameTreeNodeIDMap::iterator it = nodes->find(frame_tree_node_id);
+  FrameTreeNodeIdMap* nodes = g_frame_tree_node_id_map.Pointer();
+  FrameTreeNodeIdMap::iterator it = nodes->find(frame_tree_node_id);
   return it == nodes->end() ? nullptr : it->second;
 }
 
@@ -96,7 +96,7 @@ FrameTreeNode::FrameTreeNode(
       effective_sandbox_flags_(sandbox_flags),
       frame_owner_properties_(frame_owner_properties),
       loading_progress_(kLoadingProgressNotStarted) {
-  std::pair<FrameTreeNodeIDMap::iterator, bool> result =
+  std::pair<FrameTreeNodeIdMap::iterator, bool> result =
       g_frame_tree_node_id_map.Get().insert(
           std::make_pair(frame_tree_node_id_, this));
   CHECK(result.second);

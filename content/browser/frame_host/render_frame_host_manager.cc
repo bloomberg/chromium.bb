@@ -314,7 +314,7 @@ RenderWidgetHostView* RenderFrameHostManager::GetRenderWidgetHostView() const {
 }
 
 bool RenderFrameHostManager::ForInnerDelegate() {
-  return delegate_->GetOuterDelegateFrameTreeNodeID() !=
+  return delegate_->GetOuterDelegateFrameTreeNodeId() !=
       FrameTreeNode::kFrameTreeNodeInvalidID;
 }
 
@@ -325,7 +325,7 @@ RenderFrameHostManager::GetOuterRenderWidgetHostForKeyboardInput() {
 
   FrameTreeNode* outer_contents_frame_tree_node =
       FrameTreeNode::GloballyFindByID(
-          delegate_->GetOuterDelegateFrameTreeNodeID());
+          delegate_->GetOuterDelegateFrameTreeNodeId());
   return outer_contents_frame_tree_node->parent()
       ->current_frame_host()
       ->render_view_host()
@@ -334,7 +334,7 @@ RenderFrameHostManager::GetOuterRenderWidgetHostForKeyboardInput() {
 
 FrameTreeNode* RenderFrameHostManager::GetOuterDelegateNode() {
   int outer_contents_frame_tree_node_id =
-      delegate_->GetOuterDelegateFrameTreeNodeID();
+      delegate_->GetOuterDelegateFrameTreeNodeId();
   return FrameTreeNode::GloballyFindByID(outer_contents_frame_tree_node_id);
 }
 
@@ -351,7 +351,7 @@ RenderFrameProxyHost* RenderFrameHostManager::GetProxyToParent() {
 
 RenderFrameProxyHost* RenderFrameHostManager::GetProxyToOuterDelegate() {
   int outer_contents_frame_tree_node_id =
-      delegate_->GetOuterDelegateFrameTreeNodeID();
+      delegate_->GetOuterDelegateFrameTreeNodeId();
   FrameTreeNode* outer_contents_frame_tree_node =
       FrameTreeNode::GloballyFindByID(outer_contents_frame_tree_node_id);
   if (!outer_contents_frame_tree_node ||
@@ -367,7 +367,7 @@ RenderFrameProxyHost* RenderFrameHostManager::GetProxyToOuterDelegate() {
 void RenderFrameHostManager::RemoveOuterDelegateFrame() {
   FrameTreeNode* outer_delegate_frame_tree_node =
       FrameTreeNode::GloballyFindByID(
-          delegate_->GetOuterDelegateFrameTreeNodeID());
+          delegate_->GetOuterDelegateFrameTreeNodeId());
   DCHECK(outer_delegate_frame_tree_node->parent());
   outer_delegate_frame_tree_node->frame_tree()->RemoveFrame(
       outer_delegate_frame_tree_node);

@@ -42,7 +42,7 @@ DownloadRequestHandle::DownloadRequestHandle(
 }
 
 WebContents* DownloadRequestHandle::GetWebContents() const {
-  // PlzNavigate: if a FrameTreeNodeID was provided, use it to return the
+  // PlzNavigate: if a FrameTreeNodeId was provided, use it to return the
   // WebContents.
   // TODO(davidben): This logic should be abstracted within the ResourceLoader
   // stack. https://crbug.com/376003
@@ -64,7 +64,7 @@ WebContents* DownloadRequestHandle::GetWebContents() const {
 }
 
 DownloadManager* DownloadRequestHandle::GetDownloadManager() const {
-  // PlzNavigate: if a FrameTreeNodeID was provided, use it to return the
+  // PlzNavigate: if a FrameTreeNodeId was provided, use it to return the
   // DownloadManager.
   // TODO(davidben): This logic should be abstracted within the ResourceLoader
   // stack. https://crbug.com/376003
