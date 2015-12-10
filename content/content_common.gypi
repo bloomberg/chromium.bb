@@ -249,7 +249,6 @@
       'common/drag_messages.h',
       'common/drag_traits.h',
       'common/dwrite_font_platform_win.cc',
-      'common/dwrite_font_proxy_messages.h',
       'common/edit_command.h',
       'common/file_utilities_messages.h',
       'common/fileapi/file_system_messages.h',

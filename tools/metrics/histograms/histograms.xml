@@ -7346,34 +7346,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="DirectWrite.Fonts.Proxy.LoaderType"
-    enum="DirectWriteFontLoaderType">
-  <owner>kulshin@chromium.org</owner>
-  <summary>
-    The codepath that was used to load a font family. This is logged in the
-    browser every time a renderer attempts to load a font family, once per font
-    file.
-  </summary>
-</histogram>
-
-<histogram name="DirectWrite.Fonts.Proxy.LoadFamilyResult"
-    enum="DirectWriteLoadFamilyResult">
-  <owner>kulshin@chromium.org</owner>
-  <summary>
-    The outcome of attempting to load a font family in the renderer (success vs
-    failure and number of families). This is logged in the renderer once per
-    family that is loaded.
-  </summary>
-</histogram>
-
-<histogram name="DirectWrite.Fonts.Proxy.LoadFamilyTime" units="milliseconds">
-  <owner>kulshin@chromium.org</owner>
-  <summary>
-    The time taken to load a font family, excluding glyph data. This is logged
-    in the renderer once per family that is loaded.
-  </summary>
-</histogram>
-
 <histogram name="DisabledExtension.ExtensionWipedStatus" enum="BooleanWiped">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>Whether an extension has been wiped out.</summary>
@@ -58835,21 +58807,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <enum name="DirectoryDatabaseRepairResult" type="int">
   <int value="0" label="Succeeded"/>
   <int value="1" label="Failed"/>
-</enum>
-
-<enum name="DirectWriteFontLoaderType" type="int">
-  <int value="0" label="File: system font directory"/>
-  <int value="1" label="File: sandbox whitelisted"/>
-  <int value="2" label="File: outside sandbox whitelist"/>
-  <int value="3" label="Other"/>
-</enum>
-
-<enum name="DirectWriteLoadFamilyResult" type="int">
-  <int value="0" label="Success: single family"/>
-  <int value="1" label="Success: matched from collection"/>
-  <int value="2" label="Error: multiple families"/>
-  <int value="3" label="Error: no families"/>
-  <int value="4" label="Error: failed to create colleciton"/>
 </enum>
 
 <enum name="DistillableType" type="int">

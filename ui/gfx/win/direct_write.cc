@@ -4,6 +4,8 @@
 
 #include "ui/gfx/win/direct_write.h"
 
+#include <dwrite.h>
+
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
@@ -55,7 +57,12 @@ bool ShouldUseDirectWrite() {
   return group_name != "Disabled";
 }
 
-void CreateDWriteFactory(IDWriteFactory** factory) {
+void MaybeInitializeDirectWrite() {
+  static bool tried_dwrite_initialize = false;
+  if (tried_dwrite_initialize)
+    return;
+  tried_dwrite_initialize = true;
+
   if (!ShouldUseDirectWrite() ||
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableDirectWriteForUI)) {
@@ -74,26 +81,13 @@ void CreateDWriteFactory(IDWriteFactory** factory) {
   if (!dwrite_create_factory_proc)
     return;
 
-  // Failure to create the DirectWrite factory indicates a corrupt dll.
-  base::win::ScopedComPtr<IUnknown> factory_unknown;
-  if (FAILED(dwrite_create_factory_proc(DWRITE_FACTORY_TYPE_SHARED,
-                                        __uuidof(IDWriteFactory),
-                                        factory_unknown.Receive()))) {
-    return;
-  }
-  factory_unknown.QueryInterface<IDWriteFactory>(factory);
-}
-
-void MaybeInitializeDirectWrite() {
-  static bool tried_dwrite_initialize = false;
-  if (tried_dwrite_initialize)
-    return;
-  tried_dwrite_initialize = true;
-
   base::win::ScopedComPtr<IDWriteFactory> factory;
-  CreateDWriteFactory(factory.Receive());
 
-  if (factory == nullptr)
+  // Failure to create the DirectWrite factory indicates a corrupt dll.
+  if (FAILED(dwrite_create_factory_proc(
+          DWRITE_FACTORY_TYPE_SHARED,
+        __uuidof(IDWriteFactory),
+        reinterpret_cast<IUnknown**>(factory.Receive()))))
     return;
 
   // The skia call to create a new DirectWrite font manager instance can fail

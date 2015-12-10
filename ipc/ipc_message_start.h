@@ -133,7 +133,6 @@ enum IPCMessageStart {
   ArcInstanceHostMsgStart,
   DistillerMsgStart,
   StartupMetricMsgStart,
-  DWriteFontProxyMsgStart,
   LastIPCMsgStart  // Must come last.
 };
 
