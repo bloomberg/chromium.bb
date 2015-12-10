@@ -728,11 +728,4 @@ void WindowTreeClientImpl::WmSetProperty(uint32_t change_id,
   tree_->WmResponse(change_id, result);
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// WindowTreeClientImpl, private:
-
-mojo::Callback<void(bool)> WindowTreeClientImpl::ActionCompletedCallback() {
-  return [this](bool success) {};
-}
-
 }  // namespace mus

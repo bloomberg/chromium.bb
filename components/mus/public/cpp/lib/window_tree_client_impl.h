@@ -190,8 +190,6 @@ class WindowTreeClientImpl : public WindowTreeConnection,
                      const mojo::String& name,
                      mojo::Array<uint8_t> transit_data) override;
 
-  mojo::Callback<void(bool)> ActionCompletedCallback();
-
   // This is set once and only once when we get OnEmbed(). It gives the unique
   // id for this connection.
   ConnectionSpecificId connection_id_;
