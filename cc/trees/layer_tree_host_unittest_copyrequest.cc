@@ -200,7 +200,6 @@ class LayerTreeHostCopyRequestCompletionCausesCommit
   }
 
   void BeginTest() override {
-    callback_count_ = 0;
     PostSetNeedsCommitToMainThread();
   }
 
@@ -210,29 +209,24 @@ class LayerTreeHostCopyRequestCompletionCausesCommit
       case 1:
         layer_->RequestCopyOfOutput(CopyOutputRequest::CreateBitmapRequest(
             base::Bind(&LayerTreeHostCopyRequestCompletionCausesCommit::
-                           CopyOutputCallback,
-                       base::Unretained(this))));
-        EXPECT_EQ(0, callback_count_);
+                           CopyOutputCallback)));
         break;
       case 2:
-        // This commit was triggered by the copy request.
+        // This commit is triggered by the copy request.
         break;
       case 3:
-        // This commit was triggered by the completion of the copy request.
-        EXPECT_EQ(1, callback_count_);
+        // This commit is triggered by the completion of the copy request.
         EndTest();
         break;
     }
   }
 
-  void CopyOutputCallback(scoped_ptr<CopyOutputResult> result) {
+  static void CopyOutputCallback(scoped_ptr<CopyOutputResult> result) {
     EXPECT_FALSE(result->IsEmpty());
-    ++callback_count_;
   }
 
   void AfterTest() override {}
 
-  int callback_count_;
   FakeContentLayerClient client_;
   scoped_refptr<FakePictureLayer> root_;
   scoped_refptr<FakePictureLayer> layer_;
