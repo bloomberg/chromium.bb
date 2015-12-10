@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/json/json_reader.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/domain_reliability/beacon.h"
 #include "components/domain_reliability/dispatcher.h"
@@ -20,6 +21,10 @@
 
 namespace domain_reliability {
 namespace {
+
+using base::DictionaryValue;
+using base::ListValue;
+using base::Value;
 
 typedef std::vector<const DomainReliabilityBeacon*> BeaconVector;
 
@@ -37,6 +42,38 @@ scoped_ptr<DomainReliabilityBeacon> MakeBeacon(MockableTime* time) {
   beacon->start_time = time->NowTicks() - beacon->elapsed;
   beacon->upload_depth = 0;
   return beacon.Pass();
+}
+
+template <typename ValueType,
+          bool (DictionaryValue::* GetValueType)(const std::string&,
+                                                 ValueType*) const>
+struct HasValue {
+  bool operator()(const DictionaryValue& dict,
+                  const std::string& key,
+                  ValueType expected_value) {
+    ValueType actual_value;
+    bool got_value = (dict.*GetValueType)(key, &actual_value);
+    EXPECT_TRUE(got_value);
+    if (got_value)
+      EXPECT_EQ(expected_value, actual_value);
+    return got_value && (expected_value == actual_value);
+  }
+};
+
+HasValue<std::string, &DictionaryValue::GetString> HasStringValue;
+HasValue<int, &DictionaryValue::GetInteger> HasIntegerValue;
+HasValue<bool, &DictionaryValue::GetBoolean> HasBooleanValue;
+
+bool GetEntryFromReport(const Value* report,
+                        size_t index,
+                        const DictionaryValue** entry_out) {
+  const DictionaryValue* report_dict;
+  const ListValue* entries;
+
+  return report &&
+         report->GetAsDictionary(&report_dict) &&
+         report_dict->GetList("entries", &entries) &&
+         entries->GetDictionary(index, entry_out);
 }
 
 class DomainReliabilityContextTest : public testing::Test {
@@ -208,22 +245,26 @@ TEST_F(DomainReliabilityContextTest, ReportUpload) {
   context_.GetQueuedBeaconsForTesting(&beacons);
   EXPECT_EQ(1u, beacons.size());
 
-  // N.B.: Assumes max_delay is 5 minutes.
-  const char* kExpectedReport = "{"
-    "\"entries\":["
-      "{\"failure_data\":{\"custom_error\":\"net::ERR_CONNECTION_RESET\"},"
-      "\"network_changed\":false,\"protocol\":\"HTTP\","
-      "\"quic_broken\":true,\"request_age_ms\":300250,"
-      "\"request_elapsed_ms\":250,"
-      "\"server_ip\":\"127.0.0.1\",\"status\":\"tcp.connection_reset\","
-      "\"url\":\"https://localhost/\","
-      "\"was_proxied\":false}],\"reporter\":\"test-reporter\"}";
-
   time_.Advance(max_delay());
   EXPECT_TRUE(upload_pending());
-  EXPECT_EQ(kExpectedReport, upload_report());
   EXPECT_EQ(0, upload_max_depth());
   EXPECT_EQ(GURL("https://exampleuploader/upload"), upload_url());
+
+  scoped_ptr<Value> value = base::JSONReader::Read(upload_report());
+  const DictionaryValue* entry;
+  ASSERT_TRUE(GetEntryFromReport(value.get(), 0, &entry));
+  EXPECT_TRUE(HasStringValue(*entry, "failure_data.custom_error",
+                             "net::ERR_CONNECTION_RESET"));
+  EXPECT_TRUE(HasBooleanValue(*entry, "network_changed", false));
+  EXPECT_TRUE(HasStringValue(*entry, "protocol", "HTTP"));
+  EXPECT_TRUE(HasBooleanValue(*entry, "quic_broken", true));
+  // N.B.: Assumes max_delay is 5 minutes.
+  EXPECT_TRUE(HasIntegerValue(*entry, "request_age_ms", 300250));
+  EXPECT_TRUE(HasIntegerValue(*entry, "request_elapsed_ms", 250));
+  EXPECT_TRUE(HasStringValue(*entry, "server_ip", "127.0.0.1"));
+  EXPECT_TRUE(HasStringValue(*entry, "status", "tcp.connection_reset"));
+  EXPECT_TRUE(HasStringValue(*entry, "url", "https://localhost/"));
+  EXPECT_TRUE(HasBooleanValue(*entry, "was_proxied", false));
 
   DomainReliabilityUploader::UploadResult result;
   result.status = DomainReliabilityUploader::UploadResult::SUCCESS;
@@ -232,31 +273,24 @@ TEST_F(DomainReliabilityContextTest, ReportUpload) {
   EXPECT_TRUE(CheckNoBeacons());
 }
 
-TEST_F(DomainReliabilityContextTest, Upload_NetworkChanged) {
+TEST_F(DomainReliabilityContextTest, NetworkChanged) {
   context_.OnBeacon(MakeBeacon(&time_));
 
   BeaconVector beacons;
   context_.GetQueuedBeaconsForTesting(&beacons);
   EXPECT_EQ(1u, beacons.size());
 
-  // N.B.: Assumes max_delay is 5 minutes.
-  const char* kExpectedReport = "{"
-    "\"entries\":["
-      "{\"failure_data\":{\"custom_error\":\"net::ERR_CONNECTION_RESET\"},"
-      "\"network_changed\":true,\"protocol\":\"HTTP\","
-      "\"quic_broken\":true,\"request_age_ms\":300250,"
-      "\"request_elapsed_ms\":250,"
-      "\"server_ip\":\"127.0.0.1\",\"status\":\"tcp.connection_reset\","
-      "\"url\":\"https://localhost/\","
-      "\"was_proxied\":false}],\"reporter\":\"test-reporter\"}";
-
   // Simulate a network change after the request but before the upload.
   last_network_change_time_ = time_.NowTicks();
   time_.Advance(max_delay());
   EXPECT_TRUE(upload_pending());
-  EXPECT_EQ(kExpectedReport, upload_report());
   EXPECT_EQ(0, upload_max_depth());
   EXPECT_EQ(GURL("https://exampleuploader/upload"), upload_url());
+
+  scoped_ptr<Value> value = base::JSONReader::Read(upload_report());
+  const DictionaryValue* entry;
+  ASSERT_TRUE(GetEntryFromReport(value.get(), 0, &entry));
+  EXPECT_TRUE(HasBooleanValue(*entry, "network_changed", true));
 
   DomainReliabilityUploader::UploadResult result;
   result.status = DomainReliabilityUploader::UploadResult::SUCCESS;
