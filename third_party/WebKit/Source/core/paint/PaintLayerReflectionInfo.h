@@ -81,7 +81,7 @@ public:
 
     void updateAfterStyleChange(const ComputedStyle* oldStyle);
 
-    void paint(GraphicsContext*, const PaintLayerPaintingInfo&, PaintLayerFlags);
+    void paint(GraphicsContext&, const PaintLayerPaintingInfo&, PaintLayerFlags);
 
 private:
     LayoutBox& box() { return *m_box; }

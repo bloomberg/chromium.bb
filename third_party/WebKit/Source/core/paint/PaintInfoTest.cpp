@@ -5,16 +5,25 @@
 #include "config.h"
 #include "core/paint/PaintInfo.h"
 
+#include "platform/graphics/paint/PaintController.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 
 class PaintInfoTest : public testing::Test {
+protected:
+    PaintInfoTest()
+        : m_paintController(PaintController::create())
+        , m_context(*m_paintController)
+    { }
+
+    OwnPtr<PaintController> m_paintController;
+    GraphicsContext m_context;
 };
 
 TEST_F(PaintInfoTest, intersectsCullRect)
 {
-    PaintInfo paintInfo(nullptr, IntRect(0, 0, 50, 50), PaintPhaseBlockBackground, GlobalPaintNormalPhase, PaintLayerNoFlag);
+    PaintInfo paintInfo(m_context, IntRect(0, 0, 50, 50), PaintPhaseBlockBackground, GlobalPaintNormalPhase, PaintLayerNoFlag);
 
     EXPECT_TRUE(paintInfo.cullRect().intersectsCullRect(IntRect(0, 0, 1, 1)));
     EXPECT_FALSE(paintInfo.cullRect().intersectsCullRect(IntRect(51, 51, 1, 1)));
@@ -22,7 +31,7 @@ TEST_F(PaintInfoTest, intersectsCullRect)
 
 TEST_F(PaintInfoTest, intersectsCullRectWithLayoutRect)
 {
-    PaintInfo paintInfo(nullptr, IntRect(0, 0, 50, 50), PaintPhaseBlockBackground, GlobalPaintNormalPhase, PaintLayerNoFlag);
+    PaintInfo paintInfo(m_context, IntRect(0, 0, 50, 50), PaintPhaseBlockBackground, GlobalPaintNormalPhase, PaintLayerNoFlag);
 
     EXPECT_TRUE(paintInfo.cullRect().intersectsCullRect(LayoutRect(0, 0, 1, 1)));
     EXPECT_TRUE(paintInfo.cullRect().intersectsCullRect(LayoutRect(0.1, 0.1, 0.1, 0.1)));
@@ -30,7 +39,7 @@ TEST_F(PaintInfoTest, intersectsCullRectWithLayoutRect)
 
 TEST_F(PaintInfoTest, intersectsCullRectWithTransform)
 {
-    PaintInfo paintInfo(nullptr, IntRect(0, 0, 50, 50), PaintPhaseBlockBackground, GlobalPaintNormalPhase, PaintLayerNoFlag);
+    PaintInfo paintInfo(m_context, IntRect(0, 0, 50, 50), PaintPhaseBlockBackground, GlobalPaintNormalPhase, PaintLayerNoFlag);
     AffineTransform transform;
     transform.translate(-2, -2);
 
@@ -40,7 +49,7 @@ TEST_F(PaintInfoTest, intersectsCullRectWithTransform)
 
 TEST_F(PaintInfoTest, updateCullRect)
 {
-    PaintInfo paintInfo(nullptr, IntRect(1, 1, 50, 50), PaintPhaseBlockBackground, GlobalPaintNormalPhase, PaintLayerNoFlag);
+    PaintInfo paintInfo(m_context, IntRect(1, 1, 50, 50), PaintPhaseBlockBackground, GlobalPaintNormalPhase, PaintLayerNoFlag);
     AffineTransform transform;
     transform.translate(1, 1);
     paintInfo.updateCullRect(transform);
@@ -51,7 +60,7 @@ TEST_F(PaintInfoTest, updateCullRect)
 
 TEST_F(PaintInfoTest, intersectsVerticalRange)
 {
-    PaintInfo paintInfo(nullptr, IntRect(0, 0, 50, 100), PaintPhaseBlockBackground, GlobalPaintNormalPhase, PaintLayerNoFlag);
+    PaintInfo paintInfo(m_context, IntRect(0, 0, 50, 100), PaintPhaseBlockBackground, GlobalPaintNormalPhase, PaintLayerNoFlag);
 
     EXPECT_TRUE(paintInfo.cullRect().intersectsVerticalRange(0, 1));
     EXPECT_FALSE(paintInfo.cullRect().intersectsVerticalRange(100, 101));
@@ -59,7 +68,7 @@ TEST_F(PaintInfoTest, intersectsVerticalRange)
 
 TEST_F(PaintInfoTest, intersectsHorizontalRange)
 {
-    PaintInfo paintInfo(nullptr, IntRect(0, 0, 50, 100), PaintPhaseBlockBackground, GlobalPaintNormalPhase, PaintLayerNoFlag);
+    PaintInfo paintInfo(m_context, IntRect(0, 0, 50, 100), PaintPhaseBlockBackground, GlobalPaintNormalPhase, PaintLayerNoFlag);
 
     EXPECT_TRUE(paintInfo.cullRect().intersectsHorizontalRange(0, 1));
     EXPECT_FALSE(paintInfo.cullRect().intersectsHorizontalRange(50, 51));

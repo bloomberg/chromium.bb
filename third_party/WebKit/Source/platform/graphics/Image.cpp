@@ -96,7 +96,7 @@ bool Image::setData(PassRefPtr<SharedBuffer> data, bool allDataReceived)
     return dataChanged(allDataReceived);
 }
 
-void Image::drawTiled(GraphicsContext* ctxt, const FloatRect& destRect, const FloatPoint& srcPoint, const FloatSize& scaledTileSize, SkXfermode::Mode op, const FloatSize& repeatSpacing)
+void Image::drawTiled(GraphicsContext& ctxt, const FloatRect& destRect, const FloatPoint& srcPoint, const FloatSize& scaledTileSize, SkXfermode::Mode op, const FloatSize& repeatSpacing)
 {
     FloatSize intrinsicTileSize = FloatSize(size());
     if (hasRelativeWidth())
@@ -120,7 +120,7 @@ void Image::drawTiled(GraphicsContext* ctxt, const FloatRect& destRect, const Fl
         visibleSrcRect.setY((destRect.y() - oneTileRect.y()) / scale.height());
         visibleSrcRect.setWidth(destRect.width() / scale.width());
         visibleSrcRect.setHeight(destRect.height() / scale.height());
-        ctxt->drawImage(this, destRect, visibleSrcRect, op, DoNotRespectImageOrientation);
+        ctxt.drawImage(this, destRect, visibleSrcRect, op, DoNotRespectImageOrientation);
         return;
     }
 
@@ -131,7 +131,7 @@ void Image::drawTiled(GraphicsContext* ctxt, const FloatRect& destRect, const Fl
 }
 
 // FIXME: Merge with the other drawTiled eventually, since we need a combination of both for some things.
-void Image::drawTiled(GraphicsContext* ctxt, const FloatRect& dstRect, const FloatRect& srcRect,
+void Image::drawTiled(GraphicsContext& ctxt, const FloatRect& dstRect, const FloatRect& srcRect,
     const FloatSize& providedTileScaleFactor, TileRule hRule, TileRule vRule, SkXfermode::Mode op)
 {
     // FIXME: We do not support 'space' yet. For now just map it to 'repeat'.
@@ -173,10 +173,10 @@ void Image::drawTiled(GraphicsContext* ctxt, const FloatRect& dstRect, const Flo
     FloatPoint patternPhase(dstRect.x() - hPhase, dstRect.y() - vPhase);
 
     if (useLowInterpolationQuality) {
-        InterpolationQuality previousInterpolationQuality = ctxt->imageInterpolationQuality();
-        ctxt->setImageInterpolationQuality(InterpolationLow);
+        InterpolationQuality previousInterpolationQuality = ctxt.imageInterpolationQuality();
+        ctxt.setImageInterpolationQuality(InterpolationLow);
         drawPattern(ctxt, srcRect, tileScaleFactor, patternPhase, op, dstRect);
-        ctxt->setImageInterpolationQuality(previousInterpolationQuality);
+        ctxt.setImageInterpolationQuality(previousInterpolationQuality);
     } else {
         drawPattern(ctxt, srcRect, tileScaleFactor, patternPhase, op, dstRect);
     }
@@ -209,7 +209,7 @@ PassRefPtr<SkShader> createPatternShader(const SkImage* image, const SkMatrix& s
 
 } // anonymous namespace
 
-void Image::drawPattern(GraphicsContext* context, const FloatRect& floatSrcRect, const FloatSize& scale,
+void Image::drawPattern(GraphicsContext& context, const FloatRect& floatSrcRect, const FloatSize& scale,
     const FloatPoint& phase, SkXfermode::Mode compositeOp, const FloatRect& destRect, const FloatSize& repeatSpacing)
 {
     TRACE_EVENT0("skia", "Image::drawPattern");
@@ -245,15 +245,15 @@ void Image::drawPattern(GraphicsContext* context, const FloatRect& floatSrcRect,
         return;
 
     {
-        SkPaint paint = context->fillPaint();
+        SkPaint paint = context.fillPaint();
         paint.setColor(SK_ColorBLACK);
         paint.setXfermodeMode(compositeOp);
-        paint.setFilterQuality(context->computeFilterQuality(this, destRect, normSrcRect));
-        paint.setAntiAlias(context->shouldAntialias());
+        paint.setFilterQuality(context.computeFilterQuality(this, destRect, normSrcRect));
+        paint.setAntiAlias(context.shouldAntialias());
         RefPtr<SkShader> shader = createPatternShader(image.get(), localMatrix, paint,
             FloatSize(repeatSpacing.width() / scale.width(), repeatSpacing.height() / scale.height()));
         paint.setShader(shader.get());
-        context->drawRect(destRect, paint);
+        context.drawRect(destRect, paint);
     }
 
     if (currentFrameIsLazyDecoded())

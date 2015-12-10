@@ -27,8 +27,8 @@ public:
     void paint(const PaintInfo&);
 
 private:
-    void fillShape(GraphicsContext*, const SkPaint&, SkPath::FillType);
-    void strokeShape(GraphicsContext*, const SkPaint&);
+    void fillShape(GraphicsContext&, const SkPaint&, SkPath::FillType);
+    void strokeShape(GraphicsContext&, const SkPaint&);
 
     void paintMarkers(const PaintInfo&, const FloatRect& boundingBox);
     void paintMarker(const PaintInfo&, LayoutSVGResourceMarker&, const MarkerPosition&, float);

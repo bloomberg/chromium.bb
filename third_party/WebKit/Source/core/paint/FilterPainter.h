@@ -19,12 +19,12 @@ class LayerClipRecorder;
 class FilterPainter {
     STACK_ALLOCATED();
 public:
-    FilterPainter(PaintLayer&, GraphicsContext*, const LayoutPoint& offsetFromRoot, const ClipRect&, PaintLayerPaintingInfo&, PaintLayerFlags paintFlags, LayoutRect& rootRelativeBounds, bool& rootRelativeBoundsComputed);
+    FilterPainter(PaintLayer&, GraphicsContext&, const LayoutPoint& offsetFromRoot, const ClipRect&, PaintLayerPaintingInfo&, PaintLayerFlags paintFlags, LayoutRect& rootRelativeBounds, bool& rootRelativeBoundsComputed);
     ~FilterPainter();
 
 private:
     bool m_filterInProgress;
-    GraphicsContext* m_context;
+    GraphicsContext& m_context;
     OwnPtr<LayerClipRecorder> m_clipRecorder;
     LayoutObject* m_layoutObject;
 };

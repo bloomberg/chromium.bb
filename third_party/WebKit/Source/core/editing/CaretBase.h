@@ -57,7 +57,7 @@ protected:
     IntRect absoluteBoundsForLocalRect(Node*, const LayoutRect&) const;
     bool shouldRepaintCaret(Node&) const;
     bool shouldRepaintCaret(const LayoutView*) const;
-    void paintCaret(Node*, GraphicsContext*, const LayoutPoint&) const;
+    void paintCaret(Node*, GraphicsContext&, const LayoutPoint&) const;
 
     const LayoutRect& localCaretRectWithoutUpdate() const { return m_caretLocalRect; }
 

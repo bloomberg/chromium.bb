@@ -148,7 +148,7 @@ void ScrollbarThemeMacOverlayAPI::paintTrackBackground(GraphicsContext& context,
 
     GraphicsContextStateSaver stateSaver(context);
     context.translate(rect.x(), rect.y());
-    LocalCurrentGraphicsContext localContext(&context, IntRect(IntPoint(), rect.size()));
+    LocalCurrentGraphicsContext localContext(context, IntRect(IntPoint(), rect.size()));
 
     CGRect frameRect = scrollbar.frameRect();
     ScrollbarPainter scrollbarPainter = painterForScrollbar(scrollbar);
@@ -171,7 +171,7 @@ void ScrollbarThemeMacOverlayAPI::paintThumb(GraphicsContext& context, const Scr
 
     GraphicsContextStateSaver stateSaver(context);
     context.translate(rect.x(), rect.y());
-    LocalCurrentGraphicsContext localContext(&context, IntRect(IntPoint(), rect.size()));
+    LocalCurrentGraphicsContext localContext(context, IntRect(IntPoint(), rect.size()));
 
     ScrollbarPainter scrollbarPainter = painterForScrollbar(scrollbar);
     [scrollbarPainter setEnabled:scrollbar.enabled()];

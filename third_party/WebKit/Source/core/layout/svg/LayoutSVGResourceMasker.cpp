@@ -53,7 +53,7 @@ void LayoutSVGResourceMasker::removeClientFromCache(LayoutObject* client, bool m
 }
 
 PassRefPtr<const SkPicture> LayoutSVGResourceMasker::createContentPicture(AffineTransform& contentTransformation, const FloatRect& targetBoundingBox,
-    GraphicsContext* context)
+    GraphicsContext& context)
 {
     SVGUnitTypes::SVGUnitType contentUnits = toSVGMaskElement(element())->maskContentUnits()->currentValue()->enumValue();
     if (contentUnits == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX) {
@@ -71,7 +71,7 @@ PassRefPtr<const SkPicture> LayoutSVGResourceMasker::createContentPicture(Affine
     // userSpaceOnUse units (http://crbug.com/294900).
     FloatRect bounds = strokeBoundingBox();
 
-    SkPictureBuilder pictureBuilder(bounds, nullptr, context);
+    SkPictureBuilder pictureBuilder(bounds, nullptr, &context);
 
     ColorFilter maskContentFilter = style()->svgStyle().colorInterpolation() == CI_LINEARRGB
         ? ColorFilterSRGBToLinearRGB : ColorFilterNone;
@@ -85,7 +85,7 @@ PassRefPtr<const SkPicture> LayoutSVGResourceMasker::createContentPicture(Affine
         if (!style || style->display() == NONE || style->visibility() != VISIBLE)
             continue;
 
-        SVGPaintContext::paintSubtree(&pictureBuilder.context(), layoutObject);
+        SVGPaintContext::paintSubtree(pictureBuilder.context(), layoutObject);
     }
 
     m_maskContentPicture = pictureBuilder.endRecording();

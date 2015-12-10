@@ -103,7 +103,7 @@ SkMatrix PLATFORM_EXPORT affineTransformToSkMatrix(const AffineTransform&);
 
 bool nearlyIntegral(float value);
 
-InterpolationQuality limitInterpolationQuality(const GraphicsContext*, InterpolationQuality resampling);
+InterpolationQuality limitInterpolationQuality(const GraphicsContext&, InterpolationQuality resampling);
 
 InterpolationQuality computeInterpolationQuality(
     float srcWidth,

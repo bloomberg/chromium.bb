@@ -110,7 +110,7 @@ public:
     // Used for rendering
     void didDraw(const FloatRect&);
 
-    void paint(GraphicsContext*, const LayoutRect&);
+    void paint(GraphicsContext&, const LayoutRect&);
 
     SkCanvas* drawingCanvas() const;
     void disableDeferral() const;

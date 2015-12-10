@@ -83,16 +83,16 @@ void PartPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffs
     }
 
     // Paint a partially transparent wash over selected widgets.
-    if (isSelected() && !paintInfo.isPrinting() && !LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*paintInfo.context, m_layoutPart, paintInfo.phase, adjustedPaintOffset)) {
+    if (isSelected() && !paintInfo.isPrinting() && !LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(paintInfo.context, m_layoutPart, paintInfo.phase, adjustedPaintOffset)) {
         LayoutRect rect = m_layoutPart.localSelectionRect();
         rect.moveBy(adjustedPaintOffset);
         IntRect selectionRect = pixelSnappedIntRect(rect);
-        LayoutObjectDrawingRecorder drawingRecorder(*paintInfo.context, m_layoutPart, paintInfo.phase, selectionRect, adjustedPaintOffset);
-        paintInfo.context->fillRect(selectionRect, m_layoutPart.selectionBackgroundColor());
+        LayoutObjectDrawingRecorder drawingRecorder(paintInfo.context, m_layoutPart, paintInfo.phase, selectionRect, adjustedPaintOffset);
+        paintInfo.context.fillRect(selectionRect, m_layoutPart.selectionBackgroundColor());
     }
 
     if (m_layoutPart.canResize())
-        ScrollableAreaPainter(*m_layoutPart.layer()->scrollableArea()).paintResizer(*paintInfo.context, roundedIntPoint(adjustedPaintOffset), paintInfo.cullRect());
+        ScrollableAreaPainter(*m_layoutPart.layer()->scrollableArea()).paintResizer(paintInfo.context, roundedIntPoint(adjustedPaintOffset), paintInfo.cullRect());
 }
 
 void PartPainter::paintContents(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
@@ -111,11 +111,11 @@ void PartPainter::paintContents(const PaintInfo& paintInfo, const LayoutPoint& p
     IntSize widgetPaintOffset = paintLocation - widgetLocation;
     // When painting widgets into compositing layers, tx and ty are relative to the enclosing compositing layer,
     // not the root. In this case, shift the CTM and adjust the CullRect to be root-relative to fix plugin drawing.
-    TransformRecorder transform(*paintInfo.context, m_layoutPart,
+    TransformRecorder transform(paintInfo.context, m_layoutPart,
         AffineTransform::translation(widgetPaintOffset.width(), widgetPaintOffset.height()));
 
     CullRect adjustedCullRect(paintInfo.cullRect(), -widgetPaintOffset);
-    widget->paint(*paintInfo.context, adjustedCullRect);
+    widget->paint(paintInfo.context, adjustedCullRect);
 }
 
 } // namespace blink

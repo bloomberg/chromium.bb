@@ -51,19 +51,27 @@ class LayoutObject;
 class PaintInvalidationState;
 
 struct CORE_EXPORT PaintInfo {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-    PaintInfo(GraphicsContext* newContext, const IntRect& cullRect, PaintPhase newPhase, GlobalPaintFlags globalPaintFlags, PaintLayerFlags paintFlags,
+    PaintInfo(GraphicsContext& newContext, const IntRect& cullRect, PaintPhase newPhase, GlobalPaintFlags globalPaintFlags, PaintLayerFlags paintFlags,
         LayoutObject* newPaintingRoot = nullptr, const LayoutBoxModelObject* newPaintContainer = nullptr)
         : context(newContext)
         , phase(newPhase)
         , paintingRoot(newPaintingRoot)
-        , paintInvalidationState(nullptr)
         , m_cullRect(cullRect)
         , m_paintContainer(newPaintContainer)
         , m_paintFlags(paintFlags)
         , m_globalPaintFlags(globalPaintFlags)
     {
     }
+
+    PaintInfo(GraphicsContext& newContext, const PaintInfo& copyOtherFieldsFrom)
+        : context(newContext)
+        , phase(copyOtherFieldsFrom.phase)
+        , paintingRoot(copyOtherFieldsFrom.paintingRoot)
+        , m_cullRect(copyOtherFieldsFrom.m_cullRect)
+        , m_paintContainer(copyOtherFieldsFrom.m_paintContainer)
+        , m_paintFlags(copyOtherFieldsFrom.m_paintFlags)
+        , m_globalPaintFlags(copyOtherFieldsFrom.m_globalPaintFlags)
+    { }
 
     void updatePaintingRootForChildren(const LayoutObject*);
 
@@ -89,11 +97,9 @@ struct CORE_EXPORT PaintInfo {
     void updateCullRect(const AffineTransform& localToParentTransform);
 
     // FIXME: Introduce setters/getters at some point. Requires a lot of changes throughout layout/.
-    GraphicsContext* context;
+    GraphicsContext& context;
     PaintPhase phase;
     LayoutObject* paintingRoot; // used to draw just one element and its visual kids
-    // TODO(wangxianzhu): Populate it.
-    PaintInvalidationState* paintInvalidationState;
 
 private:
     CullRect m_cullRect;

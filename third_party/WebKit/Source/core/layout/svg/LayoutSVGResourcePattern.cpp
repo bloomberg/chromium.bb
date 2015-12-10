@@ -200,7 +200,7 @@ PassRefPtr<const SkPicture> LayoutSVGResourcePattern::asPicture(const FloatRect&
     {
         TransformRecorder transformRecorder(pictureBuilder.context(), *patternLayoutObject, tileTransform);
         for (LayoutObject* child = patternLayoutObject->firstChild(); child; child = child->nextSibling())
-            SVGPaintContext::paintSubtree(&pictureBuilder.context(), child);
+            SVGPaintContext::paintSubtree(pictureBuilder.context(), child);
     }
 
     return pictureBuilder.endRecording();

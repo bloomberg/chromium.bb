@@ -112,10 +112,10 @@ bool DragCaretController::isContentEditable() const
     return rootEditableElementOf(m_position);
 }
 
-void DragCaretController::paintDragCaret(LocalFrame* frame, GraphicsContext* p, const LayoutPoint& paintOffset) const
+void DragCaretController::paintDragCaret(LocalFrame* frame, GraphicsContext& context, const LayoutPoint& paintOffset) const
 {
     if (m_position.deepEquivalent().anchorNode()->document().frame() == frame)
-        paintCaret(m_position.deepEquivalent().anchorNode(), p, paintOffset);
+        paintCaret(m_position.deepEquivalent().anchorNode(), context, paintOffset);
 }
 
 } // namespace blink

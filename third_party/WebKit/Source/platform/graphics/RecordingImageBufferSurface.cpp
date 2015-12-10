@@ -205,7 +205,7 @@ bool RecordingImageBufferSurface::finalizeFrameInternal()
     return true;
 }
 
-void RecordingImageBufferSurface::draw(GraphicsContext* context, const FloatRect& destRect, const FloatRect& srcRect, SkXfermode::Mode op)
+void RecordingImageBufferSurface::draw(GraphicsContext& context, const FloatRect& destRect, const FloatRect& srcRect, SkXfermode::Mode op)
 {
     if (m_fallbackSurface) {
         m_fallbackSurface->draw(context, destRect, srcRect, op);
@@ -214,7 +214,7 @@ void RecordingImageBufferSurface::draw(GraphicsContext* context, const FloatRect
 
     RefPtr<SkPicture> picture = getPicture();
     if (picture) {
-        context->compositePicture(picture.get(), destRect, srcRect, op);
+        context.compositePicture(picture.get(), destRect, srcRect, op);
     } else {
         ImageBufferSurface::draw(context, destRect, srcRect, op);
     }

@@ -35,14 +35,14 @@ void FrameSetPainter::paintColumnBorder(const PaintInfo& paintInfo, const IntRec
     // FIXME: We should do something clever when borders from distinct framesets meet at a join.
 
     // Fill first.
-    GraphicsContext* context = paintInfo.context;
-    context->fillRect(borderRect, m_layoutFrameSet.frameSet()->hasBorderColor() ? m_layoutFrameSet.resolveColor(CSSPropertyBorderLeftColor) : borderFillColor());
+    GraphicsContext& context = paintInfo.context;
+    context.fillRect(borderRect, m_layoutFrameSet.frameSet()->hasBorderColor() ? m_layoutFrameSet.resolveColor(CSSPropertyBorderLeftColor) : borderFillColor());
 
     // Now stroke the edges but only if we have enough room to paint both edges with a little
     // bit of the fill color showing through.
     if (borderRect.width() >= 3) {
-        context->fillRect(IntRect(borderRect.location(), IntSize(1, borderRect.height())), borderStartEdgeColor());
-        context->fillRect(IntRect(IntPoint(borderRect.maxX() - 1, borderRect.y()), IntSize(1, borderRect.height())), borderEndEdgeColor());
+        context.fillRect(IntRect(borderRect.location(), IntSize(1, borderRect.height())), borderStartEdgeColor());
+        context.fillRect(IntRect(IntPoint(borderRect.maxX() - 1, borderRect.y()), IntSize(1, borderRect.height())), borderEndEdgeColor());
     }
 }
 
@@ -51,14 +51,14 @@ void FrameSetPainter::paintRowBorder(const PaintInfo& paintInfo, const IntRect& 
     // FIXME: We should do something clever when borders from distinct framesets meet at a join.
 
     // Fill first.
-    GraphicsContext* context = paintInfo.context;
-    context->fillRect(borderRect, m_layoutFrameSet.frameSet()->hasBorderColor() ? m_layoutFrameSet.resolveColor(CSSPropertyBorderLeftColor) : borderFillColor());
+    GraphicsContext& context = paintInfo.context;
+    context.fillRect(borderRect, m_layoutFrameSet.frameSet()->hasBorderColor() ? m_layoutFrameSet.resolveColor(CSSPropertyBorderLeftColor) : borderFillColor());
 
     // Now stroke the edges but only if we have enough room to paint both edges with a little
     // bit of the fill color showing through.
     if (borderRect.height() >= 3) {
-        context->fillRect(IntRect(borderRect.location(), IntSize(borderRect.width(), 1)), borderStartEdgeColor());
-        context->fillRect(IntRect(IntPoint(borderRect.x(), borderRect.maxY() - 1), IntSize(borderRect.width(), 1)), borderEndEdgeColor());
+        context.fillRect(IntRect(borderRect.location(), IntSize(borderRect.width(), 1)), borderStartEdgeColor());
+        context.fillRect(IntRect(IntPoint(borderRect.x(), borderRect.maxY() - 1), IntSize(borderRect.width(), 1)), borderEndEdgeColor());
     }
 }
 
@@ -70,11 +70,11 @@ static bool shouldPaintBorderAfter(const LayoutFrameSet::GridAxis& axis, size_t 
 
 void FrameSetPainter::paintBorders(const PaintInfo& paintInfo, const LayoutPoint& adjustedPaintOffset)
 {
-    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*paintInfo.context, m_layoutFrameSet, paintInfo.phase, adjustedPaintOffset))
+    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(paintInfo.context, m_layoutFrameSet, paintInfo.phase, adjustedPaintOffset))
         return;
 
     LayoutRect adjustedFrameRect(adjustedPaintOffset, m_layoutFrameSet.size());
-    LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutFrameSet, paintInfo.phase, adjustedFrameRect, adjustedPaintOffset);
+    LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutFrameSet, paintInfo.phase, adjustedFrameRect, adjustedPaintOffset);
 
     LayoutUnit borderThickness = m_layoutFrameSet.frameSet()->border();
     if (!borderThickness)

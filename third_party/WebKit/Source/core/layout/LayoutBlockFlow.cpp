@@ -2810,7 +2810,7 @@ LayoutRect LayoutBlockFlow::blockSelectionGap(const LayoutBlock* rootBlock, cons
     LayoutRect gapRect = rootBlock->logicalRectToPhysicalRect(rootBlockPhysicalPosition, LayoutRect(logicalLeft, logicalTop, logicalWidth, logicalHeight));
     if (paintInfo) {
         IntRect selectionGapRect = alignSelectionRectToDevicePixels(gapRect);
-        paintInfo->context->fillRect(selectionGapRect, selectionBackgroundColor());
+        paintInfo->context.fillRect(selectionGapRect, selectionBackgroundColor());
     }
     return gapRect;
 }
@@ -2892,7 +2892,7 @@ LayoutRect LayoutBlockFlow::logicalLeftSelectionGap(const LayoutBlock* rootBlock
     LayoutRect gapRect = rootBlock->logicalRectToPhysicalRect(rootBlockPhysicalPosition, LayoutRect(rootBlockLogicalLeft, rootBlockLogicalTop, rootBlockLogicalWidth, logicalHeight));
     if (paintInfo) {
         IntRect selectionGapRect = alignSelectionRectToDevicePixels(gapRect);
-        paintInfo->context->fillRect(selectionGapRect, selObj->selectionBackgroundColor());
+        paintInfo->context.fillRect(selectionGapRect, selObj->selectionBackgroundColor());
     }
     return gapRect;
 }
@@ -2910,7 +2910,7 @@ LayoutRect LayoutBlockFlow::logicalRightSelectionGap(const LayoutBlock* rootBloc
     LayoutRect gapRect = rootBlock->logicalRectToPhysicalRect(rootBlockPhysicalPosition, LayoutRect(rootBlockLogicalLeft, rootBlockLogicalTop, rootBlockLogicalWidth, logicalHeight));
     if (paintInfo) {
         IntRect selectionGapRect = alignSelectionRectToDevicePixels(gapRect);
-        paintInfo->context->fillRect(selectionGapRect, selObj->selectionBackgroundColor());
+        paintInfo->context.fillRect(selectionGapRect, selObj->selectionBackgroundColor());
     }
     return gapRect;
 }

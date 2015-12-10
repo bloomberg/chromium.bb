@@ -51,12 +51,12 @@ void MultiColumnSetPainter::paintColumnRules(const PaintInfo& paintInfo, const L
     if (colCount <= 1)
         return;
 
-    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*paintInfo.context, m_layoutMultiColumnSet, DisplayItem::ColumnRules, paintOffset))
+    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(paintInfo.context, m_layoutMultiColumnSet, DisplayItem::ColumnRules, paintOffset))
         return;
 
     LayoutRect paintRect = m_layoutMultiColumnSet.visualOverflowRect();
     paintRect.moveBy(paintOffset);
-    LayoutObjectDrawingRecorder drawingRecorder(*paintInfo.context, m_layoutMultiColumnSet, DisplayItem::ColumnRules, paintRect, paintOffset);
+    LayoutObjectDrawingRecorder drawingRecorder(paintInfo.context, m_layoutMultiColumnSet, DisplayItem::ColumnRules, paintRect, paintOffset);
 
     bool leftToRight = m_layoutMultiColumnSet.style()->isLeftToRightDirection();
     LayoutUnit currLogicalLeftOffset = leftToRight ? LayoutUnit() : m_layoutMultiColumnSet.contentLogicalWidth();

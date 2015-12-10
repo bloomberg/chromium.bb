@@ -44,16 +44,16 @@ void GeneratedImage::computeIntrinsicDimensions(Length& intrinsicWidth, Length& 
     intrinsicRatio = FloatSize();
 }
 
-void GeneratedImage::drawPattern(GraphicsContext* destContext, const FloatRect& srcRect, const FloatSize& scale,
+void GeneratedImage::drawPattern(GraphicsContext& destContext, const FloatRect& srcRect, const FloatSize& scale,
     const FloatPoint& phase, SkXfermode::Mode compositeOp, const FloatRect& destRect,
     const FloatSize& repeatSpacing)
 {
     FloatRect tileRect = srcRect;
     tileRect.expand(FloatSize(repeatSpacing));
 
-    SkPictureBuilder builder(tileRect, nullptr, destContext);
+    SkPictureBuilder builder(tileRect, nullptr, &destContext);
     builder.context().beginRecording(tileRect);
-    drawTile(&builder.context(), srcRect);
+    drawTile(builder.context(), srcRect);
     RefPtr<const SkPicture> tilePicture = builder.endRecording();
 
     AffineTransform patternTransform;
@@ -64,12 +64,12 @@ void GeneratedImage::drawPattern(GraphicsContext* destContext, const FloatRect& 
     RefPtr<Pattern> picturePattern = Pattern::createPicturePattern(tilePicture);
     picturePattern->setPatternSpaceTransform(patternTransform);
 
-    SkPaint fillPaint = destContext->fillPaint();
+    SkPaint fillPaint = destContext.fillPaint();
     picturePattern->applyToPaint(fillPaint);
     fillPaint.setColor(SK_ColorBLACK);
     fillPaint.setXfermodeMode(compositeOp);
 
-    destContext->drawRect(destRect, fillPaint);
+    destContext.drawRect(destRect, fillPaint);
 }
 
 PassRefPtr<SkImage> GeneratedImage::imageForCurrentFrame()

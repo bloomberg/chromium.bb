@@ -20,7 +20,7 @@ class SkPictureBuilder final {
     WTF_MAKE_NONCOPYABLE(SkPictureBuilder);
     STACK_ALLOCATED();
 public:
-    SkPictureBuilder(const FloatRect& bounds, SkMetaData* metaData = 0, GraphicsContext* containingContext = 0)
+    SkPictureBuilder(const FloatRect& bounds, SkMetaData* metaData = nullptr, GraphicsContext* containingContext = nullptr)
         : m_bounds(bounds)
     {
         GraphicsContext::DisabledMode disabledMode = GraphicsContext::NothingDisabled;

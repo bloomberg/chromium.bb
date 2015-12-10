@@ -21,7 +21,7 @@
 
 namespace blink {
 
-FilterPainter::FilterPainter(PaintLayer& layer, GraphicsContext* context, const LayoutPoint& offsetFromRoot, const ClipRect& clipRect, PaintLayerPaintingInfo& paintingInfo, PaintLayerFlags paintFlags,
+FilterPainter::FilterPainter(PaintLayer& layer, GraphicsContext& context, const LayoutPoint& offsetFromRoot, const ClipRect& clipRect, PaintLayerPaintingInfo& paintingInfo, PaintLayerFlags paintFlags,
     LayoutRect& rootRelativeBounds, bool& rootRelativeBoundsComputed)
     : m_filterInProgress(false)
     , m_context(context)
@@ -56,11 +56,11 @@ FilterPainter::FilterPainter(PaintLayer& layer, GraphicsContext* context, const 
     paintingInfo.clipToDirtyRect = false;
 
     if (clipRect.rect() != paintingInfo.paintDirtyRect || clipRect.hasRadius()) {
-        m_clipRecorder = adoptPtr(new LayerClipRecorder(*context, *layer.layoutObject(), DisplayItem::ClipLayerFilter, clipRect, &paintingInfo, LayoutPoint(), paintFlags));
+        m_clipRecorder = adoptPtr(new LayerClipRecorder(context, *layer.layoutObject(), DisplayItem::ClipLayerFilter, clipRect, &paintingInfo, LayoutPoint(), paintFlags));
     }
 
     ASSERT(m_layoutObject);
-    if (!context->paintController().displayItemConstructionIsDisabled()) {
+    if (!context.paintController().displayItemConstructionIsDisabled()) {
         FilterOperations filterOperations(layer.computeFilterOperations(m_layoutObject->styleRef()));
         OwnPtr<WebFilterOperations> webFilterOperations = adoptPtr(Platform::current()->compositorSupport()->createFilterOperations());
         builder.buildFilterOperations(filterOperations, webFilterOperations.get());
@@ -70,7 +70,7 @@ FilterPainter::FilterPainter(PaintLayer& layer, GraphicsContext* context, const 
         // the layer's filter. See crbug.com/502026.
         if (webFilterOperations->isEmpty())
             return;
-        context->paintController().createAndAppend<BeginFilterDisplayItem>(*m_layoutObject, imageFilter, FloatRect(rootRelativeBounds), webFilterOperations.release());
+        context.paintController().createAndAppend<BeginFilterDisplayItem>(*m_layoutObject, imageFilter, FloatRect(rootRelativeBounds), webFilterOperations.release());
     }
 
     m_filterInProgress = true;
@@ -81,7 +81,7 @@ FilterPainter::~FilterPainter()
     if (!m_filterInProgress)
         return;
 
-    m_context->paintController().endItem<EndFilterDisplayItem>(*m_layoutObject);
+    m_context.paintController().endItem<EndFilterDisplayItem>(*m_layoutObject);
 }
 
 } // namespace blink

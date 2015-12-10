@@ -23,7 +23,7 @@ NinePieceImagePainter::NinePieceImagePainter(const LayoutBoxModelObject& layoutO
 {
 }
 
-bool NinePieceImagePainter::paint(GraphicsContext* graphicsContext, const LayoutRect& rect, const ComputedStyle& style,
+bool NinePieceImagePainter::paint(GraphicsContext& graphicsContext, const LayoutRect& rect, const ComputedStyle& style,
     const NinePieceImage& ninePieceImage, SkXfermode::Mode op) const
 {
     StyleImage* styleImage = ninePieceImage.image();
@@ -59,10 +59,9 @@ bool NinePieceImagePainter::paint(GraphicsContext* graphicsContext, const Layout
 
     RefPtr<Image> image = styleImage->image(&m_layoutObject, imageSize, style.effectiveZoom());
 
-    InterpolationQuality interpolationQuality = BoxPainter::chooseInterpolationQuality(m_layoutObject,
-        graphicsContext, image.get(), 0, rectWithOutsets.size());
-    InterpolationQuality previousInterpolationQuality = graphicsContext->imageInterpolationQuality();
-    graphicsContext->setImageInterpolationQuality(interpolationQuality);
+    InterpolationQuality interpolationQuality = BoxPainter::chooseInterpolationQuality(m_layoutObject, image.get(), 0, rectWithOutsets.size());
+    InterpolationQuality previousInterpolationQuality = graphicsContext.imageInterpolationQuality();
+    graphicsContext.setImageInterpolationQuality(interpolationQuality);
 
     TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage", "data",
         InspectorPaintImageEvent::data(m_layoutObject, *styleImage));
@@ -72,16 +71,16 @@ bool NinePieceImagePainter::paint(GraphicsContext* graphicsContext, const Layout
 
         if (drawInfo.isDrawable) {
             if (drawInfo.isCornerPiece) {
-                graphicsContext->drawImage(image.get(), drawInfo.destination, drawInfo.source, op);
+                graphicsContext.drawImage(image.get(), drawInfo.destination, drawInfo.source, op);
             } else {
-                graphicsContext->drawTiledImage(image.get(), drawInfo.destination,
+                graphicsContext.drawTiledImage(image.get(), drawInfo.destination,
                     drawInfo.source, drawInfo.tileScale, drawInfo.tileRule.horizontal,
                     drawInfo.tileRule.vertical, op);
             }
         }
     }
 
-    graphicsContext->setImageInterpolationQuality(previousInterpolationQuality);
+    graphicsContext.setImageInterpolationQuality(previousInterpolationQuality);
     return true;
 }
 

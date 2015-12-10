@@ -73,7 +73,7 @@ public:
     virtual void setImageBuffer(ImageBuffer*) { }
     virtual PassRefPtr<SkPicture> getPicture();
     virtual void finalizeFrame(const FloatRect &dirtyRect) { }
-    virtual void draw(GraphicsContext*, const FloatRect& destRect, const FloatRect& srcRect, SkXfermode::Mode);
+    virtual void draw(GraphicsContext&, const FloatRect& destRect, const FloatRect& srcRect, SkXfermode::Mode);
     virtual void setHasExpensiveOp() { }
     virtual Platform3DObject getBackingTextureHandleForOverwrite() { return 0; }
     virtual void flush(); // Execute all deferred rendering immediately

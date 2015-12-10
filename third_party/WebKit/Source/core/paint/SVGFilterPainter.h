@@ -20,17 +20,17 @@ class SVGFilterRecordingContext {
     USING_FAST_MALLOC(SVGFilterRecordingContext);
     WTF_MAKE_NONCOPYABLE(SVGFilterRecordingContext);
 public:
-    explicit SVGFilterRecordingContext(GraphicsContext* initialContext) : m_initialContext(initialContext) { }
+    explicit SVGFilterRecordingContext(GraphicsContext& initialContext) : m_initialContext(initialContext) { }
 
     GraphicsContext* beginContent(FilterData*);
     void endContent(FilterData*);
 
-    GraphicsContext* paintingContext() const { return m_initialContext; }
+    GraphicsContext& paintingContext() const { return m_initialContext; }
 
 private:
     OwnPtr<PaintController> m_paintController;
     OwnPtr<GraphicsContext> m_context;
-    GraphicsContext* m_initialContext;
+    GraphicsContext& m_initialContext;
 };
 
 class SVGFilterPainter {

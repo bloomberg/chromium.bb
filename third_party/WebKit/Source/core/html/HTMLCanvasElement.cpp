@@ -430,7 +430,7 @@ void HTMLCanvasElement::notifyListenersCanvasChanged()
 
 }
 
-void HTMLCanvasElement::paint(GraphicsContext* context, const LayoutRect& r)
+void HTMLCanvasElement::paint(GraphicsContext& context, const LayoutRect& r)
 {
     // FIXME: crbug.com/438240; there is a bug with the new CSS blending and compositing feature.
     if (!m_context)
@@ -440,14 +440,14 @@ void HTMLCanvasElement::paint(GraphicsContext* context, const LayoutRect& r)
 
     m_context->paintRenderingResultsToCanvas(FrontBuffer);
     if (hasImageBuffer()) {
-        if (!context->contextDisabled()) {
+        if (!context.contextDisabled()) {
             SkXfermode::Mode compositeOperator = !m_context || m_context->hasAlpha() ? SkXfermode::kSrcOver_Mode : SkXfermode::kSrc_Mode;
             buffer()->draw(context, pixelSnappedIntRect(r), 0, compositeOperator);
         }
     } else {
         // When alpha is false, we should draw to opaque black.
         if (!m_context->hasAlpha())
-            context->fillRect(FloatRect(r), Color(0, 0, 0));
+            context.fillRect(FloatRect(r), Color(0, 0, 0));
     }
 
     if (is3D() && paintsIntoCanvasBuffer())

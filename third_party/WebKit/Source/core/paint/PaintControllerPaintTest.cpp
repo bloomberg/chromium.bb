@@ -36,7 +36,7 @@ TEST_P(PaintControllerPaintTestForSlimmingPaintV1AndV2, FullDocumentPaintingWith
     } else {
         GraphicsContext context(rootPaintController());
         PaintLayerPaintingInfo paintingInfo(&rootLayer, LayoutRect(0, 0, 800, 600), GlobalPaintNormalPhase, LayoutSize());
-        PaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
+        PaintLayerPainter(rootLayer).paintLayerContents(context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
         rootPaintController().commitNewDisplayItems();
 
         EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 2,
@@ -57,7 +57,7 @@ TEST_P(PaintControllerPaintTestForSlimmingPaintV1AndV2, FullDocumentPaintingWith
     } else {
         GraphicsContext context(rootPaintController());
         PaintLayerPaintingInfo paintingInfo(&rootLayer, LayoutRect(0, 0, 800, 600), GlobalPaintNormalPhase, LayoutSize());
-        PaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
+        PaintLayerPainter(rootLayer).paintLayerContents(context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
         rootPaintController().commitNewDisplayItems();
 
         EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 3,
@@ -85,7 +85,7 @@ TEST_P(PaintControllerPaintTestForSlimmingPaintV1AndV2, InlineRelayout)
     } else {
         GraphicsContext context(rootPaintController());
         PaintLayerPaintingInfo paintingInfo(&rootLayer, LayoutRect(0, 0, 800, 600), GlobalPaintNormalPhase, LayoutSize());
-        PaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
+        PaintLayerPainter(rootLayer).paintLayerContents(context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
         rootPaintController().commitNewDisplayItems();
 
         EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 2,
@@ -110,7 +110,7 @@ TEST_P(PaintControllerPaintTestForSlimmingPaintV1AndV2, InlineRelayout)
     } else {
         GraphicsContext context(rootPaintController());
         PaintLayerPaintingInfo paintingInfo(&rootLayer, LayoutRect(0, 0, 800, 600), GlobalPaintNormalPhase, LayoutSize());
-        PaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
+        PaintLayerPainter(rootLayer).paintLayerContents(context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
         rootPaintController().commitNewDisplayItems();
 
         EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 3,

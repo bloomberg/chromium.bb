@@ -53,19 +53,19 @@ public:
 
     static ImageQualityController* imageQualityController();
 
-    static void remove(LayoutObject*);
+    static void remove(LayoutObject&);
 
-    InterpolationQuality chooseInterpolationQuality(GraphicsContext*, const LayoutObject*, Image*, const void* layer, const LayoutSize&);
+    InterpolationQuality chooseInterpolationQuality(const LayoutObject&, Image*, const void* layer, const LayoutSize&);
 
 private:
     ImageQualityController();
 
-    static bool has(const LayoutObject*);
-    void set(const LayoutObject*, LayerSizeMap* innerMap, const void* layer, const LayoutSize&);
+    static bool has(const LayoutObject&);
+    void set(const LayoutObject&, LayerSizeMap* innerMap, const void* layer, const LayoutSize&);
 
-    bool shouldPaintAtLowQuality(GraphicsContext*, const LayoutObject*, Image*, const void* layer, const LayoutSize&);
-    void removeLayer(const LayoutObject*, LayerSizeMap* innerMap, const void* layer);
-    void objectDestroyed(const LayoutObject*);
+    bool shouldPaintAtLowQuality(const LayoutObject&, Image*, const void* layer, const LayoutSize&);
+    void removeLayer(const LayoutObject&, LayerSizeMap* innerMap, const void* layer);
+    void objectDestroyed(const LayoutObject&);
     bool isEmpty() { return m_objectLayerSizeMap.isEmpty(); }
 
     void highQualityRepaintTimerFired(Timer<ImageQualityController>*);

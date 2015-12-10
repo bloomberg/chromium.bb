@@ -132,7 +132,7 @@ TEST_F(FrameSelectionTest, PaintCaretShouldNotLayout)
     OwnPtr<PaintController> paintController = PaintController::create();
     GraphicsContext context(*paintController);
     DrawingRecorder drawingRecorder(context, *dummyPageHolder().frameView().layoutView(), DisplayItem::Caret, LayoutRect::infiniteIntRect());
-    selection().paintCaret(&context, LayoutPoint());
+    selection().paintCaret(context, LayoutPoint());
     EXPECT_EQ(startCount, layoutCount());
 }
 

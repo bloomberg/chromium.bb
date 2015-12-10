@@ -129,7 +129,7 @@ void PaintLayerReflectionInfo::updateAfterStyleChange(const ComputedStyle* oldSt
     m_reflection->setStyle(newStyle.release());
 }
 
-void PaintLayerReflectionInfo::paint(GraphicsContext* context, const PaintLayerPaintingInfo& paintingInfo, PaintLayerFlags flags)
+void PaintLayerReflectionInfo::paint(GraphicsContext& context, const PaintLayerPaintingInfo& paintingInfo, PaintLayerFlags flags)
 {
     if (m_isPaintingInsideReflection)
         return;

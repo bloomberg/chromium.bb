@@ -89,18 +89,18 @@ static bool hasSource(const HTMLMediaElement* mediaElement)
         && mediaElement->networkState() != HTMLMediaElement::NETWORK_NO_SOURCE;
 }
 
-static bool paintMediaButton(GraphicsContext* context, const IntRect& rect, Image* image, bool isEnabled = true)
+static bool paintMediaButton(GraphicsContext& context, const IntRect& rect, Image* image, bool isEnabled = true)
 {
     if (!RuntimeEnabledFeatures::newMediaPlaybackUiEnabled())
         isEnabled = true; // New UI only.
 
     if (!isEnabled)
-        context->beginLayer(kDisabledAlpha);
+        context.beginLayer(kDisabledAlpha);
 
-    context->drawImage(image, rect);
+    context.drawImage(image, rect);
 
     if (!isEnabled)
-        context->endLayer();
+        context.endLayer();
 
     return true;
 }
@@ -194,15 +194,15 @@ static Image* getMediaSliderThumb()
     return mediaSliderThumb;
 }
 
-static void paintRoundedSliderBackground(const IntRect& rect, const ComputedStyle& style, GraphicsContext* context, Color sliderBackgroundColor )
+static void paintRoundedSliderBackground(const IntRect& rect, const ComputedStyle& style, GraphicsContext& context, Color sliderBackgroundColor )
 {
     float borderRadius = rect.height() / 2;
     FloatSize radii(borderRadius, borderRadius);
 
-    context->fillRoundedRect(FloatRoundedRect(rect, radii, radii, radii, radii), sliderBackgroundColor);
+    context.fillRoundedRect(FloatRoundedRect(rect, radii, radii, radii, radii), sliderBackgroundColor);
 }
 
-static void paintSliderRangeHighlight(const IntRect& rect, const ComputedStyle& style, GraphicsContext* context, int startPosition, int endPosition, Color startColor, Color endColor)
+static void paintSliderRangeHighlight(const IntRect& rect, const ComputedStyle& style, GraphicsContext& context, int startPosition, int endPosition, Color startColor, Color endColor)
 {
     // Calculate border radius; need to avoid being smaller than half the slider height
     // because of https://bugs.webkit.org/show_bug.cgi?id=30143.
@@ -241,19 +241,19 @@ static void paintSliderRangeHighlight(const IntRect& rect, const ComputedStyle& 
     gradient->addColorStop(1.0, endColor);
 
     // Fill highlight rectangle with gradient, potentially rounded if on left or right edge.
-    context->save();
-    context->setFillGradient(gradient);
+    context.save();
+    context.setFillGradient(gradient);
 
     if (startOffset < borderRadius && endOffset < borderRadius)
-        context->fillRoundedRect(FloatRoundedRect(highlightRect, radii, radii, radii, radii), startColor);
+        context.fillRoundedRect(FloatRoundedRect(highlightRect, radii, radii, radii, radii), startColor);
     else if (startOffset < borderRadius)
-        context->fillRoundedRect(FloatRoundedRect(highlightRect, radii, FloatSize(0, 0), radii, FloatSize(0, 0)), startColor);
+        context.fillRoundedRect(FloatRoundedRect(highlightRect, radii, FloatSize(0, 0), radii, FloatSize(0, 0)), startColor);
     else if (endOffset < borderRadius)
-        context->fillRoundedRect(FloatRoundedRect(highlightRect, FloatSize(0, 0), radii, FloatSize(0, 0), radii), startColor);
+        context.fillRoundedRect(FloatRoundedRect(highlightRect, FloatSize(0, 0), radii, FloatSize(0, 0), radii), startColor);
     else
-        context->fillRect(highlightRect);
+        context.fillRect(highlightRect);
 
-    context->restore();
+    context.restore();
 }
 
 bool MediaControlsPainter::paintMediaSlider(const LayoutObject& object, const PaintInfo& paintInfo, const IntRect& rect)
@@ -262,17 +262,17 @@ bool MediaControlsPainter::paintMediaSlider(const LayoutObject& object, const Pa
     if (!mediaElement)
         return false;
 
-    GraphicsContext* context = paintInfo.context;
+    GraphicsContext& context = paintInfo.context;
 
     // Should we paint the slider partially transparent?
     bool drawUiGrayed = !hasSource(mediaElement) && RuntimeEnabledFeatures::newMediaPlaybackUiEnabled();
     if (drawUiGrayed)
-        context->beginLayer(kDisabledAlpha);
+        context.beginLayer(kDisabledAlpha);
 
     paintMediaSliderInternal(object, paintInfo, rect);
 
     if (drawUiGrayed)
-        context->endLayer();
+        context.endLayer();
 
     return true;
 }
@@ -285,7 +285,7 @@ void MediaControlsPainter::paintMediaSliderInternal(const LayoutObject& object, 
         return;
 
     const ComputedStyle& style = object.styleRef();
-    GraphicsContext* context = paintInfo.context;
+    GraphicsContext& context = paintInfo.context;
 
     // Paint the slider bar in the "no data buffered" state.
     Color sliderBackgroundColor;
@@ -404,7 +404,7 @@ bool MediaControlsPainter::paintMediaVolumeSlider(const LayoutObject& object, co
     if (!mediaElement)
         return false;
 
-    GraphicsContext* context = paintInfo.context;
+    GraphicsContext& context = paintInfo.context;
     const ComputedStyle& style = object.styleRef();
 
     // Paint the slider bar.

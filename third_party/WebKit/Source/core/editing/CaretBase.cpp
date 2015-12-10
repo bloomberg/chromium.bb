@@ -175,7 +175,7 @@ void CaretBase::invalidateCaretRect(Node* node, bool caretRectChanged)
     }
 }
 
-void CaretBase::paintCaret(Node* node, GraphicsContext* context, const LayoutPoint& paintOffset) const
+void CaretBase::paintCaret(Node* node, GraphicsContext& context, const LayoutPoint& paintOffset) const
 {
     if (m_caretVisibility == Hidden)
         return;
@@ -196,7 +196,7 @@ void CaretBase::paintCaret(Node* node, GraphicsContext* context, const LayoutPoi
     if (element && element->layoutObject())
         caretColor = element->layoutObject()->resolveColor(CSSPropertyColor);
 
-    context->fillRect(FloatRect(drawingRect), caretColor);
+    context.fillRect(FloatRect(drawingRect), caretColor);
 }
 
 } // namespace blink

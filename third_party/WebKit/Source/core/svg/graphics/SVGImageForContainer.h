@@ -56,7 +56,7 @@ public:
 
     void draw(SkCanvas*, const SkPaint&, const FloatRect&, const FloatRect&, RespectImageOrientationEnum, ImageClampingMode) override;
 
-    void drawPattern(GraphicsContext*, const FloatRect&, const FloatSize&, const FloatPoint&, SkXfermode::Mode, const FloatRect&, const FloatSize& repeatSpacing) override;
+    void drawPattern(GraphicsContext&, const FloatRect&, const FloatSize&, const FloatPoint&, SkXfermode::Mode, const FloatRect&, const FloatSize& repeatSpacing) override;
 
     // FIXME: Implement this to be less conservative.
     bool currentFrameKnownToBeOpaque(MetadataMode = UseCurrentMetadata) override { return false; }

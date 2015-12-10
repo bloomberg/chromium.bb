@@ -251,25 +251,25 @@ LayoutRectOutsets doubleStripeInsets(const BorderEdge edges[], BorderEdge::Doubl
         -edges[BSLeft].getDoubleBorderStripeWidth(stripe));
 }
 
-void drawSolidBorderRect(GraphicsContext* context, const FloatRect& borderRect,
+void drawSolidBorderRect(GraphicsContext& context, const FloatRect& borderRect,
     float borderWidth, const Color& color)
 {
     FloatRect strokeRect(borderRect);
     strokeRect.inflate(-borderWidth / 2);
 
-    bool wasAntialias = context->shouldAntialias();
+    bool wasAntialias = context.shouldAntialias();
     if (!wasAntialias)
-        context->setShouldAntialias(true);
+        context.setShouldAntialias(true);
 
-    context->setStrokeStyle(SolidStroke);
-    context->setStrokeColor(color);
-    context->strokeRect(strokeRect, borderWidth);
+    context.setStrokeStyle(SolidStroke);
+    context.setStrokeColor(color);
+    context.strokeRect(strokeRect, borderWidth);
 
     if (!wasAntialias)
-        context->setShouldAntialias(false);
+        context.setShouldAntialias(false);
 }
 
-void drawBleedAdjustedDRRect(GraphicsContext* context, BackgroundBleedAvoidance bleedAvoidance,
+void drawBleedAdjustedDRRect(GraphicsContext& context, BackgroundBleedAvoidance bleedAvoidance,
     const FloatRoundedRect& outer, const FloatRoundedRect& inner, Color color)
 {
     switch (bleedAvoidance) {
@@ -287,7 +287,7 @@ void drawBleedAdjustedDRRect(GraphicsContext* context, BackgroundBleedAvoidance 
         paint.setColor(color.rgb());
         paint.setStyle(SkPaint::kFill_Style);
         paint.setAntiAlias(true);
-        context->drawPath(path, paint);
+        context.drawPath(path, paint);
 
         break;
     }
@@ -296,12 +296,12 @@ void drawBleedAdjustedDRRect(GraphicsContext* context, BackgroundBleedAvoidance 
             // BackgroundBleedClipOnly clips the outer rrect corners for us.
             FloatRoundedRect adjustedOuter = outer;
             adjustedOuter.setRadii(FloatRoundedRect::Radii());
-            context->fillDRRect(adjustedOuter, inner, color);
+            context.fillDRRect(adjustedOuter, inner, color);
             break;
         }
         // fall through
     default:
-        context->fillDRRect(outer, inner, color);
+        context.fillDRRect(outer, inner, color);
         break;
     }
 }
@@ -439,7 +439,7 @@ private:
     }
 };
 
-void BoxBorderPainter::drawDoubleBorder(GraphicsContext* context, const LayoutRect& borderRect) const
+void BoxBorderPainter::drawDoubleBorder(GraphicsContext& context, const LayoutRect& borderRect) const
 {
     ASSERT(m_isUniformColor);
     ASSERT(m_isUniformStyle);
@@ -460,10 +460,10 @@ void BoxBorderPainter::drawDoubleBorder(GraphicsContext* context, const LayoutRe
         doubleStripeInsets(m_edges, BorderEdge::DoubleBorderStripeInner);
     const FloatRoundedRect innerThirdRect = m_style.getRoundedInnerBorderFor(borderRect,
         innerThirdInsets, m_includeLogicalLeftEdge, m_includeLogicalRightEdge);
-    context->fillDRRect(innerThirdRect, m_inner, color);
+    context.fillDRRect(innerThirdRect, m_inner, color);
 }
 
-bool BoxBorderPainter::paintBorderFastPath(GraphicsContext* context, const LayoutRect& borderRect) const
+bool BoxBorderPainter::paintBorderFastPath(GraphicsContext& context, const LayoutRect& borderRect) const
 {
     if (!m_isUniformColor || !m_isUniformStyle || !m_inner.isRenderable())
         return false;
@@ -503,8 +503,8 @@ bool BoxBorderPainter::paintBorderFastPath(GraphicsContext* context, const Layou
                 path.addRect(calculateSideRect(m_outer, currEdge, i));
         }
 
-        context->setFillColor(firstEdge().color);
-        context->fillPath(path);
+        context.setFillColor(firstEdge().color);
+        context.fillPath(path);
         return true;
     }
 
@@ -600,20 +600,20 @@ void BoxBorderPainter::paintBorder(const PaintInfo& info, const LayoutRect& rect
     if (!m_visibleEdgeCount || m_outer.rect().isEmpty())
         return;
 
-    GraphicsContext* graphicsContext = info.context;
+    GraphicsContext& graphicsContext = info.context;
 
     if (paintBorderFastPath(graphicsContext, rect))
         return;
 
     bool clipToOuterBorder = m_outer.isRounded();
-    GraphicsContextStateSaver stateSaver(*graphicsContext, clipToOuterBorder);
+    GraphicsContextStateSaver stateSaver(graphicsContext, clipToOuterBorder);
     if (clipToOuterBorder) {
         // For BackgroundBleedClip{Only,Layer}, the outer rrect clip is already applied.
         if (!bleedAvoidanceIsClipping(m_bleedAvoidance))
-            graphicsContext->clipRoundedRect(m_outer);
+            graphicsContext.clipRoundedRect(m_outer);
 
         if (m_inner.isRenderable() && !m_inner.isEmpty())
-            graphicsContext->clipOutRoundedRect(m_inner);
+            graphicsContext.clipOutRoundedRect(m_inner);
     }
 
     const ComplexBorderInfo borderInfo(*this, true);
@@ -662,7 +662,7 @@ void BoxBorderPainter::paintBorder(const PaintInfo& info, const LayoutRect& rect
 // Note that we're always drawing using opaque paints on top of less-opaque content - hence
 // we can use overdraw to mask portions of the previous sides.
 //
-BorderEdgeFlags BoxBorderPainter::paintOpacityGroup(GraphicsContext* context,
+BorderEdgeFlags BoxBorderPainter::paintOpacityGroup(GraphicsContext& context,
     const ComplexBorderInfo& borderInfo, unsigned index, float effectiveOpacity) const
 {
     ASSERT(effectiveOpacity > 0 && effectiveOpacity <= 1);
@@ -691,7 +691,7 @@ BorderEdgeFlags BoxBorderPainter::paintOpacityGroup(GraphicsContext* context,
         const float groupOpacity = static_cast<float>(group.alpha) / 255;
         ASSERT(groupOpacity < effectiveOpacity);
 
-        context->beginLayer(groupOpacity / effectiveOpacity);
+        context.beginLayer(groupOpacity / effectiveOpacity);
         effectiveOpacity = groupOpacity;
 
         // Group opacity is applied via a layer => we draw the members using opaque paint.
@@ -711,12 +711,12 @@ BorderEdgeFlags BoxBorderPainter::paintOpacityGroup(GraphicsContext* context,
     }
 
     if (needsLayer)
-        context->endLayer();
+        context.endLayer();
 
     return completedEdges;
 }
 
-void BoxBorderPainter::paintSide(GraphicsContext* context, const ComplexBorderInfo& borderInfo,
+void BoxBorderPainter::paintSide(GraphicsContext& context, const ComplexBorderInfo& borderInfo,
     BoxSide side, unsigned alpha, BorderEdgeFlags completedEdges) const
 {
     const BorderEdge& edge = m_edges[side];
@@ -822,7 +822,7 @@ bool BoxBorderPainter::mitersRequireClipping(MiterType miter1, MiterType miter2,
     return shouldClip;
 }
 
-void BoxBorderPainter::paintOneBorderSide(GraphicsContext* graphicsContext,
+void BoxBorderPainter::paintOneBorderSide(GraphicsContext& graphicsContext,
     const FloatRect& sideRect, BoxSide side, BoxSide adjacentSide1, BoxSide adjacentSide2,
     const Path* path, bool antialias, Color color, BorderEdgeFlags completedEdges) const
 {
@@ -835,7 +835,7 @@ void BoxBorderPainter::paintOneBorderSide(GraphicsContext* graphicsContext,
         MiterType miter1 = colorsMatchAtCorner(side, adjacentSide1, m_edges) ? HardMiter : SoftMiter;
         MiterType miter2 = colorsMatchAtCorner(side, adjacentSide2, m_edges) ? HardMiter : SoftMiter;
 
-        GraphicsContextStateSaver stateSaver(*graphicsContext);
+        GraphicsContextStateSaver stateSaver(graphicsContext);
         if (m_inner.isRenderable())
             clipBorderSidePolygon(graphicsContext, side, miter1, miter2);
         else
@@ -848,7 +848,7 @@ void BoxBorderPainter::paintOneBorderSide(GraphicsContext* graphicsContext,
         MiterType miter2 = computeMiter(side, adjacentSide2, completedEdges, antialias);
         bool shouldClip = mitersRequireClipping(miter1, miter2, edgeToRender.borderStyle(), antialias);
 
-        GraphicsContextStateSaver clipStateSaver(*graphicsContext, shouldClip);
+        GraphicsContextStateSaver clipStateSaver(graphicsContext, shouldClip);
         if (shouldClip) {
             clipBorderSidePolygon(graphicsContext, side, miter1, miter2);
 
@@ -863,7 +863,7 @@ void BoxBorderPainter::paintOneBorderSide(GraphicsContext* graphicsContext,
     }
 }
 
-void BoxBorderPainter::drawBoxSideFromPath(GraphicsContext* graphicsContext,
+void BoxBorderPainter::drawBoxSideFromPath(GraphicsContext& graphicsContext,
     const LayoutRect& borderRect, const Path& borderPath, float thickness, float drawThickness,
     BoxSide side, Color color, EBorderStyle borderStyle) const
 {
@@ -879,14 +879,14 @@ void BoxBorderPainter::drawBoxSideFromPath(GraphicsContext* graphicsContext,
         return;
     case DOTTED:
     case DASHED: {
-        graphicsContext->setStrokeColor(color);
+        graphicsContext.setStrokeColor(color);
 
         // The stroke is doubled here because the provided path is the
         // outside edge of the border so half the stroke is clipped off.
         // The extra multiplier is so that the clipping mask can antialias
         // the edges to prevent jaggies.
-        graphicsContext->setStrokeThickness(drawThickness * 2 * 1.1f);
-        graphicsContext->setStrokeStyle(borderStyle == DASHED ? DashedStroke : DottedStroke);
+        graphicsContext.setStrokeThickness(drawThickness * 2 * 1.1f);
+        graphicsContext.setStrokeStyle(borderStyle == DASHED ? DashedStroke : DottedStroke);
 
         // If the number of dashes that fit in the path is odd and non-integral then we
         // will have an awkwardly-sized dash at the end of the path. To try to avoid that
@@ -909,31 +909,31 @@ void BoxBorderPainter::drawBoxSideFromPath(GraphicsContext* graphicsContext,
             DashArray lineDash;
             lineDash.append(dashLength);
             lineDash.append(gapLength);
-            graphicsContext->setLineDash(lineDash, dashLength);
+            graphicsContext.setLineDash(lineDash, dashLength);
         }
 
         // FIXME: stroking the border path causes issues with tight corners:
         // https://bugs.webkit.org/show_bug.cgi?id=58711
         // Also, to get the best appearance we should stroke a path between the two borders.
-        graphicsContext->strokePath(borderPath);
+        graphicsContext.strokePath(borderPath);
         return;
     }
     case DOUBLE: {
         // Draw inner border line
         {
-            GraphicsContextStateSaver stateSaver(*graphicsContext);
+            GraphicsContextStateSaver stateSaver(graphicsContext);
             const LayoutRectOutsets innerInsets = doubleStripeInsets(m_edges, BorderEdge::DoubleBorderStripeInner);
             FloatRoundedRect innerClip = m_style.getRoundedInnerBorderFor(borderRect, innerInsets,
                 m_includeLogicalLeftEdge, m_includeLogicalRightEdge);
 
-            graphicsContext->clipRoundedRect(innerClip);
+            graphicsContext.clipRoundedRect(innerClip);
             drawBoxSideFromPath(graphicsContext, borderRect, borderPath, thickness, drawThickness,
                 side, color, SOLID);
         }
 
         // Draw outer border line
         {
-            GraphicsContextStateSaver stateSaver(*graphicsContext);
+            GraphicsContextStateSaver stateSaver(graphicsContext);
             LayoutRect outerRect = borderRect;
             LayoutRectOutsets outerInsets = doubleStripeInsets(m_edges, BorderEdge::DoubleBorderStripeOuter);
 
@@ -947,7 +947,7 @@ void BoxBorderPainter::drawBoxSideFromPath(GraphicsContext* graphicsContext,
 
             FloatRoundedRect outerClip = m_style.getRoundedInnerBorderFor(outerRect, outerInsets,
                 m_includeLogicalLeftEdge, m_includeLogicalRightEdge);
-            graphicsContext->clipOutRoundedRect(outerClip);
+            graphicsContext.clipOutRoundedRect(outerClip);
             drawBoxSideFromPath(graphicsContext, borderRect, borderPath, thickness, drawThickness,
                 side, color, SOLID);
         }
@@ -971,7 +971,7 @@ void BoxBorderPainter::drawBoxSideFromPath(GraphicsContext* graphicsContext,
             side, color, s1);
 
         // Paint inner only
-        GraphicsContextStateSaver stateSaver(*graphicsContext);
+        GraphicsContextStateSaver stateSaver(graphicsContext);
         LayoutUnit topWidth = m_edges[BSTop].usedWidth() / 2;
         LayoutUnit bottomWidth = m_edges[BSBottom].usedWidth() / 2;
         LayoutUnit leftWidth = m_edges[BSLeft].usedWidth() / 2;
@@ -981,7 +981,7 @@ void BoxBorderPainter::drawBoxSideFromPath(GraphicsContext* graphicsContext,
             LayoutRectOutsets(-topWidth, -rightWidth, -bottomWidth, -leftWidth),
             m_includeLogicalLeftEdge, m_includeLogicalRightEdge);
 
-        graphicsContext->clipRoundedRect(clipRect);
+        graphicsContext.clipRoundedRect(clipRect);
         drawBoxSideFromPath(graphicsContext, borderRect, borderPath, thickness, drawThickness,
             side, color, s2);
         return;
@@ -998,21 +998,21 @@ void BoxBorderPainter::drawBoxSideFromPath(GraphicsContext* graphicsContext,
         break;
     }
 
-    graphicsContext->setStrokeStyle(NoStroke);
-    graphicsContext->setFillColor(color);
-    graphicsContext->drawRect(pixelSnappedIntRect(borderRect));
+    graphicsContext.setStrokeStyle(NoStroke);
+    graphicsContext.setFillColor(color);
+    graphicsContext.drawRect(pixelSnappedIntRect(borderRect));
 }
 
-void BoxBorderPainter::clipBorderSideForComplexInnerPath(GraphicsContext* graphicsContext,
+void BoxBorderPainter::clipBorderSideForComplexInnerPath(GraphicsContext& graphicsContext,
     BoxSide side) const
 {
-    graphicsContext->clip(calculateSideRectIncludingInner(m_outer, m_edges, side));
+    graphicsContext.clip(calculateSideRectIncludingInner(m_outer, m_edges, side));
     FloatRoundedRect adjustedInnerRect = calculateAdjustedInnerBorder(m_inner, side);
     if (!adjustedInnerRect.isEmpty())
-        graphicsContext->clipOutRoundedRect(adjustedInnerRect);
+        graphicsContext.clipOutRoundedRect(adjustedInnerRect);
 }
 
-void BoxBorderPainter::clipBorderSidePolygon(GraphicsContext* graphicsContext, BoxSide side,
+void BoxBorderPainter::clipBorderSidePolygon(GraphicsContext& graphicsContext, BoxSide side,
     MiterType firstMiter, MiterType secondMiter) const
 {
     ASSERT(firstMiter != NoMiter || secondMiter != NoMiter);
@@ -1155,7 +1155,7 @@ void BoxBorderPainter::clipBorderSidePolygon(GraphicsContext* graphicsContext, B
     }
 
     if (firstMiter == secondMiter) {
-        graphicsContext->clipPolygon(4, quad, firstMiter == SoftMiter);
+        graphicsContext.clipPolygon(4, quad, firstMiter == SoftMiter);
         return;
     }
 
@@ -1188,7 +1188,7 @@ void BoxBorderPainter::clipBorderSidePolygon(GraphicsContext* graphicsContext, B
         firstQuad[1] = quad[1];
         firstQuad[2] = FloatPoint(quad[3].x() + r2 * ax, quad[3].y() + r2 * ay);
         firstQuad[3] = quad[3];
-        graphicsContext->clipPolygon(4, firstQuad, firstMiter == SoftMiter);
+        graphicsContext.clipPolygon(4, firstQuad, firstMiter == SoftMiter);
     }
 
     if (secondMiter != NoMiter) {
@@ -1197,7 +1197,7 @@ void BoxBorderPainter::clipBorderSidePolygon(GraphicsContext* graphicsContext, B
         secondQuad[1] = FloatPoint(quad[0].x() - r1 * cx, quad[0].y() - r1 * cy);
         secondQuad[2] = quad[2];
         secondQuad[3] = quad[3];
-        graphicsContext->clipPolygon(4, secondQuad, secondMiter == SoftMiter);
+        graphicsContext.clipPolygon(4, secondQuad, secondMiter == SoftMiter);
     }
 }
 

@@ -13,14 +13,14 @@ namespace blink {
 ClipScope::~ClipScope()
 {
     for (int i = 0; i < m_clipCount; i++) {
-        m_context->restore();
+        m_context.restore();
     }
 }
 
 void ClipScope::clip(const LayoutRect& clipRect, SkRegion::Op operation)
 {
-    m_context->save();
-    m_context->clipRect(pixelSnappedIntRect(clipRect), NotAntiAliased, operation);
+    m_context.save();
+    m_context.clipRect(pixelSnappedIntRect(clipRect), NotAntiAliased, operation);
     m_clipCount++;
 }
 

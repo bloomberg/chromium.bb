@@ -97,16 +97,16 @@ void WebFontImpl::drawText(WebCanvas* canvas, const WebTextRun& run, const WebFl
 
     IntRect intRect(clip);
     SkPictureBuilder pictureBuilder(intRect);
-    GraphicsContext* context = &pictureBuilder.context();
+    GraphicsContext& context = pictureBuilder.context();
 
-    ASSERT(!DrawingRecorder::useCachedDrawingIfPossible(*context, *this, DisplayItem::WebFont));
+    ASSERT(!DrawingRecorder::useCachedDrawingIfPossible(context, *this, DisplayItem::WebFont));
     {
-        DrawingRecorder drawingRecorder(*context, *this, DisplayItem::WebFont, intRect);
-        context->save();
-        context->setFillColor(color);
-        context->clip(textClipRect);
-        context->drawText(m_font, runInfo, leftBaseline);
-        context->restore();
+        DrawingRecorder drawingRecorder(context, *this, DisplayItem::WebFont, intRect);
+        context.save();
+        context.setFillColor(color);
+        context.clip(textClipRect);
+        context.drawText(m_font, runInfo, leftBaseline);
+        context.restore();
     }
 
     pictureBuilder.endRecording()->playback(canvas);

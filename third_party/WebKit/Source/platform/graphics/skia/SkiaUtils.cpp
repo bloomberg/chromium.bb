@@ -243,9 +243,9 @@ bool nearlyIntegral(float value)
     return fabs(value - floorf(value)) < std::numeric_limits<float>::epsilon();
 }
 
-InterpolationQuality limitInterpolationQuality(const GraphicsContext* context, InterpolationQuality resampling)
+InterpolationQuality limitInterpolationQuality(const GraphicsContext& context, InterpolationQuality resampling)
 {
-    return std::min(resampling, context->imageInterpolationQuality());
+    return std::min(resampling, context.imageInterpolationQuality());
 }
 
 InterpolationQuality computeInterpolationQuality(

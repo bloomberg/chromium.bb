@@ -138,7 +138,7 @@ public:
     // Sets up printing at the specified WebPrintParams. Returns the number of pages to be printed at these settings.
     int printBegin(const WebPrintParams&) const;
     // Prints the page specified by pageNumber (0-based index) into the supplied canvas.
-    void printPage(int pageNumber, GraphicsContext*, const IntRect& paintRect);
+    void printPage(int pageNumber, GraphicsContext&, const IntRect& paintRect);
     // Ends the print operation.
     void printEnd();
 

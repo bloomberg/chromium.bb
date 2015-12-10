@@ -34,13 +34,13 @@ class CORE_EXPORT TextPainter {
 public:
     struct Style;
 
-    TextPainter(GraphicsContext*, const Font&, const TextRun&, const LayoutPoint& textOrigin, const LayoutRect& textBounds, bool horizontal);
+    TextPainter(GraphicsContext&, const Font&, const TextRun&, const LayoutPoint& textOrigin, const LayoutRect& textBounds, bool horizontal);
     ~TextPainter();
 
     void setEmphasisMark(const AtomicString&, TextEmphasisPosition);
     void setCombinedText(LayoutTextCombine* combinedText) { m_combinedText = combinedText; }
 
-    static void updateGraphicsContext(GraphicsContext*, const Style&, bool horizontal, GraphicsContextStateSaver&);
+    static void updateGraphicsContext(GraphicsContext&, const Style&, bool horizontal, GraphicsContextStateSaver&);
 
     void paint(int startOffset, int endOffset, int length, const Style&, TextBlobPtr* cachedTextBlob = 0);
 
@@ -86,7 +86,7 @@ private:
 
     void paintEmphasisMarkForCombinedText();
 
-    GraphicsContext* m_graphicsContext;
+    GraphicsContext& m_graphicsContext;
     const Font& m_font;
     const TextRun& m_run;
     LayoutPoint m_textOrigin;

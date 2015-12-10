@@ -29,16 +29,16 @@ public:
     void paintInlineChildrenOutlines(const PaintInfo&, const LayoutPoint& paintOffset);
     void addPDFURLRectIfNeeded(const PaintInfo&, const LayoutPoint& paintOffset);
 
-    static void drawLineForBoxSide(GraphicsContext*, int x1, int y1, int x2, int y2, BoxSide, Color, EBorderStyle, int adjbw1, int adjbw2, bool antialias = false);
+    static void drawLineForBoxSide(GraphicsContext&, int x1, int y1, int x2, int y2, BoxSide, Color, EBorderStyle, int adjbw1, int adjbw2, bool antialias = false);
 
 private:
-    static void drawDashedOrDottedBoxSide(GraphicsContext*, int x1, int y1, int x2, int y2,
+    static void drawDashedOrDottedBoxSide(GraphicsContext&, int x1, int y1, int x2, int y2,
         BoxSide, Color, int thickness, EBorderStyle, bool antialias);
-    static void drawDoubleBoxSide(GraphicsContext*, int x1, int y1, int x2, int y2,
+    static void drawDoubleBoxSide(GraphicsContext&, int x1, int y1, int x2, int y2,
         int length, BoxSide, Color, int thickness, int adjacentWidth1, int adjacentWidth2, bool antialias);
-    static void drawRidgeOrGrooveBoxSide(GraphicsContext*, int x1, int y1, int x2, int y2,
+    static void drawRidgeOrGrooveBoxSide(GraphicsContext&, int x1, int y1, int x2, int y2,
         BoxSide, Color, EBorderStyle, int adjacentWidth1, int adjacentWidth2, bool antialias);
-    static void drawSolidBoxSide(GraphicsContext*, int x1, int y1, int x2, int y2,
+    static void drawSolidBoxSide(GraphicsContext&, int x1, int y1, int x2, int y2,
         BoxSide, Color, int adjacentWidth1, int adjacentWidth2, bool antialias);
 
     const LayoutObject& m_layoutObject;

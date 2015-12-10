@@ -829,21 +829,21 @@ SkFilterQuality GraphicsContext::computeFilterQuality(Image* image, const FloatR
             resampling = InterpolationLow;
         }
     }
-    return static_cast<SkFilterQuality>(limitInterpolationQuality(this, resampling));
+    return static_cast<SkFilterQuality>(limitInterpolationQuality(*this, resampling));
 }
 
 void GraphicsContext::drawTiledImage(Image* image, const FloatRect& destRect, const FloatPoint& srcPoint, const FloatSize& tileSize, SkXfermode::Mode op, const FloatSize& repeatSpacing)
 {
     if (contextDisabled() || !image)
         return;
-    image->drawTiled(this, destRect, srcPoint, tileSize, op, repeatSpacing);
+    image->drawTiled(*this, destRect, srcPoint, tileSize, op, repeatSpacing);
 }
 
 void GraphicsContext::drawTiledImage(Image* image, const IntRect& destRect, const IntPoint& srcPoint, const IntSize& tileSize, SkXfermode::Mode op, const IntSize& repeatSpacing)
 {
     if (contextDisabled() || !image)
         return;
-    image->drawTiled(this, destRect, srcPoint, FloatSize(tileSize), op, FloatSize(repeatSpacing));
+    image->drawTiled(*this, destRect, srcPoint, FloatSize(tileSize), op, FloatSize(repeatSpacing));
 }
 
 void GraphicsContext::drawTiledImage(Image* image, const FloatRect& dest, const FloatRect& srcRect,
@@ -858,7 +858,7 @@ void GraphicsContext::drawTiledImage(Image* image, const FloatRect& dest, const 
         return;
     }
 
-    image->drawTiled(this, dest, srcRect, tileScaleFactor, hRule, vRule, op);
+    image->drawTiled(*this, dest, srcRect, tileScaleFactor, hRule, vRule, op);
 }
 
 void GraphicsContext::drawOval(const SkRect& oval, const SkPaint& paint)

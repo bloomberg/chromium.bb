@@ -47,7 +47,7 @@ public:
 
     virtual bool controlRequiresPreWhiteSpace(ControlPart part) const { return part == PushButtonPart; }
 
-    virtual void paint(ControlPart, ControlStates, GraphicsContext*, const IntRect&, float zoomFactor, ScrollableArea*) const;
+    virtual void paint(ControlPart, ControlStates, GraphicsContext&, const IntRect&, float zoomFactor, ScrollableArea*) const;
     virtual void addVisualOverflow(ControlPart, ControlStates, float zoomFactor, IntRect& borderBox) const;
 
     // Inflate an IntRect to accout for specific padding around margins.

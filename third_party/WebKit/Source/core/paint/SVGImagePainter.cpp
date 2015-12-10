@@ -33,11 +33,11 @@ void SVGImagePainter::paint(const PaintInfo& paintInfo)
 
     PaintInfo paintInfoBeforeFiltering(paintInfo);
     // Images cannot have children so do not call updateCullRect.
-    TransformRecorder transformRecorder(*paintInfoBeforeFiltering.context, m_layoutSVGImage, m_layoutSVGImage.localToParentTransform());
+    TransformRecorder transformRecorder(paintInfoBeforeFiltering.context, m_layoutSVGImage, m_layoutSVGImage.localToParentTransform());
     {
         SVGPaintContext paintContext(m_layoutSVGImage, paintInfoBeforeFiltering);
-        if (paintContext.applyClipMaskAndFilterIfNecessary() && !LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*paintContext.paintInfo().context, m_layoutSVGImage, paintContext.paintInfo().phase, LayoutPoint())) {
-            LayoutObjectDrawingRecorder recorder(*paintContext.paintInfo().context, m_layoutSVGImage, paintContext.paintInfo().phase, boundingBox, LayoutPoint());
+        if (paintContext.applyClipMaskAndFilterIfNecessary() && !LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(paintContext.paintInfo().context, m_layoutSVGImage, paintContext.paintInfo().phase, LayoutPoint())) {
+            LayoutObjectDrawingRecorder recorder(paintContext.paintInfo().context, m_layoutSVGImage, paintContext.paintInfo().phase, boundingBox, LayoutPoint());
             paintForeground(paintContext.paintInfo());
         }
     }
@@ -64,12 +64,12 @@ void SVGImagePainter::paintForeground(const PaintInfo& paintInfo)
     imageElement->preserveAspectRatio()->currentValue()->transformRect(destRect, srcRect);
 
     InterpolationQuality interpolationQuality = InterpolationDefault;
-    interpolationQuality = ImageQualityController::imageQualityController()->chooseInterpolationQuality(paintInfo.context, &m_layoutSVGImage, image.get(), image.get(), LayoutSize(destRect.size()));
+    interpolationQuality = ImageQualityController::imageQualityController()->chooseInterpolationQuality(m_layoutSVGImage, image.get(), image.get(), LayoutSize(destRect.size()));
 
-    InterpolationQuality previousInterpolationQuality = paintInfo.context->imageInterpolationQuality();
-    paintInfo.context->setImageInterpolationQuality(interpolationQuality);
-    paintInfo.context->drawImage(image.get(), destRect, srcRect, SkXfermode::kSrcOver_Mode);
-    paintInfo.context->setImageInterpolationQuality(previousInterpolationQuality);
+    InterpolationQuality previousInterpolationQuality = paintInfo.context.imageInterpolationQuality();
+    paintInfo.context.setImageInterpolationQuality(interpolationQuality);
+    paintInfo.context.drawImage(image.get(), destRect, srcRect, SkXfermode::kSrcOver_Mode);
+    paintInfo.context.setImageInterpolationQuality(previousInterpolationQuality);
 }
 
 FloatSize SVGImagePainter::computeImageViewportSize() const

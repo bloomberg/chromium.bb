@@ -33,9 +33,8 @@ private:
 }
 
 bool SVGClipPainter::prepareEffect(const LayoutObject& target, const FloatRect& targetBoundingBox,
-    const FloatRect& paintInvalidationRect, GraphicsContext* context, ClipperState& clipperState)
+    const FloatRect& paintInvalidationRect, GraphicsContext& context, ClipperState& clipperState)
 {
-    ASSERT(context);
     ASSERT(clipperState == ClipperNotApplied);
     ASSERT_WITH_SECURITY_IMPLICATION(!m_clip.needsLayout());
 
@@ -59,7 +58,7 @@ bool SVGClipPainter::prepareEffect(const LayoutObject& target, const FloatRect& 
     Path clipPath;
     if (m_clip.asPath(animatedLocalTransform, targetBoundingBox, clipPath)) {
         clipperState = ClipperAppliedPath;
-        context->paintController().createAndAppend<BeginClipPathDisplayItem>(target, clipPath);
+        context.paintController().createAndAppend<BeginClipPathDisplayItem>(target, clipPath);
         return true;
     }
 
@@ -67,9 +66,9 @@ bool SVGClipPainter::prepareEffect(const LayoutObject& target, const FloatRect& 
     clipperState = ClipperAppliedMask;
 
     // Begin compositing the clip mask.
-    CompositingRecorder::beginCompositing(*context, target, SkXfermode::kSrcOver_Mode, 1, &paintInvalidationRect);
+    CompositingRecorder::beginCompositing(context, target, SkXfermode::kSrcOver_Mode, 1, &paintInvalidationRect);
     {
-        TransformRecorder recorder(*context, target, animatedLocalTransform);
+        TransformRecorder recorder(context, target, animatedLocalTransform);
 
         // clipPath can also be clipped by another clipPath.
         SVGResources* resources = SVGResourcesCache::cachedResourcesForLayoutObject(&m_clip);
@@ -77,7 +76,7 @@ bool SVGClipPainter::prepareEffect(const LayoutObject& target, const FloatRect& 
         ClipperState clipPathClipperState = ClipperNotApplied;
         if (clipPathClipper && !SVGClipPainter(*clipPathClipper).prepareEffect(m_clip, targetBoundingBox, paintInvalidationRect, context, clipPathClipperState)) {
             // End the clip mask's compositor.
-            CompositingRecorder::endCompositing(*context, target);
+            CompositingRecorder::endCompositing(context, target);
             return false;
         }
 
@@ -88,45 +87,43 @@ bool SVGClipPainter::prepareEffect(const LayoutObject& target, const FloatRect& 
     }
 
     // Masked content layer start.
-    CompositingRecorder::beginCompositing(*context, target, SkXfermode::kSrcIn_Mode, 1, &paintInvalidationRect);
+    CompositingRecorder::beginCompositing(context, target, SkXfermode::kSrcIn_Mode, 1, &paintInvalidationRect);
 
     return true;
 }
 
-void SVGClipPainter::finishEffect(const LayoutObject& target, GraphicsContext* context, ClipperState& clipperState)
+void SVGClipPainter::finishEffect(const LayoutObject& target, GraphicsContext& context, ClipperState& clipperState)
 {
     switch (clipperState) {
     case ClipperAppliedPath:
         // Path-only clipping, no layers to restore but we need to emit an end to the clip path display item.
-        context->paintController().endItem<EndClipPathDisplayItem>(target);
+        context.paintController().endItem<EndClipPathDisplayItem>(target);
         break;
     case ClipperAppliedMask:
         // Transfer content -> clip mask (SrcIn)
-        CompositingRecorder::endCompositing(*context, target);
+        CompositingRecorder::endCompositing(context, target);
 
         // Transfer clip mask -> bg (SrcOver)
-        CompositingRecorder::endCompositing(*context, target);
+        CompositingRecorder::endCompositing(context, target);
         break;
     default:
         ASSERT_NOT_REACHED();
     }
 }
 
-void SVGClipPainter::drawClipMaskContent(GraphicsContext* context, const LayoutObject& layoutObject, const FloatRect& targetBoundingBox, const FloatRect& targetPaintInvalidationRect)
+void SVGClipPainter::drawClipMaskContent(GraphicsContext& context, const LayoutObject& layoutObject, const FloatRect& targetBoundingBox, const FloatRect& targetPaintInvalidationRect)
 {
-    ASSERT(context);
-
     AffineTransform contentTransformation;
     RefPtr<const SkPicture> clipContentPicture = m_clip.createContentPicture(contentTransformation, targetBoundingBox, context);
 
-    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*context, layoutObject, DisplayItem::SVGClip, LayoutPoint()))
+    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(context, layoutObject, DisplayItem::SVGClip, LayoutPoint()))
         return;
 
-    LayoutObjectDrawingRecorder drawingRecorder(*context, layoutObject, DisplayItem::SVGClip, targetPaintInvalidationRect, LayoutPoint());
-    context->save();
-    context->concatCTM(contentTransformation);
-    context->drawPicture(clipContentPicture.get());
-    context->restore();
+    LayoutObjectDrawingRecorder drawingRecorder(context, layoutObject, DisplayItem::SVGClip, targetPaintInvalidationRect, LayoutPoint());
+    context.save();
+    context.concatCTM(contentTransformation);
+    context.drawPicture(clipContentPicture.get());
+    context.restore();
 }
 
 }

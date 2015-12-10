@@ -72,7 +72,7 @@ public:
 
     // Called from InspectorInstrumentation
     void layerTreeDidChange();
-    void didPaint(LayoutObject*, const GraphicsLayer*, GraphicsContext*, const LayoutRect&);
+    void didPaint(LayoutObject*, const GraphicsLayer*, GraphicsContext&, const LayoutRect&);
 
     // Called from the front-end.
     void enable(ErrorString*) override;

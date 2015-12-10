@@ -23,11 +23,11 @@ void SVGForeignObjectPainter::paint(const PaintInfo& paintInfo)
 
     PaintInfo paintInfoBeforeFiltering(paintInfo);
     paintInfoBeforeFiltering.updateCullRect(m_layoutSVGForeignObject.localTransform());
-    TransformRecorder transformRecorder(*paintInfoBeforeFiltering.context, m_layoutSVGForeignObject, m_layoutSVGForeignObject.localTransform());
+    TransformRecorder transformRecorder(paintInfoBeforeFiltering.context, m_layoutSVGForeignObject, m_layoutSVGForeignObject.localTransform());
 
     Optional<FloatClipRecorder> clipRecorder;
     if (SVGLayoutSupport::isOverflowHidden(&m_layoutSVGForeignObject))
-        clipRecorder.emplace(*paintInfoBeforeFiltering.context, m_layoutSVGForeignObject, paintInfoBeforeFiltering.phase, m_layoutSVGForeignObject.viewportRect());
+        clipRecorder.emplace(paintInfoBeforeFiltering.context, m_layoutSVGForeignObject, paintInfoBeforeFiltering.phase, m_layoutSVGForeignObject.viewportRect());
 
     SVGPaintContext paintContext(m_layoutSVGForeignObject, paintInfoBeforeFiltering);
     bool continueRendering = true;

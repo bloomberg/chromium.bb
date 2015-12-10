@@ -710,7 +710,7 @@ void FrameSelection::invalidateCaretRect()
     m_previousCaretVisibility = caretVisibility();
 }
 
-void FrameSelection::paintCaret(GraphicsContext* context, const LayoutPoint& paintOffset)
+void FrameSelection::paintCaret(GraphicsContext& context, const LayoutPoint& paintOffset)
 {
     if (selection().isCaret() && m_shouldPaintCaret) {
         updateCaretRect(PositionWithAffinity(selection().start(), selection().affinity()));

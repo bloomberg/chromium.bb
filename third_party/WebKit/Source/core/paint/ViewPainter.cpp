@@ -52,7 +52,7 @@ void ViewPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo)
     //    color. Conceptually it should be painted by the embedder but painting it here allows
     //    culling and pre-blending optimization when possible.
 
-    GraphicsContext& context = *paintInfo.context;
+    GraphicsContext& context = paintInfo.context;
     if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(context, m_layoutView, DisplayItem::BoxDecorationBackground, LayoutPoint()))
         return;
 

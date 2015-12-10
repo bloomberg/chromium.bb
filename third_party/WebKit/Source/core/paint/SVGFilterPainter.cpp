@@ -24,7 +24,7 @@ GraphicsContext* SVGFilterRecordingContext::beginContent(FilterData* filterData)
 {
     ASSERT(filterData->m_state == FilterData::Initial);
 
-    GraphicsContext* context = paintingContext();
+    GraphicsContext* context = &paintingContext();
 
     // Create a new context so the contents of the filter can be drawn and cached.
     m_paintController = PaintController::create();
@@ -42,7 +42,7 @@ void SVGFilterRecordingContext::endContent(FilterData* filterData)
     SourceGraphic* sourceGraphic = filterData->filter->sourceGraphic();
     ASSERT(sourceGraphic);
 
-    GraphicsContext* context = paintingContext();
+    GraphicsContext* context = &paintingContext();
 
     // Use the context that contains the filtered content.
     ASSERT(m_paintController);
@@ -61,7 +61,7 @@ void SVGFilterRecordingContext::endContent(FilterData* filterData)
     filterData->m_state = FilterData::ReadyToPaint;
 }
 
-static void paintFilteredContent(const LayoutObject& object, GraphicsContext* context, FilterData* filterData)
+static void paintFilteredContent(const LayoutObject& object, GraphicsContext& context, FilterData* filterData)
 {
     ASSERT(filterData->m_state == FilterData::ReadyToPaint);
     ASSERT(filterData->filter->sourceGraphic());
@@ -71,11 +71,11 @@ static void paintFilteredContent(const LayoutObject& object, GraphicsContext* co
     SkiaImageFilterBuilder builder;
     RefPtr<SkImageFilter> imageFilter = builder.build(filterData->filter->lastEffect(), ColorSpaceDeviceRGB);
     FloatRect boundaries = filterData->filter->filterRegion();
-    context->save();
+    context.save();
 
     // Clip drawing of filtered image to the minimum required paint rect.
     FilterEffect* lastEffect = filterData->filter->lastEffect();
-    context->clipRect(lastEffect->determineAbsolutePaintRect(lastEffect->maxEffectRect()));
+    context.clipRect(lastEffect->determineAbsolutePaintRect(lastEffect->maxEffectRect()));
 
 #ifdef CHECK_CTM_FOR_TRANSFORMED_IMAGEFILTER
     // TODO: Remove this workaround once skew/rotation support is added in Skia
@@ -91,22 +91,20 @@ static void paintFilteredContent(const LayoutObject& object, GraphicsContext* co
         ASSERT(scaleAndTranslate.isInvertible());
         AffineTransform shearAndRotate = scaleAndTranslate.inverse();
         shearAndRotate.multiply(ctm);
-        context->concatCTM(shearAndRotate.inverse());
+        context.concatCTM(shearAndRotate.inverse());
         imageFilter = builder.buildTransform(shearAndRotate, imageFilter.get());
     }
 #endif
 
-    context->beginLayer(1, SkXfermode::kSrcOver_Mode, &boundaries, ColorFilterNone, imageFilter.get());
-    context->endLayer();
-    context->restore();
+    context.beginLayer(1, SkXfermode::kSrcOver_Mode, &boundaries, ColorFilterNone, imageFilter.get());
+    context.endLayer();
+    context.restore();
 
     filterData->m_state = FilterData::ReadyToPaint;
 }
 
 GraphicsContext* SVGFilterPainter::prepareEffect(const LayoutObject& object, SVGFilterRecordingContext& recordingContext)
 {
-    ASSERT(recordingContext.paintingContext());
-
     m_filter.clearInvalidationMask();
 
     if (FilterData* filterData = m_filter.getFilterDataForLayoutObject(&object)) {
@@ -175,13 +173,12 @@ void SVGFilterPainter::finishEffect(const LayoutObject& object, SVGFilterRecordi
             filterData->m_state = FilterData::RecordingContent;
     }
 
-    GraphicsContext* context = recordingContext.paintingContext();
-    ASSERT(context);
-    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*context, object, DisplayItem::SVGFilter, LayoutPoint()))
+    GraphicsContext& context = recordingContext.paintingContext();
+    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(context, object, DisplayItem::SVGFilter, LayoutPoint()))
         return;
 
     // TODO(chrishtr): stop using an infinite rect, and instead bound the filter.
-    LayoutObjectDrawingRecorder recorder(*context, object, DisplayItem::SVGFilter, LayoutRect::infiniteIntRect(), LayoutPoint());
+    LayoutObjectDrawingRecorder recorder(context, object, DisplayItem::SVGFilter, LayoutRect::infiniteIntRect(), LayoutPoint());
     if (filterData && filterData->m_state == FilterData::ReadyToPaint)
         paintFilteredContent(object, context, filterData);
 }

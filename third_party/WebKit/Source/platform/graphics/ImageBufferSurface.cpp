@@ -70,14 +70,14 @@ void ImageBufferSurface::clear()
     }
 }
 
-void ImageBufferSurface::draw(GraphicsContext* context, const FloatRect& destRect, const FloatRect& srcRect, SkXfermode::Mode op)
+void ImageBufferSurface::draw(GraphicsContext& context, const FloatRect& destRect, const FloatRect& srcRect, SkXfermode::Mode op)
 {
     RefPtr<SkImage> snapshot = newImageSnapshot(PreferNoAcceleration);
     if (!snapshot)
         return;
 
     RefPtr<Image> image = StaticBitmapImage::create(snapshot.release());
-    context->drawImage(image.get(), destRect, srcRect, op);
+    context.drawImage(image.get(), destRect, srcRect, op);
 }
 
 void ImageBufferSurface::flush()

@@ -129,7 +129,7 @@ LayoutBoxModelObject::~LayoutBoxModelObject()
 
 void LayoutBoxModelObject::willBeDestroyed()
 {
-    ImageQualityController::remove(this);
+    ImageQualityController::remove(*this);
 
     // A continuation of this LayoutObject should be destroyed at subclasses.
     ASSERT(!continuation());

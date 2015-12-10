@@ -129,7 +129,7 @@ public:
     PassRefPtr<SkImage> newSkImageSnapshot(AccelerationHint) const;
     PassRefPtr<Image> newImageSnapshot(AccelerationHint = PreferNoAcceleration) const;
 
-    void draw(GraphicsContext*, const FloatRect&, const FloatRect*, SkXfermode::Mode);
+    void draw(GraphicsContext&, const FloatRect&, const FloatRect*, SkXfermode::Mode);
 
 private:
     ImageBuffer(PassOwnPtr<ImageBufferSurface>);

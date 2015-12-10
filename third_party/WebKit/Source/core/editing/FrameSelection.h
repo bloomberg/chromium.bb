@@ -192,7 +192,7 @@ public:
     void setCaretRectNeedsUpdate();
     void scheduleVisualUpdate() const;
     void invalidateCaretRect();
-    void paintCaret(GraphicsContext*, const LayoutPoint&);
+    void paintCaret(GraphicsContext&, const LayoutPoint&);
     bool ShouldPaintCaretForTesting() const { return m_shouldPaintCaret; }
 
     // Used to suspend caret blinking while the mouse is down.

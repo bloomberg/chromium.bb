@@ -28,14 +28,14 @@
 
 namespace blink {
 
-LocalCurrentGraphicsContext::LocalCurrentGraphicsContext(GraphicsContext* graphicsContext, const IntRect& dirtyRect)
-    : LocalCurrentGraphicsContext(graphicsContext->canvas(), graphicsContext->deviceScaleFactor(), nullptr, dirtyRect)
+LocalCurrentGraphicsContext::LocalCurrentGraphicsContext(GraphicsContext& graphicsContext, const IntRect& dirtyRect)
+    : LocalCurrentGraphicsContext(graphicsContext.canvas(), graphicsContext.deviceScaleFactor(), nullptr, dirtyRect)
 {
 }
 
-LocalCurrentGraphicsContext::LocalCurrentGraphicsContext(GraphicsContext* graphicsContext, const IntRect* interestRect,
+LocalCurrentGraphicsContext::LocalCurrentGraphicsContext(GraphicsContext& graphicsContext, const IntRect* interestRect,
                                                          const IntRect& dirtyRect)
-    : LocalCurrentGraphicsContext(graphicsContext->canvas(), graphicsContext->deviceScaleFactor(), interestRect, dirtyRect)
+    : LocalCurrentGraphicsContext(graphicsContext.canvas(), graphicsContext.deviceScaleFactor(), interestRect, dirtyRect)
 {
 }
 

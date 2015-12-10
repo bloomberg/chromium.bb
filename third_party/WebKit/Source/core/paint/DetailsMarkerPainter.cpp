@@ -21,7 +21,7 @@ void DetailsMarkerPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
         return;
     }
 
-    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*paintInfo.context, m_layoutDetailsMarker, paintInfo.phase, paintOffset))
+    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(paintInfo.context, m_layoutDetailsMarker, paintInfo.phase, paintOffset))
         return;
 
     LayoutPoint boxOrigin(paintOffset + m_layoutDetailsMarker.location());
@@ -31,15 +31,15 @@ void DetailsMarkerPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
     if (!paintInfo.cullRect().intersectsCullRect(overflowRect))
         return;
 
-    LayoutObjectDrawingRecorder layoutDrawingRecorder(*paintInfo.context, m_layoutDetailsMarker, paintInfo.phase, overflowRect, paintOffset);
+    LayoutObjectDrawingRecorder layoutDrawingRecorder(paintInfo.context, m_layoutDetailsMarker, paintInfo.phase, overflowRect, paintOffset);
     const Color color(m_layoutDetailsMarker.resolveColor(CSSPropertyColor));
-    paintInfo.context->setStrokeColor(color);
-    paintInfo.context->setStrokeStyle(SolidStroke);
-    paintInfo.context->setStrokeThickness(1.0f);
-    paintInfo.context->setFillColor(color);
+    paintInfo.context.setStrokeColor(color);
+    paintInfo.context.setStrokeStyle(SolidStroke);
+    paintInfo.context.setStrokeThickness(1.0f);
+    paintInfo.context.setFillColor(color);
 
     boxOrigin.move(m_layoutDetailsMarker.borderLeft() + m_layoutDetailsMarker.paddingLeft(), m_layoutDetailsMarker.borderTop() + m_layoutDetailsMarker.paddingTop());
-    paintInfo.context->fillPath(getPath(boxOrigin));
+    paintInfo.context.fillPath(getPath(boxOrigin));
 }
 
 static Path createPath(const FloatPoint* path)

@@ -536,7 +536,7 @@ protected:
     float spoolPage(GraphicsContext& context, int pageNumber) override
     {
         IntRect pageRect = m_pageRects[pageNumber];
-        m_plugin->printPage(pageNumber, &context, pageRect);
+        m_plugin->printPage(pageNumber, context, pageRect);
 
         return 1.0;
     }

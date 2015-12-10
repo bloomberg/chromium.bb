@@ -30,7 +30,7 @@ void ScrollbarPainter::paintIntoRect(const LayoutScrollbarPart& layoutScrollbarP
     const_cast<LayoutScrollbarPart&>(layoutScrollbarPart).setHeight(rect.height());
 
     // Now do the paint.
-    PaintInfo paintInfo(&graphicsContext, pixelSnappedIntRect(rect), PaintPhaseBlockBackground, GlobalPaintNormalPhase, PaintLayerNoFlag);
+    PaintInfo paintInfo(graphicsContext, pixelSnappedIntRect(rect), PaintPhaseBlockBackground, GlobalPaintNormalPhase, PaintLayerNoFlag);
     BlockPainter blockPainter(layoutScrollbarPart);
     blockPainter.paint(paintInfo, paintOffset);
     paintInfo.phase = PaintPhaseChildBlockBackgrounds;

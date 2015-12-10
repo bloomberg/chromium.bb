@@ -39,7 +39,7 @@ public:
     static PassOwnPtrWillBeRawPtr<DragCaretController> create();
 
     LayoutBlock* caretLayoutObject() const;
-    void paintDragCaret(LocalFrame*, GraphicsContext*, const LayoutPoint&) const;
+    void paintDragCaret(LocalFrame*, GraphicsContext&, const LayoutPoint&) const;
 
     bool isContentEditable() const;
     bool isContentRichlyEditable() const;

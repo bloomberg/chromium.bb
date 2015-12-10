@@ -125,10 +125,10 @@ void FramePainter::paintContents(GraphicsContext& context, const GlobalPaintFlag
     float deviceScaleFactor = blink::deviceScaleFactor(rootLayer->layoutObject()->frame());
     context.setDeviceScaleFactor(deviceScaleFactor);
 
-    layerPainter.paint(&context, LayoutRect(rect), localPaintFlags, layoutObject);
+    layerPainter.paint(context, LayoutRect(rect), localPaintFlags, layoutObject);
 
     if (rootLayer->containsDirtyOverlayScrollbars())
-        layerPainter.paintOverlayScrollbars(&context, LayoutRect(rect), localPaintFlags, layoutObject);
+        layerPainter.paintOverlayScrollbars(context, LayoutRect(rect), localPaintFlags, layoutObject);
 
     frameView().setIsPainting(false);
 
@@ -143,7 +143,7 @@ void FramePainter::paintContents(GraphicsContext& context, const GlobalPaintFlag
         s_inPaintContents = false;
     }
 
-    InspectorInstrumentation::didPaint(layoutView, 0, &context, LayoutRect(rect));
+    InspectorInstrumentation::didPaint(layoutView, 0, context, LayoutRect(rect));
 }
 
 void FramePainter::paintScrollbars(GraphicsContext& context, const IntRect& rect)

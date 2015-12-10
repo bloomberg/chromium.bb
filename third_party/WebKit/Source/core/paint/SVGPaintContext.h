@@ -45,9 +45,8 @@ class SVGPaintContext {
     STACK_ALLOCATED();
 public:
     SVGPaintContext(const LayoutObject& object, const PaintInfo& paintInfo)
-        : m_object(&object)
+        : m_object(object)
         , m_paintInfo(paintInfo)
-        , m_originalPaintInfo(&paintInfo)
         , m_filter(nullptr)
         , m_clipper(nullptr)
         , m_clipperState(SVGClipPainter::ClipperNotApplied)
@@ -59,12 +58,12 @@ public:
 
     ~SVGPaintContext();
 
-    PaintInfo& paintInfo() { return m_paintInfo; }
+    PaintInfo& paintInfo() { return m_filterPaintInfo ? *m_filterPaintInfo : m_paintInfo; }
 
     // Return true if these operations aren't necessary or if they are successfully applied.
     bool applyClipMaskAndFilterIfNecessary();
 
-    static void paintSubtree(GraphicsContext*, const LayoutObject*);
+    static void paintSubtree(GraphicsContext&, const LayoutObject*);
 
     // TODO(fs): This functions feels a bit misplaced (we don't want this to
     // turn into the new kitchen sink). Move it if a better location surfaces.
@@ -84,9 +83,9 @@ private:
 
     bool isIsolationInstalled() const;
 
-    const LayoutObject* m_object;
+    const LayoutObject& m_object;
     PaintInfo m_paintInfo;
-    const PaintInfo* m_originalPaintInfo;
+    OwnPtr<PaintInfo> m_filterPaintInfo;
     LayoutSVGResourceFilter* m_filter;
     LayoutSVGResourceClipper* m_clipper;
     SVGClipPainter::ClipperState m_clipperState;

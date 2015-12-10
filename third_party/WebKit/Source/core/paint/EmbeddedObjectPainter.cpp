@@ -43,15 +43,15 @@ void EmbeddedObjectPainter::paintReplaced(const PaintInfo& paintInfo, const Layo
     if (paintInfo.phase == PaintPhaseSelection)
         return;
 
-    GraphicsContext* context = paintInfo.context;
-    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*context, m_layoutEmbeddedObject, paintInfo.phase, paintOffset))
+    GraphicsContext& context = paintInfo.context;
+    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(context, m_layoutEmbeddedObject, paintInfo.phase, paintOffset))
         return;
 
     LayoutRect contentRect(m_layoutEmbeddedObject.contentBoxRect());
     contentRect.moveBy(paintOffset);
-    LayoutObjectDrawingRecorder drawingRecorder(*context, m_layoutEmbeddedObject, paintInfo.phase, contentRect, paintOffset);
-    GraphicsContextStateSaver stateSaver(*context);
-    context->clip(pixelSnappedIntRect(contentRect));
+    LayoutObjectDrawingRecorder drawingRecorder(context, m_layoutEmbeddedObject, paintInfo.phase, contentRect, paintOffset);
+    GraphicsContextStateSaver stateSaver(context);
+    context.clip(pixelSnappedIntRect(contentRect));
 
     Font font = replacementTextFont();
     // TODO(trchen): Speculative fix for crbug.com/481880
@@ -68,15 +68,15 @@ void EmbeddedObjectPainter::paintReplaced(const PaintInfo& paintInfo, const Layo
     Path roundedBackgroundRect;
     FloatRect floatBackgroundRect(backgroundRect);
     roundedBackgroundRect.addRoundedRect(floatBackgroundRect, FloatSize(replacementTextRoundedRectRadius, replacementTextRoundedRectRadius));
-    context->setFillColor(scaleAlpha(Color::white, replacementTextRoundedRectOpacity));
-    context->fillPath(roundedBackgroundRect);
+    context.setFillColor(scaleAlpha(Color::white, replacementTextRoundedRectOpacity));
+    context.fillPath(roundedBackgroundRect);
 
     FloatRect textRect(FloatPoint(), textGeometry);
     textRect.move(FloatPoint(contentRect.center()) - textRect.center());
     TextRunPaintInfo runInfo(textRun);
     runInfo.bounds = floatBackgroundRect;
-    context->setFillColor(scaleAlpha(Color::black, replacementTextTextOpacity));
-    context->drawBidiText(font, runInfo, textRect.location() + FloatSize(0, font.fontMetrics().ascent()));
+    context.setFillColor(scaleAlpha(Color::black, replacementTextTextOpacity));
+    context.drawBidiText(font, runInfo, textRect.location() + FloatSize(0, font.fontMetrics().ascent()));
 }
 
 } // namespace blink

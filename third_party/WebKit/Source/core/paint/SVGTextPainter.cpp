@@ -19,7 +19,7 @@ void SVGTextPainter::paint(const PaintInfo& paintInfo)
 
     PaintInfo blockInfo(paintInfo);
     blockInfo.updateCullRect(m_layoutSVGText.localToParentTransform());
-    TransformRecorder transformRecorder(*blockInfo.context, m_layoutSVGText, m_layoutSVGText.localToParentTransform());
+    TransformRecorder transformRecorder(blockInfo.context, m_layoutSVGText, m_layoutSVGText.localToParentTransform());
 
     BlockPainter(m_layoutSVGText).paint(blockInfo, LayoutPoint());
 

@@ -20,21 +20,21 @@
 
 namespace blink {
 
-static inline void paintSymbol(GraphicsContext* context, const Color& color,
+static inline void paintSymbol(GraphicsContext& context, const Color& color,
     const IntRect& marker, EListStyleType listStyle)
 {
-    context->setStrokeColor(color);
-    context->setStrokeStyle(SolidStroke);
-    context->setStrokeThickness(1.0f);
+    context.setStrokeColor(color);
+    context.setStrokeStyle(SolidStroke);
+    context.setStrokeThickness(1.0f);
     switch (listStyle) {
     case Disc:
-        context->fillEllipse(marker);
+        context.fillEllipse(marker);
         break;
     case Circle:
-        context->strokeEllipse(marker);
+        context.strokeEllipse(marker);
         break;
     case Square:
-        context->fillRect(marker);
+        context.fillRect(marker);
         break;
     default:
         ASSERT_NOT_REACHED();
@@ -50,7 +50,7 @@ void ListMarkerPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& pai
     if (m_layoutListMarker.style()->visibility() != VISIBLE)
         return;
 
-    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*paintInfo.context, m_layoutListMarker, paintInfo.phase, paintOffset))
+    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(paintInfo.context, m_layoutListMarker, paintInfo.phase, paintOffset))
         return;
 
     LayoutPoint boxOrigin(paintOffset + m_layoutListMarker.location());
@@ -64,22 +64,22 @@ void ListMarkerPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& pai
     if (!paintInfo.cullRect().intersectsCullRect(overflowRect))
         return;
 
-    LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutListMarker, paintInfo.phase, pixelSnappedOverflowRect, paintOffset);
+    LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutListMarker, paintInfo.phase, pixelSnappedOverflowRect, paintOffset);
 
     LayoutRect box(boxOrigin, m_layoutListMarker.size());
 
     IntRect marker = m_layoutListMarker.getRelativeMarkerRect();
     marker.moveBy(roundedIntPoint(boxOrigin));
 
-    GraphicsContext* context = paintInfo.context;
+    GraphicsContext& context = paintInfo.context;
 
     if (m_layoutListMarker.isImage()) {
-        context->drawImage(m_layoutListMarker.image()->image(
+        context.drawImage(m_layoutListMarker.image()->image(
             &m_layoutListMarker, marker.size(), m_layoutListMarker.styleRef().effectiveZoom()).get(), marker);
         if (m_layoutListMarker.selectionState() != SelectionNone) {
             LayoutRect selRect = m_layoutListMarker.localSelectionRect();
             selRect.moveBy(boxOrigin);
-            context->fillRect(pixelSnappedIntRect(selRect), m_layoutListMarker.listItem()->selectionBackgroundColor());
+            context.fillRect(pixelSnappedIntRect(selRect), m_layoutListMarker.listItem()->selectionBackgroundColor());
         }
         return;
     }
@@ -88,7 +88,7 @@ void ListMarkerPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& pai
         && m_layoutListMarker.selectionState() != SelectionNone) {
         LayoutRect selRect = m_layoutListMarker.localSelectionRect();
         selRect.moveBy(boxOrigin);
-        context->fillRect(pixelSnappedIntRect(selRect), m_layoutListMarker.listItem()->selectionBackgroundColor());
+        context.fillRect(pixelSnappedIntRect(selRect), m_layoutListMarker.listItem()->selectionBackgroundColor());
     }
 
     LayoutListMarker::ListStyleCategory styleCategory = m_layoutListMarker.listStyleCategory();
@@ -97,7 +97,7 @@ void ListMarkerPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& pai
 
     const Color color(m_layoutListMarker.resolveColor(CSSPropertyColor));
     // Apply the color to the list marker text.
-    context->setFillColor(color);
+    context.setFillColor(color);
 
     const EListStyleType listStyle = m_layoutListMarker.style()->listStyleType();
     if (styleCategory == LayoutListMarker::ListStyleCategory::Symbol) {
@@ -111,15 +111,15 @@ void ListMarkerPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& pai
     const Font& font = m_layoutListMarker.style()->font();
     TextRun textRun = constructTextRun(font, m_layoutListMarker.text(), m_layoutListMarker.styleRef());
 
-    GraphicsContextStateSaver stateSaver(*context, false);
+    GraphicsContextStateSaver stateSaver(context, false);
     if (!m_layoutListMarker.style()->isHorizontalWritingMode()) {
         marker.moveBy(roundedIntPoint(-boxOrigin));
         marker = marker.transposedRect();
         marker.moveBy(IntPoint(roundToInt(box.x()), roundToInt(box.y() - m_layoutListMarker.logicalHeight())));
         stateSaver.save();
-        context->translate(marker.x(), marker.maxY());
-        context->rotate(static_cast<float>(deg2rad(90.)));
-        context->translate(-marker.x(), -marker.maxY());
+        context.translate(marker.x(), marker.maxY());
+        context.rotate(static_cast<float>(deg2rad(90.)));
+        context.translate(-marker.x(), -marker.maxY());
     }
 
     TextRunPaintInfo textRunPaintInfo(textRun);
@@ -146,11 +146,11 @@ void ListMarkerPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& pai
     suffixRunInfo.bounds = marker;
 
     if (m_layoutListMarker.style()->isLeftToRightDirection()) {
-        context->drawText(font, textRunPaintInfo, textOrigin);
-        context->drawText(font, suffixRunInfo, textOrigin + IntSize(font.width(textRun), 0));
+        context.drawText(font, textRunPaintInfo, textOrigin);
+        context.drawText(font, suffixRunInfo, textOrigin + IntSize(font.width(textRun), 0));
     } else {
-        context->drawText(font, suffixRunInfo, textOrigin);
-        context->drawText(font, textRunPaintInfo, textOrigin + IntSize(font.width(suffixRun), 0));
+        context.drawText(font, suffixRunInfo, textOrigin);
+        context.drawText(font, textRunPaintInfo, textOrigin + IntSize(font.width(suffixRun), 0));
     }
 }
 

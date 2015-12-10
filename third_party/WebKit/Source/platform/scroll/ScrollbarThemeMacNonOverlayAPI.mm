@@ -148,7 +148,7 @@ bool ScrollbarThemeMacNonOverlayAPI::paint(const ScrollbarThemeClient& scrollbar
     if (!canDrawDirectly) {
         ASSERT(imageBuffer);
         if (!context.contextDisabled()) {
-            imageBuffer->draw(&context, FloatRect(scrollbar.frameRect().location(), FloatSize(imageBuffer->size())),
+            imageBuffer->draw(context, FloatRect(scrollbar.frameRect().location(), FloatSize(imageBuffer->size())),
                 nullptr, SkXfermode::kSrcOver_Mode);
         }
     }

@@ -21,7 +21,7 @@ class NinePieceImagePainter {
 public:
     NinePieceImagePainter(const LayoutBoxModelObject&);
 
-    bool paint(GraphicsContext*, const LayoutRect&, const ComputedStyle&, const NinePieceImage&, SkXfermode::Mode) const;
+    bool paint(GraphicsContext&, const LayoutRect&, const ComputedStyle&, const NinePieceImage&, SkXfermode::Mode) const;
 
 private:
     const LayoutBoxModelObject& m_layoutObject;

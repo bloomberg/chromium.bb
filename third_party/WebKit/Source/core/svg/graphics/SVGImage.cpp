@@ -218,7 +218,7 @@ PassRefPtr<SkImage> SVGImage::imageForCurrentFrame()
     return imageForCurrentFrameForContainer(KURL());
 }
 
-void SVGImage::drawPatternForContainer(GraphicsContext* context, const FloatSize containerSize,
+void SVGImage::drawPatternForContainer(GraphicsContext& context, const FloatSize containerSize,
     float zoom, const FloatRect& srcRect, const FloatSize& tileScale, const FloatPoint& phase,
     SkXfermode::Mode compositeOp, const FloatRect& dstRect,
     const FloatSize& repeatSpacing, const KURL& url)
@@ -231,7 +231,7 @@ void SVGImage::drawPatternForContainer(GraphicsContext* context, const FloatSize
     FloatRect spacedTile(tile);
     spacedTile.expand(FloatSize(repeatSpacing));
 
-    SkPictureBuilder patternPicture(spacedTile, nullptr, context);
+    SkPictureBuilder patternPicture(spacedTile, nullptr, &context);
     if (!DrawingRecorder::useCachedDrawingIfPossible(patternPicture.context(), *this, DisplayItem::Type::SVGImage)) {
         DrawingRecorder patternPictureRecorder(patternPicture.context(), *this, DisplayItem::Type::SVGImage, spacedTile);
         // When generating an expanded tile, make sure we don't draw into the spacing area.
@@ -251,8 +251,8 @@ void SVGImage::drawPatternForContainer(GraphicsContext* context, const FloatSize
     SkPaint paint;
     paint.setShader(patternShader.get());
     paint.setXfermodeMode(compositeOp);
-    paint.setColorFilter(context->colorFilter());
-    context->drawRect(dstRect, paint);
+    paint.setColorFilter(context.colorFilter());
+    context.drawRect(dstRect, paint);
 }
 
 PassRefPtr<SkImage> SVGImage::imageForCurrentFrameForContainer(const KURL& url)

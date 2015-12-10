@@ -39,18 +39,18 @@ private:
 
     void computeBorderProperties();
 
-    BorderEdgeFlags paintOpacityGroup(GraphicsContext*, const ComplexBorderInfo&, unsigned index,
+    BorderEdgeFlags paintOpacityGroup(GraphicsContext&, const ComplexBorderInfo&, unsigned index,
         float accumulatedOpacity) const;
-    void paintSide(GraphicsContext*, const ComplexBorderInfo&, BoxSide, unsigned alpha, BorderEdgeFlags) const;
-    void paintOneBorderSide(GraphicsContext*, const FloatRect& sideRect, BoxSide, BoxSide adjacentSide1,
+    void paintSide(GraphicsContext&, const ComplexBorderInfo&, BoxSide, unsigned alpha, BorderEdgeFlags) const;
+    void paintOneBorderSide(GraphicsContext&, const FloatRect& sideRect, BoxSide, BoxSide adjacentSide1,
         BoxSide adjacentSide2, const Path*, bool antialias, Color, BorderEdgeFlags) const;
-    bool paintBorderFastPath(GraphicsContext*, const LayoutRect& borderRect) const;
-    void drawDoubleBorder(GraphicsContext*, const LayoutRect& borderRect) const;
+    bool paintBorderFastPath(GraphicsContext&, const LayoutRect& borderRect) const;
+    void drawDoubleBorder(GraphicsContext&, const LayoutRect& borderRect) const;
 
-    void drawBoxSideFromPath(GraphicsContext*, const LayoutRect&, const Path&, float thickness,
+    void drawBoxSideFromPath(GraphicsContext&, const LayoutRect&, const Path&, float thickness,
         float drawThickness, BoxSide, Color, EBorderStyle) const;
-    void clipBorderSidePolygon(GraphicsContext*, BoxSide, MiterType miter1, MiterType miter2) const;
-    void clipBorderSideForComplexInnerPath(GraphicsContext*, BoxSide) const;
+    void clipBorderSidePolygon(GraphicsContext&, BoxSide, MiterType miter1, MiterType miter2) const;
+    void clipBorderSideForComplexInnerPath(GraphicsContext&, BoxSide) const;
 
     MiterType computeMiter(BoxSide, BoxSide adjacentSide, BorderEdgeFlags, bool antialias) const;
     static bool mitersRequireClipping(MiterType miter1, MiterType miter2, EBorderStyle, bool antialias);

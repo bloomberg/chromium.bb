@@ -62,11 +62,11 @@ void BlockFlowPainter::paintSelection(const PaintInfo& paintInfo, const LayoutPo
 
     // Only create a DrawingRecorder and ClipScope if skipRecording is false. This logic is needed
     // because selectionGaps(...) needs to be called even when we do not record.
-    bool skipRecording = LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*paintInfo.context, m_layoutBlockFlow, DisplayItem::SelectionGap, paintOffset);
+    bool skipRecording = LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(paintInfo.context, m_layoutBlockFlow, DisplayItem::SelectionGap, paintOffset);
     Optional<LayoutObjectDrawingRecorder> drawingRecorder;
     Optional<ClipScope> clipScope;
     if (!skipRecording) {
-        drawingRecorder.emplace(*paintInfo.context, m_layoutBlockFlow, DisplayItem::SelectionGap, FloatRect(bounds), paintOffset);
+        drawingRecorder.emplace(paintInfo.context, m_layoutBlockFlow, DisplayItem::SelectionGap, FloatRect(bounds), paintOffset);
         clipScope.emplace(paintInfo.context);
     }
 

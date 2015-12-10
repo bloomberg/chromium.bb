@@ -22,7 +22,7 @@ public:
 
     void paint(const PaintInfo&, const LayoutPoint& paintOffset);
     void paintReplaced(const PaintInfo&, const LayoutPoint& paintOffset);
-    void paintIntoRect(GraphicsContext*, const LayoutRect&);
+    void paintIntoRect(GraphicsContext&, const LayoutRect&);
 
 private:
     void paintAreaElementFocusRing(const PaintInfo&, const LayoutPoint& paintOffset);

@@ -94,7 +94,7 @@ public:
     virtual bool controlRequiresPreWhiteSpace(ControlPart) const { return false; }
 
     // Method for painting a control. The rect is in zoomed coordinates.
-    virtual void paint(ControlPart, ControlStates, GraphicsContext*, const IntRect& /*zoomedRect*/, float /*zoomFactor*/, ScrollableArea*) const { }
+    virtual void paint(ControlPart, ControlStates, GraphicsContext&, const IntRect& /*zoomedRect*/, float /*zoomFactor*/, ScrollableArea*) const { }
 
     // Add visual overflow (e.g., the check on an OS X checkbox). The rect passed in is in zoomed coordinates so
     // the inflation should take that into account and make sure the inflation amount is also scaled by the zoomFactor.

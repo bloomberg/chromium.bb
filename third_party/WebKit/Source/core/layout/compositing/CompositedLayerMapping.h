@@ -299,7 +299,7 @@ private:
 
     static bool hasVisibleNonCompositingDescendant(PaintLayer* parent);
 
-    void doPaintTask(const GraphicsLayerPaintInfo&, const GraphicsLayer&, const PaintLayerFlags&, GraphicsContext*, const IntRect& clip) const;
+    void doPaintTask(const GraphicsLayerPaintInfo&, const GraphicsLayer&, const PaintLayerFlags&, GraphicsContext&, const IntRect& clip) const;
 
     // Computes the background clip rect for the given squashed layer, up to any containing layer that is squashed into the
     // same squashing layer and contains this squashed layer's clipping ancestor.

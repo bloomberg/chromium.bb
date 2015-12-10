@@ -14,7 +14,7 @@ class ClipScope {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     WTF_MAKE_NONCOPYABLE(ClipScope);
 public:
-    ClipScope(GraphicsContext* context)
+    ClipScope(GraphicsContext& context)
         : m_context(context)
         , m_clipCount(0) { }
     ~ClipScope();
@@ -22,7 +22,7 @@ public:
     void clip(const LayoutRect& clipRect, SkRegion::Op operation);
 
 private:
-    GraphicsContext* m_context;
+    GraphicsContext& m_context;
     int m_clipCount;
 };
 

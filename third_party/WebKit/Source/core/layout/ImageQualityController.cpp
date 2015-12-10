@@ -33,7 +33,6 @@
 
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
-#include "platform/graphics/GraphicsContext.h"
 
 namespace blink {
 
@@ -49,7 +48,7 @@ ImageQualityController* ImageQualityController::imageQualityController()
     return gImageQualityController;
 }
 
-void ImageQualityController::remove(LayoutObject* layoutObject)
+void ImageQualityController::remove(LayoutObject& layoutObject)
 {
     if (gImageQualityController) {
         gImageQualityController->objectDestroyed(layoutObject);
@@ -60,20 +59,20 @@ void ImageQualityController::remove(LayoutObject* layoutObject)
     }
 }
 
-bool ImageQualityController::has(const LayoutObject* layoutObject)
+bool ImageQualityController::has(const LayoutObject& layoutObject)
 {
-    return gImageQualityController && gImageQualityController->m_objectLayerSizeMap.contains(layoutObject);
+    return gImageQualityController && gImageQualityController->m_objectLayerSizeMap.contains(&layoutObject);
 }
 
-InterpolationQuality ImageQualityController::chooseInterpolationQuality(GraphicsContext* context, const LayoutObject* object, Image* image, const void* layer, const LayoutSize& layoutSize)
+InterpolationQuality ImageQualityController::chooseInterpolationQuality(const LayoutObject& object, Image* image, const void* layer, const LayoutSize& layoutSize)
 {
-    if (object->style()->imageRendering() == ImageRenderingPixelated)
+    if (object.style()->imageRendering() == ImageRenderingPixelated)
         return InterpolationNone;
 
     if (InterpolationDefault == InterpolationLow)
         return InterpolationLow;
 
-    if (shouldPaintAtLowQuality(context, object, image, layer, layoutSize))
+    if (shouldPaintAtLowQuality(object, image, layer, layoutSize))
         return InterpolationLow;
 
     // For images that are potentially animated we paint them at medium quality.
@@ -101,7 +100,7 @@ void ImageQualityController::setTimer(Timer<ImageQualityController>* newTimer)
     m_timer = adoptPtr(newTimer);
 }
 
-void ImageQualityController::removeLayer(const LayoutObject* object, LayerSizeMap* innerMap, const void* layer)
+void ImageQualityController::removeLayer(const LayoutObject& object, LayerSizeMap* innerMap, const void* layer)
 {
     if (innerMap) {
         innerMap->remove(layer);
@@ -110,20 +109,20 @@ void ImageQualityController::removeLayer(const LayoutObject* object, LayerSizeMa
     }
 }
 
-void ImageQualityController::set(const LayoutObject* object, LayerSizeMap* innerMap, const void* layer, const LayoutSize& size)
+void ImageQualityController::set(const LayoutObject& object, LayerSizeMap* innerMap, const void* layer, const LayoutSize& size)
 {
     if (innerMap) {
         innerMap->set(layer, size);
     } else {
         LayerSizeMap newInnerMap;
         newInnerMap.set(layer, size);
-        m_objectLayerSizeMap.set(object, newInnerMap);
+        m_objectLayerSizeMap.set(&object, newInnerMap);
     }
 }
 
-void ImageQualityController::objectDestroyed(const LayoutObject* object)
+void ImageQualityController::objectDestroyed(const LayoutObject& object)
 {
-    m_objectLayerSizeMap.remove(object);
+    m_objectLayerSizeMap.remove(&object);
     if (m_objectLayerSizeMap.isEmpty()) {
         m_animatedResizeIsActive = false;
         m_timer->stop();
@@ -156,7 +155,7 @@ void ImageQualityController::restartTimer()
     m_timer->startOneShot(cLowQualityTimeThreshold, BLINK_FROM_HERE);
 }
 
-bool ImageQualityController::shouldPaintAtLowQuality(GraphicsContext* context, const LayoutObject* object, Image* image, const void *layer, const LayoutSize& layoutSize)
+bool ImageQualityController::shouldPaintAtLowQuality(const LayoutObject& object, Image* image, const void *layer, const LayoutSize& layoutSize)
 {
     // If the image is not a bitmap image, then none of this is relevant and we just paint at high
     // quality.
@@ -166,11 +165,11 @@ bool ImageQualityController::shouldPaintAtLowQuality(GraphicsContext* context, c
     if (!layer)
         return false;
 
-    if (object->style()->imageRendering() == ImageRenderingOptimizeContrast)
+    if (object.style()->imageRendering() == ImageRenderingOptimizeContrast)
         return true;
 
     // Look ourselves up in the hashtables.
-    ObjectLayerSizeMap::iterator i = m_objectLayerSizeMap.find(object);
+    ObjectLayerSizeMap::iterator i = m_objectLayerSizeMap.find(&object);
     LayerSizeMap* innerMap = i != m_objectLayerSizeMap.end() ? &i->value : 0;
     LayoutSize oldSize;
     bool isFirstResize = true;
@@ -183,7 +182,7 @@ bool ImageQualityController::shouldPaintAtLowQuality(GraphicsContext* context, c
     }
 
     // If the containing FrameView is being resized, paint at low quality until resizing is finished.
-    if (LocalFrame* frame = object->document().frame()) {
+    if (LocalFrame* frame = object.document().frame()) {
         bool frameViewIsCurrentlyInLiveResize = frame->view() && frame->view()->inLiveResize();
         if (frameViewIsCurrentlyInLiveResize) {
             set(object, innerMap, layer, layoutSize);

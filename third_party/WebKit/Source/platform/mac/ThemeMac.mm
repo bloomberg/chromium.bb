@@ -265,13 +265,13 @@ static NSButtonCell *checkbox(ControlStates states, const IntRect& zoomedRect, f
 }
 
 // FIXME: Share more code with radio buttons.
-static void paintCheckbox(ControlStates states, GraphicsContext* context, const IntRect& zoomedRect, float zoomFactor, ScrollableArea* scrollableArea)
+static void paintCheckbox(ControlStates states, GraphicsContext& context, const IntRect& zoomedRect, float zoomFactor, ScrollableArea* scrollableArea)
 {
     BEGIN_BLOCK_OBJC_EXCEPTIONS
 
     // Determine the width and height needed for the control and prepare the cell for painting.
     NSButtonCell *checkboxCell = checkbox(states, zoomedRect, zoomFactor);
-    GraphicsContextStateSaver stateSaver(*context);
+    GraphicsContextStateSaver stateSaver(context);
 
     NSControlSize controlSize = [checkboxCell controlSize];
     IntSize zoomedSize = checkboxSizes()[controlSize];
@@ -282,9 +282,9 @@ static void paintCheckbox(ControlStates states, GraphicsContext* context, const 
     if (zoomFactor != 1.0f) {
         inflatedRect.setWidth(inflatedRect.width() / zoomFactor);
         inflatedRect.setHeight(inflatedRect.height() / zoomFactor);
-        context->translate(inflatedRect.x(), inflatedRect.y());
-        context->scale(zoomFactor, zoomFactor);
-        context->translate(-inflatedRect.x(), -inflatedRect.y());
+        context.translate(inflatedRect.x(), inflatedRect.y());
+        context.scale(zoomFactor, zoomFactor);
+        context.translate(-inflatedRect.x(), -inflatedRect.y());
     }
 
     LocalCurrentGraphicsContext localContext(context, ThemeMac::inflateRectForFocusRing(inflatedRect));
@@ -347,11 +347,11 @@ static NSButtonCell *radio(ControlStates states, const IntRect& zoomedRect, floa
     return radioCell;
 }
 
-static void paintRadio(ControlStates states, GraphicsContext* context, const IntRect& zoomedRect, float zoomFactor, ScrollableArea* scrollableArea)
+static void paintRadio(ControlStates states, GraphicsContext& context, const IntRect& zoomedRect, float zoomFactor, ScrollableArea* scrollableArea)
 {
     // Determine the width and height needed for the control and prepare the cell for painting.
     NSButtonCell *radioCell = radio(states, zoomedRect, zoomFactor);
-    GraphicsContextStateSaver stateSaver(*context);
+    GraphicsContextStateSaver stateSaver(context);
 
     NSControlSize controlSize = [radioCell controlSize];
     IntSize zoomedSize = radioSizes()[controlSize];
@@ -362,9 +362,9 @@ static void paintRadio(ControlStates states, GraphicsContext* context, const Int
     if (zoomFactor != 1.0f) {
         inflatedRect.setWidth(inflatedRect.width() / zoomFactor);
         inflatedRect.setHeight(inflatedRect.height() / zoomFactor);
-        context->translate(inflatedRect.x(), inflatedRect.y());
-        context->scale(zoomFactor, zoomFactor);
-        context->translate(-inflatedRect.x(), -inflatedRect.y());
+        context.translate(inflatedRect.x(), inflatedRect.y());
+        context.scale(zoomFactor, zoomFactor);
+        context.translate(-inflatedRect.x(), -inflatedRect.y());
     }
 
     LocalCurrentGraphicsContext localContext(context, ThemeMac::inflateRectForFocusRing(inflatedRect));
@@ -426,13 +426,13 @@ static NSButtonCell *button(ControlPart part, ControlStates states, const IntRec
     return cell;
 }
 
-static void paintButton(ControlPart part, ControlStates states, GraphicsContext* context, const IntRect& zoomedRect, float zoomFactor, ScrollableArea* scrollableArea)
+static void paintButton(ControlPart part, ControlStates states, GraphicsContext& context, const IntRect& zoomedRect, float zoomFactor, ScrollableArea* scrollableArea)
 {
     BEGIN_BLOCK_OBJC_EXCEPTIONS
 
     // Determine the width and height needed for the control and prepare the cell for painting.
     NSButtonCell *buttonCell = button(part, states, zoomedRect, zoomFactor);
-    GraphicsContextStateSaver stateSaver(*context);
+    GraphicsContextStateSaver stateSaver(context);
 
     NSControlSize controlSize = [buttonCell controlSize];
     IntSize zoomedSize = buttonSizes()[controlSize];
@@ -452,9 +452,9 @@ static void paintButton(ControlPart part, ControlStates states, GraphicsContext*
         if (zoomFactor != 1.0f) {
             inflatedRect.setWidth(inflatedRect.width() / zoomFactor);
             inflatedRect.setHeight(inflatedRect.height() / zoomFactor);
-            context->translate(inflatedRect.x(), inflatedRect.y());
-            context->scale(zoomFactor, zoomFactor);
-            context->translate(-inflatedRect.x(), -inflatedRect.y());
+            context.translate(inflatedRect.x(), inflatedRect.y());
+            context.scale(zoomFactor, zoomFactor);
+            context.translate(-inflatedRect.x(), -inflatedRect.y());
         }
     }
 
@@ -489,7 +489,7 @@ static NSControlSize stepperControlSizeForFont(const FontDescription& fontDescri
     return NSMiniControlSize;
 }
 
-static void paintStepper(ControlStates states, GraphicsContext* context, const IntRect& zoomedRect, float zoomFactor, ScrollableArea*)
+static void paintStepper(ControlStates states, GraphicsContext& context, const IntRect& zoomedRect, float zoomFactor, ScrollableArea*)
 {
     // We don't use NSStepperCell because there are no ways to draw an
     // NSStepperCell with the up button highlighted.
@@ -507,13 +507,13 @@ static void paintStepper(ControlStates states, GraphicsContext* context, const I
         drawInfo.kind = kThemeIncDecButton;
 
     IntRect rect(zoomedRect);
-    GraphicsContextStateSaver stateSaver(*context);
+    GraphicsContextStateSaver stateSaver(context);
     if (zoomFactor != 1.0f) {
         rect.setWidth(rect.width() / zoomFactor);
         rect.setHeight(rect.height() / zoomFactor);
-        context->translate(rect.x(), rect.y());
-        context->scale(zoomFactor, zoomFactor);
-        context->translate(-rect.x(), -rect.y());
+        context.translate(rect.x(), rect.y());
+        context.scale(zoomFactor, zoomFactor);
+        context.translate(-rect.x(), -rect.y());
     }
     CGRect bounds(rect);
     CGRect backgroundBounds;
@@ -675,7 +675,7 @@ void ThemeMac::addVisualOverflow(ControlPart part, ControlStates states, float z
     END_BLOCK_OBJC_EXCEPTIONS
 }
 
-void ThemeMac::paint(ControlPart part, ControlStates states, GraphicsContext* context, const IntRect& zoomedRect, float zoomFactor, ScrollableArea* scrollableArea) const
+void ThemeMac::paint(ControlPart part, ControlStates states, GraphicsContext& context, const IntRect& zoomedRect, float zoomFactor, ScrollableArea* scrollableArea) const
 {
     switch (part) {
         case CheckboxPart:

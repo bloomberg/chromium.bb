@@ -58,7 +58,7 @@ LayoutSVGImage::~LayoutSVGImage()
 
 void LayoutSVGImage::willBeDestroyed()
 {
-    ImageQualityController::remove(this);
+    ImageQualityController::remove(*this);
     m_imageResource->shutdown();
     LayoutSVGModelObject::willBeDestroyed();
 }
