@@ -35,13 +35,18 @@ declare_args() {
 
     if (is_chromecast) {
       if (!disable_display) {
+        # Enable the Cast ozone platform on all A/V Cast builds.
         ozone_platform_cast = true
 
-        # For desktop Chromecast builds, override the default "headless" platform
-        # with --ozone-platform=egltest
+        # For desktop Chromecast builds, override the default "headless"
+        # platform with --ozone-platform=egltest
+        # TODO(slan|halliwell): Make the default platform "cast" on desktop too.
         if (target_os == "linux" && target_cpu != "arm") {
           ozone_platform_egltest = true
           ozone_platform_ozonex = true
+        } else {
+          # On device builds, enable "cast" as the default platform.
+          ozone_platform = "cast"
         }
       }
     } else if (is_chromeos) {

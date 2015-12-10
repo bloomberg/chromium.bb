@@ -2386,10 +2386,18 @@
               ['disable_display==0', {
                 # Enable the Cast ozone platform on all A/V Cast builds.
                 'ozone_platform_cast%': 1,
+
+                # For desktop Chromecast builds, override the default "headless"
+                # platform with --ozone-platform=egltest
+                # TODO(slan|halliwell): Make the default platform "cast" on
+                # desktop too.
                 'conditions': [
                   ['OS=="linux" and target_arch!="arm"', {
                     'ozone_platform_egltest%': 1,
                     'ozone_platform_ozonex%': 1,
+                  }, {
+                    # On device builds, enable "cast" as the default platform.
+                    'ozone_platform%': 'cast',
                   }],
                 ],
               }],
