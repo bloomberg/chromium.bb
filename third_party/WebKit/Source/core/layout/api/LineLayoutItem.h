@@ -49,6 +49,11 @@ public:
         return m_layoutObject == layoutObject;
     }
 
+    String debugName() const
+    {
+        return m_layoutObject->debugName();
+    }
+
     bool needsLayout() const
     {
         return m_layoutObject->needsLayout();

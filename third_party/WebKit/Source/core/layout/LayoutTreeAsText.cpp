@@ -410,7 +410,7 @@ static void writeInlineBox(TextStream& ts, const InlineBox& box, int indent)
 {
     writeIndent(ts, indent);
     ts << "+ ";
-    ts << box.boxName() << " {" << box.layoutObject().debugName() << "}"
+    ts << box.boxName() << " {" << box.lineLayoutItem().debugName() << "}"
         << " pos=(" << box.x() << "," << box.y() << ")"
         << " size=(" << box.width() << "," << box.height() << ")"
         << " baseline=" << box.baselinePosition(AlphabeticBaseline)
