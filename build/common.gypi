@@ -5073,7 +5073,6 @@
           'USE_HEADERMAP': 'NO',
           'WARNING_CFLAGS': [
             '-Wall',
-            '-Wendif-labels',
             '-Wextra',
             # Don't warn about unused function parameters.
             '-Wno-unused-parameter',

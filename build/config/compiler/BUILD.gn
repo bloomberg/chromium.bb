@@ -823,9 +823,6 @@ config("default_warnings") {
   # Common Clang and GCC warning setup.
   if (!is_win || is_clang) {
     cflags += [
-      # Enables.
-      "-Wendif-labels",  # Weird old-style text after an #endif.
-
       # Disables.
       "-Wno-missing-field-initializers",  # "struct foo f = {0};"
       "-Wno-unused-parameter",  # Unused function parameters.
