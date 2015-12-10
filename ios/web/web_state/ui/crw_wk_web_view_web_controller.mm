@@ -943,10 +943,13 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 
 - (void)webViewWebProcessDidCrash {
   _webProcessIsDead = YES;
-  if ([self.delegate respondsToSelector:
-          @selector(webControllerWebProcessDidCrash:)]) {
+  SEL cancelDialogsSelector =
+      @selector(cancelJavaScriptDialogsForWebController:);
+  if ([self.UIDelegate respondsToSelector:cancelDialogsSelector])
+    [self.UIDelegate cancelJavaScriptDialogsForWebController:self];
+  SEL rendererCrashSelector = @selector(webControllerWebProcessDidCrash:);
+  if ([self.delegate respondsToSelector:rendererCrashSelector])
     [self.delegate webControllerWebProcessDidCrash:self];
-  }
 }
 
 - (void)queryPageReferrerPolicy:(void(^)(NSString*))responseHandler {

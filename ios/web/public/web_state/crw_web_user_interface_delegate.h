@@ -49,6 +49,10 @@ class GURL;
                         completionHandler:
                             (void (^)(NSString* input))completionHandler;
 
+// Cancels any outstanding JavaScript dialogs requested by the functions above.
+- (void)cancelJavaScriptDialogsForWebController:
+    (CRWWebController*)webController;
+
 // Displays a context menu for DOM element. |point| and |view| represent the
 // location and UIView where the context menu was triggered by a user gesture.
 // |menuInfo| keys are defined in crw_context_menu_provider.h.

@@ -691,6 +691,11 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   if (!self.webView)
     return;
 
+  SEL cancelDialogsSelector =
+      @selector(cancelJavaScriptDialogsForWebController:);
+  if ([self.UIDelegate respondsToSelector:cancelDialogsSelector])
+    [self.UIDelegate cancelJavaScriptDialogsForWebController:self];
+
   if (allowCache)
     _expectedReconstructionURL = [self currentNavigationURL];
   else
