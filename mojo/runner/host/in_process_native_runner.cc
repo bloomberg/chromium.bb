@@ -64,7 +64,11 @@ void InProcessNativeRunner::Run() {
   // TODO(vtl): ScopedNativeLibrary doesn't have a .get() method!
   base::NativeLibrary app_library = LoadNativeApplication(app_path_);
   app_library_.Reset(app_library);
+  // This hangs on Windows in the component build, so skip it since it's
+  // unnecessary.
+#if !(defined(COMPONENT_BUILD) && defined(OS_WIN))
   CallLibraryEarlyInitialization(app_library);
+#endif
   RunNativeApplication(app_library, application_request_.Pass());
   app_completed_callback_runner_.Run();
   app_completed_callback_runner_.Reset();
