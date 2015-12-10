@@ -244,9 +244,13 @@ const char* const kSafeManifestEntries[] = {
     emk::kWebview,
 };
 
-// List of permissions based on
-// https://developer.chrome.com/apps/declare_permissions.
-// TODO(tnagel): Explain generic rationale for decisions.
+// List of permissions based on [1].  Since Public Session users may be fully
+// unaware of any apps being installed, their consent to access any kind of
+// sensitive information cannot be assumed.  Therefore only APIs are whitelisted
+// which should not leak sensitive data to the caller.  Since the privacy
+// boundary is drawn at the API level, no safeguards are required to prevent
+// exfiltration and thus apps may communicate freely over any kind of network.
+// [1] https://developer.chrome.com/apps/declare_permissions
 const char* const kSafePermissions[] = {
     // Risky: Reading accessibility settings could allow to infer health
     // information.
@@ -427,12 +431,21 @@ bool IsPlatformAppSafeForPublicSession(const extensions::Extension* extension) {
           LOG(ERROR) << it.key() << " contains a non-string.";
           return false;
         }
-        if (!ArrayContains(kSafePermissions, permission_string)) {
-          LOG(ERROR) << extension->id()
-                     << " requested non-whitelisted permission: "
-                     << permission_string;
-          return false;
+        // Accept whitelisted permissions.
+        if (ArrayContains(kSafePermissions, permission_string)) {
+          continue;
         }
+        // Allow arbitrary web requests.  Don't include <all_urls> because that
+        // also matches file:// schemes.
+        if (permission_string.find("https://") == 0 ||
+            permission_string.find("http://") == 0 ||
+            permission_string.find("ftp://") == 0) {
+          continue;
+        }
+        LOG(ERROR) << extension->id()
+                   << " requested non-whitelisted permission: "
+                   << permission_string;
+        return false;
       }
     // "app" may only contain "background".
     } else if (it.key() == emk::kApp) {

@@ -339,6 +339,44 @@ TEST(DeviceLocalAccountManagementPolicyProviderTest, PublicSession) {
     EXPECT_EQ(base::string16(), error);
     error.clear();
   }
+
+  // Verify that a platform app with remote URL permissions can be installed.
+  {
+    base::ListValue* const permissions = new base::ListValue();
+    permissions->AppendString("https://example.com/");
+    permissions->AppendString("http://example.com/");
+    permissions->AppendString("ftp://example.com/");
+    base::DictionaryValue values;
+    values.Set(extensions::manifest_keys::kPermissions, permissions);
+
+    extension = CreatePlatformAppWithExtraValues(
+        &values,
+        extensions::Manifest::EXTERNAL_POLICY,
+        extensions::Extension::NO_FLAGS);
+    ASSERT_TRUE(extension);
+
+    EXPECT_TRUE(provider.UserMayLoad(extension.get(), &error));
+    EXPECT_EQ(base::string16(), error);
+    error.clear();
+  }
+
+  // Verify that a platform app with a local URL permission cannot be installed.
+  {
+    base::ListValue* const permissions = new base::ListValue();
+    permissions->AppendString("file:///some/where");
+    base::DictionaryValue values;
+    values.Set(extensions::manifest_keys::kPermissions, permissions);
+
+    extension = CreatePlatformAppWithExtraValues(
+        &values,
+        extensions::Manifest::EXTERNAL_POLICY,
+        extensions::Extension::NO_FLAGS);
+    ASSERT_TRUE(extension);
+
+    EXPECT_FALSE(provider.UserMayLoad(extension.get(), &error));
+    EXPECT_NE(base::string16(), error);
+    error.clear();
+  }
 }
 
 TEST(DeviceLocalAccountManagementPolicyProviderTest, KioskAppSession) {
