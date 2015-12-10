@@ -14,9 +14,7 @@ import android.preference.TwoStatePreference;
 import android.support.v7.app.AlertDialog;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.widget.Button;
-import android.widget.CheckedTextView;
 import android.widget.EditText;
-import android.widget.ListView;
 import android.widget.TextView;
 
 import org.chromium.base.ThreadUtils;
@@ -222,41 +220,6 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
         expectedTypes.remove(ModelType.AUTOFILL);
         expectedTypes.remove(ModelType.PASSWORDS);
         assertDataTypesAre(expectedTypes);
-    }
-
-    /**
-     * Make sure that the encryption UI presents the correct options.
-     *
-     * By default it should show the CUSTOM and KEYSTORE options, in that order.
-     * KEYSTORE should be selected but both should be enabled.
-     */
-    @SmallTest
-    @Feature({"Sync"})
-    public void testDefaultEncryptionOptions() throws Exception {
-        setUpTestAccountAndSignInToSync();
-        SyncTestUtil.waitForSyncActive();
-        final SyncCustomizationFragment fragment = startSyncCustomizationFragment();
-        Preference encryption = getEncryption(fragment);
-        clickPreference(encryption);
-
-        PassphraseTypeDialogFragment typeFragment = getPassphraseTypeDialogFragment();
-        ListView listView = (ListView) typeFragment.getDialog()
-                .findViewById(R.id.passphrase_type_list);
-        PassphraseTypeDialogFragment.Adapter adapter =
-                (PassphraseTypeDialogFragment.Adapter) listView.getAdapter();
-
-        // Confirm that correct types show up in the correct order.
-        assertEquals(PassphraseType.CUSTOM_PASSPHRASE, adapter.getType(0));
-        assertEquals(PassphraseType.KEYSTORE_PASSPHRASE, adapter.getType(1));
-        assertEquals(2, listView.getCount());
-
-        // Make sure they are both enabled and the correct one is selected.
-        CheckedTextView customView = (CheckedTextView) listView.getChildAt(0);
-        CheckedTextView keystoreView = (CheckedTextView) listView.getChildAt(1);
-        assertTrue("The custom passphrase view should be enabled.", customView.isEnabled());
-        assertFalse("The custom passphrase option should be checked.", customView.isChecked());
-        assertTrue("The keystore passphrase view should be enabled.", keystoreView.isEnabled());
-        assertTrue("The keystore passphrase option should be checked.", keystoreView.isChecked());
     }
 
     /**
