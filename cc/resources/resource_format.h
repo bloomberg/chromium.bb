@@ -38,9 +38,6 @@ CC_EXPORT GLenum GLDataFormat(ResourceFormat format);
 CC_EXPORT GLenum GLInternalFormat(ResourceFormat format);
 CC_EXPORT gfx::BufferFormat BufferFormat(ResourceFormat format);
 
-bool IsResourceFormatCompressed(ResourceFormat format);
-bool DoesResourceFormatSupportAlpha(ResourceFormat format);
-
 }  // namespace cc
 
 #endif  // CC_RESOURCES_RESOURCE_FORMAT_H_

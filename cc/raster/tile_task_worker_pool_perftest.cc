@@ -254,7 +254,7 @@ class TileTaskWorkerPoolPerfTest
         Create3dOutputSurfaceAndResourceProvider();
         tile_task_worker_pool_ = ZeroCopyTileTaskWorkerPool::Create(
             task_runner_.get(), task_graph_runner_.get(),
-            resource_provider_.get(), PlatformColor::BestTextureFormat());
+            resource_provider_.get(), false);
         break;
       case TILE_TASK_WORKER_POOL_TYPE_ONE_COPY:
         Create3dOutputSurfaceAndResourceProvider();
@@ -262,8 +262,7 @@ class TileTaskWorkerPoolPerfTest
             task_runner_.get(), task_graph_runner_.get(),
             context_provider_.get(), resource_provider_.get(),
             std::numeric_limits<int>::max(), false,
-            std::numeric_limits<int>::max(),
-            PlatformColor::BestTextureFormat());
+            std::numeric_limits<int>::max(), false);
         break;
       case TILE_TASK_WORKER_POOL_TYPE_GPU:
         Create3dOutputSurfaceAndResourceProvider();

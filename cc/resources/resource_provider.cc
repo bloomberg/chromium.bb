@@ -368,29 +368,6 @@ ResourceProvider::~ResourceProvider() {
   gl->Finish();
 }
 
-bool ResourceProvider::IsResourceFormatSupported(ResourceFormat format) const {
-  const ContextProvider::Capabilities& caps =
-      output_surface_->context_provider()->ContextCapabilities();
-
-  switch (format) {
-    case ALPHA_8:
-    case RGBA_4444:
-    case RGBA_8888:
-    case RGB_565:
-    case LUMINANCE_8:
-      return true;
-    case BGRA_8888:
-      return caps.gpu.texture_format_bgra8888;
-    case ETC1:
-      return caps.gpu.texture_format_etc1;
-    case RED_8:
-      return caps.gpu.texture_rg;
-  }
-
-  NOTREACHED();
-  return false;
-}
-
 bool ResourceProvider::InUseByConsumer(ResourceId id) {
   Resource* resource = GetResource(id);
   return resource->lock_for_read_count > 0 || resource->exported_count > 0 ||
@@ -1090,10 +1067,10 @@ void ResourceProvider::Initialize() {
   max_texture_size_ = 0;  // Context expects cleared value.
   gl->GetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size_);
   best_texture_format_ =
-      PlatformColor::BestSupportedTextureFormat(use_texture_format_bgra_);
+      PlatformColor::BestTextureFormat(use_texture_format_bgra_);
 
-  best_render_buffer_format_ = PlatformColor::BestSupportedTextureFormat(
-      caps.gpu.render_buffer_format_bgra8888);
+  best_render_buffer_format_ =
+      PlatformColor::BestTextureFormat(caps.gpu.render_buffer_format_bgra8888);
 
   texture_id_allocator_.reset(
       new TextureIdAllocator(gl, id_allocation_chunk_size_));

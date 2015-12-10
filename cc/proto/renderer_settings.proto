@@ -19,7 +19,7 @@ message RendererSettings {
   optional bool delay_releasing_overlay_resources = 8;
   optional double refresh_rate = 9;
   optional uint32 highp_threshold_min = 10;
-  optional uint32 texture_id_allocation_chunk_size = 11;
-  optional bool use_gpu_memory_buffer_resources = 12;
-  optional uint32 preferred_tile_format = 13;
+  optional bool use_rgba_4444_textures = 11;
+  optional uint32 texture_id_allocation_chunk_size = 12;
+  optional bool use_gpu_memory_buffer_resources = 13;
 }

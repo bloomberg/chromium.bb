@@ -30,9 +30,9 @@ TEST(RendererSettingsTest, AllFieldsFlipped) {
   settings.delay_releasing_overlay_resources = true;
   settings.refresh_rate = 6.0;
   settings.highp_threshold_min = 1;
+  settings.use_rgba_4444_textures = true;
   settings.texture_id_allocation_chunk_size = 46;
   settings.use_gpu_memory_buffer_resources = true;
-  settings.preferred_tile_format = RGBA_4444;
   VerifySerializeAndDeserializeProto(settings);
 }
 
@@ -48,9 +48,9 @@ TEST(RendererSettingsTest, ArbitraryFieldValues) {
   settings.delay_releasing_overlay_resources = true;
   settings.refresh_rate = 999.0;
   settings.highp_threshold_min = 1;
+  settings.use_rgba_4444_textures = true;
   settings.texture_id_allocation_chunk_size = 12;
   settings.use_gpu_memory_buffer_resources = true;
-  settings.preferred_tile_format = RGBA_4444;
   VerifySerializeAndDeserializeProto(settings);
 }
 

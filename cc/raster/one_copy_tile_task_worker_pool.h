@@ -50,7 +50,7 @@ class CC_EXPORT OneCopyTileTaskWorkerPool
       int max_copy_texture_chromium_size,
       bool use_partial_raster,
       int max_staging_buffer_usage_in_bytes,
-      ResourceFormat preferred_tile_format);
+      bool use_rgba_4444_texture_format);
 
   // Overridden from TileTaskWorkerPool:
   TileTaskRunner* AsTileTaskRunner() override;
@@ -92,7 +92,7 @@ class CC_EXPORT OneCopyTileTaskWorkerPool
                             int max_copy_texture_chromium_size,
                             bool use_partial_raster,
                             int max_staging_buffer_usage_in_bytes,
-                            ResourceFormat preferred_tile_format);
+                            bool use_rgba_4444_texture_format);
 
  private:
   struct StagingBuffer {
@@ -149,7 +149,7 @@ class CC_EXPORT OneCopyTileTaskWorkerPool
   StagingBufferDeque busy_buffers_;
   int bytes_scheduled_since_last_flush_;
   const int max_staging_buffer_usage_in_bytes_;
-  ResourceFormat preferred_tile_format_;
+  bool use_rgba_4444_texture_format_;
   int staging_buffer_usage_in_bytes_;
   int free_staging_buffer_usage_in_bytes_;
   const base::TimeDelta staging_buffer_expiration_delay_;
