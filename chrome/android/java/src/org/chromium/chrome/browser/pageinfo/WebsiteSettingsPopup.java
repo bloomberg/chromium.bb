@@ -483,7 +483,10 @@ public class WebsiteSettingsPopup implements OnClickListener {
      * HTTPS connections.
      */
     private boolean isConnectionDetailsLinkVisible() {
-        return !mIsInternalPage && mSecurityLevel != ConnectionSecurityLevel.NONE;
+        // TODO(tsergeant): If this logic gets any more complicated from additional deprecations,
+        // change it to use something like |SchemeIsCryptographic|.
+        return !mIsInternalPage && (mSecurityLevel != ConnectionSecurityLevel.NONE
+                || mPassiveMixedContentPresent || mDeprecatedSHA1Present);
     }
 
     /**
