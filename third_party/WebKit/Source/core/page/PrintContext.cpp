@@ -259,8 +259,9 @@ String PrintContext::pageProperty(LocalFrame* frame, const char* propertyName, i
 {
     Document* document = frame->document();
     PrintContext printContext(frame);
-    printContext.begin(800); // Any width is OK here.
-    document->updateLayout();
+    // Any non-zero size is OK here. We don't care about actual layout. We just want to collect
+    // @page rules and figure out what declarations apply on a given page (that may or may not exist).
+    printContext.begin(800, 1000);
     RefPtr<ComputedStyle> style = document->styleForPage(pageNumber);
 
     // Implement formatters for properties we care about.

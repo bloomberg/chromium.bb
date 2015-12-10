@@ -241,9 +241,7 @@ void LayoutView::layout()
 
     if (shouldUsePrintingLayout()) {
         m_minPreferredLogicalWidth = m_maxPreferredLogicalWidth = logicalWidth();
-        // TODO(mstensho): Get rid of m_pageLogicalHeight zero check. Currently, pageProperty() in
-        // PrintContext starts printing with zero height, so we have to cope for now.
-        if (!m_fragmentationContext && m_pageLogicalHeight)
+        if (!m_fragmentationContext)
             m_fragmentationContext = adoptPtr(new ViewFragmentationContext(*this));
     } else if (m_fragmentationContext) {
         m_fragmentationContext.clear();
