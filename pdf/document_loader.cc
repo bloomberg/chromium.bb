@@ -16,9 +16,6 @@ namespace chrome_pdf {
 
 namespace {
 
-// Document below size will be downloaded in one chunk.
-const uint32_t kMinFileSize = 64 * 1024;
-
 // If the headers have a byte-range response, writes the start and end
 // positions and returns true if at least the start position was parsed.
 // The end position will be set to 0 if it was not found or parsed from the
@@ -176,14 +173,18 @@ bool DocumentLoader::Init(const pp::URLLoader& loader,
 }
 
 void DocumentLoader::LoadPartialDocument() {
+  // The current request is a full request (not a range request) so it starts at
+  // 0 and ends at |document_size_|.
+  current_chunk_size_ = document_size_;
+  current_pos_ = 0;
+  current_request_offset_ = 0;
+  current_request_size_ = 0;
+  current_request_extended_size_ = document_size_;
+  request_pending_ = true;
+
   partial_document_ = true;
-  // Force the main request to be cancelled, since if we're a full-frame plugin
-  // there could be other references to the loader.
-  loader_.Close();
-  loader_ = pp::URLLoader();
-  // Download file header.
   header_request_ = true;
-  RequestData(0, std::min(GetRequestSize(), document_size_));
+  ReadMore();
 }
 
 void DocumentLoader::LoadFullDocument() {
@@ -212,12 +213,8 @@ uint32_t DocumentLoader::GetAvailableData() const {
 }
 
 void DocumentLoader::ClearPendingRequests() {
-  // The first item in the queue is pending (need to keep it in the queue).
-  if (pending_requests_.size() > 1) {
-    // Remove all elements except the first one.
-    pending_requests_.erase(++pending_requests_.begin(),
-                            pending_requests_.end());
-  }
+  pending_requests_.erase(pending_requests_.begin(),
+                          pending_requests_.end());
 }
 
 bool DocumentLoader::GetBlock(uint32_t position,
@@ -247,86 +244,74 @@ void DocumentLoader::RequestData(uint32_t position, uint32_t size) {
   DownloadPendingRequests();
 }
 
-void DocumentLoader::DownloadPendingRequests() {
-  if (request_pending_ || pending_requests_.empty())
-    return;
-
-  // Remove already completed requests.
-  // By design DownloadPendingRequests() should have at least 1 request in the
-  // queue. ReadComplete() will remove the last pending comment from the queue.
-  while (pending_requests_.size() > 1) {
-    if (IsDataAvailable(pending_requests_.front().first,
-                        pending_requests_.front().second)) {
-      pending_requests_.pop_front();
-    } else {
-      break;
-    }
-  }
-
-  uint32_t pos = pending_requests_.front().first;
-  uint32_t size = pending_requests_.front().second;
-  if (IsDataAvailable(pos, size)) {
-    ReadComplete();
-    return;
-  }
-
-  // If current request has been partially downloaded already, split it into
-  // a few smaller requests.
+void DocumentLoader::RemoveCompletedRanges() {
+  // Split every request that has been partially downloaded already into smaller
+  // requests.
   std::vector<std::pair<size_t, size_t> > ranges;
-  chunk_stream_.GetMissedRanges(pos, size, &ranges);
-  if (!ranges.empty()) {
-    pending_requests_.pop_front();
-    pending_requests_.insert(pending_requests_.begin(),
-                             ranges.begin(), ranges.end());
+  auto it = pending_requests_.begin();
+  while (it != pending_requests_.end()) {
+    chunk_stream_.GetMissedRanges(it->first, it->second, &ranges);
+    pending_requests_.insert(it, ranges.begin(), ranges.end());
+    ranges.clear();
+    pending_requests_.erase(it++);
+  }
+}
+
+void DocumentLoader::DownloadPendingRequests() {
+  if (request_pending_)
+    return;
+
+  uint32_t pos;
+  uint32_t size;
+  if (pending_requests_.empty()) {
+    // If the document is not complete and we have no outstanding requests,
+    // download what's left for as long as no other request gets added to
+    // |pending_requests_|.
+    pos = chunk_stream_.GetFirstMissingByte();
+    if (pos >= document_size_) {
+      // We're done downloading the document.
+      return;
+    }
+    // Start with size 0, we'll set |current_request_extended_size_| to > 0.
+    // This way this request will get cancelled as soon as the renderer wants
+    // another portion of the document.
+    size = 0;
+  } else {
+    RemoveCompletedRanges();
+
     pos = pending_requests_.front().first;
     size = pending_requests_.front().second;
+    if (IsDataAvailable(pos, size)) {
+      ReadComplete();
+      return;
+    }
   }
 
-  uint32_t cur_request_size = GetRequestSize();
-  // If size is less than default request, try to expand download range for
-  // more optimal download.
-  if (size < cur_request_size && partial_document_) {
-    // First, try to expand block towards the end of the file.
-    uint32_t new_pos = pos;
-    uint32_t new_size = cur_request_size;
-    if (pos + new_size > document_size_)
-      new_size = document_size_ - pos;
-
-    std::vector<std::pair<size_t, size_t> > ranges;
-    if (chunk_stream_.GetMissedRanges(new_pos, new_size, &ranges)) {
-      new_pos = ranges[0].first;
-      new_size = ranges[0].second;
+  size_t last_byte_before = chunk_stream_.GetFirstMissingByteInInterval(pos);
+  if (size < kDefaultRequestSize) {
+    // Try to extend before pos, up to size |kDefaultRequestSize|.
+    if (pos + size - last_byte_before > kDefaultRequestSize) {
+      pos += size - kDefaultRequestSize;
+      size = kDefaultRequestSize;
+    } else {
+      size += pos - last_byte_before;
+      pos = last_byte_before;
     }
-
-    // Second, try to expand block towards the beginning of the file.
-    if (new_size < cur_request_size) {
-      uint32_t block_end = new_pos + new_size;
-      if (block_end > cur_request_size) {
-        new_pos = block_end - cur_request_size;
-      } else {
-        new_pos = 0;
-      }
-      new_size = block_end - new_pos;
-
-      if (chunk_stream_.GetMissedRanges(new_pos, new_size, &ranges)) {
-        new_pos = ranges.back().first;
-        new_size = ranges.back().second;
-      }
-    }
-    pos = new_pos;
-    size = new_size;
   }
-
-  size_t last_byte_before = chunk_stream_.GetLastByteBefore(pos);
-  size_t first_byte_after = chunk_stream_.GetFirstByteAfter(pos + size - 1);
-  if (pos - last_byte_before < cur_request_size) {
-    size = pos + size - last_byte_before;
+  if (pos - last_byte_before < kDefaultRequestSize) {
+    // Don't leave a gap smaller than |kDefaultRequestSize|.
+    size += pos - last_byte_before;
     pos = last_byte_before;
   }
 
-  if ((pos + size < first_byte_after) &&
-      (pos + size + cur_request_size >= first_byte_after))
-    size = first_byte_after - pos;
+  current_request_offset_ = pos;
+  current_request_size_ = size;
+
+  // Extend the request until the next downloaded byte or the end of the
+  // document.
+  size_t last_missing_byte =
+      chunk_stream_.GetLastMissingByteInInterval(pos + size - 1);
+  current_request_extended_size_ = last_missing_byte - pos + 1;
 
   request_pending_ = true;
 
@@ -335,7 +320,7 @@ void DocumentLoader::DownloadPendingRequests() {
   loader_ = client_->CreateURLLoader();
   pp::CompletionCallback callback =
       loader_factory_.NewCallback(&DocumentLoader::DidOpen);
-  pp::URLRequestInfo request = GetRequest(pos, size);
+  pp::URLRequestInfo request = GetRequest(pos, current_request_extended_size_);
   requests_count_++;
   int rv = loader_.Open(request, callback);
   if (rv != PP_OK_COMPLETIONPENDING)
@@ -469,12 +454,49 @@ void DocumentLoader::DidRead(int32_t result) {
       current_chunk_read_ += length;
       client_->OnNewDataAvailable();
     }
+
+    // Only call the renderer if we allow partial loading.
+    if (!partial_document_) {
+      ReadMore();
+      return;
+    }
+
+    UpdateRendering();
+    RemoveCompletedRanges();
+
+    if (!pending_requests_.empty()) {
+      // If there are pending requests and the current content we're downloading
+      // doesn't satisfy any of these requests, cancel the current request to
+      // fullfill those more important requests.
+      bool satisfying_pending_request =
+            SatisfyingRequest(current_request_offset_, current_request_size_);
+      for (const auto& pending_request : pending_requests_) {
+        if (SatisfyingRequest(pending_request.first, pending_request.second)) {
+          satisfying_pending_request = true;
+          break;
+        }
+      }
+      // Cancel the request as it's not satisfying any request from the
+      // renderer, unless the current request is finished in which case we let
+      // it finish cleanly.
+      if (!satisfying_pending_request &&
+          current_pos_ < current_request_offset_ +
+          current_request_extended_size_) {
+        loader_.Close();
+      }
+    }
+
     ReadMore();
-  } else if (result == PP_OK) {
+  } else if (result == PP_OK || result == PP_ERROR_ABORTED) {
     ReadComplete();
   } else {
     NOTREACHED();
   }
+}
+
+bool DocumentLoader::SatisfyingRequest(size_t offset, size_t size) const {
+  return offset <= current_pos_ + kDefaultRequestSize &&
+      current_pos_ < offset + size;
 }
 
 void DocumentLoader::ReadComplete() {
@@ -497,46 +519,22 @@ void DocumentLoader::ReadComplete() {
   }
 
   request_pending_ = false;
-  pending_requests_.pop_front();
-
-  // If there are more pending request - continue downloading.
-  if (!pending_requests_.empty()) {
-    DownloadPendingRequests();
-    return;
-  }
 
   if (IsDocumentComplete()) {
     client_->OnDocumentComplete();
     return;
   }
 
+  UpdateRendering();
+  DownloadPendingRequests();
+}
+
+void DocumentLoader::UpdateRendering() {
   if (header_request_)
     client_->OnPartialDocumentLoaded();
   else
     client_->OnPendingRequestComplete();
   header_request_ = false;
-
-  // The OnPendingRequestComplete could have added more requests.
-  if (!pending_requests_.empty()) {
-    DownloadPendingRequests();
-  } else {
-    // Document is not complete and we have no outstanding requests.
-    // Let's keep downloading PDF file in small chunks.
-    uint32_t pos = chunk_stream_.GetFirstMissingByte();
-    std::vector<std::pair<size_t, size_t> > ranges;
-    chunk_stream_.GetMissedRanges(pos, GetRequestSize(), &ranges);
-    DCHECK(!ranges.empty());
-    RequestData(ranges[0].first, ranges[0].second);
-  }
-}
-
-uint32_t DocumentLoader::GetRequestSize() const {
-  // Document loading strategy:
-  // For first 10 requests, we use 32k chunk sizes, for the next 10 requests we
-  // double the size (64k), and so on, until we cap max request size at 2M for
-  // 71 or more requests.
-  uint32_t limited_count = std::min(std::max(requests_count_, 10u), 70u);
-  return 32 * 1024 * (1 << ((limited_count - 1) / 10u));
 }
 
 }  // namespace chrome_pdf
