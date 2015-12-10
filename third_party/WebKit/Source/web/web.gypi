@@ -241,8 +241,6 @@
       'linux/WebFontRendering.cpp',
       'mac/WebScrollbarTheme.mm',
       'mac/WebSubstringUtil.mm',
-      'painting/PaintAggregator.cpp',
-      'painting/PaintAggregator.h',
       'win/WebFontRendering.cpp',
     ],
     'web_unittest_files': [
@@ -274,7 +272,6 @@
       'tests/MHTMLTest.cpp',
       'tests/WebMeaningfulLayoutsTest.cpp',
       'tests/PageSerializerTest.cpp',
-      'tests/PaintAggregatorTest.cpp',
       'tests/PrerenderingTest.cpp',
       'tests/ProgrammaticScrollTest.cpp',
       'tests/LayoutGeometryMapTest.cpp',
