@@ -76,7 +76,7 @@ IN_PROC_BROWSER_TEST_F(InspectUITest, DISABLED_AndroidTargets) {
   providers.push_back(new AdbDeviceProvider());
   android_bridge->set_device_providers_for_test(providers);
 
-  StartMockAdbServer();
+  StartMockAdbServer(FlushWithSize);
 
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIInspectURL));
 

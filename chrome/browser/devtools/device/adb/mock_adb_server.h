@@ -18,12 +18,7 @@ enum FlushMode {
   FlushWithData
 };
 
-// Note: running multiple copies of mock abd server is impossible, as they
-// bind to the same port. Do not introduce concurrent tests using this mock.
-// TODO(dgozman): instead of binding to port, parametrize AdbSocket with
-// socket factory.
-void StartMockAdbServer();
-void SetMockAdbServerMode(FlushMode flush_mode);
+void StartMockAdbServer(FlushMode flush_mode);
 void StopMockAdbServer();
 
 // Part of mock server independent of transport.

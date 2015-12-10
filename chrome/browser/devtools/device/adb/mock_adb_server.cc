@@ -377,20 +377,21 @@ void SimpleHttpServer::OnAccepted(int result) {
   AcceptConnection();
 }
 
-static FlushMode mock_adb_server_flush_mode_ = FlushWithData;
-
 class AdbParser : public SimpleHttpServer::Parser,
                   public base::NonThreadSafe,
                   public MockAndroidConnection::Delegate {
  public:
-  static Parser* Create(const SimpleHttpServer::SendCallback& callback) {
-    return new AdbParser(callback);
+  static Parser* Create(FlushMode flush_mode,
+                        const SimpleHttpServer::SendCallback& callback) {
+    return new AdbParser(flush_mode, callback);
   }
 
   ~AdbParser() override {}
  private:
-  explicit AdbParser(const SimpleHttpServer::SendCallback& callback)
-      : callback_(callback) {
+  explicit AdbParser(FlushMode flush_mode,
+                     const SimpleHttpServer::SendCallback& callback)
+      : flush_mode_(flush_mode),
+        callback_(callback) {
   }
 
   int Consume(const char* data, int size) override {
@@ -443,7 +444,7 @@ class AdbParser : public SimpleHttpServer::Parser,
     CHECK(CalledOnValidThread());
     CHECK_EQ(4U, status.size());
     std::string buffer = status;
-    if (mock_adb_server_flush_mode_ == FlushWithoutSize) {
+    if (flush_mode_ == FlushWithoutSize) {
         callback_.Run(buffer);
         buffer = std::string();
     }
@@ -453,45 +454,40 @@ class AdbParser : public SimpleHttpServer::Parser,
       static const char kHexChars[] = "0123456789ABCDEF";
       for (int i = 3; i >= 0; i--)
         buffer += kHexChars[ (size >> 4*i) & 0x0f ];
-      if (mock_adb_server_flush_mode_ == FlushWithSize) {
+      if (flush_mode_ == FlushWithSize) {
           callback_.Run(buffer);
           buffer = std::string();
       }
       buffer += response;
       callback_.Run(buffer);
-    } else if (mock_adb_server_flush_mode_ != FlushWithoutSize) {
+    } else if (flush_mode_ != FlushWithoutSize) {
       callback_.Run(buffer);
     }
   }
 
+  FlushMode flush_mode_;
   SimpleHttpServer::SendCallback callback_;
   std::string serial_;
   scoped_ptr<MockAndroidConnection> mock_connection_;
 };
 
-static SimpleHttpServer* mock_adb_server_ = nullptr;
+static SimpleHttpServer* mock_adb_server_ = NULL;
 
-void StartMockAdbServerOnIOThread() {
+void StartMockAdbServerOnIOThread(FlushMode flush_mode) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  CHECK(mock_adb_server_ == nullptr);
+  CHECK(mock_adb_server_ == NULL);
   net::IPAddressNumber address;
   net::ParseIPLiteralToNumber("127.0.0.1", &address);
   net::IPEndPoint endpoint(address, kAdbPort);
   mock_adb_server_ = new SimpleHttpServer(
-      base::Bind(&AdbParser::Create), endpoint);
-}
-
-void SetMockAdbServerModeOnIOThread(FlushMode flush_mode) {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  CHECK(mock_adb_server_ != nullptr);
-  mock_adb_server_flush_mode_ = flush_mode;
+      base::Bind(&AdbParser::Create, flush_mode), endpoint);
 }
 
 void StopMockAdbServerOnIOThread() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  CHECK(mock_adb_server_ != nullptr);
+  CHECK(mock_adb_server_ != NULL);
   delete mock_adb_server_;
-  mock_adb_server_ = nullptr;
+  mock_adb_server_ = NULL;
 }
 
 } // namespace
@@ -603,18 +599,10 @@ void MockAndroidConnection::SendHTTPResponse(const std::string& body) {
   delegate_->SendRaw(response_data);
 }
 
-void StartMockAdbServer() {
+void StartMockAdbServer(FlushMode flush_mode) {
   BrowserThread::PostTaskAndReply(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&StartMockAdbServerOnIOThread),
-      base::MessageLoop::QuitWhenIdleClosure());
-  content::RunMessageLoop();
-}
-
-void SetMockAdbServerMode(FlushMode flush_mode) {
-  BrowserThread::PostTaskAndReply(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&SetMockAdbServerModeOnIOThread, flush_mode),
+      base::Bind(&StartMockAdbServerOnIOThread, flush_mode),
       base::MessageLoop::QuitWhenIdleClosure());
   content::RunMessageLoop();
 }
