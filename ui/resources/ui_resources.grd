@@ -70,6 +70,7 @@
         <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_SOUTH_EAST_RESIZE" file="common/pointers/top_left_corner.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_SOUTH_RESIZE" file="common/pointers/sb_v_double_arrow.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_SOUTH_WEST_RESIZE" file="common/pointers/top_right_corner.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_THROBBER" file="common/pointers/throbber.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_WEST_RESIZE" file="common/pointers/sb_h_double_arrow.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_XTERM_HORIZ" file="common/pointers/xterm_horiz.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_ZOOM_IN" file="common/pointers/zoom_in.png" />
@@ -267,7 +268,9 @@
         <structure type="chrome_scaled_image" name="IDR_TEXT_SELECTION_HANDLE_LEFT" file="common/text_selection_handle_left.png" />
         <structure type="chrome_scaled_image" name="IDR_TEXT_SELECTION_HANDLE_RIGHT" file="common/text_selection_handle_right.png" />
       </if>
-      <structure type="chrome_scaled_image" name="IDR_THROBBER" file="throbber.png" />
+      <if expr="is_macosx">
+        <structure type="chrome_scaled_image" name="IDR_THROBBER" file="legacy/throbber.png" />
+      </if>
       <if expr="toolkit_views">
         <structure type="chrome_scaled_image" name="IDR_TOUCH_DRAG_TIP_COPY" file="common/drag_tip_copy.png" />
         <structure type="chrome_scaled_image" name="IDR_TOUCH_DRAG_TIP_MOVE" file="common/drag_tip_move.png" />

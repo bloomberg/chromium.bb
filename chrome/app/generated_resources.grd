@@ -5611,7 +5611,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Panels
       </message>
       <message name="IDS_FLAGS_PANELS_DESCRIPTION" desc="Description for the flag to enable Panel windows.">
-        Enable Panel windows that open outside of the browser frame. Attempts to open a Panel will open a popup instead if not enabled. Panels are always enabled on the dev and canary channels.
+        Allow extensions to create panel windows that open outside of the browser frame. Attempts to open a panel will open a popup instead if not enabled.
       </message>
       <message name="IDS_FLAGS_WEBGL_DRAFT_EXTENSIONS_NAME" desc="Name of the 'Enable WebGL Draft Extensions' flag.">
         WebGL Draft Extensions
