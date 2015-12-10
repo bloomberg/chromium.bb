@@ -73,12 +73,12 @@
     "type": "console_test_launcher",
   },
   "blink_heap_unittests": {
-    "label": "//third_party/WebKit/public:blink_heap_unittests",
-    "type": "unknown",
+    "label": "//third_party/WebKit/Source/platform:blink_heap_unittests",
+    "type": "console_test_launcher",
   },
   "blink_platform_unittests": {
-    "label": "//third_party/WebKit/public:blink_platform_unittests",
-    "type": "unknown",
+    "label": "//third_party/WebKit/Source/platform:blink_platform_unittests",
+    "type": "console_test_launcher",
   },
   "breakpad_unittests": {
     "label": "//breakpad:breakpad_unittests",

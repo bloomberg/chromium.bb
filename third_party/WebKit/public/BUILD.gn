@@ -51,8 +51,8 @@ group("all_blink") {
   public_deps = [
     "//third_party/WebKit/Source/core",
     "//third_party/WebKit/Source/modules",
-    "//third_party/WebKit/Source/platform:heap_unittests",
-    "//third_party/WebKit/Source/platform:platform_unittests",
+    "//third_party/WebKit/Source/platform:blink_heap_unittests",
+    "//third_party/WebKit/Source/platform:blink_platform_unittests",
     "//third_party/WebKit/Source/web",
     "//third_party/WebKit/Source/web:webkit_unit_tests",
     "//third_party/WebKit/Source/wtf:wtf_unittests",
@@ -61,8 +61,8 @@ group("all_blink") {
   if (is_mac) {
     # TODO(GYP): Re-enable this as soon as we can link Blink binaries on mac.
     public_deps -= [
-      "//third_party/WebKit/Source/platform:heap_unittests",
-      "//third_party/WebKit/Source/platform:platform_unittests",
+      "//third_party/WebKit/Source/platform:blink_heap_unittests",
+      "//third_party/WebKit/Source/platform:blink_platform_unittests",
       "//third_party/WebKit/Source/web:webkit_unit_tests",
     ]
   }

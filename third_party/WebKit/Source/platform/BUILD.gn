@@ -336,10 +336,9 @@ source_set("test_support") {
 }
 
 # GYP: blink_heap_unittests
-test("heap_unittests") {
+test("blink_heap_unittests") {
   visibility = []  # Allow re-assignment of list.
   visibility = [ "*" ]
-  output_name = "blink_heap_unittests"
 
   sources = rebase_path(heap_gypi.platform_heap_test_files, ".", "heap")
   sources += [ "heap/RunAllTests.cpp" ]
@@ -371,10 +370,9 @@ test("heap_unittests") {
   }
 }
 
-test("platform_unittests") {
+test("blink_platform_unittests") {
   visibility = []  # Allow re-assignment of list.
   visibility = [ "*" ]
-  output_name = "blink_platform_unittests"
 
   sources = platform_test_files
 
