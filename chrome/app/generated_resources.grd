@@ -6062,9 +6062,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_PUSH_API_BACKGROUND_MODE_DESCRIPTION" desc="Description for the flag to enable background mode for the Push API.">
         Enable background mode for the Push API. This allows Chrome to continue running after the last window is closed, and to launch at OS startup, if the Push API needs it.
       </message>
-      <message name="IDS_FLAGS_ENABLE_STALE_WHILE_REVALIDATE_NAME" desc="Name of the flag to enable the stale-while-revalidate cache directive.">
-        Enable the stale-while-revalidate cache directive
-      </message>
+      <if expr="not is_ios">
+        <message name="IDS_FLAGS_ENABLE_STALE_WHILE_REVALIDATE_NAME" desc="Name of the flag to enable the &quot;stale-while-revalidate&quot; cache directive. This message is intended for web developers who are familiar with technical terms. &quot;stale-while-revalidate&quot; here is the literal string sent by the HTTP server, and so should be untranslated where possible. &quot;cache&quot; here refers to an HTTP cache. &quot;directive&quot; here is an instruction sent by an HTTP server to indicate what caching behaviour should be used.">
+          Enable the "stale-while-revalidate" cache directive
+        </message>
+        <message name="IDS_FLAGS_ENABLE_STALE_WHILE_REVALIDATE_DESCRIPTION" desc="Description of the flag to enable the &quot;stale-while-revalidate&quot; cache directive. This message is intended for web developers who are familiar with technical terms. &quot;Cache-Control: stale-while-revalidate&quot; is the literal string sent by the HTTP server, and so should be untranslated where possible. If necessary for translation it can be split into the HTTP header name part &quot;Cache-Control&quot; and the value part &quot;stale-while-revalidate&quot;. &quot;directive&quot; here is an instruction sent by an HTTP server to indicate what caching behaviour should be used. The directive is typically configured by the server administrator. &quot;servers&quot; here refers to HTTP server software. &quot;resources&quot; here means individual files served by HTTP servers and cached by the browser. &quot;be revalidated&quot; means &quot;be checked with the HTTP server whether or not the browser has the latest version&quot;. &quot;in the background&quot; here means without making the user wait. &quot;latency&quot; here refers to the time the user waits for a web page to be loaded or become usable.">
+          Enable the experimental implementation of the "Cache-Control: stale-while-revalidate" directive. This permits servers to specify that some resources may be revalidated in the background to improve latency. 
+        </message>
+      </if>
       <message name="IDS_FLAGS_ENABLE_NAVIGATION_TRACING" desc="Name of the flag to enable navigation tracing">
         Enable navigation tracing
       </message>

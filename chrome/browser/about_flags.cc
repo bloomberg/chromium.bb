@@ -1050,6 +1050,13 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_TRACE_UPLOAD_URL_DESCRIPTION,
      kOsAll,
      MULTI_VALUE_TYPE(kTraceUploadURL)},
+#if !defined(OS_IOS)
+    {"enable-stale-while-revalidate",
+     IDS_FLAGS_ENABLE_STALE_WHILE_REVALIDATE_NAME,
+     IDS_FLAGS_ENABLE_STALE_WHILE_REVALIDATE_DESCRIPTION,
+     kOsAll,
+     SINGLE_VALUE_TYPE(switches::kEnableStaleWhileRevalidate)},
+#endif
     {"enable-suggestions-with-substring-match",
      IDS_FLAGS_SUGGESTIONS_WITH_SUB_STRING_MATCH_NAME,
      IDS_FLAGS_SUGGESTIONS_WITH_SUB_STRING_MATCH_DESCRIPTION,
