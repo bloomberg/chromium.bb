@@ -15,28 +15,32 @@ config("static_config") {
 }
 
 config("executable_config") {
-  ldflags = [
-    # Export stdlibc++ and libgcc symbols to force shlibs to refer to these
-    # symbols from the executable.
-    "-Wl,--export-dynamic",
+  if (current_cpu == "arm") {
+    ldflags = [
+      # Export stdlibc++ and libgcc symbols to force shlibs to refer to these
+      # symbols from the executable.
+      "-Wl,--export-dynamic",
 
-    "-lm",  # stdlibc++ requires math.h
+      "-lm",  # stdlibc++ requires math.h
 
-    # In case we redefined stdlibc++ symbols (e.g. tc_malloc)
-    "-Wl,--allow-multiple-definition",
+      # In case we redefined stdlibc++ symbols (e.g. tc_malloc)
+      "-Wl,--allow-multiple-definition",
 
-    "-Wl,--whole-archive",
-    "-l:libstdc++.a",
-    "-l:libgcc.a",
-    "-Wl,--no-whole-archive",
-  ]
+      "-Wl,--whole-archive",
+      "-l:libstdc++.a",
+      "-l:libgcc.a",
+      "-Wl,--no-whole-archive",
+    ]
 
-  # Despite including libstdc++/libgcc archives, we still need to specify
-  # static linking for them in order to prevent the executable from having a
-  # dynamic dependency on them.
-  configs = [ ":static_config" ]
+    # Despite including libstdc++/libgcc archives, we still need to specify
+    # static linking for them in order to prevent the executable from having a
+    # dynamic dependency on them.
+    configs = [ ":static_config" ]
+  }
 }
 
 config("shared_library_config") {
-  configs = [ ":static_config" ]
+  if (current_cpu == "arm") {
+    configs = [ ":static_config" ]
+  }
 }
