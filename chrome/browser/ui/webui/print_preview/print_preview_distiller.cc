@@ -257,14 +257,14 @@ void PrintPreviewDistiller::CreateDestinationWebContents(
 }
 
 PrintPreviewDistiller::~PrintPreviewDistiller() {
-  if (web_contents_) {
-    printing::PrintPreviewDialogController* dialog_controller =
-        printing::PrintPreviewDialogController::GetInstance();
-    if (!dialog_controller)
-      return;
+  DCHECK(web_contents_);
 
-    dialog_controller->RemoveProxyDialogForWebContents(web_contents_.get());
-  }
+  printing::PrintPreviewDialogController* dialog_controller =
+      printing::PrintPreviewDialogController::GetInstance();
+  if (!dialog_controller)
+    return;
+
+  dialog_controller->RemoveProxyDialogForWebContents(web_contents_.get());
 }
 
 WebContents* PrintPreviewDistiller::CreateWebContents(
