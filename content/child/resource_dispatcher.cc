@@ -245,8 +245,11 @@ void ResourceDispatcher::OnReceivedData(int request_id,
     CHECK_GE(data_length, 0);
     CHECK_LE(data_length, 512 * 1024);
 
-    int cached_data_offset = request_info->data_offset;
-    CHECK_EQ(cached_data_offset, data_offset);
+    if (data_offset > 512 * 1024) {
+      int cached_data_offset = request_info->data_offset;
+      base::debug::Alias(&cached_data_offset);
+      CHECK(false);
+    }
 
     // Ensure that the SHM buffer remains valid for the duration of this scope.
     // It is possible for Cancel() to be called before we exit this scope.
