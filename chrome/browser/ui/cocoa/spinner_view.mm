@@ -121,7 +121,7 @@ NSString* const kRotationAnimationName = @"RotationAnimationName";
   ui::NativeTheme* nativeTheme = ui::NativeThemeMac::instance();
   SkColor throbberBlueColor = nativeTheme->GetSystemColor(
       ui::NativeTheme::kColorId_ThrobberSpinningColor);
-  CGColorRef blueColor = gfx::CGColorCreateFromSkColor(throbberBlueColor);
+  CGColorRef blueColor = skia::CGColorCreateFromSkColor(throbberBlueColor);
   [shapeLayer_ setStrokeColor:blueColor];
   CGColorRelease(blueColor);
 

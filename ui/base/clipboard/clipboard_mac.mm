@@ -329,7 +329,7 @@ SkBitmap ClipboardMac::ReadImage(ClipboardType type) const {
 
   SkBitmap bitmap;
   if (image.get()) {
-    bitmap = gfx::NSImageToSkBitmapWithColorSpace(
+    bitmap = skia::NSImageToSkBitmapWithColorSpace(
         image.get(), /*is_opaque=*/ false, base::mac::GetSystemColorSpace());
   }
   return bitmap;
@@ -440,7 +440,7 @@ void ClipboardMac::WriteBookmark(const char* title_data,
 }
 
 void ClipboardMac::WriteBitmap(const SkBitmap& bitmap) {
-  NSImage* image = gfx::SkBitmapToNSImageWithColorSpace(
+  NSImage* image = skia::SkBitmapToNSImageWithColorSpace(
       bitmap, base::mac::GetSystemColorSpace());
   // An API to ask the NSImage to write itself to the clipboard comes in 10.6 :(
   // For now, spit out the image as a TIFF.

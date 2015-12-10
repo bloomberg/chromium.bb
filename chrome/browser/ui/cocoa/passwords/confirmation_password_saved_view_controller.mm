@@ -78,7 +78,7 @@
           withFont:font
       messageColor:textColor];
   NSColor* linkColor =
-      gfx::SkColorToCalibratedNSColor(chrome_style::GetLinkColor());
+      skia::SkColorToCalibratedNSColor(chrome_style::GetLinkColor());
   [confirmationText_
       addLinkRange:model_->save_confirmation_link_range().ToNSRange()
            withURL:@"about:blank"  // using a link here is bad ui

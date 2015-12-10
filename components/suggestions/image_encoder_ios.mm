@@ -14,7 +14,8 @@ namespace suggestions {
 SkBitmap* DecodeJPEGToSkBitmap(const void* encoded_data, size_t size) {
   NSData* data = [NSData dataWithBytes:encoded_data length:size];
   UIImage* image = [UIImage imageWithData:data scale:1.0];
-  return new SkBitmap(gfx::CGImageToSkBitmap(image.CGImage, [image size], YES));
+  return new SkBitmap(skia::CGImageToSkBitmap(image.CGImage, [image size],
+                                              YES));
 }
 
 bool EncodeSkBitmapToJPEG(const SkBitmap& bitmap,
@@ -22,7 +23,7 @@ bool EncodeSkBitmapToJPEG(const SkBitmap& bitmap,
   base::ScopedCFTypeRef<CGColorSpaceRef> color_space(
       CGColorSpaceCreateDeviceRGB());
   UIImage* image =
-      gfx::SkBitmapToUIImageWithColorSpace(bitmap, 1 /* scale */, color_space);
+      skia::SkBitmapToUIImageWithColorSpace(bitmap, 1 /* scale */, color_space);
   NSData* data = UIImageJPEGRepresentation(image, 1.0);
   const char* bytes = reinterpret_cast<const char*>([data bytes]);
   dest->assign(bytes, bytes + [data length]);

@@ -63,7 +63,7 @@ const SkColor kPressOuterRingColor = SkColorSetRGB(0x23, 0x52, 0xa2);
   base::scoped_nsobject<NSShadow> shadow([[NSShadow alloc] init]);
   [shadow setShadowOffset:NSMakeSize(0, -1)];
   [shadow setShadowBlurRadius:0];
-  [shadow setShadowColor:gfx::SkColorToSRGBNSColor(kTextShadowColor)];
+  [shadow setShadowColor:skia::SkColorToSRGBNSColor(kTextShadowColor)];
 
   NSDictionary* buttonTextAttributes = @{
     NSParagraphStyleAttributeName : buttonTextParagraphStyle,
@@ -112,24 +112,24 @@ const SkColor kPressOuterRingColor = SkColorSetRGB(0x23, 0x52, 0xa2);
   frame.size.height -= 1;
 
   if (hoverState == kHoverStateMouseDown && [self isHighlighted]) {
-    centerColor = gfx::SkColorToSRGBNSColor(kPressedColor);
-    innerColor = gfx::SkColorToSRGBNSColor(kPressInnerRingColor);
-    outerColor = gfx::SkColorToSRGBNSColor(kPressOuterRingColor);
+    centerColor = skia::SkColorToSRGBNSColor(kPressedColor);
+    innerColor = skia::SkColorToSRGBNSColor(kPressInnerRingColor);
+    outerColor = skia::SkColorToSRGBNSColor(kPressOuterRingColor);
   } else {
     centerColor = hoverState == kHoverStateMouseOver ?
-        gfx::SkColorToSRGBNSColor(kHoverColor) :
-        gfx::SkColorToSRGBNSColor(kDefaultColor);
+        skia::SkColorToSRGBNSColor(kHoverColor) :
+        skia::SkColorToSRGBNSColor(kDefaultColor);
     innerColor = [self showsFirstResponder] ?
-        gfx::SkColorToSRGBNSColor(kFocusInnerRingColor) :
-        gfx::SkColorToSRGBNSColor(kInnerRingColor);
-    outerColor = gfx::SkColorToSRGBNSColor(kOuterRingColor);
+        skia::SkColorToSRGBNSColor(kFocusInnerRingColor) :
+        skia::SkColorToSRGBNSColor(kInnerRingColor);
+    outerColor = skia::SkColorToSRGBNSColor(kOuterRingColor);
   }
   {
     gfx::ScopedNSGraphicsContextSaveGState context;
     base::scoped_nsobject<NSShadow> shadow([[NSShadow alloc] init]);
     [shadow setShadowOffset:NSMakeSize(0, -1)];
     [shadow setShadowBlurRadius:1.0];
-    [shadow setShadowColor:gfx::SkColorToSRGBNSColor(kShadowColor)];
+    [shadow setShadowColor:skia::SkColorToSRGBNSColor(kShadowColor)];
     [shadow set];
     [outerColor set];
 

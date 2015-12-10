@@ -47,7 +47,7 @@ private:
     NSGraphicsContext* m_savedNSGraphicsContext;
     bool m_didSetGraphicsContext;
     IntRect m_inflatedDirtyRect;
-    gfx::SkiaBitLocker m_skiaBitLocker;
+    skia::SkiaBitLocker m_skiaBitLocker;
 };
 
 }

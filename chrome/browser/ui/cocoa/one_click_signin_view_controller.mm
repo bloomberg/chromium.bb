@@ -140,7 +140,7 @@ void ShiftOriginY(NSView* view, CGFloat amount) {
     totalYOffset +=
         [GTMUILocalizerAndLayoutTweaker sizeToFitView:advancedLink_].height;
     [[advancedLink_ cell] setTextColor:
-        gfx::SkColorToCalibratedNSColor(chrome_style::GetLinkColor())];
+        skia::SkColorToCalibratedNSColor(chrome_style::GetLinkColor())];
   } else {
     // Don't display the advanced link for the error bubble.
     // To align the Learn More link with the OK button, we need to offset by
@@ -249,7 +249,7 @@ void ShiftOriginY(NSView* view, CGFloat amount) {
   }
 
   NSColor* linkColor =
-      gfx::SkColorToCalibratedNSColor(chrome_style::GetLinkColor());
+      skia::SkColorToCalibratedNSColor(chrome_style::GetLinkColor());
   [informativeTextView_ setMessage:messageText
                           withFont:font
                       messageColor:[NSColor blackColor]];

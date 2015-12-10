@@ -46,8 +46,8 @@ NSGradient* GetButtonGradient(ButtonState button_state) {
   const SkColor start[] = {0xFFF0F0F0, 0xFFF4F4F4, 0xFFEBEBEB, 0xFFEDEDED};
   const SkColor end[] = {0xFFE0E0E0, 0xFFE4E4E4, 0xFFDBDBDB, 0xFFDEDEDE};
 
-  NSColor* start_color = gfx::SkColorToCalibratedNSColor(start[button_state]);
-  NSColor* end_color = gfx::SkColorToCalibratedNSColor(end[button_state]);
+  NSColor* start_color = skia::SkColorToCalibratedNSColor(start[button_state]);
+  NSColor* end_color = skia::SkColorToCalibratedNSColor(end[button_state]);
   return [[[NSGradient alloc] initWithColorsAndLocations:
       start_color, 0.0,
       start_color, 0.38,
@@ -59,7 +59,7 @@ NSShadow* GetButtonHighlight(ButtonState button_state) {
   const SkColor color[] = {0xBFFFFFFF, 0xF2FFFFFF, 0x24000000, 0x00000000};
 
   NSShadow* shadow = [[[NSShadow alloc] init] autorelease];
-  [shadow setShadowColor:gfx::SkColorToCalibratedNSColor(color[button_state])];
+  [shadow setShadowColor:skia::SkColorToCalibratedNSColor(color[button_state])];
   [shadow setShadowOffset:NSMakeSize(0, -1)];
   [shadow setShadowBlurRadius:2];
   return shadow;
@@ -69,7 +69,7 @@ NSShadow* GetButtonShadow(ButtonState button_state) {
   const SkColor color[] = {0x14000000, 0x1F000000, 0x00000000, 0x00000000};
 
   NSShadow* shadow = [[[NSShadow alloc] init] autorelease];
-  [shadow setShadowColor:gfx::SkColorToCalibratedNSColor(color[button_state])];
+  [shadow setShadowColor:skia::SkColorToCalibratedNSColor(color[button_state])];
   [shadow setShadowOffset:NSMakeSize(0, -1)];
   [shadow setShadowBlurRadius:0];
   return shadow;
@@ -78,7 +78,7 @@ NSShadow* GetButtonShadow(ButtonState button_state) {
 NSColor* GetButtonBorderColor(ButtonState button_state) {
   const SkColor color[] = {0x40000000, 0x4D000000, 0x4D000000, 0x1F000000};
 
-  return gfx::SkColorToCalibratedNSColor(color[button_state]);
+  return skia::SkColorToCalibratedNSColor(color[button_state]);
 }
 
 NSAttributedString* GetButtonAttributedString(
@@ -93,7 +93,7 @@ NSAttributedString* GetButtonAttributedString(
 
   base::scoped_nsobject<NSShadow> shadow([[NSShadow alloc] init]);
   [shadow setShadowColor:
-      gfx::SkColorToCalibratedNSColor(shadow_color[cellButtonState(cell)])];
+      skia::SkColorToCalibratedNSColor(shadow_color[cellButtonState(cell)])];
   [shadow setShadowOffset:NSMakeSize(0, -1)];
   [shadow setShadowBlurRadius:0];
 
@@ -109,7 +109,7 @@ NSAttributedString* GetButtonAttributedString(
 
   NSDictionary* attributes = [NSDictionary dictionaryWithObjectsAndKeys:
       font, NSFontAttributeName,
-      gfx::SkColorToCalibratedNSColor(text_color[cellButtonState(cell)]),
+      skia::SkColorToCalibratedNSColor(text_color[cellButtonState(cell)]),
       NSForegroundColorAttributeName,
       shadow.get(), NSShadowAttributeName,
       paragraphStyle.get(), NSParagraphStyleAttributeName,

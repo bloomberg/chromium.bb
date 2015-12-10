@@ -54,7 +54,7 @@
   NSRectFill(dirtyRect);
 
   // Overlay with a lighter background color.
-  NSColor* toolbarColor = gfx::SkColorToCalibratedNSColor(
+  NSColor* toolbarColor = skia::SkColorToCalibratedNSColor(
       chrome::GetDetachedBookmarkBarBackgroundColor(themeService));
   CGFloat alpha = morph * [toolbarColor alphaComponent];
   [[toolbarColor colorWithAlphaComponent:alpha] set];
@@ -75,7 +75,7 @@
   NSRect strokeRect = [self bounds];
   strokeRect.size.height = [self cr_lineWidth];
   if (NSIntersectsRect(strokeRect, dirtyRect)) {
-    NSColor* strokeColor = gfx::SkColorToCalibratedNSColor(
+    NSColor* strokeColor = skia::SkColorToCalibratedNSColor(
         chrome::GetDetachedBookmarkBarSeparatorColor(themeService));
     strokeColor = [[self strokeColor] blendedColorWithFraction:morph
                                                        ofColor:strokeColor];

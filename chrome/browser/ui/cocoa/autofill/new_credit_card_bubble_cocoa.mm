@@ -88,7 +88,7 @@ const CGFloat kAnchorlessTopPadding = 10;
 
     ui::NativeTheme* nativeTheme = ui::NativeThemeMac::instance();
     [[self bubble] setBackgroundColor:
-        gfx::SkColorToCalibratedNSColor(nativeTheme->GetSystemColor(
+        skia::SkColorToCalibratedNSColor(nativeTheme->GetSystemColor(
             ui::NativeTheme::kColorId_DialogBackground))];
     [self performLayout];
   }

@@ -129,7 +129,7 @@ NSData* InvalidData(NSUInteger length) {
 
 TEST_F(SkiaUtilsIosTest, ImageDataToSkBitmaps) {
   std::vector<SkBitmap> bitmaps(
-      gfx::ImageDataToSkBitmaps(StringToNSData(kIcoEncodedData)));
+      skia::ImageDataToSkBitmaps(StringToNSData(kIcoEncodedData)));
 
   EXPECT_EQ(2UL, bitmaps.size());
   EXPECT_EQ(32, bitmaps[0].width());
@@ -139,20 +139,20 @@ TEST_F(SkiaUtilsIosTest, ImageDataToSkBitmaps) {
 }
 
 TEST_F(SkiaUtilsIosTest, InvalidDataFailure) {
-  std::vector<SkBitmap> bitmaps1(gfx::ImageDataToSkBitmaps(InvalidData(1)));
+  std::vector<SkBitmap> bitmaps1(skia::ImageDataToSkBitmaps(InvalidData(1)));
   EXPECT_EQ(0UL, bitmaps1.size());
-  std::vector<SkBitmap> bitmaps2(gfx::ImageDataToSkBitmaps(InvalidData(10)));
+  std::vector<SkBitmap> bitmaps2(skia::ImageDataToSkBitmaps(InvalidData(10)));
   EXPECT_EQ(0UL, bitmaps2.size());
-  std::vector<SkBitmap> bitmaps3(gfx::ImageDataToSkBitmaps(InvalidData(100)));
+  std::vector<SkBitmap> bitmaps3(skia::ImageDataToSkBitmaps(InvalidData(100)));
   EXPECT_EQ(0UL, bitmaps3.size());
-  std::vector<SkBitmap> bitmaps4(gfx::ImageDataToSkBitmaps(InvalidData(1000)));
+  std::vector<SkBitmap> bitmaps4(skia::ImageDataToSkBitmaps(InvalidData(1000)));
   EXPECT_EQ(0UL, bitmaps4.size());
-  std::vector<SkBitmap> bitmaps5(gfx::ImageDataToSkBitmaps(InvalidData(5000)));
+  std::vector<SkBitmap> bitmaps5(skia::ImageDataToSkBitmaps(InvalidData(5000)));
   EXPECT_EQ(0UL, bitmaps5.size());
 }
 
 TEST_F(SkiaUtilsIosTest, EmptyDataFailure) {
-  std::vector<SkBitmap> bitmaps(gfx::ImageDataToSkBitmaps([NSData data]));
+  std::vector<SkBitmap> bitmaps(skia::ImageDataToSkBitmaps([NSData data]));
 
   EXPECT_EQ(0UL, bitmaps.size());
 }
@@ -742,7 +742,7 @@ const char kIco88x88EncodedData[] =
 
 TEST_F(SkiaUtilsIosTest, Image88x88OrLarger) {
   std::vector<SkBitmap> bitmaps(
-      gfx::ImageDataToSkBitmaps(StringToNSData(kIco88x88EncodedData)));
+      skia::ImageDataToSkBitmaps(StringToNSData(kIco88x88EncodedData)));
   if (base::ios::IsRunningOnOrLater(8, 1, 1))
     EXPECT_EQ(0UL, bitmaps.size());
   else
@@ -751,7 +751,7 @@ TEST_F(SkiaUtilsIosTest, Image88x88OrLarger) {
 
 TEST_F(SkiaUtilsIosTest, UIColorFromSkColor) {
   SkColor color = SkColorSetARGB(50, 100, 150, 200);
-  UIColor* ios_color = gfx::UIColorFromSkColor(color);
+  UIColor* ios_color = skia::UIColorFromSkColor(color);
   CGFloat red, green, blue, alpha;
   [ios_color getRed:&red green:&green blue:&blue alpha:&alpha];
   EXPECT_EQ(50, static_cast<int>(alpha * 255 + 0.5f));

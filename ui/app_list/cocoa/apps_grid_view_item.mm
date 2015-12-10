@@ -173,7 +173,7 @@ void ItemModelObserverBridge::ItemPercentDownloadedChanged() {
   if (!selected_)
     return;
 
-  [gfx::SkColorToSRGBNSColor(app_list::kSelectedColor) set];
+  [skia::SkColorToSRGBNSColor(app_list::kSelectedColor) set];
   NSRectFillUsingOperation(dirtyRect, NSCompositeSourceOver);
 }
 
@@ -243,7 +243,7 @@ void ItemModelObserverBridge::ItemPercentDownloadedChanged() {
                               .GetPrimaryFont()
                               .GetNativeFont(),
     NSForegroundColorAttributeName :
-        gfx::SkColorToSRGBNSColor(app_list::kGridTitleColor)
+        skia::SkColorToSRGBNSColor(app_list::kGridTitleColor)
   };
   NSString* buttonTitle =
       base::SysUTF8ToNSString([self model]->GetDisplayName());

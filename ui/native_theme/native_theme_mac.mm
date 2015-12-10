@@ -96,7 +96,7 @@ SkColor NSSystemColorToSkColor(NSColor* color) {
   NSColor* device_color =
       [color colorUsingColorSpace:[NSColorSpace deviceRGBColorSpace]];
   if (device_color)
-    return gfx::NSDeviceColorToSkColor(device_color);
+    return skia::NSDeviceColorToSkColor(device_color);
 
   // Sometimes the conversion is not possible, but we can get an approximation
   // by going through a CGColorRef. Note that simply using NSColor methods for
@@ -107,7 +107,7 @@ SkColor NSSystemColorToSkColor(NSColor* color) {
   CGColorRef cg_color = [color CGColor];
   const size_t component_count = CGColorGetNumberOfComponents(cg_color);
   if (component_count == 4)
-    return gfx::CGColorRefToSkColor(cg_color);
+    return skia::CGColorRefToSkColor(cg_color);
 
   CHECK(component_count == 1 || component_count == 2);
   // 1-2 components means a grayscale channel and maybe an alpha channel, which

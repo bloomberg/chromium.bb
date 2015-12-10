@@ -27,7 +27,7 @@ bool EncodesIcoImage(NSData* image_data) {
 
 }  // namespace
 
-namespace gfx {
+namespace skia {
 
 SkBitmap CGImageToSkBitmap(CGImageRef image, CGSize size, bool is_opaque) {
   SkBitmap bitmap;
@@ -130,4 +130,4 @@ UIColor* UIColorFromSkColor(SkColor color) {
                          alpha:SkColorGetA(color) / 255.0f];
 }
 
-}  // namespace gfx
+}  // namespace skia

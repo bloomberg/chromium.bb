@@ -103,7 +103,7 @@ bool ScrollbarThemeMacNonOverlayAPI::paint(const ScrollbarThemeClient& scrollbar
     trackInfo.trackInfo.scrollbar.pressState = scrollbarPartToHIPressedState(scrollbar.pressedPart());
 
     SkCanvas* canvas = context.canvas();
-    CGAffineTransform currentCTM = gfx::SkMatrixToCGAffineTransform(canvas->getTotalMatrix());
+    CGAffineTransform currentCTM = skia::SkMatrixToCGAffineTransform(canvas->getTotalMatrix());
 
     // The Aqua scrollbar is buggy when rotated and scaled.  We will just draw into a bitmap if we detect a scale or rotation.
     bool canDrawDirectly = currentCTM.a == 1.0f && currentCTM.b == 0.0f && currentCTM.c == 0.0f && (currentCTM.d == 1.0f || currentCTM.d == -1.0f);
@@ -126,7 +126,7 @@ bool ScrollbarThemeMacNonOverlayAPI::paint(const ScrollbarThemeClient& scrollbar
     }
 
     // Draw the track and its thumb.
-    gfx::SkiaBitLocker bitLocker(
+    skia::SkiaBitLocker bitLocker(
         drawingCanvas,
         ThemeMac::inflateRectForAA(scrollbar.frameRect()),
         canDrawDirectly ? context.deviceScaleFactor() : 1.0f);

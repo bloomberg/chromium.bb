@@ -85,7 +85,7 @@ SkBitmap NSImageOrNSImageRepToSkBitmapWithColorSpace(
 
 } // namespace
 
-namespace gfx {
+namespace skia {
 
 CGAffineTransform SkMatrixToCGAffineTransform(const SkMatrix& matrix) {
   // CGAffineTransforms don't support perspective transforms, so make sure
@@ -466,4 +466,4 @@ bool SkiaBitLocker::hasEmptyClipRegion() const {
   return canvas_->isClipEmpty();
 }
 
-}  // namespace gfx
+}  // namespace skia

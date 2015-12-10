@@ -39,7 +39,7 @@
   NSBezierPath* path = [NSBezierPath bezierPathWithRoundedRect:dirtyRect
       xRadius:message_center::kProgressBarCornerRadius
       yRadius:message_center::kProgressBarCornerRadius];
-  [gfx::SkColorToCalibratedNSColor(message_center::kProgressBarBackgroundColor)
+  [skia::SkColorToCalibratedNSColor(message_center::kProgressBarBackgroundColor)
       set];
   [path fill];
 
@@ -49,7 +49,8 @@
   path = [NSBezierPath bezierPathWithRoundedRect:sliceRect
       xRadius:message_center::kProgressBarCornerRadius
       yRadius:message_center::kProgressBarCornerRadius];
-  [gfx::SkColorToCalibratedNSColor(message_center::kProgressBarSliceColor) set];
+  [skia::SkColorToCalibratedNSColor(message_center::kProgressBarSliceColor)
+      set];
   [path fill];
 }
 
@@ -77,7 +78,7 @@
 // drawRect: needs to fill the button with a background, otherwise we don't get
 // subpixel antialiasing.
 - (void)drawRect:(NSRect)dirtyRect {
-  NSColor* color = gfx::SkColorToCalibratedNSColor(
+  NSColor* color = skia::SkColorToCalibratedNSColor(
       message_center::kNotificationBackgroundColor);
   [color set];
   NSRectFill(dirtyRect);
@@ -103,7 +104,7 @@
 
   if (!hovered_)
     return;
-  [gfx::SkColorToCalibratedNSColor(
+  [skia::SkColorToCalibratedNSColor(
       message_center::kHoveredButtonBackgroundColor) set];
   NSRectFill(frame);
 }
@@ -140,7 +141,7 @@
     NSFontAttributeName :
         [title attribute:NSFontAttributeName atIndex:0 effectiveRange:NULL],
     NSForegroundColorAttributeName :
-        gfx::SkColorToCalibratedNSColor(message_center::kRegularTextColor),
+        skia::SkColorToCalibratedNSColor(message_center::kRegularTextColor),
   };
   [[title string] drawWithRect:frame
                        options:(NSStringDrawingUsesLineFragmentOrigin |
@@ -319,7 +320,7 @@
   base::scoped_nsobject<MCNotificationView> rootView(
       [[MCNotificationView alloc] initWithController:self frame:rootFrame]);
   [self configureCustomBox:rootView];
-  [rootView setFillColor:gfx::SkColorToCalibratedNSColor(
+  [rootView setFillColor:skia::SkColorToCalibratedNSColor(
       message_center::kNotificationBackgroundColor)];
   [self setView:rootView];
 
@@ -513,7 +514,7 @@
 
       // Use dim color for the title part.
       NSColor* titleColor =
-          gfx::SkColorToCalibratedNSColor(message_center::kRegularTextColor);
+          skia::SkColorToCalibratedNSColor(message_center::kRegularTextColor);
       NSRange titleRange = NSMakeRange(
           0,
           std::min(ellidedText.size(), items[i].title.size()));
@@ -522,7 +523,7 @@
       // Use dim color for the message part if it has not been truncated.
       if (ellidedText.size() > items[i].title.size() + 1) {
         NSColor* messageColor =
-            gfx::SkColorToCalibratedNSColor(message_center::kDimTextColor);
+            skia::SkColorToCalibratedNSColor(message_center::kDimTextColor);
         NSRange messageRange = NSMakeRange(
             items[i].title.size() + 1,
             ellidedText.size() - items[i].title.size() - 1);
@@ -614,7 +615,7 @@
     base::scoped_nsobject<NSBox> separator(
         [[AccessibilityIgnoredBox alloc] initWithFrame:separatorFrame]);
     [self configureCustomBox:separator];
-    [separator setFillColor:gfx::SkColorToCalibratedNSColor(
+    [separator setFillColor:skia::SkColorToCalibratedNSColor(
         message_center::kButtonSeparatorColor)];
     y += NSHeight(separatorFrame);
     frame.size.height += NSHeight(separatorFrame);
@@ -714,7 +715,7 @@
   base::scoped_nsobject<NSBox> imageBox(
       [[AccessibilityIgnoredBox alloc] initWithFrame:imageFrame]);
   [self configureCustomBox:imageBox];
-  [imageBox setFillColor:gfx::SkColorToCalibratedNSColor(
+  [imageBox setFillColor:skia::SkColorToCalibratedNSColor(
       message_center::kIconBackgroundColor)];
   [imageBox setAutoresizingMask:NSViewMinYMargin];
 
@@ -736,7 +737,7 @@
   base::scoped_nsobject<NSBox> imageBox(
       [[AccessibilityIgnoredBox alloc] initWithFrame:imageFrame]);
   [self configureCustomBox:imageBox];
-  [imageBox setFillColor:gfx::SkColorToCalibratedNSColor(
+  [imageBox setFillColor:skia::SkColorToCalibratedNSColor(
       message_center::kImageBackgroundColor)];
 
   // Images with non-preferred aspect ratios get a border on all sides.
@@ -862,7 +863,7 @@
   contentFrame.size.height = 0;
   title_.reset([self newLabelWithFrame:contentFrame]);
   [title_ setAutoresizingMask:NSViewMinYMargin];
-  [title_ setTextColor:gfx::SkColorToCalibratedNSColor(
+  [title_ setTextColor:skia::SkColorToCalibratedNSColor(
       message_center::kRegularTextColor)];
   [title_ setFont:[NSFont messageFontOfSize:message_center::kTitleFontSize]];
 }
@@ -871,7 +872,7 @@
   contentFrame.size.height = 0;
   message_.reset([self newLabelWithFrame:contentFrame]);
   [message_ setAutoresizingMask:NSViewMinYMargin];
-  [message_ setTextColor:gfx::SkColorToCalibratedNSColor(
+  [message_ setTextColor:skia::SkColorToCalibratedNSColor(
       message_center::kRegularTextColor)];
   [message_ setFont:
       [NSFont messageFontOfSize:message_center::kMessageFontSize]];
@@ -881,7 +882,7 @@
   contentFrame.size.height = 0;
   contextMessage_.reset([self newLabelWithFrame:contentFrame]);
   [contextMessage_ setAutoresizingMask:NSViewMinYMargin];
-  [contextMessage_ setTextColor:gfx::SkColorToCalibratedNSColor(
+  [contextMessage_ setTextColor:skia::SkColorToCalibratedNSColor(
       message_center::kDimTextColor)];
   [contextMessage_ setFont:
       [NSFont messageFontOfSize:message_center::kMessageFontSize]];
@@ -893,7 +894,7 @@
   // The labels MUST draw their background so that subpixel antialiasing can
   // happen on the text.
   [label setDrawsBackground:YES];
-  [label setBackgroundColor:gfx::SkColorToCalibratedNSColor(
+  [label setBackgroundColor:skia::SkColorToCalibratedNSColor(
       message_center::kNotificationBackgroundColor)];
 
   [label setEditable:NO];

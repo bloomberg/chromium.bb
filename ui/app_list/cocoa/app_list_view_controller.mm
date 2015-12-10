@@ -61,11 +61,11 @@ const NSTimeInterval kResultsAnimationDuration = 0.2;
                                    xRadius:kBubbleCornerRadius
                                    yRadius:kBubbleCornerRadius] addClip];
 
-  [gfx::SkColorToSRGBNSColor(app_list::kContentsBackgroundColor) set];
+  [skia::SkColorToSRGBNSColor(app_list::kContentsBackgroundColor) set];
   NSRectFill(boundsRect);
-  [gfx::SkColorToSRGBNSColor(app_list::kSearchBoxBackground) set];
+  [skia::SkColorToSRGBNSColor(app_list::kSearchBoxBackground) set];
   NSRectFill(searchAreaRect);
-  [gfx::SkColorToSRGBNSColor(app_list::kTopSeparatorColor) set];
+  [skia::SkColorToSRGBNSColor(app_list::kTopSeparatorColor) set];
   NSRectFill(separatorRect);
 }
 

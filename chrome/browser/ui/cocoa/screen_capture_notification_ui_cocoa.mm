@@ -237,7 +237,7 @@ scoped_ptr<ScreenCaptureNotificationUI> ScreenCaptureNotificationUI::Create(
 @implementation ScreenCaptureNotificationView
 
 - (void)drawRect:(NSRect)dirtyRect {
-  [gfx::SkColorToSRGBNSColor(ui::NativeThemeMac::instance()->GetSystemColor(
+  [skia::SkColorToSRGBNSColor(ui::NativeThemeMac::instance()->GetSystemColor(
       ui::NativeTheme::kColorId_DialogBackground)) set];
   [[NSBezierPath bezierPathWithRoundedRect:[self bounds]
                                    xRadius:kWindowCornerRadius

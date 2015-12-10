@@ -113,7 +113,7 @@
   [cell setControlSize:NSSmallControlSize];
   [cell setShouldUnderline:NO];
   [cell setUnderlineOnHover:NO];
-  [cell setTextColor:gfx::SkColorToCalibratedNSColor(
+  [cell setTextColor:skia::SkColorToCalibratedNSColor(
       chrome_style::GetLinkColor())];
   [manageButton_ setCell:cell.get()];
   [manageButton_ sizeToFit];

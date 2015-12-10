@@ -137,8 +137,8 @@ const SkColor kSelectedRowColor = SkColorSetRGB(0xE6, 0xE6, 0xE6);
   [tableView_ setRefusesFirstResponder:YES];
   [tableView_ setRowHeight:kPreferredRowHeight];
   [tableView_ setGridStyleMask:NSTableViewSolidHorizontalGridLineMask];
-  [tableView_ setGridColor:
-      gfx::SkColorToSRGBNSColor(app_list::kResultBorderColor)];
+  [tableView_
+      setGridColor:skia::SkColorToSRGBNSColor(app_list::kResultBorderColor)];
   [tableView_ setBackgroundColor:[NSColor clearColor]];
   [tableView_ setAction:@selector(tableViewClicked:)];
   [tableView_ setDelegate:self];
@@ -333,9 +333,9 @@ const SkColor kSelectedRowColor = SkColorSetRGB(0xE6, 0xE6, 0xE6);
       [[NSMutableParagraphStyle alloc] init]);
   [paragraphStyle setLineBreakMode:NSLineBreakByTruncatingTail];
   NSDictionary* defaultAttributes = @{
-      NSForegroundColorAttributeName:
-          gfx::SkColorToSRGBNSColor(app_list::kResultDefaultTextColor),
-      NSParagraphStyleAttributeName: paragraphStyle
+    NSForegroundColorAttributeName :
+        skia::SkColorToSRGBNSColor(app_list::kResultDefaultTextColor),
+    NSParagraphStyleAttributeName : paragraphStyle
   };
 
   base::scoped_nsobject<NSMutableAttributedString> text(
@@ -361,13 +361,13 @@ const SkColor kSelectedRowColor = SkColorSetRGB(0xE6, 0xE6, 0xE6);
 
     if (it->styles & app_list::SearchResult::Tag::DIM) {
       NSColor* dimmedColor =
-          gfx::SkColorToSRGBNSColor(app_list::kResultDimmedTextColor);
+          skia::SkColorToSRGBNSColor(app_list::kResultDimmedTextColor);
       [text addAttribute:NSForegroundColorAttributeName
                    value:dimmedColor
                    range:it->range.ToNSRange()];
     } else if (it->styles & app_list::SearchResult::Tag::URL) {
       NSColor* urlColor =
-          gfx::SkColorToSRGBNSColor(app_list::kResultURLTextColor);
+          skia::SkColorToSRGBNSColor(app_list::kResultURLTextColor);
       [text addAttribute:NSForegroundColorAttributeName
                    value:urlColor
                    range:it->range.ToNSRange()];
@@ -426,9 +426,9 @@ const SkColor kSelectedRowColor = SkColorSetRGB(0xE6, 0xE6, 0xE6);
                inView:(NSView*)controlView {
   if ([self backgroundStyle] != kBackgroundNormal) {
     if ([self backgroundStyle] == kBackgroundSelected)
-      [gfx::SkColorToSRGBNSColor(kSelectedRowColor) set];
+      [skia::SkColorToSRGBNSColor(kSelectedRowColor) set];
     else
-      [gfx::SkColorToSRGBNSColor(kHighlightedRowColor) set];
+      [skia::SkColorToSRGBNSColor(kHighlightedRowColor) set];
 
     // Extend up by one pixel to draw over cell border.
     NSRect backgroundRect = cellFrame;

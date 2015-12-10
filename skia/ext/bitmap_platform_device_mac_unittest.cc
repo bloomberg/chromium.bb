@@ -38,7 +38,7 @@ TEST_F(BitmapPlatformDeviceMacTest, ClipRectTransformWithTranslate) {
   bitmap_->setMatrixClip(transform, clip_region, ignore);
 
   CGContextRef context = bitmap_->GetBitmapContext();
-  SkRect clip_rect = gfx::CGRectToSkRect(CGContextGetClipBoundingBox(context));
+  SkRect clip_rect = skia::CGRectToSkRect(CGContextGetClipBoundingBox(context));
   transform.mapRect(&clip_rect);
   EXPECT_EQ(0, clip_rect.fLeft);
   EXPECT_EQ(0, clip_rect.fTop);
@@ -58,7 +58,7 @@ TEST_F(BitmapPlatformDeviceMacTest, ClipRectTransformWithScale) {
   bitmap_->setMatrixClip(transform, clip_region, unused);
 
   CGContextRef context = bitmap_->GetBitmapContext();
-  SkRect clip_rect = gfx::CGRectToSkRect(CGContextGetClipBoundingBox(context));
+  SkRect clip_rect = skia::CGRectToSkRect(CGContextGetClipBoundingBox(context));
   transform.mapRect(&clip_rect);
   EXPECT_EQ(0, clip_rect.fLeft);
   EXPECT_EQ(0, clip_rect.fTop);

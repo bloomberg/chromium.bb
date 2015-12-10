@@ -103,7 +103,7 @@ const SkColor kWarmWelcomeColor = SkColorSetRGB(0x64, 0x64, 0x64);
   NSRange titleBrandLinkRange = model_->title_brand_link_range().ToNSRange();
   if (titleBrandLinkRange.length) {
     NSColor* linkColor =
-        gfx::SkColorToCalibratedNSColor(chrome_style::GetLinkColor());
+        skia::SkColorToCalibratedNSColor(chrome_style::GetLinkColor());
     [titleView addLinkRange:titleBrandLinkRange
                     withURL:@"about:blank"  // using a link here is bad ui
                   linkColor:linkColor];
@@ -145,7 +145,7 @@ const SkColor kWarmWelcomeColor = SkColorSetRGB(0x64, 0x64, 0x64);
     [warm_welcome setFrameSize:NSMakeSize(kDesiredBubbleWidth - 2*kFramePadding,
                                           MAXFLOAT)];
     [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:warm_welcome];
-    NSColor* color = gfx::SkColorToCalibratedNSColor(kWarmWelcomeColor);
+    NSColor* color = skia::SkColorToCalibratedNSColor(kWarmWelcomeColor);
     [warm_welcome setTextColor:color];
   }
 

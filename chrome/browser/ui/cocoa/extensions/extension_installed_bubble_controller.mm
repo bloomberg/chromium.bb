@@ -125,7 +125,7 @@ void ExtensionInstalledBubbleBridge::UpdateAnchorPosition() {
     const extensions::Extension* extension = extensionBubble->extension();
     browser_ = extensionBubble->browser();
     DCHECK(browser_);
-    icon_.reset([gfx::SkBitmapToNSImage(extensionBubble->icon()) retain]);
+    icon_.reset([skia::SkBitmapToNSImage(extensionBubble->icon()) retain]);
     pageActionPreviewShowing_ = NO;
 
     if (extension->is_app()) {
@@ -155,7 +155,7 @@ void ExtensionInstalledBubbleBridge::UpdateAnchorPosition() {
     bundle_ = bundle;
     DCHECK(browser);
     browser_ = browser;
-    icon_.reset([gfx::SkBitmapToNSImage(SkBitmap()) retain]);
+    icon_.reset([skia::SkBitmapToNSImage(SkBitmap()) retain]);
     pageActionPreviewShowing_ = NO;
     type_ = extension_installed_bubble::kBundle;
     [self showWindow:self];
@@ -407,7 +407,7 @@ void ExtensionInstalledBubbleBridge::UpdateAnchorPosition() {
     [view setMessage:message withFont:font messageColor:[NSColor blackColor]];
     [view addLinkRange:NSMakeRange(0, [link length])
                withURL:@"about:blank"  // using a link here is bad ui
-             linkColor:gfx::SkColorToCalibratedNSColor(
+             linkColor:skia::SkColorToCalibratedNSColor(
                            chrome_style::GetLinkColor())];
 
     // HACK! The TextView does not report correct height even after you stuff
@@ -489,7 +489,7 @@ void ExtensionInstalledBubbleBridge::UpdateAnchorPosition() {
     [[manageShortcutLink_ cell]
         setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
     [[manageShortcutLink_ cell]
-        setTextColor:gfx::SkColorToCalibratedNSColor(
+        setTextColor:skia::SkColorToCalibratedNSColor(
             chrome_style::GetLinkColor())];
     [GTMUILocalizerAndLayoutTweaker sizeToFitView:manageShortcutLink_];
     newWindowHeight += extension_installed_bubble::kInnerVerticalMargin;

@@ -21,7 +21,7 @@ class UIImage;
 class NSData;
 #endif
 
-namespace gfx {
+namespace skia {
 
 // Draws a CGImage into an SkBitmap of the given size.
 SK_API SkBitmap CGImageToSkBitmap(CGImageRef image,
@@ -41,6 +41,6 @@ SK_API std::vector<SkBitmap> ImageDataToSkBitmaps(NSData* image_data);
 // Returns a UIColor for an SKColor. Used by iOS downstream.
 SK_API UIColor* UIColorFromSkColor(SkColor color);
 
-}  // namespace gfx
+}  // namespace skia
 
 #endif  // SKIA_EXT_SKIA_UTILS_IOS_H_

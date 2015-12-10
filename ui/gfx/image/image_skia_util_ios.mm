@@ -31,9 +31,9 @@ gfx::ImageSkiaRep ImageSkiaRepOfScaleFromUIImage(UIImage* image, float scale) {
   CGSize size = image.size;
   CGSize desired_size_for_scale =
       CGSizeMake(size.width * scale, size.height * scale);
-  SkBitmap bitmap(gfx::CGImageToSkBitmap(image.CGImage,
-                                         desired_size_for_scale,
-                                         false));
+  SkBitmap bitmap(skia::CGImageToSkBitmap(image.CGImage,
+                                          desired_size_for_scale,
+                                          false));
   return gfx::ImageSkiaRep(bitmap, scale);
 }
 
@@ -49,8 +49,8 @@ UIImage* UIImageFromImageSkiaRep(const gfx::ImageSkiaRep& image_skia_rep) {
   float scale = image_skia_rep.scale();
   base::ScopedCFTypeRef<CGColorSpaceRef> color_space(
       CGColorSpaceCreateDeviceRGB());
-  return gfx::SkBitmapToUIImageWithColorSpace(image_skia_rep.sk_bitmap(), scale,
-                                              color_space);
+  return skia::SkBitmapToUIImageWithColorSpace(image_skia_rep.sk_bitmap(),
+                                               scale, color_space);
 }
 
 }  // namespace gfx

@@ -79,7 +79,7 @@ CGFloat kMinWidth = 320.0;
     [[self bubble] setAlignment:info_bubble::kAlignArrowToAnchor];
     [[self bubble] setArrowLocation:info_bubble::kTopRight];
     [[self bubble] setBackgroundColor:
-        gfx::SkColorToCalibratedNSColor(nativeTheme->GetSystemColor(
+        skia::SkColorToCalibratedNSColor(nativeTheme->GetSystemColor(
             ui::NativeTheme::kColorId_DialogBackground))];
 
     if (!g_animations_enabled)

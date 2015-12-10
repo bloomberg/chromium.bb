@@ -124,7 +124,7 @@
   [view setMessage:message withFont:font messageColor:[NSColor blackColor]];
   if (linkLength != 0) {
     NSColor* linkColor =
-        gfx::SkColorToCalibratedNSColor(chrome_style::GetLinkColor());
+        skia::SkColorToCalibratedNSColor(chrome_style::GetLinkColor());
     [view addLinkRange:NSMakeRange(linkOffset, linkLength)
                withURL:base::SysUTF8ToNSString(delegate->GetLinkURL().spec())
              linkColor:linkColor];

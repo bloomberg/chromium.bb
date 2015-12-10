@@ -66,7 +66,7 @@ NSStatusItem* StatusIconMac::item() {
 
 void StatusIconMac::SetImage(const gfx::ImageSkia& image) {
   if (!image.isNull()) {
-    NSImage* ns_image = gfx::SkBitmapToNSImage(*image.bitmap());
+    NSImage* ns_image = skia::SkBitmapToNSImage(*image.bitmap());
     if (ns_image)
       [item() setImage:ns_image];
   }

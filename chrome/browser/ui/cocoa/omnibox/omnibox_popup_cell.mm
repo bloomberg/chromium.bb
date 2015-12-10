@@ -63,10 +63,10 @@ NSColor* DimTextColor() {
   return [NSColor darkGrayColor];
 }
 NSColor* PositiveTextColor() {
-  return gfx::SkColorToCalibratedNSColor(SkColorSetRGB(0x0b, 0x80, 0x43));
+  return skia::SkColorToCalibratedNSColor(SkColorSetRGB(0x0b, 0x80, 0x43));
 }
 NSColor* NegativeTextColor() {
-  return gfx::SkColorToCalibratedNSColor(SkColorSetRGB(0xc5, 0x39, 0x29));
+  return skia::SkColorToCalibratedNSColor(SkColorSetRGB(0xc5, 0x39, 0x29));
 }
 NSColor* URLTextColor() {
   return [NSColor colorWithCalibratedRed:0.0 green:0.55 blue:0.0 alpha:1.0];

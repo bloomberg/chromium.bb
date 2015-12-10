@@ -638,7 +638,7 @@ namespace {
 
 // Convert a color constant to an NSColor that can be compared with |bitmap|.
 NSColor* ColorInBitmapColorSpace(SkColor color, NSBitmapImageRep* bitmap) {
-  return [gfx::SkColorToSRGBNSColor(color)
+  return [skia::SkColorToSRGBNSColor(color)
       colorUsingColorSpace:[bitmap colorSpace]];
 }
 

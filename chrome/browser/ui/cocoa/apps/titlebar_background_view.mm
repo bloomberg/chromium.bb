@@ -35,8 +35,8 @@
                positioned:NSWindowBelow
                relativeTo:nil];
 
-  [titlebar_background_view setColor:gfx::SkColorToSRGBNSColor(activeColor)
-                       inactiveColor:gfx::SkColorToSRGBNSColor(inactiveColor)];
+  [titlebar_background_view setColor:skia::SkColorToSRGBNSColor(activeColor)
+                       inactiveColor:skia::SkColorToSRGBNSColor(inactiveColor)];
   return titlebar_background_view.autorelease();
 }
 

@@ -95,7 +95,7 @@ void SetZoomBubbleAutoCloseDelayForTesting(NSTimeInterval time_interval) {
     [[self bubble] setAlignment:info_bubble::kAlignRightEdgeToAnchorEdge];
     [[self bubble] setArrowLocation:info_bubble::kNoArrow];
     [[self bubble] setBackgroundColor:
-        gfx::SkColorToCalibratedNSColor(nativeTheme->GetSystemColor(
+        skia::SkColorToCalibratedNSColor(nativeTheme->GetSystemColor(
             ui::NativeTheme::kColorId_DialogBackground))];
 
     [self performLayout];
@@ -233,7 +233,7 @@ void SetZoomBubbleAutoCloseDelayForTesting(NSTimeInterval time_interval) {
   [separatorView setBoxType:NSBoxCustom];
   ui::NativeTheme* nativeTheme = ui::NativeThemeMac::instance();
   [separatorView setBorderColor:
-      gfx::SkColorToCalibratedNSColor(nativeTheme->GetSystemColor(
+      skia::SkColorToCalibratedNSColor(nativeTheme->GetSystemColor(
           ui::NativeTheme::kColorId_MenuSeparatorColor))];
   [[[self window] contentView] addSubview:separatorView];
 
@@ -336,7 +336,7 @@ void SetZoomBubbleAutoCloseDelayForTesting(NSTimeInterval time_interval) {
   NSAttributedString* title = [self attributedTitle];
   if ([self hoverState] != kHoverStateNone) {
     ui::NativeTheme* nativeTheme = ui::NativeThemeMac::instance();
-    [gfx::SkColorToCalibratedNSColor(nativeTheme->GetSystemColor(
+    [skia::SkColorToCalibratedNSColor(nativeTheme->GetSystemColor(
         ui::NativeTheme::kColorId_FocusedMenuItemBackgroundColor)) set];
     NSRectFillUsingOperation(bounds, NSCompositeSourceOver);
 
@@ -344,7 +344,7 @@ void SetZoomBubbleAutoCloseDelayForTesting(NSTimeInterval time_interval) {
     base::scoped_nsobject<NSMutableAttributedString> selectedTitle(
         [[NSMutableAttributedString alloc] initWithAttributedString:title]);
     NSColor* selectedTitleColor =
-        gfx::SkColorToCalibratedNSColor(nativeTheme->GetSystemColor(
+        skia::SkColorToCalibratedNSColor(nativeTheme->GetSystemColor(
             ui::NativeTheme::kColorId_SelectedMenuItemForegroundColor));
     [selectedTitle addAttribute:NSForegroundColorAttributeName
                           value:selectedTitleColor

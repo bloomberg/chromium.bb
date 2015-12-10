@@ -307,7 +307,7 @@ bool HasAttribute(id item, CellAttributesMask attributeMask) {
         prompt_->GetUserCount())];
     [[storeLinkButton_ cell] setUnderlineOnHover:YES];
     [[storeLinkButton_ cell] setTextColor:
-        gfx::SkColorToCalibratedNSColor(chrome_style::GetLinkColor())];
+        skia::SkColorToCalibratedNSColor(chrome_style::GetLinkColor())];
   }
 
   [iconView_ setImage:prompt_->icon().ToNSImage()];
@@ -566,7 +566,7 @@ bool HasAttribute(id item, CellAttributesMask attributeMask) {
     [cell setAlignment:NSLeftTextAlignment];
     [cell setUnderlineOnHover:YES];
     [cell setTextColor:
-        gfx::SkColorToCalibratedNSColor(chrome_style::GetLinkColor())];
+        skia::SkColorToCalibratedNSColor(chrome_style::GetLinkColor())];
 
     size_t detailsIndex =
         [[item objectForKey:kPermissionsDetailIndex] unsignedIntegerValue];

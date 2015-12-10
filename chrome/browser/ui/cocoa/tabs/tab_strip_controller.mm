@@ -1556,7 +1556,7 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
   if (isApp) {
     SkBitmap* icon = extensions_tab_helper->GetExtensionAppIcon();
     if (icon)
-      image = gfx::SkBitmapToNSImageWithColorSpace(*icon, colorSpace);
+      image = skia::SkBitmapToNSImageWithColorSpace(*icon, colorSpace);
   } else {
     image = mac::FaviconForWebContents(contents);
   }

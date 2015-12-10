@@ -313,7 +313,7 @@ base::ScopedCFTypeRef<CFMutableArrayRef> RenderTextMac::ApplyStyles(
     end = TextIndexToGivenTextIndex(text, style.GetRange().end());
     const CFRange range = CFRangeMake(i, end - i);
     base::ScopedCFTypeRef<CGColorRef> foreground(
-        CGColorCreateFromSkColor(style.color()));
+        skia::CGColorCreateFromSkColor(style.color()));
     CFAttributedStringSetAttribute(attr_string, range,
                                    kCTForegroundColorAttributeName, foreground);
     CFArrayAppendValue(attributes, foreground);
@@ -417,7 +417,7 @@ void RenderTextMac::ComputeRuns() {
     const CGColorRef foreground = base::mac::GetValueFromDictionary<CGColorRef>(
         attributes, kCTForegroundColorAttributeName);
     if (foreground)
-      run->foreground = CGColorRefToSkColor(foreground);
+      run->foreground = skia::CGColorRefToSkColor(foreground);
 
     const CFNumberRef underline =
         base::mac::GetValueFromDictionary<CFNumberRef>(

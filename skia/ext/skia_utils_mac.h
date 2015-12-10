@@ -35,19 +35,7 @@ class NSImageRep;
 class NSColor;
 #endif
 
-namespace gfx {
-
-// Converts a Skia point to a CoreGraphics CGPoint.
-// Both use same in-memory format.
-inline const CGPoint& SkPointToCGPoint(const SkPoint& point) {
-  return reinterpret_cast<const CGPoint&>(point);
-}
-
-// Converts a CoreGraphics point to a Skia CGPoint.
-// Both use same in-memory format.
-inline const SkPoint& CGPointToSkPoint(const CGPoint& point) {
-  return reinterpret_cast<const SkPoint&>(point);
-}
+namespace skia {
 
 // Matrix converters.
 SK_API CGAffineTransform SkMatrixToCGAffineTransform(const SkMatrix& matrix);
@@ -148,6 +136,6 @@ class SK_API SkiaBitLocker {
 };
 
 
-}  // namespace gfx
+}  // namespace skia
 
 #endif  // SKIA_EXT_SKIA_UTILS_MAC_H_

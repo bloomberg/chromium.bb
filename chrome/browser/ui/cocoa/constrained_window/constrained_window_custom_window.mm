@@ -40,7 +40,7 @@
                                  backing:bufferingType
                                    defer:NO])) {
     [self setHasShadow:YES];
-    [self setBackgroundColor:gfx::SkColorToCalibratedNSColor(
+    [self setBackgroundColor:skia::SkColorToCalibratedNSColor(
         chrome_style::GetBackgroundColor())];
     [self setOpaque:NO];
     [self setReleasedWhenClosed:NO];

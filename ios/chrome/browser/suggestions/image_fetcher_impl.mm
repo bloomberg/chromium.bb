@@ -48,7 +48,7 @@ void ImageFetcherImpl::StartOrQueueNetworkRequest(
         UIImage* image = [UIImage imageWithData:data scale:1];
         if (image) {
           SkBitmap bitmap =
-              gfx::CGImageToSkBitmap(image.CGImage, [image size], YES);
+              skia::CGImageToSkBitmap(image.CGImage, [image size], YES);
           callback.Run(page_url, &bitmap);
           if (delegate_) {
             delegate_->OnImageFetched(page_url, &bitmap);

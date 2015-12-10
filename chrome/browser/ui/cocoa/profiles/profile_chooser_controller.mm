@@ -166,7 +166,7 @@ NSTextView* BuildFixedWidthTextViewWithLink(
     CGFloat frame_width) {
   base::scoped_nsobject<HyperlinkTextView> text_view(
       [[HyperlinkTextView alloc] initWithFrame:NSZeroRect]);
-  NSColor* link_color = gfx::SkColorToCalibratedNSColor(
+  NSColor* link_color = skia::SkColorToCalibratedNSColor(
       chrome_style::GetLinkColor());
   NSMutableString* finalMessage =
       [NSMutableString stringWithFormat:@"%@\n", message];
@@ -199,7 +199,7 @@ NSTextView* BuildFixedWidthTextViewWithLink(
 
 // Returns the native dialog background color.
 NSColor* GetDialogBackgroundColor() {
-  return gfx::SkColorToCalibratedNSColor(
+  return skia::SkColorToCalibratedNSColor(
       ui::NativeThemeMac::instance()->GetSystemColor(
           ui::NativeTheme::kColorId_DialogBackground));
 }
@@ -799,7 +799,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
     // native control.
     SkColor hoverColor = ui::GetAuraColor(
         ui::NativeTheme::kColorId_ButtonHoverBackgroundColor, nullptr);
-    hoverColor_.reset([gfx::SkColorToSRGBNSColor(hoverColor) retain]);
+    hoverColor_.reset([skia::SkColorToSRGBNSColor(hoverColor) retain]);
 
     [self setBordered:NO];
     [self setFont:[NSFont labelFontOfSize:kTextFontSize]];
@@ -1565,7 +1565,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   tutorialMode_ = mode;
 
   NSColor* tutorialBackgroundColor =
-      gfx::SkColorToSRGBNSColor(profiles::kAvatarTutorialBackgroundColor);
+      skia::SkColorToSRGBNSColor(profiles::kAvatarTutorialBackgroundColor);
   base::scoped_nsobject<NSView> container([[BackgroundColorView alloc]
       initWithFrame:NSMakeRect(0, 0, kFixedMenuWidth, 0)
           withColor:tutorialBackgroundColor]);
@@ -1642,7 +1642,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   NSTextField* contentLabel = BuildLabel(
       contentMessage,
       NSMakePoint(kHorizontalSpacing, yOffset),
-      gfx::SkColorToSRGBNSColor(profiles::kAvatarTutorialContentTextColor));
+      skia::SkColorToSRGBNSColor(profiles::kAvatarTutorialContentTextColor));
   [contentLabel setFrameSize:NSMakeSize(availableWidth, 0)];
   [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:contentLabel];
   [container addSubview:contentLabel];
@@ -1996,7 +1996,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
       avatarMenu_->GetItemAt(avatarMenu_->GetActiveProfileIndex());
   DCHECK(item.signed_in);
 
-  NSColor* backgroundColor = gfx::SkColorToCalibratedNSColor(
+  NSColor* backgroundColor = skia::SkColorToCalibratedNSColor(
       profiles::kAvatarBubbleAccountsBackgroundColor);
   base::scoped_nsobject<NSView> container([[BackgroundColorView alloc]
       initWithFrame:rect
@@ -2325,7 +2325,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
       [[HyperlinkButtonCell buttonWithString:title] retain]);
 
   [[link cell] setShouldUnderline:NO];
-  [[link cell] setTextColor:gfx::SkColorToCalibratedNSColor(
+  [[link cell] setTextColor:skia::SkColorToCalibratedNSColor(
       chrome_style::GetLinkColor())];
   [link setTitle:title];
   [link setBordered:NO];
@@ -2358,7 +2358,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   if (warningImage)
     availableTextWidth -= kHorizontalSpacing;
 
-  NSColor* backgroundColor = gfx::SkColorToCalibratedNSColor(
+  NSColor* backgroundColor = skia::SkColorToCalibratedNSColor(
       profiles::kAvatarBubbleAccountsBackgroundColor);
   base::scoped_nsobject<BackgroundColorHoverButton> button(
       [[BackgroundColorHoverButton alloc] initWithFrame:rect

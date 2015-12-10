@@ -99,7 +99,7 @@ static void LoadTransformToCGContext(CGContextRef context,
   transformed_matrix.setTranslateY(ty + (SkScalar)height);
 
   CGAffineTransform cg_matrix =
-      gfx::SkMatrixToCGAffineTransform(transformed_matrix);
+      skia::SkMatrixToCGAffineTransform(transformed_matrix);
 
   // Load final transform into context.
   CGContextConcatCTM(context, cg_matrix);
@@ -113,7 +113,7 @@ static void LoadClippingRegionToCGContext(CGContextRef context,
     // region can be empty, in which case everything will be clipped.
     SkRect rect;
     rect.setEmpty();
-    CGContextClipToRect(context, gfx::SkRectToCGRect(rect));
+    CGContextClipToRect(context, skia::SkRectToCGRect(rect));
   } else if (region.isRect()) {
     // CoreGraphics applies the current transform to clip rects, which is
     // unwanted. Inverse-transform the rect before sending it to CG. This only
@@ -129,7 +129,7 @@ static void LoadClippingRegionToCGContext(CGContextRef context,
     t.mapRect(&rect);
     SkIRect irect;
     rect.round(&irect);
-    CGContextClipToRect(context, gfx::SkIRectToCGRect(irect));
+    CGContextClipToRect(context, skia::SkIRectToCGRect(irect));
   } else {
     // It is complex.
     SkPath path;

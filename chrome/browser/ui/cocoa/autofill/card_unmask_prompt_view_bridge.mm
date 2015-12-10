@@ -304,7 +304,7 @@ void CardUnmaskPromptViewBridge::PerformClose() {
   if (!text.empty()) {
     if (!permanentErrorBox_) {
       permanentErrorBox_ = [CardUnmaskPromptViewCocoa createPlainBox];
-      [permanentErrorBox_ setFillColor:gfx::SkColorToCalibratedNSColor(
+      [permanentErrorBox_ setFillColor:skia::SkColorToCalibratedNSColor(
                                            autofill::kWarningColor)];
       [permanentErrorBox_
           setContentViewMargins:NSMakeSize(kPermanentErrorHorizontalPadding,
@@ -312,7 +312,7 @@ void CardUnmaskPromptViewBridge::PerformClose() {
 
       permanentErrorLabel_.reset([constrained_window::CreateLabel() retain]);
       [permanentErrorLabel_ setAutoresizingMask:NSViewWidthSizable];
-      [permanentErrorLabel_ setTextColor:gfx::SkColorToCalibratedNSColor(
+      [permanentErrorLabel_ setTextColor:skia::SkColorToCalibratedNSColor(
                                              kPermanentErrorTextColor)];
 
       [permanentErrorBox_ addSubview:permanentErrorLabel_];
@@ -482,7 +482,7 @@ void CardUnmaskPromptViewBridge::PerformClose() {
 
   base::scoped_nsobject<NSBox> box = [CardUnmaskPromptViewCocoa createPlainBox];
   [box setAutoresizingMask:NSViewWidthSizable];
-  [box setFillColor:gfx::SkColorToCalibratedNSColor(kShadingColor)];
+  [box setFillColor:skia::SkColorToCalibratedNSColor(kShadingColor)];
   [box setContentViewMargins:NSMakeSize(chrome_style::kHorizontalPadding,
                                         chrome_style::kClientBottomPadding)];
   [storageView_ addSubview:box];
@@ -516,7 +516,7 @@ void CardUnmaskPromptViewBridge::PerformClose() {
   base::scoped_nsobject<NSBox> separator =
       [CardUnmaskPromptViewCocoa createPlainBox];
   [separator setAutoresizingMask:NSViewWidthSizable];
-  [separator setFillColor:gfx::SkColorToCalibratedNSColor(kSubtleBorderColor)];
+  [separator setFillColor:skia::SkColorToCalibratedNSColor(kSubtleBorderColor)];
   [storageView_ addSubview:separator];
 
   [box sizeToFit];
@@ -659,7 +659,7 @@ void CardUnmaskPromptViewBridge::PerformClose() {
   [mainView addSubview:progressOverlayView_];
 
   progressOverlayLabel_.reset([constrained_window::CreateLabel() retain]);
-  NSColor* throbberBlueColor = gfx::SkColorToCalibratedNSColor(
+  NSColor* throbberBlueColor = skia::SkColorToCalibratedNSColor(
       ui::NativeThemeMac::instance()->GetSystemColor(
           ui::NativeTheme::kColorId_ThrobberSpinningColor));
   [progressOverlayLabel_ setTextColor:throbberBlueColor];
@@ -713,7 +713,7 @@ void CardUnmaskPromptViewBridge::PerformClose() {
   // Add error message label.
   errorLabel_.reset([constrained_window::CreateLabel() retain]);
   [errorLabel_
-      setTextColor:gfx::SkColorToCalibratedNSColor(autofill::kWarningColor)];
+      setTextColor:skia::SkColorToCalibratedNSColor(autofill::kWarningColor)];
   [mainView addSubview:errorLabel_];
 
   // Add cancel button.

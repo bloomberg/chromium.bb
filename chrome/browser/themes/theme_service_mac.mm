@@ -113,7 +113,7 @@ NSColor* ThemeService::GetNSColor(int id) const {
     return nscolor_iter->second;
 
   SkColor sk_color = GetColor(id);
-  NSColor* color = gfx::SkColorToCalibratedNSColor(sk_color);
+  NSColor* color = skia::SkColorToCalibratedNSColor(sk_color);
 
   // We loaded successfully.  Cache the color.
   if (color)

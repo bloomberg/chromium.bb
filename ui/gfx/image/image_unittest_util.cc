@@ -215,11 +215,11 @@ PlatformImage CreatePlatformImage() {
   base::ScopedCFTypeRef<CGColorSpaceRef> color_space(
       CGColorSpaceCreateDeviceRGB());
   UIImage* image =
-      gfx::SkBitmapToUIImageWithColorSpace(bitmap, scale, color_space);
+      skia::SkBitmapToUIImageWithColorSpace(bitmap, scale, color_space);
   base::mac::NSObjectRetain(image);
   return image;
 #elif defined(OS_MACOSX)
-  NSImage* image = gfx::SkBitmapToNSImageWithColorSpace(
+  NSImage* image = skia::SkBitmapToNSImageWithColorSpace(
       bitmap, base::mac::GetGenericRGBColorSpace());
   base::mac::NSObjectRetain(image);
   return image;

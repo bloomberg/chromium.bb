@@ -68,12 +68,12 @@ const int kFontSize = 11;
 - (void)loadView {
   NSBox* promoView = [[[NSBox alloc] init] autorelease];
   [promoView setBoxType:NSBoxCustom];
-  [promoView setFillColor:gfx::SkColorToDeviceNSColor(kBackgroundColor)];
+  [promoView setFillColor:skia::SkColorToDeviceNSColor(kBackgroundColor)];
   [promoView setContentViewMargins:NSMakeSize(chrome_style::kHorizontalPadding,
                                               kVerticalPadding)];
   [promoView setBorderType:NSLineBorder];
   [promoView setBorderWidth:kBorderWidth];
-  [promoView setBorderColor:gfx::SkColorToDeviceNSColor(kBorderColor)];
+  [promoView setBorderColor:skia::SkColorToDeviceNSColor(kBorderColor)];
 
   // Add the sync promo text.
   size_t offset;
@@ -85,13 +85,13 @@ const int kFontSize = 11;
   NSString* nsPromoText = SysUTF16ToNSString(promoText);
   NSString* nsLinkText = SysUTF16ToNSString(linkText);
   NSFont* font = [NSFont labelFontOfSize:kFontSize];
-  NSColor* linkColor = gfx::SkColorToCalibratedNSColor(
+  NSColor* linkColor = skia::SkColorToCalibratedNSColor(
       chrome_style::GetLinkColor());
 
   textView_.reset([[HyperlinkTextView alloc] init]);
   [textView_ setMessage:nsPromoText
                withFont:font
-           messageColor:gfx::SkColorToDeviceNSColor(kTextColor)];
+           messageColor:skia::SkColorToDeviceNSColor(kTextColor)];
   [textView_ addLinkRange:NSMakeRange(offset, [nsLinkText length])
                   withURL:@"about:blank"  // using a link here is bad ui
                 linkColor:linkColor];
