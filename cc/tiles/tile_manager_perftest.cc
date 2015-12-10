@@ -40,7 +40,7 @@ class FakeTileTaskRunnerImpl : public TileTaskRunner, public TileTaskClient {
   void Shutdown() override {}
   void ScheduleTasks(TaskGraph* graph) override {
     for (auto& node : graph->nodes) {
-      RasterTask* task = static_cast<RasterTask*>(node.task);
+      TileTask* task = static_cast<TileTask*>(node.task);
 
       task->WillSchedule();
       task->ScheduleOnOriginThread(this);
@@ -50,10 +50,9 @@ class FakeTileTaskRunnerImpl : public TileTaskRunner, public TileTaskClient {
     }
   }
   void CheckForCompletedTasks() override {
-    for (RasterTask::Vector::iterator it = completed_tasks_.begin();
-         it != completed_tasks_.end();
-         ++it) {
-      RasterTask* task = it->get();
+    for (TileTask::Vector::iterator it = completed_tasks_.begin();
+         it != completed_tasks_.end(); ++it) {
+      TileTask* task = it->get();
 
       task->WillComplete();
       task->CompleteOnOriginThread(this);
@@ -79,7 +78,7 @@ class FakeTileTaskRunnerImpl : public TileTaskRunner, public TileTaskClient {
   void ReleaseBufferForRaster(scoped_ptr<RasterBuffer> buffer) override {}
 
  private:
-  RasterTask::Vector completed_tasks_;
+  TileTask::Vector completed_tasks_;
 };
 base::LazyInstance<FakeTileTaskRunnerImpl> g_fake_tile_task_runner =
     LAZY_INSTANCE_INITIALIZER;
