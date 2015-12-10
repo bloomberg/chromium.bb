@@ -433,15 +433,6 @@ cursors.Range.prototype = {
         break;
     }
     return new cursors.Range(newStart, newEnd);
-  },
-
-  /**
-   * Returns true if this range has either cursor end on web content.
-   * @return {boolean}
-  */
-  isWebRange: function() {
-    return this.start.node.root.role != Role.desktop ||
-        this.end.node.root.role != Role.desktop;
   }
 };
 
