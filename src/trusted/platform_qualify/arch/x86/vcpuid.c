@@ -386,6 +386,12 @@ static int asm_HasCX8(void) {
 #endif  /* 0 */
 #endif  /* 64-bit Windows */
 
+#if NACL_WINDOWS && (NACL_BUILD_SUBARCH == 64)
+static int CheckCPUFeatureDetection(NaClCPUFeaturesX86 *cpuf) {
+  /* Unfortunately the asm_ tests will not work on 64-bit Windows */
+  return 0;
+}
+#else
 #if (NACL_LINUX || NACL_OSX)
 /* Linux/MacOS signal handling code, for trapping illegal instruction faults */
 static int sawbadinstruction = 0;
@@ -490,12 +496,6 @@ static int DoTest(int (*thetest)(void), const char *s) {
 # error Please specify platform as NACL_LINUX, NACL_OSX or NACL_WINDOWS
 #endif
 
-#if NACL_WINDOWS && (NACL_BUILD_SUBARCH == 64)
-static int CheckCPUFeatureDetection(NaClCPUFeaturesX86* cpuf) {
-  /* Unfortunately the asm_ tests will not work on 64-bit Windows */
-  return 0;
-}
-#else
 static int DoCPUFeatureTest(NaClCPUFeaturesX86 *features,
                             NaClCPUFeatureX86ID id,
                             int (*thetest)(void)) {
@@ -509,7 +509,7 @@ static int DoCPUFeatureTest(NaClCPUFeaturesX86 *features,
  * Check if CPU feature detection is self-consistent.
  * Returns 0 on success and non-0 else.
  */
-static int CheckCPUFeatureDetection(NaClCPUFeaturesX86* cpuf) {
+static int CheckCPUFeatureDetection(NaClCPUFeaturesX86 *cpuf) {
   int rcode = 0;
   rcode |= DoCPUFeatureTest(cpuf, NaClCPUFeatureX86_x87, asm_HasX87);
   rcode |= DoCPUFeatureTest(cpuf, NaClCPUFeatureX86_MMX, asm_HasMMX);
