@@ -27,5 +27,5 @@
 // TODO(philipj): Implement the interface from CSS Fonts.
 
 interface CSSFontFaceRule : CSSRule {
-    readonly attribute CSSStyleDeclaration style;
+    [Measure] readonly attribute CSSStyleDeclaration style;
 };

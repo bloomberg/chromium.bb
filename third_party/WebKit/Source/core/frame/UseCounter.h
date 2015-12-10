@@ -936,6 +936,7 @@ public:
         AudioNodeConnectToAudioParam = 1079,
         AudioNodeDisconnectFromAudioNode = 1080,
         AudioNodeDisconnectFromAudioParam = 1081,
+        V8CSSFontFaceRule_Style_AttributeGetter = 1082,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
