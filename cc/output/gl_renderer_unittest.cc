@@ -132,10 +132,10 @@ class GLRendererShaderPixelTest : public GLRendererPixelTest {
 
   void TestShadersWithPrecision(TexCoordPrecision precision) {
     EXPECT_PROGRAM_VALID(renderer()->GetTextureIOSurfaceProgram(precision));
+    // This program uses external textures and sampler, so it won't compile
+    // everywhere.
     if (renderer()->Capabilities().using_egl_image)
       EXPECT_PROGRAM_VALID(renderer()->GetVideoStreamTextureProgram(precision));
-    else
-      EXPECT_FALSE(renderer()->GetVideoStreamTextureProgram(precision));
   }
 
   void TestShadersWithPrecisionAndBlend(TexCoordPrecision precision,
