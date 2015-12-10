@@ -1,6 +1,7 @@
 {
   'variables': {
     'chromium_code': 1,
+    'pdf_enable_xfa%': 0,
     'pdf_engine%': 0,  # 0 PDFium
   },
   'targets': [
@@ -54,6 +55,11 @@
             'pdfium/pdfium_range.cc',
             'pdfium/pdfium_range.h',
           ],
+        }],
+        ['pdf_enable_xfa==1', {
+           'defines': [
+             'PDF_ENABLE_XFA',
+           ]
         }],
         ['OS=="win"', {
           # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.

@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//third_party/pdfium/pdfium.gni")
+
 pdf_engine = 0  # 0 PDFium
 
 static_library("pdf") {
@@ -44,6 +46,10 @@ static_library("pdf") {
       "pdfium/pdfium_range.cc",
       "pdfium/pdfium_range.h",
     ]
+  }
+
+  if (pdf_enable_xfa) {
+    defines = [ "PDF_ENABLE_XFA" ]
   }
 
   deps = [
