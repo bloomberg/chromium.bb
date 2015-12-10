@@ -9,9 +9,9 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/test_simple_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -117,8 +117,8 @@ class OfflinePageMHTMLArchiverTest : public testing::Test {
   base::FilePath last_file_path_;
   int64 last_file_size_;
 
-  base::MessageLoop message_loop_;
-  scoped_ptr<base::RunLoop> run_loop_;
+  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
+  base::ThreadTaskRunnerHandle task_runner_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(OfflinePageMHTMLArchiverTest);
 };
@@ -127,7 +127,9 @@ OfflinePageMHTMLArchiverTest::OfflinePageMHTMLArchiverTest()
     : last_archiver_(nullptr),
       last_result_(OfflinePageArchiver::ArchiverResult::
                        ERROR_ARCHIVE_CREATION_FAILED),
-      last_file_size_(0L) {
+      last_file_size_(0L),
+      task_runner_(new base::TestSimpleTaskRunner),
+      task_runner_handle_(task_runner_) {
 }
 
 OfflinePageMHTMLArchiverTest::~OfflinePageMHTMLArchiverTest() {
@@ -145,8 +147,6 @@ void OfflinePageMHTMLArchiverTest::OnCreateArchiveDone(
     const GURL& url,
     const base::FilePath& file_path,
     int64 file_size) {
-  if (run_loop_)
-    run_loop_->Quit();
   last_url_ = url;
   last_archiver_ = archiver;
   last_result_ = result;
@@ -155,8 +155,7 @@ void OfflinePageMHTMLArchiverTest::OnCreateArchiveDone(
 }
 
 void OfflinePageMHTMLArchiverTest::PumpLoop() {
-  run_loop_.reset(new base::RunLoop());
-  run_loop_->Run();
+  task_runner_->RunUntilIdle();
 }
 
 // Tests that creation of an archiver fails when web contents is missing.
