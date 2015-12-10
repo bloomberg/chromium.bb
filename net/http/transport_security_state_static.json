@@ -3530,7 +3530,7 @@
     { "name": "dolphin-hosting.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "dolphin-it.de", "include_subdomains": true, "mode": "force-https" },
     { "name": "enquos.com", "include_subdomains": true, "mode": "force-https" },
-    { "name": "flipagram.com", "include_subdomains": true, "mode": "force-https" },
+    { "name": "flipagram.com", "include_subdomains": false, "mode": "force-https" },
     { "name": "gravity-net.de", "include_subdomains": true, "mode": "force-https" },
     { "name": "gtanda.tk", "include_subdomains": true, "mode": "force-https" },
     { "name": "hannover-banditen.de", "include_subdomains": true, "mode": "force-https" },
