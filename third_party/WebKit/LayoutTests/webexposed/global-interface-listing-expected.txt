@@ -3134,6 +3134,13 @@ interface KeyframeEffect : AnimationEffectReadOnly
 interface KeywordValue : StyleValue
     getter keywordValue
     method constructor
+interface LengthValue : StyleValue
+    static method fromValue
+    method add
+    method constructor
+    method divide
+    method multiply
+    method subtract
 interface Location
     method constructor
 interface MIDIAccess : EventTarget

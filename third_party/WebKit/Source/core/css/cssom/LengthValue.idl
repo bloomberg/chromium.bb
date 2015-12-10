@@ -1,0 +1,21 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+enum LengthType {
+    "px", "percent", "em", "ex", "ch", "rem", "vw", "vh", "vmin", "vmax", "cm", "mm", "q", "in", "pc", "pt"
+};
+
+[
+    RuntimeEnabled=CSSTypedOM
+] interface LengthValue : StyleValue {
+    [RaisesException, NewObject] LengthValue add(LengthValue other);
+    [RaisesException, NewObject] LengthValue subtract(LengthValue other);
+    [RaisesException, NewObject] LengthValue multiply(double value);
+    [RaisesException, NewObject] LengthValue divide(double value);
+
+    [NewObject] static LengthValue parse(DOMString cssString);
+    [NewObject] static LengthValue fromValue(double value, LengthType type);
+    // TODO: Uncomment when Calc is implemented.
+    // [NewObject] static LengthValue fromDictionary(CalcDictionary dictionary);
+};
