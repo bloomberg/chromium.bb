@@ -5,7 +5,7 @@
 #ifndef BASE_TRACE_EVENT_HEAP_PROFILER_HEAP_DUMP_WRITER_H_
 #define BASE_TRACE_EVENT_HEAP_PROFILER_HEAP_DUMP_WRITER_H_
 
-#include <string>
+#include <set>
 
 #include "base/base_export.h"
 #include "base/containers/hash_tables.h"
@@ -20,11 +20,43 @@ class StackFrameDeduplicator;
 class TracedValue;
 class TypeNameDeduplicator;
 
+// Aggregates |bytes_by_context|, recursively breaks down the heap, and returns
+// a traced value with an "entries" array that can be dumped in the trace log,
+// following the format described in https://goo.gl/KY7zVE. The number of
+// entries is kept reasonable because long tails are not included.
+BASE_EXPORT scoped_refptr<TracedValue> ExportHeapDump(
+    const hash_map<AllocationContext, size_t>& bytes_by_context,
+    StackFrameDeduplicator* stack_frame_deduplicator,
+    TypeNameDeduplicator* type_name_deduplicator);
+
+namespace internal {
+
+namespace {
+struct Bucket;
+}
+
+// An entry in the "entries" array as described in https://goo.gl/KY7zVE.
+struct BASE_EXPORT Entry {
+  size_t size;
+
+  // References a backtrace in the stack frame deduplicator. -1 means empty
+  // backtrace (the root of the tree).
+  int stack_frame_id;
+
+  // References a type name in the type name deduplicator. -1 indicates that
+  // the size is the cumulative size for all types (the root of the tree).
+  int type_id;
+};
+
+// Comparison operator to enable putting |Entry| in a |std::set|.
+BASE_EXPORT bool operator<(Entry lhs, Entry rhs);
+
+// Serializes entries to an "entries" array in a traced value.
+BASE_EXPORT scoped_refptr<TracedValue> Serialize(const std::set<Entry>& dump);
+
 // Helper class to dump a snapshot of an |AllocationRegister| or other heap
 // bookkeeping structure into a |TracedValue|. This class is intended to be
-// used as a one-shot local instance on the stack. To write heap dumps, call
-// |InsertAllocation| for every captured allocation, then call |WriteHeapDump|
-// to do the processing and generate a heap dump value for the trace log.
+// used as a one-shot local instance on the stack.
 class BASE_EXPORT HeapDumpWriter {
  public:
   // The |StackFrameDeduplicator| and |TypeNameDeduplicator| are not owned. The
@@ -32,30 +64,27 @@ class BASE_EXPORT HeapDumpWriter {
   // the dump writer.
   HeapDumpWriter(StackFrameDeduplicator* stack_frame_deduplicator,
                  TypeNameDeduplicator* type_name_deduplicator);
+
   ~HeapDumpWriter();
 
-  // Inserts information from which the heap dump will be generated. This method
-  // does minimal processing, so it can be called when a lock is held.
-  void InsertAllocation(const AllocationContext& context, size_t size);
-
-  // Aggregates allocations and writes an "entries" array to a traced value. See
-  // https://goo.gl/jYN4Zn for a description of the format.
-  scoped_refptr<TracedValue> WriteHeapDump();
+  // Aggregates allocations to compute the total size of the heap, then breaks
+  // down the heap recursively. This produces the values that should be dumped
+  // in the "entries" array. The number of entries is kept reasonable because
+  // long tails are not included. Use |Serialize| to convert to a traced value.
+  const std::set<Entry>& Summarize(
+      const hash_map<AllocationContext, size_t>& bytes_by_context);
 
  private:
-  // Writes a "bt" key that references a stack frame in the |stackFrames|
-  // dictionary.
-  void WriteStackFrameIndex(int index);
+  // Inserts an |Entry| for |Bucket| into |entries_|. Returns false if the
+  // entry was present before, true if it was not.
+  bool AddEntryForBucket(const Bucket& bucket);
 
-  // Writes a "type" key with the stringified type ID.
-  void WriteTypeId(int type_id);
+  // Recursively breaks down a bucket into smaller buckets and adds entries for
+  // the buckets worth dumping to |entries_|.
+  void BreakDown(const Bucket& bucket);
 
-  // Writes a "size" key with value |size| as a hexidecimal string to the traced
-  // value.
-  void WriteSize(size_t size);
-
-  // The value that this heap dumper writes to.
-  const scoped_refptr<TracedValue> traced_value_;
+  // The collection of entries that is filled by |Summarize|.
+  std::set<Entry> entries_;
 
   // Helper for generating the |stackFrames| dictionary. Not owned, must outlive
   // this heap dump writer instance.
@@ -65,17 +94,10 @@ class BASE_EXPORT HeapDumpWriter {
   // dump writer instance.
   TypeNameDeduplicator* const type_name_deduplicator_;
 
-  // A map of allocation context to the number of bytes allocated for that
-  // context.
-  hash_map<AllocationContext, size_t> bytes_by_context_;
-
-  // Buffer for converting integers into strings, that is re-used throughout the
-  // dump.
-  std::string buffer_;
-
   DISALLOW_COPY_AND_ASSIGN(HeapDumpWriter);
 };
 
+}  // namespace internal
 }  // namespace trace_event
 }  // namespace base
 

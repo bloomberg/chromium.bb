@@ -4,6 +4,7 @@
 
 #include "content/child/web_memory_dump_provider_adapter.h"
 
+#include "base/containers/hash_tables.h"
 #include "base/lazy_instance.h"
 #include "base/synchronization/lock.h"
 #include "base/trace_event/heap_profiler_allocation_context.h"
@@ -77,19 +78,20 @@ bool WebMemoryDumpProviderAdapter::OnMemoryDump(
   if (args.level_of_detail == MemoryDumpLevelOfDetail::DETAILED &&
       web_memory_dump_provider_->supportsHeapProfiling() &&
       g_heap_profiling_enabled) {
-    HeapDumpWriter writer(pmd->session_state()->stack_frame_deduplicator(),
-                          pmd->session_state()->type_name_deduplicator());
     TraceEventMemoryOverhead overhead;
-
+    hash_map<AllocationContext, size_t> bytes_by_context;
     {
       AutoLock lock(g_allocation_register_lock.Get());
       for (const auto& alloc_size : *g_allocation_register)
-        writer.InsertAllocation(alloc_size.context, alloc_size.size);
+        bytes_by_context[alloc_size.context] += alloc_size.size;
 
       g_allocation_register->EstimateTraceMemoryOverhead(&overhead);
     }
 
-    pmd->AddHeapDump("partition_alloc", writer.WriteHeapDump());
+    scoped_refptr<TracedValue> heap_dump = ExportHeapDump(
+        bytes_by_context, pmd->session_state()->stack_frame_deduplicator(),
+        pmd->session_state()->type_name_deduplicator());
+    pmd->AddHeapDump("partition_alloc", heap_dump);
     overhead.DumpInto("tracing/heap_profiler", pmd);
   }
 

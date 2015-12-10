@@ -82,12 +82,12 @@ bool BASE_EXPORT operator==(const AllocationContext& lhs,
 namespace BASE_HASH_NAMESPACE {
 
 template <>
-struct hash<base::trace_event::Backtrace> {
+struct BASE_EXPORT hash<base::trace_event::Backtrace> {
   size_t operator()(const base::trace_event::Backtrace& backtrace) const;
 };
 
 template <>
-struct hash<base::trace_event::AllocationContext> {
+struct BASE_EXPORT hash<base::trace_event::AllocationContext> {
   size_t operator()(const base::trace_event::AllocationContext& context) const;
 };
 
