@@ -284,7 +284,7 @@ public class DocumentModeTestBase extends MultiActivityTestBase {
     /**
      * Switches to the specified tab and waits until its activity is brought to the foreground.
      */
-    protected void switchToTab(final DocumentTab tab) throws Exception {
+    protected void switchToTab(final Tab tab) throws Exception {
         final TabModel tabModel =
                 ChromeApplication.getDocumentTabModelSelector().getCurrentModel();
         CriteriaHelper.pollForCriteria(new Criteria() {

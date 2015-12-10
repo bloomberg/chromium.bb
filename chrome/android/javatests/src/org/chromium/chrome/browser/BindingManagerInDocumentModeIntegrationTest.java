@@ -17,7 +17,6 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.document.DocumentModeTestBase;
-import org.chromium.chrome.browser.document.DocumentTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelSelector;
 import org.chromium.chrome.test.util.ChromeTabUtils;
@@ -194,7 +193,7 @@ public class BindingManagerInDocumentModeIntegrationTest extends DocumentModeTes
             }
         });
 
-        switchToTab((DocumentTab) tabs[1]);
+        switchToTab(tabs[1]);
 
         // Verify that the renderer visibility was flipped.
         mBindingManager.assertIsInBackground(

@@ -17,7 +17,6 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabUma.TabCreationState;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.content_public.browser.LoadUrlParams;
-import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
@@ -73,8 +72,7 @@ public class FullScreenActivityTab extends Tab {
 
     private void initializeFullScreenActivityTab(TabContentManager tabContentManager,
             boolean unfreeze, TopControlsVisibilityDelegate topControlsVisibilityDelegate) {
-        initialize(null, tabContentManager, new FullScreenDelegateFactory(), false);
-        if (unfreeze) unfreezeContents();
+        initialize(null, tabContentManager, new FullScreenDelegateFactory(), false, unfreeze);
         mObserver = createWebContentsObserver();
         mTopControlsVisibilityDelegate = topControlsVisibilityDelegate;
     }
@@ -103,12 +101,6 @@ public class FullScreenActivityTab extends Tab {
                 }
             }
         };
-    }
-
-    @Override
-    protected void initContentViewCore(WebContents webContents) {
-        super.initContentViewCore(webContents);
-        getContentViewCore().setFullscreenRequiredForOrientationLock(false);
     }
 
     /**

@@ -73,7 +73,7 @@ public class DocumentModeLowEndTest extends DocumentModeTestBase {
         assertEquals(1, tabCreatedCallback.getCallCount());
         assertEquals(0, tabLoadStartedCallback.getCallCount());
 
-        switchToTab((DocumentTab) backgroundTab.get());
+        switchToTab(backgroundTab.get());
 
         tabLoadStartedCallback.waitForCallback(0);
     }

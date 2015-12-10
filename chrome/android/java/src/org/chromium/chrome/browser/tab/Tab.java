@@ -68,6 +68,7 @@ import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.ssl.ConnectionSecurityLevel;
 import org.chromium.chrome.browser.ssl.SecurityStateModel;
 import org.chromium.chrome.browser.tab.TabUma.TabCreationState;
+import org.chromium.chrome.browser.tabmodel.SingleTabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
@@ -1246,9 +1247,11 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      * @param initiallyHidden   Only used if {@code webContents} is {@code null}.  Determines
      *                          whether or not the newly created {@link WebContents} will be hidden
      *                          or not.
+     * @param unfreeze          Whether there should be an attempt to restore state at the end of
+     *                          the initialization.
      */
     public final void initialize(WebContents webContents, TabContentManager tabContentManager,
-            TabDelegateFactory delegateFactory, boolean initiallyHidden) {
+            TabDelegateFactory delegateFactory, boolean initiallyHidden, boolean unfreeze) {
         try {
             TraceEvent.begin("Tab.initialize");
 
@@ -1267,7 +1270,10 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
 
             // If there is a frozen WebContents state or a pending lazy load, don't create a new
             // WebContents.
-            if (getFrozenContentsState() != null || getPendingLoadParams() != null) return;
+            if (getFrozenContentsState() != null || getPendingLoadParams() != null) {
+                if (unfreeze) unfreezeContents();
+                return;
+            }
 
             boolean creatingWebContents = webContents == null;
             if (creatingWebContents) {
@@ -1485,6 +1491,9 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
                 R.string.accessibility_content_view));
         cvc.initialize(cv, cv, webContents, getWindowAndroid());
         setContentViewCore(cvc);
+        if (mActivity.getTabModelSelector() instanceof SingleTabModelSelector) {
+            getContentViewCore().setFullscreenRequiredForOrientationLock(false);
+        }
     }
 
     /**

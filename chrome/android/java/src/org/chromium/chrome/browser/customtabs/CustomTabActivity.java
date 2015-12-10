@@ -270,7 +270,7 @@ public class CustomTabActivity extends ChromeActivity {
             webContents = WebContentsFactory.createWebContents(false, false);
         }
         mTab.initialize(webContents, getTabContentManager(),
-                new CustomTabDelegateFactory(getApplication(), mSession), false);
+                new CustomTabDelegateFactory(getApplication(), mSession), false, false);
         mTab.getView().requestFocus();
         mTabObserver = new CustomTabObserver(getApplication(), mSession);
         mTab.addObserver(mTabObserver);
