@@ -938,11 +938,11 @@ void SVGElement::svgAttributeBaseValChanged(const QualifiedName& attribute)
 
 void SVGElement::ensureAttributeAnimValUpdated()
 {
-    if (!hasSVGRareData() || !svgRareData()->webAnimatedAttributesDirty())
-        return;
-
-    DocumentAnimations::updateAnimationTimingIfNeeded(document());
-    applyActiveWebAnimations();
+    if ((hasSVGRareData() && svgRareData()->webAnimatedAttributesDirty())
+        || (elementAnimations() && DocumentAnimations::needsAnimationTimingUpdate(document()))) {
+        DocumentAnimations::updateAnimationTimingIfNeeded(document());
+        applyActiveWebAnimations();
+    }
 }
 
 void SVGElement::synchronizeAnimatedSVGAttribute(const QualifiedName& name) const
