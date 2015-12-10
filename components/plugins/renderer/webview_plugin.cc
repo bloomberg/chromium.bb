@@ -17,6 +17,7 @@
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
+#include "third_party/WebKit/public/web/WebFrameWidget.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
@@ -26,6 +27,7 @@ using blink::WebCanvas;
 using blink::WebCursorInfo;
 using blink::WebDragData;
 using blink::WebDragOperationsMask;
+using blink::WebFrameWidget;
 using blink::WebImage;
 using blink::WebInputEvent;
 using blink::WebLocalFrame;
@@ -55,8 +57,13 @@ WebViewPlugin::WebViewPlugin(content::RenderView* render_view,
   // ApplyWebPreferences before making a WebLocalFrame so that the frame sees a
   // consistent view of our preferences.
   content::RenderView::ApplyWebPreferences(preferences, web_view_);
-  web_frame_ = WebLocalFrame::create(blink::WebTreeScopeType::Document, this);
+  WebLocalFrame* web_local_frame =
+      WebLocalFrame::create(blink::WebTreeScopeType::Document, this);
+  web_frame_ = web_local_frame;
   web_view_->setMainFrame(web_frame_);
+  // TODO(dcheng): The main frame widget currently has a special case.
+  // Eliminate this once WebView is no longer a WebWidget.
+  web_frame_widget_ = WebFrameWidget::create(this, web_view_, web_local_frame);
 }
 
 // static
@@ -72,6 +79,7 @@ WebViewPlugin* WebViewPlugin::Create(content::RenderView* render_view,
 }
 
 WebViewPlugin::~WebViewPlugin() {
+  web_frame_widget_->close();
   web_view_->close();
   web_frame_->close();
 }

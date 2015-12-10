@@ -19,6 +19,7 @@
 #include "third_party/WebKit/public/web/WebViewClient.h"
 
 namespace blink {
+class WebFrameWidget;
 class WebMouseEvent;
 }
 
@@ -164,6 +165,9 @@ class WebViewPlugin : public blink::WebPlugin,
 
   // Owned by us, deleted via |close()|.
   blink::WebView* web_view_;
+
+  // Owned by us, deleted via |close()|.
+  blink::WebFrameWidget* web_frame_widget_;
 
   // Owned by us, deleted via |close()|.
   blink::WebFrame* web_frame_;
