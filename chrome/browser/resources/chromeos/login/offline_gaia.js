@@ -5,6 +5,12 @@
 Polymer((function() {
   var DEFAULT_EMAIL_DOMAIN = '@gmail.com';
 
+  var TRANSITION_TYPE = {
+    FORWARD: 0,
+    BACKWARD: 1,
+    NONE: 2
+  };
+
   return {
     is: 'offline-gaia',
 
@@ -39,7 +45,7 @@ Polymer((function() {
     },
 
     back: function() {
-      this.switchToEmailCard();
+      this.switchToEmailCard(true /* animated */);
     },
 
     onAnimationFinish_: function() {
@@ -66,11 +72,12 @@ Polymer((function() {
       if (email) {
         if (this.emailDomain)
           email = email.replace(this.emailDomain, '');
-        this.switchToPasswordCard(email);
+        this.switchToPasswordCard(email, false /* animated */);
         this.$.passwordInput.isInvalid = true;
+        this.fire('backButton', true);
       } else {
         this.$.emailInput.value = '';
-        this.switchToEmailCard();
+        this.switchToEmailCard(false /* animated */);
       }
     },
 
@@ -82,20 +89,18 @@ Polymer((function() {
       return this.$.animatedPages.selected == 'emailSection';
     },
 
-    switchToEmailCard() {
+    switchToEmailCard(animated) {
       this.$.passwordInput.value = '';
       this.$.passwordInput.isInvalid = false;
       this.$.emailInput.isInvalid = false;
       if (this.isEmailSectionActive_())
         return;
-      this.$.animatedPages.entryAnimation =
-          'slide-from-' + (this.isRTL_() ? 'right' : 'left') + '-animation';
-      this.$.animatedPages.exitAnimation =
-          'slide-' + (this.isRTL_() ? 'left' : 'right') + '-animation';
+      this.setUpPageTransitions_(
+          animated ? TRANSITION_TYPE.BACKWARD : TRANSITION_TYPE.NONE);
       this.$.animatedPages.selected = 'emailSection';
     },
 
-    switchToPasswordCard(email) {
+    switchToPasswordCard(email, animated) {
       this.$.emailInput.value = email;
       if (email.indexOf('@') === -1) {
         if (this.emailDomain)
@@ -106,16 +111,14 @@ Polymer((function() {
       this.$.passwordHeader.email = email;
       if (!this.isEmailSectionActive_())
         return;
-      this.$.animatedPages.entryAnimation =
-          'slide-from-' + (this.isRTL_() ? 'left' : 'right') + '-animation';
-      this.$.animatedPages.exitAnimation =
-          'slide-' + (this.isRTL_() ? 'right' : 'left') + '-animation';
+      this.setUpPageTransitions_(
+          animated ? TRANSITION_TYPE.FORWARD : TRANSITION_TYPE.NONE);
       this.$.animatedPages.selected = 'passwordSection';
     },
 
     onEmailSubmitted_: function() {
       if (this.$.emailInput.checkValidity())
-        this.switchToPasswordCard(this.$.emailInput.value);
+        this.switchToPasswordCard(this.$.emailInput.value, true /* animated */);
       else
         this.$.emailInput.focus();
     },
@@ -130,6 +133,21 @@ Polymer((function() {
       };
       this.$.passwordInput.value = '';
       this.fire('authCompleted', msg);
+    },
+
+    setUpPageTransitions_: function(transitionType) {
+      if (transitionType === TRANSITION_TYPE.NONE) {
+        this.$.animatedPages.entryAnimation = '';
+        this.$.animatedPages.exitAnimation = '';
+        return;
+      }
+      var isForward = transitionType === TRANSITION_TYPE.FORWARD;
+      var isRTL = this.isRTL_();
+      this.$.animatedPages.entryAnimation =
+          'slide-from-' + (isForward === isRTL ? 'left' : 'right') +
+          '-animation';
+      this.$.animatedPages.exitAnimation =
+          'slide-' + (isForward === isRTL ? 'right' : 'left') + '-animation';
     }
   };
 })());
