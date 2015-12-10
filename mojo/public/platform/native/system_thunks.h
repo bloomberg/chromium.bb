@@ -101,6 +101,18 @@ struct MojoSystemThunks {
                           void** buffer,
                           MojoMapBufferFlags flags);
   MojoResult (*UnmapBuffer)(void* buffer);
+
+  MojoResult (*CreateWaitSet)(MojoHandle* wait_set);
+  MojoResult (*AddHandle)(MojoHandle wait_set,
+                          MojoHandle handle,
+                          MojoHandleSignals signals);
+  MojoResult (*RemoveHandle)(MojoHandle wait_set,
+                             MojoHandle handle);
+  MojoResult (*GetReadyHandles)(MojoHandle wait_set,
+                                uint32_t* count,
+                                MojoHandle* handles,
+                                MojoResult* results,
+                                struct MojoHandleSignalsState* signals_states);
 };
 #pragma pack(pop)
 
@@ -127,7 +139,11 @@ inline MojoSystemThunks MojoMakeSystemThunks() {
                                     MojoCreateSharedBuffer,
                                     MojoDuplicateBufferHandle,
                                     MojoMapBuffer,
-                                    MojoUnmapBuffer};
+                                    MojoUnmapBuffer,
+                                    MojoCreateWaitSet,
+                                    MojoAddHandle,
+                                    MojoRemoveHandle,
+                                    MojoGetReadyHandles};
   return system_thunks;
 }
 #endif

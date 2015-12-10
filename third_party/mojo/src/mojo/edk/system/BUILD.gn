@@ -110,6 +110,8 @@ component("system") {
     "transport_data.h",
     "unique_identifier.cc",
     "unique_identifier.h",
+    "wait_set_dispatcher.cc",
+    "wait_set_dispatcher.h",
     "waiter.cc",
     "waiter.h",
   ]
@@ -210,6 +212,7 @@ test("mojo_system_unittests") {
     "test_channel_endpoint_client.h",
     "thread_annotations_unittest.cc",
     "unique_identifier_unittest.cc",
+    "wait_set_dispatcher_unittest.cc",
     "waiter_test_utils.cc",
     "waiter_test_utils.h",
     "waiter_unittest.cc",

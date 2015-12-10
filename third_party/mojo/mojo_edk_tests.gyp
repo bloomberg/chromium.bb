@@ -218,6 +218,7 @@
         'src/mojo/edk/system/test_utils.h',
         'src/mojo/edk/system/thread_annotations_unittest.cc',
         'src/mojo/edk/system/unique_identifier_unittest.cc',
+        'src/mojo/edk/system/wait_set_dispatcher_unittest.cc',
         'src/mojo/edk/system/waiter_test_utils.cc',
         'src/mojo/edk/system/waiter_test_utils.h',
         'src/mojo/edk/system/waiter_unittest.cc',

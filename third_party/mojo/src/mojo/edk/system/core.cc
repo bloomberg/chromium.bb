@@ -4,8 +4,10 @@
 
 #include "third_party/mojo/src/mojo/edk/system/core.h"
 
+#include <utility>
 #include <vector>
 
+#include "base/containers/stack_container.h"
 #include "base/logging.h"
 #include "base/time/time.h"
 #include "mojo/public/c/system/macros.h"
@@ -23,6 +25,7 @@
 #include "third_party/mojo/src/mojo/edk/system/message_pipe.h"
 #include "third_party/mojo/src/mojo/edk/system/message_pipe_dispatcher.h"
 #include "third_party/mojo/src/mojo/edk/system/shared_buffer_dispatcher.h"
+#include "third_party/mojo/src/mojo/edk/system/wait_set_dispatcher.h"
 #include "third_party/mojo/src/mojo/edk/system/waiter.h"
 
 namespace mojo {
@@ -189,7 +192,16 @@ MojoResult Core::CreateWaitSet(UserPointer<MojoHandle> wait_set_handle) {
   if (wait_set_handle.IsNull())
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  return MOJO_RESULT_UNIMPLEMENTED;
+  scoped_refptr<WaitSetDispatcher> dispatcher = new WaitSetDispatcher();
+  MojoHandle h = AddDispatcher(dispatcher);
+  if (h == MOJO_HANDLE_INVALID) {
+    LOG(ERROR) << "Handle table full";
+    dispatcher->Close();
+    return MOJO_RESULT_RESOURCE_EXHAUSTED;
+  }
+
+  wait_set_handle.Put(h);
+  return MOJO_RESULT_OK;
 }
 
 MojoResult Core::AddHandle(MojoHandle wait_set_handle,
@@ -203,7 +215,7 @@ MojoResult Core::AddHandle(MojoHandle wait_set_handle,
   if (!dispatcher)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  return MOJO_RESULT_UNIMPLEMENTED;
+  return wait_set_dispatcher->AddWaitingDispatcher(dispatcher, signals, handle);
 }
 
 MojoResult Core::RemoveHandle(MojoHandle wait_set_handle,
@@ -216,7 +228,7 @@ MojoResult Core::RemoveHandle(MojoHandle wait_set_handle,
   if (!dispatcher)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  return MOJO_RESULT_UNIMPLEMENTED;
+  return wait_set_dispatcher->RemoveWaitingDispatcher(dispatcher);
 }
 
 MojoResult Core::GetReadyHandles(
@@ -225,14 +237,29 @@ MojoResult Core::GetReadyHandles(
     UserPointer<MojoHandle> handles,
     UserPointer<MojoResult> results,
     UserPointer<MojoHandleSignalsState> signals_states) {
+  if (count.IsNull() || !count.Get() || handles.IsNull() || results.IsNull())
+    return MOJO_RESULT_INVALID_ARGUMENT;
+
   scoped_refptr<Dispatcher> wait_set_dispatcher(GetDispatcher(wait_set_handle));
   if (!wait_set_dispatcher)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  if (count.IsNull() || !count.Get() || handles.IsNull() || results.IsNull())
-    return MOJO_RESULT_INVALID_ARGUMENT;
+  const uint32_t in_count = count.Get();
+  DispatcherVector awoken_dispatchers;
+  base::StackVector<uintptr_t, 16> contexts;
+  contexts->assign(in_count, MOJO_HANDLE_INVALID);
 
-  return MOJO_RESULT_UNIMPLEMENTED;
+  MojoResult result = wait_set_dispatcher->GetReadyDispatchers(
+      count, &awoken_dispatchers, results, MakeUserPointer(contexts->data()));
+
+  const uint32_t out_count = count.Get();
+  for (uint32_t i = 0; i < out_count; i++) {
+    handles.At(i).Put(static_cast<MojoHandle>(contexts[i]));
+    if (!signals_states.IsNull())
+      signals_states.At(i).Put(awoken_dispatchers[i]->GetHandleSignalsState());
+  }
+
+  return result;
 }
 
 MojoResult Core::CreateMessagePipe(

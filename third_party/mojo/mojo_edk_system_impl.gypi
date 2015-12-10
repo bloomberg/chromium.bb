@@ -130,6 +130,8 @@
     'src/mojo/edk/system/transport_data.h',
     'src/mojo/edk/system/unique_identifier.cc',
     'src/mojo/edk/system/unique_identifier.h',
+    'src/mojo/edk/system/wait_set_dispatcher.cc',
+    'src/mojo/edk/system/wait_set_dispatcher.h',
     'src/mojo/edk/system/waiter.cc',
     'src/mojo/edk/system/waiter.h',
     # Test-only code:

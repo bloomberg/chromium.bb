@@ -158,6 +158,33 @@ MojoResult MojoUnmapBuffer(void* buffer) {
   return g_thunks.UnmapBuffer(buffer);
 }
 
+MojoResult MojoCreateWaitSet(MojoHandle* wait_set) {
+  assert(g_thunks.CreateWaitSet);
+  return g_thunks.CreateWaitSet(wait_set);
+}
+
+MojoResult MojoAddHandle(MojoHandle wait_set,
+                         MojoHandle handle,
+                         MojoHandleSignals signals) {
+  assert(g_thunks.AddHandle);
+  return g_thunks.AddHandle(wait_set, handle, signals);
+}
+
+MojoResult MojoRemoveHandle(MojoHandle wait_set, MojoHandle handle) {
+  assert(g_thunks.RemoveHandle);
+  return g_thunks.RemoveHandle(wait_set, handle);
+}
+
+MojoResult MojoGetReadyHandles(MojoHandle wait_set,
+                               uint32_t* count,
+                               MojoHandle* handles,
+                               MojoResult* results,
+                               struct MojoHandleSignalsState* signals_states) {
+  assert(g_thunks.GetReadyHandles);
+  return g_thunks.GetReadyHandles(wait_set, count, handles, results,
+                                  signals_states);
+}
+
 extern "C" THUNK_EXPORT size_t MojoSetSystemThunks(
     const MojoSystemThunks* system_thunks) {
   if (system_thunks->size >= sizeof(g_thunks))

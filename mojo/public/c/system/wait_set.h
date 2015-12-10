@@ -38,6 +38,10 @@ MOJO_SYSTEM_EXPORT MojoResult MojoCreateWaitSet(
 // any number of different wait sets. To modify the signals being waited for,
 // the handle must first be removed, and then added with the new signals.
 //
+// If a handle is closed while still in the wait set, it is implicitly removed
+// from the set after being returned from |MojoGetReadyHandles()| with the
+// result |MOJO_RESULT_CANCELLED|.
+//
 // It is safe to add a handle to a wait set while performing a wait on another
 // thread. If the added handle already has its signals satisfied, the waiting
 // thread will be woken.
@@ -80,7 +84,7 @@ MOJO_SYSTEM_EXPORT MojoResult MojoRemoveHandle(
 // |MOJO_HANDLE_SIGNAL_READABLE| signal. Since handles may be added and removed
 // from a wait set concurrently, it is possible for a wait set to satisfy
 // |MOJO_HANDLE_SIGNAL_READABLE|, but not have any ready handles when
-// |MojoGetReadyHandle()| is called. These spurious wake-ups must be gracefully
+// |MojoGetReadyHandles()| is called. These spurious wake-ups must be gracefully
 // handled.
 //
 // |*count| on input, must contain the maximum number of ready handles to be
@@ -99,11 +103,12 @@ MOJO_SYSTEM_EXPORT MojoResult MojoRemoveHandle(
 // |signals_state| (optional) if non-null, must point to an array of size
 // |*count| of |MojoHandleSignalsState|. It will be populated with the signals
 // state of the corresponding handle in |*handles|. See documentation for
-// |MojoHandleSignalsState|.
+// |MojoHandleSignalsState| for more details about the meaning of each array
+// entry. The array will always be updated for every returned handle.
 //
 // Mojo signals and satisfiability are logically 'level-triggered'. Therefore,
 // if a signal continues to be satisfied and is not removed from the wait set,
-// subsequent calls to |MojoGetReadyHandle()| will return the same handle.
+// subsequent calls to |MojoGetReadyHandles()| will return the same handle.
 //
 // If multiple handles have their signals satisfied, the order in which handles
 // are returned is undefined. The same handle, if not removed, may be returned
