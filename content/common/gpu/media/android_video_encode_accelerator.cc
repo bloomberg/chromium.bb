@@ -145,7 +145,7 @@ bool AndroidVideoEncodeAccelerator::Initialize(
     media::VideoPixelFormat format,
     const gfx::Size& input_visible_size,
     media::VideoCodecProfile output_profile,
-    uint32 initial_bitrate,
+    uint32_t initial_bitrate,
     Client* client) {
   DVLOG(3) << __PRETTY_FUNCTION__ << " format: " << format
            << ", input_visible_size: " << input_visible_size.ToString()
@@ -268,8 +268,8 @@ void AndroidVideoEncodeAccelerator::UseOutputBitstreamBuffer(
 }
 
 void AndroidVideoEncodeAccelerator::RequestEncodingParametersChange(
-    uint32 bitrate,
-    uint32 framerate) {
+    uint32_t bitrate,
+    uint32_t framerate) {
   DVLOG(3) << __PRETTY_FUNCTION__ << ": bitrate: " << bitrate
            << ", framerate: " << framerate;
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -393,7 +393,7 @@ void AndroidVideoEncodeAccelerator::DequeueOutput() {
     return;
   }
 
-  int32 buf_index = 0;
+  int32_t buf_index = 0;
   size_t offset = 0;
   size_t size = 0;
   bool key_frame = false;

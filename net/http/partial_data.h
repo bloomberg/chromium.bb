@@ -5,7 +5,9 @@
 #ifndef NET_HTTP_PARTIAL_DATA_H_
 #define NET_HTTP_PARTIAL_DATA_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "net/base/completion_callback.h"
 #include "net/http/http_byte_range.h"
@@ -124,12 +126,12 @@ class PartialData {
   int GetNextRangeLen();
 
   // Completion routine for our callback.
-  void GetAvailableRangeCompleted(int64* start, int result);
+  void GetAvailableRangeCompleted(int64_t* start, int result);
 
-  int64 current_range_start_;
-  int64 current_range_end_;
-  int64 cached_start_;
-  int64 resource_size_;
+  int64_t current_range_start_;
+  int64_t current_range_end_;
+  int64_t cached_start_;
+  int64_t resource_size_;
   int cached_min_len_;
   HttpByteRange byte_range_;  // The range requested by the user.
   // The clean set of extra headers (no ranges).

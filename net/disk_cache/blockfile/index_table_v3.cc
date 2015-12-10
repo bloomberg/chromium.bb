@@ -5,6 +5,7 @@
 #include "net/disk_cache/blockfile/index_table_v3.h"
 
 #include <algorithm>
+#include <limits>
 #include <set>
 #include <utility>
 
@@ -24,16 +25,16 @@ namespace {
 
 // The following constants describe the bitfields of an IndexCell so they are
 // implicitly synchronized with the descrption of IndexCell on file_format_v3.h.
-const uint64 kCellLocationMask = (1 << 22) - 1;
-const uint64 kCellIdMask = (1 << 18) - 1;
-const uint64 kCellTimestampMask = (1 << 20) - 1;
-const uint64 kCellReuseMask = (1 << 4) - 1;
-const uint8 kCellStateMask = (1 << 3) - 1;
-const uint8 kCellGroupMask = (1 << 3) - 1;
-const uint8 kCellSumMask = (1 << 2) - 1;
+const uint64_t kCellLocationMask = (1 << 22) - 1;
+const uint64_t kCellIdMask = (1 << 18) - 1;
+const uint64_t kCellTimestampMask = (1 << 20) - 1;
+const uint64_t kCellReuseMask = (1 << 4) - 1;
+const uint8_t kCellStateMask = (1 << 3) - 1;
+const uint8_t kCellGroupMask = (1 << 3) - 1;
+const uint8_t kCellSumMask = (1 << 2) - 1;
 
-const uint64 kCellSmallTableLocationMask = (1 << 16) - 1;
-const uint64 kCellSmallTableIdMask = (1 << 24) - 1;
+const uint64_t kCellSmallTableLocationMask = (1 << 16) - 1;
+const uint64_t kCellSmallTableIdMask = (1 << 24) - 1;
 
 const int kCellIdOffset = 22;
 const int kCellTimestampOffset = 40;
@@ -60,19 +61,19 @@ const int kEvictedEntriesFile = disk_cache::BLOCK_EVICTED - 1;
 const int kMaxLocation = 1 << 22;
 const int kMinFileNumber = 1 << 16;
 
-uint32 GetCellLocation(const IndexCell& cell) {
+uint32_t GetCellLocation(const IndexCell& cell) {
   return cell.first_part & kCellLocationMask;
 }
 
-uint32 GetCellSmallTableLocation(const IndexCell& cell) {
+uint32_t GetCellSmallTableLocation(const IndexCell& cell) {
   return cell.first_part & kCellSmallTableLocationMask;
 }
 
-uint32 GetCellId(const IndexCell& cell) {
+uint32_t GetCellId(const IndexCell& cell) {
   return (cell.first_part >> kCellIdOffset) & kCellIdMask;
 }
 
-uint32 GetCellSmallTableId(const IndexCell& cell) {
+uint32_t GetCellSmallTableId(const IndexCell& cell) {
   return (cell.first_part >> kCellSmallTableIdOffset) &
          kCellSmallTableIdMask;
 }
@@ -97,42 +98,42 @@ int GetCellSum(const IndexCell& cell) {
   return (cell.last_part >> kCellSumOffset) & kCellSumMask;
 }
 
-void SetCellLocation(IndexCell* cell, uint32 address) {
-  DCHECK_LE(address, static_cast<uint32>(kCellLocationMask));
+void SetCellLocation(IndexCell* cell, uint32_t address) {
+  DCHECK_LE(address, static_cast<uint32_t>(kCellLocationMask));
   cell->first_part &= ~kCellLocationMask;
   cell->first_part |= address;
 }
 
-void SetCellSmallTableLocation(IndexCell* cell, uint32 address) {
-  DCHECK_LE(address, static_cast<uint32>(kCellSmallTableLocationMask));
+void SetCellSmallTableLocation(IndexCell* cell, uint32_t address) {
+  DCHECK_LE(address, static_cast<uint32_t>(kCellSmallTableLocationMask));
   cell->first_part &= ~kCellSmallTableLocationMask;
   cell->first_part |= address;
 }
 
-void SetCellId(IndexCell* cell, uint32 hash) {
-  DCHECK_LE(hash, static_cast<uint32>(kCellIdMask));
+void SetCellId(IndexCell* cell, uint32_t hash) {
+  DCHECK_LE(hash, static_cast<uint32_t>(kCellIdMask));
   cell->first_part &= ~(kCellIdMask << kCellIdOffset);
-  cell->first_part |= static_cast<int64>(hash) << kCellIdOffset;
+  cell->first_part |= static_cast<int64_t>(hash) << kCellIdOffset;
 }
 
-void SetCellSmallTableId(IndexCell* cell, uint32 hash) {
-  DCHECK_LE(hash, static_cast<uint32>(kCellSmallTableIdMask));
+void SetCellSmallTableId(IndexCell* cell, uint32_t hash) {
+  DCHECK_LE(hash, static_cast<uint32_t>(kCellSmallTableIdMask));
   cell->first_part &= ~(kCellSmallTableIdMask << kCellSmallTableIdOffset);
-  cell->first_part |= static_cast<int64>(hash) << kCellSmallTableIdOffset;
+  cell->first_part |= static_cast<int64_t>(hash) << kCellSmallTableIdOffset;
 }
 
 void SetCellTimestamp(IndexCell* cell, int timestamp) {
   DCHECK_LT(timestamp, 1 << 20);
   DCHECK_GE(timestamp, 0);
   cell->first_part &= ~(kCellTimestampMask << kCellTimestampOffset);
-  cell->first_part |= static_cast<int64>(timestamp) << kCellTimestampOffset;
+  cell->first_part |= static_cast<int64_t>(timestamp) << kCellTimestampOffset;
 }
 
 void SetCellReuse(IndexCell* cell, int count) {
   DCHECK_LT(count, 16);
   DCHECK_GE(count, 0);
   cell->first_part &= ~(kCellReuseMask << kCellReuseOffset);
-  cell->first_part |= static_cast<int64>(count) << kCellReuseOffset;
+  cell->first_part |= static_cast<int64_t>(count) << kCellReuseOffset;
 }
 
 void SetCellState(IndexCell* cell, disk_cache::EntryState state) {
@@ -155,9 +156,9 @@ void SetCellSum(IndexCell* cell, int sum) {
 // This is a very particular way to calculate the sum, so it will not match if
 // compared a gainst a pure 2 bit, modulo 2 sum.
 int CalculateCellSum(const IndexCell& cell) {
-  uint32* words = bit_cast<uint32*>(&cell);
-  uint8* bytes = bit_cast<uint8*>(&cell);
-  uint32 result = words[0] + words[1];
+  uint32_t* words = bit_cast<uint32_t*>(&cell);
+  uint8_t* bytes = bit_cast<uint8_t*>(&cell);
+  uint32_t result = words[0] + words[1];
   result += result >> 16;
   result += (result >> 8) + (bytes[8] & 0x3f);
   result += result >> 4;
@@ -252,7 +253,8 @@ void UpdateIterator(const disk_cache::EntryCell& cell,
 
 void InitIterator(IndexIterator* iterator) {
   iterator->cells.clear();
-  iterator->timestamp = iterator->forward ? kint32max : 0;
+  iterator->timestamp =
+      iterator->forward ? std::numeric_limits<int32_t>::max() : 0;
 }
 
 }  // namespace
@@ -271,7 +273,7 @@ bool EntryCell::IsValid() const {
 // in the case of small tables. See also the comment by the definition of
 // kEntriesFile.
 Addr EntryCell::GetAddress() const {
-  uint32 location = GetLocation();
+  uint32_t location = GetLocation();
   int file_number = FileNumberFromLocation(location);
   if (small_table_) {
     DCHECK_EQ(0, file_number);
@@ -317,8 +319,8 @@ void EntryCell::SetTimestamp(int timestamp) {
 }
 
 // Static.
-EntryCell EntryCell::GetEntryCellForTest(int32 cell_num,
-                                         uint32 hash,
+EntryCell EntryCell::GetEntryCellForTest(int32_t cell_num,
+                                         uint32_t hash,
                                          Addr address,
                                          IndexCell* cell,
                                          bool small_table) {
@@ -339,13 +341,11 @@ EntryCell::EntryCell() : cell_num_(0), hash_(0), small_table_(false) {
   cell_.Clear();
 }
 
-EntryCell::EntryCell(int32 cell_num,
-                     uint32 hash,
+EntryCell::EntryCell(int32_t cell_num,
+                     uint32_t hash,
                      Addr address,
                      bool small_table)
-    : cell_num_(cell_num),
-      hash_(hash),
-      small_table_(small_table) {
+    : cell_num_(cell_num), hash_(hash), small_table_(small_table) {
   DCHECK(IsValidAddress(address) || !address.value());
 
   cell_.Clear();
@@ -357,34 +357,33 @@ EntryCell::EntryCell(int32 cell_num,
     SetCellSmallTableLocation(&cell_, address.start_block());
     SetCellSmallTableId(&cell_, hash >> kSmallTableHashShift);
   } else {
-    uint32 location = address.FileNumber() << 16 | address.start_block();
+    uint32_t location = address.FileNumber() << 16 | address.start_block();
     SetCellLocation(&cell_, location);
     SetCellId(&cell_, hash >> kHashShift);
   }
 }
 
-EntryCell::EntryCell(int32 cell_num,
-                     uint32 hash,
+EntryCell::EntryCell(int32_t cell_num,
+                     uint32_t hash,
                      const IndexCell& cell,
                      bool small_table)
     : cell_num_(cell_num),
       hash_(hash),
       cell_(cell),
-      small_table_(small_table) {
-}
+      small_table_(small_table) {}
 
 void EntryCell::FixSum() {
   SetCellSum(&cell_, CalculateCellSum(cell_));
 }
 
-uint32 EntryCell::GetLocation() const {
+uint32_t EntryCell::GetLocation() const {
   if (small_table_)
     return GetCellSmallTableLocation(cell_);
 
   return GetCellLocation(cell_);
 }
 
-uint32 EntryCell::RecomputeHash() {
+uint32_t EntryCell::RecomputeHash() {
   if (small_table_) {
     hash_ &= (1 << kSmallTableHashShift) - 1;
     hash_ |= GetCellSmallTableId(cell_) << kSmallTableHashShift;
@@ -512,13 +511,13 @@ void IndexTable::Init(IndexTableInitData* params) {
     int old_main_table_bit_words = ((mask_ >> 1) + 1) * kCellsPerBucket / 32;
     DCHECK_GT(num_words, old_main_table_bit_words);
     memset(params->index_bitmap->bitmap + old_main_table_bit_words, 0,
-           (num_words - old_main_table_bit_words) * sizeof(int32));
+           (num_words - old_main_table_bit_words) * sizeof(int32_t));
 
     DCHECK(growing);
     int old_num_words = (backup_header_.get()->table_len + 31) / 32;
     DCHECK_GT(old_num_words, old_main_table_bit_words);
     memset(backup_bitmap_storage_.get() + old_main_table_bit_words, 0,
-           (old_num_words - old_main_table_bit_words) * sizeof(int32));
+           (old_num_words - old_main_table_bit_words) * sizeof(int32_t));
   }
   bitmap_.reset(new Bitmap(params->index_bitmap->bitmap, header_->table_len,
                            num_words));
@@ -526,11 +525,11 @@ void IndexTable::Init(IndexTableInitData* params) {
   if (growing) {
     int old_num_words = (backup_header_.get()->table_len + 31) / 32;
     DCHECK_GE(num_words, old_num_words);
-    scoped_ptr<uint32[]> storage(new uint32[num_words]);
+    scoped_ptr<uint32_t[]> storage(new uint32_t[num_words]);
     memcpy(storage.get(), backup_bitmap_storage_.get(),
-           old_num_words * sizeof(int32));
+           old_num_words * sizeof(int32_t));
     memset(storage.get() + old_num_words, 0,
-           (num_words - old_num_words) * sizeof(int32));
+           (num_words - old_num_words) * sizeof(int32_t));
 
     backup_bitmap_storage_.swap(storage);
     backup_header_->table_len = header_->table_len;
@@ -574,7 +573,7 @@ void IndexTable::Shutdown() {
 //
 // One consequence of this pattern is that we never start looking at buckets in
 // the extra table, unless we are following a link from the main table.
-EntrySet IndexTable::LookupEntries(uint32 hash) {
+EntrySet IndexTable::LookupEntries(uint32_t hash) {
   EntrySet entries;
   int bucket_num = static_cast<int>(hash & mask_);
   IndexBucket* bucket = &main_table_[bucket_num];
@@ -611,7 +610,7 @@ EntrySet IndexTable::LookupEntries(uint32 hash) {
   return entries;
 }
 
-EntryCell IndexTable::CreateEntryCell(uint32 hash, Addr address) {
+EntryCell IndexTable::CreateEntryCell(uint32_t hash, Addr address) {
   DCHECK(IsValidAddress(address));
   DCHECK(address.FileNumber() || address.start_block());
 
@@ -665,7 +664,7 @@ EntryCell IndexTable::CreateEntryCell(uint32 hash, Addr address) {
   return entry_cell;
 }
 
-EntryCell IndexTable::FindEntryCell(uint32 hash, Addr address) {
+EntryCell IndexTable::FindEntryCell(uint32_t hash, Addr address) {
   return FindEntryCellImpl(hash, address, false);
 }
 
@@ -679,7 +678,7 @@ base::Time IndexTable::TimeFromTimestamp(int timestamp) {
          TimeDelta::FromMinutes(timestamp);
 }
 
-void IndexTable::SetSate(uint32 hash, Addr address, EntryState state) {
+void IndexTable::SetSate(uint32_t hash, Addr address, EntryState state) {
   EntryCell cell = FindEntryCellImpl(hash, address, state == ENTRY_FREE);
   if (!cell.IsValid()) {
     NOTREACHED();
@@ -727,7 +726,7 @@ void IndexTable::SetSate(uint32 hash, Addr address, EntryState state) {
   Save(&cell);
 }
 
-void IndexTable::UpdateTime(uint32 hash, Addr address, base::Time current) {
+void IndexTable::UpdateTime(uint32_t hash, Addr address, base::Time current) {
   EntryCell cell = FindEntryCell(hash, address);
   if (!cell.IsValid())
     return;
@@ -792,7 +791,8 @@ void IndexTable::OnBackupTimer() {
 
 // -----------------------------------------------------------------------
 
-EntryCell IndexTable::FindEntryCellImpl(uint32 hash, Addr address,
+EntryCell IndexTable::FindEntryCellImpl(uint32_t hash,
+                                        Addr address,
                                         bool allow_deleted) {
   int bucket_num = static_cast<int>(hash & mask_);
   IndexBucket* bucket = &main_table_[bucket_num];
@@ -847,7 +847,7 @@ void IndexTable::CheckState(const EntryCell& cell) {
 void IndexTable::Write(const EntryCell& cell) {
   IndexBucket* bucket = NULL;
   int bucket_num = cell.cell_num() / kCellsPerBucket;
-  if (bucket_num < static_cast<int32>(mask_ + 1)) {
+  if (bucket_num < static_cast<int32_t>(mask_ + 1)) {
     bucket = &main_table_[bucket_num];
   } else {
     DCHECK_LE(bucket_num, header()->max_bucket);
@@ -888,7 +888,7 @@ void IndexTable::WalkTables(int limit_time,
   header_->num_high_use_entries = 0;
   header_->num_evicted_entries = 0;
 
-  for (int i = 0; i < static_cast<int32>(mask_ + 1); i++) {
+  for (int i = 0; i < static_cast<int32_t>(mask_ + 1); i++) {
     int bucket_num = i;
     IndexBucket* bucket = &main_table_[i];
     do {
@@ -957,7 +957,7 @@ void IndexTable::MoveCells(IndexBucket* old_extra_table) {
   // (h >> 14). If the table is say 8 times the original size (growing from 4x),
   // the bit that we are interested in would be the 3rd bit of the stored value,
   // in other words 'multiplier' >> 1.
-  uint32 new_bit = (1 << extra_bits_) >> 1;
+  uint32_t new_bit = (1 << extra_bits_) >> 1;
 
   scoped_ptr<IndexBucket[]> old_main_table;
   IndexBucket* source_table = main_table_;
@@ -1016,7 +1016,7 @@ void IndexTable::MoveCells(IndexBucket* old_extra_table) {
 
 void IndexTable::MoveSingleCell(IndexCell* current_cell, int cell_num,
                                 int main_table_index, bool growing) {
-  uint32 hash = GetFullHash(*current_cell, main_table_index);
+  uint32_t hash = GetFullHash(*current_cell, main_table_index);
   EntryCell old_cell(cell_num, hash, *current_cell, small_table_);
 
   // This method may be called when moving entries from a small table to a
@@ -1070,7 +1070,7 @@ void IndexTable::HandleMisplacedCell(IndexCell* current_cell, int cell_num,
   NOTREACHED();  // No unit tests yet.
 
   // The cell may be misplaced, or a duplicate cell exists with this data.
-  uint32 hash = GetFullHash(*current_cell, main_table_index);
+  uint32_t hash = GetFullHash(*current_cell, main_table_index);
   MoveSingleCell(current_cell, cell_num, main_table_index, false);
 
   // Now look for a duplicate cell.
@@ -1108,21 +1108,21 @@ void IndexTable::CheckBucketList(int bucket_num) {
   } while (bucket_num);
 }
 
-uint32 IndexTable::GetLocation(const IndexCell& cell) {
+uint32_t IndexTable::GetLocation(const IndexCell& cell) {
   if (small_table_)
     return GetCellSmallTableLocation(cell);
 
   return GetCellLocation(cell);
 }
 
-uint32 IndexTable::GetHashValue(const IndexCell& cell) {
+uint32_t IndexTable::GetHashValue(const IndexCell& cell) {
   if (small_table_)
     return GetCellSmallTableId(cell);
 
   return GetCellId(cell);
 }
 
-uint32 IndexTable::GetFullHash(const IndexCell& cell, uint32 lower_part) {
+uint32_t IndexTable::GetFullHash(const IndexCell& cell, uint32_t lower_part) {
   // It is OK for the high order bits of lower_part to overlap with the stored
   // part of the hash.
   if (small_table_)
@@ -1132,16 +1132,16 @@ uint32 IndexTable::GetFullHash(const IndexCell& cell, uint32 lower_part) {
 }
 
 // All the bits stored in the cell should match the provided hash.
-bool IndexTable::IsHashMatch(const IndexCell& cell, uint32 hash) {
+bool IndexTable::IsHashMatch(const IndexCell& cell, uint32_t hash) {
   hash = small_table_ ? hash >> kSmallTableHashShift : hash >> kHashShift;
   return GetHashValue(cell) == hash;
 }
 
-bool IndexTable::MisplacedHash(const IndexCell& cell, uint32 hash) {
+bool IndexTable::MisplacedHash(const IndexCell& cell, uint32_t hash) {
   if (!extra_bits_)
     return false;
 
-  uint32 mask = (1 << extra_bits_) - 1;
+  uint32_t mask = (1 << extra_bits_) - 1;
   hash = small_table_ ? hash >> kSmallTableHashShift : hash >> kHashShift;
   return (GetHashValue(cell) & mask) != (hash & mask);
 }

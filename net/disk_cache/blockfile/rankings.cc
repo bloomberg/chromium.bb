@@ -4,6 +4,10 @@
 
 #include "net/disk_cache/blockfile/rankings.h"
 
+#include <stdint.h>
+
+#include <limits>
+
 #include "net/disk_cache/blockfile/backend_impl.h"
 #include "net/disk_cache/blockfile/disk_format.h"
 #include "net/disk_cache/blockfile/entry_impl.h"
@@ -907,8 +911,8 @@ void Rankings::IncrementCounter(List list) {
   if (!count_lists_)
     return;
 
-  DCHECK(control_data_->sizes[list] < kint32max);
-  if (control_data_->sizes[list] < kint32max)
+  DCHECK(control_data_->sizes[list] < std::numeric_limits<int32_t>::max());
+  if (control_data_->sizes[list] < std::numeric_limits<int32_t>::max())
     control_data_->sizes[list]++;
 }
 

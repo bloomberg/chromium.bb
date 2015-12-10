@@ -16,7 +16,7 @@ namespace mp4 {
 
 Box::~Box() {}
 
-bool BufferReader::Read1(uint8* v) {
+bool BufferReader::Read1(uint8_t* v) {
   RCHECK(HasBytes(1));
   *v = buf_[pos_++];
   return true;
@@ -35,18 +35,30 @@ template<typename T> bool BufferReader::Read(T* v) {
   return true;
 }
 
-bool BufferReader::Read2(uint16* v) { return Read(v); }
-bool BufferReader::Read2s(int16* v) { return Read(v); }
-bool BufferReader::Read4(uint32* v) { return Read(v); }
-bool BufferReader::Read4s(int32* v) { return Read(v); }
-bool BufferReader::Read8(uint64* v) { return Read(v); }
-bool BufferReader::Read8s(int64* v) { return Read(v); }
-
-bool BufferReader::ReadFourCC(FourCC* v) {
-  return Read4(reinterpret_cast<uint32*>(v));
+bool BufferReader::Read2(uint16_t* v) {
+  return Read(v);
+}
+bool BufferReader::Read2s(int16_t* v) {
+  return Read(v);
+}
+bool BufferReader::Read4(uint32_t* v) {
+  return Read(v);
+}
+bool BufferReader::Read4s(int32_t* v) {
+  return Read(v);
+}
+bool BufferReader::Read8(uint64_t* v) {
+  return Read(v);
+}
+bool BufferReader::Read8s(int64_t* v) {
+  return Read(v);
 }
 
-bool BufferReader::ReadVec(std::vector<uint8>* vec, uint64 count) {
+bool BufferReader::ReadFourCC(FourCC* v) {
+  return Read4(reinterpret_cast<uint32_t*>(v));
+}
+
+bool BufferReader::ReadVec(std::vector<uint8_t>* vec, uint64_t count) {
   RCHECK(HasBytes(count));
   vec->clear();
   vec->insert(vec->end(), buf_ + pos_, buf_ + pos_ + count);
@@ -54,28 +66,28 @@ bool BufferReader::ReadVec(std::vector<uint8>* vec, uint64 count) {
   return true;
 }
 
-bool BufferReader::SkipBytes(uint64 bytes) {
+bool BufferReader::SkipBytes(uint64_t bytes) {
   RCHECK(HasBytes(bytes));
   pos_ += bytes;
   return true;
 }
 
-bool BufferReader::Read4Into8(uint64* v) {
-  uint32 tmp;
+bool BufferReader::Read4Into8(uint64_t* v) {
+  uint32_t tmp;
   RCHECK(Read4(&tmp));
   *v = tmp;
   return true;
 }
 
-bool BufferReader::Read4sInto8s(int64* v) {
+bool BufferReader::Read4sInto8s(int64_t* v) {
   // Beware of the need for sign extension.
-  int32 tmp;
+  int32_t tmp;
   RCHECK(Read4s(&tmp));
   *v = tmp;
   return true;
 }
 
-BoxReader::BoxReader(const uint8* buf,
+BoxReader::BoxReader(const uint8_t* buf,
                      const int size,
                      const scoped_refptr<MediaLog>& media_log,
                      bool is_EOS)
@@ -85,8 +97,7 @@ BoxReader::BoxReader(const uint8* buf,
       version_(0),
       flags_(0),
       scanned_(false),
-      is_EOS_(is_EOS) {
-}
+      is_EOS_(is_EOS) {}
 
 BoxReader::~BoxReader() {
   if (scanned_ && !children_.empty()) {
@@ -98,7 +109,7 @@ BoxReader::~BoxReader() {
 }
 
 // static
-BoxReader* BoxReader::ReadTopLevelBox(const uint8* buf,
+BoxReader* BoxReader::ReadTopLevelBox(const uint8_t* buf,
                                       const int buf_size,
                                       const scoped_refptr<MediaLog>& media_log,
                                       bool* err) {
@@ -111,14 +122,14 @@ BoxReader* BoxReader::ReadTopLevelBox(const uint8* buf,
     return NULL;
   }
 
-  if (reader->size() <= static_cast<uint64>(buf_size))
+  if (reader->size() <= static_cast<uint64_t>(buf_size))
     return reader.release();
 
   return NULL;
 }
 
 // static
-bool BoxReader::StartTopLevelBox(const uint8* buf,
+bool BoxReader::StartTopLevelBox(const uint8_t* buf,
                                  const int buf_size,
                                  const scoped_refptr<MediaLog>& media_log,
                                  FourCC* type,
@@ -136,7 +147,7 @@ bool BoxReader::StartTopLevelBox(const uint8* buf,
 }
 
 // static
-BoxReader* BoxReader::ReadConcatentatedBoxes(const uint8* buf,
+BoxReader* BoxReader::ReadConcatentatedBoxes(const uint8_t* buf,
                                              const int buf_size) {
   return new BoxReader(buf, buf_size, new MediaLog(), true);
 }
@@ -212,7 +223,7 @@ bool BoxReader::MaybeReadChild(Box* child) {
 }
 
 bool BoxReader::ReadFullBoxHeader() {
-  uint32 vflags;
+  uint32_t vflags;
   RCHECK(Read4(&vflags));
   version_ = vflags >> 24;
   flags_ = vflags & 0xffffff;
@@ -220,7 +231,7 @@ bool BoxReader::ReadFullBoxHeader() {
 }
 
 bool BoxReader::ReadHeader(bool* err) {
-  uint64 size = 0;
+  uint64_t size = 0;
   *err = false;
 
   if (!HasBytes(8)) {
@@ -252,8 +263,8 @@ bool BoxReader::ReadHeader(bool* err) {
 
   // Implementation-specific: support for boxes larger than 2^31 has been
   // removed.
-  if (size < static_cast<uint64>(pos_) ||
-      size > static_cast<uint64>(kint32max)) {
+  if (size < static_cast<uint64_t>(pos_) ||
+      size > static_cast<uint64_t>(std::numeric_limits<int32_t>::max())) {
     *err = true;
     return false;
   }

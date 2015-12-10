@@ -4,6 +4,8 @@
 
 #include "content/browser/appcache/appcache_disk_cache.h"
 
+#include <limits>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_path.h"
@@ -61,11 +63,11 @@ class AppCacheDiskCache::EntryImpl : public Entry {
 
   // Entry implementation.
   int Read(int index,
-           int64 offset,
+           int64_t offset,
            net::IOBuffer* buf,
            int buf_len,
            const net::CompletionCallback& callback) override {
-    if (offset < 0 || offset > kint32max)
+    if (offset < 0 || offset > std::numeric_limits<int32_t>::max())
       return net::ERR_INVALID_ARGUMENT;
     if (!disk_cache_entry_)
       return net::ERR_ABORTED;
@@ -74,11 +76,11 @@ class AppCacheDiskCache::EntryImpl : public Entry {
   }
 
   int Write(int index,
-            int64 offset,
+            int64_t offset,
             net::IOBuffer* buf,
             int buf_len,
             const net::CompletionCallback& callback) override {
-    if (offset < 0 || offset > kint32max)
+    if (offset < 0 || offset > std::numeric_limits<int32_t>::max())
       return net::ERR_INVALID_ARGUMENT;
     if (!disk_cache_entry_)
       return net::ERR_ABORTED;
@@ -87,7 +89,7 @@ class AppCacheDiskCache::EntryImpl : public Entry {
         index, static_cast<int>(offset), buf, buf_len, callback, kTruncate);
   }
 
-  int64 GetSize(int index) override {
+  int64_t GetSize(int index) override {
     return disk_cache_entry_ ? disk_cache_entry_->GetDataSize(index) : 0L;
   }
 
@@ -119,7 +121,8 @@ class AppCacheDiskCache::ActiveCall
     : public base::RefCounted<AppCacheDiskCache::ActiveCall> {
  public:
   static int CreateEntry(const base::WeakPtr<AppCacheDiskCache>& owner,
-                         int64 key, Entry** entry,
+                         int64_t key,
+                         Entry** entry,
                          const net::CompletionCallback& callback) {
     scoped_refptr<ActiveCall> active_call(
         new ActiveCall(owner, entry, callback));
@@ -130,7 +133,8 @@ class AppCacheDiskCache::ActiveCall
   }
 
   static int OpenEntry(const base::WeakPtr<AppCacheDiskCache>& owner,
-                       int64 key, Entry** entry,
+                       int64_t key,
+                       Entry** entry,
                        const net::CompletionCallback& callback) {
     scoped_refptr<ActiveCall> active_call(
         new ActiveCall(owner, entry, callback));
@@ -141,7 +145,8 @@ class AppCacheDiskCache::ActiveCall
   }
 
   static int DoomEntry(const base::WeakPtr<AppCacheDiskCache>& owner,
-                       int64 key, const net::CompletionCallback& callback) {
+                       int64_t key,
+                       const net::CompletionCallback& callback) {
     scoped_refptr<ActiveCall> active_call(
         new ActiveCall(owner, nullptr, callback));
     int rv = owner->disk_cache()->DoomEntry(
@@ -253,7 +258,8 @@ void AppCacheDiskCache::Disable() {
   disk_cache_.reset();
 }
 
-int AppCacheDiskCache::CreateEntry(int64 key, Entry** entry,
+int AppCacheDiskCache::CreateEntry(int64_t key,
+                                   Entry** entry,
                                    const net::CompletionCallback& callback) {
   DCHECK(entry);
   DCHECK(!callback.is_null());
@@ -272,7 +278,8 @@ int AppCacheDiskCache::CreateEntry(int64 key, Entry** entry,
       weak_factory_.GetWeakPtr(), key, entry, callback);
 }
 
-int AppCacheDiskCache::OpenEntry(int64 key, Entry** entry,
+int AppCacheDiskCache::OpenEntry(int64_t key,
+                                 Entry** entry,
                                  const net::CompletionCallback& callback) {
   DCHECK(entry);
   DCHECK(!callback.is_null());
@@ -291,7 +298,7 @@ int AppCacheDiskCache::OpenEntry(int64 key, Entry** entry,
       weak_factory_.GetWeakPtr(), key, entry, callback);
 }
 
-int AppCacheDiskCache::DoomEntry(int64 key,
+int AppCacheDiskCache::DoomEntry(int64_t key,
                                  const net::CompletionCallback& callback) {
   DCHECK(!callback.is_null());
   if (is_disabled_)
@@ -321,15 +328,12 @@ AppCacheDiskCache::PendingCall::PendingCall()
       entry(NULL) {
 }
 
-AppCacheDiskCache::PendingCall::PendingCall(PendingCallType call_type,
-    int64 key,
+AppCacheDiskCache::PendingCall::PendingCall(
+    PendingCallType call_type,
+    int64_t key,
     Entry** entry,
     const net::CompletionCallback& callback)
-    : call_type(call_type),
-      key(key),
-      entry(entry),
-      callback(callback) {
-}
+    : call_type(call_type), key(key), entry(entry), callback(callback) {}
 
 AppCacheDiskCache::PendingCall::~PendingCall() {}
 

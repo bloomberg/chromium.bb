@@ -5,6 +5,8 @@
 #ifndef CONTENT_COMMON_GPU_MEDIA_ANDROID_VIDEO_ENCODE_ACCELERATOR_H_
 #define CONTENT_COMMON_GPU_MEDIA_ANDROID_VIDEO_ENCODE_ACCELERATOR_H_
 
+#include <stdint.h>
+
 #include <list>
 #include <queue>
 #include <vector>
@@ -40,13 +42,13 @@ class CONTENT_EXPORT AndroidVideoEncodeAccelerator
   bool Initialize(media::VideoPixelFormat format,
                   const gfx::Size& input_visible_size,
                   media::VideoCodecProfile output_profile,
-                  uint32 initial_bitrate,
+                  uint32_t initial_bitrate,
                   Client* client) override;
   void Encode(const scoped_refptr<media::VideoFrame>& frame,
               bool force_keyframe) override;
   void UseOutputBitstreamBuffer(const media::BitstreamBuffer& buffer) override;
-  void RequestEncodingParametersChange(uint32 bitrate,
-                                       uint32 framerate) override;
+  void RequestEncodingParametersChange(uint32_t bitrate,
+                                       uint32_t framerate) override;
   void Destroy() override;
 
  private:
@@ -54,7 +56,7 @@ class CONTENT_EXPORT AndroidVideoEncodeAccelerator
     // Arbitrary choice.
     INITIAL_FRAMERATE = 30,
     // Until there are non-realtime users, no need for unrequested I-frames.
-    IFRAME_INTERVAL = kint32max,
+    IFRAME_INTERVAL = INT32_MAX,
   };
 
   // Impedance-mismatch fixers: MediaCodec is a poll-based API but VEA is a
@@ -93,7 +95,7 @@ class CONTENT_EXPORT AndroidVideoEncodeAccelerator
   base::RepeatingTimer io_timer_;
 
   // The difference between number of buffers queued & dequeued at the codec.
-  int32 num_buffers_at_codec_;
+  int32_t num_buffers_at_codec_;
 
   // A monotonically-growing value, used as a fake timestamp just to keep things
   // appearing to move forward.
@@ -103,7 +105,7 @@ class CONTENT_EXPORT AndroidVideoEncodeAccelerator
   int num_output_buffers_;          // -1 until RequireBitstreamBuffers.
   size_t output_buffers_capacity_;  // 0 until RequireBitstreamBuffers.
 
-  uint32 last_set_bitrate_;  // In bps.
+  uint32_t last_set_bitrate_;  // In bps.
 
   DISALLOW_COPY_AND_ASSIGN(AndroidVideoEncodeAccelerator);
 };

@@ -5,6 +5,8 @@
 #ifndef CONTENT_RENDERER_DOM_STORAGE_DOM_STORAGE_CACHED_AREA_H_
 #define CONTENT_RENDERER_DOM_STORAGE_DOM_STORAGE_CACHED_AREA_H_
 
+#include <stdint.h>
+
 #include <map>
 
 #include "base/memory/ref_counted.h"
@@ -27,11 +29,11 @@ class DOMStorageProxy;
 class CONTENT_EXPORT DOMStorageCachedArea
     : public base::RefCounted<DOMStorageCachedArea> {
  public:
-  DOMStorageCachedArea(int64 namespace_id,
+  DOMStorageCachedArea(int64_t namespace_id,
                        const GURL& origin,
                        DOMStorageProxy* proxy);
 
-  int64 namespace_id() const { return namespace_id_; }
+  int64_t namespace_id() const { return namespace_id_; }
   const GURL& origin() const { return origin_; }
 
   unsigned GetLength(int connection_id);
@@ -82,7 +84,7 @@ class CONTENT_EXPORT DOMStorageCachedArea
   bool ignore_all_mutations_;
   std::map<base::string16, int> ignore_key_mutations_;
 
-  int64 namespace_id_;
+  int64_t namespace_id_;
   GURL origin_;
   scoped_refptr<DOMStorageMap> map_;
   scoped_refptr<DOMStorageProxy> proxy_;

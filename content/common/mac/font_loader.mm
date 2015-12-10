@@ -6,6 +6,8 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include <limits>
+
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -57,7 +59,7 @@ void _CTFontManagerUnregisterFontForData(NSUInteger, int) {
 
 namespace {
 
-uint32 GetFontIDForFont(const base::FilePath& font_path) {
+uint32_t GetFontIDForFont(const base::FilePath& font_path) {
   // content/common can't depend on content/browser, so this cannot call
   // BrowserThread::CurrentlyOn(). Check this is always called on the same
   // thread.
@@ -69,14 +71,14 @@ uint32 GetFontIDForFont(const base::FilePath& font_path) {
   // ATS is deprecated and CTFont doesn't seem to have a obvious fixed id for a
   // font. Since this function is only called from a single thread, use a static
   // map to store ids.
-  typedef std::map<base::FilePath, uint32> FontIdMap;
+  typedef std::map<base::FilePath, uint32_t> FontIdMap;
   CR_DEFINE_STATIC_LOCAL(FontIdMap, font_ids, ());
 
   auto it = font_ids.find(font_path);
   if (it != font_ids.end())
     return it->second;
 
-  uint32 font_id = font_ids.size() + 1;
+  uint32_t font_id = font_ids.size() + 1;
   font_ids[font_path] = font_id;
   return font_id;
 }
@@ -120,25 +122,26 @@ void FontLoader::LoadFont(const FontDescriptor& font,
   base::FilePath font_path = base::mac::NSStringToFilePath([font_url path]);
 
   // Load file into shared memory buffer.
-  int64 font_file_size_64 = -1;
+  int64_t font_file_size_64 = -1;
   if (!base::GetFileSize(font_path, &font_file_size_64)) {
     DLOG(ERROR) << "Couldn't get font file size for " << font_path.value();
     return;
   }
 
-  if (font_file_size_64 <= 0 || font_file_size_64 >= kint32max) {
+  if (font_file_size_64 <= 0 ||
+      font_file_size_64 >= std::numeric_limits<int32_t>::max()) {
     DLOG(ERROR) << "Bad size for font file " << font_path.value();
     return;
   }
 
-  int32 font_file_size_32 = static_cast<int32>(font_file_size_64);
+  int32_t font_file_size_32 = static_cast<int32_t>(font_file_size_64);
   if (!result->font_data.CreateAndMapAnonymous(font_file_size_32)) {
     DLOG(ERROR) << "Failed to create shmem area for " << font.font_name;
     return;
   }
 
-  int32 amt_read = base::ReadFile(font_path,
-      reinterpret_cast<char*>(result->font_data.memory()),
+  int32_t amt_read = base::ReadFile(
+      font_path, reinterpret_cast<char*>(result->font_data.memory()),
       font_file_size_32);
   if (amt_read != font_file_size_32) {
     DLOG(ERROR) << "Failed to read font data for " << font_path.value();
@@ -151,7 +154,7 @@ void FontLoader::LoadFont(const FontDescriptor& font,
 
 // static
 bool FontLoader::CGFontRefFromBuffer(base::SharedMemoryHandle font_data,
-                                     uint32 font_data_size,
+                                     uint32_t font_data_size,
                                      CGFontRef* out) {
   *out = NULL;
 

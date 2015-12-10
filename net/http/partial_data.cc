@@ -4,6 +4,8 @@
 
 #include "net/http/partial_data.h"
 
+#include <limits>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/format_macros.h"
@@ -72,8 +74,9 @@ void PartialData::SetHeaders(const HttpRequestHeaders& headers) {
 
 void PartialData::RestoreHeaders(HttpRequestHeaders* headers) const {
   DCHECK(current_range_start_ >= 0 || byte_range_.IsSuffixByteRange());
-  int64 end = byte_range_.IsSuffixByteRange() ?
-              byte_range_.suffix_length() : byte_range_.last_byte_position();
+  int64_t end = byte_range_.IsSuffixByteRange()
+                    ? byte_range_.suffix_length()
+                    : byte_range_.last_byte_position();
 
   headers->CopyFrom(extra_headers_);
   if (truncated_ || !byte_range_.IsValid())
@@ -102,7 +105,7 @@ int PartialData::ShouldValidateCache(disk_cache::Entry* entry,
 
   if (sparse_entry_) {
     DCHECK(callback_.is_null());
-    int64* start = new int64;
+    int64_t* start = new int64_t;
     // This callback now owns "start". We make sure to keep it
     // in a local variable since we want to use it later.
     CompletionCallback cb =
@@ -193,7 +196,7 @@ bool PartialData::UpdateFromStoredHeaders(const HttpResponseHeaders* headers,
 
     // Now we avoid resume if there is no content length, but that was not
     // always the case so double check here.
-    int64 total_length = headers->GetContentLength();
+    int64_t total_length = headers->GetContentLength();
     if (total_length <= 0)
       return false;
 
@@ -220,7 +223,7 @@ bool PartialData::UpdateFromStoredHeaders(const HttpResponseHeaders* headers,
   if (!headers->HasStrongValidators())
     return false;
 
-  int64 length_value = headers->GetContentLength();
+  int64_t length_value = headers->GetContentLength();
   if (length_value <= 0)
     return false;  // We must have stored the resource length.
 
@@ -270,7 +273,7 @@ bool PartialData::ResponseHeadersOK(const HttpResponseHeaders* headers) {
         byte_range_.HasLastBytePosition();
   }
 
-  int64 start, end, total_length;
+  int64_t start, end, total_length;
   if (!headers->GetContentRange(&start, &end, &total_length))
     return false;
   if (total_length <= 0)
@@ -280,7 +283,7 @@ bool PartialData::ResponseHeadersOK(const HttpResponseHeaders* headers) {
 
   // A server should return a valid content length with a 206 (per the standard)
   // but relax the requirement because some servers don't do that.
-  int64 content_length = headers->GetContentLength();
+  int64_t content_length = headers->GetContentLength();
   if (content_length > 0 && content_length != end - start + 1)
     return false;
 
@@ -374,7 +377,7 @@ int PartialData::CacheRead(disk_cache::Entry* entry,
     rv = entry->ReadSparseData(current_range_start_, data, read_len,
                                callback);
   } else {
-    if (current_range_start_ > kint32max)
+    if (current_range_start_ > std::numeric_limits<int32_t>::max())
       return ERR_INVALID_ARGUMENT;
 
     rv = entry->ReadData(kDataStream, static_cast<int>(current_range_start_),
@@ -392,7 +395,7 @@ int PartialData::CacheWrite(disk_cache::Entry* entry,
     return entry->WriteSparseData(
         current_range_start_, data, data_len, callback);
   } else  {
-    if (current_range_start_ > kint32max)
+    if (current_range_start_ > std::numeric_limits<int32_t>::max())
       return ERR_INVALID_ARGUMENT;
 
     return entry->WriteData(kDataStream, static_cast<int>(current_range_start_),
@@ -415,16 +418,16 @@ void PartialData::OnNetworkReadCompleted(int result) {
 }
 
 int PartialData::GetNextRangeLen() {
-  int64 range_len =
-      byte_range_.HasLastBytePosition() ?
-      byte_range_.last_byte_position() - current_range_start_ + 1 :
-      kint32max;
-  if (range_len > kint32max)
-    range_len = kint32max;
-  return static_cast<int32>(range_len);
+  int64_t range_len =
+      byte_range_.HasLastBytePosition()
+          ? byte_range_.last_byte_position() - current_range_start_ + 1
+          : std::numeric_limits<int32_t>::max();
+  if (range_len > std::numeric_limits<int32_t>::max())
+    range_len = std::numeric_limits<int32_t>::max();
+  return static_cast<int32_t>(range_len);
 }
 
-void PartialData::GetAvailableRangeCompleted(int64* start, int result) {
+void PartialData::GetAvailableRangeCompleted(int64_t* start, int result) {
   DCHECK(!callback_.is_null());
   DCHECK_NE(ERR_IO_PENDING, result);
 

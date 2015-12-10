@@ -5,6 +5,8 @@
 #ifndef NET_DISK_CACHE_BLOCKFILE_ENTRY_IMPL_H_
 #define NET_DISK_CACHE_BLOCKFILE_ENTRY_IMPL_H_
 
+#include <stdint.h>
+
 #include "base/memory/scoped_ptr.h"
 #include "net/disk_cache/blockfile/disk_format.h"
 #include "net/disk_cache/blockfile/storage_block-inl.h"
@@ -46,11 +48,15 @@ class NET_EXPORT_PRIVATE EntryImpl
                    const CompletionCallback& callback);
   int WriteDataImpl(int index, int offset, IOBuffer* buf, int buf_len,
                     const CompletionCallback& callback, bool truncate);
-  int ReadSparseDataImpl(int64 offset, IOBuffer* buf, int buf_len,
+  int ReadSparseDataImpl(int64_t offset,
+                         IOBuffer* buf,
+                         int buf_len,
                          const CompletionCallback& callback);
-  int WriteSparseDataImpl(int64 offset, IOBuffer* buf, int buf_len,
+  int WriteSparseDataImpl(int64_t offset,
+                          IOBuffer* buf,
+                          int buf_len,
                           const CompletionCallback& callback);
-  int GetAvailableRangeImpl(int64 offset, int len, int64* start);
+  int GetAvailableRangeImpl(int64_t offset, int len, int64_t* start);
   void CancelSparseIOImpl();
   int ReadyForSparseIOImpl(const CompletionCallback& callback);
 
@@ -62,14 +68,14 @@ class NET_EXPORT_PRIVATE EntryImpl
     return &node_;
   }
 
-  uint32 GetHash();
+  uint32_t GetHash();
 
   // Performs the initialization of a EntryImpl that will be added to the
   // cache.
-  bool CreateEntry(Addr node_address, const std::string& key, uint32 hash);
+  bool CreateEntry(Addr node_address, const std::string& key, uint32_t hash);
 
   // Returns true if this entry matches the lookup arguments.
-  bool IsSameEntry(const std::string& key, uint32 hash);
+  bool IsSameEntry(const std::string& key, uint32_t hash);
 
   // Permamently destroys this entry.
   void InternalDoom();
@@ -104,10 +110,10 @@ class NET_EXPORT_PRIVATE EntryImpl
 
   // Marks this entry as dirty (in memory) if needed. This is intended only for
   // entries that are being read from disk, to be called during loading.
-  void SetDirtyFlag(int32 current_id);
+  void SetDirtyFlag(int32_t current_id);
 
   // Fixes this entry so it can be treated as valid (to delete it).
-  void SetPointerForInvalidEntry(int32 new_id);
+  void SetPointerForInvalidEntry(int32_t new_id);
 
   // Returns true if this entry is so meesed up that not everything is going to
   // be removed.
@@ -152,7 +158,7 @@ class NET_EXPORT_PRIVATE EntryImpl
   std::string GetKey() const override;
   base::Time GetLastUsed() const override;
   base::Time GetLastModified() const override;
-  int32 GetDataSize(int index) const override;
+  int32_t GetDataSize(int index) const override;
   int ReadData(int index,
                int offset,
                IOBuffer* buf,
@@ -164,17 +170,17 @@ class NET_EXPORT_PRIVATE EntryImpl
                 int buf_len,
                 const CompletionCallback& callback,
                 bool truncate) override;
-  int ReadSparseData(int64 offset,
+  int ReadSparseData(int64_t offset,
                      IOBuffer* buf,
                      int buf_len,
                      const CompletionCallback& callback) override;
-  int WriteSparseData(int64 offset,
+  int WriteSparseData(int64_t offset,
                       IOBuffer* buf,
                       int buf_len,
                       const CompletionCallback& callback) override;
-  int GetAvailableRange(int64 offset,
+  int GetAvailableRange(int64_t offset,
                         int len,
-                        int64* start,
+                        int64_t* start,
                         const CompletionCallback& callback) override;
   bool CouldBeSparse() const override;
   void CancelSparseIO() override;
@@ -248,10 +254,10 @@ class NET_EXPORT_PRIVATE EntryImpl
   int InitSparseData();
 
   // Adds the provided |flags| to the current EntryFlags for this entry.
-  void SetEntryFlags(uint32 flags);
+  void SetEntryFlags(uint32_t flags);
 
   // Returns the current EntryFlags for this entry.
-  uint32 GetEntryFlags();
+  uint32_t GetEntryFlags();
 
   // Gets the data stored at the given index. If the information is in memory,
   // a buffer will be allocated and the data will be copied to it (the caller

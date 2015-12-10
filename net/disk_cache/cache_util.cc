@@ -4,6 +4,8 @@
 
 #include "net/disk_cache/cache_util.h"
 
+#include <limits>
+
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
@@ -49,7 +51,7 @@ base::FilePath GetTempCacheName(const base::FilePath& path,
   return base::FilePath();
 }
 
-int64 PreferredCacheSizeInternal(int64 available) {
+int64_t PreferredCacheSizeInternal(int64_t available) {
   using disk_cache::kDefaultCacheSize;
   // Return 80% of the available space if there is not enough space to use
   // kDefaultCacheSize.
@@ -62,12 +64,12 @@ int64 PreferredCacheSizeInternal(int64 available) {
 
   // Return 10% of the available space if the target size
   // (2.5 * kDefaultCacheSize) is more than 10%.
-  if (available < static_cast<int64>(kDefaultCacheSize) * 25)
+  if (available < static_cast<int64_t>(kDefaultCacheSize) * 25)
     return available / 10;
 
   // Return the target size (2.5 * kDefaultCacheSize) if it uses 10% to 1%
   // of the available space.
-  if (available < static_cast<int64>(kDefaultCacheSize) * 250)
+  if (available < static_cast<int64_t>(kDefaultCacheSize) * 250)
     return kDefaultCacheSize * 5 / 2;
 
   // Return 1% of the available space.
@@ -141,16 +143,16 @@ bool DelayedCacheCleanup(const base::FilePath& full_path) {
 
 // Returns the preferred maximum number of bytes for the cache given the
 // number of available bytes.
-int PreferredCacheSize(int64 available) {
+int PreferredCacheSize(int64_t available) {
   if (available < 0)
     return kDefaultCacheSize;
 
   // Limit cache size to somewhat less than kint32max to avoid potential
   // integer overflows in cache backend implementations.
-  DCHECK_LT(kDefaultCacheSize * 4, kint32max);
-  return static_cast<int32>(std::min(
-      PreferredCacheSizeInternal(available),
-      static_cast<int64>(kDefaultCacheSize * 4)));
+  DCHECK_LT(kDefaultCacheSize * 4, std::numeric_limits<int32_t>::max());
+  return static_cast<int32_t>(
+      std::min(PreferredCacheSizeInternal(available),
+               static_cast<int64_t>(kDefaultCacheSize * 4)));
 }
 
 }  // namespace disk_cache

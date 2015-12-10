@@ -4,6 +4,8 @@
 
 #include "net/disk_cache/blockfile/entry_impl_v3.h"
 
+#include <limits>
+
 #include "base/hash.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
@@ -257,8 +259,9 @@ EntryImplV3::EntryImplV3(BackendImplV3* backend, Addr address, bool read_only)
 
 #if defined(V3_NOT_JUST_YET_READY)
 
-bool EntryImplV3::CreateEntry(Addr node_address, const std::string& key,
-                              uint32 hash) {
+bool EntryImplV3::CreateEntry(Addr node_address,
+                              const std::string& key,
+                              uint32_t hash) {
   Trace("Create entry In");
   EntryStore* entry_store = entry_.Data();
   RankingsNode* node = node_.Data();
@@ -272,7 +275,7 @@ bool EntryImplV3::CreateEntry(Addr node_address, const std::string& key,
 
   entry_store->hash = hash;
   entry_store->creation_time = Time::Now().ToInternalValue();
-  entry_store->key_len = static_cast<int32>(key.size());
+  entry_store->key_len = static_cast<int32_t>(key.size());
   if (entry_store->key_len > kMaxInternalKeyLength) {
     Addr address(0);
     if (!CreateBlock(entry_store->key_len + 1, &address))
@@ -297,18 +300,18 @@ bool EntryImplV3::CreateEntry(Addr node_address, const std::string& key,
     memcpy(entry_store->key, key.data(), key.size());
     entry_store->key[key.size()] = '\0';
   }
-  backend_->ModifyStorageSize(0, static_cast<int32>(key.size()));
-  CACHE_UMA(COUNTS, "KeySize", 0, static_cast<int32>(key.size()));
+  backend_->ModifyStorageSize(0, static_cast<int32_t>(key.size()));
+  CACHE_UMA(COUNTS, "KeySize", 0, static_cast<int32_t>(key.size()));
   node->dirty = backend_->GetCurrentEntryId();
   Log("Create Entry ");
   return true;
 }
 
-uint32 EntryImplV3::GetHash() {
+uint32_t EntryImplV3::GetHash() {
   return entry_.Data()->hash;
 }
 
-bool EntryImplV3::IsSameEntry(const std::string& key, uint32 hash) {
+bool EntryImplV3::IsSameEntry(const std::string& key, uint32_t hash) {
   if (entry_.Data()->hash != hash ||
       static_cast<size_t>(entry_.Data()->key_len) != key.size())
     return false;
@@ -513,7 +516,7 @@ Time EntryImplV3::GetLastModified() const {
   return Time::FromInternalValue(node->Data()->last_modified);
 }
 
-int32 EntryImplV3::GetDataSize(int index) const {
+int32_t EntryImplV3::GetDataSize(int index) const {
   if (index < 0 || index >= kNumStreams)
     return 0;
 
@@ -602,7 +605,9 @@ int EntryImpl::WriteDataImpl(int index, int offset, IOBuffer* buf, int buf_len,
   return result;
 }
 
-int EntryImplV3::ReadSparseData(int64 offset, IOBuffer* buf, int buf_len,
+int EntryImplV3::ReadSparseData(int64_t offset,
+                                IOBuffer* buf,
+                                int buf_len,
                                 const CompletionCallback& callback) {
   if (callback.is_null())
     return ReadSparseDataImpl(offset, buf, buf_len, callback);
@@ -614,7 +619,9 @@ int EntryImplV3::ReadSparseData(int64 offset, IOBuffer* buf, int buf_len,
   return net::ERR_IO_PENDING;
 }
 
-int EntryImpl::ReadSparseDataImpl(int64 offset, IOBuffer* buf, int buf_len,
+int EntryImpl::ReadSparseDataImpl(int64_t offset,
+                                  IOBuffer* buf,
+                                  int buf_len,
                                   const CompletionCallback& callback) {
   DCHECK(node_.Data()->dirty || read_only_);
   int result = InitSparseData();
@@ -628,7 +635,9 @@ int EntryImpl::ReadSparseDataImpl(int64 offset, IOBuffer* buf, int buf_len,
   return result;
 }
 
-int EntryImplV3::WriteSparseData(int64 offset, IOBuffer* buf, int buf_len,
+int EntryImplV3::WriteSparseData(int64_t offset,
+                                 IOBuffer* buf,
+                                 int buf_len,
                                  const CompletionCallback& callback) {
   if (callback.is_null())
     return WriteSparseDataImpl(offset, buf, buf_len, callback);
@@ -640,7 +649,9 @@ int EntryImplV3::WriteSparseData(int64 offset, IOBuffer* buf, int buf_len,
   return net::ERR_IO_PENDING;
 }
 
-int EntryImpl::WriteSparseDataImpl(int64 offset, IOBuffer* buf, int buf_len,
+int EntryImpl::WriteSparseDataImpl(int64_t offset,
+                                   IOBuffer* buf,
+                                   int buf_len,
                                    const CompletionCallback& callback) {
   DCHECK(node_.Data()->dirty || read_only_);
   int result = InitSparseData();
@@ -654,7 +665,9 @@ int EntryImpl::WriteSparseDataImpl(int64 offset, IOBuffer* buf, int buf_len,
   return result;
 }
 
-int EntryImplV3::GetAvailableRange(int64 offset, int len, int64* start,
+int EntryImplV3::GetAvailableRange(int64_t offset,
+                                   int len,
+                                   int64_t* start,
                                    const CompletionCallback& callback) {
   if (!background_queue_)
     return net::ERR_UNEXPECTED;
@@ -663,7 +676,7 @@ int EntryImplV3::GetAvailableRange(int64 offset, int len, int64* start,
   return net::ERR_IO_PENDING;
 }
 
-int EntryImpl::GetAvailableRangeImpl(int64 offset, int len, int64* start) {
+int EntryImpl::GetAvailableRangeImpl(int64_t offset, int len, int64_t* start) {
   int result = InitSparseData();
   if (net::OK != result)
     return result;
@@ -875,7 +888,7 @@ int EntryImpl::InternalWriteData(int index, int offset,
       offset + buf_len > max_file_size) {
     int size = offset + buf_len;
     if (size <= max_file_size)
-      size = kint32max;
+      size = std::numeric_limits<int32_t>::max();
     backend_->TooMuchStorageRequested(size);
     return net::ERR_FAILED;
   }
@@ -1320,12 +1333,12 @@ int EntryImpl::InitSparseData() {
   return result;
 }
 
-void EntryImpl::SetEntryFlags(uint32 flags) {
+void EntryImpl::SetEntryFlags(uint32_t flags) {
   entry_.Data()->flags |= flags;
   entry_.set_modified();
 }
 
-uint32 EntryImpl::GetEntryFlags() {
+uint32_t EntryImpl::GetEntryFlags() {
   return entry_.Data()->flags;
 }
 
@@ -1415,7 +1428,7 @@ Time EntryImplV3::GetLastModified() const {
   return Time();
 }
 
-int32 EntryImplV3::GetDataSize(int index) const {
+int32_t EntryImplV3::GetDataSize(int index) const {
   return 0;
 }
 
@@ -1429,17 +1442,23 @@ int EntryImplV3::WriteData(int index, int offset, IOBuffer* buf, int buf_len,
   return net::ERR_FAILED;
 }
 
-int EntryImplV3::ReadSparseData(int64 offset, IOBuffer* buf, int buf_len,
+int EntryImplV3::ReadSparseData(int64_t offset,
+                                IOBuffer* buf,
+                                int buf_len,
                                 const CompletionCallback& callback) {
   return net::ERR_FAILED;
 }
 
-int EntryImplV3::WriteSparseData(int64 offset, IOBuffer* buf, int buf_len,
+int EntryImplV3::WriteSparseData(int64_t offset,
+                                 IOBuffer* buf,
+                                 int buf_len,
                                  const CompletionCallback& callback) {
   return net::ERR_FAILED;
 }
 
-int EntryImplV3::GetAvailableRange(int64 offset, int len, int64* start,
+int EntryImplV3::GetAvailableRange(int64_t offset,
+                                   int len,
+                                   int64_t* start,
                                    const CompletionCallback& callback) {
   return net::ERR_FAILED;
 }

@@ -47,12 +47,15 @@ class WrappedPickleIOBuffer : public net::WrappedIOBuffer {
 
 // AppCacheResponseInfo ----------------------------------------------
 
-AppCacheResponseInfo::AppCacheResponseInfo(
-    AppCacheStorage* storage, const GURL& manifest_url,
-    int64 response_id,  net::HttpResponseInfo* http_info,
-    int64 response_data_size)
-    : manifest_url_(manifest_url), response_id_(response_id),
-      http_response_info_(http_info), response_data_size_(response_data_size),
+AppCacheResponseInfo::AppCacheResponseInfo(AppCacheStorage* storage,
+                                           const GURL& manifest_url,
+                                           int64_t response_id,
+                                           net::HttpResponseInfo* http_info,
+                                           int64_t response_data_size)
+    : manifest_url_(manifest_url),
+      response_id_(response_id),
+      http_response_info_(http_info),
+      response_data_size_(response_data_size),
       storage_(storage) {
   DCHECK(http_info);
   DCHECK(response_id != kAppCacheNoResponseId);
@@ -75,15 +78,15 @@ HttpResponseInfoIOBuffer::~HttpResponseInfoIOBuffer() {}
 
 // AppCacheResponseIO ----------------------------------------------
 
-AppCacheResponseIO::AppCacheResponseIO(
-    int64 response_id, int64 group_id, AppCacheDiskCacheInterface* disk_cache)
+AppCacheResponseIO::AppCacheResponseIO(int64_t response_id,
+                                       int64_t group_id,
+                                       AppCacheDiskCacheInterface* disk_cache)
     : response_id_(response_id),
       group_id_(group_id),
       disk_cache_(disk_cache),
       entry_(NULL),
       buffer_len_(0),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
 AppCacheResponseIO::~AppCacheResponseIO() {
   if (entry_)
@@ -170,16 +173,15 @@ void AppCacheResponseIO::OpenEntryCallback(
 // AppCacheResponseReader ----------------------------------------------
 
 AppCacheResponseReader::AppCacheResponseReader(
-    int64 response_id,
-    int64 group_id,
+    int64_t response_id,
+    int64_t group_id,
     AppCacheDiskCacheInterface* disk_cache)
     : AppCacheResponseIO(response_id, group_id, disk_cache),
       range_offset_(0),
-      range_length_(kint32max),
+      range_length_(std::numeric_limits<int32_t>::max()),
       read_position_(0),
       reading_metadata_size_(0),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
 AppCacheResponseReader::~AppCacheResponseReader() {
 }
@@ -266,7 +268,7 @@ void AppCacheResponseReader::OnIOComplete(int result) {
       info_buffer_->response_data_size =
           entry_->GetSize(kResponseContentIndex);
 
-      int64 metadata_size = entry_->GetSize(kResponseMetadataIndex);
+      int64_t metadata_size = entry_->GetSize(kResponseMetadataIndex);
       if (metadata_size > 0) {
         reading_metadata_size_ = metadata_size;
         info_buffer_->http_info->metadata = new net::IOBufferWithSize(
@@ -296,14 +298,15 @@ void AppCacheResponseReader::OnOpenEntryComplete() {
 // AppCacheResponseWriter ----------------------------------------------
 
 AppCacheResponseWriter::AppCacheResponseWriter(
-    int64 response_id, int64 group_id, AppCacheDiskCacheInterface* disk_cache)
+    int64_t response_id,
+    int64_t group_id,
+    AppCacheDiskCacheInterface* disk_cache)
     : AppCacheResponseIO(response_id, group_id, disk_cache),
       info_size_(0),
       write_position_(0),
       write_amount_(0),
       creation_phase_(INITIAL_ATTEMPT),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
 AppCacheResponseWriter::~AppCacheResponseWriter() {
 }
@@ -437,13 +440,12 @@ void AppCacheResponseWriter::OnCreateEntryComplete(
 // AppCacheResponseMetadataWriter ----------------------------------------------
 
 AppCacheResponseMetadataWriter::AppCacheResponseMetadataWriter(
-    int64 response_id,
-    int64 group_id,
+    int64_t response_id,
+    int64_t group_id,
     AppCacheDiskCacheInterface* disk_cache)
     : AppCacheResponseIO(response_id, group_id, disk_cache),
       write_amount_(0),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
 AppCacheResponseMetadataWriter::~AppCacheResponseMetadataWriter() {
 }

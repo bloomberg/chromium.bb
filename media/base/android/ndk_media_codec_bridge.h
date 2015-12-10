@@ -6,6 +6,7 @@
 #define MEDIA_BASE_ANDROID_NDK_MEDIA_CODEC_BRIDGE_H_
 
 #include <media/NdkMediaCodec.h>
+#include <stdint.h>
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -27,13 +28,13 @@ class MEDIA_EXPORT NdkMediaCodecBridge : public MediaCodecBridge {
   int GetOutputSamplingRate() override;
   MediaCodecStatus QueueInputBuffer(
       int index,
-      const uint8* data,
+      const uint8_t* data,
       size_t data_size,
       const base::TimeDelta& presentation_time) override;
   using MediaCodecBridge::QueueSecureInputBuffer;
   MediaCodecStatus QueueSecureInputBuffer(
       int index,
-      const uint8* data,
+      const uint8_t* data,
       size_t data_size,
       const std::vector<char>& key_id,
       const std::vector<char>& iv,
@@ -52,7 +53,7 @@ class MEDIA_EXPORT NdkMediaCodecBridge : public MediaCodecBridge {
                                        bool* key_frame) override;
   void ReleaseOutputBuffer(int index, bool render) override;
   void GetInputBuffer(int input_buffer_index,
-                      uint8** data,
+                      uint8_t** data,
                       size_t* capacity) override;
   bool CopyFromOutputBuffer(int index,
                             size_t offset,

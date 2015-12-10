@@ -7,9 +7,11 @@
 #import <objc/runtime.h>
 #include <OpenGL/gl.h>
 #include <QuartzCore/QuartzCore.h>
+#include <stdint.h>
+
+#include <limits>
 #include <utility>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
@@ -1331,7 +1333,7 @@ bool RenderWidgetHostViewMac::GetLineBreakIndex(
   // TODO(nona): Bidi support.
   const size_t loop_end_idx = std::min(bounds.size(), range.end());
   int max_height = 0;
-  int min_y_offset = kint32max;
+  int min_y_offset = std::numeric_limits<int32_t>::max();
   for (size_t idx = range.start(); idx < loop_end_idx; ++idx) {
     max_height = std::max(max_height, bounds[idx].height());
     min_y_offset = std::min(min_y_offset, bounds[idx].y());
@@ -1465,7 +1467,8 @@ bool RenderWidgetHostViewMac::HasAcceleratedSurface(
 }
 
 void RenderWidgetHostViewMac::OnSwapCompositorFrame(
-    uint32 output_surface_id, scoped_ptr<cc::CompositorFrame> frame) {
+    uint32_t output_surface_id,
+    scoped_ptr<cc::CompositorFrame> frame) {
   TRACE_EVENT0("browser", "RenderWidgetHostViewMac::OnSwapCompositorFrame");
 
   last_scroll_offset_ = frame->metadata.root_scroll_offset;

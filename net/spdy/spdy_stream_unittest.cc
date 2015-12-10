@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include <cstddef>
+#include <limits>
 #include <string>
 #include <vector>
 
@@ -58,7 +61,7 @@ class SpdyStreamTest : public ::testing::Test,
  protected:
   // A function that takes a SpdyStream and the number of bytes which
   // will unstall the next frame completely.
-  typedef base::Callback<void(const base::WeakPtr<SpdyStream>&, int32)>
+  typedef base::Callback<void(const base::WeakPtr<SpdyStream>&, int32_t)>
       UnstallFunction;
 
   SpdyStreamTest()
@@ -830,7 +833,7 @@ TEST_P(SpdyStreamTest, DuplicateHeaders) {
 // The tests below are only for SPDY/3 and above.
 
 // Call IncreaseSendWindowSize on a stream with a large enough delta
-// to overflow an int32. The SpdyStream should handle that case
+// to overflow an int32_t. The SpdyStream should handle that case
 // gracefully.
 TEST_P(SpdyStreamTest, IncreaseSendWindowSizeOverflow) {
   session_ =
@@ -877,9 +880,10 @@ TEST_P(SpdyStreamTest, IncreaseSendWindowSizeOverflow) {
 
   data.RunFor(1);
 
-  int32 old_send_window_size = stream->send_window_size();
+  int32_t old_send_window_size = stream->send_window_size();
   ASSERT_GT(old_send_window_size, 0);
-  int32 delta_window_size = kint32max - old_send_window_size + 1;
+  int32_t delta_window_size =
+      std::numeric_limits<int32_t>::max() - old_send_window_size + 1;
   stream->IncreaseSendWindowSize(delta_window_size);
   EXPECT_EQ(NULL, stream.get());
 
@@ -900,14 +904,14 @@ void StallStream(const base::WeakPtr<SpdyStream>& stream) {
 }
 
 void IncreaseStreamSendWindowSize(const base::WeakPtr<SpdyStream>& stream,
-                                  int32 delta_window_size) {
+                                  int32_t delta_window_size) {
   EXPECT_TRUE(stream->send_stalled_by_flow_control());
   stream->IncreaseSendWindowSize(delta_window_size);
   EXPECT_FALSE(stream->send_stalled_by_flow_control());
 }
 
 void AdjustStreamSendWindowSize(const base::WeakPtr<SpdyStream>& stream,
-                                int32 delta_window_size) {
+                                int32_t delta_window_size) {
   // Make sure that negative adjustments are handled properly.
   EXPECT_TRUE(stream->send_stalled_by_flow_control());
   stream->AdjustSendWindowSize(-delta_window_size);
@@ -1135,11 +1139,11 @@ TEST_P(SpdyStreamTest, ReceivedBytes) {
   EXPECT_TRUE(stream->HasUrlFromHeaders());
   EXPECT_EQ(kStreamUrl, stream->GetUrlFromHeaders().spec());
 
-  int64 reply_frame_len = reply->size();
-  int64 data_header_len = spdy_util_.CreateFramer(false)
-      ->GetDataFrameMinimumSize();
-  int64 data_frame_len = data_header_len + kPostBodyLength;
-  int64 response_len = reply_frame_len + data_frame_len;
+  int64_t reply_frame_len = reply->size();
+  int64_t data_header_len =
+      spdy_util_.CreateFramer(false)->GetDataFrameMinimumSize();
+  int64_t data_frame_len = data_header_len + kPostBodyLength;
+  int64_t response_len = reply_frame_len + data_frame_len;
 
   EXPECT_EQ(0, stream->raw_received_bytes());
   data.RunFor(1); // SYN

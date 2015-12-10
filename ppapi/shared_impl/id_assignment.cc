@@ -4,13 +4,13 @@
 
 #include "ppapi/shared_impl/id_assignment.h"
 
-#include "base/basictypes.h"
+#include <stdint.h>
 
 namespace ppapi {
 
 const unsigned int kPPIdTypeBits = 2;
 
-const int32 kMaxPPId = kint32max >> kPPIdTypeBits;
+const int32_t kMaxPPId = INT32_MAX >> kPPIdTypeBits;
 
 static_assert(PP_ID_TYPE_COUNT <= (1 << kPPIdTypeBits),
               "kPPIdTypeBits is too small for all id types");

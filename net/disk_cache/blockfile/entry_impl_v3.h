@@ -5,6 +5,8 @@
 #ifndef NET_DISK_CACHE_BLOCKFILE_ENTRY_IMPL_V3_H_
 #define NET_DISK_CACHE_BLOCKFILE_ENTRY_IMPL_V3_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
@@ -40,11 +42,11 @@ class NET_EXPORT_PRIVATE EntryImplV3
 
   // Performs the initialization of a EntryImplV3 that will be added to the
   // cache.
-  bool CreateEntry(Addr node_address, const std::string& key, uint32 hash);
+  bool CreateEntry(Addr node_address, const std::string& key, uint32_t hash);
 
-  uint32 GetHash();
+  uint32_t GetHash();
 
-  uint32 GetHash() const;
+  uint32_t GetHash() const;
   Addr GetAddress() const;
   int GetReuseCounter() const;
   void SetReuseCounter(int count);
@@ -52,7 +54,7 @@ class NET_EXPORT_PRIVATE EntryImplV3
   void SetRefetchCounter(int count);
 
   // Returns true if this entry matches the lookup arguments.
-  bool IsSameEntry(const std::string& key, uint32 hash);
+  bool IsSameEntry(const std::string& key, uint32_t hash);
 
   // Permamently destroys this entry.
   void InternalDoom();
@@ -82,7 +84,7 @@ class NET_EXPORT_PRIVATE EntryImplV3
   std::string GetKey() const override;
   base::Time GetLastUsed() const override;
   base::Time GetLastModified() const override;
-  int32 GetDataSize(int index) const override;
+  int32_t GetDataSize(int index) const override;
   int ReadData(int index,
                int offset,
                IOBuffer* buf,
@@ -94,17 +96,17 @@ class NET_EXPORT_PRIVATE EntryImplV3
                 int buf_len,
                 const CompletionCallback& callback,
                 bool truncate) override;
-  int ReadSparseData(int64 offset,
+  int ReadSparseData(int64_t offset,
                      IOBuffer* buf,
                      int buf_len,
                      const CompletionCallback& callback) override;
-  int WriteSparseData(int64 offset,
+  int WriteSparseData(int64_t offset,
                       IOBuffer* buf,
                       int buf_len,
                       const CompletionCallback& callback) override;
-  int GetAvailableRange(int64 offset,
+  int GetAvailableRange(int64_t offset,
                         int len,
-                        int64* start,
+                        int64_t* start,
                         const CompletionCallback& callback) override;
   bool CouldBeSparse() const override;
   void CancelSparseIO() override;
@@ -176,10 +178,10 @@ class NET_EXPORT_PRIVATE EntryImplV3
   int InitSparseData();
 
   // Adds the provided |flags| to the current EntryFlags for this entry.
-  void SetEntryFlags(uint32 flags);
+  void SetEntryFlags(uint32_t flags);
 
   // Returns the current EntryFlags for this entry.
-  uint32 GetEntryFlags();
+  uint32_t GetEntryFlags();
 
   // Gets the data stored at the given index. If the information is in memory,
   // a buffer will be allocated and the data will be copied to it (the caller

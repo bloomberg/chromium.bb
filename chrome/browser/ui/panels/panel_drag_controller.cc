@@ -4,6 +4,10 @@
 
 #include "chrome/browser/ui/panels/panel_drag_controller.h"
 
+#include <stdint.h>
+
+#include <limits>
+
 #include "base/logging.h"
 #include "chrome/browser/ui/panels/detached_panel_collection.h"
 #include "chrome/browser/ui/panels/detached_panel_drag_handler.h"
@@ -649,7 +653,7 @@ Panel* PanelDragController::FindPanelToGlue(
     GlueAction action,
     gfx::Rect* target_bounds,
     GlueEdge* target_edge) const {
-  int best_distance = kint32max;
+  int best_distance = std::numeric_limits<int32_t>::max();
   Panel* best_matching_panel = NULL;
 
   // Compute the potential bounds for the dragging panel.

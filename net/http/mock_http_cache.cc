@@ -4,6 +4,8 @@
 
 #include "net/http/mock_http_cache.h"
 
+#include <limits>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
@@ -86,9 +88,9 @@ base::Time MockDiskEntry::GetLastModified() const {
   return base::Time::FromInternalValue(0);
 }
 
-int32 MockDiskEntry::GetDataSize(int index) const {
+int32_t MockDiskEntry::GetDataSize(int index) const {
   DCHECK(index >= 0 && index < kNumCacheEntryDataIndices);
-  return static_cast<int32>(data_[index].size());
+  return static_cast<int32_t>(data_[index].size());
 }
 
 int MockDiskEntry::ReadData(int index,
@@ -146,7 +148,7 @@ int MockDiskEntry::WriteData(int index,
   return ERR_IO_PENDING;
 }
 
-int MockDiskEntry::ReadSparseData(int64 offset,
+int MockDiskEntry::ReadSparseData(int64_t offset,
                                   IOBuffer* buf,
                                   int buf_len,
                                   const CompletionCallback& callback) {
@@ -161,7 +163,7 @@ int MockDiskEntry::ReadSparseData(int64 offset,
   if (fail_requests_)
     return ERR_CACHE_READ_FAILURE;
 
-  DCHECK(offset < kint32max);
+  DCHECK(offset < std::numeric_limits<int32_t>::max());
   int real_offset = static_cast<int>(offset);
   if (!buf_len)
     return 0;
@@ -179,7 +181,7 @@ int MockDiskEntry::ReadSparseData(int64 offset,
   return ERR_IO_PENDING;
 }
 
-int MockDiskEntry::WriteSparseData(int64 offset,
+int MockDiskEntry::WriteSparseData(int64_t offset,
                                    IOBuffer* buf,
                                    int buf_len,
                                    const CompletionCallback& callback) {
@@ -201,7 +203,7 @@ int MockDiskEntry::WriteSparseData(int64 offset,
   if (fail_requests_)
     return ERR_CACHE_READ_FAILURE;
 
-  DCHECK(offset < kint32max);
+  DCHECK(offset < std::numeric_limits<int32_t>::max());
   int real_offset = static_cast<int>(offset);
 
   if (static_cast<int>(data_[1].size()) < real_offset + buf_len)
@@ -215,9 +217,9 @@ int MockDiskEntry::WriteSparseData(int64 offset,
   return ERR_IO_PENDING;
 }
 
-int MockDiskEntry::GetAvailableRange(int64 offset,
+int MockDiskEntry::GetAvailableRange(int64_t offset,
                                      int len,
-                                     int64* start,
+                                     int64_t* start,
                                      const CompletionCallback& callback) {
   DCHECK(!callback.is_null());
   if (!sparse_ || busy_ || cancel_)
@@ -229,7 +231,7 @@ int MockDiskEntry::GetAvailableRange(int64 offset,
     return ERR_CACHE_READ_FAILURE;
 
   *start = offset;
-  DCHECK(offset < kint32max);
+  DCHECK(offset < std::numeric_limits<int32_t>::max());
   int real_offset = static_cast<int>(offset);
   if (static_cast<int>(data_[1].size()) < real_offset)
     return 0;
@@ -368,8 +370,8 @@ CacheType MockDiskCache::GetCacheType() const {
   return DISK_CACHE;
 }
 
-int32 MockDiskCache::GetEntryCount() const {
-  return static_cast<int32>(entries_.size());
+int32_t MockDiskCache::GetEntryCount() const {
+  return static_cast<int32_t>(entries_.size());
 }
 
 int MockDiskCache::OpenEntry(const std::string& key,

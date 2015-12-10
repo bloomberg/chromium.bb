@@ -6,8 +6,8 @@
 #define BASE_FILES_MEMORY_MAPPED_FILE_H_
 
 #include "base/base_export.h"
-#include "base/basictypes.h"
 #include "base/files/file.h"
+#include "base/macros.h"
 #include "build/build_config.h"
 
 #if defined(OS_WIN)
@@ -32,10 +32,10 @@ class BASE_EXPORT MemoryMappedFile {
     bool operator!=(const Region& other) const;
 
     // Start of the region (measured in bytes from the beginning of the file).
-    int64 offset;
+    int64_t offset;
 
     // Length of the region in bytes.
-    int64 size;
+    int64_t size;
   };
 
   // Opens an existing file and maps it into memory. Access is restricted to
@@ -58,7 +58,7 @@ class BASE_EXPORT MemoryMappedFile {
   bool InitializeAsImageSection(const FilePath& file_name);
 #endif  // OS_WIN
 
-  const uint8* data() const { return data_; }
+  const uint8_t* data() const { return data_; }
   size_t length() const { return length_; }
 
   // Is file_ a valid file handle that points to an open, memory mapped file?
@@ -71,11 +71,11 @@ class BASE_EXPORT MemoryMappedFile {
   // - |aligned_start| is page aligned and <= |start|.
   // - |aligned_size| is a multiple of the VM granularity and >= |size|.
   // - |offset| is the displacement of |start| w.r.t |aligned_start|.
-  static void CalculateVMAlignedBoundaries(int64 start,
-                                           int64 size,
-                                           int64* aligned_start,
-                                           int64* aligned_size,
-                                           int32* offset);
+  static void CalculateVMAlignedBoundaries(int64_t start,
+                                           int64_t size,
+                                           int64_t* aligned_start,
+                                           int64_t* aligned_size,
+                                           int32_t* offset);
 
   // Map the file to memory, set data_ to that memory address. Return true on
   // success, false on any kind of failure. This is a helper for Initialize().
@@ -85,7 +85,7 @@ class BASE_EXPORT MemoryMappedFile {
   void CloseHandles();
 
   File file_;
-  uint8* data_;
+  uint8_t* data_;
   size_t length_;
 
 #if defined(OS_WIN)

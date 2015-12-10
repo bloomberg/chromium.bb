@@ -18,9 +18,11 @@
 // re-initialized with the new structures. Note that the IndexTable instance is
 // still functional while the backend performs file IO.
 
+#include <stdint.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
@@ -54,8 +56,8 @@ class NET_EXPORT_PRIVATE EntryCell {
 
   bool IsValid() const;
 
-  int32 cell_num() const { return cell_num_; }
-  uint32 hash() const { return hash_; }
+  int32_t cell_num() const { return cell_num_; }
+  uint32_t hash() const { return hash_; }
 
   Addr GetAddress() const;
   EntryState GetState() const;
@@ -68,8 +70,8 @@ class NET_EXPORT_PRIVATE EntryCell {
   void SetReuse(int count);
   void SetTimestamp(int timestamp);
 
-  static EntryCell GetEntryCellForTest(int32 cell_num,
-                                       uint32 hash,
+  static EntryCell GetEntryCellForTest(int32_t cell_num,
+                                       uint32_t hash,
                                        Addr address,
                                        IndexCell* cell,
                                        bool small_table);
@@ -80,9 +82,9 @@ class NET_EXPORT_PRIVATE EntryCell {
   friend class CacheDumperHelper;
 
   EntryCell();
-  EntryCell(int32 cell_num, uint32 hash, Addr address, bool small_table);
-  EntryCell(int32 cell_num,
-            uint32 hash,
+  EntryCell(int32_t cell_num, uint32_t hash, Addr address, bool small_table);
+  EntryCell(int32_t cell_num,
+            uint32_t hash,
             const IndexCell& cell,
             bool small_table);
 
@@ -90,16 +92,16 @@ class NET_EXPORT_PRIVATE EntryCell {
   void FixSum();
 
   // Returns the raw value stored on the index table.
-  uint32 GetLocation() const;
+  uint32_t GetLocation() const;
 
   // Recalculates hash_ assuming that only the low order bits are valid and the
   // rest come from cell_.
-  uint32 RecomputeHash();
+  uint32_t RecomputeHash();
 
   void Serialize(IndexCell* destination) const;
 
-  int32 cell_num_;
-  uint32 hash_;
+  int32_t cell_num_;
+  uint32_t hash_;
   IndexCell cell_;
   bool small_table_;
 };
@@ -116,7 +118,10 @@ struct NET_EXPORT_PRIVATE EntrySet {
 
 // A given entity referenced by the index table is uniquely identified by the
 // combination of hash and address.
-struct CellInfo { uint32 hash; Addr address; };
+struct CellInfo {
+  uint32_t hash;
+  Addr address;
+};
 typedef std::vector<CellInfo> CellList;
 
 // An index iterator is used to get a group of cells that share the same
@@ -160,7 +165,7 @@ struct NET_EXPORT_PRIVATE IndexTableInitData {
   IndexBucket* main_table;
   IndexBucket* extra_table;
   scoped_ptr<IndexHeaderV3> backup_header;
-  scoped_ptr<uint32[]> backup_bitmap;
+  scoped_ptr<uint32_t[]> backup_bitmap;
 };
 
 // See the description at the top of this file.
@@ -182,16 +187,16 @@ class NET_EXPORT_PRIVATE IndexTable {
 
   // Locates a resouce on the index. Returns a list of all resources that match
   // the provided hash.
-  EntrySet LookupEntries(uint32 hash);
+  EntrySet LookupEntries(uint32_t hash);
 
   // Creates a new cell to store a new resource.
-  EntryCell CreateEntryCell(uint32 hash, Addr address);
+  EntryCell CreateEntryCell(uint32_t hash, Addr address);
 
   // Locates a particular cell. This method allows a caller to perform slow
   // operations with some entries while the index evolves, by returning the
   // current state of a cell. If the desired cell cannot be located, the return
   // object will be invalid.
-  EntryCell FindEntryCell(uint32 hash, Addr address);
+  EntryCell FindEntryCell(uint32_t hash, Addr address);
 
   // Returns an IndexTable timestamp for a given absolute time. The actual
   // resolution of the timestamp should be considered an implementation detail,
@@ -203,8 +208,8 @@ class NET_EXPORT_PRIVATE IndexTable {
   base::Time TimeFromTimestamp(int timestamp);
 
   // Updates a particular cell.
-  void SetSate(uint32 hash, Addr address, EntryState state);
-  void UpdateTime(uint32 hash, Addr address, base::Time current);
+  void SetSate(uint32_t hash, Addr address, EntryState state);
+  void UpdateTime(uint32_t hash, Addr address, base::Time current);
 
   // Saves the contents of |cell| to the table.
   void Save(EntryCell* cell);
@@ -232,7 +237,7 @@ class NET_EXPORT_PRIVATE IndexTable {
   const IndexHeaderV3* header() const { return header_; }
 
  private:
-  EntryCell FindEntryCellImpl(uint32 hash, Addr address, bool allow_deleted);
+  EntryCell FindEntryCellImpl(uint32_t hash, Addr address, bool allow_deleted);
   void CheckState(const EntryCell& cell);
   void Write(const EntryCell& cell);
   int NewExtraBucket();
@@ -252,21 +257,21 @@ class NET_EXPORT_PRIVATE IndexTable {
                            int main_table_index);
   void CheckBucketList(int bucket_id);
 
-  uint32 GetLocation(const IndexCell& cell);
-  uint32 GetHashValue(const IndexCell& cell);
-  uint32 GetFullHash(const IndexCell& cell, uint32 lower_part);
-  bool IsHashMatch(const IndexCell& cell, uint32 hash);
-  bool MisplacedHash(const IndexCell& cell, uint32 hash);
+  uint32_t GetLocation(const IndexCell& cell);
+  uint32_t GetHashValue(const IndexCell& cell);
+  uint32_t GetFullHash(const IndexCell& cell, uint32_t lower_part);
+  bool IsHashMatch(const IndexCell& cell, uint32_t hash);
+  bool MisplacedHash(const IndexCell& cell, uint32_t hash);
 
   IndexTableBackend* backend_;
   IndexHeaderV3* header_;
   scoped_ptr<Bitmap> bitmap_;
   scoped_ptr<Bitmap> backup_bitmap_;
-  scoped_ptr<uint32[]> backup_bitmap_storage_;
+  scoped_ptr<uint32_t[]> backup_bitmap_storage_;
   scoped_ptr<IndexHeaderV3> backup_header_;
   IndexBucket* main_table_;
   IndexBucket* extra_table_;
-  uint32 mask_;     // Binary mask to map a hash to the hash table.
+  uint32_t mask_;   // Binary mask to map a hash to the hash table.
   int extra_bits_;  // How many bits are in mask_ above the default value.
   bool modified_;
   bool small_table_;

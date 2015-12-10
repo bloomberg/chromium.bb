@@ -7,6 +7,9 @@
 #include <IOKit/IOCFPlugIn.h>
 #include <IOKit/usb/IOUSBLib.h>
 #include <IOKit/usb/USBSpec.h>
+#include <stdint.h>
+
+#include <limits>
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -96,7 +99,7 @@ typedef struct IOUSBInterfaceDescriptor {
 } IOUSBInterfaceDescriptor;
 
 static void GetBestMatchSupportedResolution(gfx::Size* resolution) {
-  int min_diff = kint32max;
+  int min_diff = std::numeric_limits<int32_t>::max();
   const int desired_area = resolution->GetArea();
   for (size_t i = 0; i < arraysize(kWellSupportedResolutions); ++i) {
     const int area = kWellSupportedResolutions[i]->width *

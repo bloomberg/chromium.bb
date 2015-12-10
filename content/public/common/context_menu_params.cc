@@ -6,7 +6,7 @@
 
 namespace content {
 
-const int32 CustomContextMenuContext::kCurrentRenderWidget = kint32max;
+const int32_t CustomContextMenuContext::kCurrentRenderWidget = INT32_MAX;
 
 CustomContextMenuContext::CustomContextMenuContext()
     : is_pepper_menu(false),

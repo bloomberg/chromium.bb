@@ -4,6 +4,8 @@
 
 #include "ui/gfx/color_analysis.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 #include <limits>
 #include <vector>
@@ -186,7 +188,7 @@ SkColor FindClosestColor(const uint8_t* image,
   uint8_t in_g = SkColorGetG(color);
   uint8_t in_b = SkColorGetB(color);
   // Search using distance-squared to avoid expensive sqrt() operations.
-  int best_distance_squared = kint32max;
+  int best_distance_squared = std::numeric_limits<int32_t>::max();
   SkColor best_color = color;
   const uint8_t* byte = image;
   for (int i = 0; i < width * height; ++i) {

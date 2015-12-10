@@ -5,6 +5,8 @@
 #ifndef MEDIA_BASE_ANDROID_MEDIA_CODEC_BRIDGE_H_
 #define MEDIA_BASE_ANDROID_MEDIA_CODEC_BRIDGE_H_
 
+#include <stdint.h>
+
 #include <set>
 #include <string>
 #include <vector>
@@ -74,7 +76,7 @@ class MEDIA_EXPORT MediaCodecBridge {
   // |data_size| must be less than kint32max (because Java).
   virtual MediaCodecStatus QueueInputBuffer(
       int index,
-      const uint8* data,
+      const uint8_t* data,
       size_t data_size,
       const base::TimeDelta& presentation_time) = 0;
 
@@ -84,7 +86,7 @@ class MEDIA_EXPORT MediaCodecBridge {
   // |data_size|).  |data_size| must be less than kint32max (because Java).
   MediaCodecStatus QueueSecureInputBuffer(
       int index,
-      const uint8* data,
+      const uint8_t* data,
       size_t data_size,
       const std::string& key_id,
       const std::string& iv,
@@ -97,7 +99,7 @@ class MEDIA_EXPORT MediaCodecBridge {
   // switch to the Spitzer pipeline.
   virtual MediaCodecStatus QueueSecureInputBuffer(
       int index,
-      const uint8* data,
+      const uint8_t* data,
       size_t data_size,
       const std::vector<char>& key_id,
       const std::vector<char>& iv,
@@ -149,7 +151,7 @@ class MEDIA_EXPORT MediaCodecBridge {
 
   // Returns an input buffer's base pointer and capacity.
   virtual void GetInputBuffer(int input_buffer_index,
-                              uint8** data,
+                              uint8_t** data,
                               size_t* capacity) = 0;
 
   // Copy |dst_size| bytes from output buffer |index|'s |offset| onwards into
@@ -165,7 +167,7 @@ class MEDIA_EXPORT MediaCodecBridge {
   // Fills a particular input buffer; returns false if |data_size| exceeds the
   // input buffer's capacity (and doesn't touch the input buffer in that case).
   bool FillInputBuffer(int index,
-                       const uint8* data,
+                       const uint8_t* data,
                        size_t data_size) WARN_UNUSED_RESULT;
 
   DISALLOW_COPY_AND_ASSIGN(MediaCodecBridge);

@@ -10,7 +10,6 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "media/base/decrypt_config.h"
@@ -29,7 +28,7 @@ MediaCodecBridge::~MediaCodecBridge() {}
 
 MediaCodecStatus MediaCodecBridge::QueueSecureInputBuffer(
     int index,
-    const uint8* data,
+    const uint8_t* data,
     size_t data_size,
     const std::string& key_id,
     const std::string& iv,
@@ -51,9 +50,9 @@ size_t MediaCodecBridge::GetOutputBuffersCapacity() {
 }
 
 bool MediaCodecBridge::FillInputBuffer(int index,
-                                       const uint8* data,
+                                       const uint8_t* data,
                                        size_t size) {
-  uint8* dst = nullptr;
+  uint8_t* dst = nullptr;
   size_t capacity = 0;
   GetInputBuffer(index, &dst, &capacity);
   CHECK(dst);

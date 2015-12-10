@@ -6,6 +6,7 @@
 #define CONTENT_COMMON_MAC_FONT_LOADER_H_
 
 #include <ApplicationServices/ApplicationServices.h>
+#include <stdint.h>
 
 #include "base/memory/shared_memory.h"
 #include "content/common/content_export.h"
@@ -30,9 +31,9 @@ class FontLoader {
   // LoadFont(), which should run on the file thread, then it is passed to a
   // task which sends the result to the originating renderer.
   struct Result {
-    uint32 font_data_size;
+    uint32_t font_data_size;
     base::SharedMemory font_data;
-    uint32 font_id;
+    uint32_t font_id;
   };
   // Load a font specified by |font| into a shared memory buffer suitable for
   // sending over IPC.
@@ -61,7 +62,7 @@ class FontLoader {
   //  when done.
   CONTENT_EXPORT
   static bool CGFontRefFromBuffer(base::SharedMemoryHandle font_data,
-                                  uint32 font_data_size,
+                                  uint32_t font_data_size,
                                   CGFontRef* out);
 };
 

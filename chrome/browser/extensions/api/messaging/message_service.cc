@@ -4,6 +4,10 @@
 
 #include "chrome/browser/extensions/api/messaging/message_service.h"
 
+#include <stdint.h>
+
+#include <limits>
+
 #include "base/atomic_sequence_num.h"
 #include "base/bind.h"
 #include "base/callback.h"
@@ -200,8 +204,8 @@ content::RenderProcessHost*
 void MessageService::AllocatePortIdPair(int* port1, int* port2) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  unsigned channel_id =
-      static_cast<unsigned>(g_next_channel_id.GetNext()) % (kint32max/2);
+  unsigned channel_id = static_cast<unsigned>(g_next_channel_id.GetNext()) %
+                        (std::numeric_limits<int32_t>::max() / 2);
   unsigned port1_id = channel_id * 2;
   unsigned port2_id = channel_id * 2 + 1;
 

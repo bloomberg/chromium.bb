@@ -5,6 +5,7 @@
 #include "media/base/android/sdk_media_codec_bridge.h"
 
 #include <algorithm>
+#include <limits>
 
 #include "base/android/build_info.h"
 #include "base/android/jni_android.h"
@@ -126,12 +127,14 @@ int SdkMediaCodecBridge::GetOutputSamplingRate() {
 
 MediaCodecStatus SdkMediaCodecBridge::QueueInputBuffer(
     int index,
-    const uint8* data,
+    const uint8_t* data,
     size_t data_size,
     const base::TimeDelta& presentation_time) {
   DVLOG(3) << __PRETTY_FUNCTION__ << index << ": " << data_size;
-  if (data_size > base::checked_cast<size_t>(kint32max))
+  if (data_size >
+      base::checked_cast<size_t>(std::numeric_limits<int32_t>::max())) {
     return MEDIA_CODEC_ERROR;
+  }
   if (data && !FillInputBuffer(index, data, data_size))
     return MEDIA_CODEC_ERROR;
   JNIEnv* env = AttachCurrentThread();
@@ -144,7 +147,7 @@ MediaCodecStatus SdkMediaCodecBridge::QueueInputBuffer(
 // interface after we switch to Spitzer pipeline.
 MediaCodecStatus SdkMediaCodecBridge::QueueSecureInputBuffer(
     int index,
-    const uint8* data,
+    const uint8_t* data,
     size_t data_size,
     const std::vector<char>& key_id,
     const std::vector<char>& iv,
@@ -152,16 +155,18 @@ MediaCodecStatus SdkMediaCodecBridge::QueueSecureInputBuffer(
     int subsamples_size,
     const base::TimeDelta& presentation_time) {
   DVLOG(3) << __PRETTY_FUNCTION__ << index << ": " << data_size;
-  if (data_size > base::checked_cast<size_t>(kint32max))
+  if (data_size >
+      base::checked_cast<size_t>(std::numeric_limits<int32_t>::max())) {
     return MEDIA_CODEC_ERROR;
+  }
   if (data && !FillInputBuffer(index, data, data_size))
     return MEDIA_CODEC_ERROR;
 
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jbyteArray> j_key_id = base::android::ToJavaByteArray(
-      env, reinterpret_cast<const uint8*>(key_id.data()), key_id.size());
+      env, reinterpret_cast<const uint8_t*>(key_id.data()), key_id.size());
   ScopedJavaLocalRef<jbyteArray> j_iv = base::android::ToJavaByteArray(
-      env, reinterpret_cast<const uint8*>(iv.data()), iv.size());
+      env, reinterpret_cast<const uint8_t*>(iv.data()), iv.size());
 
   // MediaCodec.CryptoInfo documentations says passing NULL for |clear_array|
   // to indicate that all data is encrypted. But it doesn't specify what
@@ -180,9 +185,9 @@ MediaCodecStatus SdkMediaCodecBridge::QueueSecureInputBuffer(
     DCHECK_GT(subsamples_size, 0);
     DCHECK(subsamples);
     for (int i = 0; i < subsamples_size; ++i) {
-      DCHECK(subsamples[i].clear_bytes <= std::numeric_limits<uint16>::max());
+      DCHECK(subsamples[i].clear_bytes <= std::numeric_limits<uint16_t>::max());
       if (subsamples[i].cypher_bytes >
-          static_cast<uint32>(std::numeric_limits<jint>::max())) {
+          static_cast<uint32_t>(std::numeric_limits<jint>::max())) {
         return MEDIA_CODEC_ERROR;
       }
 
@@ -281,12 +286,12 @@ size_t SdkMediaCodecBridge::GetOutputBuffersCapacity() {
 }
 
 void SdkMediaCodecBridge::GetInputBuffer(int input_buffer_index,
-                                         uint8** data,
+                                         uint8_t** data,
                                          size_t* capacity) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> j_buffer(Java_MediaCodecBridge_getInputBuffer(
       env, j_media_codec_.obj(), input_buffer_index));
-  *data = static_cast<uint8*>(env->GetDirectBufferAddress(j_buffer.obj()));
+  *data = static_cast<uint8_t*>(env->GetDirectBufferAddress(j_buffer.obj()));
   *capacity =
       base::checked_cast<size_t>(env->GetDirectBufferCapacity(j_buffer.obj()));
 }
@@ -301,7 +306,7 @@ bool SdkMediaCodecBridge::CopyFromOutputBuffer(int index,
       src_capacity - offset < static_cast<size_t>(dst_size)) {
     return false;
   }
-  memcpy(dst, static_cast<uint8*>(src_data) + offset, dst_size);
+  memcpy(dst, static_cast<uint8_t*>(src_data) + offset, dst_size);
   return true;
 }
 
@@ -312,7 +317,7 @@ int SdkMediaCodecBridge::GetOutputBufferAddress(int index,
   ScopedJavaLocalRef<jobject> j_buffer(
       Java_MediaCodecBridge_getOutputBuffer(env, j_media_codec_.obj(), index));
   *addr =
-      reinterpret_cast<uint8*>(env->GetDirectBufferAddress(j_buffer.obj())) +
+      reinterpret_cast<uint8_t*>(env->GetDirectBufferAddress(j_buffer.obj())) +
       offset;
   return env->GetDirectBufferCapacity(j_buffer.obj()) - offset;
 }
@@ -345,10 +350,10 @@ AudioCodecBridge::AudioCodecBridge(const std::string& mime)
 bool AudioCodecBridge::ConfigureAndStart(const AudioCodec& codec,
                                          int sample_rate,
                                          int channel_count,
-                                         const uint8* extra_data,
+                                         const uint8_t* extra_data,
                                          size_t extra_data_size,
-                                         int64 codec_delay_ns,
-                                         int64 seek_preroll_ns,
+                                         int64_t codec_delay_ns,
+                                         int64_t seek_preroll_ns,
                                          bool play_audio,
                                          jobject media_crypto) {
   JNIEnv* env = AttachCurrentThread();
@@ -381,10 +386,10 @@ bool AudioCodecBridge::ConfigureAndStart(const AudioCodec& codec,
 
 bool AudioCodecBridge::ConfigureMediaFormat(jobject j_format,
                                             const AudioCodec& codec,
-                                            const uint8* extra_data,
+                                            const uint8_t* extra_data,
                                             size_t extra_data_size,
-                                            int64 codec_delay_ns,
-                                            int64 seek_preroll_ns) {
+                                            int64_t codec_delay_ns,
+                                            int64_t seek_preroll_ns) {
   if (extra_data_size == 0 && codec != kCodecOpus)
     return true;
 
@@ -401,7 +406,7 @@ bool AudioCodecBridge::ConfigureMediaFormat(jobject j_format,
       // |total_length| keeps track of the total number of bytes before the last
       // header.
       size_t total_length = 1;
-      const uint8* current_pos = extra_data;
+      const uint8_t* current_pos = extra_data;
       // Calculate the length of the first 2 headers.
       for (int i = 0; i < 2; ++i) {
         header_length[i] = 0;
@@ -440,9 +445,9 @@ bool AudioCodecBridge::ConfigureMediaFormat(jobject j_format,
 
       // The following code is copied from aac.cc
       // TODO(qinmin): refactor the code in aac.cc to make it more reusable.
-      uint8 profile = 0;
-      uint8 frequency_index = 0;
-      uint8 channel_config = 0;
+      uint8_t profile = 0;
+      uint8_t frequency_index = 0;
+      uint8_t channel_config = 0;
       RETURN_ON_ERROR(reader.ReadBits(5, &profile));
       RETURN_ON_ERROR(reader.ReadBits(4, &frequency_index));
 
@@ -464,7 +469,7 @@ bool AudioCodecBridge::ConfigureMediaFormat(jobject j_format,
         return false;
       }
       const size_t kCsdLength = 2;
-      uint8 csd[kCsdLength];
+      uint8_t csd[kCsdLength];
       csd[0] = profile << 3 | frequency_index >> 1;
       csd[1] = (frequency_index & 0x01) << 7 | channel_config << 3;
       ScopedJavaLocalRef<jbyteArray> byte_array =
@@ -491,13 +496,13 @@ bool AudioCodecBridge::ConfigureMediaFormat(jobject j_format,
 
       // csd1 - Codec Delay
       ScopedJavaLocalRef<jbyteArray> csd1 = base::android::ToJavaByteArray(
-          env, reinterpret_cast<const uint8*>(&codec_delay_ns),
+          env, reinterpret_cast<const uint8_t*>(&codec_delay_ns),
           sizeof(int64_t));
       Java_MediaCodecBridge_setCodecSpecificData(env, j_format, 1, csd1.obj());
 
       // csd2 - Seek Preroll
       ScopedJavaLocalRef<jbyteArray> csd2 = base::android::ToJavaByteArray(
-          env, reinterpret_cast<const uint8*>(&seek_preroll_ns),
+          env, reinterpret_cast<const uint8_t*>(&seek_preroll_ns),
           sizeof(int64_t));
       Java_MediaCodecBridge_setCodecSpecificData(env, j_format, 2, csd2.obj());
       break;
@@ -510,10 +515,10 @@ bool AudioCodecBridge::ConfigureMediaFormat(jobject j_format,
   return true;
 }
 
-int64 AudioCodecBridge::PlayOutputBuffer(int index,
-                                         size_t size,
-                                         size_t offset,
-                                         bool postpone) {
+int64_t AudioCodecBridge::PlayOutputBuffer(int index,
+                                           size_t size,
+                                           size_t offset,
+                                           bool postpone) {
   DCHECK_LE(0, index);
   int numBytes = base::checked_cast<int>(size);
 
@@ -524,7 +529,7 @@ int64 AudioCodecBridge::PlayOutputBuffer(int index,
 
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jbyteArray> byte_array = base::android::ToJavaByteArray(
-      env, static_cast<uint8*>(buffer), numBytes);
+      env, static_cast<uint8_t*>(buffer), numBytes);
   return Java_MediaCodecBridge_playOutputBuffer(env, media_codec(),
                                                 byte_array.obj(), postpone);
 }

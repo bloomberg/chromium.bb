@@ -7,6 +7,8 @@
 #include <media/NdkMediaError.h>
 #include <media/NdkMediaFormat.h>
 
+#include <limits>
+
 #include "base/strings/string_util.h"
 #include "media/base/decrypt_config.h"
 
@@ -91,11 +93,13 @@ int NdkMediaCodecBridge::GetOutputSamplingRate() {
 
 MediaCodecStatus NdkMediaCodecBridge::QueueInputBuffer(
     int index,
-    const uint8* data,
+    const uint8_t* data,
     size_t data_size,
     const base::TimeDelta& presentation_time) {
-  if (data_size > base::checked_cast<size_t>(kint32max))
+  if (data_size >
+      base::checked_cast<size_t>(std::numeric_limits<int32_t>::max())) {
     return MEDIA_CODEC_ERROR;
+  }
   if (data && !FillInputBuffer(index, data, data_size))
     return MEDIA_CODEC_ERROR;
 
@@ -107,15 +111,17 @@ MediaCodecStatus NdkMediaCodecBridge::QueueInputBuffer(
 
 MediaCodecStatus NdkMediaCodecBridge::QueueSecureInputBuffer(
     int index,
-    const uint8* data,
+    const uint8_t* data,
     size_t data_size,
     const std::vector<char>& key_id,
     const std::vector<char>& iv,
     const SubsampleEntry* subsamples,
     int subsamples_size,
     const base::TimeDelta& presentation_time) {
-  if (data_size > base::checked_cast<size_t>(kint32max))
+  if (data_size >
+      base::checked_cast<size_t>(std::numeric_limits<int32_t>::max())) {
     return MEDIA_CODEC_ERROR;
+  }
   if (key_id.size() > 16 || iv.size())
     return MEDIA_CODEC_ERROR;
   if (data && !FillInputBuffer(index, data, data_size))
@@ -131,9 +137,9 @@ MediaCodecStatus NdkMediaCodecBridge::QueueSecureInputBuffer(
     DCHECK_GT(subsamples_size, 0);
     DCHECK(subsamples);
     for (int i = 0; i < subsamples_size; ++i) {
-      DCHECK(subsamples[i].clear_bytes <= std::numeric_limits<uint16>::max());
+      DCHECK(subsamples[i].clear_bytes <= std::numeric_limits<uint16_t>::max());
       if (subsamples[i].cypher_bytes >
-          static_cast<uint32>(std::numeric_limits<int32>::max())) {
+          static_cast<uint32_t>(std::numeric_limits<int32_t>::max())) {
         return MEDIA_CODEC_ERROR;
       }
       clear_data.push_back(subsamples[i].clear_bytes);
@@ -143,8 +149,8 @@ MediaCodecStatus NdkMediaCodecBridge::QueueSecureInputBuffer(
 
   AMediaCodecCryptoInfo* crypto_info = AMediaCodecCryptoInfo_new(
       new_subsamples_size,
-      reinterpret_cast<uint8*>(const_cast<char*>(key_id.data())),
-      reinterpret_cast<uint8*>(const_cast<char*>(iv.data())),
+      reinterpret_cast<uint8_t*>(const_cast<char*>(key_id.data())),
+      reinterpret_cast<uint8_t*>(const_cast<char*>(iv.data())),
       AMEDIACODECRYPTOINFO_MODE_AES_CTR, clear_data.data(),
       encrypted_data.data());
 
@@ -204,7 +210,7 @@ void NdkMediaCodecBridge::ReleaseOutputBuffer(int index, bool render) {
 }
 
 void NdkMediaCodecBridge::GetInputBuffer(int input_buffer_index,
-                                         uint8** data,
+                                         uint8_t** data,
                                          size_t* capacity) {
   *data = AMediaCodec_getInputBuffer(media_codec_.get(), input_buffer_index,
                                      capacity);

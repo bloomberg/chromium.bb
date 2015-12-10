@@ -10,6 +10,8 @@
 #ifndef NET_HTTP_MOCK_HTTP_CACHE_H_
 #define NET_HTTP_MOCK_HTTP_CACHE_H_
 
+#include <stdint.h>
+
 #include "base/containers/hash_tables.h"
 #include "base/strings/string_split.h"
 #include "net/disk_cache/disk_cache.h"
@@ -33,7 +35,7 @@ class MockDiskEntry : public disk_cache::Entry,
   std::string GetKey() const override;
   base::Time GetLastUsed() const override;
   base::Time GetLastModified() const override;
-  int32 GetDataSize(int index) const override;
+  int32_t GetDataSize(int index) const override;
   int ReadData(int index,
                int offset,
                IOBuffer* buf,
@@ -45,17 +47,17 @@ class MockDiskEntry : public disk_cache::Entry,
                 int buf_len,
                 const CompletionCallback& callback,
                 bool truncate) override;
-  int ReadSparseData(int64 offset,
+  int ReadSparseData(int64_t offset,
                      IOBuffer* buf,
                      int buf_len,
                      const CompletionCallback& callback) override;
-  int WriteSparseData(int64 offset,
+  int WriteSparseData(int64_t offset,
                       IOBuffer* buf,
                       int buf_len,
                       const CompletionCallback& callback) override;
-  int GetAvailableRange(int64 offset,
+  int GetAvailableRange(int64_t offset,
                         int len,
-                        int64* start,
+                        int64_t* start,
                         const CompletionCallback& callback) override;
   bool CouldBeSparse() const override;
   void CancelSparseIO() override;
@@ -112,7 +114,7 @@ class MockDiskCache : public disk_cache::Backend {
   ~MockDiskCache() override;
 
   CacheType GetCacheType() const override;
-  int32 GetEntryCount() const override;
+  int32_t GetEntryCount() const override;
   int OpenEntry(const std::string& key,
                 disk_cache::Entry** entry,
                 const CompletionCallback& callback) override;

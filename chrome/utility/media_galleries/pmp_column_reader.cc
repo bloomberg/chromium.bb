@@ -4,7 +4,10 @@
 
 #include "chrome/utility/media_galleries/pmp_column_reader.h"
 
+#include <stdint.h>
+
 #include <cstring>
+#include <limits>
 
 #include "base/files/file.h"
 #include "base/files/file_util.h"
@@ -47,7 +50,8 @@ bool PmpColumnReader::ReadFile(base::File* file,
 
   char* data_begin = reinterpret_cast<char*>(data_.get());
 
-  DCHECK(length_ < kint32max);  // ReadFile expects an int.
+  DCHECK(length_ <
+         std::numeric_limits<int32_t>::max());  // ReadFile expects an int.
 
   bool success = file->Read(0, data_begin, length_) &&
                  ParseData(expected_type);

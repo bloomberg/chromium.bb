@@ -4,7 +4,8 @@
 
 #include "content/renderer/dom_storage/dom_storage_cached_area.h"
 
-#include "base/basictypes.h"
+#include <limits>
+
 #include "base/metrics/histogram.h"
 #include "base/time/time.h"
 #include "content/common/dom_storage/dom_storage_map.h"
@@ -12,7 +13,7 @@
 
 namespace content {
 
-DOMStorageCachedArea::DOMStorageCachedArea(int64 namespace_id,
+DOMStorageCachedArea::DOMStorageCachedArea(int64_t namespace_id,
                                            const GURL& origin,
                                            DOMStorageProxy* proxy)
     : ignore_all_mutations_(false),
@@ -134,7 +135,7 @@ void DOMStorageCachedArea::ApplyMutation(
   // We turn off quota checking here to accomodate the over budget
   // allowance that's provided in the browser process.
   base::NullableString16 unused;
-  map_->set_quota(kint32max);
+  map_->set_quota(std::numeric_limits<int32_t>::max());
   map_->SetItem(key.string(), new_value.string(), &unused);
   map_->set_quota(kPerStorageAreaQuota);
 }

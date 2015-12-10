@@ -4,6 +4,9 @@
 
 #include "content/test/fileapi_test_file_set.h"
 
+#include <stdint.h>
+
+#include <limits>
 #include <string>
 
 #include "base/files/file.h"
@@ -50,7 +53,7 @@ void SetUpOneFileSystemTestCase(const base::FilePath& root_path,
   ASSERT_TRUE(file.IsValid());
   if (test_case.data_file_size) {
     std::string content = base::RandBytesAsString(test_case.data_file_size);
-    EXPECT_LE(test_case.data_file_size, kint32max);
+    EXPECT_LE(test_case.data_file_size, std::numeric_limits<int32_t>::max());
     ASSERT_EQ(static_cast<int>(content.size()),
               file.Write(0, content.data(), static_cast<int>(content.size())));
   }

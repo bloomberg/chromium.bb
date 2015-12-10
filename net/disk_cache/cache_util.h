@@ -5,7 +5,8 @@
 #ifndef NET_DISK_CACHE_CACHE_UTIL_H_
 #define NET_DISK_CACHE_CACHE_UTIL_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "net/base/net_export.h"
 #include "net/disk_cache/disk_cache.h"
 
@@ -37,7 +38,7 @@ NET_EXPORT_PRIVATE bool DeleteCacheFile(const base::FilePath& name);
 bool DelayedCacheCleanup(const base::FilePath& full_path);
 
 // Returns the preferred max cache size given the available disk space.
-NET_EXPORT_PRIVATE int PreferredCacheSize(int64 available);
+NET_EXPORT_PRIVATE int PreferredCacheSize(int64_t available);
 
 // The default cache size should not ideally be exposed, but the blockfile
 // backend uses it for reasons that include testing.

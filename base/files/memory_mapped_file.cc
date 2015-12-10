@@ -74,14 +74,15 @@ bool MemoryMappedFile::IsValid() const {
 }
 
 // static
-void MemoryMappedFile::CalculateVMAlignedBoundaries(int64 start,
-                                                    int64 size,
-                                                    int64* aligned_start,
-                                                    int64* aligned_size,
-                                                    int32* offset) {
+void MemoryMappedFile::CalculateVMAlignedBoundaries(int64_t start,
+                                                    int64_t size,
+                                                    int64_t* aligned_start,
+                                                    int64_t* aligned_size,
+                                                    int32_t* offset) {
   // Sadly, on Windows, the mmap alignment is not just equal to the page size.
-  const int64 mask = static_cast<int64>(SysInfo::VMAllocationGranularity()) - 1;
-  DCHECK_LT(mask, std::numeric_limits<int32>::max());
+  const int64_t mask =
+      static_cast<int64_t>(SysInfo::VMAllocationGranularity()) - 1;
+  DCHECK_LT(mask, std::numeric_limits<int32_t>::max());
   *offset = start & mask;
   *aligned_start = start & ~mask;
   *aligned_size = (size + *offset + mask) & ~mask;

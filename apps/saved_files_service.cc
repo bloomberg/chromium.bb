@@ -4,11 +4,12 @@
 
 #include "apps/saved_files_service.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 #include <map>
 
 #include "apps/saved_files_service_factory.h"
-#include "base/basictypes.h"
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/value_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -46,7 +47,7 @@ const char kFileEntryIsDirectory[] = "is_directory";
 const char kFileEntrySequenceNumber[] = "sequence_number";
 
 const size_t kMaxSavedFileEntries = 500;
-const int kMaxSequenceNumber = kint32max;
+const int kMaxSequenceNumber = INT32_MAX;
 
 // These might be different to the constant values in tests.
 size_t g_max_saved_file_entries = kMaxSavedFileEntries;

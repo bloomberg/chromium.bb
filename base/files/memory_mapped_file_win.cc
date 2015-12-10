@@ -4,6 +4,8 @@
 
 #include "base/files/memory_mapped_file.h"
 
+#include <limits>
+
 #include "base/files/file_path.h"
 #include "base/strings/string16.h"
 #include "base/threading/thread_restrictions.h"
@@ -34,11 +36,11 @@ bool MemoryMappedFile::MapFileRegionToMemory(
 
   LARGE_INTEGER map_start = {};
   SIZE_T map_size = 0;
-  int32 data_offset = 0;
+  int32_t data_offset = 0;
 
   if (region == MemoryMappedFile::Region::kWholeFile) {
-    int64 file_len = file_.GetLength();
-    if (file_len <= 0 || file_len > kint32max)
+    int64_t file_len = file_.GetLength();
+    if (file_len <= 0 || file_len > std::numeric_limits<int32_t>::max())
       return false;
     length_ = static_cast<size_t>(file_len);
   } else {
@@ -49,15 +51,15 @@ bool MemoryMappedFile::MapFileRegionToMemory(
     // aligned and must be less than or equal the mapped file size.
     // We map here the outer region [|aligned_start|, |aligned_start+size|]
     // which contains |region| and then add up the |data_offset| displacement.
-    int64 aligned_start = 0;
-    int64 ignored = 0;
+    int64_t aligned_start = 0;
+    int64_t ignored = 0;
     CalculateVMAlignedBoundaries(
         region.offset, region.size, &aligned_start, &ignored, &data_offset);
-    int64 size = region.size + data_offset;
+    int64_t size = region.size + data_offset;
 
     // Ensure that the casts below in the MapViewOfFile call are sane.
     if (aligned_start < 0 || size < 0 ||
-        static_cast<uint64>(size) > std::numeric_limits<SIZE_T>::max()) {
+        static_cast<uint64_t>(size) > std::numeric_limits<SIZE_T>::max()) {
       DLOG(ERROR) << "Region bounds are not valid for MapViewOfFile";
       return false;
     }
@@ -66,11 +68,9 @@ bool MemoryMappedFile::MapFileRegionToMemory(
     length_ = static_cast<size_t>(region.size);
   }
 
-  data_ = static_cast<uint8*>(::MapViewOfFile(file_mapping_.Get(),
-                                              FILE_MAP_READ,
-                                              map_start.HighPart,
-                                              map_start.LowPart,
-                                              map_size));
+  data_ = static_cast<uint8_t*>(
+      ::MapViewOfFile(file_mapping_.Get(), FILE_MAP_READ, map_start.HighPart,
+                      map_start.LowPart, map_size));
   if (data_ == NULL)
     return false;
   data_ += data_offset;

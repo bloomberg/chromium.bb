@@ -6,6 +6,8 @@
 #define MEDIA_BASE_ANDROID_SDK_MEDIA_CODEC_BRIDGE_H_
 
 #include <jni.h>
+#include <stdint.h>
+
 #include <set>
 #include <string>
 
@@ -33,13 +35,13 @@ class MEDIA_EXPORT SdkMediaCodecBridge : public MediaCodecBridge {
   int GetOutputSamplingRate() override;
   MediaCodecStatus QueueInputBuffer(
       int index,
-      const uint8* data,
+      const uint8_t* data,
       size_t data_size,
       const base::TimeDelta& presentation_time) override;
   using MediaCodecBridge::QueueSecureInputBuffer;
   MediaCodecStatus QueueSecureInputBuffer(
       int index,
-      const uint8* data,
+      const uint8_t* data,
       size_t data_size,
       const std::vector<char>& key_id,
       const std::vector<char>& iv,
@@ -60,7 +62,7 @@ class MEDIA_EXPORT SdkMediaCodecBridge : public MediaCodecBridge {
   int GetOutputBuffersCount() override;
   size_t GetOutputBuffersCapacity() override;
   void GetInputBuffer(int input_buffer_index,
-                      uint8** data,
+                      uint8_t** data,
                       size_t* capacity) override;
   bool CopyFromOutputBuffer(int index,
                             size_t offset,
@@ -105,10 +107,10 @@ class MEDIA_EXPORT AudioCodecBridge : public SdkMediaCodecBridge {
   bool ConfigureAndStart(const AudioCodec& codec,
                          int sample_rate,
                          int channel_count,
-                         const uint8* extra_data,
+                         const uint8_t* extra_data,
                          size_t extra_data_size,
-                         int64 codec_delay_ns,
-                         int64 seek_preroll_ns,
+                         int64_t codec_delay_ns,
+                         int64_t seek_preroll_ns,
                          bool play_audio,
                          jobject media_crypto) WARN_UNUSED_RESULT;
 
@@ -120,10 +122,10 @@ class MEDIA_EXPORT AudioCodecBridge : public SdkMediaCodecBridge {
   // When |postpone| is set to true, the next PlayOutputBuffer() should have
   // postpone == false, and it will play two buffers: the postponed one and
   // the one identified by |index|.
-  int64 PlayOutputBuffer(int index,
-                         size_t size,
-                         size_t offset,
-                         bool postpone = false);
+  int64_t PlayOutputBuffer(int index,
+                           size_t size,
+                           size_t offset,
+                           bool postpone = false);
 
   // Set the volume of the audio output.
   void SetVolume(double volume);
@@ -134,10 +136,10 @@ class MEDIA_EXPORT AudioCodecBridge : public SdkMediaCodecBridge {
   // Configure the java MediaFormat object with the extra codec data passed in.
   bool ConfigureMediaFormat(jobject j_format,
                             const AudioCodec& codec,
-                            const uint8* extra_data,
+                            const uint8_t* extra_data,
                             size_t extra_data_size,
-                            int64 codec_delay_ns,
-                            int64 seek_preroll_ns);
+                            int64_t codec_delay_ns,
+                            int64_t seek_preroll_ns);
 };
 
 // Class for handling video encoding/decoding using android MediaCodec APIs.

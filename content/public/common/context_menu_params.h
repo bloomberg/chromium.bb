@@ -5,6 +5,8 @@
 #ifndef CONTENT_PUBLIC_COMMON_CONTEXT_MENU_PARAMS_H_
 #define CONTENT_PUBLIC_COMMON_CONTEXT_MENU_PARAMS_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 #include <vector>
@@ -27,7 +29,7 @@
 namespace content {
 
 struct CONTENT_EXPORT CustomContextMenuContext {
-  static const int32 kCurrentRenderWidget;
+  static const int32_t kCurrentRenderWidget;
 
   CustomContextMenuContext();
 
@@ -36,7 +38,7 @@ struct CONTENT_EXPORT CustomContextMenuContext {
   // The routing ID of the render widget on which the context menu is shown.
   // It could also be |kCurrentRenderWidget|, which means the render widget that
   // the corresponding ViewHostMsg_ContextMenu is sent to.
-  int32 render_widget_id;
+  int32_t render_widget_id;
 
   // If the context menu was created for a link, and we navigated to that url,
   // this will contain the url that was navigated. This field may not be set
@@ -118,7 +120,7 @@ struct CONTENT_EXPORT ContextMenuParams {
   base::string16 misspelled_word;
 
   // The identifier of the misspelling under the cursor, if any.
-  uint32 misspelling_hash;
+  uint32_t misspelling_hash;
 
   // Suggested replacements for a misspelled word under the cursor.
   // This vector gets populated in the render process host

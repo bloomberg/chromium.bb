@@ -5,6 +5,7 @@
 #include "net/spdy/spdy_session.h"
 
 #include <algorithm>
+#include <limits>
 #include <map>
 
 #include "base/basictypes.h"
@@ -173,7 +174,7 @@ scoped_ptr<base::Value> NetLogSpdySettingCallback(
     SpdySettingsIds id,
     const SpdyMajorVersion protocol_version,
     SpdySettingsFlags flags,
-    uint32 value,
+    uint32_t value,
     NetLogCaptureMode /* capture_mode */) {
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetInteger("id",
@@ -193,7 +194,7 @@ scoped_ptr<base::Value> NetLogSpdySendSettingsCallback(
        it != settings->end(); ++it) {
     const SpdySettingsIds id = it->first;
     const SpdySettingsFlags flags = it->second.first;
-    const uint32 value = it->second.second;
+    const uint32_t value = it->second.second;
     settings_list->Append(new base::StringValue(base::StringPrintf(
         "[id:%u flags:%u value:%u]",
         SpdyConstants::SerializeSettingId(protocol_version, id),
@@ -206,7 +207,7 @@ scoped_ptr<base::Value> NetLogSpdySendSettingsCallback(
 
 scoped_ptr<base::Value> NetLogSpdyWindowUpdateFrameCallback(
     SpdyStreamId stream_id,
-    uint32 delta,
+    uint32_t delta,
     NetLogCaptureMode /* capture_mode */) {
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetInteger("stream_id", static_cast<int>(stream_id));
@@ -215,8 +216,8 @@ scoped_ptr<base::Value> NetLogSpdyWindowUpdateFrameCallback(
 }
 
 scoped_ptr<base::Value> NetLogSpdySessionWindowUpdateCallback(
-    int32 delta,
-    int32 window_size,
+    int32_t delta,
+    int32_t window_size,
     NetLogCaptureMode /* capture_mode */) {
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetInteger("delta", delta);
@@ -1264,10 +1265,8 @@ scoped_ptr<SpdyBuffer> SpdySession::CreateDataBuffer(SpdyStreamId stream_id,
 
   // TODO(mbelshe): reduce memory copies here.
   DCHECK(buffered_spdy_framer_.get());
-  scoped_ptr<SpdyFrame> frame(
-      buffered_spdy_framer_->CreateDataFrame(
-          stream_id, data->data(),
-          static_cast<uint32>(effective_len), flags));
+  scoped_ptr<SpdyFrame> frame(buffered_spdy_framer_->CreateDataFrame(
+      stream_id, data->data(), static_cast<uint32_t>(effective_len), flags));
 
   scoped_ptr<SpdyBuffer> data_buffer(new SpdyBuffer(frame.Pass()));
 
@@ -1275,7 +1274,7 @@ scoped_ptr<SpdyBuffer> SpdySession::CreateDataBuffer(SpdyStreamId stream_id,
   // just a FIN with no payload.
   if (flow_control_state_ == FLOW_CONTROL_STREAM_AND_SESSION &&
       effective_len != 0) {
-    DecreaseSendWindowSize(static_cast<int32>(effective_len));
+    DecreaseSendWindowSize(static_cast<int32_t>(effective_len));
     data_buffer->AddConsumeCallback(
         base::Bind(&SpdySession::OnWriteBufferConsumed,
                    weak_factory_.GetWeakPtr(),
@@ -1512,7 +1511,8 @@ int SpdySession::DoReadComplete(int result) {
   DCHECK(buffered_spdy_framer_.get());
   char* data = read_buffer_->data();
   while (result > 0) {
-    uint32 bytes_processed = buffered_spdy_framer_->ProcessInput(data, result);
+    uint32_t bytes_processed =
+        buffered_spdy_framer_->ProcessInput(data, result);
     result -= bytes_processed;
     data += bytes_processed;
 
@@ -2125,7 +2125,7 @@ void SpdySession::OnStreamFrameData(SpdyStreamId stream_id,
     buffer.reset(new SpdyBuffer(data, len));
 
     if (flow_control_state_ == FLOW_CONTROL_STREAM_AND_SESSION) {
-      DecreaseRecvWindowSize(static_cast<int32>(len));
+      DecreaseRecvWindowSize(static_cast<int32_t>(len));
       buffer->AddConsumeCallback(
           base::Bind(&SpdySession::OnReadBufferConsumed,
                      weak_factory_.GetWeakPtr()));
@@ -2165,8 +2165,8 @@ void SpdySession::OnStreamPadding(SpdyStreamId stream_id, size_t len) {
   // Increase window size because padding bytes are consumed (by discarding).
   // Net result: |session_unacked_recv_window_bytes_| increases by |len|,
   // |session_recv_window_size_| does not change.
-  DecreaseRecvWindowSize(static_cast<int32>(len));
-  IncreaseRecvWindowSize(static_cast<int32>(len));
+  DecreaseRecvWindowSize(static_cast<int32_t>(len));
+  IncreaseRecvWindowSize(static_cast<int32_t>(len));
 
   ActiveStreamMap::iterator it = active_streams_.find(stream_id);
   if (it == active_streams_.end())
@@ -2208,9 +2208,7 @@ void SpdySession::OnSettings(bool clear_persisted) {
   }
 }
 
-void SpdySession::OnSetting(SpdySettingsIds id,
-                            uint8 flags,
-                            uint32 value) {
+void SpdySession::OnSetting(SpdySettingsIds id, uint8_t flags, uint32_t value) {
   CHECK(in_io_loop_);
 
   HandleSetting(id, value);
@@ -2817,7 +2815,7 @@ void SpdySession::OnPushPromise(SpdyStreamId stream_id,
 }
 
 void SpdySession::SendStreamWindowUpdate(SpdyStreamId stream_id,
-                                         uint32 delta_window_size) {
+                                         uint32_t delta_window_size) {
   CHECK_GE(flow_control_state_, FLOW_CONTROL_STREAM);
   ActiveStreamMap::const_iterator it = active_streams_.find(stream_id);
   CHECK(it != active_streams_.end());
@@ -2880,13 +2878,13 @@ void SpdySession::SendInitialData() {
 
     SettingsMap::const_iterator it =
         server_settings_map.find(SETTINGS_CURRENT_CWND);
-    uint32 cwnd = (it != server_settings_map.end()) ? it->second.second : 0;
+    uint32_t cwnd = (it != server_settings_map.end()) ? it->second.second : 0;
     UMA_HISTOGRAM_CUSTOM_COUNTS("Net.SpdySettingsCwndSent", cwnd, 1, 200, 100);
 
     for (SettingsMap::const_iterator it = server_settings_map.begin();
          it != server_settings_map.end(); ++it) {
       const SpdySettingsIds new_id = it->first;
-      const uint32 new_val = it->second.second;
+      const uint32_t new_val = it->second.second;
       HandleSetting(new_id, new_val);
     }
 
@@ -2908,7 +2906,7 @@ void SpdySession::SendSettings(const SettingsMap& settings) {
   EnqueueSessionWrite(HIGHEST, SETTINGS, settings_frame.Pass());
 }
 
-void SpdySession::HandleSetting(uint32 id, uint32 value) {
+void SpdySession::HandleSetting(uint32_t id, uint32_t value) {
   switch (id) {
     case SETTINGS_MAX_CONCURRENT_STREAMS:
       max_concurrent_streams_ = std::min(static_cast<size_t>(value),
@@ -2922,7 +2920,7 @@ void SpdySession::HandleSetting(uint32 id, uint32 value) {
         return;
       }
 
-      if (value > static_cast<uint32>(kint32max)) {
+      if (value > static_cast<uint32_t>(std::numeric_limits<int32_t>::max())) {
         net_log().AddEvent(
             NetLog::TYPE_HTTP2_SESSION_INITIAL_WINDOW_SIZE_OUT_OF_RANGE,
             NetLog::IntCallback("initial_window_size", value));
@@ -2930,9 +2928,9 @@ void SpdySession::HandleSetting(uint32 id, uint32 value) {
       }
 
       // SETTINGS_INITIAL_WINDOW_SIZE updates initial_send_window_size_ only.
-      int32 delta_window_size =
-          static_cast<int32>(value) - stream_initial_send_window_size_;
-      stream_initial_send_window_size_ = static_cast<int32>(value);
+      int32_t delta_window_size =
+          static_cast<int32_t>(value) - stream_initial_send_window_size_;
+      stream_initial_send_window_size_ = static_cast<int32_t>(value);
       UpdateStreamsSendWindowSize(delta_window_size);
       net_log().AddEvent(
           NetLog::TYPE_HTTP2_SESSION_UPDATE_STREAMS_SEND_WINDOW_SIZE,
@@ -2942,7 +2940,7 @@ void SpdySession::HandleSetting(uint32 id, uint32 value) {
   }
 }
 
-void SpdySession::UpdateStreamsSendWindowSize(int32 delta_window_size) {
+void SpdySession::UpdateStreamsSendWindowSize(int32_t delta_window_size) {
   DCHECK_GE(flow_control_state_, FLOW_CONTROL_STREAM);
   for (ActiveStreamMap::iterator it = active_streams_.begin();
        it != active_streams_.end(); ++it) {
@@ -2970,7 +2968,7 @@ void SpdySession::SendPrefacePing() {
 }
 
 void SpdySession::SendWindowUpdateFrame(SpdyStreamId stream_id,
-                                        uint32 delta_window_size,
+                                        uint32_t delta_window_size,
                                         RequestPriority priority) {
   CHECK_GE(flow_control_state_, FLOW_CONTROL_STREAM);
   ActiveStreamMap::const_iterator it = active_streams_.find(stream_id);
@@ -3095,7 +3093,7 @@ void SpdySession::RecordHistograms() {
     SettingsMap::const_iterator it;
     for (it = settings_map.begin(); it != settings_map.end(); ++it) {
       const SpdySettingsIds id = it->first;
-      const uint32 val = it->second.second;
+      const uint32_t val = it->second.second;
       switch (id) {
         case SETTINGS_CURRENT_CWND:
           // Record several different histograms to see if cwnd converges
@@ -3185,7 +3183,8 @@ void SpdySession::IncreaseSendWindowSize(int delta_window_size) {
   DCHECK_GE(delta_window_size, 1);
 
   // Check for overflow.
-  int32 max_delta_window_size = kint32max - session_send_window_size_;
+  int32_t max_delta_window_size =
+      std::numeric_limits<int32_t>::max() - session_send_window_size_;
   if (delta_window_size > max_delta_window_size) {
     RecordProtocolErrorHistogram(PROTOCOL_ERROR_INVALID_WINDOW_UPDATE_SIZE);
     DoDrainSession(
@@ -3207,7 +3206,7 @@ void SpdySession::IncreaseSendWindowSize(int delta_window_size) {
   ResumeSendStalledStreams();
 }
 
-void SpdySession::DecreaseSendWindowSize(int32 delta_window_size) {
+void SpdySession::DecreaseSendWindowSize(int32_t delta_window_size) {
   DCHECK_EQ(flow_control_state_, FLOW_CONTROL_STREAM_AND_SESSION);
 
   // We only call this method when sending a frame. Therefore,
@@ -3234,18 +3233,20 @@ void SpdySession::OnReadBufferConsumed(
 
   DCHECK_EQ(flow_control_state_, FLOW_CONTROL_STREAM_AND_SESSION);
   DCHECK_GE(consume_size, 1u);
-  DCHECK_LE(consume_size, static_cast<size_t>(kint32max));
+  DCHECK_LE(consume_size,
+            static_cast<size_t>(std::numeric_limits<int32_t>::max()));
 
-  IncreaseRecvWindowSize(static_cast<int32>(consume_size));
+  IncreaseRecvWindowSize(static_cast<int32_t>(consume_size));
 }
 
-void SpdySession::IncreaseRecvWindowSize(int32 delta_window_size) {
+void SpdySession::IncreaseRecvWindowSize(int32_t delta_window_size) {
   DCHECK_EQ(flow_control_state_, FLOW_CONTROL_STREAM_AND_SESSION);
   DCHECK_GE(session_unacked_recv_window_bytes_, 0);
   DCHECK_GE(session_recv_window_size_, session_unacked_recv_window_bytes_);
   DCHECK_GE(delta_window_size, 1);
   // Check for overflow.
-  DCHECK_LE(delta_window_size, kint32max - session_recv_window_size_);
+  DCHECK_LE(delta_window_size,
+            std::numeric_limits<int32_t>::max() - session_recv_window_size_);
 
   session_recv_window_size_ += delta_window_size;
   net_log_.AddEvent(NetLog::TYPE_HTTP2_STREAM_UPDATE_RECV_WINDOW,
@@ -3261,7 +3262,7 @@ void SpdySession::IncreaseRecvWindowSize(int32 delta_window_size) {
   }
 }
 
-void SpdySession::DecreaseRecvWindowSize(int32 delta_window_size) {
+void SpdySession::DecreaseRecvWindowSize(int32_t delta_window_size) {
   CHECK(in_io_loop_);
   DCHECK_EQ(flow_control_state_, FLOW_CONTROL_STREAM_AND_SESSION);
   DCHECK_GE(delta_window_size, 1);
