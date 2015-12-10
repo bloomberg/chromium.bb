@@ -1,10 +1,5 @@
 include_rules = [
   "+ppapi/nacl_irt",
   "+sandbox/linux/seccomp-bpf-helpers",
-  "+native_client/src/shared/platform/nacl_log.h",
-  "+native_client/src/trusted/desc/nacl_desc_base.h",
-  "+native_client/src/trusted/desc/nacl_desc_effector_trusted_mem.h",
-  "+native_client/src/trusted/service_runtime/nacl_exception.h",
-  "+native_client/src/trusted/service_runtime/nacl_signal.h",
   "+third_party/lss/linux_syscall_support.h",  # for BPF policy tests
 ]
