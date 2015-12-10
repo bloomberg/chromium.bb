@@ -103,6 +103,10 @@ class ChromotingHostTest : public testing::Test {
         .WillRepeatedly(ReturnRef(*session_config1_));
     EXPECT_CALL(*session2_, config())
         .WillRepeatedly(ReturnRef(*session_config2_));
+    EXPECT_CALL(*session_unowned1_, config())
+        .WillRepeatedly(ReturnRef(*session_config1_));
+    EXPECT_CALL(*session_unowned2_, config())
+        .WillRepeatedly(ReturnRef(*session_config2_));
 
     owned_connection1_.reset(
         new protocol::FakeConnectionToClient(make_scoped_ptr(session1_)));

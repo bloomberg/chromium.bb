@@ -23,6 +23,7 @@
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_listener.h"
+#include "jingle/glue/thread_wrapper.h"
 #include "net/base/net_util.h"
 #include "net/base/network_change_notifier.h"
 #include "net/socket/client_socket_factory.h"
@@ -72,13 +73,19 @@
 #include "remoting/host/usage_stats_consent.h"
 #include "remoting/host/username.h"
 #include "remoting/host/video_frame_recorder_host_extension.h"
+#include "remoting/protocol/authenticator.h"
+#include "remoting/protocol/channel_authenticator.h"
+#include "remoting/protocol/chromium_port_allocator_factory.h"
+#include "remoting/protocol/jingle_session_manager.h"
 #include "remoting/protocol/me2me_host_authenticator_factory.h"
 #include "remoting/protocol/network_settings.h"
 #include "remoting/protocol/pairing_registry.h"
 #include "remoting/protocol/port_range.h"
 #include "remoting/protocol/token_validator.h"
+#include "remoting/protocol/webrtc_transport.h"
 #include "remoting/signaling/push_notification_subscriber.h"
 #include "remoting/signaling/xmpp_signal_strategy.h"
+#include "third_party/webrtc/base/scoped_ref_ptr.h"
 
 #if defined(OS_POSIX)
 #include <signal.h>
@@ -148,6 +155,9 @@ const char kFrameRecorderBufferKbName[] = "frame-recorder-buffer-kb";
 
 const char kWindowIdSwitchName[] = "window-id";
 
+// Command line switch used to enable WebRTC-based protocol.
+const char kEnableWebrtc[] = "enable-webrtc";
+
 // Maximum time to wait for clean shutdown to occur, before forcing termination
 // of the process.
 const int kShutdownTimeoutSeconds = 15;
@@ -165,6 +175,58 @@ const char kHostOfflineReasonPolicyChangeRequiresRestart[] =
 }  // namespace
 
 namespace remoting {
+
+#if !defined(NDEBUG)
+
+// Authenticator that accepts all connections. Use only for testing.
+class NoopAuthenticator : public protocol::Authenticator {
+ public:
+  NoopAuthenticator() {}
+  ~NoopAuthenticator() override {}
+
+  // protocol::Authenticator interface.
+  State state() const override { return done_ ? ACCEPTED : WAITING_MESSAGE; }
+  bool started() const override { return done_; }
+  RejectionReason rejection_reason() const override {
+    NOTREACHED();
+    return INVALID_CREDENTIALS;
+  }
+  void ProcessMessage(const buzz::XmlElement* message,
+                      const base::Closure& resume_callback) override {
+    done_ = true;
+    resume_callback.Run();
+  }
+  scoped_ptr<buzz::XmlElement> GetNextMessage() override {
+    NOTREACHED();
+    return nullptr;
+  }
+  const std::string& GetAuthKey() const override { return auth_key_; }
+  scoped_ptr<protocol::ChannelAuthenticator> CreateChannelAuthenticator()
+      const override {
+    NOTREACHED();
+    return nullptr;
+  };
+
+ private:
+  bool done_ = false;
+  std::string auth_key_ = "NOKEY";
+};
+
+// Factory for Authenticator instances.
+class NoopAuthenticatorFactory : public protocol::AuthenticatorFactory {
+ public:
+  NoopAuthenticatorFactory() {}
+  ~NoopAuthenticatorFactory() override {}
+
+  scoped_ptr<protocol::Authenticator> CreateAuthenticator(
+      const std::string& local_jid,
+      const std::string& remote_jid,
+      const buzz::XmlElement* first_message) override {
+    return make_scoped_ptr(new NoopAuthenticator());
+  }
+};
+
+#endif  // !defined(NDEBUG)
 
 class HostProcess : public ConfigWatcher::Delegate,
                     public HostChangeNotificationListener::Listener,
@@ -683,6 +745,14 @@ void HostProcess::CreateAuthenticatorFactory() {
 
   if (state_ != HOST_STARTED)
     return;
+
+#if !defined(NDEBUG)
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(kEnableWebrtc)) {
+    host_->SetAuthenticatorFactory(
+        make_scoped_ptr(new NoopAuthenticatorFactory()));
+    return;
+  }
+#endif  // !defined(NDEBUG)
 
   std::string local_certificate = key_pair_->GenerateCertificate();
   if (local_certificate.empty()) {
@@ -1426,9 +1496,38 @@ void HostProcess::StartHost() {
     network_settings.port_range.max_port = NetworkSettings::kDefaultMaxPort;
   }
 
-  scoped_ptr<protocol::SessionManager> session_manager =
-      CreateHostSessionManager(signal_strategy_.get(), network_settings,
-                               context_->url_request_context_getter());
+  scoped_ptr<protocol::SessionManager> session_manager;
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(kEnableWebrtc)) {
+#if !defined(NDEBUG)
+    network_settings.flags = protocol::NetworkSettings::NAT_TRAVERSAL_OUTGOING;
+
+    rtc::scoped_refptr<webrtc::PortAllocatorFactoryInterface>
+        port_allocator_factory = protocol::ChromiumPortAllocatorFactory::Create(
+            network_settings, context_->url_request_context_getter());
+
+    jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
+
+    // The network thread is also used as worker thread for webrtc.
+    //
+    // TODO(sergeyu): Figure out if we would benefit from using a separate
+    // thread as a worker thread.
+    scoped_ptr<protocol::TransportFactory> transport_factory(
+        new protocol::WebrtcTransportFactory(
+            jingle_glue::JingleThreadWrapper::current(), signal_strategy_.get(),
+            port_allocator_factory, protocol::TransportRole::SERVER));
+
+    session_manager.reset(
+        new protocol::JingleSessionManager(transport_factory.Pass()));
+#else  // !defined(NDEBUG)
+    LOG(ERROR) << "WebRTC is enabled only in debug builds.";
+    ShutdownHost(kUsageExitCode);
+    return;
+#endif  // defined(NDEBUG)
+  } else {
+    session_manager =
+        CreateHostSessionManager(signal_strategy_.get(), network_settings,
+                                 context_->url_request_context_getter());
+  }
 
   scoped_ptr<protocol::CandidateSessionConfig> protocol_config =
       protocol::CandidateSessionConfig::CreateDefault();
@@ -1436,6 +1535,11 @@ void HostProcess::StartHost() {
     protocol_config->DisableAudioChannel();
   if (enable_vp9_)
     protocol_config->set_vp9_experiment_enabled(true);
+#if !defined(NDEBUG)
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(kEnableWebrtc)) {
+    protocol_config->set_webrtc_supported(true);
+  }
+#endif  // !defined(NDEBUG)
   session_manager->set_protocol_config(protocol_config.Pass());
 
   host_.reset(new ChromotingHost(

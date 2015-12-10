@@ -22,6 +22,7 @@
 #include "remoting/protocol/host_stub.h"
 #include "remoting/protocol/ice_connection_to_client.h"
 #include "remoting/protocol/input_stub.h"
+#include "remoting/protocol/webrtc_connection_to_client.h"
 
 using remoting::protocol::ConnectionToClient;
 using remoting::protocol::InputStub;
@@ -273,23 +274,24 @@ void ChromotingHost::OnIncomingSession(
 
   HOST_LOG << "Client connected: " << session->jid();
 
-  // Create a client object.
-  scoped_ptr<protocol::ConnectionToClient> connection(
-      new protocol::IceConnectionToClient(make_scoped_ptr(session),
-                                          video_encode_task_runner_));
+  // Create either IceConnectionToClient or WebrtcConnectionToClient.
+  // TODO(sergeyu): Move this logic to the protocol layer.
+  scoped_ptr<protocol::ConnectionToClient> connection;
+  if (session->config().protocol() ==
+      protocol::SessionConfig::Protocol::WEBRTC) {
+    connection.reset(
+        new protocol::WebrtcConnectionToClient(make_scoped_ptr(session)));
+  } else {
+    connection.reset(new protocol::IceConnectionToClient(
+        make_scoped_ptr(session), video_encode_task_runner_));
+  }
+
+  // Create a ClientSession object.
   ClientSession* client = new ClientSession(
-      this,
-      audio_task_runner_,
-      input_task_runner_,
-      video_capture_task_runner_,
-      video_encode_task_runner_,
-      network_task_runner_,
-      ui_task_runner_,
-      connection.Pass(),
-      desktop_environment_factory_,
-      max_session_duration_,
-      pairing_registry_,
-      extensions_.get());
+      this, audio_task_runner_, input_task_runner_, video_capture_task_runner_,
+      video_encode_task_runner_, network_task_runner_, ui_task_runner_,
+      connection.Pass(), desktop_environment_factory_, max_session_duration_,
+      pairing_registry_, extensions_.get());
 
   clients_.push_back(client);
 }
