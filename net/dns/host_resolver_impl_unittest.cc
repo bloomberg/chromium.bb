@@ -7,12 +7,13 @@
 #include <algorithm>
 #include <string>
 #include <tuple>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_vector.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -481,7 +482,7 @@ class HostResolverImplTest : public testing::Test {
     Request* CreateRequest(const std::string& hostname) {
       return test->CreateRequest(hostname);
     }
-    ScopedVector<Request>& requests() { return test->requests_; }
+    std::vector<scoped_ptr<Request>>& requests() { return test->requests_; }
 
     void DeleteResolver() { test->resolver_.reset(); }
 
@@ -510,10 +511,9 @@ class HostResolverImplTest : public testing::Test {
   // not start until released by |proc_->SignalXXX|.
   Request* CreateRequest(const HostResolver::RequestInfo& info,
                          RequestPriority priority) {
-    Request* req = new Request(
-        info, priority, requests_.size(), resolver_.get(), handler_.get());
-    requests_.push_back(req);
-    return req;
+    requests_.push_back(make_scoped_ptr(new Request(
+        info, priority, requests_.size(), resolver_.get(), handler_.get())));
+    return requests_.back().get();
   }
 
   Request* CreateRequest(const std::string& hostname,
@@ -565,7 +565,7 @@ class HostResolverImplTest : public testing::Test {
 
   scoped_refptr<MockHostResolverProc> proc_;
   scoped_ptr<HostResolverImpl> resolver_;
-  ScopedVector<Request> requests_;
+  std::vector<scoped_ptr<Request>> requests_;
 
   scoped_ptr<Handler> handler_;
 };
