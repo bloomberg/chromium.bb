@@ -73,7 +73,7 @@ TEST_F(CoreAudioUtilWinTest, CreateDefaultDevice) {
 
   // Create default devices for all flow/role combinations above.
   ScopedComPtr<IMMDevice> audio_device;
-  for (int i = 0; i < arraysize(data); ++i) {
+  for (size_t i = 0; i < arraysize(data); ++i) {
     audio_device =
         CoreAudioUtil::CreateDefaultDevice(data[i].flow, data[i].role);
     EXPECT_TRUE(audio_device.get());
@@ -125,7 +125,7 @@ TEST_F(CoreAudioUtilWinTest, GetDefaultDeviceName) {
   // Get name and ID of default devices for all flow/role combinations above.
   ScopedComPtr<IMMDevice> audio_device;
   AudioDeviceName device_name;
-  for (int i = 0; i < arraysize(data); ++i) {
+  for (size_t i = 0; i < arraysize(data); ++i) {
     audio_device =
         CoreAudioUtil::CreateDefaultDevice(data[i].flow, data[i].role);
     EXPECT_TRUE(SUCCEEDED(
@@ -145,7 +145,7 @@ TEST_F(CoreAudioUtilWinTest, GetAudioControllerID) {
   // Enumerate all active input and output devices and fetch the ID of
   // the associated device.
   EDataFlow flows[] = { eRender , eCapture };
-  for (int i = 0; i < arraysize(flows); ++i) {
+  for (size_t i = 0; i < arraysize(flows); ++i) {
     ScopedComPtr<IMMDeviceCollection> collection;
     ASSERT_TRUE(SUCCEEDED(enumerator->EnumAudioEndpoints(flows[i],
         DEVICE_STATE_ACTIVE, collection.Receive())));
@@ -205,7 +205,7 @@ TEST_F(CoreAudioUtilWinTest, CreateDefaultClient) {
 
   EDataFlow data[] = {eRender, eCapture};
 
-  for (int i = 0; i < arraysize(data); ++i) {
+  for (size_t i = 0; i < arraysize(data); ++i) {
     ScopedComPtr<IAudioClient> client;
     client = CoreAudioUtil::CreateDefaultClient(data[i], eConsole);
     EXPECT_TRUE(client.get());
@@ -217,7 +217,7 @@ TEST_F(CoreAudioUtilWinTest, CreateClient) {
 
   EDataFlow data[] = {eRender, eCapture};
 
-  for (int i = 0; i < arraysize(data); ++i) {
+  for (size_t i = 0; i < arraysize(data); ++i) {
     ScopedComPtr<IMMDevice> device;
     ScopedComPtr<IAudioClient> client;
     device = CoreAudioUtil::CreateDefaultDevice(data[i], eConsole);
@@ -282,7 +282,7 @@ TEST_F(CoreAudioUtilWinTest, GetDevicePeriod) {
 
   // Verify that the device periods are valid for the default render and
   // capture devices.
-  for (int i = 0; i < arraysize(data); ++i) {
+  for (size_t i = 0; i < arraysize(data); ++i) {
     ScopedComPtr<IAudioClient> client;
     REFERENCE_TIME shared_time_period = 0;
     REFERENCE_TIME exclusive_time_period = 0;
@@ -305,7 +305,7 @@ TEST_F(CoreAudioUtilWinTest, GetPreferredAudioParameters) {
 
   // Verify that the preferred audio parameters are OK for the default render
   // and capture devices.
-  for (int i = 0; i < arraysize(data); ++i) {
+  for (size_t i = 0; i < arraysize(data); ++i) {
     ScopedComPtr<IAudioClient> client;
     AudioParameters params;
     client = CoreAudioUtil::CreateDefaultClient(data[i], eConsole);
@@ -386,7 +386,7 @@ TEST_F(CoreAudioUtilWinTest, CreateRenderAndCaptureClients) {
   WAVEFORMATPCMEX format;
   uint32 endpoint_buffer_size = 0;
 
-  for (int i = 0; i < arraysize(data); ++i) {
+  for (size_t i = 0; i < arraysize(data); ++i) {
     ScopedComPtr<IAudioClient> client;
     ScopedComPtr<IAudioRenderClient> render_client;
     ScopedComPtr<IAudioCaptureClient> capture_client;

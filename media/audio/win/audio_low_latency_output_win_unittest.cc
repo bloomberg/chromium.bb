@@ -432,7 +432,7 @@ TEST(WASAPIAudioOutputStreamTest, DISABLED_ReadFromStereoFile) {
   DVLOG(0) << "#file segments : " << kNumFileSegments;
   DVLOG(0) << ">> Listen to the stereo file while playing...";
 
-  for (int i = 0; i < kNumFileSegments; i++) {
+  for (size_t i = 0; i < kNumFileSegments; i++) {
     // Each segment will start with a short (~20ms) block of zeros, hence
     // some short glitches might be heard in this test if kNumFileSegments
     // is larger than one. The exact length of the silence period depends on

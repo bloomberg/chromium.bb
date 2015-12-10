@@ -42,7 +42,7 @@ TEST(BlacklistLoadAnalyzer, TestBlacklistBypass) {
   // Check that the test dll appears in list.
   module_names.clear();
   EXPECT_TRUE(GetLoadedBlacklistedModules(&module_names));
-  ASSERT_EQ(1, module_names.size());
+  ASSERT_EQ(1u, module_names.size());
   EXPECT_STREQ(kTestDllName,
                base::ToLowerASCII(
                    base::FilePath(module_names[0]).BaseName().value()).c_str());

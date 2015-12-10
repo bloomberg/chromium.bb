@@ -290,8 +290,7 @@ base::win::ScopedHandle HidServiceWin::OpenDevice(
       CreateFileA(device_path.c_str(), GENERIC_WRITE | GENERIC_READ,
                   FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING,
                   FILE_FLAG_OVERLAPPED, NULL));
-  if (!file.IsValid() &&
-      GetLastError() == base::File::FILE_ERROR_ACCESS_DENIED) {
+  if (!file.IsValid() && GetLastError() == ERROR_ACCESS_DENIED) {
     file.Set(CreateFileA(device_path.c_str(), GENERIC_READ, FILE_SHARE_READ,
                          NULL, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, NULL));
   }

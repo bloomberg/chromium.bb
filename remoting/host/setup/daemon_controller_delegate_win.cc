@@ -179,8 +179,7 @@ bool WriteConfig(const std::string& content) {
 
   // Extract the unprivileged fields from the configuration.
   base::DictionaryValue unprivileged_config_dict;
-  for (int i = 0; i < arraysize(kUnprivilegedConfigKeys); ++i) {
-    const char* key = kUnprivilegedConfigKeys[i];
+  for (const char* key : kUnprivilegedConfigKeys) {
     base::string16 value;
     if (config_dict->GetString(key, &value)) {
       unprivileged_config_dict.SetString(key, value);
@@ -382,7 +381,7 @@ void DaemonControllerDelegateWin::UpdateConfig(
     scoped_ptr<base::DictionaryValue> config,
     const DaemonController::CompletionCallback& done) {
   // Check for bad keys.
-  for (int i = 0; i < arraysize(kReadonlyKeys); ++i) {
+  for (size_t i = 0; i < arraysize(kReadonlyKeys); ++i) {
     if (config->HasKey(kReadonlyKeys[i])) {
       LOG(ERROR) << "Cannot update config: '" << kReadonlyKeys[i]
                  << "' is read only.";

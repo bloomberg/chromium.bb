@@ -349,7 +349,7 @@ void RlzValueStoreRegistry::CollectGarbage() {
     kPingTimesSubkeyName
   };
 
-  for (int i = 0; i < arraysize(subkeys); i++) {
+  for (size_t i = 0; i < arraysize(subkeys); i++) {
     std::string subkey_name;
     base::StringAppendF(&subkey_name, "%s\\%s", kLibKeyName, subkeys[i]);
     AppendBrandToString(&subkey_name);

@@ -100,7 +100,7 @@ class GoogleUpdateSettingsTest : public testing::Test {
   // Note that ap= value has to match "^2.0-d.*" or ".*x64-dev.*" and "^1.1-.*"
   // or ".*x64-beta.*" for dev and beta channels respectively.
   void TestCurrentChromeChannelWithVariousApValues(SystemUserInstall install) {
-    static struct Expectations {
+    static struct Expectation {
       const wchar_t* ap_value;
       const wchar_t* channel;
       bool supports_prefixes;
@@ -123,13 +123,13 @@ class GoogleUpdateSettingsTest : public testing::Test {
       L"suffix-with-dash",
     };
 
-    for (size_t i = 0; i < arraysize(prefixes); ++i) {
-      for (size_t j = 0; j < arraysize(expectations); ++j) {
-        for (size_t k = 0; k < arraysize(suffixes); ++k) {
-          base::string16 ap = prefixes[i];
-          ap += expectations[j].ap_value;
-          ap += suffixes[k];
-          const wchar_t* channel = expectations[j].channel;
+    for (const wchar_t* prefix : prefixes) {
+      for (const Expectation& expectation : expectations) {
+        for (const wchar_t* suffix : suffixes) {
+          base::string16 ap = prefix;
+          ap += expectation.ap_value;
+          ap += suffix;
+          const wchar_t* channel = expectation.channel;
 
           SetApField(install, ap.c_str());
           base::string16 ret_channel;
@@ -139,7 +139,7 @@ class GoogleUpdateSettingsTest : public testing::Test {
 
           // If prefixes are not supported for a channel, we expect the channel
           // to be "unknown" if a non-empty prefix is present in ap_value.
-          if (!expectations[j].supports_prefixes && wcslen(prefixes[i]) > 0) {
+          if (!expectation.supports_prefixes && wcslen(prefix) > 0) {
             EXPECT_STREQ(installer::kChromeChannelUnknown, ret_channel.c_str())
                 << "Expecting channel \"" << installer::kChromeChannelUnknown
                 << "\" for ap=\"" << ap << "\"";
@@ -444,10 +444,8 @@ TEST_F(GoogleUpdateSettingsTest, UpdateGoogleUpdateApKey) {
     multifail_full
   };
   ChannelInfo v;
-  for (int type_idx = 0; type_idx < arraysize(archive_types); ++type_idx) {
-    const installer::ArchiveType archive_type = archive_types[type_idx];
-    for (int result_idx = 0; result_idx < arraysize(results); ++result_idx) {
-      const int result = results[result_idx];
+  for (const installer::ArchiveType archive_type : archive_types) {
+    for (const int result : results) {
       // The archive type will/must always be known on install success.
       if (archive_type == installer::UNKNOWN_ARCHIVE_TYPE &&
           result == installer::FIRST_INSTALL_SUCCESS) {
@@ -461,9 +459,7 @@ TEST_F(GoogleUpdateSettingsTest, UpdateGoogleUpdateApKey) {
         outputs = full;
       }  // else if (archive_type == UNKNOWN) see below
 
-      for (int inputs_idx = 0; inputs_idx < arraysize(input_arrays);
-           ++inputs_idx) {
-        const wchar_t* const* inputs = input_arrays[inputs_idx];
+      for (const wchar_t* const* inputs : input_arrays) {
         if (archive_type == installer::UNKNOWN_ARCHIVE_TYPE) {
           // "-full" is untouched if the archive type is unknown.
           // "-multifail" is unconditionally removed.
@@ -472,7 +468,7 @@ TEST_F(GoogleUpdateSettingsTest, UpdateGoogleUpdateApKey) {
           else
             outputs = plain;
         }
-        for (int input_idx = 0; input_idx < arraysize(plain); ++input_idx) {
+        for (size_t input_idx = 0; input_idx < arraysize(plain); ++input_idx) {
           const wchar_t* input = inputs[input_idx];
           const wchar_t* output = outputs[input_idx];
 
@@ -720,8 +716,8 @@ TEST_F(GoogleUpdateSettingsTest, UpdateProfileCountsSystemInstall) {
                                         &aggregate));
 
   // Verify the correct values were written.
-  EXPECT_EQ(3, num_profiles);
-  EXPECT_EQ(2, num_signed_in);
+  EXPECT_EQ(3u, num_profiles);
+  EXPECT_EQ(2u, num_signed_in);
   EXPECT_EQ(L"sum()", aggregate);
 }
 

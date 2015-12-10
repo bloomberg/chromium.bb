@@ -50,7 +50,7 @@ class WatcherMetricsProviderWinTest : public testing::Test {
     base::string16 key_name(base::StringPrintf(L"%d-%d", pid, rand()));
 
     // Write the exit code to registry.
-    ULONG result = key.WriteValue(key_name.c_str(), exit_code);
+    LONG result = key.WriteValue(key_name.c_str(), exit_code);
     ASSERT_EQ(result, ERROR_SUCCESS);
   }
 
@@ -95,7 +95,7 @@ TEST_F(WatcherMetricsProviderWinTest, RecordsStabilityHistogram) {
         WatcherMetricsProviderWin::kBrowserExitCodeHistogramName, 12);
 
   // Verify that the reported values are gone.
-  EXPECT_EQ(ExitCodeRegistryPathValueCount(), 0);
+  EXPECT_EQ(0u, ExitCodeRegistryPathValueCount());
 }
 
 TEST_F(WatcherMetricsProviderWinTest, DoesNotReportOwnProcessId) {
@@ -113,7 +113,7 @@ TEST_F(WatcherMetricsProviderWinTest, DoesNotReportOwnProcessId) {
         WatcherMetricsProviderWin::kBrowserExitCodeHistogramName, 0, 11);
 
   // Verify that the reported values are gone.
-  EXPECT_EQ(ExitCodeRegistryPathValueCount(), 1);
+  EXPECT_EQ(1u, ExitCodeRegistryPathValueCount());
 }
 
 TEST_F(WatcherMetricsProviderWinTest, DeletesRecordedExitFunnelEvents) {
@@ -124,7 +124,7 @@ TEST_F(WatcherMetricsProviderWinTest, DeletesRecordedExitFunnelEvents) {
   AddExitFunnelEvent(102, L"Three", 990 * 1000);
 
   base::win::RegistryKeyIterator it(HKEY_CURRENT_USER, kRegistryPath);
-  EXPECT_EQ(it.SubkeyCount(), 3);
+  EXPECT_EQ(3u, it.SubkeyCount());
 
   WatcherMetricsProviderWin provider(kRegistryPath, test_task_runner_.get());
 
@@ -138,7 +138,7 @@ TEST_F(WatcherMetricsProviderWinTest, DeletesRecordedExitFunnelEvents) {
       histogram_tester_.GetAllSamples("Stability.ExitFunnel.Three").empty());
 
   // Make sure the subkeys are deleted on reporting.
-  ASSERT_EQ(it.SubkeyCount(), 0);
+  ASSERT_EQ(0u, it.SubkeyCount());
 }
 
 TEST_F(WatcherMetricsProviderWinTest, DeletesExitcodeKeyWhenNotReporting) {
@@ -187,7 +187,7 @@ TEST_F(WatcherMetricsProviderWinTest, DeletesOnly100FunnelsAtATime) {
   }
 
   base::win::RegistryKeyIterator it(HKEY_CURRENT_USER, kRegistryPath);
-  EXPECT_EQ(it.SubkeyCount(), 200);
+  EXPECT_EQ(200u, it.SubkeyCount());
 
   {
     // Make like the user is opted out of reporting.
@@ -198,7 +198,7 @@ TEST_F(WatcherMetricsProviderWinTest, DeletesOnly100FunnelsAtATime) {
   }
 
   // We expect only 100 of the funnels have been scrubbed.
-  EXPECT_EQ(it.SubkeyCount(), 100);
+  EXPECT_EQ(100u, it.SubkeyCount());
 }
 
 }  // namespace browser_watcher

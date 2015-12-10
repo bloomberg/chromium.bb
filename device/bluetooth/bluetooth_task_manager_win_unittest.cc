@@ -80,12 +80,12 @@ class BluetoothTaskManagerWinTest : public testing::Test {
 };
 
 TEST_F(BluetoothTaskManagerWinTest, StartPolling) {
-  EXPECT_EQ(1, bluetooth_task_runner_->GetPendingTasks().size());
+  EXPECT_EQ(1u, bluetooth_task_runner_->GetPendingTasks().size());
 }
 
 TEST_F(BluetoothTaskManagerWinTest, PollAdapterIfBluetoothStackIsAvailable) {
   bluetooth_task_runner_->RunPendingTasks();
-  int num_expected_pending_tasks = has_bluetooth_stack_ ? 1 : 0;
+  size_t num_expected_pending_tasks = has_bluetooth_stack_ ? 1 : 0;
   EXPECT_EQ(num_expected_pending_tasks,
             bluetooth_task_runner_->GetPendingTasks().size());
 }
@@ -112,7 +112,7 @@ TEST_F(BluetoothTaskManagerWinTest, SetPowered) {
   base::Closure closure;
   task_manager_->PostSetPoweredBluetoothTask(true, closure, closure);
 
-  EXPECT_EQ(1, bluetooth_task_runner_->GetPendingTasks().size());
+  EXPECT_EQ(1u, bluetooth_task_runner_->GetPendingTasks().size());
   bluetooth_task_runner_->RunPendingTasks();
   EXPECT_TRUE(ui_task_runner_->GetPendingTasks().size() >= 1);
 }

@@ -28,7 +28,7 @@ class EndSessionWatcherWindowTest : public testing::Test {
 
   size_t num_callbacks_;
   UINT last_message_;
-  UINT last_lparam_;
+  LPARAM last_lparam_;
 };
 
 }  // namespace browser_watcher
@@ -40,8 +40,8 @@ TEST_F(EndSessionWatcherWindowTest, NoCallbackOnDestruction) {
                    base::Unretained(this)));
   }
 
-  EXPECT_EQ(num_callbacks_, 0);
-  EXPECT_EQ(last_lparam_, 0);
+  EXPECT_EQ(0u, num_callbacks_);
+  EXPECT_EQ(0, last_lparam_);
 }
 
 TEST_F(EndSessionWatcherWindowTest, IssuesCallbackOnMessage) {
@@ -49,19 +49,19 @@ TEST_F(EndSessionWatcherWindowTest, IssuesCallbackOnMessage) {
       base::Bind(&EndSessionWatcherWindowTest::OnEndSessionMessage,
                  base::Unretained(this)));
 
-  ::SendMessage(watcher_window.window(), WM_QUERYENDSESSION, TRUE, 0xCAFEBABE);
-  EXPECT_EQ(num_callbacks_, 1);
-  EXPECT_EQ(last_message_, WM_QUERYENDSESSION);
-  EXPECT_EQ(last_lparam_, 0xCAFEBABE);
+  ::SendMessage(watcher_window.window(), WM_QUERYENDSESSION, TRUE, 0xBEEF);
+  EXPECT_EQ(1u, num_callbacks_);
+  EXPECT_EQ(static_cast<DWORD>(WM_QUERYENDSESSION), last_message_);
+  EXPECT_EQ(0xBEEF, last_lparam_);
 
   ::SendMessage(watcher_window.window(), WM_ENDSESSION, TRUE, 0xCAFE);
-  EXPECT_EQ(num_callbacks_, 2);
-  EXPECT_EQ(last_message_, WM_ENDSESSION);
-  EXPECT_EQ(last_lparam_, 0xCAFE);
+  EXPECT_EQ(2u, num_callbacks_);
+  EXPECT_EQ(static_cast<UINT>(WM_ENDSESSION), last_message_);
+  EXPECT_EQ(0xCAFE, last_lparam_);
 
   // Verify that other messages don't pass through.
   ::SendMessage(watcher_window.window(), WM_CLOSE, TRUE, 0xCAFE);
-  EXPECT_EQ(num_callbacks_, 2);
+  EXPECT_EQ(2u, num_callbacks_);
 }
 
 }  // namespace browser_watcher

@@ -63,8 +63,8 @@ class ProfileShortcutManagerTest : public testing::Test {
     message_loop_.RunUntilIdle();
 
     // Delete all profiles and ensure their shortcuts got removed.
-    const int num_profiles = profile_info_cache_->GetNumberOfProfiles();
-    for (int i = 0; i < num_profiles; ++i) {
+    const size_t num_profiles = profile_info_cache_->GetNumberOfProfiles();
+    for (size_t i = 0; i < num_profiles; ++i) {
       const base::FilePath profile_path =
           profile_info_cache_->GetPathOfProfileAtIndex(0);
       base::string16 profile_name =
@@ -93,7 +93,7 @@ class ProfileShortcutManagerTest : public testing::Test {
   }
 
   void SetupDefaultProfileShortcut(const tracked_objects::Location& location) {
-    ASSERT_EQ(0, profile_info_cache_->GetNumberOfProfiles())
+    ASSERT_EQ(0u, profile_info_cache_->GetNumberOfProfiles())
         << location.ToString();
     ASSERT_FALSE(ProfileShortcutExistsAtDefaultPath(profile_1_name_))
         << location.ToString();

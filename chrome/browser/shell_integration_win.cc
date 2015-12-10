@@ -165,7 +165,7 @@ void MigrateChromiumShortcutsCallback() {
     }
   };
 
-  for (int i = 0; i < arraysize(kLocations); ++i) {
+  for (size_t i = 0; i < arraysize(kLocations); ++i) {
     base::FilePath path;
     if (!PathService::Get(kLocations[i].location_id, &path)) {
       NOTREACHED();

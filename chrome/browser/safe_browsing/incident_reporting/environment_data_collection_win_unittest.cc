@@ -193,7 +193,7 @@ TEST(SafeBrowsingEnvironmentDataCollectionWinTest, VerifyLoadedModules) {
                      reinterpret_cast<void*>(&new_val),
                      1,
                      &bytes_written);
-  ASSERT_EQ(1, bytes_written);
+  ASSERT_EQ(1u, bytes_written);
 
   ClientIncidentReport_EnvironmentData_Process process_report;
   CollectModuleVerificationData(kTestDllNames, kTestDllNamesCount,
@@ -258,13 +258,14 @@ TEST(SafeBrowsingEnvironmentDataCollectionWinTest, CollectRegistryData) {
   CollectRegistryData(kRegKeysToCollect, 1, &registry_data_pb);
 
   // Expect 1 registry key, 1 value.
-  EXPECT_EQ(1U, registry_data_pb.size());
+  EXPECT_EQ(1, registry_data_pb.size());
   EXPECT_EQ("HKEY_CURRENT_USER\\Software\\TestKey",
             registry_data_pb.Get(0).name());
-  EXPECT_EQ(1U, registry_data_pb.Get(0).value_size());
+  EXPECT_EQ(1, registry_data_pb.Get(0).value_size());
   EXPECT_EQ(base::WideToUTF8(kStringValueName),
             registry_data_pb.Get(0).value(0).name());
-  EXPECT_EQ(REG_SZ, registry_data_pb.Get(0).value(0).type());
+  EXPECT_EQ(static_cast<uint32_t>(REG_SZ),
+            registry_data_pb.Get(0).value(0).type());
   const char* value_data = registry_data_pb.Get(0).value(0).data().c_str();
   EXPECT_EQ(kStringData,
             std::wstring(reinterpret_cast<const wchar_t*>(&value_data[0])));
@@ -276,8 +277,8 @@ TEST(SafeBrowsingEnvironmentDataCollectionWinTest, CollectRegistryData) {
   CollectRegistryData(kRegKeysToCollect, 1, &registry_data_pb);
 
   // Expect 1 registry key, 2 values.
-  EXPECT_EQ(1U, registry_data_pb.size());
-  EXPECT_EQ(2U, registry_data_pb.Get(0).value_size());
+  EXPECT_EQ(1, registry_data_pb.size());
+  EXPECT_EQ(2, registry_data_pb.Get(0).value_size());
 
   // Add a subkey.
   const wchar_t kTestValueName[] = L"TestValue";
@@ -293,16 +294,16 @@ TEST(SafeBrowsingEnvironmentDataCollectionWinTest, CollectRegistryData) {
   CollectRegistryData(kRegKeysToCollect, 1, &registry_data_pb);
 
   // Expect 1 subkey, 1 value.
-  EXPECT_EQ(1U, registry_data_pb.Get(0).key_size());
+  EXPECT_EQ(1, registry_data_pb.Get(0).key_size());
   const ClientIncidentReport_EnvironmentData_OS_RegistryKey& subkey_pb =
       registry_data_pb.Get(0).key(0);
   EXPECT_EQ(base::WideToUTF8(kSubKey), subkey_pb.name());
-  EXPECT_EQ(1U, subkey_pb.value_size());
+  EXPECT_EQ(1, subkey_pb.value_size());
   EXPECT_EQ(base::WideToUTF8(kTestValueName), subkey_pb.value(0).name());
   value_data = subkey_pb.value(0).data().c_str();
   EXPECT_EQ(kTestData,
             std::wstring(reinterpret_cast<const wchar_t*>(&value_data[0])));
-  EXPECT_EQ(REG_SZ, subkey_pb.value(0).type());
+  EXPECT_EQ(static_cast<uint32_t>(REG_SZ), subkey_pb.value(0).type());
 }
 
 TEST(SafeBrowsingEnvironmentDataCollectionWinTest,

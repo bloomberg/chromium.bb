@@ -167,7 +167,7 @@ TEST_F(MTPDeviceDelegateImplWinTest, GalleryNameMTP) {
       base::Bind(&GetGalleryInfoCallback, base::Unretained(&results)));
   base::RunLoop().RunUntilIdle();
 
-  ASSERT_EQ(media_directories_.num_galleries() + 1, results.size());
+  ASSERT_EQ(media_directories_.num_galleries() + 1u, results.size());
   bool checked = false;
   for (FSInfoMap::iterator i = results.begin(); i != results.end(); ++i) {
     MediaFileSystemInfo info = i->second;

@@ -246,11 +246,11 @@ class TestObserver : public ProfileWriter,
       EXPECT_EQ(arraysize(kIEFaviconGroup), favicon_count_);
     }
     if (importer_items_ & importer::HISTORY)
-      EXPECT_EQ(2, history_count_);
+      EXPECT_EQ(2u, history_count_);
     if (importer_items_ & importer::HOME_PAGE)
-      EXPECT_EQ(1, homepage_count_);
+      EXPECT_EQ(1u, homepage_count_);
     if ((importer_items_ & importer::PASSWORDS) && (ie_version_ == IE7))
-      EXPECT_EQ(1, ie7_password_count_);
+      EXPECT_EQ(1u, ie7_password_count_);
     // We need to test the IE6 password importer code.
     // https://crbug.com/257100
     // EXPECT_EQ(1, password_count_);
@@ -352,7 +352,7 @@ class TestObserver : public ProfileWriter,
     if (ie_version_ == IE7) {
       EXPECT_EQ(L"Test1", info.url_hash);
       EXPECT_EQ(1, info.encrypted_data[0]);
-      EXPECT_EQ(4, info.encrypted_data.size());
+      EXPECT_EQ(4u, info.encrypted_data.size());
       ++ie7_password_count_;
     }
   }

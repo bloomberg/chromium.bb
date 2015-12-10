@@ -32,9 +32,8 @@ int GetCurrentFirefoxMajorVersionFromRegistry() {
   // When installing Firefox with admin account, the product keys will be
   // written under HKLM\Mozilla. Otherwise it the keys will be written under
   // HKCU\Mozilla.
-  for (int i = 0; i < arraysize(kFireFoxRegistryPaths); ++i) {
-    base::win::RegKey reg_key(kFireFoxRegistryPaths[i], kFirefoxPath,
-                              KEY_READ);
+  for (const HKEY kFireFoxRegistryPath : kFireFoxRegistryPaths) {
+    base::win::RegKey reg_key(kFireFoxRegistryPath, kFirefoxPath, KEY_READ);
 
     LONG result = reg_key.ReadValue(kCurrentVersion, ver_buffer,
                                     &ver_buffer_length, NULL);

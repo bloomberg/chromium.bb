@@ -60,7 +60,7 @@ TEST_F(BluetoothServiceRecordWinTest, BthAddr) {
   ConvertSdpBytes(kTestRfcommSdpBytes, &sdp_bytes_array);
   BluetoothServiceRecordWin service_record(
       "01:02:03:0A:10:A0", "Sdp", sdp_bytes_array, BluetoothUUID());
-  EXPECT_EQ(1108152553632, service_record.device_bth_addr());
+  EXPECT_EQ(1108152553632ull, service_record.device_bth_addr());
 }
 
 }  // namespace device

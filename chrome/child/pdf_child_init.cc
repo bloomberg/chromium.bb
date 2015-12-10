@@ -43,7 +43,7 @@ DWORD WINAPI GetFontDataPatch(HDC hdc,
                               DWORD offset,
                               LPVOID buffer,
                               DWORD length) {
-  int rv = g_original_get_font_data(hdc, table, offset, buffer, length);
+  DWORD rv = g_original_get_font_data(hdc, table, offset, buffer, length);
   if (rv == GDI_ERROR && hdc) {
     HFONT font = static_cast<HFONT>(GetCurrentObject(hdc, OBJ_FONT));
 

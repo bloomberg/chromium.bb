@@ -194,7 +194,7 @@ TEST_F(EdgeDatabaseReaderTest, OpenTableAndReadDataDatabaseTest) {
 
     uint32_t uint_col_value = 0;
     EXPECT_TRUE(table_enum->RetrieveColumn(L"UIntCol", &uint_col_value));
-    EXPECT_EQ(uint_col_value, row_count);
+    EXPECT_EQ(uint_col_value, static_cast<uint32_t>(row_count));
 
     int64_t longlong_col_value = 0;
     EXPECT_TRUE(
@@ -381,15 +381,15 @@ TEST_F(EdgeDatabaseReaderTest, CheckNullColumnDatabaseTest) {
   // back.
   int32_t int_col_value = 1;
   EXPECT_TRUE(table_enum->RetrieveColumn(L"IntCol", &int_col_value));
-  EXPECT_EQ(int_col_value, 0);
+  EXPECT_EQ(0, int_col_value);
 
   uint32_t uint_col_value = 1;
   EXPECT_TRUE(table_enum->RetrieveColumn(L"UIntCol", &uint_col_value));
-  EXPECT_EQ(uint_col_value, 0);
+  EXPECT_EQ(0u, uint_col_value);
 
   int64_t longlong_col_value = 1;
   EXPECT_TRUE(table_enum->RetrieveColumn(L"LongLongCol", &longlong_col_value));
-  EXPECT_EQ(longlong_col_value, 0);
+  EXPECT_EQ(0, longlong_col_value);
 
   GUID guid_col_value = {};
   GUID expected_guid_col_value = {};

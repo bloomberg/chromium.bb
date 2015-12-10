@@ -127,25 +127,24 @@ TEST(PlatformFontWinTest, Metrics_SkiaVersusGDI) {
   base::win::ScopedGetDC screen_dc(NULL);
   gfx::ScopedSetMapMode mode(screen_dc, MM_TEXT);
 
-  for (int i = 0; i < arraysize(fonts); ++i) {
+  for (const FontInfo& font : fonts) {
     LOGFONT font_info = {0};
 
-    font_info.lfHeight = -fonts[i].font_size;
+    font_info.lfHeight = -font.font_size;
     font_info.lfWeight = FW_NORMAL;
-    wcscpy_s(font_info.lfFaceName,
-             fonts[i].font_name.length() + 1,
-             fonts[i].font_name.c_str());
+    wcscpy_s(font_info.lfFaceName, font.font_name.length() + 1,
+             font.font_name.c_str());
 
-    HFONT font = CreateFontIndirect(&font_info);
+    HFONT hFont = CreateFontIndirect(&font_info);
 
     TEXTMETRIC font_metrics;
-    PlatformFontWin::GetTextMetricsForFont(screen_dc, font, &font_metrics);
+    PlatformFontWin::GetTextMetricsForFont(screen_dc, hFont, &font_metrics);
 
     scoped_refptr<PlatformFontWin::HFontRef> h_font_gdi(
-        PlatformFontWin::CreateHFontRefFromGDI(font, font_metrics));
+        PlatformFontWin::CreateHFontRefFromGDI(hFont, font_metrics));
 
     scoped_refptr<PlatformFontWin::HFontRef> h_font_skia(
-        PlatformFontWin::CreateHFontRefFromSkia(font, font_metrics));
+        PlatformFontWin::CreateHFontRefFromSkia(hFont, font_metrics));
 
     EXPECT_EQ(h_font_gdi->font_size(), h_font_skia->font_size());
     EXPECT_EQ(h_font_gdi->style(), h_font_skia->style());
@@ -185,24 +184,23 @@ TEST(PlatformFontWinTest, DirectWriteFontSubstitution) {
   base::win::ScopedGetDC screen_dc(NULL);
   gfx::ScopedSetMapMode mode(screen_dc, MM_TEXT);
 
-  for (int i = 0; i < arraysize(fonts); ++i) {
+  for (const FontInfo& font : fonts) {
     LOGFONT font_info = {0};
 
     font_info.lfHeight = -10;
     font_info.lfWeight = FW_NORMAL;
-    wcscpy_s(font_info.lfFaceName,
-             fonts[i].font_name.length() + 1,
-             fonts[i].font_name.c_str());
+    wcscpy_s(font_info.lfFaceName, font.font_name.length() + 1,
+             font.font_name.c_str());
 
-    HFONT font = CreateFontIndirect(&font_info);
+    HFONT hFont = CreateFontIndirect(&font_info);
 
     TEXTMETRIC font_metrics;
-    PlatformFontWin::GetTextMetricsForFont(screen_dc, font, &font_metrics);
+    PlatformFontWin::GetTextMetricsForFont(screen_dc, hFont, &font_metrics);
 
     scoped_refptr<PlatformFontWin::HFontRef> h_font_skia(
-        PlatformFontWin::CreateHFontRefFromSkia(font, font_metrics));
+        PlatformFontWin::CreateHFontRefFromSkia(hFont, font_metrics));
 
-    EXPECT_EQ(fonts[i].expected_font_name, h_font_skia->font_name());
+    EXPECT_EQ(font.expected_font_name, h_font_skia->font_name());
   }
 }
 

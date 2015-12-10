@@ -165,7 +165,7 @@ LRESULT LocalInputMonitorWin::Core::OnInput(HRAWINPUT input_handle) {
                                 nullptr,
                                 &size,
                                 sizeof(RAWINPUTHEADER));
-  if (result == -1) {
+  if (result == static_cast<UINT>(-1)) {
     PLOG(ERROR) << "GetRawInputData() failed";
     return 0;
   }
@@ -178,7 +178,7 @@ LRESULT LocalInputMonitorWin::Core::OnInput(HRAWINPUT input_handle) {
                            buffer.get(),
                            &size,
                            sizeof(RAWINPUTHEADER));
-  if (result == -1) {
+  if (result == static_cast<UINT>(-1)) {
     PLOG(ERROR) << "GetRawInputData() failed";
     return 0;
   }

@@ -28,7 +28,7 @@ std::string GetRandomFilename() {
 
   // Hexify the value.
   std::string result(base::HexEncode(&data[0], arraysize(data)));
-  EXPECT_EQ(8, result.size());
+  EXPECT_EQ(8u, result.size());
 
   // Replace the first digit with the letter 'R' (for "random", get it?).
   result[0] = 'R';
@@ -159,7 +159,7 @@ TEST_F(SelfCleaningTempDirTest, LeaveUsedOnDestroy) {
     EXPECT_EQ(parent_temp_dir.Append(L"Three"), temp_dir.path());
     EXPECT_TRUE(base::DirectoryExists(temp_dir.path()));
     // Drop a file somewhere.
-    EXPECT_EQ(arraysize(kHiHon) - 1,
+    EXPECT_EQ(static_cast<int>(arraysize(kHiHon) - 1),
               base::WriteFile(parent_temp_dir.AppendASCII(GetRandomFilename()),
                               kHiHon, arraysize(kHiHon) - 1));
   }

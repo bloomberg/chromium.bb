@@ -120,7 +120,7 @@ void HandleCloserAgent::InitializeHandlesToClose(bool* is_csrss_connected) {
 
     DCHECK(reinterpret_cast<base::char16*>(entry) >= input);
     DCHECK(reinterpret_cast<base::char16*>(entry) - input <
-           sizeof(size_t) / sizeof(base::char16));
+           static_cast<ptrdiff_t>(sizeof(size_t) / sizeof(base::char16)));
   }
 
   // Clean up the memory we copied over.

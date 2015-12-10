@@ -20,17 +20,17 @@ TEST(RegistryDictTest, SetAndGetValue) {
   base::StringValue string_value("fortytwo");
 
   test_dict.SetValue("one", scoped_ptr<base::Value>(int_value.DeepCopy()));
-  EXPECT_EQ(1, test_dict.values().size());
+  EXPECT_EQ(1u, test_dict.values().size());
   EXPECT_TRUE(base::Value::Equals(&int_value, test_dict.GetValue("one")));
   EXPECT_FALSE(test_dict.GetValue("two"));
 
   test_dict.SetValue("two", scoped_ptr<base::Value>(string_value.DeepCopy()));
-  EXPECT_EQ(2, test_dict.values().size());
+  EXPECT_EQ(2u, test_dict.values().size());
   EXPECT_TRUE(base::Value::Equals(&int_value, test_dict.GetValue("one")));
   EXPECT_TRUE(base::Value::Equals(&string_value, test_dict.GetValue("two")));
 
   scoped_ptr<base::Value> one(test_dict.RemoveValue("one"));
-  EXPECT_EQ(1, test_dict.values().size());
+  EXPECT_EQ(1u, test_dict.values().size());
   EXPECT_TRUE(base::Value::Equals(&int_value, one.get()));
   EXPECT_FALSE(test_dict.GetValue("one"));
   EXPECT_TRUE(base::Value::Equals(&string_value, test_dict.GetValue("two")));
@@ -48,7 +48,7 @@ TEST(RegistryDictTest, CaseInsensitiveButPreservingValueNames) {
   base::StringValue string_value("fortytwo");
 
   test_dict.SetValue("One", scoped_ptr<base::Value>(int_value.DeepCopy()));
-  EXPECT_EQ(1, test_dict.values().size());
+  EXPECT_EQ(1u, test_dict.values().size());
   EXPECT_TRUE(base::Value::Equals(&int_value, test_dict.GetValue("oNe")));
 
   RegistryDict::ValueMap::const_iterator entry = test_dict.values().begin();
@@ -56,7 +56,7 @@ TEST(RegistryDictTest, CaseInsensitiveButPreservingValueNames) {
   EXPECT_EQ("One", entry->first);
 
   test_dict.SetValue("ONE", scoped_ptr<base::Value>(string_value.DeepCopy()));
-  EXPECT_EQ(1, test_dict.values().size());
+  EXPECT_EQ(1u, test_dict.values().size());
   EXPECT_TRUE(base::Value::Equals(&string_value, test_dict.GetValue("one")));
 
   scoped_ptr<base::Value> removed_value(test_dict.RemoveValue("onE"));
@@ -73,7 +73,7 @@ TEST(RegistryDictTest, SetAndGetKeys) {
   scoped_ptr<RegistryDict> subdict(new RegistryDict());
   subdict->SetValue("one", scoped_ptr<base::Value>(int_value.DeepCopy()));
   test_dict.SetKey("two", subdict.Pass());
-  EXPECT_EQ(1, test_dict.keys().size());
+  EXPECT_EQ(1u, test_dict.keys().size());
   RegistryDict* actual_subdict = test_dict.GetKey("two");
   ASSERT_TRUE(actual_subdict);
   EXPECT_TRUE(base::Value::Equals(&int_value, actual_subdict->GetValue("one")));
@@ -81,7 +81,7 @@ TEST(RegistryDictTest, SetAndGetKeys) {
   subdict.reset(new RegistryDict());
   subdict->SetValue("three", scoped_ptr<base::Value>(string_value.DeepCopy()));
   test_dict.SetKey("four", subdict.Pass());
-  EXPECT_EQ(2, test_dict.keys().size());
+  EXPECT_EQ(2u, test_dict.keys().size());
   actual_subdict = test_dict.GetKey("two");
   ASSERT_TRUE(actual_subdict);
   EXPECT_TRUE(base::Value::Equals(&int_value, actual_subdict->GetValue("one")));
@@ -102,7 +102,7 @@ TEST(RegistryDictTest, CaseInsensitiveButPreservingKeyNames) {
   base::FundamentalValue int_value(42);
 
   test_dict.SetKey("One", make_scoped_ptr(new RegistryDict()).Pass());
-  EXPECT_EQ(1, test_dict.keys().size());
+  EXPECT_EQ(1u, test_dict.keys().size());
   RegistryDict* actual_subdict = test_dict.GetKey("One");
   ASSERT_TRUE(actual_subdict);
   EXPECT_TRUE(actual_subdict->values().empty());
@@ -114,7 +114,7 @@ TEST(RegistryDictTest, CaseInsensitiveButPreservingKeyNames) {
   scoped_ptr<RegistryDict> subdict(new RegistryDict());
   subdict->SetValue("two", scoped_ptr<base::Value>(int_value.DeepCopy()));
   test_dict.SetKey("ONE", subdict.Pass());
-  EXPECT_EQ(1, test_dict.keys().size());
+  EXPECT_EQ(1u, test_dict.keys().size());
   actual_subdict = test_dict.GetKey("One");
   ASSERT_TRUE(actual_subdict);
   EXPECT_TRUE(base::Value::Equals(&int_value,

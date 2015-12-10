@@ -154,7 +154,7 @@ void UpdateShortcutWorker::CheckExistingShortcuts() {
     }
   };
 
-  for (int i = 0; i < arraysize(locations); ++i) {
+  for (size_t i = 0; i < arraysize(locations); ++i) {
     base::FilePath path;
     if (!PathService::Get(locations[i].location_id, &path)) {
       NOTREACHED();

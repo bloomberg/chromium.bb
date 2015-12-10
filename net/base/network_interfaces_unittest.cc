@@ -163,9 +163,10 @@ TEST(NetUtilTest, GetNetworkList) {
 
     if (interface_to_luid && luid_to_guid) {
       NET_LUID luid;
-      EXPECT_EQ(interface_to_luid(it->interface_index, &luid), NO_ERROR);
+      EXPECT_EQ(static_cast<DWORD>(NO_ERROR),
+                interface_to_luid(it->interface_index, &luid));
       GUID guid;
-      EXPECT_EQ(luid_to_guid(&luid, &guid), NO_ERROR);
+      EXPECT_EQ(static_cast<DWORD>(NO_ERROR), luid_to_guid(&luid, &guid));
       LPOLESTR name;
       StringFromCLSID(guid, &name);
       EXPECT_STREQ(base::UTF8ToWide(it->name).c_str(), name);

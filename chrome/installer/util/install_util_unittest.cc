@@ -64,8 +64,7 @@ TEST_F(InstallUtilTest, ComposeCommandLine) {
     std::make_pair(std::wstring(L"spam.exe"),
                    std::wstring(L"--do-something --silly")),
   };
-  for (int i = 0; i < arraysize(params); ++i) {
-    std::pair<std::wstring, std::wstring>& param = params[i];
+  for (std::pair<std::wstring, std::wstring>& param : params) {
     InstallUtil::ComposeCommandLine(param.first, param.second, &command_line);
     EXPECT_EQ(param.first, command_line.GetProgram().value());
     if (param.second.empty()) {
@@ -80,7 +79,7 @@ TEST_F(InstallUtilTest, ComposeCommandLine) {
 
 TEST_F(InstallUtilTest, GetCurrentDate) {
   std::wstring date(InstallUtil::GetCurrentDate());
-  EXPECT_EQ(8, date.length());
+  EXPECT_EQ(8u, date.length());
   if (date.length() == 8) {
     // For an invalid date value, SystemTimeToFileTime will fail.
     // We use this to validate that we have a correct date string.

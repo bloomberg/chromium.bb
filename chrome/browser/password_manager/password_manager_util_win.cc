@@ -235,7 +235,7 @@ bool AuthenticateUser(gfx::NativeWindow window) {
   base::string16 password_prompt =
       l10n_util::GetStringUTF16(IDS_PASSWORDS_PAGE_AUTHENTICATION_PROMPT);
   HANDLE handle = INVALID_HANDLE_VALUE;
-  int tries = 0;
+  size_t tries = 0;
   bool use_displayname = false;
   bool use_principalname = false;
   DWORD logon_result = 0;

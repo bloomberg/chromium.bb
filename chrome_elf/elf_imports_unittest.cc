@@ -91,8 +91,8 @@ TEST_F(ELFImportsTest, ChromeElfSanityCheck) {
   // Make sure all of ELF's imports are in the valid imports list.
   for (const std::string& import : elf_imports) {
     bool match = false;
-    for (int i = 0; i < arraysize(kValidFilePatterns); ++i) {
-      if (base::MatchPattern(import, kValidFilePatterns[i])) {
+    for (const char* kValidFilePattern : kValidFilePatterns) {
+      if (base::MatchPattern(import, kValidFilePattern)) {
         match = true;
         break;
       }

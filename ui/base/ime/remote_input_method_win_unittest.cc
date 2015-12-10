@@ -335,10 +335,10 @@ TEST(RemoteInputMethodWinTest, SetFocusedTextInputClient) {
 
   // Initial state must be synced.
   EXPECT_TRUE(mock_remote_delegate.text_input_client_updated_called());
-  ASSERT_EQ(1, mock_remote_delegate.composition_character_bounds().size());
+  ASSERT_EQ(1u, mock_remote_delegate.composition_character_bounds().size());
   EXPECT_EQ(gfx::Rect(10, 0, 10, 20),
             mock_remote_delegate.composition_character_bounds()[0]);
-  ASSERT_EQ(1, mock_remote_delegate.input_scopes().size());
+  ASSERT_EQ(1u, mock_remote_delegate.input_scopes().size());
   EXPECT_EQ(IS_URL, mock_remote_delegate.input_scopes()[0]);
 
   // State must be cleared by SetFocusedTextInputClient(NULL).
@@ -366,10 +366,10 @@ TEST(RemoteInputMethodWinTest, DetachTextInputClient) {
 
   // Initial state must be synced.
   EXPECT_TRUE(mock_remote_delegate.text_input_client_updated_called());
-  ASSERT_EQ(1, mock_remote_delegate.composition_character_bounds().size());
+  ASSERT_EQ(1u, mock_remote_delegate.composition_character_bounds().size());
   EXPECT_EQ(gfx::Rect(10, 0, 10, 20),
     mock_remote_delegate.composition_character_bounds()[0]);
-  ASSERT_EQ(1, mock_remote_delegate.input_scopes().size());
+  ASSERT_EQ(1u, mock_remote_delegate.input_scopes().size());
   EXPECT_EQ(IS_URL, mock_remote_delegate.input_scopes()[0]);
 
   // State must be cleared by DetachTextInputClient
@@ -399,7 +399,7 @@ TEST(RemoteInputMethodWinTest, OnCaretBoundsChanged) {
 
   // Initial state must be synced.
   EXPECT_TRUE(mock_remote_delegate.text_input_client_updated_called());
-  ASSERT_EQ(1, mock_remote_delegate.composition_character_bounds().size());
+  ASSERT_EQ(1u, mock_remote_delegate.composition_character_bounds().size());
   EXPECT_EQ(gfx::Rect(10, 0, 10, 20),
       mock_remote_delegate.composition_character_bounds()[0]);
 
@@ -414,7 +414,7 @@ TEST(RemoteInputMethodWinTest, OnCaretBoundsChanged) {
   mock_text_input_client.set_caret_bounds(gfx::Rect(10, 20, 30, 40));
   input_method->OnCaretBoundsChanged(&mock_text_input_client);
   EXPECT_TRUE(mock_remote_delegate.text_input_client_updated_called());
-  ASSERT_EQ(1, mock_remote_delegate.composition_character_bounds().size());
+  ASSERT_EQ(1u, mock_remote_delegate.composition_character_bounds().size());
   EXPECT_EQ(gfx::Rect(10, 20, 30, 40),
       mock_remote_delegate.composition_character_bounds()[0]);
 
@@ -484,7 +484,7 @@ TEST(RemoteInputMethodWinTest, OnTextInputTypeChanged) {
 
   // Initial state must be synced.
   EXPECT_TRUE(mock_remote_delegate.text_input_client_updated_called());
-  ASSERT_EQ(1, mock_remote_delegate.input_scopes().size());
+  ASSERT_EQ(1u, mock_remote_delegate.input_scopes().size());
   EXPECT_EQ(IS_URL, mock_remote_delegate.input_scopes()[0]);
 
   // Check TEXT_INPUT_TYPE_NONE is handled.
@@ -616,7 +616,7 @@ TEST(RemoteInputMethodWinTest, DispatchKeyEvent_FabricatedKeyDown) {
   input_method->DispatchKeyEvent(&fabricated_keydown);
   EXPECT_TRUE(fabricated_keydown.handled());
   EXPECT_TRUE(mock_text_input_client.inserted_text().empty());
-  ASSERT_EQ(1, delegate_.fabricated_key_events().size());
+  ASSERT_EQ(1u, delegate_.fabricated_key_events().size());
   EXPECT_EQ(L'A', delegate_.fabricated_key_events()[0]);
   delegate_.Reset();
   mock_text_input_client.Reset();
@@ -632,7 +632,7 @@ TEST(RemoteInputMethodWinTest, DispatchKeyEvent_FabricatedKeyDown) {
   input_method->DispatchKeyEvent(&fabricated_keydown);
   EXPECT_TRUE(fabricated_keydown.handled());
   EXPECT_TRUE(mock_text_input_client.inserted_text().empty());
-  ASSERT_EQ(1, delegate_.fabricated_key_events().size());
+  ASSERT_EQ(1u, delegate_.fabricated_key_events().size());
   EXPECT_EQ(L'A', delegate_.fabricated_key_events()[0]);
   delegate_.Reset();
   mock_text_input_client.Reset();
@@ -643,7 +643,7 @@ TEST(RemoteInputMethodWinTest, DispatchKeyEvent_FabricatedKeyDown) {
   input_method->DispatchKeyEvent(&fabricated_keydown);
   EXPECT_TRUE(fabricated_keydown.handled());
   EXPECT_TRUE(mock_text_input_client.inserted_text().empty());
-  ASSERT_EQ(1, delegate_.fabricated_key_events().size());
+  ASSERT_EQ(1u, delegate_.fabricated_key_events().size());
   EXPECT_EQ(L'A', delegate_.fabricated_key_events()[0]);
   delegate_.Reset();
   mock_text_input_client.Reset();
@@ -718,7 +718,7 @@ TEST(RemoteInputMethodWinTest, OnCompositionChanged) {
   // TextInputClient is not focused yet here.
 
   private_ptr->OnCompositionChanged(composition_text);
-  EXPECT_EQ(0, mock_text_input_client.call_count_set_composition_text());
+  EXPECT_EQ(0u, mock_text_input_client.call_count_set_composition_text());
   delegate_.Reset();
   mock_text_input_client.Reset();
 
@@ -727,7 +727,7 @@ TEST(RemoteInputMethodWinTest, OnCompositionChanged) {
   // TextInputClient is now focused here.
 
   private_ptr->OnCompositionChanged(composition_text);
-  EXPECT_EQ(1, mock_text_input_client.call_count_set_composition_text());
+  EXPECT_EQ(1u, mock_text_input_client.call_count_set_composition_text());
   delegate_.Reset();
   mock_text_input_client.Reset();
 }
@@ -749,8 +749,8 @@ TEST(RemoteInputMethodWinTest, OnTextCommitted) {
 
   mock_text_input_client.set_text_input_type(TEXT_INPUT_TYPE_TEXT);
   private_ptr->OnTextCommitted(committed_text);
-  EXPECT_EQ(0, mock_text_input_client.call_count_insert_char());
-  EXPECT_EQ(0, mock_text_input_client.call_count_insert_text());
+  EXPECT_EQ(0u, mock_text_input_client.call_count_insert_char());
+  EXPECT_EQ(0u, mock_text_input_client.call_count_insert_text());
   EXPECT_EQ(L"", mock_text_input_client.inserted_text());
   delegate_.Reset();
   mock_text_input_client.Reset();
@@ -761,8 +761,8 @@ TEST(RemoteInputMethodWinTest, OnTextCommitted) {
 
   mock_text_input_client.set_text_input_type(TEXT_INPUT_TYPE_TEXT);
   private_ptr->OnTextCommitted(committed_text);
-  EXPECT_EQ(0, mock_text_input_client.call_count_insert_char());
-  EXPECT_EQ(1, mock_text_input_client.call_count_insert_text());
+  EXPECT_EQ(0u, mock_text_input_client.call_count_insert_char());
+  EXPECT_EQ(1u, mock_text_input_client.call_count_insert_text());
   EXPECT_EQ(committed_text, mock_text_input_client.inserted_text());
   delegate_.Reset();
   mock_text_input_client.Reset();
@@ -773,7 +773,7 @@ TEST(RemoteInputMethodWinTest, OnTextCommitted) {
   private_ptr->OnTextCommitted(committed_text);
   EXPECT_EQ(committed_text.size(),
             mock_text_input_client.call_count_insert_char());
-  EXPECT_EQ(0, mock_text_input_client.call_count_insert_text());
+  EXPECT_EQ(0u, mock_text_input_client.call_count_insert_text());
   EXPECT_EQ(committed_text, mock_text_input_client.inserted_text());
   delegate_.Reset();
   mock_text_input_client.Reset();

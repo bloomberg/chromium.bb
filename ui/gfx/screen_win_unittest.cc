@@ -56,7 +56,7 @@ TEST_F(ScreenWinTest, SingleDisplay1x) {
   std::vector<gfx::Display> displays =
       ScreenWin::GetDisplaysForMonitorInfos(monitor_infos);
 
-  ASSERT_EQ(1, displays.size());
+  ASSERT_EQ(1u, displays.size());
   EXPECT_EQ(gfx::Rect(0, 0, 1920, 1200), displays[0].bounds());
   EXPECT_EQ(gfx::Rect(0, 0, 1920, 1100), displays[0].work_area());
 }
@@ -71,7 +71,7 @@ TEST_F(ScreenWinTest, SingleDisplay2x) {
   std::vector<gfx::Display> displays =
       ScreenWin::GetDisplaysForMonitorInfos(monitor_infos);
 
-  ASSERT_EQ(1, displays.size());
+  ASSERT_EQ(1u, displays.size());
   EXPECT_EQ(gfx::Rect(0, 0, 960, 600), displays[0].bounds());
   EXPECT_EQ(gfx::Rect(0, 0, 960, 550), displays[0].work_area());
 }

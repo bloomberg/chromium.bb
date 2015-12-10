@@ -115,9 +115,9 @@ void PrivateWorkingSetSnapshot::Sample() {
     DWORD buffer_size1 = 0;
     DWORD item_count1 = 0;
     // Process IDs should be retrieved as PDH_FMT_LONG
-    if (PdhGetFormattedCounterArray(counter_pair.process_id_handle,
-                                    PDH_FMT_LONG, &buffer_size1, &item_count1,
-                                    nullptr) != PDH_MORE_DATA)
+    if (PdhGetFormattedCounterArray(
+            counter_pair.process_id_handle, PDH_FMT_LONG, &buffer_size1,
+            &item_count1, nullptr) != static_cast<PDH_STATUS>(PDH_MORE_DATA))
       continue;
     if (buffer_size1 == 0 || item_count1 == 0)
       continue;
@@ -128,9 +128,9 @@ void PrivateWorkingSetSnapshot::Sample() {
     // Note that if this second call to PdhGetFormattedCounterArray with the
     // buffer size and count variables being zero is omitted then the PID and
     // working-set results are not reliably correlated.
-    if (PdhGetFormattedCounterArray(counter_pair.private_ws_handle,
-                                    PDH_FMT_LARGE, &buffer_size2, &item_count2,
-                                    nullptr) != PDH_MORE_DATA)
+    if (PdhGetFormattedCounterArray(
+            counter_pair.private_ws_handle, PDH_FMT_LARGE, &buffer_size2,
+            &item_count2, nullptr) != static_cast<PDH_STATUS>(PDH_MORE_DATA))
       continue;
 
     // It is not clear whether Pdh guarantees that the two counters in the same

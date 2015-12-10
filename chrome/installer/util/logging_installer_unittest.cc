@@ -19,7 +19,7 @@ TEST(LoggingInstallerTest, TestTruncate) {
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
   base::FilePath temp_file = temp_dir.path().Append(L"temp");
-  EXPECT_EQ(test_data.size(),
+  EXPECT_EQ(static_cast<int>(test_data.size()),
             base::WriteFile(temp_file, &test_data[0],
                             static_cast<int>(test_data.size())));
   ASSERT_TRUE(base::PathExists(temp_file));
@@ -45,7 +45,7 @@ TEST(LoggingInstallerTest, TestTruncationNotNeeded) {
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
   base::FilePath temp_file = temp_dir.path().Append(L"temp");
-  EXPECT_EQ(test_data.size(),
+  EXPECT_EQ(static_cast<int>(test_data.size()),
             base::WriteFile(temp_file, &test_data[0],
                             static_cast<int>(test_data.size())));
   ASSERT_TRUE(base::PathExists(temp_file));
@@ -68,7 +68,7 @@ TEST(LoggingInstallerTest, TestInUseNeedsTruncation) {
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
   base::FilePath temp_file = temp_dir.path().Append(L"temp");
-  EXPECT_EQ(test_data.size(),
+  EXPECT_EQ(static_cast<int>(test_data.size()),
             base::WriteFile(temp_file, &test_data[0],
                             static_cast<int>(test_data.size())));
   ASSERT_TRUE(base::PathExists(temp_file));
@@ -97,7 +97,7 @@ TEST(LoggingInstallerTest, TestMoveFailsNeedsTruncation) {
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
   base::FilePath temp_file = temp_dir.path().Append(L"temp");
-  EXPECT_EQ(test_data.size(),
+  EXPECT_EQ(static_cast<int>(test_data.size()),
             base::WriteFile(temp_file, &test_data[0],
                             static_cast<int>(test_data.size())));
   ASSERT_TRUE(base::PathExists(temp_file));

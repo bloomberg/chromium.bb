@@ -83,9 +83,7 @@ class OpenFilePickerSession : public FilePickerSessionBase {
     return filenames_;
   }
 
-  const bool allow_multi_select() const {
-    return allow_multi_select_;
-  }
+  bool allow_multi_select() const { return allow_multi_select_; }
 
  private:
   HRESULT StartFilePicker() override;

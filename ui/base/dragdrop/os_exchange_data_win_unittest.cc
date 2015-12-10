@@ -193,7 +193,7 @@ TEST(OSExchangeDataWinTest, EnumerationViaCOM) {
     FORMATETC elements_array[1];
     EXPECT_EQ(S_OK, enumerator->Next(1,
         reinterpret_cast<FORMATETC*>(&elements_array), &retrieved));
-    EXPECT_EQ(1, retrieved);
+    EXPECT_EQ(1u, retrieved);
     EXPECT_EQ(text_x_moz_url, elements_array[0].cfFormat);
   }
 
@@ -213,7 +213,7 @@ TEST(OSExchangeDataWinTest, EnumerationViaCOM) {
     FORMATETC elements_array[2];
     EXPECT_EQ(S_OK, enumerator->Next(2,
         reinterpret_cast<FORMATETC*>(&elements_array), &retrieved));
-    EXPECT_EQ(2, retrieved);
+    EXPECT_EQ(2u, retrieved);
     EXPECT_EQ(text_x_moz_url, elements_array[0].cfFormat);
     EXPECT_EQ(cfstr_file_group_descriptor, elements_array[1].cfFormat);
   }
@@ -226,7 +226,7 @@ TEST(OSExchangeDataWinTest, EnumerationViaCOM) {
     FORMATETC elements_array[1];
     EXPECT_EQ(S_OK, enumerator->Next(1,
         reinterpret_cast<FORMATETC*>(&elements_array), &retrieved));
-    EXPECT_EQ(1, retrieved);
+    EXPECT_EQ(1u, retrieved);
     EXPECT_EQ(cfstr_file_group_descriptor, elements_array[0].cfFormat);
   }
 
@@ -244,7 +244,7 @@ TEST(OSExchangeDataWinTest, EnumerationViaCOM) {
       FORMATETC elements_array[1];
       EXPECT_EQ(S_OK, cloned_enumerator->Next(1,
           reinterpret_cast<FORMATETC*>(&elements_array), &retrieved));
-      EXPECT_EQ(1, retrieved);
+      EXPECT_EQ(1u, retrieved);
       EXPECT_EQ(cfstr_file_group_descriptor, elements_array[0].cfFormat);
     }
 
@@ -253,7 +253,7 @@ TEST(OSExchangeDataWinTest, EnumerationViaCOM) {
       FORMATETC elements_array[1];
       EXPECT_EQ(S_OK, enumerator->Next(1,
           reinterpret_cast<FORMATETC*>(&elements_array), &retrieved));
-      EXPECT_EQ(1, retrieved);
+      EXPECT_EQ(1u, retrieved);
       EXPECT_EQ(text_x_moz_url, elements_array[0].cfFormat);
     }
   }

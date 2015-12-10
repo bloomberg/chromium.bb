@@ -65,7 +65,7 @@ class BlacklistTest : public testing::Test {
     base::FilePath current_dir;
     ASSERT_TRUE(PathService::Get(base::DIR_EXE, &current_dir));
 
-    for (int i = 0; i < arraysize(test_data); ++i) {
+    for (size_t i = 0; i < arraysize(test_data); ++i) {
       // Ensure that the dll has not been loaded both by inspecting the handle
       // returned by LoadLibrary and by looking for an environment variable that
       // is set when the DLL's entry point is called.
@@ -233,7 +233,7 @@ TEST_F(BlacklistTest, LoadBlacklistedLibrary) {
   EXPECT_EQ(num_initially_blocked_, num_blocked_dlls);
 
   // Add all DLLs to the blacklist then check they are blocked.
-  for (int i = 0; i < arraysize(test_data); ++i) {
+  for (size_t i = 0; i < arraysize(test_data); ++i) {
     EXPECT_TRUE(TestDll_AddDllToBlacklist(test_data[i].dll_name));
   }
   CheckBlacklistedDllsNotLoaded();
@@ -254,7 +254,7 @@ TEST_F(BlacklistTest, AddDllsFromRegistryToBlacklist) {
       HKEY_CURRENT_USER,
       blacklist::kRegistryFinchListPath,
       KEY_QUERY_VALUE | KEY_SET_VALUE);
-  for (int i = 0; i < arraysize(test_data); ++i) {
+  for (size_t i = 0; i < arraysize(test_data); ++i) {
     finch_blacklist_registry_key.WriteValue(test_data[i].dll_name,
                                             test_data[i].dll_name);
   }

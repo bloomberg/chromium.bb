@@ -1031,10 +1031,10 @@ TEST_F(InMemoryURLIndexTest, ReadVisitsFromHistory) {
   ASSERT_TRUE(entry != history_info_map.end());
   {
     const VisitInfoVector& visits = entry->second.visits;
-    EXPECT_EQ(3u, visits.size());
-    EXPECT_EQ(0u, visits[0].second);
-    EXPECT_EQ(1u, visits[1].second);
-    EXPECT_EQ(0u, visits[2].second);
+    ASSERT_EQ(3u, visits.size());
+    EXPECT_EQ(static_cast<ui::PageTransition>(0u), visits[0].second);
+    EXPECT_EQ(static_cast<ui::PageTransition>(1u), visits[1].second);
+    EXPECT_EQ(static_cast<ui::PageTransition>(0u), visits[2].second);
   }
 
   // Ditto but for URL with id 35.
@@ -1042,9 +1042,9 @@ TEST_F(InMemoryURLIndexTest, ReadVisitsFromHistory) {
   ASSERT_TRUE(entry != history_info_map.end());
   {
     const VisitInfoVector& visits = entry->second.visits;
-    EXPECT_EQ(2u, visits.size());
-    EXPECT_EQ(1u, visits[0].second);
-    EXPECT_EQ(1u, visits[1].second);
+    ASSERT_EQ(2u, visits.size());
+    EXPECT_EQ(static_cast<ui::PageTransition>(1u), visits[0].second);
+    EXPECT_EQ(static_cast<ui::PageTransition>(1u), visits[1].second);
   }
 
   // The URL with id 32 has many visits listed in the database, but we
@@ -1055,7 +1055,7 @@ TEST_F(InMemoryURLIndexTest, ReadVisitsFromHistory) {
     const VisitInfoVector& visits = entry->second.visits;
     EXPECT_EQ(10u, visits.size());
     for (size_t i = 0; i < visits.size(); ++i)
-      EXPECT_EQ(0u, visits[i].second);
+      EXPECT_EQ(static_cast<ui::PageTransition>(0u), visits[i].second);
   }
 }
 

@@ -417,7 +417,7 @@ TEST_F(IconUtilTest, TestCreateImageFamilyFromIconResource) {
     images.push_back(image);
 
   // Assert that the family contains all of the images from the icon resource.
-  EXPECT_EQ(5, images.size());
+  EXPECT_EQ(5u, images.size());
   EXPECT_EQ(16, images[0].Width());
   EXPECT_EQ(24, images[1].Width());
   EXPECT_EQ(32, images[2].Width());

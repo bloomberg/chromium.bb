@@ -295,7 +295,7 @@ TEST_F(StorageMonitorWinTest, DevicesAttached) {
 
 TEST_F(StorageMonitorWinTest, PathMountDevices) {
   PreAttachDevices();
-  int init_storages = monitor_->GetAllAvailableStorages().size();
+  size_t init_storages = monitor_->GetAllAvailableStorages().size();
 
   volume_mount_watcher_->AddDeviceForTesting(
       base::FilePath(FILE_PATH_LITERAL("F:\\mount1")),
@@ -475,7 +475,7 @@ TEST_F(StorageMonitorWinTest, DeviceInfoForPath) {
   EXPECT_EQ(info.device_id(), device_info.device_id());
   EXPECT_EQ(info.GetDisplayName(false), device_info.GetDisplayName(false));
   EXPECT_EQ(info.location(), device_info.location());
-  EXPECT_EQ(1000000, info.total_size_in_bytes());
+  EXPECT_EQ(1000000u, info.total_size_in_bytes());
 
   // A fixed device.
   base::FilePath fixed_device(L"N:\\");

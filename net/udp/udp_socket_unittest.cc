@@ -715,8 +715,8 @@ BOOL WINAPI FakeQOSAddSocketToFlow(HANDLE handle,
                                    PQOS_FLOWID flow_id) {
   EXPECT_EQ(kFakeHandle, handle);
   EXPECT_EQ(NULL, addr);
-  EXPECT_EQ(QOS_NON_ADAPTIVE_FLOW, flags);
-  EXPECT_EQ(0, *flow_id);
+  EXPECT_EQ(static_cast<DWORD>(QOS_NON_ADAPTIVE_FLOW), flags);
+  EXPECT_EQ(0u, *flow_id);
   *flow_id = kFakeFlowId;
   return true;
 }
@@ -726,9 +726,9 @@ BOOL WINAPI FakeQOSRemoveSocketFromFlow(HANDLE handle,
                                         QOS_FLOWID flowid,
                                         DWORD reserved) {
   EXPECT_EQ(kFakeHandle, handle);
-  EXPECT_EQ(NULL, socket);
+  EXPECT_EQ(0u, socket);
   EXPECT_EQ(kFakeFlowId, flowid);
-  EXPECT_EQ(0, reserved);
+  EXPECT_EQ(0u, reserved);
   return true;
 }
 
@@ -746,7 +746,7 @@ BOOL WINAPI FakeQOSSetFlow(HANDLE handle,
   EXPECT_EQ(sizeof(DWORD), size);
   EXPECT_EQ(g_expected_dscp, *reinterpret_cast<DWORD*>(data));
   EXPECT_EQ(kFakeFlowId, flow_id);
-  EXPECT_EQ(0, reserved);
+  EXPECT_EQ(0u, reserved);
   EXPECT_EQ(NULL, overlapped);
   return true;
 }

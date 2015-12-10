@@ -92,7 +92,7 @@ class ExitCodeWatcherTest : public testing::Test {
     base::win::RegistryValueIterator it(
           HKEY_CURRENT_USER, kRegistryPath);
 
-    ASSERT_EQ(1, it.ValueCount());
+    ASSERT_EQ(1u, it.ValueCount());
     base::win::RegKey key(HKEY_CURRENT_USER,
                           kRegistryPath,
                           KEY_QUERY_VALUE);
@@ -104,7 +104,7 @@ class ExitCodeWatcherTest : public testing::Test {
         base::CompareCase::SENSITIVE));
     DWORD value = 0;
     ASSERT_EQ(ERROR_SUCCESS, key.ReadValueDW(it.Name(), &value));
-    ASSERT_EQ(exit_code, value);
+    ASSERT_EQ(exit_code, static_cast<int>(value));
   }
 
  protected:

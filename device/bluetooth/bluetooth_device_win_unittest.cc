@@ -86,12 +86,12 @@ class BluetoothDeviceWinTest : public testing::Test {
 TEST_F(BluetoothDeviceWinTest, GetUUIDs) {
   BluetoothDevice::UUIDList uuids = device_->GetUUIDs();
 
-  EXPECT_EQ(2, uuids.size());
+  EXPECT_EQ(2u, uuids.size());
   EXPECT_EQ(kTestAudioSdpUuid, uuids[0]);
   EXPECT_EQ(kTestVideoSdpUuid, uuids[1]);
 
   uuids = empty_device_->GetUUIDs();
-  EXPECT_EQ(0, uuids.size());
+  EXPECT_EQ(0u, uuids.size());
 }
 
 TEST_F(BluetoothDeviceWinTest, IsEqual) {

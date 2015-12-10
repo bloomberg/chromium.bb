@@ -14,7 +14,7 @@ TEST(WMITest, TestLocalConnectionSecurityBlanket) {
   EXPECT_TRUE(WMI::CreateLocalConnection(true, &services));
   ASSERT_TRUE(NULL != services);
   ULONG refs = services->Release();
-  EXPECT_EQ(refs, 0);
+  EXPECT_EQ(0u, refs);
 }
 
 TEST(WMITest, TestLocalConnectionNoSecurityBlanket) {
@@ -22,7 +22,7 @@ TEST(WMITest, TestLocalConnectionNoSecurityBlanket) {
   EXPECT_TRUE(WMI::CreateLocalConnection(false, &services));
   ASSERT_TRUE(NULL != services);
   ULONG refs = services->Release();
-  EXPECT_EQ(refs, 0);
+  EXPECT_EQ(0u, refs);
 }
 
 TEST(WMITest, TestCreateClassMethod) {
@@ -35,9 +35,9 @@ TEST(WMITest, TestCreateClassMethod) {
                                                L"Rename", &class_method));
   ASSERT_TRUE(NULL != class_method);
   ULONG refs = class_method->Release();
-  EXPECT_EQ(refs, 0);
+  EXPECT_EQ(0u, refs);
   refs = wmi_services->Release();
-  EXPECT_EQ(refs, 0);
+  EXPECT_EQ(0u, refs);
 }
 
 // Creates an instance of cmd which executes 'echo' and exits immediately.

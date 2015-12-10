@@ -57,7 +57,7 @@ bool IsGoodDccChar(char ch) {
 // reasonable size. It also assumes that normalized_dcc is at least
 // kMaxDccLength+1 long.
 void NormalizeDcc(const char* raw_dcc, char* normalized_dcc) {
-  int index = 0;
+  size_t index = 0;
   for (; raw_dcc[index] != 0 && index < rlz_lib::kMaxDccLength; ++index) {
     char current = raw_dcc[index];
     if (IsGoodDccChar(current)) {

@@ -590,7 +590,7 @@ std::vector<base::FilePath> GetShortcutPaths(
 
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   // Populate shortcut_paths.
-  for (int i = 0; i < arraysize(locations); ++i) {
+  for (size_t i = 0; i < arraysize(locations); ++i) {
     if (locations[i].use_this_location) {
       base::FilePath path;
       if (!ShellUtil::GetShortcutPath(locations[i].location_id,

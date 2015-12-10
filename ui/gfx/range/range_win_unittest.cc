@@ -45,8 +45,8 @@ TEST(RangeTest, ToCHARRANGE) {
 TEST(RangeTest, ReversedToCHARRANGE) {
   gfx::Range r(20, 10);
   CHARRANGE cr = r.ToCHARRANGE();
-  EXPECT_EQ(20U, cr.cpMin);
-  EXPECT_EQ(10U, cr.cpMax);
+  EXPECT_EQ(20, cr.cpMin);
+  EXPECT_EQ(10, cr.cpMax);
 }
 
 TEST(RangeTest, FromCHARRANGEInvalid) {

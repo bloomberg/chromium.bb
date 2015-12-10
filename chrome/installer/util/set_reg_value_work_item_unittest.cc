@@ -216,8 +216,8 @@ TEST_F(SetRegValueWorkItemTest, WriteExistingOverwrite) {
   DWORD type = 0;
   DWORD size = 0;
   EXPECT_EQ(ERROR_SUCCESS, test_key_.ReadValue(kNameEmpty, NULL, &size, &type));
-  EXPECT_EQ(REG_SZ, type);
-  EXPECT_EQ(0, size);
+  EXPECT_EQ(static_cast<DWORD>(REG_SZ), type);
+  EXPECT_EQ(0u, size);
 
   // Now test REG_DWORD value.
   // Write data to the value we are going to set.

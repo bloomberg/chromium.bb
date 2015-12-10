@@ -250,7 +250,7 @@ TEST_F(SafeBrowsingModuleVerifierWinTest,
                                   &disk_code_addr,
                                   &code_size));
 
-  const size_t kModificationSize = 256;
+  const int kModificationSize = 256;
   // Write the modification at the end so it's not overlapping relocations
   const size_t modification_offset = code_size - kModificationSize;
   ScopedModuleModifier<kModificationSize> mod(
@@ -299,7 +299,7 @@ TEST_F(SafeBrowsingModuleVerifierWinTest, DISABLED_VerifyModuleRelocOverlap) {
                                   &code_size));
 
   // Modify the first hunk of the code, which contains many relocs.
-  const size_t kModificationSize = 256;
+  const int kModificationSize = 256;
   ScopedModuleModifier<kModificationSize> mod(mem_code_addr);
 
   state.Clear();
@@ -314,7 +314,8 @@ TEST_F(SafeBrowsingModuleVerifierWinTest, DISABLED_VerifyModuleRelocOverlap) {
   // Modifications across the relocs should have been coalesced into one.
   ASSERT_EQ(1, state.modification_size());
   ASSERT_EQ(kModificationSize, state.modification(0).byte_count());
-  ASSERT_EQ(kModificationSize, state.modification(0).modified_bytes().size());
+  ASSERT_EQ(static_cast<size_t>(kModificationSize),
+            state.modification(0).modified_bytes().size());
   EXPECT_EQ(std::string(mem_code_addr, mem_code_addr + kModificationSize),
             state.modification(0).modified_bytes());
 }

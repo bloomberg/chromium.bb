@@ -56,7 +56,7 @@ TEST_F(BinaryFeatureExtractorWinTest, UntrustedSignedBinary) {
   ASSERT_EQ(1, signature_info.certificate_chain_size());
   std::vector<scoped_refptr<net::X509Certificate> > certs;
   ParseCertificateChain(signature_info.certificate_chain(0), &certs);
-  ASSERT_EQ(2, certs.size());
+  ASSERT_EQ(2u, certs.size());
   EXPECT_EQ("Joe's-Software-Emporium", certs[0]->subject().common_name);
   EXPECT_EQ("Root Agency", certs[1]->subject().common_name);
 
@@ -73,7 +73,7 @@ TEST_F(BinaryFeatureExtractorWinTest, TrustedBinary) {
   ASSERT_EQ(1, signature_info.certificate_chain_size());
   std::vector<scoped_refptr<net::X509Certificate> > certs;
   ParseCertificateChain(signature_info.certificate_chain(0), &certs);
-  ASSERT_EQ(3, certs.size());
+  ASSERT_EQ(3u, certs.size());
 
   EXPECT_EQ("Google Inc", certs[0]->subject().common_name);
   EXPECT_EQ("VeriSign Class 3 Code Signing 2009-2 CA",
@@ -160,7 +160,7 @@ TEST_F(BinaryFeatureExtractorWinTest, ExtractImageFeaturesWithDebugData) {
   EXPECT_FALSE(pe_headers.has_optional_headers64());
   EXPECT_NE(0, pe_headers.section_header_size());
   EXPECT_TRUE(pe_headers.has_export_section_data());
-  EXPECT_EQ(1U, pe_headers.debug_data_size());
+  EXPECT_EQ(1, pe_headers.debug_data_size());
 }
 
 TEST_F(BinaryFeatureExtractorWinTest, ExtractImageFeaturesWithoutExports) {
@@ -179,7 +179,7 @@ TEST_F(BinaryFeatureExtractorWinTest, ExtractImageFeaturesWithoutExports) {
   EXPECT_FALSE(pe_headers.has_optional_headers64());
   EXPECT_NE(0, pe_headers.section_header_size());
   EXPECT_FALSE(pe_headers.has_export_section_data());
-  EXPECT_EQ(1U, pe_headers.debug_data_size());
+  EXPECT_EQ(1, pe_headers.debug_data_size());
 }
 
 TEST_F(BinaryFeatureExtractorWinTest, ExtractImageFeaturesUntrustedSigned) {

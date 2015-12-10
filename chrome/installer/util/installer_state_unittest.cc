@@ -543,7 +543,7 @@ TEST_F(InstallerStateTest, RemoveOldVersionDirs) {
   };
 
   // Create the version directories.
-  for (int i = 0; i < arraysize(version_dirs); i++) {
+  for (size_t i = 0; i < arraysize(version_dirs); i++) {
     base::CreateDirectory(version_dirs[i]);
     EXPECT_TRUE(base::PathExists(version_dirs[i]));
   }
@@ -564,7 +564,7 @@ TEST_F(InstallerStateTest, RemoveOldVersionDirs) {
     { installer_state.target_path().Append(installer::kChromeNewExe),
       new_chrome_exe_version },
   };
-  for (int i = 0; i < arraysize(targets); ++i) {
+  for (size_t i = 0; i < arraysize(targets); ++i) {
     ASSERT_TRUE(upgrade_test::GenerateSpecificPEFileVersion(
         exe_path, targets[i].target_file, targets[i].target_version));
   }
