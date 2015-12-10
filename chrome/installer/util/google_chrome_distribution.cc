@@ -158,14 +158,11 @@ base::string16 GoogleChromeDistribution::GetShortcutName(
     ShortcutType shortcut_type) {
   int string_id = IDS_PRODUCT_NAME_BASE;
   switch (shortcut_type) {
-    case SHORTCUT_CHROME_ALTERNATE:
-      string_id = IDS_OEM_MAIN_SHORTCUT_NAME_BASE;
-      break;
     case SHORTCUT_APP_LAUNCHER:
       string_id = IDS_APP_LIST_SHORTCUT_NAME_BASE;
       break;
     default:
-      DCHECK_EQ(shortcut_type, SHORTCUT_CHROME);
+      DCHECK_EQ(SHORTCUT_CHROME, shortcut_type);
       break;
   }
   return installer::GetLocalizedString(string_id);
@@ -174,8 +171,7 @@ base::string16 GoogleChromeDistribution::GetShortcutName(
 int GoogleChromeDistribution::GetIconIndex(ShortcutType shortcut_type) {
   if (shortcut_type == SHORTCUT_APP_LAUNCHER)
     return icon_resources::kAppLauncherIndex;
-  DCHECK(shortcut_type == SHORTCUT_CHROME ||
-         shortcut_type == SHORTCUT_CHROME_ALTERNATE) << shortcut_type;
+  DCHECK_EQ(SHORTCUT_CHROME, shortcut_type);
   return icon_resources::kApplicationIndex;
 }
 

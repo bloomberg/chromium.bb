@@ -36,14 +36,11 @@ base::string16 GoogleChromeSxSDistribution::GetBaseAppName() {
 base::string16 GoogleChromeSxSDistribution::GetShortcutName(
     ShortcutType shortcut_type) {
   switch (shortcut_type) {
-    case SHORTCUT_CHROME_ALTERNATE:
-      // There is no alternate shortcut name on SxS Chrome.
-      return base::string16();
     case SHORTCUT_APP_LAUNCHER:
       return installer::GetLocalizedString(
           IDS_APP_LIST_SHORTCUT_NAME_CANARY_BASE);
     default:
-      DCHECK_EQ(shortcut_type, SHORTCUT_CHROME);
+      DCHECK_EQ(SHORTCUT_CHROME, shortcut_type);
       return installer::GetLocalizedString(IDS_SXS_SHORTCUT_NAME_BASE);
   }
 }
@@ -90,8 +87,7 @@ BrowserDistribution::DefaultBrowserControlPolicy
 int GoogleChromeSxSDistribution::GetIconIndex(ShortcutType shortcut_type) {
   if (shortcut_type == SHORTCUT_APP_LAUNCHER)
     return icon_resources::kSxSAppLauncherIndex;
-  DCHECK(shortcut_type == SHORTCUT_CHROME ||
-         shortcut_type == SHORTCUT_CHROME_ALTERNATE) << shortcut_type;
+  DCHECK_EQ(SHORTCUT_CHROME, shortcut_type);
   return icon_resources::kSxSApplicationIndex;
 }
 

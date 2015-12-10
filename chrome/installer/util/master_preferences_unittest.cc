@@ -68,7 +68,6 @@ TEST_F(MasterPreferencesTest, ParseDistroParams) {
       "     \"system_level\": true,\n"
       "     \"verbose_logging\": true,\n"
       "     \"require_eula\": true,\n"
-      "     \"alternate_shortcut_text\": true,\n"
       "     \"chrome_shortcut_icon_index\": 1,\n"
       "     \"ping_delay\": 40\n"
       "  },\n"
@@ -98,7 +97,6 @@ TEST_F(MasterPreferencesTest, ParseDistroParams) {
       installer::master_preferences::kSystemLevel,
       installer::master_preferences::kVerboseLogging,
       installer::master_preferences::kRequireEula,
-      installer::master_preferences::kAltShortcutText,
   };
 
   for (int i = 0; i < arraysize(expected_true); ++i) {

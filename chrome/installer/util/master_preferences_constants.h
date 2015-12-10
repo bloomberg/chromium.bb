@@ -15,8 +15,6 @@ namespace master_preferences {
 // is specified in master preference as well as command line, the command line
 // value takes precedence.
 
-// Boolean. Use alternate text for the shortcut. Cmd line override present.
-extern const char kAltShortcutText[];
 // Boolean. This is to be a Chrome install. (When using MultiInstall)
 extern const char kChrome[];
 // Integer. Icon index from chrome.exe to use for shortcuts.

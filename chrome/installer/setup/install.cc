@@ -340,15 +340,12 @@ void CreateOrUpdateShortcuts(
   bool do_not_create_desktop_shortcut = false;
   bool do_not_create_quick_launch_shortcut = false;
   bool do_not_create_taskbar_shortcut = false;
-  bool alternate_desktop_shortcut = false;
   prefs.GetBool(master_preferences::kDoNotCreateDesktopShortcut,
                 &do_not_create_desktop_shortcut);
   prefs.GetBool(master_preferences::kDoNotCreateQuickLaunchShortcut,
                 &do_not_create_quick_launch_shortcut);
   prefs.GetBool(master_preferences::kDoNotCreateTaskbarShortcut,
                 &do_not_create_taskbar_shortcut);
-  prefs.GetBool(master_preferences::kAltShortcutText,
-                &alternate_desktop_shortcut);
 
   BrowserDistribution* dist = product.distribution();
 
@@ -380,28 +377,9 @@ void CreateOrUpdateShortcuts(
 
   if (!do_not_create_desktop_shortcut ||
       shortcut_operation == ShellUtil::SHELL_SHORTCUT_REPLACE_EXISTING) {
-    const base::string16 alternate_shortcut_name =
-        dist->GetShortcutName(BrowserDistribution::SHORTCUT_CHROME_ALTERNATE);
-
-    ShellUtil::ShortcutProperties desktop_properties(base_properties);
-    if (alternate_desktop_shortcut && !alternate_shortcut_name.empty())
-      desktop_properties.set_shortcut_name(alternate_shortcut_name);
     ExecuteAndLogShortcutOperation(
-        ShellUtil::SHORTCUT_LOCATION_DESKTOP, dist, desktop_properties,
+        ShellUtil::SHORTCUT_LOCATION_DESKTOP, dist, base_properties,
         shortcut_operation);
-
-    // On update there is no harm in always trying to update the alternate
-    // Desktop shortcut (if it exists for this distribution).
-    if (!alternate_desktop_shortcut &&
-        shortcut_operation == ShellUtil::SHELL_SHORTCUT_REPLACE_EXISTING &&
-        !alternate_shortcut_name.empty()) {
-      desktop_properties.set_shortcut_name(
-          dist->GetShortcutName(
-              BrowserDistribution::SHORTCUT_CHROME_ALTERNATE));
-      ExecuteAndLogShortcutOperation(
-          ShellUtil::SHORTCUT_LOCATION_DESKTOP, dist, desktop_properties,
-          shortcut_operation);
-    }
   }
 
   if (!do_not_create_quick_launch_shortcut ||

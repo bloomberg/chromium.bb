@@ -33,7 +33,6 @@ class BrowserDistribution {
 
   enum ShortcutType {
     SHORTCUT_CHROME,
-    SHORTCUT_CHROME_ALTERNATE,
     SHORTCUT_APP_LAUNCHER
   };
 
@@ -82,8 +81,7 @@ class BrowserDistribution {
   virtual base::string16 GetDisplayName();
 
   // Returns the localized name of the shortcut identified by |shortcut_type|
-  // for this distribution or empty string if |shortcut_type| is unsupported
-  // by this BrowserDistribution.
+  // for this distribution.
   virtual base::string16 GetShortcutName(ShortcutType shortcut_type);
 
   // Returns the index of the icon for the product identified by

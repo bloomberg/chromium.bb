@@ -161,16 +161,10 @@ base::string16 BrowserDistribution::GetDisplayName() {
 base::string16 BrowserDistribution::GetShortcutName(
     ShortcutType shortcut_type) {
   switch (shortcut_type) {
-    case SHORTCUT_CHROME_ALTERNATE:
-      // TODO(calamity): Change IDS_OEM_MAIN_SHORTCUT_NAME in
-      // chromium_strings.grd to "The Internet" (so that it doesn't collide with
-      // the value in google_chrome_strings.grd) then change this to
-      // installer::GetLocalizedString(IDS_OEM_MAIN_SHORTCUT_NAME_BASE)
-      return L"The Internet";
     case SHORTCUT_APP_LAUNCHER:
       return installer::GetLocalizedString(IDS_APP_LIST_SHORTCUT_NAME_BASE);
     default:
-      DCHECK_EQ(shortcut_type, SHORTCUT_CHROME);
+      DCHECK_EQ(SHORTCUT_CHROME, shortcut_type);
       return GetBaseAppName();
   }
 }
@@ -178,8 +172,7 @@ base::string16 BrowserDistribution::GetShortcutName(
 int BrowserDistribution::GetIconIndex(ShortcutType shortcut_type) {
   if (shortcut_type == SHORTCUT_APP_LAUNCHER)
     return icon_resources::kAppLauncherIndex;
-  DCHECK(shortcut_type == SHORTCUT_CHROME ||
-         shortcut_type == SHORTCUT_CHROME_ALTERNATE) << shortcut_type;
+  DCHECK_EQ(SHORTCUT_CHROME, shortcut_type);
   return icon_resources::kApplicationIndex;
 }
 
@@ -193,7 +186,7 @@ base::string16 BrowserDistribution::GetStartMenuShortcutSubfolder(
     case SUBFOLDER_APPS:
       return installer::GetLocalizedString(IDS_APP_SHORTCUTS_SUBDIR_NAME_BASE);
     default:
-      DCHECK_EQ(subfolder_type, SUBFOLDER_CHROME);
+      DCHECK_EQ(SUBFOLDER_CHROME, subfolder_type);
       return GetShortcutName(SHORTCUT_CHROME);
   }
 }
