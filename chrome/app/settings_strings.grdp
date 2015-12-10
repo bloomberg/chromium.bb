@@ -546,9 +546,13 @@
   </message>
 
   <!-- Sync / People Page -->
-  <message name="IDS_SETTINGS_SYNC_PEOPLE" desc="Name of the settings page which manages Chrome's signed-in Google profile.">
+  <message name="IDS_SETTINGS_PEOPLE" desc="Name of the settings page which manages Chrome's signed-in Google profile.">
     People
   </message>
+  <message name="IDS_SETTINGS_PEOPLE_MANAGE_OTHER_PEOPLE" desc="Label for the button that opens the multi profile user manager.">
+    Manage other people
+  </message>
+
   <message name="IDS_SETTINGS_SYNC_OVERVIEW" desc="The message that appears in the options dialog when sync has not been set up by the user.">
     Sign in to get your bookmarks, history, passwords and other settings on all your devices. You'll also automatically be signed in to your Google services.
   </message>
@@ -563,9 +567,6 @@
   </message>
   <message name="IDS_SETTINGS_SYNC_DISCONNECT_CONFIRM" desc="The text to display on the button to confirm the user wishes to stop syncing.">
     Clear and Disconnect
-  </message>
-  <message name="IDS_SETTINGS_SYNC_MANAGE_OTHER_PEOPLE" desc="Label for the button that opens the multi profile user manager.">
-    Manage other people
   </message>
 
   <message name="IDS_SETTINGS_SYNC" desc="Name of the settings page which manages syncing data between multiple browser instances with the same Google profile.">

@@ -432,6 +432,88 @@ void AddPasswordsAndFormsStrings(content::WebUIDataSource* html_source) {
                                   IDS_SETTINGS_PASSWORDS_DETAIL);
 }
 
+void AddPeopleStrings(content::WebUIDataSource* html_source) {
+  html_source->AddLocalizedString("peoplePageTitle", IDS_SETTINGS_PEOPLE);
+  html_source->AddLocalizedString("manageOtherPeople",
+                                  IDS_SETTINGS_PEOPLE_MANAGE_OTHER_PEOPLE);
+  html_source->AddLocalizedString("syncOverview", IDS_SETTINGS_SYNC_OVERVIEW);
+  html_source->AddLocalizedString("syncSignin", IDS_SETTINGS_SYNC_SIGNIN);
+  html_source->AddLocalizedString("syncDisconnect",
+                                  IDS_SETTINGS_SYNC_DISCONNECT);
+  html_source->AddLocalizedString("syncDisconnectTitle",
+                                  IDS_SETTINGS_SYNC_DISCONNECT_TITLE);
+  std::string disconnect_help_url =
+      google_util::AppendGoogleLocaleParam(
+          GURL(chrome::kSyncGoogleDashboardURL),
+          g_browser_process->GetApplicationLocale())
+          .spec();
+  html_source->AddString(
+      "syncDisconnectExplanation",
+      l10n_util::GetStringFUTF16(IDS_SETTINGS_SYNC_DISCONNECT_EXPLANATION,
+                                 base::ASCIIToUTF16(disconnect_help_url)));
+  html_source->AddLocalizedString("syncDisconnectDeleteProfile",
+                                  IDS_SETTINGS_SYNC_DISCONNECT_DELETE_PROFILE);
+  html_source->AddLocalizedString("syncDisconnectConfirm",
+                                  IDS_SETTINGS_SYNC_DISCONNECT_CONFIRM);
+
+  html_source->AddLocalizedString("syncPageTitle", IDS_SETTINGS_SYNC);
+  html_source->AddLocalizedString("syncLoading", IDS_SETTINGS_SYNC_LOADING);
+  html_source->AddLocalizedString("syncTimeout", IDS_SETTINGS_SYNC_TIMEOUT);
+  html_source->AddLocalizedString("syncEverythingCheckboxLabel",
+                                  IDS_SETTINGS_SYNC_EVERYTHING_CHECKBOX_LABEL);
+  html_source->AddLocalizedString("appCheckboxLabel",
+                                  IDS_SETTINGS_APPS_CHECKBOX_LABEL);
+  html_source->AddLocalizedString("extensionsCheckboxLabel",
+                                  IDS_SETTINGS_EXTENSIONS_CHECKBOX_LABEL);
+  html_source->AddLocalizedString("settingsCheckboxLabel",
+                                  IDS_SETTINGS_SETTINGS_CHECKBOX_LABEL);
+  html_source->AddLocalizedString("autofillCheckboxLabel",
+                                  IDS_SETTINGS_AUTOFILL_CHECKBOX_LABEL);
+  html_source->AddLocalizedString("historyCheckboxLabel",
+                                  IDS_SETTINGS_HISTORY_CHECKBOX_LABEL);
+  html_source->AddLocalizedString(
+      "themesAndWallpapersCheckboxLabel",
+      IDS_SETTINGS_THEMES_AND_WALLPAPERS_CHECKBOX_LABEL);
+  html_source->AddLocalizedString("bookmarksCheckboxLabel",
+                                  IDS_SETTINGS_BOOKMARKS_CHECKBOX_LABEL);
+  html_source->AddLocalizedString("passwordsCheckboxLabel",
+                                  IDS_SETTINGS_PASSWORDS_CHECKBOX_LABEL);
+  html_source->AddLocalizedString("openTabsCheckboxLabel",
+                                  IDS_SETTINGS_OPEN_TABS_CHECKBOX_LABEL);
+  html_source->AddLocalizedString("encryptionOptionsTitle",
+                                  IDS_SETTINGS_ENCRYPTION_OPTIONS);
+  html_source->AddLocalizedString("syncDataEncryptedText",
+                                  IDS_SETTINGS_SYNC_DATA_ENCRYPTED_TEXT);
+  html_source->AddLocalizedString(
+      "encryptWithGoogleCredentialsLabel",
+      IDS_SETTINGS_ENCRYPT_WITH_GOOGLE_CREDENTIALS_LABEL);
+  html_source->AddLocalizedString(
+      "encryptWithSyncPassphraseLabel",
+      IDS_SETTINGS_ENCRYPT_WITH_SYNC_PASSPHRASE_LABEL);
+  html_source->AddLocalizedString(
+      "encryptWithSyncPassphraseLearnMoreLink",
+      IDS_SETTINGS_ENCRYPT_WITH_SYNC_PASSPHRASE_LEARN_MORE_LINK);
+  html_source->AddLocalizedString("useDefaultSettingsButton",
+                                  IDS_SETTINGS_USE_DEFAULT_SETTINGS_BUTTON);
+  // TODO(dpapad): Remove this string and use IDS_CANCEL (see AddCommonStrings
+  // at the top of this file).
+  html_source->AddLocalizedString("cancelButton", IDS_SETTINGS_CANCEL_BUTTON);
+  html_source->AddLocalizedString("okButton", IDS_SETTINGS_OK_BUTTON);
+  html_source->AddLocalizedString("passphraseExplanationText",
+                                  IDS_SETTINGS_PASSPHRASE_EXPLANATION_TEXT);
+  html_source->AddLocalizedString("emptyPassphraseError",
+                                  IDS_SETTINGS_EMPTY_PASSPHRASE_ERROR);
+  html_source->AddLocalizedString("mismatchedPassphraseError",
+                                  IDS_SETTINGS_MISMATCHED_PASSPHRASE_ERROR);
+  html_source->AddLocalizedString("incorrectPassphraseError",
+                                  IDS_SETTINGS_INCORRECT_PASSPHRASE_ERROR);
+  html_source->AddLocalizedString("passphrasePlaceholder",
+                                  IDS_SETTINGS_PASSPHRASE_PLACEHOLDER);
+  html_source->AddLocalizedString(
+      "passphraseConfirmationPlaceholder",
+      IDS_SETTINGS_PASSPHRASE_CONFIRMATION_PLACEHOLDER);
+}
+
 void AddPrivacyStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString("privacyPageTitle",
                                   IDS_SETTINGS_PRIVACY);
@@ -586,90 +668,6 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source) {
                                   IDS_SETTINGS_SITE_SETTINGS_DELETE);
 }
 
-void AddSyncStrings(content::WebUIDataSource* html_source) {
-  html_source->AddLocalizedString("peoplePageTitle", IDS_SETTINGS_SYNC_PEOPLE);
-  html_source->AddLocalizedString("syncOverview", IDS_SETTINGS_SYNC_OVERVIEW);
-  html_source->AddLocalizedString("syncSignin", IDS_SETTINGS_SYNC_SIGNIN);
-  html_source->AddLocalizedString("syncDisconnect",
-                                  IDS_SETTINGS_SYNC_DISCONNECT);
-  html_source->AddLocalizedString("syncDisconnectTitle",
-                                  IDS_SETTINGS_SYNC_DISCONNECT_TITLE);
-  std::string disconnect_help_url =
-      google_util::AppendGoogleLocaleParam(
-          GURL(chrome::kSyncGoogleDashboardURL),
-          g_browser_process->GetApplicationLocale())
-          .spec();
-  html_source->AddString(
-      "syncDisconnectExplanation",
-      l10n_util::GetStringFUTF16(IDS_SETTINGS_SYNC_DISCONNECT_EXPLANATION,
-                                 base::ASCIIToUTF16(disconnect_help_url)));
-  html_source->AddLocalizedString("syncDisconnectDeleteProfile",
-                                  IDS_SETTINGS_SYNC_DISCONNECT_DELETE_PROFILE);
-  html_source->AddLocalizedString("syncDisconnectConfirm",
-                                  IDS_SETTINGS_SYNC_DISCONNECT_CONFIRM);
-  html_source->AddLocalizedString("manageOtherPeople",
-                                  IDS_SETTINGS_SYNC_MANAGE_OTHER_PEOPLE);
-
-  html_source->AddLocalizedString("syncPageTitle", IDS_SETTINGS_SYNC);
-  html_source->AddLocalizedString("syncLoading", IDS_SETTINGS_SYNC_LOADING);
-  html_source->AddLocalizedString("syncTimeout", IDS_SETTINGS_SYNC_TIMEOUT);
-  html_source->AddLocalizedString("syncEverythingCheckboxLabel",
-                                  IDS_SETTINGS_SYNC_EVERYTHING_CHECKBOX_LABEL);
-  html_source->AddLocalizedString("appCheckboxLabel",
-                                  IDS_SETTINGS_APPS_CHECKBOX_LABEL);
-  html_source->AddLocalizedString("extensionsCheckboxLabel",
-                                  IDS_SETTINGS_EXTENSIONS_CHECKBOX_LABEL);
-  html_source->AddLocalizedString("settingsCheckboxLabel",
-                                  IDS_SETTINGS_SETTINGS_CHECKBOX_LABEL);
-  html_source->AddLocalizedString("autofillCheckboxLabel",
-                                  IDS_SETTINGS_AUTOFILL_CHECKBOX_LABEL);
-  html_source->AddLocalizedString("historyCheckboxLabel",
-                                  IDS_SETTINGS_HISTORY_CHECKBOX_LABEL);
-  html_source->AddLocalizedString(
-      "themesAndWallpapersCheckboxLabel",
-      IDS_SETTINGS_THEMES_AND_WALLPAPERS_CHECKBOX_LABEL);
-  html_source->AddLocalizedString("bookmarksCheckboxLabel",
-                                  IDS_SETTINGS_BOOKMARKS_CHECKBOX_LABEL);
-  html_source->AddLocalizedString("passwordsCheckboxLabel",
-                                  IDS_SETTINGS_PASSWORDS_CHECKBOX_LABEL);
-  html_source->AddLocalizedString("openTabsCheckboxLabel",
-                                  IDS_SETTINGS_OPEN_TABS_CHECKBOX_LABEL);
-  html_source->AddLocalizedString("encryptionOptionsTitle",
-                                  IDS_SETTINGS_ENCRYPTION_OPTIONS);
-  html_source->AddLocalizedString("syncDataEncryptedText",
-                                  IDS_SETTINGS_SYNC_DATA_ENCRYPTED_TEXT);
-  html_source->AddLocalizedString(
-      "encryptWithGoogleCredentialsLabel",
-      IDS_SETTINGS_ENCRYPT_WITH_GOOGLE_CREDENTIALS_LABEL);
-  html_source->AddLocalizedString(
-      "encryptWithSyncPassphraseLabel",
-      IDS_SETTINGS_ENCRYPT_WITH_SYNC_PASSPHRASE_LABEL);
-  html_source->AddLocalizedString(
-      "encryptWithSyncPassphraseLearnMoreLink",
-      IDS_SETTINGS_ENCRYPT_WITH_SYNC_PASSPHRASE_LEARN_MORE_LINK);
-  html_source->AddLocalizedString("useDefaultSettingsButton",
-                                  IDS_SETTINGS_USE_DEFAULT_SETTINGS_BUTTON);
-  // TODO(dpapad): Remove this string and use IDS_CANCEL (see AddCommonStrings
-  // at the top of this file).
-  html_source->AddLocalizedString("cancelButton",
-                                  IDS_SETTINGS_CANCEL_BUTTON);
-  html_source->AddLocalizedString("okButton",
-                                  IDS_SETTINGS_OK_BUTTON);
-  html_source->AddLocalizedString("passphraseExplanationText",
-                                  IDS_SETTINGS_PASSPHRASE_EXPLANATION_TEXT);
-  html_source->AddLocalizedString("emptyPassphraseError",
-                                  IDS_SETTINGS_EMPTY_PASSPHRASE_ERROR);
-  html_source->AddLocalizedString("mismatchedPassphraseError",
-                                  IDS_SETTINGS_MISMATCHED_PASSPHRASE_ERROR);
-  html_source->AddLocalizedString("incorrectPassphraseError",
-                                  IDS_SETTINGS_INCORRECT_PASSPHRASE_ERROR);
-  html_source->AddLocalizedString("passphrasePlaceholder",
-                                  IDS_SETTINGS_PASSPHRASE_PLACEHOLDER);
-  html_source->AddLocalizedString(
-      "passphraseConfirmationPlaceholder",
-      IDS_SETTINGS_PASSPHRASE_CONFIRMATION_PLACEHOLDER);
-}
-
 void AddUsersStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString("usersPageTitle",
                                   IDS_SETTINGS_USERS);
@@ -753,12 +751,12 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
 #endif
   AddOnStartupStrings(html_source);
   AddPasswordsAndFormsStrings(html_source);
+  AddPeopleStrings(html_source);
   AddPrivacyStrings(html_source);
   AddResetStrings(html_source);
   AddSearchEnginesStrings(html_source);
   AddSearchStrings(html_source);
   AddSiteSettingsStrings(html_source);
-  AddSyncStrings(html_source);
   AddUsersStrings(html_source);
   AddWebContentStrings(html_source);
 

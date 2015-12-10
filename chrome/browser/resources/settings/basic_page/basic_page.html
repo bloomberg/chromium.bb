@@ -4,6 +4,7 @@
 <link rel="import" href="chrome://md-settings/settings_page/settings_page_visibility.html">
 <link rel="import" href="chrome://md-settings/settings_page/settings_section.html">
 <link rel="import" href="chrome://md-settings/on_startup_page/on_startup_page.html">
+<link rel="import" href="chrome://md-settings/people_page/people_page.html">
 
 <if expr="chromeos">
 <link rel="import" href="chrome://md-settings/internet_page/internet_page.html">
@@ -12,21 +13,18 @@
 
 <if expr="not chromeos">
 <link rel="import" href="chrome://md-settings/default_browser_page/default_browser_page.html">
-<link rel="import" href="chrome://md-settings/signin_page/signin_page.html">
 </if>
 
 <dom-module id="settings-basic-page">
   <link rel="import" type="css" href="basic_page.css">
   <template>
-<if expr="not chromeos">
     <template is="dom-if" if="[[showPage(pageVisibility.people)]]" restamp>
       <settings-section i18n-values="page-title:peoplePageTitle"
           current-route="[[currentRoute]]" section="people">
-        <settings-signin-page current-route="{{currentRoute}}">
-        </settings-signin-page>
+        <settings-people-page current-route="{{currentRoute}}">
+        </settings-people-page>
       </settings-section>
     </template>
-</if>
 <if expr="chromeos">
     <template is="dom-if" if="[[showPage(pageVisibility.internet)]]" restamp>
       <settings-section i18n-values="page-title:internetPageTitle"

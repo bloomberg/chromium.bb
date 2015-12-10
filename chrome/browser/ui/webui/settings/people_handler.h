@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_SETTINGS_SYNC_HANDLER_H_
-#define CHROME_BROWSER_UI_WEBUI_SETTINGS_SYNC_HANDLER_H_
+#ifndef CHROME_BROWSER_UI_WEBUI_SETTINGS_PEOPLE_HANDLER_H_
+#define CHROME_BROWSER_UI_WEBUI_SETTINGS_PEOPLE_HANDLER_H_
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -33,14 +33,14 @@ enum class AccessPoint;
 
 namespace settings {
 
-class SyncHandler : public content::WebUIMessageHandler,
-                    public SigninManagerBase::Observer,
-                    public SyncStartupTracker::Observer,
-                    public LoginUIService::LoginUI,
-                    public sync_driver::SyncServiceObserver {
+class PeopleHandler : public content::WebUIMessageHandler,
+                      public SigninManagerBase::Observer,
+                      public SyncStartupTracker::Observer,
+                      public LoginUIService::LoginUI,
+                      public sync_driver::SyncServiceObserver {
  public:
-  explicit SyncHandler(Profile* profile);
-  ~SyncHandler() override;
+  explicit PeopleHandler(Profile* profile);
+  ~PeopleHandler() override;
 
   // content::WebUIMessageHandler implementation.
   void RegisterMessages() override;
@@ -79,30 +79,29 @@ class SyncHandler : public content::WebUIMessageHandler,
   scoped_ptr<base::DictionaryValue> GetSyncStateDictionary();
 
  protected:
-  friend class SyncHandlerTest;
-  FRIEND_TEST_ALL_PREFIXES(SyncHandlerTest,
+  friend class PeopleHandlerTest;
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest,
                            DisplayConfigureWithBackendDisabledAndCancel);
-  FRIEND_TEST_ALL_PREFIXES(SyncHandlerTest, HandleSetupUIWhenSyncDisabled);
-  FRIEND_TEST_ALL_PREFIXES(SyncHandlerTest, SelectCustomEncryption);
-  FRIEND_TEST_ALL_PREFIXES(SyncHandlerTest, ShowSyncSetupWhenNotSignedIn);
-  FRIEND_TEST_ALL_PREFIXES(SyncHandlerTest, SuccessfullySetPassphrase);
-  FRIEND_TEST_ALL_PREFIXES(SyncHandlerTest, TestSyncEverything);
-  FRIEND_TEST_ALL_PREFIXES(SyncHandlerTest, TestSyncNothing);
-  FRIEND_TEST_ALL_PREFIXES(SyncHandlerTest, TestSyncAllManually);
-  FRIEND_TEST_ALL_PREFIXES(SyncHandlerTest, TestPassphraseStillRequired);
-  FRIEND_TEST_ALL_PREFIXES(SyncHandlerTest, TestSyncIndividualTypes);
-  FRIEND_TEST_ALL_PREFIXES(SyncHandlerTest, TurnOnEncryptAll);
-  FRIEND_TEST_ALL_PREFIXES(SyncHandlerTest, TurnOnEncryptAllDisallowed);
-  FRIEND_TEST_ALL_PREFIXES(SyncHandlerTest, UnsuccessfullySetPassphrase);
-  FRIEND_TEST_ALL_PREFIXES(SyncHandlerNonCrosTest,
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, HandleSetupUIWhenSyncDisabled);
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, SelectCustomEncryption);
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, ShowSyncSetupWhenNotSignedIn);
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, SuccessfullySetPassphrase);
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, TestSyncEverything);
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, TestSyncNothing);
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, TestSyncAllManually);
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, TestPassphraseStillRequired);
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, TestSyncIndividualTypes);
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, TurnOnEncryptAll);
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, TurnOnEncryptAllDisallowed);
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, UnsuccessfullySetPassphrase);
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerNonCrosTest,
                            UnrecoverableErrorInitializingSync);
-  FRIEND_TEST_ALL_PREFIXES(SyncHandlerNonCrosTest,
-                           GaiaErrorInitializingSync);
-  FRIEND_TEST_ALL_PREFIXES(SyncHandlerNonCrosTest, HandleCaptcha);
-  FRIEND_TEST_ALL_PREFIXES(SyncHandlerNonCrosTest, HandleGaiaAuthFailure);
-  FRIEND_TEST_ALL_PREFIXES(SyncHandlerNonCrosTest,
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerNonCrosTest, GaiaErrorInitializingSync);
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerNonCrosTest, HandleCaptcha);
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerNonCrosTest, HandleGaiaAuthFailure);
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerNonCrosTest,
                            SubmitAuthWithInvalidUsername);
-  FRIEND_TEST_ALL_PREFIXES(SyncHandlerFirstSigninTest, DisplayBasicLogin);
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerFirstSigninTest, DisplayBasicLogin);
 
   bool is_configuring_sync() const { return configuring_sync_; }
 
@@ -191,11 +190,11 @@ class SyncHandler : public content::WebUIMessageHandler,
   PrefChangeRegistrar profile_pref_registrar_;
 
   // Manages observer lifetime.
-  ScopedObserver<ProfileSyncService, SyncHandler> sync_service_observer_;
+  ScopedObserver<ProfileSyncService, PeopleHandler> sync_service_observer_;
 
-  DISALLOW_COPY_AND_ASSIGN(SyncHandler);
+  DISALLOW_COPY_AND_ASSIGN(PeopleHandler);
 };
 
 }  // namespace settings
 
-#endif  // CHROME_BROWSER_UI_WEBUI_SETTINGS_SYNC_HANDLER_H_
+#endif  // CHROME_BROWSER_UI_WEBUI_SETTINGS_PEOPLE_HANDLER_H_

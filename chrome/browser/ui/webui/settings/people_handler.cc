@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/settings/sync_handler.h"
+#include "chrome/browser/ui/webui/settings/people_handler.h"
 
 #include "base/basictypes.h"
 #include "base/bind.h"
@@ -83,8 +83,7 @@ SyncConfigInfo::SyncConfigInfo()
     : encrypt_all(false),
       sync_everything(false),
       sync_nothing(false),
-      passphrase_is_gaia(false) {
-}
+      passphrase_is_gaia(false) {}
 
 SyncConfigInfo::~SyncConfigInfo() {}
 
@@ -154,15 +153,16 @@ bool GetConfiguration(const std::string& json, SyncConfigInfo* config) {
 
 namespace settings {
 
-SyncHandler::SyncHandler(Profile* profile)
+PeopleHandler::PeopleHandler(Profile* profile)
     : profile_(profile),
       configuring_sync_(false),
       sync_service_observer_(this) {
   PrefService* prefs = profile_->GetPrefs();
   profile_pref_registrar_.Init(prefs);
   profile_pref_registrar_.Add(
-      prefs::kSigninAllowed, base::Bind(&SyncHandler::OnSigninAllowedPrefChange,
-                                        base::Unretained(this)));
+      prefs::kSigninAllowed,
+      base::Bind(&PeopleHandler::OnSigninAllowedPrefChange,
+                 base::Unretained(this)));
 
   ProfileSyncService* sync_service(
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile_));
@@ -170,7 +170,7 @@ SyncHandler::SyncHandler(Profile* profile)
     sync_service_observer_.Add(sync_service);
 }
 
-SyncHandler::~SyncHandler() {
+PeopleHandler::~PeopleHandler() {
   // Just exit if running unit tests (no actual WebUI is attached).
   if (!web_ui())
     return;
@@ -179,7 +179,7 @@ SyncHandler::~SyncHandler() {
   CloseSyncSetup();
 }
 
-void SyncHandler::ConfigureSyncDone() {
+void PeopleHandler::ConfigureSyncDone() {
   base::StringValue page("done");
   web_ui()->CallJavascriptFunction("settings.SyncPrivateApi.showSyncSetupPage",
                                    page);
@@ -202,53 +202,50 @@ void SyncHandler::ConfigureSyncDone() {
   }
 }
 
-bool SyncHandler::IsActiveLogin() const {
+bool PeopleHandler::IsActiveLogin() const {
   // LoginUIService can be nullptr if page is brought up in incognito mode
   // (i.e. if the user is running in guest mode in cros and brings up settings).
   LoginUIService* service = GetLoginUIService();
   return service && (service->current_login_ui() == this);
 }
 
-void SyncHandler::RegisterMessages() {
+void PeopleHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "SyncSetupDidClosePage",
-      base::Bind(&SyncHandler::OnDidClosePage,
-                 base::Unretained(this)));
+      base::Bind(&PeopleHandler::OnDidClosePage, base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "SyncSetupConfigure",
-      base::Bind(&SyncHandler::HandleConfigure,
-                 base::Unretained(this)));
+      base::Bind(&PeopleHandler::HandleConfigure, base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "SyncSetupShowSetupUI",
-      base::Bind(&SyncHandler::HandleShowSetupUI,
-                 base::Unretained(this)));
+      base::Bind(&PeopleHandler::HandleShowSetupUI, base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "SyncSetupCloseTimeout",
-      base::Bind(&SyncHandler::HandleCloseTimeout, base::Unretained(this)));
+      base::Bind(&PeopleHandler::HandleCloseTimeout, base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "SyncSetupGetSyncStatus",
-      base::Bind(&SyncHandler::HandleGetSyncStatus, base::Unretained(this)));
+      base::Bind(&PeopleHandler::HandleGetSyncStatus, base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "SyncSetupManageOtherPeople",
-      base::Bind(&SyncHandler::HandleManageOtherPeople,
+      base::Bind(&PeopleHandler::HandleManageOtherPeople,
                  base::Unretained(this)));
 #if defined(OS_CHROMEOS)
   web_ui()->RegisterMessageCallback(
       "SyncSetupDoSignOutOnAuthError",
-      base::Bind(&SyncHandler::HandleDoSignOutOnAuthError,
+      base::Bind(&PeopleHandler::HandleDoSignOutOnAuthError,
                  base::Unretained(this)));
 #else
-  web_ui()->RegisterMessageCallback("SyncSetupStopSyncing",
-      base::Bind(&SyncHandler::HandleStopSyncing,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("SyncSetupStartSignIn",
-      base::Bind(&SyncHandler::HandleStartSignin,
-                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "SyncSetupStopSyncing",
+      base::Bind(&PeopleHandler::HandleStopSyncing, base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "SyncSetupStartSignIn",
+      base::Bind(&PeopleHandler::HandleStartSignin, base::Unretained(this)));
 #endif
 }
 
 #if !defined(OS_CHROMEOS)
-void SyncHandler::DisplayGaiaLogin(signin_metrics::AccessPoint access_point) {
+void PeopleHandler::DisplayGaiaLogin(signin_metrics::AccessPoint access_point) {
   DCHECK(!sync_startup_tracker_);
   // Advanced options are no longer being configured if the login screen is
   // visible. If the user exits the signin wizard after this without
@@ -257,10 +254,10 @@ void SyncHandler::DisplayGaiaLogin(signin_metrics::AccessPoint access_point) {
   DisplayGaiaLoginInNewTabOrWindow(access_point);
 }
 
-void SyncHandler::DisplayGaiaLoginInNewTabOrWindow(
+void PeopleHandler::DisplayGaiaLoginInNewTabOrWindow(
     signin_metrics::AccessPoint access_point) {
-  Browser* browser = chrome::FindBrowserWithWebContents(
-      web_ui()->GetWebContents());
+  Browser* browser =
+      chrome::FindBrowserWithWebContents(web_ui()->GetWebContents());
   bool force_new_tab = false;
   if (!browser) {
     // Settings is not displayed in a browser window. Open a new window.
@@ -273,8 +270,8 @@ void SyncHandler::DisplayGaiaLoginInNewTabOrWindow(
   // re-auth scenario, and we need to ensure that the user signs in with the
   // same email address.
   GURL url;
-  if (SigninManagerFactory::GetForProfile(
-      browser->profile())->IsAuthenticated()) {
+  if (SigninManagerFactory::GetForProfile(browser->profile())
+          ->IsAuthenticated()) {
     UMA_HISTOGRAM_ENUMERATION("Signin.Reauth",
                               signin_metrics::HISTOGRAM_REAUTH_SHOWN,
                               signin_metrics::HISTOGRAM_REAUTH_MAX);
@@ -308,7 +305,7 @@ void SyncHandler::DisplayGaiaLoginInNewTabOrWindow(
 }
 #endif
 
-bool SyncHandler::PrepareSyncSetup() {
+bool PeopleHandler::PrepareSyncSetup() {
   // If the wizard is already visible, just focus that one.
   if (FocusExistingWizardIfPresent()) {
     if (!IsActiveLogin())
@@ -326,7 +323,7 @@ bool SyncHandler::PrepareSyncSetup() {
   return true;
 }
 
-void SyncHandler::DisplaySpinner() {
+void PeopleHandler::DisplaySpinner() {
   configuring_sync_ = true;
   base::StringValue page("spinner");
   base::DictionaryValue args;
@@ -335,8 +332,8 @@ void SyncHandler::DisplaySpinner() {
   DCHECK(!backend_start_timer_);
   backend_start_timer_.reset(new base::OneShotTimer());
   backend_start_timer_->Start(FROM_HERE,
-                              base::TimeDelta::FromSeconds(kTimeoutSec),
-                              this, &SyncHandler::DisplayTimeout);
+                              base::TimeDelta::FromSeconds(kTimeoutSec), this,
+                              &PeopleHandler::DisplayTimeout);
 
   web_ui()->CallJavascriptFunction("settings.SyncPrivateApi.showSyncSetupPage",
                                    page, args);
@@ -344,7 +341,7 @@ void SyncHandler::DisplaySpinner() {
 
 // TODO(kochi): Handle error conditions other than timeout.
 // http://crbug.com/128692
-void SyncHandler::DisplayTimeout() {
+void PeopleHandler::DisplayTimeout() {
   // Stop a timer to handle timeout in waiting for checking network connection.
   backend_start_timer_.reset();
 
@@ -357,11 +354,11 @@ void SyncHandler::DisplayTimeout() {
                                    page, args);
 }
 
-void SyncHandler::OnDidClosePage(const base::ListValue* args) {
+void PeopleHandler::OnDidClosePage(const base::ListValue* args) {
   CloseSyncSetup();
 }
 
-void SyncHandler::SyncStartupFailed() {
+void PeopleHandler::SyncStartupFailed() {
   // Stop a timer to handle timeout in waiting for checking network connection.
   backend_start_timer_.reset();
 
@@ -370,7 +367,7 @@ void SyncHandler::SyncStartupFailed() {
   CloseUI();
 }
 
-void SyncHandler::SyncStartupCompleted() {
+void PeopleHandler::SyncStartupCompleted() {
   ProfileSyncService* service = GetSyncService();
   DCHECK(service->IsBackendInitialized());
 
@@ -380,13 +377,13 @@ void SyncHandler::SyncStartupCompleted() {
   DisplayConfigureSync(false);
 }
 
-ProfileSyncService* SyncHandler::GetSyncService() const {
+ProfileSyncService* PeopleHandler::GetSyncService() const {
   return profile_->IsSyncAllowed()
              ? ProfileSyncServiceFactory::GetForProfile(profile_)
              : nullptr;
 }
 
-void SyncHandler::HandleConfigure(const base::ListValue* args) {
+void PeopleHandler::HandleConfigure(const base::ListValue* args) {
   DCHECK(!sync_startup_tracker_);
   std::string json;
   if (!args->GetString(0, &json)) {
@@ -509,7 +506,7 @@ void SyncHandler::HandleConfigure(const base::ListValue* args) {
     ProfileMetrics::LogProfileSyncInfo(ProfileMetrics::SYNC_CHOOSE);
 }
 
-void SyncHandler::HandleShowSetupUI(const base::ListValue* args) {
+void PeopleHandler::HandleShowSetupUI(const base::ListValue* args) {
   if (!GetSyncService()) {
     CloseUI();
     return;
@@ -544,20 +541,20 @@ void SyncHandler::HandleShowSetupUI(const base::ListValue* args) {
 #if defined(OS_CHROMEOS)
 // On ChromeOS, we need to sign out the user session to fix an auth error, so
 // the user goes through the real signin flow to generate a new auth token.
-void SyncHandler::HandleDoSignOutOnAuthError(const base::ListValue* args) {
+void PeopleHandler::HandleDoSignOutOnAuthError(const base::ListValue* args) {
   DVLOG(1) << "Signing out the user to fix a sync error.";
   chrome::AttemptUserExit();
 }
 #endif
 
 #if !defined(OS_CHROMEOS)
-void SyncHandler::HandleStartSignin(const base::ListValue* args) {
+void PeopleHandler::HandleStartSignin(const base::ListValue* args) {
   // Should only be called if the user is not already signed in.
   DCHECK(!SigninManagerFactory::GetForProfile(profile_)->IsAuthenticated());
   OpenSyncSetup(args);
 }
 
-void SyncHandler::HandleStopSyncing(const base::ListValue* args) {
+void PeopleHandler::HandleStopSyncing(const base::ListValue* args) {
   if (GetSyncService())
     ProfileSyncService::SyncEvent(ProfileSyncService::STOP_FROM_OPTIONS);
   SigninManagerFactory::GetForProfile(profile_)
@@ -571,20 +568,20 @@ void SyncHandler::HandleStopSyncing(const base::ListValue* args) {
 }
 #endif
 
-void SyncHandler::HandleCloseTimeout(const base::ListValue* args) {
+void PeopleHandler::HandleCloseTimeout(const base::ListValue* args) {
   CloseSyncSetup();
 }
 
-void SyncHandler::HandleGetSyncStatus(const base::ListValue* /* args */) {
+void PeopleHandler::HandleGetSyncStatus(const base::ListValue* /* args */) {
   UpdateSyncState();
 }
 
-void SyncHandler::HandleManageOtherPeople(const base::ListValue* /* args */) {
+void PeopleHandler::HandleManageOtherPeople(const base::ListValue* /* args */) {
   UserManager::Show(base::FilePath(), profiles::USER_MANAGER_NO_TUTORIAL,
                     profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);
 }
 
-void SyncHandler::CloseSyncSetup() {
+void PeopleHandler::CloseSyncSetup() {
   // Stop a timer to handle timeout in waiting for checking network connection.
   backend_start_timer_.reset();
 
@@ -596,7 +593,8 @@ void SyncHandler::CloseSyncSetup() {
     // Don't log a cancel event if the sync setup dialog is being
     // automatically closed due to an auth error.
     if (!sync_service || (!sync_service->HasSyncSetupCompleted() &&
-        sync_service->GetAuthError().state() == GoogleServiceAuthError::NONE)) {
+                          sync_service->GetAuthError().state() ==
+                              GoogleServiceAuthError::NONE)) {
       if (configuring_sync_) {
         ProfileSyncService::SyncEvent(
             ProfileSyncService::CANCEL_DURING_CONFIGURE);
@@ -610,7 +608,7 @@ void SyncHandler::CloseSyncSetup() {
         if (sync_service) {
           DVLOG(1) << "Sync setup aborted by user action";
           sync_service->RequestStop(ProfileSyncService::CLEAR_DATA);
-  #if !defined(OS_CHROMEOS)
+#if !defined(OS_CHROMEOS)
           // Sign out the user on desktop Chrome if they click cancel during
           // initial setup.
           // TODO(rsimha): Revisit this for M30. See http://crbug.com/252049.
@@ -618,7 +616,7 @@ void SyncHandler::CloseSyncSetup() {
             SigninManagerFactory::GetForProfile(profile_)
                 ->SignOut(signin_metrics::ABORT_SIGNIN);
           }
-  #endif
+#endif
         }
       }
     }
@@ -635,7 +633,7 @@ void SyncHandler::CloseSyncSetup() {
   configuring_sync_ = false;
 }
 
-void SyncHandler::OpenSyncSetup(const base::ListValue* args) {
+void PeopleHandler::OpenSyncSetup(const base::ListValue* args) {
   if (!PrepareSyncSetup())
     return;
 
@@ -685,42 +683,42 @@ void SyncHandler::OpenSyncSetup(const base::ListValue* args) {
   DisplayConfigureSync(false);
 }
 
-void SyncHandler::OpenConfigureSync() {
+void PeopleHandler::OpenConfigureSync() {
   if (!PrepareSyncSetup())
     return;
 
   DisplayConfigureSync(false);
 }
 
-void SyncHandler::FocusUI() {
+void PeopleHandler::FocusUI() {
   DCHECK(IsActiveLogin());
   WebContents* web_contents = web_ui()->GetWebContents();
   web_contents->GetDelegate()->ActivateContents(web_contents);
 }
 
-void SyncHandler::CloseUI() {
+void PeopleHandler::CloseUI() {
   CloseSyncSetup();
   base::StringValue page("done");
   web_ui()->CallJavascriptFunction("settings.SyncPrivateApi.showSyncSetupPage",
                                    page);
 }
 
-void SyncHandler::GoogleSigninSucceeded(const std::string& /* account_id */,
-                                        const std::string& /* username */,
-                                        const std::string& /* password */) {
+void PeopleHandler::GoogleSigninSucceeded(const std::string& /* account_id */,
+                                          const std::string& /* username */,
+                                          const std::string& /* password */) {
   UpdateSyncState();
 }
 
-void SyncHandler::GoogleSignedOut(const std::string& /* account_id */,
-                                  const std::string& /* username */) {
+void PeopleHandler::GoogleSignedOut(const std::string& /* account_id */,
+                                    const std::string& /* username */) {
   UpdateSyncState();
 }
 
-void SyncHandler::OnStateChanged() {
+void PeopleHandler::OnStateChanged() {
   UpdateSyncState();
 }
 
-scoped_ptr<base::DictionaryValue> SyncHandler::GetSyncStateDictionary() {
+scoped_ptr<base::DictionaryValue> PeopleHandler::GetSyncStateDictionary() {
   // The items which are to be written into |sync_status| are also described in
   // chrome/browser/resources/options/browser_options.js in @typedef
   // for SyncStatus. Please update it whenever you add or remove any keys here.
@@ -790,13 +788,13 @@ scoped_ptr<base::DictionaryValue> SyncHandler::GetSyncStateDictionary() {
   return sync_status.Pass();
 }
 
-bool SyncHandler::IsExistingWizardPresent() {
+bool PeopleHandler::IsExistingWizardPresent() {
   LoginUIService* service = GetLoginUIService();
   DCHECK(service);
   return service->current_login_ui() != nullptr;
 }
 
-bool SyncHandler::FocusExistingWizardIfPresent() {
+bool PeopleHandler::FocusExistingWizardIfPresent() {
   if (!IsExistingWizardPresent())
     return false;
 
@@ -806,7 +804,7 @@ bool SyncHandler::FocusExistingWizardIfPresent() {
   return true;
 }
 
-void SyncHandler::DisplayConfigureSync(bool passphrase_failed) {
+void PeopleHandler::DisplayConfigureSync(bool passphrase_failed) {
   // Should never call this when we are not signed in.
   DCHECK(SigninManagerFactory::GetForProfile(profile_)->IsAuthenticated());
   ProfileSyncService* service = GetSyncService();
@@ -885,10 +883,9 @@ void SyncHandler::DisplayConfigureSync(bool passphrase_failed) {
   if (!passphrase_time.is_null()) {
     base::string16 passphrase_time_str =
         base::TimeFormatShortDate(passphrase_time);
-    args.SetString(
-        "enterPassphraseBody",
-        GetStringFUTF16(IDS_SYNC_ENTER_PASSPHRASE_BODY_WITH_DATE,
-                        passphrase_time_str));
+    args.SetString("enterPassphraseBody",
+                   GetStringFUTF16(IDS_SYNC_ENTER_PASSPHRASE_BODY_WITH_DATE,
+                                   passphrase_time_str));
     args.SetString(
         "enterGooglePassphraseBody",
         GetStringFUTF16(IDS_SYNC_ENTER_GOOGLE_PASSPHRASE_BODY_WITH_DATE,
@@ -907,19 +904,16 @@ void SyncHandler::DisplayConfigureSync(bool passphrase_failed) {
                             passphrase_time_str));
         break;
       default:
-        args.SetString(
-            "fullEncryptionBody",
-            GetStringUTF16(IDS_SYNC_FULL_ENCRYPTION_BODY_CUSTOM));
+        args.SetString("fullEncryptionBody",
+                       GetStringUTF16(IDS_SYNC_FULL_ENCRYPTION_BODY_CUSTOM));
         break;
     }
   } else if (passphrase_type == syncer::CUSTOM_PASSPHRASE) {
-    args.SetString(
-        "fullEncryptionBody",
-        GetStringUTF16(IDS_SYNC_FULL_ENCRYPTION_BODY_CUSTOM));
+    args.SetString("fullEncryptionBody",
+                   GetStringUTF16(IDS_SYNC_FULL_ENCRYPTION_BODY_CUSTOM));
   } else {
-    args.SetString(
-        "fullEncryptionBody",
-        GetStringUTF16(IDS_SYNC_FULL_ENCRYPTION_DATA));
+    args.SetString("fullEncryptionBody",
+                   GetStringUTF16(IDS_SYNC_FULL_ENCRYPTION_DATA));
   }
 
   base::StringValue page("configure");
@@ -931,16 +925,16 @@ void SyncHandler::DisplayConfigureSync(bool passphrase_failed) {
   FocusUI();
 }
 
-LoginUIService* SyncHandler::GetLoginUIService() const {
+LoginUIService* PeopleHandler::GetLoginUIService() const {
   return LoginUIServiceFactory::GetForProfile(profile_);
 }
 
-void SyncHandler::UpdateSyncState() {
+void PeopleHandler::UpdateSyncState() {
   web_ui()->CallJavascriptFunction("settings.SyncPrivateApi.sendSyncStatus",
                                    *GetSyncStateDictionary());
 }
 
-void SyncHandler::OnSigninAllowedPrefChange() {
+void PeopleHandler::OnSigninAllowedPrefChange() {
   UpdateSyncState();
 }
 

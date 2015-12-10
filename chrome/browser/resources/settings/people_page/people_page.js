@@ -4,20 +4,20 @@
 
 /**
  * @fileoverview
- * 'settings-signin-page' is the settings page containing sign-in settings.
+ * 'settings-people-page' is the settings page containing sign-in settings.
  *
  * Example:
  *
  *    <iron-animated-pages>
- *      <settings-signin-page prefs="{{prefs}}"></settings-signin-page>
+ *      <settings-people-page prefs="{{prefs}}"></settings-people-page>
  *      ... other pages ...
  *    </iron-animated-pages>
  *
  * @group Chrome Settings Elements
- * @element settings-signin-page
+ * @element settings-people-page
  */
 Polymer({
-  is: 'settings-signin-page',
+  is: 'settings-people-page',
 
   behaviors: [
     I18nBehavior,
