@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/environment.h"
 #include "base/file_version_info.h"
 #include "base/files/file_path.h"
 #include "base/logging_win.h"
@@ -194,6 +195,40 @@ void OnWindowEvent(
 }
 
 #ifdef KASKO
+// Helper function for determining the crash server to use. Defaults to the
+// standard crash server, but can be overridden via an environment variable.
+// Enables easy integration testing.
+void GetKaskoCrashServerUrl(base::string16* crash_server) {
+  const char kKaskoCrashServerUrl[] = "KASKO_CRASH_SERVER_URL";
+  static const wchar_t kDefaultKaskoCrashServerUrl[] =
+      L"https://clients2.google.com/cr/report";
+
+  auto env = base::Environment::Create();
+  std::string env_var;
+  if (env->GetVar(kKaskoCrashServerUrl, &env_var)) {
+    base::UTF8ToWide(env_var.c_str(), env_var.size(), crash_server);
+  } else {
+    *crash_server = kDefaultKaskoCrashServerUrl;
+  }
+}
+
+// Helper function for determining the crash reports directory to use. Defaults
+// to the browser data directory, but can be overridden via an environment
+// variable. Enables easy integration testing.
+void GetKaskoCrashReportsBaseDir(const base::char16* browser_data_directory,
+                                 base::FilePath* base_dir) {
+  const char kKaskoCrashReportBaseDir[] = "KASKO_CRASH_REPORTS_BASE_DIR";
+  auto env = base::Environment::Create();
+  std::string env_var;
+  if (env->GetVar(kKaskoCrashReportBaseDir, &env_var)) {
+    base::string16 wide_env_var;
+    base::UTF8ToWide(env_var.c_str(), env_var.size(), &wide_env_var);
+    *base_dir = base::FilePath(wide_env_var);
+  } else {
+    *base_dir = base::FilePath(browser_data_directory);
+  }
+}
+
 void DumpHungBrowserProcess(DWORD main_thread_id,
                             const base::string16& channel,
                             const base::Process& process) {
@@ -337,14 +372,19 @@ extern "C" int WatcherMain(const base::char16* registry_path,
   base::Callback<void(const base::Process&)> on_hung_callback;
 
 #ifdef KASKO
+  base::string16 crash_server;
+  GetKaskoCrashServerUrl(&crash_server);
+
+  base::FilePath crash_reports_base_dir;
+  GetKaskoCrashReportsBaseDir(browser_data_directory, &crash_reports_base_dir);
   bool launched_kasko = kasko::api::InitializeReporter(
       GetKaskoEndpoint(process.Pid()).c_str(),
-      L"https://clients2.google.com/cr/report",
-      base::FilePath(browser_data_directory)
+      crash_server.c_str(),
+      crash_reports_base_dir
           .Append(L"Crash Reports")
           .value()
           .c_str(),
-      base::FilePath(browser_data_directory)
+      crash_reports_base_dir
           .Append(kPermanentlyFailedReportsSubdir)
           .value()
           .c_str(),
