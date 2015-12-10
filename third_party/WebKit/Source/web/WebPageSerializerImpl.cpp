@@ -443,6 +443,10 @@ bool WebPageSerializerImpl::serialize()
         didSerialization = true;
 
         const WTF::TextEncoding& textEncoding = document->encoding().isValid() ? document->encoding() : UTF8Encoding();
+        if (textEncoding.isNonByteBasedEncoding()) {
+            const UChar byteOrderMark = 0xFEFF;
+            m_dataBuffer.append(byteOrderMark);
+        }
 
         SerializeDomParam param(url, textEncoding, document);
 

@@ -976,16 +976,27 @@ class SavePageMultiFrameBrowserTest
           nullptr, nullptr);
 
       EXPECT_EQ(1, actual_number_of_matches)
-          << "Verifying if \"" << expected_substring << "\" appears "
-          << "exactly once in the web-contents text";
+          << "Verifying that \"" << expected_substring << "\" appears "
+          << "exactly once in the text of web contents";
     }
 
-    int actual_number_of_errors = ui_test_utils::FindInPage(
-        GetCurrentTab(browser()), base::UTF8ToUTF16("err"),
-        true,   // |forward|
-        false,  // |case_sensitive|
-        nullptr, nullptr);
-    EXPECT_EQ(0, actual_number_of_errors);
+    std::string forbidden_substrings[] = {
+        "head"  // Html markup should not be visible.
+        "err",  // "err" is a prefix of error messages + is included as text
+                // content of <object> elements in some test files (text content
+                // would be rendered in case the object itself doesn't work).
+    };
+    for (const auto& forbidden_substring : forbidden_substrings) {
+      int actual_number_of_matches = ui_test_utils::FindInPage(
+          GetCurrentTab(browser()), base::UTF8ToUTF16(forbidden_substring),
+          true,  // |forward|
+          true,  // |case_sensitive|
+          nullptr, nullptr);
+
+      EXPECT_EQ(0, actual_number_of_matches)
+          << "Verifying that \"" << forbidden_substring << "\" doesn't "
+          << "appear in the text of web contents";
+    }
   }
 
   static void IncrementInteger(int* i, content::RenderFrameHost* /* unused */) {
@@ -1128,6 +1139,46 @@ IN_PROC_BROWSER_TEST_P(SavePageMultiFrameBrowserTest, RuntimeChanges) {
       "a.com", "/save_page/frames-runtime-changes.htm?do_runtime_changes=1"));
 
   TestMultiFramePage(save_page_type, url, 5, expected_substrings);
+}
+
+// Test for saving frames with various encodings:
+// - iso-8859-2: encoding declared via <meta> element
+// - utf16-le-bom.htm, utf16-be-bom.htm: encoding detected via BOM
+// - utf16-le-nobom.htm, utf16-le-nobom.htm, utf32.htm - encoding declared via
+//                                                       mocked http headers
+IN_PROC_BROWSER_TEST_P(SavePageMultiFrameBrowserTest, Encoding) {
+  content::SavePageType save_page_type = GetParam();
+
+  std::string arr[] = {
+      "frames-encodings.htm: f53295dd-a95b-4b32-85f5-b6e15377fb20",
+      "iso-8859-2.htm: Za\xc5\xbc\xc3\xb3\xc5\x82\xc4\x87 "
+          "g\xc4\x99\xc5\x9bl\xc4\x85 ja\xc5\xba\xc5\x84",
+      "utf16-le-nobom.htm: Za\xc5\xbc\xc3\xb3\xc5\x82\xc4\x87 "
+          "g\xc4\x99\xc5\x9bl\xc4\x85 ja\xc5\xba\xc5\x84",
+      "utf16-le-bom.htm: Za\xc5\xbc\xc3\xb3\xc5\x82\xc4\x87 "
+          "g\xc4\x99\xc5\x9bl\xc4\x85 ja\xc5\xba\xc5\x84",
+      "utf16-be-nobom.htm: Za\xc5\xbc\xc3\xb3\xc5\x82\xc4\x87 "
+          "g\xc4\x99\xc5\x9bl\xc4\x85 ja\xc5\xba\xc5\x84",
+      "utf16-be-bom.htm: Za\xc5\xbc\xc3\xb3\xc5\x82\xc4\x87 "
+          "g\xc4\x99\xc5\x9bl\xc4\x85 ja\xc5\xba\xc5\x84",
+      "utf32.htm: Za\xc5\xbc\xc3\xb3\xc5\x82\xc4\x87 "
+          "g\xc4\x99\xc5\x9bl\xc4\x85 ja\xc5\xba\xc5\x84",
+  };
+  std::vector<std::string> expected_substrings(std::begin(arr), std::end(arr));
+
+  GURL url(embedded_test_server()->GetURL("a.com",
+                                          "/save_page/frames-encodings.htm"));
+
+  // TODO(lukasza): crbug.com/541699: MHTML needs to handle multi-byte encodings
+  // by either:
+  // 1. Continuing to preserve the original encoding, but starting to round-trip
+  //    the encoding declaration (in Content-Type MIME/MHTML header?)
+  // 2. Saving html docs in UTF8.
+  // 3. Saving the BOM (not sure if this will help for all cases though).
+  if (save_page_type == content::SAVE_PAGE_TYPE_AS_MHTML)
+    return;
+
+  TestMultiFramePage(save_page_type, url, 7, expected_substrings);
 }
 
 INSTANTIATE_TEST_CASE_P(

@@ -54,8 +54,9 @@ public:
 
     CString encode(const String&, UnencodableHandling) const;
 
-private:
     bool isNonByteBasedEncoding() const;
+
+private:
     bool isUTF7Encoding() const;
 
     const char* m_name;
