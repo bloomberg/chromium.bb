@@ -10,6 +10,7 @@
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 #include "content/renderer/media/audio_track_recorder.h"
+#include "content/renderer/media/media_stream_track.h"
 #include "content/renderer/media/video_track_recorder.h"
 #include "content/renderer/media/webrtc_uma_histograms.h"
 #include "media/audio/audio_parameters.h"
@@ -113,9 +114,15 @@ bool MediaRecorderHandler::start(int timeslice) {
     return false;
   }
 
+  // We cannot add ourselves as sink to a remote audio track, see
+  // http://crbug.com/121673 and MediaStreamAudioSink::AddToAudioTrack();
+  const bool use_audio_tracks = !audio_tracks.isEmpty() &&
+      MediaStreamTrack::GetTrack(audio_tracks[0]) &&
+      MediaStreamTrack::GetTrack(audio_tracks[0])->is_local_track();
+
   webm_muxer_.reset(new media::WebmMuxer(
       use_vp9_ ? media::kCodecVP9 : media::kCodecVP8,
-      video_tracks.size() > 0, audio_tracks.size() > 0,
+      video_tracks.size() > 0, use_audio_tracks,
       base::Bind(&MediaRecorderHandler::WriteData,
                  weak_factory_.GetWeakPtr())));
 
@@ -137,7 +144,7 @@ bool MediaRecorderHandler::start(int timeslice) {
         new VideoTrackRecorder(use_vp9_, video_track, on_encoded_video_cb));
   }
 
-  if (!audio_tracks.isEmpty()) {
+  if (use_audio_tracks) {
     // TODO(ajose): The muxer API supports only one audio track. Extend it to
     // several tracks.
     LOG_IF(WARNING, audio_tracks.size() > 1u)
