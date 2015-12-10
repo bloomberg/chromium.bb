@@ -76,6 +76,9 @@ public class InvalidationPreferences {
 
     private static final String TAG = "InvalidationPreferences";
 
+    // Only one commit call can be in progress at a time.
+    private static final Object sCommitLock = new Object();
+
     private final Context mContext;
 
     public InvalidationPreferences(Context context) {
@@ -96,11 +99,13 @@ public class InvalidationPreferences {
      * NOTE: this method performs blocking I/O and must not be called from the UI thread.
      */
     public boolean commit(EditContext editContext) {
-        if (!editContext.mEditor.commit()) {
-            Log.w(TAG, "Failed to commit invalidation preferences");
-            return false;
+        synchronized (sCommitLock) {
+            if (!editContext.mEditor.commit()) {
+                Log.w(TAG, "Failed to commit invalidation preferences");
+                return false;
+            }
+            return true;
         }
-        return true;
     }
 
     /** Returns the saved sync types, or {@code null} if none exist. */
