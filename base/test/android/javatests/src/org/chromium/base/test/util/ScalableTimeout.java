@@ -13,7 +13,7 @@ import org.chromium.base.annotations.SuppressFBWarnings;
  */
 public class ScalableTimeout {
     private static Double sTimeoutScale = null;
-    private static final String PROPERTY_FILE = "/data/local/tmp/chrome_timeout_scale";
+    public static final String PROPERTY_FILE = "/data/local/tmp/chrome_timeout_scale";
 
     @SuppressFBWarnings("DMI_HARDCODED_ABSOLUTE_FILENAME")
     public static long scaleTimeout(long timeout) {

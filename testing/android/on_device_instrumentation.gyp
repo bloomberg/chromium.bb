@@ -38,6 +38,7 @@
             'broker_java',
             'reporter_java',
             'appurify_support.gyp:appurify_support_java',
+            '../../base/base.gyp:base_java_test_support',
           ],
           'variables': {
             'apk_name': '<(driver_apk_name)',
