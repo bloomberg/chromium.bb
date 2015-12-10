@@ -474,6 +474,18 @@ const FeatureEntry::Choice kForceUIDirectionChoices[] = {
      switches::kForceUIDirectionRTL},
 };
 
+#if defined(OS_ANDROID)
+const FeatureEntry::Choice kNtpSwitchToExistingTabChoices[] = {
+    {IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", ""},
+    {IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED, switches::kNtpSwitchToExistingTab,
+     "disabled"},
+    {IDS_FLAGS_NTP_SWITCH_TO_EXISTING_TAB_MATCH_URL,
+     switches::kNtpSwitchToExistingTab, "url"},
+    {IDS_FLAGS_NTP_SWITCH_TO_EXISTING_TAB_MATCH_HOST,
+     switches::kNtpSwitchToExistingTab, "host"},
+};
+#endif  // defined(OS_ANDROID)
+
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the entry is the internal name. If you'd like to gather
@@ -1949,6 +1961,11 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAndroid,
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableNTPPopularSites,
                                switches::kDisableNTPPopularSites)},
+    {"ntp-switch-to-existing-tab",
+     IDS_FLAGS_NTP_SWITCH_TO_EXISTING_TAB_NAME,
+     IDS_FLAGS_NTP_SWITCH_TO_EXISTING_TAB_DESCRIPTION,
+     kOsAndroid,
+     MULTI_VALUE_TYPE(kNtpSwitchToExistingTabChoices)},
     {"use-android-midi-api",
      IDS_FLAGS_USE_ANDROID_MIDI_API_NAME,
      IDS_FLAGS_USE_ANDROID_MIDI_API_DESCRIPTION,

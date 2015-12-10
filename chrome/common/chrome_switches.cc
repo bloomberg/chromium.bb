@@ -1152,6 +1152,9 @@ const char kProgressBarAnimation[]          = "progress-bar-animation";
 // Enabled tab switcher in document mode.
 const char kEnableTabSwitcherInDocumentMode[] =
     "enable-tab-switcher-in-document-mode";
+
+// Switch to an existing tab for a suggestion opened from the New Tab Page.
+const char kNtpSwitchToExistingTab[] = "ntp-switch-to-existing-tab";
 #endif  // defined(OS_ANDROID)
 
 #if defined(USE_ASH)

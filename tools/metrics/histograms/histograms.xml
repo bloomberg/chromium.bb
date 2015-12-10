@@ -68280,6 +68280,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1257980502" label="disable-accelerated-video-decode"/>
   <int value="1268470658" label="disable-android-password-link"/>
   <int value="1272699563" label="enable-hosted-mode"/>
+  <int value="1276209777" label="ntp-switch-to-existing-tab"/>
   <int value="1279584261" label="enable-carrier-switching"/>
   <int value="1283960113" label="disable-fixed-position-compositing"/>
   <int value="1298981651" label="disable-new-task-manager"/>

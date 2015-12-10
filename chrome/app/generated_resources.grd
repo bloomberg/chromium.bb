@@ -14635,6 +14635,18 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       <message name="IDS_FLAGS_NTP_POPULAR_SITES_DESCRIPTION" desc="Description for the flag to enable showing non-personalized popular suggestions on the New Tab Page, when no personal suggestions are available yet.">
         Pre-populate the New Tab page with popular sites.
       </message>
+      <message name="IDS_FLAGS_NTP_SWITCH_TO_EXISTING_TAB_NAME" desc="Name for the flag to control the behaviour when opening a suggestion from the New Tab Page if an existing tab for it is open.">
+        Switch to an existing tab for New Tab Page suggestions.
+      </message>
+      <message name="IDS_FLAGS_NTP_SWITCH_TO_EXISTING_TAB_DESCRIPTION" desc="Description for the flag to control the behaviour when opening a suggestion from the New Tab Page if an existing tab for it is open.">
+        When opening a suggestion from the New Tab Page, if a tab is already open for the suggestion, switch to that one instead of loading the suggestion in the new tab.
+      </message>
+      <message name="IDS_FLAGS_NTP_SWITCH_TO_EXISTING_TAB_MATCH_URL" desc="Match suggestions with existing tabs by their URL.">
+        Match by URL
+      </message>
+      <message name="IDS_FLAGS_NTP_SWITCH_TO_EXISTING_TAB_MATCH_HOST" desc="Match suggestions with existing tabs by their Hostname.">
+        Match by Hostname
+      </message>
       <message name="IDS_FLAGS_USE_ANDROID_MIDI_API_NAME" desc="Name for the flag to use android midi api.">
         Use Android Midi API
       </message>

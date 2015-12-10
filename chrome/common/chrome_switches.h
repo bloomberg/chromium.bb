@@ -316,6 +316,7 @@ extern const char kProgressBarAnimation[];
 extern const char kEnableThemeColorInTabbedMode[];
 extern const char kDisableAutoHidingToolbarThreshold[];
 extern const char kEnableTabSwitcherInDocumentMode[];
+extern const char kNtpSwitchToExistingTab[];
 #endif  // defined(OS_ANDROID)
 
 #if defined(USE_ASH)

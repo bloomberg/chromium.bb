@@ -12,9 +12,6 @@ public abstract class ChromeSwitches {
     // Switches used from Java.  Please continue switch style used Chrome where
     // options-have-hypens and are_not_split_with_underscores.
 
-    /** Testing: pretend that the switch value is the name of a child account. */
-    public static final String CHILD_ACCOUNT = "child-account";
-
     /** Mimic a low end device */
     public static final String ENABLE_ACCESSIBILITY_TAB_SWITCHER =
             "enable-accessibility-tab-switcher";
@@ -159,6 +156,14 @@ public abstract class ChromeSwitches {
      * Native switch - switches::kProgressBarAnimation
      */
     public static final String PROGRESS_BAR_ANIMATION = "progress-bar-animation";
+
+    /**
+     * Specifies Android NTP behaviour on clicking a Most{Visited/Likely} tile.
+     * Specifically whether to refocus an existing tab with the same url or host or to load the url
+     * in the current tab.
+     * Native switch - switches::kNtpSwitchToExistingTab
+     */
+    public static final String NTP_SWITCH_TO_EXISTING_TAB = "ntp-switch-to-existing-tab";
 
     /**
      * Enable offline pages.

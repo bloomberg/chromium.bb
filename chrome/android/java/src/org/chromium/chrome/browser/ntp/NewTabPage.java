@@ -4,13 +4,17 @@
 
 package org.chromium.chrome.browser.ntp;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.app.Dialog;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Rect;
+import android.os.Build;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -23,11 +27,13 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.NativePage;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.compositor.layouts.content.InvalidationAwareThumbnailProvider;
 import org.chromium.chrome.browser.document.DocumentMetricIds;
+import org.chromium.chrome.browser.document.DocumentUtils;
 import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkUtils;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
 import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
@@ -52,9 +58,14 @@ import org.chromium.chrome.browser.search_engines.TemplateUrlService.TemplateUrl
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
+import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tabmodel.TabModelUtils;
+import org.chromium.chrome.browser.tabmodel.document.ActivityDelegate;
+import org.chromium.chrome.browser.tabmodel.document.DocumentTabModel;
 import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -254,7 +265,51 @@ public class NewTabPage
         public void open(MostVisitedItem item) {
             if (mIsDestroyed) return;
             recordOpenedMostVisitedItem(item);
-            open(item.getUrl());
+            String url = item.getUrl();
+            if (!switchToExistingTab(url)) open(url);
+        }
+
+        @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+        private boolean switchToExistingTab(String url) {
+            String matchPattern = CommandLine.getInstance().getSwitchValue(
+                    ChromeSwitches.NTP_SWITCH_TO_EXISTING_TAB);
+            boolean matchByHost;
+            if ("url".equals(matchPattern)) {
+                matchByHost = false;
+            } else if ("host".equals(matchPattern)) {
+                matchByHost = true;
+            } else {
+                return false;
+            }
+            if (FeatureUtilities.isDocumentMode(mActivity)) {
+                ActivityManager am =
+                        (ActivityManager) mActivity.getSystemService(Activity.ACTIVITY_SERVICE);
+                DocumentTabModel tabModel =
+                        ChromeApplication.getDocumentTabModelSelector().getModel(false);
+                for (ActivityManager.AppTask task : am.getAppTasks()) {
+                    Intent baseIntent = DocumentUtils.getBaseIntentFromTask(task);
+                    int tabId = ActivityDelegate.getTabIdFromIntent(baseIntent);
+                    String tabUrl = tabModel.getCurrentUrlForDocument(tabId);
+                    if (matchURLs(tabUrl, url, matchByHost)) {
+                        task.moveToFront();
+                        return true;
+                    }
+                }
+            } else {
+                TabModel tabModel = mTabModelSelector.getModel(false);
+                for (int i = tabModel.getCount() - 1; i >= 0; --i) {
+                    if (matchURLs(tabModel.getTabAt(i).getUrl(), url, matchByHost)) {
+                        TabModelUtils.setIndex(tabModel, i);
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        private boolean matchURLs(String url1, String url2, boolean matchByHost) {
+            if (url1 == null || url2 == null) return false;
+            return matchByHost ? UrlUtilities.sameHost(url1, url2) : url1.equals(url2);
         }
 
         @Override
