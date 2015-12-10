@@ -19,7 +19,7 @@ CookiesViewWebUITest.prototype = {
 };
 
 // Test opening the cookies view has correct location.
-TEST_F('CookiesViewWebUITest', 'DISABLED_testOpenCookiesView', function() {
+TEST_F('CookiesViewWebUITest', 'testOpenCookiesView', function() {
   assertEquals(this.browsePreload, document.location.href);
 });
 
