@@ -70,11 +70,11 @@ int CallFutimes(PlatformFile file, const struct timeval times[2]) {
 
 File::Error CallFcntlFlock(PlatformFile file, bool do_lock) {
   struct flock lock;
-  lock.l_type = F_WRLCK;
+  lock.l_type = do_lock ? F_WRLCK : F_UNLCK;
   lock.l_whence = SEEK_SET;
   lock.l_start = 0;
   lock.l_len = 0;  // Lock entire file.
-  if (HANDLE_EINTR(fcntl(file, do_lock ? F_SETLK : F_UNLCK, &lock)) == -1)
+  if (HANDLE_EINTR(fcntl(file, F_SETLK, &lock)) == -1)
     return File::OSErrorToFileError(errno);
   return File::FILE_OK;
 }

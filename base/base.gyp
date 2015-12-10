@@ -472,6 +472,7 @@
         'feature_list_unittest.cc',
         'file_version_info_unittest.cc',
         'files/dir_reader_posix_unittest.cc',
+        'files/file_locking_unittest.cc',
         'files/file_path_unittest.cc',
         'files/file_path_watcher_unittest.cc',
         'files/file_proxy_unittest.cc',
@@ -699,6 +700,8 @@
         }],
         ['OS == "ios" and _toolset != "host"', {
           'sources/': [
+            # This test needs multiple processes.
+            ['exclude', '^files/file_locking_unittest\\.cc$'],
             # iOS does not support FilePathWatcher.
             ['exclude', '^files/file_path_watcher_unittest\\.cc$'],
             # Only test the iOS-meaningful portion of memory and process_utils.

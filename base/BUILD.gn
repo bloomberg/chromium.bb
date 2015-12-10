@@ -1301,6 +1301,7 @@ test("base_unittests") {
     "environment_unittest.cc",
     "file_version_info_unittest.cc",
     "files/dir_reader_posix_unittest.cc",
+    "files/file_locking_unittest.cc",
     "files/file_path_unittest.cc",
     "files/file_path_watcher_unittest.cc",
     "files/file_proxy_unittest.cc",
@@ -1535,6 +1536,7 @@ test("base_unittests") {
 
   if (is_ios) {
     sources -= [
+      "files/file_locking_unittest.cc",
       "files/file_path_watcher_unittest.cc",
       "memory/discardable_shared_memory_unittest.cc",
       "memory/shared_memory_unittest.cc",
