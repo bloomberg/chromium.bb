@@ -8,9 +8,11 @@
 #include <map>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/callback_forward.h"
 #include "base/containers/hash_tables.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -18,7 +20,9 @@
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/synchronization/lock.h"
 #include "content/browser/download/download_item_impl_delegate.h"
+#include "content/browser/download/url_downloader.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/download_manager_delegate.h"
 #include "content/public/browser/download_url_parameters.h"
@@ -109,6 +113,8 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
       scoped_ptr<DownloadFileFactory> file_factory);
   virtual DownloadFileFactory* GetDownloadFileFactoryForTesting();
 
+  void RemoveUrlDownloader(UrlDownloader* downloader);
+
  private:
   typedef std::set<DownloadItem*> DownloadSet;
   typedef base::hash_map<uint32, DownloadItemImpl*> DownloadMap;
@@ -168,6 +174,9 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
   void ShowDownloadInShell(DownloadItemImpl* download) override;
   void DownloadRemoved(DownloadItemImpl* download) override;
 
+  void AddUrlDownloader(
+      scoped_ptr<UrlDownloader, BrowserThread::DeleteOnIOThread> downloader);
+
   // Factory for creation of downloads items.
   scoped_ptr<DownloadItemFactory> item_factory_;
 
@@ -195,6 +204,9 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
   DownloadManagerDelegate* delegate_;
 
   net::NetLog* net_log_;
+
+  std::vector<scoped_ptr<UrlDownloader, BrowserThread::DeleteOnIOThread>>
+      url_downloaders_;
 
   base::WeakPtrFactory<DownloadManagerImpl> weak_factory_;
 

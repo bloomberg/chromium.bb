@@ -60,7 +60,7 @@ class MockDelegate : public DownloadItemImplDelegate {
   MOCK_METHOD2(MockResumeInterruptedDownload,
                void(DownloadUrlParameters* params, uint32 id));
 
-  MOCK_CONST_METHOD0(GetBrowserContext, BrowserContext*());
+  BrowserContext* GetBrowserContext() const override { return nullptr; }
   MOCK_METHOD1(UpdatePersistence, void(DownloadItemImpl*));
   MOCK_METHOD1(DownloadOpened, void(DownloadItemImpl*));
   MOCK_METHOD1(DownloadRemoved, void(DownloadItemImpl*));

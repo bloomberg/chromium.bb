@@ -504,9 +504,8 @@ bool DownloadItemImpl::CanResume() const {
   if (state_ != INTERRUPTED_INTERNAL)
     return false;
 
-  // Downloads that don't have a WebContents should still be resumable, but this
-  // isn't currently the case. See ResumeInterruptedDownload().
-  if (!GetWebContents())
+  // We currently only support HTTP(S) requests for download resumption.
+  if (!GetURL().SchemeIsHTTPOrHTTPS())
     return false;
 
   ResumeMode resume_mode = GetResumeMode();
@@ -1685,13 +1684,6 @@ void DownloadItemImpl::ResumeInterruptedDownload() {
   if (state_ != INTERRUPTED_INTERNAL)
     return;
 
-  // If we can't get a web contents, we can't resume the download.
-  // TODO(rdsmith): Find some alternative web contents to use--this
-  // means we can't restart a download if it's a download imported
-  // from the history.
-  if (!GetWebContents())
-    return;
-
   // Reset the appropriate state if restarting.
   ResumeMode mode = GetResumeMode();
   if (mode == RESUME_MODE_IMMEDIATE_RESTART ||
@@ -1702,9 +1694,17 @@ void DownloadItemImpl::ResumeInterruptedDownload() {
     etag_ = "";
   }
 
-  scoped_ptr<DownloadUrlParameters> download_params(
-      DownloadUrlParameters::FromWebContents(GetWebContents(),
-                                             GetOriginalUrl()));
+  scoped_ptr<DownloadUrlParameters> download_params;
+  if (GetWebContents()) {
+    download_params = DownloadUrlParameters::FromWebContents(GetWebContents(),
+                                                             GetOriginalUrl());
+  } else if (GetBrowserContext()) {
+    download_params = make_scoped_ptr(
+        new DownloadUrlParameters(GetOriginalUrl(), -1, -1, -1,
+                                  GetBrowserContext()->GetResourceContext()));
+  } else {
+    return;
+  }
 
   download_params->set_file_path(GetFullPath());
   download_params->set_offset(GetReceivedBytes());

@@ -11,6 +11,7 @@
 #include "base/debug/alias.h"
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
@@ -28,7 +29,6 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_manager_delegate.h"
@@ -49,8 +49,10 @@
 namespace content {
 namespace {
 
-void BeginDownload(scoped_ptr<DownloadUrlParameters> params,
-                   uint32 download_id) {
+scoped_ptr<UrlDownloader, BrowserThread::DeleteOnIOThread> BeginDownload(
+    scoped_ptr<DownloadUrlParameters> params,
+    uint32 download_id,
+    base::WeakPtr<DownloadManagerImpl> download_manager) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // ResourceDispatcherHost{Base} is-not-a URLRequest::Delegate, and
   // DownloadUrlParameters can-not include resource_dispatcher_host_impl.h, so
@@ -121,19 +123,22 @@ void BeginDownload(scoped_ptr<DownloadUrlParameters> params,
   save_info->prompt_for_save_location = params->prompt();
   save_info->file = params->GetFile();
 
-  ResourceDispatcherHost::Get()->BeginDownload(
-      request.Pass(),
-      params->referrer(),
-      params->content_initiated(),
-      params->resource_context(),
-      params->render_process_host_id(),
-      params->render_view_host_routing_id(),
-      params->render_frame_host_routing_id(),
-      params->prefer_cache(),
-      params->do_not_prompt_for_login(),
-      save_info.Pass(),
-      download_id,
-      params->callback());
+  if (params->render_process_host_id() != -1) {
+    ResourceDispatcherHost::Get()->BeginDownload(
+        request.Pass(), params->referrer(), params->content_initiated(),
+        params->resource_context(), params->render_process_host_id(),
+        params->render_view_host_routing_id(),
+        params->render_frame_host_routing_id(), params->prefer_cache(),
+        params->do_not_prompt_for_login(), save_info.Pass(), download_id,
+        params->callback());
+    return nullptr;
+  }
+  return scoped_ptr<UrlDownloader, BrowserThread::DeleteOnIOThread>(
+      UrlDownloader::BeginDownload(
+          download_manager, request.Pass(), params->referrer(), false,
+          params->prefer_cache(), true, save_info.Pass(), download_id,
+          params->callback())
+          .release());
 }
 
 class DownloadItemFactoryImpl : public DownloadItemFactory {
@@ -513,10 +518,12 @@ void DownloadManagerImpl::ResumeInterruptedDownload(
     scoped_ptr<content::DownloadUrlParameters> params,
     uint32 id) {
   RecordDownloadSource(INITIATED_BY_RESUMPTION);
-  BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&BeginDownload, base::Passed(&params), id));
+  BrowserThread::PostTaskAndReplyWithResult(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&BeginDownload, base::Passed(&params), id,
+                 weak_factory_.GetWeakPtr()),
+      base::Bind(&DownloadManagerImpl::AddUrlDownloader,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void DownloadManagerImpl::SetDownloadItemFactoryForTesting(
@@ -541,6 +548,22 @@ void DownloadManagerImpl::DownloadRemoved(DownloadItemImpl* download) {
   if (downloads_.erase(download_id) == 0)
     return;
   delete download;
+}
+
+void DownloadManagerImpl::AddUrlDownloader(
+    scoped_ptr<UrlDownloader, BrowserThread::DeleteOnIOThread> downloader) {
+  if (downloader)
+    url_downloaders_.push_back(downloader.Pass());
+}
+
+void DownloadManagerImpl::RemoveUrlDownloader(UrlDownloader* downloader) {
+  for (auto ptr = url_downloaders_.begin(); ptr != url_downloaders_.end();
+       ++ptr) {
+    if (ptr->get() == downloader) {
+      url_downloaders_.erase(ptr);
+      return;
+    }
+  }
 }
 
 namespace {
@@ -613,9 +636,12 @@ void DownloadManagerImpl::DownloadUrl(
     DCHECK(params->prefer_cache());
     DCHECK_EQ("POST", params->method());
   }
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, base::Bind(
-      &BeginDownload, base::Passed(&params),
-      content::DownloadItem::kInvalidId));
+  BrowserThread::PostTaskAndReplyWithResult(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&BeginDownload, base::Passed(&params),
+                 content::DownloadItem::kInvalidId, weak_factory_.GetWeakPtr()),
+      base::Bind(&DownloadManagerImpl::AddUrlDownloader,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void DownloadManagerImpl::AddObserver(Observer* observer) {
