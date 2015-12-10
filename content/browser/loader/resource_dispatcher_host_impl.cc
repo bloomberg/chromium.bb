@@ -961,6 +961,12 @@ void ResourceDispatcherHostImpl::DidFinishLoading(ResourceLoader* loader) {
             "Net.RequestTime2.Success", request_loading_time);
         break;
       case net::ERR_ABORTED:
+        UMA_HISTOGRAM_CUSTOM_COUNTS("Net.ErrAborted.SentBytes",
+                                    loader->request()->GetTotalSentBytes(), 1,
+                                    50000000, 50);
+        UMA_HISTOGRAM_CUSTOM_COUNTS("Net.ErrAborted.ReceivedBytes",
+                                    loader->request()->GetTotalReceivedBytes(),
+                                    1, 50000000, 50);
         UMA_HISTOGRAM_LONG_TIMES(
             "Net.RequestTime2.ErrAborted", request_loading_time);
         break;

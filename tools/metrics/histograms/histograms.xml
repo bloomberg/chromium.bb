@@ -23318,6 +23318,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.ErrAborted.ReceivedBytes" units="bytes">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    The TotalReceivedBytes() at the time the request finishes with ERR_ABORTED.
+  </summary>
+</histogram>
+
+<histogram name="Net.ErrAborted.SentBytes" units="bytes">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    The TotalSentBytes() at the time the request finishes with ERR_ABORTED.
+  </summary>
+</histogram>
+
 <histogram name="Net.ErrorCodesForHTTPSGoogleMainFrame" enum="NetErrorCodes">
   <obsolete>
     Deprecated as of 2012/5/16, replaced by
