@@ -714,7 +714,7 @@ group("gn_only") {
     deps -= [ "//mandoline:all" ]  # TODO(GYP)
   }
 
-  if (use_libfuzzer) {
+  if (use_libfuzzer || use_drfuzz) {
     # these are needed only for gn to discover build files.
     deps += [
       "//testing/libfuzzer:libfuzzer_main",

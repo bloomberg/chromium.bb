@@ -48,6 +48,10 @@ declare_args() {
   # Compile for fuzzing with LLVM LibFuzzer.
   # See http://www.chromium.org/developers/testing/libfuzzer
   use_libfuzzer = false
+
+  # Compile for fuzzing with Dr. Fuzz
+  # See http://www.chromium.org/developers/testing/dr-fuzz
+  use_drfuzz = false
 }
 
 # Args that are in turn dependent on other args must be in a separate
