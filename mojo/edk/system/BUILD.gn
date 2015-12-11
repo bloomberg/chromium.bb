@@ -170,7 +170,6 @@ test("mojo_system_unittests2") {
   ]
 
   deps = [
-    ":system",
     ":test_utils",
 
     # TODO(use_chrome_edk): remove "2"
