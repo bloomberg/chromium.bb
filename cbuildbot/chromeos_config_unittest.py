@@ -257,14 +257,23 @@ class CBuildBotTest(GenerateChromeosConfigTestBase):
               'Config %s: has %s VM test, not in override (%s, %s).' % \
               (build_name, test, config.vm_tests, config.vm_tests_override))
 
-  def testHWTestsIFFArchivingHWTestArtifacts(self):
+  def testHWTestsArchivingHWTestArtifacts(self):
     """Make sure all configs upload artifacts that need them for hw testing."""
     for build_name, config in self.all_configs.iteritems():
-      if config['hw_tests']:
+      if config.hw_tests:
         self.assertTrue(
-            config['upload_hw_test_artifacts'],
+            config.upload_hw_test_artifacts,
             "%s is trying to run hw tests without uploading payloads." %
             build_name)
+
+  def testHWTestsReleaseBuilderRequirement(self):
+    """Make sure all release configs run hw tests."""
+    for build_name, config in self.all_configs.iteritems():
+      if (config.build_type == 'canary' and 'test' in config.images and
+          config.upload_hw_test_artifacts):
+        self.assertTrue(
+            config.hw_tests,
+            "Release builder %s must run hw tests." % build_name)
 
   def testValidUnifiedMasterConfig(self):
     """Make sure any unified master configurations are valid."""
