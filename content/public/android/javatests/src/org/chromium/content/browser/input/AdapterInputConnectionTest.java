@@ -33,7 +33,9 @@ public class AdapterInputConnectionTest extends ContentShellTestBase {
         launchContentShellWithUrl("about:blank");
         waitForActiveShellToBeDoneLoading();
         mWrapper = new TestInputMethodManagerWrapper(getActivity());
-        mImeAdapter = new TestImeAdapter(mWrapper, new TestImeAdapterDelegate());
+        TestImeAdapterDelegate imeAdapterDelegate =
+                new TestImeAdapterDelegate(getContentViewCore().getContainerView());
+        mImeAdapter = new TestImeAdapter(mWrapper, imeAdapterDelegate);
         mConnection = new AdapterInputConnection(
                 getContentViewCore().getContainerView(), mImeAdapter, 0, 0, new EditorInfo());
     }

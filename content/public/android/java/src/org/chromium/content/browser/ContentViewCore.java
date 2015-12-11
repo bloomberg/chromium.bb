@@ -591,9 +591,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
     // The client that implements Contextual Search functionality, or null if none exists.
     private ContextualSearchClient mContextualSearchClient;
 
-    // Keep the current configuration to detect the change when onConfigurationChanged() is called.
-    private Configuration mCurrentConfig;
-
     /**
      * @param webContents The {@link WebContents} to find a {@link ContentViewCore} of.
      * @return            A {@link ContentViewCore} that is connected to {@code webContents} or
@@ -627,8 +624,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
         mGestureStateListenersIterator = mGestureStateListeners.rewindableIterator();
 
         mContainerViewObservers = new ObserverList<ContainerViewObserver>();
-        // Deep copy newConfig so that we can notice the difference.
-        mCurrentConfig = new Configuration(getContext().getResources().getConfiguration());
     }
 
     /**
@@ -1519,17 +1514,8 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
     public void onConfigurationChanged(Configuration newConfig) {
         try {
             TraceEvent.begin("ContentViewCore.onConfigurationChanged");
-
-            if (mCurrentConfig.keyboard != newConfig.keyboard
-                    || mCurrentConfig.keyboardHidden != newConfig.keyboardHidden
-                    || mCurrentConfig.hardKeyboardHidden != newConfig.hardKeyboardHidden) {
-                mImeAdapter.onKeyboardConfigurationChanged();
-            }
-            // Deep copy newConfig so that we can notice the difference.
-            mCurrentConfig = new Configuration(newConfig);
-
+            mImeAdapter.onKeyboardConfigurationChanged(newConfig);
             mContainerViewInternals.super_onConfigurationChanged(newConfig);
-
             // To request layout has side effect, but it seems OK as it only happen in
             // onConfigurationChange and layout has to be changed in most case.
             mContainerView.requestLayout();

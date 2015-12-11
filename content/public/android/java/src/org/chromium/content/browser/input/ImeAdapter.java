@@ -103,6 +103,9 @@ public class ImeAdapter {
     private int mTextInputType = TextInputType.NONE;
     private int mTextInputFlags;
 
+    // Keep the current configuration to detect the change when onConfigurationChanged() is called.
+    private Configuration mCurrentConfig;
+
     /**
      * @param wrapper InputMethodManagerWrapper that should receive all the call directed to
      *                InputMethodManager.
@@ -114,6 +117,9 @@ public class ImeAdapter {
         mInputConnectionFactory = new AdapterInputConnectionFactory();
         mEditable = Editable.Factory.getInstance().newEditable("");
         Selection.setSelection(mEditable, 0);
+        // Deep copy newConfig so that we can notice the difference.
+        mCurrentConfig = new Configuration(
+                mViewEmbedder.getAttachedView().getResources().getConfiguration());
     }
 
     /**
@@ -329,7 +335,16 @@ public class ImeAdapter {
     /**
      * Call this when keyboard configuration has changed.
      */
-    public void onKeyboardConfigurationChanged() {
+    public void onKeyboardConfigurationChanged(Configuration newConfig) {
+        // If configuration unchanged, do nothing.
+        if (mCurrentConfig.keyboard == newConfig.keyboard
+                && mCurrentConfig.keyboardHidden == newConfig.keyboardHidden
+                && mCurrentConfig.hardKeyboardHidden == newConfig.hardKeyboardHidden) {
+            return;
+        }
+
+        // Deep copy newConfig so that we can notice the difference.
+        mCurrentConfig = new Configuration(newConfig);
         Log.d(TAG, "onKeyboardConfigurationChanged: mTextInputType [%d]", mTextInputType);
         if (mTextInputType != TextInputType.NONE) {
             restartInput();

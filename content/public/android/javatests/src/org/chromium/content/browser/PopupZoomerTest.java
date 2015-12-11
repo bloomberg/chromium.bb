@@ -81,9 +81,9 @@ public class PopupZoomerTest extends ContentShellTestBase {
         mPopupZoomer = createPopupZoomerForTest(getInstrumentation().getTargetContext());
         mContentViewCore = new ContentViewCore(getActivity());
         mContentViewCore.setPopupZoomerForTest(mPopupZoomer);
-        mContentViewCore.setImeAdapterForTest(new ImeAdapter(
-                new TestInputMethodManagerWrapper(mContentViewCore),
-                new TestImeAdapterDelegate()));
+        mContentViewCore.setImeAdapterForTest(
+                new ImeAdapter(new TestInputMethodManagerWrapper(mContentViewCore),
+                        new TestImeAdapterDelegate(getContentViewCore().getContainerView())));
     }
 
     @SmallTest

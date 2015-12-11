@@ -15,10 +15,6 @@ import org.chromium.content.browser.input.ImeAdapter.ImeAdapterDelegate;
 public class TestImeAdapterDelegate implements ImeAdapterDelegate {
     private final View mView;
 
-    public TestImeAdapterDelegate() {
-        this(null);
-    }
-
     public TestImeAdapterDelegate(View view) {
         mView = view;
     }
