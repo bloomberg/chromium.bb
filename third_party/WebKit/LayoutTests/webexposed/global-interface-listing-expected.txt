@@ -3286,7 +3286,7 @@ interface MediaQueryListEvent : Event
     getter media
     method constructor
 interface MediaRecorder : EventTarget
-    static method canRecordMimeType
+    static method isTypeSupported
     getter ignoreMutedMedia
     getter mimeType
     getter ondataavailable

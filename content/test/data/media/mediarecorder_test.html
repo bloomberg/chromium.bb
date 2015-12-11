@@ -23,7 +23,7 @@ function createAndStartMediaRecorder(stream, mimeType) {
   return new Promise(function(resolve, reject) {
     console.log('Starting MediaRecorder instance');
     document.getElementById("video").src = URL.createObjectURL(stream);
-    var recorder = new MediaRecorder(stream, mimeType);
+    var recorder = new MediaRecorder(stream, {"mimeType" : mimeType});
     console.log('Recorder object created.');
     recorder.start();
     resolve(recorder);
@@ -34,7 +34,7 @@ function createAndStartWithTimeSliceMediaRecorder(stream, mimeType, slice) {
   return new Promise(function(resolve, reject) {
     console.log('Starting MediaRecorder instance');
     document.getElementById("video").src = URL.createObjectURL(stream);
-    var recorder = new MediaRecorder(stream, mimeType);
+    var recorder = new MediaRecorder(stream, {"mimeType" : mimeType});
     console.log('Recorder object created.');
     recorder.start(slice);
     console.log('Recorder started with time slice', slice);
@@ -46,7 +46,7 @@ function createMediaRecorder(stream, mimeType) {
   return new Promise(function(resolve, reject) {
     console.log('Starting MediaRecorder instance');
     document.getElementById("video").src = URL.createObjectURL(stream);
-    var recorder = new MediaRecorder(stream, mimeType);
+    var recorder = new MediaRecorder(stream, {"mimeType" : mimeType});
     console.log('Recorder object created.');
     resolve(recorder);
   });
@@ -56,8 +56,7 @@ function testStartAndRecorderState() {
   console.log('testStartAndRecorderState started.');
   navigator.mediaDevices.getUserMedia(DEFAULT_CONSTRAINTS)
       .then(function(stream) {
-        return createAndStartMediaRecorder(stream,
-            DEFAULT_RECORDER_MIME_TYPE);
+        return createAndStartMediaRecorder(stream, DEFAULT_RECORDER_MIME_TYPE);
       })
       .then(function(recorder) {
         assertEquals('recording', recorder.state);
@@ -75,8 +74,7 @@ function testStartStopAndRecorderState() {
   var theRecorder;
   navigator.mediaDevices.getUserMedia(DEFAULT_CONSTRAINTS)
       .then(function(stream) {
-        return createAndStartMediaRecorder(stream,
-            DEFAULT_RECORDER_MIME_TYPE);
+        return createAndStartMediaRecorder(stream, DEFAULT_RECORDER_MIME_TYPE);
       })
       .then(function(recorder) {
         theRecorder = recorder;
@@ -100,8 +98,7 @@ function testStartAndDataAvailable() {
   var timeStamps = [];
   navigator.mediaDevices.getUserMedia(DEFAULT_CONSTRAINTS)
       .then(function(stream) {
-        return createAndStartMediaRecorder(stream,
-            DEFAULT_RECORDER_MIME_TYPE);
+        return createAndStartMediaRecorder(stream, DEFAULT_RECORDER_MIME_TYPE);
       })
       .then(function(recorder) {
         // Save history of Blobs received via dataavailable.
@@ -238,8 +235,7 @@ function testResumeAndRecorderState() {
   console.log('testResumeAndRecorderState started.');
   navigator.mediaDevices.getUserMedia(DEFAULT_CONSTRAINTS)
       .then(function(stream) {
-        return createAndStartMediaRecorder(stream,
-            DEFAULT_RECORDER_MIME_TYPE);
+        return createAndStartMediaRecorder(stream, DEFAULT_RECORDER_MIME_TYPE);
       })
       .then(function(recorder) {
         theRecorder = recorder;
@@ -265,8 +261,7 @@ function testResumeAndResumeEventTriggered() {
   console.log('testStartAndResumeEventTriggered started.');
   navigator.mediaDevices.getUserMedia(DEFAULT_CONSTRAINTS)
       .then(function(stream) {
-        return createAndStartMediaRecorder(stream,
-            DEFAULT_RECORDER_MIME_TYPE);
+        return createAndStartMediaRecorder(stream, DEFAULT_RECORDER_MIME_TYPE);
       })
       .then(function(recorder) {
         theRecorder = recorder;
@@ -316,8 +311,7 @@ function testResumeAndDataAvailable() {
   var emptyBlobs = 0;
   navigator.mediaDevices.getUserMedia(DEFAULT_CONSTRAINTS)
       .then(function(stream) {
-        return createAndStartMediaRecorder(stream,
-            DEFAULT_RECORDER_MIME_TYPE);
+        return createAndStartMediaRecorder(stream, DEFAULT_RECORDER_MIME_TYPE);
       })
       .then(function(recorder) {
         theRecorder = recorder;
@@ -354,7 +348,6 @@ function testResumeAndDataAvailable() {
         reportTestSuccess();
       });
 }
-
 
 </script>
 </body>

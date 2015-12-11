@@ -5,6 +5,7 @@
 #include "config.h"
 #include "modules/mediarecorder/MediaRecorder.h"
 
+#include "bindings/core/v8/Dictionary.h"
 #include "core/dom/DOMError.h"
 #include "core/fileapi/Blob.h"
 #include "core/frame/ConsoleTypes.h"
@@ -41,24 +42,24 @@ String stateToString(MediaRecorder::State state)
 
 MediaRecorder* MediaRecorder::create(ExecutionContext* context, MediaStream* stream, ExceptionState& exceptionState)
 {
-    MediaRecorder* recorder = new MediaRecorder(context, stream, String(), exceptionState);
+    MediaRecorder* recorder = new MediaRecorder(context, stream, MediaRecorderOptions(), exceptionState);
     recorder->suspendIfNeeded();
 
     return recorder;
 }
 
-MediaRecorder* MediaRecorder::create(ExecutionContext* context, MediaStream* stream,  const String& mimeType, ExceptionState& exceptionState)
+MediaRecorder* MediaRecorder::create(ExecutionContext* context, MediaStream* stream,  const MediaRecorderOptions& options, ExceptionState& exceptionState)
 {
-    MediaRecorder* recorder = new MediaRecorder(context, stream, mimeType, exceptionState);
+    MediaRecorder* recorder = new MediaRecorder(context, stream, options, exceptionState);
     recorder->suspendIfNeeded();
 
     return recorder;
 }
 
-MediaRecorder::MediaRecorder(ExecutionContext* context, MediaStream* stream, const String& mimeType, ExceptionState& exceptionState)
+MediaRecorder::MediaRecorder(ExecutionContext* context, MediaStream* stream, const MediaRecorderOptions& options, ExceptionState& exceptionState)
     : ActiveDOMObject(context)
     , m_stream(stream)
-    , m_mimeType(mimeType)
+    , m_mimeType(options.mimeType())
     , m_stopped(true)
     , m_ignoreMutedMedia(true)
     , m_state(State::Inactive)
@@ -158,20 +159,18 @@ void MediaRecorder::requestData(ExceptionState& exceptionState)
     writeData(nullptr /* data */, 0 /* length */, true /* lastInSlice */);
 }
 
-String MediaRecorder::canRecordMimeType(const String& mimeType)
+bool MediaRecorder::isTypeSupported(const String& type)
 {
     RawPtr<WebMediaRecorderHandler> handler = Platform::current()->createMediaRecorderHandler();
     if (!handler)
-        return emptyString();
+        return false;
 
-    // MediaRecorder canRecordMimeType() MUST return 'probably' "if the UA is
-    // confident that mimeType represents a type that it can record" [1], but a
-    // number of reasons could prevent the recording from happening as expected,
-    // so 'maybe' is a better option: "Implementors are encouraged to return
-    // "maybe" unless the type can be confidently established as being supported
-    // or not.". Hence this method returns '' or 'maybe', never 'probably'.
-    // [1] http://w3c.github.io/mediacapture-record/MediaRecorder.html#methods
-    return handler->canSupportMimeType(mimeType) ? "maybe" : emptyString();
+    // If true is returned from this method, it only indicates that the
+    // MediaRecorder implementation is capable of recording Blob objects for the
+    // specified MIME type. Recording may still fail if sufficient resources are
+    // not available to support the concrete media encoding.
+    // [1] https://w3c.github.io/mediacapture-record/MediaRecorder.html#methods
+    return handler->canSupportMimeType(type);
 }
 
 const AtomicString& MediaRecorder::interfaceName() const

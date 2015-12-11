@@ -9,6 +9,7 @@
 #include "core/events/EventTarget.h"
 #include "modules/EventTargetModules.h"
 #include "modules/ModulesExport.h"
+#include "modules/mediarecorder/MediaRecorderOptions.h"
 #include "modules/mediastream/MediaStream.h"
 #include "platform/AsyncMethodRunner.h"
 #include "public/platform/WebMediaRecorderHandler.h"
@@ -35,7 +36,7 @@ public:
     };
 
     static MediaRecorder* create(ExecutionContext*, MediaStream*, ExceptionState&);
-    static MediaRecorder* create(ExecutionContext*, MediaStream*, const String& mimeType, ExceptionState&);
+    static MediaRecorder* create(ExecutionContext*, MediaStream*, const MediaRecorderOptions&, ExceptionState&);
 
     virtual ~MediaRecorder() {}
 
@@ -59,7 +60,7 @@ public:
     void resume(ExceptionState&);
     void requestData(ExceptionState&);
 
-    static String canRecordMimeType(const String& mimeType);
+    static bool isTypeSupported(const String& type);
 
     // EventTarget
     virtual const AtomicString& interfaceName() const override;
@@ -80,7 +81,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    MediaRecorder(ExecutionContext*, MediaStream*, const String& mimeType, ExceptionState&);
+    MediaRecorder(ExecutionContext*, MediaStream*, const MediaRecorderOptions&, ExceptionState&);
 
     void createBlobEvent(Blob*);
 

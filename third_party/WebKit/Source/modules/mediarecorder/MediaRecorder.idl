@@ -9,8 +9,7 @@ enum RecordingState { "inactive", "recording", "paused" };
 [
     GarbageCollected,
     ActiveDOMObject,
-    // TODO(mcasas): consider changing |mimeType| to a dictionary with said key, see https://github.com/w3c/mediacapture-record/issues/19
-    Constructor(MediaStream stream, optional DOMString mimeType),
+    Constructor(MediaStream stream, optional MediaRecorderOptions options),
     ConstructorCallWith=ExecutionContext,
     RaisesException=Constructor,
     RuntimeEnabled=MediaRecorder,
@@ -33,5 +32,5 @@ enum RecordingState { "inactive", "recording", "paused" };
     [RaisesException] void resume();
     [RaisesException] void requestData();
 
-    static DOMString canRecordMimeType(DOMString mimeType);
+    static boolean isTypeSupported(DOMString type);
 };

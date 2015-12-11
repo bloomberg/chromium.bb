@@ -63,7 +63,7 @@ gotStream = test.step_func(function(stream) {
 
     assert_throws("NotSupportedError",
                   function() {
-                      recorder = new MediaRecorder(stream, "video/invalid");
+                      recorder = new MediaRecorder(stream, {mimeType : "video/invalid"});
                   },
                   "recorder should throw() with unsupported mimeType");
 

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<script src=../../resources/testharness.js></script>
+<script src=../../resources/testharnessreport.js></script>
+<script>
+// Check the Video formats that should be recordable and one that should not be.
+// Supported formats return "maybe". Same for Audio.
+// https://w3c.github.io/mediacapture-record/MediaRecorder.html#methods
+
+test(function() {
+  assert_false(MediaRecorder.isTypeSupported("video/invalid"));
+}, 'check MediaRecorder.isTypeSupported() with video/invalid');
+
+test(function() {
+  assert_true(MediaRecorder.isTypeSupported("video/vp8"));
+}, 'check MediaRecorder.isTypeSupported() with video/vp8');
+
+test(function() {
+  assert_true(MediaRecorder.isTypeSupported("video/vp9"));
+}, 'check MediaRecorder.isTypeSupported() with video/vp9');
+
+test(function() {
+  assert_false(MediaRecorder.isTypeSupported("audio/invalid"));
+}, 'check MediaRecorder.isTypeSupported() with audio/invalid');
+
+test(function() {
+  assert_true(MediaRecorder.isTypeSupported("audio/opus"));
+}, 'check MediaRecorder.isTypeSupported() with audio/opus');
+
+</script>
