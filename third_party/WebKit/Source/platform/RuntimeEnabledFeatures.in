@@ -160,7 +160,6 @@ ServiceWorkerClientAttributes status=stable
 ServiceWorkerPerformanceTimeline status=stable
 ServiceWorkerWindowClientNavigate status=stable
 ShadowDOMV1 status=experimental
-ShadowRootClosedMode status=experimental
 ShadowRootDelegatesFocus status=experimental
 SharedArrayBuffer
 SharedWorker status=stable

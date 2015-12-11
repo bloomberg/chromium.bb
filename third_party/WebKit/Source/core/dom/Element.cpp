@@ -1964,15 +1964,10 @@ PassRefPtrWillBeRawPtr<ShadowRoot> Element::attachShadow(const ScriptState* scri
     if (shadowRootInitDict.hasMode())
         type = shadowRootInitDict.mode() == "open" ? ShadowRootType::Open : ShadowRootType::Closed;
 
-    if (type == ShadowRootType::Closed) {
-        if (!RuntimeEnabledFeatures::shadowRootClosedModeEnabled()) {
-            exceptionState.throwDOMException(NotSupportedError, "Closed shadow root is not supported yet.");
-            return nullptr;
-        }
+    if (type == ShadowRootType::Closed)
         UseCounter::count(document(), UseCounter::ElementAttachShadowClosed);
-    } else if (type == ShadowRootType::Open) {
+    else if (type == ShadowRootType::Open)
         UseCounter::count(document(), UseCounter::ElementAttachShadowOpen);
-    }
 
     RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = createShadowRootInternal(type, exceptionState);
 
