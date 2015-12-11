@@ -115,11 +115,7 @@ public final class PrefServiceBridge {
         if (currentVersion < 1) {
             nativeMigrateJavascriptPreference();
         }
-        // Step 2 intentionally skipped.
-        if (currentVersion < 3) {
-            nativeMigrateLocationPreference();
-            nativeMigrateProtectedMediaPreference();
-        }
+        // Steps 2,3 intentionally skipped.
         if (currentVersion < 4) {
             // For a brief period (M44 Beta), it was possible for users to disable images via Site
             // Settings. Now that this option has been removed, ensure that users are not stuck with
@@ -952,8 +948,6 @@ public final class PrefServiceBridge {
     private native void nativeSetAutoDetectEncodingEnabled(boolean enabled);
     private native void nativeResetTranslateDefaults();
     private native void nativeMigrateJavascriptPreference();
-    private native void nativeMigrateLocationPreference();
-    private native void nativeMigrateProtectedMediaPreference();
     private native void nativeSetJavaScriptAllowed(String pattern, int setting);
     private native void nativeClearBrowsingData(boolean history, boolean cache,
             boolean cookiesAndSiteData, boolean passwords, boolean formData);

@@ -1553,11 +1553,6 @@ const char kWebAppCreateInQuickLaunchBar[] =
 // corresponding access token.
 const char kGeolocationAccessToken[] = "geolocation.access_token";
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
-// Boolean that controls the enabled-state of Geolocation in content.
-const char kGeolocationEnabled[] = "geolocation.enabled";
-#endif
-
 #if BUILDFLAG(ENABLE_GOOGLE_NOW)
 // Boolean that is true when Google services can use the user's location.
 const char kGoogleGeolocationAccessEnabled[] =
@@ -1673,12 +1668,6 @@ const char kHotwordAudioLoggingEnabled[] = "hotword.audio_logging_enabled";
 // It is used for comparison since the hotword voice search trigger must be
 // reinstalled to handle a new language.
 const char kHotwordPreviousLanguage[] = "hotword.previous_language";
-
-#if defined(OS_ANDROID)
-// Boolean that controls the global enabled-state of protected media identifier.
-const char kProtectedMediaIdentifierEnabled[] =
-    "protected_media_identifier.enabled";
-#endif
 
 #if defined(OS_CHROMEOS)
 // Dictionary for transient storage of settings that should go into device

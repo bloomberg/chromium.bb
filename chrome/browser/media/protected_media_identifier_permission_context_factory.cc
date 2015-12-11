@@ -43,11 +43,3 @@ ProtectedMediaIdentifierPermissionContextFactory::BuildServiceInstanceFor(
   return new ProtectedMediaIdentifierPermissionContext(
       static_cast<Profile*>(profile));
 }
-
-void
-ProtectedMediaIdentifierPermissionContextFactory::RegisterProfilePrefs(
-    user_prefs::PrefRegistrySyncable* registry) {
-#if defined(OS_ANDROID)
-  registry->RegisterBooleanPref(prefs::kProtectedMediaIdentifierEnabled, true);
-#endif
-}

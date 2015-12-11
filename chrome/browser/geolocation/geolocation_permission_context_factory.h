@@ -31,8 +31,6 @@ class GeolocationPermissionContextFactory
   // BrowserContextKeyedBaseFactory methods:
   KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const override;
-  void RegisterProfilePrefs(
-      user_prefs::PrefRegistrySyncable* registry) override;
 
   DISALLOW_COPY_AND_ASSIGN(GeolocationPermissionContextFactory);
 };

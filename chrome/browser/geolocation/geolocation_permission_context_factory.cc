@@ -58,10 +58,3 @@ GeolocationPermissionContextFactory::BuildServiceInstanceFor(
       static_cast<Profile*>(profile));
 #endif
 }
-
-void GeolocationPermissionContextFactory::RegisterProfilePrefs(
-    user_prefs::PrefRegistrySyncable* registry) {
-#if BUILDFLAG(ANDROID_JAVA_UI)
-  registry->RegisterBooleanPref(prefs::kGeolocationEnabled, true);
-#endif
-}

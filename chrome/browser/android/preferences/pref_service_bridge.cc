@@ -672,37 +672,6 @@ static void MigrateJavascriptPreference(JNIEnv* env,
   GetPrefService()->ClearPref(prefs::kWebKitJavascriptEnabled);
 }
 
-static void MigrateLocationPreference(JNIEnv* env,
-                                      const JavaParamRef<jobject>& obj) {
-  const PrefService::Preference* pref =
-      GetPrefService()->FindPreference(prefs::kGeolocationEnabled);
-  if (!pref || !pref->HasUserSetting())
-    return;
-  bool location_enabled = false;
-  bool retval = pref->GetValue()->GetAsBoolean(&location_enabled);
-  DCHECK(retval);
-  // Do a restrictive migration. GetAllowLocationEnabled could be
-  // non-usermodifiable and we don't want to migrate that.
-  if (!location_enabled)
-    SetAllowLocationEnabled(env, obj, false);
-  GetPrefService()->ClearPref(prefs::kGeolocationEnabled);
-}
-
-static void MigrateProtectedMediaPreference(JNIEnv* env,
-                                            const JavaParamRef<jobject>& obj) {
-  const PrefService::Preference* pref =
-      GetPrefService()->FindPreference(prefs::kProtectedMediaIdentifierEnabled);
-  if (!pref || !pref->HasUserSetting())
-    return;
-  bool pmi_enabled = false;
-  bool retval = pref->GetValue()->GetAsBoolean(&pmi_enabled);
-  DCHECK(retval);
-  // Do a restrictive migration if values disagree.
-  if (!pmi_enabled)
-    SetProtectedMediaIdentifierEnabled(env, obj, false);
-  GetPrefService()->ClearPref(prefs::kProtectedMediaIdentifierEnabled);
-}
-
 static void SetPasswordEchoEnabled(JNIEnv* env,
                                    const JavaParamRef<jobject>& obj,
                                    jboolean passwordEchoEnabled) {

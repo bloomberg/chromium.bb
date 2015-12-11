@@ -555,9 +555,6 @@ extern const char kWebAppCreateInAppsMenu[];
 extern const char kWebAppCreateInQuickLaunchBar[];
 
 extern const char kGeolocationAccessToken[];
-#if BUILDFLAG(ANDROID_JAVA_UI)
-extern const char kGeolocationEnabled[];
-#endif
 
 #if BUILDFLAG(ENABLE_GOOGLE_NOW)
 extern const char kGoogleGeolocationAccessEnabled[];
@@ -597,10 +594,6 @@ extern const char kHotwordAlwaysOnSearchEnabled[];
 extern const char kHotwordAlwaysOnNotificationSeen[];
 extern const char kHotwordAudioLoggingEnabled[];
 extern const char kHotwordPreviousLanguage[];
-
-#if defined(OS_ANDROID)
-extern const char kProtectedMediaIdentifierEnabled[];
-#endif
 
 #if defined(OS_CHROMEOS)
 extern const char kDeviceSettingsCache[];
