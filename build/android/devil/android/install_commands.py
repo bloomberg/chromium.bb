@@ -5,11 +5,12 @@
 import os
 import posixpath
 
+from devil import devil_env
 from devil.android import device_errors
-from pylib import constants
+from devil.android.constants import file_system
 
-BIN_DIR = '%s/bin' % constants.TEST_EXECUTABLE_DIR
-_FRAMEWORK_DIR = '%s/framework' % constants.TEST_EXECUTABLE_DIR
+BIN_DIR = '%s/bin' % file_system.TEST_EXECUTABLE_DIR
+_FRAMEWORK_DIR = '%s/framework' % file_system.TEST_EXECUTABLE_DIR
 
 _COMMANDS = {
   'unzip': 'org.chromium.android.commands.unzip.Unzip',
@@ -35,9 +36,7 @@ def InstallCommands(device):
         'chromium_commands currently requires a userdebug build.',
         device_serial=device.adb.GetDeviceSerial())
 
-  chromium_commands_jar_path = os.path.join(
-      constants.GetOutDirectory(), constants.SDK_BUILD_JAVALIB_DIR,
-      'chromium_commands.dex.jar')
+  chromium_commands_jar_path = devil_env.config.FetchPath('chromium_commands')
   if not os.path.exists(chromium_commands_jar_path):
     raise device_errors.CommandFailedError(
         '%s not found. Please build chromium_commands.'
@@ -46,7 +45,7 @@ def InstallCommands(device):
   device.RunShellCommand(['mkdir', BIN_DIR, _FRAMEWORK_DIR])
   for command, main_class in _COMMANDS.iteritems():
     shell_command = _SHELL_COMMAND_FORMAT % (
-        constants.TEST_EXECUTABLE_DIR, main_class)
+        file_system.TEST_EXECUTABLE_DIR, main_class)
     shell_file = '%s/%s' % (BIN_DIR, command)
     device.WriteFile(shell_file, shell_command)
     device.RunShellCommand(
