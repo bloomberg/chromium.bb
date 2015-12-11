@@ -18,4 +18,8 @@ bool TracingDelegate::IsAllowedToEndBackgroundScenario(
   return false;
 }
 
+MetadataFilterPredicate TracingDelegate::GetMetadataFilterPredicate() {
+  return MetadataFilterPredicate();
+}
+
 }  // namespace content

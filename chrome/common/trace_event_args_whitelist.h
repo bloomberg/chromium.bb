@@ -14,4 +14,8 @@ bool IsTraceEventArgsWhitelisted(
     const char* event_name,
     base::trace_event::ArgumentNameFilterPredicate* arg_name_filter);
 
+// Used to filter metadata against a whitelist of metadata names that have been
+// manually vetted to not include any PII.
+bool IsMetadataWhitelisted(const std::string& metadata_name);
+
 #endif  // CHROME_COMMON_TRACE_EVENT_ARGS_WHITELIST_H_

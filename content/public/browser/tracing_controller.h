@@ -13,6 +13,7 @@
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/tracing_delegate.h"
 
 namespace content {
 
@@ -37,14 +38,18 @@ class TracingController {
   class CONTENT_EXPORT TraceDataSink
       : public base::RefCountedThreadSafe<TraceDataSink> {
    public:
+    TraceDataSink();
+
     virtual void AddTraceChunk(const std::string& chunk) {}
     virtual void SetSystemTrace(const std::string& data) {}
 
     // Notice that TracingController adds some default metadata when
-    // DisableRecording is called, which may override metadata that you would
+    // StopTracing is called, which may override metadata that you would
     // set beforehand in case of key collision.
     virtual void AddMetadata(const base::DictionaryValue& data);
-    virtual const base::DictionaryValue& GetMetadata() const;
+    virtual scoped_ptr<const base::DictionaryValue> GetMetadataCopy() const;
+    virtual void SetMetadataFilterPredicate(
+        const MetadataFilterPredicate& metadata_filter_predicate);
     // TODO(prabhur) Replace all the Set* functions with a generic function:
     // TraceDataSink::AppendAdditionalData(const std::string& name,
     // const std::string& trace_data)
@@ -53,9 +58,10 @@ class TracingController {
 
    protected:
     friend class base::RefCountedThreadSafe<TraceDataSink>;
-    virtual ~TraceDataSink() {}
+    virtual ~TraceDataSink();
 
    private:
+    MetadataFilterPredicate metadata_filter_predicate_;
     base::DictionaryValue metadata_;
   };
 

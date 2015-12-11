@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_otr_state.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/trace_event_args_whitelist.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/variations/active_field_trials.h"
 #include "content/public/browser/background_tracing_config.h"
@@ -149,4 +150,9 @@ void ChromeTracingDelegate::GenerateMetadataDict(
     variations_list->Append(new base::StringValue(it));
 
   metadata_dict->Set("field-trials", variations_list.Pass());
+}
+
+content::MetadataFilterPredicate
+ChromeTracingDelegate::GetMetadataFilterPredicate() {
+  return base::Bind(&IsMetadataWhitelisted);
 }

@@ -27,6 +27,20 @@ const WhitelistEntry kEventArgsWhitelist[] = {
     {"latencyInfo", "*", kInputLatencyAllowedArgs},
     {nullptr, nullptr, nullptr}};
 
+const char* kMetadataWhitelist[] = {
+  "command_line",
+  "cpu-*",
+  "field-trials",
+  "gpu-*",
+  "highres-ticks",
+  "network-type",
+  "num-cpus",
+  "os-*",
+  "physical-memory",
+  "product-version",
+  "user-agent"
+};
+
 }  // namespace
 
 bool IsTraceArgumentNameWhitelisted(const char* const* granular_filter,
@@ -65,5 +79,14 @@ bool IsTraceEventArgsWhitelisted(
     }
   }
 
+  return false;
+}
+
+bool IsMetadataWhitelisted(const std::string& metadata_name) {
+  for (auto key : kMetadataWhitelist) {
+    if (base::MatchPattern(metadata_name, key)) {
+      return true;
+    }
+  }
   return false;
 }

@@ -6,6 +6,7 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/json/json_writer.h"
+#include "base/strings/pattern.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/zlib/zlib.h"
 
@@ -143,7 +144,7 @@ class StringTraceDataSink : public TracingController::TraceDataSink {
       AddTraceChunkAndPassToEndpoint(",\"systemTraceEvents\": " +
                                      system_trace_);
     std::string metadataJSON;
-    if (base::JSONWriter::Write(GetMetadata(), &metadataJSON) &&
+    if (base::JSONWriter::Write(*GetMetadataCopy(), &metadataJSON) &&
         !metadataJSON.empty())
       AddTraceChunkAndPassToEndpoint(",\"metadata\": " + metadataJSON);
     if (!power_trace_.empty()) {
@@ -153,8 +154,7 @@ class StringTraceDataSink : public TracingController::TraceDataSink {
 
     AddTraceChunkAndPassToEndpoint("}");
 
-    scoped_ptr<const base::DictionaryValue> metadata(GetMetadata().DeepCopy());
-    endpoint_->ReceiveTraceFinalContents(metadata.Pass(), trace_);
+    endpoint_->ReceiveTraceFinalContents(GetMetadataCopy(), trace_);
   }
 
  private:
@@ -278,7 +278,7 @@ class CompressedStringTraceDataSink : public TracingController::TraceDataSink {
           ",\"systemTraceEvents\": " + system_trace_, false);
     }
     std::string metadataJSON;
-    if (base::JSONWriter::Write(GetMetadata(), &metadataJSON) &&
+    if (base::JSONWriter::Write(*GetMetadataCopy(), &metadataJSON) &&
         !metadataJSON.empty()) {
       AddTraceChunkAndCompressOnFileThread(",\"metadata\": " + metadataJSON,
                                            false);
@@ -292,8 +292,7 @@ class CompressedStringTraceDataSink : public TracingController::TraceDataSink {
     deflateEnd(stream_.get());
     stream_.reset();
 
-    scoped_ptr<const base::DictionaryValue> metadata(GetMetadata().DeepCopy());
-    endpoint_->ReceiveTraceFinalContents(metadata.Pass(),
+    endpoint_->ReceiveTraceFinalContents(GetMetadataCopy(),
                                          compressed_trace_data_);
   }
 
@@ -309,14 +308,34 @@ class CompressedStringTraceDataSink : public TracingController::TraceDataSink {
 
 }  // namespace
 
+TracingController::TraceDataSink::TraceDataSink() {}
+
+TracingController::TraceDataSink::~TraceDataSink() {}
+
 void TracingController::TraceDataSink::AddMetadata(
     const base::DictionaryValue& data) {
   metadata_.MergeDictionary(&data);
 }
 
-const base::DictionaryValue&
-    TracingController::TraceDataSink::GetMetadata() const {
-  return metadata_;
+void TracingController::TraceDataSink::SetMetadataFilterPredicate(
+    const MetadataFilterPredicate& metadata_filter_predicate) {
+  metadata_filter_predicate_ = metadata_filter_predicate;
+}
+
+scoped_ptr<const base::DictionaryValue>
+    TracingController::TraceDataSink::GetMetadataCopy() const {
+  if (metadata_filter_predicate_.is_null())
+    return scoped_ptr<const base::DictionaryValue>(metadata_.DeepCopy()).Pass();
+
+  scoped_ptr<base::DictionaryValue> metadata_copy(new base::DictionaryValue);
+  for (base::DictionaryValue::Iterator it(metadata_); !it.IsAtEnd();
+       it.Advance()) {
+    if (metadata_filter_predicate_.Run(it.key()))
+      metadata_copy->Set(it.key(), it.value().DeepCopy());
+    else
+      metadata_copy->SetString(it.key(), "__stripped__");
+  }
+  return metadata_copy.Pass();
 }
 
 scoped_refptr<TracingController::TraceDataSink>

@@ -284,8 +284,18 @@ bool TracingControllerImpl::StopTracing(
     const scoped_refptr<TraceDataSink>& trace_data_sink) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  if (trace_data_sink)
+  if (trace_data_sink) {
+    if (TraceLog::GetInstance()->GetCurrentTraceConfig()
+        .IsArgumentFilterEnabled()) {
+      scoped_ptr<TracingDelegate> delegate(
+          GetContentClient()->browser()->GetTracingDelegate());
+      if (delegate) {
+        trace_data_sink->SetMetadataFilterPredicate(
+            delegate->GetMetadataFilterPredicate());
+      }
+    }
     trace_data_sink->AddMetadata(*GenerateTracingMetadataDict().get());
+  }
 
   if (!can_stop_tracing())
     return false;

@@ -31,6 +31,8 @@ class ChromeTracingDelegate : public content::TracingDelegate,
 
   void GenerateMetadataDict(base::DictionaryValue* metadata_dict) override;
 
+  content::MetadataFilterPredicate GetMetadataFilterPredicate() override;
+
  private:
   // chrome::BrowserListObserver implementation.
   void OnBrowserAdded(Browser* browser) override;
