@@ -332,7 +332,6 @@ String stringForSkPaintFlags(const SkPaint& paint)
     appendFlagToString(&flagsString, paint.isEmbeddedBitmapText(), "EmbeddedBitmapText");
     appendFlagToString(&flagsString, paint.isAutohinted(), "Autohinted");
     appendFlagToString(&flagsString, paint.isVerticalText(), "VerticalText");
-    appendFlagToString(&flagsString, paint.getFlags() & SkPaint::kGenA8FromLCD_Flag, "GenA8FromLCD");
     return flagsString;
 }
 

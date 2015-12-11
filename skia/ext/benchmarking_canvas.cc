@@ -239,8 +239,6 @@ scoped_ptr<base::Value> AsValue(const SkPaint& paint) {
     builder.addFlag(paint.isEmbeddedBitmapText(), "EmbeddedBitmapText");
     builder.addFlag(paint.isAutohinted(), "Autohinted");
     builder.addFlag(paint.isVerticalText(), "VerticalText");
-    builder.addFlag(paint.getFlags() & SkPaint::kGenA8FromLCD_Flag,
-                    "GenA8FromLCD");
 
     val->SetString("Flags", builder.str());
   }
