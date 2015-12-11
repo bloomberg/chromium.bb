@@ -403,7 +403,10 @@ void DeviceEmulatorMessageHandler::UpdatePowerSources(
     source->set_id(id);
     std::string device_type;
     CHECK(dict->GetString("type", &device_type));
-    source->set_active_by_default(device_type == "DedicatedCharger");
+    bool dual_role = device_type == "DualRoleUSB";
+    source->set_active_by_default(!dual_role);
+    if (dual_role)
+      props.set_supports_dual_role_devices(true);
     int port;
     CHECK(dict->GetInteger("port", &port));
     source->set_port(
