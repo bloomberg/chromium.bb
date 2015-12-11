@@ -385,8 +385,12 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, SmallSameOrigin) {
   LoadHTML(
       "<object id='plugin' data='fake.swf' "
       "    type='application/x-ppapi-tests' width='400' height='100'>"
+      "</object>"
+      "<object id='plugin_poster' data='fake.swf' poster='click_me.png' "
+      "    type='application/x-ppapi-tests' width='400' height='100'>"
       "</object>");
   VerifyPluginMarkedEssential(GetActiveWebContents(), "plugin");
+  VerifyPluginMarkedEssential(GetActiveWebContents(), "plugin_poster");
 }
 
 IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, SmallCrossOrigin) {
