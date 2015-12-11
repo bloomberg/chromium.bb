@@ -592,6 +592,7 @@
       'linux_chromium_gn_rel': 'gn_release_trybot',
       'linux_chromium_gn_chromeos_rel': 'chromeos_ozone_gn_release_trybot',
       'android_chromium_gn_compile_rel': 'android_gn_release_trybot',
+      'linux_blink_oilpan_rel': 'swarming_gn_oilpan_release_trybot_minimal_symbols_x64',
       'linux_chromium_compile_dbg_ng': 'swarming_gn_debug_trybot',
       'linux_chromium_dbg_ng': 'swarming_gn_debug_trybot',
       'linux_chromium_trusty_dbg': 'gyp_debug_bot',
