@@ -39,6 +39,5 @@ source_set("cast") {
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/ozone:ozone_base",
-    "//ui/platform_window",
   ]
 }
