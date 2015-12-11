@@ -100,7 +100,7 @@ TEST(AnimationTranslationUtilTest, filtersWork)
     ops.operations().append(BasicColorMatrixFilterOperation::create(0.5, FilterOperation::SATURATE));
     ops.operations().append(BasicColorMatrixFilterOperation::create(0.2, FilterOperation::GRAYSCALE));
     ops.operations().append(BasicColorMatrixFilterOperation::create(0.8, FilterOperation::SEPIA));
-    ops.operations().append(BasicColorMatrixFilterOperation::create(0.1, FilterOperation::OPACITY));
+    ops.operations().append(BasicComponentTransferFilterOperation::create(0.1, FilterOperation::OPACITY));
     toWebFilterOperations(ops, &outOps);
 }
 
