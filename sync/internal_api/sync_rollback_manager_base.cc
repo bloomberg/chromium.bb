@@ -85,8 +85,8 @@ void SyncRollbackManagerBase::UpdateCredentials(
 }
 
 void SyncRollbackManagerBase::StartSyncingNormally(
-    const ModelSafeRoutingInfo& routing_info, base::Time last_poll_time){
-}
+    const ModelSafeRoutingInfo& routing_info,
+    base::Time last_poll_time) {}
 
 void SyncRollbackManagerBase::ConfigureSyncer(
       ConfigureReason reason,
@@ -165,7 +165,6 @@ SyncEncryptionHandler* SyncRollbackManagerBase::GetEncryptionHandler() {
 }
 
 void SyncRollbackManagerBase::RefreshTypes(ModelTypeSet types) {
-
 }
 
 void SyncRollbackManagerBase::HandleTransactionCompleteChangeEvent(

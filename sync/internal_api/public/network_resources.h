@@ -11,7 +11,7 @@
 
 namespace net {
 class URLRequestContextGetter;
-} // namespace net
+}  // namespace net
 
 namespace syncer {
 

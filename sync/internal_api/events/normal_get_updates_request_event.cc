@@ -98,4 +98,4 @@ NormalGetUpdatesRequestEvent::NormalGetUpdatesRequestEvent(
     is_retry_(is_retry),
     request_(request) {}
 
-}  // namespace
+}  // namespace syncer

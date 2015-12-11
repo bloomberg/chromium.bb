@@ -5,6 +5,8 @@
 #ifndef SYNC_INTERNAL_API_PUBLIC_WRITE_TRANSACTION_H_
 #define SYNC_INTERNAL_API_PUBLIC_WRITE_TRANSACTION_H_
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "sync/api/sync_change_processor.h"

@@ -4,6 +4,8 @@
 
 #include "sync/internal_api/public/attachments/attachment_downloader_impl.h"
 
+#include <map>
+
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -106,7 +108,7 @@ class TokenServiceProvider
     : public OAuth2TokenServiceRequest::TokenServiceProvider,
       base::NonThreadSafe {
  public:
-  TokenServiceProvider(OAuth2TokenService* token_service);
+  explicit TokenServiceProvider(OAuth2TokenService* token_service);
 
   // OAuth2TokenService::TokenServiceProvider implementation.
   scoped_refptr<base::SingleThreadTaskRunner> GetTokenServiceTaskRunner()

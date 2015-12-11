@@ -44,8 +44,8 @@
 //   void OnIOError(IOError err) { DCHECK(CalledOnValidThread(); ... }
 // };
 
-#ifndef SYNC_UTIL_WEAK_HANDLE_H_
-#define SYNC_UTIL_WEAK_HANDLE_H_
+#ifndef SYNC_INTERNAL_API_PUBLIC_UTIL_WEAK_HANDLE_H_
+#define SYNC_INTERNAL_API_PUBLIC_UTIL_WEAK_HANDLE_H_
 
 #include <cstddef>
 
@@ -373,4 +373,4 @@ WeakHandle<T> MakeWeakHandle(const base::WeakPtr<T>& ptr) {
 
 }  // namespace syncer
 
-#endif  // SYNC_UTIL_WEAK_HANDLE_H_
+#endif  // SYNC_INTERNAL_API_PUBLIC_UTIL_WEAK_HANDLE_H_

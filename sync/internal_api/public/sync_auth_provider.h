@@ -5,6 +5,8 @@
 #ifndef SYNC_INTERNAL_API_PUBLIC_SYNC_AUTH_PROVIDER_H_
 #define SYNC_INTERNAL_API_PUBLIC_SYNC_AUTH_PROVIDER_H_
 
+#include <string>
+
 #include "base/callback.h"
 
 class GoogleServiceAuthError;

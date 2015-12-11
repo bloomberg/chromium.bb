@@ -4,6 +4,9 @@
 
 #include "sync/internal_api/public/attachments/attachment_uploader_impl.h"
 
+#include <string>
+#include <vector>
+
 #include "base/base64.h"
 #include "base/base64url.h"
 #include "base/bind.h"

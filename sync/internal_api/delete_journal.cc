@@ -4,6 +4,9 @@
 
 #include "sync/internal_api/public/delete_journal.h"
 
+#include <set>
+#include <string>
+
 #include "sync/internal_api/public/base_transaction.h"
 #include "sync/syncable/directory.h"
 #include "sync/syncable/syncable_base_transaction.h"

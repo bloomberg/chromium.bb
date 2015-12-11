@@ -4,6 +4,8 @@
 
 #include "sync/internal_api/sync_backup_manager.h"
 
+#include <vector>
+
 #include "sync/internal_api/public/read_node.h"
 #include "sync/internal_api/public/write_transaction.h"
 #include "sync/syncable/directory.h"

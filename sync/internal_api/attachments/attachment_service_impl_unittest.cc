@@ -4,6 +4,11 @@
 
 #include "sync/internal_api/public/attachments/attachment_service_impl.h"
 
+#include <algorithm>
+#include <map>
+#include <utility>
+#include <vector>
+
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -156,6 +161,7 @@ class MockAttachmentDownloader
 
   std::map<AttachmentId, DownloadCallback> download_requests;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(MockAttachmentDownloader);
 };
 
@@ -182,6 +188,7 @@ class MockAttachmentUploader
 
   std::map<AttachmentId, UploadCallback> upload_requests;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(MockAttachmentUploader);
 };
 

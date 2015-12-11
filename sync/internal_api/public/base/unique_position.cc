@@ -4,6 +4,7 @@
 
 #include "sync/internal_api/public/base/unique_position.h"
 
+#include <algorithm>
 #include <limits>
 
 #include "base/logging.h"
@@ -87,7 +88,7 @@ UniquePosition UniquePosition::FromProto(const sync_pb::UniquePosition& proto) {
 // static.
 UniquePosition UniquePosition::FromInt64(int64_t x, const std::string& suffix) {
   uint64_t y = static_cast<uint64_t>(x);
-  y ^= 0x8000000000000000ULL; // Make it non-negative.
+  y ^= 0x8000000000000000ULL;  // Make it non-negative.
   std::string bytes(8, 0);
   for (int i = 7; i >= 0; --i) {
     bytes[i] = static_cast<uint8_t>(y);

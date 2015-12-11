@@ -4,6 +4,8 @@
 
 #include "sync/internal_api/public/attachments/on_disk_attachment_store.h"
 
+#include <string>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"
@@ -334,7 +336,7 @@ void OnDiskAttachmentStore::ReadMetadata(
         result_code = AttachmentStore::UNSPECIFIED_ERROR;
         continue;
       }
-      DCHECK(record_metadata.component_size() > 0);
+      DCHECK_GT(record_metadata.component_size(), 0);
       if (AttachmentHasReferenceFromComponent(record_metadata, proto_component))
         metadata_list->push_back(MakeAttachmentMetadata(id, record_metadata));
     }
@@ -496,7 +498,7 @@ bool OnDiskAttachmentStore::ReadSingleRecordMetadata(
     DVLOG(1) << "RecordMetadata::ParseFromString failed";
     return false;
   }
-  DCHECK(record_metadata->component_size() > 0);
+  DCHECK_GT(record_metadata->component_size(), 0);
   return true;
 }
 

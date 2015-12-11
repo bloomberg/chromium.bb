@@ -28,4 +28,4 @@ scoped_ptr<SyncContextProxy> NullSyncContextProxy::Clone() const {
   return scoped_ptr<SyncContextProxy>(new NullSyncContextProxy());
 }
 
-}  // namespace syncer
+}  // namespace syncer_v2

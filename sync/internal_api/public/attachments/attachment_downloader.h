@@ -5,6 +5,8 @@
 #ifndef SYNC_INTERNAL_API_PUBLIC_ATTACHMENTS_ATTACHMENT_DOWNLOADER_H_
 #define SYNC_INTERNAL_API_PUBLIC_ATTACHMENTS_ATTACHMENT_DOWNLOADER_H_
 
+#include <string>
+
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "google_apis/gaia/oauth2_token_service_request.h"

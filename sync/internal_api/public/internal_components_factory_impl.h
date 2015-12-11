@@ -8,6 +8,9 @@
 #ifndef SYNC_INTERNAL_API_PUBLIC_INTERNAL_COMPONENTS_FACTORY_IMPL_H_
 #define SYNC_INTERNAL_API_PUBLIC_INTERNAL_COMPONENTS_FACTORY_IMPL_H_
 
+#include <string>
+#include <vector>
+
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/internal_components_factory.h"
 
@@ -16,7 +19,7 @@ namespace syncer {
 class SYNC_EXPORT InternalComponentsFactoryImpl
     : public InternalComponentsFactory {
  public:
-  InternalComponentsFactoryImpl(const Switches& switches);
+  explicit InternalComponentsFactoryImpl(const Switches& switches);
   ~InternalComponentsFactoryImpl() override;
 
   scoped_ptr<SyncScheduler> BuildScheduler(

@@ -17,7 +17,7 @@ namespace syncer {
 
 class BlockingTask : public CancelationObserver {
  public:
-  BlockingTask(CancelationSignal* cancel_signal);
+  explicit BlockingTask(CancelationSignal* cancel_signal);
   ~BlockingTask() override;
 
   // Starts the |exec_thread_| and uses it to execute DoRun().

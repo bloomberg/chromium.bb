@@ -38,4 +38,4 @@ void SyncManagerForProfileSyncTest::NotifyInitializationSuccess() {
   SyncManagerImpl::NotifyInitializationSuccess();
 }
 
-};
+}  // namespace syncer

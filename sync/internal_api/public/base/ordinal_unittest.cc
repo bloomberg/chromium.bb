@@ -349,7 +349,7 @@ TEST(Ordinal, EqualsFn) {
   EXPECT_FALSE(equals(ordinal1, ordinal2));
 
   EXPECT_FALSE(equals(ordinal2, ordinal1));
-  EXPECT_TRUE(equals(ordinal2,ordinal2));
+  EXPECT_TRUE(equals(ordinal2, ordinal2));
 }
 
 // Create some Ordinals and shuffle them.  Sorting them using

@@ -1515,7 +1515,7 @@ TEST_F(SyncManagerTest, SupplyPendingOldGAIAPass) {
   EXPECT_CALL(encryption_observer_,
               OnBootstrapTokenUpdated(_, PASSPHRASE_BOOTSTRAP_TOKEN))
       .WillOnce(SaveArg<0>(&bootstrap_token));
-  EXPECT_CALL(encryption_observer_, OnPassphraseRequired(_,_));
+  EXPECT_CALL(encryption_observer_, OnPassphraseRequired(_, _));
   EXPECT_CALL(encryption_observer_, OnCryptographerStateChanged(_));
   SetImplicitPassphraseAndCheck("new_gaia");
   EXPECT_FALSE(IsEncryptEverythingEnabledForTest());

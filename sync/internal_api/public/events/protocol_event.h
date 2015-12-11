@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNC_INTERNAL_API_PUBLIC_EVENTS_PROTOCOL_EVENT_H
-#define SYNC_INTERNAL_API_PUBLIC_EVENTS_PROTOCOL_EVENT_H
+#ifndef SYNC_INTERNAL_API_PUBLIC_EVENTS_PROTOCOL_EVENT_H_
+#define SYNC_INTERNAL_API_PUBLIC_EVENTS_PROTOCOL_EVENT_H_
+
+#include <string>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
@@ -56,4 +58,4 @@ class SYNC_EXPORT ProtocolEvent {
 
 }  // namespace syncer
 
-#endif  // SYNC_INTERNAL_API_PUBLIC_EVENTS_PROTOCOL_EVENT_H
+#endif  // SYNC_INTERNAL_API_PUBLIC_EVENTS_PROTOCOL_EVENT_H_

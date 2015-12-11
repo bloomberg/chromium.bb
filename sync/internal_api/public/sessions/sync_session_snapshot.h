@@ -6,6 +6,7 @@
 #define SYNC_INTERNAL_API_PUBLIC_SESSIONS_SYNC_SESSION_SNAPSHOT_H_
 
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/time/time.h"

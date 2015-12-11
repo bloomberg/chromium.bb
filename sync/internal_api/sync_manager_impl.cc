@@ -784,9 +784,8 @@ void SyncManagerImpl::HandleCalculateChangesChangeEventFromSyncer(
     else if (!exists_now && existed_before)
       change_buffers[type].PushDeletedItem(handle);
     else if (exists_now && existed_before &&
-             VisiblePropertiesDiffer(it->second, crypto)) {
+             VisiblePropertiesDiffer(it->second, crypto))
       change_buffers[type].PushUpdatedItem(handle);
-    }
 
     SetExtraChangeRecordData(handle, type, &change_buffers[type], crypto,
                              it->second.original, existed_before, exists_now);

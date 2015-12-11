@@ -79,7 +79,7 @@ int64 TestEntryFactory::CreateUnappliedNewItem(
   entry.PutServerParentId(syncable::Id::GetRoot());
   entry.PutServerIsDir(is_unique);
   entry.PutServerSpecifics(specifics);
-  if (is_unique) { // For top-level nodes.
+  if (is_unique) {  // For top-level nodes.
     entry.PutUniqueServerTag(
               ModelTypeToRootTag(GetModelTypeFromSpecifics(specifics)));
   }
@@ -250,7 +250,6 @@ bool TestEntryFactory::SetServerAttachmentMetadataForItem(
   entry.PutServerAttachmentMetadata(metadata);
   entry.PutIsUnappliedUpdate(true);
   return true;
-
 }
 
 bool TestEntryFactory::SetLocalAttachmentMetadataForItem(

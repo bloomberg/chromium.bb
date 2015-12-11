@@ -5,6 +5,9 @@
 #ifndef SYNC_INTERNAL_API_PUBLIC_ATTACHMENTS_IN_MEMORY_ATTACHMENT_STORE_H_
 #define SYNC_INTERNAL_API_PUBLIC_ATTACHMENTS_IN_MEMORY_ATTACHMENT_STORE_H_
 
+#include <map>
+#include <set>
+
 #include "base/memory/ref_counted.h"
 #include "base/threading/non_thread_safe.h"
 #include "sync/api/attachments/attachment.h"

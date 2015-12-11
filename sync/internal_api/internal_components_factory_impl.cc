@@ -4,6 +4,9 @@
 
 #include "sync/internal_api/public/internal_components_factory_impl.h"
 
+#include <string>
+#include <vector>
+
 #include "sync/engine/backoff_delay_provider.h"
 #include "sync/engine/syncer.h"
 #include "sync/engine/sync_scheduler_impl.h"

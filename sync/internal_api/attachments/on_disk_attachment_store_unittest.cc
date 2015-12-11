@@ -4,6 +4,8 @@
 
 #include "sync/internal_api/public/attachments/on_disk_attachment_store.h"
 
+#include <string>
+
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"

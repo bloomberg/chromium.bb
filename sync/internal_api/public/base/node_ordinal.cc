@@ -5,6 +5,7 @@
 #include "sync/internal_api/public/base/node_ordinal.h"
 
 #include <algorithm>
+#include <string>
 
 namespace syncer {
 

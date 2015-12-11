@@ -70,7 +70,6 @@ TEST_F(ProtocolEventBufferTest, AddThenOverflowThenReturnEvents) {
     EXPECT_TRUE(
         HasId(*(buffered_events[i-1]), static_cast<int64>(i)));
   }
-
 }
 
 

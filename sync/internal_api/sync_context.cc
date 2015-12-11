@@ -12,4 +12,4 @@ SyncContext::SyncContext() {
 SyncContext::~SyncContext() {
 }
 
-}  // namespace syncer
+}  // namespace syncer_v2

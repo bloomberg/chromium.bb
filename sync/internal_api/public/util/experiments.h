@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNC_UTIL_EXPERIMENTS_
-#define SYNC_UTIL_EXPERIMENTS_
+#ifndef SYNC_INTERNAL_API_PUBLIC_UTIL_EXPERIMENTS_H_
+#define SYNC_INTERNAL_API_PUBLIC_UTIL_EXPERIMENTS_H_
 
 #include <string>
 
@@ -51,4 +51,4 @@ struct Experiments {
 
 }  // namespace syncer
 
-#endif  // SYNC_UTIL_EXPERIMENTS_
+#endif  // SYNC_INTERNAL_API_PUBLIC_UTIL_EXPERIMENTS_H_

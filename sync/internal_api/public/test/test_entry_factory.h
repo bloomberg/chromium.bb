@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNC_TEST_TEST_ENTRY_FACTORY_H_
-#define SYNC_TEST_TEST_ENTRY_FACTORY_H_
+#ifndef SYNC_INTERNAL_API_PUBLIC_TEST_TEST_ENTRY_FACTORY_H_
+#define SYNC_INTERNAL_API_PUBLIC_TEST_TEST_ENTRY_FACTORY_H_
 
 #include <string>
 
@@ -130,4 +130,4 @@ class TestEntryFactory {
 
 }  // namespace syncer
 
-#endif  // SYNC_TEST_TEST_ENTRY_FACTORY_H_
+#endif  // SYNC_INTERNAL_API_PUBLIC_TEST_TEST_ENTRY_FACTORY_H_

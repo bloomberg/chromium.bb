@@ -24,6 +24,6 @@ class NullSyncContextProxy : public SyncContextProxy {
   scoped_ptr<SyncContextProxy> Clone() const override;
 };
 
-}  // namespace syncer
+}  // namespace syncer_v2
 
 #endif  // SYNC_INTERNAL_API_PUBLIC_TEST_NULL_SYNC_CONTEXT_PROXY_H_

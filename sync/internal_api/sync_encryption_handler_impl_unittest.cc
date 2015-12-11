@@ -2497,7 +2497,6 @@ TEST_F(SyncEncryptionHandlerImplTest, MissingKeystoreMigrationTime) {
     encryption_handler()->SetKeystoreKeys(BuildEncryptionKeyProto(
                                               kRawKeystoreKey),
                                           trans.GetWrappedTrans());
-
   }
 }
 

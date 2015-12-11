@@ -4,6 +4,8 @@
 
 #include "sync/internal_api/public/base/attachment_id_proto.h"
 
+#include <string>
+
 #include "base/guid.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"

@@ -5,6 +5,9 @@
 #ifndef SYNC_INTERNAL_API_PUBLIC_TEST_TEST_INTERNAL_COMPONENTS_FACTORY_H_
 #define SYNC_INTERNAL_API_PUBLIC_TEST_TEST_INTERNAL_COMPONENTS_FACTORY_H_
 
+#include <string>
+#include <vector>
+
 #include "sync/internal_api/public/internal_components_factory.h"
 
 namespace syncer {

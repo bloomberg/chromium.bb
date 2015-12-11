@@ -61,8 +61,8 @@
 // with forward-declared types.  See comments on traits below for
 // details.
 
-#ifndef SYNC_UTIL_IMMUTABLE_H_
-#define SYNC_UTIL_IMMUTABLE_H_
+#ifndef SYNC_INTERNAL_API_PUBLIC_UTIL_IMMUTABLE_H_
+#define SYNC_INTERNAL_API_PUBLIC_UTIL_IMMUTABLE_H_
 
 // For std::swap().
 #include <algorithm>
@@ -257,4 +257,4 @@ Immutable<T> MakeImmutable(T* t) {
 
 }  // namespace syncer
 
-#endif  // SYNC_UTIL_IMMUTABLE_H_
+#endif  // SYNC_INTERNAL_API_PUBLIC_UTIL_IMMUTABLE_H_

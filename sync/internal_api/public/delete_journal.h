@@ -5,6 +5,7 @@
 #ifndef SYNC_INTERNAL_API_PUBLIC_DELETE_JOURNAL_H_
 #define SYNC_INTERNAL_API_PUBLIC_DELETE_JOURNAL_H_
 
+#include <set>
 #include <vector>
 
 #include "sync/base/sync_export.h"

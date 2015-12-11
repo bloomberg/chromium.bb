@@ -5,6 +5,8 @@
 #ifndef SYNC_INTERNAL_API_PUBLIC_ATTACHMENTS_ON_DISK_ATTACHMENT_STORE_H_
 #define SYNC_INTERNAL_API_PUBLIC_ATTACHMENTS_ON_DISK_ATTACHMENT_STORE_H_
 
+#include <string>
+
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/non_thread_safe.h"

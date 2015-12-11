@@ -4,6 +4,8 @@
 
 #include "sync/internal_api/public/sessions/sync_session_snapshot.h"
 
+#include <vector>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/test/values_test_util.h"
 #include "base/values.h"
@@ -42,17 +44,11 @@ TEST_F(SyncSessionSnapshotTest, SyncSessionSnapshotToValue) {
   const int kNumHierarchyConflicts = 1055;
   const int kNumServerConflicts = 1057;
 
-  SyncSessionSnapshot snapshot(model_neutral,
-                               download_progress_markers,
-                               kIsSilenced,
-                               kNumEncryptionConflicts,
-                               kNumHierarchyConflicts,
-                               kNumServerConflicts,
-                               false,
-                               0,
-                               base::Time::Now(),
-                               base::Time::Now(),
-                               std::vector<int>(MODEL_TYPE_COUNT,0),
+  SyncSessionSnapshot snapshot(model_neutral, download_progress_markers,
+                               kIsSilenced, kNumEncryptionConflicts,
+                               kNumHierarchyConflicts, kNumServerConflicts,
+                               false, 0, base::Time::Now(), base::Time::Now(),
+                               std::vector<int>(MODEL_TYPE_COUNT, 0),
                                std::vector<int>(MODEL_TYPE_COUNT, 0),
                                sync_pb::GetUpdatesCallerInfo::UNKNOWN);
   scoped_ptr<base::DictionaryValue> value(snapshot.ToValue());

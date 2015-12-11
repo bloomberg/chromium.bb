@@ -22,4 +22,4 @@ UpdateResponseData::UpdateResponseData() {}
 
 UpdateResponseData::~UpdateResponseData() {}
 
-}  // namespace syncer
+}  // namespace syncer_v2

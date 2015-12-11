@@ -25,6 +25,6 @@ SYNC_EXPORT void CheckSyncDbLastModifiedTime(
     scoped_refptr<base::SingleThreadTaskRunner> callback_runner,
     base::Callback<void(base::Time)> callback);
 
-}  // namesapce syncer
+}  // namespace syncer
 
 #endif  // SYNC_INTERNAL_API_PUBLIC_UTIL_SYNC_DB_UTIL_H_

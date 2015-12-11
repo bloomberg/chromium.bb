@@ -20,6 +20,6 @@ SYNC_EXPORT const char* PassphraseRequiredReasonToString(
 SYNC_EXPORT const char* PassphraseTypeToString(PassphraseType type);
 
 const char* BootstrapTokenTypeToString(BootstrapTokenType type);
-}
+}  // namespace syncer
 
 #endif  // SYNC_INTERNAL_API_PUBLIC_UTIL_SYNC_STRING_CONVERSIONS_H_

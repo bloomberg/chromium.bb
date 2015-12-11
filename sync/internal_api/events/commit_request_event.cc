@@ -13,12 +13,12 @@ namespace syncer {
 CommitRequestEvent::CommitRequestEvent(
     base::Time timestamp,
     size_t num_items,
-    ModelTypeSet contributing_types_,
+    ModelTypeSet contributing_types,
     const sync_pb::ClientToServerMessage& request)
-  : timestamp_(timestamp),
-    num_items_(num_items),
-    contributing_types_(contributing_types_),
-    request_(request) {}
+    : timestamp_(timestamp),
+      num_items_(num_items),
+      contributing_types_(contributing_types),
+      request_(request) {}
 
 CommitRequestEvent::~CommitRequestEvent() {}
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNC_UTIL_UNRECOVERABLE_ERROR_HANDLER_H_
-#define SYNC_UTIL_UNRECOVERABLE_ERROR_HANDLER_H_
+#ifndef SYNC_INTERNAL_API_PUBLIC_UTIL_UNRECOVERABLE_ERROR_HANDLER_H_
+#define SYNC_INTERNAL_API_PUBLIC_UTIL_UNRECOVERABLE_ERROR_HANDLER_H_
 
 #include <string>
 
@@ -24,4 +24,4 @@ class UnrecoverableErrorHandler {
 
 }  // namespace syncer
 
-#endif  // SYNC_UTIL_UNRECOVERABLE_ERROR_HANDLER_H_
+#endif  // SYNC_INTERNAL_API_PUBLIC_UTIL_UNRECOVERABLE_ERROR_HANDLER_H_

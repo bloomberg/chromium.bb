@@ -23,7 +23,7 @@ class SYNC_EXPORT SyncManagerFactory {
     ROLLBACK,   // Rollback sync manager
   };
 
-  SyncManagerFactory(MANAGER_TYPE type);
+  explicit SyncManagerFactory(MANAGER_TYPE type);
   virtual ~SyncManagerFactory();
 
   virtual scoped_ptr<SyncManager> CreateSyncManager(const std::string& name);

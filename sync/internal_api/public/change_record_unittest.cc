@@ -4,6 +4,8 @@
 
 #include "sync/internal_api/public/change_record.h"
 
+#include <string>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/values_test_util.h"

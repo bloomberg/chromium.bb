@@ -52,7 +52,6 @@ TestInternalComponentsFactory::BuildContext(
           switches_.pre_commit_updates_policy ==
               FORCE_ENABLE_PRE_COMMIT_UPDATE_AVOIDANCE,
           invalidator_client_id));
-
 }
 
 scoped_ptr<syncable::DirectoryBackingStore>

@@ -5,6 +5,8 @@
 #ifndef SYNC_INTERNAL_API_PUBLIC_READ_TRANSACTION_H_
 #define SYNC_INTERNAL_API_PUBLIC_READ_TRANSACTION_H_
 
+#include <string>
+
 #include "base/compiler_specific.h"
 #include "sync/api/attachments/attachment_id.h"
 #include "sync/base/sync_export.h"

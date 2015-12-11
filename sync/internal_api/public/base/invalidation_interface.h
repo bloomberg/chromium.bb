@@ -52,4 +52,4 @@ class SYNC_EXPORT InvalidationInterface {
 
 }  // namespace syncer
 
-#endif
+#endif  // SYNC_INTERNAL_API_PUBLIC_BASE_INVALIDATION_INTERFACE_H_

@@ -23,4 +23,4 @@ scoped_ptr<base::DictionaryValue> ProgressMarkerMapToValue(
   return value.Pass();
 }
 
-} // namespace syncer
+}  // namespace syncer

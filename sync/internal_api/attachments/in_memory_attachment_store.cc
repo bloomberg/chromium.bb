@@ -121,7 +121,7 @@ void InMemoryAttachmentStore::ReadMetadataById(
       result_code = AttachmentStore::UNSPECIFIED_ERROR;
       continue;
     }
-    DCHECK(iter->second.components.size() > 0);
+    DCHECK_GT(iter->second.components.size(), 0u);
     if (iter->second.components.count(component) == 0) {
       result_code = AttachmentStore::UNSPECIFIED_ERROR;
       continue;
@@ -141,7 +141,7 @@ void InMemoryAttachmentStore::ReadMetadata(
 
   for (AttachmentEntryMap::const_iterator iter = attachments_.begin();
        iter != attachments_.end(); ++iter) {
-    DCHECK(iter->second.components.size() > 0);
+    DCHECK_GT(iter->second.components.size(), 0u);
     if (iter->second.components.count(component) > 0) {
       AppendMetadata(metadata_list.get(), iter->second.attachment);
     }

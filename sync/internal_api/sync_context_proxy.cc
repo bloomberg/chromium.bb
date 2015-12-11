@@ -12,4 +12,4 @@ SyncContextProxy::SyncContextProxy() {
 SyncContextProxy::~SyncContextProxy() {
 }
 
-}  // namespace syncer
+}  // namespace syncer_v2

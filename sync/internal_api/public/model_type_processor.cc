@@ -10,4 +10,4 @@ ModelTypeProcessor::ModelTypeProcessor() {}
 
 ModelTypeProcessor::~ModelTypeProcessor() {}
 
-}  // namespace syncer
+}  // namespace syncer_v2

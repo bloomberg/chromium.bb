@@ -90,7 +90,7 @@ bool IsNigoriMigratedToKeystore(const sync_pb::NigoriSpecifics& nigori) {
 
 PassphraseType ProtoPassphraseTypeToEnum(
     sync_pb::NigoriSpecifics::PassphraseType type) {
-  switch(type) {
+  switch (type) {
     case sync_pb::NigoriSpecifics::IMPLICIT_PASSPHRASE:
       return IMPLICIT_PASSPHRASE;
     case sync_pb::NigoriSpecifics::KEYSTORE_PASSPHRASE:
@@ -102,12 +102,12 @@ PassphraseType ProtoPassphraseTypeToEnum(
     default:
       NOTREACHED();
       return IMPLICIT_PASSPHRASE;
-  };
+  }
 }
 
 sync_pb::NigoriSpecifics::PassphraseType
 EnumPassphraseTypeToProto(PassphraseType type) {
-  switch(type) {
+  switch (type) {
     case IMPLICIT_PASSPHRASE:
       return sync_pb::NigoriSpecifics::IMPLICIT_PASSPHRASE;
     case KEYSTORE_PASSPHRASE:
@@ -119,7 +119,7 @@ EnumPassphraseTypeToProto(PassphraseType type) {
     default:
       NOTREACHED();
       return sync_pb::NigoriSpecifics::IMPLICIT_PASSPHRASE;
-  };
+  }
 }
 
 bool IsExplicitPassphrase(PassphraseType type) {
@@ -826,11 +826,11 @@ void SyncEncryptionHandlerImpl::ReEncryptEverything(
            UnlockVault(trans->GetWrappedTrans()).encrypted_types.First();
        iter.Good(); iter.Inc()) {
     if (iter.Get() == PASSWORDS || IsControlType(iter.Get()))
-      continue; // These types handle encryption differently.
+      continue;  // These types handle encryption differently.
 
     ReadNode type_root(trans);
     if (type_root.InitTypeRoot(iter.Get()) != BaseNode::INIT_OK)
-      continue; // Don't try to reencrypt if the type's data is unavailable.
+      continue;  // Don't try to reencrypt if the type's data is unavailable.
 
     // Iterate through all children of this datatype.
     std::queue<int64> to_visit;
@@ -1697,4 +1697,4 @@ base::Time SyncEncryptionHandlerImpl::GetExplicitPassphraseTime() const {
   return base::Time();
 }
 
-}  // namespace browser_sync
+}  // namespace syncer

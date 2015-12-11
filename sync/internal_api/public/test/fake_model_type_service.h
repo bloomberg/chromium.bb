@@ -5,6 +5,8 @@
 #ifndef SYNC_INTERNAL_API_PUBLIC_TEST_FAKE_MODEL_TYPE_SERVICE_H_
 #define SYNC_INTERNAL_API_PUBLIC_TEST_FAKE_MODEL_TYPE_SERVICE_H_
 
+#include <string>
+
 #include "sync/api/data_batch.h"
 #include "sync/api/metadata_batch.h"
 #include "sync/api/metadata_change_list.h"

@@ -28,8 +28,7 @@ SyncStatus::SyncStatus()
       has_keystore_key(false),
       passphrase_type(IMPLICIT_PASSPHRASE),
       num_entries_by_type(MODEL_TYPE_COUNT, 0),
-      num_to_delete_entries_by_type(MODEL_TYPE_COUNT, 0){
-}
+      num_to_delete_entries_by_type(MODEL_TYPE_COUNT, 0) {}
 
 SyncStatus::~SyncStatus() {
 }

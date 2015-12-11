@@ -4,6 +4,8 @@
 
 #include "sync/internal_api/sync_rollback_manager.h"
 
+#include <set>
+
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
 #include "sync/internal_api/public/read_node.h"

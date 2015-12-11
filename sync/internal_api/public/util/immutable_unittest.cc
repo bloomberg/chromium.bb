@@ -113,7 +113,7 @@ void swap(syncer::SpecializationToken& t1,
   t1.Swap(&t2);
 }
 
-}  // namespace
+}  // namespace std
 
 namespace syncer {
 namespace {

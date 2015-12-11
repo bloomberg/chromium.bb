@@ -37,7 +37,7 @@ class PreferenceSpecifics;
 class PasswordSpecificsData;
 class ThemeSpecifics;
 class TypedUrlSpecifics;
-}
+}  // namespace sync_pb
 
 namespace syncer {
 

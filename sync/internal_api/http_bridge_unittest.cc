@@ -226,6 +226,7 @@ class ShuntedHttpBridge : public HttpBridge {
     test_->GetIOThreadLoop()->PostTask(FROM_HERE,
         base::Bind(&ShuntedHttpBridge::CallOnURLFetchComplete, this));
   }
+
  private:
   ~ShuntedHttpBridge() override {}
 
@@ -619,11 +620,11 @@ TEST_F(MAYBE_SyncHttpBridgeTest, RequestContextGetterReleaseOrder) {
 
   // Create bridge factory and factory on sync thread and wait for the creation
   // to finish.
-  sync_thread.message_loop()->PostTask(FROM_HERE,
-      base::Bind(&HttpBridgeRunOnSyncThread,
-                 base::Unretained(baseline_context_getter.get()),
-                 &release_request_context_signal ,&factory, &bridge,
-                 &signal_when_created, &wait_for_shutdown));
+  sync_thread.message_loop()->PostTask(
+      FROM_HERE, base::Bind(&HttpBridgeRunOnSyncThread,
+                            base::Unretained(baseline_context_getter.get()),
+                            &release_request_context_signal, &factory, &bridge,
+                            &signal_when_created, &wait_for_shutdown));
   signal_when_created.Wait();
 
   // Simulate sync shutdown by aborting bridge and shutting down factory on
@@ -680,6 +681,6 @@ TEST_F(MAYBE_SyncHttpBridgeTest, EarlyAbortFactory) {
 
   // At this point, attempting to use the factory would trigger a crash.  Both
   // this test and the real world code should make sure this never happens.
-};
+}
 
 }  // namespace syncer

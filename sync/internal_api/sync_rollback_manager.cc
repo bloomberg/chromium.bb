@@ -43,7 +43,8 @@ void SyncRollbackManager::Init(InitArgs* args) {
 }
 
 void SyncRollbackManager::StartSyncingNormally(
-    const ModelSafeRoutingInfo& routing_info, base::Time last_poll_time){
+    const ModelSafeRoutingInfo& routing_info,
+    base::Time last_poll_time) {
   if (rollback_ready_types_.Empty()) {
     NotifyRollbackDone();
     return;

@@ -40,7 +40,7 @@ class SyncEncryptionHandler;
 class TestDirectorySetterUpper;
 
 namespace syncable {
-  class TestTransactionObserver;
+class TestTransactionObserver;
 }
 
 class TestUserShare {

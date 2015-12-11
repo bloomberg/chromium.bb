@@ -7,7 +7,9 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <functional>
 #include <string>
+#include <vector>
 
 #include "base/base64.h"
 #include "base/basictypes.h"
@@ -221,7 +223,6 @@ TEST_F(RelativePositioningTest, SortPositions) {
         << positions[i].ToDebugString() << " != "
         << kSortedPositionArray[i].ToDebugString();
   }
-
 }
 
 // Some more exercise for the comparison function.
@@ -580,7 +581,7 @@ TEST_F(PositionFromIntTest, RoundTripConversion) {
 template <typename T, typename LessThan = std::less<T> >
 class IndexedLessThan {
  public:
-  IndexedLessThan(const T* values) : values_(values) {}
+  explicit IndexedLessThan(const T* values) : values_(values) {}
 
   bool operator()(int i1, int i2) {
     return less_than_(values_[i1], values_[i2]);
@@ -613,22 +614,26 @@ TEST_F(PositionFromIntTest, ConsistentOrdering) {
 class CompressedPositionTest : public UniquePositionTest {
  public:
   CompressedPositionTest() {
-    positions_.push_back(
-        MakePosition( // Prefix starts with 256 0x00s
-            std::string("\x00\x00\x00\x00\xFF\xFF\xFE\xFF" "\x01", 9),
-            MakeSuffix('\x04')));
-    positions_.push_back(
-        MakePosition( // Prefix starts with four 0x00s
-            std::string("\x00\x00\x00\x00\xFF\xFF\xFF\xFB" "\x01", 9),
-            MakeSuffix('\x03')));
-    positions_.push_back(
-        MakePosition( // Prefix starts with four 0xFFs
-            std::string("\xFF\xFF\xFF\xFF\x00\x00\x00\x04" "\x01", 9),
-            MakeSuffix('\x01')));
-    positions_.push_back(
-        MakePosition( // Prefix starts with 256 0xFFs
-            std::string("\xFF\xFF\xFF\xFF\x00\x00\x01\x00" "\x01", 9),
-            MakeSuffix('\x02')));
+    positions_.push_back(MakePosition(  // Prefix starts with 256 0x00s
+        std::string("\x00\x00\x00\x00\xFF\xFF\xFE\xFF"
+                    "\x01",
+                    9),
+        MakeSuffix('\x04')));
+    positions_.push_back(MakePosition(  // Prefix starts with four 0x00s
+        std::string("\x00\x00\x00\x00\xFF\xFF\xFF\xFB"
+                    "\x01",
+                    9),
+        MakeSuffix('\x03')));
+    positions_.push_back(MakePosition(  // Prefix starts with four 0xFFs
+        std::string("\xFF\xFF\xFF\xFF\x00\x00\x00\x04"
+                    "\x01",
+                    9),
+        MakeSuffix('\x01')));
+    positions_.push_back(MakePosition(  // Prefix starts with 256 0xFFs
+        std::string("\xFF\xFF\xFF\xFF\x00\x00\x01\x00"
+                    "\x01",
+                    9),
+        MakeSuffix('\x02')));
   }
 
  private:

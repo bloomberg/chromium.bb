@@ -41,4 +41,4 @@ scoped_ptr<ProtocolEvent> PollGetUpdatesRequestEvent::Clone() const {
           request_));
 }
 
-}  // namespace
+}  // namespace syncer

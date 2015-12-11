@@ -42,4 +42,4 @@ scoped_ptr<SyncContextProxy> SyncContextProxyImpl::Clone() const {
       new SyncContextProxyImpl(sync_task_runner_, sync_context_));
 }
 
-}  // namespace syncer
+}  // namespace syncer_v2

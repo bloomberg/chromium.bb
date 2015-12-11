@@ -72,7 +72,7 @@ class SYNC_EXPORT AttachmentServiceProxy : public AttachmentService {
                            public base::RefCountedThreadSafe<Core> {
    public:
     // Construct an AttachmentServiceProxyCore that forwards calls to |wrapped|.
-    Core(const base::WeakPtr<syncer::AttachmentService>& wrapped);
+    explicit Core(const base::WeakPtr<syncer::AttachmentService>& wrapped);
 
     // AttachmentService implementation.
     void GetOrDownloadAttachments(

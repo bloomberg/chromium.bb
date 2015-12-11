@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNC_UTIL_UNRECOVERABLE_ERROR_INFO_H_
-#define SYNC_UTIL_UNRECOVERABLE_ERROR_INFO_H_
+#ifndef SYNC_INTERNAL_API_PUBLIC_UTIL_UNRECOVERABLE_ERROR_INFO_H_
+#define SYNC_INTERNAL_API_PUBLIC_UTIL_UNRECOVERABLE_ERROR_INFO_H_
 // TODO(lipalani): Figure out the right location for this class so it is
 // accessible outside of sync engine as well.
 
@@ -37,4 +37,4 @@ class UnrecoverableErrorInfo {
 
 }  // namespace syncer
 
-#endif  // SYNC_UTIL_UNRECOVERABLE_ERROR_INFO_H_
+#endif  // SYNC_INTERNAL_API_PUBLIC_UTIL_UNRECOVERABLE_ERROR_INFO_H_

@@ -4,6 +4,8 @@
 
 #include "sync/internal_api/sync_backup_manager.h"
 
+#include <string>
+
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
 #include "sync/internal_api/public/read_node.h"

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNC_INTERNAL_PUBLIC_API_BASE_MODEL_TYPE_TEST_UTIL_H_
-#define SYNC_INTERNAL_PUBLIC_API_BASE_MODEL_TYPE_TEST_UTIL_H_
+#ifndef SYNC_INTERNAL_API_PUBLIC_BASE_MODEL_TYPE_TEST_UTIL_H_
+#define SYNC_INTERNAL_API_PUBLIC_BASE_MODEL_TYPE_TEST_UTIL_H_
 
 #include <ostream>
 
@@ -22,4 +22,4 @@ void PrintTo(ModelTypeSet model_types, ::std::ostream* os);
 
 }  // namespace syncer
 
-#endif  // SYNC_INTERNAL_PUBLIC_API_BASE_MODEL_TYPE_TEST_UTIL_H_
+#endif  // SYNC_INTERNAL_API_PUBLIC_BASE_MODEL_TYPE_TEST_UTIL_H_

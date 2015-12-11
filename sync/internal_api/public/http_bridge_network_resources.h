@@ -20,15 +20,15 @@ class CancelationSignal;
 class HttpPostProviderFactory;
 
 class SYNC_EXPORT HttpBridgeNetworkResources : public NetworkResources {
-  public:
-   ~HttpBridgeNetworkResources() override;
+ public:
+  ~HttpBridgeNetworkResources() override;
 
-   // NetworkResources
-   scoped_ptr<HttpPostProviderFactory> GetHttpPostProviderFactory(
-       const scoped_refptr<net::URLRequestContextGetter>&
-           baseline_context_getter,
-       const NetworkTimeUpdateCallback& network_time_update_callback,
-       CancelationSignal* cancelation_signal) override;
+  // NetworkResources
+  scoped_ptr<HttpPostProviderFactory> GetHttpPostProviderFactory(
+      const scoped_refptr<net::URLRequestContextGetter>&
+          baseline_context_getter,
+      const NetworkTimeUpdateCallback& network_time_update_callback,
+      CancelationSignal* cancelation_signal) override;
 };
 
 }  // namespace syncer
