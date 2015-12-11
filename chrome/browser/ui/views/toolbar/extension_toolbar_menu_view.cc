@@ -74,8 +74,7 @@ gfx::Size ExtensionToolbarMenuView::GetPreferredSize() const {
 int ExtensionToolbarMenuView::GetHeightForWidth(int width) const {
   // The width passed in here includes the full width of the menu, so we need
   // to omit the necessary padding.
-  const views::MenuConfig& menu_config =
-      static_cast<const views::MenuItemView*>(parent())->GetMenuConfig();
+  const views::MenuConfig& menu_config = views::MenuConfig::instance();
   int end_padding = menu_config.arrow_to_edge_padding -
       container_->toolbar_actions_bar()->platform_settings().item_spacing;
   width -= start_padding() + end_padding;

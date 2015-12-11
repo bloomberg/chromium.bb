@@ -312,7 +312,7 @@ bool DispatchEventToMenu(views::Widget* widget, ui::KeyboardCode key_code) {
     return;
 
   if (drawMenuBackgroundForBlur_) {
-    const CGFloat radius = views::MenuConfig::instance(nullptr).corner_radius;
+    const CGFloat radius = views::MenuConfig::instance().corner_radius;
     [skia::SkColorToSRGBNSColor(0x01000000) set];
     [[NSBezierPath bezierPathWithRoundedRect:[self bounds]
                                      xRadius:radius

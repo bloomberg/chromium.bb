@@ -15,9 +15,7 @@ class MenuItemView;
 
 class MenuSeparator : public View {
  public:
-  MenuSeparator(MenuItemView* parent, ui::MenuSeparatorType type)
-      : type_(type),
-        parent_menu_item_(parent) {}
+  explicit MenuSeparator(ui::MenuSeparatorType type) : type_(type) {}
 
   // View overrides.
   void OnPaint(gfx::Canvas* canvas) override;
@@ -31,9 +29,6 @@ class MenuSeparator : public View {
 
   // The type of the separator.
   const ui::MenuSeparatorType type_;
-
-  // Our parent.
-  MenuItemView* parent_menu_item_;
 
   DISALLOW_COPY_AND_ASSIGN(MenuSeparator);
 };

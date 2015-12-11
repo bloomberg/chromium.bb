@@ -8,7 +8,6 @@
 #include "ui/gfx/canvas.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/menu/menu_config.h"
-#include "ui/views/controls/menu/menu_item_view.h"
 
 namespace {
 
@@ -25,7 +24,7 @@ void MenuSeparator::OnPaint(gfx::Canvas* canvas) {
 #endif
 
 gfx::Size MenuSeparator::GetPreferredSize() const {
-  const MenuConfig& menu_config = parent_menu_item_->GetMenuConfig();
+  const MenuConfig& menu_config = MenuConfig::instance();
   int height = menu_config.separator_height;
   switch(type_) {
     case ui::SPACING_SEPARATOR:
@@ -61,7 +60,7 @@ gfx::Rect MenuSeparator::GetPaintBounds() {
   }
 
   gfx::Rect paint_rect(0, pos, width(), kSeparatorHeight);
-  if (parent_menu_item_->GetMenuConfig().use_outer_border)
+  if (MenuConfig::instance().use_outer_border)
     paint_rect.Inset(1, 0);
   return paint_rect;
 }

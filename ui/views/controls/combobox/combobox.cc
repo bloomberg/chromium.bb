@@ -233,8 +233,7 @@ class Combobox::ComboboxMenuModelAdapter : public ui::MenuModel,
  private:
   bool UseCheckmarks() const {
     return owner_->style_ != STYLE_ACTION &&
-           MenuConfig::instance(owner_->GetNativeTheme())
-               .check_selected_combobox_item;
+           MenuConfig::instance().check_selected_combobox_item;
   }
 
   // Overridden from MenuModel:
