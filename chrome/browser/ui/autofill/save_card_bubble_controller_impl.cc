@@ -236,6 +236,7 @@ SaveCardBubbleControllerImpl::GetLegalMessageLines() const {
 
 void SaveCardBubbleControllerImpl::ShowBubble(bool user_action) {
   DCHECK(!save_card_callback_.is_null());
+  DCHECK(!save_card_bubble_view_);
 
   // Need to create location bar icon before bubble, otherwise bubble will be
   // unanchored.

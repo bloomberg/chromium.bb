@@ -809,7 +809,6 @@ bool CanBookmarkAllTabs(const Browser* browser) {
              CanBookmarkCurrentPageInternal(browser, false);
 }
 
-#if defined(TOOLKIT_VIEWS) && !defined(OS_MACOSX)
 void SaveCreditCard(Browser* browser) {
   WebContents* web_contents =
       browser->tab_strip_model()->GetActiveWebContents();
@@ -817,7 +816,6 @@ void SaveCreditCard(Browser* browser) {
       autofill::SaveCardBubbleControllerImpl::FromWebContents(web_contents);
   controller->ReshowBubble();
 }
-#endif
 
 void Translate(Browser* browser) {
   if (!browser->window()->IsActive())

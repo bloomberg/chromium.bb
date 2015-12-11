@@ -890,6 +890,10 @@ class NotificationBridge : public AppMenuBadgeController::Delegate {
   return locationBarView_->GetManagePasswordsBubblePoint();
 }
 
+- (NSPoint)saveCreditCardBubblePoint {
+  return locationBarView_->GetSaveCreditCardBubblePoint();
+}
+
 - (NSPoint)translateBubblePoint {
   return locationBarView_->GetTranslateBubblePoint();
 }

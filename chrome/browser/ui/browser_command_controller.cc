@@ -563,13 +563,9 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
       break;
 #endif  // ENABLE_BASIC_PRINTING
 
-// TODO(bondd): Implement save credit card bubble and icon on Mac.
-#if defined(TOOLKIT_VIEWS) && !defined(OS_MACOSX)
     case IDC_SAVE_CREDIT_CARD_FOR_PAGE:
       SaveCreditCard(browser_);
       break;
-#endif
-
     case IDC_TRANSLATE_PAGE:
       Translate(browser_);
       break;

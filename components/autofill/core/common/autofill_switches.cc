@@ -32,6 +32,10 @@ const char kDisableOfferUploadCreditCards[] =
 // account creation.
 const char kDisablePasswordGeneration[]     = "disable-password-generation";
 
+// Disables showing bubble instead of infobar for save credit card prompt.
+const char kDisableSaveCardBubble[] =
+    "disable-autofill-save-card-bubble";
+
 // The "disable" flag for kEnableSingleClickAutofill.
 const char kDisableSingleClickAutofill[]    = "disable-single-click-autofill";
 
@@ -63,6 +67,10 @@ const char kEnableOfferUploadCreditCards[] = "enable-offer-upload-credit-cards";
 // Enables password generation when we detect that the user is going through
 // account creation.
 const char kEnablePasswordGeneration[]      = "enable-password-generation";
+
+// Enables showing bubble instead of infobar for save credit card prompt.
+const char kEnableSaveCardBubble[] =
+    "enable-autofill-save-card-bubble";
 
 // Enables/disables suggestions without typing anything (on first click).
 const char kEnableSingleClickAutofill[]     = "enable-single-click-autofill";

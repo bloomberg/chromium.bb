@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
@@ -33,6 +34,7 @@
 #include "components/autofill/core/browser/autofill_cc_infobar_delegate.h"
 #include "components/autofill/core/browser/ui/card_unmask_prompt_view.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
+#include "components/autofill/core/common/autofill_switches.h"
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
 #include "components/signin/core/browser/profile_identity_provider.h"
 #include "components/user_prefs/user_prefs.h"
@@ -51,6 +53,21 @@
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(autofill::ChromeAutofillClient);
 
 namespace autofill {
+
+namespace {
+
+#if !defined(OS_ANDROID)
+bool IsSaveCardBubbleEnabled() {
+#if defined(OS_MACOSX)
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableSaveCardBubble);
+#else
+  return true;
+#endif
+}
+#endif  // !defined(OS_ANDROID)
+
+}  // namespace
 
 ChromeAutofillClient::ChromeAutofillClient(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
@@ -155,24 +172,26 @@ void ChromeAutofillClient::OnUnmaskVerificationResult(
 
 void ChromeAutofillClient::ConfirmSaveCreditCardLocally(
     const base::Closure& callback) {
-// TODO(bondd): Implement save card bubble for OS_MACOSX.
-#if defined(TOOLKIT_VIEWS) && !defined(OS_MACOSX)
-  // Do lazy initialization of SaveCardBubbleControllerImpl.
-  autofill::SaveCardBubbleControllerImpl::CreateForWebContents(web_contents());
-  autofill::SaveCardBubbleControllerImpl* controller =
-      autofill::SaveCardBubbleControllerImpl::FromWebContents(web_contents());
-  controller->ShowBubbleForLocalSave(callback);
-#else
+#if !defined(OS_ANDROID)
+  if (IsSaveCardBubbleEnabled()) {
+    // Do lazy initialization of SaveCardBubbleControllerImpl.
+    autofill::SaveCardBubbleControllerImpl::CreateForWebContents(
+        web_contents());
+    autofill::SaveCardBubbleControllerImpl* controller =
+        autofill::SaveCardBubbleControllerImpl::FromWebContents(web_contents());
+    controller->ShowBubbleForLocalSave(callback);
+    return;
+  }
+#endif
   AutofillCCInfoBarDelegate::Create(
       InfoBarService::FromWebContents(web_contents()), this, callback);
-#endif
 }
 
 void ChromeAutofillClient::ConfirmSaveCreditCardToCloud(
     const base::Closure& callback,
     scoped_ptr<base::DictionaryValue> legal_message) {
-// TODO(bondd): Implement save card bubble for OS_MACOSX.
-#if defined(TOOLKIT_VIEWS) && !defined(OS_MACOSX)
+// TODO(jdonnelly): Implement save card prompt for OS_ANDROID and OS_IOS.
+#if !defined(OS_ANDROID)
   // Do lazy initialization of SaveCardBubbleControllerImpl.
   autofill::SaveCardBubbleControllerImpl::CreateForWebContents(web_contents());
   autofill::SaveCardBubbleControllerImpl* controller =

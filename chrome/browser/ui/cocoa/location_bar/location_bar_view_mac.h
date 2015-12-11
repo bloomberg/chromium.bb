@@ -30,6 +30,7 @@ class LocationIconDecoration;
 class ManagePasswordsDecoration;
 class PageActionDecoration;
 class Profile;
+class SaveCreditCardDecoration;
 class SelectedKeywordDecoration;
 class StarDecoration;
 class TranslateDecoration;
@@ -105,6 +106,10 @@ class LocationBarViewMac : public LocationBar,
   // Get the point in window coordinates on the star for the bookmark bubble to
   // aim at. Only works if IsStarEnabled returns YES.
   NSPoint GetBookmarkBubblePoint() const;
+
+  // Get the point in window coordinates in the save credit card icon for the
+  //  save credit card bubble to aim at.
+  NSPoint GetSaveCreditCardBubblePoint() const;
 
   // Get the point in window coordinates on the star for the Translate bubble to
   // aim at.
@@ -225,6 +230,9 @@ class LocationBarViewMac : public LocationBar,
   // A decoration that shows a lock icon and ev-cert label in a bubble
   // on the left.
   scoped_ptr<EVBubbleDecoration> ev_bubble_decoration_;
+
+  // Save credit card icon on the right side of the omnibox.
+  scoped_ptr<SaveCreditCardDecoration> save_credit_card_decoration_;
 
   // Bookmark star right of page actions.
   scoped_ptr<StarDecoration> star_decoration_;

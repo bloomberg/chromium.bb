@@ -152,7 +152,10 @@ class NotificationBridge;
 // associated window's coordinate system.
 - (NSPoint)bookmarkBubblePoint;
 
-// Point on the translate icon fot the Translate bubble.
+// Point on the save credit card icon for the save credit card bubble.
+- (NSPoint)saveCreditCardBubblePoint;
+
+// Point on the translate icon for the Translate bubble.
 - (NSPoint)translateBubblePoint;
 
 // Returns the desired toolbar height for the given compression factor.
