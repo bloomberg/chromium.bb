@@ -960,10 +960,10 @@ protected:
 
     // Helper function to validate compressed texture data is correct size
     // for the given format and dimensions.
-    bool validateCompressedTexFuncData(const char* functionName, GLsizei width, GLsizei height, GLenum format, DOMArrayBufferView* pixels);
+    bool validateCompressedTexFuncData(const char* functionName, GLsizei width, GLsizei height, GLsizei depth, GLenum format, DOMArrayBufferView* pixels);
 
     // Helper function for validating compressed texture formats.
-    bool validateCompressedTexFormat(GLenum format);
+    bool validateCompressedTexFormat(const char* functionName, GLenum format);
 
     // Helper function to validate compressed texture dimensions are valid for
     // the given format.
@@ -971,7 +971,7 @@ protected:
 
     // Helper function to validate compressed texture dimensions are valid for
     // the given format.
-    bool validateCompressedTexSubDimensions(const char* functionName, GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, WebGLTexture*);
+    bool validateCompressedTexSubDimensions(const char* functionName, GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, WebGLTexture*);
 
     // Helper function to validate mode for draw{Arrays/Elements}.
     bool validateDrawMode(const char* functionName, GLenum);

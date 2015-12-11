@@ -1068,15 +1068,15 @@ void WebGL2RenderingContextBase::compressedTexImage3D(GLenum target, GLint level
         return;
     if (!validateTexFuncLevel("compressedTexImage3D", target, level))
         return;
-    if (!validateCompressedTexFormat(internalformat)) {
-        synthesizeGLError(GL_INVALID_ENUM, "compressedTexImage3D", "invalid internalformat");
+    if (!validateCompressedTexFormat("compressedTexImage3D", internalformat))
         return;
-    }
     if (border) {
         synthesizeGLError(GL_INVALID_VALUE, "compressedTexImage3D", "border not 0");
         return;
     }
     if (!validateCompressedTexDimensions("compressedTexImage3D", NotTexSubImage2D, target, level, width, height, depth, internalformat))
+        return;
+    if (!validateCompressedTexFuncData("compressedTexImage3D", width, height, depth, internalformat, data))
         return;
 
     WebGLTexture* tex = validateTextureBinding("compressedTexImage3D", target, true);
@@ -1097,16 +1097,21 @@ void WebGL2RenderingContextBase::compressedTexSubImage3D(GLenum target, GLint le
         return;
     if (!validateTexFunc3DTarget("compressedTexSubImage3D", target))
         return;
-
     WebGLTexture* tex = validateTextureBinding("compressedTexSubImage3D", target, true);
     if (!tex)
         return;
-
+    if (!validateTexFuncLevel("compressedTexSubImage3D", target, level))
+        return;
+    if (!validateCompressedTexFormat("compressedTexSubImage3D", format))
+        return;
     if (format != tex->getInternalFormat(target, level)) {
         synthesizeGLError(GL_INVALID_OPERATION, "compressedTexSubImage3D", "format does not match texture format");
         return;
     }
-
+    if (!validateCompressedTexSubDimensions("compressedTexSubImage3D", target, level, xoffset, yoffset, zoffset, width, height, depth, format, tex))
+        return;
+    if (!validateCompressedTexFuncData("compressedTexSubImage3D", width, height, depth, format, data))
+        return;
     webContext()->compressedTexSubImage3D(target, level, xoffset, yoffset, zoffset,
         width, height, depth, format, data->byteLength(), data->baseAddress());
 }

@@ -1877,17 +1877,15 @@ void WebGLRenderingContextBase::compressedTexImage2D(GLenum target, GLint level,
     if (!validateTexFuncLevel("compressedTexImage2D", target, level))
         return;
 
-    if (!validateCompressedTexFormat(internalformat)) {
-        synthesizeGLError(GL_INVALID_ENUM, "compressedTexImage2D", "invalid internalformat");
+    if (!validateCompressedTexFormat("compressedTexImage2D", internalformat))
         return;
-    }
     if (border) {
         synthesizeGLError(GL_INVALID_VALUE, "compressedTexImage2D", "border not 0");
         return;
     }
     if (!validateCompressedTexDimensions("compressedTexImage2D", NotTexSubImage2D, target, level, width, height, 1, internalformat))
         return;
-    if (!validateCompressedTexFuncData("compressedTexImage2D", width, height, internalformat, data))
+    if (!validateCompressedTexFuncData("compressedTexImage2D", width, height, 1, internalformat, data))
         return;
 
     if (tex->isImmutable()) {
@@ -1910,23 +1908,18 @@ void WebGLRenderingContextBase::compressedTexSubImage2D(GLenum target, GLint lev
     WebGLTexture* tex = validateTextureBinding("compressedTexSubImage2D", target, true);
     if (!tex)
         return;
-
     if (!validateTexFuncLevel("compressedTexSubImage2D", target, level))
         return;
-    if (!validateCompressedTexFormat(format)) {
-        synthesizeGLError(GL_INVALID_ENUM, "compressedTexSubImage2D", "invalid format");
+    if (!validateCompressedTexFormat("compressedTexSubImage2D", format))
         return;
-    }
     if (format != tex->getInternalFormat(target, level)) {
         synthesizeGLError(GL_INVALID_OPERATION, "compressedTexSubImage2D", "format does not match texture format");
         return;
     }
-    if (!validateCompressedTexFuncData("compressedTexSubImage2D", width, height, format, data))
+    if (!validateCompressedTexSubDimensions("compressedTexSubImage2D", target, level, xoffset, yoffset, 0, width, height, 1, format, tex))
         return;
-
-    if (!validateCompressedTexSubDimensions("compressedTexSubImage2D", target, level, xoffset, yoffset, width, height, format, tex))
+    if (!validateCompressedTexFuncData("compressedTexSubImage2D", width, height, 1, format, data))
         return;
-
     webContext()->compressedTexSubImage2D(target, level, xoffset, yoffset,
         width, height, format, data->byteLength(), data->baseAddress());
 }
@@ -5902,23 +5895,23 @@ bool WebGLRenderingContextBase::validateCopyTexSubImage(const char* functionName
     return true;
 }
 
-bool WebGLRenderingContextBase::validateCompressedTexFormat(GLenum format)
+bool WebGLRenderingContextBase::validateCompressedTexFormat(const char* functionName, GLenum format)
 {
-    return m_compressedTextureFormats.contains(format);
+    if (!m_compressedTextureFormats.contains(format)) {
+        synthesizeGLError(GL_INVALID_ENUM, functionName, "invalid format");
+        return false;
+    }
+    return true;
 }
 
-bool WebGLRenderingContextBase::validateCompressedTexFuncData(const char* functionName, GLsizei width, GLsizei height, GLenum format, DOMArrayBufferView* pixels)
+bool WebGLRenderingContextBase::validateCompressedTexFuncData(const char* functionName, GLsizei width, GLsizei height, GLsizei depth, GLenum format, DOMArrayBufferView* pixels)
 {
     if (!pixels) {
         synthesizeGLError(GL_INVALID_VALUE, functionName, "no pixels");
         return false;
     }
-    if (width < 0 || height < 0) {
-        synthesizeGLError(GL_INVALID_VALUE, functionName, "width or height < 0");
-        return false;
-    }
 
-    unsigned bytesRequired = 0;
+    CheckedInt<unsigned> bytesRequired = 0;
 
     switch (format) {
     case GL_COMPRESSED_RGBA_ASTC_4x4_KHR:
@@ -5957,9 +5950,9 @@ bool WebGLRenderingContextBase::validateCompressedTexFuncData(const char* functi
             const int kBlockWidth = WebGLCompressedTextureASTC::kBlockSizeCompressASTC[index].blockWidth;
             const int kBlockHeight = WebGLCompressedTextureASTC::kBlockSizeCompressASTC[index].blockHeight;
 
-            int numBlocksAcross = (width + kBlockWidth - 1) / kBlockWidth;
-            int numBlocksDown = (height + kBlockHeight - 1) / kBlockHeight;
-            int numBlocks = numBlocksAcross * numBlocksDown;
+            CheckedInt<unsigned> numBlocksAcross = (CheckedInt<unsigned>(width) + kBlockWidth - 1) / kBlockWidth;
+            CheckedInt<unsigned> numBlocksDown = (CheckedInt<unsigned>(height) + kBlockHeight - 1) / kBlockHeight;
+            CheckedInt<unsigned> numBlocks = numBlocksAcross * numBlocksDown;
             bytesRequired = numBlocks * kBlockSize;
         }
         break;
@@ -5969,9 +5962,9 @@ bool WebGLRenderingContextBase::validateCompressedTexFuncData(const char* functi
             const int kBlockWidth = 4;
             const int kBlockHeight = 4;
             const int kBlockSize = 8;
-            int numBlocksAcross = (width + kBlockWidth - 1) / kBlockWidth;
-            int numBlocksDown = (height + kBlockHeight - 1) / kBlockHeight;
-            int numBlocks = numBlocksAcross * numBlocksDown;
+            CheckedInt<unsigned> numBlocksAcross = (CheckedInt<unsigned>(width) + kBlockWidth - 1) / kBlockWidth;
+            CheckedInt<unsigned> numBlocksDown = (CheckedInt<unsigned>(height) + kBlockHeight - 1) / kBlockHeight;
+            CheckedInt<unsigned> numBlocks = numBlocksAcross * numBlocksDown;
             bytesRequired = numBlocks * kBlockSize;
         }
         break;
@@ -5981,9 +5974,9 @@ bool WebGLRenderingContextBase::validateCompressedTexFuncData(const char* functi
             const int kBlockWidth = 4;
             const int kBlockHeight = 4;
             const int kBlockSize = 16;
-            int numBlocksAcross = (width + kBlockWidth - 1) / kBlockWidth;
-            int numBlocksDown = (height + kBlockHeight - 1) / kBlockHeight;
-            int numBlocks = numBlocksAcross * numBlocksDown;
+            CheckedInt<unsigned> numBlocksAcross = (CheckedInt<unsigned>(width) + kBlockWidth - 1) / kBlockWidth;
+            CheckedInt<unsigned> numBlocksDown = (CheckedInt<unsigned>(height) + kBlockHeight - 1) / kBlockHeight;
+            CheckedInt<unsigned> numBlocks = numBlocksAcross * numBlocksDown;
             bytesRequired = numBlocks * kBlockSize;
         }
         break;
@@ -5996,7 +5989,7 @@ bool WebGLRenderingContextBase::validateCompressedTexFuncData(const char* functi
     case GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2:
     case GL_ETC1_RGB8_OES:
         {
-            bytesRequired = floor(static_cast<double>((width + 3) / 4)) * floor(static_cast<double>((height + 3) / 4)) * 8;
+            bytesRequired = ((CheckedInt<unsigned>(width) + 3) / 4) * ((height + 3) / 4) * 8;
         }
         break;
     case GC3D_COMPRESSED_ATC_RGBA_EXPLICIT_ALPHA_AMD:
@@ -6006,19 +5999,19 @@ bool WebGLRenderingContextBase::validateCompressedTexFuncData(const char* functi
     case GL_COMPRESSED_RGBA8_ETC2_EAC:
     case GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC:
         {
-            bytesRequired = floor(static_cast<double>((width + 3) / 4)) * floor(static_cast<double>((height + 3) / 4)) * 16;
+            bytesRequired = ((CheckedInt<unsigned>(width) + 3) / 4) * ((height + 3) / 4) * 16;
         }
         break;
     case GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG:
     case GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG:
         {
-            bytesRequired = (max(width, 8) * max(height, 8) * 4 + 7) / 8;
+            bytesRequired = (CheckedInt<unsigned>(max(width, 8)) * max(height, 8) * 4 + 7) / 8;
         }
         break;
     case GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG:
     case GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG:
         {
-            bytesRequired = (max(width, 16) * max(height, 8) * 2 + 7) / 8;
+            bytesRequired = (CheckedInt<unsigned>(max(width, 16)) * max(height, 8) * 2 + 7) / 8;
         }
         break;
     default:
@@ -6026,7 +6019,12 @@ bool WebGLRenderingContextBase::validateCompressedTexFuncData(const char* functi
         return false;
     }
 
-    if (pixels->byteLength() != bytesRequired) {
+    bytesRequired *= depth;
+    if (!bytesRequired.isValid()) {
+        synthesizeGLError(GL_INVALID_VALUE, functionName, "bad dimensions");
+        return false;
+    }
+    if (pixels->byteLength() != bytesRequired.value()) {
         synthesizeGLError(GL_INVALID_VALUE, functionName, "length of ArrayBufferView is not correct for dimensions");
         return false;
     }
@@ -6135,14 +6133,43 @@ bool WebGLRenderingContextBase::validateCompressedTexDimensions(const char* func
     return true;
 }
 
-bool WebGLRenderingContextBase::validateCompressedTexSubDimensions(const char* functionName, GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, WebGLTexture* tex)
+bool WebGLRenderingContextBase::validateCompressedTexSubDimensions(const char* functionName, GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, WebGLTexture* tex)
 {
-    if (xoffset < 0 || yoffset < 0) {
-        synthesizeGLError(GL_INVALID_VALUE, functionName, "xoffset or yoffset < 0");
+    if (xoffset < 0 || yoffset < 0 || zoffset < 0) {
+        synthesizeGLError(GL_INVALID_VALUE, functionName, "xoffset, yoffset or zoffset < 0");
         return false;
     }
 
     switch (format) {
+    case GL_COMPRESSED_R11_EAC:
+    case GL_COMPRESSED_SIGNED_R11_EAC:
+    case GL_COMPRESSED_RG11_EAC:
+    case GL_COMPRESSED_SIGNED_RG11_EAC:
+    case GL_COMPRESSED_RGB8_ETC2:
+    case GL_COMPRESSED_SRGB8_ETC2:
+    case GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2:
+    case GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2:
+    case GL_COMPRESSED_RGBA8_ETC2_EAC:
+    case GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC: {
+        const int kBlockWidth = 4;
+        const int kBlockHeight = 4;
+        if ((xoffset % kBlockWidth) || (yoffset % kBlockHeight)) {
+            synthesizeGLError(GL_INVALID_OPERATION, functionName, "xoffset or yoffset not multiple of 4");
+            return false;
+        }
+        Checked<GLint, RecordOverflow> maxX = xoffset, maxY = yoffset;
+        maxX += width;
+        maxY += height;
+        if (maxX.hasOverflowed() || ((width % kBlockWidth) && maxX.unsafeGet() != tex->getWidth(target, level))) {
+            synthesizeGLError(GL_INVALID_OPERATION, functionName, "width not multiple of 4 and width + xoffset not equal to width of the texture level for ETC2/EAC format texture");
+            return false;
+        }
+        if (maxY.hasOverflowed() || ((height % kBlockHeight) && maxY.unsafeGet() != tex->getHeight(target, level))) {
+            synthesizeGLError(GL_INVALID_OPERATION, functionName, "height not multiple of 4 and height + yoffset not equal to height of the texture level for ETC2/EAC format texture");
+            return false;
+        }
+        return validateCompressedTexDimensions(functionName, TexSubImage2D, target, level, width, height, depth, format);
+    }
     case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
     case GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:
     case GL_COMPRESSED_RGBA_S3TC_DXT3_EXT:
@@ -6162,7 +6189,7 @@ bool WebGLRenderingContextBase::validateCompressedTexSubDimensions(const char* f
             synthesizeGLError(GL_INVALID_VALUE, functionName, "dimensions out of range");
             return false;
         }
-        return validateCompressedTexDimensions(functionName, TexSubImage2D, target, level, width, height, 1, format);
+        return validateCompressedTexDimensions(functionName, TexSubImage2D, target, level, width, height, depth, format);
     }
     case GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG:
     case GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG:
@@ -6177,7 +6204,7 @@ bool WebGLRenderingContextBase::validateCompressedTexSubDimensions(const char* f
             synthesizeGLError(GL_INVALID_OPERATION, functionName, "dimensions must match existing level");
             return false;
         }
-        return validateCompressedTexDimensions(functionName, TexSubImage2D, target, level, width, height, 1, format);
+        return validateCompressedTexDimensions(functionName, TexSubImage2D, target, level, width, height, depth, format);
     }
     case GC3D_COMPRESSED_ATC_RGB_AMD:
     case GC3D_COMPRESSED_ATC_RGBA_EXPLICIT_ALPHA_AMD:
