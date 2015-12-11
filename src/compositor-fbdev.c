@@ -724,7 +724,7 @@ session_notify(struct wl_listener *listener, void *data)
 		/* If we have a repaint scheduled (from the idle handler), make
 		 * sure we cancel that so we don't try to pageflip when we're
 		 * vt switched away.  The OFFSCREEN state will prevent
-		 * further attemps at repainting.  When we switch
+		 * further attempts at repainting.  When we switch
 		 * back, we schedule a repaint, which will process
 		 * pending frame callbacks. */
 
