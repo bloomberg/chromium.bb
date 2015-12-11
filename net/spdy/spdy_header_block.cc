@@ -165,6 +165,23 @@ bool SpdyHeaderBlock::operator!=(const SpdyHeaderBlock& other) const {
   return !(operator==(other));
 }
 
+std::string SpdyHeaderBlock::DebugString() const {
+  if (empty()) {
+    return "{}";
+  }
+
+  std::string output = "\n{\n";
+  for (auto it = begin(); it != end(); ++it) {
+    output.append(" ");
+    it->first.AppendToString(&output);
+    output.append(":");
+    it->second.AppendToString(&output);
+    output.append("\n");
+  }
+  output.append("}\n");
+  return output;
+}
+
 void SpdyHeaderBlock::clear() {
   block_.clear();
   storage_->Clear();
