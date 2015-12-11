@@ -78,6 +78,10 @@ extern const char kGPUVendor[];
 extern const char kGPURenderer[];
 #endif
 
+#if defined(OS_WIN)
+extern const char kHungAudioThreadDetails[];
+#endif
+
 // The user's printers, up to kPrinterInfoCount. Should be set with
 // ScopedPrinterInfo.
 const size_t kPrinterInfoCount = 4;

@@ -47,8 +47,6 @@ MEDIA_EXPORT extern const char kWaveOutBuffers[];
 MEDIA_EXPORT extern const char kUseCras[];
 #endif
 
-MEDIA_EXPORT extern const char kEnableAudioHangMonitor[];
-
 MEDIA_EXPORT extern const char kUseFakeDeviceForMediaStream[];
 MEDIA_EXPORT extern const char kUseFileForFakeVideoCapture[];
 MEDIA_EXPORT extern const char kUseFileForFakeAudioCapture[];

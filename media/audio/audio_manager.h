@@ -26,6 +26,11 @@ class AudioOutputStream;
 
 // Manages all audio resources.  Provides some convenience functions that avoid
 // the need to provide iterators over the existing streams.
+//
+// Except on OSX, a hang monitor for the audio thread is always created. When a
+// thread hang is detected, it is reported to UMA.  Optionally, if called prior,
+// EnableCrashKeyLoggingForAudioThreadHangs() will cause a non-crash dump to be
+// logged on Windows (this allows us to report driver hangs to Microsoft).
 class MEDIA_EXPORT AudioManager {
  public:
   virtual ~AudioManager();
@@ -55,11 +60,8 @@ class MEDIA_EXPORT AudioManager {
   // Similar to Create() except uses a FakeAudioLogFactory for testing.
   static AudioManager* CreateForTesting();
 
-  // Enables the hang monitor for the AudioManager once it's created.  Must be
-  // called before the AudioManager is created.  CreateWithHangTimer() requires
-  // either switches::kEnableAudioHangMonitor to be present or this to have been
-  // called previously to start the hang monitor.  Does nothing on OSX.
-  static void EnableHangMonitor();
+  // Enables non-crash dumps when audio thread hangs are detected.
+  static void EnableCrashKeyLoggingForAudioThreadHangs();
 
 #if defined(OS_LINUX)
   // Sets the name of the audio source as seen by external apps. Only actually

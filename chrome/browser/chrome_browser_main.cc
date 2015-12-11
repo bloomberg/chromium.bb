@@ -746,7 +746,7 @@ void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
   if (channel == version_info::Channel::UNKNOWN ||
       channel == version_info::Channel::CANARY ||
       channel == version_info::Channel::DEV) {
-    media::AudioManager::EnableHangMonitor();
+    media::AudioManager::EnableCrashKeyLoggingForAudioThreadHangs();
   }
 
   // Enable profiler instrumentation depending on the channel.

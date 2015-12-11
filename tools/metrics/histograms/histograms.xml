@@ -18289,6 +18289,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.AudioThreadStatus" enum="AudioThreadStatus">
+  <owner>dalecurtis@chromium.org</owner>
+  <summary>
+    State of the audio thread. A value of &quot;started&quot; is emitted once
+    the hang monitor has been initialized. If the thread is detected as hung
+    later, a value of &quot;hung&quot; is emitted. If the hung thread later
+    recovers a value of &quot;recovered&quot; is emitted.
+  </summary>
+</histogram>
+
 <histogram name="Media.AudioTrackProcessingStates"
     enum="AudioTrackProcessingStates">
   <owner>grunell@chromium.org</owner>
@@ -55839,6 +55849,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="9" label="k176400Hz"/>
   <int value="10" label="k192000Hz"/>
   <int value="11" label="k24000Hz"/>
+</enum>
+
+<enum name="AudioThreadStatus" type="int">
+  <int value="0" label="None"/>
+  <int value="1" label="Started"/>
+  <int value="2" label="Hung"/>
+  <int value="3" label="Recovered"/>
 </enum>
 
 <enum name="AudioTrackProcessingStates" type="int">

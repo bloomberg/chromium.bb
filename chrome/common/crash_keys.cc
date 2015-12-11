@@ -47,6 +47,10 @@ const char kGPUVendor[] = "gpu-gl-vendor";
 const char kGPURenderer[] = "gpu-gl-renderer";
 #endif
 
+#if defined(OS_WIN)
+const char kHungAudioThreadDetails[] = "hung-audio-thread-details";
+#endif
+
 const char kPrinterInfo[] = "prn-info-%" PRIuS;
 
 #if defined(OS_CHROMEOS)
@@ -141,6 +145,11 @@ size_t RegisterChromeCrashKeys() {
 #endif
     { kBug464926CrashKey, kSmallSize },
     { kViewCount, kSmallSize },
+
+    // media/:
+#if defined(OS_WIN)
+    { kHungAudioThreadDetails, kSmallSize },
+#endif
     { kZeroEncodeDetails, kSmallSize },
   };
 

@@ -8,10 +8,14 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/debug/alias.h"
+#include "base/debug/crash_logging.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/power_monitor/power_monitor.h"
+#include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "media/audio/audio_manager_factory.h"
 #include "media/audio/fake_audio_log_factory.h"
@@ -20,6 +24,7 @@
 
 #if defined(OS_WIN)
 #include "base/win/scoped_com_initializer.h"
+#include "media/audio/win/core_audio_util_win.h"
 #endif
 
 namespace media {
@@ -46,12 +51,24 @@ const int kMaxHangFailureCount = 2;
 // process so we can catch offenders quickly in the field.
 class AudioManagerHelper : public base::PowerObserver {
  public:
-  AudioManagerHelper()
-      : max_hung_task_time_(base::TimeDelta::FromMinutes(1)),
-        hang_detection_enabled_(true),
-        io_task_running_(false),
-        audio_task_running_(false) {}
+  // These values are histogrammed over time; do not change their ordinal
+  // values.
+  enum ThreadStatus {
+    THREAD_NONE = 0,
+    THREAD_STARTED,
+    THREAD_HUNG,
+    THREAD_RECOVERED,
+    THREAD_MAX = THREAD_RECOVERED
+  };
+
+  AudioManagerHelper() {}
   ~AudioManagerHelper() override {}
+
+  void HistogramThreadStatus(ThreadStatus status) {
+    audio_thread_status_ = status;
+    UMA_HISTOGRAM_ENUMERATION("Media.AudioThreadStatus", audio_thread_status_,
+                              THREAD_MAX + 1);
+  }
 
   void StartHangTimer(
       const scoped_refptr<base::SingleThreadTaskRunner>& monitor_task_runner) {
@@ -61,7 +78,7 @@ class AudioManagerHelper : public base::PowerObserver {
     hang_failures_ = 0;
     io_task_running_ = audio_task_running_ = true;
     UpdateLastAudioThreadTimeTick();
-    CrashOnAudioThreadHang();
+    RecordAudioThreadStatus();
   }
 
   // Disable hang detection when the system goes into the suspend state.
@@ -90,12 +107,12 @@ class AudioManagerHelper : public base::PowerObserver {
       io_task_running_ = true;
 
       base::AutoUnlock unlock(hang_lock_);
-      CrashOnAudioThreadHang();
+      RecordAudioThreadStatus();
     }
   }
 
   // Runs on |monitor_task_runner| typically, but may be started on any thread.
-  void CrashOnAudioThreadHang() {
+  void RecordAudioThreadStatus() {
     {
       base::AutoLock lock(hang_lock_);
 
@@ -110,15 +127,24 @@ class AudioManagerHelper : public base::PowerObserver {
       const base::TimeTicks now = base::TimeTicks::Now();
       const base::TimeDelta tick_delta = now - last_audio_thread_timer_tick_;
       if (tick_delta > max_hung_task_time_) {
-        CHECK_LT(++hang_failures_, kMaxHangFailureCount);
+        if (++hang_failures_ >= kMaxHangFailureCount &&
+            audio_thread_status_ < THREAD_HUNG) {
+          if (enable_crash_key_logging_)
+            LogAudioDriverCrashKeys();
+          HistogramThreadStatus(THREAD_HUNG);
+        }
       } else {
         hang_failures_ = 0;
+        if (audio_thread_status_ == THREAD_NONE)
+          HistogramThreadStatus(THREAD_STARTED);
+        else if (audio_thread_status_ == THREAD_HUNG)
+          HistogramThreadStatus(THREAD_RECOVERED);
       }
     }
 
     // Don't hold the lock while posting the next task.
     monitor_task_runner_->PostDelayedTask(
-        FROM_HERE, base::Bind(&AudioManagerHelper::CrashOnAudioThreadHang,
+        FROM_HERE, base::Bind(&AudioManagerHelper::RecordAudioThreadStatus,
                               base::Unretained(this)),
         max_hung_task_time_);
   }
@@ -167,18 +193,40 @@ class AudioManagerHelper : public base::PowerObserver {
   }
 #endif
 
+  void enable_crash_key_logging() { enable_crash_key_logging_ = true; }
+
  private:
+  void LogAudioDriverCrashKeys() {
+    DCHECK(enable_crash_key_logging_);
+
+#if defined(OS_WIN)
+    std::string driver_name, driver_version;
+    if (!CoreAudioUtil::GetDxDiagDetails(&driver_name, &driver_version))
+      return;
+
+    base::debug::ScopedCrashKey crash_key(
+        "hung-audio-thread-details",
+        base::StringPrintf("%s:%s", driver_name.c_str(),
+                           driver_version.c_str()));
+
+    // Please forward crash reports to http://crbug.com/422522
+    base::debug::DumpWithoutCrashing();
+#endif
+  }
+
   FakeAudioLogFactory fake_log_factory_;
 
-  const base::TimeDelta max_hung_task_time_;
+  const base::TimeDelta max_hung_task_time_ = base::TimeDelta::FromMinutes(1);
   scoped_refptr<base::SingleThreadTaskRunner> monitor_task_runner_;
 
   base::Lock hang_lock_;
-  bool hang_detection_enabled_;
+  bool hang_detection_enabled_ = true;
   base::TimeTicks last_audio_thread_timer_tick_;
-  int hang_failures_;
-  bool io_task_running_;
-  bool audio_task_running_;
+  int hang_failures_ = 0;
+  bool io_task_running_ = false;
+  bool audio_task_running_ = false;
+  ThreadStatus audio_thread_status_ = THREAD_NONE;
+  bool enable_crash_key_logging_ = false;
 
 #if defined(OS_WIN)
   scoped_ptr<base::win::ScopedCOMInitializer> com_initializer_for_testing_;
@@ -190,8 +238,6 @@ class AudioManagerHelper : public base::PowerObserver {
 
   DISALLOW_COPY_AND_ASSIGN(AudioManagerHelper);
 };
-
-bool g_hang_monitor_enabled = false;
 
 base::LazyInstance<AudioManagerHelper>::Leaky g_helper =
     LAZY_INSTANCE_INITIALIZER;
@@ -240,11 +286,13 @@ AudioManager* AudioManager::CreateWithHangTimer(
     AudioLogFactory* audio_log_factory,
     const scoped_refptr<base::SingleThreadTaskRunner>& monitor_task_runner) {
   AudioManager* manager = Create(audio_log_factory);
-  if (g_hang_monitor_enabled ||
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableAudioHangMonitor)) {
-    g_helper.Pointer()->StartHangTimer(monitor_task_runner);
-  }
+
+// On OSX the audio thread is the UI thread, for which a hang monitor is not
+// necessary or recommended.
+#if !defined(OS_MACOSX)
+  g_helper.Pointer()->StartHangTimer(monitor_task_runner);
+#endif
+
   return manager;
 }
 
@@ -257,14 +305,9 @@ AudioManager* AudioManager::CreateForTesting() {
 }
 
 // static
-void AudioManager::EnableHangMonitor() {
+void AudioManager::EnableCrashKeyLoggingForAudioThreadHangs() {
   CHECK(!g_last_created);
-// On OSX the audio thread is the UI thread, for which a hang monitor is not
-// necessary or recommended.  If it's manually requested, we should allow it
-// to start though.
-#if !defined(OS_MACOSX)
-  g_hang_monitor_enabled = true;
-#endif
+  g_helper.Pointer()->enable_crash_key_logging();
 }
 
 #if defined(OS_LINUX)

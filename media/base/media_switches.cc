@@ -92,11 +92,6 @@ const char kWaveOutBuffers[] = "waveout-buffers";
 const char kUseCras[] = "use-cras";
 #endif
 
-// Enables the audio thread hang monitor.  Allows us to find users in the field
-// who have stuck audio threads.  See crbug.com/422522 and crbug.com/478932.
-// TODO(dalecurtis): This should be removed once those issues are resolved.
-const char kEnableAudioHangMonitor[] = "enable-audio-hang-monitor";
-
 // Use fake device for Media Stream to replace actual camera and microphone.
 const char kUseFakeDeviceForMediaStream[] = "use-fake-device-for-media-stream";
 

@@ -995,6 +995,7 @@
         ['OS=="win"', {
           'link_settings':  {
             'libraries': [
+              '-ldxguid.lib',
               '-lmf.lib',
               '-lmfplat.lib',
               '-lmfreadwrite.lib',
