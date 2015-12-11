@@ -71,6 +71,10 @@ inline void DistributionPool::populateChildren(const ContainerNode& parent)
 {
     clear();
     for (Node* child = parent.firstChild(); child; child = child->nextSibling()) {
+        if (isHTMLSlotElement(child)) {
+            // TODO(hayato): Support re-distribution across v0 and v1 shadow trees
+            continue;
+        }
         if (isActiveInsertionPoint(*child)) {
             InsertionPoint* insertionPoint = toInsertionPoint(child);
             for (size_t i = 0; i < insertionPoint->distributedNodesSize(); ++i)
@@ -328,7 +332,9 @@ void ElementShadow::distributeV0()
 
 void ElementShadow::distributeV1()
 {
-    // TODO(hayato): Implement this
+    if (!m_slotAssignment)
+        m_slotAssignment = adoptPtr(new SlotAssignment());
+    m_slotAssignment->resolveAssignment(youngestShadowRoot());
 }
 
 void ElementShadow::didDistributeNode(const Node* node, InsertionPoint* insertionPoint)

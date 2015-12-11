@@ -71,6 +71,7 @@ interface Element : Node {
     [RuntimeEnabled=ShadowDOMV1, RaisesException, CallWith=ScriptState, MeasureAs=ElementAttachShadow] ShadowRoot attachShadow(ShadowRootInit shadowRootInitDict);
     NodeList getDestinationInsertionPoints();
     [PerWorldBindings, ImplementedAs=openShadowRoot] readonly attribute ShadowRoot? shadowRoot;
+    [RuntimeEnabled=ShadowDOMV1, Reflect] attribute DOMString slot;
 
     // Pointer Lock
     // https://dvcs.w3.org/hg/pointerlock/raw-file/default/index.html#extensions-to-the-element-interface

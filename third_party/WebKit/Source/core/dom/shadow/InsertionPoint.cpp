@@ -140,6 +140,8 @@ bool InsertionPoint::canBeActive() const
 {
     if (!isInShadowTree())
         return false;
+    if (containingShadowRoot()->isV1())
+        return false;
     return !Traversal<InsertionPoint>::firstAncestor(*this);
 }
 

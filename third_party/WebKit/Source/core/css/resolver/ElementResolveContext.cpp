@@ -45,7 +45,7 @@ ElementResolveContext::ElementResolveContext(Element& element)
     , m_distributedToInsertionPoint(false)
 {
     LayoutTreeBuilderTraversal::ParentDetails parentDetails;
-    m_parentNode = isActiveInsertionPoint(element) ? nullptr : LayoutTreeBuilderTraversal::parent(element, &parentDetails);
+    m_parentNode = element.isSlotOrActiveInsertionPoint() ? nullptr : LayoutTreeBuilderTraversal::parent(element, &parentDetails);
     m_distributedToInsertionPoint = parentDetails.insertionPoint();
 
     const Document& document = element.document();

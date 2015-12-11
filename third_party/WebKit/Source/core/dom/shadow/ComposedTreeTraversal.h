@@ -37,6 +37,7 @@
 namespace blink {
 
 class ContainerNode;
+class HTMLSlotElement;
 class Node;
 
 // Composed tree version of |NodeTraversal|.
@@ -139,6 +140,8 @@ private:
     }
 
     static Node* resolveDistributionStartingAt(const Node*, TraversalDirection);
+    static Node* v1ResolveDistributionStartingAt(const Node&, TraversalDirection);
+    static Node* v0ResolveDistributionStartingAt(const Node&, TraversalDirection);
 
     static Node* traverseNext(const Node&);
     static Node* traverseNext(const Node&, const Node* stayWithin);
@@ -150,11 +153,17 @@ private:
     static Node* traverseChild(const Node&, TraversalDirection);
 
     static ContainerNode* traverseParent(const Node&, ParentTraversalDetails* = 0);
+    // TODO(hayato): Make ParentTraversalDetails be aware of slot elements too.
+    static ContainerNode* v1TraverseParent(const Node&);
+    static ContainerNode* v0TraverseParent(const Node&, ParentTraversalDetails* = 0);
 
     static Node* traverseNextSibling(const Node&);
     static Node* traversePreviousSibling(const Node&);
 
     static Node* traverseSiblings(const Node&, TraversalDirection);
+    static Node* v1TraverseSiblings(const Node&, TraversalDirection);
+    static Node* v0TraverseSiblings(const Node&, TraversalDirection);
+
     static Node* traverseSiblingsOrShadowInsertionPointSiblings(const Node&, TraversalDirection);
 
     static ContainerNode* traverseParentOrHost(const Node&);

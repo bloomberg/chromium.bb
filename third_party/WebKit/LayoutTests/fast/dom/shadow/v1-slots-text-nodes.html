@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<script src='../../../resources/testharness.js'></script>
+<script src='../../../resources/testharnessreport.js'></script>
+<script src='resources/shadow-dom.js'></script>
+<div id='host'>
+  <template data-mode='open'>
+    <div id='shadow-child1'></div>
+    <slot></slot>
+    <slot name='slot1'></slot>
+    <div id='shadow-child2'></div>
+  </template>
+  <div id='child1' slot='slot1'></div>
+  Hello
+  <div id='child2'></div>
+  World
+  <div id='child3' slot='nonexistent'></div>
+</div>
+<script>
+'use strict';
+convertTemplatesToShadowRootsWithin(host);
+removeWhiteSpaceOnlyTextNodes(host);
+document.body.offsetLeft;
+
+const slot1 = host.shadowRoot.querySelector('slot[name=slot1]');
+const defaultSlot = host.shadowRoot.querySelector('slot');
+const shadowChild1 = host.shadowRoot.querySelector('#shadow-child1');
+const shadowChild2 = host.shadowRoot.querySelector('#shadow-child2');
+
+const textHello = host.childNodes[1];
+const textWorld = host.childNodes[3];
+
+test(() => {
+  assert_equals(textHello.nodeValue.trim(), 'Hello');
+  assert_equals(textWorld.nodeValue.trim(), 'World');
+  assert_equals(textHello.assignedSlot, defaultSlot);
+  assert_equals(textWorld.assignedSlot, defaultSlot);
+  assert_equals(child1.assignedSlot, slot1);
+  assert_equals(child2.assignedSlot, defaultSlot);
+  assert_equals(child3.assignedSlot, null);
+}, "assignedSlot");
+
+test(() => {
+  assert_array_equals(defaultSlot.getDistributedNodes(), [textHello, child2, textWorld]);
+  assert_array_equals(slot1.getDistributedNodes(), [child1]);
+}, "getDistributedNodes");
+
+add_completion_callback(() => {
+  if (window.testRunner)
+    host.style.display = "none";
+});
+</script>

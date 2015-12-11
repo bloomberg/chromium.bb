@@ -575,6 +575,7 @@ interface ChannelMergerNode : AudioNode
 interface ChannelSplitterNode : AudioNode
     method constructor
 interface CharacterData : Node
+    getter assignedSlot
     getter data
     getter length
     getter nextElementSibling
@@ -1240,6 +1241,7 @@ interface DynamicsCompressorNode : AudioNode
     getter threshold
     method constructor
 interface Element : Node
+    getter assignedSlot
     getter attributes
     getter childElementCount
     getter children
@@ -1277,6 +1279,7 @@ interface Element : Node
     getter scrollTop
     getter scrollWidth
     getter shadowRoot
+    getter slot
     getter tagName
     method animate
     method attachShadow
@@ -1338,6 +1341,7 @@ interface Element : Node
     setter outerHTML
     setter scrollLeft
     setter scrollTop
+    setter slot
 interface ErrorEvent : Event
     getter colno
     getter error
@@ -2701,6 +2705,8 @@ interface HTMLShadowElement : HTMLElement
 interface HTMLSlotElement : HTMLElement
     getter name
     method constructor
+    method getAssignedNodes
+    method getDistributedNodes
     setter name
 interface HTMLSourceElement : HTMLElement
     getter media

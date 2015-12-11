@@ -30,4 +30,6 @@
     RuntimeEnabled=ShadowDOMV1,
 ] interface HTMLSlotElement : HTMLElement {
     [Reflect] attribute DOMString name;
+    sequence<Node> getAssignedNodes();
+    sequence<Node> getDistributedNodes();
 };

@@ -2593,6 +2593,8 @@
             'dom/shadow/ShadowRoot.cpp',
             'dom/shadow/ShadowRoot.h',
             'dom/shadow/ShadowRootRareData.h',
+            'dom/shadow/SlotAssignment.cpp',
+            'dom/shadow/SlotAssignment.h',
             'events/AnimationEvent.cpp',
             'events/AnimationEvent.h',
             'events/AnimationPlayerEvent.cpp',

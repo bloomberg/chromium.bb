@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<script src='../../../resources/testharness.js'></script>
+<script src='../../../resources/testharnessreport.js'></script>
+<script src='resources/shadow-dom.js'></script>
+<div id='host'>
+  <template data-mode='open'>
+    <slot id='slot1'></slot>
+    <slot id='slot2'></slot>
+    <slot id='slot3' name='slot3'></slot>
+  </template>
+  <div id='child1' slot='nonexistent'></div>
+  <div id='child2'></div>
+  <div id='child3' slot='slot3'></div>
+  <div id='child4'></div>
+</div>
+<script>
+'use strict';
+convertTemplatesToShadowRootsWithin(host);
+removeWhiteSpaceOnlyTextNodes(host);
+document.body.offsetLeft;
+
+const slot1 = host.shadowRoot.querySelector('#slot1');
+const slot2 = host.shadowRoot.querySelector('#slot2');
+const slot3 = host.shadowRoot.querySelector('#slot3');
+
+test(() => {
+  assert_equals(child1.assignedSlot, null);
+  assert_equals(child2.assignedSlot, slot1);
+  assert_equals(child3.assignedSlot, slot3);
+  assert_equals(child4.assignedSlot, slot1);
+}, "assignedSlot");
+
+test(() => {
+  assert_array_equals(slot1.getAssignedNodes(), [child2, child4]);
+  assert_array_equals(slot2.getAssignedNodes(), []);
+  assert_array_equals(slot3.getAssignedNodes(), [child3]);
+}, "getAssignedNodes");
+
+test(() => {
+  assert_array_equals(slot1.getDistributedNodes(), [child2, child4]);
+  assert_array_equals(slot2.getDistributedNodes(), []);
+  assert_array_equals(slot3.getDistributedNodes(), [child3]);
+}, "getDistributedNodes");
+</script>

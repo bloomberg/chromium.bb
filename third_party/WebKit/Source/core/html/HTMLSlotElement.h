@@ -39,15 +39,35 @@ namespace blink {
 class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<HTMLSlotElement> create(Document&);
-    ~HTMLSlotElement() override;
+    DECLARE_NODE_FACTORY(HTMLSlotElement);
+
+    const WillBeHeapVector<RefPtrWillBeMember<Node>> getAssignedNodes() const { return m_assignedNodes; }
+    // TODO(hayato): Support fallback contents of slot elements
+    const WillBeHeapVector<RefPtrWillBeMember<Node>> getDistributedNodes() const { return m_distributedNodes; }
+
+    Node* firstDistributedNode() const { return m_distributedNodes.isEmpty() ? nullptr : m_distributedNodes.first().get(); }
+    Node* lastDistributedNode() const { return m_distributedNodes.isEmpty() ? nullptr : m_distributedNodes.last().get(); }
+
+    // TODO(hayato): This takes O(N). Make it O(1) with node-to-index hash table.
+    Node* distributedNodeNextTo(const Node&) const;
+    Node* distributedNodePreviousTo(const Node&) const;
+
+    void appendAssignedNode(Node&);
+    void appendDistributedNode(Node&);
+    void appendDistributedNodes(const WillBeHeapVector<RefPtrWillBeMember<Node>>&);
+    void clearDistribution();
+
+    void attach(const AttachContext& = AttachContext()) override;
+    void detach(const AttachContext& = AttachContext()) override;
 
     DECLARE_VIRTUAL_TRACE();
 
 private:
     HTMLSlotElement(Document&);
 
-    AtomicString m_name;
+    WillBeHeapVector<RefPtrWillBeMember<Node>> m_assignedNodes;
+    // TODO(hayato): Share code with DistributedNode class
+    WillBeHeapVector<RefPtrWillBeMember<Node>> m_distributedNodes;
 };
 
 } // namespace blink

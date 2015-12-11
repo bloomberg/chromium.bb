@@ -37,22 +37,72 @@ namespace blink {
 
 using namespace HTMLNames;
 
-PassRefPtrWillBeRawPtr<HTMLSlotElement> HTMLSlotElement::create(Document& document)
-{
-    return adoptRefWillBeNoop(new HTMLSlotElement(document));
-}
-
 inline HTMLSlotElement::HTMLSlotElement(Document& document)
     : HTMLElement(slotTag, document)
 {
 }
 
-HTMLSlotElement::~HTMLSlotElement()
+DEFINE_NODE_FACTORY(HTMLSlotElement);
+
+void HTMLSlotElement::appendAssignedNode(Node& node)
 {
+    m_assignedNodes.append(&node);
+}
+
+void HTMLSlotElement::appendDistributedNode(Node& node)
+{
+    m_distributedNodes.append(&node);
+}
+
+void HTMLSlotElement::appendDistributedNodes(const WillBeHeapVector<RefPtrWillBeMember<Node>>& nodes)
+{
+    m_distributedNodes.appendVector(nodes);
+}
+
+void HTMLSlotElement::clearDistribution()
+{
+    m_assignedNodes.clear();
+    m_distributedNodes.clear();
+}
+
+Node* HTMLSlotElement::distributedNodeNextTo(const Node& node) const
+{
+    size_t index = m_distributedNodes.find(&node);
+    if (index == kNotFound || index + 1 == m_distributedNodes.size())
+        return nullptr;
+    return m_distributedNodes[index + 1].get();
+}
+
+Node* HTMLSlotElement::distributedNodePreviousTo(const Node& node) const
+{
+    size_t index = m_distributedNodes.find(&node);
+    if (index == kNotFound || index == 0)
+        return nullptr;
+    return m_distributedNodes[index - 1].get();
+}
+
+void HTMLSlotElement::attach(const AttachContext& context)
+{
+    for (auto& node : m_distributedNodes) {
+        if (node->needsAttach())
+            node->attach(context);
+    }
+
+    HTMLElement::attach(context);
+}
+
+void HTMLSlotElement::detach(const AttachContext& context)
+{
+    for (auto& node : m_distributedNodes)
+        node->lazyReattachIfAttached();
+
+    HTMLElement::detach(context);
 }
 
 DEFINE_TRACE(HTMLSlotElement)
 {
+    visitor->trace(m_assignedNodes);
+    visitor->trace(m_distributedNodes);
     HTMLElement::trace(visitor);
 }
 

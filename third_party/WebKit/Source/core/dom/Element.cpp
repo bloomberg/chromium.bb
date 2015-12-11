@@ -1561,7 +1561,7 @@ void Element::attach(const AttachContext& context)
         data->clearComputedStyle();
     }
 
-    if (!isActiveInsertionPoint(*this))
+    if (!isSlotOrActiveInsertionPoint())
         LayoutTreeBuilderForElement(*this, context.resolvedStyle).createLayoutObjectIfNeeded();
 
     addCallbackSelectors();

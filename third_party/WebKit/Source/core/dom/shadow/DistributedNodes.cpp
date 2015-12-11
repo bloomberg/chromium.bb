@@ -40,7 +40,7 @@ void DistributedNodes::swap(DistributedNodes& other)
 void DistributedNodes::append(PassRefPtrWillBeRawPtr<Node> node)
 {
     ASSERT(node);
-    ASSERT(!isActiveInsertionPoint(*node));
+    ASSERT(!node->isSlotOrActiveInsertionPoint());
     size_t size = m_nodes.size();
     m_indices.set(node.get(), size);
     m_nodes.append(node);

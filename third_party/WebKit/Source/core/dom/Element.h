@@ -354,6 +354,8 @@ public:
 
     ShadowRoot* youngestShadowRoot() const;
 
+    ShadowRoot* shadowRootIfV1() const;
+
     ShadowRoot& ensureUserAgentShadowRoot();
     virtual void willAddFirstAuthorShadowRoot() { }
 

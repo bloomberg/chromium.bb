@@ -60,6 +60,7 @@ class FloatPoint;
 class LocalFrame;
 class HTMLInputElement;
 class HTMLQualifiedName;
+class HTMLSlotElement;
 class IntRect;
 class KeyboardEvent;
 class NSResolver;
@@ -295,6 +296,7 @@ public:
     bool isInsertionPoint() const { return getFlag(IsInsertionPointFlag); }
 
     bool canParticipateInComposedTree() const;
+    bool isSlotOrActiveInsertionPoint() const;
 
     bool hasCustomStyleCallbacks() const { return getFlag(HasCustomStyleCallbacksFlag); }
 
@@ -655,6 +657,8 @@ public:
     void updateAncestorConnectedSubframeCountForInsertion() const;
 
     PassRefPtrWillBeRawPtr<StaticNodeList> getDestinationInsertionPoints();
+    HTMLSlotElement* assignedSlot() const;
+    HTMLSlotElement* assignedSlotForBinding() { updateDistribution(); return assignedSlot(); }
 
     void setAlreadySpellChecked(bool flag) { setFlag(flag, AlreadySpellCheckedFlag); }
     bool isAlreadySpellChecked() { return getFlag(AlreadySpellCheckedFlag); }
