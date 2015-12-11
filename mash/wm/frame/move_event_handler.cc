@@ -46,12 +46,12 @@ MoveEventHandler::MoveEventHandler(mus::Window* mus_window,
                                    aura::Window* aura_window)
     : mus_window_(mus_window), aura_window_(aura_window),
       root_window_(aura_window->GetRootWindow()) {
+  root_window_->AddObserver(this);
   root_window_->AddPreTargetHandler(this);
 }
 
 MoveEventHandler::~MoveEventHandler() {
-  if (root_window_)
-    root_window_->RemovePreTargetHandler(this);
+  Detach();
 }
 
 void MoveEventHandler::ProcessLocatedEvent(ui::LocatedEvent* event) {
@@ -81,6 +81,15 @@ int MoveEventHandler::GetNonClientComponentForEvent(
   return aura_window_->delegate()->GetNonClientComponent(event->location());
 }
 
+void MoveEventHandler::Detach() {
+  if (!root_window_)
+    return;
+
+  root_window_->RemoveObserver(this);
+  root_window_->RemovePreTargetHandler(this);
+  root_window_ = nullptr;
+}
+
 void MoveEventHandler::OnMouseEvent(ui::MouseEvent* event) {
   ProcessLocatedEvent(event);
 }
@@ -100,8 +109,7 @@ void MoveEventHandler::OnCancelMode(ui::CancelModeEvent* event) {
 
 void MoveEventHandler::OnWindowDestroying(aura::Window* window) {
   DCHECK_EQ(root_window_, window);
-  root_window_->RemovePreTargetHandler(this);
-  root_window_ = nullptr;
+  Detach();
 }
 
 }  // namespace wm

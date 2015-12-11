@@ -253,6 +253,7 @@ class WindowTreeImpl : public mojom::WindowTree, public AccessPolicyDelegate {
       mojo::InsetsPtr insets,
       mojo::Array<mojo::RectPtr> transport_additional_client_areas) override;
   void WmResponse(uint32 change_id, bool response) override;
+  void WmRequestClose(Id transport_window_id) override;
 
   // AccessPolicyDelegate:
   bool IsRootForAccessPolicy(const WindowId& id) const override;

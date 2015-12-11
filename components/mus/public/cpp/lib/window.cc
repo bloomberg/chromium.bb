@@ -387,6 +387,11 @@ void Window::Embed(mus::mojom::WindowTreeClientPtr client,
     callback.Run(false, 0);
 }
 
+void Window::RequestClose() {
+  if (tree_client())
+    tree_client()->RequestClose(this);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Window, protected:
 
@@ -400,16 +405,7 @@ mojom::ViewportMetricsPtr CreateEmptyViewportMetrics() {
 
 }  // namespace
 
-Window::Window()
-    : connection_(nullptr),
-      id_(static_cast<Id>(-1)),
-      parent_(nullptr),
-      stacking_target_(nullptr),
-      transient_parent_(nullptr),
-      input_event_handler_(nullptr),
-      viewport_metrics_(CreateEmptyViewportMetrics()),
-      visible_(true),
-      drawn_(false) {}
+Window::Window() : Window(nullptr, static_cast<Id>(-1)) {}
 
 Window::~Window() {
   FOR_EACH_OBSERVER(WindowObserver, observers_, OnWindowDestroying(this));
@@ -470,8 +466,10 @@ Window::Window(WindowTreeConnection* connection, Id id)
       parent_(nullptr),
       stacking_target_(nullptr),
       transient_parent_(nullptr),
+      input_event_handler_(nullptr),
       viewport_metrics_(CreateEmptyViewportMetrics()),
       visible_(false),
+      cursor_id_(mojom::CURSOR_NULL),
       drawn_(false) {}
 
 WindowTreeClientImpl* Window::tree_client() {

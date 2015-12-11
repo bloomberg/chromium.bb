@@ -96,6 +96,10 @@ class WindowObserver {
   virtual void OnWindowDrawnChanging(Window* window) {}
   virtual void OnWindowDrawnChanged(Window* window) {}
 
+  // The WindowManager has requested the window to close. If the observer
+  // allows the close it should destroy the window as appropriate.
+  virtual void OnRequestClose(Window* window) {}
+
  protected:
   virtual ~WindowObserver() {}
 };
