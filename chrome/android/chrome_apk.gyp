@@ -337,6 +337,7 @@
       'dependencies': [
         'chrome_shared_test_java',
         'chrome_public_apk_java',
+        '../../chrome/chrome.gyp:require_chrome_public_test_support_apk',
         '../../testing/android/on_device_instrumentation.gyp:broker_java',
         '../../testing/android/on_device_instrumentation.gyp:require_driver_apk',
       ],

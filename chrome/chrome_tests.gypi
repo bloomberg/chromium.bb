@@ -3119,6 +3119,16 @@
   ],
   'conditions': [
     ['OS == "android"', {
+        'variables' : {
+           'test_support_apk_target' : 'chrome_public_test_support_apk',
+           'test_support_apk_name' : 'ChromePublicTestSupport',
+           'test_support_apk_manifest_path' : '../chrome/test/android/chrome_public_test_support/AndroidManifest.xml',
+            'test_support_apk_dependencies' : ['cast_emulator',],
+
+        },
+        'includes' : [
+            'chrome_test_support.gypi',
+        ],
       'targets': [
         {
           # GN: //chrome/android:chrome_junit_tests
@@ -3171,6 +3181,21 @@
             '../sync/sync.gyp:sync_java',
             '../sync/sync.gyp:sync_java_test_support',
           ],
+          'includes': [ '../build/java.gypi' ],
+        },
+        {
+          # GN: //chrome/test/android/cast_emulator:cast_emulator
+          'target_name': 'cast_emulator',
+          'type': 'none',
+          'dependencies': [
+            '../base/base.gyp:base_java',
+            '../third_party/android_tools/android_tools.gyp:android_support_v7_appcompat_javalib',
+            '../third_party/android_tools/android_tools.gyp:android_support_v7_mediarouter_javalib',
+            '../third_party/android_tools/android_tools.gyp:google_play_services_javalib',
+          ],
+          'variables': {
+            'java_in_dir': '../chrome/test/android/cast_emulator',
+          },
           'includes': [ '../build/java.gypi' ],
         },
       ],

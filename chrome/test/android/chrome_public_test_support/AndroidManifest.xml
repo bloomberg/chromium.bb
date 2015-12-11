@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+  <!-- Copyright (c) 2014 The Chromium Authors. All rights reserved. Use of
+       this source code is governed by a BSD-style license that can be found
+       in the LICENSE file. -->
+  <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:tools="http://schemas.android.com/tools"
+      package="org.chromium.chrome.tests.support">
+    <uses-sdk android:minSdkVersion="16" android:targetSdkVersion="22" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <application>
+        <service android:name="org.chromium.chrome.browser.media.remote.TestMediaRouteProviderService"
+                android:label="testMediaRouteProviderService"
+                android:process=":mrp"
+                tools:ignore="ExportedService" >
+            <intent-filter>
+                <action android:name="android.media.MediaRouteProviderService" />
+            </intent-filter>
+        </service>
+    </application>
+</manifest>
