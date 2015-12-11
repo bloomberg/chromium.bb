@@ -148,6 +148,13 @@ def RmTree(dir):
   shutil.rmtree(dir, onerror=ChmodAndRetry)
 
 
+def RmCmakeCache(dir):
+  """Delete CMakeCache.txt files under dir recursively."""
+  for dirpath, _, files in os.walk(dir):
+    if 'CMakeCache.txt' in files:
+      os.remove(os.path.join(dirpath, 'CMakeCache.txt'))
+
+
 def RunCommand(command, msvc_arch=None, env=None, fail_hard=True):
   """Run command and return success (True) or failure; or if fail_hard is
      True, exit on failure.  If msvc_arch is set, runs the command in a
@@ -429,6 +436,7 @@ def UpdateClang(args):
         ]
     if cc is not None:  bootstrap_args.append('-DCMAKE_C_COMPILER=' + cc)
     if cxx is not None: bootstrap_args.append('-DCMAKE_CXX_COMPILER=' + cxx)
+    RmCmakeCache('.')
     RunCommand(['cmake'] + bootstrap_args + [LLVM_DIR], msvc_arch='x64')
     RunCommand(['ninja'], msvc_arch='x64')
     if args.run_tests:
@@ -542,6 +550,7 @@ def UpdateClang(args):
   if not os.path.exists(LLVM_BUILD_DIR):
     os.makedirs(LLVM_BUILD_DIR)
   os.chdir(LLVM_BUILD_DIR)
+  RmCmakeCache('.')
   RunCommand(['cmake'] + cmake_args + [LLVM_DIR],
              msvc_arch='x64', env=deployment_env)
 
@@ -591,6 +600,7 @@ def UpdateClang(args):
                         '-DSANITIZER_MIN_OSX_VERSION="10.7"']
   # compiler-rt is part of the llvm checkout on Windows but a stand-alone
   # directory elsewhere, see the TODO above COMPILER_RT_DIR.
+  RmCmakeCache('.')
   RunCommand(['cmake'] + compiler_rt_args +
              [LLVM_DIR if sys.platform == 'win32' else COMPILER_RT_DIR],
              msvc_arch='x86', env=deployment_env)
@@ -670,9 +680,6 @@ def UpdateClang(args):
       if not os.path.exists(build_dir):
         os.mkdir(os.path.join(build_dir))
       os.chdir(build_dir)
-      if os.path.exists('CMakeCache.txt'):
-        os.remove('CMakeCache.txt')
-
       cflags = ['--target=%s-linux-androideabi' % target_arch,
                 '--sysroot=%s/sysroot' % toolchain_dir,
                 '-B%s' % toolchain_dir]
@@ -683,6 +690,7 @@ def UpdateClang(args):
         '-DCMAKE_C_FLAGS=' + ' '.join(cflags),
         '-DCMAKE_CXX_FLAGS=' + ' '.join(cflags),
         '-DANDROID=1']
+      RmCmakeCache('.')
       RunCommand(['cmake'] + android_args + [COMPILER_RT_DIR])
       RunCommand(['ninja', 'libclang_rt.asan-%s-android.so' % target_arch])
 
