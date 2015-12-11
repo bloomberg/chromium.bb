@@ -65,7 +65,6 @@
       "name": "twitterCom",
       "static_spki_hashes": [
         "VeriSignClass1",
-        "VeriSignClass3",
         "VeriSignClass3_G4",
         "VeriSignClass4_G3",
         "VeriSignClass3_G3",
@@ -92,7 +91,6 @@
       "name": "twitterCDN",
       "static_spki_hashes": [
         "VeriSignClass1",
-        "VeriSignClass3",
         "VeriSignClass3_G4",
         "VeriSignClass4_G3",
         "VeriSignClass3_G3",

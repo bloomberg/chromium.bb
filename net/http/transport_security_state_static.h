@@ -289,10 +289,6 @@ static const char kSPKIHash_TestSPKI[] =
     "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
     "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00";
 
-static const char kSPKIHash_VeriSignClass3[] =
-    "\xb1\x12\x41\x42\xa5\xa1\xa5\xa2\x88\x19\xc7\x35\x34\x0e\xff\x8c"
-    "\x9e\x2f\x81\x68\xfe\xe3\xba\x18\x7f\x25\x3b\xc1\xa3\x92\xd7\xe2";
-
 static const char kSPKIHash_VeriSignClass3_G3[] =
     "\x49\x5a\x96\xba\x6b\xad\x78\x24\x07\xbd\x52\x1a\x00\xba\xce\x65"
     "\x7b\xb3\x55\x55\x5e\x4b\xb7\xf8\x14\x6c\x71\xbb\xa5\x7e\x7a\xce";
@@ -587,7 +583,6 @@ static const char* const kTorAcceptableCerts[] = {
 };
 static const char* const kTwitterComAcceptableCerts[] = {
   kSPKIHash_VeriSignClass1,
-  kSPKIHash_VeriSignClass3,
   kSPKIHash_VeriSignClass3_G4,
   kSPKIHash_VeriSignClass4_G3,
   kSPKIHash_VeriSignClass3_G3,
@@ -612,7 +607,6 @@ static const char* const kTwitterComAcceptableCerts[] = {
 };
 static const char* const kTwitterCDNAcceptableCerts[] = {
   kSPKIHash_VeriSignClass1,
-  kSPKIHash_VeriSignClass3,
   kSPKIHash_VeriSignClass3_G4,
   kSPKIHash_VeriSignClass4_G3,
   kSPKIHash_VeriSignClass3_G3,
