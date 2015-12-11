@@ -11,6 +11,7 @@ import android.graphics.Rect;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
+import android.view.ViewConfiguration;
 import android.widget.Scroller;
 
 /**
@@ -51,6 +52,18 @@ public class TouchInputHandler implements TouchInputHandlerInterface {
      * initialized using the Context passed into the ctor.
      */
     private float mSwipeThreshold;
+
+    /**
+     * Distance, in pixels, from the edge of the screen in which a touch event should be considered
+     * as having originated from that edge.
+     */
+    private final int mEdgeSlopInPx;
+
+    /**
+     * Defines an inset boundary within which pan gestures are allowed.  Pan gestures which
+     * originate outside of this boundary will be ignored.
+     */
+    private Rect mPanGestureBounds = new Rect();
 
     /**
      * Set to true to prevent any further movement of the cursor, for example, when showing the
@@ -100,6 +113,8 @@ public class TouchInputHandler implements TouchInputHandlerInterface {
         // that intentional swipes are usually detected.
         float density = context.getResources().getDisplayMetrics().density;
         mSwipeThreshold = 40 * density;
+
+        mEdgeSlopInPx = ViewConfiguration.get(context).getScaledEdgeSlop();
     }
 
     @Override
@@ -137,6 +152,8 @@ public class TouchInputHandler implements TouchInputHandlerInterface {
 
     @Override
     public void onClientSizeChanged(int width, int height) {
+        mPanGestureBounds = new Rect(
+                mEdgeSlopInPx, mEdgeSlopInPx, width - mEdgeSlopInPx, height - mEdgeSlopInPx);
         mDesktopCanvas.repositionImageWithZoom();
     }
 
@@ -278,6 +295,15 @@ public class TouchInputHandler implements TouchInputHandlerInterface {
         @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
             int pointerCount = e2.getPointerCount();
+
+            // Check to see if the motion originated at the edge of the screen.
+            // If so, then the user is likely swiping in to display system UI.
+            if (!mPanGestureBounds.contains((int) e1.getX(), (int) e1.getY())) {
+                // Prevent the cursor being moved or flung by the gesture.
+                mSuppressCursorMovement = true;
+                return false;
+            }
+
             if (pointerCount == 3 && !mSwipeCompleted) {
                 // Note that distance values are reversed. For example, dragging a finger in the
                 // direction of increasing Y coordinate (downwards) results in distanceY being
