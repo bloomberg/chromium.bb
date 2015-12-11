@@ -64,7 +64,6 @@ class WebrtcAudio(_Webrtc):
 
 # WebrtcRendering must be a PerfBenchmark, and not a _Webrtc, because it is a
 # timeline-based.
-@benchmark.Disabled('mac')  # http://crbug.com/545119
 class WebrtcRendering(perf_benchmark.PerfBenchmark):
   """Specific time measurements (e.g. fps, smoothness) for WebRtc rendering."""
 
