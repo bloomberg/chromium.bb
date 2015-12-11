@@ -90,6 +90,7 @@ class NET_EXPORT URLRequestContextBuilder {
     bool quic_delay_tcp_race;
     int quic_max_number_of_lossy_connections;
     float quic_packet_loss_threshold;
+    int quic_idle_connection_timeout_seconds;
     QuicTagVector quic_connection_options;
   };
 
@@ -213,6 +214,12 @@ class NET_EXPORT URLRequestContextBuilder {
   void set_quic_packet_loss_threshold(float quic_packet_loss_threshold) {
     http_network_session_params_.quic_packet_loss_threshold =
         quic_packet_loss_threshold;
+  }
+
+  void set_quic_idle_connection_timeout_seconds(
+      int quic_idle_connection_timeout_seconds) {
+    http_network_session_params_.quic_idle_connection_timeout_seconds =
+        quic_idle_connection_timeout_seconds;
   }
 
   void set_throttling_enabled(bool throttling_enabled) {

@@ -28,6 +28,7 @@
 #include "net/http/http_server_properties_manager.h"
 #include "net/http/transport_security_persister.h"
 #include "net/http/transport_security_state.h"
+#include "net/quic/quic_stream_factory.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/default_channel_id_store.h"
 #include "net/ssl/ssl_config_service_defaults.h"
@@ -181,7 +182,8 @@ URLRequestContextBuilder::HttpNetworkSessionParams::HttpNetworkSessionParams()
       quic_store_server_configs_in_properties(false),
       quic_delay_tcp_race(false),
       quic_max_number_of_lossy_connections(0),
-      quic_packet_loss_threshold(1.0f) {}
+      quic_packet_loss_threshold(1.0f),
+      quic_idle_connection_timeout_seconds(kIdleConnectionTimeoutSeconds) {}
 
 URLRequestContextBuilder::HttpNetworkSessionParams::~HttpNetworkSessionParams()
 {}
@@ -395,6 +397,8 @@ scoped_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
       http_network_session_params_.quic_max_number_of_lossy_connections;
   network_session_params.quic_packet_loss_threshold =
       http_network_session_params_.quic_packet_loss_threshold;
+  network_session_params.quic_idle_connection_timeout_seconds =
+      http_network_session_params_.quic_idle_connection_timeout_seconds;
   network_session_params.quic_connection_options =
       http_network_session_params_.quic_connection_options;
 

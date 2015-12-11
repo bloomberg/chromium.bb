@@ -29,6 +29,8 @@ const char kQuicDelayTcpRace[] = "delay_tcp_race";
 const char kQuicMaxNumberOfLossyConnections[] =
     "max_number_of_lossy_connections";
 const char kQuicPacketLossThreshold[] = "packet_loss_threshold";
+const char kQuicIdleConnectionTimeoutSeconds[] =
+    "idle_connection_timeout_seconds";
 
 // AsyncDNS experiment dictionary name.
 const char kAsyncDnsFieldTrialName[] = "AsyncDNS";
@@ -94,6 +96,13 @@ void ParseAndSetExperimentalOptions(
                              &quic_packet_loss_threshold)) {
       context_builder->set_quic_packet_loss_threshold(
           quic_packet_loss_threshold);
+    }
+
+    int quic_idle_connection_timeout_seconds = 0;
+    if (quic_args->GetInteger(kQuicIdleConnectionTimeoutSeconds,
+                              &quic_idle_connection_timeout_seconds)) {
+      context_builder->set_quic_idle_connection_timeout_seconds(
+          quic_idle_connection_timeout_seconds);
     }
   }
 

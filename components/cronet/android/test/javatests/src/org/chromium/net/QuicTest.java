@@ -44,7 +44,8 @@ public class QuicTest extends CronetTestBase {
                                         .put("store_server_configs_in_properties", true)
                                         .put("delay_tcp_race", true)
                                         .put("max_number_of_lossy_connections", 10)
-                                        .put("packet_loss_threshold", 0.5);
+                                        .put("packet_loss_threshold", 0.5)
+                                        .put("idle_connection_timeout_seconds", 300);
         JSONObject experimentalOptions = new JSONObject().put("QUIC", quicParams);
         mBuilder.setExperimentalOptions(experimentalOptions.toString());
 
