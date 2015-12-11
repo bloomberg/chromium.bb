@@ -211,7 +211,7 @@ static void preloadIfNeeded(const LinkRelAttribute& relAttribute, const KURL& hr
     }
 }
 
-bool LinkLoader::loadLinkFromHeader(const String& headerValue, Document* document, const NetworkHintsInterface& networkHintsInterface)
+bool LinkLoader::loadLinkFromHeader(const String& headerValue, Document* document, const NetworkHintsInterface& networkHintsInterface, CanLoadResources canLoadResources)
 {
     if (!document)
         return false;
@@ -219,15 +219,20 @@ bool LinkLoader::loadLinkFromHeader(const String& headerValue, Document* documen
     for (auto& header : headerSet) {
         if (!header.valid() || header.url().isEmpty() || header.rel().isEmpty())
             return false;
+
         LinkRelAttribute relAttribute(header.rel());
         KURL url = document->completeURL(header.url());
-        if (RuntimeEnabledFeatures::linkHeaderEnabled())
-            dnsPrefetchIfNeeded(relAttribute, url, *document, networkHintsInterface, LinkCalledFromHeader);
+        if (canLoadResources == DoNotLoadResources) {
+            if (RuntimeEnabledFeatures::linkHeaderEnabled())
+                dnsPrefetchIfNeeded(relAttribute, url, *document, networkHintsInterface, LinkCalledFromHeader);
 
-        if (RuntimeEnabledFeatures::linkPreconnectEnabled())
-            preconnectIfNeeded(relAttribute, url, *document, header.crossOrigin(), networkHintsInterface, LinkCalledFromHeader);
-
-        // FIXME: Add more supported headers as needed.
+            if (RuntimeEnabledFeatures::linkPreconnectEnabled())
+                preconnectIfNeeded(relAttribute, url, *document, header.crossOrigin(), networkHintsInterface, LinkCalledFromHeader);
+        } else {
+            if (RuntimeEnabledFeatures::linkPreloadEnabled())
+                preloadIfNeeded(relAttribute, url, *document, header.as());
+        }
+        // TODO(yoav): Add more supported headers as needed.
     }
     return true;
 }

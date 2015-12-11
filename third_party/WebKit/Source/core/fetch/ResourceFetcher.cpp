@@ -1056,7 +1056,9 @@ void ResourceFetcher::updateAllImageResourcePriorities()
 
     TRACE_EVENT0("blink", "ResourceLoadPriorityOptimizer::updateAllImageResourcePriorities");
     for (const auto& loader : m_loaders->hashSet()) {
+        ASSERT(loader);
         Resource* resource = loader->cachedResource();
+        ASSERT(resource);
         if (!resource->isImage())
             continue;
 

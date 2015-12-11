@@ -264,7 +264,7 @@ public:
 
     bool hasLegacyViewportTag() const { return m_legacyViewportDescription.isLegacyViewportType(); }
 
-    String outgoingReferrer();
+    String outgoingReferrer() const;
     String outgoingOrigin() const;
 
     void setDoctype(PassRefPtrWillBeRawPtr<DocumentType>);

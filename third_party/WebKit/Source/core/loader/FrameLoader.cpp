@@ -68,8 +68,10 @@
 #include "core/loader/FormSubmission.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoaderClient.h"
+#include "core/loader/LinkLoader.h"
 #include "core/loader/MixedContentChecker.h"
 #include "core/loader/NavigationScheduler.h"
+#include "core/loader/NetworkHintsInterface.h"
 #include "core/loader/ProgressTracker.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"
 #include "core/page/ChromeClient.h"
@@ -438,8 +440,10 @@ void FrameLoader::didBeginDocument(bool dispatch)
         dispatchDidClearDocumentOfWindowObject();
 
     m_frame->document()->initContentSecurityPolicy(m_documentLoader ? m_documentLoader->releaseContentSecurityPolicy() : ContentSecurityPolicy::create());
-    if (m_documentLoader)
+    if (m_documentLoader) {
         m_frame->document()->clientHintsPreferences().updateFrom(m_documentLoader->clientHintsPreferences());
+        LinkLoader::loadLinkFromHeader(m_documentLoader->response().httpHeaderField("Link"), m_frame->document(), NetworkHintsInterfaceImpl(), LinkLoader::LoadResources);
+    }
 
     Settings* settings = m_frame->document()->settings();
     if (settings) {
@@ -1062,6 +1066,7 @@ bool FrameLoader::prepareForCommit()
     if (!m_frame->client())
         return false;
     // No more events will be dispatched so detach the Document.
+    // TODO(yoav): Should we also be nullifying domWindow's document (or domWindow) since the doc is now detached?
     if (m_frame->document())
         m_frame->document()->detach();
     m_documentLoader = m_provisionalDocumentLoader.release();

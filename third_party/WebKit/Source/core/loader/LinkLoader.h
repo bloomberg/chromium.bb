@@ -68,7 +68,8 @@ public:
 
     void released();
     bool loadLink(const LinkRelAttribute&, CrossOriginAttributeValue, const String& type, const String& as, const KURL&, Document&, const NetworkHintsInterface&);
-    static bool loadLinkFromHeader(const String& headerValue, Document*, const NetworkHintsInterface&);
+    enum CanLoadResources { LoadResources, DoNotLoadResources };
+    static bool loadLinkFromHeader(const String& headerValue, Document*, const NetworkHintsInterface&, CanLoadResources);
 
     DECLARE_TRACE();
 

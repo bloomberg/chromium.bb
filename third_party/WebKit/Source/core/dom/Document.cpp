@@ -3127,7 +3127,7 @@ void Document::processReferrerPolicy(const String& policy)
     setReferrerPolicy(referrerPolicy);
 }
 
-String Document::outgoingReferrer()
+String Document::outgoingReferrer() const
 {
     if (securityOrigin()->isUnique()) {
         // Return |no-referrer|.
@@ -3136,7 +3136,7 @@ String Document::outgoingReferrer()
 
     // See http://www.whatwg.org/specs/web-apps/current-work/#fetching-resources
     // for why we walk the parent chain for srcdoc documents.
-    Document* referrerDocument = this;
+    const Document* referrerDocument = this;
     if (LocalFrame* frame = m_frame) {
         while (frame->document()->isSrcdocDocument()) {
             // Srcdoc documents must be local within the containing frame.
