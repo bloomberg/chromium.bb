@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/prefs/pref_member.h"
 #include "content/public/browser/content_browser_client.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_job_factory.h"
@@ -73,6 +74,10 @@ class AwURLRequestContextGetter : public net::URLRequestContextGetter {
   scoped_ptr<net::HttpAuthHandlerFactory> CreateAuthHandlerFactory(
       net::HostResolver* resolver);
 
+  // Update methods for the auth related preferences
+  void UpdateServerWhitelist();
+  void UpdateAndroidAuthNegotiateAccountType();
+
   const base::FilePath cache_path_;
 
   scoped_ptr<net::NetLog> net_log_;
@@ -86,8 +91,8 @@ class AwURLRequestContextGetter : public net::URLRequestContextGetter {
   scoped_ptr<net::URLRequestContext> url_request_context_;
 
   // Store HTTP Auth-related policies in this thread.
-  std::string auth_android_negotiate_account_type_;
-  std::string auth_server_whitelist_;
+  StringPrefMember auth_android_negotiate_account_type_;
+  StringPrefMember auth_server_whitelist_;
 
   // ProtocolHandlers and interceptors are stored here between
   // SetHandlersAndInterceptors() and the first GetURLRequestContext() call.

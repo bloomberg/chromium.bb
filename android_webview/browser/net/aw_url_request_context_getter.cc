@@ -167,13 +167,25 @@ AwURLRequestContextGetter::AwURLRequestContextGetter(
       net_log_(new net::NetLog()),
       proxy_config_service_(config_service.Pass()),
       cookie_store_(cookie_store),
-      http_user_agent_settings_(new AwHttpUserAgentSettings()),
-      auth_android_negotiate_account_type_(user_pref_service->GetString(
-          prefs::kAuthAndroidNegotiateAccountType)),
-      auth_server_whitelist_(
-          user_pref_service->GetString(prefs::kAuthServerWhitelist)) {
+      http_user_agent_settings_(new AwHttpUserAgentSettings()) {
   // CreateSystemProxyConfigService for Android must be called on main thread.
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  scoped_refptr<base::SingleThreadTaskRunner> io_thread_proxy =
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
+
+  auth_server_whitelist_.Init(
+      prefs::kAuthServerWhitelist, user_pref_service,
+      base::Bind(&AwURLRequestContextGetter::UpdateServerWhitelist,
+                 base::Unretained(this)));
+  auth_server_whitelist_.MoveToThread(io_thread_proxy);
+
+  auth_android_negotiate_account_type_.Init(
+      prefs::kAuthAndroidNegotiateAccountType, user_pref_service,
+      base::Bind(
+          &AwURLRequestContextGetter::UpdateAndroidAuthNegotiateAccountType,
+          base::Unretained(this)));
+  auth_android_negotiate_account_type_.MoveToThread(io_thread_proxy);
 }
 
 AwURLRequestContextGetter::~AwURLRequestContextGetter() {
@@ -280,11 +292,22 @@ AwURLRequestContextGetter::CreateAuthHandlerFactory(
   // there is no interest to have it available so far.
   std::vector<std::string> supported_schemes = {"basic", "digest", "negotiate"};
   http_auth_preferences_.reset(new net::HttpAuthPreferences(supported_schemes));
-  http_auth_preferences_->set_server_whitelist(auth_server_whitelist_);
-  http_auth_preferences_->set_auth_android_negotiate_account_type(
-      auth_android_negotiate_account_type_);
+
+  UpdateServerWhitelist();
+  UpdateAndroidAuthNegotiateAccountType();
+
   return net::HttpAuthHandlerRegistryFactory::Create(
       http_auth_preferences_.get(), resolver);
+}
+
+void AwURLRequestContextGetter::UpdateServerWhitelist() {
+  http_auth_preferences_->set_server_whitelist(
+      auth_server_whitelist_.GetValue());
+}
+
+void AwURLRequestContextGetter::UpdateAndroidAuthNegotiateAccountType() {
+  http_auth_preferences_->set_auth_android_negotiate_account_type(
+      auth_android_negotiate_account_type_.GetValue());
 }
 
 }  // namespace android_webview
