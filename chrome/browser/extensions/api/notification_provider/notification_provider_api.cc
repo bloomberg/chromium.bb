@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/notification_provider/notification_provider_api.h"
 
+#include <utility>
+
 #include "base/callback.h"
 #include "base/guid.h"
 #include "base/rand_util.h"
@@ -65,10 +67,10 @@ void NotificationProviderEventRouter::Create(
 
   scoped_ptr<Event> event(new Event(
       events::NOTIFICATION_PROVIDER_ON_CREATED,
-      api::notification_provider::OnCreated::kEventName, args.Pass()));
+      api::notification_provider::OnCreated::kEventName, std::move(args)));
 
   EventRouter::Get(profile_)
-      ->DispatchEventToExtension(notification_provider_id, event.Pass());
+      ->DispatchEventToExtension(notification_provider_id, std::move(event));
 }
 
 void NotificationProviderEventRouter::Update(
@@ -82,10 +84,10 @@ void NotificationProviderEventRouter::Update(
 
   scoped_ptr<Event> event(new Event(
       events::NOTIFICATION_PROVIDER_ON_UPDATED,
-      api::notification_provider::OnUpdated::kEventName, args.Pass()));
+      api::notification_provider::OnUpdated::kEventName, std::move(args)));
 
   EventRouter::Get(profile_)
-      ->DispatchEventToExtension(notification_provider_id, event.Pass());
+      ->DispatchEventToExtension(notification_provider_id, std::move(event));
 }
 
 void NotificationProviderEventRouter::Clear(
@@ -97,10 +99,10 @@ void NotificationProviderEventRouter::Clear(
 
   scoped_ptr<Event> event(new Event(
       events::NOTIFICATION_PROVIDER_ON_CLEARED,
-      api::notification_provider::OnCleared::kEventName, args.Pass()));
+      api::notification_provider::OnCleared::kEventName, std::move(args)));
 
   EventRouter::Get(profile_)
-      ->DispatchEventToExtension(notification_provider_id, event.Pass());
+      ->DispatchEventToExtension(notification_provider_id, std::move(event));
 }
 
 NotificationProviderNotifyOnClearedFunction::

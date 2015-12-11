@@ -4,6 +4,8 @@
 
 #include "chrome/browser/notifications/notifier_state_tracker.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/values.h"
@@ -177,9 +179,9 @@ void NotifierStateTracker::FirePermissionLevelChangedEvent(
   scoped_ptr<extensions::Event> event(new extensions::Event(
       extensions::events::NOTIFICATIONS_ON_PERMISSION_LEVEL_CHANGED,
       extensions::api::notifications::OnPermissionLevelChanged::kEventName,
-      args.Pass()));
+      std::move(args)));
   extensions::EventRouter::Get(profile_)
-      ->DispatchEventToExtension(notifier_id.id, event.Pass());
+      ->DispatchEventToExtension(notifier_id.id, std::move(event));
 
   // Tell the IO thread that this extension's permission for notifications
   // has changed.

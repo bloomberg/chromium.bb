@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/notifications/notifications_api.h"
 
+#include <utility>
+
 #include "base/callback.h"
 #include "base/guid.h"
 #include "base/rand_util.h"
@@ -152,14 +154,14 @@ class NotificationsApiDelegate : public NotificationDelegate {
     scoped_ptr<base::ListValue> args(CreateBaseEventArgs());
     args->Append(new base::FundamentalValue(by_user));
     SendEvent(events::NOTIFICATIONS_ON_CLOSED,
-              notifications::OnClosed::kEventName, gesture, args.Pass());
+              notifications::OnClosed::kEventName, gesture, std::move(args));
   }
 
   void Click() override {
     scoped_ptr<base::ListValue> args(CreateBaseEventArgs());
     SendEvent(events::NOTIFICATIONS_ON_CLICKED,
               notifications::OnClicked::kEventName,
-              EventRouter::USER_GESTURE_ENABLED, args.Pass());
+              EventRouter::USER_GESTURE_ENABLED, std::move(args));
   }
 
   bool HasClickedListener() override {
@@ -175,7 +177,7 @@ class NotificationsApiDelegate : public NotificationDelegate {
     args->Append(new base::FundamentalValue(index));
     SendEvent(events::NOTIFICATIONS_ON_BUTTON_CLICKED,
               notifications::OnButtonClicked::kEventName,
-              EventRouter::USER_GESTURE_ENABLED, args.Pass());
+              EventRouter::USER_GESTURE_ENABLED, std::move(args));
   }
 
   std::string id() const override { return scoped_id_; }
@@ -190,9 +192,9 @@ class NotificationsApiDelegate : public NotificationDelegate {
     if (!event_router_)
       return;
 
-    scoped_ptr<Event> event(new Event(histogram_value, name, args.Pass()));
+    scoped_ptr<Event> event(new Event(histogram_value, name, std::move(args)));
     event->user_gesture = user_gesture;
-    event_router_->DispatchEventToExtension(extension_id_, event.Pass());
+    event_router_->DispatchEventToExtension(extension_id_, std::move(event));
   }
 
   void Shutdown() {
@@ -203,7 +205,7 @@ class NotificationsApiDelegate : public NotificationDelegate {
   scoped_ptr<base::ListValue> CreateBaseEventArgs() {
     scoped_ptr<base::ListValue> args(new base::ListValue());
     args->Append(new base::StringValue(id_));
-    return args.Pass();
+    return args;
   }
 
   scoped_refptr<ChromeAsyncExtensionFunction> api_function_;

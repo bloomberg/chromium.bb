@@ -4,6 +4,8 @@
 
 #include "chrome/browser/notifications/notification_object_proxy.h"
 
+#include <utility>
+
 #include "base/guid.h"
 #include "base/logging.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
@@ -13,7 +15,7 @@ NotificationObjectProxy::NotificationObjectProxy(
     content::BrowserContext* browser_context,
     scoped_ptr<content::DesktopNotificationDelegate> delegate)
     : browser_context_(browser_context),
-      delegate_(delegate.Pass()),
+      delegate_(std::move(delegate)),
       displayed_(false),
       id_(base::GenerateGUID()) {}
 

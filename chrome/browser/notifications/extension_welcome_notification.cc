@@ -4,6 +4,8 @@
 
 #include "chrome/browser/notifications/extension_welcome_notification.h"
 
+#include <utility>
+
 #include "base/guid.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
@@ -270,7 +272,7 @@ void ExtensionWelcomeNotification::ShowWelcomeNotification(
     if (pop_up_request == POP_UP_HIDDEN)
       message_center_notification->set_shown_as_popup(true);
 
-    GetMessageCenter()->AddNotification(message_center_notification.Pass());
+    GetMessageCenter()->AddNotification(std::move(message_center_notification));
     StartExpirationTimer();
   }
 }

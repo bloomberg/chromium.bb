@@ -4,6 +4,8 @@
 
 #include "chrome/browser/notifications/notification_ui_manager.h"
 
+#include <utility>
+
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/message_center_notification_manager.h"
@@ -24,5 +26,5 @@ NotificationUIManager* NotificationUIManager::Create(PrefService* local_state) {
       new MessageCenterSettingsController(profile_info_cache));
   return new MessageCenterNotificationManager(
       g_browser_process->message_center(),
-      settings_provider.Pass());
+      std::move(settings_provider));
 }

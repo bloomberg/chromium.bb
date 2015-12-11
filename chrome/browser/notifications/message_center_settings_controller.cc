@@ -5,6 +5,7 @@
 #include "chrome/browser/notifications/message_center_settings_controller.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/i18n/string_compare.h"
@@ -408,8 +409,9 @@ void MessageCenterSettingsController::OnNotifierAdvancedSettingsRequested(
 
   scoped_ptr<extensions::Event> event(new extensions::Event(
       extensions::events::NOTIFICATIONS_ON_SHOW_SETTINGS,
-      extensions::api::notifications::OnShowSettings::kEventName, args.Pass()));
-  event_router->DispatchEventToExtension(extension_id, event.Pass());
+      extensions::api::notifications::OnShowSettings::kEventName,
+      std::move(args)));
+  event_router->DispatchEventToExtension(extension_id, std::move(event));
 }
 
 void MessageCenterSettingsController::OnFaviconLoaded(
@@ -492,7 +494,7 @@ void MessageCenterSettingsController::CreateNotifierGroupForGuestLogin() {
                                                0,
                                                profile));
 
-  notifier_groups_.push_back(group.Pass());
+  notifier_groups_.push_back(std::move(group));
 
   FOR_EACH_OBSERVER(message_center::NotifierSettingsObserver,
                     observers_,
@@ -535,7 +537,7 @@ void MessageCenterSettingsController::RebuildNotifierGroups(bool notify) {
       continue;
 #endif
 
-    notifier_groups_.push_back(group.Pass());
+    notifier_groups_.push_back(std::move(group));
   }
 
 #if defined(OS_CHROMEOS)

@@ -8,20 +8,22 @@
 #include "ui/message_center/notification_delegate.h"
 #include "ui/message_center/notification_types.h"
 
-namespace {
-unsigned g_next_serial_number_ = 0;
-}
-
 namespace message_center {
+
+namespace {
+
+unsigned g_next_serial_number_ = 0;
+
+}  // namespace
 
 NotificationItem::NotificationItem(const base::string16& title,
                                    const base::string16& message)
- : title(title),
-   message(message) {
+    : title(title),
+      message(message) {
 }
 
 ButtonInfo::ButtonInfo(const base::string16& title)
- : title(title) {
+    : title(title) {
 }
 
 RichNotificationData::RichNotificationData()
@@ -173,7 +175,7 @@ scoped_ptr<Notification> Notification::CreateSystemNotification(
       RichNotificationData(),
       new HandleNotificationClickedDelegate(click_callback)));
   notification->SetSystemPriority();
-  return notification.Pass();
+  return notification;
 }
 
 }  // namespace message_center

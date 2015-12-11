@@ -5,6 +5,7 @@
 #include "content/child/notifications/notification_manager.h"
 
 #include <cmath>
+#include <utility>
 
 #include "base/lazy_instance.h"
 #include "base/metrics/histogram_macros.h"
@@ -116,7 +117,7 @@ void NotificationManager::showPersistent(
   if (notification_data.icon.isEmpty()) {
     DisplayPersistentNotification(origin, notification_data,
                                   service_worker_registration_id,
-                                  owned_callbacks.Pass(), SkBitmap());
+                                  std::move(owned_callbacks), SkBitmap());
     return;
   }
 

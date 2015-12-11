@@ -4,6 +4,8 @@
 
 #include "ui/message_center/notification_list.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
@@ -86,7 +88,7 @@ void NotificationList::SetMessageCenterVisible(
 }
 
 void NotificationList::AddNotification(scoped_ptr<Notification> notification) {
-  PushNotification(notification.Pass());
+  PushNotification(std::move(notification));
 }
 
 void NotificationList::UpdateNotificationMessage(

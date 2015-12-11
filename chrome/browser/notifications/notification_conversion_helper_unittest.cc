@@ -64,7 +64,7 @@ class NotificationConversionHelperTest : public testing::Test {
         base::UTF8ToUTF16("Notifier's Name"), GURL(), "id1", optional_fields,
         delegate));
 
-    return notification.Pass();
+    return notification;
   }
 
  private:

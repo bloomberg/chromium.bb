@@ -5,6 +5,7 @@
 #include "chrome/browser/notifications/notification_conversion_helper.h"
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/logging.h"
@@ -27,7 +28,7 @@ void NotificationConversionHelper::NotificationToNotificationOptions(
     scoped_ptr<extensions::api::notifications::NotificationBitmap> icon(
         new extensions::api::notifications::NotificationBitmap());
     GfxImageToNotificationBitmap(&notification.icon(), icon.get());
-    options->icon_bitmap = icon.Pass();
+    options->icon_bitmap = std::move(icon);
   }
 
   options->title.reset(
@@ -43,7 +44,7 @@ void NotificationConversionHelper::NotificationToNotificationOptions(
     scoped_ptr<extensions::api::notifications::NotificationBitmap> icon_mask(
         new extensions::api::notifications::NotificationBitmap());
     GfxImageToNotificationBitmap(&rich_data->small_image, icon_mask.get());
-    options->app_icon_mask_bitmap = icon_mask.Pass();
+    options->app_icon_mask_bitmap = std::move(icon_mask);
   }
 
   options->priority.reset(new int(rich_data->priority));
@@ -70,11 +71,11 @@ void NotificationConversionHelper::NotificationToNotificationOptions(
         scoped_ptr<extensions::api::notifications::NotificationBitmap> icon(
             new extensions::api::notifications::NotificationBitmap());
         GfxImageToNotificationBitmap(&rich_data->buttons[i].icon, icon.get());
-        button->icon_bitmap = icon.Pass();
+        button->icon_bitmap = std::move(icon);
       }
       button_list->push_back(button);
     }
-    options->buttons = button_list.Pass();
+    options->buttons = std::move(button_list);
   }
 
   // Only image type notifications should have images.
@@ -82,7 +83,7 @@ void NotificationConversionHelper::NotificationToNotificationOptions(
     scoped_ptr<extensions::api::notifications::NotificationBitmap> image(
         new extensions::api::notifications::NotificationBitmap());
     GfxImageToNotificationBitmap(&notification.image(), image.get());
-    options->image_bitmap = image.Pass();
+    options->image_bitmap = std::move(image);
   } else if (type != "image" && !rich_data->image.IsEmpty()) {
     DVLOG(1) << "Only image type notifications should have images.";
   }
@@ -106,7 +107,7 @@ void NotificationConversionHelper::NotificationToNotificationOptions(
       item->message = base::UTF16ToUTF8(rich_data->items[j].message);
       list->push_back(item);
     }
-    options->items = list.Pass();
+    options->items = std::move(list);
   } else if (type != "list" && !rich_data->items.empty()) {
     DVLOG(1) << "Only list type notifications should have lists.";
   }
@@ -133,7 +134,7 @@ void NotificationConversionHelper::GfxImageToNotificationBitmap(
                                                   rgba_bitmap_data->data()));
   sk_bitmap.unlockPixels();
 
-  notification_bitmap->data = rgba_bitmap_data.Pass();
+  notification_bitmap->data = std::move(rgba_bitmap_data);
   return;
 }
 

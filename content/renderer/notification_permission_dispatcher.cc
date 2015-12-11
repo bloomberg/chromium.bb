@@ -4,6 +4,8 @@
 
 #include "content/renderer/notification_permission_dispatcher.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "content/public/common/service_registry.h"
 #include "content/public/renderer/render_frame.h"
@@ -38,7 +40,8 @@ void NotificationPermissionDispatcher::RequestPermission(
       PERMISSION_NAME_NOTIFICATIONS, origin.toString().utf8(),
       blink::WebUserGestureIndicator::isProcessingUserGesture(),
       base::Bind(&NotificationPermissionDispatcher::OnPermissionRequestComplete,
-                 base::Unretained(this), base::Passed(owned_callback.Pass())));
+                 base::Unretained(this),
+                 base::Passed(std::move(owned_callback))));
 }
 
 void NotificationPermissionDispatcher::OnPermissionRequestComplete(

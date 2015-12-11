@@ -6,6 +6,7 @@
 
 #include <set>
 #include <string>
+#include <utility>
 
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -604,7 +605,7 @@ void NotifierSettingsView::UpdateContentsView(
                                                 0,
                                                 settings::kEntrySeparatorColor);
     }
-    entry->SetBorder(entry_border.Pass());
+    entry->SetBorder(std::move(entry_border));
     entry->SetFocusable(true);
     contents_view->AddChildView(entry);
     buttons_.insert(button);
