@@ -10,7 +10,6 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/time/time.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller_mock.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -40,8 +39,6 @@ using ::testing::Pointee;
 
 namespace {
 
-const int64 kSlowNavigationDelayInMS = 6000;
-const int64 kQuickNavigationDelayInMS = 500;
 // Number of dismissals that for sure supresses the bubble.
 const int kGreatDissmisalCount = 10;
 
@@ -71,8 +68,6 @@ class TestManagePasswordsUIController : public ManagePasswordsUIController {
       password_manager::PasswordManagerClient* client);
   ~TestManagePasswordsUIController() override;
 
-  base::TimeDelta Elapsed() const override;
-  void SetElapsed(base::TimeDelta elapsed) { elapsed_ = elapsed; }
   bool opened_bubble() const { return opened_bubble_; }
 
   using ManagePasswordsUIController::DidNavigateMainFrame;
@@ -84,7 +79,6 @@ class TestManagePasswordsUIController : public ManagePasswordsUIController {
       const autofill::PasswordForm& password_form) override {}
   void NeverSavePasswordInternal() override;
 
-  base::TimeDelta elapsed_;
   bool opened_bubble_;
 };
 
@@ -100,10 +94,6 @@ TestManagePasswordsUIController::TestManagePasswordsUIController(
 }
 
 TestManagePasswordsUIController::~TestManagePasswordsUIController() {
-}
-
-base::TimeDelta TestManagePasswordsUIController::Elapsed() const {
-  return elapsed_;
 }
 
 void TestManagePasswordsUIController::UpdateBubbleAndIconVisibility() {
@@ -368,34 +358,29 @@ TEST_F(ManagePasswordsUIControllerTest, PasswordBlacklisted) {
   ExpectIconStateIs(password_manager::ui::PENDING_PASSWORD_STATE);
 }
 
-TEST_F(ManagePasswordsUIControllerTest, QuickNavigations) {
+TEST_F(ManagePasswordsUIControllerTest, RedirectNavigations) {
   scoped_ptr<password_manager::PasswordFormManager> test_form_manager(
       CreateFormManager());
   controller()->OnPasswordSubmitted(test_form_manager.Pass());
   ExpectIconStateIs(password_manager::ui::PENDING_PASSWORD_STATE);
 
-  // Fake-navigate within a second. We expect the bubble's state to persist
-  // if a navigation occurs too quickly for a user to reasonably have been
-  // able to interact with the bubble. This happens on `accounts.google.com`,
-  // for instance.
-  controller()->SetElapsed(
-      base::TimeDelta::FromMilliseconds(kQuickNavigationDelayInMS));
-  controller()->DidNavigateMainFrame(content::LoadCommittedDetails(),
-                                     content::FrameNavigateParams());
+  // Fake-redirect. We expect the bubble's state to persist so a user reasonably
+  // have been able to interact with the bubble. This happens on
+  // `accounts.google.com`, for instance.
+  content::FrameNavigateParams params;
+  params.transition = ui::PAGE_TRANSITION_SERVER_REDIRECT;
+  controller()->DidNavigateMainFrame(content::LoadCommittedDetails(), params);
 
   ExpectIconStateIs(password_manager::ui::PENDING_PASSWORD_STATE);
 }
 
-TEST_F(ManagePasswordsUIControllerTest, SlowNavigations) {
+TEST_F(ManagePasswordsUIControllerTest, NormalNavigations) {
   scoped_ptr<password_manager::PasswordFormManager> test_form_manager(
       CreateFormManager());
   controller()->OnPasswordSubmitted(test_form_manager.Pass());
   ExpectIconStateIs(password_manager::ui::PENDING_PASSWORD_STATE);
 
-  // Fake-navigate after 5 seconds. We expect the bubble's state to be reset
-  // if a navigation occurs after this limit.
-  controller()->SetElapsed(
-      base::TimeDelta::FromMilliseconds(kSlowNavigationDelayInMS));
+  // Fake-navigate. We expect the bubble's state to be reset.
   controller()->DidNavigateMainFrame(content::LoadCommittedDetails(),
                                      content::FrameNavigateParams());
 
@@ -634,10 +619,6 @@ TEST_F(ManagePasswordsUIControllerTest, NavigationWhenUpdateBubbleActive) {
   controller()->OnUpdatePasswordSubmitted(test_form_manager.Pass());
   EXPECT_EQ(password_manager::ui::PENDING_PASSWORD_UPDATE_STATE,
             controller()->GetState());
-  // Fake-navigate after 5 seconds. We expect the bubble's state to be reset
-  // if a navigation occurs after this limit.
-  controller()->SetElapsed(
-      base::TimeDelta::FromMilliseconds(kSlowNavigationDelayInMS));
   controller()->DidNavigateMainFrame(content::LoadCommittedDetails(),
                                      content::FrameNavigateParams());
   EXPECT_EQ(password_manager::ui::INACTIVE_STATE, controller()->GetState());

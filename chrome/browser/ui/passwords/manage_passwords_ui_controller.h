@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_UI_PASSWORDS_MANAGE_PASSWORDS_UI_CONTROLLER_H_
 #define CHROME_BROWSER_UI_PASSWORDS_MANAGE_PASSWORDS_UI_CONTROLLER_H_
 
-#include "base/timer/elapsed_timer.h"
 #include "chrome/browser/ui/passwords/manage_passwords_state.h"
 #include "chrome/browser/ui/passwords/passwords_client_ui_delegate.h"
 #include "chrome/browser/ui/passwords/passwords_model_delegate.h"
@@ -107,10 +106,6 @@ class ManagePasswordsUIController
   // manage passwords icon and bubble.
   virtual void UpdateBubbleAndIconVisibility();
 
-  // Returns the time elapsed since |timer_| was initialized,
-  // or base::TimeDelta::Max() if |timer_| was not initialized.
-  virtual base::TimeDelta Elapsed() const;
-
   // Overwrites the client for |passwords_data_|.
   void set_client(password_manager::PasswordManagerClient* client) {
     passwords_data_.set_client(client);
@@ -133,11 +128,6 @@ class ManagePasswordsUIController
 
   // The wrapper around current state and data.
   ManagePasswordsState passwords_data_;
-
-  // Used to measure the amount of time on a page; if it's less than some
-  // reasonable limit, then don't close the bubble upon navigation. We create
-  // (and destroy) the timer in DidNavigateMainFrame.
-  scoped_ptr<base::ElapsedTimer> timer_;
 
   // Contains true if the bubble is to be popped up in the next call to
   // UpdateBubbleAndIconVisibility().

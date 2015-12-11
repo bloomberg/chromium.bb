@@ -38,9 +38,6 @@ using password_manager::PasswordFormManager;
 
 namespace {
 
-// Minimal time span the bubble should survive implicit navigations.
-const int kBubbleMinTime = 5;
-
 password_manager::PasswordStore* GetPasswordStore(
     content::WebContents* web_contents) {
   return PasswordStoreFactory::GetForProfile(
@@ -77,7 +74,6 @@ void ManagePasswordsUIController::OnPasswordSubmitted(
     if (stats && show_threshold > 0 && stats->dismissal_count >= show_threshold)
       show_bubble = false;
   }
-  timer_.reset(new base::ElapsedTimer);
   base::AutoReset<bool> resetter(&should_pop_up_bubble_, show_bubble);
   UpdateBubbleAndIconVisibility();
 }
@@ -85,7 +81,6 @@ void ManagePasswordsUIController::OnPasswordSubmitted(
 void ManagePasswordsUIController::OnUpdatePasswordSubmitted(
     scoped_ptr<PasswordFormManager> form_manager) {
   passwords_data_.OnUpdatePassword(form_manager.Pass());
-  timer_.reset(new base::ElapsedTimer);
   base::AutoReset<bool> resetter(&should_pop_up_bubble_, true);
   UpdateBubbleAndIconVisibility();
 }
@@ -113,7 +108,6 @@ void ManagePasswordsUIController::OnAutoSignin(
     ScopedVector<autofill::PasswordForm> local_forms) {
   DCHECK(!local_forms.empty());
   passwords_data_.OnAutoSignin(local_forms.Pass());
-  timer_.reset(new base::ElapsedTimer);
   base::AutoReset<bool> resetter(&should_pop_up_bubble_, true);
   UpdateBubbleAndIconVisibility();
 }
@@ -350,10 +344,6 @@ void ManagePasswordsUIController::UpdateBubbleAndIconVisibility() {
 #endif
 }
 
-base::TimeDelta ManagePasswordsUIController::Elapsed() const {
-  return timer_ ? timer_->Elapsed() : base::TimeDelta::Max();
-}
-
 void ManagePasswordsUIController::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
@@ -361,17 +351,14 @@ void ManagePasswordsUIController::DidNavigateMainFrame(
   if (details.is_in_page)
     return;
 
-  // Don't do anything if a navigation occurs before a user could reasonably
-  // interact with the password bubble.
-  if (Elapsed() < base::TimeDelta::FromSeconds(kBubbleMinTime))
+  // Don't do anything if a redirect occurs. It is possible that the user was
+  // not able to interact with the password bubble.
+  if (ui::PageTransitionIsRedirect(params.transition))
     return;
 
   // Otherwise, reset the password manager and the timer.
   passwords_data_.OnInactive();
   UpdateBubbleAndIconVisibility();
-  // This allows the bubble to survive several redirects in case the whole
-  // process of navigating to the landing page is longer than 1 second.
-  timer_.reset(new base::ElapsedTimer());
 }
 
 void ManagePasswordsUIController::WasHidden() {
