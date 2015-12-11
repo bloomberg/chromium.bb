@@ -5,6 +5,9 @@
 #ifndef CHROMECAST_MEDIA_CMA_PIPELINE_MEDIA_PIPELINE_IMPL_H_
 #define CHROMECAST_MEDIA_CMA_PIPELINE_MEDIA_PIPELINE_IMPL_H_
 
+#include <string>
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -23,13 +26,14 @@ class VideoDecoderConfig;
 
 namespace chromecast {
 namespace media {
+class AudioDecoderSoftwareWrapper;
 class AudioPipelineImpl;
-struct AvPipelineClient;
-struct VideoPipelineClient;
 class BrowserCdmCast;
 class BufferingController;
 class CodedFrameProvider;
 class VideoPipelineImpl;
+struct AvPipelineClient;
+struct VideoPipelineClient;
 
 class MediaPipelineImpl {
  public:
@@ -48,7 +52,7 @@ class MediaPipelineImpl {
                        const AvPipelineClient& client,
                        scoped_ptr<CodedFrameProvider> frame_provider,
                        const ::media::PipelineStatusCB& status_cb);
-  void InitializeVideo(const std::vector< ::media::VideoDecoderConfig>& configs,
+  void InitializeVideo(const std::vector<::media::VideoDecoderConfig>& configs,
                        const VideoPipelineClient& client,
                        scoped_ptr<CodedFrameProvider> frame_provider,
                        const ::media::PipelineStatusCB& status_cb);
@@ -78,7 +82,7 @@ class MediaPipelineImpl {
 
   // Interface with the underlying hardware media pipeline.
   scoped_ptr<MediaPipelineBackend> media_pipeline_backend_;
-  MediaPipelineBackend::AudioDecoder* audio_decoder_;
+  scoped_ptr<AudioDecoderSoftwareWrapper> audio_decoder_;
   MediaPipelineBackend::VideoDecoder* video_decoder_;
 
   bool backend_initialized_;

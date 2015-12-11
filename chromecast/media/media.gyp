@@ -203,6 +203,7 @@
       'type': '<(component)',
       'dependencies': [
         'cma_base',
+        'cma_decoder',
         'media_base',
         'media_cdm',
         '../../base/base.gyp:base',
@@ -211,6 +212,8 @@
         '../../third_party/boringssl/boringssl.gyp:boringssl',
       ],
       'sources': [
+        'cma/pipeline/audio_decoder_software_wrapper.cc',
+        'cma/pipeline/audio_decoder_software_wrapper.h',
         'cma/pipeline/audio_pipeline_impl.cc',
         'cma/pipeline/audio_pipeline_impl.h',
         'cma/pipeline/av_pipeline_client.cc',

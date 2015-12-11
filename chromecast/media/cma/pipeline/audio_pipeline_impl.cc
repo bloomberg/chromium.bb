@@ -26,8 +26,7 @@ AudioPipelineImpl::AudioPipelineImpl(
   DCHECK(audio_decoder_);
 }
 
-AudioPipelineImpl::~AudioPipelineImpl() {
-}
+AudioPipelineImpl::~AudioPipelineImpl() {}
 
 void AudioPipelineImpl::Initialize(
     const ::media::AudioDecoderConfig& audio_config,
@@ -41,8 +40,9 @@ void AudioPipelineImpl::Initialize(
   }
 
   DCHECK(audio_config.IsValidConfig());
-  if (!audio_decoder_->SetConfig(
-          DecoderConfigAdapter::ToCastAudioConfig(kPrimary, audio_config))) {
+  AudioConfig cast_audio_config =
+      DecoderConfigAdapter::ToCastAudioConfig(kPrimary, audio_config);
+  if (!audio_decoder_->SetConfig(cast_audio_config)) {
     status_cb.Run(::media::PIPELINE_ERROR_INITIALIZATION_FAILED);
     return;
   }
