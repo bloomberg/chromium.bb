@@ -3273,17 +3273,16 @@ void LayoutObject::setShouldDoFullPaintInvalidation(PaintInvalidationReason reas
 
     bool isUpgradingDelayedFullToFull = m_bitfields.fullPaintInvalidationReason() == PaintInvalidationDelayedFull && reason != PaintInvalidationDelayedFull;
 
-    if (m_bitfields.fullPaintInvalidationReason() != PaintInvalidationNone && !isUpgradingDelayedFullToFull)
-        return;
-
-    if (reason == PaintInvalidationFull)
-        reason = documentLifecycleBasedPaintInvalidationReason(document().lifecycle());
-    m_bitfields.setFullPaintInvalidationReason(reason);
+    if (m_bitfields.fullPaintInvalidationReason() == PaintInvalidationNone || isUpgradingDelayedFullToFull) {
+        if (reason == PaintInvalidationFull)
+            reason = documentLifecycleBasedPaintInvalidationReason(document().lifecycle());
+        m_bitfields.setFullPaintInvalidationReason(reason);
+    }
 
     if (!isUpgradingDelayedFullToFull) {
         ASSERT(document().lifecycle().state() != DocumentLifecycle::InPaintInvalidation);
+        frame()->scheduleVisualUpdateUnlessThrottled(); // In case that this is called outside of FrameView::updateLayoutAndStyleForPainting().
         markContainerChainForPaintInvalidation();
-        frameView()->scheduleVisualUpdateForPaintInvalidationIfNeeded();
     }
 }
 
@@ -3293,7 +3292,7 @@ void LayoutObject::setMayNeedPaintInvalidation()
         return;
     m_bitfields.setMayNeedPaintInvalidation(true);
     markContainerChainForPaintInvalidation();
-    frameView()->scheduleVisualUpdateForPaintInvalidationIfNeeded();
+    frame()->scheduleVisualUpdateUnlessThrottled(); // In case that this is called outside of FrameView::updateLayoutAndStyleForPainting().
 }
 
 void LayoutObject::clearPaintInvalidationState(const PaintInvalidationState& paintInvalidationState)

@@ -149,7 +149,6 @@ FrameView::FrameView(LocalFrame* frame)
     , m_viewportIntersectionValid(false)
     , m_hiddenForThrottling(false)
     , m_crossOriginForThrottling(false)
-    , m_isUpdatingAllLifecyclePhases(false)
 {
     ASSERT(m_frame);
     init();
@@ -2364,22 +2363,8 @@ void FrameView::updateLifecycleToLayoutClean()
     frame().localFrameRoot()->view()->updateLifecyclePhasesInternal(OnlyUpToLayoutClean);
 }
 
-void FrameView::scheduleVisualUpdateForPaintInvalidationIfNeeded()
-{
-    LocalFrame* localFrameRoot = frame().localFrameRoot();
-    if (!localFrameRoot->view()->m_isUpdatingAllLifecyclePhases || lifecycle().state() >= DocumentLifecycle::PaintInvalidationClean) {
-        // Schedule visual update to process the paint invalidation in the next cycle.
-        localFrameRoot->scheduleVisualUpdateUnlessThrottled();
-    }
-    // Otherwise the paint invalidation will be handled in paint invalidation phase of this cycle.
-}
-
 void FrameView::updateLifecyclePhasesInternal(LifeCycleUpdateOption phases)
 {
-    Optional<TemporaryChange<bool>> isUpdatingAllLifecyclePhasesScope;
-    if (phases == AllPhases)
-        isUpdatingAllLifecyclePhasesScope.emplace(m_isUpdatingAllLifecyclePhases, true);
-
     // This must be called from the root frame, since it recurses down, not up.
     // Otherwise the lifecycles of the frames might be out of sync.
     ASSERT(m_frame->isLocalRoot());

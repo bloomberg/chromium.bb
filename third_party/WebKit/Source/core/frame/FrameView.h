@@ -240,8 +240,6 @@ public:
     // After calling this method, all frames will be in a lifecycle state >= LayoutClean (unless throttling is allowed).
     void updateLifecycleToLayoutClean();
 
-    void scheduleVisualUpdateForPaintInvalidationIfNeeded();
-
     bool invalidateViewportConstrainedObjects();
 
     void incrementVisuallyNonEmptyCharacterCount(unsigned);
@@ -897,8 +895,6 @@ private:
     // The content clip clips the document (= LayoutView) but not the scrollbars.
     // TODO(trchen): Going away in favor of Settings::rootLayerScrolls too.
     RefPtr<ClipPaintPropertyNode> m_contentClip;
-
-    bool m_isUpdatingAllLifecyclePhases;
 };
 
 inline void FrameView::incrementVisuallyNonEmptyCharacterCount(unsigned count)
