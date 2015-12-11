@@ -54,6 +54,7 @@ def main():
                                                              args.slave_num))
     cmd.extend([
       '--skps', skps_dir,
+      '--match', 'skp',
       '--resourcePath', resource_path,
       '--config', '8888', 'gpu',
       '--outResultsFile', out_results_file,
