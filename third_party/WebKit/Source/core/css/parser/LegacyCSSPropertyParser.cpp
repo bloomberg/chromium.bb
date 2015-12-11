@@ -2941,7 +2941,7 @@ static bool isBaselinePositionKeyword(CSSValueID id)
 
 static bool isAlignmentOverflowKeyword(CSSValueID id)
 {
-    return id == CSSValueTrue || id == CSSValueSafe;
+    return id == CSSValueUnsafe || id == CSSValueSafe;
 }
 
 static bool isItemPositionKeyword(CSSValueID id)

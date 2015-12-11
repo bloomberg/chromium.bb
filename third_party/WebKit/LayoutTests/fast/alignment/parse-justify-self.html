@@ -50,12 +50,12 @@
     justify-self: flex-end;
 }
 
-#justifySelfEndTrue {
-    justify-self: end true;
+#justifySelfEndUnsafe {
+    justify-self: end unsafe;
 }
 
-#justifySelfCenterTrue {
-    justify-self: center true;
+#justifySelfCenterUnsafe {
+    justify-self: center unsafe;
 }
 
 #justifySelfSelfEndSafe {
@@ -70,12 +70,12 @@
     justify-self: right safe;
 }
 
-#justifySelfLeftTrue {
-    justify-self: left true;
+#justifySelfLeftUnsafe {
+    justify-self: left unsafe;
 }
 
-#justifySelfFlexStartTrue {
-    justify-self: flex-start true;
+#justifySelfFlexStartUnsafe {
+    justify-self: flex-start unsafe;
 }
 
 #justifySelfFlexEndSafe {
@@ -98,13 +98,13 @@
 <div id="justifySelfFlexStart"></div>
 <div id="justifySelfFlexEnd"></div>
 
-<div id="justifySelfEndTrue"></div>
-<div id="justifySelfCenterTrue"></div>
+<div id="justifySelfEndUnsafe"></div>
+<div id="justifySelfCenterUnsafe"></div>
 <div id="justifySelfSelfEndSafe"></div>
 <div id="justifySelfSelfStartSafe"></div>
 <div id="justifySelfRightSafe"></div>
-<div id="justifySelfLeftTrue"></div>
-<div id="justifySelfFlexStartTrue"></div>
+<div id="justifySelfLeftUnsafe"></div>
+<div id="justifySelfFlexStartUnsafe"></div>
 <div id="justifySelfFlexEndSafe"></div>
 <script src="resources/alignment-parsing-utils.js"></script>
 <script>
@@ -147,11 +147,11 @@ shouldBe("getComputedStyle(justifySelfFlexStart, '').getPropertyValue('justify-s
 var justifySelfFlexEnd = document.getElementById("justifySelfFlexEnd");
 shouldBe("getComputedStyle(justifySelfFlexEnd, '').getPropertyValue('justify-self')", "'flex-end'");
 
-var justifySelfEndTrue = document.getElementById("justifySelfEndTrue");
-shouldBe("getComputedStyle(justifySelfEndTrue, '').getPropertyValue('justify-self')", "'end true'");
+var justifySelfEndUnsafe = document.getElementById("justifySelfEndUnsafe");
+shouldBe("getComputedStyle(justifySelfEndUnsafe, '').getPropertyValue('justify-self')", "'end unsafe'");
 
-var justifySelfCenterTrue = document.getElementById("justifySelfCenterTrue");
-shouldBe("getComputedStyle(justifySelfCenterTrue, '').getPropertyValue('justify-self')", "'center true'");
+var justifySelfCenterUnsafe = document.getElementById("justifySelfCenterUnsafe");
+shouldBe("getComputedStyle(justifySelfCenterUnsafe, '').getPropertyValue('justify-self')", "'center unsafe'");
 
 var justifySelfSelfEndSafe = document.getElementById("justifySelfSelfEndSafe");
 shouldBe("getComputedStyle(justifySelfSelfEndSafe, '').getPropertyValue('justify-self')", "'self-end safe'");
@@ -162,11 +162,11 @@ shouldBe("getComputedStyle(justifySelfSelfStartSafe, '').getPropertyValue('justi
 var justifySelfRightSafe = document.getElementById("justifySelfRightSafe");
 shouldBe("getComputedStyle(justifySelfRightSafe, '').getPropertyValue('justify-self')", "'right safe'");
 
-var justifySelfLeftTrue = document.getElementById("justifySelfLeftTrue");
-shouldBe("getComputedStyle(justifySelfLeftTrue, '').getPropertyValue('justify-self')", "'left true'");
+var justifySelfLeftUnsafe = document.getElementById("justifySelfLeftUnsafe");
+shouldBe("getComputedStyle(justifySelfLeftUnsafe, '').getPropertyValue('justify-self')", "'left unsafe'");
 
-var justifySelfFlexStartTrue = document.getElementById("justifySelfFlexStartTrue");
-shouldBe("getComputedStyle(justifySelfFlexStartTrue, '').getPropertyValue('justify-self')", "'flex-start true'");
+var justifySelfFlexStartUnsafe = document.getElementById("justifySelfFlexStartUnsafe");
+shouldBe("getComputedStyle(justifySelfFlexStartUnsafe, '').getPropertyValue('justify-self')", "'flex-start unsafe'");
 
 var justifySelfFlexEndSafe = document.getElementById("justifySelfFlexEndSafe");
 shouldBe("getComputedStyle(justifySelfFlexEndSafe, '').getPropertyValue('justify-self')", "'flex-end safe'");
@@ -186,8 +186,8 @@ document.body.appendChild(container);
 element.style.justifySelf = "center";
 checkValues(element, "justifySelf", "justify-self",  "center", "center");
 
-element.style.justifySelf = "true start";
-checkValues(element, "justifySelf", "justify-self",  "start true", "start true");
+element.style.justifySelf = "unsafe start";
+checkValues(element, "justifySelf", "justify-self",  "start unsafe", "start unsafe");
 
 element.style.justifySelf = "flex-end safe";
 checkValues(element, "justifySelf", "justify-self",  "flex-end safe", "flex-end safe");
@@ -222,26 +222,26 @@ element = document.createElement("div");
 container.appendChild(element);
 document.body.appendChild(container);
 
-checkBadValues(element, "justifySelf", "justify-self",  "true auto");
+checkBadValues(element, "justifySelf", "justify-self",  "unsafe auto");
 checkBadValues(element, "justifySelf", "justify-self",  "auto safe");
 checkBadValues(element, "justifySelf", "justify-self",  "auto left");
 checkBadValues(element, "justifySelf", "justify-self",  "baseline safe");
 checkBadValues(element, "justifySelf", "justify-self",  "baseline center");
-checkBadValues(element, "justifySelf", "justify-self",  "stretch true");
+checkBadValues(element, "justifySelf", "justify-self",  "stretch unsafe");
 checkBadValues(element, "justifySelf", "justify-self",  "stretch right");
-checkBadValues(element, "justifySelf", "justify-self",  "true true");
-checkBadValues(element, "justifySelf", "justify-self",  "true safe");
+checkBadValues(element, "justifySelf", "justify-self",  "unsafe unsafe");
+checkBadValues(element, "justifySelf", "justify-self",  "unsafe safe");
 checkBadValues(element, "justifySelf", "justify-self",  "center start");
-checkBadValues(element, "justifySelf", "justify-self",  "stretch true");
+checkBadValues(element, "justifySelf", "justify-self",  "stretch unsafe");
 checkBadValues(element, "justifySelf", "justify-self",  "safe stretch");
 checkBadValues(element, "justifySelf", "justify-self",  "baseline safe");
-checkBadValues(element, "justifySelf", "justify-self",  "true baseline");
-checkBadValues(element, "justifySelf", "justify-self",  "true safe left");
-checkBadValues(element, "justifySelf", "justify-self",  "true left safe");
-checkBadValues(element, "justifySelf", "justify-self",  "left safe true safe");
+checkBadValues(element, "justifySelf", "justify-self",  "unsafe baseline");
+checkBadValues(element, "justifySelf", "justify-self",  "unsafe safe left");
+checkBadValues(element, "justifySelf", "justify-self",  "unsafe left safe");
+checkBadValues(element, "justifySelf", "justify-self",  "left safe unsafe safe");
 checkBadValues(element, "justifySelf", "justify-self",  "legacy start");
 checkBadValues(element, "justifySelf", "justify-self",  "legacy end");
-checkBadValues(element, "justifySelf", "justify-self",  "legacy right true");
+checkBadValues(element, "justifySelf", "justify-self",  "legacy right unsafe");
 checkBadValues(element, "justifySelf", "justify-self",  "legacy auto");
 checkBadValues(element, "justifySelf", "justify-self",  "legacy stretch");
 checkBadValues(element, "justifySelf", "justify-self",  "legacy");
@@ -260,7 +260,7 @@ checkInitialValues(element, "justifySelf", "justify-self", "left safe", "stretch
 debug("");
 debug("Test the value 'initial' for flex containers");
 container.style.display = "flex";
-checkInitialValues(element, "justifySelf", "justify-self", "right true", "stretch");
+checkInitialValues(element, "justifySelf", "justify-self", "right unsafe", "stretch");
 
 debug("");
 debug("Test the value 'initial' for positioned elements");
@@ -284,7 +284,7 @@ debug("");
 debug("Test the value 'inherit'");
 checkInheritValues("justifySelf", "justify-self", "end");
 checkInheritValues("justifySelf", "justify-self", "left safe");
-checkInheritValues("justifySelf", "justify-self", "center true");
+checkInheritValues("justifySelf", "justify-self", "center unsafe");
 
 </script>
 </body>

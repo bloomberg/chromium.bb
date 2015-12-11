@@ -16,13 +16,13 @@ PASS getComputedStyle(justifySelfLeft, '').getPropertyValue('justify-self') is '
 PASS getComputedStyle(justifySelfRight, '').getPropertyValue('justify-self') is 'right'
 PASS getComputedStyle(justifySelfFlexStart, '').getPropertyValue('justify-self') is 'flex-start'
 PASS getComputedStyle(justifySelfFlexEnd, '').getPropertyValue('justify-self') is 'flex-end'
-PASS getComputedStyle(justifySelfEndTrue, '').getPropertyValue('justify-self') is 'end true'
-PASS getComputedStyle(justifySelfCenterTrue, '').getPropertyValue('justify-self') is 'center true'
+PASS getComputedStyle(justifySelfEndUnsafe, '').getPropertyValue('justify-self') is 'end unsafe'
+PASS getComputedStyle(justifySelfCenterUnsafe, '').getPropertyValue('justify-self') is 'center unsafe'
 PASS getComputedStyle(justifySelfSelfEndSafe, '').getPropertyValue('justify-self') is 'self-end safe'
 PASS getComputedStyle(justifySelfSelfStartSafe, '').getPropertyValue('justify-self') is 'self-start safe'
 PASS getComputedStyle(justifySelfRightSafe, '').getPropertyValue('justify-self') is 'right safe'
-PASS getComputedStyle(justifySelfLeftTrue, '').getPropertyValue('justify-self') is 'left true'
-PASS getComputedStyle(justifySelfFlexStartTrue, '').getPropertyValue('justify-self') is 'flex-start true'
+PASS getComputedStyle(justifySelfLeftUnsafe, '').getPropertyValue('justify-self') is 'left unsafe'
+PASS getComputedStyle(justifySelfFlexStartUnsafe, '').getPropertyValue('justify-self') is 'flex-start unsafe'
 PASS getComputedStyle(justifySelfFlexEndSafe, '').getPropertyValue('justify-self') is 'flex-end safe'
 
 Test initial value of justify-self through JS
@@ -31,8 +31,8 @@ PASS getComputedStyle(element, '').getPropertyValue('justify-self') is 'start'
 Test getting and setting justify-self through JS
 PASS element.style.justifySelf is "center"
 PASS window.getComputedStyle(element, '').getPropertyValue('justify-self') is "center"
-PASS element.style.justifySelf is "start true"
-PASS window.getComputedStyle(element, '').getPropertyValue('justify-self') is "start true"
+PASS element.style.justifySelf is "start unsafe"
+PASS window.getComputedStyle(element, '').getPropertyValue('justify-self') is "start unsafe"
 PASS element.style.justifySelf is "flex-end safe"
 PASS window.getComputedStyle(element, '').getPropertyValue('justify-self') is "flex-end safe"
 PASS element.style.justifySelf is "right"
@@ -113,8 +113,8 @@ PASS element.style.justifySelf is "initial"
 PASS window.getComputedStyle(element, '').getPropertyValue('justify-self') is "stretch"
 
 Test the value 'initial' for flex containers
-PASS element.style.justifySelf is "right true"
-PASS window.getComputedStyle(element, '').getPropertyValue('justify-self') is "right true"
+PASS element.style.justifySelf is "right unsafe"
+PASS window.getComputedStyle(element, '').getPropertyValue('justify-self') is "right unsafe"
 PASS element.style.justifySelf is "initial"
 PASS window.getComputedStyle(element, '').getPropertyValue('justify-self') is "stretch"
 
@@ -145,10 +145,10 @@ PASS element.style.justifySelf is "left safe"
 PASS window.getComputedStyle(element, '').getPropertyValue('justify-self') is "left safe"
 PASS element.style.justifySelf is "inherit"
 PASS window.getComputedStyle(element, '').getPropertyValue('justify-self') is "left safe"
-PASS element.style.justifySelf is "center true"
-PASS window.getComputedStyle(element, '').getPropertyValue('justify-self') is "center true"
+PASS element.style.justifySelf is "center unsafe"
+PASS window.getComputedStyle(element, '').getPropertyValue('justify-self') is "center unsafe"
 PASS element.style.justifySelf is "inherit"
-PASS window.getComputedStyle(element, '').getPropertyValue('justify-self') is "center true"
+PASS window.getComputedStyle(element, '').getPropertyValue('justify-self') is "center unsafe"
 PASS successfullyParsed is true
 
 TEST COMPLETE

@@ -496,6 +496,8 @@ space-between
 space-around
 space-evenly
 // stretch
+unsafe
+safe
 
 // align-items / align-self
 // flex-start
@@ -514,6 +516,8 @@ space-evenly
 // space-around
 // space-evenly
 // stretch
+// unsafe
+// safe
 
 
 // flex-flow
@@ -948,8 +952,8 @@ self-end
 // flex-end
 // left
 // right
-true
-safe
+// unsafe
+// safe
 legacy
 
 // scroll-behavior

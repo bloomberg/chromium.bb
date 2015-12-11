@@ -1607,7 +1607,7 @@ static LayoutUnit computeOverflowAlignmentOffset(OverflowAlignment overflow, Lay
         // If overflow is 'safe', we have to make sure we don't overflow the 'start'
         // edge (potentially cause some data loss as the overflow is unreachable).
         return std::max<LayoutUnit>(0, offset);
-    case OverflowAlignmentTrue:
+    case OverflowAlignmentUnsafe:
     case OverflowAlignmentDefault:
         // If we overflow our alignment container and overflow is 'true' (default), we
         // ignore the overflow and just return the value regardless (which may cause data

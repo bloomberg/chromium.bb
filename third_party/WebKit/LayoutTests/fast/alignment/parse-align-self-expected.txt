@@ -16,13 +16,13 @@ PASS getComputedStyle(alignSelfLeft, '').getPropertyValue('align-self') is 'left
 PASS getComputedStyle(alignSelfRight, '').getPropertyValue('align-self') is 'right'
 PASS getComputedStyle(alignSelfFlexStart, '').getPropertyValue('align-self') is 'flex-start'
 PASS getComputedStyle(alignSelfFlexEnd, '').getPropertyValue('align-self') is 'flex-end'
-PASS getComputedStyle(alignSelfEndTrue, '').getPropertyValue('align-self') is 'end true'
-PASS getComputedStyle(alignSelfCenterTrue, '').getPropertyValue('align-self') is 'center true'
+PASS getComputedStyle(alignSelfEndUnsafe, '').getPropertyValue('align-self') is 'end unsafe'
+PASS getComputedStyle(alignSelfCenterUnsafe, '').getPropertyValue('align-self') is 'center unsafe'
 PASS getComputedStyle(alignSelfSelfEndSafe, '').getPropertyValue('align-self') is 'self-end safe'
 PASS getComputedStyle(alignSelfSelfStartSafe, '').getPropertyValue('align-self') is 'self-start safe'
 PASS getComputedStyle(alignSelfRightSafe, '').getPropertyValue('align-self') is 'right safe'
-PASS getComputedStyle(alignSelfLeftTrue, '').getPropertyValue('align-self') is 'left true'
-PASS getComputedStyle(alignSelfFlexStartTrue, '').getPropertyValue('align-self') is 'flex-start true'
+PASS getComputedStyle(alignSelfLeftUnsafe, '').getPropertyValue('align-self') is 'left unsafe'
+PASS getComputedStyle(alignSelfFlexStartUnsafe, '').getPropertyValue('align-self') is 'flex-start unsafe'
 PASS getComputedStyle(alignSelfFlexEndSafe, '').getPropertyValue('align-self') is 'flex-end safe'
 
 Test initial value of align-self through JS
@@ -31,8 +31,8 @@ PASS getComputedStyle(element, '').getPropertyValue('align-self') is 'start'
 Test getting and setting align-self through JS
 PASS element.style.alignSelf is "center"
 PASS window.getComputedStyle(element, '').getPropertyValue('align-self') is "center"
-PASS element.style.alignSelf is "start true"
-PASS window.getComputedStyle(element, '').getPropertyValue('align-self') is "start true"
+PASS element.style.alignSelf is "start unsafe"
+PASS window.getComputedStyle(element, '').getPropertyValue('align-self') is "start unsafe"
 PASS element.style.alignSelf is "flex-end safe"
 PASS window.getComputedStyle(element, '').getPropertyValue('align-self') is "flex-end safe"
 PASS element.style.alignSelf is "right"
@@ -113,8 +113,8 @@ PASS element.style.alignSelf is "initial"
 PASS window.getComputedStyle(element, '').getPropertyValue('align-self') is "stretch"
 
 Test the value 'initial' for flex containers
-PASS element.style.alignSelf is "right true"
-PASS window.getComputedStyle(element, '').getPropertyValue('align-self') is "right true"
+PASS element.style.alignSelf is "right unsafe"
+PASS window.getComputedStyle(element, '').getPropertyValue('align-self') is "right unsafe"
 PASS element.style.alignSelf is "initial"
 PASS window.getComputedStyle(element, '').getPropertyValue('align-self') is "stretch"
 
@@ -145,10 +145,10 @@ PASS element.style.alignSelf is "left safe"
 PASS window.getComputedStyle(element, '').getPropertyValue('align-self') is "left safe"
 PASS element.style.alignSelf is "inherit"
 PASS window.getComputedStyle(element, '').getPropertyValue('align-self') is "left safe"
-PASS element.style.alignSelf is "center true"
-PASS window.getComputedStyle(element, '').getPropertyValue('align-self') is "center true"
+PASS element.style.alignSelf is "center unsafe"
+PASS window.getComputedStyle(element, '').getPropertyValue('align-self') is "center unsafe"
 PASS element.style.alignSelf is "inherit"
-PASS window.getComputedStyle(element, '').getPropertyValue('align-self') is "center true"
+PASS window.getComputedStyle(element, '').getPropertyValue('align-self') is "center unsafe"
 PASS successfullyParsed is true
 
 TEST COMPLETE

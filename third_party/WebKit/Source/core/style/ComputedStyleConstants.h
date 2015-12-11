@@ -514,7 +514,7 @@ enum ItemPosition {
 
 enum OverflowAlignment {
     OverflowAlignmentDefault,
-    OverflowAlignmentTrue,
+    OverflowAlignmentUnsafe,
     OverflowAlignmentSafe
 };
 
