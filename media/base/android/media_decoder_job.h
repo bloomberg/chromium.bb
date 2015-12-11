@@ -140,7 +140,7 @@ class MediaDecoderJob {
   virtual bool ComputeTimeToRender() const = 0;
 
   // Gets MediaCrypto object from |drm_bridge_|.
-  base::android::ScopedJavaLocalRef<jobject> GetMediaCrypto();
+  jobject GetMediaCrypto();
 
   // Releases the |media_codec_bridge_|.
   void ReleaseMediaCodecBridge();

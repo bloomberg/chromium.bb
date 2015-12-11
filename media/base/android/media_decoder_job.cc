@@ -199,11 +199,8 @@ void MediaDecoderJob::ReleaseDecoderResources() {
   release_resources_pending_ = true;
 }
 
-base::android::ScopedJavaLocalRef<jobject> MediaDecoderJob::GetMediaCrypto() {
-  base::android::ScopedJavaLocalRef<jobject> media_crypto;
-  if (drm_bridge_)
-    media_crypto = drm_bridge_->GetMediaCrypto();
-  return media_crypto;
+jobject MediaDecoderJob::GetMediaCrypto() {
+  return drm_bridge_ ? drm_bridge_->GetMediaCrypto() : nullptr;
 }
 
 bool MediaDecoderJob::SetCurrentFrameToPreviouslyCachedKeyFrame() {
@@ -662,8 +659,7 @@ MediaDecoderJob::MediaDecoderJobStatus
   if (media_codec_bridge_ && !need_to_reconfig_decoder_job_)
     return STATUS_SUCCESS;
 
-  base::android::ScopedJavaLocalRef<jobject> media_crypto = GetMediaCrypto();
-  if (is_content_encrypted_ && media_crypto.is_null())
+  if (is_content_encrypted_ && !GetMediaCrypto())
     return STATUS_FAILURE;
 
   ReleaseMediaCodecBridge();

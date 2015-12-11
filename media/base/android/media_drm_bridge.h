@@ -145,9 +145,11 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys, public PlayerTracker {
                                  const std::string& session_id);
   void RejectPromise(uint32_t promise_id, const std::string& error_message);
 
-  // Returns a MediaCrypto object if it's already created. Returns a null object
-  // otherwise.
-  base::android::ScopedJavaLocalRef<jobject> GetMediaCrypto();
+  // Returns a MediaCrypto object. Can only be called after |j_media_crypto_|
+  // is set.
+  // TODO(xhwang): This is only used by MediaSourcePlayer et al. Remove this
+  // method when MediaSourcePlayer is deprecated.
+  jobject GetMediaCrypto();
 
   // Registers a callback which will be called when MediaCrypto is ready.
   // Can be called on any thread. Only one callback should be registered.
@@ -162,7 +164,8 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys, public PlayerTracker {
   // Called by Java after a MediaCrypto object is created.
   void OnMediaCryptoReady(
       JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& j_media_drm);
+      const base::android::JavaParamRef<jobject>& j_media_drm,
+      const base::android::JavaParamRef<jobject>& j_media_crypto);
 
   // Called by Java when we need to send a provisioning request,
   void OnStartProvisioning(
@@ -260,9 +263,11 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys, public PlayerTracker {
   // Get the security level of the media.
   SecurityLevel GetSecurityLevel();
 
-  // A helper method that calculates the |media_crypto_ready_cb_| arguments and
-  // run this callback.
-  void NotifyMediaCryptoReady(const MediaCryptoReadyCB& cb);
+  // A helper method to create a JavaObjectPtr.
+  JavaObjectPtr CreateJavaObjectPtr(jobject object);
+
+  // A helper method that is called when MediaCrypto is ready.
+  void NotifyMediaCryptoReady(JavaObjectPtr j_media_crypto);
 
   // Sends HTTP provisioning request to a provisioning server.
   void SendProvisioningRequest(const std::string& default_url,
@@ -276,6 +281,15 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys, public PlayerTracker {
 
   // Java MediaDrm instance.
   base::android::ScopedJavaGlobalRef<jobject> j_media_drm_;
+
+  // Java MediaCrypto instance. Possible values are:
+  // !j_media_crypto_:
+  //   MediaCrypto creation has not been notified via NotifyMediaCryptoReady().
+  // !j_media_crypto_->is_null():
+  //   MediaCrypto creation succeeded and it has been notified.
+  // j_media_crypto_->is_null():
+  //   MediaCrypto creation failed and it has been notified.
+  JavaObjectPtr j_media_crypto_;
 
   // The callback to create a ProvisionFetcher.
   CreateFetcherCB create_fetcher_cb_;

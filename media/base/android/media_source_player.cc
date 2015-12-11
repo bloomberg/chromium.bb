@@ -266,11 +266,19 @@ void MediaSourcePlayer::OnDemuxerDurationChanged(base::TimeDelta duration) {
 }
 
 void MediaSourcePlayer::OnMediaCryptoReady(
-    MediaDrmBridge::JavaObjectPtr /* media_crypto */,
+    MediaDrmBridge::JavaObjectPtr media_crypto,
     bool /* needs_protected_surface */) {
-  // Callback parameters are ignored in this player. They are intended for
-  // MediaCodecPlayer which uses a different threading scheme.
-  DCHECK(!static_cast<MediaDrmBridge*>(cdm_.get())->GetMediaCrypto().is_null());
+  DCHECK(media_crypto);
+  DCHECK(static_cast<MediaDrmBridge*>(cdm_.get())->GetMediaCrypto());
+
+  if (media_crypto->is_null()) {
+    // TODO(xhwang): Fail playback nicely here if needed. Note that we could get
+    // here even though the stream to play is unencrypted and therefore
+    // MediaCrypto is not needed. In that case, we may ignore this error and
+    // continue playback, or fail the playback.
+    LOG(ERROR) << "MediaCrypto creation failed!";
+    return;
+  }
 
   // Retry decoder creation if the decoders are waiting for MediaCrypto.
   RetryDecoderCreation(true, true);
@@ -306,16 +314,9 @@ void MediaSourcePlayer::SetCdm(const scoped_refptr<MediaKeys>& cdm) {
   audio_decoder_job_->SetDrmBridge(drm_bridge);
   video_decoder_job_->SetDrmBridge(drm_bridge);
 
-  if (drm_bridge->GetMediaCrypto().is_null()) {
-    // Use BindToCurrentLoop to avoid reentrancy.
-    MediaDrmBridge::MediaCryptoReadyCB cb = BindToCurrentLoop(
-        base::Bind(&MediaSourcePlayer::OnMediaCryptoReady, weak_this_));
-    drm_bridge->SetMediaCryptoReadyCB(cb);
-    return;
-  }
-
-  // If the player is previously waiting for CDM, retry decoder creation.
-  RetryDecoderCreation(true, true);
+  // Use BindToCurrentLoop to avoid reentrancy.
+  drm_bridge->SetMediaCryptoReadyCB(BindToCurrentLoop(
+      base::Bind(&MediaSourcePlayer::OnMediaCryptoReady, weak_this_)));
 }
 
 void MediaSourcePlayer::OnDemuxerSeekDone(

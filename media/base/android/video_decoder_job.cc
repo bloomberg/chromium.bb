@@ -136,7 +136,7 @@ MediaDecoderJob::MediaDecoderJobStatus
 
   media_codec_bridge_.reset(VideoCodecBridge::CreateDecoder(
       video_codec_, is_secure, gfx::Size(config_width_, config_height_),
-      surface_.j_surface().obj(), GetMediaCrypto().obj()));
+      surface_.j_surface().obj(), GetMediaCrypto()));
 
   if (!media_codec_bridge_)
     return STATUS_FAILURE;

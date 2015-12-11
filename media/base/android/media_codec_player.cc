@@ -937,7 +937,15 @@ void MediaCodecPlayer::OnMediaCryptoReady(
   // and the surface requirement does not change until new SetCdm() is called.
 
   DCHECK(media_crypto);
-  DCHECK(!media_crypto->is_null());
+
+  if (media_crypto->is_null()) {
+    // TODO(timav): Fail playback nicely here if needed. Note that we could get
+    // here even though the stream to play is unencrypted and therefore
+    // MediaCrypto is not needed. In that case, we may ignore this error and
+    // continue playback, or fail the playback.
+    LOG(ERROR) << "MediaCrypto creation failed.";
+    return;
+  }
 
   media_crypto_ = media_crypto.Pass();
 

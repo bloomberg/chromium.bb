@@ -166,7 +166,7 @@ MediaDecoderJob::MediaDecoderJobStatus
                                num_channels_, &audio_extra_data_[0],
                                audio_extra_data_.size(), audio_codec_delay_ns_,
                                audio_seek_preroll_ns_, true,
-                               GetMediaCrypto().obj())) {
+                               GetMediaCrypto())) {
     media_codec_bridge_.reset();
     return STATUS_FAILURE;
   }

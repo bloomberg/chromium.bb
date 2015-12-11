@@ -492,11 +492,9 @@ void MediaDrmBridge::RejectPromise(uint32_t promise_id,
                                      error_message);
 }
 
-ScopedJavaLocalRef<jobject> MediaDrmBridge::GetMediaCrypto() {
+jobject MediaDrmBridge::GetMediaCrypto() {
   DCHECK(task_runner_->BelongsToCurrentThread());
-
-  JNIEnv* env = AttachCurrentThread();
-  return Java_MediaDrmBridge_getMediaCrypto(env, j_media_drm_.obj());
+  return j_media_crypto_->obj();
 }
 
 void MediaDrmBridge::SetMediaCryptoReadyCB(
@@ -517,15 +515,14 @@ void MediaDrmBridge::SetMediaCryptoReadyCB(
   }
 
   DCHECK(media_crypto_ready_cb_.is_null());
-
-  // |media_crypto_ready_cb| is already bound to the correct thread
-  // (either UI or Media).
-  if (!GetMediaCrypto().is_null()) {
-    NotifyMediaCryptoReady(media_crypto_ready_cb);
-    return;
-  }
-
   media_crypto_ready_cb_ = media_crypto_ready_cb;
+
+  if (!j_media_crypto_)
+    return;
+
+  base::ResetAndReturn(&media_crypto_ready_cb_)
+      .Run(CreateJavaObjectPtr(j_media_crypto_->obj()),
+           IsProtectedSurfaceRequired());
 }
 
 //------------------------------------------------------------------------------
@@ -534,17 +531,16 @@ void MediaDrmBridge::SetMediaCryptoReadyCB(
 
 void MediaDrmBridge::OnMediaCryptoReady(
     JNIEnv* env,
-    const JavaParamRef<jobject>& j_media_drm) {
+    const JavaParamRef<jobject>& j_media_drm,
+    const JavaParamRef<jobject>& j_media_crypto) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DVLOG(1) << __FUNCTION__;
 
-  if (media_crypto_ready_cb_.is_null())
-    return;
-
   task_runner_->PostTask(
-      FROM_HERE, base::Bind(&MediaDrmBridge::NotifyMediaCryptoReady,
-                            weak_factory_.GetWeakPtr(),
-                            base::ResetAndReturn(&media_crypto_ready_cb_)));
+      FROM_HERE,
+      base::Bind(&MediaDrmBridge::NotifyMediaCryptoReady,
+                 weak_factory_.GetWeakPtr(),
+                 base::Passed(CreateJavaObjectPtr(j_media_crypto.obj()))));
 }
 
 void MediaDrmBridge::OnStartProvisioning(
@@ -759,6 +755,11 @@ MediaDrmBridge::~MediaDrmBridge() {
 
   player_tracker_.NotifyCdmUnset();
 
+  if (!media_crypto_ready_cb_.is_null()) {
+    base::ResetAndReturn(&media_crypto_ready_cb_)
+        .Run(CreateJavaObjectPtr(nullptr), IsProtectedSurfaceRequired());
+  }
+
   // Rejects all pending promises.
   cdm_promise_adapter_.Clear();
 }
@@ -779,18 +780,29 @@ MediaDrmBridge::SecurityLevel MediaDrmBridge::GetSecurityLevel() {
   return GetSecurityLevelFromString(security_level_str);
 }
 
-void MediaDrmBridge::NotifyMediaCryptoReady(const MediaCryptoReadyCB& cb) {
+// We have to use scoped_ptr to pass ScopedJavaGlobalRef with a callback.
+// TODO(timav): Check whether we can simply pass j_media_crypto_->obj() in the
+// callback.
+MediaDrmBridge::JavaObjectPtr MediaDrmBridge::CreateJavaObjectPtr(
+    jobject object) {
+  JavaObjectPtr j_object_ptr(new ScopedJavaGlobalRef<jobject>());
+  j_object_ptr->Reset(AttachCurrentThread(), object);
+  return j_object_ptr;
+}
+
+void MediaDrmBridge::NotifyMediaCryptoReady(JavaObjectPtr j_media_crypto) {
   DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(j_media_crypto);
+  DCHECK(!j_media_crypto_);
 
-  DCHECK(!cb.is_null());
-  DCHECK(!GetMediaCrypto().is_null());
+  j_media_crypto_ = std::move(j_media_crypto);
 
-  // We can use scoped_ptr to pass ScopedJavaGlobalRef with a callback.
-  scoped_ptr<ScopedJavaGlobalRef<jobject>> j_object_ptr(
-      new ScopedJavaGlobalRef<jobject>());
-  j_object_ptr->Reset(AttachCurrentThread(), GetMediaCrypto().obj());
+  if (media_crypto_ready_cb_.is_null())
+    return;
 
-  cb.Run(j_object_ptr.Pass(), IsProtectedSurfaceRequired());
+  base::ResetAndReturn(&media_crypto_ready_cb_)
+      .Run(CreateJavaObjectPtr(j_media_crypto_->obj()),
+           IsProtectedSurfaceRequired());
 }
 
 void MediaDrmBridge::SendProvisioningRequest(const std::string& default_url,
