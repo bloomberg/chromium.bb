@@ -46,7 +46,7 @@ gfx::Rect BrowserNonClientFrameViewMac::GetBoundsForTabStrip(
   return bounds;
 }
 
-int BrowserNonClientFrameViewMac::GetTopInset() const {
+int BrowserNonClientFrameViewMac::GetTopInset(bool restored) const {
   return browser_view()->IsTabStripVisible() ? kTabstripTopInset : 0;
 }
 
@@ -144,7 +144,7 @@ void BrowserNonClientFrameViewMac::PaintToolbarBackground(gfx::Canvas* canvas) {
   if (bounds.IsEmpty())
     return;
 
-  ui::ThemeProvider* tp = GetThemeProvider();
+  const ui::ThemeProvider* tp = GetThemeProvider();
   gfx::ImageSkia* border = tp->GetImageSkiaNamed(IDR_TOOLBAR_SHADE_TOP);
   const int top_inset =
       GetLayoutConstant(TABSTRIP_TOOLBAR_OVERLAP) - border->height();
@@ -162,8 +162,8 @@ void BrowserNonClientFrameViewMac::PaintToolbarBackground(gfx::Canvas* canvas) {
 
   // Draw the toolbar fill.
   canvas->TileImageInt(*tp->GetImageSkiaNamed(IDR_THEME_TOOLBAR),
-                       x + GetThemeBackgroundXInset(), fill_y - GetTopInset(),
-                       x, fill_y, w, fill_height);
+                       x + GetThemeBackgroundXInset(),
+                       fill_y - GetTopInset(false), x, fill_y, w, fill_height);
 
   // Draw the tabstrip/toolbar separator.
   canvas->TileImageInt(*border, 0, 0, x, y, w, border->height());
