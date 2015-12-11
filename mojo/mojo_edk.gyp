@@ -113,6 +113,8 @@
         'edk/system/simple_dispatcher.h',
         'edk/system/transport_data.cc',
         'edk/system/transport_data.h',
+        'edk/system/wait_set_dispatcher.cc',
+        'edk/system/wait_set_dispatcher.h',
         'edk/system/waiter.cc',
         'edk/system/waiter.h',
         # Test-only code:

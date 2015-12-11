@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/containers/stack_container.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
 #include "base/time/time.h"
@@ -23,6 +24,7 @@
 #include "mojo/edk/system/handle_signals_state.h"
 #include "mojo/edk/system/message_pipe_dispatcher.h"
 #include "mojo/edk/system/shared_buffer_dispatcher.h"
+#include "mojo/edk/system/wait_set_dispatcher.h"
 #include "mojo/edk/system/waiter.h"
 #include "mojo/public/c/system/macros.h"
 #include "mojo/public/cpp/system/macros.h"
@@ -175,6 +177,79 @@ MojoResult Core::WaitMany(const MojoHandle* handles,
   if (index != static_cast<uint32_t>(-1) && result_index)
     *result_index = index;
   return rv;
+}
+
+MojoResult Core::CreateWaitSet(MojoHandle* wait_set_handle) {
+  if (!wait_set_handle)
+    return MOJO_RESULT_INVALID_ARGUMENT;
+
+  scoped_refptr<WaitSetDispatcher> dispatcher = new WaitSetDispatcher();
+  MojoHandle h = AddDispatcher(dispatcher);
+  if (h == MOJO_HANDLE_INVALID) {
+    LOG(ERROR) << "Handle table full";
+    dispatcher->Close();
+    return MOJO_RESULT_RESOURCE_EXHAUSTED;
+  }
+
+  *wait_set_handle = h;
+  return MOJO_RESULT_OK;
+}
+
+MojoResult Core::AddHandle(MojoHandle wait_set_handle,
+                           MojoHandle handle,
+                           MojoHandleSignals signals) {
+  scoped_refptr<Dispatcher> wait_set_dispatcher(GetDispatcher(wait_set_handle));
+  if (!wait_set_dispatcher)
+    return MOJO_RESULT_INVALID_ARGUMENT;
+
+  scoped_refptr<Dispatcher> dispatcher(GetDispatcher(handle));
+  if (!dispatcher)
+    return MOJO_RESULT_INVALID_ARGUMENT;
+
+  return wait_set_dispatcher->AddWaitingDispatcher(dispatcher, signals, handle);
+}
+
+MojoResult Core::RemoveHandle(MojoHandle wait_set_handle,
+                              MojoHandle handle) {
+  scoped_refptr<Dispatcher> wait_set_dispatcher(GetDispatcher(wait_set_handle));
+  if (!wait_set_dispatcher)
+    return MOJO_RESULT_INVALID_ARGUMENT;
+
+  scoped_refptr<Dispatcher> dispatcher(GetDispatcher(handle));
+  if (!dispatcher)
+    return MOJO_RESULT_INVALID_ARGUMENT;
+
+  return wait_set_dispatcher->RemoveWaitingDispatcher(dispatcher);
+}
+
+MojoResult Core::GetReadyHandles(MojoHandle wait_set_handle,
+                                 uint32_t* count,
+                                 MojoHandle* handles,
+                                 MojoResult* results,
+                                 MojoHandleSignalsState* signals_state) {
+  if (!handles || !count || !(*count) || !results)
+    return MOJO_RESULT_INVALID_ARGUMENT;
+
+  scoped_refptr<Dispatcher> wait_set_dispatcher(GetDispatcher(wait_set_handle));
+  if (!wait_set_dispatcher)
+    return MOJO_RESULT_INVALID_ARGUMENT;
+
+  DispatcherVector awoken_dispatchers;
+  base::StackVector<uintptr_t, 16> contexts;
+  contexts->assign(*count, MOJO_HANDLE_INVALID);
+
+  MojoResult result = wait_set_dispatcher->GetReadyDispatchers(
+      count, &awoken_dispatchers, results, contexts->data());
+
+  if (result == MOJO_RESULT_OK) {
+    for (size_t i = 0; i < *count; i++) {
+      handles[i] = static_cast<MojoHandle>(contexts[i]);
+      if (signals_state)
+        signals_state[i] = awoken_dispatchers[i]->GetHandleSignalsState();
+    }
+  }
+
+  return result;
 }
 
 MojoResult Core::CreateMessagePipe(

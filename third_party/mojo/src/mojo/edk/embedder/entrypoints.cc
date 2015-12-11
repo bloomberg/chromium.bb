@@ -68,7 +68,7 @@ MojoResult MojoWaitMany(const MojoHandle* handles,
 
 MojoResult MojoCreateWaitSet(MojoHandle* wait_set_handle) {
   if (UseNewEDK())
-    return MOJO_RESULT_UNIMPLEMENTED;
+    return mojo::edk::internal::g_core->CreateWaitSet(wait_set_handle);
   return g_core->CreateWaitSet(MakeUserPointer(wait_set_handle));
 }
 
@@ -76,14 +76,15 @@ MojoResult MojoAddHandle(MojoHandle wait_set_handle,
                          MojoHandle handle,
                          MojoHandleSignals signals) {
   if (UseNewEDK())
-    return MOJO_RESULT_UNIMPLEMENTED;
+    return mojo::edk::internal::g_core->AddHandle(wait_set_handle, handle,
+                                                  signals);
   return g_core->AddHandle(wait_set_handle, handle, signals);
 }
 
 MojoResult MojoRemoveHandle(MojoHandle wait_set_handle,
                             MojoHandle handle) {
   if (UseNewEDK())
-    return MOJO_RESULT_UNIMPLEMENTED;
+    return mojo::edk::internal::g_core->RemoveHandle(wait_set_handle, handle);
   return g_core->RemoveHandle(wait_set_handle, handle);
 }
 
@@ -93,7 +94,8 @@ MojoResult MojoGetReadyHandles(MojoHandle wait_set_handle,
                                MojoResult* results,
                                struct MojoHandleSignalsState *signals_states) {
   if (UseNewEDK())
-    return MOJO_RESULT_UNIMPLEMENTED;
+    return mojo::edk::internal::g_core->GetReadyHandles(
+        wait_set_handle, count, handles, results, signals_states);
   return g_core->GetReadyHandles(wait_set_handle, MakeUserPointer(count),
                                  MakeUserPointer(handles),
                                  MakeUserPointer(results),

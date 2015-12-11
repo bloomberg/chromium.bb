@@ -84,6 +84,20 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
                       MojoHandleSignalsState* signals_states);
 
   // These methods correspond to the API functions defined in
+  // "mojo/public/c/system/wait_set.h":
+  MojoResult CreateWaitSet(MojoHandle* wait_set_handle);
+  MojoResult AddHandle(MojoHandle wait_set_handle,
+                       MojoHandle handle,
+                       MojoHandleSignals signals);
+  MojoResult RemoveHandle(MojoHandle wait_set_handle,
+                          MojoHandle handle);
+  MojoResult GetReadyHandles(MojoHandle wait_set_handle,
+                             uint32_t* count,
+                             MojoHandle* handles,
+                             MojoResult* results,
+                             MojoHandleSignalsState* signals_states);
+
+  // These methods correspond to the API functions defined in
   // "mojo/public/c/system/message_pipe.h":
   MojoResult CreateMessagePipe(
       const MojoCreateMessagePipeOptions* options,

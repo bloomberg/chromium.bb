@@ -77,6 +77,8 @@ static_library("system") {
     "simple_dispatcher.h",
     "transport_data.cc",
     "transport_data.h",
+    "wait_set_dispatcher.cc",
+    "wait_set_dispatcher.h",
     "waiter.cc",
     "waiter.h",
   ]
@@ -161,6 +163,7 @@ test("mojo_system_unittests2") {
     "raw_channel_unittest.cc",
     "shared_buffer_dispatcher_unittest.cc",
     "simple_dispatcher_unittest.cc",
+    "wait_set_dispatcher_unittest.cc",
     "waiter_test_utils.cc",
     "waiter_test_utils.h",
     "waiter_unittest.cc",

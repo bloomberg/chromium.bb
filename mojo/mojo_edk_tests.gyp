@@ -57,6 +57,7 @@
         'edk/system/simple_dispatcher_unittest.cc',
         'edk/system/test_utils.cc',
         'edk/system/test_utils.h',
+        'edk/system/wait_set_dispatcher_unittest.cc',
         'edk/system/waiter_test_utils.cc',
         'edk/system/waiter_test_utils.h',
         'edk/system/waiter_unittest.cc',

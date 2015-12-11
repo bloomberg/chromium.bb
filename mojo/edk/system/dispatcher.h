@@ -60,6 +60,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher
     DATA_PIPE_PRODUCER,
     DATA_PIPE_CONSUMER,
     SHARED_BUFFER,
+    WAIT_SET,
 
     // "Private" types (not exposed via the public interface):
     PLATFORM_HANDLE = -1
@@ -146,6 +147,25 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher
   // |AddAwakable()| was called at most once.) If |signals_state| is non-null,
   // |*signals_state| will be set to the current handle signals state.
   void RemoveAwakable(Awakable* awakable, HandleSignalsState* signals_state);
+
+  // Adds a dispatcher to wait on. When the dispatcher satisfies |signals|, it
+  // will be returned in the next call to |GetReadyDispatchers()|. If
+  // |dispatcher| has been added, it must be removed before adding again,
+  // otherwise |MOJO_RESULT_ALREADY_EXISTS| will be returned.
+  MojoResult AddWaitingDispatcher(const scoped_refptr<Dispatcher>& dispatcher,
+                                  MojoHandleSignals signals,
+                                  uintptr_t context);
+  // Removes a dispatcher to wait on. If |dispatcher| has not been added,
+  // |MOJO_RESULT_NOT_FOUND| will be returned.
+  MojoResult RemoveWaitingDispatcher(
+      const scoped_refptr<Dispatcher>& dispatcher);
+  // Returns a set of ready dispatchers. |*count| is the maximum number of
+  // dispatchers to return, and will contain the number of dispatchers returned
+  // in |dispatchers| on completion.
+  MojoResult GetReadyDispatchers(uint32_t* count,
+                                 DispatcherVector* dispatchers,
+                                 MojoResult* results,
+                                 uintptr_t* contexts);
 
   // A dispatcher must be put into a special state in order to be sent across a
   // message pipe. Outside of tests, only |HandleTableAccess| is allowed to do
@@ -265,6 +285,17 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher
                                            HandleSignalsState* signals_state);
   virtual void RemoveAwakableImplNoLock(Awakable* awakable,
                                         HandleSignalsState* signals_state);
+  virtual MojoResult AddWaitingDispatcherImplNoLock(
+      const scoped_refptr<Dispatcher>& dispatcher,
+      MojoHandleSignals signals,
+      uintptr_t context);
+  virtual MojoResult RemoveWaitingDispatcherImplNoLock(
+      const scoped_refptr<Dispatcher>& dispatcher);
+  virtual MojoResult GetReadyDispatchersImplNoLock(
+      uint32_t* count,
+      DispatcherVector* dispatchers,
+      MojoResult* results,
+      uintptr_t* contexts);
 
   // These implement the API used to serialize dispatchers (described below).
   // They will only be called on a dispatcher that's attached to and "owned" by
