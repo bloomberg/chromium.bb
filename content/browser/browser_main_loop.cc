@@ -28,6 +28,7 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
 #include "components/tracing/trace_config_file.h"
+#include "components/tracing/trace_to_console.h"
 #include "components/tracing/tracing_switches.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/device_sensors/device_inertial_sensor_service.h"
@@ -613,6 +614,10 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
     TracingController::GetInstance()->StartTracing(
         trace_config,
         TracingController::StartTracingDoneCallback());
+  } else if (parsed_command_line_.HasSwitch(switches::kTraceToConsole)) {
+      TracingController::GetInstance()->StartTracing(
+          tracing::GetConfigForTraceToConsole(),
+          TracingController::StartTracingDoneCallback());
   } else if (tracing::TraceConfigFile::GetInstance()->IsEnabled()) {
     // This checks kTraceConfigFile switch.
     TracingController::GetInstance()->StartTracing(

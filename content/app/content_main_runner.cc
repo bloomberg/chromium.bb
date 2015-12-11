@@ -31,6 +31,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "components/tracing/trace_config_file.h"
+#include "components/tracing/trace_to_console.h"
 #include "components/tracing/tracing_switches.h"
 #include "content/browser/browser_main.h"
 #include "content/common/set_process_title.h"
@@ -601,6 +602,15 @@ class ContentMainRunnerImpl : public ContentMainRunner {
       base::trace_event::TraceConfig trace_config(
           command_line.GetSwitchValueASCII(switches::kTraceStartup),
           base::trace_event::RECORD_UNTIL_FULL);
+      base::trace_event::TraceLog::GetInstance()->SetEnabled(
+          trace_config,
+          base::trace_event::TraceLog::RECORDING_MODE);
+    } else if (command_line.HasSwitch(switches::kTraceToConsole)) {
+      base::trace_event::TraceConfig trace_config =
+          tracing::GetConfigForTraceToConsole();
+      LOG(ERROR) << "Start " << switches::kTraceToConsole
+                 << " with CategoryFilter '"
+                 << trace_config.ToCategoryFilterString() << "'.";
       base::trace_event::TraceLog::GetInstance()->SetEnabled(
           trace_config,
           base::trace_event::TraceLog::RECORDING_MODE);

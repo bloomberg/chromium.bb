@@ -27,6 +27,8 @@ component("startup_tracing") {
   sources = [
     "trace_config_file.cc",
     "trace_config_file.h",
+    "trace_to_console.cc",
+    "trace_to_console.h",
     "tracing_export.h",
     "tracing_switches.cc",
     "tracing_switches.h",

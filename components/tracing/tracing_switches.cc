@@ -46,6 +46,9 @@ const char kTraceStartupDuration[]          = "trace-startup-duration";
 // all events since startup.
 const char kTraceStartupFile[]              = "trace-startup-file";
 
+// Sends a pretty-printed version of tracing info to the console.
+const char kTraceToConsole[]                = "trace-to-console";
+
 // Sets the target URL for uploading tracing data.
 const char kTraceUploadURL[]                = "trace-upload-url";
 

@@ -84,11 +84,6 @@ const size_t kEchoToConsoleTraceEventBufferChunks = 256;
 const size_t kTraceEventBufferSizeInBytes = 100 * 1024;
 const int kThreadFlushTimeoutMs = 3000;
 
-#if !defined(OS_NACL)
-// These categories will cause deadlock when ECHO_TO_CONSOLE. crbug.com/325575.
-const char kEchoToConsoleCategoryFilter[] = "-ipc,-task";
-#endif
-
 #define MAX_CATEGORY_GROUPS 100
 
 // Parallel arrays g_category_groups and g_category_group_enabled are separate
@@ -377,23 +372,6 @@ TraceLog::TraceLog()
   SetProcessID(0);
 #else
   SetProcessID(static_cast<int>(GetCurrentProcId()));
-
-  // NaCl also shouldn't access the command line.
-  if (CommandLine::InitializedForCurrentProcess() &&
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kTraceToConsole)) {
-    std::string filter = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-        switches::kTraceToConsole);
-    if (filter.empty()) {
-      filter = kEchoToConsoleCategoryFilter;
-    } else {
-      filter.append(",");
-      filter.append(kEchoToConsoleCategoryFilter);
-    }
-
-    LOG(ERROR) << "Start " << switches::kTraceToConsole
-               << " with CategoryFilter '" << filter << "'.";
-    SetEnabled(TraceConfig(filter, ECHO_TO_CONSOLE), RECORDING_MODE);
-  }
 #endif
 
   logged_events_.reset(CreateTraceBuffer());

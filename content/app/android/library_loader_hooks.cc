@@ -17,6 +17,7 @@
 #include "base/trace_event/trace_event.h"
 #include "base/tracked_objects.h"
 #include "components/tracing/trace_config_file.h"
+#include "components/tracing/trace_to_console.h"
 #include "components/tracing/tracing_switches.h"
 #include "content/app/android/app_jni_registrar.h"
 #include "content/browser/android/browser_jni_registrar.h"
@@ -103,6 +104,15 @@ bool LibraryLoaded(JNIEnv* env, jclass clazz) {
         command_line->GetSwitchValueASCII(switches::kTraceStartup), "");
     base::trace_event::TraceLog::GetInstance()->SetEnabled(
         trace_config, base::trace_event::TraceLog::RECORDING_MODE);
+  } else if (command_line->HasSwitch(switches::kTraceToConsole)) {
+      base::trace_event::TraceConfig trace_config =
+          tracing::GetConfigForTraceToConsole();
+      LOG(ERROR) << "Start " << switches::kTraceToConsole
+                 << " with CategoryFilter '"
+                 << trace_config.ToCategoryFilterString() << "'.";
+      base::trace_event::TraceLog::GetInstance()->SetEnabled(
+          trace_config,
+          base::trace_event::TraceLog::RECORDING_MODE);
   } else if (tracing::TraceConfigFile::GetInstance()->IsEnabled()) {
     // This checks kTraceConfigFile switch.
     base::trace_event::TraceLog::GetInstance()->SetEnabled(

@@ -34,6 +34,7 @@
 #include "chromeos/login/user_names.h"
 #include "components/policy/core/common/policy_switches.h"
 #include "components/signin/core/account_id/account_id.h"
+#include "components/tracing/tracing_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
