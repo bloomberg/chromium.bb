@@ -1,6 +1,5 @@
 # Run these tests with under virtual/spv2 only.
 crbug.com/524134 paint/invalidation/spv2 [ Skip ]
-crbug.com/524134 virtual/syncpaint/paint/invalidation/spv2 [ Skip ]
 
 # TODO(yosin): We should convert following tests to use asynchronous spell checker.
 crbug.com/563265 editing/spelling/context-menu-suggestions.html [ Skip ]
@@ -48,7 +47,6 @@ crbug.com/564443 [ Mac10.7 Mac10.8 Mac10.9 Mac10.10 Win7 Linux ] virtual/spv2/pa
 
 crbug.com/504613 crbug.com/524248 paint/images/image-backgrounds-not-antialiased.html [ Skip ]
 crbug.com/504613 crbug.com/524248 virtual/spv2/paint/images/image-backgrounds-not-antialiased.html [ Skip ]
-crbug.com/504613 crbug.com/524248 virtual/syncpaint/paint/images/image-backgrounds-not-antialiased.html [ Skip ]
 crbug.com/502531 fast/borders/border-antialiasing.html [ Failure ]
 
 crbug.com/538697 [ Win7 Debug ] virtual/threaded/printing/webgl-oversized-printing.html [ Crash ]
@@ -201,7 +199,6 @@ crbug.com/548226 [ Win ] virtual/trustedeventsdefaultaction/fast/events/pointere
 
 crbug.com/432129 fast/html/marquee-scroll.html [ Failure Pass ]
 crbug.com/320139 fast/repaint/block-layout-inline-children-replaced.html [ Failure Pass ]
-crbug.com/320139 virtual/syncpaint/fast/repaint/block-layout-inline-children-replaced.html [ Skip ]
 crbug.com/518929 [ Precise Debug ] http/tests/appcache/obsolete-error-events.html [ Failure Pass Timeout ]
 crbug.com/518929 [ Precise Debug ] http/tests/appcache/remove-cache.html [ Failure Pass ]
 crbug.com/248938 virtual/threaded/transitions/cancel-and-start-new.html [ Pass Failure ]
@@ -436,7 +433,6 @@ crbug.com/505364 imported/web-platform-tests/shadow-dom/untriaged/shadow-trees/u
 crbug.com/505364 crbug.com/520616 imported/web-platform-tests/shadow-dom/untriaged/shadow-trees/upper-boundary-encapsulation/test-009.html [ Failure ]
 
 crbug.com/539623 [ Mac10.6 ] fast/repaint/selection-change-in-iframe-with-relative-parent.html [ Pass Failure ]
-crbug.com/539623 [ Mac10.6 ] virtual/syncpaint/fast/repaint/selection-change-in-iframe-with-relative-parent.html [ Skip ]
 
 crbug.com/387740 imported/web-platform-tests/mediacapture-streams/stream-api/introduction/disabled-audio-silence.html [ Skip ]
 crbug.com/387740 imported/web-platform-tests/mediacapture-streams/stream-api/introduction/disabled-video-black.html [ Skip ]
@@ -792,7 +788,6 @@ crbug.com/364250 [ Debug ] virtual/threaded/animations/interpolation/webkit-tran
 crbug.com/467477 fast/multicol/vertical-rl/nested-columns.html [ Failure ]
 
 crbug.com/506525 [ XP ] paint/masks/fieldset-mask.html [ Failure ]
-crbug.com/506525 [ XP ] virtual/syncpaint/paint/masks/fieldset-mask.html [ Skip ]
 
 crbug.com/400841 media/video-canvas-draw.html [ Failure ]
 crbug.com/400829 media/video-object-fit.html [ Failure ]
@@ -872,9 +867,6 @@ crbug.com/524596 paint/invalidation/composited-non-stacking-context-descendant-m
 crbug.com/524596 paint/invalidation/fixed-position-descendant-paint-offset-indirect.html [ Failure ]
 crbug.com/524596 virtual/spv2/paint/invalidation/composited-non-stacking-context-descendant-move.html [ Skip ]
 crbug.com/524596 virtual/spv2/paint/invalidation/fixed-position-descendant-paint-offset-indirect.html [ Skip ]
-crbug.com/524596 virtual/syncpaint/paint/invalidation/composited-non-stacking-context-descendant-change-color.html [ Skip ]
-crbug.com/524596 virtual/syncpaint/paint/invalidation/composited-non-stacking-context-descendant-move.html [ Skip ]
-crbug.com/524596 virtual/syncpaint/paint/invalidation/fixed-position-descendant-paint-offset-indirect.html [ Skip ]
 
 crbug.com/425113 svg/clip-path/clip-path-multiple-children.svg [ Failure ]
 
@@ -953,8 +945,6 @@ crbug.com/474798 fast/repaint/align-self-change-keeping-geometry-grid.html [ Fai
 crbug.com/474798 fast/repaint/justify-self-change-keeping-geometry.html [ Failure ]
 crbug.com/474798 virtual/spv2/paint/invalidation/spv2/align-self-change-keeping-geometry-grid-as-text.html [ Skip ]
 crbug.com/474798 virtual/spv2/paint/invalidation/spv2/justify-self-change-keeping-geometry-as-text.html [ Skip ]
-crbug.com/474798 virtual/syncpaint/fast/repaint/align-self-change-keeping-geometry-grid.html [ Skip ]
-crbug.com/474798 virtual/syncpaint/fast/repaint/justify-self-change-keeping-geometry.html [ Skip ]
 
 crbug.com/548695 fast/forms/datalist/update-range-with-datalist.html [ Failure ]
 
@@ -1242,14 +1232,10 @@ crbug.com/521730 [ Win10 ] svg/text/text-selection-intro-05-t.svg [ Failure ]
 # This test's results will be tweaked slightly by an upcoming Skia change.
 crbug.com/240827 svg/filters/feOffset.svg [ NeedsManualRebaseline ]
 
-crbug.com/550285 [ XP ] virtual/syncpaint/inspector/tracing/decode-resize.html [ Slow Pass Failure ]
-
 crbug.com/474759 fast/writing-mode/vertical-rl-replaced-selection.html [ Failure ]
 crbug.com/474759 fast/block/line-layout/selection-highlight-overlap.html [ Failure ]
 crbug.com/502927 [ XP ] paint/frames/frameset-with-stacking-context-and-not-stacking-context-children.html [ Failure ]
 crbug.com/502927 [ XP ] paint/frames/frameset-with-stacking-contexts.html [ Failure ]
-crbug.com/502927 [ XP ] virtual/syncpaint/paint/frames/frameset-with-stacking-context-and-not-stacking-context-children.html [ Skip ]
-crbug.com/502927 [ XP ] virtual/syncpaint/paint/frames/frameset-with-stacking-contexts.html [ Skip ]
 
 crbug.com/353746 virtual/android/fullscreen/video-specified-size.html [ Failure Pass ]
 
@@ -1310,10 +1296,6 @@ crbug.com/558574 [ Win7 ] fast/text/emphasis.html [ Failure ]
 
 crbug.com/561595 [ XP ] plugins/webview-plugin-scroll.html [ Failure ]
 crbug.com/561595 [ XP ] plugins/webview-plugin-nested-iframe-scroll.html [ Failure ]
-
-crbug.com/568157 [ XP ] virtual/syncpaint/fast/repaint/details-open-repaint.html [ Failure ]
-crbug.com/568157 [ XP ] virtual/syncpaint/fast/repaint/overflow-scroll-body-appear.html [ Failure ]
-crbug.com/568157 [ XP ] virtual/syncpaint/fast/repaint/resize-scrollable-iframe.html [ Failure ]
 
 crbug.com/568678 [ XP ] virtual/gpu/fast/canvas/canvas-scale-strokePath-shadow.html [ Failure ]
 crbug.com/568740 [ Mac10.8 Win7 XP ] svg/custom/repaint-shadow.svg [ Failure ]
