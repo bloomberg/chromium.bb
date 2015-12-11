@@ -250,8 +250,8 @@ TemplateUrlServiceAndroid::GetSearchEngineUrlFromTemplateUrl(
     jint index) {
   TemplateURL* template_url = template_url_service_->GetTemplateURLs()[index];
   std::string url(template_url->url_ref().ReplaceSearchTerms(
-      TemplateURLRef::SearchTermsArgs(
-          base::ASCIIToUTF16("query")), SearchTermsData(), nullptr));
+      TemplateURLRef::SearchTermsArgs(base::ASCIIToUTF16("query")),
+      template_url_service_->search_terms_data()));
   return base::android::ConvertUTF8ToJavaString(env, url);
 }
 
