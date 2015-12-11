@@ -83,8 +83,18 @@ protected:
     {
         if (response.url().isNull())
             response.setURL(KURL(ParsedURLString, kResourceURL));
-        ResourcePtr<Resource> resource =
-            new Resource(ResourceRequest(response.url()), type);
+        ResourcePtr<Resource> resource;
+        switch (type) {
+        case Resource::Raw:
+            resource = new Resource(ResourceRequest(response.url()), type);
+            break;
+        case Resource::Image:
+            resource = new ImageResource(ResourceRequest(response.url()), nullptr);
+            break;
+        default:
+            EXPECT_TRUE(false) << "'Unreachable' code was reached";
+            return nullptr;
+        }
         resource->setResponse(response);
         memoryCache()->add(resource.get());
 
