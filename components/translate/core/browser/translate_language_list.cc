@@ -132,14 +132,7 @@ const char kAlphaLanguageQueryName[] = "alpha";
 const char kAlphaLanguageQueryValue[] = "1";
 
 // Represent if the language list updater is disabled.
-// Android does not handle well language updates, leading to bugs
-// like crbug.com/555124
-
-#if defined(OS_ANDROID)
-bool update_is_disabled = true;
-#else
 bool update_is_disabled = false;
-#endif  // OS_ANDROID
 
 // Retry parameter for fetching.
 const int kMaxRetryOn5xx = 5;
