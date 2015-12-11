@@ -417,6 +417,7 @@ void BluetoothHostPairingController::OnEnrollmentStatusChanged(
   if (enrollment_status == ENROLLMENT_STATUS_SUCCESS) {
     ChangeStage(STAGE_ENROLLMENT_SUCCESS);
   } else if (enrollment_status == ENROLLMENT_STATUS_FAILURE) {
+    ChangeStage(STAGE_ENROLLMENT_ERROR);
     AbortWithError(PAIRING_ERROR_PAIRING_OR_ENROLLMENT,
                    kErrorEnrollmentFailed);
   }

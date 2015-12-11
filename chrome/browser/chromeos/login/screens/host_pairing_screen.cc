@@ -5,7 +5,11 @@
 #include "chrome/browser/chromeos/login/screens/host_pairing_screen.h"
 
 #include "base/command_line.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
 #include "components/pairing/host_pairing_controller.h"
 
 namespace chromeos {
@@ -22,7 +26,8 @@ HostPairingScreen::HostPairingScreen(
       delegate_(delegate),
       actor_(actor),
       remora_controller_(remora_controller),
-      current_stage_(HostPairingController::STAGE_NONE) {
+      current_stage_(HostPairingController::STAGE_NONE),
+      weak_ptr_factory_(this) {
   actor_->SetDelegate(this);
   remora_controller_->AddObserver(this);
 }
@@ -74,6 +79,24 @@ void HostPairingScreen::PairingStageChanged(Stage new_stage) {
                          remora_controller_->GetConfirmationCode());
       break;
     }
+    case HostPairingController::STAGE_WAITING_FOR_CREDENTIALS:
+    case HostPairingController::STAGE_ENROLLING: {
+      // TODO(xdai): Use kPageEnrollment for STAGE_ENROLLING. It requires that
+      // the Master device sends the domain info over to the Slave device.
+      desired_page = kPageEnrollmentIntroduction;
+      break;
+    }
+    case HostPairingController::STAGE_ENROLLMENT_SUCCESS: {
+      remora_controller_->RemoveObserver(this);
+      Finish(WizardController::ENTERPRISE_ENROLLMENT_COMPLETED);
+      break;
+    }
+    case HostPairingController::STAGE_ENROLLMENT_ERROR: {
+      // TODO(xdai): Maybe return to the Network Setup page?
+      remora_controller_->RemoveObserver(this);
+      desired_page = kPageEnrollmentError;
+      break;
+    }
     default:
       break;
   }
@@ -94,12 +117,10 @@ void HostPairingScreen::ConfigureHostRequested(
           << ", timezone=" << timezone
           << ", keyboard_layout=" << keyboard_layout;
 
-  remora_controller_->RemoveObserver(this);
   if (delegate_) {
     delegate_->ConfigureHostRequested(
         accepted_eula, lang, timezone, send_reports, keyboard_layout);
   }
-  Finish(WizardController::HOST_PAIRING_FINISHED);
 }
 
 void HostPairingScreen::AddNetworkRequested(const std::string& onc_spec) {
@@ -108,12 +129,63 @@ void HostPairingScreen::AddNetworkRequested(const std::string& onc_spec) {
 }
 
 void HostPairingScreen::EnrollHostRequested(const std::string& auth_token) {
-  NOTREACHED();
+  policy::EnrollmentConfig enrollment_config =
+      g_browser_process->platform_part()
+          ->browser_policy_connector_chromeos()
+          ->GetPrescribedEnrollmentConfig();
+  enrollment_helper_ = EnterpriseEnrollmentHelper::Create(
+      this, enrollment_config, std::string());
+  enrollment_helper_->EnrollUsingToken(auth_token);
+  remora_controller_->OnEnrollmentStatusChanged(
+      HostPairingController::ENROLLMENT_STATUS_ENROLLING);
 }
 
 void HostPairingScreen::OnActorDestroyed(HostPairingScreenActor* actor) {
   if (actor_ == actor)
     actor_ = NULL;
+}
+
+void HostPairingScreen::OnAuthError(const GoogleServiceAuthError& error) {
+  OnAnyEnrollmentError();
+}
+
+void HostPairingScreen::OnEnrollmentError(policy::EnrollmentStatus status) {
+  OnAnyEnrollmentError();
+}
+
+void HostPairingScreen::OnOtherError(
+    EnterpriseEnrollmentHelper::OtherError error) {
+  OnAnyEnrollmentError();
+}
+
+void HostPairingScreen::OnDeviceEnrolled(const std::string& additional_token) {
+  StartupUtils::MarkDeviceRegistered(base::Bind(&base::DoNothing));
+  enrollment_helper_->ClearAuth(base::Bind(&HostPairingScreen::OnAuthCleared,
+                                           weak_ptr_factory_.GetWeakPtr()));
+
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  const enterprise_management::PolicyData* policy =
+      connector->GetDeviceCloudPolicyManager()->core()->store()->policy();
+
+  remora_controller_->SetPermanentId(policy->directory_api_id());
+  remora_controller_->OnEnrollmentStatusChanged(
+      HostPairingController::ENROLLMENT_STATUS_SUCCESS);
+}
+
+void HostPairingScreen::OnDeviceAttributeUploadCompleted(bool success) {}
+
+void HostPairingScreen::OnDeviceAttributeUpdatePermission(bool granted) {}
+
+void HostPairingScreen::OnAuthCleared() {
+  enrollment_helper_.reset();
+}
+
+void HostPairingScreen::OnAnyEnrollmentError() {
+  enrollment_helper_->ClearAuth(base::Bind(&HostPairingScreen::OnAuthCleared,
+                                           weak_ptr_factory_.GetWeakPtr()));
+  remora_controller_->OnEnrollmentStatusChanged(
+      HostPairingController::ENROLLMENT_STATUS_FAILURE);
 }
 
 }  // namespace chromeos

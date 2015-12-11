@@ -62,33 +62,20 @@ EnrollmentScreen::EnrollmentScreen(BaseScreenDelegate* base_screen_delegate,
                                    EnrollmentScreenActor* actor)
     : BaseScreen(base_screen_delegate),
       shark_controller_(NULL),
-      remora_controller_(NULL),
       actor_(actor),
       enrollment_failed_once_(false),
       weak_ptr_factory_(this) {
-  // Init the TPM if it has not been done until now (in debug build we might
-  // have not done that yet).
-  DBusThreadManager::Get()->GetCryptohomeClient()->TpmCanAttemptOwnership(
-      EmptyVoidDBusMethodCallback());
 }
 
 EnrollmentScreen::~EnrollmentScreen() {
-  if (remora_controller_)
-    remora_controller_->RemoveObserver(this);
   DCHECK(!enrollment_helper_ || g_browser_process->IsShuttingDown());
 }
 
 void EnrollmentScreen::SetParameters(
     const policy::EnrollmentConfig& enrollment_config,
-    pairing_chromeos::ControllerPairingController* shark_controller,
-    pairing_chromeos::HostPairingController* remora_controller) {
+    pairing_chromeos::ControllerPairingController* shark_controller) {
   enrollment_config_ = enrollment_config;
   shark_controller_ = shark_controller;
-  if (remora_controller_)
-    remora_controller_->RemoveObserver(this);
-  remora_controller_ = remora_controller;
-  if (remora_controller_)
-    remora_controller_->AddObserver(this);
   actor_->SetParameters(this, enrollment_config_);
 }
 
@@ -132,26 +119,6 @@ std::string EnrollmentScreen::GetName() const {
   return WizardController::kEnrollmentScreenName;
 }
 
-void EnrollmentScreen::PairingStageChanged(Stage new_stage) {
-  DCHECK(remora_controller_);
-  if (new_stage == HostPairingController::STAGE_FINISHED) {
-    remora_controller_->RemoveObserver(this);
-    remora_controller_ = NULL;
-    OnConfirmationClosed();
-  }
-}
-
-void EnrollmentScreen::EnrollHostRequested(const std::string& auth_token) {
-  actor_->Show();
-  actor_->ShowEnrollmentSpinnerScreen();
-  CreateEnrollmentHelper();
-  enrollment_helper_->EnrollUsingToken(auth_token);
-  if (remora_controller_) {
-    remora_controller_->OnEnrollmentStatusChanged(
-        HostPairingController::ENROLLMENT_STATUS_ENROLLING);
-  }
-}
-
 void EnrollmentScreen::OnLoginDone(const std::string& user,
                                    const std::string& auth_code) {
   LOG_IF(ERROR, auth_code.empty()) << "Auth code is empty.";
@@ -191,7 +158,6 @@ void EnrollmentScreen::OnConfirmationClosed() {
 }
 
 void EnrollmentScreen::OnAuthError(const GoogleServiceAuthError& error) {
-  DCHECK(!remora_controller_);
   OnAnyEnrollmentError();
   actor_->ShowAuthError(error);
 }
@@ -232,16 +198,6 @@ void EnrollmentScreen::OnDeviceAttributeUpdatePermission(bool granted) {
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
-  if (remora_controller_) {
-    policy::BrowserPolicyConnectorChromeOS* connector =
-        g_browser_process->platform_part()->browser_policy_connector_chromeos();
-    const enterprise_management::PolicyData* policy =
-        connector->GetDeviceCloudPolicyManager()->core()->store()->policy();
-
-    remora_controller_->SetPermanentId(policy->directory_api_id());
-    remora_controller_->OnEnrollmentStatusChanged(
-        HostPairingController::ENROLLMENT_STATUS_SUCCESS);
-  }
 }
 
 void EnrollmentScreen::OnDeviceAttributeUploadCompleted(bool success) {
@@ -299,10 +255,6 @@ void EnrollmentScreen::OnAnyEnrollmentError() {
   enrollment_failed_once_ = true;
   if (elapsed_timer_)
     UMA_ENROLLMENT_TIME(kMetricEnrollmentTimeFailure, elapsed_timer_);
-  if (remora_controller_) {
-    remora_controller_->OnEnrollmentStatusChanged(
-        HostPairingController::ENROLLMENT_STATUS_FAILURE);
-  }
 }
 
 }  // namespace chromeos

@@ -604,6 +604,8 @@ void WizardController::OnUpdateCompleted() {
                             ->IsSharkRequisition();
   if (is_shark || IsBootstrappingMaster()) {
     ShowControllerPairingScreen();
+  } else if (IsBootstrappingSlave()) {
+    ShowHostPairingScreen();
   } else {
     ShowAutoEnrollmentCheckScreen();
   }
@@ -751,7 +753,7 @@ void WizardController::OnControllerPairingFinished() {
 }
 
 void WizardController::OnHostPairingFinished() {
-  InitiateOOBEUpdate();
+  ShowAutoEnrollmentCheckScreen();
 }
 
 void WizardController::OnAutoEnrollmentCheckCompleted() {
@@ -1103,6 +1105,7 @@ void WizardController::ConfigureHostRequested(
 void WizardController::AddNetworkRequested(const std::string& onc_spec) {
   NetworkScreen* network_screen = NetworkScreen::Get(this);
   network_screen->CreateAndConnectNetworkFromOnc(onc_spec);
+  InitiateOOBEUpdate();
 }
 
 void WizardController::OnEnableDebuggingScreenRequested() {
@@ -1351,8 +1354,7 @@ void WizardController::StartEnrollmentScreen() {
   }
 
   EnrollmentScreen* screen = EnrollmentScreen::Get(this);
-  screen->SetParameters(effective_config, shark_controller_.get(),
-                        remora_controller_.get());
+  screen->SetParameters(effective_config, shark_controller_.get());
   SetStatusAreaVisible(true);
   SetCurrentScreen(screen);
 }

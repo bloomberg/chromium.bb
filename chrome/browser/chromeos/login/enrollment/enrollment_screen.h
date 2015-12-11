@@ -17,7 +17,6 @@
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_helper.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
-#include "components/pairing/host_pairing_controller.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/enterprise_metrics.h"
 
@@ -38,12 +37,9 @@ class ScreenManager;
 // OOBE wizard.
 class EnrollmentScreen
     : public BaseScreen,
-      public pairing_chromeos::HostPairingController::Observer,
       public EnterpriseEnrollmentHelper::EnrollmentStatusConsumer,
       public EnrollmentScreenActor::Controller {
  public:
-  typedef pairing_chromeos::HostPairingController::Stage Stage;
-
   EnrollmentScreen(BaseScreenDelegate* base_screen_delegate,
                    EnrollmentScreenActor* actor);
   ~EnrollmentScreen() override;
@@ -52,23 +48,16 @@ class EnrollmentScreen
 
   // Setup how this screen will handle enrollment.
   //   |shark_controller| is an interface that is used to communicate with a
-  //     remora device for remote enrollment.
-  //   |remora_controller| is an interface that is used to communicate with a
-  //     shark device for remote enrollment.
+  //     remora device or a slave device for remote enrollment.
   void SetParameters(
       const policy::EnrollmentConfig& enrollment_config,
-      pairing_chromeos::ControllerPairingController* shark_controller,
-      pairing_chromeos::HostPairingController* remora_controller);
+      pairing_chromeos::ControllerPairingController* shark_controller);
 
   // BaseScreen implementation:
   void PrepareToShow() override;
   void Show() override;
   void Hide() override;
   std::string GetName() const override;
-
-  // pairing_chromeos::HostPairingController::Observer:
-  void PairingStageChanged(Stage new_stage) override;
-  void EnrollHostRequested(const std::string& auth_token) override;
 
   // EnrollmentScreenActor::Controller implementation:
   void OnLoginDone(const std::string& user,
@@ -133,7 +122,7 @@ class EnrollmentScreen
   void OnAnyEnrollmentError();
 
   pairing_chromeos::ControllerPairingController* shark_controller_;
-  pairing_chromeos::HostPairingController* remora_controller_;
+
   EnrollmentScreenActor* actor_;
   policy::EnrollmentConfig enrollment_config_;
   bool enrollment_failed_once_;

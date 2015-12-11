@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_HOST_PAIRING_SCREEN_H_
 
 #include "base/macros.h"
+#include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_helper.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
 #include "chrome/browser/chromeos/login/screens/host_pairing_screen_actor.h"
 #include "components/login/screens/screen_context.h"
@@ -16,7 +17,8 @@ namespace chromeos {
 class HostPairingScreen
     : public BaseScreen,
       public pairing_chromeos::HostPairingController::Observer,
-      public HostPairingScreenActor::Delegate {
+      public HostPairingScreenActor::Delegate,
+      public EnterpriseEnrollmentHelper::EnrollmentStatusConsumer {
  public:
   class Delegate {
    public:
@@ -65,6 +67,18 @@ class HostPairingScreen
   // Overridden from ControllerPairingView::Delegate:
   void OnActorDestroyed(HostPairingScreenActor* actor) override;
 
+  // Overridden from EnterpriseEnrollmentHelper::EnrollmentStatusConsumer:
+  void OnAuthError(const GoogleServiceAuthError& error) override;
+  void OnEnrollmentError(policy::EnrollmentStatus status) override;
+  void OnOtherError(EnterpriseEnrollmentHelper::OtherError error) override;
+  void OnDeviceEnrolled(const std::string& additional_token) override;
+  void OnDeviceAttributeUploadCompleted(bool success) override;
+  void OnDeviceAttributeUpdatePermission(bool granted) override;
+
+  // Used as a callback for EnterpriseEnrollmentHelper::ClearAuth.
+  void OnAuthCleared();
+  void OnAnyEnrollmentError();
+
   Delegate* delegate_;
 
   HostPairingScreenActor* actor_;
@@ -72,8 +86,12 @@ class HostPairingScreen
   // Controller performing pairing. Owned by the wizard controller.
   pairing_chromeos::HostPairingController* remora_controller_;
 
+  scoped_ptr<EnterpriseEnrollmentHelper> enrollment_helper_;
+
   // Current stage of pairing process.
   Stage current_stage_;
+
+  base::WeakPtrFactory<HostPairingScreen> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(HostPairingScreen);
 };
