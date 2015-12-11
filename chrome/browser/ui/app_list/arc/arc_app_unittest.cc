@@ -192,6 +192,8 @@ class ArcAppModelBuilderTest : public AppListTestBase {
 
   }
 
+  AppListControllerDelegate* controller() { return controller_.get(); }
+
   arc::FakeArcBridgeService* bridge_service() { return bridge_service_.get(); }
 
   const std::vector<arc::AppInfo>& fake_apps() const { return fake_apps_; }
@@ -270,6 +272,9 @@ TEST_F(ArcAppModelBuilderTest, StopServiceDisablesApps) {
 }
 
 TEST_F(ArcAppModelBuilderTest, LaunchApps) {
+  // Disable attempts to dismiss app launcher view.
+  ChromeAppListItem::OverrideAppListControllerDelegateForTesting(controller());
+
   bridge_service()->SetReady();
   bridge_service()->SendRefreshAppList(fake_apps());
 

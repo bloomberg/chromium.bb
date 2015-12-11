@@ -12,6 +12,18 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image_skia_operations.h"
 
+namespace {
+
+AppListControllerDelegate* g_controller_for_test = nullptr;
+
+} // namespace
+
+// static
+void ChromeAppListItem::OverrideAppListControllerDelegateForTesting(
+    AppListControllerDelegate* controller) {
+  g_controller_for_test = controller;
+}
+
 // static
 gfx::ImageSkia ChromeAppListItem::CreateDisabledIcon(
     const gfx::ImageSkia& icon) {
@@ -43,6 +55,7 @@ void ChromeAppListItem::UpdateFromSync(
 }
 
 AppListControllerDelegate* ChromeAppListItem::GetController() {
-  return AppListService::Get(chrome::GetActiveDesktop())->
-      GetControllerDelegate();
+  return g_controller_for_test != nullptr ?
+      g_controller_for_test :
+      AppListService::Get(chrome::GetActiveDesktop())->GetControllerDelegate();
 }
