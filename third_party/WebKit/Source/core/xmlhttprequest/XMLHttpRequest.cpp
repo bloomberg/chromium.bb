@@ -100,11 +100,6 @@ private:
     int* const m_level;
 };
 
-bool isSetCookieHeader(const AtomicString& name)
-{
-    return equalIgnoringCase(name, "set-cookie") || equalIgnoringCase(name, "set-cookie2");
-}
-
 void replaceCharsetInMediaType(String& mediaType, const String& charsetValue)
 {
     unsigned pos = 0, len = 0;
@@ -1230,13 +1225,12 @@ String XMLHttpRequest::getAllResponseHeaders() const
     parseAccessControlExposeHeadersAllowList(m_response.httpHeaderField("Access-Control-Expose-Headers"), accessControlExposeHeaderSet);
     HTTPHeaderMap::const_iterator end = m_response.httpHeaderFields().end();
     for (HTTPHeaderMap::const_iterator it = m_response.httpHeaderFields().begin(); it!= end; ++it) {
-        // Hide Set-Cookie header fields from the XMLHttpRequest client for these reasons:
-        //     1) If the client did have access to the fields, then it could read HTTP-only
-        //        cookies; those cookies are supposed to be hidden from scripts.
-        //     2) There's no known harm in hiding Set-Cookie header fields entirely; we don't
-        //        know any widely used technique that requires access to them.
-        //     3) Firefox has implemented this policy.
-        if (isSetCookieHeader(it->key) && !securityOrigin()->canLoadLocalResources())
+        // Hide any headers whose name is a forbidden response-header name.
+        // This is required for all kinds of filtered responses.
+        //
+        // TODO: Consider removing canLoadLocalResources() call.
+        // crbug.com/567527
+        if (FetchUtils::isForbiddenResponseHeaderName(it->key) && !securityOrigin()->canLoadLocalResources())
             continue;
 
         if (!m_sameOriginRequest && !isOnAccessControlResponseHeaderWhitelist(it->key) && !accessControlExposeHeaderSet.contains(it->key))
@@ -1259,7 +1253,7 @@ const AtomicString& XMLHttpRequest::getResponseHeader(const AtomicString& name) 
         return nullAtom;
 
     // See comment in getAllResponseHeaders above.
-    if (isSetCookieHeader(name) && !securityOrigin()->canLoadLocalResources()) {
+    if (FetchUtils::isForbiddenResponseHeaderName(name) && !securityOrigin()->canLoadLocalResources()) {
         logConsoleError(executionContext(), "Refused to get unsafe header \"" + name + "\"");
         return nullAtom;
     }
