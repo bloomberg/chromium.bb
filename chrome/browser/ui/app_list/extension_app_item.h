@@ -10,9 +10,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/app_list/app_context_menu_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
+#include "chrome/browser/ui/app_list/chrome_app_list_item.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow_delegate.h"
 #include "extensions/browser/extension_icon_image.h"
-#include "ui/app_list/app_list_item.h"
 #include "ui/gfx/image/image_skia.h"
 
 class AppListControllerDelegate;
@@ -29,7 +29,7 @@ class Extension;
 }
 
 // ExtensionAppItem represents an extension app in app list.
-class ExtensionAppItem : public app_list::AppListItem,
+class ExtensionAppItem : public ChromeAppListItem,
                          public extensions::IconImage::Observer,
                          public ExtensionEnableFlowDelegate,
                          public app_list::AppContextMenuDelegate {
@@ -56,7 +56,7 @@ class ExtensionAppItem : public app_list::AppListItem,
   // the beginning or at the end.
   void Move(const ExtensionAppItem* prev, const ExtensionAppItem* next);
 
-  const std::string& extension_id() const { return extension_id_; }
+  const std::string& extension_id() const { return id(); }
   const std::string& extension_name() const { return extension_name_; }
 
  private:
@@ -95,14 +95,8 @@ class ExtensionAppItem : public app_list::AppListItem,
   // Overridden from app_list::AppContextMenuDelegate:
   void ExecuteLaunchCommand(int event_flags) override;
 
-  // Set the position from the extension ordering.
-  void UpdatePositionFromExtensionOrdering();
-
-  // Return the controller for the active desktop type.
-  AppListControllerDelegate* GetController();
-
-  Profile* profile_;
-  const std::string extension_id_;
+  // Set the position from the ordering.
+  void UpdatePositionFromOrdering();
 
   scoped_ptr<extensions::IconImage> icon_;
   scoped_ptr<app_list::AppContextMenu> context_menu_;

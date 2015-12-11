@@ -4,65 +4,38 @@
 
 #include "chrome/browser/ui/app_list/arc/arc_app_item.h"
 
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "components/arc/arc_bridge_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/app_sorting.h"
-#include "extensions/browser/extension_prefs.h"
 #include "ui/app_list/app_list_constants.h"
-#include "ui/gfx/color_utils.h"
-#include "ui/gfx/image/image_skia_operations.h"
-
-namespace {
-
-gfx::ImageSkia CreateDisabledIcon(const gfx::ImageSkia& icon) {
-  const color_utils::HSL shift = {-1, 0, 0.6};
-  return gfx::ImageSkiaOperations::CreateHSLShiftedImage(icon, shift);
-}
-
-extensions::AppSorting* GetAppSorting(content::BrowserContext* context) {
-  return extensions::ExtensionPrefs::Get(context)->app_sorting();
-}
-
-}  // namespace
+#include "ui/gfx/image/image_skia.h"
 
 // static
 const char ArcAppItem::kItemType[] = "ArcAppItem";
 
 ArcAppItem::ArcAppItem(
-    content::BrowserContext* context,
+    Profile* profile,
     const app_list::AppListSyncableService::SyncItem* sync_item,
     const std::string& id,
     const std::string& name,
     bool ready)
-    : app_list::AppListItem(id),
-      context_(context),
+    : ChromeAppListItem(profile, id),
       ready_(ready) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  arc_app_icon_.reset(new ArcAppIcon(context_,
+  arc_app_icon_.reset(new ArcAppIcon(profile,
                                      id,
                                      app_list::kGridIconDimension,
                                      this));
 
   SetName(name);
   UpdateIcon();
-
-  if (sync_item && sync_item->item_ordinal.IsValid()) {
-    // An existing synced position exists, use that.
-    set_position(sync_item->item_ordinal);
-  } else {
-    // There is an ExtensionAppItem that uses extension::AppSorting to order
-    // its element. There is no commonly available sorting mechanism for app
-    // ordering so use the only one available from extension subsystem.
-    // Page is is the earliest non-full page.
-    const syncer::StringOrdinal& page =
-        GetAppSorting(context_)->GetNaturalAppPageOrdinal();
-    // And get next available pos in this page.
-    const syncer::StringOrdinal& pos =
-       GetAppSorting(context_)->CreateNextAppLaunchOrdinal(page);
-    set_position(pos);
-  }
+  if (sync_item && sync_item->item_ordinal.IsValid())
+    UpdateFromSync(sync_item);
+  else
+    UpdatePositionFromOrdering();
 }
 
 ArcAppItem::~ArcAppItem() {
@@ -78,7 +51,7 @@ void ArcAppItem::Activate(int event_flags) {
     return;
   }
 
-  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(context_);
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile());
   scoped_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(id());
   if (!app_info) {
     VLOG(2) << "Cannot launch unavailable app:" << id() << ".";
@@ -116,6 +89,19 @@ void ArcAppItem::UpdateIcon() {
     icon = CreateDisabledIcon(icon);
 
   SetIcon(icon);
+}
+
+void ArcAppItem::UpdatePositionFromOrdering() {
+  // There is an ExtensionAppItem that uses extension::AppSorting to order
+  // its element. There is no commonly available sorting mechanism for app
+  // ordering so use the only one available from extension subsystem.
+  // Page is the earliest non-full page.
+  const syncer::StringOrdinal& page =
+      GetAppSorting()->GetNaturalAppPageOrdinal();
+  // And get next available pos in this page.
+  const syncer::StringOrdinal& pos =
+     GetAppSorting()->CreateNextAppLaunchOrdinal(page);
+  set_position(pos);
 }
 
 void ArcAppItem::OnIconUpdated() {

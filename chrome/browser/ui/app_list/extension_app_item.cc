@@ -10,16 +10,13 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_context_menu.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
-#include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow.h"
-#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_metrics.h"
 #include "content/public/browser/user_metrics.h"
 #include "extensions/browser/app_sorting.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
-#include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_icon_set.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
@@ -28,10 +25,8 @@
 #include "sync/api/string_ordinal.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/canvas_image_source.h"
-#include "ui/gfx/image/image_skia_operations.h"
 
 using extensions::Extension;
 
@@ -101,15 +96,6 @@ class RoundedCornersImageSource : public gfx::CanvasImageSource {
   DISALLOW_COPY_AND_ASSIGN(RoundedCornersImageSource);
 };
 
-extensions::AppSorting* GetAppSorting(Profile* profile) {
-  return extensions::ExtensionSystem::Get(profile)->app_sorting();
-}
-
-gfx::ImageSkia CreateDisabledIcon(const gfx::ImageSkia& icon) {
-  const color_utils::HSL shift = {-1, 0, 0.6};
-  return gfx::ImageSkiaOperations::CreateHSLShiftedImage(icon, shift);
-}
-
 }  // namespace
 
 ExtensionAppItem::ExtensionAppItem(
@@ -119,9 +105,7 @@ ExtensionAppItem::ExtensionAppItem(
     const std::string& extension_name,
     const gfx::ImageSkia& installing_icon,
     bool is_platform_app)
-    : app_list::AppListItem(extension_id),
-      profile_(profile),
-      extension_id_(extension_id),
+    : ChromeAppListItem(profile, extension_id),
       extension_enable_flow_controller_(NULL),
       extension_name_(extension_name),
       installing_icon_(CreateDisabledIcon(installing_icon)),
@@ -129,16 +113,12 @@ ExtensionAppItem::ExtensionAppItem(
       has_overlay_(false) {
   Reload();
   if (sync_item && sync_item->item_ordinal.IsValid()) {
-    // An existing synced position exists, use that.
-    set_position(sync_item->item_ordinal);
-    // Only set the name from the sync item if it is empty.
-    if (name().empty())
-      SetName(sync_item->item_name);
-    return;
+    UpdateFromSync(sync_item);
+  } else {
+    GetAppSorting()->EnsureValidOrdinals(extension_id,
+                                         syncer::StringOrdinal());
+    UpdatePositionFromOrdering();
   }
-  GetAppSorting(profile_)->EnsureValidOrdinals(extension_id_,
-                                               syncer::StringOrdinal());
-  UpdatePositionFromExtensionOrdering();
 }
 
 ExtensionAppItem::~ExtensionAppItem() {
@@ -150,15 +130,14 @@ bool ExtensionAppItem::NeedsOverlay() const {
   return false;
 #endif
 
-  extensions::LaunchType launch_type =
-      GetExtension()
-          ? extensions::GetLaunchType(extensions::ExtensionPrefs::Get(profile_),
-                                      GetExtension())
-          : extensions::LAUNCH_TYPE_WINDOW;
+  extensions::LaunchType launch_type = GetExtension()
+      ? extensions::GetLaunchType(extensions::ExtensionPrefs::Get(profile()),
+                                  GetExtension())
+      : extensions::LAUNCH_TYPE_WINDOW;
 
   // The overlay icon is disabled for hosted apps in windowed mode with
   // bookmark apps enabled.
-  return !is_platform_app_ && extension_id_ != extension_misc::kChromeAppId &&
+  return !is_platform_app_ && extension_id() != extension_misc::kChromeAppId &&
          (!extensions::util::IsNewBookmarkAppsEnabled() ||
           launch_type != extensions::LAUNCH_TYPE_WINDOW);
 }
@@ -183,8 +162,8 @@ void ExtensionAppItem::UpdateIcon() {
   // not launchable.
   if (GetExtension() && icon_) {
     icon = icon_->image_skia();
-    const bool enabled = extensions::util::IsAppLaunchable(extension_id_,
-                                                           profile_);
+    const bool enabled = extensions::util::IsAppLaunchable(extension_id(),
+                                                           profile());
     if (!enabled)
       icon = CreateDisabledIcon(icon);
 
@@ -204,8 +183,9 @@ void ExtensionAppItem::Move(const ExtensionAppItem* prev,
   if (!prev && !next)
     return;  // No reordering necessary
 
-  extensions::ExtensionPrefs* prefs = extensions::ExtensionPrefs::Get(profile_);
-  extensions::AppSorting* sorting = GetAppSorting(profile_);
+  extensions::ExtensionPrefs* prefs =
+      extensions::ExtensionPrefs::Get(profile());
+  extensions::AppSorting* sorting = GetAppSorting();
 
   syncer::StringOrdinal page;
   std::string prev_id, next_id;
@@ -222,23 +202,23 @@ void ExtensionAppItem::Move(const ExtensionAppItem* prev,
     if (page.Equals(sorting->GetPageOrdinal(next->extension_id())))
       next_id = next->extension_id();
   }
-  prefs->SetAppDraggedByUser(extension_id_);
-  sorting->SetPageOrdinal(extension_id_, page);
-  sorting->OnExtensionMoved(extension_id_, prev_id, next_id);
-  UpdatePositionFromExtensionOrdering();
+  prefs->SetAppDraggedByUser(extension_id());
+  sorting->SetPageOrdinal(extension_id(), page);
+  sorting->OnExtensionMoved(extension_id(), prev_id, next_id);
+  UpdatePositionFromOrdering();
 }
 
 const Extension* ExtensionAppItem::GetExtension() const {
   const extensions::ExtensionRegistry* registry =
-      extensions::ExtensionRegistry::Get(profile_);
+      extensions::ExtensionRegistry::Get(profile());
   const Extension* extension = registry->GetInstalledExtension(
-      extension_id_);
+      extension_id());
   return extension;
 }
 
 void ExtensionAppItem::LoadImage(const Extension* extension) {
   icon_.reset(new extensions::IconImage(
-      profile_,
+      profile(),
       extension,
       extensions::IconsInfo::GetIcons(extension),
       extension_misc::EXTENSION_ICON_MEDIUM,
@@ -248,7 +228,8 @@ void ExtensionAppItem::LoadImage(const Extension* extension) {
 }
 
 bool ExtensionAppItem::RunExtensionEnableFlow() {
-  if (extensions::util::IsAppLaunchableWithoutEnabling(extension_id_, profile_))
+  if (extensions::util::IsAppLaunchableWithoutEnabling(extension_id(),
+                                                       profile()))
     return false;
 
   if (!extension_enable_flow_) {
@@ -256,7 +237,7 @@ bool ExtensionAppItem::RunExtensionEnableFlow() {
     extension_enable_flow_controller_->OnShowChildDialog();
 
     extension_enable_flow_.reset(new ExtensionEnableFlow(
-        profile_, extension_id_, this));
+        profile(), extension_id(), this));
     extension_enable_flow_->StartForNativeWindow(
         extension_enable_flow_controller_->GetAppListWindow());
   }
@@ -270,13 +251,13 @@ void ExtensionAppItem::Launch(int event_flags) {
     return;
 
   // Don't auto-enable apps that cannot be launched.
-  if (!extensions::util::IsAppLaunchable(extension_id_, profile_))
+  if (!extensions::util::IsAppLaunchable(extension_id(), profile()))
     return;
 
   if (RunExtensionEnableFlow())
     return;
 
-  GetController()->LaunchApp(profile_,
+  GetController()->LaunchApp(profile(),
                              extension,
                              AppListControllerDelegate::LAUNCH_FROM_APP_LIST,
                              event_flags);
@@ -310,7 +291,7 @@ void ExtensionAppItem::Activate(int event_flags) {
     return;
 
   // Don't auto-enable apps that cannot be launched.
-  if (!extensions::util::IsAppLaunchable(extension_id_, profile_))
+  if (!extensions::util::IsAppLaunchable(extension_id(), profile()))
     return;
 
   if (RunExtensionEnableFlow())
@@ -318,7 +299,7 @@ void ExtensionAppItem::Activate(int event_flags) {
 
   content::RecordAction(base::UserMetricsAction("AppList_ClickOnApp"));
   extensions::RecordAppListMainLaunch(extension);
-  GetController()->ActivateApp(profile_,
+  GetController()->ActivateApp(profile(),
                                extension,
                                AppListControllerDelegate::LAUNCH_FROM_APP_LIST,
                                event_flags);
@@ -326,7 +307,7 @@ void ExtensionAppItem::Activate(int event_flags) {
 
 ui::MenuModel* ExtensionAppItem::GetContextMenuModel() {
   context_menu_.reset(new app_list::AppContextMenu(
-      this, profile_, extension_id_, GetController()));
+      this, profile(), extension_id(), GetController()));
   context_menu_->set_is_platform_app(is_platform_app_);
   if (IsInFolder())
     context_menu_->set_is_in_folder(true);
@@ -349,16 +330,11 @@ void ExtensionAppItem::ExecuteLaunchCommand(int event_flags) {
   Launch(event_flags);
 }
 
-void ExtensionAppItem::UpdatePositionFromExtensionOrdering() {
+void ExtensionAppItem::UpdatePositionFromOrdering() {
   const syncer::StringOrdinal& page =
-      GetAppSorting(profile_)->GetPageOrdinal(extension_id_);
+      GetAppSorting()->GetPageOrdinal(extension_id());
   const syncer::StringOrdinal& launch =
-     GetAppSorting(profile_)->GetAppLaunchOrdinal(extension_id_);
+     GetAppSorting()->GetAppLaunchOrdinal(extension_id());
   set_position(syncer::StringOrdinal(
       page.ToInternalValue() + launch.ToInternalValue()));
-}
-
-AppListControllerDelegate* ExtensionAppItem::GetController() {
-  return AppListService::Get(chrome::GetActiveDesktop())->
-      GetControllerDelegate();
 }

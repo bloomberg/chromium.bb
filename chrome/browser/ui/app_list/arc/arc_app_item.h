@@ -8,21 +8,19 @@
 #include <string>
 
 #include "base/macros.h"
-#include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon.h"
+#include "chrome/browser/ui/app_list/chrome_app_list_item.h"
 #include "ui/app_list/app_list_item.h"
 
-namespace content {
-class BrowserContext;
-}  // content
+class Profile;
 
 // ArcAppItem represents an ARC app in app list.
-class ArcAppItem : public app_list::AppListItem,
+class ArcAppItem : public ChromeAppListItem,
                    public ArcAppIcon::Observer {
  public:
   static const char kItemType[];
 
-  ArcAppItem(content::BrowserContext* context,
+  ArcAppItem(Profile* profile,
              const app_list::AppListSyncableService::SyncItem* sync_item,
              const std::string& id,
              const std::string& name,
@@ -47,7 +45,9 @@ class ArcAppItem : public app_list::AppListItem,
   // Updates the app item's icon, if necessary making it gray.
   void UpdateIcon();
 
-  content::BrowserContext* context_;
+  // Set the position from the ordering.
+  void UpdatePositionFromOrdering();
+
   bool ready_;
   scoped_ptr<ArcAppIcon> arc_app_icon_;
 
