@@ -1529,7 +1529,10 @@ cr.define('downloads', function() {
   }
 
   /** @constructor */
-  function ActionService() {}
+  function ActionService() {
+    /** @private {Array<string>} */
+    this.searchTerms_ = [];
+  }
 
   /**
    * @param {string} s
@@ -1553,9 +1556,6 @@ cr.define('downloads', function() {
   };
 
   ActionService.prototype = {
-    /** @private {Array<string>} */
-    searchTerms_: [],
-
     /** @param {string} id ID of the download to cancel. */
     cancel: chromeSendWithId('cancel'),
 
