@@ -667,7 +667,8 @@ v8::Local<v8::Value> ModuleSystem::LoadModule(const std::string& module_name) {
     return v8::Undefined(GetIsolate());
   }
 
-  exports->ForceSet(v8_key, function, v8::ReadOnly);
+  exports->DefineOwnProperty(v8_context, v8_key, function, v8::ReadOnly)
+      .FromJust();
 
   v8::Local<v8::Object> natives(NewInstance());
   CHECK(!natives.IsEmpty());  // this can fail if v8 has issues
