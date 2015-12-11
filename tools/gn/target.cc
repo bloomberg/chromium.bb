@@ -160,21 +160,40 @@ bool Target::OnResolved(Err* err) {
   ScopedTrace trace(TraceItem::TRACE_ON_RESOLVED, label());
   trace.SetToolchain(settings()->toolchain_label());
 
-  // Copy our own dependent configs to the list of configs applying to us.
+  // Copy this target's own dependent and public configs to the list of configs
+  // applying to it.
   configs_.Append(all_dependent_configs_.begin(), all_dependent_configs_.end());
   MergePublicConfigsFrom(this, &configs_);
+
+  // Copy public configs from all dependencies into the list of configs
+  // applying to this target (configs_).
+  PullDependentTargetConfigs();
+
+  // Copies public dependencies' public configs to this target's public
+  // configs. These configs have already been applied to this target by
+  // PullDependentTargetConfigs above, along with the public configs from
+  // private deps. This step re-exports them as public configs for targets that
+  // depend on this one.
+  for (const auto& dep : public_deps_) {
+    public_configs_.Append(dep.ptr->public_configs().begin(),
+                           dep.ptr->public_configs().end());
+  }
 
   // Copy our own libs and lib_dirs to the final set. This will be from our
   // target and all of our configs. We do this specially since these must be
   // inherited through the dependency tree (other flags don't work this way).
+  //
+  // This needs to happen after we pull dependent target configs for the
+  // public config's libs to be included here. And it needs to happen
+  // before pulling the dependent target libs so the libs are in the correct
+  // order (local ones first, then the dependency's).
   for (ConfigValuesIterator iter(this); !iter.done(); iter.Next()) {
     const ConfigValues& cur = iter.cur();
     all_lib_dirs_.append(cur.lib_dirs().begin(), cur.lib_dirs().end());
     all_libs_.append(cur.libs().begin(), cur.libs().end());
   }
 
-  PullDependentTargets();
-  PullPublicConfigs();
+  PullDependentTargetLibs();
   PullRecursiveHardDeps();
   if (!ResolvePrecompiledHeaders(err))
     return false;
@@ -266,10 +285,17 @@ bool Target::SetToolchain(const Toolchain* toolchain, Err* err) {
   return false;
 }
 
-void Target::PullDependentTarget(const Target* dep, bool is_public) {
+void Target::PullDependentTargetConfigsFrom(const Target* dep) {
   MergeAllDependentConfigsFrom(dep, &configs_, &all_dependent_configs_);
   MergePublicConfigsFrom(dep, &configs_);
+}
 
+void Target::PullDependentTargetConfigs() {
+  for (const auto& pair : GetDeps(DEPS_LINKED))
+    PullDependentTargetConfigsFrom(pair.ptr);
+}
+
+void Target::PullDependentTargetLibsFrom(const Target* dep, bool is_public) {
   // Direct dependent libraries.
   if (dep->output_type() == STATIC_LIBRARY ||
       dep->output_type() == SHARED_LIBRARY ||
@@ -309,22 +335,11 @@ void Target::PullDependentTarget(const Target* dep, bool is_public) {
   }
 }
 
-void Target::PullDependentTargets() {
+void Target::PullDependentTargetLibs() {
   for (const auto& dep : public_deps_)
-    PullDependentTarget(dep.ptr, true);
+    PullDependentTargetLibsFrom(dep.ptr, true);
   for (const auto& dep : private_deps_)
-    PullDependentTarget(dep.ptr, false);
-}
-
-void Target::PullPublicConfigs() {
-  // Pull public configs from each of our dependency's public deps.
-  for (const auto& dep : public_deps_)
-    PullPublicConfigsFrom(dep.ptr);
-}
-
-void Target::PullPublicConfigsFrom(const Target* from) {
-  public_configs_.Append(from->public_configs().begin(),
-                         from->public_configs().end());
+    PullDependentTargetLibsFrom(dep.ptr, false);
 }
 
 void Target::PullRecursiveHardDeps() {

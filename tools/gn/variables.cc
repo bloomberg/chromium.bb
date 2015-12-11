@@ -861,6 +861,12 @@ const char kLdflags_Help[] =
     "  uniquified so each one is only passed once (the first instance of it\n" \
     "  will be the one used).\n"
 
+#define LIBS_AND_LIB_DIRS_ORDERING_HELP \
+    "\n" \
+    "  For \"libs\" and \"lib_dirs\" only, the values propagated from\n" \
+    "  dependencies (as described above) are applied last assuming they\n" \
+    "  are not already in the list.\n"
+
 const char kLibDirs[] = "lib_dirs";
 const char kLibDirs_HelpShort[] =
     "lib_dirs: [directory list] Additional library directories.";
@@ -874,6 +880,7 @@ const char kLibDirs_Help[] =
     "  will be treated as being relative to the current build file.\n"
     COMMON_LIB_INHERITANCE_HELP
     COMMON_ORDERING_HELP
+    LIBS_AND_LIB_DIRS_ORDERING_HELP
     "\n"
     "Example\n"
     "\n"
@@ -906,6 +913,7 @@ const char kLibs_Help[] =
     "  links framework dependencies.\n"
     COMMON_LIB_INHERITANCE_HELP
     COMMON_ORDERING_HELP
+    LIBS_AND_LIB_DIRS_ORDERING_HELP
     "\n"
     "Examples\n"
     "\n"

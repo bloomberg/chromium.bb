@@ -249,13 +249,10 @@ class Target : public Item {
 
   // Pulls necessary information from dependencies to this one when all
   // dependencies have been resolved.
-  void PullDependentTarget(const Target* dep, bool is_public);
-  void PullDependentTargets();
-
-  // These each pull specific things from dependencies to this one when all
-  // deps have been resolved.
-  void PullPublicConfigs();
-  void PullPublicConfigsFrom(const Target* from);
+  void PullDependentTargetConfigsFrom(const Target* dep);
+  void PullDependentTargetConfigs();
+  void PullDependentTargetLibsFrom(const Target* dep, bool is_public);
+  void PullDependentTargetLibs();
   void PullRecursiveHardDeps();
 
   // Fills the link and dependency output files when a target is resolved.
@@ -289,6 +286,7 @@ class Target : public Item {
   LabelTargetVector public_deps_;
   LabelTargetVector data_deps_;
 
+  // See getters for more info.
   UniqueVector<LabelConfigPair> configs_;
   UniqueVector<LabelConfigPair> all_dependent_configs_;
   UniqueVector<LabelConfigPair> public_configs_;

@@ -386,6 +386,8 @@ TEST(Target, PublicConfigs) {
 
   Label pub_config_label(SourceDir("//a/"), "pubconfig");
   Config pub_config(setup.settings(), pub_config_label);
+  std::string lib_name("testlib");
+  pub_config.own_values().libs().push_back(lib_name);
   ASSERT_TRUE(pub_config.OnResolved(&err));
 
   // This is the destination target that has a public config.
@@ -405,6 +407,11 @@ TEST(Target, PublicConfigs) {
   ASSERT_TRUE(dep_on_pub.OnResolved(&err));
   ASSERT_EQ(1u, dep_on_pub.configs().size());
   EXPECT_EQ(&pub_config, dep_on_pub.configs()[0].ptr);
+
+  // Libs have special handling, check that they were forwarded from the
+  // public config to all_libs.
+  ASSERT_EQ(1u, dep_on_pub.all_libs().size());
+  ASSERT_EQ(lib_name, dep_on_pub.all_libs()[0]);
 
   // This target has a private dependency on dest for forwards configs.
   TestTarget forward(setup, "//a:f", Target::SOURCE_SET);
