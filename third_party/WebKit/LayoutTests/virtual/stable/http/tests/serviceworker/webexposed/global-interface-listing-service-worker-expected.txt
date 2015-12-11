@@ -477,6 +477,7 @@ interface ServiceWorkerRegistration : EventTarget
     getter onupdatefound
     getter pushManager
     getter scope
+    getter sync
     method constructor
     method getNotifications
     method showNotification
@@ -497,6 +498,14 @@ interface SubtleCrypto
     method unwrapKey
     method verify
     method wrapKey
+interface SyncEvent : ExtendableEvent
+    getter lastChance
+    getter tag
+    method constructor
+interface SyncManager
+    method constructor
+    method getTags
+    method register
 interface TextDecoder
     getter encoding
     getter fatal
@@ -741,6 +750,7 @@ global object
     getter onmessage
     getter onnotificationclick
     getter onpush
+    getter onsync
     getter registration
     method close
     method fetch
@@ -752,6 +762,7 @@ global object
     setter onmessage
     setter onnotificationclick
     setter onpush
+    setter onsync
 This is a testharness.js-based test.
 PASS Verify the interface of ServiceWorkerGlobalScope 
 Harness: the test ran to completion.

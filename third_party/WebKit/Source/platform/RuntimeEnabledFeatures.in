@@ -27,8 +27,7 @@ ApplicationCache status=stable
 AudioOutputDevices status=experimental
 AudioVideoTracks depends_on=Media, status=experimental
 AuthorShadowDOMForAnyElement
-BackgroundSync status=experimental
-BackgroundSyncPeriodic status=experimental
+BackgroundSync status=stable
 BackgroundSyncV2 status=experimental
 CacheStorageMatchAll status=stable
 ClientHints status=stable

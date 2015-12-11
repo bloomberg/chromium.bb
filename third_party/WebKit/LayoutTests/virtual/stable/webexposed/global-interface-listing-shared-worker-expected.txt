@@ -452,6 +452,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     getter onupdatefound
 [Worker]     getter pushManager
 [Worker]     getter scope
+[Worker]     getter sync
 [Worker]     method constructor
 [Worker]     method getNotifications
 [Worker]     method showNotification

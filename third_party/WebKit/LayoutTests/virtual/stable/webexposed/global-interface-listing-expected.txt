@@ -4511,6 +4511,7 @@ interface ServiceWorkerRegistration : EventTarget
     getter onupdatefound
     getter pushManager
     getter scope
+    getter sync
     method constructor
     method getNotifications
     method showNotification
@@ -4613,6 +4614,10 @@ interface SubtleCrypto
     method unwrapKey
     method verify
     method wrapKey
+interface SyncManager
+    method constructor
+    method getTags
+    method register
 interface Text : CharacterData
     getter wholeText
     method constructor
