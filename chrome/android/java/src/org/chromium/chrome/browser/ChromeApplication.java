@@ -598,7 +598,7 @@ public class ChromeApplication extends ContentApplication {
      * @param nativePtr Pointer to the native ExternalEstimateProviderAndroid object.
      */
     public ExternalEstimateProviderAndroid createExternalEstimateProviderAndroid(long nativePtr) {
-        return new ExternalEstimateProviderAndroid();
+        return new ExternalEstimateProviderAndroid(nativePtr) {};
     }
 
     /**

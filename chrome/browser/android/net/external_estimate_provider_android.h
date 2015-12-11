@@ -68,18 +68,15 @@ class ExternalEstimateProviderAndroid
 
   base::android::ScopedJavaGlobalRef<jobject> j_external_estimate_provider_;
 
-  // Task runner that accesses ExternalEstimateProviderAndroid members.
-  scoped_refptr<base::TaskRunner> task_runner_;
+  // Used to post tasks back to this object's origin thread.
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   // Notified every time there is an update available from the network quality
   // provider.
-  // TODO(tbansal): Add the function that is called by Java side when an update
-  // is available.
   net::ExternalEstimateProvider::UpdatedEstimateDelegate* delegate_;
 
   base::ThreadChecker thread_checker_;
 
-  // Used for posting tasks.
   base::WeakPtrFactory<ExternalEstimateProviderAndroid> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalEstimateProviderAndroid);
