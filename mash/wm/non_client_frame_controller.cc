@@ -4,7 +4,10 @@
 
 #include "mash/wm/non_client_frame_controller.h"
 
+#include "components/mus/public/cpp/property_type_converters.h"
 #include "components/mus/public/cpp/window.h"
+#include "components/mus/public/cpp/window_property.h"
+#include "components/mus/public/interfaces/window_manager.mojom.h"
 #include "components/mus/public/interfaces/window_tree_host.mojom.h"
 #include "mash/wm/frame/frame_border_hit_test_controller.h"
 #include "mash/wm/frame/move_event_handler.h"
@@ -199,6 +202,16 @@ NonClientFrameController::~NonClientFrameController() {
     window_->RemoveObserver(this);
 }
 
+base::string16 NonClientFrameController::GetWindowTitle() const {
+  if (!window_->HasSharedProperty(
+          mus::mojom::WindowManager::kWindowTitle_Property)) {
+    return base::string16();
+  }
+
+  return window_->GetSharedProperty<base::string16>(
+      mus::mojom::WindowManager::kWindowTitle_Property);
+}
+
 views::View* NonClientFrameController::GetContentsView() {
   return this;
 }
@@ -233,6 +246,8 @@ void NonClientFrameController::OnWindowSharedPropertyChanged(
     const std::vector<uint8_t>* new_data) {
   if (name == mus::mojom::WindowManager::kResizeBehavior_Property)
     widget_->OnSizeConstraintsChanged();
+  else if (name == mus::mojom::WindowManager::kWindowTitle_Property)
+    widget_->UpdateWindowTitle();
 }
 
 void NonClientFrameController::OnWindowDestroyed(mus::Window* window) {

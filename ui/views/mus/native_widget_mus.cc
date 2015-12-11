@@ -365,6 +365,12 @@ void NativeWidgetMus::ViewRemoved(View* view) {
   // NOTIMPLEMENTED();
 }
 
+// These methods are wrong in mojo. They're not usually used to associate
+// data with a window; they are used exclusively in chrome/ to unsafely pass
+// raw pointers around. I can only find two places where we do the "safe"
+// thing (and even that requires casting an integer to a void*). They can't be
+// used safely in a world where we separate things with mojo. They should be
+// removed; not ported.
 void NativeWidgetMus::SetNativeWindowProperty(const char* name, void* value) {
   // TODO(beng): push properties to mus::Window.
   // NOTIMPLEMENTED();
@@ -410,9 +416,9 @@ void NativeWidgetMus::GetWindowPlacement(
 }
 
 bool NativeWidgetMus::SetWindowTitle(const base::string16& title) {
-  // TODO(beng): push title to window manager.
-  // NOTIMPLEMENTED();
-  return false;
+  window_->SetSharedProperty<base::string16>(
+      mus::mojom::WindowManager::kWindowTitle_Property, title);
+  return true;
 }
 
 void NativeWidgetMus::SetWindowIcons(const gfx::ImageSkia& window_icon,

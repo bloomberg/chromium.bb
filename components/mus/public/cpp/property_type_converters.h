@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <vector>
 
+#include "base/strings/string16.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
 
 namespace gfx {
@@ -46,6 +47,24 @@ struct TypeConverter<const std::vector<uint8_t>, int32_t> {
 template <>
 struct TypeConverter<int32_t, const std::vector<uint8_t>> {
   static int32_t Convert(const std::vector<uint8_t>& input);
+};
+
+template <>
+struct TypeConverter<const std::vector<uint8_t>, base::string16> {
+  static const std::vector<uint8_t> Convert(const base::string16& input);
+};
+template <>
+struct TypeConverter<base::string16, const std::vector<uint8_t>> {
+  static base::string16 Convert(const std::vector<uint8_t>& input);
+};
+
+template <>
+struct TypeConverter<const std::vector<uint8_t>, std::string> {
+  static const std::vector<uint8_t> Convert(const std::string& input);
+};
+template <>
+struct TypeConverter<std::string, const std::vector<uint8_t>> {
+  static std::string Convert(const std::vector<uint8_t>& input);
 };
 
 }  // namespace mojo

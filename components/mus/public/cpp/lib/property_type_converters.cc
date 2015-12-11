@@ -4,6 +4,7 @@
 
 #include "components/mus/public/cpp/property_type_converters.h"
 
+#include "base/strings/utf_string_conversions.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -82,6 +83,37 @@ const std::vector<uint8_t>
 int32_t TypeConverter<int32_t, const std::vector<uint8_t>>::Convert(
     const std::vector<uint8_t>& input) {
   return input[0] << 24 | input[1] << 16 | input[2] << 8 | input[3];
+}
+
+// static
+const std::vector<uint8_t>
+TypeConverter<const std::vector<uint8_t>, base::string16>::Convert(
+    const base::string16& input) {
+  return TypeConverter<const std::vector<uint8_t>, std::string>::Convert(
+      base::UTF16ToUTF8(input));
+}
+
+// static
+base::string16
+TypeConverter<base::string16, const std::vector<uint8_t>>::Convert(
+    const std::vector<uint8_t>& input) {
+  return base::UTF8ToUTF16(
+      TypeConverter<std::string, const std::vector<uint8_t>>::Convert(
+          input));
+}
+
+// static
+const std::vector<uint8_t>
+TypeConverter<const std::vector<uint8_t>, std::string>::Convert(
+    const std::string& input) {
+  return std::vector<uint8_t>(input.begin(), input.end());
+}
+
+// static
+std::string
+TypeConverter<std::string, const std::vector<uint8_t>>::Convert(
+    const std::vector<uint8_t>& input) {
+  return std::string(input.begin(), input.end());
 }
 
 }  // namespace mojo

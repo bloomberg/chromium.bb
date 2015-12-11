@@ -27,13 +27,15 @@ interface WindowManager {
   const string kResizeBehavior_Property = "prop:resize-behavior";
   // Bounds the window is restored to. Type: gfx::Rect.
   const string kRestoreBounds_Property = "prop:restore-bounds";
-  // Shadow style for the window. Type mojom::ShadowStyle.
+  // Shadow style for the window. Type: mojom::ShadowStyle.
   const string kShadowStyle_Property = "prop:shadow-style";
   // The window's show state. Type: ShowState.
   const string kShowState_Property = "prop:show-state";
   // The window bounds as set by user input. Type: gfx::Rect.
   const string kUserSetBounds_Property = "prop:user-set-bounds";
-  const string kWindowType_Property = "property:window-type";
+  const string kWindowType_Property = "prop:window-type";
+  // The window's title. Type: mojom::String
+  const string kWindowTitle_Property = "prop:window-title";
 
   OpenWindow(WindowTreeClient client, map<string, array<uint8>> properties);
 

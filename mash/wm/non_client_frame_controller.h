@@ -6,6 +6,7 @@
 #define MASH_WM_NON_CLIENT_FRAME_CONTROLLER_H_
 
 #include "base/macros.h"
+#include "base/strings/string16.h"
 #include "components/mus/public/cpp/window_observer.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -49,6 +50,7 @@ class NonClientFrameController : public views::WidgetDelegateView,
   ~NonClientFrameController() override;
 
   // views::WidgetDelegateView:
+  base::string16 GetWindowTitle() const override;
   views::View* GetContentsView() override;
   bool CanResize() const override;
   bool CanMaximize() const override;
