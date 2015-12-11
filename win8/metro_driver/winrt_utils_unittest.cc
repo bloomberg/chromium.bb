@@ -11,12 +11,12 @@
 namespace {
 
 template <typename Type>
-static HRESULT CreateProperty(Type value, winfoundtn::IPropertyValue** prop) {
+HRESULT CreateProperty(Type value, winfoundtn::IPropertyValue** prop) {
   return E_NOTIMPL;
 }
 
 template <>
-static HRESULT CreateProperty<const wchar_t*>(
+HRESULT CreateProperty<const wchar_t*>(
     const wchar_t* value, winfoundtn::IPropertyValue** prop) {
   mswrw::HString string_value;
   string_value.Attach(MakeHString(value));
@@ -24,43 +24,43 @@ static HRESULT CreateProperty<const wchar_t*>(
 }
 
 template <>
-static HRESULT CreateProperty<INT16>(INT16 value,
+HRESULT CreateProperty<INT16>(INT16 value,
                                      winfoundtn::IPropertyValue** prop) {
   return winrt_utils::CreateInt16Property(value, prop);
 }
 
 template <>
-static HRESULT CreateProperty<INT32>(INT32 value,
+HRESULT CreateProperty<INT32>(INT32 value,
                                      winfoundtn::IPropertyValue** prop) {
   return winrt_utils::CreateInt32Property(value, prop);
 }
 
 template <>
-static HRESULT CreateProperty<INT64>(INT64 value,
+HRESULT CreateProperty<INT64>(INT64 value,
                                      winfoundtn::IPropertyValue** prop) {
   return winrt_utils::CreateInt64Property(value, prop);
 }
 
 template <>
-static HRESULT CreateProperty<UINT8>(UINT8 value,
+HRESULT CreateProperty<UINT8>(UINT8 value,
                                      winfoundtn::IPropertyValue** prop) {
   return winrt_utils::CreateUInt8Property(value, prop);
 }
 
 template <>
-static HRESULT CreateProperty<UINT16>(UINT16 value,
+HRESULT CreateProperty<UINT16>(UINT16 value,
                                       winfoundtn::IPropertyValue** prop) {
   return winrt_utils::CreateUInt16Property(value, prop);
 }
 
 template <>
-static HRESULT CreateProperty<UINT32>(UINT32 value,
+HRESULT CreateProperty<UINT32>(UINT32 value,
                                       winfoundtn::IPropertyValue** prop) {
   return winrt_utils::CreateUInt32Property(value, prop);
 }
 
 template <>
-static HRESULT CreateProperty<UINT64>(UINT64 value,
+HRESULT CreateProperty<UINT64>(UINT64 value,
                                       winfoundtn::IPropertyValue** prop) {
   return winrt_utils::CreateUInt64Property(value, prop);
 }
