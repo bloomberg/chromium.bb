@@ -24,6 +24,7 @@
 #include "media/base/renderer.h"
 #include "media/base/text_renderer.h"
 #include "media/base/text_track_config.h"
+#include "media/base/timestamp_constants.h"
 #include "media/base/video_decoder_config.h"
 
 using base::TimeDelta;
@@ -41,6 +42,7 @@ Pipeline::Pipeline(
       playback_rate_(0.0),
       status_(PIPELINE_OK),
       state_(kCreated),
+      suspend_timestamp_(kNoTimestamp()),
       renderer_ended_(false),
       text_renderer_ended_(false),
       demuxer_(NULL),
@@ -171,7 +173,7 @@ void Pipeline::SetVolume(float volume) {
 
 TimeDelta Pipeline::GetMediaTime() const {
   base::AutoLock auto_lock(lock_);
-  if (state_ == kSuspending || state_ == kSuspended || state_ == kResuming)
+  if (suspend_timestamp_ != kNoTimestamp())
     return suspend_timestamp_;
   return renderer_ ? std::min(renderer_->GetMediaTime(), duration_)
                    : TimeDelta();
@@ -371,6 +373,10 @@ void Pipeline::StateTransitionTask(PipelineStatus status) {
     case kPlaying:
       DCHECK(start_timestamp_ >= base::TimeDelta());
       renderer_->StartPlayingFrom(start_timestamp_);
+      {
+        base::AutoLock auto_lock(lock_);
+        suspend_timestamp_ = kNoTimestamp();
+      }
 
       if (text_renderer_)
         text_renderer_->StartPlaying();
@@ -643,6 +649,8 @@ void Pipeline::SeekTask(TimeDelta time, const PipelineStatusCB& seek_cb) {
 }
 
 void Pipeline::SuspendTask(const PipelineStatusCB& suspend_cb) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
   // Suppress suspending if we're not playing.
   if (state_ != kPlaying) {
     DCHECK(state_ == kStopping || state_ == kStopped)
@@ -659,7 +667,11 @@ void Pipeline::SuspendTask(const PipelineStatusCB& suspend_cb) {
   // Freeze playback and record the media time before flushing. (Flushing clears
   // the value.)
   renderer_->SetPlaybackRate(0.0);
-  suspend_timestamp_ = renderer_->GetMediaTime();
+  {
+    base::AutoLock auto_lock(lock_);
+    suspend_timestamp_ = renderer_->GetMediaTime();
+    DCHECK(suspend_timestamp_ != kNoTimestamp());
+  }
 
   // Queue the asynchronous actions required to stop playback. (Matches setup in
   // DoSeek().)
@@ -686,6 +698,8 @@ void Pipeline::SuspendTask(const PipelineStatusCB& suspend_cb) {
 void Pipeline::ResumeTask(scoped_ptr<Renderer> renderer,
                           base::TimeDelta timestamp,
                           const PipelineStatusCB& seek_cb) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
   // Suppress resuming if we're not suspended.
   if (state_ != kSuspended) {
     DCHECK(state_ == kStopping || state_ == kStopped)

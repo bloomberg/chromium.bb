@@ -382,7 +382,8 @@ class MEDIA_EXPORT Pipeline : public DemuxerHost {
   // completed.
   base::TimeDelta start_timestamp_;
 
-  // The media timestamp to return while the pipeline is suspended.
+  // The media timestamp to return while the pipeline is suspended. Otherwise
+  // set to kNoTimestamp().
   base::TimeDelta suspend_timestamp_;
 
   // Whether we've received the audio/video/text ended events.
