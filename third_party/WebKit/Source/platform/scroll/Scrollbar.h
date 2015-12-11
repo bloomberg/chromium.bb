@@ -164,8 +164,6 @@ protected:
     Scrollbar(ScrollableArea*, ScrollbarOrientation, ScrollbarControlSize, ScrollbarTheme* = 0);
 
     void updateThumb();
-    virtual void updateThumbPosition();
-    virtual void updateThumbProportion();
 
     void autoscrollTimerFired(Timer<Scrollbar>*);
     void startTimerIfNeeded(double delay);
@@ -207,6 +205,9 @@ private:
     void invalidateRect(const IntRect&) override { setNeedsPaintInvalidation(); }
 
     float scrollableAreaCurrentPos() const;
+
+    void updateThumbPosition();
+    void updateThumbProportion();
 
     bool m_trackNeedsRepaint;
     bool m_thumbNeedsRepaint;
