@@ -13,7 +13,6 @@
 
 namespace content {
 class BrowserMainRunner;
-class ExternalVideoSurfaceContainel;
 }
 
 namespace android_webview {
