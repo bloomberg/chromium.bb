@@ -187,16 +187,63 @@ void FocusController::SetFocusedWindowImpl(
     drawn_tracker_.reset();
 }
 
+void FocusController::OnDrawnStateWillChange(ServerWindow* ancestor,
+                                             ServerWindow* window,
+                                             bool is_drawn) {
+  DCHECK(!is_drawn);
+  DCHECK(root_->Contains(window));
+  drawn_tracker_.reset();
+
+  auto will_be_hidden = [ancestor, window](ServerWindow* w) {
+    return w != ancestor && ancestor->Contains(w) && w->Contains(window);
+  };
+
+  // If |window| is |active_window_|, then activate the next activatable window
+  // that does not belong to the subtree which is getting hidden.
+  if (window == active_window_) {
+    WindowTreeIterator iter(root_);
+    ServerWindow* activate = active_window_;
+    do {
+      activate = iter.GetNext(activate);
+    } while (activate != active_window_ &&
+             (will_be_hidden(activate) || !CanBeActivated(activate)));
+    if (activate == window)
+      activate = nullptr;
+    SetActiveWindow(activate);
+
+    // Now make sure focus is in the active window.
+    ServerWindow* focus = nullptr;
+    if (active_window_) {
+      WindowTreeIterator iter(active_window_);
+      focus = nullptr;
+      do {
+        focus = iter.GetNext(focus);
+      } while (focus != active_window_ &&
+               (will_be_hidden(focus) || !CanBeFocused(focus)));
+      DCHECK(focus && CanBeFocused(focus));
+    }
+    SetFocusedWindowImpl(FocusControllerChangeSource::DRAWN_STATE_CHANGED,
+                         focus);
+    return;
+  }
+
+  // Move focus to the next focusable window in |active_window_|.
+  DCHECK_EQ(focused_window_, window);
+  WindowTreeIterator iter(active_window_);
+  ServerWindow* focus = focused_window_;
+  do {
+    focus = iter.GetNext(focus);
+  } while (focus != focused_window_ &&
+           (will_be_hidden(focus) || !CanBeFocused(focus)));
+  if (focus == window)
+    focus = nullptr;
+  SetFocusedWindowImpl(FocusControllerChangeSource::DRAWN_STATE_CHANGED, focus);
+}
+
 void FocusController::OnDrawnStateChanged(ServerWindow* ancestor,
                                           ServerWindow* window,
                                           bool is_drawn) {
-  DCHECK(!is_drawn);  // We only observe when drawn.
-  // TODO(sad): If |window| is |focused_window_|, then move focus to the next
-  // focusable window in |active_window_|, if |active_window_| is still visible.
-  // If |active_window_| is invisible, or if |window| is |active_window_|, then
-  // activate the next window that can be activated.
-  SetFocusedWindowImpl(FocusControllerChangeSource::DRAWN_STATE_CHANGED,
-                       ancestor);
+  DCHECK(false);
 }
 
 }  // namespace ws

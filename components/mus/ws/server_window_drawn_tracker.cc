@@ -23,11 +23,18 @@ ServerWindowDrawnTracker::~ServerWindowDrawnTracker() {
 }
 
 void ServerWindowDrawnTracker::SetDrawn(ServerWindow* ancestor, bool drawn) {
+  // If |windows_| is empty when this code runs, that means |window_| has been
+  // destroyed. So set |window_| to nullptr, but make sure the right value is
+  // sent to OnDrawnStateChanged().
+  ServerWindow* window = window_;
+  if (windows_.empty())
+    window_ = nullptr;
+
   if (drawn == drawn_)
     return;
 
   drawn_ = drawn;
-  observer_->OnDrawnStateChanged(ancestor, window_, drawn);
+  observer_->OnDrawnStateChanged(ancestor, window, drawn);
 }
 
 void ServerWindowDrawnTracker::AddObservers() {
@@ -47,14 +54,36 @@ void ServerWindowDrawnTracker::RemoveObservers() {
   windows_.clear();
 }
 
+void ServerWindowDrawnTracker::OnWillDestroyWindow(ServerWindow* window) {
+  if (!drawn_)
+    return;
+  observer_->OnDrawnStateWillChange(window->parent(), window_, false);
+}
+
 void ServerWindowDrawnTracker::OnWindowDestroyed(ServerWindow* window) {
   // As windows are removed before being destroyed, resulting in
   // OnWindowHierarchyChanged() and us removing ourself as an observer, the only
   // window we should ever get notified of destruction on is |window_|.
   DCHECK_EQ(window, window_);
   RemoveObservers();
-  window_ = nullptr;
   SetDrawn(nullptr, false);
+}
+
+void ServerWindowDrawnTracker::OnWillChangeWindowHierarchy(
+    ServerWindow* window,
+    ServerWindow* new_parent,
+    ServerWindow* old_parent) {
+  bool new_is_drawn = new_parent && new_parent->IsDrawn();
+  if (new_is_drawn) {
+    for (ServerWindow* w = window_; new_is_drawn && w != old_parent;
+         w = w->parent()) {
+      new_is_drawn = w->visible();
+    }
+  }
+  if (drawn_ != new_is_drawn) {
+    observer_->OnDrawnStateWillChange(new_is_drawn ? nullptr : old_parent,
+                                      window_, new_is_drawn);
+  }
 }
 
 void ServerWindowDrawnTracker::OnWindowHierarchyChanged(
@@ -65,6 +94,36 @@ void ServerWindowDrawnTracker::OnWindowHierarchyChanged(
   AddObservers();
   const bool is_drawn = window_->IsDrawn();
   SetDrawn(is_drawn ? nullptr : old_parent, is_drawn);
+}
+
+void ServerWindowDrawnTracker::OnWillChangeWindowVisibility(
+    ServerWindow* window) {
+  bool will_change = false;
+  if (drawn_) {
+    // If |window_| is currently drawn, then any change of visibility of the
+    // windows will toggle the drawn status.
+    will_change = true;
+  } else {
+    // If |window| is currently visible, then it's becoming invisible, and so
+    // |window_| will remain not drawn.
+    if (window->visible()) {
+      will_change = false;
+    } else {
+      bool is_drawn = (window->GetRoot() == window) ||
+          (window->parent() && window->parent()->IsDrawn());
+      if (is_drawn) {
+        for (ServerWindow* w = window_; is_drawn && w != window;
+             w = w->parent())
+          is_drawn = w->visible();
+      }
+      will_change = drawn_ != is_drawn;
+    }
+  }
+  if (will_change) {
+    bool new_is_drawn = !drawn_;
+    observer_->OnDrawnStateWillChange(new_is_drawn ? nullptr : window->parent(),
+                                      window_, new_is_drawn);
+  }
 }
 
 void ServerWindowDrawnTracker::OnWindowVisibilityChanged(ServerWindow* window) {

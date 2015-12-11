@@ -58,6 +58,9 @@ class FocusController : public ServerWindowDrawnTrackerObserver {
                             ServerWindow* window);
 
   // ServerWindowDrawnTrackerObserver:
+  void OnDrawnStateWillChange(ServerWindow* ancestor,
+                              ServerWindow* window,
+                              bool is_drawn) override;
   void OnDrawnStateChanged(ServerWindow* ancestor,
                            ServerWindow* window,
                            bool is_drawn) override;

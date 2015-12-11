@@ -31,13 +31,21 @@ class TestServerWindowDrawnTrackerObserver
 
  private:
   // ServerWindowDrawnTrackerObserver:
-  void OnDrawnStateChanged(ServerWindow* ancestor,
-                           ServerWindow* window,
-                           bool is_drawn) override {
+  void OnDrawnStateWillChange(ServerWindow* ancestor,
+                              ServerWindow* window,
+                              bool is_drawn) override {
     change_count_++;
     ancestor_ = ancestor;
     window_ = window;
     is_drawn_ = is_drawn;
+  }
+
+  void OnDrawnStateChanged(ServerWindow* ancestor,
+                           ServerWindow* window,
+                           bool is_drawn) override {
+    EXPECT_EQ(ancestor_, ancestor);
+    EXPECT_EQ(window_, window);
+    EXPECT_EQ(is_drawn_, is_drawn);
   }
 
   size_t change_count_;
@@ -78,9 +86,10 @@ TEST(ServerWindowDrawnTrackerTest, ChangeBecauseOfDeletionAndVisibility) {
   EXPECT_TRUE(drawn_observer.is_drawn());
   drawn_observer.clear_change_count();
 
+  ServerWindow* old_window = window.get();
   window.reset();
   EXPECT_EQ(1u, drawn_observer.change_count());
-  EXPECT_EQ(window.get(), drawn_observer.window());
+  EXPECT_EQ(old_window, drawn_observer.window());
   EXPECT_EQ(nullptr, drawn_observer.ancestor());
   EXPECT_FALSE(drawn_observer.is_drawn());
 }
@@ -137,6 +146,85 @@ TEST(ServerWindowDrawnTrackerTest, ChangeBecauseOfRemovingAncestorFromRoot) {
   EXPECT_EQ(&child_child, drawn_observer.window());
   EXPECT_EQ(nullptr, drawn_observer.ancestor());
   EXPECT_TRUE(drawn_observer.is_drawn());
+}
+
+TEST(ServerWindowDrawnTrackerTest, VisibilityChangeFromNonParentAncestor) {
+  TestServerWindowDelegate server_window_delegate;
+  ServerWindow root(&server_window_delegate, WindowId());
+  ServerWindow child1(&server_window_delegate, WindowId());
+  ServerWindow child2(&server_window_delegate, WindowId());
+  ServerWindow child3(&server_window_delegate, WindowId());
+  server_window_delegate.set_root_window(&root);
+
+  root.Add(&child1);
+  child1.Add(&child2);
+  child2.Add(&child3);
+
+  root.SetVisible(true);
+  child1.SetVisible(false);
+  child2.SetVisible(false);
+  child3.SetVisible(true);
+
+  TestServerWindowDrawnTrackerObserver drawn_observer;
+  ServerWindowDrawnTracker tracker(&child3, &drawn_observer);
+
+  EXPECT_FALSE(child3.IsDrawn());
+
+  // Make |child1| visible. |child3| should still be not drawn, since |child2|
+  // is still invisible.
+  child1.SetVisible(true);
+  EXPECT_EQ(0u, drawn_observer.change_count());
+  EXPECT_EQ(nullptr, drawn_observer.window());
+  EXPECT_EQ(nullptr, drawn_observer.ancestor());
+  EXPECT_FALSE(drawn_observer.is_drawn());
+  EXPECT_FALSE(child3.IsDrawn());
+
+  child2.SetVisible(true);
+  EXPECT_EQ(1u, drawn_observer.change_count());
+  EXPECT_EQ(&child3, drawn_observer.window());
+  EXPECT_EQ(nullptr, drawn_observer.ancestor());
+  EXPECT_TRUE(drawn_observer.is_drawn());
+  EXPECT_TRUE(child3.IsDrawn());
+}
+
+TEST(ServerWindowDrawnTrackerTest, TreeHierarchyChangeFromNonParentAncestor) {
+  TestServerWindowDelegate server_window_delegate;
+  ServerWindow root(&server_window_delegate, WindowId());
+  ServerWindow child1(&server_window_delegate, WindowId());
+  ServerWindow child2(&server_window_delegate, WindowId());
+  ServerWindow child11(&server_window_delegate, WindowId());
+  ServerWindow child111(&server_window_delegate, WindowId());
+  server_window_delegate.set_root_window(&root);
+
+  root.Add(&child1);
+  root.Add(&child2);
+  child1.Add(&child11);
+  child11.Add(&child111);
+
+  root.SetVisible(true);
+  child1.SetVisible(false);
+  child2.SetVisible(true);
+  child11.SetVisible(false);
+  child111.SetVisible(true);
+
+  TestServerWindowDrawnTrackerObserver drawn_observer;
+  ServerWindowDrawnTracker tracker(&child111, &drawn_observer);
+  EXPECT_FALSE(child111.IsDrawn());
+
+  // Move |child11| as a child of |child2|. |child111| should remain not drawn.
+  child2.Add(&child11);
+  EXPECT_EQ(0u, drawn_observer.change_count());
+  EXPECT_EQ(nullptr, drawn_observer.window());
+  EXPECT_EQ(nullptr, drawn_observer.ancestor());
+  EXPECT_FALSE(drawn_observer.is_drawn());
+  EXPECT_FALSE(child111.IsDrawn());
+
+  child11.SetVisible(true);
+  EXPECT_EQ(1u, drawn_observer.change_count());
+  EXPECT_EQ(&child111, drawn_observer.window());
+  EXPECT_EQ(nullptr, drawn_observer.ancestor());
+  EXPECT_TRUE(drawn_observer.is_drawn());
+  EXPECT_TRUE(child111.IsDrawn());
 }
 
 }  // namespace ws
