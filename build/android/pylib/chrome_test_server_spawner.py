@@ -21,10 +21,10 @@ import threading
 import time
 import urlparse
 
+from devil.android import forwarder
 from devil.android import ports
 
 from pylib import constants
-from pylib.forwarder import Forwarder
 
 
 # Path that are needed to import necessary modules when launching a testserver.
@@ -242,10 +242,10 @@ class TestServerThread(threading.Thread):
       else:
         self.is_ready = _CheckPortNotAvailable(self.host_port)
     if self.is_ready:
-      Forwarder.Map([(0, self.host_port)], self.device, self.tool)
+      forwarder.Forwarder.Map([(0, self.host_port)], self.device, self.tool)
       # Check whether the forwarder is ready on the device.
       self.is_ready = False
-      device_port = Forwarder.DevicePortForHostPort(self.host_port)
+      device_port = forwarder.Forwarder.DevicePortForHostPort(self.host_port)
       if device_port and _CheckDevicePortStatus(self.device, device_port):
         self.is_ready = True
         self.forwarder_device_port = device_port
@@ -255,7 +255,7 @@ class TestServerThread(threading.Thread):
     _WaitUntil(lambda: self.stop_flag, max_attempts=sys.maxint)
     if self.process.poll() is None:
       self.process.kill()
-    Forwarder.UnmapDevicePort(self.forwarder_device_port, self.device)
+    forwarder.Forwarder.UnmapDevicePort(self.forwarder_device_port, self.device)
     self.process = None
     self.is_ready = False
     if self.pipe_out:

@@ -24,12 +24,12 @@ from devil.android import apk_helper
 from devil.android import device_blacklist
 from devil.android import device_errors
 from devil.android import device_utils
+from devil.android import forwarder
 from devil.android import ports
 from devil.utils import reraiser_thread
 from devil.utils import run_tests_helper
 
 from pylib import constants
-from pylib import forwarder
 from pylib.base import base_test_result
 from pylib.base import environment_factory
 from pylib.base import test_dispatcher

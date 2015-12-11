@@ -62,9 +62,9 @@ import zipfile
 
 from devil.android import battery_utils
 from devil.android import device_errors
+from devil.android import forwarder
 from devil.utils import cmd_helper
 from pylib import constants
-from pylib import forwarder
 from pylib.base import base_test_result
 from pylib.base import base_test_runner
 

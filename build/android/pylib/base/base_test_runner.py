@@ -11,8 +11,8 @@
 import logging
 
 from devil.android import device_utils
+from devil.android import forwarder
 from devil.android import ports
-from pylib.forwarder import Forwarder
 from pylib.valgrind_tools import CreateTool
 # TODO(frankf): Move this to pylib/utils
 import lighttpd_server
@@ -98,12 +98,12 @@ class BaseTestRunner(object):
 
   def _ForwardPorts(self, port_pairs):
     """Forwards a port."""
-    Forwarder.Map(port_pairs, self.device, self.tool)
+    forwarder.Forwarder.Map(port_pairs, self.device, self.tool)
 
   def _UnmapPorts(self, port_pairs):
     """Unmap previously forwarded ports."""
     for (device_port, _) in port_pairs:
-      Forwarder.UnmapDevicePort(device_port, self.device)
+      forwarder.Forwarder.UnmapDevicePort(device_port, self.device)
 
   # Deprecated: Use ForwardPorts instead.
   def StartForwarder(self, port_pairs):

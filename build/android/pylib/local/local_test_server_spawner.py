@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from devil.android import forwarder
 from pylib import chrome_test_server_spawner
-from pylib import forwarder
 from pylib.base import test_server
 
 

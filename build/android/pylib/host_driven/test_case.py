@@ -24,8 +24,8 @@ import logging
 import os
 import time
 
+from devil.android import forwarder
 from pylib import constants
-from pylib import forwarder
 from pylib import valgrind_tools
 from pylib.base import base_test_result
 from pylib.instrumentation import test_package

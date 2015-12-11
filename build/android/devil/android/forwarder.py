@@ -10,9 +10,9 @@ import os
 import psutil
 
 from devil import devil_env
+from devil.android.constants import file_system
 from devil.android.valgrind_tools import base_tool
 from devil.utils import cmd_helper
-from pylib import constants
 
 
 def _GetProcessStartTime(pid):
@@ -43,9 +43,9 @@ class _FileLock(object):
 class Forwarder(object):
   """Thread-safe class to manage port forwards from the device to the host."""
 
-  _DEVICE_FORWARDER_FOLDER = (constants.TEST_EXECUTABLE_DIR +
+  _DEVICE_FORWARDER_FOLDER = (file_system.TEST_EXECUTABLE_DIR +
                               '/forwarder/')
-  _DEVICE_FORWARDER_PATH = (constants.TEST_EXECUTABLE_DIR +
+  _DEVICE_FORWARDER_PATH = (file_system.TEST_EXECUTABLE_DIR +
                             '/forwarder/device_forwarder')
   _LOCK_PATH = '/tmp/chrome.forwarder.lock'
   # Defined in host_forwarder_main.cc
