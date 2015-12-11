@@ -219,6 +219,9 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 
   // YES if the web process backing _wkWebView is believed to currently be dead.
   BOOL _webProcessIsDead;
+
+  // The WKNavigation for the most recent load request.
+  base::scoped_nsobject<WKNavigation> _latestWKNavigation;
 }
 
 // Dictionary where keys are the names of WKWebView properties and values are
@@ -538,7 +541,7 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 }
 
 - (void)loadRequest:(NSMutableURLRequest*)request {
-  [_wkWebView loadRequest:request];
+  _latestWKNavigation.reset([[_wkWebView loadRequest:request] retain]);
 }
 
 - (void)loadWebHTMLString:(NSString*)html forURL:(const GURL&)URL {
@@ -1742,6 +1745,7 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
   // Ensure the URL is registered and loadPhase is as expected.
   DCHECK(self.lastRegisteredRequestURL == webViewURL);
   DCHECK(self.loadPhase == web::LOAD_REQUESTED);
+  _latestWKNavigation.reset([navigation retain]);
 }
 
 - (void)webView:(WKWebView *)webView
@@ -1755,6 +1759,12 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 - (void)webView:(WKWebView *)webView
     didFailProvisionalNavigation:(WKNavigation *)navigation
                        withError:(NSError *)error {
+  // Ignore provisional navigation failure if a new navigation has been started,
+  // for example, if a page is reloaded after the start of the provisional
+  // load but before the load has been committed.
+  if (![_latestWKNavigation isEqual:navigation]) {
+    return;
+  }
   // Directly cancelled navigations are simply discarded without handling
   // their potential errors.
   if (![_pendingNavigationInfo cancelled]) {

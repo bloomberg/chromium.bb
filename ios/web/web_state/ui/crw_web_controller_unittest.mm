@@ -382,6 +382,7 @@ class CRWWKWebViewWebControllerTest
 
     // Called by resetInjectedWebView
     [[result stub] backForwardList];
+    [[[result stub] andReturn:[NSURL URLWithString:kTestURLString]] URL];
     [[result stub] setNavigationDelegate:OCMOCK_ANY];
     [[result stub] setUIDelegate:OCMOCK_ANY];
     [[result stub] addObserver:webController_
@@ -895,9 +896,14 @@ TEST_F(CRWWKWebViewWebControllerTest, SSLCertError) {
                         web::kNSErrorPeerCertificateChainKey : chain,
                       }];
   WKWebView* webView = static_cast<WKWebView*>([webController_ webView]);
-  [static_cast<id<WKNavigationDelegate>>(webController_.get()) webView:webView
-                                          didFailProvisionalNavigation:nil
-                                                             withError:error];
+  base::scoped_nsobject<NSObject> navigation([[NSObject alloc] init]);
+  [static_cast<id<WKNavigationDelegate>>(webController_.get())
+                            webView:webView
+      didStartProvisionalNavigation:static_cast<WKNavigation*>(navigation)];
+  [static_cast<id<WKNavigationDelegate>>(webController_.get())
+                           webView:webView
+      didFailProvisionalNavigation:static_cast<WKNavigation*>(navigation)
+                         withError:error];
 
   // Verify correctness of delegate's method arguments.
   EXPECT_TRUE([mockDelegate_ SSLInfo].is_valid());
