@@ -110,8 +110,8 @@ public:
     };
 
     static ViewportConstrainedPosition viewportConstrainedPosition(EPosition position) { return position == FixedPosition ? IsFixedPosition : IsNotFixedPosition; }
-    void mapRectToPaintInvalidationBacking(const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect&, ViewportConstrainedPosition, const PaintInvalidationState*) const;
-    void mapRectToPaintInvalidationBacking(const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect&, const PaintInvalidationState*) const override;
+    void mapToVisibleRectInContainerSpace(const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect&, ViewportConstrainedPosition, const PaintInvalidationState*) const;
+    void mapToVisibleRectInContainerSpace(const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect&, const PaintInvalidationState*) const override;
     void adjustViewportConstrainedOffset(LayoutRect&, ViewportConstrainedPosition) const;
 
     void invalidatePaintForViewAndCompositedLayers();

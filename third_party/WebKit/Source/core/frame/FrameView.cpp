@@ -2034,7 +2034,7 @@ IntRect FrameView::windowClipRect(IncludeScrollbarsInRect scrollbarInclusion) co
     ASSERT(m_frame->view() == this);
 
     LayoutRect clipRect(LayoutPoint(), LayoutSize(visibleContentSize(scrollbarInclusion)));
-    layoutView()->mapRectToPaintInvalidationBacking(&layoutView()->containerForPaintInvalidation(), clipRect, nullptr);
+    layoutView()->mapToVisibleRectInContainerSpace(&layoutView()->containerForPaintInvalidation(), clipRect, nullptr);
     return enclosingIntRect(clipRect);
 }
 

@@ -2287,7 +2287,7 @@ IntRect CompositedLayerMapping::recomputeInterestRect(const GraphicsLayer* graph
     LayoutView* rootView = anchorLayoutObject->view();
     while (rootView->frame()->ownerLayoutObject())
         rootView = rootView->frame()->ownerLayoutObject()->view();
-    anchorLayoutObject->mapRectToPaintInvalidationBacking(rootView, visibleContentRect, 0);
+    anchorLayoutObject->mapToVisibleRectInContainerSpace(rootView, visibleContentRect, 0);
     visibleContentRect.intersect(LayoutRect(rootView->frameView()->visibleContentRect()));
 
     // Map the visible content rect from screen space to local graphics layer space.

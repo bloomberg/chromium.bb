@@ -98,7 +98,7 @@ LayoutRect SVGLayoutSupport::clippedOverflowRectForPaintInvalidation(const Layou
     LayoutRect rect;
     const LayoutSVGRoot& svgRoot = mapRectToSVGRootForPaintInvalidation(object,
         paintInvalidationRect, rect, strokeWidthForHairlinePadding);
-    svgRoot.mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, paintInvalidationState);
+    svgRoot.mapToVisibleRectInContainerSpace(paintInvalidationContainer, rect, paintInvalidationState);
     return rect;
 }
 

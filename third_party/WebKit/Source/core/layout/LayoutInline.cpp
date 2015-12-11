@@ -1047,7 +1047,7 @@ LayoutRect LayoutInline::clippedOverflowRect(const LayoutBoxModelObject* paintIn
     if (overflowRect.isEmpty())
         return overflowRect;
 
-    mapRectToPaintInvalidationBacking(paintInvalidationContainer, overflowRect, paintInvalidationState);
+    mapToVisibleRectInContainerSpace(paintInvalidationContainer, overflowRect, paintInvalidationState);
     return overflowRect;
 }
 
@@ -1069,7 +1069,7 @@ LayoutRect LayoutInline::visualOverflowRect() const
     return overflowRect;
 }
 
-void LayoutInline::mapRectToPaintInvalidationBacking(const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState) const
+void LayoutInline::mapToVisibleRectInContainerSpace(const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState) const
 {
     if (paintInvalidationState && paintInvalidationState->canMapToContainer(paintInvalidationContainer)) {
         if (style()->hasInFlowPosition() && layer())
@@ -1103,7 +1103,10 @@ void LayoutInline::mapRectToPaintInvalidationBacking(const LayoutBoxModelObject*
     rect.setLocation(topLeft);
     if (o->hasOverflowClip()) {
         LayoutBox* containerBox = toLayoutBox(o);
-        containerBox->applyCachedClipAndScrollOffsetForPaintInvalidation(rect);
+        if (o == paintInvalidationContainer)
+            containerBox->applyCachedScrollOffsetForPaintInvalidation(rect);
+        else
+            containerBox->applyCachedClipAndScrollOffsetForPaintInvalidation(rect);
         if (rect.isEmpty())
             return;
     }
@@ -1115,7 +1118,7 @@ void LayoutInline::mapRectToPaintInvalidationBacking(const LayoutBoxModelObject*
         return;
     }
 
-    o->mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, paintInvalidationState);
+    o->mapToVisibleRectInContainerSpace(paintInvalidationContainer, rect, paintInvalidationState);
 }
 
 LayoutSize LayoutInline::offsetFromContainer(const LayoutObject* container, const LayoutPoint& point, bool* offsetDependsOnPoint) const

@@ -237,7 +237,7 @@ private:
 
     LayoutRect absoluteClippedOverflowRect() const override;
     LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* = nullptr) const override;
-    void mapRectToPaintInvalidationBacking(const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect&, const PaintInvalidationState*) const final;
+    void mapToVisibleRectInContainerSpace(const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect&, const PaintInvalidationState*) const final;
 
     // This method differs from clippedOverflowRectForPaintInvalidation in that it includes
     // the rects for culled inline boxes, which aren't necessary for paint invalidation.

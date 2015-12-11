@@ -939,20 +939,28 @@ IntSize LayoutBox::scrolledContentOffset() const
     return flooredIntSize(layer()->scrollableArea()->scrollOffset());
 }
 
+void LayoutBox::applyCachedScrollOffsetForPaintInvalidation(LayoutRect& paintRect) const
+{
+    ASSERT(hasLayer());
+    ASSERT(hasOverflowClip());
+
+    LayoutSize offset = LayoutSize(-scrolledContentOffset());
+    if (UNLIKELY(hasFlippedBlocksWritingMode())) {
+        if (isHorizontalWritingMode())
+            offset.setHeight(-offset.height());
+        else
+            offset.setWidth(-offset.width());
+    }
+    paintRect.move(offset);
+}
+
 void LayoutBox::applyCachedClipAndScrollOffsetForPaintInvalidation(LayoutRect& paintRect) const
 {
     ASSERT(hasLayer());
     ASSERT(hasOverflowClip());
 
+    applyCachedScrollOffsetForPaintInvalidation(paintRect);
     flipForWritingMode(paintRect);
-    paintRect.move(-scrolledContentOffset()); // For overflow:auto/scroll/hidden.
-
-    // Do not clip scroll layer contents because the compositor expects the whole layer
-    // to be always invalidated in-time.
-    if (usesCompositedScrolling()) {
-        flipForWritingMode(paintRect);
-        return;
-    }
 
     // size() is inaccurate if we're in the middle of a layout of this LayoutBox, so use the
     // layer's size instead. Even if the layer's size is wrong, the layer itself will issue paint invalidations
@@ -1426,7 +1434,7 @@ bool LayoutBox::intersectsVisibleViewport()
     LayoutView* layoutView = view();
     while (layoutView->frame()->ownerLayoutObject())
         layoutView = layoutView->frame()->ownerLayoutObject()->view();
-    mapRectToPaintInvalidationBacking(layoutView, rect, 0);
+    mapToVisibleRectInContainerSpace(layoutView, rect, 0);
     return rect.intersects(LayoutRect(layoutView->frameView()->scrollableArea()->visibleContentRectDouble()));
 }
 
@@ -1856,11 +1864,11 @@ LayoutRect LayoutBox::clippedOverflowRectForPaintInvalidation(const LayoutBoxMod
     }
 
     LayoutRect r = visualOverflowRect();
-    mapRectToPaintInvalidationBacking(paintInvalidationContainer, r, paintInvalidationState);
+    mapToVisibleRectInContainerSpace(paintInvalidationContainer, r, paintInvalidationState);
     return r;
 }
 
-void LayoutBox::mapRectToPaintInvalidationBacking(const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState) const
+void LayoutBox::mapToVisibleRectInContainerSpace(const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState) const
 {
     // The rect we compute at each step is shifted by our x/y offset in the parent container's coordinate space.
     // Only when we cross a writing mode boundary will we have to possibly flipForWritingMode (to convert into a more appropriate
@@ -1934,7 +1942,10 @@ void LayoutBox::mapRectToPaintInvalidationBacking(const LayoutBoxModelObject* pa
     rect.setLocation(topLeft);
     if (o->hasOverflowClip()) {
         LayoutBox* containerBox = toLayoutBox(o);
-        containerBox->applyCachedClipAndScrollOffsetForPaintInvalidation(rect);
+        if (o == paintInvalidationContainer)
+            containerBox->applyCachedScrollOffsetForPaintInvalidation(rect);
+        else
+            containerBox->applyCachedClipAndScrollOffsetForPaintInvalidation(rect);
         if (rect.isEmpty())
             return;
     }
@@ -1950,9 +1961,9 @@ void LayoutBox::mapRectToPaintInvalidationBacking(const LayoutBoxModelObject* pa
     }
 
     if (o->isLayoutView())
-        toLayoutView(o)->mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, LayoutView::viewportConstrainedPosition(position), paintInvalidationState);
+        toLayoutView(o)->mapToVisibleRectInContainerSpace(paintInvalidationContainer, rect, LayoutView::viewportConstrainedPosition(position), paintInvalidationState);
     else
-        o->mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, paintInvalidationState);
+        o->mapToVisibleRectInContainerSpace(paintInvalidationContainer, rect, paintInvalidationState);
 }
 
 void LayoutBox::inflatePaintInvalidationRectForReflectionAndFilter(LayoutRect& paintInvalidationRect) const

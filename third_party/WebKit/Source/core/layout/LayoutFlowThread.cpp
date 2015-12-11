@@ -99,7 +99,7 @@ void LayoutFlowThread::validateColumnSets()
     generateColumnSetIntervalTree();
 }
 
-void LayoutFlowThread::mapRectToPaintInvalidationBacking(const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState) const
+void LayoutFlowThread::mapToVisibleRectInContainerSpace(const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState) const
 {
     ASSERT(paintInvalidationContainer != this); // A flow thread should never be an invalidation container.
     // |rect| is a layout rectangle, where the block direction coordinate is flipped for writing
@@ -108,7 +108,7 @@ void LayoutFlowThread::mapRectToPaintInvalidationBacking(const LayoutBoxModelObj
     flipForWritingMode(rect);
     rect = fragmentsBoundingBox(rect);
     flipForWritingMode(rect);
-    LayoutBlockFlow::mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, paintInvalidationState);
+    LayoutBlockFlow::mapToVisibleRectInContainerSpace(paintInvalidationContainer, rect, paintInvalidationState);
 }
 
 void LayoutFlowThread::layout()

@@ -97,11 +97,11 @@ LayoutRect LayoutSVGBlock::clippedOverflowRectForPaintInvalidation(const LayoutB
     return SVGLayoutSupport::clippedOverflowRectForPaintInvalidation(*this, paintInvalidationContainer, paintInvalidationState);
 }
 
-void LayoutSVGBlock::mapRectToPaintInvalidationBacking(const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState) const
+void LayoutSVGBlock::mapToVisibleRectInContainerSpace(const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState) const
 {
     FloatRect paintInvalidationRect(rect);
     const LayoutSVGRoot& svgRoot = SVGLayoutSupport::mapRectToSVGRootForPaintInvalidation(*this, paintInvalidationRect, rect);
-    svgRoot.mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, paintInvalidationState);
+    svgRoot.mapToVisibleRectInContainerSpace(paintInvalidationContainer, rect, paintInvalidationState);
 }
 
 bool LayoutSVGBlock::nodeAtPoint(HitTestResult&, const HitTestLocation&, const LayoutPoint&, HitTestAction)

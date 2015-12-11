@@ -1584,7 +1584,7 @@ LayoutRect LayoutText::clippedOverflowRectForPaintInvalidation(const LayoutBoxMo
         return LayoutRect();
 
     LayoutRect paintInvalidationRect(visualOverflowRect());
-    mapRectToPaintInvalidationBacking(paintInvalidationContainer, paintInvalidationRect, paintInvalidationState);
+    mapToVisibleRectInContainerSpace(paintInvalidationContainer, paintInvalidationRect, paintInvalidationState);
     return paintInvalidationRect;
 }
 
@@ -1623,7 +1623,7 @@ LayoutRect LayoutText::selectionRectForPaintInvalidation(const LayoutBoxModelObj
         rect.unite(LayoutRect(ellipsisRectForBox(box, startPos, endPos)));
     }
 
-    mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, 0);
+    mapToVisibleRectInContainerSpace(paintInvalidationContainer, rect, 0);
     // FIXME: groupedMapping() leaks the squashing abstraction.
     if (paintInvalidationContainer->layer()->groupedMapping())
         PaintLayer::mapRectToPaintBackingCoordinates(paintInvalidationContainer, rect);

@@ -1583,7 +1583,7 @@ LayoutRect LayoutObject::clippedOverflowRectForPaintInvalidation(const LayoutBox
     return LayoutRect();
 }
 
-void LayoutObject::mapRectToPaintInvalidationBacking(const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState) const
+void LayoutObject::mapToVisibleRectInContainerSpace(const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState) const
 {
     if (paintInvalidationContainer == this)
         return;
@@ -1596,14 +1596,17 @@ void LayoutObject::mapRectToPaintInvalidationBacking(const LayoutBoxModelObject*
     }
 
     if (LayoutObject* o = parent()) {
-        if (o->hasOverflowClip()) {
+        if (o != paintInvalidationContainer && o->hasOverflowClip()) {
             LayoutBox* boxParent = toLayoutBox(o);
-            boxParent->applyCachedClipAndScrollOffsetForPaintInvalidation(rect);
+            if (o == paintInvalidationContainer)
+                boxParent->applyCachedScrollOffsetForPaintInvalidation(rect);
+            else
+                boxParent->applyCachedClipAndScrollOffsetForPaintInvalidation(rect);
             if (rect.isEmpty())
                 return;
         }
 
-        o->mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, paintInvalidationState);
+        o->mapToVisibleRectInContainerSpace(paintInvalidationContainer, rect, paintInvalidationState);
     }
 }
 

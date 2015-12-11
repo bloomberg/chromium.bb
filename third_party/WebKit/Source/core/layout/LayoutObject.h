@@ -1083,9 +1083,11 @@ public:
     virtual LayoutRect absoluteClippedOverflowRect() const;
     virtual LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* = nullptr) const;
 
-    // Given a rect in the object's coordinate space, compute a rect suitable for invalidating paints of
-    // that rect in the coordinate space of paintInvalidationContainer.
-    virtual void mapRectToPaintInvalidationBacking(const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect&, const PaintInvalidationState*) const;
+    // Given a rect in the object's coordinate space, compute a rect suitable for invalidating paints of that
+    // rect in the coordinate space of paintInvalidationContainer.  If intermediate containers have clipping or
+    // scrolling of any kind, it is applied; but overflow clipping is *not* applied for paintInvalidationContainer
+    // itself.
+    virtual void mapToVisibleRectInContainerSpace(const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect&, const PaintInvalidationState*) const;
 
     // Return the offset to the column in which the specified point (in flow-thread coordinates)
     // lives. This is used to convert a flow-thread point to a visual point.

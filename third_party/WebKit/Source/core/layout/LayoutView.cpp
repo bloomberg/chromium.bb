@@ -459,12 +459,12 @@ void LayoutView::invalidatePaintForViewAndCompositedLayers()
         compositor()->fullyInvalidatePaint();
 }
 
-void LayoutView::mapRectToPaintInvalidationBacking(const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect& rect, const PaintInvalidationState* invalidationState) const
+void LayoutView::mapToVisibleRectInContainerSpace(const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect& rect, const PaintInvalidationState* invalidationState) const
 {
-    mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, IsNotFixedPosition, invalidationState);
+    mapToVisibleRectInContainerSpace(paintInvalidationContainer, rect, IsNotFixedPosition, invalidationState);
 }
 
-void LayoutView::mapRectToPaintInvalidationBacking(const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect& rect, ViewportConstrainedPosition viewportConstraint, const PaintInvalidationState* state) const
+void LayoutView::mapToVisibleRectInContainerSpace(const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect& rect, ViewportConstrainedPosition viewportConstraint, const PaintInvalidationState* state) const
 {
     if (document().printing())
         return;
@@ -504,7 +504,7 @@ void LayoutView::mapRectToPaintInvalidationBacking(const LayoutBoxModelObject* p
 
         // Adjust for frame border.
         rect.move(obj->contentBoxOffset());
-        obj->mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, 0);
+        obj->mapToVisibleRectInContainerSpace(paintInvalidationContainer, rect, 0);
     }
 }
 

@@ -43,7 +43,7 @@ public:
 
 protected:
     void willBeDestroyed() override;
-    void mapRectToPaintInvalidationBacking(const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect&, const PaintInvalidationState*) const final;
+    void mapToVisibleRectInContainerSpace(const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect&, const PaintInvalidationState*) const final;
 
     AffineTransform m_localTransform;
 

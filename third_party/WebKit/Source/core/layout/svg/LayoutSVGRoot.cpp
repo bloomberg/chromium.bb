@@ -312,7 +312,7 @@ const AffineTransform& LayoutSVGRoot::localToParentTransform() const
 LayoutRect LayoutSVGRoot::clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
 {
     // This is an open-coded aggregate of SVGLayoutSupport::clippedOverflowRectForPaintInvalidation,
-    // LayoutSVGRoot::mapRectToPaintInvalidationBacking and LayoutReplaced::clippedOverflowRectForPaintInvalidation.
+    // LayoutSVGRoot::mapToVisibleRectInContainerSpace and LayoutReplaced::clippedOverflowRectForPaintInvalidation.
     // The reason for this is to optimize/minimize the paint invalidation rect when the box is not "decorated"
     // (does not have background/border/etc.)
 
@@ -339,11 +339,11 @@ LayoutRect LayoutSVGRoot::clippedOverflowRectForPaintInvalidation(const LayoutBo
 
     // Compute the paint invalidation rect in the parent coordinate space.
     LayoutRect rect(enclosingIntRect(paintInvalidationRect));
-    LayoutReplaced::mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, paintInvalidationState);
+    LayoutReplaced::mapToVisibleRectInContainerSpace(paintInvalidationContainer, rect, paintInvalidationState);
     return rect;
 }
 
-void LayoutSVGRoot::mapRectToPaintInvalidationBacking(const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState) const
+void LayoutSVGRoot::mapToVisibleRectInContainerSpace(const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState) const
 {
     // Note that we don't apply the border-box transform here - it's assumed
     // that whoever called us has done that already.
@@ -352,7 +352,7 @@ void LayoutSVGRoot::mapRectToPaintInvalidationBacking(const LayoutBoxModelObject
     if (shouldApplyViewportClip())
         rect.intersect(LayoutRect(pixelSnappedBorderBoxRect()));
 
-    LayoutReplaced::mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, paintInvalidationState);
+    LayoutReplaced::mapToVisibleRectInContainerSpace(paintInvalidationContainer, rect, paintInvalidationState);
 }
 
 // This method expects local CSS box coordinates.

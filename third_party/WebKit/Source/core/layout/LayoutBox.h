@@ -599,7 +599,7 @@ public:
     bool hasForcedBreakAfter() const;
 
     LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* = nullptr) const override;
-    void mapRectToPaintInvalidationBacking(const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect&, const PaintInvalidationState*) const override;
+    void mapToVisibleRectInContainerSpace(const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect&, const PaintInvalidationState*) const override;
     virtual void invalidatePaintForOverhangingFloats(bool paintAllDescendants);
 
     LayoutUnit containingBlockLogicalHeightForGetComputedStyle() const;
@@ -798,6 +798,7 @@ public:
     virtual void computeIntrinsicRatioInformation(FloatSize& /* intrinsicSize */, double& /* intrinsicRatio */) const { }
 
     IntSize scrolledContentOffset() const;
+    void applyCachedScrollOffsetForPaintInvalidation(LayoutRect& paintRect) const;
     void applyCachedClipAndScrollOffsetForPaintInvalidation(LayoutRect& paintRect) const;
 
     virtual bool hasRelativeLogicalWidth() const;
