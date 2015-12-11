@@ -12,9 +12,9 @@
       "paintInvalidationClients": [
         "LayoutBlockFlow DIV id='badge'",
         "InlineBox",
-        "LayoutText #text",
         "RootInlineBox",
-        "LayoutBlockFlow (floating) DIV class='state'"
+        "LayoutBlockFlow (floating) DIV class='state'",
+        "LayoutText #text"
       ]
     }
   ]
