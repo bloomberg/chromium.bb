@@ -2395,7 +2395,7 @@ def GenerateEnumUtils(out_file, input_filenames):
   out_file.write(LICENSE_AND_HEADER)
   out_file.write("static const GLEnums::EnumToString "
                  "enum_to_string_table[] = {\n")
-  for value in dict:
+  for value in sorted(dict):
     out_file.write('  { %s, "%s", },\n' % (value, dict[value]))
   out_file.write("""};
 
