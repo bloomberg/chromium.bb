@@ -28,7 +28,6 @@
 #include "base/sys_info.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "content/common/sandbox_linux/sandbox_debug_handling_linux.h"
 #include "content/common/sandbox_linux/sandbox_linux.h"
 #include "content/common/sandbox_linux/sandbox_seccomp_bpf_linux.h"
 #include "content/public/common/content_switches.h"
@@ -185,10 +184,6 @@ void LinuxSandbox::EngageNamespaceSandbox() {
   std::vector<sandbox::Credentials::Capability> caps;
   caps.push_back(sandbox::Credentials::Capability::SYS_ADMIN);
   CHECK(sandbox::Credentials::SetCapabilities(proc_fd_, caps));
-
-  // This needs to happen after moving to a new user NS, since doing so involves
-  // writing the UID/GID map.
-  CHECK(SandboxDebugHandling::SetDumpableStatusAndHandlers());
 }
 
 std::vector<int> LinuxSandbox::GetFileDescriptorsToClose() {
