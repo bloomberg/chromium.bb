@@ -14,12 +14,6 @@ namespace edk {
 
 namespace {
 const uint64_t kInternalRoutingId = 0;
-
-// These are messages sent over our internal routing id above, meant for the
-// other side's RoutedRawChannel to dispatch.
-enum InternalMessages {
-  ROUTE_CLOSED = 0,
-};
 }
 
 RoutedRawChannel::PendingMessage::PendingMessage() {
@@ -77,9 +71,8 @@ void RoutedRawChannel::RemoveRoute(uint64_t pipe_id,
     close_routes_.erase(pipe_id);
   } else if (channel_) {
     // Default route id of 0 to reach the other side's RoutedRawChannel.
-    char message_data[sizeof(char) + sizeof(uint64_t)];
-    message_data[0] = ROUTE_CLOSED;
-    memcpy(&message_data[1], &pipe_id, sizeof(uint64_t));
+    char message_data[sizeof(uint64_t)];
+    memcpy(&message_data[0], &pipe_id, sizeof(uint64_t));
     scoped_ptr<MessageInTransit> message(new MessageInTransit(
         MessageInTransit::Type::MESSAGE, arraysize(message_data),
           message_data));
@@ -110,16 +103,11 @@ void RoutedRawChannel::OnReadMessage(
   base::AutoLock auto_lock(lock_);
   uint64_t route_id = message_view.route_id();
   if (route_id == kInternalRoutingId) {
-    if (message_view.num_bytes() != sizeof(char) + sizeof(uint64_t)) {
-      NOTREACHED() << "Invalid internal message in RoutedRawChannel.";
+    if (message_view.num_bytes() !=  sizeof(uint64_t)) {
+      NOTREACHED() << "Invalid internal message in RoutedRawChannel." ;
       return;
     }
-    const char* bytes = static_cast<const char*>(message_view.bytes());
-    if (bytes[0] != ROUTE_CLOSED) {
-      NOTREACHED() << "Unknown internal message in RoutedRawChannel.";
-      return;
-    }
-    uint64_t closed_route = *reinterpret_cast<const uint64_t*>(&bytes[1]);
+    uint64_t closed_route = *static_cast<const uint64_t*>(message_view.bytes());
     if (close_routes_.find(closed_route) != close_routes_.end()) {
       NOTREACHED() << "Should only receive one ROUTE_CLOSED per route.";
       return;
