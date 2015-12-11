@@ -320,23 +320,78 @@ TEST(StringTest, ToLowerLocale)
     }
 }
 
-TEST(WTF, StartsWithIgnoringASCIICase)
+TEST(StringTest, StartsWithIgnoringASCIICase)
 {
     String allASCII("LINK");
     String allASCIILowerCase("link");
-    EXPECT_TRUE(startsWithIgnoringASCIICase(allASCII, allASCIILowerCase));
+    EXPECT_TRUE(allASCII.startsWith(allASCIILowerCase, TextCaseASCIIInsensitive));
     String allASCIIMixedCase("lInK");
-    EXPECT_TRUE(startsWithIgnoringASCIICase(allASCII, allASCIIMixedCase));
+    EXPECT_TRUE(allASCII.startsWith(allASCIIMixedCase, TextCaseASCIIInsensitive));
     String allASCIIDifferent("foo");
-    EXPECT_FALSE(startsWithIgnoringASCIICase(allASCII, allASCIIDifferent));
+    EXPECT_FALSE(allASCII.startsWith(allASCIIDifferent, TextCaseASCIIInsensitive));
     String nonASCII = String::fromUTF8("LIN\xE2\x84\xAA");
-    EXPECT_FALSE(startsWithIgnoringASCIICase(allASCII, nonASCII));
-    EXPECT_TRUE(startsWithIgnoringASCIICase(allASCII, nonASCII.lower()));
+    EXPECT_FALSE(allASCII.startsWith(nonASCII, TextCaseASCIIInsensitive));
+    EXPECT_TRUE(allASCII.startsWith(nonASCII.lower(), TextCaseASCIIInsensitive));
 
-    EXPECT_FALSE(startsWithIgnoringASCIICase(nonASCII, allASCII));
-    EXPECT_FALSE(startsWithIgnoringASCIICase(nonASCII, allASCIILowerCase));
-    EXPECT_FALSE(startsWithIgnoringASCIICase(nonASCII, allASCIIMixedCase));
-    EXPECT_FALSE(startsWithIgnoringASCIICase(nonASCII, allASCIIDifferent));
+    EXPECT_FALSE(nonASCII.startsWith(allASCII, TextCaseASCIIInsensitive));
+    EXPECT_FALSE(nonASCII.startsWith(allASCIILowerCase, TextCaseASCIIInsensitive));
+    EXPECT_FALSE(nonASCII.startsWith(allASCIIMixedCase, TextCaseASCIIInsensitive));
+    EXPECT_FALSE(nonASCII.startsWith(allASCIIDifferent, TextCaseASCIIInsensitive));
+}
+
+TEST(StringTest, EndsWithIgnoringASCIICase)
+{
+    String allASCII("LINK");
+    String allASCIILowerCase("link");
+    EXPECT_TRUE(allASCII.endsWith(allASCIILowerCase, TextCaseASCIIInsensitive));
+    String allASCIIMixedCase("lInK");
+    EXPECT_TRUE(allASCII.endsWith(allASCIIMixedCase, TextCaseASCIIInsensitive));
+    String allASCIIDifferent("foo");
+    EXPECT_FALSE(allASCII.endsWith(allASCIIDifferent, TextCaseASCIIInsensitive));
+    String nonASCII = String::fromUTF8("LIN\xE2\x84\xAA");
+    EXPECT_FALSE(allASCII.endsWith(nonASCII, TextCaseASCIIInsensitive));
+    EXPECT_TRUE(allASCII.endsWith(nonASCII.lower(), TextCaseASCIIInsensitive));
+
+    EXPECT_FALSE(nonASCII.endsWith(allASCII, TextCaseASCIIInsensitive));
+    EXPECT_FALSE(nonASCII.endsWith(allASCIILowerCase, TextCaseASCIIInsensitive));
+    EXPECT_FALSE(nonASCII.endsWith(allASCIIMixedCase, TextCaseASCIIInsensitive));
+    EXPECT_FALSE(nonASCII.endsWith(allASCIIDifferent, TextCaseASCIIInsensitive));
+}
+
+TEST(StringTest, EqualIgnoringASCIICase)
+{
+    String allASCII("LINK");
+    String allASCIILowerCase("link");
+    EXPECT_TRUE(equalIgnoringASCIICase(allASCII, allASCIILowerCase));
+    String allASCIIMixedCase("lInK");
+    EXPECT_TRUE(equalIgnoringASCIICase(allASCII, allASCIIMixedCase));
+    String allASCIIDifferent("foo");
+    EXPECT_FALSE(equalIgnoringASCIICase(allASCII, allASCIIDifferent));
+    String nonASCII = String::fromUTF8("LIN\xE2\x84\xAA");
+    EXPECT_FALSE(equalIgnoringASCIICase(allASCII, nonASCII));
+    EXPECT_TRUE(equalIgnoringASCIICase(allASCII, nonASCII.lower()));
+
+    EXPECT_FALSE(equalIgnoringASCIICase(nonASCII, allASCII));
+    EXPECT_FALSE(equalIgnoringASCIICase(nonASCII, allASCIILowerCase));
+    EXPECT_FALSE(equalIgnoringASCIICase(nonASCII, allASCIIMixedCase));
+    EXPECT_FALSE(equalIgnoringASCIICase(nonASCII, allASCIIDifferent));
+}
+
+TEST(StringTest, FindIgnoringASCIICase)
+{
+    String needle = String::fromUTF8("a\xCC\x88qa\xCC\x88");
+
+    // Multiple matches, non-overlapping
+    String haystack1 = String::fromUTF8("aA\xCC\x88QA\xCC\x88sA\xCC\x88qa\xCC\x88rfi\xC3\xA4q\xC3\xA4");
+    EXPECT_EQ(1u, haystack1.findIgnoringASCIICase(needle));
+    EXPECT_EQ(7u, haystack1.findIgnoringASCIICase(needle, 2));
+    EXPECT_EQ(kNotFound, haystack1.findIgnoringASCIICase(needle, 8));
+
+    // Multiple matches, overlapping
+    String haystack2 = String::fromUTF8("aA\xCC\x88QA\xCC\x88qa\xCC\x88rfi");
+    EXPECT_EQ(1u, haystack2.findIgnoringASCIICase(needle));
+    EXPECT_EQ(4u, haystack2.findIgnoringASCIICase(needle, 2));
+    EXPECT_EQ(kNotFound, haystack2.findIgnoringASCIICase(needle, 5));
 }
 
 TEST(StringTest, Lower)

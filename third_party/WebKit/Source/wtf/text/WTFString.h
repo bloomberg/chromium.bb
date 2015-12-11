@@ -87,6 +87,7 @@ enum UTF8ConversionMode {
 
 #define DISPATCH_CASE_OP(caseSensitivity, op, args)                     \
     ((caseSensitivity == TextCaseSensitive) ? op args :                 \
+     (caseSensitivity == TextCaseASCIIInsensitive) ? op##IgnoringASCIICase args : \
      op##IgnoringCase args)
 
 template<bool isSpecialCharacter(UChar), typename CharacterType>
@@ -235,6 +236,10 @@ public:
         { return m_impl ? m_impl->findIgnoringCase(str, start) : kNotFound; }
     size_t findIgnoringCase(const String& str, unsigned start = 0) const
         { return m_impl ? m_impl->findIgnoringCase(str.impl(), start) : kNotFound; }
+
+    // ASCII case insensitive string matching.
+    size_t findIgnoringASCIICase(const String& str, unsigned start = 0) const
+        { return m_impl ? m_impl->findIgnoringASCIICase(str.impl(), start) : kNotFound; }
 
     // Wrappers for find adding dynamic sensitivity check.
     size_t find(const LChar* str, unsigned start, TextCaseSensitivity caseSensitivity) const

@@ -507,7 +507,7 @@ static bool attributeValueMatches(const Attribute& attributeItem, CSSSelector::M
     case CSSSelector::AttributeExact:
         if (caseSensitivity == TextCaseSensitive)
             return selectorValue == value;
-        return equalIgnoringCase(selectorValue, value);
+        return equalIgnoringASCIICase(selectorValue, value);
     case CSSSelector::AttributeSet:
         return true;
     case CSSSelector::AttributeList:
@@ -571,7 +571,7 @@ static bool anyAttributeMatches(Element& element, CSSSelector::Match match, cons
     element.synchronizeAttribute(selectorAttr.localName());
 
     const AtomicString& selectorValue = selector.value();
-    TextCaseSensitivity caseSensitivity = (selector.attributeMatchType() == CSSSelector::CaseInsensitive) ? TextCaseInsensitive : TextCaseSensitive;
+    TextCaseSensitivity caseSensitivity = (selector.attributeMatchType() == CSSSelector::CaseInsensitive) ? TextCaseASCIIInsensitive : TextCaseSensitive;
 
     AttributeCollection attributes = element.attributesWithoutUpdate();
     for (const auto& attributeItem: attributes) {
@@ -581,7 +581,7 @@ static bool anyAttributeMatches(Element& element, CSSSelector::Match match, cons
         if (attributeValueMatches(attributeItem, match, selectorValue, caseSensitivity))
             return true;
 
-        if (caseSensitivity == TextCaseInsensitive) {
+        if (caseSensitivity == TextCaseASCIIInsensitive) {
             if (selectorAttr.namespaceURI() != starAtom)
                 return false;
             continue;
@@ -594,7 +594,7 @@ static bool anyAttributeMatches(Element& element, CSSSelector::Match match, cons
 
         // If case-insensitive, re-check, and count if result differs.
         // See http://code.google.com/p/chromium/issues/detail?id=327060
-        if (legacyCaseInsensitive && attributeValueMatches(attributeItem, match, selectorValue, TextCaseInsensitive)) {
+        if (legacyCaseInsensitive && attributeValueMatches(attributeItem, match, selectorValue, TextCaseASCIIInsensitive)) {
             UseCounter::count(element.document(), UseCounter::CaseInsensitiveAttrSelectorMatch);
             return true;
         }
@@ -933,7 +933,7 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, M
             else
                 value = element.computeInheritedLanguage();
             const AtomicString& argument = selector.argument();
-            if (value.isEmpty() || !startsWithIgnoringASCIICase(value, argument))
+            if (value.isEmpty() || !value.startsWith(argument, TextCaseASCIIInsensitive))
                 break;
             if (value.length() != argument.length() && value[argument.length()] != '-')
                 break;
