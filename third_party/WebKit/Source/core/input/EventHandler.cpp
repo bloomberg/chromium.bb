@@ -1339,7 +1339,7 @@ WebInputEventResult EventHandler::handleMouseReleaseEvent(const PlatformMouseEve
     if (m_lastScrollbarUnderMouse) {
         invalidateClick();
         m_lastScrollbarUnderMouse->mouseUp(mouseEvent);
-        return dispatchMouseEvent(EventTypeNames::mouseup, m_nodeUnderMouse.get(), m_clickCount, mouseEvent);
+        return updatePointerTargetAndDispatchEvents(EventTypeNames::mouseup, m_nodeUnderMouse.get(), m_clickCount, mouseEvent);
     }
 
     // Mouse events simulated from touch should not hit-test again.
