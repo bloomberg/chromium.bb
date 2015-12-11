@@ -27,10 +27,10 @@ class WriteTransaction;
 //                        permanent folders) for configured type as needed.
 //
 // Most of other functions are no ops.
-class SYNC_EXPORT_PRIVATE SyncRollbackManagerBase :
-    public SyncManager,
-    public syncable::DirectoryChangeDelegate,
-    public syncable::TransactionObserver {
+class SYNC_EXPORT SyncRollbackManagerBase
+    : public SyncManager,
+      public syncable::DirectoryChangeDelegate,
+      public syncable::TransactionObserver {
  public:
   SyncRollbackManagerBase();
   ~SyncRollbackManagerBase() override;

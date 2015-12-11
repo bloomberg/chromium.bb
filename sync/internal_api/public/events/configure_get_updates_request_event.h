@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNC_INTERNAL_API_EVENTS_CONFIGURE_GET_UPDATES_REQUEST_H
-#define SYNC_INTERNAL_API_EVENTS_CONFIGURE_GET_UPDATES_REQUEST_H
+#ifndef SYNC_INTERNAL_API_PUBLIC_EVENTS_CONFIGURE_GET_UPDATES_REQUEST_EVENT_H_
+#define SYNC_INTERNAL_API_PUBLIC_EVENTS_CONFIGURE_GET_UPDATES_REQUEST_EVENT_H_
+
+#include <string>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
@@ -15,8 +17,7 @@
 namespace syncer {
 
 // An event representing a configure GetUpdates request to the server.
-class SYNC_EXPORT_PRIVATE ConfigureGetUpdatesRequestEvent
-    : public ProtocolEvent {
+class SYNC_EXPORT ConfigureGetUpdatesRequestEvent : public ProtocolEvent {
  public:
   ConfigureGetUpdatesRequestEvent(
       base::Time timestamp,
@@ -40,4 +41,4 @@ class SYNC_EXPORT_PRIVATE ConfigureGetUpdatesRequestEvent
 
 }  // namespace syncer
 
-#endif  // SYNC_INTERNAL_API_EVENTS_CONFIGURE_GET_UPDATES_REQUEST_H
+#endif  // SYNC_INTERNAL_API_PUBLIC_EVENTS_CONFIGURE_GET_UPDATES_REQUEST_EVENT_H_

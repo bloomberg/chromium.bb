@@ -44,13 +44,13 @@ static_assert(NodeOrdinal::kRadix == 256,
 // field of SyncEntity) to a NodeOrdinal.  This transformation
 // preserves the ordering relation: a < b under integer ordering if
 // and only if Int64ToNodeOrdinal(a) < Int64ToNodeOrdinal(b).
-SYNC_EXPORT_PRIVATE NodeOrdinal Int64ToNodeOrdinal(int64_t x);
+SYNC_EXPORT NodeOrdinal Int64ToNodeOrdinal(int64_t x);
 
 // The inverse of Int64ToNodeOrdinal.  This conversion is, in general,
 // lossy: NodeOrdinals can have arbitrary fidelity, while numeric
 // positions contain only 64 bits of information (in fact, this is the
 // reason we've moved away from them).
-SYNC_EXPORT_PRIVATE int64 NodeOrdinalToInt64(const NodeOrdinal& ordinal);
+SYNC_EXPORT int64 NodeOrdinalToInt64(const NodeOrdinal& ordinal);
 
 }  // namespace syncer
 

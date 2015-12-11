@@ -27,10 +27,9 @@ class ModelTypeEntity;
 
 // A sync component embedded on the synced type's thread that helps to handle
 // communication between sync and model type threads.
-class SYNC_EXPORT_PRIVATE SharedModelTypeProcessor
-    : public ModelTypeProcessor,
-      public ModelTypeChangeProcessor,
-      base::NonThreadSafe {
+class SYNC_EXPORT SharedModelTypeProcessor : public ModelTypeProcessor,
+                                             public ModelTypeChangeProcessor,
+                                             base::NonThreadSafe {
  public:
   SharedModelTypeProcessor(syncer::ModelType type, ModelTypeService* service);
   ~SharedModelTypeProcessor() override;

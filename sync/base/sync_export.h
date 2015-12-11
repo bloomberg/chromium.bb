@@ -8,6 +8,8 @@
 #if defined(COMPONENT_BUILD)
 #if defined(WIN32)
 
+// TODO(skym): Remove SYNC_EXPORT_PRIVATE, see crbug/554242.
+
 #if defined(SYNC_IMPLEMENTATION)
 #define SYNC_EXPORT __declspec(dllexport)
 #define SYNC_EXPORT_PRIVATE __declspec(dllexport)

@@ -5,11 +5,13 @@
 #ifndef SYNC_SYNCABLE_NIGORI_HANDLER_H_
 #define SYNC_SYNCABLE_NIGORI_HANDLER_H_
 
+#include <string>
+
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/model_type.h"
 
-namespace google{
-namespace protobuf{
+namespace google {
+namespace protobuf {
 template <typename T>
 class RepeatedPtrField;
 }
@@ -27,7 +29,7 @@ class BaseTransaction;
 // Sync internal interface for dealing with nigori node and querying
 // the current set of encrypted types. Not thread safe, so a sync transaction
 // must be held by a caller whenever invoking methods.
-class SYNC_EXPORT_PRIVATE NigoriHandler {
+class SYNC_EXPORT NigoriHandler {
  public:
   NigoriHandler();
   virtual ~NigoriHandler();

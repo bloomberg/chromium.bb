@@ -44,9 +44,10 @@ class TransactionObserver;
 class WriteTransaction;
 
 enum InvariantCheckLevel {
-  OFF = 0,            // No checking.
-  VERIFY_CHANGES = 1, // Checks only mutated entries.  Does not check hierarchy.
-  FULL_DB_VERIFICATION = 2 // Check every entry.  This can be expensive.
+  OFF = 0,                  // No checking.
+  VERIFY_CHANGES = 1,       // Checks only mutated entries.  Does not check
+                            // hierarchy.
+  FULL_DB_VERIFICATION = 2  // Check every entry.  This can be expensive.
 };
 
 // Directory stores and manages EntryKernels.
@@ -58,6 +59,7 @@ class SYNC_EXPORT Directory {
  public:
   typedef std::vector<int64> Metahandles;
 
+  // TODO(skym): Convert this hash_map usage to unordered_map, crbug/567280.
   // Be careful when using these hash_map containers.  According to the spec,
   // inserting into them may invalidate all iterators.
   //
@@ -86,7 +88,7 @@ class SYNC_EXPORT Directory {
 
   // Various data that the Directory::Kernel we are backing (persisting data
   // for) needs saved across runs of the application.
-  struct SYNC_EXPORT_PRIVATE PersistedKernelInfo {
+  struct SYNC_EXPORT PersistedKernelInfo {
     PersistedKernelInfo();
     ~PersistedKernelInfo();
 
@@ -131,7 +133,7 @@ class SYNC_EXPORT Directory {
   // When the Directory is told to SaveChanges, a SaveChangesSnapshot is
   // constructed and forms a consistent snapshot of what needs to be sent to
   // the backing store.
-  struct SYNC_EXPORT_PRIVATE SaveChangesSnapshot {
+  struct SYNC_EXPORT SaveChangesSnapshot {
     SaveChangesSnapshot();
     ~SaveChangesSnapshot();
 
@@ -372,8 +374,8 @@ class SYNC_EXPORT Directory {
   //
   // TODO(rlarocque): These functions are used mainly for tree traversal.  We
   // should replace these with an iterator API.  See crbug.com/178275.
-  syncable::Id GetPredecessorId(EntryKernel*);
-  syncable::Id GetSuccessorId(EntryKernel*);
+  syncable::Id GetPredecessorId(EntryKernel* e);
+  syncable::Id GetSuccessorId(EntryKernel* e);
 
   // Places |e| as a successor to |predecessor|.  If |predecessor| is NULL,
   // |e| will be placed as the left-most item in its folder.
@@ -664,4 +666,4 @@ class SYNC_EXPORT Directory {
 }  // namespace syncable
 }  // namespace syncer
 
-#endif // SYNC_SYNCABLE_DIRECTORY_H_
+#endif  // SYNC_SYNCABLE_DIRECTORY_H_

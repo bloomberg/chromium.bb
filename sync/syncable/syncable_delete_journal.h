@@ -26,7 +26,7 @@ typedef std::set<const EntryKernel*, LessField<IdField, ID> > JournalIndex;
 // DeleteJournal is thread-safe and can be accessed on any thread. Has to hold
 // a valid transaction object when calling methods of DeleteJournal, thus each
 // method requires a non-null |trans| parameter.
-class SYNC_EXPORT_PRIVATE DeleteJournal {
+class SYNC_EXPORT DeleteJournal {
  public:
   FRIEND_TEST_ALL_PREFIXES(SyncableDirectoryTest, ManageDeleteJournals);
 

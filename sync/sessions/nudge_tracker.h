@@ -25,7 +25,7 @@ class ObjectIdInvalidationMap;
 
 namespace sessions {
 
-class SYNC_EXPORT_PRIVATE NudgeTracker {
+class SYNC_EXPORT NudgeTracker {
  public:
   static size_t kDefaultMaxPayloadsPerType;
 

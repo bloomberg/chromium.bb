@@ -4,8 +4,8 @@
 //
 // Definition of ProgressMarkerMap and various utility functions.
 
-#ifndef SYNC_INTERNAL_PUBLIC_API_BASE_PROGRESS_MARKER_MAP_H_
-#define SYNC_INTERNAL_PUBLIC_API_BASE_PROGRESS_MARKER_MAP_H_
+#ifndef SYNC_INTERNAL_API_PUBLIC_BASE_PROGRESS_MARKER_MAP_H_
+#define SYNC_INTERNAL_API_PUBLIC_BASE_PROGRESS_MARKER_MAP_H_
 
 #include <map>
 #include <string>
@@ -27,9 +27,9 @@ namespace syncer {
 // DataTypeProgressMarkers.
 typedef std::map<ModelType, std::string> ProgressMarkerMap;
 
-SYNC_EXPORT_PRIVATE scoped_ptr<base::DictionaryValue> ProgressMarkerMapToValue(
+SYNC_EXPORT scoped_ptr<base::DictionaryValue> ProgressMarkerMapToValue(
     const ProgressMarkerMap& marker_map);
 
 }  // namespace syncer
 
-#endif  // SYNC_INTERNAL_PUBLIC_API_BASE_PROGRESS_MARKER_MAP_H_
+#endif  // SYNC_INTERNAL_API_PUBLIC_BASE_PROGRESS_MARKER_MAP_H_

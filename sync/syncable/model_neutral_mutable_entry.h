@@ -5,6 +5,8 @@
 #ifndef SYNC_SYNCABLE_MODEL_NEUTRAL_MUTABLE_ENTRY_H_
 #define SYNC_SYNCABLE_MODEL_NEUTRAL_MUTABLE_ENTRY_H_
 
+#include <string>
+
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/syncable/entry.h"
@@ -27,7 +29,7 @@ enum CreateNewTypeRoot { CREATE_NEW_TYPE_ROOT };
 // to be communicated to the model (and the model's thread).  It is not possible
 // to change an entry's SPECIFICS or UNIQUE_POSITION fields with this kind of
 // entry.
-class SYNC_EXPORT_PRIVATE ModelNeutralMutableEntry : public Entry {
+class SYNC_EXPORT ModelNeutralMutableEntry : public Entry {
  public:
   ModelNeutralMutableEntry(BaseWriteTransaction* trans,
                            CreateNewUpdateItem,

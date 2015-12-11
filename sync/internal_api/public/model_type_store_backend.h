@@ -24,7 +24,7 @@ namespace syncer_v2 {
 // ModelTypeStoreBackend handles operations with leveldb. It is oblivious of the
 // fact that it is called from separate thread (with the exception of ctor),
 // meaning it shouldn't deal with callbacks and task_runners.
-class SYNC_EXPORT_PRIVATE ModelTypeStoreBackend : public base::NonThreadSafe {
+class SYNC_EXPORT ModelTypeStoreBackend : public base::NonThreadSafe {
  public:
   ModelTypeStoreBackend();
   ~ModelTypeStoreBackend();

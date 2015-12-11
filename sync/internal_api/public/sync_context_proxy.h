@@ -14,7 +14,7 @@ struct ActivationContext;
 // Interface for the datatype integration logic from non-sync threads.
 //
 // See SyncContextProxyImpl for an actual implementation.
-class SYNC_EXPORT_PRIVATE SyncContextProxy {
+class SYNC_EXPORT SyncContextProxy {
  public:
   SyncContextProxy();
   virtual ~SyncContextProxy();
@@ -35,6 +35,6 @@ class SYNC_EXPORT_PRIVATE SyncContextProxy {
   virtual scoped_ptr<SyncContextProxy> Clone() const = 0;
 };
 
-}  // namespace syncer
+}  // namespace syncer_v2
 
 #endif  // SYNC_INTERNAL_API_PUBLIC_SYNC_CONTEXT_PROXY_H_

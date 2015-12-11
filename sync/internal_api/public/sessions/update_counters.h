@@ -5,6 +5,8 @@
 #ifndef SYNC_INTERNAL_API_PUBLIC_SESSIONS_UPDATE_COUNTERS_H_
 #define SYNC_INTERNAL_API_PUBLIC_SESSIONS_UPDATE_COUNTERS_H_
 
+#include <string>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "sync/base/sync_export.h"
@@ -13,7 +15,7 @@ namespace syncer {
 
 // A class to maintain counts related to the update requests and responses for
 // a particular sync type.
-struct SYNC_EXPORT_PRIVATE UpdateCounters {
+struct SYNC_EXPORT UpdateCounters {
   UpdateCounters();
   ~UpdateCounters();
 

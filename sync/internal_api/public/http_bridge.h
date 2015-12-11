@@ -46,10 +46,9 @@ class CancelationSignal;
 // This is a one-time use bridge. Create one for each request you want to make.
 // It is RefCountedThreadSafe because it can PostTask to the io loop, and thus
 // needs to stick around across context switches, etc.
-class SYNC_EXPORT_PRIVATE HttpBridge
-    : public base::RefCountedThreadSafe<HttpBridge>,
-      public HttpPostProviderInterface,
-      public net::URLFetcherDelegate {
+class SYNC_EXPORT HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
+                               public HttpPostProviderInterface,
+                               public net::URLFetcherDelegate {
  public:
   HttpBridge(const std::string& user_agent,
              const scoped_refptr<net::URLRequestContextGetter>& context,

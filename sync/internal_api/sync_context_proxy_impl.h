@@ -20,7 +20,7 @@ class SyncContext;
 //
 // It is expected that this object will be copied to and used on many different
 // threads.  It is small and safe to pass by value.
-class SYNC_EXPORT_PRIVATE SyncContextProxyImpl : public SyncContextProxy {
+class SYNC_EXPORT SyncContextProxyImpl : public SyncContextProxy {
  public:
   SyncContextProxyImpl(
       const scoped_refptr<base::SequencedTaskRunner>& sync_task_runner,
@@ -49,6 +49,6 @@ class SYNC_EXPORT_PRIVATE SyncContextProxyImpl : public SyncContextProxy {
   base::WeakPtr<SyncContext> sync_context_;
 };
 
-}  // namespace syncer
+}  // namespace syncer_v2
 
 #endif  // SYNC_INTERNAL_API_SYNC_CONTEXT_PROXY_IMPL_H_

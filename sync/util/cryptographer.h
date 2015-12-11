@@ -23,7 +23,7 @@ namespace syncer {
 
 class Encryptor;
 
-SYNC_EXPORT_PRIVATE extern const char kNigoriTag[];
+SYNC_EXPORT extern const char kNigoriTag[];
 
 // The parameters used to initialize a Nigori instance.
 struct KeyParams {

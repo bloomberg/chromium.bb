@@ -39,7 +39,7 @@ namespace syncer {
 //
 // This class currently has several bookmarks-related assumptions built in,
 // though it could be adapted to be more generally useful.
-class SYNC_EXPORT_PRIVATE UniquePosition {
+class SYNC_EXPORT UniquePosition {
  public:
   static const size_t kSuffixLength;
   static const size_t kCompressBytesThreshold;
@@ -141,6 +141,6 @@ class SYNC_EXPORT_PRIVATE UniquePosition {
   bool is_valid_;
 };
 
-}  // namespace syncer;
+}  // namespace syncer
 
 #endif  // SYNC_INTERNAL_API_PUBLIC_BASE_UNIQUE_POSITION_H_

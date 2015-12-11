@@ -12,7 +12,7 @@
 namespace syncer {
 namespace syncable {
 
-class SYNC_EXPORT_PRIVATE TransactionObserver {
+class SYNC_EXPORT TransactionObserver {
  public:
   virtual void OnTransactionWrite(
       const ImmutableWriteTransactionInfo& write_transaction_info,

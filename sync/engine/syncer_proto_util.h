@@ -38,14 +38,14 @@ class Entry;
 }
 
 // Returns the types to migrate from the data in |response|.
-SYNC_EXPORT_PRIVATE ModelTypeSet GetTypesToMigrate(
-    const sync_pb::ClientToServerResponse& response);
+SYNC_EXPORT ModelTypeSet
+GetTypesToMigrate(const sync_pb::ClientToServerResponse& response);
 
 // Builds a SyncProtocolError from the data in |error|.
-SYNC_EXPORT_PRIVATE SyncProtocolError ConvertErrorPBToSyncProtocolError(
+SYNC_EXPORT SyncProtocolError ConvertErrorPBToSyncProtocolError(
     const sync_pb::ClientToServerResponse_Error& error);
 
-class SYNC_EXPORT_PRIVATE SyncerProtoUtil {
+class SYNC_EXPORT SyncerProtoUtil {
  public:
   // Posts the given message and fills the buffer with the returned value.
   // Returns true on success.  Also handles store birthday verification: will

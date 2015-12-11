@@ -13,7 +13,7 @@ namespace sessions {
 
 // This is the interface that needs to be implemented by the event listener
 // to communicate the debug info data to the syncer.
-class SYNC_EXPORT_PRIVATE DebugInfoGetter {
+class SYNC_EXPORT DebugInfoGetter {
  public:
   // Gets the client debug info. Be sure to clear the info to ensure the data
   // isn't sent multiple times.

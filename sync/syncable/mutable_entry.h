@@ -5,6 +5,8 @@
 #ifndef SYNC_SYNCABLE_MUTABLE_ENTRY_H_
 #define SYNC_SYNCABLE_MUTABLE_ENTRY_H_
 
+#include <string>
+
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/syncable/entry.h"
@@ -24,7 +26,7 @@ class WriteTransaction;
 
 // A mutable meta entry.  Changes get committed to the database when the
 // WriteTransaction is destroyed.
-class SYNC_EXPORT_PRIVATE MutableEntry : public ModelNeutralMutableEntry {
+class SYNC_EXPORT MutableEntry : public ModelNeutralMutableEntry {
   void Init(WriteTransaction* trans, ModelType model_type,
             const Id& parent_id, const std::string& name);
 

@@ -5,6 +5,8 @@
 #ifndef SYNC_INTERNAL_API_PUBLIC_SESSIONS_COMMIT_COUNTERS_H_
 #define SYNC_INTERNAL_API_PUBLIC_SESSIONS_COMMIT_COUNTERS_H_
 
+#include <string>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "sync/base/sync_export.h"
@@ -12,7 +14,7 @@
 namespace syncer {
 
 // A class to maintain counts related to sync commit requests and responses.
-struct SYNC_EXPORT_PRIVATE CommitCounters {
+struct SYNC_EXPORT CommitCounters {
   CommitCounters();
   ~CommitCounters();
 

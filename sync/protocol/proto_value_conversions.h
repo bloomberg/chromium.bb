@@ -95,41 +95,40 @@ namespace syncer {
 // caller.
 
 // TODO(akalin): Perhaps extend this to decrypt?
-SYNC_EXPORT_PRIVATE scoped_ptr<base::DictionaryValue> EncryptedDataToValue(
+SYNC_EXPORT scoped_ptr<base::DictionaryValue> EncryptedDataToValue(
     const sync_pb::EncryptedData& encrypted_data);
 
 // Sub-protocol of AppListSpecifics.
-SYNC_EXPORT_PRIVATE scoped_ptr<base::DictionaryValue> AppListSpecificsToValue(
+SYNC_EXPORT scoped_ptr<base::DictionaryValue> AppListSpecificsToValue(
     const sync_pb::AppListSpecifics& proto);
 
 // Sub-protocols of AppSpecifics.
-SYNC_EXPORT_PRIVATE scoped_ptr<base::DictionaryValue> AppSettingsToValue(
+SYNC_EXPORT scoped_ptr<base::DictionaryValue> AppSettingsToValue(
     const sync_pb::AppNotificationSettings& app_notification_settings);
 
-SYNC_EXPORT_PRIVATE scoped_ptr<base::DictionaryValue> LinkedAppIconInfoToValue(
+SYNC_EXPORT scoped_ptr<base::DictionaryValue> LinkedAppIconInfoToValue(
     const sync_pb::LinkedAppIconInfo& linked_app_icon_info);
 
 // Sub-protocols of SessionSpecifics.
 
-SYNC_EXPORT_PRIVATE scoped_ptr<base::DictionaryValue> SessionHeaderToValue(
+SYNC_EXPORT scoped_ptr<base::DictionaryValue> SessionHeaderToValue(
     const sync_pb::SessionHeader& session_header);
 
-SYNC_EXPORT_PRIVATE scoped_ptr<base::DictionaryValue> SessionTabToValue(
+SYNC_EXPORT scoped_ptr<base::DictionaryValue> SessionTabToValue(
     const sync_pb::SessionTab& session_tab);
 
-SYNC_EXPORT_PRIVATE scoped_ptr<base::DictionaryValue> SessionWindowToValue(
+SYNC_EXPORT scoped_ptr<base::DictionaryValue> SessionWindowToValue(
     const sync_pb::SessionWindow& session_window);
 
-SYNC_EXPORT_PRIVATE scoped_ptr<base::DictionaryValue> TabNavigationToValue(
+SYNC_EXPORT scoped_ptr<base::DictionaryValue> TabNavigationToValue(
     const sync_pb::TabNavigation& tab_navigation);
 
-SYNC_EXPORT_PRIVATE scoped_ptr<base::DictionaryValue> NavigationRedirectToValue(
+SYNC_EXPORT scoped_ptr<base::DictionaryValue> NavigationRedirectToValue(
     const sync_pb::NavigationRedirect& navigation_redirect);
 
 // Sub-protocol of PasswordSpecifics.
 
-SYNC_EXPORT_PRIVATE scoped_ptr<base::DictionaryValue>
-PasswordSpecificsDataToValue(
+SYNC_EXPORT scoped_ptr<base::DictionaryValue> PasswordSpecificsDataToValue(
     const sync_pb::PasswordSpecificsData& password_specifics_data);
 
 // Sub-protocol of NigoriSpecifics.
@@ -150,69 +149,61 @@ scoped_ptr<base::DictionaryValue> TimeRangeDirectiveToValue(
 scoped_ptr<base::DictionaryValue> KeystoreEncryptionToValue(
     const sync_pb::KeystoreEncryptionFlagsSpecifics& proto);
 
-SYNC_EXPORT_PRIVATE scoped_ptr<base::DictionaryValue> SessionSpecificsToValue(
+SYNC_EXPORT scoped_ptr<base::DictionaryValue> SessionSpecificsToValue(
     const sync_pb::SessionSpecifics& session_specifics);
 
 // Main *SpecificsToValue functions.
 
-SYNC_EXPORT_PRIVATE scoped_ptr<base::DictionaryValue> AppNotificationToValue(
+SYNC_EXPORT scoped_ptr<base::DictionaryValue> AppNotificationToValue(
     const sync_pb::AppNotification& app_notification_specifics);
 
 scoped_ptr<base::DictionaryValue> AppSettingSpecificsToValue(
     const sync_pb::AppSettingSpecifics& app_setting_specifics);
 
-SYNC_EXPORT_PRIVATE scoped_ptr<base::DictionaryValue> AppSpecificsToValue(
+SYNC_EXPORT scoped_ptr<base::DictionaryValue> AppSpecificsToValue(
     const sync_pb::AppSpecifics& app_specifics);
 
-SYNC_EXPORT_PRIVATE scoped_ptr<base::DictionaryValue> ArticleSpecificsToValue(
+SYNC_EXPORT scoped_ptr<base::DictionaryValue> ArticleSpecificsToValue(
     const sync_pb::ArticleSpecifics& article_specifics);
 
-SYNC_EXPORT_PRIVATE scoped_ptr<base::DictionaryValue> AutofillSpecificsToValue(
+SYNC_EXPORT scoped_ptr<base::DictionaryValue> AutofillSpecificsToValue(
     const sync_pb::AutofillSpecifics& autofill_specifics);
 
-SYNC_EXPORT_PRIVATE scoped_ptr<base::DictionaryValue>
-AutofillProfileSpecificsToValue(
+SYNC_EXPORT scoped_ptr<base::DictionaryValue> AutofillProfileSpecificsToValue(
     const sync_pb::AutofillProfileSpecifics& autofill_profile_specifics);
 
-SYNC_EXPORT_PRIVATE scoped_ptr<base::DictionaryValue>
-WalletMetadataSpecificsToValue(
+SYNC_EXPORT scoped_ptr<base::DictionaryValue> WalletMetadataSpecificsToValue(
     const sync_pb::WalletMetadataSpecifics& wallet_metadata_specifics);
 
-SYNC_EXPORT_PRIVATE scoped_ptr<base::DictionaryValue>
-AutofillWalletSpecificsToValue(
+SYNC_EXPORT scoped_ptr<base::DictionaryValue> AutofillWalletSpecificsToValue(
     const sync_pb::AutofillWalletSpecifics& autofill_wallet_specifics);
 
-SYNC_EXPORT_PRIVATE scoped_ptr<base::DictionaryValue> BookmarkSpecificsToValue(
+SYNC_EXPORT scoped_ptr<base::DictionaryValue> BookmarkSpecificsToValue(
     const sync_pb::BookmarkSpecifics& bookmark_specifics);
 
-SYNC_EXPORT_PRIVATE scoped_ptr<base::DictionaryValue>
-DeviceInfoSpecificsToValue(
+SYNC_EXPORT scoped_ptr<base::DictionaryValue> DeviceInfoSpecificsToValue(
     const sync_pb::DeviceInfoSpecifics& device_info_specifics);
 
-SYNC_EXPORT_PRIVATE scoped_ptr<base::DictionaryValue>
-DictionarySpecificsToValue(
+SYNC_EXPORT scoped_ptr<base::DictionaryValue> DictionarySpecificsToValue(
     const sync_pb::DictionarySpecifics& dictionary_specifics);
 
-SYNC_EXPORT_PRIVATE scoped_ptr<base::DictionaryValue>
-ExperimentsSpecificsToValue(const sync_pb::ExperimentsSpecifics& proto);
+SYNC_EXPORT scoped_ptr<base::DictionaryValue> ExperimentsSpecificsToValue(
+    const sync_pb::ExperimentsSpecifics& proto);
 
-SYNC_EXPORT_PRIVATE scoped_ptr<base::DictionaryValue>
+SYNC_EXPORT scoped_ptr<base::DictionaryValue>
 PriorityPreferenceSpecificsToValue(
     const sync_pb::PriorityPreferenceSpecifics& proto);
 
-SYNC_EXPORT_PRIVATE scoped_ptr<base::DictionaryValue>
-ExtensionSettingSpecificsToValue(
+SYNC_EXPORT scoped_ptr<base::DictionaryValue> ExtensionSettingSpecificsToValue(
     const sync_pb::ExtensionSettingSpecifics& extension_setting_specifics);
 
-SYNC_EXPORT_PRIVATE scoped_ptr<base::DictionaryValue> ExtensionSpecificsToValue(
+SYNC_EXPORT scoped_ptr<base::DictionaryValue> ExtensionSpecificsToValue(
     const sync_pb::ExtensionSpecifics& extension_specifics);
 
-SYNC_EXPORT_PRIVATE scoped_ptr<base::DictionaryValue>
-FaviconImageSpecificsToValue(
+SYNC_EXPORT scoped_ptr<base::DictionaryValue> FaviconImageSpecificsToValue(
     const sync_pb::FaviconImageSpecifics& favicon_image_specifics);
 
-SYNC_EXPORT_PRIVATE scoped_ptr<base::DictionaryValue>
-FaviconTrackingSpecificsToValue(
+SYNC_EXPORT scoped_ptr<base::DictionaryValue> FaviconTrackingSpecificsToValue(
     const sync_pb::FaviconTrackingSpecifics& favicon_tracking_specifics);
 
 SYNC_EXPORT scoped_ptr<base::DictionaryValue>
@@ -220,84 +211,78 @@ HistoryDeleteDirectiveSpecificsToValue(
     const sync_pb::HistoryDeleteDirectiveSpecifics&
         history_delete_directive_specifics);
 
-SYNC_EXPORT_PRIVATE scoped_ptr<base::DictionaryValue>
+SYNC_EXPORT scoped_ptr<base::DictionaryValue>
 ManagedUserSettingSpecificsToValue(
     const sync_pb::ManagedUserSettingSpecifics& managed_user_setting_specifics);
 
-SYNC_EXPORT_PRIVATE scoped_ptr<base::DictionaryValue>
-ManagedUserSpecificsToValue(
+SYNC_EXPORT scoped_ptr<base::DictionaryValue> ManagedUserSpecificsToValue(
     const sync_pb::ManagedUserSpecifics& managed_user_specifics);
 
-SYNC_EXPORT_PRIVATE scoped_ptr<base::DictionaryValue>
+SYNC_EXPORT scoped_ptr<base::DictionaryValue>
 ManagedUserSharedSettingSpecificsToValue(
     const sync_pb::ManagedUserSharedSettingSpecifics&
         managed_user_shared_setting_specifics);
 
-SYNC_EXPORT_PRIVATE scoped_ptr<base::DictionaryValue>
+SYNC_EXPORT scoped_ptr<base::DictionaryValue>
 ManagedUserWhitelistSpecificsToValue(
     const sync_pb::ManagedUserWhitelistSpecifics&
         managed_user_whitelist_specifics);
 
-SYNC_EXPORT_PRIVATE scoped_ptr<base::DictionaryValue> MediaToValue(
+SYNC_EXPORT scoped_ptr<base::DictionaryValue> MediaToValue(
     const sync_pb::Media& media);
 
-SYNC_EXPORT_PRIVATE scoped_ptr<base::DictionaryValue> NigoriSpecificsToValue(
+SYNC_EXPORT scoped_ptr<base::DictionaryValue> NigoriSpecificsToValue(
     const sync_pb::NigoriSpecifics& nigori_specifics);
 
-SYNC_EXPORT_PRIVATE scoped_ptr<base::DictionaryValue> PasswordSpecificsToValue(
+SYNC_EXPORT scoped_ptr<base::DictionaryValue> PasswordSpecificsToValue(
     const sync_pb::PasswordSpecifics& password_specifics);
 
-SYNC_EXPORT_PRIVATE scoped_ptr<base::DictionaryValue>
-PreferenceSpecificsToValue(
+SYNC_EXPORT scoped_ptr<base::DictionaryValue> PreferenceSpecificsToValue(
     const sync_pb::PreferenceSpecifics& password_specifics);
 
-SYNC_EXPORT_PRIVATE scoped_ptr<base::DictionaryValue>
+SYNC_EXPORT scoped_ptr<base::DictionaryValue>
 SyncedNotificationAppInfoSpecificsToValue(
     const sync_pb::SyncedNotificationAppInfoSpecifics&
         synced_notification_specifics);
 
-SYNC_EXPORT_PRIVATE scoped_ptr<base::DictionaryValue>
+SYNC_EXPORT scoped_ptr<base::DictionaryValue>
 SyncedNotificationSpecificsToValue(
     const sync_pb::SyncedNotificationSpecifics& synced_notification_specifics);
 
-SYNC_EXPORT_PRIVATE scoped_ptr<base::DictionaryValue>
-SearchEngineSpecificsToValue(
+SYNC_EXPORT scoped_ptr<base::DictionaryValue> SearchEngineSpecificsToValue(
     const sync_pb::SearchEngineSpecifics& search_engine_specifics);
 
-SYNC_EXPORT_PRIVATE scoped_ptr<base::DictionaryValue> ThemeSpecificsToValue(
+SYNC_EXPORT scoped_ptr<base::DictionaryValue> ThemeSpecificsToValue(
     const sync_pb::ThemeSpecifics& theme_specifics);
 
-SYNC_EXPORT_PRIVATE scoped_ptr<base::DictionaryValue> TypedUrlSpecificsToValue(
+SYNC_EXPORT scoped_ptr<base::DictionaryValue> TypedUrlSpecificsToValue(
     const sync_pb::TypedUrlSpecifics& typed_url_specifics);
 
-SYNC_EXPORT_PRIVATE scoped_ptr<base::DictionaryValue>
-WalletMaskedCreditCardToValue(
+SYNC_EXPORT scoped_ptr<base::DictionaryValue> WalletMaskedCreditCardToValue(
     const sync_pb::WalletMaskedCreditCard& wallet_masked_card);
 
-SYNC_EXPORT_PRIVATE scoped_ptr<base::DictionaryValue>
-WalletPostalAddressToValue(
+SYNC_EXPORT scoped_ptr<base::DictionaryValue> WalletPostalAddressToValue(
     const sync_pb::WalletPostalAddress& wallet_postal_address);
 
-SYNC_EXPORT_PRIVATE scoped_ptr<base::DictionaryValue>
-WifiCredentialSpecificsToValue(
+SYNC_EXPORT scoped_ptr<base::DictionaryValue> WifiCredentialSpecificsToValue(
     const sync_pb::WifiCredentialSpecifics& wifi_credential_specifics);
 
 // Any present extensions are mapped to sub-dictionary values with the
 // key equal to the extension name.
-SYNC_EXPORT_PRIVATE scoped_ptr<base::DictionaryValue> EntitySpecificsToValue(
+SYNC_EXPORT scoped_ptr<base::DictionaryValue> EntitySpecificsToValue(
     const sync_pb::EntitySpecifics& specifics);
 
-SYNC_EXPORT_PRIVATE scoped_ptr<base::DictionaryValue> SyncEntityToValue(
+SYNC_EXPORT scoped_ptr<base::DictionaryValue> SyncEntityToValue(
     const sync_pb::SyncEntity& entity,
     bool include_specifics);
 
-SYNC_EXPORT_PRIVATE scoped_ptr<base::DictionaryValue>
-ClientToServerMessageToValue(const sync_pb::ClientToServerMessage& proto,
-                             bool include_specifics);
+SYNC_EXPORT scoped_ptr<base::DictionaryValue> ClientToServerMessageToValue(
+    const sync_pb::ClientToServerMessage& proto,
+    bool include_specifics);
 
-SYNC_EXPORT_PRIVATE scoped_ptr<base::DictionaryValue>
-ClientToServerResponseToValue(const sync_pb::ClientToServerResponse& proto,
-                              bool include_specifics);
+SYNC_EXPORT scoped_ptr<base::DictionaryValue> ClientToServerResponseToValue(
+    const sync_pb::ClientToServerResponse& proto,
+    bool include_specifics);
 
 scoped_ptr<base::DictionaryValue> DatatypeAssociationStatsToValue(
     const sync_pb::DatatypeAssociationStats& proto);
@@ -314,7 +299,7 @@ scoped_ptr<base::DictionaryValue> SyncCycleCompletedEventInfoToValue(
 scoped_ptr<base::DictionaryValue> ClientConfigParamsToValue(
     const sync_pb::ClientConfigParams& proto);
 
-SYNC_EXPORT_PRIVATE scoped_ptr<base::DictionaryValue> AttachmentIdProtoToValue(
+SYNC_EXPORT scoped_ptr<base::DictionaryValue> AttachmentIdProtoToValue(
     const sync_pb::AttachmentIdProto& proto);
 
 }  // namespace syncer

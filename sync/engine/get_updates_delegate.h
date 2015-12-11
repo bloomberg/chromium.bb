@@ -5,6 +5,7 @@
 #ifndef SYNC_ENGINE_GET_UPDATES_DELEGATE_H_
 #define SYNC_ENGINE_GET_UPDATES_DELEGATE_H_
 
+#include "base/macros.h"
 #include "sync/internal_api/public/events/protocol_event.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/sessions/model_type_registry.h"
@@ -19,7 +20,7 @@ class GetUpdatesProcessor;
 // GetUpdate type (normal, configuration, poll).  The GetUpdatesProcessor is
 // given an appropriate GetUpdatesDelegate to handle type specific functionality
 // on construction.
-class SYNC_EXPORT_PRIVATE GetUpdatesDelegate {
+class SYNC_EXPORT GetUpdatesDelegate {
  public:
   GetUpdatesDelegate();
   virtual ~GetUpdatesDelegate() = 0;
@@ -40,9 +41,10 @@ class SYNC_EXPORT_PRIVATE GetUpdatesDelegate {
 };
 
 // Functionality specific to the normal GetUpdate request.
-class SYNC_EXPORT_PRIVATE NormalGetUpdatesDelegate : public GetUpdatesDelegate {
+class SYNC_EXPORT NormalGetUpdatesDelegate : public GetUpdatesDelegate {
  public:
-  NormalGetUpdatesDelegate(const sessions::NudgeTracker& nudge_tracker);
+  explicit NormalGetUpdatesDelegate(
+      const sessions::NudgeTracker& nudge_tracker);
   ~NormalGetUpdatesDelegate() override;
 
   // Uses the member NudgeTracker to populate some fields of this GU message.
@@ -59,14 +61,13 @@ class SYNC_EXPORT_PRIVATE NormalGetUpdatesDelegate : public GetUpdatesDelegate {
       const sync_pb::ClientToServerMessage& request) const override;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(NormalGetUpdatesDelegate);
-
   const sessions::NudgeTracker& nudge_tracker_;
+
+  DISALLOW_COPY_AND_ASSIGN(NormalGetUpdatesDelegate);
 };
 
 // Functionality specific to the configure GetUpdate request.
-class SYNC_EXPORT_PRIVATE ConfigureGetUpdatesDelegate
-    : public GetUpdatesDelegate {
+class SYNC_EXPORT ConfigureGetUpdatesDelegate : public GetUpdatesDelegate {
  public:
   ConfigureGetUpdatesDelegate(
       sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source);
@@ -89,16 +90,16 @@ class SYNC_EXPORT_PRIVATE ConfigureGetUpdatesDelegate
       const sync_pb::ClientToServerMessage& request) const override;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ConfigureGetUpdatesDelegate);
-
   static sync_pb::SyncEnums::GetUpdatesOrigin ConvertConfigureSourceToOrigin(
       sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source);
 
   const sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source_;
+
+  DISALLOW_COPY_AND_ASSIGN(ConfigureGetUpdatesDelegate);
 };
 
 // Functionality specific to the poll GetUpdate request.
-class SYNC_EXPORT_PRIVATE PollGetUpdatesDelegate : public GetUpdatesDelegate {
+class SYNC_EXPORT PollGetUpdatesDelegate : public GetUpdatesDelegate {
  public:
   PollGetUpdatesDelegate();
   ~PollGetUpdatesDelegate() override;

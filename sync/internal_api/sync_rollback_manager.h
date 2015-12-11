@@ -5,6 +5,7 @@
 #ifndef SYNC_INTERNAL_API_SYNC_ROLLBACK_MANAGER_H_
 #define SYNC_INTERNAL_API_SYNC_ROLLBACK_MANAGER_H_
 
+#include <map>
 #include <string>
 #include <vector>
 
@@ -16,7 +17,7 @@ namespace syncer {
 
 // SyncRollbackManager restores user's data to pre-sync state using backup
 // DB created by SyncBackupManager.
-class SYNC_EXPORT_PRIVATE SyncRollbackManager : public SyncRollbackManagerBase {
+class SYNC_EXPORT SyncRollbackManager : public SyncRollbackManagerBase {
  public:
   SyncRollbackManager();
   ~SyncRollbackManager() override;

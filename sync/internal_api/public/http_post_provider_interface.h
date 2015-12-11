@@ -15,7 +15,7 @@ namespace syncer {
 // required HTTP POST functionality to the syncer backend. This interface is
 // designed for one-time use. You create one, use it, and create another if you
 // want to make a subsequent POST.
-class SYNC_EXPORT_PRIVATE HttpPostProviderInterface {
+class SYNC_EXPORT HttpPostProviderInterface {
  public:
   // Add additional headers to the request.
   virtual void SetExtraRequestHeaders(const char* headers) = 0;

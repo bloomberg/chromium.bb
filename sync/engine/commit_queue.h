@@ -10,7 +10,7 @@
 namespace syncer_v2 {
 
 // Interface used by a synced data type to issue requests to the sync backend.
-class SYNC_EXPORT_PRIVATE CommitQueue {
+class SYNC_EXPORT CommitQueue {
  public:
   CommitQueue();
   virtual ~CommitQueue();
@@ -19,6 +19,6 @@ class SYNC_EXPORT_PRIVATE CommitQueue {
   virtual void EnqueueForCommit(const CommitRequestDataList& list) = 0;
 };
 
-}  // namespace syncer
+}  // namespace syncer_v2
 
 #endif  // SYNC_ENGINE_COMMIT_QUEUE_H_
