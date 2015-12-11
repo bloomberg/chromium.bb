@@ -92,6 +92,10 @@ void ChildProcessHost::Start() {
       base::Bind(&ChildProcessHost::DidStart, weak_factory_.GetWeakPtr()));
 }
 
+base::ProcessId ChildProcessHost::GetChildPID() const {
+  return child_process_.IsValid() ? child_process_.Pid() : base::kNullProcessId;
+}
+
 int ChildProcessHost::Join() {
   if (controller_)  // We use this as a signal that Start was called.
     start_child_process_event_.Wait();

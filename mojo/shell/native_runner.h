@@ -7,6 +7,7 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/process/process_handle.h"
 #include "mojo/application/public/interfaces/application.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 
@@ -43,6 +44,10 @@ class NativeRunner {
   // by someone else. Provides |application_request| via |channel|.
   virtual void InitHost(ScopedHandle channel,
                         InterfaceRequest<Application> application_request) = 0;
+
+  // Returns the pid of the application. This will be base::kNullProcessId if
+  // the application was run in process.
+  virtual base::ProcessId GetApplicationPID() const = 0;
 };
 
 class NativeRunnerFactory {

@@ -56,6 +56,10 @@ void InProcessNativeRunner::InitHost(
   NOTREACHED();  // Can't host another process in this runner.
 }
 
+base::ProcessId InProcessNativeRunner::GetApplicationPID() const {
+  return base::kNullProcessId;
+}
+
 void InProcessNativeRunner::Run() {
   DVLOG(2) << "Loading/running Mojo app in process from library: "
            << app_path_.value()

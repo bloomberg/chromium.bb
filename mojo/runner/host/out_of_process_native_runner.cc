@@ -54,6 +54,10 @@ void OutOfProcessNativeRunner::InitHost(
                  base::Unretained(this)));
 }
 
+base::ProcessId OutOfProcessNativeRunner::GetApplicationPID() const {
+  return child_process_host_->GetChildPID();
+}
+
 void OutOfProcessNativeRunner::AppCompleted(int32_t result) {
   DVLOG(2) << "OutOfProcessNativeRunner::AppCompleted(" << result << ")";
 

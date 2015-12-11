@@ -127,12 +127,24 @@ void ApplicationManager::CreateInstanceForHandle(ScopedHandle channel,
   //             http://crbug.com/555392
   CapabilityFilter local_filter = filter->filter.To<CapabilityFilter>();
   Identity target_id(url, std::string(), local_filter);
+  ApplicationInstance* instance = nullptr;
   InterfaceRequest<Application> application_request =
-      CreateInstance(target_id, base::Closure(), nullptr);
-  NativeRunner* runner =
-      native_runner_factory_->Create(base::FilePath()).release();
-  native_runners_.push_back(runner);
+      CreateInstance(target_id, base::Closure(), &instance);
+  scoped_ptr<NativeRunner> runner =
+      native_runner_factory_->Create(base::FilePath());
   runner->InitHost(channel.Pass(), application_request.Pass());
+  instance->SetNativeRunner(runner.get());
+  native_runners_.push_back(std::move(runner));
+}
+
+void ApplicationManager::AddListener(
+    mojom::ApplicationManagerListenerPtr listener) {
+  Array<mojom::ApplicationInfoPtr> applications;
+  for (auto& entry : identity_to_instance_)
+    applications.push_back(CreateApplicationInfoForInstance(entry.second));
+  listener->SetRunningApplications(std::move(applications));
+
+  listeners_.AddInterfacePtr(std::move(listener));
 }
 
 InterfaceRequest<Application> ApplicationManager::CreateAndConnectToInstance(
@@ -159,6 +171,12 @@ InterfaceRequest<Application> ApplicationManager::CreateInstance(
   DCHECK(identity_to_instance_.find(target_id) ==
          identity_to_instance_.end());
   identity_to_instance_[target_id] = instance;
+  mojom::ApplicationInfoPtr application_info =
+      CreateApplicationInfoForInstance(instance);
+  listeners_.ForAllPtrs(
+      [this, &application_info](mojom::ApplicationManagerListener* listener) {
+        listener->ApplicationStarted(application_info.Clone());
+      });
   instance->InitializeApplication();
   if (resulting_instance)
     *resulting_instance = instance;
@@ -228,13 +246,15 @@ void ApplicationManager::HandleFetchCallback(
                   base::Bind(&ApplicationManager::RunNativeApplication,
                               weak_ptr_factory_.GetWeakPtr(),
                               base::Passed(request.Pass()), start_sandboxed,
-                              base::Passed(fetcher.Pass())));
+                              base::Passed(fetcher.Pass()),
+                              base::Unretained(app)));
 }
 
 void ApplicationManager::RunNativeApplication(
     InterfaceRequest<Application> application_request,
     bool start_sandboxed,
     scoped_ptr<Fetcher> fetcher,
+    ApplicationInstance* instance,
     const base::FilePath& path,
     bool path_exists) {
   // We only passed fetcher to keep it alive. Done with it now.
@@ -250,11 +270,12 @@ void ApplicationManager::RunNativeApplication(
 
   TRACE_EVENT1("mojo_shell", "ApplicationManager::RunNativeApplication", "path",
                path.AsUTF8Unsafe());
-  NativeRunner* runner = native_runner_factory_->Create(path).release();
-  native_runners_.push_back(runner);
+  scoped_ptr<NativeRunner> runner = native_runner_factory_->Create(path);
   runner->Start(path, start_sandboxed, application_request.Pass(),
                 base::Bind(&ApplicationManager::CleanupRunner,
-                           weak_ptr_factory_.GetWeakPtr(), runner));
+                           weak_ptr_factory_.GetWeakPtr(), runner.get()));
+  instance->SetNativeRunner(runner.get());
+  native_runners_.push_back(std::move(runner));
 }
 
 void ApplicationManager::SetLoaderForURL(scoped_ptr<ApplicationLoader> loader,
@@ -272,6 +293,15 @@ ApplicationLoader* ApplicationManager::GetLoaderForURL(const GURL& url) {
   return default_loader_.get();
 }
 
+mojom::ApplicationInfoPtr ApplicationManager::CreateApplicationInfoForInstance(
+    ApplicationInstance* instance) const {
+  mojom::ApplicationInfoPtr info(mojom::ApplicationInfo::New());
+  info->url = instance->identity().url().spec();
+  info->qualifier = instance->identity().qualifier();
+  info->pid = instance->GetProcessId();
+  return info;
+}
+
 void ApplicationManager::OnApplicationInstanceError(
     ApplicationInstance* instance) {
   // Called from ~ApplicationInstance, so we do not need to call Destroy here.
@@ -280,15 +310,24 @@ void ApplicationManager::OnApplicationInstanceError(
   // Remove the shell.
   auto it = identity_to_instance_.find(identity);
   DCHECK(it != identity_to_instance_.end());
+  base::ProcessId pid = instance->GetProcessId();
   delete it->second;
   identity_to_instance_.erase(it);
+  listeners_.ForAllPtrs(
+      [this, pid](mojom::ApplicationManagerListener* listener) {
+        listener->ApplicationEnded(pid);
+      });
   if (!on_application_end.is_null())
     on_application_end.Run();
 }
 
 void ApplicationManager::CleanupRunner(NativeRunner* runner) {
-  native_runners_.erase(
-      std::find(native_runners_.begin(), native_runners_.end(), runner));
+  for (auto it = native_runners_.begin(); it != native_runners_.end(); ++it) {
+    if (it->get() == runner) {
+      native_runners_.erase(it);
+      return;
+    }
+  }
 }
 
 Shell::ConnectToApplicationCallback EmptyConnectCallback() {

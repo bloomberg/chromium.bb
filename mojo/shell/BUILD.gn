@@ -128,6 +128,7 @@ mojo_native_application("apptests") {
     "//base/test:test_config",
     "//mojo/application/public/cpp:sources",
     "//mojo/application/public/cpp:test_support",
+    "//mojo/application/public/interfaces",
     "//mojo/common:common_base",
     "//mojo/converters/network",
   ]

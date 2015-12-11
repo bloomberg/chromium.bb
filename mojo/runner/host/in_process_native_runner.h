@@ -36,6 +36,7 @@ class InProcessNativeRunner : public shell::NativeRunner,
              const base::Closure& app_completed_callback) override;
   void InitHost(ScopedHandle channel,
                 InterfaceRequest<Application> application_request) override;
+  base::ProcessId GetApplicationPID() const override;
 
  private:
   // |base::DelegateSimpleThread::Delegate| method:

@@ -75,5 +75,10 @@ void ShellApplicationDelegate::RegisterProcessWithBroker(
   embedder::ChildProcessLaunched(process.Handle(), platform_pipe.Pass());
 }
 
+void ShellApplicationDelegate::AddListener(
+    mojom::ApplicationManagerListenerPtr listener) {
+  manager_->AddListener(std::move(listener));
+}
+
 }  // namespace shell
 }  // namespace mojo

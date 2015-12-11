@@ -52,6 +52,8 @@ class ChildProcessHost {
   // |Start()| was called) when the child has been started (or failed to start).
   void Start();
 
+  base::ProcessId GetChildPID() const;
+
   // Waits for the child process to terminate, and returns its exit code.
   int Join();
 

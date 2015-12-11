@@ -16,6 +16,7 @@ void MainApplicationDelegate::Initialize(mojo::ApplicationImpl* app) {
   connections_.push_back(app->ConnectToApplication("mojo:views_examples"));
   connections_.push_back(
       app->ConnectToApplication("exe:window_type_launcher_exe"));
+  connections_.push_back(app->ConnectToApplication("mojo:task_viewer"));
 }
 
 bool MainApplicationDelegate::ConfigureIncomingConnection(

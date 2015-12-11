@@ -28,7 +28,9 @@ ApplicationInstance::ApplicationInstance(
       on_application_end_(on_application_end),
       application_(application.Pass()),
       binding_(this),
-      queue_requests_(false) {
+      queue_requests_(false),
+      native_runner_(nullptr),
+      pid_(base::kNullProcessId) {
   binding_.set_connection_error_handler([this]() { OnConnectionError(); });
 }
 
@@ -52,6 +54,15 @@ void ApplicationInstance::ConnectToClient(
   }
 
   CallAcceptConnection(params.Pass());
+}
+
+void ApplicationInstance::SetNativeRunner(NativeRunner* native_runner) {
+  native_runner_ = native_runner;
+  pid_ = native_runner_->GetApplicationPID();
+}
+
+base::ProcessId ApplicationInstance::GetProcessId() const {
+  return pid_;
 }
 
 // Shell implementation:

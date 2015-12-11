@@ -1,0 +1,229 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "mash/task_viewer/task_viewer_application_delegate.h"
+
+#include "base/bind.h"
+#include "base/process/process.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/utf_string_conversions.h"
+#include "mojo/application/public/cpp/application_connection.h"
+#include "mojo/application/public/cpp/application_impl.h"
+#include "mojo/application/public/interfaces/application_manager.mojom.h"
+#include "mojo/public/cpp/bindings/binding.h"
+#include "ui/base/models/table_model.h"
+#include "ui/views/background.h"
+#include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/table/table_view.h"
+#include "ui/views/controls/table/table_view_observer.h"
+#include "ui/views/mus/aura_init.h"
+#include "ui/views/mus/window_manager_connection.h"
+#include "ui/views/widget/widget_delegate.h"
+
+namespace mash {
+namespace task_viewer {
+namespace {
+
+using ListenerRequest =
+    mojo::InterfaceRequest<mojo::shell::mojom::ApplicationManagerListener>;
+using mojo::shell::mojom::ApplicationInfoPtr;
+
+class TaskViewer : public views::WidgetDelegateView,
+                   public ui::TableModel,
+                   public views::ButtonListener,
+                   public mojo::shell::mojom::ApplicationManagerListener {
+ public:
+  explicit TaskViewer(ListenerRequest request)
+      : binding_(this, std::move(request)),
+        table_view_(nullptr),
+        table_view_parent_(nullptr),
+        kill_button_(
+            new views::LabelButton(this, base::ASCIIToUTF16("Kill Process"))),
+        observer_(nullptr) {
+    // We don't want to show an empty UI on startup, so just block until we
+    // receive the initial set of applications.
+    binding_.WaitForIncomingMethodCall();
+
+    table_view_ = new views::TableView(this, GetColumns(), views::TEXT_ONLY,
+                                       false);
+    set_background(views::Background::CreateStandardPanelBackground());
+
+    table_view_parent_ = table_view_->CreateParentIfNecessary();
+    AddChildView(table_view_parent_);
+
+    kill_button_->SetStyle(views::Button::STYLE_BUTTON);
+    AddChildView(kill_button_);
+  }
+  ~TaskViewer() override {}
+
+ private:
+  struct ProcessInfo {
+    std::string url;
+    uint32_t pid;
+
+    ProcessInfo(const std::string url, base::ProcessId pid)
+        : url(url), pid(pid) {}
+  };
+
+  // Overridden from views::WidgetDelegate:
+  views::View* GetContentsView() override { return this; }
+  base::string16 GetWindowTitle() const override {
+    // TODO(beng): use resources.
+    return base::ASCIIToUTF16("Tasks");
+  }
+
+  // Overridden from views::View:
+  void Layout() override {
+    gfx::Rect bounds = GetLocalBounds();
+    bounds.Inset(10, 10);
+
+    gfx::Size ps = kill_button_->GetPreferredSize();
+    bounds.set_height(bounds.height() - ps.height() - 10);
+
+    kill_button_->SetBounds(bounds.width() - ps.width(),
+                            bounds.bottom() + 10,
+                            ps.width(), ps.height());
+    table_view_parent_->SetBoundsRect(bounds);
+  }
+
+  // Overridden from ui::TableModel:
+  int RowCount() override {
+    return static_cast<int>(processes_.size());
+  }
+  base::string16 GetText(int row, int column_id) override {
+    switch(column_id) {
+    case 0:
+      DCHECK(row < static_cast<int>(processes_.size()));
+      return base::UTF8ToUTF16(processes_[row]->url);
+    case 1:
+      DCHECK(row < static_cast<int>(processes_.size()));
+      return base::IntToString16(processes_[row]->pid);
+    default:
+      NOTREACHED();
+      break;
+    }
+    return base::string16();
+  }
+  void SetObserver(ui::TableModelObserver* observer) override {
+    observer_ = observer;
+  }
+
+  // Overridden from views::ButtonListener:
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override {
+    DCHECK_EQ(sender, kill_button_);
+    DCHECK_EQ(table_view_->SelectedRowCount(), 1);
+    int row = table_view_->FirstSelectedRow();
+    DCHECK(row < static_cast<int>(processes_.size()));
+    base::Process process = base::Process::Open(processes_[row]->pid);
+    process.Terminate(9, true);
+  }
+
+  // Overridden from mojo::shell::mojom::ApplicationManagerListener:
+  void SetRunningApplications(
+      mojo::Array<ApplicationInfoPtr> applications) override {
+    // This callback should only be called with an empty model.
+    DCHECK(processes_.empty());
+    for (size_t i = 0; i < applications.size(); ++i) {
+      processes_.push_back(
+          make_scoped_ptr(new ProcessInfo(applications[i]->url,
+                                          applications[i]->pid)));
+    }
+  }
+  void ApplicationStarted(ApplicationInfoPtr application) override {
+    DCHECK(!ContainsURL(application->url));
+    // TODO(beng): eventually nothing should be returning invalid process ids.
+    if (application->pid != base::kNullProcessId)
+      DCHECK(!ContainsPid(application->pid));
+    processes_.push_back(
+        make_scoped_ptr(new ProcessInfo(application->url, application->pid)));
+    observer_->OnItemsAdded(static_cast<int>(processes_.size()), 1);
+  }
+  void ApplicationEnded(uint32_t pid) override {
+    for (auto it = processes_.begin(); it != processes_.end(); ++it) {
+      if ((*it)->pid == pid) {
+        observer_->OnItemsRemoved(static_cast<int>(it - processes_.begin()), 1);
+        processes_.erase(it);
+        return;
+      }
+    }
+    NOTREACHED();
+  }
+
+  bool ContainsURL(const std::string& url) const {
+    for (auto& it : processes_) {
+      if (it->url == url)
+        return true;
+    }
+    return false;
+  }
+  bool ContainsPid(uint32_t pid) const {
+    for (auto& it : processes_) {
+      if (it->pid == pid)
+        return true;
+    }
+    return false;
+  }
+
+  static std::vector<ui::TableColumn> GetColumns() {
+    std::vector<ui::TableColumn> columns;
+
+    ui::TableColumn url_column;
+    url_column.id = 0;
+    // TODO(beng): use resources.
+    url_column.title = base::ASCIIToUTF16("URL");
+    url_column.width = -1;
+    url_column.percent = 0.8f;
+    url_column.sortable = true;
+    columns.push_back(url_column);
+
+    ui::TableColumn pid_column;
+    pid_column.id = 1;
+    // TODO(beng): use resources.
+    pid_column.title  = base::ASCIIToUTF16("PID");
+    pid_column.width = 50;
+    pid_column.sortable = true;
+    columns.push_back(pid_column);
+
+    return columns;
+  }
+
+  mojo::Binding<mojo::shell::mojom::ApplicationManagerListener> binding_;
+
+  views::TableView* table_view_;
+  views::View* table_view_parent_;
+  views::LabelButton* kill_button_;
+  ui::TableModelObserver* observer_;
+
+  std::vector<scoped_ptr<ProcessInfo>> processes_;
+
+  DISALLOW_COPY_AND_ASSIGN(TaskViewer);
+};
+
+}  // namespace
+
+TaskViewerApplicationDelegate::TaskViewerApplicationDelegate() {}
+
+TaskViewerApplicationDelegate::~TaskViewerApplicationDelegate() {}
+
+void TaskViewerApplicationDelegate::Initialize(mojo::ApplicationImpl* app) {
+  tracing_.Initialize(app);
+
+  aura_init_.reset(new views::AuraInit(app, "views_mus_resources.pak"));
+  views::WindowManagerConnection::Create(app);
+
+  mojo::shell::mojom::ApplicationManagerPtr application_manager;
+  app->ConnectToService("mojo:shell", &application_manager);
+
+  mojo::shell::mojom::ApplicationManagerListenerPtr listener;
+  ListenerRequest request = GetProxy(&listener);
+  application_manager->AddListener(std::move(listener));
+
+  TaskViewer* task_viewer = new TaskViewer(std::move(request));
+  views::Widget* window = views::Widget::CreateWindowWithBounds(
+      task_viewer, gfx::Rect(10, 10, 500, 500));
+  window->Show();
+}
+
+}  // namespace task_viewer
+}  // namespace main

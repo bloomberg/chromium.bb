@@ -6,6 +6,25 @@ module mojo.shell.mojom;
 
 import "mojo/application/public/interfaces/shell.mojom";
 
+struct ApplicationInfo {
+  string url;
+  string qualifier;
+  uint32 pid;
+};
+
+// Implemented by an application that wishes to be informed when the list of
+// running applications changes.
+interface ApplicationManagerListener {
+  // Called once when the listener is added via
+  // ApplicationManager::AddListener() to provide the initial list of running
+  // applications that the listener observes changes against.
+  SetRunningApplications(array<ApplicationInfo> applications);
+
+  // Tells the listener about applications starting or ending.
+  ApplicationStarted(ApplicationInfo application);
+  ApplicationEnded(uint32 pid);
+};
+
 interface ApplicationManager {
   // Instructs the ApplicationManager to create an instance for an existing
   // process at the other end of |channel|, and perform applicable
@@ -21,4 +40,7 @@ interface ApplicationManager {
   // global BrokerState in the parent mojo_runner process.
   RegisterProcessWithBroker(uint32 pid,
                             handle pipe);
+
+  // The listener is removed when the pipe is closed.
+  AddListener(ApplicationManagerListener listener);
 };

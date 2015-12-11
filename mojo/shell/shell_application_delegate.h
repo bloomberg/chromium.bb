@@ -39,6 +39,8 @@ class ShellApplicationDelegate
                                const String& url,
                                CapabilityFilterPtr filter) override;
   void RegisterProcessWithBroker(uint32_t pid, ScopedHandle pipe) override;
+  void AddListener(
+      mojom::ApplicationManagerListenerPtr listener) override;
 
   mojo::shell::ApplicationManager* manager_;
 

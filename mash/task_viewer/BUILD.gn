@@ -7,27 +7,27 @@ import("//mojo/public/mojo_application.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//tools/grit/repack.gni")
 
-mojo_native_application("main") {
-  output_name = "example_main"
-  testonly = true
-
+mojo_native_application("task_viewer") {
   sources = [
     "main.cc",
-    "main_application_delegate.cc",
-    "main_application_delegate.h",
+    "task_viewer_application_delegate.cc",
+    "task_viewer_application_delegate.h",
   ]
 
   deps = [
     "//base",
     "//mojo/application/public/cpp",
     "//mojo/application/public/cpp:sources",
+    "//mojo/application/public/interfaces",
     "//mojo/public/cpp/bindings",
+    "//mojo/services/tracing/public/cpp",
+    "//ui/views",
+    "//ui/views/mus:for_mojo_application",
   ]
 
+  resources = [ "$root_out_dir/views_mus_resources.pak" ]
+
   data_deps = [
-    "//mash/shell",
-    "//mash/task_viewer",
-    "//mash/example/views_examples",
-    "//mash/example/window_type_launcher",
+    "//components/mus",
   ]
 }

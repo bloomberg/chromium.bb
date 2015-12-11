@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/process/process_handle.h"
 #include "mojo/application/public/interfaces/application.mojom.h"
 #include "mojo/application/public/interfaces/shell.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -21,6 +22,7 @@ namespace mojo {
 namespace shell {
 
 class ApplicationManager;
+class NativeRunner;
 
 // Encapsulates a connection to an instance of an application, tracked by the
 // shell's ApplicationManager.
@@ -40,6 +42,11 @@ class ApplicationInstance : public Shell {
   void InitializeApplication();
 
   void ConnectToClient(scoped_ptr<ConnectToApplicationParams> params);
+
+  // Required before GetProcessId can be called.
+  void SetNativeRunner(NativeRunner* native_runner);
+
+  base::ProcessId GetProcessId() const;
 
   Application* application() { return application_.get(); }
   const Identity& identity() const { return identity_; }
@@ -67,6 +74,8 @@ class ApplicationInstance : public Shell {
 
   void OnQuitRequestedResult(bool can_quit);
 
+  void DestroyRunner();
+
   ApplicationManager* const manager_;
   const Identity identity_;
   const bool allow_any_application_;
@@ -76,6 +85,8 @@ class ApplicationInstance : public Shell {
   Binding<Shell> binding_;
   bool queue_requests_;
   std::vector<ConnectToApplicationParams*> queued_client_requests_;
+  NativeRunner* native_runner_;
+  base::ProcessId pid_;
 
   DISALLOW_COPY_AND_ASSIGN(ApplicationInstance);
 };
