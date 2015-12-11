@@ -938,6 +938,9 @@ void SVGElement::svgAttributeBaseValChanged(const QualifiedName& attribute)
 
 void SVGElement::ensureAttributeAnimValUpdated()
 {
+    if (!RuntimeEnabledFeatures::webAnimationsSVGEnabled())
+        return;
+
     if ((hasSVGRareData() && svgRareData()->webAnimatedAttributesDirty())
         || (elementAnimations() && DocumentAnimations::needsAnimationTimingUpdate(document()))) {
         DocumentAnimations::updateAnimationTimingIfNeeded(document());
