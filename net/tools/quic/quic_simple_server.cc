@@ -66,9 +66,10 @@ class CustomPacketWriterFactory : public QuicDispatcher::PacketWriterFactory {
 QuicSimpleServer::QuicSimpleServer(ProofSource* proof_source,
                                    const QuicConfig& config,
                                    const QuicVersionVector& supported_versions)
-    : helper_(base::ThreadTaskRunnerHandle::Get().get(),
-              &clock_,
-              QuicRandom::GetInstance()),
+    : helper_(
+          new QuicConnectionHelper(base::ThreadTaskRunnerHandle::Get().get(),
+                                   &clock_,
+                                   QuicRandom::GetInstance())),
       config_(config),
       crypto_config_(kSourceAddressTokenSecret,
                      QuicRandom::GetInstance(),
@@ -101,10 +102,9 @@ void QuicSimpleServer::Initialize() {
         kInitialSessionFlowControlWindow);
   }
 
-  scoped_ptr<CryptoHandshakeMessage> scfg(
-      crypto_config_.AddDefaultConfig(
-          helper_.GetRandomGenerator(), helper_.GetClock(),
-          QuicCryptoServerConfig::ConfigOptions()));
+  scoped_ptr<CryptoHandshakeMessage> scfg(crypto_config_.AddDefaultConfig(
+      helper_->GetRandomGenerator(), helper_->GetClock(),
+      QuicCryptoServerConfig::ConfigOptions()));
 }
 
 QuicSimpleServer::~QuicSimpleServer() {
@@ -149,12 +149,8 @@ int QuicSimpleServer::Listen(const IPEndPoint& address) {
   socket_.swap(socket);
 
   CustomPacketWriterFactory* factory = new CustomPacketWriterFactory();
-  dispatcher_.reset(
-      new QuicDispatcher(config_,
-                         &crypto_config_,
-                         supported_versions_,
-                         factory,
-                         &helper_));
+  dispatcher_.reset(new QuicDispatcher(config_, &crypto_config_,
+                                       supported_versions_, factory, helper_));
   QuicSimpleServerPacketWriter* writer = new QuicSimpleServerPacketWriter(
       socket_.get(),
       dispatcher_.get());

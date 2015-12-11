@@ -70,8 +70,8 @@ class QuicSimpleServer {
   // Used by the helper_ to time alarms.
   QuicClock clock_;
 
-  // Used to manage the message loop.
-  QuicConnectionHelper helper_;
+  // Used to manage the message loop. Owned by dispatcher_.
+  QuicConnectionHelper* helper_;
 
   // Listening socket. Also used for outbound client communication.
   scoped_ptr<UDPServerSocket> socket_;
