@@ -123,8 +123,8 @@ public class GeolocationTest extends AwTestBase {
     @Feature({"AndroidWebView"})
     public void testGetPosition() throws Throwable {
         initAwContents(new GrantPermisionAwContentClient());
-        loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
-                RAW_HTML, "text/html", false);
+        loadDataWithBaseUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), RAW_HTML,
+                "text/html", false, "https://google.com/", "about:blank");
 
         mAwContents.evaluateJavaScriptForTests("initiate_getCurrentPosition();", null);
 
@@ -151,8 +151,8 @@ public class GeolocationTest extends AwTestBase {
     @Feature({"AndroidWebView"})
     public void testWatchPosition() throws Throwable {
         initAwContents(new GrantPermisionAwContentClient());
-        loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
-                RAW_HTML, "text/html", false);
+        loadDataWithBaseUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), RAW_HTML,
+                "text/html", false, "https://google.com/", "about:blank");
 
         mAwContents.evaluateJavaScriptForTests("initiate_watchPosition();", null);
 
@@ -169,8 +169,8 @@ public class GeolocationTest extends AwTestBase {
     public void testPauseGeolocationOnPause() throws Throwable {
         initAwContents(new GrantPermisionAwContentClient());
         // Start a watch going.
-        loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
-                RAW_HTML, "text/html", false);
+        loadDataWithBaseUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), RAW_HTML,
+                "text/html", false, "https://google.com/", "about:blank");
 
         mAwContents.evaluateJavaScriptForTests("initiate_watchPosition();", null);
 
@@ -228,8 +228,8 @@ public class GeolocationTest extends AwTestBase {
         });
 
         // Start a watch going.
-        loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
-                RAW_HTML, "text/html", false);
+        loadDataWithBaseUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), RAW_HTML,
+                "text/html", false, "https://google.com/", "about:blank");
 
         mAwContents.evaluateJavaScriptForTests("initiate_watchPosition();", null);
 
@@ -265,8 +265,8 @@ public class GeolocationTest extends AwTestBase {
             }
         });
 
-        loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
-                RAW_HTML, "text/html", false);
+        loadDataWithBaseUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), RAW_HTML,
+                "text/html", false, "https://google.com/", "about:blank");
 
         getInstrumentation().runOnMainSync(new Runnable() {
             @Override
@@ -282,8 +282,8 @@ public class GeolocationTest extends AwTestBase {
     @SmallTest
     public void testDenyAccessByDefault() throws Throwable {
         initAwContents(new DefaultPermisionAwContentClient());
-        loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
-                RAW_HTML, "text/html", false);
+        loadDataWithBaseUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), RAW_HTML,
+                "text/html", false, "https://google.com/", "about:blank");
 
         mAwContents.evaluateJavaScriptForTests("initiate_getCurrentPosition();", null);
 
