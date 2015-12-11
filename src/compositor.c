@@ -3817,6 +3817,11 @@ bind_subcompositor(struct wl_client *client,
 				       compositor, NULL);
 }
 
+/** Set a DPMS mode on all of the compositor's outputs
+ *
+ * \param compositor The compositor instance
+ * \param state The DPMS state the outputs will be set to
+ */
 static void
 weston_compositor_dpms(struct weston_compositor *compositor,
 		       enum dpms_enum state)
@@ -3828,6 +3833,17 @@ weston_compositor_dpms(struct weston_compositor *compositor,
 			output->set_dpms(output, state);
 }
 
+/** Restores the compositor to active status
+ *
+ * \param compositor The compositor instance
+ *
+ * If the compositor was in a sleeping mode, all outputs are powered
+ * back on via DPMS.  Otherwise if the compositor was inactive
+ * (idle/locked, offscreen, or sleeping) then the compositor's wake
+ * signal will fire.
+ *
+ * Restarts the idle timer.
+ */
 WL_EXPORT void
 weston_compositor_wake(struct weston_compositor *compositor)
 {
@@ -3852,6 +3868,19 @@ weston_compositor_wake(struct weston_compositor *compositor)
 	}
 }
 
+/** Turns off rendering and frame events for the compositor.
+ *
+ * \param compositor The compositor instance
+ *
+ * This is used for example to prevent further rendering while the
+ * compositor is shutting down.
+ *
+ * \note When offscreen state is entered, outputs will be powered
+ * back on if they were sleeping (in DPMS off mode), even though
+ * no rendering will be performed.
+ *
+ * Stops the idle timer.
+ */
 WL_EXPORT void
 weston_compositor_offscreen(struct weston_compositor *compositor)
 {
@@ -3867,6 +3896,16 @@ weston_compositor_offscreen(struct weston_compositor *compositor)
 	}
 }
 
+/** Powers down all attached output devices
+ *
+ * \param compositor The compositor instance
+ *
+ * Causes rendering to the outputs to cease, and no frame events to be
+ * sent.  Only powers down the outputs if the compositor is not already
+ * in sleep mode.
+ *
+ * Stops the idle timer.
+ */
 WL_EXPORT void
 weston_compositor_sleep(struct weston_compositor *compositor)
 {
@@ -3878,6 +3917,18 @@ weston_compositor_sleep(struct weston_compositor *compositor)
 	weston_compositor_dpms(compositor, WESTON_DPMS_OFF);
 }
 
+/** Sets compositor to idle mode
+ *
+ * \param data The compositor instance
+ *
+ * This is called when the idle timer fires.  Once the compositor is in
+ * idle mode it requires a wake action (e.g. via
+ * weston_compositor_wake()) to restore it.  The compositor's
+ * idle_signal will be triggered when the idle event occurs.
+ *
+ * Idleness can be inhibited by setting the compositor's idle_inhibit
+ * property.
+ */
 static int
 idle_handler(void *data)
 {
