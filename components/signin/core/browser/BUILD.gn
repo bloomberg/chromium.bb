@@ -144,6 +144,7 @@ source_set("unit_tests") {
 
   deps = [
     ":test_support",
+    "//components/os_crypt:os_crypt",
     "//components/signin/core/common",
     "//testing/gmock",
   ]
