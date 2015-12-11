@@ -333,7 +333,7 @@ void ElementShadow::distributeV0()
 void ElementShadow::distributeV1()
 {
     if (!m_slotAssignment)
-        m_slotAssignment = adoptPtr(new SlotAssignment());
+        m_slotAssignment = SlotAssignment::create();
     m_slotAssignment->resolveAssignment(youngestShadowRoot());
 }
 
@@ -404,6 +404,7 @@ DEFINE_TRACE(ElementShadow)
     // It is therefore enough to trace one of the shadow roots here and the
     // rest will be traced from there.
     visitor->trace(m_shadowRoots.head());
+    visitor->trace(m_slotAssignment);
 #endif
 }
 

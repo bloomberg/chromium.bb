@@ -13,15 +13,21 @@ class HTMLSlotElement;
 class Node;
 class ShadowRoot;
 
-class SlotAssignment final {
+class SlotAssignment final : public NoBaseWillBeGarbageCollected<SlotAssignment> {
 public:
-    SlotAssignment() { }
+    static PassOwnPtrWillBeRawPtr<SlotAssignment> create()
+    {
+        return adoptPtrWillBeNoop(new SlotAssignment);
+    }
+
     HTMLSlotElement* assignedSlotFor(const Node&) const;
     void resolveAssignment(const ShadowRoot&);
 
     DECLARE_TRACE();
 
 private:
+    SlotAssignment() { }
+
     void assign(Node&, HTMLSlotElement&);
     WillBeHeapHashMap<RawPtrWillBeMember<Node>, RawPtrWillBeMember<HTMLSlotElement>> m_assignment;
 };

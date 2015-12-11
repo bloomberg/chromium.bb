@@ -122,7 +122,7 @@ private:
     bool m_needsSelectFeatureSet;
 
     // TODO(hayato): ShadowRoot should be an owner of SlotAssigment
-    OwnPtr<SlotAssignment> m_slotAssignment;
+    OwnPtrWillBeMember<SlotAssignment> m_slotAssignment;
 };
 
 inline Element* ElementShadow::host() const
