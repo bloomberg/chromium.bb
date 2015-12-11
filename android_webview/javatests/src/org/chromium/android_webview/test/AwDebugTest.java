@@ -8,12 +8,15 @@ import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.android_webview.AwDebug;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.parameter.ParameterizedTest;
 
 import java.io.File;
 
 /**
  * A test suite for AwDebug class.
  */
+// Only works in single-process mode, crbug.com/568825.
+@ParameterizedTest.Set
 public class AwDebugTest extends AwTestBase {
     @SmallTest
     @Feature({"AndroidWebView", "Debug"})

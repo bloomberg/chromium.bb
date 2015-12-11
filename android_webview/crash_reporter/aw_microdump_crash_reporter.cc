@@ -109,7 +109,7 @@ bool SafeToUseSignalHandler() {
 
 }  // namespace
 
-void EnableMicrodumpCrashReporter() {
+void EnableMicrodumpCrashReporter(const std::string& process_type) {
   if (g_enabled) {
     NOTREACHED() << "EnableMicrodumpCrashReporter called more than once";
     return;
@@ -124,8 +124,7 @@ void EnableMicrodumpCrashReporter() {
 
   ::crash_reporter::SetCrashReporterClient(g_crash_reporter_client.Pointer());
 
-  // |process_type| is not really relevant here, as long as it not empty.
-  breakpad::InitNonBrowserCrashReporterForAndroid("webview" /* process_type */);
+  breakpad::InitMicrodumpCrashHandlerIfNecessary(process_type);
   g_enabled = true;
 }
 

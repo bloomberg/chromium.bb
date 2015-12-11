@@ -739,31 +739,6 @@ bool MicrodumpCrashDone(const MinidumpDescriptor& minidump,
   return FinalizeCrashDoneAndroid(is_browser_process);
  }
 
-// The microdump handler does NOT upload anything. It just dumps out on the
-// system console (logcat) a restricted and serialized variant of a minidump.
-// See crbug.com/410294 for more details.
-void InitMicrodumpCrashHandlerIfNecessary(const std::string& process_type) {
-  if (!GetCrashReporterClient()->ShouldEnableBreakpadMicrodumps())
-    return;
-
-  VLOG(1) << "Enabling microdumps crash handler (process_type:"
-          << process_type << ")";
-
-  // The exception handler runs in a compromised context and cannot use c_str()
-  // as that would require the heap. Therefore, we have to guarantee that the
-  // build fingerprint and product info pointers are always valid.
-  const char* product_name = nullptr;
-  const char* product_version = nullptr;
-  GetCrashReporterClient()->GetProductNameAndVersion(&product_name,
-                                                     &product_version);
-
-  const char* android_build_fp =
-      base::android::BuildInfo::GetInstance()->android_build_fp();
-
-  g_microdump_info.Get().Initialize(process_type, product_name, product_version,
-                                    android_build_fp);
-}
-
 bool CrashDoneInProcessNoUpload(
     const google_breakpad::MinidumpDescriptor& descriptor,
     void* context,
@@ -1856,6 +1831,31 @@ void InitNonBrowserCrashReporterForAndroid(const std::string& process_type) {
       EnableNonBrowserCrashDumping(process_type, minidump_fd);
     }
   }
+}
+
+// The microdump handler does NOT upload anything. It just dumps out on the
+// system console (logcat) a restricted and serialized variant of a minidump.
+// See crbug.com/410294 for more details.
+void InitMicrodumpCrashHandlerIfNecessary(const std::string& process_type) {
+  if (!GetCrashReporterClient()->ShouldEnableBreakpadMicrodumps())
+    return;
+
+  VLOG(1) << "Enabling microdumps crash handler (process_type:"
+          << process_type << ")";
+
+  // The exception handler runs in a compromised context and cannot use c_str()
+  // as that would require the heap. Therefore, we have to guarantee that the
+  // build fingerprint and product info pointers are always valid.
+  const char* product_name = nullptr;
+  const char* product_version = nullptr;
+  GetCrashReporterClient()->GetProductNameAndVersion(&product_name,
+                                                     &product_version);
+
+  const char* android_build_fp =
+      base::android::BuildInfo::GetInstance()->android_build_fp();
+
+  g_microdump_info.Get().Initialize(process_type, product_name, product_version,
+                                    android_build_fp);
 }
 
 void AddGpuFingerprintToMicrodumpCrashHandler(

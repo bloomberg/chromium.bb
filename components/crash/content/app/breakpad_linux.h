@@ -16,9 +16,13 @@ namespace breakpad {
 // Turns on the crash reporter in any process.
 extern void InitCrashReporter(const std::string& process_type);
 
-// Enables the crash reporter in child processes.
 #if defined(OS_ANDROID)
+// Enables the crash reporter in child processes.
 extern void InitNonBrowserCrashReporterForAndroid(
+    const std::string& process_type);
+
+// Enables *micro*dump only. Can be called from any process.
+extern void InitMicrodumpCrashHandlerIfNecessary(
     const std::string& process_type);
 
 extern void AddGpuFingerprintToMicrodumpCrashHandler(

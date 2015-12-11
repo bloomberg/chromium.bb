@@ -170,8 +170,13 @@ void AwMainDelegate::PreSandboxStartup() {
     ResourceBundle::GetSharedInstance().AddDataPackFromFileRegion(
         base::File(pak_fd), pak_region, ui::SCALE_FACTOR_NONE);
   }
+  if (process_type.empty() &&
+      command_line.HasSwitch(switches::kSingleProcess)) {
+    // "webview" has a special treatment in breakpad_linux.cc.
+    process_type = "webview";
+  }
 
-  crash_reporter::EnableMicrodumpCrashReporter();
+  crash_reporter::EnableMicrodumpCrashReporter(process_type);
 }
 
 int AwMainDelegate::RunProcess(
