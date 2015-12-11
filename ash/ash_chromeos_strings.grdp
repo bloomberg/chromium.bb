@@ -30,6 +30,39 @@
   <message name="IDS_ASH_STATUS_TRAY_LOW_POWER_CHARGER_MESSAGE_SHORT" desc="The message body of a notification indicating that a low-current USB charger has been connected, short version.">
     Your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> may not charge while it is turned on.
   </message>
+  <message name="IDS_ASH_POWER_SOURCE_PORT_LEFT" desc="The text identifying an external device, when that device is connected to the USB Type-C port on the left side of this device.">
+    USB-C device (left port)
+  </message>
+  <message name="IDS_ASH_POWER_SOURCE_PORT_RIGHT" desc="The text identifying an external device, when that device is connected to the USB Type-C port on the right side of this device.">
+    USB-C device (right port)
+  </message>
+  <message name="IDS_ASH_POWER_SOURCE_PORT_BACK" desc="The text identifying an external device, when that device is connected to the USB Type-C port on the back of this device.">
+    USB-C device (rear port)
+  </message>
+  <message name="IDS_ASH_POWER_SOURCE_PORT_FRONT" desc="The text identifying an external device, when that device is connected to the USB Type-C port on the front of this device.">
+    USB-C device (front port)
+  </message>
+  <message name="IDS_ASH_POWER_SOURCE_PORT_LEFT_FRONT" desc="The text identifying an external device, when that device is connected to a USB Type-C port on the left side of this device. In this case there are two ports on that side, so this text should refer to the front one on that side.">
+    USB-C device (left side front port)
+  </message>
+  <message name="IDS_ASH_POWER_SOURCE_PORT_LEFT_BACK" desc="The text identifying an external device, when that device is connected to a USB Type-C port on the left side of this device. In this case there are two ports on that side, so this text should refer to the back one on that side.">
+    USB-C device (left side back port)
+  </message>
+  <message name="IDS_ASH_POWER_SOURCE_PORT_RIGHT_FRONT" desc="The text identifying an external device, when that device is connected to a USB Type-C port on the right side of this device. In this case there are two ports on that side, so this text should refer to the front one on that side.">
+    USB-C device (right side front port)
+  </message>
+  <message name="IDS_ASH_POWER_SOURCE_PORT_RIGHT_BACK" desc="The text identifying an external device, when that device is connected to a USB Type-C port on the right side of this device. In this case there are two ports on that side, so this text should refer to the back one on that side.">
+    USB-C device (right side back port)
+  </message>
+  <message name="IDS_ASH_POWER_SOURCE_PORT_BACK_LEFT" desc="The text identifying an external device, when that device is connected to a USB Type-C port on the back of this device. In this case there are two ports on the back, so this text should refer to the one on the left.">
+    USB-C device (left port in the back)
+  </message>
+  <message name="IDS_ASH_POWER_SOURCE_PORT_BACK_RIGHT" desc="The text identifying an external device, when that device is connected to a USB Type-C port on the back of this device. In this case there are two ports on the back, so this text should refer to the one on the right.">
+    USB-C device (right port in the back)
+  </message>
+  <message name="IDS_ASH_POWER_SOURCE_PORT_UNKNOWN" desc="The text referring to the device to charge from, when its port location cannot be determined.">
+    USB-C device
+  </message>
 
   <message name="IDS_CHARGER_REPLACEMENT_ACCESSIBILITY_NOTIFICATION" desc="The notification string used in accessibility to tell user to contact Google for replacing the possible bad charger.">
     You may have a bad charger. If you live in the US, please call 866-628-1371 in order to receive help and a replacement. If you live in the UK, please call 0800-026-0613. If you live in Ireland, please call 1-800-832-664. If you live in Canada, please call 866-628-1372. If you live in Australia, please call 1-800-067-460.

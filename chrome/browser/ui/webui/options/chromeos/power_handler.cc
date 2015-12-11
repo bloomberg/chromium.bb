@@ -21,40 +21,6 @@
 using ash::PowerStatus;
 
 namespace chromeos {
-namespace {
-
-// Returns the message ID corresponding to the port location of a source.
-int GetPowerSourceDescription(const PowerStatus::PowerSource& source) {
-  switch (source.port) {
-    case PowerStatus::UNKNOWN_PORT:
-      return IDS_OPTIONS_POWER_SOURCE_PORT_UNKNOWN;
-    case PowerStatus::LEFT_PORT:
-      return IDS_OPTIONS_POWER_SOURCE_PORT_LEFT;
-    case PowerStatus::RIGHT_PORT:
-      return IDS_OPTIONS_POWER_SOURCE_PORT_RIGHT;
-    case PowerStatus::BACK_PORT:
-      return IDS_OPTIONS_POWER_SOURCE_PORT_BACK;
-    case PowerStatus::FRONT_PORT:
-      return IDS_OPTIONS_POWER_SOURCE_PORT_FRONT;
-    case PowerStatus::LEFT_FRONT_PORT:
-      return IDS_OPTIONS_POWER_SOURCE_PORT_LEFT_FRONT;
-    case PowerStatus::LEFT_BACK_PORT:
-      return IDS_OPTIONS_POWER_SOURCE_PORT_LEFT_BACK;
-    case PowerStatus::RIGHT_FRONT_PORT:
-      return IDS_OPTIONS_POWER_SOURCE_PORT_RIGHT_FRONT;
-    case PowerStatus::RIGHT_BACK_PORT:
-      return IDS_OPTIONS_POWER_SOURCE_PORT_RIGHT_BACK;
-    case PowerStatus::BACK_LEFT_PORT:
-      return IDS_OPTIONS_POWER_SOURCE_PORT_BACK_LEFT;
-    case PowerStatus::BACK_RIGHT_PORT:
-      return IDS_OPTIONS_POWER_SOURCE_PORT_BACK_RIGHT;
-  }
-  NOTREACHED();
-  return IDS_OPTIONS_POWER_SOURCE_PORT_UNKNOWN;
-}
-
-}  // namespace
-
 namespace options {
 
 PowerHandler::PowerHandler() {
@@ -187,8 +153,8 @@ void PowerHandler::UpdatePowerSources() {
     scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
     dict->SetString("id", source.id);
     dict->SetInteger("type", source.type);
-    int message_id = GetPowerSourceDescription(source);
-    dict->SetString("description", l10n_util::GetStringUTF16(message_id));
+    dict->SetString("description",
+                    l10n_util::GetStringUTF16(source.description_id));
     sources_list.Append(dict.release());
   }
 

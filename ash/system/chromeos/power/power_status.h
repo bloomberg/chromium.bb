@@ -50,24 +50,6 @@ class ASH_EXPORT PowerStatus : public chromeos::PowerManagerClient::Observer {
     DUAL_ROLE_USB,
   };
 
-  // Port locations.
-  enum Port {
-    // Unknown, or the only port.
-    UNKNOWN_PORT,
-    LEFT_PORT,
-    RIGHT_PORT,
-    BACK_PORT,
-    FRONT_PORT,
-
-    // First word takes precedence, e.g. "frontmost port on the left side".
-    LEFT_FRONT_PORT,
-    LEFT_BACK_PORT,
-    RIGHT_FRONT_PORT,
-    RIGHT_BACK_PORT,
-    BACK_LEFT_PORT,
-    BACK_RIGHT_PORT,
-  };
-
   // Information about an available power source.
   struct PowerSource {
     // ID provided by kernel.
@@ -76,8 +58,8 @@ class ASH_EXPORT PowerStatus : public chromeos::PowerManagerClient::Observer {
     // Type of power source.
     DeviceType type;
 
-    // Location of the port used.
-    Port port;
+    // Message ID of a description for this port.
+    int description_id;
   };
 
   // Maximum battery time-to-full or time-to-empty that should be displayed

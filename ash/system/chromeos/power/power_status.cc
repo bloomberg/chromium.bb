@@ -65,34 +65,34 @@ base::string16 GetBatteryTimeAccessibilityString(int hour, int min) {
                              base::TimeDelta::FromMinutes(min)));
 }
 
-PowerStatus::Port PowerSupplyPortToPowerStatusPort(
-    power_manager::PowerSupplyProperties_PowerSource_Port port) {
-  switch (port) {
+int PowerSourceToMessageID(
+    const power_manager::PowerSupplyProperties_PowerSource& source) {
+  switch (source.port()) {
     case power_manager::PowerSupplyProperties_PowerSource_Port_UNKNOWN:
-      return PowerStatus::UNKNOWN_PORT;
+      return IDS_ASH_POWER_SOURCE_PORT_UNKNOWN;
     case power_manager::PowerSupplyProperties_PowerSource_Port_LEFT:
-      return PowerStatus::LEFT_PORT;
+      return IDS_ASH_POWER_SOURCE_PORT_LEFT;
     case power_manager::PowerSupplyProperties_PowerSource_Port_RIGHT:
-      return PowerStatus::RIGHT_PORT;
+      return IDS_ASH_POWER_SOURCE_PORT_RIGHT;
     case power_manager::PowerSupplyProperties_PowerSource_Port_BACK:
-      return PowerStatus::BACK_PORT;
+      return IDS_ASH_POWER_SOURCE_PORT_BACK;
     case power_manager::PowerSupplyProperties_PowerSource_Port_FRONT:
-      return PowerStatus::FRONT_PORT;
+      return IDS_ASH_POWER_SOURCE_PORT_FRONT;
     case power_manager::PowerSupplyProperties_PowerSource_Port_LEFT_FRONT:
-      return PowerStatus::LEFT_FRONT_PORT;
+      return IDS_ASH_POWER_SOURCE_PORT_LEFT_FRONT;
     case power_manager::PowerSupplyProperties_PowerSource_Port_LEFT_BACK:
-      return PowerStatus::LEFT_BACK_PORT;
+      return IDS_ASH_POWER_SOURCE_PORT_LEFT_BACK;
     case power_manager::PowerSupplyProperties_PowerSource_Port_RIGHT_FRONT:
-      return PowerStatus::RIGHT_FRONT_PORT;
+      return IDS_ASH_POWER_SOURCE_PORT_RIGHT_FRONT;
     case power_manager::PowerSupplyProperties_PowerSource_Port_RIGHT_BACK:
-      return PowerStatus::RIGHT_BACK_PORT;
+      return IDS_ASH_POWER_SOURCE_PORT_RIGHT_BACK;
     case power_manager::PowerSupplyProperties_PowerSource_Port_BACK_LEFT:
-      return PowerStatus::BACK_LEFT_PORT;
+      return IDS_ASH_POWER_SOURCE_PORT_BACK_LEFT;
     case power_manager::PowerSupplyProperties_PowerSource_Port_BACK_RIGHT:
-      return PowerStatus::BACK_RIGHT_PORT;
+      return IDS_ASH_POWER_SOURCE_PORT_BACK_RIGHT;
   }
   NOTREACHED();
-  return PowerStatus::UNKNOWN_PORT;
+  return 0;
 }
 
 static PowerStatus* g_power_status = NULL;
@@ -250,7 +250,7 @@ std::vector<PowerStatus::PowerSource> PowerStatus::GetPowerSources() const {
     sources.push_back(
         {source.id(),
          source.active_by_default() ? DEDICATED_CHARGER : DUAL_ROLE_USB,
-         PowerSupplyPortToPowerStatusPort(source.port())});
+         PowerSourceToMessageID(source)});
   }
   return sources;
 }

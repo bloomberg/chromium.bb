@@ -2044,39 +2044,6 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_POWER_SOURCE_LOW_POWER_CHARGER" desc="The text referring to a low-power charger like a USB charger as the power source.">
     Low-power charger
   </message>
-  <message name="IDS_OPTIONS_POWER_SOURCE_PORT_LEFT" desc="The text identifying an external device, when that device is connected to the USB Type-C port on the left side of this device.">
-    USB-C device (left port)
-  </message>
-  <message name="IDS_OPTIONS_POWER_SOURCE_PORT_RIGHT" desc="The text identifying an external device, when that device is connected to the USB Type-C port on the right side of this device.">
-    USB-C device (right port)
-  </message>
-  <message name="IDS_OPTIONS_POWER_SOURCE_PORT_BACK" desc="The text identifying an external device, when that device is connected to the USB Type-C port on the back of this device.">
-    USB-C device (rear port)
-  </message>
-  <message name="IDS_OPTIONS_POWER_SOURCE_PORT_FRONT" desc="The text identifying an external device, when that device is connected to the USB Type-C port on the front of this device.">
-    USB-C device (front port)
-  </message>
-  <message name="IDS_OPTIONS_POWER_SOURCE_PORT_LEFT_FRONT" desc="The text identifying an external device, when that device is connected to a USB Type-C port on the left side of this device. In this case there are two ports on that side, so this text should refer to the front one on that side.">
-    USB-C device (left side front port)
-  </message>
-  <message name="IDS_OPTIONS_POWER_SOURCE_PORT_LEFT_BACK" desc="The text identifying an external device, when that device is connected to a USB Type-C port on the left side of this device. In this case there are two ports on that side, so this text should refer to the back one on that side.">
-    USB-C device (left side back port)
-  </message>
-  <message name="IDS_OPTIONS_POWER_SOURCE_PORT_RIGHT_FRONT" desc="The text identifying an external device, when that device is connected to a USB Type-C port on the right side of this device. In this case there are two ports on that side, so this text should refer to the front one on that side.">
-    USB-C device (right side front port)
-  </message>
-  <message name="IDS_OPTIONS_POWER_SOURCE_PORT_RIGHT_BACK" desc="The text identifying an external device, when that device is connected to a USB Type-C port on the right side of this device. In this case there are two ports on that side, so this text should refer to the back one on that side.">
-    USB-C device (right side back port)
-  </message>
-  <message name="IDS_OPTIONS_POWER_SOURCE_PORT_BACK_LEFT" desc="The text identifying an external device, when that device is connected to a USB Type-C port on the back of this device. In this case there are two ports on the back, so this text should refer to the one on the left.">
-    USB-C device (left port in the back)
-  </message>
-  <message name="IDS_OPTIONS_POWER_SOURCE_PORT_BACK_RIGHT" desc="The text identifying an external device, when that device is connected to a USB Type-C port on the back of this device. In this case there are two ports on the back, so this text should refer to the one on the right.">
-    USB-C device (right port in the back)
-  </message>
-  <message name="IDS_OPTIONS_POWER_SOURCE_PORT_UNKNOWN" desc="The text referring to the device to charge from, when its port location cannot be determined.">
-    USB-C device
-  </message>
   <message name="IDS_OPTIONS_BATTERY_STATUS_LABEL" desc="The label for the battery information in the 'Power' overlay.">
     Battery:
   </message>
