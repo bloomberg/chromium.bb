@@ -23,8 +23,6 @@ namespace content {
 
 namespace {
 
-int kMockRenderProcessId = 1224;
-
 void EmptyCallback() {}
 
 }
@@ -35,8 +33,7 @@ class ServiceWorkerContextRequestHandlerTest : public testing::Test {
       : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
 
   void SetUp() override {
-    helper_.reset(
-        new EmbeddedWorkerTestHelper(base::FilePath(), kMockRenderProcessId));
+    helper_.reset(new EmbeddedWorkerTestHelper(base::FilePath()));
 
     // A new unstored registration/version.
     scope_ = GURL("http://host/scope/");
@@ -48,9 +45,9 @@ class ServiceWorkerContextRequestHandlerTest : public testing::Test {
 
     // An empty host.
     scoped_ptr<ServiceWorkerProviderHost> host(new ServiceWorkerProviderHost(
-        kMockRenderProcessId, MSG_ROUTING_NONE /* render_frame_id */,
-        1 /* provider_id */, SERVICE_WORKER_PROVIDER_FOR_WINDOW,
-        context()->AsWeakPtr(), nullptr));
+        helper_->mock_render_process_id(),
+        MSG_ROUTING_NONE /* render_frame_id */, 1 /* provider_id */,
+        SERVICE_WORKER_PROVIDER_FOR_WINDOW, context()->AsWeakPtr(), nullptr));
     provider_host_ = host->AsWeakPtr();
     context()->AddProviderHost(host.Pass());
 

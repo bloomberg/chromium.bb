@@ -78,8 +78,7 @@ void ExpectRegisteredWorkers(
 
 class RejectInstallTestHelper : public EmbeddedWorkerTestHelper {
  public:
-  explicit RejectInstallTestHelper(int mock_render_process_id)
-      : EmbeddedWorkerTestHelper(base::FilePath(), mock_render_process_id) {}
+  RejectInstallTestHelper() : EmbeddedWorkerTestHelper(base::FilePath()) {}
 
   void OnInstallEvent(int embedded_worker_id,
                       int request_id) override {
@@ -92,8 +91,7 @@ class RejectInstallTestHelper : public EmbeddedWorkerTestHelper {
 
 class RejectActivateTestHelper : public EmbeddedWorkerTestHelper {
  public:
-  explicit RejectActivateTestHelper(int mock_render_process_id)
-      : EmbeddedWorkerTestHelper(base::FilePath(), mock_render_process_id) {}
+  RejectActivateTestHelper() : EmbeddedWorkerTestHelper(base::FilePath()) {}
 
   void OnActivateEvent(int embedded_worker_id, int request_id) override {
     SimulateSend(
@@ -121,12 +119,10 @@ class ServiceWorkerContextTest : public ServiceWorkerContextObserver,
                                  public testing::Test {
  public:
   ServiceWorkerContextTest()
-      : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
-        render_process_id_(99) {}
+      : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
 
   void SetUp() override {
-    helper_.reset(
-        new EmbeddedWorkerTestHelper(base::FilePath(), render_process_id_));
+    helper_.reset(new EmbeddedWorkerTestHelper(base::FilePath()));
     helper_->context_wrapper()->AddObserver(this);
   }
 
@@ -160,7 +156,6 @@ class ServiceWorkerContextTest : public ServiceWorkerContextObserver,
  protected:
   TestBrowserThreadBundle browser_thread_bundle_;
   scoped_ptr<EmbeddedWorkerTestHelper> helper_;
-  const int render_process_id_;
   std::vector<NotificationLog> notifications_;
 };
 
@@ -215,7 +210,7 @@ TEST_F(ServiceWorkerContextTest, Register_RejectInstall) {
   GURL script_url("http://www.example.com/service_worker.js");
 
   helper_.reset();  // Make sure the process lookups stay overridden.
-  helper_.reset(new RejectInstallTestHelper(render_process_id_));
+  helper_.reset(new RejectInstallTestHelper);
   helper_->context_wrapper()->AddObserver(this);
   int64 registration_id = kInvalidServiceWorkerRegistrationId;
   bool called = false;
@@ -262,7 +257,7 @@ TEST_F(ServiceWorkerContextTest, Register_RejectActivate) {
   GURL script_url("http://www.example.com/service_worker.js");
 
   helper_.reset();
-  helper_.reset(new RejectActivateTestHelper(render_process_id_));
+  helper_.reset(new RejectActivateTestHelper);
   helper_->context_wrapper()->AddObserver(this);
   int64 registration_id = kInvalidServiceWorkerRegistrationId;
   bool called = false;
@@ -620,8 +615,7 @@ TEST_P(ServiceWorkerContextRecoveryTest, DeleteAndStartOver) {
     // Reinitialize the helper to test on-disk storage.
     base::ScopedTempDir user_data_directory;
     ASSERT_TRUE(user_data_directory.CreateUniqueTempDir());
-    helper_.reset(new EmbeddedWorkerTestHelper(user_data_directory.path(),
-                                               render_process_id_));
+    helper_.reset(new EmbeddedWorkerTestHelper(user_data_directory.path()));
     helper_->context_wrapper()->AddObserver(this);
   }
 

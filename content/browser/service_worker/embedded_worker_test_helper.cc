@@ -47,26 +47,6 @@ class MockMessagePortMessageFilter : public MessagePortMessageFilter {
 }  // namespace
 
 EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(
-    const base::FilePath& user_data_directory,
-    int mock_render_process_id)
-    : wrapper_(new ServiceWorkerContextWrapper(NULL)),
-      next_thread_id_(0),
-      mock_render_process_id_(mock_render_process_id),
-      weak_factory_(this) {
-  scoped_ptr<MockServiceWorkerDatabaseTaskManager> database_task_manager(
-      new MockServiceWorkerDatabaseTaskManager(
-          base::ThreadTaskRunnerHandle::Get()));
-  wrapper_->InitInternal(user_data_directory,
-                         database_task_manager.Pass(),
-                         base::ThreadTaskRunnerHandle::Get(),
-                         NULL,
-                         NULL);
-  wrapper_->process_manager()->SetProcessIdForTest(mock_render_process_id);
-  registry()->AddChildProcessSender(mock_render_process_id, this,
-                                    NewMessagePortMessageFilter());
-}
-
-EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(
     const base::FilePath& user_data_directory)
     : browser_context_(new TestBrowserContext),
       render_process_host_(new MockRenderProcessHost(browser_context_.get())),

@@ -19,9 +19,6 @@
 
 namespace content {
 
-// Fake render process id to use in tests requiring one.
-const int kFakeRenderProcessId = 99;
-
 // Fake Service Worker registration id to use in tests requiring one.
 const int64_t kFakeServiceWorkerRegistrationId = 42;
 
@@ -230,7 +227,7 @@ TEST_F(PlatformNotificationContextTest, DeleteNotification) {
 
 TEST_F(PlatformNotificationContextTest, ServiceWorkerUnregistered) {
   scoped_ptr<EmbeddedWorkerTestHelper> embedded_worker_test_helper(
-      new EmbeddedWorkerTestHelper(base::FilePath(), kFakeRenderProcessId));
+      new EmbeddedWorkerTestHelper(base::FilePath()));
 
   // Manually create the PlatformNotificationContextImpl so that the Service
   // Worker context wrapper can be passed in.

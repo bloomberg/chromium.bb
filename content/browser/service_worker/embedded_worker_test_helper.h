@@ -48,14 +48,8 @@ class TestBrowserContext;
 class EmbeddedWorkerTestHelper : public IPC::Sender,
                                  public IPC::Listener {
  public:
-  // Initialize this helper for |context|, and enable this as an IPC
-  // sender for |mock_render_process_id|. If |user_data_directory| is empty,
-  // the context makes storage stuff in memory.
-  EmbeddedWorkerTestHelper(const base::FilePath& user_data_directory,
-                           int mock_render_process_id);
-  // Use this constructor to have |EmbeddedWorkerTestHelper| create a
-  // |MockRenderProcessHost| for its render process, instead of just using
-  // a hardcoded (invalid) process id.
+  // If |user_data_directory| is empty, the context makes storage stuff in
+  // memory.
   explicit EmbeddedWorkerTestHelper(const base::FilePath& user_data_directory);
   ~EmbeddedWorkerTestHelper() override;
 

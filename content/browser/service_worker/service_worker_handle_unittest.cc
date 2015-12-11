@@ -25,7 +25,6 @@ namespace content {
 
 namespace {
 
-const int kRenderProcessId = 88;  // A dummy ID for testing.
 const int kRenderFrameId = 44;  // A dummy ID for testing.
 
 void VerifyStateChangedMessage(int expected_handle_id,
@@ -71,11 +70,10 @@ class ServiceWorkerHandleTest : public testing::Test {
       : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
 
   void SetUp() override {
-    helper_.reset(
-        new EmbeddedWorkerTestHelper(base::FilePath(), kRenderProcessId));
+    helper_.reset(new EmbeddedWorkerTestHelper(base::FilePath()));
 
     dispatcher_host_ = new TestingServiceWorkerDispatcherHost(
-        kRenderProcessId, helper_->context_wrapper(),
+        helper_->mock_render_process_id(), helper_->context_wrapper(),
         &resource_context_, helper_.get());
 
     const GURL pattern("http://www.example.com/");
@@ -105,10 +103,12 @@ class ServiceWorkerHandleTest : public testing::Test {
     ASSERT_EQ(SERVICE_WORKER_OK, status);
 
     provider_host_.reset(new ServiceWorkerProviderHost(
-        kRenderProcessId, kRenderFrameId, 1, SERVICE_WORKER_PROVIDER_FOR_WINDOW,
-        helper_->context()->AsWeakPtr(), dispatcher_host_.get()));
+        helper_->mock_render_process_id(), kRenderFrameId, 1,
+        SERVICE_WORKER_PROVIDER_FOR_WINDOW, helper_->context()->AsWeakPtr(),
+        dispatcher_host_.get()));
 
-    helper_->SimulateAddProcessToPattern(pattern, kRenderProcessId);
+    helper_->SimulateAddProcessToPattern(pattern,
+                                         helper_->mock_render_process_id());
   }
 
   void TearDown() override {

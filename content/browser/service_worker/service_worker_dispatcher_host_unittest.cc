@@ -34,7 +34,6 @@ static void SaveStatusCallback(bool* called,
 
 }
 
-static const int kRenderProcessId = 1;
 static const int kRenderFrameId = 1;
 
 class TestingServiceWorkerDispatcherHost : public ServiceWorkerDispatcherHost {
@@ -69,10 +68,10 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
       : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
 
   void SetUp() override {
-    helper_.reset(
-        new EmbeddedWorkerTestHelper(base::FilePath(), kRenderProcessId));
+    helper_.reset(new EmbeddedWorkerTestHelper(base::FilePath()));
     dispatcher_host_ = new TestingServiceWorkerDispatcherHost(
-        kRenderProcessId, context_wrapper(), &resource_context_, helper_.get());
+        helper_->mock_render_process_id(), context_wrapper(),
+        &resource_context_, helper_.get());
   }
 
   void TearDown() override { helper_.reset(); }
@@ -146,7 +145,7 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
 
   ServiceWorkerProviderHost* CreateServiceWorkerProviderHost(int provider_id) {
     return new ServiceWorkerProviderHost(
-        kRenderProcessId, kRenderFrameId, provider_id,
+        helper_->mock_render_process_id(), kRenderFrameId, provider_id,
         SERVICE_WORKER_PROVIDER_FOR_WINDOW, context()->AsWeakPtr(),
         dispatcher_host_.get());
   }
@@ -403,11 +402,12 @@ TEST_F(ServiceWorkerDispatcherHostTest, EarlyContextDeletion) {
 }
 
 TEST_F(ServiceWorkerDispatcherHostTest, ProviderCreatedAndDestroyed) {
-  const int kProviderId = 1001;  // Test with a value != kRenderProcessId.
+  const int kProviderId = 1001;
+  int process_id = helper_->mock_render_process_id();
 
   dispatcher_host_->OnMessageReceived(ServiceWorkerHostMsg_ProviderCreated(
       kProviderId, MSG_ROUTING_NONE, SERVICE_WORKER_PROVIDER_FOR_WINDOW));
-  EXPECT_TRUE(context()->GetProviderHost(kRenderProcessId, kProviderId));
+  EXPECT_TRUE(context()->GetProviderHost(process_id, kProviderId));
 
   // Two with the same ID should be seen as a bad message.
   dispatcher_host_->OnMessageReceived(ServiceWorkerHostMsg_ProviderCreated(
@@ -416,7 +416,7 @@ TEST_F(ServiceWorkerDispatcherHostTest, ProviderCreatedAndDestroyed) {
 
   dispatcher_host_->OnMessageReceived(
       ServiceWorkerHostMsg_ProviderDestroyed(kProviderId));
-  EXPECT_FALSE(context()->GetProviderHost(kRenderProcessId, kProviderId));
+  EXPECT_FALSE(context()->GetProviderHost(process_id, kProviderId));
 
   // Destroying an ID that does not exist warrants a bad message.
   dispatcher_host_->OnMessageReceived(
@@ -427,10 +427,10 @@ TEST_F(ServiceWorkerDispatcherHostTest, ProviderCreatedAndDestroyed) {
   // process to get deleted as well.
   dispatcher_host_->OnMessageReceived(ServiceWorkerHostMsg_ProviderCreated(
       kProviderId, MSG_ROUTING_NONE, SERVICE_WORKER_PROVIDER_FOR_WINDOW));
-  EXPECT_TRUE(context()->GetProviderHost(kRenderProcessId, kProviderId));
+  EXPECT_TRUE(context()->GetProviderHost(process_id, kProviderId));
   EXPECT_TRUE(dispatcher_host_->HasOneRef());
   dispatcher_host_ = NULL;
-  EXPECT_FALSE(context()->GetProviderHost(kRenderProcessId, kProviderId));
+  EXPECT_FALSE(context()->GetProviderHost(process_id, kProviderId));
 }
 
 TEST_F(ServiceWorkerDispatcherHostTest, GetRegistration_SameOrigin) {
@@ -523,6 +523,8 @@ TEST_F(ServiceWorkerDispatcherHostTest, GetRegistrations_EarlyContextDeletion) {
 }
 
 TEST_F(ServiceWorkerDispatcherHostTest, CleanupOnRendererCrash) {
+  int process_id = helper_->mock_render_process_id();
+
   // Add a provider and worker.
   const int64 kProviderId = 99;  // Dummy value
   dispatcher_host_->OnMessageReceived(ServiceWorkerHostMsg_ProviderCreated(
@@ -556,7 +558,7 @@ TEST_F(ServiceWorkerDispatcherHostTest, CleanupOnRendererCrash) {
   EXPECT_TRUE(called);
   ASSERT_EQ(SERVICE_WORKER_OK, status);
 
-  helper_->SimulateAddProcessToPattern(pattern, kRenderProcessId);
+  helper_->SimulateAddProcessToPattern(pattern, process_id);
 
   // Start up the worker.
   status = SERVICE_WORKER_ERROR_ABORT;
@@ -566,24 +568,22 @@ TEST_F(ServiceWorkerDispatcherHostTest, CleanupOnRendererCrash) {
   EXPECT_TRUE(called);
   EXPECT_EQ(SERVICE_WORKER_OK, status);
 
-  EXPECT_TRUE(context()->GetProviderHost(kRenderProcessId, kProviderId));
+  EXPECT_TRUE(context()->GetProviderHost(process_id, kProviderId));
   EXPECT_EQ(ServiceWorkerVersion::RUNNING, version->running_status());
 
   // Simulate the render process crashing.
   dispatcher_host_->OnFilterRemoved();
 
   // The dispatcher host should clean up the state from the process.
-  EXPECT_FALSE(context()->GetProviderHost(kRenderProcessId, kProviderId));
+  EXPECT_FALSE(context()->GetProviderHost(process_id, kProviderId));
   EXPECT_EQ(ServiceWorkerVersion::STOPPED, version->running_status());
 
   // We should be able to hook up a new dispatcher host although the old object
   // is not yet destroyed. This is what the browser does when reusing a crashed
   // render process.
   scoped_refptr<TestingServiceWorkerDispatcherHost> new_dispatcher_host(
-      new TestingServiceWorkerDispatcherHost(kRenderProcessId,
-                                             context_wrapper(),
-                                             &resource_context_,
-                                             helper_.get()));
+      new TestingServiceWorkerDispatcherHost(
+          process_id, context_wrapper(), &resource_context_, helper_.get()));
 
   // To show the new dispatcher can operate, simulate provider creation. Since
   // the old dispatcher cleaned up the old provider host, the new one won't

@@ -19,8 +19,6 @@ namespace content {
 
 namespace {
 
-const int kRenderProcessId = 11;
-
 void DestroyWorker(scoped_ptr<EmbeddedWorkerInstance> worker,
                    ServiceWorkerStatusCode* out_status,
                    ServiceWorkerStatusCode status) {
@@ -56,8 +54,7 @@ class EmbeddedWorkerInstanceTest : public testing::Test,
   bool OnMessageReceived(const IPC::Message& message) override { return false; }
 
   void SetUp() override {
-    helper_.reset(
-        new EmbeddedWorkerTestHelper(base::FilePath(), kRenderProcessId));
+    helper_.reset(new EmbeddedWorkerTestHelper(base::FilePath()));
   }
 
   void TearDown() override { helper_.reset(); }
@@ -97,8 +94,7 @@ class EmbeddedWorkerInstanceTest : public testing::Test,
 
 class FailToSendIPCHelper : public EmbeddedWorkerTestHelper {
  public:
-  FailToSendIPCHelper()
-      : EmbeddedWorkerTestHelper(base::FilePath(), kRenderProcessId) {}
+  FailToSendIPCHelper() : EmbeddedWorkerTestHelper(base::FilePath()) {}
   ~FailToSendIPCHelper() override {}
 
   bool Send(IPC::Message* message) override {
@@ -117,7 +113,8 @@ TEST_F(EmbeddedWorkerInstanceTest, StartAndStop) {
   const GURL url("http://example.com/worker.js");
 
   // Simulate adding one process to the pattern.
-  helper_->SimulateAddProcessToPattern(pattern, kRenderProcessId);
+  helper_->SimulateAddProcessToPattern(pattern,
+                                       helper_->mock_render_process_id());
 
   // Start should succeed.
   ServiceWorkerStatusCode status;
@@ -134,7 +131,7 @@ TEST_F(EmbeddedWorkerInstanceTest, StartAndStop) {
   // The 'WorkerStarted' message should have been sent by
   // EmbeddedWorkerTestHelper.
   EXPECT_EQ(EmbeddedWorkerInstance::RUNNING, worker->status());
-  EXPECT_EQ(kRenderProcessId, worker->process_id());
+  EXPECT_EQ(helper_->mock_render_process_id(), worker->process_id());
 
   // Stop the worker.
   EXPECT_EQ(SERVICE_WORKER_OK, worker->Stop());
@@ -162,13 +159,14 @@ TEST_F(EmbeddedWorkerInstanceTest, StopWhenDevToolsAttached) {
   const GURL url("http://example.com/worker.js");
 
   // Simulate adding one process to the pattern.
-  helper_->SimulateAddProcessToPattern(pattern, kRenderProcessId);
+  helper_->SimulateAddProcessToPattern(pattern,
+                                       helper_->mock_render_process_id());
 
   // Start the worker and then call StopIfIdle().
   EXPECT_EQ(SERVICE_WORKER_OK,
             StartWorker(worker.get(), service_worker_version_id, pattern, url));
   EXPECT_EQ(EmbeddedWorkerInstance::RUNNING, worker->status());
-  EXPECT_EQ(kRenderProcessId, worker->process_id());
+  EXPECT_EQ(helper_->mock_render_process_id(), worker->process_id());
   worker->StopIfIdle();
   EXPECT_EQ(EmbeddedWorkerInstance::STOPPING, worker->status());
   base::RunLoop().RunUntilIdle();
@@ -182,7 +180,7 @@ TEST_F(EmbeddedWorkerInstanceTest, StopWhenDevToolsAttached) {
   EXPECT_EQ(SERVICE_WORKER_OK,
             StartWorker(worker.get(), service_worker_version_id, pattern, url));
   EXPECT_EQ(EmbeddedWorkerInstance::RUNNING, worker->status());
-  EXPECT_EQ(kRenderProcessId, worker->process_id());
+  EXPECT_EQ(helper_->mock_render_process_id(), worker->process_id());
   worker->StopIfIdle();
   base::RunLoop().RunUntilIdle();
 
@@ -208,8 +206,9 @@ TEST_F(EmbeddedWorkerInstanceTest, RemoveWorkerInSharedProcess) {
   const int64 version_id2 = 56L;
   const GURL pattern("http://example.com/");
   const GURL url("http://example.com/worker.js");
+  int process_id = helper_->mock_render_process_id();
 
-  helper_->SimulateAddProcessToPattern(pattern, kRenderProcessId);
+  helper_->SimulateAddProcessToPattern(pattern, process_id);
   {
     // Start worker1.
     ServiceWorkerStatusCode status;
@@ -243,9 +242,8 @@ TEST_F(EmbeddedWorkerInstanceTest, RemoveWorkerInSharedProcess) {
   // Only worker1 should be removed from the registry's process_map.
   EmbeddedWorkerRegistry* registry =
       helper_->context()->embedded_worker_registry();
-  EXPECT_EQ(0UL,
-            registry->worker_process_map_[kRenderProcessId].count(worker1_id));
-  EXPECT_EQ(1UL, registry->worker_process_map_[kRenderProcessId].count(
+  EXPECT_EQ(0UL, registry->worker_process_map_[process_id].count(worker1_id));
+  EXPECT_EQ(1UL, registry->worker_process_map_[process_id].count(
                      worker2->embedded_worker_id()));
 
   worker2->Stop();
@@ -307,7 +305,8 @@ TEST_F(EmbeddedWorkerInstanceTest, Detach) {
   const GURL url("http://example.com/worker.js");
   scoped_ptr<EmbeddedWorkerInstance> worker =
       embedded_worker_registry()->CreateWorker();
-  helper_->SimulateAddProcessToPattern(pattern, kRenderProcessId);
+  helper_->SimulateAddProcessToPattern(pattern,
+                                       helper_->mock_render_process_id());
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
   worker->AddListener(this);
 
@@ -340,7 +339,8 @@ TEST_F(EmbeddedWorkerInstanceTest, FailToSendStartIPC) {
 
   scoped_ptr<EmbeddedWorkerInstance> worker =
       embedded_worker_registry()->CreateWorker();
-  helper_->SimulateAddProcessToPattern(pattern, kRenderProcessId);
+  helper_->SimulateAddProcessToPattern(pattern,
+                                       helper_->mock_render_process_id());
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
   worker->AddListener(this);
 

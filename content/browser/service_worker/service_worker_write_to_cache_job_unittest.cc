@@ -305,15 +305,12 @@ class ServiceWorkerWriteToCacheJobTest : public testing::Test {
         REQUEST_CONTEXT_FRAME_TYPE_NONE, scoped_refptr<ResourceRequestBody>());
   }
 
-  int NextRenderProcessId() { return next_render_process_id_++; }
   int NextProviderId() { return next_provider_id_++; }
   int NextVersionId() { return next_version_id_++; }
 
   void SetUp() override {
-    int render_process_id = NextRenderProcessId();
     int provider_id = NextProviderId();
-    helper_.reset(
-        new EmbeddedWorkerTestHelper(base::FilePath(), render_process_id));
+    helper_.reset(new EmbeddedWorkerTestHelper(base::FilePath()));
 
     // A new unstored registration/version.
     scope_ = GURL("https://host/scope/");
@@ -323,8 +320,9 @@ class ServiceWorkerWriteToCacheJobTest : public testing::Test {
     version_ =
         new ServiceWorkerVersion(registration_.get(), script_url_,
                                  NextVersionId(), context()->AsWeakPtr());
-    CreateHostForVersion(render_process_id, provider_id, version_);
-    SetUpScriptRequest(render_process_id, provider_id);
+    CreateHostForVersion(helper_->mock_render_process_id(), provider_id,
+                         version_);
+    SetUpScriptRequest(helper_->mock_render_process_id(), provider_id);
 
     context()->storage()->LazyInitialize(base::Bind(&EmptyCallback));
     base::RunLoop().RunUntilIdle();
@@ -372,14 +370,14 @@ class ServiceWorkerWriteToCacheJobTest : public testing::Test {
   // to the script |response|. Returns the new version.
   scoped_refptr<ServiceWorkerVersion> UpdateScript(
       const std::string& response) {
-    int render_process_id = NextRenderProcessId();
     int provider_id = NextProviderId();
     scoped_refptr<ServiceWorkerVersion> new_version =
         new ServiceWorkerVersion(registration_.get(), script_url_,
                                  NextVersionId(), context()->AsWeakPtr());
-    CreateHostForVersion(render_process_id, provider_id, new_version);
+    CreateHostForVersion(helper_->mock_render_process_id(), provider_id,
+                         new_version);
 
-    SetUpScriptRequest(render_process_id, provider_id);
+    SetUpScriptRequest(helper_->mock_render_process_id(), provider_id);
     mock_protocol_handler_->SetCreateJobCallback(
         base::Bind(&CreateResponseJob, response));
     request_->Start();
@@ -425,7 +423,6 @@ class ServiceWorkerWriteToCacheJobTest : public testing::Test {
   GURL scope_;
   GURL script_url_;
 
-  int next_render_process_id_ = 1224;  // dummy value
   int next_provider_id_ = 1;
   int64 next_version_id_ = 1L;
 };

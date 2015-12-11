@@ -16,8 +16,6 @@
 
 namespace content {
 
-static const int kRenderProcessId = 33;  // Dummy process ID for testing.
-
 class ServiceWorkerProviderHostTest : public testing::Test {
  protected:
   ServiceWorkerProviderHostTest()
@@ -25,8 +23,7 @@ class ServiceWorkerProviderHostTest : public testing::Test {
   ~ServiceWorkerProviderHostTest() override {}
 
   void SetUp() override {
-    helper_.reset(
-        new EmbeddedWorkerTestHelper(base::FilePath(), kRenderProcessId));
+    helper_.reset(new EmbeddedWorkerTestHelper(base::FilePath()));
     context_ = helper_->context();
     script_url_ = GURL("http://www.example.com/service_worker.js");
     registration1_ = new ServiceWorkerRegistration(
@@ -36,12 +33,14 @@ class ServiceWorkerProviderHostTest : public testing::Test {
 
     // Prepare provider hosts (for the same process).
     scoped_ptr<ServiceWorkerProviderHost> host1(new ServiceWorkerProviderHost(
-        kRenderProcessId, MSG_ROUTING_NONE, 1 /* provider_id */,
-        SERVICE_WORKER_PROVIDER_FOR_WINDOW, context_->AsWeakPtr(), NULL));
+        helper_->mock_render_process_id(), MSG_ROUTING_NONE,
+        1 /* provider_id */, SERVICE_WORKER_PROVIDER_FOR_WINDOW,
+        context_->AsWeakPtr(), NULL));
     host1->SetDocumentUrl(GURL("http://www.example.com/example1.html"));
     scoped_ptr<ServiceWorkerProviderHost> host2(new ServiceWorkerProviderHost(
-        kRenderProcessId, MSG_ROUTING_NONE, 2 /* provider_id */,
-        SERVICE_WORKER_PROVIDER_FOR_WINDOW, context_->AsWeakPtr(), NULL));
+        helper_->mock_render_process_id(), MSG_ROUTING_NONE,
+        2 /* provider_id */, SERVICE_WORKER_PROVIDER_FOR_WINDOW,
+        context_->AsWeakPtr(), NULL));
     host2->SetDocumentUrl(GURL("http://www.example.com/example2.html"));
     provider_host1_ = host1->AsWeakPtr();
     provider_host2_ = host2->AsWeakPtr();

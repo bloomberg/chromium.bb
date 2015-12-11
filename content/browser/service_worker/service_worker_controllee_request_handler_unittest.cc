@@ -30,7 +30,6 @@ namespace content {
 
 namespace {
 
-int kMockRenderProcessId = 1224;
 int kMockProviderId = 1;
 
 void EmptyCallback() {}
@@ -43,8 +42,7 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
       : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
 
   void SetUp() override {
-    helper_.reset(
-        new EmbeddedWorkerTestHelper(base::FilePath(), kMockRenderProcessId));
+    helper_.reset(new EmbeddedWorkerTestHelper(base::FilePath()));
 
     // A new unstored registration/version.
     scope_ = GURL("http://host/scope/");
@@ -61,7 +59,7 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
 
     // An empty host.
     scoped_ptr<ServiceWorkerProviderHost> host(new ServiceWorkerProviderHost(
-        kMockRenderProcessId, MSG_ROUTING_NONE, kMockProviderId,
+        helper_->mock_render_process_id(), MSG_ROUTING_NONE, kMockProviderId,
         SERVICE_WORKER_PROVIDER_FOR_WINDOW, context()->AsWeakPtr(), NULL));
     provider_host_ = host->AsWeakPtr();
     context()->AddProviderHost(host.Pass());
@@ -227,7 +225,8 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, DeletedProviderHost) {
 
   // Shouldn't crash if the ProviderHost is deleted prior to completion of
   // the database lookup.
-  context()->RemoveProviderHost(kMockRenderProcessId, kMockProviderId);
+  context()->RemoveProviderHost(helper_->mock_render_process_id(),
+                                kMockProviderId);
   EXPECT_FALSE(provider_host_.get());
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(sw_job->ShouldFallbackToNetwork());

@@ -19,7 +19,6 @@ typedef std::map<std::string, WebCircularGeofencingRegion> RegionMap;
 
 namespace {
 
-static const int kRenderProcessId = 99;
 static const char* kTestRegionId = "region-id";
 static const int64 kTestGeofencingRegistrationId = 42;
 static const int64 kTestGeofencingRegistrationId2 = 43;
@@ -123,8 +122,7 @@ class GeofencingManagerTest : public testing::Test {
   }
 
   void SetUp() override {
-    helper_.reset(
-        new EmbeddedWorkerTestHelper(base::FilePath(), kRenderProcessId));
+    helper_.reset(new EmbeddedWorkerTestHelper(base::FilePath()));
     service_ = new TestGeofencingService();
     manager_ = new GeofencingManager(helper_->context_wrapper());
     manager_->SetServiceForTesting(service_);

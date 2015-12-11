@@ -55,7 +55,6 @@ class ServiceWorkerURLRequestJobTest;
 
 namespace {
 
-const int kProcessID = 1;
 const int kProviderID = 100;
 const char kTestData[] = "Here is sample text for the blob.";
 
@@ -211,7 +210,7 @@ class ServiceWorkerURLRequestJobTest
   void SetUp() override {
     browser_context_.reset(new TestBrowserContext);
     InitializeResourceContext(browser_context_.get());
-    SetUpWithHelper(new EmbeddedWorkerTestHelper(base::FilePath(), kProcessID));
+    SetUpWithHelper(new EmbeddedWorkerTestHelper(base::FilePath()));
   }
 
   void SetUpWithHelper(EmbeddedWorkerTestHelper* helper,
@@ -255,10 +254,10 @@ class ServiceWorkerURLRequestJobTest
     }
 
     scoped_ptr<ServiceWorkerProviderHost> provider_host(
-        new ServiceWorkerProviderHost(kProcessID, MSG_ROUTING_NONE, kProviderID,
-                                      SERVICE_WORKER_PROVIDER_FOR_WINDOW,
-                                      helper_->context()->AsWeakPtr(),
-                                      nullptr));
+        new ServiceWorkerProviderHost(
+            helper_->mock_render_process_id(), MSG_ROUTING_NONE, kProviderID,
+            SERVICE_WORKER_PROVIDER_FOR_WINDOW, helper_->context()->AsWeakPtr(),
+            nullptr));
     provider_host_ = provider_host->AsWeakPtr();
     provider_host->SetDocumentUrl(GURL("http://example.com/"));
     registration_->SetActiveVersion(version_);
@@ -421,15 +420,14 @@ TEST_F(ServiceWorkerURLRequestJobTest, Simple) {
 
 class ProviderDeleteHelper : public EmbeddedWorkerTestHelper {
  public:
-  explicit ProviderDeleteHelper(int mock_render_process_id)
-      : EmbeddedWorkerTestHelper(base::FilePath(), mock_render_process_id) {}
+  ProviderDeleteHelper() : EmbeddedWorkerTestHelper(base::FilePath()) {}
   ~ProviderDeleteHelper() override {}
 
  protected:
   void OnFetchEvent(int embedded_worker_id,
                     int request_id,
                     const ServiceWorkerFetchRequest& request) override {
-    context()->RemoveProviderHost(kProcessID, kProviderID);
+    context()->RemoveProviderHost(mock_render_process_id(), kProviderID);
     SimulateSend(new ServiceWorkerHostMsg_FetchEventFinished(
         embedded_worker_id, request_id,
         SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE,
@@ -447,7 +445,7 @@ TEST_F(ServiceWorkerURLRequestJobTest, DeletedProviderHostOnFetchEvent) {
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   // Shouldn't crash if the ProviderHost is deleted prior to completion of
   // the fetch event.
-  SetUpWithHelper(new ProviderDeleteHelper(kProcessID));
+  SetUpWithHelper(new ProviderDeleteHelper);
 
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   TestRequest(500, "Service Worker Response Error", std::string(),
@@ -472,7 +470,8 @@ TEST_F(ServiceWorkerURLRequestJobTest, DeletedProviderHostBeforeFetchEvent) {
 
   request_->set_method("GET");
   request_->Start();
-  helper_->context()->RemoveProviderHost(kProcessID, kProviderID);
+  helper_->context()->RemoveProviderHost(helper_->mock_render_process_id(),
+                                         kProviderID);
   base::RunLoop().RunUntilIdle();
   TestRequestResult(500, "Service Worker Response Error", std::string(),
                     false /* expect_valid_ssl */);
@@ -491,10 +490,8 @@ TEST_F(ServiceWorkerURLRequestJobTest, DeletedProviderHostBeforeFetchEvent) {
 // Responds to fetch events with a blob.
 class BlobResponder : public EmbeddedWorkerTestHelper {
  public:
-  BlobResponder(int mock_render_process_id,
-                const std::string& blob_uuid,
-                uint64 blob_size)
-      : EmbeddedWorkerTestHelper(base::FilePath(), mock_render_process_id),
+  BlobResponder(const std::string& blob_uuid, uint64 blob_size)
+      : EmbeddedWorkerTestHelper(base::FilePath()),
         blob_uuid_(blob_uuid),
         blob_size_(blob_size) {}
   ~BlobResponder() override {}
@@ -530,8 +527,8 @@ TEST_F(ServiceWorkerURLRequestJobTest, BlobResponse) {
   }
   scoped_ptr<storage::BlobDataHandle> blob_handle =
       blob_storage_context->context()->AddFinishedBlob(blob_data_.get());
-  SetUpWithHelper(new BlobResponder(
-      kProcessID, blob_handle->uuid(), expected_response.size()));
+  SetUpWithHelper(
+      new BlobResponder(blob_handle->uuid(), expected_response.size()));
 
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   TestRequest(200, "OK", expected_response, true /* expect_valid_ssl */);
@@ -548,7 +545,7 @@ TEST_F(ServiceWorkerURLRequestJobTest, BlobResponse) {
 }
 
 TEST_F(ServiceWorkerURLRequestJobTest, NonExistentBlobUUIDResponse) {
-  SetUpWithHelper(new BlobResponder(kProcessID, "blob-id:nothing-is-here", 0));
+  SetUpWithHelper(new BlobResponder("blob-id:nothing-is-here", 0));
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   TestRequest(500, "Service Worker Response Error", std::string(),
               true /* expect_valid_ssl */);
@@ -567,9 +564,8 @@ TEST_F(ServiceWorkerURLRequestJobTest, NonExistentBlobUUIDResponse) {
 // Responds to fetch events with a stream.
 class StreamResponder : public EmbeddedWorkerTestHelper {
  public:
-  StreamResponder(int mock_render_process_id, const GURL& stream_url)
-      : EmbeddedWorkerTestHelper(base::FilePath(), mock_render_process_id),
-        stream_url_(stream_url) {}
+  explicit StreamResponder(const GURL& stream_url)
+      : EmbeddedWorkerTestHelper(base::FilePath()), stream_url_(stream_url) {}
   ~StreamResponder() override {}
 
  protected:
@@ -598,7 +594,7 @@ TEST_F(ServiceWorkerURLRequestJobTest, StreamResponse) {
           browser_context_->GetResourceContext());
   scoped_refptr<Stream> stream =
       new Stream(stream_context->registry(), nullptr, stream_url);
-  SetUpWithHelper(new StreamResponder(kProcessID, stream_url));
+  SetUpWithHelper(new StreamResponder(stream_url));
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   request_ = url_request_context_.CreateRequest(
       GURL("http://example.com/foo.html"), net::DEFAULT_PRIORITY,
@@ -642,7 +638,7 @@ TEST_F(ServiceWorkerURLRequestJobTest, StreamResponse_DelayedRegistration) {
   StreamContext* stream_context =
       GetStreamContextForResourceContext(
           browser_context_->GetResourceContext());
-  SetUpWithHelper(new StreamResponder(kProcessID, stream_url));
+  SetUpWithHelper(new StreamResponder(stream_url));
 
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   request_ = url_request_context_.CreateRequest(
@@ -699,7 +695,7 @@ TEST_F(ServiceWorkerURLRequestJobTest, StreamResponse_QuickFinalize) {
     stream->AddData(kTestData, sizeof(kTestData) - 1);
   }
   stream->Finalize();
-  SetUpWithHelper(new StreamResponder(kProcessID, stream_url));
+  SetUpWithHelper(new StreamResponder(stream_url));
 
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   request_ = url_request_context_.CreateRequest(
@@ -738,7 +734,7 @@ TEST_F(ServiceWorkerURLRequestJobTest, StreamResponse_Flush) {
           browser_context_->GetResourceContext());
   scoped_refptr<Stream> stream =
       new Stream(stream_context->registry(), nullptr, stream_url);
-  SetUpWithHelper(new StreamResponder(kProcessID, stream_url));
+  SetUpWithHelper(new StreamResponder(stream_url));
 
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   request_ = url_request_context_.CreateRequest(
@@ -784,7 +780,7 @@ TEST_F(ServiceWorkerURLRequestJobTest, StreamResponseAndCancel) {
       new Stream(stream_context->registry(), nullptr, stream_url);
   ASSERT_EQ(stream.get(),
             stream_context->registry()->GetStream(stream_url).get());
-  SetUpWithHelper(new StreamResponder(kProcessID, stream_url));
+  SetUpWithHelper(new StreamResponder(stream_url));
 
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   request_ = url_request_context_.CreateRequest(
@@ -832,7 +828,7 @@ TEST_F(ServiceWorkerURLRequestJobTest,
   StreamContext* stream_context =
       GetStreamContextForResourceContext(
           browser_context_->GetResourceContext());
-  SetUpWithHelper(new StreamResponder(kProcessID, stream_url));
+  SetUpWithHelper(new StreamResponder(stream_url));
 
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   request_ = url_request_context_.CreateRequest(
@@ -864,8 +860,7 @@ TEST_F(ServiceWorkerURLRequestJobTest,
 // Helper to simulate failing to dispatch a fetch event to a worker.
 class FailFetchHelper : public EmbeddedWorkerTestHelper {
  public:
-  explicit FailFetchHelper(int mock_render_process_id)
-      : EmbeddedWorkerTestHelper(base::FilePath(), mock_render_process_id) {}
+  FailFetchHelper() : EmbeddedWorkerTestHelper(base::FilePath()) {}
   ~FailFetchHelper() override {}
 
  protected:
@@ -880,7 +875,7 @@ class FailFetchHelper : public EmbeddedWorkerTestHelper {
 };
 
 TEST_F(ServiceWorkerURLRequestJobTest, FailFetchDispatch) {
-  SetUpWithHelper(new FailFetchHelper(kProcessID));
+  SetUpWithHelper(new FailFetchHelper);
 
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   request_ = url_request_context_.CreateRequest(
@@ -895,8 +890,8 @@ TEST_F(ServiceWorkerURLRequestJobTest, FailFetchDispatch) {
   EXPECT_EQ(200, request_->GetResponseCode());
   EXPECT_EQ("PASS", url_request_delegate_.response_data());
   EXPECT_FALSE(HasInflightRequests());
-  ServiceWorkerProviderHost* host =
-      helper_->context()->GetProviderHost(kProcessID, kProviderID);
+  ServiceWorkerProviderHost* host = helper_->context()->GetProviderHost(
+      helper_->mock_render_process_id(), kProviderID);
   ASSERT_TRUE(host);
   EXPECT_EQ(host->controlling_version(), nullptr);
 
@@ -909,8 +904,7 @@ TEST_F(ServiceWorkerURLRequestJobTest, FailFetchDispatch) {
 // TODO(horo): Remove this test when crbug.com/485900 is fixed.
 TEST_F(ServiceWorkerURLRequestJobTest, MainScriptHTTPResponseInfoNotSet) {
   // Shouldn't crash if MainScriptHttpResponseInfo is not set.
-  SetUpWithHelper(new EmbeddedWorkerTestHelper(base::FilePath(), kProcessID),
-                  false);
+  SetUpWithHelper(new EmbeddedWorkerTestHelper(base::FilePath()), false);
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   request_ = url_request_context_.CreateRequest(
       GURL("http://example.com/foo.html"), net::DEFAULT_PRIORITY,
