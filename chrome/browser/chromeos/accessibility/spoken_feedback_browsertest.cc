@@ -568,6 +568,28 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, DISABLED_ChromeVoxStickyMode) {
   EXPECT_EQ("One", speech_monitor_.GetNextUtterance());
 }
 
+IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, ChromeVoxNextStickyMode) {
+  LoadChromeVoxAndThenNavigateToURL(
+      GURL("data:text/html;charset=utf-8,<button autofocus>Click me</button>"
+           "<!-- chromevox_next_test -->"));
+  while ("Button" != speech_monitor_.GetNextUtterance()) {
+  }
+
+  // Press the sticky-key sequence: Search Search.
+  SendKeyPress(ui::VKEY_LWIN);
+  SendKeyPress(ui::VKEY_LWIN);
+  EXPECT_EQ("Sticky mode enabled", speech_monitor_.GetNextUtterance());
+
+  SendKeyPress(ui::VKEY_H);
+  while ("No next heading." != speech_monitor_.GetNextUtterance()) {
+  }
+
+  SendKeyPress(ui::VKEY_LWIN);
+  SendKeyPress(ui::VKEY_LWIN);
+  while ("Sticky mode disabled" != speech_monitor_.GetNextUtterance()) {
+  }
+}
+
 IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, TouchExploreStatusTray) {
   EnableChromeVox();
   SimulateTouchScreenInChromeVox();

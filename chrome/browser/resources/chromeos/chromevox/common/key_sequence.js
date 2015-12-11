@@ -38,13 +38,11 @@ goog.require('cvox.PlatformFilter');
  * @param {boolean=} opt_cvoxModifier Whether or not the ChromeVox modifier key
  * is active. If not specified, we will try to determine whether the modifier
  * was active by looking at the originalEvent.
- * @param {boolean=} opt_skipStripping Skips stripping of ChromeVox modifiers
  * from key events when the cvox modifiers are set. Defaults to false.
  * @param {boolean=} opt_doubleTap Whether this is triggered via double tap.
  * @constructor
  */
-cvox.KeySequence = function(
-    originalEvent, opt_cvoxModifier, opt_skipStripping, opt_doubleTap) {
+cvox.KeySequence = function(originalEvent, opt_cvoxModifier, opt_doubleTap) {
   /** @type {boolean} */
   this.doubleTap = !!opt_doubleTap;
 
@@ -58,7 +56,6 @@ cvox.KeySequence = function(
   }
   this.stickyMode = !!originalEvent['stickyMode'];
   this.prefixKey = !!originalEvent['keyPrefix'];
-  this.skipStripping = !!opt_skipStripping;
 
   if (this.stickyMode && this.prefixKey) {
     throw 'Prefix key and sticky mode cannot both be enabled: ' + originalEvent;
@@ -228,10 +225,6 @@ cvox.KeySequence.prototype.extractKey_ = function(keyEvent) {
  * @private
  */
 cvox.KeySequence.prototype.rationalizeKeys_ = function() {
-  if (this.skipStripping) {
-    return;
-  }
-
   // TODO (rshearer): This is a hack. When the modifier key becomes customizable
   // then we will not have to deal with strings here.
   var modifierKeyCombo = cvox.ChromeVox.modKeyStr.split(/\+/g);
@@ -442,7 +435,7 @@ cvox.KeySequence.deserialize = function(sequenceObject) {
   }
 
   var keySeq = new cvox.KeySequence(firstSequenceEvent,
-      sequenceObject.cvoxModifier, true, sequenceObject.doubleTap);
+      sequenceObject.cvoxModifier, sequenceObject.doubleTap);
   if (secondKeyPressed) {
     cvox.ChromeVox.sequenceSwitchKeyCodes.push(
         new cvox.KeySequence(firstSequenceEvent, sequenceObject.cvoxModifier));

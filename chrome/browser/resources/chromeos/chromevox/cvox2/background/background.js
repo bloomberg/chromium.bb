@@ -460,6 +460,11 @@ Background.prototype = {
         cvox.ChromeVox.tts.speak(isClassic ?
             'classic' : 'next', cvox.QueueMode.FLUSH, {doNotInterrupt: true});
         break;
+      case 'toggleStickyMode':
+        cvox.ChromeVoxBackground.setPref('sticky',
+                                         !cvox.ChromeVox.isStickyPrefOn,
+                                         true);
+        break;
       default:
         return true;
     }
@@ -503,6 +508,7 @@ Background.prototype = {
    * @return {boolean} True if the default action should be performed.
    */
   onKeyDown: function(evt) {
+    evt.stickyMode = cvox.ChromeVox.isStickyModeOn() && cvox.ChromeVox.isActive;
     if (this.mode_ != ChromeVoxMode.CLASSIC &&
         !cvox.ChromeVoxKbHandler.basicKeyDownActionsListener(evt)) {
       evt.preventDefault();

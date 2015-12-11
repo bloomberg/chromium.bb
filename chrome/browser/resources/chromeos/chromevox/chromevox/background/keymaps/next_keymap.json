@@ -315,6 +315,16 @@
           "keyCode": [65, 65]
         }
       }
+    },
+    {
+      "command": "toggleStickyMode",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [91]
+        },
+        "doubleTap": true
+      }
     }
   ]
 }
