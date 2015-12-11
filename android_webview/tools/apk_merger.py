@@ -150,6 +150,7 @@ def main():
   parser.add_argument('--keystore_path', required=True, type=os.path.abspath)
   parser.add_argument('--key_name', required=True)
   parser.add_argument('--key_password', required=True)
+  parser.add_argument('--shared_library', required=True)
   args = parser.parse_args()
 
   tmp_dir = tempfile.mkdtemp()
@@ -163,7 +164,7 @@ def main():
   # setting the compression level of the file
   expected_files = {'snapshot_blob_32.bin': ['-0'],
                     'natives_blob_32.bin': ['-0'],
-                    'libwebviewchromium.so': []}
+                    args.shared_library: []}
 
   try:
     shutil.copyfile(args.apk_64bit, tmp_apk)
