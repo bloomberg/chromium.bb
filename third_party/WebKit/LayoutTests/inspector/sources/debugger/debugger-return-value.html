@@ -32,7 +32,7 @@ var test = function()
         if (stepCount < 2) {
             for (var i = 0, frame; frame = callFrames[i]; ++i)
                 InspectorTest.assertTrue(!frame.returnValue(), "Unexpected returnValue in frame #" + i);
-            WebInspector.panels.sources._stepOverButton.element.click();
+            InspectorTest.stepOver();
             InspectorTest.waitUntilResumed(InspectorTest.waitUntilPaused.bind(InspectorTest, step2));
         } else {
             InspectorTest.captureStackTrace(callFrames, null, { printReturnValue: true });

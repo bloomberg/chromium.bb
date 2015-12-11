@@ -73,7 +73,7 @@ function test()
     {
         if (stepInCount < 2) {
             ++stepInCount;
-            WebInspector.panels.sources._stepIntoButton.element.click();
+            InspectorTest.stepInto();
             InspectorTest.waitUntilResumed(InspectorTest.waitUntilPaused.bind(InspectorTest, didPause));
             return;
         }

@@ -151,7 +151,7 @@ InspectorTest.waitUntilResumed = function(callback)
 InspectorTest.resumeExecution = function(callback)
 {
     if (WebInspector.panels.sources.paused())
-        WebInspector.panels.sources.togglePause();
+        WebInspector.panels.sources._togglePause();
     InspectorTest.waitUntilResumed(callback);
 };
 
@@ -195,6 +195,26 @@ InspectorTest.waitUntilPausedAndDumpStackAndResume = function(callback, options)
     }
 };
 
+InspectorTest.stepOver = function()
+{
+    Promise.resolve().then(function(){WebInspector.panels.sources._stepOver()});
+};
+
+InspectorTest.stepInto = function()
+{
+    Promise.resolve().then(function(){WebInspector.panels.sources._stepInto()});
+};
+
+InspectorTest.stepOut = function()
+{
+    Promise.resolve().then(function(){WebInspector.panels.sources._stepOut()});
+};
+
+InspectorTest.togglePause = function()
+{
+    Promise.resolve().then(function(){WebInspector.panels.sources._togglePause()});
+};
+
 InspectorTest.waitUntilPausedAndPerformSteppingActions = function(actions, callback)
 {
     callback = InspectorTest.safeWrap(callback);
@@ -211,7 +231,7 @@ InspectorTest.waitUntilPausedAndPerformSteppingActions = function(actions, callb
         }
 
         if (!action) {
-            callback()
+            callback();
             return;
         }
 
@@ -219,23 +239,23 @@ InspectorTest.waitUntilPausedAndPerformSteppingActions = function(actions, callb
 
         switch (action) {
         case "StepInto":
-            WebInspector.panels.sources._stepIntoButton.element.click();
+            InspectorTest.stepInto();
             break;
         case "StepOver":
-            WebInspector.panels.sources._stepOverButton.element.click();
+            InspectorTest.stepOver();
             break;
         case "StepOut":
-            WebInspector.panels.sources._stepOutButton.element.click();
+            InspectorTest.stepOut();
             break;
         case "Resume":
-            WebInspector.panels.sources.togglePause();
+            InspectorTest.togglePause();
             break;
         case "StepIntoAsync":
             InspectorTest.DebuggerAgent.stepIntoAsync();
             break;
         default:
             InspectorTest.addResult("FAIL: Unknown action: " + action);
-            callback()
+            callback();
             return;
         }
 

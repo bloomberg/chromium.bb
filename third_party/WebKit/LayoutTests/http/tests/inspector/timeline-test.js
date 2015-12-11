@@ -93,7 +93,7 @@ InspectorTest.startTimeline = function(callback)
     }
     panel._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStarted, onRecordingStarted, this)
     panel._enableJSSamplingSetting.set(false);
-    panel._toggleTimelineButton.element.click();
+    panel._toggleRecording();
 };
 
 InspectorTest.stopTimeline = function(callback)
@@ -105,7 +105,7 @@ InspectorTest.stopTimeline = function(callback)
         InspectorTest.runAfterPendingDispatches(callback);
     }
     panel._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStopped, didStop, this)
-    panel._toggleTimelineButton.element.click();
+    panel._toggleRecording();
 };
 
 InspectorTest.evaluateWithTimeline = function(actions, doneCallback)

@@ -45,7 +45,18 @@ function initialize_extensionsPanelTest()
     InspectorTest.clickButton = function(index)
     {
         var panel = WebInspector.inspectorView.currentPanel();
-        panel._panelToolbar._contentElement.children[index].click();
+        var items = panel._panelToolbar._contentElement.children;
+        for (var i = 0, buttonIndex = 0; i < items.length; ++i) {
+            if (items[i] instanceof HTMLButtonElement) {
+                if (buttonIndex === index) {
+                    items[i].click();
+                    return;
+                }
+                buttonIndex++;
+            }
+        }
+        InspectorTest.addResult("No button with index " + index);
+        items[index].click();
     }
 
     InspectorTest.logMessageAndClickOnURL = function()

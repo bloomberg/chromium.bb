@@ -149,7 +149,7 @@ function test()
         {
             panel._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStarted, recordingStarted);
             panel._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStopped, finish);
-            panel._toggleTimelineButtonClicked();
+            panel._toggleRecording();
 
             function recordingStarted()
             {
@@ -159,7 +159,7 @@ function test()
 
             function step2()
             {
-                panel._toggleTimelineButtonClicked();
+                panel._toggleRecording();
             }
 
             function finish()
@@ -183,7 +183,7 @@ function test()
 
             function step2()
             {
-                panel._toggleTimelineButtonClicked();
+                panel._toggleRecording();
             }
 
             function finish()
@@ -198,7 +198,7 @@ function test()
         {
             panel._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStarted, recordingStarted);
             panel._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStopped, finish);
-            panel._toggleTimelineButtonClicked();
+            panel._toggleRecording();
 
             function recordingStarted()
             {
@@ -208,7 +208,7 @@ function test()
 
             function didEvaluate()
             {
-                panel._toggleTimelineButtonClicked();
+                panel._toggleRecording();
             }
 
             function finish()
@@ -224,7 +224,7 @@ function test()
             panel._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStarted, recordingStarted);
             panel._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStopped, finish);
 
-            panel._toggleTimelineButtonClicked();
+            panel._toggleRecording();
 
             function recordingStarted()
             {
@@ -235,7 +235,7 @@ function test()
             function didEvaluate()
             {
                 // Fool listener order execution.
-                setTimeout(panel._toggleTimelineButtonClicked.bind(panel));
+                setTimeout(panel._toggleRecording.bind(panel));
             }
 
             function finish()

@@ -55,10 +55,10 @@ function test()
     function stepOverThenIn(name, callback)
     {
         InspectorTest.addResult("Stepping to " + name + "...");
-        WebInspector.panels.sources._stepOverButton.element.click();
+        InspectorTest.stepOver();
         InspectorTest.waitUntilResumed(InspectorTest.waitUntilPaused.bind(InspectorTest, function() {
             InspectorTest.addResult("Stepping into " + name + "...");
-            WebInspector.panels.sources._stepIntoButton.element.click();
+            InspectorTest.stepInto();
             InspectorTest.waitUntilResumed(InspectorTest.waitUntilPaused.bind(InspectorTest, callback));
         }));
     }

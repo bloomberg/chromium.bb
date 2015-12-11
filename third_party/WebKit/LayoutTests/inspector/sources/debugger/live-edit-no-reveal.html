@@ -83,7 +83,7 @@ function test()
         {
             InspectorTest.addResult("Stepping into...");
             InspectorTest.addSniffer(WebInspector.SourcesView.prototype, "showSourceLocation", didRevealAfterStepInto);
-            WebInspector.panels.sources._stepIntoButton.element.click();
+            InspectorTest.stepInto();
         }
 
         function didRevealAfterStepInto()

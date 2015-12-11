@@ -15,11 +15,11 @@ function test()
             var profilesPanel = WebInspector.panels.profiles;
             InspectorTest.addSniffer(cpuProfiler, "stopRecording", stopRecording);
             InspectorTest.addSniffer(profilesPanel, "_addProfileHeader", onAddProfileHeader);
-            profilesPanel.toggleRecordButton();  // Start profiling.
+            profilesPanel.toggleRecord();  // Start profiling.
 
             function onAddProfileHeader()
             {
-                profilesPanel.toggleRecordButton();  // Stop profiling.
+                profilesPanel.toggleRecord();  // Stop profiling.
                 profilesPanel._reset();  // ... and remove the profile before it actually stopped.
             }
 

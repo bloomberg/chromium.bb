@@ -51,7 +51,7 @@ function test()
 
         InspectorTest.addSniffer(WebInspector.JavaScriptSourceFrame.prototype, "setExecutionLocation", onSetExecutionLocation);
         if (++stepCount < 10)
-            WebInspector.panels.sources._stepOverButton.element.click();
+            InspectorTest.stepOver();
         else
             InspectorTest.completeDebuggerTest();
     }

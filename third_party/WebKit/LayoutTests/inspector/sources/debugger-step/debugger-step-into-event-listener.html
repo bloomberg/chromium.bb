@@ -53,7 +53,7 @@ var test = function()
 
         if (stepCount < 5) {
             InspectorTest.addResult("Stepping into...");
-            WebInspector.panels.sources._stepIntoButton.element.click();
+            InspectorTest.stepInto();
             InspectorTest.waitUntilResumed(InspectorTest.waitUntilPaused.bind(InspectorTest, step2));
         } else {
             InspectorTest.completeDebuggerTest();

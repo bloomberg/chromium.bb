@@ -33,7 +33,7 @@ function test()
     function step4(node)
     {
         InspectorTest.assertTrue(!WebInspector.panels.sources.paused());
-        WebInspector.panels.sources.togglePause();
+        InspectorTest.togglePause();
 
         // This used to skip the pause request (the test used to timeout).
         node.highlight();
