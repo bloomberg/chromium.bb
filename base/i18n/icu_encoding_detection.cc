@@ -22,16 +22,10 @@ bool DetectEncoding(const std::string& text, std::string* encoding) {
   ucsdet_setText(detector, text.data(), static_cast<int32_t>(text.length()),
                  &status);
   const UCharsetMatch* match = ucsdet_detect(detector, &status);
-  if (match == NULL)
-    return false;
-  const char* detected_encoding = ucsdet_getName(match, &status);
+  if (match != nullptr)
+    *encoding = ucsdet_getName(match, &status);
   ucsdet_close(detector);
-
-  if (U_FAILURE(status))
-    return false;
-
-  *encoding = detected_encoding;
-  return true;
+  return (match != nullptr) && !!U_SUCCESS(status);
 }
 
 bool DetectAllEncodings(const std::string& text,
