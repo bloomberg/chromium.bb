@@ -81,10 +81,10 @@ ListBuilder::ListBuilder(const base::ListValue& init) : list_(init.DeepCopy()) {
 ListBuilder::~ListBuilder() {}
 
 ListBuilder::ListBuilder(ListBuilder&& other)
-    : list_(other.Build().release()) {}
+    : list_(other.Build()) {}
 
 ListBuilder& ListBuilder::operator=(ListBuilder&& other) {
-  list_.reset(other.Build().release());
+  list_ = other.Build();
   return *this;
 }
 
