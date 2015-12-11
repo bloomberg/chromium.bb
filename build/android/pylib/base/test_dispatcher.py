@@ -149,8 +149,10 @@ def _SetUp(runner_factory, device, out_runners, threadsafe_counter):
     runner = runner_factory(device, index)
     runner.SetUp()
     out_runners.append(runner)
-  except device_errors.DeviceUnreachableError as e:
-    logging.warning('Failed to create shard for %s: [%s]', device, e)
+  except (device_errors.CommandFailedError,
+          device_errors.CommandTimeoutError,
+          device_errors.DeviceUnreachableError):
+    logging.exception('Failed to create shard for %s', str(device))
 
 
 def _RunAllTests(runners, test_collection_factory, num_retries, timeout=None,

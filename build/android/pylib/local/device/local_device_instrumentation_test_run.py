@@ -64,6 +64,8 @@ class LocalDeviceInstrumentationTestRun(
       else:
         return d
 
+    @local_device_test_run.handle_shard_failures_with(
+        self._env.BlacklistDevice)
     def individual_device_set_up(dev, host_device_tuples):
       dev.Install(self._test_instance.apk_under_test,
                   permissions=self._test_instance.apk_under_test_permissions)

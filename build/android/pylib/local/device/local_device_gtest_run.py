@@ -225,7 +225,8 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
 
   #override
   def SetUp(self):
-    @local_device_test_run.handle_shard_failures
+    @local_device_test_run.handle_shard_failures_with(
+        on_failure=self._env.BlacklistDevice)
     def individual_device_set_up(dev):
       def install_apk():
         # Install test APK.
