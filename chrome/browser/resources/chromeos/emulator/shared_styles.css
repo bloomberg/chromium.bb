@@ -3,8 +3,8 @@
    found in the LICENSE file. */
 
 paper-input {
-  -webkit-margin-end: 15px;
   display: inline-block;
+  margin: 0 15px;
   width: 200px;
 }
 
@@ -16,6 +16,10 @@ paper-dialog {
   height: 90%;
   overflow-y: scroll;
   width: 40%;
+}
+
+paper-radio-button {
+  display: inline-block;
 }
 
 .element-label {
@@ -75,12 +79,12 @@ paper-dialog {
   text-align: center;
 }
 
-.devices-table paper-checkbox {
-  --paper-checkbox-checked-color: rgb(82, 101, 162);
-}
-
 .devices-table td {
   padding: 10px;
+}
+
+.devices-table td.centered-cell-label {
+  text-align: center;
 }
 
 .bold {

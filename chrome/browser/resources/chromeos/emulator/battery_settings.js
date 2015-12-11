@@ -6,13 +6,8 @@ var BatterySettings = Polymer({
   is: 'battery-settings',
 
   properties: {
-    /**
-     * The system's battery percentage.
-     */
-    batteryPercent: {
-      type: Number,
-      observer: 'batteryPercentChanged',
-    },
+    /** The system's battery percentage. */
+    batteryPercent: Number,
 
     /**
      * A string representing a value in the
@@ -31,7 +26,7 @@ var BatterySettings = Polymer({
      */
     batteryStateOptions: {
       type: Array,
-      value: function() { return ['Full', 'Charging', 'Disharging',
+      value: function() { return ['Full', 'Charging', 'Discharging',
                                   'Not Present']; },
     },
 
@@ -55,32 +50,17 @@ var BatterySettings = Polymer({
       value: function() { return ['AC', 'USB (Low Power)', 'Disconnected']; }
     },
 
-    /**
-     * A string representing the time left until the battery is discharged.
-     */
-    timeUntilEmpty: {
-      type: String,
-      observer: 'timeUntilEmptyChanged',
-    },
+    /** A string representing the time left until the battery is discharged. */
+    timeUntilEmpty: String,
 
-    /**
-     * A string representing the time left until the battery is at 100%.
-     */
-    timeUntilFull: {
-      type: String,
-      observer: 'timeUntilFullChanged',
-    },
+    /** A string representing the time left until the battery is at 100%. */
+    timeUntilFull: String,
 
-    /**
-     * The title for the settings section.
-     */
+    /** The title for the settings section. */
     title: {
       type: String,
+      value: 'Power',
     },
-  },
-
-  ready: function() {
-    this.title = 'Power';
   },
 
   initialize: function() {
@@ -90,33 +70,38 @@ var BatterySettings = Polymer({
     }
   },
 
-  batteryPercentChanged: function(percent, oldPercent) {
-    if (oldPercent != undefined)
-      chrome.send('updateBatteryPercent', [parseInt(percent)]);
+  onBatteryPercentChange: function(e) {
+    this.percent = parseInt(e.target.value);
+    if (!isNaN(this.percent))
+      chrome.send('updateBatteryPercent', [this.percent]);
   },
 
-  batteryStateChanged: function(state) {
+  batteryStateChanged: function(batteryState) {
     // Find the index of the selected battery state.
-    var index = this.batteryStateOptions.indexOf(state);
-    if (index >= 0)
-      chrome.send('updateBatteryState', [index]);
+    var index = this.batteryStateOptions.indexOf(batteryState);
+    if (index < 0)
+      return;
+    chrome.send('updateBatteryState', [index]);
   },
 
-  externalPowerChanged: function(source) {
+  externalPowerChanged: function(externalPower) {
     // Find the index of the selected power source.
-    var index = this.externalPowerOptions.indexOf(source);
-    if (index >= 0)
-      chrome.send('updateExternalPower', [index]);
+    var index = this.externalPowerOptions.indexOf(externalPower);
+    if (index < 0)
+      return;
+    chrome.send('updateExternalPower', [index]);
   },
 
-  timeUntilEmptyChanged: function(time, oldTime) {
-    if (oldTime != undefined)
-      chrome.send('updateTimeToEmpty', [parseInt(time)]);
+  onTimeUntilEmptyChange: function(e) {
+    this.timeUntilEmpty = parseInt(e.target.value);
+    if (!isNaN(this.timeUntilEmpty))
+      chrome.send('updateTimeToEmpty', [this.timeUntilEmpty]);
   },
 
-  timeUntilFullChanged: function(time, oldTime) {
-    if (oldTime != undefined)
-      chrome.send('updateTimeToFull', [parseInt(time)]);
+  onTimeUntilFullChange: function(e) {
+    this.timeUntilFull = parseInt(e.target.value);
+    if (!isNaN(this.timeUntilFull))
+      chrome.send('updateTimeToFull', [this.timeUntilFull]);
   },
 
   updatePowerProperties: function(power_properties) {
@@ -127,5 +112,9 @@ var BatterySettings = Polymer({
         this.externalPowerOptions[power_properties.external_power];
     this.timeUntilEmpty = power_properties.battery_time_to_empty_sec;
     this.timeUntilFull = power_properties.battery_time_to_full_sec;
-  }
+  },
+
+  isBatteryPresent: function() {
+    return this.batteryState != 'Not Present';
+  },
 });
