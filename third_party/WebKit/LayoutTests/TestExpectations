@@ -1335,3 +1335,7 @@ crbug.com/568778 [ XP ] tables/mozilla/bugs/bug14929.html [ Failure ]
 crbug.com/568778 [ XP ] tables/mozilla/bugs/bug86708.html [ Failure ]
 crbug.com/568778 [ XP ] tables/mozilla_expected_failures/bugs/97619.html [ Failure ]
 crbug.com/568778 [ XP ] tables/mozilla_expected_failures/bugs/bug85016.html [ Failure ]
+
+crbug.com/240827 virtual/display_list_2d_canvas/fast/canvas/canvas-shadow-source-in.html [ NeedsRebaseline ]
+crbug.com/240827 virtual/gpu/fast/canvas/canvas-incremental-repaint.html [ NeedsRebaseline ]
+crbug.com/240827 virtual/gpu/fast/canvas/canvas-shadow-source-in.html [ NeedsRebaseline ]
