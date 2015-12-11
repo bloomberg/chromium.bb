@@ -2148,6 +2148,55 @@ TEST_F(RendererSchedulerImplTest,
               testing::ElementsAre(std::string("L1"), std::string("D1")));
 }
 
+TEST_F(RendererSchedulerImplTest, ExpensiveTimerTaskBlocked) {
+  std::vector<std::string> run_order;
+
+  scheduler_->SetHasVisibleRenderWidgetWithTouchHandler(true);
+  DoMainFrame();
+  SimulateExpensiveTasks(timer_task_runner_);
+  ForceTouchStartToBeExpectedSoon();
+
+  scheduler_->DidHandleInputEventOnCompositorThread(
+      FakeInputEvent(blink::WebInputEvent::GestureFlingStart),
+      RendererScheduler::InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
+  PostTestTasks(&run_order, "T1 D1");
+  RunUntilIdle();
+
+  EXPECT_EQ(UseCase::MAIN_THREAD_GESTURE,
+            ForceUpdatePolicyAndGetCurrentUseCase());
+  EXPECT_TRUE(HaveSeenABeginMainframe());
+  EXPECT_FALSE(LoadingTasksSeemExpensive());
+  EXPECT_TRUE(TimerTasksSeemExpensive());
+  EXPECT_TRUE(TouchStartExpectedSoon());
+  EXPECT_THAT(run_order, testing::ElementsAre(std::string("D1")));
+}
+
+TEST_F(RendererSchedulerImplTest,
+       ExpensiveTimerTaskNotBlocked_IfBeginMainFrameNotExpectedSoon) {
+  std::vector<std::string> run_order;
+
+  scheduler_->SetHasVisibleRenderWidgetWithTouchHandler(true);
+  DoMainFrame();
+  SimulateExpensiveTasks(timer_task_runner_);
+  ForceTouchStartToBeExpectedSoon();
+  scheduler_->BeginFrameNotExpectedSoon();
+
+  scheduler_->DidHandleInputEventOnCompositorThread(
+      FakeInputEvent(blink::WebInputEvent::GestureFlingStart),
+      RendererScheduler::InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
+  PostTestTasks(&run_order, "T1 D1");
+  RunUntilIdle();
+
+  EXPECT_EQ(UseCase::MAIN_THREAD_GESTURE,
+            ForceUpdatePolicyAndGetCurrentUseCase());
+  EXPECT_TRUE(HaveSeenABeginMainframe());
+  EXPECT_FALSE(LoadingTasksSeemExpensive());
+  EXPECT_FALSE(TimerTasksSeemExpensive());
+  EXPECT_TRUE(TouchStartExpectedSoon());
+  EXPECT_THAT(run_order,
+              testing::ElementsAre(std::string("T1"), std::string("D1")));
+}
+
 TEST_F(RendererSchedulerImplTest,
        ExpensiveLoadingTasksNotBlockedIfNavigationExpected) {
   std::vector<std::string> run_order;

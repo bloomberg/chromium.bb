@@ -293,6 +293,7 @@ class SCHEDULER_EXPORT RendererSchedulerImpl
     bool touchstart_expected_soon;
     bool have_seen_a_begin_main_frame;
     bool has_visible_render_widget_with_touch_handler;
+    bool begin_frame_not_expected_soon;
   };
 
   struct AnyThread {
