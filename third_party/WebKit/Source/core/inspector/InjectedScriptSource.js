@@ -564,6 +564,7 @@ InjectedScript.prototype = {
                             continue;
                         if ("get" in descriptor && "set" in descriptor && name != "__proto__" && InjectedScriptHost.isDOMWrapper(object) && !doesAttributeHaveObservableSideEffectOnGet(object, name)) {
                             descriptor.value = InjectedScriptHost.suppressWarningsAndCallFunction(function(attribute) { return this[attribute]; }, object, [name]);
+                            descriptor.isOwn = true;
                             delete descriptor.get;
                             delete descriptor.set;
                         }

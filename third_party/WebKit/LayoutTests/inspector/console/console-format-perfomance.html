@@ -1,0 +1,37 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/console-test.js"></script>
+<script>
+function logToConsole()
+{
+    console.log(performance.timing);
+    console.log(performance.memory);
+}
+
+function onload()
+{
+    logToConsole();
+    runTest();
+}
+
+function test()
+{
+    InspectorTest.evaluateInPage("logToConsole()", callback);
+
+    function callback()
+    {
+        var messages = InspectorTest.dumpConsoleMessagesIntoArray();
+        messages.map(m => InspectorTest.addResult(m.replace(/:\s+\d+/g, ": <number>")));
+        InspectorTest.completeTest();
+    }
+}
+</script>
+</head>
+
+<body onload="onload()">
+<p>
+Tests that console nicely formats perfomance getters.
+</p>
+</body>
+</html>
