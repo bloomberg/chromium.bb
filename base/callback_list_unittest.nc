@@ -33,7 +33,7 @@ class FooListener {
 };
 
 
-#if defined(NCTEST_MOVE_ONLY_TYPE_PARAMETER)  // [r"calling a private constructor of class"]
+#if defined(NCTEST_MOVE_ONLY_TYPE_PARAMETER)  // [r"fatal error: call to deleted constructor"]
 
 // Callbacks run with a move-only typed parameter.
 //

@@ -240,6 +240,8 @@ template <class T, class D = std::default_delete<T>>
 class scoped_ptr {
   DISALLOW_COPY_AND_ASSIGN_WITH_MOVE_FOR_BIND(scoped_ptr)
 
+  static_assert(!std::is_array<T>::value,
+                "scoped_ptr doesn't support array with size");
   static_assert(base::internal::IsNotRefCounted<T>::value,
                 "T is a refcounted type and needs a scoped_refptr");
 

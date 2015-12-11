@@ -115,14 +115,14 @@ void WontCompile() {
   WeakPtr<Unrelated> ptr = AsWeakPtr<Unrelated>(&f);
 }
 
-#elif defined(NCTEST_COMPLETELY_UNRELATED_HELPER)  // [r"fatal error: static_assert failed \"AsWeakPtr_argument_inherits_from_SupportsWeakPtr\""]
+#elif defined(NCTEST_COMPLETELY_UNRELATED_HELPER)  // [r"fatal error: static_assert failed \"AsWeakPtr argument must inherit from SupportsWeakPtr\""]
 
 void WontCompile() {
   Unrelated f;
   WeakPtr<Unrelated> ptr = AsWeakPtr(&f);
 }
 
-#elif defined(NCTEST_DERIVED_COMPLETELY_UNRELATED_HELPER)  // [r"fatal error: static_assert failed \"AsWeakPtr_argument_inherits_from_SupportsWeakPtr\""]
+#elif defined(NCTEST_DERIVED_COMPLETELY_UNRELATED_HELPER)  // [r"fatal error: static_assert failed \"AsWeakPtr argument must inherit from SupportsWeakPtr\""]
 
 void WontCompile() {
   DerivedUnrelated f;
