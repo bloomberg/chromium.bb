@@ -20,14 +20,15 @@
  * binding events.
  * @type {boolean}
  */
-var settingsHideAllPagesForTest;
+var settingsHidePagesByDefaultForTest;
 
 /** @polymerBehavior */
 var SettingsPageVisibility = {
   properties: {
     /**
      * Dictionary defining page visibility. If not set for a page, visibility
-     * will default to true (unless settingsHideAllPagesForTest is set).
+     * will default to true, unless settingsHidePagesByDefaultForTest is set
+     * in which case visibility defaults to false.
      * @type {Object<boolean>}
      */
     pageVisibility: {
@@ -41,6 +42,8 @@ var SettingsPageVisibility = {
    * @return {boolean}
    */
   showPage: function(visibility) {
-    return !settingsHideAllPagesForTest && visibility !== false;
+    if (settingsHidePagesByDefaultForTest)
+      return visibility === true;
+    return visibility !== false;
   },
 };
