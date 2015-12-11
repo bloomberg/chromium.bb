@@ -43,6 +43,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/bookmarks/browser/startup_task_runner_service.h"
+#include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/web_contents.h"
 #include "net/cookies/cookie_store.h"
 #include "net/cookies/cookie_util.h"
@@ -522,18 +523,6 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
 #endif
   }
 
-  void ProceedAndWhitelist(
-      const SafeBrowsingUIManager::UnsafeResource& resource) {
-    std::vector<SafeBrowsingUIManager::UnsafeResource> resources;
-    resources.push_back(resource);
-    g_browser_process->safe_browsing_service()
-        ->ui_manager()
-        ->OnBlockingPageDone(resources, true);
-    if (!resource.callback.is_null()) {
-      WaitForThread(resource.callback_thread);
-    }
-  }
-
  protected:
   StrictMock<MockObserver> observer_;
 
@@ -704,26 +693,32 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, UnwantedImgIgnored) {
   EXPECT_FALSE(ShowingInterstitialPage());
 }
 
-IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, DISABLED_MalwareWithWhitelist) {
+IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, MalwareWithWhitelist) {
   GURL url = embedded_test_server()->GetURL(kEmptyPage);
 
   // After adding the url to safebrowsing database and getfullhash result,
   // we should see the interstitial page.
   SBFullHashResult malware_full_hash;
   GenUrlFullhashResult(url, MALWARE, &malware_full_hash);
-  EXPECT_CALL(observer_, OnSafeBrowsingHit(IsUnsafeResourceFor(url)))
-      .Times(1)
-      .WillOnce(testing::Invoke(
-          this, &SafeBrowsingServiceTest::ProceedAndWhitelist));
+  EXPECT_CALL(observer_, OnSafeBrowsingHit(IsUnsafeResourceFor(url))).Times(1);
   SetupResponseForUrl(url, malware_full_hash);
 
   ui_test_utils::NavigateToURL(browser(), url);
-  // Mock calls OnBlockingPageDone set to proceed, so the interstitial
-  // is removed.
-  EXPECT_FALSE(ShowingInterstitialPage());
   Mock::VerifyAndClearExpectations(&observer_);
+  // There should be an InterstitialPage.
+  WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
+  InterstitialPage* interstitial_page = contents->GetInterstitialPage();
+  ASSERT_TRUE(interstitial_page);
+  // Proceed through it.
+  content::WindowedNotificationObserver load_stop_observer(
+      content::NOTIFICATION_LOAD_STOP,
+      content::Source<content::NavigationController>(
+           &contents->GetController()));
+  interstitial_page->Proceed();
+  load_stop_observer.Wait();
+  EXPECT_FALSE(ShowingInterstitialPage());
 
-  // Navigate back to kEmptyPage -- should hit the whitelist.
+  // Navigate to kEmptyPage again -- should hit the whitelist this time.
   EXPECT_CALL(observer_, OnSafeBrowsingHit(IsUnsafeResourceFor(url))).Times(0);
   ui_test_utils::NavigateToURL(browser(), url);
   EXPECT_FALSE(ShowingInterstitialPage());
