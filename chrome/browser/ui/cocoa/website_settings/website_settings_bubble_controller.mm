@@ -70,7 +70,7 @@ const CGFloat kInternalPageImageSpacing = 10;
 const CGFloat kConnectionImageSize = 30;
 
 // Square size of the image that is shown for internal pages.
-const CGFloat kInternalPageImageSize = 26;
+const CGFloat kInternalPageImageSize = 16;
 
 // Square size of the permission images.
 const CGFloat kPermissionImageSize = 19;
@@ -401,7 +401,7 @@ NSPoint AnchorPointForWindow(NSWindow* parent) {
   NSImageView* imageView = [self addImageWithSize:imageSize
                                            toView:contentView_
                                           atPoint:controlOrigin];
-  [imageView setImage:rb.GetNativeImageNamed(IDR_PRODUCT_LOGO_26).ToNSImage()];
+  [imageView setImage:rb.GetNativeImageNamed(IDR_PRODUCT_LOGO_16).ToNSImage()];
 
   controlOrigin.x += NSWidth([imageView frame]) + kInternalPageImageSpacing;
   base::string16 text = l10n_util::GetStringUTF16(IDS_PAGE_INFO_INTERNAL_PAGE);
