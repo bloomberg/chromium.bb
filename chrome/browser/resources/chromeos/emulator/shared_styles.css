@@ -122,3 +122,7 @@ paper-radio-button {
   color: rgb(82, 101, 162);
   width: 200px;
 }
+
+[hidden] {
+  display: none !important;
+}

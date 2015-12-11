@@ -3,8 +3,11 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/device-icons.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-dropdown-menu/paper-dropdown-menu.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-menu/paper-menu.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-radio-group/paper-radio-group.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-radio-button/paper-radio-button.html">
 
@@ -17,15 +20,6 @@
         </paper-icon-button>
         <span>[[title]]</span>
       </div>
-      <label>
-        <span class="form-label">External power</span>
-        <paper-radio-group selected="{{externalPower}}">
-          <template is="dom-repeat" items="[[externalPowerOptions]]">
-            <paper-radio-button name="[[item]]">[[item]]</paper-radio-button>
-          </template>
-        </paper-radio-group>
-      </label>
-
       <label>
         <span class="form-label">Battery state</span>
         <paper-radio-group selected="{{batteryState}}">
@@ -49,6 +43,43 @@
           </paper-input>
         </div>
       </iron-collapse>
+
+      <table class="devices-table">
+        <tbody>
+          <tr class="table-section-header">
+            <td>Power sources</td>
+            <td class="centered-cell-label">Connected</td>
+            <td class="centered-cell-label">Role</td>
+            <td class="centered-cell-label">Amps</td>
+          </tr>
+          <template is="dom-repeat" items="{{powerSourceOptions}}">
+            <tr>
+              <td class="alias-cell">[[item.name]]</td>
+              <td class="control-cell">
+                <paper-checkbox checked="{{item.connected}}"></paper-checkbox>
+              </td>
+              <td class="control-cell">
+                <paper-button on-tap="onSetAsSourceTap"
+                    hidden$="[[!isDualRole(item)]]"
+                    raised="[[!isSelectedSource(item, selectedPowerSourceId)]]"
+                    disabled="[[!canBecomeSource(item, selectedPowerSourceId, powerSourceOptions.*)]]">
+                  Set as source
+                </paper-button>
+                <div hidden$="[[isDualRole(item)]]">Source</div>
+              </td>
+              <td class="control-cell">
+                <paper-dropdown-menu class="device-class-group"
+                    disabled="[[!item.variablePower]]">
+                  <paper-menu selected="{{item.power}}"
+                      class="dropdown-content" attr-for-selected="data-value">
+                    <paper-item data-value="high">High</paper-item>
+                    <paper-item data-value="low">Low</paper-item>
+                  </paper-menu>
+                </paper-dropdown-menu>
+              </td>
+          </template>
+        </tbody>
+      </table>
     </div>
   </template>
   <script src="battery_settings.js"></script>

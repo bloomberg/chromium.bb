@@ -77,6 +77,8 @@ class DeviceEmulatorMessageHandler
   void UpdateExternalPower(const base::ListValue* args);
   void UpdateTimeToEmpty(const base::ListValue* args);
   void UpdateTimeToFull(const base::ListValue* args);
+  void UpdatePowerSources(const base::ListValue* args);
+  void UpdatePowerSourceId(const base::ListValue* args);
 
   // content::WebUIMessageHandler:
   void RegisterMessages() override;

@@ -12,6 +12,11 @@
 
 namespace chromeos {
 
+namespace {
+// Minimum power for a USB power source to be classified as AC.
+const double kUsbMinAcWatts = 24;
+}
+
 FakePowerManagerClient::FakePowerManagerClient()
     : num_request_restart_calls_(0),
       num_request_shutdown_calls_(0),
@@ -111,7 +116,22 @@ void FakePowerManagerClient::SetIsProjecting(bool is_projecting) {
   is_projecting_ = is_projecting;
 }
 
-void FakePowerManagerClient::SetPowerSource(const std::string& id) {}
+void FakePowerManagerClient::SetPowerSource(const std::string& id) {
+  props_.set_external_power_source_id(id);
+  props_.set_external_power(
+      power_manager::PowerSupplyProperties_ExternalPower_DISCONNECTED);
+  for (const auto& source : props_.available_external_power_source()) {
+    if (source.id() == id) {
+      props_.set_external_power(
+          !source.active_by_default() || source.max_power() < kUsbMinAcWatts
+              ? power_manager::PowerSupplyProperties_ExternalPower_USB
+              : power_manager::PowerSupplyProperties_ExternalPower_AC);
+      break;
+    }
+  }
+
+  NotifyObservers();
+}
 
 base::Closure FakePowerManagerClient::GetSuspendReadinessCallback() {
   ++num_pending_suspend_readiness_callbacks_;
