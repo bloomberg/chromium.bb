@@ -52722,6 +52722,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>The reason that a forced-close of a backing store occurred.</summary>
 </histogram>
 
+<histogram name="WebCore.IndexedDB.Database.OutstandingTransactionCount"
+    units="transactions">
+  <owner>jsbell@chromium.org</owner>
+  <summary>
+    Number of outstanding transactions (running, blocked) in database when a new
+    transaction is created.
+  </summary>
+</histogram>
+
 <histogram name="WebCore.IndexedDB.FrontEndAPICalls"
     enum="IndexedDatabaseMethods">
   <owner>dgrogan@chromium.org</owner>

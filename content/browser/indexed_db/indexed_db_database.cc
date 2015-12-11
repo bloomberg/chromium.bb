@@ -1670,6 +1670,22 @@ void IndexedDBDatabase::CreateTransaction(
   if (transactions_.find(transaction_id) != transactions_.end())
     return;
 
+  UMA_HISTOGRAM_COUNTS_1000(
+      "WebCore.IndexedDB.Database.OutstandingTransactionCount",
+      transactions_.size());
+
+  // Throttle transaction creation so that a renderer in a tight loop can't
+  // cause browser memory to grow unbounded by creating transactions faster
+  // than they can be processed.
+  const size_t kMaxTransactionCount = 128;
+  if (transactions_.size() >= kMaxTransactionCount) {
+    connection->callbacks()->OnAbort(
+        transaction_id, IndexedDBDatabaseError(
+                            blink::WebIDBDatabaseExceptionUnknownError,
+                            "Internal error: Too many transactions queued."));
+    return;
+  }
+
   // The transaction will add itself to this database's coordinator, which
   // manages the lifetime of the object.
   TransactionCreated(IndexedDBClassFactory::Get()->CreateIndexedDBTransaction(
