@@ -323,7 +323,7 @@ crbug.com/565059 [ Debug ] inspector/console/console-uncaught-promise.html [ Cra
 
 crbug.com/248938 [ Win Debug ] virtual/threaded/animations/transition-and-animation-2.html [ Timeout ]
 
-crbug.com/487281 [ Mac ] fast/forms/menulist-narrow-width.html [ Failure ]
+crbug.com/487281 [ Mac ] fast/forms/select/menulist-narrow-width.html [ Failure ]
 
 crbug.com/543110 [ Mac ] fast/text/international/text-shaping-arabic.html [ Failure ]
 
@@ -1015,7 +1015,7 @@ crbug.com/509025 [ Mac10.10 ] fast/css/css2-system-fonts.html [ Failure ]
 crbug.com/509025 [ Mac10.10 ] fast/css/font-face-data-uri-invalid.html [ Failure ]
 crbug.com/509025 [ Mac10.10 ] fast/css/fontfaceset-download-error.html [ Failure ]
 crbug.com/509025 [ Mac10.10 ] fast/dom/adopt-attribute-crash.svg [ Failure ]
-crbug.com/509025 [ Mac10.10 ] fast/forms/hidden-listbox.html [ Failure ]
+crbug.com/509025 [ Mac10.10 ] fast/forms/select/hidden-listbox.html [ Failure ]
 crbug.com/509025 [ Mac10.10 ] fast/forms/textarea-newline.html [ Failure ]
 crbug.com/509025 [ Mac10.10 ] fast/images/style-access-during-imageChanged-crash.html [ Failure ]
 crbug.com/509025 [ Mac10.10 ] fast/parser/xml-colon-entity.html [ Failure ]

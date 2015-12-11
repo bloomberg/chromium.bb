@@ -1,3 +1,13 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+<head>
+<link rel="stylesheet" href="../resources/live-pseudo-selectors.css">
+<script src="../../../resources/js-test.js"></script>
+</head>
+<body>
+<p id="description"></p>
+<div id="console"></div>
+<script>
 description("This test performs a check that :valid/:invalid CSS psudo selectors are lively applied.");
 
 // Setup for static elements.
@@ -210,3 +220,6 @@ el.required = false;
 shouldBe(elBackground, 'validColor');
 el.required = true;
 shouldBe(elBackground, 'invalidColor');
+</script>
+</body>
+</html>

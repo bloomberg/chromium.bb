@@ -1,7 +1,8 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-<script src="../../resources/js-test.js"></script>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<script src="../../../resources/js-test.js"></script>
 </head>
 <body>
 <p id="description"></p>
@@ -15,22 +16,22 @@
 </select>
 
 <script>
-description('Test for space striping .value attribute of OPTION element');
+description('Test for space striping .label attribute of OPTION element');
 
 var o1 = document.getElementById('o1');
-shouldBe('o1.value', '"text with extra while spaces"');
+shouldBe('o1.label', '"text with extra while spaces"');
 
 var o2 = document.getElementById('o2');
-shouldBe('o2.value', '"text"');
+shouldBe('o2.label', '"text"');
 
 
 var o3 = document.getElementById('o3');
 var expected = '\u00A0'+'test'+'\u00A0'+ 'text'+'\u00A0';
-shouldBe('o3.value','"'+expected+'"');
+shouldBe('o3.label','"'+expected+'"');
 
 var o4 = document.getElementById('o4');
 var expected = 'test'+'\u00A0\u00A0'+ 'text';
-shouldBe('o4.value', '"'+expected+'"');
+shouldBe('o4.label', '"'+expected+'"');
 </script>
 </body>
 </html>

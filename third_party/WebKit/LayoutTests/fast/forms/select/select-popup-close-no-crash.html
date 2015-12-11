@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html>
 <head>
-<script src="resources/picker-common.js"></script>
+<script src="../resources/picker-common.js"></script>
 </head>
 <body>
 <select id="menu">
 <option>foo</option>
 <option>bar</option>
 </select>
-<form action="resources/popup-no-crash.html" id="form1"></form>
+<form action="../resources/popup-no-crash.html" id="form1"></form>
 <script>
 if (window.testRunner) {
     testRunner.waitUntilDone();
@@ -20,7 +20,7 @@ function openCallback() {
 }
 
 function errorCallback() {
-    window.location = "resources/popup-no-crash.html";
+    window.location = "../resources/popup-no-crash.html";
 }
 
 window.onload = function () {
