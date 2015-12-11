@@ -12,7 +12,6 @@
 #include "base/memory/weak_ptr.h"
 #include "components/mus/public/interfaces/window_manager.mojom.h"
 #include "ui/aura/window_delegate.h"
-#include "ui/aura/window_tree_host_observer.h"
 #include "ui/platform_window/platform_window_delegate.h"
 #include "ui/views/mus/mus_export.h"
 #include "ui/views/widget/native_widget_private.h"
@@ -53,9 +52,9 @@ class WindowTreeHostMus;
 // aura::Window in a hierarchy is created without a delegate by the
 // aura::WindowTreeHost, we must create a child aura::Window in this class
 // (content_) and attach it to the root.
-class VIEWS_MUS_EXPORT NativeWidgetMus : public internal::NativeWidgetPrivate,
-                                         public aura::WindowDelegate,
-                                         public aura::WindowTreeHostObserver {
+class VIEWS_MUS_EXPORT NativeWidgetMus
+    : public internal::NativeWidgetPrivate,
+      public aura::WindowDelegate {
  public:
   NativeWidgetMus(internal::NativeWidgetDelegate* delegate,
                   mojo::Shell* shell,
@@ -193,9 +192,6 @@ class VIEWS_MUS_EXPORT NativeWidgetMus : public internal::NativeWidgetPrivate,
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnScrollEvent(ui::ScrollEvent* event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
-
-  // Overridden from aura::WindowTreeHostObserver:
-  void OnHostCloseRequested(const aura::WindowTreeHost* host) override;
 
  private:
   mus::Window* window_;

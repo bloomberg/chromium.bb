@@ -43,8 +43,6 @@ class NonClientFrameController : public views::WidgetDelegateView,
   // title bar.
   static int GetMaxTitleBarButtonWidth();
 
-  mus::Window* window() { return window_; }
-
  private:
   ~NonClientFrameController() override;
 
@@ -53,7 +51,6 @@ class NonClientFrameController : public views::WidgetDelegateView,
   bool CanResize() const override;
   bool CanMaximize() const override;
   bool CanMinimize() const override;
-  views::ClientView* CreateClientView(views::Widget* widget) override;
 
   // mus::WindowObserver:
   void OnWindowSharedPropertyChanged(

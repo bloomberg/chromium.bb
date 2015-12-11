@@ -24,8 +24,7 @@ PlatformWindowMus::PlatformWindowMus(ui::PlatformWindowDelegate* delegate,
       mus_window_(mus_window),
       show_state_(mus::mojom::SHOW_STATE_RESTORED),
       last_cursor_(mus::mojom::CURSOR_NULL),
-      has_capture_(false),
-      mus_window_destroyed_(false) {
+      has_capture_(false) {
   DCHECK(delegate_);
   DCHECK(mus_window_);
   mus_window_->AddObserver(this);
@@ -50,9 +49,9 @@ PlatformWindowMus::~PlatformWindowMus() {
     return;
   mus_window_->RemoveObserver(this);
   mus_window_->set_input_event_handler(nullptr);
-  if (!mus_window_destroyed_)
-    mus_window_->Destroy();
+  mus_window_->Destroy();
 }
+
 
 void PlatformWindowMus::Activate() {
   mus_window_->SetFocus();
@@ -144,7 +143,6 @@ void PlatformWindowMus::SetShowState(mus::mojom::ShowState show_state) {
 
 void PlatformWindowMus::OnWindowDestroyed(mus::Window* window) {
   DCHECK_EQ(mus_window_, window);
-  mus_window_destroyed_ = true;
   delegate_->OnClosed();
   mus_window_ = nullptr;
 }
@@ -201,10 +199,6 @@ void PlatformWindowMus::OnWindowSharedPropertyChanged(
       break;
   }
   delegate_->OnWindowStateChanged(state);
-}
-
-void PlatformWindowMus::OnRequestClose(mus::Window* window) {
-  delegate_->OnCloseRequest();
 }
 
 void PlatformWindowMus::OnWindowInputEvent(

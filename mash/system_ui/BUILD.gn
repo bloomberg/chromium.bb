@@ -22,7 +22,6 @@ mojo_native_application("system_ui") {
     "//mojo/common:common_base",
     "//mojo/services/tracing/public/cpp",
     "//skia",
-    "//ui/aura",
     "//ui/views",
     "//ui/views/mus:for_mojo_application",
   ]

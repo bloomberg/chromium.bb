@@ -116,9 +116,6 @@ void TestWindowTree::OnWindowInputEventAck(uint32_t event_id) {
   EXPECT_FALSE(acked_events_.count(event_id));
   acked_events_.insert(event_id);
 }
-
 void TestWindowTree::WmResponse(uint32_t change_id, bool response) {}
-
-void TestWindowTree::WmRequestClose(uint32_t window_id) {}
 
 }  // namespace mus

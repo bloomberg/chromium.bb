@@ -201,10 +201,6 @@ class Window {
              uint32_t policy_bitmask,
              const EmbedCallback& callback);
 
-  // TODO(sky): this API is only applicable to the WindowManager. Move it
-  // to a better place.
-  void RequestClose();
-
  protected:
   // This class is subclassed only by test classes that provide a public ctor.
   Window();

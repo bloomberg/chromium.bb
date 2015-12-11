@@ -235,10 +235,6 @@ interface WindowTree {
 
   // The window manager has completed a request with the specific change id.
   WmResponse(uint32 change_id, bool response);
-
-  // Calls WindowTreeClient::RequestClose() on the embedded app at the
-  // specified window.
-  WmRequestClose(uint32 window_id);
 };
 
 // Changes to windows are not sent to the connection that originated the
@@ -339,10 +335,6 @@ interface WindowTreeClient {
   // A change initiated from the client has completed. See description of
   // change ids for details.
   OnChangeCompleted(uint32 change_id, bool success);
-
-  // The WindowManager is requesting the specified window to close. If the
-  // client allows the change it should delete the window.
-  RequestClose(uint32 window_id);
 
   // --------------------------------------------------------------------------
   // This section is for functions that are expected to be pulled into the

@@ -957,18 +957,6 @@ void WindowTreeImpl::WmResponse(uint32 change_id, bool response) {
     connection_manager_->WindowManagerChangeCompleted(change_id, response);
 }
 
-void WindowTreeImpl::WmRequestClose(Id transport_window_id) {
-  // Only the WindowManager should be using this.
-  if (!GetHost() || GetHost()->GetWindowTree() != this)
-    return;
-
-  const WindowId window_id(WindowIdFromTransportId(transport_window_id));
-  WindowTreeImpl* connection =
-      connection_manager_->GetConnectionWithRoot(window_id);
-  if (connection && connection != GetHost()->GetWindowTree())
-    connection->client_->RequestClose(transport_window_id);
-}
-
 bool WindowTreeImpl::IsRootForAccessPolicy(const WindowId& id) const {
   return IsRoot(id);
 }

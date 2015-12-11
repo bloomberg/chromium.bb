@@ -127,12 +127,11 @@ class TestWindowTreeClient : public mus::mojom::WindowTreeClient {
   void OnWindowFocused(uint32_t focused_window_id) override {
     tracker_.OnWindowFocused(focused_window_id);
   }
-  void OnWindowPredefinedCursorChanged(uint32_t window_id,
+  void OnWindowPredefinedCursorChanged(uint32 window_id,
                                        mojom::Cursor cursor_id) override {
     tracker_.OnWindowPredefinedCursorChanged(window_id, cursor_id);
   }
   void OnChangeCompleted(uint32_t change_id, bool success) override {}
-  void RequestClose(uint32_t window_id) override {}
   void WmSetBounds(uint32_t change_id,
                    Id window_id,
                    mojo::RectPtr bounds) override {}
