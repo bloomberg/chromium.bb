@@ -103,6 +103,7 @@ void HTMLImportChild::didFinishUpgradingCustomElements()
 
 void HTMLImportChild::dispose()
 {
+    invalidateCustomElementMicrotaskStep();
     if (parent())
         parent()->removeChild(this);
 
