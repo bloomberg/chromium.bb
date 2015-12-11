@@ -19,7 +19,7 @@ ASH_EXPORT bool PlaySystemSoundAlways(media::SoundsManager::SoundKey key);
 // conditions is true:
 // * ash::switches::kAshEnableSystemSounds flag is set
 // * spoken feedback is enabled
-// Returns true when sound is succesfully played.
+// Returns true when sound is successfully played.
 ASH_EXPORT bool PlaySystemSoundIfSpokenFeedback(
     media::SoundsManager::SoundKey key);
 
