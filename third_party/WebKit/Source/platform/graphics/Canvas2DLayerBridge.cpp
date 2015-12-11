@@ -37,6 +37,8 @@
 #include "public/platform/WebCompositorSupport.h"
 #include "public/platform/WebGraphicsContext3D.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
+#include "public/platform/WebScheduler.h"
+#include "public/platform/WebTraceLocation.h"
 #include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -56,7 +58,8 @@ WTF::RefCountedLeakCounter& canvas2DLayerBridgeInstanceCounter()
     return staticCanvas2DLayerBridgeInstanceCounter;
 }
 #endif
-}
+
+} // unnamed
 
 namespace blink {
 
@@ -103,6 +106,8 @@ PassRefPtr<Canvas2DLayerBridge> Canvas2DLayerBridge::create(const IntSize& size,
 
 Canvas2DLayerBridge::Canvas2DLayerBridge(PassOwnPtr<WebGraphicsContext3DProvider> contextProvider, const IntSize& size, int msaaSampleCount, OpacityMode opacityMode, AccelerationMode accelerationMode)
     : m_contextProvider(contextProvider)
+    , m_logger(adoptPtr(new Logger))
+    , m_weakPtrFactory(this)
     , m_imageBuffer(0)
     , m_msaaSampleCount(msaaSampleCount)
     , m_bytesAllocated(0)
@@ -113,6 +118,7 @@ Canvas2DLayerBridge::Canvas2DLayerBridge(PassOwnPtr<WebGraphicsContext3DProvider
     , m_isDeferralEnabled(true)
     , m_isRegisteredTaskObserver(false)
     , m_renderingTaskCompletedForCurrentFrame(false)
+    , m_softwareRenderingWhileHidden(false)
     , m_lastImageId(0)
     , m_lastFilter(GL_LINEAR)
     , m_accelerationMode(accelerationMode)
@@ -149,10 +155,17 @@ void Canvas2DLayerBridge::startRecording()
     m_recordingPixelCount = 0;
 }
 
+void Canvas2DLayerBridge::setLoggerForTesting(PassOwnPtr<Logger> logger)
+{
+    m_logger = logger;
+}
+
 bool Canvas2DLayerBridge::shouldAccelerate(AccelerationHint hint) const
 {
     bool accelerate;
-    if (m_accelerationMode == ForceAccelerationForTesting)
+    if (m_softwareRenderingWhileHidden)
+        accelerate = false;
+    else if (m_accelerationMode == ForceAccelerationForTesting)
         accelerate = true;
     else if (m_accelerationMode == DisableAcceleration)
         accelerate = false;
@@ -166,6 +179,10 @@ bool Canvas2DLayerBridge::shouldAccelerate(AccelerationHint hint) const
 
 bool Canvas2DLayerBridge::isAccelerated() const
 {
+    if (isHibernating())
+        return false;
+    if (m_softwareRenderingWhileHidden)
+        return false;
     if (m_layer) // We don't check m_surface, so this returns true if context was lost (m_surface is null) with restoration pending.
         return true;
     if (m_surface) // && !m_layer is implied
@@ -177,24 +194,98 @@ bool Canvas2DLayerBridge::isAccelerated() const
     return shouldAccelerate(PreferAcceleration);
 }
 
+static void hibernateWrapper(WeakPtr<Canvas2DLayerBridge> bridge, double /*idleDeadline*/)
+{
+    if (bridge) {
+        bridge->hibernate();
+    } else {
+        Canvas2DLayerBridge::Logger localLogger;
+        localLogger.reportHibernationEvent(Canvas2DLayerBridge::HibernationAbortedDueToDestructionWhileHibernatePending);
+    }
+}
+
+void Canvas2DLayerBridge::hibernate()
+{
+    ASSERT(!isHibernating());
+    if (m_destructionInProgress) {
+        m_logger->reportHibernationEvent(HibernationAbortedDueToPendingDestruction);
+        return;
+    }
+
+    if (!isHidden()) {
+        m_logger->reportHibernationEvent(HibernationAbortedDueToVisibilityChange);
+        return;
+    }
+
+    if (!checkSurfaceValid()) {
+        m_logger->reportHibernationEvent(HibernationAbortedDueGpuContextLoss);
+        return;
+    }
+
+    if (!isAccelerated()) {
+        m_logger->reportHibernationEvent(HibernationAbortedDueToSwitchToUnacceleratedRendering);
+        return;
+    }
+
+    TRACE_EVENT0("cc", "Canvas2DLayerBridge::hibernate");
+    RefPtr<SkSurface> tempHibernationSurface = adoptRef(SkSurface::NewRasterN32Premul(m_size.width(), m_size.height()));
+    if (tempHibernationSurface) {
+        // No HibernationEvent reported on success. This is on purppose to avoid
+        // non-complementary stats. Each HibernationScheduled event is paired with
+        // exactly one failure or exit event.
+        flushRecordingOnly();
+        SkPaint copyPaint;
+        copyPaint.setXfermodeMode(SkXfermode::kSrc_Mode);
+        m_surface->draw(tempHibernationSurface->getCanvas(), 0, 0, &copyPaint); // GPU readback
+        m_hibernationImage = adoptRef(tempHibernationSurface->newImageSnapshot());
+        m_surface.clear(); // destroy the GPU-backed buffer
+        m_layer->clearTexture();
+        m_logger->didStartHibernating();
+    } else {
+        m_logger->reportHibernationEvent(HibernationAbortedDueToAllocationFailure);
+    }
+}
+
 SkSurface* Canvas2DLayerBridge::getOrCreateSurface(AccelerationHint hint)
 {
-    if (!m_surface) {
-        if (m_layer)
-            return nullptr; // recreation will happen through restore()
+    if (m_surface)
+        return m_surface.get();
 
-        bool wantAccelerated = shouldAccelerate(hint);
-        bool surfaceIsAccelerated;
+    if (m_layer && !isHibernating())
+        return nullptr; // re-creation will happen through restore()
 
-        m_surface = createSkSurface(wantAccelerated ? m_contextProvider->grContext() : nullptr, m_size, m_msaaSampleCount, m_opacityMode, &surfaceIsAccelerated);
+    bool wantAcceleration = shouldAccelerate(hint);
+    bool surfaceIsAccelerated;
 
-        if (m_surface && surfaceIsAccelerated && !m_layer) {
-            m_layer = adoptPtr(Platform::current()->compositorSupport()->createExternalTextureLayer(this));
-            m_layer->setOpaque(m_opacityMode == Opaque);
-            m_layer->setBlendBackgroundColor(m_opacityMode != Opaque);
-            GraphicsLayer::registerContentsLayer(m_layer->layer());
-            m_layer->setNearestNeighbor(m_filterQuality == kNone_SkFilterQuality);
+    if (isHidden() && wantAcceleration) {
+        wantAcceleration = false;
+        m_softwareRenderingWhileHidden = true;
+    }
+
+    m_surface = createSkSurface(wantAcceleration ? m_contextProvider->grContext() : nullptr, m_size, m_msaaSampleCount, m_opacityMode, &surfaceIsAccelerated);
+
+    if (m_surface && surfaceIsAccelerated && !m_layer) {
+        m_layer = adoptPtr(Platform::current()->compositorSupport()->createExternalTextureLayer(this));
+        m_layer->setOpaque(m_opacityMode == Opaque);
+        m_layer->setBlendBackgroundColor(m_opacityMode != Opaque);
+        GraphicsLayer::registerContentsLayer(m_layer->layer());
+        m_layer->setNearestNeighbor(m_filterQuality == kNone_SkFilterQuality);
+    }
+
+    if (m_surface && isHibernating()) {
+        if (surfaceIsAccelerated) {
+            m_logger->reportHibernationEvent(HibernationEndedNormally);
+        } else {
+            if (isHidden())
+                m_logger->reportHibernationEvent(HibernationEndedWithSwitchToBackgroundRendering);
+            else
+                m_logger->reportHibernationEvent(HibernationEndedWithFallbackToSW);
         }
+
+        SkPaint copyPaint;
+        copyPaint.setXfermodeMode(SkXfermode::kSrc_Mode);
+        m_surface->getCanvas()->drawImage(m_hibernationImage.get(), 0, 0, &copyPaint);
+        m_hibernationImage.clear();
 
         if (m_imageBuffer)
             m_imageBuffer->updateGPUMemoryUsage();
@@ -229,7 +320,8 @@ void Canvas2DLayerBridge::disableDeferral()
     flushRecordingOnly();
     m_recorder.clear();
     // install the current matrix/clip stack onto the immediate canvas
-    m_imageBuffer->resetCanvas(getOrCreateSurface()->getCanvas());
+    if (m_imageBuffer)
+        m_imageBuffer->resetCanvas(getOrCreateSurface()->getCanvas());
 }
 
 void Canvas2DLayerBridge::setImageBuffer(ImageBuffer* imageBuffer)
@@ -242,7 +334,11 @@ void Canvas2DLayerBridge::setImageBuffer(ImageBuffer* imageBuffer)
 
 void Canvas2DLayerBridge::beginDestruction()
 {
-    ASSERT(!m_destructionInProgress);
+    if (m_destructionInProgress)
+        return;
+    if (isHibernating())
+        m_logger->reportHibernationEvent(HibernationEndedWithTeardown);
+    m_hibernationImage.clear();
     m_recorder.clear();
     m_imageBuffer = nullptr;
     m_destructionInProgress = true;
@@ -259,6 +355,7 @@ void Canvas2DLayerBridge::beginDestruction()
         // virtual/gpu/fast/canvas/canvas-resize-after-paint-without-layout.html
         m_layer->layer()->removeFromParent();
     }
+
     ASSERT(!m_bytesAllocated);
 }
 
@@ -285,8 +382,26 @@ void Canvas2DLayerBridge::setIsHidden(bool hidden)
         return;
 
     m_isHidden = newHiddenValue;
-    if (isHidden() && !m_destructionInProgress)
-        flush();
+    if (m_surface && isHidden() && !m_destructionInProgress) {
+        if (m_layer)
+            m_layer->clearTexture();
+        m_logger->reportHibernationEvent(HibernationScheduled);
+        Platform::current()->currentThread()->scheduler()->postIdleTask(BLINK_FROM_HERE, WTF::bind<double>(&hibernateWrapper, m_weakPtrFactory.createWeakPtr()));
+    }
+    if (!isHidden() && m_softwareRenderingWhileHidden) {
+        flushRecordingOnly();
+        SkPaint copyPaint;
+        copyPaint.setXfermodeMode(SkXfermode::kSrc_Mode);
+        RefPtr<SkSurface> oldSurface = m_surface.release();
+        m_softwareRenderingWhileHidden = false;
+        SkSurface* newSurface = getOrCreateSurface();
+        if (newSurface) {
+            oldSurface->draw(newSurface->getCanvas(), 0, 0, &copyPaint);
+        }
+    }
+    if (!isHidden() && isHibernating()) {
+        getOrCreateSurface(); // Rude awakening
+    }
 }
 
 bool Canvas2DLayerBridge::writePixels(const SkImageInfo& origInfo, const void* pixels, size_t rowBytes, int x, int y)
@@ -417,7 +532,6 @@ bool Canvas2DLayerBridge::restoreSurface()
 
 bool Canvas2DLayerBridge::prepareMailbox(WebExternalTextureMailbox* outMailbox, WebExternalBitmap* bitmap)
 {
-    ASSERT(isAccelerated());
     if (m_destructionInProgress) {
         // It can be hit in the following sequence.
         // 1. Canvas draws something.
@@ -426,6 +540,13 @@ bool Canvas2DLayerBridge::prepareMailbox(WebExternalTextureMailbox* outMailbox, 
         // 4. Here.
         return false;
     }
+    ASSERT(isAccelerated() || isHibernating());
+
+    // if hibernating but not hidden, we want to wake up from
+    // hibernation
+    if (isHibernating() && isHidden())
+        return false;
+
     if (bitmap) {
         // Using accelerated 2d canvas with software renderer, which
         // should only happen in tests that use fake graphics contexts
@@ -511,8 +632,8 @@ bool Canvas2DLayerBridge::prepareMailbox(WebExternalTextureMailbox* outMailbox, 
 
 void Canvas2DLayerBridge::mailboxReleased(const WebExternalTextureMailbox& mailbox, bool lostResource)
 {
-    ASSERT(isAccelerated());
-    bool contextLost = !m_surface || m_contextProvider->context3d()->isContextLost();
+    ASSERT(isAccelerated() || isHibernating());
+    bool contextLost = !isHibernating() && (!m_surface || m_contextProvider->context3d()->isContextLost());
     ASSERT(m_mailboxes.last().m_parentLayerBridge.get() == this);
 
     // Mailboxes are typically released in FIFO order, so we iterate
@@ -654,6 +775,11 @@ Canvas2DLayerBridge::MailboxInfo::MailboxInfo(const MailboxInfo& other)
     memcpy(&m_mailbox, &other.m_mailbox, sizeof(m_mailbox));
     m_image = other.m_image;
     m_parentLayerBridge = other.m_parentLayerBridge;
+}
+
+void Canvas2DLayerBridge::Logger::reportHibernationEvent(HibernationEvent event)
+{
+    blink::Platform::current()->histogramEnumeration("Canvas.HibernationEvents", event, HibernationEventCount);
 }
 
 } // namespace blink

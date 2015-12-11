@@ -31,7 +31,10 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebExternalBitmap.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
+#include "public/platform/WebScheduler.h"
+#include "public/platform/WebTaskRunner.h"
 #include "public/platform/WebThread.h"
+#include "public/platform/WebTraceLocation.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -81,12 +84,27 @@ private:
 
 class Canvas2DLayerBridgePtr {
 public:
+    Canvas2DLayerBridgePtr() { }
     Canvas2DLayerBridgePtr(PassRefPtr<Canvas2DLayerBridge> layerBridge)
         : m_layerBridge(layerBridge) { }
 
     ~Canvas2DLayerBridgePtr()
     {
-        m_layerBridge->beginDestruction();
+        clear();
+    }
+
+    void clear()
+    {
+        if (m_layerBridge) {
+            m_layerBridge->beginDestruction();
+            m_layerBridge.clear();
+        }
+    }
+
+    void operator=(PassRefPtr<Canvas2DLayerBridge> layerBridge)
+    {
+        ASSERT(!m_layerBridge);
+        m_layerBridge = layerBridge;
     }
 
     Canvas2DLayerBridge* operator->() { return m_layerBridge.get(); }
@@ -116,6 +134,12 @@ public:
 } // anonymous namespace
 
 class Canvas2DLayerBridgeTest : public Test {
+public:
+    PassRefPtr<Canvas2DLayerBridge> makeBridge(PassOwnPtr<MockWebGraphicsContext3DProvider> provider, const IntSize& size, Canvas2DLayerBridge::AccelerationMode accelerationMode)
+    {
+        return adoptRef(new Canvas2DLayerBridge(provider, size, 0, NonOpaque, accelerationMode));
+    }
+
 protected:
     void fullLifecycleTest()
     {
@@ -334,6 +358,431 @@ TEST_F(Canvas2DLayerBridgeTest, FallbackToSoftwareIfContextLost)
 TEST_F(Canvas2DLayerBridgeTest, FallbackToSoftwareOnFailedTextureAlloc)
 {
     fallbackToSoftwareOnFailedTextureAlloc();
+}
+
+class MockLogger : public Canvas2DLayerBridge::Logger {
+public:
+    MOCK_METHOD1(reportHibernationEvent, void(Canvas2DLayerBridge::HibernationEvent));
+    MOCK_METHOD0(didStartHibernating, void());
+    virtual ~MockLogger() { }
+};
+
+
+class CreateBridgeTask : public WebTaskRunner::Task {
+public:
+    CreateBridgeTask(Canvas2DLayerBridgePtr* bridgePtr, MockCanvasContext* mockCanvasContext, Canvas2DLayerBridgeTest* testHost, WebWaitableEvent* doneEvent)
+        : m_bridgePtr(bridgePtr)
+        , m_mockCanvasContext(mockCanvasContext)
+        , m_testHost(testHost)
+        , m_doneEvent(doneEvent)
+    { }
+
+    virtual ~CreateBridgeTask() { }
+
+    void run() override
+    {
+        OwnPtr<MockWebGraphicsContext3DProvider> mainMockProvider = adoptPtr(new MockWebGraphicsContext3DProvider(m_mockCanvasContext));
+        *m_bridgePtr = m_testHost->makeBridge(mainMockProvider.release(), IntSize(300, 300), Canvas2DLayerBridge::EnableAcceleration);
+        // draw+flush to trigger the creation of a GPU surface
+        (*m_bridgePtr)->didDraw(FloatRect(0, 0, 1, 1));
+        (*m_bridgePtr)->finalizeFrame(FloatRect(0, 0, 1, 1));
+        (*m_bridgePtr)->flush();
+        m_doneEvent->signal();
+    }
+
+private:
+    Canvas2DLayerBridgePtr* m_bridgePtr;
+    MockCanvasContext* m_mockCanvasContext;
+    Canvas2DLayerBridgeTest* m_testHost;
+    WebWaitableEvent* m_doneEvent;
+};
+
+class DestroyBridgeTask : public WebTaskRunner::Task {
+public:
+    DestroyBridgeTask(Canvas2DLayerBridgePtr* bridgePtr, WebWaitableEvent* doneEvent = nullptr)
+        : m_bridgePtr(bridgePtr)
+        , m_doneEvent(doneEvent)
+    { }
+
+    virtual ~DestroyBridgeTask() { }
+
+    void run() override
+    {
+        m_bridgePtr->clear();
+        if (m_doneEvent)
+            m_doneEvent->signal();
+    }
+
+private:
+    Canvas2DLayerBridgePtr* m_bridgePtr;
+    WebWaitableEvent* m_doneEvent;
+};
+
+class SetIsHiddenTask : public WebTaskRunner::Task {
+public:
+    SetIsHiddenTask(Canvas2DLayerBridge* bridge, bool value, WebWaitableEvent* doneEvent = nullptr)
+        : m_bridge(bridge)
+        , m_value(value)
+        , m_doneEvent(doneEvent)
+    { }
+
+    virtual ~SetIsHiddenTask() { }
+
+    void run() override
+    {
+        m_bridge->setIsHidden(m_value);
+        if (m_doneEvent)
+            m_doneEvent->signal();
+    }
+
+private:
+    Canvas2DLayerBridge* m_bridge;
+    bool m_value;
+    WebWaitableEvent* m_doneEvent;
+};
+
+TEST_F(Canvas2DLayerBridgeTest, HibernationLifeCycle)
+{
+    MockCanvasContext mainMock;
+    OwnPtr<WebThread> testThread = adoptPtr(Platform::current()->createThread("TestThread"));
+
+    // The Canvas2DLayerBridge has to be created on the thread that will use it
+    // to avoid WeakPtr thread check issues.
+    Canvas2DLayerBridgePtr bridge;
+    OwnPtr<WebWaitableEvent> bridgeCreatedEvent = adoptPtr(Platform::current()->createWaitableEvent());
+    testThread->taskRunner()->postTask(BLINK_FROM_HERE, new CreateBridgeTask(&bridge, &mainMock, this, bridgeCreatedEvent.get()));
+    bridgeCreatedEvent->wait();
+
+    // Register an alternate Logger for tracking hibernation events
+    OwnPtr<MockLogger> mockLogger = adoptPtr(new MockLogger);
+    MockLogger* mockLoggerPtr = mockLogger.get();
+    bridge->setLoggerForTesting(mockLogger.release());
+
+    // Test entering hibernation
+    OwnPtr<WebWaitableEvent> hibernationStartedEvent = adoptPtr(Platform::current()->createWaitableEvent());
+    EXPECT_CALL(*mockLoggerPtr, reportHibernationEvent(Canvas2DLayerBridge::HibernationScheduled));
+    EXPECT_CALL(*mockLoggerPtr, didStartHibernating())
+        .WillOnce(testing::Invoke(hibernationStartedEvent.get(), &WebWaitableEvent::signal));
+    testThread->taskRunner()->postTask(BLINK_FROM_HERE, new SetIsHiddenTask(bridge.get(), true));
+    hibernationStartedEvent->wait();
+    ::testing::Mock::VerifyAndClearExpectations(mockLoggerPtr);
+    EXPECT_FALSE(bridge->isAccelerated());
+    EXPECT_TRUE(bridge->isHibernating());
+
+    // Test exiting hibernation
+    OwnPtr<WebWaitableEvent> hibernationEndedEvent = adoptPtr(Platform::current()->createWaitableEvent());
+    EXPECT_CALL(*mockLoggerPtr, reportHibernationEvent(Canvas2DLayerBridge::HibernationEndedNormally));
+    testThread->taskRunner()->postTask(BLINK_FROM_HERE, new SetIsHiddenTask(bridge.get(), false, hibernationEndedEvent.get()));
+    hibernationEndedEvent->wait();
+    ::testing::Mock::VerifyAndClearExpectations(mockLoggerPtr);
+    EXPECT_TRUE(bridge->isAccelerated());
+    EXPECT_FALSE(bridge->isHibernating());
+
+    // Tear down the bridge on the thread so that 'bridge' can go out of scope
+    // without crashing due to thread checks
+    OwnPtr<WebWaitableEvent> bridgeDestroyedEvent = adoptPtr(Platform::current()->createWaitableEvent());
+    testThread->taskRunner()->postTask(BLINK_FROM_HERE, new DestroyBridgeTask(&bridge, bridgeDestroyedEvent.get()));
+    bridgeDestroyedEvent->wait();
+
+    ::testing::Mock::VerifyAndClearExpectations(&mainMock);
+}
+
+class RenderingTask : public WebTaskRunner::Task {
+public:
+    RenderingTask(Canvas2DLayerBridge* bridge, WebWaitableEvent* doneEvent)
+        : m_bridge(bridge)
+        , m_doneEvent(doneEvent)
+    { }
+
+    virtual ~RenderingTask() { }
+
+    void run() override
+    {
+        m_bridge->didDraw(FloatRect(0, 0, 1, 1));
+        m_bridge->finalizeFrame(FloatRect(0, 0, 1, 1));
+        m_bridge->flush();
+        m_doneEvent->signal();
+    }
+
+private:
+    Canvas2DLayerBridge* m_bridge;
+    WebWaitableEvent* m_doneEvent;
+};
+
+TEST_F(Canvas2DLayerBridgeTest, BackgroundRenderingWhileHibernating)
+{
+    MockCanvasContext mainMock;
+    OwnPtr<WebThread> testThread = adoptPtr(Platform::current()->createThread("TestThread"));
+
+    // The Canvas2DLayerBridge has to be created on the thread that will use it
+    // to avoid WeakPtr thread check issues.
+    Canvas2DLayerBridgePtr bridge;
+    OwnPtr<WebWaitableEvent> bridgeCreatedEvent = adoptPtr(Platform::current()->createWaitableEvent());
+    testThread->taskRunner()->postTask(BLINK_FROM_HERE, new CreateBridgeTask(&bridge, &mainMock, this, bridgeCreatedEvent.get()));
+    bridgeCreatedEvent->wait();
+
+    // Register an alternate Logger for tracking hibernation events
+    OwnPtr<MockLogger> mockLogger = adoptPtr(new MockLogger);
+    MockLogger* mockLoggerPtr = mockLogger.get();
+    bridge->setLoggerForTesting(mockLogger.release());
+
+    // Test entering hibernation
+    OwnPtr<WebWaitableEvent> hibernationStartedEvent = adoptPtr(Platform::current()->createWaitableEvent());
+    EXPECT_CALL(*mockLoggerPtr, reportHibernationEvent(Canvas2DLayerBridge::HibernationScheduled));
+    EXPECT_CALL(*mockLoggerPtr, didStartHibernating())
+        .WillOnce(testing::Invoke(hibernationStartedEvent.get(), &WebWaitableEvent::signal));
+    testThread->taskRunner()->postTask(BLINK_FROM_HERE, new SetIsHiddenTask(bridge.get(), true));
+    hibernationStartedEvent->wait();
+    ::testing::Mock::VerifyAndClearExpectations(mockLoggerPtr);
+    EXPECT_FALSE(bridge->isAccelerated());
+    EXPECT_TRUE(bridge->isHibernating());
+
+    // Rendering in the background -> temp switch to SW
+    EXPECT_CALL(*mockLoggerPtr, reportHibernationEvent(Canvas2DLayerBridge::HibernationEndedWithSwitchToBackgroundRendering));
+    OwnPtr<WebWaitableEvent> switchEvent = adoptPtr(Platform::current()->createWaitableEvent());
+    testThread->taskRunner()->postTask(BLINK_FROM_HERE, new RenderingTask(bridge.get(), switchEvent.get()));
+    switchEvent->wait();
+    ::testing::Mock::VerifyAndClearExpectations(mockLoggerPtr);
+    EXPECT_FALSE(bridge->isAccelerated());
+    EXPECT_FALSE(bridge->isHibernating());
+
+    // Unhide
+    OwnPtr<WebWaitableEvent> unhideEvent = adoptPtr(Platform::current()->createWaitableEvent());
+    testThread->taskRunner()->postTask(BLINK_FROM_HERE, new SetIsHiddenTask(bridge.get(), false, unhideEvent.get()));
+    unhideEvent->wait();
+    ::testing::Mock::VerifyAndClearExpectations(mockLoggerPtr);
+    EXPECT_TRUE(bridge->isAccelerated()); // Becoming visible causes switch back to GPU
+    EXPECT_FALSE(bridge->isHibernating());
+
+    // Tear down the bridge on the thread so that 'bridge' can go out of scope
+    // without crashing due to thread checks
+    OwnPtr<WebWaitableEvent> bridgeDestroyedEvent = adoptPtr(Platform::current()->createWaitableEvent());
+    testThread->taskRunner()->postTask(BLINK_FROM_HERE, new DestroyBridgeTask(&bridge, bridgeDestroyedEvent.get()));
+    bridgeDestroyedEvent->wait();
+
+    ::testing::Mock::VerifyAndClearExpectations(&mainMock);
+}
+
+TEST_F(Canvas2DLayerBridgeTest, TeardownWhileHibernating)
+{
+    MockCanvasContext mainMock;
+    OwnPtr<WebThread> testThread = adoptPtr(Platform::current()->createThread("TestThread"));
+
+    // The Canvas2DLayerBridge has to be created on the thread that will use it
+    // to avoid WeakPtr thread check issues.
+    Canvas2DLayerBridgePtr bridge;
+    OwnPtr<WebWaitableEvent> bridgeCreatedEvent = adoptPtr(Platform::current()->createWaitableEvent());
+    testThread->taskRunner()->postTask(BLINK_FROM_HERE, new CreateBridgeTask(&bridge, &mainMock, this, bridgeCreatedEvent.get()));
+    bridgeCreatedEvent->wait();
+
+    // Register an alternate Logger for tracking hibernation events
+    OwnPtr<MockLogger> mockLogger = adoptPtr(new MockLogger);
+    MockLogger* mockLoggerPtr = mockLogger.get();
+    bridge->setLoggerForTesting(mockLogger.release());
+
+    // Test entering hibernation
+    OwnPtr<WebWaitableEvent> hibernationStartedEvent = adoptPtr(Platform::current()->createWaitableEvent());
+    EXPECT_CALL(*mockLoggerPtr, reportHibernationEvent(Canvas2DLayerBridge::HibernationScheduled));
+    EXPECT_CALL(*mockLoggerPtr, didStartHibernating())
+        .WillOnce(testing::Invoke(hibernationStartedEvent.get(), &WebWaitableEvent::signal));
+    testThread->taskRunner()->postTask(BLINK_FROM_HERE, new SetIsHiddenTask(bridge.get(), true));
+    hibernationStartedEvent->wait();
+    ::testing::Mock::VerifyAndClearExpectations(mockLoggerPtr);
+    EXPECT_FALSE(bridge->isAccelerated());
+    EXPECT_TRUE(bridge->isHibernating());
+
+    // Tear down the bridge while hibernating
+    EXPECT_CALL(*mockLoggerPtr, reportHibernationEvent(Canvas2DLayerBridge::HibernationEndedWithTeardown));
+    OwnPtr<WebWaitableEvent> bridgeDestroyedEvent = adoptPtr(Platform::current()->createWaitableEvent());
+    testThread->taskRunner()->postTask(BLINK_FROM_HERE, new DestroyBridgeTask(&bridge, bridgeDestroyedEvent.get()));
+    bridgeDestroyedEvent->wait();
+
+    ::testing::Mock::VerifyAndClearExpectations(&mainMock);
+}
+
+class IdleFenceTask : public WebThread::IdleTask {
+public:
+    IdleFenceTask(WebWaitableEvent* doneEvent)
+        : m_doneEvent(doneEvent)
+    { }
+
+    virtual ~IdleFenceTask() { }
+
+    void run(double /*deadline*/) override
+    {
+        m_doneEvent->signal();
+    }
+
+private:
+    WebWaitableEvent* m_doneEvent;
+};
+
+TEST_F(Canvas2DLayerBridgeTest, TeardownWhileHibernationIsPending)
+{
+    MockCanvasContext mainMock;
+    OwnPtr<WebThread> testThread = adoptPtr(Platform::current()->createThread("TestThread"));
+
+    // The Canvas2DLayerBridge has to be created on the thread that will use it
+    // to avoid WeakPtr thread check issues.
+    Canvas2DLayerBridgePtr bridge;
+    OwnPtr<WebWaitableEvent> bridgeCreatedEvent = adoptPtr(Platform::current()->createWaitableEvent());
+    testThread->taskRunner()->postTask(BLINK_FROM_HERE, new CreateBridgeTask(&bridge, &mainMock, this, bridgeCreatedEvent.get()));
+    bridgeCreatedEvent->wait();
+
+    // Register an alternate Logger for tracking hibernation events
+    OwnPtr<MockLogger> mockLogger = adoptPtr(new MockLogger);
+    MockLogger* mockLoggerPtr = mockLogger.get();
+    bridge->setLoggerForTesting(mockLogger.release());
+
+    // Test entering hibernation
+    OwnPtr<WebWaitableEvent> hibernationScheduledEvent = adoptPtr(Platform::current()->createWaitableEvent());
+    EXPECT_CALL(*mockLoggerPtr, reportHibernationEvent(Canvas2DLayerBridge::HibernationScheduled));
+    testThread->taskRunner()->postTask(BLINK_FROM_HERE, new SetIsHiddenTask(bridge.get(), true, hibernationScheduledEvent.get()));
+    testThread->taskRunner()->postTask(BLINK_FROM_HERE, new DestroyBridgeTask(&bridge));
+    // In production, we would expect a
+    // HibernationAbortedDueToDestructionWhileHibernatePending event to be
+    // fired, but that signal is lost in the unit test due to no longer having
+    // a bridge to hold the mockLogger.
+    hibernationScheduledEvent->wait();
+    // Once we know the hibernation task is scheduled, we can schedule a fence.
+    // Assuming Idle tasks are guaranteed to run in the order they were
+    // submitted, this fence will guarantee the attempt to hibernate runs to
+    // completion before the thread is destroyed.
+    // This test passes by not crashing, which proves that the WeakPtr logic
+    // is sound.
+    OwnPtr<WebWaitableEvent> fenceEvent = adoptPtr(Platform::current()->createWaitableEvent());
+    testThread->scheduler()->postIdleTask(BLINK_FROM_HERE, new IdleFenceTask(fenceEvent.get()));
+    fenceEvent->wait();
+
+    ::testing::Mock::VerifyAndClearExpectations(&mainMock);
+}
+
+class BeginDestroyBridgeTask : public WebTaskRunner::Task {
+public:
+    BeginDestroyBridgeTask(Canvas2DLayerBridge* bridge)
+        : m_bridge(bridge)
+    { }
+
+    virtual ~BeginDestroyBridgeTask() { }
+
+    void run() override
+    {
+        m_bridge->beginDestruction();
+    }
+
+private:
+    Canvas2DLayerBridge* m_bridge;
+};
+
+TEST_F(Canvas2DLayerBridgeTest, HibernationAbortedDueToPendingTeardown)
+{
+    MockCanvasContext mainMock;
+    OwnPtr<WebThread> testThread = adoptPtr(Platform::current()->createThread("TestThread"));
+
+    // The Canvas2DLayerBridge has to be created on the thread that will use it
+    // to avoid WeakPtr thread check issues.
+    Canvas2DLayerBridgePtr bridge;
+    OwnPtr<WebWaitableEvent> bridgeCreatedEvent = adoptPtr(Platform::current()->createWaitableEvent());
+    testThread->taskRunner()->postTask(BLINK_FROM_HERE, new CreateBridgeTask(&bridge, &mainMock, this, bridgeCreatedEvent.get()));
+    bridgeCreatedEvent->wait();
+
+    // Register an alternate Logger for tracking hibernation events
+    OwnPtr<MockLogger> mockLogger = adoptPtr(new MockLogger);
+    MockLogger* mockLoggerPtr = mockLogger.get();
+    bridge->setLoggerForTesting(mockLogger.release());
+
+    // Test entering hibernation
+    OwnPtr<WebWaitableEvent> hibernationAbortedEvent = adoptPtr(Platform::current()->createWaitableEvent());
+    EXPECT_CALL(*mockLoggerPtr, reportHibernationEvent(Canvas2DLayerBridge::HibernationScheduled));
+    EXPECT_CALL(*mockLoggerPtr, reportHibernationEvent(Canvas2DLayerBridge::HibernationAbortedDueToPendingDestruction))
+        .WillOnce(testing::InvokeWithoutArgs(hibernationAbortedEvent.get(), &WebWaitableEvent::signal));
+    testThread->taskRunner()->postTask(BLINK_FROM_HERE, new SetIsHiddenTask(bridge.get(), true));
+    testThread->taskRunner()->postTask(BLINK_FROM_HERE, new BeginDestroyBridgeTask(bridge.get()));
+    hibernationAbortedEvent->wait();
+
+    ::testing::Mock::VerifyAndClearExpectations(mockLoggerPtr);
+
+    // Tear down bridge on thread
+    OwnPtr<WebWaitableEvent> bridgeDestroyedEvent = adoptPtr(Platform::current()->createWaitableEvent());
+    testThread->taskRunner()->postTask(BLINK_FROM_HERE, new DestroyBridgeTask(&bridge, bridgeDestroyedEvent.get()));
+    bridgeDestroyedEvent->wait();
+
+    ::testing::Mock::VerifyAndClearExpectations(&mainMock);
+}
+
+TEST_F(Canvas2DLayerBridgeTest, HibernationAbortedDueToVisibilityChange)
+{
+    MockCanvasContext mainMock;
+    OwnPtr<WebThread> testThread = adoptPtr(Platform::current()->createThread("TestThread"));
+
+    // The Canvas2DLayerBridge has to be created on the thread that will use it
+    // to avoid WeakPtr thread check issues.
+    Canvas2DLayerBridgePtr bridge;
+    OwnPtr<WebWaitableEvent> bridgeCreatedEvent = adoptPtr(Platform::current()->createWaitableEvent());
+    testThread->taskRunner()->postTask(BLINK_FROM_HERE, new CreateBridgeTask(&bridge, &mainMock, this, bridgeCreatedEvent.get()));
+    bridgeCreatedEvent->wait();
+
+    // Register an alternate Logger for tracking hibernation events
+    OwnPtr<MockLogger> mockLogger = adoptPtr(new MockLogger);
+    MockLogger* mockLoggerPtr = mockLogger.get();
+    bridge->setLoggerForTesting(mockLogger.release());
+
+    // Test entering hibernation
+    OwnPtr<WebWaitableEvent> hibernationAbortedEvent = adoptPtr(Platform::current()->createWaitableEvent());
+    EXPECT_CALL(*mockLoggerPtr, reportHibernationEvent(Canvas2DLayerBridge::HibernationScheduled));
+    EXPECT_CALL(*mockLoggerPtr, reportHibernationEvent(Canvas2DLayerBridge::HibernationAbortedDueToVisibilityChange))
+        .WillOnce(testing::InvokeWithoutArgs(hibernationAbortedEvent.get(), &WebWaitableEvent::signal));
+    testThread->taskRunner()->postTask(BLINK_FROM_HERE, new SetIsHiddenTask(bridge.get(), true));
+    testThread->taskRunner()->postTask(BLINK_FROM_HERE, new SetIsHiddenTask(bridge.get(), false));
+    hibernationAbortedEvent->wait();
+    ::testing::Mock::VerifyAndClearExpectations(mockLoggerPtr);
+    EXPECT_TRUE(bridge->isAccelerated());
+    EXPECT_FALSE(bridge->isHibernating());
+
+    // Tear down the bridge on the thread so that 'bridge' can go out of scope
+    // without crashing due to thread checks
+    OwnPtr<WebWaitableEvent> bridgeDestroyedEvent = adoptPtr(Platform::current()->createWaitableEvent());
+    testThread->taskRunner()->postTask(BLINK_FROM_HERE, new DestroyBridgeTask(&bridge, bridgeDestroyedEvent.get()));
+    bridgeDestroyedEvent->wait();
+
+    ::testing::Mock::VerifyAndClearExpectations(&mainMock);
+}
+
+TEST_F(Canvas2DLayerBridgeTest, HibernationAbortedDueToLostContext)
+{
+    MockCanvasContext mainMock;
+    OwnPtr<WebThread> testThread = adoptPtr(Platform::current()->createThread("TestThread"));
+
+    // The Canvas2DLayerBridge has to be created on the thread that will use it
+    // to avoid WeakPtr thread check issues.
+    Canvas2DLayerBridgePtr bridge;
+    OwnPtr<WebWaitableEvent> bridgeCreatedEvent = adoptPtr(Platform::current()->createWaitableEvent());
+    testThread->taskRunner()->postTask(BLINK_FROM_HERE, new CreateBridgeTask(&bridge, &mainMock, this, bridgeCreatedEvent.get()));
+    bridgeCreatedEvent->wait();
+
+    // Register an alternate Logger for tracking hibernation events
+    OwnPtr<MockLogger> mockLogger = adoptPtr(new MockLogger);
+    MockLogger* mockLoggerPtr = mockLogger.get();
+    bridge->setLoggerForTesting(mockLogger.release());
+
+    mainMock.fakeContextLost();
+    // Test entering hibernation
+    OwnPtr<WebWaitableEvent> hibernationAbortedEvent = adoptPtr(Platform::current()->createWaitableEvent());
+    EXPECT_CALL(*mockLoggerPtr, reportHibernationEvent(Canvas2DLayerBridge::HibernationScheduled));
+    EXPECT_CALL(*mockLoggerPtr, reportHibernationEvent(Canvas2DLayerBridge::HibernationAbortedDueGpuContextLoss))
+        .WillOnce(testing::InvokeWithoutArgs(hibernationAbortedEvent.get(), &WebWaitableEvent::signal));
+    testThread->taskRunner()->postTask(BLINK_FROM_HERE, new SetIsHiddenTask(bridge.get(), true));
+    hibernationAbortedEvent->wait();
+    ::testing::Mock::VerifyAndClearExpectations(mockLoggerPtr);
+    EXPECT_FALSE(bridge->isHibernating());
+
+    // Tear down the bridge on the thread so that 'bridge' can go out of scope
+    // without crashing due to thread checks
+    OwnPtr<WebWaitableEvent> bridgeDestroyedEvent = adoptPtr(Platform::current()->createWaitableEvent());
+    testThread->taskRunner()->postTask(BLINK_FROM_HERE, new DestroyBridgeTask(&bridge, bridgeDestroyedEvent.get()));
+    bridgeDestroyedEvent->wait();
+
+    ::testing::Mock::VerifyAndClearExpectations(&mainMock);
 }
 
 } // namespace blink

@@ -3526,6 +3526,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Canvas.HibernationEvents" enum="CanvasHibernationEvent">
+  <owner>junov@chromium.org</owner>
+  <summary>
+    Records the occurrence of events related to 2D canvas GPU resource
+    hibernation.
+  </summary>
+</histogram>
+
 <histogram name="CAPSUpdater.Step" enum="CAPSUpdaterStep">
   <owner>cpu@chromium.org</owner>
   <summary>
@@ -56959,6 +56967,21 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="5" label="Unaccelerated2DCanvasImageBufferCreationFailed"/>
   <int value="6" label="GPUAccelerated2DCanvasImageBufferCreationFailed"/>
   <int value="7" label="DisplayList2DCanvasFallbackToRaster"/>
+</enum>
+
+<enum name="CanvasHibernationEvent" type="int">
+  <int value="0" label="HibernationScheduled"/>
+  <int value="1"
+      label="HibernationAbortedDueToDestructionWhileHibernatePending"/>
+  <int value="2" label="HibernationAbortedDueToPendingDestruction"/>
+  <int value="3" label="HibernationAbortedDueToVisibilityChange"/>
+  <int value="4" label="HibernationAbortedDueGpuContextLoss"/>
+  <int value="5" label="HibernationAbortedDueToSwitchToUnacceleratedRendering"/>
+  <int value="6" label="HibernationAbortedDueToAllocationFailure"/>
+  <int value="7" label="HibernationEndedNormally"/>
+  <int value="8" label="HibernationEndedWithSwitchToBackgroundRendering"/>
+  <int value="9" label="HibernationEndedWithFallbackToSW"/>
+  <int value="10" label="HibernationEndedWithTeardown"/>
 </enum>
 
 <enum name="CAPSUpdaterStep" type="int">

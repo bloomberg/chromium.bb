@@ -40,11 +40,13 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
+#include "wtf/WeakPtr.h"
 
 class SkPictureRecorder;
 
 namespace blink {
 
+class Canvas2DLayerBridgeHistogramLogger;
 class Canvas2DLayerBridgeTest;
 class ImageBuffer;
 class WebGraphicsContext3D;
@@ -90,8 +92,37 @@ public:
     bool isHidden() { return m_isHidden; }
 
     void beginDestruction();
+    void hibernate();
+    bool isHibernating() const { return m_hibernationImage; }
 
     PassRefPtr<SkImage> newImageSnapshot(AccelerationHint);
+
+    // The values of the enum entries must not change because they are used for
+    // usage metrics histograms. New values can be added to the end.
+    enum HibernationEvent {
+        HibernationScheduled = 0,
+        HibernationAbortedDueToDestructionWhileHibernatePending = 1,
+        HibernationAbortedDueToPendingDestruction = 2,
+        HibernationAbortedDueToVisibilityChange = 3,
+        HibernationAbortedDueGpuContextLoss = 4,
+        HibernationAbortedDueToSwitchToUnacceleratedRendering = 5,
+        HibernationAbortedDueToAllocationFailure = 6,
+        HibernationEndedNormally = 7,
+        HibernationEndedWithSwitchToBackgroundRendering = 8,
+        HibernationEndedWithFallbackToSW = 9,
+        HibernationEndedWithTeardown = 10,
+
+        HibernationEventCount = 11,
+    };
+
+    class PLATFORM_EXPORT Logger {
+    public:
+        virtual void reportHibernationEvent(HibernationEvent);
+        virtual void didStartHibernating() { }
+        virtual ~Logger() { }
+    };
+
+    void setLoggerForTesting(PassOwnPtr<Logger>);
 
 private:
     Canvas2DLayerBridge(PassOwnPtr<WebGraphicsContext3DProvider>, const IntSize&, int msaaSampleCount, OpacityMode, AccelerationMode);
@@ -110,10 +141,13 @@ private:
 
     OwnPtr<SkPictureRecorder> m_recorder;
     RefPtr<SkSurface> m_surface;
+    RefPtr<SkImage> m_hibernationImage;
     int m_initialSurfaceSaveCount;
     OwnPtr<WebExternalTextureLayer> m_layer;
     OwnPtr<WebGraphicsContext3DProvider> m_contextProvider;
     OwnPtr<SharedContextRateLimiter> m_rateLimiter;
+    OwnPtr<Logger> m_logger;
+    WeakPtrFactory<Canvas2DLayerBridge> m_weakPtrFactory;
     ImageBuffer* m_imageBuffer;
     int m_msaaSampleCount;
     size_t m_bytesAllocated;
@@ -124,6 +158,7 @@ private:
     bool m_isDeferralEnabled;
     bool m_isRegisteredTaskObserver;
     bool m_renderingTaskCompletedForCurrentFrame;
+    bool m_softwareRenderingWhileHidden;
 
     friend class Canvas2DLayerBridgeTest;
 
