@@ -72,26 +72,24 @@ FetchRequest::~FetchRequest()
 {
 }
 
-void FetchRequest::setCrossOriginAccessControl(SecurityOrigin* origin, StoredCredentials allowCredentials, CredentialRequest requested)
+void FetchRequest::setCrossOriginAccessControl(SecurityOrigin* origin, CrossOriginAttributeValue crossOrigin)
 {
-    ASSERT(requested == ClientDidNotRequestCredentials || allowCredentials == AllowStoredCredentials);
+    ASSERT(crossOrigin != CrossOriginAttributeNotSet);
+    const bool useCredentials = crossOrigin == CrossOriginAttributeUseCredentials;
+    const bool isSameOriginRequest = origin && origin->canRequestNoSuborigin(m_resourceRequest.url());
+
+    // Currently FetchRequestMode and FetchCredentialsMode are only used when the request goes to Service Worker.
     m_resourceRequest.setFetchRequestMode(WebURLRequest::FetchRequestModeCORS);
-    updateRequestForAccessControl(m_resourceRequest, origin, allowCredentials);
-    m_options.allowCredentials = allowCredentials;
+    m_resourceRequest.setFetchCredentialsMode(useCredentials ? WebURLRequest::FetchCredentialsModeInclude : WebURLRequest::FetchCredentialsModeSameOrigin);
+
+    m_options.allowCredentials = (isSameOriginRequest || useCredentials) ? AllowStoredCredentials : DoNotAllowStoredCredentials;
     m_options.corsEnabled = IsCORSEnabled;
     m_options.securityOrigin = origin;
-    m_options.credentialsRequested = requested;
+    m_options.credentialsRequested = useCredentials ? ClientRequestedCredentials : ClientDidNotRequestCredentials;
+
+    updateRequestForAccessControl(m_resourceRequest, origin, m_options.allowCredentials);
 }
 
-void FetchRequest::setCrossOriginAccessControl(SecurityOrigin* origin, StoredCredentials allowCredentials)
-{
-    setCrossOriginAccessControl(origin, allowCredentials, allowCredentials == AllowStoredCredentials ? ClientRequestedCredentials : ClientDidNotRequestCredentials);
-}
-
-void FetchRequest::setCrossOriginAccessControl(SecurityOrigin* origin, const AtomicString& crossOriginMode)
-{
-    setCrossOriginAccessControl(origin, equalIgnoringCase(crossOriginMode, "use-credentials") ? AllowStoredCredentials : DoNotAllowStoredCredentials);
-}
 
 void FetchRequest::setResourceWidth(ResourceWidth resourceWidth)
 {

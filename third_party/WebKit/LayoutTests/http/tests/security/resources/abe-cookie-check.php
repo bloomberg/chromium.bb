@@ -12,8 +12,6 @@ if (isset($cookie_check)) {
   }
 }
 
-header("Access-Control-Allow-Origin: *");
-
 $name = 'abe.png';
 $fp = fopen($name, 'rb');
 header("Content-Type: image/png");

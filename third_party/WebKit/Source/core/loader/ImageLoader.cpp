@@ -38,6 +38,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
+#include "core/html/CrossOriginAttribute.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/layout/LayoutImage.h"
@@ -253,9 +254,9 @@ static void configureRequest(FetchRequest& request, ImageLoader::BypassMainWorld
     if (bypassBehavior == ImageLoader::BypassMainWorldCSP)
         request.setContentSecurityCheck(DoNotCheckContentSecurityPolicy);
 
-    AtomicString crossOriginMode = element.fastGetAttribute(HTMLNames::crossoriginAttr);
-    if (!crossOriginMode.isNull())
-        request.setCrossOriginAccessControl(element.document().securityOrigin(), crossOriginMode);
+    CrossOriginAttributeValue crossOrigin = crossOriginAttributeValue(element.fastGetAttribute(HTMLNames::crossoriginAttr));
+    if (crossOrigin != CrossOriginAttributeNotSet)
+        request.setCrossOriginAccessControl(element.document().securityOrigin(), crossOrigin);
 
     if (clientHintsPreferences.shouldSendResourceWidth() && isHTMLImageElement(element))
         request.setResourceWidth(toHTMLImageElement(element).resourceWidth());

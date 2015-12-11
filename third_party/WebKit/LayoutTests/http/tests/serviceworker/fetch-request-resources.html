@@ -144,42 +144,43 @@ async_test(function(t) {
       .then(function(f) {
         frame = f;
         image_test(f, LOCAL_URL, '', 'no-cors', 'same-origin');
-        image_test(f, LOCAL_URL, 'anonymous', 'cors', 'omit');
+        image_test(f, LOCAL_URL, 'anonymous', 'cors', 'same-origin');
         image_test(f, LOCAL_URL, 'use-credentials', 'cors', 'include');
         image_test(f, REMOTE_URL, '', 'no-cors', 'same-origin');
-        image_test(f, REMOTE_URL, 'anonymous', 'cors', 'omit');
+        image_test(f, REMOTE_URL, 'anonymous', 'cors', 'same-origin');
         image_test(f, REMOTE_URL, 'use-credentials', 'cors', 'include');
 
         script_test(f, LOCAL_URL, '', 'no-cors', 'same-origin');
-        script_test(f, LOCAL_URL, 'anonymous', 'cors', 'omit');
+        script_test(f, LOCAL_URL, 'anonymous', 'cors', 'same-origin');
         script_test(f, LOCAL_URL, 'use-credentials', 'cors', 'include');
         script_test(f, REMOTE_URL, '', 'no-cors', 'same-origin');
-        script_test(f, REMOTE_URL, 'anonymous', 'cors', 'omit');
+        script_test(f, REMOTE_URL, 'anonymous', 'cors', 'same-origin');
         script_test(f, REMOTE_URL, 'use-credentials', 'cors', 'include');
 
         css_test(f, LOCAL_URL, '', 'no-cors', 'same-origin');
-        css_test(f, LOCAL_URL, 'anonymous', 'cors', 'omit');
+        css_test(f, LOCAL_URL, 'anonymous', 'cors', 'same-origin');
         css_test(f, LOCAL_URL, 'use-credentials', 'cors', 'include');
         css_test(f, REMOTE_URL, '', 'no-cors', 'same-origin');
-        css_test(f, REMOTE_URL, 'anonymous', 'cors', 'omit');
+        css_test(f, REMOTE_URL, 'anonymous', 'cors', 'same-origin');
         css_test(f, REMOTE_URL, 'use-credentials', 'cors', 'include');
 
-        font_face_test(f, LOCAL_URL, 'cors', 'include');
-        font_face_test(f, REMOTE_URL, 'cors', 'omit');
+        font_face_test(f, LOCAL_URL, 'cors', 'same-origin');
+        font_face_test(f, REMOTE_URL, 'cors', 'same-origin');
 
         css_image_test(f, LOCAL_URL, 'backgroundImage',
                        'no-cors', 'same-origin');
         css_image_test(f, REMOTE_URL, 'backgroundImage',
                        'no-cors', 'same-origin');
-        css_image_test(f, LOCAL_URL, 'shapeOutside', 'cors', 'omit');
-        css_image_test(f, REMOTE_URL, 'shapeOutside', 'cors', 'omit');
+        css_image_test(f, LOCAL_URL, 'shapeOutside', 'cors', 'same-origin');
+        css_image_test(f, REMOTE_URL, 'shapeOutside', 'cors', 'same-origin');
 
         css_image_set_test(f, LOCAL_URL, 'backgroundImage',
                            'no-cors', 'same-origin');
         css_image_set_test(f, REMOTE_URL, 'backgroundImage',
                            'no-cors', 'same-origin');
-        css_image_set_test(f, LOCAL_URL, 'shapeOutside', 'cors', 'omit');
-        css_image_set_test(f, REMOTE_URL, 'shapeOutside', 'cors', 'omit');
+        css_image_set_test(f, LOCAL_URL, 'shapeOutside', 'cors', 'same-origin');
+        css_image_set_test(f, REMOTE_URL, 'shapeOutside',
+                           'cors', 'same-origin');
 
       })
       .catch(unreached_rejection(t));

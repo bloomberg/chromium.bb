@@ -29,6 +29,7 @@
 #include "core/fetch/RawResource.h"
 #include "core/fetch/ResourceOwner.h"
 #include "core/html/track/vtt/VTTParser.h"
+#include "platform/CrossOriginAttributeValue.h"
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
 #include "wtf/OwnPtr.h"
@@ -57,7 +58,7 @@ public:
     }
     ~TextTrackLoader() override;
 
-    bool load(const KURL&, const AtomicString& crossOriginMode);
+    bool load(const KURL&, CrossOriginAttributeValue);
     void cancelLoad();
 
     enum State { Idle, Loading, Finished, Failed };

@@ -38,6 +38,7 @@
 #include "core/style/StyleFetchedImageSet.h"
 #include "core/style/StyleGeneratedImage.h"
 #include "core/style/StylePendingImage.h"
+#include "platform/CrossOriginAttributeValue.h"
 
 namespace blink {
 
@@ -77,10 +78,10 @@ void StyleResourceLoader::loadPendingSVGDocuments(ComputedStyle* computedStyle, 
     elementStyleResources.clearPendingSVGDocuments();
 }
 
-static PassRefPtrWillBeRawPtr<StyleImage> doLoadPendingImage(Document* document, StylePendingImage* pendingImage, float deviceScaleFactor, const ResourceLoaderOptions& options)
+static PassRefPtrWillBeRawPtr<StyleImage> doLoadPendingImage(Document* document, StylePendingImage* pendingImage, float deviceScaleFactor, CrossOriginAttributeValue crossOrigin)
 {
     if (CSSImageValue* imageValue = pendingImage->cssImageValue())
-        return imageValue->cacheImage(document, options);
+        return imageValue->cacheImage(document, crossOrigin);
 
     if (CSSImageGeneratorValue* imageGeneratorValue = pendingImage->cssImageGeneratorValue()) {
         imageGeneratorValue->loadSubimages(document);
@@ -91,14 +92,14 @@ static PassRefPtrWillBeRawPtr<StyleImage> doLoadPendingImage(Document* document,
         return cursorImageValue->cacheImage(document, deviceScaleFactor);
 
     if (CSSImageSetValue* imageSetValue = pendingImage->cssImageSetValue())
-        return imageSetValue->cacheImageSet(document, deviceScaleFactor, options);
+        return imageSetValue->cacheImageSet(document, deviceScaleFactor, crossOrigin);
 
     return nullptr;
 }
 
 PassRefPtrWillBeRawPtr<StyleImage> StyleResourceLoader::loadPendingImage(StylePendingImage* pendingImage, float deviceScaleFactor)
 {
-    return doLoadPendingImage(m_document, pendingImage, deviceScaleFactor, ResourceFetcher::defaultResourceOptions());
+    return doLoadPendingImage(m_document, pendingImage, deviceScaleFactor, CrossOriginAttributeNotSet);
 }
 
 void StyleResourceLoader::loadPendingShapeImage(ComputedStyle* computedStyle, ShapeValue* shapeValue, float deviceScaleFactor)
@@ -110,12 +111,7 @@ void StyleResourceLoader::loadPendingShapeImage(ComputedStyle* computedStyle, Sh
     if (!image || !image->isPendingImage())
         return;
 
-    ResourceLoaderOptions options = ResourceFetcher::defaultResourceOptions();
-    options.allowCredentials = DoNotAllowStoredCredentials;
-    options.credentialsRequested  = ClientDidNotRequestCredentials;
-    options.corsEnabled = IsCORSEnabled;
-
-    shapeValue->setImage(doLoadPendingImage(m_document, toStylePendingImage(image), deviceScaleFactor, options));
+    shapeValue->setImage(doLoadPendingImage(m_document, toStylePendingImage(image), deviceScaleFactor, CrossOriginAttributeAnonymous));
 }
 
 void StyleResourceLoader::loadPendingImages(ComputedStyle* style, ElementStyleResources& elementStyleResources)

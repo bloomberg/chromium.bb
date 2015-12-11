@@ -36,6 +36,7 @@
 #include "core/fetch/ResourceClient.h"
 #include "core/fetch/ResourceOwner.h"
 #include "core/loader/LinkLoaderClient.h"
+#include "platform/CrossOriginAttributeValue.h"
 #include "platform/PrerenderClient.h"
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
@@ -66,7 +67,7 @@ public:
     void didSendDOMContentLoadedForPrerender() override;
 
     void released();
-    bool loadLink(const LinkRelAttribute&, const AtomicString& crossOriginMode, const String& type, const String& as, const KURL&, Document&, const NetworkHintsInterface&);
+    bool loadLink(const LinkRelAttribute&, CrossOriginAttributeValue, const String& type, const String& as, const KURL&, Document&, const NetworkHintsInterface&);
     static bool loadLinkFromHeader(const String& headerValue, Document*, const NetworkHintsInterface&);
 
     DECLARE_TRACE();

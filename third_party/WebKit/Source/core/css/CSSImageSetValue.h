@@ -27,7 +27,7 @@
 #define CSSImageSetValue_h
 
 #include "core/css/CSSValueList.h"
-#include "core/fetch/ResourceLoaderOptions.h"
+#include "platform/CrossOriginAttributeValue.h"
 #include "platform/weborigin/Referrer.h"
 #include "wtf/Allocator.h"
 
@@ -47,8 +47,7 @@ public:
 
     bool isCachePending(float deviceScaleFactor) const;
     StyleFetchedImageSet* cachedImageSet(float deviceScaleFactor) const;
-    StyleFetchedImageSet* cacheImageSet(Document*, float deviceScaleFactor, const ResourceLoaderOptions&);
-    StyleFetchedImageSet* cacheImageSet(Document*, float deviceScaleFactor);
+    StyleFetchedImageSet* cacheImageSet(Document*, float deviceScaleFactor, CrossOriginAttributeValue = CrossOriginAttributeNotSet);
 
     String customCSSText() const;
 

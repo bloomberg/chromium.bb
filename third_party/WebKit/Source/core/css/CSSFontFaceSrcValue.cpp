@@ -35,6 +35,7 @@
 #include "core/fetch/FontResource.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/loader/MixedContentChecker.h"
+#include "platform/CrossOriginAttributeValue.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/FontCustomPlatformData.h"
 #include "platform/weborigin/SecurityPolicy.h"
@@ -82,13 +83,7 @@ static void setCrossOriginAccessControl(FetchRequest& request, SecurityOrigin* s
     if (request.url().isLocalFile())
         return;
 
-    StoredCredentials allowCredentials = DoNotAllowStoredCredentials;
-    bool sameOriginRequest = securityOrigin->canRequestNoSuborigin(request.url());
-    // Include credentials for same origin requests (and assume that
-    // redirects out of origin will be handled per Fetch spec.)
-    if (sameOriginRequest)
-        allowCredentials = AllowStoredCredentials;
-    request.setCrossOriginAccessControl(securityOrigin, allowCredentials, ClientDidNotRequestCredentials);
+    request.setCrossOriginAccessControl(securityOrigin, CrossOriginAttributeAnonymous);
 }
 
 FontResource* CSSFontFaceSrcValue::fetch(Document* document)

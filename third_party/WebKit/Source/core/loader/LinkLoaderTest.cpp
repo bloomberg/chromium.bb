@@ -106,7 +106,7 @@ TEST(LinkLoaderTest, Preload)
         LinkLoader loader(&loaderClient);
         KURL hrefURL = KURL(KURL(), testCase.href);
         loader.loadLink(LinkRelAttribute("preload"),
-            AtomicString(),
+            CrossOriginAttributeNotSet,
             String(),
             testCase.as,
             hrefURL,
@@ -154,7 +154,7 @@ TEST(LinkLoaderTest, DNSPrefetch)
         KURL hrefURL = KURL(KURL(ParsedURLStringTag(), String("http://example.com")), testCase.href);
         NetworkHintsMock networkHints;
         loader.loadLink(LinkRelAttribute("dns-prefetch"),
-            AtomicString(),
+            CrossOriginAttributeNotSet,
             String(),
             String(),
             hrefURL,
@@ -169,15 +169,15 @@ TEST(LinkLoaderTest, Preconnect)
 {
     struct {
         const char* href;
-        const char* crossOrigin;
+        CrossOriginAttributeValue crossOrigin;
         const bool shouldLoad;
         const bool isHTTPS;
         const bool isCrossOrigin;
     } cases[] = {
-        {"http://example.com/", nullptr, true, false, false},
-        {"https://example.com/", nullptr, true, true, false},
-        {"http://example.com/", "anonymous", true, false, true},
-        {"//example.com/", nullptr, true, false, false},
+        {"http://example.com/", CrossOriginAttributeNotSet, true, false, false},
+        {"https://example.com/", CrossOriginAttributeNotSet, true, true, false},
+        {"http://example.com/", CrossOriginAttributeAnonymous, true, false, true},
+        {"//example.com/", CrossOriginAttributeNotSet, true, false, false},
     };
 
     // Test the cases with a single header

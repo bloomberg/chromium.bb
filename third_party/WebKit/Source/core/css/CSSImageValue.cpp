@@ -26,8 +26,10 @@
 #include "core/fetch/FetchInitiatorTypeNames.h"
 #include "core/fetch/FetchRequest.h"
 #include "core/fetch/ImageResource.h"
+#include "core/fetch/ResourceFetcher.h"
 #include "core/loader/MixedContentChecker.h"
 #include "core/style/StyleFetchedImage.h"
+#include "platform/CrossOriginAttributeValue.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityPolicy.h"
 
@@ -46,18 +48,18 @@ CSSImageValue::~CSSImageValue()
 {
 }
 
-StyleFetchedImage* CSSImageValue::cacheImage(Document* document, const ResourceLoaderOptions& options)
+StyleFetchedImage* CSSImageValue::cacheImage(Document* document, CrossOriginAttributeValue crossOrigin)
 {
     ASSERT(document);
 
     if (m_isCachePending) {
         m_isCachePending = false;
 
-        FetchRequest request(ResourceRequest(m_absoluteURL), m_initiatorName.isEmpty() ? FetchInitiatorTypeNames::css : m_initiatorName, options);
+        FetchRequest request(ResourceRequest(m_absoluteURL), m_initiatorName.isEmpty() ? FetchInitiatorTypeNames::css : m_initiatorName);
         request.mutableResourceRequest().setHTTPReferrer(SecurityPolicy::generateReferrer(m_referrer.referrerPolicy, request.url(), m_referrer.referrer));
 
-        if (options.corsEnabled == IsCORSEnabled)
-            request.setCrossOriginAccessControl(document->securityOrigin(), options.allowCredentials, options.credentialsRequested);
+        if (crossOrigin != CrossOriginAttributeNotSet)
+            request.setCrossOriginAccessControl(document->securityOrigin(), crossOrigin);
 
         if (ResourcePtr<ImageResource> cachedImage = ImageResource::fetch(request, document->fetcher()))
             m_cachedImage = StyleFetchedImage::create(cachedImage.get(), document, request.url());

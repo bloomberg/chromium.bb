@@ -22,7 +22,7 @@
 #define CSSImageValue_h
 
 #include "core/css/CSSValue.h"
-#include "core/fetch/ResourceFetcher.h"
+#include "platform/CrossOriginAttributeValue.h"
 #include "platform/weborigin/Referrer.h"
 #include "wtf/RefPtr.h"
 
@@ -52,8 +52,7 @@ public:
 
     bool isCachePending() const { return m_isCachePending; }
     StyleFetchedImage* cachedImage() const { ASSERT(!isCachePending()); return m_cachedImage.get(); }
-    StyleFetchedImage* cacheImage(Document*, const ResourceLoaderOptions&);
-    StyleFetchedImage* cacheImage(Document* document) { return cacheImage(document, ResourceFetcher::defaultResourceOptions()); }
+    StyleFetchedImage* cacheImage(Document*, CrossOriginAttributeValue = CrossOriginAttributeNotSet);
 
     const String& url() { return m_absoluteURL; }
 

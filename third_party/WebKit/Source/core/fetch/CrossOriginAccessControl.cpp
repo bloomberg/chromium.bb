@@ -66,7 +66,6 @@ void updateRequestForAccessControl(ResourceRequest& request, SecurityOrigin* sec
 {
     request.removeCredentials();
     request.setAllowStoredCredentials(allowCredentials == AllowStoredCredentials);
-    request.setFetchCredentialsMode(allowCredentials == AllowStoredCredentials ? WebURLRequest::FetchCredentialsModeInclude : WebURLRequest::FetchCredentialsModeOmit);
 
     if (securityOrigin)
         request.setHTTPOrigin(securityOrigin);

@@ -7,6 +7,7 @@
 
 #include "core/dom/Document.h"
 #include "core/fetch/FetchInitiatorInfo.h"
+#include "platform/CrossOriginAttributeValue.h"
 
 namespace blink {
 
@@ -37,15 +38,10 @@ FetchRequest PreloadRequest::resourceRequest(Document* document)
 
     if (m_resourceType == Resource::ImportResource) {
         SecurityOrigin* securityOrigin = document->contextDocument()->securityOrigin();
-        bool sameOrigin = securityOrigin->canRequest(request.url());
-        request.setCrossOriginAccessControl(securityOrigin,
-            sameOrigin ? AllowStoredCredentials : DoNotAllowStoredCredentials,
-            ClientDidNotRequestCredentials);
+        request.setCrossOriginAccessControl(securityOrigin, CrossOriginAttributeAnonymous);
     }
-
-    if (m_isCORSEnabled)
-        request.setCrossOriginAccessControl(document->securityOrigin(), m_allowCredentials);
-
+    if (m_crossOrigin != CrossOriginAttributeNotSet)
+        request.setCrossOriginAccessControl(document->securityOrigin(), m_crossOrigin);
     request.setDefer(m_defer);
     request.setResourceWidth(m_resourceWidth);
     request.clientHintsPreferences().updateFrom(m_clientHintsPreferences);

@@ -256,6 +256,9 @@ void DocumentThreadableLoader::makeCrossOriginAccessRequest(const ResourceReques
         ResourceRequest crossOriginRequest(request);
         ResourceLoaderOptions crossOriginOptions(m_resourceLoaderOptions);
         updateRequestForAccessControl(crossOriginRequest, securityOrigin(), effectiveAllowCredentials());
+        // We update the credentials mode according to effectiveAllowCredentials() here for backward compatibility. But this is not correct.
+        // FIXME: We should set it in the caller of DocumentThreadableLoader.
+        crossOriginRequest.setFetchCredentialsMode(effectiveAllowCredentials() == AllowStoredCredentials ? WebURLRequest::FetchCredentialsModeInclude : WebURLRequest::FetchCredentialsModeOmit);
         loadRequest(crossOriginRequest, crossOriginOptions);
     } else {
         m_crossOriginNonSimpleRequest = true;
@@ -264,6 +267,9 @@ void DocumentThreadableLoader::makeCrossOriginAccessRequest(const ResourceReques
         ResourceLoaderOptions crossOriginOptions(m_resourceLoaderOptions);
         // Do not set the Origin header for preflight requests.
         updateRequestForAccessControl(crossOriginRequest, 0, effectiveAllowCredentials());
+        // We update the credentials mode according to effectiveAllowCredentials() here for backward compatibility. But this is not correct.
+        // FIXME: We should set it in the caller of DocumentThreadableLoader.
+        crossOriginRequest.setFetchCredentialsMode(effectiveAllowCredentials() == AllowStoredCredentials ? WebURLRequest::FetchCredentialsModeInclude : WebURLRequest::FetchCredentialsModeOmit);
         m_actualRequest = crossOriginRequest;
         m_actualOptions = crossOriginOptions;
 

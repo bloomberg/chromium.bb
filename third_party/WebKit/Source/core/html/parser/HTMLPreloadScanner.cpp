@@ -36,6 +36,7 @@
 #include "core/css/parser/SizesAttributeParser.h"
 #include "core/dom/Document.h"
 #include "core/frame/Settings.h"
+#include "core/html/CrossOriginAttribute.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLMetaElement.h"
 #include "core/html/LinkRelAttribute.h"
@@ -119,9 +120,8 @@ public:
         , m_inputIsImage(false)
         , m_sourceSize(0)
         , m_sourceSizeSet(false)
-        , m_isCORSEnabled(false)
         , m_defer(FetchRequest::NoDefer)
-        , m_allowCredentials(DoNotAllowStoredCredentials)
+        , m_crossOrigin(CrossOriginAttributeNotSet)
         , m_mediaValues(mediaValues)
         , m_referrerPolicySet(false)
         , m_referrerPolicy(ReferrerPolicyDefault)
@@ -200,8 +200,7 @@ public:
         // The element's 'referrerpolicy' attribute (if present) takes precedence over the document's referrer policy.
         ReferrerPolicy referrerPolicy = (m_referrerPolicy != ReferrerPolicyDefault && RuntimeEnabledFeatures::referrerPolicyAttributeEnabled()) ? m_referrerPolicy : documentReferrerPolicy;
         OwnPtr<PreloadRequest> request = PreloadRequest::create(initiatorFor(m_tagImpl), position, m_urlToLoad, predictedBaseURL, resourceType(), referrerPolicy, resourceWidth, clientHintsPreferences, requestType);
-        if (isCORSEnabled())
-            request->setCrossOriginEnabled(allowStoredCredentials());
+        request->setCrossOrigin(m_crossOrigin);
         request->setCharset(charset());
         request->setDefer(m_defer);
         return request.release();
@@ -215,7 +214,7 @@ private:
         if (match(attributeName, srcAttr))
             setUrlToLoad(attributeValue, DisallowURLReplacement);
         else if (match(attributeName, crossoriginAttr))
-            setCrossOriginAllowed(attributeValue);
+            setCrossOrigin(attributeValue);
         else if (match(attributeName, asyncAttr))
             setDefer(FetchRequest::LazyLoad);
         else if (match(attributeName, deferAttr))
@@ -229,7 +228,7 @@ private:
             m_imgSrcUrl = attributeValue;
             setUrlToLoad(bestFitSourceForImageAttributes(m_mediaValues->devicePixelRatio(), m_sourceSize, attributeValue, m_srcsetImageCandidate), AllowURLReplacement);
         } else if (match(attributeName, crossoriginAttr)) {
-            setCrossOriginAllowed(attributeValue);
+            setCrossOrigin(attributeValue);
         } else if (match(attributeName, srcsetAttr) && m_srcsetImageCandidate.isEmpty()) {
             m_srcsetAttributeValue = attributeValue;
             m_srcsetImageCandidate = bestFitSourceForSrcsetAttribute(m_mediaValues->devicePixelRatio(), m_sourceSize, attributeValue);
@@ -261,7 +260,7 @@ private:
         } else if (match(attributeName, mediaAttr)) {
             m_matchedMediaAttribute = mediaAttributeMatches(*m_mediaValues, attributeValue);
         } else if (match(attributeName, crossoriginAttr)) {
-            setCrossOriginAllowed(attributeValue);
+            setCrossOrigin(attributeValue);
         }
     }
 
@@ -371,24 +370,9 @@ private:
             return false;
         return true;
     }
-
-    bool isCORSEnabled() const
+    void setCrossOrigin(const String& corsSetting)
     {
-        return m_isCORSEnabled;
-    }
-
-    StoredCredentials allowStoredCredentials() const
-    {
-        return m_allowCredentials;
-    }
-
-    void setCrossOriginAllowed(const String& corsSetting)
-    {
-        m_isCORSEnabled = true;
-        if (!corsSetting.isNull() && equalIgnoringCase(stripLeadingAndTrailingHTMLSpaces(corsSetting), "use-credentials"))
-            m_allowCredentials = AllowStoredCredentials;
-        else
-            m_allowCredentials = DoNotAllowStoredCredentials;
+        m_crossOrigin = crossOriginAttributeValue(corsSetting);
     }
 
     void setDefer(FetchRequest::DeferOption defer)
@@ -414,9 +398,8 @@ private:
     String m_srcsetAttributeValue;
     float m_sourceSize;
     bool m_sourceSizeSet;
-    bool m_isCORSEnabled;
     FetchRequest::DeferOption m_defer;
-    StoredCredentials m_allowCredentials;
+    CrossOriginAttributeValue m_crossOrigin;
     RefPtrWillBeMember<MediaValues> m_mediaValues;
     bool m_referrerPolicySet;
     ReferrerPolicy m_referrerPolicy;

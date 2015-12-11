@@ -64,7 +64,7 @@ protected:
             ClientHintsPreferences(),
             PreloadRequest::RequestTypePreconnect);
         if (testCase.isCORS)
-            preloadRequest->setCrossOriginEnabled(DoNotAllowStoredCredentials);
+            preloadRequest->setCrossOrigin(CrossOriginAttributeAnonymous);
         OwnPtrWillBeRawPtr<HTMLResourcePreloader> preloader = HTMLResourcePreloader::create(m_dummyPageHolder->document());
         preloader->preload(preloadRequest.release(), networkHints);
         ASSERT_TRUE(networkHints.didPreconnect());

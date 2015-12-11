@@ -31,6 +31,7 @@
 #include "core/fetch/FetchInitiatorInfo.h"
 #include "core/fetch/IntegrityMetadata.h"
 #include "core/fetch/ResourceLoaderOptions.h"
+#include "platform/CrossOriginAttributeValue.h"
 #include "platform/network/ResourceLoadPriority.h"
 #include "platform/network/ResourceRequest.h"
 #include "wtf/Allocator.h"
@@ -90,9 +91,7 @@ public:
     void setAvoidBlockingOnLoad(bool doNotBlock) { m_avoidBlockingOnLoad = doNotBlock; }
 
     void setContentSecurityCheck(ContentSecurityPolicyDisposition contentSecurityPolicyOption) { m_options.contentSecurityPolicyOption = contentSecurityPolicyOption; }
-    void setCrossOriginAccessControl(SecurityOrigin*, StoredCredentials, CredentialRequest);
-    void setCrossOriginAccessControl(SecurityOrigin*, StoredCredentials);
-    void setCrossOriginAccessControl(SecurityOrigin*, const AtomicString& crossOriginMode);
+    void setCrossOriginAccessControl(SecurityOrigin*, CrossOriginAttributeValue);
     OriginRestriction originRestriction() const { return m_originRestriction; }
     void setOriginRestriction(OriginRestriction restriction) { m_originRestriction = restriction; }
     const IntegrityMetadataSet& integrityMetadata() const { return m_integrityMetadata; }

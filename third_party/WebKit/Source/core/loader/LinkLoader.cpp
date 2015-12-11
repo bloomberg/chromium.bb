@@ -232,7 +232,7 @@ bool LinkLoader::loadLinkFromHeader(const String& headerValue, Document* documen
     return true;
 }
 
-bool LinkLoader::loadLink(const LinkRelAttribute& relAttribute, const AtomicString& crossOriginMode, const String& type, const String& as, const KURL& href, Document& document, const NetworkHintsInterface& networkHintsInterface)
+bool LinkLoader::loadLink(const LinkRelAttribute& relAttribute, CrossOriginAttributeValue crossOrigin, const String& type, const String& as, const KURL& href, Document& document, const NetworkHintsInterface& networkHintsInterface)
 {
     // TODO(yoav): Do all links need to load only after they're in document???
 
@@ -240,7 +240,7 @@ bool LinkLoader::loadLink(const LinkRelAttribute& relAttribute, const AtomicStri
     // FIXME(crbug.com/463266): We're ignoring type here. Maybe we shouldn't.
     dnsPrefetchIfNeeded(relAttribute, href, document, networkHintsInterface, LinkCalledFromMarkup);
 
-    preconnectIfNeeded(relAttribute, href, document, crossOriginAttributeValue(crossOriginMode), networkHintsInterface, LinkCalledFromMarkup);
+    preconnectIfNeeded(relAttribute, href, document, crossOrigin, networkHintsInterface, LinkCalledFromMarkup);
 
     if (m_client->shouldLoadLink())
         preloadIfNeeded(relAttribute, href, document, as);
@@ -258,8 +258,8 @@ bool LinkLoader::loadLink(const LinkRelAttribute& relAttribute, const AtomicStri
         }
 
         FetchRequest linkRequest(ResourceRequest(document.completeURL(href)), FetchInitiatorTypeNames::link);
-        if (!crossOriginMode.isNull())
-            linkRequest.setCrossOriginAccessControl(document.securityOrigin(), crossOriginMode);
+        if (crossOrigin != CrossOriginAttributeNotSet)
+            linkRequest.setCrossOriginAccessControl(document.securityOrigin(), crossOrigin);
         setResource(LinkFetchResource::fetch(type, linkRequest, document.fetcher()));
     }
 
