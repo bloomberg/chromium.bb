@@ -1035,41 +1035,6 @@ TEST_F(HttpServerPropertiesManagerTest, AddToAlternativeServiceMap) {
   EXPECT_EQ(expected_expiration, alternative_service_info_vector[2].expiration);
 }
 
-// Early release 46 Dev and Canary builds serialized alternative service
-// expiration as double.  Test that they are properly parsed.
-// TODO(bnc) Remove this test around 2015-10-01,
-// and remove corresponding FRIEND macro from header file.
-TEST_F(HttpServerPropertiesManagerTest, AlternativeServiceExpirationDouble) {
-  scoped_ptr<base::Value> server_value = base::JSONReader::Read(
-      "{\"alternative_service\":[{\"port\":443,\"protocol_str\":\"npn-h2\","
-      "\"expiration\":1234567890.0}]}");
-  ASSERT_TRUE(server_value);
-  base::DictionaryValue* server_dict;
-  ASSERT_TRUE(server_value->GetAsDictionary(&server_dict));
-
-  const HostPortPair host_port_pair("example.com", 443);
-  AlternativeServiceMap alternative_service_map(/*max_size=*/5);
-  EXPECT_TRUE(http_server_props_manager_->AddToAlternativeServiceMap(
-      host_port_pair, *server_dict, &alternative_service_map));
-
-  AlternativeServiceMap::iterator it =
-      alternative_service_map.Get(host_port_pair);
-  ASSERT_NE(alternative_service_map.end(), it);
-  AlternativeServiceInfoVector alternative_service_info_vector = it->second;
-  ASSERT_EQ(1u, alternative_service_info_vector.size());
-
-  EXPECT_EQ(NPN_HTTP_2,
-            alternative_service_info_vector[0].alternative_service.protocol);
-  EXPECT_EQ("", alternative_service_info_vector[0].alternative_service.host);
-  EXPECT_EQ(443, alternative_service_info_vector[0].alternative_service.port);
-  // Probability defaults to 1.0.
-  EXPECT_DOUBLE_EQ(1.0, alternative_service_info_vector[0].probability);
-  base::Time expected_expiration;
-  ASSERT_TRUE(
-      base::Time::FromUTCString("2009-02-13 23:31:30", &expected_expiration));
-  EXPECT_EQ(expected_expiration, alternative_service_info_vector[0].expiration);
-}
-
 TEST_F(HttpServerPropertiesManagerTest, ShutdownWithPendingUpdateCache0) {
   // Post an update task to the UI thread.
   http_server_props_manager_->ScheduleUpdateCacheOnPrefThread();

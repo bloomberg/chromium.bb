@@ -629,16 +629,6 @@ bool HttpServerPropertiesManager::ParseAlternativeServiceDict(
     return true;
   }
 
-  // Early release 46 Dev and Canary versions stored expiration as double.
-  // TODO(bnc) Remove the following code parsing double around 2015-10-01.
-  double expiration_double;
-  if (alternative_service_dict.GetDoubleWithoutPathExpansion(
-          kExpirationKey, &expiration_double)) {
-    alternative_service_info->expiration =
-        base::Time::FromDoubleT(expiration_double);
-    return true;
-  }
-
   DVLOG(1) << "Malformed alternative service expiration for server: "
            << server_str;
   return false;
