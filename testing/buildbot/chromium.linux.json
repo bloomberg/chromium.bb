@@ -1,7 +1,7 @@
 {
   "Android GN": {
     "additional_compile_targets": [
-      "gn_all"
+      "all"
     ],
     "gtest_tests": [
       {
@@ -131,7 +131,7 @@
   },
   "Android GN (dbg)": {
     "additional_compile_targets": [
-      "gn_all"
+      "all"
     ]
   },
   "Android Tests": {
