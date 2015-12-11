@@ -74,6 +74,7 @@ class BaseFencedAllocatorTest : public testing::Test {
   scoped_ptr<CommandBufferService> command_buffer_;
   scoped_ptr<GpuScheduler> gpu_scheduler_;
   scoped_ptr<CommandBufferHelper> helper_;
+  base::MessageLoop message_loop_;
 };
 
 #ifndef _MSC_VER

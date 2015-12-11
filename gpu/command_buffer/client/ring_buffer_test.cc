@@ -101,6 +101,7 @@ class BaseRingBufferTest : public testing::Test {
 
   scoped_ptr<int8[]> buffer_;
   int8* buffer_start_;
+  base::MessageLoop message_loop_;
 };
 
 #ifndef _MSC_VER

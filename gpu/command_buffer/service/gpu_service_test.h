@@ -7,6 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_mock.h"
@@ -36,6 +37,7 @@ class GpuServiceTest : public testing::Test {
   bool ran_setup_;
   bool ran_teardown_;
   scoped_refptr<gfx::GLContextStubWithExtensions> context_;
+  base::MessageLoop message_loop_;
 };
 
 }  // namespace gles2

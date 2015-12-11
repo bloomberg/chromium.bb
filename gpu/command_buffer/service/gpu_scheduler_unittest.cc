@@ -72,6 +72,7 @@ class GpuSchedulerTest : public testing::Test {
   int32* buffer_;
   scoped_ptr<gles2::MockGLES2Decoder> decoder_;
   scoped_ptr<GpuScheduler> scheduler_;
+  base::MessageLoop message_loop_;
 };
 
 TEST_F(GpuSchedulerTest, SchedulerDoesNothingIfRingBufferIsEmpty) {

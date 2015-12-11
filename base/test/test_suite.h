@@ -49,11 +49,6 @@ class TestSuite {
   int Run();
 
  protected:
-  // This constructor is only accessible to specialized test suite
-  // implementations which need to control the creation of an AtExitManager
-  // instance for the duration of the test.
-  TestSuite(int argc, char** argv, bool create_at_exit_manager);
-
   // By default fatal log messages (e.g. from DCHECKs) result in error dialogs
   // which gum up buildbots. Use a minimalistic assert handler which just
   // terminates the process.
@@ -79,7 +74,7 @@ class TestSuite {
 #endif  // defined(OS_WIN)
 
   // Basic initialization for the test suite happens here.
-  void PreInitialize(bool create_at_exit_manager);
+  void PreInitialize();
 
   test::TraceToFile trace_to_file_;
 

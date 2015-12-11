@@ -5,6 +5,7 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_BASE_H_
 #define GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_BASE_H_
 
+#include "base/message_loop/message_loop.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/buffer_manager.h"
@@ -721,6 +722,7 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
   scoped_ptr< ::testing::StrictMock<MockCommandBufferEngine> > engine_;
   scoped_refptr<ContextGroup> group_;
   MockGLStates gl_states_;
+  base::MessageLoop message_loop_;
 };
 
 class GLES2DecoderWithShaderTestBase : public GLES2DecoderTestBase {

@@ -259,6 +259,7 @@ class CommandBufferHelperTest : public testing::Test {
   std::list<linked_ptr<std::vector<CommandBufferEntry> > > test_command_args_;
   unsigned int test_command_next_id_;
   Sequence sequence_;
+  base::MessageLoop message_loop_;
 };
 
 // Checks immediate_entry_count_ changes based on 'usable' state.

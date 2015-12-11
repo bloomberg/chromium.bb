@@ -133,26 +133,11 @@ void PrintJsonFileInfo() {
          switches::kHostNameSwitchName, switches::kRefreshTokenPathSwitchName);
 }
 
-// This class exists so that we can create a test suite which does not create
-// its own AtExitManager.  The problem we are working around occurs when
-// the test suite does not create an AtExitManager (e.g. if no tests are run)
-// and the environment object destroys its MessageLoop, then a crash will occur.
-class NoAtExitBaseTestSuite : public base::TestSuite {
- public:
-  NoAtExitBaseTestSuite(int argc, char** argv)
-      : base::TestSuite(argc, argv, false) {}
-
-  static int RunTestSuite(int argc, char** argv) {
-    return NoAtExitBaseTestSuite(argc, argv).Run();
-  }
-};
-
 }  // namespace
 
 int main(int argc, char* argv[]) {
-  base::AtExitManager at_exit;
+  base::TestSuite test_suite(argc, argv);
   base::MessageLoopForIO message_loop;
-  testing::InitGoogleTest(&argc, argv);
 
   if (!base::CommandLine::InitializedForCurrentProcess()) {
     if (!base::CommandLine::Init(argc, argv)) {
@@ -180,7 +165,8 @@ int main(int argc, char* argv[]) {
     PrintJsonFileInfo();
     PrintAuthCodeInfo();
     return base::LaunchUnitTestsSerially(
-      argc, argv, base::Bind(&NoAtExitBaseTestSuite::RunTestSuite, argc, argv));
+        argc, argv,
+        base::Bind(&base::TestSuite::Run, base::Unretained(&test_suite)));
   }
 
   // Update the logging verbosity level if user specified one.
@@ -254,5 +240,6 @@ int main(int argc, char* argv[]) {
   // Running the tests serially will avoid clients from connecting to the same
   // host.
   return base::LaunchUnitTestsSerially(
-      argc, argv, base::Bind(&NoAtExitBaseTestSuite::RunTestSuite, argc, argv));
+      argc, argv,
+      base::Bind(&base::TestSuite::Run, base::Unretained(&test_suite)));
 }
