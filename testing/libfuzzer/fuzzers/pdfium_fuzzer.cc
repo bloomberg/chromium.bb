@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include <list>
 #include <sstream>
@@ -161,27 +162,42 @@ static void RenderPdf(const char* pBuf, size_t len) {
   FPDFAvail_Destroy(pdf_avail);
 }
 
-static v8::Platform* Init() {
-  v8::Platform* platform;
-  InitializeV8ForPDFium(&platform);
-
-  auto config = new FPDF_LIBRARY_CONFIG();
-  config->version = 2;
-  config->m_pUserFontPaths = nullptr;
-  config->m_pIsolate = nullptr;
-  config->m_v8EmbedderSlot = 0;
-  FPDF_InitLibraryWithConfig(config);
-
-  auto unsuppored_info = new UNSUPPORT_INFO();
-  memset(unsuppored_info, '\0', sizeof(*unsuppored_info));
-  unsuppored_info->version = 1;
-  unsuppored_info->FSDK_UnSupport_Handler = ExampleUnsupportedHandler;
-  FSDK_SetUnSpObjProcessHandler(unsuppored_info);
-
-  return platform;
+std::string ProgramPath() {
+  char *path = new char[PATH_MAX + 1];
+  assert(path);
+  ssize_t sz = readlink("/proc/self/exe", path, PATH_MAX);
+  assert(sz > 0);
+  std::string result(path, sz);
+  delete[] path;
+  return result;
 }
 
-static v8::Platform* platform = Init();
+struct TestCase {
+  TestCase() {
+    InitializeV8ForPDFium(ProgramPath(), "", &natives_blob, &snapshot_blob,
+        &platform);
+
+    memset(&config, '\0', sizeof(config));
+    config.version = 2;
+    config.m_pUserFontPaths = nullptr;
+    config.m_pIsolate = nullptr;
+    config.m_v8EmbedderSlot = 0;
+    FPDF_InitLibraryWithConfig(&config);
+
+    memset(&unsupport_info, '\0', sizeof(unsupport_info));
+    unsupport_info.version = 1;
+    unsupport_info.FSDK_UnSupport_Handler = ExampleUnsupportedHandler;
+    FSDK_SetUnSpObjProcessHandler(&unsupport_info);
+  }
+
+  v8::Platform* platform;
+  v8::StartupData natives_blob;
+  v8::StartupData snapshot_blob;
+  FPDF_LIBRARY_CONFIG config;
+  UNSUPPORT_INFO unsupport_info;
+};
+
+static TestCase* testCase = new TestCase();
 
 extern "C" int LLVMFuzzerTestOneInput(const unsigned char* data, size_t size) {
   RenderPdf(reinterpret_cast<const char*>(data), size);

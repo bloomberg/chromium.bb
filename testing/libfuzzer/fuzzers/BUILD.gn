@@ -240,7 +240,7 @@ test("pdfium_fuzzer") {
     "//v8:v8_libplatform",
   ]
   configs += [ "//third_party/pdfium:pdfium_config" ]
-  configs += [ "//v8:external_config" ]
+  configs += [ "//v8:external_startup_data" ]
 }
 
 test("websocket_frame_parser_fuzzer") {
