@@ -30,16 +30,47 @@ if (window.location.origin != get_host_info().UNAUTHENTICATED_ORIGIN) {
     // Tests for APIs that are deprecated, but still allowed, on
     // insecure origins
     async_test(function() {
+        navigator.geolocation.getCurrentPosition(
+            this.step_func(function() {
+                this.done();
+            }),
+            this.step_func(function(error) {
+                assert_unreached('getCurrentPosition should succeed, but failed.');
+                this.done();
+            }));
+    }, 'getCurrentPosition');
+
+    // Note that the deprecation message for watchPosition() will be supressed
+    // because it is an exact duplicate of the getCurrentPosition() message.
+    // Thus, this test is really to confirm that it still executes.
+    async_test(function() {
+        navigator.geolocation.watchPosition(
+            this.step_func(function() {
+                this.done();
+            }),
+            this.step_func(function(error) {
+                assert_unreached('watchPosition should succeed, but failed.');
+                this.done();
+            }));
+    }, 'watchPosition');
+
+    async_test(function() {
         testRunner.setMockDeviceMotion(true, 0, true, 0, true, 0,
                                        true, 0, true, 0, true, 0,
                                        true, 0, true, 0, true, 0,
                                        0);
-        window.addEventListener('devicemotion', this.step_func_done());
+
+        window.addEventListener('devicemotion', this.step_func(function() {
+            this.done();
+        }));
     }, 'device motion');
 
     async_test(function() {
         testRunner.setMockDeviceOrientation(11.1, 22.2, 33.3, true);
-        window.addEventListener('deviceorientation', this.step_func_done());
+
+        window.addEventListener('deviceorientation', this.step_func(function() {
+            this.done();
+        }));
     }, 'device orientation');
 
     promise_test(function(test) {
@@ -47,21 +78,6 @@ if (window.location.origin != get_host_info().UNAUTHENTICATED_ORIGIN) {
     }, 'requestMediaKeySystemAccess');
 
     // Tests for APIs that have been turned off on insecure origins
-    async_test(function() {
-        navigator.geolocation.getCurrentPosition(
-            this.unreached_func('getCurrentPosition should fail, but succeeded.'),
-            this.step_func_done());
-    }, 'getCurrentPosition');
-
-    // Note that the deprecation message for watchPosition() will be supressed
-    // because it is an exact duplicate of the getCurrentPosition() message.
-    // Thus, this test is really to confirm that it still executes (and fails).
-    async_test(function() {
-        navigator.geolocation.watchPosition(
-            this.unreached_func('watchPosition should fail, but succeeded.'),
-            this.step_func_done());
-    }, 'watchPosition');
-
     async_test(function() {
         navigator.webkitGetUserMedia({ audio: true, video: true },
             this.unreached_func('navigator.webkitGetUserMedia should call the error callback, but called the success callback instead.'),

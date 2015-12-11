@@ -89,5 +89,5 @@ void GeolocationPermissionContext::UpdateTabContext(
 }
 
 bool GeolocationPermissionContext::IsRestrictedToSecureOrigins() const {
-  return true;
+  return false;
 }

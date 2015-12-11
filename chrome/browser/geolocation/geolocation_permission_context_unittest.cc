@@ -383,7 +383,7 @@ base::string16 GeolocationPermissionContextTests::GetPromptText() {
 // Tests ----------------------------------------------------------------------
 
 TEST_F(GeolocationPermissionContextTests, SinglePermissionBubble) {
-  GURL requesting_frame("https://www.example.com/geolocation");
+  GURL requesting_frame("http://www.example.com/geolocation");
   NavigateAndCommit(requesting_frame);
   BubbleManagerDocumentLoadCompleted();
 
@@ -393,21 +393,9 @@ TEST_F(GeolocationPermissionContextTests, SinglePermissionBubble) {
   ASSERT_EQ(1U, GetNumberOfPrompts());
 }
 
-TEST_F(GeolocationPermissionContextTests,
-       SinglePermissionBubbleFailsOnInsecureOrigin) {
-  GURL requesting_frame("http://www.example.com/geolocation");
-  NavigateAndCommit(requesting_frame);
-  BubbleManagerDocumentLoadCompleted();
-
-  EXPECT_EQ(0U, GetNumberOfPrompts());
-  RequestGeolocationPermission(web_contents(), RequestID(0), requesting_frame,
-                               true);
-  ASSERT_EQ(0U, GetNumberOfPrompts());
-}
-
 #if BUILDFLAG(ANDROID_JAVA_UI)
 TEST_F(GeolocationPermissionContextTests, SinglePermissionInfobar) {
-  GURL requesting_frame("https://www.example.com/geolocation");
+  GURL requesting_frame("http://www.example.com/geolocation");
   NavigateAndCommit(requesting_frame);
   EXPECT_EQ(0U, infobar_service()->infobar_count());
   RequestGeolocationPermission(
@@ -425,7 +413,7 @@ TEST_F(GeolocationPermissionContextTests, SinglePermissionInfobar) {
 
 // Infobar-only tests; Android doesn't support permission bubbles.
 TEST_F(GeolocationPermissionContextTests, GeolocationEnabledDisabled) {
-  GURL requesting_frame("https://www.example.com/geolocation");
+  GURL requesting_frame("http://www.example.com/geolocation");
   NavigateAndCommit(requesting_frame);
   MockLocationSettings::SetLocationStatus(true, true);
   EXPECT_EQ(0U, infobar_service()->infobar_count());
@@ -447,7 +435,7 @@ TEST_F(GeolocationPermissionContextTests, GeolocationEnabledDisabled) {
 }
 
 TEST_F(GeolocationPermissionContextTests, MasterEnabledGoogleAppsEnabled) {
-  GURL requesting_frame("https://www.example.com/geolocation");
+  GURL requesting_frame("http://www.example.com/geolocation");
   NavigateAndCommit(requesting_frame);
   MockLocationSettings::SetLocationStatus(true, true);
   EXPECT_EQ(0U, infobar_service()->infobar_count());
@@ -463,7 +451,7 @@ TEST_F(GeolocationPermissionContextTests, MasterEnabledGoogleAppsEnabled) {
 }
 
 TEST_F(GeolocationPermissionContextTests, MasterEnabledGoogleAppsDisabled) {
-  GURL requesting_frame("https://www.example.com/geolocation");
+  GURL requesting_frame("http://www.example.com/geolocation");
   NavigateAndCommit(requesting_frame);
   MockLocationSettings::SetLocationStatus(true, false);
   EXPECT_EQ(0U, infobar_service()->infobar_count());
@@ -474,8 +462,8 @@ TEST_F(GeolocationPermissionContextTests, MasterEnabledGoogleAppsDisabled) {
 #endif
 
 TEST_F(GeolocationPermissionContextTests, QueuedPermission) {
-  GURL requesting_frame_0("https://www.example.com/geolocation");
-  GURL requesting_frame_1("https://www.example-2.com/geolocation");
+  GURL requesting_frame_0("http://www.example.com/geolocation");
+  GURL requesting_frame_1("http://www.example-2.com/geolocation");
   EXPECT_EQ(
       CONTENT_SETTING_ASK,
       GetGeolocationContentSetting(requesting_frame_0, requesting_frame_1));
@@ -540,8 +528,8 @@ TEST_F(GeolocationPermissionContextTests, QueuedPermission) {
 }
 
 TEST_F(GeolocationPermissionContextTests, HashIsIgnored) {
-  GURL url_a("https://www.example.com/geolocation#a");
-  GURL url_b("https://www.example.com/geolocation#b");
+  GURL url_a("http://www.example.com/geolocation#a");
+  GURL url_b("http://www.example.com/geolocation#b");
 
   // Navigate to the first url.
   NavigateAndCommit(url_a);
@@ -607,8 +595,8 @@ TEST_F(GeolocationPermissionContextTests, MAYBE_PermissionForFileScheme) {
 }
 
 TEST_F(GeolocationPermissionContextTests, CancelGeolocationPermissionRequest) {
-  GURL frame_0("https://www.example.com/geolocation");
-  GURL frame_1("https://www.example-2.com/geolocation");
+  GURL frame_0("http://www.example.com/geolocation");
+  GURL frame_1("http://www.example-2.com/geolocation");
   EXPECT_EQ(
       CONTENT_SETTING_ASK, GetGeolocationContentSetting(frame_0, frame_0));
   EXPECT_EQ(
@@ -672,8 +660,8 @@ TEST_F(GeolocationPermissionContextTests, InvalidURL) {
 }
 
 TEST_F(GeolocationPermissionContextTests, SameOriginMultipleTabs) {
-  GURL url_a("https://www.example.com/geolocation");
-  GURL url_b("https://www.example-2.com/geolocation");
+  GURL url_a("http://www.example.com/geolocation");
+  GURL url_b("http://www.example-2.com/geolocation");
   NavigateAndCommit(url_a);  // Tab A0
   AddNewTab(url_b);          // Tab B (extra_tabs_[0])
   AddNewTab(url_a);          // Tab A1 (extra_tabs_[1])
@@ -733,8 +721,8 @@ TEST_F(GeolocationPermissionContextTests, SameOriginMultipleTabs) {
 }
 
 TEST_F(GeolocationPermissionContextTests, QueuedOriginMultipleTabs) {
-  GURL url_a("https://www.example.com/geolocation");
-  GURL url_b("https://www.example-2.com/geolocation");
+  GURL url_a("http://www.example.com/geolocation");
+  GURL url_b("http://www.example-2.com/geolocation");
   NavigateAndCommit(url_a);  // Tab A0.
   AddNewTab(url_a);          // Tab A1.
 #if !BUILDFLAG(ANDROID_JAVA_UI)
@@ -808,8 +796,8 @@ TEST_F(GeolocationPermissionContextTests, QueuedOriginMultipleTabs) {
 }
 
 TEST_F(GeolocationPermissionContextTests, TabDestroyed) {
-  GURL requesting_frame_0("https://www.example.com/geolocation");
-  GURL requesting_frame_1("https://www.example-2.com/geolocation");
+  GURL requesting_frame_0("http://www.example.com/geolocation");
+  GURL requesting_frame_1("http://www.example-2.com/geolocation");
   EXPECT_EQ(
       CONTENT_SETTING_ASK,
       GetGeolocationContentSetting(requesting_frame_0, requesting_frame_0));
@@ -847,7 +835,7 @@ TEST_F(GeolocationPermissionContextTests, TabDestroyed) {
 }
 
 TEST_F(GeolocationPermissionContextTests, LastUsageAudited) {
-  GURL requesting_frame("https://www.example.com/geolocation");
+  GURL requesting_frame("http://www.example.com/geolocation");
   NavigateAndCommit(requesting_frame);
   BubbleManagerDocumentLoadCompleted();
 
@@ -899,8 +887,8 @@ TEST_F(GeolocationPermissionContextTests, LastUsageAuditedMultipleFrames) {
       HostContentSettingsMapFactory::GetForProfile(profile());
   map->SetPrefClockForTesting(scoped_ptr<base::Clock>(test_clock));
 
-  GURL requesting_frame_0("https://www.example.com/geolocation");
-  GURL requesting_frame_1("https://www.example-2.com/geolocation");
+  GURL requesting_frame_0("http://www.example.com/geolocation");
+  GURL requesting_frame_1("http://www.example-2.com/geolocation");
 
   // The permission shouldn't have been used yet.
   EXPECT_EQ(map->GetLastUsage(requesting_frame_0.GetOrigin(),
