@@ -33,6 +33,7 @@ config("compiler") {
   if (is_clang) {
     rebased_android_toolchain_root =
         rebase_path(android_toolchain_root, root_build_dir)
+    assert(rebased_android_toolchain_root != "")  # Mark as used.
     if (current_cpu == "mipsel") {
       cflags += [
         # TODO(gordanac) Enable integrated-as.
