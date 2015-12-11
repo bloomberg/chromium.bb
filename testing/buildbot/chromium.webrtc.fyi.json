@@ -17,6 +17,7 @@
       "frame_analyzer",
       "media_unittests",
       "midi_unittests",
+      "remoting_unittests",
       "rgba_to_i420_converter"
     ]
   },
@@ -26,9 +27,13 @@
   "Mac Builder": {
     "additional_compile_targets": [
       "browser_tests",
-      "chromium_builder_webrtc",
       "content_browsertests",
-      "content_unittests"
+      "content_unittests",
+      "frame_analyzer",
+      "media_unittests",
+      "midi_unittests",
+      "remoting_unittests",
+      "rgba_to_i420_converter"
     ]
   },
   "Mac GN": {
@@ -39,6 +44,7 @@
       "frame_analyzer",
       "media_unittests",
       "midi_unittests",
+      "remoting_unittests",
       "rgba_to_i420_converter"
     ]
   },
@@ -50,6 +56,7 @@
       "frame_analyzer",
       "media_unittests",
       "midi_unittests",
+      "remoting_unittests",
       "rgba_to_i420_converter"
     ]
   },
@@ -59,32 +66,39 @@
   "Win Builder": {
     "additional_compile_targets": [
       "browser_tests",
-      "chromium_builder_webrtc",
       "content_browsertests",
-      "content_unittests"
+      "content_unittests",
+      "crash_service",
+      "frame_analyzer",
+      "media_unittests",
+      "midi_unittests",
+      "remoting_unittests",
+      "rgba_to_i420_converter"
     ]
   },
   "Win x64 GN": {
     "additional_compile_targets": [
       "browser_tests",
-      "crash_service",
       "content_browsertests",
       "content_unittests",
+      "crash_service",
       "frame_analyzer",
       "media_unittests",
       "midi_unittests",
+      "remoting_unittests",
       "rgba_to_i420_converter"
     ]
   },
   "Win x64 GN (dbg)": {
     "additional_compile_targets": [
       "browser_tests",
-      "crash_service",
       "content_browsertests",
       "content_unittests",
+      "crash_service",
       "frame_analyzer",
       "media_unittests",
       "midi_unittests",
+      "remoting_unittests",
       "rgba_to_i420_converter"
     ]
   },
