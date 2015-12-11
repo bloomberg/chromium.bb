@@ -98,7 +98,14 @@ class InstructionView : public views::View {
                   SkColor foreground_color,
                   SkColor background_color);
 
+  void SetText(const base::string16& text);
+
  private:
+  views::Label* before_key_;
+  views::Label* key_name_label_;
+  views::View* key_name_;
+  views::Label* after_key_;
+
   DISALLOW_COPY_AND_ASSIGN(InstructionView);
 };
 
@@ -106,13 +113,6 @@ InstructionView::InstructionView(const base::string16& text,
                                  const gfx::FontList& font_list,
                                  SkColor foreground_color,
                                  SkColor background_color) {
-  // Parse |text|, looking for pipe-delimited segment.
-  std::vector<base::string16> segments =
-      base::SplitString(text, base::ASCIIToUTF16("|"), base::TRIM_WHITESPACE,
-                        base::SPLIT_WANT_ALL);
-  // Expect 1 or 3 pieces (either no pipe-delimited segments, or one).
-  DCHECK(segments.size() == 1 || segments.size() == 3);
-
   // Spacing around the escape key name.
   const int kKeyNameMarginHorizPx = 7;
   const int kKeyNameBorderPx = 1;
@@ -124,33 +124,55 @@ InstructionView::InstructionView(const base::string16& text,
                                                   0, 0, kKeyNameMarginHorizPx);
   SetLayoutManager(layout);
 
-  views::Label* before_key = new views::Label(segments[0], font_list);
-  before_key->SetEnabledColor(foreground_color);
-  before_key->SetBackgroundColor(background_color);
-  AddChildView(before_key);
+  before_key_ = new views::Label(base::string16(), font_list);
+  before_key_->SetEnabledColor(foreground_color);
+  before_key_->SetBackgroundColor(background_color);
+  AddChildView(before_key_);
 
-  if (segments.size() < 3)
-    return;
+  key_name_label_ = new views::Label(base::string16(), font_list);
+  key_name_label_->SetEnabledColor(foreground_color);
+  key_name_label_->SetBackgroundColor(background_color);
 
-  views::Label* key_name_label = new views::Label(segments[1], font_list);
-  key_name_label->SetEnabledColor(foreground_color);
-  key_name_label->SetBackgroundColor(background_color);
-
-  views::View* key_name = new views::View;
+  key_name_ = new views::View;
   views::BoxLayout* key_name_layout = new views::BoxLayout(
       views::BoxLayout::kHorizontal, kKeyNamePaddingPx, kKeyNamePaddingPx, 0);
-  key_name->SetLayoutManager(key_name_layout);
-  key_name->AddChildView(key_name_label);
+  key_name_->SetLayoutManager(key_name_layout);
+  key_name_->AddChildView(key_name_label_);
   // The key name has a border around it.
   scoped_ptr<views::Border> border(views::Border::CreateRoundedRectBorder(
       kKeyNameBorderPx, kKeyNameCornerRadius, foreground_color));
-  key_name->SetBorder(border.Pass());
-  AddChildView(key_name);
+  key_name_->SetBorder(border.Pass());
+  AddChildView(key_name_);
 
-  views::Label* after_key = new views::Label(segments[2], font_list);
-  after_key->SetEnabledColor(foreground_color);
-  after_key->SetBackgroundColor(background_color);
-  AddChildView(after_key);
+  after_key_ = new views::Label(base::string16(), font_list);
+  after_key_->SetEnabledColor(foreground_color);
+  after_key_->SetBackgroundColor(background_color);
+  AddChildView(after_key_);
+
+  SetText(text);
+}
+
+void InstructionView::SetText(const base::string16& text) {
+  // Parse |text|, looking for pipe-delimited segment.
+  std::vector<base::string16> segments =
+      base::SplitString(text, base::ASCIIToUTF16("|"), base::TRIM_WHITESPACE,
+                        base::SPLIT_WANT_ALL);
+  // Expect 1 or 3 pieces (either no pipe-delimited segments, or one).
+  DCHECK(segments.size() <= 1 || segments.size() == 3);
+
+  before_key_->SetText(segments.size() ? segments[0] : base::string16());
+
+  if (segments.size() < 3) {
+    key_name_->SetVisible(false);
+    after_key_->SetVisible(false);
+    return;
+  }
+
+  before_key_->SetText(segments[0]);
+  key_name_label_->SetText(segments[1]);
+  key_name_->SetVisible(true);
+  after_key_->SetVisible(true);
+  after_key_->SetText(segments[2]);
 }
 
 }  // namespace
@@ -244,9 +266,8 @@ ExclusiveAccessBubbleViews::ExclusiveAccessView::ExclusiveAccessView(
     message_label_->SetBackgroundColor(background_color);
   }
 
-  exit_instruction_ =
-      new InstructionView(bubble_->GetInstructionText(), font_list,
-                          foreground_color, background_color);
+  exit_instruction_ = new InstructionView(base::string16(), font_list,
+                                          foreground_color, background_color);
 
   link_ = new views::Link();
   link_->SetFocusable(false);
@@ -330,11 +351,12 @@ void ExclusiveAccessBubbleViews::ExclusiveAccessView::UpdateContent(
         bubble_type ==
             EXCLUSIVE_ACCESS_BUBBLE_TYPE_EXTENSION_FULLSCREEN_EXIT_INSTRUCTION) {
       accelerator = browser_fullscreen_exit_accelerator_;
-    } else if (bubble_type ==
-               EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_EXIT_INSTRUCTION) {
-      accelerator = l10n_util::GetStringUTF16(IDS_APP_ESC_KEY);
     } else {
-      link_visible = false;
+      accelerator = l10n_util::GetStringUTF16(IDS_APP_ESC_KEY);
+      if (bubble_type !=
+          EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_EXIT_INSTRUCTION) {
+        link_visible = false;
+      }
     }
 #if !defined(OS_CHROMEOS)
     if (link_visible) {
@@ -345,6 +367,7 @@ void ExclusiveAccessBubbleViews::ExclusiveAccessView::UpdateContent(
     }
 #endif
     link_->SetVisible(link_visible);
+    exit_instruction_->SetText(bubble_->GetInstructionText(accelerator));
     exit_instruction_->SetVisible(!link_visible);
     button_view_->SetVisible(false);
   }

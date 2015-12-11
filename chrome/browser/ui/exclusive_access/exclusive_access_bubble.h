@@ -95,10 +95,10 @@ class ExclusiveAccessBubble : public gfx::AnimationDelegate {
   base::string16 GetCurrentDenyButtonText() const;
   base::string16 GetCurrentAllowButtonText() const;
 
-  // The following strings never change.
   // This string *may* contain the name of the key surrounded in pipe characters
   // ('|'), which should be drawn graphically as a key, not displayed literally.
-  base::string16 GetInstructionText() const;
+  // |accelerator| is the name of the key to exit fullscreen mode.
+  base::string16 GetInstructionText(const base::string16& accelerator) const;
 
   // The Manager associated with this bubble.
   ExclusiveAccessManager* const manager_;
