@@ -14,7 +14,7 @@ cr.define('options.contentSettings', function() {
    *
    * @param {string} contentType The type of the list.
    */
-  function IsEditableType(contentType) {
+  function isEditableType(contentType) {
     // Exceptions of the following lists are not editable for now.
     return !(contentType == 'location' ||
              contentType == 'fullscreen' ||
@@ -22,7 +22,7 @@ cr.define('options.contentSettings', function() {
              contentType == 'media-stream-camera' ||
              contentType == 'midi-sysex' ||
              contentType == 'zoomlevels' ||
-             IsChosenObjectType(contentType));
+             isChosenObjectType(contentType));
   }
 
   /**
@@ -30,11 +30,16 @@ cr.define('options.contentSettings', function() {
    *
    * @param {string} contentType The type of the list.
    */
-  function IsChosenObjectType(contentType) {
+  function isChosenObjectType(contentType) {
     return contentType == 'usb-devices';
   }
 
-  function ValueColumnForContentType(contentType) {
+  /**
+   * Returns the ID of the column containing values for the given content type.
+   *
+   * @param {string} contentType The type of the list.
+   */
+  function valueColumnForContentType(contentType) {
     if (contentType == 'usb-devices')
       return 'exception-usb-device-column';
     if (contentType == 'zoomlevels')
@@ -133,13 +138,13 @@ cr.define('options.contentSettings', function() {
       }
 
       if (this.contentType != 'zoomlevels' &&
-          !IsChosenObjectType(this.contentType)) {
+          !isChosenObjectType(this.contentType)) {
         this.addEditField(select, this.settingLabel);
         this.contentElement.appendChild(select);
       }
       select.className = 'exception-setting';
       select.setAttribute('aria-labelledby',
-                          ValueColumnForContentType(this.contentType));
+                          valueColumnForContentType(this.contentType));
 
       if (this.pattern)
         select.setAttribute('displaymode', 'edit');
@@ -155,7 +160,7 @@ cr.define('options.contentSettings', function() {
         this.zoomLabel = zoomLabel;
       }
 
-      if (IsChosenObjectType(this.contentType) &&
+      if (isChosenObjectType(this.contentType) &&
           this.dataItem.object !== undefined) {
         this.deletable = true;
 
@@ -183,7 +188,7 @@ cr.define('options.contentSettings', function() {
       this.select = select;
 
       this.updateEditables();
-      this.editable = this.editable && IsEditableType(this.contentType);
+      this.editable = this.editable && isEditableType(this.contentType);
 
       // If the source of the content setting exception is not a user
       // preference, that source controls the exception and the user cannot edit
@@ -558,7 +563,7 @@ cr.define('options.contentSettings', function() {
      */
     isEditable: function() {
       // Exceptions of the following lists are not editable for now.
-      return IsEditableType(this.contentType);
+      return isEditableType(this.contentType);
     },
 
     /**
@@ -580,18 +585,15 @@ cr.define('options.contentSettings', function() {
         return;
 
       var dataItem = listItem.dataItem;
-      if (IsChosenObjectType(this.contentType)) {
-        chrome.send('removeException', [listItem.contentType,
-                                        listItem.mode,
-                                        dataItem.origin,
-                                        dataItem.embeddingOrigin,
-                                        dataItem.object]);
-      } else {
-        chrome.send('removeException', [listItem.contentType,
-                                        listItem.mode,
-                                        dataItem.origin,
-                                        dataItem.embeddingOrigin]);
-      }
+      var params = [listItem.contentType,
+                    listItem.mode,
+                    dataItem.origin,
+                    dataItem.embeddingOrigin];
+
+      if (isChosenObjectType(this.contentType))
+        params.push(dataItem.object);
+
+      chrome.send('removeException', params);
     },
   };
 
@@ -656,7 +658,7 @@ cr.define('options.contentSettings', function() {
           divs[i].hidden = true;
       }
 
-      var valueColumnId = ValueColumnForContentType(type);
+      var valueColumnId = valueColumnForContentType(type);
       var headers =
           this.pageDiv.querySelectorAll('div.exception-value-column-header');
       for (var i = 0; i < headers.length; ++i)
