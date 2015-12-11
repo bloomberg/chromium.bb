@@ -81,6 +81,10 @@ class TabDataUseEntry {
   // time will be null if no tracking session was ever started or ended.
   const base::TimeTicks GetLatestStartOrEndTime() const;
 
+  // Returns the tracking label for the active tracking session. Empty string is
+  // returned if tracking session is not active.
+  const std::string GetActiveTrackingSessionLabel() const;
+
  private:
   friend class TabDataUseEntryTest;
   friend class MockTabDataUseEntryTest;

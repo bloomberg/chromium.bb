@@ -194,6 +194,13 @@ const base::TimeTicks TabDataUseEntry::GetLatestStartOrEndTime() const {
   return back_iterator->start_time;
 }
 
+const std::string TabDataUseEntry::GetActiveTrackingSessionLabel() const {
+  TabSessions::const_reverse_iterator back_iterator = sessions_.rbegin();
+  if (back_iterator == sessions_.rend() || !IsTrackingDataUse())
+    return std::string();
+  return back_iterator->label;
+}
+
 void TabDataUseEntry::CompactSessionHistory() {
   while (sessions_.size() > max_sessions_per_tab_) {
     const auto& front = sessions_.front();

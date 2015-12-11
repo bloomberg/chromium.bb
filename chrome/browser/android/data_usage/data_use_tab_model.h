@@ -51,9 +51,14 @@ class DataUseTabModel {
     // Navigation from the omnibox to the SRP.
     TRANSITION_OMNIBOX_SEARCH,
 
-    // Navigation from external apps such as AGSA app.
-    // TODO(rajendrant): Remove this if not needed.
-    TRANSITION_FROM_EXTERNAL_APP,
+    // Navigation from external apps that use Custom Tabs.
+    TRANSITION_CUSTOM_TAB,
+
+    // Navigation by clicking a link in the page.
+    TRANSITION_LINK,
+
+    // Navigation by reloading the page or restoring tabs.
+    TRANSITION_RELOAD,
 
     // Navigation from the omnibox when typing a URL.
     TRANSITION_OMNIBOX_NAVIGATION,

@@ -71,8 +71,8 @@ void DataUseUITabModel::ReportCustomTabInitialNavigation(
   io_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&DataUseTabModel::OnNavigationEvent, data_use_tab_model_,
-                 tab_id, DataUseTabModel::TRANSITION_FROM_EXTERNAL_APP,
-                 GURL(url), package_name));
+                 tab_id, DataUseTabModel::TRANSITION_CUSTOM_TAB, GURL(url),
+                 package_name));
 }
 
 void DataUseUITabModel::SetDataUseTabModel(
@@ -148,7 +148,9 @@ bool DataUseUITabModel::ConvertTransitionType(
     ui::PageTransition page_transition,
     DataUseTabModel::TransitionType* transition_type) const {
   if (!ui::PageTransitionIsMainFrame(page_transition) ||
-      !ui::PageTransitionIsNewNavigation(page_transition)) {
+      (((page_transition & ui::PAGE_TRANSITION_CORE_MASK) !=
+        ui::PAGE_TRANSITION_RELOAD) &&
+       !ui::PageTransitionIsNewNavigation(page_transition))) {
     return false;
   }
 
@@ -159,7 +161,9 @@ bool DataUseUITabModel::ConvertTransitionType(
         *transition_type = DataUseTabModel::TRANSITION_BOOKMARK;
         return true;
       }
-      return false;  // Newtab, clicking on a link.
+      // Newtab, clicking on a link.
+      *transition_type = DataUseTabModel::TRANSITION_LINK;
+      return true;
     case ui::PAGE_TRANSITION_TYPED:
       *transition_type = DataUseTabModel::TRANSITION_OMNIBOX_NAVIGATION;
       return true;
@@ -176,7 +180,13 @@ bool DataUseUITabModel::ConvertTransitionType(
       *transition_type = DataUseTabModel::TRANSITION_OMNIBOX_SEARCH;
       return true;
     case ui::PAGE_TRANSITION_RELOAD:
-      // Restored tabs.
+      if ((page_transition & ui::PAGE_TRANSITION_FORWARD_BACK) == 0) {
+        // Restored tabs or user reloaded the page.
+        // TODO(rajendrant): Handle only the tab restore case. We are only
+        // interested in that.
+        *transition_type = DataUseTabModel::TRANSITION_RELOAD;
+        return true;
+      }
       return false;
     default:
       return false;

@@ -122,12 +122,12 @@ TEST_F(DataUseUITabModelTest, ReportTabEventsTest) {
       {ui::PageTransitionFromInt(ui::PageTransition::PAGE_TRANSITION_LINK |
                                  ui::PAGE_TRANSITION_FROM_API),
        std::string()},
-      {ui::PageTransition::PAGE_TRANSITION_LINK, std::string()},
+      {ui::PageTransition::PAGE_TRANSITION_LINK, kFooLabel},
       {ui::PageTransition::PAGE_TRANSITION_TYPED, kFooLabel},
       {ui::PageTransition::PAGE_TRANSITION_AUTO_BOOKMARK, std::string()},
       {ui::PageTransition::PAGE_TRANSITION_AUTO_TOPLEVEL, std::string()},
       {ui::PageTransition::PAGE_TRANSITION_GENERATED, kFooLabel},
-      {ui::PageTransition::PAGE_TRANSITION_RELOAD, std::string()},
+      {ui::PageTransition::PAGE_TRANSITION_RELOAD, kFooLabel},
   };
 
   SessionID::id_type foo_tab_id = 100;
@@ -303,6 +303,28 @@ TEST_F(DataUseUITabModelTest, ConvertTransitionType) {
       ui::PageTransition(ui::PAGE_TRANSITION_GENERATED | 0x12FFFF00),
       &transition_type));
   EXPECT_EQ(DataUseTabModel::TRANSITION_OMNIBOX_SEARCH, transition_type);
+
+  EXPECT_TRUE(data_use_ui_tab_model()->ConvertTransitionType(
+      ui::PageTransition(ui::PAGE_TRANSITION_RELOAD), &transition_type));
+  EXPECT_EQ(DataUseTabModel::TRANSITION_RELOAD, transition_type);
+  EXPECT_TRUE(data_use_ui_tab_model()->ConvertTransitionType(
+      ui::PageTransition(ui::PAGE_TRANSITION_RELOAD | 0xFF00),
+      &transition_type));
+  EXPECT_EQ(DataUseTabModel::TRANSITION_RELOAD, transition_type);
+  EXPECT_TRUE(data_use_ui_tab_model()->ConvertTransitionType(
+      ui::PageTransition(ui::PAGE_TRANSITION_RELOAD | 0xFFFF00),
+      &transition_type));
+  EXPECT_EQ(DataUseTabModel::TRANSITION_RELOAD, transition_type);
+  EXPECT_TRUE(data_use_ui_tab_model()->ConvertTransitionType(
+      ui::PageTransition(ui::PAGE_TRANSITION_RELOAD | 0x12FFFF00),
+      &transition_type));
+  EXPECT_EQ(DataUseTabModel::TRANSITION_RELOAD, transition_type);
+
+  // Navigating back or forward.
+  EXPECT_FALSE(data_use_ui_tab_model()->ConvertTransitionType(
+      ui::PageTransition(ui::PAGE_TRANSITION_RELOAD |
+                         ui::PAGE_TRANSITION_FORWARD_BACK),
+      &transition_type));
 
   EXPECT_FALSE(data_use_ui_tab_model()->ConvertTransitionType(
       ui::PageTransition(ui::PAGE_TRANSITION_AUTO_SUBFRAME), &transition_type));

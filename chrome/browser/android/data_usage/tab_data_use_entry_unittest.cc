@@ -253,7 +253,7 @@ class MockTabDataUseEntryTest : public testing::Test {
 
   // Returns true if a tracking session is found labeled with |label|.
   bool IsTabEntrySessionExists(const std::string& label) const {
-    for (auto session : tab_entry_->sessions_) {
+    for (const auto& session : tab_entry_->sessions_) {
       if (session.label == label)
         return true;
     }
