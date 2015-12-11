@@ -337,7 +337,8 @@ static void NaClSelLdrParseArgs(int argc, char **argv,
         entry->next = NULL;
         entry->nacl_desc = strtol(optarg, &rest, 0);
         entry->tag = IMC_DESC;
-        entry->u.handle = (NaClHandle) strtol(rest+1, (char **) 0, 0);
+        entry->u.handle =
+            (NaClHandle) (intptr_t) strtol(rest+1, (char **) 0, 0);
         *(options->redir_qend) = entry;
         options->redir_qend = &entry->next;
         break;
@@ -732,7 +733,8 @@ int NaClSelLdrMain(int argc, char **argv) {
      * errors would be seen, since NaClSetUpBootstrapChannel will get
      * called.
      */
-    NaClSetUpBootstrapChannel(nap, (NaClHandle) options->export_addr_to);
+    NaClSetUpBootstrapChannel(nap,
+                              (NaClHandle) (intptr_t) options->export_addr_to);
     /*
      * NB: spawns a thread that uses the command channel.  we do
      * this after NaClAppLoadFile so that NaClApp object is more
