@@ -92,6 +92,11 @@ public:
         return toInline()->lineBoxes();
     }
 
+    bool hitTestCulledInline(HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset)
+    {
+        return toInline()->hitTestCulledInline(result, locationInContainer, accumulatedOffset);
+    }
+
 protected:
     LayoutInline* toInline()
     {

@@ -1004,28 +1004,28 @@ bool InlineFlowBox::nodeAtPoint(HitTestResult& result, const HitTestLocation& lo
 
         // If the current inline box's layout object and the previous inline box's layout object are same,
         // we should yield the hit-test to the previous inline box.
-        if (prev && curr->lineLayoutItem().isEqual(&prev->layoutObject()))
+        if (prev && curr->lineLayoutItem() == prev->lineLayoutItem())
             continue;
 
         // If a parent of the current inline box is a culled inline,
         // we hit test it before we move the previous inline box.
-        LayoutObject* currLayoutObject = &curr->layoutObject();
+        LineLayoutItem currLayoutItem = curr->lineLayoutItem();
         while (true) {
             // If the previous inline box is not a descendant of a current inline's parent,
             // the parent is a culled inline and we hit test it.
             // Otherwise, move to the previous inline box because we hit test first all
             // candidate inline boxes under the parent to take a pre-order tree traversal in reverse.
-            bool hasSibling = currLayoutObject->previousSibling() || currLayoutObject->nextSibling();
-            LayoutObject* culledParent = currLayoutObject->parent();
+            bool hasSibling = currLayoutItem.previousSibling() || currLayoutItem.nextSibling();
+            LineLayoutItem culledParent = currLayoutItem.parent();
             ASSERT(culledParent);
 
-            if (culledParent == layoutObject() || (hasSibling && prev && prev->layoutObject().isDescendantOf(culledParent)))
+            if (culledParent == lineLayoutItem() || (hasSibling && prev && prev->lineLayoutItem().isDescendantOf(culledParent)))
                 break;
 
-            if (culledParent->isLayoutInline() && toLayoutInline(culledParent)->hitTestCulledInline(result, locationInContainer, accumulatedOffset))
+            if (culledParent.isLayoutInline() && LineLayoutInline(culledParent).hitTestCulledInline(result, locationInContainer, accumulatedOffset))
                 return true;
 
-            currLayoutObject = culledParent;
+            currLayoutItem = culledParent;
         }
     }
 
