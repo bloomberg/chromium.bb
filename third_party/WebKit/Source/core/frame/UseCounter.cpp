@@ -809,12 +809,6 @@ String UseCounter::deprecationMessage(Feature feature)
     case PrefixedCancelRequestAnimationFrame:
         return "'webkitCancelRequestAnimationFrame' is vendor-specific. Please use the standard 'cancelAnimationFrame' instead.";
 
-    case NodeIteratorDetach:
-        return "'NodeIterator.detach' is now a no-op, as per DOM (https://dom.spec.whatwg.org/#dom-nodeiterator-detach).";
-
-    case RangeDetach:
-        return "'Range.detach' is now a no-op, as per DOM (https://dom.spec.whatwg.org/#dom-range-detach).";
-
     case SyncXHRWithCredentials:
         return "Setting 'XMLHttpRequest.withCredentials' for synchronous requests is deprecated.";
 
@@ -870,18 +864,6 @@ String UseCounter::deprecationMessage(Feature feature)
 
     case CanPlayTypeKeySystem:
         return "canPlayType()'s 'keySystem' parameter is deprecated. Please use 'navigator.requestMediaKeySystemAccess()' instead.";
-
-    case SVGSVGElementForceRedraw:
-        return "'SVGSVGElement.forceRedraw()' is deprecated, please do not use it. It is a no-op, as per SVG2 (https://svgwg.org/svg2-draft/struct.html#__svg__SVGSVGElement__forceRedraw).";
-
-    case SVGSVGElementSuspendRedraw:
-        return "'SVGSVGElement.suspendRedraw()' is deprecated, please do not use it. It is a no-op, as per SVG2 (https://svgwg.org/svg2-draft/struct.html#__svg__SVGSVGElement__suspendRedraw).";
-
-    case SVGSVGElementUnsuspendRedraw:
-        return "'SVGSVGElement.unsuspendRedraw()' is deprecated, please do not use it. It is a no-op, as per SVG2 (https://svgwg.org/svg2-draft/struct.html#__svg__SVGSVGElement__unsuspendRedraw).";
-
-    case SVGSVGElementUnsuspendRedrawAll:
-        return "'SVGSVGElement.unsuspendRedrawAll()' is deprecated, please do not use it. It is a no-op, as per SVG2 (https://svgwg.org/svg2-draft/struct.html#__svg__SVGSVGElement__unsuspendRedrawAll).";
 
     // Powerful features on insecure origins (https://goo.gl/rStTGz)
     case DeviceMotionInsecureOrigin:

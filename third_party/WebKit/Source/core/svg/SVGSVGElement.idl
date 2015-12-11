@@ -38,10 +38,10 @@ interface SVGSVGElement : SVGGraphicsElement {
     // TODO(philipj): currentTranslate should be a DOMPointReadOnly.
     [ImplementedAs=currentTranslateFromJavascript] readonly attribute SVGPoint currentTranslate;
 
-    [DeprecateAs=SVGSVGElementSuspendRedraw] unsigned long suspendRedraw(unsigned long maxWaitMilliseconds);
-    [DeprecateAs=SVGSVGElementUnsuspendRedraw] void unsuspendRedraw(unsigned long suspendHandleId);
-    [DeprecateAs=SVGSVGElementUnsuspendRedrawAll] void unsuspendRedrawAll();
-    [DeprecateAs=SVGSVGElementForceRedraw] void forceRedraw();
+    [MeasureAs=SVGSVGElementSuspendRedraw] unsigned long suspendRedraw(unsigned long maxWaitMilliseconds);
+    [MeasureAs=SVGSVGElementUnsuspendRedraw] void unsuspendRedraw(unsigned long suspendHandleId);
+    [MeasureAs=SVGSVGElementUnsuspendRedrawAll] void unsuspendRedrawAll();
+    [MeasureAs=SVGSVGElementForceRedraw] void forceRedraw();
 
     [RuntimeEnabled=smil] void pauseAnimations();
     [RuntimeEnabled=smil] void unpauseAnimations();

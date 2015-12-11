@@ -15,10 +15,9 @@ function testNull()
     shouldThrow('selection.addRange(null)');
 }
 
-function testDetachedRange()
+function testEmptyRange()
 {
     var range = new Range();
-    range.detach();
     selection.addRange(range);
 }
 
@@ -73,7 +72,7 @@ function runSingleTest(testFunction)
     shouldEvaluateTo('selection.getRangeAt(0).endOffset', 0);
 }
 
-var testFunctions = [testNull, testDetachedRange, testNotInDocumentRange, testOtherDocument, testOtherDocumentFragments];
+var testFunctions = [testNull, testEmptyRange, testNotInDocumentRange, testOtherDocument, testOtherDocumentFragments];
 testFunctions.forEach(runSingleTest);
 </script>
 </body>

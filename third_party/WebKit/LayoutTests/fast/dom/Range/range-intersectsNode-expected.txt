@@ -1,4 +1,3 @@
-CONSOLE WARNING: 'Range.detach' is now a no-op, as per DOM (https://dom.spec.whatwg.org/#dom-range-detach).
 This test checks the behavior of the intersectsNode() method on the Range object.
 It covers all configurations of the node/Range relationship and some exception conditions.
 

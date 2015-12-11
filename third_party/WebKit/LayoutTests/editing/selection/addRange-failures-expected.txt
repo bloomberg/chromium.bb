@@ -1,4 +1,3 @@
-CONSOLE WARNING: 'Range.detach' is now a no-op, as per DOM (https://dom.spec.whatwg.org/#dom-range-detach).
 CONSOLE ERROR: Discontiguous selection is not supported.
 CONSOLE ERROR: The given range isn't in document.
 CONSOLE ERROR: The given range does not belong to the current selection's document.
@@ -15,7 +14,7 @@ PASS selection.getRangeAt(0).startContainer === document.body is true
 PASS selection.getRangeAt(0).startOffset is 0
 PASS selection.getRangeAt(0).endContainer === document.body is true
 PASS selection.getRangeAt(0).endOffset is 0
-Running: testDetachedRange
+Running: testEmptyRange
 PASS selection.rangeCount is 1
 PASS selection.getRangeAt(0).startContainer === document.body is true
 PASS selection.getRangeAt(0).startOffset is 0

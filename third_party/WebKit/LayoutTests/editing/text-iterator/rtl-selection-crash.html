@@ -14,7 +14,6 @@ var sel = window.getSelection();
 sel.selectAllChildren(bar);
 var range = sel.getRangeAt(0);
 range.insertNode(document.createElement('span'));
-range.detach();
 
 // This part can be any number of actions, e.g., clicking anywhere on the page also crashes.
 sel.selectAllChildren(bar);

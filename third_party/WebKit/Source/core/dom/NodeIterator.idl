@@ -33,5 +33,5 @@
     [RaisesException] Node? nextNode();
     [RaisesException] Node? previousNode();
 
-    [DeprecateAs=NodeIteratorDetach] void detach();
+    [MeasureAs=NodeIteratorDetach] void detach();
 };
