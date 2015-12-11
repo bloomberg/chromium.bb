@@ -68,6 +68,7 @@ public:
     HostWindow* hostWindow() const override;
     void serviceScrollAnimations(double) override;
     void updateCompositorScrollAnimations() override;
+    void cancelProgrammaticScrollAnimation() override;
     ScrollBehavior scrollBehaviorStyle() const override;
 
 private:

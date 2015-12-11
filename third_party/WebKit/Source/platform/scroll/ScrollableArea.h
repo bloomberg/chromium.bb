@@ -244,7 +244,7 @@ public:
     void layerForScrollingDidChange(WebCompositorAnimationTimeline*);
 
     void cancelScrollAnimation();
-    void cancelProgrammaticScrollAnimation();
+    virtual void cancelProgrammaticScrollAnimation();
 
     virtual ~ScrollableArea();
 
@@ -279,6 +279,9 @@ public:
 
 protected:
     ScrollableArea();
+
+    ScrollbarOrientation scrollbarOrientationFromDirection(ScrollDirectionPhysical) const;
+    float scrollStep(ScrollGranularity, ScrollbarOrientation) const;
 
     void setScrollOrigin(const IntPoint&);
     void resetScrollOriginChanged() { m_scrollOriginChanged = false; }

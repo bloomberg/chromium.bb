@@ -423,6 +423,11 @@ bool VisualViewport::visualViewportSuppliesScrollbars() const
     return frameHost().settings().viewportMetaEnabled();
 }
 
+bool VisualViewport::scrollAnimatorEnabled() const
+{
+    return frameHost().settings().scrollAnimatorEnabled();
+}
+
 void VisualViewport::clearLayersForTreeView(WebLayerTreeView* layerTreeView) const
 {
     ASSERT(layerTreeView);

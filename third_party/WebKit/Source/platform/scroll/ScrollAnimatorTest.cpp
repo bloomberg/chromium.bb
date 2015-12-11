@@ -116,7 +116,7 @@ TEST(ScrollAnimatorTest, Enabled)
     ScrollResultOneDimensional result = scrollAnimator->userScroll(HorizontalScrollbar, ScrollByLine, 100, -1);
     EXPECT_FALSE(scrollAnimator->hasRunningAnimation());
     EXPECT_FALSE(result.didScroll);
-    EXPECT_FLOAT_EQ(-100.0, result.unusedScrollDelta);
+    EXPECT_FLOAT_EQ(-1.0f, result.unusedScrollDelta);
 
     result = scrollAnimator->userScroll(HorizontalScrollbar, ScrollByLine, 100, 1);
     EXPECT_TRUE(scrollAnimator->hasRunningAnimation());

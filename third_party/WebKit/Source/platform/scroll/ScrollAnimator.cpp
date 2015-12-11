@@ -59,6 +59,19 @@ ScrollAnimator::~ScrollAnimator()
     cancelAnimations();
 }
 
+FloatPoint ScrollAnimator::desiredTargetPosition() const
+{
+    return m_animationCurve ? FloatPoint(m_animationCurve->targetValue()) : currentPosition();
+}
+
+float ScrollAnimator::computeDeltaToConsume(ScrollbarOrientation orientation, float pixelDelta) const
+{
+    FloatPoint pos = desiredTargetPosition();
+    float currentPos = (orientation == HorizontalScrollbar) ? pos.x() : pos.y();
+    float newPos = clampScrollPosition(orientation, currentPos + pixelDelta);
+    return (currentPos == newPos) ? 0.0f : (newPos - currentPos);
+}
+
 ScrollResultOneDimensional ScrollAnimator::userScroll(ScrollbarOrientation orientation, ScrollGranularity granularity, float step, float delta)
 {
     if (!m_scrollableArea->scrollAnimatorEnabled())
@@ -69,12 +82,11 @@ ScrollResultOneDimensional ScrollAnimator::userScroll(ScrollbarOrientation orien
     if (granularity == ScrollByPrecisePixel)
         return ScrollAnimatorBase::userScroll(orientation, granularity, step, delta);
 
-    float pixelDelta = step * delta;
-    FloatPoint desiredDelta = (orientation == VerticalScrollbar ? FloatPoint(0, pixelDelta) : FloatPoint(pixelDelta, 0));
+    float usedPixelDelta = computeDeltaToConsume(orientation, step * delta);
+    FloatPoint pixelDelta = (orientation == VerticalScrollbar ? FloatPoint(0, usedPixelDelta) : FloatPoint(usedPixelDelta, 0));
 
-    FloatPoint targetPos = m_animationCurve ? FloatPoint(m_animationCurve->targetValue()) : currentPosition();
-    targetPos.moveBy(desiredDelta);
-    targetPos = FloatPoint(m_scrollableArea->clampScrollPosition(targetPos));
+    FloatPoint targetPos = desiredTargetPosition();
+    targetPos.moveBy(pixelDelta);
 
     if (m_animationCurve) {
         if (!(targetPos - m_animationCurve->targetValue()).isZero())
@@ -86,7 +98,7 @@ ScrollResultOneDimensional ScrollAnimator::userScroll(ScrollbarOrientation orien
         // Report unused delta only if there is no animation and we are not
         // starting one. This ensures we latch for the duration of the
         // animation rather than animating multiple scrollers at the same time.
-        return ScrollResultOneDimensional(/* didScroll */ false, pixelDelta);
+        return ScrollResultOneDimensional(/* didScroll */ false, delta);
     }
 
     m_animationCurve = adoptPtr(Platform::current()->compositorSupport()->createScrollOffsetAnimationCurve(

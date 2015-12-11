@@ -72,6 +72,10 @@ public:
     void setCurrentPosition(const FloatPoint&);
     FloatPoint currentPosition() const;
 
+    // Returns how much of pixelDelta will be used by the underlying scrollable
+    // area.
+    virtual float computeDeltaToConsume(ScrollbarOrientation, float pixelDelta) const;
+
     virtual void cancelAnimations() { }
     virtual void serviceScrollAnimations() { }
     virtual bool hasRunningAnimation() const { return false; }
@@ -109,12 +113,11 @@ protected:
 
     virtual void notifyPositionChanged();
 
+    float clampScrollPosition(ScrollbarOrientation, float) const;
+
     RawPtrWillBeMember<ScrollableArea> m_scrollableArea;
     float m_currentPosX; // We avoid using a FloatPoint in order to reduce
     float m_currentPosY; // subclass code complexity.
-
-private:
-    float clampScrollPosition(ScrollbarOrientation, float);
 };
 
 } // namespace blink

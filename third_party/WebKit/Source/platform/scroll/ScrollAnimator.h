@@ -45,6 +45,8 @@ public:
     explicit ScrollAnimator(ScrollableArea*, WTF::TimeFunction = WTF::monotonicallyIncreasingTime);
     ~ScrollAnimator() override;
 
+    float computeDeltaToConsume(ScrollbarOrientation, float pixelDelta) const override;
+
     ScrollResultOneDimensional userScroll(ScrollbarOrientation, ScrollGranularity, float step, float delta) override;
     void scrollToOffsetWithoutAnimation(const FloatPoint&) override;
 
@@ -60,6 +62,8 @@ protected:
     OwnPtr<WebScrollOffsetAnimationCurve> m_animationCurve;
     double m_startTime;
     WTF::TimeFunction m_timeFunction;
+private:
+    FloatPoint desiredTargetPosition() const;
 };
 
 } // namespace blink

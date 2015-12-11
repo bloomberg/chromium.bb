@@ -239,15 +239,40 @@ ScrollResultOneDimensional RootFrameViewport::userScroll(ScrollDirectionPhysical
 {
     updateScrollAnimator();
 
-    ScrollbarOrientation orientation;
+    ScrollbarOrientation orientation = scrollbarOrientationFromDirection(direction);
 
-    if (direction == ScrollUp || direction == ScrollDown)
-        orientation = VerticalScrollbar;
-    else
-        orientation = HorizontalScrollbar;
+    if (layoutViewport().userInputScrollable(orientation) && visualViewport().userInputScrollable(orientation)) {
+        // Distribute the scroll between the visual and layout viewport.
+        float step = scrollStep(granularity, orientation);
 
-    if (layoutViewport().userInputScrollable(orientation) && visualViewport().userInputScrollable(orientation))
-        return ScrollableArea::userScroll(direction, granularity, delta);
+        if (direction == ScrollUp || direction == ScrollLeft)
+            delta = -delta;
+
+        // This is the total amount we need to scroll. Instead of passing step
+        // to the scroll animator and letting it compute the total delta, we
+        // give it the delta it should scroll. This way we can apply the
+        // unused delta from the visual viewport to the layout viewport.
+        // TODO(ymalik): ScrollAnimator should return unused delta in pixles
+        // rather than in terms of steps.
+        delta *= step;
+
+        cancelProgrammaticScrollAnimation();
+
+        float visualUsedDelta = visualViewport().scrollAnimator().computeDeltaToConsume(orientation, delta);
+        ScrollResultOneDimensional visualResult = visualViewport().scrollAnimator().userScroll(
+            orientation, granularity, 1 /* step */, visualUsedDelta);
+
+        // Scroll the layout viewport if all of the scroll was not applied to the
+        // visual viewport.
+        if (visualUsedDelta == delta)
+            return visualResult;
+
+        ScrollResultOneDimensional layoutResult = layoutViewport().scrollAnimator().userScroll(
+            orientation, granularity, 1 /* step */, delta - visualUsedDelta);
+
+        return ScrollResultOneDimensional(visualResult.didScroll || layoutResult.didScroll,
+            layoutResult.unusedScrollDelta / step);
+    }
 
     if (visualViewport().userInputScrollable(orientation))
         return visualViewport().userScroll(direction, granularity, delta);
@@ -280,6 +305,13 @@ void RootFrameViewport::updateCompositorScrollAnimations()
     ScrollableArea::updateCompositorScrollAnimations();
     layoutViewport().updateCompositorScrollAnimations();
     visualViewport().updateCompositorScrollAnimations();
+}
+
+void RootFrameViewport::cancelProgrammaticScrollAnimation()
+{
+    ScrollableArea::cancelProgrammaticScrollAnimation();
+    layoutViewport().cancelProgrammaticScrollAnimation();
+    visualViewport().cancelProgrammaticScrollAnimation();
 }
 
 DEFINE_TRACE(RootFrameViewport)

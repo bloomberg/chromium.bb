@@ -742,7 +742,8 @@ ScrollResultOneDimensional ScrollAnimatorMac::userScroll(ScrollbarOrientation or
         return ScrollAnimatorBase::userScroll(orientation, granularity, step, delta);
 
     float currentPos = orientation == HorizontalScrollbar ? m_currentPosX : m_currentPosY;
-    float newPos = std::max<float>(std::min<float>(currentPos + (step * delta), m_scrollableArea->maximumScrollPosition(orientation)), m_scrollableArea->minimumScrollPosition(orientation));
+    float usedPixelDelta = computeDeltaToConsume(orientation, step * delta);
+    float newPos = currentPos + usedPixelDelta;
     if (currentPos == newPos)
         return ScrollResultOneDimensional(false);
 
@@ -755,8 +756,7 @@ ScrollResultOneDimensional ScrollAnimatorMac::userScroll(ScrollbarOrientation or
 
     [m_scrollAnimationHelper.get() scrollToPoint:newPoint];
 
-    float usedDelta = (newPos - currentPos) / step;
-    return ScrollResultOneDimensional(true, delta - usedDelta);
+    return ScrollResultOneDimensional(true, delta - (usedPixelDelta / step));
 }
 
 void ScrollAnimatorMac::scrollToOffsetWithoutAnimation(const FloatPoint& offset)

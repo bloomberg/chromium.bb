@@ -130,35 +130,38 @@ GraphicsLayer* ScrollableArea::layerForContainer() const
     return layerForScrolling() ? layerForScrolling()->parent() : 0;
 }
 
+ScrollbarOrientation ScrollableArea::scrollbarOrientationFromDirection(ScrollDirectionPhysical direction) const
+{
+    return (direction == ScrollUp  || direction == ScrollDown) ? VerticalScrollbar : HorizontalScrollbar;
+}
+
+float ScrollableArea::scrollStep(ScrollGranularity granularity, ScrollbarOrientation orientation) const
+{
+    switch (granularity) {
+    case ScrollByLine:
+        return lineStep(orientation);
+    case ScrollByPage:
+        return pageStep(orientation);
+    case ScrollByDocument:
+        return documentStep(orientation);
+    case ScrollByPixel:
+    case ScrollByPrecisePixel:
+        return pixelStep(orientation);
+    default:
+        ASSERT_NOT_REACHED();
+        return 0.0f;
+    }
+}
+
 ScrollResultOneDimensional ScrollableArea::userScroll(ScrollDirectionPhysical direction, ScrollGranularity granularity, float delta)
 {
-    ScrollbarOrientation orientation;
-    if (direction == ScrollUp || direction == ScrollDown)
-        orientation = VerticalScrollbar;
-    else
-        orientation = HorizontalScrollbar;
-
+    ScrollbarOrientation orientation = scrollbarOrientationFromDirection(direction);
     if (!userInputScrollable(orientation))
         return ScrollResultOneDimensional(false, delta);
 
     cancelProgrammaticScrollAnimation();
 
-    float step = 0;
-    switch (granularity) {
-    case ScrollByLine:
-        step = lineStep(orientation);
-        break;
-    case ScrollByPage:
-        step = pageStep(orientation);
-        break;
-    case ScrollByDocument:
-        step = documentStep(orientation);
-        break;
-    case ScrollByPixel:
-    case ScrollByPrecisePixel:
-        step = pixelStep(orientation);
-        break;
-    }
+    float step = scrollStep(granularity, orientation);
 
     if (direction == ScrollUp || direction == ScrollLeft)
         delta = -delta;
