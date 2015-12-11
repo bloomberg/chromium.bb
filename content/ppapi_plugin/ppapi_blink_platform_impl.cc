@@ -10,7 +10,6 @@
 #include "base/strings/string16.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
-#include "components/scheduler/ppapi/webthread_impl_for_ppapi.h"
 #include "content/child/child_thread_impl.h"
 #include "content/common/child_process_messages.h"
 #include "ppapi/proxy/plugin_globals.h"
@@ -115,8 +114,7 @@ void PpapiBlinkPlatformImpl::SandboxSupport::getRenderStyleForStrike(
 
 #endif  // !defined(OS_ANDROID) && !defined(OS_WIN)
 
-PpapiBlinkPlatformImpl::PpapiBlinkPlatformImpl()
-    : main_thread_(new scheduler::WebThreadImplForPPAPI()) {
+PpapiBlinkPlatformImpl::PpapiBlinkPlatformImpl() {
 #if !defined(OS_ANDROID) && !defined(OS_WIN)
   sandbox_support_.reset(new PpapiBlinkPlatformImpl::SandboxSupport);
 #endif
@@ -135,8 +133,6 @@ void PpapiBlinkPlatformImpl::Shutdown() {
 }
 
 blink::WebThread* PpapiBlinkPlatformImpl::currentThread() {
-  if (main_thread_->isCurrentThread())
-    return main_thread_.get();
   return BlinkPlatformImpl::currentThread();
 }
 

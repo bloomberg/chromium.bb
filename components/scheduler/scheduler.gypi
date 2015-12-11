@@ -60,8 +60,6 @@
       'child/worker_scheduler.h',
       'child/worker_scheduler_impl.cc',
       'child/worker_scheduler_impl.h',
-      'ppapi/webthread_impl_for_ppapi.cc',
-      'ppapi/webthread_impl_for_ppapi.h',
       'renderer/deadline_task_runner.cc',
       'renderer/deadline_task_runner.h',
       'renderer/idle_time_estimator.cc',

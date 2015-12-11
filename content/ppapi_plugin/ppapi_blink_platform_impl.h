@@ -9,10 +9,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/child/blink_platform_impl.h"
 
-namespace scheduler {
-class WebThreadImplForPPAPI;
-}
-
 namespace content {
 
 class PpapiBlinkPlatformImpl : public BlinkPlatformImpl {
@@ -59,7 +55,6 @@ class PpapiBlinkPlatformImpl : public BlinkPlatformImpl {
   class SandboxSupport;
   scoped_ptr<SandboxSupport> sandbox_support_;
 #endif
-  scoped_ptr<scheduler::WebThreadImplForPPAPI> main_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(PpapiBlinkPlatformImpl);
 };
