@@ -1215,6 +1215,11 @@ void BackgroundSyncManager::FireReadyEventsDidFindRegistration(
           ? BACKGROUND_SYNC_EVENT_LAST_CHANCE_IS_LAST_CHANCE
           : BACKGROUND_SYNC_EVENT_LAST_CHANCE_IS_NOT_LAST_CHANCE;
 
+  HasMainFrameProviderHost(
+      service_worker_registration->pattern().GetOrigin(),
+      base::Bind(&BackgroundSyncMetrics::RecordEventStarted,
+                 registration->value()->options()->periodicity));
+
   FireOneShotSync(
       handle_id, service_worker_registration->active_version(), last_chance,
       base::Bind(
@@ -1247,7 +1252,6 @@ void BackgroundSyncManager::EventComplete(
 
   // Do not check for disabled as events that were firing when disabled should
   // be allowed to complete (for NotifyWhenFinished).
-
   op_scheduler_.ScheduleOperation(base::Bind(
       &BackgroundSyncManager::EventCompleteImpl, weak_ptr_factory_.GetWeakPtr(),
       service_worker_id, base::Passed(registration_handle.Pass()), status_code,

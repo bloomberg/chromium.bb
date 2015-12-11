@@ -28,6 +28,10 @@ class BackgroundSyncMetrics {
     REGISTRATION_IS_DUPLICATE
   };
 
+  // Records the start of a sync event.
+  static void RecordEventStarted(SyncPeriodicity periodicity,
+                                 bool startedin_foreground);
+
   // Records the result of a single sync event firing.
   static void RecordEventResult(SyncPeriodicity periodicity,
                                 bool result,

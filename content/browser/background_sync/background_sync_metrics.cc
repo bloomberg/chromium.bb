@@ -33,6 +33,22 @@ ResultPattern EventResultToResultPattern(bool success,
 namespace content {
 
 // static
+void BackgroundSyncMetrics::RecordEventStarted(SyncPeriodicity periodicity,
+                                               bool started_in_foreground) {
+  switch (periodicity) {
+    case SYNC_ONE_SHOT:
+      UMA_HISTOGRAM_BOOLEAN("BackgroundSync.Event.OneShotStartedInForeground",
+                            started_in_foreground);
+      return;
+    case SYNC_PERIODIC:
+      UMA_HISTOGRAM_BOOLEAN("BackgroundSync.Event.PeriodicStartedInForeground",
+                            started_in_foreground);
+      return;
+  }
+  NOTREACHED();
+}
+
+// static
 void BackgroundSyncMetrics::RecordEventResult(SyncPeriodicity periodicity,
                                               bool success,
                                               bool finished_in_foreground) {

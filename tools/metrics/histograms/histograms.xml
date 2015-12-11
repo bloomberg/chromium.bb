@@ -2751,6 +2751,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </details>
 </histogram>
 
+<histogram name="BackgroundSync.Event.OneShotStartedInForeground"
+    enum="BooleanInForeground">
+  <owner>jkarlin@chromium.org</owner>
+  <summary>
+    Records whether a one-shot sync started firing in the foreground or
+    background. Called shortly before the event is fired.
+  </summary>
+</histogram>
+
 <histogram name="BackgroundSync.Event.PeriodicResult" enum="BooleanSuccess">
   <owner>iclelland@chromium.org</owner>
   <obsolete>
@@ -2771,6 +2780,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     A sync event finished in the foreground if the associated Service Worker
     Registration has a client at the time that the event finished.
   </details>
+</histogram>
+
+<histogram name="BackgroundSync.Event.PeriodicStartedInForeground"
+    enum="BooleanInForeground">
+  <owner>jkarlin@chromium.org</owner>
+  <summary>
+    Records whether a periodic sync event started firing in the foreground or
+    background. Called shortly before the event is fired.
+  </summary>
 </histogram>
 
 <histogram name="BackgroundSync.Event.Time" units="milliseconds">
@@ -56710,6 +56728,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <enum name="BooleanInappropriateFallback" type="int">
   <int value="0" label="Handshake successful"/>
   <int value="1" label="inappropriate_fallback alert"/>
+</enum>
+
+<enum name="BooleanInForeground" type="int">
+  <int value="0" label="Background"/>
+  <int value="1" label="Foreground"/>
 </enum>
 
 <enum name="BooleanIsLastSharedAppInfoRetrieved" type="int">
