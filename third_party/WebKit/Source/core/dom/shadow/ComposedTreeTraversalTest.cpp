@@ -486,6 +486,8 @@ TEST_F(ComposedTreeTraversalTest, v1Simple)
     RefPtrWillBeRawPtr<Element> shadowChild1 = shadowRoot->querySelector("#shadow-child1", ASSERT_NO_EXCEPTION);
     RefPtrWillBeRawPtr<Element> shadowChild2 = shadowRoot->querySelector("#shadow-child2", ASSERT_NO_EXCEPTION);
 
+    ASSERT(slot1);
+    ASSERT(slot2);
     EXPECT_EQ(shadowChild1.get(), ComposedTreeTraversal::firstChild(*host));
     EXPECT_EQ(child1.get(), ComposedTreeTraversal::nextSibling(*shadowChild1));
     EXPECT_EQ(child2.get(), ComposedTreeTraversal::nextSibling(*child1));
@@ -544,6 +546,14 @@ TEST_F(ComposedTreeTraversalTest, v1Redistribution)
     RefPtrWillBeRawPtr<Element> d11s1 = shadowRoot2->querySelector("[name=d1-1-s1]", ASSERT_NO_EXCEPTION);
     RefPtrWillBeRawPtr<Element> d11s2 = shadowRoot2->querySelector("[name=d1-1-s2]", ASSERT_NO_EXCEPTION);
 
+    ASSERT(d5);
+    ASSERT(d12);
+    ASSERT(d13);
+    ASSERT(d1s0);
+    ASSERT(d1s1);
+    ASSERT(d1s2);
+    ASSERT(d11s1);
+    ASSERT(d11s2);
     EXPECT_EQ(d11.get(), ComposedTreeTraversal::next(*d1));
     EXPECT_EQ(d111.get(), ComposedTreeTraversal::next(*d11));
     EXPECT_EQ(d2.get(), ComposedTreeTraversal::next(*d111));
