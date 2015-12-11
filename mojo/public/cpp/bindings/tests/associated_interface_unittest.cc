@@ -79,6 +79,8 @@ class IntegerSenderConnectionImpl : public IntegerSenderConnection {
     callback.Run(ptr_info.Pass());
   }
 
+  Binding<IntegerSenderConnection>* binding() { return &binding_; }
+
  private:
   Binding<IntegerSenderConnection> binding_;
 };
@@ -530,6 +532,30 @@ TEST_F(AssociatedInterfaceTest, PassAssociatedInterfaces) {
   sender1->Echo(456, [&echoed_value](int32_t value) { echoed_value = value; });
   PumpMessages();
   EXPECT_EQ(456, echoed_value);
+}
+
+TEST_F(AssociatedInterfaceTest, BindingWaitAndPauseWhenNoAssociatedInterfaces) {
+  IntegerSenderConnectionPtr connection_ptr;
+  IntegerSenderConnectionImpl connection(GetProxy(&connection_ptr));
+
+  IntegerSenderAssociatedPtr sender0;
+  connection_ptr->GetSender(
+      GetProxy(&sender0, connection_ptr.associated_group()));
+
+  EXPECT_FALSE(connection.binding()->HasAssociatedInterfaces());
+  // There are no associated interfaces running on the pipe yet. It is okay to
+  // pause.
+  connection.binding()->PauseIncomingMethodCallProcessing();
+  connection.binding()->ResumeIncomingMethodCallProcessing();
+
+  // There are no associated interfaces running on the pipe yet. It is okay to
+  // wait.
+  EXPECT_TRUE(connection.binding()->WaitForIncomingMethodCall());
+
+  // The previous wait has dispatched the GetSender request message, therefore
+  // an associated interface has been set up on the pipe. It is not allowed to
+  // wait or pause.
+  EXPECT_TRUE(connection.binding()->HasAssociatedInterfaces());
 }
 
 }  // namespace

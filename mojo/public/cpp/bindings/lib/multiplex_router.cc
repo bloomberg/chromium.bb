@@ -298,14 +298,16 @@ MultiplexRouter* MultiplexRouter::GetRouter(AssociatedGroup* associated_group) {
   return associated_group->router_.get();
 }
 
-ScopedMessagePipeHandle MultiplexRouter::PassMessagePipe() {
+bool MultiplexRouter::HasAssociatedEndpoints() const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  {
-    base::AutoLock locker(lock_);
-    DCHECK(endpoints_.empty() || (endpoints_.size() == 1 &&
-                                  ContainsKey(endpoints_, kMasterInterfaceId)));
-  }
-  return connector_.PassMessagePipe();
+  base::AutoLock locker(lock_);
+
+  if (endpoints_.size() > 1)
+    return true;
+  if (endpoints_.size() == 0)
+    return false;
+
+  return !ContainsKey(endpoints_, kMasterInterfaceId);
 }
 
 void MultiplexRouter::EnableTestingMode() {

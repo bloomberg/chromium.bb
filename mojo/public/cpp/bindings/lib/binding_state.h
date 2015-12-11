@@ -58,6 +58,8 @@ class BindingState<Interface, false> {
         [this]() { connection_error_handler_.Run(); });
   }
 
+  bool HasAssociatedInterfaces() const { return false; }
+
   void PauseIncomingMethodCallProcessing() {
     DCHECK(router_);
     router_->PauseIncomingMethodCallProcessing();
@@ -149,6 +151,25 @@ class BindingState<Interface, true> {
         [this]() { connection_error_handler_.Run(); });
   }
 
+  bool HasAssociatedInterfaces() const {
+    return router_ ? router_->HasAssociatedEndpoints() : false;
+  }
+
+  void PauseIncomingMethodCallProcessing() {
+    DCHECK(router_);
+    router_->PauseIncomingMethodCallProcessing();
+  }
+  void ResumeIncomingMethodCallProcessing() {
+    DCHECK(router_);
+    router_->ResumeIncomingMethodCallProcessing();
+  }
+
+  bool WaitForIncomingMethodCall(
+      MojoDeadline deadline = MOJO_DEADLINE_INDEFINITE) {
+    DCHECK(router_);
+    return router_->WaitForIncomingMessage(deadline);
+  }
+
   void Close() {
     DCHECK(router_);
     endpoint_client_.reset();
@@ -185,11 +206,6 @@ class BindingState<Interface, true> {
     DCHECK(is_bound());
     router_->EnableTestingMode();
   }
-
-  // Intentionally not defined:
-  // void PauseIncomingMethodCallProcessing();
-  // void ResumeIncomingMethodCallProcessing();
-  // bool WaitForIncomingMethodCall(MojoDeadline deadline);
 
  private:
   scoped_refptr<internal::MultiplexRouter> router_;

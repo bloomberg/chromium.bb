@@ -114,16 +114,19 @@ class InterfacePtr {
     internal_state_.Swap(&doomed);
   }
 
+  // Whether there are any associated interfaces running on the pipe currently.
+  bool HasAssociatedInterfaces() const {
+    return internal_state_.HasAssociatedInterfaces();
+  }
+
   // Blocks the current thread until the next incoming response callback arrives
   // or an error occurs. Returns |true| if a response arrived, or |false| in
   // case of error.
   //
-  // This method may only be called after the InterfacePtr has been bound to a
-  // message pipe.
-  //
-  // NOTE: Not supported (yet) if |Interface| has methods to pass associated
-  // interface pointers/requests.
+  // This method may only be called if the InterfacePtr has been bound to a
+  // message pipe and there are no associated interfaces running.
   bool WaitForIncomingResponse() {
+    CHECK(!HasAssociatedInterfaces());
     return internal_state_.WaitForIncomingResponse();
   }
 
@@ -145,11 +148,18 @@ class InterfacePtr {
   // to setup an InterfacePtr again. This method may be used to move the proxy
   // to a different thread (see class comments for details).
   //
-  // It is an error to call PassInterface() while there are pending responses.
-  // TODO: fix this restriction, it's not always obvious when there is a
-  // pending response.
+  // It is an error to call PassInterface() while:
+  //   - there are pending responses; or
+  //     TODO: fix this restriction, it's not always obvious when there is a
+  //     pending response.
+  //   - there are associated interfaces running.
+  //     TODO(yzshen): For now, users need to make sure there is no one holding
+  //     on to associated interface endpoint handles at both sides of the
+  //     message pipe in order to call this method. We need a way to forcefully
+  //     invalidate associated interface endpoint handles.
   InterfacePtrInfo<Interface> PassInterface() {
-    DCHECK(!internal_state_.has_pending_callbacks());
+    CHECK(!HasAssociatedInterfaces());
+    CHECK(!internal_state_.has_pending_callbacks());
     State state;
     internal_state_.Swap(&state);
 

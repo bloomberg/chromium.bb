@@ -104,12 +104,11 @@ class MultiplexRouter
   }
 
   // Extracts the underlying message pipe.
-  //
-  // TODO(yzshen): For now, users need to make sure there is no one holding on
-  // to associated interface endpoint handles at both sides of the message pipe
-  // in order to call this method. We need a way to forcefully invalidate
-  // associated interface endpoint handles.
-  ScopedMessagePipeHandle PassMessagePipe();
+  ScopedMessagePipeHandle PassMessagePipe() {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK(!HasAssociatedEndpoints());
+    return connector_.PassMessagePipe();
+  }
 
   // Blocks the current thread until the first incoming message, or |deadline|.
   bool WaitForIncomingMessage(MojoDeadline deadline) {
@@ -126,6 +125,9 @@ class MultiplexRouter
     DCHECK(thread_checker_.CalledOnValidThread());
     connector_.ResumeIncomingMethodCallProcessing();
   }
+
+  // Whether there are any associated interfaces running currently.
+  bool HasAssociatedEndpoints() const;
 
   // Sets this object to testing mode.
   // In testing mode, the object doesn't disconnect the underlying message pipe

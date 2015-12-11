@@ -137,19 +137,23 @@ class Binding {
     Bind(request.PassMessagePipe(), waiter);
   }
 
+  // Whether there are any associated interfaces running on the pipe currently.
+  bool HasAssociatedInterfaces() const {
+    return internal_state_.HasAssociatedInterfaces();
+  }
+
   // Stops processing incoming messages until
   // ResumeIncomingMethodCallProcessing(), or WaitForIncomingMethodCall().
   // Outgoing messages are still sent.
   //
   // No errors are detected on the message pipe while paused.
   //
-  // NOTE: Not supported (yet) if |Interface| has methods to pass associated
-  // interface pointers/requests.
+  // This method may only be called if the object has been bound to a message
+  // pipe and there are no associated interfaces running.
   void PauseIncomingMethodCallProcessing() {
+    CHECK(!HasAssociatedInterfaces());
     internal_state_.PauseIncomingMethodCallProcessing();
   }
-  // NOTE: Not supported (yet) if |Interface| has methods to pass associated
-  // interface pointers/requests.
   void ResumeIncomingMethodCallProcessing() {
     internal_state_.ResumeIncomingMethodCallProcessing();
   }
@@ -158,10 +162,11 @@ class Binding {
   // bound message pipe, the deadline is exceeded, or an error occurs. Returns
   // true if a method was successfully read and dispatched.
   //
-  // NOTE: Not supported (yet) if |Interface| has methods to pass associated
-  // interface pointers/requests.
+  // This method may only be called if the object has been bound to a message
+  // pipe and there are no associated interfaces running.
   bool WaitForIncomingMethodCall(
       MojoDeadline deadline = MOJO_DEADLINE_INDEFINITE) {
+    CHECK(!HasAssociatedInterfaces());
     return internal_state_.WaitForIncomingMethodCall(deadline);
   }
 
@@ -173,7 +178,18 @@ class Binding {
   // used in another context, such as on another thread or with a different
   // implementation. Put this object into a state where it can be rebound to a
   // new pipe.
-  InterfaceRequest<Interface> Unbind() { return internal_state_.Unbind(); }
+  //
+  // This method may only be called if the object has been bound to a message
+  // pipe and there are no associated interfaces running.
+  //
+  // TODO(yzshen): For now, users need to make sure there is no one holding
+  // on to associated interface endpoint handles at both sides of the
+  // message pipe in order to call this method. We need a way to forcefully
+  // invalidate associated interface endpoint handles.
+  InterfaceRequest<Interface> Unbind() {
+    CHECK(!HasAssociatedInterfaces());
+    return internal_state_.Unbind();
+  }
 
   // Sets an error handler that will be called if a connection error occurs on
   // the bound message pipe.

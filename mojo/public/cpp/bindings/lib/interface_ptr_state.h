@@ -107,6 +107,8 @@ class InterfacePtrState<Interface, false> {
     version_ = info.version();
   }
 
+  bool HasAssociatedInterfaces() const { return false; }
+
   bool WaitForIncomingResponse() {
     ConfigureProxyIfNecessary();
 
@@ -260,6 +262,17 @@ class InterfacePtrState<Interface, true> {
     version_ = info.version();
   }
 
+  bool HasAssociatedInterfaces() const {
+    return router_ ? router_->HasAssociatedEndpoints() : false;
+  }
+
+  bool WaitForIncomingResponse() {
+    ConfigureProxyIfNecessary();
+
+    DCHECK(router_);
+    return router_->WaitForIncomingMessage(MOJO_DEADLINE_INDEFINITE);
+  }
+
   // After this method is called, the object is in an invalid state and
   // shouldn't be reused.
   InterfacePtrInfo<Interface> PassInterface() {
@@ -296,9 +309,6 @@ class InterfacePtrState<Interface, true> {
     ConfigureProxyIfNecessary();
     router_->EnableTestingMode();
   }
-
-  // Intentionally not defined:
-  // bool WaitForIncomingResponse();
 
  private:
   using Proxy = typename Interface::Proxy_;
