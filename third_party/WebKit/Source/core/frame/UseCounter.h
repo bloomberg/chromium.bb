@@ -939,6 +939,14 @@ public:
         V8CSSFontFaceRule_Style_AttributeGetter = 1082,
         SelectionCollapseNull = 1083,
         SelectionSetBaseAndExtentNull = 1084,
+        V8SVGSVGElement_CreateSVGNumber_Method = 1085,
+        V8SVGSVGElement_CreateSVGLength_Method = 1086,
+        V8SVGSVGElement_CreateSVGAngle_Method = 1087,
+        V8SVGSVGElement_CreateSVGPoint_Method = 1088,
+        V8SVGSVGElement_CreateSVGMatrix_Method = 1089,
+        V8SVGSVGElement_CreateSVGRect_Method = 1090,
+        V8SVGSVGElement_CreateSVGTransform_Method = 1091,
+        V8SVGSVGElement_CreateSVGTransformFromMatrix_Method = 1092,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

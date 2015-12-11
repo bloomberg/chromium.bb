@@ -64070,6 +64070,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1082" label="V8CSSFontFaceRule_Style_AttributeGetter"/>
   <int value="1083" label="SelectionCollapseNull"/>
   <int value="1084" label="SelectionSetBaseAndExtentNull"/>
+  <int value="1085" label="V8SVGSVGElement_CreateSVGNumber_Method"/>
+  <int value="1086" label="V8SVGSVGElement_CreateSVGLength_Method"/>
+  <int value="1087" label="V8SVGSVGElement_CreateSVGAngle_Method"/>
+  <int value="1088" label="V8SVGSVGElement_CreateSVGPoint_Method"/>
+  <int value="1089" label="V8SVGSVGElement_CreateSVGMatrix_Method"/>
+  <int value="1090" label="V8SVGSVGElement_CreateSVGRect_Method"/>
+  <int value="1091" label="V8SVGSVGElement_CreateSVGTransform_Method"/>
+  <int value="1092"
+      label="V8SVGSVGElement_CreateSVGTransformFromMatrix_Method"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

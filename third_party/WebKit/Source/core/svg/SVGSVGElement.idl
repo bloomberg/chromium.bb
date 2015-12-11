@@ -55,15 +55,15 @@ interface SVGSVGElement : SVGGraphicsElement {
     boolean checkIntersection(SVGElement element, SVGRect rect);
     boolean checkEnclosure(SVGElement element, SVGRect rect);
     void deselectAll();
-    [MeasureAs=SVG1DOM] SVGNumber createSVGNumber();
-    [MeasureAs=SVG1DOM] SVGLength createSVGLength();
-    [MeasureAs=SVG1DOM] SVGAngle createSVGAngle();
+    [Measure] SVGNumber createSVGNumber();
+    [Measure] SVGLength createSVGLength();
+    [Measure] SVGAngle createSVGAngle();
     // TODO(philipj): SVGPoint/Matrix/Rect should be DOMPoint/Matrix/Rect.
-    [MeasureAs=SVG1DOM] SVGPoint createSVGPoint();
-    [MeasureAs=SVG1DOM] SVGMatrix createSVGMatrix();
-    [MeasureAs=SVG1DOM] SVGRect createSVGRect();
-    [MeasureAs=SVG1DOM] SVGTransform createSVGTransform();
-    [MeasureAs=SVG1DOM] SVGTransform createSVGTransformFromMatrix(SVGMatrix matrix);
+    [Measure] SVGPoint createSVGPoint();
+    [Measure] SVGMatrix createSVGMatrix();
+    [Measure] SVGRect createSVGRect();
+    [Measure] SVGTransform createSVGTransform();
+    [Measure] SVGTransform createSVGTransformFromMatrix(SVGMatrix matrix);
 
     // TODO(philipj): The following was part of SVG 1.1:
     // http://www.w3.org/TR/SVG11/struct.html#InterfaceSVGSVGElement
