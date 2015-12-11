@@ -884,6 +884,8 @@ void HttpServerPropertiesManager::UpdatePrefsFromCacheOnNetworkThread(
       new AlternativeServiceMap(kMaxAlternateProtocolHostsToPersist);
   const AlternativeServiceMap& map =
       http_server_properties_impl_->alternative_service_map();
+  UMA_HISTOGRAM_COUNTS("Net.CountOfAlternateProtocolServers.Memory",
+                       map.size());
   count = 0;
   typedef std::map<std::string, bool> CanonicalHostPersistedMap;
   CanonicalHostPersistedMap persisted_map;

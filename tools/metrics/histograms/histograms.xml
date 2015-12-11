@@ -22825,24 +22825,34 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Net.CountOfAlternateProtocolServers">
+<histogram name="Net.CountOfAlternateProtocolServers" units="servers">
   <owner>bnc@chromium.org</owner>
   <owner>rch@chromium.org</owner>
   <owner>rtenneti@chromium.org</owner>
   <summary>
-    The total number of severs to which alternative protocol was used. This
-    counts the number of servers persisted to prefs file.
+    The total number of servers (HostPortPairs) to which alternative protocol
+    was used. This counts the number of servers persisted to prefs file.
   </summary>
 </histogram>
 
-<histogram name="Net.CountOfPipelineCapableServers">
+<histogram name="Net.CountOfAlternateProtocolServers.Memory" units="servers">
+  <owner>bnc@chromium.org</owner>
+  <owner>rch@chromium.org</owner>
+  <owner>rtenneti@chromium.org</owner>
+  <summary>
+    The total number of servers (HostPortPairs in memory) to which alternative
+    protocol was used.
+  </summary>
+</histogram>
+
+<histogram name="Net.CountOfPipelineCapableServers" units="servers">
   <obsolete>
     Deprecated 05/2014, related field trial already long expired.
   </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
-    The total number of severs that support HTTP pipelining. This counts the
-    number of servers persisted to prefs file.
+    The total number of servers (HostPortPairs) that support HTTP pipelining.
+    This counts the number of servers persisted to prefs file.
   </summary>
 </histogram>
 
