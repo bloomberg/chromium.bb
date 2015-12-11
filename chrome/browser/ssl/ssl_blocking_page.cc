@@ -7,20 +7,12 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
-#include "base/i18n/rtl.h"
-#include "base/i18n/time_formatting.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
-#include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_piece.h"
-#include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/interstitials/chrome_controller_client.h"
 #include "chrome/browser/interstitials/chrome_metrics_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
@@ -28,44 +20,28 @@
 #include "chrome/browser/ssl/ssl_cert_reporter.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/grit/chromium_strings.h"
-#include "chrome/grit/generated_resources.h"
-#include "components/google/core/browser/google_util.h"
 #include "components/security_interstitials/core/controller_client.h"
-#include "components/ssl_errors/error_classification.h"
-#include "components/ssl_errors/error_info.h"
-#include "content/public/browser/browser_thread.h"
+#include "components/security_interstitials/core/metrics_helper.h"
+#include "components/security_interstitials/core/ssl_error_ui.h"
 #include "content/public/browser/cert_store.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/interstitial_page_delegate.h"
-#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/signed_certificate_timestamp_store.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/common/ssl_status.h"
-#include "grit/browser_resources.h"
-#include "grit/components_strings.h"
-#include "net/base/hash_value.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
-#include "ui/base/l10n/l10n_util.h"
 
-using base::ASCIIToUTF16;
 using base::TimeTicks;
 using content::InterstitialPage;
 using content::InterstitialPageDelegate;
-using content::NavigationController;
 using content::NavigationEntry;
+using security_interstitials::SSLErrorUI;
 
 namespace {
-
-// URL for help page.
-const char kHelpURL[] = "https://support.google.com/chrome/answer/4454607";
 
 // Constants for the Experience Sampling instrumentation.
 const char kEventNameBase[] = "ssl_interstitial_";
@@ -84,6 +60,16 @@ enum SSLExpirationAndDecision {
 // Rappor prefix, which is used for both overridable and non-overridable
 // interstitials so we don't leak the "overridable" bit.
 const char kSSLRapporPrefix[] = "ssl2";
+
+std::string GetSamplingEventName(const bool overridable, const int cert_error) {
+  std::string event_name(kEventNameBase);
+  if (overridable)
+    event_name.append(kEventOverridable);
+  else
+    event_name.append(kEventNotOverridable);
+  event_name.append(net::ErrorToString(cert_error));
+  return event_name;
+}
 
 void RecordSSLExpirationPageEventState(bool expired_but_previously_allowed,
                                        bool proceed,
@@ -129,37 +115,48 @@ SSLBlockingPage::SSLBlockingPage(content::WebContents* web_contents,
                                  const base::Callback<void(bool)>& callback)
     : SecurityInterstitialPage(web_contents, request_url),
       callback_(callback),
-      cert_error_(cert_error),
       ssl_info_(ssl_info),
       overridable_(IsOverridable(
           options_mask,
           Profile::FromBrowserContext(web_contents->GetBrowserContext()))),
-      danger_overridable_(DoesPolicyAllowDangerOverride(
-          Profile::FromBrowserContext(web_contents->GetBrowserContext()))),
-      strict_enforcement_((options_mask & STRICT_ENFORCEMENT) != 0),
       expired_but_previously_allowed_(
-          (options_mask & EXPIRED_BUT_PREVIOUSLY_ALLOWED) != 0),
-      time_triggered_(time_triggered) {
+          (options_mask & SSLErrorUI::EXPIRED_BUT_PREVIOUSLY_ALLOWED) != 0),
+      controller_(new ChromeControllerClient(web_contents)) {
+  // Get the language and override prefs for the SSLErrorUI.
+  std::string languages;
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  if (profile) {
+    languages = profile->GetPrefs()->GetString(prefs::kAcceptLanguages);
+    if (!profile->GetPrefs()->GetBoolean(prefs::kSSLErrorOverrideAllowed)) {
+      options_mask |= SSLErrorUI::HARD_OVERRIDE_DISABLED;
+    }
+  }
+  if (overridable_)
+    options_mask |= SSLErrorUI::SOFT_OVERRIDE_ENABLED;
+  else
+    options_mask &= ~SSLErrorUI::SOFT_OVERRIDE_ENABLED;
+
+  // Set up the metrics helper for the SSLErrorUI.
   security_interstitials::MetricsHelper::ReportDetails reporting_info;
-  reporting_info.metric_prefix = GetUmaHistogramPrefix();
+  reporting_info.metric_prefix =
+      overridable_ ? "ssl_overridable" : "ssl_nonoverridable";
   reporting_info.rappor_prefix = kSSLRapporPrefix;
   reporting_info.rappor_report_type = rappor::UMA_RAPPOR_TYPE;
-  scoped_ptr<ChromeMetricsHelper> chrome_metrics_helper(new ChromeMetricsHelper(
-      web_contents, request_url, reporting_info, GetSamplingEventName()));
+  ChromeMetricsHelper* chrome_metrics_helper =
+      new ChromeMetricsHelper(web_contents, request_url, reporting_info,
+                              GetSamplingEventName(overridable_, cert_error));
   chrome_metrics_helper->StartRecordingCaptivePortalMetrics(overridable_);
-  set_metrics_helper(chrome_metrics_helper.Pass());
-  metrics_helper()->RecordUserDecision(
-      security_interstitials::MetricsHelper::SHOW);
-  metrics_helper()->RecordUserInteraction(
-      security_interstitials::MetricsHelper::TOTAL_VISITS);
+  controller_->set_metrics_helper(make_scoped_ptr(chrome_metrics_helper));
 
   cert_report_helper_.reset(new CertReportHelper(
       ssl_cert_reporter.Pass(), web_contents, request_url, ssl_info,
       certificate_reporting::ErrorReport::INTERSTITIAL_SSL, overridable_,
-      metrics_helper()));
+      controller_->metrics_helper()));
 
-  ssl_errors::RecordUMAStatistics(overridable_, time_triggered_, request_url,
-                                  cert_error_, *ssl_info_.cert.get());
+  ssl_error_ui_.reset(new SSLErrorUI(request_url, cert_error, ssl_info,
+                                     options_mask, time_triggered, languages,
+                                     controller_.get()));
 
   // Creating an interstitial without showing (e.g. from chrome://interstitials)
   // it leaks memory, so don't create it here.
@@ -174,105 +171,22 @@ InterstitialPageDelegate::TypeID SSLBlockingPage::GetTypeForTesting() const {
 }
 
 SSLBlockingPage::~SSLBlockingPage() {
-  metrics_helper()->RecordShutdownMetrics();
   if (!callback_.is_null()) {
     // The page is closed without the user having chosen what to do, default to
     // deny.
-    metrics_helper()->RecordUserDecision(
-        security_interstitials::MetricsHelper::DONT_PROCEED);
     RecordSSLExpirationPageEventState(
         expired_but_previously_allowed_, false, overridable_);
     NotifyDenyCertificate();
   }
 }
 
+void SSLBlockingPage::AfterShow() {
+  controller_->set_interstitial_page(interstitial_page());
+}
+
 void SSLBlockingPage::PopulateInterstitialStrings(
     base::DictionaryValue* load_time_data) {
-  CHECK(load_time_data);
-  base::string16 url(GetFormattedHostName());
-  // Shared values for both the overridable and non-overridable versions.
-  load_time_data->SetString("type", "SSL");
-  load_time_data->SetBoolean("bad_clock", false);
-
-  // Shared UI configuration for all SSL interstitials.
-  load_time_data->SetString("errorCode", net::ErrorToString(cert_error_));
-  load_time_data->SetString(
-      "openDetails",
-      l10n_util::GetStringUTF16(IDS_SSL_OPEN_DETAILS_BUTTON));
-  load_time_data->SetString(
-      "closeDetails",
-      l10n_util::GetStringUTF16(IDS_SSL_CLOSE_DETAILS_BUTTON));
-
-  load_time_data->SetString("tabTitle",
-                            l10n_util::GetStringUTF16(IDS_SSL_V2_TITLE));
-  load_time_data->SetString("heading",
-                            l10n_util::GetStringUTF16(IDS_SSL_V2_HEADING));
-  load_time_data->SetString(
-      "primaryParagraph",
-      l10n_util::GetStringFUTF16(IDS_SSL_V2_PRIMARY_PARAGRAPH, url));
-
-  if (overridable_) {
-    load_time_data->SetBoolean("overridable", true);
-
-    ssl_errors::ErrorInfo error_info = ssl_errors::ErrorInfo::CreateError(
-        ssl_errors::ErrorInfo::NetErrorToErrorType(cert_error_),
-        ssl_info_.cert.get(), request_url());
-    load_time_data->SetString("explanationParagraph", error_info.details());
-    load_time_data->SetString(
-        "primaryButtonText",
-        l10n_util::GetStringUTF16(IDS_SSL_OVERRIDABLE_SAFETY_BUTTON));
-    load_time_data->SetString(
-        "finalParagraph",
-        l10n_util::GetStringFUTF16(IDS_SSL_OVERRIDABLE_PROCEED_PARAGRAPH, url));
-  } else {
-    load_time_data->SetBoolean("overridable", false);
-
-    ssl_errors::ErrorInfo::ErrorType type =
-        ssl_errors::ErrorInfo::NetErrorToErrorType(cert_error_);
-    load_time_data->SetString(
-        "explanationParagraph",
-        l10n_util::GetStringFUTF16(IDS_SSL_NONOVERRIDABLE_MORE, url));
-    load_time_data->SetString("primaryButtonText",
-                              l10n_util::GetStringUTF16(IDS_SSL_RELOAD));
-    // Customize the help link depending on the specific error type.
-    // Only mark as HSTS if none of the more specific error types apply,
-    // and use INVALID as a fallback if no other string is appropriate.
-    load_time_data->SetInteger("errorType", type);
-    int help_string = IDS_SSL_NONOVERRIDABLE_INVALID;
-    switch (type) {
-      case ssl_errors::ErrorInfo::CERT_REVOKED:
-        help_string = IDS_SSL_NONOVERRIDABLE_REVOKED;
-        break;
-      case ssl_errors::ErrorInfo::CERT_PINNED_KEY_MISSING:
-        help_string = IDS_SSL_NONOVERRIDABLE_PINNED;
-        break;
-      case ssl_errors::ErrorInfo::CERT_INVALID:
-        help_string = IDS_SSL_NONOVERRIDABLE_INVALID;
-        break;
-      default:
-        if (strict_enforcement_)
-          help_string = IDS_SSL_NONOVERRIDABLE_HSTS;
-    }
-    load_time_data->SetString("finalParagraph",
-                              l10n_util::GetStringFUTF16(help_string, url));
-  }
-
-  // Set debugging information at the bottom of the warning.
-  load_time_data->SetString(
-      "subject", ssl_info_.cert->subject().GetDisplayName());
-  load_time_data->SetString(
-      "issuer", ssl_info_.cert->issuer().GetDisplayName());
-  load_time_data->SetString(
-      "expirationDate",
-      base::TimeFormatShortDate(ssl_info_.cert->valid_expiry()));
-  load_time_data->SetString(
-      "currentDate", base::TimeFormatShortDate(time_triggered_));
-  std::vector<std::string> encoded_chain;
-  ssl_info_.cert->GetPEMEncodedChain(
-      &encoded_chain);
-  load_time_data->SetString(
-      "pem", base::JoinString(encoded_chain, base::StringPiece()));
-
+  ssl_error_ui_->PopulateStringsForHTML(load_time_data);
   cert_report_helper_->PopulateExtendedReportingOption(load_time_data);
 }
 
@@ -303,7 +217,6 @@ void SSLBlockingPage::SetSSLCertReporterForTesting(
 }
 
 // This handles the commands sent from the interstitial JavaScript.
-// DO NOT reorder or change this logic without also changing the JavaScript!
 void SSLBlockingPage::CommandReceived(const std::string& command) {
   if (command == "\"pageLoadComplete\"") {
     // content::WaitForRenderFrameReady sends this message when the page
@@ -314,54 +227,8 @@ void SSLBlockingPage::CommandReceived(const std::string& command) {
   int cmd = 0;
   bool retval = base::StringToInt(command, &cmd);
   DCHECK(retval);
-  switch (cmd) {
-    case security_interstitials::CMD_DONT_PROCEED: {
-      interstitial_page()->DontProceed();
-      break;
-    }
-    case security_interstitials::CMD_PROCEED: {
-      if (danger_overridable_) {
-        interstitial_page()->Proceed();
-      }
-      break;
-    }
-    case security_interstitials::CMD_DO_REPORT: {
-      SetReportingPreference(true);
-      break;
-    }
-    case security_interstitials::CMD_DONT_REPORT: {
-      SetReportingPreference(false);
-      break;
-    }
-    case security_interstitials::CMD_SHOW_MORE_SECTION: {
-      metrics_helper()->RecordUserInteraction(
-          security_interstitials::MetricsHelper::SHOW_ADVANCED);
-      break;
-    }
-    case security_interstitials::CMD_OPEN_HELP_CENTER: {
-      metrics_helper()->RecordUserInteraction(
-          security_interstitials::MetricsHelper::SHOW_LEARN_MORE);
-      content::NavigationController::LoadURLParams help_page_params(
-          google_util::AppendGoogleLocaleParam(
-              GURL(kHelpURL), g_browser_process->GetApplicationLocale()));
-      web_contents()->GetController().LoadURLWithParams(help_page_params);
-      break;
-    }
-    case security_interstitials::CMD_RELOAD: {
-      metrics_helper()->RecordUserInteraction(
-          security_interstitials::MetricsHelper::RELOAD);
-      // The interstitial can't refresh itself.
-      web_contents()->GetController().Reload(true);
-      break;
-    }
-    case security_interstitials::CMD_OPEN_REPORTING_PRIVACY:
-      OpenExtendedReportingPrivacyPolicy();
-      break;
-    case security_interstitials::CMD_OPEN_DATE_SETTINGS:
-    case security_interstitials::CMD_OPEN_DIAGNOSTIC:
-      // Commands not supported by the SSL interstitial.
-      NOTREACHED() << "Unexpected command: " << command;
-  }
+  ssl_error_ui_->HandleCommand(
+      static_cast<security_interstitials::SecurityInterstitialCommands>(cmd));
 }
 
 void SSLBlockingPage::OverrideRendererPrefs(
@@ -373,31 +240,25 @@ void SSLBlockingPage::OverrideRendererPrefs(
 }
 
 void SSLBlockingPage::OnProceed() {
-  metrics_helper()->RecordUserDecision(
-      security_interstitials::MetricsHelper::PROCEED);
-
-  // Finish collecting information about invalid certificates, if the
-  // user opted in to.
+  // Finish collecting metrics, if the user opted into it.
   cert_report_helper_->FinishCertCollection(
       certificate_reporting::ErrorReport::USER_PROCEEDED);
-
   RecordSSLExpirationPageEventState(
       expired_but_previously_allowed_, true, overridable_);
+
   // Accepting the certificate resumes the loading of the page.
-  NotifyAllowCertificate();
+  DCHECK(!callback_.is_null());
+  callback_.Run(true);
+  callback_.Reset();
 }
 
 void SSLBlockingPage::OnDontProceed() {
-  metrics_helper()->RecordUserDecision(
-      security_interstitials::MetricsHelper::DONT_PROCEED);
-
-  // Finish collecting information about invalid certificates, if the
-  // user opted in to.
+  // Finish collecting metrics, if the user opted into it.
   cert_report_helper_->FinishCertCollection(
       certificate_reporting::ErrorReport::USER_DID_NOT_PROCEED);
-
   RecordSSLExpirationPageEventState(
       expired_but_previously_allowed_, false, overridable_);
+
   NotifyDenyCertificate();
 }
 
@@ -412,39 +273,12 @@ void SSLBlockingPage::NotifyDenyCertificate() {
   callback_.Reset();
 }
 
-void SSLBlockingPage::NotifyAllowCertificate() {
-  DCHECK(!callback_.is_null());
-
-  callback_.Run(true);
-  callback_.Reset();
-}
-
-std::string SSLBlockingPage::GetUmaHistogramPrefix() const {
-  return overridable_ ? "ssl_overridable" : "ssl_nonoverridable";
-}
-
-std::string SSLBlockingPage::GetSamplingEventName() const {
-  std::string event_name(kEventNameBase);
-  if (overridable_)
-    event_name.append(kEventOverridable);
-  else
-    event_name.append(kEventNotOverridable);
-  event_name.append(net::ErrorToString(cert_error_));
-  return event_name;
-}
-
 // static
 bool SSLBlockingPage::IsOverridable(int options_mask,
                                     const Profile* const profile) {
   const bool is_overridable =
-      (options_mask & SSLBlockingPage::OVERRIDABLE) &&
-      !(options_mask & SSLBlockingPage::STRICT_ENFORCEMENT) &&
+      (options_mask & SSLErrorUI::SOFT_OVERRIDE_ENABLED) &&
+      !(options_mask & SSLErrorUI::STRICT_ENFORCEMENT) &&
       profile->GetPrefs()->GetBoolean(prefs::kSSLErrorOverrideAllowed);
   return is_overridable;
-}
-
-// static
-bool SSLBlockingPage::DoesPolicyAllowDangerOverride(
-    const Profile* const profile) {
-  return profile->GetPrefs()->GetBoolean(prefs::kSSLErrorOverrideAllowed);
 }

@@ -15,6 +15,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "components/grit/components_resources.h"
+#include "components/security_interstitials/core/ssl_error_ui.h"
 #include "content/public/browser/interstitial_page_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -118,9 +119,9 @@ SSLBlockingPage* CreateSSLBlockingPage(content::WebContents* web_contents) {
   // This delegate doesn't create an interstitial.
   int options_mask = 0;
   if (overridable)
-    options_mask |= SSLBlockingPage::OVERRIDABLE;
+    options_mask |= security_interstitials::SSLErrorUI::SOFT_OVERRIDE_ENABLED;
   if (strict_enforcement)
-    options_mask |= SSLBlockingPage::STRICT_ENFORCEMENT;
+    options_mask |= security_interstitials::SSLErrorUI::STRICT_ENFORCEMENT;
   return new SSLBlockingPage(web_contents, cert_error, ssl_info, request_url,
                              options_mask, time_triggered_, nullptr,
                              base::Callback<void(bool)>());
@@ -166,9 +167,9 @@ BadClockBlockingPage* CreateBadClockBlockingPage(
   // This delegate doesn't create an interstitial.
   int options_mask = 0;
   if (overridable)
-    options_mask |= SSLBlockingPage::OVERRIDABLE;
+    options_mask |= security_interstitials::SSLErrorUI::SOFT_OVERRIDE_ENABLED;
   if (strict_enforcement)
-    options_mask |= SSLBlockingPage::STRICT_ENFORCEMENT;
+    options_mask |= security_interstitials::SSLErrorUI::STRICT_ENFORCEMENT;
   return new BadClockBlockingPage(web_contents, cert_error, ssl_info,
                                   request_url, time_triggered_, nullptr,
                                   base::Callback<void(bool)>());

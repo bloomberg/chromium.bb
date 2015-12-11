@@ -69,12 +69,18 @@ class ControllerClient {
   // Close the error and go back to the previous page.
   virtual void GoBack() = 0;
 
+  // Close the error and proceed to the blocked page.
+  virtual void Proceed() = 0;
+
+  // Reload the blocked page to see if it succeeds now.
+  virtual void Reload() = 0;
+
   MetricsHelper* metrics_helper() const;
   void set_metrics_helper(scoped_ptr<MetricsHelper> metrics_helper);
 
- protected:
   virtual void OpenUrlInCurrentTab(const GURL& url) = 0;
 
+ protected:
   virtual const std::string& GetApplicationLocale() = 0;
   virtual PrefService* GetPrefService() = 0;
   virtual const std::string GetExtendedReportingPrefName() = 0;

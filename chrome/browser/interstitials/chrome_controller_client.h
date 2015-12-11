@@ -25,10 +25,12 @@ class ChromeControllerClient : public security_interstitials::ControllerClient {
   bool CanLaunchDateAndTimeSettings() override;
   void LaunchDateAndTimeSettings() override;
   void GoBack() override;
+  void Proceed() override;
+  void Reload() override;
+  void OpenUrlInCurrentTab(const GURL& url) override;
 
  protected:
   // security_interstitials::ControllerClient overrides
-  void OpenUrlInCurrentTab(const GURL& url) override;
   const std::string& GetApplicationLocale() override;
   PrefService* GetPrefService() override;
   const std::string GetExtendedReportingPrefName() override;

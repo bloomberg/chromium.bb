@@ -370,6 +370,16 @@ class SSLUITest
     observer.Wait();
   }
 
+  void SendInterstitialCommand(WebContents* tab, std::string command) {
+    InterstitialPage* interstitial_page = tab->GetInterstitialPage();
+    ASSERT_TRUE(interstitial_page);
+    ASSERT_EQ(SSLBlockingPage::kTypeForTesting,
+              interstitial_page->GetDelegateForTesting()->GetTypeForTesting());
+    SSLBlockingPage* ssl_interstitial = static_cast<SSLBlockingPage*>(
+        interstitial_page->GetDelegateForTesting());
+    ssl_interstitial->CommandReceived(command);
+  }
+
   bool IsShowingWebContentsModalDialog() const {
     return WebContentsModalDialogManager::FromWebContents(
         browser()->tab_strip_model()->GetActiveWebContents())->
@@ -706,8 +716,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestBrokenHTTPSMetricsReporting_Proceed) {
       security_interstitials::MetricsHelper::TOTAL_VISITS, 1);
 
   // Decision should be recorded.
-  ProceedThroughInterstitial(
-      browser()->tab_strip_model()->GetActiveWebContents());
+  SendInterstitialCommand(browser()->tab_strip_model()->GetActiveWebContents(),
+                          "1");
   histograms.ExpectTotalCount(decision_histogram, 2);
   histograms.ExpectBucketCount(
       decision_histogram, security_interstitials::MetricsHelper::PROCEED, 1);
@@ -743,11 +753,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestBrokenHTTPSMetricsReporting_DontProceed) {
       security_interstitials::MetricsHelper::TOTAL_VISITS, 1);
 
   // Decision should be recorded.
-  InterstitialPage* interstitial_page = browser()
-                                            ->tab_strip_model()
-                                            ->GetActiveWebContents()
-                                            ->GetInterstitialPage();
-  interstitial_page->DontProceed();
+  SendInterstitialCommand(browser()->tab_strip_model()->GetActiveWebContents(),
+                          "0");
   histograms.ExpectTotalCount(decision_histogram, 2);
   histograms.ExpectBucketCount(
       decision_histogram, security_interstitials::MetricsHelper::DONT_PROCEED,

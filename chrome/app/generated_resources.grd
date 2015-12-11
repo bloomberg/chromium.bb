@@ -9095,39 +9095,6 @@ I don't think this site should be blocked!
         You can <ph name="BEGIN_ERROR_LINK">&lt;a href="#" id="report-error-link"&gt;</ph>report a detection problem<ph name="END_ERROR_LINK">&lt;/a&gt;</ph> or, if you understand the risks to your security, <ph name="BEGIN_LINK">&lt;a href="#" id="proceed-link"&gt;</ph>visit this unsafe site<ph name="END_LINK">&lt;/a&gt;</ph>.
       </message>
 
-      <!-- SSL Interstitial V2 -->
-      <message name="IDS_SSL_V2_TITLE" desc="The tab title for the SSL interstitial.">
-        Privacy error
-      </message>
-      <message name="IDS_SSL_V2_HEADING" desc="The large heading at the top of the SSL interstitial.">
-        Your connection is not private
-      </message>
-      <message name="IDS_SSL_V2_PRIMARY_PARAGRAPH" desc="The primary explanatory paragraph for the SSL interstitial.">
-        Attackers might be trying to steal your information from <ph name="BEGIN_BOLD">&lt;strong&gt;</ph><ph name="SITE">$1<ex>google.com</ex></ph><ph name="END_BOLD">&lt;/strong&gt;</ph> (for example, passwords, messages, or credit cards).
-      </message>
-
-      <!-- SSL Interstitial V2: Overridable -->
-      <message name="IDS_SSL_OVERRIDABLE_SAFETY_BUTTON" desc="The text for the button that takes the user back to the previous page.">
-        Back to safety
-      </message>
-      <message name="IDS_SSL_OVERRIDABLE_PROCEED_PARAGRAPH" desc="The text for the paragraph at the bottom with the proceed link.">
-        <ph name="BEGIN_LINK">&lt;a href="#" id="proceed-link"&gt;</ph>Proceed to <ph name="SITE">$1<ex>example.com</ex></ph> (unsafe)<ph name="END_LINK">&lt;/a&gt;</ph>
-      </message>
-
-      <!-- SSL Interstitial V2: Non-overridable -->
-      <message name="IDS_SSL_RELOAD" desc="The text for the button that reloads the page.">
-        Reload
-      </message>
-      <message name="IDS_SSL_NONOVERRIDABLE_PINNED" desc="A sentence to explain why the user can't proceed, plus a link to a help page about certificate pinning.">
-      You cannot visit <ph name="SITE">$1<ex>google.com</ex></ph> right now because the website <ph name="BEGIN_LINK">&lt;a href="#" id="help-link"&gt;</ph>uses certificate pinning<ph name="END_LINK">&lt;/a&gt;</ph>. Network errors and attacks are usually temporary, so this page will probably work later.
-      </message>
-      <message name="IDS_SSL_NONOVERRIDABLE_HSTS" desc="A sentence to explain why the user can't proceed, plus a link to a help page about HSTS.">
-      You cannot visit <ph name="SITE">$1<ex>google.com</ex></ph> right now because the website <ph name="BEGIN_LINK">&lt;a href="#" id="help-link"&gt;</ph>uses HSTS<ph name="END_LINK">&lt;/a&gt;</ph>. Network errors and attacks are usually temporary, so this page will probably work later.
-      </message>
-      <message name="IDS_SSL_NONOVERRIDABLE_REVOKED" desc="A sentence to explain why the user can't proceed, plus a link to a help page about certificate revocation.">
-      You cannot visit <ph name="SITE">$1<ex>google.com</ex></ph> right now because <ph name="BEGIN_LINK">&lt;a href="#" id="help-link"&gt;</ph>this certificate has been revoked<ph name="END_LINK">&lt;/a&gt;</ph>. Network errors and attacks are usually temporary, so this page will probably work later.
-      </message>
-
       <!-- Captive portal interstitial -->
       <message name="IDS_CAPTIVE_PORTAL_HEADING_WIRED" desc="Heading in the error page when a secure request is blocked because a captive portal is manipulating a wired connection (e.g. ethernet)">
         Connect to network

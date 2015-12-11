@@ -117,6 +117,7 @@
 #include "components/net_log/chrome_net_log.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/rappor/rappor_utils.h"
+#include "components/security_interstitials/core/ssl_error_ui.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/startup_metric_utils/browser/startup_metric_message_filter.h"
 #include "components/translate/core/common/translate_switches.h"
@@ -302,6 +303,7 @@ using content::SiteInstance;
 using content::WebContents;
 using content::WebPreferences;
 using message_center::NotifierId;
+using security_interstitials::SSLErrorUI;
 
 #if defined(OS_POSIX)
 using content::FileDescriptorInfo;
@@ -2022,11 +2024,11 @@ void ChromeContentBrowserClient::AllowCertificateError(
   // ownership of ssl_blocking_page.
   int options_mask = 0;
   if (overridable)
-    options_mask |= SSLBlockingPage::OVERRIDABLE;
+    options_mask |= SSLErrorUI::SOFT_OVERRIDE_ENABLED;
   if (strict_enforcement)
-    options_mask |= SSLBlockingPage::STRICT_ENFORCEMENT;
+    options_mask |= SSLErrorUI::STRICT_ENFORCEMENT;
   if (expired_previous_decision)
-    options_mask |= SSLBlockingPage::EXPIRED_BUT_PREVIOUSLY_ALLOWED;
+    options_mask |= SSLErrorUI::EXPIRED_BUT_PREVIOUSLY_ALLOWED;
 
   safe_browsing::SafeBrowsingService* safe_browsing_service =
       g_browser_process->safe_browsing_service();

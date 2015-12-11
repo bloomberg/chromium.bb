@@ -34,6 +34,8 @@
         'security_interstitials/core/controller_client.h',
         'security_interstitials/core/metrics_helper.cc',
         'security_interstitials/core/metrics_helper.h',
+        'security_interstitials/core/ssl_error_ui.cc',
+        'security_interstitials/core/ssl_error_ui.h',
       ]
     }
   ]

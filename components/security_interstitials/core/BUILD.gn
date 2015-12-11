@@ -13,6 +13,8 @@ static_library("core") {
     "controller_client.h",
     "metrics_helper.cc",
     "metrics_helper.h",
+    "ssl_error_ui.cc",
+    "ssl_error_ui.h",
   ]
 
   deps = [
