@@ -253,12 +253,6 @@ void ArcInputBridgeImpl::SendKernelEvent(const base::ScopedFD& fd,
                                          int value) {
   DCHECK(fd.is_valid());
 
-  // Chrome does not always use the monotonic system time for event times.
-  // For now always force the event time to the current system time.
-  // TODO(denniskempin): To enable performance tracing of events we will want
-  // to use the kernel-provided monotonic time stamps of events.
-  time_stamp = ui::EventTimeForNow();
-
   struct input_event event;
   event.time.tv_sec = time_stamp.InSeconds();
   base::TimeDelta remainder =
