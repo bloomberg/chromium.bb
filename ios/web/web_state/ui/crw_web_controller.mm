@@ -1809,20 +1809,11 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
       ![_webStateImpl->GetNavigationManagerImpl().GetSessionController()
           isPushStateNavigationBetweenEntry:fromEntry
                                    andEntry:self.currentSessionEntry];
-  // Set the serialized state if necessary.  State must be set if:
-  // - the transition between |fromEntry| and the current session entry is a
-  //   history.pushState, or
-  // - the current session entry has a serialized state object (occurs after a
-  //   history.replaceState).
   web::NavigationItemImpl* currentItem =
       self.currentSessionEntry.navigationItemImpl;
-  NSString* stateObject = currentItem->GetSerializedStateObject();
-  if (!shouldLoadURL || stateObject.length) {
-    [self setPushedOrReplacedURL:currentItem->GetURL() stateObject:stateObject];
-  }
+  GURL endURL = [self URLForHistoryNavigationFromItem:fromEntry.navigationItem
+                                               toItem:currentItem];
   if (shouldLoadURL) {
-    GURL endURL = [self URLForHistoryNavigationFromItem:fromEntry.navigationItem
-                                                 toItem:currentItem];
     ui::PageTransition transition = ui::PageTransitionFromInt(
         ui::PAGE_TRANSITION_RELOAD | ui::PAGE_TRANSITION_FORWARD_BACK);
 
@@ -1832,6 +1823,19 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     }
     params.transition_type = transition;
     [self loadWithParams:params];
+  }
+  // Set the serialized state if necessary.  State must be set if the document
+  // objects are the same. This can happen if:
+  // - The navigation is a pushState (i.e., shouldLoadURL is NO).
+  // - The navigation is a hash change.
+  // TODO(crbug.com/566157): This misses some edge cases (e.g., a mixed series
+  // of hash changes and push/replaceState calls will likely end up dispatching
+  // this in cases where it shouldn't.
+  if (!shouldLoadURL ||
+      (web::GURLByRemovingRefFromGURL(endURL) ==
+       web::GURLByRemovingRefFromGURL(fromEntry.navigationItem->GetURL()))) {
+    NSString* stateObject = currentItem->GetSerializedStateObject();
+    [self setPushedOrReplacedURL:currentItem->GetURL() stateObject:stateObject];
   }
 }
 
