@@ -81,6 +81,12 @@ SVGImage::~SVGImage()
     ASSERT(!m_chromeClient || !m_chromeClient->image());
 }
 
+IntRect SVGImage::visualRect() const
+{
+    // TODO(chrishtr): fix this.
+    return IntRect();
+}
+
 bool SVGImage::isInSVGImage(const Node* node)
 {
     ASSERT(node);

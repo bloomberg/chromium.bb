@@ -65,7 +65,11 @@ public:
     void update();
 
     GraphicsLayer* graphicsLayer() const { return m_layer.get(); }
+
+    // DisplayItemClient methods.
     String debugName() const final { return "PageOverlay"; }
+    // TODO(chrishtr): fix this.
+    IntRect visualRect() const override { return IntRect(); }
 
     // GraphicsLayerClient implementation
     IntRect computeInterestRect(const GraphicsLayer*, const IntRect&) const override;

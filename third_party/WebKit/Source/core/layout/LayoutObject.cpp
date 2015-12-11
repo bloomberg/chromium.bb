@@ -1139,6 +1139,11 @@ String LayoutObject::debugName() const
     return name.toString();
 }
 
+IntRect LayoutObject::visualRect() const
+{
+    return enclosingIntRect(previousPaintInvalidationRect());
+}
+
 bool LayoutObject::isPaintInvalidationContainer() const
 {
     return hasLayer() && toLayoutBoxModelObject(this)->layer()->isPaintInvalidationContainer();

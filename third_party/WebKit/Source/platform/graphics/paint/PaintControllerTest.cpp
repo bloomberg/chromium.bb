@@ -50,6 +50,7 @@ public:
     { }
 
     String debugName() const final { return m_name; }
+    IntRect visualRect() const override { return IntRect(); }
 
 private:
     String m_name;

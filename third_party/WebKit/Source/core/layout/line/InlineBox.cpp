@@ -94,6 +94,12 @@ String InlineBox::debugName() const
     return boxName();
 }
 
+IntRect InlineBox::visualRect() const
+{
+    // TODO(chrishtr): tighten these bounds.
+    return layoutObject().visualRect();
+}
+
 #ifndef NDEBUG
 void InlineBox::showTreeForThis() const
 {

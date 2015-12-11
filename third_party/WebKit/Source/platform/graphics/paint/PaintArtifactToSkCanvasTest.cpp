@@ -68,6 +68,7 @@ public:
     SkColor color() const { return m_color; }
     PassRefPtr<SkPicture> makePicture() const { return pictureWithRect(m_rect, m_color); }
     String debugName() const final { return "<dummy>"; }
+    IntRect visualRect() const override { return IntRect(); }
 
 private:
     SkRect m_rect;

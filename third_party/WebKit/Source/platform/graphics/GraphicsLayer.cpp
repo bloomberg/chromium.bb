@@ -158,6 +158,11 @@ GraphicsLayer::~GraphicsLayer()
     ASSERT(!m_parent);
 }
 
+IntRect GraphicsLayer::visualRect() const
+{
+    return enclosingIntRect(FloatRect(FloatPoint(0, 0), size()));
+}
+
 void GraphicsLayer::setDrawDebugRedFillForTesting(bool enabled)
 {
     s_drawDebugRedFill = enabled;

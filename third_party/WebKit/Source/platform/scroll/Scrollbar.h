@@ -149,7 +149,10 @@ public:
     bool overlapsResizer() const { return m_overlapsResizer; }
     void setOverlapsResizer(bool overlapsResizer) { m_overlapsResizer = overlapsResizer; }
 
+    // DisplayItemClient methods.
     String debugName() const final { return m_orientation == HorizontalScrollbar ? "HorizontalScrollbar" : "VerticalScrollbar"; }
+    // TODO(chrishtr): fix this.
+    IntRect visualRect() const override { return IntRect(); }
 
     void setNeedsPaintInvalidation();
 

@@ -77,7 +77,9 @@ public:
 
     void updateUseCounters(Document&) const;
 
+    // DisplayItemClient methods.
     String debugName() const final { return "SVGImage"; }
+    IntRect visualRect() const override;
 
 private:
     friend class AXLayoutObject;

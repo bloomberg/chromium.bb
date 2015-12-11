@@ -184,6 +184,11 @@ String PaintLayer::debugName() const
     return layoutObject()->debugName();
 }
 
+IntRect PaintLayer::visualRect() const
+{
+    return m_layoutObject->visualRect();
+}
+
 PaintLayerCompositor* PaintLayer::compositor() const
 {
     if (!layoutObject()->view())

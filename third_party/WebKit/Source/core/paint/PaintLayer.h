@@ -162,7 +162,9 @@ public:
     PaintLayer(LayoutBoxModelObject*, PaintLayerType);
     ~PaintLayer();
 
+    // DisplayItemClient methods
     String debugName() const final;
+    IntRect visualRect() const override;
 
     LayoutBoxModelObject* layoutObject() const { return m_layoutObject; }
     LayoutBox* layoutBox() const { return m_layoutObject && m_layoutObject->isBox() ? toLayoutBox(m_layoutObject) : 0; }

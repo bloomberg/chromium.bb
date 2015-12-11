@@ -267,7 +267,9 @@ public:
     static void setDrawDebugRedFillForTesting(bool);
     ContentLayerDelegate* contentLayerDelegateForTesting() const { return m_contentLayerDelegate.get(); }
 
+    // DisplayItemClient methods
     String debugName() const final { return m_client->debugName(this); }
+    IntRect visualRect() const override;
 
 protected:
     String debugName(cc::Layer*) const;

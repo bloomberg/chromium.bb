@@ -436,7 +436,9 @@ public:
         pictureBuilder.endRecording()->playback(canvas);
     }
 
+    // DisplayItemClient methods
     String debugName() const final { return "ChromePrintContext"; }
+    IntRect visualRect() const override { ASSERT_NOT_REACHED(); return IntRect(); }
 
 protected:
     // Spools the printed page, a subrect of frame(). Skip the scale step.

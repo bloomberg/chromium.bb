@@ -220,7 +220,8 @@ public:
     // along with extra information about the layout object state (e.g. positioning).
     String decoratedName() const;
 
-    // Returns the decorated name along with the debug information from the associated Node object.
+    // DisplayItemClient methods.
+    IntRect visualRect() const override;
     String debugName() const final;
 
     LayoutObject* parent() const { return m_parent; }

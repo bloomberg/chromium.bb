@@ -180,7 +180,10 @@ public:
     void clearWeakMembers(Visitor*);
 #endif
 
+    // DisplayItemClient methods
     String debugName() const final { return "LocalFrame"; }
+    // TODO(chrishtr): fix this.
+    IntRect visualRect() const override { return IntRect(); }
 
     bool shouldThrottleRendering() const;
 
