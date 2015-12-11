@@ -184,8 +184,8 @@ base::string16 ExclusiveAccessBubble::GetInstructionText(
                                       accelerator);
   }
 
-  return l10n_util::GetStringFUTF16(IDS_FULLSCREEN_PRESS_ESC_TO_EXIT,
-                                    accelerator);
+  return exclusive_access_bubble::GetInstructionTextForType(bubble_type_,
+                                                            accelerator);
 }
 
 void ExclusiveAccessBubble::ShowAndStartTimers() {

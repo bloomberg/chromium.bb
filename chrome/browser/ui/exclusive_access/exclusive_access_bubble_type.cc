@@ -12,6 +12,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/strings/grit/ui_strings.h"
 
 namespace exclusive_access_bubble {
 
@@ -132,6 +133,34 @@ base::string16 GetAllowButtonTextForType(ExclusiveAccessBubbleType type,
     case EXCLUSIVE_ACCESS_BUBBLE_TYPE_EXTENSION_FULLSCREEN_EXIT_INSTRUCTION:
     case EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE:
       NOTREACHED();  // No button in this case.
+      return base::string16();
+  }
+  NOTREACHED();
+  return base::string16();
+}
+
+base::string16 GetInstructionTextForType(ExclusiveAccessBubbleType type,
+                                         const base::string16& accelerator) {
+  switch (type) {
+    case EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_BUTTONS:
+    case EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_MOUSELOCK_BUTTONS:
+    case EXCLUSIVE_ACCESS_BUBBLE_TYPE_MOUSELOCK_BUTTONS:
+      NOTREACHED();  // No exit instruction if there are buttons.
+      return base::string16();
+    case EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_EXIT_INSTRUCTION:
+    case EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_MOUSELOCK_EXIT_INSTRUCTION:
+    case EXCLUSIVE_ACCESS_BUBBLE_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION:
+    case EXCLUSIVE_ACCESS_BUBBLE_TYPE_EXTENSION_FULLSCREEN_EXIT_INSTRUCTION:
+      // Both fullscreen and fullscreen + mouselock have the same message (the
+      // user does not care about mouse lock when in fullscreen mode). All ways
+      // to trigger fullscreen result in the same message.
+      return l10n_util::GetStringFUTF16(
+          IDS_FULLSCREEN_PRESS_ESC_TO_EXIT_FULLSCREEN, accelerator);
+    case EXCLUSIVE_ACCESS_BUBBLE_TYPE_MOUSELOCK_EXIT_INSTRUCTION:
+      return l10n_util::GetStringFUTF16(
+          IDS_FULLSCREEN_PRESS_ESC_TO_EXIT_MOUSELOCK, accelerator);
+    case EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE:
+      NOTREACHED();
       return base::string16();
   }
   NOTREACHED();
