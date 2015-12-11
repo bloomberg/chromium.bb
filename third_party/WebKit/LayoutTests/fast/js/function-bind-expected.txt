@@ -23,7 +23,7 @@ PASS "prototype" in G is false
 PASS "prototype" in H is false
 PASS Function.bind.call(undefined) threw exception TypeError: Bind must be called on a function.
 PASS abcAt(1) is "b"
-PASS new abcAt(1) threw exception TypeError: function charAt() { [native code] } is not a constructor.
+PASS new abcAt(1) threw exception TypeError: function is not a constructor.
 PASS boundFunctionPrototypeAccessed is false
 PASS Function.bind.length is 1
 PASS successfullyParsed is true

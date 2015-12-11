@@ -40,7 +40,7 @@ window.onload = function()
     // window object itself
     shouldBeTrue("canGet('targetWindow.toString')");
     shouldBeFalse("canSet('targetWindow.toString')");
-    shouldBe("toString('targetWindow', '')", "'[object Window]'");
+    shouldBe("toString('targetWindow')", "'[exception]'");
 }
 </script>
 </body>

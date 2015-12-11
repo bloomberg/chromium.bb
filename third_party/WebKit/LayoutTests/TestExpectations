@@ -243,17 +243,14 @@ crbug.com/542541 [ Debug ] virtual/pointerevent/fast/events/click-count.html [ P
 # though this is a non-flaky assert failure, we need to mark it [ Pass Crash ].
 crbug.com/389648 crbug.com/517123 fast/text-autosizing/table-inflation-crash.html [ Pass Crash Timeout ]
 crbug.com/419696 [ Mac Debug ] fast/text/font-linux-normalize.html [ Crash Pass ]
-crbug.com/423739 fast/js/string-replace-2.html [ NeedsManualRebaseline ]
-crbug.com/423739 fast/dom/Window/Location/location-override-valueOf.html [ NeedsManualRebaseline ]
 crbug.com/524859 fast/text/complex-text-opacity.html [ NeedsManualRebaseline ]
 # crbug.com/498021 [ Linux ] fast/text/complex-text-opacity.html [ Failure ]
 # crbug.com/509025 [ Mac10.10 ] fast/text/complex-text-opacity.html [ Failure ]
 # crbug.com/521730 [ Win10 ] fast/text/complex-text-opacity.html [ Failure Timeout ]
 crbug.com/524859 transforms/2d/hindi-rotated.html [ NeedsManualRebaseline ]
 
-crbug.com/535408 fast/js/function-bind.html [ NeedsManualRebaseline ]
-
-crbug.com/552574 fast/js/regexp-caching.html [ NeedsManualRebaseline ]
+crbug.com/569139 fast/js/string-replace-2.html [ NeedsManualRebaseline ]
+crbug.com/569139 fast/js/regexp-caching.html [ NeedsManualRebaseline ]
 
 crbug.com/498539 http/tests/inspector/elements/styles/selector-line.html [ Pass Timeout ]
 crbug.com/498539 http/tests/inspector/network/network-datareceived.html [ Pass Timeout ]
@@ -325,17 +322,6 @@ crbug.com/487281 [ Mac ] fast/forms/select/menulist-narrow-width.html [ Failure 
 crbug.com/543110 [ Mac ] fast/text/international/text-shaping-arabic.html [ Failure ]
 
 crbug.com/548904 [ Linux Win ] fast/writing-mode/Kusa-Makura-background-canvas.html [ Failure Pass ]
-
-crbug.com/561394 inspector/console/console-call-getter-on-proto.html [ NeedsManualRebaseline ]
-crbug.com/561394 inspector/console/console-dir-es6.html [ NeedsManualRebaseline ]
-crbug.com/561394 inspector/console/console-format-es6-2.html [ NeedsManualRebaseline ]
-crbug.com/561394 inspector/console/console-log-document-proto.html [ NeedsManualRebaseline ]
-crbug.com/561394 inspector/console/console-object-constructor-name.html [ NeedsManualRebaseline ]
-
-# ES6 makes (Native)Error.prototype not be an error instance
-crbug.com/568026 fast/dom/DOMException/XPathException.html [ NeedsManualRebaseline ]
-crbug.com/568026 fast/dom/DOMException/prototype-object.html [ NeedsManualRebaseline ]
-crbug.com/568026 storage/websql/transaction-error-callback.html [ NeedsManualRebaseline ]
 
 crbug.com/552433 svg/W3C-SVG-1.1/coords-units-02-b.svg [ Pass Failure ]
 crbug.com/552433 [ Linux Mac Win10 Win7 ] svg/dom/length-list-parser.html [ Failure Pass ]
@@ -1033,9 +1019,6 @@ crbug.com/443596 media/sources-fallback-codecs.html [ Pass Failure ]
 
 crbug.com/464736 http/tests/xmlhttprequest/ontimeout-event-override-after-failure.html [ Pass Failure ]
 
-# Unclear semantics of ToString (actually ToPrimitive) across iframes.
-crbug.com/532469 http/tests/security/cross-frame-access-custom.html [ NeedsManualRebaseline ]
-
 crbug.com/521730 [ Win10 ] compositing/plugins/invalidate_rect.html [ Crash ]
 crbug.com/521730 [ Win10 ] plugins/windowless_plugin_paint_test.html [ Crash ]
 
@@ -1234,10 +1217,6 @@ crbug.com/502927 [ XP ] paint/frames/frameset-with-stacking-contexts.html [ Fail
 
 crbug.com/353746 virtual/android/fullscreen/video-specified-size.html [ Failure Pass ]
 
-crbug.com/560503 fast/js/mozilla/strict/12.14.1.html [ NeedsManualRebaseline ]
-crbug.com/560503 fast/js/mozilla/strict/13.1.html [ NeedsManualRebaseline ]
-crbug.com/560503 fast/js/mozilla/strict/regress-532254.html [ NeedsManualRebaseline ]
-
 crbug.com/527270 accessibility/name-calc-img.html [ Failure Pass Timeout ]
 
 # This test has different results in Debug and Release.
@@ -1266,8 +1245,6 @@ crbug.com/457273 [ Mac ] http/tests/websocket/close.html [ Pass Timeout ]
 crbug.com/531286 virtual/gpu/fast/canvas/yuv-video-on-accelerated-canvas.html [ Failure ]
 
 crbug.com/535478 [ Win ] virtual/threaded/inspector/tracing/decode-resize.html [ Slow Pass Failure ]
-
-crbug.com/568875 inspector/console/console-format-collections.html [ NeedsManualRebaseline ]
 
 crbug.com/524646 [ Mac10.10 ] fast/dom/shadow/shadowdom-for-button.html [ Failure ]
 

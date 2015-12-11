@@ -37,10 +37,9 @@ assertEq(testLenientAndStrict('function f(a,b,c,d,e,f,g,h,d) {}',
  * SpiderMonkey has always treated duplicates in destructuring
  * patterns as an error. Strict mode should not affect this.
  */
-// Destructuring is not valid ES5 syntax.
 assertEq(testLenientAndStrict('function f([x,y]) {}',
-                              parseRaisesException(SyntaxError),
-                              parseRaisesException(SyntaxError)),
+                              parsesSuccessfully,
+                              parsesSuccessfully),
          true);
 assertEq(testLenientAndStrict('function f([x,x]){}',
                               parseRaisesException(SyntaxError),
@@ -116,14 +115,12 @@ assertEq(testLenientAndStrict('function f(eval){}',
                               parsesSuccessfully,
                               parseRaisesException(SyntaxError)),
          true);
-// Destructuring is not valid ES5 syntax.
 assertEq(testLenientAndStrict('function f([eval]){}',
-                              parseRaisesException(SyntaxError),
+                              parsesSuccessfully,
                               parseRaisesException(SyntaxError)),
          true);
-// Destructuring is not valid ES5 syntax.
 assertEq(testLenientAndStrict('function f({x:eval}){}',
-                              parseRaisesException(SyntaxError),
+                              parsesSuccessfully,
                               parseRaisesException(SyntaxError)),
          true);
 assertEq(testLenientAndStrict('function eval(){}',
@@ -134,12 +131,12 @@ assertEq(testLenientAndStrict('function f(eval){"use strict";}',
                               parseRaisesException(SyntaxError),
                               parseRaisesException(SyntaxError)),
          true);
-// Destructuring is not valid ES5 syntax.
+// Non-simple arguments and "use strict" directive is an error.
 assertEq(testLenientAndStrict('function f([eval]){"use strict";}',
                               parseRaisesException(SyntaxError),
                               parseRaisesException(SyntaxError)),
          true);
-// Destructuring is not valid ES5 syntax.
+// Non-simple arguments and "use strict" directive is an error.
 assertEq(testLenientAndStrict('function f({x:eval}){"use strict";}',
                               parseRaisesException(SyntaxError),
                               parseRaisesException(SyntaxError)),
@@ -152,14 +149,12 @@ assertEq(testLenientAndStrict('(function f(eval){})',
                               parsesSuccessfully,
                               parseRaisesException(SyntaxError)),
          true);
-// Destructuring is not valid ES5 syntax.
 assertEq(testLenientAndStrict('(function f([eval]){})',
-                              parseRaisesException(SyntaxError),
+                              parsesSuccessfully,
                               parseRaisesException(SyntaxError)),
          true);
-// Destructuring is not valid ES5 syntax.
 assertEq(testLenientAndStrict('(function f({x:eval}){})',
-                              parseRaisesException(SyntaxError),
+                              parsesSuccessfully,
                               parseRaisesException(SyntaxError)),
          true);
 assertEq(testLenientAndStrict('(function eval(){})',
@@ -170,10 +165,12 @@ assertEq(testLenientAndStrict('(function f(eval){"use strict";})',
                               parseRaisesException(SyntaxError),
                               parseRaisesException(SyntaxError)),
          true);
+// Non-simple arguments and "use strict" directive is an error.
 assertEq(testLenientAndStrict('(function f([eval]){"use strict";})',
                               parseRaisesException(SyntaxError),
                               parseRaisesException(SyntaxError)),
          true);
+// Non-simple arguments and "use strict" directive is an error.
 assertEq(testLenientAndStrict('(function f({x:eval}){"use strict";})',
                               parseRaisesException(SyntaxError),
                               parseRaisesException(SyntaxError)),
@@ -187,7 +184,7 @@ assertEq(testLenientAndStrict('(function f(eval) 2)',
                               parseRaisesException(SyntaxError),
                               parseRaisesException(SyntaxError)),
          true);
-// Destructuring is not valid ES5 syntax.
+// This is not valid ES5 syntax.
 assertEq(testLenientAndStrict('(function f([eval]) 2)',
                               parseRaisesException(SyntaxError),
                               parseRaisesException(SyntaxError)),
@@ -206,24 +203,24 @@ assertEq(testLenientAndStrict('({set x(eval){}})',
                               parsesSuccessfully,
                               parseRaisesException(SyntaxError)),
          true);
-// Destructuring is not valid ES5 syntax.
 assertEq(testLenientAndStrict('({set x([eval]){}})',
-                              parseRaisesException(SyntaxError),
+                              parsesSuccessfully,
                               parseRaisesException(SyntaxError)),
          true);
-// Destructuring is not valid ES5 syntax.
 assertEq(testLenientAndStrict('({set x({x:eval}){}})',
-                              parseRaisesException(SyntaxError),
+                              parsesSuccessfully,
                               parseRaisesException(SyntaxError)),
          true);
 assertEq(testLenientAndStrict('({set x(eval){"use strict";}})',
                               parseRaisesException(SyntaxError),
                               parseRaisesException(SyntaxError)),
          true);
+// Non-simple arguments and "use strict" directive is an error.
 assertEq(testLenientAndStrict('({set x([eval]){"use strict";}})',
                               parseRaisesException(SyntaxError),
                               parseRaisesException(SyntaxError)),
          true);
+// Non-simple arguments and "use strict" directive is an error.
 assertEq(testLenientAndStrict('({set x({x:eval}){"use strict";}})',
                               parseRaisesException(SyntaxError),
                               parseRaisesException(SyntaxError)),
@@ -232,14 +229,12 @@ assertEq(testLenientAndStrict('function f(arguments){}',
                               parsesSuccessfully,
                               parseRaisesException(SyntaxError)),
          true);
-// Destructuring is not valid ES5 syntax.
 assertEq(testLenientAndStrict('function f([arguments]){}',
-                              parseRaisesException(SyntaxError),
+                              parsesSuccessfully,
                               parseRaisesException(SyntaxError)),
          true);
-// Destructuring is not valid ES5 syntax.
 assertEq(testLenientAndStrict('function f({x:arguments}){}',
-                              parseRaisesException(SyntaxError),
+                              parsesSuccessfully,
                               parseRaisesException(SyntaxError)),
          true);
 assertEq(testLenientAndStrict('function arguments(){}',
@@ -250,11 +245,12 @@ assertEq(testLenientAndStrict('function f(arguments){"use strict";}',
                               parseRaisesException(SyntaxError),
                               parseRaisesException(SyntaxError)),
          true);
-// Destructuring is not valid ES5 syntax.
+// Non-simple arguments and "use strict" directive is an error.
 assertEq(testLenientAndStrict('function f([arguments]){"use strict";}',
                               parseRaisesException(SyntaxError),
                               parseRaisesException(SyntaxError)),
          true);
+// Non-simple arguments and "use strict" directive is an error.
 assertEq(testLenientAndStrict('function f({x:arguments}){"use strict";}',
                               parseRaisesException(SyntaxError),
                               parseRaisesException(SyntaxError)),
@@ -267,14 +263,12 @@ assertEq(testLenientAndStrict('(function f(arguments){})',
                               parsesSuccessfully,
                               parseRaisesException(SyntaxError)),
          true);
-// Destructuring is not valid ES5 syntax.
 assertEq(testLenientAndStrict('(function f([arguments]){})',
-                              parseRaisesException(SyntaxError),
+                              parsesSuccessfully,
                               parseRaisesException(SyntaxError)),
          true);
-// Destructuring is not valid ES5 syntax.
 assertEq(testLenientAndStrict('(function f({x:arguments}){})',
-                              parseRaisesException(SyntaxError),
+                              parsesSuccessfully,
                               parseRaisesException(SyntaxError)),
          true);
 assertEq(testLenientAndStrict('(function arguments(){})',
@@ -285,10 +279,12 @@ assertEq(testLenientAndStrict('(function f(arguments){"use strict";})',
                               parseRaisesException(SyntaxError),
                               parseRaisesException(SyntaxError)),
          true);
+// Non-simple arguments and "use strict" directive is an error.
 assertEq(testLenientAndStrict('(function f([arguments]){"use strict";})',
                               parseRaisesException(SyntaxError),
                               parseRaisesException(SyntaxError)),
          true);
+// Non-simple arguments and "use strict" directive is an error.
 assertEq(testLenientAndStrict('(function f({x:arguments}){"use strict";})',
                               parseRaisesException(SyntaxError),
                               parseRaisesException(SyntaxError)),
@@ -302,12 +298,12 @@ assertEq(testLenientAndStrict('(function f(arguments) 2)',
                               parseRaisesException(SyntaxError),
                               parseRaisesException(SyntaxError)),
          true);
-// Destructuring is not valid ES5 syntax.
+// This is not valid ES5 syntax.
 assertEq(testLenientAndStrict('(function f([arguments]) 2)',
                               parseRaisesException(SyntaxError),
                               parseRaisesException(SyntaxError)),
          true);
-// Destructuring is not valid ES5 syntax.
+// This is not valid ES5 syntax.
 assertEq(testLenientAndStrict('(function f({x:arguments}) 2)',
                               parseRaisesException(SyntaxError),
                               parseRaisesException(SyntaxError)),
@@ -321,24 +317,24 @@ assertEq(testLenientAndStrict('({set x(arguments){}})',
                               parsesSuccessfully,
                               parseRaisesException(SyntaxError)),
          true);
-// Destructuring is not valid ES5 syntax.
 assertEq(testLenientAndStrict('({set x([arguments]){}})',
-                              parseRaisesException(SyntaxError),
+                              parsesSuccessfully,
                               parseRaisesException(SyntaxError)),
          true);
-// Destructuring is not valid ES5 syntax.
 assertEq(testLenientAndStrict('({set x({x:arguments}){}})',
-                              parseRaisesException(SyntaxError),
+                              parsesSuccessfully,
                               parseRaisesException(SyntaxError)),
          true);
 assertEq(testLenientAndStrict('({set x(arguments){"use strict";}})',
                               parseRaisesException(SyntaxError),
                               parseRaisesException(SyntaxError)),
          true);
+// Non-simple arguments and "use strict" directive is an error.
 assertEq(testLenientAndStrict('({set x([arguments]){"use strict";}})',
                               parseRaisesException(SyntaxError),
                               parseRaisesException(SyntaxError)),
          true);
+// Non-simple arguments and "use strict" directive is an error.
 assertEq(testLenientAndStrict('({set x({x:arguments}){"use strict";}})',
                               parseRaisesException(SyntaxError),
                               parseRaisesException(SyntaxError)),

@@ -13,6 +13,6 @@ try {
 
 shouldBeEqualToString("e.toString()", "TypeError: Failed to read the 'numberValue' property from 'XPathResult': The result type is not a number.");
 shouldBeEqualToString("Object.prototype.toString.call(e)", "[object Error]");
-shouldBeEqualToString("Object.prototype.toString.call(e.__proto__)", "[object Error]");
+shouldBeEqualToString("Object.prototype.toString.call(e.__proto__)", "[object Object]");
 shouldBeEqualToString("e.constructor.toString()", "function TypeError() { [native code] }");
 shouldBe("e.constructor", "window.TypeError");

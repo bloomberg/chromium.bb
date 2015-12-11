@@ -50,42 +50,42 @@ console-dir-es6.html:37 WeakMap
     <entries>[0]
         No Entries
 console-dir-es6.html:45 MapIterator
-    __proto__: Object
+    __proto__: Map Iterator
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
     [[IteratorKind]]: "keys"
     <entries>[1]
         0: Object
 console-dir-es6.html:46 MapIterator
-    __proto__: Object
+    __proto__: Map Iterator
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
     [[IteratorKind]]: "values"
     <entries>[1]
         0: Object
 console-dir-es6.html:47 MapIterator
-    __proto__: Object
+    __proto__: Map Iterator
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
     [[IteratorKind]]: "entries"
     <entries>[1]
         0: Array[2]
 console-dir-es6.html:45 SetIterator
-    __proto__: Object
+    __proto__: Set Iterator
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
     [[IteratorKind]]: "values"
     <entries>[1]
         0: Object
 console-dir-es6.html:46 SetIterator
-    __proto__: Object
+    __proto__: Set Iterator
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
     [[IteratorKind]]: "values"
     <entries>[1]
         0: Object
 console-dir-es6.html:47 SetIterator
-    __proto__: Object
+    __proto__: Set Iterator
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
     [[IteratorKind]]: "entries"

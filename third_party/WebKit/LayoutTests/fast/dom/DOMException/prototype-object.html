@@ -15,7 +15,7 @@ try {
 shouldBeEqualToString("e.toString()", "HierarchyRequestError: Failed to execute 'appendChild' on 'Node': Nodes of type '#document' may not be inserted inside nodes of type '#document'.");
 shouldBeEqualToString("Object.prototype.toString.call(e)", "[object DOMException]");
 shouldBeEqualToString("Object.prototype.toString.call(e.__proto__)", "[object DOMExceptionPrototype]");
-shouldBeEqualToString("Object.prototype.toString.call(e.__proto__.__proto__)", "[object Error]");
+shouldBeEqualToString("Object.prototype.toString.call(e.__proto__.__proto__)", "[object Object]");
 shouldBeEqualToString("e.constructor.toString()", "function DOMException() { [native code] }");
 shouldBeTrue("e instanceof DOMException");
 shouldBeTrue("e instanceof Error");
