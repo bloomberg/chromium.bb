@@ -88,7 +88,7 @@ sandbox.appendChild(
         createDOM('div', {'id': 'host'},
             createShadowRoot(
                 createDOM('span', {'id': 'target'},
-                    document.createTextNode('green border, because of hat.'))))));
+                    document.createTextNode('green border, because of ::shadow.'))))));
 
 borderColorShouldBe('host/target', 'rgb(0, 128, 0)');
 
@@ -104,7 +104,7 @@ sandbox.appendChild(
                 createDOM('style', {},
                     document.createTextNode('span { border: 1px solid red; }')),
                 createDOM('span', {'id': 'target'},
-                    document.createTextNode('green border, because of hat.'))))));
+                    document.createTextNode('green border, because of ::shadow.'))))));
 
 borderColorShouldBe('host/target', 'rgb(0, 128, 0)');
 
@@ -119,7 +119,7 @@ sandbox.appendChild(
                 createDOM('style', {},
                     document.createTextNode('span#target { border: 1px solid red; }')),
                 createDOM('span', {'id': 'target'},
-                    document.createTextNode('green border, because of hat.'))))));
+                    document.createTextNode('green border, because of ::shadow.'))))));
 
 // Need to clarify the spec, i.e. using specificity? Currently rgb(255,0,0).
 borderColorShouldBe('host/target', 'rgb(255, 0, 0)');
@@ -133,7 +133,7 @@ sandbox.appendChild(
         createDOM('div', {'id': 'host'},
             createShadowRoot(
                 createDOM('span', {'id': 'target'},
-                    document.createTextNode('green border, because of hat.'))))));
+                    document.createTextNode('green border, because of ::shadow.'))))));
 
 borderColorShouldBe('host/target', 'rgb(0, 128, 0)');
 
@@ -149,7 +149,7 @@ sandbox.appendChild(
                     document.createTextNode('div > span { border: 1px solid red; }')),
                 createDOM('div', {},
                     createDOM('span', {'id': 'target'},
-                        document.createTextNode('green border, because parent hat wins.')))))));
+                        document.createTextNode('green border, because parent ::shadow wins.')))))));
 
 borderColorShouldBe('host/target', 'rgb(0, 128, 0)');
 
