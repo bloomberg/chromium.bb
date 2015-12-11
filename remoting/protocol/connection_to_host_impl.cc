@@ -151,6 +151,9 @@ void ConnectionToHostImpl::OnSignalStrategyStateChange(
 
   if (state == SignalStrategy::CONNECTED) {
     VLOG(1) << "Connected as: " << signal_strategy_->GetLocalJid();
+    // After signaling has been connected we can try connecting to the host.
+    session_ = session_manager_->Connect(host_jid_, authenticator_.Pass());
+    session_->SetEventHandler(this);
   } else if (state == SignalStrategy::DISCONNECTED) {
     VLOG(1) << "Connection closed.";
     CloseOnError(SIGNALING_ERROR);
@@ -160,14 +163,6 @@ void ConnectionToHostImpl::OnSignalStrategyStateChange(
 bool ConnectionToHostImpl::OnSignalStrategyIncomingStanza(
     const buzz::XmlElement* stanza) {
   return false;
-}
-
-void ConnectionToHostImpl::OnSessionManagerReady() {
-  DCHECK(CalledOnValidThread());
-
-  // After SessionManager is initialized we can try to connect to the host.
-  session_ = session_manager_->Connect(host_jid_, authenticator_.Pass());
-  session_->SetEventHandler(this);
 }
 
 void ConnectionToHostImpl::OnIncomingSession(

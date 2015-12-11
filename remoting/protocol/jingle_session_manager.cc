@@ -23,10 +23,7 @@ namespace protocol {
 JingleSessionManager::JingleSessionManager(
     scoped_ptr<TransportFactory> transport_factory)
     : protocol_config_(CandidateSessionConfig::CreateDefault()),
-      transport_factory_(transport_factory.Pass()),
-      signal_strategy_(nullptr),
-      listener_(nullptr),
-      ready_(false) {}
+      transport_factory_(transport_factory.Pass()) {}
 
 JingleSessionManager::~JingleSessionManager() {
   Close();
@@ -40,8 +37,6 @@ void JingleSessionManager::Init(
   iq_sender_.reset(new IqSender(signal_strategy_));
 
   signal_strategy_->AddListener(this);
-
-  OnSignalStrategyStateChange(signal_strategy_->GetState());
 }
 
 void JingleSessionManager::set_protocol_config(
@@ -79,12 +74,7 @@ void JingleSessionManager::set_authenticator_factory(
 }
 
 void JingleSessionManager::OnSignalStrategyStateChange(
-    SignalStrategy::State state) {
-  if (state == SignalStrategy::CONNECTED && !ready_) {
-    ready_ = true;
-    listener_->OnSessionManagerReady();
-  }
-}
+    SignalStrategy::State state) {}
 
 bool JingleSessionManager::OnSignalStrategyIncomingStanza(
     const buzz::XmlElement* stanza) {
