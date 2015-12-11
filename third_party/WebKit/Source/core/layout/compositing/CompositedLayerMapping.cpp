@@ -1879,7 +1879,7 @@ bool CompositedLayerMapping::containsPaintedContent() const
     if (layoutObject->hasMask()) // masks require special treatment
         return true;
 
-    if (layoutObject->isReplaced() && !isCompositedPlugin(layoutObject))
+    if (layoutObject->isAtomicInlineLevel() && !isCompositedPlugin(layoutObject))
         return true;
 
     if (layoutObject->isLayoutMultiColumnSet())

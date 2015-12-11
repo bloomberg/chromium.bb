@@ -21,7 +21,7 @@ namespace {
 // height applies to all elements but non-replaced inline elements, table columns, and column groups.
 bool supportsTouchAction(const LayoutObject& object)
 {
-    if (object.isInline() && !object.isReplaced())
+    if (object.isInline() && !object.isAtomicInlineLevel())
         return false;
     if (object.isTableRow() || object.isLayoutTableCol())
         return false;

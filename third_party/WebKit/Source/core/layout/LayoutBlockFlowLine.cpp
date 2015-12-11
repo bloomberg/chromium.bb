@@ -596,7 +596,7 @@ void LayoutBlockFlow::computeInlineDirectionPositionsForLine(RootInlineBox* line
     updateLogicalInlinePositions(this, lineLogicalLeft, lineLogicalRight, availableLogicalWidth, isFirstLine, shouldIndentText, 0);
     bool needsWordSpacing;
 
-    if (firstRun && firstRun->m_object->isReplaced()) {
+    if (firstRun && firstRun->m_object->isAtomicInlineLevel()) {
         LayoutBox* layoutBox = toLayoutBox(firstRun->m_object);
         updateLogicalInlinePositions(this, lineLogicalLeft, lineLogicalRight, availableLogicalWidth, isFirstLine, shouldIndentText, layoutBox->logicalHeight());
     }
@@ -1100,7 +1100,7 @@ LayoutObject* InlineMinMaxIterator::next()
     bool oldEndOfInline = endOfInline;
     endOfInline = false;
     while (current || current == parent) {
-        if (!oldEndOfInline && (current == parent || (!current->isFloating() && !current->isReplaced() && !current->isOutOfFlowPositioned())))
+        if (!oldEndOfInline && (current == parent || (!current->isFloating() && !current->isAtomicInlineLevel() && !current->isOutOfFlowPositioned())))
             result = current->slowFirstChild();
 
         if (!result) {
@@ -1127,7 +1127,7 @@ LayoutObject* InlineMinMaxIterator::next()
         if (!result)
             break;
 
-        if (!result->isOutOfFlowPositioned() && (result->isText() || result->isFloating() || result->isReplaced() || result->isLayoutInline()))
+        if (!result->isOutOfFlowPositioned() && (result->isText() || result->isFloating() || result->isAtomicInlineLevel() || result->isLayoutInline()))
             break;
 
         current = result;
@@ -1262,7 +1262,7 @@ void LayoutBlockFlow::computeInlinePreferredLogicalWidths(LayoutUnit& minLogical
     bool isPrevChildInlineFlow = false;
     bool shouldBreakLineAfterText = false;
     while (LayoutObject* child = childIterator.next()) {
-        autoWrap = child->isReplaced() ? child->parent()->style()->autoWrap() :
+        autoWrap = child->isAtomicInlineLevel() ? child->parent()->style()->autoWrap() :
             child->style()->autoWrap();
 
         if (!child->isBR()) {
@@ -1563,7 +1563,7 @@ void LayoutBlockFlow::layoutInlineChildren(bool relayoutChildren, LayoutUnit& pa
             if (!layoutState.hasInlineChild() && o->isInline())
                 layoutState.setHasInlineChild(true);
 
-            if (o->isReplaced() || o->isFloating() || o->isOutOfFlowPositioned()) {
+            if (o->isAtomicInlineLevel() || o->isFloating() || o->isOutOfFlowPositioned()) {
                 LayoutBox* box = toLayoutBox(o);
 
                 updateBlockChildDirtyBitsBeforeLayout(relayoutChildren, *box);

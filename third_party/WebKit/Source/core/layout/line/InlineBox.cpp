@@ -203,7 +203,7 @@ void InlineBox::move(const LayoutSize& delta)
 {
     m_topLeft.move(delta);
 
-    if (lineLayoutItem().isReplaced())
+    if (lineLayoutItem().isAtomicInlineLevel())
         toLayoutBox(layoutObject()).move(delta.width(), delta.height());
 }
 
@@ -304,8 +304,8 @@ SelectionState InlineBox::selectionState() const
 
 bool InlineBox::canAccommodateEllipsis(bool ltr, int blockEdge, int ellipsisWidth) const
 {
-    // Non-replaced elements can always accommodate an ellipsis.
-    if (!lineLayoutItem().isReplaced())
+    // Non-atomic inline-level elements can always accommodate an ellipsis.
+    if (!lineLayoutItem().isAtomicInlineLevel())
         return true;
 
     IntRect boxRect(left(), 0, m_logicalWidth, 10);

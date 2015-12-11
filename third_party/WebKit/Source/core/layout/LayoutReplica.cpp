@@ -39,8 +39,8 @@ LayoutReplica::LayoutReplica()
     // This is a hack. Replicas are synthetic, and don't pick up the attributes of the
     // layoutObjects being replicated, so they always report that they are inline, non-replaced.
     // However, we need transforms to be applied to replicas for reflections, so have to pass
-    // the if (!isInline() || isReplaced()) check before setHasTransform().
-    setReplaced(true);
+    // the if (!isInline() || isAtomicInlineLevel()) check before setHasTransform().
+    setIsAtomicInlineLevel(true);
 }
 
 LayoutReplica* LayoutReplica::createAnonymous(Document* document)

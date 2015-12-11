@@ -41,9 +41,8 @@ LayoutListMarker::LayoutListMarker(LayoutListItem* item)
     : LayoutBox(nullptr)
     , m_listItem(item)
 {
-    // init LayoutObject attributes
-    setInline(true); // our object is Inline
-    setReplaced(true); // pretend to be replaced
+    setInline(true);
+    setIsAtomicInlineLevel(true);
 }
 
 LayoutListMarker::~LayoutListMarker()

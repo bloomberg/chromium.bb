@@ -41,8 +41,8 @@ namespace blink {
 LayoutRubyRun::LayoutRubyRun()
     : LayoutBlockFlow(nullptr)
 {
-    setReplaced(true);
     setInline(true);
+    setIsAtomicInlineLevel(true);
 }
 
 LayoutRubyRun::~LayoutRubyRun()

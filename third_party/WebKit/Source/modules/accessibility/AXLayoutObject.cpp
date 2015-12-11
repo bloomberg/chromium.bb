@@ -168,7 +168,7 @@ static inline bool lastChildHasContinuation(LayoutObject* layoutObject)
 static LayoutBoxModelObject* nextContinuation(LayoutObject* layoutObject)
 {
     ASSERT(layoutObject);
-    if (layoutObject->isLayoutInline() && !layoutObject->isReplaced())
+    if (layoutObject->isLayoutInline() && !layoutObject->isAtomicInlineLevel())
         return toLayoutInline(layoutObject)->continuation();
     if (layoutObject->isLayoutBlock())
         return toLayoutBlock(layoutObject)->inlineElementContinuation();
@@ -370,7 +370,7 @@ bool AXLayoutObject::isAttachment() const
         return false;
     // Widgets are the replaced elements that we represent to AX as attachments
     bool isLayoutPart = layoutObject->isLayoutPart();
-    ASSERT(!isLayoutPart || (layoutObject->isReplaced() && !isImage()));
+    ASSERT(!isLayoutPart || (layoutObject->isAtomicInlineLevel() && !isImage()));
     return isLayoutPart;
 }
 

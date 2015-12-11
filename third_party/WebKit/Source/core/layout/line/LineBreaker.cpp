@@ -82,7 +82,7 @@ InlineIterator LineBreaker::nextLineBreak(InlineBidiResolver& resolver, LineInfo
             context.handleFloat();
         } else if (context.currentObject()->isLayoutInline()) {
             context.handleEmptyInline();
-        } else if (context.currentObject()->isReplaced()) {
+        } else if (context.currentObject()->isAtomicInlineLevel()) {
             context.handleReplaced();
         } else if (context.currentObject()->isText()) {
             if (context.handleText(wordMeasurements, m_hyphenated)) {

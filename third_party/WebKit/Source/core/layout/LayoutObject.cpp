@@ -902,7 +902,7 @@ LayoutBlock* LayoutObject::containingBlockForAbsolutePosition() const
     // list in all LayoutInlines and lets us return a strongly-typed LayoutBlock* result
     // from this method.  The container() method can actually be used to obtain the
     // inline directly.
-    if (o && o->isInline() && !o->isReplaced()) {
+    if (o && o->isInline() && !o->isAtomicInlineLevel()) {
         ASSERT(o->style()->hasInFlowPosition());
         o = o->containingBlock();
     }
@@ -933,7 +933,7 @@ LayoutBlock* LayoutObject::containingBlock() const
     if (isColumnSpanAll()) {
         o = spannerPlaceholder()->containingBlock();
     } else {
-        while (o && ((o->isInline() && !o->isReplaced()) || !o->isLayoutBlock()))
+        while (o && ((o->isInline() && !o->isAtomicInlineLevel()) || !o->isLayoutBlock()))
             o = o->parent();
     }
 
@@ -3030,7 +3030,7 @@ int LayoutObject::caretMinOffset() const
 
 int LayoutObject::caretMaxOffset() const
 {
-    if (isReplaced())
+    if (isAtomicInlineLevel())
         return node() ? std::max(1U, node()->countChildren()) : 1;
     if (isHR())
         return 1;

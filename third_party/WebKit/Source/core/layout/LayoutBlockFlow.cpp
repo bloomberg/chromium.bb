@@ -885,7 +885,7 @@ void LayoutBlockFlow::rebuildFloatsFromIntruding()
         }
     }
 
-    // Inline blocks are covered by the isReplaced() check in the avoidFloats method.
+    // Inline blocks are covered by the isAtomicInlineLevel() check in the avoidFloats method.
     if (avoidsFloats() || isDocumentElement() || isLayoutView() || isFloatingOrOutOfFlowPositioned() || isTableCell()) {
         if (m_floatingObjects) {
             m_floatingObjects->clear();

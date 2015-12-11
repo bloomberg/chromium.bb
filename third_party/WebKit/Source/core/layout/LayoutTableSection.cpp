@@ -969,7 +969,7 @@ int LayoutTableSection::distributeExtraLogicalHeightToRows(int extraLogicalHeigh
 
 static bool shouldFlexCellChild(LayoutObject* cellDescendant)
 {
-    return cellDescendant->isReplaced() || (cellDescendant->isBox() && toLayoutBox(cellDescendant)->scrollsOverflow());
+    return cellDescendant->isAtomicInlineLevel() || (cellDescendant->isBox() && toLayoutBox(cellDescendant)->scrollsOverflow());
 }
 
 void LayoutTableSection::layoutRows()

@@ -256,7 +256,7 @@ void LineBoxList::dirtyLinesFromChangedChild(LineLayoutItem container, LineLayou
         if (curr.isFloatingOrOutOfFlowPositioned())
             continue;
 
-        if (curr.isReplaced()) {
+        if (curr.isAtomicInlineLevel()) {
             InlineBox* wrapper = toLayoutBox(curr)->inlineBoxWrapper();
             if (wrapper)
                 box = &wrapper->root();

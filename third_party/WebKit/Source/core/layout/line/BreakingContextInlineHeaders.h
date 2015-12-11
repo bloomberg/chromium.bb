@@ -918,7 +918,7 @@ inline void BreakingContext::commitAndUpdateLineBreakIfNeeded()
 
     if (!m_current.object().isFloatingOrOutOfFlowPositioned()) {
         m_lastObject = m_current.object();
-        if (m_lastObject.isReplaced() && m_autoWrap && (!m_lastObject.isImage() || m_allowImagesToBreak) && (!m_lastObject.isListMarker() || LineLayoutListMarker(m_lastObject).isInside())
+        if (m_lastObject.isAtomicInlineLevel() && m_autoWrap && (!m_lastObject.isImage() || m_allowImagesToBreak) && (!m_lastObject.isListMarker() || LineLayoutListMarker(m_lastObject).isInside())
             && !m_lastObject.isRubyRun()) {
             m_width.commit();
             m_lineBreak.moveToStartOf(m_nextObject);

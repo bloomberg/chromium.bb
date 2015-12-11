@@ -210,13 +210,13 @@ TextIteratorAlgorithm<Strategy>::~TextIteratorAlgorithm()
 }
 
 template<typename Strategy>
-bool TextIteratorAlgorithm<Strategy>::isInsideReplacedElement() const
+bool TextIteratorAlgorithm<Strategy>::isInsideAtomicInlineElement() const
 {
     if (atEnd() || length() != 1 || !m_node)
         return false;
 
     LayoutObject* layoutObject = m_node->layoutObject();
-    return layoutObject && layoutObject->isReplaced();
+    return layoutObject && layoutObject->isAtomicInlineLevel();
 }
 
 template<typename Strategy>

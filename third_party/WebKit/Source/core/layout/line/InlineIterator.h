@@ -202,7 +202,7 @@ static inline void notifyObserverWillExitObject(Observer* observer, LineLayoutIt
 static inline bool isIteratorTarget(LineLayoutItem object)
 {
     ASSERT(object); // The iterator will of course return 0, but its not an expected argument to this function.
-    return object.isText() || object.isFloating() || object.isOutOfFlowPositioned() || object.isReplaced();
+    return object.isText() || object.isFloating() || object.isOutOfFlowPositioned() || object.isAtomicInlineLevel();
 }
 
 // This enum is only used for bidiNextShared()

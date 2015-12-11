@@ -227,7 +227,7 @@ void LayoutBlock::styleWillChange(StyleDifference diff, const ComputedStyle& new
 {
     const ComputedStyle* oldStyle = style();
 
-    setReplaced(newStyle.isDisplayInlineType());
+    setIsAtomicInlineLevel(newStyle.isDisplayInlineType());
 
     if (oldStyle && parent()) {
         bool oldHasTransformRelatedProperty = oldStyle->hasTransformRelatedProperty();
@@ -1040,7 +1040,7 @@ void LayoutBlock::simplifiedNormalFlowLayout()
         ASSERT_WITH_SECURITY_IMPLICATION(isLayoutBlockFlow());
         for (InlineWalker walker(toLayoutBlockFlow(this)); !walker.atEnd(); walker.advance()) {
             LayoutObject* o = walker.current();
-            if (!o->isOutOfFlowPositioned() && (o->isReplaced() || o->isFloating())) {
+            if (!o->isOutOfFlowPositioned() && (o->isAtomicInlineLevel() || o->isFloating())) {
                 o->layoutIfNeeded();
                 if (toLayoutBox(o)->inlineBoxWrapper()) {
                     RootInlineBox& box = toLayoutBox(o)->inlineBoxWrapper()->root();
@@ -1879,7 +1879,7 @@ PositionWithAffinity LayoutBlock::positionForPointWithInlineChildren(const Layou
         LayoutPoint point(pointInLogicalContents.x(), closestBox->root().blockDirectionPointInLine());
         if (!isHorizontalWritingMode())
             point = point.transposedPoint();
-        if (closestBox->lineLayoutItem().isReplaced())
+        if (closestBox->lineLayoutItem().isAtomicInlineLevel())
             return positionForPointRespectingEditingBoundaries(this, LineLayoutBox(closestBox->lineLayoutItem()), point);
         return closestBox->lineLayoutItem().positionForPoint(point);
     }
@@ -1908,7 +1908,7 @@ PositionWithAffinity LayoutBlock::positionForPoint(const LayoutPoint& point)
     if (isTable())
         return LayoutBox::positionForPoint(point);
 
-    if (isReplaced()) {
+    if (isAtomicInlineLevel()) {
         // FIXME: This seems wrong when the object's writing-mode doesn't match the line's writing-mode.
         LayoutUnit pointLogicalLeft = isHorizontalWritingMode() ? point.x() : point.y();
         LayoutUnit pointLogicalTop = isHorizontalWritingMode() ? point.y() : point.x();
@@ -2169,7 +2169,7 @@ LayoutUnit LayoutBlock::lineHeight(bool firstLine, LineDirectionMode direction, 
     // the base class.  If we're being queried as though we're the root line
     // box, then the fact that we're an inline-block is irrelevant, and we behave
     // just like a block.
-    if (isReplaced() && linePositionMode == PositionOnContainingLine)
+    if (isAtomicInlineLevel() && linePositionMode == PositionOnContainingLine)
         return LayoutBox::lineHeight(firstLine, direction, linePositionMode);
 
     const ComputedStyle& style = styleRef(firstLine && document().styleEngine().usesFirstLineRules());
@@ -2304,7 +2304,7 @@ LayoutBlock* LayoutBlock::enclosingFirstLineStyleBlock() const
         if (hasPseudo)
             break;
         LayoutObject* parentBlock = firstLineBlock->parent();
-        if (firstLineBlock->isReplaced() || firstLineBlock->isFloatingOrOutOfFlowPositioned()
+        if (firstLineBlock->isAtomicInlineLevel() || firstLineBlock->isFloatingOrOutOfFlowPositioned()
             || !parentBlock
             || !parentBlock->canHaveFirstLineOrFirstLetterStyle())
             break;

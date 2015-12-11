@@ -43,14 +43,18 @@ LayoutReplaced::LayoutReplaced(Element* element)
     : LayoutBox(element)
     , m_intrinsicSize(defaultWidth, defaultHeight)
 {
-    setReplaced(true);
+    // TODO(jchaffraix): We should not set this boolean for block-level
+    // replaced elements (crbug.com/567964).
+    setIsAtomicInlineLevel(true);
 }
 
 LayoutReplaced::LayoutReplaced(Element* element, const LayoutSize& intrinsicSize)
     : LayoutBox(element)
     , m_intrinsicSize(intrinsicSize)
 {
-    setReplaced(true);
+    // TODO(jchaffraix): We should not set this boolean for block-level
+    // replaced elements (crbug.com/567964).
+    setIsAtomicInlineLevel(true);
 }
 
 LayoutReplaced::~LayoutReplaced()

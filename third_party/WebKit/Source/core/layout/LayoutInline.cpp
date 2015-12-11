@@ -266,7 +266,7 @@ void LayoutInline::addChild(LayoutObject* newChild, LayoutObject* beforeChild)
 
 static LayoutBoxModelObject* nextContinuation(LayoutObject* layoutObject)
 {
-    if (layoutObject->isInline() && !layoutObject->isReplaced())
+    if (layoutObject->isInline() && !layoutObject->isAtomicInlineLevel())
         return toLayoutInline(layoutObject)->continuation();
     return toLayoutBlock(layoutObject)->inlineElementContinuation();
 }

@@ -906,7 +906,7 @@ bool ContainerNode::getUpperLeftCorner(FloatPoint& point) const
 
     // FIXME: What is this code really trying to do?
     LayoutObject* o = layoutObject();
-    if (!o->isInline() || o->isReplaced()) {
+    if (!o->isInline() || o->isAtomicInlineLevel()) {
         point = o->localToAbsolute(FloatPoint(), UseTransforms);
         return true;
     }
@@ -931,7 +931,7 @@ bool ContainerNode::getUpperLeftCorner(FloatPoint& point) const
         }
         ASSERT(o);
 
-        if (!o->isInline() || o->isReplaced()) {
+        if (!o->isInline() || o->isAtomicInlineLevel()) {
             point = o->localToAbsolute(FloatPoint(), UseTransforms);
             return true;
         }
@@ -939,7 +939,7 @@ bool ContainerNode::getUpperLeftCorner(FloatPoint& point) const
         if (p->node() && p->node() == this && o->isText() && !o->isBR() && !toLayoutText(o)->hasTextBoxes()) {
             // Do nothing - skip unrendered whitespace that is a child or next sibling of the anchor.
             // FIXME: This fails to skip a whitespace sibling when there was also a whitespace child (because p has moved).
-        } else if ((o->isText() && !o->isBR()) || o->isReplaced()) {
+        } else if ((o->isText() && !o->isBR()) || o->isAtomicInlineLevel()) {
             point = FloatPoint();
             if (o->isText()) {
                 if (toLayoutText(o)->firstTextBox())
@@ -989,7 +989,7 @@ bool ContainerNode::getLowerRightCorner(FloatPoint& point) const
         return false;
 
     LayoutObject* o = layoutObject();
-    if (!o->isInline() || o->isReplaced()) {
+    if (!o->isInline() || o->isAtomicInlineLevel()) {
         LayoutBox* box = toLayoutBox(o);
         point = o->localToAbsolute(FloatPoint(box->size()), UseTransforms);
         return true;
@@ -1029,7 +1029,7 @@ bool ContainerNode::getLowerRightCorner(FloatPoint& point) const
             o = prev;
         }
         ASSERT(o);
-        if (o->isText() || o->isReplaced()) {
+        if (o->isText() || o->isAtomicInlineLevel()) {
             point = FloatPoint();
             if (o->isText()) {
                 LayoutText* text = toLayoutText(o);

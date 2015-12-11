@@ -244,9 +244,9 @@ public:
         return m_layoutObject->isListMarker();
     }
 
-    bool isReplaced() const
+    bool isAtomicInlineLevel() const
     {
-        return m_layoutObject->isReplaced();
+        return m_layoutObject->isAtomicInlineLevel();
     }
 
     bool isRubyRun() const

@@ -644,7 +644,7 @@ public:
     bool isBox() const { return m_bitfields.isBox(); }
     bool isInline() const { return m_bitfields.isInline(); } // inline object
     bool isDragging() const { return m_bitfields.isDragging(); }
-    bool isReplaced() const { return m_bitfields.isReplaced(); } // a "replaced" element (see CSS)
+    bool isAtomicInlineLevel() const { return m_bitfields.isAtomicInlineLevel(); }
     bool isHorizontalWritingMode() const { return m_bitfields.horizontalWritingMode(); }
     bool hasFlippedBlocksWritingMode() const
     {
@@ -824,7 +824,7 @@ public:
 
     void setIsText() { m_bitfields.setIsText(true); }
     void setIsBox() { m_bitfields.setIsBox(true); }
-    void setReplaced(bool isReplaced) { m_bitfields.setIsReplaced(isReplaced); }
+    void setIsAtomicInlineLevel(bool isAtomicInlineLevel) { m_bitfields.setIsAtomicInlineLevel(isAtomicInlineLevel); }
     void setHorizontalWritingMode(bool hasHorizontalWritingMode) { m_bitfields.setHorizontalWritingMode(hasHorizontalWritingMode); }
     void setHasOverflowClip(bool hasOverflowClip) { m_bitfields.setHasOverflowClip(hasOverflowClip); }
     void setHasLayer(bool hasLayer) { m_bitfields.setHasLayer(hasLayer); }
@@ -1610,7 +1610,7 @@ private:
             , m_isText(false)
             , m_isBox(false)
             , m_isInline(true)
-            , m_isReplaced(false)
+            , m_isAtomicInlineLevel(false)
             , m_horizontalWritingMode(true)
             , m_isDragging(false)
             , m_hasLayer(false)
@@ -1705,7 +1705,21 @@ private:
         // siblings (think of paragraphs).
         ADD_BOOLEAN_BITFIELD(isInline, IsInline);
 
-        ADD_BOOLEAN_BITFIELD(isReplaced, IsReplaced);
+        // This boolean is set if the element is an atomic inline-level box.
+        //
+        // In CSS, atomic inline-level boxes are laid out on a line but they
+        // are opaque from the perspective of line layout. This means that they
+        // can't be split across lines like normal inline boxes (LayoutInline).
+        // Examples of atomic inline-level elements: inline tables, inline
+        // blocks and replaced inline elements.
+        // See http://www.w3.org/TR/CSS2/visuren.html#inline-boxes.
+        //
+        // Our code is confused about the use of this boolean and confuses it
+        // with being replaced (see LayoutReplaced about this).
+        // TODO(jchaffraix): We should inspect callers and clarify their use.
+        // TODO(jchaffraix): We set this boolean for replaced elements that are
+        // not inline but shouldn't (crbug.com/567964). This should be enforced.
+        ADD_BOOLEAN_BITFIELD(isAtomicInlineLevel, IsAtomicInlineLevel);
         ADD_BOOLEAN_BITFIELD(horizontalWritingMode, HorizontalWritingMode);
         ADD_BOOLEAN_BITFIELD(isDragging, IsDragging);
 

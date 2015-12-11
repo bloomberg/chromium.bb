@@ -59,7 +59,7 @@ LayoutFullScreen::LayoutFullScreen()
     : LayoutFlexibleBox(nullptr)
     , m_placeholder(nullptr)
 {
-    setReplaced(false);
+    setIsAtomicInlineLevel(false);
 }
 
 LayoutFullScreen* LayoutFullScreen::createAnonymous(Document* document)

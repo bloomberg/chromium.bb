@@ -137,7 +137,7 @@ LayoutObject* FirstLetterPseudoElement::firstLetterTextLayoutObject(const Elemen
                 break;
             }
             firstLetterTextLayoutObject = firstLetterTextLayoutObject->nextSibling();
-        } else if (firstLetterTextLayoutObject->isReplaced() || firstLetterTextLayoutObject->isLayoutButton()
+        } else if (firstLetterTextLayoutObject->isAtomicInlineLevel() || firstLetterTextLayoutObject->isLayoutButton()
             || firstLetterTextLayoutObject->isMenuList()) {
             return nullptr;
         } else if (firstLetterTextLayoutObject->isFlexibleBoxIncludingDeprecated() || firstLetterTextLayoutObject->isLayoutGrid()) {

@@ -119,7 +119,7 @@ void InlineFlowBox::addToLine(InlineBox* child)
         const ComputedStyle& parentStyle = lineLayoutItem().styleRef(isFirstLineStyle());
         const ComputedStyle& childStyle = child->lineLayoutItem().styleRef(isFirstLineStyle());
         bool shouldClearDescendantsHaveSameLineHeightAndBaseline = false;
-        if (child->lineLayoutItem().isReplaced()) {
+        if (child->lineLayoutItem().isAtomicInlineLevel()) {
             shouldClearDescendantsHaveSameLineHeightAndBaseline = true;
         } else if (child->isText()) {
             if (child->lineLayoutItem().isBR() || (!child->lineLayoutItem().parent().isEqual(&layoutObject()))) {
@@ -157,7 +157,7 @@ void InlineFlowBox::addToLine(InlineBox* child)
             const ComputedStyle& childStyle = child->lineLayoutItem().styleRef(isFirstLineStyle());
             if (childStyle.letterSpacing() < 0 || childStyle.textShadow() || childStyle.textEmphasisMark() != TextEmphasisMarkNone || childStyle.textStrokeWidth())
                 child->clearKnownToHaveNoOverflow();
-        } else if (child->lineLayoutItem().isReplaced()) {
+        } else if (child->lineLayoutItem().isAtomicInlineLevel()) {
             LineLayoutBox box = LineLayoutBox(child->lineLayoutItem());
             if (box.hasOverflowModel() || box.hasSelfPaintingLayer())
                 child->clearKnownToHaveNoOverflow();
@@ -1143,7 +1143,7 @@ LayoutUnit InlineFlowBox::computeOverAnnotationAdjustment(LayoutUnit allowedPosi
         if (curr->isInlineFlowBox())
             result = std::max(result, toInlineFlowBox(curr)->computeOverAnnotationAdjustment(allowedPosition));
 
-        if (curr->lineLayoutItem().isReplaced() && curr->lineLayoutItem().isRubyRun() && curr->lineLayoutItem().style()->rubyPosition() == RubyPositionBefore) {
+        if (curr->lineLayoutItem().isAtomicInlineLevel() && curr->lineLayoutItem().isRubyRun() && curr->lineLayoutItem().style()->rubyPosition() == RubyPositionBefore) {
             LineLayoutRubyRun rubyRun = LineLayoutRubyRun(curr->lineLayoutItem());
             LayoutRubyText* rubyText = rubyRun.rubyText();
             if (!rubyText)
@@ -1191,7 +1191,7 @@ LayoutUnit InlineFlowBox::computeUnderAnnotationAdjustment(LayoutUnit allowedPos
         if (curr->isInlineFlowBox())
             result = std::max(result, toInlineFlowBox(curr)->computeUnderAnnotationAdjustment(allowedPosition));
 
-        if (curr->lineLayoutItem().isReplaced() && curr->lineLayoutItem().isRubyRun() && curr->lineLayoutItem().style()->rubyPosition() == RubyPositionAfter) {
+        if (curr->lineLayoutItem().isAtomicInlineLevel() && curr->lineLayoutItem().isRubyRun() && curr->lineLayoutItem().style()->rubyPosition() == RubyPositionAfter) {
             LineLayoutRubyRun rubyRun = LineLayoutRubyRun(curr->lineLayoutItem());
             LayoutRubyText* rubyText = rubyRun.rubyText();
             if (!rubyText)

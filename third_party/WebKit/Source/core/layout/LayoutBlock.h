@@ -372,7 +372,10 @@ protected:
 
     void updateBlockChildDirtyBitsBeforeLayout(bool relayoutChildren, LayoutBox&);
 
-    bool isInlineBlockOrInlineTable() const final { return isInline() && isReplaced(); }
+    // TODO(jchaffraix): We should rename this function as inline-flex and inline-grid as also covered.
+    // Alternatively it should be removed as we clarify the meaning of isAtomicInlineLevel to imply
+    // isInline.
+    bool isInlineBlockOrInlineTable() const final { return isInline() && isAtomicInlineLevel(); }
 
     void invalidatePaintOfSubtreesIfNeeded(PaintInvalidationState& childPaintInvalidationState) override;
     void invalidateDisplayItemClients(const LayoutBoxModelObject& paintInvalidationContainer, PaintInvalidationReason, const LayoutRect* paintInvalidationRect) const override;

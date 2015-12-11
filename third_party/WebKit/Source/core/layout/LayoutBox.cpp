@@ -1699,7 +1699,7 @@ LayoutSize LayoutBox::offsetFromContainer(const LayoutObject* o, const LayoutPoi
     if (isInFlowPositioned())
         offset += offsetForInFlowPosition();
 
-    if (!isInline() || isReplaced()) {
+    if (!isInline() || isAtomicInlineLevel()) {
         offset += topLeftLocationOffset();
         if (o->isLayoutFlowThread()) {
             // So far the point has been in flow thread coordinates (i.e. as if everything in
@@ -1764,7 +1764,7 @@ void LayoutBox::positionLineBox(InlineBox* box)
         // Nuke the box.
         box->remove(DontMarkLineBoxes);
         box->destroy();
-    } else if (isReplaced()) {
+    } else if (isAtomicInlineLevel()) {
         // FIXME: the call to roundedLayoutPoint() below is temporary and should be removed once
         // the transition to LayoutUnit-based types is complete (crbug.com/321237)
         setLocationAndUpdateOverflowControlsIfNeeded(box->topLeft());
@@ -2349,8 +2349,8 @@ void LayoutBox::computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logica
     computedValues.m_extent = logicalHeight;
     computedValues.m_position = logicalTop;
 
-    // Cell height is managed by the table and inline non-replaced elements do not support a height property.
-    if (isTableCell() || (isInline() && !isReplaced()))
+    // Cell height is managed by the table and non-atomic inline-level elements do not support a height property.
+    if (isTableCell() || (isInline() && !isAtomicInlineLevel()))
         return;
 
     Length h;
@@ -2475,7 +2475,7 @@ LayoutUnit LayoutBox::computeIntrinsicLogicalContentHeightUsing(const Length& lo
     // FIXME(cbiesinger): The css-sizing spec is considering changing what min-content/max-content should resolve to.
     // If that happens, this code will have to change.
     if (logicalHeightLength.isMinContent() || logicalHeightLength.isMaxContent() || logicalHeightLength.isFitContent()) {
-        if (isReplaced())
+        if (isAtomicInlineLevel())
             return intrinsicSize().height();
         if (m_intrinsicContentLogicalHeight != -1)
             return m_intrinsicContentLogicalHeight;
@@ -2987,7 +2987,7 @@ static void computeInlineStaticDistance(Length& logicalLeft, Length& logicalRigh
 
 void LayoutBox::computePositionedLogicalWidth(LogicalExtentComputedValues& computedValues) const
 {
-    if (isReplaced()) {
+    if (isAtomicInlineLevel()) {
         computePositionedLogicalWidthReplaced(computedValues);
         return;
     }
@@ -3314,7 +3314,7 @@ static void computeBlockStaticDistance(Length& logicalTop, Length& logicalBottom
 
 void LayoutBox::computePositionedLogicalHeight(LogicalExtentComputedValues& computedValues) const
 {
-    if (isReplaced()) {
+    if (isAtomicInlineLevel()) {
         computePositionedLogicalHeightReplaced(computedValues);
         return;
     }
@@ -3884,13 +3884,13 @@ LayoutRect LayoutBox::localCaretRect(InlineBox* box, int caretOffset, LayoutUnit
     // If height of box is smaller than font height, use the latter one,
     // otherwise the caret might become invisible.
     //
-    // Also, if the box is not a replaced element, always use the font height.
+    // Also, if the box is not an atomic inline-level element, always use the font height.
     // This prevents the "big caret" bug described in:
     // <rdar://problem/3777804> Deleting all content in a document can result in giant tall-as-window insertion point
     //
     // FIXME: ignoring :first-line, missing good reason to take care of
     LayoutUnit fontHeight = style()->fontMetrics().height();
-    if (fontHeight > rect.height() || (!isReplaced() && !isTable()))
+    if (fontHeight > rect.height() || (!isAtomicInlineLevel() && !isTable()))
         rect.setHeight(fontHeight);
 
     if (extraWidthToEndOfLine)
@@ -4007,15 +4007,15 @@ bool LayoutBox::shrinkToAvoidFloats() const
     return style()->width().isAuto();
 }
 
-static bool isReplacedElement(Node* node)
+static bool shouldBeConsideredAsReplaced(Node* node)
 {
-    // Checkboxes and radioboxes are not isReplaced() nor do they have their own layoutObject in which to override avoidFloats().
+    // Checkboxes and radioboxes are not isAtomicInlineLevel() nor do they have their own layoutObject in which to override avoidFloats().
     return node && node->isElementNode() && (toElement(node)->isFormControlElement() || isHTMLImageElement(toElement(node)));
 }
 
 bool LayoutBox::avoidsFloats() const
 {
-    return isReplaced() || isReplacedElement(node()) || hasOverflowClip() || isHR() || isLegend() || isWritingModeRoot() || isFlexItemIncludingDeprecated();
+    return isAtomicInlineLevel() || shouldBeConsideredAsReplaced(node()) || hasOverflowClip() || isHR() || isLegend() || isWritingModeRoot() || isFlexItemIncludingDeprecated();
 }
 
 bool LayoutBox::hasNonCompositedScrollbars() const
@@ -4421,7 +4421,9 @@ bool LayoutBox::hasUnsplittableScrollingOverflow() const
 
 LayoutBox::PaginationBreakability LayoutBox::paginationBreakability() const
 {
-    if (isReplaced()
+    // TODO(mstensho): It is wrong to check isAtomicInlineLevel() as we
+    // actually look for replaced elements.
+    if (isAtomicInlineLevel()
         || hasUnsplittableScrollingOverflow()
         || (parent() && isWritingModeRoot())
         || (isOutOfFlowPositioned() && style()->position() == FixedPosition))
@@ -4438,7 +4440,7 @@ LayoutBox::PaginationBreakability LayoutBox::paginationBreakability() const
 
 LayoutUnit LayoutBox::lineHeight(bool /*firstLine*/, LineDirectionMode direction, LinePositionMode /*linePositionMode*/) const
 {
-    if (isReplaced())
+    if (isAtomicInlineLevel())
         return direction == HorizontalLine ? marginHeight() + size().height() : marginWidth() + size().width();
     return LayoutUnit();
 }
@@ -4446,7 +4448,7 @@ LayoutUnit LayoutBox::lineHeight(bool /*firstLine*/, LineDirectionMode direction
 int LayoutBox::baselinePosition(FontBaseline baselineType, bool /*firstLine*/, LineDirectionMode direction, LinePositionMode linePositionMode) const
 {
     ASSERT(linePositionMode == PositionOnContainingLine);
-    if (isReplaced()) {
+    if (isAtomicInlineLevel()) {
         int result = direction == HorizontalLine ? roundToInt(marginHeight() + size().height()) : roundToInt(marginWidth() + size().width());
         if (baselineType == AlphabeticBaseline)
             return result;

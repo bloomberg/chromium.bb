@@ -1728,8 +1728,8 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
     case CSSPropertyHeight:
         if (layoutObject) {
             // According to http://www.w3.org/TR/CSS2/visudet.html#the-height-property,
-            // the "height" property does not apply for non-replaced inline elements.
-            if (!layoutObject->isReplaced() && layoutObject->isInline())
+            // the "height" property does not apply for non-atomic inline elements.
+            if (!layoutObject->isAtomicInlineLevel() && layoutObject->isInline())
                 return cssValuePool().createIdentifierValue(CSSValueAuto);
             return zoomAdjustedPixelValue(sizingBox(layoutObject).height(), style);
         }
@@ -2046,8 +2046,8 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
     case CSSPropertyWidth:
         if (layoutObject) {
             // According to http://www.w3.org/TR/CSS2/visudet.html#the-width-property,
-            // the "width" property does not apply for non-replaced inline elements.
-            if (!layoutObject->isReplaced() && layoutObject->isInline())
+            // the "width" property does not apply for non-atomic inline elements.
+            if (!layoutObject->isAtomicInlineLevel() && layoutObject->isInline())
                 return cssValuePool().createIdentifierValue(CSSValueAuto);
             return zoomAdjustedPixelValue(sizingBox(layoutObject).width(), style);
         }
