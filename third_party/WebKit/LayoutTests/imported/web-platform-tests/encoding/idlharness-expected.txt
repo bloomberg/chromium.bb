@@ -5,6 +5,7 @@ This test validates the WebIDL included in the Encoding Living Standard.
 This is a testharness.js-based test.
 PASS TextDecoder interface: existence and properties of interface object 
 PASS TextDecoder interface object length 
+PASS TextDecoder interface object name 
 FAIL TextDecoder interface: existence and properties of interface prototype object assert_equals: class string of TextDecoder.prototype expected "[object TextDecoderPrototype]" but got "[object Object]"
 PASS TextDecoder interface: existence and properties of interface prototype object's "constructor" property 
 PASS TextDecoder interface: attribute encoding 
@@ -20,6 +21,7 @@ PASS TextDecoder interface: new TextDecoder() must inherit property "decode" wit
 PASS TextDecoder interface: calling decode(BufferSource,TextDecodeOptions) on new TextDecoder() with too few arguments must throw TypeError 
 PASS TextEncoder interface: existence and properties of interface object 
 PASS TextEncoder interface object length 
+PASS TextEncoder interface object name 
 FAIL TextEncoder interface: existence and properties of interface prototype object assert_equals: class string of TextEncoder.prototype expected "[object TextEncoderPrototype]" but got "[object Object]"
 PASS TextEncoder interface: existence and properties of interface prototype object's "constructor" property 
 PASS TextEncoder interface: attribute encoding 

@@ -5,6 +5,7 @@ FAIL URL interface: operation createFor(Blob) assert_own_property: interface obj
 PASS URL interface: operation revokeObjectURL(DOMString) 
 PASS Blob interface: existence and properties of interface object 
 PASS Blob interface object length 
+PASS Blob interface object name 
 FAIL Blob interface: existence and properties of interface prototype object assert_equals: class string of Blob.prototype expected "[object BlobPrototype]" but got "[object Object]"
 PASS Blob interface: existence and properties of interface prototype object's "constructor" property 
 PASS Blob interface: attribute size 
@@ -22,6 +23,7 @@ PASS Blob interface: calling slice(long long,long long,DOMString) on new Blob(["
 PASS Blob interface: new Blob(["TEST"]) must inherit property "close" with the proper type (4) 
 PASS File interface: existence and properties of interface object 
 PASS File interface object length 
+PASS File interface object name 
 FAIL File interface: existence and properties of interface prototype object assert_equals: class string of File.prototype expected "[object FilePrototype]" but got "[object Object]"
 PASS File interface: existence and properties of interface prototype object's "constructor" property 
 PASS File interface: attribute name 
@@ -38,6 +40,7 @@ PASS Blob interface: calling slice(long long,long long,DOMString) on new File(["
 PASS Blob interface: new File(["myFileBits"], "myFileName") must inherit property "close" with the proper type (4) 
 PASS FileList interface: existence and properties of interface object 
 PASS FileList interface object length 
+PASS FileList interface object name 
 FAIL FileList interface: existence and properties of interface prototype object assert_equals: class string of FileList.prototype expected "[object FileListPrototype]" but got "[object Object]"
 PASS FileList interface: existence and properties of interface prototype object's "constructor" property 
 PASS FileList interface: operation item(unsigned long) 
@@ -49,6 +52,7 @@ PASS FileList interface: calling item(unsigned long) on file_input.files with to
 PASS FileList interface: file_input.files must inherit property "length" with the proper type (1) 
 PASS FileReader interface: existence and properties of interface object 
 PASS FileReader interface object length 
+PASS FileReader interface object name 
 FAIL FileReader interface: existence and properties of interface prototype object assert_equals: class string of FileReader.prototype expected "[object FileReaderPrototype]" but got "[object Object]"
 PASS FileReader interface: existence and properties of interface prototype object's "constructor" property 
 PASS FileReader interface: operation readAsArrayBuffer(Blob) 

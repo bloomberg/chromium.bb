@@ -2,6 +2,7 @@ This is a testharness.js-based test.
 FAIL Window interface: attribute indexedDB assert_equals: "indexedDB" must have a getter expected "function" but got "undefined"
 PASS IDBKeyRange interface: existence and properties of interface object 
 PASS IDBKeyRange interface object length 
+PASS IDBKeyRange interface object name 
 FAIL IDBKeyRange interface: existence and properties of interface prototype object assert_equals: class string of IDBKeyRange.prototype expected "[object IDBKeyRangePrototype]" but got "[object Object]"
 PASS IDBKeyRange interface: existence and properties of interface prototype object's "constructor" property 
 PASS IDBKeyRange interface: attribute lower 
@@ -28,6 +29,7 @@ PASS IDBKeyRange interface: IDBKeyRange.only(0) must inherit property "bound" wi
 PASS IDBKeyRange interface: calling bound(any,any,boolean,boolean) on IDBKeyRange.only(0) with too few arguments must throw TypeError 
 PASS IDBRequest interface: existence and properties of interface object 
 PASS IDBRequest interface object length 
+PASS IDBRequest interface object name 
 FAIL IDBRequest interface: existence and properties of interface prototype object assert_equals: class string of IDBRequest.prototype expected "[object IDBRequestPrototype]" but got "[object Object]"
 PASS IDBRequest interface: existence and properties of interface prototype object's "constructor" property 
 PASS IDBRequest interface: attribute result 
@@ -39,12 +41,14 @@ PASS IDBRequest interface: attribute onsuccess
 PASS IDBRequest interface: attribute onerror 
 PASS IDBOpenDBRequest interface: existence and properties of interface object 
 PASS IDBOpenDBRequest interface object length 
+PASS IDBOpenDBRequest interface object name 
 FAIL IDBOpenDBRequest interface: existence and properties of interface prototype object assert_equals: class string of IDBOpenDBRequest.prototype expected "[object IDBOpenDBRequestPrototype]" but got "[object Object]"
 PASS IDBOpenDBRequest interface: existence and properties of interface prototype object's "constructor" property 
 PASS IDBOpenDBRequest interface: attribute onblocked 
 PASS IDBOpenDBRequest interface: attribute onupgradeneeded 
 PASS IDBVersionChangeEvent interface: existence and properties of interface object 
 PASS IDBVersionChangeEvent interface object length 
+PASS IDBVersionChangeEvent interface object name 
 FAIL IDBVersionChangeEvent interface: existence and properties of interface prototype object assert_equals: class string of IDBVersionChangeEvent.prototype expected "[object IDBVersionChangeEventPrototype]" but got "[object Object]"
 PASS IDBVersionChangeEvent interface: existence and properties of interface prototype object's "constructor" property 
 PASS IDBVersionChangeEvent interface: attribute oldVersion 
@@ -55,6 +59,7 @@ PASS IDBVersionChangeEvent interface: new IDBVersionChangeEvent('foo') must inhe
 PASS IDBVersionChangeEvent interface: new IDBVersionChangeEvent('foo') must inherit property "newVersion" with the proper type (1) 
 PASS IDBFactory interface: existence and properties of interface object 
 PASS IDBFactory interface object length 
+PASS IDBFactory interface object name 
 FAIL IDBFactory interface: existence and properties of interface prototype object assert_equals: class string of IDBFactory.prototype expected "[object IDBFactoryPrototype]" but got "[object Object]"
 PASS IDBFactory interface: existence and properties of interface prototype object's "constructor" property 
 PASS IDBFactory interface: operation open(DOMString,unsigned long long) 
@@ -70,6 +75,7 @@ PASS IDBFactory interface: window.indexedDB must inherit property "cmp" with the
 PASS IDBFactory interface: calling cmp(any,any) on window.indexedDB with too few arguments must throw TypeError 
 PASS IDBDatabase interface: existence and properties of interface object 
 PASS IDBDatabase interface object length 
+PASS IDBDatabase interface object name 
 FAIL IDBDatabase interface: existence and properties of interface prototype object assert_equals: class string of IDBDatabase.prototype expected "[object IDBDatabasePrototype]" but got "[object Object]"
 PASS IDBDatabase interface: existence and properties of interface prototype object's "constructor" property 
 PASS IDBDatabase interface: attribute name 
@@ -84,6 +90,7 @@ PASS IDBDatabase interface: attribute onerror
 PASS IDBDatabase interface: attribute onversionchange 
 PASS IDBObjectStore interface: existence and properties of interface object 
 PASS IDBObjectStore interface object length 
+PASS IDBObjectStore interface object name 
 FAIL IDBObjectStore interface: existence and properties of interface prototype object assert_equals: class string of IDBObjectStore.prototype expected "[object IDBObjectStorePrototype]" but got "[object Object]"
 PASS IDBObjectStore interface: existence and properties of interface prototype object's "constructor" property 
 PASS IDBObjectStore interface: attribute name 
@@ -103,6 +110,7 @@ PASS IDBObjectStore interface: operation deleteIndex(DOMString)
 PASS IDBObjectStore interface: operation count(any) 
 PASS IDBIndex interface: existence and properties of interface object 
 PASS IDBIndex interface object length 
+PASS IDBIndex interface object name 
 FAIL IDBIndex interface: existence and properties of interface prototype object assert_equals: class string of IDBIndex.prototype expected "[object IDBIndexPrototype]" but got "[object Object]"
 PASS IDBIndex interface: existence and properties of interface prototype object's "constructor" property 
 PASS IDBIndex interface: attribute name 
@@ -117,6 +125,7 @@ PASS IDBIndex interface: operation getKey(any)
 PASS IDBIndex interface: operation count(any) 
 PASS IDBCursor interface: existence and properties of interface object 
 PASS IDBCursor interface object length 
+PASS IDBCursor interface object name 
 FAIL IDBCursor interface: existence and properties of interface prototype object assert_equals: class string of IDBCursor.prototype expected "[object IDBCursorPrototype]" but got "[object Object]"
 PASS IDBCursor interface: existence and properties of interface prototype object's "constructor" property 
 PASS IDBCursor interface: attribute source 
@@ -129,11 +138,13 @@ PASS IDBCursor interface: operation continue(any)
 PASS IDBCursor interface: operation delete() 
 PASS IDBCursorWithValue interface: existence and properties of interface object 
 PASS IDBCursorWithValue interface object length 
+PASS IDBCursorWithValue interface object name 
 FAIL IDBCursorWithValue interface: existence and properties of interface prototype object assert_equals: class string of IDBCursorWithValue.prototype expected "[object IDBCursorWithValuePrototype]" but got "[object Object]"
 PASS IDBCursorWithValue interface: existence and properties of interface prototype object's "constructor" property 
 PASS IDBCursorWithValue interface: attribute value 
 PASS IDBTransaction interface: existence and properties of interface object 
 PASS IDBTransaction interface object length 
+PASS IDBTransaction interface object name 
 FAIL IDBTransaction interface: existence and properties of interface prototype object assert_equals: class string of IDBTransaction.prototype expected "[object IDBTransactionPrototype]" but got "[object Object]"
 PASS IDBTransaction interface: existence and properties of interface prototype object's "constructor" property 
 PASS IDBTransaction interface: attribute mode 

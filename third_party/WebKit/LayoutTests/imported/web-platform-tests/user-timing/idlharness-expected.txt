@@ -15,10 +15,12 @@ PASS Performance interface: window.performance must inherit property "clearMeasu
 PASS Performance interface: calling clearMeasures(DOMString) on window.performance with too few arguments must throw TypeError 
 PASS PerformanceMark interface: existence and properties of interface object 
 PASS PerformanceMark interface object length 
+PASS PerformanceMark interface object name 
 FAIL PerformanceMark interface: existence and properties of interface prototype object assert_equals: class string of PerformanceMark.prototype expected "[object PerformanceMarkPrototype]" but got "[object Object]"
 PASS PerformanceMark interface: existence and properties of interface prototype object's "constructor" property 
 PASS PerformanceMeasure interface: existence and properties of interface object 
 PASS PerformanceMeasure interface object length 
+PASS PerformanceMeasure interface object name 
 FAIL PerformanceMeasure interface: existence and properties of interface prototype object assert_equals: class string of PerformanceMeasure.prototype expected "[object PerformanceMeasurePrototype]" but got "[object Object]"
 PASS PerformanceMeasure interface: existence and properties of interface prototype object's "constructor" property 
 Harness: the test ran to completion.

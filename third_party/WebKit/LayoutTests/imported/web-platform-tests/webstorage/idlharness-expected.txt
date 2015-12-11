@@ -3,6 +3,7 @@ FAIL Window interface: attribute sessionStorage assert_equals: "sessionStorage" 
 FAIL Window interface: attribute localStorage assert_equals: "localStorage" must have a getter expected "function" but got "undefined"
 PASS Storage interface: existence and properties of interface object 
 PASS Storage interface object length 
+PASS Storage interface object name 
 FAIL Storage interface: existence and properties of interface prototype object assert_equals: class string of Storage.prototype expected "[object StoragePrototype]" but got "[object Object]"
 PASS Storage interface: existence and properties of interface prototype object's "constructor" property 
 FAIL Storage interface: attribute length assert_true: property is not enumerable expected true got false
@@ -25,6 +26,7 @@ PASS Storage interface: calling removeItem(DOMString) on window.localStorage wit
 PASS Storage interface: window.localStorage must inherit property "clear" with the proper type (5) 
 PASS StorageEvent interface: existence and properties of interface object 
 PASS StorageEvent interface object length 
+PASS StorageEvent interface object name 
 FAIL StorageEvent interface: existence and properties of interface prototype object assert_equals: class string of StorageEvent.prototype expected "[object StorageEventPrototype]" but got "[object Object]"
 PASS StorageEvent interface: existence and properties of interface prototype object's "constructor" property 
 PASS StorageEvent interface: attribute key 
