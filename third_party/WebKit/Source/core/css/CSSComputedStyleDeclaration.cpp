@@ -641,9 +641,12 @@ String CSSComputedStyleDeclaration::getPropertyValue(const String& propertyName)
 {
     CSSPropertyID propertyID = cssPropertyID(propertyName);
     if (!propertyID) {
-        if (!RuntimeEnabledFeatures::cssVariablesEnabled() || !CSSVariableParser::isValidVariableName(propertyName))
-            return String();
-        return getPropertyCSSValue(AtomicString(propertyName))->cssText();
+        if (RuntimeEnabledFeatures::cssVariablesEnabled() && CSSVariableParser::isValidVariableName(propertyName)) {
+            RefPtrWillBeRawPtr<CSSValue> value = getPropertyCSSValue(AtomicString(propertyName));
+            if (value)
+                return value->cssText();
+        }
+        return String();
     }
     ASSERT(CSSPropertyMetadata::isEnabledProperty(propertyID));
     return getPropertyValue(propertyID);
