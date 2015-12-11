@@ -82,22 +82,8 @@ void ValidateDisplayItemListSerialization(const gfx::Size& layer_size,
   scoped_refptr<DisplayItemList> new_list =
       DisplayItemList::CreateFromProto(proto);
 
-  // Finalize the DisplayItemLists to perform raster.
-  new_list->Finalize();
-
-  const int pixel_size = 4 * layer_size.GetArea();
-
-  // Get the rendered contents of the old DisplayItemList.
-  scoped_ptr<unsigned char[]> pixels(new unsigned char[pixel_size]);
-  memset(pixels.get(), 0, pixel_size);
-  DrawDisplayList(pixels.get(), gfx::Rect(layer_size), list);
-
-  // Get the rendered contents of the new DisplayItemList.
-  scoped_ptr<unsigned char[]> new_pixels(new unsigned char[pixel_size]);
-  memset(new_pixels.get(), 0, pixel_size);
-  DrawDisplayList(new_pixels.get(), gfx::Rect(layer_size), new_list);
-
-  EXPECT_EQ(0, memcmp(pixels.get(), new_pixels.get(), pixel_size));
+  EXPECT_TRUE(
+      AreDisplayListDrawingResultsSame(gfx::Rect(layer_size), list, new_list));
 }
 
 }  // namespace

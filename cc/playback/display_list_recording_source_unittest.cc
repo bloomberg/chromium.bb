@@ -6,6 +6,7 @@
 
 #include "cc/base/region.h"
 #include "cc/playback/display_list_raster_source.h"
+#include "cc/proto/display_list_recording_source.pb.h"
 #include "cc/test/fake_content_layer_client.h"
 #include "cc/test/fake_display_list_recording_source.h"
 #include "cc/test/skia_common.h"
@@ -28,6 +29,54 @@ scoped_refptr<DisplayListRasterSource> CreateRasterSource(
   bool can_use_lcd_text = true;
   return DisplayListRasterSource::CreateFromDisplayListRecordingSource(
       recording_source, can_use_lcd_text);
+}
+
+void ValidateRecordingSourceSerialization(
+    FakeDisplayListRecordingSource* source) {
+  proto::DisplayListRecordingSource proto;
+  source->ToProtobuf(&proto);
+
+  FakeDisplayListRecordingSource new_source;
+  new_source.FromProtobuf(proto);
+
+  EXPECT_TRUE(source->EqualsTo(new_source));
+}
+
+TEST(DisplayListRecordingSourceTest, TestEmptySerializationDeserialization) {
+  gfx::Rect recorded_viewport(0, 0, 256, 256);
+
+  scoped_ptr<FakeDisplayListRecordingSource> recording_source =
+      CreateRecordingSource(recorded_viewport);
+  recording_source->SetDisplayListUsesCachedPicture(false);
+  recording_source->SetGenerateDiscardableImagesMetadata(true);
+  recording_source->Rerecord();
+
+  ValidateRecordingSourceSerialization(recording_source.get());
+}
+
+TEST(DisplayListRecordingSourceTest,
+     TestPopulatedSerializationDeserialization) {
+  gfx::Rect recorded_viewport(0, 0, 256, 256);
+
+  scoped_ptr<FakeDisplayListRecordingSource> recording_source =
+      CreateRecordingSource(recorded_viewport);
+  recording_source->SetDisplayListUsesCachedPicture(false);
+
+  SkPaint simple_paint;
+  simple_paint.setColor(SkColorSetARGB(255, 12, 23, 34));
+  recording_source->add_draw_rect_with_paint(gfx::Rect(0, 0, 256, 256),
+                                             simple_paint);
+  recording_source->add_draw_rect_with_paint(gfx::Rect(128, 128, 512, 512),
+                                             simple_paint);
+  recording_source->add_draw_rect_with_paint(gfx::Rect(512, 0, 256, 256),
+                                             simple_paint);
+  recording_source->add_draw_rect_with_paint(gfx::Rect(0, 512, 256, 256),
+                                             simple_paint);
+
+  recording_source->SetGenerateDiscardableImagesMetadata(true);
+  recording_source->Rerecord();
+
+  ValidateRecordingSourceSerialization(recording_source.get());
 }
 
 TEST(DisplayListRecordingSourceTest, DiscardableImagesWithTransform) {

@@ -66,6 +66,8 @@ scoped_refptr<DisplayItemList> DisplayItemList::CreateFromProto(
                                                   item_proto);
   }
 
+  list->Finalize();
+
   return list;
 }
 
@@ -160,6 +162,8 @@ bool DisplayItemList::RetainsIndividualDisplayItems() const {
 void DisplayItemList::Finalize() {
   // TODO(wkorman): Uncomment the assert below once we've investigated
   // and resolved issues. http://crbug.com/557905
+  // TODO(dtrainor): Need to deal with serializing visual_rects_.
+  // http://crbug.com/568757.
   // DCHECK_EQ(items_.size(), visual_rects_.size());
 
   // TODO(vmpstr): Build and make use of an RTree from the visual

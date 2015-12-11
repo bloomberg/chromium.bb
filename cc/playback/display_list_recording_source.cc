@@ -12,6 +12,8 @@
 #include "cc/layers/content_layer_client.h"
 #include "cc/playback/display_item_list.h"
 #include "cc/playback/display_list_raster_source.h"
+#include "cc/proto/display_list_recording_source.pb.h"
+#include "cc/proto/gfx_conversions.h"
 #include "skia/ext/analysis_canvas.h"
 
 namespace {
@@ -44,6 +46,40 @@ DisplayListRecordingSource::DisplayListRecordingSource()
 DisplayListRecordingSource::~DisplayListRecordingSource() {
 }
 
+void DisplayListRecordingSource::ToProtobuf(
+    proto::DisplayListRecordingSource* proto) const {
+  RectToProto(recorded_viewport_, proto->mutable_recorded_viewport());
+  SizeToProto(size_, proto->mutable_size());
+  proto->set_slow_down_raster_scale_factor_for_debug(
+      slow_down_raster_scale_factor_for_debug_);
+  proto->set_generate_discardable_images_metadata(
+      generate_discardable_images_metadata_);
+  proto->set_requires_clear(requires_clear_);
+  proto->set_is_solid_color(is_solid_color_);
+  proto->set_clear_canvas_with_debug_color(clear_canvas_with_debug_color_);
+  proto->set_solid_color(static_cast<uint64_t>(solid_color_));
+  proto->set_background_color(static_cast<uint64_t>(background_color_));
+  display_list_->ToProtobuf(proto->mutable_display_list());
+}
+
+void DisplayListRecordingSource::FromProtobuf(
+    const proto::DisplayListRecordingSource& proto) {
+  recorded_viewport_ = ProtoToRect(proto.recorded_viewport());
+  size_ = ProtoToSize(proto.size());
+  slow_down_raster_scale_factor_for_debug_ =
+      proto.slow_down_raster_scale_factor_for_debug();
+  generate_discardable_images_metadata_ =
+      proto.generate_discardable_images_metadata();
+  requires_clear_ = proto.requires_clear();
+  is_solid_color_ = proto.is_solid_color();
+  clear_canvas_with_debug_color_ = proto.clear_canvas_with_debug_color();
+  solid_color_ = static_cast<SkColor>(proto.solid_color());
+  background_color_ = static_cast<SkColor>(proto.background_color());
+  display_list_ = DisplayItemList::CreateFromProto(proto.display_list());
+
+  FinishDisplayItemListUpdate();
+}
+
 void DisplayListRecordingSource::UpdateInvalidationForNewViewport(
     const gfx::Rect& old_recorded_viewport,
     const gfx::Rect& new_recorded_viewport,
@@ -56,6 +92,13 @@ void DisplayListRecordingSource::UpdateInvalidationForNewViewport(
   Region no_longer_exposed_region(old_recorded_viewport);
   no_longer_exposed_region.Subtract(new_recorded_viewport);
   invalidation->Union(no_longer_exposed_region);
+}
+
+void DisplayListRecordingSource::FinishDisplayItemListUpdate() {
+  DetermineIfSolidColor();
+  display_list_->EmitTraceSnapshot();
+  if (generate_discardable_images_metadata_)
+    display_list_->GenerateDiscardableImagesMetadata();
 }
 
 bool DisplayListRecordingSource::UpdateAndExpandInvalidation(
@@ -117,10 +160,7 @@ bool DisplayListRecordingSource::UpdateAndExpandInvalidation(
   display_list_ = painter->PaintContentsToDisplayList(painting_control);
   painter_reported_memory_usage_ = painter->GetApproximateUnsharedMemoryUsage();
 
-  DetermineIfSolidColor();
-  display_list_->EmitTraceSnapshot();
-  if (generate_discardable_images_metadata_)
-    display_list_->GenerateDiscardableImagesMetadata();
+  FinishDisplayItemListUpdate();
 
   return true;
 }

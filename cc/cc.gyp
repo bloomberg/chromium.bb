@@ -600,6 +600,7 @@
       'sources': [
         'proto/compositor_message.proto',
         'proto/display_item.proto',
+        'proto/display_list_recording_source.proto',
         'proto/layer.proto',
         'proto/layer_position_constraint.proto',
         'proto/layer_tree_debug_state.proto',

@@ -28,10 +28,12 @@ FakeContentLayerClient::ImageData::ImageData(const SkImage* img,
 FakeContentLayerClient::ImageData::~ImageData() {}
 
 FakeContentLayerClient::FakeContentLayerClient()
-    : fill_with_nonsolid_color_(false),
+    : display_list_use_cached_picture_(true),
+      fill_with_nonsolid_color_(false),
       last_canvas_(nullptr),
       last_painting_control_(PAINTING_BEHAVIOR_NORMAL),
-      reported_memory_usage_(0) {}
+      reported_memory_usage_(0),
+      bounds_set_(false) {}
 
 FakeContentLayerClient::~FakeContentLayerClient() {
 }
@@ -47,7 +49,7 @@ FakeContentLayerClient::PaintContentsToDisplayList(
   // Cached picture is used because unit tests expect to be able to
   // use GatherPixelRefs.
   DisplayItemListSettings settings;
-  settings.use_cached_picture = true;
+  settings.use_cached_picture = display_list_use_cached_picture_;
   scoped_refptr<DisplayItemList> display_list =
       DisplayItemList::Create(PaintableRegion(), settings);
   SkPictureRecorder recorder;

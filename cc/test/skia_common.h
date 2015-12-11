@@ -23,6 +23,10 @@ void DrawDisplayList(unsigned char* buffer,
                      const gfx::Rect& layer_rect,
                      scoped_refptr<DisplayItemList> list);
 
+bool AreDisplayListDrawingResultsSame(const gfx::Rect& layer_rect,
+                                      scoped_refptr<DisplayItemList> list_a,
+                                      scoped_refptr<DisplayItemList> list_b);
+
 skia::RefPtr<SkImage> CreateDiscardableImage(const gfx::Size& size);
 
 }  // namespace cc

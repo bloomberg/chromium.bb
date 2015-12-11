@@ -13,6 +13,11 @@
 #include "ui/gfx/geometry/size.h"
 
 namespace cc {
+
+namespace proto {
+class DisplayListRecordingSource;
+}
+
 class ContentLayerClient;
 class DisplayItemList;
 class DisplayListRasterSource;
@@ -33,6 +38,9 @@ class CC_EXPORT DisplayListRecordingSource {
 
   DisplayListRecordingSource();
   virtual ~DisplayListRecordingSource();
+
+  void ToProtobuf(proto::DisplayListRecordingSource* proto) const;
+  void FromProtobuf(const proto::DisplayListRecordingSource& proto);
 
   bool UpdateAndExpandInvalidation(ContentLayerClient* painter,
                                    Region* invalidation,
@@ -74,6 +82,7 @@ class CC_EXPORT DisplayListRecordingSource {
   void UpdateInvalidationForNewViewport(const gfx::Rect& old_recorded_viewport,
                                         const gfx::Rect& new_recorded_viewport,
                                         Region* invalidation);
+  void FinishDisplayItemListUpdate();
 
   friend class DisplayListRasterSource;
 

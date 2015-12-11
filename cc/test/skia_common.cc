@@ -35,6 +35,21 @@ void DrawDisplayList(unsigned char* buffer,
   list->Raster(&canvas, NULL, gfx::Rect(), 1.0f);
 }
 
+bool AreDisplayListDrawingResultsSame(const gfx::Rect& layer_rect,
+                                      scoped_refptr<DisplayItemList> list_a,
+                                      scoped_refptr<DisplayItemList> list_b) {
+  const size_t pixel_size = 4 * layer_rect.size().GetArea();
+
+  scoped_ptr<unsigned char[]> pixels_a(new unsigned char[pixel_size]);
+  scoped_ptr<unsigned char[]> pixels_b(new unsigned char[pixel_size]);
+  memset(pixels_a.get(), 0, pixel_size);
+  memset(pixels_b.get(), 0, pixel_size);
+  DrawDisplayList(pixels_a.get(), layer_rect, list_a);
+  DrawDisplayList(pixels_b.get(), layer_rect, list_b);
+
+  return !memcmp(pixels_a.get(), pixels_b.get(), pixel_size);
+}
+
 skia::RefPtr<SkImage> CreateDiscardableImage(const gfx::Size& size) {
   const SkImageInfo info =
       SkImageInfo::MakeN32Premul(size.width(), size.height());

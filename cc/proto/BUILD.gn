@@ -31,6 +31,7 @@ proto_library("proto_internal") {
     # to include protos from other directories/targets (crbug.com/542423).
     "compositor_message.proto",
     "display_item.proto",
+    "display_list_recording_source.proto",
     "layer.proto",
     "layer_position_constraint.proto",
     "layer_tree_debug_state.proto",
