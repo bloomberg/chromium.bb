@@ -32,6 +32,7 @@
 #include "core/fetch/ResourceFetcher.h"
 
 #include "core/fetch/FetchInitiatorInfo.h"
+#include "core/fetch/FetchInitiatorTypeNames.h"
 #include "core/fetch/FetchRequest.h"
 #include "core/fetch/MemoryCache.h"
 #include "core/fetch/ResourceLoader.h"
@@ -223,6 +224,19 @@ TEST_F(ResourceFetcherTest, RevalidateWhileLoading)
     // Tidily(?) shut down the ResourceLoader.
     resource1->loader()->cancel();
     Platform::current()->unitTestSupport()->unregisterMockedURL(url);
+}
+
+TEST_F(ResourceFetcherTest, DontReuseMediaDataUrl)
+{
+    ResourceFetcher* fetcher = ResourceFetcher::create(ResourceFetcherTestMockFetchContext::create());
+    ResourceRequest request(KURL(ParsedURLString, "data:text/html,foo"));
+    ResourceLoaderOptions options;
+    options.dataBufferingPolicy = DoNotBufferData;
+    FetchRequest fetchRequest = FetchRequest(request, FetchInitiatorTypeNames::internal, options);
+    ResourcePtr<Resource> resource1 = fetcher->requestResource(fetchRequest, TestResourceFactory(Resource::Media));
+    ResourcePtr<Resource> resource2 = fetcher->requestResource(fetchRequest, TestResourceFactory(Resource::Media));
+    EXPECT_NE(resource1.get(), resource2.get());
+    memoryCache()->remove(resource2.get());
 }
 
 } // namespace blink

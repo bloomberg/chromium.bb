@@ -277,12 +277,18 @@ void ResourceFetcher::preCacheData(const FetchRequest& request, const ResourceFa
 {
     const KURL& url = request.resourceRequest().url();
     ASSERT(url.protocolIsData() || substituteData.isValid());
-    if ((factory.type() == Resource::MainResource && !substituteData.isValid()) || factory.type() == Resource::Raw || factory.type() == Resource::Media)
+
+    // TODO(japhet): We only send main resource data: urls through WebURLLoader for the benefit of
+    // a service worker test (RenderViewImplTest.ServiceWorkerNetworkProviderSetup), which is at a
+    // layer where it isn't easy to mock out a network load. It uses data: urls to emulate the
+    // behavior it wants to test, which would otherwise be reserved for network loads.
+    if ((factory.type() == Resource::MainResource && !substituteData.isValid()) || factory.type() == Resource::Raw)
         return;
 
     const String cacheIdentifier = getCacheIdentifier();
     if (Resource* oldResource = memoryCache()->resourceForURL(url, cacheIdentifier)) {
-        if (!substituteData.isValid())
+        // There's no reason to re-parse if we saved the data from the previous parse.
+        if (request.options().dataBufferingPolicy != DoNotBufferData)
             return;
         memoryCache()->remove(oldResource);
     }
@@ -444,7 +450,7 @@ ResourcePtr<Resource> ResourceFetcher::requestResource(FetchRequest& request, co
     // use.
     // Remove main resource from cache to prevent reuse.
     if (factory.type() == Resource::MainResource) {
-        ASSERT(policy != Use || substituteData.isValid());
+        ASSERT(policy != Use || isStaticData);
         ASSERT(policy != Revalidate);
         memoryCache()->remove(resource.get());
     }
