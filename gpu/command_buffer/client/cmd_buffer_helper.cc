@@ -158,6 +158,8 @@ CommandBufferHelper::~CommandBufferHelper() {
 }
 
 bool CommandBufferHelper::WaitForGetOffsetInRange(int32 start, int32 end) {
+  DCHECK(start >= 0 && start <= total_entry_count_);
+  DCHECK(end >= 0 && end <= total_entry_count_);
   if (!usable()) {
     return false;
   }
@@ -314,7 +316,8 @@ void CommandBufferHelper::WaitForAvailableEntries(int32 count) {
     if (immediate_entry_count_ < count) {
       // Buffer is full.  Need to wait for entries.
       TRACE_EVENT0("gpu", "CommandBufferHelper::WaitForAvailableEntries1");
-      if (!WaitForGetOffsetInRange(put_ + count + 1, put_))
+      if (!WaitForGetOffsetInRange((put_ + count + 1) % total_entry_count_,
+                                   put_))
         return;
       CalcImmediateEntries(count);
       DCHECK_GE(immediate_entry_count_, count);

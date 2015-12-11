@@ -40,13 +40,16 @@ class CommandBufferServiceLocked : public CommandBufferService {
       : CommandBufferService(transfer_buffer_manager),
         flush_locked_(false),
         last_flush_(-1),
+        previous_put_offset_(0),
         flush_count_(0) {}
   ~CommandBufferServiceLocked() override {}
 
+  // Overridden from CommandBufferService
   void Flush(int32 put_offset) override {
     flush_count_++;
     if (!flush_locked_) {
       last_flush_ = -1;
+      previous_put_offset_ = put_offset;
       CommandBufferService::Flush(put_offset);
     } else {
       last_flush_ = put_offset;
@@ -60,7 +63,10 @@ class CommandBufferServiceLocked : public CommandBufferService {
   int FlushCount() { return flush_count_; }
 
   void WaitForGetOffsetInRange(int32 start, int32 end) override {
-    if (last_flush_ != -1) {
+    // Flush only if it's required to unblock this Wait.
+    if (last_flush_ != -1 &&
+        !CommandBuffer::InRange(start, end, previous_put_offset_)) {
+      previous_put_offset_ = last_flush_;
       CommandBufferService::Flush(last_flush_);
       last_flush_ = -1;
     }
@@ -70,6 +76,7 @@ class CommandBufferServiceLocked : public CommandBufferService {
  private:
   bool flush_locked_;
   int last_flush_;
+  int previous_put_offset_;
   int flush_count_;
   DISALLOW_COPY_AND_ASSIGN(CommandBufferServiceLocked);
 };
