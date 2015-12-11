@@ -386,6 +386,13 @@
       'tpm/tpm_token_loader.cc',
       'tpm/tpm_token_loader.h'
     ],
+    'chromeos_binder_sources': [
+      'binder/driver.cc',
+      'binder/driver.h',
+    ],
+    'chromeos_binder_test_sources': [
+      'binder/driver_unittest.cc',
+    ],
     'chromeos_test_sources': [
       'app_mode/kiosk_oem_manifest_parser_unittest.cc',
       'attestation/attestation_flow_unittest.cc',
@@ -453,6 +460,7 @@
       'timezone/timezone_unittest.cc',
       'tpm/tpm_token_info_getter_unittest.cc',
     ],
+    'use_binder%': 0,
   },
   'includes': [
     'chromeos_tools.gypi'
@@ -490,6 +498,18 @@
         'CHROMEOS_IMPLEMENTATION',
       ],
       'sources': [ '<@(chromeos_sources)' ],
+      'conditions': [
+        ['use_binder == 1', {
+          'sources': [ '<@(chromeos_binder_sources)' ],
+          'conditions': [
+            ['target_arch == "arm" or target_arch == "ia32"', {
+              'defines': [
+                'BINDER_IPC_32BIT',
+              ],
+            }],
+          ],
+        }],
+      ],
     },
     {
       # GN version: //chromeos:test_support
@@ -620,6 +640,16 @@
           ],
           },
         ],
+        ['use_binder == 1', {
+          'sources': [ '<@(chromeos_binder_test_sources)' ],
+          'conditions': [
+            ['target_arch == "arm" or target_arch == "ia32"', {
+              'defines': [
+                'BINDER_IPC_32BIT',
+              ],
+            }],
+          ],
+        }],
       ],
     },
     {

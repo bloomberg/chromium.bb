@@ -9,6 +9,11 @@ import("//third_party/protobuf/proto_library.gni")
 
 assert(is_chromeos, "Non-ChromeOS builds must not depend on //chromeos")
 
+declare_args() {
+  # Use binder. Binder related code is compiled only when true.
+  use_binder = false
+}
+
 gypi_values = exec_script("//build/gypi_to_gn.py",
                           [ rebase_path("chromeos.gyp") ],
                           "scope",
@@ -42,6 +47,12 @@ component("chromeos") {
   ]
   sources = gypi_values.chromeos_sources
   defines = [ "CHROMEOS_IMPLEMENTATION" ]
+  if (use_binder) {
+    if (target_cpu == "arm" || target_cpu == "x86") {
+      defines += [ "BINDER_IPC_32BIT" ]
+    }
+    sources += gypi_values.chromeos_binder_sources
+  }
 }
 
 # TYhis must be a static library instead of a source set because some of the
@@ -154,6 +165,12 @@ test("chromeos_unittests") {
   sources = gypi_values.chromeos_test_sources
   if (use_allocator != "none") {
     deps += [ "//base/allocator" ]
+  }
+  if (use_binder) {
+    if (target_cpu == "arm" || target_cpu == "x86") {
+      defines += [ "BINDER_IPC_32BIT" ]
+    }
+    sources += gypi_values.chromeos_binder_test_sources
   }
 }
 
