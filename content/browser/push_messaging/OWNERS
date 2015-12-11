@@ -1,6 +1,7 @@
 # Push Messaging OWNERS
 #
 # This file also covers ownership of the following directories:
+#   //chrome/android/java/src/org/chromium/chrome/browser/services/gcm/
 #   //chrome/android/javatests/src/org/chromium/chrome/browser/push_messaging/
 #   //chrome/browser/push_messaging/
 #   //components/gcm_driver/

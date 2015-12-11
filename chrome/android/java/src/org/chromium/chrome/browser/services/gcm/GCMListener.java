@@ -71,10 +71,5 @@ public class GCMListener extends MultiplexingGcmListener.AbstractListener {
         Log.w(TAG, "Push messages were deleted, but we can't tell the Service Worker, as we"
                    + " don't have access to the intent extras so we can't get the appId");
         return;
-        //ThreadUtils.runOnUiThread(new Runnable() {
-        //    @Override public void run() {
-        //        GCMDriver.onMessagesDeleted(getApplicationContext(), appId);
-        //    }
-        //});
     }
 }
