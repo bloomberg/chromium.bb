@@ -909,4 +909,16 @@ public class AwContentsTest extends AwTestBase {
         assertEquals(5, grandchild.endSelection);
     }
 
+    @Feature({"AndroidWebView"})
+    @SmallTest
+    public void testRequestAccessibilitySnapshotPasswordField() throws Throwable {
+        final String data =
+                "<html><body><input id='input' type='password' value='foo'></body></html>";
+        AccessibilitySnapshotNode root = receiveAccessibilitySnapshot(data, null);
+        assertEquals(1, root.children.size());
+        assertEquals("", root.text);
+        AccessibilitySnapshotNode child = root.children.get(0);
+        AccessibilitySnapshotNode grandchild = child.children.get(0);
+        assertEquals("•••", grandchild.text);
+    }
 }
