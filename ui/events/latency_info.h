@@ -19,6 +19,8 @@
 
 namespace ui {
 
+// When adding new components, or new metrics based on LatencyInfo,
+// please update latency_info.dot.
 enum LatencyComponentType {
   // ---------------------------BEGIN COMPONENT-------------------------------
   // BEGIN COMPONENT is when we show the latency begin in chrome://tracing.
