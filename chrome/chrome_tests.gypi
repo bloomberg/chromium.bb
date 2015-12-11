@@ -993,7 +993,6 @@
       'test/data/webui/settings/cr_settings_browsertest.js',
       'test/data/webui/settings/main_page_browsertest.js',
       'test/data/webui/settings/settings_page_browsertest.js',
-      'test/data/webui/settings/settings_subpage_browsertest.js',
     ],
     # TODO(rockot) bug 505926: These should be moved to a target in
     # //extensions but have old dependencies on chrome files. The chrome

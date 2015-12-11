@@ -58,16 +58,19 @@ SettingsPageBrowserTest.prototype = {
   /**
    * @param {Node} page The DOM node for the settings page containing |section|.
    * @param {string} section The settings page section, e.g. 'appearance'.
-   * @return {Node|undefined} The DOM node for the section.
+   * @return {Node} The DOM node for the section.
    */
   getSection: function(page, section) {
     var sections = page.shadowRoot.querySelectorAll('settings-section');
     assertTrue(!!sections);
-    for (var i = 0; i < sections.length; ++i) {
+    var len = sections.length;
+    assertGT(len, 0);
+    for (var i = 0; i < len; ++i) {
       var s = sections[i];
       if (s.section == section)
         return s;
     }
+    assertNotReached('Section not found: ' + section + ' in ' + page);
     return undefined;
   },
 };
