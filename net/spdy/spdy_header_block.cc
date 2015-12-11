@@ -162,7 +162,7 @@ bool SpdyHeaderBlock::operator==(const SpdyHeaderBlock& other) const {
 }
 
 bool SpdyHeaderBlock::operator!=(const SpdyHeaderBlock& other) const {
-  return !(*this == other);
+  return !(operator==(other));
 }
 
 void SpdyHeaderBlock::clear() {
