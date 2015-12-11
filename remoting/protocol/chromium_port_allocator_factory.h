@@ -7,8 +7,9 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "remoting/protocol/network_settings.h"
-#include "third_party/libjingle/source/talk/app/webrtc/peerconnectioninterface.h"
+#include "remoting/protocol/port_allocator_factory.h"
 
 namespace net {
 class URLRequestContextGetter;
@@ -17,17 +18,14 @@ class URLRequestContextGetter;
 namespace remoting {
 namespace protocol {
 
-class ChromiumPortAllocatorFactory
-    : public webrtc::PortAllocatorFactoryInterface {
+class ChromiumPortAllocatorFactory : public PortAllocatorFactory {
  public:
-  static rtc::scoped_refptr<webrtc::PortAllocatorFactoryInterface> Create(
+  static scoped_ptr<PortAllocatorFactory> Create(
       const NetworkSettings& network_settings,
       scoped_refptr<net::URLRequestContextGetter> url_request_context_getter);
 
-  // webrtc::PortAllocatorFactoryInterface implementation.
-  cricket::PortAllocator* CreatePortAllocator(
-      const std::vector<StunConfiguration>& stun_servers,
-      const std::vector<TurnConfiguration>& turn_configurations) override;
+  // PortAllocatorFactory implementation.
+  cricket::PortAllocator* CreatePortAllocator() override;
 
  protected:
   ChromiumPortAllocatorFactory(

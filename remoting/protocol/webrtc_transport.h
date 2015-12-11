@@ -6,11 +6,13 @@
 #define REMOTING_PROTOCOL_WEBRTC_TRANSPORT_H_
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
+#include "remoting/protocol/port_allocator_factory.h"
 #include "remoting/protocol/transport.h"
 #include "remoting/protocol/webrtc_data_stream_adapter.h"
 #include "remoting/signaling/signal_strategy.h"
@@ -27,8 +29,7 @@ class WebrtcTransport : public Transport,
                         public webrtc::PeerConnectionObserver {
  public:
   WebrtcTransport(rtc::Thread* worker_thread,
-                  rtc::scoped_refptr<webrtc::PortAllocatorFactoryInterface>
-                      port_allocator_factory,
+                  PortAllocatorFactory* port_allocator_factory,
                   TransportRole role);
   ~WebrtcTransport() override;
 
@@ -79,8 +80,7 @@ class WebrtcTransport : public Transport,
 
   base::ThreadChecker thread_checker_;
 
-  rtc::scoped_refptr<webrtc::PortAllocatorFactoryInterface>
-      port_allocator_factory_;
+  PortAllocatorFactory* port_allocator_factory_;
   TransportRole role_;
   EventHandler* event_handler_ = nullptr;
   rtc::Thread* worker_thread_;
@@ -113,8 +113,7 @@ class WebrtcTransportFactory : public TransportFactory {
   WebrtcTransportFactory(
       rtc::Thread* worker_thread,
       SignalStrategy* signal_strategy,
-      rtc::scoped_refptr<webrtc::PortAllocatorFactoryInterface>
-          port_allocator_factory,
+      scoped_ptr<PortAllocatorFactory> port_allocator_factory,
       TransportRole role);
   ~WebrtcTransportFactory() override;
 
@@ -124,8 +123,7 @@ class WebrtcTransportFactory : public TransportFactory {
  private:
   rtc::Thread* worker_thread_;
   SignalStrategy* signal_strategy_;
-  rtc::scoped_refptr<webrtc::PortAllocatorFactoryInterface>
-      port_allocator_factory_;
+  scoped_ptr<PortAllocatorFactory> port_allocator_factory_;
   TransportRole role_;
 
   DISALLOW_COPY_AND_ASSIGN(WebrtcTransportFactory);
