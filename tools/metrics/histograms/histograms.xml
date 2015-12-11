@@ -15312,30 +15312,40 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     The number of typed URLs in the history database that are read into the
     &quot;in memory&quot; history database. This in memory copy of the typed
     URLs is used for synchronous inline autocomplete on the UI thread, while the
-    larger slower service is run off of disk on a background thread.
+    larger slower service is run off of disk on a background thread. Recorded on
+    profile open.
   </summary>
 </histogram>
 
 <histogram name="History.InMemoryDBKeywordTermsCount">
   <owner>gab@chromium.org</owner>
-  <summary>Number of items in in-memory keyword_search_terms table.</summary>
+  <summary>
+    Number of items in in-memory keyword_search_terms table. Recorded on profile
+    open.
+  </summary>
 </histogram>
 
 <histogram name="History.InMemoryDBKeywordTermsPopulate" units="milliseconds">
   <owner>gab@chromium.org</owner>
   <summary>
-    Time to load in-memory keyword_search_terms table from disk.
+    Time to load in-memory keyword_search_terms table from disk. Recorded on
+    profile open.
   </summary>
 </histogram>
 
 <histogram name="History.InMemoryDBKeywordURLItemCount">
   <owner>gab@chromium.org</owner>
-  <summary>Number of items in in-memory urls table.</summary>
+  <summary>
+    Number of items in in-memory urls table. Recorded on profile open.
+  </summary>
 </histogram>
 
 <histogram name="History.InMemoryDBKeywordURLPopulate" units="milliseconds">
   <owner>gab@chromium.org</owner>
-  <summary>Time to load in-memory urls table from disk urls table.</summary>
+  <summary>
+    Time to load in-memory urls table from disk urls table. Recorded on profile
+    open.
+  </summary>
 </histogram>
 
 <histogram name="History.InMemoryDBPopulate">
@@ -15344,7 +15354,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     The time it takes to read the typed URLs from the main history database into
     the &quot;in memory&quot; history database. This in memory copy of the typed
     URLs is used for synchronous inline autocomplete on the UI thread, while the
-    larger slower service is run off of disk on a background thread.
+    larger slower service is run off of disk on a background thread. Recorded on
+    profile open.
   </summary>
 </histogram>
 
@@ -15355,48 +15366,68 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     history database. This corresponds to the number of times the user has
     visited the typed URLs in the last 30 days (excluding page reloads, since
     the history database does not increment the visit_count in that case).
+    Recorded on profile open.
   </summary>
 </histogram>
 
 <histogram name="History.InMemoryURLCacheSize" units="bytes">
   <owner>mpearson@chromium.org</owner>
-  <summary>Size of on-disk cache for in-memory url index.</summary>
+  <summary>
+    Size of on-disk cache for in-memory url index. Recorded on profile open when
+    restoring from a cache file.
+  </summary>
 </histogram>
 
 <histogram name="History.InMemoryURLChars">
   <owner>mpearson@chromium.org</owner>
   <summary>
-    Size of in-memory url index char_word_map_ read from disk cache.
+    Number of items in the in-memory url index char_word_map_. Recorded on
+    profile open when restoring from a cache file and again shortly after
+    profile open when rebuilding the in-memory url index from history.
   </summary>
 </histogram>
 
 <histogram name="History.InMemoryURLHistoryItems">
   <owner>mpearson@chromium.org</owner>
   <summary>
-    Number of history items read when loading in-memory url index disk cache.
+    Number of history items in the in-memory url index. Recorded on profile open
+    when restoring from a cache file and again shortly after profile open when
+    rebuilding the in-memory url index from history.
   </summary>
 </histogram>
 
 <histogram name="History.InMemoryURLIndexingTime" units="milliseconds">
   <owner>mpearson@chromium.org</owner>
   <summary>
-    Time to rebuild in-memory url index from main history database.
+    Time to rebuild in-memory url index from main history database. Recorded
+    once shortly after profile open.
   </summary>
 </histogram>
 
 <histogram name="History.InMemoryURLIndexRestoreCacheTime" units="milliseconds">
   <owner>mpearson@chromium.org</owner>
-  <summary>Time to restore the in-memory url index from disk cache.</summary>
+  <summary>
+    Time to restore the in-memory url index from disk cache. Recorded on profile
+    open.
+  </summary>
 </histogram>
 
 <histogram name="History.InMemoryURLIndexSaveCacheTime" units="milliseconds">
   <owner>mpearson@chromium.org</owner>
-  <summary>Time to write in-memory url index to disk cache.</summary>
+  <summary>
+    Time to write in-memory url index to disk cache. Recorded once shortly after
+    profile open (after rebuilding the in-memory url index from history) and
+    again upon (clean) shutdown.
+  </summary>
 </histogram>
 
 <histogram name="History.InMemoryURLWords">
   <owner>mpearson@chromium.org</owner>
-  <summary>Size of in-memory url index word_map_ read from disk cache.</summary>
+  <summary>
+    Number of items in in-memory url index word_map_. Recorded on profile open
+    when restoring from a cache file and again shortly after profile open when
+    rebuilding the in-memory url index from history.
+  </summary>
 </histogram>
 
 <histogram name="History.MonthlyHostCount">
