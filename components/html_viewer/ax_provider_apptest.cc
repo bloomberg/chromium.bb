@@ -15,9 +15,9 @@
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/application/public/cpp/application_test_base.h"
 #include "mojo/converters/network/network_type_converters.h"
+#include "mojo/services/accessibility/public/interfaces/accessibility.mojom.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/mojo_services/src/accessibility/public/interfaces/accessibility.mojom.h"
 
 namespace mojo {
 

@@ -3,5 +3,4 @@ include_rules = [
   "+mojo/common",
   "+mojo/public",
   "+mojo/services/tracing/public/cpp",
-  "+third_party/mojo_services/src/clipboard",
 ]

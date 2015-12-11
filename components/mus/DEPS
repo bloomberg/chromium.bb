@@ -8,7 +8,6 @@ include_rules = [
   "+mojo/services/network/public",
   "+mojo/services/tracing/public",
   "+mojo/shell",
-  "+third_party/mojo_services",
   "+third_party/skia/include",
   "+ui",
 ]

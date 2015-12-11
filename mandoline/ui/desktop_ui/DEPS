@@ -9,6 +9,5 @@ include_rules = [
   "+mojo/runner",
   "+mojo/services/network/public",
   "+mojo/services/tracing/public",
-  "+third_party/mojo_services",
   "+ui",
 ]

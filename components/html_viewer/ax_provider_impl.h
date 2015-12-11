@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "third_party/mojo_services/src/accessibility/public/interfaces/accessibility.mojom.h"
+#include "mojo/services/accessibility/public/interfaces/accessibility.mojom.h"
 
 namespace blink {
 class WebAXObject;

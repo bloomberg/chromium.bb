@@ -8,6 +8,5 @@ include_rules = [
   "+crypto",
   "+jni",
   "+sandbox",
-  "+third_party/mojo_services",
   "+ui",
 ]

@@ -182,6 +182,7 @@ source_set("lib") {
     "//mojo/message_pump",
     "//mojo/platform_handle",
     "//mojo/public/cpp/environment:environment",
+    "//mojo/services/accessibility/public/interfaces",
     "//mojo/services/network/public/cpp",
     "//mojo/services/network/public/interfaces",
     "//mojo/services/tracing/public/cpp",
@@ -190,7 +191,6 @@ source_set("lib") {
     "//skia",
     "//third_party/WebKit/public:image_resources",
     "//third_party/WebKit/public:resources",
-    "//third_party/mojo_services/src/accessibility/public/interfaces",
     "//ui/base:base",
     "//ui/events",
     "//ui/events:gesture_detection",
@@ -356,9 +356,9 @@ mojo_native_application("apptests") {
     "//mojo/application/public/cpp:test_support",
     "//mojo/converters/network",
     "//mojo/public/c/system:for_shared_library",
+    "//mojo/services/accessibility/public/interfaces",
     "//net:test_support",
     "//testing/gtest",
-    "//third_party/mojo_services/src/accessibility/public/interfaces",
   ]
 
   data_deps = [
