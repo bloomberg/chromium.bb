@@ -230,9 +230,8 @@ void EnrollmentScreen::ShowAttributePromptScreen() {
 }
 
 void EnrollmentScreen::SendEnrollmentAuthToken(const std::string& token) {
-  // TODO(achuith, zork): Extract and send domain.
   DCHECK(shark_controller_);
-  shark_controller_->OnAuthenticationDone("", token);
+  shark_controller_->OnAuthenticationDone(enrolling_user_domain_, token);
 }
 
 void EnrollmentScreen::ShowEnrollmentStatusOnSuccess() {

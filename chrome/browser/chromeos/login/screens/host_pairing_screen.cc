@@ -79,12 +79,14 @@ void HostPairingScreen::PairingStageChanged(Stage new_stage) {
                          remora_controller_->GetConfirmationCode());
       break;
     }
-    case HostPairingController::STAGE_WAITING_FOR_CREDENTIALS:
-    case HostPairingController::STAGE_ENROLLING: {
-      // TODO(xdai): Use kPageEnrollment for STAGE_ENROLLING. It requires that
-      // the Master device sends the domain info over to the Slave device.
+    case HostPairingController::STAGE_WAITING_FOR_CREDENTIALS: {
       desired_page = kPageEnrollmentIntroduction;
       break;
+    }
+    case HostPairingController::STAGE_ENROLLING: {
+      desired_page = kPageEnrollment;
+      context_.SetString(kContextKeyEnrollmentDomain,
+                         remora_controller_->GetEnrollmentDomain());
     }
     case HostPairingController::STAGE_ENROLLMENT_SUCCESS: {
       remora_controller_->RemoveObserver(this);

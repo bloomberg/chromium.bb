@@ -62,6 +62,7 @@ message ConfigureHost {
 message PairDevicesParameters {
   optional string controller_access_token = 1;
   optional string admin_access_token = 2;
+  optional string enrolling_domain = 3;
 }
 
 message PairDevices {

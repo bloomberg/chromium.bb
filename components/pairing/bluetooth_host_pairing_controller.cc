@@ -321,6 +321,7 @@ void BluetoothHostPairingController::OnConfigureHostMessage(
 void BluetoothHostPairingController::OnPairDevicesMessage(
     const pairing_api::PairDevices& message) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  enrollment_domain_ = message.parameters().enrolling_domain();
   ChangeStage(STAGE_ENROLLING);
   FOR_EACH_OBSERVER(Observer, observers_,
                     EnrollHostRequested(

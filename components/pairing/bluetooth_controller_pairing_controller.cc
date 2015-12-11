@@ -358,6 +358,7 @@ void BluetoothControllerPairingController::OnAuthenticationDone(
   pairing_api::PairDevices pair_devices;
   pair_devices.set_api_version(kPairingAPIVersion);
   pair_devices.mutable_parameters()->set_admin_access_token(auth_token);
+  pair_devices.mutable_parameters()->set_enrolling_domain(domain);
 
   int size = 0;
   scoped_refptr<net::IOBuffer> io_buffer(
