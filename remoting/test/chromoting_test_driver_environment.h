@@ -36,6 +36,7 @@ class ChromotingTestDriverEnvironment : public testing::Environment {
 
     std::string user_name;
     std::string host_name;
+    std::string host_jid;
     std::string pin;
     base::FilePath refresh_token_file_path;
   };
@@ -49,6 +50,11 @@ class ChromotingTestDriverEnvironment : public testing::Environment {
   // Retrieves connection information for all known hosts and displays
   // their availability to STDOUT.
   void DisplayHostList();
+
+  // Waits for either the host to come online or a maximum timeout. Returns true
+  // if host is found online.
+  bool WaitForHostOnline(const std::string& host_jid,
+                         const std::string& host_name);
 
   // Used to set fake/mock objects for ChromotingTestDriverEnvironment tests.
   // The caller retains ownership of the supplied objects, and must ensure that
@@ -85,9 +91,18 @@ class ChromotingTestDriverEnvironment : public testing::Environment {
   // Returns true if the request was successful and |host_list_| is valid.
   bool RetrieveHostList();
 
+  // Clears and then retrieves a new host list.
+  bool RefreshHostList();
+
   // Called after the host info fetcher completes.
   void OnHostListRetrieved(base::Closure done_closure,
                            const std::vector<HostInfo>& retrieved_host_list);
+
+  // Checks the status of the host in |host_list_| that matches the given
+  // host_jid and host_name. Returns true if that host is online, false
+  // otherwise.
+  bool IsHostOnline(const std::string host_jid,
+                    const std::string host_name) const;
 
   // Used for authenticating with the directory service.
   std::string access_token_;

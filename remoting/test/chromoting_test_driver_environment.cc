@@ -112,6 +112,49 @@ void ChromotingTestDriverEnvironment::DisplayHostList() {
   }
 }
 
+bool ChromotingTestDriverEnvironment::WaitForHostOnline(
+    const std::string& host_jid,
+    const std::string& host_name) {
+  // Refresh the |host_list_| periodically to check if expected JID is online.
+  const int kMaxIterations = 12;
+  const base::TimeDelta kSleepTimeInSeconds = base::TimeDelta::FromSeconds(5);
+  int num_iterations = 0;
+  while (num_iterations < kMaxIterations) {
+    if (IsHostOnline(host_jid, host_name)) {
+      if (num_iterations > 0) {
+        VLOG(0) << "Host came online after "
+                << num_iterations * kSleepTimeInSeconds.InSeconds()
+                << " seconds.";
+      }
+      return true;
+    }
+    // Wait a while before refreshing host list.
+    base::PlatformThread::Sleep(kSleepTimeInSeconds);
+    RefreshHostList();
+    ++num_iterations;
+  }
+  LOG(ERROR) << "Host with JID '" << host_jid << "' still not online after "
+             << num_iterations * kSleepTimeInSeconds.InSeconds() << " seconds.";
+  return false;
+}
+
+bool ChromotingTestDriverEnvironment::IsHostOnline(
+    const std::string host_jid,
+    const std::string host_name) const {
+  for (const HostInfo& host_info : host_list_) {
+    if (host_jid == host_info.host_jid && host_name == host_info.host_name) {
+      if (host_info.status == kHostStatusOnline) {
+        return true;
+      } else {
+        LOG(WARNING) << "Host '" << host_name << "' with JID '" << host_jid
+                     << "' not online.";
+        return false;
+      }
+    }
+  }
+  return false;
+}
+
 void ChromotingTestDriverEnvironment::SetAccessTokenFetcherForTest(
     AccessTokenFetcher* access_token_fetcher) {
   DCHECK(access_token_fetcher);
@@ -224,10 +267,15 @@ void ChromotingTestDriverEnvironment::OnAccessTokenRetrieved(
   done_closure.Run();
 }
 
+bool ChromotingTestDriverEnvironment::RefreshHostList() {
+  host_list_.clear();
+
+  return RetrieveHostList();
+}
+
 bool ChromotingTestDriverEnvironment::RetrieveHostList() {
   base::RunLoop run_loop;
 
-  host_list_.clear();
   host_info_ = HostInfo();
 
   // If a unit test has set |test_host_list_fetcher_| then we should use it

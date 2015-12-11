@@ -20,6 +20,7 @@ namespace switches {
 const char kAuthCodeSwitchName[] = "authcode";
 const char kHelpSwitchName[] = "help";
 const char kHostNameSwitchName[] = "hostname";
+const char kHostJidSwitchName[] = "hostjid";
 const char kLoggingLevelSwitchName[] = "verbosity";
 const char kPinSwitchName[] = "pin";
 const char kRefreshTokenPathSwitchName[] = "refresh-token-path";
@@ -220,6 +221,10 @@ int main(int argc, char* argv[]) {
     LOG(ERROR) << "No hostname passed in, connect to host requires hostname!";
     return -1;
   }
+
+  options.host_jid =
+      command_line->GetSwitchValueASCII(switches::kHostJidSwitchName);
+
   VLOG(1) << "Chromoting tests will connect to: " << options.host_name;
 
   options.pin = command_line->GetSwitchValueASCII(switches::kPinSwitchName);
@@ -232,6 +237,12 @@ int main(int argc, char* argv[]) {
 
   if (!shared_data->Initialize(auth_code)) {
     // If we failed to initialize our shared data object, then bail.
+    return -1;
+  }
+
+  if (!options.host_jid.empty() &&
+      !shared_data->WaitForHostOnline(options.host_jid, options.host_name)) {
+    // Host with expected JID is not online. No point running further tests.
     return -1;
   }
 
