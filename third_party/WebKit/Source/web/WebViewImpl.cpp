@@ -545,6 +545,11 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
 WebViewImpl::~WebViewImpl()
 {
     ASSERT(!m_page);
+
+    // Each highlight uses m_owningWebViewImpl->m_linkHighlightsTimeline
+    // in destructor. m_linkHighlightsTimeline might be destroyed earlier
+    // than m_linkHighlights.
+    ASSERT(m_linkHighlights.isEmpty());
 }
 
 WebDevToolsAgentImpl* WebViewImpl::mainFrameDevToolsAgentImpl()
