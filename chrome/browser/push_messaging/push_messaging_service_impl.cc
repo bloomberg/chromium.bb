@@ -21,6 +21,7 @@
 #include "chrome/browser/push_messaging/push_messaging_app_identifier.h"
 #include "chrome/browser/push_messaging/push_messaging_constants.h"
 #include "chrome/browser/push_messaging/push_messaging_service_factory.h"
+#include "chrome/browser/push_messaging/push_messaging_service_observer.h"
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/common/chrome_switches.h"
@@ -121,6 +122,7 @@ PushMessagingServiceImpl::PushMessagingServiceImpl(Profile* profile)
 #if defined(ENABLE_NOTIFICATIONS)
       notification_manager_(profile),
 #endif
+      push_messaging_service_observer_(PushMessagingServiceObserver::Create()),
       weak_factory_(this) {
   DCHECK(profile);
   HostContentSettingsMapFactory::GetForProfile(profile_)->AddObserver(this);
@@ -242,13 +244,12 @@ void PushMessagingServiceImpl::DeliverMessageCallback(
     const gcm::IncomingMessage& message,
     const base::Closure& message_handled_closure,
     content::PushDeliveryStatus status) {
-  // Remove a single in-flight delivery for |app_id|. This has to be done using
-  // an iterator rather than by value, as the latter removes all entries.
-  DCHECK(in_flight_message_deliveries_.find(app_id) !=
-         in_flight_message_deliveries_.end());
+  DCHECK_GE(in_flight_message_deliveries_.count(app_id), 1u);
 
-  in_flight_message_deliveries_.erase(
-      in_flight_message_deliveries_.find(app_id));
+  // TODO(mvanouwerkerk): Use ScopedClosureRunner for this.
+  base::Closure completion_closure =
+      base::Bind(&PushMessagingServiceImpl::DidHandleMessage,
+                 weak_factory_.GetWeakPtr(), app_id, message_handled_closure);
 
   // TODO(mvanouwerkerk): Show a warning in the developer console of the
   // Service Worker corresponding to app_id (and/or on an internals page).
@@ -261,33 +262,48 @@ void PushMessagingServiceImpl::DeliverMessageCallback(
     case content::PUSH_DELIVERY_STATUS_SUCCESS:
     case content::PUSH_DELIVERY_STATUS_EVENT_WAITUNTIL_REJECTED:
 #if defined(ENABLE_NOTIFICATIONS)
-      // Only enforce the user visible requirements after the entire queue of
-      // incoming messages for |app_id| has been flushed.
-      if (!in_flight_message_deliveries_.count(app_id)) {
+      // Only enforce the user visible requirements if this is currently running
+      // as the delivery callback for the last in-flight message.
+      if (in_flight_message_deliveries_.count(app_id) == 1) {
         notification_manager_.EnforceUserVisibleOnlyRequirements(
             requesting_origin, service_worker_registration_id,
-            message_handled_closure);
+            completion_closure);
       } else {
-        message_handled_closure.Run();
+        completion_closure.Run();
       }
 #else
-      message_handled_closure.Run();
+      completion_closure.Run();
 #endif
       break;
     case content::PUSH_DELIVERY_STATUS_INVALID_MESSAGE:
     case content::PUSH_DELIVERY_STATUS_SERVICE_WORKER_ERROR:
-      message_handled_closure.Run();
+      completion_closure.Run();
       break;
     case content::PUSH_DELIVERY_STATUS_UNKNOWN_APP_ID:
     case content::PUSH_DELIVERY_STATUS_PERMISSION_DENIED:
     case content::PUSH_DELIVERY_STATUS_NO_SERVICE_WORKER:
-      Unsubscribe(
-          app_id, message.sender_id,
-          base::Bind(&UnregisterCallbackToClosure, message_handled_closure));
+      Unsubscribe(app_id, message.sender_id,
+                  base::Bind(&UnregisterCallbackToClosure, completion_closure));
       break;
   }
 
   RecordDeliveryStatus(status);
+}
+
+void PushMessagingServiceImpl::DidHandleMessage(
+    const std::string& app_id,
+    const base::Closure& message_handled_closure) {
+  auto in_flight_iterator = in_flight_message_deliveries_.find(app_id);
+  DCHECK(in_flight_iterator != in_flight_message_deliveries_.end());
+
+  // Remove a single in-flight delivery for |app_id|. This has to be done using
+  // an iterator rather than by value, as the latter removes all entries.
+  in_flight_message_deliveries_.erase(in_flight_iterator);
+
+  message_handled_closure.Run();
+
+  if (push_messaging_service_observer_)
+    push_messaging_service_observer_->OnMessageHandled();
 }
 
 void PushMessagingServiceImpl::SetMessageCallbackForTesting(

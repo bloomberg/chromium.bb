@@ -9,10 +9,9 @@ import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 import android.app.Notification;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.preferences.website.ContentSetting;
 import org.chromium.chrome.browser.preferences.website.PushNotificationInfo;
-import org.chromium.chrome.test.ChromeActivityTestCaseBase;
+import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
 import org.chromium.chrome.test.util.TestHttpServerClient;
 import org.chromium.chrome.test.util.browser.notifications.MockNotificationManagerProxy;
 import org.chromium.chrome.test.util.browser.notifications.MockNotificationManagerProxy.NotificationEntry;
@@ -27,7 +26,7 @@ import java.util.concurrent.TimeoutException;
  *
  * Web Notifications are only supported on Android JellyBean and beyond.
  */
-public class NotificationTestBase extends ChromeActivityTestCaseBase<ChromeActivity> {
+public class NotificationTestBase extends ChromeTabbedActivityTestBase {
     /** The maximum time to wait for a criteria to become valid. */
     private static final long MAX_TIME_TO_POLL_MS = scaleTimeout(6000);
 
@@ -35,10 +34,6 @@ public class NotificationTestBase extends ChromeActivityTestCaseBase<ChromeActiv
     private static final long POLLING_INTERVAL_MS = 50;
 
     private MockNotificationManagerProxy mMockNotificationManager;
-
-    protected NotificationTestBase() {
-        super(ChromeActivity.class);
-    }
 
     /**
      * Returns the origin of the HTTP server the test is being ran on.

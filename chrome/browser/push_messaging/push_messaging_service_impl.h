@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/background/background_trigger.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
@@ -31,6 +32,7 @@
 
 class Profile;
 class PushMessagingAppIdentifier;
+class PushMessagingServiceObserver;
 
 namespace gcm {
 class GCMDriver;
@@ -131,6 +133,9 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
                               const base::Closure& message_handled_closure,
                               content::PushDeliveryStatus status);
 
+  void DidHandleMessage(const std::string& app_id,
+                        const base::Closure& completion_closure);
+
   // Subscribe methods ---------------------------------------------------------
 
   void SubscribeEnd(
@@ -230,6 +235,8 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
   std::multiset<std::string> in_flight_message_deliveries_;
 
   MessageDispatchedCallback message_dispatched_callback_for_testing_;
+
+  scoped_ptr<PushMessagingServiceObserver> push_messaging_service_observer_;
 
   base::WeakPtrFactory<PushMessagingServiceImpl> weak_factory_;
 
