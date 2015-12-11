@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.autofill;
 
+import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.view.View;
 import android.view.ViewGroup;
@@ -138,8 +139,12 @@ public class AutofillKeyboardAccessoryTest extends ChromeActivityTestCaseBase<Ch
     /**
      * Switching fields should re-scroll the keyboard accessory to the left.
      */
+    /*
     @MediumTest
     @Feature({"keyboard-accessory"})
+    Bug https://crbug.com/563640
+    */
+    @FlakyTest
     public void testSwitchFieldsRescrollsKeyboardAccessory() throws ExecutionException,
              InterruptedException, TimeoutException {
         loadTestPage(false);
