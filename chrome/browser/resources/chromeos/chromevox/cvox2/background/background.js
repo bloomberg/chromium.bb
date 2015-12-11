@@ -496,6 +496,7 @@ Background.prototype = {
 
       new Output().withSpeechAndBraille(
               this.currentRange_, prevRange, Output.EventType.NAVIGATE)
+          .withQueueMode(cvox.QueueMode.FLUSH)
           .go();
     }
 

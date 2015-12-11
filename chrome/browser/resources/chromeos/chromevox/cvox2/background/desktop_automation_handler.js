@@ -141,10 +141,17 @@ DesktopAutomationHandler.prototype = {
       node = node.find({state: {focused: true}}) || node;
     }
 
-    if (this.isEditable_(evt.target))
-      this.createEditableTextHandlerIfNeeded_(evt.target);
+    if (this.isEditable_(node))
+      this.createEditableTextHandlerIfNeeded_(node);
 
-    this.onEventDefault({target: node, type: 'focus'});
+    // Since we queue output mostly for live regions support and there isn't a
+    // reliable way to know if this focus event resulted from a user's explicit
+    // action, only flush when the focused node is not web content.
+    if (node.root.role == RoleType.desktop)
+      Output.flushNextSpeechUtterance();
+
+    this.onEventDefault(
+        {target: node, type: chrome.automation.EventType.focus});
   },
 
   /**
