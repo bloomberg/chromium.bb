@@ -307,7 +307,8 @@ void AvPipelineImpl::OnDecoderError() {
 void AvPipelineImpl::OnKeyStatusChanged(const std::string& key_id,
                                         CastKeyStatus key_status,
                                         uint32_t system_code) {
-  CMALOG(kLogControl) << __FUNCTION__;
+  CMALOG(kLogControl) << __FUNCTION__ << " key_status= " << key_status
+                      << " system_code=" << system_code;
   DCHECK(media_keys_);
   media_keys_->SetKeyStatus(key_id, key_status, system_code);
 }
