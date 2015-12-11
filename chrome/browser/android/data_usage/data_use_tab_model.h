@@ -22,6 +22,7 @@
 
 namespace base {
 class SingleThreadTaskRunner;
+class TickClock;
 }
 
 namespace data_usage {
@@ -126,6 +127,21 @@ class DataUseTabModel {
                           const std::vector<std::string>* domain_path_regex,
                           const std::vector<std::string>* label);
 
+  // Returns the maximum number of tracking sessions to maintain per tab.
+  size_t max_sessions_per_tab() const { return max_sessions_per_tab_; }
+
+  // Returns the expiration duration for a closed tab entry and an open tab
+  // entry respectively.
+  const base::TimeDelta& closed_tab_expiration_duration() const {
+    return closed_tab_expiration_duration_;
+  }
+  const base::TimeDelta& open_tab_expiration_duration() const {
+    return open_tab_expiration_duration_;
+  }
+
+  // Returns the current time.
+  base::TimeTicks NowTicks() const;
+
  protected:
   // Notifies the observers that a data usage tracking session started for
   // |tab_id|. Protected for testing.
@@ -137,29 +153,21 @@ class DataUseTabModel {
 
  private:
   friend class DataUseTabModelTest;
-  friend class MockTabDataUseEntryTest;
+  friend class TabDataUseEntryTest;
   friend class TestDataUseTabModel;
-  FRIEND_TEST_ALL_PREFIXES(DataUseTabModelTest, SingleTabTracking);
-  FRIEND_TEST_ALL_PREFIXES(DataUseTabModelTest, MultipleTabTracking);
-  FRIEND_TEST_ALL_PREFIXES(DataUseTabModelTest, ObserverStartEndEvents);
-  FRIEND_TEST_ALL_PREFIXES(DataUseTabModelTest,
-                           MultipleObserverMultipleStartEndEvents);
-  FRIEND_TEST_ALL_PREFIXES(DataUseTabModelTest, TabCloseEvent);
-  FRIEND_TEST_ALL_PREFIXES(DataUseTabModelTest, TabCloseEventEndsTracking);
-  FRIEND_TEST_ALL_PREFIXES(DataUseTabModelTest, OnTrackingLabelRemoved);
   FRIEND_TEST_ALL_PREFIXES(DataUseTabModelTest,
                            CompactTabEntriesWithinMaxLimit);
   FRIEND_TEST_ALL_PREFIXES(DataUseTabModelTest,
-                           UnexpiredTabEntryRemovaltimeHistogram);
-  FRIEND_TEST_ALL_PREFIXES(DataUseTabModelTest,
                            ExpiredInactiveTabEntryRemovaltimeHistogram);
   FRIEND_TEST_ALL_PREFIXES(DataUseTabModelTest,
-                           ExpiredActiveTabEntryRemovaltimeHistogram);
+                           MultipleObserverMultipleStartEndEvents);
+  FRIEND_TEST_ALL_PREFIXES(DataUseTabModelTest, ObserverStartEndEvents);
+  FRIEND_TEST_ALL_PREFIXES(DataUseTabModelTest, TabCloseEvent);
+  FRIEND_TEST_ALL_PREFIXES(DataUseTabModelTest, TabCloseEventEndsTracking);
+  FRIEND_TEST_ALL_PREFIXES(DataUseTabModelTest,
+                           UnexpiredTabEntryRemovaltimeHistogram);
 
   typedef base::hash_map<SessionID::id_type, TabDataUseEntry> TabEntryMap;
-
-  // Virtualized for unit test support.
-  virtual base::TimeTicks Now() const;
 
   // Initiates a new tracking session with the |label| for tab with id |tab_id|.
   void StartTrackingDataUse(SessionID::id_type tab_id,
@@ -183,6 +191,17 @@ class DataUseTabModel {
 
   // Maximum number of tab entries to maintain session information about.
   const size_t max_tab_entries_;
+
+  // Maximum number of tracking sessions to maintain per tab.
+  const size_t max_sessions_per_tab_;
+
+  // Expiration duration for a closed tab entry and an open tab entry
+  // respectively.
+  const base::TimeDelta closed_tab_expiration_duration_;
+  const base::TimeDelta open_tab_expiration_duration_;
+
+  // TickClock used for obtaining the current time.
+  scoped_ptr<base::TickClock> tick_clock_;
 
   // |ui_task_runner_| is used to notify TabDataUseObserver on UI thread.
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;

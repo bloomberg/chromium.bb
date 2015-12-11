@@ -7,6 +7,8 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/time/default_tick_clock.h"
+#include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "chrome/browser/android/data_usage/data_use_matcher.h"
 #include "chrome/browser/android/data_usage/external_data_use_observer.h"
@@ -16,15 +18,26 @@
 
 namespace {
 
-// Indicates the default maximum number of tabs to maintain session information
-// about. May be overridden by the field trial.
+// Default maximum number of tabs to maintain session information about. May be
+// overridden by the field trial.
 const size_t kDefaultMaxTabEntries = 200;
 
-const char kUMAExpiredInactiveTabEntryRemovalDurationSecondsHistogram[] =
+// Default maximum number of tracking session history to maintain per tab. May
+// be overridden by the field trial.
+const size_t kDefaultMaxSessionsPerTab = 5;
+
+// Default expiration duration in seconds, after which a closed and an open tab
+// entry can be removed from the list of tab entries, respectively. May be
+// overridden by the field trial.
+const uint32_t kDefaultClosedTabExpirationDurationSeconds = 30;  // 30 seconds.
+const uint32_t kDefaultOpenTabExpirationDurationSeconds =
+    60 * 60 * 24 * 5;  // 5 days.
+
+const char kUMAExpiredInactiveTabEntryRemovalDurationHistogram[] =
     "DataUse.TabModel.ExpiredInactiveTabEntryRemovalDuration";
-const char kUMAExpiredActiveTabEntryRemovalDurationHoursHistogram[] =
+const char kUMAExpiredActiveTabEntryRemovalDurationHistogram[] =
     "DataUse.TabModel.ExpiredActiveTabEntryRemovalDuration";
-const char kUMAUnexpiredTabEntryRemovalDurationMinutesHistogram[] =
+const char kUMAUnexpiredTabEntryRemovalDurationHistogram[] =
     "DataUse.TabModel.UnexpiredTabEntryRemovalDuration";
 
 // Returns true if |tab_id| is a valid tab ID.
@@ -34,7 +47,7 @@ bool IsValidTabID(SessionID::id_type tab_id) {
 
 // Returns various parameters from the values specified in the field trial.
 size_t GetMaxTabEntries() {
-  size_t max_tab_entries = -1;
+  size_t max_tab_entries = kDefaultMaxTabEntries;
   std::string variation_value = variations::GetVariationParamValue(
       chrome::android::ExternalDataUseObserver::
           kExternalDataUseObserverFieldTrial,
@@ -46,6 +59,47 @@ size_t GetMaxTabEntries() {
   return kDefaultMaxTabEntries;
 }
 
+// Returns various parameters from the values specified in the field trial.
+size_t GetMaxSessionsPerTab() {
+  size_t max_sessions_per_tab = kDefaultMaxSessionsPerTab;
+  std::string variation_value = variations::GetVariationParamValue(
+      chrome::android::ExternalDataUseObserver::
+          kExternalDataUseObserverFieldTrial,
+      "max_sessions_per_tab");
+  if (!variation_value.empty() &&
+      base::StringToSizeT(variation_value, &max_sessions_per_tab)) {
+    return max_sessions_per_tab;
+  }
+  return kDefaultMaxSessionsPerTab;
+}
+
+base::TimeDelta GetClosedTabExpirationDuration() {
+  uint32_t duration_seconds = kDefaultClosedTabExpirationDurationSeconds;
+  std::string variation_value = variations::GetVariationParamValue(
+      chrome::android::ExternalDataUseObserver::
+          kExternalDataUseObserverFieldTrial,
+      "closed_tab_expiration_duration_seconds");
+  if (!variation_value.empty() &&
+      base::StringToUint(variation_value, &duration_seconds)) {
+    return base::TimeDelta::FromSeconds(duration_seconds);
+  }
+  return base::TimeDelta::FromSeconds(
+      kDefaultClosedTabExpirationDurationSeconds);
+}
+
+base::TimeDelta GetOpenTabExpirationDuration() {
+  uint32_t duration_seconds = kDefaultOpenTabExpirationDurationSeconds;
+  std::string variation_value = variations::GetVariationParamValue(
+      chrome::android::ExternalDataUseObserver::
+          kExternalDataUseObserverFieldTrial,
+      "open_tab_expiration_duration_seconds");
+  if (!variation_value.empty() &&
+      base::StringToUint(variation_value, &duration_seconds)) {
+    return base::TimeDelta::FromSeconds(duration_seconds);
+  }
+  return base::TimeDelta::FromSeconds(kDefaultOpenTabExpirationDurationSeconds);
+}
+
 }  // namespace
 
 namespace chrome {
@@ -55,6 +109,10 @@ namespace android {
 DataUseTabModel::DataUseTabModel(
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner)
     : max_tab_entries_(GetMaxTabEntries()),
+      max_sessions_per_tab_(GetMaxSessionsPerTab()),
+      closed_tab_expiration_duration_(GetClosedTabExpirationDuration()),
+      open_tab_expiration_duration_(GetOpenTabExpirationDuration()),
+      tick_clock_(new base::DefaultTickClock()),
       ui_task_runner_(ui_task_runner),
       weak_factory_(this) {
   DCHECK(ui_task_runner_);
@@ -184,8 +242,8 @@ void DataUseTabModel::RegisterURLRegexes(
                                         label);
 }
 
-base::TimeTicks DataUseTabModel::Now() const {
-  return base::TimeTicks::Now();
+base::TimeTicks DataUseTabModel::NowTicks() const {
+  return tick_clock_->NowTicks();
 }
 
 void DataUseTabModel::NotifyObserversOfTrackingStarting(
@@ -217,8 +275,8 @@ void DataUseTabModel::StartTrackingDataUse(SessionID::id_type tab_id,
   bool new_tab_entry_added = false;
   TabEntryMap::iterator tab_entry_iterator = active_tabs_.find(tab_id);
   if (tab_entry_iterator == active_tabs_.end()) {
-    auto new_entry =
-        active_tabs_.insert(TabEntryMap::value_type(tab_id, TabDataUseEntry()));
+    auto new_entry = active_tabs_.insert(
+        TabEntryMap::value_type(tab_id, TabDataUseEntry(this)));
     tab_entry_iterator = new_entry.first;
     DCHECK(tab_entry_iterator != active_tabs_.end());
     DCHECK(!tab_entry_iterator->second.IsTrackingDataUse());
@@ -247,17 +305,15 @@ void DataUseTabModel::CompactTabEntries() {
     if (tab_entry.IsExpired()) {
       // Track the lifetime of expired tab entry.
       const base::TimeDelta removal_time =
-          Now() - tab_entry.GetLatestStartOrEndTime();
+          NowTicks() - tab_entry.GetLatestStartOrEndTime();
       if (!tab_entry.IsTrackingDataUse()) {
         UMA_HISTOGRAM_CUSTOM_TIMES(
-            kUMAExpiredInactiveTabEntryRemovalDurationSecondsHistogram,
-            removal_time, base::TimeDelta::FromSeconds(1),
-            base::TimeDelta::FromHours(1), 50);
+            kUMAExpiredInactiveTabEntryRemovalDurationHistogram, removal_time,
+            base::TimeDelta::FromSeconds(1), base::TimeDelta::FromHours(1), 50);
       } else {
         UMA_HISTOGRAM_CUSTOM_TIMES(
-            kUMAExpiredActiveTabEntryRemovalDurationHoursHistogram,
-            removal_time, base::TimeDelta::FromHours(1),
-            base::TimeDelta::FromDays(5), 50);
+            kUMAExpiredActiveTabEntryRemovalDurationHistogram, removal_time,
+            base::TimeDelta::FromHours(1), base::TimeDelta::FromDays(5), 50);
       }
       active_tabs_.erase(tab_entry_iterator++);
     } else {
@@ -281,8 +337,9 @@ void DataUseTabModel::CompactTabEntries() {
     }
     DCHECK(oldest_tab_entry_iterator != active_tabs_.end());
     UMA_HISTOGRAM_CUSTOM_TIMES(
-        kUMAUnexpiredTabEntryRemovalDurationMinutesHistogram,
-        Now() - oldest_tab_entry_iterator->second.GetLatestStartOrEndTime(),
+        kUMAUnexpiredTabEntryRemovalDurationHistogram,
+        NowTicks() -
+            oldest_tab_entry_iterator->second.GetLatestStartOrEndTime(),
         base::TimeDelta::FromMinutes(1), base::TimeDelta::FromHours(1), 50);
     active_tabs_.erase(oldest_tab_entry_iterator);
   }

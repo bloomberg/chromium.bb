@@ -9,11 +9,14 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/simple_test_tick_clock.h"
 #include "base/time/time.h"
 #include "chrome/browser/android/data_usage/external_data_use_observer.h"
 #include "chrome/browser/android/data_usage/tab_data_use_entry.h"
@@ -47,7 +50,23 @@ const std::string kPackageBar = "com.google.package.bar";
 
 enum TabEntrySize { ZERO = 0, ONE, TWO, THREE };
 
-const int kMaxMockObservers = 5;
+// Mock observer to track the calls to start and end tracking events.
+class MockTabDataUseObserver
+    : public chrome::android::DataUseTabModel::TabDataUseObserver {
+ public:
+  MockTabDataUseObserver() : weak_ptr_factory_(this) {}
+  MOCK_METHOD1(NotifyTrackingStarting, void(SessionID::id_type tab_id));
+  MOCK_METHOD1(NotifyTrackingEnding, void(SessionID::id_type tab_id));
+
+  base::WeakPtr<MockTabDataUseObserver> GetWeakPtr() {
+    return weak_ptr_factory_.GetWeakPtr();
+  }
+
+ private:
+  base::WeakPtrFactory<MockTabDataUseObserver> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockTabDataUseObserver);
+};
 
 }  // namespace
 
@@ -59,32 +78,6 @@ namespace chrome {
 
 namespace android {
 
-// Test version of |DataUseTabModel|, which permits overriding of calls to Now.
-// TODO(rajendrant): Move this class to anonymous namespace.
-class DataUseTabModelNowTest : public DataUseTabModel {
- public:
-  DataUseTabModelNowTest(
-      const ExternalDataUseObserver* data_use_observer,
-      const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner)
-      : DataUseTabModel(ui_task_runner) {}
-
-  ~DataUseTabModelNowTest() override {}
-
-  // TODO(rajendrant): Change this test class to use a SimpleTestTickClock
-  // instead.
-  void AdvanceTime(base::TimeDelta now_offset) { now_offset_ = now_offset; }
-
- private:
-  // Returns the current time advanced by |now_offset_|.
-  base::TimeTicks Now() const override {
-    return base::TimeTicks::Now() + now_offset_;
-  }
-
-  // Represents the delta offset to be added to current time that is returned by
-  // Now.
-  base::TimeDelta now_offset_;
-};
-
 class DataUseTabModelTest : public testing::Test {
  public:
   DataUseTabModelTest()
@@ -92,23 +85,17 @@ class DataUseTabModelTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    data_use_aggregator_.reset(new data_usage::DataUseAggregator(
-        scoped_ptr<data_usage::DataUseAnnotator>(),
-        scoped_ptr<data_usage::DataUseAmortizer>()));
-    data_use_observer_.reset(new ExternalDataUseObserver(
-        data_use_aggregator_.get(),
-        content::BrowserThread::GetMessageLoopProxyForThread(
-            content::BrowserThread::IO),
+    base::RunLoop().RunUntilIdle();
+    data_use_tab_model_.reset(new DataUseTabModel(
         content::BrowserThread::GetMessageLoopProxyForThread(
             content::BrowserThread::UI)));
-    base::RunLoop().RunUntilIdle();
-    data_use_tab_model_ = new DataUseTabModelNowTest(
-        data_use_observer_.get(),
-        content::BrowserThread::GetMessageLoopProxyForThread(
-            content::BrowserThread::UI));
+    tick_clock_ = new base::SimpleTestTickClock();
 
-    // |data_use_tab_model_| will be owned by |data_use_observer_|.
-    data_use_observer_->data_use_tab_model_.reset(data_use_tab_model_);
+    // Advance to non nil time.
+    tick_clock_->Advance(base::TimeDelta::FromSeconds(1));
+
+    // |tick_clock_| will be owned by |data_use_tab_model_|.
+    data_use_tab_model_->tick_clock_.reset(tick_clock_);
   }
 
   // Returns true if tab entry for |tab_id| exists in |active_tabs_|.
@@ -143,7 +130,7 @@ class DataUseTabModelTest : public testing::Test {
   // Checks if the DataUse object for the given |tab_id| is labeled as an empty
   // string.
   void ExpectEmptyDataUseLabel(SessionID::id_type tab_id) const {
-    ExpectDataUseLabelAtTimeWithReturn(tab_id, base::TimeTicks::Now(), false,
+    ExpectDataUseLabelAtTimeWithReturn(tab_id, tick_clock_->NowTicks(), false,
                                        std::string());
   }
 
@@ -151,7 +138,7 @@ class DataUseTabModelTest : public testing::Test {
   // |expected_label|.
   void ExpectDataUseLabel(SessionID::id_type tab_id,
                           const std::string& expected_label) const {
-    ExpectDataUseLabelAtTimeWithReturn(tab_id, base::TimeTicks::Now(),
+    ExpectDataUseLabelAtTimeWithReturn(tab_id, tick_clock_->NowTicks(),
                                        !expected_label.empty(), expected_label);
   }
 
@@ -191,34 +178,15 @@ class DataUseTabModelTest : public testing::Test {
                                             &labels);
   }
 
-  scoped_ptr<data_usage::DataUseAggregator> data_use_aggregator_;
-  scoped_ptr<ExternalDataUseObserver> data_use_observer_;
+  // Pointer to the tick clock owned by |data_use_tab_model_|.
+  base::SimpleTestTickClock* tick_clock_;
 
-  // Pointer to the tab model within and owned by ExternalDataUseObserver.
-  DataUseTabModelNowTest* data_use_tab_model_;
+  scoped_ptr<DataUseTabModel> data_use_tab_model_;
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;
 
   DISALLOW_COPY_AND_ASSIGN(DataUseTabModelTest);
-};
-
-// Mock observer to track the calls to start and end tracking events.
-// TODO(rajendrant): Move this class to anonymous namespace.
-class MockTabDataUseObserver : public DataUseTabModel::TabDataUseObserver {
- public:
-  MockTabDataUseObserver() : weak_ptr_factory_(this) {}
-  MOCK_METHOD1(NotifyTrackingStarting, void(SessionID::id_type tab_id));
-  MOCK_METHOD1(NotifyTrackingEnding, void(SessionID::id_type tab_id));
-
-  base::WeakPtr<MockTabDataUseObserver> GetWeakPtr() {
-    return weak_ptr_factory_.GetWeakPtr();
-  }
-
- private:
-  base::WeakPtrFactory<MockTabDataUseObserver> weak_ptr_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockTabDataUseObserver);
 };
 
 // Starts and ends tracking a single tab and checks if its label is returned
@@ -272,7 +240,7 @@ TEST_F(DataUseTabModelTest, MultipleTabTracking) {
 
   // Future data use object should be labeled as an empty string.
   base::TimeTicks future_time =
-      base::TimeTicks::Now() + base::TimeDelta::FromMilliseconds(20);
+      tick_clock_->NowTicks() + base::TimeDelta::FromMilliseconds(20);
   ExpectEmptyDataUseLabelAtTime(kTabID1, future_time);
   ExpectEmptyDataUseLabelAtTime(kTabID2, future_time);
   ExpectEmptyDataUseLabelAtTime(kTabID3, future_time);
@@ -297,6 +265,7 @@ TEST_F(DataUseTabModelTest, ObserverStartEndEvents) {
 // Checks that multiple mock observers receive start and end tracking events for
 // multiple tabs.
 TEST_F(DataUseTabModelTest, MultipleObserverMultipleStartEndEvents) {
+  const int kMaxMockObservers = 5;
   MockTabDataUseObserver mock_observers[kMaxMockObservers];
   size_t expected_observer_count = 0;
   EXPECT_EQ(expected_observer_count, data_use_tab_model_->observers_.size());
@@ -333,14 +302,14 @@ TEST_F(DataUseTabModelTest, TabCloseEvent) {
   EndTrackingDataUse(kTabID1);
 
   ExpectTabEntrySize(TabEntrySize::ONE);
-  EXPECT_TRUE(
-      data_use_tab_model_->active_tabs_[kTabID1].tab_close_time_.is_null());
+  EXPECT_TRUE(data_use_tab_model_->active_tabs_.find(kTabID1)
+                  ->second.tab_close_time_.is_null());
 
   data_use_tab_model_->OnTabCloseEvent(kTabID1);
 
   ExpectTabEntrySize(TabEntrySize::ONE);
-  EXPECT_FALSE(
-      data_use_tab_model_->active_tabs_[kTabID1].tab_close_time_.is_null());
+  EXPECT_FALSE(data_use_tab_model_->active_tabs_.find(kTabID1)
+                   ->second.tab_close_time_.is_null());
 }
 
 // Checks that tab close event ends the active tracking session for the tab.
@@ -353,7 +322,7 @@ TEST_F(DataUseTabModelTest, TabCloseEventEndsTracking) {
 
   // Future data use object should be labeled as an empty string.
   ExpectEmptyDataUseLabelAtTime(
-      kTabID1, base::TimeTicks::Now() + base::TimeDelta::FromMilliseconds(20));
+      kTabID1, tick_clock_->NowTicks() + base::TimeDelta::FromMilliseconds(20));
 }
 
 // Checks that end tracking for specific labels closes those active sessions.
@@ -402,7 +371,9 @@ TEST_F(DataUseTabModelTest, CompactTabEntriesWithinMaxLimit) {
   while (tab_id <= max_tab_entries) {
     std::string tab_label = base::StringPrintf("label_%d", tab_id);
     StartTrackingDataUse(tab_id, tab_label);
+    tick_clock_->Advance(base::TimeDelta::FromSeconds(1));
     EndTrackingDataUse(tab_id);
+    tick_clock_->Advance(base::TimeDelta::FromSeconds(1));
 
     ExpectTabEntrySize(tab_id);
     ++tab_id;
@@ -417,7 +388,9 @@ TEST_F(DataUseTabModelTest, CompactTabEntriesWithinMaxLimit) {
     EXPECT_TRUE(IsTabEntryExists(oldest_tab_id));
     std::string tab_label = base::StringPrintf("label_%d", tab_id);
     StartTrackingDataUse(tab_id, tab_label);
+    tick_clock_->Advance(base::TimeDelta::FromSeconds(1));
     EndTrackingDataUse(tab_id);
+    tick_clock_->Advance(base::TimeDelta::FromSeconds(1));
 
     // Oldest entry got removed.
     EXPECT_FALSE(IsTabEntryExists(oldest_tab_id));
@@ -433,6 +406,7 @@ TEST_F(DataUseTabModelTest, CompactTabEntriesWithinMaxLimit) {
     EXPECT_TRUE(IsTabEntryExists(oldest_tab_id));
     std::string tab_label = base::StringPrintf("label_%d", tab_id);
     StartTrackingDataUse(tab_id, tab_label);
+    tick_clock_->Advance(base::TimeDelta::FromSeconds(1));
 
     // Oldest entry got removed.
     EXPECT_FALSE(IsTabEntryExists(oldest_tab_id));
@@ -444,7 +418,7 @@ TEST_F(DataUseTabModelTest, CompactTabEntriesWithinMaxLimit) {
 }
 
 TEST_F(DataUseTabModelTest, ExpiredInactiveTabEntryRemovaltimeHistogram) {
-  const char kUMAExpiredInactiveTabEntryRemovalDurationSecondsHistogram[] =
+  const char kUMAExpiredInactiveTabEntryRemovalDurationHistogram[] =
       "DataUse.TabModel.ExpiredInactiveTabEntryRemovalDuration";
   base::HistogramTester histogram_tester;
 
@@ -455,27 +429,26 @@ TEST_F(DataUseTabModelTest, ExpiredInactiveTabEntryRemovaltimeHistogram) {
 
   // Fake tab close time to make it as expired.
   EXPECT_TRUE(IsTabEntryExists(kTabID1));
-  auto& tab_entry = data_use_tab_model_->active_tabs_[kTabID1];
+  auto& tab_entry = data_use_tab_model_->active_tabs_.find(kTabID1)->second;
   EXPECT_FALSE(tab_entry.tab_close_time_.is_null());
-  tab_entry.tab_close_time_ -= tab_entry.closed_tab_expiration_duration_ +
-                               base::TimeDelta::FromSeconds(1);
+  tab_entry.tab_close_time_ -=
+      data_use_tab_model_->closed_tab_expiration_duration() +
+      base::TimeDelta::FromSeconds(1);
   EXPECT_TRUE(tab_entry.IsExpired());
 
   // Fast forward 50 seconds.
-  data_use_tab_model_->AdvanceTime(base::TimeDelta::FromSeconds(50));
+  tick_clock_->Advance(base::TimeDelta::FromSeconds(50));
 
   data_use_tab_model_->CompactTabEntries();
   EXPECT_FALSE(IsTabEntryExists(kTabID1));
 
-  histogram_tester.ExpectTotalCount(
-      kUMAExpiredInactiveTabEntryRemovalDurationSecondsHistogram, 1);
-  histogram_tester.ExpectBucketCount(
-      kUMAExpiredInactiveTabEntryRemovalDurationSecondsHistogram,
+  histogram_tester.ExpectUniqueSample(
+      kUMAExpiredInactiveTabEntryRemovalDurationHistogram,
       base::TimeDelta::FromSeconds(50).InMilliseconds(), 1);
 }
 
 TEST_F(DataUseTabModelTest, UnexpiredTabEntryRemovaltimeHistogram) {
-  const char kUMAUnexpiredTabEntryRemovalDurationMinutesHistogram[] =
+  const char kUMAUnexpiredTabEntryRemovalDurationHistogram[] =
       "DataUse.TabModel.UnexpiredTabEntryRemovalDuration";
   base::HistogramTester histogram_tester;
   const int32_t max_tab_entries =
@@ -490,17 +463,15 @@ TEST_F(DataUseTabModelTest, UnexpiredTabEntryRemovaltimeHistogram) {
   }
 
   // Fast forward 10 minutes.
-  data_use_tab_model_->AdvanceTime(base::TimeDelta::FromMinutes(10));
+  tick_clock_->Advance(base::TimeDelta::FromMinutes(10));
 
   // Adding another tab entry triggers CompactTabEntries.
   std::string tab_label = base::StringPrintf("label_%d", tab_id);
   StartTrackingDataUse(tab_id, tab_label);
   EndTrackingDataUse(tab_id);
 
-  histogram_tester.ExpectTotalCount(
-      kUMAUnexpiredTabEntryRemovalDurationMinutesHistogram, 1);
-  histogram_tester.ExpectBucketCount(
-      kUMAUnexpiredTabEntryRemovalDurationMinutesHistogram,
+  histogram_tester.ExpectUniqueSample(
+      kUMAUnexpiredTabEntryRemovalDurationHistogram,
       base::TimeDelta::FromMinutes(10).InMilliseconds(), 1);
 }
 
@@ -758,10 +729,10 @@ TEST_F(DataUseTabModelTest, SingleTabTransitionSequence) {
 
   data_use_tab_model_->AddObserver(mock_observer.GetWeakPtr());
   for (auto const& test : transition_tests) {
-    data_use_tab_model_->AdvanceTime(base::TimeDelta::FromSeconds(1));
+    tick_clock_->Advance(base::TimeDelta::FromSeconds(1));
     data_use_tab_model_->OnNavigationEvent(tab_id, test.transition,
                                            GURL(test.url), test.package);
-    data_use_tab_model_->AdvanceTime(base::TimeDelta::FromSeconds(1));
+    tick_clock_->Advance(base::TimeDelta::FromSeconds(1));
 
     EXPECT_EQ(!test.expected_label.empty(), IsTrackingDataUse(tab_id));
     ExpectDataUseLabel(tab_id, test.expected_label);
