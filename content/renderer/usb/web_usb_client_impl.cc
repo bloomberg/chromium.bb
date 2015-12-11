@@ -65,6 +65,7 @@ void OnGetDevicesComplete(
   scoped_callbacks.PassCallbacks()->onSuccess(blink::adoptWebPtr(devices));
 }
 
+#if !defined(OS_MACOSX)
 void OnRequestDevicesComplete(
     ScopedWebCallbacks<blink::WebUSBClientRequestDeviceCallbacks> callbacks,
     device::usb::DeviceManager* device_manager,
@@ -82,6 +83,7 @@ void OnRequestDevicesComplete(
         blink::adoptWebPtr<blink::WebUSBDevice>(nullptr));
   }
 }
+#endif
 
 }  // namespace
 
@@ -102,6 +104,11 @@ void WebUSBClientImpl::getDevices(
 void WebUSBClientImpl::requestDevice(
     const blink::WebUSBDeviceRequestOptions& options,
     blink::WebUSBClientRequestDeviceCallbacks* callbacks) {
+#if defined(OS_MACOSX)
+  callbacks->onError(blink::WebUSBError(blink::WebUSBError::Error::Service,
+                                        base::UTF8ToUTF16("Not implemented.")));
+  delete callbacks;
+#else
   if (!webusb_permission_bubble_) {
     service_registry_->ConnectToRemoteService(
         mojo::GetProxy(&webusb_permission_bubble_));
@@ -116,6 +123,7 @@ void WebUSBClientImpl::requestDevice(
       device_filters.Pass(),
       base::Bind(&OnRequestDevicesComplete, base::Passed(&scoped_callbacks),
                  base::Unretained(device_manager_.get())));
+#endif
 }
 
 void WebUSBClientImpl::setObserver(Observer* observer) {

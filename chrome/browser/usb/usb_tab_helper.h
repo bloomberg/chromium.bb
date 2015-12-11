@@ -19,7 +19,14 @@ class PermissionProvider;
 }
 }
 
-class WebUSBPermissionProvider;
+namespace webusb {
+class WebUsbPermissionBubble;
+}
+
+struct FrameUsbServices;
+
+typedef std::map<content::RenderFrameHost*, scoped_ptr<FrameUsbServices>>
+    FrameUsbServicesMap;
 
 // Per-tab owner of USB services provided to render frames within that tab.
 class UsbTabHelper : public content::WebContentsObserver,
@@ -34,6 +41,10 @@ class UsbTabHelper : public content::WebContentsObserver,
       content::RenderFrameHost* render_frame_host,
       mojo::InterfaceRequest<device::usb::DeviceManager> request);
 
+  void CreatePermissionBubble(
+      content::RenderFrameHost* render_frame_host,
+      mojo::InterfaceRequest<webusb::WebUsbPermissionBubble> request);
+
  private:
   explicit UsbTabHelper(content::WebContents* web_contents);
   friend class content::WebContentsUserData<UsbTabHelper>;
@@ -41,12 +52,18 @@ class UsbTabHelper : public content::WebContentsObserver,
   // content::WebContentsObserver overrides:
   void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
 
+  FrameUsbServices* GetFrameUsbService(
+      content::RenderFrameHost* render_frame_host);
+
   void GetPermissionProvider(
       content::RenderFrameHost* render_frame_host,
       mojo::InterfaceRequest<device::usb::PermissionProvider> request);
 
-  std::map<content::RenderFrameHost*, scoped_ptr<WebUSBPermissionProvider>>
-      permission_provider_;
+  void GetPermissionBubble(
+      content::RenderFrameHost* render_frame_host,
+      mojo::InterfaceRequest<webusb::WebUsbPermissionBubble> request);
+
+  FrameUsbServicesMap frame_usb_services_;
 
   DISALLOW_COPY_AND_ASSIGN(UsbTabHelper);
 };

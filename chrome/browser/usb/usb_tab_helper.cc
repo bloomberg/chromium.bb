@@ -4,6 +4,10 @@
 
 #include "chrome/browser/usb/usb_tab_helper.h"
 
+#include <utility>
+
+#include "base/memory/scoped_ptr.h"
+#include "chrome/browser/usb/web_usb_permission_bubble.h"
 #include "chrome/browser/usb/web_usb_permission_provider.h"
 #include "device/devices_app/usb/device_manager_impl.h"
 
@@ -11,6 +15,11 @@ using content::RenderFrameHost;
 using content::WebContents;
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(UsbTabHelper);
+
+struct FrameUsbServices {
+  scoped_ptr<WebUSBPermissionProvider> permission_provider;
+  scoped_ptr<ChromeWebUsbPermissionBubble> permission_bubble;
+};
 
 // static
 UsbTabHelper* UsbTabHelper::GetOrCreateForWebContents(
@@ -36,23 +45,50 @@ void UsbTabHelper::CreateDeviceManager(
                                          request.Pass());
 }
 
+void UsbTabHelper::CreatePermissionBubble(
+    content::RenderFrameHost* render_frame_host,
+    mojo::InterfaceRequest<webusb::WebUsbPermissionBubble> request) {
+  GetPermissionBubble(render_frame_host, request.Pass());
+}
+
 UsbTabHelper::UsbTabHelper(WebContents* web_contents)
     : content::WebContentsObserver(web_contents) {}
 
 void UsbTabHelper::RenderFrameDeleted(RenderFrameHost* render_frame_host) {
-  permission_provider_.erase(render_frame_host);
+  frame_usb_services_.erase(render_frame_host);
+}
+
+FrameUsbServices* UsbTabHelper::GetFrameUsbService(
+    content::RenderFrameHost* render_frame_host) {
+  FrameUsbServicesMap::const_iterator it =
+      frame_usb_services_.find(render_frame_host);
+  if (it == frame_usb_services_.end()) {
+    scoped_ptr<FrameUsbServices> frame_usb_services(new FrameUsbServices());
+    it = (frame_usb_services_.insert(
+              std::make_pair(render_frame_host, frame_usb_services.Pass())))
+             .first;
+  }
+  return it->second.get();
 }
 
 void UsbTabHelper::GetPermissionProvider(
     RenderFrameHost* render_frame_host,
     mojo::InterfaceRequest<device::usb::PermissionProvider> request) {
-  const auto it = permission_provider_.find(render_frame_host);
-  if (it == permission_provider_.end()) {
-    scoped_ptr<WebUSBPermissionProvider> permission_provider(
+  FrameUsbServices* frame_usb_services = GetFrameUsbService(render_frame_host);
+  if (!frame_usb_services->permission_provider) {
+    frame_usb_services->permission_provider.reset(
         new WebUSBPermissionProvider(render_frame_host));
-    permission_provider->Bind(request.Pass());
-    permission_provider_[render_frame_host] = permission_provider.Pass();
-  } else {
-    it->second->Bind(request.Pass());
   }
+  frame_usb_services->permission_provider->Bind(request.Pass());
+}
+
+void UsbTabHelper::GetPermissionBubble(
+    content::RenderFrameHost* render_frame_host,
+    mojo::InterfaceRequest<webusb::WebUsbPermissionBubble> request) {
+  FrameUsbServices* frame_usb_services = GetFrameUsbService(render_frame_host);
+  if (!frame_usb_services->permission_bubble) {
+    frame_usb_services->permission_bubble.reset(
+        new ChromeWebUsbPermissionBubble(render_frame_host));
+  }
+  frame_usb_services->permission_bubble->Bind(request.Pass());
 }

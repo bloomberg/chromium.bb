@@ -1329,6 +1329,10 @@
       'browser/tracing/chrome_tracing_delegate.h',
       'browser/upgrade_detector.cc',
       'browser/upgrade_detector.h',
+      'browser/usb/usb_chooser_bubble_delegate.cc',
+      'browser/usb/usb_chooser_bubble_delegate.h',
+      'browser/usb/web_usb_permission_bubble.cc',
+      'browser/usb/web_usb_permission_bubble.h',
     ],
     'chrome_browser_win_sources': [
       'browser/browser_process_platform_part_aurawin.cc',

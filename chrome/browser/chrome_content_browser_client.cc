@@ -280,6 +280,10 @@
 #include "chrome/browser/media/router/presentation_service_delegate_impl.h"
 #endif
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#include "components/webusb/public/interfaces/webusb_permission_bubble.mojom.h"
+#endif
+
 #if defined(ENABLE_WAYLAND_SERVER)
 #include "chrome/browser/chrome_browser_main_extra_parts_exo.h"
 #endif
@@ -658,6 +662,23 @@ void CreateUsbDeviceManager(
       UsbTabHelper::GetOrCreateForWebContents(web_contents);
   tab_helper->CreateDeviceManager(render_frame_host, request.Pass());
 }
+
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+void CreateWebUsbPermissionBubble(
+    RenderFrameHost* render_frame_host,
+    mojo::InterfaceRequest<webusb::WebUsbPermissionBubble> request) {
+  WebContents* web_contents =
+      WebContents::FromRenderFrameHost(render_frame_host);
+  if (!web_contents) {
+    NOTREACHED();
+    return;
+  }
+
+  UsbTabHelper* tab_helper =
+      UsbTabHelper::GetOrCreateForWebContents(web_contents);
+  tab_helper->CreatePermissionBubble(render_frame_host, request.Pass());
+}
+#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 
 }  // namespace
 
@@ -2614,6 +2635,10 @@ void ChromeContentBrowserClient::RegisterRenderFrameMojoServices(
     content::ServiceRegistry* registry,
     content::RenderFrameHost* render_frame_host) {
   registry->AddService(base::Bind(&CreateUsbDeviceManager, render_frame_host));
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+  registry->AddService(
+      base::Bind(&CreateWebUsbPermissionBubble, render_frame_host));
+#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 }
 
 void ChromeContentBrowserClient::RegisterOutOfProcessMojoApplications(

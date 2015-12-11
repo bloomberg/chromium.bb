@@ -31,11 +31,15 @@ enum BubbleType {
 
   // Permissions-related bubbles:
   BUBBLE_TYPE_PERMISSION = 30,  // Displays a permission request to the user.
+  BUBBLE_TYPE_CHOOSER_PERMISSION = 31,  // For chooser permissions.
 
   // Upper boundary for metrics.
   BUBBLE_TYPE_MAX,
 };
 
+// TODO(juncai): Since LogBubbleCloseReason function adds metrics for each
+// close type, we can use only enum, and it may not be necessary to keep the
+// bubble name.
 // Convert from bubble name to ID. The bubble ID will allow collecting the
 // close reason for each bubble type.
 static int GetBubbleId(BubbleReference bubble) {
@@ -50,6 +54,8 @@ static int GetBubbleId(BubbleReference bubble) {
     bubble_type = BUBBLE_TYPE_TRANSLATE;
   else if (bubble->GetName().compare("PermissionBubble") == 0)
     bubble_type = BUBBLE_TYPE_PERMISSION;
+  else if (bubble->GetName().compare("ChooserBubble") == 0)
+    bubble_type = BUBBLE_TYPE_CHOOSER_PERMISSION;
 
   DCHECK_NE(bubble_type, BUBBLE_TYPE_UNKNOWN);
   DCHECK_NE(bubble_type, BUBBLE_TYPE_MAX);

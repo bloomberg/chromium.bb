@@ -56864,6 +56864,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="10" label="Extension Installed Bubble"/>
   <int value="20" label="Translate Bubble"/>
   <int value="30" label="Permissions Bubble"/>
+  <int value="31" label="Chooser Permissions Bubble"/>
 </enum>
 
 <enum name="CacheResult" type="int">
