@@ -168,6 +168,14 @@ class SESSIONS_EXPORT TabRestoreService : public KeyedService {
   // passed to the caller.
   virtual Tab* RemoveTabEntryById(SessionID::id_type id) = 0;
 
+  // Removes the Tab whose navigation ended at a visit identified by the given
+  // |url| and |time|. If this Tab is not a separate Entry, but a part of
+  // a Window, it will be removed from that Window instead. If this leaves
+  // the Window with a single Tab, it will be converted to a Tab Entry.
+  // Returns true if a Tab with the given last visit |url| and |time| existed.
+  virtual bool RemoveTabByLastVisit(const GURL& url,
+                                    const base::Time& time) = 0;
+
   // Restores an entry by id. If there is no entry with an id matching |id|,
   // this does nothing. If |context| is NULL, this creates a new window for the
   // entry. |disposition| is respected, but the attributes (tabstrip index,

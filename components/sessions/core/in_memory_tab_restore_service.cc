@@ -60,6 +60,11 @@ TabRestoreService::Tab* InMemoryTabRestoreService::RemoveTabEntryById(
   return helper_.RemoveTabEntryById(id);
 }
 
+bool InMemoryTabRestoreService::RemoveTabByLastVisit(
+    const GURL& url, const base::Time& time) {
+  return helper_.RemoveTabByLastVisit(url, time);
+}
+
 std::vector<LiveTab*> InMemoryTabRestoreService::RestoreEntryById(
     LiveTabContext* context,
     SessionID::id_type id,

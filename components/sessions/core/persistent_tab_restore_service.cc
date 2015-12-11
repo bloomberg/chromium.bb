@@ -965,6 +965,11 @@ TabRestoreService::Tab* PersistentTabRestoreService::RemoveTabEntryById(
   return helper_.RemoveTabEntryById(id);
 }
 
+bool PersistentTabRestoreService::RemoveTabByLastVisit(
+    const GURL& url, const base::Time& time) {
+  return helper_.RemoveTabByLastVisit(url, time);
+}
+
 std::vector<LiveTab*> PersistentTabRestoreService::RestoreEntryById(
     LiveTabContext* context,
     SessionID::id_type id,
