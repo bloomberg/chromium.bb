@@ -42,7 +42,7 @@ SchedulerHelper::SchedulerHelper(
   control_after_wakeup_task_runner_->SetQueuePriority(
       TaskQueue::CONTROL_PRIORITY);
 
-  task_queue_manager_->SetWorkBatchSize(400);
+  task_queue_manager_->SetWorkBatchSize(4);
 
   DCHECK(task_queue_manager_delegate_);
   task_queue_manager_delegate_->SetDefaultTaskRunner(
