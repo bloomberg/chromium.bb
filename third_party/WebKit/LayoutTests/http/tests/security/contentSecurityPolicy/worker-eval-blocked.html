@@ -1,29 +1,31 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline'"/>
-<script>
-if (window.testRunner) {
-    testRunner.waitUntilDone();
-    testRunner.dumpAsText();
-}
-</script>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
 </head>
 <body>
 <script>
-try {
-    var worker = new Worker('http://127.0.0.1:8000/security/contentSecurityPolicy/resources/worker.php?type=eval&csp=' +
-                             encodeURIComponent("script-src 'self' 'unsafe-inline'"));
-    worker.onmessage = function (event) {
-        alert(event.data);
-        if (window.testRunner)
-            testRunner.notifyDone();
-    };
-} catch (e) {
-    alert(e);
-    if (window.testRunner)
-        testRunner.notifyDone();
+function runWorkerTest(type, policy, expectation) {
+    policy = encodeURIComponent(policy);
+    if (expectation.none) {
+        var worker = new Worker("./resources/worker-testharness.php?csp=" + policy + "&type=" + type + "&expectation=none");
+        async_test(function (t) {
+            worker.onmessage = t.step_func_done(function (e) {
+                assert_equals(e.data.state, expectation.none);
+            });
+        }, type + " " + expectation.none + " for '" + policy + "'");
+    } else {
+        var worker = new Worker("./resources/worker-testharness.php?csp=" + policy + "&type=" + type + "&expectation=" + expectation);
+        fetch_tests_from_worker(worker);
+    }
 }
+runWorkerTest("eval", "script-src 'none'", { "none": "blocked" });
+runWorkerTest("eval", "default-src 'none'", { "none": "blocked" });
+runWorkerTest("eval", "script-src 'self'", "blocked");
+runWorkerTest("eval", "default-src 'self'", "blocked");
+runWorkerTest("eval", "script-src 'self' 'unsafe-eval'", "allowed");
+runWorkerTest("eval", "default-src 'self' 'unsafe-eval'", "allowed");
 </script>
 </body>
 </html>
