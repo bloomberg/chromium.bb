@@ -1,8 +1,10 @@
 # --test_video_data="test-25fps.h264:320:240:250:258:35:150:1"
-# Intel Ivy Bridge / Haswell / Broadwell - EGL
-27ddce017b884f8bbfa159ad180a71d2
 # Intel Sandy Brige - EGL
 42e78b8ac231dc24e6db5fac2d26da7b
+# Intel - Broadwell / Haswell - EGL
+11899ca545a269b6af28116b0480c0bd
+# Intel - Ivy Bridge - EGL
+d16d0662406b9d4ebb413ed3da3896e0
 # Intel - Haswell - X11
 # Intel - Ivy Bridge - X11
 5f697b015b7af0afa7ff202905f748fa
