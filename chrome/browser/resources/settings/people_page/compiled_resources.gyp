@@ -4,7 +4,7 @@
 {
   'targets': [
     {
-      'target_name': 'sync_page',
+      'target_name': 'people_page',
       'variables': {
         'depends': [
           '../../../../../ui/webui/resources/js/compiled_resources.gyp:assert',

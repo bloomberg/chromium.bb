@@ -34,7 +34,7 @@ Polymer({
 
     /**
      * The current sync status, supplied by settings.SyncPrivateApi.
-     * @type {?settings.SyncPrivateApi.SyncStatus}
+     * @type {?settings.SyncStatus}
      */
     syncStatus: Object,
   },
