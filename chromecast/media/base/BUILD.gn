@@ -41,7 +41,6 @@ source_set("key_systems") {
   ]
 }
 
-# TODO(slan): See if the dependency on //media can be broken.
 source_set("base") {
   sources = [
     "decrypt_context_impl.cc",
@@ -52,8 +51,6 @@ source_set("base") {
     "media_caps.h",
     "media_codec_support.cc",
     "media_codec_support.h",
-    "switching_media_renderer.cc",
-    "switching_media_renderer.h",
   ]
 
   public_deps = [
@@ -67,7 +64,6 @@ source_set("base") {
     "//base",
     "//crypto",
     "//crypto:platform",
-    "//media",
     "//net",
   ]
 

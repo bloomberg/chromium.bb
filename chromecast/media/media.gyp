@@ -51,8 +51,6 @@
         'base/media_codec_support.h',
         'base/media_message_loop.cc',
         'base/media_message_loop.h',
-        'base/switching_media_renderer.cc',
-        'base/switching_media_renderer.h',
         'base/video_plane_controller.cc',
         'base/video_plane_controller.h',
       ],

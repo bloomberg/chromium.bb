@@ -185,7 +185,7 @@ CastContentRendererClient::CreateMediaRendererFactory(
 
   return scoped_ptr<::media::RendererFactory>(
       new chromecast::media::ChromecastMediaRendererFactory(
-          gpu_factories, media_log, render_frame->GetRoutingID()));
+          gpu_factories, render_frame->GetRoutingID()));
 }
 #endif
 
