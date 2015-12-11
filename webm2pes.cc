@@ -7,6 +7,7 @@
 // be found in the AUTHORS file in the root of the source tree.
 #include "webm2pes.h"
 
+#include <cstring>
 #include <vector>
 
 namespace {
@@ -258,12 +259,13 @@ bool BCMVHeader::Write(std::FILE* fileptr) const {
     std::fprintf(stderr, "Webm2Pes: BCMV write failed.\n");
   }
   const std::size_t kRemainingBytes = 6;
-  const uint8_t buffer[kRemainingBytes] = {(length >> 24) & 0xff,
-                                           (length >> 16) & 0xff,
-                                           (length >> 8) & 0xff,
-                                           length & 0xff,
-                                           0,
-                                           0 /* 2 bytes 0 padding */};
+  const uint8_t buffer[kRemainingBytes] = {
+      static_cast<std::uint8_t>((length >> 24) & 0xff),
+      static_cast<std::uint8_t>((length >> 16) & 0xff),
+      static_cast<std::uint8_t>((length >> 8) & 0xff),
+      static_cast<std::uint8_t>(length & 0xff),
+      0,
+      0 /* 2 bytes 0 padding */};
   for (std::int8_t i = 0; i < kRemainingBytes; ++i) {
     if (WriteUint8(buffer[i], fileptr) != true) {
       std::fprintf(stderr, "Webm2Pes: BCMV remainder write failed.\n");
