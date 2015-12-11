@@ -1546,8 +1546,11 @@ using content::WebContents;
   }];
 }
 
+// TODO(estade): change this function to return a const* or const& and remove
+// this cast.
 - (ui::ThemeProvider*)themeProvider {
-  return ThemeServiceFactory::GetForProfile(browser_->profile());
+  return const_cast<ui::ThemeProvider*>(
+      &ThemeService::GetThemeProviderForProfile(browser_->profile()));
 }
 
 - (ThemedWindowStyle)themedWindowStyle {

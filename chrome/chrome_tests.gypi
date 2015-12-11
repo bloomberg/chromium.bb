@@ -1154,7 +1154,6 @@
       'browser/ui/views/tabs/tab_drag_controller_interactive_uitest.cc',
       'browser/ui/views/tabs/tab_drag_controller_interactive_uitest.h',
       'browser/ui/views/toolbar/toolbar_action_view_interactive_uitest.cc',
-      'browser/ui/views/toolbar/toolbar_button_test.cc',
       'browser/ui/views/toolbar/toolbar_view_interactive_uitest.cc',
       'browser/ui/views/translate/translate_bubble_test_utils_views.cc',
     ],
@@ -1667,13 +1666,6 @@
           'dependencies': [
             '../build/linux/system.gyp:xtst',
             '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
-          ],
-        }],
-        ['OS=="linux"', {
-          # TODO(gbillock): aura linux does not support the automation for
-          # SendMouseMoveNotifyWhenDone
-          'sources!': [
-            'browser/ui/views/toolbar/toolbar_button_test.cc',
           ],
         }],
         ['OS=="linux"', {

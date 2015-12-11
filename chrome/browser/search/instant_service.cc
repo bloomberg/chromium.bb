@@ -236,10 +236,12 @@ void InstantService::UpdateThemeInfo() {
 #if defined(ENABLE_THEMES)
   // Update theme background info.
   // Initialize |theme_info| if necessary.
-  if (!theme_info_)
-    OnThemeChanged(ThemeServiceFactory::GetForProfile(profile_));
-  else
-    OnThemeChanged(NULL);
+  if (!theme_info_) {
+    OnThemeChanged();
+  } else {
+    FOR_EACH_OBSERVER(InstantServiceObserver, observers_,
+                      ThemeInfoChanged(*theme_info_));
+  }
 #endif  // defined(ENABLE_THEMES)
 }
 
@@ -278,10 +280,9 @@ void InstantService::Observe(int type,
           content::Source<content::RenderProcessHost>(source)->GetID());
       break;
 #if defined(ENABLE_THEMES)
-    case chrome::NOTIFICATION_BROWSER_THEME_CHANGED: {
-      OnThemeChanged(content::Source<ThemeService>(source).ptr());
+    case chrome::NOTIFICATION_BROWSER_THEME_CHANGED:
+      OnThemeChanged();
       break;
-    }
 #endif  // defined(ENABLE_THEMES)
     default:
       NOTREACHED() << "Unexpected notification type in InstantService.";
@@ -383,31 +384,25 @@ RGBAColor SkColorToRGBAColor(const SkColor& sKColor) {
 
 }  // namespace
 
-void InstantService::OnThemeChanged(ThemeService* theme_service) {
-  if (!theme_service) {
-    DCHECK(theme_info_.get());
-    FOR_EACH_OBSERVER(InstantServiceObserver, observers_,
-                      ThemeInfoChanged(*theme_info_));
-    return;
-  }
-
+void InstantService::OnThemeChanged() {
   // Get theme information from theme service.
   theme_info_.reset(new ThemeBackgroundInfo());
 
   // Get if the current theme is the default theme.
+  ThemeService* theme_service = ThemeServiceFactory::GetForProfile(profile_);
   theme_info_->using_default_theme = theme_service->UsingDefaultTheme();
 
   // Get theme colors.
+  const ui::ThemeProvider& theme_provider =
+      ThemeService::GetThemeProviderForProfile(profile_);
   SkColor background_color =
-      theme_service->GetColor(ThemeProperties::COLOR_NTP_BACKGROUND);
-  SkColor text_color =
-      theme_service->GetColor(ThemeProperties::COLOR_NTP_TEXT);
-  SkColor link_color =
-      theme_service->GetColor(ThemeProperties::COLOR_NTP_LINK);
+      theme_provider.GetColor(ThemeProperties::COLOR_NTP_BACKGROUND);
+  SkColor text_color = theme_provider.GetColor(ThemeProperties::COLOR_NTP_TEXT);
+  SkColor link_color = theme_provider.GetColor(ThemeProperties::COLOR_NTP_LINK);
   SkColor text_color_light =
-      theme_service->GetColor(ThemeProperties::COLOR_NTP_TEXT_LIGHT);
+      theme_provider.GetColor(ThemeProperties::COLOR_NTP_TEXT_LIGHT);
   SkColor header_color =
-      theme_service->GetColor(ThemeProperties::COLOR_NTP_HEADER);
+      theme_provider.GetColor(ThemeProperties::COLOR_NTP_HEADER);
   // Generate section border color from the header color.
   SkColor section_border_color =
       SkColorSetARGB(kSectionBorderAlphaTransparency,
@@ -433,16 +428,16 @@ void InstantService::OnThemeChanged(ThemeService* theme_service) {
   theme_info_->header_color = SkColorToRGBAColor(header_color);
   theme_info_->section_border_color = SkColorToRGBAColor(section_border_color);
 
-  int logo_alternate = theme_service->GetDisplayProperty(
-      ThemeProperties::NTP_LOGO_ALTERNATE);
+  int logo_alternate =
+      theme_provider.GetDisplayProperty(ThemeProperties::NTP_LOGO_ALTERNATE);
   theme_info_->logo_alternate = logo_alternate == 1;
 
-  if (theme_service->HasCustomImage(IDR_THEME_NTP_BACKGROUND)) {
+  if (theme_provider.HasCustomImage(IDR_THEME_NTP_BACKGROUND)) {
     // Set theme id for theme background image url.
     theme_info_->theme_id = theme_service->GetThemeID();
 
     // Set theme background image horizontal alignment.
-    int alignment = theme_service->GetDisplayProperty(
+    int alignment = theme_provider.GetDisplayProperty(
         ThemeProperties::NTP_BACKGROUND_ALIGNMENT);
     if (alignment & ThemeProperties::ALIGN_LEFT)
       theme_info_->image_horizontal_alignment = THEME_BKGRND_IMAGE_ALIGN_LEFT;
@@ -460,7 +455,7 @@ void InstantService::OnThemeChanged(ThemeService* theme_service) {
       theme_info_->image_vertical_alignment = THEME_BKGRND_IMAGE_ALIGN_CENTER;
 
     // Set theme backgorund image tiling.
-    int tiling = theme_service->GetDisplayProperty(
+    int tiling = theme_provider.GetDisplayProperty(
         ThemeProperties::NTP_BACKGROUND_TILING);
     switch (tiling) {
       case ThemeProperties::NO_REPEAT:
@@ -478,13 +473,13 @@ void InstantService::OnThemeChanged(ThemeService* theme_service) {
     }
 
     // Set theme background image height.
-    gfx::ImageSkia* image = theme_service->GetImageSkiaNamed(
-        IDR_THEME_NTP_BACKGROUND);
+    gfx::ImageSkia* image =
+        theme_provider.GetImageSkiaNamed(IDR_THEME_NTP_BACKGROUND);
     DCHECK(image);
     theme_info_->image_height = image->height();
 
     theme_info_->has_attribution =
-       theme_service->HasCustomImage(IDR_THEME_NTP_ATTRIBUTION);
+        theme_provider.HasCustomImage(IDR_THEME_NTP_ATTRIBUTION);
   }
 
   FOR_EACH_OBSERVER(InstantServiceObserver, observers_,

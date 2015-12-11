@@ -6,28 +6,32 @@
 
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/themes/theme_service_factory.h"
 #include "ui/base/resource/material_design/material_design_controller.h"
 
 namespace chrome {
 
-SkColor GetDetachedBookmarkBarBackgroundColor(ThemeService* theme_service) {
-  if (!theme_service->UsingDefaultTheme())
-    return theme_service->GetColor(ThemeProperties::COLOR_TOOLBAR);
+SkColor GetDetachedBookmarkBarBackgroundColor(Profile* profile) {
+  if (ThemeServiceFactory::GetForProfile(profile)->UsingDefaultTheme()) {
+    return ui::MaterialDesignController::IsModeMaterial()
+               ? SK_ColorWHITE
+               : SkColorSetARGB(0xFF, 0xF1, 0xF1, 0xF1);
+  }
 
-  return ui::MaterialDesignController::IsModeMaterial()
-             ? SK_ColorWHITE
-             : SkColorSetARGB(0xFF, 0xF1, 0xF1, 0xF1);
+  return ThemeService::GetThemeProviderForProfile(profile)
+      .GetColor(ThemeProperties::COLOR_TOOLBAR);
 }
 
-SkColor GetDetachedBookmarkBarSeparatorColor(ThemeService* theme_service) {
-  if (theme_service->UsingDefaultTheme()) {
+SkColor GetDetachedBookmarkBarSeparatorColor(Profile* profile) {
+  if (ThemeServiceFactory::GetForProfile(profile)->UsingDefaultTheme()) {
     return ThemeProperties::GetDefaultColor(
         ThemeProperties::COLOR_TOOLBAR_SEPARATOR);
   }
 
   // Use 50% of bookmark text color as separator color.
-  return SkColorSetA(
-      theme_service->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT), 128);
+  return SkColorSetA(ThemeService::GetThemeProviderForProfile(profile)
+                         .GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT),
+                     128);
 }
 
 }  // namespace chrome

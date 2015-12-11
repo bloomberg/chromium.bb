@@ -2358,8 +2358,7 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
 }
 
 - (void)setNewTabImages {
-  ThemeService *theme =
-      static_cast<ThemeService*>([[tabStripView_ window] themeProvider]);
+  ui::ThemeProvider* theme = [[tabStripView_ window] themeProvider];
   if (!theme)
     return;
 
@@ -2380,7 +2379,7 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
                     forButtonState:image_button_cell::kPressedState];
 
   // IDR_THEME_TAB_BACKGROUND_INACTIVE is only used with the default theme.
-  if (theme->UsingDefaultTheme()) {
+  if (theme->UsingSystemTheme()) {
     const CGFloat alpha = tabs::kImageNoFocusAlpha;
     NSImage* background = ApplyMask(
         theme->GetNSImageNamed(IDR_THEME_TAB_BACKGROUND_INACTIVE), mask);

@@ -112,8 +112,8 @@ std::string SkColorToRGBComponents(SkColor color) {
       SkColorGetB(color));
 }
 
-SkColor GetThemeColor(ui::ThemeProvider* tp, int id) {
-  SkColor color = tp->GetColor(id);
+SkColor GetThemeColor(const ui::ThemeProvider& tp, int id) {
+  SkColor color = tp.GetColor(id);
   // If web contents are being inverted because the system is in high-contrast
   // mode, any system theme colors we use must be inverted too to cancel out.
   return color_utils::IsInvertedColorScheme() ?
@@ -122,17 +122,17 @@ SkColor GetThemeColor(ui::ThemeProvider* tp, int id) {
 
 // Get the CSS string for the background position on the new tab page for the
 // states when the bar is attached or detached.
-std::string GetNewTabBackgroundCSS(const ui::ThemeProvider* theme_provider,
+std::string GetNewTabBackgroundCSS(const ui::ThemeProvider& theme_provider,
                                    bool bar_attached) {
   // TODO(glen): This is a quick workaround to hide the notused.png image when
   // no image is provided - we don't have time right now to figure out why
   // this is painting as white.
   // http://crbug.com/17593
-  if (!theme_provider->HasCustomImage(IDR_THEME_NTP_BACKGROUND)) {
+  if (!theme_provider.HasCustomImage(IDR_THEME_NTP_BACKGROUND)) {
     return "-64px";
   }
 
-  int alignment = theme_provider->GetDisplayProperty(
+  int alignment = theme_provider.GetDisplayProperty(
       ThemeProperties::NTP_BACKGROUND_ALIGNMENT);
 
   if (bar_attached)
@@ -156,9 +156,9 @@ std::string GetNewTabBackgroundCSS(const ui::ThemeProvider* theme_provider,
 // How the background image on the new tab page should be tiled (see tiling
 // masks in theme_service.h).
 std::string GetNewTabBackgroundTilingCSS(
-    const ui::ThemeProvider* theme_provider) {
-  int repeat_mode = theme_provider->GetDisplayProperty(
-      ThemeProperties::NTP_BACKGROUND_TILING);
+    const ui::ThemeProvider& theme_provider) {
+  int repeat_mode =
+      theme_provider.GetDisplayProperty(ThemeProperties::NTP_BACKGROUND_TILING);
   return ThemeProperties::TilingToString(repeat_mode);
 }
 
@@ -338,9 +338,10 @@ void NTPResourceCache::CreateNewTabIncognitoHTML() {
       profile_->GetPrefs()->GetBoolean(bookmarks::prefs::kShowBookmarkBar);
   localized_strings.SetBoolean("bookmarkbarattached", bookmark_bar_attached);
 
-  ui::ThemeProvider* tp = ThemeServiceFactory::GetForProfile(profile_);
+  const ui::ThemeProvider& tp =
+      ThemeService::GetThemeProviderForProfile(profile_);
   localized_strings.SetBoolean("hasCustomBackground",
-                               tp->HasCustomImage(IDR_THEME_NTP_BACKGROUND));
+                               tp.HasCustomImage(IDR_THEME_NTP_BACKGROUND));
 
   const std::string& app_locale = g_browser_process->GetApplicationLocale();
   webui::SetLoadTimeDataDefaults(app_locale, &localized_strings);
@@ -539,12 +540,14 @@ void NTPResourceCache::CreateNewTabHTML() {
 }
 
 void NTPResourceCache::CreateNewTabIncognitoCSS() {
-  ui::ThemeProvider* tp = ThemeServiceFactory::GetForProfile(profile_);
-  DCHECK(tp);
+  // TODO(estade): this returns a subtly incorrect theme provider because
+  // |profile_| is actually not the incognito profile. See crbug.com/568388
+  const ui::ThemeProvider& tp =
+      ThemeService::GetThemeProviderForProfile(profile_);
 
   // Get our theme colors
   SkColor color_background =
-      tp->HasCustomImage(IDR_THEME_NTP_BACKGROUND)
+      tp.HasCustomImage(IDR_THEME_NTP_BACKGROUND)
           ? GetThemeColor(tp, ThemeProperties::COLOR_NTP_BACKGROUND)
           : SkColorSetRGB(0x32, 0x32, 0x32);
 
@@ -574,8 +577,8 @@ void NTPResourceCache::CreateNewTabIncognitoCSS() {
 }
 
 void NTPResourceCache::CreateNewTabCSS() {
-  ui::ThemeProvider* tp = ThemeServiceFactory::GetForProfile(profile_);
-  DCHECK(tp);
+  const ui::ThemeProvider& tp =
+      ThemeService::GetThemeProviderForProfile(profile_);
 
   // Get our theme colors
   SkColor color_background =
@@ -622,8 +625,8 @@ void NTPResourceCache::CreateNewTabCSS() {
 
   // For themes that right-align the background, we flip the attribution to the
   // left to avoid conflicts.
-  int alignment = tp->GetDisplayProperty(
-      ThemeProperties::NTP_BACKGROUND_ALIGNMENT);
+  int alignment =
+      tp.GetDisplayProperty(ThemeProperties::NTP_BACKGROUND_ALIGNMENT);
   if (alignment & ThemeProperties::ALIGN_RIGHT) {
     substitutions["leftAlignAttribution"] = "0";
     substitutions["rightAlignAttribution"] = "auto";
@@ -635,7 +638,7 @@ void NTPResourceCache::CreateNewTabCSS() {
   }
 
   substitutions["displayAttribution"] =
-      tp->HasCustomImage(IDR_THEME_NTP_ATTRIBUTION) ? "inline" : "none";
+      tp.HasCustomImage(IDR_THEME_NTP_ATTRIBUTION) ? "inline" : "none";
 
   // Get our template.
   static const base::StringPiece new_tab_theme_css(

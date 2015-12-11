@@ -12,6 +12,8 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/label_button.h"
 
+class Profile;
+
 namespace ui {
 class MenuModel;
 }
@@ -29,7 +31,9 @@ class ToolbarButton : public views::LabelButton,
  public:
   // Takes ownership of the |model|, which can be null if no menu
   // is to be shown.
-  ToolbarButton(views::ButtonListener* listener, ui::MenuModel* model);
+  ToolbarButton(Profile* profile,
+                views::ButtonListener* listener,
+                ui::MenuModel* model);
   ~ToolbarButton() override;
 
   // Set up basic mouseover border behavior.
@@ -84,6 +88,9 @@ class ToolbarButton : public views::LabelButton,
 
   // views::InkDropHost:
   gfx::Point CalculateInkDropCenter() const override;
+
+  // The associated profile. The browser theme affects rendering.
+  Profile* profile_;
 
   // The model that populates the attached menu.
   scoped_ptr<ui::MenuModel> model_;

@@ -50,8 +50,9 @@ BrowserFrame::BrowserFrame(BrowserView* browser_view)
       root_view_(nullptr),
       browser_frame_view_(nullptr),
       browser_view_(browser_view),
-      theme_provider_(ThemeServiceFactory::GetForProfile(
-                          browser_view_->browser()->profile())) {
+      theme_provider_(
+          &ThemeService::GetThemeProviderForProfile(browser_view_->browser()
+                                                        ->profile())) {
   browser_view_->set_frame(this);
   set_is_secondary_widget(false);
   // Don't focus anything on creation, selecting a tab will set the focus.

@@ -193,7 +193,7 @@ void SimpleWebViewDialog::Init() {
                                       this, true);
 
   // Reload button.
-  reload_ = new ReloadButton(command_updater_.get());
+  reload_ = new ReloadButton(profile_, command_updater_.get());
   reload_->set_triggerable_event_flags(ui::EF_LEFT_MOUSE_BUTTON |
                                        ui::EF_MIDDLE_MOUSE_BUTTON);
   reload_->set_tag(IDC_RELOAD);

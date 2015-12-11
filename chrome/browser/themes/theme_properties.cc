@@ -45,6 +45,8 @@ const SkColor kDefaultColorToolbar = SkColorSetRGB(230, 230, 230);
 #else
 const SkColor kDefaultColorToolbar[] = {
     SkColorSetRGB(223, 223, 223), SkColorSetRGB(242, 242, 242)};
+const SkColor kDefaultColorToolbarIncognito[] = {
+    SkColorSetRGB(223, 223, 223), SkColorSetRGB(0x50, 0x50, 0x50)};
 #endif  // OS_MACOSX
 
 const SkColor kDefaultColorTabText = SK_ColorBLACK;
@@ -240,6 +242,10 @@ color_utils::HSL ThemeProperties::GetDefaultTint(int id) {
 
 // static
 SkColor ThemeProperties::GetDefaultColor(int id) {
+  return GetDefaultColor(id, false);
+}
+
+SkColor ThemeProperties::GetDefaultColor(int id, bool otr) {
   int mode = ui::MaterialDesignController::IsModeMaterial();
   switch (id) {
     // Properties stored in theme pack.
@@ -259,11 +265,13 @@ SkColor ThemeProperties::GetDefaultColor(int id) {
       return kDefaultColorFrameIncognito[mode];
     case COLOR_FRAME_INCOGNITO_INACTIVE:
       return kDefaultColorFrameIncognitoInactive[mode];
-    case COLOR_TOOLBAR:
 #if defined(OS_MACOSX)
+    case COLOR_TOOLBAR:
       return kDefaultColorToolbar;
 #else
-      return kDefaultColorToolbar[mode];
+    case COLOR_TOOLBAR:
+      return otr ? kDefaultColorToolbarIncognito[mode]
+                 : kDefaultColorToolbar[mode];
 #endif  // OS_MACOSX
     case COLOR_TAB_TEXT:
       return kDefaultColorTabText;

@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/themes/custom_theme_supplier.h"
+#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
@@ -25,6 +26,7 @@
 #include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/extension.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/resource/material_design/material_design_controller.h"
 
 #if defined(ENABLE_SUPERVISED_USERS)
 #include "chrome/browser/supervised_user/supervised_user_service.h"
@@ -106,7 +108,6 @@ class ThemeServiceTest : public extensions::ExtensionServiceTestBase {
  protected:
   bool is_supervised_;
   ExtensionRegistry* registry_;
-
 };
 
 // Installs then uninstalls a theme and makes sure that the ThemeService
@@ -239,13 +240,41 @@ TEST_F(ThemeServiceTest, ThemeUpgrade) {
                                           ExtensionRegistry::DISABLED));
 }
 
+TEST_F(ThemeServiceTest, IncognitoTest) {
+  ThemeService* theme_service =
+      ThemeServiceFactory::GetForProfile(profile_.get());
+  theme_service->UseDefaultTheme();
+  // Let the ThemeService uninstall unused themes.
+  base::MessageLoop::current()->RunUntilIdle();
+
+  // Should get the same ThemeService for incognito and original profiles.
+  ThemeService* otr_theme_service =
+      ThemeServiceFactory::GetForProfile(profile_->GetOffTheRecordProfile());
+  EXPECT_EQ(theme_service, otr_theme_service);
+
+#if !defined(OS_MACOSX)
+  // Should get a different ThemeProvider for incognito and original profiles.
+  const ui::ThemeProvider& provider =
+      ThemeService::GetThemeProviderForProfile(profile_.get());
+  const ui::ThemeProvider& otr_provider =
+      ThemeService::GetThemeProviderForProfile(
+          profile_->GetOffTheRecordProfile());
+  EXPECT_NE(&provider, &otr_provider);
+  // And (some) colors should be different in MD mode.
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    EXPECT_NE(provider.GetColor(ThemeProperties::COLOR_TOOLBAR),
+              otr_provider.GetColor(ThemeProperties::COLOR_TOOLBAR));
+  }
+#endif
+}
+
 namespace {
 
 // NotificationObserver which emulates an infobar getting destroyed when the
 // theme changes.
 class InfobarDestroyerOnThemeChange : public content::NotificationObserver {
  public:
-  InfobarDestroyerOnThemeChange(Profile* profile)
+  explicit InfobarDestroyerOnThemeChange(Profile* profile)
       : theme_service_(ThemeServiceFactory::GetForProfile(profile)) {
     registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
         content::Source<ThemeService>(theme_service_));

@@ -34,38 +34,32 @@ const int kClientEdgeThickness = 3;
 // theme images rather than the ash theme images.
 class DesktopThemeProvider : public ui::ThemeProvider {
  public:
-  explicit DesktopThemeProvider(ui::ThemeProvider* delegate)
-      : delegate_(delegate) {
-  }
+  explicit DesktopThemeProvider(const ui::ThemeProvider& delegate)
+      : delegate_(delegate) {}
 
-  bool UsingSystemTheme() const override {
-    return delegate_->UsingSystemTheme();
-  }
   gfx::ImageSkia* GetImageSkiaNamed(int id) const override {
-    return delegate_->GetImageSkiaNamed(
+    return delegate_.GetImageSkiaNamed(
         chrome::MapThemeImage(chrome::HOST_DESKTOP_TYPE_NATIVE, id));
   }
-  SkColor GetColor(int id) const override {
-    return delegate_->GetColor(id);
-  }
+  SkColor GetColor(int id) const override { return delegate_.GetColor(id); }
   int GetDisplayProperty(int id) const override {
-    return delegate_->GetDisplayProperty(id);
+    return delegate_.GetDisplayProperty(id);
   }
   bool ShouldUseNativeFrame() const override {
-    return delegate_->ShouldUseNativeFrame();
+    return delegate_.ShouldUseNativeFrame();
   }
   bool HasCustomImage(int id) const override {
-    return delegate_->HasCustomImage(
+    return delegate_.HasCustomImage(
         chrome::MapThemeImage(chrome::HOST_DESKTOP_TYPE_NATIVE, id));
   }
   base::RefCountedMemory* GetRawData(
       int id,
       ui::ScaleFactor scale_factor) const override {
-    return delegate_->GetRawData(id, scale_factor);
+    return delegate_.GetRawData(id, scale_factor);
   }
 
  private:
-  ui::ThemeProvider* delegate_;
+  const ui::ThemeProvider& delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopThemeProvider);
 };
@@ -86,8 +80,8 @@ BrowserDesktopWindowTreeHostWin::BrowserDesktopWindowTreeHostWin(
       browser_frame_(browser_frame),
       did_gdi_clear_(false) {
   scoped_ptr<ui::ThemeProvider> theme_provider(
-      new DesktopThemeProvider(ThemeServiceFactory::GetForProfile(
-                                   browser_view->browser()->profile())));
+      new DesktopThemeProvider(ThemeService::GetThemeProviderForProfile(
+          browser_view->browser()->profile())));
   browser_frame->SetThemeProvider(theme_provider.Pass());
 }
 

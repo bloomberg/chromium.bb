@@ -165,8 +165,9 @@ ToolbarView::~ToolbarView() {
 void ToolbarView::Init() {
   GetWidget()->AddObserver(this);
 
-  back_ = new BackButton(this, new BackForwardMenuModel(
-      browser_, BackForwardMenuModel::BACKWARD_MENU));
+  back_ = new BackButton(
+      browser_->profile(), this,
+      new BackForwardMenuModel(browser_, BackForwardMenuModel::BACKWARD_MENU));
   back_->set_triggerable_event_flags(
       ui::EF_LEFT_MOUSE_BUTTON | ui::EF_MIDDLE_MOUSE_BUTTON);
   back_->set_tag(IDC_BACK);
@@ -175,8 +176,9 @@ void ToolbarView::Init() {
   back_->set_id(VIEW_ID_BACK_BUTTON);
   back_->Init();
 
-  forward_ = new ToolbarButton(this, new BackForwardMenuModel(
-      browser_, BackForwardMenuModel::FORWARD_MENU));
+  forward_ = new ToolbarButton(
+      browser_->profile(), this,
+      new BackForwardMenuModel(browser_, BackForwardMenuModel::FORWARD_MENU));
   forward_->set_triggerable_event_flags(
       ui::EF_LEFT_MOUSE_BUTTON | ui::EF_MIDDLE_MOUSE_BUTTON);
   forward_->set_tag(IDC_FORWARD);
@@ -190,7 +192,8 @@ void ToolbarView::Init() {
       browser_->command_controller()->command_updater(), this,
       display_mode_ == DISPLAYMODE_LOCATION);
 
-  reload_ = new ReloadButton(browser_->command_controller()->command_updater());
+  reload_ = new ReloadButton(browser_->profile(),
+                             browser_->command_controller()->command_updater());
   reload_->set_triggerable_event_flags(
       ui::EF_LEFT_MOUSE_BUTTON | ui::EF_MIDDLE_MOUSE_BUTTON);
   reload_->set_tag(IDC_RELOAD);

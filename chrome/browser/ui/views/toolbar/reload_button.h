@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_TOOLBAR_RELOAD_BUTTON_H__
-#define CHROME_BROWSER_UI_VIEWS_TOOLBAR_RELOAD_BUTTON_H__
+#ifndef CHROME_BROWSER_UI_VIEWS_TOOLBAR_RELOAD_BUTTON_H_
+#define CHROME_BROWSER_UI_VIEWS_TOOLBAR_RELOAD_BUTTON_H_
 
 #include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
 #include "ui/base/models/simple_menu_model.h"
@@ -33,7 +34,7 @@ class ReloadButton : public ToolbarButton,
   // The button's class name.
   static const char kViewClassName[];
 
-  explicit ReloadButton(CommandUpdater* command_updater);
+  ReloadButton(Profile* profile, CommandUpdater* command_updater);
   ~ReloadButton() override;
 
   // Ask for a specified button state.  If |force| is true this will be applied
@@ -104,7 +105,7 @@ class ReloadButton : public ToolbarButton,
   // test code can tell whether we did so (as there may be no |browser_|).
   int testing_reload_count_;
 
-  DISALLOW_IMPLICIT_CONSTRUCTORS(ReloadButton);
+  DISALLOW_COPY_AND_ASSIGN(ReloadButton);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_TOOLBAR_RELOAD_BUTTON_H__
+#endif  // CHROME_BROWSER_UI_VIEWS_TOOLBAR_RELOAD_BUTTON_H_

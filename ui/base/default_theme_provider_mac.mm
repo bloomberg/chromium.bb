@@ -10,6 +10,10 @@
 
 namespace ui {
 
+bool DefaultThemeProvider::UsingSystemTheme() const {
+  return true;
+}
+
 NSImage* DefaultThemeProvider::GetNSImageNamed(int id) const {
  return ResourceBundle::GetSharedInstance().
      GetNativeImageNamed(id).ToNSImage();

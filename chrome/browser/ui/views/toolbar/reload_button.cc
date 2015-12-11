@@ -40,8 +40,8 @@ const int kReloadMenuItems[]  = {
 // static
 const char ReloadButton::kViewClassName[] = "ReloadButton";
 
-ReloadButton::ReloadButton(CommandUpdater* command_updater)
-    : ToolbarButton(this, CreateMenuModel()),
+ReloadButton::ReloadButton(Profile* profile, CommandUpdater* command_updater)
+    : ToolbarButton(profile, this, CreateMenuModel()),
       command_updater_(command_updater),
       intended_mode_(MODE_RELOAD),
       visible_mode_(MODE_RELOAD),
@@ -50,8 +50,7 @@ ReloadButton::ReloadButton(CommandUpdater* command_updater)
       stop_to_reload_timer_delay_(base::TimeDelta::FromMilliseconds(1350)),
       menu_enabled_(false),
       testing_mouse_hovered_(false),
-      testing_reload_count_(0) {
-}
+      testing_reload_count_(0) {}
 
 ReloadButton::~ReloadButton() {
 }

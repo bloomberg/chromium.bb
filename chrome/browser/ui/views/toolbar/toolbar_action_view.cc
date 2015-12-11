@@ -10,8 +10,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
-#include "chrome/browser/themes/theme_service.h"
-#include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/browser/ui/view_ids.h"
@@ -85,14 +83,6 @@ ToolbarActionView::ToolbarActionView(
       kInkDropLargeSize, kInkDropLargeCornerRadius, kInkDropSmallSize,
       kInkDropSmallCornerRadius);
 
-  // We also listen for browser theme changes on linux because a switch from or
-  // to GTK requires that we regrab our browser action images.
-  registrar_.Add(
-      this,
-      chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
-      content::Source<ThemeService>(
-          ThemeServiceFactory::GetForProfile(profile_)));
-
   // If the button is within a menu, we need to make it focusable in order to
   // have it accessible via keyboard navigation, but it shouldn't request focus
   // (because that would close the menu).
@@ -158,9 +148,8 @@ void ToolbarActionView::UpdateState() {
                                 GetPreferredSize()).AsImageSkia());
 
   if (!icon.isNull()) {
-    ThemeService* theme = ThemeServiceFactory::GetForProfile(profile_);
-
-    gfx::ImageSkia bg = *theme->GetImageSkiaNamed(IDR_BROWSER_ACTION);
+    gfx::ImageSkia bg = *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+        IDR_BROWSER_ACTION);
     SetImage(views::Button::STATE_NORMAL,
              gfx::ImageSkiaOperations::CreateSuperimposedImage(bg, icon));
   }
@@ -183,13 +172,6 @@ void ToolbarActionView::OnMenuButtonClicked(views::View* sender,
   } else {
     view_controller_->ExecuteAction(true);
   }
-}
-
-void ToolbarActionView::Observe(int type,
-                                const content::NotificationSource& source,
-                                const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_BROWSER_THEME_CHANGED, type);
-  UpdateState();
 }
 
 void ToolbarActionView::AddInkDropLayer(ui::Layer* ink_drop_layer) {

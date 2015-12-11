@@ -604,13 +604,12 @@ static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
     CGContextRef context =
         (CGContextRef)([[NSGraphicsContext currentContext] graphicsPort]);
 
-    ThemeService* themeProvider = static_cast<ThemeService*>(
-        [[controlView window] themeProvider]);
+    ui::ThemeProvider* themeProvider = [[controlView window] themeProvider];
     NSColor* color = themeProvider ?
         themeProvider->GetNSColorTint(ThemeProperties::TINT_BUTTONS) :
         [NSColor blackColor];
 
-    if (isTemplate && themeProvider && themeProvider->UsingDefaultTheme()) {
+    if (isTemplate && themeProvider && themeProvider->UsingSystemTheme()) {
       base::scoped_nsobject<NSShadow> shadow([[NSShadow alloc] init]);
       [shadow.get() setShadowColor:themeProvider->GetNSColor(
           ThemeProperties::COLOR_TOOLBAR_BEZEL)];

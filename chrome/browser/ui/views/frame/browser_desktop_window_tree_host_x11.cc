@@ -20,38 +20,45 @@ namespace {
 // because we need to also look up whether we're using the native theme.
 class DesktopThemeProvider : public ui::ThemeProvider {
  public:
-  explicit DesktopThemeProvider(ThemeService* delegate)
-      : delegate_(delegate) {
-  }
+  explicit DesktopThemeProvider(Profile* profile) : profile_(profile) {}
 
-  bool UsingSystemTheme() const override {
-    return delegate_->UsingSystemTheme();
-  }
   gfx::ImageSkia* GetImageSkiaNamed(int id) const override {
-    if (delegate_->UsingSystemTheme() && delegate_->HasCustomImage(id))
-      return delegate_->GetImageSkiaNamed(id);
+    if (GetThemeService()->UsingSystemTheme() &&
+        GetThemeProvider().HasCustomImage(id)) {
+      return GetThemeProvider().GetImageSkiaNamed(id);
+    }
 
-    return delegate_->GetImageSkiaNamed(
+    return GetThemeProvider().GetImageSkiaNamed(
         chrome::MapThemeImage(chrome::HOST_DESKTOP_TYPE_NATIVE, id));
   }
-  SkColor GetColor(int id) const override { return delegate_->GetColor(id); }
+  SkColor GetColor(int id) const override {
+    return GetThemeProvider().GetColor(id);
+  }
   int GetDisplayProperty(int id) const override {
-    return delegate_->GetDisplayProperty(id);
+    return GetThemeProvider().GetDisplayProperty(id);
   }
   bool ShouldUseNativeFrame() const override {
-    return delegate_->ShouldUseNativeFrame();
+    return GetThemeProvider().ShouldUseNativeFrame();
   }
   bool HasCustomImage(int id) const override {
-    return delegate_->HasCustomImage(
+    return GetThemeProvider().HasCustomImage(
         chrome::MapThemeImage(chrome::HOST_DESKTOP_TYPE_NATIVE, id));
   }
   base::RefCountedMemory* GetRawData(int id, ui::ScaleFactor scale_factor)
       const override {
-    return delegate_->GetRawData(id, scale_factor);
+    return GetThemeProvider().GetRawData(id, scale_factor);
   }
 
  private:
-  ThemeService* delegate_;
+  const ThemeService* GetThemeService() const {
+    return ThemeServiceFactory::GetForProfile(profile_);
+  }
+
+  const ui::ThemeProvider& GetThemeProvider() const {
+    return ThemeService::GetThemeProviderForProfile(profile_);
+  }
+
+  Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopThemeProvider);
 };
@@ -70,8 +77,7 @@ BrowserDesktopWindowTreeHostX11::BrowserDesktopWindowTreeHostX11(
                                desktop_native_widget_aura),
       browser_view_(browser_view) {
   scoped_ptr<ui::ThemeProvider> theme_provider(
-      new DesktopThemeProvider(ThemeServiceFactory::GetForProfile(
-                                   browser_view->browser()->profile())));
+      new DesktopThemeProvider(browser_view->browser()->profile()));
   browser_frame->SetThemeProvider(theme_provider.Pass());
   browser_frame->set_frame_type(
       browser_frame->UseCustomFrame() ? views::Widget::FRAME_TYPE_FORCE_CUSTOM

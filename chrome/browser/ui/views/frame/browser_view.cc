@@ -38,7 +38,6 @@
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/signin/chrome_signin_helper.h"
 #include "chrome/browser/themes/theme_properties.h"
-#include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bar_constants.h"
@@ -210,14 +209,13 @@ void PaintHorizontalBorder(gfx::Canvas* canvas,
 // will be removed.
 void PaintDetachedBookmarkBar(gfx::Canvas* canvas,
                               BookmarkBarView* view,
-                              ThemeService* theme_service) {
+                              Profile* profile) {
   // Paint background for detached state; if animating, this is fade in/out.
-  canvas->DrawColor(
-      chrome::GetDetachedBookmarkBarBackgroundColor(theme_service));
+  canvas->DrawColor(chrome::GetDetachedBookmarkBarBackgroundColor(profile));
   // Draw the separators above and below bookmark bar;
   // if animating, these are fading in/out.
   SkColor separator_color =
-      chrome::GetDetachedBookmarkBarSeparatorColor(theme_service);
+      chrome::GetDetachedBookmarkBarSeparatorColor(profile);
 
   if (ui::MaterialDesignController::IsModeMaterial()) {
     BrowserView::Paint1pxHorizontalLine(
@@ -417,9 +415,8 @@ void BookmarkBarViewBackground::Paint(gfx::Canvas* canvas,
   // the value - when current_state is at '0', we expect the bar to be docked.
   double current_state = 1 - bookmark_bar_view_->GetAnimationValue();
 
-  ThemeService* ts = ThemeServiceFactory::GetForProfile(browser_->profile());
   if (current_state == 0.0 || current_state == 1.0) {
-    PaintDetachedBookmarkBar(canvas, bookmark_bar_view_, ts);
+    PaintDetachedBookmarkBar(canvas, bookmark_bar_view_, browser_->profile());
     return;
   }
   // While animating, set opacity to cross-fade between attached and detached
@@ -438,13 +435,13 @@ void BookmarkBarViewBackground::Paint(gfx::Canvas* canvas,
                              toolbar_overlap);
     canvas->Restore();
     canvas->SaveLayerAlpha(detached_alpha);
-    PaintDetachedBookmarkBar(canvas, bookmark_bar_view_, ts);
+    PaintDetachedBookmarkBar(canvas, bookmark_bar_view_, browser_->profile());
   } else {
     // To animate from detached to attached state:
     // - fade out detached background
     // - fade in attached background.
     canvas->SaveLayerAlpha(detached_alpha);
-    PaintDetachedBookmarkBar(canvas, bookmark_bar_view_, ts);
+    PaintDetachedBookmarkBar(canvas, bookmark_bar_view_, browser_->profile());
     canvas->Restore();
     canvas->SaveLayerAlpha(attached_alpha);
     PaintAttachedBookmarkBar(canvas,

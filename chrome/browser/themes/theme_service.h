@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -58,8 +59,7 @@ extern "C" NSString* const kBrowserThemeDidChangeNotification;
 
 class ThemeService : public base::NonThreadSafe,
                      public content::NotificationObserver,
-                     public KeyedService,
-                     public ui::ThemeProvider {
+                     public KeyedService {
  public:
   // Public constants used in ThemeService and its subclasses:
   static const char* kDefaultThemeID;
@@ -68,29 +68,6 @@ class ThemeService : public base::NonThreadSafe,
   ~ThemeService() override;
 
   virtual void Init(Profile* profile);
-
-  // Returns a cross platform image for an id.
-  //
-  // TODO(erg): Make this part of the ui::ThemeProvider and the main way to get
-  // theme properties out of the theme provider since it's cross platform.
-  virtual gfx::Image GetImageNamed(int id) const;
-
-  // Overridden from ui::ThemeProvider:
-  bool UsingSystemTheme() const override;
-  gfx::ImageSkia* GetImageSkiaNamed(int id) const override;
-  SkColor GetColor(int id) const override;
-  int GetDisplayProperty(int id) const override;
-  bool ShouldUseNativeFrame() const override;
-  bool HasCustomImage(int id) const override;
-  base::RefCountedMemory* GetRawData(int id, ui::ScaleFactor scale_factor)
-      const override;
-#if defined(OS_MACOSX)
-  NSImage* GetNSImageNamed(int id) const override;
-  NSColor* GetNSImageColorNamed(int id) const override;
-  NSColor* GetNSColor(int id) const override;
-  NSColor* GetNSColorTint(int id) const override;
-  NSGradient* GetNSGradient(int id) const override;
-#endif
 
   // KeyedService:
   void Shutdown() override;
@@ -120,6 +97,10 @@ class ThemeService : public base::NonThreadSafe,
   // if we're using the GTK theme.
   virtual bool UsingDefaultTheme() const;
 
+  // Whether we are using the system theme. On GTK, the system theme is the GTK
+  // theme, not the "Classic" theme.
+  virtual bool UsingSystemTheme() const;
+
   // Gets the id of the last installed theme. (The theme may have been further
   // locally customized.)
   virtual std::string GetThemeID() const;
@@ -141,8 +122,10 @@ class ThemeService : public base::NonThreadSafe,
   // owned by |this| object.
   virtual ThemeSyncableService* GetThemeSyncableService() const;
 
-  // Save the images to be written to disk, mapping file path to id.
-  typedef std::map<base::FilePath, int> ImagesDiskCache;
+  // Gets the ThemeProvider for |profile|. This will be different for an
+  // incognito profile and its original profile, even though both profiles use
+  // the same ThemeService.
+  static const ui::ThemeProvider& GetThemeProviderForProfile(Profile* profile);
 
  protected:
   // Set a custom default theme instead of the normal default theme.
@@ -187,7 +170,64 @@ class ThemeService : public base::NonThreadSafe,
   bool ready_;
 
  private:
+  // This class implements ui::ThemeProvider on behalf of ThemeService and keeps
+  // track of the incognito state of the calling code.
+  class BrowserThemeProvider : public ui::ThemeProvider {
+   public:
+    BrowserThemeProvider(const ThemeService& theme_service,
+                         bool off_the_record);
+    ~BrowserThemeProvider() override;
+
+    // Overridden from ui::ThemeProvider:
+    gfx::ImageSkia* GetImageSkiaNamed(int id) const override;
+    SkColor GetColor(int original_id) const override;
+    int GetDisplayProperty(int id) const override;
+    bool ShouldUseNativeFrame() const override;
+    bool HasCustomImage(int id) const override;
+    base::RefCountedMemory* GetRawData(int id, ui::ScaleFactor scale_factor)
+        const override;
+#if defined(OS_MACOSX)
+    bool UsingSystemTheme() const override;
+    NSImage* GetNSImageNamed(int id) const override;
+    NSColor* GetNSImageColorNamed(int id) const override;
+    NSColor* GetNSColor(int id) const override;
+    NSColor* GetNSColorTint(int id) const override;
+    NSGradient* GetNSGradient(int id) const override;
+#endif
+
+   private:
+    const ThemeService& theme_service_;
+    bool off_the_record_;
+
+    DISALLOW_COPY_AND_ASSIGN(BrowserThemeProvider);
+  };
+  friend class BrowserThemeProvider;
   friend class theme_service_internal::ThemeServiceTest;
+
+  const ui::ThemeProvider& GetOrCreateThemeProviderForProfile(Profile* profile);
+
+  // These methods provide the implementation for ui::ThemeProvider (exposed
+  // via BrowserThemeProvider).
+  gfx::ImageSkia* GetImageSkiaNamed(int id) const;
+  SkColor GetColor(int id, bool off_the_record) const;
+  int GetDisplayProperty(int id) const;
+  bool ShouldUseNativeFrame() const;
+  bool HasCustomImage(int id) const;
+  base::RefCountedMemory* GetRawData(int id,
+                                     ui::ScaleFactor scale_factor) const;
+#if defined(OS_MACOSX)
+  NSImage* GetNSImageNamed(int id) const;
+  NSColor* GetNSImageColorNamed(int id) const;
+  NSColor* GetNSColor(int id) const;
+  NSColor* GetNSColorTint(int id) const;
+  NSGradient* GetNSGradient(int id) const;
+#endif
+
+  // Returns a cross platform image for an id.
+  //
+  // TODO(erg): Make this part of the ui::ThemeProvider and the main way to get
+  // theme properties out of the theme provider since it's cross platform.
+  gfx::Image GetImageNamed(int id) const;
 
   // Called when the extension service is ready.
   void OnExtensionServiceReady();
@@ -255,6 +295,9 @@ class ThemeService : public base::NonThreadSafe,
   class ThemeObserver;
   scoped_ptr<ThemeObserver> theme_observer_;
 #endif
+
+  BrowserThemeProvider original_theme_provider_;
+  BrowserThemeProvider otr_theme_provider_;
 
   base::WeakPtrFactory<ThemeService> weak_ptr_factory_;
 

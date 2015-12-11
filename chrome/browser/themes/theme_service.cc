@@ -21,6 +21,7 @@
 #include "chrome/browser/themes/browser_theme_pack.h"
 #include "chrome/browser/themes/custom_theme_supplier.h"
 #include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/themes/theme_syncable_service.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
@@ -164,8 +165,9 @@ ThemeService::ThemeService()
       profile_(nullptr),
       installed_pending_load_id_(kDefaultThemeID),
       number_of_infobars_(0),
-      weak_ptr_factory_(this) {
-}
+      original_theme_provider_(*this, false),
+      otr_theme_provider_(*this, true),
+      weak_ptr_factory_(this) {}
 
 ThemeService::~ThemeService() {
   FreePlatformCaches();
@@ -184,159 +186,8 @@ void ThemeService::Init(Profile* profile) {
   theme_syncable_service_.reset(new ThemeSyncableService(profile_, this));
 }
 
-gfx::Image ThemeService::GetImageNamed(int id) const {
-  DCHECK(CalledOnValidThread());
-
-  gfx::Image image;
-  if (theme_supplier_.get())
-    image = theme_supplier_->GetImageNamed(id);
-
-  if (image.IsEmpty())
-    image = rb_.GetNativeImageNamed(id);
-
-  return image;
-}
-
 bool ThemeService::IsSystemThemeDistinctFromDefaultTheme() const {
   return false;
-}
-
-bool ThemeService::UsingSystemTheme() const {
-  return UsingDefaultTheme();
-}
-
-gfx::ImageSkia* ThemeService::GetImageSkiaNamed(int id) const {
-  gfx::Image image = GetImageNamed(id);
-  if (image.IsEmpty())
-    return nullptr;
-  // TODO(pkotwicz): Remove this const cast.  The gfx::Image interface returns
-  // its images const. GetImageSkiaNamed() also should but has many callsites.
-  return const_cast<gfx::ImageSkia*>(image.ToImageSkia());
-}
-
-SkColor ThemeService::GetColor(int id) const {
-  DCHECK(CalledOnValidThread());
-  SkColor color;
-  if (theme_supplier_.get() && theme_supplier_->GetColor(id, &color))
-    return color;
-
-  // For backward compat with older themes, some newer colors are generated from
-  // older ones if they are missing.
-  switch (id) {
-    case Properties::COLOR_TOOLBAR_BUTTON_ICON:
-      return color_utils::HSLShift(gfx::kChromeIconGrey,
-                                   GetTint(Properties::TINT_BUTTONS));
-    case Properties::COLOR_TOOLBAR_BUTTON_ICON_INACTIVE:
-      // The active color is overridden in Gtk2UI.
-      return SkColorSetA(GetColor(Properties::COLOR_TOOLBAR_BUTTON_ICON), 0x33);
-    case Properties::COLOR_NTP_SECTION_HEADER_TEXT:
-      return IncreaseLightness(GetColor(Properties::COLOR_NTP_TEXT), 0.30);
-    case Properties::COLOR_NTP_SECTION_HEADER_TEXT_HOVER:
-      return GetColor(Properties::COLOR_NTP_TEXT);
-    case Properties::COLOR_NTP_SECTION_HEADER_RULE:
-      return IncreaseLightness(GetColor(Properties::COLOR_NTP_TEXT), 0.70);
-    case Properties::COLOR_NTP_SECTION_HEADER_RULE_LIGHT:
-      return IncreaseLightness(GetColor(Properties::COLOR_NTP_TEXT), 0.86);
-    case Properties::COLOR_NTP_TEXT_LIGHT:
-      return IncreaseLightness(GetColor(Properties::COLOR_NTP_TEXT), 0.40);
-    case Properties::COLOR_TAB_THROBBER_SPINNING:
-    case Properties::COLOR_TAB_THROBBER_WAITING: {
-      SkColor base_color =
-          ui::GetAuraColor(id == Properties::COLOR_TAB_THROBBER_SPINNING
-                               ? ui::NativeTheme::kColorId_ThrobberSpinningColor
-                               : ui::NativeTheme::kColorId_ThrobberWaitingColor,
-                           nullptr);
-      color_utils::HSL hsl = GetTint(Properties::TINT_BUTTONS);
-      return color_utils::HSLShift(base_color, hsl);
-    }
-#if defined(ENABLE_SUPERVISED_USERS)
-    case Properties::COLOR_SUPERVISED_USER_LABEL:
-      return color_utils::GetReadableColor(
-          SK_ColorWHITE,
-          GetColor(Properties::COLOR_SUPERVISED_USER_LABEL_BACKGROUND));
-    case Properties::COLOR_SUPERVISED_USER_LABEL_BACKGROUND:
-      return color_utils::BlendTowardOppositeLuminance(
-          GetColor(Properties::COLOR_FRAME), 0x80);
-    case Properties::COLOR_SUPERVISED_USER_LABEL_BORDER:
-      return color_utils::AlphaBlend(
-          GetColor(Properties::COLOR_SUPERVISED_USER_LABEL_BACKGROUND),
-          SK_ColorBLACK,
-          230);
-#endif
-    case Properties::COLOR_STATUS_BAR_TEXT: {
-      // A long time ago, we blended the toolbar and the tab text together to
-      // get the status bar text because, at the time, our text rendering in
-      // views couldn't do alpha blending. Even though this is no longer the
-      // case, this blending decision is built into the majority of themes that
-      // exist, and we must keep doing it.
-      SkColor toolbar_color = GetColor(Properties::COLOR_TOOLBAR);
-      SkColor text_color = GetColor(Properties::COLOR_TAB_TEXT);
-      return SkColorSetARGB(
-          SkColorGetA(text_color),
-          (SkColorGetR(text_color) + SkColorGetR(toolbar_color)) / 2,
-          (SkColorGetG(text_color) + SkColorGetR(toolbar_color)) / 2,
-          (SkColorGetB(text_color) + SkColorGetR(toolbar_color)) / 2);
-    }
-  }
-
-  return Properties::GetDefaultColor(id);
-}
-
-int ThemeService::GetDisplayProperty(int id) const {
-  int result = 0;
-  if (theme_supplier_.get() &&
-      theme_supplier_->GetDisplayProperty(id, &result)) {
-    return result;
-  }
-
-  switch (id) {
-    case Properties::NTP_BACKGROUND_ALIGNMENT:
-      return Properties::ALIGN_CENTER;
-
-    case Properties::NTP_BACKGROUND_TILING:
-      return Properties::NO_REPEAT;
-
-    case Properties::NTP_LOGO_ALTERNATE:
-      return UsingDefaultTheme() || UsingSystemTheme() ||
-          (!HasCustomImage(IDR_THEME_NTP_BACKGROUND) &&
-           IsColorGrayscale(GetColor(Properties::COLOR_NTP_BACKGROUND))) ?
-          0 : 1;
-
-    default:
-      return -1;
-  }
-}
-
-bool ThemeService::ShouldUseNativeFrame() const {
-  if (HasCustomImage(IDR_THEME_FRAME))
-    return false;
-#if defined(OS_WIN)
-  return ui::win::IsAeroGlassEnabled();
-#else
-  return false;
-#endif
-}
-
-bool ThemeService::HasCustomImage(int id) const {
-  return BrowserThemePack::IsPersistentImageID(id) &&
-      theme_supplier_ && theme_supplier_->HasCustomImage(id);
-}
-
-base::RefCountedMemory* ThemeService::GetRawData(
-    int id,
-    ui::ScaleFactor scale_factor) const {
-  // Check to see whether we should substitute some images.
-  int ntp_alternate = GetDisplayProperty(Properties::NTP_LOGO_ALTERNATE);
-  if (id == IDR_PRODUCT_LOGO && ntp_alternate != 0)
-    id = IDR_PRODUCT_LOGO_WHITE;
-
-  base::RefCountedMemory* data = nullptr;
-  if (theme_supplier_.get())
-    data = theme_supplier_->GetRawData(id, scale_factor);
-  if (!data)
-    data = rb_.LoadDataResourceBytesForScale(id, ui::SCALE_FACTOR_100P);
-
-  return data;
 }
 
 void ThemeService::Shutdown() {
@@ -491,7 +342,7 @@ color_utils::HSL ThemeService::GetTint(int id) const {
   DCHECK(CalledOnValidThread());
 
   color_utils::HSL hsl;
-  if (theme_supplier_.get() && theme_supplier_->GetTint(id, &hsl))
+  if (theme_supplier_ && theme_supplier_->GetTint(id, &hsl))
     return hsl;
 
   return ThemeProperties::GetDefaultTint(id);
@@ -549,7 +400,7 @@ void ThemeService::LoadThemePrefs() {
                            ? chrome::kThemePackMaterialDesignFilename
                            : chrome::kThemePackFilename);
     SwapThemeSupplier(BrowserThemePack::BuildFromDataPack(path, current_id));
-    loaded_pack = theme_supplier_.get() != nullptr;
+    loaded_pack = theme_supplier_ != nullptr;
   }
 
   if (loaded_pack) {
@@ -586,6 +437,159 @@ void ThemeService::FreePlatformCaches() {
   // Views (Skia) has no platform image cache to clear.
 }
 #endif
+
+bool ThemeService::UsingSystemTheme() const {
+  return UsingDefaultTheme();
+}
+
+gfx::ImageSkia* ThemeService::GetImageSkiaNamed(int id) const {
+  gfx::Image image = GetImageNamed(id);
+  if (image.IsEmpty())
+    return nullptr;
+  // TODO(pkotwicz): Remove this const cast.  The gfx::Image interface returns
+  // its images const. GetImageSkiaNamed() also should but has many callsites.
+  return const_cast<gfx::ImageSkia*>(image.ToImageSkia());
+}
+
+SkColor ThemeService::GetColor(int id, bool otr) const {
+  DCHECK(CalledOnValidThread());
+  // Custom themes always use the original (non-incognito) color.
+  SkColor color;
+  if (theme_supplier_ && theme_supplier_->GetColor(id, &color))
+    return color;
+
+  // For backward compat with older themes, some newer colors are generated from
+  // older ones if they are missing.
+  switch (id) {
+    case Properties::COLOR_TOOLBAR_BUTTON_ICON:
+      return color_utils::HSLShift(gfx::kChromeIconGrey,
+                                   GetTint(Properties::TINT_BUTTONS));
+    case Properties::COLOR_TOOLBAR_BUTTON_ICON_INACTIVE:
+      // The active color is overridden in Gtk2UI.
+      return SkColorSetA(GetColor(Properties::COLOR_TOOLBAR_BUTTON_ICON, otr),
+                         0x33);
+    case Properties::COLOR_NTP_SECTION_HEADER_TEXT:
+      return IncreaseLightness(GetColor(Properties::COLOR_NTP_TEXT, otr), 0.30);
+    case Properties::COLOR_NTP_SECTION_HEADER_TEXT_HOVER:
+      return GetColor(Properties::COLOR_NTP_TEXT, otr);
+    case Properties::COLOR_NTP_SECTION_HEADER_RULE:
+      return IncreaseLightness(GetColor(Properties::COLOR_NTP_TEXT, otr), 0.70);
+    case Properties::COLOR_NTP_SECTION_HEADER_RULE_LIGHT:
+      return IncreaseLightness(GetColor(Properties::COLOR_NTP_TEXT, otr), 0.86);
+    case Properties::COLOR_NTP_TEXT_LIGHT:
+      return IncreaseLightness(GetColor(Properties::COLOR_NTP_TEXT, otr), 0.40);
+    case Properties::COLOR_TAB_THROBBER_SPINNING:
+    case Properties::COLOR_TAB_THROBBER_WAITING: {
+      SkColor base_color =
+          ui::GetAuraColor(id == Properties::COLOR_TAB_THROBBER_SPINNING
+                               ? ui::NativeTheme::kColorId_ThrobberSpinningColor
+                               : ui::NativeTheme::kColorId_ThrobberWaitingColor,
+                           nullptr);
+      color_utils::HSL hsl = GetTint(Properties::TINT_BUTTONS);
+      return color_utils::HSLShift(base_color, hsl);
+    }
+#if defined(ENABLE_SUPERVISED_USERS)
+    case Properties::COLOR_SUPERVISED_USER_LABEL:
+      return color_utils::GetReadableColor(
+          SK_ColorWHITE,
+          GetColor(Properties::COLOR_SUPERVISED_USER_LABEL_BACKGROUND, otr));
+    case Properties::COLOR_SUPERVISED_USER_LABEL_BACKGROUND:
+      return color_utils::BlendTowardOppositeLuminance(
+          GetColor(Properties::COLOR_FRAME, otr), 0x80);
+    case Properties::COLOR_SUPERVISED_USER_LABEL_BORDER:
+      return color_utils::AlphaBlend(
+          GetColor(Properties::COLOR_SUPERVISED_USER_LABEL_BACKGROUND, otr),
+          SK_ColorBLACK, 230);
+#endif
+    case Properties::COLOR_STATUS_BAR_TEXT: {
+      // A long time ago, we blended the toolbar and the tab text together to
+      // get the status bar text because, at the time, our text rendering in
+      // views couldn't do alpha blending. Even though this is no longer the
+      // case, this blending decision is built into the majority of themes that
+      // exist, and we must keep doing it.
+      SkColor toolbar_color = GetColor(Properties::COLOR_TOOLBAR, otr);
+      SkColor text_color = GetColor(Properties::COLOR_TAB_TEXT, otr);
+      return SkColorSetARGB(
+          SkColorGetA(text_color),
+          (SkColorGetR(text_color) + SkColorGetR(toolbar_color)) / 2,
+          (SkColorGetG(text_color) + SkColorGetR(toolbar_color)) / 2,
+          (SkColorGetB(text_color) + SkColorGetR(toolbar_color)) / 2);
+    }
+  }
+
+  return Properties::GetDefaultColor(id, otr);
+}
+
+int ThemeService::GetDisplayProperty(int id) const {
+  int result = 0;
+  if (theme_supplier_ && theme_supplier_->GetDisplayProperty(id, &result)) {
+    return result;
+  }
+
+  switch (id) {
+    case Properties::NTP_BACKGROUND_ALIGNMENT:
+      return Properties::ALIGN_CENTER;
+
+    case Properties::NTP_BACKGROUND_TILING:
+      return Properties::NO_REPEAT;
+
+    case Properties::NTP_LOGO_ALTERNATE:
+      return UsingDefaultTheme() || UsingSystemTheme() ||
+                     (!HasCustomImage(IDR_THEME_NTP_BACKGROUND) &&
+                      IsColorGrayscale(
+                          GetColor(Properties::COLOR_NTP_BACKGROUND, false)))
+                 ? 0
+                 : 1;
+
+    default:
+      return -1;
+  }
+}
+
+bool ThemeService::ShouldUseNativeFrame() const {
+  if (HasCustomImage(IDR_THEME_FRAME))
+    return false;
+#if defined(OS_WIN)
+  return ui::win::IsAeroGlassEnabled();
+#else
+  return false;
+#endif
+}
+
+bool ThemeService::HasCustomImage(int id) const {
+  return BrowserThemePack::IsPersistentImageID(id) && theme_supplier_ &&
+         theme_supplier_->HasCustomImage(id);
+}
+
+base::RefCountedMemory* ThemeService::GetRawData(
+    int id,
+    ui::ScaleFactor scale_factor) const {
+  // Check to see whether we should substitute some images.
+  int ntp_alternate = GetDisplayProperty(Properties::NTP_LOGO_ALTERNATE);
+  if (id == IDR_PRODUCT_LOGO && ntp_alternate != 0)
+    id = IDR_PRODUCT_LOGO_WHITE;
+
+  base::RefCountedMemory* data = nullptr;
+  if (theme_supplier_)
+    data = theme_supplier_->GetRawData(id, scale_factor);
+  if (!data)
+    data = rb_.LoadDataResourceBytesForScale(id, ui::SCALE_FACTOR_100P);
+
+  return data;
+}
+
+gfx::Image ThemeService::GetImageNamed(int id) const {
+  DCHECK(CalledOnValidThread());
+
+  gfx::Image image;
+  if (theme_supplier_)
+    image = theme_supplier_->GetImageNamed(id);
+
+  if (image.IsEmpty())
+    image = rb_.GetNativeImageNamed(id);
+
+  return image;
+}
 
 void ThemeService::OnExtensionServiceReady() {
   if (!ready_) {
@@ -633,10 +637,10 @@ void ThemeService::MigrateTheme() {
 
 void ThemeService::SwapThemeSupplier(
     scoped_refptr<CustomThemeSupplier> theme_supplier) {
-  if (theme_supplier_.get())
+  if (theme_supplier_)
     theme_supplier_->StopUsingTheme();
   theme_supplier_ = theme_supplier;
-  if (theme_supplier_.get())
+  if (theme_supplier_)
     theme_supplier_->StartUsingTheme();
 }
 
@@ -702,4 +706,55 @@ void ThemeService::OnInfobarDestroyed() {
 
 ThemeSyncableService* ThemeService::GetThemeSyncableService() const {
   return theme_syncable_service_.get();
+}
+
+// static
+const ui::ThemeProvider& ThemeService::GetThemeProviderForProfile(
+    Profile* profile) {
+  ThemeService* service = ThemeServiceFactory::GetForProfile(profile);
+#if defined(OS_MACOSX)
+  // TODO(estade): this doesn't work for OSX yet; fall back to normal theming
+  // in incognito. Since the OSX version of ThemeService caches colors, and
+  // both ThemeProviders use the same ThemeService some code needs to be
+  // rearranged.
+  bool off_the_record = false;
+#else
+  bool off_the_record = profile->IsOffTheRecord();
+#endif
+  return off_the_record ? service->otr_theme_provider_
+                        : service->original_theme_provider_;
+}
+
+ThemeService::BrowserThemeProvider::BrowserThemeProvider(
+    const ThemeService& theme_service,
+    bool off_the_record)
+    : theme_service_(theme_service), off_the_record_(off_the_record) {}
+
+ThemeService::BrowserThemeProvider::~BrowserThemeProvider() {}
+
+gfx::ImageSkia* ThemeService::BrowserThemeProvider::GetImageSkiaNamed(
+    int id) const {
+  return theme_service_.GetImageSkiaNamed(id);
+}
+
+SkColor ThemeService::BrowserThemeProvider::GetColor(int id) const {
+  return theme_service_.GetColor(id, off_the_record_);
+}
+
+int ThemeService::BrowserThemeProvider::GetDisplayProperty(int id) const {
+  return theme_service_.GetDisplayProperty(id);
+}
+
+bool ThemeService::BrowserThemeProvider::ShouldUseNativeFrame() const {
+  return theme_service_.ShouldUseNativeFrame();
+}
+
+bool ThemeService::BrowserThemeProvider::HasCustomImage(int id) const {
+  return theme_service_.HasCustomImage(id);
+}
+
+base::RefCountedMemory* ThemeService::BrowserThemeProvider::GetRawData(
+    int id,
+    ui::ScaleFactor scale_factor) const {
+  return theme_service_.GetRawData(id, scale_factor);
 }

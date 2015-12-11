@@ -1746,8 +1746,8 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   return y;
 }
 
-- (ThemeService*)themeService {
-  return [parentController_ themeService];
+- (Profile*)profile {
+  return profile_;
 }
 
 - (void)childFolderWillShow:(id<BookmarkButtonControllerProtocol>)child {

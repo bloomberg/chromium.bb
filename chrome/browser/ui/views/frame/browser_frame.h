@@ -148,7 +148,7 @@ class BrowserFrame
   // and |owned_theme_provider_| is null (as ThemeServices lifetime is managed
   // externally).
   scoped_ptr<ui::ThemeProvider> owned_theme_provider_;
-  ui::ThemeProvider* theme_provider_;
+  const ui::ThemeProvider* theme_provider_;
 
   scoped_ptr<ui::EventHandler> browser_command_handler_;
 

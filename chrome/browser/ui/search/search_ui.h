@@ -7,15 +7,15 @@
 
 #include "third_party/skia/include/core/SkColor.h"
 
-class ThemeService;
+class Profile;
 
 namespace chrome {
 
 // Returns the color to use to draw the detached bookmark bar background.
-SkColor GetDetachedBookmarkBarBackgroundColor(ThemeService* theme_service);
+SkColor GetDetachedBookmarkBarBackgroundColor(Profile* profile);
 
 // Returns the color to use to draw the detached bookmark bar separator.
-SkColor GetDetachedBookmarkBarSeparatorColor(ThemeService* theme_service);
+SkColor GetDetachedBookmarkBarSeparatorColor(Profile* profile);
 
 }  // namespace chrome
 

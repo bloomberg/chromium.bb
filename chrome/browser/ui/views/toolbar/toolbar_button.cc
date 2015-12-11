@@ -8,6 +8,9 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "ui/accessibility/ax_view_state.h"
@@ -26,9 +29,11 @@
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/widget/widget.h"
 
-ToolbarButton::ToolbarButton(views::ButtonListener* listener,
+ToolbarButton::ToolbarButton(Profile* profile,
+                             views::ButtonListener* listener,
                              ui::MenuModel* model)
     : views::LabelButton(listener, base::string16()),
+      profile_(profile),
       model_(model),
       menu_showing_(false),
       y_position_on_lbuttondown_(0),
@@ -201,8 +206,7 @@ ToolbarButton::CreateDefaultBorder() const {
   scoped_ptr<views::LabelButtonBorder> border =
       views::LabelButton::CreateDefaultBorder();
 
-  const ui::ThemeProvider* provider = GetThemeProvider();
-  if (provider && provider->UsingSystemTheme())
+  if (ThemeServiceFactory::GetForProfile(profile_)->UsingSystemTheme())
     border->set_insets(GetLayoutInsets(TOOLBAR_BUTTON));
 
   return border.Pass();

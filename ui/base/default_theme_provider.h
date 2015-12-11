@@ -24,7 +24,6 @@ class UI_BASE_EXPORT DefaultThemeProvider : public ThemeProvider {
   ~DefaultThemeProvider() override;
 
   // Overridden from ui::ThemeProvider:
-  bool UsingSystemTheme() const override;
   gfx::ImageSkia* GetImageSkiaNamed(int id) const override;
   SkColor GetColor(int id) const override;
   int GetDisplayProperty(int id) const override;
@@ -34,6 +33,7 @@ class UI_BASE_EXPORT DefaultThemeProvider : public ThemeProvider {
       const override;
 
 #if defined(OS_MACOSX)
+  bool UsingSystemTheme() const override;
   NSImage* GetNSImageNamed(int id) const override;
   NSColor* GetNSImageColorNamed(int id) const override;
   NSColor* GetNSColor(int id) const override;

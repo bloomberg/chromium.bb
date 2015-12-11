@@ -7,8 +7,6 @@
 
 #include "base/callback.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_action_view_delegate_views.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "ui/views/animation/ink_drop_host.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/menu_button.h"
@@ -40,7 +38,6 @@ class ToolbarActionView : public views::MenuButton,
                           public ToolbarActionViewDelegateViews,
                           public views::MenuButtonListener,
                           public views::ContextMenuController,
-                          public content::NotificationObserver,
                           public views::InkDropHost {
  public:
   // Need DragController here because ToolbarActionView could be
@@ -88,11 +85,6 @@ class ToolbarActionView : public views::MenuButton,
   // views::MenuButtonListener:
   void OnMenuButtonClicked(views::View* sender,
                            const gfx::Point& point) override;
-
-  // content::NotificationObserver:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
 
   // views::InkDropHost:
   void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
@@ -180,8 +172,6 @@ class ToolbarActionView : public views::MenuButton,
 
   // The time the popup was last closed.
   base::TimeTicks popup_closed_time_;
-
-  content::NotificationRegistrar registrar_;
 
   scoped_ptr<views::InkDropDelegate> ink_drop_delegate_;
 

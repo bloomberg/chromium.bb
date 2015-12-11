@@ -109,8 +109,7 @@ class FullscreenObserver : public WebContentsObserver {
   // windows or opening new tabs), so ensure that the flash be the theme
   // background color in those cases.
   NSColor* backgroundColor = nil;
-  ThemeService* const theme =
-      static_cast<ThemeService*>([[self window] themeProvider]);
+  ui::ThemeProvider* const theme = [[self window] themeProvider];
   if (theme)
     backgroundColor = theme->GetNSColor(ThemeProperties::COLOR_NTP_BACKGROUND);
   if (!backgroundColor)

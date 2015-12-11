@@ -17,7 +17,7 @@
 
 @class BookmarkBarView;
 
-class ThemeService;
+class Profile;
 
 // An interface to allow mocking of a BookmarkBarController by the
 // BookmarkBarToolbarView.
@@ -27,8 +27,8 @@ class ThemeService;
 // background image is joined.
 - (int)currentTabContentsHeight;
 
-// Current theme service.
-- (ThemeService*)themeService;
+// Current profile.
+- (Profile*)profile;
 
 @end
 

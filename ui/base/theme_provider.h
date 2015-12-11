@@ -47,10 +47,6 @@ class UI_BASE_EXPORT ThemeProvider {
  public:
   virtual ~ThemeProvider();
 
-  // Whether we're using the system theme (which may or may not be the
-  // same as the default theme).
-  virtual bool UsingSystemTheme() const = 0;
-
   // Get the image specified by |id|. An implementation of ThemeProvider should
   // have its own source of ids (e.g. an enum, or external resource bundle).
   virtual gfx::ImageSkia* GetImageSkiaNamed(int id) const = 0;
@@ -78,6 +74,12 @@ class UI_BASE_EXPORT ThemeProvider {
       ui::ScaleFactor scale_factor) const = 0;
 
 #if defined(OS_MACOSX)
+  // Whether we're using the system theme (which may or may not be the
+  // same as the default theme).
+  // TODO(estade): this should probably just be part of ThemeService and not
+  // ThemeProvider, but it's used in many places on OSX.
+  virtual bool UsingSystemTheme() const = 0;
+
   // Gets the NSImage with the specified |id|.
   virtual NSImage* GetNSImageNamed(int id) const = 0;
 

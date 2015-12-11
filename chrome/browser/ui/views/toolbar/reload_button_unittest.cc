@@ -4,10 +4,12 @@
 
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/ui/views/toolbar/reload_button.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event_utils.h"
 
-class ReloadButtonTest : public testing::Test {
+class ReloadButtonTest : public ChromeRenderViewHostTestHarness {
  public:
   ReloadButtonTest();
 
@@ -24,13 +26,10 @@ class ReloadButtonTest : public testing::Test {
   int reload_count() { return reload_.testing_reload_count_; }
 
  protected:
-  // We need a message loop for the timers to post events.
-  base::MessageLoop loop_;
-
   ReloadButton reload_;
 };
 
-ReloadButtonTest::ReloadButtonTest() : reload_(NULL) {
+ReloadButtonTest::ReloadButtonTest() : reload_(profile(), nullptr) {
   // Set the timer delays to 0 so that timers will fire as soon as we tell the
   // message loop to run pending tasks.
   reload_.double_click_timer_delay_ = base::TimeDelta();
@@ -98,7 +97,7 @@ TEST_F(ReloadButtonTest, DoubleClickTimer) {
              false);
 
   // Now fire the timer.  This should complete the mode change.
-  loop_.RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   CheckState(true, ReloadButton::MODE_STOP, ReloadButton::MODE_STOP, false,
              false);
 }
@@ -151,7 +150,7 @@ TEST_F(ReloadButtonTest, ResetOnTimer) {
   reload_.ChangeMode(ReloadButton::MODE_RELOAD, false);
 
   // Now fire the stop-to-reload timer.  This should reset the button.
-  loop_.RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   CheckState(true, ReloadButton::MODE_RELOAD, ReloadButton::MODE_RELOAD, false,
              false);
 }

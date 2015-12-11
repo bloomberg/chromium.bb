@@ -5,6 +5,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/scoped_nsobject.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
@@ -15,7 +16,6 @@
 #include "testing/platform_test.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/base/theme_provider.h"
 #include "ui/gfx/image/image_skia.h"
 
 using ::testing::_;
@@ -40,12 +40,12 @@ using ::testing::SetArgumentPointee;
     NSObject<BookmarkBarState, BookmarkBarToolbarViewController> {
  @private
   int currentTabContentsHeight_;
-  ThemeService* themeService_;
+  Profile* profile_;
   BookmarkBar::State state_;
   BOOL isEmpty_;
 }
 @property (nonatomic, assign) int currentTabContentsHeight;
-@property (nonatomic, assign) ThemeService* themeService;
+@property (nonatomic, assign) Profile* profile;
 @property (nonatomic, assign) BookmarkBar::State state;
 @property (nonatomic, assign) BOOL isEmpty;
 
@@ -64,7 +64,7 @@ using ::testing::SetArgumentPointee;
 
 @implementation DrawDetachedBarFakeController
 @synthesize currentTabContentsHeight = currentTabContentsHeight_;
-@synthesize themeService = themeService_;
+@synthesize profile = profile_;
 @synthesize state = state_;
 @synthesize isEmpty = isEmpty_;
 

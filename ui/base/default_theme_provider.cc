@@ -13,10 +13,6 @@ DefaultThemeProvider::DefaultThemeProvider() {}
 
 DefaultThemeProvider::~DefaultThemeProvider() {}
 
-bool DefaultThemeProvider::UsingSystemTheme() const {
-  return true;
-}
-
 gfx::ImageSkia* DefaultThemeProvider::GetImageSkiaNamed(int id) const {
   return ResourceBundle::GetSharedInstance().GetImageSkiaNamed(id);
 }

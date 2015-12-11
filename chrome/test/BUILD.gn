@@ -400,10 +400,6 @@ if (!is_android) {
                 "//chrome")
       }
       if (is_linux) {
-        # TODO(gbillock): aura linux does not support the automation for
-        # SendMouseMoveNotifyWhenDone
-        sources -= [ "../browser/ui/views/toolbar/toolbar_button_test.cc" ]
-
         if (!is_chromeos) {
           # Desktop linux.
           sources -= [

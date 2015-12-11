@@ -145,7 +145,7 @@ class InstantService : public KeyedService,
 
 #if defined(ENABLE_THEMES)
   // Theme changed notification handler.
-  void OnThemeChanged(ThemeService* theme_service);
+  void OnThemeChanged();
 #endif
 
   void ResetInstantSearchPrerenderer();

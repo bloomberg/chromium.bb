@@ -154,6 +154,10 @@ class ThemeProperties {
   // Returns gfx::kPlaceholderColor if |id| is invalid.
   static SkColor GetDefaultColor(int id);
 
+  // As above, but takes incognito status into account.
+  // TODO(estade): remove the above in favor of this one.
+  static SkColor GetDefaultColor(int id, bool otr);
+
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(ThemeProperties);
 };

@@ -46,8 +46,8 @@
 
 - (void)drawAsDetachedBubble:(NSRect)dirtyRect {
   CGFloat morph = [controller_ detachedMorphProgress];
-  ThemeService* themeService = [controller_ themeService];
-  if (!themeService)
+  Profile* profile = [controller_ profile];
+  if (!profile)
     return;
 
   [[NSColor whiteColor] set];
@@ -55,7 +55,7 @@
 
   // Overlay with a lighter background color.
   NSColor* toolbarColor = skia::SkColorToCalibratedNSColor(
-      chrome::GetDetachedBookmarkBarBackgroundColor(themeService));
+      chrome::GetDetachedBookmarkBarBackgroundColor(profile));
   CGFloat alpha = morph * [toolbarColor alphaComponent];
   [[toolbarColor colorWithAlphaComponent:alpha] set];
   NSRectFillUsingOperation(dirtyRect, NSCompositeSourceOver);
@@ -76,7 +76,7 @@
   strokeRect.size.height = [self cr_lineWidth];
   if (NSIntersectsRect(strokeRect, dirtyRect)) {
     NSColor* strokeColor = skia::SkColorToCalibratedNSColor(
-        chrome::GetDetachedBookmarkBarSeparatorColor(themeService));
+        chrome::GetDetachedBookmarkBarSeparatorColor(profile));
     strokeColor = [[self strokeColor] blendedColorWithFraction:morph
                                                        ofColor:strokeColor];
     strokeColor = [strokeColor colorWithAlphaComponent:0.5];
