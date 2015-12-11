@@ -19,16 +19,17 @@ class PrefRegistrySyncable;
 // StartupPref specifies what should happen at startup for a specified profile.
 // StartupPref is stored in the preferences for a particular profile.
 struct SessionStartupPref {
+  // Integer values should not be changed because reset reports depend on these.
   enum Type {
     // Indicates the user wants to open the New Tab page.
-    DEFAULT,
+    DEFAULT = 0,
 
     // Indicates the user wants to restore the last session.
-    LAST,
+    LAST = 2,
 
     // Indicates the user wants to restore a specific set of URLs. The URLs
     // are contained in urls.
-    URLS,
+    URLS = 3,
   };
 
   // For historical reasons the enum and value registered in the prefs don't
