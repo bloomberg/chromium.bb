@@ -204,11 +204,11 @@ TEST_F(HttpServerPropertiesManagerTest,
   base::DictionaryValue* alternative_service_dict1 = new base::DictionaryValue;
   alternative_service_dict1->SetInteger("port", 1234);
   alternative_service_dict1->SetString("protocol_str", "quic");
-  base::ListValue* alternative_service_list = new base::ListValue;
-  alternative_service_list->Append(alternative_service_dict0);
-  alternative_service_list->Append(alternative_service_dict1);
+  base::ListValue* alternative_service_list0 = new base::ListValue;
+  alternative_service_list0->Append(alternative_service_dict0);
+  alternative_service_list0->Append(alternative_service_dict1);
   server_pref_dict->SetWithoutPathExpansion("alternative_service",
-                                            alternative_service_list);
+                                            alternative_service_list0);
 
   // Set up ServerNetworkStats for www.google.com:80.
   base::DictionaryValue* stats = new base::DictionaryValue;
@@ -225,13 +225,14 @@ TEST_F(HttpServerPropertiesManagerTest,
   // Set supports_spdy for mail.google.com:80
   server_pref_dict1->SetBoolean("supports_spdy", true);
 
-  // Set up alternate_protocol for mail.google.com:80 to test migration to
-  // alternative_service.
-  base::DictionaryValue* alternate_protocol_dict = new base::DictionaryValue;
-  alternate_protocol_dict->SetString("protocol_str", "npn-spdy/3.1");
-  alternate_protocol_dict->SetInteger("port", 444);
-  server_pref_dict1->SetWithoutPathExpansion("alternate_protocol",
-                                             alternate_protocol_dict);
+  // Set up alternative_services for mail.google.com:80.
+  base::DictionaryValue* alternative_service_dict2 = new base::DictionaryValue;
+  alternative_service_dict2->SetString("protocol_str", "npn-spdy/3.1");
+  alternative_service_dict2->SetInteger("port", 444);
+  base::ListValue* alternative_service_list1 = new base::ListValue;
+  alternative_service_list1->Append(alternative_service_dict2);
+  server_pref_dict1->SetWithoutPathExpansion("alternative_service",
+                                             alternative_service_list1);
 
   // Set up ServerNetworkStats for mail.google.com:80.
   base::DictionaryValue* stats1 = new base::DictionaryValue;

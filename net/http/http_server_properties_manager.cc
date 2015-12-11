@@ -60,7 +60,6 @@ const char kQuicServers[] = "quic_servers";
 const char kServerInfoKey[] = "server_info";
 const char kUsedQuicKey[] = "used_quic";
 const char kAddressKey[] = "address";
-const char kAlternateProtocolKey[] = "alternate_protocol";
 const char kAlternativeServiceKey[] = "alternative_service";
 const char kProtocolKey[] = "protocol_str";
 const char kHostKey[] = "host";
@@ -640,33 +639,19 @@ bool HttpServerPropertiesManager::AddToAlternativeServiceMap(
     AlternativeServiceMap* alternative_service_map) {
   DCHECK(alternative_service_map->Peek(server) ==
          alternative_service_map->end());
-  // Get alternative_services...
   const base::ListValue* alternative_service_list;
-  const base::DictionaryValue* alternative_service_dict;
+  if (!server_pref_dict.GetListWithoutPathExpansion(
+          kAlternativeServiceKey, &alternative_service_list)) {
+    return true;
+  }
+
   AlternativeServiceInfoVector alternative_service_info_vector;
-  if (server_pref_dict.GetListWithoutPathExpansion(kAlternativeServiceKey,
-                                                   &alternative_service_list)) {
-    for (const base::Value* alternative_service_list_item :
-         *alternative_service_list) {
-      if (!alternative_service_list_item->GetAsDictionary(
-              &alternative_service_dict))
-        return false;
-      AlternativeServiceInfo alternative_service_info;
-      if (!ParseAlternativeServiceDict(*alternative_service_dict,
-                                       server.ToString(),
-                                       &alternative_service_info)) {
-        return false;
-      }
-      alternative_service_info_vector.push_back(alternative_service_info);
-    }
-  } else {
-    // ...or alternate_protocol.
-    // TODO(bnc): Remove this in M46, we do not need preference migration for
-    // long.
-    if (!server_pref_dict.GetDictionaryWithoutPathExpansion(
-            kAlternateProtocolKey, &alternative_service_dict)) {
-      return true;
-    }
+  for (const base::Value* alternative_service_list_item :
+       *alternative_service_list) {
+    const base::DictionaryValue* alternative_service_dict;
+    if (!alternative_service_list_item->GetAsDictionary(
+            &alternative_service_dict))
+      return false;
     AlternativeServiceInfo alternative_service_info;
     if (!ParseAlternativeServiceDict(*alternative_service_dict,
                                      server.ToString(),
