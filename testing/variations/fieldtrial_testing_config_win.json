@@ -24,7 +24,7 @@
     ],
     "AutomaticTabDiscarding": [
         {
-            "group_name": "Enabled"
+            "group_name": "Enabled_Once"
         }
     ],
     "BrowserBlacklist": [
