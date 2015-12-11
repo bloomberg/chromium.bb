@@ -63,7 +63,8 @@ class URLLoaderImpl : public URLLoader,
   ScopedDataPipeProducerHandle response_body_stream_;
   scoped_refptr<NetToMojoPendingBuffer> pending_write_;
   common::HandleWatcher handle_watcher_;
-  uint32 response_body_buffer_size_;
+  uint32_t response_body_buffer_size_;
+  uint32_t response_body_bytes_read_;
   bool auto_follow_redirects_;
   bool connected_;
   Binding<URLLoader> binding_;

@@ -139,6 +139,7 @@ URLLoaderImpl::URLLoaderImpl(NetworkContext* context,
                              scoped_ptr<mojo::AppRefCount> app_refcount)
     : context_(context),
       response_body_buffer_size_(0),
+      response_body_bytes_read_(0),
       auto_follow_redirects_(true),
       connected_(true),
       binding_(this, request.Pass()),
@@ -231,10 +232,15 @@ void URLLoaderImpl::FollowRedirect(
 void URLLoaderImpl::QueryStatus(
     const Callback<void(URLLoaderStatusPtr)>& callback) {
   URLLoaderStatusPtr status(URLLoaderStatus::New());
+  status->bytes_read = response_body_bytes_read_;
   if (url_request_) {
     status->is_loading = url_request_->is_pending();
     if (!url_request_->status().is_success())
       status->error = MakeNetworkError(url_request_->status().error());
+    if (url_request_->response_info().headers) {
+      status->content_length =
+          url_request_->response_info().headers->GetContentLength();
+    }
   } else {
     status->is_loading = false;
   }
@@ -385,6 +391,7 @@ void URLLoaderImpl::ReadMore() {
 void URLLoaderImpl::DidRead(uint32_t num_bytes, bool completed_synchronously) {
   DCHECK(url_request_->status().is_success());
 
+  response_body_bytes_read_ += num_bytes;
   response_body_stream_ = pending_write_->Complete(num_bytes);
   pending_write_ = nullptr;
 

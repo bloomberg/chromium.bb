@@ -87,6 +87,11 @@ struct URLLoaderStatus {
   // body stream.
   bool is_loading;
 
+  // The length in bytes of the content as reported by the HTTP response header,
+  // and the number of bytes read by the URLLoader thus far.
+  int64 content_length;
+  int64 bytes_read;
+
   // TODO(darin): Add further details about the stages of loading (e.g.,
   // "resolving host") that happen prior to receiving bytes.
 };
