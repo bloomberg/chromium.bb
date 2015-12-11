@@ -71,7 +71,7 @@ copresence::CopresenceManager* CopresenceService::manager() {
   return manager_.get();
 }
 
-const std::string CopresenceService::auth_token(const std::string& app_id)
+std::string CopresenceService::auth_token(const std::string& app_id)
     const {
   // This won't be const if we use map[]
   const auto& key = auth_tokens_by_app_.find(app_id);
@@ -172,11 +172,11 @@ net::URLRequestContextGetter* CopresenceService::GetRequestContext() const {
   return browser_context_->GetRequestContext();
 }
 
-const std::string CopresenceService::GetPlatformVersionString() const {
+std::string CopresenceService::GetPlatformVersionString() const {
   return chrome::GetVersionString();
 }
 
-const std::string
+std::string
 CopresenceService::GetAPIKey(const std::string& app_id) const {
   // Check first if the app has set its key via the API.
   const auto& key = api_keys_by_app_.find(app_id);
@@ -210,7 +210,7 @@ gcm::GCMDriver* CopresenceService::GetGCMDriver() {
   return gcm_service ? gcm_service->driver() : nullptr;
 }
 
-const std::string CopresenceService::GetDeviceId(bool authenticated) {
+std::string CopresenceService::GetDeviceId(bool authenticated) {
   std::string id = GetPrefService()->GetString(GetPrefName(authenticated));
   DVLOG(3) << "Retrieved device ID \"" << id << "\", "
            << "authenticated = " << authenticated;

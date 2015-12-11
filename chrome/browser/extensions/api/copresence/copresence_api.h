@@ -56,7 +56,7 @@ class CopresenceService final : public BrowserContextKeyedAPI,
     return apps_by_subscription_id_;
   }
 
-  const std::string auth_token(const std::string& app_id) const;
+  std::string auth_token(const std::string& app_id) const;
 
   void set_api_key(const std::string& app_id,
                    const std::string& api_key);
@@ -86,11 +86,11 @@ class CopresenceService final : public BrowserContextKeyedAPI,
                       const std::vector<copresence::Message>& message) override;
   void HandleStatusUpdate(copresence::CopresenceStatus status) override;
   net::URLRequestContextGetter* GetRequestContext() const override;
-  const std::string GetPlatformVersionString() const override;
-  const std::string GetAPIKey(const std::string& app_id) const override;
+  std::string GetPlatformVersionString() const override;
+  std::string GetAPIKey(const std::string& app_id) const override;
   audio_modem::WhispernetClient* GetWhispernetClient() override;
   gcm::GCMDriver* GetGCMDriver() override;
-  const std::string GetDeviceId(bool authenticated) override;
+  std::string GetDeviceId(bool authenticated) override;
   void SaveDeviceId(bool authenticated, const std::string& device_id) override;
 
   // BrowserContextKeyedAPI implementation.

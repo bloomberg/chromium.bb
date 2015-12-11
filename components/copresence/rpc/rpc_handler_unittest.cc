@@ -75,11 +75,11 @@ class RpcHandlerTest : public testing::Test, public CopresenceDelegate {
     return nullptr;
   }
 
-  const std::string GetPlatformVersionString() const override {
+  std::string GetPlatformVersionString() const override {
     return kChromeVersion;
   }
 
-  const std::string GetAPIKey(const std::string& app_id) const override {
+  std::string GetAPIKey(const std::string& app_id) const override {
     return app_id + " API Key";
   }
 
@@ -92,7 +92,7 @@ class RpcHandlerTest : public testing::Test, public CopresenceDelegate {
     return nullptr;
   }
 
-  const std::string GetDeviceId(bool authenticated) override {
+  std::string GetDeviceId(bool authenticated) override {
     return device_id_by_auth_state_[authenticated];
   }
 

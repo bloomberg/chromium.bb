@@ -48,9 +48,9 @@ class CopresenceDelegate {
   // Thw URLRequestContextGetter must outlive the CopresenceManager.
   virtual net::URLRequestContextGetter* GetRequestContext() const = 0;
 
-  virtual const std::string GetPlatformVersionString() const = 0;
+  virtual std::string GetPlatformVersionString() const = 0;
 
-  virtual const std::string GetAPIKey(const std::string& app_id) const = 0;
+  virtual std::string GetAPIKey(const std::string& app_id) const = 0;
 
   // The WhispernetClient must outlive the CopresenceManager.
   virtual audio_modem::WhispernetClient* GetWhispernetClient() = 0;
@@ -61,7 +61,7 @@ class CopresenceDelegate {
 
   // Get the copresence device ID for authenticated or anonymous calls,
   // as specified. If none exists, return the empty string.
-  virtual const std::string GetDeviceId(bool authenticated) = 0;
+  virtual std::string GetDeviceId(bool authenticated) = 0;
 
   // Save a copresence device ID for authenticated or anonymous calls.
   // If the device ID is empty, any stored ID should be deleted.
