@@ -40,7 +40,6 @@ ContextMenu status=experimental
 CredentialManager status=test
 CSS3Text status=experimental
 CSS3TextDecorations status=experimental
-CSSAttributeCaseSensitivity status=experimental
 CSSBackdropFilter status=experimental
 CSSCompositing status=stable
 CSSContainment status=experimental

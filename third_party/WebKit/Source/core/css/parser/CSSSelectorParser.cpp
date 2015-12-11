@@ -467,10 +467,8 @@ CSSSelector::AttributeMatchType CSSSelectorParser::consumeAttributeFlags(CSSPars
     if (range.peek().type() != IdentToken)
         return CSSSelector::CaseSensitive;
     const CSSParserToken& flag = range.consumeIncludingWhitespace();
-    if (String(flag.value()) == "i") {
-        if (RuntimeEnabledFeatures::cssAttributeCaseSensitivityEnabled() || isUASheetBehavior(m_context.mode()))
-            return CSSSelector::CaseInsensitive;
-    }
+    if (String(flag.value()) == "i")
+        return CSSSelector::CaseInsensitive;
     m_failedParsing = true;
     return CSSSelector::CaseSensitive;
 }
