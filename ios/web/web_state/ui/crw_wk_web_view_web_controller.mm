@@ -1863,6 +1863,11 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
                                  net::CertStatus status) {
                base::scoped_nsobject<CRWWKWebViewWebController> strongSelf(
                    [weakSelf retain]);
+               if (!strongSelf) {
+                 completionHandler(
+                     NSURLSessionAuthChallengeRejectProtectionSpace, nil);
+                 return;
+               }
                [strongSelf processAuthChallenge:challenge
                             forCertAcceptPolicy:policy
                                      certStatus:status
