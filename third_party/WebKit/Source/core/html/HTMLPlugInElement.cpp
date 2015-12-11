@@ -94,7 +94,10 @@ DEFINE_TRACE(HTMLPlugInElement)
 void HTMLPlugInElement::disconnectContentFrame()
 {
     if (m_persistedPluginWidget) {
-        m_persistedPluginWidget->dispose();
+        if (m_persistedPluginWidget->isPluginView())
+            m_persistedPluginWidget->dispose();
+        else
+            ASSERT(m_persistedPluginWidget->isFrameView());
         m_persistedPluginWidget = nullptr;
     }
     HTMLFrameOwnerElement::disconnectContentFrame();
@@ -115,8 +118,12 @@ void HTMLPlugInElement::setPersistedPluginWidget(Widget* widget)
     unregisterAsRenderlessIfNeeded();
     registerAsRenderless(widget);
     if (m_persistedPluginWidget) {
-        m_persistedPluginWidget->hide();
-        m_persistedPluginWidget->dispose();
+        if (m_persistedPluginWidget->isPluginView()) {
+            m_persistedPluginWidget->hide();
+            m_persistedPluginWidget->dispose();
+        } else {
+            ASSERT(m_persistedPluginWidget->isFrameView());
+        }
     }
 #endif
     m_persistedPluginWidget = widget;
