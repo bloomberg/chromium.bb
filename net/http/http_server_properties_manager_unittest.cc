@@ -1036,6 +1036,71 @@ TEST_F(HttpServerPropertiesManagerTest, AddToAlternativeServiceMap) {
   EXPECT_EQ(expected_expiration, alternative_service_info_vector[2].expiration);
 }
 
+// Do not persist expired or broken alternative service entries to disk.
+TEST_F(HttpServerPropertiesManagerTest,
+       DoNotPersistExpiredOrBrokenAlternativeService) {
+  ExpectScheduleUpdatePrefsOnNetworkThreadRepeatedly();
+
+  AlternativeServiceInfoVector alternative_service_info_vector;
+
+  const AlternativeService broken_alternative_service(
+      NPN_HTTP_2, "broken.example.com", 443);
+  const base::Time time_one_day_later =
+      base::Time::Now() + base::TimeDelta::FromDays(1);
+  alternative_service_info_vector.push_back(AlternativeServiceInfo(
+      broken_alternative_service, 1.0, time_one_day_later));
+  http_server_props_manager_->MarkAlternativeServiceBroken(
+      broken_alternative_service);
+
+  const AlternativeService expired_alternative_service(
+      NPN_HTTP_2, "expired.example.com", 443);
+  const base::Time time_one_day_ago =
+      base::Time::Now() - base::TimeDelta::FromDays(1);
+  alternative_service_info_vector.push_back(AlternativeServiceInfo(
+      expired_alternative_service, 1.0, time_one_day_ago));
+
+  const AlternativeService valid_alternative_service(NPN_HTTP_2,
+                                                     "valid.example.com", 443);
+  alternative_service_info_vector.push_back(AlternativeServiceInfo(
+      valid_alternative_service, 1.0, time_one_day_later));
+
+  const HostPortPair host_port_pair("www.example.com", 443);
+  http_server_props_manager_->SetAlternativeServices(
+      host_port_pair, alternative_service_info_vector);
+
+  // Update cache.
+  ExpectPrefsUpdate();
+  ExpectCacheUpdate();
+  http_server_props_manager_->ScheduleUpdateCacheOnPrefThread();
+  base::RunLoop().RunUntilIdle();
+
+  const base::Value* pref_value =
+      pref_service_.GetUserPref(kTestHttpServerProperties);
+  ASSERT_NE(nullptr, pref_value);
+
+  const base::DictionaryValue* pref_dict;
+  ASSERT_TRUE(pref_value->GetAsDictionary(&pref_dict));
+
+  const base::DictionaryValue* server_pref_dict;
+  ASSERT_TRUE(pref_dict->GetDictionary("servers", &server_pref_dict));
+
+  const base::DictionaryValue* example_pref_dict;
+  ASSERT_TRUE(server_pref_dict->GetDictionaryWithoutPathExpansion(
+      "www.example.com:443", &example_pref_dict));
+
+  const base::ListValue* altsvc_list;
+  ASSERT_TRUE(example_pref_dict->GetList("alternative_service", &altsvc_list));
+
+  ASSERT_EQ(1u, altsvc_list->GetSize());
+
+  const base::DictionaryValue* altsvc_entry;
+  ASSERT_TRUE(altsvc_list->GetDictionary(0, &altsvc_entry));
+
+  std::string hostname;
+  ASSERT_TRUE(altsvc_entry->GetString("host", &hostname));
+  EXPECT_EQ("valid.example.com", hostname);
+}
+
 TEST_F(HttpServerPropertiesManagerTest, ShutdownWithPendingUpdateCache0) {
   // Post an update task to the UI thread.
   http_server_props_manager_->ScheduleUpdateCacheOnPrefThread();

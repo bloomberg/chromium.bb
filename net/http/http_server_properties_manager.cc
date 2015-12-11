@@ -869,12 +869,15 @@ void HttpServerPropertiesManager::UpdatePrefsFromCacheOnNetworkThread(
     const HostPortPair& server = it->first;
     AlternativeServiceInfoVector notbroken_alternative_service_info_vector;
     for (const AlternativeServiceInfo& alternative_service_info : it->second) {
-      if (!IsAlternateProtocolValid(
-              alternative_service_info.alternative_service.protocol)) {
+      // Do not persist expired entries.
+      if (alternative_service_info.expiration < base::Time::Now()) {
         continue;
       }
       AlternativeService alternative_service(
           alternative_service_info.alternative_service);
+      if (!IsAlternateProtocolValid(alternative_service.protocol)) {
+        continue;
+      }
       if (alternative_service.host.empty()) {
         alternative_service.host = server.host();
       }
