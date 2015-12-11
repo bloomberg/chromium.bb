@@ -149,7 +149,9 @@ public:
     virtual void ensureBackbufferCHROMIUM() { }
 
     virtual bool insertSyncPoint(WGC3Dbyte*) { return false; }
-    virtual void waitSyncToken(const WGC3Dbyte*) {}
+    virtual WGC3Duint64 insertFenceSyncCHROMIUM() { return 0; }
+    virtual bool genSyncTokenCHROMIUM(WGC3Duint64, WGC3Dbyte*) { return false; }
+    virtual void waitSyncTokenCHROMIUM(const WGC3Dbyte*) {}
 
     // Copies the contents of the off-screen render target used by the WebGL
     // context to the corresponding texture used by the compositor.

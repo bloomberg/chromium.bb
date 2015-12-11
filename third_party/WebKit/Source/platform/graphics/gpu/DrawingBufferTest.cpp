@@ -99,7 +99,19 @@ public:
         return true;
     }
 
-    void waitSyncToken(const WGC3Dbyte* syncToken) override
+    WGC3Duint64 insertFenceSyncCHROMIUM() override
+    {
+        static WGC3Duint64 syncPointGenerator = 0;
+        return ++syncPointGenerator;
+    }
+
+    bool genSyncTokenCHROMIUM(WGC3Duint64 fenceSync, WGC3Dbyte* syncToken) override
+    {
+        memcpy(syncToken, &fenceSync, sizeof(fenceSync));
+        return true;
+    }
+
+    void waitSyncTokenCHROMIUM(const WGC3Dbyte* syncToken) override
     {
         memcpy(&m_mostRecentlyWaitedSyncToken, syncToken, sizeof(m_mostRecentlyWaitedSyncToken));
     }

@@ -653,7 +653,7 @@ void Canvas2DLayerBridge::mailboxReleased(const WebExternalTextureMailbox& mailb
         // Invalidate texture state in case the compositor altered it since the copy-on-write.
         if (releasedMailboxInfo->m_image) {
             if (mailbox.validSyncToken) {
-                context()->waitSyncToken(mailbox.syncToken);
+                context()->waitSyncTokenCHROMIUM(mailbox.syncToken);
             }
             GrTexture* texture = releasedMailboxInfo->m_image->getTexture();
             if (texture) {

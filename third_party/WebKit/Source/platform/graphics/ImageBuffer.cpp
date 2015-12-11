@@ -214,7 +214,7 @@ bool ImageBuffer::copyToPlatformTexture(WebGraphicsContext3D* context, Platform3
 
     mailbox->validSyncToken = sharedContext->insertSyncPoint(mailbox->syncToken);
     if (mailbox->validSyncToken)
-        context->waitSyncToken(mailbox->syncToken);
+        context->waitSyncTokenCHROMIUM(mailbox->syncToken);
 
     Platform3DObject sourceTexture = context->createAndConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox->name);
 
@@ -228,7 +228,7 @@ bool ImageBuffer::copyToPlatformTexture(WebGraphicsContext3D* context, Platform3
 
     WGC3Dbyte syncToken[24];
     if (context->insertSyncPoint(syncToken))
-        sharedContext->waitSyncToken(syncToken);
+        sharedContext->waitSyncTokenCHROMIUM(syncToken);
 
     // Undo grContext texture binding changes introduced in this function
     provider->grContext()->resetContext(kTextureBinding_GrGLBackendState);
