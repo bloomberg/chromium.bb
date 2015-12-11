@@ -203,6 +203,9 @@
   "ios/chrome/app/strings/ios_google_chrome_strings.grd": {
     "messages": [26055],
   },
+  "ios/chrome/app/resources/ios_resources.grd": {
+    "structures": [26150],
+  },
   "ios/chrome/app/theme/ios_theme_resources.grd": {
     "structures": [26155],
   },

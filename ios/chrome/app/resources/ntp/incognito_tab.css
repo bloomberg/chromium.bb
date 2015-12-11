@@ -1,0 +1,69 @@
+/* Copyright 2014 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+.center {
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 416px;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+html {
+  /* It's necessary to add this here in order to prevent the incognito text
+     from being suddenly zoomed in when the phone is in landscape mode
+     (see b/6644342). */
+  -webkit-text-size-adjust: none;
+  /* On iOS, set the background to transparent. */
+  background-color: transparent;
+  color: #fff;
+  margin-left: 8px;
+  margin-right: 8px;
+}
+
+/* On iOS with WKWebView, embed the fonts. */
+${robotoRegularFontFace}
+${robotoMediumFontFace}
+${robotoLightFontFace}
+
+h1 {
+  font-family: Roboto-Light;
+  font-size: 24px;
+  font-weight: normal;
+  margin-top: 22px;
+  opacity: 0.8;
+  text-align: center;
+}
+
+.description {
+  font-family: Roboto-Regular;
+  font-size: 14px;
+  line-height: 20px;
+  margin-top: 32px;
+  opacity: 0.7;
+}
+
+a {
+  color: rgb(3, 169, 244);
+  text-decoration: none;
+}
+
+.icon {
+  content: -webkit-image-set(
+      url(images/1x/incognito_icon.png) 1x,
+      url(images/2x/incognito_icon.png) 2x);
+  height: 120px;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 24px;
+  width: 120px;
+}
+
+.link {
+  font-family: Roboto-Medium;
+  font-size: 14px;
+  margin-top: 36px;
+  opacity: 1;
+  text-align: center;
+}

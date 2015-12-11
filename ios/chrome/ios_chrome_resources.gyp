@@ -35,6 +35,7 @@
       'target_name': 'ios_chrome_resources',
       'type': 'none',
       'dependencies': [
+        'ios_resources_gen',
         'ios_strings_gen',
         'ios_theme_resources_gen',
       ],
@@ -90,6 +91,32 @@
           '<(grit_out_dir)',
         ],
       }
+    },
+    {
+      # GN version: //ios/chrome/app/resources
+      'target_name': 'ios_resources_gen',
+      'type': 'none',
+      'hard_dependency': 1,
+      'actions': [
+        {
+          'action_name': 'ios_resources',
+          'variables': {
+            'grit_grd_file': 'app/resources/ios_resources.grd',
+          },
+          'includes': [ '../../build/grit_action.gypi' ],
+        },
+      ],
+      'includes': [ '../../build/grit_target.gypi' ],
+      # Override the exported include-dirs; ios_theme_resources.h should only be
+      # referencable as ios/chrome/grit/ to allow DEPS-time checking of usage.
+      'direct_dependent_settings': {
+        'include_dirs': [
+          '<(grit_base_dir)',
+        ],
+        'include_dirs!': [
+          '<(grit_out_dir)',
+        ],
+      },
     },
     {
       # GN version: //ios/chrome/app/theme
@@ -197,6 +224,7 @@
           'variables': {
             'pak_inputs': [
               '<(SHARED_INTERMEDIATE_DIR)/components/components_resources.pak',
+              '<(SHARED_INTERMEDIATE_DIR)/ios/chrome/ios_resources.pak',
               '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.pak',
               '<(SHARED_INTERMEDIATE_DIR)/ui/resources/webui_resources.pak',
             ],

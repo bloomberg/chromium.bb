@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html i18n-values="dir:textdirection;bookmarkbarattached:bookmarkbarattached">
+<head>
+<meta charset="utf-8">
+<title i18n-content="title"></title>
+<!-- The viewport tag forces the page to correctly resize when starting in
+     landscape mode; this handles an iOS resizing bug. -->
+<meta name="viewport"
+   content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<link rel="stylesheet" href="incognito_tab.css">
+</head>
+<body>
+<div class="center">
+  <div class="icon"></div>
+  <div>
+    <h1 i18n-content="incognitoTabHeading"></h1>
+    <p>
+      <div i18n-values=".innerHTML:incognitoTabDescription"
+          class="description"></div>
+      <div class="link">
+        <a i18n-content="learnMore" i18n-values=".href:learnMoreLink"></a>
+      </div>
+    </p>
+    <p>
+      <strong i18n-content="incognitoTabWarning"></strong>
+    </p>
+  </div>
+</div>
+</body>
+<script>
+var originalTopMargin = 0;
+function centerContentVerticallyIfNecessary() {
+  var content = document.getElementsByClassName('center')[0];
+  var boxHeight = content.clientHeight;
+  var screenHeight = window.innerHeight;
+  // Adjust the margin around the content so that there's twice as much empty
+  // space below the content as above if all the content fits in inside the
+  // screen.
+  var margin = Math.max((screenHeight - boxHeight) / 3, 10);
+  content.style.marginTop = margin + 'px';
+}
+// Delay until after the i18n sweep is done.
+window.setTimeout(centerContentVerticallyIfNecessary, 0);
+// The image can change the content height, so re-center when it's loaded.
+window.addEventListener('load', centerContentVerticallyIfNecessary);
+window.addEventListener('resize', centerContentVerticallyIfNecessary);
+</script>
+</html>
