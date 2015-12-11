@@ -20,10 +20,10 @@ cr.define('cr.ui', function() {
    * @enum {number}
    */
   var KeyCodes = {
-    TAB: 9,
-    ENTER: 13,
-    ESC: 27,
-    SPACE: 32
+    TAB: 'U+0009',
+    ENTER: 'Enter',
+    ESC: 'U+001B',
+    SPACE: 'U+0020'
   };
 
   /**
@@ -326,19 +326,21 @@ cr.define('cr.ui', function() {
         return;
       }
       // Artificial tab-cycle.
-      if (e.keyCode == KeyCodes.TAB && e.shiftKey == true &&
+
+      if (e.keyIdentifier == KeyCodes.TAB && e.shiftKey == true &&
           e.target == this.firstBubbleElement_) {
         this.lastBubbleElement_.focus();
         e.preventDefault();
       }
-      if (e.keyCode == KeyCodes.TAB && e.shiftKey == false &&
+      if (e.keyIdentifier == KeyCodes.TAB && e.shiftKey == false &&
           e.target == this.lastBubbleElement_) {
         this.firstBubbleElement_.focus();
         e.preventDefault();
       }
       // Close bubble on ESC or on hitting spacebar or Enter at close-button.
-      if (e.keyCode == KeyCodes.ESC ||
-          ((e.keyCode == KeyCodes.ENTER || e.keyCode == KeyCodes.SPACE) &&
+      if (e.keyIdentifier == KeyCodes.ESC ||
+          ((e.keyIdentifier == KeyCodes.ENTER ||
+            e.keyIdentifier == KeyCodes.SPACE) &&
              e.target && e.target.classList.contains('close-button')))
         this.hide();
     },

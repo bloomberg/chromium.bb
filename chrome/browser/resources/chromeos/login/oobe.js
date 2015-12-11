@@ -160,6 +160,8 @@ cr.define('cr.ui.Oobe', function() {
 
       $('accessibility-menu').firstBubbleElement = $('spoken-feedback');
       $('accessibility-menu').lastBubbleElement = $('close-accessibility-menu');
+      $('spoken-feedback').focus();
+
       if (Oobe.getInstance().currentScreen &&
           Oobe.getInstance().currentScreen.defaultControl) {
         $('accessibility-menu').elementToFocusOnHide =
