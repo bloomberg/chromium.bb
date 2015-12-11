@@ -3877,7 +3877,7 @@
             'fetch/ResourceTest.cpp',
             'fileapi/FileListTest.cpp',
             'fileapi/FileTest.cpp',
-            'frame/FrameViewDidPaintTest.cpp',
+            'frame/FrameViewTest.cpp',
             'frame/ImageBitmapTest.cpp',
             'frame/OriginsUsingFeaturesTest.cpp',
             'frame/RootFrameViewportTest.cpp',
