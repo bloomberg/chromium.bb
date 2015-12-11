@@ -442,7 +442,7 @@
 
     <!-- Physical Web styles -->
     <style name="PhysicalWebNearbyUrlsListStyle" parent="Theme.AppCompat.Light">
-        <item name="android:windowBackground">@color/nearby_urls_background_color</item>
+        <item name="android:windowBackground">@android:color/white</item>
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">match_parent</item>
     </style>

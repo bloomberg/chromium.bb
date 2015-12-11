@@ -10,6 +10,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 
@@ -36,8 +38,6 @@ import java.util.Set;
  * of currently-nearby and known-resolved URLs.
  */
 class UrlManager {
-    public static final String REFERER_KEY = "referer";
-    public static final int NOTIFICATION_REFERER = 1;
     private static final String TAG = "PhysicalWeb";
     private static final String PREFS_NAME = "org.chromium.chrome.browser.physicalweb.URL_CACHE";
     private static final String PREFS_VERSION_KEY = "version";
@@ -121,7 +121,7 @@ class UrlManager {
         Set<String> emptySet = Collections.emptySet();
         putCachedNearbyUrls(emptySet);
         putCachedResolvedUrls(emptySet);
-        updateNotification();
+        clearNotification();
     }
 
     private void addResolvedUrl(String url) {
@@ -191,7 +191,7 @@ class UrlManager {
 
     private PendingIntent createListUrlsIntent() {
         Intent intent = new Intent(mContext, ListUrlsActivity.class);
-        intent.putExtra(REFERER_KEY, NOTIFICATION_REFERER);
+        intent.putExtra(ListUrlsActivity.REFERER_KEY, ListUrlsActivity.NOTIFICATION_REFERER);
         PendingIntent pendingIntent = PendingIntent.getActivity(mContext, 0, intent, 0);
         return pendingIntent;
     }
@@ -217,35 +217,36 @@ class UrlManager {
         Set<String> urls = getUrls();
 
         if (urls.isEmpty()) {
-            mNotificationManager.cancel(NotificationConstants.NOTIFICATION_ID_PHYSICAL_WEB);
+            clearNotification();
             return;
         }
 
-        int urlCount = urls.size();
-
-        Resources resources = mContext.getResources();
-        // TODO: Do not show how many are nearby
-        String title = resources.getQuantityString(
-                R.plurals.physical_web_notification_title, urlCount, urlCount);
-        String text = null;
-
-        createNotification(title, text);
+        createNotification();
     }
 
-    private void createNotification(String title, String text) {
-        // Get values to display.
+    private void createNotification() {
         PendingIntent pendingIntent = createListUrlsIntent();
+
+        // Get values to display.
+        Resources resources = mContext.getResources();
+        String title = resources.getString(R.string.physical_web_notification_title);
+        Bitmap largeIcon = BitmapFactory.decodeResource(resources,
+                R.drawable.physical_web_notification_large);
 
         // Create the notification.
         Notification notification = new NotificationCompat.Builder(mContext)
-                .setSmallIcon(R.drawable.ic_physical_web_notification)
+                .setLargeIcon(largeIcon)
+                .setSmallIcon(R.drawable.ic_chrome)
                 .setContentTitle(title)
-                .setContentText(text)
                 .setContentIntent(pendingIntent)
                 .setPriority(NotificationCompat.PRIORITY_MIN)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .build();
         mNotificationManager.notify(NotificationConstants.NOTIFICATION_ID_PHYSICAL_WEB,
                                     notification);
+    }
+
+    private void clearNotification() {
+        mNotificationManager.cancel(NotificationConstants.NOTIFICATION_ID_PHYSICAL_WEB);
     }
 }

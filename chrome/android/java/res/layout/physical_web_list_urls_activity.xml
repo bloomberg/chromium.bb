@@ -3,25 +3,45 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<RelativeLayout
+<merge
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    xmlns:tools="http://schemas.android.com/tools">
 
     <ListView
         android:id="@android:id/list"
         android:layout_height="match_parent"
         android:layout_width="match_parent"
         android:divider="@null"/>
-    <TextView
+
+    <LinearLayout
         android:id="@android:id/empty"
         android:layout_height="wrap_content"
-        android:layout_width="wrap_content"
-        android:text="@string/physical_web_empty_list_scanning"
-        android:textSize="16sp"
-        android:textColor="@color/physical_web_no_urls_text_color"
-        android:layout_alignParentBottom="true"
-        android:layout_marginBottom="260dp"
-        android:layout_centerHorizontal="true"/>
+        android:layout_width="match_parent"
+        android:layout_gravity="center"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        tools:ignore="UseCompoundDrawables" >
 
-</RelativeLayout>
+        <ImageView
+            android:id="@+id/physical_web_logo"
+            android:layout_height="140dp"
+            android:layout_width="140dp"
+            android:layout_marginBottom="5dp"
+            android:src="@drawable/physical_web_logo"
+            android:contentDescription="@null" />
+
+        <TextView
+            android:id="@+id/physical_web_empty_list_text"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:text="@string/physical_web_empty_list_scanning"
+            android:textSize="16sp"
+            android:textColor="@color/light_normal_color" />
+
+        <View
+            android:layout_height="145dp"
+            android:layout_width="1dp" />
+
+    </LinearLayout>
+
+</merge>
