@@ -63,10 +63,8 @@ IconLabelBubbleView::~IconLabelBubbleView() {
 void IconLabelBubbleView::SetBackgroundImageGrid(
     const int background_images[]) {
   should_show_background_ = true;
-  if (!background_painter_.get()) {
-    background_painter_.reset(
-        views::Painter::CreateImageGridPainter(background_images));
-  }
+  background_painter_.reset(
+      views::Painter::CreateImageGridPainter(background_images));
   // Use the middle image of the background to represent the color of the entire
   // background.
   gfx::ImageSkia* background_image =
