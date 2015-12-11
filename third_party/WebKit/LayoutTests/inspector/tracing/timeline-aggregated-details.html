@@ -573,7 +573,7 @@ function test()
     ];
 
     var timeline = WebInspector.panels.timeline;
-    timeline._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStopped, timelineRecorded, this);
+    timeline._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStopped, InspectorTest.safeWrap(timelineRecorded), this);
     timeline._model.setEventsForTest(rawTraceEvents);
 
     function timelineRecorded()
