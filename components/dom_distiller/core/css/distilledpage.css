@@ -256,6 +256,11 @@ h6 {
 }
 
 #closeReaderView {
+  /*
+  TODO(mdjones): Remove the "display: none;" style when the Reader Mode bar
+                 behaves like the toolbar when scrolling.
+  */
+  display: none;
   flex: 0 0 auto;
   font-family: 'Roboto', sans-serif;
   font-weight: 700;
