@@ -252,9 +252,8 @@ class BuildPackagesStageTest(AllConfigsTestCase,
       rc.assertCommandContains(['./build_packages', '--skip_chroot_upgrade'])
       rc.assertCommandContains(['./build_packages', '--nousepkg'],
                                expected=not cfg['usepkg_build_packages'])
-      build_tests = cfg['build_tests'] and self._run.options.tests
       rc.assertCommandContains(['./build_packages', '--nowithautotest'],
-                               expected=not build_tests)
+                               expected=not self._run.options.tests)
 
   def testAllConfigs(self):
     """Test all major configurations"""

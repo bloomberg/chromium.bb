@@ -96,7 +96,7 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
     cmd = ['generate_delta_sysroot', '--out-dir', in_chroot_path,
            '--board', self._current_board]
     # TODO(mtennant): Make this condition into one run param.
-    if not self._run.config.build_tests or not self._run.options.tests:
+    if not self._run.options.tests:
       cmd.append('--skip-tests')
     cros_build_lib.RunCommand(cmd, cwd=self._build_root, enter_chroot=True,
                               extra_env=extra_env)
@@ -257,7 +257,7 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
       # TODO(petermayo): This logic needs to be exported from the BuildTargets
       # stage rather than copied/re-evaluated here.
       # TODO(mtennant): Make this autotest_built concept into a run param.
-      autotest_built = (config['build_tests'] and self._run.options.tests and
+      autotest_built = (self._run.options.tests and
                         config['upload_hw_test_artifacts'])
 
       if config['hwqual'] and autotest_built:

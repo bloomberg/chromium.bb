@@ -1947,7 +1947,6 @@ def GetConfig():
       'internal-toolchain-minor',
       config_lib.BuildConfig(), _toolchain_minor, internal, official,
       boards=['x86-alex', 'stumpy', 'daisy', 'lakitu'],
-      build_tests=True,
       description=_toolchain_minor['description'] + ' (internal)',
   )
 
@@ -1960,7 +1959,6 @@ def GetConfig():
       build_type=constants.CANARY_TYPE,
       build_timeout=12 * 60 * 60 if IS_RELEASE_BRANCH else (7 * 60 + 50) * 60,
       useflags=append_useflags(['-cros-debug']),
-      build_tests=True,
       afdo_use=True,
       manifest=constants.OFFICIAL_MANIFEST,
       manifest_version=True,
@@ -2637,7 +2635,6 @@ def GetConfig():
       packages=['virtual/chromeos-firmware', 'chromeos-base/autotest-all'],
       usepkg_build_packages=True,
       sync_chrome=False,
-      build_tests=True,
       chrome_sdk=False,
       unittests=False,
       hw_tests=[],

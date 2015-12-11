@@ -579,10 +579,6 @@ class _BuilderRunBase(object):
       # Some attributes are available as properties.  In particular, attributes
       # that use self.config must be determined after __init__.
       # self.bot_id      # Effective name of builder for this run.
-
-      # TODO(mtennant): Other candidates here include:
-      # trybot, buildbot, remote_trybot, chrome_root,
-      # test = (config build_tests AND option tests)
   )
 
   def __init__(self, site_config, options, multiprocess_manager):
@@ -702,7 +698,7 @@ class _BuilderRunBase(object):
 
   def ShouldBuildAutotest(self):
     """Return True if this run should build autotest and artifacts."""
-    return self.config.build_tests and self.options.tests
+    return self.options.tests
 
   def ShouldUploadPrebuilts(self):
     """Return True if this run should upload prebuilts."""

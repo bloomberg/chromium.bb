@@ -339,16 +339,6 @@ class CBuildBotTest(GenerateChromeosConfigTestBase):
             'As this is the %s branch, all release configs that are being used '
             'must end in %s.' % (branch, tracking_branch, branch))
 
-  def testBuildTests(self):
-    """Verify that we don't try to use tests without building them."""
-
-    for build_name, config in self.all_configs.iteritems():
-      if not config['build_tests']:
-        for flag in ('factory_toolkit', 'vm_tests', 'hw_tests'):
-          self.assertFalse(
-              config[flag],
-              'Config %s set %s without build_tests.' % (build_name, flag))
-
   def testAFDOInBackground(self):
     """Verify that we don't try to build or use AFDO data in the background."""
     for build_name, config in self.all_configs.iteritems():
