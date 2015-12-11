@@ -4149,7 +4149,8 @@ void RenderFrameImpl::WasShown() {
   DCHECK(!IsMainFrame() || render_widget_.get() == render_view_.get())
       << "The main render frame is no longer reusing the RenderView as its "
       << "RenderWidget!";
-  if (render_widget_ && render_view_.get() != render_widget_.get()) {
+  if (render_widget_ && render_widget_->webwidget() &&
+      render_view_.get() != render_widget_.get()) {
     static_cast<blink::WebFrameWidget*>(render_widget_->webwidget())->
         setVisibilityState(blink::WebPageVisibilityStateVisible, false);
   }
