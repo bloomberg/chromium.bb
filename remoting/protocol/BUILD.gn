@@ -100,6 +100,7 @@ source_set("unit_tests") {
     "connection_tester.h",
     "content_description_unittest.cc",
     "ice_connection_to_client_unittest.cc",
+    "ice_transport_unittest.cc",
     "input_event_tracker_unittest.cc",
     "input_filter_unittest.cc",
     "jingle_messages_unittest.cc",

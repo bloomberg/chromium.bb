@@ -314,6 +314,7 @@
         'protocol/connection_tester.h',
         'protocol/content_description_unittest.cc',
         'protocol/ice_connection_to_client_unittest.cc',
+        'protocol/ice_transport_unittest.cc',
         'protocol/input_event_tracker_unittest.cc',
         'protocol/input_filter_unittest.cc',
         'protocol/jingle_messages_unittest.cc',

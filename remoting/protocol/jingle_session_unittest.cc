@@ -22,8 +22,6 @@
 #include "remoting/protocol/ice_transport_factory.h"
 #include "remoting/protocol/jingle_session_manager.h"
 #include "remoting/protocol/network_settings.h"
-#include "remoting/protocol/p2p_stream_socket.h"
-#include "remoting/protocol/stream_channel_factory.h"
 #include "remoting/signaling/fake_signal_strategy.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -49,28 +47,6 @@ namespace {
 const char kHostJid[] = "host1@gmail.com/123";
 const char kClientJid[] = "host2@gmail.com/321";
 
-// Send 100 messages 1024 bytes each. UDP messages are sent with 10ms delay
-// between messages (about 1 second for 100 messages).
-const int kMessageSize = 1024;
-const int kMessages = 100;
-const char kChannelName[] = "test_channel";
-
-void QuitCurrentThread() {
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
-}
-
-ACTION(QuitThread) {
-  QuitCurrentThread();
-}
-
-ACTION_P(QuitThreadOnCounter, counter) {
-  --(*counter);
-  EXPECT_GE(*counter, 0);
-  if (*counter == 0)
-    QuitCurrentThread();
-}
-
 class MockSessionManagerListener : public SessionManager::Listener {
  public:
   MOCK_METHOD2(OnIncomingSession,
@@ -83,11 +59,6 @@ class MockSessionEventHandler : public Session::EventHandler {
   MOCK_METHOD1(OnSessionStateChange, void(Session::State));
   MOCK_METHOD2(OnSessionRouteChange, void(const std::string& channel_name,
                                           const TransportRoute& route));
-};
-
-class MockChannelCreatedCallback {
- public:
-  MOCK_METHOD1(OnDone, void(P2PStreamSocket* socket));
 };
 
 }  // namespace
@@ -112,16 +83,6 @@ class JingleSessionTest : public testing::Test {
     host_session_.reset();
   }
 
-  void OnClientChannelCreated(scoped_ptr<P2PStreamSocket> socket) {
-    client_channel_callback_.OnDone(socket.get());
-    client_socket_ = socket.Pass();
-  }
-
-  void OnHostChannelCreated(scoped_ptr<P2PStreamSocket> socket) {
-    host_channel_callback_.OnDone(socket.get());
-    host_socket_ = socket.Pass();
-  }
-
  protected:
   void TearDown() override {
     CloseSessions();
@@ -130,9 +91,7 @@ class JingleSessionTest : public testing::Test {
   }
 
   void CloseSessions() {
-    host_socket_.reset();
     host_session_.reset();
-    client_socket_.reset();
     client_session_.reset();
   }
 
@@ -248,26 +207,6 @@ class JingleSessionTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  void CreateChannel() {
-    client_session_->GetTransport()->GetStreamChannelFactory()->CreateChannel(
-        kChannelName, base::Bind(&JingleSessionTest::OnClientChannelCreated,
-                                 base::Unretained(this)));
-    host_session_->GetTransport()->GetStreamChannelFactory()->CreateChannel(
-        kChannelName, base::Bind(&JingleSessionTest::OnHostChannelCreated,
-                                 base::Unretained(this)));
-
-    int counter = 2;
-    ExpectRouteChange(kChannelName);
-    EXPECT_CALL(client_channel_callback_, OnDone(_))
-        .WillOnce(QuitThreadOnCounter(&counter));
-    EXPECT_CALL(host_channel_callback_, OnDone(_))
-        .WillOnce(QuitThreadOnCounter(&counter));
-    message_loop_->Run();
-
-    EXPECT_TRUE(client_socket_.get());
-    EXPECT_TRUE(host_socket_.get());
-  }
-
   void ExpectRouteChange(const std::string& channel_name) {
     EXPECT_CALL(host_session_event_handler_,
                 OnSessionRouteChange(channel_name, _))
@@ -293,12 +232,6 @@ class JingleSessionTest : public testing::Test {
   MockSessionEventHandler host_session_event_handler_;
   scoped_ptr<Session> client_session_;
   MockSessionEventHandler client_session_event_handler_;
-
-  MockChannelCreatedCallback client_channel_callback_;
-  MockChannelCreatedCallback host_channel_callback_;
-
-  scoped_ptr<P2PStreamSocket> client_socket_;
-  scoped_ptr<P2PStreamSocket> host_socket_;
 };
 
 
@@ -364,21 +297,6 @@ TEST_F(JingleSessionTest, ConnectWithBadAuth) {
 TEST_F(JingleSessionTest, ConnectWithBadMultistepAuth) {
   CreateSessionManagers(3, FakeAuthenticator::REJECT);
   InitiateConnection(3, FakeAuthenticator::ACCEPT, true);
-}
-
-// Verify that data can be sent over stream channel.
-TEST_F(JingleSessionTest, TestStreamChannel) {
-  CreateSessionManagers(1, FakeAuthenticator::ACCEPT);
-  ASSERT_NO_FATAL_FAILURE(
-      InitiateConnection(1, FakeAuthenticator::ACCEPT, false));
-
-  ASSERT_NO_FATAL_FAILURE(CreateChannel());
-
-  StreamConnectionTester tester(host_socket_.get(), client_socket_.get(),
-                                kMessageSize, kMessages);
-  tester.Start();
-  message_loop_->Run();
-  tester.CheckResults();
 }
 
 // Verify that incompatible protocol configuration is handled properly.
@@ -484,159 +402,11 @@ TEST_F(JingleSessionTest, DeleteSessionOnAuth) {
   base::RunLoop().RunUntilIdle();
 }
 
-// Verify that data can be sent over a multiplexed channel.
-TEST_F(JingleSessionTest, TestMuxStreamChannel) {
-  CreateSessionManagers(1, FakeAuthenticator::ACCEPT);
-  ASSERT_NO_FATAL_FAILURE(
-      InitiateConnection(1, FakeAuthenticator::ACCEPT, false));
-
-  client_session_->GetTransport()
-      ->GetMultiplexedChannelFactory()
-      ->CreateChannel(kChannelName,
-                      base::Bind(&JingleSessionTest::OnClientChannelCreated,
-                                 base::Unretained(this)));
-  host_session_->GetTransport()
-      ->GetMultiplexedChannelFactory()
-      ->CreateChannel(kChannelName,
-                      base::Bind(&JingleSessionTest::OnHostChannelCreated,
-                                 base::Unretained(this)));
-
-  int counter = 2;
-  ExpectRouteChange("mux");
-  EXPECT_CALL(client_channel_callback_, OnDone(_))
-      .WillOnce(QuitThreadOnCounter(&counter));
-  EXPECT_CALL(host_channel_callback_, OnDone(_))
-      .WillOnce(QuitThreadOnCounter(&counter));
-  message_loop_->Run();
-
-  EXPECT_TRUE(client_socket_.get());
-  EXPECT_TRUE(host_socket_.get());
-
-  StreamConnectionTester tester(host_socket_.get(), client_socket_.get(),
-                                kMessageSize, kMessages);
-  tester.Start();
-  message_loop_->Run();
-  tester.CheckResults();
-}
-
-// Verify that channels are never marked connected if transport is broken.
-TEST_F(JingleSessionTest, TestBrokenTransport) {
-  // Allow only incoming connections on both ends, which effectively renders P2P
-  // transport unusable.
-  network_settings_ = NetworkSettings(NetworkSettings::NAT_TRAVERSAL_DISABLED);
-  CreateSessionManagers(1, FakeAuthenticator::ACCEPT);
-
-  scoped_ptr<CandidateSessionConfig> config =
-      CandidateSessionConfig::CreateDefault();
-  config->PreferTransport(ChannelConfig::TRANSPORT_MUX_STREAM);
-  client_server_->set_protocol_config(config.Pass());
-
-  ASSERT_NO_FATAL_FAILURE(
-      InitiateConnection(1, FakeAuthenticator::ACCEPT, false));
-
-  EXPECT_CALL(client_channel_callback_, OnDone(_)).Times(0);
-  EXPECT_CALL(host_channel_callback_, OnDone(_)).Times(0);
-
-  client_session_->GetTransport()
-      ->GetMultiplexedChannelFactory()
-      ->CreateChannel(kChannelName,
-                      base::Bind(&JingleSessionTest::OnClientChannelCreated,
-                                 base::Unretained(this)));
-  host_session_->GetTransport()->GetMultiplexedChannelFactory()->CreateChannel(
-      kChannelName, base::Bind(&JingleSessionTest::OnHostChannelCreated,
-                               base::Unretained(this)));
-
-  message_loop_->RunUntilIdle();
-
-  // Verify that neither of the two ends of the channel is connected.
-  EXPECT_FALSE(client_socket_);
-  EXPECT_FALSE(host_socket_);
-
-  client_session_->GetTransport()
-      ->GetMultiplexedChannelFactory()
-      ->CancelChannelCreation(kChannelName);
-  host_session_->GetTransport()
-      ->GetMultiplexedChannelFactory()
-      ->CancelChannelCreation(kChannelName);
-}
-
-// Verify that we can connect channels with multistep auth.
-TEST_F(JingleSessionTest, TestMultistepAuthStreamChannel) {
+// Verify that we can connect with multistep authentication.
+TEST_F(JingleSessionTest, TestMultistepAuth) {
   CreateSessionManagers(3, FakeAuthenticator::ACCEPT);
   ASSERT_NO_FATAL_FAILURE(
       InitiateConnection(3, FakeAuthenticator::ACCEPT, false));
-
-  ASSERT_NO_FATAL_FAILURE(CreateChannel());
-
-  StreamConnectionTester tester(host_socket_.get(), client_socket_.get(),
-                                kMessageSize, kMessages);
-  tester.Start();
-  message_loop_->Run();
-  tester.CheckResults();
-}
-
-// Verify that we shutdown properly when channel authentication fails.
-TEST_F(JingleSessionTest, TestFailedChannelAuth) {
-  CreateSessionManagers(1, FakeAuthenticator::REJECT_CHANNEL);
-  ASSERT_NO_FATAL_FAILURE(
-      InitiateConnection(1, FakeAuthenticator::ACCEPT, false));
-
-  client_session_->GetTransport()->GetStreamChannelFactory()->CreateChannel(
-      kChannelName, base::Bind(&JingleSessionTest::OnClientChannelCreated,
-                               base::Unretained(this)));
-  host_session_->GetTransport()->GetStreamChannelFactory()->CreateChannel(
-      kChannelName, base::Bind(&JingleSessionTest::OnHostChannelCreated,
-                               base::Unretained(this)));
-
-  // Terminate the message loop when we get rejection notification
-  // from the host.
-  EXPECT_CALL(host_channel_callback_, OnDone(nullptr))
-      .WillOnce(QuitThread());
-  ExpectRouteChange(kChannelName);
-
-  message_loop_->Run();
-
-  client_session_->GetTransport()
-      ->GetStreamChannelFactory()
-      ->CancelChannelCreation(kChannelName);
-
-  EXPECT_TRUE(!host_socket_.get());
-}
-
-TEST_F(JingleSessionTest, TestCancelChannelCreation) {
-  CreateSessionManagers(1, FakeAuthenticator::REJECT_CHANNEL);
-  ASSERT_NO_FATAL_FAILURE(
-      InitiateConnection(1, FakeAuthenticator::ACCEPT, false));
-
-  client_session_->GetTransport()
-      ->GetStreamChannelFactory()
-      ->CreateChannel(kChannelName,
-                      base::Bind(&JingleSessionTest::OnClientChannelCreated,
-                                 base::Unretained(this)));
-  client_session_->GetTransport()
-      ->GetStreamChannelFactory()
-      ->CancelChannelCreation(kChannelName);
-
-  EXPECT_TRUE(!client_socket_.get());
-}
-
-// Verify that we can still connect even when there is a delay in signaling
-// messages delivery.
-TEST_F(JingleSessionTest, TestDelayedSignaling) {
-  CreateSessionManagers(1, FakeAuthenticator::ACCEPT);
-  ASSERT_NO_FATAL_FAILURE(
-      InitiateConnection(1, FakeAuthenticator::ACCEPT, false));
-
-  host_signal_strategy_->set_send_delay(
-      base::TimeDelta::FromMilliseconds(100));
-
-  ASSERT_NO_FATAL_FAILURE(CreateChannel());
-
-  StreamConnectionTester tester(host_socket_.get(), client_socket_.get(),
-                                kMessageSize, 1);
-  tester.Start();
-  message_loop_->Run();
-  tester.CheckResults();
 }
 
 }  // namespace protocol
