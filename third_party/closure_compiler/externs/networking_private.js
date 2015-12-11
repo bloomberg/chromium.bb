@@ -1037,8 +1037,8 @@ chrome.networkingPrivate.getManagedProperties = function(networkGuid, callback) 
  * ErrorState, WiFi.SignalStrength, Cellular.NetworkTechnology,
  * Cellular.ActivationState, Cellular.RoamingState.
  * @param {string} networkGuid The GUID of the network to get properties for.
- * @param {function(!chrome.networkingPrivate.NetworkStateProperties):void} callback Called immediately with the network state
- *     properties.
+ * @param {function(!chrome.networkingPrivate.NetworkStateProperties):void}
+ *     callback Called immediately with the network state properties.
  * @see https://developer.chrome.com/extensions/networkingPrivate#method-getState
  */
 chrome.networkingPrivate.getState = function(networkGuid, callback) {};
@@ -1086,8 +1086,9 @@ chrome.networkingPrivate.forgetNetwork = function(networkGuid, callback) {};
  * networks listed first.
  * @param {!chrome.networkingPrivate.NetworkFilter} filter Describes which
  *     networks to return.
- * @param {function(!Array<!chrome.networkingPrivate.NetworkStateProperties>):void} callback Called with a dictionary of networks and their state     properties
- *     when received.
+ * @param {function(!Array<!chrome.networkingPrivate.NetworkStateProperties>):void}
+ *     callback Called with a dictionary of networks and their state
+ *     properties when received.
  * @see https://developer.chrome.com/extensions/networkingPrivate#method-getNetworks
  */
 chrome.networkingPrivate.getNetworks = function(filter, callback) {};
@@ -1096,7 +1097,8 @@ chrome.networkingPrivate.getNetworks = function(filter, callback) {};
  * Deprecated. Please use $(ref:networkingPrivate.getNetworks) with
  * filter.visible = true instead.
  * @param {!chrome.networkingPrivate.NetworkType} networkType
- * @param {function(!Array<!chrome.networkingPrivate.NetworkStateProperties>):void} callback
+ * @param {function(!Array<!chrome.networkingPrivate.NetworkStateProperties>):void}
+ *     callback
  * @deprecated Use getNetworks.
  * @see https://developer.chrome.com/extensions/networkingPrivate#method-getVisibleNetworks
  */
@@ -1104,7 +1106,8 @@ chrome.networkingPrivate.getVisibleNetworks = function(networkType, callback) {}
 
 /**
  * Deprecated. Please use $(ref:networkingPrivate.getDeviceStates) instead.
- * @param {function(!Array<!chrome.networkingPrivate.NetworkType>):void} callback
+ * @param {function(!Array<!chrome.networkingPrivate.NetworkType>):void}
+ *     callback
  * @deprecated Use getDeviceStates.
  * @see https://developer.chrome.com/extensions/networkingPrivate#method-getEnabledNetworkTypes
  */
@@ -1112,8 +1115,8 @@ chrome.networkingPrivate.getEnabledNetworkTypes = function(callback) {};
 
 /**
  * Returns a list of $(ref:networkingPrivate.DeviceStateProperties) objects.
- * @param {function(!Array<!chrome.networkingPrivate.DeviceStateProperties>):void} callback Called with a list of devices and
- *     their state.
+ * @param {function(!Array<!chrome.networkingPrivate.DeviceStateProperties>):void}
+ *     callback Called with a list of devices and their state.
  * @see https://developer.chrome.com/extensions/networkingPrivate#method-getDeviceStates
  */
 chrome.networkingPrivate.getDeviceStates = function(callback) {};
@@ -1243,8 +1246,9 @@ chrome.networkingPrivate.getWifiTDLSStatus = function(ip_or_mac_address, callbac
  * Returns captive portal status for the network matching 'networkGuid'.
  * @param {string} networkGuid The GUID of the network to get captive portal
  *     status for.
- * @param {function(!chrome.networkingPrivate.CaptivePortalStatus):void} callback A callback function that returns the results of the query for     network captive portal status
- *     .
+ * @param {function(!chrome.networkingPrivate.CaptivePortalStatus):void}
+ *     callback A callback function that returns the results of the query for
+ *     network captive portal status.
  * @see https://developer.chrome.com/extensions/networkingPrivate#method-getCaptivePortalStatus
  */
 chrome.networkingPrivate.getCaptivePortalStatus = function(networkGuid, callback) {};
