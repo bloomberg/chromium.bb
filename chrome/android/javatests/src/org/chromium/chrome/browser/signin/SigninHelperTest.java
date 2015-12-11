@@ -10,6 +10,7 @@ import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.AdvancedMockContext;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.sync.signin.AccountManagerHelper;
 import org.chromium.sync.signin.ChromeSigninController;
 import org.chromium.sync.test.util.AccountHolder;
@@ -74,6 +75,7 @@ public class SigninHelperTest extends InstrumentationTestCase {
         assertEquals("B", getNewSignedInAccountName());
     }
 
+    @DisabledTest // crbug.com/568623
     @SmallTest
     public void testNotSignedInAccountRename() {
         setSignedInAccountName("A");

@@ -9,6 +9,7 @@ import android.content.Context;
 import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.sync.signin.AccountManagerHelper;
 import org.chromium.sync.test.util.AccountHolder;
 import org.chromium.sync.test.util.MockAccountManager;
@@ -41,6 +42,7 @@ public class AccountManagerHelperTest extends InstrumentationTestCase {
         assertTrue(hasAccountForName("te.st@gmail.com"));
     }
 
+    @DisabledTest // crbug.com/568636
     @SmallTest
     public void testNonCanonicalAccount() throws InterruptedException {
         addTestAccount("test.me@gmail.com", "password");

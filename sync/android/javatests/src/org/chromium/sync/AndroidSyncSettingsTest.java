@@ -11,6 +11,7 @@ import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.sync.AndroidSyncSettings.AndroidSyncSettingsObserver;
 import org.chromium.sync.signin.AccountManagerHelper;
@@ -311,6 +312,7 @@ public class AndroidSyncSettingsTest extends InstrumentationTestCase {
                 AndroidSyncSettings.getContractAuthority(mContext));
     }
 
+    @DisabledTest // crbug.com/568633
     @SmallTest
     @Feature({"Sync"})
     public void testAndroidSyncSettingsPostsNotifications() throws InterruptedException {

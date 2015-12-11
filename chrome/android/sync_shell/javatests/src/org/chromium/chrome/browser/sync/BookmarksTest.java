@@ -8,6 +8,7 @@ import android.test.suitebuilder.annotation.LargeTest;
 import android.util.Pair;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.bookmark.BookmarksBridge;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -235,6 +236,7 @@ public class BookmarksTest extends SyncTestBase {
     }
 
     // Test syncing a bookmark tombstone from client to server.
+    @DisabledTest // crbug.com/568617
     @LargeTest
     @Feature({"Sync"})
     public void testUploadBookmarkTombstone() throws Exception {

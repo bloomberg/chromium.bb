@@ -84,6 +84,7 @@ public class OAuth2TokenServiceTest extends InstrumentationTestCase {
         assertEquals("There should be zero registered account", 0, accounts.length);
     }
 
+    @DisabledTest // http://crbug.com/568620
     @SmallTest
     @Feature({"Sync"})
     public void testGetOAuth2AccessTokenWithTimeoutOnSuccess() {
