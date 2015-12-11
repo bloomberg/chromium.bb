@@ -322,7 +322,9 @@
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_PEOPLE_PAGE_JS"
                  file="people_page/people_page.js"
-                 type="chrome_html" />
+                 type="chrome_html"
+                 flattenhtml="true"
+                 allowexternalscript="true" />
       <structure name="IDR_SETTINGS_PEOPLE_PAGE_HTML"
                  file="people_page/people_page.html"
                  type="chrome_html"
@@ -642,26 +644,26 @@
                    file="internet_page/network_summary_item.js"
                    type="chrome_html" />
         <structure name="IDR_SETTINGS_USERS_PAGE_USER_LIST_JS"
-                   file="users_page/user_list.js"
+                   file="people_page/user_list.js"
                    type="chrome_html" />
         <structure name="IDR_SETTINGS_USERS_PAGE_USER_LIST_HTML"
-                   file="users_page/user_list.html"
+                   file="people_page/user_list.html"
                    type="chrome_html"
                    flattenhtml="true"
                    allowexternalscript="true" />
         <structure name="IDR_SETTINGS_USERS_PAGE_USER_LIST_CSS"
-                   file="users_page/user_list.css"
+                   file="people_page/user_list.css"
                    type="chrome_html" />
         <structure name="IDR_SETTINGS_USERS_PAGE_JS"
-                   file="users_page/users_page.js"
+                   file="people_page/users_page.js"
                    type="chrome_html" />
         <structure name="IDR_SETTINGS_USERS_PAGE_HTML"
-                   file="users_page/users_page.html"
+                   file="people_page/users_page.html"
                    type="chrome_html"
                    flattenhtml="true"
                    allowexternalscript="true" />
         <structure name="IDR_SETTINGS_USERS_PAGE_CSS"
-                   file="users_page/users_page.css"
+                   file="people_page/users_page.css"
                    type="chrome_html" />
       </if>
     </structures>

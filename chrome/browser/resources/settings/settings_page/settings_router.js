@@ -118,6 +118,15 @@ Polymer({
       subpage: ['sync'],
       subpageTitles: ['syncPageTitle'],
     },
+<if expr="chromeos">
+    {
+      url: '/accounts',
+      page: 'basic',
+      section: 'people',
+      subpage: ['users'],
+      subpageTitles: ['usersPageTitle'],
+    },
+</if>
     {
       url: '/certificates',
       page: 'advanced',

@@ -8,7 +8,6 @@
 
 <if expr="chromeos">
 <link rel="import" href="chrome://md-settings/internet_page/internet_page.html">
-<link rel="import" href="chrome://md-settings/users_page/users_page.html">
 </if>
 
 <if expr="not chromeos">
@@ -21,7 +20,7 @@
     <template is="dom-if" if="[[showPage(pageVisibility.people)]]" restamp>
       <settings-section i18n-values="page-title:peoplePageTitle"
           current-route="[[currentRoute]]" section="people">
-        <settings-people-page current-route="{{currentRoute}}">
+        <settings-people-page prefs="{{prefs}}" current-route="{{currentRoute}}">
         </settings-people-page>
       </settings-section>
     </template>
@@ -57,15 +56,6 @@
         </settings-search-page>
       </settings-section>
     </template>
-<if expr="chromeos">
-    <template is="dom-if" if="[[showPage(pageVisibility.users)]]" restamp>
-      <settings-section i18n-values="page-title:usersPageTitle"
-          current-route="[[currentRoute]]" section="users">
-        <settings-users-page prefs="{{prefs}}"></settings-users-page>
-      </settings-section>
-    </template>
-</if>
-
 <if expr="not chromeos">
     <template is="dom-if" if="[[showPage(pageVisibility.defaultBrowser)]]"
         restamp>

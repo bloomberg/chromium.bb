@@ -40,13 +40,12 @@ TEST_F('SettingsMainPageBrowserTest', 'MAYBE_Main', function() {
       var page = self.getPage('basic');
       expectTrue(!!self.getSection(page, 'appearance'));
       expectTrue(!!self.getSection(page, 'onStartup'));
+      expectTrue(!!self.getSection(page, 'people'));
       expectTrue(!!self.getSection(page, 'search'));
       if (!cr.isChromeOS) {
-        expectTrue(!!self.getSection(page, 'people'));
         expectTrue(!!self.getSection(page, 'defaultBrowser'));
       } else {
         expectTrue(!!self.getSection(page, 'internet'));
-        expectTrue(!!self.getSection(page, 'users'));
       }
     });
 

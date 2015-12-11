@@ -33,6 +33,14 @@ Polymer({
     },
 
     /**
+     * Preferences state.
+     */
+    prefs: {
+      type: Object,
+      notify: true,
+    },
+
+    /**
      * The current sync status, supplied by settings.SyncPrivateApi.
      * @type {?settings.SyncStatus}
      */
@@ -86,7 +94,12 @@ Polymer({
 
   /** @private */
   onManageOtherPeople_: function() {
+<if expr="not chromeos">
     settings.SyncPrivateApi.manageOtherPeople();
+</if>
+<if expr="chromeos">
+    this.$.pages.setSubpageChain(['users']);
+</if>
   },
 
   /**
