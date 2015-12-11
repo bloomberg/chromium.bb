@@ -284,6 +284,12 @@ class QuotaManagerTest : public testing::Test {
     quota_manager_->GetCachedOrigins(type, origins);
   }
 
+  bool GetVolumeInfo(const base::FilePath& path,
+                     uint64_t* available_space,
+                     uint64_t* total_size) {
+    return QuotaManager::GetVolumeInfo(path, available_space, total_size);
+  }
+
   void NotifyStorageAccessed(QuotaClient* client,
                              const GURL& origin,
                              StorageType type) {
@@ -2277,6 +2283,17 @@ TEST_F(QuotaManagerTest, GetUsageAndQuota_Incognito) {
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(10, usage());
   EXPECT_EQ(QuotaManager::kIncognitoDefaultQuotaLimit, quota());
+}
+
+TEST_F(QuotaManagerTest, GetVolumeInfo) {
+  // We aren't actually testing that it's correct, just that it's sane.
+  base::FilePath tmp_dir;
+  ASSERT_TRUE(base::GetTempDir(&tmp_dir));
+  uint64_t available_space = 0;
+  uint64_t total_size = 0;
+  EXPECT_TRUE(GetVolumeInfo(tmp_dir, &available_space, &total_size));
+  EXPECT_GT(available_space, 0u) << tmp_dir.value();
+  EXPECT_GT(total_size, 0u) << tmp_dir.value();
 }
 
 }  // namespace content

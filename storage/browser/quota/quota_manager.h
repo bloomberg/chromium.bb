@@ -441,6 +441,10 @@ class STORAGE_EXPORT QuotaManager
       const base::Callback<bool(QuotaDatabase*)>& task,
       const base::Callback<void(bool)>& reply);
 
+  static bool GetVolumeInfo(const base::FilePath& path,
+                            uint64_t* available_space,
+                            uint64_t* total_size);
+
   const bool is_incognito_;
   const base::FilePath profile_path_;
 

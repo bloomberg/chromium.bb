@@ -29,6 +29,18 @@
 #include "storage/browser/quota/usage_tracker.h"
 #include "storage/common/quota/quota_types.h"
 
+// Platform specific includes for GetVolumeInfo().
+#if defined(OS_WIN)
+#include <windows.h>
+#elif defined(OS_POSIX)
+#if defined(OS_ANDROID)
+#include <sys/vfs.h>
+#define statvfs statfs  // Android uses a statvfs-like statfs struct and call.
+#else
+#include <sys/statvfs.h>
+#endif
+#endif
+
 #define UMA_HISTOGRAM_MBYTES(name, sample)          \
   UMA_HISTOGRAM_CUSTOM_COUNTS(                      \
       (name), static_cast<int>((sample) / kMBytes), \
@@ -1755,6 +1767,30 @@ void QuotaManager::PostTaskAndReplyWithResultForDBThread(
       from_here,
       base::Bind(task, base::Unretained(database_.get())),
       reply);
+}
+
+//static
+bool QuotaManager::GetVolumeInfo(const base::FilePath& path,
+                                 uint64_t* available_space,
+                                 uint64_t* total_size) {
+  // Inspired by similar code in the base::SysInfo class.
+  base::ThreadRestrictions::AssertIOAllowed();
+#if defined(OS_WIN)
+  ULARGE_INTEGER available, total, free;
+  if (!GetDiskFreeSpaceExW(path.value().c_str(), &available, &total, &free))
+    return false;
+  *available_space = static_cast<uint64_t>(available.QuadPart);
+  *total_size = static_cast<uint64_t>(total.QuadPart);
+#elif defined(OS_POSIX)
+  struct statvfs stats;
+  if (HANDLE_EINTR(statvfs(path.value().c_str(), &stats)) != 0)
+    return false;
+  *available_space = static_cast<uint64_t>(stats.f_bavail) * stats.f_frsize;
+  *total_size = static_cast<uint64_t>(stats.f_blocks) * stats.f_frsize;
+#else
+#error Not implemented
+#endif
+  return true;
 }
 
 }  // namespace storage
