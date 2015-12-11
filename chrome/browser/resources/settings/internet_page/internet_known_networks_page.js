@@ -20,7 +20,6 @@ Polymer({
      */
     networkType: {
       type: String,
-      value: CrOnc.Type.WI_FI,
       observer: 'networkTypeChanged_',
     },
 

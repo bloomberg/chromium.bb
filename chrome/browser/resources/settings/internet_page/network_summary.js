@@ -164,10 +164,11 @@ Polymer({
    * @private
    */
   onWiFiExpanded_: function(event) {
+    if (!event.detail.expanded)
+      return;
     // Get the latest network states (only).
     this.getNetworkStates_();
-    if (event.detail.expanded)
-      chrome.networkingPrivate.requestNetworkScan();
+    chrome.networkingPrivate.requestNetworkScan();
   },
 
   /**
