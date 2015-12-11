@@ -295,6 +295,10 @@ void WindowTreeClientImpl::Embed(
   tree_->Embed(window_id, std::move(client), policy_bitmask, callback);
 }
 
+void WindowTreeClientImpl::RequestClose(Window* window) {
+  tree_->WmRequestClose(window->id());
+}
+
 void WindowTreeClientImpl::AttachSurface(
     Id window_id,
     mojom::SurfaceType type,
@@ -684,6 +688,15 @@ void WindowTreeClientImpl::OnChangeCompleted(uint32 change_id, bool success) {
   } else if (!success) {
     change->Revert();
   }
+}
+
+void WindowTreeClientImpl::RequestClose(uint32_t window_id) {
+  Window* window = GetWindowById(window_id);
+  if (!window || window != root_)
+    return;
+
+  FOR_EACH_OBSERVER(WindowObserver, *WindowPrivate(window).observers(),
+                    OnRequestClose(window));
 }
 
 void WindowTreeClientImpl::WmSetBounds(uint32_t change_id,

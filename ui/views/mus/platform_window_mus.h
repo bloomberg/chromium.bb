@@ -64,6 +64,7 @@ class VIEWS_MUS_EXPORT PlatformWindowMus
       const std::string& name,
       const std::vector<uint8_t>* old_data,
       const std::vector<uint8_t>* new_data) override;
+  void OnRequestClose(mus::Window* window) override;
 
   // mus::InputEventHandler:
   void OnWindowInputEvent(mus::Window* view,
@@ -75,6 +76,9 @@ class VIEWS_MUS_EXPORT PlatformWindowMus
   mus::mojom::ShowState show_state_;
   mus::mojom::Cursor last_cursor_;
   bool has_capture_;
+
+  // True if OnWindowDestroyed() has been received.
+  bool mus_window_destroyed_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformWindowMus);
 };

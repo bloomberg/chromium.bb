@@ -18,7 +18,7 @@ class AURA_EXPORT EnvObserver {
   virtual void OnWindowInitialized(Window* window) = 0;
 
  // Called when a WindowTreeHost is initialized.
- virtual void OnHostInitialized(WindowTreeHost* host) {};
+  virtual void OnHostInitialized(WindowTreeHost* host) {}
 
   // Called when a WindowTreeHost is activated.
   virtual void OnHostActivated(WindowTreeHost* host) {}

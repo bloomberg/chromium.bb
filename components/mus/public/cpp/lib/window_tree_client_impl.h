@@ -85,6 +85,8 @@ class WindowTreeClientImpl : public WindowTreeConnection,
              uint32_t policy_bitmask,
              const mojom::WindowTree::EmbedCallback& callback);
 
+  void RequestClose(Window* window);
+
   void AttachSurface(Id window_id,
                      mojom::SurfaceType type,
                      mojo::InterfaceRequest<mojom::Surface> surface,
@@ -182,6 +184,7 @@ class WindowTreeClientImpl : public WindowTreeConnection,
   void OnWindowPredefinedCursorChanged(Id window_id,
                                        mojom::Cursor cursor) override;
   void OnChangeCompleted(uint32_t change_id, bool success) override;
+  void RequestClose(uint32_t window_id) override;
   void WmSetBounds(uint32_t change_id,
                    Id window_id,
                    mojo::RectPtr transit_bounds) override;

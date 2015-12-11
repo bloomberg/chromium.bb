@@ -190,7 +190,20 @@ NativeWidgetMus::~NativeWidgetMus() {
 }
 
 void NativeWidgetMus::OnPlatformWindowClosed() {
-  GetWidget()->Close();
+  native_widget_delegate_->OnNativeWidgetDestroying();
+
+  window_tree_client_.reset();  // Uses |content_|.
+  capture_client_.reset();      // Uses |content_|.
+
+  window_tree_host_->RemoveObserver(this);
+  window_tree_host_.reset();
+
+  window_ = nullptr;
+  content_ = nullptr;
+
+  native_widget_delegate_->OnNativeWidgetDestroyed();
+  if (ownership_ == Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET)
+    delete this;
 }
 
 void NativeWidgetMus::OnActivationChanged(bool active) {
@@ -271,6 +284,7 @@ void NativeWidgetMus::InitNativeWidget(const Widget::InitParams& params) {
   }
   window_tree_host_.reset(
       new WindowTreeHostMus(shell_, this, window_, surface_type_));
+  window_tree_host_->AddObserver(this);
   window_tree_host_->InitHost();
   aura::Env::GetInstance()->set_context_factory(default_context_factory);
 
@@ -380,7 +394,7 @@ bool NativeWidgetMus::HasCapture() const {
 }
 
 ui::InputMethod* NativeWidgetMus::GetInputMethod() {
-  return window_tree_host_->GetInputMethod();
+  return window_tree_host_ ? window_tree_host_->GetInputMethod() : nullptr;
 }
 
 void NativeWidgetMus::CenterWindow(const gfx::Size& size) {
@@ -460,9 +474,7 @@ void NativeWidgetMus::Close() {
 }
 
 void NativeWidgetMus::CloseNow() {
-  // Note: Deleting |content_| triggers the |OnWindowDestroyed()| callback,
-  // which can delete |this|.
-  delete content_;
+  window_->Destroy();
 }
 
 void NativeWidgetMus::Show() {
@@ -589,7 +601,8 @@ void NativeWidgetMus::RunShellDrag(
 }
 
 void NativeWidgetMus::SchedulePaintInRect(const gfx::Rect& rect) {
-  content_->SchedulePaintInRect(rect);
+  if (content_)
+    content_->SchedulePaintInRect(rect);
 }
 
 void NativeWidgetMus::SetCursor(gfx::NativeCursor cursor) {
@@ -727,9 +740,7 @@ void NativeWidgetMus::OnWindowDestroying(aura::Window* window) {
 }
 
 void NativeWidgetMus::OnWindowDestroyed(aura::Window* window) {
-  native_widget_delegate_->OnNativeWidgetDestroyed();
-  if (ownership_ == Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET)
-    delete this;
+  // Cleanup happens in OnPlatformWindowClosed().
 }
 
 void NativeWidgetMus::OnWindowTargetVisibilityChanged(bool visible) {
@@ -790,6 +801,10 @@ void NativeWidgetMus::OnScrollEvent(ui::ScrollEvent* event) {
 
 void NativeWidgetMus::OnGestureEvent(ui::GestureEvent* event) {
   native_widget_delegate_->OnGestureEvent(event);
+}
+
+void NativeWidgetMus::OnHostCloseRequested(const aura::WindowTreeHost* host) {
+  GetWidget()->Close();
 }
 
 }  // namespace views

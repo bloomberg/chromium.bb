@@ -82,4 +82,8 @@ void WindowTreeHostMus::OnActivationChanged(bool active) {
   WindowTreeHostPlatform::OnActivationChanged(active);
 }
 
+void WindowTreeHostMus::OnCloseRequest() {
+  OnHostCloseRequested();
+}
+
 }  // namespace views

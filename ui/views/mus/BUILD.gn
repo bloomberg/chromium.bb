@@ -38,6 +38,7 @@ component("mus") {
   public_deps = [
     ":resources",
     "//components/mus/public/cpp",
+    "//ui/aura",
   ]
   deps = [
     "//base",

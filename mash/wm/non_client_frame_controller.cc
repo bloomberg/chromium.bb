@@ -133,6 +133,30 @@ class WmNativeWidgetMus : public views::NativeWidgetMus {
   DISALLOW_COPY_AND_ASSIGN(WmNativeWidgetMus);
 };
 
+class ClientViewMus : public views::ClientView {
+ public:
+  ClientViewMus(views::Widget* widget,
+                views::View* contents_view,
+                NonClientFrameController* frame_controller)
+      : views::ClientView(widget, contents_view),
+        frame_controller_(frame_controller) {}
+  ~ClientViewMus() override {}
+
+  // views::ClientView:
+  bool CanClose() override {
+    if (!frame_controller_->window())
+      return true;
+
+    frame_controller_->window()->RequestClose();
+    return false;
+  }
+
+ private:
+  NonClientFrameController* frame_controller_;
+
+  DISALLOW_COPY_AND_ASSIGN(ClientViewMus);
+};
+
 }  // namespace
 
 NonClientFrameController::NonClientFrameController(
@@ -195,6 +219,11 @@ bool NonClientFrameController::CanMinimize() const {
   return window_ &&
          (GetResizeBehavior(window_) &
           mus::mojom::RESIZE_BEHAVIOR_CAN_MINIMIZE) != 0;
+}
+
+views::ClientView* NonClientFrameController::CreateClientView(
+    views::Widget* widget) {
+  return new ClientViewMus(widget, GetContentsView(), this);
 }
 
 void NonClientFrameController::OnWindowSharedPropertyChanged(

@@ -37,6 +37,9 @@ class MoveEventHandler : public ui::EventHandler, public aura::WindowObserver {
   void ProcessLocatedEvent(ui::LocatedEvent* event);
   int GetNonClientComponentForEvent(const ui::LocatedEvent* event);
 
+  // Removes observer and EventHandler installed on |root_window_|.
+  void Detach();
+
   // Overridden from ui::EventHandler:
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnTouchEvent(ui::TouchEvent* event) override;

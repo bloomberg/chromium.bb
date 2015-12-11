@@ -55,6 +55,7 @@ class VIEWS_MUS_EXPORT WindowTreeHostMus : public aura::WindowTreeHostPlatform {
   void OnClosed() override;
   void OnWindowStateChanged(ui::PlatformWindowState new_state) override;
   void OnActivationChanged(bool active) override;
+  void OnCloseRequest() override;
 
   NativeWidgetMus* native_widget_;
   scoped_ptr<InputMethodMUS> input_method_;
