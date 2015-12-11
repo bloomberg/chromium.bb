@@ -2788,8 +2788,11 @@ int SSLClientSocketNSS::InitializeSSLOptions() {
         SECSuccess) {
       continue;
     }
-    if (info.symCipher == ssl_calg_rc4 && !ssl_config_.rc4_enabled)
+    if (info.symCipher == ssl_calg_rc4 &&
+        !(ssl_config_.rc4_enabled &&
+          ssl_config_.deprecated_cipher_suites_enabled)) {
       SSL_CipherPrefSet(nss_fd_, ssl_ciphers[i], PR_FALSE);
+    }
     if (info.keaType == ssl_kea_dh &&
         !ssl_config_.deprecated_cipher_suites_enabled) {
       // Only offer DHE on the second handshake. https://crbug.com/538690

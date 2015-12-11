@@ -938,8 +938,10 @@ int SSLClientSocketOpenSSL::Init() {
   if (ssl_config_.require_ecdhe)
     command.append(":!kRSA:!kDHE");
 
-  if (!ssl_config_.rc4_enabled)
+  if (!(ssl_config_.rc4_enabled &&
+        ssl_config_.deprecated_cipher_suites_enabled)) {
     command.append(":!RC4");
+  }
 
   if (ssl_config_.deprecated_cipher_suites_enabled) {
     // Add TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384 under a fallback. This is
