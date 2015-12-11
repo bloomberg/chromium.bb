@@ -58,6 +58,7 @@ class MetadataDatabaseIndex : public MetadataDatabaseIndexInterface {
       DatabaseContents* contents, LevelDBWrapper* db);
 
   // MetadataDatabaseIndexInterface overrides.
+  void RemoveUnreachableItems() override;
   bool GetFileMetadata(const std::string& file_id,
                        FileMetadata* metadata) const override;
   bool GetFileTracker(int64 tracker_id, FileTracker* tracker) const override;
@@ -84,9 +85,11 @@ class MetadataDatabaseIndex : public MetadataDatabaseIndexInterface {
   size_t CountDirtyTracker() const override;
   size_t CountFileMetadata() const override;
   size_t CountFileTracker() const override;
+  void SetSyncRootRevalidated() const override;
   void SetSyncRootTrackerID(int64 sync_root_id) const override;
   void SetLargestChangeID(int64 largest_change_id) const override;
   void SetNextTrackerID(int64 next_tracker_id) const override;
+  bool IsSyncRootRevalidated() const override;
   int64 GetSyncRootTrackerID() const override;
   int64 GetLargestChangeID() const override;
   int64 GetNextTrackerID() const override;

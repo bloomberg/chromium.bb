@@ -92,7 +92,8 @@ void SyncEngineInitializer::RunPreflight(scoped_ptr<SyncTaskToken> token) {
 
   DCHECK(metadata_database);
   metadata_database_ = metadata_database.Pass();
-  if (metadata_database_->HasSyncRoot()) {
+  if (metadata_database_->HasSyncRoot() &&
+      !metadata_database_->NeedsSyncRootRevalidation()) {
     util::Log(logging::LOG_VERBOSE, FROM_HERE,
               "[Initialize] Found local cache of sync-root.");
     SyncTaskManager::NotifyTaskDone(token.Pass(), SYNC_STATUS_OK);
@@ -188,6 +189,9 @@ void SyncEngineInitializer::DidFindSyncRoot(
     // ignore others.
     DCHECK(!root_folder_id_.empty());
     if (!HasNoParents(*entry) && !HasFolderAsParent(*entry, root_folder_id_))
+      continue;
+
+    if (entry->shared())
       continue;
 
     if (!sync_root_folder_ || LessOnCreationTime(*entry, *sync_root_folder_)) {

@@ -28,6 +28,8 @@ message ServiceMetadata {
 
   // The sequence number of FileTrackers. Must be positive.
   optional int64 next_tracker_id = 3;
+
+  optional bool sync_root_revalidated = 4;
 }
 
 // Holds details of file/folder metadata.

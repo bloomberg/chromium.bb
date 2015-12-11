@@ -34,6 +34,9 @@ class MetadataDatabaseIndexInterface {
   MetadataDatabaseIndexInterface() {}
   virtual ~MetadataDatabaseIndexInterface() {}
 
+  // Removes unreachable items.
+  virtual void RemoveUnreachableItems() = 0;
+
   // Returns true if FileMetadata identified by |file_id| exists.
   // If |metadata| is not NULL, the FileMetadata is copied to it.
   virtual bool GetFileMetadata(
@@ -102,9 +105,11 @@ class MetadataDatabaseIndexInterface {
   virtual size_t CountFileMetadata() const = 0;
   virtual size_t CountFileTracker() const = 0;
 
+  virtual void SetSyncRootRevalidated() const = 0;
   virtual void SetSyncRootTrackerID(int64 sync_root_id) const = 0;
   virtual void SetLargestChangeID(int64 largest_change_id) const = 0;
   virtual void SetNextTrackerID(int64 next_tracker_id) const = 0;
+  virtual bool IsSyncRootRevalidated() const = 0;
   virtual int64 GetSyncRootTrackerID() const = 0;
   virtual int64 GetLargestChangeID() const = 0;
   virtual int64 GetNextTrackerID() const = 0;

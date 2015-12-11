@@ -613,6 +613,10 @@ void MetadataDatabase::UpdateLargestKnownChangeID(int64 change_id) {
     largest_known_change_id_ = change_id;
 }
 
+bool MetadataDatabase::NeedsSyncRootRevalidation() const {
+  return !index_->IsSyncRootRevalidated();
+}
+
 bool MetadataDatabase::HasSyncRoot() const {
   return index_->GetSyncRootTrackerID() != kInvalidTrackerID;
 }
@@ -627,6 +631,11 @@ SyncStatusCode MetadataDatabase::PopulateInitialData(
   AttachSyncRoot(sync_root_folder);
   for (size_t i = 0; i < app_root_folders.size(); ++i)
     AttachInitialAppRoot(*app_root_folders[i]);
+
+  if (NeedsSyncRootRevalidation()) {
+    index_->RemoveUnreachableItems();
+    index_->SetSyncRootRevalidated();
+  }
 
   return WriteToDatabase();
 }

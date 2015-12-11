@@ -145,7 +145,8 @@ std::string GenerateDemotedDirtyIDKey(int64 tracker_id) {
   return kDemotedDirtyIDKeyPrefix + base::Int64ToString(tracker_id);
 }
 
-void RemoveUnreachableItems(LevelDBWrapper* db, int64 sync_root_tracker_id) {
+void RemoveUnreachableItemsFromDB(LevelDBWrapper* db,
+                                  int64 sync_root_tracker_id) {
   DCHECK(db);
 
   typedef std::map<int64, std::set<int64> > ChildTrackersByParent;
@@ -258,7 +259,7 @@ MetadataDatabaseIndexOnDisk::Create(LevelDBWrapper* db) {
     return nullptr;
 
   PutVersionToDB(kDatabaseOnDiskVersion, db);
-  RemoveUnreachableItems(db, service_metadata->sync_root_tracker_id());
+  RemoveUnreachableItemsFromDB(db, service_metadata->sync_root_tracker_id());
   scoped_ptr<MetadataDatabaseIndexOnDisk>
       index(new MetadataDatabaseIndexOnDisk(db));
 
@@ -266,6 +267,11 @@ MetadataDatabaseIndexOnDisk::Create(LevelDBWrapper* db) {
 }
 
 MetadataDatabaseIndexOnDisk::~MetadataDatabaseIndexOnDisk() {}
+
+void MetadataDatabaseIndexOnDisk::RemoveUnreachableItems() {
+  RemoveUnreachableItemsFromDB(
+      db_, service_metadata_->sync_root_tracker_id());
+}
 
 bool MetadataDatabaseIndexOnDisk::GetFileMetadata(
     const std::string& file_id, FileMetadata* metadata) const {
@@ -593,6 +599,11 @@ size_t MetadataDatabaseIndexOnDisk::CountFileTracker() const {
   return count;
 }
 
+void MetadataDatabaseIndexOnDisk::SetSyncRootRevalidated() const {
+  service_metadata_->set_sync_root_revalidated(true);
+  PutServiceMetadataToDB(*service_metadata_, db_);
+}
+
 void MetadataDatabaseIndexOnDisk::SetSyncRootTrackerID(
     int64 sync_root_id) const {
   service_metadata_->set_sync_root_tracker_id(sync_root_id);
@@ -609,6 +620,11 @@ void MetadataDatabaseIndexOnDisk::SetNextTrackerID(
     int64 next_tracker_id) const {
   service_metadata_->set_next_tracker_id(next_tracker_id);
   PutServiceMetadataToDB(*service_metadata_, db_);
+}
+
+bool MetadataDatabaseIndexOnDisk::IsSyncRootRevalidated() const {
+  return service_metadata_->has_sync_root_revalidated() &&
+      service_metadata_->sync_root_revalidated();
 }
 
 int64 MetadataDatabaseIndexOnDisk::GetSyncRootTrackerID() const {

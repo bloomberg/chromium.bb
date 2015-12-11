@@ -121,9 +121,9 @@ void ReadDatabaseContents(LevelDBWrapper* db, DatabaseContents* contents) {
   }
 }
 
-void RemoveUnreachableItems(DatabaseContents* contents,
-                            int64 sync_root_tracker_id,
-                            LevelDBWrapper* db) {
+void RemoveUnreachableItemsFromDB(DatabaseContents* contents,
+                                  int64 sync_root_tracker_id,
+                                  LevelDBWrapper* db) {
   typedef std::map<int64, std::set<int64> > ChildTrackersByParent;
   ChildTrackersByParent trackers_by_parent;
 
@@ -211,9 +211,9 @@ MetadataDatabaseIndex::Create(LevelDBWrapper* db) {
   DatabaseContents contents;
   PutVersionToDB(kCurrentDatabaseVersion, db);
   ReadDatabaseContents(db, &contents);
-  RemoveUnreachableItems(&contents,
-                         service_metadata->sync_root_tracker_id(),
-                         db);
+  RemoveUnreachableItemsFromDB(&contents,
+                               service_metadata->sync_root_tracker_id(),
+                               db);
 
   scoped_ptr<MetadataDatabaseIndex> index(new MetadataDatabaseIndex(db));
   index->Initialize(service_metadata.Pass(), &contents);
@@ -250,6 +250,12 @@ void MetadataDatabaseIndex::Initialize(
 
 MetadataDatabaseIndex::MetadataDatabaseIndex(LevelDBWrapper* db) : db_(db) {}
 MetadataDatabaseIndex::~MetadataDatabaseIndex() {}
+
+void MetadataDatabaseIndex::RemoveUnreachableItems() {
+  // Do nothing. MetadataDatabaseIndex is behind a private flag and will be
+  // removed soon.
+  // TODO(crbug.com/568008): Remove MetadataDatabaseIndex.
+}
 
 bool MetadataDatabaseIndex::GetFileMetadata(
     const std::string& file_id, FileMetadata* metadata) const {
@@ -433,6 +439,11 @@ size_t MetadataDatabaseIndex::CountFileTracker() const {
   return tracker_by_id_.size();
 }
 
+void MetadataDatabaseIndex::SetSyncRootRevalidated() const {
+  service_metadata_->set_sync_root_revalidated(true);
+  PutServiceMetadataToDB(*service_metadata_, db_);
+}
+
 void MetadataDatabaseIndex::SetSyncRootTrackerID(
     int64 sync_root_id) const {
   service_metadata_->set_sync_root_tracker_id(sync_root_id);
@@ -449,6 +460,11 @@ void MetadataDatabaseIndex::SetNextTrackerID(
     int64 next_tracker_id) const {
   service_metadata_->set_next_tracker_id(next_tracker_id);
   PutServiceMetadataToDB(*service_metadata_, db_);
+}
+
+bool MetadataDatabaseIndex::IsSyncRootRevalidated() const {
+  return service_metadata_->has_sync_root_revalidated() &&
+      service_metadata_->sync_root_revalidated();
 }
 
 int64 MetadataDatabaseIndex::GetSyncRootTrackerID() const {

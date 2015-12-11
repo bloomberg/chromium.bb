@@ -140,6 +140,10 @@ class MetadataDatabase {
 
   int64 GetLargestFetchedChangeID() const;
   int64 GetSyncRootTrackerID() const;
+
+  // Returns true if the client should check if the sync root is still valid.
+  bool NeedsSyncRootRevalidation() const;
+
   bool HasSyncRoot() const;
 
   // Returns all file metadata for the given |app_id|.
