@@ -1338,3 +1338,6 @@ crbug.com/568778 [ XP ] tables/mozilla_expected_failures/bugs/bug85016.html [ Fa
 crbug.com/240827 virtual/display_list_2d_canvas/fast/canvas/canvas-shadow-source-in.html [ NeedsRebaseline ]
 crbug.com/240827 virtual/gpu/fast/canvas/canvas-incremental-repaint.html [ NeedsRebaseline ]
 crbug.com/240827 virtual/gpu/fast/canvas/canvas-shadow-source-in.html [ NeedsRebaseline ]
+
+crbug.com/568867 [ Win7 Debug ] transforms/3d/point-mapping/3d-point-mapping-deep.html [ Failure ]
+crbug.com/568867 [ Win7 Debug ] transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ Failure ]
