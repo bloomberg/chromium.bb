@@ -42,11 +42,17 @@ namespace {
 
 #define MAX_DEBUG_HISTORY_EVENTS 50
 
+// |NetErrorNavigationCorrectionTypes| enum id for Web search query.
+// Other correction types uses the |kCorrectionResourceTable| array order.
+const int kWebSearchQueryUMAId = 100;
+
 struct CorrectionTypeToResourceTable {
   int resource_id;
   const char* correction_type;
 };
 
+// Note: Ordering should be the same as |NetErrorNavigationCorrectionTypes| enum
+// in histograms.xml.
 const CorrectionTypeToResourceTable kCorrectionResourceTable[] = {
   {IDS_ERRORPAGES_SUGGESTION_VISIT_GOOGLE_CACHE, "cachedPage"},
   // "reloadPage" is has special handling.
@@ -275,6 +281,12 @@ scoped_ptr<NavigationCorrectionResponse> ParseNavigationCorrectionResponse(
   return response.Pass();
 }
 
+void LogCorrectionTypeShown(int type_id) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Net.ErrorpageCounts.NavigationCorrectionLinksShown", type_id,
+      kWebSearchQueryUMAId + 1);
+}
+
 scoped_ptr<ErrorPageParams> CreateErrorPageParams(
     const NavigationCorrectionResponse& response,
     const blink::WebURLError& error,
@@ -306,11 +318,12 @@ scoped_ptr<ErrorPageParams> CreateErrorPageParams(
     }
 
     if ((*it)->correction_type == "webSearchQuery") {
-      // If there are mutliple searches suggested, use the first suggestion.
+      // If there are multiple searches suggested, use the first suggestion.
       if (params->search_terms.empty()) {
         params->search_url = correction_params.search_url;
         params->search_terms = (*it)->url_correction;
         params->search_tracking_id = tracking_id;
+        LogCorrectionTypeShown(kWebSearchQueryUMAId);
       }
       continue;
     }
@@ -341,6 +354,7 @@ scoped_ptr<ErrorPageParams> CreateErrorPageParams(
       suggest->SetInteger("type", static_cast<int>(correction_index));
 
       params->override_suggestions->Append(suggest);
+      LogCorrectionTypeShown(static_cast<int>(correction_index));
       break;
     }
   }
@@ -368,6 +382,31 @@ void ReportAutoReloadFailure(const blink::WebURLError& error, size_t count) {
   UMA_HISTOGRAM_SPARSE_SLOWLY("Net.AutoReload.ErrorAtStop", -error.reason);
   UMA_HISTOGRAM_COUNTS("Net.AutoReload.CountAtStop",
                        static_cast<base::HistogramBase::Sample>(count));
+}
+
+// Tracks navigation correction service usage in UMA to enable more in depth
+// analysis.
+void TrackClickUMA(std::string type_id) {
+  // Web search suggestion isn't in |kCorrectionResourceTable| array.
+  if (type_id == "webSearchQuery") {
+    UMA_HISTOGRAM_ENUMERATION(
+       "Net.ErrorpageCounts.NavigationCorrectionLinksUsed",
+       kWebSearchQueryUMAId, kWebSearchQueryUMAId + 1);
+    return;
+  }
+
+  size_t correction_index;
+  for (correction_index = 0;
+       correction_index < arraysize(kCorrectionResourceTable);
+       ++correction_index) {
+    if (kCorrectionResourceTable[correction_index].correction_type ==
+        type_id) {
+      UMA_HISTOGRAM_ENUMERATION(
+         "Net.ErrorpageCounts.NavigationCorrectionLinksUsed",
+         static_cast<int>(correction_index), kWebSearchQueryUMAId + 1);
+      break;
+    }
+  }
 }
 
 }  // namespace
@@ -1080,6 +1119,8 @@ void NetErrorHelperCore::TrackClick(int tracking_id) {
   // Only report a clicked link once.
   if (committed_error_page_info_->clicked_corrections.count(tracking_id))
     return;
+
+  TrackClickUMA(response->corrections[tracking_id]->correction_type);
 
   committed_error_page_info_->clicked_corrections.insert(tracking_id);
   std::string request_body = CreateClickTrackingUrlRequestBody(

@@ -23526,6 +23526,23 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.ErrorPageCounts.NavigationCorrectionLinksShown"
+    enum="NetErrorNavigationCorrectionTypes">
+  <owner>edwardjung@chromium.org</owner>
+  <summary>
+    Counts of the type of navigation correction suggestions shown on the network
+    error page. Multiple suggestions can be shown at the same time.
+  </summary>
+</histogram>
+
+<histogram name="Net.ErrorPageCounts.NavigationCorrectionLinksUsed"
+    enum="NetErrorNavigationCorrectionTypes">
+  <owner>edwardjung@chromium.org</owner>
+  <summary>
+    Usage of navigation correction suggestions shown on the network error page.
+  </summary>
+</histogram>
+
 <histogram name="Net.ErrorResponseHasContentMainFrame" units="BooleanSuccess">
   <owner>mmenke@chromium.org</owner>
   <summary>
@@ -70251,6 +70268,18 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="804" label="DNS_CACHE_MISS"/>
   <int value="805" label="DNS_SEARCH_EMPTY"/>
   <int value="806" label="DNS_SORT_ERROR"/>
+</enum>
+
+<enum name="NetErrorNavigationCorrectionTypes" type="int">
+  <int value="0" label="Google cached page"/>
+  <int value="1" label="URL correction"/>
+  <int value="2" label="Alt URL - domain"/>
+  <int value="3" label="Alt URL - host"/>
+  <int value="4" label="Alt URL - sitemap"/>
+  <int value="5" label="Alt URL - path parent folder"/>
+  <int value="6" label="Alt URL - content overlap"/>
+  <int value="7" label="Emphasized URL correction"/>
+  <int value="100" label="Web search query"/>
 </enum>
 
 <enum name="NetErrorPageEvents" type="int">
