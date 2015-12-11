@@ -3658,7 +3658,6 @@
     { "name": "americanbio.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "amoory.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "appmobile.io", "include_subdomains": true, "mode": "force-https" },
-    { "name": "attotech.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "aussiecable.org", "include_subdomains": true, "mode": "force-https" },
     { "name": "avarty.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "aylak.com", "include_subdomains": true, "mode": "force-https" },
