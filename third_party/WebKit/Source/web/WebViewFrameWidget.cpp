@@ -266,4 +266,9 @@ void WebViewFrameWidget::setVisibilityState(WebPageVisibilityState visibilitySta
     return m_webView->setVisibilityState(visibilityState, isInitialState);
 }
 
+void WebViewFrameWidget::scheduleAnimation()
+{
+    m_webView->scheduleAnimation();
+}
+
 } // namespace blink

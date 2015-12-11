@@ -194,6 +194,7 @@ public:
     GraphicsLayer* layerForScrolling() const override;
     GraphicsLayer* layerForHorizontalScrollbar() const override;
     GraphicsLayer* layerForVerticalScrollbar() const override;
+    Widget* widget() override;
 
     // Used for gathering data on user pinch-zoom statistics.
     void userDidChangeScale();

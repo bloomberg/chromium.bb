@@ -95,6 +95,7 @@ public:
     void updateTopControlsState(WebTopControlsState constraints, WebTopControlsState current, bool animate) override;
     void setVisibilityState(WebPageVisibilityState, bool isInitialState) override;
     bool forSubframe() const { return false; }
+    void scheduleAnimation() override;
 
 private:
     WebWidgetClient* m_client;

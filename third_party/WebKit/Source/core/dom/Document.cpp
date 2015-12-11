@@ -1530,7 +1530,7 @@ void Document::scheduleLayoutTreeUpdate()
     ASSERT(needsLayoutTreeUpdate());
 
     if (!view()->shouldThrottleRendering())
-        page()->animator().scheduleVisualUpdate();
+        page()->animator().scheduleVisualUpdate(frame());
     m_lifecycle.ensureStateAtMost(DocumentLifecycle::VisualUpdatePending);
 
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ScheduleStyleRecalculation", TRACE_EVENT_SCOPE_THREAD, "data", InspectorRecalculateStylesEvent::data(frame()));

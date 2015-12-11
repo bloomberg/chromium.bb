@@ -116,7 +116,7 @@ private:
             m_popup->widgetClient()->didInvalidateRect(paintRect);
     }
 
-    void scheduleAnimation() override
+    void scheduleAnimation(Widget*) override
     {
         // Calling scheduleAnimation on m_webView so WebTestProxy will call beginFrame.
         if (LayoutTestSupport::isRunningLayoutTest())

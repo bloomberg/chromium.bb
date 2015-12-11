@@ -122,7 +122,7 @@ public:
     // Returns the currently focused Element or null if no element has focus.
     Element* focusedElement() const;
 
-    void scheduleAnimation();
+    void scheduleAnimation() override;
 
     PaintLayerCompositor* compositor() const;
     void setRootGraphicsLayer(GraphicsLayer*);

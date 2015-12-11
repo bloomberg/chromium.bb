@@ -908,7 +908,7 @@ void LocalFrame::scheduleVisualUpdateUnlessThrottled()
 {
     if (shouldThrottleRendering())
         return;
-    page()->animator().scheduleVisualUpdate();
+    page()->animator().scheduleVisualUpdate(this);
 }
 
 void LocalFrame::updateSecurityOrigin(SecurityOrigin* origin)

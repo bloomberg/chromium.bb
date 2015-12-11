@@ -314,6 +314,11 @@ void RootFrameViewport::cancelProgrammaticScrollAnimation()
     visualViewport().cancelProgrammaticScrollAnimation();
 }
 
+Widget* RootFrameViewport::widget()
+{
+    return visualViewport().widget();
+}
+
 DEFINE_TRACE(RootFrameViewport)
 {
     visitor->trace(m_visualViewport);

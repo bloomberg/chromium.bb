@@ -47,6 +47,7 @@
 
 namespace blink {
 
+class WebFrameWidget;
 class WebRemoteFrameImpl;
 
 namespace FrameTestHelpers {
@@ -124,6 +125,7 @@ public:
 
 private:
     WebViewImpl* m_webView;
+    WebFrameWidget* m_webViewWidget;
     SettingOverrider* m_settingOverrider;
     UseMockScrollbarSettings m_mockScrollbarSettings;
 };

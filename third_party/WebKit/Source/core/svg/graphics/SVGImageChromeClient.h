@@ -49,7 +49,7 @@ private:
 
     void chromeDestroyed() override;
     void invalidateRect(const IntRect&) override;
-    void scheduleAnimation() override;
+    void scheduleAnimation(Widget*) override;
 
     void animationTimerFired(Timer<SVGImageChromeClient>*);
 

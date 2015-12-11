@@ -67,7 +67,7 @@ void SVGImageChromeClient::invalidateRect(const IntRect& r)
         m_image->imageObserver()->changedInRect(m_image, r);
 }
 
-void SVGImageChromeClient::scheduleAnimation()
+void SVGImageChromeClient::scheduleAnimation(Widget*)
 {
     // Because a single SVGImage can be shared by multiple pages, we can't key
     // our svg image layout on the page's real animation frame. Therefore, we

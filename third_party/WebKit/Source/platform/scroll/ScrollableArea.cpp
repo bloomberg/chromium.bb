@@ -450,7 +450,7 @@ void ScrollableArea::layerForScrollingDidChange(WebCompositorAnimationTimeline* 
 bool ScrollableArea::scheduleAnimation()
 {
     if (HostWindow* window = hostWindow()) {
-        window->scheduleAnimation();
+        window->scheduleAnimation(widget());
         return true;
     }
     return false;
@@ -567,7 +567,6 @@ IntSize ScrollableArea::excludeScrollbars(const IntSize& size) const
 
     return IntSize(std::max(0, size.width() - verticalScrollbarWidth),
         std::max(0, size.height() - horizontalScrollbarHeight));
-
 }
 
 DEFINE_TRACE(ScrollableArea)

@@ -3632,6 +3632,11 @@ bool FrameView::shouldPlaceVerticalScrollbarOnLeft() const
     return false;
 }
 
+Widget* FrameView::widget()
+{
+    return this;
+}
+
 LayoutRect FrameView::scrollIntoView(const LayoutRect& rectInContent, const ScrollAlignment& alignX, const ScrollAlignment& alignY, ScrollType scrollType)
 {
     LayoutRect viewRect(visibleContentRect());

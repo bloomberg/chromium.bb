@@ -70,6 +70,7 @@ public:
     void updateCompositorScrollAnimations() override;
     void cancelProgrammaticScrollAnimation() override;
     ScrollBehavior scrollBehaviorStyle() const override;
+    Widget* widget() override;
 
 private:
     RootFrameViewport(ScrollableArea& visualViewport, ScrollableArea& layoutViewport, bool invertScrollOrder);

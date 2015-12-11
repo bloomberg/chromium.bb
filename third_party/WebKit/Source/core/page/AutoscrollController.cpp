@@ -264,12 +264,12 @@ void AutoscrollController::animate(double)
 #endif
     }
     if (m_autoscrollType != NoAutoscroll)
-        m_page->chromeClient().scheduleAnimation();
+        m_page->chromeClient().scheduleAnimation(m_autoscrollLayoutObject->frame()->view());
 }
 
 void AutoscrollController::startAutoscroll()
 {
-    m_page->chromeClient().scheduleAnimation();
+    m_page->chromeClient().scheduleAnimation(m_autoscrollLayoutObject->frame()->view());
 }
 
 #if OS(WIN)

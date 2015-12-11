@@ -146,8 +146,6 @@ public:
     // End methods used by HostWindow.
     virtual Cursor lastSetCursorForTesting() const = 0;
 
-    virtual void scheduleAnimationForFrame(LocalFrame*) { }
-
     virtual void dispatchViewportPropertiesDidChange(const ViewportDescription&) const { }
 
     virtual void contentsSizeChanged(LocalFrame*, const IntSize&) const = 0;

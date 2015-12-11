@@ -328,6 +328,8 @@ public:
     IntRect rectForHorizontalScrollbar(const IntRect& borderBoxRect) const;
     IntRect rectForVerticalScrollbar(const IntRect& borderBoxRect) const;
 
+    Widget* widget() override;
+
     DECLARE_VIRTUAL_TRACE();
 
 private:

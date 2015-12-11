@@ -47,6 +47,7 @@ class ProgrammaticScrollAnimator;
 struct ScrollAlignment;
 class ScrollAnimatorBase;
 class WebCompositorAnimationTimeline;
+class Widget;
 
 enum ScrollBehavior {
     ScrollBehaviorAuto,
@@ -272,6 +273,9 @@ public:
     // Subtracts space occupied by this ScrollableArea's scrollbars.
     // Does nothing if overlay scrollbars are enabled.
     IntSize excludeScrollbars(const IntSize&) const;
+
+    // Returns the widget associated with this ScrollableArea.
+    virtual Widget* widget() { return nullptr; }
 
     // Need to promptly let go of owned animator objects.
     EAGERLY_FINALIZE();

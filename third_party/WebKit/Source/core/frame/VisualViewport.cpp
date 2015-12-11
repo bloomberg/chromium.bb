@@ -592,6 +592,11 @@ LocalFrame* VisualViewport::mainFrame() const
     return frameHost().page().mainFrame() && frameHost().page().mainFrame()->isLocalFrame() ? frameHost().page().deprecatedLocalMainFrame() : 0;
 }
 
+Widget* VisualViewport::widget()
+{
+    return mainFrame()->view();
+}
+
 FloatPoint VisualViewport::clampOffsetToBoundaries(const FloatPoint& offset)
 {
     FloatPoint clampedOffset(offset);

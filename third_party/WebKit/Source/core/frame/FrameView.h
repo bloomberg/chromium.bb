@@ -365,6 +365,7 @@ public:
     bool isScrollCornerVisible() const override;
     bool userInputScrollable(ScrollbarOrientation) const override;
     bool shouldPlaceVerticalScrollbarOnLeft() const override;
+    Widget* widget() override;
 
     LayoutRect scrollIntoView(
         const LayoutRect& rectInContent,

@@ -55,9 +55,12 @@ public:
     // it needs to draw or not.
     virtual void setVisibilityState(WebPageVisibilityState visibilityState, bool isInitialState) { }
 
-    // Temporary: there should only be one WebFrameWidget implementation but the
-    // Blink API is currently in a transition state. See https://goo.gl/7yVrnb
+    // TODO(dcheng): Temporary: there should only be one WebFrameWidget
+    // implementation but the Blink API is currently in a transition state.
+    // See https://goo.gl/7yVrnb. These methods should only be used inside
+    // blink.
     virtual bool forSubframe() const { return true; }
+    virtual void scheduleAnimation() = 0;
 };
 
 } // namespace blink

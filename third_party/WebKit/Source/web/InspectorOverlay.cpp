@@ -159,12 +159,12 @@ public:
         m_overlay->invalidate();
     }
 
-    void scheduleAnimation() override
+    void scheduleAnimation(Widget* widget) override
     {
         if (m_overlay->m_inLayout)
             return;
 
-        m_client->scheduleAnimation();
+        m_client->scheduleAnimation(widget);
     }
 
 private:
@@ -373,7 +373,9 @@ void InspectorOverlay::scheduleUpdate()
         return;
     }
     m_needsUpdate = true;
-    m_webViewImpl->page()->chromeClient().scheduleAnimation();
+    FrameView* view = m_webViewImpl->mainFrameImpl()->frameView();
+    if (view)
+        m_webViewImpl->page()->chromeClient().scheduleAnimation(view);
 }
 
 void InspectorOverlay::rebuildOverlayPage()

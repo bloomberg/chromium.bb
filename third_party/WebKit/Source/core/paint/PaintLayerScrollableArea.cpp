@@ -1423,6 +1423,11 @@ bool PaintLayerScrollableArea::visualViewportSuppliesScrollbars() const
     return frame->settings()->viewportMetaEnabled();
 }
 
+Widget* PaintLayerScrollableArea::widget()
+{
+    return box().frame()->view();
+}
+
 PaintLayerScrollableArea::ScrollbarManager::ScrollbarManager(PaintLayerScrollableArea& scrollableArea)
     : m_scrollableArea(&scrollableArea)
     , m_canDetachScrollbars(0)

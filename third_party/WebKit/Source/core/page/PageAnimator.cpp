@@ -76,15 +76,7 @@ void PageAnimator::scheduleVisualUpdate(LocalFrame* frame)
 {
     if (m_servicingAnimations || m_updatingLayoutAndStyleForPainting)
         return;
-    // FIXME: The frame-specific version of scheduleAnimation() is for
-    // out-of-process iframes. Passing 0 or the top-level frame to this method
-    // causes scheduleAnimation() to be called for the page, which still uses
-    // a page-level WebWidget (the WebViewImpl).
-    if (frame && !frame->isMainFrame() && frame->isLocalRoot()) {
-        m_page->chromeClient().scheduleAnimationForFrame(frame);
-    } else {
-        m_page->chromeClient().scheduleAnimation();
-    }
+    m_page->chromeClient().scheduleAnimation(frame->view());
 }
 
 void PageAnimator::updateLifecycleToCompositingCleanPlusScrolling(LocalFrame& rootFrame)

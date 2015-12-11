@@ -18,7 +18,7 @@ class CORE_EXPORT PageAnimator final : public RefCountedWillBeGarbageCollected<P
 public:
     static PassRefPtrWillBeRawPtr<PageAnimator> create(Page&);
     DECLARE_TRACE();
-    void scheduleVisualUpdate(LocalFrame* = 0);
+    void scheduleVisualUpdate(LocalFrame*);
     void serviceScriptedAnimations(double monotonicAnimationStartTime);
 
     bool isServicingAnimations() const { return m_servicingAnimations; }

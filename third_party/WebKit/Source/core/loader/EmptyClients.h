@@ -129,7 +129,7 @@ public:
     IntRect windowResizerRect() const override { return IntRect(); }
 
     void invalidateRect(const IntRect&) override {}
-    void scheduleAnimation() override {}
+    void scheduleAnimation(Widget*) override {}
 
     IntRect viewportToScreen(const IntRect& r) const override { return r; }
     WebScreenInfo screenInfo() const override { return WebScreenInfo(); }
