@@ -640,7 +640,7 @@ public class AwContents implements SmartClipProvider,
             if (isDestroyed(NO_WARN)) return;
             boolean visibleRectEmpty = getGlobalVisibleRect().isEmpty();
             final boolean visible = mIsViewVisible && mIsWindowVisible && !visibleRectEmpty;
-            ThreadUtils.runOnUiThread(new Runnable() {
+            ThreadUtils.runOnUiThreadBlocking(new Runnable() {
                 @Override
                 public void run() {
                     nativeTrimMemory(mNativeAwContents, level, visible);
