@@ -7,6 +7,7 @@
       'target_name': 'internet_page',
       'variables': {
         'depends': [
+          '../../../../../third_party/closure_compiler/externs/networking_private_interface.js',
           '../../../../../ui/webui/resources/cr_elements/network/cr_onc_types.js',
           '../../../../../ui/webui/resources/js/compiled_resources.gyp:assert',
           '../../../../../ui/webui/resources/js/compiled_resources.gyp:load_time_data',
@@ -22,8 +23,10 @@
       'target_name': 'internet_detail_page',
       'variables': {
         'depends': [
+          '../../../../../third_party/closure_compiler/externs/networking_private_interface.js',
           '../../../../../ui/webui/resources/cr_elements/network/cr_onc_types.js',
           '../../../../../ui/webui/resources/cr_elements/policy/cr_policy_network_behavior.js',
+          '../../../../../ui/webui/resources/js/compiled_resources.gyp:assert',
           '../../../../../ui/webui/resources/js/compiled_resources.gyp:load_time_data',
         ],
         'externs': [
@@ -36,7 +39,9 @@
       'target_name': 'internet_known_networks_page',
       'variables': {
         'depends': [
+          '../../../../../third_party/closure_compiler/externs/networking_private_interface.js',
           '../../../../../ui/webui/resources/cr_elements/network/cr_onc_types.js',
+          '../../../../../ui/webui/resources/js/compiled_resources.gyp:assert',
           '../../../../../ui/webui/resources/js/compiled_resources.gyp:load_time_data',
         ],
         'externs': [
@@ -142,7 +147,9 @@
       'target_name': 'network_siminfo',
       'variables': {
         'depends': [
+          '../../../../../third_party/closure_compiler/externs/networking_private_interface.js',
           '../../../../../ui/webui/resources/cr_elements/network/cr_onc_types.js',
+          '../../../../../ui/webui/resources/js/compiled_resources.gyp:assert',
           '../../../../../ui/webui/resources/js/compiled_resources.gyp:load_time_data',
         ],
         'externs': [
@@ -155,7 +162,9 @@
       'target_name': 'network_summary',
       'variables': {
         'depends': [
+          '../../../../../third_party/closure_compiler/externs/networking_private_interface.js',
           '../../../../../ui/webui/resources/cr_elements/network/cr_onc_types.js',
+          '../../../../../ui/webui/resources/js/compiled_resources.gyp:assert',
           '../../../../../ui/webui/resources/js/compiled_resources.gyp:load_time_data',
         ],
         'externs': [

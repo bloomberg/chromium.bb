@@ -49,6 +49,14 @@ Polymer({
       type: Object,
       value: ErrorType.NONE
     },
+
+    /**
+     * Interface for networkingPrivate calls, passed from internet_page.
+     * @type {NetworkingPrivate}
+     */
+    networkingPrivate: {
+      type: Object,
+    },
   },
 
   sendSimLockEnabled_: false,
@@ -135,7 +143,7 @@ Polymer({
       currentPin: pin,
       requirePin: this.sendSimLockEnabled_
     });
-    chrome.networkingPrivate.setCellularSimState(guid, simState, function() {
+    this.networkingPrivate.setCellularSimState(guid, simState, function() {
       if (chrome.runtime.lastError) {
         this.error = ErrorType.INCORRECT_PIN;
       } else {
@@ -188,7 +196,7 @@ Polymer({
       currentPin: this.$.changePinOld.value,
       newPin: newPin
     });
-    chrome.networkingPrivate.setCellularSimState(guid, simState, function() {
+    this.networkingPrivate.setCellularSimState(guid, simState, function() {
       if (chrome.runtime.lastError) {
         this.error = ErrorType.INCORRECT_PIN;
       } else {
@@ -231,7 +239,7 @@ Polymer({
     if (!this.validatePin_(pin))
       return;
 
-    chrome.networkingPrivate.unlockCellularSim(guid, pin, '', function() {
+    this.networkingPrivate.unlockCellularSim(guid, pin, '', function() {
       if (chrome.runtime.lastError) {
         this.error = ErrorType.INCORRECT_PIN;
       } else {
@@ -280,7 +288,7 @@ Polymer({
     if (!this.validatePin_(pin, this.$.unlockPin2.value))
       return;
 
-    chrome.networkingPrivate.unlockCellularSim(guid, pin, puk, function() {
+    this.networkingPrivate.unlockCellularSim(guid, pin, puk, function() {
       if (chrome.runtime.lastError) {
         this.error = ErrorType.INCORRECT_PUK;
       } else {

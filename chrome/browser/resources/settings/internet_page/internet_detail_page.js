@@ -89,6 +89,14 @@ Polymer({
       },
       readOnly: true
     },
+
+    /**
+     * Interface for networkingPrivate calls, passed from internet_page.
+     * @type {NetworkingPrivate}
+     */
+    networkingPrivate: {
+      type: Object,
+    },
   },
 
   /**
@@ -101,13 +109,13 @@ Polymer({
   /** @override */
   attached: function() {
     this.networksChangedListener_ = this.onNetworksChangedEvent_.bind(this);
-    chrome.networkingPrivate.onNetworksChanged.addListener(
+    this.networkingPrivate.onNetworksChanged.addListener(
         this.networksChangedListener_);
   },
 
   /** @override */
   detached: function() {
-    chrome.networkingPrivate.onNetworksChanged.removeListener(
+    this.networkingPrivate.onNetworksChanged.removeListener(
         this.networksChangedListener_);
   },
 
@@ -184,7 +192,7 @@ Polymer({
   getNetworkDetails_: function() {
     if (!this.guid)
       return;
-    chrome.networkingPrivate.getManagedProperties(
+    this.networkingPrivate.getManagedProperties(
         this.guid, this.getPropertiesCallback_.bind(this));
   },
 
@@ -210,7 +218,7 @@ Polymer({
   setNetworkProperties_: function(onc) {
     if (!this.guid)
       return;
-    chrome.networkingPrivate.setProperties(this.guid, onc, function() {
+    this.networkingPrivate.setProperties(this.guid, onc, function() {
       if (chrome.runtime.lastError) {
         // An error typically indicates invalid input; request the properties
         // to update any invalid fields.
@@ -349,7 +357,7 @@ Polymer({
    * @private
    */
   onConnectTap_: function() {
-    chrome.networkingPrivate.startConnect(this.guid);
+    this.networkingPrivate.startConnect(this.guid);
   },
 
   /**
@@ -357,7 +365,7 @@ Polymer({
    * @private
    */
   onDisconnectTap_: function() {
-    chrome.networkingPrivate.startDisconnect(this.guid);
+    this.networkingPrivate.startDisconnect(this.guid);
   },
 
   /**
@@ -365,7 +373,7 @@ Polymer({
    * @private
    */
   onActivateTap_: function() {
-    chrome.networkingPrivate.startActivate(this.guid);
+    this.networkingPrivate.startActivate(this.guid);
   },
 
   /**
@@ -374,7 +382,7 @@ Polymer({
    */
   onViewAccountTap_: function() {
     // startActivate() will show the account page for activated networks.
-    chrome.networkingPrivate.startActivate(this.guid);
+    this.networkingPrivate.startActivate(this.guid);
   },
 
   /**

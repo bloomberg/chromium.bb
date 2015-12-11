@@ -43,6 +43,15 @@ Polymer({
     knownNetworksType: {
       type: String,
     },
+
+    /**
+     * Interface for networkingPrivate calls. May be overriden by tests.
+     * @type {NetworkingPrivate}
+     */
+    networkingPrivate: {
+      type: Object,
+      value: chrome.networkingPrivate,
+    },
   },
 
   /**

@@ -94,6 +94,14 @@ Polymer({
       type: Object,
       value: function() { return {}; },
     },
+
+    /**
+     * Interface for networkingPrivate calls, passed from internet_page.
+     * @type {NetworkingPrivate}
+     */
+    networkingPrivate: {
+      type: Object,
+    }
   },
 
   /**
@@ -133,28 +141,28 @@ Polymer({
 
     this.networkListChangedListener_ =
         this.onNetworkListChangedEvent_.bind(this);
-    chrome.networkingPrivate.onNetworkListChanged.addListener(
+    this.networkingPrivate.onNetworkListChanged.addListener(
         this.networkListChangedListener_);
 
     this.deviceStateListChangedListener_ =
         this.onDeviceStateListChangedEvent_.bind(this);
-    chrome.networkingPrivate.onDeviceStateListChanged.addListener(
+    this.networkingPrivate.onDeviceStateListChanged.addListener(
         this.deviceStateListChangedListener_);
 
     this.networksChangedListener_ = this.onNetworksChangedEvent_.bind(this);
-    chrome.networkingPrivate.onNetworksChanged.addListener(
+    this.networkingPrivate.onNetworksChanged.addListener(
         this.networksChangedListener_);
   },
 
   /** @override */
   detached: function() {
-    chrome.networkingPrivate.onNetworkListChanged.removeListener(
+    this.networkingPrivate.onNetworkListChanged.removeListener(
         this.networkListChangedListener_);
 
-    chrome.networkingPrivate.onDeviceStateListChanged.removeListener(
+    this.networkingPrivate.onDeviceStateListChanged.removeListener(
         this.deviceStateListChangedListener_);
 
-    chrome.networkingPrivate.onNetworksChanged.removeListener(
+    this.networkingPrivate.onNetworksChanged.removeListener(
         this.networksChangedListener_);
   },
 
@@ -168,7 +176,7 @@ Polymer({
       return;
     // Get the latest network states (only).
     this.getNetworkStates_();
-    chrome.networkingPrivate.requestNetworkScan();
+    this.networkingPrivate.requestNetworkScan();
   },
 
   /**
@@ -194,9 +202,9 @@ Polymer({
    */
   onDeviceEnabledToggled_: function(event) {
     if (event.detail.enabled)
-      chrome.networkingPrivate.enableNetworkType(event.detail.type);
+      this.networkingPrivate.enableNetworkType(event.detail.type);
     else
-      chrome.networkingPrivate.disableNetworkType(event.detail.type);
+      this.networkingPrivate.disableNetworkType(event.detail.type);
   },
 
   /**
@@ -219,7 +227,7 @@ Polymer({
   onNetworksChangedEvent_: function(networkIds) {
     networkIds.forEach(function(id) {
       if (id in this.networkIds_) {
-        chrome.networkingPrivate.getState(
+        this.networkingPrivate.getState(
             id, this.getStateCallback_.bind(this, id));
       }
     }, this);
@@ -271,7 +279,7 @@ Polymer({
    * @private
    */
   connectToNetwork_: function(state) {
-    chrome.networkingPrivate.startConnect(state.GUID, function() {
+    this.networkingPrivate.startConnect(state.GUID, function() {
       if (chrome.runtime.lastError) {
         var message = chrome.runtime.lastError.message;
         if (message != 'connecting') {
@@ -291,7 +299,7 @@ Polymer({
    */
   getNetworkLists_: function() {
     // First get the device states.
-    chrome.networkingPrivate.getDeviceStates(
+    this.networkingPrivate.getDeviceStates(
       function(deviceStates) {
         // Second get the network states.
         this.getNetworkStates_(deviceStates);
@@ -311,7 +319,7 @@ Polymer({
       visible: true,
       configured: false
     };
-    chrome.networkingPrivate.getNetworks(filter, function(networkStates) {
+    this.networkingPrivate.getNetworks(filter, function(networkStates) {
       this.updateNetworkStates_(networkStates, opt_deviceStates);
     }.bind(this));
   },
