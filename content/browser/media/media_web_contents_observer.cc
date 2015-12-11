@@ -16,7 +16,9 @@
 
 #if defined(OS_ANDROID)
 #include "content/browser/media/android/browser_media_player_manager.h"
+#include "content/browser/media/android/browser_media_session_manager.h"
 #include "content/common/media/media_player_messages_android.h"
+#include "content/common/media/media_session_messages_android.h"
 #include "media/base/android/media_player_android.h"
 #endif  // defined(OS_ANDROID)
 
@@ -35,6 +37,7 @@ void MediaWebContentsObserver::RenderFrameDeleted(
   // Always destroy the media players before CDMs because we do not support
   // detaching CDMs from media players yet. See http://crbug.com/330324
   media_player_managers_.erase(render_frame_host);
+  media_session_managers_.erase(render_frame_host);
 
   // TODO(xhwang): Currently MediaWebContentsObserver, BrowserMediaPlayerManager
   // and BrowserCdmManager all run on browser UI thread. So this call is okay.
@@ -295,6 +298,12 @@ bool MediaWebContentsObserver::OnMediaPlayerMessageReceived(
                         GetMediaPlayerManager(render_frame_host),
                         BrowserMediaPlayerManager::OnNotifyExternalSurface)
 #endif  // defined(VIDEO_HOLE)
+    IPC_MESSAGE_FORWARD(MediaSessionHostMsg_Activate,
+                        GetMediaSessionManager(render_frame_host),
+                        BrowserMediaSessionManager::OnActivate)
+    IPC_MESSAGE_FORWARD(MediaSessionHostMsg_Deactivate,
+                        GetMediaSessionManager(render_frame_host),
+                        BrowserMediaSessionManager::OnDeactivate)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -351,6 +360,18 @@ BrowserMediaPlayerManager* MediaWebContentsObserver::GetMediaPlayerManager(
   BrowserMediaPlayerManager* manager =
       BrowserMediaPlayerManager::Create(render_frame_host);
   media_player_managers_.set(render_frame_host, make_scoped_ptr(manager));
+  return manager;
+}
+
+BrowserMediaSessionManager* MediaWebContentsObserver::GetMediaSessionManager(
+    RenderFrameHost* render_frame_host) {
+  auto it = media_session_managers_.find(render_frame_host);
+  if (it != media_session_managers_.end())
+    return it->second;
+
+  BrowserMediaSessionManager* manager =
+      new BrowserMediaSessionManager(render_frame_host);
+  media_session_managers_.set(render_frame_host, make_scoped_ptr(manager));
   return manager;
 }
 

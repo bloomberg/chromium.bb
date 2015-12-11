@@ -7,9 +7,11 @@
 
 #include <map>
 
+#include "base/id_map.h"
 #include "base/macros.h"
 #include "content/common/content_export.h"
 #include "content/public/renderer/render_frame_observer.h"
+#include "third_party/WebKit/public/platform/modules/mediasession/WebMediaSession.h"
 
 namespace content {
 
@@ -20,14 +22,34 @@ class CONTENT_EXPORT RendererMediaSessionManager : public RenderFrameObserver {
   RendererMediaSessionManager(RenderFrame* render_frame);
   ~RendererMediaSessionManager() override;
 
+  // RenderFrameObserver override.
+  bool OnMessageReceived(const IPC::Message& msg) override;
+
   int RegisterMediaSession(WebMediaSessionAndroid* session);
   void UnregisterMediaSession(int session_id);
+
+  void Activate(int session_id,
+                scoped_ptr<blink::WebMediaSessionActivateCallback> callback);
+  void Deactivate(
+      int session_id,
+      scoped_ptr<blink::WebMediaSessionDeactivateCallback> callback);
+
+  void OnDidActivate(int request_id, bool success);
+  void OnDidDeactivate(int request_id);
 
  private:
   friend class WebMediaSessionTest;
 
   std::map<int, WebMediaSessionAndroid*> sessions_;
   int next_session_id_;
+
+  using ActivationRequests =
+      IDMap<blink::WebMediaSessionActivateCallback, IDMapOwnPointer>;
+  ActivationRequests pending_activation_requests_;
+
+  using DeactivationRequests =
+      IDMap<blink::WebMediaSessionDeactivateCallback, IDMapOwnPointer>;
+  DeactivationRequests pending_deactivation_requests_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererMediaSessionManager);
 };

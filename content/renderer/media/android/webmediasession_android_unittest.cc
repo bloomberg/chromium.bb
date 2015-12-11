@@ -5,13 +5,23 @@
 #include "content/renderer/media/android/webmediasession_android.h"
 
 #include "base/memory/scoped_ptr.h"
+#include "content/common/media/media_session_messages_android.h"
 #include "content/renderer/media/android/renderer_media_session_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace content {
 
+namespace {
+
+const int kRouteId = 0;
+
+}  // anonymous namespace
+
 class WebMediaSessionTest : public testing::Test {
  public:
+  void OnSuccess() { ++success_count_; }
+  void OnError() { ++error_count_; }
+
   bool SessionManagerHasSession(RendererMediaSessionManager* session_manager,
                                 WebMediaSessionAndroid* session) {
     for (auto& iter : session_manager->sessions_) {
@@ -24,6 +34,34 @@ class WebMediaSessionTest : public testing::Test {
   bool IsSessionManagerEmpty(RendererMediaSessionManager* session_manager) {
     return session_manager->sessions_.empty();
   }
+
+ protected:
+  int success_count_ = 0;
+  int error_count_ = 0;
+};
+
+class TestActivateCallback : public blink::WebMediaSessionActivateCallback {
+ public:
+  TestActivateCallback(WebMediaSessionTest* test) : test_(test) {}
+
+ private:
+  void onSuccess() override { test_->OnSuccess(); }
+  void onError(const blink::WebMediaSessionError&) override {
+    test_->OnError();
+  }
+
+  WebMediaSessionTest* test_;
+};
+
+class TestDeactivateCallback : public blink::WebMediaSessionDeactivateCallback {
+ public:
+  TestDeactivateCallback(WebMediaSessionTest* test) : test_(test) {}
+
+ private:
+  void onSuccess() override { test_->OnSuccess(); }
+  void onError() override { test_->OnError(); }
+
+  WebMediaSessionTest* test_;
 };
 
 TEST_F(WebMediaSessionTest, TestRegistration) {
@@ -81,6 +119,134 @@ TEST_F(WebMediaSessionTest, TestMultipleRegistrationOutOfOrder) {
 
   delete session2;
   EXPECT_TRUE(IsSessionManagerEmpty(session_manager.get()));
+}
+
+TEST_F(WebMediaSessionTest, ActivationOutOfOrder) {
+  scoped_ptr<RendererMediaSessionManager> session_manager(
+      new RendererMediaSessionManager(nullptr));
+
+  scoped_ptr<WebMediaSessionAndroid> session(
+      new WebMediaSessionAndroid(session_manager.get()));
+
+  // Request activate three times
+  session->activate(new TestActivateCallback(this));  // request 1
+  session->activate(new TestActivateCallback(this));  // request 2
+  session->activate(new TestActivateCallback(this));  // request 3
+
+  // Confirm activation out of order
+  session_manager->OnMessageReceived(
+      MediaSessionMsg_DidActivate(kRouteId, 3, true));
+
+  session_manager->OnMessageReceived(
+      MediaSessionMsg_DidActivate(kRouteId, 2, true));
+
+  session_manager->OnMessageReceived(
+      MediaSessionMsg_DidActivate(kRouteId, 1, true));
+
+  EXPECT_EQ(3, success_count_);
+  EXPECT_EQ(0, error_count_);
+}
+
+TEST_F(WebMediaSessionTest, ActivationInOrder) {
+  scoped_ptr<RendererMediaSessionManager> session_manager(
+      new RendererMediaSessionManager(nullptr));
+
+  scoped_ptr<WebMediaSessionAndroid> session(
+      new WebMediaSessionAndroid(session_manager.get()));
+
+  // Request activate three times
+  session->activate(new TestActivateCallback(this));  // request 1
+  session_manager->OnMessageReceived(
+      MediaSessionMsg_DidActivate(kRouteId, 1, true));
+
+  session->activate(new TestActivateCallback(this));  // request 2
+  session_manager->OnMessageReceived(
+      MediaSessionMsg_DidActivate(kRouteId, 2, true));
+
+  session->activate(new TestActivateCallback(this));  // request 3
+  session_manager->OnMessageReceived(
+      MediaSessionMsg_DidActivate(kRouteId, 3, true));
+
+  EXPECT_EQ(3, success_count_);
+  EXPECT_EQ(0, error_count_);
+}
+
+TEST_F(WebMediaSessionTest, ActivationInFlight) {
+  scoped_ptr<RendererMediaSessionManager> session_manager(
+      new RendererMediaSessionManager(nullptr));
+
+  scoped_ptr<WebMediaSessionAndroid> session(
+      new WebMediaSessionAndroid(session_manager.get()));
+
+  session->activate(new TestActivateCallback(this));  // request 1
+  session->activate(new TestActivateCallback(this));  // request 2
+  session->activate(new TestActivateCallback(this));  // request 3
+
+  session_manager->OnMessageReceived(
+      MediaSessionMsg_DidActivate(kRouteId, 1, true));
+
+  session->activate(new TestActivateCallback(this));  // request 4
+  session->activate(new TestActivateCallback(this));  // request 5
+
+  session_manager->OnMessageReceived(
+      MediaSessionMsg_DidActivate(kRouteId, 3, true));
+  session_manager->OnMessageReceived(
+      MediaSessionMsg_DidActivate(kRouteId, 2, true));
+  session_manager->OnMessageReceived(
+      MediaSessionMsg_DidActivate(kRouteId, 5, true));
+  session_manager->OnMessageReceived(
+      MediaSessionMsg_DidActivate(kRouteId, 4, true));
+
+  EXPECT_EQ(5, success_count_);
+  EXPECT_EQ(0, error_count_);
+}
+
+TEST_F(WebMediaSessionTest, ActivationFailure) {
+  scoped_ptr<RendererMediaSessionManager> session_manager(
+      new RendererMediaSessionManager(nullptr));
+
+  scoped_ptr<WebMediaSessionAndroid> session(
+      new WebMediaSessionAndroid(session_manager.get()));
+
+  session->activate(new TestActivateCallback(this));  // request 1
+  session->activate(new TestActivateCallback(this));  // request 2
+  session->activate(new TestActivateCallback(this));  // request 3
+
+  session_manager->OnMessageReceived(
+      MediaSessionMsg_DidActivate(kRouteId, 1, true));
+  EXPECT_EQ(1, success_count_);
+  EXPECT_EQ(0, error_count_);
+  session_manager->OnMessageReceived(
+      MediaSessionMsg_DidActivate(kRouteId, 2, false));
+  EXPECT_EQ(1, success_count_);
+  EXPECT_EQ(1, error_count_);
+  session_manager->OnMessageReceived(
+      MediaSessionMsg_DidActivate(kRouteId, 3, true));
+  EXPECT_EQ(2, success_count_);
+  EXPECT_EQ(1, error_count_);
+}
+
+TEST_F(WebMediaSessionTest, Deactivation) {
+  scoped_ptr<RendererMediaSessionManager> session_manager(
+      new RendererMediaSessionManager(nullptr));
+
+  scoped_ptr<WebMediaSessionAndroid> session(
+      new WebMediaSessionAndroid(session_manager.get()));
+
+  // Request deactivate three times
+  session->deactivate(new TestDeactivateCallback(this));  // request 1
+  session->deactivate(new TestDeactivateCallback(this));  // request 2
+  session->deactivate(new TestDeactivateCallback(this));  // request 3
+  session_manager->OnMessageReceived(
+      MediaSessionMsg_DidDeactivate(kRouteId, 1));
+  EXPECT_EQ(1, success_count_);
+  session_manager->OnMessageReceived(
+      MediaSessionMsg_DidDeactivate(kRouteId, 2));
+  EXPECT_EQ(2, success_count_);
+  session_manager->OnMessageReceived(
+      MediaSessionMsg_DidDeactivate(kRouteId, 3));
+  EXPECT_EQ(3, success_count_);
+  EXPECT_EQ(0, error_count_);
 }
 
 }  // namespace content

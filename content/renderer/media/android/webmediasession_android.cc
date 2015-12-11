@@ -22,19 +22,13 @@ WebMediaSessionAndroid::~WebMediaSessionAndroid() {
 }
 
 void WebMediaSessionAndroid::activate(
-    blink::WebMediaSessionActivateCallback* raw_callback) {
-  NOTIMPLEMENTED();
-
-  scoped_ptr<blink::WebMediaSessionActivateCallback> callback(raw_callback);
-  callback->onError(blink::WebMediaSessionError::Activate);
+    blink::WebMediaSessionActivateCallback* callback) {
+  session_manager_->Activate(session_id_, make_scoped_ptr(callback));
 }
 
 void WebMediaSessionAndroid::deactivate(
-    blink::WebMediaSessionDeactivateCallback* raw_callback) {
-  NOTIMPLEMENTED();
-
-  scoped_ptr<blink::WebMediaSessionDeactivateCallback> callback(raw_callback);
-  callback->onSuccess();
+    blink::WebMediaSessionDeactivateCallback* callback) {
+  session_manager_->Deactivate(session_id_, make_scoped_ptr(callback));
 }
 
 void WebMediaSessionAndroid::setMetadata(

@@ -19,7 +19,16 @@ class WebMediaSession {
 public:
     virtual ~WebMediaSession() = default;
 
+    // Tries to activate the session by requesting audio focus from
+    // the system. May fail if audio focus is denied by the
+    // system. The ownership of the pointer is transferred to the
+    // WebMediaSession implementation.
     virtual void activate(WebMediaSessionActivateCallback*) = 0;
+
+    // Deactivates the session by abandoning audio focus. Will not
+    // fail in way visible to the user of the WebMediaSession. The
+    // ownership of the pointer is transferred to the WebMediaSession
+    // implementation.
     virtual void deactivate(WebMediaSessionDeactivateCallback*) = 0;
 
     // Updates the metadata associated with the WebMediaSession. The metadata

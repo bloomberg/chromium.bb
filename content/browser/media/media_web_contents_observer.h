@@ -19,6 +19,7 @@ namespace content {
 
 class BrowserCdmManager;
 class BrowserMediaPlayerManager;
+class BrowserMediaSessionManager;
 
 // This class manages all RenderFrame based media related managers at the
 // browser side. It receives IPC messages from media RenderFrameObservers and
@@ -44,6 +45,9 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
   // Gets the media player manager associated with |render_frame_host|. Creates
   // a new one if it doesn't exist. The caller doesn't own the returned pointer.
   BrowserMediaPlayerManager* GetMediaPlayerManager(
+      RenderFrameHost* render_frame_host);
+
+  BrowserMediaSessionManager* GetMediaSessionManager(
       RenderFrameHost* render_frame_host);
 
 #if defined(VIDEO_HOLE)
@@ -113,6 +117,12 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
       base::ScopedPtrHashMap<RenderFrameHost*,
                              scoped_ptr<BrowserMediaPlayerManager>>;
   MediaPlayerManagerMap media_player_managers_;
+
+  // Map from RenderFrameHost* to BrowserMediaSessionManager.
+  using MediaSessionManagerMap =
+      base::ScopedPtrHashMap<RenderFrameHost*,
+                             scoped_ptr<BrowserMediaSessionManager>>;
+  MediaSessionManagerMap media_session_managers_;
 #endif  // defined(OS_ANDROID)
 
   // Tracking variables and associated power save blockers for media playback.

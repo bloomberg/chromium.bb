@@ -428,6 +428,7 @@
       'common/media/media_param_traits.h',
       'common/media/media_player_messages_android.h',
       'common/media/media_player_messages_enums_android.h',
+      'common/media/media_session_messages_android.h',
       'common/media/media_stream_messages.h',
       'common/media/media_stream_options.cc',
       'common/media/media_stream_options.h',
