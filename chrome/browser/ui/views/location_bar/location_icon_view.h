@@ -5,33 +5,56 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_LOCATION_ICON_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_LOCATION_ICON_VIEW_H_
 
-#include "chrome/browser/ui/views/location_bar/page_info_helper.h"
-#include "ui/views/controls/image_view.h"
+#include "chrome/browser/ui/views/location_bar/icon_label_bubble_view.h"
 
 class LocationBarView;
 
-// LocationIconView is used to display an icon to the left of the edit field.
-// This shows the user's current action while editing, the page security
-// status on https pages, or a globe for other URLs.
-class LocationIconView : public views::ImageView {
+namespace ui {
+class KeyEvent;
+class LocatedEvent;
+}
+
+// Use a LocationIconView to display an icon on the leading side of the edit
+// field. It shows the user's current action (while the user is editing), or the
+// page security status (after navigation has completed).
+class LocationIconView : public IconLabelBubbleView {
  public:
-  explicit LocationIconView(LocationBarView* location_bar);
+  LocationIconView(const gfx::FontList& font_list,
+                   SkColor text_color,
+                   SkColor parent_background_color,
+                   LocationBarView* location_bar);
   ~LocationIconView() override;
 
-  // views::ImageView:
+  // IconLabelBubbleView:
+  gfx::Size GetMinimumSize() const override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
-  void OnMouseReleased(const ui::MouseEvent& event) override;
   bool OnMouseDragged(const ui::MouseEvent& event) override;
-
-  // ui::EventHandler:
+  void OnMouseReleased(const ui::MouseEvent& event) override;
+  bool OnKeyPressed(const ui::KeyEvent& event) override;
+  bool OnKeyReleased(const ui::KeyEvent& event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
+  SkColor GetTextColor() const override;
+  SkColor GetBorderColor() const override;
 
   // Whether we should show the tooltip for this icon or not.
   void ShowTooltip(bool show);
 
-  PageInfoHelper* page_info_helper() { return &page_info_helper_; }
+  // Returns what the minimum size would be if the label text were |text|.
+  gfx::Size GetMinimumSizeForLabelText(const base::string16& text) const;
+
+  const gfx::FontList& GetFontList() const { return font_list(); }
+
+  // Set the background image. Pass false for |should_show_ev| for all non-EV
+  // HTTPS contexts.
+  void SetBackground(bool should_show_ev);
 
  private:
+  void ProcessEvent(const ui::LocatedEvent& event);
+  void ProcessEvent(const ui::KeyEvent& event);
+
+  // Returns what the minimum size would be if the preferred size were |size|.
+  gfx::Size GetMinimumSizeForPreferredSize(gfx::Size size) const;
+
   // Handles both click and gesture events by delegating to the page info
   // helper in the appropriate circumstances.
   void OnClickOrTap(const ui::LocatedEvent& event);
@@ -41,7 +64,7 @@ class LocationIconView : public views::ImageView {
   // clicking the icon repeatedly will appear to toggle the bubble on and off.
   bool suppress_mouse_released_action_;
 
-  PageInfoHelper page_info_helper_;
+  LocationBarView* location_bar_;
 
   DISALLOW_COPY_AND_ASSIGN(LocationIconView);
 };

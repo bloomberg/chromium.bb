@@ -27,7 +27,7 @@ using bookmarks::BookmarkModel;
 using content::OpenURLParams;
 using content::Referrer;
 
-// Basic sanity check of ViewID use on the mac.
+// Basic sanity check of ViewID use on the Mac.
 class ViewIDTest : public InProcessBrowserTest {
  public:
   ViewIDTest() : root_window_(nil) {
@@ -69,13 +69,15 @@ class ViewIDTest : public InProcessBrowserTest {
 
     for (int i = VIEW_ID_TOOLBAR; i < VIEW_ID_PREDEFINED_COUNT; ++i) {
       // Mac implementation does not support following ids yet.
+      // TODO(palmer): crbug.com/536257: Enable VIEW_ID_LOCATION_ICON.
       if (i == VIEW_ID_STAR_BUTTON ||
           i == VIEW_ID_CONTENTS_SPLIT ||
           i == VIEW_ID_BROWSER_ACTION ||
           i == VIEW_ID_FEEDBACK_BUTTON ||
           i == VIEW_ID_SCRIPT_BUBBLE ||
           i == VIEW_ID_SAVE_CREDIT_CARD_BUTTON ||
-          i == VIEW_ID_TRANSLATE_BUTTON) {
+          i == VIEW_ID_TRANSLATE_BUTTON ||
+          i == VIEW_ID_LOCATION_ICON) {
         continue;
       }
 

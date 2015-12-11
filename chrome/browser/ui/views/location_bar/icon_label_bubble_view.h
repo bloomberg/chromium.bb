@@ -10,8 +10,8 @@
 #include "base/strings/string16.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/view.h"
 
 namespace gfx {
 class Canvas;
@@ -20,15 +20,14 @@ class ImageSkia;
 }
 
 namespace views {
-class ImageView;
 class Label;
 class Painter;
 }
 
-// View used to draw a bubble, containing an icon and a label.  We use this as a
-// base for the classes that handle the EV bubble, tab-to-search UI, and
-// content settings.
-class IconLabelBubbleView : public views::View {
+// View used to draw a bubble, containing an icon and a label. We use this as a
+// base for the classes that handle the location icon (including the EV bubble),
+// tab-to-search UI, and content settings.
+class IconLabelBubbleView : public views::ImageView {
  public:
   // TODO(estade): remove |text_color| which is not used for MD.
   IconLabelBubbleView(int contained_image,
@@ -39,15 +38,21 @@ class IconLabelBubbleView : public views::View {
   ~IconLabelBubbleView() override;
 
   // Sets a background that paints |background_images| in a scalable grid.
-  // Subclasses are required to call this or SetBackgroundImageWithInsets during
-  // construction.
+  // Subclasses must call this during construction.
   void SetBackgroundImageGrid(const int background_images[]);
+  void UnsetBackgroundImageGrid();
 
   void SetLabel(const base::string16& label);
   void SetImage(const gfx::ImageSkia& image);
   void set_is_extension_icon(bool is_extension_icon) {
     is_extension_icon_ = is_extension_icon;
   }
+
+  // Sets a background color on |label_| based on |chip_background_color| and
+  // the parent's bg color.
+  void SetLabelBackgroundColor(SkColor chip_background_color);
+
+  void SetLabelForegroundColor(SkColor color);
 
  protected:
   views::ImageView* image() { return image_; }
@@ -56,8 +61,8 @@ class IconLabelBubbleView : public views::View {
   // Gets the color for displaying text.
   virtual SkColor GetTextColor() const = 0;
 
-  // Gets the color for the border (a more transparent version of
-  // which is used for the background).
+  // Gets the color for the border (a more transparent version of which is used
+  // for the background).
   virtual SkColor GetBorderColor() const = 0;
 
   // Returns true when the background should be rendered.
@@ -92,10 +97,6 @@ class IconLabelBubbleView : public views::View {
   // As above, but for Material Design. TODO(estade): remove/replace the above.
   int GetBubbleOuterPaddingMd(bool leading) const;
 
-  // Sets a background color on |label_| based on |chip_background_color| and
-  // the parent's bg color.
-  void SetLabelBackgroundColor(SkColor chip_background_color);
-
   // views::View:
   const char* GetClassName() const override;
   void OnPaint(gfx::Canvas* canvas) override;
@@ -113,6 +114,8 @@ class IconLabelBubbleView : public views::View {
   // the native theme (so it responds to native theme updates). TODO(estade):
   // remove when MD is default.
   SkColor parent_background_color_;
+
+  bool should_show_background_;
 
   DISALLOW_COPY_AND_ASSIGN(IconLabelBubbleView);
 };

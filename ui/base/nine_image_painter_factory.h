@@ -13,8 +13,8 @@
                         x ## _LEFT,        x ## _CENTER, x ## _RIGHT, \
                         x ## _BOTTOM_LEFT, x ## _BOTTOM, x ## _BOTTOM_RIGHT, }
 
-// Defines a empty image for used in macro for creating image grid for a ring of
-// eight images.
+// Defines an empty image for use in macros for creating an image grid for a
+// ring of eight images.
 #define EMPTY_IMAGE 0
 
 // A macro to define arrays of IDR constants used with CreateImageGridPainter

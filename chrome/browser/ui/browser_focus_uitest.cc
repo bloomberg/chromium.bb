@@ -119,6 +119,13 @@ class BrowserFocusTest : public InProcessBrowserTest {
       }
 #endif
 
+      if (reverse) {
+        ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
+            browser(), key, false, reverse, false, false,
+            content::NOTIFICATION_ALL,
+            content::NotificationService::AllSources()));
+      }
+
       for (size_t j = 0; j < arraysize(kExpectedIDs); ++j) {
         SCOPED_TRACE(base::StringPrintf("focus inner loop %" PRIuS, j));
         const size_t index = reverse ? arraysize(kExpectedIDs) - 1 - j : j;
@@ -147,9 +154,23 @@ class BrowserFocusTest : public InProcessBrowserTest {
           browser(), key, false, reverse, false, false,
           chrome::NOTIFICATION_FOCUS_RETURNED_TO_BROWSER,
           content::Source<Browser>(browser())));
+      EXPECT_TRUE(
+          IsViewFocused(reverse ? VIEW_ID_OMNIBOX : VIEW_ID_LOCATION_ICON));
+
+      ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
+          browser(), key, false, reverse, false, false,
+          content::NOTIFICATION_ALL,
+          content::NotificationService::AllSources()));
 #endif
       content::RunAllPendingInMessageLoop();
-      EXPECT_TRUE(IsViewFocused(VIEW_ID_OMNIBOX));
+      EXPECT_TRUE(
+          IsViewFocused(reverse ? VIEW_ID_LOCATION_ICON : VIEW_ID_OMNIBOX));
+      if (reverse) {
+        ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
+            browser(), key, false, false, false, false,
+            content::NOTIFICATION_ALL,
+            content::NotificationService::AllSources()));
+      }
     }
   }
 };
