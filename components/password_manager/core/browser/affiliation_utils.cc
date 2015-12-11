@@ -301,8 +301,8 @@ bool IsAffiliationBasedMatchingEnabled(const base::CommandLine& command_line) {
     return false;
   if (command_line.HasSwitch(switches::kEnableAffiliationBasedMatching))
     return true;
-  return base::StartsWith(group_name, "Enabled",
-                          base::CompareCase::INSENSITIVE_ASCII);
+  return !base::StartsWith(group_name, "Disabled",
+                           base::CompareCase::INSENSITIVE_ASCII);
 }
 
 bool IsPropagatingPasswordChangesToWebCredentialsEnabled(
@@ -317,7 +317,7 @@ bool IsPropagatingPasswordChangesToWebCredentialsEnabled(
     return false;
   if (command_line.HasSwitch(switches::kEnableAffiliationBasedMatching))
     return true;
-  return base::LowerCaseEqualsASCII(update_enabled, "enabled");
+  return !base::LowerCaseEqualsASCII(update_enabled, "disabled");
 }
 
 bool IsAffiliationRequestsForDummyFacetsEnabled(

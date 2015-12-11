@@ -206,10 +206,10 @@ TEST(AffiliationUtilsTest, IsAffiliationBasedMatchingEnabled) {
     const char* command_line_switch;
     bool expected_enabled;
   } kTestCases[] = {
-      {"", "", false},
+      {"", "", true},
       {"", switches::kEnableAffiliationBasedMatching, true},
       {"", switches::kDisableAffiliationBasedMatching, false},
-      {"garbage value", "", false},
+      {"garbage value", "", true},
       {"disabled", "", false},
       {"disabled2", "", false},
       {"Disabled", "", false},
@@ -247,10 +247,10 @@ TEST(AffiliationUtilsTest,
     const char* command_line_switch;
     bool expected_enabled;
   } kTestCases[] = {
-      {"", "", false},
+      {"", "", true},
       {"", switches::kEnableAffiliationBasedMatching, true},
       {"", switches::kDisableAffiliationBasedMatching, false},
-      {"garbage value", "", false},
+      {"garbage value", "", true},
       {"disabled", "", false},
       {"Disabled", "", false},
       {"Disabled", switches::kDisableAffiliationBasedMatching, false},
