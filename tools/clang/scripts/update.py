@@ -734,7 +734,7 @@ def main():
                       help='select which chrome tools to build',
                       default=['plugins', 'blink_gc_plugin'])
   parser.add_argument('--without-android', action='store_false',
-                      help='don\tt build Android ASan runtime (linux only)',
+                      help='don\'t build Android ASan runtime (linux only)',
                       dest='with_android',
                       default=sys.platform.startswith('linux'))
   args = parser.parse_args()
