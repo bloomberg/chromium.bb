@@ -13,6 +13,7 @@
 #include "ui/android/window_android.h"
 
 using base::android::ConvertUTF16ToJavaString;
+using base::android::JavaRef;
 using content::ContentViewCore;
 
 namespace web_contents_delegate_android {
@@ -57,7 +58,7 @@ ColorChooserAndroid::ColorChooserAndroid(
     }
   }
   if (j_color_chooser_.is_null())
-    OnColorChosen(env, j_color_chooser_.obj(), initial_color);
+    OnColorChosen(env, j_color_chooser_, initial_color);
 }
 
 ColorChooserAndroid::~ColorChooserAndroid() {
@@ -76,7 +77,9 @@ void ColorChooserAndroid::SetSelectedColor(SkColor color) {
   // we don't support that for now.
 }
 
-void ColorChooserAndroid::OnColorChosen(JNIEnv* env, jobject obj, jint color) {
+void ColorChooserAndroid::OnColorChosen(JNIEnv* env,
+                                        const JavaRef<jobject>& obj,
+                                        jint color) {
   web_contents_->DidChooseColorInColorChooser(color);
   web_contents_->DidEndColorChooser();
 }

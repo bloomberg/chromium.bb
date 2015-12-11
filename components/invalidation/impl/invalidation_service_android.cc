@@ -119,12 +119,13 @@ void InvalidationServiceAndroid::TriggerStateChangeForTest(
   invalidator_registrar_.UpdateInvalidatorState(invalidator_state_);
 }
 
-void InvalidationServiceAndroid::Invalidate(JNIEnv* env,
-                                            jobject obj,
-                                            jint object_source,
-                                            jstring java_object_id,
-                                            jlong version,
-                                            jstring java_payload) {
+void InvalidationServiceAndroid::Invalidate(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    jint object_source,
+    const JavaParamRef<jstring>& java_object_id,
+    jlong version,
+    const JavaParamRef<jstring>& java_payload) {
   syncer::ObjectIdInvalidationMap object_invalidation_map;
   if (!java_object_id) {
     syncer::ObjectIdSet sync_ids;

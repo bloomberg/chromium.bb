@@ -30,7 +30,9 @@ class ColorChooserAndroid : public content::ColorChooser {
                       const std::vector<content::ColorSuggestion>& suggestions);
   ~ColorChooserAndroid() override;
 
-  void OnColorChosen(JNIEnv* env, jobject obj, jint color);
+  void OnColorChosen(JNIEnv* env,
+                     const base::android::JavaRef<jobject>& obj,
+                     jint color);
 
   // ColorChooser interface
   void End() override;

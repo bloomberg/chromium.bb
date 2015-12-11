@@ -99,13 +99,18 @@ void ExternalVideoSurfaceContainerImpl::OnExternalVideoSurfacePositionChanged(
 
 // Methods called from Java.
 void ExternalVideoSurfaceContainerImpl::SurfaceCreated(
-    JNIEnv* env, jobject obj, jint player_id, jobject jsurface) {
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    jint player_id,
+    const JavaParamRef<jobject>& jsurface) {
   if (!surface_created_cb_.is_null())
     surface_created_cb_.Run(static_cast<int>(player_id), jsurface);
 }
 
 void ExternalVideoSurfaceContainerImpl::SurfaceDestroyed(
-    JNIEnv* env, jobject obj, jint player_id) {
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    jint player_id) {
   if (!surface_destroyed_cb_.is_null())
     surface_destroyed_cb_.Run(static_cast<int>(player_id));
 }

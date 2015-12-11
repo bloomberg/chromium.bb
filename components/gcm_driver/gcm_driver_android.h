@@ -29,25 +29,27 @@ class GCMDriverAndroid : public GCMDriver {
   ~GCMDriverAndroid() override;
 
   // Methods called from Java via JNI:
-  void OnRegisterFinished(JNIEnv* env,
-                          jobject obj,
-                          jstring app_id,
-                          jstring registration_id,
-                          jboolean success);
+  void OnRegisterFinished(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jstring>& app_id,
+      const base::android::JavaParamRef<jstring>& registration_id,
+      jboolean success);
   void OnUnregisterFinished(JNIEnv* env,
-                           jobject obj,
-                           jstring app_id,
-                           jboolean success);
-  void OnMessageReceived(JNIEnv* env,
-                         jobject obj,
-                         jstring app_id,
-                         jstring sender_id,
-                         jstring collapse_key,
-                         jbyteArray raw_data,
-                         jobjectArray data_keys_and_values);
+                            const base::android::JavaParamRef<jobject>& obj,
+                            const base::android::JavaParamRef<jstring>& app_id,
+                            jboolean success);
+  void OnMessageReceived(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jstring>& app_id,
+      const base::android::JavaParamRef<jstring>& sender_id,
+      const base::android::JavaParamRef<jstring>& collapse_key,
+      const base::android::JavaParamRef<jbyteArray>& raw_data,
+      const base::android::JavaParamRef<jobjectArray>& data_keys_and_values);
   void OnMessagesDeleted(JNIEnv* env,
-                         jobject obj,
-                         jstring app_id);
+                         const base::android::JavaParamRef<jobject>& obj,
+                         const base::android::JavaParamRef<jstring>& app_id);
 
   // Register JNI methods.
   static bool RegisterBindings(JNIEnv* env);

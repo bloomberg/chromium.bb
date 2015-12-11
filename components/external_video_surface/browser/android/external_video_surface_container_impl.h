@@ -38,9 +38,13 @@ class ExternalVideoSurfaceContainerImpl
                                              const gfx::RectF& rect) override;
 
   // Methods called from Java.
-  void SurfaceCreated(
-      JNIEnv* env, jobject obj, jint player_id, jobject jsurface);
-  void SurfaceDestroyed(JNIEnv* env, jobject obj, jint player_id);
+  void SurfaceCreated(JNIEnv* env,
+                      const base::android::JavaParamRef<jobject>& obj,
+                      jint player_id,
+                      const base::android::JavaParamRef<jobject>& jsurface);
+  void SurfaceDestroyed(JNIEnv* env,
+                        const base::android::JavaParamRef<jobject>& obj,
+                        jint player_id);
 
  private:
   explicit ExternalVideoSurfaceContainerImpl(

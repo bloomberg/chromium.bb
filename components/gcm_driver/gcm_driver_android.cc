@@ -38,11 +38,12 @@ GCMDriverAndroid::~GCMDriverAndroid() {
   Java_GCMDriver_destroy(env, java_ref_.obj());
 }
 
-void GCMDriverAndroid::OnRegisterFinished(JNIEnv* env,
-                                          jobject obj,
-                                          jstring j_app_id,
-                                          jstring j_registration_id,
-                                          jboolean success) {
+void GCMDriverAndroid::OnRegisterFinished(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& j_app_id,
+    const JavaParamRef<jstring>& j_registration_id,
+    jboolean success) {
   std::string app_id = ConvertJavaStringToUTF8(env, j_app_id);
   std::string registration_id = ConvertJavaStringToUTF8(env, j_registration_id);
   GCMClient::Result result = success ? GCMClient::SUCCESS
@@ -51,10 +52,11 @@ void GCMDriverAndroid::OnRegisterFinished(JNIEnv* env,
   RegisterFinished(app_id, registration_id, result);
 }
 
-void GCMDriverAndroid::OnUnregisterFinished(JNIEnv* env,
-                                            jobject obj,
-                                            jstring j_app_id,
-                                            jboolean success) {
+void GCMDriverAndroid::OnUnregisterFinished(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& j_app_id,
+    jboolean success) {
   std::string app_id = ConvertJavaStringToUTF8(env, j_app_id);
   GCMClient::Result result = success ? GCMClient::SUCCESS
                                      : GCMClient::UNKNOWN_ERROR;
@@ -62,13 +64,14 @@ void GCMDriverAndroid::OnUnregisterFinished(JNIEnv* env,
   UnregisterFinished(app_id, result);
 }
 
-void GCMDriverAndroid::OnMessageReceived(JNIEnv* env,
-                                         jobject obj,
-                                         jstring j_app_id,
-                                         jstring j_sender_id,
-                                         jstring j_collapse_key,
-                                         jbyteArray j_raw_data,
-                                         jobjectArray j_data_keys_and_values) {
+void GCMDriverAndroid::OnMessageReceived(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& j_app_id,
+    const JavaParamRef<jstring>& j_sender_id,
+    const JavaParamRef<jstring>& j_collapse_key,
+    const JavaParamRef<jbyteArray>& j_raw_data,
+    const JavaParamRef<jobjectArray>& j_data_keys_and_values) {
   std::string app_id = ConvertJavaStringToUTF8(env, j_app_id);
 
   IncomingMessage message;
@@ -92,9 +95,10 @@ void GCMDriverAndroid::OnMessageReceived(JNIEnv* env,
   DispatchMessage(app_id, message);
 }
 
-void GCMDriverAndroid::OnMessagesDeleted(JNIEnv* env,
-                                         jobject obj,
-                                         jstring j_app_id) {
+void GCMDriverAndroid::OnMessagesDeleted(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& j_app_id) {
   std::string app_id = ConvertJavaStringToUTF8(env, j_app_id);
 
   GetAppHandler(app_id)->OnMessagesDeleted(app_id);
