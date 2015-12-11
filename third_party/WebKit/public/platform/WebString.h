@@ -82,9 +82,6 @@ public:
 
     BLINK_COMMON_EXPORT size_t length() const;
 
-    // Caller must check bounds.
-    BLINK_COMMON_EXPORT WebUChar at(unsigned) const;
-
     bool isEmpty() const { return !length(); }
     bool isNull() const { return m_private.isNull(); }
 

@@ -8,6 +8,7 @@
 #include "base/i18n/char_iterator.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversion_utils.h"
@@ -17,7 +18,6 @@
 #include "ppapi/shared_impl/ppb_input_event_shared.h"
 #include "ppapi/shared_impl/time_conversion.h"
 #include "third_party/WebKit/public/platform/WebGamepads.h"
-#include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 
@@ -28,7 +28,6 @@ using blink::WebInputEvent;
 using blink::WebKeyboardEvent;
 using blink::WebMouseEvent;
 using blink::WebMouseWheelEvent;
-using blink::WebString;
 using blink::WebTouchEvent;
 using blink::WebTouchPoint;
 using blink::WebUChar;
@@ -528,10 +527,9 @@ void GetKeyCode(const std::string& char_text,
       }
     }
     if (!vk_code) {
-      WebString web_char_text =
-          WebString::fromUTF8(char_text.data(), char_text.size());
-      DCHECK_EQ(web_char_text.length(), 1U);
-      vk_text = vk_code = web_char_text.at(0);
+      base::string16 char_text16 = base::UTF8ToUTF16(char_text);
+      DCHECK_EQ(char_text16.size(), 1U);
+      vk_text = vk_code = char_text16[0];
       *needs_shift_modifier =
           (vk_code & 0xFF) >= 'A' && (vk_code & 0xFF) <= 'Z';
       if ((vk_code & 0xFF) >= 'a' && (vk_code & 0xFF) <= 'z')

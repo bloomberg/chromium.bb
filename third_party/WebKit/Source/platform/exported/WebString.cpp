@@ -59,12 +59,6 @@ size_t WebString::length() const
     return m_private.isNull() ? 0 : m_private->length();
 }
 
-WebUChar WebString::at(unsigned i) const
-{
-    ASSERT(!m_private.isNull());
-    return (*m_private.get())[i];
-}
-
 bool WebString::is8Bit() const
 {
     return m_private->is8Bit();

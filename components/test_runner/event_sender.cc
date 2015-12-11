@@ -6,8 +6,10 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "components/test_runner/mock_spell_check.h"
 #include "components/test_runner/test_interfaces.h"
 #include "components/test_runner/web_test_delegate.h"
@@ -1386,15 +1388,14 @@ void EventSender::KeyDown(const std::string& code_str,
       }
     }
     if (!code) {
-      WebString web_code_str =
-          WebString::fromUTF8(code_str.data(), code_str.size());
-      if (web_code_str.length() != 1u) {
+      base::string16 code_str16 = base::UTF8ToUTF16(code_str);
+      if (code_str16.size() != 1u) {
         v8::Isolate* isolate = blink::mainThreadIsolate();
         isolate->ThrowException(v8::Exception::TypeError(
             gin::StringToV8(isolate, "Invalid web code.")));
         return;
       }
-      text = code = web_code_str.at(0);
+      text = code = code_str16[0];
       needs_shift_key_modifier = NeedsShiftModifier(code);
       if ((code & 0xFF) >= 'a' && (code & 0xFF) <= 'z')
         code -= 'a' - 'A';
