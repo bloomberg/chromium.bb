@@ -63,7 +63,7 @@
     },
     # Same binary but for the host rather than the device.
     {
-      # GN: //tools/android/md5sum:md5sum_copy_host($default_toolchain)
+      # GN: //tools/android/md5sum:md5sum_bin_host($default_toolchain)
       'target_name': 'md5sum_bin_host',
       'toolsets': ['host'],
       'type': 'executable',

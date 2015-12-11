@@ -3,12 +3,13 @@
 # found in the LICENSE file.
 
 import("//build/config/android/config.gni")
+import("//build/symlink.gni")
 
 # GYP: //tools/android/md5sum/md5sum.gyp:md5sum
 group("md5sum") {
   data_deps = [
     ":md5sum_prepare_dist($default_toolchain)",
-    ":md5sum_copy_host($host_toolchain)",
+    ":md5sum_bin_host($default_toolchain)",
   ]
 
   # TODO(cjhopman): Remove once group data_deps are fixed.
@@ -42,27 +43,9 @@ if (current_toolchain == default_toolchain) {
       ":md5sum_bin",
     ]
   }
-} else {
+
   # GYP: //tools/android/md5sum/md5sum.gyp:md5sum_bin_host
-  action("md5sum_copy_host") {
-    # Symlink rather than copy. When copied and using a component build, it
-    # fails to find libbase.so (since it's actually at clang_x64/libbase.so).
-    script = "//build/symlink.py"
-    _src = "$root_out_dir/md5sum_bin"
-    _target = "$root_build_dir/md5sum_bin_host"
-    sources = [
-      _src,
-    ]
-    outputs = [
-      _target,
-    ]
-    deps = [
-      ":md5sum_bin",
-    ]
-    args = [
-      "-f",
-      rebase_path(_src, root_build_dir),
-      rebase_path(_target, root_build_dir),
-    ]
+  binary_symlink("md5sum_bin_host") {
+    binary_label = ":md5sum_bin($host_toolchain)"
   }
 }

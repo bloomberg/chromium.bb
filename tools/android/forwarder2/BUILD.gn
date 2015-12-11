@@ -2,10 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/symlink.gni")
+
 # GYP: //tools/android/forwarder2/forwarder.gyp:forwarder2
 group("forwarder2") {
   data_deps = [
-    ":host_forwarder_copy($host_toolchain)",
+    ":host_forwarder",
     ":device_forwarder_prepare_dist($default_toolchain)",
   ]
 }
@@ -89,27 +91,9 @@ if (current_toolchain != default_toolchain) {
       "//tools/android/common",
     ]
   }
-
-  # GYP: //tools/android/forwarder2/forwarder.gyp:forwarder2
-  action("host_forwarder_copy") {
-    # Symlink rather than copy. When copied and using a component build, it
-    # fails to find libbase.so (since it's actually at clang_x64/libbase.so).
-    script = "//build/symlink.py"
-    _src = "$root_out_dir/host_forwarder"
-    _target = "$root_build_dir/host_forwarder"
-    sources = [
-      _src,
-    ]
-    outputs = [
-      _target,
-    ]
-    deps = [
-      ":host_forwarder",
-    ]
-    args = [
-      "-f",
-      rebase_path(_src, root_build_dir),
-      rebase_path(_target, root_build_dir),
-    ]
+} else {
+  # Create a symlink from root_build_dir -> clang_x64/host_forwarder.
+  binary_symlink("host_forwarder") {
+    binary_label = ":host_forwarder($host_toolchain)"
   }
 }
