@@ -4,8 +4,11 @@
 
 #include "net/proxy/dhcp_proxy_script_fetcher_win.h"
 
+#include <vector>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "net/base/net_errors.h"
@@ -173,11 +176,12 @@ void DhcpProxyScriptFetcherWin::OnGetCandidateAdapterNamesDone(
   for (std::set<std::string>::const_iterator it = adapter_names.begin();
        it != adapter_names.end();
        ++it) {
-    DhcpProxyScriptAdapterFetcher* fetcher(ImplCreateAdapterFetcher());
+    scoped_ptr<DhcpProxyScriptAdapterFetcher> fetcher(
+        ImplCreateAdapterFetcher());
     fetcher->Fetch(
         *it, base::Bind(&DhcpProxyScriptFetcherWin::OnFetcherDone,
                         base::Unretained(this)));
-    fetchers_.push_back(fetcher);
+    fetchers_.push_back(std::move(fetcher));
   }
   num_pending_fetchers_ = fetchers_.size();
 }
