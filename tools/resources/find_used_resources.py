@@ -39,12 +39,14 @@ def FindResourceIds(header, resource_names):
   """Returns the numerical resource IDs that correspond to the given resource
      names, as #defined in the given header file."
   """
-  pattern = re.compile(r'^#define (%s) (\d+)$' % '|'.join(resource_names))
+  pattern = re.compile(
+      r'^#define (%s) _Pragma\S+ (\d+)$' % '|'.join(resource_names))
   with open(header, 'r') as f:
     res_ids = [ int(pattern.match(line).group(2))
                  for line in f if pattern.match(line) ]
   if len(res_ids) != len(resource_names):
-    raise Exception("Find resource id failed: the result is " + res_ids)
+    raise Exception('Find resource id failed: the result is ' +
+                    ', '.join(str(i) for i in res_ids))
   return set(res_ids)
 
 def GetResourceIdsInPragmaWarnings(input):
