@@ -26,12 +26,6 @@
 #include "ui/gl/scoped_make_current.h"
 #include "ui/gl/sync_control_vsync_provider.h"
 
-#if defined(USE_X11)
-extern "C" {
-#include <X11/Xlib.h>
-}
-#endif
-
 #if defined (USE_OZONE)
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
@@ -472,10 +466,10 @@ EGLDisplay GLSurfaceEGL::InitializeDisplay() {
 
 NativeViewGLSurfaceEGL::NativeViewGLSurfaceEGL(EGLNativeWindowType window)
     : window_(window),
-      surface_(NULL),
-      supports_post_sub_buffer_(false),
       config_(NULL),
       size_(1, 1),
+      surface_(NULL),
+      supports_post_sub_buffer_(false),
       swap_interval_(1) {
 #if defined(OS_ANDROID)
   if (window)
@@ -501,6 +495,13 @@ bool NativeViewGLSurfaceEGL::Initialize(
 
   if (!GetDisplay()) {
     LOG(ERROR) << "Trying to create surface with invalid display.";
+    return false;
+  }
+
+  // We need to make sure that window_ is correctly initialized with all
+  // the platform-dependant quirks, if any, before creating the surface.
+  if (!InitializeNativeWindow()) {
+    LOG(ERROR) << "Error trying to initialize the native window.";
     return false;
   }
 
@@ -546,6 +547,10 @@ bool NativeViewGLSurfaceEGL::Initialize(
   return true;
 }
 
+bool NativeViewGLSurfaceEGL::InitializeNativeWindow() {
+  return true;
+}
+
 void NativeViewGLSurfaceEGL::Destroy() {
   if (surface_) {
     if (!eglDestroySurface(GetDisplay(), surface_)) {
@@ -557,80 +562,7 @@ void NativeViewGLSurfaceEGL::Destroy() {
 }
 
 EGLConfig NativeViewGLSurfaceEGL::GetConfig() {
-#if !defined(USE_X11)
   return g_config;
-#else
-  if (!config_) {
-    // Get a config compatible with the window
-    DCHECK(window_);
-    XWindowAttributes win_attribs;
-    if (!XGetWindowAttributes(GetNativeDisplay(), window_, &win_attribs)) {
-      return NULL;
-    }
-
-    // Try matching the window depth with an alpha channel,
-    // because we're worried the destination alpha width could
-    // constrain blending precision.
-    const int kBufferSizeOffset = 1;
-    const int kAlphaSizeOffset = 3;
-    EGLint config_attribs[] = {
-      EGL_BUFFER_SIZE, ~0,
-      EGL_ALPHA_SIZE, 8,
-      EGL_BLUE_SIZE, 8,
-      EGL_GREEN_SIZE, 8,
-      EGL_RED_SIZE, 8,
-      EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
-      EGL_SURFACE_TYPE, EGL_WINDOW_BIT | EGL_PBUFFER_BIT,
-      EGL_NONE
-    };
-    config_attribs[kBufferSizeOffset] = win_attribs.depth;
-
-    EGLint num_configs;
-    if (!eglChooseConfig(g_display,
-                         config_attribs,
-                         &config_,
-                         1,
-                         &num_configs)) {
-      LOG(ERROR) << "eglChooseConfig failed with error "
-                 << GetLastEGLErrorString();
-      return NULL;
-    }
-
-    if (num_configs) {
-      EGLint config_depth;
-      if (!eglGetConfigAttrib(g_display,
-                              config_,
-                              EGL_BUFFER_SIZE,
-                              &config_depth)) {
-        LOG(ERROR) << "eglGetConfigAttrib failed with error "
-                   << GetLastEGLErrorString();
-        return NULL;
-      }
-
-      if (config_depth == win_attribs.depth) {
-        return config_;
-      }
-    }
-
-    // Try without an alpha channel.
-    config_attribs[kAlphaSizeOffset] = 0;
-    if (!eglChooseConfig(g_display,
-                         config_attribs,
-                         &config_,
-                         1,
-                         &num_configs)) {
-      LOG(ERROR) << "eglChooseConfig failed with error "
-                 << GetLastEGLErrorString();
-      return NULL;
-    }
-
-    if (num_configs == 0) {
-      LOG(ERROR) << "No suitable EGL configs found.";
-      return NULL;
-    }
-  }
-  return config_;
-#endif
 }
 
 bool NativeViewGLSurfaceEGL::IsOffscreen() {

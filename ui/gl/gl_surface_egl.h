@@ -101,10 +101,15 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL {
   // Takes ownership of the VSyncProvider.
   virtual bool Initialize(scoped_ptr<VSyncProvider> sync_provider);
 
+  // Takes care of the platform dependant bits, of any, for creating the window.
+  virtual bool InitializeNativeWindow();
+
  protected:
   ~NativeViewGLSurfaceEGL() override;
 
   EGLNativeWindowType window_;
+  EGLConfig config_;
+  gfx::Size size_;
 
   void OnSetSwapInterval(int interval) override;
 
@@ -115,8 +120,6 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL {
 
   EGLSurface surface_;
   bool supports_post_sub_buffer_;
-  EGLConfig config_;
-  gfx::Size size_;
 
   scoped_ptr<VSyncProvider> vsync_provider_;
 

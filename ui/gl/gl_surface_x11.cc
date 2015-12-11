@@ -13,6 +13,7 @@
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface_egl.h"
+#include "ui/gl/gl_surface_egl_x11.h"
 #include "ui/gl/gl_surface_glx.h"
 #include "ui/gl/gl_surface_osmesa.h"
 #include "ui/gl/gl_surface_stub.h"
@@ -295,7 +296,7 @@ scoped_refptr<GLSurface> GLSurface::CreateViewGLSurface(
     }
     case kGLImplementationEGLGLES2: {
       DCHECK(window != gfx::kNullAcceleratedWidget);
-      scoped_refptr<GLSurface> surface(new NativeViewGLSurfaceEGL(window));
+      scoped_refptr<GLSurface> surface(new NativeViewGLSurfaceEGLX11(window));
       if (!surface->Initialize())
         return NULL;
 
