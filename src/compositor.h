@@ -86,6 +86,7 @@ struct weston_mode {
 
 struct weston_shell_client {
 	void (*send_configure)(struct weston_surface *surface, int32_t width, int32_t height);
+	void (*send_position)(struct weston_surface *surface, int32_t x, int32_t y);
 };
 
 struct weston_shell_interface {
@@ -94,9 +95,6 @@ struct weston_shell_interface {
 	struct shell_surface *(*create_shell_surface)(void *shell,
 						      struct weston_surface *surface,
 						      const struct weston_shell_client *client);
-	struct weston_view *(*get_primary_view)(void *shell,
-						struct shell_surface *shsurf);
-
 	void (*set_toplevel)(struct shell_surface *shsurf);
 
 	void (*set_transient)(struct shell_surface *shsurf,

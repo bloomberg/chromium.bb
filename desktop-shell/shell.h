@@ -121,6 +121,7 @@ struct desktop_shell {
 
 	struct wl_listener idle_listener;
 	struct wl_listener wake_listener;
+	struct wl_listener transform_listener;
 	struct wl_listener destroy_listener;
 	struct wl_listener show_input_panel_listener;
 	struct wl_listener hide_input_panel_listener;

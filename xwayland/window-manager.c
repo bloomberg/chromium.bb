@@ -145,6 +145,7 @@ struct weston_wm_window {
 	xcb_atom_t type;
 	int width, height;
 	int x, y;
+	bool pos_dirty;
 	int saved_width, saved_height;
 	int decorate;
 	int override_redirect;
@@ -692,6 +693,8 @@ weston_wm_handle_configure_notify(struct weston_wm *wm, xcb_generic_event_t *eve
 
 	window->x = configure_notify->x;
 	window->y = configure_notify->y;
+	window->pos_dirty = false;
+
 	if (window->override_redirect) {
 		window->width = configure_notify->width;
 		window->height = configure_notify->height;
@@ -806,41 +809,6 @@ weston_wm_window_activate(struct wl_listener *listener, void *data)
 
 	xcb_flush(wm->conn);
 
-}
-
-static void
-weston_wm_window_transform(struct wl_listener *listener, void *data)
-{
-	struct weston_surface *surface = data;
-	struct weston_wm_window *window = get_wm_window(surface);
-	struct weston_wm *wm =
-		container_of(listener, struct weston_wm, transform_listener);
-	struct weston_view *view;
-	struct weston_shell_interface *shell_interface =
-		&wm->server->compositor->shell_interface;
-	uint32_t mask, values[2];
-
-	if (!window || !wm || !window->shsurf)
-		return;
-
-	if (!shell_interface->get_primary_view)
-		return;
-
-	view = shell_interface->get_primary_view(shell_interface->shell,
-	                                         window->shsurf);
-
-	if (!view || !weston_view_is_mapped(view))
-		return;
-
-	if (window->x != view->geometry.x ||
-	    window->y != view->geometry.y) {
-		values[0] = view->geometry.x;
-		values[1] = view->geometry.y;
-		mask = XCB_CONFIG_WINDOW_X | XCB_CONFIG_WINDOW_Y;
-
-		xcb_configure_window(wm->conn, window->frame_id, mask, values);
-		xcb_flush(wm->conn);
-	}
 }
 
 #define ICCCM_WITHDRAWN_STATE	0
@@ -1226,6 +1194,7 @@ weston_wm_window_create(struct weston_wm *wm,
 	window->height = height;
 	window->x = x;
 	window->y = y;
+	window->pos_dirty = false;
 
 	geometry_reply = xcb_get_geometry_reply(wm->conn, geometry_cookie, NULL);
 	/* technically we should use XRender and check the visual format's
@@ -2316,9 +2285,6 @@ weston_wm_create(struct weston_xserver *wxs, int fd)
 	wm->activate_listener.notify = weston_wm_window_activate;
 	wl_signal_add(&wxs->compositor->activate_signal,
 		      &wm->activate_listener);
-	wm->transform_listener.notify = weston_wm_window_transform;
-	wl_signal_add(&wxs->compositor->transform_signal,
-		      &wm->transform_listener);
 	wm->kill_listener.notify = weston_wm_kill_client;
 	wl_signal_add(&wxs->compositor->kill_signal,
 		      &wm->kill_listener);
@@ -2347,7 +2313,6 @@ weston_wm_destroy(struct weston_wm *wm)
 	wl_list_remove(&wm->selection_listener.link);
 	wl_list_remove(&wm->activate_listener.link);
 	wl_list_remove(&wm->kill_listener.link);
-	wl_list_remove(&wm->transform_listener.link);
 	wl_list_remove(&wm->create_surface_listener.link);
 
 	free(wm);
@@ -2438,8 +2403,35 @@ send_configure(struct weston_surface *surface, int32_t width, int32_t height)
 				       weston_wm_window_configure, window);
 }
 
+static void
+send_position(struct weston_surface *surface, int32_t x, int32_t y)
+{
+	struct weston_wm_window *window = get_wm_window(surface);
+	struct weston_wm *wm;
+	uint32_t mask, values[2];
+
+	if (!window || !window->wm)
+		return;
+
+	wm = window->wm;
+	/* We use pos_dirty to tell whether a configure message is in flight.
+	 * This is needed in case we send two configure events in a very
+	 * short time, since window->x/y is set in after a roundtrip, hence
+	 * we cannot just check if the current x and y are different. */
+	if (window->x != x || window->y != y || window->pos_dirty) {
+		window->pos_dirty = true;
+		values[0] = x;
+		values[1] = y;
+		mask = XCB_CONFIG_WINDOW_X | XCB_CONFIG_WINDOW_Y;
+
+		xcb_configure_window(wm->conn, window->frame_id, mask, values);
+		xcb_flush(wm->conn);
+	}
+}
+
 static const struct weston_shell_client shell_client = {
-	send_configure
+	send_configure,
+	send_position
 };
 
 static int

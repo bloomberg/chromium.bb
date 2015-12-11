@@ -1813,7 +1813,8 @@ send_configure(struct weston_surface *surface, int32_t width, int32_t height)
 }
 
 static const struct weston_shell_client shell_client = {
-	send_configure
+	send_configure,
+	NULL
 };
 
 static void
@@ -3704,12 +3705,6 @@ create_shell_surface(void *shell, struct weston_surface *surface,
 	return create_common_surface(NULL, shell, surface, client);
 }
 
-static struct weston_view *
-get_primary_view(void *shell, struct shell_surface *shsurf)
-{
-	return shsurf->view;
-}
-
 static void
 shell_get_shell_surface(struct wl_client *client,
 			struct wl_resource *resource,
@@ -3995,7 +3990,8 @@ xdg_send_configure(struct weston_surface *surface,
 }
 
 static const struct weston_shell_client xdg_client = {
-	xdg_send_configure
+	xdg_send_configure,
+	NULL
 };
 
 static void
@@ -4119,7 +4115,8 @@ xdg_popup_send_configure(struct weston_surface *surface,
 }
 
 static const struct weston_shell_client xdg_popup_client = {
-	xdg_popup_send_configure
+	xdg_popup_send_configure,
+	NULL
 };
 
 static struct shell_surface *
@@ -5412,6 +5409,27 @@ wake_handler(struct wl_listener *listener, void *data)
 }
 
 static void
+transform_handler(struct wl_listener *listener, void *data)
+{
+	struct weston_surface *surface = data;
+	struct shell_surface *shsurf = get_shell_surface(surface);
+	struct weston_view *view;;
+	int x, y;
+
+	if (!shsurf || !shsurf->client->send_position)
+		return;
+
+	view = shsurf->view;
+	if (!view || !weston_view_is_mapped(view))
+		return;
+
+	x = view->geometry.x;
+	y = view->geometry.y;
+
+	shsurf->client->send_position(surface, x, y);
+}
+
+static void
 center_on_output(struct weston_view *view, struct weston_output *output)
 {
 	int32_t surf_x, surf_y, width, height;
@@ -6379,6 +6397,7 @@ shell_destroy(struct wl_listener *listener, void *data)
 
 	wl_list_remove(&shell->idle_listener.link);
 	wl_list_remove(&shell->wake_listener.link);
+	wl_list_remove(&shell->transform_listener.link);
 
 	text_backend_destroy(shell->text_backend);
 	input_panel_destroy(shell);
@@ -6520,10 +6539,11 @@ module_init(struct weston_compositor *ec,
 	wl_signal_add(&ec->idle_signal, &shell->idle_listener);
 	shell->wake_listener.notify = wake_handler;
 	wl_signal_add(&ec->wake_signal, &shell->wake_listener);
+	shell->transform_listener.notify = transform_handler;
+	wl_signal_add(&ec->transform_signal, &shell->transform_listener);
 
 	ec->shell_interface.shell = shell;
 	ec->shell_interface.create_shell_surface = create_shell_surface;
-	ec->shell_interface.get_primary_view = get_primary_view;
 	ec->shell_interface.set_toplevel = set_toplevel;
 	ec->shell_interface.set_transient = set_transient;
 	ec->shell_interface.set_fullscreen = shell_interface_set_fullscreen;

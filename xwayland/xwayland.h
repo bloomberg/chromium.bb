@@ -70,7 +70,6 @@ struct weston_wm {
 	xcb_colormap_t colormap;
 	struct wl_listener create_surface_listener;
 	struct wl_listener activate_listener;
-	struct wl_listener transform_listener;
 	struct wl_listener kill_listener;
 	struct wl_list unpaired_window_list;
 
