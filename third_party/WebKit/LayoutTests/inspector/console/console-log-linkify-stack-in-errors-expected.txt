@@ -14,42 +14,46 @@ CONSOLE MESSAGE: line 38: Error valid stack #2
     at foo(http://www.chromium.org/foo.js:10:50)
 CONSOLE MESSAGE: line 39: Error valid stack #3
     at http://www.chromium.org/foo.js:40
+CONSOLE MESSAGE: line 40: Error: MyError
+    at throwError (http://www.chromium.org/foo.js:40)
+    at eval (eval at <anonymous> (http://www.chromium.org/foo.js:42:1), <anonymous>:1:1)
+    at http://www.chromium.org/foo.js:239
 CONSOLE MESSAGE: line 20: ReferenceError: valid stack
     at stack2 (console-log-linkify-stack-in-errors.html:20:21)
     at stack1 (console-log-linkify-stack-in-errors.html:22:5)
-    at console-log-linkify-stack-in-errors.html:41:1
+    at console-log-linkify-stack-in-errors.html:42:1
 CONSOLE MESSAGE: line 20: EvalError: valid stack
     at stack2 (console-log-linkify-stack-in-errors.html:20:21)
     at stack1 (console-log-linkify-stack-in-errors.html:22:5)
-    at console-log-linkify-stack-in-errors.html:42:1
+    at console-log-linkify-stack-in-errors.html:43:1
 CONSOLE MESSAGE: line 20: SyntaxError: valid stack
     at stack2 (console-log-linkify-stack-in-errors.html:20:21)
     at stack1 (console-log-linkify-stack-in-errors.html:22:5)
-    at console-log-linkify-stack-in-errors.html:43:1
+    at console-log-linkify-stack-in-errors.html:44:1
 CONSOLE MESSAGE: line 20: RangeError: valid stack
     at stack2 (console-log-linkify-stack-in-errors.html:20:21)
     at stack1 (console-log-linkify-stack-in-errors.html:22:5)
-    at console-log-linkify-stack-in-errors.html:44:1
+    at console-log-linkify-stack-in-errors.html:45:1
 CONSOLE MESSAGE: line 20: TypeError: valid stack
     at stack2 (console-log-linkify-stack-in-errors.html:20:21)
     at stack1 (console-log-linkify-stack-in-errors.html:22:5)
-    at console-log-linkify-stack-in-errors.html:45:1
+    at console-log-linkify-stack-in-errors.html:46:1
 CONSOLE MESSAGE: line 20: URIError: valid stack
     at stack2 (console-log-linkify-stack-in-errors.html:20:21)
     at stack1 (console-log-linkify-stack-in-errors.html:22:5)
-    at console-log-linkify-stack-in-errors.html:46:1
-CONSOLE MESSAGE: line 48: Error broken stack
+    at console-log-linkify-stack-in-errors.html:47:1
+CONSOLE MESSAGE: line 49: Error broken stack
     at function_name(foob.js foob.js:30:1)
  at foob.js:40:70
-CONSOLE MESSAGE: line 49: Error broken stack #2
+CONSOLE MESSAGE: line 50: Error broken stack #2
     at function_name(foob.js:20:30
-CONSOLE MESSAGE: line 50: Error broken stack #3
+CONSOLE MESSAGE: line 51: Error broken stack #3
     at function_name(foob:20.js:30   bla
-CONSOLE MESSAGE: line 51: Error broken stack #4
+CONSOLE MESSAGE: line 52: Error broken stack #4
     at function_name)foob.js:20:30(
-CONSOLE MESSAGE: line 52: Error broken stack #5
+CONSOLE MESSAGE: line 53: Error broken stack #5
     at function_name foob.js:20:30)
-CONSOLE MESSAGE: line 53: Error broken stack #6
+CONSOLE MESSAGE: line 54: Error broken stack #6
     at foob.js foob.js:40:70
 CONSOLE MESSAGE: line 9: Error
     at Failure.letsFailWithStack (stack-with-sourceMap.js:19:20)
@@ -72,42 +76,46 @@ console-log-linkify-stack-in-errors.html:31 Error valid stack #2
     at foo(www.chromium.org/foo.js:10) console-message-text source-code > console-message-url webkit-html-resource-link > webkit-html-resource-link > webkit-html-resource-link
 console-log-linkify-stack-in-errors.html:32 Error valid stack #3
     at www.chromium.org/foo.js:40 console-message-text source-code > console-message-url webkit-html-resource-link > webkit-html-resource-link
+console-log-linkify-stack-in-errors.html:33 Error: MyError
+    at throwError (www.chromium.org/foo.js:40)
+    at eval (eval at <anonymous> (www.chromium.org/foo.js:42), <anonymous>:1:1)
+    at www.chromium.org/foo.js:239 console-message-text source-code > console-message-url webkit-html-resource-link > webkit-html-resource-link > webkit-html-resource-link > webkit-html-resource-link
 console-log-linkify-stack-in-errors.html:13 ReferenceError: valid stack
     at stack2 (console-log-linkify-stack-in-errors.html:13)
     at stack1 (console-log-linkify-stack-in-errors.html:15)
-    at console-log-linkify-stack-in-errors.html:34 console-message-text source-code > console-message-url webkit-html-resource-link >  webkit-html-resource-link >  webkit-html-resource-link >  webkit-html-resource-link
+    at console-log-linkify-stack-in-errors.html:35 console-message-text source-code > console-message-url webkit-html-resource-link >  webkit-html-resource-link >  webkit-html-resource-link >  webkit-html-resource-link
 console-log-linkify-stack-in-errors.html:13 EvalError: valid stack
     at stack2 (console-log-linkify-stack-in-errors.html:13)
     at stack1 (console-log-linkify-stack-in-errors.html:15)
-    at console-log-linkify-stack-in-errors.html:35 console-message-text source-code > console-message-url webkit-html-resource-link >  webkit-html-resource-link >  webkit-html-resource-link >  webkit-html-resource-link
+    at console-log-linkify-stack-in-errors.html:36 console-message-text source-code > console-message-url webkit-html-resource-link >  webkit-html-resource-link >  webkit-html-resource-link >  webkit-html-resource-link
 console-log-linkify-stack-in-errors.html:13 SyntaxError: valid stack
     at stack2 (console-log-linkify-stack-in-errors.html:13)
     at stack1 (console-log-linkify-stack-in-errors.html:15)
-    at console-log-linkify-stack-in-errors.html:36 console-message-text source-code > console-message-url webkit-html-resource-link >  webkit-html-resource-link >  webkit-html-resource-link >  webkit-html-resource-link
+    at console-log-linkify-stack-in-errors.html:37 console-message-text source-code > console-message-url webkit-html-resource-link >  webkit-html-resource-link >  webkit-html-resource-link >  webkit-html-resource-link
 console-log-linkify-stack-in-errors.html:13 RangeError: valid stack
     at stack2 (console-log-linkify-stack-in-errors.html:13)
     at stack1 (console-log-linkify-stack-in-errors.html:15)
-    at console-log-linkify-stack-in-errors.html:37 console-message-text source-code > console-message-url webkit-html-resource-link >  webkit-html-resource-link >  webkit-html-resource-link >  webkit-html-resource-link
+    at console-log-linkify-stack-in-errors.html:38 console-message-text source-code > console-message-url webkit-html-resource-link >  webkit-html-resource-link >  webkit-html-resource-link >  webkit-html-resource-link
 console-log-linkify-stack-in-errors.html:13 TypeError: valid stack
     at stack2 (console-log-linkify-stack-in-errors.html:13)
     at stack1 (console-log-linkify-stack-in-errors.html:15)
-    at console-log-linkify-stack-in-errors.html:38 console-message-text source-code > console-message-url webkit-html-resource-link >  webkit-html-resource-link >  webkit-html-resource-link >  webkit-html-resource-link
+    at console-log-linkify-stack-in-errors.html:39 console-message-text source-code > console-message-url webkit-html-resource-link >  webkit-html-resource-link >  webkit-html-resource-link >  webkit-html-resource-link
 console-log-linkify-stack-in-errors.html:13 URIError: valid stack
     at stack2 (console-log-linkify-stack-in-errors.html:13)
     at stack1 (console-log-linkify-stack-in-errors.html:15)
-    at console-log-linkify-stack-in-errors.html:39 console-message-text source-code > console-message-url webkit-html-resource-link >  webkit-html-resource-link >  webkit-html-resource-link >  webkit-html-resource-link
-console-log-linkify-stack-in-errors.html:41 Error broken stack
+    at console-log-linkify-stack-in-errors.html:40 console-message-text source-code > console-message-url webkit-html-resource-link >  webkit-html-resource-link >  webkit-html-resource-link >  webkit-html-resource-link
+console-log-linkify-stack-in-errors.html:42 Error broken stack
     at function_name(foob.js foob.js:30:1)
  at foob.js:40:70 console-message-text source-code > console-message-url webkit-html-resource-link
-console-log-linkify-stack-in-errors.html:42 Error broken stack #2
+console-log-linkify-stack-in-errors.html:43 Error broken stack #2
     at function_name(foob.js:20:30 console-message-text source-code > console-message-url webkit-html-resource-link
-console-log-linkify-stack-in-errors.html:43 Error broken stack #3
+console-log-linkify-stack-in-errors.html:44 Error broken stack #3
     at function_name(foob:20.js:30   bla console-message-text source-code > console-message-url webkit-html-resource-link
-console-log-linkify-stack-in-errors.html:44 Error broken stack #4
+console-log-linkify-stack-in-errors.html:45 Error broken stack #4
     at function_name)foob.js:20:30( console-message-text source-code > console-message-url webkit-html-resource-link
-console-log-linkify-stack-in-errors.html:45 Error broken stack #5
+console-log-linkify-stack-in-errors.html:46 Error broken stack #5
     at function_name foob.js:20:30) console-message-text source-code > console-message-url webkit-html-resource-link
-console-log-linkify-stack-in-errors.html:46 Error broken stack #6
+console-log-linkify-stack-in-errors.html:47 Error broken stack #6
     at foob.js foob.js:40:70 console-message-text source-code > console-message-url webkit-html-resource-link
 stack-with-sourceMap.coffee:3 Error
     at Failure.letsFailWithStack (stack-with-sourceMap.coffee:3)
