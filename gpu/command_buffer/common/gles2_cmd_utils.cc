@@ -542,40 +542,11 @@ bool GLES2Util::ComputeImageDataSizes(
     int width, int height, int depth, int format, int type,
     int alignment, uint32* size, uint32* opt_unpadded_row_size,
     uint32* opt_padded_row_size) {
-  DCHECK(width >= 0 && height >= 0 && depth >= 0);
-
-  uint32 bytes_per_group = ComputeImageGroupSize(format, type);
-
-  uint32 unpadded_row_size;
-  uint32 padded_row_size;
-  if (!ComputeImageRowSizeHelper(width, bytes_per_group, alignment,
-                                 &unpadded_row_size, &padded_row_size)) {
-    return false;
-  }
-  uint32 num_of_rows;
-  if (!SafeMultiplyUint32(height, depth, &num_of_rows)) {
-    return false;
-  }
-  if (num_of_rows > 0) {
-    uint32 size_of_all_but_last_row;
-    if (!SafeMultiplyUint32((num_of_rows - 1), padded_row_size,
-                            &size_of_all_but_last_row)) {
-      return false;
-    }
-    if (!SafeAddUint32(size_of_all_but_last_row, unpadded_row_size, size)) {
-      return false;
-    }
-  } else {
-    *size = 0;
-  }
-  if (opt_padded_row_size) {
-    *opt_padded_row_size = padded_row_size;
-  }
-  if (opt_unpadded_row_size) {
-    *opt_unpadded_row_size = unpadded_row_size;
-  }
-
-  return true;
+  PixelStoreParams params;
+  params.alignment = alignment;
+  return ComputeImageDataSizesES3(
+      width, height, depth, format, type, params,
+      size, opt_unpadded_row_size, opt_padded_row_size, nullptr);
 }
 
 bool GLES2Util::ComputeImageDataSizesES3(
