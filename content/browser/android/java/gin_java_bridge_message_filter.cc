@@ -103,12 +103,16 @@ GinJavaBridgeDispatcherHost* GinJavaBridgeMessageFilter::FindHost() {
   auto iter = hosts_.find(current_routing_id_);
   if (iter != hosts_.end())
     return iter->second;
-  // This is usually OK -- we can receive messages from RenderFrames for
-  // which the corresponding host part has already been destroyed. That means,
-  // any references to Java objects that the host was holding were already
-  // released (with the death of ContentViewCore), so we can just drop such
-  // messages.
-  LOG(WARNING) << "WebView: Unknown frame routing id: " << current_routing_id_;
+  // Not being able to find a host is OK -- we can receive messages from
+  // RenderFrames for which the corresponding host part has already been
+  // destroyed. That means, any references to Java objects that the host was
+  // holding were already released (with the death of ContentViewCore), so we
+  // can just ignore such messages.
+  // RenderProcessHostImpl does the same -- if it can't find a listener
+  // for the message's routing id, it just drops the message silently.
+  // The only action RenderProcessHostImpl does is sending a reply to incoming
+  // synchronous messages, but as we handle all our messages using
+  // IPC_MESSAGE_HANDLER, the reply will be sent automatically.
   return nullptr;
 }
 
