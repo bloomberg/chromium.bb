@@ -165,7 +165,9 @@ void DisplayItemList::Finalize() {
   // TODO(vmpstr): Build and make use of an RTree from the visual
   // rects. For now we just clear them out since we won't ever need
   // them to stick around post-Finalize. http://crbug.com/527245
-  visual_rects_.clear();
+  // This clears both the vector and the vector's capacity, since visual_rects_
+  // won't be used anymore.
+  std::vector<gfx::Rect>().swap(visual_rects_);
 
   if (settings_.use_cached_picture) {
     // Convert to an SkPicture for faster rasterization.
