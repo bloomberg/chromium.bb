@@ -185,37 +185,41 @@ void CrashDumpManager::BrowserChildProcessCrashed(
 void CrashDumpManager::Observe(int type,
                                const content::NotificationSource& source,
                                const content::NotificationDetails& details) {
+  content::RenderProcessHost* rph =
+      content::Source<content::RenderProcessHost>(source).ptr();
+  base::TerminationStatus term_status = base::TERMINATION_STATUS_MAX_ENUM;
+  base::android::ApplicationState app_state =
+      base::android::APPLICATION_STATE_UNKNOWN;
   switch (type) {
     case content::NOTIFICATION_RENDERER_PROCESS_TERMINATED: {
       // NOTIFICATION_RENDERER_PROCESS_TERMINATED is sent when the renderer
       // process is cleanly shutdown. However, we still need to close the
       // minidump_fd we kept open.
-      content::RenderProcessHost* rph =
-          content::Source<content::RenderProcessHost>(source).ptr();
-      OnChildExit(rph->GetID(),
-                  rph->GetHandle(),
-                  content::PROCESS_TYPE_RENDERER,
-                  base::TERMINATION_STATUS_NORMAL_TERMINATION,
-                  base::android::APPLICATION_STATE_UNKNOWN);
+      term_status = base::TERMINATION_STATUS_NORMAL_TERMINATION;
       break;
     }
     case content::NOTIFICATION_RENDERER_PROCESS_CLOSED: {
-      content::RenderProcessHost* rph =
-          content::Source<content::RenderProcessHost>(source).ptr();
+      // We do not care about android fast shutdowns as it is a known case where
+      // the renderer is intentionally killed when we are done with it.
+      if (rph->FastShutdownStarted()) {
+        break;
+      }
       content::RenderProcessHost::RendererClosedDetails* process_details =
           content::Details<content::RenderProcessHost::RendererClosedDetails>(
               details).ptr();
-      OnChildExit(rph->GetID(),
-                  rph->GetHandle(),
-                  content::PROCESS_TYPE_RENDERER,
-                  process_details->status,
-                  base::android::ApplicationStatusListener::GetState());
+      term_status = process_details->status;
+      app_state = base::android::ApplicationStatusListener::GetState();
       break;
     }
     default:
       NOTREACHED();
       return;
   }
+  OnChildExit(rph->GetID(),
+              rph->GetHandle(),
+              content::PROCESS_TYPE_RENDERER,
+              term_status,
+              app_state);
 }
 
 void CrashDumpManager::OnChildExit(int child_process_id,
