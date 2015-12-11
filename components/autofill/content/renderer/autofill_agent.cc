@@ -270,8 +270,9 @@ void AutofillAgent::FocusedNodeChanged(const WebNode& node) {
 
   WebElement web_element = node.toConst<WebElement>();
   const WebInputElement* element = toWebInputElement(&web_element);
-  if (!element || (!last_interacted_form_.isNull() &&
-                   last_interacted_form_ != element->form())) {
+
+  if (!last_interacted_form_.isNull() &&
+      (!element || last_interacted_form_ != element->form())) {
     // The focused element is not part of the last interacted form (could be
     // in a different form).
     Send(new AutofillHostMsg_FocusNoLongerOnForm(routing_id()));
