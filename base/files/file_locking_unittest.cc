@@ -1,4 +1,4 @@
-// Copyright (c) 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,7 +41,7 @@ const char kSignalExit[] = "exit.signal";
 // Signal an event by creating a file which didn't previously exist.
 bool SignalEvent(const FilePath& signal_dir, const char* signal_file) {
   File file(signal_dir.AppendASCII(signal_file),
-            File::FLAG_CREATE | File::FLAG_APPEND);
+            File::FLAG_CREATE | File::FLAG_WRITE);
   return file.IsValid();
 }
 
@@ -124,15 +124,13 @@ class FileLockingTest : public testing::Test {
  protected:
   void SetUp() override {
     testing::Test::SetUp();
-    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
-    // Create the lock file and verify that it can be locked and unlocked.
+    // Setup the temp dir and the lock file.
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     lock_file_.Initialize(
         temp_dir_.path().AppendASCII(kLockFile),
         File::FLAG_CREATE | File::FLAG_READ | File::FLAG_WRITE);
     ASSERT_TRUE(lock_file_.IsValid());
-    ASSERT_EQ(File::FILE_OK, lock_file_.Lock());
-    ASSERT_EQ(File::FILE_OK, lock_file_.Unlock());
   }
 
   bool SignalEvent(const char* signal_file) {
