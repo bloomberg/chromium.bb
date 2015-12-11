@@ -119,7 +119,7 @@ void CompositorMusConnection::OnWindowInputEvent(
       routing_id_, web_event.get(), &info);
   if (ack_state != INPUT_EVENT_ACK_STATE_NOT_CONSUMED)
     return;
-  base::Closure ack;
+  base::Closure ack = base::Bind(&base::DoNothing);
   const bool send_ack =
       WebInputEventTraits::WillReceiveAckFromRenderer(*web_event);
   if (send_ack) {
