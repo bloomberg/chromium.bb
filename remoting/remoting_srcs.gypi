@@ -210,7 +210,6 @@
       'protocol/chromium_socket_factory.h',
       'protocol/ice_connection_to_client.cc',
       'protocol/ice_connection_to_client.h',
-      'protocol/port_allocator_factory.h',
       'protocol/video_frame_pump.cc',
       'protocol/video_frame_pump.h',
       'protocol/webrtc_connection_to_client.cc',

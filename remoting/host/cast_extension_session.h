@@ -198,7 +198,7 @@ class CastExtensionSession : public HostExtensionSession,
   rtc::scoped_refptr<CastCreateSessionDescriptionObserver>
       create_session_desc_observer_;
 
-  // Parameters passed to ChromiumPortAllocator on creation.
+  // Parameters passed to ChromiumPortAllocatorFactory on creation.
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
   const protocol::NetworkSettings& network_settings_;
 

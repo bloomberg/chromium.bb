@@ -9,8 +9,11 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "third_party/webrtc/p2p/client/httpportallocator.h"
+
+namespace net {
+class URLRequestContextGetter;
+}  // namespace net
 
 namespace remoting {
 namespace protocol {

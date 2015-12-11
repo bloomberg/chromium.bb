@@ -12,7 +12,7 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "remoting/host/client_session.h"
 #include "remoting/proto/control.pb.h"
-#include "remoting/protocol/chromium_port_allocator.h"
+#include "remoting/protocol/chromium_port_allocator_factory.h"
 #include "remoting/protocol/client_stub.h"
 #include "remoting/protocol/webrtc_video_capturer_adapter.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediastreaminterface.h"
@@ -50,9 +50,8 @@ const char kVideoLabel[] = "cast_video_label";
 const char kStreamLabel[] = "stream_label";
 
 // Default STUN server used to construct
-// ChromiumPortAllocator for the PeerConnection.
-const char kDefaultStunHost[] = "stun.l.google.com";
-const int kDefaultStunPort = 19302;
+// webrtc::PeerConnectionInterface::RTCConfiguration for the PeerConnection.
+const char kDefaultStunURI[] = "stun:stun.l.google.com:19302";
 
 const char kWorkerThreadName[] = "CastExtensionSessionWorkerThread";
 
@@ -482,6 +481,13 @@ bool CastExtensionSession::InitializePeerConnection() {
 
   VLOG(1) << "Created PeerConnectionFactory successfully.";
 
+  webrtc::PeerConnectionInterface::IceServers servers;
+  webrtc::PeerConnectionInterface::IceServer server;
+  server.uri = kDefaultStunURI;
+  servers.push_back(server);
+  webrtc::PeerConnectionInterface::RTCConfiguration rtc_config;
+  rtc_config.servers = servers;
+
   // DTLS-SRTP is the preferred encryption method. If set to kValueFalse, the
   // peer connection uses SDES. Disabling SDES as well will cause the peer
   // connection to fail to connect.
@@ -491,17 +497,12 @@ bool CastExtensionSession::InitializePeerConnection() {
   constraints.AddMandatory(webrtc::MediaConstraintsInterface::kEnableDtlsSrtp,
                            webrtc::MediaConstraintsInterface::kValueTrue);
 
-  rtc::scoped_ptr<protocol::ChromiumPortAllocator> port_allocator(
-      protocol::ChromiumPortAllocator::Create(url_request_context_getter_,
-                                              network_settings_)
-          .release());
-  std::vector<rtc::SocketAddress> stun_hosts;
-  stun_hosts.push_back(rtc::SocketAddress(kDefaultStunHost, kDefaultStunPort));
-  port_allocator->SetStunHosts(stun_hosts);
+  rtc::scoped_refptr<webrtc::PortAllocatorFactoryInterface>
+      port_allocator_factory = protocol::ChromiumPortAllocatorFactory::Create(
+          network_settings_, url_request_context_getter_);
 
-  webrtc::PeerConnectionInterface::RTCConfiguration rtc_config;
   peer_connection_ = peer_conn_factory_->CreatePeerConnection(
-      rtc_config, &constraints, port_allocator.Pass(), nullptr, this);
+      rtc_config, &constraints, port_allocator_factory, nullptr, this);
 
   if (!peer_connection_.get()) {
     CleanupPeerConnection();

@@ -135,6 +135,87 @@ void HarmonizeConstraintsAndEffects(RTCMediaConstraints* constraints,
   }
 }
 
+class P2PPortAllocatorFactory
+    : public rtc::RefCountedObject<webrtc::PortAllocatorFactoryInterface> {
+ public:
+  P2PPortAllocatorFactory(
+      scoped_ptr<media::MediaPermission> media_permission,
+      const scoped_refptr<P2PSocketDispatcher>& socket_dispatcher,
+      rtc::NetworkManager* network_manager,
+      rtc::PacketSocketFactory* socket_factory,
+      const P2PPortAllocator::Config& config,
+      const GURL& origin,
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
+      : media_permission_(media_permission.Pass()),
+        socket_dispatcher_(socket_dispatcher),
+        network_manager_(network_manager),
+        socket_factory_(socket_factory),
+        config_(config),
+        origin_(origin),
+        task_runner_(task_runner) {}
+
+  cricket::PortAllocator* CreatePortAllocator(
+      const std::vector<StunConfiguration>& stun_servers,
+      const std::vector<TurnConfiguration>& turn_configurations) override {
+    P2PPortAllocator::Config config = config_;
+    for (size_t i = 0; i < stun_servers.size(); ++i) {
+      config.stun_servers.insert(rtc::SocketAddress(
+          stun_servers[i].server.hostname(),
+          stun_servers[i].server.port()));
+    }
+    for (size_t i = 0; i < turn_configurations.size(); ++i) {
+      P2PPortAllocator::Config::RelayServerConfig relay_config;
+      relay_config.server_address = turn_configurations[i].server.hostname();
+      relay_config.port = turn_configurations[i].server.port();
+      relay_config.username = turn_configurations[i].username;
+      relay_config.password = turn_configurations[i].password;
+      relay_config.transport_type = turn_configurations[i].transport_type;
+      relay_config.secure = turn_configurations[i].secure;
+      config.relays.push_back(relay_config);
+    }
+
+    scoped_ptr<rtc::NetworkManager> network_manager;
+    if (config.enable_multiple_routes) {
+      media::MediaPermission* media_permission = media_permission_.get();
+      FilteringNetworkManager* filtering_network_manager =
+          new FilteringNetworkManager(network_manager_, origin_,
+                                      media_permission_.Pass());
+      if (media_permission) {
+        // Start permission check earlier to reduce any impact to call set up
+        // time. It's safe to use Unretained here since both destructor and
+        // Initialize can only be called on the worker thread.
+        task_runner_->PostTask(
+            FROM_HERE, base::Bind(&FilteringNetworkManager::Initialize,
+                                  base::Unretained(filtering_network_manager)));
+      }
+      network_manager.reset(filtering_network_manager);
+    } else {
+      network_manager.reset(new EmptyNetworkManager(network_manager_));
+    }
+
+    return new P2PPortAllocator(socket_dispatcher_, network_manager.Pass(),
+                                socket_factory_, config, origin_, task_runner_);
+  }
+
+ protected:
+  ~P2PPortAllocatorFactory() override {}
+
+ private:
+  // Ownership of |media_permission_| will be passed to FilteringNetworkManager
+  // during CreatePortAllocator.
+  scoped_ptr<media::MediaPermission> media_permission_;
+
+  scoped_refptr<P2PSocketDispatcher> socket_dispatcher_;
+  rtc::NetworkManager* network_manager_;
+  rtc::PacketSocketFactory* socket_factory_;
+  P2PPortAllocator::Config config_;
+  GURL origin_;
+
+  // This is the worker thread where |media_permission_| and |network_manager_|
+  // live on.
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+};
+
 PeerConnectionDependencyFactory::PeerConnectionDependencyFactory(
     P2PSocketDispatcher* p2p_socket_dispatcher)
     : network_manager_(NULL),
@@ -459,30 +540,14 @@ PeerConnectionDependencyFactory::CreatePeerConnection(
   const GURL& requesting_origin =
       GURL(web_frame->document().url().spec()).GetOrigin();
 
-  scoped_ptr<rtc::NetworkManager> network_manager;
-  if (port_config.enable_multiple_routes) {
-    media::MediaPermission* media_permission_ptr = media_permission.get();
-    FilteringNetworkManager* filtering_network_manager =
-        new FilteringNetworkManager(network_manager_, requesting_origin,
-                                    std::move(media_permission));
-    if (media_permission_ptr) {
-      // Start permission check earlier to reduce any impact to call set up
-      // time. It's safe to use Unretained here since both destructor and
-      // Initialize can only be called on the worker thread.
-      chrome_worker_thread_.task_runner()->PostTask(
-          FROM_HERE, base::Bind(&FilteringNetworkManager::Initialize,
-                                base::Unretained(filtering_network_manager)));
-    }
-    network_manager.reset(filtering_network_manager);
-  } else {
-    network_manager.reset(new EmptyNetworkManager(network_manager_));
-  }
-  rtc::scoped_ptr<P2PPortAllocator> port_allocator(new P2PPortAllocator(
-      p2p_socket_dispatcher_, std::move(network_manager), socket_factory_.get(),
-      port_config, requesting_origin, chrome_worker_thread_.task_runner()));
+  scoped_refptr<P2PPortAllocatorFactory> pa_factory =
+      new P2PPortAllocatorFactory(
+          media_permission.Pass(), p2p_socket_dispatcher_, network_manager_,
+          socket_factory_.get(), port_config, requesting_origin,
+          chrome_worker_thread_.task_runner());
 
   return GetPcFactory()
-      ->CreatePeerConnection(config, constraints, std::move(port_allocator),
+      ->CreatePeerConnection(config, constraints, pa_factory.get(),
                              std::move(identity_store), observer)
       .get();
 }

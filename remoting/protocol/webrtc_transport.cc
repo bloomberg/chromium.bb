@@ -99,9 +99,11 @@ class SetSessionDescriptionObserver
 
 }  // namespace
 
-WebrtcTransport::WebrtcTransport(rtc::Thread* worker_thread,
-                                 PortAllocatorFactory* port_allocator_factory,
-                                 TransportRole role)
+WebrtcTransport::WebrtcTransport(
+    rtc::Thread* worker_thread,
+    rtc::scoped_refptr<webrtc::PortAllocatorFactoryInterface>
+        port_allocator_factory,
+    TransportRole role)
     : port_allocator_factory_(port_allocator_factory),
       role_(role),
       worker_thread_(worker_thread),
@@ -136,11 +138,8 @@ void WebrtcTransport::Start(EventHandler* event_handler,
   constraints.AddMandatory(webrtc::MediaConstraintsInterface::kEnableDtlsSrtp,
                            webrtc::MediaConstraintsInterface::kValueTrue);
 
-  rtc::scoped_ptr<cricket::PortAllocator> port_allocator(
-      port_allocator_factory_->CreatePortAllocator());
-
   peer_connection_ = peer_connection_factory_->CreatePeerConnection(
-      rtc_config, &constraints, std::move(port_allocator), nullptr, this);
+      rtc_config, &constraints, port_allocator_factory_, nullptr, this);
 
   data_stream_adapter_.Initialize(peer_connection_,
                                   role_ == TransportRole::SERVER);
@@ -489,18 +488,19 @@ void WebrtcTransport::AddPendingCandidatesIfPossible() {
 WebrtcTransportFactory::WebrtcTransportFactory(
     rtc::Thread* worker_thread,
     SignalStrategy* signal_strategy,
-    scoped_ptr<PortAllocatorFactory> port_allocator_factory,
+    rtc::scoped_refptr<webrtc::PortAllocatorFactoryInterface>
+        port_allocator_factory,
     TransportRole role)
     : worker_thread_(worker_thread),
       signal_strategy_(signal_strategy),
-      port_allocator_factory_(std::move(port_allocator_factory)),
+      port_allocator_factory_(port_allocator_factory),
       role_(role) {}
 
 WebrtcTransportFactory::~WebrtcTransportFactory() {}
 
 scoped_ptr<Transport> WebrtcTransportFactory::CreateTransport() {
-  return make_scoped_ptr(new WebrtcTransport(
-      worker_thread_, port_allocator_factory_.get(), role_));
+  return make_scoped_ptr(
+      new WebrtcTransport(worker_thread_, port_allocator_factory_, role_));
 }
 
 }  // namespace protocol
