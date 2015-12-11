@@ -27,7 +27,6 @@
 
 [
     SetWrapperReferenceTo(SVGElement contextElement),
-    RuntimeEnabled=SVG1DOM,
     WillBeGarbageCollected,
 ] interface SVGAnimatedInteger {
     [RaisesException=Setter] attribute long baseVal;

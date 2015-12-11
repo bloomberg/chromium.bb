@@ -26,9 +26,9 @@
 // http://www.w3.org/TR/SVG2/text.html#InterfaceSVGTextPositioningElement
 
 interface SVGTextPositioningElement : SVGTextContentElement {
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMText] readonly attribute SVGAnimatedLengthList x;
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMText] readonly attribute SVGAnimatedLengthList y;
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMText] readonly attribute SVGAnimatedLengthList dx;
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMText] readonly attribute SVGAnimatedLengthList dy;
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMText] readonly attribute SVGAnimatedNumberList rotate;
+    [MeasureAs=SVG1DOMText] readonly attribute SVGAnimatedLengthList x;
+    [MeasureAs=SVG1DOMText] readonly attribute SVGAnimatedLengthList y;
+    [MeasureAs=SVG1DOMText] readonly attribute SVGAnimatedLengthList dx;
+    [MeasureAs=SVG1DOMText] readonly attribute SVGAnimatedLengthList dy;
+    [MeasureAs=SVG1DOMText] readonly attribute SVGAnimatedNumberList rotate;
 };

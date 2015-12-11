@@ -27,7 +27,6 @@
 // http://www.w3.org/TR/SVG2/types.html#InterfaceSVGAnimatedNumber
 
 [
-    RuntimeEnabled=SVG1DOM,
     SetWrapperReferenceTo(SVGElement contextElement),
     WillBeGarbageCollected,
 ] interface SVGAnimatedNumber {

@@ -29,18 +29,18 @@
     DoNotCheckConstants
 ] interface SVGComponentTransferFunctionElement : SVGElement {
     // Component Transfer Types
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMFilter] const unsigned short SVG_FECOMPONENTTRANSFER_TYPE_UNKNOWN  = 0;
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMFilter] const unsigned short SVG_FECOMPONENTTRANSFER_TYPE_IDENTITY = 1;
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMFilter] const unsigned short SVG_FECOMPONENTTRANSFER_TYPE_TABLE    = 2;
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMFilter] const unsigned short SVG_FECOMPONENTTRANSFER_TYPE_DISCRETE = 3;
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMFilter] const unsigned short SVG_FECOMPONENTTRANSFER_TYPE_LINEAR   = 4;
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMFilter] const unsigned short SVG_FECOMPONENTTRANSFER_TYPE_GAMMA    = 5;
+    [MeasureAs=SVG1DOMFilter] const unsigned short SVG_FECOMPONENTTRANSFER_TYPE_UNKNOWN  = 0;
+    [MeasureAs=SVG1DOMFilter] const unsigned short SVG_FECOMPONENTTRANSFER_TYPE_IDENTITY = 1;
+    [MeasureAs=SVG1DOMFilter] const unsigned short SVG_FECOMPONENTTRANSFER_TYPE_TABLE    = 2;
+    [MeasureAs=SVG1DOMFilter] const unsigned short SVG_FECOMPONENTTRANSFER_TYPE_DISCRETE = 3;
+    [MeasureAs=SVG1DOMFilter] const unsigned short SVG_FECOMPONENTTRANSFER_TYPE_LINEAR   = 4;
+    [MeasureAs=SVG1DOMFilter] const unsigned short SVG_FECOMPONENTTRANSFER_TYPE_GAMMA    = 5;
 
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMFilter] readonly attribute SVGAnimatedEnumeration type;
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMFilter] readonly attribute SVGAnimatedNumberList  tableValues;
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMFilter] readonly attribute SVGAnimatedNumber      slope;
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMFilter] readonly attribute SVGAnimatedNumber      intercept;
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMFilter] readonly attribute SVGAnimatedNumber      amplitude;
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMFilter] readonly attribute SVGAnimatedNumber      exponent;
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMFilter] readonly attribute SVGAnimatedNumber      offset;
+    [MeasureAs=SVG1DOMFilter] readonly attribute SVGAnimatedEnumeration type;
+    [MeasureAs=SVG1DOMFilter] readonly attribute SVGAnimatedNumberList  tableValues;
+    [MeasureAs=SVG1DOMFilter] readonly attribute SVGAnimatedNumber      slope;
+    [MeasureAs=SVG1DOMFilter] readonly attribute SVGAnimatedNumber      intercept;
+    [MeasureAs=SVG1DOMFilter] readonly attribute SVGAnimatedNumber      amplitude;
+    [MeasureAs=SVG1DOMFilter] readonly attribute SVGAnimatedNumber      exponent;
+    [MeasureAs=SVG1DOMFilter] readonly attribute SVGAnimatedNumber      offset;
 };

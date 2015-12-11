@@ -28,7 +28,6 @@
 [
     ImplementedAs=SVGPreserveAspectRatioTearOff,
     SetWrapperReferenceTo(SVGElement contextElement),
-    RuntimeEnabled=SVG1DOM,
     WillBeGarbageCollected,
 ] interface SVGPreserveAspectRatio {
     // Alignment types

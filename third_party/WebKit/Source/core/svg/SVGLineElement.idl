@@ -26,8 +26,8 @@
 // http://www.w3.org/TR/SVG2/shapes.html#InterfaceSVGLineElement
 
 interface SVGLineElement : SVGGeometryElement {
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMShape] readonly attribute SVGAnimatedLength x1;
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMShape] readonly attribute SVGAnimatedLength y1;
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMShape] readonly attribute SVGAnimatedLength x2;
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMShape] readonly attribute SVGAnimatedLength y2;
+    [MeasureAs=SVG1DOMShape] readonly attribute SVGAnimatedLength x1;
+    [MeasureAs=SVG1DOMShape] readonly attribute SVGAnimatedLength y1;
+    [MeasureAs=SVG1DOMShape] readonly attribute SVGAnimatedLength x2;
+    [MeasureAs=SVG1DOMShape] readonly attribute SVGAnimatedLength y2;
 };

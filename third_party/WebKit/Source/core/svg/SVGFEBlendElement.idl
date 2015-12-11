@@ -30,16 +30,16 @@
 ] interface SVGFEBlendElement : SVGElement {
 
     // Blend Mode Types
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMFilter] const unsigned short SVG_FEBLEND_MODE_UNKNOWN = 0;
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMFilter] const unsigned short SVG_FEBLEND_MODE_NORMAL = 1;
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMFilter] const unsigned short SVG_FEBLEND_MODE_MULTIPLY = 2;
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMFilter] const unsigned short SVG_FEBLEND_MODE_SCREEN = 3;
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMFilter] const unsigned short SVG_FEBLEND_MODE_DARKEN = 4;
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMFilter] const unsigned short SVG_FEBLEND_MODE_LIGHTEN = 5;
+    [MeasureAs=SVG1DOMFilter] const unsigned short SVG_FEBLEND_MODE_UNKNOWN = 0;
+    [MeasureAs=SVG1DOMFilter] const unsigned short SVG_FEBLEND_MODE_NORMAL = 1;
+    [MeasureAs=SVG1DOMFilter] const unsigned short SVG_FEBLEND_MODE_MULTIPLY = 2;
+    [MeasureAs=SVG1DOMFilter] const unsigned short SVG_FEBLEND_MODE_SCREEN = 3;
+    [MeasureAs=SVG1DOMFilter] const unsigned short SVG_FEBLEND_MODE_DARKEN = 4;
+    [MeasureAs=SVG1DOMFilter] const unsigned short SVG_FEBLEND_MODE_LIGHTEN = 5;
 
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMFilter] readonly attribute SVGAnimatedString in1;
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMFilter] readonly attribute SVGAnimatedString in2;
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMFilter] readonly attribute SVGAnimatedEnumeration mode;
+    [MeasureAs=SVG1DOMFilter] readonly attribute SVGAnimatedString in1;
+    [MeasureAs=SVG1DOMFilter] readonly attribute SVGAnimatedString in2;
+    [MeasureAs=SVG1DOMFilter] readonly attribute SVGAnimatedEnumeration mode;
 };
 
 SVGFEBlendElement implements SVGFilterPrimitiveStandardAttributes;

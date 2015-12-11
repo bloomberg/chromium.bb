@@ -28,7 +28,6 @@
 [
     SetWrapperReferenceTo(SVGElement contextElement),
     ImplementedAs=SVGStringListTearOff,
-    RuntimeEnabled=SVG1DOM,
     WillBeGarbageCollected,
 ] interface SVGStringList {
     readonly attribute unsigned long length;

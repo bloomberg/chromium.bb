@@ -28,7 +28,7 @@
 // Currently SVG 1.1, SVG 2 members not implemented
 
 interface SVGFEImageElement : SVGElement {
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMFilter] readonly attribute SVGAnimatedPreserveAspectRatio preserveAspectRatio;
+    [MeasureAs=SVG1DOMFilter] readonly attribute SVGAnimatedPreserveAspectRatio preserveAspectRatio;
 };
 
 SVGFEImageElement implements SVGFilterPrimitiveStandardAttributes;

@@ -28,7 +28,6 @@
 [
     ImplementedAs=SVGAnimatedEnumerationBase,
     SetWrapperReferenceTo(SVGElement contextElement),
-    RuntimeEnabled=SVG1DOM,
     WillBeGarbageCollected,
 ] interface SVGAnimatedEnumeration {
     [RaisesException=Setter] attribute unsigned short baseVal;

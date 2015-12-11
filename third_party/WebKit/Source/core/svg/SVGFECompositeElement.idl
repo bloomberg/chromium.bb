@@ -29,21 +29,21 @@
     DoNotCheckConstants,
 ] interface SVGFECompositeElement : SVGElement {
     // Composite Operators
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMFilter] const unsigned short SVG_FECOMPOSITE_OPERATOR_UNKNOWN = 0;
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMFilter] const unsigned short SVG_FECOMPOSITE_OPERATOR_OVER = 1;
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMFilter] const unsigned short SVG_FECOMPOSITE_OPERATOR_IN = 2;
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMFilter] const unsigned short SVG_FECOMPOSITE_OPERATOR_OUT = 3;
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMFilter] const unsigned short SVG_FECOMPOSITE_OPERATOR_ATOP = 4;
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMFilter] const unsigned short SVG_FECOMPOSITE_OPERATOR_XOR = 5;
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMFilter] const unsigned short SVG_FECOMPOSITE_OPERATOR_ARITHMETIC = 6;
+    [MeasureAs=SVG1DOMFilter] const unsigned short SVG_FECOMPOSITE_OPERATOR_UNKNOWN = 0;
+    [MeasureAs=SVG1DOMFilter] const unsigned short SVG_FECOMPOSITE_OPERATOR_OVER = 1;
+    [MeasureAs=SVG1DOMFilter] const unsigned short SVG_FECOMPOSITE_OPERATOR_IN = 2;
+    [MeasureAs=SVG1DOMFilter] const unsigned short SVG_FECOMPOSITE_OPERATOR_OUT = 3;
+    [MeasureAs=SVG1DOMFilter] const unsigned short SVG_FECOMPOSITE_OPERATOR_ATOP = 4;
+    [MeasureAs=SVG1DOMFilter] const unsigned short SVG_FECOMPOSITE_OPERATOR_XOR = 5;
+    [MeasureAs=SVG1DOMFilter] const unsigned short SVG_FECOMPOSITE_OPERATOR_ARITHMETIC = 6;
 
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMFilter] readonly attribute SVGAnimatedString in2;
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMFilter] readonly attribute SVGAnimatedString in1;
-    [RuntimeEnabled=SVG1DOM,ImplementedAs=svgOperator, MeasureAs=SVG1DOMFilter] readonly attribute SVGAnimatedEnumeration operator;
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMFilter] readonly attribute SVGAnimatedNumber k1;
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMFilter] readonly attribute SVGAnimatedNumber k2;
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMFilter] readonly attribute SVGAnimatedNumber k3;
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMFilter] readonly attribute SVGAnimatedNumber k4;
+    [MeasureAs=SVG1DOMFilter] readonly attribute SVGAnimatedString in2;
+    [MeasureAs=SVG1DOMFilter] readonly attribute SVGAnimatedString in1;
+    [ImplementedAs=svgOperator, MeasureAs=SVG1DOMFilter] readonly attribute SVGAnimatedEnumeration operator;
+    [MeasureAs=SVG1DOMFilter] readonly attribute SVGAnimatedNumber k1;
+    [MeasureAs=SVG1DOMFilter] readonly attribute SVGAnimatedNumber k2;
+    [MeasureAs=SVG1DOMFilter] readonly attribute SVGAnimatedNumber k3;
+    [MeasureAs=SVG1DOMFilter] readonly attribute SVGAnimatedNumber k4;
 };
 
 SVGFECompositeElement implements SVGFilterPrimitiveStandardAttributes;

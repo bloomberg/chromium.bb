@@ -27,7 +27,6 @@
 
 [
     SetWrapperReferenceTo(SVGElement contextElement),
-    RuntimeEnabled=SVG1DOM,
     WillBeGarbageCollected,
 ] interface SVGAnimatedRect {
     // TODO(philipj): SVGRect should be DOMRectReadOnly.

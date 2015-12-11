@@ -23,7 +23,6 @@
 
 [
     ImplementedAs=SVGTransformTearOff,
-    RuntimeEnabled=SVG1DOM,
     SetWrapperReferenceTo(SVGElement contextElement),
     WillBeGarbageCollected,
 ] interface SVGTransform {

@@ -26,13 +26,13 @@
 // http://www.w3.org/TR/SVG2/pservers.html#InterfaceSVGPatternElement
 
 interface SVGPatternElement : SVGElement {
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMPaintServer] readonly attribute SVGAnimatedEnumeration patternUnits;
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMPaintServer] readonly attribute SVGAnimatedEnumeration patternContentUnits;
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMPaintServer] readonly attribute SVGAnimatedTransformList patternTransform;
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMPaintServer] readonly attribute SVGAnimatedLength x;
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMPaintServer] readonly attribute SVGAnimatedLength y;
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMPaintServer] readonly attribute SVGAnimatedLength width;
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMPaintServer] readonly attribute SVGAnimatedLength height;
+    [MeasureAs=SVG1DOMPaintServer] readonly attribute SVGAnimatedEnumeration patternUnits;
+    [MeasureAs=SVG1DOMPaintServer] readonly attribute SVGAnimatedEnumeration patternContentUnits;
+    [MeasureAs=SVG1DOMPaintServer] readonly attribute SVGAnimatedTransformList patternTransform;
+    [MeasureAs=SVG1DOMPaintServer] readonly attribute SVGAnimatedLength x;
+    [MeasureAs=SVG1DOMPaintServer] readonly attribute SVGAnimatedLength y;
+    [MeasureAs=SVG1DOMPaintServer] readonly attribute SVGAnimatedLength width;
+    [MeasureAs=SVG1DOMPaintServer] readonly attribute SVGAnimatedLength height;
 };
 
 SVGPatternElement implements SVGFitToViewBox;

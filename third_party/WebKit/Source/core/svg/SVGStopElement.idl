@@ -26,5 +26,5 @@
 // http://www.w3.org/TR/SVG2/pservers.html#InterfaceSVGStopElement
 
 interface SVGStopElement : SVGElement {
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMPaintServer] readonly attribute SVGAnimatedNumber offset;
+    [MeasureAs=SVG1DOMPaintServer] readonly attribute SVGAnimatedNumber offset;
 };

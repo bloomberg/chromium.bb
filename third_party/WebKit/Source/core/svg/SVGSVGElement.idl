@@ -24,10 +24,10 @@
 
 interface SVGSVGElement : SVGGraphicsElement {
 
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOM] readonly attribute SVGAnimatedLength x;
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOM] readonly attribute SVGAnimatedLength y;
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOM] readonly attribute SVGAnimatedLength width;
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOM] readonly attribute SVGAnimatedLength height;
+    [MeasureAs=SVG1DOM] readonly attribute SVGAnimatedLength x;
+    [MeasureAs=SVG1DOM] readonly attribute SVGAnimatedLength y;
+    [MeasureAs=SVG1DOM] readonly attribute SVGAnimatedLength width;
+    [MeasureAs=SVG1DOM] readonly attribute SVGAnimatedLength height;
     // TODO(philipj): viewport should be a DOMRectReadOnly.
     readonly attribute SVGRect viewport;
     // TODO(philipj): useCurrentView and currentView have been removed:
@@ -38,10 +38,10 @@ interface SVGSVGElement : SVGGraphicsElement {
     // TODO(philipj): currentTranslate should be a DOMPointReadOnly.
     [ImplementedAs=currentTranslateFromJavascript] readonly attribute SVGPoint currentTranslate;
 
-    [RuntimeEnabled=SVG1DOM, DeprecateAs=SVGSVGElementSuspendRedraw] unsigned long suspendRedraw(unsigned long maxWaitMilliseconds);
-    [RuntimeEnabled=SVG1DOM, DeprecateAs=SVGSVGElementUnsuspendRedraw] void unsuspendRedraw(unsigned long suspendHandleId);
-    [RuntimeEnabled=SVG1DOM, DeprecateAs=SVGSVGElementUnsuspendRedrawAll] void unsuspendRedrawAll();
-    [RuntimeEnabled=SVG1DOM, DeprecateAs=SVGSVGElementForceRedraw] void forceRedraw();
+    [DeprecateAs=SVGSVGElementSuspendRedraw] unsigned long suspendRedraw(unsigned long maxWaitMilliseconds);
+    [DeprecateAs=SVGSVGElementUnsuspendRedraw] void unsuspendRedraw(unsigned long suspendHandleId);
+    [DeprecateAs=SVGSVGElementUnsuspendRedrawAll] void unsuspendRedrawAll();
+    [DeprecateAs=SVGSVGElementForceRedraw] void forceRedraw();
 
     [RuntimeEnabled=smil] void pauseAnimations();
     [RuntimeEnabled=smil] void unpauseAnimations();
@@ -55,15 +55,15 @@ interface SVGSVGElement : SVGGraphicsElement {
     boolean checkIntersection(SVGElement element, SVGRect rect);
     boolean checkEnclosure(SVGElement element, SVGRect rect);
     void deselectAll();
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOM] SVGNumber createSVGNumber();
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOM] SVGLength createSVGLength();
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOM] SVGAngle createSVGAngle();
+    [MeasureAs=SVG1DOM] SVGNumber createSVGNumber();
+    [MeasureAs=SVG1DOM] SVGLength createSVGLength();
+    [MeasureAs=SVG1DOM] SVGAngle createSVGAngle();
     // TODO(philipj): SVGPoint/Matrix/Rect should be DOMPoint/Matrix/Rect.
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOM] SVGPoint createSVGPoint();
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOM] SVGMatrix createSVGMatrix();
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOM] SVGRect createSVGRect();
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOM] SVGTransform createSVGTransform();
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOM] SVGTransform createSVGTransformFromMatrix(SVGMatrix matrix);
+    [MeasureAs=SVG1DOM] SVGPoint createSVGPoint();
+    [MeasureAs=SVG1DOM] SVGMatrix createSVGMatrix();
+    [MeasureAs=SVG1DOM] SVGRect createSVGRect();
+    [MeasureAs=SVG1DOM] SVGTransform createSVGTransform();
+    [MeasureAs=SVG1DOM] SVGTransform createSVGTransformFromMatrix(SVGMatrix matrix);
 
     // TODO(philipj): The following was part of SVG 1.1:
     // http://www.w3.org/TR/SVG11/struct.html#InterfaceSVGSVGElement

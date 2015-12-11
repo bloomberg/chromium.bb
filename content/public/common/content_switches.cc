@@ -268,9 +268,6 @@ const char kDisableSoftwareRasterizer[]     = "disable-software-rasterizer";
 // Disables the Web Speech API.
 const char kDisableSpeechAPI[]              = "disable-speech-api";
 
-// Disables SVG 1.1 DOM.
-const char kDisableSVG1DOM[]                = "disable-svg1dom";
-
 // Disable multithreaded GPU compositing of web content.
 const char kDisableThreadedCompositing[]     = "disable-threaded-compositing";
 

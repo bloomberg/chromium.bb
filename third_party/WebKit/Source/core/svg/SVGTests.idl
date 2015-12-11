@@ -29,7 +29,7 @@
 [
     NoInterfaceObject, // Always used on target of 'implements'
 ] interface SVGTests {
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMSVGTests] readonly attribute SVGStringList requiredFeatures;
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMSVGTests] readonly attribute SVGStringList requiredExtensions;
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMSVGTests] readonly attribute SVGStringList systemLanguage;
+    [MeasureAs=SVG1DOMSVGTests] readonly attribute SVGStringList requiredFeatures;
+    [MeasureAs=SVG1DOMSVGTests] readonly attribute SVGStringList requiredExtensions;
+    [MeasureAs=SVG1DOMSVGTests] readonly attribute SVGStringList systemLanguage;
 };

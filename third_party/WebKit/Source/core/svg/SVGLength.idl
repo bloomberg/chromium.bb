@@ -25,7 +25,6 @@
 [
     ImplementedAs=SVGLengthTearOff,
     SetWrapperReferenceTo(SVGElement contextElement),
-    RuntimeEnabled=SVG1DOM,
     WillBeGarbageCollected,
 ] interface SVGLength {
     // Length Unit Types

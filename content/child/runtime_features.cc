@@ -178,10 +178,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (command_line.HasSwitch(switches::kEnableCredentialManagerAPI))
     WebRuntimeFeatures::enableCredentialManagerAPI(true);
 
-  if (command_line.HasSwitch(switches::kDisableSVG1DOM)) {
-    WebRuntimeFeatures::enableSVG1DOM(false);
-  }
-
   if (command_line.HasSwitch(switches::kReducedReferrerGranularity))
     WebRuntimeFeatures::enableReducedReferrerGranularity(true);
 

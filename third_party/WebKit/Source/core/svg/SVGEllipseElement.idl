@@ -26,8 +26,8 @@
 // http://www.w3.org/TR/SVG2/shapes.html#InterfaceSVGEllipseElement
 
 interface SVGEllipseElement : SVGGeometryElement {
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMShape] readonly attribute SVGAnimatedLength cx;
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMShape] readonly attribute SVGAnimatedLength cy;
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMShape] readonly attribute SVGAnimatedLength rx;
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMShape] readonly attribute SVGAnimatedLength ry;
+    [MeasureAs=SVG1DOMShape] readonly attribute SVGAnimatedLength cx;
+    [MeasureAs=SVG1DOMShape] readonly attribute SVGAnimatedLength cy;
+    [MeasureAs=SVG1DOMShape] readonly attribute SVGAnimatedLength rx;
+    [MeasureAs=SVG1DOMShape] readonly attribute SVGAnimatedLength ry;
 };

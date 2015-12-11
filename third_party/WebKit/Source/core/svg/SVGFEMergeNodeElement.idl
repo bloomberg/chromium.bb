@@ -26,5 +26,5 @@
 // http://www.w3.org/TR/filter-effects/#InterfaceSVGFEMergeNodeElement
 
 interface SVGFEMergeNodeElement : SVGElement {
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMFilter] readonly attribute SVGAnimatedString in1;
+    [MeasureAs=SVG1DOMFilter] readonly attribute SVGAnimatedString in1;
 };

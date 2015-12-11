@@ -150,8 +150,6 @@ public:
 
     BLINK_EXPORT static void enableV8IdleTasks(bool);
 
-    BLINK_EXPORT static void enableSVG1DOM(bool);
-
     BLINK_EXPORT static void enableReducedReferrerGranularity(bool);
 
     BLINK_EXPORT static void enablePushMessaging(bool);

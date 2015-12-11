@@ -29,7 +29,6 @@
 [
     ImplementedAs=SVGNumberListTearOff,
     SetWrapperReferenceTo(SVGElement contextElement),
-    RuntimeEnabled=SVG1DOM,
     WillBeGarbageCollected,
 ] interface SVGNumberList {
     readonly attribute unsigned long length;

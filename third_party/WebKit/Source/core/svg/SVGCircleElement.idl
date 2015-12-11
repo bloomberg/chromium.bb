@@ -27,7 +27,7 @@
 // http://www.w3.org/TR/SVG2/shapes.html#InterfaceSVGCircleElement
 
 interface SVGCircleElement : SVGGeometryElement {
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMShape] readonly attribute SVGAnimatedLength cx;
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMShape] readonly attribute SVGAnimatedLength cy;
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMShape] readonly attribute SVGAnimatedLength r;
+    [MeasureAs=SVG1DOMShape] readonly attribute SVGAnimatedLength cx;
+    [MeasureAs=SVG1DOMShape] readonly attribute SVGAnimatedLength cy;
+    [MeasureAs=SVG1DOMShape] readonly attribute SVGAnimatedLength r;
 };

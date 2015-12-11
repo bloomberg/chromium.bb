@@ -27,18 +27,18 @@
 
 interface SVGTextPathElement : SVGTextContentElement {
     // textPath Method Types
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMText] const unsigned short TEXTPATH_METHODTYPE_UNKNOWN   = 0;
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMText] const unsigned short TEXTPATH_METHODTYPE_ALIGN     = 1;
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMText] const unsigned short TEXTPATH_METHODTYPE_STRETCH   = 2;
+    [MeasureAs=SVG1DOMText] const unsigned short TEXTPATH_METHODTYPE_UNKNOWN   = 0;
+    [MeasureAs=SVG1DOMText] const unsigned short TEXTPATH_METHODTYPE_ALIGN     = 1;
+    [MeasureAs=SVG1DOMText] const unsigned short TEXTPATH_METHODTYPE_STRETCH   = 2;
 
     // textPath Spacing Types
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMText] const unsigned short TEXTPATH_SPACINGTYPE_UNKNOWN  = 0;
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMText] const unsigned short TEXTPATH_SPACINGTYPE_AUTO     = 1;
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMText] const unsigned short TEXTPATH_SPACINGTYPE_EXACT    = 2;
+    [MeasureAs=SVG1DOMText] const unsigned short TEXTPATH_SPACINGTYPE_UNKNOWN  = 0;
+    [MeasureAs=SVG1DOMText] const unsigned short TEXTPATH_SPACINGTYPE_AUTO     = 1;
+    [MeasureAs=SVG1DOMText] const unsigned short TEXTPATH_SPACINGTYPE_EXACT    = 2;
 
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMText] readonly attribute SVGAnimatedLength startOffset;
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMText] readonly attribute SVGAnimatedEnumeration method;
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMText] readonly attribute SVGAnimatedEnumeration spacing;
+    [MeasureAs=SVG1DOMText] readonly attribute SVGAnimatedLength startOffset;
+    [MeasureAs=SVG1DOMText] readonly attribute SVGAnimatedEnumeration method;
+    [MeasureAs=SVG1DOMText] readonly attribute SVGAnimatedEnumeration spacing;
 };
 
 SVGTextPathElement implements SVGURIReference;
