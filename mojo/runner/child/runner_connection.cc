@@ -249,13 +249,7 @@ bool RunnerConnectionImpl::WaitForApplicationRequest(
       CHECK(broker_channel.is_valid());
       embedder::SetParentPipeHandle(
           mojo::embedder::ScopedPlatformHandle(mojo::embedder::PlatformHandle(
-              broker_channel.release().
-#if defined(OS_WIN)
-                                      handle
-#else
-                                      fd
-#endif
-              )));
+              broker_channel.release().handle)));
     }
   }
 

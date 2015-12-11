@@ -34,7 +34,7 @@ namespace {
 
 void WaitReadable(PlatformHandle h) {
   struct pollfd pfds = {};
-  pfds.fd = h.fd;
+  pfds.fd = h.handle;
   pfds.events = POLLIN;
   CHECK_EQ(poll(&pfds, 1, -1), 1);
 }
@@ -70,7 +70,7 @@ TEST_F(PlatformChannelPairPosixTest, NoSigPipe) {
   // Write to the client.
   static const char kHello[] = "hello";
   EXPECT_EQ(static_cast<ssize_t>(sizeof(kHello)),
-            write(client_handle.get().fd, kHello, sizeof(kHello)));
+            write(client_handle.get().handle, kHello, sizeof(kHello)));
 
   // Close the client.
   client_handle.reset();
@@ -78,11 +78,11 @@ TEST_F(PlatformChannelPairPosixTest, NoSigPipe) {
   // Read from the server; this should be okay.
   char buffer[100] = {};
   EXPECT_EQ(static_cast<ssize_t>(sizeof(kHello)),
-            read(server_handle.get().fd, buffer, sizeof(buffer)));
+            read(server_handle.get().handle, buffer, sizeof(buffer)));
   EXPECT_STREQ(kHello, buffer);
 
   // Try reading again.
-  ssize_t result = read(server_handle.get().fd, buffer, sizeof(buffer));
+  ssize_t result = read(server_handle.get().handle, buffer, sizeof(buffer));
   // We should probably get zero (for "end of file"), but -1 would also be okay.
   EXPECT_TRUE(result == 0 || result == -1);
   if (result == -1)

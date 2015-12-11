@@ -52,7 +52,7 @@ bool SimplePlatformSharedBuffer::InitFromPlatformHandle(
     return false;
   }
 
-  int size = ashmem_get_size_region(platform_handle.get().fd);
+  int size = ashmem_get_size_region(platform_handle.get().handle);
 
   if (size < 0) {
     DPLOG(ERROR) << "ashmem_get_size_region()";

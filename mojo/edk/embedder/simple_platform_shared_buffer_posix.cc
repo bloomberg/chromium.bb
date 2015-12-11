@@ -97,7 +97,7 @@ bool SimplePlatformSharedBuffer::InitFromPlatformHandle(
 
   struct stat sb = {};
   // Note: |fstat()| isn't interruptible.
-  if (fstat(platform_handle.get().fd, &sb) != 0) {
+  if (fstat(platform_handle.get().handle, &sb) != 0) {
     PLOG(ERROR) << "fstat";
     return false;
   }
@@ -134,7 +134,7 @@ scoped_ptr<PlatformSharedBufferMapping> SimplePlatformSharedBuffer::MapImpl(
 
   void* real_base =
       mmap(nullptr, real_length, PROT_READ | PROT_WRITE, MAP_SHARED,
-           handle_.get().fd, static_cast<off_t>(real_offset));
+           handle_.get().handle, static_cast<off_t>(real_offset));
   // |mmap()| should return |MAP_FAILED| (a.k.a. -1) on error. But it shouldn't
   // return null either.
   if (real_base == MAP_FAILED || !real_base) {

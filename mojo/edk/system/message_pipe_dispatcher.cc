@@ -313,7 +313,7 @@ scoped_refptr<MessagePipeDispatcher> MessagePipeDispatcher::Deserialize(
       ClosePlatformHandles(&serialized_fds);
       return nullptr;
     }
-    serialized_fds.push_back(handle.release().fd);
+    serialized_fds.push_back(handle.release().handle);
   }
 
   serialized_read_fds.assign(
@@ -523,7 +523,7 @@ void MessagePipeDispatcher::SerializeInternal() {
           all_platform_handles->at(i) = PlatformHandle();
 #else
         for (size_t i = 0; i < all_platform_handles->size(); i++) {
-          serialized_fds_.push_back(all_platform_handles->at(i).fd);
+          serialized_fds_.push_back(all_platform_handles->at(i).handle);
           serialized_message_fds_length_++;
           all_platform_handles->at(i) = PlatformHandle();
         }

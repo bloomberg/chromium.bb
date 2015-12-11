@@ -23,9 +23,9 @@ void PlatformHandle::CloseIfNecessary() {
     return;
 
 #if defined(OS_POSIX)
-  bool success = (close(fd) == 0);
+  bool success = (close(handle) == 0);
   DPCHECK(success);
-  fd = -1;
+  handle = -1;
 #elif defined(OS_WIN)
   bool success = !!CloseHandle(handle);
   DPCHECK(success);

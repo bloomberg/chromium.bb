@@ -105,12 +105,7 @@ edk::ScopedPlatformHandle CreateEDKHandle(ScopedPlatformHandle handle) {
 }
 
 ScopedPlatformHandle CreateHandle(edk::ScopedPlatformHandle handle) {
-  return ScopedPlatformHandle(PlatformHandle(
-#if defined(OS_WIN)
-        handle.release().handle));
-#else
-        handle.release().fd));
-#endif
+  return ScopedPlatformHandle(PlatformHandle(handle.release().handle));
 }
 
 }  // namespace
@@ -194,11 +189,7 @@ MojoResult PassWrappedPlatformHandle(MojoHandle platform_handle_wrapper_handle,
     MojoResult rv = mojo::edk::PassWrappedPlatformHandle(
         platform_handle_wrapper_handle, &edk_handle);
     platform_handle->reset(mojo::embedder::PlatformHandle(
-#if defined(OS_WIN)
         edk_handle.release().handle));
-#else
-        edk_handle.release().fd));
-#endif
     return rv;
   }
 

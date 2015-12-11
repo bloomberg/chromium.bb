@@ -17,14 +17,14 @@ namespace edk {
 
 #if defined(OS_POSIX)
 struct MOJO_SYSTEM_IMPL_EXPORT PlatformHandle {
-  PlatformHandle() : fd(-1) {}
-  explicit PlatformHandle(int fd) : fd(fd) {}
+  PlatformHandle() : handle(-1) {}
+  explicit PlatformHandle(int handle) : handle(handle) {}
 
   void CloseIfNecessary();
 
-  bool is_valid() const { return fd != -1; }
+  bool is_valid() const { return handle != -1; }
 
-  int fd;
+  int handle;
 };
 #elif defined(OS_WIN)
 struct MOJO_SYSTEM_IMPL_EXPORT PlatformHandle {

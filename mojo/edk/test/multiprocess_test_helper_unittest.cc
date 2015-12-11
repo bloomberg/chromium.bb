@@ -26,7 +26,7 @@ bool IsNonBlocking(const PlatformHandle& handle) {
   // FILE_FLAG_OVERLAPPED.
   return true;
 #else
-  return fcntl(handle.fd, F_GETFL) & O_NONBLOCK;
+  return fcntl(handle.handle, F_GETFL) & O_NONBLOCK;
 #endif
 }
 

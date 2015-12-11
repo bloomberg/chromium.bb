@@ -207,12 +207,7 @@ void ChildProcessHost::DoLaunch() {
           child_process_.Handle(),
           mojo::embedder::ScopedPlatformHandle(mojo::embedder::PlatformHandle(
               serializer_platform_channel_pair_->PassServerHandle().release().
-#if defined(OS_WIN)
-                  handle
-#else
-                  fd
-#endif
-            )));
+                  handle)));
     }
   }
   start_child_process_event_.Signal();

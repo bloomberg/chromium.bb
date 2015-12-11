@@ -17,15 +17,15 @@ bool BlockingWrite(const PlatformHandle& handle,
                    const void* buffer,
                    size_t bytes_to_write,
                    size_t* bytes_written) {
-  int original_flags = fcntl(handle.fd, F_GETFL);
+  int original_flags = fcntl(handle.handle, F_GETFL);
   if (original_flags == -1 ||
-      fcntl(handle.fd, F_SETFL, original_flags & (~O_NONBLOCK)) != 0) {
+      fcntl(handle.handle, F_SETFL, original_flags & (~O_NONBLOCK)) != 0) {
     return false;
   }
 
-  ssize_t result = HANDLE_EINTR(write(handle.fd, buffer, bytes_to_write));
+  ssize_t result = HANDLE_EINTR(write(handle.handle, buffer, bytes_to_write));
 
-  fcntl(handle.fd, F_SETFL, original_flags);
+  fcntl(handle.handle, F_SETFL, original_flags);
 
   if (result < 0)
     return false;
@@ -38,15 +38,15 @@ bool BlockingRead(const PlatformHandle& handle,
                   void* buffer,
                   size_t buffer_size,
                   size_t* bytes_read) {
-  int original_flags = fcntl(handle.fd, F_GETFL);
+  int original_flags = fcntl(handle.handle, F_GETFL);
   if (original_flags == -1 ||
-      fcntl(handle.fd, F_SETFL, original_flags & (~O_NONBLOCK)) != 0) {
+      fcntl(handle.handle, F_SETFL, original_flags & (~O_NONBLOCK)) != 0) {
     return false;
   }
 
-  ssize_t result = HANDLE_EINTR(read(handle.fd, buffer, buffer_size));
+  ssize_t result = HANDLE_EINTR(read(handle.handle, buffer, buffer_size));
 
-  fcntl(handle.fd, F_SETFL, original_flags);
+  fcntl(handle.handle, F_SETFL, original_flags);
 
   if (result < 0)
     return false;
@@ -59,7 +59,7 @@ bool NonBlockingRead(const PlatformHandle& handle,
                      void* buffer,
                      size_t buffer_size,
                      size_t* bytes_read) {
-  ssize_t result = HANDLE_EINTR(read(handle.fd, buffer, buffer_size));
+  ssize_t result = HANDLE_EINTR(read(handle.handle, buffer, buffer_size));
 
   if (result < 0) {
     if (errno != EAGAIN && errno != EWOULDBLOCK)
@@ -83,7 +83,7 @@ ScopedPlatformHandle PlatformHandleFromFILE(base::ScopedFILE fp) {
 base::ScopedFILE FILEFromPlatformHandle(ScopedPlatformHandle h,
                                         const char* mode) {
   CHECK(h.is_valid());
-  base::ScopedFILE rv(fdopen(h.release().fd, mode));
+  base::ScopedFILE rv(fdopen(h.release().handle, mode));
   PCHECK(rv) << "fdopen";
   return rv.Pass();
 }
