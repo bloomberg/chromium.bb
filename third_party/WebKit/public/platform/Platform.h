@@ -81,9 +81,9 @@ class WebIDBFactory;
 class WebMIDIAccessor;
 class WebMIDIAccessorClient;
 class WebMediaRecorderHandler;
-class WebMediaStream;
 class WebMediaStreamCenter;
 class WebMediaStreamCenterClient;
+class WebMediaStreamTrack;
 class WebMemoryDumpProvider;
 class WebMessagePortChannel;
 class WebMimeRegistry;
@@ -647,7 +647,7 @@ public:
     virtual WebMediaStreamCenter* createMediaStreamCenter(WebMediaStreamCenterClient*) { return nullptr; }
 
     // Creates an WebCanvasCaptureHandler to capture Canvas output.
-    virtual WebCanvasCaptureHandler* createCanvasCaptureHandler(const WebSize&, double, WebMediaStream*) { return nullptr; }
+    virtual WebCanvasCaptureHandler* createCanvasCaptureHandler(const WebSize&, double, WebMediaStreamTrack*) { return nullptr; }
     // WebWorker ----------------------------------------------------------
 
     virtual void didStartWorkerRunLoop() { }

@@ -11,13 +11,13 @@
 
 namespace blink {
 
-class CanvasCaptureMediaStream;
+class MediaStream;
 class ExceptionState;
 
 class HTMLCanvasElementCapture {
     STATIC_ONLY(HTMLCanvasElementCapture);
 public:
-    static CanvasCaptureMediaStream* captureStream(HTMLCanvasElement&, ExceptionState&);
+    static MediaStream* captureStream(HTMLCanvasElement&, ExceptionState&);
 };
 
 } // namespace blink

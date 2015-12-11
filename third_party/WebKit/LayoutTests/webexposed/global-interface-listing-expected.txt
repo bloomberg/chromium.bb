@@ -468,7 +468,7 @@ interface CacheStorage
     method keys
     method match
     method open
-interface CanvasCaptureMediaStream : MediaStream
+interface CanvasCaptureMediaStreamTrack : MediaStreamTrack
     getter canvas
     method constructor
     method requestFrame

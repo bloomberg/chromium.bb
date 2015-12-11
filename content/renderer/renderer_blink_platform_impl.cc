@@ -148,9 +148,9 @@ using blink::WebGamepads;
 using blink::WebIDBFactory;
 using blink::WebMIDIAccessor;
 using blink::WebMediaRecorderHandler;
-using blink::WebMediaStream;
 using blink::WebMediaStreamCenter;
 using blink::WebMediaStreamCenterClient;
+using blink::WebMediaStreamTrack;
 using blink::WebMimeRegistry;
 using blink::WebRTCPeerConnectionHandler;
 using blink::WebRTCPeerConnectionHandlerClient;
@@ -944,9 +944,9 @@ bool RendererBlinkPlatformImpl::SetSandboxEnabledForTesting(bool enable) {
 WebCanvasCaptureHandler* RendererBlinkPlatformImpl::createCanvasCaptureHandler(
     const WebSize& size,
     double frame_rate,
-    WebMediaStream* stream) {
+    WebMediaStreamTrack* track) {
 #if defined(ENABLE_WEBRTC)
-  return new CanvasCaptureHandler(size, frame_rate, stream);
+  return new CanvasCaptureHandler(size, frame_rate, track);
 #else
   return nullptr;
 #endif  // defined(ENABLE_WEBRTC)

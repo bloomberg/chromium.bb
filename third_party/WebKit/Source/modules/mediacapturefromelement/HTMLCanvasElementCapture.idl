@@ -6,5 +6,5 @@
 [
     RuntimeEnabled=MediaCaptureFromElement
 ] partial interface HTMLCanvasElement {
-    [RaisesException] CanvasCaptureMediaStream captureStream ();
+    [RaisesException] MediaStream captureStream ();
 };

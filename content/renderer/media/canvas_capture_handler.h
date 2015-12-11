@@ -13,19 +13,33 @@
 #include "media/base/video_capturer_source.h"
 #include "media/base/video_frame_pool.h"
 #include "third_party/WebKit/public/platform/WebCanvasCaptureHandler.h"
-#include "third_party/WebKit/public/platform/WebMediaStream.h"
+#include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/WebKit/public/platform/WebSkImage.h"
 #include "third_party/skia/include/core/SkImage.h"
 
 namespace content {
 
+// CanvasCaptureHandler acts as the link between blink side HTMLCanvasElement
+// and Chrome side VideoCapturerSource. It is responsible for handling
+// WebSkImage instances sent from the blink side, convert them to
+// media::VideoFrame and plug them to the MediaStreamTrack.
+// CanvasCaptureHandler instance is owned by a blink::CanvasDrawListener which
+// is owned by a CanvasCaptureMediaStreamTrack.
+// All methods are called on the same thread as construction and destruction,
+// i.e. the Main Render thread. Note that a CanvasCaptureHandlerDelegate is
+// used to send back frames on the IO thread.
 class CONTENT_EXPORT CanvasCaptureHandler final
     : public NON_EXPORTED_BASE(blink::WebCanvasCaptureHandler) {
  public:
+  // A VideoCapturerSource instance is created, which is responsible for handing
+  // stop&start callbacks back to CanvasCaptureHandler. That VideoCapturerSource
+  // is then plugged into a MediaStreamTrack passed as |track|, and it is owned
+  // by the blink side MediaStreamSource.
   CanvasCaptureHandler(const blink::WebSize& size,
                        double frame_rate,
-                       blink::WebMediaStream* stream);
+                       blink::WebMediaStreamTrack* track);
+  ~CanvasCaptureHandler() override;
 
   // blink::WebCanvasCaptureHandler Implementation.
   void sendNewFrame(const blink::WebSkImage& image) override;
@@ -41,13 +55,15 @@ class CONTENT_EXPORT CanvasCaptureHandler final
   blink::WebSize GetSourceSize() const { return size_; }
 
  private:
-  ~CanvasCaptureHandler() override;
-
   void CreateNewFrame(const blink::WebSkImage& image);
+  void AddVideoCapturerSourceToVideoTrack(
+      scoped_ptr<media::VideoCapturerSource> source,
+      blink::WebMediaStreamTrack* web_track);
 
   // Implementation VideoCapturerSource that is owned by blink and delegates
   // the Start/Stop calls to CanvasCaptureHandler.
   class VideoCapturerSource;
+
   // Object that does all the work of running |new_frame_callback_|.
   // Destroyed on |io_task_runner_| after the class is destroyed.
   class CanvasCaptureHandlerDelegate;

@@ -7,7 +7,8 @@
 
 #include "core/dom/ExceptionCode.h"
 #include "core/html/HTMLCanvasElement.h"
-#include "modules/mediacapturefromelement/CanvasCaptureMediaStream.h"
+#include "modules/mediacapturefromelement/CanvasCaptureMediaStreamTrack.h"
+#include "modules/mediastream/MediaStream.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCanvasCaptureHandler.h"
 #include "public/platform/WebMediaStream.h"
@@ -19,25 +20,25 @@ const double kDefaultFrameRate = 60.0;
 
 namespace blink {
 
-CanvasCaptureMediaStream* HTMLCanvasElementCapture::captureStream(HTMLCanvasElement& element, ExceptionState& exceptionState)
+MediaStream* HTMLCanvasElementCapture::captureStream(HTMLCanvasElement& element, ExceptionState& exceptionState)
 {
-    WebMediaStream stream;
-    stream.initialize(WebVector<WebMediaStreamTrack>(), Vector<WebMediaStreamTrack>());
-    WebSize size(element.width(), element.height());
-
     if (!element.originClean()) {
         exceptionState.throwDOMException(SecurityError, "Canvas is not origin-clean.");
-        return CanvasCaptureMediaStream::create(stream, &element);
+        return MediaStream::create(element.executionContext());
     }
 
-    OwnPtr<WebCanvasCaptureHandler> handler = adoptPtr(Platform::current()->createCanvasCaptureHandler(size, kDefaultFrameRate, &stream));
+    WebMediaStreamTrack track;
+    WebSize size(element.width(), element.height());
+    OwnPtr<WebCanvasCaptureHandler> handler = adoptPtr(Platform::current()->createCanvasCaptureHandler(size, kDefaultFrameRate, &track));
     ASSERT(handler);
     if (!handler) {
         exceptionState.throwDOMException(NotSupportedError, "No CanvasCapture handler can be created.");
-        return CanvasCaptureMediaStream::create(stream, &element);
+        return MediaStream::create(element.executionContext());
     }
 
-    return CanvasCaptureMediaStream::create(stream, &element, handler.release());
+    MediaStreamTrackVector tracks;
+    tracks.append(CanvasCaptureMediaStreamTrack::create(track, &element, handler.release()));
+    return MediaStream::create(element.executionContext(), tracks);
 }
 
 } // namespace blink

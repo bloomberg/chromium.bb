@@ -4,10 +4,17 @@
 
 #include "content/renderer/media/canvas_capture_handler.h"
 
+#include "base/base64.h"
 #include "base/bind_helpers.h"
-#include "content/public/renderer/media_stream_api.h"
+#include "base/rand_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "content/public/renderer/render_thread.h"
+#include "content/renderer/media/media_stream_video_capturer_source.h"
+#include "content/renderer/media/media_stream_video_source.h"
+#include "content/renderer/media/media_stream_video_track.h"
 #include "content/renderer/render_thread_impl.h"
+#include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
+#include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/libyuv/include/libyuv.h"
 
 namespace content {
@@ -86,7 +93,7 @@ class CanvasCaptureHandler::CanvasCaptureHandlerDelegate {
 
 CanvasCaptureHandler::CanvasCaptureHandler(const blink::WebSize& size,
                                            double frame_rate,
-                                           blink::WebMediaStream* stream)
+                                           blink::WebMediaStreamTrack* track)
     : ask_for_new_frame_(false),
       size_(size),
       io_task_runner_(content::RenderThread::Get()->GetIOMessageLoopProxy()),
@@ -94,7 +101,7 @@ CanvasCaptureHandler::CanvasCaptureHandler(const blink::WebSize& size,
   scoped_ptr<media::VideoCapturerSource> video_source(
       new CanvasCaptureHandler::VideoCapturerSource(
           weak_ptr_factory_.GetWeakPtr(), frame_rate));
-  content::AddVideoTrackToMediaStream(video_source.Pass(), false, true, stream);
+  AddVideoCapturerSourceToVideoTrack(video_source.Pass(), track);
 }
 
 CanvasCaptureHandler::~CanvasCaptureHandler() {
@@ -173,6 +180,28 @@ void CanvasCaptureHandler::CreateNewFrame(const blink::WebSkImage& image) {
                      SendNewFrameOnIOThread,
                  delegate_->GetWeakPtrForIOThread(), video_frame,
                  base::TimeTicks()));
+}
+
+void CanvasCaptureHandler::AddVideoCapturerSourceToVideoTrack(
+    scoped_ptr<media::VideoCapturerSource> source,
+    blink::WebMediaStreamTrack* web_track) {
+  std::string str_track_id;
+  base::Base64Encode(base::RandBytesAsString(64), &str_track_id);
+  const blink::WebString track_id = base::UTF8ToUTF16(str_track_id);
+  blink::WebMediaStreamSource webkit_source;
+  scoped_ptr<MediaStreamVideoSource> media_stream_source(
+      new MediaStreamVideoCapturerSource(
+          MediaStreamSource::SourceStoppedCallback(), source.Pass()));
+  webkit_source.initialize(track_id, blink::WebMediaStreamSource::TypeVideo,
+                           track_id, false, true);
+  webkit_source.setExtraData(media_stream_source.get());
+
+  web_track->initialize(webkit_source);
+  blink::WebMediaConstraints constraints;
+  constraints.initialize();
+  web_track->setExtraData(new MediaStreamVideoTrack(
+      media_stream_source.release(), constraints,
+      MediaStreamVideoSource::ConstraintsCallback(), true));
 }
 
 }  // namespace content

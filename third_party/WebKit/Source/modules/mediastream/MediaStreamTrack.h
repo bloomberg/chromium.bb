@@ -41,7 +41,7 @@ class ExceptionState;
 class MediaStreamComponent;
 class MediaStreamTrackSourcesCallback;
 
-class MODULES_EXPORT MediaStreamTrack final
+class MODULES_EXPORT MediaStreamTrack
     : public RefCountedGarbageCollectedEventTargetWithInlineData<MediaStreamTrack>
     , public ActiveDOMObject
     , public MediaStreamSource::Observer {
@@ -91,6 +91,8 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
+    friend class CanvasCaptureMediaStreamTrack;
+
     MediaStreamTrack(ExecutionContext*, MediaStreamComponent*);
 
     // MediaStreamSourceObserver

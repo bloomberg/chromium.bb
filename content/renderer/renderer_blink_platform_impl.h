@@ -146,7 +146,7 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   blink::WebCanvasCaptureHandler* createCanvasCaptureHandler(
       const blink::WebSize& size,
       double frame_rate,
-      blink::WebMediaStream* stream) override;
+      blink::WebMediaStreamTrack* track) override;
   blink::WebGraphicsContext3D* createOffscreenGraphicsContext3D(
       const blink::WebGraphicsContext3D::Attributes& attributes) override;
   blink::WebGraphicsContext3D* createOffscreenGraphicsContext3D(

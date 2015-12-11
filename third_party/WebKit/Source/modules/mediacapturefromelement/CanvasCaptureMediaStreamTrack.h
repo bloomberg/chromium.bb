@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CanvasCaptureMediaStream_h
-#define CanvasCaptureMediaStream_h
+#ifndef CanvasCaptureMediaStreamTrack_h
+#define CanvasCaptureMediaStreamTrack_h
 
 #include "core/html/canvas/CanvasDrawListener.h"
-#include "modules/mediastream/MediaStream.h"
+#include "modules/mediastream/MediaStreamTrack.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -14,19 +14,17 @@ namespace blink {
 class HTMLCanvasElement;
 class WebCanvasCaptureHandler;
 
-class CanvasCaptureMediaStream final : public MediaStream {
+class CanvasCaptureMediaStreamTrack final : public MediaStreamTrack {
     DEFINE_WRAPPERTYPEINFO();
 
 public:
-    static CanvasCaptureMediaStream* create(MediaStreamDescriptor*, PassRefPtrWillBeRawPtr<HTMLCanvasElement>);
-    static CanvasCaptureMediaStream* create(MediaStreamDescriptor*, PassRefPtrWillBeRawPtr<HTMLCanvasElement>, const PassOwnPtr<WebCanvasCaptureHandler>);
+    static CanvasCaptureMediaStreamTrack* create(MediaStreamComponent*, PassRefPtrWillBeRawPtr<HTMLCanvasElement>, const PassOwnPtr<WebCanvasCaptureHandler>);
     DECLARE_VIRTUAL_TRACE();
     HTMLCanvasElement* canvas() const;
     void requestFrame();
 
 private:
-    CanvasCaptureMediaStream(MediaStreamDescriptor*, PassRefPtrWillBeRawPtr<HTMLCanvasElement>);
-    void initialize(const PassOwnPtr<WebCanvasCaptureHandler>);
+    CanvasCaptureMediaStreamTrack(MediaStreamComponent*, PassRefPtrWillBeRawPtr<HTMLCanvasElement>, const PassOwnPtr<WebCanvasCaptureHandler>);
 
     RefPtrWillBeMember<HTMLCanvasElement> m_canvasElement;
     Member<CanvasDrawListener> m_drawListener;
