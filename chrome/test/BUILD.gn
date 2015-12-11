@@ -730,6 +730,11 @@ if (!is_android) {
     ]
 
     data = [
+      # For isolate contract.
+      "//testing/scripts/common.py",
+      "//testing/xvfb.py",
+      "//testing/scripts/run_telemetry_benchmark_as_googletest.py",
+
       "//content/test/gpu/",
       "//content/test/data/gpu/",
 
