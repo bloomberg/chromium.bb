@@ -296,7 +296,8 @@ void WindowTreeClientImpl::Embed(
 }
 
 void WindowTreeClientImpl::RequestClose(Window* window) {
-  tree_->WmRequestClose(window->id());
+  if (window_manager_internal_client_)
+    window_manager_internal_client_->WmRequestClose(window->id());
 }
 
 void WindowTreeClientImpl::AttachSurface(
@@ -469,6 +470,12 @@ void WindowTreeClientImpl::OnEmbed(ConnectionSpecificId connection_id,
   DCHECK(!tree_ptr_);
   tree_ptr_ = std::move(tree);
   tree_ptr_.set_connection_error_handler([this]() { delete this; });
+
+  if (window_manager_delegate_) {
+    tree_ptr_->GetWindowManagerInternalClient(GetProxy(
+        &window_manager_internal_client_, tree_ptr_.associated_group()));
+  }
+
   OnEmbedImpl(tree_ptr_.get(), connection_id, std::move(root_data),
               focused_window_id, access_policy);
 }
@@ -690,6 +697,13 @@ void WindowTreeClientImpl::OnChangeCompleted(uint32 change_id, bool success) {
   }
 }
 
+void WindowTreeClientImpl::GetWindowManagerInternal(
+    mojo::AssociatedInterfaceRequest<WindowManagerInternal> internal) {
+  window_manager_internal_.reset(
+      new mojo::AssociatedBinding<mojom::WindowManagerInternal>(
+          this, internal.Pass()));
+}
+
 void WindowTreeClientImpl::RequestClose(uint32_t window_id) {
   Window* window = GetWindowById(window_id);
   if (!window || window != root_)
@@ -715,7 +729,7 @@ void WindowTreeClientImpl::WmSetBounds(uint32_t change_id,
       window->SetBounds(bounds);
     }
   }
-  tree_->WmResponse(change_id, result);
+  window_manager_internal_client_->WmResponse(change_id, result);
 }
 
 void WindowTreeClientImpl::WmSetProperty(uint32_t change_id,
@@ -738,7 +752,7 @@ void WindowTreeClientImpl::WmSetProperty(uint32_t change_id,
       window->SetSharedPropertyInternal(name, data.get());
     }
   }
-  tree_->WmResponse(change_id, result);
+  window_manager_internal_client_->WmResponse(change_id, result);
 }
 
 }  // namespace mus

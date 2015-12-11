@@ -10,7 +10,6 @@
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace mus {
-
 namespace ws {
 
 class ConnectionManager;
@@ -29,6 +28,8 @@ class ClientConnection {
 
   mojom::WindowTreeClient* client() { return client_; }
 
+  virtual mojom::WindowManagerInternal* GetWindowManagerInternal() = 0;
+
  private:
   scoped_ptr<WindowTreeImpl> service_;
   mojom::WindowTreeClient* client_;
@@ -46,16 +47,19 @@ class DefaultClientConnection : public ClientConnection {
       mojom::WindowTreeClientPtr client);
   ~DefaultClientConnection() override;
 
+  // ClientConnection:
+  mojom::WindowManagerInternal* GetWindowManagerInternal() override;
+
  private:
   ConnectionManager* connection_manager_;
   mojo::Binding<mojom::WindowTree> binding_;
   mojom::WindowTreeClientPtr client_;
+  mojom::WindowManagerInternalAssociatedPtr window_manager_internal_;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultClientConnection);
 };
 
 }  // namespace ws
-
 }  // namespace mus
 
 #endif  // COMPONENTS_MUS_WS_CLIENT_CONNECTION_H_

@@ -353,13 +353,9 @@ class TestWindowTreeClientImpl : public mojom::WindowTreeClient,
     }
   }
   void RequestClose(uint32_t window_id) override {}
-  void WmSetBounds(uint32_t change_id,
-                   Id window_id,
-                   mojo::RectPtr bounds) override {}
-  void WmSetProperty(uint32_t change_id,
-                     Id window_id,
-                     const mojo::String& name,
-                     mojo::Array<uint8_t> transit_data) override {}
+  void GetWindowManagerInternal(
+      mojo::AssociatedInterfaceRequest<mojom::WindowManagerInternal> internal)
+      override {}
 
   TestChangeTracker tracker_;
 

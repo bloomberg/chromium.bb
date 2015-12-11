@@ -112,6 +112,11 @@ void ConnectionManager::OnConnectionError(ClientConnection* connection) {
     in_flight_wm_change_map_.erase(id);
 }
 
+ClientConnection* ConnectionManager::GetClientConnection(
+    WindowTreeImpl* window_tree) {
+  return connection_map_[window_tree->id()];
+}
+
 void ConnectionManager::OnHostConnectionClosed(
     WindowTreeHostConnection* connection) {
   auto it = host_connection_map_.find(connection->window_tree_host());

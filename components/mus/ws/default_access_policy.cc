@@ -171,6 +171,10 @@ const ServerWindow* DefaultAccessPolicy::GetWindowForFocusChange(
   return nullptr;
 }
 
+bool DefaultAccessPolicy::CanSetWindowManagerInternal() const {
+  return false;
+}
+
 bool DefaultAccessPolicy::WasCreatedByThisConnection(
     const ServerWindow* window) const {
   return window->id().connection_id == connection_id_;

@@ -17,6 +17,7 @@
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "components/mus/ws/access_policy_delegate.h"
 #include "components/mus/ws/ids.h"
+#include "mojo/public/cpp/bindings/associated_binding.h"
 
 namespace gfx {
 class Insets;
@@ -37,7 +38,9 @@ class WindowTreeHostImpl;
 // WindowTreeImpl tracks all the state and windows created by a client.
 // WindowTreeImpl coordinates with ConnectionManager to update the client (and
 // internal state) as necessary.
-class WindowTreeImpl : public mojom::WindowTree, public AccessPolicyDelegate {
+class WindowTreeImpl : public mojom::WindowTree,
+                       public AccessPolicyDelegate,
+                       public mojom::WindowManagerInternalClient {
  public:
   WindowTreeImpl(ConnectionManager* connection_manager,
                  ConnectionSpecificId creator_id,
@@ -252,6 +255,11 @@ class WindowTreeImpl : public mojom::WindowTree, public AccessPolicyDelegate {
       Id transport_window_id,
       mojo::InsetsPtr insets,
       mojo::Array<mojo::RectPtr> transport_additional_client_areas) override;
+  void GetWindowManagerInternalClient(
+      mojo::AssociatedInterfaceRequest<mojom::WindowManagerInternalClient>
+          internal) override;
+
+  // mojom::WindowManagerInternalClient:
   void WmResponse(uint32 change_id, bool response) override;
   void WmRequestClose(Id transport_window_id) override;
 
@@ -290,6 +298,10 @@ class WindowTreeImpl : public mojom::WindowTree, public AccessPolicyDelegate {
   bool is_embed_root_;
 
   std::queue<scoped_ptr<TargetedEvent>> event_queue_;
+
+  scoped_ptr<mojo::AssociatedBinding<mojom::WindowManagerInternalClient>>
+      window_manager_internal_client_binding_;
+  mojom::WindowManagerInternal* window_manager_internal_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeImpl);
 };

@@ -32,6 +32,13 @@ DefaultClientConnection::DefaultClientConnection(
 
 DefaultClientConnection::~DefaultClientConnection() {}
 
+mojom::WindowManagerInternal*
+DefaultClientConnection::GetWindowManagerInternal() {
+  client_->GetWindowManagerInternal(
+      GetProxy(&window_manager_internal_, client_.associated_group()));
+  return window_manager_internal_.get();
+}
+
 }  // namespace ws
 
 }  // namespace mus

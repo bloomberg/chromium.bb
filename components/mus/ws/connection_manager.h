@@ -60,6 +60,8 @@ class ConnectionManager : public ServerWindowDelegate,
   // Invoked when a WindowTreeImpl's connection encounters an error.
   void OnConnectionError(ClientConnection* connection);
 
+  ClientConnection* GetClientConnection(WindowTreeImpl* window_tree);
+
   // Invoked when a WindowTreeHostConnection encounters an error or the
   // associated Display window is closed.
   void OnHostConnectionClosed(WindowTreeHostConnection* connection);

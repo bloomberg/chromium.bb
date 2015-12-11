@@ -229,16 +229,9 @@ interface WindowTree {
   // See documentation for WindowTreeClient::OnWindowInputEvent().
   OnWindowInputEventAck(uint32 event_id);
 
-  // --------------------------------------------------------------------------
-  // This section is for functions called from the window manager. It is
-  // expected these will be pulled into an associated interface.
-
-  // The window manager has completed a request with the specific change id.
-  WmResponse(uint32 change_id, bool response);
-
-  // Calls WindowTreeClient::RequestClose() on the embedded app at the
-  // specified window.
-  WmRequestClose(uint32 window_id);
+  // See description of WindowManagerInternal for details.
+  GetWindowManagerInternalClient(
+      associated WindowManagerInternalClient& internal);
 };
 
 // Changes to windows are not sent to the connection that originated the
@@ -344,15 +337,39 @@ interface WindowTreeClient {
   // client allows the change it should delete the window.
   RequestClose(uint32 window_id);
 
-  // --------------------------------------------------------------------------
-  // This section is for functions that are expected to be pulled into the
-  // WindowManager interface once we get associated interfaces.
+  // See description of WindowManagerInternal for details.
+  GetWindowManagerInternal(associated WindowManagerInternal& internal);
+};
 
-  // Calls to SetWindowBounds() for windows owned by the window manager end up
-  // here. The window manager should reply with WmResponse() as appropriate.
+// WindowManagerInternal is used when a WindowTreeClient attempts to modify
+// a property of the embed root. When this happens WindowTree calls the
+// appropriate function on WindowManagerInternal. For example, if a
+// WindowTreeClient calls SetWindowBounds() on its embed root, WindowTree
+// calls WmSetBounds(). WindowManagerInternal can then decide if it wants to
+// change the bounds or not.
+//
+// WindowManagerInternal may only be installed from the connection that created
+// a new window tree (see WindowTreeHostFactory).
+//
+// This interface is only used as an associated interface and is associated
+// with WindowTreeClient.
+interface WindowManagerInternal {
+  // When the WindowManagerInternal completes a request it must call back to
+  // WindowManagerInternalClient::WmResponse().
   WmSetBounds(uint32 change_id, uint32 window_id, mojo.Rect bounds);
   WmSetProperty(uint32 change_id,
                 uint32 window_id,
                 string name,
                 array<uint8>? value);
+};
+
+// This interface is only used as an associated interface and is associated
+// with WindowTree.
+interface WindowManagerInternalClient {
+  // The window manager has completed a request with the specific change id.
+  WmResponse(uint32 change_id, bool response);
+
+  // Calls WindowTreeClient::RequestClose() on the embedded app at the
+  // specified window.
+  WmRequestClose(uint32 window_id);
 };

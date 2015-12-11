@@ -52,6 +52,7 @@ class WindowManagerAccessPolicy : public AccessPolicy {
       const ServerWindow** old_parent) const override;
   const ServerWindow* GetWindowForFocusChange(
       const ServerWindow* focused) override;
+  bool CanSetWindowManagerInternal() const override;
 
  private:
   bool IsWindowKnown(const ServerWindow* window) const;

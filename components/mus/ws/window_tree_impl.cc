@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/stl_util.h"
+#include "components/mus/ws/client_connection.h"
 #include "components/mus/ws/connection_manager.h"
 #include "components/mus/ws/default_access_policy.h"
 #include "components/mus/ws/display_manager.h"
@@ -67,7 +68,8 @@ WindowTreeImpl::WindowTreeImpl(ConnectionManager* connection_manager,
       creator_id_(creator_id),
       client_(nullptr),
       event_ack_id_(0),
-      is_embed_root_(false) {
+      is_embed_root_(false),
+      window_manager_internal_(nullptr) {
   ServerWindow* window = GetWindow(root_id);
   CHECK(window);
   root_.reset(new WindowId(root_id));
@@ -457,14 +459,17 @@ bool WindowTreeImpl::ShouldRouteToWindowManager(
   if (!root_ || *root_ != window->id())
     return false;
 
+  // The WindowManager is attached to the root of the WindowTreeHost, if there
+  // isn't a WindowManager attached no need to route to it.
   WindowTreeHostImpl* host = GetHost();
-  if (!host || !host->window_manager())
+  if (!host || !host->GetWindowTree() ||
+      !host->GetWindowTree()->window_manager_internal_) {
     return false;
+  }
+
   // Requests coming from the WM should not be routed through the WM again.
-  bool is_wm = host->GetWindowTree() == this;
-  if (is_wm)
-    return false;
-  return true;
+  const bool is_wm = host->GetWindowTree() == this;
+  return is_wm ? false : true;
 }
 
 bool WindowTreeImpl::IsWindowKnown(const ServerWindow* window) const {
@@ -785,8 +790,8 @@ void WindowTreeImpl::SetWindowBounds(uint32_t change_id,
   if (window && ShouldRouteToWindowManager(window)) {
     const uint32_t wm_change_id =
         connection_manager_->GenerateWindowManagerChangeId(this, change_id);
-    GetHost()->GetWindowTree()->client_->WmSetBounds(wm_change_id, window_id,
-                                                     std::move(bounds));
+    GetHost()->GetWindowTree()->window_manager_internal_->WmSetBounds(
+        wm_change_id, window_id, std::move(bounds));
     return;
   }
 
@@ -815,8 +820,8 @@ void WindowTreeImpl::SetWindowProperty(uint32_t change_id,
   if (window && ShouldRouteToWindowManager(window)) {
     const uint32_t wm_change_id =
         connection_manager_->GenerateWindowManagerChangeId(this, change_id);
-    GetHost()->GetWindowTree()->client_->WmSetProperty(wm_change_id, window_id,
-                                                       name, std::move(value));
+    GetHost()->GetWindowTree()->window_manager_internal_->WmSetProperty(
+        wm_change_id, window_id, name, std::move(value));
     return;
   }
   const bool success = window && access_policy_->CanSetWindowProperties(window);
@@ -950,6 +955,20 @@ void WindowTreeImpl::SetPredefinedCursor(uint32_t change_id,
     window->SetPredefinedCursor(cursor_id);
   }
   client_->OnChangeCompleted(change_id, success);
+}
+
+void WindowTreeImpl::GetWindowManagerInternalClient(
+    mojo::AssociatedInterfaceRequest<mojom::WindowManagerInternalClient>
+        internal) {
+  if (!access_policy_->CanSetWindowManagerInternal() ||
+      window_manager_internal_)
+    return;
+  window_manager_internal_client_binding_.reset(
+      new mojo::AssociatedBinding<mojom::WindowManagerInternalClient>(
+          this, internal.Pass()));
+
+  window_manager_internal_ = connection_manager_->GetClientConnection(this)
+                                 ->GetWindowManagerInternal();
 }
 
 void WindowTreeImpl::WmResponse(uint32 change_id, bool response) {

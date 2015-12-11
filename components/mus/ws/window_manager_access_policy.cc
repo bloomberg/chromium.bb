@@ -131,6 +131,10 @@ bool WindowManagerAccessPolicy::ShouldNotifyOnHierarchyChange(
   return IsWindowKnown(window) || (*new_parent && IsWindowKnown(*new_parent));
 }
 
+bool WindowManagerAccessPolicy::CanSetWindowManagerInternal() const {
+  return true;
+}
+
 const ServerWindow* WindowManagerAccessPolicy::GetWindowForFocusChange(
     const ServerWindow* focused) {
   return focused;
