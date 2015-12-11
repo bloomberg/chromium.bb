@@ -279,16 +279,22 @@ GURL ScriptContext::GetEffectiveDocumentURL(const blink::WebFrame* frame,
   // hierarchy to find the closest non-about:-page and return its URL.
   const blink::WebFrame* parent = frame;
   do {
-    parent = parent->parent() ? parent->parent() : parent->opener();
-  } while (parent != NULL && !parent->document().isNull() &&
+    if (parent->parent())
+      parent = parent->parent();
+    else if (parent->opener() != parent)
+      parent = parent->opener();
+    else
+      parent = nullptr;
+  } while (parent && !parent->document().isNull() &&
            GURL(parent->document().url()).SchemeIs(url::kAboutScheme));
 
   if (parent && !parent->document().isNull()) {
     // Only return the parent URL if the frame can access it.
     const blink::WebDocument& parent_document = parent->document();
     if (frame->document().securityOrigin().canAccess(
-            parent_document.securityOrigin()))
+            parent_document.securityOrigin())) {
       return parent_document.url();
+    }
   }
   return document_url;
 }
