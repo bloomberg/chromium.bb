@@ -175,6 +175,58 @@ TEST(FocusControllerTest, FocusShiftsOnDestroy) {
   focus_controller.RemoveObserver(&focus_observer);
 }
 
-}  // namespace ws
+TEST(FocusControllerTest, ActivationSkipsOverHiddenWindow) {
+  TestServerWindowDelegate server_window_delegate;
+  ServerWindow parent(&server_window_delegate, WindowId());
+  server_window_delegate.set_root_window(&parent);
+  parent.SetVisible(true);
 
+  ServerWindow child_first(&server_window_delegate, WindowId());
+  ServerWindow child_second(&server_window_delegate, WindowId());
+  ServerWindow child_third(&server_window_delegate, WindowId());
+
+  parent.Add(&child_first);
+  parent.Add(&child_second);
+  parent.Add(&child_third);
+
+  child_first.SetVisible(true);
+  child_second.SetVisible(false);
+  child_third.SetVisible(true);
+
+  TestFocusControllerObserver focus_observer;
+  focus_observer.set_ignore_explicit(false);
+  FocusController focus_controller(&focus_observer, &parent);
+  focus_controller.AddObserver(&focus_observer);
+
+  // Since |child_second| is invisible, activation should cycle from
+  // |child_first|, to |child_third|, to |parent|, back to |child_first|.
+  focus_controller.ActivateNextWindow();
+  EXPECT_EQ(nullptr, focus_observer.old_active_window());
+  EXPECT_EQ(&child_first, focus_observer.new_active_window());
+  focus_observer.ClearAll();
+
+  focus_controller.ActivateNextWindow();
+  EXPECT_EQ(&child_first, focus_observer.old_active_window());
+  EXPECT_EQ(&child_third, focus_observer.new_active_window());
+  focus_observer.ClearAll();
+
+  focus_controller.ActivateNextWindow();
+  EXPECT_EQ(&child_third, focus_observer.old_active_window());
+  EXPECT_EQ(&parent, focus_observer.new_active_window());
+  focus_observer.ClearAll();
+
+  focus_controller.ActivateNextWindow();
+  EXPECT_EQ(&parent, focus_observer.old_active_window());
+  EXPECT_EQ(&child_first, focus_observer.new_active_window());
+  focus_observer.ClearAll();
+
+  // Once |child_second| is made visible, activation should go from
+  // |child_first| to |child_second|.
+  child_second.SetVisible(true);
+  focus_controller.ActivateNextWindow();
+  EXPECT_EQ(&child_first, focus_observer.old_active_window());
+  EXPECT_EQ(&child_second, focus_observer.new_active_window());
+}
+
+}  // namespace ws
 }  // namespace mus

@@ -4,6 +4,7 @@
 
 #include "components/mus/ws/focus_controller.h"
 
+#include "components/mus/public/interfaces/window_manager.mojom.h"
 #include "components/mus/ws/focus_controller_delegate.h"
 #include "components/mus/ws/focus_controller_observer.h"
 #include "components/mus/ws/server_window.h"
@@ -138,11 +139,29 @@ bool FocusController::CanBeFocused(ServerWindow* window) const {
 
 bool FocusController::CanBeActivated(ServerWindow* window) const {
   DCHECK(window);
+  // A detached window cannot be activated.
+  if (!root_->Contains(window))
+    return false;
+
   // The parent window must be allowed to have active children.
   if (!delegate_->CanHaveActiveChildren(window->parent()))
     return false;
 
-  // TODO(sad): Implement this.
+  // The window must be drawn, or if it's not drawn, it must be minimized.
+  if (!window->IsDrawn()) {
+    bool is_minimized = false;
+    const ServerWindow::Properties& props = window->properties();
+    if (props.count(mojom::WindowManager::kShowState_Property)) {
+      is_minimized =
+          props.find(mojom::WindowManager::kShowState_Property)->second[0] ==
+          mus::mojom::SHOW_STATE_MINIMIZED;
+    }
+    if (!is_minimized)
+      return false;
+  }
+
+  // TODO(sad): If there's a transient modal window, then this cannot be
+  // activated.
   return true;
 }
 
