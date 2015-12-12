@@ -327,6 +327,11 @@ ScriptValue WebGL2RenderingContextBase::getInternalformatParameter(ScriptState* 
     bool floatType = false;
 
     switch (internalformat) {
+    // Renderbuffer doesn't support unsized internal formats,
+    // though GL_RGB and GL_RGBA are color-renderable.
+    case GL_RGB:
+    case GL_RGBA:
+    // Multisampling is not supported for signed and unsigned integer internal formats.
     case GL_R8UI:
     case GL_R8I:
     case GL_R16UI:
