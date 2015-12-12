@@ -23,6 +23,16 @@ test_harness_script = r"""
   domAutomationController.setAutomationId = function(id) {}
 
   domAutomationController.send = function(msg) {
+    // Issue a read pixel to synchronize the gpu process to ensure
+    // the asynchronous category enabling is finished.
+    var canvas = document.createElement("canvas")
+    canvas.width = 1;
+    canvas.height = 1;
+    var gl = canvas.getContext("webgl");
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    var id = new Uint8Array(4);
+    gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, id);
+
     domAutomationController._finished = true;
   }
 

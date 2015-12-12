@@ -11,7 +11,7 @@ class TraceTestExpectations(GpuTestExpectations):
     # Sample Usage:
     # self.Fail('TraceTest.Canvas2DRedBox',
     #     ['mac', 'amd', ('nvidia', 0x1234)], bug=123)
-    self.Skip('*', bug=512622)
+    pass
 
 class DeviceTraceTestExpectations(GpuTestExpectations):
   def SetExpectations(self):
