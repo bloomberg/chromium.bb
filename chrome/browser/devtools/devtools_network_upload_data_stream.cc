@@ -15,7 +15,6 @@ DevToolsNetworkUploadDataStream::DevToolsNetworkUploadDataStream(
                      base::Unretained(this))),
       throttled_byte_count_(0),
       upload_data_stream_(upload_data_stream) {
-  DCHECK(!upload_data_stream->IsInMemory());
 }
 
 DevToolsNetworkUploadDataStream::~DevToolsNetworkUploadDataStream() {
