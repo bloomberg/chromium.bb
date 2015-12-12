@@ -199,6 +199,11 @@ public class TouchInputHandler implements TouchInputHandlerInterface {
 
     @Override
     public void setInputStrategy(InputStrategyInterface inputStrategy) {
+        // Since the rules for flinging the cursor differ between input modes, we want to stop
+        // running the current fling animation when the mode changes to prevent a wonky experience.
+        if (!mFlingScroller.isFinished()) {
+            mFlingScroller.abortAnimation();
+        }
         mInputStrategy = inputStrategy;
     }
 
@@ -211,10 +216,27 @@ public class TouchInputHandler implements TouchInputHandlerInterface {
             deltaY = -deltaY;
         }
 
+        // Determine the center point from which to apply the delta.
+        // For indirect input modes (i.e. trackpad), the view generally follows the cursor.
+        // For direct input modes (i.e. touch) the should track the user's motion.
+        // If the user is dragging, then the viewport should always follow the user's finger.
+        PointF viewportPoint;
+        if (mInputStrategy.isIndirectInputMode() || mIsDragging) {
+            viewportPoint = mDesktopCanvas.getViewportPosition();
+        } else {
+            synchronized (mRenderData) {
+                float[] viewportPosition = new float[] {(float) mRenderData.screenWidth / 2,
+                                                        (float) mRenderData.screenHeight / 2};
+                Matrix inverted = new Matrix();
+                mRenderData.transform.invert(inverted);
+                inverted.mapPoints(viewportPosition);
+                viewportPoint = new PointF(viewportPosition[0], viewportPosition[1]);
+            }
+        }
+
         // Constrain the coordinates to the image area.
-        PointF viewportPosition = mDesktopCanvas.getViewportPosition();
-        float newX = viewportPosition.x + deltaX;
-        float newY = viewportPosition.y + deltaY;
+        float newX = viewportPoint.x + deltaX;
+        float newY = viewportPoint.y + deltaY;
         synchronized (mRenderData) {
             // Constrain viewport position to the image area.
             if (newX < 0) {

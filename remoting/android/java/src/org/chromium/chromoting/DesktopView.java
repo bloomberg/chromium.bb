@@ -420,11 +420,9 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
                 break;
 
             case TOUCH:
-                if (hostTouchCapability.isSupported()) {
-                    // TODO(joedow): Set the touch input strategy.
-                } else {
-                    // TODO(joedow): Set the simulated touch input strategy.
-                }
+                // TODO(joedow): Add TouchInputStrategy once it is finished.
+                mInputHandler.setInputStrategy(
+                        new SimulatedTouchInputStrategy(mRenderData, getContext()));
                 break;
 
             default:
