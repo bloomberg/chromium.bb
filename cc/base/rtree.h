@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "cc/base/cc_export.h"
-#include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace cc {
 
