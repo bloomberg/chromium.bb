@@ -63,6 +63,7 @@ import zipfile
 from devil.android import battery_utils
 from devil.android import device_errors
 from devil.android import forwarder
+from devil.constants import exit_codes
 from devil.utils import cmd_helper
 from pylib import constants
 from pylib.base import base_test_result
@@ -143,7 +144,7 @@ def PrintTestOutput(test_name, json_file_name=None, archive_file_name=None):
   """
   persisted_result = GetPersistedResult(test_name)
   if not persisted_result:
-    return 1
+    return exit_codes.INFRA
   logging.info('*' * 80)
   logging.info('Output from:')
   logging.info(persisted_result['cmd'])
