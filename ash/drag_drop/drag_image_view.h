@@ -8,6 +8,10 @@
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/views/controls/image_view.h"
 
+namespace gfx {
+class Image;
+}
+
 namespace views {
 class Widget;
 }
@@ -58,8 +62,13 @@ class DragImageView : public views::ImageView {
   void SetOpacity(float opacity);
 
  private:
+  gfx::Image* DragHint() const;
+
   // Overridden from views::ImageView.
   void OnPaint(gfx::Canvas* canvas) override;
+
+  // Overridden from views::view
+  void Layout() override;
 
   scoped_ptr<views::Widget> widget_;
   gfx::Size widget_size_;

@@ -132,6 +132,23 @@ void DragImageView::OnPaint(gfx::Canvas* canvas) {
   if (drag_event_source_ != ui::DragDropTypes::DRAG_EVENT_SOURCE_TOUCH)
     return;
 
+  gfx::Image* drag_hint = DragHint();
+  if (drag_hint->IsEmpty())
+    return;
+
+  // Make sure drag hint image is positioned within the widget.
+  gfx::Size drag_hint_size = drag_hint->Size();
+  gfx::Point drag_hint_position = touch_drag_operation_indicator_position_;
+  drag_hint_position.Offset(-drag_hint_size.width() / 2, 0);
+  gfx::Rect drag_hint_bounds(drag_hint_position, drag_hint_size);
+  drag_hint_bounds.AdjustToFit(gfx::Rect(widget_size_));
+
+  // Draw image.
+  canvas->DrawImageInt(*(drag_hint->ToImageSkia()), drag_hint_bounds.x(),
+                       drag_hint_bounds.y());
+}
+
+gfx::Image* DragImageView::DragHint() const {
   // Select appropriate drag hint.
   gfx::Image* drag_hint =
       &ui::ResourceBundle::GetSharedInstance().GetImageNamed(
@@ -146,26 +163,24 @@ void DragImageView::OnPaint(gfx::Canvas* canvas) {
     drag_hint = &ui::ResourceBundle::GetSharedInstance().GetImageNamed(
         IDR_TOUCH_DRAG_TIP_LINK);
   }
-  if (!drag_hint->IsEmpty()) {
-    gfx::Size drag_hint_size = drag_hint->Size();
+  return drag_hint;
+}
 
-    // Enlarge widget if required to fit the drag hint image.
-    if (drag_hint_size.width() > widget_size_.width() ||
-        drag_hint_size.height() > widget_size_.height()) {
-      gfx::Size new_widget_size = widget_size_;
-      new_widget_size.SetToMax(drag_hint_size);
-      widget_->SetSize(new_widget_size);
-    }
+void DragImageView::Layout() {
+  View::Layout();
 
-    // Make sure drag hint image is positioned within the widget.
-    gfx::Point drag_hint_position = touch_drag_operation_indicator_position_;
-    drag_hint_position.Offset(-drag_hint_size.width() / 2, 0);
-    gfx::Rect drag_hint_bounds(drag_hint_position, drag_hint_size);
-    drag_hint_bounds.AdjustToFit(gfx::Rect(widget_size_));
+  gfx::Image* drag_hint = DragHint();
+  if (drag_hint->IsEmpty())
+    return;
 
-    // Draw image.
-    canvas->DrawImageInt(*(drag_hint->ToImageSkia()),
-        drag_hint_bounds.x(), drag_hint_bounds.y());
+  gfx::Size drag_hint_size = drag_hint->Size();
+
+  // Enlarge widget if required to fit the drag hint image.
+  if (drag_hint_size.width() > widget_size_.width() ||
+      drag_hint_size.height() > widget_size_.height()) {
+    gfx::Size new_widget_size = widget_size_;
+    new_widget_size.SetToMax(drag_hint_size);
+    widget_->SetSize(new_widget_size);
   }
 }
 
