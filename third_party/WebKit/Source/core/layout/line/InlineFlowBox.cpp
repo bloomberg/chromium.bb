@@ -268,7 +268,7 @@ LineBoxList* InlineFlowBox::lineBoxes() const
     return LineLayoutInline(lineLayoutItem()).lineBoxes();
 }
 
-static inline bool isLastChildForLayoutObject(LayoutObject* ancestor, LayoutObject* child)
+static inline bool isLastChildForLayoutObject(LineLayoutItem ancestor, LineLayoutItem child)
 {
     if (!child)
         return false;
@@ -276,16 +276,16 @@ static inline bool isLastChildForLayoutObject(LayoutObject* ancestor, LayoutObje
     if (child == ancestor)
         return true;
 
-    LayoutObject* curr = child;
-    LayoutObject* parent = curr->parent();
-    while (parent && (!parent->isLayoutBlock() || parent->isInline())) {
-        if (parent->slowLastChild() != curr)
+    LineLayoutItem curr = child;
+    LineLayoutItem parent = curr.parent();
+    while (parent && (!parent.isLayoutBlock() || parent.isInline())) {
+        if (parent.slowLastChild() != curr)
             return false;
         if (parent == ancestor)
             return true;
 
         curr = parent;
-        parent = curr->parent();
+        parent = curr.parent();
     }
 
     return true;
@@ -327,7 +327,8 @@ void InlineFlowBox::determineSpacingForFlowBoxes(bool lastLine, bool isLogically
 
         if (!lineBoxList->lastLineBox()->isConstructed()) {
             LayoutInline& inlineFlow = toLayoutInline(layoutObject());
-            bool isLastObjectOnLine = !isAncestorAndWithinBlock(lineLayoutItem(), LineLayoutItem(logicallyLastRunLayoutObject)) || (isLastChildForLayoutObject(&layoutObject(), logicallyLastRunLayoutObject) && !isLogicallyLastRunWrapped);
+            LineLayoutItem logicallyLastRunLayoutItem = LineLayoutItem(logicallyLastRunLayoutObject);
+            bool isLastObjectOnLine = !isAncestorAndWithinBlock(lineLayoutItem(), logicallyLastRunLayoutItem) || (isLastChildForLayoutObject(lineLayoutItem(), logicallyLastRunLayoutItem) && !isLogicallyLastRunWrapped);
 
             // We include the border under these conditions:
             // (1) The next line was not created, or it is constructed. We check the previous line for rtl.
