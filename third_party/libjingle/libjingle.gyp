@@ -294,6 +294,8 @@
             '<(libjingle_source)/talk/app/webrtc/portallocatorfactory.h',
             '<(libjingle_source)/talk/app/webrtc/remoteaudiosource.cc',
             '<(libjingle_source)/talk/app/webrtc/remoteaudiosource.h',
+            '<(libjingle_source)/talk/app/webrtc/remoteaudiotrack.cc',
+            '<(libjingle_source)/talk/app/webrtc/remoteaudiotrack.h',
             '<(libjingle_source)/talk/app/webrtc/remotevideocapturer.cc',
             '<(libjingle_source)/talk/app/webrtc/remotevideocapturer.h',
             '<(libjingle_source)/talk/app/webrtc/rtpreceiver.cc',

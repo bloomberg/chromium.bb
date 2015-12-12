@@ -335,6 +335,8 @@ if (enable_webrtc) {
       "source/talk/app/webrtc/portallocatorfactory.h",
       "source/talk/app/webrtc/remoteaudiosource.cc",
       "source/talk/app/webrtc/remoteaudiosource.h",
+      "source/talk/app/webrtc/remoteaudiotrack.cc",
+      "source/talk/app/webrtc/remoteaudiotrack.h",
       "source/talk/app/webrtc/remotevideocapturer.cc",
       "source/talk/app/webrtc/remotevideocapturer.h",
       "source/talk/app/webrtc/rtpreceiver.cc",
