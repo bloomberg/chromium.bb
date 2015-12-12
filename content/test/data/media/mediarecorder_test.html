@@ -154,12 +154,6 @@ function testStartWithTimeSlice() {
             });
       })
       .then(function() {
-        var timeDeltas = getTimeStampDeltas(timeStamps);
-        timeDeltas.forEach(function(timeDelta) {
-          assertTrue(timeDelta >= DEFAULT_TIME_SLICE, 'A time slice was ' +
-              timeDelta + ' ms which is shorter than the expected minimum '
-              + DEFAULT_TIME_SLICE + 'ms');
-          });
         assertTrue(emptyBlobs == 0, 'Recording has ' + emptyBlobs +
             ' empty blobs, there should be no such empty blobs.');
       })
