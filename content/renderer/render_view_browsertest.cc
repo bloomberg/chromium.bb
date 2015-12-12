@@ -78,6 +78,8 @@
 #include "ui/events/keycodes/keyboard_code_conversion.h"
 #endif
 
+#include "url/url_constants.h"
+
 using blink::WebFrame;
 using blink::WebInputEvent;
 using blink::WebLocalFrame;
@@ -843,6 +845,63 @@ TEST_F(RenderViewImplTest, OriginReplicationForSwapOut) {
   child_frame2->SwapOut(kProxyRoutingId + 1, true, replication_state);
   EXPECT_TRUE(web_frame->lastChild()->isWebRemoteFrame());
   EXPECT_TRUE(web_frame->lastChild()->securityOrigin().isUnique());
+}
+
+// Test for https://crbug.com/568676, where a parent detaches a remote child
+// while the browser navigates it to the parent's site in parallel, with the
+// detach happening after the provisional RenderFrame is created but before
+// FrameMsg_Navigate is received.  This is a variant of
+// https://crbug.com/526304.
+TEST_F(RenderViewImplTest, NavigateProxyAndDetachBeforeOnNavigate) {
+  // This test should only run with --site-per-process.
+  if (!AreAllSitesIsolatedForTesting())
+    return;
+
+  LoadHTML("Hello <iframe src='data:text/html,frame 1'></iframe>");
+  WebFrame* web_frame = frame()->GetWebFrame();
+  TestRenderFrame* child_frame = static_cast<TestRenderFrame*>(
+      RenderFrame::FromWebFrame(web_frame->firstChild()));
+
+  // Swap the child frame out.
+  child_frame->SwapOut(kProxyRoutingId, true, content::FrameReplicationState());
+  EXPECT_TRUE(web_frame->firstChild()->isWebRemoteFrame());
+
+  // Do the first step of a remote-to-local transition for the child proxy,
+  // which is to create a provisional local frame.
+  int routing_id = kProxyRoutingId + 1;
+  FrameMsg_NewFrame_WidgetParams widget_params;
+  widget_params.routing_id = MSG_ROUTING_NONE;
+  widget_params.hidden = false;
+  RenderFrameImpl::CreateFrame(routing_id, kProxyRoutingId, MSG_ROUTING_NONE,
+                               frame()->GetRoutingID(), MSG_ROUTING_NONE,
+                               content::FrameReplicationState(), nullptr,
+                               widget_params, blink::WebFrameOwnerProperties());
+  TestRenderFrame* provisional_frame =
+      static_cast<TestRenderFrame*>(RenderFrameImpl::FromRoutingID(routing_id));
+  EXPECT_TRUE(provisional_frame);
+
+  // Detach the child frame (current remote) in the main frame.
+  ExecuteJavaScriptForTests(
+      "document.body.removeChild(document.querySelector('iframe'));");
+  RenderFrameProxy* child_proxy =
+      RenderFrameProxy::FromRoutingID(kProxyRoutingId);
+  EXPECT_FALSE(child_proxy);
+
+  // Attempt to start a navigation on the RenderFrame that was created to
+  // replace the now-detached RenderFrameProxy.   This shouldn't crash and
+  // should abort the navigation, since the frame no longer exists.
+  CommonNavigationParams common_params;
+  common_params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
+  common_params.url = GURL(url::kAboutBlankURL);
+  provisional_frame->Navigate(common_params, StartNavigationParams(),
+                              RequestNavigationParams());
+  ProcessPendingMessages();
+
+  // Check that there was no DidCommitProvisionalLoad.
+  const IPC::Message* frame_navigate_msg =
+      render_thread_->sink().GetUniqueMessageMatching(
+          FrameHostMsg_DidCommitProvisionalLoad::ID);
+  EXPECT_FALSE(frame_navigate_msg);
 }
 
 // Verify that DidFlushPaint doesn't crash if called after a RenderView is

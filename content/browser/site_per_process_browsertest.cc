@@ -406,6 +406,29 @@ class FrameFocusedObserver : public FrameTreeNode::Observer {
   DISALLOW_COPY_AND_ASSIGN(FrameFocusedObserver);
 };
 
+// This observer is used to wait for its owner FrameTreeNode to become deleted.
+class FrameDeletedObserver : public FrameTreeNode::Observer {
+ public:
+  FrameDeletedObserver(FrameTreeNode* owner)
+      : owner_(owner), message_loop_runner_(new MessageLoopRunner) {
+    owner->AddObserver(this);
+  }
+
+  void Wait() { message_loop_runner_->Run(); }
+
+ private:
+  // FrameTreeNode::Observer
+  void OnFrameTreeNodeDestroyed(FrameTreeNode* node) override {
+    if (node == owner_)
+      message_loop_runner_->Quit();
+  }
+
+  FrameTreeNode* owner_;
+  scoped_refptr<MessageLoopRunner> message_loop_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(FrameDeletedObserver);
+};
+
 // Helper function to focus a frame by sending it a mouse click and then
 // waiting for it to become focused.
 void FocusFrame(FrameTreeNode* frame) {
@@ -4264,6 +4287,84 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_CreateContextMenuTest) {
 
   EXPECT_EQ(point.x(), params.x);
   EXPECT_EQ(point.y(), params.y);
+}
+
+// Test for https://crbug.com/526304, where a parent frame executes a
+// remote-to-local navigation on a child frame and immediately removes the same
+// child frame.  This test exercises the path where the detach happens before
+// the provisional local frame is created.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       NavigateProxyAndDetachBeforeProvisionalFrameCreation) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b,b)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  WebContents* contents = shell()->web_contents();
+  FrameTreeNode* root =
+      static_cast<WebContentsImpl*>(contents)->GetFrameTree()->root();
+  EXPECT_EQ(2U, root->child_count());
+
+  // Navigate the first child frame to 'about:blank' (which is a
+  // remote-to-local transition), and then detach it.
+  FrameDeletedObserver observer(root->child_at(0));
+  std::string script =
+      "var f = document.querySelector('iframe');"
+      "f.contentWindow.location.href = 'about:blank';"
+      "setTimeout(function() { document.body.removeChild(f); }, 0);";
+  EXPECT_TRUE(ExecuteScript(root->current_frame_host(), script));
+  observer.Wait();
+  EXPECT_EQ(1U, root->child_count());
+
+  // Make sure the main frame renderer does not crash and ignores the
+  // navigation to the frame that's already been deleted.
+  int child_count = 0;
+  EXPECT_TRUE(ExecuteScriptAndExtractInt(
+      root->current_frame_host(),
+      "domAutomationController.send(frames.length)",
+      &child_count));
+  EXPECT_EQ(1, child_count);
+}
+
+// Test for a variation of https://crbug.com/526304, where a child frame does a
+// remote-to-local navigation, and the parent frame removes that child frame
+// after the provisional local frame is created and starts to navigate, but
+// before it commits.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       NavigateProxyAndDetachBeforeCommit) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b,b)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  WebContents* contents = shell()->web_contents();
+  FrameTreeNode* root =
+      static_cast<WebContentsImpl*>(contents)->GetFrameTree()->root();
+  EXPECT_EQ(2U, root->child_count());
+  FrameTreeNode* child = root->child_at(0);
+
+  // Start a remote-to-local navigation for the child, but don't wait for
+  // commit.
+  GURL same_site_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  NavigationController::LoadURLParams params(same_site_url);
+  params.transition_type = ui::PAGE_TRANSITION_LINK;
+  params.frame_tree_node_id = child->frame_tree_node_id();
+  child->navigator()->GetController()->LoadURLWithParams(params);
+
+  // Tell parent to remove the first child.  This should happen after the
+  // previous navigation starts but before it commits.
+  FrameDeletedObserver observer(child);
+  EXPECT_TRUE(ExecuteScript(
+      root->current_frame_host(),
+      "document.body.removeChild(document.querySelector('iframe'));"));
+  observer.Wait();
+  EXPECT_EQ(1U, root->child_count());
+
+  // Make sure the a.com renderer does not crash.
+  int child_count = 0;
+  EXPECT_TRUE(ExecuteScriptAndExtractInt(
+      root->current_frame_host(),
+      "domAutomationController.send(frames.length)",
+      &child_count));
+  EXPECT_EQ(1, child_count);
 }
 
 }  // namespace content
