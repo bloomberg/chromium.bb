@@ -314,11 +314,19 @@ void MediaRouterMojoImpl::JoinRoute(
                         callbacks));
 }
 
-void MediaRouterMojoImpl::CloseRoute(const MediaRoute::Id& route_id) {
+void MediaRouterMojoImpl::TerminateRoute(const MediaRoute::Id& route_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  SetWakeReason(MediaRouteProviderWakeReason::CLOSE_ROUTE);
-  RunOrDefer(base::Bind(&MediaRouterMojoImpl::DoCloseRoute,
+  SetWakeReason(MediaRouteProviderWakeReason::TERMINATE_ROUTE);
+  RunOrDefer(base::Bind(&MediaRouterMojoImpl::DoTerminateRoute,
+                        base::Unretained(this), route_id));
+}
+
+void MediaRouterMojoImpl::DetachRoute(const MediaRoute::Id& route_id) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  SetWakeReason(MediaRouteProviderWakeReason::DETACH_ROUTE);
+  RunOrDefer(base::Bind(&MediaRouterMojoImpl::DoDetachRoute,
                         base::Unretained(this), route_id));
 }
 
@@ -353,14 +361,6 @@ void MediaRouterMojoImpl::AddIssue(const Issue& issue) {
 void MediaRouterMojoImpl::ClearIssue(const Issue::Id& issue_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
   issue_manager_.ClearIssue(issue_id);
-}
-
-void MediaRouterMojoImpl::OnPresentationSessionDetached(
-    const MediaRoute::Id& route_id) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  SetWakeReason(MediaRouteProviderWakeReason::PRESENTATION_SESSION_DETACHED);
-  RunOrDefer(base::Bind(&MediaRouterMojoImpl::DoOnPresentationSessionDetached,
-                        base::Unretained(this), route_id));
 }
 
 bool MediaRouterMojoImpl::RegisterMediaSinksObserver(
@@ -551,9 +551,14 @@ void MediaRouterMojoImpl::DoJoinRoute(
           base::Unretained(this), presentation_id, callbacks));
 }
 
-void MediaRouterMojoImpl::DoCloseRoute(const MediaRoute::Id& route_id) {
-  DVLOG_WITH_INSTANCE(1) << "DoCloseRoute " << route_id;
-  media_route_provider_->CloseRoute(route_id);
+void MediaRouterMojoImpl::DoTerminateRoute(const MediaRoute::Id& route_id) {
+  DVLOG_WITH_INSTANCE(1) << "DoTerminateRoute " << route_id;
+  media_route_provider_->TerminateRoute(route_id);
+}
+
+void MediaRouterMojoImpl::DoDetachRoute(const MediaRoute::Id& route_id) {
+  DVLOG_WITH_INSTANCE(1) << "DoDetachRoute " << route_id;
+  media_route_provider_->DetachRoute(route_id);
 }
 
 void MediaRouterMojoImpl::DoSendSessionMessage(
@@ -677,12 +682,6 @@ void MediaRouterMojoImpl::OnPresentationConnectionStateChanged(
 
   NotifyPresentationConnectionStateChange(
       route_id, mojo::PresentationConnectionStateFromMojo(state));
-}
-
-void MediaRouterMojoImpl::DoOnPresentationSessionDetached(
-    const MediaRoute::Id& route_id) {
-  DVLOG_WITH_INSTANCE(1) << "DoOnPresentationSessionDetached " << route_id;
-  media_route_provider_->OnPresentationSessionDetached(route_id);
 }
 
 bool MediaRouterMojoImpl::HasLocalDisplayRoute() const {

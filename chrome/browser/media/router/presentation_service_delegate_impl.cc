@@ -83,6 +83,8 @@ class PresentationFrame {
       const content::PresentationSessionMessageCallback& message_cb);
 
   void Reset();
+  void RemoveConnection(const std::string& presentation_id,
+                        const MediaRoute::Id& route_id);
 
   const MediaRoute::Id GetRouteId(const std::string& presentation_id) const;
   const std::vector<MediaRoute::Id> GetRouteIds() const;
@@ -184,12 +186,30 @@ bool PresentationFrame::HasScreenAvailabilityListenerForTest(
 
 void PresentationFrame::Reset() {
   for (const auto& pid_route_id : presentation_id_to_route_id_)
-    router_->OnPresentationSessionDetached(pid_route_id.second);
+    router_->DetachRoute(pid_route_id.second);
 
   presentation_id_to_route_id_.clear();
   sinks_observer_.reset();
   connection_state_subscriptions_.clear();
   session_messages_observers_.clear();
+}
+
+void PresentationFrame::RemoveConnection(const std::string& presentation_id,
+                                         const MediaRoute::Id& route_id) {
+  // Remove the presentation id mapping so a later call to Reset is a no-op.
+  presentation_id_to_route_id_.erase(presentation_id);
+
+  // We no longer need to observe route messages.
+  auto observer_iter = std::find_if(
+      session_messages_observers_.begin(), session_messages_observers_.end(),
+      [&route_id](const PresentationSessionMessagesObserver* observer) {
+        return route_id == observer->route_id();
+      });
+  if (observer_iter != session_messages_observers_.end())
+    session_messages_observers_.erase(observer_iter);
+
+  // We keep the PresentationConnectionStateChangedCallback registered with MR
+  // so the MRP can tell us when terminate() completed.
 }
 
 void PresentationFrame::ListenForConnectionStateChange(
@@ -280,6 +300,9 @@ class PresentationFrameManager {
       PresentationServiceDelegateImpl::DefaultPresentationRequestObserver*
           observer);
   void Reset(const RenderFrameHostId& render_frame_host_id);
+  void RemoveConnection(const RenderFrameHostId& render_frame_host_id,
+                        const MediaRoute::Id& route_id,
+                        const std::string& presentation_id);
   bool HasScreenAvailabilityListenerForTest(
       const RenderFrameHostId& render_frame_host_id,
       const MediaSource::Id& source_id) const;
@@ -505,6 +528,15 @@ void PresentationFrameManager::Reset(
   }
 }
 
+void PresentationFrameManager::RemoveConnection(
+    const RenderFrameHostId& render_frame_host_id,
+    const MediaRoute::Id& route_id,
+    const std::string& presentation_id) {
+  auto presentation_frame = presentation_frames_.get(render_frame_host_id);
+  if (presentation_frame)
+    presentation_frame->RemoveConnection(route_id, presentation_id);
+}
+
 PresentationFrame* PresentationFrameManager::GetOrAddPresentationFrame(
     const RenderFrameHostId& render_frame_host_id) {
   if (!presentation_frames_.contains(render_frame_host_id)) {
@@ -715,35 +747,38 @@ void PresentationServiceDelegateImpl::JoinSession(
       web_contents_, route_response_callbacks);
 }
 
-void PresentationServiceDelegateImpl::CloseSession(
+void PresentationServiceDelegateImpl::CloseConnection(
     int render_process_id,
     int render_frame_id,
     const std::string& presentation_id) {
-  const MediaRoute::Id& route_id = frame_manager_->GetRouteId(
-      RenderFrameHostId(render_process_id, render_frame_id), presentation_id);
+  const RenderFrameHostId rfh_id(render_process_id, render_frame_id);
+  const MediaRoute::Id& route_id =
+      frame_manager_->GetRouteId(rfh_id, presentation_id);
   if (route_id.empty()) {
     DVLOG(1) << "No active route for: " << presentation_id;
     return;
   }
 
-  // TODO(mfoltz, mlamouri): implement CloseSession().
-  // This could call router_->OnPresentationSessionDetached(route_id).
-  // PresentationFrame::Reset() should probably call CloseSession() too.
-  // Rename CloseRoute() to something else to avoid confusion?
-  NOTIMPLEMENTED();
+  router_->DetachRoute(route_id);
+  frame_manager_->RemoveConnection(rfh_id, presentation_id, route_id);
+  // TODO(mfoltz): close() should always succeed so there is no need to keep the
+  // state_changed_cb around - remove it and fire the ChangeEvent on the
+  // PresentationConnection in Blink.
 }
 
-void PresentationServiceDelegateImpl::TerminateSession(
+void PresentationServiceDelegateImpl::Terminate(
     int render_process_id,
     int render_frame_id,
     const std::string& presentation_id) {
-  const MediaRoute::Id& route_id = frame_manager_->GetRouteId(
-      RenderFrameHostId(render_process_id, render_frame_id), presentation_id);
+  const RenderFrameHostId rfh_id(render_process_id, render_frame_id);
+  const MediaRoute::Id& route_id =
+      frame_manager_->GetRouteId(rfh_id, presentation_id);
   if (route_id.empty()) {
     DVLOG(1) << "No active route for: " << presentation_id;
     return;
   }
-  router_->CloseRoute(route_id);
+  router_->TerminateRoute(route_id);
+  frame_manager_->RemoveConnection(rfh_id, presentation_id, route_id);
 }
 
 void PresentationServiceDelegateImpl::ListenForSessionMessages(

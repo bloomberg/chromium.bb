@@ -367,7 +367,7 @@ bool MediaRouterUI::CreateRoute(const MediaSink::Id& sink_id,
 }
 
 void MediaRouterUI::CloseRoute(const MediaRoute::Id& route_id) {
-  router_->CloseRoute(route_id);
+  router_->TerminateRoute(route_id);
 }
 
 void MediaRouterUI::AddIssue(const Issue& issue) { router_->AddIssue(issue); }

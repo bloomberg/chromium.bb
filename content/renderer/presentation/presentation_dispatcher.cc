@@ -210,9 +210,8 @@ void PresentationDispatcher::closeSession(
     const blink::WebString& presentationId) {
   ConnectToPresentationServiceIfNeeded();
 
-  presentation_service_->CloseSession(
-      presentationUrl.utf8(),
-      presentationId.utf8());
+  presentation_service_->CloseConnection(presentationUrl.utf8(),
+                                         presentationId.utf8());
 }
 
 void PresentationDispatcher::terminateSession(
@@ -220,9 +219,8 @@ void PresentationDispatcher::terminateSession(
     const blink::WebString& presentationId) {
   ConnectToPresentationServiceIfNeeded();
 
-  presentation_service_->TerminateSession(
-      presentationUrl.utf8(),
-      presentationId.utf8());
+  presentation_service_->Terminate(presentationUrl.utf8(),
+                                   presentationId.utf8());
 }
 
 void PresentationDispatcher::getAvailability(

@@ -163,12 +163,10 @@ class CONTENT_EXPORT PresentationServiceImpl
   void SendSessionMessage(presentation::PresentationSessionInfoPtr session_info,
                           presentation::SessionMessagePtr session_message,
                           const SendMessageMojoCallback& callback) override;
-  void CloseSession(
-      const mojo::String& presentation_url,
-      const mojo::String& presentation_id) override;
-  void TerminateSession(
-      const mojo::String& presentation_url,
-      const mojo::String& presentation_id) override;
+  void CloseConnection(const mojo::String& presentation_url,
+                       const mojo::String& presentation_id) override;
+  void Terminate(const mojo::String& presentation_url,
+                 const mojo::String& presentation_id) override;
   void ListenForSessionMessages(
       presentation::PresentationSessionInfoPtr session) override;
 

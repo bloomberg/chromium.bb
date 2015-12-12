@@ -114,8 +114,7 @@ void MediaRouterE2EBrowserTest::CreateMediaRoute(
 
 void MediaRouterE2EBrowserTest::StopMediaRoute() {
   ASSERT_FALSE(route_id_.empty());
-
-  media_router_->CloseRoute(route_id_);
+  media_router_->TerminateRoute(route_id_);
 }
 
 bool MediaRouterE2EBrowserTest::IsSinkDiscovered() const {

@@ -150,7 +150,7 @@ void MediaRouterAndroid::JoinRoute(
       request_id);
 }
 
-void MediaRouterAndroid::CloseRoute(const MediaRoute::Id& route_id) {
+void MediaRouterAndroid::TerminateRoute(const MediaRoute::Id& route_id) {
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jstring> jroute_id =
           base::android::ConvertUTF8ToJavaString(env, route_id);
@@ -201,8 +201,7 @@ void MediaRouterAndroid::ClearIssue(const Issue::Id& issue_id) {
   NOTIMPLEMENTED();
 }
 
-void MediaRouterAndroid::OnPresentationSessionDetached(
-    const MediaRoute::Id& route_id) {
+void MediaRouterAndroid::DetachRoute(const MediaRoute::Id& route_id) {
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jstring> jroute_id =
           base::android::ConvertUTF8ToJavaString(env, route_id);

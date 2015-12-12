@@ -74,7 +74,8 @@ class MediaRouterMojoImpl : public MediaRouterBase,
       const GURL& origin,
       content::WebContents* web_contents,
       const std::vector<MediaRouteResponseCallback>& callbacks) override;
-  void CloseRoute(const MediaRoute::Id& route_id) override;
+  void TerminateRoute(const MediaRoute::Id& route_id) override;
+  void DetachRoute(const MediaRoute::Id& route_id) override;
   void SendRouteMessage(const MediaRoute::Id& route_id,
                         const std::string& message,
                         const SendRouteMessageCallback& callback) override;
@@ -84,7 +85,6 @@ class MediaRouterMojoImpl : public MediaRouterBase,
       const SendRouteMessageCallback& callback) override;
   void AddIssue(const Issue& issue) override;
   void ClearIssue(const Issue::Id& issue_id) override;
-  void OnPresentationSessionDetached(const MediaRoute::Id& route_id) override;
   bool HasLocalDisplayRoute() const override;
 
   const std::string& media_route_provider_extension_id() const {
@@ -212,7 +212,8 @@ class MediaRouterMojoImpl : public MediaRouterBase,
                    const std::string& origin,
                    int tab_id,
                    const std::vector<MediaRouteResponseCallback>& callbacks);
-  void DoCloseRoute(const MediaRoute::Id& route_id);
+  void DoTerminateRoute(const MediaRoute::Id& route_id);
+  void DoDetachRoute(const MediaRoute::Id& route_id);
   void DoSendSessionMessage(const MediaRoute::Id& route_id,
                             const std::string& message,
                             const SendRouteMessageCallback& callback);
@@ -221,7 +222,6 @@ class MediaRouterMojoImpl : public MediaRouterBase,
                                   const SendRouteMessageCallback& callback);
   void DoListenForRouteMessages(const MediaRoute::Id& route_id);
   void DoStopListeningForRouteMessages(const MediaRoute::Id& route_id);
-  void DoOnPresentationSessionDetached(const MediaRoute::Id& route_id);
   void DoStartObservingMediaSinks(const MediaSource::Id& source_id);
   void DoStopObservingMediaSinks(const MediaSource::Id& source_id);
   void DoStartObservingMediaRoutes();

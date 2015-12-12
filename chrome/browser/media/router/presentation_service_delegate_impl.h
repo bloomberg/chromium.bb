@@ -107,12 +107,12 @@ class PresentationServiceDelegateImpl
       const std::string& presentation_id,
       const content::PresentationSessionStartedCallback& success_cb,
       const content::PresentationSessionErrorCallback& error_cb) override;
-  void CloseSession(int render_process_id,
-                    int render_frame_id,
-                    const std::string& presentation_id) override;
-  void TerminateSession(int render_process_id,
-                        int render_frame_id,
-                        const std::string& presentation_id) override;
+  void CloseConnection(int render_process_id,
+                       int render_frame_id,
+                       const std::string& presentation_id) override;
+  void Terminate(int render_process_id,
+                 int render_frame_id,
+                 const std::string& presentation_id) override;
   void ListenForSessionMessages(
       int render_process_id,
       int render_frame_id,

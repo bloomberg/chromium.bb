@@ -68,7 +68,7 @@ void MediaRouterDialogControllerAndroid::OnRouteClosed(
   MediaRouter* router = MediaRouterFactory::GetApiForBrowserContext(
       initiator()->GetBrowserContext());
 
-  router->CloseRoute(media_route_id);
+  router->TerminateRoute(media_route_id);
 
   CancelPresentationRequest();
 }

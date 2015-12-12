@@ -88,10 +88,10 @@ interface PresentationService {
                      SessionMessage message_request) => (bool success);
 
   // Called when close() is called by the frame.
-  CloseSession(string presentation_url, string presentation_id);
+  CloseConnection(string presentation_url, string presentation_id);
 
   // Called when terminate() is called by the frame.
-  TerminateSession(string presentation_url, string presentation_id);
+  Terminate(string presentation_url, string presentation_id);
 
   // Starts listening for messages for session with |sessionInfo|.
   // Messages will be received in

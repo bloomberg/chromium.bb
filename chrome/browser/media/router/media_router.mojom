@@ -143,8 +143,8 @@ interface MediaRouteProvider {
             string origin,
             int32 tab_id) => (MediaRoute? route, string? error_text);
 
-  // Closes the route specified by |route_id|.
-  CloseRoute(string route_id);
+  // Terminates the route specified by |route_id|.
+  TerminateRoute(string route_id);
 
   // Sends |message| via the media route |media_route_id|.
   // If the operation was successful, |sent| is true; otherwise it is false.
@@ -183,9 +183,10 @@ interface MediaRouteProvider {
   // with an empty list.
   StopListeningForRouteMessages(string route_id);
 
-  // Indicates that the presentation session that was connected to route
-  // |route_id| is no longer connected to it.
-  OnPresentationSessionDetached(string route_id);
+  // Indicates that a PresentationConnection that was connected to route
+  // |route_id| has been closed (via .close(), garbage collection or
+  // navigation).
+  DetachRoute(string route_id);
 };
 
 // Interface for a service which observes state changes across media

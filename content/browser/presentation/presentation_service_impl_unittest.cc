@@ -103,11 +103,11 @@ class MockPresentationServiceDelegate : public PresentationServiceDelegate {
                     const std::string& presentation_id,
                     const PresentationSessionStartedCallback& success_cb,
                     const PresentationSessionErrorCallback& error_cb));
-  MOCK_METHOD3(CloseSession,
+  MOCK_METHOD3(CloseConnection,
                void(int render_process_id,
                     int render_frame_id,
                     const std::string& presentation_id));
-  MOCK_METHOD3(TerminateSession,
+  MOCK_METHOD3(Terminate,
                void(int render_process_id,
                     int render_frame_id,
                     const std::string& presentation_id));
@@ -571,18 +571,18 @@ TEST_F(PresentationServiceImplTest, JoinSessionError) {
   SaveQuitClosureAndRunLoop();
 }
 
-TEST_F(PresentationServiceImplTest, CloseSession) {
-  service_ptr_->CloseSession(kPresentationUrl, kPresentationId);
+TEST_F(PresentationServiceImplTest, CloseConnection) {
+  service_ptr_->CloseConnection(kPresentationUrl, kPresentationId);
   base::RunLoop run_loop;
-  EXPECT_CALL(mock_delegate_, CloseSession(_, _, Eq(kPresentationId)))
+  EXPECT_CALL(mock_delegate_, CloseConnection(_, _, Eq(kPresentationId)))
       .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
   run_loop.Run();
 }
 
-TEST_F(PresentationServiceImplTest, TerminateSession) {
-  service_ptr_->TerminateSession(kPresentationUrl, kPresentationId);
+TEST_F(PresentationServiceImplTest, Terminate) {
+  service_ptr_->Terminate(kPresentationUrl, kPresentationId);
   base::RunLoop run_loop;
-  EXPECT_CALL(mock_delegate_, TerminateSession(_, _, Eq(kPresentationId)))
+  EXPECT_CALL(mock_delegate_, Terminate(_, _, Eq(kPresentationId)))
       .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
   run_loop.Run();
 }

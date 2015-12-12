@@ -413,22 +413,20 @@ void PresentationServiceImpl::OnSendMessageCallback(bool sent) {
   }
 }
 
-void PresentationServiceImpl::CloseSession(
+void PresentationServiceImpl::CloseConnection(
     const mojo::String& presentation_url,
     const mojo::String& presentation_id) {
-  DVLOG(2) << "CloseSession " << presentation_id;
+  DVLOG(2) << "CloseConnection " << presentation_id;
   if (delegate_)
-    delegate_->CloseSession(render_process_id_, render_frame_id_,
-                            presentation_id);
+    delegate_->CloseConnection(render_process_id_, render_frame_id_,
+                               presentation_id);
 }
 
-void PresentationServiceImpl::TerminateSession(
-    const mojo::String& presentation_url,
-    const mojo::String& presentation_id) {
-  DVLOG(2) << "TerminateSession " << presentation_id;
+void PresentationServiceImpl::Terminate(const mojo::String& presentation_url,
+                                        const mojo::String& presentation_id) {
+  DVLOG(2) << "Terminate " << presentation_id;
   if (delegate_)
-    delegate_->TerminateSession(render_process_id_, render_frame_id_,
-                                presentation_id);
+    delegate_->Terminate(render_process_id_, render_frame_id_, presentation_id);
 }
 
 void PresentationServiceImpl::OnConnectionStateChanged(

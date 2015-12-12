@@ -100,8 +100,12 @@ class MediaRouter : public KeyedService {
       content::WebContents* web_contents,
       const std::vector<MediaRouteResponseCallback>& callbacks) = 0;
 
-  // Closes the media route specified by |route_id|.
-  virtual void CloseRoute(const MediaRoute::Id& route_id) = 0;
+  // Terminates the media route specified by |route_id|.
+  virtual void TerminateRoute(const MediaRoute::Id& route_id) = 0;
+
+  // Detaches the media route specified by |route_id|. The request might come
+  // from the page or from an event like navigation or garbage collection.
+  virtual void DetachRoute(const MediaRoute::Id& route_id) = 0;
 
   // Posts |message| to a MediaSink connected via MediaRoute with |route_id|.
   virtual void SendRouteMessage(const MediaRoute::Id& route_id,
@@ -120,11 +124,6 @@ class MediaRouter : public KeyedService {
 
   // Clears the issue with the id |issue_id|.
   virtual void ClearIssue(const Issue::Id& issue_id) = 0;
-
-  // Indicates that a presentation session has detached from the underlying
-  // MediaRoute |route_id| (due to navigation, garbage collection, etc.)
-  virtual void OnPresentationSessionDetached(
-      const MediaRoute::Id& route_id) = 0;
 
   // Returns whether or not there is currently an active local displayable
   // route.

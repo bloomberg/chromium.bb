@@ -189,7 +189,7 @@ void CastConfigDelegateMediaRouter::CastToReceiver(
 }
 
 void CastConfigDelegateMediaRouter::StopCasting(const std::string& route_id) {
-  GetMediaRouter()->CloseRoute(route_id);
+  GetMediaRouter()->TerminateRoute(route_id);
 }
 
 bool CastConfigDelegateMediaRouter::HasOptions() const {

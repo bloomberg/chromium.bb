@@ -40,7 +40,8 @@ class MediaRouterAndroid : public MediaRouterBase {
       const GURL& origin,
       content::WebContents* web_contents,
       const std::vector<MediaRouteResponseCallback>& callbacks) override;
-  void CloseRoute(const MediaRoute::Id& route_id) override;
+  void DetachRoute(const MediaRoute::Id& route_id) override;
+  void TerminateRoute(const MediaRoute::Id& route_id) override;
   void SendRouteMessage(const MediaRoute::Id& route_id,
                         const std::string& message,
                         const SendRouteMessageCallback& callback) override;
@@ -50,7 +51,6 @@ class MediaRouterAndroid : public MediaRouterBase {
       const SendRouteMessageCallback& callback) override;
   void AddIssue(const Issue& issue) override;
   void ClearIssue(const Issue::Id& issue_id) override;
-  void OnPresentationSessionDetached(const MediaRoute::Id& route_id) override;
   bool HasLocalDisplayRoute() const override;
 
   // The methods called by the Java counterpart.
