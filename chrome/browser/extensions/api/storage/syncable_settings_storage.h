@@ -51,8 +51,6 @@ class SyncableSettingsStorage : public ValueStore {
   WriteResult Remove(const std::string& key) override;
   WriteResult Remove(const std::vector<std::string>& keys) override;
   WriteResult Clear() override;
-  bool Restore() override;
-  bool RestoreKey(const std::string& key) override;
 
   // Sync-related methods, analogous to those on SyncableService (handled by
   // ExtensionSettings), but with looser guarantees about when the methods
@@ -79,6 +77,11 @@ class SyncableSettingsStorage : public ValueStore {
  private:
   // Sends the changes from |result| to sync if it's enabled.
   void SyncResultIfEnabled(const ValueStore::WriteResult& result);
+
+  // Analyze the result returned by a call to the delegate, and take appropriate
+  // measures.
+  template <class T>
+  T HandleResult(T result);
 
   // Sends all local settings to sync. This assumes that there are no settings
   // in sync yet.

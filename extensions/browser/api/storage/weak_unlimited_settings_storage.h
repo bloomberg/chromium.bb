@@ -5,6 +5,9 @@
 #ifndef EXTENSIONS_BROWSER_API_STORAGE_WEAK_UNLIMITED_SETTINGS_STORAGE_H_
 #define EXTENSIONS_BROWSER_API_STORAGE_WEAK_UNLIMITED_SETTINGS_STORAGE_H_
 
+#include <string>
+#include <vector>
+
 #include "base/compiler_specific.h"
 #include "extensions/browser/value_store/value_store.h"
 
@@ -35,8 +38,6 @@ class WeakUnlimitedSettingsStorage : public ValueStore {
   WriteResult Remove(const std::string& key) override;
   WriteResult Remove(const std::vector<std::string>& keys) override;
   WriteResult Clear() override;
-  bool Restore() override;
-  bool RestoreKey(const std::string& key) override;
 
  private:
   // The delegate storage area, NOT OWNED.

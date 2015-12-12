@@ -45,10 +45,6 @@ class TestingValueStore : public ValueStore {
   WriteResult Remove(const std::string& key) override;
   WriteResult Remove(const std::vector<std::string>& keys) override;
   WriteResult Clear() override;
-  // TestingValueStores can't get corrupted (they're all in-memory), so these
-  // just return true.
-  bool Restore() override;
-  bool RestoreKey(const std::string& key) override;
 
  private:
   base::DictionaryValue storage_;

@@ -26,6 +26,7 @@ namespace {
 
 const char kInvalidJson[] = "Invalid JSON";
 const char kCannotSerialize[] = "Cannot serialize value to JSON";
+const char kRestoredDuringOpen[] = "Database corruption repaired during open";
 
 // UMA values used when recovering from a corrupted leveldb.
 // Do not change/delete these values as you will break reporting for older
@@ -58,12 +59,29 @@ class ScopedSnapshot {
   DISALLOW_COPY_AND_ASSIGN(ScopedSnapshot);
 };
 
+ValueStore::StatusCode LevelDbToValueStoreStatus(
+    const leveldb::Status& status) {
+  if (status.ok())
+    return ValueStore::OK;
+  if (status.IsCorruption())
+    return ValueStore::CORRUPTION;
+  return ValueStore::OTHER_ERROR;
+}
+
 }  // namespace
 
 LeveldbValueStore::LeveldbValueStore(const std::string& uma_client_name,
                                      const base::FilePath& db_path)
-    : db_path_(db_path), open_histogram_(nullptr), restore_histogram_(nullptr) {
+    : db_path_(db_path),
+      db_unrecoverable_(false),
+      open_histogram_(nullptr),
+      restore_histogram_(nullptr) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+
+  open_options_.max_open_files = 0;  // Use minimum.
+  open_options_.create_if_missing = true;
+  open_options_.paranoid_checks = true;
+  open_options_.reuse_logs = leveldb_env::kDefaultLogReuseOptionValue;
 
   // Used in lieu of UMA_HISTOGRAM_ENUMERATION because the histogram name is
   // not a constant.
@@ -112,28 +130,28 @@ size_t LeveldbValueStore::GetBytesInUse() {
 ValueStore::ReadResult LeveldbValueStore::Get(const std::string& key) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
-  Status open_error = EnsureDbIsOpen();
-  if (!open_error.ok())
-    return MakeReadResult(open_error);
+  Status status = EnsureDbIsOpen();
+  if (!status.ok())
+    return MakeReadResult(status);
 
   scoped_ptr<base::Value> setting;
-  Status error = ReadFromDb(leveldb::ReadOptions(), key, &setting);
-  if (!error.ok())
-    return MakeReadResult(error);
+  status.Merge(ReadFromDb(leveldb::ReadOptions(), key, &setting));
+  if (!status.ok())
+    return MakeReadResult(status);
 
   base::DictionaryValue* settings = new base::DictionaryValue();
   if (setting)
     settings->SetWithoutPathExpansion(key, setting.release());
-  return MakeReadResult(make_scoped_ptr(settings));
+  return MakeReadResult(make_scoped_ptr(settings), status);
 }
 
 ValueStore::ReadResult LeveldbValueStore::Get(
     const std::vector<std::string>& keys) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
-  Status open_error = EnsureDbIsOpen();
-  if (!open_error.ok())
-    return MakeReadResult(open_error);
+  Status status = EnsureDbIsOpen();
+  if (!status.ok())
+    return MakeReadResult(status);
 
   leveldb::ReadOptions options;
   scoped_ptr<base::DictionaryValue> settings(new base::DictionaryValue());
@@ -145,22 +163,22 @@ ValueStore::ReadResult LeveldbValueStore::Get(
   for (std::vector<std::string>::const_iterator it = keys.begin();
       it != keys.end(); ++it) {
     scoped_ptr<base::Value> setting;
-    Status error = ReadFromDb(options, *it, &setting);
-    if (!error.ok())
-      return MakeReadResult(error);
+    status.Merge(ReadFromDb(options, *it, &setting));
+    if (!status.ok())
+      return MakeReadResult(status);
     if (setting)
       settings->SetWithoutPathExpansion(*it, setting.release());
   }
 
-  return MakeReadResult(settings.Pass());
+  return MakeReadResult(settings.Pass(), status);
 }
 
 ValueStore::ReadResult LeveldbValueStore::Get() {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
-  Status open_error = EnsureDbIsOpen();
-  if (!open_error.ok())
-    return MakeReadResult(open_error);
+  Status status = EnsureDbIsOpen();
+  if (!status.ok())
+    return MakeReadResult(status);
 
   base::JSONReader json_reader;
   leveldb::ReadOptions options = leveldb::ReadOptions();
@@ -175,63 +193,69 @@ ValueStore::ReadResult LeveldbValueStore::Get() {
     std::string key = it->key().ToString();
     scoped_ptr<base::Value> value =
         json_reader.ReadToValue(it->value().ToString());
-    if (!value)
-      return MakeReadResult(Status(CORRUPTION, kInvalidJson));
+    if (!value) {
+      return MakeReadResult(Status(
+          CORRUPTION,
+          Delete(key).ok() ? RESTORE_REPAIR_SUCCESS : RESTORE_DELETE_FAILURE,
+          kInvalidJson));
+    }
     settings->SetWithoutPathExpansion(key, value.Pass());
   }
 
   if (it->status().IsNotFound()) {
     NOTREACHED() << "IsNotFound() but iterating over all keys?!";
-    return MakeReadResult(settings.Pass());
+    return MakeReadResult(settings.Pass(), status);
   }
 
-  if (!it->status().ok())
-    return MakeReadResult(ToValueStoreError(it->status()));
+  if (!it->status().ok()) {
+    status.Merge(ToValueStoreError(it->status()));
+    return MakeReadResult(status);
+  }
 
-  return MakeReadResult(settings.Pass());
+  return MakeReadResult(settings.Pass(), status);
 }
 
 ValueStore::WriteResult LeveldbValueStore::Set(
     WriteOptions options, const std::string& key, const base::Value& value) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
-  Status open_error = EnsureDbIsOpen();
-  if (!open_error.ok())
-    return MakeWriteResult(open_error);
+  Status status = EnsureDbIsOpen();
+  if (!status.ok())
+    return MakeWriteResult(status);
 
   leveldb::WriteBatch batch;
   scoped_ptr<ValueStoreChangeList> changes(new ValueStoreChangeList());
-  Status batch_error = AddToBatch(options, key, value, &batch, changes.get());
-  if (!batch_error.ok())
-    return MakeWriteResult(batch_error);
+  status.Merge(AddToBatch(options, key, value, &batch, changes.get()));
+  if (!status.ok())
+    return MakeWriteResult(status);
 
-  Status write_error = WriteToDb(&batch);
-  return write_error.ok() ? MakeWriteResult(changes.Pass())
-                          : MakeWriteResult(write_error);
+  status.Merge(WriteToDb(&batch));
+  return status.ok() ? MakeWriteResult(changes.Pass(), status)
+                     : MakeWriteResult(status);
 }
 
 ValueStore::WriteResult LeveldbValueStore::Set(
     WriteOptions options, const base::DictionaryValue& settings) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
-  Status open_error = EnsureDbIsOpen();
-  if (!open_error.ok())
-    return MakeWriteResult(open_error);
+  Status status = EnsureDbIsOpen();
+  if (!status.ok())
+    return MakeWriteResult(status);
 
   leveldb::WriteBatch batch;
   scoped_ptr<ValueStoreChangeList> changes(new ValueStoreChangeList());
 
   for (base::DictionaryValue::Iterator it(settings);
        !it.IsAtEnd(); it.Advance()) {
-    Status batch_error =
-        AddToBatch(options, it.key(), it.value(), &batch, changes.get());
-    if (!batch_error.ok())
-      return MakeWriteResult(batch_error);
+    status.Merge(
+        AddToBatch(options, it.key(), it.value(), &batch, changes.get()));
+    if (!status.ok())
+      return MakeWriteResult(status);
   }
 
-  Status write_error = WriteToDb(&batch);
-  return write_error.ok() ? MakeWriteResult(changes.Pass())
-                          : MakeWriteResult(write_error);
+  status.Merge(WriteToDb(&batch));
+  return status.ok() ? MakeWriteResult(changes.Pass(), status)
+                     : MakeWriteResult(status);
 }
 
 ValueStore::WriteResult LeveldbValueStore::Remove(const std::string& key) {
@@ -243,9 +267,9 @@ ValueStore::WriteResult LeveldbValueStore::Remove(
     const std::vector<std::string>& keys) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
-  Status open_error = EnsureDbIsOpen();
-  if (!open_error.ok())
-    return MakeWriteResult(open_error);
+  Status status = EnsureDbIsOpen();
+  if (!status.ok())
+    return MakeWriteResult(status);
 
   leveldb::WriteBatch batch;
   scoped_ptr<ValueStoreChangeList> changes(new ValueStoreChangeList());
@@ -253,9 +277,9 @@ ValueStore::WriteResult LeveldbValueStore::Remove(
   for (std::vector<std::string>::const_iterator it = keys.begin();
       it != keys.end(); ++it) {
     scoped_ptr<base::Value> old_value;
-    Status read_error = ReadFromDb(leveldb::ReadOptions(), *it, &old_value);
-    if (!read_error.ok())
-      return MakeWriteResult(read_error);
+    status.Merge(ReadFromDb(leveldb::ReadOptions(), *it, &old_value));
+    if (!status.ok())
+      return MakeWriteResult(status);
 
     if (old_value) {
       changes->push_back(ValueStoreChange(*it, old_value.release(), NULL));
@@ -263,10 +287,12 @@ ValueStore::WriteResult LeveldbValueStore::Remove(
     }
   }
 
-  leveldb::Status status = db_->Write(leveldb::WriteOptions(), &batch);
-  if (!status.ok() && !status.IsNotFound())
-    return MakeWriteResult(ToValueStoreError(status));
-  return MakeWriteResult(changes.Pass());
+  leveldb::Status ldb_status = db_->Write(leveldb::WriteOptions(), &batch);
+  if (!ldb_status.ok() && !ldb_status.IsNotFound()) {
+    status.Merge(ToValueStoreError(ldb_status));
+    return MakeWriteResult(status);
+  }
+  return MakeWriteResult(changes.Pass(), status);
 }
 
 ValueStore::WriteResult LeveldbValueStore::Clear() {
@@ -283,56 +309,11 @@ ValueStore::WriteResult LeveldbValueStore::Clear() {
     std::string next_key = base::DictionaryValue::Iterator(whole_db).key();
     scoped_ptr<base::Value> next_value;
     whole_db.RemoveWithoutPathExpansion(next_key, &next_value);
-    changes->push_back(
-        ValueStoreChange(next_key, next_value.release(), NULL));
+    changes->push_back(ValueStoreChange(next_key, next_value.release(), NULL));
   }
 
   DeleteDbFile();
-  return MakeWriteResult(changes.Pass());
-}
-
-bool LeveldbValueStore::Restore() {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-
-  // Possible to have a corrupted open database, so first close it.
-  db_.reset();
-
-  leveldb::Options options;
-  options.create_if_missing = true;
-  options.paranoid_checks = true;
-
-  // Repair can drop an unbounded number of leveldb tables (key/value sets)
-  leveldb::Status status = leveldb::RepairDB(db_path_.AsUTF8Unsafe(), options);
-  if (status.ok()) {
-    restore_histogram_->Add(LEVELDB_RESTORE_REPAIR_SUCCESS);
-    return true;
-  }
-
-  if (DeleteDbFile()) {
-    restore_histogram_->Add(LEVELDB_RESTORE_DELETE_SUCCESS);
-    return true;
-  }
-
-  restore_histogram_->Add(LEVELDB_RESTORE_DELETE_FAILURE);
-  return false;
-}
-
-bool LeveldbValueStore::RestoreKey(const std::string& key) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-
-  ReadResult result = Get(key);
-  if (result->status().IsCorrupted()) {
-    leveldb::WriteBatch batch;
-    batch.Delete(key);
-    ValueStore::Status error = WriteToDb(&batch);
-    // If we can't delete the key, the restore failed.
-    if (!error.ok())
-      return false;
-    result = Get(key);
-  }
-
-  // The restore succeeded if there is no corruption error.
-  return !result->status().IsCorrupted();
+  return MakeWriteResult(changes.Pass(), read_result->status());
 }
 
 bool LeveldbValueStore::WriteToDbForTest(leveldb::WriteBatch* batch) {
@@ -371,34 +352,120 @@ bool LeveldbValueStore::OnMemoryDump(
   return true;
 }
 
+ValueStore::BackingStoreRestoreStatus LeveldbValueStore::LogRestoreStatus(
+    BackingStoreRestoreStatus restore_status) {
+  switch (restore_status) {
+    case RESTORE_NONE:
+      NOTREACHED();
+      break;
+    case RESTORE_DELETE_SUCCESS:
+      restore_histogram_->Add(LEVELDB_RESTORE_DELETE_SUCCESS);
+      break;
+    case RESTORE_DELETE_FAILURE:
+      restore_histogram_->Add(LEVELDB_RESTORE_DELETE_FAILURE);
+      break;
+    case RESTORE_REPAIR_SUCCESS:
+      restore_histogram_->Add(LEVELDB_RESTORE_REPAIR_SUCCESS);
+      break;
+  }
+  return restore_status;
+}
+
+ValueStore::BackingStoreRestoreStatus LeveldbValueStore::FixCorruption(
+    const std::string* key) {
+  leveldb::Status s;
+  if (key && db_) {
+    s = Delete(*key);
+    // Deleting involves writing to the log, so it's possible to have a
+    // perfectly OK database but still have a delete fail.
+    if (s.ok())
+      return LogRestoreStatus(RESTORE_REPAIR_SUCCESS);
+    else if (s.IsIOError())
+      return LogRestoreStatus(RESTORE_DELETE_FAILURE);
+    // Any other kind of failure triggers a db repair.
+  }
+
+  // Make sure database is closed.
+  db_.reset();
+
+  // First try the less lossy repair.
+  BackingStoreRestoreStatus restore_status = RESTORE_NONE;
+
+  leveldb::Options repair_options;
+  repair_options.create_if_missing = true;
+  repair_options.paranoid_checks = true;
+
+  // RepairDB can drop an unbounded number of leveldb tables (key/value sets).
+  s = leveldb::RepairDB(db_path_.AsUTF8Unsafe(), repair_options);
+
+  leveldb::DB* db = nullptr;
+  if (s.ok()) {
+    restore_status = RESTORE_REPAIR_SUCCESS;
+    s = leveldb::DB::Open(open_options_, db_path_.AsUTF8Unsafe(), &db);
+  }
+
+  if (!s.ok()) {
+    if (DeleteDbFile()) {
+      restore_status = RESTORE_DELETE_SUCCESS;
+      s = leveldb::DB::Open(open_options_, db_path_.AsUTF8Unsafe(), &db);
+    } else {
+      restore_status = RESTORE_DELETE_FAILURE;
+    }
+  }
+
+  if (s.ok())
+    db_.reset(db);
+  else
+    db_unrecoverable_ = true;
+
+  if (s.ok() && key) {
+    s = Delete(*key);
+    if (s.ok()) {
+      restore_status = RESTORE_REPAIR_SUCCESS;
+    } else if (s.IsIOError()) {
+      restore_status = RESTORE_DELETE_FAILURE;
+    } else {
+      db_.reset(db);
+      if (!DeleteDbFile())
+        db_unrecoverable_ = true;
+      restore_status = RESTORE_DELETE_FAILURE;
+    }
+  }
+
+  // Only log for the final and most extreme form of database restoration.
+  LogRestoreStatus(restore_status);
+
+  return restore_status;
+}
+
 ValueStore::Status LeveldbValueStore::EnsureDbIsOpen() {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   if (db_)
     return Status();
 
-  leveldb::Options options;
-  options.max_open_files = 0;  // Use minimum.
-  options.create_if_missing = true;
-  options.reuse_logs = leveldb_env::kDefaultLogReuseOptionValue;
+  if (db_unrecoverable_) {
+    return ValueStore::Status(ValueStore::CORRUPTION,
+                              ValueStore::RESTORE_DELETE_FAILURE,
+                              "Database corrupted");
+  }
 
   leveldb::DB* db = NULL;
-  leveldb::Status status =
-      leveldb::DB::Open(options, db_path_.AsUTF8Unsafe(), &db);
-  if (open_histogram_)
-    open_histogram_->Add(leveldb_env::GetLevelDBStatusUMAValue(status));
-  if (status.IsCorruption()) {
-    // Returning a corruption error should result in Restore() being called.
-    // However, since once a leveldb becomes corrupt it's unusable without
-    // some kind of repair or delete, so do that right now.
-    Restore();
+  leveldb::Status ldb_status =
+      leveldb::DB::Open(open_options_, db_path_.AsUTF8Unsafe(), &db);
+  open_histogram_->Add(leveldb_env::GetLevelDBStatusUMAValue(ldb_status));
+  Status status = ToValueStoreError(ldb_status);
+  if (ldb_status.ok()) {
+    db_.reset(db);
+  } else if (ldb_status.IsCorruption()) {
+    status.restore_status = FixCorruption(nullptr);
+    if (status.restore_status != RESTORE_DELETE_FAILURE) {
+      status.code = OK;
+      status.message = kRestoredDuringOpen;
+    }
   }
-  if (!status.ok())
-    return ToValueStoreError(status);
 
-  CHECK(db);
-  db_.reset(db);
-  return Status();
+  return status;
 }
 
 ValueStore::Status LeveldbValueStore::ReadFromDb(
@@ -422,7 +489,7 @@ ValueStore::Status LeveldbValueStore::ReadFromDb(
 
   scoped_ptr<base::Value> value = base::JSONReader().ReadToValue(value_as_json);
   if (!value)
-    return Status(CORRUPTION, kInvalidJson);
+    return Status(CORRUPTION, FixCorruption(&key), kInvalidJson);
 
   *setting = value.Pass();
   return Status();
@@ -438,11 +505,9 @@ ValueStore::Status LeveldbValueStore::AddToBatch(
 
   if (!(options & NO_GENERATE_CHANGES)) {
     scoped_ptr<base::Value> old_value;
-    Status read_error = ReadFromDb(leveldb::ReadOptions(), key, &old_value);
-    if (read_error.IsCorrupted())
-      batch->Delete(key);
-    else if (!read_error.ok())
-      return read_error;
+    Status status = ReadFromDb(leveldb::ReadOptions(), key, &old_value);
+    if (!status.ok())
+      return status;
     if (!old_value || !old_value->Equals(&value)) {
       changes->push_back(
           ValueStoreChange(key, old_value.release(), value.DeepCopy()));
@@ -463,7 +528,7 @@ ValueStore::Status LeveldbValueStore::AddToBatch(
 
 ValueStore::Status LeveldbValueStore::WriteToDb(leveldb::WriteBatch* batch) {
   leveldb::Status status = db_->Write(leveldb::WriteOptions(), batch);
-  return status.ok() ? Status() : ToValueStoreError(status);
+  return ToValueStoreError(status);
 }
 
 bool LeveldbValueStore::IsEmpty() {
@@ -479,6 +544,16 @@ bool LeveldbValueStore::IsEmpty() {
   return is_empty;
 }
 
+leveldb::Status LeveldbValueStore::Delete(const std::string& key) {
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  DCHECK(db_.get());
+
+  leveldb::WriteBatch batch;
+  batch.Delete(key);
+
+  return db_->Write(leveldb::WriteOptions(), &batch);
+}
+
 bool LeveldbValueStore::DeleteDbFile() {
   db_.reset();  // release any lock on the directory
   if (!base::DeleteFile(db_path_, true /* recursive */)) {
@@ -491,7 +566,6 @@ bool LeveldbValueStore::DeleteDbFile() {
 
 ValueStore::Status LeveldbValueStore::ToValueStoreError(
     const leveldb::Status& status) {
-  CHECK(!status.ok());
   CHECK(!status.IsNotFound());  // not an error
 
   std::string message = status.ToString();
@@ -500,5 +574,5 @@ ValueStore::Status LeveldbValueStore::ToValueStoreError(
   base::ReplaceSubstringsAfterOffset(
       &message, 0u, db_path_.AsUTF8Unsafe(), "...");
 
-  return Status(CORRUPTION, message);
+  return Status(LevelDbToValueStoreStatus(status), message);
 }

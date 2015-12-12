@@ -55,16 +55,6 @@ void PolicyValueStore::SetCurrentPolicy(const policy::PolicyMap& policy) {
   base::DictionaryValue previous_policy;
   ValueStore::ReadResult read_result = delegate_->Get();
 
-  // If the database is corrupted, try to restore it.
-  // This may have the unfortunate side-effect of incorrectly informing the
-  // extension of a "new" key, which isn't new and was corrupted. Unfortunately,
-  // there's not always a way around this - if the database is corrupted, there
-  // may be no way of telling which keys were previously present.
-  if (read_result->status().IsCorrupted()) {
-    if (delegate_->Restore())
-      read_result = delegate_->Get();
-  }
-
   if (!read_result->status().ok()) {
     LOG(WARNING) << "Failed to read managed settings for extension "
                  << extension_id_ << ": " << read_result->status().message;
@@ -165,12 +155,6 @@ ValueStore::WriteResult PolicyValueStore::Remove(
 
 ValueStore::WriteResult PolicyValueStore::Clear() {
   return MakeWriteResult(ReadOnlyError());
-}
-
-bool PolicyValueStore::Restore() { return delegate_->Restore(); }
-
-bool PolicyValueStore::RestoreKey(const std::string& key) {
-  return delegate_->RestoreKey(key);
 }
 
 }  // namespace extensions

@@ -51,27 +51,41 @@ size_t SyncableSettingsStorage::GetBytesInUse() {
   return delegate_->GetBytesInUse();
 }
 
+template <class T>
+T SyncableSettingsStorage::HandleResult(T result) {
+  if (result->status().restore_status != RESTORE_NONE) {
+    // If we're syncing, stop - we don't want to push the deletion of any data.
+    // At next startup, when we start up the sync service, we'll get back any
+    // data which was stored intact on Sync.
+    // TODO(devlin): Investigate if there's a way we can trigger
+    // MergeDataAndStartSyncing() to immediately get back any data we can, and
+    // continue syncing.
+    StopSyncing();
+  }
+  return result;
+}
+
 ValueStore::ReadResult SyncableSettingsStorage::Get(
     const std::string& key) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-  return delegate_->Get(key);
+  return HandleResult(delegate_->Get(key));
 }
 
 ValueStore::ReadResult SyncableSettingsStorage::Get(
     const std::vector<std::string>& keys) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-  return delegate_->Get(keys);
+  return HandleResult(delegate_->Get(keys));
 }
 
 ValueStore::ReadResult SyncableSettingsStorage::Get() {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-  return delegate_->Get();
+  return HandleResult(delegate_->Get());
 }
 
 ValueStore::WriteResult SyncableSettingsStorage::Set(
     WriteOptions options, const std::string& key, const base::Value& value) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-  WriteResult result = delegate_->Set(options, key, value);
+  WriteResult result = HandleResult(delegate_->Set(options, key, value));
   if (!result->status().ok())
     return result.Pass();
   SyncResultIfEnabled(result);
@@ -81,7 +95,7 @@ ValueStore::WriteResult SyncableSettingsStorage::Set(
 ValueStore::WriteResult SyncableSettingsStorage::Set(
     WriteOptions options, const base::DictionaryValue& values) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-  WriteResult result = delegate_->Set(options, values);
+  WriteResult result = HandleResult(delegate_->Set(options, values));
   if (!result->status().ok())
     return result.Pass();
   SyncResultIfEnabled(result);
@@ -91,7 +105,7 @@ ValueStore::WriteResult SyncableSettingsStorage::Set(
 ValueStore::WriteResult SyncableSettingsStorage::Remove(
     const std::string& key) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-  WriteResult result = delegate_->Remove(key);
+  WriteResult result = HandleResult(delegate_->Remove(key));
   if (!result->status().ok())
     return result.Pass();
   SyncResultIfEnabled(result);
@@ -101,7 +115,7 @@ ValueStore::WriteResult SyncableSettingsStorage::Remove(
 ValueStore::WriteResult SyncableSettingsStorage::Remove(
     const std::vector<std::string>& keys) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-  WriteResult result = delegate_->Remove(keys);
+  WriteResult result = HandleResult(delegate_->Remove(keys));
   if (!result->status().ok())
     return result.Pass();
   SyncResultIfEnabled(result);
@@ -110,33 +124,11 @@ ValueStore::WriteResult SyncableSettingsStorage::Remove(
 
 ValueStore::WriteResult SyncableSettingsStorage::Clear() {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-  WriteResult result = delegate_->Clear();
+  WriteResult result = HandleResult(delegate_->Clear());
   if (!result->status().ok())
     return result.Pass();
   SyncResultIfEnabled(result);
   return result.Pass();
-}
-
-bool SyncableSettingsStorage::Restore() {
-  // If we're syncing, stop - we don't want to push the deletion of any data.
-  // At next startup, when we start up the sync service, we'll get back any
-  // data which was stored intact on Sync.
-  // TODO (rdevlin.cronin): Investigate if there's a way we can trigger
-  // MergeDataAndStartSyncing() to immediately get back any data we can,
-  // and continue syncing.
-  StopSyncing();
-  return delegate_->Restore();
-}
-
-bool SyncableSettingsStorage::RestoreKey(const std::string& key) {
-  // If we're syncing, stop - we don't want to push the deletion of any data.
-  // At next startup, when we start up the sync service, we'll get back any
-  // data which was stored intact on Sync.
-  // TODO (rdevlin.cronin): Investigate if there's a way we can trigger
-  // MergeDataAndStartSyncing() to immediately get back any data we can,
-  // and continue syncing.
-  StopSyncing();
-  return delegate_->RestoreKey(key);
 }
 
 void SyncableSettingsStorage::SyncResultIfEnabled(
@@ -357,7 +349,8 @@ syncer::SyncError SyncableSettingsStorage::OnSyncAdd(
     base::Value* new_value,
     ValueStoreChangeList* changes) {
   DCHECK(new_value);
-  WriteResult result = delegate_->Set(IGNORE_QUOTA, key, *new_value);
+  WriteResult result =
+      HandleResult(delegate_->Set(IGNORE_QUOTA, key, *new_value));
   if (!result->status().ok()) {
     return syncer::SyncError(
         FROM_HERE, syncer::SyncError::DATATYPE_ERROR,
@@ -376,7 +369,8 @@ syncer::SyncError SyncableSettingsStorage::OnSyncUpdate(
     ValueStoreChangeList* changes) {
   DCHECK(old_value);
   DCHECK(new_value);
-  WriteResult result = delegate_->Set(IGNORE_QUOTA, key, *new_value);
+  WriteResult result =
+      HandleResult(delegate_->Set(IGNORE_QUOTA, key, *new_value));
   if (!result->status().ok()) {
     return syncer::SyncError(
         FROM_HERE, syncer::SyncError::DATATYPE_ERROR,
@@ -393,7 +387,7 @@ syncer::SyncError SyncableSettingsStorage::OnSyncDelete(
     base::Value* old_value,
     ValueStoreChangeList* changes) {
   DCHECK(old_value);
-  WriteResult result = delegate_->Remove(key);
+  WriteResult result = HandleResult(delegate_->Remove(key));
   if (!result->status().ok()) {
     return syncer::SyncError(
         FROM_HERE, syncer::SyncError::DATATYPE_ERROR,

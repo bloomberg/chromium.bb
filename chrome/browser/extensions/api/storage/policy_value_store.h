@@ -54,9 +54,6 @@ class PolicyValueStore : public ValueStore {
   WriteResult Remove(const std::string& key) override;
   WriteResult Remove(const std::vector<std::string>& keys) override;
   WriteResult Clear() override;
-  // Hopefully, as a Read-Only database, there is no reason to use these.
-  bool Restore() override;
-  bool RestoreKey(const std::string& key) override;
 
   // For unit tests.
   ValueStore* delegate() { return delegate_.get(); }

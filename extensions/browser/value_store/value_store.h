@@ -39,9 +39,23 @@ class ValueStore {
     OTHER_ERROR,
   };
 
+  enum BackingStoreRestoreStatus {
+    // No restore attempted.
+    RESTORE_NONE,
+    // Corrupted backing store successfully deleted.
+    RESTORE_DELETE_SUCCESS,
+    // Corrupted backing store cannot be deleted.
+    RESTORE_DELETE_FAILURE,
+    // Corrupted backing store successfully repaired.
+    RESTORE_REPAIR_SUCCESS,
+  };
+
   // The status (result) of an operation on a ValueStore.
   struct Status {
     Status();
+    Status(StatusCode code,
+           BackingStoreRestoreStatus restore_status,
+           const std::string& message);
     Status(StatusCode code, const std::string& message);
     ~Status();
 
@@ -49,8 +63,15 @@ class ValueStore {
 
     bool IsCorrupted() const { return code == CORRUPTION; }
 
+    // Merge |status| into this object. Any members (either |code|,
+    // |restore_status|, or |message| in |status| will be used, but only if this
+    // object's members are at their default value.
+    void Merge(const Status& status);
+
     // The status code.
     StatusCode code;
+
+    BackingStoreRestoreStatus restore_status;
 
     // Message associated with the status (error) if there is one.
     std::string message;
@@ -59,7 +80,8 @@ class ValueStore {
   // The result of a read operation (Get).
   class ReadResultType {
    public:
-    explicit ReadResultType(scoped_ptr<base::DictionaryValue> settings);
+    ReadResultType(scoped_ptr<base::DictionaryValue> settings,
+                   const Status& status);
     explicit ReadResultType(const Status& status);
     ~ReadResultType();
 
@@ -86,7 +108,8 @@ class ValueStore {
   // The result of a write operation (Set/Remove/Clear).
   class WriteResultType {
    public:
-    explicit WriteResultType(scoped_ptr<ValueStoreChangeList> changes);
+    WriteResultType(scoped_ptr<ValueStoreChangeList> changes,
+                    const Status& status);
     explicit WriteResultType(const Status& status);
     ~WriteResultType();
 
@@ -122,17 +145,17 @@ class ValueStore {
   virtual ~ValueStore() {}
 
   // Helpers for making a Read/WriteResult.
-  template<typename T>
-  static ReadResult MakeReadResult(scoped_ptr<T> arg) {
-    return ReadResult(new ReadResultType(arg.Pass()));
+  template <typename T>
+  static ReadResult MakeReadResult(scoped_ptr<T> arg, const Status& status) {
+    return ReadResult(new ReadResultType(arg.Pass(), status));
   }
   static ReadResult MakeReadResult(const Status& status) {
     return ReadResult(new ReadResultType(status));
   }
 
-  template<typename T>
-  static WriteResult MakeWriteResult(scoped_ptr<T> arg) {
-    return WriteResult(new WriteResultType(arg.Pass()));
+  template <typename T>
+  static WriteResult MakeWriteResult(scoped_ptr<T> arg, const Status& status) {
+    return WriteResult(new WriteResultType(arg.Pass(), status));
   }
   static WriteResult MakeWriteResult(const Status& status) {
     return WriteResult(new WriteResultType(status));
@@ -177,27 +200,6 @@ class ValueStore {
 
   // Clears the storage.
   virtual WriteResult Clear() = 0;
-
-  // In the event of corruption, the ValueStore should be able to restore
-  // itself. This means deleting local corrupted files. If only a few keys are
-  // corrupted, then some of the database may be saved. If the full database is
-  // corrupted, this will erase it in its entirety.
-  // Returns true on success, false on failure. The only way this will fail is
-  // if we also cannot delete the database file.
-  // Note: This method may be expensive; some implementations may need to read
-  // the entire database to restore. Use sparingly.
-  // Note: This method (and the following RestoreKey()) are rude, and do not
-  // make any logs, track changes, or other generally polite things. Please do
-  // not use these as substitutes for Clear() and Remove().
-  virtual bool Restore() = 0;
-
-  // Similar to Restore(), but for only a particular key. If the key is corrupt,
-  // this will forcefully remove the key. It does not look at the database on
-  // the whole, which makes it faster, but does not guarantee there is no
-  // additional corruption.
-  // Returns true on success, and false on failure. If false, the next step is
-  // probably to Restore() the whole database.
-  virtual bool RestoreKey(const std::string& key) = 0;
 };
 
 #endif  // EXTENSIONS_BROWSER_VALUE_STORE_VALUE_STORE_H_

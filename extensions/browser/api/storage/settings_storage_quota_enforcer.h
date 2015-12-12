@@ -49,14 +49,19 @@ class SettingsStorageQuotaEnforcer : public ValueStore {
   WriteResult Remove(const std::string& key) override;
   WriteResult Remove(const std::vector<std::string>& keys) override;
   WriteResult Clear() override;
-  bool Restore() override;
-  bool RestoreKey(const std::string& key) override;
 
   ValueStore* get_delegate_for_test() { return delegate_.get(); }
 
  private:
-  // Calculate the current usage for the database.
-  void CalculateUsage();
+  template <class T>
+  T HandleResult(T result);
+
+  // Calculate the current usage for the database if not already calculated.
+  void LazyCalculateUsage();
+
+  // Frees the allocation of a setting in a record of total and per-setting
+  // usage.
+  void Free(const std::string& key);
 
   // Limits configuration.
   const Limits limits_;
@@ -67,6 +72,9 @@ class SettingsStorageQuotaEnforcer : public ValueStore {
   // Total bytes in used by |delegate_|. Includes both key lengths and
   // JSON-encoded values.
   size_t used_total_;
+
+  // Have the total bytes used been calculated?
+  bool usage_calculated_;
 
   // Map of item key to its size, including the key itself.
   std::map<std::string, size_t> used_per_setting_;

@@ -51,8 +51,6 @@ class LeveldbValueStore : public ValueStore,
   WriteResult Remove(const std::string& key) override;
   WriteResult Remove(const std::vector<std::string>& keys) override;
   WriteResult Clear() override;
-  bool Restore() override;
-  bool RestoreKey(const std::string& key) override;
 
   // Write directly to the backing levelDB. Only used for testing to cause
   // corruption in the database.
@@ -63,6 +61,15 @@ class LeveldbValueStore : public ValueStore,
                     base::trace_event::ProcessMemoryDump* pmd) override;
 
  private:
+  // Fix the |key| or database. If |key| is not null and the database is open
+  // then the key will be deleted. Otherwise the database will be repaired, and
+  // failing that will be deleted.
+  BackingStoreRestoreStatus FixCorruption(const std::string* key);
+
+  // Log, to UMA, the status of an attempt to restore a database.
+  BackingStoreRestoreStatus LogRestoreStatus(
+      BackingStoreRestoreStatus restore_status);
+
   // Tries to open the database if it hasn't been opened already.
   ValueStore::Status EnsureDbIsOpen();
 
@@ -83,8 +90,11 @@ class LeveldbValueStore : public ValueStore,
   // Commits the changes in |batch| to the database.
   ValueStore::Status WriteToDb(leveldb::WriteBatch* batch);
 
-  // Converts an error leveldb::Status to a ValueStore::Status.
+  // Converts an error leveldb::Status to a ValueStore::Error.
   ValueStore::Status ToValueStoreError(const leveldb::Status& status);
+
+  // Delete a value (identified by |key|) from the value store.
+  leveldb::Status Delete(const std::string& key);
 
   // Removes the on-disk database at |db_path_|. Any file system locks should
   // be released before calling this method.
@@ -95,9 +105,12 @@ class LeveldbValueStore : public ValueStore,
 
   // The location of the leveldb backend.
   const base::FilePath db_path_;
+  leveldb::Options open_options_;
 
   // leveldb backend.
   scoped_ptr<leveldb::DB> db_;
+  // Database is corrupt - restoration failed.
+  bool db_unrecoverable_;
   base::HistogramBase* open_histogram_;
   base::HistogramBase* restore_histogram_;
 

@@ -8,17 +8,33 @@
 
 // Implementation of Status.
 
-ValueStore::Status::Status() : code(OK) {}
+ValueStore::Status::Status() : code(OK), restore_status(RESTORE_NONE) {}
 
 ValueStore::Status::Status(StatusCode code, const std::string& message)
-    : code(code), message(message) {}
+    : Status(code, RESTORE_NONE, message) {}
+
+ValueStore::Status::Status(StatusCode code,
+                           BackingStoreRestoreStatus restore_status,
+                           const std::string& message)
+    : code(code), restore_status(restore_status), message(message) {}
 
 ValueStore::Status::~Status() {}
+
+void ValueStore::Status::Merge(const Status& status) {
+  if (code == OK)
+    code = status.code;
+  if (message.empty() && !status.message.empty())
+    message = status.message;
+  if (restore_status == RESTORE_NONE)
+    restore_status = status.restore_status;
+}
 
 // Implementation of ReadResultType.
 
 ValueStore::ReadResultType::ReadResultType(
-    scoped_ptr<base::DictionaryValue> settings) : settings_(settings.Pass()) {
+    scoped_ptr<base::DictionaryValue> settings,
+    const Status& status)
+    : settings_(settings.Pass()), status_(status) {
   CHECK(settings_);
 }
 
@@ -30,8 +46,9 @@ ValueStore::ReadResultType::~ReadResultType() {}
 // Implementation of WriteResultType.
 
 ValueStore::WriteResultType::WriteResultType(
-    scoped_ptr<ValueStoreChangeList> changes)
-    : changes_(changes.Pass()) {
+    scoped_ptr<ValueStoreChangeList> changes,
+    const Status& status)
+    : changes_(changes.Pass()), status_(status) {
   CHECK(changes_);
 }
 

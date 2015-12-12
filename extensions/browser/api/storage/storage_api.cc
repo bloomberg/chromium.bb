@@ -22,8 +22,7 @@ using content::BrowserThread;
 // SettingsFunction
 
 SettingsFunction::SettingsFunction()
-    : settings_namespace_(settings_namespace::INVALID),
-      tried_restoring_storage_(false) {}
+    : settings_namespace_(settings_namespace::INVALID) {}
 
 SettingsFunction::~SettingsFunction() {}
 
@@ -71,11 +70,9 @@ void SettingsFunction::AsyncRunWithStorage(ValueStore* storage) {
 }
 
 ExtensionFunction::ResponseValue SettingsFunction::UseReadResult(
-    ValueStore::ReadResult result,
-    const std::string* key,
-    ValueStore* storage) {
+    ValueStore::ReadResult result) {
   if (!result->status().ok())
-    return HandleError(result->status(), key, storage);
+    return Error(result->status().message);
 
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->Swap(&result->settings());
@@ -83,11 +80,9 @@ ExtensionFunction::ResponseValue SettingsFunction::UseReadResult(
 }
 
 ExtensionFunction::ResponseValue SettingsFunction::UseWriteResult(
-    ValueStore::WriteResult result,
-    const std::string* key,
-    ValueStore* storage) {
+    ValueStore::WriteResult result) {
   if (!result->status().ok())
-    return HandleError(result->status(), key, storage);
+    return Error(result->status().message);
 
   if (!result->changes().empty()) {
     observers_->Notify(FROM_HERE, &SettingsObserver::OnSettingsChanged,
@@ -96,30 +91,6 @@ ExtensionFunction::ResponseValue SettingsFunction::UseWriteResult(
   }
 
   return NoArguments();
-}
-
-ExtensionFunction::ResponseValue SettingsFunction::HandleError(
-    const ValueStore::Status& status,
-    const std::string* key,
-    ValueStore* storage) {
-  // If the method failed due to corruption, and we haven't tried to fix it, we
-  // can try to restore the storage and re-run it. Otherwise, the method has
-  // failed.
-  if (status.IsCorrupted() && !tried_restoring_storage_) {
-    tried_restoring_storage_ = true;
-
-    // If the corruption is on a particular key, try to restore that key and
-    // re-run.
-    if (key && storage->RestoreKey(*key))
-      return RunWithStorage(storage);
-
-    // If the full database is corrupted, try to restore the whole thing and
-    // re-run.
-    if (storage->Restore())
-      return RunWithStorage(storage);
-  }
-
-  return Error(status.message);
 }
 
 // Concrete settings functions
@@ -175,19 +146,19 @@ ExtensionFunction::ResponseValue StorageStorageAreaGetFunction::RunWithStorage(
 
   switch (input->GetType()) {
     case base::Value::TYPE_NULL:
-      return UseReadResult(storage->Get(), nullptr, storage);
+      return UseReadResult(storage->Get());
 
     case base::Value::TYPE_STRING: {
       std::string as_string;
       input->GetAsString(&as_string);
-      return UseReadResult(storage->Get(as_string), &as_string, storage);
+      return UseReadResult(storage->Get(as_string));
     }
 
     case base::Value::TYPE_LIST: {
       std::vector<std::string> as_string_list;
       AddAllStringValues(*static_cast<base::ListValue*>(input),
                          &as_string_list);
-      return UseReadResult(storage->Get(as_string_list), nullptr, storage);
+      return UseReadResult(storage->Get(as_string_list));
     }
 
     case base::Value::TYPE_DICTIONARY: {
@@ -195,14 +166,13 @@ ExtensionFunction::ResponseValue StorageStorageAreaGetFunction::RunWithStorage(
           static_cast<base::DictionaryValue*>(input);
       ValueStore::ReadResult result = storage->Get(GetKeys(*as_dict));
       if (!result->status().ok()) {
-        return UseReadResult(result.Pass(), nullptr, storage);
+        return UseReadResult(result.Pass());
       }
 
       base::DictionaryValue* with_default_values = as_dict->DeepCopy();
       with_default_values->MergeDictionary(&result->settings());
-      return UseReadResult(
-          ValueStore::MakeReadResult(make_scoped_ptr(with_default_values)),
-          nullptr, storage);
+      return UseReadResult(ValueStore::MakeReadResult(
+          make_scoped_ptr(with_default_values), result->status()));
     }
 
     default:
@@ -251,8 +221,7 @@ ExtensionFunction::ResponseValue StorageStorageAreaSetFunction::RunWithStorage(
   base::DictionaryValue* input = NULL;
   if (!args_->GetDictionary(0, &input))
     return BadMessage();
-  return UseWriteResult(storage->Set(ValueStore::DEFAULTS, *input), nullptr,
-                        storage);
+  return UseWriteResult(storage->Set(ValueStore::DEFAULTS, *input));
 }
 
 void StorageStorageAreaSetFunction::GetQuotaLimitHeuristics(
@@ -270,14 +239,14 @@ StorageStorageAreaRemoveFunction::RunWithStorage(ValueStore* storage) {
     case base::Value::TYPE_STRING: {
       std::string as_string;
       input->GetAsString(&as_string);
-      return UseWriteResult(storage->Remove(as_string), &as_string, storage);
+      return UseWriteResult(storage->Remove(as_string));
     }
 
     case base::Value::TYPE_LIST: {
       std::vector<std::string> as_string_list;
       AddAllStringValues(*static_cast<base::ListValue*>(input),
                          &as_string_list);
-      return UseWriteResult(storage->Remove(as_string_list), nullptr, storage);
+      return UseWriteResult(storage->Remove(as_string_list));
     }
 
     default:
@@ -292,7 +261,7 @@ void StorageStorageAreaRemoveFunction::GetQuotaLimitHeuristics(
 
 ExtensionFunction::ResponseValue
 StorageStorageAreaClearFunction::RunWithStorage(ValueStore* storage) {
-  return UseWriteResult(storage->Clear(), nullptr, storage);
+  return UseWriteResult(storage->Clear());
 }
 
 void StorageStorageAreaClearFunction::GetQuotaLimitHeuristics(

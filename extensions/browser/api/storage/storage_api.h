@@ -30,51 +30,25 @@ class SettingsFunction : public UIThreadExtensionFunction {
   // The StorageFrontend makes sure this is posted to the appropriate thread.
   virtual ResponseValue RunWithStorage(ValueStore* storage) = 0;
 
-  // Handles the |result| of a read function.
-  // - If the result succeeded, this will set |result_| and return.
-  // - If |result| failed with a ValueStore::CORRUPTION error, this will call
-  //   RestoreStorageAndRetry(), and return that result.
-  // - If the |result| failed with a different error, this will set |error_|
-  //   and return.
-  // - |key| will be non-null only when reading a single value.
-  ResponseValue UseReadResult(ValueStore::ReadResult result,
-                              const std::string* key,
-                              ValueStore* storage);
+  // Convert the |result| of a read function to the appropriate response value.
+  // - If the |result| succeeded this will return a response object argument.
+  // - If the |result| failed will return an error object.
+  ResponseValue UseReadResult(ValueStore::ReadResult result);
 
   // Handles the |result| of a write function.
-  // - If the result succeeded, this will set |result_| and return.
-  // - If |result| failed with a ValueStore::CORRUPTION error, this will call
-  //   RestoreStorageAndRetry(), and return that result.
-  // - If the |result| failed with a different error, this will set |error_|
-  //   and return.
-  // - |key| will be non-null only when writing a single value.
-  // This will also send out a change notification, if appropriate.
-  ResponseValue UseWriteResult(ValueStore::WriteResult result,
-                               const std::string* key,
-                               ValueStore* storage);
+  // - If the |result| succeeded this will send out change notification(s), if
+  //   appropriate, and return no arguments.
+  // - If the |result| failed will return an error object.
+  ResponseValue UseWriteResult(ValueStore::WriteResult result);
 
  private:
   // Called via PostTask from Run. Calls RunWithStorage and then
   // SendResponse with its success value.
   void AsyncRunWithStorage(ValueStore* storage);
 
-  // Called if we encounter a ValueStore error. If the error is due to
-  // corruption, tries to restore the ValueStore and re-run the API function.
-  // If the storage cannot be restored or was due to some other error, then sets
-  // error and returns. This also sets the |tried_restoring_storage_| flag to
-  // ensure we don't enter a loop.
-  // - |key| will be non-null only when reading/writing a single value.
-  ResponseValue HandleError(const ValueStore::Status& error,
-                            const std::string* key,
-                            ValueStore* storage);
-
   // The settings namespace the call was for.  For example, SYNC if the API
   // call was chrome.settings.experimental.sync..., LOCAL if .local, etc.
   settings_namespace::Namespace settings_namespace_;
-
-  // A flag indicating whether or not we have tried to restore storage. We
-  // should only ever try once (per API call) in order to avoid entering a loop.
-  bool tried_restoring_storage_;
 
   // Observers, cached so that it's only grabbed from the UI thread.
   scoped_refptr<SettingsObserverList> observers_;
