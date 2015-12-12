@@ -7,7 +7,7 @@
 
 #include <assert.h>
 
-#include "mojo/public/cpp/bindings/lib/thread_checker.h"
+#include "base/threading/thread_checker.h"
 #include "mojo/public/cpp/system/macros.h"
 
 namespace mojo {
@@ -70,7 +70,7 @@ class SharedData {
 
    private:
     int ref_count_;
-    ThreadChecker thread_checker_;
+    base::ThreadChecker thread_checker_;
     MOJO_DISALLOW_COPY_AND_ASSIGN(Holder);
   };
 
