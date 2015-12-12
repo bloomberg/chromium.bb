@@ -523,7 +523,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, Submit) {
   AddAutofillProfileToProfile(controller()->profile(),
                               test::GetVerifiedProfile());
   scoped_ptr<AutofillDialogViewTester> view = AutofillDialogViewTester::For(
-      static_cast<TestAutofillDialogController*>(controller())->view());
+      controller()->view());
   view->SetTextContentsOfSuggestionInput(SECTION_CC, ASCIIToUTF16("123"));
   GetViewTester()->SubmitForTesting();
   RunMessageLoop();
@@ -886,8 +886,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, AutocompleteEvent) {
                               test::GetVerifiedProfile());
 
   scoped_ptr<AutofillDialogViewTester> view =
-      AutofillDialogViewTester::For(
-          static_cast<TestAutofillDialogController*>(controller)->view());
+      AutofillDialogViewTester::For(controller->view());
   view->SetTextContentsOfSuggestionInput(SECTION_CC, ASCIIToUTF16("123"));
   view->SubmitForTesting();
   ExpectDomMessage("success");
@@ -908,8 +907,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
                               test::GetVerifiedProfile());
 
   scoped_ptr<AutofillDialogViewTester> view =
-      AutofillDialogViewTester::For(
-          static_cast<TestAutofillDialogController*>(controller)->view());
+      AutofillDialogViewTester::For(controller->view());
   view->SetTextContentsOfSuggestionInput(SECTION_CC, ASCIIToUTF16("123"));
   view->SubmitForTesting();
   ExpectDomMessage("error: invalid");
@@ -932,8 +930,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
   AutofillDialogControllerImpl* controller =
       SetUpHtmlAndInvoke("<input autocomplete='cc-name'>");
   ASSERT_TRUE(controller);
-  AutofillDialogViewTester::For(
-      static_cast<TestAutofillDialogController*>(controller)->view())->
+  AutofillDialogViewTester::For(controller->view())->
           CancelForTesting();
   ExpectDomMessage("error: cancel");
 }
@@ -956,8 +953,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
                                                      &unused));
   ExpectDomMessage("iframe loaded");
 
-  AutofillDialogViewTester::For(
-      static_cast<TestAutofillDialogController*>(controller)->view())->
+  AutofillDialogViewTester::For(controller->view())->
           CancelForTesting();
   ExpectDomMessage("error: cancel");
 }
@@ -985,8 +981,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
                               test::GetVerifiedProfile());
 
   scoped_ptr<AutofillDialogViewTester> view =
-      AutofillDialogViewTester::For(
-          static_cast<TestAutofillDialogController*>(controller)->view());
+      AutofillDialogViewTester::For(controller->view());
   view->SetTextContentsOfSuggestionInput(SECTION_CC, ASCIIToUTF16("123"));
   view->SubmitForTesting();
   ExpectDomMessage("success");

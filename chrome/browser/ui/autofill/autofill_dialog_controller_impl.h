@@ -215,6 +215,18 @@ class AutofillDialogControllerImpl
 
  private:
   FRIEND_TEST_ALL_PREFIXES(AutofillDialogControllerTest,
+                           AutocompleteEvent);
+  FRIEND_TEST_ALL_PREFIXES(AutofillDialogControllerTest,
+                           AutocompleteErrorEventReasonCancel);
+  FRIEND_TEST_ALL_PREFIXES(AutofillDialogControllerTest,
+                           AutocompleteErrorEventReasonInvalid);
+  FRIEND_TEST_ALL_PREFIXES(AutofillDialogControllerTest,
+                           ErrorWithFrameNavigation);
+  FRIEND_TEST_ALL_PREFIXES(AutofillDialogControllerTest,
+                           FillFormIncludesCVC);
+  FRIEND_TEST_ALL_PREFIXES(AutofillDialogControllerTest,
+                           Submit);
+  FRIEND_TEST_ALL_PREFIXES(AutofillDialogControllerTest,
                            TransactionAmount);
   FRIEND_TEST_ALL_PREFIXES(AutofillDialogControllerTest,
                            TransactionAmountReadonly);
