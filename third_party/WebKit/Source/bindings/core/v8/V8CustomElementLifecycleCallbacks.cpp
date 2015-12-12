@@ -133,7 +133,7 @@ bool V8CustomElementLifecycleCallbacks::setBinding(CustomElementDefinition* owne
     // The context is responsible for keeping the prototype
     // alive. This in turn keeps callbacks alive through hidden
     // references; see CALLBACK_LIST(SET_HIDDEN_VALUE).
-    perContextData->addCustomElementBinding(owner, binding);
+    perContextData->addCustomElementBinding(owner, std::move(binding));
     return true;
 }
 

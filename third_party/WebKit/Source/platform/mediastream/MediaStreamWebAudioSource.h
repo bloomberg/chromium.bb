@@ -44,7 +44,7 @@ class WebAudioSourceProvider;
 class MediaStreamWebAudioSource : public AudioSourceProvider {
     WTF_MAKE_NONCOPYABLE(MediaStreamWebAudioSource);
 public:
-    static PassOwnPtr<MediaStreamWebAudioSource> create(PassOwnPtr<WebAudioSourceProvider> provider) { return adoptPtr(new MediaStreamWebAudioSource(provider)); }
+    static PassOwnPtr<MediaStreamWebAudioSource> create(PassOwnPtr<WebAudioSourceProvider> provider) { return adoptPtr(new MediaStreamWebAudioSource(std::move(provider))); }
 
     ~MediaStreamWebAudioSource() override;
 

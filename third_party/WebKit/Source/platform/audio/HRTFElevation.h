@@ -89,8 +89,8 @@ public:
 
 private:
     HRTFElevation(PassOwnPtr<HRTFKernelList> kernelListL, PassOwnPtr<HRTFKernelList> kernelListR, int elevation, float sampleRate)
-        : m_kernelListL(kernelListL)
-        , m_kernelListR(kernelListR)
+        : m_kernelListL(std::move(kernelListL))
+        , m_kernelListR(std::move(kernelListR))
         , m_elevationAngle(elevation)
         , m_sampleRate(sampleRate)
     {

@@ -20,7 +20,7 @@ class IdleTaskRunner : public WebThread::IdleTask {
 
 public:
     explicit IdleTaskRunner(PassOwnPtr<WebScheduler::IdleTask> task)
-        : m_task(task)
+        : m_task(std::move(task))
     {
     }
 
@@ -42,17 +42,17 @@ private:
 
 void WebScheduler::postIdleTask(const WebTraceLocation& location, PassOwnPtr<IdleTask> idleTask)
 {
-    postIdleTask(location, new IdleTaskRunner(idleTask));
+    postIdleTask(location, new IdleTaskRunner(std::move(idleTask)));
 }
 
 void WebScheduler::postNonNestableIdleTask(const WebTraceLocation& location, PassOwnPtr<IdleTask> idleTask)
 {
-    postNonNestableIdleTask(location, new IdleTaskRunner(idleTask));
+    postNonNestableIdleTask(location, new IdleTaskRunner(std::move(idleTask)));
 }
 
 void WebScheduler::postIdleTaskAfterWakeup(const WebTraceLocation& location, PassOwnPtr<IdleTask> idleTask)
 {
-    postIdleTaskAfterWakeup(location, new IdleTaskRunner(idleTask));
+    postIdleTaskAfterWakeup(location, new IdleTaskRunner(std::move(idleTask)));
 }
 
 } // namespace blink

@@ -64,7 +64,7 @@ PassOwnPtr<ImageBuffer> ImageBuffer::create(PassOwnPtr<ImageBufferSurface> surfa
 {
     if (!surface->isValid())
         return nullptr;
-    return adoptPtr(new ImageBuffer(surface));
+    return adoptPtr(new ImageBuffer(std::move(surface)));
 }
 
 PassOwnPtr<ImageBuffer> ImageBuffer::create(const IntSize& size, OpacityMode opacityMode, ImageInitializationMode initializationMode)
@@ -77,7 +77,7 @@ PassOwnPtr<ImageBuffer> ImageBuffer::create(const IntSize& size, OpacityMode opa
 
 ImageBuffer::ImageBuffer(PassOwnPtr<ImageBufferSurface> surface)
     : m_snapshotState(InitialSnapshotState)
-    , m_surface(surface)
+    , m_surface(std::move(surface))
     , m_client(0)
     , m_gpuMemoryUsage(0)
 {

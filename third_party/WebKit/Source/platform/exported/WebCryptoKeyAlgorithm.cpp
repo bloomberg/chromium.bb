@@ -46,7 +46,7 @@ class WebCryptoKeyAlgorithmPrivate : public ThreadSafeRefCounted<WebCryptoKeyAlg
 public:
     WebCryptoKeyAlgorithmPrivate(WebCryptoAlgorithmId id, PassOwnPtr<WebCryptoKeyAlgorithmParams> params)
         : id(id)
-        , params(params)
+        , params(std::move(params))
     {
     }
 
@@ -55,7 +55,7 @@ public:
 };
 
 WebCryptoKeyAlgorithm::WebCryptoKeyAlgorithm(WebCryptoAlgorithmId id, PassOwnPtr<WebCryptoKeyAlgorithmParams> params)
-    : m_private(adoptRef(new WebCryptoKeyAlgorithmPrivate(id, params)))
+    : m_private(adoptRef(new WebCryptoKeyAlgorithmPrivate(id, std::move(params))))
 {
 }
 

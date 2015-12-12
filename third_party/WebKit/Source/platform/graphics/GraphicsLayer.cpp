@@ -1097,7 +1097,7 @@ void GraphicsLayer::setContentsToImage(Image* image, RespectImageOrientationEnum
 
 bool GraphicsLayer::addAnimation(PassOwnPtr<WebCompositorAnimation> popAnimation)
 {
-    OwnPtr<WebCompositorAnimation> animation(popAnimation);
+    OwnPtr<WebCompositorAnimation> animation(std::move(popAnimation));
     ASSERT(animation);
     platformLayer()->setAnimationDelegate(this);
 

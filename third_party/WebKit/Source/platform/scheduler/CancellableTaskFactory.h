@@ -63,7 +63,7 @@ protected:
     // Only intended used by unit tests wanting to stack allocate and/or pass in a closure value.
     // Please use the create() factory method elsewhere.
     explicit CancellableTaskFactory(PassOwnPtr<Closure> closure)
-        : m_closure(closure)
+        : m_closure(std::move(closure))
         , m_weakPtrFactory(this)
     {
     }

@@ -59,7 +59,7 @@ public:
 
     static PassOwnPtr<MainThreadDebugger> create(PassOwnPtr<ClientMessageLoop> clientMessageLoop, v8::Isolate* isolate)
     {
-        return adoptPtr(new MainThreadDebugger(clientMessageLoop, isolate));
+        return adoptPtr(new MainThreadDebugger(std::move(clientMessageLoop), isolate));
     }
 
     ~MainThreadDebugger() override;

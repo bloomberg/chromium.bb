@@ -118,7 +118,7 @@ protected:
     {
         ASSERT(!m_namedItemCache);
         document().registerNodeListWithIdNameCache(this);
-        m_namedItemCache = cache;
+        m_namedItemCache = std::move(cache);
     }
 
     NamedItemCache& namedItemCache() const

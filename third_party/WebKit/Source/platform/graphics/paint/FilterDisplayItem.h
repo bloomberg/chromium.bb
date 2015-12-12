@@ -21,7 +21,7 @@ public:
     BeginFilterDisplayItem(const DisplayItemClient& client, PassRefPtr<SkImageFilter> imageFilter, const FloatRect& bounds, PassOwnPtr<WebFilterOperations> filterOperations = nullptr)
         : PairedBeginDisplayItem(client, BeginFilter, sizeof(*this))
         , m_imageFilter(imageFilter)
-        , m_webFilterOperations(filterOperations)
+        , m_webFilterOperations(std::move(filterOperations))
         , m_bounds(bounds) { }
 
     void replay(GraphicsContext&) const override;

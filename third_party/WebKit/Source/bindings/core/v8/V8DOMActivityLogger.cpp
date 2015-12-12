@@ -33,9 +33,9 @@ static DOMActivityLoggerMapForIsolatedWorld& domActivityLoggersForIsolatedWorld(
 void V8DOMActivityLogger::setActivityLogger(int worldId, const String& extensionId, PassOwnPtr<V8DOMActivityLogger> logger)
 {
     if (worldId)
-        domActivityLoggersForIsolatedWorld().set(worldId, logger);
+        domActivityLoggersForIsolatedWorld().set(worldId, std::move(logger));
     else
-        domActivityLoggersForMainWorld().set(extensionId, logger);
+        domActivityLoggersForMainWorld().set(extensionId, std::move(logger));
 }
 
 V8DOMActivityLogger* V8DOMActivityLogger::activityLogger(int worldId, const String& extensionId)
