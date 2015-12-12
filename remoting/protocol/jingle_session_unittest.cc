@@ -49,7 +49,6 @@ const char kClientJid[] = "host2@gmail.com/321";
 
 class MockSessionManagerListener : public SessionManager::Listener {
  public:
-  MOCK_METHOD0(OnSessionManagerReady, void());
   MOCK_METHOD2(OnIncomingSession,
                void(Session*,
                     SessionManager::IncomingSessionResponse*));
@@ -103,9 +102,6 @@ class JingleSessionTest : public testing::Test {
     FakeSignalStrategy::Connect(host_signal_strategy_.get(),
                                 client_signal_strategy_.get());
 
-    EXPECT_CALL(host_server_listener_, OnSessionManagerReady())
-        .Times(1);
-
     scoped_ptr<TransportFactory> host_transport(new IceTransportFactory(
         nullptr,
         ChromiumPortAllocator::Create(nullptr, network_settings_).Pass(),
@@ -118,8 +114,6 @@ class JingleSessionTest : public testing::Test {
           messages_till_start, auth_action, true));
     host_server_->set_authenticator_factory(factory.Pass());
 
-    EXPECT_CALL(client_server_listener_, OnSessionManagerReady())
-        .Times(1);
     scoped_ptr<TransportFactory> client_transport(new IceTransportFactory(
         nullptr,
         ChromiumPortAllocator::Create(nullptr, network_settings_).Pass(),

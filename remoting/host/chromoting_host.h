@@ -123,7 +123,6 @@ class ChromotingHost : public base::NonThreadSafe,
                             const protocol::TransportRoute& route) override;
 
   // SessionManager::Listener implementation.
-  void OnSessionManagerReady() override;
   void OnIncomingSession(
       protocol::Session* session,
       protocol::SessionManager::IncomingSessionResponse* response) override;

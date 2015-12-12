@@ -65,12 +65,13 @@ class ConnectionToHostImpl : public ConnectionToHost,
   State state() const override;
 
  private:
+  void StartSession();
+
   // SignalStrategy::StatusObserver interface.
   void OnSignalStrategyStateChange(SignalStrategy::State state) override;
   bool OnSignalStrategyIncomingStanza(const buzz::XmlElement* stanza) override;
 
   // SessionManager::Listener interface.
-  void OnSessionManagerReady() override;
   void OnIncomingSession(
       Session* session,
       SessionManager::IncomingSessionResponse* response) override;

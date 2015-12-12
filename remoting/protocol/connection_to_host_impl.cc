@@ -90,13 +90,25 @@ void ConnectionToHostImpl::Connect(
   host_jid_ = host_jid;
 
   signal_strategy_->AddListener(this);
-  signal_strategy_->Connect();
 
   session_manager_.reset(new JingleSessionManager(transport_factory.Pass()));
   session_manager_->set_protocol_config(candidate_config_->Clone());
   session_manager_->Init(signal_strategy_, this);
 
   SetState(CONNECTING, OK);
+
+  switch (signal_strategy_->GetState()) {
+    case SignalStrategy::CONNECTING:
+      // Nothing to do here. Just need to wait until |signal_strategy_| becomes
+      // connected.
+      break;
+    case SignalStrategy::CONNECTED:
+      StartSession();
+      break;
+    case SignalStrategy::DISCONNECTED:
+      signal_strategy_->Connect();
+      break;
+  }
 }
 
 void ConnectionToHostImpl::set_candidate_config(
@@ -144,6 +156,14 @@ void ConnectionToHostImpl::set_audio_stub(AudioStub* audio_stub) {
   audio_stub_ = audio_stub;
 }
 
+void ConnectionToHostImpl::StartSession() {
+  DCHECK(CalledOnValidThread());
+  DCHECK_EQ(state_, CONNECTING);
+
+  session_ = session_manager_->Connect(host_jid_, authenticator_.Pass());
+  session_->SetEventHandler(this);
+}
+
 void ConnectionToHostImpl::OnSignalStrategyStateChange(
     SignalStrategy::State state) {
   DCHECK(CalledOnValidThread());
@@ -151,6 +171,9 @@ void ConnectionToHostImpl::OnSignalStrategyStateChange(
 
   if (state == SignalStrategy::CONNECTED) {
     VLOG(1) << "Connected as: " << signal_strategy_->GetLocalJid();
+    // After signaling has been connected we can try connecting to the host.
+    if (state_ == CONNECTING)
+      StartSession();
   } else if (state == SignalStrategy::DISCONNECTED) {
     VLOG(1) << "Connection closed.";
     CloseOnError(SIGNALING_ERROR);
@@ -160,14 +183,6 @@ void ConnectionToHostImpl::OnSignalStrategyStateChange(
 bool ConnectionToHostImpl::OnSignalStrategyIncomingStanza(
     const buzz::XmlElement* stanza) {
   return false;
-}
-
-void ConnectionToHostImpl::OnSessionManagerReady() {
-  DCHECK(CalledOnValidThread());
-
-  // After SessionManager is initialized we can try to connect to the host.
-  session_ = session_manager_->Connect(host_jid_, authenticator_.Pass());
-  session_->SetEventHandler(this);
 }
 
 void ConnectionToHostImpl::OnIncomingSession(
