@@ -94,38 +94,6 @@ int MapOpenSSLErrorSSL(uint32_t error_code) {
       return ERR_SSL_UNRECOGNIZED_NAME_ALERT;
     case SSL_R_BAD_DH_P_LENGTH:
       return ERR_SSL_WEAK_SERVER_EPHEMERAL_DH_KEY;
-    // SSL_R_UNKNOWN_PROTOCOL is reported if premature application data is
-    // received (see http://crbug.com/42538), and also if all the protocol
-    // versions supported by the server were disabled in this socket instance.
-    // Mapped to ERR_SSL_PROTOCOL_ERROR for compatibility with other SSL sockets
-    // in the former scenario.
-    case SSL_R_UNKNOWN_PROTOCOL:
-    case SSL_R_SSL_HANDSHAKE_FAILURE:
-    case SSL_R_DECRYPTION_FAILED:
-    case SSL_R_DECRYPTION_FAILED_OR_BAD_RECORD_MAC:
-    case SSL_R_DH_PUBLIC_VALUE_LENGTH_IS_WRONG:
-    case SSL_R_DIGEST_CHECK_FAILED:
-    case SSL_R_ENCRYPTED_LENGTH_TOO_LONG:
-    case SSL_R_ERROR_IN_RECEIVED_CIPHER_LIST:
-    case SSL_R_EXCESSIVE_MESSAGE_SIZE:
-    case SSL_R_EXTRA_DATA_IN_MESSAGE:
-    case SSL_R_GOT_A_FIN_BEFORE_A_CCS:
-    case SSL_R_INVALID_COMMAND:
-    case SSL_R_INVALID_TICKET_KEYS_LENGTH:
-    // SSL_do_handshake reports this error when the server responds to a
-    // ClientHello with a fatal close_notify alert.
-    case SSL_R_SSLV3_ALERT_CLOSE_NOTIFY:
-    case SSL_R_SSLV3_ALERT_UNEXPECTED_MESSAGE:
-    case SSL_R_SSLV3_ALERT_NO_CERTIFICATE:
-    case SSL_R_SSLV3_ALERT_ILLEGAL_PARAMETER:
-    case SSL_R_TLSV1_ALERT_DECODE_ERROR:
-    case SSL_R_TLSV1_ALERT_DECRYPTION_FAILED:
-    case SSL_R_TLSV1_ALERT_EXPORT_RESTRICTION:
-    case SSL_R_TLSV1_ALERT_INTERNAL_ERROR:
-    case SSL_R_TLSV1_ALERT_NO_RENEGOTIATION:
-    case SSL_R_TLSV1_ALERT_RECORD_OVERFLOW:
-    case SSL_R_TLSV1_ALERT_USER_CANCELLED:
-      return ERR_SSL_PROTOCOL_ERROR;
     case SSL_R_CERTIFICATE_VERIFY_FAILED:
       // The only way that the certificate verify callback can fail is if
       // the leaf certificate changed during a renegotiation.
@@ -145,7 +113,6 @@ int MapOpenSSLErrorSSL(uint32_t error_code) {
       return ERR_SSL_PROTOCOL_ERROR;
     }
     default:
-      LOG(WARNING) << "Unmapped error reason: " << ERR_GET_REASON(error_code);
       return ERR_SSL_PROTOCOL_ERROR;
   }
 }
