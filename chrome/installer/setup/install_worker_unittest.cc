@@ -785,30 +785,31 @@ TEST_F(InstallWorkerTest, WillProductBePresentAfterSetup) {
     }
 
     // Loop over operations: {uninstall, install/update}.
-    for (int i_op = 0; i_op < arraysize(op_list); ++i_op) {
+    for (InstallerState::Operation op : op_list) {
 
       // Loop over product types to operate on: {TYPE_BROWSER, TYPE_CF}.
       for (int i_type_op = 0; i_type_op < NUM_TYPE; ++i_type_op) {
         scoped_ptr<InstallerState> installer_state;
         if (i_type_op == TYPE_BROWSER) {
           installer_state.reset(BuildChromeInstallerState(
-              system_level, multi_install, *machine_state, op_list[i_op]));
+              system_level, multi_install, *machine_state, op));
         } else if (i_type_op == TYPE_CF) {
           // Skip the CF uninstall case due to limitations in
           // BuildChromeFrameInstallerState().
-          if (op_list[i_op] == InstallerState::UNINSTALL)
+          if (op == InstallerState::UNINSTALL)
             continue;
 
           installer_state.reset(BuildChromeFrameInstallerState(
-              system_level, multi_install, *machine_state, op_list[i_op]));
+              system_level, multi_install, *machine_state, op));
         } else {
           NOTREACHED();
         }
 
         // Calculate the machine state after operation, as bit mask.
         // If uninstall, remove product with bitwise AND; else add with OR.
-        int mach_after = (op_list[i_op] == InstallerState::UNINSTALL) ?
-            i_mach & ~(1 << i_type_op) : i_mach | (1 << i_type_op);
+        int mach_after = (op == InstallerState::UNINSTALL)
+                             ? i_mach & ~(1 << i_type_op)
+                             : i_mach | (1 << i_type_op);
 
         // Verify predicted presence of Chrome Binaries.
         bool bin_res = installer::WillProductBePresentAfterSetup(
