@@ -186,3 +186,9 @@ TEST_F('CrExtensionsBrowserTestWithMultipleExtensionTypesInstalled',
   mocha.grep(
       assert(extension_manager_tests.TestNames.WebsiteSectionVisibility)).run();
 });
+
+TEST_F('CrExtensionsBrowserTestWithMultipleExtensionTypesInstalled',
+       'ExtensionManagerScrollingTest', function() {
+  extension_manager_tests.registerTests();
+  mocha.grep(assert(extension_manager_tests.TestNames.Scrolling)).run();
+});

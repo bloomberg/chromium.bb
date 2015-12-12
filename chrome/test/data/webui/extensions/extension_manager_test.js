@@ -11,6 +11,7 @@ cr.define('extension_manager_tests', function() {
     ExtensionSectionVisibility: 'extension section visibility',
     AppSectionVisibility: 'app section visibility',
     WebsiteSectionVisibility: 'website section visibility',
+    Scrolling: 'scrolling',
   };
 
   function getDataByName(list, name) {
@@ -170,6 +171,16 @@ cr.define('extension_manager_tests', function() {
         Polymer.dom.flush();
         testVisible('#websites-list', true);
         testSidebarVisible('#sections-websites', true);
+      });
+
+      test(assert(TestNames.Scrolling), function() {
+        // TODO(devlin): This doesn't really test anything, because scrolling is
+        // so heavily dependent on viewport size (which is very unpredictable in
+        // browser tests). But we can at least exercise the code path and check
+        // for errors.
+        manager.scrollHelper_.scrollToExtensions();
+        manager.scrollHelper_.scrollToApps();
+        manager.scrollHelper_.scrollToWebsites();
       });
     });
   }
