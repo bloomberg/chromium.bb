@@ -1410,7 +1410,11 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
                 .addOnLayoutChangeListener(suggestionListResizer);
 
         mSuggestionList = new OmniboxSuggestionsList(getContext());
+
+        // Ensure the results container is initialized and add the suggestion list to it.
+        initOmniboxResultsContainer();
         mOmniboxResultsContainer.addView(mSuggestionList);
+
         // Start with visibility GONE to ensure that show() is called. http://crbug.com/517438
         mSuggestionList.setVisibility(GONE);
         mSuggestionList.setAdapter(mSuggestionListAdapter);
@@ -2077,28 +2081,32 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
         return currentTab != null ? currentTab.getContentViewCore() : null;
     }
 
+    private void initOmniboxResultsContainer() {
+        if (mOmniboxResultsContainer != null) return;
+
+        ViewStub overlayStub =
+                (ViewStub) getRootView().findViewById(R.id.omnibox_results_container_stub);
+        mOmniboxResultsContainer = (ViewGroup) overlayStub.inflate();
+        mOmniboxResultsContainer.setBackgroundColor(CONTENT_OVERLAY_COLOR);
+        // Prevent touch events from propagating down to the chrome view.
+        mOmniboxResultsContainer.setOnTouchListener(new OnTouchListener() {
+            @Override
+            @SuppressLint("ClickableViewAccessibility")
+            public boolean onTouch(View v, MotionEvent event) {
+                int action = event.getActionMasked();
+                if (action == MotionEvent.ACTION_CANCEL
+                        || action == MotionEvent.ACTION_UP) {
+                    mUrlBar.clearFocus();
+                    updateOmniboxResultsContainerBackground(false);
+                }
+                return true;
+            }
+        });
+    }
+
     private void updateOmniboxResultsContainer() {
         if (mSuggestionsShown || mUrlHasFocus) {
-            if (mOmniboxResultsContainer == null) {
-                ViewStub overlayStub =
-                        (ViewStub) getRootView().findViewById(R.id.omnibox_results_container_stub);
-                mOmniboxResultsContainer = (ViewGroup) overlayStub.inflate();
-                mOmniboxResultsContainer.setBackgroundColor(CONTENT_OVERLAY_COLOR);
-                // Prevent touch events from propagating down to the chrome view.
-                mOmniboxResultsContainer.setOnTouchListener(new OnTouchListener() {
-                    @Override
-                    @SuppressLint("ClickableViewAccessibility")
-                    public boolean onTouch(View v, MotionEvent event) {
-                        int action = event.getActionMasked();
-                        if (action == MotionEvent.ACTION_CANCEL
-                                || action == MotionEvent.ACTION_UP) {
-                            mUrlBar.clearFocus();
-                            updateOmniboxResultsContainerBackground(false);
-                        }
-                        return true;
-                    }
-                });
-            }
+            initOmniboxResultsContainer();
             updateOmniboxResultsContainerVisibility(true);
         } else if (mOmniboxResultsContainer != null) {
             updateOmniboxResultsContainerBackground(false);
