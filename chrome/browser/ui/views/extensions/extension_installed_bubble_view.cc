@@ -13,7 +13,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/singleton_tabs.h"
-#include "chrome/browser/ui/sync/sync_promo_ui.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/location_bar/page_action_with_badge_view.h"
@@ -21,14 +20,12 @@
 #include "chrome/browser/ui/views/toolbar/app_menu_button.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
-#include "chrome/common/extensions/sync_helper.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/bubble/bubble_controller.h"
 #include "components/bubble/bubble_ui.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/feature_switch.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/render_text.h"
@@ -70,7 +67,7 @@ ExtensionInstalledBubbleView::ExtensionInstalledBubbleView(
       extension_(bubble->extension()),
       browser_(bubble->browser()),
       type_(bubble->type()),
-      options_(NONE),
+      anchor_position_(bubble->anchor_position()),
       sync_promo_(nullptr),
       close_(nullptr),
       manage_shortcut_(nullptr) {}
@@ -81,35 +78,44 @@ void ExtensionInstalledBubbleView::UpdateAnchorView() {
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser_);
 
   views::View* reference_view = nullptr;
-  if (type_ == ExtensionInstalledBubble::BROWSER_ACTION ||
-      extensions::FeatureSwitch::extension_action_redesign()->IsEnabled()) {
-    BrowserActionsContainer* container =
-        browser_view->GetToolbarView()->browser_actions();
-    // Hitting this DCHECK means |ShouldShow| failed.
-    DCHECK(!container->animating());
+  switch (anchor_position_) {
+    case ExtensionInstalledBubble::ANCHOR_BROWSER_ACTION: {
+      BrowserActionsContainer* container =
+          browser_view->GetToolbarView()->browser_actions();
+      // Hitting this DCHECK means |ShouldShow| failed.
+      DCHECK(!container->animating());
 
-    reference_view = container->GetViewForId(extension_->id());
-    // If the view is not visible then it is in the chevron, so point the
-    // install bubble to the chevron instead. If this is an incognito window,
-    // both could be invisible.
-    if (!reference_view || !reference_view->visible()) {
-      reference_view = container->chevron();
-      if (!reference_view || !reference_view->visible())
-        reference_view = nullptr;  // fall back to app menu below.
+      reference_view = container->GetViewForId(extension_->id());
+      // If the view is not visible then it is in the chevron, so point the
+      // install bubble to the chevron instead. If this is an incognito window,
+      // both could be invisible.
+      if (!reference_view || !reference_view->visible()) {
+        reference_view = container->chevron();
+        if (!reference_view || !reference_view->visible())
+          reference_view = nullptr;  // fall back to app menu below.
+      }
+      break;
     }
-  } else if (type_ == ExtensionInstalledBubble::PAGE_ACTION) {
-    LocationBarView* location_bar_view = browser_view->GetLocationBarView();
-    ExtensionAction* page_action =
-        extensions::ExtensionActionManager::Get(browser_->profile())
-            ->GetPageAction(*extension_);
-    location_bar_view->SetPreviewEnabledPageAction(page_action,
-                                                   true);  // preview_enabled
-    reference_view = location_bar_view->GetPageActionView(page_action);
-    DCHECK(reference_view);
-  } else if (type_ == ExtensionInstalledBubble::OMNIBOX_KEYWORD) {
-    LocationBarView* location_bar_view = browser_view->GetLocationBarView();
-    reference_view = location_bar_view;
-    DCHECK(reference_view);
+    case ExtensionInstalledBubble::ANCHOR_PAGE_ACTION: {
+      LocationBarView* location_bar_view = browser_view->GetLocationBarView();
+      ExtensionAction* page_action =
+          extensions::ExtensionActionManager::Get(browser_->profile())
+              ->GetPageAction(*extension_);
+      location_bar_view->SetPreviewEnabledPageAction(page_action,
+                                                     true);  // preview_enabled
+      reference_view = location_bar_view->GetPageActionView(page_action);
+      DCHECK(reference_view);
+      break;
+    }
+    case ExtensionInstalledBubble::ANCHOR_OMNIBOX: {
+      LocationBarView* location_bar_view = browser_view->GetLocationBarView();
+      reference_view = location_bar_view;
+      DCHECK(reference_view);
+      break;
+    }
+    case ExtensionInstalledBubble::ANCHOR_APP_MENU:
+      // Will be caught below.
+      break;
   }
 
   // Default case.
@@ -119,8 +125,7 @@ void ExtensionInstalledBubbleView::UpdateAnchorView() {
 }
 
 void ExtensionInstalledBubbleView::WindowClosing() {
-  if (extension_ && type_ == ExtensionInstalledBubble::PAGE_ACTION &&
-      !extensions::FeatureSwitch::extension_action_redesign()->IsEnabled()) {
+  if (anchor_position_ == ExtensionInstalledBubble::ANCHOR_PAGE_ACTION) {
     BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser_);
     browser_view->GetLocationBarView()->SetPreviewEnabledPageAction(
         extensions::ExtensionActionManager::Get(browser_->profile())
@@ -213,40 +218,14 @@ void ExtensionInstalledBubbleView::InitLayout(
 
   set_margins(gfx::Insets(views::kPanelVertMargin, 0, 0, 0));
 
-  if (extensions::sync_helper::IsSyncable(extension_) &&
-      SyncPromoUI::ShouldShowSyncPromo(browser_->profile()))
-    options_ |= SIGN_IN_PROMO;
-
   // The number of rows in the content section of the bubble.
   int main_content_row_count = 1;
-  // Determine the bubble option we want, based on the extension type.
-  switch (type_) {
-    case ExtensionInstalledBubble::BROWSER_ACTION:
-    case ExtensionInstalledBubble::PAGE_ACTION:
-      options_ |= HOW_TO_USE;
-      if (bubble.has_command_keybinding()) {
-        options_ |= SHOW_KEYBINDING;
-      } else {
-        // The How-To-Use text makes the bubble seem a little crowded when the
-        // extension has a keybinding, so the How-To-Manage text is not shown
-        // in those cases.
-        options_ |= HOW_TO_MANAGE;
-      }
-      main_content_row_count += 2;
-      break;
-    case ExtensionInstalledBubble::OMNIBOX_KEYWORD:
-      options_ |= HOW_TO_USE | HOW_TO_MANAGE;
-      main_content_row_count += 2;
-      break;
-    case ExtensionInstalledBubble::GENERIC:
-      break;
-    default:
-      // When adding a new bubble type, the option needs to be set.
-      static_assert(ExtensionInstalledBubble::GENERIC == 3,
-                    "kBubbleType enum has changed, this switch statement must "
-                    "be updateed");
-      break;
-  }
+  if (bubble.options() & ExtensionInstalledBubble::HOW_TO_USE)
+    ++main_content_row_count;
+  if (bubble.options() & ExtensionInstalledBubble::SHOW_KEYBINDING)
+    ++main_content_row_count;
+  if (bubble.options() & ExtensionInstalledBubble::HOW_TO_MANAGE)
+    ++main_content_row_count;
 
   views::GridLayout* layout = new views::GridLayout(this);
   SetLayoutManager(layout);
@@ -319,11 +298,11 @@ void ExtensionInstalledBubbleView::InitLayout(
     layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
   };
 
-  if (options_ & HOW_TO_USE) {
+  if (bubble.options() & ExtensionInstalledBubble::HOW_TO_USE) {
     add_content_view(CreateLabel(bubble.GetHowToUseDescription(), font_list));
   }
 
-  if (options_ & SHOW_KEYBINDING) {
+  if (bubble.options() & ExtensionInstalledBubble::SHOW_KEYBINDING) {
     manage_shortcut_ = new views::Link(
         l10n_util::GetStringUTF16(IDS_EXTENSION_INSTALLED_MANAGE_SHORTCUTS));
     manage_shortcut_->set_listener(this);
@@ -331,13 +310,13 @@ void ExtensionInstalledBubbleView::InitLayout(
     add_content_view(manage_shortcut_);
   }
 
-  if (options_ & HOW_TO_MANAGE) {
+  if (bubble.options() & ExtensionInstalledBubble::HOW_TO_MANAGE) {
     add_content_view(CreateLabel(
         l10n_util::GetStringUTF16(IDS_EXTENSION_INSTALLED_MANAGE_INFO),
         font_list));
   }
 
-  if (options_ & SIGN_IN_PROMO) {
+  if (bubble.options() & ExtensionInstalledBubble::SIGN_IN_PROMO) {
     views::ColumnSet* sync_cs = layout->AddColumnSet(SYNC_PROMO_COLUMN_SET);
     sync_cs->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
                        views::GridLayout::USE_PREF, 0, 0);
@@ -351,8 +330,7 @@ void ExtensionInstalledBubbleView::InitLayout(
 
 // Views specific implementation.
 bool ExtensionInstalledBubble::ShouldShow() {
-  if (type() == BROWSER_ACTION ||
-      extensions::FeatureSwitch::extension_action_redesign()->IsEnabled()) {
+  if (anchor_position() == ANCHOR_BROWSER_ACTION) {
     BrowserActionsContainer* container =
         BrowserView::GetBrowserViewForBrowser(browser())
             ->GetToolbarView()

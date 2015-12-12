@@ -16,15 +16,18 @@
 #include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/sync/sync_promo_ui.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "chrome/common/extensions/api/omnibox/omnibox_handler.h"
 #include "chrome/common/extensions/command.h"
+#include "chrome/common/extensions/sync_helper.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
+#include "extensions/common/feature_switch.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using extensions::Extension;
@@ -76,7 +79,7 @@ class ExtensionInstalledBubbleObserver
   void OnExtensionLoaded(content::BrowserContext* browser_context,
                          const extensions::Extension* extension) override {
     if (extension == bubble_->extension()) {
-      bubble_->OnExtensionLoaded();
+      bubble_->Initialize();
       // PostTask to ourself to allow all EXTENSION_LOADED Observers to run.
       // Only then can we be sure that a BrowserAction or PageAction has had
       // views created which we can inspect for the purpose of previewing of
@@ -183,7 +186,12 @@ void ExtensionInstalledBubble::ShowBubble(
 ExtensionInstalledBubble::ExtensionInstalledBubble(const Extension* extension,
                                                    Browser* browser,
                                                    const SkBitmap& icon)
-    : extension_(extension), browser_(browser), icon_(icon) {
+    : extension_(extension),
+      browser_(browser),
+      icon_(icon),
+      type_(GENERIC),
+      options_(NONE),
+      anchor_position_(ANCHOR_APP_MENU) {
   if (!extensions::OmniboxInfo::GetKeyword(extension).empty())
     type_ = OMNIBOX_KEYWORD;
   else if (extensions::ActionInfo::GetBrowserActionInfo(extension))
@@ -236,6 +244,42 @@ base::string16 ExtensionInstalledBubble::GetHowToUseDescription() const {
       l10n_util::GetStringFUTF16(message_id, extra);
 }
 
-void ExtensionInstalledBubble::OnExtensionLoaded() {
+void ExtensionInstalledBubble::Initialize() {
   action_command_ = GetCommand(extension_->id(), browser_->profile(), type_);
+  if (extensions::sync_helper::IsSyncable(extension_) &&
+      SyncPromoUI::ShouldShowSyncPromo(browser_->profile()))
+    options_ |= SIGN_IN_PROMO;
+
+  // Determine the bubble options we want, based on the extension type.
+  switch (type_) {
+    case BROWSER_ACTION:
+    case PAGE_ACTION:
+      options_ |= HOW_TO_USE;
+      if (has_command_keybinding()) {
+        options_ |= SHOW_KEYBINDING;
+      } else {
+        // The How-To-Use text makes the bubble seem a little crowded when the
+        // extension has a keybinding, so the How-To-Manage text is not shown
+        // in those cases.
+        options_ |= HOW_TO_MANAGE;
+      }
+
+      if (type_ == BROWSER_ACTION ||
+          extensions::FeatureSwitch::extension_action_redesign()->IsEnabled()) {
+        // If the toolbar redesign is enabled, all bubbles for extensions point
+        // to their toolbar action.
+        anchor_position_ = ANCHOR_BROWSER_ACTION;
+      } else {
+        DCHECK_EQ(type_, PAGE_ACTION);
+        anchor_position_ = ANCHOR_PAGE_ACTION;
+      }
+      break;
+    case OMNIBOX_KEYWORD:
+      options_ |= HOW_TO_USE | HOW_TO_MANAGE;
+      anchor_position_ = ANCHOR_OMNIBOX;
+      break;
+    case GENERIC:
+      anchor_position_ = ANCHOR_APP_MENU;
+      break;
+  }
 }

@@ -36,14 +36,11 @@ const int kInnerVerticalMargin = 10;
 const int kAppsBubbleArrowOffset = 4;
 
 // We use a different kind of notification for each of these extension types.
-typedef enum {
+enum ExtensionType {
   kApp,
-  kBrowserAction,
-  kGeneric,
-  kOmniboxKeyword,
-  kPageAction,
+  kExtension,
   kBundle,
-} ExtensionType;
+};
 
 }  // namespace extension_installed_bubble
 
@@ -95,6 +92,7 @@ typedef enum {
 }
 
 @property(nonatomic, readonly) const extensions::BundleInstaller* bundle;
+@property(nonatomic, readonly) ExtensionInstalledBubble* installedBubble;
 @property(nonatomic) BOOL pageActionPreviewShowing;
 
 // Initialize the window. It will be shown by the BubbleManager.
@@ -140,7 +138,6 @@ typedef enum {
 - (NSRect)frameOfHowToUse;
 - (NSRect)frameOfHowToManage;
 - (NSRect)frameOfSigninPromo;
-- (BOOL)showSyncPromo;
 - (NSButton*)appInstalledShortcutLink;
 - (void)updateAnchorPosition;
 

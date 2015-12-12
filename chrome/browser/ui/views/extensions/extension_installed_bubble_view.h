@@ -49,15 +49,6 @@ class ExtensionInstalledBubbleView : public BubbleSyncPromoDelegate,
   void InitLayout(const ExtensionInstalledBubble& bubble);
 
  private:
-  // The different options to show in the installed bubble.
-  enum Options {
-    NONE = 0,
-    HOW_TO_USE = 1 << 0,
-    HOW_TO_MANAGE = 1 << 1,
-    SHOW_KEYBINDING = 1 << 2,
-    SIGN_IN_PROMO = 1 << 3,
-  };
-
   // views::BubbleDelegateView:
   void WindowClosing() override;
   gfx::Rect GetAnchorRect() const override;
@@ -78,9 +69,7 @@ class ExtensionInstalledBubbleView : public BubbleSyncPromoDelegate,
   const extensions::Extension* extension_;
   Browser* browser_;
   ExtensionInstalledBubble::BubbleType type_;
-
-  // A bitmask containing the various options of bubble sections to show.
-  int options_;
+  ExtensionInstalledBubble::AnchorPosition anchor_position_;
 
   // The sync promo section of the bubble.
   BubbleSyncPromoView* sync_promo_;

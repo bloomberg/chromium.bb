@@ -37,6 +37,23 @@ class ExtensionInstalledBubble : public BubbleDelegate {
     GENERIC
   };
 
+  // The different options to show in the installed bubble.
+  enum Options {
+    NONE = 0,
+    HOW_TO_USE = 1 << 0,
+    HOW_TO_MANAGE = 1 << 1,
+    SHOW_KEYBINDING = 1 << 2,
+    SIGN_IN_PROMO = 1 << 3,
+  };
+
+  // The different possible anchor positions.
+  enum AnchorPosition {
+    ANCHOR_BROWSER_ACTION,
+    ANCHOR_PAGE_ACTION,
+    ANCHOR_OMNIBOX,
+    ANCHOR_APP_MENU,
+  };
+
   // Creates the ExtensionInstalledBubble and schedules it to be shown once
   // the extension has loaded. |extension| is the installed extension. |browser|
   // is the browser window which will host the bubble. |icon| is the install
@@ -57,6 +74,8 @@ class ExtensionInstalledBubble : public BubbleDelegate {
   const SkBitmap& icon() const { return icon_; }
   BubbleType type() const { return type_; }
   bool has_command_keybinding() const { return action_command_; }
+  int options() const { return options_; }
+  AnchorPosition anchor_position() const { return anchor_position_; }
 
   // BubbleDelegate:
   scoped_ptr<BubbleUi> BuildBubbleUi() override;
@@ -72,7 +91,7 @@ class ExtensionInstalledBubble : public BubbleDelegate {
   base::string16 GetHowToUseDescription() const;
 
   // Handle initialization with the extension.
-  void OnExtensionLoaded();
+  void Initialize();
 
  private:
   // |extension_| is NULL when we are deleted.
@@ -80,6 +99,12 @@ class ExtensionInstalledBubble : public BubbleDelegate {
   Browser* browser_;
   const SkBitmap icon_;
   BubbleType type_;
+
+  // A bitmask containing the various options of bubble sections to show.
+  int options_;
+
+  // The location where the bubble should be anchored.
+  AnchorPosition anchor_position_;
 
   // The command to execute the extension action, if one exists.
   scoped_ptr<extensions::Command> action_command_;
