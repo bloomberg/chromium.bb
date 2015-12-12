@@ -9,34 +9,29 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/win/windows_version.h"
 #include "sandbox/win/src/app_container.h"
-#include "sandbox/win/src/filesystem_dispatcher.h"
 #include "sandbox/win/src/filesystem_policy.h"
-#include "sandbox/win/src/handle_dispatcher.h"
 #include "sandbox/win/src/handle_policy.h"
-#include "sandbox/win/src/job.h"
 #include "sandbox/win/src/interception.h"
-#include "sandbox/win/src/process_mitigations.h"
-#include "sandbox/win/src/named_pipe_dispatcher.h"
+#include "sandbox/win/src/job.h"
 #include "sandbox/win/src/named_pipe_policy.h"
 #include "sandbox/win/src/policy_broker.h"
 #include "sandbox/win/src/policy_engine_processor.h"
 #include "sandbox/win/src/policy_low_level.h"
-#include "sandbox/win/src/process_mitigations_win32k_dispatcher.h"
+#include "sandbox/win/src/process_mitigations.h"
 #include "sandbox/win/src/process_mitigations_win32k_policy.h"
-#include "sandbox/win/src/process_thread_dispatcher.h"
 #include "sandbox/win/src/process_thread_policy.h"
-#include "sandbox/win/src/registry_dispatcher.h"
 #include "sandbox/win/src/registry_policy.h"
 #include "sandbox/win/src/restricted_token_utils.h"
 #include "sandbox/win/src/sandbox_policy.h"
 #include "sandbox/win/src/sandbox_utils.h"
-#include "sandbox/win/src/sync_dispatcher.h"
 #include "sandbox/win/src/sync_policy.h"
 #include "sandbox/win/src/target_process.h"
+#include "sandbox/win/src/top_level_dispatcher.h"
 #include "sandbox/win/src/window.h"
 
 namespace {
@@ -107,7 +102,7 @@ HANDLE CreateLowBoxObjectDirectory(PSID lowbox_sid) {
   return handle;
 }
 
-}
+}  // namespace
 
 namespace sandbox {
 
@@ -141,42 +136,7 @@ PolicyBase::PolicyBase()
       policy_(NULL),
       lowbox_sid_(NULL) {
   ::InitializeCriticalSection(&lock_);
-  // Initialize the IPC dispatcher array.
-  memset(&ipc_targets_, NULL, sizeof(ipc_targets_));
-  Dispatcher* dispatcher = NULL;
-
-  dispatcher = new FilesystemDispatcher(this);
-  ipc_targets_[IPC_NTCREATEFILE_TAG] = dispatcher;
-  ipc_targets_[IPC_NTOPENFILE_TAG] = dispatcher;
-  ipc_targets_[IPC_NTSETINFO_RENAME_TAG] = dispatcher;
-  ipc_targets_[IPC_NTQUERYATTRIBUTESFILE_TAG] = dispatcher;
-  ipc_targets_[IPC_NTQUERYFULLATTRIBUTESFILE_TAG] = dispatcher;
-
-  dispatcher = new NamedPipeDispatcher(this);
-  ipc_targets_[IPC_CREATENAMEDPIPEW_TAG] = dispatcher;
-
-  dispatcher = new ThreadProcessDispatcher(this);
-  ipc_targets_[IPC_NTOPENTHREAD_TAG] = dispatcher;
-  ipc_targets_[IPC_NTOPENPROCESS_TAG] = dispatcher;
-  ipc_targets_[IPC_CREATEPROCESSW_TAG] = dispatcher;
-  ipc_targets_[IPC_NTOPENPROCESSTOKEN_TAG] = dispatcher;
-  ipc_targets_[IPC_NTOPENPROCESSTOKENEX_TAG] = dispatcher;
-
-  dispatcher = new SyncDispatcher(this);
-  ipc_targets_[IPC_CREATEEVENT_TAG] = dispatcher;
-  ipc_targets_[IPC_OPENEVENT_TAG] = dispatcher;
-
-  dispatcher = new RegistryDispatcher(this);
-  ipc_targets_[IPC_NTCREATEKEY_TAG] = dispatcher;
-  ipc_targets_[IPC_NTOPENKEY_TAG] = dispatcher;
-
-  dispatcher = new HandleDispatcher(this);
-  ipc_targets_[IPC_DUPLICATEHANDLEPROXY_TAG] = dispatcher;
-
-  dispatcher = new ProcessMitigationsWin32KDispatcher(this);
-  ipc_targets_[IPC_GDI_GDIDLLINITIALIZE_TAG] = dispatcher;
-  ipc_targets_[IPC_GDI_GETSTOCKOBJECT_TAG] = dispatcher;
-  ipc_targets_[IPC_USER_REGISTERCLASSW_TAG] = dispatcher;
+  dispatcher_.reset(new TopLevelDispatcher(this));
 }
 
 PolicyBase::~PolicyBase() {
@@ -187,12 +147,6 @@ PolicyBase::~PolicyBase() {
     TargetProcess* target = (*it);
     delete target;
   }
-  delete ipc_targets_[IPC_NTCREATEFILE_TAG];
-  delete ipc_targets_[IPC_CREATENAMEDPIPEW_TAG];
-  delete ipc_targets_[IPC_NTOPENTHREAD_TAG];
-  delete ipc_targets_[IPC_CREATEEVENT_TAG];
-  delete ipc_targets_[IPC_NTCREATEKEY_TAG];
-  delete ipc_targets_[IPC_DUPLICATEHANDLEPROXY_TAG];
   delete policy_maker_;
   delete policy_;
 
@@ -489,42 +443,6 @@ void PolicyBase::ClearSharedHandles() {
   STLDeleteElements(&handles_to_share_);
 }
 
-// When an IPC is ready in any of the targets we get called. We manage an array
-// of IPC dispatchers which are keyed on the IPC tag so we normally delegate
-// to the appropriate dispatcher unless we can handle the IPC call ourselves.
-Dispatcher* PolicyBase::OnMessageReady(IPCParams* ipc,
-                                       CallbackGeneric* callback) {
-  DCHECK(callback);
-  static const IPCParams ping1 = {IPC_PING1_TAG, {UINT32_TYPE}};
-  static const IPCParams ping2 = {IPC_PING2_TAG, {INOUTPTR_TYPE}};
-
-  if (ping1.Matches(ipc) || ping2.Matches(ipc)) {
-    *callback = reinterpret_cast<CallbackGeneric>(
-                    static_cast<Callback1>(&PolicyBase::Ping));
-    return this;
-  }
-
-  Dispatcher* dispatch = GetDispatcher(ipc->ipc_tag);
-  if (!dispatch) {
-    NOTREACHED();
-    return NULL;
-  }
-  return dispatch->OnMessageReady(ipc, callback);
-}
-
-// Delegate to the appropriate dispatcher.
-bool PolicyBase::SetupService(InterceptionManager* manager, int service) {
-  if (IPC_PING1_TAG == service || IPC_PING2_TAG == service)
-    return true;
-
-  Dispatcher* dispatch = GetDispatcher(service);
-  if (!dispatch) {
-    NOTREACHED();
-    return false;
-  }
-  return dispatch->SetupService(manager, service);
-}
-
 ResultCode PolicyBase::MakeJobObject(base::win::ScopedHandle* job) {
   if (job_level_ != JOB_NONE) {
     // Create the windows job object.
@@ -655,7 +573,8 @@ bool PolicyBase::AddTarget(TargetProcess* target) {
     return false;
 
   // Initialize the sandbox infrastructure for the target.
-  if (ERROR_SUCCESS != target->Init(this, policy_, kIPCMemSize, kPolMemSize))
+  if (ERROR_SUCCESS !=
+      target->Init(dispatcher_.get(), policy_, kIPCMemSize, kPolMemSize))
     return false;
 
   g_shared_delayed_integrity_level = delayed_integrity_level_;
@@ -736,46 +655,13 @@ HANDLE PolicyBase::GetStderrHandle() {
   return stderr_handle_;
 }
 
-// We service IPC_PING_TAG message which is a way to test a round trip of the
-// IPC subsystem. We receive a integer cookie and we are expected to return the
-// cookie times two (or three) and the current tick count.
-bool PolicyBase::Ping(IPCInfo* ipc, void* arg1) {
-  switch (ipc->ipc_tag) {
-    case IPC_PING1_TAG: {
-      IPCInt ipc_int(arg1);
-      uint32 cookie = ipc_int.As32Bit();
-      ipc->return_info.extended_count = 2;
-      ipc->return_info.extended[0].unsigned_int = ::GetTickCount();
-      ipc->return_info.extended[1].unsigned_int = 2 * cookie;
-      return true;
-    }
-    case IPC_PING2_TAG: {
-      CountedBuffer* io_buffer = reinterpret_cast<CountedBuffer*>(arg1);
-      if (sizeof(uint32) != io_buffer->Size())
-        return false;
-
-      uint32* cookie = reinterpret_cast<uint32*>(io_buffer->Buffer());
-      *cookie = (*cookie) * 3;
-      return true;
-    }
-    default: return false;
-  }
-}
-
-Dispatcher* PolicyBase::GetDispatcher(int ipc_tag) {
-  if (ipc_tag >= IPC_LAST_TAG || ipc_tag <= IPC_UNUSED_TAG)
-    return NULL;
-
-  return ipc_targets_[ipc_tag];
-}
-
 bool PolicyBase::SetupAllInterceptions(TargetProcess* target) {
   InterceptionManager manager(target, relaxed_interceptions_);
 
   if (policy_) {
     for (int i = 0; i < IPC_LAST_TAG; i++) {
-      if (policy_->entry[i] && !ipc_targets_[i]->SetupService(&manager, i))
-          return false;
+      if (policy_->entry[i] && !dispatcher_->SetupService(&manager, i))
+        return false;
     }
   }
 

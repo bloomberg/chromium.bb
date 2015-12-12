@@ -12,6 +12,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/win/scoped_handle.h"
 #include "sandbox/win/src/crosscall_server.h"
@@ -31,11 +32,7 @@ struct PolicyGlobal;
 
 typedef std::vector<base::win::ScopedHandle*> HandleList;
 
-// We act as a policy dispatcher, implementing the handler for the "ping" IPC,
-// so we have to provide the appropriate handler on the OnMessageReady method.
-// There is a static_cast for the handler, and the compiler only performs the
-// cast if the first base class is Dispatcher.
-class PolicyBase : public Dispatcher, public TargetPolicy {
+class PolicyBase : public TargetPolicy {
  public:
   PolicyBase();
 
@@ -71,11 +68,6 @@ class PolicyBase : public Dispatcher, public TargetPolicy {
   ResultCode AddKernelObjectToClose(const base::char16* handle_type,
                                     const base::char16* handle_name) override;
   void* AddHandleToShare(HANDLE handle) override;
-
-  // Dispatcher:
-  Dispatcher* OnMessageReady(IPCParams* ipc,
-                             CallbackGeneric* callback) override;
-  bool SetupService(InterceptionManager* manager, int service) override;
 
   // Creates a Job object with the level specified in a previous call to
   // SetJobLevel().
@@ -113,13 +105,7 @@ class PolicyBase : public Dispatcher, public TargetPolicy {
   void ClearSharedHandles();
 
  private:
-  ~PolicyBase() override;
-
-  // Test IPC providers.
-  bool Ping(IPCInfo* ipc, void* cookie);
-
-  // Returns a dispatcher from ipc_targets_.
-  Dispatcher* GetDispatcher(int ipc_tag);
+  ~PolicyBase();
 
   // Sets up interceptions for a new target.
   bool SetupAllInterceptions(TargetProcess* target);
@@ -156,8 +142,6 @@ class PolicyBase : public Dispatcher, public TargetPolicy {
   IntegrityLevel delayed_integrity_level_;
   MitigationFlags mitigations_;
   MitigationFlags delayed_mitigations_;
-  // The array of objects that will answer IPC calls.
-  Dispatcher* ipc_targets_[IPC_LAST_TAG];
   // Object in charge of generating the low level policy.
   LowLevelPolicy* policy_maker_;
   // Memory structure that stores the low level policy.
@@ -172,6 +156,7 @@ class PolicyBase : public Dispatcher, public TargetPolicy {
   scoped_ptr<AppContainerAttributes> appcontainer_list_;
   PSID lowbox_sid_;
   base::win::ScopedHandle lowbox_directory_;
+  scoped_ptr<Dispatcher> dispatcher_;
 
   static HDESK alternate_desktop_handle_;
   static HWINSTA alternate_winstation_handle_;

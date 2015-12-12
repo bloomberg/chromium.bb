@@ -132,6 +132,8 @@
             'src/target_process.h',
             'src/target_services.cc',
             'src/target_services.h',
+            'src/top_level_dispatcher.cc',
+            'src/top_level_dispatcher.h',
             'src/win_utils.cc',
             'src/win_utils.h',
             'src/win2k_threadpool.cc',

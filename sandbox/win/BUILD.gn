@@ -125,6 +125,8 @@ source_set("sandbox") {
     "src/target_process.h",
     "src/target_services.cc",
     "src/target_services.h",
+    "src/top_level_dispatcher.cc",
+    "src/top_level_dispatcher.h",
     "src/win2k_threadpool.cc",
     "src/win2k_threadpool.h",
     "src/win_utils.cc",
