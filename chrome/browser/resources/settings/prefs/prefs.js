@@ -208,7 +208,7 @@
       // Ignore changes that came from singleton_ so we don't re-process
       // changes made in other instances of this element.
       if (!this.ignoreChanges_)
-        this.singleton_.fire('prefs-changed', info, {bubbles: false});
+        this.singleton_.fire('shared-prefs-changed', info, {bubbles: false});
     },
 
     /**
@@ -279,9 +279,10 @@
       },
     },
 
-    // Listen for the manually fired prefs-changed event.
+    // Listen for the manually fired shared-prefs-changed event, fired when
+    // a shared-prefs instance is changed by another element.
     listeners: {
-      'prefs-changed': 'prefsChanged_',
+      'shared-prefs-changed': 'sharedPrefsChanged_',
     },
 
     /** @type {SettingsPrivate} */
@@ -308,12 +309,12 @@
     },
 
     /**
-     * Polymer callback for changes to this.prefs.
+     * Polymer callback for changes to prefs.* from a shared-prefs element.
      * @param {!CustomEvent} e
      * @param {!{path: string}} change
      * @private
      */
-    prefsChanged_: function(e, change) {
+    sharedPrefsChanged_: function(e, change) {
       if (!CrSettingsPrefs.isInitialized)
         return;
 
@@ -323,17 +324,19 @@
       var prefObj = /** @type {chrome.settingsPrivate.PrefObject} */(
           this.get(key, this.prefs));
 
-      // If settingsPrivate already has this value, do nothing. (Otherwise,
+      // If settingsPrivate already has this value, ignore it. (Otherwise,
       // a change event from settingsPrivate could make us call
       // settingsPrivate.setPref and potentially trigger an IPC loop.)
-      if (deepEqual(prefStoreValue, prefObj.value))
-        return;
+      if (!deepEqual(prefStoreValue, prefObj.value)) {
+        this.settingsApi_.setPref(
+            key,
+            prefObj.value,
+            /* pageId */ '',
+            /* callback */ this.setPrefCallback_.bind(this, key));
+      }
 
-      this.settingsApi_.setPref(
-          key,
-          prefObj.value,
-          /* pageId */ '',
-          /* callback */ this.setPrefCallback_.bind(this, key));
+      // Package the event as a prefs-changed event for other elements.
+      this.fire('prefs-changed', change);
     },
 
     /**
