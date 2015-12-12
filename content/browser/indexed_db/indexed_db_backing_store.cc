@@ -2255,7 +2255,8 @@ class IndexedDBBackingStore::Transaction::ChainedBlobWriterImpl
       : waiting_for_callback_(false),
         database_id_(database_id),
         backing_store_(backing_store),
-        callback_(callback) {
+        callback_(callback),
+        aborted_(false) {
     blobs_.swap(*blobs);
     iter_ = blobs_.begin();
     backing_store->task_runner()->PostTask(
@@ -2273,8 +2274,8 @@ class IndexedDBBackingStore::Transaction::ChainedBlobWriterImpl
     if (delegate_.get())  // Only present for Blob, not File.
       content::BrowserThread::DeleteSoon(
           content::BrowserThread::IO, FROM_HERE, delegate_.release());
-    if (aborted_self_ref_.get()) {
-      aborted_self_ref_ = NULL;
+    if (aborted_) {
+      self_ref_ = NULL;
       return;
     }
     if (iter_->size() != -1 && iter_->size() != bytes_written)
@@ -2288,38 +2289,40 @@ class IndexedDBBackingStore::Transaction::ChainedBlobWriterImpl
   }
 
   void Abort() override {
+    aborted_ = true;
     if (!waiting_for_callback_)
       return;
-    aborted_self_ref_ = this;
+    self_ref_ = this;
   }
 
  private:
-  ~ChainedBlobWriterImpl() override { DCHECK(!waiting_for_callback_); }
+  ~ChainedBlobWriterImpl() override {}
 
   void WriteNextFile() {
     DCHECK(!waiting_for_callback_);
-    DCHECK(!aborted_self_ref_.get());
+    DCHECK(!aborted_);
     if (iter_ == blobs_.end()) {
+      DCHECK(!self_ref_.get());
       callback_->Run(true);
       return;
     } else {
-      waiting_for_callback_ = true;
       if (!backing_store_->WriteBlobFile(database_id_, *iter_, this)) {
-        waiting_for_callback_ = false;
         callback_->Run(false);
         return;
       }
+      waiting_for_callback_ = true;
     }
   }
 
   bool waiting_for_callback_;
-  scoped_refptr<ChainedBlobWriterImpl> aborted_self_ref_;
+  scoped_refptr<ChainedBlobWriterImpl> self_ref_;
   WriteDescriptorVec blobs_;
   WriteDescriptorVec::const_iterator iter_;
   int64 database_id_;
   IndexedDBBackingStore* backing_store_;
   scoped_refptr<IndexedDBBackingStore::BlobWriteCallback> callback_;
   scoped_ptr<FileWriterDelegate> delegate_;
+  bool aborted_;
 
   DISALLOW_COPY_AND_ASSIGN(ChainedBlobWriterImpl);
 };
