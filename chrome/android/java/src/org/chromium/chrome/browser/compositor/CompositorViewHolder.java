@@ -424,16 +424,6 @@ public class CompositorViewHolder extends FrameLayout
 
     @Override
     public void onOverdrawBottomHeightChanged(int overdrawHeight) {
-        if (mLayoutManager == null) return;
-
-        sCachedCVCList.clear();
-        mLayoutManager.getActiveLayout().getAllContentViewCores(sCachedCVCList);
-
-        for (int i = 0; i < sCachedCVCList.size(); i++) {
-            sCachedCVCList.get(i).onOverdrawBottomHeightChanged(overdrawHeight);
-        }
-        sCachedCVCList.clear();
-
         mSkipNextToolbarTextureUpdate = true;
         requestRender();
     }
@@ -939,8 +929,6 @@ public class CompositorViewHolder extends FrameLayout
 
         adjustPhysicalBackingSize(contentViewCore,
                 mCompositorView.getWidth(), mCompositorView.getHeight());
-
-        contentViewCore.onOverdrawBottomHeightChanged(mCompositorView.getOverdrawBottomHeight());
     }
 
     /**

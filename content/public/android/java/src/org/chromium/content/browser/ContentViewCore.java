@@ -1555,10 +1555,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
         }
     }
 
-    /* TODO(aelias): Remove this after downstream callers disappear. */
-    public void onOverdrawBottomHeightChanged(int overdrawHeightPix) {
-    }
-
     private void updateAfterSizeChanged() {
         mPopupZoomer.hide(false);
 
