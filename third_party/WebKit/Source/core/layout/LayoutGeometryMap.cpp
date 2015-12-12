@@ -32,6 +32,14 @@
 #include "platform/geometry/TransformState.h"
 #include "wtf/TemporaryChange.h"
 
+#define LAYOUT_GEOMETRY_MAP_LOGGING 0
+
+#if LAYOUT_GEOMETRY_MAP_LOGGING
+#define LAYOUT_GEOMETRY_MAP_LOG(...) WTFLogAlways(__VA_ARGS__)
+#else
+#define LAYOUT_GEOMETRY_MAP_LOG(...) ((void)0)
+#endif
+
 namespace blink {
 
 LayoutGeometryMap::LayoutGeometryMap(MapCoordinatesFlags flags)
@@ -196,7 +204,7 @@ void LayoutGeometryMap::pushMappingsToAncestor(const PaintLayer* layer, const Pa
     // from mapping via layers.
     bool canConvertInLayerTree = (ancestorLayer && !crossDocument) ? canMapBetweenLayoutObjects(layer->layoutObject(), ancestorLayer->layoutObject()) : false;
 
-//    fprintf(stderr, "LayoutGeometryMap::pushMappingsToAncestor from layer %p to layer %p, canConvertInLayerTree=%d\n", layer, ancestorLayer, canConvertInLayerTree);
+    LAYOUT_GEOMETRY_MAP_LOG("LayoutGeometryMap::pushMappingsToAncestor from layer %p to layer %p, canConvertInLayerTree=%d\n", layer, ancestorLayer, canConvertInLayerTree);
 
     if (canConvertInLayerTree) {
         LayoutPoint layerOffset;
@@ -219,7 +227,7 @@ void LayoutGeometryMap::pushMappingsToAncestor(const PaintLayer* layer, const Pa
 
 void LayoutGeometryMap::push(const LayoutObject* layoutObject, const LayoutSize& offsetFromContainer, bool accumulatingTransform, bool isNonUniform, bool isFixedPosition, bool hasTransform, LayoutSize offsetForFixedPosition)
 {
-//    fprintf(stderr, "LayoutGeometryMap::push %p %d,%d isNonUniform=%d\n", layoutObject, offsetFromContainer.width().toInt(), offsetFromContainer.height().toInt(), isNonUniform);
+    LAYOUT_GEOMETRY_MAP_LOG("LayoutGeometryMap::push %p %d,%d isNonUniform=%d\n", layoutObject, offsetFromContainer.width().toInt(), offsetFromContainer.height().toInt(), isNonUniform);
 
     ASSERT(m_insertionPosition != kNotFound);
     ASSERT(!layoutObject->isLayoutView() || !m_insertionPosition || m_mapCoordinatesFlags & TraverseDocumentBoundaries);
