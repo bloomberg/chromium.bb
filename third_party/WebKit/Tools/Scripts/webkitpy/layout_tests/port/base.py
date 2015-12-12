@@ -1294,6 +1294,8 @@ class Port(object):
         paths.append(self._filesystem.join(self.layout_tests_dir(), 'NeverFixTests'))
         paths.append(self._filesystem.join(self.layout_tests_dir(), 'StaleTestExpectations'))
         paths.append(self._filesystem.join(self.layout_tests_dir(), 'SlowTests'))
+        if self._is_wpt_enabled:
+            paths.append(self._filesystem.join(self.layout_tests_dir(), 'WPTServeExpectations'))
         return paths
 
     def _flag_specific_expectations_files(self):

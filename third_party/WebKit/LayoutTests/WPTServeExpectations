@@ -1,0 +1,51 @@
+# Overriden expectations for imported tests when run with --enable-wptserve
+
+# Fail when run with --enable-wptserve due to data: URLs treated as cross-origin: (crbug.com/508730)
+crbug.com/508730 crbug.com/472300 imported/web-platform-tests/html/semantics/embedded-content/media-elements/interfaces/TextTrack/addCue.html [ Failure ]
+crbug.com/508730 crbug.com/472300 imported/web-platform-tests/html/semantics/embedded-content/media-elements/interfaces/TextTrack/removeCue.html [ Failure ]
+crbug.com/508730 crbug.com/472300 imported/web-platform-tests/html/semantics/embedded-content/media-elements/interfaces/TextTrackCue/endTime.html [ Failure ]
+crbug.com/508730 crbug.com/472300 imported/web-platform-tests/html/semantics/embedded-content/media-elements/interfaces/TextTrackCue/id.html [ Failure ]
+crbug.com/508730 crbug.com/472300 imported/web-platform-tests/html/semantics/embedded-content/media-elements/interfaces/TextTrackCue/pauseOnExit.html [ Failure ]
+crbug.com/508730 crbug.com/472300 imported/web-platform-tests/html/semantics/embedded-content/media-elements/interfaces/TextTrackCue/startTime.html [ Failure ]
+crbug.com/508730 crbug.com/472300 imported/web-platform-tests/html/semantics/embedded-content/media-elements/interfaces/TextTrackCue/track.html [ Failure ]
+crbug.com/508730 imported/web-platform-tests/html/browsers/browsing-the-web/read-media/pageload-image.html [ Failure ]
+crbug.com/508730 imported/web-platform-tests/html/browsers/browsing-the-web/read-media/pageload-video.html [ Failure ]
+crbug.com/508730 imported/web-platform-tests/html/webappapis/scripting/processing-model-2/compile-error-data-url.html [ Failure ]
+
+# Fail when run with --enable-wptserve: (crbug.com/508734)
+crbug.com/508734 imported/web-platform-tests/html/browsers/history/the-location-interface/security_location_0.sub.htm [ Failure ]
+crbug.com/508734 imported/web-platform-tests/html/dom/dynamic-markup-insertion/opening-the-input-stream/010.html [ Failure ]
+crbug.com/508734 imported/web-platform-tests/html/editing/focus/document-level-focus-apis/document-level-apis.html [ Failure ]
+crbug.com/508734 imported/web-platform-tests/html/semantics/embedded-content/media-elements/track/track-element/cloneNode.html [ Failure ]
+crbug.com/508734 imported/web-platform-tests/html/webappapis/system-state-and-capabilities/the-navigator-object/protocol/004.xhtml [ Failure ]
+
+# Fail differently when run with --enable-wptserve: (crbug.com/508728)
+crbug.com/508728 imported/web-platform-tests/FileAPI/url/url_xmlhttprequest.html [ Failure ]
+crbug.com/508728 imported/web-platform-tests/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-pointer-control.html [ Failure ]
+crbug.com/508728 imported/web-platform-tests/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-pointer-insert-br.html [ Failure ]
+crbug.com/508728 imported/web-platform-tests/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-pointer-insert-source.html [ Failure ]
+crbug.com/508728 imported/web-platform-tests/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-pointer-insert-text.html [ Failure ]
+crbug.com/508728 imported/web-platform-tests/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-pointer-remove-source.html [ Failure ]
+crbug.com/508728 imported/web-platform-tests/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-pointer-remove-text.html [ Failure ]
+crbug.com/508728 imported/web-platform-tests/html/semantics/embedded-content/the-iframe-element/iframe_sandbox_allow_script.html [ Failure ]
+crbug.com/508728 imported/web-platform-tests/html/semantics/selectors/pseudo-classes/focus.html [ Failure ]
+crbug.com/508728 imported/web-platform-tests/html/webappapis/scripting/processing-model-2/compile-error-cross-origin.html [ Failure ]
+crbug.com/508728 imported/web-platform-tests/html/webappapis/scripting/processing-model-2/runtime-error-cross-origin.html [ Failure ]
+crbug.com/508728 imported/web-platform-tests/html/webappapis/scripting/processing-model-2/runtime-error-data-url.html [ Failure ]
+crbug.com/508728 imported/web-platform-tests/webstorage/document-domain.html [ Failure ]
+
+# Pass when run with --enable-wptserve ([Failure] since expectations do not match): (crbug.com/508725)
+crbug.com/508725 imported/web-platform-tests/html/browsers/history/the-history-interface/history_pushstate_err.html [ Failure ]
+crbug.com/508725 imported/web-platform-tests/html/browsers/history/the-history-interface/history_replacestate_err.html [ Failure ]
+crbug.com/508725 imported/web-platform-tests/html/browsers/offline/application-cache-api/api_status_idle.html [ Failure ]
+crbug.com/508725 imported/web-platform-tests/html/dom/elements/global-attributes/the-lang-attribute-003.html [ Failure ]
+crbug.com/508725 imported/web-platform-tests/html/webappapis/system-state-and-capabilities/the-navigator-object/protocol.html [ Failure ]
+
+# Requires HTTPS for getUserMedia()
+imported/web-platform-tests/mediacapture-streams/obtaining-local-multimedia-content/navigatorusermedia/getusermedia-impossible-constraint.html [ Failure ]
+imported/web-platform-tests/mediacapture-streams/stream-api/mediastream/mediastream-addtrack.html [ Failure ]
+imported/web-platform-tests/mediacapture-streams/stream-api/mediastream/mediastream-gettrackid.html [ Failure ]
+imported/web-platform-tests/mediacapture-streams/stream-api/mediastream/stream-ended.html [ Failure ]
+imported/web-platform-tests/mediacapture-streams/stream-api/mediastream/video.html [ Failure ]
+imported/web-platform-tests/mediacapture-streams/stream-api/mediastreamtrack/mediastreamtrack-id.html [ Failure ]
+imported/web-platform-tests/webrtc/simplecall.html [ Failure ]
