@@ -263,9 +263,9 @@ void RawChannel::Shutdown() {
   // Reset the delegate so that it won't receive further calls.
   delegate_ = nullptr;
   if (calling_delegate_) {
-    base::MessageLoop::current()->PostTask(
-            FROM_HERE,
-            base::Bind(&RawChannel::Shutdown, weak_ptr_factory_.GetWeakPtr()));
+    internal::g_io_thread_task_runner->PostTask(
+        FROM_HERE,
+        base::Bind(&RawChannel::Shutdown, weak_ptr_factory_.GetWeakPtr()));
     return;
   }
 
@@ -565,7 +565,7 @@ void RawChannel::CallOnError(Delegate::Error error) {
   } else {
     // We depend on delegate to delete since it could be waiting to call
     // ReleaseHandle.
-    base::MessageLoop::current()->PostTask(
+    internal::g_io_thread_task_runner->PostTask(
         FROM_HERE,
         base::Bind(&RawChannel::Shutdown, weak_ptr_factory_.GetWeakPtr()));
   }
@@ -589,7 +589,7 @@ bool RawChannel::OnWriteCompletedInternalNoLock(IOResult io_result,
       if (!delegate_) {
         // Shutdown must have been called and we were waiting to flush all
         // pending writes. Now we're done.
-        base::MessageLoop::current()->PostTask(
+        internal::g_io_thread_task_runner->PostTask(
             FROM_HERE,
             base::Bind(&RawChannel::Shutdown, weak_ptr_factory_.GetWeakPtr()));
       }

@@ -53,10 +53,6 @@ ChildBrokerHost::ChildBrokerHost(base::ProcessHandle child_process,
                       &duplicated_child_handle, sizeof(duplicated_child_handle),
                       NULL, &write_context_.overlapped);
   DCHECK(rv || GetLastError() == ERROR_IO_PENDING);
-
-  internal::g_io_thread_task_runner->PostTask(
-      FROM_HERE,
-      base::Bind(&ChildBrokerHost::RegisterIOHandler, base::Unretained(this)));
 #endif
 
   child_channel_ = RawChannel::Create(parent_async_channel_handle.Pass());
@@ -69,6 +65,15 @@ ChildBrokerHost::ChildBrokerHost(base::ProcessHandle child_process,
                   base::Unretained(child_channel_)));
 
   BrokerState::GetInstance()->ChildBrokerHostCreated(this);
+
+#if defined(OS_WIN)
+  // Call this after RawChannel::Init because this call could cause us to get
+  // notified that the child has gone away and to delete this class and shut
+  // down child_channel_ before Init() has run.
+  internal::g_io_thread_task_runner->PostTask(
+      FROM_HERE,
+      base::Bind(&ChildBrokerHost::RegisterIOHandler, base::Unretained(this)));
+#endif
 }
 
 base::ProcessId ChildBrokerHost::GetProcessId() {
@@ -147,7 +152,7 @@ void ChildBrokerHost::OnError(Error error) {
   child_channel_->Shutdown();
   child_channel_ = nullptr;
   // On Windows, we have two pipes to the child process. It's easier to wait
-  // until we get the error from the pipe that uses asynchronous I/O.
+  // until we get the error from the pipe that is used for synchronous I/O.
 #if !defined(OS_WIN)
   delete this;
 #endif
