@@ -32,7 +32,7 @@ struct PolicyGlobal;
 
 typedef std::vector<base::win::ScopedHandle*> HandleList;
 
-class PolicyBase : public TargetPolicy {
+class PolicyBase final : public TargetPolicy {
  public:
   PolicyBase();
 
