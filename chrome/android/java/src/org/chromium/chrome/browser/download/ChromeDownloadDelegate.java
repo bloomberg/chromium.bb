@@ -365,6 +365,10 @@ public class ChromeDownloadDelegate
                             new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int id) {
+                                    if (mTab == null) {
+                                        dialog.cancel();
+                                        return;
+                                    }
                                     mTab.getWindowAndroid().requestPermissions(
                                             new String[] {storagePermission}, permissionCallback);
                                 }
