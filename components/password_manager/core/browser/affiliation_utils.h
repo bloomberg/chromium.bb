@@ -191,14 +191,6 @@ bool IsAffiliationBasedMatchingEnabled(const base::CommandLine& command_line);
 bool IsPropagatingPasswordChangesToWebCredentialsEnabled(
     const base::CommandLine& command_line);
 
-// Returns whether or not affiliation requests for dummy facets should be
-// triggered as part of an experiment to exercise AffiliationService code before
-// users would get a chance to have any real Android-based credentials. If the
-// main feature is forced enabled/disabled via the command line, the experiment
-// is force enabled/disabled correspondingly.
-bool IsAffiliationRequestsForDummyFacetsEnabled(
-    const base::CommandLine& command_line);
-
 // Returns the origin URI in a format which can be presented to a user based of
 // |password_from| field values. For web URIs |languages| is using in order to
 // determine whether a URI is 'comprehensible' to a user who understands

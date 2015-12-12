@@ -283,49 +283,6 @@ TEST(AffiliationUtilsTest,
   }
 }
 
-TEST(AffiliationUtilsTest, IsAffiliationRequestsForDummyFacetsEnabled) {
-  const char kExperimentName[] = "DoesNotMatter";
-
-  struct {
-    const char* variation_param;
-    const char* command_line_switch;
-    bool expected_enabled;
-  } kTestCases[] = {
-      {"", "", false},
-      {"", switches::kEnableAffiliationBasedMatching, true},
-      {"", switches::kDisableAffiliationBasedMatching, false},
-      {"garbage value", "", false},
-      {"disabled", "", false},
-      {"Disabled", "", false},
-      {"Disabled", switches::kDisableAffiliationBasedMatching, false},
-      {"Disabled", switches::kEnableAffiliationBasedMatching, true},
-      {"enabled", "", true},
-      {"Enabled", "", true},
-      {"Enabled", switches::kDisableAffiliationBasedMatching, false},
-      {"Enabled", switches::kEnableAffiliationBasedMatching, true}};
-
-  for (const auto& test_case : kTestCases) {
-    SCOPED_TRACE(testing::Message("Command line = ")
-                 << test_case.command_line_switch);
-    SCOPED_TRACE(testing::Message("Variation param = ")
-                 << test_case.variation_param);
-
-    variations::testing::ClearAllVariationParams();
-    base::FieldTrialList field_trials(nullptr);
-    base::FieldTrialList::CreateFieldTrial(kFieldTrialName, kExperimentName);
-    std::map<std::string, std::string> variation_params;
-    variation_params["affiliation_requests_for_dummy_facets"] =
-        test_case.variation_param;
-    ASSERT_TRUE(variations::AssociateVariationParams(
-        kFieldTrialName, kExperimentName, variation_params));
-
-    base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
-    command_line.AppendSwitch(test_case.command_line_switch);
-    EXPECT_EQ(test_case.expected_enabled,
-              IsAffiliationRequestsForDummyFacetsEnabled(command_line));
-  }
-}
-
 class GetHumanReadableOriginTest : public testing::Test {
  public:
   GetHumanReadableOriginTest() {
