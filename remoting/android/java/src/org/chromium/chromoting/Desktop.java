@@ -242,9 +242,6 @@ public class Desktop
             });
         }
 
-        // TODO(joedow): Remove this line when touch input mode has been implemented.
-        menu.findItem(R.id.actionbar_input_mode).setVisible(false);
-
         ChromotingUtil.tintMenuIcons(this, menu);
 
         // Wait to set the input mode until after the default tinting has been applied.
