@@ -1425,15 +1425,17 @@ void RenderWidget::FlushPendingInputEventAck() {
 // WebWidgetClient
 
 void RenderWidget::didAutoResize(const WebSize& new_size) {
-  // TODO(oshima): support UseZoomForDSFEnabled()
-  if (size_.width() != new_size.width || size_.height() != new_size.height) {
-    size_ = new_size;
+  WebRect new_size_in_window(0, 0, new_size.width, new_size.height);
+  convertViewportToWindow(&new_size_in_window);
+  if (size_.width() != new_size_in_window.width ||
+      size_.height() != new_size_in_window.height) {
+    size_ = gfx::Size(new_size_in_window.width, new_size_in_window.height);
 
     if (resizing_mode_selector_->is_synchronous_mode()) {
-      WebRect new_pos(rootWindowRect().x,
-                      rootWindowRect().y,
-                      new_size.width,
-                      new_size.height);
+      gfx::Rect new_pos(rootWindowRect().x,
+                        rootWindowRect().y,
+                        size_.width(),
+                        size_.height());
       view_screen_rect_ = new_pos;
       window_screen_rect_ = new_pos;
     }
@@ -1712,9 +1714,8 @@ void RenderWidget::setToolTipText(const blink::WebString& text,
   Send(new ViewHostMsg_SetTooltipText(routing_id_, text, hint));
 }
 
-void RenderWidget::setWindowRect(const WebRect& rect) {
-  // TODO(oshima): Scale back to DIP coordinates.
-  WebRect window_rect = rect;
+void RenderWidget::setWindowRect(const WebRect& rect_in_screen) {
+  WebRect window_rect = rect_in_screen;
   if (popup_origin_scale_for_emulation_) {
     float scale = popup_origin_scale_for_emulation_;
     window_rect.x = popup_screen_origin_for_emulation_.x() +
@@ -2103,16 +2104,10 @@ void RenderWidget::GetSelectionBounds(gfx::Rect* focus, gfx::Rect* anchor) {
   WebRect focus_webrect;
   WebRect anchor_webrect;
   webwidget_->selectionBounds(focus_webrect, anchor_webrect);
-  if (IsUseZoomForDSFEnabled()) {
-    float inverse_scale = 1.f / device_scale_factor_;
-    gfx::RectF focus_rect(focus_webrect);
-    *focus = gfx::ToEnclosingRect(gfx::ScaleRect(focus_rect, inverse_scale));
-    gfx::RectF anchor_rect(anchor_webrect);
-    *anchor = gfx::ToEnclosingRect(gfx::ScaleRect(anchor_rect, inverse_scale));
-  } else {
-    *focus = focus_webrect;
-    *anchor = anchor_webrect;
-  }
+  convertViewportToWindow(&focus_webrect);
+  convertViewportToWindow(&anchor_webrect);
+  *focus = focus_webrect;
+  *anchor = anchor_webrect;
 }
 
 void RenderWidget::UpdateSelectionBounds() {
