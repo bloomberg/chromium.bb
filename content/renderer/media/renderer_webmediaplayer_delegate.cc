@@ -31,4 +31,20 @@ void RendererWebMediaPlayerDelegate::PlayerGone(blink::WebMediaPlayer* player) {
   DidPause(player);
 }
 
+void RendererWebMediaPlayerDelegate::AddObserver(Observer* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void RendererWebMediaPlayerDelegate::RemoveObserver(Observer* observer) {
+  observer_list_.RemoveObserver(observer);
+}
+
+void RendererWebMediaPlayerDelegate::WasHidden() {
+  FOR_EACH_OBSERVER(Observer, observer_list_, OnHidden());
+}
+
+void RendererWebMediaPlayerDelegate::WasShown() {
+  FOR_EACH_OBSERVER(Observer, observer_list_, OnShown());
+}
+
 }  // namespace media

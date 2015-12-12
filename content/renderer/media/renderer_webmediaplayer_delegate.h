@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "media/blink/webmediaplayer_delegate.h"
 
@@ -33,9 +34,16 @@ class RendererWebMediaPlayerDelegate
   void DidPlay(blink::WebMediaPlayer* player) override;
   void DidPause(blink::WebMediaPlayer* player) override;
   void PlayerGone(blink::WebMediaPlayer* player) override;
+  void AddObserver(Observer* observer) override;
+  void RemoveObserver(Observer* observer) override;
+
+  // content::RenderFrameObserver overrides.
+  void WasHidden() override;
+  void WasShown() override;
 
  private:
   bool has_played_media_ = false;
+  base::ObserverList<Observer> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererWebMediaPlayerDelegate);
 };

@@ -16,6 +16,9 @@ MEDIA_EXPORT extern const char kAudioBufferSize[];
 
 MEDIA_EXPORT extern const char kVideoThreads[];
 
+MEDIA_EXPORT extern const char kEnableMediaSuspend[];
+MEDIA_EXPORT extern const char kDisableMediaSuspend[];
+
 #if defined(OS_ANDROID)
 MEDIA_EXPORT extern const char kDisableMediaThreadForMediaPlayback[];
 MEDIA_EXPORT extern const char kEnableMediaThreadForMediaPlayback[];

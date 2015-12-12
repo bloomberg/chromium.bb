@@ -624,12 +624,8 @@ void Pipeline::SeekTask(TimeDelta time, const PipelineStatusCB& seek_cb) {
   // Suppress seeking if we're not fully started.
   if (state_ != kPlaying) {
     DCHECK(state_ == kStopping || state_ == kStopped)
-        << "Receive extra seek in unexpected state: " << state_;
-
-    // TODO(scherkus): should we run the callback?  I'm tempted to say the API
-    // will only execute the first Seek() request.
-    DVLOG(1) << "Media pipeline has not started, ignoring seek to "
-             << time.InMicroseconds() << " (current state: " << state_ << ")";
+        << "Receive seek in unexpected state: " << state_;
+    seek_cb.Run(PIPELINE_ERROR_INVALID_STATE);
     return;
   }
 

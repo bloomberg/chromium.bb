@@ -102,6 +102,12 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor
   // the frequency of canvas or WebGL paints requested via JavaScript.
   scoped_refptr<VideoFrame> GetCurrentFrameAndUpdateIfStale();
 
+  // Returns the timestamp of the current (possibly stale) frame, or
+  // base::TimeDelta() if there is no current frame. This method may be called
+  // from the media thread as long as the VFC is stopped. (Assuming that
+  // PaintFrameUsingOldRenderingPath() is not also called while stopped.)
+  base::TimeDelta GetCurrentFrameTimestamp() const;
+
   void set_tick_clock_for_testing(scoped_ptr<base::TickClock> tick_clock) {
     tick_clock_ = tick_clock.Pass();
   }
@@ -155,7 +161,6 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor
 
   // These values are only set and read on the compositor thread.
   cc::VideoFrameProvider::Client* client_;
-  scoped_refptr<VideoFrame> current_frame_;
   bool rendering_;
   bool rendered_last_frame_;
   bool is_background_rendering_;
@@ -163,8 +168,12 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor
   base::TimeDelta last_interval_;
   base::TimeTicks last_background_render_;
 
+  // These values are set on the compositor thread, but also read on the media
+  // thread when the VFC is stopped.
+  scoped_refptr<VideoFrame> current_frame_;
+
   // These values are updated and read from the media and compositor threads.
-  base::Lock lock_;
+  base::Lock callback_lock_;
   VideoRendererSink::RenderCallback* callback_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoFrameCompositor);

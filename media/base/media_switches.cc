@@ -12,6 +12,10 @@ const char kAudioBufferSize[] = "audio-buffer-size";
 // Set number of threads to use for video decoding.
 const char kVideoThreads[] = "video-threads";
 
+// Suspend media pipeline on background tabs.
+const char kEnableMediaSuspend[] = "enable-media-suspend";
+const char kDisableMediaSuspend[] = "disable-media-suspend";
+
 #if defined(OS_ANDROID)
 // Sets the MediaSource player that uses UI thread for frame processing.
 const char kDisableMediaThreadForMediaPlayback[] =

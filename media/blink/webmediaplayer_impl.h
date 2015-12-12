@@ -23,6 +23,7 @@
 #include "media/blink/encrypted_media_player_support.h"
 #include "media/blink/media_blink_export.h"
 #include "media/blink/video_frame_compositor.h"
+#include "media/blink/webmediaplayer_delegate.h"
 #include "media/blink/webmediaplayer_params.h"
 #include "media/blink/webmediaplayer_util.h"
 #include "media/renderers/skcanvas_video_renderer.h"
@@ -63,6 +64,7 @@ class WebTextTrackImpl;
 // Encrypted Media.
 class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
     : public NON_EXPORTED_BASE(blink::WebMediaPlayer),
+      public NON_EXPORTED_BASE(WebMediaPlayerDelegate::Observer),
       public base::SupportsWeakPtr<WebMediaPlayerImpl> {
  public:
   // Constructs a WebMediaPlayer implementation using Chromium's media stack.
@@ -167,6 +169,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
       blink::WebContentDecryptionModuleResult result) override;
 
   void OnPipelineSeeked(bool time_changed, PipelineStatus status);
+  void OnPipelineSuspended(PipelineStatus status);
   void OnPipelineEnded();
   void OnPipelineError(PipelineStatus error);
   void OnPipelineMetadata(PipelineMetadata metadata);
@@ -175,7 +178,17 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   void OnAddTextTrack(const TextTrackConfig& config,
                       const AddTextTrackDoneCB& done_cb);
 
+  // WebMediaPlayerDelegate::Observer implementation.
+  void OnHidden() override;
+  void OnShown() override;
+
  private:
+  // Initiate suspending the pipeline.
+  void Suspend();
+
+  // Initiate resuming the pipeline.
+  void Resume();
+
   // Called after |defer_load_cb_| has decided to allow the load. If
   // |defer_load_cb_| is null this is called immediately.
   void DoLoad(LoadType load_type,
@@ -187,6 +200,9 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
 
   // Called when the data source is downloading or paused.
   void NotifyDownloading(bool is_downloading);
+
+  // Creates a Renderer via the |renderer_factory_|.
+  scoped_ptr<Renderer> CreateRenderer();
 
   // Finishes starting the pipeline due to a call to load().
   void StartPipeline();
@@ -286,15 +302,38 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   bool paused_;
   base::TimeDelta paused_time_;
   bool seeking_;
-  base::TimeDelta seek_time_;  // Meaningless when |seeking_| is false.
+
+  // Set when seeking (|seeking_| is true) or resuming.
+  base::TimeDelta seek_time_;
+
+  // Set when a suspend is required but another suspend or seek is in progress.
+  bool pending_suspend_;
+
+  // Set when suspending immediately after a seek. The time change will happen
+  // after Resume().
+  bool pending_time_change_;
+
+  // Set when a resume is required but suspending is in progress.
+  bool pending_resume_;
+
+  // Set for the entire period between suspend starting and resume completing.
+  bool suspending_;
+
+  // Set while suspending to detect double-suspend.
+  bool suspended_;
+
+  // Set while resuming to detect double-resume.
+  bool resuming_;
 
   // TODO(scherkus): Replace with an explicit ended signal to HTMLMediaElement,
   // see http://crbug.com/409280
   bool ended_;
 
-  // Seek gets pending if another seek is in progress. Only last pending seek
-  // will have effect.
+  // Indicates that a seek is queued after the current seek completes or, if the
+  // pipeline is suspended, after it resumes. Only the last queued seek will
+  // have any effect.
   bool pending_seek_;
+
   // |pending_seek_time_| is meaningless when |pending_seek_| is false.
   base::TimeDelta pending_seek_time_;
 

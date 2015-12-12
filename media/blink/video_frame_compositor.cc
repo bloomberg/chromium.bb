@@ -113,7 +113,7 @@ void VideoFrameCompositor::Start(RenderCallback* callback) {
 
   // Called from the media thread, so acquire the callback under lock before
   // returning in case a Stop() call comes in before the PostTask is processed.
-  base::AutoLock lock(lock_);
+  base::AutoLock lock(callback_lock_);
   DCHECK(!callback_);
   callback_ = callback;
   compositor_task_runner_->PostTask(
@@ -127,7 +127,7 @@ void VideoFrameCompositor::Stop() {
   // Called from the media thread, so release the callback under lock before
   // returning to avoid a pending UpdateCurrentFrame() call occurring before
   // the PostTask is processed.
-  base::AutoLock lock(lock_);
+  base::AutoLock lock(callback_lock_);
   DCHECK(callback_);
   callback_ = nullptr;
   compositor_task_runner_->PostTask(
@@ -172,6 +172,16 @@ VideoFrameCompositor::GetCurrentFrameAndUpdateIfStale() {
   return current_frame_;
 }
 
+base::TimeDelta VideoFrameCompositor::GetCurrentFrameTimestamp() const {
+  // When the VFC is stopped, |callback_| is cleared; this synchronously
+  // prevents CallRender() from invoking ProcessNewFrame(), and so
+  // |current_frame_| won't change again until after Start(). (Assuming that
+  // PaintFrameUsingOldRenderingPath() is not also called while stopped.)
+  if (!current_frame_)
+    return base::TimeDelta();
+  return current_frame_->timestamp();
+}
+
 bool VideoFrameCompositor::ProcessNewFrame(
     const scoped_refptr<VideoFrame>& frame) {
   DCHECK(compositor_task_runner_->BelongsToCurrentThread());
@@ -210,7 +220,7 @@ bool VideoFrameCompositor::CallRender(base::TimeTicks deadline_min,
                                       bool background_rendering) {
   DCHECK(compositor_task_runner_->BelongsToCurrentThread());
 
-  base::AutoLock lock(lock_);
+  base::AutoLock lock(callback_lock_);
   if (!callback_) {
     // Even if we no longer have a callback, return true if we have a frame
     // which |client_| hasn't seen before.

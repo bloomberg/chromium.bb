@@ -14,6 +14,12 @@ namespace media {
 // to objects that need to know.
 class WebMediaPlayerDelegate {
  public:
+  class Observer {
+   public:
+    virtual void OnHidden() = 0;
+    virtual void OnShown() = 0;
+  };
+
   WebMediaPlayerDelegate() {}
 
   // The specified player started playing media.
@@ -23,7 +29,14 @@ class WebMediaPlayerDelegate {
   virtual void DidPause(blink::WebMediaPlayer* player) = 0;
 
   // The specified player was destroyed. Do not call any methods on it.
+  // (RemoveObserver() is still necessary if the player is also an observer.)
   virtual void PlayerGone(blink::WebMediaPlayer* player) = 0;
+
+  // Subscribe to observer callbacks.
+  virtual void AddObserver(Observer* observer) = 0;
+
+  // Unsubscribe from observer callbacks.
+  virtual void RemoveObserver(Observer* observer) = 0;
 
  protected:
   virtual ~WebMediaPlayerDelegate() {}
