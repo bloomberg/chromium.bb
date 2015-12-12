@@ -1698,12 +1698,10 @@ void DownloadItemImpl::ResumeInterruptedDownload() {
   if (GetWebContents()) {
     download_params = DownloadUrlParameters::FromWebContents(GetWebContents(),
                                                              GetOriginalUrl());
-  } else if (GetBrowserContext()) {
+  } else {
     download_params = make_scoped_ptr(
         new DownloadUrlParameters(GetOriginalUrl(), -1, -1, -1,
                                   GetBrowserContext()->GetResourceContext()));
-  } else {
-    return;
   }
 
   download_params->set_file_path(GetFullPath());

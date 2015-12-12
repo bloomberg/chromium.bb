@@ -19,6 +19,7 @@
 #include "content/public/browser/download_url_parameters.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/mock_download_item.h"
+#include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -60,7 +61,7 @@ class MockDelegate : public DownloadItemImplDelegate {
   MOCK_METHOD2(MockResumeInterruptedDownload,
                void(DownloadUrlParameters* params, uint32 id));
 
-  BrowserContext* GetBrowserContext() const override { return nullptr; }
+  MOCK_CONST_METHOD0(GetBrowserContext, BrowserContext*());
   MOCK_METHOD1(UpdatePersistence, void(DownloadItemImpl*));
   MOCK_METHOD1(DownloadOpened, void(DownloadItemImpl*));
   MOCK_METHOD1(DownloadRemoved, void(DownloadItemImpl*));
@@ -411,6 +412,7 @@ TEST_F(DownloadItemTest, ContinueAfterInterrupted) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableDownloadResumption);
 
+  TestBrowserContext test_browser_context;
   DownloadItemImpl* item = CreateDownloadItem();
   MockObserver observer(item);
   DownloadItemImplDelegate::DownloadTargetCallback callback;
@@ -421,14 +423,19 @@ TEST_F(DownloadItemTest, ContinueAfterInterrupted) {
   EXPECT_CALL(*download_file, FullPath())
       .WillOnce(Return(base::FilePath()));
   EXPECT_CALL(*download_file, Detach());
+  EXPECT_CALL(*mock_delegate(), GetBrowserContext())
+      .WillRepeatedly(Return(&test_browser_context));
+  EXPECT_CALL(*mock_delegate(), MockResumeInterruptedDownload(_, _)).Times(1);
   item->DestinationObserverAsWeakPtr()->DestinationError(
       DOWNLOAD_INTERRUPT_REASON_FILE_TRANSIENT_ERROR);
   ASSERT_TRUE(observer.CheckUpdated());
-  // Should attempt to auto-resume.  Because we don't have a mock WebContents,
-  // ResumeInterruptedDownload() will abort early, with another interrupt,
-  // which will be ignored.
   ASSERT_EQ(1, observer.GetInterruptCount());
-  ASSERT_EQ(0, observer.GetResumeCount());
+
+  // Test expectations verify that ResumeInterruptedDownload() is called (by way
+  // of MockResumeInterruptedDownload) after the download is interrupted. But
+  // the mock doesn't follow through with the resumption.
+  // ResumeInterruptedDownload() being called is sufficient for verifying that
+  // the automatic resumption was triggered.
   RunAllPendingInMessageLoops();
 
   CleanupItem(item, download_file, DownloadItem::INTERRUPTED);
@@ -493,6 +500,7 @@ TEST_F(DownloadItemTest, LimitRestartsAfterInterrupted) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableDownloadResumption);
 
+  TestBrowserContext test_browser_context;
   DownloadItemImpl* item = CreateDownloadItem();
   base::WeakPtr<DownloadDestinationObserver> as_observer(
       item->DestinationObserverAsWeakPtr());
@@ -505,6 +513,10 @@ TEST_F(DownloadItemTest, LimitRestartsAfterInterrupted) {
 
   EXPECT_CALL(*mock_delegate(), DetermineDownloadTarget(item, _))
       .WillRepeatedly(SaveArg<1>(&callback));
+  EXPECT_CALL(*mock_delegate(), GetBrowserContext())
+      .WillRepeatedly(Return(&test_browser_context));
+  EXPECT_CALL(*mock_delegate(), MockResumeInterruptedDownload(_, _))
+      .Times(DownloadItemImpl::kMaxAutoResumeAttempts);
   for (int i = 0; i < (DownloadItemImpl::kMaxAutoResumeAttempts + 1); ++i) {
     DVLOG(20) << "Loop iteration " << i;
 
@@ -515,14 +527,6 @@ TEST_F(DownloadItemTest, LimitRestartsAfterInterrupted) {
 
     ON_CALL(*mock_download_file, FullPath())
         .WillByDefault(Return(base::FilePath()));
-
-    // It's too complicated to set up a WebContents instance that would cause
-    // the MockDownloadItemDelegate's ResumeInterruptedDownload() function
-    // to be callled, so we simply verify that GetWebContents() is called.
-    if (i < (DownloadItemImpl::kMaxAutoResumeAttempts - 1)) {
-      EXPECT_CALL(*mock_request_handle, GetWebContents())
-          .WillRepeatedly(Return(static_cast<WebContents*>(NULL)));
-    }
 
     // Copied key parts of DoIntermediateRename & AddDownloadFileToDownloadItem
     // to allow for holding onto the request handle.
