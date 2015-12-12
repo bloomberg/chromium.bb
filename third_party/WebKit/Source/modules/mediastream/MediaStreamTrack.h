@@ -67,7 +67,7 @@ public:
 
     static void getSources(ExecutionContext*, MediaStreamTrackSourcesCallback*, ExceptionState&);
     void stopTrack(ExceptionState&);
-    MediaStreamTrack* clone(ExecutionContext*);
+    virtual MediaStreamTrack* clone(ExecutionContext*);
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(mute);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(unmute);

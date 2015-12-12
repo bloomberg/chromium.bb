@@ -19,11 +19,16 @@ class CanvasCaptureMediaStreamTrack final : public MediaStreamTrack {
 
 public:
     static CanvasCaptureMediaStreamTrack* create(MediaStreamComponent*, PassRefPtrWillBeRawPtr<HTMLCanvasElement>, const PassOwnPtr<WebCanvasCaptureHandler>);
-    DECLARE_VIRTUAL_TRACE();
+
     HTMLCanvasElement* canvas() const;
     void requestFrame();
 
+    CanvasCaptureMediaStreamTrack* clone(ExecutionContext*) override;
+
+    DECLARE_VIRTUAL_TRACE();
+
 private:
+    CanvasCaptureMediaStreamTrack(const CanvasCaptureMediaStreamTrack&, MediaStreamComponent*);
     CanvasCaptureMediaStreamTrack(MediaStreamComponent*, PassRefPtrWillBeRawPtr<HTMLCanvasElement>, const PassOwnPtr<WebCanvasCaptureHandler>);
 
     RefPtrWillBeMember<HTMLCanvasElement> m_canvasElement;

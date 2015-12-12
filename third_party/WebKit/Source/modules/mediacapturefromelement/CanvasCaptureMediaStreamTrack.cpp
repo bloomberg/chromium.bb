@@ -8,6 +8,7 @@
 #include "core/html/HTMLCanvasElement.h"
 #include "modules/mediacapturefromelement/AutoCanvasDrawListener.h"
 #include "platform/NotImplemented.h"
+#include "platform/mediastream/MediaStreamCenter.h"
 
 namespace blink {
 
@@ -27,11 +28,28 @@ void CanvasCaptureMediaStreamTrack::requestFrame()
     return;
 }
 
+CanvasCaptureMediaStreamTrack* CanvasCaptureMediaStreamTrack::clone(ExecutionContext* context)
+{
+    MediaStreamComponent* clonedComponent = MediaStreamComponent::create(component()->source());
+    CanvasCaptureMediaStreamTrack* clonedTrack = new CanvasCaptureMediaStreamTrack(*this, clonedComponent);
+    MediaStreamCenter::instance().didCreateMediaStreamTrack(clonedComponent);
+    return clonedTrack;
+}
+
 DEFINE_TRACE(CanvasCaptureMediaStreamTrack)
 {
     visitor->trace(m_canvasElement);
     visitor->trace(m_drawListener);
     MediaStreamTrack::trace(visitor);
+}
+
+CanvasCaptureMediaStreamTrack::CanvasCaptureMediaStreamTrack(const CanvasCaptureMediaStreamTrack& track, MediaStreamComponent* component)
+    :MediaStreamTrack(track.m_canvasElement->executionContext(), component)
+    , m_canvasElement(track.m_canvasElement)
+    , m_drawListener(track.m_drawListener)
+{
+    suspendIfNeeded();
+    m_canvasElement->addListener(m_drawListener.get());
 }
 
 CanvasCaptureMediaStreamTrack::CanvasCaptureMediaStreamTrack(MediaStreamComponent* component, PassRefPtrWillBeRawPtr<HTMLCanvasElement> element, const PassOwnPtr<WebCanvasCaptureHandler> handler)
