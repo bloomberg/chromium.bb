@@ -26,4 +26,8 @@ void FakeOAuthTokenGetter::CallWithToken(const TokenCallback& on_access_token) {
       base::Bind(on_access_token, status_, user_email_, access_token_));
 }
 
+void FakeOAuthTokenGetter::InvalidateCache() {
+  NOTIMPLEMENTED();
+}
+
 }  // namespace remoting

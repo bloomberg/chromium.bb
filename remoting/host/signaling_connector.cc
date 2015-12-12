@@ -21,6 +21,21 @@ namespace {
 // to the maximum specified here.
 const int kMaxReconnectDelaySeconds = 10 * 60;
 
+const char* SignalStrategyErrorToString(SignalStrategy::Error error){
+  switch(error) {
+    case SignalStrategy::OK:
+      return "OK";
+    case SignalStrategy::AUTHENTICATION_FAILED:
+      return "AUTHENTICATION_FAILED";
+    case SignalStrategy::NETWORK_ERROR:
+      return "NETWORK_ERROR";
+    case SignalStrategy::PROTOCOL_ERROR:
+      return "PROTOCOL_ERROR";
+  }
+  NOTREACHED();
+  return "";
+}
+
 }  // namespace
 
 SignalingConnector::SignalingConnector(
@@ -56,16 +71,14 @@ void SignalingConnector::OnSignalStrategyStateChange(
              << signal_strategy_->GetLocalJid();
     reconnect_attempts_ = 0;
   } else if (state == SignalStrategy::DISCONNECTED) {
-    HOST_LOG << "Signaling disconnected.";
+    HOST_LOG << "Signaling disconnected. error="
+             << SignalStrategyErrorToString(signal_strategy_->GetError());
     reconnect_attempts_++;
 
-    // If authentication failed then we have an invalid OAuth token,
-    // inform the upper layer about it.
-    if (signal_strategy_->GetError() == SignalStrategy::AUTHENTICATION_FAILED) {
-      auth_failed_callback_.Run();
-    } else {
-      ScheduleTryReconnect();
-    }
+    if (signal_strategy_->GetError() == SignalStrategy::AUTHENTICATION_FAILED)
+      oauth_token_getter_->InvalidateCache();
+
+    ScheduleTryReconnect();
   }
 }
 

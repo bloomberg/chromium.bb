@@ -148,6 +148,11 @@ void OAuthTokenGetterImpl::CallWithToken(const TokenCallback& on_access_token) {
   }
 }
 
+void OAuthTokenGetterImpl::InvalidateCache() {
+  DCHECK(CalledOnValidThread());
+  auth_token_expiry_time_ = base::Time();
+}
+
 void OAuthTokenGetterImpl::RefreshOAuthToken() {
   DCHECK(CalledOnValidThread());
   HOST_LOG << "Refreshing OAuth token.";

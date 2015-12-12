@@ -56,6 +56,10 @@ class OAuthTokenGetter {
   virtual void CallWithToken(
       const OAuthTokenGetter::TokenCallback& on_access_token) = 0;
 
+  // Invalidates the cache, so the next CallWithToken() will get a fresh access
+  // token.
+  virtual void InvalidateCache() = 0;
+
   DISALLOW_COPY_AND_ASSIGN(OAuthTokenGetter);
 };
 

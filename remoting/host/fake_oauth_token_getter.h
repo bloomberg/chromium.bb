@@ -21,6 +21,7 @@ class FakeOAuthTokenGetter : public OAuthTokenGetter {
 
   // OAuthTokenGetter interface.
   void CallWithToken(const TokenCallback& on_access_token) override;
+  void InvalidateCache() override;
 
  private:
   Status status_;

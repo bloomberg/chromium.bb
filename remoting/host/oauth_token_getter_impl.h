@@ -35,6 +35,7 @@ class OAuthTokenGetterImpl : public OAuthTokenGetter,
   // OAuthTokenGetter interface.
   void CallWithToken(
       const OAuthTokenGetter::TokenCallback& on_access_token) override;
+  void InvalidateCache() override;
 
  private:
   // gaia::GaiaOAuthClient::Delegate interface.
