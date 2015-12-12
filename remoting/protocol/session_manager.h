@@ -55,6 +55,8 @@
 
 #include <string>
 
+#include "base/callback.h"
+#include "base/memory/ref_counted.h"
 #include "base/threading/non_thread_safe.h"
 #include "remoting/protocol/session.h"
 
@@ -93,6 +95,11 @@ class SessionManager : public base::NonThreadSafe {
    public:
     Listener() {}
 
+    // Called when the session manager is ready to create outgoing
+    // sessions. May be called from Init() or after Init()
+    // returns.
+    virtual void OnSessionManagerReady() = 0;
+
     // Called when a new session is received. If the host decides to
     // accept the session it should set the |response| to
     // ACCEPT. Otherwise it should set it to DECLINE, or
@@ -108,7 +115,7 @@ class SessionManager : public base::NonThreadSafe {
     ~Listener() {}
   };
 
-  // Initializes the SessionManager. Caller retains ownership of the
+  // Initializes the session client. Caller retains ownership of the
   // |signal_strategy| and |listener|.
   virtual void Init(SignalStrategy* signal_strategy,
                     Listener* listener) = 0;

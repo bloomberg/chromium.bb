@@ -70,6 +70,7 @@ class ConnectionToHostImpl : public ConnectionToHost,
   bool OnSignalStrategyIncomingStanza(const buzz::XmlElement* stanza) override;
 
   // SessionManager::Listener interface.
+  void OnSessionManagerReady() override;
   void OnIncomingSession(
       Session* session,
       SessionManager::IncomingSessionResponse* response) override;

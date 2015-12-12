@@ -251,6 +251,12 @@ void ChromotingHost::OnSessionRouteChange(
                                         route));
 }
 
+void ChromotingHost::OnSessionManagerReady() {
+  DCHECK(CalledOnValidThread());
+  // Don't need to do anything here, just wait for incoming
+  // connections.
+}
+
 void ChromotingHost::OnIncomingSession(
       protocol::Session* session,
       protocol::SessionManager::IncomingSessionResponse* response) {

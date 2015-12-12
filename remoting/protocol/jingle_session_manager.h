@@ -5,16 +5,27 @@
 #ifndef REMOTING_PROTOCOL_JINGLE_SESSION_MANAGER_H_
 #define REMOTING_PROTOCOL_JINGLE_SESSION_MANAGER_H_
 
+#include <list>
 #include <map>
 #include <string>
 
+#include "base/memory/ref_counted.h"
+#include "net/cert/x509_certificate.h"
 #include "remoting/protocol/jingle_messages.h"
 #include "remoting/protocol/session_manager.h"
 #include "remoting/signaling/signal_strategy.h"
 
+namespace pp {
+class Instance;
+}  // namespace pp
+
 namespace buzz {
 class XmlElement;
 }  // namespace buzz
+
+namespace rtc {
+class SocketAddress;
+}  // namespace rtc
 
 namespace remoting {
 
@@ -55,6 +66,11 @@ class JingleSessionManager : public SessionManager,
 
   typedef std::map<std::string, JingleSession*> SessionsMap;
 
+  void OnJingleInfo(
+      const std::string& relay_token,
+      const std::vector<std::string>& relay_hosts,
+      const std::vector<rtc::SocketAddress>& stun_hosts);
+
   IqSender* iq_sender() { return iq_sender_.get(); }
   void SendReply(const buzz::XmlElement* original_stanza,
                  JingleMessageReply::ErrorType error);
@@ -71,6 +87,8 @@ class JingleSessionManager : public SessionManager,
   scoped_ptr<AuthenticatorFactory> authenticator_factory_;
   scoped_ptr<IqSender> iq_sender_;
   SessionManager::Listener* listener_;
+
+  bool ready_;
 
   SessionsMap sessions_;
 
