@@ -32,6 +32,8 @@ using bookmarks_helper::CheckFaviconExpired;
 using bookmarks_helper::ContainsDuplicateBookmarks;
 using bookmarks_helper::CountAllBookmarks;
 using bookmarks_helper::CountBookmarksWithTitlesMatching;
+using bookmarks_helper::CountBookmarksWithUrlsMatching;
+using bookmarks_helper::CountFoldersWithTitlesMatching;
 using bookmarks_helper::CreateFavicon;
 using bookmarks_helper::ExpireFavicon;
 using bookmarks_helper::GetBookmarkBarNode;
@@ -2254,6 +2256,32 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   for (int i = 0; i < num_clients(); ++i) {
     ASSERT_EQ(CountAllBookmarks(i), init_bookmarks_count + 1) <<
         "Total bookmark count is wrong.";
+  }
+}
+
+// TODO(shadi): crbug.com/569213: Enable this as E2E test.
+IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
+                       OneClientAddsFolderAndBookmark) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  // All profiles should sync same bookmarks.
+  ASSERT_TRUE(AwaitAllModelsMatch())
+      << "Initial bookmark models did not match for all profiles";
+
+  // Add one new bookmark to the first profile.
+  const BookmarkNode* new_folder = AddFolder(0, 0, "Folder 0");
+  ASSERT_TRUE(new_folder != NULL);
+  ASSERT_TRUE(AddURL(0, new_folder, 0, "Google URL 0",
+                     GURL("http://www.google.com/0")) != NULL);
+
+  // Blocks and waits for bookmarks models in all profiles to match.
+  ASSERT_TRUE(AwaitAllModelsMatch());
+  // Check that both profiles have the folder and the bookmark created above.
+  for (int i = 0; i < num_clients(); ++i) {
+    ASSERT_EQ(1, CountFoldersWithTitlesMatching(i, "Folder 0"))
+        << "Failed to match the folder";
+    ASSERT_EQ(
+        1, CountBookmarksWithUrlsMatching(i, GURL("http://www.google.com/0")))
+        << "Failed to match the bookmark";
   }
 }
 

@@ -230,24 +230,13 @@ class Traversal {
  private:
   // The following functions do not modify the traversal directly.  They return
   // their results in the |result| vector instead.
-  bool AddUncommittedParentsAndTheirPredecessors(
-      const std::set<int64>& ready_unsynced_set,
-      const syncable::Entry& item,
-      syncable::Directory::Metahandles* result) const;
+  bool AddUncommittedParents(const std::set<int64>& ready_unsynced_set,
+                             const syncable::Entry& item,
+                             syncable::Directory::Metahandles* result) const;
 
   void TryAddItem(const std::set<int64>& ready_unsynced_set,
                   const syncable::Entry& item,
                   syncable::Directory::Metahandles* result) const;
-
-  void AddItemThenPredecessors(
-      const std::set<int64>& ready_unsynced_set,
-      const syncable::Entry& item,
-      syncable::Directory::Metahandles* result) const;
-
-  void AddPredecessorsThenItem(
-      const std::set<int64>& ready_unsynced_set,
-      const syncable::Entry& item,
-      syncable::Directory::Metahandles* result) const;
 
   bool AddDeletedParents(const std::set<int64>& ready_unsynced_set,
                          const syncable::Entry& item,
@@ -286,7 +275,7 @@ Traversal::Traversal(
 
 Traversal::~Traversal() {}
 
-bool Traversal::AddUncommittedParentsAndTheirPredecessors(
+bool Traversal::AddUncommittedParents(
     const std::set<int64>& ready_unsynced_set,
     const syncable::Entry& item,
     syncable::Directory::Metahandles* result) const {
@@ -310,9 +299,7 @@ bool Traversal::AddUncommittedParentsAndTheirPredecessors(
       DVLOG(1) << "Parent was in conflict, omitting " << item;
       return false;
     }
-    AddItemThenPredecessors(ready_unsynced_set,
-                            parent,
-                            &dependencies);
+    TryAddItem(ready_unsynced_set, parent, &dependencies);
     parent_id = parent.GetParentId();
   }
 
@@ -330,57 +317,6 @@ void Traversal::TryAddItem(const std::set<int64>& ready_unsynced_set,
   if (ready_unsynced_set.count(item_handle) != 0) {
     result->push_back(item_handle);
   }
-}
-
-// Adds the given item, and all its unsynced predecessors.  The traversal will
-// be cut short if any item along the traversal is not IS_UNSYNCED, or if we
-// detect that this area of the tree has already been traversed.  Items that are
-// not 'ready' for commit (see IsEntryReadyForCommit()) will not be added to the
-// list, though they will not stop the traversal.
-void Traversal::AddItemThenPredecessors(
-    const std::set<int64>& ready_unsynced_set,
-    const syncable::Entry& item,
-    syncable::Directory::Metahandles* result) const {
-  int64 item_handle = item.GetMetahandle();
-  if (HaveItem(item_handle)) {
-    // We've already added this item to the commit set, and so must have
-    // already added the predecessors as well.
-    return;
-  }
-  TryAddItem(ready_unsynced_set, item, result);
-  if (item.GetIsDel())
-    return;  // Deleted items have no predecessors.
-
-  syncable::Id prev_id = item.GetPredecessorId();
-  while (!prev_id.IsNull()) {
-    syncable::Entry prev(trans_, syncable::GET_BY_ID, prev_id);
-    CHECK(prev.good()) << "Bad id when walking predecessors.";
-    if (!prev.GetIsUnsynced()) {
-      // We're interested in "runs" of unsynced items.  This item breaks
-      // the streak, so we stop traversing.
-      return;
-    }
-    int64 handle = prev.GetMetahandle();
-    if (HaveItem(handle)) {
-      // We've already added this item to the commit set, and so must have
-      // already added the predecessors as well.
-      return;
-    }
-    TryAddItem(ready_unsynced_set, prev, result);
-    prev_id = prev.GetPredecessorId();
-  }
-}
-
-// Same as AddItemThenPredecessor, but the traversal order will be reversed.
-void Traversal::AddPredecessorsThenItem(
-    const std::set<int64>& ready_unsynced_set,
-    const syncable::Entry& item,
-    syncable::Directory::Metahandles* result) const {
-  syncable::Directory::Metahandles dependencies;
-  AddItemThenPredecessors(ready_unsynced_set, item, &dependencies);
-
-  // Reverse what we added to get the correct order.
-  result->insert(result->end(), dependencies.rbegin(), dependencies.rend());
 }
 
 // Traverses the tree from bottom to top, adding the deleted parents of the
@@ -485,10 +421,9 @@ void Traversal::AddCreatesAndMoves(
         // We only commit an item + its dependencies if it and all its
         // dependencies are not in conflict.
         syncable::Directory::Metahandles item_dependencies;
-        if (AddUncommittedParentsAndTheirPredecessors(ready_unsynced_set, entry,
-                                                      &item_dependencies)) {
-          AddPredecessorsThenItem(ready_unsynced_set, entry,
-                                  &item_dependencies);
+        if (AddUncommittedParents(ready_unsynced_set, entry,
+                                  &item_dependencies)) {
+          TryAddItem(ready_unsynced_set, entry, &item_dependencies);
           AppendManyToTraversal(item_dependencies);
         }
       } else {
@@ -559,8 +494,7 @@ void OrderCommitIds(
     syncable::Directory::Metahandles* out) {
   // Commits follow these rules:
   // 1. Moves or creates are preceded by needed folder creates, from
-  //    root to leaf.  For folders whose contents are ordered, moves
-  //    and creates appear in order.
+  //    root to leaf.
   // 2. Moves/Creates before deletes.
   // 3. Deletes, collapsed.
   // We commit deleted moves under deleted items as moves when collapsing
