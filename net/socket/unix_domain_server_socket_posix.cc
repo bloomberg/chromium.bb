@@ -11,6 +11,7 @@
 
 #include "base/logging.h"
 #include "net/base/net_errors.h"
+#include "net/base/net_util.h"
 #include "net/socket/socket_posix.h"
 #include "net/socket/unix_domain_client_socket_posix.h"
 

@@ -21,6 +21,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
+#include "net/base/net_util.h"
 #include "net/base/network_activity_monitor.h"
 #include "net/base/network_change_notifier.h"
 #include "net/socket/socket_net_log_params.h"
