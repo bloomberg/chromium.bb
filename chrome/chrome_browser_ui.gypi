@@ -1378,6 +1378,8 @@
       'browser/ui/webui/certificate_viewer_webui.h',
     ],
     'chrome_browser_ui_mac_sources': [
+      'browser/ui/chrome_style.cc',
+      'browser/ui/chrome_style.h',
       'browser/ui/cocoa/accelerator_utils_cocoa.mm',
       'browser/ui/cocoa/accelerators_cocoa.h',
       'browser/ui/cocoa/accelerators_cocoa.mm',
@@ -1576,8 +1578,6 @@
       'browser/ui/chrome_bubble_manager.h',
       'browser/ui/chrome_pages.cc',
       'browser/ui/chrome_pages.h',
-      'browser/ui/chrome_style.cc',
-      'browser/ui/chrome_style.h',
       'browser/ui/chrome_web_modal_dialog_manager_delegate.cc',
       'browser/ui/chrome_web_modal_dialog_manager_delegate.h',
       'browser/ui/collected_cookies_infobar_delegate.cc',
