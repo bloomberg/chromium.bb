@@ -17,7 +17,7 @@ static CSSPropertyDescriptor cssPropertyDescriptorsById[propertyArraySize];
 
 void CSSPropertyDescriptor::add(CSSPropertyDescriptor descriptor)
 {
-    ASSERT(descriptor.m_id >= 0 && descriptor.m_id < propertyArraySize);
+    ASSERT(descriptor.m_id >= 0 && static_cast<size_t>(descriptor.m_id) < propertyArraySize);
     ASSERT(descriptor.m_valid);
     cssPropertyDescriptorsById[descriptor.m_id] = descriptor;
 }
