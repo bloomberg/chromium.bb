@@ -15,12 +15,12 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
-import android.os.StrictMode;
 import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.util.Log;
 
 import org.chromium.base.ContentUriUtils;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -122,28 +122,34 @@ public class SelectFileDialog
         }
     }
 
+    /**
+     * Called to launch an intent to allow user to select files.
+     */
     private void launchSelectFileIntent() {
         boolean hasCameraPermission = mWindowAndroid.hasPermission(Manifest.permission.CAMERA);
-        boolean hasAudioPermission =
-                mWindowAndroid.hasPermission(Manifest.permission.RECORD_AUDIO);
-
-        Intent camera = null;
         if (mSupportsImageCapture && hasCameraPermission) {
-            camera = getCameraIntent(mWindowAndroid.getApplicationContext());
-            // The camera intent can be null if we are unable to generate the output URI.  If this
-            // occurs while we are in camera capture mode, early exit as there is nothing we can
-            // do at this point.
-            if (camera == null && captureCamera()) {
-                onFileNotSelected();
-                return;
-            }
+            // GetCameraIntentTask will call LaunchSelectFileWithCameraIntent later.
+            new GetCameraIntentTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        } else {
+            launchSelectFileWithCameraIntent(hasCameraPermission, null);
         }
+    }
 
+    /**
+     * Called to launch an intent to allow user to select files. If |camera| is null,
+     * the select file dialog shouldn't include any files from the camera. Otherwise, user
+     * is allowed to choose files from the camera.
+     * @param hasCameraPermission Whether accessing camera is allowed.
+     * @param camera Intent for selecting files from camera.
+     */
+    private void launchSelectFileWithCameraIntent(boolean hasCameraPermission, Intent camera) {
         Intent camcorder = null;
         if (mSupportsVideoCapture && hasCameraPermission) {
             camcorder = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
         }
 
+        boolean hasAudioPermission =
+                mWindowAndroid.hasPermission(Manifest.permission.RECORD_AUDIO);
         Intent soundRecorder = null;
         if (mSupportsAudioCapture && hasAudioPermission) {
             soundRecorder = new Intent(MediaStore.Audio.Media.RECORD_SOUND_ACTION);
@@ -204,25 +210,37 @@ public class SelectFileDialog
         }
     }
 
-    private Intent getCameraIntent(Context context) {
-        Intent camera = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        camera.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION
-                | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-        try {
-            mCameraOutputUri =
-                    UiUtils.getUriForImageCaptureFile(context, getFileForImageCapture(context));
-        } catch (IOException e) {
-            Log.e(TAG, "Cannot retrieve content uri from file", e);
+    private class GetCameraIntentTask extends AsyncTask<Void, Void, Uri> {
+        @Override
+        public Uri doInBackground(Void...voids) {
+            try {
+                Context context = mWindowAndroid.getApplicationContext();
+                return UiUtils.getUriForImageCaptureFile(context, getFileForImageCapture(context));
+            } catch (IOException e) {
+                Log.e(TAG, "Cannot retrieve content uri from file", e);
+                return null;
+            }
         }
 
-        if (mCameraOutputUri == null) return null;
+        @Override
+        protected void onPostExecute(Uri result) {
+            mCameraOutputUri = result;
+            if (mCameraOutputUri == null && captureCamera()) {
+                onFileNotSelected();
+                return;
+            }
 
-        camera.putExtra(MediaStore.EXTRA_OUTPUT, mCameraOutputUri);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-            camera.setClipData(ClipData.newUri(
-                    context.getContentResolver(), UiUtils.IMAGE_FILE_PATH, mCameraOutputUri));
+            Intent camera = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            camera.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION
+                    | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            camera.putExtra(MediaStore.EXTRA_OUTPUT, mCameraOutputUri);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                camera.setClipData(ClipData.newUri(
+                        mWindowAndroid.getApplicationContext().getContentResolver(),
+                        UiUtils.IMAGE_FILE_PATH, mCameraOutputUri));
+            }
+            launchSelectFileWithCameraIntent(true, camera);
         }
-        return camera;
     }
 
     /**
@@ -234,15 +252,10 @@ public class SelectFileDialog
      * @return file path for the captured image to be stored.
      */
     private File getFileForImageCapture(Context context) throws IOException {
-        // Temporarily allowing disk access while fixing. TODO: http://crbug.com/562173
-        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
-        try {
-            File photoFile = File.createTempFile(String.valueOf(System.currentTimeMillis()), ".jpg",
-                    UiUtils.getDirectoryForImageCapture(context));
-            return photoFile;
-        } finally {
-            StrictMode.setThreadPolicy(oldPolicy);
-        }
+        assert !ThreadUtils.runningOnUiThread();
+        File photoFile = File.createTempFile(String.valueOf(System.currentTimeMillis()), ".jpg",
+                UiUtils.getDirectoryForImageCapture(context));
+        return photoFile;
     }
 
     /**

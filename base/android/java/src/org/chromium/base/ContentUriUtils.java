@@ -23,6 +23,9 @@ public abstract class ContentUriUtils {
     private static final String TAG = "ContentUriUtils";
     private static FileProviderUtil sFileProviderUtil;
 
+    // Guards access to sFileProviderUtil.
+    private static final Object sLock = new Object();
+
     /**
      * Provides functionality to translate a file into a content URI for use
      * with a content provider.
@@ -40,13 +43,16 @@ public abstract class ContentUriUtils {
     private ContentUriUtils() {}
 
     public static void setFileProviderUtil(FileProviderUtil util) {
-        sFileProviderUtil = util;
+        synchronized (sLock) {
+            sFileProviderUtil = util;
+        }
     }
 
     public static Uri getContentUriFromFile(Context context, File file) {
-        ThreadUtils.assertOnUiThread();
-        if (sFileProviderUtil != null) {
-            return sFileProviderUtil.getContentUriFromFile(context, file);
+        synchronized (sLock) {
+            if (sFileProviderUtil != null) {
+                return sFileProviderUtil.getContentUriFromFile(context, file);
+            }
         }
         return null;
     }
