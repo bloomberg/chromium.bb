@@ -382,6 +382,9 @@ private:
     // This does not check user gesture restrictions.
     void playInternal();
 
+    // This does not change the buffering strategy.
+    void pauseInternal();
+
     // If we are about to enter a paused state, call this to record
     // autoplay metrics.  If we were already in a stopped state, then
     // this does nothing.

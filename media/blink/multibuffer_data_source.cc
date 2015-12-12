@@ -115,6 +115,7 @@ MultibufferDataSource::MultibufferDataSource(
       frame_(frame),
       stop_signal_received_(false),
       media_has_played_(false),
+      buffering_strategy_(BUFFERING_STRATEGY_NORMAL),
       single_origin_(true),
       cancel_on_defer_(false),
       preload_(AUTO),
@@ -234,6 +235,13 @@ void MultibufferDataSource::SetPreload(Preload preload) {
   UpdateBufferSizes();
 }
 
+void MultibufferDataSource::SetBufferingStrategy(
+    BufferingStrategy buffering_strategy) {
+  DCHECK(render_task_runner_->BelongsToCurrentThread());
+  buffering_strategy_ = buffering_strategy;
+  UpdateBufferSizes();
+}
+
 bool MultibufferDataSource::HasSingleOrigin() {
   DCHECK(render_task_runner_->BelongsToCurrentThread());
   DCHECK(init_cb_.is_null() && reader_.get())
@@ -279,15 +287,8 @@ void MultibufferDataSource::MediaIsPlaying() {
   DCHECK(render_task_runner_->BelongsToCurrentThread());
   media_has_played_ = true;
   cancel_on_defer_ = false;
-  paused_ = false;
   // Once we start playing, we need preloading.
   preload_ = AUTO;
-  UpdateBufferSizes();
-}
-
-void MultibufferDataSource::MediaIsPaused() {
-  DCHECK(render_task_runner_->BelongsToCurrentThread());
-  paused_ = true;
   UpdateBufferSizes();
 }
 
@@ -518,9 +519,11 @@ void MultibufferDataSource::UpdateBufferSizes() {
     return;
 
   if (!assume_fully_buffered()) {
-    // If the playback has started and we're paused, then try to load as much as
-    // possible, assuming that the file is cacheable. (If not, why bother?)
-    if (media_has_played_ && paused_ && url_data_ &&
+    // If the playback has started and the strategy is aggressive, then try to
+    // load as much as possible, assuming that the file is cacheable. (If not,
+    // why bother?)
+    bool aggressive = (buffering_strategy_ == BUFFERING_STRATEGY_AGGRESSIVE);
+    if (media_has_played_ && aggressive && url_data_ &&
         url_data_->range_supported() && url_data_->cacheable()) {
       reader_->SetPreload(1LL << 40, 1LL << 40);  // 1 Tb
       return;

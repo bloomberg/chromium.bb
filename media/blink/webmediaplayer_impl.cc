@@ -133,6 +133,8 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       network_state_(WebMediaPlayer::NetworkStateEmpty),
       ready_state_(WebMediaPlayer::ReadyStateHaveNothing),
       preload_(BufferedDataSource::AUTO),
+      buffering_strategy_(
+          BufferedDataSourceInterface::BUFFERING_STRATEGY_NORMAL),
       main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       media_task_runner_(params.media_task_runner()),
       worker_task_runner_(params.worker_task_runner()),
@@ -284,6 +286,7 @@ void WebMediaPlayerImpl::DoLoad(LoadType load_type,
       &buffered_data_source_host_,
       base::Bind(&WebMediaPlayerImpl::NotifyDownloading, AsWeakPtr())));
   data_source_->SetPreload(preload_);
+  data_source_->SetBufferingStrategy(buffering_strategy_);
   data_source_->Initialize(
       base::Bind(&WebMediaPlayerImpl::DataSourceInitialized, AsWeakPtr()));
 }
@@ -310,8 +313,6 @@ void WebMediaPlayerImpl::pause() {
   const bool was_already_paused = paused_ || playback_rate_ == 0;
   paused_ = true;
   pipeline_.SetPlaybackRate(0.0);
-  if (data_source_)
-    data_source_->MediaIsPaused();
   UpdatePausedTime();
 
   media_log_->AddEvent(media_log_->CreateEvent(MediaLogEvent::PAUSE));
@@ -483,6 +484,27 @@ void WebMediaPlayerImpl::setPreload(WebMediaPlayer::Preload preload) {
   preload_ = static_cast<BufferedDataSource::Preload>(preload);
   if (data_source_)
     data_source_->SetPreload(preload_);
+}
+
+#define STATIC_ASSERT_MATCHING_ENUM(webkit_name, chromium_name)          \
+  static_assert(static_cast<int>(WebMediaPlayer::webkit_name) ==         \
+                    static_cast<int>(BufferedDataSource::chromium_name), \
+                "mismatching enum values: " #webkit_name)
+STATIC_ASSERT_MATCHING_ENUM(BufferingStrategy::Normal,
+                            BUFFERING_STRATEGY_NORMAL);
+STATIC_ASSERT_MATCHING_ENUM(BufferingStrategy::Aggressive,
+                            BUFFERING_STRATEGY_AGGRESSIVE);
+#undef STATIC_ASSERT_MATCHING_ENUM
+
+void WebMediaPlayerImpl::setBufferingStrategy(
+    WebMediaPlayer::BufferingStrategy buffering_strategy) {
+  DVLOG(1) << __FUNCTION__;
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+
+  buffering_strategy_ =
+      static_cast<BufferedDataSource::BufferingStrategy>(buffering_strategy);
+  if (data_source_)
+    data_source_->SetBufferingStrategy(buffering_strategy_);
 }
 
 bool WebMediaPlayerImpl::hasVideo() const {

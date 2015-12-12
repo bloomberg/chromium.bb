@@ -61,6 +61,10 @@ class MEDIA_BLINK_EXPORT MultibufferDataSource
   // Adjusts the buffering algorithm based on the given preload value.
   void SetPreload(Preload preload) override;
 
+  // Adjusts the buffering algorithm based on the given buffering strategy
+  // value.
+  void SetBufferingStrategy(BufferingStrategy buffering_strategy) override;
+
   // Returns true if the media resource has a single origin, false otherwise.
   // Only valid to call after Initialize() has completed.
   //
@@ -81,7 +85,6 @@ class MEDIA_BLINK_EXPORT MultibufferDataSource
   // behavior.
   void MediaPlaybackRateChanged(double playback_rate) override;
   void MediaIsPlaying() override;
-  void MediaIsPaused() override;
   bool media_has_played() const override;
 
   // Returns true if the resource is local.
@@ -191,8 +194,8 @@ class MEDIA_BLINK_EXPORT MultibufferDataSource
   // least once.
   bool media_has_played_;
 
-  // Are we currently paused.
-  bool paused_;
+  // Buffering strategy set by SetBufferingStrategy.
+  BufferingStrategy buffering_strategy_;
 
   // As we follow redirects, we set this variable to false if redirects
   // go between different origins.

@@ -98,6 +98,7 @@ BufferedDataSource::BufferedDataSource(
       render_task_runner_(task_runner),
       stop_signal_received_(false),
       media_has_played_(false),
+      buffering_strategy_(BUFFERING_STRATEGY_NORMAL),
       preload_(AUTO),
       bitrate_(0),
       playback_rate_(0.0),
@@ -176,6 +177,13 @@ void BufferedDataSource::SetPreload(Preload preload) {
   preload_ = preload;
 }
 
+void BufferedDataSource::SetBufferingStrategy(
+    BufferingStrategy buffering_strategy) {
+  DCHECK(render_task_runner_->BelongsToCurrentThread());
+  buffering_strategy_ = buffering_strategy;
+  UpdateDeferStrategy();
+}
+
 bool BufferedDataSource::HasSingleOrigin() {
   DCHECK(render_task_runner_->BelongsToCurrentThread());
   DCHECK(init_cb_.is_null() && loader_.get())
@@ -211,12 +219,7 @@ void BufferedDataSource::MediaPlaybackRateChanged(double playback_rate) {
 void BufferedDataSource::MediaIsPlaying() {
   DCHECK(render_task_runner_->BelongsToCurrentThread());
   media_has_played_ = true;
-  UpdateDeferStrategy(false);
-}
-
-void BufferedDataSource::MediaIsPaused() {
-  DCHECK(render_task_runner_->BelongsToCurrentThread());
-  UpdateDeferStrategy(true);
+  UpdateDeferStrategy();
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -566,7 +569,10 @@ void BufferedDataSource::ProgressCallback(int64 position) {
   host_->AddBufferedByteRange(loader_->first_byte_position(), position);
 }
 
-void BufferedDataSource::UpdateDeferStrategy(bool paused) {
+void BufferedDataSource::UpdateDeferStrategy() {
+  if (!loader_)
+    return;
+
   // No need to aggressively buffer when we are assuming the resource is fully
   // buffered.
   if (assume_fully_buffered()) {
@@ -575,10 +581,11 @@ void BufferedDataSource::UpdateDeferStrategy(bool paused) {
   }
 
   // If the playback has started (at which point the preload value is ignored)
-  // and we're paused, then try to load as much as possible (the loader will
-  // fall back to kCapacityDefer if it knows the current response won't be
-  // useful from the cache in the future).
-  if (media_has_played_ && paused && loader_->range_supported()) {
+  // and the strategy is aggressive, then try to load as much as possible (the
+  // loader will fall back to kCapacityDefer if it knows the current response
+  // won't be useful from the cache in the future).
+  bool aggressive = (buffering_strategy_ == BUFFERING_STRATEGY_AGGRESSIVE);
+  if (media_has_played_ && aggressive && loader_->range_supported()) {
     loader_->UpdateDeferStrategy(BufferedResourceLoader::kNeverDefer);
     return;
   }

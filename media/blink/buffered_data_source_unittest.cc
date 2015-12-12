@@ -861,7 +861,8 @@ TEST_F(BufferedDataSourceTest, LocalResource_DeferStrategy) {
   data_source_->MediaIsPlaying();
   EXPECT_EQ(BufferedResourceLoader::kCapacityDefer, defer_strategy());
 
-  data_source_->MediaIsPaused();
+  data_source_->SetBufferingStrategy(
+      BufferedDataSource::BUFFERING_STRATEGY_AGGRESSIVE);
   EXPECT_EQ(BufferedResourceLoader::kCapacityDefer, defer_strategy());
 
   Stop();
@@ -878,7 +879,8 @@ TEST_F(BufferedDataSourceTest, LocalResource_PreloadMetadata_DeferStrategy) {
   data_source_->MediaIsPlaying();
   EXPECT_EQ(BufferedResourceLoader::kCapacityDefer, defer_strategy());
 
-  data_source_->MediaIsPaused();
+  data_source_->SetBufferingStrategy(
+      BufferedDataSource::BUFFERING_STRATEGY_AGGRESSIVE);
   EXPECT_EQ(BufferedResourceLoader::kCapacityDefer, defer_strategy());
 
   Stop();
@@ -895,7 +897,8 @@ TEST_F(BufferedDataSourceTest, ExternalResource_Reponse200_DeferStrategy) {
   data_source_->MediaIsPlaying();
   EXPECT_EQ(BufferedResourceLoader::kCapacityDefer, defer_strategy());
 
-  data_source_->MediaIsPaused();
+  data_source_->SetBufferingStrategy(
+      BufferedDataSource::BUFFERING_STRATEGY_AGGRESSIVE);
   EXPECT_EQ(BufferedResourceLoader::kCapacityDefer, defer_strategy());
 
   Stop();
@@ -914,7 +917,8 @@ TEST_F(BufferedDataSourceTest,
   data_source_->MediaIsPlaying();
   EXPECT_EQ(BufferedResourceLoader::kCapacityDefer, defer_strategy());
 
-  data_source_->MediaIsPaused();
+  data_source_->SetBufferingStrategy(
+      BufferedDataSource::BUFFERING_STRATEGY_AGGRESSIVE);
   EXPECT_EQ(BufferedResourceLoader::kCapacityDefer, defer_strategy());
 
   Stop();
@@ -931,13 +935,18 @@ TEST_F(BufferedDataSourceTest, ExternalResource_Reponse206_DeferStrategy) {
   data_source_->MediaIsPlaying();
   EXPECT_EQ(BufferedResourceLoader::kCapacityDefer, defer_strategy());
   set_might_be_reused_from_cache_in_future(true);
-  data_source_->MediaIsPaused();
+
+  data_source_->SetBufferingStrategy(
+      BufferedDataSource::BUFFERING_STRATEGY_AGGRESSIVE);
   EXPECT_EQ(BufferedResourceLoader::kNeverDefer, defer_strategy());
 
-  data_source_->MediaIsPlaying();
+  data_source_->SetBufferingStrategy(
+      BufferedDataSource::BUFFERING_STRATEGY_NORMAL);
   EXPECT_EQ(BufferedResourceLoader::kCapacityDefer, defer_strategy());
+
   set_might_be_reused_from_cache_in_future(false);
-  data_source_->MediaIsPaused();
+  data_source_->SetBufferingStrategy(
+      BufferedDataSource::BUFFERING_STRATEGY_AGGRESSIVE);
   EXPECT_EQ(BufferedResourceLoader::kCapacityDefer, defer_strategy());
 
   Stop();
@@ -955,14 +964,19 @@ TEST_F(BufferedDataSourceTest,
 
   data_source_->MediaIsPlaying();
   EXPECT_EQ(BufferedResourceLoader::kCapacityDefer, defer_strategy());
+
   set_might_be_reused_from_cache_in_future(true);
-  data_source_->MediaIsPaused();
+  data_source_->SetBufferingStrategy(
+      BufferedDataSource::BUFFERING_STRATEGY_AGGRESSIVE);
   EXPECT_EQ(BufferedResourceLoader::kNeverDefer, defer_strategy());
 
-  data_source_->MediaIsPlaying();
+  data_source_->SetBufferingStrategy(
+      BufferedDataSource::BUFFERING_STRATEGY_NORMAL);
   EXPECT_EQ(BufferedResourceLoader::kCapacityDefer, defer_strategy());
+
   set_might_be_reused_from_cache_in_future(false);
-  data_source_->MediaIsPaused();
+  data_source_->SetBufferingStrategy(
+      BufferedDataSource::BUFFERING_STRATEGY_AGGRESSIVE);
   EXPECT_EQ(BufferedResourceLoader::kCapacityDefer, defer_strategy());
 
   Stop();

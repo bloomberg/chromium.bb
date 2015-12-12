@@ -56,6 +56,14 @@ class BufferedDataSourceInterface : public DataSource {
     AUTO,
   };
 
+  // Enum values must match the values in
+  // blink::WebMediaPlayer::BufferingStrategy and there will be assertions at
+  // compile time if they do not match.
+  enum BufferingStrategy {
+    BUFFERING_STRATEGY_NORMAL,
+    BUFFERING_STRATEGY_AGGRESSIVE,
+  };
+
   // Executes |init_cb| with the result of initialization when it has completed.
   //
   // Method called on the render thread.
@@ -64,6 +72,10 @@ class BufferedDataSourceInterface : public DataSource {
 
   // Adjusts the buffering algorithm based on the given preload value.
   virtual void SetPreload(Preload preload) = 0;
+
+  // Adjusts the buffering algorithm based on the given buffering strategy
+  // value.
+  virtual void SetBufferingStrategy(BufferingStrategy buffering_strategy) = 0;
 
   // Returns true if the media resource has a single origin, false otherwise.
   // Only valid to call after Initialize() has completed.
@@ -85,7 +97,6 @@ class BufferedDataSourceInterface : public DataSource {
   // behavior.
   virtual void MediaPlaybackRateChanged(double playback_rate) = 0;
   virtual void MediaIsPlaying() = 0;
-  virtual void MediaIsPaused() = 0;
   virtual bool media_has_played() const = 0;
 
   // Returns true if the resource is local.
@@ -132,6 +143,10 @@ class MEDIA_BLINK_EXPORT BufferedDataSource
   // Adjusts the buffering algorithm based on the given preload value.
   void SetPreload(Preload preload) override;
 
+  // Adjusts the buffering algorithm based on the given buffering strategy
+  // value.
+  void SetBufferingStrategy(BufferingStrategy buffering_strategy) override;
+
   // Returns true if the media resource has a single origin, false otherwise.
   // Only valid to call after Initialize() has completed.
   //
@@ -152,7 +167,6 @@ class MEDIA_BLINK_EXPORT BufferedDataSource
   // behavior.
   void MediaPlaybackRateChanged(double playback_rate) override;
   void MediaIsPlaying() override;
-  void MediaIsPaused() override;
   bool media_has_played() const override;
 
   // Returns true if the resource is local.
@@ -220,9 +234,8 @@ class MEDIA_BLINK_EXPORT BufferedDataSource
   void LoadingStateChangedCallback(BufferedResourceLoader::LoadingState state);
   void ProgressCallback(int64 position);
 
-  // Update |loader_|'s deferring strategy in response to a play/pause, or
-  // change in playback rate.
-  void UpdateDeferStrategy(bool paused);
+  // Update |loader_|'s deferring strategy.
+  void UpdateDeferStrategy();
 
   // URL of the resource requested.
   GURL url_;
@@ -276,6 +289,9 @@ class MEDIA_BLINK_EXPORT BufferedDataSource
   // This variable is true when the user has requested the video to play at
   // least once.
   bool media_has_played_;
+
+  // Buffering strategy as configured by SetBufferingStrategy().
+  BufferingStrategy buffering_strategy_;
 
   // This variable holds the value of the preload attribute for the video
   // element.

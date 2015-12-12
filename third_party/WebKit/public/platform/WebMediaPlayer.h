@@ -77,6 +77,11 @@ public:
         PreloadAuto,
     };
 
+    enum class BufferingStrategy {
+        Normal,
+        Aggressive,
+    };
+
     // Represents synchronous exceptions that can be thrown from the Encrypted
     // Media methods. This is different from the asynchronous MediaKeyError.
     enum MediaKeyException {
@@ -117,6 +122,7 @@ public:
     virtual void requestRemotePlayback() { }
     virtual void requestRemotePlaybackControl() { }
     virtual void setPreload(Preload) { }
+    virtual void setBufferingStrategy(BufferingStrategy) {}
     virtual WebTimeRanges buffered() const = 0;
     virtual WebTimeRanges seekable() const = 0;
 
