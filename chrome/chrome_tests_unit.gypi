@@ -39,7 +39,6 @@
       'browser/autocomplete/in_memory_url_index_unittest.cc',
       'browser/autocomplete/search_provider_unittest.cc',
       'browser/autocomplete/shortcuts_backend_unittest.cc',
-      'browser/autocomplete/shortcuts_database_unittest.cc',
       'browser/autocomplete/shortcuts_provider_unittest.cc',
       'browser/autocomplete/zero_suggest_provider_unittest.cc',
       'browser/background_sync/background_sync_controller_impl_unittest.cc',

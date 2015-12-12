@@ -192,6 +192,7 @@ source_set("unit_tests") {
     "omnibox_popup_model_unittest.cc",
     "omnibox_view_unittest.cc",
     "scored_history_match_unittest.cc",
+    "shortcuts_database_unittest.cc",
     "suggestion_answer_unittest.cc",
   ]
 
@@ -203,8 +204,11 @@ source_set("unit_tests") {
     "//components/search",
     "//components/search_engines",
     "//components/variations",
+    "//sql",
+    "//sql:test_support",
     "//testing/gmock",
     "//testing/gtest",
+    "//ui/base",
     "//url",
   ]
 }

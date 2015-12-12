@@ -10,11 +10,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "chrome/common/chrome_paths.h"
-#include "chrome/test/base/testing_profile.h"
 #include "components/omnibox/browser/autocomplete_match_type.h"
 #include "components/omnibox/browser/shortcuts_constants.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "sql/statement.h"
 #include "sql/test/test_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -63,12 +60,18 @@ typedef testing::Test ShortcutsDatabaseMigrationTest;
 void CheckV2ColumnExistence(const base::FilePath& db_path, bool is_v2) {
   sql::Connection connection;
   ASSERT_TRUE(connection.Open(db_path));
-  EXPECT_EQ(is_v2, connection.DoesColumnExist("omni_box_shortcuts",
-                                              "fill_into_edit"));
-  EXPECT_EQ(is_v2, connection.DoesColumnExist("omni_box_shortcuts",
-                                              "transition"));
+  EXPECT_EQ(is_v2,
+            connection.DoesColumnExist("omni_box_shortcuts", "fill_into_edit"));
+  EXPECT_EQ(is_v2,
+            connection.DoesColumnExist("omni_box_shortcuts", "transition"));
   EXPECT_EQ(is_v2, connection.DoesColumnExist("omni_box_shortcuts", "type"));
   EXPECT_EQ(is_v2, connection.DoesColumnExist("omni_box_shortcuts", "keyword"));
+}
+
+const base::FilePath GetTestDataDir() {
+  base::FilePath path;
+  PathService::Get(base::DIR_SOURCE_ROOT, &path);
+  return path.AppendASCII("components/test/data/omnibox");
 }
 
 }  // namespace
@@ -88,15 +91,14 @@ class ShortcutsDatabaseTest : public testing::Test {
 
   void AddAll();
 
-  content::TestBrowserThreadBundle thread_bundle_;
-  scoped_ptr<TestingProfile> profile_;
   scoped_refptr<ShortcutsDatabase> db_;
 };
 
 void ShortcutsDatabaseTest::SetUp() {
-  profile_.reset(new TestingProfile());
-  db_ = new ShortcutsDatabase(
-      profile_->GetPath().Append(kShortcutsDatabaseName));
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  base::FilePath db_path(temp_dir.path().Append(kShortcutsDatabaseName));
+  db_ = new ShortcutsDatabase(db_path);
   ASSERT_TRUE(db_->Init());
   ClearDB();
 }
@@ -106,14 +108,14 @@ void ShortcutsDatabaseTest::TearDown() {
 }
 
 void ShortcutsDatabaseTest::ClearDB() {
-  sql::Statement
-      s(db_->db_.GetUniqueStatement("DELETE FROM omni_box_shortcuts"));
+  sql::Statement s(
+      db_->db_.GetUniqueStatement("DELETE FROM omni_box_shortcuts"));
   EXPECT_TRUE(s.Run());
 }
 
 size_t ShortcutsDatabaseTest::CountRecords() const {
-  sql::Statement s(db_->db_.GetUniqueStatement(
-      "SELECT count(*) FROM omni_box_shortcuts"));
+  sql::Statement s(
+      db_->db_.GetUniqueStatement("SELECT count(*) FROM omni_box_shortcuts"));
   EXPECT_TRUE(s.Step());
   return static_cast<size_t>(s.ColumnInt(0));
 }
@@ -137,7 +139,6 @@ void ShortcutsDatabaseTest::AddAll() {
     db_->AddShortcut(ShortcutFromTestInfo(shortcut_test_db[i]));
   EXPECT_EQ(arraysize(shortcut_test_db), CountRecords());
 }
-
 
 // Actual tests ---------------------------------------------------------------
 
@@ -208,7 +209,6 @@ TEST_F(ShortcutsDatabaseTest, DeleteShortcutsWithURL) {
   EXPECT_TRUE(it == shortcuts.end());
 }
 
-
 TEST_F(ShortcutsDatabaseTest, DeleteAllShortcuts) {
   AddAll();
   ShortcutsDatabase::GuidToShortcutMap shortcuts;
@@ -221,9 +221,7 @@ TEST_F(ShortcutsDatabaseTest, DeleteAllShortcuts) {
 
 TEST(ShortcutsDatabaseMigrationTest, MigrateTableAddFillIntoEdit) {
   // Use the pre-v0 test file to create a test database in a temp dir.
-  base::FilePath sql_path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &sql_path));
-  sql_path = sql_path.AppendASCII("History").AppendASCII(
+  base::FilePath sql_path = GetTestDataDir().AppendASCII(
 #if defined(OS_ANDROID)
       "Shortcuts.v1.sql");
 #else
@@ -271,9 +269,7 @@ TEST(ShortcutsDatabaseMigrationTest, MigrateTableAddFillIntoEdit) {
 
 TEST(ShortcutsDatabaseMigrationTest, MigrateV0ToV1) {
   // Use the v0 test file to create a test database in a temp dir.
-  base::FilePath sql_path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &sql_path));
-  sql_path = sql_path.AppendASCII("History").AppendASCII("Shortcuts.v0.sql");
+  base::FilePath sql_path = GetTestDataDir().AppendASCII("Shortcuts.v0.sql");
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   base::FilePath db_path(temp_dir.path().AppendASCII("TestShortcuts2.db"));

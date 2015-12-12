@@ -415,6 +415,7 @@
       'omnibox/browser/omnibox_popup_model_unittest.cc',
       'omnibox/browser/omnibox_view_unittest.cc',
       'omnibox/browser/scored_history_match_unittest.cc',
+      'omnibox/browser/shortcuts_database_unittest.cc',
       'omnibox/browser/suggestion_answer_unittest.cc',
     ],
     'open_from_clipboard_unittest_sources': [
