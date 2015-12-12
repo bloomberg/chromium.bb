@@ -30,6 +30,7 @@ import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeBrowserProvider.BookmarkNode;
 import org.chromium.chrome.browser.ChromeBrowserProviderClient;
 import org.chromium.chrome.browser.bookmark.BookmarkColumns;
+import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.sync.AndroidSyncSettings;
 
@@ -107,7 +108,7 @@ public class BookmarkThumbnailWidgetService extends RemoteViewsService {
             // Required to be applied here redundantly to prevent crashes in the cases where the
             // package data is deleted or the Chrome application forced to stop.
             try {
-                mContext.startBrowserProcessesAndLoadLibrariesSync(true);
+                ChromeBrowserInitializer.getInstance(mContext).handleSynchronousStartup();
             } catch (ProcessInitException e) {
                 Log.e(TAG, "Failed to start browser process.", e);
                 // Since the library failed to initialize nothing in the application

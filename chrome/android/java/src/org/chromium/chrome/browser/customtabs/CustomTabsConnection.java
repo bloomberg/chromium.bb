@@ -158,10 +158,10 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
 
     /** Warmup activities that should only happen once. */
     @SuppressFBWarnings("DM_EXIT")
-    private static void initializeBrowser(final ChromeApplication app) {
+    private static void initializeBrowser(final Application app) {
         ThreadUtils.assertOnUiThread();
         try {
-            app.startBrowserProcessesAndLoadLibrariesSync(true);
+            ChromeBrowserInitializer.getInstance(app).handleSynchronousStartup();
         } catch (ProcessInitException e) {
             Log.e(TAG, "ProcessInitException while starting the browser process.");
             // Cannot do anything without the native library, and cannot show a
@@ -203,7 +203,7 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
         ThreadUtils.postOnUiThread(new Runnable() {
             @Override
             public void run() {
-                if (!initialized) initializeBrowser((ChromeApplication) mApplication);
+                if (!initialized) initializeBrowser(mApplication);
                 if (mayCreateSpareWebContents && mPrerender == null && !SysUtils.isLowEndDevice()) {
                     createSpareWebContents();
                 }

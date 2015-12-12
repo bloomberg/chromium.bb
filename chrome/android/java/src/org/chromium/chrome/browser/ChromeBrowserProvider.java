@@ -39,6 +39,7 @@ import org.chromium.chrome.browser.bookmark.BookmarkColumns;
 import org.chromium.chrome.browser.bookmark.SearchColumns;
 import org.chromium.chrome.browser.database.SQLiteCursor;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
+import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.content.app.ContentApplication;
 import org.chromium.content.browser.BrowserStartupController;
 import org.chromium.sync.AndroidSyncSettings;
@@ -792,9 +793,8 @@ public class ChromeBrowserProvider extends ContentProvider {
                 public void run() {
                     if (mNativeChromeBrowserProvider != 0) return;
                     try {
-                        ((ChromeApplication) getContext().getApplicationContext())
-                                .startBrowserProcessesAndLoadLibrariesSync(
-                                        true /*Start GoogleServicesManager*/);
+                        ChromeBrowserInitializer.getInstance(getContext())
+                                .handleSynchronousStartup();
                     } catch (ProcessInitException e) {
                         // Chrome browser runs in the background, so exit silently; but do exit,
                         // since otherwise the next attempt to use Chrome will find a broken JNI.

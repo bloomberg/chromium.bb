@@ -33,8 +33,6 @@ import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.SuppressFBWarnings;
-import org.chromium.base.library_loader.LibraryLoader;
-import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
@@ -93,7 +91,6 @@ import org.chromium.chrome.browser.tabmodel.document.StorageDelegate;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.content.app.ContentApplication;
-import org.chromium.content.browser.BrowserStartupController;
 import org.chromium.content.browser.ChildProcessLauncher;
 import org.chromium.content.browser.ContentViewStatics;
 import org.chromium.content.browser.DownloadController;
@@ -490,51 +487,6 @@ public class ChromeApplication extends ContentApplication {
     }
 
     /**
-     * Start the browser process asynchronously. This will set up a queue of UI
-     * thread tasks to initialize the browser process.
-     *
-     * Note that this can only be called on the UI thread.
-     *
-     * @param callback the callback to be called when browser startup is complete.
-     * @throws ProcessInitException
-     */
-    public void startChromeBrowserProcessesAsync(BrowserStartupController.StartupCallback callback)
-            throws ProcessInitException {
-        assert ThreadUtils.runningOnUiThread() : "Tried to start the browser on the wrong thread";
-        // The policies are used by browser startup, so we need to register the policy providers
-        // before starting the browser process.
-        registerPolicyProviders(CombinedPolicyProvider.get());
-        Context applicationContext = getApplicationContext();
-        BrowserStartupController.get(applicationContext, LibraryProcessType.PROCESS_BROWSER)
-                .startBrowserProcessesAsync(callback);
-    }
-
-    /**
-     * Loads native Libraries synchronously and starts Chrome browser processes.
-     * Must be called on the main thread. Makes sure the process is initialized as a
-     * Browser process instead of a ContentView process.
-     *
-     * @param initGoogleServicesManager when true the GoogleServicesManager is initialized.
-     */
-    public void startBrowserProcessesAndLoadLibrariesSync(boolean initGoogleServicesManager)
-            throws ProcessInitException {
-        ThreadUtils.assertOnUiThread();
-        initCommandLine();
-        Context context = getApplicationContext();
-        LibraryLoader libraryLoader = LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER);
-        libraryLoader.ensureInitialized(context);
-        libraryLoader.asyncPrefetchLibrariesToMemory();
-        // The policies are used by browser startup, so we need to register the policy providers
-        // before starting the browser process.
-        registerPolicyProviders(CombinedPolicyProvider.get());
-        BrowserStartupController.get(context, LibraryProcessType.PROCESS_BROWSER)
-                .startBrowserProcessesSync(false);
-        if (initGoogleServicesManager) {
-            GoogleServicesManager.get(getApplicationContext());
-        }
-    }
-
-    /**
      * Shows an error dialog following a startup error, and then exits the application.
      * @param e The exception reported by Chrome initialization.
      */
@@ -737,7 +689,7 @@ public class ChromeApplication extends ContentApplication {
      * method in the end for this method to maintain the highest precedence.
      * @param combinedProvider The {@link CombinedPolicyProvider} to register the providers with.
      */
-    protected void registerPolicyProviders(CombinedPolicyProvider combinedProvider) {
+    public void registerPolicyProviders(CombinedPolicyProvider combinedProvider) {
         combinedProvider.registerProvider(new AppRestrictionsProvider(getApplicationContext()));
     }
 

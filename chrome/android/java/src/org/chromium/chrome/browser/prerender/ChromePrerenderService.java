@@ -19,11 +19,11 @@ import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ApplicationInitialization;
-import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.externalauth.VerifiedHandler;
+import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.content.browser.ChildProcessLauncher;
 
 /**
@@ -76,8 +76,7 @@ public class ChromePrerenderService extends Service {
 
         try {
             new LauncherWarmUpTask().execute(getApplicationContext());
-            ((ChromeApplication) getApplication())
-                    .startBrowserProcessesAndLoadLibrariesSync(true);
+            ChromeBrowserInitializer.getInstance(this).handleSynchronousStartup();
 
             ApplicationInitialization.enableFullscreenFlags(
                     getApplicationContext().getResources(),

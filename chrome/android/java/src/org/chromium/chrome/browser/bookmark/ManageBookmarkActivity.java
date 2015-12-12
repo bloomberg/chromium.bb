@@ -23,6 +23,7 @@ import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeBrowserProviderClient;
+import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.ui.UiUtils;
@@ -78,10 +79,7 @@ public class ManageBookmarkActivity extends FragmentActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         try {
-            if (getApplication() instanceof ChromeApplication) {
-                ((ChromeApplication) getApplication())
-                        .startBrowserProcessesAndLoadLibrariesSync(true);
-            }
+            ChromeBrowserInitializer.getInstance(getApplication()).handleSynchronousStartup();
         } catch (ProcessInitException e) {
             Log.e(TAG, "Unable to load native library.", e);
             ChromeApplication.reportStartupErrorAndExit(e);

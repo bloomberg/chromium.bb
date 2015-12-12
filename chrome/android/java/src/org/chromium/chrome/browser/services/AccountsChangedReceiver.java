@@ -18,6 +18,9 @@ import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.init.BrowserParts;
+import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
+import org.chromium.chrome.browser.init.EmptyBrowserParts;
 import org.chromium.chrome.browser.signin.AccountTrackerService;
 import org.chromium.chrome.browser.signin.SigninHelper;
 import org.chromium.content.browser.BrowserStartupController;
@@ -98,9 +101,9 @@ public class AccountsChangedReceiver extends BroadcastReceiver {
 
     @SuppressFBWarnings("DM_EXIT")
     private static void startBrowserIfNeededAndValidateAccounts(final Context context) {
-        StartupCallback validateAccountsCallback = new StartupCallback() {
+        BrowserParts parts = new EmptyBrowserParts() {
             @Override
-            public void onSuccess(boolean alreadyStarted) {
+            public void finishNativeInitialization() {
                 ThreadUtils.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -108,16 +111,17 @@ public class AccountsChangedReceiver extends BroadcastReceiver {
                     }
                 });
             }
+
             @Override
-            public void onFailure() {
+            public void onStartupFailure() {
                 // Startup failed. So notify SigninHelper of changed accounts via
                 // shared prefs.
                 SigninHelper.markAccountsChangedPref(context);
             }
         };
         try {
-            ((ChromeApplication) context)
-                    .startChromeBrowserProcessesAsync(validateAccountsCallback);
+            ChromeBrowserInitializer.getInstance(context).handlePreNativeStartup(parts);
+            ChromeBrowserInitializer.getInstance(context).handlePostNativeStartup(true, parts);
         } catch (ProcessInitException e) {
             Log.e(TAG, "Unable to load native library.", e);
             ChromeApplication.reportStartupErrorAndExit(e);

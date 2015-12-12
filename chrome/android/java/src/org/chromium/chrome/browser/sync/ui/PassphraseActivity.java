@@ -17,6 +17,7 @@ import android.util.Log;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.SyncController;
 import org.chromium.sync.signin.ChromeSigninController;
@@ -43,11 +44,11 @@ public class PassphraseActivity extends FragmentActivity implements
         // During a normal user flow the ChromeTabbedActivity would start the Chrome browser
         // process and this wouldn't be necessary.
         try {
-            ((ChromeApplication) getApplication())
-                    .startBrowserProcessesAndLoadLibrariesSync(true);
+            ChromeBrowserInitializer.getInstance(this).handleSynchronousStartup();
         } catch (ProcessInitException e) {
             Log.e(TAG, "Failed to start browser process.", e);
             ChromeApplication.reportStartupErrorAndExit(e);
+            return;
         }
         assert ProfileSyncService.get() != null;
         getFragmentManager().addOnBackStackChangedListener(this);

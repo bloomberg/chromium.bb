@@ -10,6 +10,7 @@ import android.util.Log;
 
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 
 /**
  * Activity base class that all the EnhnacedBookmark activities inherit. Currently it's responsible
@@ -23,8 +24,7 @@ abstract class EnhancedBookmarkActivityBase extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         // Ensure that native library is loaded.
         try {
-            ((ChromeApplication) getApplication())
-                    .startBrowserProcessesAndLoadLibrariesSync(true);
+            ChromeBrowserInitializer.getInstance(this).handleSynchronousStartup();
         } catch (ProcessInitException e) {
             Log.e(TAG, "Failed to start browser process.", e);
             ChromeApplication.reportStartupErrorAndExit(e);
