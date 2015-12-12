@@ -15,6 +15,9 @@ namespace blink {
 
 ScriptValue WebGLAny(ScriptState*, bool value);
 ScriptValue WebGLAny(ScriptState*, const bool* value, size_t);
+ScriptValue WebGLAny(ScriptState*, const Vector<bool>& value);
+ScriptValue WebGLAny(ScriptState*, const Vector<unsigned>& value);
+ScriptValue WebGLAny(ScriptState*, const Vector<int>& value);
 ScriptValue WebGLAny(ScriptState*, int value);
 ScriptValue WebGLAny(ScriptState*, unsigned value);
 ScriptValue WebGLAny(ScriptState*, int64_t value);

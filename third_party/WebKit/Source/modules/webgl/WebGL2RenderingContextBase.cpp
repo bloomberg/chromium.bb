@@ -2346,40 +2346,84 @@ Vector<GLuint> WebGL2RenderingContextBase::getUniformIndices(WebGLProgram* progr
     return result;
 }
 
-Vector<GLint> WebGL2RenderingContextBase::getActiveUniforms(WebGLProgram* program, const Vector<GLuint>& uniformIndices, GLenum pname)
+ScriptValue WebGL2RenderingContextBase::getActiveUniforms(ScriptState* scriptState, WebGLProgram* program, const Vector<GLuint>& uniformIndices, GLenum pname)
 {
-    Vector<GLint> result;
     if (isContextLost() || !validateWebGLObject("getActiveUniforms", program))
-        return result;
+        return ScriptValue::createNull(scriptState);
 
+    enum ReturnType {
+        EnumType,
+        UnsignedIntType,
+        IntType,
+        BoolType
+    };
+
+    int returnType;
     switch (pname) {
     case GL_UNIFORM_TYPE:
+        returnType = EnumType;
+        break;
     case GL_UNIFORM_SIZE:
+        returnType = UnsignedIntType;
+        break;
     case GL_UNIFORM_BLOCK_INDEX:
     case GL_UNIFORM_OFFSET:
     case GL_UNIFORM_ARRAY_STRIDE:
     case GL_UNIFORM_MATRIX_STRIDE:
+        returnType = IntType;
+        break;
     case GL_UNIFORM_IS_ROW_MAJOR:
+        returnType = BoolType;
         break;
     default:
         synthesizeGLError(GL_INVALID_ENUM, "getActiveUniforms", "invalid parameter name");
-        return result;
+        return ScriptValue::createNull(scriptState);
     }
 
     GLint activeUniforms = -1;
     webContext()->getProgramiv(objectOrZero(program), GL_ACTIVE_UNIFORMS, &activeUniforms);
 
     GLuint activeUniformsUnsigned = activeUniforms;
-    for (size_t i = 0; i < uniformIndices.size(); ++i) {
+    size_t size = uniformIndices.size();
+    for (size_t i = 0; i < size; ++i) {
         if (uniformIndices[i] >= activeUniformsUnsigned) {
             synthesizeGLError(GL_INVALID_VALUE, "getActiveUniforms", "uniform index greater than ACTIVE_UNIFORMS");
-            return result;
+            return ScriptValue::createNull(scriptState);
         }
     }
 
-    result.resize(uniformIndices.size());
+    Vector<GLint> result(size);
     webContext()->getActiveUniformsiv(objectOrZero(program), uniformIndices.size(), uniformIndices.data(), pname, result.data());
-    return result;
+    switch (returnType) {
+    case EnumType:
+        {
+            Vector<GLenum> enumResult(size);
+            for (size_t i = 0; i < size; ++i)
+                enumResult[i] = static_cast<GLenum>(result[i]);
+            return WebGLAny(scriptState, enumResult);
+        }
+    case UnsignedIntType:
+        {
+            Vector<GLuint> uintResult(size);
+            for (size_t i = 0; i < size; ++i)
+                uintResult[i] = static_cast<GLuint>(result[i]);
+            return WebGLAny(scriptState, uintResult);
+        }
+    case IntType:
+        {
+            return WebGLAny(scriptState, result);
+        }
+    case BoolType:
+        {
+            Vector<bool> boolResult(size);
+            for (size_t i = 0; i < size; ++i)
+                boolResult[i] = static_cast<bool>(result[i]);
+            return WebGLAny(scriptState, boolResult);
+        }
+    default:
+        ASSERT_NOT_REACHED();
+        return ScriptValue::createNull(scriptState);
+    }
 }
 
 GLuint WebGL2RenderingContextBase::getUniformBlockIndex(WebGLProgram* program, const String& uniformBlockName)

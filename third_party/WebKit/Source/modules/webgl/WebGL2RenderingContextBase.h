@@ -153,7 +153,7 @@ public:
     void bindBufferRange(GLenum, GLuint, WebGLBuffer*, long long, long long);
     ScriptValue getIndexedParameter(ScriptState*, GLenum, GLuint);
     Vector<GLuint> getUniformIndices(WebGLProgram*, const Vector<String>&);
-    Vector<GLint> getActiveUniforms(WebGLProgram*, const Vector<GLuint>&, GLenum);
+    ScriptValue getActiveUniforms(ScriptState*, WebGLProgram*, const Vector<GLuint>&, GLenum);
     GLuint getUniformBlockIndex(WebGLProgram*, const String&);
     ScriptValue getActiveUniformBlockParameter(ScriptState*, WebGLProgram*, GLuint, GLenum);
     String getActiveUniformBlockName(WebGLProgram*, GLuint);
