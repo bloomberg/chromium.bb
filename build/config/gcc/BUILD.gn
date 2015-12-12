@@ -20,6 +20,45 @@ config("symbol_visibility_hidden") {
   cflags = [ "-fvisibility=hidden" ]
 }
 
+# The rpath is the dynamic library search path. Setting this config on a link
+# step will put the directory where the build generates shared libraries into
+# the rpath.
+#
+# It's important that this *not* be used for release builds we push out.
+# Chrome uses some setuid binaries, and hard links preserve setuid bits. An
+# unprivileged user could gain root privileges by hardlinking a setuid
+# executable and then adding in whatever binaries they want to run into the lib
+# directory.
+#
+# Example bug: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=520126
+#
+# This is required for component builds since the build generates many shared
+# libraries in the build directory that we expect to be automatically loaded.
+# It will be automatically applied in this case by :executable_ldconfig.
+#
+# In non-component builds, certain test binaries may expect to load dynamic
+# libraries from the current directory. As long as these aren't distributed,
+# this is OK. For these cases use something like this:
+#
+#  if (is_linux && !is_component_build) {
+#    configs += [ "//build/config/gcc:rpath_for_built_shared_libraries" ]
+#  }
+config("rpath_for_built_shared_libraries") {
+  if (!is_android) {
+    # Note: Android doesn't support rpath.
+    if (shlib_subdir != ".") {
+      rpath_link = "${shlib_subdir}/"
+    } else {
+      rpath_link = "."
+    }
+    ldflags = [
+      # Want to pass "\$". GN will re-escape as required for ninja.
+      "-Wl,-rpath=\$ORIGIN/${rpath_link}",
+      "-Wl,-rpath-link=${rpath_link}",
+    ]
+  }
+}
+
 # Settings for executables and shared libraries.
 config("executable_ldconfig") {
   if (is_android) {
@@ -28,16 +67,13 @@ config("executable_ldconfig") {
       "-Wl,-z,nocopyreloc",
     ]
   } else {
-    # Note: Android doesn't support rpath.
-    rpath_link = "."
-    if (shlib_subdir != ".") {
-      rpath_link = "${shlib_subdir}/"
+    if (is_component_build) {
+      configs = [ ":rpath_for_built_shared_libraries" ]
     }
-    ldflags = [
-      # Want to pass "\$". GN will re-escape as required for ninja.
-      "-Wl,-rpath=\$ORIGIN/${rpath_link}",
-      "-Wl,-rpath-link=${rpath_link}",
 
+    ldflags = [
+      # TODO(GYP): Do we need a check on the binutils version here?
+      #
       # Newer binutils don't set DT_RPATH unless you disable "new" dtags
       # and the new DT_RUNPATH doesn't work without --no-as-needed flag.
       "-Wl,--disable-new-dtags",
