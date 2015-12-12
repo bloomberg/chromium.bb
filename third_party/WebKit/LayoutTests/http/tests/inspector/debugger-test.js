@@ -393,7 +393,7 @@ InspectorTest.dumpNavigatorView = function(navigatorView, id, prefix)
 
     function dumpNavigatorTreeElement(prefix, treeElement)
     {
-        InspectorTest.addResult(prefix + treeElement.nodeTitle());
+        InspectorTest.addResult(prefix + treeElement.title);
         var children = treeElement.children();
         for (var i = 0; i < children.length; ++i)
             dumpNavigatorTreeElement(prefix + "  ", children[i]);
