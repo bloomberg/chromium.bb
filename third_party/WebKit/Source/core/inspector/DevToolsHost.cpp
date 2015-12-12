@@ -48,6 +48,7 @@
 #include "core/page/Page.h"
 #include "platform/ContextMenu.h"
 #include "platform/ContextMenuItem.h"
+#include "platform/ScriptForbiddenScope.h"
 #include "platform/SharedBuffer.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/network/ResourceError.h"
@@ -84,9 +85,10 @@ public:
     void contextMenuCleared() override
     {
         if (m_devtoolsHost) {
-            ScriptFunctionCall function(m_devtoolsApiObject, "contextMenuCleared");
-            function.call();
-
+            if (!ScriptForbiddenScope::isScriptForbidden()) {
+                ScriptFunctionCall function(m_devtoolsApiObject, "contextMenuCleared");
+                function.call();
+            }
             m_devtoolsHost->clearMenuProvider();
             m_devtoolsHost = nullptr;
         }
@@ -107,9 +109,11 @@ public:
         UserGestureIndicator gestureIndicator(DefinitelyProcessingNewUserGesture);
         int itemNumber = item->action() - ContextMenuItemBaseCustomTag;
 
-        ScriptFunctionCall function(m_devtoolsApiObject, "contextMenuItemSelected");
-        function.appendArgument(itemNumber);
-        function.call();
+        if (!ScriptForbiddenScope::isScriptForbidden()) {
+            ScriptFunctionCall function(m_devtoolsApiObject, "contextMenuItemSelected");
+            function.appendArgument(itemNumber);
+            function.call();
+        }
     }
 
 private:
