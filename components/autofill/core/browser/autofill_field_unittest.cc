@@ -19,6 +19,12 @@ using base::UTF8ToUTF16;
 namespace autofill {
 namespace {
 
+#if defined(OS_WIN)
+// VS 2015 gives a warning about its limitations:
+// warning C4592: symbol will be dynamically initialized
+#pragma warning(disable : 4592)
+#endif
+
 const std::vector<const char*> kNotNumericMonthsContentsNoPlaceholder = {
     "Jan", "Fev", "Mar", "Apr", "May", "Jun",
     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
