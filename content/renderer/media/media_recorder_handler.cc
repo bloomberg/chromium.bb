@@ -94,6 +94,7 @@ bool MediaRecorderHandler::start(int timeslice) {
   DCHECK(!recording_);
   DCHECK(!media_stream_.isNull());
   DCHECK(timeslice_.is_zero());
+  DCHECK(!webm_muxer_);
 
   timeslice_ = TimeDelta::FromMilliseconds(timeslice);
   slice_origin_timestamp_ = TimeTicks::Now();
@@ -102,12 +103,6 @@ bool MediaRecorderHandler::start(int timeslice) {
   media_stream_.videoTracks(video_tracks);
   media_stream_.audioTracks(audio_tracks);
 
-#if defined(MEDIA_DISABLE_LIBWEBM)
-  LOG(WARNING) << "No muxer available";
-  return false;
-#endif
-
-  DCHECK(!webm_muxer_);
 
   if (video_tracks.isEmpty() && audio_tracks.isEmpty()) {
     LOG(WARNING) << __FUNCTION__ << ": no media tracks.";
@@ -168,15 +163,13 @@ bool MediaRecorderHandler::start(int timeslice) {
 
 void MediaRecorderHandler::stop() {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
-  DCHECK(recording_);
+  // Don't check |recording_| since we can go directly from pause() to stop().
 
   recording_ = false;
   timeslice_ = TimeDelta::FromMilliseconds(0);
   video_recorders_.clear();
   audio_recorders_.clear();
-#if !defined(MEDIA_DISABLE_LIBWEBM)
   webm_muxer_.reset();
-#endif
 }
 
 void MediaRecorderHandler::pause() {
@@ -201,12 +194,10 @@ void MediaRecorderHandler::OnEncodedVideo(
     TimeTicks timestamp,
     bool is_key_frame) {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
-#if !defined(MEDIA_DISABLE_LIBWEBM)
   if (!webm_muxer_)
     return;
   webm_muxer_->OnEncodedVideo(video_frame, encoded_data.Pass(), timestamp,
                               is_key_frame);
-#endif
 }
 
 void MediaRecorderHandler::OnEncodedAudio(const media::AudioParameters& params,

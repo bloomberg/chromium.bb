@@ -105,7 +105,10 @@ void MediaRecorder::start(int timeSlice, ExceptionState& exceptionState)
     }
     m_state = State::Recording;
 
-    m_recorderHandler->start(timeSlice);
+    if (!m_recorderHandler->start(timeSlice)) {
+        exceptionState.throwDOMException(UnknownError, "The MediaRecorder failed to start because there are no audio or video tracks available.");
+        return;
+    }
     scheduleDispatchEvent(Event::create(EventTypeNames::start));
 }
 

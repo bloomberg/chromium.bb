@@ -137,7 +137,9 @@ void AudioTrackRecorder::AudioEncoder::OnSetFormat(
   opus_encoder_ = opus_encoder_create(params.sample_rate(), params.channels(),
                                       OPUS_APPLICATION_AUDIO, &opus_result);
   if (opus_result < 0) {
-    DLOG(ERROR) << "Couldn't init opus encoder: " << opus_strerror(opus_result);
+    DLOG(ERROR) << "Couldn't init opus encoder: " << opus_strerror(opus_result)
+                << ", sample rate: " << params.sample_rate()
+                << ", channels: " << params.channels();
     return;
   }
 
