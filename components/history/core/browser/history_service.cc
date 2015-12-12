@@ -357,7 +357,7 @@ void HistoryService::SetOnBackendDestroyTask(const base::Closure& task) {
                  history_backend_.get(), base::MessageLoop::current(), task));
 }
 
-void HistoryService::TopHosts(int num_hosts,
+void HistoryService::TopHosts(size_t num_hosts,
                               const TopHostsCallback& callback) const {
   DCHECK(thread_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());

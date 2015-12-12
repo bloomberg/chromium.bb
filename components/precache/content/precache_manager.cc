@@ -34,13 +34,13 @@ const char kPrecacheFieldTrialEnabledGroup[] = "Enabled";
 const char kPrecacheFieldTrialControlGroup[] = "Control";
 const char kConfigURLParam[] = "config_url";
 const char kManifestURLPrefixParam[] = "manifest_url_prefix";
-const int kNumTopHosts = 100;
+const size_t kNumTopHosts = 100;
 
 }  // namespace
 
 namespace precache {
 
-int NumTopHosts() {
+size_t NumTopHosts() {
   return kNumTopHosts;
 }
 

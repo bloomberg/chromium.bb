@@ -210,7 +210,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   //
   // As a side effect, caches the list of top hosts for the purposes of
   // generating internal metrics.
-  TopHostsList TopHosts(int num_hosts) const;
+  TopHostsList TopHosts(size_t num_hosts) const;
 
   // Gets the counts of URLs that belong to |origins| in the history database.
   // Origins that are not in the history database will be in the map with a

@@ -82,7 +82,7 @@ class MockHistoryService : public history::HistoryService {
   }
 
   MOCK_CONST_METHOD2(TopHosts,
-                     void(int num_hosts, const TopHostsCallback& callback));
+                     void(size_t num_hosts, const TopHostsCallback& callback));
 
   MOCK_CONST_METHOD2(HostRankIfAvailable,
                      void(const GURL& url,

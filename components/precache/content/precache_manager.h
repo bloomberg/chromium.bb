@@ -41,7 +41,7 @@ namespace precache {
 class PrecacheDatabase;
 
 // Visible for test.
-int NumTopHosts();
+size_t NumTopHosts();
 
 // Class that manages all precaching-related activities. Owned by the
 // BrowserContext that it is constructed for. Use

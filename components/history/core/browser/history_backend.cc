@@ -411,7 +411,7 @@ void HistoryBackend::UpdateVisitDuration(VisitID visit_id, const Time end_ts) {
   }
 }
 
-TopHostsList HistoryBackend::TopHosts(int num_hosts) const {
+TopHostsList HistoryBackend::TopHosts(size_t num_hosts) const {
   if (!db_)
     return TopHostsList();
 

@@ -193,7 +193,7 @@ void HistoryDatabase::ComputeDatabaseMetrics(
   }
 }
 
-TopHostsList HistoryDatabase::TopHosts(int num_hosts) {
+TopHostsList HistoryDatabase::TopHosts(size_t num_hosts) {
   base::Time one_month_ago =
       std::max(base::Time::Now() - base::TimeDelta::FromDays(30), base::Time());
 
@@ -224,9 +224,8 @@ TopHostsList HistoryDatabase::TopHosts(int num_hosts) {
   IntermediateList top_hosts;
   for (const auto& it : host_count)
     top_hosts.push_back(std::make_pair(-it.second, it.first));
-  IntermediateList::size_type middle_index = std::min(
-      base::saturated_cast<IntermediateList::size_type, int>(num_hosts),
-      top_hosts.size());
+  IntermediateList::size_type middle_index =
+      std::min(num_hosts, top_hosts.size());
   auto middle = std::min(top_hosts.end(), top_hosts.begin() + middle_index);
   std::partial_sort(top_hosts.begin(), middle, top_hosts.end());
 

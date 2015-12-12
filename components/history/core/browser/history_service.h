@@ -167,7 +167,8 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   // 4. Only http://, https://, and ftp:// URLs are counted.
   //
   // Note: Virtual needed for mocking.
-  virtual void TopHosts(int num_hosts, const TopHostsCallback& callback) const;
+  virtual void TopHosts(size_t num_hosts,
+                        const TopHostsCallback& callback) const;
 
   // Gets the counts of URLs that belong to |origins| in the history database.
   void GetCountsForOrigins(const std::set<GURL>& origins,
