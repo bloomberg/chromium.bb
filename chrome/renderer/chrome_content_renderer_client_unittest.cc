@@ -68,7 +68,7 @@ const char kChatAppURL3[] = "https://foo.plus.sandbox.google.com/hangouts/foo";
 #if !defined(DISABLE_NACL)
 bool AllowsDevInterfaces(const WebPluginParams& params) {
   for (size_t i = 0; i < params.attributeNames.size(); ++i) {
-    if (params.attributeNames[i] == WebString::fromUTF8("@dev"))
+    if (params.attributeNames[i] == "@dev")
       return true;
   }
   return false;

@@ -104,14 +104,14 @@ bool MockSpellCheck::SpellCheckWord(const blink::WebString& text,
 }
 
 bool MockSpellCheck::HasInCache(const blink::WebString& word) {
-  return word == blink::WebString::fromUTF8("Spell wellcome. Is it broken?") ||
-         word == blink::WebString::fromUTF8("Spell wellcome.\x007F");
+  return word == "Spell wellcome. Is it broken?" ||
+         word == "Spell wellcome.\x007F";
 }
 
 bool MockSpellCheck::IsMultiWordMisspelling(
     const blink::WebString& text,
     std::vector<blink::WebTextCheckingResult>* results) {
-  if (text == blink::WebString::fromUTF8("Helllo wordl.")) {
+  if (text == "Helllo wordl.") {
     results->push_back(blink::WebTextCheckingResult(
         blink::WebTextDecorationTypeSpelling, 0, 6, blink::WebString("Hello")));
     results->push_back(blink::WebTextCheckingResult(
@@ -124,13 +124,13 @@ bool MockSpellCheck::IsMultiWordMisspelling(
 void MockSpellCheck::FillSuggestionList(
     const blink::WebString& word,
     blink::WebVector<blink::WebString>* suggestions) {
-  if (word == blink::WebString::fromUTF8("wellcome"))
+  if (word == "wellcome")
     Append(suggestions, blink::WebString::fromUTF8("welcome"));
-  else if (word == blink::WebString::fromUTF8("upper case"))
+  else if (word == "upper case")
     Append(suggestions, blink::WebString::fromUTF8("uppercase"));
-  else if (word == blink::WebString::fromUTF8("Helllo"))
+  else if (word == "Helllo")
     Append(suggestions, blink::WebString::fromUTF8("Hello"));
-  else if (word == blink::WebString::fromUTF8("wordl"))
+  else if (word == "wordl")
     Append(suggestions, blink::WebString::fromUTF8("world"));
 }
 

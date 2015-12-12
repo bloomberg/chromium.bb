@@ -1465,7 +1465,7 @@ void RenderViewImpl::SendUpdateState() {
     return;
 
   // Don't send state updates for kSwappedOutURL.
-  if (entry->root().urlString() == WebString::fromUTF8(kSwappedOutURL))
+  if (entry->root().urlString() == kSwappedOutURL)
     return;
 
   Send(new ViewHostMsg_UpdateState(

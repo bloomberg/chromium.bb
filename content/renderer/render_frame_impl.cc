@@ -4862,7 +4862,7 @@ void RenderFrameImpl::NavigateInternal(
     if (entry) {
       // Ensure we didn't save the swapped out URL in UpdateState, since the
       // browser should never be telling us to navigate to swappedout://.
-      CHECK(entry->root().urlString() != WebString::fromUTF8(kSwappedOutURL));
+      CHECK(entry->root().urlString() != kSwappedOutURL);
 
       if (!browser_side_navigation) {
         scoped_ptr<NavigationParams> navigation_params(

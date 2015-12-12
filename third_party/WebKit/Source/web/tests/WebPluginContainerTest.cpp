@@ -101,9 +101,8 @@ private:
 class TestPluginWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
     WebPlugin* createPlugin(WebLocalFrame* frame, const WebPluginParams& params) override
     {
-        if (params.mimeType == WebString::fromUTF8("application/x-webkit-test-webplugin"))
-            return new TestPlugin(frame, params, this);
-        if (params.mimeType == WebString::fromUTF8("application/pdf"))
+        if (params.mimeType == "application/x-webkit-test-webplugin"
+            || params.mimeType == "application/pdf")
             return new TestPlugin(frame, params, this);
         return WebFrameClient::createPlugin(frame, params);
     }
