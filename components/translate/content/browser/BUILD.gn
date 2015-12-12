@@ -4,7 +4,10 @@
 
 import("//build/config/features.gni")
 
-source_set("browser") {
+static_library("browser") {
+  # TODO(crbug.com/565129) this should be a source_set but
+  # there are static initializers that get accidentally linked
+  # into chrome from that need to be addressed first.
   sources = [
     "browser_cld_data_provider.cc",
     "browser_cld_data_provider.h",

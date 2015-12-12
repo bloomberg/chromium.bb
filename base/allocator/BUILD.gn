@@ -99,7 +99,10 @@ if (is_win) {
 
 if (use_allocator == "tcmalloc") {
   # tcmalloc currently won't compile on Android.
-  source_set("tcmalloc") {
+  # TODO(crbug.com/559766) this should be a source_set but
+  # there are static initializers that get accidentally linked
+  # into chrome from vdso_support.cc that need to be addressed first.
+  static_library("tcmalloc") {
     tcmalloc_dir = "//third_party/tcmalloc/chromium"
 
     # Don't check tcmalloc's includes. These files include various files like
