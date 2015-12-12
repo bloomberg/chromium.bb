@@ -848,7 +848,7 @@ void SyncEncryptionHandlerImpl::ReEncryptEverything(
       if (child.GetIsFolder()) {
         to_visit.push(child.GetFirstChildId());
       }
-      if (child.GetEntry()->GetUniqueServerTag().empty()) {
+      if (!child.GetIsPermanentFolder()) {
       // Rewrite the specifics of the node with encrypted data if necessary
       // (only rewrite the non-unique folders).
         child.ResetFromSpecifics();

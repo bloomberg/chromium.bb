@@ -110,12 +110,12 @@ class SYNC_EXPORT Entry {
     return kernel_->ref(SERVER_CTIME);
   }
 
-  Id GetId() const {
+  const Id& GetId() const {
     DCHECK(kernel_);
     return kernel_->ref(ID);
   }
 
-  Id GetParentId() const {
+  const Id& GetParentId() const {
     DCHECK(kernel_);
     return kernel_->ref(PARENT_ID);
   }

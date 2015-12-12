@@ -48,7 +48,7 @@ BaseNode::BaseNode() : password_data_(new sync_pb::PasswordSpecificsData) {}
 BaseNode::~BaseNode() {}
 
 bool BaseNode::DecryptIfNecessary() {
-  if (!GetEntry()->GetUniqueServerTag().empty())
+  if (GetIsPermanentFolder())
       return true;  // Ignore unique folders.
   const sync_pb::EntitySpecifics& specifics =
       GetEntry()->GetSpecifics();
@@ -124,7 +124,7 @@ const sync_pb::EntitySpecifics& BaseNode::GetUnencryptedSpecifics(
           specifics.bookmark();
       if (bookmark_specifics.has_title() ||
           GetTitle().empty() ||  // For the empty node case
-          !GetEntry()->GetUniqueServerTag().empty()) {
+          GetIsPermanentFolder()) {
         // It's possible we previously had to convert and set
         // |unencrypted_data_| but then wrote our own data, so we allow
         // |unencrypted_data_| to be non-empty.
@@ -155,6 +155,15 @@ base::Time BaseNode::GetModificationTime() const {
 
 bool BaseNode::GetIsFolder() const {
   return GetEntry()->GetIsDir();
+}
+
+bool BaseNode::GetIsPermanentFolder() const {
+  bool is_permanent_folder = !GetEntry()->GetUniqueServerTag().empty();
+  if (is_permanent_folder) {
+    // If the node is a permanent folder it must also have IS_DIR bit set.
+    DCHECK(GetIsFolder());
+  }
+  return is_permanent_folder;
 }
 
 std::string BaseNode::GetTitle() const {
@@ -216,6 +225,10 @@ base::DictionaryValue* BaseNode::ToValue() const {
 
 int64 BaseNode::GetExternalId() const {
   return GetEntry()->GetLocalExternalId();
+}
+
+const syncable::Id& BaseNode::GetSyncId() const {
+  return GetEntry()->GetId();
 }
 
 const sync_pb::BookmarkSpecifics& BaseNode::GetBookmarkSpecifics() const {

@@ -595,7 +595,7 @@ syncer::SyncError GenericChangeProcessor::HandleActionUpdate(
       syncer::Cryptographer* crypto = trans.GetCryptographer();
       syncer::ModelTypeSet encrypted_types(trans.GetEncryptedTypes());
       const sync_pb::EntitySpecifics& specifics =
-          sync_node->GetEntry()->GetSpecifics();
+          sync_node->GetEntitySpecifics();
       CHECK(specifics.has_encrypted());
       const bool can_decrypt = crypto->CanDecrypt(specifics.encrypted());
       const bool agreement = encrypted_types.Has(type_);

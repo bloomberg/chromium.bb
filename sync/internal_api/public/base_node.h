@@ -46,6 +46,7 @@ class BaseTransaction;
 namespace syncable {
 class BaseTransaction;
 class Entry;
+class Id;
 }
 
 // A valid BaseNode will never have an ID of zero.
@@ -102,6 +103,10 @@ class SYNC_EXPORT BaseNode {
   // of syncable::Entry.
   bool GetIsFolder() const;
 
+  // Specifies whether node is a permanent folder. This is true when
+  // UNIQUE_SERVER_TAG property of syncable::Entry is non-empty.
+  bool GetIsPermanentFolder() const;
+
   // Returns the title of the object.
   // Uniqueness of the title is not enforced on siblings -- it is not an error
   // for two children to share a title.
@@ -136,6 +141,9 @@ class SYNC_EXPORT BaseNode {
   // Returns the local external ID associated with the node.
   int64 GetExternalId() const;
 
+  // Returns the internal syncable ID associated with the node.
+  const syncable::Id& GetSyncId() const;
+
   // Returns true iff this node has children.
   bool HasChildren() const;
 
@@ -168,16 +176,16 @@ class SYNC_EXPORT BaseNode {
   // Returns this item's attachment ids.
   const syncer::AttachmentIdList GetAttachmentIds() const;
 
-  // These virtual accessors provide access to data members of derived classes.
-  virtual const syncable::Entry* GetEntry() const = 0;
-  virtual const BaseTransaction* GetTransaction() const = 0;
-
   // Returns a base::DictionaryValue serialization of this node.
   base::DictionaryValue* ToValue() const;
 
  protected:
   BaseNode();
   virtual ~BaseNode();
+
+  // These virtual accessors provide access to data members of derived classes.
+  virtual const syncable::Entry* GetEntry() const = 0;
+  virtual const BaseTransaction* GetTransaction() const = 0;
 
   // Determines whether part of the entry is encrypted, and if so attempts to
   // decrypt it. Unless decryption is necessary and fails, this will always
@@ -200,6 +208,11 @@ class SYNC_EXPORT BaseNode {
   // protected/private BaseNode methods.
   friend class SyncManagerTest;
   FRIEND_TEST_ALL_PREFIXES(SyncApiTest, GenerateSyncableHash);
+  FRIEND_TEST_ALL_PREFIXES(SyncApiTest, WriteEmptyBookmarkTitle);
+  FRIEND_TEST_ALL_PREFIXES(SyncApiTest, WriteEncryptedTitle);
+  FRIEND_TEST_ALL_PREFIXES(SyncBackupManagerTest, NormalizeEntry);
+  FRIEND_TEST_ALL_PREFIXES(SyncBackupManagerTest,
+                           PersistWithSwitchToSyncShutdown);
   FRIEND_TEST_ALL_PREFIXES(SyncManagerTest, UpdateEntryWithEncryption);
   FRIEND_TEST_ALL_PREFIXES(SyncManagerTest,
                            UpdatePasswordSetEntitySpecificsNoChange);

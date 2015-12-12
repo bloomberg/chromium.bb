@@ -597,7 +597,7 @@ TEST_F(SyncApiTest, WriteEmptyBookmarkTitle) {
     ReadNode bookmark_node(&trans);
     ASSERT_EQ(BaseNode::INIT_OK, bookmark_node.InitByIdLookup(bookmark_id));
     EXPECT_EQ("", bookmark_node.GetTitle());
-    EXPECT_EQ(" ", bookmark_node.GetEntry()->GetSpecifics().bookmark().title());
+    EXPECT_EQ(" ", bookmark_node.GetEntitySpecifics().bookmark().title());
     EXPECT_EQ(" ", bookmark_node.GetEntry()->GetNonUniqueName());
   }
 }

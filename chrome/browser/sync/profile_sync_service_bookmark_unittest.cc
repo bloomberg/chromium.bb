@@ -2468,7 +2468,7 @@ void ProfileSyncServiceBookmarkTestWithData::ExpectTransactionVersionMatch(
     syncer::ReadNode sync_node(&trans);
     ASSERT_TRUE(model_associator_->InitSyncNodeFromChromeId(it->first,
                                                             &sync_node));
-    EXPECT_EQ(sync_node.GetEntry()->GetTransactionVersion(), it->second);
+    EXPECT_EQ(sync_node.GetTransactionVersion(), it->second);
     BookmarkNodeVersionMap::const_iterator expected_ver_it =
         version_expected.find(it->first);
     if (expected_ver_it != version_expected.end())

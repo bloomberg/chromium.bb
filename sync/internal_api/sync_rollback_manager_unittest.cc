@@ -97,7 +97,7 @@ class SyncRollbackManagerTest : public testing::Test,
     WriteNode node(&trans);
     EXPECT_EQ(WriteNode::INIT_SUCCESS,
               node.InitUniqueByCreation(type, client_tag));
-    return node.GetEntry()->GetMetahandle();
+    return node.GetId();
   }
 
   void InitManager(SyncManager* manager, ModelTypeSet types,
