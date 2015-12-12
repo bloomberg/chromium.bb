@@ -1005,7 +1005,7 @@ TEST_F(BrowserAccessibilityTest, TestValueAttributeInTextControls) {
   // value. Only text entry controls.
   hr = link_accessible->get_accValue(childid_self, value.Receive());
   EXPECT_EQ(S_OK, hr);
-  EXPECT_EQ(0, value.Length());
+  EXPECT_EQ(0u, value.Length());
   value.Reset();
 
   // Sliders and other range controls should expose their current value and not

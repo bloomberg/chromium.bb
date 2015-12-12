@@ -45,7 +45,7 @@ TEST_F(LzmaFileAllocatorTest, ReadAndWriteWithMultipleSizeTest) {
       return c != kSampleExpectedCharacter;
     });
     EXPECT_EQ(s + size, ret);
-    EXPECT_EQ(MEM_MAPPED, GetMemoryType(s));
+    EXPECT_EQ(static_cast<DWORD>(MEM_MAPPED), GetMemoryType(s));
 
     IAlloc_Free(&allocator, s);
   }
@@ -74,7 +74,7 @@ TEST_F(LzmaFileAllocatorTest, ErrorAndFallbackTest) {
   char* s = reinterpret_cast<char*>(IAlloc_Alloc(&allocator, 10));
   EXPECT_NE(nullptr, s);
   ASSERT_FALSE(allocator.file_mapping_handle_.IsValid());
-  EXPECT_EQ(MEM_PRIVATE, GetMemoryType(s));
+  EXPECT_EQ(static_cast<DWORD>(MEM_PRIVATE), GetMemoryType(s));
 
   IAlloc_Free(&allocator, s);
 }

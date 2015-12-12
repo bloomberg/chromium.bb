@@ -26,7 +26,7 @@ TEST(LoggingInstallerTest, TestTruncate) {
 
   int64 file_size = 0;
   EXPECT_TRUE(base::GetFileSize(temp_file, &file_size));
-  EXPECT_EQ(test_data.size(), file_size);
+  EXPECT_EQ(static_cast<int64>(test_data.size()), file_size);
 
   EXPECT_EQ(installer::LOGFILE_TRUNCATED,
             installer::TruncateLogFileIfNeeded(temp_file));
