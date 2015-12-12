@@ -13,6 +13,7 @@
 #include "content/common/devtools_messages.h"
 #include "content/common/frame_messages.h"
 #include "content/renderer/devtools/devtools_client.h"
+#include "content/renderer/devtools/devtools_cpu_throttler.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_widget.h"
 #include "ipc/ipc_channel.h"
@@ -68,7 +69,8 @@ DevToolsAgent::DevToolsAgent(RenderFrameImpl* frame)
       is_devtools_client_(false),
       paused_in_mouse_move_(false),
       paused_(false),
-      frame_(frame) {
+      frame_(frame),
+      cpu_throttler_(new DevToolsCPUThrottler()) {
   g_agent_for_routing_id.Get()[routing_id()] = this;
   frame_->GetWebFrame()->setDevToolsAgentClient(this);
 }
@@ -145,6 +147,10 @@ void DevToolsAgent::enableTracing(const WebString& category_filter) {
 
 void DevToolsAgent::disableTracing() {
   TraceLog::GetInstance()->SetDisabled();
+}
+
+void DevToolsAgent::setCPUThrottlingRate(double rate) {
+  cpu_throttler_->SetThrottlingRate(rate);
 }
 
 // static

@@ -18,7 +18,14 @@ using ErrorString = String;
 class InspectorEmulationAgent final : public InspectorBaseAgent<InspectorEmulationAgent, InspectorFrontend::Emulation>, public InspectorBackendDispatcher::EmulationCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorEmulationAgent);
 public:
-    static PassOwnPtrWillBeRawPtr<InspectorEmulationAgent> create(WebLocalFrameImpl*);
+    class Client {
+    public:
+        virtual ~Client() {}
+
+        virtual void setCPUThrottlingRate(double rate) {}
+    };
+
+    static PassOwnPtrWillBeRawPtr<InspectorEmulationAgent> create(WebLocalFrameImpl*, Client*);
     ~InspectorEmulationAgent() override;
 
     void viewportChanged();
@@ -29,6 +36,7 @@ public:
     void setScriptExecutionDisabled(ErrorString*, bool) override;
     void setTouchEmulationEnabled(ErrorString*, bool enabled, const String* configuration) override;
     void setEmulatedMedia(ErrorString*, const String&) override;
+    void setCPUThrottlingRate(ErrorString*, double rate) override;
 
     // InspectorBaseAgent overrides.
     void disable(ErrorString*) override;
@@ -39,14 +47,13 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    explicit InspectorEmulationAgent(WebLocalFrameImpl*);
+    InspectorEmulationAgent(WebLocalFrameImpl*, Client*);
     WebViewImpl* webViewImpl();
 
     RawPtrWillBeMember<WebLocalFrameImpl> m_webLocalFrameImpl;
+    Client* m_client;
 };
 
-
 } // namespace blink
-
 
 #endif // !defined(InspectorEmulationAgent_h)

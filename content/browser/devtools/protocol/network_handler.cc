@@ -322,6 +322,6 @@ Response NetworkHandler::ShowCertificateViewer(int certificate_id) {
   return Response::OK();
 }
 
-}  // namespace dom
+}  // namespace network
 }  // namespace devtools
 }  // namespace content

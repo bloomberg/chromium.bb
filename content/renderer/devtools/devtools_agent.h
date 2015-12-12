@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "content/public/common/console_message_level.h"
 #include "content/public/renderer/render_frame_observer.h"
@@ -18,6 +19,7 @@ class WebDevToolsAgent;
 
 namespace content {
 
+class DevToolsCPUThrottler;
 class RenderFrameImpl;
 
 // DevToolsAgent belongs to the inspectable RenderFrameImpl and communicates
@@ -67,6 +69,8 @@ class CONTENT_EXPORT DevToolsAgent
   void enableTracing(const blink::WebString& category_filter) override;
   void disableTracing() override;
 
+  void setCPUThrottlingRate(double rate) override;
+
   void OnAttach(const std::string& host_id, int session_id);
   void OnReattach(const std::string& host_id,
                   int session_id,
@@ -82,6 +86,7 @@ class CONTENT_EXPORT DevToolsAgent
   bool paused_in_mouse_move_;
   bool paused_;
   RenderFrameImpl* frame_;
+  scoped_ptr<DevToolsCPUThrottler> cpu_throttler_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsAgent);
 };

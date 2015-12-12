@@ -39,6 +39,7 @@
 #include "public/platform/WebSize.h"
 #include "public/platform/WebThread.h"
 #include "public/web/WebDevToolsAgent.h"
+#include "web/InspectorEmulationAgent.h"
 #include "wtf/Forward.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/Vector.h"
@@ -71,6 +72,7 @@ class WebDevToolsAgentImpl final
     : public NoBaseWillBeGarbageCollectedFinalized<WebDevToolsAgentImpl>
     , public WebDevToolsAgent
     , public InspectorStateClient
+    , public InspectorEmulationAgent::Client
     , public InspectorTracingAgent::Client
     , public InspectorRuntimeAgent::Client
     , public InspectorFrontendChannel
@@ -116,6 +118,9 @@ private:
     // InspectorTracingAgent::Client implementation.
     void enableTracing(const WTF::String& categoryFilter) override;
     void disableTracing() override;
+
+    // InspectorEmulationAgent::Client implementation.
+    void setCPUThrottlingRate(double) override;
 
     // InspectorRuntimeAgent::Client implementation.
     void resumeStartup() override;

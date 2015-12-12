@@ -68,6 +68,8 @@ public:
     virtual void enableTracing(const WebString& categoryFilter) { }
     virtual void disableTracing() { }
 
+    virtual void setCPUThrottlingRate(double rate) {}
+
 protected:
     ~WebDevToolsAgentClient() { }
 };

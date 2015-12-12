@@ -637,4 +637,4 @@ void V8SamplingProfiler::WaitSamplingEventForTesting() {
   waitable_event_for_testing_->Wait();
 }
 
-}  // namespace blink
+}  // namespace content

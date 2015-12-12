@@ -164,6 +164,8 @@
       'renderer/devtools/devtools_agent_filter.h',
       'renderer/devtools/devtools_client.cc',
       'renderer/devtools/devtools_client.h',
+      'renderer/devtools/devtools_cpu_throttler.cc',
+      'renderer/devtools/devtools_cpu_throttler.h',
       'renderer/devtools/lock_free_circular_queue.h',
       'renderer/devtools/v8_sampling_profiler.cc',
       'renderer/devtools/v8_sampling_profiler.h',
