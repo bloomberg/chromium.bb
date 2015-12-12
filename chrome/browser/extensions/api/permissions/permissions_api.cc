@@ -248,8 +248,12 @@ bool PermissionsRequestFunction::RunAsync() {
   } else {
     CHECK_EQ(DO_NOT_SKIP, auto_confirm_for_tests);
     install_ui_.reset(new ExtensionInstallPrompt(GetAssociatedWebContents()));
-    install_ui_->ConfirmPermissions(this, extension(),
-                                    requested_permissions_->Clone());
+    install_ui_->ShowDialog(
+        this, extension(), nullptr,
+        new ExtensionInstallPrompt::Prompt(
+            ExtensionInstallPrompt::PERMISSIONS_PROMPT),
+        requested_permissions_->Clone(),
+        ExtensionInstallPrompt::GetDefaultShowDialogCallback());
   }
 
   return true;

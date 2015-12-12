@@ -83,9 +83,8 @@ SimpleExtensionLoadPrompt::~SimpleExtensionLoadPrompt() {
 void SimpleExtensionLoadPrompt::ShowPrompt() {
   switch (extensions::ScopedTestDialogAutoConfirm::GetAutoConfirmValue()) {
     case extensions::ScopedTestDialogAutoConfirm::NONE:
-      install_ui_->ConfirmInstall(
-          this,
-          extension_.get(),
+      install_ui_->ShowDialog(
+          this, extension_.get(), nullptr,
           ExtensionInstallPrompt::GetDefaultShowDialogCallback());
       break;
     case extensions::ScopedTestDialogAutoConfirm::ACCEPT:

@@ -78,7 +78,12 @@ void NavigationObserver::PromptToEnableExtensionIfNecessary(
 
     extension_install_prompt_.reset(
         new ExtensionInstallPrompt(nav_controller->GetWebContents()));
-    extension_install_prompt_->ConfirmReEnable(this, extension);
+    ExtensionInstallPrompt::PromptType type =
+        ExtensionInstallPrompt::GetReEnablePromptTypeForExtension(profile_,
+                                                                  extension);
+    extension_install_prompt_->ShowDialog(
+        this, extension, nullptr, new ExtensionInstallPrompt::Prompt(type),
+        ExtensionInstallPrompt::GetDefaultShowDialogCallback());
   }
 }
 

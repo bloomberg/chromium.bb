@@ -625,7 +625,7 @@ void CrxInstaller::ConfirmInstall() {
       (!allow_silent_install_ || !approved_) &&
       !update_from_settings_page_) {
     AddRef();  // Balanced in InstallUIProceed() and InstallUIAbort().
-    client_->ConfirmInstall(this, extension(), show_dialog_callback_);
+    client_->ShowDialog(this, extension(), nullptr, show_dialog_callback_);
   } else {
     if (!installer_task_runner_->PostTask(
             FROM_HERE,
@@ -645,7 +645,7 @@ void CrxInstaller::InstallUIProceed() {
   // If update_from_settings_page_ boolean is true, this functions is
   // getting called in response to ExtensionInstallPrompt::ConfirmReEnable()
   // and if it is false, this function is called in response to
-  // ExtensionInstallPrompt::ConfirmInstall().
+  // ExtensionInstallPrompt::ShowDialog().
   if (update_from_settings_page_) {
     service->GrantPermissionsAndEnableExtension(extension());
   } else {
@@ -662,7 +662,7 @@ void CrxInstaller::InstallUIAbort(bool user_initiated) {
   // If update_from_settings_page_ boolean is true, this functions is
   // getting called in response to ExtensionInstallPrompt::ConfirmReEnable()
   // and if it is false, this function is called in response to
-  // ExtensionInstallPrompt::ConfirmInstall().
+  // ExtensionInstallPrompt::ShowDialog().
   if (!update_from_settings_page_) {
     const char* histogram_name = user_initiated ? "InstallCancel"
                                                 : "InstallAbort";
@@ -910,7 +910,12 @@ void CrxInstaller::ConfirmReEnable() {
 
   if (client_) {
     AddRef();  // Balanced in InstallUIProceed() and InstallUIAbort().
-    client_->ConfirmReEnable(this, extension());
+    ExtensionInstallPrompt::PromptType type =
+        ExtensionInstallPrompt::GetReEnablePromptTypeForExtension(
+            service->profile(), extension());
+    client_->ShowDialog(this, extension(), nullptr,
+                        new ExtensionInstallPrompt::Prompt(type),
+                        ExtensionInstallPrompt::GetDefaultShowDialogCallback());
   }
 }
 

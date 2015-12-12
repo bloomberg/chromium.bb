@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -31,6 +32,7 @@ class MessageLoop;
 }  // namespace base
 
 namespace content {
+class BrowserContext;
 class WebContents;
 }
 
@@ -280,6 +282,13 @@ class ExtensionInstallPrompt
   // The implementations of this function are platform-specific.
   static ShowDialogCallback GetDefaultShowDialogCallback();
 
+  // Returns the appropriate prompt type for the given |extension|.
+  // TODO(devlin): This method is yucky - callers probably only care about one
+  // prompt type. We just need to comb through and figure out what it is.
+  static PromptType GetReEnablePromptTypeForExtension(
+      content::BrowserContext* context,
+      const extensions::Extension* extension);
+
   // Creates a dummy extension from the |manifest|, replacing the name and
   // description with the localizations if provided.
   static scoped_refptr<extensions::Extension> GetLocalizedExtensionForDisplay(
@@ -304,99 +313,34 @@ class ExtensionInstallPrompt
     return install_ui_.get();
   }
 
-  // This is called by the bundle installer to verify whether the bundle
-  // should be installed.
-  //
-  // We *MUST* eventually call either Proceed() or Abort() on |bundle|.
-  virtual void ConfirmBundleInstall(
-      extensions::BundleInstaller* bundle,
-      const SkBitmap* icon,
-      scoped_ptr<const extensions::PermissionSet> permissions);
-
-  // This is called by the bundle installer to verify the permissions for a
-  // delegated bundle install.
-  //
-  // We *MUST* eventually call either Proceed() or Abort() on |bundle|.
-  virtual void ConfirmPermissionsForDelegatedBundleInstall(
-      extensions::BundleInstaller* bundle,
-      const std::string& delegated_username,
-      const SkBitmap* icon,
-      scoped_ptr<const extensions::PermissionSet> permissions);
-
-  // This is called by the standalone installer to verify whether the install
-  // from the webstore should proceed.
+  // Starts the process to show the install dialog. Loads the icon (if |icon| is
+  // null), sets up the Prompt, and calls |show_dialog_callback| when ready to
+  // show.
+  // |extension| can be null in the case of a bndle install.
+  // If |icon| is null, this will attempt to load the extension's icon.
+  // |prompt| is used to pass in a prompt with additional data (like retained
+  // device permissions) or a different type. If not provided, |prompt| will
+  // be created as an INSTALL_PROMPT.
+  // |custom_permissions| will be used if provided; otherwise, the extensions
+  // current permissions are used.
   //
   // We *MUST* eventually call either Proceed() or Abort() on |delegate|.
-  virtual void ConfirmStandaloneInstall(Delegate* delegate,
-                                        const extensions::Extension* extension,
-                                        SkBitmap* icon,
-                                        scoped_refptr<Prompt> prompt);
-
-  // This is called by the installer to verify whether the installation from
-  // the webstore should proceed. |show_dialog_callback| is optional and can be
-  // NULL.
-  //
-  // We *MUST* eventually call either Proceed() or Abort() on |delegate|.
-  virtual void ConfirmWebstoreInstall(
+  virtual void ShowDialog(Delegate* delegate,
+                          const extensions::Extension* extension,
+                          const SkBitmap* icon,
+                          const ShowDialogCallback& show_dialog_callback);
+  virtual void ShowDialog(Delegate* delegate,
+                          const extensions::Extension* extension,
+                          const SkBitmap* icon,
+                          const scoped_refptr<Prompt>& prompt,
+                          const ShowDialogCallback& show_dialog_callback);
+  virtual void ShowDialog(
       Delegate* delegate,
       const extensions::Extension* extension,
       const SkBitmap* icon,
+      const scoped_refptr<Prompt>& prompt,
+      scoped_ptr<const extensions::PermissionSet> custom_permissions,
       const ShowDialogCallback& show_dialog_callback);
-
-  // This is called by the installer to verify whether the installation should
-  // proceed. This is declared virtual for testing. |show_dialog_callback| is
-  // optional and can be NULL.
-  //
-  // We *MUST* eventually call either Proceed() or Abort() on |delegate|.
-  virtual void ConfirmInstall(Delegate* delegate,
-                              const extensions::Extension* extension,
-                              const ShowDialogCallback& show_dialog_callback);
-
-  // This is called by the webstore API to verify the permissions for a
-  // delegated install.
-  //
-  // We *MUST* eventually call either Proceed() or Abort() on |delegate|.
-  virtual void ConfirmPermissionsForDelegatedInstall(
-      Delegate* delegate,
-      const extensions::Extension* extension,
-      const std::string& delegated_username,
-      const SkBitmap* icon);
-
-  // This is called by the app handler launcher to verify whether the app
-  // should be re-enabled. This is declared virtual for testing.
-  //
-  // We *MUST* eventually call either Proceed() or Abort() on |delegate|.
-  virtual void ConfirmReEnable(Delegate* delegate,
-                               const extensions::Extension* extension);
-
-  // This is called by the external install alert UI to verify whether the
-  // extension should be enabled (external extensions are installed disabled).
-  //
-  // We *MUST* eventually call either Proceed() or Abort() on |delegate|.
-  virtual void ConfirmExternalInstall(
-      Delegate* delegate,
-      const extensions::Extension* extension,
-      const ShowDialogCallback& show_dialog_callback,
-      scoped_refptr<Prompt> prompt);
-
-  // This is called by the extension permissions API to verify whether an
-  // extension may be granted additional permissions.
-  //
-  // We *MUST* eventually call either Proceed() or Abort() on |delegate|.
-  virtual void ConfirmPermissions(
-      Delegate* delegate,
-      const extensions::Extension* extension,
-      scoped_ptr<const extensions::PermissionSet> permissions);
-
-  // This is called by the app handler launcher to review what permissions the
-  // extension or app currently has.
-  //
-  // We *MUST* eventually call either Proceed() or Abort() on |delegate|.
-  virtual void ReviewPermissions(
-      Delegate* delegate,
-      const extensions::Extension* extension,
-      const std::vector<base::FilePath>& retained_file_paths,
-      const std::vector<base::string16>& retained_device_messages);
 
   // Installation was successful. This is declared virtual for testing.
   virtual void OnInstallSuccess(const extensions::Extension* extension,
@@ -405,16 +349,9 @@ class ExtensionInstallPrompt
   // Installation failed. This is declared virtual for testing.
   virtual void OnInstallFailure(const extensions::CrxInstallError& error);
 
-  void set_callback_for_test(const ShowDialogCallback& show_dialog_callback) {
-    show_dialog_callback_ = show_dialog_callback;
-  }
-
  protected:
   friend class extensions::ExtensionWebstorePrivateApiTest;
   friend class WebstoreStartupInstallUnpackFailureTest;
-
-  // Whether or not we should record the oauth2 grant upon successful install.
-  bool record_oauth2_grant_;
 
  private:
   friend class GalleryInstallApiTestObserver;
@@ -445,14 +382,6 @@ class ExtensionInstallPrompt
   // BUNDLE_INSTALL_PROMPT or DELEGATED_BUNDLE_PERMISSIONS_PROMPT.
   const extensions::Extension* extension_;
 
-  // The bundle we are showing the UI for, if type BUNDLE_INSTALL_PROMPT or
-  // DELEGATED_BUNDLE_PERMISSIONS_PROMPT.
-  const extensions::BundleInstaller* bundle_;
-
-  // The name of the user we are asking about, if type
-  // DELEGATED_PERMISSIONS_PROMPT or DELEGATED_BUNDLE_PERMISSIONS_PROMPT.
-  std::string delegated_username_;
-
   // A custom set of permissions to show in the install prompt instead of the
   // extension's active permissions.
   scoped_ptr<const extensions::PermissionSet> custom_permissions_;
@@ -471,6 +400,8 @@ class ExtensionInstallPrompt
 
   // Used to show the confirm dialog.
   ShowDialogCallback show_dialog_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionInstallPrompt);
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_INSTALL_PROMPT_H_

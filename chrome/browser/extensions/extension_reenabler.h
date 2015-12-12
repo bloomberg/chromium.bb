@@ -57,18 +57,20 @@ class ExtensionReenabler : public ExtensionInstallPrompt::Delegate,
 
   // Like PromptForReenable, but allows tests to inject the
   // ExtensionInstallPrompt.
-  static scoped_ptr<ExtensionReenabler> PromptForReenableWithPromptForTest(
+  static scoped_ptr<ExtensionReenabler> PromptForReenableWithCallbackForTest(
       const scoped_refptr<const Extension>& extension,
       content::BrowserContext* browser_context,
       const Callback& callback,
-      scoped_ptr<ExtensionInstallPrompt> install_prompt);
+      const ExtensionInstallPrompt::ShowDialogCallback& show_callback);
 
  private:
-  ExtensionReenabler(const scoped_refptr<const Extension>& extension,
-                     content::BrowserContext* browser_context,
-                     const GURL& referrer_url,
-                     const Callback& callback,
-                     scoped_ptr<ExtensionInstallPrompt> install_prompt);
+  ExtensionReenabler(
+      const scoped_refptr<const Extension>& extension,
+      content::BrowserContext* browser_context,
+      const GURL& referrer_url,
+      const Callback& callback,
+      content::WebContents* web_contents,
+      const ExtensionInstallPrompt::ShowDialogCallback& show_callback);
 
   // ExtensionInstallPrompt::Delegate:
   void InstallUIProceed() override;
@@ -102,6 +104,9 @@ class ExtensionReenabler : public ExtensionInstallPrompt::Delegate,
 
   // The callback to run upon completion.
   Callback callback_;
+
+  // The callback to use to show the dialog.
+  ExtensionInstallPrompt::ShowDialogCallback show_dialog_callback_;
 
   // The re-enable prompt.
   scoped_ptr<ExtensionInstallPrompt> install_prompt_;

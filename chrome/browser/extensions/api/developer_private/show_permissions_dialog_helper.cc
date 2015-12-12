@@ -76,8 +76,13 @@ void ShowPermissionsDialogHelper::ShowPermissionsDialog(
         DevicePermissionsManager::Get(profile_)
             ->GetPermissionMessageStrings(extension_id_);
   }
-  prompt_->ReviewPermissions(
-      this, extension, retained_file_paths, retained_device_messages);
+  scoped_refptr<ExtensionInstallPrompt::Prompt> prompt(
+      new ExtensionInstallPrompt::Prompt(
+          ExtensionInstallPrompt::POST_INSTALL_PERMISSIONS_PROMPT));
+  prompt->set_retained_files(retained_file_paths);
+  prompt->set_retained_device_messages(retained_device_messages);
+  prompt_->ShowDialog(this, extension, nullptr, prompt,
+                      ExtensionInstallPrompt::GetDefaultShowDialogCallback());
 }
 
 // This is called when the user clicks "Revoke File Access."

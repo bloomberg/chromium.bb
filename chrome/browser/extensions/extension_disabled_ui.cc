@@ -123,7 +123,12 @@ ExtensionDisabledDialogDelegate::ExtensionDisabledDialogDelegate(
       service_(service),
       extension_(extension) {
   AddRef();  // Balanced in Proceed or Abort.
-  install_ui_->ConfirmReEnable(this, extension_);
+  ExtensionInstallPrompt::PromptType type =
+      ExtensionInstallPrompt::GetReEnablePromptTypeForExtension(
+          service_->profile(), extension);
+  install_ui_->ShowDialog(
+      this, extension_, nullptr, new ExtensionInstallPrompt::Prompt(type),
+      ExtensionInstallPrompt::GetDefaultShowDialogCallback());
 }
 
 ExtensionDisabledDialogDelegate::~ExtensionDisabledDialogDelegate() {

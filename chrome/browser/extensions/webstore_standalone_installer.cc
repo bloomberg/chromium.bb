@@ -405,8 +405,9 @@ void WebstoreStandaloneInstaller::ShowInstallUI() {
   }
 
   install_ui_ = CreateInstallUI();
-  install_ui_->ConfirmStandaloneInstall(
-      this, localized_extension.get(), &icon_, install_prompt_);
+  install_ui_->ShowDialog(
+      this, localized_extension.get(), &icon_, install_prompt_,
+      ExtensionInstallPrompt::GetDefaultShowDialogCallback());
 }
 
 void WebstoreStandaloneInstaller::OnWebStoreDataFetcherDone() {

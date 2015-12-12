@@ -93,8 +93,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallPromptBrowserTest,
 
   base::RunLoop run_loop;
   TestExtensionInstallPromptDelegate delegate(run_loop.QuitClosure());
-  prompt.ConfirmInstall(&delegate, extension.get(),
-                        base::Bind(&TestShowDialogCallback));
+  prompt.ShowDialog(&delegate, extension.get(), nullptr,
+                    base::Bind(&TestShowDialogCallback));
   run_loop.Run();
   EXPECT_TRUE(delegate.DidAbort());
 }
@@ -116,8 +116,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallPromptBrowserTest,
 
   base::RunLoop run_loop;
   TestExtensionInstallPromptDelegate delegate(run_loop.QuitClosure());
-  prompt.ConfirmInstall(&delegate, extension.get(),
-                        base::Bind(&TestShowDialogCallback));
+  prompt.ShowDialog(&delegate, extension.get(), nullptr,
+                    base::Bind(&TestShowDialogCallback));
   run_loop.Run();
   EXPECT_TRUE(delegate.DidAbort());
 }
@@ -131,8 +131,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallPromptBrowserTest, NoParent) {
   ExtensionInstallPrompt prompt(browser()->profile(), NULL);
   base::RunLoop run_loop;
   TestExtensionInstallPromptDelegate delegate(run_loop.QuitClosure());
-  prompt.ConfirmInstall(&delegate, extension.get(),
-                        base::Bind(&TestShowDialogCallback));
+  prompt.ShowDialog(&delegate, extension.get(), nullptr,
+                    base::Bind(&TestShowDialogCallback));
   run_loop.Run();
 
   // TestShowDialogCallback() should have signaled the install to proceed.

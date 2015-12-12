@@ -49,7 +49,12 @@ class ManagementSetEnabledFunctionInstallPromptDelegate
       : function_(function) {
     install_prompt_.reset(
         new ExtensionInstallPrompt(function->GetSenderWebContents()));
-    install_prompt_->ConfirmReEnable(this, extension);
+    ExtensionInstallPrompt::PromptType type =
+        ExtensionInstallPrompt::GetReEnablePromptTypeForExtension(
+            function->browser_context(), extension);
+    install_prompt_->ShowDialog(
+        this, extension, nullptr, new ExtensionInstallPrompt::Prompt(type),
+        ExtensionInstallPrompt::GetDefaultShowDialogCallback());
   }
   ~ManagementSetEnabledFunctionInstallPromptDelegate() override {}
 

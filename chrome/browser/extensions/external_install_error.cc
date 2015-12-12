@@ -379,12 +379,11 @@ void ExternalInstallError::OnFetchComplete() {
       new ExtensionInstallPrompt(Profile::FromBrowserContext(browser_context_),
                                  NULL));  // NULL native window.
 
-  install_ui_->ConfirmExternalInstall(
-      this,
-      GetExtension(),
-      base::Bind(&ExternalInstallError::OnDialogReady,
-                 weak_factory_.GetWeakPtr()),
-      prompt_);
+  install_ui_->ShowDialog(this, GetExtension(),
+                          nullptr,  // Force a fetch of the icon.
+                          prompt_,
+                          base::Bind(&ExternalInstallError::OnDialogReady,
+                                     weak_factory_.GetWeakPtr()));
 }
 
 void ExternalInstallError::OnDialogReady(

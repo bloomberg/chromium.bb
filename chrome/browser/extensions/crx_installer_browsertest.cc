@@ -83,11 +83,6 @@ class MockPromptProxy : public base::RefCountedThreadSafe<MockPromptProxy> {
   bool confirmation_requested() const { return confirmation_requested_; }
   const base::string16& error() const { return error_; }
 
-  // To have any effect, this should be called before CreatePrompt.
-  void set_record_oauth2_grant(bool record_oauth2_grant) {
-    record_oauth2_grant_.reset(new bool(record_oauth2_grant));
-  }
-
   void set_extension_id(const std::string& id) { extension_id_ = id; }
   void set_confirmation_requested() { confirmation_requested_ = true; }
   void set_error(const base::string16& error) { error_ = error; }
@@ -100,7 +95,6 @@ class MockPromptProxy : public base::RefCountedThreadSafe<MockPromptProxy> {
 
   // Data used to create a prompt.
   content::WebContents* web_contents_;
-  scoped_ptr<bool> record_oauth2_grant_;
 
   // Data reported back to us by the prompt we created.
   bool confirmation_requested_;
@@ -144,12 +138,11 @@ class MockInstallPrompt : public ExtensionInstallPrompt {
       ExtensionInstallPrompt(web_contents),
       proxy_(proxy) {}
 
-  void set_record_oauth2_grant(bool record) { record_oauth2_grant_ = record; }
-
   // Overriding some of the ExtensionInstallUI API.
-  void ConfirmInstall(Delegate* delegate,
-                      const Extension* extension,
-                      const ShowDialogCallback& show_dialog_callback) override {
+  void ShowDialog(Delegate* delegate,
+                  const Extension* extension,
+                  const SkBitmap* bitmap,
+                  const ShowDialogCallback& show_dialog_callback) override {
     proxy_->set_confirmation_requested();
     delegate->InstallUIProceed();
   }
@@ -173,11 +166,8 @@ MockPromptProxy::MockPromptProxy(content::WebContents* web_contents)
 MockPromptProxy::~MockPromptProxy() {}
 
 scoped_ptr<ExtensionInstallPrompt> MockPromptProxy::CreatePrompt() {
-  scoped_ptr<MockInstallPrompt> prompt(
+  return scoped_ptr<MockInstallPrompt>(
       new MockInstallPrompt(web_contents_, this));
-  if (record_oauth2_grant_.get())
-    prompt->set_record_oauth2_grant(*record_oauth2_grant_.get());
-  return prompt.Pass();
 }
 
 
@@ -285,7 +275,6 @@ class ExtensionCrxInstallerTest : public ExtensionBrowserTest {
     scoped_refptr<MockPromptProxy> mock_prompt =
         CreateMockPromptProxyForBrowser(browser());
 
-    mock_prompt->set_record_oauth2_grant(record_oauth2_grant);
     InstallWithPrompt("browsertest/scopes", std::string(), mock_prompt);
 
     scoped_ptr<const PermissionSet> permissions =

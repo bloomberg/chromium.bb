@@ -65,15 +65,10 @@ class CallbackHelper {
   // Create a test ExtensionInstallPrompt that will not display any UI (which
   // causes unit tests to crash), but rather runs the given |quit_closure| (with
   // the prompt still active|.
-  scoped_ptr<ExtensionInstallPrompt> CreateTestPrompt(
-      content::WebContents* web_contents,
+  ExtensionInstallPrompt::ShowDialogCallback CreateShowCallback(
       const base::Closure& quit_closure) {
     quit_closure_ = quit_closure;
-    scoped_ptr<ExtensionInstallPrompt> prompt(
-        new ExtensionInstallPrompt(web_contents));
-    prompt->set_callback_for_test(base::Bind(&CallbackHelper::OnShow,
-                                             base::Unretained(this)));
-    return prompt.Pass();
+    return base::Bind(&CallbackHelper::OnShow, base::Unretained(this));
   }
 
  private:
@@ -235,11 +230,9 @@ TEST_F(ExtensionReenablerUnitTest, TestReenablingDisabledExtension) {
   {
     base::RunLoop run_loop;
     scoped_ptr<ExtensionReenabler> extension_reenabler =
-        ExtensionReenabler::PromptForReenableWithPromptForTest(
-            extension,
-            profile(),
-            callback_helper.GetCallback(),
-            callback_helper.CreateTestPrompt(nullptr, run_loop.QuitClosure()));
+        ExtensionReenabler::PromptForReenableWithCallbackForTest(
+            extension, profile(), callback_helper.GetCallback(),
+            callback_helper.CreateShowCallback(run_loop.QuitClosure()));
     run_loop.Run();
 
     // We shouldn't have any result yet (the user hasn't confirmed or canceled).
@@ -259,11 +252,9 @@ TEST_F(ExtensionReenablerUnitTest, TestReenablingDisabledExtension) {
                                 Extension::DISABLE_PERMISSIONS_INCREASE);
     base::RunLoop run_loop;
     scoped_ptr<ExtensionReenabler> extension_reenabler =
-        ExtensionReenabler::PromptForReenableWithPromptForTest(
-            extension,
-            profile(),
-            callback_helper.GetCallback(),
-            callback_helper.CreateTestPrompt(nullptr, run_loop.QuitClosure()));
+        ExtensionReenabler::PromptForReenableWithCallbackForTest(
+            extension, profile(), callback_helper.GetCallback(),
+            callback_helper.CreateShowCallback(run_loop.QuitClosure()));
     run_loop.Run();
     EXPECT_FALSE(callback_helper.has_result());
     // Destroy the reenabler to simulate the owning context being shut down

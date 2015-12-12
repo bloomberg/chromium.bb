@@ -65,11 +65,11 @@ class ProgrammableInstallPrompt : public ExtensionInstallPrompt {
 
   ~ProgrammableInstallPrompt() override {}
 
-  void ConfirmStandaloneInstall(
-      Delegate* delegate,
-      const Extension* extension,
-      SkBitmap* icon,
-      scoped_refptr<ExtensionInstallPrompt::Prompt> prompt) override {
+  void ShowDialog(Delegate* delegate,
+                  const Extension* extension,
+                  const SkBitmap* icon,
+                  const scoped_refptr<ExtensionInstallPrompt::Prompt>& prompt,
+                  const ShowDialogCallback& callback) override {
     delegate_ = delegate;
   }
 

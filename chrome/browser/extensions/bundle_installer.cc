@@ -287,12 +287,19 @@ void BundleInstaller::ShowPrompt() {
     if (browser)
       web_contents = browser->tab_strip_model()->GetActiveWebContents();
     install_ui_.reset(new ExtensionInstallPrompt(web_contents));
+    scoped_refptr<ExtensionInstallPrompt::Prompt> prompt;
     if (delegated_username_.empty()) {
-      install_ui_->ConfirmBundleInstall(this, &icon_, permissions.Pass());
+      prompt = new ExtensionInstallPrompt::Prompt(
+          ExtensionInstallPrompt::BUNDLE_INSTALL_PROMPT);
     } else {
-      install_ui_->ConfirmPermissionsForDelegatedBundleInstall(
-          this, delegated_username_, &icon_, permissions.Pass());
+      prompt = new ExtensionInstallPrompt::Prompt(
+          ExtensionInstallPrompt::DELEGATED_BUNDLE_PERMISSIONS_PROMPT);
+      prompt->set_delegated_username(delegated_username_);
     }
+    prompt->set_bundle(this);
+    install_ui_->ShowDialog(
+        this, nullptr, &icon_, prompt, permissions.Pass(),
+        ExtensionInstallPrompt::GetDefaultShowDialogCallback());
   }
 }
 
