@@ -185,7 +185,7 @@ TEST(DisplayItemListTest, SerializeCompositingItem) {
   skia::RefPtr<SkColorFilter> filter = skia::AdoptRef(
       SkColorFilter::CreateLightingFilter(SK_ColorRED, SK_ColorGREEN));
   list->CreateAndAppendItem<CompositingDisplayItem>(
-      kVisualRect, 150, SkXfermode::Mode::kDst_Mode, nullptr, filter);
+      kVisualRect, 150, SkXfermode::Mode::kDst_Mode, nullptr, filter, false);
 
   // Build the second DrawingDisplayItem.
   AppendSecondSerializationTestPicture(list, layer_size);

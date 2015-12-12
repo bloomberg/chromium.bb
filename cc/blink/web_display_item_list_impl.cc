@@ -168,14 +168,16 @@ void WebDisplayItemListImpl::appendCompositingItem(
   // TODO(ajuma): This should really be rounding instead of flooring the alpha
   // value, but that breaks slimming paint reftests.
 
+  const bool kLcdTextRequiresOpaqueLayer = true;
   if (display_item_list_->RetainsIndividualDisplayItems()) {
     display_item_list_->CreateAndAppendItem<cc::CompositingDisplayItem>(
         visual_rect, static_cast<uint8_t>(gfx::ToFlooredInt(255 * opacity)),
-        xfermode, bounds, skia::SharePtr(color_filter));
+        xfermode, bounds, skia::SharePtr(color_filter),
+        kLcdTextRequiresOpaqueLayer);
   } else {
     cc::CompositingDisplayItem item(
         static_cast<uint8_t>(gfx::ToFlooredInt(255 * opacity)), xfermode,
-        bounds, skia::SharePtr(color_filter));
+        bounds, skia::SharePtr(color_filter), kLcdTextRequiresOpaqueLayer);
     display_item_list_->RasterIntoCanvas(item);
   }
 }

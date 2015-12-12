@@ -23,7 +23,8 @@ class CC_EXPORT CompositingDisplayItem : public DisplayItem {
   CompositingDisplayItem(uint8_t alpha,
                          SkXfermode::Mode xfermode,
                          SkRect* bounds,
-                         skia::RefPtr<SkColorFilter> color_filter);
+                         skia::RefPtr<SkColorFilter> color_filter,
+                         bool lcd_text_requires_opaque_layer);
   explicit CompositingDisplayItem(const proto::DisplayItem& proto);
   ~CompositingDisplayItem() override;
 
@@ -42,13 +43,15 @@ class CC_EXPORT CompositingDisplayItem : public DisplayItem {
   void SetNew(uint8_t alpha,
               SkXfermode::Mode xfermode,
               SkRect* bounds,
-              skia::RefPtr<SkColorFilter> color_filter);
+              skia::RefPtr<SkColorFilter> color_filter,
+              bool lcd_text_requires_opaque_layer);
 
   uint8_t alpha_;
   SkXfermode::Mode xfermode_;
   bool has_bounds_;
   SkRect bounds_;
   skia::RefPtr<SkColorFilter> color_filter_;
+  bool lcd_text_requires_opaque_layer_;
 };
 
 class CC_EXPORT EndCompositingDisplayItem : public DisplayItem {

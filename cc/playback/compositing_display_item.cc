@@ -19,11 +19,14 @@
 
 namespace cc {
 
-CompositingDisplayItem::CompositingDisplayItem(uint8_t alpha,
-                                               SkXfermode::Mode xfermode,
-                                               SkRect* bounds,
-                                               skia::RefPtr<SkColorFilter> cf) {
-  SetNew(alpha, xfermode, bounds, std::move(cf));
+CompositingDisplayItem::CompositingDisplayItem(
+    uint8_t alpha,
+    SkXfermode::Mode xfermode,
+    SkRect* bounds,
+    skia::RefPtr<SkColorFilter> cf,
+    bool lcd_text_requires_opaque_layer) {
+  SetNew(alpha, xfermode, bounds, std::move(cf),
+         lcd_text_requires_opaque_layer);
 }
 
 CompositingDisplayItem::CompositingDisplayItem(
@@ -47,7 +50,11 @@ CompositingDisplayItem::CompositingDisplayItem(
     filter = skia::AdoptRef(static_cast<SkColorFilter*>(flattenable));
   }
 
-  SetNew(alpha, xfermode, bounds.get(), std::move(filter));
+  bool lcd_text_requires_opaque_layer =
+      details.lcd_text_requires_opaque_layer();
+
+  SetNew(alpha, xfermode, bounds.get(), std::move(filter),
+         lcd_text_requires_opaque_layer);
 }
 
 CompositingDisplayItem::~CompositingDisplayItem() {
@@ -56,13 +63,15 @@ CompositingDisplayItem::~CompositingDisplayItem() {
 void CompositingDisplayItem::SetNew(uint8_t alpha,
                                     SkXfermode::Mode xfermode,
                                     SkRect* bounds,
-                                    skia::RefPtr<SkColorFilter> cf) {
+                                    skia::RefPtr<SkColorFilter> cf,
+                                    bool lcd_text_requires_opaque_layer) {
   alpha_ = alpha;
   xfermode_ = xfermode;
   has_bounds_ = !!bounds;
   if (bounds)
     bounds_ = SkRect(*bounds);
   color_filter_ = std::move(cf);
+  lcd_text_requires_opaque_layer_ = lcd_text_requires_opaque_layer;
 }
 
 void CompositingDisplayItem::ToProtobuf(proto::DisplayItem* proto) const {
@@ -80,6 +89,8 @@ void CompositingDisplayItem::ToProtobuf(proto::DisplayItem* proto) const {
     if (data->size() > 0)
       details->set_color_filter(data->data(), data->size());
   }
+
+  details->set_lcd_text_requires_opaque_layer(lcd_text_requires_opaque_layer_);
 }
 
 void CompositingDisplayItem::Raster(
@@ -90,7 +101,11 @@ void CompositingDisplayItem::Raster(
   paint.setXfermodeMode(xfermode_);
   paint.setAlpha(alpha_);
   paint.setColorFilter(color_filter_.get());
-  canvas->saveLayer(has_bounds_ ? &bounds_ : nullptr, &paint);
+  const SkRect* bounds = has_bounds_ ? &bounds_ : nullptr;
+  if (lcd_text_requires_opaque_layer_)
+    canvas->saveLayer(bounds, &paint);
+  else
+    canvas->saveLayerPreserveLCDTextRequests(bounds, &paint);
 }
 
 void CompositingDisplayItem::AsValueInto(

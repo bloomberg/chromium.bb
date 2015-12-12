@@ -1432,11 +1432,11 @@ void TabStrip::PaintChildren(const ui::PaintContext& context) {
   Tabs selected_tabs;
 
   {
-    // TODO(pkasting): This results in greyscale AA for the tab titles.  Work
-    // with Mike Reed to fix, or else convert to passing the tabs a memory
-    // canvas to paint on and then manually compositing.
+    // We pass false for |lcd_text_requires_opaque_layer| so that background
+    // tab titles will get LCD AA.  These are rendered opaquely on an opaque tab
+    // background before the layer is composited, so this is safe.
     ui::CompositingRecorder opacity_recorder(context, size(),
-                                             GetInactiveAlpha(false));
+                                             GetInactiveAlpha(false), false);
 
     PaintClosingTabs(tab_count(), context);
 
@@ -1493,8 +1493,10 @@ void TabStrip::PaintChildren(const ui::PaintContext& context) {
   if (md && (newtab_button_->state() != views::CustomButton::STATE_PRESSED)) {
     // Match the inactive tab opacity for non-pressed states.  See comments in
     // NewTabButton::PaintFill() for why we don't do this for the pressed state.
+    // This call doesn't need to set |lcd_text_requires_opaque_layer| to false
+    // because no text will be drawn.
     ui::CompositingRecorder opacity_recorder(context, size(),
-                                             GetInactiveAlpha(true));
+                                             GetInactiveAlpha(true), true);
     newtab_button_->Paint(context);
   } else {
     newtab_button_->Paint(context);

@@ -68,10 +68,10 @@ message ClipPathDisplayItem {
 
 message CompositingDisplayItem {
   optional uint32 alpha = 1;
-
   optional cc.proto.SkXfermode.Mode mode = 2;
   optional cc.proto.RectF bounds = 3;
   optional bytes color_filter = 4; /* SkColorFilter */
+  optional bool lcd_text_requires_opaque_layer = 5;
 }
 
 message DrawingDisplayItem {
