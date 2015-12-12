@@ -127,6 +127,8 @@ source_set("renderer") {
     sources -= [
       "media/media_stream_audio_level_calculator.cc",
       "media/media_stream_audio_level_calculator.h",
+      "media/media_stream_audio_track.cc",
+      "media/media_stream_audio_track.h",
       "media/media_stream_center.h",
       "media/media_stream_constraints_util.cc",
       "media/media_stream_constraints_util.h",

@@ -12,7 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
-#include "content/renderer/media/media_stream_track.h"
+#include "content/renderer/media/media_stream_audio_track.h"
 #include "content/renderer/media/tagged_list.h"
 #include "media/audio/audio_parameters.h"
 
@@ -36,8 +36,9 @@ class WebRtcLocalAudioTrackAdapter;
 // When an instance is created, it will register itself as a track to the
 // WebRtcAudioCapturer to get the captured data, and forward the data to
 // its |sinks_|. The data flow can be stopped by disabling the audio track.
+// TODO(tommi): Rename to MediaStreamLocalAudioTrack.
 class CONTENT_EXPORT WebRtcLocalAudioTrack
-    : NON_EXPORTED_BASE(public MediaStreamTrack) {
+    : NON_EXPORTED_BASE(public MediaStreamAudioTrack) {
  public:
   WebRtcLocalAudioTrack(WebRtcLocalAudioTrackAdapter* adapter,
                         const scoped_refptr<WebRtcAudioCapturer>& capturer,
@@ -48,11 +49,11 @@ class CONTENT_EXPORT WebRtcLocalAudioTrack
   // Add a sink to the track. This function will trigger a OnSetFormat()
   // call on the |sink|.
   // Called on the main render thread.
-  void AddSink(MediaStreamAudioSink* sink);
+  void AddSink(MediaStreamAudioSink* sink) override;
 
   // Remove a sink from the track.
   // Called on the main render thread.
-  void RemoveSink(MediaStreamAudioSink* sink);
+  void RemoveSink(MediaStreamAudioSink* sink) override;
 
   // Starts the local audio track. Called on the main render thread and
   // should be called only once when audio track is created.
@@ -71,7 +72,7 @@ class CONTENT_EXPORT WebRtcLocalAudioTrack
   // Returns the output format of the capture source. May return an invalid
   // AudioParameters if the format is not yet available.
   // Called on the main render thread.
-  media::AudioParameters GetOutputFormat() const;
+  media::AudioParameters GetOutputFormat() const override;
 
   // Method called by the capturer to deliver the capture data.
   // Called on the capture audio thread.

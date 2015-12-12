@@ -8,11 +8,8 @@
 #include "base/compiler_specific.h"
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
+#include "media/audio/audio_parameters.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
-
-namespace webrtc {
-class AudioTrackInterface;
-}  // namespace webrtc
 
 namespace content {
 
@@ -31,9 +28,6 @@ class CONTENT_EXPORT MediaStreamTrack
 
   virtual void Stop() = 0;
 
-  // TODO(tommi, xians): Remove this method.
-  virtual webrtc::AudioTrackInterface* GetAudioAdapter();
-
   bool is_local_track() const { return is_local_track_; }
 
  protected:
@@ -42,6 +36,7 @@ class CONTENT_EXPORT MediaStreamTrack
   // Used to DCHECK that we are called on Render main Thread.
   base::ThreadChecker main_render_thread_checker_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(MediaStreamTrack);
 };
 

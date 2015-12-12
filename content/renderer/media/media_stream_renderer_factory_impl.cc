@@ -6,6 +6,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "content/renderer/media/media_stream.h"
+#include "content/renderer/media/media_stream_audio_track.h"
 #include "content/renderer/media/media_stream_video_renderer_sink.h"
 #include "content/renderer/media/media_stream_video_track.h"
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
@@ -141,7 +142,8 @@ MediaStreamRendererFactoryImpl::GetAudioRenderer(
   // and mixes audio from all the tracks that belong to the media stream.
   // For now, we have separate renderers depending on if the first audio track
   // in the stream is local or remote.
-  MediaStreamTrack* audio_track = MediaStreamTrack::GetTrack(audio_tracks[0]);
+  MediaStreamAudioTrack* audio_track = MediaStreamAudioTrack::GetTrack(
+      audio_tracks[0]);
   if (!audio_track) {
     // This can happen if the track was cloned.
     // TODO(tommi, perkj): Fix cloning of tracks to handle extra data too.

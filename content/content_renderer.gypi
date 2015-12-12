@@ -302,6 +302,8 @@
       'renderer/media/media_permission_dispatcher_proxy.h',
       'renderer/media/media_stream_audio_level_calculator.cc',
       'renderer/media/media_stream_audio_level_calculator.h',
+      'renderer/media/media_stream_audio_track.cc',
+      'renderer/media/media_stream_audio_track.h',
       'renderer/media/media_stream_center.h',
       'renderer/media/media_stream_constraints_util.cc',
       'renderer/media/media_stream_constraints_util.h',

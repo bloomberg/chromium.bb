@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "content/renderer/media/media_stream_audio_source.h"
+#include "content/renderer/media/media_stream_audio_track.h"
 #include "content/renderer/media/media_stream_track.h"
 #include "content/renderer/media/webrtc/media_stream_video_webrtc_sink.h"
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
@@ -77,7 +78,7 @@ void WebRtcMediaStreamAdapter::CreateAudioTrack(
   DCHECK_EQ(track.source().type(), blink::WebMediaStreamSource::TypeAudio);
   // A media stream is connected to a peer connection, enable the
   // peer connection mode for the sources.
-  MediaStreamTrack* native_track = MediaStreamTrack::GetTrack(track);
+  MediaStreamAudioTrack* native_track = MediaStreamAudioTrack::GetTrack(track);
   if (!native_track || !native_track->is_local_track()) {
     // We don't support connecting remote audio tracks to PeerConnection yet.
     // See issue http://crbug/344303.

@@ -21,7 +21,7 @@ WebRtcLocalAudioTrack::WebRtcLocalAudioTrack(
     WebRtcLocalAudioTrackAdapter* adapter,
     const scoped_refptr<WebRtcAudioCapturer>& capturer,
     WebAudioCapturerSource* webaudio_source)
-    : MediaStreamTrack(true),
+    : MediaStreamAudioTrack(true),
       adapter_(adapter),
       capturer_(capturer),
       webaudio_source_(webaudio_source) {
