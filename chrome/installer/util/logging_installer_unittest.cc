@@ -24,9 +24,9 @@ TEST(LoggingInstallerTest, TestTruncate) {
                             static_cast<int>(test_data.size())));
   ASSERT_TRUE(base::PathExists(temp_file));
 
-  int64 file_size = 0;
+  int64_t file_size = 0;
   EXPECT_TRUE(base::GetFileSize(temp_file, &file_size));
-  EXPECT_EQ(static_cast<int64>(test_data.size()), file_size);
+  EXPECT_EQ(static_cast<int64_t>(test_data.size()), file_size);
 
   EXPECT_EQ(installer::LOGFILE_TRUNCATED,
             installer::TruncateLogFileIfNeeded(temp_file));
@@ -50,15 +50,15 @@ TEST(LoggingInstallerTest, TestTruncationNotNeeded) {
                             static_cast<int>(test_data.size())));
   ASSERT_TRUE(base::PathExists(temp_file));
 
-  int64 file_size = 0;
+  int64_t file_size = 0;
   EXPECT_TRUE(base::GetFileSize(temp_file, &file_size));
-  EXPECT_EQ(test_data.size(), file_size);
+  EXPECT_EQ(static_cast<int64_t>(test_data.size()), file_size);
 
   EXPECT_EQ(installer::LOGFILE_UNTOUCHED,
             installer::TruncateLogFileIfNeeded(temp_file));
   EXPECT_TRUE(base::PathExists(temp_file));
   EXPECT_TRUE(base::GetFileSize(temp_file, &file_size));
-  EXPECT_EQ(test_data.size(), file_size);
+  EXPECT_EQ(static_cast<int64_t>(test_data.size()), file_size);
 }
 
 TEST(LoggingInstallerTest, TestInUseNeedsTruncation) {
@@ -72,9 +72,9 @@ TEST(LoggingInstallerTest, TestInUseNeedsTruncation) {
             base::WriteFile(temp_file, &test_data[0],
                             static_cast<int>(test_data.size())));
   ASSERT_TRUE(base::PathExists(temp_file));
-  int64 file_size = 0;
+  int64_t file_size = 0;
   EXPECT_TRUE(base::GetFileSize(temp_file, &file_size));
-  EXPECT_EQ(test_data.size(), file_size);
+  EXPECT_EQ(static_cast<int64_t>(test_data.size()), file_size);
 
   // Prevent the log file from being moved or deleted.
   uint32 file_flags = base::File::FLAG_OPEN |
@@ -87,7 +87,7 @@ TEST(LoggingInstallerTest, TestInUseNeedsTruncation) {
             installer::TruncateLogFileIfNeeded(temp_file));
   EXPECT_TRUE(base::PathExists(temp_file));
   EXPECT_TRUE(base::GetFileSize(temp_file, &file_size));
-  EXPECT_EQ(test_data.size(), file_size);
+  EXPECT_EQ(static_cast<int64_t>(test_data.size()), file_size);
 }
 
 TEST(LoggingInstallerTest, TestMoveFailsNeedsTruncation) {
@@ -101,9 +101,9 @@ TEST(LoggingInstallerTest, TestMoveFailsNeedsTruncation) {
             base::WriteFile(temp_file, &test_data[0],
                             static_cast<int>(test_data.size())));
   ASSERT_TRUE(base::PathExists(temp_file));
-  int64 file_size = 0;
+  int64_t file_size = 0;
   EXPECT_TRUE(base::GetFileSize(temp_file, &file_size));
-  EXPECT_EQ(test_data.size(), file_size);
+  EXPECT_EQ(static_cast<int64_t>(test_data.size()), file_size);
 
   // Create an inconvenient, non-deletable file in the location that
   // TruncateLogFileIfNeeded would like to move the log file to.
