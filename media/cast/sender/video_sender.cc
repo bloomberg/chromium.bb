@@ -249,7 +249,9 @@ void VideoSender::InsertRawVideoFrame(
 
   TRACE_COUNTER_ID1("cast.stream", "Video Target Bitrate", this, bitrate);
 
-  MaybeRenderPerformanceMetricsOverlay(bitrate,
+  MaybeRenderPerformanceMetricsOverlay(GetTargetPlayoutDelay(),
+                                       low_latency_mode_,
+                                       bitrate,
                                        frames_in_encoder_ + 1,
                                        last_reported_deadline_utilization_,
                                        last_reported_lossy_utilization_,

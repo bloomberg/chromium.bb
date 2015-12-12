@@ -5,27 +5,29 @@
 #ifndef MEDIA_CAST_SENDER_PERFORMANCE_METRICS_OVERLAY_H_
 #define MEDIA_CAST_SENDER_PERFORMANCE_METRICS_OVERLAY_H_
 
+#include "base/time/time.h"
+
 // This module provides a display of frame-level performance metrics, rendered
 // in the lower-right corner of a VideoFrame.  It looks like this:
 //
-// +----------------------------------------------------------------+
-// |                         @@@@@@@@@@@@@@@@@@@@@@@                |
-// |                 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@                |
-// |              @@@@@@@@@@@@@@@@@@@@@@@ @@@@@@@@@@@@              |
-// |             @@@@@@@@@@@@@                    @@@@              |
-// |            @@@@@@@@@@                        @@@@              |
-// |           @@@@@  @@@               @@@       @@@@              |
-// |           @@@     @    @@@         @@@@      @@@@              |
-// |          @@@@          @@@@                  @@@@              |
-// |          @@@@                  @@@           @@@               |
-// |            @@@@                 @@           @@@               |
-// |             @@@@@      @@@            @@@   @@@                |
-// |              @@@@@     @@@@@        @@@@   @@@@                |
-// |               @@@@@      @@@@@@@@@@@@@    @@@@                 |
-// |                @@@@@@                    @@@@      1  45%  75% |
-// |                    @@@@@@@@         @@@@@@      22  16.7  4000 |
-// |                         @@@@@@@@@@@@@@@@      1280x720 0:15.12 |
-// +----------------------------------------------------------------+
+// +---------------------------------------------------------------------+
+// |                         @@@@@@@@@@@@@@@@@@@@@@@                     |
+// |                 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@                     |
+// |              @@@@@@@@@@@@@@@@@@@@@@@ @@@@@@@@@@@@                   |
+// |             @@@@@@@@@@@@@                    @@@@                   |
+// |            @@@@@@@@@@                        @@@@                   |
+// |           @@@@@  @@@               @@@       @@@@                   |
+// |           @@@     @    @@@         @@@@      @@@@                   |
+// |          @@@@          @@@@                  @@@@                   |
+// |          @@@@                  @@@           @@@                    |
+// |            @@@@                 @@           @@@                    |
+// |             @@@@@      @@@            @@@   @@@                     |
+// |              @@@@@     @@@@@        @@@@   @@@@                     |
+// |               @@@@@      @@@@@@@@@@@@@    @@@@                      |
+// |                @@@@@@                    @@@@           1  45%  75% |
+// |                    @@@@@@@@         @@@@@@            22  400. 4000 |
+// |                         @@@@@@@@@@@@@@@@      16.7 1280x720 0:15.12 |
+// +---------------------------------------------------------------------+
 //
 // Line 1: Reads as, "1 frame ago, the encoder deadline utilization for the
 // frame was 45% and the lossy utilization was 75%."  Encoder deadline
@@ -35,11 +37,15 @@
 // byte size, where a value over 100% means the frame's content is too complex
 // to encode within the target number of bytes.
 //
-// Line 2: Reads as, "Capture of this frame took 22 ms.  The expected duration
-// of this frame is 16.7 ms.  The target bitrate for this frame is 4000 kbps."
+// Line 2: Reads as, "Capture of this frame took 22 ms.  The current target
+// playout delay is 400 ms and low-latency adjustment mode is not active.  The
+// target bitrate for this frame is 4000 kbps."  If there were an exclamation
+// mark (!) after the playout delay number instead of a period (.), it would
+// indicate low-latency adjustment mode is active.  See VideoSender for more
+// details.
 //
-// Line 3: Contains the frame's resolution and media timestamp in
-// minutes:seconds.hundredths format.
+// Line 3: Contains the frame's duration (16.7 milliseconds), resolution, and
+// media timestamp in minutes:seconds.hundredths format.
 
 namespace media {
 
@@ -54,7 +60,9 @@ namespace cast {
 // lines, and level 3 renders all three lines.  So, use the
 // --vmodule=performance_metrics_overlay=3 command line argument to turn on
 // rendering of the entire overlay.
-void MaybeRenderPerformanceMetricsOverlay(int target_bitrate,
+void MaybeRenderPerformanceMetricsOverlay(base::TimeDelta target_playout_delay,
+                                          bool in_low_latency_mode,
+                                          int target_bitrate,
                                           int frames_ago,
                                           double deadline_utilization,
                                           double lossy_utilization,
