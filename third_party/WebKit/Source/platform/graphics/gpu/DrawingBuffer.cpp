@@ -120,7 +120,7 @@ PassRefPtr<DrawingBuffer> DrawingBuffer::create(PassOwnPtr<WebGraphicsContext3D>
     if (discardFramebufferSupported)
         extensionsUtil->ensureExtensionEnabled("GL_EXT_discard_framebuffer");
 
-    RefPtr<DrawingBuffer> drawingBuffer = adoptRef(new DrawingBuffer(std::move(context), extensionsUtil.release(), multisampleSupported, packedDepthStencilSupported, discardFramebufferSupported, preserve, requestedAttributes));
+    RefPtr<DrawingBuffer> drawingBuffer = adoptRef(new DrawingBuffer(context, extensionsUtil.release(), multisampleSupported, packedDepthStencilSupported, discardFramebufferSupported, preserve, requestedAttributes));
     if (!drawingBuffer->initialize(size)) {
         drawingBuffer->beginDestruction();
         return PassRefPtr<DrawingBuffer>();
@@ -146,8 +146,8 @@ DrawingBuffer::DrawingBuffer(PassOwnPtr<WebGraphicsContext3D> context,
     , m_drawFramebufferBinding(0)
     , m_readFramebufferBinding(0)
     , m_activeTextureUnit(GL_TEXTURE0)
-    , m_context(std::move(context))
-    , m_extensionsUtil(std::move(extensionsUtil))
+    , m_context(context)
+    , m_extensionsUtil(extensionsUtil)
     , m_size(-1, -1)
     , m_requestedAttributes(requestedAttributes)
     , m_multisampleExtensionSupported(multisampleExtensionSupported)

@@ -274,7 +274,7 @@ void DOMWrapperWorld::registerDOMObjectHolderInternal(PassOwnPtr<DOMObjectHolder
     ASSERT(!m_domObjectHolders.contains(holderBase.get()));
     holderBase->setWorld(this);
     holderBase->setWeak(&DOMWrapperWorld::weakCallbackForDOMObjectHolder);
-    m_domObjectHolders.add(std::move(holderBase));
+    m_domObjectHolders.add(holderBase);
 }
 
 void DOMWrapperWorld::unregisterDOMObjectHolder(DOMObjectHolderBase* holderBase)

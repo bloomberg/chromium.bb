@@ -97,7 +97,7 @@ private:
     friend class ImageFrameGeneratorTest;
     friend class DeferredImageDecoderTest;
     // For testing. |factory| will overwrite the default ImageDecoder creation logic if |factory->create()| returns non-zero.
-    void setImageDecoderFactory(PassOwnPtr<ImageDecoderFactory> factory) { m_imageDecoderFactory = std::move(factory); }
+    void setImageDecoderFactory(PassOwnPtr<ImageDecoderFactory> factory) { m_imageDecoderFactory = factory; }
 
     void setHasAlpha(size_t index, bool hasAlpha);
 

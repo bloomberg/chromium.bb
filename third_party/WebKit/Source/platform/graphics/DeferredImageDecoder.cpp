@@ -50,13 +50,13 @@ PassOwnPtr<DeferredImageDecoder> DeferredImageDecoder::create(const SharedBuffer
 
 PassOwnPtr<DeferredImageDecoder> DeferredImageDecoder::createForTesting(PassOwnPtr<ImageDecoder> actualDecoder)
 {
-    return adoptPtr(new DeferredImageDecoder(std::move(actualDecoder)));
+    return adoptPtr(new DeferredImageDecoder(actualDecoder));
 }
 
 DeferredImageDecoder::DeferredImageDecoder(PassOwnPtr<ImageDecoder> actualDecoder)
     : m_allDataReceived(false)
     , m_lastDataSize(0)
-    , m_actualDecoder(std::move(actualDecoder))
+    , m_actualDecoder(actualDecoder)
     , m_repetitionCount(cAnimationNone)
     , m_hasColorProfile(false)
     , m_canYUVDecode(false)

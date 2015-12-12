@@ -41,7 +41,7 @@ namespace blink {
 class Task : public WebTaskRunner::Task {
 public:
     explicit Task(PassOwnPtr<Closure> closure)
-        : m_closure(std::move(closure))
+        : m_closure(closure)
     {
     }
 

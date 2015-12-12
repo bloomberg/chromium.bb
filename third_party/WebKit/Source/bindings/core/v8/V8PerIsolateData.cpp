@@ -291,7 +291,7 @@ void V8PerIsolateData::clearEndOfScopeTasks()
 void V8PerIsolateData::setScriptDebugger(PassOwnPtr<MainThreadDebugger> debugger)
 {
     ASSERT(!m_scriptDebugger);
-    m_scriptDebugger = std::move(debugger);
+    m_scriptDebugger = debugger;
 }
 
 } // namespace blink

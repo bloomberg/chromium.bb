@@ -839,7 +839,7 @@ bool JPEGImageDecoder::decodeToYUV()
 
 void JPEGImageDecoder::setImagePlanes(PassOwnPtr<ImagePlanes> imagePlanes)
 {
-    m_imagePlanes = std::move(imagePlanes);
+    m_imagePlanes = imagePlanes;
 }
 
 template <J_COLOR_SPACE colorSpace> void setPixel(ImageFrame& buffer, ImageFrame::PixelData* pixel, JSAMPARRAY samples, int column)

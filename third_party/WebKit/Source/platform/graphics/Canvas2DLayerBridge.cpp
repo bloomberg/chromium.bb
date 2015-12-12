@@ -105,7 +105,7 @@ PassRefPtr<Canvas2DLayerBridge> Canvas2DLayerBridge::create(const IntSize& size,
 }
 
 Canvas2DLayerBridge::Canvas2DLayerBridge(PassOwnPtr<WebGraphicsContext3DProvider> contextProvider, const IntSize& size, int msaaSampleCount, OpacityMode opacityMode, AccelerationMode accelerationMode)
-    : m_contextProvider(std::move(contextProvider))
+    : m_contextProvider(contextProvider)
     , m_logger(adoptPtr(new Logger))
     , m_weakPtrFactory(this)
     , m_imageBuffer(0)
@@ -157,7 +157,7 @@ void Canvas2DLayerBridge::startRecording()
 
 void Canvas2DLayerBridge::setLoggerForTesting(PassOwnPtr<Logger> logger)
 {
-    m_logger = std::move(logger);
+    m_logger = logger;
 }
 
 bool Canvas2DLayerBridge::shouldAccelerate(AccelerationHint hint) const

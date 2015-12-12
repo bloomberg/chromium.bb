@@ -27,7 +27,7 @@ RecordingImageBufferSurface::RecordingImageBufferSurface(const IntSize& size, Pa
     , m_didRecordDrawCommandsInCurrentFrame(false)
     , m_currentFrameHasExpensiveOp(false)
     , m_previousFrameHasExpensiveOp(false)
-    , m_fallbackFactory(std::move(fallbackFactory))
+    , m_fallbackFactory(fallbackFactory)
 {
     initializeCurrentFrame();
 }

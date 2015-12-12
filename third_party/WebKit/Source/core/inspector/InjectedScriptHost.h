@@ -69,9 +69,9 @@ public:
     {
         m_consoleAgent = consoleAgent;
         m_debuggerAgent = debuggerAgent;
-        m_inspectCallback = std::move(inspectCallback);
+        m_inspectCallback = inspectCallback;
         m_debugger = debugger;
-        m_client = std::move(injectedScriptHostClient);
+        m_client = injectedScriptHostClient;
     }
 
     static EventTarget* eventTargetFromV8Value(v8::Isolate*, v8::Local<v8::Value>);

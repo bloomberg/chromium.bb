@@ -38,7 +38,7 @@
 namespace blink {
 
 MediaStreamWebAudioSource::MediaStreamWebAudioSource(PassOwnPtr<WebAudioSourceProvider> provider)
-    : m_webAudioSourceProvider(std::move(provider))
+    : m_webAudioSourceProvider(provider)
 {
 }
 

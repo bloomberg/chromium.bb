@@ -42,7 +42,7 @@ namespace blink {
 class WebCryptoKeyPrivate : public ThreadSafeRefCounted<WebCryptoKeyPrivate> {
 public:
     WebCryptoKeyPrivate(PassOwnPtr<WebCryptoKeyHandle> handle, WebCryptoKeyType type, bool extractable, const WebCryptoKeyAlgorithm& algorithm, WebCryptoKeyUsageMask usages)
-        : handle(std::move(handle))
+        : handle(handle)
         , type(type)
         , extractable(extractable)
         , algorithm(algorithm)

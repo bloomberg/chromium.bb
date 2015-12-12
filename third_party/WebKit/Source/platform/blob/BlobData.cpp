@@ -209,7 +209,7 @@ BlobDataHandle::BlobDataHandle(PassOwnPtr<BlobData> data, long long size)
     , m_type(data->contentType().isolatedCopy())
     , m_size(size)
 {
-    BlobRegistry::registerBlobData(m_uuid, std::move(data));
+    BlobRegistry::registerBlobData(m_uuid, data);
 }
 
 BlobDataHandle::BlobDataHandle(const String& uuid, const String& type, long long size)

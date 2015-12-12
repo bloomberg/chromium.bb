@@ -84,7 +84,7 @@ public:
     void addObserver(Observer*);
 
     ExtraData* extraData() const { return m_extraData.get(); }
-    void setExtraData(PassOwnPtr<ExtraData> extraData) { m_extraData = std::move(extraData); }
+    void setExtraData(PassOwnPtr<ExtraData> extraData) { m_extraData = extraData; }
 
     void setConstraints(WebMediaConstraints constraints) { m_constraints = constraints; }
     WebMediaConstraints constraints() { return m_constraints; }

@@ -138,12 +138,12 @@ private:
     public:
         static PassOwnPtr<DecoderCacheEntry> create(const ImageFrameGenerator* generator, PassOwnPtr<ImageDecoder> decoder)
         {
-            return adoptPtr(new DecoderCacheEntry(generator, 0, std::move(decoder)));
+            return adoptPtr(new DecoderCacheEntry(generator, 0, decoder));
         }
 
         DecoderCacheEntry(const ImageFrameGenerator* generator, int count, PassOwnPtr<ImageDecoder> decoder)
             : CacheEntry(generator, count)
-            , m_cachedDecoder(std::move(decoder))
+            , m_cachedDecoder(decoder)
             , m_size(SkISize::Make(m_cachedDecoder->decodedSize().width(), m_cachedDecoder->decodedSize().height()))
         {
         }

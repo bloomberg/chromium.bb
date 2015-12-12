@@ -57,7 +57,7 @@ public:
     }
     static PassRefPtrWillBeRawPtr<MessageEvent> create(PassOwnPtr<MessagePortChannelArray> channels, PassRefPtr<SerializedScriptValue> data, const String& origin = String(), const String& lastEventId = String(), PassRefPtrWillBeRawPtr<EventTarget> source = nullptr, const String& suborigin = String())
     {
-        return adoptRefWillBeNoop(new MessageEvent(data, origin, lastEventId, source, std::move(channels), suborigin));
+        return adoptRefWillBeNoop(new MessageEvent(data, origin, lastEventId, source, channels, suborigin));
     }
     static PassRefPtrWillBeRawPtr<MessageEvent> create(const String& data, const String& origin = String(), const String& suborigin = String())
     {

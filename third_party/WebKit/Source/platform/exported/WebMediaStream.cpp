@@ -43,7 +43,7 @@ namespace {
 
 class ExtraDataContainer : public MediaStreamDescriptor::ExtraData {
 public:
-    ExtraDataContainer(PassOwnPtr<WebMediaStream::ExtraData> extraData) : m_extraData(std::move(extraData)) { }
+    ExtraDataContainer(PassOwnPtr<WebMediaStream::ExtraData> extraData) : m_extraData(extraData) { }
 
     WebMediaStream::ExtraData* extraData() { return m_extraData.get(); }
 
