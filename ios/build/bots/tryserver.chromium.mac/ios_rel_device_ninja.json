@@ -7,9 +7,13 @@
   ],
   "xcode version": "7.0",
   "GYP_DEFINES": {
+    "OS": "ios",
     "chromium_ios_signing": "0",
-    "target_subarch": "both"
+    "gomadir": "$(goma_dir)",
+    "target_subarch": "both",
+    "use_goma": "1"
   },
+  "mb_type": "gyp",
   "compiler": "ninja",
   "configuration": "Release",
   "sdk": "iphoneos9.0",
