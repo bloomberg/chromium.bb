@@ -311,6 +311,11 @@
             "group_name": "v=1:Prefetching=Learning"
         }
     ],
+    "StrictSecureCookies": [
+        {
+            "group_name": "Enabled"
+        }
+    ],
     "SyncHttpContentCompression": [
         {
             "group_name": "Enabled"
