@@ -109,7 +109,8 @@ protected:
     virtual ScriptState* defaultScriptState() = 0;
 
     InjectedScriptManager* injectedScriptManager() { return m_injectedScriptManager; }
-    void reportExecutionContextCreated(int executionContextId, const String& type, const String& origin, const String& humanReadableName, const String& frameId);
+    void reportExecutionContextCreated(ScriptState*, const String& type, const String& origin, const String& humanReadableName, const String& frameId);
+    void reportExecutionContextDestroyed(ScriptState*);
 
     bool m_enabled;
 

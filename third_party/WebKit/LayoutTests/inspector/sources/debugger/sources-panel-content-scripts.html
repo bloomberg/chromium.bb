@@ -13,7 +13,7 @@ function test()
     InspectorTest.evaluateInPage("createContentScript()", step1);
     function step1()
     {
-        var scripts = InspectorTest.queryScripts(function(script) { return script._isContentScript; });
+        var scripts = InspectorTest.queryScripts(function(script) { return script._isContentScript && !script._isInternalScript; });
         InspectorTest.addResult("Content Scripts:");
         for (var i = 0; i < scripts.length; ++i) {
             InspectorTest.addResult("#" + (i + 1) + ":");

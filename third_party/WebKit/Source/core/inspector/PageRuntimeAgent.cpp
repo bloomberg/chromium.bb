@@ -90,7 +90,6 @@ void PageRuntimeAgent::disable(ErrorString* errorString)
 {
     if (!m_enabled)
         return;
-    m_scriptStateToId.clear();
     InspectorRuntimeAgent::disable(errorString);
 }
 
@@ -118,13 +117,7 @@ void PageRuntimeAgent::didCreateScriptContext(LocalFrame* frame, ScriptState* sc
 
 void PageRuntimeAgent::willReleaseScriptContext(LocalFrame* frame, ScriptState* scriptState)
 {
-    injectedScriptManager()->discardInjectedScriptFor(scriptState);
-    ScriptStateToId::iterator it = m_scriptStateToId.find(scriptState);
-    if (it == m_scriptStateToId.end())
-        return;
-    int id = it->value;
-    m_scriptStateToId.remove(scriptState);
-    frontend()->executionContextDestroyed(id);
+    reportExecutionContextDestroyed(scriptState);
 }
 
 ScriptState* PageRuntimeAgent::defaultScriptState()
@@ -167,12 +160,10 @@ void PageRuntimeAgent::reportExecutionContextCreation()
 
 void PageRuntimeAgent::reportExecutionContext(ScriptState* scriptState, bool isPageContext, const String& origin, const String& frameId)
 {
-    int executionContextId = injectedScriptManager()->injectedScriptIdFor(scriptState);
-    m_scriptStateToId.set(scriptState, executionContextId);
     DOMWrapperWorld& world = scriptState->world();
     String humanReadableName = world.isIsolatedWorld() ? world.isolatedWorldHumanReadableName() : "";
     String type = isPageContext ? "" : "Extension";
-    InspectorRuntimeAgent::reportExecutionContextCreated(executionContextId, type, origin, humanReadableName, frameId);
+    InspectorRuntimeAgent::reportExecutionContextCreated(scriptState, type, origin, humanReadableName, frameId);
 }
 
 } // namespace blink

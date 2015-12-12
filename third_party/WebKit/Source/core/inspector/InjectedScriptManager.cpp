@@ -36,6 +36,7 @@
 #include "core/inspector/InjectedScriptHost.h"
 #include "core/inspector/InjectedScriptNative.h"
 #include "core/inspector/RemoteObjectId.h"
+#include "core/inspector/v8/V8Debugger.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebData.h"
 #include "wtf/PassOwnPtr.h"
@@ -53,8 +54,7 @@ PassOwnPtrWillBeRawPtr<InjectedScriptManager> InjectedScriptManager::createForWo
 }
 
 InjectedScriptManager::InjectedScriptManager(InspectedStateAccessCheck accessCheck)
-    : m_nextInjectedScriptId(1)
-    , m_injectedScriptHost(InjectedScriptHost::create())
+    : m_injectedScriptHost(InjectedScriptHost::create())
     , m_inspectedStateAccessCheck(accessCheck)
     , m_customObjectFormatterEnabled(false)
 {
@@ -80,26 +80,12 @@ InjectedScriptHost* InjectedScriptManager::injectedScriptHost()
     return m_injectedScriptHost.get();
 }
 
-InjectedScript InjectedScriptManager::injectedScriptForId(int id)
+InjectedScript InjectedScriptManager::findInjectedScript(int id) const
 {
-    IdToInjectedScriptMap::iterator it = m_idToInjectedScript.find(id);
+    IdToInjectedScriptMap::const_iterator it = m_idToInjectedScript.find(id);
     if (it != m_idToInjectedScript.end())
         return it->value;
-    for (auto& state : m_scriptStateToId) {
-        if (state.value == id)
-            return injectedScriptFor(state.key.get());
-    }
     return InjectedScript();
-}
-
-int InjectedScriptManager::injectedScriptIdFor(ScriptState* scriptState)
-{
-    ScriptStateToId::iterator it = m_scriptStateToId.find(scriptState);
-    if (it != m_scriptStateToId.end())
-        return it->value;
-    int id = m_nextInjectedScriptId++;
-    m_scriptStateToId.set(scriptState, id);
-    return id;
 }
 
 InjectedScript InjectedScriptManager::findInjectedScript(RemoteObjectIdBase* objectId) const
@@ -112,17 +98,14 @@ InjectedScript InjectedScriptManager::findInjectedScript(RemoteObjectIdBase* obj
 void InjectedScriptManager::discardInjectedScripts()
 {
     m_idToInjectedScript.clear();
-    m_scriptStateToId.clear();
 }
 
-void InjectedScriptManager::discardInjectedScriptFor(ScriptState* scriptState)
+int InjectedScriptManager::discardInjectedScriptFor(ScriptState* scriptState)
 {
-    ScriptStateToId::iterator it = m_scriptStateToId.find(scriptState);
-    if (it == m_scriptStateToId.end())
-        return;
-
-    m_idToInjectedScript.remove(it->value);
-    m_scriptStateToId.remove(it);
+    ScriptState::Scope scope(scriptState);
+    int contextId = V8Debugger::contextId(scriptState->context());
+    m_idToInjectedScript.remove(contextId);
+    return contextId;
 }
 
 bool InjectedScriptManager::canAccessInspectedWorkerGlobalScope(ScriptState*)
@@ -157,25 +140,24 @@ String InjectedScriptManager::injectedScriptSource()
     return String(injectedScriptSourceResource.data(), injectedScriptSourceResource.size());
 }
 
-InjectedScript InjectedScriptManager::injectedScriptFor(ScriptState* inspectedScriptState)
+InjectedScript InjectedScriptManager::injectedScriptFor(ScriptState* scriptState)
 {
-    ScriptStateToId::iterator it = m_scriptStateToId.find(inspectedScriptState);
-    if (it != m_scriptStateToId.end()) {
-        IdToInjectedScriptMap::iterator it1 = m_idToInjectedScript.find(it->value);
-        if (it1 != m_idToInjectedScript.end())
-            return it1->value;
-    }
+    ScriptState::Scope scope(scriptState);
+    int contextId = V8Debugger::contextId(scriptState->context());
 
-    if (!m_inspectedStateAccessCheck(inspectedScriptState))
+    IdToInjectedScriptMap::iterator it = m_idToInjectedScript.find(contextId);
+    if (it != m_idToInjectedScript.end())
+        return it->value;
+
+    if (!m_inspectedStateAccessCheck(scriptState))
         return InjectedScript();
 
-    int id = injectedScriptIdFor(inspectedScriptState);
-    RefPtr<InjectedScriptNative> injectedScriptNative = adoptRef(new InjectedScriptNative(inspectedScriptState->isolate()));
-    ScriptValue injectedScriptValue = createInjectedScript(injectedScriptSource(), inspectedScriptState, id, injectedScriptNative.get());
-    InjectedScript result(injectedScriptValue, m_inspectedStateAccessCheck, injectedScriptNative.release());
+    RefPtr<InjectedScriptNative> injectedScriptNative = adoptRef(new InjectedScriptNative(scriptState->isolate()));
+    ScriptValue injectedScriptValue = createInjectedScript(injectedScriptSource(), scriptState, contextId, injectedScriptNative.get());
+    InjectedScript result(injectedScriptValue, m_inspectedStateAccessCheck, injectedScriptNative.release(), contextId);
     if (m_customObjectFormatterEnabled)
         result.setCustomObjectFormatterEnabled(m_customObjectFormatterEnabled);
-    m_idToInjectedScript.set(id, result);
+    m_idToInjectedScript.set(contextId, result);
     return result;
 }
 

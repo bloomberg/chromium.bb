@@ -134,7 +134,7 @@ void PageDebuggerAgent::didClearDocumentOfWindowObject(LocalFrame* frame)
 
 void PageDebuggerAgent::compileScript(ErrorString* errorString, const String& expression, const String& sourceURL, bool persistScript, int executionContextId, TypeBuilder::OptOutput<ScriptId>* scriptId, RefPtr<ExceptionDetails>& exceptionDetails)
 {
-    InjectedScript injectedScript = m_injectedScriptManager->injectedScriptForId(executionContextId);
+    InjectedScript injectedScript = m_injectedScriptManager->findInjectedScript(executionContextId);
     if (injectedScript.isEmpty()) {
         *errorString = "Inspected frame has gone";
         return;
@@ -152,7 +152,7 @@ void PageDebuggerAgent::compileScript(ErrorString* errorString, const String& ex
 
 void PageDebuggerAgent::runScript(ErrorString* errorString, const ScriptId& scriptId, int executionContextId, const String* const objectGroup, const bool* const doNotPauseOnExceptionsAndMuteConsole, RefPtr<RemoteObject>& result, RefPtr<ExceptionDetails>& exceptionDetails)
 {
-    InjectedScript injectedScript = m_injectedScriptManager->injectedScriptForId(executionContextId);
+    InjectedScript injectedScript = m_injectedScriptManager->findInjectedScript(executionContextId);
     if (injectedScript.isEmpty()) {
         *errorString = "Inspected frame has gone";
         return;

@@ -114,11 +114,12 @@ public:
     void releaseObjectGroup(const String&);
 
     void setCustomObjectFormatterEnabled(bool);
+    int contextId() { return m_contextId; }
 
 private:
     friend InjectedScript InjectedScriptManager::injectedScriptFor(ScriptState*);
     using InspectedStateAccessCheck = bool (*)(ScriptState*);
-    InjectedScript(ScriptValue, InspectedStateAccessCheck, PassRefPtr<InjectedScriptNative>);
+    InjectedScript(ScriptValue, InspectedStateAccessCheck, PassRefPtr<InjectedScriptNative>, int contextId);
 
     void initialize(ScriptValue, InspectedStateAccessCheck);
     bool canAccessInspectedWindow() const;
@@ -131,6 +132,7 @@ private:
     ScriptValue m_injectedScriptObject;
     InspectedStateAccessCheck m_inspectedStateAccessCheck;
     RefPtr<InjectedScriptNative> m_native;
+    int m_contextId;
 };
 
 } // namespace blink

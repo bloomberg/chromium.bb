@@ -97,7 +97,7 @@ void InspectorRuntimeAgent::restore()
 
 void InspectorRuntimeAgent::evaluate(ErrorString* errorString, const String& expression, const String* const objectGroup, const bool* const includeCommandLineAPI, const bool* const doNotPauseOnExceptionsAndMuteConsole, const int* optExecutionContextId, const bool* const returnByValue, const bool* generatePreview, RefPtr<TypeBuilder::Runtime::RemoteObject>& result, TypeBuilder::OptOutput<bool>* wasThrown, RefPtr<TypeBuilder::Debugger::ExceptionDetails>& exceptionDetails)
 {
-    int executionContextId = optExecutionContextId ? *optExecutionContextId : m_injectedScriptManager->injectedScriptIdFor(defaultScriptState());
+    int executionContextId = optExecutionContextId ? *optExecutionContextId : m_injectedScriptManager->injectedScriptFor(defaultScriptState()).contextId();
     MuteConsoleScope<InspectorRuntimeAgent> muteScope;
     if (asBool(doNotPauseOnExceptionsAndMuteConsole))
         muteScope.enter(this);
@@ -163,9 +163,14 @@ void InspectorRuntimeAgent::disable(ErrorString* errorString)
     m_v8RuntimeAgent->disable(errorString);
 }
 
-void InspectorRuntimeAgent::reportExecutionContextCreated(int executionContextId, const String& type, const String& origin, const String& humanReadableName, const String& frameId)
+void InspectorRuntimeAgent::reportExecutionContextCreated(ScriptState* scriptState, const String& type, const String& origin, const String& humanReadableName, const String& frameId)
 {
-    m_v8RuntimeAgent->reportExecutionContextCreated(executionContextId, type, origin, humanReadableName, frameId);
+    m_v8RuntimeAgent->reportExecutionContextCreated(scriptState, type, origin, humanReadableName, frameId);
+}
+
+void InspectorRuntimeAgent::reportExecutionContextDestroyed(ScriptState* scriptState)
+{
+    m_v8RuntimeAgent->reportExecutionContextDestroyed(scriptState);
 }
 
 } // namespace blink

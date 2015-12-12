@@ -146,7 +146,7 @@ DebuggerScript.getScripts = function(contextGroupId)
             if (!script.context_data)
                 continue;
             // Context data is a string in the following format:
-            // <id>","("page"|"injected"|"worker")
+            // <id>,<contextId>,("page"|"injected"|"worker")
             if (script.context_data.indexOf(contextDataPrefix) !== 0)
                 continue;
         }
@@ -172,6 +172,24 @@ DebuggerScript._formatScript = function(script)
             endColumn = script.source.length - (lineEnds[lineCount - 2] + 1);
     }
 
+    /**
+     * @return {number}
+     */
+    function executionContextId()
+    {
+        var context_data = script.context_data;
+        if (!context_data)
+            return 0;
+        var firstComma = context_data.indexOf(",");
+        if (firstComma === -1)
+            return 0;
+        var secondComma = context_data.indexOf(",", firstComma + 1);
+        if (secondComma === -1)
+            return 0;
+
+        return parseInt(context_data.substring(firstComma + 1, secondComma), 10) || 0;
+    }
+
     return {
         id: script.id,
         name: script.nameOrSourceURL(),
@@ -182,6 +200,7 @@ DebuggerScript._formatScript = function(script)
         startColumn: script.column_offset,
         endLine: endLine,
         endColumn: endColumn,
+        executionContextId: executionContextId(),
         isContentScript: !!script.context_data && script.context_data.endsWith(",injected"),
         isInternalScript: script.is_debugger_script
     };

@@ -53,6 +53,7 @@ public:
     int startColumn() const { return m_startColumn; }
     int endLine() const { return m_endLine; }
     int endColumn() const { return m_endColumn; }
+    int executionContextId() const { return m_executionContextId; }
     bool isContentScript() const { return m_isContentScript; }
     bool isInternalScript() const { return m_isInternalScript; }
     bool isLiveEdit() const { return m_isLiveEdit; }
@@ -68,6 +69,7 @@ public:
     V8DebuggerScript& setStartColumn(int);
     V8DebuggerScript& setEndLine(int);
     V8DebuggerScript& setEndColumn(int);
+    V8DebuggerScript& setExecutionContextId(int);
     V8DebuggerScript& setIsContentScript(bool);
     V8DebuggerScript& setIsInternalScript(bool);
     V8DebuggerScript& setIsLiveEdit(bool);
@@ -81,6 +83,7 @@ private:
     int m_startColumn;
     int m_endLine;
     int m_endColumn;
+    int m_executionContextId;
     bool m_isContentScript;
     bool m_isInternalScript;
     bool m_isLiveEdit;

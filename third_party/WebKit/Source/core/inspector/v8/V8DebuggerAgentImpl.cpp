@@ -922,7 +922,7 @@ void V8DebuggerAgentImpl::compileScript(ErrorString* errorString, const String& 
 {
     if (!checkEnabled(errorString))
         return;
-    InjectedScript injectedScript = m_injectedScriptManager->injectedScriptForId(executionContextId);
+    InjectedScript injectedScript = m_injectedScriptManager->findInjectedScript(executionContextId);
     if (injectedScript.isEmpty() || !injectedScript.scriptState()->contextIsValid()) {
         *errorString = "Inspected frame has gone";
         return;
@@ -953,7 +953,7 @@ void V8DebuggerAgentImpl::runScript(ErrorString* errorString, const ScriptId& sc
 {
     if (!checkEnabled(errorString))
         return;
-    InjectedScript injectedScript = m_injectedScriptManager->injectedScriptForId(executionContextId);
+    InjectedScript injectedScript = m_injectedScriptManager->findInjectedScript(executionContextId);
     if (injectedScript.isEmpty()) {
         *errorString = "Inspected frame has gone";
         return;
@@ -1455,6 +1455,7 @@ void V8DebuggerAgentImpl::didParseSource(const V8DebuggerParsedScript& parsedScr
     if (!parsedScript.success)
         script.setSourceURL(ContentSearchUtils::findSourceURL(script.source(), ContentSearchUtils::JavaScriptMagicComment));
 
+    int executionContextId = script.executionContextId();
     bool isContentScript = script.isContentScript();
     bool isInternalScript = script.isInternalScript();
     bool isLiveEdit = script.isLiveEdit();
@@ -1468,9 +1469,9 @@ void V8DebuggerAgentImpl::didParseSource(const V8DebuggerParsedScript& parsedScr
     const bool* isLiveEditParam = isLiveEdit ? &isLiveEdit : nullptr;
     const bool* hasSourceURLParam = hasSourceURL ? &hasSourceURL : nullptr;
     if (parsedScript.success)
-        m_frontend->scriptParsed(parsedScript.scriptId, scriptURL, script.startLine(), script.startColumn(), script.endLine(), script.endColumn(), isContentScriptParam, isInternalScriptParam, isLiveEditParam, sourceMapURLParam, hasSourceURLParam);
+        m_frontend->scriptParsed(parsedScript.scriptId, scriptURL, script.startLine(), script.startColumn(), script.endLine(), script.endColumn(), executionContextId, isContentScriptParam, isInternalScriptParam, isLiveEditParam, sourceMapURLParam, hasSourceURLParam);
     else
-        m_frontend->scriptFailedToParse(parsedScript.scriptId, scriptURL, script.startLine(), script.startColumn(), script.endLine(), script.endColumn(), isContentScriptParam, isInternalScriptParam, sourceMapURLParam, hasSourceURLParam);
+        m_frontend->scriptFailedToParse(parsedScript.scriptId, scriptURL, script.startLine(), script.startColumn(), script.endLine(), script.endColumn(), executionContextId, isContentScriptParam, isInternalScriptParam, sourceMapURLParam, hasSourceURLParam);
 
     m_scripts.set(parsedScript.scriptId, script);
 

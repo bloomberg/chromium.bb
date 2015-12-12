@@ -33,6 +33,8 @@ public:
     // |contextGroupId| must be non-0.
     static void setContextDebugData(v8::Local<v8::Context>, const String& type, int contextGroupId);
 
+    static int contextId(v8::Local<v8::Context>);
+
     enum PauseOnExceptionsState {
         DontPauseOnExceptions,
         PauseOnAllExceptions,

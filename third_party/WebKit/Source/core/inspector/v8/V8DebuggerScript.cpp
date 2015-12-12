@@ -16,6 +16,7 @@ V8DebuggerScript::V8DebuggerScript()
     , m_startColumn(0)
     , m_endLine(0)
     , m_endColumn(0)
+    , m_executionContextId(0)
     , m_isContentScript(false)
     , m_isInternalScript(false)
     , m_isLiveEdit(false)
@@ -91,6 +92,12 @@ V8DebuggerScript& V8DebuggerScript::setEndLine(int endLine)
 V8DebuggerScript& V8DebuggerScript::setEndColumn(int endColumn)
 {
     m_endColumn = endColumn;
+    return *this;
+}
+
+V8DebuggerScript& V8DebuggerScript::setExecutionContextId(int executionContextId)
+{
+    m_executionContextId = executionContextId;
     return *this;
 }
 

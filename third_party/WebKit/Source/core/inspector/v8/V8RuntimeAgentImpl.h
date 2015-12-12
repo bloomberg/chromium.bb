@@ -93,12 +93,14 @@ public:
 
 private:
     InjectedScriptManager* injectedScriptManager() { return m_injectedScriptManager; }
-    void reportExecutionContextCreated(int executionContextId, const String& type, const String& origin, const String& humanReadableName, const String& frameId) override;
+    void reportExecutionContextCreated(ScriptState*, const String& type, const String& origin, const String& humanReadableName, const String& frameId) override;
+    void reportExecutionContextDestroyed(ScriptState*) override;
 
     RawPtrWillBeWeakPersistent<InspectorState> m_state;
     InspectorFrontend::Runtime* m_frontend;
     RawPtrWillBeWeakPersistent<InjectedScriptManager> m_injectedScriptManager;
     V8DebuggerImpl* m_debugger;
+    bool m_enabled;
 };
 
 } // namespace blink

@@ -60,6 +60,7 @@ V8RuntimeAgentImpl::V8RuntimeAgentImpl(InjectedScriptManager* injectedScriptMana
     , m_frontend(nullptr)
     , m_injectedScriptManager(injectedScriptManager)
     , m_debugger(debugger)
+    , m_enabled(false)
 {
 }
 
@@ -73,7 +74,7 @@ void V8RuntimeAgentImpl::evaluate(ErrorString* errorString, const String& expres
         *errorString = "Cannot find default execution context";
         return;
     }
-    InjectedScript injectedScript = m_injectedScriptManager->injectedScriptForId(*executionContextId);
+    InjectedScript injectedScript = m_injectedScriptManager->findInjectedScript(*executionContextId);
     if (injectedScript.isEmpty()) {
         *errorString = "Cannot find execution context with given id";
         return;
@@ -200,22 +201,35 @@ void V8RuntimeAgentImpl::restore()
 
 void V8RuntimeAgentImpl::enable(ErrorString* errorString)
 {
+    m_enabled = true;
 }
 
 void V8RuntimeAgentImpl::disable(ErrorString* errorString)
 {
+    m_enabled = false;
 }
 
-void V8RuntimeAgentImpl::reportExecutionContextCreated(int executionContextId, const String& type, const String& origin, const String& humanReadableName, const String& frameId)
+void V8RuntimeAgentImpl::reportExecutionContextCreated(ScriptState* scriptState, const String& type, const String& origin, const String& humanReadableName, const String& frameId)
 {
+    if (!m_enabled)
+        return;
+    InjectedScript injectedScript = injectedScriptManager()->injectedScriptFor(scriptState);
     RefPtr<ExecutionContextDescription> description = ExecutionContextDescription::create()
-        .setId(executionContextId)
+        .setId(injectedScript.contextId())
         .setName(humanReadableName)
         .setOrigin(origin)
         .setFrameId(frameId);
     if (!type.isEmpty())
         description->setType(type);
     m_frontend->executionContextCreated(description.release());
+}
+
+
+void V8RuntimeAgentImpl::reportExecutionContextDestroyed(ScriptState* scriptState)
+{
+    int contextId = injectedScriptManager()->discardInjectedScriptFor(scriptState);
+    if (m_enabled)
+        m_frontend->executionContextDestroyed(contextId);
 }
 
 } // namespace blink

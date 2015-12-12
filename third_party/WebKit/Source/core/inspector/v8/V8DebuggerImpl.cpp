@@ -103,10 +103,29 @@ bool V8DebuggerImpl::enabled() const
 
 void V8Debugger::setContextDebugData(v8::Local<v8::Context> context, const String& type, int contextGroupId)
 {
-    String debugData = String::number(contextGroupId) + "," + type;
+    static int contextIdCounter = 0;
+    int contextId = ++contextIdCounter;
+    String debugData = String::number(contextGroupId) + "," + String::number(contextId) + "," + type;
     v8::HandleScope scope(context->GetIsolate());
     v8::Context::Scope contextScope(context);
     context->SetEmbedderData(static_cast<int>(v8::Context::kDebugIdIndex), v8String(context->GetIsolate(), debugData));
+}
+
+int V8Debugger::contextId(v8::Local<v8::Context> context)
+{
+    v8::Local<v8::Value> data = context->GetEmbedderData(static_cast<int>(v8::Context::kDebugIdIndex));
+    if (data.IsEmpty() || !data->IsString())
+        return 0;
+    String dataString = toCoreString(data.As<v8::String>());
+    if (dataString.isEmpty())
+        return 0;
+    size_t commaPos = dataString.find(",");
+    if (commaPos == kNotFound)
+        return 0;
+    size_t commaPos2 = dataString.find(",", commaPos + 1);
+    if (commaPos2 == kNotFound)
+        return 0;
+    return dataString.substring(commaPos + 1, commaPos2 - commaPos - 1).toInt();
 }
 
 static int getGroupId(v8::Local<v8::Context> context)
@@ -676,6 +695,7 @@ V8DebuggerParsedScript V8DebuggerImpl::createParsedScript(v8::Local<v8::Object> 
         .setEndColumn(object->Get(v8InternalizedString("endColumn"))->ToInteger(m_isolate)->Value())
         .setIsContentScript(object->Get(v8InternalizedString("isContentScript"))->ToBoolean(m_isolate)->Value())
         .setIsInternalScript(object->Get(v8InternalizedString("isInternalScript"))->ToBoolean(m_isolate)->Value())
+        .setExecutionContextId(object->Get(v8InternalizedString("executionContextId"))->ToInteger(m_isolate)->Value())
         .setIsLiveEdit(inLiveEditScope);
     parsedScript.success = success;
     return parsedScript;

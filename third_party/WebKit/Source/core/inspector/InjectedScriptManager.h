@@ -59,11 +59,10 @@ public:
     InjectedScriptHost* injectedScriptHost();
 
     InjectedScript injectedScriptFor(ScriptState*);
-    InjectedScript injectedScriptForId(int);
-    int injectedScriptIdFor(ScriptState*);
+    InjectedScript findInjectedScript(int) const;
     InjectedScript findInjectedScript(RemoteObjectIdBase*) const;
     void discardInjectedScripts();
-    void discardInjectedScriptFor(ScriptState*);
+    int discardInjectedScriptFor(ScriptState*);
     void releaseObjectGroup(const String& objectGroup);
 
     typedef bool (*InspectedStateAccessCheck)(ScriptState*);
@@ -80,13 +79,10 @@ private:
     static bool canAccessInspectedWindow(ScriptState*);
     static bool canAccessInspectedWorkerGlobalScope(ScriptState*);
 
-    int m_nextInjectedScriptId;
     typedef HashMap<int, InjectedScript> IdToInjectedScriptMap;
     IdToInjectedScriptMap m_idToInjectedScript;
     RefPtrWillBeMember<InjectedScriptHost> m_injectedScriptHost;
     InspectedStateAccessCheck m_inspectedStateAccessCheck;
-    typedef HashMap<RefPtr<ScriptState>, int> ScriptStateToId;
-    ScriptStateToId m_scriptStateToId;
     bool m_customObjectFormatterEnabled;
 };
 

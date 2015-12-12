@@ -4,11 +4,15 @@
 <script src="../../../http/tests/inspector/console-test.js"></script>
 
 <script>
+function newWorld()
+{
+    testRunner.evaluateScriptInIsolatedWorld(239, "console.log(42);\n//# sourceURL=239.js");
+}
+
 function test()
 {
     InspectorTest.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.ParsedScriptSource, step2);
-    // evaluateInConsole force InjectedScript.js loading and evaluate script with expression
-    InspectorTest.evaluateInConsole("console.log(42)");
+    InspectorTest.evaluateInPage("newWorld()");
 
     var expectedScriptParsed = 2;
     function step2(event)
