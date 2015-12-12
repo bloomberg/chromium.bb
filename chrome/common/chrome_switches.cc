@@ -553,10 +553,6 @@ const char kEnableWebAppFrame[] = "enable-web-app-frame";
 const char kEnableWebNotificationCustomLayouts[] =
     "enable-web-notification-custom-layouts";
 
-// Bypasses the WebUSB permission prompt as it is not yet implemented.
-// crbug.com/529950
-const char kEnableWebUsbOnAnyOrigin[] = "enable-webusb-on-any-origin";
-
 // Values for the kExtensionContentVerification flag.
 // See ContentVerifierDelegate::Mode for more explanation.
 const char kExtensionContentVerificationBootstrap[] = "bootstrap";

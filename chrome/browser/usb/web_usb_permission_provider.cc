@@ -4,11 +4,9 @@
 
 #include "chrome/browser/usb/web_usb_permission_provider.h"
 
-#include "base/command_line.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
-#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -57,11 +55,6 @@ bool FindOriginInDescriptorSet(const WebUsbDescriptorSet* set,
   return false;
 }
 
-bool EnableWebUsbOnAnyOrigin() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableWebUsbOnAnyOrigin);
-}
-
 }  // namespace
 
 WebUSBPermissionProvider::WebUSBPermissionProvider(
@@ -93,9 +86,8 @@ void WebUSBPermissionProvider::HasDevicePermission(
     const device::usb::DeviceInfoPtr& device = requested_devices[i];
     if (FindOriginInDescriptorSet(device->webusb_allowed_origins.get(),
                                   requesting_origin, nullptr, nullptr) &&
-        (EnableWebUsbOnAnyOrigin() ||
-         chooser_context->HasDevicePermission(requesting_origin,
-                                              embedding_origin, device->guid)))
+        chooser_context->HasDevicePermission(requesting_origin,
+                                             embedding_origin, device->guid))
       allowed_guids.push_back(device->guid);
   }
   callback.Run(allowed_guids.Pass());

@@ -92,13 +92,6 @@ void ShowBadFlagsPrompt(Browser* browser) {
     // the flag is enabled.
     switches::kEnableWebBluetooth,
 
-    // This flag bypasses the permission UI for WebUSB as it not yet
-    // implemented. The risk is minimal because a device still needs to
-    // whitelist the requesting origin, but since this means the site can take
-    // action without the user's knowledge we need to show a warning when the
-    // flag is enabled.
-    switches::kEnableWebUsbOnAnyOrigin,
-
     NULL
   };
 

@@ -1993,13 +1993,6 @@ const FeatureEntry kFeatureEntries[] = {
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnablePushApiBackgroundMode,
                                switches::kDisablePushApiBackgroundMode)},
 #endif  // defined(ENABLE_BACKGROUND)
-    // TODO(reillyg): Remove this flag when the permission granting UI is
-    // available. crbug.com/529950
-    {"enable-webusb-on-any-origin",
-     IDS_FLAGS_ENABLE_WEBUSB_ON_ANY_ORIGIN_NAME,
-     IDS_FLAGS_ENABLE_WEBUSB_ON_ANY_ORIGIN_DESCRIPTION,
-     kOsAll,
-     SINGLE_VALUE_TYPE(switches::kEnableWebUsbOnAnyOrigin)},
 #if defined(OS_CHROMEOS)
     {"cros-regions-mode",
      IDS_FLAGS_CROS_REGIONS_MODE_NAME,
