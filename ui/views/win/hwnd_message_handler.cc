@@ -329,6 +329,7 @@ HWNDMessageHandler::HWNDMessageHandler(HWNDMessageHandlerDelegate* delegate)
       last_mouse_hwheel_time_(0),
       dwm_transition_desired_(false),
       sent_window_size_changing_(false),
+      left_button_down_on_caption_(false),
       autohide_factory_(this),
       weak_factory_(this) {}
 
@@ -2402,7 +2403,7 @@ LRESULT HWNDMessageHandler::HandleMouseEventInternal(UINT message,
   }
 
   if (!handled && message == WM_NCLBUTTONDOWN && w_param != HTSYSMENU &&
-      delegate_->IsUsingCustomFrame()) {
+      w_param != HTCAPTION && delegate_->IsUsingCustomFrame()) {
     // TODO(msw): Eliminate undesired painting, or re-evaluate this workaround.
     // DefWindowProc for WM_NCLBUTTONDOWN does weird non-client painting, so we
     // need to call it inside a ScopedRedrawLock. This may cause other negative
@@ -2410,6 +2411,12 @@ LRESULT HWNDMessageHandler::HandleMouseEventInternal(UINT message,
     DefWindowProcWithRedrawLock(message, w_param, l_param);
     handled = true;
   }
+
+  // We need special processing for mouse input on the caption.
+  // Please refer to the HandleMouseInputForCaption() function for more
+  // information.
+  if (!handled)
+    handled = HandleMouseInputForCaption(message, w_param, l_param);
 
   if (ref.get())
     SetMsgHandled(handled);
@@ -2484,5 +2491,88 @@ void HWNDMessageHandler::GenerateTouchEvent(ui::EventType event_type,
 
   touch_events->push_back(event);
 }
+
+bool HWNDMessageHandler::HandleMouseInputForCaption(unsigned int message,
+                                                    WPARAM w_param,
+                                                    LPARAM l_param) {
+  // If we are receive a WM_NCLBUTTONDOWN messsage for the caption, the
+  // following things happen.
+  // 1. This message is defproced which will post a WM_SYSCOMMAND message with
+  //    SC_MOVE and a constant 0x0002 which is documented on msdn as
+  //    SC_DRAGMOVE.
+  // 2. The WM_SYSCOMMAND message is defproced in our handler which works
+  //    correctly in all cases except the case when we click on the caption
+  //    and hold. The defproc appears to try and detect whether a mouse move
+  //    is going to happen presumably via the DragEnter or a similar
+  //    implementation which in its modal loop appears to only peek for
+  //    mouse input briefly.
+  // 3. Our workhorse message pump relies on the tickler posted message to get
+  //    control during modal loops which does not happen in the above case for
+  //    a while leading to the problem where activity on the page pauses
+  //    briefly or at times stops for a while.
+  // To fix this we don't defproc the WM_NCLBUTTONDOWN message and instead wait
+  // for the subsequent WM_NCMOUSEMOVE/WM_MOUSEMOVE message. Once we receive
+  // these messages and the mouse actually moved, we defproc the
+  // WM_NCLBUTTONDOWN message.
+  bool handled = false;
+  switch (message) {
+    case WM_NCLBUTTONDOWN: {
+      if (w_param == HTCAPTION) {
+        left_button_down_on_caption_ = true;
+        // Cache the location where the click occurred. We use this in the
+        // WM_NCMOUSEMOVE message to determine if the mouse actually moved.F
+        caption_left_button_click_pos_.set_x(CR_GET_X_LPARAM(l_param));
+        caption_left_button_click_pos_.set_y(CR_GET_Y_LPARAM(l_param));
+        handled = true;
+      }
+      break;
+    }
+
+    // WM_NCMOUSEMOVE is received for normal drags which originate on the
+    // caption and stay there.
+    // WM_MOUSEMOVE can be received for drags which originate on the caption
+    // and move towards the client area.
+    case WM_MOUSEMOVE:
+    case WM_NCMOUSEMOVE: {
+      if (!left_button_down_on_caption_)
+        break;
+
+      bool should_handle_pending_ncl_button_down = true;
+      // Check if the mouse actually moved.
+      if (message == WM_NCMOUSEMOVE) {
+        if (caption_left_button_click_pos_.x() == CR_GET_X_LPARAM(l_param) &&
+            caption_left_button_click_pos_.y() == CR_GET_Y_LPARAM(l_param)) {
+          should_handle_pending_ncl_button_down = false;
+        }
+      }
+      if (should_handle_pending_ncl_button_down) {
+        l_param = MAKELPARAM(caption_left_button_click_pos_.x(),
+                             caption_left_button_click_pos_.y());
+        // TODO(msw): Eliminate undesired painting, or re-evaluate this
+        // workaround.
+        // DefWindowProc for WM_NCLBUTTONDOWN does weird non-client painting,
+        // so we need to call it inside a ScopedRedrawLock. This may cause
+        // other negative side-effects
+        // (ex/ stifling non-client mouse releases).
+        if (delegate_->IsUsingCustomFrame()) {
+          DefWindowProcWithRedrawLock(WM_NCLBUTTONDOWN, HTCAPTION, l_param);
+        } else {
+          DefWindowProc(hwnd(), WM_NCLBUTTONDOWN, HTCAPTION, l_param);
+        }
+        left_button_down_on_caption_ = false;
+      }
+      break;
+    }
+
+    case WM_NCMOUSELEAVE:
+      break;
+
+    default:
+      left_button_down_on_caption_ = false;
+      break;
+  }
+  return handled;
+}
+
 
 }  // namespace views

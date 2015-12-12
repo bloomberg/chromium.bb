@@ -3245,6 +3245,146 @@ TEST_F(WidgetTest, CharMessagesAsKeyboardMessagesDoesNotCrash) {
   target->HandleKeyboardMessage(WM_SYSDEADCHAR, 0, 0, &handled);
   widget.CloseNow();
 }
+
+// Provides functionality to subclass a window and keep track of messages
+// received.
+class SubclassWindowHelper {
+ public:
+  explicit SubclassWindowHelper(HWND window)
+      : window_(window) {
+    EXPECT_EQ(instance_, nullptr);
+    instance_ = this;
+    EXPECT_TRUE(Subclass());
+  }
+
+  ~SubclassWindowHelper() {
+    Unsubclass();
+    instance_ = nullptr;
+  }
+
+  // Returns true if the |message| passed in was received.
+  bool received_message(unsigned int message) {
+    return (messages_.find(message) != messages_.end());
+  }
+
+  void Clear() {
+    messages_.clear();
+  }
+
+ private:
+  bool Subclass() {
+    old_proc_ = reinterpret_cast<WNDPROC>(
+        ::SetWindowLongPtr(window_,
+                           GWLP_WNDPROC,
+                           reinterpret_cast<LONG_PTR>(WndProc)));
+    return old_proc_ != nullptr;
+  }
+
+  void Unsubclass() {
+    ::SetWindowLongPtr(window_,
+                       GWLP_WNDPROC,
+                       reinterpret_cast<LONG_PTR>(old_proc_));
+  }
+
+  static LRESULT CALLBACK WndProc(HWND window,
+                                  unsigned int message,
+                                  WPARAM w_param,
+                                  LPARAM l_param) {
+    EXPECT_NE(instance_, nullptr);
+    EXPECT_EQ(window, instance_->window_);
+
+    // Keep track of messags received for this window.
+    instance_->messages_.insert(message);
+
+    return ::CallWindowProc(instance_->old_proc_, window, message, w_param,
+                            l_param);
+  }
+
+  WNDPROC old_proc_;
+  HWND window_;
+  static SubclassWindowHelper* instance_;
+  std::set<unsigned int> messages_;
+
+  DISALLOW_COPY_AND_ASSIGN(SubclassWindowHelper);
+};
+
+SubclassWindowHelper* SubclassWindowHelper::instance_ = nullptr;
+
+// This test validates whether the WM_SYSCOMMAND message for SC_MOVE is
+// received when we post a WM_NCLBUTTONDOWN message for the caption in the
+// following scenarios:-
+// 1. Posting a WM_NCMOUSEMOVE message for a different location.
+// 2. Posting a WM_NCMOUSEMOVE message with a different hittest code.
+// 3. Posting a WM_MOUSEMOVE message.
+TEST_F(WidgetTest, SysCommandMoveOnNCLButtonDownOnCaptionAndMoveTest) {
+  Widget widget;
+  Widget::InitParams params =
+      CreateParams(Widget::InitParams::TYPE_WINDOW);
+  params.native_widget = new PlatformDesktopNativeWidget(&widget);
+  params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  widget.Init(params);
+  widget.SetBounds(gfx::Rect(0, 0, 200, 200));
+  widget.Show();
+  ::SetCursorPos(500, 500);
+
+  HWND window = widget.GetNativeWindow()->GetHost()->GetAcceleratedWidget();
+
+  SubclassWindowHelper subclass_helper(window);
+
+  // Posting just a WM_NCLBUTTONDOWN message should not result in a
+  // WM_SYSCOMMAND
+  ::PostMessage(window, WM_NCLBUTTONDOWN, HTCAPTION, MAKELPARAM(100, 100));
+  RunPendingMessages();
+  EXPECT_TRUE(subclass_helper.received_message(WM_NCLBUTTONDOWN));
+  EXPECT_FALSE(subclass_helper.received_message(WM_SYSCOMMAND));
+
+  subclass_helper.Clear();
+  // Posting a WM_NCLBUTTONDOWN message followed by a WM_NCMOUSEMOVE at the
+  // same location should not result in a WM_SYSCOMMAND message.
+  ::PostMessage(window, WM_NCLBUTTONDOWN, HTCAPTION, MAKELPARAM(100, 100));
+  ::PostMessage(window, WM_NCMOUSEMOVE, HTCAPTION, MAKELPARAM(100, 100));
+  RunPendingMessages();
+
+  EXPECT_TRUE(subclass_helper.received_message(WM_NCLBUTTONDOWN));
+  EXPECT_TRUE(subclass_helper.received_message(WM_NCMOUSEMOVE));
+  EXPECT_FALSE(subclass_helper.received_message(WM_SYSCOMMAND));
+
+  subclass_helper.Clear();
+ // Posting a WM_NCLBUTTONDOWN message followed by a WM_NCMOUSEMOVE at a
+  // different location should result in a WM_SYSCOMMAND message.
+  ::PostMessage(window, WM_NCLBUTTONDOWN, HTCAPTION, MAKELPARAM(100, 100));
+  ::PostMessage(window, WM_NCMOUSEMOVE, HTCAPTION, MAKELPARAM(110, 110));
+  RunPendingMessages();
+
+  EXPECT_TRUE(subclass_helper.received_message(WM_NCLBUTTONDOWN));
+  EXPECT_TRUE(subclass_helper.received_message(WM_NCMOUSEMOVE));
+  EXPECT_TRUE(subclass_helper.received_message(WM_SYSCOMMAND));
+
+  subclass_helper.Clear();
+ // Posting a WM_NCLBUTTONDOWN message followed by a WM_NCMOUSEMOVE at a
+  // different location with a different hittest code should result in a
+  // WM_SYSCOMMAND message.
+  ::PostMessage(window, WM_NCLBUTTONDOWN, HTCAPTION, MAKELPARAM(100, 100));
+  ::PostMessage(window, WM_NCMOUSEMOVE, HTTOP, MAKELPARAM(110, 102));
+  RunPendingMessages();
+
+  EXPECT_TRUE(subclass_helper.received_message(WM_NCLBUTTONDOWN));
+  EXPECT_TRUE(subclass_helper.received_message(WM_NCMOUSEMOVE));
+  EXPECT_TRUE(subclass_helper.received_message(WM_SYSCOMMAND));
+
+  subclass_helper.Clear();
+  // Posting a WM_NCLBUTTONDOWN message followed by a WM_MOUSEMOVE should
+  // result in a WM_SYSCOMMAND message.
+  ::PostMessage(window, WM_NCLBUTTONDOWN, HTCAPTION, MAKELPARAM(100, 100));
+  ::PostMessage(window, WM_MOUSEMOVE, HTCLIENT, MAKELPARAM(110, 110));
+  RunPendingMessages();
+
+  EXPECT_TRUE(subclass_helper.received_message(WM_NCLBUTTONDOWN));
+  EXPECT_TRUE(subclass_helper.received_message(WM_MOUSEMOVE));
+  EXPECT_TRUE(subclass_helper.received_message(WM_SYSCOMMAND));
+
+  widget.CloseNow();
+}
 #endif
 
 // Test that SetAlwaysOnTop and IsAlwaysOnTop are consistent.
