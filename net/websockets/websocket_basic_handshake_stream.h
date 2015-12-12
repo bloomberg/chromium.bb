@@ -66,6 +66,7 @@ class NET_EXPORT_PRIVATE WebSocketBasicHandshakeStream
   bool GetRemoteEndpoint(IPEndPoint* endpoint) override;
   void Drain(HttpNetworkSession* session) override;
   void SetPriority(RequestPriority priority) override;
+  void PopulateNetErrorDetails(NetErrorDetails* details) override;
   UploadProgress GetUploadProgress() const override;
   HttpStream* RenewStreamForAuth() override;
 

@@ -165,7 +165,7 @@ bool FailingHttpTransaction::GetRemoteEndpoint(IPEndPoint* endpoint) const {
 }
 
 void FailingHttpTransaction::PopulateNetErrorDetails(
-    NetErrorDetails* details) const {
+    NetErrorDetails* /*details*/) const {
   return;
 }
 

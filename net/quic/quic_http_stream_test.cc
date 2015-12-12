@@ -118,6 +118,14 @@ class QuicHttpStreamPeer {
       QuicHttpStream* stream) {
     return stream->stream_;
   }
+
+  static bool WasHandshakeConfirmed(QuicHttpStream* stream) {
+    return stream->was_handshake_confirmed_;
+  }
+
+  static void SetHandshakeConfirmed(QuicHttpStream* stream, bool confirmed) {
+    stream->was_handshake_confirmed_ = confirmed;
+  }
 };
 
 class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
@@ -479,6 +487,71 @@ TEST_P(QuicHttpStreamTest, SessionClosedBeforeSendRequest) {
 
   EXPECT_EQ(0, stream_->GetTotalSentBytes());
   EXPECT_EQ(0, stream_->GetTotalReceivedBytes());
+}
+
+TEST_P(QuicHttpStreamTest, LogGranularQuicConnectionError) {
+  SetRequest("GET", "/", DEFAULT_PRIORITY);
+  size_t spdy_request_headers_frame_length;
+  AddWrite(ConstructRequestHeadersPacket(1, kFin, DEFAULT_PRIORITY,
+                                         &spdy_request_headers_frame_length));
+  AddWrite(ConstructAckAndRstStreamPacket(2));
+  use_closing_stream_ = true;
+  Initialize();
+
+  request_.method = "GET";
+  request_.url = GURL("http://www.google.com/");
+
+  EXPECT_EQ(OK, stream_->InitializeStream(&request_, DEFAULT_PRIORITY, net_log_,
+                                          callback_.callback()));
+  EXPECT_EQ(OK,
+            stream_->SendRequest(headers_, &response_, callback_.callback()));
+
+  // Ack the request.
+  ProcessPacket(ConstructAckPacket(1, 0, 0));
+  EXPECT_EQ(ERR_IO_PENDING, stream_->ReadResponseHeaders(callback_.callback()));
+
+  EXPECT_TRUE(QuicHttpStreamPeer::WasHandshakeConfirmed(stream_.get()));
+  stream_->OnClose(QUIC_PEER_GOING_AWAY);
+
+  NetErrorDetails details;
+  EXPECT_EQ(QUIC_NO_ERROR, details.quic_connection_error);
+  stream_->PopulateNetErrorDetails(&details);
+  EXPECT_EQ(QUIC_PEER_GOING_AWAY, details.quic_connection_error);
+}
+
+TEST_P(QuicHttpStreamTest, DoNotLogGranularQuicErrorIfHandshakeNotConfirmed) {
+  SetRequest("GET", "/", DEFAULT_PRIORITY);
+  size_t spdy_request_headers_frame_length;
+  AddWrite(ConstructRequestHeadersPacket(1, kFin, DEFAULT_PRIORITY,
+                                         &spdy_request_headers_frame_length));
+  AddWrite(ConstructAckAndRstStreamPacket(2));
+  use_closing_stream_ = true;
+  Initialize();
+
+  request_.method = "GET";
+  request_.url = GURL("http://www.google.com/");
+
+  EXPECT_EQ(OK, stream_->InitializeStream(&request_, DEFAULT_PRIORITY, net_log_,
+                                          callback_.callback()));
+  EXPECT_EQ(OK,
+            stream_->SendRequest(headers_, &response_, callback_.callback()));
+
+  // Ack the request.
+  ProcessPacket(ConstructAckPacket(1, 0, 0));
+  EXPECT_EQ(ERR_IO_PENDING, stream_->ReadResponseHeaders(callback_.callback()));
+
+  // The test setup defaults handshake to be confirmed. Manually set
+  // it to be not confirmed.
+  // Granular errors shouldn't be reported if handshake not confirmed.
+  QuicHttpStreamPeer::SetHandshakeConfirmed(stream_.get(), false);
+
+  EXPECT_FALSE(QuicHttpStreamPeer::WasHandshakeConfirmed(stream_.get()));
+  stream_->OnClose(QUIC_PEER_GOING_AWAY);
+
+  NetErrorDetails details;
+  EXPECT_EQ(QUIC_NO_ERROR, details.quic_connection_error);
+  stream_->PopulateNetErrorDetails(&details);
+  EXPECT_EQ(QUIC_NO_ERROR, details.quic_connection_error);
 }
 
 // Regression test for http://crbug.com/409871

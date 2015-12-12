@@ -14428,6 +14428,8 @@ class FakeStream : public HttpStream,
 
   void Drain(HttpNetworkSession* session) override { ADD_FAILURE(); }
 
+  void PopulateNetErrorDetails(NetErrorDetails* details) override { return; }
+
   void SetPriority(RequestPriority priority) override { priority_ = priority; }
 
   UploadProgress GetUploadProgress() const override { return UploadProgress(); }
@@ -14645,6 +14647,8 @@ class FakeWebSocketBasicHandshakeStream : public WebSocketHandshakeStreamBase {
   bool GetRemoteEndpoint(IPEndPoint* endpoint) override { return false; }
 
   void Drain(HttpNetworkSession* session) override { NOTREACHED(); }
+
+  void PopulateNetErrorDetails(NetErrorDetails* details) override { return; }
 
   void SetPriority(RequestPriority priority) override { NOTREACHED(); }
 

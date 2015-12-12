@@ -99,6 +99,58 @@ scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeAckAndRstPacket(
   return scoped_ptr<QuicEncryptedPacket>(encrypted.Clone());
 }
 
+scoped_ptr<QuicEncryptedPacket>
+QuicTestPacketMaker::MakeAckAndConnectionClosePacket(
+    QuicPacketNumber num,
+    bool include_version,
+    QuicTime::Delta delta_time_largest_observed,
+    QuicPacketNumber largest_received,
+    QuicPacketNumber least_unacked,
+    QuicErrorCode quic_error,
+    std::string& quic_error_details) {
+  QuicPacketHeader header;
+  header.public_header.connection_id = connection_id_;
+  header.public_header.reset_flag = false;
+  header.public_header.version_flag = include_version;
+  header.public_header.packet_number_length = PACKET_1BYTE_PACKET_NUMBER;
+  header.packet_number = num;
+  header.entropy_flag = false;
+  header.fec_flag = false;
+  header.fec_group = 0;
+
+  QuicAckFrame ack(MakeAckFrame(largest_received));
+  ack.delta_time_largest_observed = delta_time_largest_observed;
+  for (QuicPacketNumber i = least_unacked; i <= largest_received; ++i) {
+    ack.received_packet_times.push_back(make_pair(i, clock_->Now()));
+  }
+  QuicFrames frames;
+  frames.push_back(QuicFrame(&ack));
+  DVLOG(1) << "Adding frame: " << frames[0];
+
+  QuicStopWaitingFrame stop_waiting;
+  stop_waiting.least_unacked = least_unacked;
+  frames.push_back(QuicFrame(&stop_waiting));
+  DVLOG(1) << "Adding frame: " << frames[1];
+
+  QuicConnectionCloseFrame close;
+  close.error_code = quic_error;
+  close.error_details = quic_error_details;
+
+  frames.push_back(QuicFrame(&close));
+  DVLOG(1) << "Adding frame: " << frames[2];
+
+  QuicFramer framer(SupportedVersions(version_), clock_->Now(),
+                    Perspective::IS_CLIENT);
+  scoped_ptr<QuicPacket> packet(
+      BuildUnsizedDataPacket(&framer, header, frames));
+  char buffer[kMaxPacketSize];
+  size_t encrypted_size = framer.EncryptPayload(
+      ENCRYPTION_NONE, header.packet_number, *packet, buffer, kMaxPacketSize);
+  EXPECT_NE(0u, encrypted_size);
+  QuicEncryptedPacket encrypted(buffer, encrypted_size, false);
+  return scoped_ptr<QuicEncryptedPacket>(encrypted.Clone());
+}
+
 scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeConnectionClosePacket(
     QuicPacketNumber num) {
   QuicPacketHeader header;

@@ -106,6 +106,11 @@ void ProxyConnectRedirectHttpStream::Drain(HttpNetworkSession* session) {
   NOTREACHED();
 }
 
+void ProxyConnectRedirectHttpStream::PopulateNetErrorDetails(
+    NetErrorDetails* /*details*/) {
+  return;
+}
+
 void ProxyConnectRedirectHttpStream::SetPriority(RequestPriority priority) {
   // Nothing to do.
 }

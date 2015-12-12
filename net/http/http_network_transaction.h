@@ -249,6 +249,10 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
   // to be maintained for multi-round auth.
   void ResetStateForAuthRestart();
 
+  // Caches network error details from the stream if available
+  // and resets the stream.
+  void CacheNetErrorDetailsAndResetStream();
+
   // Records metrics relating to SSL fallbacks.
   void RecordSSLFallbackMetrics(int result);
 
@@ -360,11 +364,8 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
 
   ConnectionAttempts connection_attempts_;
   IPEndPoint remote_endpoint_;
-
-  // True when all QUIC alternative services are marked broken for the origin
-  // in this request which advertises supporting QUIC.
-  bool quic_broken_;
-
+  // Network error details for this transaction.
+  NetErrorDetails net_error_details_;
   DISALLOW_COPY_AND_ASSIGN(HttpNetworkTransaction);
 };
 

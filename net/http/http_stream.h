@@ -16,6 +16,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/base/completion_callback.h"
+#include "net/base/net_error_details.h"
 #include "net/base/net_export.h"
 #include "net/base/request_priority.h"
 #include "net/base/upload_progress.h"
@@ -155,6 +156,11 @@ class NET_EXPORT_PRIVATE HttpStream {
   // underlying connection. This stream is responsible for deleting itself when
   // draining is complete.
   virtual void Drain(HttpNetworkSession* session) = 0;
+
+  // Get the network error details this stream is encountering.
+  // Fills in |details| if it is available; leaves |details| unchanged if it
+  // is unavailable.
+  virtual void PopulateNetErrorDetails(NetErrorDetails* details) = 0;
 
   // Called when the priority of the parent transaction changes.
   virtual void SetPriority(RequestPriority priority) = 0;

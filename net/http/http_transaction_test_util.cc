@@ -287,7 +287,7 @@ int MockNetworkTransaction::RestartWithAuth(
 }
 
 void MockNetworkTransaction::PopulateNetErrorDetails(
-    NetErrorDetails* details) const {
+    NetErrorDetails* /*details*/) const {
   NOTIMPLEMENTED();
 }
 

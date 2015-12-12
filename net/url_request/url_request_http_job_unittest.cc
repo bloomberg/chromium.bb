@@ -749,6 +749,8 @@ class FakeWebSocketHandshakeStream : public WebSocketHandshakeStreamBase {
 
   void Drain(HttpNetworkSession* session) override {}
 
+  void PopulateNetErrorDetails(NetErrorDetails* details) override { return; }
+
   void SetPriority(RequestPriority priority) override {}
 
   UploadProgress GetUploadProgress() const override {

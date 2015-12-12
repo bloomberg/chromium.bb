@@ -438,6 +438,11 @@ bool WebSocketBasicHandshakeStream::GetRemoteEndpoint(IPEndPoint* endpoint) {
   return state_.connection()->socket()->GetPeerAddress(endpoint) == OK;
 }
 
+void WebSocketBasicHandshakeStream::PopulateNetErrorDetails(
+    NetErrorDetails* /*details*/) {
+  return;
+}
+
 void WebSocketBasicHandshakeStream::Drain(HttpNetworkSession* session) {
   HttpResponseBodyDrainer* drainer = new HttpResponseBodyDrainer(this);
   drainer->Start(session);

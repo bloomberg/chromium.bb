@@ -78,6 +78,8 @@ class HttpBasicStream : public HttpStream {
 
   void Drain(HttpNetworkSession* session) override;
 
+  void PopulateNetErrorDetails(NetErrorDetails* details) override;
+
   void SetPriority(RequestPriority priority) override;
 
  private:

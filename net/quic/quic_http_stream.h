@@ -60,6 +60,7 @@ class NET_EXPORT_PRIVATE QuicHttpStream
   void GetSSLCertRequestInfo(SSLCertRequestInfo* cert_request_info) override;
   bool GetRemoteEndpoint(IPEndPoint* endpoint) override;
   void Drain(HttpNetworkSession* session) override;
+  void PopulateNetErrorDetails(NetErrorDetails* details) override;
   void SetPriority(RequestPriority priority) override;
 
   // QuicReliableClientStream::Delegate implementation
@@ -167,6 +168,8 @@ class NET_EXPORT_PRIVATE QuicHttpStream
   scoped_refptr<DrainableIOBuffer> request_body_buf_;
 
   BoundNetLog stream_net_log_;
+
+  QuicErrorCode quic_connection_error_;
 
   base::WeakPtrFactory<QuicHttpStream> weak_factory_;
 

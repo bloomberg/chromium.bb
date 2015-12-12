@@ -40,6 +40,14 @@ class QuicTestPacketMaker {
       QuicPacketNumber largest_received,
       QuicPacketNumber least_unacked,
       bool send_feedback);
+  scoped_ptr<QuicEncryptedPacket> MakeAckAndConnectionClosePacket(
+      QuicPacketNumber num,
+      bool include_version,
+      QuicTime::Delta delta_time_largest_observed,
+      QuicPacketNumber largest_received,
+      QuicPacketNumber least_unacked,
+      QuicErrorCode quic_error,
+      std::string& quic_error_details);
   scoped_ptr<QuicEncryptedPacket> MakeConnectionClosePacket(
       QuicPacketNumber num);
   scoped_ptr<QuicEncryptedPacket> MakeAckPacket(

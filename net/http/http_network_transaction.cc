@@ -154,7 +154,7 @@ HttpNetworkTransaction::HttpNetworkTransaction(RequestPriority priority,
       next_state_(STATE_NONE),
       establishing_tunnel_(false),
       websocket_handshake_stream_base_create_helper_(NULL),
-      quic_broken_(false) {
+      net_error_details_() {
   session->ssl_config_service()->GetSSLConfig(&server_ssl_config_);
   session->GetAlpnProtos(&server_ssl_config_.alpn_protos);
   session->GetNpnProtos(&server_ssl_config_.npn_protos);
@@ -468,7 +468,9 @@ bool HttpNetworkTransaction::GetRemoteEndpoint(IPEndPoint* endpoint) const {
 
 void HttpNetworkTransaction::PopulateNetErrorDetails(
     NetErrorDetails* details) const {
-  details->quic_broken = quic_broken_;
+  *details = net_error_details_;
+  if (stream_)
+    stream_->PopulateNetErrorDetails(details);
 }
 
 void HttpNetworkTransaction::SetPriority(RequestPriority priority) {
@@ -617,7 +619,7 @@ void HttpNetworkTransaction::OnHttpsProxyTunnelResponse(
 }
 
 void HttpNetworkTransaction::OnQuicBroken() {
-  quic_broken_ = true;
+  net_error_details_.quic_broken = true;
 }
 
 void HttpNetworkTransaction::GetConnectionAttempts(
@@ -855,7 +857,7 @@ int HttpNetworkTransaction::DoInitStreamComplete(int result) {
       total_received_bytes_ += stream_->GetTotalReceivedBytes();
       total_sent_bytes_ += stream_->GetTotalSentBytes();
     }
-    stream_.reset();
+    CacheNetErrorDetailsAndResetStream();
   }
 
   return result;
@@ -1230,7 +1232,7 @@ int HttpNetworkTransaction::HandleCertificateRequest(int error) {
     total_received_bytes_ += stream_->GetTotalReceivedBytes();
     total_sent_bytes_ += stream_->GetTotalSentBytes();
     stream_->Close(true);
-    stream_.reset();
+    CacheNetErrorDetailsAndResetStream();
   }
 
   // The server is asking for a client certificate during the initial
@@ -1459,7 +1461,7 @@ void HttpNetworkTransaction::ResetStateForRestart() {
     total_received_bytes_ += stream_->GetTotalReceivedBytes();
     total_sent_bytes_ += stream_->GetTotalSentBytes();
   }
-  stream_.reset();
+  CacheNetErrorDetailsAndResetStream();
 }
 
 void HttpNetworkTransaction::ResetStateForAuthRestart() {
@@ -1474,7 +1476,14 @@ void HttpNetworkTransaction::ResetStateForAuthRestart() {
   response_ = HttpResponseInfo();
   establishing_tunnel_ = false;
   remote_endpoint_ = IPEndPoint();
-  quic_broken_ = false;
+  net_error_details_.quic_broken = false;
+  net_error_details_.quic_connection_error = QUIC_NO_ERROR;
+}
+
+void HttpNetworkTransaction::CacheNetErrorDetailsAndResetStream() {
+  if (stream_)
+    stream_->PopulateNetErrorDetails(&net_error_details_);
+  stream_.reset();
 }
 
 void HttpNetworkTransaction::RecordSSLFallbackMetrics(int result) {
@@ -1564,7 +1573,7 @@ bool HttpNetworkTransaction::ShouldResendRequest() const {
 void HttpNetworkTransaction::ResetConnectionAndRequestForResend() {
   if (stream_.get()) {
     stream_->Close(true);
-    stream_.reset();
+    CacheNetErrorDetailsAndResetStream();
   }
 
   // We need to clear request_headers_ because it contains the real request

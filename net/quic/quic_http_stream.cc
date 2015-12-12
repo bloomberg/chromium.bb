@@ -42,6 +42,7 @@ QuicHttpStream::QuicHttpStream(
       closed_stream_received_bytes_(0),
       closed_stream_sent_bytes_(0),
       user_buffer_len_(0),
+      quic_connection_error_(QUIC_NO_ERROR),
       weak_factory_(this) {
   DCHECK(session_);
   session_->AddObserver(this);
@@ -285,6 +286,11 @@ void QuicHttpStream::Drain(HttpNetworkSession* session) {
   delete this;
 }
 
+void QuicHttpStream::PopulateNetErrorDetails(NetErrorDetails* details) {
+  if (was_handshake_confirmed_)
+    details->quic_connection_error = quic_connection_error_;
+}
+
 void QuicHttpStream::SetPriority(RequestPriority priority) {
   priority_ = priority;
 }
@@ -328,8 +334,10 @@ void QuicHttpStream::OnClose(QuicErrorCode error) {
   }
 
   ResetStream();
-  if (!callback_.is_null())
+  if (!callback_.is_null()) {
+    quic_connection_error_ = error;
     DoCallback(response_status_);
+  }
 }
 
 void QuicHttpStream::OnError(int error) {

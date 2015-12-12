@@ -127,6 +127,8 @@ class MockHttpStream : public HttpStream {
 
   void Drain(HttpNetworkSession*) override {}
 
+  void PopulateNetErrorDetails(NetErrorDetails* details) override { return; }
+
   void SetPriority(RequestPriority priority) override {}
 
   // Methods to tweak/observer mock behavior:

@@ -117,6 +117,10 @@ void HttpBasicStream::Drain(HttpNetworkSession* session) {
   // |drainer| will delete itself.
 }
 
+void HttpBasicStream::PopulateNetErrorDetails(NetErrorDetails* /*details*/) {
+  return;
+}
+
 void HttpBasicStream::SetPriority(RequestPriority priority) {
   // TODO(akalin): Plumb this through to |connection_|.
 }
