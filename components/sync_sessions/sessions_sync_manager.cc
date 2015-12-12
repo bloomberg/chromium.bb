@@ -82,7 +82,6 @@ SessionsSyncManager::SessionsSyncManager(
       page_revisit_broadcaster_(this, sessions_client),
       sessions_updated_callback_(sessions_updated_callback),
       datatype_refresh_callback_(datatype_refresh_callback) {
-  synced_window_getter_ = sessions_client_->GetSyncedWindowDelegatesGetter();
 }
 
 SessionsSyncManager::~SessionsSyncManager() {}
@@ -186,7 +185,7 @@ void SessionsSyncManager::AssociateWindows(
 
   session_tracker_.ResetSessionTracking(local_tag);
   std::set<const SyncedWindowDelegate*> windows =
-      GetSyncedWindowDelegatesGetter()->GetSyncedWindowDelegates();
+      synced_window_delegates_getter()->GetSyncedWindowDelegates();
 
   for (std::set<const SyncedWindowDelegate*>::const_iterator i =
            windows.begin();
@@ -893,8 +892,7 @@ void SessionsSyncManager::LocalTabDelegateToSpecifics(
   session_tab = session_tracker_.GetTab(current_machine_tag(),
                                         tab_delegate.GetSessionId(),
                                         tab_delegate.GetSyncId());
-  SetSessionTabFromDelegate(GetSyncedWindowDelegatesGetter(), tab_delegate,
-                            base::Time::Now(), session_tab);
+  SetSessionTabFromDelegate(tab_delegate, base::Time::Now(), session_tab);
   SetVariationIds(session_tab);
   sync_pb::SessionTab tab_s = session_tab->ToSyncData();
   specifics->set_session_tag(current_machine_tag_);
@@ -947,7 +945,6 @@ void SessionsSyncManager::AssociateRestoredPlaceholderTab(
 
 // static
 void SessionsSyncManager::SetSessionTabFromDelegate(
-    SyncedWindowDelegatesGetter* synced_window_getter,
     const SyncedTabDelegate& tab_delegate,
     base::Time mtime,
     sessions::SessionTab* session_tab) {
@@ -958,7 +955,7 @@ void SessionsSyncManager::SetSessionTabFromDelegate(
   // Use -1 to indicate that the index hasn't been set properly yet.
   session_tab->current_navigation_index = -1;
   const SyncedWindowDelegate* window_delegate =
-      synced_window_getter->FindById(tab_delegate.GetWindowId());
+      synced_window_delegates_getter()->FindById(tab_delegate.GetWindowId());
   session_tab->pinned =
       window_delegate ? window_delegate->IsTabPinned(&tab_delegate) : false;
   session_tab->extension_app_id = tab_delegate.GetExtensionAppId();
@@ -1026,8 +1023,8 @@ FaviconCache* SessionsSyncManager::GetFaviconCache() {
 }
 
 SyncedWindowDelegatesGetter*
-SessionsSyncManager::GetSyncedWindowDelegatesGetter() const {
-  return synced_window_getter_;
+SessionsSyncManager::synced_window_delegates_getter() const {
+  return sessions_client_->GetSyncedWindowDelegatesGetter();
 }
 
 void SessionsSyncManager::DoGarbageCollection() {

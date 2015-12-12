@@ -211,13 +211,8 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
   if (!disabled_types.Has(syncer::PROXY_TABS) && !history_disabled) {
     sync_service->RegisterDataTypeController(
         new ProxyDataTypeController(ui_thread_, syncer::PROXY_TABS));
-    // TODO(zea): remove this once SyncedWindowDelegateGetter is componentized.
-    // For now, we know that the implementation of SyncService is always a
-    // ProfileSyncService at this level.
-    ProfileSyncService* pss = static_cast<ProfileSyncService*>(sync_service);
     sync_service->RegisterDataTypeController(new SessionDataTypeController(
         ui_thread_, error_callback, sync_client_,
-        pss->GetSyncedWindowDelegatesGetter(),
         sync_service->GetLocalDeviceInfoProvider(), history_disabled_pref_));
   }
 

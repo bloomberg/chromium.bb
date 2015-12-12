@@ -461,11 +461,6 @@ browser_sync::FaviconCache* ProfileSyncService::GetFaviconCache() {
   return sessions_sync_manager_->GetFaviconCache();
 }
 
-browser_sync::SyncedWindowDelegatesGetter*
-ProfileSyncService::GetSyncedWindowDelegatesGetter() const {
-  return sessions_sync_manager_->GetSyncedWindowDelegatesGetter();
-}
-
 sync_driver::DeviceInfoTracker* ProfileSyncService::GetDeviceInfoTracker()
     const {
   return device_info_sync_service_.get();

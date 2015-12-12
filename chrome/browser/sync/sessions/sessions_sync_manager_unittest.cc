@@ -20,6 +20,7 @@
 #include "components/sync_driver/device_info.h"
 #include "components/sync_driver/local_device_info_provider_mock.h"
 #include "components/sync_driver/sync_api_component_factory.h"
+#include "components/sync_sessions/sync_sessions_client.h"
 #include "components/sync_sessions/synced_tab_delegate.h"
 #include "components/sync_sessions/synced_window_delegate.h"
 #include "components/sync_sessions/synced_window_delegates_getter.h"
@@ -259,6 +260,58 @@ scoped_ptr<LocalSessionEventRouter> NewDummyRouter() {
   return scoped_ptr<LocalSessionEventRouter>(new DummyRouter());
 }
 
+// Provides ability to override SyncedWindowDelegatesGetter.
+// All other calls are passed through to the original SyncSessionsClient.
+class SyncSessionsClientShim : public sync_sessions::SyncSessionsClient {
+ public:
+  SyncSessionsClientShim(
+      sync_sessions::SyncSessionsClient* sync_sessions_client)
+      : sync_sessions_client_(sync_sessions_client),
+        synced_window_getter_(nullptr) {}
+  ~SyncSessionsClientShim() override {}
+
+  bookmarks::BookmarkModel* GetBookmarkModel() override {
+    return sync_sessions_client_->GetBookmarkModel();
+  }
+
+  favicon::FaviconService* GetFaviconService() override {
+    return sync_sessions_client_->GetFaviconService();
+  }
+
+  history::HistoryService* GetHistoryService() override {
+    return sync_sessions_client_->GetHistoryService();
+  }
+
+  bool ShouldSyncURL(const GURL& url) const override {
+    return sync_sessions_client_->ShouldSyncURL(url);
+  }
+
+  browser_sync::SyncedWindowDelegatesGetter* GetSyncedWindowDelegatesGetter()
+      override {
+    // The idea here is to allow the test code override the default
+    // SyncedWindowDelegatesGetter provided by |sync_sessions_client_|.
+    // If |synced_window_getter_| is explicitly set, return it; otherwise return
+    // the default one provided by |sync_sessions_client_|.
+    return synced_window_getter_
+               ? synced_window_getter_
+               : sync_sessions_client_->GetSyncedWindowDelegatesGetter();
+  }
+
+  scoped_ptr<browser_sync::LocalSessionEventRouter> GetLocalSessionEventRouter()
+      override {
+    return sync_sessions_client_->GetLocalSessionEventRouter().Pass();
+  }
+
+  void set_synced_window_getter(
+      browser_sync::SyncedWindowDelegatesGetter* synced_window_getter) {
+    synced_window_getter_ = synced_window_getter;
+  }
+
+ private:
+  sync_sessions::SyncSessionsClient* const sync_sessions_client_;
+  browser_sync::SyncedWindowDelegatesGetter* synced_window_getter_;
+};
+
 }  // namespace
 
 class SessionsSyncManagerTest
@@ -278,6 +331,8 @@ class SessionsSyncManagerTest
   void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
     sync_client_.reset(new browser_sync::ChromeSyncClient(profile()));
+    sessions_client_shim_.reset(
+        new SyncSessionsClientShim(sync_client_->GetSyncSessionsClient()));
     browser_sync::NotificationServiceSessionsRouter* router(
         new browser_sync::NotificationServiceSessionsRouter(
             profile(), GetSyncSessionsClient(),
@@ -354,13 +409,19 @@ class SessionsSyncManagerTest
   }
 
   sync_sessions::SyncSessionsClient* GetSyncSessionsClient() {
-    return sync_client_->GetSyncSessionsClient();
+    return sessions_client_shim_.get();
   }
 
   sync_driver::SyncPrefs* sync_prefs() { return sync_prefs_.get(); }
 
+  void set_synced_window_getter(
+      browser_sync::SyncedWindowDelegatesGetter* synced_window_getter) {
+    sessions_client_shim_->set_synced_window_getter(synced_window_getter);
+  }
+
  private:
   scoped_ptr<browser_sync::ChromeSyncClient> sync_client_;
+  scoped_ptr<SyncSessionsClientShim> sessions_client_shim_;
   scoped_ptr<sync_driver::SyncPrefs> sync_prefs_;
   SessionNotificationObserver observer_;
   scoped_ptr<SessionsSyncManager> manager_;
@@ -559,8 +620,7 @@ TEST_F(SessionsSyncManagerTest, SetSessionTabFromDelegate) {
       SerializedNavigationEntryTestHelper::CreateNavigation(
           "http://www.example.com", "Example"));
   session_tab.session_storage_persistent_id = "persistent id";
-  manager()->SetSessionTabFromDelegate(
-      manager()->GetSyncedWindowDelegatesGetter(), tab, kTime4, &session_tab);
+  manager()->SetSessionTabFromDelegate(tab, kTime4, &session_tab);
 
   EXPECT_EQ(0, session_tab.window_id.id());
   EXPECT_EQ(0, session_tab.tab_id.id());
@@ -667,8 +727,7 @@ TEST_F(SessionsSyncManagerTest, SetSessionTabFromDelegateNavigationIndex) {
   tab.set_current_entry_index(8);
 
   sessions::SessionTab session_tab;
-  manager()->SetSessionTabFromDelegate(
-      manager()->GetSyncedWindowDelegatesGetter(), tab, kTime9, &session_tab);
+  manager()->SetSessionTabFromDelegate(tab, kTime9, &session_tab);
 
   EXPECT_EQ(6, session_tab.current_navigation_index);
   ASSERT_EQ(8u, session_tab.navigations.size());
@@ -709,8 +768,7 @@ TEST_F(SessionsSyncManagerTest, SetSessionTabFromDelegateCurrentInvalid) {
   tab.set_current_entry_index(1);
 
   sessions::SessionTab session_tab;
-  manager()->SetSessionTabFromDelegate(
-      manager()->GetSyncedWindowDelegatesGetter(), tab, kTime9, &session_tab);
+  manager()->SetSessionTabFromDelegate(tab, kTime9, &session_tab);
 
   EXPECT_EQ(2, session_tab.current_navigation_index);
   ASSERT_EQ(3u, session_tab.navigations.size());
@@ -781,8 +839,7 @@ TEST_F(SessionsSyncManagerTest, BlockedNavigations) {
       SerializedNavigationEntryTestHelper::CreateNavigation(
           "http://www.example.com", "Example"));
   session_tab.session_storage_persistent_id = "persistent id";
-  manager()->SetSessionTabFromDelegate(
-      manager()->GetSyncedWindowDelegatesGetter(), tab, kTime4, &session_tab);
+  manager()->SetSessionTabFromDelegate(tab, kTime4, &session_tab);
 
   EXPECT_EQ(0, session_tab.window_id.id());
   EXPECT_EQ(0, session_tab.tab_id.id());
@@ -914,7 +971,7 @@ TEST_F(SessionsSyncManagerTest, SwappedOutOnRestore) {
   manager()->StopSyncing(syncer::SESSIONS);
 
   const std::set<const SyncedWindowDelegate*>& windows =
-      manager()->GetSyncedWindowDelegatesGetter()->GetSyncedWindowDelegates();
+      manager()->synced_window_delegates_getter()->GetSyncedWindowDelegates();
   ASSERT_EQ(1U, windows.size());
   SyncedTabDelegateFake t1_override, t2_override;
   t1_override.SetSyncId(1);  // No WebContents by default.
@@ -927,7 +984,7 @@ TEST_F(SessionsSyncManagerTest, SwappedOutOnRestore) {
   delegates.insert(&window_override);
   scoped_ptr<TestSyncedWindowDelegatesGetter> getter(
       new TestSyncedWindowDelegatesGetter(delegates));
-  manager()->synced_window_getter_ = getter.get();
+  set_synced_window_getter(getter.get());
 
   syncer::SyncMergeResult result = manager()->MergeDataAndStartSyncing(
       syncer::SESSIONS, in,

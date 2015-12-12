@@ -64,7 +64,6 @@ namespace browser_sync {
 class BackendMigrator;
 class FaviconCache;
 class SessionsSyncManager;
-class SyncedWindowDelegatesGetter;
 }  // namespace browser_sync
 
 namespace sync_driver {
@@ -346,10 +345,6 @@ class ProfileSyncService : public sync_driver::SyncService,
   // Return whether OAuth2 refresh token is loaded and available for the backend
   // to start up. Virtual to enable mocking in tests.
   virtual bool IsOAuthRefreshTokenAvailable();
-
-  // Returns the SyncedWindowDelegatesGetter from the embedded sessions manager.
-  virtual browser_sync::SyncedWindowDelegatesGetter*
-  GetSyncedWindowDelegatesGetter() const;
 
   // Returns the SyncableService for syncer::SESSIONS.
   virtual syncer::SyncableService* GetSessionsSyncableService();

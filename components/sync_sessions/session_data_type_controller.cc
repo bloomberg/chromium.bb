@@ -6,6 +6,7 @@
 
 #include "base/prefs/pref_service.h"
 #include "components/sync_driver/sync_client.h"
+#include "components/sync_sessions/sync_sessions_client.h"
 #include "components/sync_sessions/synced_window_delegate.h"
 #include "components/sync_sessions/synced_window_delegates_getter.h"
 
@@ -15,7 +16,6 @@ SessionDataTypeController::SessionDataTypeController(
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
     const base::Closure& error_callback,
     sync_driver::SyncClient* sync_client,
-    SyncedWindowDelegatesGetter* synced_window_getter,
     sync_driver::LocalDeviceInfoProvider* local_device,
     const char* history_disabled_pref_name)
     : UIDataTypeController(ui_thread,
@@ -23,7 +23,6 @@ SessionDataTypeController::SessionDataTypeController(
                            syncer::SESSIONS,
                            sync_client),
       sync_client_(sync_client),
-      synced_window_getter_(synced_window_getter),
       local_device_(local_device),
       history_disabled_pref_name_(history_disabled_pref_name),
       waiting_on_session_restore_(false),
@@ -40,8 +39,10 @@ SessionDataTypeController::~SessionDataTypeController() {}
 
 bool SessionDataTypeController::StartModels() {
   DCHECK(ui_thread()->BelongsToCurrentThread());
+  browser_sync::SyncedWindowDelegatesGetter* synced_window_getter =
+      sync_client_->GetSyncSessionsClient()->GetSyncedWindowDelegatesGetter();
   std::set<const browser_sync::SyncedWindowDelegate*> window =
-      synced_window_getter_->GetSyncedWindowDelegates();
+      synced_window_getter->GetSyncedWindowDelegates();
   for (std::set<const browser_sync::SyncedWindowDelegate*>::const_iterator i =
            window.begin();
        i != window.end(); ++i) {

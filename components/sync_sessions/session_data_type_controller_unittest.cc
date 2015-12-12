@@ -16,6 +16,7 @@
 #include "components/sync_driver/fake_sync_client.h"
 #include "components/sync_driver/local_device_info_provider_mock.h"
 #include "components/sync_driver/sync_api_component_factory_mock.h"
+#include "components/sync_sessions/fake_sync_sessions_client.h"
 #include "components/sync_sessions/synced_window_delegate.h"
 #include "components/sync_sessions/synced_window_delegates_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -76,6 +77,22 @@ class MockSyncedWindowDelegatesGetter : public SyncedWindowDelegatesGetter {
   std::set<const SyncedWindowDelegate*> delegates_;
 };
 
+class TestSyncSessionsClient : public sync_sessions::FakeSyncSessionsClient {
+ public:
+  browser_sync::SyncedWindowDelegatesGetter* GetSyncedWindowDelegatesGetter()
+      override {
+    return synced_window_getter_;
+  }
+
+  void SetSyncedWindowDelegatesGetter(
+      browser_sync::SyncedWindowDelegatesGetter* synced_window_getter) {
+    synced_window_getter_ = synced_window_getter;
+  }
+
+ private:
+  browser_sync::SyncedWindowDelegatesGetter* synced_window_getter_;
+};
+
 class SessionDataTypeControllerTest : public testing::Test,
                                       public sync_driver::FakeSyncClient {
  public:
@@ -89,13 +106,20 @@ class SessionDataTypeControllerTest : public testing::Test,
   // FakeSyncClient overrides.
   PrefService* GetPrefService() override { return &prefs_; }
 
+  sync_sessions::SyncSessionsClient* GetSyncSessionsClient() override {
+    return sync_sessions_client_.get();
+  }
+
   void SetUp() override {
     prefs_.registry()->RegisterBooleanPref(kSavingBrowserHistoryDisabled,
                                            false);
 
     synced_window_delegate_.reset(new MockSyncedWindowDelegate());
     synced_window_getter_.reset(new MockSyncedWindowDelegatesGetter());
+    sync_sessions_client_.reset(new TestSyncSessionsClient());
     synced_window_getter_->Add(synced_window_delegate_.get());
+    sync_sessions_client_->SetSyncedWindowDelegatesGetter(
+        synced_window_getter_.get());
 
     local_device_.reset(new LocalDeviceInfoProviderMock(
         "cache_guid", "Wayne Gretzky's Hacking Box", "Chromium 10k",
@@ -103,8 +127,7 @@ class SessionDataTypeControllerTest : public testing::Test,
 
     controller_ = new SessionDataTypeController(
         base::ThreadTaskRunnerHandle::Get(), base::Bind(&base::DoNothing), this,
-        synced_window_getter_.get(), local_device_.get(),
-        kSavingBrowserHistoryDisabled);
+        local_device_.get(), kSavingBrowserHistoryDisabled);
 
     load_finished_ = false;
     last_type_ = syncer::UNSPECIFIED;
@@ -116,6 +139,7 @@ class SessionDataTypeControllerTest : public testing::Test,
     local_device_.reset();
     synced_window_getter_.reset();
     synced_window_delegate_.reset();
+    sync_sessions_client_.reset();
   }
 
   void Start() {
@@ -163,6 +187,7 @@ class SessionDataTypeControllerTest : public testing::Test,
   scoped_ptr<MockSyncedWindowDelegatesGetter> synced_window_getter_;
   scoped_ptr<LocalDeviceInfoProviderMock> local_device_;
   scoped_ptr<MockSyncedWindowDelegate> synced_window_delegate_;
+  scoped_ptr<TestSyncSessionsClient> sync_sessions_client_;
   bool load_finished_;
 
  private:

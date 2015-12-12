@@ -110,8 +110,6 @@ class SessionsSyncManager : public syncer::SyncableService,
 
   FaviconCache* GetFaviconCache();
 
-  SyncedWindowDelegatesGetter* GetSyncedWindowDelegatesGetter() const;
-
   // Triggers garbage collection of stale sessions (as defined by
   // |stale_session_threshold_days_|). This is called automatically every
   // time we start up (via AssociateModels) and when new sessions data is
@@ -262,11 +260,9 @@ class SessionsSyncManager : public syncer::SyncableService,
                     syncer::SyncChangeList* change_output);
 
   // Set |session_tab| from |tab_delegate| and |mtime|.
-  static void SetSessionTabFromDelegate(
-      SyncedWindowDelegatesGetter* synced_window_getter,
-      const SyncedTabDelegate& tab_delegate,
-      base::Time mtime,
-      sessions::SessionTab* session_tab);
+  void SetSessionTabFromDelegate(const SyncedTabDelegate& tab_delegate,
+                                 base::Time mtime,
+                                 sessions::SessionTab* session_tab);
 
   // Sets |variation_ids| field of |session_tab| with the ids of the currently
   // assigned variations which should be sent to sync.
@@ -301,6 +297,8 @@ class SessionsSyncManager : public syncer::SyncableService,
   // Validates the content of a SessionHeader protobuf.
   // Returns false if validation fails.
   static bool IsValidSessionHeader(const sync_pb::SessionHeader& header);
+
+  SyncedWindowDelegatesGetter* synced_window_delegates_getter() const;
 
   // The client of this sync sessions datatype.
   sync_sessions::SyncSessionsClient* const sessions_client_;
@@ -346,7 +344,6 @@ class SessionsSyncManager : public syncer::SyncableService,
   size_t stale_session_threshold_days_;
 
   scoped_ptr<LocalSessionEventRouter> local_event_router_;
-  SyncedWindowDelegatesGetter* synced_window_getter_;
 
   // Owns revisiting instrumentation logic for page visit events.
   PageRevisitBroadcaster page_revisit_broadcaster_;
