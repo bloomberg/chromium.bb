@@ -31,7 +31,7 @@ void OfflinePageTestStore::Load(const LoadCallback& callback) {
     load_status = OfflinePageMetadataStore::LOAD_SUCCEEDED;
   }
   task_runner_->PostTask(FROM_HERE,
-                         base::Bind(callback, load_status, offline_pages_));
+                         base::Bind(callback, load_status, GetAllPages()));
 }
 
 void OfflinePageTestStore::AddOrUpdateOfflinePage(
@@ -40,7 +40,7 @@ void OfflinePageTestStore::AddOrUpdateOfflinePage(
   last_saved_page_ = offline_page;
   bool result = scenario_ != TestScenario::WRITE_FAILED;
   if (result)
-    offline_pages_.push_back(offline_page);
+    offline_pages_[offline_page.bookmark_id] = offline_page;
   task_runner_->PostTask(FROM_HERE, base::Bind(callback, result));
 }
 
@@ -50,12 +50,11 @@ void OfflinePageTestStore::RemoveOfflinePages(
   ASSERT_FALSE(bookmark_ids.empty());
   bool result = false;
   if (scenario_ != TestScenario::REMOVE_FAILED) {
-    for (auto iter = offline_pages_.begin(); iter != offline_pages_.end();
-         ++iter) {
-      if (iter->bookmark_id == bookmark_ids[0]) {
+    for (const auto& bookmark_id : bookmark_ids) {
+      auto iter = offline_pages_.find(bookmark_id);
+      if (iter != offline_pages_.end()) {
         offline_pages_.erase(iter);
         result = true;
-        break;
       }
     }
   }
@@ -71,12 +70,17 @@ void OfflinePageTestStore::Reset(const ResetCallback& callback) {
 void OfflinePageTestStore::UpdateLastAccessTime(
     int64 bookmark_id,
     const base::Time& last_access_time) {
-  for (auto& offline_page : offline_pages_) {
-    if (offline_page.bookmark_id == bookmark_id) {
-      offline_page.last_access_time = last_access_time;
-      return;
-    }
-  }
+  auto iter = offline_pages_.find(bookmark_id);
+  if (iter == offline_pages_.end())
+    return;
+  iter->second.last_access_time = last_access_time;
+}
+
+std::vector<OfflinePageItem> OfflinePageTestStore::GetAllPages() const {
+  std::vector<OfflinePageItem> offline_pages;
+  for (const auto& id_page_pair : offline_pages_)
+    offline_pages.push_back(id_page_pair.second);
+  return offline_pages;
 }
 
 }  // namespace offline_pages

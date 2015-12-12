@@ -27,6 +27,7 @@ class GURL;
 namespace base {
 class SequencedTaskRunner;
 class Time;
+class TimeDelta;
 }
 namespace bookmarks {
 class BookmarkModel;
@@ -123,6 +124,8 @@ class OfflinePageModel : public KeyedService,
 
   // Returns true if an offline copy can be saved for the given URL.
   static bool CanSavePage(const GURL& url);
+
+  static base::TimeDelta GetFinalDeletionDelayForTesting();
 
   // All blocking calls/disk access will happen on the provided |task_runner|.
   OfflinePageModel(scoped_ptr<OfflinePageMetadataStore> store,

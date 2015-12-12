@@ -108,6 +108,11 @@ bool OfflinePageModel::CanSavePage(const GURL& url) {
   return url.SchemeIsHTTPOrHTTPS();
 }
 
+// static
+base::TimeDelta OfflinePageModel::GetFinalDeletionDelayForTesting() {
+  return kFinalDeletionDelay;
+}
+
 OfflinePageModel::OfflinePageModel(
     scoped_ptr<OfflinePageMetadataStore> store,
     const base::FilePath& archives_dir,

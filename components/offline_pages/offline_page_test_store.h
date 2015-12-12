@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_OFFLINE_PAGES_OFFLINE_PAGE_TEST_STORE_H_
 #define COMPONENTS_OFFLINE_PAGES_OFFLINE_PAGE_TEST_STORE_H_
 
+#include <map>
 #include <vector>
 
 #include "base/macros.h"
@@ -43,20 +44,19 @@ class OfflinePageTestStore : public OfflinePageMetadataStore {
   void UpdateLastAccessTime(int64 bookmark_id,
                             const base::Time& last_access_time);
 
+  // Returns all pages, regardless their states.
+  std::vector<OfflinePageItem> GetAllPages() const;
+
   const OfflinePageItem& last_saved_page() const { return last_saved_page_; }
 
   void set_test_scenario(TestScenario scenario) { scenario_ = scenario; };
-
-  const std::vector<OfflinePageItem>& offline_pages() const {
-    return offline_pages_;
-  }
 
  private:
   OfflinePageItem last_saved_page_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   TestScenario scenario_;
 
-  std::vector<OfflinePageItem> offline_pages_;
+  std::map<int64, OfflinePageItem> offline_pages_;
 
   DISALLOW_ASSIGN(OfflinePageTestStore);
 };
