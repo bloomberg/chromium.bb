@@ -490,7 +490,7 @@ class CONTENT_EXPORT RenderViewImpl
   void GetSelectionBounds(gfx::Rect* start, gfx::Rect* end) override;
   void FocusChangeComplete() override;
   void GetCompositionCharacterBounds(
-      std::vector<gfx::Rect>* character_bounds_in_window) override;
+      std::vector<gfx::Rect>* character_bounds) override;
   void GetCompositionRange(gfx::Range* range) override;
   bool CanComposeInline() override;
   void DidCommitCompositorFrame() override;
@@ -564,8 +564,6 @@ class CONTENT_EXPORT RenderViewImpl
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, PaintAfterSwapOut);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplScaleFactorTest,
                            ConverViewportToScreenWithZoomForDSF);
-  FRIEND_TEST_ALL_PREFIXES(RenderViewImplScaleFactorTest,
-                           GetCompositionCharacterBoundsTest);
 
   typedef std::map<GURL, double> HostZoomLevels;
 
