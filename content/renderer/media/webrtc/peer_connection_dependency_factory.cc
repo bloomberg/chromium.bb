@@ -32,6 +32,7 @@
 #include "content/renderer/media/rtc_video_decoder_factory.h"
 #include "content/renderer/media/rtc_video_encoder_factory.h"
 #include "content/renderer/media/webaudio_capturer_source.h"
+#include "content/renderer/media/webrtc/media_stream_remote_audio_track.h"
 #include "content/renderer/media/webrtc/stun_field_trial.h"
 #include "content/renderer/media/webrtc/webrtc_local_audio_track_adapter.h"
 #include "content/renderer/media/webrtc/webrtc_video_capturer_adapter.h"
@@ -570,6 +571,7 @@ void PeerConnectionDependencyFactory::CreateLocalAudioTrack(
     const blink::WebMediaStreamTrack& track) {
   blink::WebMediaStreamSource source = track.source();
   DCHECK_EQ(source.type(), blink::WebMediaStreamSource::TypeAudio);
+  DCHECK(!source.remote());
   MediaStreamAudioSource* source_data =
       static_cast<MediaStreamAudioSource*>(source.extraData());
 
@@ -582,9 +584,7 @@ void PeerConnectionDependencyFactory::CreateLocalAudioTrack(
       source_data =
           static_cast<MediaStreamAudioSource*>(source.extraData());
     } else {
-      // TODO(perkj): Implement support for sources from
-      // remote MediaStreams.
-      NOTIMPLEMENTED();
+      NOTREACHED() << "Local track missing source extra data.";
       return;
     }
   }
@@ -607,6 +607,18 @@ void PeerConnectionDependencyFactory::CreateLocalAudioTrack(
   // Pass the ownership of the native local audio track to the blink track.
   blink::WebMediaStreamTrack writable_track = track;
   writable_track.setExtraData(audio_track.release());
+}
+
+void PeerConnectionDependencyFactory::CreateRemoteAudioTrack(
+    const blink::WebMediaStreamTrack& track) {
+  blink::WebMediaStreamSource source = track.source();
+  DCHECK_EQ(source.type(), blink::WebMediaStreamSource::TypeAudio);
+  DCHECK(source.remote());
+  DCHECK(source.extraData());
+
+  blink::WebMediaStreamTrack writable_track = track;
+  writable_track.setExtraData(
+      new MediaStreamRemoteAudioTrack(source, track.isEnabled()));
 }
 
 void PeerConnectionDependencyFactory::StartLocalAudioTrack(

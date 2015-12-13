@@ -79,24 +79,26 @@ void WebRtcMediaStreamAdapter::CreateAudioTrack(
   // A media stream is connected to a peer connection, enable the
   // peer connection mode for the sources.
   MediaStreamAudioTrack* native_track = MediaStreamAudioTrack::GetTrack(track);
-  if (!native_track || !native_track->is_local_track()) {
-    // We don't support connecting remote audio tracks to PeerConnection yet.
-    // See issue http://crbug/344303.
-    // TODO(xians): Remove this after we support connecting remote audio track
-    // to PeerConnection.
-    NOTIMPLEMENTED() << "webrtc audio track can not be created from a remote "
-                     << "audio track.";
+  if (!native_track) {
+    DLOG(ERROR) << "No native track for blink audio track.";
     return;
   }
 
-  // This is a local audio track.
-  const blink::WebMediaStreamSource& source = track.source();
-  MediaStreamAudioSource* audio_source =
-      static_cast<MediaStreamAudioSource*>(source.extraData());
-  if (audio_source && audio_source->GetAudioCapturer().get())
-    audio_source->GetAudioCapturer()->EnablePeerConnectionMode();
+  webrtc::AudioTrackInterface* audio_track = native_track->GetAudioAdapter();
+  if (!audio_track) {
+    DLOG(ERROR) << "Audio track doesn't support webrtc.";
+    return;
+  }
 
-  webrtc_media_stream_->AddTrack(native_track->GetAudioAdapter());
+  if (native_track->is_local_track()) {
+    const blink::WebMediaStreamSource& source = track.source();
+    MediaStreamAudioSource* audio_source =
+        static_cast<MediaStreamAudioSource*>(source.extraData());
+    if (audio_source && audio_source->GetAudioCapturer().get())
+      audio_source->GetAudioCapturer()->EnablePeerConnectionMode();
+  }
+
+  webrtc_media_stream_->AddTrack(audio_track);
 }
 
 void WebRtcMediaStreamAdapter::CreateVideoTrack(

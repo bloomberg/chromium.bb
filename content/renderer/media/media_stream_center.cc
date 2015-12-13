@@ -41,7 +41,11 @@ void CreateNativeAudioMediaStreamTrack(
   DCHECK(!track.extraData());
   blink::WebMediaStreamSource source = track.source();
   DCHECK_EQ(source.type(), blink::WebMediaStreamSource::TypeAudio);
-  factory->CreateLocalAudioTrack(track);
+  if (source.remote()) {
+    factory->CreateRemoteAudioTrack(track);
+  } else {
+    factory->CreateLocalAudioTrack(track);
+  }
 }
 
 void CreateNativeVideoMediaStreamTrack(

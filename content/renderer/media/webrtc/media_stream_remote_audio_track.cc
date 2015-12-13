@@ -12,7 +12,7 @@
 
 namespace content {
 
-class MediaStreamRemoteAudioTrack::AudioSink
+class MediaStreamRemoteAudioSource::AudioSink
     : public webrtc::AudioTrackSinkInterface {
  public:
   AudioSink() {
@@ -21,26 +21,41 @@ class MediaStreamRemoteAudioTrack::AudioSink
     DCHECK(sinks_.empty());
   }
 
-  void Add(MediaStreamAudioSink* sink) {
+  void Add(MediaStreamAudioSink* sink, MediaStreamAudioTrack* track,
+           bool enabled) {
     DCHECK(thread_checker_.CalledOnValidThread());
+    SinkInfo info(sink, track, enabled);
     base::AutoLock lock(lock_);
-    sinks_.push_back(sink);
+    sinks_.push_back(info);
   }
 
-  void Remove(MediaStreamAudioSink* sink) {
+  void Remove(MediaStreamAudioSink* sink, MediaStreamAudioTrack* track) {
     DCHECK(thread_checker_.CalledOnValidThread());
     base::AutoLock lock(lock_);
-    sinks_.remove(sink);
+    sinks_.remove_if([&sink, &track](const SinkInfo& info) {
+        return info.sink == sink && info.track == track;
+      });
+  }
+
+  void SetEnabled(MediaStreamAudioTrack* track, bool enabled) {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    base::AutoLock lock(lock_);
+    for (SinkInfo& info : sinks_) {
+      if (info.track == track)
+        info.enabled = enabled;
+    }
+  }
+
+  void RemoveAll(MediaStreamAudioTrack* track) {
+    base::AutoLock lock(lock_);
+    sinks_.remove_if([&track](const SinkInfo& info) {
+        return info.track == track;
+      });
   }
 
   bool IsNeeded() const {
     DCHECK(thread_checker_.CalledOnValidThread());
     return !sinks_.empty();
-  }
-
-  const media::AudioParameters GetOutputFormat() const {
-    base::AutoLock lock(lock_);
-    return params_;
   }
 
  private:
@@ -60,7 +75,6 @@ class MediaStreamRemoteAudioTrack::AudioSink
         params_.channels() != number_of_channels ||
         params_.sample_rate() != sample_rate ||
         params_.frames_per_buffer() != static_cast<int>(number_of_frames)) {
-      base::AutoLock lock(lock_);  // Only lock on this thread when writing.
       params_ = media::AudioParameters(
           media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
           media::GuessChannelLayout(number_of_channels),
@@ -72,32 +86,54 @@ class MediaStreamRemoteAudioTrack::AudioSink
     base::TimeTicks estimated_capture_time(base::TimeTicks::Now());
 
     base::AutoLock lock(lock_);
-    for (auto* sink : sinks_) {
-      if (format_changed)
-        sink->OnSetFormat(params_);
-      sink->OnData(*audio_bus_.get(), estimated_capture_time);
+    for (const SinkInfo& info : sinks_) {
+      if (info.enabled) {
+        if (format_changed)
+          info.sink->OnSetFormat(params_);
+        info.sink->OnData(*audio_bus_.get(), estimated_capture_time);
+      }
     }
   }
 
   mutable base::Lock lock_;
-  std::list<MediaStreamAudioSink*> sinks_;
+  struct SinkInfo {
+    SinkInfo(MediaStreamAudioSink* sink, MediaStreamAudioTrack* track,
+             bool enabled) : sink(sink), track(track), enabled(enabled) {}
+    MediaStreamAudioSink* sink;
+    MediaStreamAudioTrack* track;
+    bool enabled;
+  };
+  std::list<SinkInfo> sinks_;
   base::ThreadChecker thread_checker_;
-  media::AudioParameters params_;
+  media::AudioParameters params_;  // Only used on the callback thread.
   scoped_ptr<media::AudioBus> audio_bus_;  // Only used on the callback thread.
 };
 
 MediaStreamRemoteAudioTrack::MediaStreamRemoteAudioTrack(
-    const scoped_refptr<webrtc::AudioTrackInterface>& track)
-    : MediaStreamAudioTrack(false), track_(track) {
+    const blink::WebMediaStreamSource& source, bool enabled)
+    : MediaStreamAudioTrack(false), source_(source), enabled_(enabled) {
+  DCHECK(source.extraData());  // Make sure the source has a native source.
 }
 
 MediaStreamRemoteAudioTrack::~MediaStreamRemoteAudioTrack() {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
+  source()->RemoveAll(this);
 }
 
 void MediaStreamRemoteAudioTrack::SetEnabled(bool enabled) {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
-  track_->set_enabled(enabled);
+
+  // This affects the shared state of the source for whether or not it's a part
+  // of the mixed audio that's rendered for remote tracks from WebRTC.
+  // All tracks from the same source will share this state and thus can step
+  // on each other's toes.
+  // This is also why we can't check the |enabled_| state for equality with
+  // |enabled| before setting the mixing enabled state. |enabled_| and the
+  // shared state might not be the same.
+  source()->SetEnabledForMixing(enabled);
+
+  enabled_ = enabled;
+  source()->SetSinksEnabled(this, enabled);
 }
 
 void MediaStreamRemoteAudioTrack::Stop() {
@@ -111,21 +147,61 @@ void MediaStreamRemoteAudioTrack::Stop() {
 
 void MediaStreamRemoteAudioTrack::AddSink(MediaStreamAudioSink* sink) {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
+  return source()->AddSink(sink, this, enabled_);
+}
 
+void MediaStreamRemoteAudioTrack::RemoveSink(MediaStreamAudioSink* sink) {
+  DCHECK(main_render_thread_checker_.CalledOnValidThread());
+  return source()->RemoveSink(sink, this);
+}
+
+media::AudioParameters MediaStreamRemoteAudioTrack::GetOutputFormat() const {
+  DCHECK(main_render_thread_checker_.CalledOnValidThread());
+  // This method is not implemented on purpose and should be removed.
+  // TODO(tommi): See comment for GetOutputFormat in MediaStreamAudioTrack.
+  NOTIMPLEMENTED();
+  return media::AudioParameters();
+}
+
+webrtc::AudioTrackInterface* MediaStreamRemoteAudioTrack::GetAudioAdapter() {
+  DCHECK(main_render_thread_checker_.CalledOnValidThread());
+  return source()->GetAudioAdapter();
+}
+
+MediaStreamRemoteAudioSource* MediaStreamRemoteAudioTrack::source() const {
+  return static_cast<MediaStreamRemoteAudioSource*>(source_.extraData());
+}
+
+MediaStreamRemoteAudioSource::MediaStreamRemoteAudioSource(
+    const scoped_refptr<webrtc::AudioTrackInterface>& track) : track_(track) {}
+
+MediaStreamRemoteAudioSource::~MediaStreamRemoteAudioSource() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+}
+
+void MediaStreamRemoteAudioSource::SetEnabledForMixing(bool enabled) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  track_->set_enabled(enabled);
+}
+
+void MediaStreamRemoteAudioSource::AddSink(MediaStreamAudioSink* sink,
+                                           MediaStreamAudioTrack* track,
+                                           bool enabled) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (!sink_) {
     sink_.reset(new AudioSink());
     track_->AddSink(sink_.get());
   }
 
-  sink_->Add(sink);
+  sink_->Add(sink, track, enabled);
 }
 
-void MediaStreamRemoteAudioTrack::RemoveSink(MediaStreamAudioSink* sink) {
-  DCHECK(main_render_thread_checker_.CalledOnValidThread());
-
+void MediaStreamRemoteAudioSource::RemoveSink(MediaStreamAudioSink* sink,
+                                              MediaStreamAudioTrack* track) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(sink_);
 
-  sink_->Remove(sink);
+  sink_->Remove(sink, track);
 
   if (!sink_->IsNeeded()) {
     track_->RemoveSink(sink_.get());
@@ -133,13 +209,19 @@ void MediaStreamRemoteAudioTrack::RemoveSink(MediaStreamAudioSink* sink) {
   }
 }
 
-media::AudioParameters MediaStreamRemoteAudioTrack::GetOutputFormat() const {
-  DCHECK(main_render_thread_checker_.CalledOnValidThread());
-  return sink_ ? sink_->GetOutputFormat() : media::AudioParameters();
+void MediaStreamRemoteAudioSource::SetSinksEnabled(MediaStreamAudioTrack* track,
+                                                   bool enabled) {
+  if (sink_)
+    sink_->SetEnabled(track, enabled);
 }
 
-webrtc::AudioTrackInterface* MediaStreamRemoteAudioTrack::GetAudioAdapter() {
-  DCHECK(main_render_thread_checker_.CalledOnValidThread());
+void MediaStreamRemoteAudioSource::RemoveAll(MediaStreamAudioTrack* track) {
+  if (sink_)
+    sink_->RemoveAll(track);
+}
+
+webrtc::AudioTrackInterface* MediaStreamRemoteAudioSource::GetAudioAdapter() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   return track_.get();
 }
 

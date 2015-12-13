@@ -38,6 +38,9 @@ class CONTENT_EXPORT MediaStreamAudioTrack : public MediaStreamTrack {
   // Returns the output format of the capture source. May return an invalid
   // AudioParameters if the format is not yet available.
   // Called on the main render thread.
+  // TODO(tommi): This method appears to only be used by Pepper and in fact
+  // does not appear to be necessary there.  We should remove it since it adds
+  // to the complexity of all types of audio tracks+source implementations.
   virtual media::AudioParameters GetOutputFormat() const = 0;
 
  private:

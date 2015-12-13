@@ -89,9 +89,13 @@ class CONTENT_EXPORT PeerConnectionDependencyFactory
   virtual WebRtcVideoCapturerAdapter* CreateVideoCapturer(
       bool is_screen_capture);
 
-  // Create an instance of WebRtcLocalAudioTrack and store it
+  // Creates an instance of WebRtcLocalAudioTrack and stores it
   // in the extraData field of |track|.
   void CreateLocalAudioTrack(const blink::WebMediaStreamTrack& track);
+
+  // Creates an instance of MediaStreamRemoteAudioTrack and associates with the
+  // |track| object.
+  void CreateRemoteAudioTrack(const blink::WebMediaStreamTrack& track);
 
   // Asks the PeerConnection factory to create a Local VideoTrack object.
   virtual scoped_refptr<webrtc::VideoTrackInterface>

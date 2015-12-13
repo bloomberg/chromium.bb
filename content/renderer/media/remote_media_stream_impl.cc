@@ -227,12 +227,13 @@ void RemoteAudioTrackAdapter::Unregister() {
 }
 
 void RemoteAudioTrackAdapter::InitializeWebkitAudioTrack() {
-  scoped_ptr<MediaStreamRemoteAudioTrack> media_stream_track(
-      new MediaStreamRemoteAudioTrack(observed_track().get()));
   InitializeWebkitTrack(blink::WebMediaStreamSource::TypeAudio);
-  webkit_track()->setExtraData(media_stream_track.release());
-  // TODO(tommi): Set the remote audio source extra data.
-  // webkit_track()->source().setExtraData(...);
+
+  webkit_track()->source().setExtraData(
+      new MediaStreamRemoteAudioSource(observed_track().get()));
+  webkit_track()->setExtraData(
+      new MediaStreamRemoteAudioTrack(
+          webkit_track()->source(), webkit_track()->isEnabled()));
 }
 
 void RemoteAudioTrackAdapter::OnChanged() {
