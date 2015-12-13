@@ -108,13 +108,14 @@ class NET_EXPORT_PRIVATE SpdyHttpStream : public SpdyStream::Delegate,
   // does the actual sending of data.
   void OnRequestBodyReadCompleted(int status);
 
-  // Call the user callback.
-  void DoCallback(int rv);
+  // Call the user callback associated with sending the request.
+  void DoRequestCallback(int rv);
+
+  // Call the user callback associated with reading the response.
+  void DoResponseCallback(int rv);
 
   void ScheduleBufferedReadCallback();
-
-  // Returns true if the callback is invoked.
-  bool DoBufferedReadCallback();
+  void DoBufferedReadCallback();
   bool ShouldWaitForMoreBufferedData() const;
 
   const base::WeakPtr<SpdySession> spdy_session_;
@@ -153,7 +154,8 @@ class NET_EXPORT_PRIVATE SpdyHttpStream : public SpdyStream::Delegate,
   // We buffer the response body as it arrives asynchronously from the stream.
   SpdyReadQueue response_body_queue_;
 
-  CompletionCallback callback_;
+  CompletionCallback request_callback_;
+  CompletionCallback response_callback_;
 
   // User provided buffer for the ReadResponseBody() response.
   scoped_refptr<IOBuffer> user_buffer_;

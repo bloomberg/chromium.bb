@@ -8,6 +8,7 @@
 #include <list>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
@@ -115,8 +116,8 @@ int SpdyHttpStream::ReadResponseHeaders(const CompletionCallback& callback) {
   }
 
   // Still waiting for the response, return IO_PENDING.
-  CHECK(callback_.is_null());
-  callback_ = callback;
+  CHECK(response_callback_.is_null());
+  response_callback_ = callback;
   return ERR_IO_PENDING;
 }
 
@@ -136,11 +137,11 @@ int SpdyHttpStream::ReadResponseBody(
     return closed_stream_status_;
   }
 
-  CHECK(callback_.is_null());
+  CHECK(response_callback_.is_null());
   CHECK(!user_buffer_.get());
   CHECK_EQ(0, user_buffer_len_);
 
-  callback_ = callback;
+  response_callback_ = callback;
   user_buffer_ = buf;
   user_buffer_len_ = buf_len;
   return ERR_IO_PENDING;
@@ -268,31 +269,32 @@ int SpdyHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
     // idle. However, we still want to return ERR_IO_PENDING to mimic
     // non-push behavior. The callback will be called when the
     // response is received.
-    result = ERR_IO_PENDING;
-  } else {
-    scoped_ptr<SpdyHeaderBlock> headers(new SpdyHeaderBlock);
-    CreateSpdyHeadersFromHttpRequest(
-        *request_info_, request_headers,
-        stream_->GetProtocolVersion(), direct_,
-        headers.get());
-    stream_->net_log().AddEvent(
-        NetLog::TYPE_HTTP_TRANSACTION_HTTP2_SEND_REQUEST_HEADERS,
-        base::Bind(&SpdyHeaderBlockNetLogCallback, headers.get()));
-    result =
-        stream_->SendRequestHeaders(
-            headers.Pass(),
-            HasUploadData() ? MORE_DATA_TO_SEND : NO_MORE_DATA_TO_SEND);
+    CHECK(response_callback_.is_null());
+    response_callback_ = callback;
+    return ERR_IO_PENDING;
   }
 
+  scoped_ptr<SpdyHeaderBlock> headers(new SpdyHeaderBlock);
+  CreateSpdyHeadersFromHttpRequest(*request_info_, request_headers,
+                                   stream_->GetProtocolVersion(), direct_,
+                                   headers.get());
+  stream_->net_log().AddEvent(
+      NetLog::TYPE_HTTP_TRANSACTION_HTTP2_SEND_REQUEST_HEADERS,
+      base::Bind(&SpdyHeaderBlockNetLogCallback, headers.get()));
+  result = stream_->SendRequestHeaders(
+      headers.Pass(),
+      HasUploadData() ? MORE_DATA_TO_SEND : NO_MORE_DATA_TO_SEND);
+
   if (result == ERR_IO_PENDING) {
-    CHECK(callback_.is_null());
-    callback_ = callback;
+    CHECK(request_callback_.is_null());
+    request_callback_ = callback;
   }
   return result;
 }
 
 void SpdyHttpStream::Cancel() {
-  callback_.Reset();
+  request_callback_.Reset();
+  response_callback_.Reset();
   if (stream_.get()) {
     stream_->Cancel();
     DCHECK(!stream_.get());
@@ -300,8 +302,8 @@ void SpdyHttpStream::Cancel() {
 }
 
 void SpdyHttpStream::OnRequestHeadersSent() {
-  if (!callback_.is_null())
-    DoCallback(OK);
+  if (!request_callback_.is_null())
+    DoRequestCallback(OK);
 
   // TODO(akalin): Do this immediately after sending the request
   // headers.
@@ -342,8 +344,9 @@ SpdyResponseHeadersStatus SpdyHttpStream::OnResponseHeadersUpdated(
   response_info_->vary_data
       .Init(*request_info_, *response_info_->headers.get());
 
-  if (!callback_.is_null())
-    DoCallback(OK);
+  if (!response_callback_.is_null()) {
+    DoResponseCallback(OK);
+  }
 
   return RESPONSE_HEADERS_ARE_COMPLETE;
 }
@@ -391,13 +394,25 @@ void SpdyHttpStream::OnClose(int status) {
   }
   stream_.reset();
 
-  bool invoked_callback = false;
+  // Callbacks might destroy |this|.
+  base::WeakPtr<SpdyHttpStream> self = weak_factory_.GetWeakPtr();
+
+  if (!request_callback_.is_null()) {
+    DoRequestCallback(status);
+    if (!self)
+      return;
+  }
+
   if (status == OK) {
     // We need to complete any pending buffered read now.
-    invoked_callback = DoBufferedReadCallback();
+    DoBufferedReadCallback();
+    if (!self)
+      return;
   }
-  if (!invoked_callback && !callback_.is_null())
-    DoCallback(status);
+
+  if (!response_callback_.is_null()) {
+    DoResponseCallback(status);
+  }
 }
 
 bool SpdyHttpStream::HasUploadData() const {
@@ -466,9 +481,8 @@ void SpdyHttpStream::ScheduleBufferedReadCallback() {
   buffered_read_callback_pending_ = true;
   const base::TimeDelta kBufferTime = base::TimeDelta::FromMilliseconds(1);
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(base::IgnoreResult(&SpdyHttpStream::DoBufferedReadCallback),
-                 weak_factory_.GetWeakPtr()),
+      FROM_HERE, base::Bind(&SpdyHttpStream::DoBufferedReadCallback,
+                            weak_factory_.GetWeakPtr()),
       kBufferTime);
 }
 
@@ -484,47 +498,54 @@ bool SpdyHttpStream::ShouldWaitForMoreBufferedData() const {
       static_cast<size_t>(user_buffer_len_);
 }
 
-bool SpdyHttpStream::DoBufferedReadCallback() {
+void SpdyHttpStream::DoBufferedReadCallback() {
   buffered_read_callback_pending_ = false;
 
   // If the transaction is cancelled or errored out, we don't need to complete
   // the read.
   if (!stream_.get() && !stream_closed_)
-    return false;
+    return;
 
   int stream_status =
       stream_closed_ ? closed_stream_status_ : stream_->response_status();
   if (stream_status != OK)
-    return false;
+    return;
 
   // When more_read_data_pending_ is true, it means that more data has
   // arrived since we started waiting.  Wait a little longer and continue
   // to buffer.
   if (more_read_data_pending_ && ShouldWaitForMoreBufferedData()) {
     ScheduleBufferedReadCallback();
-    return false;
+    return;
   }
 
   int rv = 0;
   if (user_buffer_.get()) {
-    rv = ReadResponseBody(user_buffer_.get(), user_buffer_len_, callback_);
+    rv = ReadResponseBody(user_buffer_.get(), user_buffer_len_,
+                          response_callback_);
     CHECK_NE(rv, ERR_IO_PENDING);
     user_buffer_ = NULL;
     user_buffer_len_ = 0;
-    DoCallback(rv);
-    return true;
+    DoResponseCallback(rv);
   }
-  return false;
 }
 
-void SpdyHttpStream::DoCallback(int rv) {
+void SpdyHttpStream::DoRequestCallback(int rv) {
   CHECK_NE(rv, ERR_IO_PENDING);
-  CHECK(!callback_.is_null());
+  CHECK(!request_callback_.is_null());
 
-  // Since Run may result in being called back, clear user_callback_ in advance.
-  CompletionCallback c = callback_;
-  callback_.Reset();
-  c.Run(rv);
+  // Since Run may result in being called back, reset request_callback_ in
+  // advance.
+  ResetAndReturn(&request_callback_).Run(rv);
+}
+
+void SpdyHttpStream::DoResponseCallback(int rv) {
+  CHECK_NE(rv, ERR_IO_PENDING);
+  CHECK(!response_callback_.is_null());
+
+  // Since Run may result in being called back, reset response_callback_ in
+  // advance.
+  ResetAndReturn(&response_callback_).Run(rv);
 }
 
 void SpdyHttpStream::GetSSLInfo(SSLInfo* ssl_info) {
