@@ -46,7 +46,7 @@ class VaapiJpegDecoderTest : public ::testing::Test {
         << "failed to read input data from " << input_file.value();
   }
 
-  void TearDown() override { wrapper_.reset(); }
+  void TearDown() override { wrapper_ = nullptr; }
 
   bool VerifyDecode(const media::JpegParseResult& parse_result,
                     const std::string& md5sum);
