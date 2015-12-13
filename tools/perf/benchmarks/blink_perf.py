@@ -334,6 +334,12 @@ class BlinkPerfXMLHttpRequest(perf_benchmark.PerfBenchmark):
 # Disabled on reference builds due to https://crbug.com/530374
 @benchmark.Disabled('win', 'chromeos', 'reference')
 class BlinkPerfPywebsocket(perf_benchmark.PerfBenchmark):
+  '''
+  The blink_perf.pywebsocket tests measure turn-around-time of 10MB
+  send/receive for XHR, Fetch API and WebSocket.
+  We might ignore <10% regressions, because the tests are noisy and such
+  regressions are often unreproducible (https://crbug.com/549017).
+  '''
   tag = 'pywebsocket'
   test = _BlinkPerfPywebsocketMeasurement
 
