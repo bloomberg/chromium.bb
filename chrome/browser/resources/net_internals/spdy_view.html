@@ -89,11 +89,7 @@
         <tbody>
           <tr jsselect="spdyAlternateProtocolMappings">
             <td jscontent="host_port_pair"></td>
-            <!-- "alternative_service" is used since release 43, see
-                 https://crrev.com/1043973002.  "alternate_protocol" is here
-                 to support importing netlog json files from earlier browsers.
-                 TODO(bnc): Deprecate around 2015 October. -->
-            <td jscontent="$this.alternative_service || $this.alternate_protocol"></td>
+            <td jscontent="alternative_service"></td>
           </tr>
         </tbody>
       </table>
