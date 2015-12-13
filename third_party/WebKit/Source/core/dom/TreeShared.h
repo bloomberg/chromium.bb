@@ -21,7 +21,7 @@
 #ifndef TreeShared_h
 #define TreeShared_h
 
-#include "public/platform/WebPrivatePtr.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Assertions.h"
 #include "wtf/MainThread.h"
 #include "wtf/Noncopyable.h"
