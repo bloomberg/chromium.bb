@@ -69,6 +69,7 @@
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/webview/webview.h"
+#include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
@@ -273,6 +274,14 @@ class RightAlignedIconLabelButton : public views::LabelButton {
   }
 
  private:
+  void OnFocus() override {
+    SetState(STATE_HOVERED);
+  }
+
+  void OnBlur() override {
+    SetState(STATE_NORMAL);
+  }
+
   DISALLOW_COPY_AND_ASSIGN(RightAlignedIconLabelButton);
 };
 
@@ -366,22 +375,22 @@ class EditableProfilePhoto : public views::LabelButton {
 // EditableProfileName -------------------------------------------------
 
 // A custom text control that turns into a textfield for editing when clicked.
-class EditableProfileName : public RightAlignedIconLabelButton,
+class EditableProfileName : public views::View,
                             public views::ButtonListener {
  public:
   EditableProfileName(views::TextfieldController* controller,
                       const base::string16& text,
                       bool is_editing_allowed)
-      : RightAlignedIconLabelButton(this, text),
-        profile_name_textfield_(NULL) {
+      : button_(new RightAlignedIconLabelButton(this, text)),
+        profile_name_textfield_(new views::Textfield()) {
     ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
     const gfx::FontList& medium_font_list =
         rb->GetFontList(ui::ResourceBundle::MediumFont);
-    SetFontList(medium_font_list);
-    SetHorizontalAlignment(gfx::ALIGN_CENTER);
+    button_->SetFontList(medium_font_list);
+    button_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
 
     if (!is_editing_allowed) {
-      SetBorder(views::Border::CreateEmptyBorder(2, 0, 2, 0));
+      button_->SetBorder(views::Border::CreateEmptyBorder(2, 0, 2, 0));
       return;
     }
 
@@ -390,27 +399,32 @@ class EditableProfileName : public RightAlignedIconLabelButton,
     // the text doesn't jump around when the hovered icon appears.
     // TODO(estade): revisit colors and press effect.
     const int kIconSize = 16;
-    SetImage(STATE_NORMAL, CreateSquarePlaceholderImage(kIconSize));
-    SetImage(STATE_HOVERED,
-             gfx::CreateVectorIcon(gfx::VectorIconId::MODE_EDIT, kIconSize,
-                                   SkColorSetRGB(0x33, 0x33, 0x33)));
-    SetImage(STATE_PRESSED,
-             gfx::CreateVectorIcon(gfx::VectorIconId::MODE_EDIT, kIconSize,
-                                   SkColorSetRGB(0x20, 0x20, 0x20)));
+    button_->SetImage(views::LabelButton::STATE_NORMAL,
+                      CreateSquarePlaceholderImage(kIconSize));
+    button_->SetImage(views::LabelButton::STATE_HOVERED,
+                      gfx::CreateVectorIcon(
+                          gfx::VectorIconId::MODE_EDIT, kIconSize,
+                          SkColorSetRGB(0x33, 0x33, 0x33)));
+    button_->SetImage(views::LabelButton::STATE_PRESSED,
+                      gfx::CreateVectorIcon(
+                          gfx::VectorIconId::MODE_EDIT, kIconSize,
+                          SkColorSetRGB(0x20, 0x20, 0x20)));
     // To center the text, we need to offest it by the width of the icon we
     // are adding and its padding. We need to also add a small top/bottom
     // padding to account for the textfield's border.
     const int kIconTextLabelButtonSpacing = 5;
-    SetBorder(views::Border::CreateEmptyBorder(
+    button_->SetBorder(views::Border::CreateEmptyBorder(
         2, kIconSize + kIconTextLabelButtonSpacing, 2, 0));
 
     // Textfield that overlaps the button.
-    profile_name_textfield_ = new views::Textfield();
     profile_name_textfield_->set_controller(controller);
     profile_name_textfield_->SetFontList(medium_font_list);
     profile_name_textfield_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
-
     profile_name_textfield_->SetVisible(false);
+
+    SetLayoutManager(
+        new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
+    AddChildView(button_);
     AddChildView(profile_name_textfield_);
   }
 
@@ -420,19 +434,20 @@ class EditableProfileName : public RightAlignedIconLabelButton,
 
   // Hide the editable textfield to show the profile name button instead.
   void ShowReadOnlyView() {
-    if (profile_name_textfield_)
-      profile_name_textfield_->SetVisible(false);
+    button_->SetVisible(true);
+    profile_name_textfield_->SetVisible(false);
   }
 
  private:
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override {
-    if (profile_name_textfield_) {
-      profile_name_textfield_->SetVisible(true);
-      profile_name_textfield_->SetText(GetText());
-      profile_name_textfield_->SelectAll(false);
-      profile_name_textfield_->RequestFocus();
-    }
+    button_->SetVisible(false);
+    profile_name_textfield_->SetVisible(true);
+    profile_name_textfield_->SetText(button_->GetText());
+    profile_name_textfield_->SelectAll(false);
+    profile_name_textfield_->RequestFocus();
+    // Re-layouts the view after swaping the controls.
+    Layout();
   }
 
   // views::LabelButton:
@@ -443,21 +458,7 @@ class EditableProfileName : public RightAlignedIconLabelButton,
     return false;
   }
 
-  void Layout() override {
-    if (profile_name_textfield_)
-      profile_name_textfield_->SetBounds(0, 0, width(), height());
-    RightAlignedIconLabelButton::Layout();
-  }
-
-  void OnFocus() override {
-    RightAlignedIconLabelButton::OnFocus();
-    SetState(STATE_HOVERED);
-  }
-
-  void OnBlur() override {
-    RightAlignedIconLabelButton::OnBlur();
-    SetState(STATE_NORMAL);
-  }
+  RightAlignedIconLabelButton* button_;
 
   // Textfield that is shown when editing the profile name. Can be NULL if
   // the profile name isn't allowed to be edited (e.g. for guest profiles).
