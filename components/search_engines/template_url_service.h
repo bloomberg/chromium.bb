@@ -294,6 +294,9 @@ class TemplateURLService : public WebDataServiceConsumer,
 
 #if defined(UNIT_TEST)
   void set_loaded(bool value) { loaded_ = value; }
+
+  // Turns Load() into a no-op.
+  void set_disable_load(bool value) { disable_load_ = value; }
 #endif
 
   // Whether or not the keywords have been loaded.
@@ -745,6 +748,9 @@ class TemplateURLService : public WebDataServiceConsumer,
   // further communication with sync or writing to prefs, so we don't persist
   // inconsistent state data anywhere.
   bool load_failed_;
+
+  // Whether Load() is disabled. True only in testing contexts.
+  bool disable_load_;
 
   // If non-zero, we're waiting on a load.
   KeywordWebDataService::Handle load_handle_;

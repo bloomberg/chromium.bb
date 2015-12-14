@@ -233,6 +233,7 @@ TemplateURLService::TemplateURLService(
       provider_map_(new SearchHostToURLsMap),
       loaded_(false),
       load_failed_(false),
+      disable_load_(false),
       load_handle_(0),
       default_search_provider_(NULL),
       next_id_(kInvalidTemplateURLID + 1),
@@ -258,6 +259,7 @@ TemplateURLService::TemplateURLService(const Initializer* initializers,
       provider_map_(new SearchHostToURLsMap),
       loaded_(false),
       load_failed_(false),
+      disable_load_(false),
       load_handle_(0),
       default_search_provider_(NULL),
       next_id_(kInvalidTemplateURLID + 1),
@@ -705,7 +707,7 @@ void TemplateURLService::RemoveObserver(TemplateURLServiceObserver* observer) {
 }
 
 void TemplateURLService::Load() {
-  if (loaded_ || load_handle_)
+  if (loaded_ || load_handle_ || disable_load_)
     return;
 
   if (web_data_service_.get())

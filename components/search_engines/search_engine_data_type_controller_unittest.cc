@@ -8,21 +8,17 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/tracked_objects.h"
-#include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/search_engines/template_url_service_factory_test_util.h"
-#include "chrome/test/base/testing_profile.h"
 #include "components/search_engines/search_engine_data_type_controller.h"
+#include "components/search_engines/template_url_service.h"
 #include "components/sync_driver/data_type_controller_mock.h"
 #include "components/sync_driver/fake_generic_change_processor.h"
 #include "components/sync_driver/fake_sync_client.h"
 #include "components/sync_driver/sync_api_component_factory_mock.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "sync/api/fake_syncable_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using content::BrowserThread;
 using testing::_;
 using testing::DoAll;
 using testing::InvokeWithoutArgs;
@@ -38,7 +34,11 @@ class SyncSearchEngineDataTypeControllerTest
  public:
   SyncSearchEngineDataTypeControllerTest()
       : sync_driver::FakeSyncClient(&profile_sync_factory_),
-        test_util_(&profile_) {}
+        template_url_service_(new TemplateURLService(nullptr, 0)) {
+    // Disallow the TemplateURLService from loading until
+    // PreloadTemplateURLService() is called .
+    template_url_service_->set_disable_load(true);
+  }
 
   // FakeSyncClient overrides.
   base::WeakPtr<syncer::SyncableService> GetSyncableServiceForType(
@@ -47,12 +47,10 @@ class SyncSearchEngineDataTypeControllerTest
   }
 
   void SetUp() override {
-    // Feed the DTC the profile so it is reused later.
-    // This allows us to control the associated TemplateURLService.
     search_engine_dtc_ = new SearchEngineDataTypeController(
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
+        base::ThreadTaskRunnerHandle::Get(),
         base::Bind(&base::DoNothing), this,
-        TemplateURLServiceFactory::GetForProfile(&profile_));
+        template_url_service_.get());
   }
 
   void TearDown() override {
@@ -62,9 +60,9 @@ class SyncSearchEngineDataTypeControllerTest
   }
 
  protected:
-  // Pre-emptively get the TURL Service and make sure it is loaded.
   void PreloadTemplateURLService() {
-    test_util_.VerifyLoad();
+    template_url_service_->set_disable_load(false);
+    template_url_service_->Load();
   }
 
   void SetStartExpectations() {
@@ -86,9 +84,8 @@ class SyncSearchEngineDataTypeControllerTest
     base::MessageLoop::current()->RunUntilIdle();
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
-  TestingProfile profile_;
-  TemplateURLServiceFactoryTestUtil test_util_;
+  base::MessageLoop message_loop_;
+  scoped_ptr<TemplateURLService> template_url_service_;
   scoped_refptr<SearchEngineDataTypeController> search_engine_dtc_;
   SyncApiComponentFactoryMock profile_sync_factory_;
   syncer::FakeSyncableService syncable_service_;

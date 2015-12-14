@@ -229,7 +229,6 @@
       'browser/storage/durable_storage_permission_context_unittest.cc',
       'browser/sync/abstract_profile_sync_service_test.cc',
       'browser/sync/abstract_profile_sync_service_test.h',
-      'browser/sync/glue/search_engine_data_type_controller_unittest.cc',
       'browser/sync/profile_sync_service_autofill_unittest.cc',
       'browser/sync/profile_sync_service_bookmark_unittest.cc',
       'browser/sync/profile_sync_service_factory_unittest.cc',
