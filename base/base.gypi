@@ -350,6 +350,7 @@
           'memory/memory_pressure_monitor_mac.h',
           'memory/memory_pressure_monitor_win.cc',
           'memory/memory_pressure_monitor_win.h',
+          'memory/ptr_util.h',
           'memory/raw_scoped_refptr_mismatch_checker.h',
           'memory/ref_counted.cc',
           'memory/ref_counted.h',

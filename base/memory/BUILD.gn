@@ -24,6 +24,7 @@ source_set("memory") {
     "memory_pressure_monitor_mac.h",
     "memory_pressure_monitor_win.cc",
     "memory_pressure_monitor_win.h",
+    "ptr_util.h",
     "raw_scoped_refptr_mismatch_checker.h",
     "ref_counted.cc",
     "ref_counted.h",
