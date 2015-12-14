@@ -47,6 +47,7 @@ void SaveFileManager::OnShutdown() {
 }
 
 SaveFile* SaveFileManager::LookupSaveFile(int save_item_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   SaveFileMap::iterator it = save_file_map_.find(save_item_id);
   return it == save_file_map_.end() ? NULL : it->second;
 }
@@ -165,7 +166,7 @@ void SaveFileManager::StartSave(SaveFileCreateInfo* info) {
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&SaveFileManager::OnStartSave, this, info));
+      base::Bind(&SaveFileManager::OnStartSave, this, *info));
 }
 
 // We do forward an update to the UI thread here, since we do not use timer to
@@ -219,23 +220,23 @@ void SaveFileManager::SaveFinished(int save_item_id,
 
 // Notifications sent from the file thread and run on the UI thread.
 
-void SaveFileManager::OnStartSave(const SaveFileCreateInfo* info) {
+void SaveFileManager::OnStartSave(const SaveFileCreateInfo& info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   SavePackage* save_package = GetSavePackageFromRenderIds(
-      info->render_process_id, info->render_frame_routing_id);
+      info.render_process_id, info.render_frame_routing_id);
   if (!save_package) {
     // Cancel this request.
-    SendCancelRequest(info->save_item_id);
+    SendCancelRequest(info.save_item_id);
     return;
   }
 
   // Insert started saving job to tracking list.
-  SavePackageMap::iterator sit = packages_.find(info->save_item_id);
+  SavePackageMap::iterator sit = packages_.find(info.save_item_id);
   DCHECK(sit == packages_.end());
-  packages_[info->save_item_id] = save_package;
+  packages_[info.save_item_id] = save_package;
 
   // Forward this message to SavePackage.
-  save_package->StartSave(info);
+  save_package->StartSave(&info);
 }
 
 void SaveFileManager::OnUpdateSaveProgress(int save_item_id,

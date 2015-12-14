@@ -547,7 +547,7 @@ bool SavePackage::GenerateFileName(const std::string& disposition,
 }
 
 // We have received a message from SaveFileManager about a new saving job. We
-// create a SaveItem and store it in our in_progress list.
+// find a SaveItem and store it in our in_progress list.
 void SavePackage::StartSave(const SaveFileCreateInfo* info) {
   DCHECK(info && !info->url.is_empty());
 

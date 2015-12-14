@@ -161,7 +161,7 @@ class SaveFileManager : public base::RefCountedThreadSafe<SaveFileManager> {
 
   // Lookup the SaveManager for this WebContents' saving browser context and
   // inform it the saving job has been started.
-  void OnStartSave(const SaveFileCreateInfo* info);
+  void OnStartSave(const SaveFileCreateInfo& info);
   // Update the SavePackage with the current state of a started saving job.
   // If the SavePackage for this saving job is gone, cancel the request.
   void OnUpdateSaveProgress(int save_item_id,
