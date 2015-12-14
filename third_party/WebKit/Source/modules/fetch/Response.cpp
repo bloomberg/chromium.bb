@@ -7,13 +7,6 @@
 
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/ReadableStreamOperations.h"
-#include "bindings/core/v8/ScriptState.h"
-#include "bindings/core/v8/V8ArrayBuffer.h"
-#include "bindings/core/v8/V8ArrayBufferView.h"
-#include "bindings/core/v8/V8Binding.h"
-#include "bindings/core/v8/V8Blob.h"
-#include "bindings/core/v8/V8FormData.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMArrayBufferView.h"
 #include "core/fileapi/Blob.h"
@@ -21,9 +14,7 @@
 #include "modules/fetch/BodyStreamBuffer.h"
 #include "modules/fetch/FetchBlobDataConsumerHandle.h"
 #include "modules/fetch/FetchFormDataConsumerHandle.h"
-#include "modules/fetch/ReadableStreamDataConsumerHandle.h"
 #include "modules/fetch/ResponseInit.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/network/EncodedFormData.h"
 #include "platform/network/HTTPHeaderMap.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerResponse.h"
@@ -104,44 +95,37 @@ bool isValidReasonPhrase(const String& statusText)
 
 }
 
-Response* Response::create(ScriptState* scriptState, ExceptionState& exceptionState)
+Response* Response::create(ExecutionContext* context, ExceptionState& exceptionState)
 {
-    return create(scriptState->executionContext(), nullptr, String(), ResponseInit(), exceptionState);
+    return create(context, nullptr, String(), ResponseInit(), exceptionState);
 }
 
-Response* Response::create(ScriptState* scriptState, ScriptValue bodyValue, const Dictionary& init, ExceptionState& exceptionState)
+Response* Response::create(ExecutionContext* context, const BodyInit& body, const Dictionary& init, ExceptionState& exceptionState)
 {
-    v8::Local<v8::Value> body = bodyValue.v8Value();
-    v8::Isolate* isolate = scriptState->isolate();
-    ExecutionContext* executionContext = scriptState->executionContext();
-
+    ASSERT(!body.isNull());
     OwnPtr<FetchDataConsumerHandle> bodyHandle;
     String contentType;
-    if (V8Blob::hasInstance(body, isolate)) {
-        Blob* blob = V8Blob::toImpl(body.As<v8::Object>());
-        bodyHandle = FetchBlobDataConsumerHandle::create(executionContext, blob->blobDataHandle());
-        contentType = blob->type();
-    } else if (V8ArrayBuffer::hasInstance(body, isolate)) {
-        bodyHandle = FetchFormDataConsumerHandle::create(V8ArrayBuffer::toImpl(body.As<v8::Object>()));
-    } else if (V8ArrayBufferView::hasInstance(body, isolate)) {
-        bodyHandle = FetchFormDataConsumerHandle::create(V8ArrayBufferView::toImpl(body.As<v8::Object>()));
-    } else if (V8FormData::hasInstance(body, isolate)) {
-        RefPtr<EncodedFormData> formData = V8FormData::toImpl(body.As<v8::Object>())->encodeMultiPartFormData();
+    if (body.isBlob()) {
+        bodyHandle = FetchBlobDataConsumerHandle::create(context, body.getAsBlob()->blobDataHandle());
+        contentType = body.getAsBlob()->type();
+    } else if (body.isUSVString()) {
+        bodyHandle = FetchFormDataConsumerHandle::create(body.getAsUSVString());
+        contentType = "text/plain;charset=UTF-8";
+    } else if (body.isArrayBuffer()) {
+        bodyHandle = FetchFormDataConsumerHandle::create(body.getAsArrayBuffer());
+    } else if (body.isArrayBufferView()) {
+        bodyHandle = FetchFormDataConsumerHandle::create(body.getAsArrayBufferView());
+    } else if (body.isFormData()) {
+        RefPtr<EncodedFormData> formData = body.getAsFormData()->encodeMultiPartFormData();
         // Here we handle formData->boundary() as a C-style string. See
         // FormDataEncoder::generateUniqueBoundaryString.
         contentType = AtomicString("multipart/form-data; boundary=", AtomicString::ConstructFromLiteral) + formData->boundary().data();
-        bodyHandle = FetchFormDataConsumerHandle::create(executionContext, formData.release());
-    } else if (RuntimeEnabledFeatures::responseConstructedWithReadableStreamEnabled() && ReadableStreamOperations::isReadableStream(scriptState, body)) {
-        bodyHandle = ReadableStreamDataConsumerHandle::create(scriptState, body);
+        bodyHandle = FetchFormDataConsumerHandle::create(context, formData.release());
     } else {
-        String string = toUSVString(isolate, body, exceptionState);
-        if (exceptionState.hadException())
-            return nullptr;
-        bodyHandle = FetchFormDataConsumerHandle::create(string);
-        contentType = "text/plain;charset=UTF-8";
+        ASSERT_NOT_REACHED();
+        return nullptr;
     }
-    // TODO(yhirano): Add the URLSearchParams case.
-    return create(executionContext, bodyHandle.release(), contentType, ResponseInit(init, exceptionState), exceptionState);
+    return create(context, bodyHandle.release(), contentType, ResponseInit(init, exceptionState), exceptionState);
 }
 
 Response* Response::create(ExecutionContext* context, PassOwnPtr<FetchDataConsumerHandle> bodyHandle, const String& contentType, const ResponseInit& init, ExceptionState& exceptionState)

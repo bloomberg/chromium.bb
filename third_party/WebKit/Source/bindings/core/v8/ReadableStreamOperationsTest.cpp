@@ -21,6 +21,24 @@ namespace blink {
 
 namespace {
 
+// Unpacks |item|, stores the value of "done" member to |done| and returns
+// the value of "value" member. Returns an empty handle when errored.
+v8::MaybeLocal<v8::Value> unpack(ScriptState* scriptState, v8::Local<v8::Value> item, bool* done)
+{
+    if (!item->IsObject()) {
+        V8ThrowException::throwTypeError(scriptState->isolate(), "The iteration item is not an object.");
+        return v8::MaybeLocal<v8::Value>();
+    }
+    v8::Local<v8::Object> object = item.As<v8::Object>();
+    v8::Local<v8::Value> doneValue;
+    if (!v8Call(object->Get(scriptState->context(), v8String(scriptState->isolate(), "done")), doneValue))
+        return v8::MaybeLocal<v8::Value>();
+    v8::MaybeLocal<v8::Value> r = object->Get(scriptState->context(), v8String(scriptState->isolate(), "value"));
+    if (!r.IsEmpty())
+        *done = doneValue->ToBoolean()->Value();
+    return r;
+}
+
 class NotReached : public ScriptFunction {
 public:
     static v8::Local<v8::Function> createFunction(ScriptState* scriptState)
@@ -57,8 +75,7 @@ public:
         m_isSet = true;
         v8::TryCatch block(v.scriptState()->isolate());
         v8::Local<v8::Value> value;
-        v8::Local<v8::Value> item = v.v8Value();
-        if (!item->IsObject() || !v8Call(v8UnpackIteratorResult(v.scriptState(), item.As<v8::Object>(), &m_isDone), value)) {
+        if (!v8Call(unpack(v.scriptState(), v.v8Value(), &m_isDone), value)) {
             m_isValid = false;
             return;
         }
