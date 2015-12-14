@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "8.36",
+  "version": "8.37",
   "entries": [
     {
       "id": 1,
@@ -1658,6 +1658,20 @@ LONG_STRING_CONST(
       },
       "disabled_extensions": [
         "GL_EXT_texture_rg"
+      ]
+    },
+    {
+      "id": 140,
+      "description": "glReadPixels fails on FBOs with SRGB_ALPHA textures, Nexus 5X",
+      "cr_bugs": [550292, 565179],
+      "os": {
+        "type": "android"
+        // Originally on Android 6.0. Expect it to fail in later versions.
+      },
+      "gl_vendor": "Qualcomm",
+      "gl_renderer": "Adreno \\(TM\\) 4.*", // Originally on 418.
+      "features": [
+        "disable_ext_srgb"
       ]
     }
   ]
