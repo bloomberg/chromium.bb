@@ -11,7 +11,6 @@
 class PrefRegistry;
 class PrefService;
 class PrefStore;
-class TrackedPreferenceValidationDelegate;
 
 namespace base {
 class FilePath;
@@ -43,7 +42,6 @@ scoped_ptr<PrefService> CreateLocalState(
 scoped_ptr<syncable_prefs::PrefServiceSyncable> CreateBrowserStatePrefs(
     const base::FilePath& browser_state_path,
     base::SequencedTaskRunner* pref_io_task_runner,
-    TrackedPreferenceValidationDelegate* validation_delegate,
     const scoped_refptr<user_prefs::PrefRegistrySyncable>& pref_registry);
 
 // Creates an incognito copy of |pref_service| that shares most prefs but uses

@@ -56,7 +56,6 @@ scoped_ptr<PrefService> CreateLocalState(
 scoped_ptr<syncable_prefs::PrefServiceSyncable> CreateBrowserStatePrefs(
     const base::FilePath& browser_state_path,
     base::SequencedTaskRunner* pref_io_task_runner,
-    TrackedPreferenceValidationDelegate* validation_delegate,
     const scoped_refptr<user_prefs::PrefRegistrySyncable>& pref_registry) {
   // chrome_prefs::CreateProfilePrefs uses ProfilePrefStoreManager to create
   // the preference store however since Chrome on iOS does not need to track
