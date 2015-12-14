@@ -49,7 +49,7 @@ private:
     PassRefPtrWillBeRawPtr<Node> cloneNode(bool deep) override;
 
     InsertionNotificationRequest insertedInto(ContainerNode*) override;
-    void removedFrom(ContainerNode* insertionPoint, Node* next) override;
+    void removedFrom(ContainerNode*) override;
 
     String m_name;
     String m_publicId;

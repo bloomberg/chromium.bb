@@ -108,20 +108,20 @@ Node::InsertionNotificationRequest HTMLSourceElement::insertedInto(ContainerNode
     if (isHTMLMediaElement(parent))
         toHTMLMediaElement(parent)->sourceWasAdded(this);
     if (isHTMLPictureElement(parent))
-        toHTMLPictureElement(parent)->sourceOrMediaChanged(this);
+        toHTMLPictureElement(parent)->sourceOrMediaChanged();
     return InsertionDone;
 }
 
-void HTMLSourceElement::removedFrom(ContainerNode* insertionPoint, Node* next)
+void HTMLSourceElement::removedFrom(ContainerNode* removalRoot)
 {
     Element* parent = parentElement();
-    if (!parent && insertionPoint->isElementNode())
-        parent = toElement(insertionPoint);
+    if (!parent && removalRoot->isElementNode())
+        parent = toElement(removalRoot);
     if (isHTMLMediaElement(parent))
         toHTMLMediaElement(parent)->sourceWasRemoved(this);
     if (isHTMLPictureElement(parent))
-        toHTMLPictureElement(parent)->sourceOrMediaChanged(this, next);
-    HTMLElement::removedFrom(insertionPoint, next);
+        toHTMLPictureElement(parent)->sourceOrMediaChanged();
+    HTMLElement::removedFrom(removalRoot);
 }
 
 void HTMLSourceElement::setSrc(const String& url)
@@ -179,7 +179,7 @@ void HTMLSourceElement::parseAttribute(const QualifiedName& name, const AtomicSt
     if (name == srcsetAttr || name == sizesAttr || name == mediaAttr || name == typeAttr) {
         Element* parent = parentElement();
         if (isHTMLPictureElement(parent))
-            toHTMLPictureElement(parent)->sourceOrMediaChanged(this);
+            toHTMLPictureElement(parent)->sourceOrMediaChanged();
     }
 }
 
@@ -187,7 +187,7 @@ void HTMLSourceElement::notifyMediaQueryChanged()
 {
     Element* parent = parentElement();
     if (isHTMLPictureElement(parent))
-        toHTMLPictureElement(parent)->sourceOrMediaChanged(this);
+        toHTMLPictureElement(parent)->sourceOrMediaChanged();
 }
 
 DEFINE_TRACE(HTMLSourceElement)

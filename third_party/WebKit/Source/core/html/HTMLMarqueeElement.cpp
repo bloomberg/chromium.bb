@@ -63,9 +63,9 @@ Node::InsertionNotificationRequest HTMLMarqueeElement::insertedInto(ContainerNod
     return InsertionDone;
 }
 
-void HTMLMarqueeElement::removedFrom(ContainerNode* insertionPoint, Node* next)
+void HTMLMarqueeElement::removedFrom(ContainerNode* insertionPoint)
 {
-    HTMLElement::removedFrom(insertionPoint, next);
+    HTMLElement::removedFrom(insertionPoint);
     if (insertionPoint->inDocument()) {
         V8HTMLMarqueeElement::PrivateScript::detachedCallbackMethod(insertionPoint->document().frame(), this);
     }

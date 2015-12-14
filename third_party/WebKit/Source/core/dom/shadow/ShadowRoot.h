@@ -87,7 +87,7 @@ public:
     void attach(const AttachContext& = AttachContext()) override;
 
     InsertionNotificationRequest insertedInto(ContainerNode*) override;
-    void removedFrom(ContainerNode* insertionPoint, Node* next) override;
+    void removedFrom(ContainerNode*) override;
 
     void registerScopedHTMLStyleChild();
     void unregisterScopedHTMLStyleChild();

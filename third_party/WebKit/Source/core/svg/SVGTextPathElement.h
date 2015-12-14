@@ -74,7 +74,7 @@ private:
 
     void buildPendingResource() override;
     InsertionNotificationRequest insertedInto(ContainerNode*) override;
-    void removedFrom(ContainerNode* insertionPoint, Node* next) override;
+    void removedFrom(ContainerNode*) override;
 
     void svgAttributeChanged(const QualifiedName&) override;
 

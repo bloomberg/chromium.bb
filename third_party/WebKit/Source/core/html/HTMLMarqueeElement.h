@@ -34,7 +34,7 @@ public:
 
     void attributeChanged(const QualifiedName&, const AtomicString& oldValue, const AtomicString& newValue, AttributeModificationReason) final;
     InsertionNotificationRequest insertedInto(ContainerNode*) final;
-    void removedFrom(ContainerNode* insertionPoint, Node* next) final;
+    void removedFrom(ContainerNode*) final;
 
     bool isHorizontal() const;
 

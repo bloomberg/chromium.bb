@@ -62,7 +62,7 @@ private:
     void didMoveToNewDocument(Document& oldDocument) override;
 
     InsertionNotificationRequest insertedInto(ContainerNode*) override;
-    void removedFrom(ContainerNode* insertionPoint, Node* next) override;
+    void removedFrom(ContainerNode*) override;
     bool isURLAttribute(const Attribute&) const override;
     void parseAttribute(const QualifiedName&, const AtomicString&, const AtomicString&) override;
 

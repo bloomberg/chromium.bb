@@ -322,7 +322,7 @@ Node::InsertionNotificationRequest SVGElement::insertedInto(ContainerNode* rootP
     return InsertionDone;
 }
 
-void SVGElement::removedFrom(ContainerNode* rootParent, Node* next)
+void SVGElement::removedFrom(ContainerNode* rootParent)
 {
     bool wasInDocument = rootParent->inDocument();
 
@@ -340,7 +340,7 @@ void SVGElement::removedFrom(ContainerNode* rootParent, Node* next)
 
     ASSERT_WITH_SECURITY_IMPLICATION(!rootParent->isSVGElement() || !toSVGElement(rootParent)->m_elementsWithRelativeLengths.contains(this));
 
-    Element::removedFrom(rootParent, next);
+    Element::removedFrom(rootParent);
 
     if (wasInDocument) {
         rebuildAllIncomingReferences();

@@ -52,9 +52,9 @@ Node::InsertionNotificationRequest HTMLTitleElement::insertedInto(ContainerNode*
     return InsertionDone;
 }
 
-void HTMLTitleElement::removedFrom(ContainerNode* insertionPoint, Node* next)
+void HTMLTitleElement::removedFrom(ContainerNode* insertionPoint)
 {
-    HTMLElement::removedFrom(insertionPoint, next);
+    HTMLElement::removedFrom(insertionPoint);
     if (insertionPoint->inDocument() && !insertionPoint->isInShadowTree())
         document().removeTitle(this);
 }

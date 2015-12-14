@@ -90,9 +90,9 @@ Node::InsertionNotificationRequest SVGMPathElement::insertedInto(ContainerNode* 
     return InsertionDone;
 }
 
-void SVGMPathElement::removedFrom(ContainerNode* rootParent, Node* next)
+void SVGMPathElement::removedFrom(ContainerNode* rootParent)
 {
-    SVGElement::removedFrom(rootParent, next);
+    SVGElement::removedFrom(rootParent);
     notifyParentOfPathChange(rootParent);
     if (rootParent->inDocument())
         clearResourceReferences();

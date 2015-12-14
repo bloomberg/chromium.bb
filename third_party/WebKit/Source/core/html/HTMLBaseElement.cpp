@@ -56,9 +56,9 @@ Node::InsertionNotificationRequest HTMLBaseElement::insertedInto(ContainerNode* 
     return InsertionDone;
 }
 
-void HTMLBaseElement::removedFrom(ContainerNode* insertionPoint, Node* next)
+void HTMLBaseElement::removedFrom(ContainerNode* insertionPoint)
 {
-    HTMLElement::removedFrom(insertionPoint, next);
+    HTMLElement::removedFrom(insertionPoint);
     if (insertionPoint->inDocument())
         document().processBaseElement();
 }

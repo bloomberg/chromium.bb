@@ -551,11 +551,11 @@ void HTMLMediaElement::didNotifySubtreeInsertionsToDocument()
     configureMediaControls();
 }
 
-void HTMLMediaElement::removedFrom(ContainerNode* insertionPoint, Node* next)
+void HTMLMediaElement::removedFrom(ContainerNode* insertionPoint)
 {
     WTF_LOG(Media, "HTMLMediaElement::removedFrom(%p, %p)", this, insertionPoint);
 
-    HTMLElement::removedFrom(insertionPoint, next);
+    HTMLElement::removedFrom(insertionPoint);
     if (insertionPoint->inActiveDocument()) {
         configureMediaControls();
         if (m_networkState > NETWORK_EMPTY)

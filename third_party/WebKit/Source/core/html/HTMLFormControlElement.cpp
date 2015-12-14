@@ -285,7 +285,7 @@ Node::InsertionNotificationRequest HTMLFormControlElement::insertedInto(Containe
     return InsertionDone;
 }
 
-void HTMLFormControlElement::removedFrom(ContainerNode* insertionPoint, Node* next)
+void HTMLFormControlElement::removedFrom(ContainerNode* insertionPoint)
 {
     fieldSetAncestorsSetNeedsValidityCheck(insertionPoint);
     hideVisibleValidationMessage();
@@ -293,8 +293,8 @@ void HTMLFormControlElement::removedFrom(ContainerNode* insertionPoint, Node* ne
     m_ancestorDisabledState = AncestorDisabledStateUnknown;
     m_dataListAncestorState = Unknown;
     setNeedsWillValidateCheck();
-    HTMLElement::removedFrom(insertionPoint, next);
-    FormAssociatedElement::removedFrom(insertionPoint, next);
+    HTMLElement::removedFrom(insertionPoint);
+    FormAssociatedElement::removedFrom(insertionPoint);
     document().removeFormAssociation(this);
 }
 

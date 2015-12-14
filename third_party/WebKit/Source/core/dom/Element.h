@@ -565,7 +565,7 @@ protected:
     void addPropertyToPresentationAttributeStyle(MutableStylePropertySet*, CSSPropertyID, PassRefPtrWillBeRawPtr<CSSValue>);
 
     InsertionNotificationRequest insertedInto(ContainerNode*) override;
-    void removedFrom(ContainerNode* insertionPoint, Node* next) override;
+    void removedFrom(ContainerNode*) override;
     void childrenChanged(const ChildrenChange&) override;
 
     virtual void willRecalcStyle(StyleRecalcChange);
@@ -848,7 +848,7 @@ inline Node::InsertionNotificationRequest Node::insertedInto(ContainerNode* inse
     return InsertionDone;
 }
 
-inline void Node::removedFrom(ContainerNode* insertionPoint, Node* next)
+inline void Node::removedFrom(ContainerNode* insertionPoint)
 {
     ASSERT(insertionPoint->inDocument() || isContainerNode() || isInShadowTree());
     if (insertionPoint->inDocument()) {

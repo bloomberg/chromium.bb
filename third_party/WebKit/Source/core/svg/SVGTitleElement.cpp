@@ -43,9 +43,9 @@ Node::InsertionNotificationRequest SVGTitleElement::insertedInto(ContainerNode* 
     return InsertionDone;
 }
 
-void SVGTitleElement::removedFrom(ContainerNode* rootParent, Node* next)
+void SVGTitleElement::removedFrom(ContainerNode* rootParent)
 {
-    SVGElement::removedFrom(rootParent, next);
+    SVGElement::removedFrom(rootParent);
     if (rootParent->inDocument() && document().isSVGDocument())
         document().removeTitle(this);
 }

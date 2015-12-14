@@ -81,11 +81,11 @@ Node::InsertionNotificationRequest HTMLTrackElement::insertedInto(ContainerNode*
     return InsertionDone;
 }
 
-void HTMLTrackElement::removedFrom(ContainerNode* insertionPoint, Node* next)
+void HTMLTrackElement::removedFrom(ContainerNode* insertionPoint)
 {
     if (!parentNode() && isHTMLMediaElement(*insertionPoint))
         toHTMLMediaElement(insertionPoint)->didRemoveTrackElement(this);
-    HTMLElement::removedFrom(insertionPoint, next);
+    HTMLElement::removedFrom(insertionPoint);
 }
 
 void HTMLTrackElement::parseAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& value)

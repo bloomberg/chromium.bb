@@ -177,7 +177,7 @@ Node::InsertionNotificationRequest ShadowRoot::insertedInto(ContainerNode* inser
     return InsertionDone;
 }
 
-void ShadowRoot::removedFrom(ContainerNode* insertionPoint, Node* next)
+void ShadowRoot::removedFrom(ContainerNode* insertionPoint)
 {
     if (insertionPoint->inDocument()) {
         document().styleEngine().shadowRootRemovedFromDocument(this);
@@ -191,7 +191,7 @@ void ShadowRoot::removedFrom(ContainerNode* insertionPoint, Node* next)
         }
     }
 
-    DocumentFragment::removedFrom(insertionPoint, next);
+    DocumentFragment::removedFrom(insertionPoint);
 }
 
 void ShadowRoot::childrenChanged(const ChildrenChange& change)

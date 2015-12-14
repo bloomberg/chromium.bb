@@ -112,7 +112,7 @@ void PseudoElement::dispose()
     RefPtrWillBeRawPtr<Element> parent = parentOrShadowHostElement();
     document().adoptIfNeeded(*this);
     setParentOrShadowHostNode(0);
-    removedFrom(parent.get(), nullptr);
+    removedFrom(parent.get());
 }
 
 void PseudoElement::attach(const AttachContext& context)

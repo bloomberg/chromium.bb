@@ -1492,7 +1492,7 @@ Node::InsertionNotificationRequest Element::insertedInto(ContainerNode* insertio
     return InsertionDone;
 }
 
-void Element::removedFrom(ContainerNode* insertionPoint, Node* next)
+void Element::removedFrom(ContainerNode* insertionPoint)
 {
     bool wasInDocument = insertionPoint->inDocument();
 
@@ -1524,7 +1524,7 @@ void Element::removedFrom(ContainerNode* insertionPoint, Node* next)
             updateName(nameValue, nullAtom);
     }
 
-    ContainerNode::removedFrom(insertionPoint, next);
+    ContainerNode::removedFrom(insertionPoint);
     if (wasInDocument) {
         if (this == document().cssTarget())
             document().setCSSTarget(nullptr);

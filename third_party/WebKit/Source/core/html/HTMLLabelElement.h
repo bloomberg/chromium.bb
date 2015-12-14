@@ -58,7 +58,7 @@ private:
     void accessKeyAction(bool sendMouseEvents) override;
 
     InsertionNotificationRequest insertedInto(ContainerNode*) override;
-    void removedFrom(ContainerNode* insertionPoint, Node* next) override;
+    void removedFrom(ContainerNode*) override;
 
     // Overridden to update the hover/active state of the corresponding control.
     void setActive(bool = true) override;

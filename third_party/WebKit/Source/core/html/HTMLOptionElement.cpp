@@ -389,7 +389,7 @@ Node::InsertionNotificationRequest HTMLOptionElement::insertedInto(ContainerNode
     return InsertionDone;
 }
 
-void HTMLOptionElement::removedFrom(ContainerNode* insertionPoint, Node* next)
+void HTMLOptionElement::removedFrom(ContainerNode* insertionPoint)
 {
     if (isHTMLSelectElement(*insertionPoint)) {
         if (!parentNode() || isHTMLOptGroupElement(*parentNode()))
@@ -399,7 +399,7 @@ void HTMLOptionElement::removedFrom(ContainerNode* insertionPoint, Node* next)
         if (isHTMLSelectElement(parent))
             toHTMLSelectElement(parent)->optionRemoved(*this);
     }
-    HTMLElement::removedFrom(insertionPoint, next);
+    HTMLElement::removedFrom(insertionPoint);
 }
 
 String HTMLOptionElement::collectOptionInnerText() const

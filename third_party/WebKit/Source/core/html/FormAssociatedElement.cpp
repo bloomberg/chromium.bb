@@ -96,7 +96,7 @@ void FormAssociatedElement::insertedInto(ContainerNode* insertionPoint)
         resetFormAttributeTargetObserver();
 }
 
-void FormAssociatedElement::removedFrom(ContainerNode* insertionPoint, Node* next)
+void FormAssociatedElement::removedFrom(ContainerNode* insertionPoint)
 {
     HTMLElement* element = toHTMLElement(this);
     if (insertionPoint->inDocument() && element->fastHasAttribute(formAttr)) {

@@ -348,7 +348,7 @@ Node::InsertionNotificationRequest SVGSMILElement::insertedInto(ContainerNode* r
     return InsertionDone;
 }
 
-void SVGSMILElement::removedFrom(ContainerNode* rootParent, Node* next)
+void SVGSMILElement::removedFrom(ContainerNode* rootParent)
 {
     if (rootParent->inDocument()) {
         clearResourceAndEventBaseReferences();
@@ -359,7 +359,7 @@ void SVGSMILElement::removedFrom(ContainerNode* rootParent, Node* next)
         m_timeContainer = nullptr;
     }
 
-    SVGElement::removedFrom(rootParent, next);
+    SVGElement::removedFrom(rootParent);
 }
 
 bool SVGSMILElement::hasValidAttributeName()

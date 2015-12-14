@@ -68,10 +68,10 @@ Node::InsertionNotificationRequest DocumentType::insertedInto(ContainerNode* ins
     return InsertionDone;
 }
 
-void DocumentType::removedFrom(ContainerNode* insertionPoint, Node* next)
+void DocumentType::removedFrom(ContainerNode* insertionPoint)
 {
     document().setDoctype(nullptr);
-    Node::removedFrom(insertionPoint, next);
+    Node::removedFrom(insertionPoint);
 }
 
 }

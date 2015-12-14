@@ -128,7 +128,7 @@ protected:
     virtual void disabledAttributeChanged();
     void attach(const AttachContext& = AttachContext()) override;
     InsertionNotificationRequest insertedInto(ContainerNode*) override;
-    void removedFrom(ContainerNode* insertionPoint, Node* next) override;
+    void removedFrom(ContainerNode*) override;
     void willChangeForm() override;
     void didChangeForm() override;
     void didMoveToNewDocument(Document& oldDocument) override;

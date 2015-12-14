@@ -252,15 +252,15 @@ Node::InsertionNotificationRequest HTMLLabelElement::insertedInto(ContainerNode*
     return result;
 }
 
-void HTMLLabelElement::removedFrom(ContainerNode* insertionPoint, Node* next)
+void HTMLLabelElement::removedFrom(ContainerNode* insertionPoint)
 {
     if (insertionPoint->isInTreeScope() && treeScope() == document()) {
         TreeScope& treeScope = insertionPoint->treeScope();
         if (treeScope.shouldCacheLabelsByForAttribute())
             updateLabel(treeScope, fastGetAttribute(forAttr), nullAtom);
     }
-    HTMLElement::removedFrom(insertionPoint, next);
-    FormAssociatedElement::removedFrom(insertionPoint, next);
+    HTMLElement::removedFrom(insertionPoint);
+    FormAssociatedElement::removedFrom(insertionPoint);
     document().removeFormAssociation(this);
 }
 

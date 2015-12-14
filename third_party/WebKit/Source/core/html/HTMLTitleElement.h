@@ -38,7 +38,7 @@ private:
     explicit HTMLTitleElement(Document&);
 
     InsertionNotificationRequest insertedInto(ContainerNode*) override;
-    void removedFrom(ContainerNode* insertionPoint, Node* next) override;
+    void removedFrom(ContainerNode*) override;
     void childrenChanged(const ChildrenChange&) override;
 
     bool m_ignoreTitleUpdatesWhenChildrenChange;

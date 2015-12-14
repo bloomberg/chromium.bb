@@ -90,9 +90,9 @@ Node::InsertionNotificationRequest HTMLStyleElement::insertedInto(ContainerNode*
     return InsertionShouldCallDidNotifySubtreeInsertions;
 }
 
-void HTMLStyleElement::removedFrom(ContainerNode* insertionPoint, Node* next)
+void HTMLStyleElement::removedFrom(ContainerNode* insertionPoint)
 {
-    HTMLElement::removedFrom(insertionPoint, next);
+    HTMLElement::removedFrom(insertionPoint);
     StyleElement::removedFrom(this, insertionPoint);
 }
 

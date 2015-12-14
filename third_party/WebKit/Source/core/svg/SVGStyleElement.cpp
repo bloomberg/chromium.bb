@@ -136,9 +136,9 @@ void SVGStyleElement::didNotifySubtreeInsertionsToDocument()
         notifyLoadedSheetAndAllCriticalSubresources(ErrorOccurredLoadingSubresource);
 }
 
-void SVGStyleElement::removedFrom(ContainerNode* insertionPoint, Node* next)
+void SVGStyleElement::removedFrom(ContainerNode* insertionPoint)
 {
-    SVGElement::removedFrom(insertionPoint, next);
+    SVGElement::removedFrom(insertionPoint);
     StyleElement::removedFrom(this, insertionPoint);
 }
 

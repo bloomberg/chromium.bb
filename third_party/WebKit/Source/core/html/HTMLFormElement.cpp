@@ -165,7 +165,7 @@ void notifyFormRemovedFromTree(const T& elements, Node& root)
         element->formRemovedFromTree(root);
 }
 
-void HTMLFormElement::removedFrom(ContainerNode* insertionPoint, Node* next)
+void HTMLFormElement::removedFrom(ContainerNode* insertionPoint)
 {
     // We don't need to take care of form association by 'form' content
     // attribute becuse IdTargetObserver handles it.
@@ -196,7 +196,7 @@ void HTMLFormElement::removedFrom(ContainerNode* insertionPoint, Node* next)
 #if ENABLE(OILPAN)
     document().formController().willDeleteForm(this);
 #endif
-    HTMLElement::removedFrom(insertionPoint, next);
+    HTMLElement::removedFrom(insertionPoint);
 }
 
 void HTMLFormElement::handleLocalEvents(Event& event)

@@ -312,10 +312,10 @@ Node::InsertionNotificationRequest HTMLObjectElement::insertedInto(ContainerNode
     return InsertionDone;
 }
 
-void HTMLObjectElement::removedFrom(ContainerNode* insertionPoint, Node* next)
+void HTMLObjectElement::removedFrom(ContainerNode* insertionPoint)
 {
-    HTMLPlugInElement::removedFrom(insertionPoint, next);
-    FormAssociatedElement::removedFrom(insertionPoint, next);
+    HTMLPlugInElement::removedFrom(insertionPoint);
+    FormAssociatedElement::removedFrom(insertionPoint);
 }
 
 void HTMLObjectElement::childrenChanged(const ChildrenChange& change)

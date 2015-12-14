@@ -270,7 +270,7 @@ void HTMLImageElement::parseAttribute(const QualifiedName& name, const AtomicStr
             if (text && text->textContent() != value)
                 text->setTextContent(altText());
         }
-    } else if (name == srcAttr || ((name == srcsetAttr || name == sizesAttr) && (value != oldValue))) {
+    } else if (name == srcAttr || name == srcsetAttr || name == sizesAttr) {
         selectSourceURL(ImageLoader::UpdateIgnorePreviousError);
     } else if (name == usemapAttr) {
         setIsLink(!value.isNull());
@@ -400,26 +400,19 @@ Node::InsertionNotificationRequest HTMLImageElement::insertedInto(ContainerNode*
 
     // If we have been inserted from a layoutObject-less document,
     // our loader may have not fetched the image, so do it now.
-    if ((insertionPoint->inDocument() && !imageLoader().image()) || imageWasModified || isHTMLPictureElement(insertionPoint))
+    if ((insertionPoint->inDocument() && !imageLoader().image()) || imageWasModified)
         imageLoader().updateFromElement(ImageLoader::UpdateNormal, m_referrerPolicy);
 
     return HTMLElement::insertedInto(insertionPoint);
 }
 
-void HTMLImageElement::removedFrom(ContainerNode* insertionPoint, Node* next)
+void HTMLImageElement::removedFrom(ContainerNode* insertionPoint)
 {
     if (!m_form || NodeTraversal::highestAncestorOrSelf(*m_form.get()) != NodeTraversal::highestAncestorOrSelf(*this))
         resetFormOwner();
     if (m_listener)
         document().mediaQueryMatcher().removeViewportListener(m_listener);
-    HTMLElement::removedFrom(insertionPoint, next);
-
-    if (isHTMLPictureElement(insertionPoint)) {
-        // This is diverging from the spec because we don't want to trigger spurious downloads of fallback images.
-        // See https://github.com/ResponsiveImagesCG/picture-element/issues/274
-        m_bestFitImageURL = AtomicString();
-        imageLoader().updateFromElement(ImageLoader::UpdateNormal, m_referrerPolicy);
-    }
+    HTMLElement::removedFrom(insertionPoint);
 }
 
 int HTMLImageElement::width()

@@ -548,7 +548,7 @@ Node::InsertionNotificationRequest SVGSVGElement::insertedInto(ContainerNode* ro
     return SVGGraphicsElement::insertedInto(rootParent);
 }
 
-void SVGSVGElement::removedFrom(ContainerNode* rootParent, Node* next)
+void SVGSVGElement::removedFrom(ContainerNode* rootParent)
 {
     if (rootParent->inDocument()) {
         SVGDocumentExtensions& svgExtensions = document().accessSVGExtensions();
@@ -556,7 +556,7 @@ void SVGSVGElement::removedFrom(ContainerNode* rootParent, Node* next)
         svgExtensions.removeSVGRootWithRelativeLengthDescendents(this);
     }
 
-    SVGGraphicsElement::removedFrom(rootParent, next);
+    SVGGraphicsElement::removedFrom(rootParent);
 }
 
 void SVGSVGElement::pauseAnimations()
