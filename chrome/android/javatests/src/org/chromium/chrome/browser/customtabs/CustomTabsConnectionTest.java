@@ -8,6 +8,7 @@ import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_E
 
 import android.app.Application;
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -167,7 +168,7 @@ public class CustomTabsConnectionTest extends InstrumentationTestCase {
         assertTrue(mCustomTabsConnection.newSession(cb));
         List<Bundle> urls = new ArrayList<>();
         Bundle urlBundle = new Bundle();
-        urlBundle.putString(CustomTabsService.KEY_URL, URL);
+        urlBundle.putParcelable(CustomTabsService.KEY_URL, Uri.parse(URL));
         urls.add(urlBundle);
         mCustomTabsConnection.mayLaunchUrl(cb, null, null, urls);
 
@@ -183,13 +184,61 @@ public class CustomTabsConnectionTest extends InstrumentationTestCase {
     }
 
     @SmallTest
+    public void testLowConfidenceMayLaunchUrlOnlyAcceptUris() {
+        final ICustomTabsCallback cb = new CustomTabsTestUtils.DummyCallback();
+        assertTrue(mCustomTabsConnection.newSession(cb));
+        assertTrue(mCustomTabsConnection.warmup(0));
+
+        final List<Bundle> urlsAsString = new ArrayList<>();
+        Bundle urlStringBundle = new Bundle();
+        urlStringBundle.putString(CustomTabsService.KEY_URL, URL);
+        urlsAsString.add(urlStringBundle);
+
+        final List<Bundle> urlsAsUri = new ArrayList<>();
+        Bundle urlUriBundle = new Bundle();
+        urlUriBundle.putParcelable(CustomTabsService.KEY_URL, Uri.parse(URL));
+        urlsAsUri.add(urlUriBundle);
+
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                assertFalse(mCustomTabsConnection.lowConfidenceMayLaunchUrl(urlsAsString));
+                assertTrue(mCustomTabsConnection.lowConfidenceMayLaunchUrl(urlsAsUri));
+            }
+        });
+    }
+
+    @SmallTest
+    public void testLowConfidenceMayLaunchUrlDoesntCrash() {
+        final ICustomTabsCallback cb = new CustomTabsTestUtils.DummyCallback();
+        assertTrue(mCustomTabsConnection.newSession(cb));
+        assertTrue(mCustomTabsConnection.warmup(0));
+
+        final List<Bundle> invalidBundles = new ArrayList<>();
+        Bundle invalidBundle = new Bundle();
+        invalidBundle.putParcelable(CustomTabsService.KEY_URL, new Intent());
+        invalidBundles.add(invalidBundle);
+
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    mCustomTabsConnection.lowConfidenceMayLaunchUrl(invalidBundles);
+                } catch (ClassCastException e) {
+                    fail();
+                }
+            }
+        });
+    }
+
+    @SmallTest
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testStillHighConfidenceMayLaunchUrlWithSeveralUrls() {
         final ICustomTabsCallback cb = new CustomTabsTestUtils.DummyCallback();
         assertTrue(mCustomTabsConnection.newSession(cb));
         List<Bundle> urls = new ArrayList<>();
         Bundle urlBundle = new Bundle();
-        urlBundle.putString(CustomTabsService.KEY_URL, URL);
+        urlBundle.putParcelable(CustomTabsService.KEY_URL, Uri.parse(URL));
         urls.add(urlBundle);
 
         mCustomTabsConnection.mayLaunchUrl(cb, Uri.parse(URL), null, urls);
