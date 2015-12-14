@@ -45,7 +45,8 @@ class FilteringNetworkManager : public rtc::NetworkManagerBase,
 
   CONTENT_EXPORT ~FilteringNetworkManager() override;
 
-  // Check mic/camera permission. This is called by P2PPortAllocatorFactory.
+  // Check mic/camera permission.
+  // This is called by PeerConnectionDependencyFactory.
   CONTENT_EXPORT void Initialize();
 
   // rtc::NetworkManager:

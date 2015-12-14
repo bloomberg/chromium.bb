@@ -20,33 +20,17 @@ ChromiumPortAllocatorFactory::ChromiumPortAllocatorFactory(
 
 ChromiumPortAllocatorFactory::~ChromiumPortAllocatorFactory() {}
 
-rtc::scoped_refptr<webrtc::PortAllocatorFactoryInterface>
-ChromiumPortAllocatorFactory::Create(
+scoped_ptr<PortAllocatorFactory> ChromiumPortAllocatorFactory::Create(
     const NetworkSettings& network_settings,
     scoped_refptr<net::URLRequestContextGetter> url_request_context_getter) {
-  rtc::RefCountedObject<ChromiumPortAllocatorFactory>* allocator_factory =
-      new rtc::RefCountedObject<ChromiumPortAllocatorFactory>(
-          network_settings, url_request_context_getter);
-  return allocator_factory;
+  return scoped_ptr<PortAllocatorFactory>(new ChromiumPortAllocatorFactory(
+      network_settings, url_request_context_getter));
 }
 
-cricket::PortAllocator* ChromiumPortAllocatorFactory::CreatePortAllocator(
-    const std::vector<StunConfiguration>& stun_servers,
-    const std::vector<TurnConfiguration>& turn_configurations) {
+cricket::PortAllocator* ChromiumPortAllocatorFactory::CreatePortAllocator() {
   scoped_ptr<ChromiumPortAllocator> port_allocator(
       ChromiumPortAllocator::Create(url_request_context_getter_,
                                     network_settings_));
-
-  std::vector<rtc::SocketAddress> stun_hosts;
-  for (auto stun_it = stun_servers.begin(); stun_it != stun_servers.end();
-       ++stun_it) {
-    stun_hosts.push_back(stun_it->server);
-  }
-  port_allocator->SetStunHosts(stun_hosts);
-
-  // TODO(aiguha): Figure out how to translate |turn_configurations| into
-  // turn hosts so we can set |port_allocator|'s relay hosts.
-
   return port_allocator.release();
 }
 

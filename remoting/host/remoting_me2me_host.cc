@@ -1501,8 +1501,8 @@ void HostProcess::StartHost() {
 #if !defined(NDEBUG)
     network_settings.flags = protocol::NetworkSettings::NAT_TRAVERSAL_OUTGOING;
 
-    rtc::scoped_refptr<webrtc::PortAllocatorFactoryInterface>
-        port_allocator_factory = protocol::ChromiumPortAllocatorFactory::Create(
+    scoped_ptr<protocol::PortAllocatorFactory> port_allocator_factory =
+        protocol::ChromiumPortAllocatorFactory::Create(
             network_settings, context_->url_request_context_getter());
 
     jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
@@ -1514,7 +1514,8 @@ void HostProcess::StartHost() {
     scoped_ptr<protocol::TransportFactory> transport_factory(
         new protocol::WebrtcTransportFactory(
             jingle_glue::JingleThreadWrapper::current(), signal_strategy_.get(),
-            port_allocator_factory, protocol::TransportRole::SERVER));
+            std::move(port_allocator_factory),
+            protocol::TransportRole::SERVER));
 
     session_manager.reset(
         new protocol::JingleSessionManager(transport_factory.Pass()));
