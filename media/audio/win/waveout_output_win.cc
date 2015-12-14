@@ -327,8 +327,8 @@ void PCMWaveOutAudioOutputStream::QueueNextPacket(WAVEHDR *buffer) {
 
   // TODO(sergeyu): Specify correct hardware delay for |total_delay_bytes|.
   uint32 total_delay_bytes = pending_bytes_;
-  int frames_filled = callback_->OnMoreData(
-      audio_bus_.get(), total_delay_bytes);
+  int frames_filled =
+      callback_->OnMoreData(audio_bus_.get(), total_delay_bytes, 0);
   uint32 used = frames_filled * audio_bus_->channels() *
       format_.Format.wBitsPerSample / 8;
 

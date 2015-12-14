@@ -82,7 +82,7 @@ OutputDevice* NullAudioSink::GetOutputDevice() {
 void NullAudioSink::CallRender() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  int frames_received = callback_->Render(audio_bus_.get(), 0);
+  int frames_received = callback_->Render(audio_bus_.get(), 0, 0);
   if (!audio_hash_ || frames_received <= 0)
     return;
 

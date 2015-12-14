@@ -28,7 +28,9 @@ class OnMoreDataConverter
   ~OnMoreDataConverter() override;
 
   // AudioSourceCallback interface.
-  int OnMoreData(AudioBus* dest, uint32 total_bytes_delay) override;
+  int OnMoreData(AudioBus* dest,
+                 uint32_t total_bytes_delay,
+                 uint32_t frames_skipped) override;
   void OnError(AudioOutputStream* stream) override;
 
   // Sets |source_callback_|.  If this is not a new object, then Stop() must be
@@ -370,7 +372,8 @@ void OnMoreDataConverter::Stop() {
 }
 
 int OnMoreDataConverter::OnMoreData(AudioBus* dest,
-                                    uint32 total_bytes_delay) {
+                                    uint32_t total_bytes_delay,
+                                    uint32_t frames_skipped) {
   current_total_bytes_delay_ = total_bytes_delay;
   audio_converter_.Convert(dest);
 
@@ -389,7 +392,8 @@ double OnMoreDataConverter::ProvideInput(AudioBus* dest,
                    buffer_delay.InSecondsF() * input_bytes_per_second_));
 
   // Retrieve data from the original callback.
-  const int frames = source_callback_->OnMoreData(dest, new_total_bytes_delay);
+  const int frames =
+      source_callback_->OnMoreData(dest, new_total_bytes_delay, 0);
 
   // Zero any unfilled frames if anything was filled, otherwise we'll just
   // return a volume of zero and let AudioConverter drop the output.

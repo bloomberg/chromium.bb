@@ -331,7 +331,8 @@ void CastAudioOutputStream::PushBuffer() {
       std::max(base::TimeDelta(), next_push_time_ - now);
   uint32_t bytes_delay = queue_delay.InMicroseconds() *
                          audio_params_.GetBytesPerSecond() / 1000000;
-  int frame_count = source_callback_->OnMoreData(audio_bus_.get(), bytes_delay);
+  int frame_count =
+      source_callback_->OnMoreData(audio_bus_.get(), bytes_delay, 0);
   VLOG(3) << "frames_filled=" << frame_count << " with latency=" << bytes_delay;
 
   DCHECK_EQ(frame_count, audio_bus_->frames());

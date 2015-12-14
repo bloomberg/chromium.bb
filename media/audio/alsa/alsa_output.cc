@@ -781,7 +781,7 @@ int AlsaPcmOutputStream::RunDataCallback(AudioBus* audio_bus,
   TRACE_EVENT0("audio", "AlsaPcmOutputStream::RunDataCallback");
 
   if (source_callback_)
-    return source_callback_->OnMoreData(audio_bus, total_bytes_delay);
+    return source_callback_->OnMoreData(audio_bus, total_bytes_delay, 0);
 
   return 0;
 }

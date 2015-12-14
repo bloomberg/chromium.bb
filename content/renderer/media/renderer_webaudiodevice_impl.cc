@@ -94,7 +94,8 @@ double RendererWebAudioDeviceImpl::sampleRate() {
 }
 
 int RendererWebAudioDeviceImpl::Render(media::AudioBus* dest,
-                                       int audio_delay_milliseconds) {
+                                       uint32_t audio_delay_milliseconds,
+                                       uint32_t frames_skipped) {
 #if defined(OS_ANDROID)
   if (is_first_buffer_after_silence_) {
     DCHECK(!is_using_null_audio_sink_);

@@ -33,7 +33,8 @@ enum LocalRendererSinkStates {
 
 // media::AudioRendererSink::RenderCallback implementation
 int WebRtcLocalAudioRenderer::Render(
-    media::AudioBus* audio_bus, int audio_delay_milliseconds) {
+    media::AudioBus* audio_bus, uint32_t audio_delay_milliseconds,
+    uint32_t frames_skipped) {
   TRACE_EVENT0("audio", "WebRtcLocalAudioRenderer::Render");
   base::AutoLock auto_lock(thread_lock_);
 

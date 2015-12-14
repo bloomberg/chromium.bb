@@ -28,7 +28,7 @@ TEST(SimpleSources, SineWaveAudioSource) {
 
   SineWaveAudioSource source(1, freq, params.sample_rate());
   scoped_ptr<AudioBus> audio_bus = AudioBus::Create(params);
-  source.OnMoreData(audio_bus.get(), 0);
+  source.OnMoreData(audio_bus.get(), 0, 0);
   EXPECT_EQ(1, source.callbacks());
   EXPECT_EQ(0, source.errors());
 
@@ -57,14 +57,12 @@ TEST(SimpleSources, SineWaveAudioCapped) {
   source.CapSamples(kSampleCap);
 
   scoped_ptr<AudioBus> audio_bus = AudioBus::Create(1, 2 * kSampleCap);
-  EXPECT_EQ(source.OnMoreData(
-      audio_bus.get(), 0), kSampleCap);
+  EXPECT_EQ(source.OnMoreData(audio_bus.get(), 0, 0), kSampleCap);
   EXPECT_EQ(1, source.callbacks());
-  EXPECT_EQ(source.OnMoreData(audio_bus.get(), 0), 0);
+  EXPECT_EQ(source.OnMoreData(audio_bus.get(), 0, 0), 0);
   EXPECT_EQ(2, source.callbacks());
   source.Reset();
-  EXPECT_EQ(source.OnMoreData(
-      audio_bus.get(), 0), kSampleCap);
+  EXPECT_EQ(source.OnMoreData(audio_bus.get(), 0, 0), kSampleCap);
   EXPECT_EQ(3, source.callbacks());
   EXPECT_EQ(0, source.errors());
 }
@@ -97,7 +95,7 @@ TEST(SimpleSources, FileSourceTestData) {
 
   // Create a FileSource that reads this file.
   FileSource source(params, temp_path);
-  EXPECT_EQ(kNumFrames, source.OnMoreData(audio_bus.get(), 0));
+  EXPECT_EQ(kNumFrames, source.OnMoreData(audio_bus.get(), 0, 0));
 
   // Convert the test data (little-endian) into floats and compare.
   const int kFirstSampleIndex = 12 + 8 + 16 + 8;
@@ -133,7 +131,7 @@ TEST(SimpleSources, BadFilePathFails) {
              .Append(FILE_PATH_LITERAL("not"))
              .Append(FILE_PATH_LITERAL("exist"));
   FileSource source(params, path);
-  EXPECT_EQ(0, source.OnMoreData(audio_bus.get(), 0));
+  EXPECT_EQ(0, source.OnMoreData(audio_bus.get(), 0, 0));
 
   // Confirm all frames are zero-padded.
   for (int channel = 0; channel < audio_bus->channels(); ++channel) {
@@ -167,7 +165,7 @@ TEST(SimpleSources, FileSourceCorruptTestDataFails) {
 
   // Create a FileSource that reads this file.
   FileSource source(params, temp_path);
-  EXPECT_EQ(0, source.OnMoreData(audio_bus.get(), 0));
+  EXPECT_EQ(0, source.OnMoreData(audio_bus.get(), 0, 0));
 
   // Confirm all frames are zero-padded.
   for (int channel = 0; channel < audio_bus->channels(); ++channel) {

@@ -331,8 +331,8 @@ void OpenSLESOutputStream::FillBufferQueueNoLock() {
   // TODO(henrika): Investigate if it is possible to get a more accurate
   // delay estimation.
   const uint32 hardware_delay = buffer_size_bytes_;
-  int frames_filled = callback_->OnMoreData(
-      audio_bus_.get(), hardware_delay);
+  int frames_filled =
+      callback_->OnMoreData(audio_bus_.get(), hardware_delay, 0);
   if (frames_filled <= 0) {
     // Audio source is shutting down, or halted on error.
     return;

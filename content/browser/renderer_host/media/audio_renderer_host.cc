@@ -538,7 +538,8 @@ void AudioRendererHost::DoCreateStream(int stream_id,
   }
 
   // Create the shared memory and share with the renderer process.
-  uint32 shared_memory_size = AudioBus::CalculateMemorySize(params);
+  uint32 shared_memory_size = sizeof(media::AudioOutputBufferParameters) +
+                              AudioBus::CalculateMemorySize(params);
   scoped_ptr<base::SharedMemory> shared_memory(new base::SharedMemory());
   if (!shared_memory->CreateAndMapAnonymous(shared_memory_size)) {
     SendErrorMessage(stream_id);

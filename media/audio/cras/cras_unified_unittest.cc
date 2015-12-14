@@ -142,10 +142,10 @@ TEST_F(CrasUnifiedStreamTest, RenderFrames) {
 
   base::WaitableEvent event(false, false);
 
-  EXPECT_CALL(mock_callback, OnMoreData(_, _))
-      .WillRepeatedly(DoAll(
-          InvokeWithoutArgs(&event, &base::WaitableEvent::Signal),
-                            Return(kTestFramesPerPacket)));
+  EXPECT_CALL(mock_callback, OnMoreData(_, _, 0))
+      .WillRepeatedly(
+          DoAll(InvokeWithoutArgs(&event, &base::WaitableEvent::Signal),
+                Return(kTestFramesPerPacket)));
 
   test_stream->Start(&mock_callback);
 

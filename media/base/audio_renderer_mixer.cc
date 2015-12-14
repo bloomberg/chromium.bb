@@ -117,7 +117,8 @@ OutputDevice* AudioRendererMixer::GetOutputDevice() {
 }
 
 int AudioRendererMixer::Render(AudioBus* audio_bus,
-                               int audio_delay_milliseconds) {
+                               uint32_t audio_delay_milliseconds,
+                               uint32_t frames_skipped) {
   base::AutoLock auto_lock(lock_);
 
   // If there are no mixer inputs and we haven't seen one for a while, pause the

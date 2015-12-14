@@ -53,6 +53,7 @@ AUHALStream::AUHALStream(AudioManagerMac* manager,
       hardware_latency_frames_(0),
       stopped_(true),
       current_hardware_pending_bytes_(0),
+      current_lost_frames_(0),
       last_sample_time_(0.0),
       last_number_of_frames_(0),
       total_lost_frames_(0),
@@ -248,11 +249,11 @@ void AUHALStream::ProvideInput(int frame_delay, AudioBus* dest) {
   }
 
   // Supply the input data and render the output data.
-  source_->OnMoreData(
-      dest,
-      current_hardware_pending_bytes_ +
-      frame_delay * params_.GetBytesPerFrame());
+  source_->OnMoreData(dest, current_hardware_pending_bytes_ +
+                                frame_delay * params_.GetBytesPerFrame(),
+                      current_lost_frames_);
   dest->Scale(volume_);
+  current_lost_frames_ = 0;
 }
 
 // AUHAL callback.
@@ -360,6 +361,7 @@ void AUHALStream::UpdatePlayoutTimestamp(const AudioTimeStamp* timestamp) {
       // glitch count etc and keep a record of the largest glitch.
       auto lost_frames = diff - last_number_of_frames_;
       total_lost_frames_ += lost_frames;
+      current_lost_frames_ += lost_frames;
       if (lost_frames > largest_glitch_frames_)
         largest_glitch_frames_ = lost_frames;
       ++glitches_detected_;

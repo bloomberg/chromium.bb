@@ -34,7 +34,7 @@ class AudioHashTest : public testing::Test {
     // audio data, we need to fill each channel manually.
     for (int ch = 0; ch < audio_bus->channels(); ++ch) {
       wrapped_bus->SetChannelData(0, audio_bus->channel(ch));
-      fake_callback_.Render(wrapped_bus.get(), 0);
+      fake_callback_.Render(wrapped_bus.get(), 0, 0);
     }
   }
 

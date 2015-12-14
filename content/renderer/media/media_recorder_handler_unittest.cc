@@ -110,7 +110,7 @@ class MediaRecorderHandlerTest : public TestWithParam<MediaRecorderTestParams>,
     scoped_ptr<media::AudioBus> bus(media::AudioBus::Create(
         kTestAudioChannels,
         kTestAudioSampleRate * kTestAudioBufferDurationMS / 1000));
-    audio_source_.OnMoreData(bus.get(), 0);
+    audio_source_.OnMoreData(bus.get(), 0, 0);
     return bus.Pass();
   }
 

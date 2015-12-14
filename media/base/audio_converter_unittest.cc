@@ -111,7 +111,7 @@ class AudioConverterTest
     converter_->Convert(audio_bus_.get());
 
     // Render expected audio data.
-    expected_callback_->Render(expected_audio_bus_.get(), 0);
+    expected_callback_->Render(expected_audio_bus_.get(), 0, 0);
 
     // Zero out unused channels in the expected AudioBus just as AudioConverter
     // would during channel mixing.

@@ -166,7 +166,7 @@ OutputDeviceStatus AudioRendererMixerInput::GetDeviceStatus() {
 double AudioRendererMixerInput::ProvideInput(AudioBus* audio_bus,
                                              base::TimeDelta buffer_delay) {
   int frames_filled = callback_->Render(
-      audio_bus, static_cast<int>(buffer_delay.InMillisecondsF() + 0.5));
+      audio_bus, static_cast<int>(buffer_delay.InMillisecondsF() + 0.5), 0);
 
   // AudioConverter expects unfilled frames to be zeroed.
   if (frames_filled < audio_bus->frames()) {

@@ -76,14 +76,15 @@ OutputDevice* AudioOutputStreamSink::GetOutputDevice() {
 }
 
 int AudioOutputStreamSink::OnMoreData(AudioBus* dest,
-                                      uint32 total_bytes_delay) {
+                                      uint32_t total_bytes_delay,
+                                      uint32_t frames_skipped) {
   // Note: Runs on the audio thread created by the OS.
   base::AutoLock al(callback_lock_);
   if (!active_render_callback_)
     return 0;
 
   return active_render_callback_->Render(
-      dest, total_bytes_delay * 1000.0 / active_params_.GetBytesPerSecond());
+      dest, total_bytes_delay * 1000.0 / active_params_.GetBytesPerSecond(), 0);
 }
 
 void AudioOutputStreamSink::OnError(AudioOutputStream* stream) {

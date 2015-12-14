@@ -26,7 +26,9 @@ class FakeAudioRenderCallback
 
   // Renders a sine wave into the provided audio data buffer.  If |half_fill_|
   // is set, will only fill half the buffer.
-  int Render(AudioBus* audio_bus, int audio_delay_milliseconds) override;
+  int Render(AudioBus* audio_bus,
+             uint32_t audio_delay_milliseconds,
+             uint32_t frames_skipped) override;
   MOCK_METHOD0(OnRenderError, void());
 
   // AudioTransform::ProvideAudioTransformInput implementation.

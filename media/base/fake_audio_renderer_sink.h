@@ -43,7 +43,8 @@ class FakeAudioRendererSink : public AudioRendererSink {
   // Returns false if this object is in a state where calling Render()
   // should not occur. (i.e., in the kPaused or kStopped state.) The
   // value of |frames_written| is undefined if false is returned.
-  bool Render(AudioBus* dest, int audio_delay_milliseconds,
+  bool Render(AudioBus* dest,
+              uint32_t audio_delay_milliseconds,
               int* frames_written);
   void OnRenderError();
 
