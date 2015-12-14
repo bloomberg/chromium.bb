@@ -531,6 +531,12 @@ DeviceMonitorMac::~DeviceMonitorMac() {}
 void DeviceMonitorMac::StartMonitoring(
     const scoped_refptr<base::SingleThreadTaskRunner>& device_task_runner) {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  // We're on the UI thread so let's try to initialize AVFoundation and then
+  // see if it's supported.  IsAVFoundationSupported can't implicitly initialize
+  // the library since it can be called on different threads.
+  AVFoundationGlue::InitializeAVFoundation();
+
   if (AVFoundationGlue::IsAVFoundationSupported()) {
     // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/458404
     // is fixed.

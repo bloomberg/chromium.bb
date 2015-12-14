@@ -81,11 +81,6 @@ static void RunDevicesEnumeratedCallback(
   callback.Run(device_names.Pass());
 }
 
-// static
-bool VideoCaptureDeviceFactoryMac::PlatformSupportsAVFoundation() {
-  return AVFoundationGlue::IsAVFoundationSupported();
-}
-
 VideoCaptureDeviceFactoryMac::VideoCaptureDeviceFactoryMac(
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
     : ui_task_runner_(ui_task_runner) {

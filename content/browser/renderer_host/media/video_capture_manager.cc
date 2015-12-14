@@ -38,6 +38,10 @@
 #endif
 #endif
 
+#if defined(OS_MACOSX)
+#include "media/base/mac/avfoundation_glue.h"
+#endif
+
 namespace {
 
 // Compares two VideoCaptureFormat by checking smallest frame_size area, then
@@ -192,6 +196,14 @@ void VideoCaptureManager::EnumerateDevices(MediaStreamType stream_type) {
   DCHECK(listener_);
   DCHECK_EQ(stream_type, MEDIA_DEVICE_VIDEO_CAPTURE);
 
+#if defined(OS_MACOSX)
+  if (NeedToInitializeCaptureDeviceApi(stream_type)) {
+    InitializeCaptureDeviceApiOnUIThread(
+        base::Bind(&VideoCaptureManager::EnumerateDevices, this, stream_type));
+    return;
+  }
+#endif
+
   // Bind a callback to ConsolidateDevicesInfoOnDeviceThread() with an argument
   // for another callback to OnDevicesInfoEnumerated() to be run in the current
   // loop, i.e. IO loop. Pass a timer for UMA histogram collection.
@@ -328,6 +340,14 @@ void VideoCaptureManager::HandleQueuedStartRequest() {
       });
   DCHECK(entry_it != devices_.end());
   DeviceEntry* entry =  (*entry_it);
+
+#if defined(OS_MACOSX)
+  if (NeedToInitializeCaptureDeviceApi(entry->stream_type)) {
+    InitializeCaptureDeviceApiOnUIThread(
+        base::Bind(&VideoCaptureManager::HandleQueuedStartRequest, this));
+    return;
+  }
+#endif
 
   DVLOG(3) << "HandleQueuedStartRequest, Post start to device thread, device = "
            << entry->id << " start id = " << entry->serial_id;
@@ -931,5 +951,31 @@ void VideoCaptureManager::SetDesktopCaptureWindowIdOnDeviceThread(
   VLOG(2) << "Screen capture notification window passed on device thread.";
 #endif
 }
+
+#if defined(OS_MACOSX)
+void VideoCaptureManager::OnDeviceLayerInitialized(
+    const base::Closure& and_then) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  capture_device_api_initialized_ = true;
+  and_then.Run();
+}
+
+bool VideoCaptureManager::NeedToInitializeCaptureDeviceApi(
+    MediaStreamType stream_type) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  return !capture_device_api_initialized_ &&
+         stream_type == MEDIA_DEVICE_VIDEO_CAPTURE;
+}
+
+void VideoCaptureManager::InitializeCaptureDeviceApiOnUIThread(
+    const base::Closure& and_then) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  BrowserThread::PostTaskAndReply(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&AVFoundationGlue::InitializeAVFoundation),
+      base::Bind(&VideoCaptureManager::OnDeviceLayerInitialized, this,
+                 and_then));
+}
+#endif
 
 }  // namespace content

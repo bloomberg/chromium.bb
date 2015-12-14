@@ -265,10 +265,9 @@ TEST_F(VideoCaptureDeviceTest, MAYBE_OpenInvalidDevice) {
   VideoCaptureDevice::Name device_name("jibberish", "jibberish", api_type);
 #elif defined(OS_MACOSX)
   VideoCaptureDevice::Name device_name(
-      "jibberish", "jibberish",
-      VideoCaptureDeviceFactoryMac::PlatformSupportsAVFoundation()
-          ? VideoCaptureDevice::Name::AVFOUNDATION
-          : VideoCaptureDevice::Name::QTKIT);
+      "jibberish", "jibberish", AVFoundationGlue::IsAVFoundationSupported()
+                                    ? VideoCaptureDevice::Name::AVFOUNDATION
+                                    : VideoCaptureDevice::Name::QTKIT);
 #else
   VideoCaptureDevice::Name device_name("jibberish", "jibberish");
 #endif
@@ -277,7 +276,7 @@ TEST_F(VideoCaptureDeviceTest, MAYBE_OpenInvalidDevice) {
 #if !defined(OS_MACOSX)
   EXPECT_TRUE(device == NULL);
 #else
-  if (VideoCaptureDeviceFactoryMac::PlatformSupportsAVFoundation()) {
+  if (AVFoundationGlue::IsAVFoundationSupported()) {
     EXPECT_TRUE(device == NULL);
   } else {
     // The presence of the actual device is only checked on AllocateAndStart()

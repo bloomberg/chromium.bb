@@ -15,8 +15,6 @@ namespace media {
 class MEDIA_EXPORT VideoCaptureDeviceFactoryMac
     : public VideoCaptureDeviceFactory {
  public:
-  static bool PlatformSupportsAVFoundation();
-
   explicit VideoCaptureDeviceFactoryMac(
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
   ~VideoCaptureDeviceFactoryMac() override;
