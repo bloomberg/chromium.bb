@@ -20,8 +20,10 @@ source_set("headless") {
     "//base",
     "//skia",
     "//ui/base",
+    "//ui/events",
     "//ui/events/ozone:events_ozone_layout",
     "//ui/events/platform",
     "//ui/gfx/geometry",
+    "//ui/ozone:ozone_base",
   ]
 }

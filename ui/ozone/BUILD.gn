@@ -57,34 +57,6 @@ config("vgem_map") {
 # GYP version: ui/ozone/ozone.gyp:ozone_base
 component("ozone_base") {
   sources = [
-    "public/cursor_factory_ozone.cc",
-    "public/cursor_factory_ozone.h",
-    "public/gpu_platform_support.cc",
-    "public/gpu_platform_support.h",
-    "public/gpu_platform_support_host.cc",
-    "public/gpu_platform_support_host.h",
-    "public/overlay_candidates_ozone.cc",
-    "public/overlay_candidates_ozone.h",
-    "public/overlay_manager_ozone.h",
-    "public/surface_factory_ozone.cc",
-    "public/surface_factory_ozone.h",
-    "public/surface_ozone_canvas.h",
-    "public/surface_ozone_egl.cc",
-    "public/surface_ozone_egl.h",
-    "public/system_input_injector.h",
-  ]
-
-  defines = [ "OZONE_BASE_IMPLEMENTATION" ]
-
-  deps = [
-    "//base",
-    "//skia",
-    "//ui/gfx/geometry",
-  ]
-}
-
-component("ozone") {
-  sources = [
     "common/display_mode_proxy.cc",
     "common/display_mode_proxy.h",
     "common/display_snapshot_proxy.cc",
@@ -104,18 +76,53 @@ component("ozone") {
     "common/stub_client_native_pixmap_factory.h",
     "common/stub_overlay_manager.cc",
     "common/stub_overlay_manager.h",
+    "public/cursor_factory_ozone.cc",
+    "public/cursor_factory_ozone.h",
+    "public/gpu_platform_support.cc",
+    "public/gpu_platform_support.h",
+    "public/gpu_platform_support_host.cc",
+    "public/gpu_platform_support_host.h",
+    "public/input_controller.cc",
+    "public/input_controller.h",
+    "public/overlay_candidates_ozone.cc",
+    "public/overlay_candidates_ozone.h",
+    "public/overlay_manager_ozone.h",
+    "public/ozone_switches.cc",
+    "public/ozone_switches.h",
+    "public/surface_factory_ozone.cc",
+    "public/surface_factory_ozone.h",
+    "public/surface_ozone_canvas.h",
+    "public/surface_ozone_egl.cc",
+    "public/surface_ozone_egl.h",
+    "public/system_input_injector.h",
+  ]
+
+  defines = [ "OZONE_BASE_IMPLEMENTATION" ]
+
+  deps = [
+    "//base",
+    "//ipc",
+    "//skia",
+    "//ui/display/types",
+    "//ui/display/util",
+    "//ui/events",
+    "//ui/events:dom_keycode_converter",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+    "//ui/gfx/ipc",
+  ]
+}
+
+component("ozone") {
+  sources = [
     "platform_selection.cc",
     "platform_selection.h",
     "public/client_native_pixmap_factory.cc",
     "public/client_native_pixmap_factory.h",
-    "public/input_controller.cc",
-    "public/input_controller.h",
     "public/ozone_gpu_test_helper.cc",
     "public/ozone_gpu_test_helper.h",
     "public/ozone_platform.cc",
     "public/ozone_platform.h",
-    "public/ozone_switches.cc",
-    "public/ozone_switches.h",
     constructor_list_cc_file,
     platform_list_cc_file,
     platform_list_h_file,

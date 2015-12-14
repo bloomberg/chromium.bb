@@ -5,7 +5,7 @@
 #include "ui/ozone/platform/drm/client_native_pixmap_factory_gbm.h"
 
 #include "ui/gfx/native_pixmap_handle_ozone.h"
-#include "ui/ozone/public/client_native_pixmap_factory.h"
+#include "ui/ozone/public/client_native_pixmap_factory.h"  // nogncheck
 
 #if defined(USE_VGEM_MAP)
 #include "ui/ozone/platform/drm/common/client_native_pixmap_vgem.h"

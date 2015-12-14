@@ -137,6 +137,7 @@ if (use_ozone) {
       "//ui/events/devices",
       "//ui/events/platform",
       "//ui/gfx",
+      "//ui/ozone:ozone_base",
     ]
 
     public_configs = [ ":evdev" ]

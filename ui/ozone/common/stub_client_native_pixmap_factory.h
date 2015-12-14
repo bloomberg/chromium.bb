@@ -5,7 +5,7 @@
 #ifndef UI_OZONE_COMMON_STUB_CLIENT_NATIVE_PIXMAP_FACTORY_H_
 #define UI_OZONE_COMMON_STUB_CLIENT_NATIVE_PIXMAP_FACTORY_H_
 
-#include "ui/ozone/public/client_native_pixmap_factory.h"
+#include "ui/ozone/public/client_native_pixmap_factory.h"  // nogncheck
 
 namespace ui {
 

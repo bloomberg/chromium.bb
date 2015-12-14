@@ -24,7 +24,6 @@ source_set("gbm") {
     "common/scoped_drm_types.h",
     "gpu/crtc_controller.cc",
     "gpu/crtc_controller.h",
-    "gpu/display_change_observer.h",
     "gpu/drm_buffer.cc",
     "gpu/drm_buffer.h",
     "gpu/drm_console_buffer.cc",
@@ -115,11 +114,13 @@ source_set("gbm") {
     "//ui/display/util",
     "//ui/events",
     "//ui/events/devices",
+    "//ui/events/ozone:events_ozone",
     "//ui/events/ozone:events_ozone_evdev",
     "//ui/events/ozone:events_ozone_layout",
     "//ui/events/platform",
     "//ui/gfx",
     "//ui/gfx/geometry",
+    "//ui/ozone:ozone_base",
   ]
 
   configs += [ ":libdrm" ]
@@ -162,6 +163,7 @@ source_set("gbm_unittests") {
   ]
 
   deps = [
+    ":gbm",
     "//skia",
     "//testing/gtest",
     "//ui/gfx",

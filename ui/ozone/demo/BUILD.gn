@@ -26,10 +26,14 @@ executable("ozone_demo") {
     "//base",
     "//build/config/sanitizers:deps",
     "//skia",
+    "//ui/display/types",
+    "//ui/events",
+    "//ui/events:dom_keycode_converter",
     "//ui/events/ozone:events_ozone_layout",
     "//ui/gfx/geometry",
     "//ui/gl",
     "//ui/ozone",
     "//ui/ozone:ozone_base",
+    "//ui/platform_window",
   ]
 }
