@@ -664,7 +664,24 @@ TEST(SafeNumerics, CastTests) {
   EXPECT_EQ(saturated_cast<float>(-double_large), -double_infinity);
   EXPECT_EQ(numeric_limits<int>::min(), saturated_cast<int>(double_small_int));
   EXPECT_EQ(numeric_limits<int>::max(), saturated_cast<int>(double_large_int));
+
+  float not_a_number = std::numeric_limits<float>::infinity() -
+                       std::numeric_limits<float>::infinity();
+  EXPECT_TRUE(std::isnan(not_a_number));
+  EXPECT_EQ(0, saturated_cast<int>(not_a_number));
 }
+
+#if GTEST_HAS_DEATH_TEST
+
+TEST(SafeNumerics, SaturatedCastChecks) {
+  float not_a_number = std::numeric_limits<float>::infinity() -
+                       std::numeric_limits<float>::infinity();
+  EXPECT_TRUE(std::isnan(not_a_number));
+  EXPECT_DEATH((saturated_cast<int, base::SaturatedCastNaNBehaviorCheck>(
+      not_a_number)), "");
+}
+
+#endif  // GTEST_HAS_DEATH_TEST
 
 TEST(SafeNumerics, IsValueInRangeForNumericType) {
   EXPECT_TRUE(IsValueInRangeForNumericType<uint32_t>(0));

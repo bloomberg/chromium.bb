@@ -48,10 +48,30 @@ inline Dst checked_cast(Src value) {
   return static_cast<Dst>(value);
 }
 
+// HandleNaN will cause this class to CHECK(false).
+struct SaturatedCastNaNBehaviorCheck {
+  template <typename T>
+  static T HandleNaN() {
+    CHECK(false);
+    return T();
+  }
+};
+
+// HandleNaN will return 0 in this case.
+struct SaturatedCastNaNBehaviorReturnZero {
+  template <typename T>
+  static T HandleNaN() {
+    return T();
+  }
+};
+
 // saturated_cast<> is analogous to static_cast<> for numeric types, except
 // that the specified numeric conversion will saturate rather than overflow or
-// underflow. NaN assignment to an integral will trigger a CHECK condition.
-template <typename Dst, typename Src>
+// underflow. NaN assignment to an integral will defer the behavior to a
+// specified class. By default, it will return 0.
+template <typename Dst,
+          class NaNHandler = SaturatedCastNaNBehaviorReturnZero,
+          typename Src>
 inline Dst saturated_cast(Src value) {
   // Optimization for floating point values, which already saturate.
   if (std::numeric_limits<Dst>::is_iec559)
@@ -69,8 +89,7 @@ inline Dst saturated_cast(Src value) {
 
     // Should fail only on attempting to assign NaN to a saturated integer.
     case internal::RANGE_INVALID:
-      CHECK(false);
-      return std::numeric_limits<Dst>::max();
+      return NaNHandler::template HandleNaN<Dst>();
   }
 
   NOTREACHED();
