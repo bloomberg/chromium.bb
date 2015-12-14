@@ -1728,7 +1728,7 @@ TEST_F(WebSocketChannelEventInterfaceTest, SmallWriteDoesntUpdateQuota) {
   channel_->SendFrame(true, WebSocketFrameHeader::kOpCodeText, AsVector("B"));
 }
 
-// If we send enough to go below send_quota_low_water_mask_ we should get our
+// If we send enough to go below |send_quota_low_water_mark_| we should get our
 // quota refreshed.
 TEST_F(WebSocketChannelEventInterfaceTest, LargeWriteUpdatesQuota) {
   set_stream(make_scoped_ptr(new WriteableFakeWebSocketStream));
