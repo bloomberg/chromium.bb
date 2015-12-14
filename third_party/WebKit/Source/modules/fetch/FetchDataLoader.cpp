@@ -218,7 +218,7 @@ protected:
         ASSERT(!m_decoder);
         ASSERT(!m_reader);
         m_client = client;
-        m_decoder = TextResourceDecoder::create("text/plain", UTF8Encoding());
+        m_decoder = TextResourceDecoder::createAlwaysUseUTF8ForText();
         m_reader = handle->obtainReader(this);
     }
 

@@ -164,6 +164,36 @@ promise_test(function(test) {
         })
     }, 'NonAsciiTextTest');
 
+promise_test(function(test) {
+    return fetch('/fetch/resources/bom-utf-8.php')
+      .then(function(response) { return response.text(); })
+      .then(function(text) {
+          assert_equals(text, '\u4e09\u6751\u304b\u306a\u5b50',
+                        'utf-8 string with BOM is decoded as utf-8 and ' +
+                        'BOM is not included in the decoded result.');
+        })
+    }, 'BOMUTF8Test');
+
+promise_test(function(test) {
+    return fetch('/fetch/resources/bom-utf-16le.php')
+      .then(function(response) { return response.text(); })
+      .then(function(text) {
+          assert_equals(text, '\ufffd\ufffd\tNQgK0j0P[',
+                        'utf-16le string is decoded as if utf-8 ' +
+                        'even if the data has utf-16le BOM.');
+        })
+    }, 'BOMUTF16LETest');
+
+promise_test(function(test) {
+    return fetch('/fetch/resources/bom-utf-16be.php')
+      .then(function(response) { return response.text(); })
+      .then(function(text) {
+          assert_equals(text, '\ufffd\ufffdN\tgQ0K0j[P',
+                        'utf-16be string is decoded as if utf-8 ' +
+                        'even if the data has utf-16be BOM.');
+        })
+    }, 'BOMUTF16BETest');
+
 test(t => {
     var req = new Request('/');
     assert_false(req.bodyUsed);
