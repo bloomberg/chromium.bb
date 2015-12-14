@@ -936,6 +936,9 @@ String UseCounter::deprecationMessage(Feature feature)
     case MediaStreamTrackGetSources:
         return "MediaStreamTrack.getSources is deprecated. See https://www.chromestatus.com/feature/4765305641369600 for more details.";
 
+    case CSSXGetComputedStyleQueries:
+        return "'getComputedStyle(e).cssXx' (except .cssFloat) is deprecated and will be removed in M50, around April 2016. Please use 'getComputedStyle(e).xx' instead.";
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();

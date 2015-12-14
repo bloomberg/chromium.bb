@@ -1,3 +1,4 @@
+CONSOLE WARNING: 'getComputedStyle(e).cssXx' (except .cssFloat) is deprecated and will be removed in M50, around April 2016. Please use 'getComputedStyle(e).xx' instead.
 PASS document.body.style['BorderTopWidth'] is undefined.
 PASS document.body.style['borderTopWidth'] is "1px"
 PASS document.body.style['border-topWidth'] is undefined.

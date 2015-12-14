@@ -96,7 +96,7 @@ static CSSPropertyID parseCSSPropertyID(v8::Isolate* isolate, const String& prop
         i += 3;
         // getComputedStyle(elem).cssX is a non-standard behaviour
         // Measure this behaviour as CSSXGetComputedStyleQueries.
-        UseCounter::countIfNotPrivateScript(isolate, callingExecutionContext(isolate), UseCounter::CSSXGetComputedStyleQueries);
+        UseCounter::countDeprecationIfNotPrivateScript(isolate, callingExecutionContext(isolate), UseCounter::CSSXGetComputedStyleQueries);
     } else if (hasCSSPropertyNamePrefix(propertyName, "webkit"))
         builder.append('-');
     else if (isASCIIUpper(propertyName[0]))
