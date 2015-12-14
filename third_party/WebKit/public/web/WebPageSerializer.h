@@ -33,26 +33,58 @@
 
 #include "../platform/WebCString.h"
 #include "../platform/WebCommon.h"
+#include "../platform/WebData.h"
+#include "../platform/WebString.h"
 #include "../platform/WebURL.h"
-#include "WebFrame.h"
+#include "../platform/WebVector.h"
+
+#include <utility>
 
 namespace blink {
 
 class WebPageSerializerClient;
-class WebString;
-class WebView;
+class WebFrame;
+class WebLocalFrame;
 template <typename T> class WebVector;
 
-// Get html data by serializing all frames of current page with lists
-// which contain all resource links that have local copy.
+// Serialization of frame contents into html or mhtml.
+// TODO(lukasza): Rename this class to WebFrameSerializer?
 class WebPageSerializer {
 public:
-    // Serializes the WebView contents to a MHTML representation.
-    BLINK_EXPORT static WebCString serializeToMHTML(WebView*);
+    // Generates and returns an MHTML header.
+    //
+    // Contents of the header (i.e. title and mime type) will be based
+    // on the frame passed as an argument (which typically should be
+    // the main, top-level frame).
+    //
+    // Same |boundary| needs to used for all generateMHTMLHeader and
+    // generateMHTMLParts and generateMHTMLFooter calls that belong to the same
+    // MHTML document (see also rfc1341, section 7.2.1, "boundary" description).
+    BLINK_EXPORT static WebData generateMHTMLHeader(
+        const WebString& boundary, WebLocalFrame*);
 
-    // Similar to serializeToMHTML but uses binary encoding for the MHTML parts.
-    // This results in a smaller MHTML file but it might not be supported by other browsers.
-    BLINK_EXPORT static WebCString serializeToMHTMLUsingBinaryEncoding(WebView*);
+    // Generates and returns MHTML parts for the given frame and all the
+    // savable resources underneath.
+    //
+    // Same |boundary| needs to used for all generateMHTMLHeader and
+    // generateMHTMLParts and generateMHTMLFooter calls that belong to the same
+    // MHTML document (see also rfc1341, section 7.2.1, "boundary" description).
+    //
+    // |frameToContentID| is used for 1) emitting cid: scheme uri links for
+    // subframes and 2) emitting MIME Content-ID headers.
+    // See rfc2557 - section 8.3 - "Use of the Content-ID header and CID URLs".
+    // Format note - |frameToContentID| should contain strings of the form
+    // "<foo@bar.com>" (i.e. the strings should include the angle brackets).
+    BLINK_EXPORT static WebData generateMHTMLParts(
+        const WebString& boundary, WebLocalFrame*, bool useBinaryEncoding,
+        const WebVector<std::pair<WebFrame*, WebString>>& frameToContentID);
+
+    // Generates and returns an MHTML footer.
+    //
+    // Same |boundary| needs to used for all generateMHTMLHeader and
+    // generateMHTMLParts and generateMHTMLFooter calls that belong to the same
+    // MHTML document (see also rfc1341, section 7.2.1, "boundary" description).
+    BLINK_EXPORT static WebData generateMHTMLFooter(const WebString& boundary);
 
     // IMPORTANT:
     // The API below is an older implementation of a pageserialization that

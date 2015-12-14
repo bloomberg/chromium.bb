@@ -58,15 +58,11 @@ public:
         UseBinaryEncoding
     };
 
-    // Generates a random/unique boundary that can be used as a separator of
-    // MHTML parts.
-    static String generateMHTMLBoundary();
-
     // Generates an MHTML header and appends it to |outputBuffer|.
     //
     // Same |boundary| needs to used for all generateMHTMLHeader and
     // generateMHTMLPart and generateMHTMLFooter calls that belong to the same
-    // MHTML document (see also generateMHTMLBoundary method).
+    // MHTML document (see also rfc1341, section 7.2.1, "boundary" description).
     static void generateMHTMLHeader(
         const String& boundary, const String& title, const String& mimeType,
         SharedBuffer& outputBuffer);
@@ -76,7 +72,7 @@ public:
     //
     // Same |boundary| needs to used for all generateMHTMLHeader and
     // generateMHTMLPart and generateMHTMLFooter calls that belong to the same
-    // MHTML document (see also generateMHTMLBoundary method).
+    // MHTML document (see also rfc1341, section 7.2.1, "boundary" description).
     //
     // If |contentID| is non-empty, then it will be used as a Content-ID header.
     // See rfc2557 - section 8.3 - "Use of the Content-ID header and CID URLs".
@@ -89,7 +85,7 @@ public:
     //
     // Same |boundary| needs to used for all generateMHTMLHeader and
     // generateMHTMLPart and generateMHTMLFooter calls that belong to the same
-    // MHTML document (see also generateMHTMLBoundary method).
+    // MHTML document (see also rfc1341, section 7.2.1, "boundary" description).
     static void generateMHTMLFooter(
         const String& boundary,
         SharedBuffer& outputBuffer);

@@ -57,7 +57,6 @@
 #include "content/browser/device_sensors/device_orientation_message_filter.h"
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
 #include "content/browser/dom_storage/dom_storage_message_filter.h"
-#include "content/browser/download/mhtml_generation_manager.h"
 #include "content/browser/fileapi/chrome_blob_storage_context.h"
 #include "content/browser/fileapi/fileapi_message_filter.h"
 #include "content/browser/frame_host/render_frame_message_filter.h"
@@ -1675,7 +1674,6 @@ bool RenderProcessHostImpl::OnMessageReceived(const IPC::Message& msg) {
                           SuddenTerminationChanged)
       IPC_MESSAGE_HANDLER(ViewHostMsg_UserMetricsRecordAction,
                           OnUserMetricsRecordAction)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_SavedPageAsMHTML, OnSavedPageAsMHTML)
       IPC_MESSAGE_HANDLER(ViewHostMsg_Close_ACK, OnCloseACK)
 #if defined(ENABLE_WEBRTC)
       IPC_MESSAGE_HANDLER(AecDumpMsg_RegisterAecDumpConsumer,
@@ -2577,12 +2575,6 @@ void RenderProcessHostImpl::OnCloseACK(int old_route_id) {
   if (!holder)
     return;
   holder->Release(old_route_id);
-}
-
-void RenderProcessHostImpl::OnSavedPageAsMHTML(int job_id, int64 data_size) {
-  bool mhtml_generation_in_renderer_succeeded = data_size >= 0;
-  MHTMLGenerationManager::GetInstance()->OnSavedPageAsMHTML(
-      job_id, mhtml_generation_in_renderer_succeeded);
 }
 
 void RenderProcessHostImpl::OnGpuSwitched() {

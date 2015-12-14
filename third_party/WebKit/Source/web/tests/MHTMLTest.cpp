@@ -145,7 +145,9 @@ protected:
         MHTMLArchive::EncodingPolicy encodingPolicy,
         const String& title, const String& mimeType)
     {
-        String boundary = MHTMLArchive::generateMHTMLBoundary();
+        // This boundary is as good as any other.  Plus it gets used in almost
+        // all the examples in the MHTML spec - RFC 2557.
+        String boundary = String::fromUTF8("boundary-example");
 
         RefPtr<SharedBuffer> mhtmlData = SharedBuffer::create();
         MHTMLArchive::generateMHTMLHeader(boundary, title, mimeType, *mhtmlData);

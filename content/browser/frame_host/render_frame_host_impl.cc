@@ -20,6 +20,7 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
+#include "content/browser/download/mhtml_generation_manager.h"
 #include "content/browser/frame_host/cross_process_frame_connector.h"
 #include "content/browser/frame_host/cross_site_transferring_request.h"
 #include "content/browser/frame_host/frame_mojo_shell.h"
@@ -541,6 +542,8 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidStopLoading, OnDidStopLoading)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidChangeLoadProgress,
                         OnDidChangeLoadProgress)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_SerializeAsMHTMLResponse,
+                        OnSerializeAsMHTMLResponse)
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(FrameHostMsg_ShowPopup, OnShowPopup)
     IPC_MESSAGE_HANDLER(FrameHostMsg_HidePopup, OnHidePopup)
@@ -1702,6 +1705,10 @@ void RenderFrameHostImpl::OnDidStopLoading() {
 
 void RenderFrameHostImpl::OnDidChangeLoadProgress(double load_progress) {
   frame_tree_node_->DidChangeLoadProgress(load_progress);
+}
+
+void RenderFrameHostImpl::OnSerializeAsMHTMLResponse(int job_id, bool success) {
+  MHTMLGenerationManager::GetInstance()->OnSavedFrameAsMHTML(job_id, success);
 }
 
 #if defined(OS_MACOSX) || defined(OS_ANDROID)

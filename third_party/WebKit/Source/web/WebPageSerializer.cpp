@@ -34,16 +34,18 @@
 #include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
+#include "core/frame/Frame.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/RemoteFrame.h"
 #include "core/html/HTMLAllCollection.h"
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLTableElement.h"
 #include "core/loader/DocumentLoader.h"
-#include "core/page/Page.h"
 #include "core/page/PageSerializer.h"
 #include "platform/SerializedResource.h"
+#include "platform/SharedBuffer.h"
 #include "platform/mhtml/MHTMLArchive.h"
 #include "platform/mhtml/MHTMLParser.h"
 #include "platform/weborigin/KURL.h"
@@ -51,14 +53,15 @@
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebVector.h"
+#include "public/web/WebDocument.h"
 #include "public/web/WebFrame.h"
 #include "public/web/WebPageSerializerClient.h"
-#include "public/web/WebView.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebPageSerializerImpl.h"
-#include "web/WebViewImpl.h"
+#include "web/WebRemoteFrameImpl.h"
 #include "wtf/Assertions.h"
 #include "wtf/HashMap.h"
+#include "wtf/HashSet.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/Vector.h"
 #include "wtf/text/StringConcatenate.h"
@@ -133,77 +136,74 @@ bool MHTMLPageSerializerDelegate::rewriteLink(
     return false;
 }
 
-ContentIDMap generateFrameContentIDs(Page* page)
+ContentIDMap createFrameToContentIDMap(
+    const WebVector<std::pair<WebFrame*, WebString>>& webFrameToContentID)
 {
-    ContentIDMap frameToContentID;
-    int frameID = 0;
-    for (Frame* frame = page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
-        // TODO(lukasza): Move cid generation to the browser + use base/guid.h
-        // (see the draft at crrev.com/1386873003).
-        StringBuilder contentIDBuilder;
-        contentIDBuilder.appendLiteral("<frame");
-        contentIDBuilder.appendNumber(frameID++);
-        contentIDBuilder.appendLiteral("@mhtml.blink>");
+    ContentIDMap result;
+    for (const auto& it : webFrameToContentID) {
+        WebFrame* webFrame = it.first;
+        const WebString& webContentID = it.second;
 
-        frameToContentID.add(frame, contentIDBuilder.toString());
+        Frame* frame = webFrame->toImplBase()->frame();
+        String contentID(webContentID);
+
+        result.add(frame, contentID);
     }
-    return frameToContentID;
-}
-
-PassRefPtr<SharedBuffer> serializePageToMHTML(Page* page, MHTMLArchive::EncodingPolicy encodingPolicy)
-{
-    Vector<SerializedResource> resources;
-    ContentIDMap frameToContentID = generateFrameContentIDs(page);
-    MHTMLPageSerializerDelegate delegate(frameToContentID);
-    PageSerializer serializer(resources, &delegate);
-
-    RefPtr<SharedBuffer> output = SharedBuffer::create();
-    String boundary = MHTMLArchive::generateMHTMLBoundary();
-
-    Document* document = page->deprecatedLocalMainFrame()->document();
-    MHTMLArchive::generateMHTMLHeader(
-        boundary, document->title(), document->suggestedMIMEType(), *output);
-
-    for (Frame* frame = page->deprecatedLocalMainFrame(); frame; frame = frame->tree().traverseNext()) {
-        // TODO(lukasza): This causes incomplete MHTML for OOPIFs.
-        // (crbug.com/538766)
-        if (!frame->isLocalFrame())
-            continue;
-
-        resources.clear();
-        serializer.serializeFrame(*toLocalFrame(frame));
-
-        bool isFirstResource = true;
-        for (const SerializedResource& resource : resources) {
-            // Frame is the 1st resource (see PageSerializer::serializeFrame doc
-            // comment). Frames need a Content-ID header.
-            String contentID = isFirstResource ? frameToContentID.get(frame) : String();
-
-            MHTMLArchive::generateMHTMLPart(
-                boundary, contentID, encodingPolicy, resource, *output);
-
-            isFirstResource = false;
-        }
-    }
-
-    MHTMLArchive::generateMHTMLFooter(boundary, *output);
-    return output.release();
+    return result;
 }
 
 } // namespace
 
-WebCString WebPageSerializer::serializeToMHTML(WebView* view)
+WebData WebPageSerializer::generateMHTMLHeader(
+    const WebString& boundary, WebLocalFrame* frame)
 {
-    RefPtr<SharedBuffer> mhtml = serializePageToMHTML(toWebViewImpl(view)->page(), MHTMLArchive::UseDefaultEncoding);
-    // FIXME: we are copying all the data here. Idealy we would have a WebSharedData().
-    return WebCString(mhtml->data(), mhtml->size());
+    Document* document = toWebLocalFrameImpl(frame)->frame()->document();
+
+    RefPtr<SharedBuffer> buffer = SharedBuffer::create();
+    MHTMLArchive::generateMHTMLHeader(
+        boundary, document->title(), document->suggestedMIMEType(),
+        *buffer);
+    return buffer.release();
 }
 
-WebCString WebPageSerializer::serializeToMHTMLUsingBinaryEncoding(WebView* view)
+WebData WebPageSerializer::generateMHTMLParts(
+    const WebString& boundary, WebLocalFrame* webFrame, bool useBinaryEncoding,
+    const WebVector<std::pair<WebFrame*, WebString>>& webFrameToContentID)
 {
-    RefPtr<SharedBuffer> mhtml = serializePageToMHTML(toWebViewImpl(view)->page(), MHTMLArchive::UseBinaryEncoding);
-    // FIXME: we are copying all the data here. Idealy we would have a WebSharedData().
-    return WebCString(mhtml->data(), mhtml->size());
+    // Translate arguments from public to internal blink APIs.
+    LocalFrame* frame = toWebLocalFrameImpl(webFrame)->frame();
+    MHTMLArchive::EncodingPolicy encodingPolicy = useBinaryEncoding
+        ? MHTMLArchive::EncodingPolicy::UseBinaryEncoding
+        : MHTMLArchive::EncodingPolicy::UseDefaultEncoding;
+    ContentIDMap frameToContentID = createFrameToContentIDMap(webFrameToContentID);
+
+    // Serialize.
+    Vector<SerializedResource> resources;
+    MHTMLPageSerializerDelegate delegate(frameToContentID);
+    PageSerializer serializer(resources, &delegate);
+    serializer.serializeFrame(*frame);
+
+    // Encode serializer's output as MHTML.
+    RefPtr<SharedBuffer> output = SharedBuffer::create();
+    bool isFirstResource = true;
+    for (const SerializedResource& resource : resources) {
+        // Frame is the 1st resource (see PageSerializer::serializeFrame doc
+        // comment). Frames need a Content-ID header.
+        String contentID = isFirstResource ? frameToContentID.get(frame) : String();
+
+        MHTMLArchive::generateMHTMLPart(
+            boundary, contentID, encodingPolicy, resource, *output);
+
+        isFirstResource = false;
+    }
+    return output.release();
+}
+
+WebData WebPageSerializer::generateMHTMLFooter(const WebString& boundary)
+{
+    RefPtr<SharedBuffer> buffer = SharedBuffer::create();
+    MHTMLArchive::generateMHTMLFooter(boundary, *buffer);
+    return buffer.release();
 }
 
 bool WebPageSerializer::serialize(

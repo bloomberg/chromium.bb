@@ -6,13 +6,16 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/debug/alias.h"
 #include "base/debug/asan_invalid_access.h"
 #include "base/debug/dump_without_crashing.h"
+#include "base/files/file.h"
 #include "base/i18n/char_iterator.h"
+#include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/process/process.h"
@@ -136,6 +139,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/http/http_util.h"
+#include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebStorageQuotaCallbacks.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
@@ -1265,6 +1269,7 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnGetSavableResourceLinks)
     IPC_MESSAGE_HANDLER(FrameMsg_GetSerializedHtmlWithLocalLinks,
                         OnGetSerializedHtmlWithLocalLinks)
+    IPC_MESSAGE_HANDLER(FrameMsg_SerializeAsMHTML, OnSerializeAsMHTML)
 #if defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(FrameMsg_SelectPopupMenuItems, OnSelectPopupMenuItems)
 #elif defined(OS_MACOSX)
@@ -4740,6 +4745,63 @@ void RenderFrameImpl::OnGetSerializedHtmlWithLocalLinks(
   WebPageSerializer::serialize(GetWebFrame(),
                                this,  // WebPageSerializerClient.
                                weburl_to_local_path);
+}
+
+void RenderFrameImpl::OnSerializeAsMHTML(
+    int job_id,
+    IPC::PlatformFileForTransit file_for_transit,
+    const std::string& std_mhtml_boundary,
+    const std::map<int, std::string>& frame_routing_id_to_content_id,
+    bool is_last_frame) {
+  // Unpack IPC payload.
+  base::File file = IPC::PlatformFileForTransitToFile(file_for_transit);
+  const WebString mhtml_boundary = WebString::fromUTF8(std_mhtml_boundary);
+  DCHECK(!mhtml_boundary.isEmpty());
+  std::vector<std::pair<WebFrame*, WebString>> web_frame_to_content_id;
+  for (const auto& it : frame_routing_id_to_content_id) {
+    const std::string& content_id = it.second;
+    WebFrame* web_frame = GetWebFrameFromRoutingIdForFrameOrProxy(it.first);
+    if (!web_frame)
+      continue;
+
+    web_frame_to_content_id.push_back(
+        std::make_pair(web_frame, WebString::fromUTF8(content_id)));
+  }
+
+  WebData data;
+  bool success = true;
+
+  // Generate MHTML header if needed.
+  if (IsMainFrame()) {
+    data =
+        WebPageSerializer::generateMHTMLHeader(mhtml_boundary, GetWebFrame());
+    if (file.WriteAtCurrentPos(data.data(), data.size()) < 0) {
+      success = false;
+    }
+  }
+
+  // Generate MHTML parts.
+  if (success) {
+    data = WebPageSerializer::generateMHTMLParts(
+        mhtml_boundary, GetWebFrame(), false, web_frame_to_content_id);
+    // TODO(jcivelli): write the chunks in deferred tasks to give a chance to
+    //                 the message loop to process other events.
+    if (file.WriteAtCurrentPos(data.data(), data.size()) < 0) {
+      success = false;
+    }
+  }
+
+  // Generate MHTML footer if needed.
+  if (success && is_last_frame) {
+    data = WebPageSerializer::generateMHTMLFooter(mhtml_boundary);
+    if (file.WriteAtCurrentPos(data.data(), data.size()) < 0) {
+      success = false;
+    }
+  }
+
+  // Cleanup and notify the browser process about completion.
+  file.Close();  // Need to flush file contents before sending IPC response.
+  Send(new FrameHostMsg_SerializeAsMHTMLResponse(routing_id_, job_id, success));
 }
 
 void RenderFrameImpl::OpenURL(const GURL& url,

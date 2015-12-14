@@ -297,7 +297,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void OnShutdownRequest();
   void SuddenTerminationChanged(bool enabled);
   void OnUserMetricsRecordAction(const std::string& action);
-  void OnSavedPageAsMHTML(int job_id, int64 mhtml_file_size);
   void OnCloseACK(int old_route_id);
 
   // Generates a command line to be used to spawn a renderer and appends the

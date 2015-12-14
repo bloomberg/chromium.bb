@@ -35,7 +35,6 @@
 #include "content/public/common/window_container_type.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
-#include "ipc/ipc_platform_file.h"
 #include "media/audio/audio_parameters.h"
 #include "media/base/channel_layout.h"
 #include "media/base/media_log_event.h"
@@ -886,11 +885,6 @@ IPC_MESSAGE_CONTROL1(ViewMsg_PurgePluginListCache,
 // Used to instruct the RenderView to go into "view source" mode.
 IPC_MESSAGE_ROUTED0(ViewMsg_EnableViewSourceMode)
 
-// Instructs the renderer to save the current page to MHTML.
-IPC_MESSAGE_ROUTED2(ViewMsg_SavePageAsMHTML,
-                    int /* job_id */,
-                    IPC::PlatformFileForTransit /* file handle */)
-
 // An acknowledge to ViewHostMsg_MultipleTargetsTouched to notify the renderer
 // process to release the magnified image.
 IPC_MESSAGE_ROUTED1(ViewMsg_ReleaseDisambiguationPopupBitmap,
@@ -1294,11 +1288,6 @@ IPC_MESSAGE_ROUTED3(
 // Send back a string to be recorded by UserMetrics.
 IPC_MESSAGE_CONTROL1(ViewHostMsg_UserMetricsRecordAction,
                      std::string /* action */)
-
-// Notifies the browser that the page was or was not saved as MHTML.
-IPC_MESSAGE_CONTROL2(ViewHostMsg_SavedPageAsMHTML,
-                     int /* job_id */,
-                     int64 /* size of the MHTML file, -1 if error */)
 
 // Notifies the browser of an event occurring in the media pipeline.
 IPC_MESSAGE_CONTROL1(ViewHostMsg_MediaLogEvents,

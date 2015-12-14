@@ -37,10 +37,10 @@ class MHTMLGenerationManager {
                  const base::FilePath& file_path,
                  const GenerateMHTMLCallback& callback);
 
-  // Handler for ViewHostMsg_SavedPageAsMHTML (a notification from the renderer
-  // that the MHTML generation finished).
-  void OnSavedPageAsMHTML(int job_id,
-                          bool mhtml_generation_in_renderer_succeeded);
+  // Handler for FrameHostMsg_SerializeAsMHTMLResponse (a notification from the
+  // renderer that the MHTML generation finished for a single frame).
+  void OnSavedFrameAsMHTML(int job_id,
+                           bool mhtml_generation_in_renderer_succeeded);
 
  private:
   friend struct base::DefaultSingletonTraits<MHTMLGenerationManager>;

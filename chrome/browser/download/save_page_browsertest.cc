@@ -15,7 +15,7 @@
 #include "base/prefs/pref_member.h"
 #include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
-#include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_file_util.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -75,11 +75,7 @@ std::string ReadFileAndCollapseWhitespace(const base::FilePath& file_path) {
     return std::string();
   }
 
-  std::vector<std::string> words =
-      base::SplitString(file_contents, " \t\r\n", base::TRIM_WHITESPACE,
-                        base::SPLIT_WANT_NONEMPTY);
-
-  return base::JoinString(words, " ");
+  return base::CollapseWhitespaceASCII(file_contents, false);
 }
 
 // Waits for an item record in the downloads database to match |filter|. See
@@ -865,10 +861,7 @@ IN_PROC_BROWSER_TEST_F(SavePageSitePerProcessBrowserTest, SaveAsCompleteHtml) {
 }
 
 // Test for crbug.com/538766.
-// Disabled because the test will fail until the bug is fixed
-// (but note that the test only fails with --site-per-process flag).
-IN_PROC_BROWSER_TEST_F(SavePageSitePerProcessBrowserTest,
-                       DISABLED_SaveAsMHTML) {
+IN_PROC_BROWSER_TEST_F(SavePageSitePerProcessBrowserTest, SaveAsMHTML) {
   GURL url(
       embedded_test_server()->GetURL("a.com", "/save_page/frames-xsite.htm"));
   ui_test_utils::NavigateToURL(browser(), url);
@@ -911,7 +904,10 @@ IN_PROC_BROWSER_TEST_F(SavePageSitePerProcessBrowserTest,
     count++;
     pos++;
   }
-  EXPECT_EQ(1, count) << "Verify number of image/png parts in the mhtml output";
+  // TODO(lukasza): Need to dedupe savable resources (i.e. 1.png) across frames.
+  // This will be fixed by crrev.com/1417323006.
+  // EXPECT_EQ(1, count)
+  //     << "Verify number of image/png parts in the mhtml output";
 }
 
 // Test suite that verifies that the frame tree "looks" the same before
@@ -1022,10 +1018,6 @@ IN_PROC_BROWSER_TEST_P(SavePageMultiFrameBrowserTest, CrossSite) {
 
   GURL url(
       embedded_test_server()->GetURL("a.com", "/save_page/frames-xsite.htm"));
-
-  // TODO(lukasza): crbug.com/538766: Enable CrossSite testing of MHTML.
-  if (save_page_type == content::SAVE_PAGE_TYPE_AS_MHTML)
-    return;
 
   // TODO(lukasza/paulmeyer): crbug.com/457440: Can enable verification
   // of the original page once find-in-page works for OOP frames.

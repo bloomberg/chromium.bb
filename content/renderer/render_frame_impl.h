@@ -25,6 +25,7 @@
 #include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/renderer_webcookiejar_impl.h"
 #include "ipc/ipc_message.h"
+#include "ipc/ipc_platform_file.h"
 #include "media/blink/webmediaplayer_delegate.h"
 #include "media/blink/webmediaplayer_params.h"
 #include "mojo/application/public/interfaces/service_provider.mojom.h"
@@ -774,6 +775,12 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnGetSavableResourceLinks();
   void OnGetSerializedHtmlWithLocalLinks(
       const std::map<GURL, base::FilePath>& url_to_local_path);
+  void OnSerializeAsMHTML(
+      int job_id,
+      IPC::PlatformFileForTransit file_for_transit,
+      const std::string& mhtml_boundary_marker,
+      const std::map<int, std::string>& frame_routing_id_to_content_id,
+      bool is_last_frame);
 
   // Requests that the browser process navigates to |url|. If
   // |is_history_navigation_in_new_child| is true, the browser process should

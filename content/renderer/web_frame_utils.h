@@ -15,6 +15,10 @@ namespace content {
 // associated with |web_frame|.
 int GetRoutingIdForFrameOrProxy(blink::WebFrame* web_frame);
 
+// Returns either a WebLocalFrame or WebRemoteFrame based on |routing_id|.
+// Returns nullptr if |routing_id| doesn't properly map to a frame.
+blink::WebFrame* GetWebFrameFromRoutingIdForFrameOrProxy(int routing_id);
+
 }  // namespace content
 
 #endif  // CONTENT_RENDERER_WEB_FRAME_UTILS_H_

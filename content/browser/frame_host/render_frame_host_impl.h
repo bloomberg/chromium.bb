@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_FRAME_HOST_RENDER_FRAME_HOST_IMPL_H_
 
 #include <map>
+#include <string>
 #include <vector>
 
 #include "base/callback.h"
@@ -609,6 +610,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnDidStartLoading(bool to_different_document);
   void OnDidStopLoading();
   void OnDidChangeLoadProgress(double load_progress);
+  void OnSerializeAsMHTMLResponse(int job_id, bool success);
 
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
   void OnShowPopup(const FrameHostMsg_ShowPopup_Params& params);

@@ -29,6 +29,7 @@
 #include "content/public/common/three_d_api_types.h"
 #include "content/public/common/transition_element.h"
 #include "ipc/ipc_message_macros.h"
+#include "ipc/ipc_platform_file.h"
 #include "third_party/WebKit/public/platform/WebFocusType.h"
 #include "third_party/WebKit/public/web/WebFrameOwnerProperties.h"
 #include "third_party/WebKit/public/web/WebTreeScopeType.h"
@@ -46,6 +47,9 @@
 
 using FrameMsg_GetSerializedHtmlWithLocalLinks_Map =
     std::map<GURL, base::FilePath>;
+
+using FrameMsg_SerializeAsMHTML_FrameRoutingIdToContentIdMap =
+    std::map<int, std::string>;
 
 #endif  // CONTENT_COMMON_FRAME_MESSAGES_H_
 
@@ -727,6 +731,30 @@ IPC_MESSAGE_ROUTED0(FrameMsg_GetSavableResourceLinks)
 IPC_MESSAGE_ROUTED1(FrameMsg_GetSerializedHtmlWithLocalLinks,
                     FrameMsg_GetSerializedHtmlWithLocalLinks_Map)
 
+// Serialize target frame and its resources into MHTML and write it into the
+// provided destination file handle.
+//
+// When starting generation of a new MHTML document, one needs to start by
+// sending FrameMsg_SerializeAsMHTML for the *main* frame (main frame needs to
+// be the first part in the MHTML document + main frame will trigger generation
+// of the MHTML header).
+//
+// The same |mhtml_boundary_marker| should be used for serialization of each
+// frame (this string will be used as a mime multipart boundary within the mhtml
+// document).
+//
+// For more details about frame to content id map please see
+// WebPageSerializer::generateMHTMLParts method.
+//
+// |is_last_frame| controls whether the serializer in the renderer will
+// emit the MHTML footer.
+IPC_MESSAGE_ROUTED5(FrameMsg_SerializeAsMHTML,
+                    int /* job_id (used to match responses to requests) */,
+                    IPC::PlatformFileForTransit /* destination file handle */,
+                    std::string /* mhtml boundary marker */,
+                    FrameMsg_SerializeAsMHTML_FrameRoutingIdToContentIdMap,
+                    bool /* is last frame */)
+
 IPC_MESSAGE_ROUTED1(FrameMsg_SetFrameOwnerProperties,
                     blink::WebFrameOwnerProperties /* frame_owner_properties */)
 
@@ -1263,6 +1291,11 @@ IPC_MESSAGE_ROUTED0(FrameHostMsg_SavableResourceLinksError)
 IPC_MESSAGE_ROUTED2(FrameHostMsg_SerializedHtmlWithLocalLinksResponse,
                     std::string /* data buffer */,
                     bool /* end of data? */)
+
+// Response to FrameMsg_SerializeAsMHTML.
+IPC_MESSAGE_ROUTED2(FrameHostMsg_SerializeAsMHTMLResponse,
+                    int /* job_id (used to match responses to requests) */,
+                    bool /* true if success, false if error */)
 
 // Sent when the renderer updates hint for importance of a tab.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_UpdatePageImportanceSignals,
