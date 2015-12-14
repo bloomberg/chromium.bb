@@ -1,0 +1,13 @@
+Tests that the constructor of the OffScreenCanvas can be called on the main thread
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS aCanvas.width is 50
+PASS aCanvas.height is 50
+PASS aCanvas.width is 100
+PASS aCanvas.height is 100
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

@@ -3630,6 +3630,12 @@ interface NumberValue : StyleValue
     getter value
     method constructor
     setter value
+interface OffScreenCanvas
+    getter height
+    getter width
+    method constructor
+    setter height
+    setter width
 interface OfflineAudioCompletionEvent : Event
     getter renderedBuffer
     method constructor
