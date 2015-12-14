@@ -14,7 +14,7 @@ import org.chromium.chrome.browser.util.NonThreadSafe;
 /**
  * This class provides a base class implementation and may be overridden on operating systems that
  * provide more useful APIs. All method calls from native code will happen on the thread where
- * thisobject is constructed, but calls from subclasses (specifically,
+ * this object is constructed, but calls from subclasses (specifically,
  * {@link #notifyExternalEstimateProviderAndroidUpdate()} can happen on other threads.
  */
 @JNINamespace("chrome::android")
@@ -32,14 +32,6 @@ public class ExternalEstimateProviderAndroid {
     private static ExternalEstimateProviderAndroid create(Context context, long nativePtr) {
         return ((ChromeApplication) context)
                 .createExternalEstimateProviderAndroid(nativePtr);
-    }
-
-    /**
-     * Temporary constructor.
-     * TODO(bauerb): Remove when the downstream subclass is updated.
-     */
-    protected ExternalEstimateProviderAndroid() {
-        this(0);
     }
 
     /**
@@ -118,7 +110,6 @@ public class ExternalEstimateProviderAndroid {
         }
     }
 
-    // TODO(bauerb): Make this private when the downstream subclass is updated.
-    protected native void nativeNotifyExternalEstimateProviderAndroidUpdate(
+    private native void nativeNotifyExternalEstimateProviderAndroidUpdate(
             long nativeExternalEstimateProviderAndroid);
 }
