@@ -46,6 +46,8 @@ struct DOMAIN_RELIABILITY_EXPORT DomainReliabilityBeacon {
   std::string resource;
   // Status string (e.g. "ok", "dns.nxdomain", "http.403").
   std::string status;
+  // Granular QUIC error string (e.g. "quic.peer_going_away").
+  std::string quic_error;
   // Net error code.  Encoded as a string in the final JSON.
   int chrome_error;
   // IP address of the server the request went to.

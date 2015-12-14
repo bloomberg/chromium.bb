@@ -634,6 +634,10 @@ enum QuicErrorCode {
   QUIC_LAST_ERROR = 77,
 };
 
+// Must be updated any time a QuicErrorCode is deprecated.
+const int kDeprecatedQuicErrorCount = 4;
+const int kActiveQuicErrorCount = QUIC_LAST_ERROR - kDeprecatedQuicErrorCount;
+
 struct NET_EXPORT_PRIVATE QuicPacketPublicHeader {
   QuicPacketPublicHeader();
   explicit QuicPacketPublicHeader(const QuicPacketPublicHeader& other);

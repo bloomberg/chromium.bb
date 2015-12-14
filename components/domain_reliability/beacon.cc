@@ -26,6 +26,8 @@ scoped_ptr<Value> DomainReliabilityBeacon::ToValue(
   GURL sanitized_url = SanitizeURLForReport(url, collector_url, path_prefixes);
   beacon_value->SetString("url", sanitized_url.spec());
   beacon_value->SetString("status", status);
+  if (!quic_error.empty())
+    beacon_value->SetString("quic_error", quic_error);
   if (chrome_error != net::OK) {
     DictionaryValue* failure_value = new DictionaryValue();
     failure_value->SetString("custom_error",

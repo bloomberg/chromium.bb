@@ -316,6 +316,8 @@ void DomainReliabilityMonitor::OnRequestLegComplete(
   beacon_template.protocol =
       GetDomainReliabilityProtocol(request.response_info.connection_info,
                                    request.response_info.ssl_info.is_valid());
+  GetDomainReliabilityBeaconQuicError(request.details.quic_connection_error,
+                                      &beacon_template.quic_error);
   beacon_template.http_response_code = response_code;
   beacon_template.start_time = request.load_timing_info.request_start;
   beacon_template.elapsed = time_->NowTicks() - beacon_template.start_time;

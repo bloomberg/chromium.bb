@@ -28,10 +28,14 @@ using base::Value;
 
 typedef std::vector<const DomainReliabilityBeacon*> BeaconVector;
 
-scoped_ptr<DomainReliabilityBeacon> MakeBeacon(MockableTime* time) {
+scoped_ptr<DomainReliabilityBeacon> MakeCustomizedBeacon(
+    MockableTime* time,
+    std::string status,
+    std::string quic_error) {
   scoped_ptr<DomainReliabilityBeacon> beacon(new DomainReliabilityBeacon());
   beacon->url = GURL("https://localhost/");
-  beacon->status = "tcp.connection_reset";
+  beacon->status = status;
+  beacon->quic_error = quic_error;
   beacon->chrome_error = net::ERR_CONNECTION_RESET;
   beacon->server_ip = "127.0.0.1";
   beacon->was_proxied = false;
@@ -45,6 +49,10 @@ scoped_ptr<DomainReliabilityBeacon> MakeBeacon(MockableTime* time) {
   return beacon.Pass();
 }
 
+scoped_ptr<DomainReliabilityBeacon> MakeBeacon(MockableTime* time) {
+  return MakeCustomizedBeacon(time, "tcp.connection_reset", "");
+}
+
 template <typename ValueType,
           bool (DictionaryValue::* GetValueType)(const std::string&,
                                                  ValueType*) const>
@@ -54,7 +62,6 @@ struct HasValue {
                   ValueType expected_value) {
     ValueType actual_value;
     bool got_value = (dict.*GetValueType)(key, &actual_value);
-    EXPECT_TRUE(got_value);
     if (got_value)
       EXPECT_EQ(expected_value, actual_value);
     return got_value && (expected_value == actual_value);
@@ -305,6 +312,98 @@ TEST_F(DomainReliabilityContextTest, NetworkChanged) {
   const DictionaryValue* entry;
   ASSERT_TRUE(GetEntryFromReport(value.get(), 0, &entry));
   EXPECT_TRUE(HasBooleanValue(*entry, "network_changed", true));
+
+  DomainReliabilityUploader::UploadResult result;
+  result.status = DomainReliabilityUploader::UploadResult::SUCCESS;
+  CallUploadCallback(result);
+
+  EXPECT_TRUE(CheckNoBeacons());
+}
+
+// Always expecting granular QUIC errors if status is quic.protocol error.
+TEST_F(DomainReliabilityContextTest,
+       ReportUploadWithQuicProtocolErrorAndQuicError) {
+  InitContext(MakeTestConfig());
+  context_->OnBeacon(MakeCustomizedBeacon(&time_, "quic.protocol",
+                                          "quic.invalid.stream_data"));
+
+  BeaconVector beacons;
+  context_->GetQueuedBeaconsForTesting(&beacons);
+  EXPECT_EQ(1u, beacons.size());
+
+  time_.Advance(max_delay());
+  EXPECT_TRUE(upload_pending());
+  EXPECT_EQ(0, upload_max_depth());
+  EXPECT_EQ(GURL("https://exampleuploader/upload"), upload_url());
+
+  scoped_ptr<Value> value = base::JSONReader::Read(upload_report());
+  const DictionaryValue* entry;
+  ASSERT_TRUE(GetEntryFromReport(value.get(), 0, &entry));
+
+  EXPECT_TRUE(HasBooleanValue(*entry, "quic_broken", true));
+  EXPECT_TRUE(HasStringValue(*entry, "status", "quic.protocol"));
+  EXPECT_TRUE(HasStringValue(*entry, "quic_error", "quic.invalid.stream_data"));
+
+  DomainReliabilityUploader::UploadResult result;
+  result.status = DomainReliabilityUploader::UploadResult::SUCCESS;
+  CallUploadCallback(result);
+
+  EXPECT_TRUE(CheckNoBeacons());
+}
+
+// If status is not quic.protocol, expect no granular QUIC error to be reported.
+TEST_F(DomainReliabilityContextTest,
+       ReportUploadWithNonQuicProtocolErrorAndNoQuicError) {
+  InitContext(MakeTestConfig());
+  context_->OnBeacon(MakeBeacon(&time_));
+
+  BeaconVector beacons;
+  context_->GetQueuedBeaconsForTesting(&beacons);
+  EXPECT_EQ(1u, beacons.size());
+
+  time_.Advance(max_delay());
+  EXPECT_TRUE(upload_pending());
+  EXPECT_EQ(0, upload_max_depth());
+  EXPECT_EQ(GURL("https://exampleuploader/upload"), upload_url());
+
+  scoped_ptr<Value> value = base::JSONReader::Read(upload_report());
+  const DictionaryValue* entry;
+  ASSERT_TRUE(GetEntryFromReport(value.get(), 0, &entry));
+
+  EXPECT_TRUE(HasStringValue(*entry, "status", "tcp.connection_reset"));
+  EXPECT_FALSE(HasStringValue(*entry, "quic_error", ""));
+
+  DomainReliabilityUploader::UploadResult result;
+  result.status = DomainReliabilityUploader::UploadResult::SUCCESS;
+  CallUploadCallback(result);
+
+  EXPECT_TRUE(CheckNoBeacons());
+}
+
+// Edge cases that a non-QUIC protocol error with granular QUIC error reported,
+// probably indicating state machine in http_network_transaction is working
+// in a different way.
+TEST_F(DomainReliabilityContextTest,
+       ReportUploadWithNonQuicProtocolErrorAndQuicError) {
+  InitContext(MakeTestConfig());
+  context_->OnBeacon(MakeCustomizedBeacon(&time_, "tcp.connection_reset",
+                                          "quic.invalid.stream_data"));
+
+  BeaconVector beacons;
+  context_->GetQueuedBeaconsForTesting(&beacons);
+  EXPECT_EQ(1u, beacons.size());
+
+  time_.Advance(max_delay());
+  EXPECT_TRUE(upload_pending());
+  EXPECT_EQ(0, upload_max_depth());
+  EXPECT_EQ(GURL("https://exampleuploader/upload"), upload_url());
+
+  scoped_ptr<Value> value = base::JSONReader::Read(upload_report());
+  const DictionaryValue* entry;
+  ASSERT_TRUE(GetEntryFromReport(value.get(), 0, &entry));
+  EXPECT_TRUE(HasBooleanValue(*entry, "quic_broken", true));
+  EXPECT_TRUE(HasStringValue(*entry, "status", "tcp.connection_reset"));
+  EXPECT_TRUE(HasStringValue(*entry, "quic_error", "quic.invalid.stream_data"));
 
   DomainReliabilityUploader::UploadResult result;
   result.status = DomainReliabilityUploader::UploadResult::SUCCESS;
