@@ -4,8 +4,11 @@
 
 #include "chrome/browser/ui/views/frame/native_browser_frame_factory.h"
 
-#include "chrome/browser/ui/views/frame/browser_frame_ash.h"
 #include "chrome/browser/ui/views/frame/desktop_browser_frame_auralinux.h"
+
+#if defined(USE_ASH)
+#include "chrome/browser/ui/views/frame/browser_frame_ash.h"
+#endif
 
 #if defined(MOJO_SHELL_CLIENT)
 #include "chrome/browser/ui/views/frame/browser_frame_mus.h"
@@ -20,8 +23,10 @@ NativeBrowserFrame* NativeBrowserFrameFactory::Create(
     return new BrowserFrameMus(browser_frame, browser_view);
 #endif
 
+#if defined(USE_ASH)
   if (ShouldCreateForAshDesktop(browser_view))
     return new BrowserFrameAsh(browser_frame, browser_view);
+#endif
 
   return new DesktopBrowserFrameAuraLinux(browser_frame, browser_view);
 }

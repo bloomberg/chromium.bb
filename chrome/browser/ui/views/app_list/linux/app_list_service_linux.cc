@@ -13,7 +13,6 @@
 #include "chrome/browser/ui/app_list/app_list_controller_delegate_views.h"
 #include "chrome/browser/ui/app_list/app_list_shower_views.h"
 #include "chrome/browser/ui/app_list/app_list_view_delegate.h"
-#include "chrome/browser/ui/ash/app_list/app_list_service_ash.h"
 #include "chrome/browser/ui/views/app_list/linux/app_list_linux.h"
 #include "chrome/grit/chromium_strings.h"
 #include "content/public/browser/browser_thread.h"
@@ -21,6 +20,10 @@
 #include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if defined(USE_ASH)
+#include "chrome/browser/ui/ash/app_list/app_list_service_ash.h"
+#endif
 
 namespace {
 
@@ -87,8 +90,10 @@ void AppListServiceLinux::MoveNearCursor(app_list::AppListView* view) {
 
 // static
 AppListService* AppListService::Get(chrome::HostDesktopType desktop_type) {
+#if defined(USE_ASH)
   if (desktop_type == chrome::HOST_DESKTOP_TYPE_ASH)
     return AppListServiceAsh::GetInstance();
+#endif
 
   return AppListServiceLinux::GetInstance();
 }
@@ -96,6 +101,8 @@ AppListService* AppListService::Get(chrome::HostDesktopType desktop_type) {
 // static
 void AppListService::InitAll(Profile* initial_profile,
                              const base::FilePath& profile_path) {
+#if defined(USE_ASH)
   AppListServiceAsh::GetInstance()->Init(initial_profile);
+#endif
   AppListServiceLinux::GetInstance()->Init(initial_profile);
 }
