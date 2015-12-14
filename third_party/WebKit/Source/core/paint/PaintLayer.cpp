@@ -1655,7 +1655,7 @@ PaintLayer* PaintLayer::hitTestLayer(PaintLayer* rootLayer, PaintLayer* containe
     ASSERT(layoutObject()->document().lifecycle().state() >= DocumentLifecycle::CompositingClean);
 
     if (!isSelfPaintingLayer() && !hasSelfPaintingLayerDescendant())
-        return 0;
+        return nullptr;
 
     ClipRectsCacheSlot clipRectsCacheSlot = result.hitTestRequest().ignoreClipping() ? RootRelativeClipRectsIgnoringViewportClip : RootRelativeClipRects;
 
@@ -1669,10 +1669,18 @@ PaintLayer* PaintLayer::hitTestLayer(PaintLayer* rootLayer, PaintLayer* containe
             ClipRect clipRect = clipper().backgroundClipRect(ClipRectsContext(rootLayer, clipRectsCacheSlot, IncludeOverlayScrollbarSize));
             // Go ahead and test the enclosing clip now.
             if (!clipRect.intersects(hitTestLocation))
-                return 0;
+                return nullptr;
         }
 
         return hitTestLayerByApplyingTransform(rootLayer, containerLayer, result, hitTestRect, hitTestLocation, transformState, zOffset);
+    }
+
+    if (layoutObject()->hasClipPath()) {
+        ASSERT(layoutObject()->isBox() && isSelfPaintingLayer());
+        LayoutPoint offsetToRootLayer;
+        convertToLayerCoords(rootLayer, offsetToRootLayer);
+        if (toLayoutBox(layoutObject())->hitTestClippedOutByClipPath(hitTestLocation.point(), offsetToRootLayer))
+            return nullptr;
     }
 
     // Ensure our lists and 3d status are up-to-date.
@@ -1695,7 +1703,7 @@ PaintLayer* PaintLayer::hitTestLayer(PaintLayer* rootLayer, PaintLayer* containe
         TransformationMatrix invertedMatrix = localTransformState->m_accumulatedTransform.inverse();
         // If the z-vector of the matrix is negative, the back is facing towards the viewer.
         if (invertedMatrix.m33() < 0)
-            return 0;
+            return nullptr;
     }
 
     RefPtr<HitTestingTransformState> unflattenedTransformState = localTransformState;
@@ -1806,7 +1814,7 @@ PaintLayer* PaintLayer::hitTestLayer(PaintLayer* rootLayer, PaintLayer* containe
             result.append(tempResult);
     }
 
-    return 0;
+    return nullptr;
 }
 
 bool PaintLayer::hitTestContentsForFragments(const PaintLayerFragments& layerFragments, HitTestResult& result,

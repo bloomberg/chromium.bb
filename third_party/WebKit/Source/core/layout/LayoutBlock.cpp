@@ -60,7 +60,6 @@
 #include "core/layout/line/InlineIterator.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "core/layout/shapes/ShapeOutsideInfo.h"
-#include "core/layout/svg/LayoutSVGResourceClipper.h"
 #include "core/page/Page.h"
 #include "core/paint/BlockPainter.h"
 #include "core/paint/BoxPainter.h"
@@ -1632,6 +1631,8 @@ Node* LayoutBlock::nodeForHitTest() const
     return isAnonymousBlockContinuation() ? continuation()->node() : node();
 }
 
+// TODO(pdr): This is too similar to LayoutBox::nodeAtPoint and should share
+//            more code, or merge into LayoutBox::nodeAtPoint entirely.
 bool LayoutBlock::nodeAtPoint(HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction hitTestAction)
 {
     LayoutPoint adjustedLocation(accumulatedOffset + location());
@@ -1656,31 +1657,16 @@ bool LayoutBlock::nodeAtPoint(HitTestResult& result, const HitTestLocation& loca
             return true;
     }
 
-    if (style()->clipPath()) {
-        switch (style()->clipPath()->type()) {
-        case ClipPathOperation::SHAPE: {
-            ShapeClipPathOperation* clipPath = toShapeClipPathOperation(style()->clipPath());
-            // FIXME: handle marginBox etc.
-            if (!clipPath->path(FloatRect(borderBoxRect())).contains(FloatPoint(locationInContainer.point() - localOffset), clipPath->windRule()))
-                return false;
-            break;
-        }
-        case ClipPathOperation::REFERENCE:
-            ReferenceClipPathOperation* referenceClipPathOperation = toReferenceClipPathOperation(style()->clipPath());
-            Element* element = document().getElementById(referenceClipPathOperation->fragment());
-            if (isSVGClipPathElement(element) && element->layoutObject()) {
-                LayoutSVGResourceClipper* clipper = toLayoutSVGResourceClipper(toLayoutSVGResourceContainer(element->layoutObject()));
-                if (!clipper->hitTestClipContent(FloatRect(borderBoxRect()), FloatPoint(locationInContainer.point() - localOffset)))
-                    return false;
-            }
-            break;
-        }
-    }
+    // Clip path hit testing should already be handled by PaintLayer.
+    ASSERT(!hitTestClippedOutByClipPath(locationInContainer, adjustedLocation));
+
+    // TODO(pdr): We should also check for css clip in the !isSelfPaintingLayer
+    //            case, similar to overflow clip below.
 
     bool checkChildren = true;
 
-    // Self painting layers will handle overflow clip in most cases, but without one we need to
-    // check if overflip clip will affect child hit testing.
+    // TODO(pdr): We should also include checks for hit testing border radius at
+    //            the layer level (see: crbug.com/568904).
     if (hasOverflowClip() && !hasSelfPaintingLayer()) {
         if (style()->hasBorderRadius()) {
             LayoutRect borderRect = borderBoxRect();
@@ -1710,13 +1696,8 @@ bool LayoutBlock::nodeAtPoint(HitTestResult& result, const HitTestLocation& loca
             return true;
     }
 
-    // Check if the point is outside radii.
-    if (style()->hasBorderRadius()) {
-        LayoutRect borderRect = borderBoxRect();
-        borderRect.moveBy(adjustedLocation);
-        if (!locationInContainer.intersects(style()->getRoundedBorderFor(borderRect)))
-            return false;
-    }
+    if (hitTestClippedOutByRoundedBorder(locationInContainer, adjustedLocation))
+        return false;
 
     // Now hit test our background
     if (hitTestAction == HitTestBlockBackground || hitTestAction == HitTestChildBlockBackground) {

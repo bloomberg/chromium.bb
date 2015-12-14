@@ -54,6 +54,7 @@
 #include "core/layout/LayoutView.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/layout/shapes/ShapeOutsideInfo.h"
+#include "core/layout/svg/LayoutSVGResourceClipper.h"
 #include "core/page/AutoscrollController.h"
 #include "core/page/Page.h"
 #include "core/paint/BackgroundImageGeometry.h"
@@ -1173,9 +1174,14 @@ bool LayoutBox::nodeAtPoint(HitTestResult& result, const HitTestLocation& locati
     // Exit early if no children can be hit.
     LayoutRect overflowRect = visualOverflowRect();
     overflowRect.moveBy(adjustedLocation);
-    if (!locationInContainer.intersects(overflowRect)) {
+    if (!locationInContainer.intersects(overflowRect))
         return false;
-    }
+
+    // Clip path hit testing should already be handled by PaintLayer.
+    ASSERT(!hitTestClippedOutByClipPath(locationInContainer, adjustedLocation));
+
+    // TODO(pdr): We should also check for css clip in the !isSelfPaintingLayer
+    //            case, similar to overflow clip in LayoutBlock::nodeAtPoint.
 
     // Check kids first.
     for (LayoutObject* child = slowLastChild(); child; child = child->previousSibling()) {
@@ -1184,6 +1190,9 @@ bool LayoutBox::nodeAtPoint(HitTestResult& result, const HitTestLocation& locati
             return true;
         }
     }
+
+    if (hitTestClippedOutByRoundedBorder(locationInContainer, adjustedLocation))
+        return false;
 
     // Check our bounds next. For this purpose always assume that we can only be hit in the
     // foreground phase (which is true for replaced elements like images).
@@ -1196,6 +1205,40 @@ bool LayoutBox::nodeAtPoint(HitTestResult& result, const HitTestLocation& locati
     }
 
     return false;
+}
+
+bool LayoutBox::hitTestClippedOutByClipPath(const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset) const
+{
+    if (!style()->clipPath())
+        return false;
+
+    if (style()->clipPath()->type() == ClipPathOperation::SHAPE) {
+        ShapeClipPathOperation* clipPath = toShapeClipPathOperation(style()->clipPath());
+        // FIXME: handle marginBox etc.
+        if (!clipPath->path(FloatRect(borderBoxRect())).contains(FloatPoint(locationInContainer.point() - toLayoutSize(accumulatedOffset)), clipPath->windRule()))
+            return true;
+    } else {
+        ASSERT(style()->clipPath()->type() == ClipPathOperation::REFERENCE);
+        ReferenceClipPathOperation* referenceClipPathOperation = toReferenceClipPathOperation(style()->clipPath());
+        Element* element = document().getElementById(referenceClipPathOperation->fragment());
+        if (isSVGClipPathElement(element) && element->layoutObject()) {
+            LayoutSVGResourceClipper* clipper = toLayoutSVGResourceClipper(toLayoutSVGResourceContainer(element->layoutObject()));
+            if (!clipper->hitTestClipContent(FloatRect(borderBoxRect()), FloatPoint(locationInContainer.point() - toLayoutSize(accumulatedOffset))))
+                return true;
+        }
+    }
+
+    return false;
+}
+
+bool LayoutBox::hitTestClippedOutByRoundedBorder(const HitTestLocation& locationInContainer, const LayoutPoint& borderBoxLocation) const
+{
+    if (!style()->hasBorderRadius())
+        return false;
+
+    LayoutRect borderRect = borderBoxRect();
+    borderRect.moveBy(borderBoxLocation);
+    return !locationInContainer.intersects(style()->getRoundedBorderFor(borderRect));
 }
 
 void LayoutBox::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
