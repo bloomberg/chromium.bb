@@ -211,7 +211,7 @@ public:
     void scrollTo(double x, double y);
     virtual void scrollTo(const ScrollToOptions&);
 
-    IntRect boundsInViewport();
+    IntRect boundsInViewport() const;
 
     ClientRectList* getClientRects();
     ClientRect* getBoundingClientRect();

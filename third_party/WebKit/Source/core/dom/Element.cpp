@@ -1013,7 +1013,7 @@ bool Element::hasNonEmptyLayoutSize() const
     return false;
 }
 
-IntRect Element::boundsInViewport()
+IntRect Element::boundsInViewport() const
 {
     document().updateLayoutIgnorePendingStylesheets();
 
