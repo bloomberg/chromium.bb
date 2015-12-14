@@ -136,6 +136,9 @@ public:
 
     String valueWithDefault() const;
 
+    // This function dispatches 'input' event for non-textfield types. Callers
+    // need to handle any DOM structure changes by event handlers, or need to
+    // delay the 'input' event with EventQueueScope.
     void setValueFromRenderer(const String&);
 
     int selectionStartForBinding(ExceptionState&) const;

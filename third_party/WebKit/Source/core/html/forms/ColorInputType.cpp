@@ -206,6 +206,7 @@ void ColorInputType::didChooseColor(const Color& color)
 {
     if (element().isDisabledFormControl() || color == valueAsColor())
         return;
+    EventQueueScope scope;
     element().setValueFromRenderer(color.serialized());
     element().updateView();
     if (!LayoutTheme::theme().isModalColorChooser())
