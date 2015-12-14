@@ -349,12 +349,13 @@ void NativeWidgetMac::Close() {
   // Clear the view early to suppress repaints.
   bridge_->SetRootView(NULL);
 
-  // Calling performClose: will momentarily highlight the close button, but
-  // AppKit will reject it if there is no close button.
-  SEL close_selector = ([window styleMask] & NSClosableWindowMask)
-                           ? @selector(performClose:)
-                           : @selector(close);
-  [window performSelector:close_selector withObject:nil afterDelay:0];
+  // Widget::Close() ensures [Non]ClientView::CanClose() returns true, so there
+  // is no need to call the NSWindow or its delegate's -windowShouldClose:
+  // implementation in the manner of -[NSWindow performClose:]. But,
+  // like -performClose:, first remove the window from AppKit's display
+  // list to avoid crashes like http://crbug.com/156101.
+  [window orderOut:nil];
+  [window performSelector:@selector(close) withObject:nil afterDelay:0];
 }
 
 void NativeWidgetMac::CloseNow() {
