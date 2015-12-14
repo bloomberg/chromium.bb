@@ -32,13 +32,17 @@
 #define Task_h
 
 #include "public/platform/WebTaskRunner.h"
+#include "wtf/Allocator.h"
 #include "wtf/Functional.h"
+#include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
 class Task : public WebTaskRunner::Task {
+    USING_FAST_MALLOC(Task);
+    WTF_MAKE_NONCOPYABLE(Task);
 public:
     explicit Task(PassOwnPtr<Closure> closure)
         : m_closure(closure)

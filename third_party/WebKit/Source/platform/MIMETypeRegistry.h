@@ -27,6 +27,7 @@
 #define MIMETypeRegistry_h
 
 #include "platform/PlatformExport.h"
+#include "wtf/Allocator.h"
 #include "wtf/HashSet.h"
 #include "wtf/text/StringHash.h"
 #include "wtf/text/WTFString.h"
@@ -34,6 +35,7 @@
 namespace blink {
 
 class PLATFORM_EXPORT MIMETypeRegistry {
+    STATIC_ONLY(MIMETypeRegistry);
 public:
     static String getMIMETypeForExtension(const String& extension);
     static String getWellKnownMIMETypeForExtension(const String& extension);

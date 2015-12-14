@@ -33,7 +33,9 @@
 #include "platform/fonts/FontDescription.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/Color.h"
+#include "wtf/Allocator.h"
 #include "wtf/Forward.h"
+#include "wtf/Noncopyable.h"
 
 namespace blink {
 
@@ -42,6 +44,8 @@ class ScrollableArea;
 
 // Unlike other platform classes, Theme does extensively use virtual functions.  This design allows a platform to switch between multiple themes at runtime.
 class PLATFORM_EXPORT Theme {
+    USING_FAST_MALLOC(Theme);
+    WTF_MAKE_NONCOPYABLE(Theme);
 public:
     Theme() { }
     virtual ~Theme() { }

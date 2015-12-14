@@ -30,6 +30,7 @@
 #define TaskSynchronizer_h
 
 #include "platform/PlatformExport.h"
+#include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/Threading.h"
 #include "wtf/ThreadingPrimitives.h"
@@ -38,6 +39,7 @@ namespace blink {
 
 // TaskSynchronizer can be used to wait for task completion.
 class PLATFORM_EXPORT TaskSynchronizer {
+    DISALLOW_NEW();
     WTF_MAKE_NONCOPYABLE(TaskSynchronizer);
 public:
     TaskSynchronizer();

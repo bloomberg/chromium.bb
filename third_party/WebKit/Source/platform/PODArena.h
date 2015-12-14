@@ -26,7 +26,7 @@
 #ifndef PODArena_h
 #define PODArena_h
 
-#include <stdint.h>
+#include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
@@ -34,6 +34,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
+#include <stdint.h>
 
 namespace blink {
 
@@ -147,6 +148,7 @@ protected:
 
     // Manages a chunk of memory and individual allocations out of it.
     class Chunk final {
+        USING_FAST_MALLOC(Chunk);
         WTF_MAKE_NONCOPYABLE(Chunk);
     public:
         // Allocates a block of memory of the given size from the passed
@@ -193,6 +195,10 @@ protected:
     Chunk* m_current;
     size_t m_currentChunkSize;
     Vector<OwnPtr<Chunk>> m_chunks;
+
+#if COMPILER(MSVC)
+    friend struct ::WTF::OwnedPtrDeleter<Chunk>;
+#endif
 };
 
 } // namespace blink

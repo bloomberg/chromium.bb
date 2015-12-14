@@ -27,6 +27,7 @@
 #define PODFreeListArena_h
 
 #include "platform/PODArena.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
@@ -115,6 +116,7 @@ private:
     // far. None of the individual chunks can be freed until the arena is
     // destroyed.
     struct FixedSizeMemoryChunk {
+        DISALLOW_NEW();
         FixedSizeMemoryChunk* next;
     };
     FixedSizeMemoryChunk* m_freeList;

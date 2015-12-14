@@ -33,8 +33,10 @@
 #include "platform/EventTracer.h"
 #include "platform/TraceEventCommon.h"
 
+#include "wtf/Allocator.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/DynamicAnnotations.h"
+#include "wtf/Noncopyable.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/CString.h"
 
@@ -257,9 +259,12 @@ const unsigned long long noBindId = 0;
 // TraceID encapsulates an ID that can either be an integer or pointer. Pointers
 // are mangled with the Process ID so that they are unlikely to collide when the
 // same pointer is used on different processes.
-class TraceID {
+class TraceID final {
+    STACK_ALLOCATED();
+    WTF_MAKE_NONCOPYABLE(TraceID);
 public:
-    template<bool dummyMangle> class MangleBehavior {
+    template<bool dummyMangle> class MangleBehavior final {
+        STACK_ALLOCATED();
     public:
         template<typename T> explicit MangleBehavior(T id) : m_data(reinterpret_cast<unsigned long long>(id)) { }
         unsigned long long data() const { return m_data; }
@@ -313,6 +318,7 @@ union TraceValueUnion {
 
 // Simple container for const char* that should be copied instead of retained.
 class TraceStringWithCopy {
+    STACK_ALLOCATED();
 public:
     explicit TraceStringWithCopy(const char* str) : m_str(str) { }
     const char* str() const { return m_str; }
@@ -528,7 +534,9 @@ static inline TraceEventHandle addTraceEvent(
 }
 
 // Used by TRACE_EVENTx macro. Do not use directly.
-class ScopedTracer {
+class ScopedTracer final {
+    STACK_ALLOCATED();
+    WTF_MAKE_NONCOPYABLE(ScopedTracer);
 public:
     // Note: members of m_data intentionally left uninitialized. See initialize.
     ScopedTracer() : m_pdata(0) { }
@@ -553,6 +561,7 @@ private:
     // members of this class instead, compiler warnings occur about potential
     // uninitialized accesses.
     struct Data {
+        DISALLOW_NEW();
         const unsigned char* categoryGroupEnabled;
         const char* name;
         TraceEventHandle eventHandle;
@@ -565,8 +574,9 @@ private:
 // and sets a new sampling state. When the scope exists, it restores
 // the sampling state having recorded.
 template<size_t BucketNumber>
-class SamplingStateScope {
-    USING_FAST_MALLOC(SamplingStateScope);
+class SamplingStateScope final {
+    STACK_ALLOCATED();
+    WTF_MAKE_NONCOPYABLE(SamplingStateScope);
 public:
     SamplingStateScope(const char* categoryAndName)
     {
@@ -594,6 +604,7 @@ private:
 };
 
 template<typename IDType> class TraceScopedTrackableObject {
+    STACK_ALLOCATED();
     WTF_MAKE_NONCOPYABLE(TraceScopedTrackableObject);
 public:
     TraceScopedTrackableObject(const char* categoryGroup, const char* name, IDType id)

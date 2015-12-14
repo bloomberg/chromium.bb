@@ -16,6 +16,7 @@ namespace blink {
 namespace {
 
 class IdleTaskRunner : public WebThread::IdleTask {
+    USING_FAST_MALLOC(IdleTaskRunner);
     WTF_MAKE_NONCOPYABLE(IdleTaskRunner);
 
 public:

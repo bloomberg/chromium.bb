@@ -33,11 +33,13 @@
 
 #include "platform/SharedBuffer.h"
 #include "platform/weborigin/KURL.h"
+#include "wtf/Allocator.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
 struct SerializedResource {
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     KURL url;
     String mimeType;
     RefPtr<SharedBuffer> data;

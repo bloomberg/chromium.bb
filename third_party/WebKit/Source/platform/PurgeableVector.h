@@ -46,6 +46,7 @@ class WebProcessMemoryDump;
 // means that N calls to lock() must be followed by N+1 calls to unlock() to
 // actually make the vector purgeable.
 class PLATFORM_EXPORT PurgeableVector {
+    DISALLOW_NEW();
     WTF_MAKE_NONCOPYABLE(PurgeableVector);
 public:
     enum PurgeableOption {

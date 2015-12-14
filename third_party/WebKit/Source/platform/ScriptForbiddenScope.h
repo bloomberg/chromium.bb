@@ -14,13 +14,16 @@ namespace blink {
 
 // Scoped disabling of script execution on the main thread,
 // and only to be used by the main thread.
-class PLATFORM_EXPORT ScriptForbiddenScope {
+class PLATFORM_EXPORT ScriptForbiddenScope final {
     STACK_ALLOCATED();
+    WTF_MAKE_NONCOPYABLE(ScriptForbiddenScope);
 public:
     ScriptForbiddenScope();
     ~ScriptForbiddenScope();
 
-    class PLATFORM_EXPORT AllowUserAgentScript {
+    class PLATFORM_EXPORT AllowUserAgentScript final {
+        STACK_ALLOCATED();
+        WTF_MAKE_NONCOPYABLE(AllowUserAgentScript);
     public:
         AllowUserAgentScript();
         ~AllowUserAgentScript();
@@ -40,8 +43,9 @@ public:
 // call sites that might be used by multiple threads to have
 // this scope object perform the is-main-thread check on
 // its behalf.
-class PLATFORM_EXPORT ScriptForbiddenIfMainThreadScope {
+class PLATFORM_EXPORT ScriptForbiddenIfMainThreadScope final {
     STACK_ALLOCATED();
+    WTF_MAKE_NONCOPYABLE(ScriptForbiddenIfMainThreadScope);
 public:
     ScriptForbiddenIfMainThreadScope();
     ~ScriptForbiddenIfMainThreadScope();

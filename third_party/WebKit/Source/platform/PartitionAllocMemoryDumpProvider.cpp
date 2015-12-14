@@ -28,6 +28,8 @@ String getPartitionDumpName(const char* partitionName)
 // PartitionAllocMemoryDumpProvider. This implements an interface that will
 // be called with memory statistics for each bucket in the allocator.
 class PartitionStatsDumperImpl final : public PartitionStatsDumper {
+    DISALLOW_NEW();
+    WTF_MAKE_NONCOPYABLE(PartitionStatsDumperImpl);
 public:
     PartitionStatsDumperImpl(WebProcessMemoryDump* memoryDump, WebMemoryDumpLevelOfDetail levelOfDetail)
         : m_memoryDump(memoryDump)

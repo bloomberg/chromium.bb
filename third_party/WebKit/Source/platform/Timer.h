@@ -31,6 +31,7 @@
 #include "public/platform/WebTaskRunner.h"
 #include "public/platform/WebTraceLocation.h"
 #include "wtf/AddressSanitizer.h"
+#include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/Threading.h"
 #include "wtf/Vector.h"

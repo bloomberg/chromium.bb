@@ -32,6 +32,8 @@
 #define SharedBufferChunkReader_h
 
 #include "platform/PlatformExport.h"
+#include "wtf/Allocator.h"
+#include "wtf/Noncopyable.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
@@ -39,7 +41,9 @@ namespace blink {
 
 class SharedBuffer;
 
-class PLATFORM_EXPORT SharedBufferChunkReader {
+class PLATFORM_EXPORT SharedBufferChunkReader final {
+    DISALLOW_NEW();
+    WTF_MAKE_NONCOPYABLE(SharedBufferChunkReader);
 public:
     SharedBufferChunkReader(SharedBuffer*, const Vector<char>& separator);
     SharedBufferChunkReader(SharedBuffer*, const char* separator);

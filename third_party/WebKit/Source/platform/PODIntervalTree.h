@@ -42,6 +42,7 @@ struct ValueToString;
 
 template <class T, class UserData = void*>
 class PODIntervalSearchAdapter {
+    DISALLOW_NEW();
 public:
     typedef PODInterval<T, UserData> IntervalType;
 

@@ -27,6 +27,7 @@
 #define LinkHash_h
 
 #include "platform/PlatformExport.h"
+#include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 #include "wtf/text/StringHash.h"
 
@@ -38,6 +39,7 @@ typedef uint64_t LinkHash;
 
 // Use the low 32-bits of the 64-bit LinkHash as the key for HashSets.
 struct LinkHashHash {
+    STATIC_ONLY(LinkHashHash);
     static unsigned hash(LinkHash key) { return static_cast<unsigned>(key); }
     static bool equal(LinkHash a, LinkHash b) { return a == b; }
     static const bool safeToCompareToEmptyOrDeleted = true;
