@@ -169,6 +169,11 @@ class CppFunctionsTest(unittest.TestCase):
         single_line_view = cpp_style.SingleLineView(['abcdef'], start_position, end_position)
         self.assertEqual(single_line_view.single_line, 'd')
 
+        start_position = cpp_style.Position(row=0, column=0)
+        end_position = cpp_style.Position(row=3, column=2)
+        single_line_view = cpp_style.SingleLineView(['""', '""', '""'], start_position, end_position)
+        self.assertEqual(single_line_view.single_line, '""')
+
     def test_create_skeleton_parameters(self):
         self.assertEqual(cpp_style.create_skeleton_parameters(''), '')
         self.assertEqual(cpp_style.create_skeleton_parameters(' '), ' ')
@@ -2657,6 +2662,7 @@ class CleansedLinesTest(unittest.TestCase):
                           collapse('StringReplace(body, "\\\\", "\\\\\\\\");'))
         self.assertEqual('\'\' ""',
                           collapse('\'"\' "foo"'))
+        self.assertEqual('""', collapse('"a" "b" "c"'))
 
 
 class OrderOfIncludesTest(CppStyleTestBase):

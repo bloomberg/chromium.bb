@@ -426,6 +426,7 @@ class SingleLineView(object):
 
         # Create a single line with all of the parameters.
         self.single_line = ' '.join(trimmed_lines)
+        self.single_line = _RE_PATTERN_CLEANSE_MULTIPLE_STRINGS.sub('""', self.single_line)
 
         # Keep the row lengths, so we can calculate the original row number
         # given a column in the single line (adding 1 due to the space added
@@ -713,6 +714,9 @@ _RE_PATTERN_CLEANSE_LINE_ESCAPES = re.compile(
 _RE_PATTERN_CLEANSE_LINE_DOUBLE_QUOTES = re.compile(r'"[^"]*"')
 # Matches characters.  Escape codes should already be removed by ESCAPES.
 _RE_PATTERN_CLEANSE_LINE_SINGLE_QUOTES = re.compile(r"'.'")
+# Matches multiple strings (after the above cleanses) which can be concatenated.
+_RE_PATTERN_CLEANSE_MULTIPLE_STRINGS = re.compile(r'"("\s*")+"')
+
 # Matches multi-line C++ comments.
 # This RE is a little bit more complicated than one might expect, because we
 # have to take care of space removals tools so we can handle comments inside
@@ -847,6 +851,7 @@ class CleansedLines(object):
             elided = _RE_PATTERN_CLEANSE_LINE_ESCAPES.sub('', elided)
             elided = _RE_PATTERN_CLEANSE_LINE_SINGLE_QUOTES.sub("''", elided)
             elided = _RE_PATTERN_CLEANSE_LINE_DOUBLE_QUOTES.sub('""', elided)
+            elided = _RE_PATTERN_CLEANSE_MULTIPLE_STRINGS.sub('""', elided)
         return elided
 
 
