@@ -77,3 +77,8 @@ Current patches:
     Fixes the conditionals on Linux so that these symbols are hidden and
     adds the Chromium-specific private_extern extension for hiding these
     symbols on OSX.
+
+  Revert 'sidx' processing for .mov containers.
+    Reverts commit 4ab56667594842283dc5ae07f0daba2a2cb4d3af.
+    'sidx' box processing is broken for MOV containers. http://crbug.com/568336.
+    Reported: http://ffmpeg.org/pipermail/ffmpeg-devel/2015-December/185040.html
