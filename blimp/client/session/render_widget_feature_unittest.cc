@@ -17,6 +17,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
+using testing::InSequence;
+using testing::Sequence;
 
 namespace blimp {
 
@@ -96,37 +98,31 @@ class RenderWidgetFeatureTest : public testing::Test {
 
 TEST_F(RenderWidgetFeatureTest, DelegateCallsOK) {
   EXPECT_CALL(delegate1_, MockableOnRenderWidgetInitialized()).Times(1);
-  SendRenderWidgetMessage(&feature_, 1, 1U);
-
-  EXPECT_CALL(delegate1_, MockableOnCompositorMessageReceived(_)).Times(1);
-  SendCompositorMessage(&feature_, 1, 1U);
-
+  EXPECT_CALL(delegate1_, MockableOnCompositorMessageReceived(_)).Times(2);
   EXPECT_CALL(delegate2_, MockableOnRenderWidgetInitialized()).Times(1);
-  SendRenderWidgetMessage(&feature_, 2, 2U);
+  EXPECT_CALL(delegate2_, MockableOnCompositorMessageReceived(_)).Times(0);
 
-  EXPECT_CALL(delegate2_, MockableOnCompositorMessageReceived(_)).Times(1);
-  SendCompositorMessage(&feature_, 2, 2U);
+  SendRenderWidgetMessage(&feature_, 1, 1U);
+  SendCompositorMessage(&feature_, 1, 1U);
+  SendCompositorMessage(&feature_, 1, 1U);
+  SendRenderWidgetMessage(&feature_, 2, 2U);
 }
 
 TEST_F(RenderWidgetFeatureTest, RepliesHaveCorrectRenderWidgetId) {
+  InSequence sequence;
+
+  EXPECT_CALL(*out_compositor_processor_,
+              MockableProcessMessage(CompMsgEquals(1, 2U), _));
+  EXPECT_CALL(*out_compositor_processor_,
+              MockableProcessMessage(CompMsgEquals(1, 3U), _));
+  EXPECT_CALL(*out_compositor_processor_,
+              MockableProcessMessage(CompMsgEquals(2, 1U), _));
+
   SendRenderWidgetMessage(&feature_, 1, 2U);
-  SendRenderWidgetMessage(&feature_, 2, 1U);
-
-  EXPECT_CALL(*out_compositor_processor_,
-              MockableProcessMessage(CompMsgEquals(1, 2U), _))
-      .Times(1);
   feature_.SendCompositorMessage(1, cc::proto::CompositorMessage());
-
   SendRenderWidgetMessage(&feature_, 1, 3U);
-
-  EXPECT_CALL(*out_compositor_processor_,
-              MockableProcessMessage(CompMsgEquals(1, 3U), _))
-      .Times(1);
   feature_.SendCompositorMessage(1, cc::proto::CompositorMessage());
-
-  EXPECT_CALL(*out_compositor_processor_,
-              MockableProcessMessage(CompMsgEquals(2, 1U), _))
-      .Times(1);
+  SendRenderWidgetMessage(&feature_, 2, 1U);
   feature_.SendCompositorMessage(2, cc::proto::CompositorMessage());
 }
 

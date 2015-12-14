@@ -19,10 +19,8 @@
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 
 using testing::_;
-using testing::InvokeArgument;
-using testing::Ref;
-using testing::Return;
-using testing::SaveArg;
+using testing::InSequence;
+using testing::Sequence;
 
 namespace blimp {
 
@@ -110,9 +108,6 @@ class EngineRenderWidgetMessageProcessorTest : public testing::Test {
   void SetUp() override {
     processor_.SetDelegate(1, &delegate1_);
     processor_.SetDelegate(2, &delegate2_);
-
-    processor_.OnRenderWidgetInitialized(1);
-    processor_.OnRenderWidgetInitialized(2);
   }
 
  protected:
@@ -125,63 +120,77 @@ class EngineRenderWidgetMessageProcessorTest : public testing::Test {
 TEST_F(EngineRenderWidgetMessageProcessorTest, DelegateCallsOK) {
   std::vector<uint8_t> payload = { 'd', 'a', 'v', 'i', 'd' };
 
-  EXPECT_CALL(delegate1_, MockableOnCompositorMessageReceived(
-      CompMsgEquals(payload))).Times(1);
-  SendCompositorMessage(&processor_, 1, 1U, payload);
-
+  EXPECT_CALL(out_processor_, MockableProcessMessage(_, _)).Times(2);
+  EXPECT_CALL(delegate1_,
+              MockableOnCompositorMessageReceived(CompMsgEquals(payload)))
+      .Times(1);
   EXPECT_CALL(delegate1_, MockableOnWebInputEvent()).Times(1);
+  EXPECT_CALL(delegate2_,
+              MockableOnCompositorMessageReceived(CompMsgEquals(payload)))
+      .Times(1);
+  EXPECT_CALL(delegate2_, MockableOnWebInputEvent()).Times(0);
+
+  processor_.OnRenderWidgetInitialized(1);
+  processor_.OnRenderWidgetInitialized(2);
+  SendCompositorMessage(&processor_, 1, 1U, payload);
   SendInputMessage(&processor_, 1, 1U);
-
-  EXPECT_CALL(delegate2_, MockableOnCompositorMessageReceived(
-      CompMsgEquals(payload))).Times(1);
   SendCompositorMessage(&processor_, 2, 1U, payload);
-
-  EXPECT_CALL(delegate2_, MockableOnWebInputEvent()).Times(1);
-  SendInputMessage(&processor_, 2, 1U);
 }
 
 TEST_F(EngineRenderWidgetMessageProcessorTest, DropsStaleMessages) {
+  InSequence sequence;
   std::vector<uint8_t> payload = { 'f', 'u', 'n' };
-
-  EXPECT_CALL(delegate1_, MockableOnCompositorMessageReceived(
-      CompMsgEquals(payload))).Times(1);
-  SendCompositorMessage(&processor_, 1, 1U, payload);
+  std::vector<uint8_t> new_payload = {'n', 'o', ' ', 'f', 'u', 'n'};
 
   EXPECT_CALL(out_processor_,
-              MockableProcessMessage(BlimpRWMsgEquals(1, 2U), _)).Times(1);
+              MockableProcessMessage(BlimpRWMsgEquals(1, 1U), _));
+  EXPECT_CALL(delegate1_,
+              MockableOnCompositorMessageReceived(CompMsgEquals(payload)));
+  EXPECT_CALL(out_processor_,
+              MockableProcessMessage(BlimpRWMsgEquals(1, 2U), _));
+  EXPECT_CALL(delegate1_,
+              MockableOnCompositorMessageReceived(CompMsgEquals(new_payload)));
+  EXPECT_CALL(delegate1_, MockableOnWebInputEvent());
+
+  processor_.OnRenderWidgetInitialized(1);
+  SendCompositorMessage(&processor_, 1, 1U, payload);
   processor_.OnRenderWidgetInitialized(1);
 
-  EXPECT_CALL(delegate1_, MockableOnCompositorMessageReceived(
-      CompMsgEquals(payload))).Times(0);
-  payload[0] = 'a';
+  // These next three calls should be dropped.
   SendCompositorMessage(&processor_, 1, 1U, payload);
-
-  EXPECT_CALL(delegate1_, MockableOnWebInputEvent()).Times(0);
+  SendCompositorMessage(&processor_, 1, 1U, payload);
   SendInputMessage(&processor_, 1, 1U);
 
-  EXPECT_CALL(delegate1_, MockableOnCompositorMessageReceived(
-      CompMsgEquals(payload))).Times(1);
-  SendCompositorMessage(&processor_, 1, 2U, payload);
-
-  EXPECT_CALL(delegate1_, MockableOnWebInputEvent()).Times(1);
+  SendCompositorMessage(&processor_, 1, 2U, new_payload);
   SendInputMessage(&processor_, 1, 2U);
 }
 
 TEST_F(EngineRenderWidgetMessageProcessorTest,
        RepliesHaveCorrectRenderWidgetId) {
+  Sequence delegate1_sequence;
+  Sequence delegate2_sequence;
   std::vector<uint8_t> payload = { 'a', 'b', 'c', 'd' };
 
   EXPECT_CALL(out_processor_,
-              MockableProcessMessage(BlimpRWMsgEquals(1, 2U), _)).Times(1);
-  processor_.OnRenderWidgetInitialized(1);
-
+              MockableProcessMessage(BlimpRWMsgEquals(1, 1U), _))
+      .InSequence(delegate1_sequence);
   EXPECT_CALL(out_processor_,
-              MockableProcessMessage(BlimpRWMsgEquals(2, 2U), _)).Times(1);
+              MockableProcessMessage(BlimpRWMsgEquals(1, 2U), _))
+      .InSequence(delegate1_sequence);
+  EXPECT_CALL(out_processor_,
+              MockableProcessMessage(BlimpCompMsgEquals(1, 2U, payload), _))
+      .InSequence(delegate1_sequence);
+  EXPECT_CALL(out_processor_,
+              MockableProcessMessage(BlimpRWMsgEquals(2, 1U), _))
+      .InSequence(delegate2_sequence);
+  EXPECT_CALL(out_processor_,
+              MockableProcessMessage(BlimpRWMsgEquals(2, 2U), _))
+      .InSequence(delegate2_sequence);
+
+  processor_.OnRenderWidgetInitialized(1);
   processor_.OnRenderWidgetInitialized(2);
-
-  EXPECT_CALL(out_processor_, MockableProcessMessage(
-      BlimpCompMsgEquals(1, 2U, payload), _)).Times(1);
-
+  processor_.OnRenderWidgetInitialized(1);
+  processor_.OnRenderWidgetInitialized(2);
   processor_.SendCompositorMessage(1, payload);
 }
 

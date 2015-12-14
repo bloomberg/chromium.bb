@@ -41,6 +41,9 @@ class Toolbar : public NavigationFeature::NavigationFeatureDelegate {
  private:
   virtual ~Toolbar();
 
+  // A bridge to the network layer which does the work of (de)serializing the
+  // outgoing and incoming navigation messages from the engine. Toolbar does not
+  // own this and it is expected to outlive this Toolbar instance.
   NavigationFeature* navigation_feature_;
 
   // Reference to the Java object which owns this class.

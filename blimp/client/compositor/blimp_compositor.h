@@ -81,8 +81,7 @@ class BLIMP_CLIENT_EXPORT BlimpCompositor
   // |dp_to_px| is the scale factor required to move from dp (device pixels) to
   // px.  See https://developer.android.com/guide/practices/screens_support.html
   // for more details.
-  explicit BlimpCompositor(float dp_to_px,
-                           RenderWidgetFeature* render_widget_feature);
+  BlimpCompositor(float dp_to_px, RenderWidgetFeature* render_widget_feature);
 
   // Populates the cc::LayerTreeSettings used by the cc::LayerTreeHost.  Can be
   // overridden to provide custom settings parameters.
@@ -162,6 +161,8 @@ class BLIMP_CLIENT_EXPORT BlimpCompositor
   cc::RemoteProtoChannel::ProtoReceiver* remote_proto_channel_receiver_;
 
   // The bridge to the network layer that does the proto/RenderWidget id work.
+  // BlimpCompositor does not own this and it is expected to outlive this
+  // BlimpCompositor instance.
   // TODO(dtrainor): Move this to a higher level once we start dealing with
   // multiple tabs.
   RenderWidgetFeature* render_widget_feature_;
