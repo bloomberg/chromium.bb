@@ -1298,3 +1298,9 @@ crbug.com/568778 [ XP ] tables/mozilla_expected_failures/bugs/bug85016.html [ Fa
 
 crbug.com/568867 [ Win7 Debug ] transforms/3d/point-mapping/3d-point-mapping-deep.html [ Failure ]
 crbug.com/568867 [ Win7 Debug ] transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ Failure ]
+
+crbug.com/569514 inspector/sources/debugger-step/debugger-step-into-document-write.html [ NeedsManualRebaseline ]
+crbug.com/569514 inspector/sources/debugger-step/debugger-step-into-inlined-scripts.html [ NeedsManualRebaseline ]
+crbug.com/569514 inspector/sources/debugger-step/debugger-step-over-document-write.html [ NeedsManualRebaseline ]
+crbug.com/569514 inspector/sources/debugger-step/debugger-step-over-inlined-scripts.html [ NeedsManualRebaseline ]
+crbug.com/569514 inspector/sources/debugger/debugger-scripts.html [ NeedsManualRebaseline ]
