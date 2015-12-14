@@ -26,13 +26,13 @@ namespace {
 #endif
 
 const std::vector<const char*> kNotNumericMonthsContentsNoPlaceholder = {
-    "Jan", "Fev", "Mar", "Apr", "May", "Jun",
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 
 const std::vector<const char*> kNotNumericMonthsContentsWithPlaceholder = {
     "Select a Month",
     "Jan",
-    "Fev",
+    "Feb",
     "Mar",
     "Apr",
     "May",
