@@ -308,6 +308,11 @@ void AutofillManager::StartUploadProcess(
     scoped_ptr<FormStructure> form_structure,
     const TimeTicks& timestamp,
     bool observed_submission) {
+  // It is possible for |personal_data_| to be null, such as when used in the
+  // Android webview.
+  if (!personal_data_)
+    return;
+
   // Only upload server statistics and UMA metrics if at least some local data
   // is available to use as a baseline.
   const std::vector<AutofillProfile*>& profiles = personal_data_->GetProfiles();
