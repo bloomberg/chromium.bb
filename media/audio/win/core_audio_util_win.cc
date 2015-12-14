@@ -146,6 +146,10 @@ static std::string GetDeviceID(IMMDevice* device) {
   return device_id;
 }
 
+static bool IsDefaultDeviceId(const std::string& device_id) {
+  return device_id.empty() || device_id == AudioManagerBase::kDefaultDeviceId;
+}
+
 static bool IsDeviceActive(IMMDevice* device) {
   DWORD state = DEVICE_STATE_DISABLED;
   return SUCCEEDED(device->GetState(&state)) && (state & DEVICE_STATE_ACTIVE);
@@ -438,8 +442,7 @@ std::string CoreAudioUtil::GetMatchingOutputDeviceID(
     return AudioManagerBase::kCommunicationsDeviceId;
 
   ScopedComPtr<IMMDevice> input_device;
-  if (input_device_id.empty() ||
-      input_device_id == AudioManagerBase::kDefaultDeviceId) {
+  if (IsDefaultDeviceId(input_device_id)) {
     input_device = CreateDefaultDevice(eCapture, eConsole);
   } else {
     input_device = CreateDevice(input_device_id);
@@ -547,7 +550,7 @@ ScopedComPtr<IAudioClient> CoreAudioUtil::CreateDefaultClient(
 
 ScopedComPtr<IAudioClient> CoreAudioUtil::CreateClient(
     const std::string& device_id, EDataFlow data_flow, ERole role) {
-  if (device_id.empty())
+  if (IsDefaultDeviceId(device_id))
     return CreateDefaultClient(data_flow, role);
 
   ScopedComPtr<IMMDevice> device(CreateDevice(device_id));
