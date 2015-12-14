@@ -83,6 +83,10 @@ def main(argv):
       print 'run_tool failed:\n%s' % stdout
       sys.exit(1)
 
+    args = ['git', 'cl', 'format']
+    args.extend(actual_files)
+    subprocess.check_call(args)
+
     passed = 0
     failed = 0
     for expected, actual in zip(expected_files, actual_files):

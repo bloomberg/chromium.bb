@@ -8,8 +8,8 @@
 // should be run using the tools/clang/scripts/run_tool.py helper.
 
 #include <memory>
-#include "clang/ASTMatchers/ASTMatchers.h"
 #include "clang/ASTMatchers/ASTMatchFinder.h"
+#include "clang/ASTMatchers/ASTMatchers.h"
 #include "clang/Basic/SourceManager.h"
 #include "clang/Frontend/FrontendActions.h"
 #include "clang/Tooling/CommonOptionsParser.h"
@@ -17,24 +17,7 @@
 #include "clang/Tooling/Tooling.h"
 #include "llvm/Support/CommandLine.h"
 
-using clang::ast_matchers::MatchFinder;
-using clang::ast_matchers::argumentCountIs;
-using clang::ast_matchers::bindTemporaryExpr;
-using clang::ast_matchers::constructorDecl;
-using clang::ast_matchers::constructExpr;
-using clang::ast_matchers::defaultArgExpr;
-using clang::ast_matchers::expr;
-using clang::ast_matchers::forEach;
-using clang::ast_matchers::has;
-using clang::ast_matchers::hasArgument;
-using clang::ast_matchers::hasDeclaration;
-using clang::ast_matchers::hasName;
-using clang::ast_matchers::id;
-using clang::ast_matchers::methodDecl;
-using clang::ast_matchers::newExpr;
-using clang::ast_matchers::ofClass;
-using clang::ast_matchers::stringLiteral;
-using clang::ast_matchers::varDecl;
+using namespace clang::ast_matchers;
 using clang::tooling::CommonOptionsParser;
 using clang::tooling::Replacement;
 using clang::tooling::Replacements;
@@ -97,25 +80,24 @@ class EmptyStringConverter {
 };
 
 void EmptyStringConverter::SetupMatchers(MatchFinder* match_finder) {
-  const clang::ast_matchers::StatementMatcher& constructor_call =
-      id("call",
-         constructExpr(
-             hasDeclaration(methodDecl(ofClass(hasName("std::basic_string")))),
-             argumentCountIs(2),
-             hasArgument(0, id("literal", stringLiteral())),
-             hasArgument(1, defaultArgExpr())));
+  const clang::ast_matchers::StatementMatcher& constructor_call = id(
+      "call",
+      cxxConstructExpr(
+          hasDeclaration(cxxMethodDecl(ofClass(hasName("std::basic_string")))),
+          argumentCountIs(2), hasArgument(0, id("literal", stringLiteral())),
+          hasArgument(1, cxxDefaultArgExpr())));
 
   // Note that expr(has()) in the matcher is significant; the Clang AST wraps
   // calls to the std::string constructor with exprWithCleanups nodes. Without
   // the expr(has()) matcher, the first and last rules would not match anything!
   match_finder->addMatcher(varDecl(forEach(expr(has(constructor_call)))),
                            &constructor_callback_);
-  match_finder->addMatcher(newExpr(has(constructor_call)),
+  match_finder->addMatcher(cxxNewExpr(has(constructor_call)),
                            &constructor_callback_);
-  match_finder->addMatcher(bindTemporaryExpr(has(constructor_call)),
+  match_finder->addMatcher(cxxBindTemporaryExpr(has(constructor_call)),
                            &temporary_callback_);
   match_finder->addMatcher(
-      constructorDecl(forEach(expr(has(constructor_call)))),
+      cxxConstructorDecl(forEach(expr(has(constructor_call)))),
       &initializer_callback_);
 }
 
@@ -160,8 +142,7 @@ void TemporaryCallback::run(const MatchFinder::MatchResult& result) {
     replacements_->insert(Replacement(*result.SourceManager, literal, ""));
   } else {
     replacements_->insert(
-        Replacement(*result.SourceManager,
-                    call,
+        Replacement(*result.SourceManager, call,
                     literal->isWide() ? "std::wstring()" : "std::string()"));
   }
 }
@@ -196,8 +177,9 @@ int main(int argc, const char* argv[]) {
   // tools.
   llvm::outs() << "==== BEGIN EDITS ====\n";
   for (const auto& r : replacements) {
-    llvm::outs() << "r:::" << r.getFilePath() << ":::" << r.getOffset() << ":::"
-                 << r.getLength() << ":::" << r.getReplacementText() << "\n";
+    llvm::outs() << "r:::" << r.getFilePath() << ":::" << r.getOffset()
+                 << ":::" << r.getLength() << ":::" << r.getReplacementText()
+                 << "\n";
   }
   llvm::outs() << "==== END EDITS ====\n";
 
