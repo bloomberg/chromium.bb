@@ -303,6 +303,7 @@
     ],
     'invalidation_unittest_sources': [
       'invalidation/impl/fake_invalidator_unittest.cc',
+      'invalidation/impl/gcm_invalidation_bridge_unittest.cc',
       'invalidation/impl/gcm_network_channel_unittest.cc',
       'invalidation/impl/invalidation_logger_unittest.cc',
       'invalidation/impl/invalidation_notifier_unittest.cc',

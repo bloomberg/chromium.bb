@@ -1479,8 +1479,6 @@
       'browser/font_family_cache_unittest.cc',
       'browser/importer/firefox_profile_lock_unittest.cc',
       'browser/importer/profile_writer_unittest.cc',
-      # Android uses a different invalidator.
-      'browser/invalidation/gcm_invalidation_bridge_unittest.cc',
       'browser/media_galleries/fileapi/native_media_file_util_unittest.cc',
       'browser/media_galleries/gallery_watch_manager_unittest.cc',
       'browser/media_galleries/linux/mtp_device_object_enumerator_unittest.cc',

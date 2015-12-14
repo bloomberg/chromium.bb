@@ -2,23 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/invalidation/impl/gcm_invalidation_bridge.h"
+
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
-#include "chrome/browser/signin/account_fetcher_service_factory.h"
-#include "chrome/browser/signin/chrome_signin_client_factory.h"
-#include "chrome/browser/signin/fake_account_fetcher_service_builder.h"
-#include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/test_signin_client_builder.h"
-#include "chrome/test/base/testing_profile.h"
 #include "components/gcm_driver/fake_gcm_driver.h"
 #include "components/gcm_driver/gcm_driver.h"
-#include "components/invalidation/impl/gcm_invalidation_bridge.h"
-#include "components/signin/core/browser/fake_account_fetcher_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/gaia/fake_identity_provider.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "net/base/ip_endpoint.h"
@@ -57,22 +50,12 @@ class GCMInvalidationBridgeTest : public ::testing::Test {
   ~GCMInvalidationBridgeTest() override {}
 
   void SetUp() override {
-    TestingProfile::Builder builder;
-    builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),
-                              &BuildAutoIssuingFakeProfileOAuth2TokenService);
-    builder.AddTestingFactory(AccountFetcherServiceFactory::GetInstance(),
-                              FakeAccountFetcherServiceBuilder::BuildForTests);
-    builder.AddTestingFactory(ChromeSigninClientFactory::GetInstance(),
-                              signin::BuildTestSigninClient);
-    profile_ = builder.Build();
-
-    FakeProfileOAuth2TokenService* token_service =
-        (FakeProfileOAuth2TokenService*)
-        ProfileOAuth2TokenServiceFactory::GetForProfile(profile_.get());
-    token_service->UpdateCredentials("", "fake_refresh_token");
+    token_service_.reset(new FakeProfileOAuth2TokenService());
+    token_service_->set_auto_post_fetch_response_on_message_loop(true);
+    token_service_->UpdateCredentials("", "fake_refresh_token");
     gcm_driver_.reset(new CustomFakeGCMDriver());
 
-    identity_provider_.reset(new FakeIdentityProvider(token_service));
+    identity_provider_.reset(new FakeIdentityProvider(token_service_.get()));
     bridge_.reset(new GCMInvalidationBridge(gcm_driver_.get(),
                                             identity_provider_.get()));
 
@@ -104,8 +87,8 @@ class GCMInvalidationBridgeTest : public ::testing::Test {
     connection_online_ = online;
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
-  scoped_ptr<Profile> profile_;
+  base::MessageLoop message_loop_;
+  scoped_ptr<FakeProfileOAuth2TokenService> token_service_;
   scoped_ptr<gcm::GCMDriver> gcm_driver_;
   scoped_ptr<FakeIdentityProvider> identity_provider_;
 

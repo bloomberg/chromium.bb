@@ -119,6 +119,7 @@ source_set("unit_tests") {
     # Non-Android tests.
     sources += [
       "fake_invalidator_unittest.cc",
+      "gcm_invalidation_bridge_unittest.cc",
       "gcm_network_channel_unittest.cc",
       "invalidation_notifier_unittest.cc",
       "invalidator_registrar_unittest.cc",
@@ -138,7 +139,9 @@ source_set("unit_tests") {
     deps += [
       "//components/gcm_driver:test_support",
       "//components/pref_registry:test_support",
+      "//components/signin/core/browser:test_support",
       "//google_apis:test_support",
+      "//net",
     ]
   }
 }
