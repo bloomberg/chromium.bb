@@ -19,7 +19,6 @@ NaClStartParams::NaClStartParams()
 #endif
       validation_cache_enabled(false),
       enable_debug_stub(false),
-      enable_ipc_proxy(false),
       process_type(kUnknownNaClProcessType),
       crash_info_shmem_handle(base::SharedMemory::NULLHandle()) {
 }

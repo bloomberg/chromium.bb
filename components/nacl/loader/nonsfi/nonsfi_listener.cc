@@ -77,9 +77,6 @@ void NonSfiListener::OnStart(const nacl::NaClStartParams& params) {
   // Random number source initialization.
   nonsfi_set_urandom_fd(base::GetUrandomFD());
 
-  // In Non-SFI mode, PPAPI proxy must be enabled.
-  CHECK(params.enable_ipc_proxy);
-
   // In Non-SFI mode, we neither intercept nor rewrite the message using
   // NaClIPCAdapter, and the channels are connected between the plugin and
   // the hosts directly. So, the IPC::Channel instances will be created in

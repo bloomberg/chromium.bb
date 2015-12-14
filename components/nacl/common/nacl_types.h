@@ -101,7 +101,6 @@ struct NaClStartParams {
   std::string version;
 
   bool enable_debug_stub;
-  bool enable_ipc_proxy;
 
   NaClAppProcessType process_type;
 

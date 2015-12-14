@@ -493,13 +493,6 @@ void NaClProcessHost::Launch(
       delete this;
       return;
     }
-
-    if (!enable_ppapi_proxy()) {
-      SendErrorToRenderer(
-          "PPAPI proxy must be enabled on NaCl in Non-SFI mode.");
-      delete this;
-      return;
-    }
   } else {
     // Rather than creating a socket pair in the renderer, and passing
     // one side through the browser to sel_ldr, socket pairs are created
@@ -900,8 +893,6 @@ bool NaClProcessHost::StartNaClExecution() {
 
   NaClStartParams params;
 
-  // Enable PPAPI proxy channel creation only for renderer processes.
-  params.enable_ipc_proxy = enable_ppapi_proxy();
   params.process_type = process_type_;
   bool enable_nacl_debug = enable_debug_stub_ &&
       NaClBrowser::GetDelegate()->URLMatchesDebugPatterns(manifest_url_);
@@ -1061,9 +1052,6 @@ void NaClProcessHost::StartNaClFileResolved(
     // process will exit properly.
     bool has_error = false;
 
-    // Note: this check is redundant. We check this earlier.
-    DCHECK(params.enable_ipc_proxy);
-
     ScopedChannelHandle ppapi_browser_server_channel_handle;
     ScopedChannelHandle ppapi_browser_client_channel_handle;
     ScopedChannelHandle ppapi_renderer_server_channel_handle;
@@ -1207,18 +1195,9 @@ void NaClProcessHost::OnPpapiChannelsCreated(
   ScopedChannelHandle manifest_service_channel_handle(
       raw_manifest_service_channel_handle);
 
-  if (enable_ppapi_proxy()) {
-    if (!StartPPAPIProxy(ppapi_browser_channel_handle.Pass())) {
-      SendErrorToRenderer("Browser PPAPI proxy could not start.");
-      return;
-    }
-  } else {
-    // If PPAPI proxy is disabled, channel handles should be invalid.
-    DCHECK(ppapi_browser_channel_handle.get().name.empty());
-    DCHECK(ppapi_renderer_channel_handle.get().name.empty());
-    // Invalidate, just in case.
-    ppapi_browser_channel_handle.reset();
-    ppapi_renderer_channel_handle.reset();
+  if (!StartPPAPIProxy(ppapi_browser_channel_handle.Pass())) {
+    SendErrorToRenderer("Browser PPAPI proxy could not start.");
+    return;
   }
 
   // Let the renderer know that the IPC channels are established.

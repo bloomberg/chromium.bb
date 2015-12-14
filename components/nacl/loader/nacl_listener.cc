@@ -350,32 +350,29 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
     LOG(FATAL) << "NaClAppCreate() failed";
   }
 
-  IPC::ChannelHandle browser_handle;
-  IPC::ChannelHandle ppapi_renderer_handle;
-  IPC::ChannelHandle manifest_service_handle;
+  IPC::ChannelHandle browser_handle =
+      IPC::Channel::GenerateVerifiedChannelID("nacl");
+  IPC::ChannelHandle ppapi_renderer_handle =
+      IPC::Channel::GenerateVerifiedChannelID("nacl");
+  IPC::ChannelHandle manifest_service_handle =
+      IPC::Channel::GenerateVerifiedChannelID("nacl");
 
-  if (params.enable_ipc_proxy) {
-    browser_handle = IPC::Channel::GenerateVerifiedChannelID("nacl");
-    ppapi_renderer_handle = IPC::Channel::GenerateVerifiedChannelID("nacl");
-    manifest_service_handle = IPC::Channel::GenerateVerifiedChannelID("nacl");
-
-    // Create the PPAPI IPC channels between the NaCl IRT and the host
-    // (browser/renderer) processes. The IRT uses these channels to
-    // communicate with the host and to initialize the IPC dispatchers.
-    SetUpIPCAdapter(&browser_handle, io_thread_.task_runner(), nap,
-                    NACL_CHROME_DESC_BASE,
-                    NaClIPCAdapter::ResolveFileTokenCallback(),
-                    NaClIPCAdapter::OpenResourceCallback());
-    SetUpIPCAdapter(&ppapi_renderer_handle, io_thread_.task_runner(), nap,
-                    NACL_CHROME_DESC_BASE + 1,
-                    NaClIPCAdapter::ResolveFileTokenCallback(),
-                    NaClIPCAdapter::OpenResourceCallback());
-    SetUpIPCAdapter(
-        &manifest_service_handle, io_thread_.task_runner(), nap,
-        NACL_CHROME_DESC_BASE + 2,
-        base::Bind(&NaClListener::ResolveFileToken, base::Unretained(this)),
-        base::Bind(&NaClListener::OnOpenResource, base::Unretained(this)));
-  }
+  // Create the PPAPI IPC channels between the NaCl IRT and the host
+  // (browser/renderer) processes. The IRT uses these channels to
+  // communicate with the host and to initialize the IPC dispatchers.
+  SetUpIPCAdapter(&browser_handle, io_thread_.task_runner(), nap,
+                  NACL_CHROME_DESC_BASE,
+                  NaClIPCAdapter::ResolveFileTokenCallback(),
+                  NaClIPCAdapter::OpenResourceCallback());
+  SetUpIPCAdapter(&ppapi_renderer_handle, io_thread_.task_runner(), nap,
+                  NACL_CHROME_DESC_BASE + 1,
+                  NaClIPCAdapter::ResolveFileTokenCallback(),
+                  NaClIPCAdapter::OpenResourceCallback());
+  SetUpIPCAdapter(
+      &manifest_service_handle, io_thread_.task_runner(), nap,
+      NACL_CHROME_DESC_BASE + 2,
+      base::Bind(&NaClListener::ResolveFileToken, base::Unretained(this)),
+      base::Bind(&NaClListener::OnOpenResource, base::Unretained(this)));
 
   trusted_listener_ =
       new NaClTrustedListener(IPC::Channel::GenerateVerifiedChannelID("nacl"),
