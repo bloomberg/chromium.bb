@@ -42,6 +42,11 @@ class NavigationManager {
   // currently in progress, or null if there is none.
   virtual NavigationItem* GetPendingItem() const = 0;
 
+  // Returns the transient item if any. This is an item which is removed and
+  // discarded if any navigation occurs. Note that the returned item is owned
+  // by the navigation manager and may be deleted at any time.
+  virtual NavigationItem* GetTransientItem() const = 0;
+
   // Removes the transient and pending NavigationItems.
   virtual void DiscardNonCommittedItems() = 0;
 

@@ -69,11 +69,6 @@ class NavigationManagerImpl : public NavigationManager {
   void OnNavigationItemChanged();
   void OnNavigationItemCommitted();
 
-  // Returns the transient item if any. This is an item which is removed and
-  // discarded if any navigation occurs. Note that the returned item is owned
-  // by the navigation manager and may be deleted at any time.
-  NavigationItem* GetTransientItem() const;
-
   // Temporary accessors and content/ class pass-throughs.
   // TODO(stuartmorgan): Re-evaluate this list once the refactorings have
   // settled down.
@@ -106,6 +101,7 @@ class NavigationManagerImpl : public NavigationManager {
   NavigationItem* GetVisibleItem() const override;
   NavigationItem* GetLastCommittedItem() const override;
   NavigationItem* GetPendingItem() const override;
+  NavigationItem* GetTransientItem() const override;
   void DiscardNonCommittedItems() override;
   void LoadIfNecessary() override;
   void AddTransientURLRewriter(

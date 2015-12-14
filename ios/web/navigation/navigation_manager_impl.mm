@@ -134,8 +134,17 @@ NavigationItem* NavigationManagerImpl::GetVisibleItem() const {
   return [entry navigationItem];
 }
 
+NavigationItem* NavigationManagerImpl::GetLastCommittedItem() const {
+  CRWSessionEntry* entry = [session_controller_ lastCommittedEntry];
+  return [entry navigationItem];
+}
+
 NavigationItem* NavigationManagerImpl::GetPendingItem() const {
   return [[session_controller_ pendingEntry] navigationItem];
+}
+
+NavigationItem* NavigationManagerImpl::GetTransientItem() const {
+  return [[session_controller_ transientEntry] navigationItem];
 }
 
 void NavigationManagerImpl::DiscardNonCommittedItems() {
@@ -144,15 +153,6 @@ void NavigationManagerImpl::DiscardNonCommittedItems() {
 
 void NavigationManagerImpl::LoadIfNecessary() {
   // Nothing to do; iOS loads lazily.
-}
-
-NavigationItem* NavigationManagerImpl::GetTransientItem() const {
-  return [[session_controller_ transientEntry] navigationItem];
-}
-
-NavigationItem* NavigationManagerImpl::GetLastCommittedItem() const {
-  CRWSessionEntry* entry = [session_controller_ lastCommittedEntry];
-  return [entry navigationItem];
 }
 
 int NavigationManagerImpl::GetLastCommittedEntryIndex() const {
