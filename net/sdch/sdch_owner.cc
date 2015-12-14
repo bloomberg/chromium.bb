@@ -489,12 +489,11 @@ void SdchOwner::OnDictionaryUsed(const std::string& server_hash) {
   base::TimeDelta time_since_last_used(now -
       base::Time::FromDoubleT(last_used_seconds_since_epoch));
 
-  // TODO(rdsmith): Distinguish between "Never used" and "Actually not
-  // touched for 48 hours".
-  UMA_HISTOGRAM_CUSTOM_TIMES(
-      "Sdch3.UsageInterval",
-      use_count ? time_since_last_used : base::TimeDelta::FromHours(48),
-      base::TimeDelta(), base::TimeDelta::FromHours(48), 50);
+  if (use_count) {
+    UMA_HISTOGRAM_CUSTOM_TIMES("Sdch3.UsageInterval2", time_since_last_used,
+                               base::TimeDelta(), base::TimeDelta::FromDays(7),
+                               50);
+  }
 
   specific_dictionary_map->SetDouble(kDictionaryLastUsedKey, now.ToDoubleT());
   specific_dictionary_map->SetInteger(kDictionaryUseCountKey, use_count + 1);

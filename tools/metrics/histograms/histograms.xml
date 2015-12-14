@@ -42453,6 +42453,25 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Sdch3.UsageInterval" units="milliseconds">
+  <owner>rdsmith@chromium.org</owner>
+  <obsolete>
+    Use Sdch3.UsageInterval2 instead.
+  </obsolete>
+  <summary>
+    The amount of time from the last time an SDCH dictionary was used.  For the
+    first use of a dictionary, the maximum time is used.
+  </summary>
+</histogram>
+
+<histogram name="Sdch3.UsageInterval2" units="milliseconds">
+  <owner>rdsmith@chromium.org</owner>
+  <summary>
+    The amount of time from the last time an SDCH dictionary was used.  Not
+    recorded on first dictionary use.
+  </summary>
+</histogram>
+
 <histogram name="Search.AddSearchProvider" enum="AddSearchProvider">
   <obsolete>
     Use Search.AddSearchProvider2 instead.
