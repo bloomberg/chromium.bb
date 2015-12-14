@@ -37,17 +37,17 @@ bool GetScrollAnimationEnabled() {
   return enabled;
 }
 
-blink::ScrollbarButtonsPlacement GetButtonPlacement() {
+blink::WebScrollbarButtonsPlacement GetButtonPlacement() {
   NSString* scrollbar_variant = [[NSUserDefaults standardUserDefaults]
       objectForKey:@"AppleScrollBarVariant"];
   if ([scrollbar_variant isEqualToString:@"Single"])
-    return blink::ScrollbarButtonsPlacementSingle;
+    return blink::WebScrollbarButtonsPlacementSingle;
   else if ([scrollbar_variant isEqualToString:@"DoubleMin"])
-    return blink::ScrollbarButtonsPlacementDoubleStart;
+    return blink::WebScrollbarButtonsPlacementDoubleStart;
   else if ([scrollbar_variant isEqualToString:@"DoubleBoth"])
-    return blink::ScrollbarButtonsPlacementDoubleBoth;
+    return blink::WebScrollbarButtonsPlacementDoubleBoth;
   else
-    return blink::ScrollbarButtonsPlacementDoubleEnd;
+    return blink::WebScrollbarButtonsPlacementDoubleEnd;
 }
 
 void FillScrollbarThemeParams(ViewMsg_UpdateScrollbarTheme_Params* params) {

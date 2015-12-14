@@ -41,7 +41,7 @@ public:
 
     void registerScrollbar(ScrollbarThemeClient&) override;
     void unregisterScrollbar(ScrollbarThemeClient&) override;
-    void preferencesChanged(float initialButtonDelay, float autoscrollButtonDelay, NSScrollerStyle preferredScrollerStyle, bool redraw, bool scrollAnimationEnabled, ScrollbarButtonsPlacement);
+    void preferencesChanged(float initialButtonDelay, float autoscrollButtonDelay, NSScrollerStyle preferredScrollerStyle, bool redraw, bool scrollAnimationEnabled, WebScrollbarButtonsPlacement);
 
     bool supportsControlTints() const override { return true; }
 
@@ -62,7 +62,7 @@ protected:
     bool shouldDragDocumentInsteadOfThumb(const ScrollbarThemeClient&, const PlatformMouseEvent&) override;
     int scrollbarPartToHIPressedState(ScrollbarPart);
 
-    virtual void updateButtonPlacement(ScrollbarButtonsPlacement) {}
+    virtual void updateButtonPlacement(WebScrollbarButtonsPlacement) {}
 
     void paintGivenTickmarks(SkCanvas*, const ScrollbarThemeClient&, const IntRect&, const Vector<IntRect>&);
 

@@ -242,21 +242,21 @@ void LayoutScrollbar::updateScrollbarPart(ScrollbarPart partType, bool destroy)
 
     if (needLayoutObject && partStyle->display() != BLOCK) {
         // See if we are a button that should not be visible according to OS settings.
-        ScrollbarButtonsPlacement buttonsPlacement = theme().buttonsPlacement();
+        WebScrollbarButtonsPlacement buttonsPlacement = theme().buttonsPlacement();
         switch (partType) {
         case BackButtonStartPart:
-            needLayoutObject = (buttonsPlacement == ScrollbarButtonsPlacementSingle || buttonsPlacement == ScrollbarButtonsPlacementDoubleStart
-                || buttonsPlacement == ScrollbarButtonsPlacementDoubleBoth);
+            needLayoutObject = (buttonsPlacement == WebScrollbarButtonsPlacementSingle || buttonsPlacement == WebScrollbarButtonsPlacementDoubleStart
+                || buttonsPlacement == WebScrollbarButtonsPlacementDoubleBoth);
             break;
         case ForwardButtonStartPart:
-            needLayoutObject = (buttonsPlacement == ScrollbarButtonsPlacementDoubleStart || buttonsPlacement == ScrollbarButtonsPlacementDoubleBoth);
+            needLayoutObject = (buttonsPlacement == WebScrollbarButtonsPlacementDoubleStart || buttonsPlacement == WebScrollbarButtonsPlacementDoubleBoth);
             break;
         case BackButtonEndPart:
-            needLayoutObject = (buttonsPlacement == ScrollbarButtonsPlacementDoubleEnd || buttonsPlacement == ScrollbarButtonsPlacementDoubleBoth);
+            needLayoutObject = (buttonsPlacement == WebScrollbarButtonsPlacementDoubleEnd || buttonsPlacement == WebScrollbarButtonsPlacementDoubleBoth);
             break;
         case ForwardButtonEndPart:
-            needLayoutObject = (buttonsPlacement == ScrollbarButtonsPlacementSingle || buttonsPlacement == ScrollbarButtonsPlacementDoubleEnd
-                || buttonsPlacement == ScrollbarButtonsPlacementDoubleBoth);
+            needLayoutObject = (buttonsPlacement == WebScrollbarButtonsPlacementSingle || buttonsPlacement == WebScrollbarButtonsPlacementDoubleEnd
+                || buttonsPlacement == WebScrollbarButtonsPlacementDoubleBoth);
             break;
         default:
             break;

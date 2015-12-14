@@ -190,6 +190,7 @@
       "platform/WebScrollOffsetAnimationCurve.h",
       "platform/WebScrollbar.h",
       "platform/WebScrollbarBehavior.h",
+      "platform/WebScrollbarButtonsPlacement.h",
       "platform/WebScrollbarLayer.h",
       "platform/WebScrollbarThemeGeometry.h",
       "platform/WebScrollbarThemePainter.h",

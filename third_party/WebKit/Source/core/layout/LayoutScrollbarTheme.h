@@ -38,7 +38,7 @@ public:
 
     int scrollbarThickness(ScrollbarControlSize controlSize) override { return ScrollbarTheme::theme().scrollbarThickness(controlSize); }
 
-    ScrollbarButtonsPlacement buttonsPlacement() const override { return ScrollbarTheme::theme().buttonsPlacement(); }
+    WebScrollbarButtonsPlacement buttonsPlacement() const override { return ScrollbarTheme::theme().buttonsPlacement(); }
 
     void paintScrollCorner(GraphicsContext&, const DisplayItemClient&, const IntRect& cornerRect) override;
 

@@ -1160,27 +1160,27 @@ bool SelectorChecker::checkScrollbarPseudoClass(const SelectorCheckingContext& c
         return part == BackButtonEndPart || part == ForwardButtonEndPart || part == ForwardTrackPart;
     case CSSSelector::PseudoDoubleButton:
         {
-            ScrollbarButtonsPlacement buttonsPlacement = scrollbar->theme().buttonsPlacement();
+            WebScrollbarButtonsPlacement buttonsPlacement = scrollbar->theme().buttonsPlacement();
             if (part == BackButtonStartPart || part == ForwardButtonStartPart || part == BackTrackPart)
-                return buttonsPlacement == ScrollbarButtonsPlacementDoubleStart || buttonsPlacement == ScrollbarButtonsPlacementDoubleBoth;
+                return buttonsPlacement == WebScrollbarButtonsPlacementDoubleStart || buttonsPlacement == WebScrollbarButtonsPlacementDoubleBoth;
             if (part == BackButtonEndPart || part == ForwardButtonEndPart || part == ForwardTrackPart)
-                return buttonsPlacement == ScrollbarButtonsPlacementDoubleEnd || buttonsPlacement == ScrollbarButtonsPlacementDoubleBoth;
+                return buttonsPlacement == WebScrollbarButtonsPlacementDoubleEnd || buttonsPlacement == WebScrollbarButtonsPlacementDoubleBoth;
             return false;
         }
     case CSSSelector::PseudoSingleButton:
         {
-            ScrollbarButtonsPlacement buttonsPlacement = scrollbar->theme().buttonsPlacement();
+            WebScrollbarButtonsPlacement buttonsPlacement = scrollbar->theme().buttonsPlacement();
             if (part == BackButtonStartPart || part == ForwardButtonEndPart || part == BackTrackPart || part == ForwardTrackPart)
-                return buttonsPlacement == ScrollbarButtonsPlacementSingle;
+                return buttonsPlacement == WebScrollbarButtonsPlacementSingle;
             return false;
         }
     case CSSSelector::PseudoNoButton:
         {
-            ScrollbarButtonsPlacement buttonsPlacement = scrollbar->theme().buttonsPlacement();
+            WebScrollbarButtonsPlacement buttonsPlacement = scrollbar->theme().buttonsPlacement();
             if (part == BackTrackPart)
-                return buttonsPlacement == ScrollbarButtonsPlacementNone || buttonsPlacement == ScrollbarButtonsPlacementDoubleEnd;
+                return buttonsPlacement == WebScrollbarButtonsPlacementNone || buttonsPlacement == WebScrollbarButtonsPlacementDoubleEnd;
             if (part == ForwardTrackPart)
-                return buttonsPlacement == ScrollbarButtonsPlacementNone || buttonsPlacement == ScrollbarButtonsPlacementDoubleStart;
+                return buttonsPlacement == WebScrollbarButtonsPlacementNone || buttonsPlacement == WebScrollbarButtonsPlacementDoubleStart;
             return false;
         }
     case CSSSelector::PseudoCornerPresent:

@@ -160,7 +160,7 @@ ScrollbarThemeMacCommon::~ScrollbarThemeMacCommon()
 {
 }
 
-void ScrollbarThemeMacCommon::preferencesChanged(float initialButtonDelay, float autoscrollButtonDelay, NSScrollerStyle preferredScrollerStyle, bool redraw, bool scrollAnimationEnabled, ScrollbarButtonsPlacement buttonPlacement)
+void ScrollbarThemeMacCommon::preferencesChanged(float initialButtonDelay, float autoscrollButtonDelay, NSScrollerStyle preferredScrollerStyle, bool redraw, bool scrollAnimationEnabled, WebScrollbarButtonsPlacement buttonPlacement)
 {
     updateButtonPlacement(buttonPlacement);
     gInitialButtonDelay = initialButtonDelay;

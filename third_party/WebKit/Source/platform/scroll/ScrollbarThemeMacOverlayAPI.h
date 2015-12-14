@@ -44,7 +44,7 @@ public:
     int scrollbarThickness(ScrollbarControlSize = RegularScrollbar) override;
     bool usesOverlayScrollbars() const override;
     void updateScrollbarOverlayStyle(const ScrollbarThemeClient&) override;
-    ScrollbarButtonsPlacement buttonsPlacement() const override;
+    WebScrollbarButtonsPlacement buttonsPlacement() const override;
 
     void registerScrollbar(ScrollbarThemeClient&) override;
     void unregisterScrollbar(ScrollbarThemeClient&) override;

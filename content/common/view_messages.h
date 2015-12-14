@@ -66,7 +66,7 @@
 #include "ui/gfx/range/range.h"
 
 #if defined(OS_MACOSX)
-#include "third_party/WebKit/public/platform/mac/MacScrollTypes.h"
+#include "third_party/WebKit/public/platform/WebScrollbarButtonsPlacement.h"
 #include "third_party/WebKit/public/web/mac/WebScrollbarTheme.h"
 #endif
 
@@ -119,8 +119,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(ui::TextInputType, ui::TEXT_INPUT_TYPE_MAX)
 
 #if defined(OS_MACOSX)
 IPC_ENUM_TRAITS_MAX_VALUE(
-    blink::ScrollbarButtonsPlacement,
-    blink::ScrollbarButtonsPlacement::ScrollbarButtonsPlacementLast)
+    blink::WebScrollbarButtonsPlacement,
+    blink::WebScrollbarButtonsPlacement::WebScrollbarButtonsPlacementLast)
 
 IPC_ENUM_TRAITS_MAX_VALUE(blink::ScrollerStyle, blink::ScrollerStyleOverlay)
 #endif
@@ -575,7 +575,7 @@ IPC_STRUCT_BEGIN(ViewMsg_UpdateScrollbarTheme_Params)
   IPC_STRUCT_MEMBER(blink::ScrollerStyle, preferred_scroller_style)
   IPC_STRUCT_MEMBER(bool, redraw)
   IPC_STRUCT_MEMBER(bool, scroll_animation_enabled)
-  IPC_STRUCT_MEMBER(blink::ScrollbarButtonsPlacement, button_placement)
+  IPC_STRUCT_MEMBER(blink::WebScrollbarButtonsPlacement, button_placement)
 IPC_STRUCT_END()
 #endif
 

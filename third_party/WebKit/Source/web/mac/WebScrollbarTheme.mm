@@ -45,7 +45,7 @@ static_assert(static_cast<NSScrollerStyle>(ScrollerStyleOverlay) == NSScrollerSt
 
 void WebScrollbarTheme::updateScrollbarsWithNSDefaults(
     float initialButtonDelay, float autoscrollButtonDelay,
-    ScrollerStyle preferredScrollerStyle, bool redraw, bool scrollAnimationEnabled, ScrollbarButtonsPlacement buttonPlacement)
+    ScrollerStyle preferredScrollerStyle, bool redraw, bool scrollAnimationEnabled, WebScrollbarButtonsPlacement buttonPlacement)
 {
     ScrollbarTheme& theme = ScrollbarTheme::theme();
     if (theme.isMockTheme())

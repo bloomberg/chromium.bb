@@ -57,9 +57,9 @@ static int cThumbMinLength[] = { 26, 20 };
 static int cOuterButtonLength[] = { 16, 14 }; // The outer button in a double button pair is a bit bigger.
 static int cOuterButtonOverlap = 2;
 
-static ScrollbarButtonsPlacement gButtonPlacement = ScrollbarButtonsPlacementDoubleEnd;
+static WebScrollbarButtonsPlacement gButtonPlacement = WebScrollbarButtonsPlacementDoubleEnd;
 
-void ScrollbarThemeMacNonOverlayAPI::updateButtonPlacement(ScrollbarButtonsPlacement buttonPlacement)
+void ScrollbarThemeMacNonOverlayAPI::updateButtonPlacement(WebScrollbarButtonsPlacement buttonPlacement)
 {
     gButtonPlacement = buttonPlacement;
 }
@@ -161,14 +161,14 @@ int ScrollbarThemeMacNonOverlayAPI::scrollbarThickness(ScrollbarControlSize cont
     return cScrollbarThickness[controlSize];
 }
 
-ScrollbarButtonsPlacement ScrollbarThemeMacNonOverlayAPI::buttonsPlacement() const
+WebScrollbarButtonsPlacement ScrollbarThemeMacNonOverlayAPI::buttonsPlacement() const
 {
     return gButtonPlacement;
 }
 
 bool ScrollbarThemeMacNonOverlayAPI::hasButtons(const ScrollbarThemeClient& scrollbar)
 {
-    return scrollbar.enabled() && buttonsPlacement() != ScrollbarButtonsPlacementNone
+    return scrollbar.enabled() && buttonsPlacement() != WebScrollbarButtonsPlacementNone
              && (scrollbar.orientation() == HorizontalScrollbar
              ? scrollbar.width()
              : scrollbar.height()) >= 2 * (cRealButtonLength[scrollbar.controlSize()] - cButtonHitInset[scrollbar.controlSize()]);
@@ -184,7 +184,7 @@ bool ScrollbarThemeMacNonOverlayAPI::hasThumb(const ScrollbarThemeClient& scroll
 
 static IntRect buttonRepaintRect(const IntRect& buttonRect, ScrollbarOrientation orientation, ScrollbarControlSize controlSize, bool start)
 {
-    ASSERT(gButtonPlacement != ScrollbarButtonsPlacementNone);
+    ASSERT(gButtonPlacement != WebScrollbarButtonsPlacementNone);
 
     IntRect paintRect(buttonRect);
     if (orientation == HorizontalScrollbar) {
@@ -204,14 +204,14 @@ IntRect ScrollbarThemeMacNonOverlayAPI::backButtonRect(const ScrollbarThemeClien
 {
     IntRect result;
 
-    if (part == BackButtonStartPart && (buttonsPlacement() == ScrollbarButtonsPlacementNone || buttonsPlacement() == ScrollbarButtonsPlacementDoubleEnd))
+    if (part == BackButtonStartPart && (buttonsPlacement() == WebScrollbarButtonsPlacementNone || buttonsPlacement() == WebScrollbarButtonsPlacementDoubleEnd))
         return result;
 
-    if (part == BackButtonEndPart && (buttonsPlacement() == ScrollbarButtonsPlacementNone || buttonsPlacement() == ScrollbarButtonsPlacementDoubleStart || buttonsPlacement() == ScrollbarButtonsPlacementSingle))
+    if (part == BackButtonEndPart && (buttonsPlacement() == WebScrollbarButtonsPlacementNone || buttonsPlacement() == WebScrollbarButtonsPlacementDoubleStart || buttonsPlacement() == WebScrollbarButtonsPlacementSingle))
         return result;
 
     int thickness = scrollbarThickness(scrollbar.controlSize());
-    bool outerButton = part == BackButtonStartPart && (buttonsPlacement() == ScrollbarButtonsPlacementDoubleStart || buttonsPlacement() == ScrollbarButtonsPlacementDoubleBoth);
+    bool outerButton = part == BackButtonStartPart && (buttonsPlacement() == WebScrollbarButtonsPlacementDoubleStart || buttonsPlacement() == WebScrollbarButtonsPlacementDoubleBoth);
     if (outerButton) {
         if (scrollbar.orientation() == HorizontalScrollbar)
             result = IntRect(scrollbar.x(), scrollbar.y(), cOuterButtonLength[scrollbar.controlSize()] + (painting ? cOuterButtonOverlap : 0), thickness);
@@ -238,17 +238,17 @@ IntRect ScrollbarThemeMacNonOverlayAPI::forwardButtonRect(const ScrollbarThemeCl
 {
     IntRect result;
 
-    if (part == ForwardButtonEndPart && (buttonsPlacement() == ScrollbarButtonsPlacementNone || buttonsPlacement() == ScrollbarButtonsPlacementDoubleStart))
+    if (part == ForwardButtonEndPart && (buttonsPlacement() == WebScrollbarButtonsPlacementNone || buttonsPlacement() == WebScrollbarButtonsPlacementDoubleStart))
         return result;
 
-    if (part == ForwardButtonStartPart && (buttonsPlacement() == ScrollbarButtonsPlacementNone || buttonsPlacement() == ScrollbarButtonsPlacementDoubleEnd || buttonsPlacement() == ScrollbarButtonsPlacementSingle))
+    if (part == ForwardButtonStartPart && (buttonsPlacement() == WebScrollbarButtonsPlacementNone || buttonsPlacement() == WebScrollbarButtonsPlacementDoubleEnd || buttonsPlacement() == WebScrollbarButtonsPlacementSingle))
         return result;
 
     int thickness = scrollbarThickness(scrollbar.controlSize());
     int outerButtonLength = cOuterButtonLength[scrollbar.controlSize()];
     int buttonLength = cButtonLength[scrollbar.controlSize()];
 
-    bool outerButton = part == ForwardButtonEndPart && (buttonsPlacement() == ScrollbarButtonsPlacementDoubleEnd || buttonsPlacement() == ScrollbarButtonsPlacementDoubleBoth);
+    bool outerButton = part == ForwardButtonEndPart && (buttonsPlacement() == WebScrollbarButtonsPlacementDoubleEnd || buttonsPlacement() == WebScrollbarButtonsPlacementDoubleBoth);
     if (outerButton) {
         if (scrollbar.orientation() == HorizontalScrollbar) {
             result = IntRect(scrollbar.x() + scrollbar.width() - outerButtonLength, scrollbar.y(), outerButtonLength, thickness);
@@ -287,17 +287,17 @@ IntRect ScrollbarThemeMacNonOverlayAPI::trackRect(const ScrollbarThemeClient& sc
     int buttonLength = cButtonLength[scrollbar.controlSize()];
     int doubleButtonLength = outerButtonLength + buttonLength;
     switch (buttonsPlacement()) {
-        case ScrollbarButtonsPlacementSingle:
+        case WebScrollbarButtonsPlacementSingle:
             startWidth = buttonLength;
             endWidth = buttonLength;
             break;
-        case ScrollbarButtonsPlacementDoubleStart:
+        case WebScrollbarButtonsPlacementDoubleStart:
             startWidth = doubleButtonLength;
             break;
-        case ScrollbarButtonsPlacementDoubleEnd:
+        case WebScrollbarButtonsPlacementDoubleEnd:
             endWidth = doubleButtonLength;
             break;
-        case ScrollbarButtonsPlacementDoubleBoth:
+        case WebScrollbarButtonsPlacementDoubleBoth:
             startWidth = doubleButtonLength;
             endWidth = doubleButtonLength;
             break;
