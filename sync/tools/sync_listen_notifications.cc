@@ -136,7 +136,6 @@ notifier::NotifierOptions ParseNotifierOptions(
 }
 
 int SyncListenNotificationsMain(int argc, char* argv[]) {
-  using namespace syncer;
 #if defined(OS_MACOSX)
   base::mac::ScopedNSAutoreleasePool pool;
 #endif

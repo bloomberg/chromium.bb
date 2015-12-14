@@ -1632,7 +1632,6 @@ bool DirectoryBackingStore::CreateShareInfoTableVersion71(
 bool DirectoryBackingStore::VerifyReferenceIntegrity(
     const Directory::MetahandlesMap* handles_map) {
   TRACE_EVENT0("sync", "SyncDatabaseIntegrityCheck");
-  using namespace syncable;
   typedef base::hash_set<std::string> IdsSet;
 
   IdsSet ids_set;
