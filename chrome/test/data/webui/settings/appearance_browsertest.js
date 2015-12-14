@@ -16,6 +16,11 @@ function AppearanceSettingsBrowserTest() {}
 AppearanceSettingsBrowserTest.prototype = {
   __proto__: SettingsPageBrowserTest.prototype,
 
+  /** @override */
+  extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
+    'fake_settings_private.js',
+  ]),
+
   /** @return {string} */
   appearancePage: function(selector) {
     var section = this.getSection(this.getPage('basic'), 'appearance');
@@ -29,6 +34,11 @@ AppearanceSettingsBrowserTest.prototype = {
 };
 
 TEST_F('AppearanceSettingsBrowserTest', 'uiTests', function() {
+  /**
+   * The prefs API that will get a fake implementation.
+   * @type {!SettingsPrivate}
+   */
+  var settingsPrefs;
   var self = this;
 
   var fontSize = function() {
@@ -37,22 +47,31 @@ TEST_F('AppearanceSettingsBrowserTest', 'uiTests', function() {
   };
 
   suite('AppearanceHandler', function() {
-    test('font settings', function(done) {
-      chrome.settingsPrivate.setPref(
-          'webkit.webprefs.default_font_size', 16, '', function(result) {
-        assertTrue(result);
-        assertEquals('Medium', fontSize());
-        chrome.settingsPrivate.setPref(
-            'webkit.webprefs.default_font_size', 20, '', function(result) {
-          assertTrue(result);
-          chrome.settingsPrivate.getPref(
-                'webkit.webprefs.default_font_size', function(pref) {
-              assertEquals(pref.value, 20);
-              assertEquals('Large', fontSize());
-              done();
-          });
-        });
-      });
+    var fakePrefs = [{
+      key: 'webkit.webprefs.default_font_size',
+      type: chrome.settingsPrivate.PrefType.NUMBER,
+      value: 1234,
+    }];
+
+    suiteSetup(function() {
+      settingsPrefs = document.querySelector(
+          'cr-settings').$$('settings-prefs');
+      assertTrue(!!settingsPrefs);
+      CrSettingsPrefs.resetForTesting();
+      settingsPrefs.resetForTesting();
+      var fakeApi = new settings.FakeSettingsPrivate(fakePrefs);
+      settingsPrefs.initializeForTesting(fakeApi);
+      return CrSettingsPrefs.initialized;
+    });
+
+    test('very small font', function() {
+      settingsPrefs.set('prefs.webkit.webprefs.default_font_size.value', 9);
+      assertEquals('Very small', fontSize());
+    });
+
+    test('large font', function() {
+      settingsPrefs.set('prefs.webkit.webprefs.default_font_size.value', 20);
+      assertEquals('Large', fontSize());
     });
 
     /**
@@ -60,18 +79,10 @@ TEST_F('AppearanceSettingsBrowserTest', 'uiTests', function() {
      * then the menu label will be 'Custom' (rather than 'Medium', 'Large',
      * etc.).
      */
-    test('font size custom', function(done) {
-      chrome.settingsPrivate.setPref(
-          'webkit.webprefs.default_font_size', 19, '', function(result) {
-        assertTrue(result);
-        assertEquals('Custom', fontSize());
-        done();
-      });
-    });
-
-    test('home button', function() {
-      var homeButton = self.appearancePage('#showHomeButton');
-      assertEquals('false', homeButton.getAttribute('aria-pressed'));
+    test('custom font size', function() {
+      settingsPrefs.set(
+          'prefs.webkit.webprefs.default_font_size', 19);
+      assertEquals('Custom', fontSize());
     });
   });
   mocha.run();
