@@ -6,7 +6,10 @@ config("compat_config") {
   if (is_win) {
     include_dirs = [ "win" ]
   } else if (is_mac) {
-    include_dirs = [ "mac" ]
+    include_dirs = [
+      "mac",
+      "non_cxx11_lib",
+    ]
   }
 }
 
@@ -21,6 +24,8 @@ source_set("compat") {
       "mac/mach-o/loader.h",
       "mac/mach/mach.h",
       "mac/sys/resource.h",
+      "non_cxx11_lib/type_traits",
+      "non_cxx11_lib/utility",
     ]
   } else {
     sources += [ "non_mac/mach/mach.h" ]

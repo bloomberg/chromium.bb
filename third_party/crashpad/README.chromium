@@ -2,7 +2,7 @@ Name: Crashpad
 Short Name: crashpad
 URL: https://crashpad.chromium.org/
 Version: unknown
-Revision: 6bebb10829332dee5c7315abafb0a8bf32840c15
+Revision: 583d1dc3efa96ea50f62afa69a598eeed1534edc
 License: Apache 2.0
 License File: crashpad/LICENSE
 Security Critical: yes
@@ -35,5 +35,4 @@ $ cd "${CRASHPAD_DIR}"
 $ git am --3way --message-id -p4 /tmp/patchdir
 
 Local Modifications:
- - Cherry-pick upstream 7efdc94f5982a1f9654c53fd4bf5663e5efa66ce.
- - Cherry-pick upstream b9e732d3180f9eadc74d7229090e613d0700b8a6.
+None.
