@@ -112,6 +112,8 @@
         'browser/signin/fake_oauth2_token_service_builder.h',
         'browser/signin/fake_signin_manager_builder.cc',
         'browser/signin/fake_signin_manager_builder.h',
+        'browser/sync/ios_chrome_profile_sync_test_util.cc',
+        'browser/sync/ios_chrome_profile_sync_test_util.h',
         'browser/sync/sync_setup_service_mock.cc',
         'browser/sync/sync_setup_service_mock.h',
         'test/block_cleanup_test.h',

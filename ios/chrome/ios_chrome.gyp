@@ -473,6 +473,8 @@
         'browser/suggestions/suggestions_service_factory.mm',
         'browser/sync/glue/sync_start_util.cc',
         'browser/sync/glue/sync_start_util.h',
+        'browser/sync/ios_chrome_profile_sync_service_factory.cc',
+        'browser/sync/ios_chrome_profile_sync_service_factory.h',
         'browser/sync/ios_chrome_sync_client.cc',
         'browser/sync/ios_chrome_sync_client.h',
         'browser/sync/ios_chrome_synced_tab_delegate.cc',
