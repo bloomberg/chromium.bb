@@ -1,0 +1,42 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef BINDER_BUFFER_READER_H_
+#define BINDER_BUFFER_READER_H_
+
+#include "base/macros.h"
+
+namespace binder {
+
+// BufferReader reads data from the given buffer.
+class BufferReader {
+ public:
+  BufferReader(const char* data, size_t size);
+  ~BufferReader();
+
+  const char* data() const { return data_; }
+  size_t size() const { return size_; }
+  size_t position() const { return position_; }
+
+  // Returns true when there is some data to read.
+  bool HasMoreData() const;
+
+  // Copies the specified number of bytes from the buffer to |out|.
+  // |out| shouldn't overlap with |data_|.
+  bool Read(void* out, size_t num_bytes);
+
+  // Moves the position |num_bytes| forward.
+  bool Skip(size_t num_bytes);
+
+ private:
+  const char* data_;
+  size_t size_;
+  size_t position_;
+
+  DISALLOW_COPY_AND_ASSIGN(BufferReader);
+};
+
+}  // namespace binder
+
+#endif  // BINDER_BUFFER_READER_H_

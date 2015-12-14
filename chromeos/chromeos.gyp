@@ -387,12 +387,15 @@
       'tpm/tpm_token_loader.h'
     ],
     'chromeos_binder_sources': [
+      'binder/buffer_reader.cc',
+      'binder/buffer_reader.h',
       'binder/driver.cc',
       'binder/driver.h',
       'binder/util.cc',
       'binder/util.h',
     ],
     'chromeos_binder_test_sources': [
+      'binder/buffer_reader_unittest.cc',
       'binder/driver_unittest.cc',
     ],
     'chromeos_test_sources': [
