@@ -7,6 +7,7 @@ group("examples") {
   deps = [
     "//ppapi/examples/2d",
     "//ppapi/examples/audio",
+    "//ppapi/examples/audio_encode",
     "//ppapi/examples/audio_input",
     "//ppapi/examples/compositor",
     "//ppapi/examples/crxfs",

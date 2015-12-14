@@ -351,6 +351,16 @@
       ],
     },
     {
+      'target_name': 'ppapi_example_audio_encode',
+      'dependencies': [
+        'ppapi_example_skeleton',
+        'ppapi.gyp:ppapi_cpp',
+      ],
+      'sources': [
+        'examples/audio_encode/audio_encode.cc',
+      ],
+    },
+    {
       # GN version: //ppapi/examples/audio_input
       'target_name': 'ppapi_example_audio_input',
       'dependencies': [
