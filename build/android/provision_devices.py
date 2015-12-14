@@ -298,6 +298,9 @@ def SetProperties(device, options):
     else:
       logging.warning('Cannot remove system webview from a non-rooted device')
 
+  # Some device types can momentarily disappear after setting properties.
+  device.adb.WaitForDevice()
+
 
 def _ConfigureLocalProperties(device, java_debug=True):
   """Set standard readonly testing device properties prior to reboot."""
@@ -388,10 +391,14 @@ def FinishProvisioning(device, options):
 
 def _UninstallIfMatch(device, pattern, app_to_keep):
   installed_packages = device.RunShellCommand(['pm', 'list', 'packages'])
+  installed_system_packages = [
+      pkg.split(':')[1] for pkg in device.RunShellCommand(['pm', 'list',
+                                                           'packages', '-s'])]
   for package_output in installed_packages:
     package = package_output.split(":")[1]
     if pattern.match(package) and not package == app_to_keep:
-      device.Uninstall(package)
+      if not device.IsUserBuild() or package not in installed_system_packages:
+        device.Uninstall(package)
 
 
 def _WipeUnderDirIfMatch(device, path, pattern):
