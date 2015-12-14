@@ -5,10 +5,10 @@
 #include "net/log/net_log_util.h"
 
 #include <set>
+#include <vector>
 
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/values.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
@@ -64,11 +64,10 @@ TEST(NetLogUtil, CreateNetLogEntriesForActiveObjectsOneContext) {
   context.Init();
   TestDelegate delegate;
   for (size_t num_requests = 0; num_requests < 5; ++num_requests) {
-    ScopedVector<URLRequest> requests;
+    std::vector<scoped_ptr<URLRequest>> requests;
     for (size_t i = 0; i < num_requests; ++i) {
       requests.push_back(context.CreateRequest(GURL("about:life"),
-                                               DEFAULT_PRIORITY,
-                                               &delegate).release());
+                                               DEFAULT_PRIORITY, &delegate));
     }
     std::set<URLRequestContext*> contexts;
     contexts.insert(&context);
@@ -90,18 +89,16 @@ TEST(NetLogUtil, CreateNetLogEntriesForActiveObjectsMultipleContexts) {
   TestDelegate delegate;
   for (size_t num_requests = 0; num_requests < 5; ++num_requests) {
     NetLog net_log;
-    ScopedVector<TestURLRequestContext> contexts;
-    ScopedVector<URLRequest> requests;
+    std::vector<scoped_ptr<TestURLRequestContext>> contexts;
+    std::vector<scoped_ptr<URLRequest>> requests;
     std::set<URLRequestContext*> context_set;
     for (size_t i = 0; i < num_requests; ++i) {
-      contexts.push_back(new TestURLRequestContext(true));
+      contexts.push_back(make_scoped_ptr(new TestURLRequestContext(true)));
       contexts[i]->set_net_log(&net_log);
       contexts[i]->Init();
-      context_set.insert(contexts[i]);
-      requests.push_back(
-          contexts[i]
-              ->CreateRequest(GURL("about:hats"), DEFAULT_PRIORITY, &delegate)
-              .release());
+      context_set.insert(contexts[i].get());
+      requests.push_back(contexts[i]->CreateRequest(
+          GURL("about:hats"), DEFAULT_PRIORITY, &delegate));
     }
     TestNetLog test_net_log;
     CreateNetLogEntriesForActiveObjects(context_set,
