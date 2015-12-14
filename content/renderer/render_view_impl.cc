@@ -2659,8 +2659,15 @@ void RenderViewImpl::OnEnableAutoResize(const gfx::Size& min_size,
   DCHECK(disable_scrollbars_size_limit_.IsEmpty());
   if (!webview())
     return;
+
   auto_resize_mode_ = true;
-  webview()->enableAutoResizeMode(min_size, max_size);
+  if (IsUseZoomForDSFEnabled()) {
+    webview()->enableAutoResizeMode(
+        gfx::ScaleToCeiledSize(min_size, device_scale_factor_),
+        gfx::ScaleToCeiledSize(max_size, device_scale_factor_));
+  } else {
+    webview()->enableAutoResizeMode(min_size, max_size);
+  }
 }
 
 void RenderViewImpl::OnDisableAutoResize(const gfx::Size& new_size) {
@@ -3245,7 +3252,8 @@ void RenderViewImpl::GetSelectionBounds(gfx::Rect* start, gfx::Rect* end) {
     // Current Pepper IME API does not handle selection bounds. So we simply
     // use the caret position as an empty range for now. It will be updated
     // after Pepper API equips features related to surrounding text retrieval.
-    gfx::Rect caret = focused_pepper_plugin_->GetCaretBounds();
+    blink::WebRect caret(focused_pepper_plugin_->GetCaretBounds());
+    convertViewportToWindow(&caret);
     *start = caret;
     *end = caret;
     return;
@@ -3260,9 +3268,9 @@ void RenderViewImpl::FocusChangeComplete() {
 }
 
 void RenderViewImpl::GetCompositionCharacterBounds(
-    std::vector<gfx::Rect>* bounds) {
-  DCHECK(bounds);
-  bounds->clear();
+    std::vector<gfx::Rect>* bounds_in_window) {
+  DCHECK(bounds_in_window);
+  bounds_in_window->clear();
 
 #if defined(ENABLE_PLUGINS)
   if (focused_pepper_plugin_) {
@@ -3283,15 +3291,16 @@ void RenderViewImpl::GetCompositionCharacterBounds(
   if (!frame)
     return;
 
-  bounds->reserve(character_count);
+  bounds_in_window->reserve(character_count);
   blink::WebRect webrect;
   for (size_t i = 0; i < character_count; ++i) {
     if (!frame->firstRectForCharacterRange(start_offset + i, 1, webrect)) {
       DLOG(ERROR) << "Could not retrieve character rectangle at " << i;
-      bounds->clear();
+      bounds_in_window->clear();
       return;
     }
-    bounds->push_back(webrect);
+    convertViewportToWindow(&webrect);
+    bounds_in_window->push_back(webrect);
   }
 }
 

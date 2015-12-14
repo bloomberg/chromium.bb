@@ -388,17 +388,15 @@ class RenderViewImplBlinkSettingsTest : public RenderViewImplTest {
 
 class RenderViewImplScaleFactorTest : public RenderViewImplBlinkSettingsTest {
  public:
-  void DoSetUp() override {
-    RenderViewImplBlinkSettingsTest::DoSetUp();
-
+  void SetDeviceScaleFactor(float dsf) {
     ViewMsg_Resize_Params params;
-    params.screen_info.deviceScaleFactor = 2.f;
+    params.screen_info.deviceScaleFactor = dsf;
     params.new_size = gfx::Size(100, 100);
     params.physical_backing_size = gfx::Size(200, 200);
     params.visible_viewport_size = params.new_size;
     params.needs_resize_ack = false;
     view()->OnResize(params);
-    ASSERT_EQ(2.f, view()->device_scale_factor_);
+    ASSERT_EQ(dsf, view()->device_scale_factor_);
   }
 };
 
@@ -1887,6 +1885,7 @@ TEST_F(RenderViewImplTest, GetCompositionCharacterBoundsTest) {
   view()->OnImeSetComposition(ascii_composition, empty_underline, 0, 0);
   view()->GetCompositionCharacterBounds(&bounds);
   ASSERT_EQ(ascii_composition.size(), bounds.size());
+
   for (size_t i = 0; i < bounds.size(); ++i)
     EXPECT_LT(0, bounds[i].width());
   view()->OnImeConfirmComposition(
@@ -2550,6 +2549,7 @@ TEST_F(RenderViewImplBlinkSettingsTest, Negative) {
 
 TEST_F(RenderViewImplScaleFactorTest, ConverViewportToWindowWithoutZoomForDSF) {
   DoSetUp();
+  SetDeviceScaleFactor(2.f);
   blink::WebRect rect(20, 10, 200, 100);
   view()->convertViewportToWindow(&rect);
   EXPECT_EQ(20, rect.x);
@@ -2562,14 +2562,112 @@ TEST_F(RenderViewImplScaleFactorTest, ConverViewportToWindowWithZoomForDSF) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableUseZoomForDSF);
   DoSetUp();
+  SetDeviceScaleFactor(1.f);
+  {
+    blink::WebRect rect(20, 10, 200, 100);
+    view()->convertViewportToWindow(&rect);
+    EXPECT_EQ(20, rect.x);
+    EXPECT_EQ(10, rect.y);
+    EXPECT_EQ(200, rect.width);
+    EXPECT_EQ(100, rect.height);
+  }
 
-  blink::WebRect rect(20, 10, 200, 100);
-  view()->convertViewportToWindow(&rect);
-  EXPECT_EQ(10, rect.x);
-  EXPECT_EQ(5, rect.y);
-  EXPECT_EQ(100, rect.width);
-  EXPECT_EQ(50, rect.height);
+  SetDeviceScaleFactor(2.f);
+  {
+    blink::WebRect rect(20, 10, 200, 100);
+    view()->convertViewportToWindow(&rect);
+    EXPECT_EQ(10, rect.x);
+    EXPECT_EQ(5, rect.y);
+    EXPECT_EQ(100, rect.width);
+    EXPECT_EQ(50, rect.height);
+  }
 }
+
+#if defined(OS_MACOSX) || defined(USE_AURA)
+TEST_F(RenderViewImplScaleFactorTest, GetCompositionCharacterBoundsTest) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableUseZoomForDSF);
+  DoSetUp();
+  SetDeviceScaleFactor(1.f);
+#if defined(OS_WIN)
+  // http://crbug.com/508747
+  if (base::win::GetVersion() >= base::win::VERSION_WIN10)
+    return;
+#endif
+
+  LoadHTML("<textarea id=\"test\"></textarea>");
+  ExecuteJavaScriptForTests("document.getElementById('test').focus();");
+
+  const base::string16 empty_string;
+  const std::vector<blink::WebCompositionUnderline> empty_underline;
+  std::vector<gfx::Rect> bounds_at_1x;
+  view()->OnSetFocus(true);
+
+  // ASCII composition
+  const base::string16 ascii_composition = base::UTF8ToUTF16("aiueo");
+  view()->OnImeSetComposition(ascii_composition, empty_underline, 0, 0);
+  view()->GetCompositionCharacterBounds(&bounds_at_1x);
+  ASSERT_EQ(ascii_composition.size(), bounds_at_1x.size());
+
+  SetDeviceScaleFactor(2.f);
+  std::vector<gfx::Rect> bounds_at_2x;
+  view()->GetCompositionCharacterBounds(&bounds_at_2x);
+  ASSERT_EQ(bounds_at_1x.size(), bounds_at_2x.size());
+  for (size_t i = 0; i < bounds_at_1x.size(); i++) {
+    const gfx::Rect& b1 = bounds_at_1x[i];
+    const gfx::Rect& b2 = bounds_at_2x[i];
+    gfx::Vector2d origin_diff = b1.origin() - b2.origin();
+
+    // The bounds may not be exactly same because the font metrics are different
+    // at 1x and 2x. Just make sure that the difference is small.
+    EXPECT_LT(origin_diff.x(), 2);
+    EXPECT_LT(origin_diff.y(), 2);
+    EXPECT_LT(std::abs(b1.width() - b2.width()), 3);
+    EXPECT_LT(std::abs(b1.height() - b2.height()), 2);
+  }
+}
+#endif
+
+#if !defined(OS_ANDROID)
+// No extensions/autoresize on Android.
+namespace {
+
+// Don't use text as it text will change the size in DIP at different
+// scale factor.
+const char kAutoResizeTestPage[] =
+    "<div style='width=20px; height=20px'></div>";
+
+}  // namespace
+
+TEST_F(RenderViewImplScaleFactorTest, AutoResizeWithZoomForDSF) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableUseZoomForDSF);
+  DoSetUp();
+  view()->EnableAutoResizeForTesting(gfx::Size(5, 5), gfx::Size(1000, 1000));
+  LoadHTML(kAutoResizeTestPage);
+  gfx::Size size_at_1x = view()->size();
+  ASSERT_FALSE(size_at_1x.IsEmpty());
+
+  SetDeviceScaleFactor(2.f);
+  LoadHTML(kAutoResizeTestPage);
+  gfx::Size size_at_2x = view()->size();
+  EXPECT_EQ(size_at_1x, size_at_2x);
+}
+
+TEST_F(RenderViewImplScaleFactorTest, AutoResizeWithoutZoomForDSF) {
+  DoSetUp();
+  view()->EnableAutoResizeForTesting(gfx::Size(5, 5), gfx::Size(1000, 1000));
+  LoadHTML(kAutoResizeTestPage);
+  gfx::Size size_at_1x = view()->size();
+  ASSERT_FALSE(size_at_1x.IsEmpty());
+
+  SetDeviceScaleFactor(2.f);
+  LoadHTML(kAutoResizeTestPage);
+  gfx::Size size_at_2x = view()->size();
+  EXPECT_EQ(size_at_1x, size_at_2x);
+}
+
+#endif
 
 TEST_F(DevToolsAgentTest, DevToolsResumeOnClose) {
   Attach();
