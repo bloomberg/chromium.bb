@@ -43,7 +43,8 @@ MockRenderProcessHost::MockRenderProcessHost(BrowserContext* browser_context)
       fast_shutdown_started_(false),
       deletion_callback_called_(false),
       is_for_guests_only_(false),
-      is_process_backgrounded_(false) {
+      is_process_backgrounded_(false),
+      worker_ref_count_(0) {
   // Child process security operations can't be unit tested unless we add
   // ourselves as an existing child process.
   ChildProcessSecurityPolicyImpl::GetInstance()->Add(GetID());
@@ -296,6 +297,14 @@ scoped_refptr<media::MediaKeys> MockRenderProcessHost::GetCdm(
 
 bool MockRenderProcessHost::IsProcessBackgrounded() const {
   return is_process_backgrounded_;
+}
+
+void MockRenderProcessHost::IncrementWorkerRefCount() {
+  ++worker_ref_count_;
+}
+
+void MockRenderProcessHost::DecrementWorkerRefCount() {
+  --worker_ref_count_;
 }
 
 void MockRenderProcessHost::FilterURL(bool empty_allowed, GURL* url) {

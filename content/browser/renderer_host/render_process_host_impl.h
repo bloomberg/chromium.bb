@@ -163,6 +163,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
                                          int cdm_id) const override;
 #endif
   bool IsProcessBackgrounded() const override;
+  void IncrementWorkerRefCount() override;
+  void DecrementWorkerRefCount() override;
 
   // IPC::Sender via RenderProcessHost.
   bool Send(IPC::Message* msg) override;
@@ -252,11 +254,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void set_is_for_guests_only_for_testing(bool is_for_guests_only) {
     is_for_guests_only_ = is_for_guests_only;
   }
-
-  // Called when the existence of the other renderer process which is connected
-  // to the Worker in this renderer process has changed.
-  void IncrementWorkerRefCount();
-  void DecrementWorkerRefCount();
 
   void GetAudioOutputControllers(
       const GetAudioOutputControllersCallback& callback) const override;

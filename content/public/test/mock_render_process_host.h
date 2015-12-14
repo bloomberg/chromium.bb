@@ -97,6 +97,8 @@ class MockRenderProcessHost : public RenderProcessHost {
                                          int cdm_id) const override;
 #endif
   bool IsProcessBackgrounded() const override;
+  void IncrementWorkerRefCount() override;
+  void DecrementWorkerRefCount() override;
 
   // IPC::Sender via RenderProcessHost.
   bool Send(IPC::Message* msg) override;
@@ -126,6 +128,8 @@ class MockRenderProcessHost : public RenderProcessHost {
   void GetAudioOutputControllers(
       const GetAudioOutputControllersCallback& callback) const override {}
 
+  int worker_ref_count() const { return worker_ref_count_; }
+
  private:
   // Stores IPC messages that would have been sent to the renderer.
   IPC::TestSink sink_;
@@ -144,6 +148,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   bool is_for_guests_only_;
   bool is_process_backgrounded_;
   scoped_ptr<base::ProcessHandle> process_handle;
+  int worker_ref_count_;
 
   DISALLOW_COPY_AND_ASSIGN(MockRenderProcessHost);
 };
