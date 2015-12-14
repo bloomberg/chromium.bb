@@ -563,9 +563,7 @@ TEST_P(EndToEndTest, SimpleRequestResponse) {
   EXPECT_EQ(2, client_->client()->GetNumSentClientHellos());
 }
 
-// TODO(jri): This test fails in net_unittest. Figure out whether to leave
-// disabled or to fix it.
-TEST_P(EndToEndTest, DISABLED_SimpleRequestResponseWithLargeReject) {
+TEST_P(EndToEndTest, SimpleRequestResponseWithLargeReject) {
   chlo_multiplier_ = 1;
   ASSERT_TRUE(Initialize());
 

@@ -72,7 +72,7 @@ class TestProofVerifierChromium : public ProofVerifierChromium {
   scoped_ptr<CTVerifier> cert_transparency_verifier_;
 };
 
-const string kSignature(2048, 's');
+const char kSignature[] = "signature";
 const char kSCT[] = "CryptoServerTests";
 
 class FakeProofSource : public ProofSource {
@@ -216,7 +216,7 @@ ProofSource* CryptoTestUtils::ProofSourceForTesting() {
 #endif
   base::FilePath certs_dir = GetTestCertsDirectory();
   CHECK(source->Initialize(
-      certs_dir.AppendASCII("quic_test.example.com.crt"),
+      certs_dir.AppendASCII("quic_chain.crt"),
       certs_dir.AppendASCII("quic_test.example.com.key.pkcs8"),
       certs_dir.AppendASCII("quic_test.example.com.key.sct")));
   return source;
