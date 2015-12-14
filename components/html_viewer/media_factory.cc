@@ -29,6 +29,7 @@
 #include "mojo/application/public/cpp/connect.h"
 #include "mojo/application/public/interfaces/shell.mojom.h"
 #include "third_party/WebKit/public/web/WebKit.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "v8/include/v8.h"
 
 namespace html_viewer {
@@ -105,9 +106,13 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
       GetMediaPermission(), initial_cdm);
   base::WeakPtr<media::WebMediaPlayerDelegate> delegate;
 
+  if (!url_index_.get() || url_index_->frame() != frame) {
+    url_index_.reset(new media::UrlIndex(frame));
+  }
+
   return new media::WebMediaPlayerImpl(frame, client, encrypted_client,
                                        delegate, media_renderer_factory.Pass(),
-                                       GetCdmFactory(), params);
+                                       GetCdmFactory(), url_index_, params);
 #endif  // defined(OS_ANDROID)
 }
 

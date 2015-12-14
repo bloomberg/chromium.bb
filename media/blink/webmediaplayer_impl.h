@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -22,6 +23,7 @@
 #include "media/blink/buffered_data_source_host_impl.h"
 #include "media/blink/encrypted_media_player_support.h"
 #include "media/blink/media_blink_export.h"
+#include "media/blink/multibuffer_data_source.h"
 #include "media/blink/video_frame_compositor.h"
 #include "media/blink/webmediaplayer_delegate.h"
 #include "media/blink/webmediaplayer_params.h"
@@ -54,6 +56,7 @@ class AudioHardwareConfig;
 class ChunkDemuxer;
 class GpuVideoAcceleratorFactories;
 class MediaLog;
+class UrlIndex;
 class VideoFrameCompositor;
 class WebAudioSourceProviderImpl;
 class WebMediaPlayerDelegate;
@@ -79,6 +82,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
       base::WeakPtr<WebMediaPlayerDelegate> delegate,
       scoped_ptr<RendererFactory> renderer_factory,
       CdmFactory* cdm_factory,
+      linked_ptr<UrlIndex> url_index,
       const WebMediaPlayerParams& params);
   ~WebMediaPlayerImpl() override;
 
@@ -372,11 +376,12 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   //
   // |demuxer_| will contain the appropriate demuxer based on which resource
   // load strategy we're using.
-  scoped_ptr<BufferedDataSource> data_source_;
+  scoped_ptr<BufferedDataSourceInterface> data_source_;
   scoped_ptr<Demuxer> demuxer_;
   ChunkDemuxer* chunk_demuxer_;
 
   BufferedDataSourceHostImpl buffered_data_source_host_;
+  linked_ptr<UrlIndex> url_index_;
 
   // Video rendering members.
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;

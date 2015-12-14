@@ -62,6 +62,8 @@ MEDIA_EXPORT extern const char kVideoUnderflowThresholdMs[];
 
 MEDIA_EXPORT extern const char kDisableRTCSmoothnessAlgorithm[];
 
+MEDIA_EXPORT extern const char kUseNewMediaCache[];
+
 }  // namespace switches
 
 #endif  // MEDIA_BASE_MEDIA_SWITCHES_H_

@@ -6,11 +6,13 @@
 #define COMPONENTS_HTML_VIEWER_MEDIA_FACTORY_H_
 
 #include "base/macros.h"
+#include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread.h"
 #include "media/audio/fake_audio_log_factory.h"
 #include "media/base/audio_hardware_config.h"
+#include "media/blink/url_index.h"
 #include "media/mojo/interfaces/service_factory.mojom.h"
 #include "mojo/application/public/interfaces/service_provider.mojom.h"
 
@@ -33,6 +35,7 @@ class AudioManager;
 class RestartableAudioRendererSink;
 class CdmFactory;
 class MediaPermission;
+class UrlIndex;
 class WebEncryptedMediaClientImpl;
 }
 
@@ -88,6 +91,9 @@ class MediaFactory {
   scoped_ptr<media::WebEncryptedMediaClientImpl> web_encrypted_media_client_;
   scoped_ptr<media::MediaPermission> media_permission_;
   scoped_ptr<media::CdmFactory> cdm_factory_;
+
+  // Media resource cache, lazily initialized.
+  linked_ptr<media::UrlIndex> url_index_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaFactory);
 };

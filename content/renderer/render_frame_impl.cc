@@ -131,6 +131,7 @@
 #include "media/base/audio_renderer_mixer_input.h"
 #include "media/base/media_log.h"
 #include "media/base/media_switches.h"
+#include "media/blink/url_index.h"
 #include "media/blink/webencryptedmediaclient_impl.h"
 #include "media/blink/webmediaplayer_impl.h"
 #include "media/renderers/gpu_video_accelerator_factories.h"
@@ -2322,9 +2323,13 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
 #endif  // defined(ENABLE_MOJO_MEDIA) &&
         // !defined(ENABLE_MEDIA_PIPELINE_ON_ANDROID)
 
+  if (!url_index_.get() || url_index_->frame() != frame) {
+    url_index_.reset(new media::UrlIndex(frame));
+  }
+
   return new media::WebMediaPlayerImpl(
       frame, client, encrypted_client, GetWebMediaPlayerDelegate()->AsWeakPtr(),
-      media_renderer_factory.Pass(), GetCdmFactory(), params);
+      media_renderer_factory.Pass(), GetCdmFactory(), url_index_, params);
 #endif  // defined(OS_ANDROID) && !defined(ENABLE_MEDIA_PIPELINE_ON_ANDROID)
 }
 

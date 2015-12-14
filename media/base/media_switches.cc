@@ -128,4 +128,7 @@ const char kVideoUnderflowThresholdMs[] = "video-underflow-threshold-ms";
 const char kDisableRTCSmoothnessAlgorithm[] =
     "disable-rtc-smoothness-algorithm";
 
+// Use shared block-based buffering for media.
+const char kUseNewMediaCache[] = "use-new-media-cache";
+
 }  // namespace switches

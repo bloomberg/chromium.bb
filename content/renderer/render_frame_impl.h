@@ -12,6 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/id_map.h"
+#include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -85,7 +86,9 @@ class Rect;
 namespace media {
 class CdmFactory;
 class MediaPermission;
+class MediaServiceProvider;
 class RendererWebMediaPlayerDelegate;
+class UrlIndex;
 class WebEncryptedMediaClientImpl;
 }
 
@@ -1060,6 +1063,9 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // The CDM factory attached to this frame, lazily initialized.
   scoped_ptr<media::CdmFactory> cdm_factory_;
+
+  // Media resource cache, lazily initialized.
+  linked_ptr<media::UrlIndex> url_index_;
 
 #if defined(VIDEO_HOLE)
   // Whether or not this RenderFrameImpl contains a media player. Used to

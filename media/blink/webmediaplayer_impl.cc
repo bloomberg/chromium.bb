@@ -104,13 +104,13 @@ namespace media {
 
 class BufferedDataSourceHostImpl;
 
-#define STATIC_ASSERT_MATCHING_ENUM(name) \
-  static_assert(static_cast<int>(WebMediaPlayer::CORSMode ## name) == \
-                static_cast<int>(BufferedResourceLoader::k ## name), \
+#define STATIC_ASSERT_MATCHING_ENUM(name, name2)                    \
+  static_assert(static_cast<int>(WebMediaPlayer::CORSMode##name) == \
+                    static_cast<int>(UrlData::name2),               \
                 "mismatching enum values: " #name)
-STATIC_ASSERT_MATCHING_ENUM(Unspecified);
-STATIC_ASSERT_MATCHING_ENUM(Anonymous);
-STATIC_ASSERT_MATCHING_ENUM(UseCredentials);
+STATIC_ASSERT_MATCHING_ENUM(Unspecified, CORS_UNSPECIFIED);
+STATIC_ASSERT_MATCHING_ENUM(Anonymous, CORS_ANONYMOUS);
+STATIC_ASSERT_MATCHING_ENUM(UseCredentials, CORS_USE_CREDENTIALS);
 #undef STATIC_ASSERT_MATCHING_ENUM
 
 #define BIND_TO_RENDER_LOOP(function) \
@@ -128,6 +128,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
     base::WeakPtr<WebMediaPlayerDelegate> delegate,
     scoped_ptr<RendererFactory> renderer_factory,
     CdmFactory* cdm_factory,
+    linked_ptr<UrlIndex> url_index,
     const WebMediaPlayerParams& params)
     : frame_(frame),
       network_state_(WebMediaPlayer::NetworkStateEmpty),
@@ -163,6 +164,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       last_reported_memory_usage_(0),
       supports_save_(true),
       chunk_demuxer_(NULL),
+      url_index_(url_index),
       // Threaded compositing isn't enabled universally yet.
       compositor_task_runner_(
           params.compositor_task_runner()
@@ -277,14 +279,21 @@ void WebMediaPlayerImpl::DoLoad(LoadType load_type,
   }
 
   // Otherwise it's a regular request which requires resolving the URL first.
-  data_source_.reset(new BufferedDataSource(
-      url,
-      static_cast<BufferedResourceLoader::CORSMode>(cors_mode),
-      main_task_runner_,
-      frame_,
-      media_log_.get(),
-      &buffered_data_source_host_,
-      base::Bind(&WebMediaPlayerImpl::NotifyDownloading, AsWeakPtr())));
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kUseNewMediaCache)) {
+    // Remove this when MultiBufferDataSource becomes default.
+    LOG(WARNING) << "Using MultibufferDataSource";
+    data_source_.reset(new MultibufferDataSource(
+        url, static_cast<UrlData::CORSMode>(cors_mode), main_task_runner_,
+        url_index_, frame_, media_log_.get(), &buffered_data_source_host_,
+        base::Bind(&WebMediaPlayerImpl::NotifyDownloading, AsWeakPtr())));
+  } else {
+    data_source_.reset(new BufferedDataSource(
+        url, static_cast<BufferedResourceLoader::CORSMode>(cors_mode),
+        main_task_runner_, frame_, media_log_.get(),
+        &buffered_data_source_host_,
+        base::Bind(&WebMediaPlayerImpl::NotifyDownloading, AsWeakPtr())));
+  }
   data_source_->SetPreload(preload_);
   data_source_->SetBufferingStrategy(buffering_strategy_);
   data_source_->Initialize(
