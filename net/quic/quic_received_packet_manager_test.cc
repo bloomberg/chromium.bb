@@ -306,10 +306,13 @@ TEST_F(QuicReceivedPacketManagerTest, UpdateReceivedPacketInfo) {
   QuicPacketHeader header;
   header.packet_number = 2u;
   QuicTime two_ms = QuicTime::Zero().Add(QuicTime::Delta::FromMilliseconds(2));
+  EXPECT_FALSE(received_manager_.ack_frame_updated());
   received_manager_.RecordPacketReceived(0u, header, two_ms);
+  EXPECT_TRUE(received_manager_.ack_frame_updated());
 
   QuicAckFrame ack;
   received_manager_.UpdateReceivedPacketInfo(&ack, QuicTime::Zero());
+  EXPECT_FALSE(received_manager_.ack_frame_updated());
   // When UpdateReceivedPacketInfo with a time earlier than the time of the
   // largest observed packet, make sure that the delta is 0, not negative.
   EXPECT_EQ(QuicTime::Delta::Zero(), ack.delta_time_largest_observed);
@@ -317,6 +320,7 @@ TEST_F(QuicReceivedPacketManagerTest, UpdateReceivedPacketInfo) {
 
   QuicTime four_ms = QuicTime::Zero().Add(QuicTime::Delta::FromMilliseconds(4));
   received_manager_.UpdateReceivedPacketInfo(&ack, four_ms);
+  EXPECT_FALSE(received_manager_.ack_frame_updated());
   // When UpdateReceivedPacketInfo after not having received a new packet,
   // the delta should still be accurate.
   EXPECT_EQ(QuicTime::Delta::FromMilliseconds(2),
@@ -329,14 +333,18 @@ TEST_F(QuicReceivedPacketManagerTest, UpdateReceivedPacketInfo) {
   received_manager_.RecordPacketReceived(0u, header, two_ms);
   header.packet_number = 1000u;
   received_manager_.RecordPacketReceived(0u, header, two_ms);
+  EXPECT_TRUE(received_manager_.ack_frame_updated());
   received_manager_.UpdateReceivedPacketInfo(&ack, two_ms);
+  EXPECT_FALSE(received_manager_.ack_frame_updated());
   // UpdateReceivedPacketInfo should discard any times which can't be
   // expressed on the wire.
   EXPECT_EQ(2ul, ack.received_packet_times.size());
 }
 
 TEST_F(QuicReceivedPacketManagerTest, UpdateReceivedConnectionStats) {
+  EXPECT_FALSE(received_manager_.ack_frame_updated());
   RecordPacketReceipt(1, 0);
+  EXPECT_TRUE(received_manager_.ack_frame_updated());
   RecordPacketReceipt(6, 0);
   RecordPacketReceipt(
       2, 0, QuicTime::Zero().Add(QuicTime::Delta::FromMilliseconds(1)));
@@ -347,19 +355,24 @@ TEST_F(QuicReceivedPacketManagerTest, UpdateReceivedConnectionStats) {
 }
 
 TEST_F(QuicReceivedPacketManagerTest, RevivedPacket) {
+  EXPECT_FALSE(received_manager_.ack_frame_updated());
   RecordPacketReceipt(1, 0);
+  EXPECT_TRUE(received_manager_.ack_frame_updated());
   RecordPacketReceipt(3, 0);
   RecordPacketRevived(2);
 
   QuicAckFrame ack;
   received_manager_.UpdateReceivedPacketInfo(&ack, QuicTime::Zero());
+  EXPECT_FALSE(received_manager_.ack_frame_updated());
   EXPECT_EQ(1u, ack.missing_packets.NumPacketsSlow());
   EXPECT_EQ(2u, ack.missing_packets.Min());
   EXPECT_EQ(2u, ack.latest_revived_packet);
 }
 
 TEST_F(QuicReceivedPacketManagerTest, PacketRevivedThenReceived) {
+  EXPECT_FALSE(received_manager_.ack_frame_updated());
   RecordPacketReceipt(1, 0);
+  EXPECT_TRUE(received_manager_.ack_frame_updated());
   RecordPacketReceipt(3, 0);
   RecordPacketRevived(2);
   RecordPacketReceipt(2, 0);
@@ -370,6 +383,27 @@ TEST_F(QuicReceivedPacketManagerTest, PacketRevivedThenReceived) {
   EXPECT_EQ(0u, ack.latest_revived_packet);
 }
 
+TEST_F(QuicReceivedPacketManagerTest, RevivedPacketAckFrameUpdated) {
+  EXPECT_FALSE(received_manager_.ack_frame_updated());
+  RecordPacketReceipt(1, 0);
+  RecordPacketReceipt(3, 0);
+  EXPECT_TRUE(received_manager_.ack_frame_updated());
+
+  QuicAckFrame ack;
+  received_manager_.UpdateReceivedPacketInfo(&ack, QuicTime::Zero());
+  EXPECT_FALSE(received_manager_.ack_frame_updated());
+  EXPECT_EQ(1u, ack.missing_packets.NumPacketsSlow());
+  EXPECT_EQ(2u, ack.missing_packets.Min());
+  EXPECT_EQ(0u, ack.latest_revived_packet);
+
+  RecordPacketRevived(2);
+  EXPECT_TRUE(received_manager_.ack_frame_updated());
+  received_manager_.UpdateReceivedPacketInfo(&ack, QuicTime::Zero());
+  EXPECT_FALSE(received_manager_.ack_frame_updated());
+  EXPECT_EQ(1u, ack.missing_packets.NumPacketsSlow());
+  EXPECT_EQ(2u, ack.missing_packets.Min());
+  EXPECT_EQ(2u, ack.latest_revived_packet);
+}
 
 }  // namespace
 }  // namespace test

@@ -123,14 +123,15 @@ const bool kIncludeVersion = true;
 // Signifies that the QuicPacket will contain path id.
 const bool kIncludePathId = true;
 
-// Index of the first byte in a QUIC packet which is used in hash calculation.
-const size_t kStartOfHashData = 0;
-
 // Reserved ID for the crypto stream.
 const QuicStreamId kCryptoStreamId = 1;
 
 // Reserved ID for the headers stream.
 const QuicStreamId kHeadersStreamId = 3;
+
+// Header key used to identify final offset on data stream when sending HTTP/2
+// trailing headers over QUIC.
+NET_EXPORT_PRIVATE extern const char* const kFinalOffsetHeaderKey;
 
 // Maximum delayed ack time, in ms.
 const int64 kMaxDelayedAckTimeMs = 25;
@@ -190,6 +191,9 @@ const int kUFloat16MantissaEffectiveBits = kUFloat16MantissaBits + 1;  // 12
 const uint64 kUFloat16MaxValue =  // 0x3FFC0000000
     ((UINT64_C(1) << kUFloat16MantissaEffectiveBits) - 1) <<
     kUFloat16MaxExponent;
+
+// Default path ID.
+const QuicPathId kDefaultPathId = 0;
 
 enum TransmissionType {
   NOT_RETRANSMISSION,
@@ -772,6 +776,8 @@ struct NET_EXPORT_PRIVATE QuicStopWaitingFrame {
 
   NET_EXPORT_PRIVATE friend std::ostream& operator<<(
       std::ostream& os, const QuicStopWaitingFrame& s);
+  // Path which this stop waiting frame belongs to.
+  QuicPathId path_id;
   // Entropy hash of all packets up to, but not including, the least unacked
   // packet.
   QuicPacketEntropyHash entropy_hash;
@@ -878,6 +884,9 @@ struct NET_EXPORT_PRIVATE QuicAckFrame {
 
   NET_EXPORT_PRIVATE friend std::ostream& operator<<(
       std::ostream& os, const QuicAckFrame& s);
+
+  // Path which this ack belongs to.
+  QuicPathId path_id;
 
   // Entropy hash of all packets up to largest observed not including missing
   // packets.
@@ -1118,7 +1127,6 @@ class NET_EXPORT_PRIVATE QuicPacket : public QuicData {
 
   base::StringPiece FecProtectedData() const;
   base::StringPiece AssociatedData() const;
-  base::StringPiece BeforePlaintext() const;
   base::StringPiece Plaintext() const;
 
   char* mutable_data() { return buffer_; }

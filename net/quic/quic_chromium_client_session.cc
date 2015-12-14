@@ -393,7 +393,7 @@ int QuicChromiumClientSession::TryCreateStream(
     return ERR_CONNECTION_CLOSED;
   }
 
-  if (GetNumOpenStreams() < get_max_open_streams()) {
+  if (GetNumOpenOutgoingStreams() < get_max_open_streams()) {
     *stream = CreateOutgoingReliableStreamImpl();
     return OK;
   }
@@ -418,9 +418,9 @@ QuicChromiumClientSession::CreateOutgoingDynamicStream() {
     DVLOG(1) << "Encryption not active so no outgoing stream created.";
     return nullptr;
   }
-  if (GetNumOpenStreams() >= get_max_open_streams()) {
+  if (GetNumOpenOutgoingStreams() >= get_max_open_streams()) {
     DVLOG(1) << "Failed to create a new outgoing stream. "
-             << "Already " << GetNumOpenStreams() << " open.";
+             << "Already " << GetNumOpenOutgoingStreams() << " open.";
     return nullptr;
   }
   if (goaway_received()) {
@@ -442,11 +442,12 @@ QuicChromiumClientSession::CreateOutgoingReliableStreamImpl() {
       new QuicReliableClientStream(GetNextOutgoingStreamId(), this, net_log_);
   ActivateStream(stream);
   ++num_total_streams_;
-  UMA_HISTOGRAM_COUNTS("Net.QuicSession.NumOpenStreams", GetNumOpenStreams());
+  UMA_HISTOGRAM_COUNTS("Net.QuicSession.NumOpenStreams",
+                       GetNumOpenOutgoingStreams());
   // The previous histogram puts 100 in a bucket betweeen 86-113 which does
   // not shed light on if chrome ever things it has more than 100 streams open.
   UMA_HISTOGRAM_BOOLEAN("Net.QuicSession.TooManyOpenStreams",
-                        GetNumOpenStreams() > 100);
+                        GetNumOpenOutgoingStreams() > 100);
   return stream;
 }
 
@@ -591,7 +592,7 @@ void QuicChromiumClientSession::SendRstStream(QuicStreamId id,
 }
 
 void QuicChromiumClientSession::OnClosedStream() {
-  if (GetNumOpenStreams() < get_max_open_streams() &&
+  if (GetNumOpenOutgoingStreams() < get_max_open_streams() &&
       !stream_requests_.empty() && crypto_stream_->encryption_established() &&
       !goaway_received() && !going_away_ && connection()->connected()) {
     StreamRequest* request = stream_requests_.front();
@@ -599,7 +600,7 @@ void QuicChromiumClientSession::OnClosedStream() {
     request->OnRequestCompleteSuccess(CreateOutgoingReliableStreamImpl());
   }
 
-  if (GetNumOpenStreams() == 0) {
+  if (GetNumOpenOutgoingStreams() == 0) {
     stream_factory_->OnIdleSession(this);
   }
 }
@@ -709,9 +710,9 @@ void QuicChromiumClientSession::OnConnectionClosed(QuicErrorCode error,
   if (error == QUIC_CONNECTION_TIMED_OUT) {
     UMA_HISTOGRAM_COUNTS(
         "Net.QuicSession.ConnectionClose.NumOpenStreams.TimedOut",
-        GetNumOpenStreams());
+        GetNumOpenOutgoingStreams());
     if (IsCryptoHandshakeConfirmed()) {
-      if (GetNumOpenStreams() > 0) {
+      if (GetNumOpenOutgoingStreams() > 0) {
         disabled_reason_ = QUIC_DISABLED_TIMEOUT_WITH_OPEN_STREAMS;
         UMA_HISTOGRAM_BOOLEAN(
             "Net.QuicSession.TimedOutWithOpenStreams.HasUnackedPackets",
@@ -738,7 +739,7 @@ void QuicChromiumClientSession::OnConnectionClosed(QuicErrorCode error,
     } else {
       UMA_HISTOGRAM_COUNTS(
           "Net.QuicSession.ConnectionClose.NumOpenStreams.HandshakeTimedOut",
-          GetNumOpenStreams());
+          GetNumOpenOutgoingStreams());
       UMA_HISTOGRAM_COUNTS(
           "Net.QuicSession.ConnectionClose.NumTotalStreams.HandshakeTimedOut",
           num_total_streams_);
@@ -875,7 +876,7 @@ scoped_ptr<base::Value> QuicChromiumClientSession::GetInfoAsValue(
     const std::set<HostPortPair>& aliases) {
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetString("version", QuicVersionToString(connection()->version()));
-  dict->SetInteger("open_streams", GetNumOpenStreams());
+  dict->SetInteger("open_streams", GetNumOpenOutgoingStreams());
   scoped_ptr<base::ListValue> stream_list(new base::ListValue());
   for (base::hash_map<QuicStreamId, ReliableQuicStream*>::const_iterator it =
            dynamic_streams().begin();
@@ -977,7 +978,7 @@ void QuicChromiumClientSession::OnConnectTimeout() {
   //  if (stream_factory_)
   //    stream_factory_->OnSessionConnectTimeout(this);
   //  CloseAllStreams(ERR_QUIC_HANDSHAKE_FAILED);
-  //  DCHECK_EQ(0u, GetNumOpenStreams());
+  //  DCHECK_EQ(0u, GetNumOpenOutgoingStreams());
 }
 
 }  // namespace net

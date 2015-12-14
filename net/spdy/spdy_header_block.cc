@@ -18,6 +18,7 @@ using std::dec;
 using std::hex;
 using std::max;
 using std::min;
+using std::string;
 
 namespace net {
 namespace {
@@ -165,18 +166,14 @@ bool SpdyHeaderBlock::operator!=(const SpdyHeaderBlock& other) const {
   return !(operator==(other));
 }
 
-std::string SpdyHeaderBlock::DebugString() const {
+string SpdyHeaderBlock::DebugString() const {
   if (empty()) {
     return "{}";
   }
-
-  std::string output = "\n{\n";
+  string output = "\n{\n";
   for (auto it = begin(); it != end(); ++it) {
-    output.append(" ");
-    it->first.AppendToString(&output);
-    output.append(":");
-    it->second.AppendToString(&output);
-    output.append("\n");
+    output +=
+        "  " + it->first.as_string() + ":" + it->second.as_string() + "\n";
   }
   output.append("}\n");
   return output;
@@ -259,7 +256,7 @@ bool SpdyHeaderBlockFromNetLogParam(
 
   for (base::DictionaryValue::Iterator it(*header_dict); !it.IsAtEnd();
        it.Advance()) {
-    std::string value;
+    string value;
     if (!it.value().GetAsString(&value)) {
       headers->clear();
       return false;

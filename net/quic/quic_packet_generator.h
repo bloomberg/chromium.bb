@@ -71,6 +71,7 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator
   class NET_EXPORT_PRIVATE DelegateInterface {
    public:
     virtual ~DelegateInterface() {}
+    // Consults delegate whether a packet should be generated.
     virtual bool ShouldGeneratePacket(HasRetransmittableData retransmittable,
                                       IsHandshake handshake) = 0;
     virtual void PopulateAckFrame(QuicAckFrame* ack) = 0;
@@ -210,6 +211,11 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator
   // immediately.  Otherwise, it is enacted at the next opportunity.
   void SetMaxPacketLength(QuicByteCount length, bool force);
 
+  // Sets |path_id| to be the path on which next packet is generated.
+  void SetCurrentPath(QuicPathId path_id,
+                      QuicPacketNumber least_packet_awaited_by_peer,
+                      QuicPacketCount max_packets_in_flight);
+
   void set_debug_delegate(DebugDelegate* debug_delegate) {
     debug_delegate_ = debug_delegate;
   }
@@ -226,7 +232,7 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator
 
   // Test to see if we have pending ack, or control frames.
   bool HasPendingFrames() const;
-  // Test to see if the addition of a pending frame (which might be
+  // Returns true if addition of a pending frame (which might be
   // retransmittable) would still allow the resulting packet to be sent now.
   bool CanSendWithNextPendingFrameAddition() const;
   // Add exactly one pending frame, preferring ack frames over control frames.
@@ -255,10 +261,6 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator
   // retransmitted.
   QuicAckFrame pending_ack_frame_;
   QuicStopWaitingFrame pending_stop_waiting_frame_;
-  // True if an ack or stop waiting frame is already queued, and should not be
-  // re-added.
-  bool ack_queued_;
-  bool stop_waiting_queued_;
 
   // Stores ack listeners that should be attached to the next packet.
   std::list<AckListenerWrapper> ack_listeners_;

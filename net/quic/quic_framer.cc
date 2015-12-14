@@ -1599,11 +1599,11 @@ StringPiece QuicFramer::GetAssociatedDataFromEncryptedPacket(
     QuicConnectionIdLength connection_id_length,
     bool includes_version,
     QuicPacketNumberLength packet_number_length) {
+  // TODO(ianswett): This is identical to QuicData::AssociatedData.
   return StringPiece(
-      encrypted.data() + kStartOfHashData,
+      encrypted.data(),
       GetStartOfEncryptedData(connection_id_length, includes_version,
-                              packet_number_length) -
-          kStartOfHashData);
+                              packet_number_length));
 }
 
 void QuicFramer::SetDecrypter(EncryptionLevel level, QuicDecrypter* decrypter) {
@@ -1642,21 +1642,21 @@ size_t QuicFramer::EncryptPayload(EncryptionLevel level,
                                   size_t buffer_len) {
   DCHECK(encrypter_[level].get() != nullptr);
 
-  StringPiece header_data = packet.BeforePlaintext();
+  StringPiece associated_data = packet.AssociatedData();
   // Copy in the header, because the encrypter only populates the encrypted
   // plaintext content.
-  const size_t header_len = header_data.length();
-  memcpy(buffer, header_data.data(), header_len);
+  const size_t ad_len = associated_data.length();
+  memcpy(buffer, associated_data.data(), ad_len);
   // Encrypt the plaintext into the buffer.
   size_t output_length = 0;
-  if (!encrypter_[level]->EncryptPacket(
-          packet_number, packet.AssociatedData(), packet.Plaintext(),
-          buffer + header_len, &output_length, buffer_len - header_len)) {
+  if (!encrypter_[level]->EncryptPacket(packet_number, associated_data,
+                                        packet.Plaintext(), buffer + ad_len,
+                                        &output_length, buffer_len - ad_len)) {
     RaiseError(QUIC_ENCRYPTION_FAILURE);
     return 0;
   }
 
-  return header_len + output_length;
+  return ad_len + output_length;
 }
 
 size_t QuicFramer::GetMaxPlaintextSize(size_t ciphertext_size) {

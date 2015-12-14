@@ -186,9 +186,9 @@ TEST_P(QuicSpdyServerStreamTest, TestFramingExtraData) {
   string large_body = "hello world!!!!!!";
 
   // We'll automatically write out an error (headers + body)
+  EXPECT_CALL(session_, WriteHeaders(_, _, _, _, _));
   EXPECT_CALL(session_, WritevData(_, _, _, _, _, _))
-      .Times(2)
-      .WillRepeatedly(Invoke(MockQuicSpdySession::ConsumeAllData));
+      .WillOnce(Invoke(MockQuicSpdySession::ConsumeAllData));
   EXPECT_CALL(session_, SendRstStream(_, QUIC_STREAM_NO_ERROR, _)).Times(0);
 
   stream_->OnStreamHeaders(headers_string_);
@@ -223,7 +223,7 @@ TEST_P(QuicSpdyServerStreamTest, SendResponseWithIllegalResponseStatus) {
   stream_->set_fin_received(true);
 
   InSequence s;
-  EXPECT_CALL(session_, WritevData(kHeadersStreamId, _, 0, false, _, nullptr));
+  EXPECT_CALL(session_, WriteHeaders(stream_->id(), _, false, _, nullptr));
   EXPECT_CALL(session_, WritevData(_, _, _, _, _, _))
       .Times(1)
       .WillOnce(Return(QuicConsumedData(
@@ -280,7 +280,7 @@ TEST_P(QuicSpdyServerStreamTest, SendResponseWithValidHeaders) {
   stream_->set_fin_received(true);
 
   InSequence s;
-  EXPECT_CALL(session_, WritevData(kHeadersStreamId, _, 0, false, _, nullptr));
+  EXPECT_CALL(session_, WriteHeaders(stream_->id(), _, false, _, nullptr));
   EXPECT_CALL(session_, WritevData(_, _, _, _, _, _))
       .Times(1)
       .WillOnce(Return(QuicConsumedData(body.length(), true)));
@@ -300,7 +300,7 @@ TEST_P(QuicSpdyServerStreamTest, TestSendErrorResponse) {
   stream_->set_fin_received(true);
 
   InSequence s;
-  EXPECT_CALL(session_, WritevData(kHeadersStreamId, _, 0, false, _, nullptr));
+  EXPECT_CALL(session_, WriteHeaders(_, _, _, _, _));
   EXPECT_CALL(session_, WritevData(_, _, _, _, _, _)).Times(1).
       WillOnce(Return(QuicConsumedData(3, true)));
 
@@ -319,6 +319,7 @@ TEST_P(QuicSpdyServerStreamTest, InvalidMultipleContentLength) {
 
   headers_string_ = SpdyUtils::SerializeUncompressedHeaders(request_headers);
 
+  EXPECT_CALL(session_, WriteHeaders(_, _, _, _, _));
   EXPECT_CALL(session_, WritevData(_, _, _, _, _, _))
       .Times(AnyNumber())
       .WillRepeatedly(Invoke(MockQuicSpdySession::ConsumeAllData));
@@ -339,6 +340,7 @@ TEST_P(QuicSpdyServerStreamTest, InvalidLeadingNullContentLength) {
 
   headers_string_ = SpdyUtils::SerializeUncompressedHeaders(request_headers);
 
+  EXPECT_CALL(session_, WriteHeaders(_, _, _, _, _));
   EXPECT_CALL(session_, WritevData(_, _, _, _, _, _))
       .Times(AnyNumber())
       .WillRepeatedly(Invoke(MockQuicSpdySession::ConsumeAllData));
@@ -372,8 +374,7 @@ TEST_P(QuicSpdyServerStreamTest, SendQuicRstStreamNoErrorWithEarlyResponse) {
   response_headers_["content-length"] = "3";
 
   InSequence s;
-
-  EXPECT_CALL(session_, WritevData(kHeadersStreamId, _, 0, false, _, nullptr));
+  EXPECT_CALL(session_, WriteHeaders(stream_->id(), _, _, _, _));
   EXPECT_CALL(session_, WritevData(_, _, _, _, _, _))
       .Times(1)
       .WillOnce(Return(QuicConsumedData(3, true)));

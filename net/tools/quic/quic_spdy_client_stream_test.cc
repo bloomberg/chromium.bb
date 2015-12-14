@@ -6,6 +6,7 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "net/quic/quic_utils.h"
+#include "net/quic/spdy_utils.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/tools/quic/quic_client_session.h"
@@ -32,16 +33,31 @@ namespace tools {
 namespace test {
 namespace {
 
+class MockQuicClientSession : public QuicClientSession {
+ public:
+  explicit MockQuicClientSession(QuicConnection* connection)
+      : QuicClientSession(
+            DefaultQuicConfig(),
+            connection,
+            QuicServerId("example.com", 80, PRIVACY_MODE_DISABLED),
+            &crypto_config_),
+        crypto_config_(CryptoTestUtils::ProofVerifierForTesting()) {}
+  ~MockQuicClientSession() override {}
+
+  MOCK_METHOD1(CloseStream, void(QuicStreamId stream_id));
+
+ private:
+  QuicCryptoClientConfig crypto_config_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockQuicClientSession);
+};
+
 class QuicSpdyClientStreamTest : public ::testing::Test {
  public:
   QuicSpdyClientStreamTest()
       : connection_(
             new StrictMock<MockConnection>(&helper_, Perspective::IS_CLIENT)),
-        crypto_config_(CryptoTestUtils::ProofVerifierForTesting()),
-        session_(DefaultQuicConfig(),
-                 connection_,
-                 QuicServerId("example.com", 80, PRIVACY_MODE_DISABLED),
-                 &crypto_config_),
+        session_(connection_),
         body_("hello world") {
     session_.Initialize();
 
@@ -51,19 +67,12 @@ class QuicSpdyClientStreamTest : public ::testing::Test {
     headers_string_ =
         net::tools::SpdyBalsaUtils::SerializeResponseHeaders(headers_);
 
-    // New streams rely on having the peer's flow control receive window
-    // negotiated in the config.
-    session_.config()->SetInitialStreamFlowControlWindowToSend(
-        kInitialStreamFlowControlWindowForTest);
-    session_.config()->SetInitialSessionFlowControlWindowToSend(
-        kInitialSessionFlowControlWindowForTest);
     stream_.reset(new QuicSpdyClientStream(kClientDataStreamId1, &session_));
   }
 
   MockConnectionHelper helper_;
   StrictMock<MockConnection>* connection_;
-  QuicCryptoClientConfig crypto_config_;
-  QuicClientSession session_;
+  MockQuicClientSession session_;
   scoped_ptr<QuicSpdyClientStream> stream_;
   BalsaHeaders headers_;
   string headers_string_;
@@ -114,6 +123,32 @@ TEST_F(QuicSpdyClientStreamTest, TestNoBidirectionalStreaming) {
   EXPECT_FALSE(stream_->write_side_closed());
   stream_->OnStreamFrame(frame);
   EXPECT_TRUE(stream_->write_side_closed());
+}
+
+TEST_F(QuicSpdyClientStreamTest, ReceivingTrailers) {
+  // Test that receiving trailing headers, containing a final offset, results in
+  // the stream being closed at that byte offset.
+  FLAGS_quic_supports_trailers = true;
+
+  // Send headers as usual.
+  stream_->OnStreamHeaders(headers_string_);
+  stream_->OnStreamHeadersComplete(false, headers_string_.size());
+
+  // Send trailers before sending the body. Even though a FIN has been received
+  // the stream should not be closed, as it does not yet have all the data bytes
+  // promised by the final offset field.
+  SpdyHeaderBlock trailers;
+  trailers["trailer key"] = "trailer value";
+  trailers[kFinalOffsetHeaderKey] = base::IntToString(body_.size());
+  string trailers_string = SpdyUtils::SerializeUncompressedHeaders(trailers);
+  stream_->OnStreamHeaders(trailers_string);
+  stream_->OnStreamHeadersComplete(true, trailers_string.size());
+
+  // Now send the body, which should close the stream as the FIN has been
+  // received, as well as all data.
+  EXPECT_CALL(session_, CloseStream(stream_->id()));
+  stream_->OnStreamFrame(
+      QuicStreamFrame(stream_->id(), /*fin=*/false, /*offset=*/0, body_));
 }
 
 }  // namespace

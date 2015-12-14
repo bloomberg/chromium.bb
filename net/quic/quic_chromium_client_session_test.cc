@@ -130,7 +130,8 @@ TEST_P(QuicChromiumClientSessionTest, MaxNumStreams) {
   }
   EXPECT_FALSE(session_.CreateOutgoingDynamicStream());
 
-  EXPECT_EQ(kDefaultMaxStreamsPerConnection, session_.GetNumOpenStreams());
+  EXPECT_EQ(kDefaultMaxStreamsPerConnection,
+            session_.GetNumOpenOutgoingStreams());
 
   // Close a stream and ensure I can now open a new one.
   QuicStreamId stream_id = streams[0]->id();
@@ -139,7 +140,8 @@ TEST_P(QuicChromiumClientSessionTest, MaxNumStreams) {
   EXPECT_FALSE(session_.CreateOutgoingDynamicStream());
   QuicRstStreamFrame rst1(stream_id, QUIC_STREAM_NO_ERROR, 0);
   session_.OnRstStream(rst1);
-  EXPECT_EQ(kDefaultMaxStreamsPerConnection - 1, session_.GetNumOpenStreams());
+  EXPECT_EQ(kDefaultMaxStreamsPerConnection - 1,
+            session_.GetNumOpenOutgoingStreams());
   EXPECT_TRUE(session_.CreateOutgoingDynamicStream());
 }
 

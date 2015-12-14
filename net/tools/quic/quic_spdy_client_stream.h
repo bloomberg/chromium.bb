@@ -31,8 +31,11 @@ class QuicSpdyClientStream : public QuicSpdyStream {
   // SPDY/HTTP does not support bidirectional streaming.
   void OnStreamFrame(const QuicStreamFrame& frame) override;
 
-  // Override the base class to store the size of the headers.
-  void OnStreamHeadersComplete(bool fin, size_t frame_len) override;
+  // Override the base class to parse and store headers.
+  void OnInitialHeadersComplete(bool fin, size_t frame_len) override;
+
+  // Override the base class to parse and store trailers.
+  void OnTrailingHeadersComplete(bool fin, size_t frame_len) override;
 
   // ReliableQuicStream implementation called by the session when there's
   // data for us.
@@ -57,9 +60,14 @@ class QuicSpdyClientStream : public QuicSpdyStream {
   // Returns whatever headers have been received for this stream.
   const SpdyHeaderBlock& headers() { return response_headers_; }
 
+  // Returns whatever trailers have been received for this stream.
+  const SpdyHeaderBlock& trailers() { return response_trailers_; }
+
   size_t header_bytes_read() const { return header_bytes_read_; }
 
   size_t header_bytes_written() const { return header_bytes_written_; }
+
+  size_t trailer_bytes_read() const { return header_bytes_read_; }
 
   int response_code() const { return response_code_; }
 
@@ -76,6 +84,10 @@ class QuicSpdyClientStream : public QuicSpdyStream {
  private:
   // The parsed headers received from the server.
   SpdyHeaderBlock response_headers_;
+
+  // The parsed trailers received from the server.
+  SpdyHeaderBlock response_trailers_;
+
   // The parsed content-length, or -1 if none is specified.
   int content_length_;
   int response_code_;

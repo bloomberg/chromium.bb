@@ -1356,6 +1356,171 @@ TEST_P(QuicPacketCreatorTest, ResetFecGroupWithQueuedFrames) {
   EXPECT_FALSE(creator_.IsFecGroupOpen());
 }
 
+TEST_P(QuicPacketCreatorTest, SetCurrentPath) {
+  // Current path is the default path.
+  EXPECT_EQ(kDefaultPathId, QuicPacketCreatorPeer::GetCurrentPath(&creator_));
+  EXPECT_EQ(0u, creator_.packet_number());
+  EXPECT_EQ(PACKET_1BYTE_PACKET_NUMBER,
+            QuicPacketCreatorPeer::NextPacketNumberLength(&creator_));
+  // Add a stream frame to the creator.
+  QuicFrame frame;
+  QuicIOVector io_vector(MakeIOVector("test"));
+  ASSERT_TRUE(creator_.ConsumeData(1u, io_vector, 0u, 0u, false, false, &frame,
+                                   MAY_FEC_PROTECT));
+  ASSERT_TRUE(frame.stream_frame);
+  size_t consumed = frame.stream_frame->frame_length;
+  EXPECT_EQ(4u, consumed);
+  EXPECT_TRUE(creator_.HasPendingFrames());
+  EXPECT_EQ(0u, creator_.packet_number());
+
+  // Change current path.
+  QuicPathId kPathId1 = 1;
+  EXPECT_DFATAL(creator_.SetCurrentPath(kPathId1, 1, 0),
+                "Unable to change paths when a packet is under construction");
+  EXPECT_CALL(delegate_, OnSerializedPacket(_))
+      .Times(1)
+      .WillRepeatedly(
+          Invoke(this, &QuicPacketCreatorTest::ClearSerializedPacket));
+  creator_.Flush();
+  EXPECT_FALSE(creator_.HasPendingFrames());
+  creator_.SetCurrentPath(kPathId1, 1, 0);
+  EXPECT_EQ(kPathId1, QuicPacketCreatorPeer::GetCurrentPath(&creator_));
+  EXPECT_FALSE(creator_.HasPendingFrames());
+  EXPECT_EQ(0u, creator_.packet_number());
+  EXPECT_EQ(PACKET_1BYTE_PACKET_NUMBER,
+            QuicPacketCreatorPeer::NextPacketNumberLength(&creator_));
+
+  // Change current path back.
+  creator_.SetCurrentPath(kDefaultPathId, 2, 1);
+  EXPECT_EQ(kDefaultPathId, QuicPacketCreatorPeer::GetCurrentPath(&creator_));
+  EXPECT_EQ(1u, creator_.packet_number());
+  EXPECT_EQ(PACKET_1BYTE_PACKET_NUMBER,
+            QuicPacketCreatorPeer::NextPacketNumberLength(&creator_));
+  // Add a stream frame to the creator.
+  ASSERT_TRUE(creator_.ConsumeData(1u, io_vector, 0u, 0u, false, false, &frame,
+                                   MAY_FEC_PROTECT));
+  ASSERT_TRUE(frame.stream_frame);
+  consumed = frame.stream_frame->frame_length;
+  EXPECT_EQ(4u, consumed);
+  EXPECT_TRUE(creator_.HasPendingFrames());
+
+  // Does not change current path.
+  creator_.SetCurrentPath(kDefaultPathId, 2, 0);
+  EXPECT_EQ(kDefaultPathId, QuicPacketCreatorPeer::GetCurrentPath(&creator_));
+  EXPECT_TRUE(creator_.HasPendingFrames());
+  EXPECT_EQ(1u, creator_.packet_number());
+  EXPECT_EQ(PACKET_1BYTE_PACKET_NUMBER,
+            QuicPacketCreatorPeer::NextPacketNumberLength(&creator_));
+}
+
+TEST_P(QuicPacketCreatorTest, SetCurrentPathWithFec) {
+  // Send FEC packet every 6 packets.
+  creator_.set_max_packets_per_fec_group(6);
+  // Current path is the default path.
+  EXPECT_EQ(kDefaultPathId, QuicPacketCreatorPeer::GetCurrentPath(&creator_));
+  EXPECT_EQ(0u, creator_.packet_number());
+  EXPECT_EQ(PACKET_1BYTE_PACKET_NUMBER,
+            QuicPacketCreatorPeer::NextPacketNumberLength(&creator_));
+  EXPECT_FALSE(QuicPacketCreatorPeer::IsFecProtected(&creator_));
+  // Add a stream frame to the creator.
+  QuicFrame frame;
+  QuicIOVector io_vector(MakeIOVector("test"));
+  ASSERT_TRUE(creator_.ConsumeData(1u, io_vector, 0u, 0u, false, false, &frame,
+                                   MUST_FEC_PROTECT));
+  ASSERT_TRUE(frame.stream_frame);
+  size_t consumed = frame.stream_frame->frame_length;
+  EXPECT_EQ(4u, consumed);
+  EXPECT_TRUE(creator_.HasPendingFrames());
+  EXPECT_EQ(0u, creator_.packet_number());
+  EXPECT_EQ(PACKET_1BYTE_PACKET_NUMBER,
+            QuicPacketCreatorPeer::NextPacketNumberLength(&creator_));
+  EXPECT_TRUE(QuicPacketCreatorPeer::IsFecProtected(&creator_));
+
+  // Change current path.
+  QuicPathId kPathId1 = 1;
+  EXPECT_DFATAL(creator_.SetCurrentPath(kPathId1, 1, 0),
+                "Unable to change paths when a packet is under construction");
+  EXPECT_CALL(delegate_, OnSerializedPacket(_))
+      .Times(2)
+      .WillRepeatedly(
+          Invoke(this, &QuicPacketCreatorTest::ClearSerializedPacket));
+  creator_.Flush();
+  EXPECT_FALSE(creator_.HasPendingFrames());
+  creator_.SetCurrentPath(kPathId1, 1, 0);
+  EXPECT_EQ(kPathId1, QuicPacketCreatorPeer::GetCurrentPath(&creator_));
+  EXPECT_FALSE(creator_.HasPendingFrames());
+  EXPECT_EQ(0u, creator_.packet_number());
+  EXPECT_EQ(PACKET_1BYTE_PACKET_NUMBER,
+            QuicPacketCreatorPeer::NextPacketNumberLength(&creator_));
+  EXPECT_TRUE(QuicPacketCreatorPeer::IsFecProtected(&creator_));
+
+  // Change current path back.
+  creator_.SetCurrentPath(kDefaultPathId, 3, 2);
+  EXPECT_EQ(kDefaultPathId, QuicPacketCreatorPeer::GetCurrentPath(&creator_));
+  // FEC packet consumes a packet number.
+  EXPECT_EQ(2u, creator_.packet_number());
+  EXPECT_EQ(PACKET_1BYTE_PACKET_NUMBER,
+            QuicPacketCreatorPeer::NextPacketNumberLength(&creator_));
+  // Add a stream frame to the creator.
+  ASSERT_TRUE(creator_.ConsumeData(1u, io_vector, 0u, 0u, false, false, &frame,
+                                   MUST_FEC_PROTECT));
+  ASSERT_TRUE(frame.stream_frame);
+  consumed = frame.stream_frame->frame_length;
+  EXPECT_EQ(4u, consumed);
+  EXPECT_TRUE(creator_.HasPendingFrames());
+
+  // Does not change current path.
+  creator_.SetCurrentPath(kDefaultPathId, 3, 0);
+  EXPECT_EQ(kDefaultPathId, QuicPacketCreatorPeer::GetCurrentPath(&creator_));
+  EXPECT_TRUE(creator_.HasPendingFrames());
+  // FEC packet consumes a packet number.
+  EXPECT_EQ(2u, creator_.packet_number());
+  EXPECT_EQ(PACKET_1BYTE_PACKET_NUMBER,
+            QuicPacketCreatorPeer::NextPacketNumberLength(&creator_));
+  EXPECT_TRUE(QuicPacketCreatorPeer::IsFecProtected(&creator_));
+}
+
+TEST_P(QuicPacketCreatorTest,
+       SetCurrentPathWithFecAndUpdatePacketSequenceNumberLength) {
+  // Send FEC packet every 10 packets.
+  size_t max_packets_per_fec_group = 10;
+  creator_.set_max_packets_per_fec_group(max_packets_per_fec_group);
+  // Current path is the default path.
+  EXPECT_EQ(kDefaultPathId, QuicPacketCreatorPeer::GetCurrentPath(&creator_));
+  EXPECT_EQ(PACKET_1BYTE_PACKET_NUMBER,
+            QuicPacketCreatorPeer::NextPacketNumberLength(&creator_));
+  QuicPacketCreatorPeer::SetPacketNumber(
+      &creator_, 64 * 256 - max_packets_per_fec_group - 2);
+  // Add a stream frame to the creator and send the packet.
+  QuicFrame frame;
+  QuicIOVector io_vector(MakeIOVector("test"));
+  ASSERT_TRUE(creator_.ConsumeData(1u, io_vector, 0u, 0u, false, false, &frame,
+                                   MUST_FEC_PROTECT));
+  EXPECT_CALL(delegate_, OnSerializedPacket(_))
+      .Times(2)
+      .WillRepeatedly(
+          Invoke(this, &QuicPacketCreatorTest::ClearSerializedPacket));
+  creator_.Flush();
+  EXPECT_EQ(64 * 256 - max_packets_per_fec_group - 1, creator_.packet_number());
+  creator_.UpdatePacketNumberLength(2, 10000 / kDefaultMaxPacketSize);
+  EXPECT_EQ(PACKET_2BYTE_PACKET_NUMBER,
+            QuicPacketCreatorPeer::NextPacketNumberLength(&creator_));
+
+  // Change current path.
+  QuicPathId kPathId1 = 1;
+  creator_.SetCurrentPath(kPathId1, 1, 0);
+  EXPECT_EQ(0u, creator_.packet_number());
+  EXPECT_EQ(PACKET_1BYTE_PACKET_NUMBER,
+            QuicPacketCreatorPeer::NextPacketNumberLength(&creator_));
+
+  // Change current path back.
+  creator_.SetCurrentPath(kDefaultPathId, 2, 10000 / kDefaultMaxPacketSize);
+  // FEC packet consumes a packet number.
+  EXPECT_EQ(64 * 256 - max_packets_per_fec_group, creator_.packet_number());
+  EXPECT_EQ(PACKET_2BYTE_PACKET_NUMBER,
+            QuicPacketCreatorPeer::NextPacketNumberLength(&creator_));
+}
+
 }  // namespace
 }  // namespace test
 }  // namespace net

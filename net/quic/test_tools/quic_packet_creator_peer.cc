@@ -123,5 +123,10 @@ EncryptionLevel QuicPacketCreatorPeer::GetEncryptionLevel(
   return creator->encryption_level_;
 }
 
+// static
+QuicPathId QuicPacketCreatorPeer::GetCurrentPath(QuicPacketCreator* creator) {
+  return creator->current_path_;
+}
+
 }  // namespace test
 }  // namespace net

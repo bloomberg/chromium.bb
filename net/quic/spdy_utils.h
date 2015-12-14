@@ -31,7 +31,7 @@ class NET_EXPORT_PRIVATE SpdyUtils {
 
   // Parses |data| as a std::string containing serialized HTTP/2 HEADERS frame,
   // populating |trailers| with the key->value std:pairs found.
-  // The :final-offset header will be excluded from |trailers|, and instead the
+  // The final offset header will be excluded from |trailers|, and instead the
   // value will be copied to |final_byte_offset|.
   // Returns true on success, false if parsing fails, or invalid keys are found.
   static bool ParseTrailers(const char* data,

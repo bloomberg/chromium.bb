@@ -673,7 +673,7 @@ TEST_F(ReliableQuicStreamTest, SetDrainingIncomingOutgoing) {
   EXPECT_FALSE(ReliableQuicStreamPeer::read_side_closed(stream_));
   EXPECT_FALSE(stream_->reading_stopped());
 
-  EXPECT_EQ(1u, session_->GetNumOpenStreams());
+  EXPECT_EQ(1u, session_->GetNumOpenIncomingStreams());
 
   // Outgoing data with FIN.
   EXPECT_CALL(*session_, WritevData(kTestStreamId, _, _, _, _, _))
@@ -683,7 +683,7 @@ TEST_F(ReliableQuicStreamTest, SetDrainingIncomingOutgoing) {
 
   EXPECT_EQ(1u, QuicSessionPeer::GetDrainingStreams(session_.get())
                     ->count(kTestStreamId));
-  EXPECT_EQ(0u, session_->GetNumOpenStreams());
+  EXPECT_EQ(0u, session_->GetNumOpenIncomingStreams());
 }
 
 TEST_F(ReliableQuicStreamTest, SetDrainingOutgoingIncoming) {
@@ -696,7 +696,7 @@ TEST_F(ReliableQuicStreamTest, SetDrainingOutgoingIncoming) {
   stream_->WriteOrBufferData(StringPiece(kData1, 2), true, nullptr);
   EXPECT_TRUE(stream_->write_side_closed());
 
-  EXPECT_EQ(1u, session_->GetNumOpenStreams());
+  EXPECT_EQ(1u, session_->GetNumOpenIncomingStreams());
 
   // Incoming data with FIN.
   QuicStreamFrame stream_frame_with_fin(stream_->id(), true, 1234,
@@ -709,7 +709,7 @@ TEST_F(ReliableQuicStreamTest, SetDrainingOutgoingIncoming) {
 
   EXPECT_EQ(1u, QuicSessionPeer::GetDrainingStreams(session_.get())
                     ->count(kTestStreamId));
-  EXPECT_EQ(0u, session_->GetNumOpenStreams());
+  EXPECT_EQ(0u, session_->GetNumOpenIncomingStreams());
 }
 
 TEST_F(ReliableQuicStreamTest, FecSendPolicyReceivedConnectionOption) {

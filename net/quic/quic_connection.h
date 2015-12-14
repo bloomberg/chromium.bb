@@ -629,6 +629,10 @@ class NET_EXPORT_PRIVATE QuicConnection
     return termination_packets_.get();
   }
 
+  bool ack_frame_updated() const;
+
+  void set_ack_frame_updated(bool updated);
+
  protected:
   // Packets which have not been written to the wire.
   struct QueuedPacket {

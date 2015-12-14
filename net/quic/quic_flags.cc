@@ -111,3 +111,19 @@ bool FLAGS_quic_never_write_unencrypted_data = true;
 
 // If true, reject any incoming QUIC which does not have the FIXD tag.
 bool FLAGS_quic_require_fix = true;
+
+// If true, QUIC supports sending trailers from Server to Client.
+bool FLAGS_quic_supports_trailers = true;
+
+// Fixes a bug in QUIC_VERSION_26 by always using the primary config when
+// getting the proof of possession.
+bool FLAGS_quic_use_primary_config_for_proof = true;
+
+// Enable counters for incoming/outgoing streams which are used as condition
+// check while creating a new stream.
+bool FLAGS_quic_distinguish_incoming_outgoing_streams = true;
+
+// If true, QUIC servers will attempt to validate a client's source
+// address token using the primary config, even if no server config id
+// is present in the client hello.
+bool FLAGS_quic_validate_stk_without_scid = true;

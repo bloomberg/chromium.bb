@@ -513,6 +513,10 @@ const BalsaHeaders* QuicTestClient::response_headers() const {
   }
 }
 
+const SpdyHeaderBlock& QuicTestClient::response_trailers() const {
+  return response_trailers_;
+}
+
 int64 QuicTestClient::response_size() const {
   return bytes_read_;
 }
@@ -541,6 +545,7 @@ void QuicTestClient::OnClose(QuicSpdyStream* stream) {
   response_complete_ = true;
   response_headers_complete_ = stream_->headers_decompressed();
   SpdyBalsaUtils::SpdyHeadersToResponseHeaders(stream_->headers(), &headers_);
+  response_trailers_ = stream_->trailers();
   stream_error_ = stream_->stream_error();
   bytes_read_ = stream_->stream_bytes_read() + stream_->header_bytes_read();
   bytes_written_ =

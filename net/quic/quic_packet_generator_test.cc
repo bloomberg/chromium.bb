@@ -1680,5 +1680,34 @@ TEST_P(QuicPacketGeneratorTest, DontCrashOnInvalidStopWaiting) {
                 "for least_unacked_delta: 1001");
 }
 
+TEST_P(QuicPacketGeneratorTest, SetCurrentPath) {
+  delegate_.SetCanWriteAnything();
+  generator_.StartBatchOperations();
+
+  QuicConsumedData consumed = generator_.ConsumeData(
+      kHeadersStreamId, MakeIOVector("foo"), 2, true, MAY_FEC_PROTECT, nullptr);
+  EXPECT_EQ(3u, consumed.bytes_consumed);
+  EXPECT_TRUE(consumed.fin_consumed);
+  EXPECT_TRUE(generator_.HasQueuedFrames());
+  EXPECT_EQ(kDefaultPathId, QuicPacketCreatorPeer::GetCurrentPath(creator_));
+  // Does not change current path.
+  generator_.SetCurrentPath(kDefaultPathId, 1, 0);
+  EXPECT_EQ(kDefaultPathId, QuicPacketCreatorPeer::GetCurrentPath(creator_));
+
+  // Try to switch path when a packet is under construction.
+  QuicPathId kTestPathId1 = 1;
+  EXPECT_DFATAL(generator_.SetCurrentPath(kTestPathId1, 1, 0),
+                "Unable to change paths when a packet is under construction");
+  EXPECT_EQ(kDefaultPathId, QuicPacketCreatorPeer::GetCurrentPath(creator_));
+
+  // Try to switch path after current open packet gets serialized.
+  EXPECT_CALL(delegate_, OnSerializedPacket(_))
+      .WillOnce(Invoke(this, &QuicPacketGeneratorTest::SavePacket));
+  generator_.FlushAllQueuedFrames();
+  EXPECT_FALSE(generator_.HasQueuedFrames());
+  generator_.SetCurrentPath(kTestPathId1, 1, 0);
+  EXPECT_EQ(kTestPathId1, QuicPacketCreatorPeer::GetCurrentPath(creator_));
+}
+
 }  // namespace test
 }  // namespace net

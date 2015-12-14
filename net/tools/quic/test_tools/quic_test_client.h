@@ -131,6 +131,9 @@ class QuicTestClient : public SimpleClient, public QuicSpdyStream::Visitor {
   const IPEndPoint& address() const override;
   size_t requests_sent() const override;
 
+  // Returns the response trailers as received by the |stream_|.
+  const SpdyHeaderBlock& response_trailers() const;
+
   // From QuicSpdyStream::Visitor
   void OnClose(QuicSpdyStream* stream) override;
 
@@ -226,6 +229,10 @@ class QuicTestClient : public SimpleClient, public QuicSpdyStream::Visitor {
   bool response_complete_;
   bool response_headers_complete_;
   mutable BalsaHeaders headers_;
+
+  // Parsed response trailers (if present), copied from the stream in OnClose.
+  SpdyHeaderBlock response_trailers_;
+
   SpdyPriority priority_;
   std::string response_;
   uint64 bytes_read_;

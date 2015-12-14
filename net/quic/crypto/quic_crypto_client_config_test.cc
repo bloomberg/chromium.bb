@@ -184,6 +184,31 @@ TEST(QuicCryptoClientConfigTest, InchoateChloSecure) {
   QuicTag pdmd;
   EXPECT_EQ(QUIC_NO_ERROR, msg.GetUint32(kPDMD, &pdmd));
   EXPECT_EQ(kX509, pdmd);
+  StringPiece scid;
+  EXPECT_FALSE(msg.GetStringPiece(kSCID, &scid));
+}
+
+TEST(QuicCryptoClientConfigTest, InchoateChloSecureWithSCID) {
+  QuicCryptoClientConfig::CachedState state;
+  CryptoHandshakeMessage scfg;
+  scfg.set_tag(kSCFG);
+  uint64 future = 1;
+  scfg.SetValue(kEXPY, future);
+  scfg.SetStringPiece(kSCID, "12345678");
+  string details;
+  state.SetServerConfig(scfg.GetSerialized().AsStringPiece(),
+                        QuicWallTime::FromUNIXSeconds(0), &details);
+
+  QuicCryptoClientConfig config(CryptoTestUtils::ProofVerifierForTesting());
+  QuicCryptoNegotiatedParameters params;
+  CryptoHandshakeMessage msg;
+  QuicServerId server_id("www.google.com", 443, PRIVACY_MODE_DISABLED);
+  config.FillInchoateClientHello(server_id, QuicVersionMax(), &state, &params,
+                                 &msg);
+
+  StringPiece scid;
+  EXPECT_TRUE(msg.GetStringPiece(kSCID, &scid));
+  EXPECT_EQ("12345678", scid);
 }
 
 TEST(QuicCryptoClientConfigTest, InchoateChloSecureNoEcdsa) {

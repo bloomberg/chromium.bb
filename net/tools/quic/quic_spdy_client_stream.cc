@@ -40,10 +40,12 @@ void QuicSpdyClientStream::OnStreamFrame(const QuicStreamFrame& frame) {
   QuicSpdyStream::OnStreamFrame(frame);
 }
 
-void QuicSpdyClientStream::OnStreamHeadersComplete(bool fin,
-                                                   size_t frame_len) {
+void QuicSpdyClientStream::OnInitialHeadersComplete(bool fin,
+                                                    size_t frame_len) {
+  QuicSpdyStream::OnInitialHeadersComplete(fin, frame_len);
+
+  DCHECK(headers_decompressed());
   header_bytes_read_ = frame_len;
-  QuicSpdyStream::OnStreamHeadersComplete(fin, frame_len);
   if (!SpdyUtils::ParseHeaders(decompressed_headers().data(),
                                decompressed_headers().length(),
                                &content_length_, &response_headers_)) {
@@ -63,6 +65,26 @@ void QuicSpdyClientStream::OnStreamHeadersComplete(bool fin,
   }
 
   MarkHeadersConsumed(decompressed_headers().length());
+}
+
+void QuicSpdyClientStream::OnTrailingHeadersComplete(bool fin,
+                                                     size_t frame_len) {
+  QuicSpdyStream::OnTrailingHeadersComplete(fin, frame_len);
+
+  size_t final_byte_offset = 0;
+  if (!SpdyUtils::ParseTrailers(decompressed_trailers().data(),
+                                decompressed_trailers().length(),
+                                &final_byte_offset, &response_trailers_)) {
+    Reset(QUIC_BAD_APPLICATION_PAYLOAD);
+    return;
+  }
+  MarkTrailersConsumed(decompressed_trailers().length());
+
+  // The data on this stream ends at |final_byte_offset|.
+  DVLOG(1) << "Stream ends at byte offset: " << final_byte_offset
+           << "  currently read: " << stream_bytes_read();
+  OnStreamFrame(
+      QuicStreamFrame(id(), /*fin=*/true, final_byte_offset, StringPiece()));
 }
 
 void QuicSpdyClientStream::OnDataAvailable() {

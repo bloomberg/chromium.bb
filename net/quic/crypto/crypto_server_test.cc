@@ -8,7 +8,10 @@
 #include "base/basictypes.h"
 #include "base/strings/string_number_conversions.h"
 #include "crypto/secure_hash.h"
+#include "net/quic/crypto/cert_compressor.h"
+#include "net/quic/crypto/common_cert_set.h"
 #include "net/quic/crypto/crypto_handshake.h"
+#include "net/quic/crypto/crypto_server_config_protobuf.h"
 #include "net/quic/crypto/crypto_utils.h"
 #include "net/quic/crypto/proof_source.h"
 #include "net/quic/crypto/quic_crypto_server_config.h"
@@ -31,6 +34,24 @@ using std::vector;
 
 namespace net {
 namespace test {
+
+namespace {
+
+class DummyProofVerifierCallback : public ProofVerifierCallback {
+ public:
+  DummyProofVerifierCallback() {}
+  ~DummyProofVerifierCallback() override {}
+
+  void Run(bool ok,
+           const std::string& error_details,
+           scoped_ptr<ProofVerifyDetails>* details) override {
+    // Do nothing
+  }
+};
+
+const char kOldConfigId[] = "old-config-id";
+
+}  // namespace
 
 class QuicCryptoServerConfigPeer {
  public:
@@ -125,8 +146,15 @@ class CryptoServerTest : public ::testing::TestWithParam<TestParams> {
   }
 
   void SetUp() override {
+    QuicCryptoServerConfig::ConfigOptions old_config_options;
+    old_config_options.id = kOldConfigId;
+    delete config_.AddDefaultConfig(rand_, &clock_, old_config_options);
+    clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(1000));
+    scoped_ptr<QuicServerConfigProtobuf> primary_config(
+        config_.GenerateConfig(rand_, &clock_, config_options_));
+    primary_config->set_primary_time(clock_.WallNow().ToUNIXSeconds());
     scoped_ptr<CryptoHandshakeMessage> msg(
-        config_.AddDefaultConfig(rand_, &clock_, config_options_));
+        config_.AddConfig(primary_config.get(), clock_.WallNow()));
 
     StringPiece orbit;
     CHECK(msg->GetStringPiece(kORBT, &orbit));
@@ -366,7 +394,7 @@ class CryptoServerTest : public ::testing::TestWithParam<TestParams> {
   QuicRandom* const rand_;
   MockRandom rand_for_id_generation_;
   MockClock clock_;
-  const IPEndPoint client_address_;
+  IPEndPoint client_address_;
   QuicVersionVector supported_versions_;
   QuicVersion client_version_;
   string client_version_string_;
@@ -447,6 +475,100 @@ TEST_P(CryptoServerTest, DefaultCert) {
       SERVER_CONFIG_INCHOATE_HELLO_FAILURE};
   CheckRejectReasons(kRejectReasons, arraysize(kRejectReasons));
   EXPECT_EQ(client_version_ > QUIC_VERSION_29, cert_sct.size() > 0);
+}
+
+TEST_P(CryptoServerTest, RejectTooLarge) {
+  // Check that the server replies with no certificate when a CHLO is
+  // constructed with a PDMD but no SKT when the REJ would be too large.
+  // clang-format off
+  CryptoHandshakeMessage msg = CryptoTestUtils::Message(
+      "CHLO",
+      "AEAD", "AESG",
+      "KEXS", "C255",
+      "PUBS", pub_hex_.c_str(),
+      "NONC", nonce_hex_.c_str(),
+      "PDMD", "X509",
+      "VER\0", client_version_string_.c_str(),
+      "$padding", static_cast<int>(kClientHelloMinimumSize),
+      nullptr);
+  // clang-format on
+
+  // The REJ will be larger than the CHLO so no PROF or CRT will be sent.
+  config_.set_chlo_multiplier(1);
+
+  ShouldSucceed(msg);
+  StringPiece cert, proof, cert_sct;
+  EXPECT_FALSE(out_.GetStringPiece(kCertificateTag, &cert));
+  EXPECT_FALSE(out_.GetStringPiece(kPROF, &proof));
+  EXPECT_FALSE(out_.GetStringPiece(kCertificateSCTTag, &cert_sct));
+  const HandshakeFailureReason kRejectReasons[] = {
+      SERVER_CONFIG_INCHOATE_HELLO_FAILURE};
+  CheckRejectReasons(kRejectReasons, arraysize(kRejectReasons));
+}
+
+TEST_P(CryptoServerTest, RejectTooLargeButValidSTK) {
+  ValueRestore<bool> old_flag(&FLAGS_quic_validate_stk_without_scid, true);
+  // Check that the server replies with no certificate when a CHLO is
+  // constructed with a PDMD but no SKT when the REJ would be too large.
+  // clang-format off
+  CryptoHandshakeMessage msg = CryptoTestUtils::Message(
+      "CHLO",
+      "AEAD", "AESG",
+      "KEXS", "C255",
+      "PUBS", pub_hex_.c_str(),
+      "NONC", nonce_hex_.c_str(),
+      "#004b5453", srct_hex_.c_str(),
+      "PDMD", "X509",
+      "VER\0", client_version_string_.c_str(),
+      "$padding", static_cast<int>(kClientHelloMinimumSize),
+      nullptr);
+  // clang-format on
+
+  // The REJ will be larger than the CHLO so no PROF or CRT will be sent.
+  config_.set_chlo_multiplier(1);
+
+  ShouldSucceed(msg);
+  StringPiece cert, proof, cert_sct;
+  EXPECT_TRUE(out_.GetStringPiece(kCertificateTag, &cert));
+  EXPECT_TRUE(out_.GetStringPiece(kPROF, &proof));
+  EXPECT_EQ(client_version_ > QUIC_VERSION_29,
+            out_.GetStringPiece(kCertificateSCTTag, &cert_sct));
+  EXPECT_NE(0u, cert.size());
+  EXPECT_NE(0u, proof.size());
+  const HandshakeFailureReason kRejectReasons[] = {
+      SERVER_CONFIG_INCHOATE_HELLO_FAILURE};
+  CheckRejectReasons(kRejectReasons, arraysize(kRejectReasons));
+}
+
+TEST_P(CryptoServerTest, RejectTooLargeButValidSTKWithoutFlag) {
+  ValueRestore<bool> old_flag(&FLAGS_quic_validate_stk_without_scid, false);
+  // Check that the server replies with no certificate when a CHLO is
+  // constructed with a PDMD but no SKT when the REJ would be too large.
+  // clang-format off
+  CryptoHandshakeMessage msg = CryptoTestUtils::Message(
+      "CHLO",
+      "AEAD", "AESG",
+      "KEXS", "C255",
+      "PUBS", pub_hex_.c_str(),
+      "NONC", nonce_hex_.c_str(),
+      "#004b5453", srct_hex_.c_str(),
+      "PDMD", "X509",
+      "VER\0", client_version_string_.c_str(),
+      "$padding", static_cast<int>(kClientHelloMinimumSize),
+      nullptr);
+  // clang-format on
+
+  // The REJ will be larger than the CHLO so no PROF or CRT will be sent.
+  config_.set_chlo_multiplier(1);
+
+  ShouldSucceed(msg);
+  StringPiece cert, proof, cert_sct;
+  EXPECT_FALSE(out_.GetStringPiece(kCertificateTag, &cert));
+  EXPECT_FALSE(out_.GetStringPiece(kPROF, &proof));
+  EXPECT_FALSE(out_.GetStringPiece(kCertificateSCTTag, &cert_sct));
+  const HandshakeFailureReason kRejectReasons[] = {
+      SERVER_CONFIG_INCHOATE_HELLO_FAILURE};
+  CheckRejectReasons(kRejectReasons, arraysize(kRejectReasons));
 }
 
 TEST_P(CryptoServerTest, TooSmall) {
@@ -675,6 +797,63 @@ TEST_P(CryptoServerTest, ReplayProtection) {
   // The message should accepted twice when replay protection is off.
   ASSERT_EQ(kSHLO, out_.tag());
   CheckServerHello(out_);
+}
+
+TEST_P(CryptoServerTest, ProofForSuppliedServerConfig) {
+  ValueRestore<bool> old_flag(&FLAGS_quic_use_primary_config_for_proof, true);
+  client_address_ = IPEndPoint(Loopback6(), 1234);
+  // clang-format off
+  CryptoHandshakeMessage msg = CryptoTestUtils::Message(
+      "CHLO",
+      "AEAD", "AESG",
+      "KEXS", "C255",
+      "PDMD", "X509",
+      "SCID", kOldConfigId,
+      "#004b5453", srct_hex_.c_str(),
+      "PUBS", pub_hex_.c_str(),
+      "NONC", nonce_hex_.c_str(),
+      "VER\0", client_version_string_.c_str(),
+      "XLCT", XlctHexString().c_str(),
+      "$padding", static_cast<int>(kClientHelloMinimumSize),
+      nullptr);
+  // clang-format on
+  ShouldSucceed(msg);
+  // The message should be rejected because the source-address token is no
+  // longer valid.
+  CheckRejectTag();
+  const HandshakeFailureReason kRejectReasons[] = {
+      SOURCE_ADDRESS_TOKEN_DIFFERENT_IP_ADDRESS_FAILURE};
+  CheckRejectReasons(kRejectReasons, arraysize(kRejectReasons));
+
+  StringPiece cert, proof, scfg_str;
+  EXPECT_TRUE(out_.GetStringPiece(kCertificateTag, &cert));
+  EXPECT_TRUE(out_.GetStringPiece(kPROF, &proof));
+  EXPECT_TRUE(out_.GetStringPiece(kSCFG, &scfg_str));
+  scoped_ptr<CryptoHandshakeMessage> scfg(CryptoFramer::ParseMessage(scfg_str));
+  StringPiece scid;
+  EXPECT_TRUE(scfg->GetStringPiece(kSCID, &scid));
+  EXPECT_NE(scid, kOldConfigId);
+
+  // Get certs from compressed certs.
+  const CommonCertSets* common_cert_sets(CommonCertSets::GetInstanceQUIC());
+  vector<string> cached_certs;
+
+  vector<string> certs;
+  ASSERT_TRUE(CertCompressor::DecompressChain(cert, cached_certs,
+                                              common_cert_sets, &certs));
+
+  // Check that the proof in the REJ message is valid.
+  scoped_ptr<ProofVerifier> proof_verifier(
+      CryptoTestUtils::ProofVerifierForTesting());
+  scoped_ptr<ProofVerifyContext> verify_context(
+      CryptoTestUtils::ProofVerifyContextForTesting());
+  scoped_ptr<ProofVerifyDetails> details;
+  string error_details;
+  DummyProofVerifierCallback callback;
+  EXPECT_EQ(QUIC_SUCCESS, proof_verifier->VerifyProof(
+                              "test.example.com", scfg_str.as_string(), certs,
+                              "", proof.as_string(), verify_context.get(),
+                              &error_details, &details, &callback));
 }
 
 TEST_P(CryptoServerTest, RejectInvalidXlct) {

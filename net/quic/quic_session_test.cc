@@ -141,7 +141,7 @@ class TestSession : public QuicSpdySession {
 
   TestStream* CreateIncomingDynamicStream(QuicStreamId id) override {
     // Enforce the limit on the number of open streams.
-    if (GetNumOpenStreams() + 1 > get_max_open_streams()) {
+    if (GetNumOpenIncomingStreams() + 1 > get_max_open_streams()) {
       connection()->SendConnectionClose(QUIC_TOO_MANY_OPEN_STREAMS);
       return nullptr;
     } else {
@@ -715,13 +715,13 @@ TEST_P(QuicSessionTestServer, RstStreamBeforeHeadersDecompressed) {
   // Send two bytes of payload.
   QuicStreamFrame data1(kClientDataStreamId1, false, 0, StringPiece("HT"));
   session_.OnStreamFrame(data1);
-  EXPECT_EQ(1u, session_.GetNumOpenStreams());
+  EXPECT_EQ(1u, session_.GetNumOpenIncomingStreams());
 
   EXPECT_CALL(*connection_, SendRstStream(kClientDataStreamId1, _, _));
   QuicRstStreamFrame rst1(kClientDataStreamId1, QUIC_ERROR_PROCESSING_STREAM,
                           0);
   session_.OnRstStream(rst1);
-  EXPECT_EQ(0u, session_.GetNumOpenStreams());
+  EXPECT_EQ(0u, session_.GetNumOpenIncomingStreams());
   // Connection should remain alive.
   EXPECT_TRUE(connection_->connected());
 }
@@ -734,7 +734,7 @@ TEST_P(QuicSessionTestServer, MultipleRstStreamsCauseSingleConnectionClose) {
   // Create valid stream.
   QuicStreamFrame data1(kClientDataStreamId1, false, 0, StringPiece("HT"));
   session_.OnStreamFrame(data1);
-  EXPECT_EQ(1u, session_.GetNumOpenStreams());
+  EXPECT_EQ(1u, session_.GetNumOpenIncomingStreams());
 
   // Process first invalid stream reset, resulting in the connection being
   // closed.
@@ -1128,9 +1128,9 @@ TEST_P(QuicSessionTestServer, DrainingStreamsDoNotCountAsOpened) {
   for (QuicStreamId i = kFirstStreamId; i < kFinalStreamId; i += 2) {
     QuicStreamFrame data1(i, true, 0, StringPiece("HT"));
     session_.OnStreamFrame(data1);
-    EXPECT_EQ(1u, session_.GetNumOpenStreams());
+    EXPECT_EQ(1u, session_.GetNumOpenIncomingStreams());
     session_.StreamDraining(i);
-    EXPECT_EQ(0u, session_.GetNumOpenStreams());
+    EXPECT_EQ(0u, session_.GetNumOpenIncomingStreams());
   }
 
   // Called after any new data is received by the session, and triggers the call

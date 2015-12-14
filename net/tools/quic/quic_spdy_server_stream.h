@@ -30,7 +30,8 @@ class QuicSpdyServerStream : public QuicSpdyStream {
   ~QuicSpdyServerStream() override;
 
   // QuicSpdyStream
-  void OnStreamHeadersComplete(bool fin, size_t frame_len) override;
+  void OnInitialHeadersComplete(bool fin, size_t frame_len) override;
+  void OnTrailingHeadersComplete(bool fin, size_t frame_len) override;
 
   // ReliableQuicStream implementation called by the sequencer when there is
   // data (or a FIN) to be read.
@@ -50,6 +51,9 @@ class QuicSpdyServerStream : public QuicSpdyStream {
 
   void SendHeadersAndBody(const SpdyHeaderBlock& response_headers,
                           base::StringPiece body);
+  void SendHeadersAndBodyAndTrailers(const SpdyHeaderBlock& response_headers,
+                                     base::StringPiece body,
+                                     const SpdyHeaderBlock& response_trailers);
 
   SpdyHeaderBlock* request_headers() { return &request_headers_; }
 

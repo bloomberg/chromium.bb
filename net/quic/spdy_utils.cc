@@ -77,15 +77,15 @@ bool SpdyUtils::ParseTrailers(const char* data,
     return false;  // Trailers were invalid.
   }
 
-  // Pull out the :final-offset pseudo header which indicates the number of
+  // Pull out the final offset pseudo header which indicates the number of
   // response body bytes expected.
-  auto it = trailers->find(":final-offset");
+  auto it = trailers->find(kFinalOffsetHeaderKey);
   if (it == trailers->end() ||
       !base::StringToSizeT(it->second, final_byte_offset)) {
-    DVLOG(1) << ":final-offset not present";
-    return false;  // :final-offset key must be present.
+    DVLOG(1) << "Required key '" << kFinalOffsetHeaderKey << "' not present";
+    return false;
   }
-  // :final-offset header is no longer used.
+  // The final offset header is no longer needed.
   trailers->erase(it->first);
 
   // Trailers must not have empty keys, and must not contain pseudo headers.

@@ -4,6 +4,8 @@
 
 #include "net/quic/quic_spdy_stream.h"
 
+#include "base/strings/string_number_conversions.h"
+
 #include "net/quic/quic_connection.h"
 #include "net/quic/quic_utils.h"
 #include "net/quic/quic_write_blocked_list.h"
@@ -18,6 +20,8 @@
 using base::StringPiece;
 using std::min;
 using std::string;
+using testing::AnyNumber;
+using testing::Invoke;
 using testing::Return;
 using testing::StrictMock;
 using testing::_;
@@ -94,22 +98,24 @@ class QuicSpdyStreamTest : public ::testing::TestWithParam<QuicVersion> {
     connection_ = new testing::StrictMock<MockConnection>(
         &helper_, Perspective::IS_SERVER, SupportedVersions(GetParam()));
     session_.reset(new testing::StrictMock<MockQuicSpdySession>(connection_));
-    stream_.reset(new TestStream(kClientDataStreamId1, session_.get(),
-                                 stream_should_process_data));
-    stream2_.reset(new TestStream(kClientDataStreamId2, session_.get(),
-                                  stream_should_process_data));
-    write_blocked_list_ =
-        QuicSessionPeer::GetWriteBlockedStreams(session_.get());
+    stream_ = new TestStream(kClientDataStreamId1, session_.get(),
+                             stream_should_process_data);
+    session_->ActivateStream(stream_);
+    stream2_ = new TestStream(kClientDataStreamId2, session_.get(),
+                              stream_should_process_data);
+    session_->ActivateStream(stream2_);
   }
 
  protected:
   MockConnectionHelper helper_;
   MockConnection* connection_;
   scoped_ptr<MockQuicSpdySession> session_;
-  scoped_ptr<TestStream> stream_;
-  scoped_ptr<TestStream> stream2_;
+
+  // Owned by the |session_|.
+  TestStream* stream_;
+  TestStream* stream2_;
+
   SpdyHeaderBlock headers_;
-  QuicWriteBlockedList* write_blocked_list_;
 };
 
 INSTANTIATE_TEST_CASE_P(Tests,
@@ -365,7 +371,7 @@ TEST_P(QuicSpdyStreamTest, StreamFlowControlBlocked) {
             QuicFlowControllerPeer::SendWindowSize(stream_->flow_controller()));
 
   // And we should have queued the overflowed data.
-  EXPECT_EQ(kOverflow, ReliableQuicStreamPeer::SizeOfQueuedData(stream_.get()));
+  EXPECT_EQ(kOverflow, ReliableQuicStreamPeer::SizeOfQueuedData(stream_));
 }
 
 TEST_P(QuicSpdyStreamTest, StreamFlowControlNoWindowUpdateIfNotConsumed) {
@@ -540,6 +546,10 @@ TEST_P(QuicSpdyStreamTest, TestHandlingQuicRstStreamNoError) {
   string headers = SpdyUtils::SerializeUncompressedHeaders(headers_);
   stream_->OnStreamHeaders(headers);
   stream_->OnStreamHeadersComplete(false, headers.size());
+
+  if (GetParam() <= QUIC_VERSION_28) {
+    EXPECT_CALL(*session_, SendRstStream(_, _, _));
+  }
   stream_->OnStreamReset(
       QuicRstStreamFrame(stream_->id(), QUIC_STREAM_NO_ERROR, 0));
   EXPECT_TRUE(stream_->write_side_closed());
@@ -602,6 +612,248 @@ TEST_P(QuicSpdyStreamTest, StreamFlowControlFinNotBlocked) {
       .WillOnce(Return(QuicConsumedData(0, fin)));
 
   stream_->WriteOrBufferData(body, fin, nullptr);
+}
+
+TEST_P(QuicSpdyStreamTest, ReceivingTrailers) {
+  // Test that receiving trailing headers from the peer works, and can be read
+  // from the stream and consumed.
+  ValueRestore<bool> old_flag(&FLAGS_quic_supports_trailers, true);
+  Initialize(kShouldProcessData);
+
+  // Receive initial headers.
+  string headers = SpdyUtils::SerializeUncompressedHeaders(headers_);
+  stream_->OnStreamHeaders(headers);
+  stream_->OnStreamHeadersComplete(false, headers.size());
+  stream_->MarkHeadersConsumed(stream_->decompressed_headers().size());
+
+  // Receive trailing headers.
+  SpdyHeaderBlock trailers_block;
+  trailers_block["key1"] = "value1";
+  trailers_block["key2"] = "value2";
+  trailers_block["key3"] = "value3";
+  string trailers = SpdyUtils::SerializeUncompressedHeaders(trailers_block);
+  stream_->OnStreamHeaders(trailers);
+  stream_->OnStreamHeadersComplete(/*fin=*/true, trailers.size());
+
+  // The trailers should be decompressed, and readable from the stream.
+  EXPECT_TRUE(stream_->trailers_decompressed());
+  const string decompressed_trailers = stream_->decompressed_trailers();
+  EXPECT_EQ(trailers, decompressed_trailers);
+
+  // Consuming the trailers erases them from the stream.
+  stream_->MarkTrailersConsumed(decompressed_trailers.size());
+  EXPECT_EQ("", stream_->decompressed_trailers());
+}
+
+TEST_P(QuicSpdyStreamTest, ReceivingTrailersWithoutFin) {
+  // Test that received Trailers must always have the FIN set.
+  ValueRestore<bool> old_flag(&FLAGS_quic_supports_trailers, true);
+  Initialize(kShouldProcessData);
+
+  // Receive initial headers.
+  string headers = SpdyUtils::SerializeUncompressedHeaders(headers_);
+  stream_->OnStreamHeaders(headers);
+  stream_->OnStreamHeadersComplete(false, headers.size());
+
+  // Receive trailing headers with FIN deliberately set to false.
+  SpdyHeaderBlock trailers_block;
+  string trailers = SpdyUtils::SerializeUncompressedHeaders(trailers_block);
+  stream_->OnStreamHeaders(trailers);
+
+  EXPECT_CALL(*connection_,
+              SendConnectionClose(QUIC_INVALID_HEADERS_STREAM_DATA))
+      .Times(1);
+  stream_->OnStreamHeadersComplete(/*fin=*/false, trailers.size());
+}
+
+TEST_P(QuicSpdyStreamTest, ReceivingTrailersAfterFin) {
+  // If Trailers are sent, neither Headers nor Body should contain a FIN.
+  ValueRestore<bool> old_flag(&FLAGS_quic_supports_trailers, true);
+  Initialize(kShouldProcessData);
+
+  // Receive initial headers with FIN set.
+  string headers = SpdyUtils::SerializeUncompressedHeaders(headers_);
+  stream_->OnStreamHeaders(headers);
+  stream_->OnStreamHeadersComplete(/*fin=*/true, headers.size());
+
+  // Receive trailing headers after FIN already received.
+  SpdyHeaderBlock trailers_block;
+  string trailers = SpdyUtils::SerializeUncompressedHeaders(trailers_block);
+  stream_->OnStreamHeaders(trailers);
+
+  EXPECT_CALL(*connection_,
+              SendConnectionClose(QUIC_INVALID_HEADERS_STREAM_DATA))
+      .Times(1);
+  stream_->OnStreamHeadersComplete(/*fin=*/true, trailers.size());
+}
+
+TEST_P(QuicSpdyStreamTest, ReceivingTrailersAfterBodyWithFin) {
+  // If body data are received with a FIN, no trailers should then arrive.
+  ValueRestore<bool> old_flag(&FLAGS_quic_supports_trailers, true);
+  Initialize(kShouldProcessData);
+
+  // Receive initial headers without FIN set.
+  string headers = SpdyUtils::SerializeUncompressedHeaders(headers_);
+  stream_->OnStreamHeaders(headers);
+  stream_->OnStreamHeadersComplete(/*fin=*/false, headers.size());
+
+  // Receive body data, with FIN.
+  QuicStreamFrame frame(kClientDataStreamId1, /*fin=*/true, 0, "body");
+  stream_->OnStreamFrame(frame);
+
+  // Receive trailing headers after FIN already received.
+  SpdyHeaderBlock trailers_block;
+  string trailers = SpdyUtils::SerializeUncompressedHeaders(trailers_block);
+  stream_->OnStreamHeaders(trailers);
+
+  EXPECT_CALL(*connection_,
+              SendConnectionClose(QUIC_INVALID_HEADERS_STREAM_DATA))
+      .Times(1);
+  stream_->OnStreamHeadersComplete(/*fin=*/true, trailers.size());
+}
+
+TEST_P(QuicSpdyStreamTest, ClosingStreamWithNoTrailers) {
+  // Verify that a stream receiving headers, body, and no trailers is correctly
+  // marked as done reading on consumption of headers and body.
+  ValueRestore<bool> old_flag(&FLAGS_quic_supports_trailers, true);
+  Initialize(kShouldProcessData);
+
+  // Receive and consume initial headers with FIN not set.
+  string headers = SpdyUtils::SerializeUncompressedHeaders(headers_);
+  stream_->OnStreamHeaders(headers);
+  stream_->OnStreamHeadersComplete(/*fin=*/false, headers.size());
+  stream_->MarkHeadersConsumed(headers.size());
+
+  // Receive and consume body with FIN set, and no trailers.
+  const string kBody = string(1024, 'x');
+  QuicStreamFrame frame(kClientDataStreamId1, /*fin=*/true, 0, kBody);
+  stream_->OnStreamFrame(frame);
+
+  EXPECT_TRUE(stream_->IsDoneReading());
+}
+
+TEST_P(QuicSpdyStreamTest, WritingTrailersSendsAFin) {
+  // Test that writing trailers will send a FIN, as Trailers are the last thing
+  // to be sent on a stream.
+  ValueRestore<bool> old_flag(&FLAGS_quic_supports_trailers, true);
+  Initialize(kShouldProcessData);
+  EXPECT_CALL(*session_, WritevData(_, _, _, _, _, _))
+      .Times(AnyNumber())
+      .WillRepeatedly(Invoke(MockQuicSpdySession::ConsumeAllData));
+
+  // Write the initial headers, without a FIN.
+  EXPECT_CALL(*session_, WriteHeaders(_, _, _, _, _));
+  stream_->WriteHeaders(SpdyHeaderBlock(), /*fin=*/false, nullptr);
+
+  // Writing trailers implicitly sends a FIN.
+  SpdyHeaderBlock trailers;
+  trailers["trailer key"] = "trailer value";
+  EXPECT_CALL(*session_, WriteHeaders(_, _,
+                                      /*fin=*/true, _, _));
+  stream_->WriteTrailers(trailers, nullptr);
+  EXPECT_TRUE(stream_->fin_sent());
+}
+
+TEST_P(QuicSpdyStreamTest, WritingTrailersFinalOffset) {
+  // Test that when writing trailers, the trailers that are actually sent to the
+  // peer contain the final offset field indicating last byte of data.
+  ValueRestore<bool> old_flag(&FLAGS_quic_supports_trailers, true);
+  Initialize(kShouldProcessData);
+  EXPECT_CALL(*session_, WritevData(_, _, _, _, _, _))
+      .Times(AnyNumber())
+      .WillRepeatedly(Invoke(MockQuicSpdySession::ConsumeAllData));
+
+  // Write the initial headers.
+  EXPECT_CALL(*session_, WriteHeaders(_, _, _, _, _));
+  stream_->WriteHeaders(SpdyHeaderBlock(), /*fin=*/false, nullptr);
+
+  // Write non-zero body data to force a non-zero final offset.
+  const int kBodySize = 1 * 1024;  // 1 MB
+  stream_->WriteOrBufferData(string(kBodySize, 'x'), false, nullptr);
+
+  // The final offset field in the trailing headers is populated with the
+  // number of body bytes written (including queued bytes).
+  SpdyHeaderBlock trailers;
+  trailers["trailer key"] = "trailer value";
+  SpdyHeaderBlock trailers_with_offset = trailers;
+  trailers_with_offset[kFinalOffsetHeaderKey] = base::IntToString(kBodySize);
+  EXPECT_CALL(*session_, WriteHeaders(_, testing::Eq(trailers_with_offset),
+                                      /*fin=*/true, _, _));
+  stream_->WriteTrailers(trailers, nullptr);
+}
+
+TEST_P(QuicSpdyStreamTest, WritingTrailersClosesWriteSide) {
+  // Test that if trailers are written after all other data has been written
+  // (headers and body), that this closes the stream for writing.
+  ValueRestore<bool> old_flag(&FLAGS_quic_supports_trailers, true);
+  Initialize(kShouldProcessData);
+  EXPECT_CALL(*session_, WritevData(_, _, _, _, _, _))
+      .Times(AnyNumber())
+      .WillRepeatedly(Invoke(MockQuicSpdySession::ConsumeAllData));
+
+  // Write the initial headers.
+  EXPECT_CALL(*session_, WriteHeaders(_, _, _, _, _));
+  stream_->WriteHeaders(SpdyHeaderBlock(), /*fin=*/false, nullptr);
+
+  // Write non-zero body data.
+  const int kBodySize = 1 * 1024;  // 1 MB
+  stream_->WriteOrBufferData(string(kBodySize, 'x'), false, nullptr);
+  EXPECT_EQ(0u, stream_->queued_data_bytes());
+
+  // Headers and body have been fully written, there is no queued data. Writing
+  // trailers marks the end of this stream, and thus the write side is closed.
+  EXPECT_CALL(*session_, WriteHeaders(_, _,
+                                      /*fin=*/true, _, _));
+  stream_->WriteTrailers(SpdyHeaderBlock(), nullptr);
+  EXPECT_TRUE(stream_->write_side_closed());
+}
+
+TEST_P(QuicSpdyStreamTest, WritingTrailersWithQueuedBytes) {
+  // Test that the stream is not closed for writing when trailers are sent
+  // while there are still body bytes queued.
+  ValueRestore<bool> old_flag(&FLAGS_quic_supports_trailers, true);
+  Initialize(kShouldProcessData);
+  EXPECT_CALL(*session_, WritevData(_, _, _, _, _, _))
+      .Times(AnyNumber())
+      .WillRepeatedly(Invoke(MockQuicSpdySession::ConsumeAllData));
+
+  // Write the initial headers.
+  EXPECT_CALL(*session_, WriteHeaders(_, _, _, _, _));
+  stream_->WriteHeaders(SpdyHeaderBlock(), /*fin=*/false, nullptr);
+
+  // Write non-zero body data, but only consume partially, ensuring queueing.
+  const int kBodySize = 1 * 1024;  // 1 MB
+  EXPECT_CALL(*session_, WritevData(_, _, _, _, _, _))
+      .WillOnce(Return(QuicConsumedData(kBodySize - 1, false)));
+  stream_->WriteOrBufferData(string(kBodySize, 'x'), false, nullptr);
+  EXPECT_EQ(1u, stream_->queued_data_bytes());
+
+  // Writing trailers will send a FIN, but not close the write side of the
+  // stream as there are queued bytes.
+  EXPECT_CALL(*session_, WriteHeaders(_, _,
+                                      /*fin=*/true, _, _));
+  stream_->WriteTrailers(SpdyHeaderBlock(), nullptr);
+  EXPECT_TRUE(stream_->fin_sent());
+  EXPECT_FALSE(stream_->write_side_closed());
+}
+
+TEST_P(QuicSpdyStreamTest, WritingTrailersAfterFIN) {
+  // Test that it is not possible to write Trailers after a FIN has been sent.
+  ValueRestore<bool> old_flag(&FLAGS_quic_supports_trailers, true);
+  Initialize(kShouldProcessData);
+  EXPECT_CALL(*session_, WritevData(_, _, _, _, _, _))
+      .Times(AnyNumber())
+      .WillRepeatedly(Invoke(MockQuicSpdySession::ConsumeAllData));
+
+  // Write the initial headers, with a FIN.
+  EXPECT_CALL(*session_, WriteHeaders(_, _, _, _, _));
+  stream_->WriteHeaders(SpdyHeaderBlock(), /*fin=*/true, nullptr);
+  EXPECT_TRUE(stream_->fin_sent());
+
+  // Writing Trailers should fail, as the FIN has already been sent.
+  // populated with the number of body bytes written.
+  EXPECT_DFATAL(stream_->WriteTrailers(SpdyHeaderBlock(), nullptr),
+                "Trailers cannot be sent after a FIN");
 }
 
 }  // namespace

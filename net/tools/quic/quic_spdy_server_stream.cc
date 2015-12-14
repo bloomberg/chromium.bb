@@ -30,8 +30,9 @@ QuicSpdyServerStream::QuicSpdyServerStream(QuicStreamId id,
 QuicSpdyServerStream::~QuicSpdyServerStream() {
 }
 
-void QuicSpdyServerStream::OnStreamHeadersComplete(bool fin, size_t frame_len) {
-  QuicSpdyStream::OnStreamHeadersComplete(fin, frame_len);
+void QuicSpdyServerStream::OnInitialHeadersComplete(bool fin,
+                                                    size_t frame_len) {
+  QuicSpdyStream::OnInitialHeadersComplete(fin, frame_len);
   if (!SpdyUtils::ParseHeaders(decompressed_headers().data(),
                                decompressed_headers().length(),
                                &content_length_, &request_headers_)) {
@@ -39,6 +40,12 @@ void QuicSpdyServerStream::OnStreamHeadersComplete(bool fin, size_t frame_len) {
     SendErrorResponse();
   }
   MarkHeadersConsumed(decompressed_headers().length());
+}
+
+void QuicSpdyServerStream::OnTrailingHeadersComplete(bool fin,
+                                                     size_t frame_len) {
+  LOG(DFATAL) << "Server does not support receiving Trailers.";
+  SendErrorResponse();
 }
 
 void QuicSpdyServerStream::OnDataAvailable() {
@@ -147,7 +154,8 @@ void QuicSpdyServerStream::SendResponse() {
     }
   }
   DVLOG(1) << "Sending response for stream " << id();
-  SendHeadersAndBody(response->headers(), response->body());
+  SendHeadersAndBodyAndTrailers(response->headers(), response->body(),
+                                response->trailers());
 }
 
 void QuicSpdyServerStream::SendErrorResponse() {
@@ -161,17 +169,43 @@ void QuicSpdyServerStream::SendErrorResponse() {
 void QuicSpdyServerStream::SendHeadersAndBody(
     const SpdyHeaderBlock& response_headers,
     StringPiece body) {
+  SendHeadersAndBodyAndTrailers(response_headers, body, SpdyHeaderBlock());
+}
+
+void QuicSpdyServerStream::SendHeadersAndBodyAndTrailers(
+    const SpdyHeaderBlock& response_headers,
+    StringPiece body,
+    const SpdyHeaderBlock& response_trailers) {
   // This server only supports SPDY and HTTP, and neither handles bidirectional
   // streaming.
   if (!reading_stopped()) {
     StopReading();
   }
 
-  WriteHeaders(response_headers, body.empty(), nullptr);
-
-  if (!body.empty()) {
-    WriteOrBufferData(body, true, nullptr);
+  // Send the headers, with a FIN if there's nothing else to send.
+  bool send_fin = (body.empty() && response_trailers.empty());
+  DVLOG(1) << "Writing headers (fin = " << send_fin
+           << ") : " << response_headers.DebugString();
+  WriteHeaders(response_headers, send_fin, nullptr);
+  if (send_fin) {
+    // Nothing else to send.
+    return;
   }
+
+  // Send the body, with a FIN if there's nothing else to send.
+  send_fin = response_trailers.empty();
+  DVLOG(1) << "Writing body (fin = " << send_fin
+           << ") with size: " << body.size();
+  WriteOrBufferData(body, send_fin, nullptr);
+  if (send_fin) {
+    // Nothing else to send.
+    return;
+  }
+
+  // Send the trailers. A FIN is always sent with trailers.
+  DVLOG(1) << "Writing trailers (fin = true): "
+           << response_trailers.DebugString();
+  WriteTrailers(response_trailers, nullptr);
 }
 
 const char* const QuicSpdyServerStream::kErrorResponseBody = "bad";

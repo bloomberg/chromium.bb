@@ -52,6 +52,7 @@
 #include "net/tools/quic/test_tools/server_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::IntToString;
 using base::StringPiece;
 using base::WaitableEvent;
 using net::EpollServer;
@@ -262,6 +263,7 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
         server_hostname_("example.com"),
         server_started_(false),
         strike_register_no_startup_period_(false),
+        chlo_multiplier_(0),
         stream_factory_(nullptr) {
     client_supported_versions_ = GetParam().client_supported_versions;
     server_supported_versions_ = GetParam().server_supported_versions;
@@ -404,6 +406,9 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
         new QuicTestServer(CryptoTestUtils::ProofSourceForTesting(),
                            server_config_, server_supported_versions_),
         server_address_, strike_register_no_startup_period_));
+    if (chlo_multiplier_ != 0) {
+      server_thread_->server()->SetChloMultiplier(chlo_multiplier_);
+    }
     server_thread_->Initialize();
     server_address_ = IPEndPoint(server_address_.address(),
                                  server_thread_->GetPort());
@@ -541,6 +546,7 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
   QuicVersionVector server_supported_versions_;
   QuicVersion negotiated_version_;
   bool strike_register_no_startup_period_;
+  size_t chlo_multiplier_;
   QuicTestServer::StreamFactory* stream_factory_;
 };
 
@@ -554,6 +560,18 @@ TEST_P(EndToEndTest, SimpleRequestResponse) {
 
   EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
   EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
+  EXPECT_EQ(2, client_->client()->GetNumSentClientHellos());
+}
+
+// TODO(jri): This test fails in net_unittest. Figure out whether to leave
+// disabled or to fix it.
+TEST_P(EndToEndTest, DISABLED_SimpleRequestResponseWithLargeReject) {
+  chlo_multiplier_ = 1;
+  ASSERT_TRUE(Initialize());
+
+  EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
+  EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
+  EXPECT_EQ(3, client_->client()->GetNumSentClientHellos());
 }
 
 // TODO(rch): figure out how to detect missing v6 supprt (like on the linux
@@ -2117,6 +2135,36 @@ TEST_P(EndToEndTest, LargePostEarlyResponse) {
   ReliableQuicStream* stream =
       client_->client()->session()->GetStream(kClientDataStreamId1);
   EXPECT_FALSE(stream != nullptr && stream->HasBufferedData());
+}
+
+TEST_P(EndToEndTest, Trailers) {
+  // Test sending and receiving HTTP/2 Trailers (trailing HEADERS frames).
+  ValueRestore<bool> old_flag(&FLAGS_quic_supports_trailers, true);
+  ASSERT_TRUE(Initialize());
+  client_->client()->WaitForCryptoHandshakeConfirmed();
+
+  // Set reordering to ensure that Trailers arriving before body is ok.
+  SetPacketSendDelay(QuicTime::Delta::FromMilliseconds(2));
+  SetReorderPercentage(30);
+
+  // Add a response with headers, body, and trailers.
+  const int kBodySize = 64 * 1024;  // 1 MB;
+  SpdyHeaderBlock headers;
+  headers[":status"] = "200";
+  headers[":version"] = "HTTP/1.1";
+  headers["content-length"] = IntToString(kBodySize);
+
+  const string kBody = string(kBodySize, 'x');
+
+  SpdyHeaderBlock trailers;
+  trailers["some-trailing-header"] = "trailing-header-value";
+
+  QuicInMemoryCache::GetInstance()->AddResponse(
+      "www.google.com", "/trailer_url", headers, kBody, trailers);
+
+  EXPECT_EQ(kBody, client_->SendSynchronousRequest("/trailer_url"));
+  EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
+  EXPECT_EQ(trailers, client_->response_trailers());
 }
 
 }  // namespace

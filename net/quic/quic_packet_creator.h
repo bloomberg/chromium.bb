@@ -4,7 +4,9 @@
 //
 // Accumulates frames for the next packet until more frames no longer fit or
 // it's time to create a packet from them.  Also provides packet creation of
-// FEC packets based on previously created packets.
+// FEC packets based on previously created packets. If multipath enabled, only
+// creates packets on one path at the same time. Currently, next packet number
+// is tracked per-path.
 
 #ifndef NET_QUIC_QUIC_PACKET_CREATOR_H_
 #define NET_QUIC_QUIC_PACKET_CREATOR_H_
@@ -18,6 +20,8 @@
 #include "net/quic/quic_fec_group.h"
 #include "net/quic/quic_framer.h"
 #include "net/quic/quic_protocol.h"
+
+using base::hash_map;
 
 namespace net {
 namespace test {
@@ -74,6 +78,8 @@ class NET_EXPORT_PRIVATE QuicPacketCreator {
 
   // Update the packet number length to use in future packets as soon as it
   // can be safely changed.
+  // TODO(fayang): Directly set packet number length instead of compute it in
+  // creator.
   void UpdatePacketNumberLength(QuicPacketNumber least_packet_awaited_by_peer,
                                 QuicPacketCount max_packets_in_flight);
 
@@ -197,6 +203,10 @@ class NET_EXPORT_PRIVATE QuicPacketCreator {
     return max_packet_length_;
   }
 
+  bool has_ack() const { return has_ack_; }
+
+  bool has_stop_waiting() const { return has_stop_waiting_; }
+
   // Sets the encrypter to use for the encryption level and updates the max
   // plaintext size.
   void SetEncrypter(EncryptionLevel level, QuicEncrypter* encrypter);
@@ -207,6 +217,15 @@ class NET_EXPORT_PRIVATE QuicPacketCreator {
 
   // Sets the maximum packet length.
   void SetMaxPacketLength(QuicByteCount length);
+
+  // Sets the path on which subsequent packets will be created. It is the
+  // caller's responsibility to guarantee no packet is under construction before
+  // calling this function. If |path_id| is different from current_path_, the
+  // FEC packet (if exists) will be sent and next_packet_number_length_ is
+  // recalculated.
+  void SetCurrentPath(QuicPathId path_id,
+                      QuicPacketNumber least_packet_awaited_by_peer,
+                      QuicPacketCount max_packets_in_flight);
 
   // Returns current max number of packets covered by an FEC group.
   size_t max_packets_per_fec_group() const {
@@ -329,8 +348,16 @@ class NET_EXPORT_PRIVATE QuicPacketCreator {
   DelegateInterface* delegate_;
   QuicConnectionId connection_id_;
   EncryptionLevel encryption_level_;
+  // True if an ack is queued in queued_frames_.
+  bool has_ack_;
+  // True if a stop waiting frame is queued in queued_frames_.
+  bool has_stop_waiting_;
   QuicFramer* framer_;
   scoped_ptr<QuicRandomBoolSource> random_bool_source_;
+  // Map mapping path_id to last sent packet number on the path.
+  hash_map<QuicPathId, QuicPacketNumber> multipath_packet_number_;
+  // The path which current constructed packet will be sent on.
+  QuicPathId current_path_;
   QuicPacketNumber packet_number_;
   // True when creator is requested to turn on FEC protection. False otherwise.
   // There is a time difference between should_fec_protect_next_packet is

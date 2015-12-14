@@ -16,6 +16,8 @@ using std::string;
 
 namespace net {
 
+const char* const kFinalOffsetHeaderKey = ":final-offset";
+
 size_t GetPacketHeaderSize(const QuicPacketHeader& header) {
   return GetPacketHeaderSize(
       header.public_header.connection_id_length,
@@ -74,7 +76,7 @@ QuicPacketPublicHeader::QuicPacketPublicHeader(
 QuicPacketPublicHeader::~QuicPacketPublicHeader() {}
 
 QuicPacketHeader::QuicPacketHeader()
-    : path_id(0),
+    : path_id(kDefaultPathId),
       packet_number(0),
       fec_flag(false),
       entropy_flag(false),
@@ -84,7 +86,7 @@ QuicPacketHeader::QuicPacketHeader()
 
 QuicPacketHeader::QuicPacketHeader(const QuicPacketPublicHeader& header)
     : public_header(header),
-      path_id(0),
+      path_id(kDefaultPathId),
       packet_number(0),
       fec_flag(false),
       entropy_flag(false),
@@ -108,12 +110,7 @@ UniqueStreamBuffer NewStreamBuffer(size_t size) {
 }
 
 QuicStreamFrame::QuicStreamFrame()
-    : stream_id(0),
-      fin(false),
-      frame_length(0),
-      frame_buffer(nullptr),
-      offset(0),
-      buffer(nullptr) {}
+    : QuicStreamFrame(0, false, 0, nullptr, 0, nullptr) {}
 
 QuicStreamFrame::QuicStreamFrame(QuicStreamId stream_id,
                                  bool fin,
@@ -154,6 +151,7 @@ QuicStreamFrame::QuicStreamFrame(QuicStreamId stream_id,
       offset(offset),
       buffer(std::move(buffer)) {
   if (this->buffer != nullptr) {
+    DCHECK(frame_buffer == nullptr);
     this->frame_buffer = this->buffer.get();
   }
 }
@@ -281,14 +279,13 @@ bool IsAwaitingPacket(const QuicAckFrame& ack_frame,
 }
 
 QuicStopWaitingFrame::QuicStopWaitingFrame()
-    : entropy_hash(0),
-      least_unacked(0) {
-}
+    : path_id(kDefaultPathId), entropy_hash(0), least_unacked(0) {}
 
 QuicStopWaitingFrame::~QuicStopWaitingFrame() {}
 
 QuicAckFrame::QuicAckFrame()
-    : entropy_hash(0),
+    : path_id(kDefaultPathId),
+      entropy_hash(0),
       is_truncated(false),
       largest_observed(0),
       delta_time_largest_observed(QuicTime::Delta::Infinite()),
@@ -704,14 +701,6 @@ StringPiece QuicPacket::FecProtectedData() const {
 }
 
 StringPiece QuicPacket::AssociatedData() const {
-  return StringPiece(
-      data() + kStartOfHashData,
-      GetStartOfEncryptedData(connection_id_length_, includes_version_,
-                              packet_number_length_) -
-          kStartOfHashData);
-}
-
-StringPiece QuicPacket::BeforePlaintext() const {
   return StringPiece(
       data(), GetStartOfEncryptedData(connection_id_length_, includes_version_,
                                       packet_number_length_));

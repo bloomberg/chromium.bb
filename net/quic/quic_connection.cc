@@ -84,6 +84,7 @@ class AckAlarm : public QuicAlarm::Delegate {
   }
 
   QuicTime OnAlarm() override {
+    DCHECK(connection_->ack_frame_updated());
     connection_->SendAck();
     return QuicTime::Zero();
   }
@@ -1768,6 +1769,7 @@ void QuicConnection::OnHandshakeComplete() {
   if (perspective_ == Perspective::IS_CLIENT && !ack_queued_) {
     ack_alarm_->Cancel();
     ack_alarm_->Set(clock_->ApproximateNow());
+    set_ack_frame_updated(true);
   }
 }
 
@@ -2266,6 +2268,7 @@ QuicConnection::ScopedPacketBundler::ScopedPacketBundler(
       connection_->ack_alarm_->IsSet() || connection_->stop_waiting_count_ > 1;
   if (send_ack == SEND_ACK || (send_ack == BUNDLE_PENDING_ACK && ack_pending)) {
     DVLOG(1) << "Bundling ack with outgoing packet.";
+    DCHECK(send_ack == SEND_ACK || connection_->ack_frame_updated());
     connection_->SendAck();
   }
 }
@@ -2393,6 +2396,14 @@ void QuicConnection::DiscoverMtu() {
   SendMtuDiscoveryPacket(mtu_discovery_target_);
 
   DCHECK(!mtu_discovery_alarm_->IsSet());
+}
+
+bool QuicConnection::ack_frame_updated() const {
+  return received_packet_manager_.ack_frame_updated();
+}
+
+void QuicConnection::set_ack_frame_updated(bool updated) {
+  received_packet_manager_.set_ack_frame_updated(updated);
 }
 
 }  // namespace net

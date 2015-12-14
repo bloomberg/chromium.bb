@@ -26,8 +26,6 @@ QuicPacketGenerator::QuicPacketGenerator(QuicConnectionId connection_id,
       batch_mode_(false),
       should_send_ack_(false),
       should_send_stop_waiting_(false),
-      ack_queued_(false),
-      stop_waiting_queued_(false),
       max_packet_length_(kDefaultMaxPacketSize) {}
 
 QuicPacketGenerator::~QuicPacketGenerator() {
@@ -77,12 +75,12 @@ void QuicPacketGenerator::OnRttChange(QuicTime::Delta rtt) {
 }
 
 void QuicPacketGenerator::SetShouldSendAck(bool also_send_stop_waiting) {
-  if (ack_queued_) {
+  if (packet_creator_.has_ack()) {
     // Ack already queued, nothing to do.
     return;
   }
 
-  if (also_send_stop_waiting && stop_waiting_queued_) {
+  if (also_send_stop_waiting && packet_creator_.has_stop_waiting()) {
     LOG(DFATAL) << "Should only ever be one pending stop waiting frame.";
     return;
   }
@@ -216,7 +214,7 @@ bool QuicPacketGenerator::CanSendWithNextPendingFrameAddition() const {
           ? NO_RETRANSMITTABLE_DATA
           : HAS_RETRANSMITTABLE_DATA;
   if (retransmittable == HAS_RETRANSMITTABLE_DATA) {
-      DCHECK(!queued_control_frames_.empty());  // These are retransmittable.
+    DCHECK(!queued_control_frames_.empty());  // These are retransmittable.
   }
   return delegate_->ShouldGeneratePacket(retransmittable, NOT_HANDSHAKE);
 }
@@ -278,7 +276,6 @@ bool QuicPacketGenerator::HasPendingFrames() const {
 bool QuicPacketGenerator::AddNextPendingFrame() {
   if (should_send_ack_) {
     delegate_->PopulateAckFrame(&pending_ack_frame_);
-    ack_queued_ = true;
     // If we can't this add the frame now, then we still need to do so later.
     should_send_ack_ = !AddFrame(QuicFrame(&pending_ack_frame_),
                                  /*needs_padding=*/false);
@@ -289,7 +286,6 @@ bool QuicPacketGenerator::AddNextPendingFrame() {
 
   if (should_send_stop_waiting_) {
     delegate_->PopulateStopWaitingFrame(&pending_stop_waiting_frame_);
-    stop_waiting_queued_ = true;
     // If we can't this add the frame now, then we still need to do so later.
     should_send_stop_waiting_ =
         !AddFrame(QuicFrame(&pending_stop_waiting_frame_),
@@ -418,14 +414,18 @@ void QuicPacketGenerator::OnSerializedPacket(
   if (packet_creator_.CanSetMaxPacketLength()) {
     packet_creator_.SetMaxPacketLength(max_packet_length_);
   }
-
-  // The packet has now been serialized, so the frames are no longer queued.
-  ack_queued_ = false;
-  stop_waiting_queued_ = false;
 }
 
 void QuicPacketGenerator::OnResetFecGroup() {
   delegate_->OnResetFecGroup();
+}
+
+void QuicPacketGenerator::SetCurrentPath(
+    QuicPathId path_id,
+    QuicPacketNumber least_packet_awaited_by_peer,
+    QuicPacketCount max_packets_in_flight) {
+  packet_creator_.SetCurrentPath(path_id, least_packet_awaited_by_peer,
+                                 max_packets_in_flight);
 }
 
 void QuicPacketGenerator::set_rtt_multiplier_for_fec_timeout(

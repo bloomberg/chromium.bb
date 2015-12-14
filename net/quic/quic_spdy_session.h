@@ -43,11 +43,11 @@ class NET_EXPORT_PRIVATE QuicSpdySession : public QuicSession {
   // If |fin| is true, then no more data will be sent for the stream |id|.
   // If provided, |ack_notifier_delegate| will be registered to be notified when
   // we have seen ACKs for all packets resulting from this call.
-  size_t WriteHeaders(QuicStreamId id,
-                      const SpdyHeaderBlock& headers,
-                      bool fin,
-                      SpdyPriority priority,
-                      QuicAckListenerInterface* ack_notifier_delegate);
+  virtual size_t WriteHeaders(QuicStreamId id,
+                              const SpdyHeaderBlock& headers,
+                              bool fin,
+                              SpdyPriority priority,
+                              QuicAckListenerInterface* ack_notifier_delegate);
 
   QuicHeadersStream* headers_stream() { return headers_stream_.get(); }
 

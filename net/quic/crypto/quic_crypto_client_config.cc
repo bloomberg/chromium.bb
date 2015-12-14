@@ -417,6 +417,16 @@ void QuicCryptoClientConfig::FillInchoateClientHello(
     out->SetStringPiece(kUAID, user_agent_id_);
   }
 
+  // Even though this is an inchoate CHLO, send the SCID so that
+  // the STK can be validated by the server.
+  const CryptoHandshakeMessage* scfg = cached->GetServerConfig();
+  if (scfg != nullptr) {
+    StringPiece scid;
+    if (scfg->GetStringPiece(kSCID, &scid)) {
+      out->SetStringPiece(kSCID, scid);
+    }
+  }
+
   if (!cached->source_address_token().empty()) {
     out->SetStringPiece(kSourceAddressTokenTag, cached->source_address_token());
   }

@@ -62,6 +62,10 @@ class QuicServer : public EpollCallbackInterface {
     crypto_config_.set_strike_register_no_startup_period();
   }
 
+  void SetChloMultiplier(size_t multiplier) {
+    crypto_config_.set_chlo_multiplier(multiplier);
+  }
+
   bool overflow_supported() { return overflow_supported_; }
 
   QuicPacketCount packets_dropped() { return packets_dropped_; }

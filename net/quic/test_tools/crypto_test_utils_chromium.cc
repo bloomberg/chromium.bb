@@ -72,7 +72,7 @@ class TestProofVerifierChromium : public ProofVerifierChromium {
   scoped_ptr<CTVerifier> cert_transparency_verifier_;
 };
 
-const char kSignature[] = "signature";
+const string kSignature(2048, 's');
 const char kSCT[] = "CryptoServerTests";
 
 class FakeProofSource : public ProofSource {

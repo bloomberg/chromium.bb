@@ -429,6 +429,7 @@ class MockQuicSpdySession : public QuicSpdySession {
 
   QuicCryptoStream* GetCryptoStream() override { return crypto_stream_.get(); }
 
+  // From QuicSession.
   MOCK_METHOD2(OnConnectionClosed, void(QuicErrorCode error, bool from_peer));
   MOCK_METHOD1(CreateIncomingDynamicStream, QuicSpdyStream*(QuicStreamId id));
   MOCK_METHOD0(CreateOutgoingDynamicStream, QuicSpdyStream*());
@@ -439,6 +440,11 @@ class MockQuicSpdySession : public QuicSpdySession {
                                 bool fin,
                                 FecProtection fec_protection,
                                 QuicAckListenerInterface*));
+  MOCK_METHOD3(SendRstStream,
+               void(QuicStreamId stream_id,
+                    QuicRstStreamErrorCode error,
+                    QuicStreamOffset bytes_written));
+
   MOCK_METHOD2(OnStreamHeaders, void(QuicStreamId stream_id,
                                      base::StringPiece headers_data));
   MOCK_METHOD2(OnStreamHeadersPriority,
@@ -446,10 +452,13 @@ class MockQuicSpdySession : public QuicSpdySession {
   MOCK_METHOD3(OnStreamHeadersComplete, void(QuicStreamId stream_id,
                                              bool fin,
                                              size_t frame_len));
-  MOCK_METHOD3(SendRstStream, void(QuicStreamId stream_id,
-                                   QuicRstStreamErrorCode error,
-                                   QuicStreamOffset bytes_written));
   MOCK_METHOD0(IsCryptoHandshakeConfirmed, bool());
+  MOCK_METHOD5(WriteHeaders,
+               size_t(QuicStreamId id,
+                      const SpdyHeaderBlock& headers,
+                      bool fin,
+                      SpdyPriority priority,
+                      QuicAckListenerInterface* ack_notifier_delegate));
   MOCK_METHOD1(OnHeadersHeadOfLineBlocking, void(QuicTime::Delta delta));
 
   using QuicSession::ActivateStream;

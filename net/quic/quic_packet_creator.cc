@@ -88,8 +88,11 @@ QuicPacketCreator::QuicPacketCreator(QuicConnectionId connection_id,
     : delegate_(delegate),
       connection_id_(connection_id),
       encryption_level_(ENCRYPTION_NONE),
+      has_ack_(false),
+      has_stop_waiting_(false),
       framer_(framer),
       random_bool_source_(new QuicRandomBoolSource(random_generator)),
+      current_path_(kDefaultPathId),
       packet_number_(0),
       should_fec_protect_next_packet_(false),
       fec_protect_(false),
@@ -112,7 +115,7 @@ QuicPacketCreator::~QuicPacketCreator() {
 
 void QuicPacketCreator::OnBuiltFecProtectedPayload(
     const QuicPacketHeader& header, StringPiece payload) {
-  if (fec_group_.get()) {
+  if (fec_group_.get() != nullptr) {
     DCHECK_NE(0u, header.fec_group);
     fec_group_->Update(encryption_level_, header, payload);
   }
@@ -585,13 +588,10 @@ SerializedPacket QuicPacketCreator::SerializePacket(
     queued_retransmittable_frames_->set_needs_padding(needs_padding_);
   }
 
-  bool has_ack = false;
-  bool has_stop_waiting = false;
-  for (const QuicFrame& frame : queued_frames_) {
-    has_ack |= frame.type == ACK_FRAME;
-    has_stop_waiting |= frame.type == STOP_WAITING_FRAME;
-  }
-
+  const bool has_ack = has_ack_;
+  const bool has_stop_waiting = has_stop_waiting_;
+  has_ack_ = false;
+  has_stop_waiting_ = false;
   packet_size_ = 0;
   queued_frames_.clear();
   needs_padding_ = false;
@@ -707,6 +707,12 @@ bool QuicPacketCreator::AddFrame(const QuicFrame& frame,
     queued_frames_.push_back(frame);
   }
 
+  if (frame.type == ACK_FRAME) {
+    has_ack_ = true;
+  }
+  if (frame.type == STOP_WAITING_FRAME) {
+    has_stop_waiting_ = true;
+  }
   if (needs_padding) {
     needs_padding_ = true;
   }
@@ -783,6 +789,34 @@ void QuicPacketCreator::OnCongestionWindowChange(
 
 void QuicPacketCreator::OnRttChange(QuicTime::Delta rtt) {
   fec_timeout_ = rtt.Multiply(rtt_multiplier_for_fec_timeout_);
+}
+
+void QuicPacketCreator::SetCurrentPath(
+    QuicPathId path_id,
+    QuicPacketNumber least_packet_awaited_by_peer,
+    QuicPacketCount max_packets_in_flight) {
+  if (current_path_ == path_id) {
+    return;
+  }
+
+  if (HasPendingFrames()) {
+    LOG(DFATAL)
+        << "Unable to change paths when a packet is under construction.";
+    return;
+  }
+
+  // Send FEC packet and close FEC group.
+  MaybeSendFecPacketAndCloseGroup(/*force_send_fec=*/true,
+                                  /*is_fec_timeout=*/false);
+  // Save current packet number and load switching path's packet number.
+  multipath_packet_number_[current_path_] = packet_number_;
+  hash_map<QuicPathId, QuicPacketNumber>::iterator it =
+      multipath_packet_number_.find(path_id);
+  // If path_id is not in the map, it's a new path. Set packet_number to 0.
+  packet_number_ = it == multipath_packet_number_.end() ? 0 : it->second;
+  current_path_ = path_id;
+  // Switching path needs to update packet number length.
+  UpdatePacketNumberLength(least_packet_awaited_by_peer, max_packets_in_flight);
 }
 
 }  // namespace net

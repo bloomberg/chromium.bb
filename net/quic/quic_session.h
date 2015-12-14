@@ -154,11 +154,16 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   }
 
   // Returns the number of currently open streams, excluding the reserved
-  // headers and crypto streams.
-  virtual size_t GetNumOpenStreams() const;
-
-  // Same as GetNumOpenStreams(), but never counting unfinished streams.
+  // headers and crypto streams, and never counting unfinished streams.
   virtual size_t GetNumActiveStreams() const;
+
+  // Returns the number of currently open peer initiated streams, excluding the
+  // reserved headers and crypto streams.
+  virtual size_t GetNumOpenIncomingStreams() const;
+
+  // Returns the number of currently open self initiated streams, excluding the
+  // reserved headers and crypto streams.
+  virtual size_t GetNumOpenOutgoingStreams() const;
 
   // Returns the number of "available" streams, the stream ids less than
   // largest_peer_created_stream_id_ that have not yet been opened.
@@ -256,6 +261,16 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   }
   void set_error(QuicErrorCode error) { error_ = error; }
 
+  size_t GetNumDynamicOutgoingStreams() const;
+
+  size_t GetNumDrainingOutgoingStreams() const;
+
+  size_t num_locally_closed_incoming_streams_highest_offset() const {
+    return num_locally_closed_incoming_streams_highest_offset_;
+  }
+
+  size_t GetNumLocallyClosedOutgoingStreamsHighestOffset() const;
+
  private:
   friend class test::QuicSessionPeer;
   friend class VisitorShim;
@@ -286,6 +301,9 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   // Called in OnConfigNegotiated for finch trials to measure performance of
   // starting with smaller flow control receive windows and auto-tuning.
   void AdjustInitialFlowControlWindows(size_t stream_window);
+
+  // Return true if given stream is peer initiated.
+  bool IsIncomingStream(QuicStreamId id) const;
 
   // Keep track of highest received byte offset of locally closed streams, while
   // waiting for a definitive final highest offset from the peer.
@@ -328,6 +346,16 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   QuicWriteBlockedList write_blocked_streams_;
 
   QuicStreamId largest_peer_created_stream_id_;
+
+  // A counter for peer initiated streams which are in the dynamic_stream_map_.
+  size_t num_dynamic_incoming_streams_;
+
+  // A counter for peer initiated streams which are in the draining_streams_.
+  size_t num_draining_incoming_streams_;
+
+  // A counter for peer initiated streams which are in the
+  // locally_closed_streams_highest_offset_.
+  size_t num_locally_closed_incoming_streams_highest_offset_;
 
   // The latched error with which the connection was closed.
   QuicErrorCode error_;

@@ -33,7 +33,6 @@ QuicStreamSequencer::QuicStreamSequencer(ReliableQuicStream* quic_stream,
       clock_(clock),
       ignore_read_data_(false) {
   if (FLAGS_quic_use_stream_sequencer_buffer) {
-    DVLOG(1) << "Use StreamSequencerBuffer for stream: " << stream_->id();
     buffered_frames_.reset(
         new StreamSequencerBuffer(kStreamReceiveWindowLimit));
   } else {
