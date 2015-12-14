@@ -403,7 +403,7 @@ component("media") {
         "base/android/ndk_media_codec_bridge.cc",
         "base/android/ndk_media_codec_bridge.h",
       ]
-      libs += [ "-lmediandk" ]
+      libs += [ "mediandk" ]
     }
     allow_circular_includes_from = [ "//media/base/android" ]
   }
