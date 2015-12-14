@@ -53,6 +53,7 @@ class TestWebState : public WebState {
                     uint32_t max_bitmap_size,
                     bool bypass_cache,
                     const ImageDownloadCallback& callback) override;
+  base::WeakPtr<WebState> AsWeakPtr() override;
 
   // Setters for test data.
   void SetContentIsHTML(bool content_is_html);

@@ -100,4 +100,9 @@ int TestWebState::DownloadImage(const GURL& url,
   return 0;
 }
 
+base::WeakPtr<WebState> TestWebState::AsWeakPtr() {
+  NOTREACHED();
+  return base::WeakPtr<WebState>();
+}
+
 }  // namespace web

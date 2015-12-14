@@ -245,6 +245,7 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
                     uint32_t max_bitmap_size,
                     bool bypass_cache,
                     const ImageDownloadCallback& callback) override;
+  base::WeakPtr<WebState> AsWeakPtr() override;
 
   // Adds |interstitial|'s view to the web controller's content view.
   void ShowWebInterstitial(WebInterstitialImpl* interstitial);
@@ -335,6 +336,11 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
 
   // Callbacks associated to command prefixes.
   std::map<std::string, ScriptCommandCallback> script_command_callbacks_;
+
+  // Member variables should appear before the WeakPtrFactory<> to ensure that
+  // any WeakPtrs to WebStateImpl are invalidated before its member variable's
+  // destructors are executed, rendering them invalid.
+  base::WeakPtrFactory<WebState> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebStateImpl);
 };

@@ -270,6 +270,8 @@ source_set("web") {
     "web_state/web_state_observer.cc",
     "web_state/web_state_observer_bridge.mm",
     "web_state/web_state_policy_decider.mm",
+    "web_state/web_state_weak_ptr_factory.cc",
+    "web_state/web_state_weak_ptr_factory.h",
     "web_state/web_view_internal_creation_util.h",
     "web_state/web_view_internal_creation_util.mm",
     "web_state/wk_web_view_security_util.h",
