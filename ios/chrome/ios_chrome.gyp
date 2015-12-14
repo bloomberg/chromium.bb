@@ -186,6 +186,8 @@
         'browser/bookmarks/bookmarks_utils.h',
         'browser/bookmarks/startup_task_runner_service_factory.cc',
         'browser/bookmarks/startup_task_runner_service_factory.h',
+        'browser/browser_state/bookmark_model_loaded_observer.cc',
+        'browser/browser_state/bookmark_model_loaded_observer.h',
         'browser/browser_state/browser_state_info_cache.cc',
         'browser/browser_state/browser_state_info_cache.h',
         'browser/browser_state/browser_state_info_cache_observer.h',
