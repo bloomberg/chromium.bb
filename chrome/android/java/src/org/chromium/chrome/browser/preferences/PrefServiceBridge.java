@@ -842,10 +842,10 @@ public final class PrefServiceBridge {
     }
 
     /**
-     * @return whether ForceGoogleSafeSearch is set
+     * @return whether SafeSites for supervised users is enabled.
      */
-    public boolean isForceGoogleSafeSearch() {
-        return nativeGetForceGoogleSafeSearch();
+    public boolean isSupervisedUserSafeSitesEnabled() {
+        return nativeGetSupervisedUserSafeSitesEnabled();
     }
 
     /**
@@ -943,7 +943,7 @@ public final class PrefServiceBridge {
     private native boolean nativeGetIncognitoModeManaged();
     private native boolean nativeGetPrintingEnabled();
     private native boolean nativeGetPrintingManaged();
-    private native boolean nativeGetForceGoogleSafeSearch();
+    private native boolean nativeGetSupervisedUserSafeSitesEnabled();
     private native void nativeSetTranslateEnabled(boolean enabled);
     private native void nativeSetAutoDetectEncodingEnabled(boolean enabled);
     private native void nativeResetTranslateDefaults();

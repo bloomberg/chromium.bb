@@ -118,7 +118,7 @@ public class AccountManagementFragment extends PreferenceFragment
     public static final String PREF_PARENTAL_SETTINGS = "parental_settings";
     public static final String PREF_PARENT_ACCOUNTS = "parent_accounts";
     public static final String PREF_CHILD_CONTENT = "child_content";
-    public static final String PREF_CHILD_SAFE_SEARCH = "child_safe_search";
+    public static final String PREF_CHILD_SAFE_SITES = "child_safe_sites";
 
     private int mGaiaServiceType;
 
@@ -354,7 +354,7 @@ public class AccountManagementFragment extends PreferenceFragment
     private void configureChildAccountPreferences() {
         Preference parentAccounts = findPreference(PREF_PARENT_ACCOUNTS);
         Preference childContent = findPreference(PREF_CHILD_CONTENT);
-        Preference childSafeSearch = findPreference(PREF_CHILD_SAFE_SEARCH);
+        Preference childSafeSites = findPreference(PREF_CHILD_SAFE_SITES);
         if (ChildAccountService.isChildAccount()) {
             Resources res = getActivity().getResources();
             PrefServiceBridge prefService = PrefServiceBridge.getInstance();
@@ -384,16 +384,17 @@ public class AccountManagementFragment extends PreferenceFragment
             childContent.setSummary(contentText);
             childContent.setSelectable(false);
 
-            final String safeSearchText = res.getString(
-                    prefService.isForceGoogleSafeSearch() ? R.string.text_on : R.string.text_off);
-            childSafeSearch.setSummary(safeSearchText);
-            childSafeSearch.setSelectable(false);
+            final String safeSitesText = res.getString(
+                    prefService.isSupervisedUserSafeSitesEnabled()
+                            ? R.string.text_on : R.string.text_off);
+            childSafeSites.setSummary(safeSitesText);
+            childSafeSites.setSelectable(false);
         } else {
             PreferenceScreen prefScreen = getPreferenceScreen();
             prefScreen.removePreference(findPreference(PREF_PARENTAL_SETTINGS));
             prefScreen.removePreference(parentAccounts);
             prefScreen.removePreference(childContent);
-            prefScreen.removePreference(childSafeSearch);
+            prefScreen.removePreference(childSafeSites);
         }
     }
 

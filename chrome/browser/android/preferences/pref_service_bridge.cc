@@ -391,9 +391,9 @@ static jboolean GetCrashReportManaged(JNIEnv* env,
       prefs::kCrashReportingEnabled);
 }
 
-static jboolean GetForceGoogleSafeSearch(JNIEnv* env,
+static jboolean GetSupervisedUserSafeSitesEnabled(JNIEnv* env,
                                          const JavaParamRef<jobject>& obj) {
-  return GetPrefService()->GetBoolean(prefs::kForceGoogleSafeSearch);
+  return GetPrefService()->GetBoolean(prefs::kSupervisedUserSafeSites);
 }
 
 static jint GetDefaultSupervisedUserFilteringBehavior(

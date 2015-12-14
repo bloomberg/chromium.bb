@@ -843,8 +843,8 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_ACCOUNT_MANAGEMENT_CHILD_CONTENT_ALL" desc="Setting that permits child accounts to visit any websites.">
         Uncontrolled
       </message>
-      <message name="IDS_ACCOUNT_MANAGEMENT_CHILD_SAFE_SEARCH_TITLE" desc="Title of Google SafeSearch, which blocks inappropriate or explicit search results.">
-        SafeSearch
+      <message name="IDS_ACCOUNT_MANAGEMENT_CHILD_SAFE_SITES_TITLE" desc="Title of Google SafeSites, which blocks inappropriate or explicit websites.">
+        Google SafeSites filter
       </message>
       <message name="IDS_POWERED_BY_CHROME_MESSAGE" desc="A message indicating that the current page is running in Chrome.">
         Powered by Chrome

@@ -51,8 +51,8 @@
         android:title="@string/account_management_child_content_title"
         android:order="1005" />
     <Preference
-        android:key="child_safe_search"
-        android:title="@string/account_management_child_safe_search_title"
+        android:key="child_safe_sites"
+        android:title="@string/account_management_child_safe_sites_title"
         android:order="1006" />
 
 </PreferenceScreen>
