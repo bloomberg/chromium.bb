@@ -95,8 +95,22 @@ void RenderWidgetHostViewGuest::Show() {
   // The two sizes may fall out of sync if we switch RenderWidgetHostViews,
   // resize, and then switch page, as is the case with interstitial pages.
   // NOTE: |guest_| is NULL in unit tests.
-  if (guest_)
+  if (guest_) {
     SetSize(guest_->web_contents()->GetViewBounds().size());
+    // Since we were last shown, our renderer may have had a different surface
+    // set (e.g. showing an interstitial), so we resend our current surface to
+    // the renderer.
+    if (!surface_id_.is_null()) {
+      cc::SurfaceSequence sequence = cc::SurfaceSequence(
+          id_allocator_->id_namespace(), next_surface_sequence_++);
+      GetSurfaceManager()
+          ->GetSurfaceForId(surface_id_)
+          ->AddDestructionDependency(sequence);
+      guest_->SetChildFrameSurface(surface_id_, current_surface_size_,
+                                   current_surface_scale_factor_,
+                                   sequence);
+    }
+  }
   host_->WasShown(ui::LatencyInfo());
 }
 
