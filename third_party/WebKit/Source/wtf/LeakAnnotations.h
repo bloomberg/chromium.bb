@@ -34,11 +34,7 @@
 
 // This file defines macros for working with LeakSanitizer, allowing memory
 // and allocations to be registered as exempted from LSan consideration.
-//
-// LSan exempted memory will be treated as a source of live pointers,
-// i.e. heap objects reachable by following pointers from an exempted
-// object will not be reported as leaks.
-//
+
 #include "wtf/Noncopyable.h"
 #if USE(LEAK_SANITIZER)
 #include "wtf/AddressSanitizer.h"
@@ -74,6 +70,12 @@ public:
 
 // LEAK_SANITIZER_IGNORE_OBJECT(X): the heap object referenced by pointer X
 // will be ignored by LSan.
+//
+// "Ignorance" means that LSan's reachability traversal is stopped short
+// upon encountering an ignored memory chunk. Consequently, LSan will not
+// scan an ignored memory chunk for live, reachable pointers. However, should
+// those embedded pointers be reachable by some other path, they will be
+// reported as leaking.
 #define LEAK_SANITIZER_IGNORE_OBJECT(X) __lsan_ignore_object(X)
 
 // If the object pointed to by the static local is on the Oilpan heap, a strong
