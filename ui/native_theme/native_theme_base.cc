@@ -201,6 +201,9 @@ void NativeThemeBase::Paint(SkCanvas* canvas,
   if (rect.IsEmpty())
     return;
 
+  canvas->save();
+  canvas->clipRect(gfx::RectToSkRect(rect));
+
   switch (part) {
     // Please keep these in the order of NativeTheme::Part.
     case kComboboxArrow:
@@ -283,6 +286,8 @@ void NativeThemeBase::Paint(SkCanvas* canvas,
       NOTREACHED() << "Unknown theme part: " << part;
       break;
   }
+
+  canvas->restore();
 }
 
 NativeThemeBase::NativeThemeBase()
@@ -929,21 +934,15 @@ void NativeThemeBase::PaintProgressBar(
   canvas->drawRect(gfx::RectToSkRect(progress_rect), progress_paint);
 
   // Draw the border.
+  gfx::RectF border_rect(rect);
+  border_rect.Inset(stroke_width / 2.0f, stroke_width / 2.0f);
   stroke_paint.setColor(kProgressBorderColor);
-  canvas->drawRect(gfx::RectToSkRect(rect), stroke_paint);
+  canvas->drawRect(gfx::RectFToSkRect(border_rect), stroke_paint);
 }
 
 void NativeThemeBase::AdjustCheckboxRadioRectForPadding(SkRect* rect) const {
   // By default we only take 1px from right and bottom for the drop shadow.
   rect->iset(rect->x(), rect->y(), rect->right() - 1, rect->bottom() - 1);
-}
-
-bool NativeThemeBase::IntersectsClipRectInt(SkCanvas* canvas,
-                                            int x, int y, int w, int h) const {
-  SkRect clip;
-  return canvas->getClipBounds(&clip) &&
-      clip.intersect(SkIntToScalar(x), SkIntToScalar(y), SkIntToScalar(x + w),
-                     SkIntToScalar(y + h));
 }
 
 void NativeThemeBase::DrawImageInt(
