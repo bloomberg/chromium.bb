@@ -17,6 +17,7 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_form_field_prediction_map.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
+#include "components/autofill/core/common/password_form_generation_data.h"
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/common_param_traits_macros.h"
 #include "ipc/ipc_message_macros.h"
@@ -68,6 +69,12 @@ IPC_STRUCT_TRAITS_BEGIN(autofill::FormDataPredictions)
   IPC_STRUCT_TRAITS_MEMBER(data)
   IPC_STRUCT_TRAITS_MEMBER(signature)
   IPC_STRUCT_TRAITS_MEMBER(fields)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(autofill::PasswordFormGenerationData)
+  IPC_STRUCT_TRAITS_MEMBER(name)
+  IPC_STRUCT_TRAITS_MEMBER(action)
+  IPC_STRUCT_TRAITS_MEMBER(generation_field)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(autofill::UsernamesCollectionKey)
@@ -197,9 +204,10 @@ IPC_MESSAGE_ROUTED3(AutofillMsg_RequestAutocompleteResult,
                     autofill::FormData /* form_data */)
 
 // Sent when Autofill manager gets the query response from the Autofill server
-// and there are fields classified as ACCOUNT_CREATION_PASSWORD in the response.
-IPC_MESSAGE_ROUTED1(AutofillMsg_AccountCreationFormsDetected,
-                    std::vector<autofill::FormData> /* forms */)
+// and there are fields classified for password generation in the response.
+IPC_MESSAGE_ROUTED1(
+    AutofillMsg_FoundFormsEligibleForGeneration,
+    std::vector<autofill::PasswordFormGenerationData> /* forms */)
 
 // Sent when Autofill manager gets the query response from the Autofill server
 // which contains information about username and password fields for some forms.

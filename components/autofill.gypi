@@ -46,6 +46,7 @@
         'autofill/core/common/password_form_field_prediction_map.h',
         'autofill/core/common/password_form_fill_data.cc',
         'autofill/core/common/password_form_fill_data.h',
+        'autofill/core/common/password_form_generation_data.h',
         'autofill/core/common/password_generation_util.cc',
         'autofill/core/common/password_generation_util.h',
         'autofill/core/common/save_password_progress_logger.cc',

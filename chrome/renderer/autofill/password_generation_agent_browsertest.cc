@@ -181,6 +181,16 @@ const char ChangeDetectionScript[] =
     "  };"
     "</script>";
 
+const char kPasswordChangeFormHTML[] =
+    "<FORM name = 'ChangeWithUsernameForm' action = 'http://www.bidule.com'> "
+    "  <INPUT type = 'text' id = 'username'/> "
+    "  <INPUT type = 'password' id = 'password'/> "
+    "  <INPUT type = 'password' id = 'newpassword'/> "
+    "  <INPUT type = 'password' id = 'confirmpassword'/> "
+    "  <INPUT type = 'button' id = 'dummy'/> "
+    "  <INPUT type = 'submit' value = 'Login'/> "
+    "</FORM>";
+
 TEST_F(PasswordGenerationAgentTest, DetectionTest) {
   // Don't shown the icon for non account creation forms.
   LoadHTMLWithUserGesture(kSigninFormHTML);
@@ -196,8 +206,7 @@ TEST_F(PasswordGenerationAgentTest, DetectionTest) {
   LoadHTMLWithUserGesture(kAccountCreationFormHTML);
   SetNotBlacklistedMessage(password_generation_, kAccountCreationFormHTML);
   SetAccountCreationFormsDetectedMessage(password_generation_,
-                                         GetMainFrame()->document(),
-                                         0);
+                                         GetMainFrame()->document(), 0, 1);
   ExpectGenerationAvailable("first_password", true);
 
   // Hidden fields are not treated differently.
@@ -205,8 +214,7 @@ TEST_F(PasswordGenerationAgentTest, DetectionTest) {
   SetNotBlacklistedMessage(password_generation_,
                            kHiddenPasswordAccountCreationFormHTML);
   SetAccountCreationFormsDetectedMessage(password_generation_,
-                                         GetMainFrame()->document(),
-                                         0);
+                                         GetMainFrame()->document(), 0, 1);
   ExpectGenerationAvailable("first_password", true);
 
   // This doesn't trigger because the form action is invalid.
@@ -214,8 +222,7 @@ TEST_F(PasswordGenerationAgentTest, DetectionTest) {
   SetNotBlacklistedMessage(password_generation_,
                            kInvalidActionAccountCreationFormHTML);
   SetAccountCreationFormsDetectedMessage(password_generation_,
-                                         GetMainFrame()->document(),
-                                         0);
+                                         GetMainFrame()->document(), 0, 1);
   ExpectGenerationAvailable("first_password", false);
 }
 
@@ -226,8 +233,7 @@ TEST_F(PasswordGenerationAgentTest, FillTest) {
   LoadHTMLWithUserGesture(html.c_str());
   SetNotBlacklistedMessage(password_generation_, html.c_str());
   SetAccountCreationFormsDetectedMessage(password_generation_,
-                                         GetMainFrame()->document(),
-                                         0);
+                                         GetMainFrame()->document(), 0, 1);
 
   WebDocument document = GetMainFrame()->document();
   WebElement element =
@@ -278,8 +284,7 @@ TEST_F(PasswordGenerationAgentTest, EditingTest) {
   LoadHTMLWithUserGesture(kAccountCreationFormHTML);
   SetNotBlacklistedMessage(password_generation_, kAccountCreationFormHTML);
   SetAccountCreationFormsDetectedMessage(password_generation_,
-                                         GetMainFrame()->document(),
-                                         0);
+                                         GetMainFrame()->document(), 0, 1);
 
   WebDocument document = GetMainFrame()->document();
   WebElement element =
@@ -328,8 +333,7 @@ TEST_F(PasswordGenerationAgentTest, BlacklistedTest) {
   // icon.
   LoadHTMLWithUserGesture(kAccountCreationFormHTML);
   SetAccountCreationFormsDetectedMessage(password_generation_,
-                                         GetMainFrame()->document(),
-                                         0);
+                                         GetMainFrame()->document(), 0, 1);
   ExpectGenerationAvailable("first_password", false);
 
   // Receive one not blacklisted message for non account creation form. Don't
@@ -337,8 +341,7 @@ TEST_F(PasswordGenerationAgentTest, BlacklistedTest) {
   LoadHTMLWithUserGesture(kAccountCreationFormHTML);
   SetNotBlacklistedMessage(password_generation_, kSigninFormHTML);
   SetAccountCreationFormsDetectedMessage(password_generation_,
-                                         GetMainFrame()->document(),
-                                         0);
+                                         GetMainFrame()->document(), 0, 1);
   ExpectGenerationAvailable("first_password", false);
 
   // Receive one not blacklisted message for account creation form. Show
@@ -346,8 +349,7 @@ TEST_F(PasswordGenerationAgentTest, BlacklistedTest) {
   LoadHTMLWithUserGesture(kAccountCreationFormHTML);
   SetNotBlacklistedMessage(password_generation_, kAccountCreationFormHTML);
   SetAccountCreationFormsDetectedMessage(password_generation_,
-                                         GetMainFrame()->document(),
-                                         0);
+                                         GetMainFrame()->document(), 0, 1);
   ExpectGenerationAvailable("first_password", true);
 
   // Receive two not blacklisted messages, one is for account creation form and
@@ -356,8 +358,7 @@ TEST_F(PasswordGenerationAgentTest, BlacklistedTest) {
   SetNotBlacklistedMessage(password_generation_, kAccountCreationFormHTML);
   SetNotBlacklistedMessage(password_generation_, kSigninFormHTML);
   SetAccountCreationFormsDetectedMessage(password_generation_,
-                                         GetMainFrame()->document(),
-                                         0);
+                                         GetMainFrame()->document(), 0, 1);
   ExpectGenerationAvailable("first_password", true);
 }
 
@@ -373,8 +374,7 @@ TEST_F(PasswordGenerationAgentTest, AccountCreationFormsDetectedTest) {
   LoadHTMLWithUserGesture(kAccountCreationFormHTML);
   SetNotBlacklistedMessage(password_generation_, kAccountCreationFormHTML);
   SetAccountCreationFormsDetectedMessage(password_generation_,
-                                         GetMainFrame()->document(),
-                                         0);
+                                         GetMainFrame()->document(), 0, 1);
   ExpectGenerationAvailable("first_password", true);
 }
 
@@ -384,8 +384,7 @@ TEST_F(PasswordGenerationAgentTest, MaximumOfferSize) {
   LoadHTMLWithUserGesture(kAccountCreationFormHTML);
   SetNotBlacklistedMessage(password_generation_, kAccountCreationFormHTML);
   SetAccountCreationFormsDetectedMessage(password_generation_,
-                                         GetMainFrame()->document(),
-                                         0);
+                                         GetMainFrame()->document(), 0, 1);
   ExpectGenerationAvailable("first_password", true);
 
   WebDocument document = GetMainFrame()->document();
@@ -469,8 +468,7 @@ TEST_F(PasswordGenerationAgentTest, DynamicFormTest) {
 
   // This needs to come after the DOM has been modified.
   SetAccountCreationFormsDetectedMessage(password_generation_,
-                                         GetMainFrame()->document(),
-                                         1);
+                                         GetMainFrame()->document(), 1, 1);
 
   // TODO(gcasto): I'm slightly worried about flakes in this test where
   // didAssociateFormControls() isn't called. If this turns out to be a problem
@@ -488,8 +486,7 @@ TEST_F(PasswordGenerationAgentTest, MultiplePasswordFormsTest) {
 
   // Should trigger on the second form.
   SetAccountCreationFormsDetectedMessage(password_generation_,
-                                         GetMainFrame()->document(),
-                                         1);
+                                         GetMainFrame()->document(), 1, 1);
 
   ExpectGenerationAvailable("password", false);
   ExpectGenerationAvailable("first_password", true);
@@ -499,8 +496,7 @@ TEST_F(PasswordGenerationAgentTest, MessagesAfterAccountSignupFormFound) {
   LoadHTMLWithUserGesture(kAccountCreationFormHTML);
   SetNotBlacklistedMessage(password_generation_, kAccountCreationFormHTML);
   SetAccountCreationFormsDetectedMessage(password_generation_,
-                                         GetMainFrame()->document(),
-                                         0);
+                                         GetMainFrame()->document(), 0, 1);
 
   // Generation should be enabled.
   ExpectGenerationAvailable("first_password", true);
@@ -521,8 +517,7 @@ TEST_F(PasswordGenerationAgentTest, BlurTest) {
   SetNotBlacklistedMessage(password_generation_,
                            kDisabledElementAccountCreationFormHTML);
   SetAccountCreationFormsDetectedMessage(password_generation_,
-                                         GetMainFrame()->document(),
-                                         0);
+                                         GetMainFrame()->document(), 0, 1);
 
   // Focus on the first password field: password generation popup should show
   // up.
@@ -558,6 +553,19 @@ TEST_F(PasswordGenerationAgentTest, AutocompleteAttributesTest) {
                            kNewPasswordAutocompleteAttributeFormHTML);
 
   ExpectGenerationAvailable("first_password", false);
+}
+
+TEST_F(PasswordGenerationAgentTest, ChangePasswordFormDetectionTest) {
+  // Verify that generation is shown on correct field after message receiving.
+  LoadHTMLWithUserGesture(kPasswordChangeFormHTML);
+  SetNotBlacklistedMessage(password_generation_, kPasswordChangeFormHTML);
+  ExpectGenerationAvailable("password", false);
+  ExpectGenerationAvailable("newpassword", false);
+
+  SetAccountCreationFormsDetectedMessage(password_generation_,
+                                         GetMainFrame()->document(), 0, 2);
+  ExpectGenerationAvailable("password", false);
+  ExpectGenerationAvailable("newpassword", true);
 }
 
 }  // namespace autofill

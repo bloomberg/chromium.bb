@@ -1823,8 +1823,7 @@ TEST_F(PasswordAutofillAgentTest, PasswordGenerationTriggered_TypedPassword) {
 
   SetNotBlacklistedMessage(password_generation_, kFormHTML);
   SetAccountCreationFormsDetectedMessage(password_generation_,
-                                         GetMainFrame()->document(),
-                                         0);
+                                         GetMainFrame()->document(), 0, 2);
 
   SimulateUsernameChange("NewGuy");
   SimulatePasswordChange("NewPassword");
@@ -1844,8 +1843,7 @@ TEST_F(PasswordAutofillAgentTest,
 
   SetNotBlacklistedMessage(password_generation_, kFormHTML);
   SetAccountCreationFormsDetectedMessage(password_generation_,
-                                         GetMainFrame()->document(),
-                                         0);
+                                         GetMainFrame()->document(), 0, 2);
 
   base::string16 password = base::ASCIIToUTF16("NewPass22");
   AutofillMsg_GeneratedPasswordAccepted msg(0, password);
@@ -1884,8 +1882,7 @@ TEST_F(PasswordAutofillAgentTest, PasswordGenerationSupersedesAutofill) {
   SetNotBlacklistedMessage(password_generation_,
                            kSignupFormHTML);
   SetAccountCreationFormsDetectedMessage(password_generation_,
-                                         GetMainFrame()->document(),
-                                         0);
+                                         GetMainFrame()->document(), 0, 1);
 
   // Simulate the field being clicked to start typing. This should trigger
   // generation but not password autofill.

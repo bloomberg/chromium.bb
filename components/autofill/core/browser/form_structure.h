@@ -195,6 +195,8 @@ class FormStructure {
 
   const GURL& source_url() const { return source_url_; }
 
+  const GURL& target_url() const { return target_url_; }
+
   bool has_author_specified_types() { return has_author_specified_types_; }
 
   bool has_author_specified_sections() {

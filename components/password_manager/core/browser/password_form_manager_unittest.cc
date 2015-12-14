@@ -2546,4 +2546,115 @@ TEST_F(PasswordFormManagerTest, DontFetchStatistics) {
 }
 #endif
 
+TEST_F(PasswordFormManagerTest,
+       TestSavingOnChangePasswordFormGenerationNoStoredForms) {
+  client()->set_is_update_password_ui_enabled(true);
+  SimulateMatchingPhase(form_manager(), RESULT_NO_MATCH);
+  form_manager()->set_has_generated_password(true);
+
+  // User submits change password form and there is no stored credentials.
+  PasswordForm credentials = *observed_form();
+  credentials.username_element.clear();
+  credentials.password_value = saved_match()->password_value;
+  credentials.new_password_element = ASCIIToUTF16("NewPasswd");
+  credentials.new_password_value = ASCIIToUTF16("new_password");
+  credentials.preferred = true;
+  form_manager()->ProvisionallySave(
+      credentials, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+
+  // Successful login. The PasswordManager would instruct PasswordFormManager
+  // to save, which should know this is a new login.
+  EXPECT_TRUE(form_manager()->IsNewLogin());
+  // Make sure the credentials that would be submitted on successful login
+  // are going to match submitted form.
+  EXPECT_EQ(observed_form()->origin.spec(),
+            form_manager()->pending_credentials().origin.spec());
+  EXPECT_EQ(observed_form()->signon_realm,
+            form_manager()->pending_credentials().signon_realm);
+  EXPECT_EQ(observed_form()->action,
+            form_manager()->pending_credentials().action);
+  EXPECT_TRUE(form_manager()->pending_credentials().preferred);
+  EXPECT_EQ(ASCIIToUTF16("new_password"),
+            form_manager()->pending_credentials().password_value);
+  EXPECT_EQ(base::string16(),
+            form_manager()->pending_credentials().username_value);
+  EXPECT_TRUE(
+      form_manager()->pending_credentials().new_password_element.empty());
+  EXPECT_TRUE(form_manager()->pending_credentials().new_password_value.empty());
+}
+
+TEST_F(PasswordFormManagerTest, TestUpdatingOnChangePasswordFormGeneration) {
+  client()->set_is_update_password_ui_enabled(true);
+  SimulateMatchingPhase(form_manager(), RESULT_SAVED_MATCH);
+  form_manager()->set_has_generated_password(true);
+
+  // User submits credentials for the change password form, and old password is
+  // coincide with password from an existing credentials, so stored credentials
+  // should be updated.
+  PasswordForm credentials = *observed_form();
+  credentials.username_element.clear();
+  credentials.password_value = saved_match()->password_value;
+  credentials.new_password_element = ASCIIToUTF16("NewPasswd");
+  credentials.new_password_value = ASCIIToUTF16("new_password");
+  credentials.preferred = true;
+  form_manager()->ProvisionallySave(
+      credentials, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+
+  EXPECT_FALSE(form_manager()->IsNewLogin());
+  // Make sure the credentials that would be submitted on successful login
+  // are going to match the stored entry in the db.
+  EXPECT_EQ(saved_match()->origin.spec(),
+            form_manager()->pending_credentials().origin.spec());
+  EXPECT_EQ(saved_match()->signon_realm,
+            form_manager()->pending_credentials().signon_realm);
+  EXPECT_EQ(observed_form()->action,
+            form_manager()->pending_credentials().action);
+  EXPECT_TRUE(form_manager()->pending_credentials().preferred);
+  EXPECT_EQ(ASCIIToUTF16("new_password"),
+            form_manager()->pending_credentials().password_value);
+  EXPECT_EQ(saved_match()->username_value,
+            form_manager()->pending_credentials().username_value);
+  EXPECT_TRUE(
+      form_manager()->pending_credentials().new_password_element.empty());
+  EXPECT_TRUE(form_manager()->pending_credentials().new_password_value.empty());
+}
+
+TEST_F(PasswordFormManagerTest,
+       TestSavingOnChangePasswordFormGenerationNoMatchedForms) {
+  client()->set_is_update_password_ui_enabled(true);
+  SimulateMatchingPhase(form_manager(), RESULT_SAVED_MATCH);
+  form_manager()->set_has_generated_password(true);
+
+  // User submits credentials for the change password form, and old password is
+  // not coincide with password from existing credentials, so new credentials
+  // should be saved.
+  PasswordForm credentials = *observed_form();
+  credentials.username_element.clear();
+  credentials.password_value =
+      saved_match()->password_value + ASCIIToUTF16("1");
+  credentials.new_password_element = ASCIIToUTF16("NewPasswd");
+  credentials.new_password_value = ASCIIToUTF16("new_password");
+  credentials.preferred = true;
+  form_manager()->ProvisionallySave(
+      credentials, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+
+  EXPECT_TRUE(form_manager()->IsNewLogin());
+  // Make sure the credentials that would be submitted on successful login
+  // are going to match submitted form.
+  EXPECT_EQ(observed_form()->origin.spec(),
+            form_manager()->pending_credentials().origin.spec());
+  EXPECT_EQ(observed_form()->signon_realm,
+            form_manager()->pending_credentials().signon_realm);
+  EXPECT_EQ(observed_form()->action,
+            form_manager()->pending_credentials().action);
+  EXPECT_TRUE(form_manager()->pending_credentials().preferred);
+  EXPECT_EQ(ASCIIToUTF16("new_password"),
+            form_manager()->pending_credentials().password_value);
+  EXPECT_EQ(base::string16(),
+            form_manager()->pending_credentials().username_value);
+  EXPECT_TRUE(
+      form_manager()->pending_credentials().new_password_element.empty());
+  EXPECT_TRUE(form_manager()->pending_credentials().new_password_value.empty());
+}
+
 }  // namespace password_manager

@@ -1069,36 +1069,21 @@ void PasswordFormManager::CreatePendingCredentials() {
         provisionally_saved_form_->username_element.empty() &&
         provisionally_saved_form_->new_password_element.empty();
 
+    is_new_login_ = false;
     if (best_update_match)
       pending_credentials_ = *best_update_match;
-    else
+    else if (has_generated_password_) {
+      // If a password was generated and we didn't find match we have to save it
+      // in separate entry since we have to store it but we don't know where.
+      CreatePendingCredentialsForNewCredentials();
+      is_new_login_ = true;
+    } else {
+      // We don't care about |pending_credentials_| if we didn't find the best
+      // match, since the user will select the correct one.
       pending_credentials_.origin = provisionally_saved_form_->origin;
-    is_new_login_ = false;
-    // We don't care about |pending_credentials_| if we didn't find the best
-    // match, since the user will select the correct one.
-  } else {
-    // User typed in a new, unknown username.
-    user_action_ = kUserActionOverrideUsernameAndPassword;
-    pending_credentials_ = observed_form_;
-    if (provisionally_saved_form_->was_parsed_using_autofill_predictions)
-      pending_credentials_.username_element =
-          provisionally_saved_form_->username_element;
-    pending_credentials_.username_value =
-        provisionally_saved_form_->username_value;
-    pending_credentials_.other_possible_usernames =
-        provisionally_saved_form_->other_possible_usernames;
-
-    // The password value will be filled in later, remove any garbage for now.
-    pending_credentials_.password_value.clear();
-    pending_credentials_.new_password_value.clear();
-
-    // If this was a sign-up or change password form, the names of the elements
-    // are likely different than those on a login form, so do not bother saving
-    // them. We will fill them with meaningful values in UpdateLogin() when the
-    // user goes onto a real login form for the first time.
-    if (!provisionally_saved_form_->new_password_element.empty()) {
-      pending_credentials_.password_element.clear();
     }
+  } else {
+    CreatePendingCredentialsForNewCredentials();
   }
 
   pending_credentials_.action = provisionally_saved_form_->action;
@@ -1235,27 +1220,19 @@ void PasswordFormManager::DeleteEmptyUsernameCredentials() {
 
 PasswordForm* PasswordFormManager::FindBestMatchForUpdatePassword(
     const base::string16& password) const {
-  if (best_matches_.size() == 1) {
-    // In case when the user has only one credential, consider it the same as
-    // is being saved.
+  if (best_matches_.size() == 1 && !has_generated_password_) {
+    // In case when the user has only one credential and the current password is
+    // not generated, consider it the same as is being saved.
     return best_matches_.begin()->second.get();
   }
   if (password.empty())
     return nullptr;
 
-  PasswordFormMap::const_iterator best_password_match_it = best_matches_.end();
   for (auto it = best_matches_.begin(); it != best_matches_.end(); ++it) {
-    if (it->second->password_value == password) {
-      if (best_password_match_it != best_matches_.end()) {
-        // Found a second credential with the same password, do nothing.
-        return nullptr;
-      }
-      best_password_match_it = it;
-    }
+    if (it->second->password_value == password)
+      return it->second.get();
   }
-  return best_password_match_it == best_matches_.end()
-             ? nullptr
-             : best_password_match_it->second.get();
+  return nullptr;
 }
 
 PasswordForm* PasswordFormManager::FindBestSavedMatch(
@@ -1264,13 +1241,38 @@ PasswordForm* PasswordFormManager::FindBestSavedMatch(
       best_matches_.find(provisionally_saved_form_->username_value);
   if (it != best_matches_.end())
     return it->second.get();
-  if (!form->username_value.empty())
+  if (!form->username_element.empty() || !form->new_password_element.empty())
     return nullptr;
   for (const auto& stored_match : best_matches_) {
     if (stored_match.second->password_value == form->password_value)
       return stored_match.second.get();
   }
   return nullptr;
+}
+
+void PasswordFormManager::CreatePendingCredentialsForNewCredentials() {
+  // User typed in a new, unknown username.
+  user_action_ = kUserActionOverrideUsernameAndPassword;
+  pending_credentials_ = observed_form_;
+  if (provisionally_saved_form_->was_parsed_using_autofill_predictions)
+    pending_credentials_.username_element =
+        provisionally_saved_form_->username_element;
+  pending_credentials_.username_value =
+      provisionally_saved_form_->username_value;
+  pending_credentials_.other_possible_usernames =
+      provisionally_saved_form_->other_possible_usernames;
+
+  // The password value will be filled in later, remove any garbage for now.
+  pending_credentials_.password_value.clear();
+  pending_credentials_.new_password_value.clear();
+
+  // If this was a sign-up or change password form, the names of the elements
+  // are likely different than those on a login form, so do not bother saving
+  // them. We will fill them with meaningful values in UpdateLogin() when the
+  // user goes onto a real login form for the first time.
+  if (!provisionally_saved_form_->new_password_element.empty()) {
+    pending_credentials_.password_element.clear();
+  }
 }
 
 void PasswordFormManager::OnNopeUpdateClicked() {

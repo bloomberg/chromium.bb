@@ -402,6 +402,10 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // from password store.
   void CreatePendingCredentials();
 
+  // Create pending credentials from provisionally saved form when this form
+  // represents credentials that were not previosly saved.
+  void CreatePendingCredentialsForNewCredentials();
+
   // If |pending_credentials_.username_value| is not empty, iterates over all
   // forms from |best_matches_| and deletes from the password store all which
   // are not PSL-matched, have an empty username, and a password equal to

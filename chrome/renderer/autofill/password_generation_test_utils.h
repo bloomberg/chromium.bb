@@ -19,7 +19,8 @@ void SetNotBlacklistedMessage(TestPasswordGenerationAgent* generation_agent,
                               const char* form_str);
 void SetAccountCreationFormsDetectedMessage(TestPasswordGenerationAgent* agent,
                                             blink::WebDocument document,
-                                            int form_index);
+                                            int form_index,
+                                            int field_index);
 }  // namespace autofill
 
 #endif  // CHROME_RENDERER_AUTOFILL_PASSWORD_GENERATION_TEST_UTILS_H_

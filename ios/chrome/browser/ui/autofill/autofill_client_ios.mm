@@ -143,7 +143,7 @@ void AutofillClientIOS::PropagateAutofillPredictions(
     content::RenderFrameHost* rfh,
     const std::vector<FormStructure*>& forms) {
   if (password_generation_manager_) {
-    password_generation_manager_->DetectAccountCreationForms(forms);
+    password_generation_manager_->DetectFormsEligibleForGeneration(forms);
   }
 }
 

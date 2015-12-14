@@ -7,7 +7,7 @@
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_structure.h"
-#include "components/autofill/core/common/form_data.h"
+#include "components/autofill/core/common/password_form_generation_data.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
@@ -23,12 +23,13 @@ PasswordGenerationManager::PasswordGenerationManager(
 PasswordGenerationManager::~PasswordGenerationManager() {
 }
 
-void PasswordGenerationManager::DetectAccountCreationForms(
+void PasswordGenerationManager::DetectFormsEligibleForGeneration(
     const std::vector<autofill::FormStructure*>& forms) {
   if (!IsGenerationEnabled())
     return;
 
-  std::vector<autofill::FormData> account_creation_forms;
+  std::vector<autofill::PasswordFormGenerationData>
+      forms_eligible_for_generation;
   for (std::vector<autofill::FormStructure*>::const_iterator form_it =
            forms.begin();
        form_it != forms.end(); ++form_it) {
@@ -37,14 +38,17 @@ void PasswordGenerationManager::DetectAccountCreationForms(
              form->begin();
          field_it != form->end(); ++field_it) {
       autofill::AutofillField* field = *field_it;
-      if (field->server_type() == autofill::ACCOUNT_CREATION_PASSWORD) {
-        account_creation_forms.push_back(form->ToFormData());
+      if (field->server_type() == autofill::ACCOUNT_CREATION_PASSWORD ||
+          field->server_type() == autofill::NEW_PASSWORD) {
+        forms_eligible_for_generation.push_back(
+            autofill::PasswordFormGenerationData{form->form_name(),
+                                                 form->target_url(), *field});
         break;
       }
     }
   }
-  if (!account_creation_forms.empty())
-    driver_->AccountCreationFormsFound(account_creation_forms);
+  if (!forms_eligible_for_generation.empty())
+    driver_->FormsEligibleForGenerationFound(forms_eligible_for_generation);
 }
 
 // In order for password generation to be enabled, we need to make sure:

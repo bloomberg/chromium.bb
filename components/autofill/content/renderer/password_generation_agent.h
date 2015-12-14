@@ -23,6 +23,7 @@ namespace autofill {
 
 struct FormData;
 struct PasswordForm;
+struct PasswordFormGenerationData;
 class PasswordAutofillAgent;
 
 // This class is responsible for controlling communication for password
@@ -77,8 +78,8 @@ class PasswordGenerationAgent : public content::RenderFrameObserver {
   // Message handlers.
   void OnFormNotBlacklisted(const PasswordForm& form);
   void OnPasswordAccepted(const base::string16& password);
-  void OnAccountCreationFormsDetected(
-      const std::vector<autofill::FormData>& forms);
+  void OnFormsEligibleForGenerationFound(
+      const std::vector<autofill::PasswordFormGenerationData>& forms);
 
   // Helper function that will try and populate |password_elements_| and
   // |possible_account_creation_form_|.
@@ -107,9 +108,9 @@ class PasswordGenerationAgent : public content::RenderFrameObserver {
   std::vector<GURL> not_blacklisted_password_form_origins_;
 
   // Stores each password form for which the Autofill server classifies one of
-  // the form's fields as an ACCOUNT_CREATION_PASSWORD. These forms will
-  // not be sent if the feature is disabled.
-  std::vector<autofill::FormData> generation_enabled_forms_;
+  // the form's fields as an ACCOUNT_CREATION_PASSWORD or NEW_PASSWORD. These
+  // forms will not be sent if the feature is disabled.
+  std::vector<autofill::PasswordFormGenerationData> generation_enabled_forms_;
 
   // Data for form which generation is allowed on.
   scoped_ptr<AccountCreationFormData> generation_form_data_;

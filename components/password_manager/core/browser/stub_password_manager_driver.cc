@@ -20,9 +20,8 @@ void StubPasswordManagerDriver::AllowPasswordGenerationForForm(
     const autofill::PasswordForm& form) {
 }
 
-void StubPasswordManagerDriver::AccountCreationFormsFound(
-    const std::vector<autofill::FormData>& forms) {
-}
+void StubPasswordManagerDriver::FormsEligibleForGenerationFound(
+    const std::vector<autofill::PasswordFormGenerationData>& forms) {}
 
 void StubPasswordManagerDriver::GeneratedPasswordAccepted(
     const base::string16& password) {

@@ -66,11 +66,11 @@ void ContentPasswordManagerDriver::AllowPasswordGenerationForForm(
   host->Send(new AutofillMsg_FormNotBlacklisted(host->GetRoutingID(), form));
 }
 
-void ContentPasswordManagerDriver::AccountCreationFormsFound(
-    const std::vector<autofill::FormData>& forms) {
+void ContentPasswordManagerDriver::FormsEligibleForGenerationFound(
+    const std::vector<autofill::PasswordFormGenerationData>& forms) {
   content::RenderFrameHost* host = render_frame_host_;
-  host->Send(new AutofillMsg_AccountCreationFormsDetected(host->GetRoutingID(),
-                                                          forms));
+  host->Send(new AutofillMsg_FoundFormsEligibleForGeneration(
+      host->GetRoutingID(), forms));
 }
 
 void ContentPasswordManagerDriver::AutofillDataReceived(
