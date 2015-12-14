@@ -26,17 +26,6 @@ void EmptyNetworkTimeUpdate(const base::Time&,
 }  // namespace
 
 ProfileSyncService::InitParams CreateProfileSyncServiceParamsForTest(
-    ios::ChromeBrowserState* browser_state) {
-  auto sync_client = make_scoped_ptr(new IOSChromeSyncClient(browser_state));
-
-  ProfileSyncService::InitParams init_params =
-      CreateProfileSyncServiceParamsForTest(std::move(sync_client),
-                                            browser_state);
-
-  return init_params;
-}
-
-ProfileSyncService::InitParams CreateProfileSyncServiceParamsForTest(
     scoped_ptr<sync_driver::SyncClient> sync_client,
     ios::ChromeBrowserState* browser_state) {
   ProfileSyncService::InitParams init_params;
@@ -68,5 +57,5 @@ scoped_ptr<KeyedService> BuildMockProfileSyncService(
     web::BrowserState* context) {
   return make_scoped_ptr(
       new ProfileSyncServiceMock(CreateProfileSyncServiceParamsForTest(
-          ios::ChromeBrowserState::FromBrowserState(context))));
+          nullptr, ios::ChromeBrowserState::FromBrowserState(context))));
 }
