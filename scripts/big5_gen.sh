@@ -59,8 +59,10 @@ function ascii {
 
 
 # HKSCS characters are not supported in encoding ( |lead < 0xA1| )
-# Entries with pointer=528[79] have to be decoding-only even though
-# come before the other entry with the same Unicode character.
+# Entries with pointer=528[79] and 5247 ~ 5250 have to be decoding-only
+# even though they come before the other entry with the same Unicode
+# character. The corresponding Unicode characters are U+255[0E],
+# U+256[1A], and U+534[15].
 # See https://www.w3.org/Bugs/Public/show_bug.cgi?id=27878
 function big5 {
   awk '!/^#/ && !/^$/ \
@@ -69,7 +71,8 @@ function big5 {
          sortkey = (length(ucs) < 5) ? ("0" ucs) : ucs;
          lead = pointer / 157 + 0x81; \
          is_decoding_only = lead < 0xA1 || seen_before[ucs] || \
-             pointer == 5287 || pointer == 5289; \
+             pointer == 5287 || pointer == 5289 || \
+             (5247 <= pointer && pointer <= 5250);
          trail = $1 % 157; \
          trail_offset = trail < 0x3F ? 0x40 : 0x62; \
          tag = (is_decoding_only ? 3 : 0); \

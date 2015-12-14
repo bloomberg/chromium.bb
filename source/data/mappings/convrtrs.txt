@@ -282,6 +282,7 @@ koi8-r-html
 
 koi8-u-html
     KOI8-U { MIME* HTML* }
+    koi8-ru
 
 macintosh-html
     macintosh { MIME* HTML* }
