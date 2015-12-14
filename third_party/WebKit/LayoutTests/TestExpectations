@@ -187,6 +187,7 @@ crbug.com/518915 [ Android ] accessibility/aria-labelledby-on-input.html [ Crash
 crbug.com/445100 fast/block/float/marquee-shrink-to-avoid-floats.html [ Failure Pass ]
 crbug.com/469657 fast/events/mouse-event-buttons-attribute.html [ Failure Pass ]
 crbug.com/469657 virtual/pointerevent/fast/events/mouse-event-buttons-attribute.html [ Failure Pass ]
+crbug.com/469657 virtual/trustedeventsdefaultaction/fast/events/mouse-event-buttons-attribute.html [ Failure Pass ]
 
 crbug.com/548226 [ Win ] fast/events/pointerevents/mouse-pointer-event-properties.html [ Failure Pass ]
 crbug.com/548226 [ Win ] virtual/pointerevent/fast/events/pointerevents/mouse-pointer-event-properties.html [ Failure Pass ]

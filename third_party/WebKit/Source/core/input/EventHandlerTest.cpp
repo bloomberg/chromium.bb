@@ -78,7 +78,7 @@ TEST_F(EventHandlerTest, dragSelectionAfterScroll)
         LeftButton,
         PlatformEvent::MousePressed,
         1,
-        static_cast<PlatformEvent::Modifiers>(0),
+        PlatformEvent::Modifiers::LeftButtonDown,
         WTF::monotonicallyIncreasingTime());
     document().frame()->eventHandler().handleMousePressEvent(mouseDownEvent);
 
@@ -88,7 +88,7 @@ TEST_F(EventHandlerTest, dragSelectionAfterScroll)
         LeftButton,
         PlatformEvent::MouseMoved,
         1,
-        static_cast<PlatformEvent::Modifiers>(0),
+        PlatformEvent::Modifiers::LeftButtonDown,
         WTF::monotonicallyIncreasingTime());
     document().frame()->eventHandler().handleMouseMoveEvent(mouseMoveEvent);
 

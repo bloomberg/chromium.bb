@@ -67,21 +67,6 @@ WebMouseEvent::Button GetButtonTypeFromButtonNumber(int button_code) {
   return WebMouseEvent::ButtonNone;
 }
 
-int GetWebMouseEventModifierForButton(WebMouseEvent::Button button) {
-  switch (button) {
-    case WebMouseEvent::ButtonNone:
-      return 0;
-    case WebMouseEvent::ButtonLeft:
-      return WebMouseEvent::LeftButtonDown;
-    case WebMouseEvent::ButtonMiddle:
-      return WebMouseEvent::MiddleButtonDown;
-    case WebMouseEvent::ButtonRight:
-      return WebMouseEvent::RightButtonDown;
-  }
-  NOTREACHED();
-  return 0;
-}
-
 void InitMouseEvent(WebInputEvent::Type t,
                     WebMouseEvent::Button b,
                     const WebPoint& pos,
@@ -91,7 +76,7 @@ void InitMouseEvent(WebInputEvent::Type t,
                     WebMouseEvent* e) {
   e->type = t;
   e->button = b;
-  e->modifiers = modifiers | GetWebMouseEventModifierForButton(b);
+  e->modifiers = modifiers;
   e->x = pos.x;
   e->y = pos.y;
   e->globalX = pos.x;
@@ -1159,6 +1144,7 @@ void EventSender::Reset() {
   if (view_ && pressed_button_ != WebMouseEvent::ButtonNone)
     view_->mouseCaptureLost();
   pressed_button_ = WebMouseEvent::ButtonNone;
+  modifiers_ = 0;
   is_drag_mode_ = true;
   force_layout_on_events_ = true;
 

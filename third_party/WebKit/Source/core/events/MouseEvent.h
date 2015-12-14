@@ -60,6 +60,7 @@ public:
     ~MouseEvent() override;
 
     static unsigned short platformModifiersToButtons(unsigned modifiers);
+    static unsigned short buttonToButtons(short button);
 
     void initMouseEvent(ScriptState*, const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<AbstractView>,
         int detail, int screenX, int screenY, int clientX, int clientY,
@@ -68,7 +69,7 @@ public:
 
     // WinIE uses 1,4,2 for left/middle/right but not for click (just for mousedown/up, maybe others),
     // but we will match the standard DOM.
-    short button() const { return m_button == -1 ? 0 : m_button; }
+    virtual short button() const { return m_button == -1 ? 0 : m_button; }
     unsigned short buttons() const { return m_buttons; }
     bool buttonDown() const { return m_button != -1; }
     EventTarget* relatedTarget() const { return m_relatedTarget.get(); }
@@ -89,6 +90,13 @@ public:
 
     PassRefPtrWillBeRawPtr<EventDispatchMediator> createMediator() override;
 
+    enum class Buttons : unsigned {
+        None = 0,
+        Left = 1 << 0,
+        Right = 1 << 1,
+        Middle = 1 << 2
+    };
+
     DECLARE_VIRTUAL_TRACE();
 
 protected:
@@ -103,6 +111,8 @@ protected:
     MouseEvent(const AtomicString& type, const MouseEventInit&);
 
     MouseEvent();
+
+    short rawButton() const { return m_button; }
 
 private:
     friend class MouseEventDispatchMediator;

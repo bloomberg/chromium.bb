@@ -26,7 +26,7 @@ PASS lastPointerEvent.screenX is 23
 PASS lastPointerEvent.screenY is 31
 PASS lastPointerEvent.x is 23
 PASS lastPointerEvent.y is 31
-PASS lastPointerEvent.button is 0
+PASS lastPointerEvent.button is -1
 PASS lastPointerEvent.buttons is 0
 Received pointerenter
 Received mouseenter
@@ -50,7 +50,7 @@ PASS lastPointerEvent.screenX is 23
 PASS lastPointerEvent.screenY is 31
 PASS lastPointerEvent.x is 23
 PASS lastPointerEvent.y is 31
-PASS lastPointerEvent.button is 0
+PASS lastPointerEvent.button is -1
 PASS lastPointerEvent.buttons is 0
 Received pointermove
 Received mousemove
@@ -74,7 +74,7 @@ PASS lastPointerEvent.screenX is 23
 PASS lastPointerEvent.screenY is 31
 PASS lastPointerEvent.x is 23
 PASS lastPointerEvent.y is 31
-PASS lastPointerEvent.button is 0
+PASS lastPointerEvent.button is -1
 PASS lastPointerEvent.buttons is 0
 
 --- move within target ---
@@ -100,7 +100,7 @@ PASS lastPointerEvent.screenX is 25
 PASS lastPointerEvent.screenY is 41
 PASS lastPointerEvent.x is 25
 PASS lastPointerEvent.y is 41
-PASS lastPointerEvent.button is 0
+PASS lastPointerEvent.button is -1
 PASS lastPointerEvent.buttons is 0
 Received pointermove
 Received mousemove
@@ -124,7 +124,7 @@ PASS lastPointerEvent.screenX is 23
 PASS lastPointerEvent.screenY is 31
 PASS lastPointerEvent.x is 23
 PASS lastPointerEvent.y is 31
-PASS lastPointerEvent.button is 0
+PASS lastPointerEvent.button is -1
 PASS lastPointerEvent.buttons is 0
 
 --- click each button ---
@@ -628,7 +628,7 @@ PASS lastPointerEvent.screenX is 13
 PASS lastPointerEvent.screenY is 21
 PASS lastPointerEvent.x is 13
 PASS lastPointerEvent.y is 21
-PASS lastPointerEvent.button is 0
+PASS lastPointerEvent.button is -1
 PASS lastPointerEvent.buttons is 0
 Received pointerleave
 Received mouseleave
@@ -652,7 +652,7 @@ PASS lastPointerEvent.screenX is 13
 PASS lastPointerEvent.screenY is 21
 PASS lastPointerEvent.x is 13
 PASS lastPointerEvent.y is 21
-PASS lastPointerEvent.button is 0
+PASS lastPointerEvent.button is -1
 PASS lastPointerEvent.buttons is 0
 PASS successfullyParsed is true
 

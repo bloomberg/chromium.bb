@@ -34,6 +34,7 @@ public:
     const String& pointerType() const { return m_pointerType; }
     bool isPrimary() const { return m_isPrimary; }
 
+    short button() const override { return rawButton(); }
     bool isMouseEvent() const override;
     bool isPointerEvent() const override;
 

@@ -148,13 +148,29 @@ unsigned short MouseEvent::platformModifiersToButtons(unsigned modifiers)
     unsigned short buttons = 0;
 
     if (modifiers & PlatformEvent::LeftButtonDown)
-        buttons |= 1;
+        buttons |= static_cast<unsigned short>(Buttons::Left);
     if (modifiers & PlatformEvent::RightButtonDown)
-        buttons |= 2;
+        buttons |= static_cast<unsigned short>(Buttons::Right);
     if (modifiers & PlatformEvent::MiddleButtonDown)
-        buttons |= 4;
+        buttons |= static_cast<unsigned short>(Buttons::Middle);
 
     return buttons;
+}
+
+unsigned short MouseEvent::buttonToButtons(short button)
+{
+    switch (button) {
+    case NoButton:
+        return static_cast<unsigned short>(Buttons::None);
+    case LeftButton:
+        return static_cast<unsigned short>(Buttons::Left);
+    case RightButton:
+        return static_cast<unsigned short>(Buttons::Right);
+    case MiddleButton:
+        return static_cast<unsigned short>(Buttons::Middle);
+    }
+    ASSERT_NOT_REACHED();
+    return 0;
 }
 
 void MouseEvent::initMouseEvent(ScriptState* scriptState, const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<AbstractView> view,

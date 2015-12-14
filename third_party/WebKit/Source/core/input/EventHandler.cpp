@@ -1785,13 +1785,19 @@ WebInputEventResult EventHandler::updatePointerTargetAndDispatchEvents(const Ato
     if (!m_nodeUnderMouse)
         return WebInputEventResult::NotHandled;
 
-    WebInputEventResult result = dispatchPointerEvent(m_nodeUnderMouse.get(),
-        pointerEventNameForMouseEventName(mouseEventType),
-        mouseEvent);
+    AtomicString pointerEventType = pointerEventNameForMouseEventName(mouseEventType);
+    unsigned short pointerButtonsPressed = MouseEvent::platformModifiersToButtons(mouseEvent.modifiers());
 
-    if (result != WebInputEventResult::NotHandled && mouseEventType == EventTypeNames::mousedown) {
+    // Make sure chorded buttons fire pointermove instead of pointerup/pointerdown.
+    if ((pointerEventType == EventTypeNames::pointerdown && (pointerButtonsPressed & ~MouseEvent::buttonToButtons(mouseEvent.button())) != 0)
+        || (pointerEventType == EventTypeNames::pointerup && pointerButtonsPressed != 0))
+        pointerEventType = EventTypeNames::pointermove;
+
+    WebInputEventResult result = dispatchPointerEvent(
+        m_nodeUnderMouse.get(), pointerEventType, mouseEvent);
+
+    if (result != WebInputEventResult::NotHandled && pointerEventType == EventTypeNames::pointerdown)
         m_preventMouseEventForPointerTypeMouse = true;
-    }
 
     if (!m_preventMouseEventForPointerTypeMouse) {
         RefPtrWillBeRawPtr<MouseEvent> event = MouseEvent::create(mouseEventType, m_nodeUnderMouse->document().domWindow(), mouseEvent, clickCount, nullptr);
@@ -2948,9 +2954,6 @@ WebInputEventResult EventHandler::sendContextMenuEventForKey(Element* overrideTa
     Document* doc = m_frame->document();
     if (!doc)
         return WebInputEventResult::NotHandled;
-
-    // Clear mouse press state to avoid initiating a drag while context menu is up.
-    m_mousePressed = false;
 
     static const int kContextMenuMargin = 1;
 

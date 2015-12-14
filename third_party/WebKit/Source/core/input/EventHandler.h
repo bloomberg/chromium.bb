@@ -361,7 +361,10 @@ private:
 
     const RawPtrWillBeMember<LocalFrame> m_frame;
 
+    // Current button-press state for mouse/mouse-like-stylus.
+    // TODO(crbug.com/563676): Buggy for chorded buttons.
     bool m_mousePressed;
+
     bool m_capturesDragging;
     RefPtrWillBeMember<Node> m_mousePressNode;
 

@@ -73,7 +73,10 @@ function init() {
           shouldBeTrue("lastPointerEvent.isPrimary");
 
           numericAttributes.forEach(function(attribute) {
-            shouldBeEqualToNumber("lastPointerEvent." + attribute, eval("event." + attribute));
+            var expectedValue = eval("event." + attribute);
+            if (attribute == "button" && event.type != "mousedown" && event.type != "mouseup")
+              expectedValue = -1;
+            shouldBeEqualToNumber("lastPointerEvent." + attribute, expectedValue);
           });
 
         } else {
@@ -109,7 +112,7 @@ function runTests() {
 
   debug("--- click each button ---");
   for (var button = 0; button <=2; button++) {
-    eventSender.mouseDown(button);
+    eventSender.mouseDown(button, [button == 0 ? "leftButton" : button == 2 ? "rightButton" : "middleButton"]);
     eventSender.mouseUp(button);
     // TODO(crbug.com/548226): Investigate missing events in win_chromium_rel_ng on 3rd down/up.
   }
