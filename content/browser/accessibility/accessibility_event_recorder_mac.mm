@@ -9,11 +9,9 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/foundation_util.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/string_util.h"
+#include "base/mac/scoped_cftyperef.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/strings/utf_string_conversions.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 
 namespace content {
@@ -39,10 +37,11 @@ class AccessibilityEventRecorderMac : public AccessibilityEventRecorder {
       AXUIElementRef element, NSString* attribute_name);
 
   // The AXUIElement for the Chrome application.
-  AXUIElementRef application_;
+  base::ScopedCFTypeRef<AXUIElementRef> application_;
 
   // The AXObserver we use to monitor AX notifications.
-  AXObserverRef observer_ref_;
+  base::ScopedCFTypeRef<AXObserverRef> observer_ref_;
+  CFRunLoopSourceRef observer_run_loop_source_;
 };
 
 // Callback function registered using AXObserverCreate.
@@ -64,18 +63,17 @@ AccessibilityEventRecorder* AccessibilityEventRecorder::Create(
 
 AccessibilityEventRecorderMac::AccessibilityEventRecorderMac(
     BrowserAccessibilityManager* manager)
-    : AccessibilityEventRecorder(manager),
-      observer_ref_(0) {
+    : AccessibilityEventRecorder(manager), observer_run_loop_source_(NULL) {
   // Get Chrome's process id.
   int pid = [[NSProcessInfo processInfo] processIdentifier];
-  if (kAXErrorSuccess != AXObserverCreate(
-      pid, EventReceivedThunk, &observer_ref_)) {
+  if (kAXErrorSuccess != AXObserverCreate(pid, EventReceivedThunk,
+                                          observer_ref_.InitializeInto())) {
     LOG(FATAL) << "Failed to create AXObserverRef";
   }
 
   // Get an AXUIElement for the Chrome application.
-  application_ = AXUIElementCreateApplication(pid);
-  if (!application_)
+  application_.reset(AXUIElementCreateApplication(pid));
+  if (!application_.get())
     LOG(FATAL) << "Failed to create AXUIElement for application.";
 
   // Add the notifications we care about to the observer.
@@ -92,58 +90,59 @@ AccessibilityEventRecorderMac::AccessibilityEventRecorderMac(
   AddNotification(@"AXRowExpanded");
 
   // Add the observer to the current message loop.
-  CFRunLoopAddSource(
-      [[NSRunLoop currentRunLoop] getCFRunLoop],
-      AXObserverGetRunLoopSource(observer_ref_),
-      kCFRunLoopDefaultMode);
+  observer_run_loop_source_ = AXObserverGetRunLoopSource(observer_ref_.get());
+  CFRunLoopAddSource(CFRunLoopGetCurrent(), observer_run_loop_source_,
+                     kCFRunLoopDefaultMode);
 }
 
 AccessibilityEventRecorderMac::~AccessibilityEventRecorderMac() {
-  CFRelease(application_);
-  CFRelease(observer_ref_);
+  CFRunLoopRemoveSource(CFRunLoopGetCurrent(), observer_run_loop_source_,
+                        kCFRunLoopDefaultMode);
 }
 
 void AccessibilityEventRecorderMac::AddNotification(NSString* notification) {
-  AXObserverAddNotification(observer_ref_,
-                            application_,
-                            static_cast<CFStringRef>(notification),
-                            this);
+  AXObserverAddNotification(observer_ref_, application_,
+                            base::mac::NSToCFCast(notification), this);
 }
 
 std::string AccessibilityEventRecorderMac::GetAXAttributeValue(
-    AXUIElementRef element, NSString* attribute_name) {
-  CFTypeRef value;
+    AXUIElementRef element,
+    NSString* attribute_name) {
+  base::ScopedCFTypeRef<CFTypeRef> value;
   AXError err = AXUIElementCopyAttributeValue(
-      element, static_cast<CFStringRef>(attribute_name), &value);
+      element, base::mac::NSToCFCast(attribute_name), value.InitializeInto());
   if (err != kAXErrorSuccess)
     return std::string();
-  return base::SysNSStringToUTF8(
-      base::mac::CFToNSCast(static_cast<CFStringRef>(value)));
+
+  CFStringRef value_string = base::mac::CFCast<CFStringRef>(value.get());
+  if (value_string)
+    return base::SysCFStringRefToUTF8(value_string);
+
+  // TODO(dmazzoni): And if it's not a string, can we return something better?
+  return std::string();
 }
 
-void AccessibilityEventRecorderMac::EventReceived(
-    AXUIElementRef element,
-    CFStringRef notification) {
-  std::string notification_str = base::SysNSStringToUTF8(
-      base::mac::CFToNSCast(notification));
+void AccessibilityEventRecorderMac::EventReceived(AXUIElementRef element,
+                                                  CFStringRef notification) {
+  std::string notification_str = base::SysCFStringRefToUTF8(notification);
   std::string role = GetAXAttributeValue(element, NSAccessibilityRoleAttribute);
   if (role.empty())
     return;
-  std::string log = base::StringPrintf("%s on %s",
-      notification_str.c_str(), role.c_str());
+  std::string log =
+      base::StringPrintf("%s on %s", notification_str.c_str(), role.c_str());
 
-  std::string title = GetAXAttributeValue(element,
-                                          NSAccessibilityTitleAttribute);
+  std::string title =
+      GetAXAttributeValue(element, NSAccessibilityTitleAttribute);
   if (!title.empty())
     log += base::StringPrintf(" AXTitle=\"%s\"", title.c_str());
 
-  std::string description = GetAXAttributeValue(element,
-                                          NSAccessibilityDescriptionAttribute);
+  std::string description =
+      GetAXAttributeValue(element, NSAccessibilityDescriptionAttribute);
   if (!description.empty())
     log += base::StringPrintf(" AXDescription=\"%s\"", description.c_str());
 
-  std::string value = GetAXAttributeValue(element,
-                                          NSAccessibilityValueAttribute);
+  std::string value =
+      GetAXAttributeValue(element, NSAccessibilityValueAttribute);
   if (!value.empty())
     log += base::StringPrintf(" AXValue=\"%s\"", value.c_str());
 
