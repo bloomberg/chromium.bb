@@ -93,11 +93,15 @@ void UpdatePreReadOptions(const base::string16& product_registry_path) {
   base::win::RegKey(HKEY_CURRENT_USER, registry_path.c_str(), KEY_SET_VALUE)
       .DeleteKey(L"");
 
-  // Read variation params for the new group.
-  std::map<std::string, std::string> variation_params;
-  if (!variations::GetVariationParams(kPreReadFieldTrialName,
-                                      &variation_params))
+  // Get the new group name.
+  const base::string16 group = base::UTF8ToUTF16(
+      base::FieldTrialList::FindFullName(kPreReadFieldTrialName));
+  if (group.empty())
     return;
+
+  // Get variation params for the new group.
+  std::map<std::string, std::string> variation_params;
+  variations::GetVariationParams(kPreReadFieldTrialName, &variation_params);
 
   // Open the registry key.
   base::win::RegKey key(HKEY_CURRENT_USER, registry_path.c_str(),
@@ -118,9 +122,7 @@ void UpdatePreReadOptions(const base::string16& product_registry_path) {
   }
 
   // Write the new group name in the registry.
-  key.WriteValue(L"", base::UTF8ToUTF16(base::FieldTrialList::FindFullName(
-                                            kPreReadFieldTrialName))
-                          .c_str());
+  key.WriteValue(L"", group.c_str());
 }
 
 void RegisterPreReadSyntheticFieldTrial(
