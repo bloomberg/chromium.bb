@@ -76,6 +76,7 @@ via.kld
 tests/auth
 tests/amdgpu/amdgpu_test
 tests/dristat
+tests/drmdevice
 tests/drmsl
 tests/drmstat
 tests/getclient
