@@ -86,7 +86,6 @@
   } else {
     NOTREACHED();
   }
-  [self performLayout];
 }
 
 - (void)performLayout {
@@ -97,7 +96,7 @@
   NSWindow* window = [self window];
   [[window contentView] setSubviews:@[ [currentController_ view] ]];
   NSButton* button = [currentController_ defaultButton];
-  if (button)
+  if (button && [self shouldOpenAsKeyWindow])
     [window setDefaultButtonCell:[button cell]];
 
   NSPoint anchorPoint;

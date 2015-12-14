@@ -180,10 +180,12 @@ TEST_F(ManagePasswordsBubbleCocoaTest, OpenWithoutFocus) {
   ShowBubble(false);
   EXPECT_TRUE(ManagePasswordsBubbleCocoa::instance());
   EXPECT_FALSE([controller() shouldOpenAsKeyWindow]);
+  EXPECT_FALSE([bubbleWindow() defaultButtonCell]);
 }
 
 TEST_F(ManagePasswordsBubbleCocoaTest, OpenWithFocus) {
   ShowBubble(true);
   EXPECT_TRUE(ManagePasswordsBubbleCocoa::instance());
   EXPECT_TRUE([controller() shouldOpenAsKeyWindow]);
+  EXPECT_TRUE([bubbleWindow() defaultButtonCell]);
 }
