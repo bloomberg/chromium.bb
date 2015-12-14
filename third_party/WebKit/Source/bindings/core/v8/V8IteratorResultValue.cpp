@@ -18,4 +18,17 @@ v8::Local<v8::Object> v8IteratorResultValue(v8::Isolate* isolate, bool done, v8:
     return result;
 }
 
+v8::MaybeLocal<v8::Value> v8UnpackIteratorResult(ScriptState* scriptState, v8::Local<v8::Object> result, bool* done)
+{
+    v8::MaybeLocal<v8::Value> maybeValue = result->Get(scriptState->context(), v8String(scriptState->isolate(), "value"));
+    if (maybeValue.IsEmpty())
+        return maybeValue;
+    v8::Local<v8::Value> doneValue;
+    if (!v8Call(result->Get(scriptState->context(), v8String(scriptState->isolate(), "done")), doneValue)
+        || !v8Call(doneValue->BooleanValue(scriptState->context()), *done)) {
+        return v8::MaybeLocal<v8::Value>();
+    }
+    return maybeValue;
+}
+
 } // namespace blink
