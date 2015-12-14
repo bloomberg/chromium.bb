@@ -7,6 +7,7 @@
 #include <sstream>
 
 #include "base/stl_util.h"
+#include "net/quic/quic_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -43,6 +44,20 @@ TEST(QuicProtocolTest, IsAawaitingPacket) {
 
   ack_frame.missing_packets.Add(10);
   EXPECT_TRUE(IsAwaitingPacket(ack_frame, 10u));
+}
+
+TEST(QuicProtocolTest, QuicDeprecatedErrorCodeCount) {
+  // If you deprecated any QuicErrorCode, you will need to update the
+  // deprecated QuicErrorCode count. Otherwise this test will fail.
+  int num_deprecated_errors = 0;
+  std::string invalid_error_code = "INVALID_ERROR_CODE";
+  for (int i = 0; i < QUIC_LAST_ERROR; ++i) {
+    if (QuicUtils::ErrorToString(static_cast<QuicErrorCode>(i)) ==
+        invalid_error_code) {
+      ++num_deprecated_errors;
+    }
+  }
+  EXPECT_EQ(kDeprecatedQuicErrorCount, num_deprecated_errors);
 }
 
 TEST(QuicProtocolTest, QuicVersionToQuicTag) {
