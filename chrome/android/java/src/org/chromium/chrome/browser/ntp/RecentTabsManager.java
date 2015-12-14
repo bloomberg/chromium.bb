@@ -67,6 +67,7 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
     private SigninManager mSignInManager;
     private UpdatedCallback mUpdatedCallback;
     private ProfileDataCache mProfileDataCache;
+    private boolean mIsDestroyed;
 
     /**
      * Create an RecentTabsManager to be used with RecentTabsPage and RecentTabsRowAdapter.
@@ -98,6 +99,7 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
      * Should be called when this object is no longer needed. Performs necessary listener tear down.
      */
     public void destroy() {
+        mIsDestroyed = true;
         AndroidSyncSettings.unregisterObserver(mContext, this);
 
         mSignInManager.removeSignInStateObserver(this);
@@ -123,6 +125,13 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
         }
 
         InvalidationController.get(mContext).onRecentTabsPageClosed();
+    }
+
+    /**
+     * Returns true if destroy() has been called.
+     */
+    public boolean isDestroyed() {
+        return mIsDestroyed;
     }
 
     private static ForeignSessionHelper buildForeignSessionHelper(Profile profile) {
@@ -420,6 +429,7 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                if (mIsDestroyed) return;
                 updateForeignSessions();
                 postUpdate();
                 for (AndroidSyncSettingsObserver observer : mObservers) {

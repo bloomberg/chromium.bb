@@ -116,6 +116,7 @@ public class DocumentRecentTabsManager extends RecentTabsManager {
         ThreadUtils.postOnUiThreadDelayed(new Runnable() {
             @Override
             public void run() {
+                if (isDestroyed()) return;
                 DocumentRecentTabsManager.super.openForeignSessionTab(
                         session, tab, WindowOpenDisposition.NEW_FOREGROUND_TAB);
                 if (mDialog != null) mDialog.dismiss();
@@ -131,6 +132,7 @@ public class DocumentRecentTabsManager extends RecentTabsManager {
         ThreadUtils.postOnUiThreadDelayed(new Runnable() {
             @Override
             public void run() {
+                if (isDestroyed()) return;
                 DocumentRecentTabsManager.super.openRecentlyClosedTab(
                         tab, WindowOpenDisposition.NEW_FOREGROUND_TAB);
                 if (mDialog != null) mDialog.dismiss();
