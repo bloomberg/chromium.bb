@@ -890,8 +890,6 @@ void HttpServerPropertiesManager::UpdatePrefsFromCacheOnNetworkThread(
     if (notbroken_alternative_service_info_vector.empty()) {
       continue;
     }
-    alternative_service_map->Put(server,
-                                 notbroken_alternative_service_info_vector);
     std::string canonical_suffix =
         http_server_properties_impl_->GetCanonicalSuffix(server.host());
     if (!canonical_suffix.empty()) {
@@ -899,16 +897,20 @@ void HttpServerPropertiesManager::UpdatePrefsFromCacheOnNetworkThread(
         continue;
       persisted_map[canonical_suffix] = true;
     }
+    alternative_service_map->Put(server,
+                                 notbroken_alternative_service_info_vector);
     ++count;
   }
 
   ServerNetworkStatsMap* server_network_stats_map =
       new ServerNetworkStatsMap(kMaxServerNetworkStatsHostsToPersist);
-  const ServerNetworkStatsMap& main_server_network_stats_map =
+  const ServerNetworkStatsMap& network_stats_map =
       http_server_properties_impl_->server_network_stats_map();
-  for (ServerNetworkStatsMap::const_iterator it =
-           main_server_network_stats_map.begin();
-       it != main_server_network_stats_map.end(); ++it) {
+  count = 0;
+  for (ServerNetworkStatsMap::const_iterator it = network_stats_map.begin();
+       it != network_stats_map.end() &&
+       count < kMaxServerNetworkStatsHostsToPersist;
+       ++it, ++count) {
     server_network_stats_map->Put(it->first, it->second);
   }
 
