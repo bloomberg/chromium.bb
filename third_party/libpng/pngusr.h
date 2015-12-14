@@ -116,8 +116,13 @@
 #define PNG_NO_ZALLOC_ZERO
 #define PNG_NO_ERROR_NUMBERS
 #undef PNG_NO_EASY_ACCESS
-#define PNG_NO_USER_LIMITS
-#define PNG_NO_SET_USER_LIMITS
+
+/* Set recommended chunk limits: see https://crbug.com/117369 */
+#undef PNG_NO_USER_LIMITS
+#undef PNG_NO_SET_USER_LIMITS
+#define PNG_USER_CHUNK_CACHE_MAX 128
+#define PNG_USER_CHUNK_MALLOC_MAX 4000000L
+
 #define PNG_NO_TIME_RFC1123
 #undef PNG_NO_INFO_IMAGE
 #undef PNG_NO_PROGRESSIVE_READ

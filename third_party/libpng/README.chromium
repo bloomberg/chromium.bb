@@ -15,3 +15,4 @@ stripped.
 
 - Unset PNG_NO_READ_PACK on Android in pngusr.h, required by freetype to support
   color glyphs.
+- Configure PNG chunk user limits (crbug.com/117369)
