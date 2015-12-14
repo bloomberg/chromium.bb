@@ -190,7 +190,7 @@ deps = {
     Var('chromium_git') + '/external/webrtc/trunk/talk.git' + '@' + 'f2f143fd6169378519543704aeda9621a7c6f6dc', # commit position 10999
 
   'src/third_party/usrsctp/usrsctplib':
-    Var('chromium_git') + '/external/github.com/sctplab/usrsctp' + '@' + 'c60ec8b35c3fe6027d7a3faae89d1c8d7dd3ce98',
+    Var('chromium_git') + '/external/usrsctplib.git' + '@' + '36444a999739e9e408f8f587cb4c3ffeef2e50ac', # from svn revision 9215
 
   'src/third_party/libsrtp':
    Var('chromium_git') + '/chromium/deps/libsrtp.git' + '@' + 'b8dd754b4fa05fd4cf1c2e8dc3b1ac976280e41a', # from svn revision 295151
