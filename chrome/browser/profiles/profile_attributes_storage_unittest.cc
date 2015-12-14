@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/format_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
@@ -105,18 +106,16 @@ class ProfileAttributesStorageTest : public testing::Test {
   }
 
   void AddTestingProfile() {
-    unsigned long number_of_profiles =
-        static_cast<unsigned long>(storage()->GetNumberOfProfiles());
+    size_t number_of_profiles = storage()->GetNumberOfProfiles();
 
     storage()->AddProfile(
-        GetProfilePath(
-            base::StringPrintf("testing_profile_path%lu", number_of_profiles)),
-        base::ASCIIToUTF16(
-            base::StringPrintf("testing_profile_name%lu", number_of_profiles)),
-        std::string(
-            base::StringPrintf("testing_profile_gaia%lu", number_of_profiles)),
-        base::ASCIIToUTF16(
-            base::StringPrintf("testing_profile_user%lu", number_of_profiles)),
+        GetProfilePath(base::StringPrintf("testing_profile_path%" PRIuS,
+                                          number_of_profiles)),
+        base::ASCIIToUTF16(base::StringPrintf("testing_profile_name%" PRIuS,
+                                              number_of_profiles)),
+        base::StringPrintf("testing_profile_gaia%" PRIuS, number_of_profiles),
+        base::ASCIIToUTF16(base::StringPrintf("testing_profile_user%" PRIuS,
+                                              number_of_profiles)),
         number_of_profiles,
         std::string(""));
 
