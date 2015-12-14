@@ -9,7 +9,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "gpu/command_buffer/client/fenced_allocator.h"
 #include "gpu/command_buffer/common/buffer.h"

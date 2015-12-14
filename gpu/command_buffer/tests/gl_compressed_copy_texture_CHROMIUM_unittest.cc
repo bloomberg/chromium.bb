@@ -10,7 +10,6 @@
 #include <GLES2/gl2ext.h>
 #include <GLES2/gl2extchromium.h>
 
-#include "base/memory/scoped_vector.h"
 #include "gpu/command_buffer/tests/gl_manager.h"
 #include "gpu/command_buffer/tests/gl_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -206,42 +205,42 @@ TEST_P(GLCompressedCopyTextureCHROMIUMTest, InternalFormat) {
     Image(const GLint format, const uint8* data, const GLsizei data_size) :
       format(format), data(data), data_size(data_size) {}
   };
-  ScopedVector<Image> supported_formats;
+  std::vector<scoped_ptr<Image>> supported_formats;
 
   if ((GLTestHelper::HasExtension("GL_AMD_compressed_ATC_texture") ||
       GLTestHelper::HasExtension("GL_ATI_texture_compression_atitc")) &&
       copy_type != TexSubImage) {
-    supported_formats.push_back(new Image(
+    supported_formats.push_back(make_scoped_ptr(new Image(
         GL_ATC_RGB_AMD,
         kCompressedImageATC,
-        sizeof(kCompressedImageATC)));
-    supported_formats.push_back(new Image(
+        sizeof(kCompressedImageATC))));
+    supported_formats.push_back(make_scoped_ptr(new Image(
         GL_ATC_RGBA_INTERPOLATED_ALPHA_AMD,
         kCompressedImageATCIA,
-        sizeof(kCompressedImageATCIA)));
+        sizeof(kCompressedImageATCIA))));
   }
   if (GLTestHelper::HasExtension("GL_EXT_texture_compression_dxt1")) {
-    supported_formats.push_back(new Image(
+    supported_formats.push_back(make_scoped_ptr(new Image(
         GL_COMPRESSED_RGB_S3TC_DXT1_EXT,
         kCompressedImageDXT1,
-        sizeof(kCompressedImageDXT1)));
+        sizeof(kCompressedImageDXT1))));
   }
   if (GLTestHelper::HasExtension("GL_ANGLE_texture_compression_dxt5") ||
       GLTestHelper::HasExtension("GL_EXT_texture_compression_s3tc")) {
-    supported_formats.push_back(new Image(
+    supported_formats.push_back(make_scoped_ptr(new Image(
         GL_COMPRESSED_RGBA_S3TC_DXT5_EXT,
         kCompressedImageDXT5,
-        sizeof(kCompressedImageDXT5)));
+        sizeof(kCompressedImageDXT5))));
   }
   if (GLTestHelper::HasExtension("GL_OES_compressed_ETC1_RGB8_texture") &&
       copy_type != TexSubImage) {
-    supported_formats.push_back(new Image(
+    supported_formats.push_back(make_scoped_ptr(new Image(
         GL_ETC1_RGB8_OES,
         kCompressedImageETC1,
-        sizeof(kCompressedImageETC1)));
+        sizeof(kCompressedImageETC1))));
   }
 
-  for (const Image* image : supported_formats) {
+  for (const auto& image : supported_formats) {
     glBindTexture(GL_TEXTURE_2D, textures_[0]);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);

@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_vector.h"
+#include "base/memory/scoped_ptr.h"
 #include "gpu/tools/compositor_model_bench/shaders.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_implementation.h"
@@ -144,11 +144,11 @@ class ContentLayerNode : public RenderNode {
   }
 
   void add_child(RenderNode* child) {
-    children_.push_back(child);
+    children_.push_back(make_scoped_ptr(child));
   }
 
  private:
-  ScopedVector<RenderNode> children_;
+  std::vector<scoped_ptr<RenderNode>> children_;
   bool skipsDraw_;
 };
 

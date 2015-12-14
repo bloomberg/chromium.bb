@@ -78,9 +78,8 @@ ContentLayerNode::~ContentLayerNode() {
 
 void ContentLayerNode::Accept(RenderNodeVisitor* v) {
   v->BeginVisitContentLayerNode(this);
-  typedef vector<RenderNode*>::iterator node_itr;
-  for (node_itr i = children_.begin(); i != children_.end(); ++i) {
-    (*i)->Accept(v);
+  for (auto& child : children_) {
+    child->Accept(v);
   }
   v->EndVisitContentLayerNode(this);
 }
