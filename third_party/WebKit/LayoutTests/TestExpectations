@@ -992,7 +992,7 @@ crbug.com/509025 [ Mac10.10 ] fast/css/font-face-data-uri-invalid.html [ Failure
 crbug.com/509025 [ Mac10.10 ] fast/css/fontfaceset-download-error.html [ Failure ]
 crbug.com/509025 [ Mac10.10 ] fast/dom/adopt-attribute-crash.svg [ Failure ]
 crbug.com/509025 [ Mac10.10 ] fast/forms/select/hidden-listbox.html [ Failure ]
-crbug.com/509025 [ Mac10.10 ] fast/forms/textarea-newline.html [ Failure ]
+crbug.com/509025 [ Mac10.10 ] fast/forms/textarea/textarea-newline.html [ Failure ]
 crbug.com/509025 [ Mac10.10 ] fast/images/style-access-during-imageChanged-crash.html [ Failure ]
 crbug.com/509025 [ Mac10.10 ] fast/parser/xml-colon-entity.html [ Failure ]
 crbug.com/509025 [ Mac10.10 ] fast/parser/xml-declaration-missing-ending-mark.html [ Failure ]
