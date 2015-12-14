@@ -207,6 +207,11 @@ AccountConsistencyService::AccountConsistencyService(
   signin_manager_->AddObserver(this);
   web::BrowserState::GetActiveStateManager(browser_state_)->AddObserver(this);
   LoadFromPrefs();
+  if (signin_manager_->IsAuthenticated()) {
+    AddXChromeConnectedCookies();
+  } else {
+    RemoveXChromeConnectedCookies();
+  }
 }
 
 AccountConsistencyService::~AccountConsistencyService() {
