@@ -84,6 +84,8 @@ BrowserPlugin::BrowserPlugin(
 }
 
 BrowserPlugin::~BrowserPlugin() {
+  Detach();
+
   if (compositing_helper_.get())
     compositing_helper_->OnContainerDestroy();
 
@@ -488,6 +490,8 @@ blink::WebInputEventResult BrowserPlugin::handleInputEvent(
     blink::WebCursorInfo& cursor_info) {
   if (guest_crashed_ || !attached())
     return blink::WebInputEventResult::NotHandled;
+
+  DCHECK(!blink::WebInputEvent::isTouchEventType(event.type));
 
   if (event.type == blink::WebInputEvent::MouseWheel) {
     auto wheel_event = static_cast<const blink::WebMouseWheelEvent&>(event);

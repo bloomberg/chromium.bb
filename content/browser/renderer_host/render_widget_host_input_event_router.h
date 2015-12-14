@@ -13,10 +13,15 @@
 namespace blink {
 class WebMouseEvent;
 class WebMouseWheelEvent;
+class WebTouchEvent;
 }
 
 namespace gfx {
 class Point;
+}
+
+namespace ui {
+class LatencyInfo;
 }
 
 namespace content {
@@ -38,9 +43,16 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter {
                        blink::WebMouseEvent* event);
   void RouteMouseWheelEvent(RenderWidgetHostViewBase* root_view,
                             blink::WebMouseWheelEvent* event);
+  void RouteTouchEvent(RenderWidgetHostViewBase* root_view,
+                       blink::WebTouchEvent *event,
+                       const ui::LatencyInfo& latency);
 
   void AddSurfaceIdNamespaceOwner(uint32_t id, RenderWidgetHostViewBase* owner);
   void RemoveSurfaceIdNamespaceOwner(uint32_t id);
+
+  bool is_registered(uint32_t id) {
+    return owner_map_.find(id) != owner_map_.end();
+  }
 
  private:
   RenderWidgetHostViewBase* FindEventTarget(RenderWidgetHostViewBase* root_view,
@@ -50,6 +62,8 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter {
   typedef base::hash_map<uint32_t, RenderWidgetHostViewBase*>
       SurfaceIdNamespaceOwnerMap;
   SurfaceIdNamespaceOwnerMap owner_map_;
+  RenderWidgetHostViewBase* current_touch_target_;
+  int active_touches_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostInputEventRouter);
 };

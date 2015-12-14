@@ -39,8 +39,7 @@ struct NativeWebKeyboardEvent;
 // the relevant calls to the platform view.
 class CONTENT_EXPORT RenderWidgetHostViewGuest
     : public RenderWidgetHostViewChildFrame,
-      public ui::GestureConsumer,
-      public ui::GestureEventHelper {
+      public ui::GestureConsumer {
  public:
   RenderWidgetHostViewGuest(
       RenderWidgetHost* widget,
@@ -97,6 +96,11 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   void ProcessAckedTouchEvent(const TouchEventWithLatencyInfo& touch,
                               InputEventAckState ack_result) override;
 #endif
+  void ProcessTouchEvent(const blink::WebTouchEvent& event,
+                         const ui::LatencyInfo& latency) override;
+  void RegisterSurfaceNamespaceId();
+  void UnregisterSurfaceNamespaceId();
+
   bool LockMouse() override;
   void UnlockMouse() override;
   void GetScreenInfo(blink::WebScreenInfo* results) override;
@@ -139,11 +143,6 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   void GestureEventAck(const blink::WebGestureEvent& event,
                        InputEventAckState ack_result) override;
 
-  // Overridden from ui::GestureEventHelper.
-  bool CanDispatchToConsumer(ui::GestureConsumer* consumer) override;
-  void DispatchGestureEvent(ui::GestureEvent* event) override;
-  void DispatchCancelTouchEvent(ui::TouchEvent* event) override;
-
  protected:
   friend class RenderWidgetHostView;
 
@@ -172,9 +171,6 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   // RenderWidgetHostViewGuest mostly only cares about stuff related to
   // compositing, the rest are directly forwared to this |platform_view_|.
   base::WeakPtr<RenderWidgetHostViewBase> platform_view_;
-#if defined(USE_AURA)
-  scoped_ptr<ui::GestureRecognizer> gesture_recognizer_;
-#endif
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewGuest);
 };
 

@@ -2804,38 +2804,6 @@ class WebViewFocusTest : public WebViewTest {
   scoped_refptr<content::FrameWatcher> frame_watcher_;
 };
 
-class FocusWaiter : public views::FocusChangeListener {
- public:
-  explicit FocusWaiter(views::View* view_to_wait_for)
-      : view_to_wait_for_(view_to_wait_for) {
-    view_to_wait_for_->GetFocusManager()->AddFocusChangeListener(this);
-  }
-  ~FocusWaiter() override {
-    view_to_wait_for_->GetFocusManager()->RemoveFocusChangeListener(this);
-  }
-
-  void Wait() {
-    if (view_to_wait_for_->HasFocus())
-      return;
-
-    base::MessageLoop::current()->Run();
-  }
-
-  // FocusChangeListener implementation.
-  void OnWillChangeFocus(views::View* focused_before,
-                         views::View* focused_now) override {}
-  void OnDidChangeFocus(views::View* focused_before,
-                        views::View* focused_now) override {
-    if (view_to_wait_for_ == focused_now)
-      base::MessageLoop::current()->QuitWhenIdle();
-  }
-
- private:
-  views::View* view_to_wait_for_;
-
-  DISALLOW_COPY_AND_ASSIGN(FocusWaiter);
-};
-
 // The following test verifies that a views::WebView hosting an embedder
 // gains focus on touchstart.
 IN_PROC_BROWSER_TEST_F(WebViewFocusTest, TouchFocusesEmbedder) {
@@ -2895,13 +2863,9 @@ IN_PROC_BROWSER_TEST_F(WebViewFocusTest, TouchFocusesEmbedder) {
   guest_rect.Offset(-embedder_origin.x(), -embedder_origin.y());
 
   // Generate and send synthetic touch event.
-  FocusWaiter waiter(aura_webview);
   content::SimulateTouchPressAt(GetEmbedderWebContents(),
                                 guest_rect.CenterPoint());
-
-  // Wait for the TouchStart to propagate and restore focus. Test times out
-  // on failure.
-  waiter.Wait();
+  EXPECT_TRUE(aura_webview->HasFocus());
 }
 #endif
 

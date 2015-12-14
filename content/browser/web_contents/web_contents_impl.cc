@@ -1595,9 +1595,10 @@ bool WebContentsImpl::PreHandleGestureEvent(
 }
 
 RenderWidgetHostInputEventRouter* WebContentsImpl::GetInputEventRouter() {
-  // Currently only supported in site per process mode (--site-per-process).
-  if (!rwh_input_event_router_.get() && !is_being_destroyed_ &&
-      SiteIsolationPolicy::AreCrossProcessFramesPossible())
+  if (!is_being_destroyed_ && GetOuterWebContents())
+    return GetOuterWebContents()->GetInputEventRouter();
+
+  if (!rwh_input_event_router_.get() && !is_being_destroyed_)
     rwh_input_event_router_.reset(new RenderWidgetHostInputEventRouter);
   return rwh_input_event_router_.get();
 }

@@ -10,7 +10,8 @@
 
 namespace content {
 
-RenderWidgetHostInputEventRouter::RenderWidgetHostInputEventRouter() {}
+RenderWidgetHostInputEventRouter::RenderWidgetHostInputEventRouter()
+    : current_touch_target_(nullptr), active_touches_(0) {}
 
 RenderWidgetHostInputEventRouter::~RenderWidgetHostInputEventRouter() {
   owner_map_.clear();
@@ -65,6 +66,44 @@ void RenderWidgetHostInputEventRouter::RouteMouseWheelEvent(
   event->y = transformed_point.y();
 
   target->ProcessMouseWheelEvent(*event);
+}
+
+void RenderWidgetHostInputEventRouter::RouteTouchEvent(
+    RenderWidgetHostViewBase* root_view,
+    blink::WebTouchEvent* event,
+    const ui::LatencyInfo& latency) {
+  switch (event->type) {
+    case blink::WebInputEvent::TouchStart: {
+      if (!active_touches_) {
+        // Since this is the first touch, it defines the target for the rest
+        // of this sequence.
+        DCHECK(!current_touch_target_);
+        gfx::Point transformed_point;
+        gfx::Point original_point(event->touches[0].position.x,
+                                  event->touches[0].position.y);
+        current_touch_target_ =
+            FindEventTarget(root_view, original_point, &transformed_point);
+      }
+      ++active_touches_;
+      current_touch_target_->ProcessTouchEvent(*event, latency);
+      break;
+    }
+    case blink::WebInputEvent::TouchMove:
+      DCHECK(current_touch_target_);
+      current_touch_target_->ProcessTouchEvent(*event, latency);
+      break;
+    case blink::WebInputEvent::TouchEnd:
+    case blink::WebInputEvent::TouchCancel:
+      DCHECK(active_touches_);
+      DCHECK(current_touch_target_);
+      current_touch_target_->ProcessTouchEvent(*event, latency);
+      --active_touches_;
+      if (!active_touches_)
+        current_touch_target_ = nullptr;
+      break;
+    default:
+      NOTREACHED();
+  }
 }
 
 void RenderWidgetHostInputEventRouter::AddSurfaceIdNamespaceOwner(

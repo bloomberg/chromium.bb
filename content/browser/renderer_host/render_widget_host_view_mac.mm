@@ -54,6 +54,7 @@
 #include "content/common/edit_command.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/input_messages.h"
+#include "content/common/site_isolation_policy.h"
 #include "content/common/view_messages.h"
 #include "content/common/webplugin_geometry.h"
 #include "content/public/browser/browser_context.h"
@@ -1610,6 +1611,18 @@ uint32_t RenderWidgetHostViewMac::SurfaceIdNamespaceAtPoint(
   return cc::SurfaceIdAllocator::NamespaceForId(id);
 }
 
+bool RenderWidgetHostViewMac::ShouldRouteEvent(
+    const WebInputEvent& event) const {
+  // See also RenderWidgetHostViewAura::ShouldRouteEvent.
+  // TODO(wjmaclean): Update this function if RenderWidgetHostViewMac implements
+  // OnTouchEvent(), to match what we are doing in RenderWidgetHostViewAura.
+  DCHECK(WebInputEvent::isMouseEventType(event.type) ||
+         event.type == WebInputEvent::MouseWheel);
+  return render_widget_host_->delegate() &&
+         render_widget_host_->delegate()->GetInputEventRouter() &&
+         SiteIsolationPolicy::AreCrossProcessFramesPossible();
+}
+
 void RenderWidgetHostViewMac::ProcessMouseEvent(
     const blink::WebMouseEvent& event) {
   render_widget_host_->ForwardMouseEvent(event);
@@ -1956,14 +1969,12 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
       WebMouseEvent enterEvent = WebMouseEventBuilder::Build(theEvent, self);
       enterEvent.type = WebInputEvent::MouseMove;
       enterEvent.button = WebMouseEvent::ButtonNone;
-      if (renderWidgetHostView_->render_widget_host_->delegate() &&
-          renderWidgetHostView_->render_widget_host_->delegate()
-              ->GetInputEventRouter()) {
+      if (renderWidgetHostView_->ShouldRouteEvent(enterEvent)) {
         renderWidgetHostView_->render_widget_host_->delegate()
             ->GetInputEventRouter()
             ->RouteMouseEvent(renderWidgetHostView_.get(), &enterEvent);
       } else {
-        renderWidgetHostView_->ForwardMouseEvent(enterEvent);
+        renderWidgetHostView_->ProcessMouseEvent(enterEvent);
       }
     }
   }
@@ -1993,14 +2004,12 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
   }
 
   WebMouseEvent event = WebMouseEventBuilder::Build(theEvent, self);
-  if (renderWidgetHostView_->render_widget_host_->delegate() &&
-      renderWidgetHostView_->render_widget_host_->delegate()
-          ->GetInputEventRouter()) {
+  if (renderWidgetHostView_->ShouldRouteEvent(event)) {
     renderWidgetHostView_->render_widget_host_->delegate()
         ->GetInputEventRouter()
         ->RouteMouseEvent(renderWidgetHostView_.get(), &event);
   } else {
-    renderWidgetHostView_->ForwardMouseEvent(event);
+    renderWidgetHostView_->ProcessMouseEvent(event);
   }
 }
 
@@ -2504,14 +2513,12 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
     WebMouseWheelEvent webEvent = WebMouseWheelEventBuilder::Build(
         event, self, canRubberbandLeft, canRubberbandRight);
     webEvent.railsMode = mouseWheelFilter_.UpdateRailsMode(webEvent);
-    if (renderWidgetHostView_->render_widget_host_->delegate() &&
-        renderWidgetHostView_->render_widget_host_->delegate()
-            ->GetInputEventRouter()) {
+    if (renderWidgetHostView_->ShouldRouteEvent(webEvent)) {
       renderWidgetHostView_->render_widget_host_->delegate()
           ->GetInputEventRouter()
           ->RouteMouseWheelEvent(renderWidgetHostView_.get(), &webEvent);
     } else {
-      renderWidgetHostView_->render_widget_host_->ForwardWheelEvent(webEvent);
+      renderWidgetHostView_->ProcessMouseWheelEvent(webEvent);
     }
   }
 }

@@ -802,6 +802,9 @@ void BrowserPluginGuest::OnWillAttachComplete(
   SendQueuedMessages();
 
   delegate_->DidAttach(GetGuestProxyRoutingID());
+  RenderWidgetHostViewGuest* rwhv = static_cast<RenderWidgetHostViewGuest*>(
+      web_contents()->GetRenderWidgetHostView());
+  rwhv->RegisterSurfaceNamespaceId();
 
   if (!use_cross_process_frames)
     has_render_view_ = true;
@@ -826,6 +829,12 @@ void BrowserPluginGuest::OnDetach(int browser_plugin_instance_id) {
   // This tells BrowserPluginGuest to queue up all IPCs to BrowserPlugin until
   // it's attached again.
   attached_ = false;
+
+  RenderWidgetHostViewGuest* rwhv = static_cast<RenderWidgetHostViewGuest*>(
+       web_contents()->GetRenderWidgetHostView());
+  // If the guest is terminated, our host may already be gone.
+  if (rwhv)
+    rwhv->UnregisterSurfaceNamespaceId();
 
   delegate_->DidDetach();
 }

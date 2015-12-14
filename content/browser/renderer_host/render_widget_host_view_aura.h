@@ -192,6 +192,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
                                      gfx::Point* transformed_point) override;
   void ProcessMouseEvent(const blink::WebMouseEvent& event) override;
   void ProcessMouseWheelEvent(const blink::WebMouseWheelEvent& event) override;
+  void ProcessTouchEvent(const blink::WebTouchEvent& event,
+                         const ui::LatencyInfo& latency) override;
   void TransformPointToLocalCoordSpace(const gfx::Point& point,
                                        cc::SurfaceId original_surface,
                                        gfx::Point* transformed_point) override;
@@ -484,6 +486,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   bool CanRendererHandleEvent(const ui::MouseEvent* event,
                               bool mouse_locked,
                               bool selection_popup);
+
+  // Returns true when we can do SurfaceHitTesting for the event type.
+  bool ShouldRouteEvent(const ui::Event* event) const;
 
   // Called when the parent window bounds change.
   void HandleParentBoundsChanged();

@@ -45,6 +45,7 @@
 #include "content/browser/renderer_host/web_input_event_aura.h"
 #include "content/common/gpu/client/gl_helper.h"
 #include "content/common/gpu/gpu_messages.h"
+#include "content/common/site_isolation_policy.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/overscroll_configuration.h"
@@ -855,6 +856,23 @@ bool RenderWidgetHostViewAura::CanRendererHandleEvent(
   }
 #endif
   return true;
+}
+
+bool RenderWidgetHostViewAura::ShouldRouteEvent(const ui::Event* event) const {
+  // We should route an event in two cases:
+  // 1) Mouse events are routed only if cross-process frames are possible.
+  // 2) Touch events are always routed. In the absence of a BrowserPlugin
+  //    we expect the routing to always send the event to this view. If
+  //    one or more BrowserPlugins are present, then the event may be targeted
+  //    to one of them, or this view. This allows GuestViews to have access to
+  //    them while still forcing pinch-zoom to be handled by the top-level
+  //    frame. TODO(wjmaclean): At present, this doesn't work for OOPIF, but
+  //    it should be a simple extension to modify RenderWidgetHostViewChildFrame
+  //    in a similar manner to RenderWidgetHostViewGuest.
+  bool result = host_->delegate() && host_->delegate()->GetInputEventRouter();
+  if (event->IsMouseEvent())
+    result = result && SiteIsolationPolicy::AreCrossProcessFramesPossible();
+  return result;
 }
 
 void RenderWidgetHostViewAura::HandleParentBoundsChanged() {
@@ -2127,7 +2145,7 @@ void RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
     blink::WebMouseWheelEvent mouse_wheel_event =
         MakeWebMouseWheelEvent(static_cast<ui::MouseWheelEvent&>(*event));
     if (mouse_wheel_event.deltaX != 0 || mouse_wheel_event.deltaY != 0) {
-      if (host_->delegate() && host_->delegate()->GetInputEventRouter()) {
+      if (ShouldRouteEvent(event)) {
         host_->delegate()->GetInputEventRouter()->RouteMouseWheelEvent(
             this, &mouse_wheel_event);
       } else {
@@ -2146,7 +2164,7 @@ void RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
 
       blink::WebMouseEvent mouse_event = MakeWebMouseEvent(*event);
       ModifyEventMovementAndCoords(&mouse_event);
-      if (host_->delegate() && host_->delegate()->GetInputEventRouter()) {
+      if (ShouldRouteEvent(event)) {
         host_->delegate()->GetInputEventRouter()->RouteMouseEvent(this,
                                                                   &mouse_event);
       } else {
@@ -2217,6 +2235,12 @@ void RenderWidgetHostViewAura::ProcessMouseEvent(
 void RenderWidgetHostViewAura::ProcessMouseWheelEvent(
     const blink::WebMouseWheelEvent& event) {
   host_->ForwardWheelEvent(event);
+}
+
+void RenderWidgetHostViewAura::ProcessTouchEvent(
+    const blink::WebTouchEvent& event,
+    const ui::LatencyInfo& latency) {
+  host_->ForwardTouchEventWithLatencyInfo(event, latency);
 }
 
 void RenderWidgetHostViewAura::TransformPointToLocalCoordSpace(
@@ -2293,7 +2317,12 @@ void RenderWidgetHostViewAura::OnTouchEvent(ui::TouchEvent* event) {
   // Set unchanged touch point to StateStationary for touchmove and
   // touchcancel to make sure only send one ack per WebTouchEvent.
   MarkUnchangedTouchPointsAsStationary(&touch_event, event->touch_id());
-  host_->ForwardTouchEventWithLatencyInfo(touch_event, *event->latency());
+  if (ShouldRouteEvent(event)) {
+    host_->delegate()->GetInputEventRouter()->RouteTouchEvent(
+        this, &touch_event, *event->latency());
+  } else {
+    ProcessTouchEvent(touch_event, *event->latency());
+  }
 }
 
 void RenderWidgetHostViewAura::OnGestureEvent(ui::GestureEvent* event) {

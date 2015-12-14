@@ -46,6 +46,10 @@ class WebMouseEvent;
 class WebMouseWheelEvent;
 }
 
+namespace ui {
+class LatencyInfo;
+}
+
 namespace content {
 class BrowserAccessibilityDelegate;
 class BrowserAccessibilityManager;
@@ -192,6 +196,8 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   virtual void ProcessKeyboardEvent(const NativeWebKeyboardEvent& event) {}
   virtual void ProcessMouseEvent(const blink::WebMouseEvent& event) {}
   virtual void ProcessMouseWheelEvent(const blink::WebMouseWheelEvent& event) {}
+  virtual void ProcessTouchEvent(const blink::WebTouchEvent& event,
+                         const ui::LatencyInfo& latency) {}
 
   // If a RenderWidgetHost is dealing with points that are transformed from the
   // root frame for a page (i.e. because its content is contained within

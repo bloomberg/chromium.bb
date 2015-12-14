@@ -49,10 +49,12 @@
 #include "ui/resources/grit/webui_resources.h"
 
 #if defined(USE_AURA)
+#include "content/browser/renderer_host/render_widget_host_view_aura.h"
 #include "ui/aura/test/window_event_dispatcher_test_api.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/events/event.h"
 #endif  // USE_AURA
 
 namespace content {
@@ -526,13 +528,14 @@ void SimulateTapWithModifiersAt(WebContents* web_contents,
   widget_host->ForwardGestureEvent(tap);
 }
 
+#if defined(USE_AURA)
 void SimulateTouchPressAt(WebContents* web_contents, const gfx::Point& point) {
-  SyntheticWebTouchEvent touch;
-  touch.PressPoint(point.x(), point.y());
-  RenderWidgetHostImpl* widget_host = RenderWidgetHostImpl::From(
-      web_contents->GetRenderViewHost()->GetWidget());
-  widget_host->ForwardTouchEventWithLatencyInfo(touch, ui::LatencyInfo());
+  ui::TouchEvent touch(ui::ET_TOUCH_PRESSED, point, 0, base::TimeDelta());
+  static_cast<RenderWidgetHostViewAura*>(
+      web_contents->GetRenderWidgetHostView())
+      ->OnTouchEvent(&touch);
 }
+#endif
 
 void SimulateKeyPress(WebContents* web_contents,
                       ui::KeyboardCode key_code,

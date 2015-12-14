@@ -14,6 +14,8 @@
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/frame_host/render_widget_host_view_guest.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/browser/renderer_host/render_widget_host_delegate.h"
+#include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/common/browser_plugin/browser_plugin_messages.h"
 #include "content/common/frame_messages.h"
 #include "content/common/gpu/gpu_messages.h"
@@ -56,16 +58,9 @@ RenderWidgetHostViewGuest::RenderWidgetHostViewGuest(
       // |guest| is NULL during test.
       guest_(guest ? guest->AsWeakPtr() : base::WeakPtr<BrowserPluginGuest>()),
       platform_view_(platform_view) {
-#if defined(USE_AURA)
-  gesture_recognizer_.reset(ui::GestureRecognizer::Create());
-  gesture_recognizer_->AddGestureEventHelper(this);
-#endif  // defined(USE_AURA)
 }
 
 RenderWidgetHostViewGuest::~RenderWidgetHostViewGuest() {
-#if defined(USE_AURA)
-  gesture_recognizer_->RemoveGestureEventHelper(this);
-#endif  // defined(USE_AURA)
 }
 
 bool RenderWidgetHostViewGuest::OnMessageReceivedFromEmbedder(
@@ -147,29 +142,43 @@ bool RenderWidgetHostViewGuest::HasFocus() const {
 #if defined(USE_AURA)
 void RenderWidgetHostViewGuest::ProcessAckedTouchEvent(
     const TouchEventWithLatencyInfo& touch, InputEventAckState ack_result) {
-  // TODO(fsamuel): Currently we will only take this codepath if the guest has
-  // requested touch events. A better solution is to always forward touchpresses
-  // to the embedder process to target a BrowserPlugin, and then route all
-  // subsequent touch points of that touchdown to the appropriate guest until
-  // that touch point is released.
-  ScopedVector<ui::TouchEvent> events;
-  if (!MakeUITouchEventsFromWebTouchEvents(touch, &events, LOCAL_COORDINATES))
-    return;
-
-  ui::EventResult result = (ack_result ==
-      INPUT_EVENT_ACK_STATE_CONSUMED) ? ui::ER_HANDLED : ui::ER_UNHANDLED;
-  for (ScopedVector<ui::TouchEvent>::iterator iter = events.begin(),
-      end = events.end(); iter != end; ++iter)  {
-    if (!gesture_recognizer_->ProcessTouchEventPreDispatch(*iter, this))
-      continue;
-
-    scoped_ptr<ui::GestureRecognizer::Gestures> gestures;
-    gestures.reset(gesture_recognizer_->AckTouchEvent(
-        (*iter)->unique_event_id(), result, this));
-    ProcessGestures(gestures.get());
-  }
+  // TODO(tdresser): Since all ProcessAckedTouchEvent() uses is the event id,
+  // don't pass the full event object here. https://crbug.com/550581.
+  GetOwnerRenderWidgetHostView()->ProcessAckedTouchEvent(touch, ack_result);
 }
 #endif
+
+void RenderWidgetHostViewGuest::ProcessTouchEvent(
+    const blink::WebTouchEvent& event,
+    const ui::LatencyInfo& latency) {
+  if (event.type == blink::WebInputEvent::TouchStart) {
+    DCHECK(guest_->GetOwnerRenderWidgetHostView());
+    RenderWidgetHostImpl* embedder = static_cast<RenderWidgetHostImpl*>(
+        guest_->GetOwnerRenderWidgetHostView()->GetRenderWidgetHost());
+    if (!embedder->GetView()->HasFocus())
+      embedder->GetView()->Focus();
+  }
+
+  host_->ForwardTouchEventWithLatencyInfo(event, latency);
+}
+
+void RenderWidgetHostViewGuest::RegisterSurfaceNamespaceId() {
+  DCHECK(host_);
+  if (host_->delegate() && host_->delegate()->GetInputEventRouter()) {
+    RenderWidgetHostInputEventRouter* router =
+        host_->delegate()->GetInputEventRouter();
+    if (!router->is_registered(GetSurfaceIdNamespace()))
+      router->AddSurfaceIdNamespaceOwner(GetSurfaceIdNamespace(), this);
+  }
+}
+
+void RenderWidgetHostViewGuest::UnregisterSurfaceNamespaceId() {
+  DCHECK(host_);
+  if (host_->delegate() && host_->delegate()->GetInputEventRouter()) {
+    host_->delegate()->GetInputEventRouter()->RemoveSurfaceIdNamespaceOwner(
+        GetSurfaceIdNamespace());
+  }
+}
 
 gfx::Rect RenderWidgetHostViewGuest::GetViewBounds() const {
   if (!guest_)
@@ -550,32 +559,6 @@ void RenderWidgetHostViewGuest::DestroyGuestView() {
   host_->SetView(NULL);
   host_ = NULL;
   base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
-}
-
-bool RenderWidgetHostViewGuest::CanDispatchToConsumer(
-    ui::GestureConsumer* consumer) {
-  CHECK_EQ(static_cast<RenderWidgetHostViewGuest*>(consumer), this);
-  return true;
-}
-
-void RenderWidgetHostViewGuest::DispatchGestureEvent(
-    ui::GestureEvent* event) {
-  ForwardGestureEventToRenderer(event);
-}
-
-void RenderWidgetHostViewGuest::DispatchCancelTouchEvent(
-    ui::TouchEvent* event) {
-  if (!host_)
-    return;
-
-  blink::WebTouchEvent cancel_event;
-  // TODO(rbyers): This event has no touches in it.  Don't we need to know what
-  // touches are currently active in order to cancel them all properly?
-  WebTouchEventTraits::ResetType(blink::WebInputEvent::TouchCancel,
-                                 event->time_stamp().InSecondsF(),
-                                 &cancel_event);
-
-  host_->ForwardTouchEventWithLatencyInfo(cancel_event, *event->latency());
 }
 
 bool RenderWidgetHostViewGuest::ForwardGestureEventToRenderer(
