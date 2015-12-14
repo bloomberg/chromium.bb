@@ -83,6 +83,8 @@ LeveldbValueStore::LeveldbValueStore(const std::string& uma_client_name,
   open_options_.paranoid_checks = true;
   open_options_.reuse_logs = leveldb_env::kDefaultLogReuseOptionValue;
 
+  read_options_.verify_checksums = true;
+
   // Used in lieu of UMA_HISTOGRAM_ENUMERATION because the histogram name is
   // not a constant.
   open_histogram_ = base::LinearHistogram::FactoryGet(
@@ -135,7 +137,7 @@ ValueStore::ReadResult LeveldbValueStore::Get(const std::string& key) {
     return MakeReadResult(status);
 
   scoped_ptr<base::Value> setting;
-  status.Merge(ReadFromDb(leveldb::ReadOptions(), key, &setting));
+  status.Merge(ReadFromDb(key, &setting));
   if (!status.ok())
     return MakeReadResult(status);
 
@@ -153,17 +155,12 @@ ValueStore::ReadResult LeveldbValueStore::Get(
   if (!status.ok())
     return MakeReadResult(status);
 
-  leveldb::ReadOptions options;
   scoped_ptr<base::DictionaryValue> settings(new base::DictionaryValue());
 
-  // All interaction with the db is done on the same thread, so snapshotting
-  // isn't strictly necessary.  This is just defensive.
-  ScopedSnapshot snapshot(db_.get());
-  options.snapshot = snapshot.get();
   for (std::vector<std::string>::const_iterator it = keys.begin();
       it != keys.end(); ++it) {
     scoped_ptr<base::Value> setting;
-    status.Merge(ReadFromDb(options, *it, &setting));
+    status.Merge(ReadFromDb(*it, &setting));
     if (!status.ok())
       return MakeReadResult(status);
     if (setting)
@@ -277,7 +274,7 @@ ValueStore::WriteResult LeveldbValueStore::Remove(
   for (std::vector<std::string>::const_iterator it = keys.begin();
       it != keys.end(); ++it) {
     scoped_ptr<base::Value> old_value;
-    status.Merge(ReadFromDb(leveldb::ReadOptions(), *it, &old_value));
+    status.Merge(ReadFromDb(*it, &old_value));
     if (!status.ok())
       return MakeWriteResult(status);
 
@@ -469,14 +466,13 @@ ValueStore::Status LeveldbValueStore::EnsureDbIsOpen() {
 }
 
 ValueStore::Status LeveldbValueStore::ReadFromDb(
-    leveldb::ReadOptions options,
     const std::string& key,
     scoped_ptr<base::Value>* setting) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   DCHECK(setting);
 
   std::string value_as_json;
-  leveldb::Status s = db_->Get(options, key, &value_as_json);
+  leveldb::Status s = db_->Get(read_options_, key, &value_as_json);
 
   if (s.IsNotFound()) {
     // Despite there being no value, it was still a success. Check this first
@@ -505,7 +501,7 @@ ValueStore::Status LeveldbValueStore::AddToBatch(
 
   if (!(options & NO_GENERATE_CHANGES)) {
     scoped_ptr<base::Value> old_value;
-    Status status = ReadFromDb(leveldb::ReadOptions(), key, &old_value);
+    Status status = ReadFromDb(key, &old_value);
     if (!status.ok())
       return status;
     if (!old_value || !old_value->Equals(&value)) {

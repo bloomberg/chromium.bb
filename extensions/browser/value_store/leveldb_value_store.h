@@ -74,8 +74,7 @@ class LeveldbValueStore : public ValueStore,
   ValueStore::Status EnsureDbIsOpen();
 
   // Reads a setting from the database.
-  ValueStore::Status ReadFromDb(leveldb::ReadOptions options,
-                                const std::string& key,
+  ValueStore::Status ReadFromDb(const std::string& key,
                                 // Will be reset() with the result, if any.
                                 scoped_ptr<base::Value>* setting);
 
@@ -106,6 +105,7 @@ class LeveldbValueStore : public ValueStore,
   // The location of the leveldb backend.
   const base::FilePath db_path_;
   leveldb::Options open_options_;
+  leveldb::ReadOptions read_options_;
 
   // leveldb backend.
   scoped_ptr<leveldb::DB> db_;
