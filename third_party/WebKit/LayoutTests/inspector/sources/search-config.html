@@ -1,0 +1,26 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script>
+function test()
+{
+    function dumpParsedSearchQuery(query, isRegex)
+    {
+        var searchConfig = new WebInspector.SearchConfig(query, true, isRegex);
+        InspectorTest.addResult("Dumping parsed search query [" + query + "]:");
+        InspectorTest.addResult(JSON.stringify(searchConfig.queries()));
+    }
+
+    dumpParsedSearchQuery("function", false);
+    dumpParsedSearchQuery(" function", false);
+    dumpParsedSearchQuery(" function file:js", false);
+    dumpParsedSearchQuery("\s", true);
+    dumpParsedSearchQuery(" \s hello", true);
+    InspectorTest.completeTest();
+};
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests search query parsing.</p>
+</body>
+</html>
