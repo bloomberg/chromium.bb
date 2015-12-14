@@ -12,32 +12,20 @@ GEN_INCLUDE(['settings_page_browsertest.js']);
 /**
  * @constructor
  * @extends {SettingsPageBrowserTest}
+ *
+ * @param {string} pageId 'basic' or 'advanced'.
+ * @param {!Array<string>} subPages
 */
-function SettingsSubPageBrowserTest() {}
+function SettingsSubPageBrowserTest(pageId, subPages) {
+  /** @type {string} */
+  this.pageId = pageId;
+
+  /** @type {!Array<string>} */
+  this.subPages = subPages;
+}
 
 SettingsSubPageBrowserTest.prototype = {
   __proto__: SettingsPageBrowserTest.prototype,
-
-  basicPages_: [
-    'people',
-    'internet',
-    'appearance',
-    'onStartup',
-    'search',
-    'defaultBrowser'
-  ],
-
-  advancedPages_: [
-    'dateTime',
-    'location',
-    'privacy',
-    'bluetooth',
-    'passwordsAndForms',
-    'languages',
-    'downloads',
-    'reset',
-    'a11y'
-  ],
 
   /** @override */
   preLoad: function() {
@@ -53,22 +41,19 @@ SettingsSubPageBrowserTest.prototype = {
     SettingsPageBrowserTest.prototype.setUp.call(this);
     // Explicitly hide all of the pages (not strictly required but is more
     // clear than relying on undefined -> hidden).
-    this.hideSubPages_('basic', this.basicPages_ );
-    this.hideSubPages_('advanced', this.advancedPages_ );
+    this.hideSubPages_();
   },
 
   /*
-   * This will hide all subpages in |subpages|. Note: any existing subpages
-   * not listed in |subpages| will be shown.
-   * @param {string} pageId
-   * @param {!Array<string>} subpages
+   * This will hide all subpages in |this.subPages|. Note: any existing subpages
+   * not listed in |this.subPages| will be shown.
    */
-  hideSubPages_: function(pageId, subpages) {
-    var page = this.getPage(pageId);
+  hideSubPages_: function() {
+    var page = this.getPage(this.pageId);
     var visibility = {};
-    for (var p of subpages) {
-      visibility[p] = false;
-    }
+    this.subPages.forEach(function(subPage) {
+      visibility[subPage] = false;
+    });
     assertEquals(0, Object.keys(page.pageVisibility).length);
     page.pageVisibility = visibility;
     // Ensure all pages are hidden.
@@ -76,54 +61,96 @@ SettingsSubPageBrowserTest.prototype = {
     assertTrue(!!sections);
     assertEquals(0, sections.length);
   },
-};
 
-TEST_F('SettingsSubPageBrowserTest', 'SubPages', function() {
-  // Assign |self| to |this| instead of binding since 'this' in suite()
-  // and test() will be a Mocha 'Suite' or 'Test' instance.
-  var self = this;
-
-  // Ensures the subpage is initially hidden, then sets it to visible and
-  // times the result, outputting a (rough) approximation of load time for the
-  // subpage.
-  var testPage = function(page, subpage) {
+  /**
+   * Ensures the subpage is initially hidden, then sets it to visible and
+   * times the result, outputting a (rough) approximation of load time for the
+   * subpage.
+   * @param {Node} page
+   * @param {string} subpage
+   */
+  testPage: function(page, subPage) {
     Polymer.dom.flush();
-    expectFalse(!!self.getSection(page, subpage), subpage);
+    expectFalse(!!this.getSection(page, subPage));
     var startTime = window.performance.now();
-    page.set('pageVisibility.' + subpage, true);
+    page.set('pageVisibility.' + subPage, true);
     Polymer.dom.flush();
     var dtime = window.performance.now() - startTime;
-    console.log('Page: ' + subpage + ' Load time: ' + dtime.toFixed(0) + ' ms');
-    expectTrue(!!self.getSection(page, subpage), subpage);
-    // Hide the page so that it doesn't interfere with other subpages.
-    page.set('pageVisibility.' + subpage, false);
+    console.log('Page: ' + subPage + ' Load time: ' + dtime.toFixed(0) + ' ms');
+    expectTrue(!!this.getSection(page, subPage));
+    // Hide the page so that it doesn't interfere with other subPages.
+    page.set('pageVisibility.' + subPage, false);
     Polymer.dom.flush();
-  };
+  },
 
-  var includePage = function(id) {
+  testSubPages: function() {
+    var page = this.getPage(this.pageId);
+    this.subPages.forEach(function(subPage) {
+      if (this.includePage(subPage))
+        test(subPage, this.testPage.bind(this, page, subPage));
+    }.bind(this));
+  },
+
+  /**
+   * @param {string} id
+   * @return {boolean}
+   */
+  includePage: function(id) {
     if (cr.isChromeOS)
-      return id != 'defaultBrowser';
-    return id != 'internet' && id != 'dateTime' && id != 'bluetooth' &&
-           id != 'a11y';
-  };
+      return id != 'people' && id != 'defaultBrowser';
+    return id != 'internet' && id != 'users' && id != 'dateTime' &&
+           id != 'bluetooth' && id != 'a11y';
+  },
+};
 
-  // Register mocha tests.
-  suite('Basic', function() {
-    var page = self.getPage('basic');
-    for (var subPage of self.basicPages_) {
-      if (includePage(subPage))
-        test(subPage, testPage.bind(self, page, subPage));
-    }
-  });
+/** @constructor @extends {SettingsSubPageBrowserTest} */
+function SettingsBasicSubPageBrowserTest() {
+  var subPages = [
+    'people',
+    'internet',
+    'appearance',
+    'onStartup',
+    'search',
+    'defaultBrowser'
+  ];
 
-  suite('Advanced', function() {
-    var page = self.getPage('advanced');
-    for (var subPage of self.advancedPages_) {
-      if (includePage(subPage))
-        test(subPage, testPage.bind(self, page, subPage));
-    }
-  });
+  SettingsSubPageBrowserTest.call(this, 'basic', subPages);
+}
 
-  // Run all registered tests.
+SettingsBasicSubPageBrowserTest.prototype = {
+  __proto__: SettingsSubPageBrowserTest.prototype,
+};
+
+TEST_F('SettingsBasicSubPageBrowserTest', 'SubPages', function() {
+  suite('Basic', this.testSubPages.bind(this));
+  mocha.run();
+});
+
+/** @constructor @extends {SettingsSubPageBrowserTest} */
+function SettingsAdvancedSubPageBrowserTest() {
+  var subPages = [
+    'dateTime',
+    'location',
+    'privacy',
+    'bluetooth',
+    'passwordsAndForms',
+    'languages',
+    'downloads',
+    'reset',
+    'a11y'
+  ];
+
+  SettingsSubPageBrowserTest.call(this, 'advanced', subPages);
+};
+
+SettingsAdvancedSubPageBrowserTest.prototype = {
+  __proto__: SettingsSubPageBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://md-settings/advanced',
+};
+
+TEST_F('SettingsAdvancedSubPageBrowserTest', 'SubPages', function() {
+  suite('Advanced', this.testSubPages.bind(this));
   mocha.run();
 });

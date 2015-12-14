@@ -38,6 +38,12 @@ Polymer({
       notify: true,
       observer: 'currentRouteChanged_',
     },
+
+    // If false the 'basic' page should be shown.
+    showAdvancedPage_: {
+      type: Boolean,
+      value: false
+    }
   },
 
   listeners: {
@@ -46,6 +52,8 @@ Polymer({
 
   /** @private */
   currentRouteChanged_: function(newRoute, oldRoute) {
+    this.showAdvancedPage_ = newRoute.page == 'advanced';
+
     var pageContainer = this.$.pageContainer;
     if (!oldRoute) {
       pageContainer.classList.toggle('expanded', newRoute.section);
@@ -68,10 +76,5 @@ Polymer({
       pageContainer.classList.add('expanded');
       pageContainer.scrollTop = 0;
     }
-  },
-
-  /** @private */
-  getSelectedPage_: function(currentRoute) {
-    return currentRoute.page || 'basic';
   },
 });

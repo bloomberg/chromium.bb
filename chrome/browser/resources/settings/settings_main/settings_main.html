@@ -1,5 +1,4 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-pages/iron-pages.html">
 <link rel="import" href="chrome://md-settings/advanced_page/advanced_page.html">
 <link rel="import" href="chrome://md-settings/basic_page/basic_page.html">
 
@@ -7,15 +6,17 @@
   <link rel="import" type="css" href="settings_main.css">
   <template>
     <content select="paper-icon-button"></content>
-    <iron-pages id="pageContainer" attr-for-selected="data-route-page"
-        selected="[[getSelectedPage_(currentRoute)]]">
-      <settings-basic-page data-route-page="basic" prefs="{{prefs}}"
-          current-route="{{currentRoute}}">
-      </settings-basic-page>
-      <settings-advanced-page data-route-page="advanced" prefs="{{prefs}}"
-          current-route="{{currentRoute}}">
-      </settings-advanced-page>
-    </iron-pages>
+    <div id="pageContainer">
+      <template is="dom-if" if="[[!showAdvancedPage_]]">
+        <settings-basic-page prefs="{{prefs}}" current-route="{{currentRoute}}">
+        </settings-basic-page>
+      </template>
+      <template is="dom-if" if="[[showAdvancedPage_]]">
+        <settings-advanced-page prefs="{{prefs}}"
+            current-route="{{currentRoute}}">
+        </settings-advanced-page>
+      </template>
+    </div>
   </template>
   <script src="settings_main.js"></script>
 </dom-module>
