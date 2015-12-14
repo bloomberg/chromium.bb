@@ -637,8 +637,7 @@ void BrowserNonClientFrameViewAsh::PaintToolbarBackground(gfx::Canvas* canvas) {
     toolbar_bounds.Inset(kClientEdgeThickness, 0);
     BrowserView::Paint1pxHorizontalLine(
         canvas,
-        ThemeProperties::GetDefaultColor(
-            ThemeProperties::COLOR_TOOLBAR_SEPARATOR),
+        tp->GetColor(ThemeProperties::COLOR_TOOLBAR_SEPARATOR),
         toolbar_bounds, true);
   } else {
     // Gross hack: We split the toolbar images into two pieces, since sometimes
@@ -696,17 +695,15 @@ void BrowserNonClientFrameViewAsh::PaintToolbarBackground(gfx::Canvas* canvas) {
     canvas->FillRect(
         gfx::Rect(x + kClientEdgeThickness,
                   toolbar_bounds.bottom() - kClientEdgeThickness,
-                  w - (2 * kClientEdgeThickness),
-                  kClientEdgeThickness),
-        ThemeProperties::GetDefaultColor(
-            ThemeProperties::COLOR_TOOLBAR_SEPARATOR));
+                  w - (2 * kClientEdgeThickness), kClientEdgeThickness),
+        tp->GetColor(ThemeProperties::COLOR_TOOLBAR_SEPARATOR));
   }
 }
 
 void BrowserNonClientFrameViewAsh::PaintContentEdge(gfx::Canvas* canvas) {
   DCHECK(!UsePackagedAppHeaderStyle() && !UseWebAppHeaderStyle());
-  canvas->FillRect(gfx::Rect(0, caption_button_container_->bounds().bottom(),
-                             width(), kClientEdgeThickness),
-                   ThemeProperties::GetDefaultColor(
-                       ThemeProperties::COLOR_TOOLBAR_SEPARATOR));
+  canvas->FillRect(
+      gfx::Rect(0, caption_button_container_->bounds().bottom(), width(),
+                kClientEdgeThickness),
+      GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR_SEPARATOR));
 }

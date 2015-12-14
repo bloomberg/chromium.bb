@@ -293,15 +293,12 @@ void PaintAttachedBookmarkBar(gfx::Canvas* canvas,
     // Draw the separator below the Bookmarks Bar; this is fading in/out.
     if (ui::MaterialDesignController::IsModeMaterial()) {
       BrowserView::Paint1pxHorizontalLine(
-          canvas,
-          ThemeProperties::GetDefaultColor(
-              ThemeProperties::COLOR_TOOLBAR_SEPARATOR),
+          canvas, view->GetThemeProvider()->GetColor(
+                      ThemeProperties::COLOR_TOOLBAR_SEPARATOR),
           view->GetLocalBounds(), true);
     } else {
-      PaintHorizontalBorder(canvas,
-                            view,
-                            false,
-                            ThemeProperties::GetDefaultColor(
+      PaintHorizontalBorder(canvas, view, false,
+                            view->GetThemeProvider()->GetColor(
                                 ThemeProperties::COLOR_TOOLBAR_SEPARATOR));
     }
   }
@@ -2110,8 +2107,7 @@ void BrowserView::InitViews() {
 
   contents_container_ = new views::View();
   contents_container_->set_background(views::Background::CreateSolidBackground(
-      ThemeProperties::GetDefaultColor(
-          ThemeProperties::COLOR_CONTROL_BACKGROUND)));
+      GetThemeProvider()->GetColor(ThemeProperties::COLOR_CONTROL_BACKGROUND)));
   contents_container_->AddChildView(devtools_web_view_);
   contents_container_->AddChildView(contents_web_view_);
   contents_container_->SetLayoutManager(new ContentsLayoutManager(

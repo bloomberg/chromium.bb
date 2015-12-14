@@ -450,8 +450,7 @@ void OmniboxPopupContentsView::OnPaint(gfx::Canvas* canvas) {
     canvas->FillRect(
         gfx::Rect(0, 0, width(),
                   views::NonClientFrameView::kClientEdgeThickness),
-        ThemeProperties::GetDefaultColor(
-            ThemeProperties::COLOR_TOOLBAR_SEPARATOR));
+        GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR_SEPARATOR));
   }
 
   // Bottom border.
