@@ -103,7 +103,6 @@ Polymer({
     this.$.audioController.addEventListener('dragging-changed',
         this.onDraggingChanged_.bind(this));
 
-    this.$.audio.volume = 0;  // Temporary initial volume.
     this.$.audio.addEventListener('ended', this.onAudioEnded.bind(this));
     this.$.audio.addEventListener('error', this.onAudioError.bind(this));
 

@@ -90,6 +90,7 @@
        */
       volume: {
         type: Number,
+        value: 50,
         notify: true,
         reflectToAttribute: true,
         observer: 'volumeChanged_'
