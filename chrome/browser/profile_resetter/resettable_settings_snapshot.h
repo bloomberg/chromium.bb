@@ -19,9 +19,6 @@
 namespace base {
 class ListValue;
 }
-namespace reset_report {
-class ChromeResetReport;
-}
 
 // ResettableSettingsSnapshot captures some settings values at constructor. It
 // can calculate the difference between two snapshots. That is, modified fields.
@@ -69,8 +66,6 @@ class ResettableSettingsSnapshot {
     return shortcuts_determined_;
   }
 
-  std::string guid() const { return guid_; }
-
   // Substitutes |enabled_extensions_| with
   // |enabled_extensions_|\|snapshot.enabled_extensions_|.
   void Subtract(const ResettableSettingsSnapshot& snapshot);
@@ -91,9 +86,6 @@ class ResettableSettingsSnapshot {
   void SetShortcutsAndReport(
       const base::Closure& callback,
       const std::vector<ShortcutCommand>& shortcuts);
-
-  // Every ResettableSettingsSnapshot instance gets a randomly created GUID.
-  std::string guid_;
 
   // Startup pages. URLs are always stored sorted.
   SessionStartupPref startup_;
@@ -128,21 +120,10 @@ class ResettableSettingsSnapshot {
 std::string SerializeSettingsReport(const ResettableSettingsSnapshot& snapshot,
                                     int field_mask);
 
-// Serializes specified |snapshot| members to a protobuf. |field_mask| is a bit
-// mask of ResettableSettingsSnapshot::Field values.
-scoped_ptr<reset_report::ChromeResetReport> SerializeSettingsReportToProto(
-    const ResettableSettingsSnapshot& snapshot,
-    int field_mask);
-
 // Sends |report| as a feedback. |report| is supposed to be result of
 // SerializeSettingsReport().
 void SendSettingsFeedback(const std::string& report,
                           Profile* profile);
-
-// Sends |report| as a feedback. |report| is supposed to be result of
-// SerializeSettingsReportToProto().
-void SendSettingsFeedbackProto(const reset_report::ChromeResetReport& report,
-                               Profile* profile);
 
 // Returns list of key/value pairs for all available reported information
 // from the |profile| and some additional fields.

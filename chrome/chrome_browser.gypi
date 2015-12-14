@@ -1286,10 +1286,6 @@
       'browser/profile_resetter/brandcoded_default_settings.h',
       'browser/profile_resetter/profile_resetter.cc',
       'browser/profile_resetter/profile_resetter.h',
-      'browser/profile_resetter/reset_report_uploader.cc',
-      'browser/profile_resetter/reset_report_uploader.h',
-      'browser/profile_resetter/reset_report_uploader_factory.cc',
-      'browser/profile_resetter/reset_report_uploader_factory.h',
       'browser/profile_resetter/resettable_settings_snapshot.cc',
       'browser/profile_resetter/resettable_settings_snapshot.h',
       'browser/profile_resetter/triggered_profile_resetter.cc',
@@ -3701,7 +3697,6 @@
           'dependencies': [
             '../components/components.gyp:feedback_component',
             '../net/net.gyp:net_browser_services',
-            'profile_reset_report_proto',
           ]
         }],
         ['OS=="android"', {
@@ -3992,19 +3987,6 @@
         'proto_out_dir': 'chrome/browser/safe_browsing/incident_reporting',
       },
       'includes': [ '../build/protoc.gypi' ],
-    },
-    {
-      # Protobuf compiler / generator for reset reports
-      # protocol buffer.
-      # GN version: //chrome/browser/profile_resetter:profile_reset_report_proto
-      'target_name': 'profile_reset_report_proto',
-      'type': 'static_library',
-      'sources': [ 'browser/profile_resetter/profile_reset_report.proto' ],
-      'variables': {
-        'proto_in_dir': 'browser/profile_resetter',
-        'proto_out_dir': 'chrome/browser/profile_resetter',
-      },
-      'includes': [ '../build/protoc.gypi' ]
     },
   ],
   'conditions': [

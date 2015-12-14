@@ -15,7 +15,6 @@
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profile_resetter/brandcode_config_fetcher.h"
-#include "chrome/browser/profile_resetter/profile_reset_report.pb.h"
 #include "chrome/browser/profile_resetter/profile_resetter_test_base.h"
 #include "chrome/browser/profile_resetter/resettable_settings_snapshot.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -979,59 +978,6 @@ TEST_F(ProfileResetterTest, FeedbackSerializationTest) {
               dict->GetList("enabled_extensions", &extensions));
     EXPECT_EQ(!!(field_mask & ResettableSettingsSnapshot::SHORTCUTS),
               dict->GetList("shortcuts", &shortcuts));
-  }
-}
-
-TEST_F(ProfileResetterTest, FeedbackSerializationAsProtoTest) {
-  // Reset to non organic defaults.
-  ResetAndWait(ProfileResetter::DEFAULT_SEARCH_ENGINE |
-               ProfileResetter::HOMEPAGE |
-               ProfileResetter::STARTUP_PAGES,
-               kDistributionConfig);
-
-  scoped_refptr<Extension> ext = CreateExtension(
-      base::ASCIIToUTF16("example"),
-      base::FilePath(FILE_PATH_LITERAL("//nonexistent")),
-      Manifest::INVALID_LOCATION,
-      extensions::Manifest::TYPE_EXTENSION,
-      false);
-  ASSERT_TRUE(ext.get());
-  service_->AddExtension(ext.get());
-
-  ShortcutHandler shortcut;
-  ShortcutCommand command_line = shortcut.CreateWithArguments(
-      base::ASCIIToUTF16("chrome.lnk"),
-      base::ASCIIToUTF16("--profile-directory=Default foo.com"));
-
-  ResettableSettingsSnapshot nonorganic_snap(profile());
-  nonorganic_snap.RequestShortcuts(base::Closure());
-  // Let it enumerate shortcuts on the FILE thread.
-  base::MessageLoop::current()->RunUntilIdle();
-
-  static_assert(ResettableSettingsSnapshot::ALL_FIELDS == 31,
-                "this test needs to be expanded");
-  for (int field_mask = 0; field_mask <= ResettableSettingsSnapshot::ALL_FIELDS;
-       ++field_mask) {
-    scoped_ptr<reset_report::ChromeResetReport> report =
-        SerializeSettingsReportToProto(nonorganic_snap, field_mask);
-
-    EXPECT_EQ(!!(field_mask & ResettableSettingsSnapshot::STARTUP_MODE),
-              report->startup_url_path_size() > 0);
-    EXPECT_EQ(!!(field_mask & ResettableSettingsSnapshot::STARTUP_MODE),
-              report->has_startup_type());
-    EXPECT_EQ(!!(field_mask & ResettableSettingsSnapshot::HOMEPAGE),
-              report->has_homepage_path());
-    EXPECT_EQ(!!(field_mask & ResettableSettingsSnapshot::HOMEPAGE),
-              report->has_homepage_is_new_tab_page());
-    EXPECT_EQ(!!(field_mask & ResettableSettingsSnapshot::HOMEPAGE),
-              report->has_show_home_button());
-    EXPECT_EQ(!!(field_mask & ResettableSettingsSnapshot::DSE_URL),
-              report->has_default_search_engine_path());
-    EXPECT_EQ(!!(field_mask & ResettableSettingsSnapshot::EXTENSIONS),
-              report->enabled_extensions_size() > 0);
-    EXPECT_EQ(!!(field_mask & ResettableSettingsSnapshot::SHORTCUTS) &&
-                  ShortcutHandler::IsSupported(),
-              report->shortcuts_size() > 0);
   }
 }
 

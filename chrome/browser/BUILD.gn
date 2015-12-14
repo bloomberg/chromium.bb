@@ -736,10 +736,7 @@ source_set("browser") {
     sources += rebase_path(gypi_values.chrome_browser_non_mobile_sources,
                            ".",
                            "//chrome")
-    deps += [
-      "//chrome/browser/profile_resetter:profile_reset_report_proto",
-      "//components/feedback",
-    ]
+    deps += [ "//components/feedback" ]
   }
 
   if (!is_chrome_branded) {
