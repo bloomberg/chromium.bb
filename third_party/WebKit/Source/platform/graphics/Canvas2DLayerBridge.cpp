@@ -170,7 +170,7 @@ bool Canvas2DLayerBridge::shouldAccelerate(AccelerationHint hint) const
     else if (m_accelerationMode == DisableAcceleration)
         accelerate = false;
     else
-        accelerate = hint == PreferAcceleration;
+        accelerate = hint == PreferAcceleration || hint == PreferAccelerationAfterVisibilityChange;
 
     if (accelerate && (!m_contextProvider || m_contextProvider->context3d()->isContextLost()))
         accelerate = false;
@@ -251,8 +251,9 @@ SkSurface* Canvas2DLayerBridge::getOrCreateSurface(AccelerationHint hint)
     if (m_surface)
         return m_surface.get();
 
-    if (m_layer && !isHibernating())
+    if (m_layer && !isHibernating() && hint == PreferAcceleration) {
         return nullptr; // re-creation will happen through restore()
+    }
 
     bool wantAcceleration = shouldAccelerate(hint);
     bool surfaceIsAccelerated;
@@ -289,6 +290,9 @@ SkSurface* Canvas2DLayerBridge::getOrCreateSurface(AccelerationHint hint)
 
         if (m_imageBuffer)
             m_imageBuffer->updateGPUMemoryUsage();
+
+        if (m_imageBuffer && !m_isDeferralEnabled)
+            m_imageBuffer->resetCanvas(m_surface->getCanvas());
     }
     return m_surface.get();
 }
@@ -394,9 +398,12 @@ void Canvas2DLayerBridge::setIsHidden(bool hidden)
         copyPaint.setXfermodeMode(SkXfermode::kSrc_Mode);
         RefPtr<SkSurface> oldSurface = m_surface.release();
         m_softwareRenderingWhileHidden = false;
-        SkSurface* newSurface = getOrCreateSurface();
+        SkSurface* newSurface = getOrCreateSurface(PreferAccelerationAfterVisibilityChange);
         if (newSurface) {
             oldSurface->draw(newSurface->getCanvas(), 0, 0, &copyPaint);
+            if (m_imageBuffer && !m_isDeferralEnabled) {
+                m_imageBuffer->resetCanvas(m_surface->getCanvas());
+            }
         }
     }
     if (!isHidden() && isHibernating()) {

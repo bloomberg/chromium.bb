@@ -72,7 +72,7 @@ public:
     static PassOwnPtr<ImageBuffer> create(const IntSize&, OpacityMode = NonOpaque, ImageInitializationMode = InitializeImagePixels);
     static PassOwnPtr<ImageBuffer> create(PassOwnPtr<ImageBufferSurface>);
 
-    ~ImageBuffer();
+    virtual ~ImageBuffer();
 
     void setClient(ImageBufferClient* client) { m_client = client; }
 
@@ -90,8 +90,9 @@ public:
     void setFilterQuality(SkFilterQuality filterQuality) { m_surface->setFilterQuality(filterQuality); }
     void setIsHidden(bool hidden) { m_surface->setIsHidden(hidden); }
 
-    // Called by subclasses of ImageBufferSurface to install a new canvas object
-    void resetCanvas(SkCanvas*) const;
+    // Called by subclasses of ImageBufferSurface to install a new canvas object.
+    // Virtual for mocking
+    virtual void resetCanvas(SkCanvas*) const;
 
     SkCanvas* canvas() const;
     void disableDeferral() const;
@@ -135,9 +136,10 @@ public:
     static intptr_t getGlobalGPUMemoryUsage() { return s_globalGPUMemoryUsage; }
     intptr_t getGPUMemoryUsage() { return m_gpuMemoryUsage; }
 
-private:
+protected:
     ImageBuffer(PassOwnPtr<ImageBufferSurface>);
 
+private:
     enum SnapshotState {
         InitialSnapshotState,
         DidAcquireSnapshot,

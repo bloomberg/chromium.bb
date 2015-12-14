@@ -77,6 +77,9 @@ enum OpacityMode {
 
 enum AccelerationHint {
     PreferAcceleration,
+    // The PreferAccelerationAfterVisibilityChange hint suggests we should switch back to acceleration
+    // in the context of the canvas becoming visible again.
+    PreferAccelerationAfterVisibilityChange,
     PreferNoAcceleration,
 };
 
