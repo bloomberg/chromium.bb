@@ -10,6 +10,7 @@
 #include "tools/gn/ninja_build_writer.h"
 #include "tools/gn/ninja_toolchain_writer.h"
 #include "tools/gn/settings.h"
+#include "tools/gn/target.h"
 
 NinjaWriter::NinjaWriter(const BuildSettings* build_settings,
                          Builder* builder)
@@ -66,19 +67,26 @@ bool NinjaWriter::WriteToolchains(std::vector<const Settings*>* all_settings,
     return false;
   }
 
+  for (auto& i : categorized) {
+    // Sort targets so that they are in a deterministic order.
+    std::sort(i.second.begin(), i.second.end(),
+              [](const Target* a, const Target* b) {
+                return a->label() < b->label();
+              });
+  }
+
   Label default_label = builder_->loader()->GetDefaultToolchain();
 
   // Write out the toolchain buildfiles, and also accumulate the set of
   // all settings and find the list of targets in the default toolchain.
-  for (CategorizedMap::const_iterator i = categorized.begin();
-       i != categorized.end(); ++i) {
+  for (const auto& i : categorized) {
     const Settings* settings =
-        builder_->loader()->GetToolchainSettings(i->first);
-    const Toolchain* toolchain = builder_->GetToolchain(i->first);
+        builder_->loader()->GetToolchainSettings(i.first);
+    const Toolchain* toolchain = builder_->GetToolchain(i.first);
 
     all_settings->push_back(settings);
-    if (!NinjaToolchainWriter::RunAndWriteFile(settings, toolchain,
-                                               i->second)) {
+
+    if (!NinjaToolchainWriter::RunAndWriteFile(settings, toolchain, i.second)) {
       Err(Location(),
           "Couldn't open toolchain buildfile(s) for writing").PrintToStdout();
       return false;

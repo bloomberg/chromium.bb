@@ -207,26 +207,42 @@ OutputFile NinjaTargetWriter::WriteInputDepsStampAndGetDep(
   }
 
   // The different souces of input deps may duplicate some targets, so uniquify
-  // them (ordering doesn't matter for this case).
-  std::set<const Target*> unique_deps;
+  // them. These are sorted so the generated files are deterministic.
+  std::vector<const Target*> sorted_deps;
 
   // Hard dependencies that are direct or indirect dependencies.
-  const std::set<const Target*>& hard_deps = target_->recursive_hard_deps();
-  for (const auto& dep : hard_deps)
-    unique_deps.insert(dep);
+  // These are large (up to 100s), hence why we check other
+  const std::set<const Target*>& hard_deps(target_->recursive_hard_deps());
 
-  // Extra hard dependencies passed in.
-  unique_deps.insert(extra_hard_deps.begin(), extra_hard_deps.end());
+  // Extra hard dependencies passed in. Note that these are usually empty/small.
+  for (const Target* target : extra_hard_deps) {
+    if (!hard_deps.count(target))
+      sorted_deps.push_back(target);
+  }
 
   // Toolchain dependencies. These must be resolved before doing anything.
-  // This just writs all toolchain deps for simplicity. If we find that
+  // This just writes all toolchain deps for simplicity. If we find that
   // toolchains often have more than one dependency, we could consider writing
   // a toolchain-specific stamp file and only include the stamp here.
+  // Note that these are usually empty/small.
   const LabelTargetVector& toolchain_deps = target_->toolchain()->deps();
-  for (const auto& toolchain_dep : toolchain_deps)
-    unique_deps.insert(toolchain_dep.ptr);
+  for (const auto& toolchain_dep : toolchain_deps) {
+    // This could theoretically duplicate dependencies already in the list,
+    // but shouldn't happen in practice, is inconvenient to check for,
+    // and only results in harmless redundant dependencies listed.
+    if (!hard_deps.count(toolchain_dep.ptr))
+      sorted_deps.push_back(toolchain_dep.ptr);
+  }
 
-  for (const auto& dep : unique_deps) {
+  for (const Target* target : hard_deps) {
+    sorted_deps.push_back(target);
+  }
+
+  std::sort(
+      sorted_deps.begin(), sorted_deps.end(),
+      [](const Target* a, const Target* b) { return a->label() < b->label(); });
+
+  for (const auto& dep : sorted_deps) {
     DCHECK(!dep->dependency_output_file().value().empty());
     out_ << " ";
     path_output_.WriteFile(out_, dep->dependency_output_file());

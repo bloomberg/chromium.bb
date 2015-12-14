@@ -215,12 +215,16 @@ void NinjaBuildWriter::WriteNinjaRules() {
   dep_out_ << "build.ninja:";
   std::vector<base::FilePath> input_files;
   g_scheduler->input_file_manager()->GetAllPhysicalInputFileNames(&input_files);
-  for (const auto& input_file : input_files)
-    dep_out_ << " " << FilePathToUTF8(input_file);
 
   // Other files read by the build.
   std::vector<base::FilePath> other_files = g_scheduler->GetGenDependencies();
-  for (const auto& other_file : other_files)
+
+  // Sort the input files to order them deterministically.
+  // Additionally, remove duplicate filepaths that seem to creep in.
+  std::set<base::FilePath> fileset(input_files.begin(), input_files.end());
+  fileset.insert(other_files.begin(), other_files.end());
+
+  for (const auto& other_file : fileset)
     dep_out_ << " " << FilePathToUTF8(other_file);
 
   out_ << std::endl;
