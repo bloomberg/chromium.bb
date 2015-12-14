@@ -48,8 +48,8 @@ include_rules = [
   "+components/rlz",
   "+components/search",
   "+components/search_engines",
+  "+components/security_interstitials",
   "+components/sessions",
-  "-components/sessions/content",
   "+components/signin/core/browser",
   "+components/signin/core/common",
   "+components/signin/ios/browser",
@@ -83,6 +83,7 @@ include_rules = [
 
   # Those depend on //content; exclude them.
   "-components/metrics/gpu",
+  "-components/sessions/content",
 
   # For tests.
   "+ios/chrome/test",
