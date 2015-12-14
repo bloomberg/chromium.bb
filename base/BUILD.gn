@@ -1564,16 +1564,10 @@ test("base_unittests") {
   if (is_linux) {
     sources -= [ "file_version_info_unittest.cc" ]
     sources += [ "nix/xdg_util_unittest.cc" ]
-
     deps += [ "//base/test:malloc_wrapper" ]
 
     if (use_glib) {
       configs += [ "//build/config/linux:glib" ]
-    }
-
-    if (!is_component_build) {
-      # Set rpath to find libmalloc_wrapper.so even in a non-component build.
-      configs += [ "//build/config/gcc:rpath_for_built_shared_libraries" ]
     }
   }
 
