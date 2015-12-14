@@ -142,6 +142,16 @@ public class MediaSessionTabHelper {
         }
 
         @Override
+        public void onTitleUpdated(Tab tab) {
+            assert tab == mTab;
+            if (mNotificationInfoBuilder == null) return;
+
+            mNotificationInfoBuilder.setTitle(sanitizeMediaTitle(mTab.getTitle()));
+            MediaNotificationManager.show(ApplicationStatus.getApplicationContext(),
+                    mNotificationInfoBuilder.build());
+        }
+
+        @Override
         public void onDestroyed(Tab tab) {
             assert mTab == tab;
 

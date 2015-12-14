@@ -327,6 +327,14 @@ public class MediaNotificationManager {
         return getManager(notificationId) != null;
     }
 
+    @VisibleForTesting
+    @Nullable
+    protected static MediaNotificationInfo getNotificationInfoForTesting(int notificationId) {
+        MediaNotificationManager manager = getManager(notificationId);
+        if (manager == null) return null;
+        return manager.mMediaNotificationInfo;
+    }
+
     private final Context mContext;
 
     // ListenerService running for the notification. Only non-null when showing.

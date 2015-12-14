@@ -7,6 +7,7 @@ package org.chromium.content.browser.webcontents;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ObserverList.RewindableIterator;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.MainDex;
@@ -59,6 +60,14 @@ class WebContentsObserverProxy extends WebContentsObserver {
      */
     boolean hasObservers() {
         return !mObservers.isEmpty();
+    }
+
+    /**
+     * @return The list of proxied observers.
+     */
+    @VisibleForTesting
+    public ObserverList.RewindableIterator<WebContentsObserver> getObserversForTesting() {
+        return mObservers.rewindableIterator();
     }
 
     @Override
