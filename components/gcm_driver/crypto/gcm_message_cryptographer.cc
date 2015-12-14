@@ -87,7 +87,7 @@ GCMMessageCryptographer::GCMMessageCryptographer(
 GCMMessageCryptographer::~GCMMessageCryptographer() {}
 
 bool GCMMessageCryptographer::Encrypt(const base::StringPiece& plaintext,
-                                      const base::StringPiece& key,
+                                      const base::StringPiece& ikm,
                                       const base::StringPiece& salt,
                                       size_t* record_size,
                                       std::string* ciphertext) const {
@@ -97,10 +97,10 @@ bool GCMMessageCryptographer::Encrypt(const base::StringPiece& plaintext,
   if (salt.size() != kSaltSize)
     return false;
 
-  std::string ikm = DeriveInputKeyingMaterial(key);
+  std::string prk = DerivePseudoRandomKey(ikm);
 
-  std::string content_encryption_key = DeriveContentEncryptionKey(ikm, salt);
-  std::string nonce = DeriveNonce(ikm, salt);
+  std::string content_encryption_key = DeriveContentEncryptionKey(prk, salt);
+  std::string nonce = DeriveNonce(prk, salt);
 
   // draft-thomson-http-encryption allows between 0 and 255 octets of padding to
   // be inserted before the enciphered content, with the length of the padding
@@ -126,7 +126,7 @@ bool GCMMessageCryptographer::Encrypt(const base::StringPiece& plaintext,
 }
 
 bool GCMMessageCryptographer::Decrypt(const base::StringPiece& ciphertext,
-                                      const base::StringPiece& key,
+                                      const base::StringPiece& ikm,
                                       const base::StringPiece& salt,
                                       size_t record_size,
                                       std::string* plaintext) const {
@@ -144,10 +144,10 @@ bool GCMMessageCryptographer::Decrypt(const base::StringPiece& ciphertext,
     return false;
   }
 
-  std::string ikm = DeriveInputKeyingMaterial(key);
+  std::string prk = DerivePseudoRandomKey(ikm);
 
-  std::string content_encryption_key = DeriveContentEncryptionKey(ikm, salt);
-  std::string nonce = DeriveNonce(ikm, salt);
+  std::string content_encryption_key = DeriveContentEncryptionKey(prk, salt);
+  std::string nonce = DeriveNonce(prk, salt);
 
   std::string decrypted_record;
   if (!EncryptDecryptRecordInternal(DECRYPT, ciphertext, content_encryption_key,
@@ -178,15 +178,18 @@ bool GCMMessageCryptographer::Decrypt(const base::StringPiece& ciphertext,
   return true;
 }
 
-std::string GCMMessageCryptographer::DeriveInputKeyingMaterial(
-    const base::StringPiece& key) const {
+std::string GCMMessageCryptographer::DerivePseudoRandomKey(
+    const base::StringPiece& ikm) const {
   if (allow_empty_auth_secret_for_tests_ && auth_secret_.empty())
-    return key.as_string();
+    return ikm.as_string();
 
   CHECK(!auth_secret_.empty());
 
-  crypto::HKDF hkdf(key, auth_secret_,
-                    "Content-Encoding: auth",
+  std::stringstream info_stream;
+  info_stream << "Content-Encoding: auth" << '\x00';
+
+  crypto::HKDF hkdf(ikm, auth_secret_,
+                    info_stream.str(),
                     32, /* key_bytes_to_generate */
                     0,  /* iv_bytes_to_generate */
                     0   /* subkey_secret_bytes_to_generate */);
@@ -195,9 +198,9 @@ std::string GCMMessageCryptographer::DeriveInputKeyingMaterial(
 }
 
 std::string GCMMessageCryptographer::DeriveContentEncryptionKey(
-    const base::StringPiece& key,
+    const base::StringPiece& prk,
     const base::StringPiece& salt) const {
-  crypto::HKDF hkdf(key, salt,
+  crypto::HKDF hkdf(prk, salt,
                     content_encryption_key_info_,
                     kContentEncryptionKeySize,
                     0,  /* iv_bytes_to_generate */
@@ -207,9 +210,9 @@ std::string GCMMessageCryptographer::DeriveContentEncryptionKey(
 }
 
 std::string GCMMessageCryptographer::DeriveNonce(
-    const base::StringPiece& key,
+    const base::StringPiece& prk,
     const base::StringPiece& salt) const {
-  crypto::HKDF hkdf(key, salt,
+  crypto::HKDF hkdf(prk, salt,
                     nonce_info_,
                     kNonceSize,
                     0,  /* iv_bytes_to_generate */

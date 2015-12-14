@@ -50,14 +50,14 @@ const TestVector kEncryptionTestVectors[] = {
     "AhA6n2oFYPWIh-cXwyv1m2C0JvmjHB4ZkXj8QylESXU",
     "tsJYqAGvFDk6lDEv7daecw",
     4096,
-    "NFivl-fJJkKHJPvHlDM3P6SHyBdmr5Caqxm1m-Is"
+    "x9jT8FN0cy3GX906plTF_K52znY5ZMo0lqMEN90c"
    },
    // Empty message.
    { "",
     "lMyvTong4VR053jfCpWmMDGW5dEDAqiTZUIU-inhTjU",
     "wH3uvZqcN6oey9whiGpn1A",
     4096,
-    "Pnoyj0pZJ0daULfQFPWUlBA"
+    "KNXWPR0Sx1jc3NW4JDPQKlw"
    },
    // Message with an invalid salt size.
    { "Hello, world!",
@@ -70,21 +70,21 @@ const TestVector kEncryptionTestVectors[] = {
 
 const TestVector kDecryptionTestVectors[] = {
   // Simple message.
-  { "o7t04QCaL2YHs_UQWqJo_4RZ8rnLCJsoQeAGbvVv",
+  { "lqMcX_o8HrRu3v9F9w4Cwk_fCiYmmTRCcatQdpQk",
     "47ZytAw9qHlm-Q8g-7rH81rUPzaCgGcoFvlS1qxQtQk",
     "EuR7EVetcaWpndXd_dKeyA",
     4096,
     "Hello, world!"
    },
    // Simple message with 16 bytes of padding.
-   { "mCKryg4tyVSkEM5B5fmV8FzTcMvzB3a8PRii3SY3uM8nXOc4yLpB0XgXjnDKbw",
+   { "2sdvDvwlda33AMQEjtTdPqfb0RINM710Pabe_zQ3H8DO4ca5P7iy6Xh_9ZOqXQ",
      "MYSsNybwrTzRIzQYUq_yFPc6ugcTrJdEZJDM4NswvUg",
      "8sEAMQYnufo2UkKl80cUGQ",
      4096,
      "Hello, world!"
    },
    // Empty message.
-   { "k27iDM90-Jmc6q5Eb9Nx2IM",
+   { "Px1lQsFDdDrTomks7GYRvts",
      "S3-Ki_-XtzR66gUp_zR75CC5JXO62pyr5fWfneTYwFE",
      "4RM6s19jJHdmqiVEJDp9jg",
      4096,
@@ -223,10 +223,10 @@ TEST_F(GCMMessageCryptographerTest, InvalidRecordPadding) {
 
   const std::string salt = GenerateRandomSalt();
 
-  const std::string ikm = cryptographer()->DeriveInputKeyingMaterial(key());
-  const std::string nonce = cryptographer()->DeriveNonce(ikm, salt);
+  const std::string prk = cryptographer()->DerivePseudoRandomKey(key());
+  const std::string nonce = cryptographer()->DeriveNonce(prk, salt);
   const std::string content_encryption_key =
-      cryptographer()->DeriveContentEncryptionKey(ikm, salt);
+      cryptographer()->DeriveContentEncryptionKey(prk, salt);
 
   ASSERT_GT(message.size(), 1u);
   const size_t record_size = message.size() + 1;
@@ -334,7 +334,7 @@ TEST_F(GCMMessageCryptographerTest, AuthSecretAffectsIKM) {
       kLocalPublicKeyCommon, base::Base64UrlDecodePolicy::IGNORE_PADDING,
       &public_key));
 
-  // Fake IKM to use in the DeriveInputKeyingMaterial calls.
+  // Fake IKM to use in the DerivePseudoRandomKey calls.
   const char kFakeIKM[] = "HelloWorld";
 
   GCMMessageCryptographer hello_cryptographer(
@@ -343,11 +343,11 @@ TEST_F(GCMMessageCryptographerTest, AuthSecretAffectsIKM) {
   GCMMessageCryptographer world_cryptographer(
       GCMMessageCryptographer::Label::P256, public_key, public_key, "World");
 
-  ASSERT_NE(hello_cryptographer.DeriveInputKeyingMaterial(kFakeIKM), kFakeIKM);
-  ASSERT_NE(world_cryptographer.DeriveInputKeyingMaterial(kFakeIKM), kFakeIKM);
+  ASSERT_NE(hello_cryptographer.DerivePseudoRandomKey(kFakeIKM), kFakeIKM);
+  ASSERT_NE(world_cryptographer.DerivePseudoRandomKey(kFakeIKM), kFakeIKM);
 
-  ASSERT_NE(hello_cryptographer.DeriveInputKeyingMaterial(kFakeIKM),
-            world_cryptographer.DeriveInputKeyingMaterial(kFakeIKM));
+  ASSERT_NE(hello_cryptographer.DerivePseudoRandomKey(kFakeIKM),
+            world_cryptographer.DerivePseudoRandomKey(kFakeIKM));
 
   std::string salt = GenerateRandomSalt();
 
