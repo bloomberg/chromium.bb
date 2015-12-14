@@ -651,21 +651,11 @@ upconvert:
     return newImpl.release();
 }
 
-ALWAYS_INLINE static bool startsWithIgnoringCase(const StringImpl* stringImpl, const LChar* prefix, unsigned prefixLength)
-{
-    ASSERT(stringImpl);
-    if (prefixLength > stringImpl->length())
-        return false;
-    if (stringImpl->is8Bit())
-        return equalIgnoringCase(stringImpl->characters8(), prefix, prefixLength);
-    return equalIgnoringCase(stringImpl->characters16(), prefix, prefixLength);
-}
-
 static inline bool localeIdMatchesLang(const AtomicString& localeId, const char* lang)
 {
     size_t langLength = strlen(lang);
     RELEASE_ASSERT(langLength >= 2 && langLength <= 3);
-    if (!localeId.impl() || !startsWithIgnoringCase(localeId.impl(), reinterpret_cast<const LChar*>(lang), langLength))
+    if (!localeId.impl() || !localeId.impl()->startsWithIgnoringCase(lang, langLength))
         return false;
     if (localeId.impl()->length() == langLength)
         return true;
@@ -1470,7 +1460,7 @@ size_t StringImpl::reverseFind(StringImpl* matchString, unsigned index)
     return reverseFindInner(characters16(), matchString->characters16(), index, ourLength, matchLength);
 }
 
-ALWAYS_INLINE static bool equalInner(const StringImpl* stringImpl, unsigned startOffset, const LChar* matchString, unsigned matchLength)
+ALWAYS_INLINE static bool equalSubstring(const StringImpl* stringImpl, unsigned startOffset, const LChar* matchString, unsigned matchLength)
 {
     ASSERT(stringImpl);
     ASSERT(matchLength <= stringImpl->length());
@@ -1486,12 +1476,12 @@ bool StringImpl::startsWith(UChar character) const
     return m_length && (*this)[0] == character;
 }
 
-bool StringImpl::startsWith(const char* matchString, unsigned matchLength) const
+bool StringImpl::startsWith(const char* prefixString, unsigned prefixLength) const
 {
-    ASSERT(matchLength);
-    if (matchLength > length())
+    ASSERT(prefixLength);
+    if (prefixLength > length())
         return false;
-    return equalInner(this, 0, reinterpret_cast<const LChar*>(matchString), matchLength);
+    return equalSubstring(this, 0, reinterpret_cast<const LChar*>(prefixString), prefixLength);
 }
 
 ALWAYS_INLINE static bool equalSubstring(const StringImpl* stringImpl, unsigned startOffset, const StringImpl* matchString)
@@ -1502,16 +1492,11 @@ ALWAYS_INLINE static bool equalSubstring(const StringImpl* stringImpl, unsigned 
     ASSERT(startOffset + matchString->length() <= stringImpl->length());
 
     unsigned matchLength = matchString->length();
-    if (stringImpl->is8Bit()) {
-        const LChar* start = stringImpl->characters8() + startOffset;
-        if (matchString->is8Bit())
-            return equal(start, matchString->characters8(), matchLength);
-        return equal(start, matchString->characters16(), matchLength);
-    }
-    const UChar* start = stringImpl->characters16() + startOffset;
     if (matchString->is8Bit())
-        return equal(start, matchString->characters8(), matchLength);
-    return equal(start, matchString->characters16(), matchLength);
+        return equalSubstring(stringImpl, startOffset, matchString->characters8(), matchLength);
+    if (stringImpl->is8Bit())
+        return equal(stringImpl->characters8() + startOffset, matchString->characters16(), matchLength);
+    return equal(stringImpl->characters16() + startOffset, matchString->characters16(), matchLength);
 }
 
 bool StringImpl::startsWith(const StringImpl* prefix) const
@@ -1522,6 +1507,25 @@ bool StringImpl::startsWith(const StringImpl* prefix) const
     return equalSubstring(this, 0, prefix);
 }
 
+ALWAYS_INLINE static bool equalSubstringIgnoringCase(const StringImpl* stringImpl, unsigned startOffset, const LChar* matchString, unsigned matchLength)
+{
+    ASSERT(stringImpl);
+    ASSERT(matchLength <= stringImpl->length());
+    ASSERT(startOffset + matchLength <= stringImpl->length());
+
+    if (stringImpl->is8Bit())
+        return equalIgnoringCase(stringImpl->characters8() + startOffset, matchString, matchLength);
+    return equalIgnoringCase(stringImpl->characters16() + startOffset, matchString, matchLength);
+}
+
+bool StringImpl::startsWithIgnoringCase(const char* prefixString, unsigned prefixLength) const
+{
+    ASSERT(prefixLength);
+    if (prefixLength > length())
+        return false;
+    return equalSubstringIgnoringCase(this, 0, reinterpret_cast<const LChar*>(prefixString), prefixLength);
+}
+
 ALWAYS_INLINE static bool equalSubstringIgnoringCase(const StringImpl* stringImpl, unsigned startOffset, const StringImpl* matchString)
 {
     ASSERT(stringImpl);
@@ -1530,16 +1534,11 @@ ALWAYS_INLINE static bool equalSubstringIgnoringCase(const StringImpl* stringImp
     ASSERT(startOffset + matchString->length() <= stringImpl->length());
 
     unsigned matchLength = matchString->length();
-    if (stringImpl->is8Bit()) {
-        const LChar* start = stringImpl->characters8() + startOffset;
-        if (matchString->is8Bit())
-            return equalIgnoringCase(start, matchString->characters8(), matchLength);
-        return equalIgnoringCase(start, matchString->characters16(), matchLength);
-    }
-    const UChar* start = stringImpl->characters16() + startOffset;
     if (matchString->is8Bit())
-        return equalIgnoringCase(start, matchString->characters8(), matchLength);
-    return equalIgnoringCase(start, matchString->characters16(), matchLength);
+        return equalSubstringIgnoringCase(stringImpl, startOffset, matchString->characters8(), matchLength);
+    if (stringImpl->is8Bit())
+        return equalIgnoringCase(stringImpl->characters8() + startOffset, matchString->characters16(), matchLength);
+    return equalIgnoringCase(stringImpl->characters16() + startOffset, matchString->characters16(), matchLength);
 }
 
 bool StringImpl::startsWithIgnoringCase(const StringImpl* prefix) const
@@ -1550,6 +1549,25 @@ bool StringImpl::startsWithIgnoringCase(const StringImpl* prefix) const
     return equalSubstringIgnoringCase(this, 0, prefix);
 }
 
+ALWAYS_INLINE static bool equalSubstringIgnoringASCIICase(const StringImpl* stringImpl, unsigned startOffset, const LChar* matchString, unsigned matchLength)
+{
+    ASSERT(stringImpl);
+    ASSERT(matchLength <= stringImpl->length());
+    ASSERT(startOffset + matchLength <= stringImpl->length());
+
+    if (stringImpl->is8Bit())
+        return equalIgnoringASCIICase(stringImpl->characters8() + startOffset, matchString, matchLength);
+    return equalIgnoringASCIICase(stringImpl->characters16() + startOffset, matchString, matchLength);
+}
+
+bool StringImpl::startsWithIgnoringASCIICase(const char* prefixString, unsigned prefixLength) const
+{
+    ASSERT(prefixLength);
+    if (prefixLength > length())
+        return false;
+    return equalSubstringIgnoringASCIICase(this, 0, reinterpret_cast<const LChar*>(prefixString), prefixLength);
+}
+
 ALWAYS_INLINE static bool equalSubstringIgnoringASCIICase(const StringImpl* stringImpl, unsigned startOffset, const StringImpl* matchString)
 {
     ASSERT(stringImpl);
@@ -1558,16 +1576,11 @@ ALWAYS_INLINE static bool equalSubstringIgnoringASCIICase(const StringImpl* stri
     ASSERT(startOffset + matchString->length() <= stringImpl->length());
 
     unsigned matchLength = matchString->length();
-    if (stringImpl->is8Bit()) {
-        const LChar* start = stringImpl->characters8() + startOffset;
-        if (matchString->is8Bit())
-            return equalIgnoringASCIICase(start, matchString->characters8(), matchLength);
-        return equalIgnoringASCIICase(start, matchString->characters16(), matchLength);
-    }
-    const UChar* start = stringImpl->characters16() + startOffset;
     if (matchString->is8Bit())
-        return equalIgnoringASCIICase(start, matchString->characters8(), matchLength);
-    return equalIgnoringASCIICase(start, matchString->characters16(), matchLength);
+        return equalSubstringIgnoringASCIICase(stringImpl, startOffset, matchString->characters8(), matchLength);
+    if (stringImpl->is8Bit())
+        return equalIgnoringASCIICase(stringImpl->characters8() + startOffset, matchString->characters16(), matchLength);
+    return equalIgnoringASCIICase(stringImpl->characters16() + startOffset, matchString->characters16(), matchLength);
 }
 
 bool StringImpl::startsWithIgnoringASCIICase(const StringImpl* prefix) const
@@ -1583,12 +1596,12 @@ bool StringImpl::endsWith(UChar character) const
     return m_length && (*this)[m_length - 1] == character;
 }
 
-bool StringImpl::endsWith(const char* matchString, unsigned matchLength) const
+bool StringImpl::endsWith(const char* suffixString, unsigned suffixLength) const
 {
-    ASSERT(matchLength);
-    if (matchLength > length())
+    ASSERT(suffixLength);
+    if (suffixLength > length())
         return false;
-    return equalInner(this, length() - matchLength, reinterpret_cast<const LChar*>(matchString), matchLength);
+    return equalSubstring(this, length() - suffixLength, reinterpret_cast<const LChar*>(suffixString), suffixLength);
 }
 
 bool StringImpl::endsWith(const StringImpl* suffix) const
@@ -1600,6 +1613,14 @@ bool StringImpl::endsWith(const StringImpl* suffix) const
     return equalSubstring(this, length() - suffixLength, suffix);
 }
 
+bool StringImpl::endsWithIgnoringCase(const char* suffixString, unsigned suffixLength) const
+{
+    ASSERT(suffixLength);
+    if (suffixLength > length())
+        return false;
+    return equalSubstringIgnoringCase(this, length() - suffixLength, reinterpret_cast<const LChar*>(suffixString), suffixLength);
+}
+
 bool StringImpl::endsWithIgnoringCase(const StringImpl* suffix) const
 {
     ASSERT(suffix);
@@ -1607,6 +1628,14 @@ bool StringImpl::endsWithIgnoringCase(const StringImpl* suffix) const
     if (suffixLength > length())
         return false;
     return equalSubstringIgnoringCase(this, length() - suffixLength, suffix);
+}
+
+bool StringImpl::endsWithIgnoringASCIICase(const char* suffixString, unsigned suffixLength) const
+{
+    ASSERT(suffixLength);
+    if (suffixLength > length())
+        return false;
+    return equalSubstringIgnoringASCIICase(this, length() - suffixLength, reinterpret_cast<const LChar*>(suffixString), suffixLength);
 }
 
 bool StringImpl::endsWithIgnoringASCIICase(const StringImpl* suffix) const

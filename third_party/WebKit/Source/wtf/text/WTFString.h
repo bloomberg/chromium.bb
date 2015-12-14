@@ -270,16 +270,16 @@ public:
     bool startsWith(UChar character) const
         { return m_impl ? m_impl->startsWith(character) : false; }
     template<unsigned matchLength>
-    bool startsWith(const char (&prefix)[matchLength]) const
-        { return m_impl ? m_impl->startsWith(prefix, matchLength - 1) : !matchLength; }
+    bool startsWith(const char (&prefix)[matchLength], TextCaseSensitivity caseSensitivity = TextCaseSensitive) const
+        { return m_impl ? DISPATCH_CASE_OP(caseSensitivity, m_impl->startsWith, (prefix, matchLength - 1)) : !matchLength; }
 
     bool endsWith(const String& s, TextCaseSensitivity caseSensitivity = TextCaseSensitive) const
         { return m_impl ? DISPATCH_CASE_OP(caseSensitivity, m_impl->endsWith, (s.impl())) : s.isEmpty(); }
     bool endsWith(UChar character) const
         { return m_impl ? m_impl->endsWith(character) : false; }
     template<unsigned matchLength>
-    bool endsWith(const char (&prefix)[matchLength]) const
-        { return m_impl ? m_impl->endsWith(prefix, matchLength - 1) : !matchLength; }
+    bool endsWith(const char (&prefix)[matchLength], TextCaseSensitivity caseSensitivity = TextCaseSensitive) const
+        { return m_impl ? DISPATCH_CASE_OP(caseSensitivity, m_impl->endsWith, (prefix, matchLength - 1)) : !matchLength; }
 
     void append(const String&);
     void append(LChar);

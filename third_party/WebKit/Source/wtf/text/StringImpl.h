@@ -384,15 +384,19 @@ public:
     size_t count(LChar) const;
 
     bool startsWith(UChar) const;
-    bool startsWith(const char*, unsigned matchLength) const;
+    bool startsWith(const char*, unsigned prefixLength) const;
     bool startsWith(const StringImpl*) const;
+    bool startsWithIgnoringCase(const char*, unsigned prefixLength) const;
     bool startsWithIgnoringCase(const StringImpl*) const;
+    bool startsWithIgnoringASCIICase(const char*, unsigned prefixLength) const;
     bool startsWithIgnoringASCIICase(const StringImpl*) const;
 
     bool endsWith(UChar) const;
-    bool endsWith(const char*, unsigned matchLength) const;
+    bool endsWith(const char*, unsigned suffixLength) const;
     bool endsWith(const StringImpl*) const;
+    bool endsWithIgnoringCase(const char*, unsigned suffixLength) const;
     bool endsWithIgnoringCase(const StringImpl*) const;
+    bool endsWithIgnoringASCIICase(const char*, unsigned suffixLength) const;
     bool endsWithIgnoringASCIICase(const StringImpl*) const;
 
     PassRefPtr<StringImpl> replace(UChar, UChar);
