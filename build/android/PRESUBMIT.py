@@ -27,8 +27,8 @@ def CommonChecks(input_api, output_api):
       input_api,
       output_api,
       pylintrc='pylintrc',
-      # symbols has its own PRESUBMIT.py
-      black_list=build_pys + [r'pylib/symbols/.*\.py$'],
+      # devil and symbols have their own PRESUBMIT.py
+      black_list=build_pys + [r'devil/.*\.py$', r'pylib/symbols/.*\.py$'],
       extra_paths_list=[J(), J('buildbot')]))
   output.extend(input_api.canned_checks.RunPylint(
       input_api,
@@ -60,26 +60,6 @@ def CommonChecks(input_api, output_api):
       ],
       env=pylib_test_env))
 
-
-  devil_test_env = dict(pylib_test_env)
-  devil_test_env.update({
-      'DEVIL_ENV_CONFIG':
-          input_api.os_path.join(build_android_dir, 'devil_chromium.json')
-  })
-  output.extend(input_api.canned_checks.RunUnitTests(
-      input_api,
-      output_api,
-      unit_tests=[
-          J('devil', 'devil_env_test.py'),
-          J('devil', 'android', 'battery_utils_test.py'),
-          J('devil', 'android', 'device_utils_test.py'),
-          J('devil', 'android', 'fastboot_utils_test.py'),
-          J('devil', 'android', 'md5sum_test.py'),
-          J('devil', 'android', 'logcat_monitor_test.py'),
-          J('devil', 'utils', 'cmd_helper_test.py'),
-          J('devil', 'utils', 'timeout_retry_unittest.py'),
-      ],
-      env=devil_test_env))
   return output
 
 
