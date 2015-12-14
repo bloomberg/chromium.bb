@@ -8,7 +8,7 @@ waterfall up and running, and triaging performance test failures and flakes.
   * [Keeping the chromium.perf waterfall green](#chromiumperf)
      * [Handling Test Failures](#testfailures)
      * [Handling Device and Bot Failures](#botfailures)
-     * [Follow up on failures and keep state](#followup)
+     * [Follow up on failures](#followup)
   * [Triaging Data Stoppage Alerts](#datastoppage)
 
 ###<a name="chromiumperf"></a> Keeping the chromium.perf waterfall green
@@ -33,10 +33,7 @@ Note that there are four different views:
       it easier to see a summary.
    2. [Waterfall view](https://uberchromegw.corp.google.com/i/chromium.perf/waterfall)
       shows more details, including recent changes.
-   3. [Sheriff-o-Matic](https://sheriff-o-matic.appspot.com/chromium.perf)
-      attempts to group and summarize test failures with bug links. But it is
-      much more useful if all sheriffs use it.
-   4. [Firefighter](https://chromiumperfstats.appspot.com/) shows traces of
+   3. [Firefighter](https://chromiumperfstats.appspot.com/) shows traces of
       recent builds. It takes url parameter arguments:
       * **master** can be chromium.perf, tryserver.chromium.perf
       * **builder** can be a builder or tester name, like
@@ -46,9 +43,9 @@ Note that there are four different views:
 You can see a list of all previously filed bugs using the **[Performance-Waterfall](https://code.google.com/p/chromium/issues/list?can=2&q=label%3APerformance-Waterfall)**
 label in crbug.
 
-Please also check the **[perf status](https://docs.google.com/document/d/1kIMZ8jNA2--4JsCtUJ_OprnlfT6aM3BfHrQ8o4s3bDI/edit#)**
-doc and keep it up to date throughout your shift with known issues and ongoing
-problems.
+Please also check the recent
+**[perf-sheriffs@chromium.org](https://groups.google.com/a/chromium.org/forum/#!forum/perf-sheriffs)**
+postings for important announcements about bot turndowns and other known issues.
 
 ####<a name="testfailures"></a> Handling Test Failures
 
@@ -158,7 +155,7 @@ There are two types of device failures:
 For both types of failures, please file a bug with [this template](https://code.google.com/p/chromium/issues/entry?labels=Pri-1,Performance-Waterfall,Performance-Sheriff,Infra-Labs,OS-Android&comment=Link+to+buildbot+status+page:&summary=Device+offline+on+chromium.perf)
 which will add an issue to the infra labs queue.
 
-####<a name="followup"></a> Follow up on failures and keep state
+####<a name="followup"></a> Follow up on failures
 
 **[Pri-0 bugs](https://code.google.com/p/chromium/issues/list?can=2&q=label%3APerformance-Waterfall+label%3APri-0)**
 should have an owner or contact on speed infra team and be worked on as top
@@ -170,7 +167,8 @@ bugs are for a red test (not yet disabled), purple bot, or failing device.
 
 **[Pri-2 bugs](https://code.google.com/p/chromium/issues/list?can=2&q=label%3APerformance-Waterfall+label%3APri-2)**
 are for disabled tests. These should be pinged weekly, and work towards fixing
-should be ongoing when the sheriff is not working on a Pri-1 issue.
+should be ongoing when the sheriff is not working on a Pri-1 issue. Here is the
+[list of Pri-2 bugs that have not been pinged in a week](https://code.google.com/p/chromium/issues/list?can=2&q=label:Performance-Waterfall%20label:Pri-2%20modified-before:today-7&sort=modified)
 
 If you need help triaging, here are the common labels you should use:
    * **Performance-Waterfall** should go on all bugs you file about the bots,
