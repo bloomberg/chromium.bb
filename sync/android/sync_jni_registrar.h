@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNC_JNI_REGISTRAR_H_
-#define SYNC_JNI_REGISTRAR_H_
+#ifndef SYNC_ANDROID_SYNC_JNI_REGISTRAR_H_
+#define SYNC_ANDROID_SYNC_JNI_REGISTRAR_H_
 
 #include <jni.h>
 
@@ -15,4 +15,4 @@ SYNC_EXPORT bool RegisterSyncJni(JNIEnv* env);
 
 }
 
-#endif  // SYNC_JNI_REGISTRAR_H_
+#endif  // SYNC_ANDROID_SYNC_JNI_REGISTRAR_H_

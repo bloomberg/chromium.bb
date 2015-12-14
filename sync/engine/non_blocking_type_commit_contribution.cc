@@ -4,6 +4,8 @@
 
 #include "sync/engine/non_blocking_type_commit_contribution.h"
 
+#include <algorithm>
+
 #include "base/values.h"
 #include "sync/engine/model_type_worker.h"
 #include "sync/internal_api/public/non_blocking_sync_common.h"
@@ -116,4 +118,4 @@ size_t NonBlockingTypeCommitContribution::GetNumEntries() const {
   return sequence_numbers_.size();
 }
 
-}  // namespace syncer
+}  // namespace syncer_v2

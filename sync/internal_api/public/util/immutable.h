@@ -97,10 +97,11 @@ class ImmutableCore
   }
 
  private:
+  friend class base::RefCountedThreadSafe<ImmutableCore<T, Traits>>;
+
   ~ImmutableCore() {
     Traits::DestroyWrapper(&wrapper_);
   }
-  friend class base::RefCountedThreadSafe<ImmutableCore<T, Traits> >;
 
   // This is semantically const, but we can't mark it a such as we
   // modify it in the constructor.

@@ -45,6 +45,6 @@ class DirectoryCommitContributor : public CommitContributor {
   DISALLOW_COPY_AND_ASSIGN(DirectoryCommitContributor);
 };
 
-}  // namespace
+}  // namespace syncer
 
 #endif  // SYNC_ENGINE_DIRECTORY_COMMIT_CONTRIBUTOR_H_

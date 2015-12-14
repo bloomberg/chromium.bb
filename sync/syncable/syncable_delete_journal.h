@@ -28,8 +28,6 @@ typedef std::set<const EntryKernel*, LessField<IdField, ID> > JournalIndex;
 // method requires a non-null |trans| parameter.
 class SYNC_EXPORT DeleteJournal {
  public:
-  FRIEND_TEST_ALL_PREFIXES(SyncableDirectoryTest, ManageDeleteJournals);
-
   // Initialize |delete_journals_| using |intitial_journal|, whose content is
   // destroyed during initialization.
   explicit DeleteJournal(JournalIndex* initial_journal);
@@ -81,6 +79,8 @@ class SYNC_EXPORT DeleteJournal {
   static bool IsDeleteJournalEnabled(ModelType type);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(SyncableDirectoryTest, ManageDeleteJournals);
+
   // Contains deleted entries that may not be persisted in native models. And
   // in case of unrecoverable error, all purged entries are moved here for
   // bookkeeping to prevent back-from-dead entries that are deleted elsewhere

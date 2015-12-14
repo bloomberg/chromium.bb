@@ -29,9 +29,6 @@ class StatusController;
 }  // namespace sessions
 
 class ConflictResolver {
-  friend class SyncerTest;
-  FRIEND_TEST_ALL_PREFIXES(SyncerTest,
-                           ConflictResolverMergeOverwritesLocalEntry);
  public:
   // Enumeration of different conflict resolutions. Used for histogramming.
   enum SimpleConflictResolutions {
@@ -57,6 +54,10 @@ class ConflictResolver {
                         UpdateCounters* counters);
 
  private:
+  friend class SyncerTest;
+  FRIEND_TEST_ALL_PREFIXES(SyncerTest,
+                           ConflictResolverMergeOverwritesLocalEntry);
+
   void ProcessSimpleConflict(
       syncable::WriteTransaction* trans,
       const syncable::Id& id,

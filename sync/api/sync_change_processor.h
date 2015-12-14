@@ -5,6 +5,7 @@
 #ifndef SYNC_API_SYNC_CHANGE_PROCESSOR_H_
 #define SYNC_API_SYNC_CHANGE_PROCESSOR_H_
 
+#include <string>
 #include <vector>
 
 #include "sync/api/sync_data.h"
@@ -59,7 +60,7 @@ class SYNC_EXPORT SyncChangeProcessor {
   //
   // Refer to sync_data.h for a description of |sync_tag|.
   //
-  // TODO:(maniscalco): N.B. this method should really be pure virtual. An
+  // TODO(maniscalco): N.B. this method should really be pure virtual. An
   // implentation is provided here just to verify that everything compiles.
   // Update this method to be pure virtual (bug 353300).
   virtual void GetSyncData(const ModelType& type,

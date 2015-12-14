@@ -25,7 +25,7 @@ static bool RunSyncTest(
     const base::FilePath::StringType& sync_test_script_name) {
   scoped_ptr<syncer::LocalSyncTestServer> test_server(
       new syncer::LocalSyncTestServer());
- if (!test_server->SetPythonPath()) {
+  if (!test_server->SetPythonPath()) {
     LOG(ERROR) << "Error trying to set python path. Exiting.";
     return false;
   }

@@ -4,6 +4,10 @@
 
 #include "sync/test/fake_server/fake_server_verifier.h"
 
+#include <map>
+#include <set>
+#include <vector>
+
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"

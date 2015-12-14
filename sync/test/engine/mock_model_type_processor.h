@@ -5,6 +5,8 @@
 #ifndef SYNC_TEST_ENGINE_MOCK_MODEL_TYPE_PROCESSOR_H_
 #define SYNC_TEST_ENGINE_MOCK_MODEL_TYPE_PROCESSOR_H_
 
+#include <map>
+#include <string>
 #include <vector>
 
 #include "base/callback.h"
@@ -84,7 +86,6 @@ class MockModelTypeProcessor : public ModelTypeProcessor {
   CommitResponseData GetCommitResponse(const std::string& tag_hash) const;
 
  private:
-
   // Process a received commit response.
   //
   // Implemented as an Impl method so we can defer its execution in some cases.
@@ -136,6 +137,6 @@ class MockModelTypeProcessor : public ModelTypeProcessor {
   DISALLOW_COPY_AND_ASSIGN(MockModelTypeProcessor);
 };
 
-}  // namespace syncer
+}  // namespace syncer_v2
 
 #endif  // SYNC_TEST_ENGINE_MOCK_MODEL_TYPE_PROCESSOR_H_

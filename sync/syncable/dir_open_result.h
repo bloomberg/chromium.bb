@@ -7,16 +7,17 @@
 
 namespace syncer {
 namespace syncable {
-enum DirOpenResult { NOT_INITIALIZED,
-                     OPENED,   // success.
-                     FAILED_NEWER_VERSION,  // DB version is too new.
-                     FAILED_MAKE_REPOSITORY,  // Couldn't create subdir.
-                     FAILED_OPEN_DATABASE,  // sqlite_open() failed.
-                     FAILED_DISK_FULL,  // The disk is full.
-                     FAILED_DATABASE_CORRUPT,  // Something is wrong with the DB
-                     FAILED_LOGICAL_CORRUPTION, // Invalid database contents
-                     FAILED_IN_UNITTEST, // For tests.
-                     FAILED_INITIAL_WRITE,  // Early write to DB failed.
+enum DirOpenResult {
+  NOT_INITIALIZED,
+  OPENED,                     // success.
+  FAILED_NEWER_VERSION,       // DB version is too new.
+  FAILED_MAKE_REPOSITORY,     // Couldn't create subdir.
+  FAILED_OPEN_DATABASE,       // sqlite_open() failed.
+  FAILED_DISK_FULL,           // The disk is full.
+  FAILED_DATABASE_CORRUPT,    // Something is wrong with the DB
+  FAILED_LOGICAL_CORRUPTION,  // Invalid database contents
+  FAILED_IN_UNITTEST,         // For tests.
+  FAILED_INITIAL_WRITE,       // Early write to DB failed.
 };
 }  // namespace syncable
 }  // namespace syncer

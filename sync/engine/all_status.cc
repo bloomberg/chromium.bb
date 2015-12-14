@@ -164,7 +164,7 @@ void AllStatus::SetInvalidatorClientId(
 
 void AllStatus::IncrementNudgeCounter(NudgeSource source) {
   ScopedStatusLock lock(this);
-  switch(source) {
+  switch (source) {
     case NUDGE_SOURCE_LOCAL_REFRESH:
       status_.nudge_source_local_refresh++;
       return;

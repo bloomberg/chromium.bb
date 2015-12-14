@@ -83,14 +83,13 @@ class SYNC_EXPORT HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
   net::URLRequestContextGetter* GetRequestContextGetterForTest() const;
 
  protected:
-  friend class base::RefCountedThreadSafe<HttpBridge>;
-
   ~HttpBridge() override;
 
   // Protected virtual so the unit test can override to shunt network requests.
   virtual void MakeAsynchronousPost();
 
  private:
+  friend class base::RefCountedThreadSafe<HttpBridge>;
   friend class SyncHttpBridgeTest;
   friend class ::HttpBridgeTest;
 

@@ -88,7 +88,6 @@ TEST_F(ProtoEnumConversionsTest, GetErrorTypeString) {
       GetErrorTypeString,
       sync_pb::SyncEnums::UNKNOWN,
       sync_pb::SyncEnums::ErrorType_MAX);
-
 }
 
 TEST_F(ProtoEnumConversionsTest, GetActionString) {

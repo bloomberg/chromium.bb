@@ -4,6 +4,8 @@
 
 #include "sync/test/directory_backing_store_corruption_testing.h"
 
+#include <string>
+
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 
@@ -32,6 +34,6 @@ bool CorruptDatabase(const base::FilePath& backing_file_path) {
   return num_written == 1U;
 }
 
-}  // namespace corruption_util
+}  // namespace corruption_testing
 }  // namespace syncable
 }  // namespace syncer

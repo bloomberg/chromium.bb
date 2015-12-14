@@ -23,9 +23,9 @@ namespace syncer {
 
 namespace {
 
-const string kSyncTag = "3984729834";
+const char kSyncTag[] = "3984729834";
 const ModelType kDatatype = syncer::PREFERENCES;
-const string kNonUniqueTitle = "my preference";
+const char kNonUniqueTitle[] = "my preference";
 const int64 kId = 439829;
 const base::Time kLastModifiedTime = base::Time();
 

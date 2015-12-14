@@ -61,6 +61,6 @@ class NonBlockingTypeCommitContribution : public syncer::CommitContribution {
   DISALLOW_COPY_AND_ASSIGN(NonBlockingTypeCommitContribution);
 };
 
-}  // namespace syncer
+}  // namespace syncer_v2
 
 #endif  // SYNC_ENGINE_NON_BLOCKING_TYPE_COMMIT_CONTRIBUTION_H_

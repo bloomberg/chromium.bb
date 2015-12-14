@@ -24,7 +24,7 @@ namespace sessions {
 // A class to track the per-type scheduling data.
 class DataTypeTracker {
  public:
-  explicit DataTypeTracker();
+  DataTypeTracker();
   ~DataTypeTracker();
 
   // For STL compatibility, we do not forbid the creation of a default copy

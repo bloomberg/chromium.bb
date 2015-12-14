@@ -4,6 +4,8 @@
 
 #include "sync/engine/directory_update_handler.h"
 
+#include <vector>
+
 #include "sync/engine/conflict_resolver.h"
 #include "sync/engine/process_updates_util.h"
 #include "sync/engine/update_applicator.h"

@@ -5,6 +5,8 @@
 #ifndef SYNC_API_FAKE_SYNC_CHANGE_PROCESSOR_H_
 #define SYNC_API_FAKE_SYNC_CHANGE_PROCESSOR_H_
 
+#include <string>
+
 #include "sync/api/sync_change_processor.h"
 
 namespace syncer {

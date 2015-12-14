@@ -151,7 +151,7 @@ const char* GetUniquePositionFieldString(UniquePositionField position_field) {
   ASSERT_ENUM_BOUNDS(SERVER_UNIQUE_POSITION, UNIQUE_POSITION,
                      UNIQUE_POSITION_FIELDS_BEGIN,
                      UNIQUE_POSITION_FIELDS_END - 1);
-  switch(position_field) {
+  switch (position_field) {
     ENUM_CASE(SERVER_UNIQUE_POSITION);
     ENUM_CASE(UNIQUE_POSITION);
     case UNIQUE_POSITION_FIELDS_END: break;
@@ -166,7 +166,7 @@ const char* GetAttachmentMetadataFieldString(
                      SERVER_ATTACHMENT_METADATA,
                      ATTACHMENT_METADATA_FIELDS_BEGIN,
                      ATTACHMENT_METADATA_FIELDS_END - 1);
-  switch(attachment_metadata_field) {
+  switch (attachment_metadata_field) {
     ENUM_CASE(ATTACHMENT_METADATA);
     ENUM_CASE(SERVER_ATTACHMENT_METADATA);
     case ATTACHMENT_METADATA_FIELDS_END: break;

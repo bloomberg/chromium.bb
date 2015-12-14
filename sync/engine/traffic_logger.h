@@ -6,8 +6,8 @@
 // To get the log run a debug build of chrome with the flag
 // --vmodule=traffic_logger=1.
 
-#ifndef CHROME_BROWSER_SYNC_ENGINE_TRAFFIC_LOGGER_H_
-#define CHROME_BROWSER_SYNC_ENGINE_TRAFFIC_LOGGER_H_
+#ifndef SYNC_ENGINE_TRAFFIC_LOGGER_H_
+#define SYNC_ENGINE_TRAFFIC_LOGGER_H_
 
 namespace sync_pb {
 class ClientToServerResponse;
@@ -22,4 +22,4 @@ void LogClientToServerResponse(
 
 }  // namespace syncer
 
-#endif  // CHROME_BROWSER_SYNC_ENGINE_TRAFFIC_LOGGER_H_
+#endif  // SYNC_ENGINE_TRAFFIC_LOGGER_H_

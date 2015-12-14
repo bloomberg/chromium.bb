@@ -4,6 +4,8 @@
 
 #include "sync/android/model_type_helper.h"
 
+#include <string>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "jni/ModelTypeHelper_jni.h"

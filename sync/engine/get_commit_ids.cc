@@ -69,7 +69,7 @@ void GetCommitIdsForType(
   if (cryptographer) {
     encrypted_types = dir->GetNigoriHandler()->GetEncryptedTypes(trans);
     passphrase_missing = cryptographer->has_pending_keys();
-  };
+  }
 
   // We filter out all unready entries from the set of unsynced handles. This
   // new set of ready and unsynced items is then what we use to determine what

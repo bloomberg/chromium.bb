@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNC_SYNCABLE_METAHANDLE_SET_
-#define SYNC_SYNCABLE_METAHANDLE_SET_
+#ifndef SYNC_SYNCABLE_METAHANDLE_SET_H_
+#define SYNC_SYNCABLE_METAHANDLE_SET_H_
 
 #include <set>
 
@@ -17,4 +17,4 @@ typedef std::set<int64> MetahandleSet;
 }  // namespace syncable
 }  // namespace syncer
 
-#endif // SYNC_SYNCABLE_METAHANDLE_SET_
+#endif  // SYNC_SYNCABLE_METAHANDLE_SET_H_

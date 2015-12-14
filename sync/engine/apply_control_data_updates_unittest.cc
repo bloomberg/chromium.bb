@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "sync/engine/apply_control_data_updates.h"
+
+#include <string>
+
 #include "base/format_macros.h"
 #include "base/location.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
-#include "sync/engine/apply_control_data_updates.h"
 #include "sync/engine/syncer.h"
 #include "sync/engine/syncer_util.h"
 #include "sync/internal_api/public/test/test_entry_factory.h"

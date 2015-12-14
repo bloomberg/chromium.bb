@@ -28,5 +28,5 @@ TEST(SyncableUtilTest, GenerateSyncableHash) {
 }
 
 }  // namespace
-}  // namespace syncer
 }  // namespace syncable
+}  // namespace syncer

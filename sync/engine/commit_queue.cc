@@ -12,4 +12,4 @@ CommitQueue::CommitQueue() {
 CommitQueue::~CommitQueue() {
 }
 
-}  // namespace syncer
+}  // namespace syncer_v2

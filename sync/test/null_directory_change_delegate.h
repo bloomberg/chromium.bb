@@ -5,6 +5,8 @@
 #ifndef SYNC_TEST_NULL_DIRECTORY_CHANGE_DELEGATE_H_
 #define SYNC_TEST_NULL_DIRECTORY_CHANGE_DELEGATE_H_
 
+#include <vector>
+
 #include "base/compiler_specific.h"
 #include "sync/syncable/directory_change_delegate.h"
 

@@ -271,4 +271,4 @@ void MockModelTypeProcessor::SetServerAssignedId(const std::string& tag_hash,
   assigned_ids_[tag_hash] = id;
 }
 
-}  // namespace syncer
+}  // namespace syncer_v2

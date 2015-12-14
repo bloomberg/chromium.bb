@@ -4,6 +4,9 @@
 
 #include "sync/engine/directory_commit_contribution.h"
 
+#include <set>
+#include <string>
+
 #include "base/message_loop/message_loop.h"
 #include "sync/internal_api/public/base/attachment_id_proto.h"
 #include "sync/sessions/status_controller.h"
@@ -291,7 +294,6 @@ TEST_F(DirectoryCommitContributionTest, DeletedBookmarksWithSpecifics) {
 
 // Test that bookmarks support hierarchy.
 TEST_F(DirectoryCommitContributionTest, HierarchySupport_Bookmark) {
-
   // Create a normal-looking bookmark item.
   int64 bm1;
   {

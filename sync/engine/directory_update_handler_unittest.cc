@@ -4,6 +4,8 @@
 
 #include "sync/engine/directory_update_handler.h"
 
+#include <set>
+#include <string>
 #include <utility>
 
 #include "base/compiler_specific.h"
@@ -533,7 +535,7 @@ sync_pb::EntitySpecifics DefaultBookmarkSpecifics() {
   AddDefaultFieldValue(BOOKMARKS, &result);
   return result;
 }
-} // namespace
+}  // namespace
 
 // Test update application for a few bookmark items.
 TEST_F(DirectoryUpdateHandlerApplyUpdateTest, SimpleBookmark) {

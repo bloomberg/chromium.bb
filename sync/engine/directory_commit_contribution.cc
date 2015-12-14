@@ -4,6 +4,9 @@
 
 #include "sync/engine/directory_commit_contribution.h"
 
+#include <algorithm>
+#include <set>
+
 #include "sync/engine/commit_util.h"
 #include "sync/engine/get_commit_ids.h"
 #include "sync/engine/syncer_util.h"

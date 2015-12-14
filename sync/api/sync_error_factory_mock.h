@@ -5,8 +5,9 @@
 #ifndef SYNC_API_SYNC_ERROR_FACTORY_MOCK_H_
 #define SYNC_API_SYNC_ERROR_FACTORY_MOCK_H_
 
-#include "sync/api/sync_error_factory.h"
+#include <string>
 
+#include "sync/api/sync_error_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace syncer {

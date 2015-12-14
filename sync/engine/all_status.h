@@ -5,8 +5,8 @@
 // The AllStatus object watches various sync engine components and aggregates
 // the status of all of them into one place.
 
-#ifndef SYNC_INTERNAL_API_ALL_STATUS_H_
-#define SYNC_INTERNAL_API_ALL_STATUS_H_
+#ifndef SYNC_ENGINE_ALL_STATUS_H_
+#define SYNC_ENGINE_ALL_STATUS_H_
 
 #include <map>
 #include <string>
@@ -35,7 +35,6 @@ struct SyncCycleEvent;
 // we will continue to collect data and update state mid-sync-cycle in case we
 // need to debug slow or stuck sync cycles.
 class AllStatus : public SyncEngineEventListener {
-  friend class ScopedStatusLock;
  public:
   AllStatus();
   ~AllStatus() override;
@@ -77,6 +76,10 @@ class AllStatus : public SyncEngineEventListener {
   SyncStatus status_;
 
   mutable base::Lock mutex_;  // Protects all data members.
+
+ private:
+  friend class ScopedStatusLock;
+
   DISALLOW_COPY_AND_ASSIGN(AllStatus);
 };
 
@@ -90,4 +93,4 @@ class ScopedStatusLock {
 
 }  // namespace syncer
 
-#endif  // SYNC_INTERNAL_API_ALL_STATUS_H_
+#endif  // SYNC_ENGINE_ALL_STATUS_H_

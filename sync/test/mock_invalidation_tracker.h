@@ -6,6 +6,7 @@
 #define SYNC_TEST_MOCK_INVALIDATION_TRACKER_H_
 
 #include <set>
+#include <string>
 
 #include "base/memory/scoped_ptr.h"
 #include "sync/test/trackable_mock_invalidation.h"

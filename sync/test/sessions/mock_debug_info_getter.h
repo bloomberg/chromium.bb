@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNC_SESSIONS_MOCK_DEBUG_INFO_GETTER_H_
-#define SYNC_SESSIONS_MOCK_DEBUG_INFO_GETTER_H_
+#ifndef SYNC_TEST_SESSIONS_MOCK_DEBUG_INFO_GETTER_H_
+#define SYNC_TEST_SESSIONS_MOCK_DEBUG_INFO_GETTER_H_
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -36,4 +36,4 @@ class MockDebugInfoGetter : public sessions::DebugInfoGetter {
 }  // namespace sessions
 }  // namespace syncer
 
-#endif  // SYNC_SESSIONS_MOCK_DEBUG_INFO_GETTER_H_
+#endif  // SYNC_TEST_SESSIONS_MOCK_DEBUG_INFO_GETTER_H_

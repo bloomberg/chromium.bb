@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNC_SYNCABLE_PARENT_CHILD_INDEX_UPDATER_H_
-#define SYNC_SYNCABLE_PARENT_CHILD_INDEX_UPDATER_H_
+#ifndef SYNC_SYNCABLE_SCOPED_PARENT_CHILD_INDEX_UPDATER_H_
+#define SYNC_SYNCABLE_SCOPED_PARENT_CHILD_INDEX_UPDATER_H_
 
 #include "base/basictypes.h"
 #include "sync/base/sync_export.h"
@@ -19,7 +19,7 @@ struct EntryKernel;
 // object goes out of scope.
 class ScopedParentChildIndexUpdater {
  public:
-  ScopedParentChildIndexUpdater(ScopedKernelLock& proof_of_lock,
+  ScopedParentChildIndexUpdater(const ScopedKernelLock& proof_of_lock,
                                 EntryKernel* entry,
                                 ParentChildIndex* index);
   ~ScopedParentChildIndexUpdater();
@@ -31,7 +31,7 @@ class ScopedParentChildIndexUpdater {
   DISALLOW_COPY_AND_ASSIGN(ScopedParentChildIndexUpdater);
 };
 
-}  // namespace syncer
 }  // namespace syncable
+}  // namespace syncer
 
-#endif  // SYNC_SYNCABLE_PARENT_CHILD_INDEX_UPDATER_H_
+#endif  // SYNC_SYNCABLE_SCOPED_PARENT_CHILD_INDEX_UPDATER_H_

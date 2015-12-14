@@ -41,10 +41,11 @@ class FakeServerHttpPostProvider
       const std::string& name) const override;
 
  protected:
-  friend class base::RefCountedThreadSafe<FakeServerHttpPostProvider>;
   ~FakeServerHttpPostProvider() override;
 
  private:
+  friend class base::RefCountedThreadSafe<FakeServerHttpPostProvider>;
+
   // |fake_server_| should only be dereferenced on the same thread as
   // |fake_server_task_runner_| runs on.
   base::WeakPtr<FakeServer> fake_server_;

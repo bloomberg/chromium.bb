@@ -279,4 +279,4 @@ bool TaskQueue<T>::ShouldDispatch() {
 
 }  // namespace syncer
 
-#endif  //  SYNC_INTERNAL_API_PUBLIC_ATTACHMENTS_TASK_QUEUE_H_
+#endif  // SYNC_INTERNAL_API_PUBLIC_ATTACHMENTS_TASK_QUEUE_H_

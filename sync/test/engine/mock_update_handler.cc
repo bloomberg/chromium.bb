@@ -4,6 +4,8 @@
 
 #include "sync/test/engine/mock_update_handler.h"
 
+#include <string>
+
 #include "sync/internal_api/public/base/model_type.h"
 
 namespace syncer {

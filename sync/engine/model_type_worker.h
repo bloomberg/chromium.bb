@@ -5,6 +5,9 @@
 #ifndef SYNC_ENGINE_MODEL_TYPE_WORKER_H_
 #define SYNC_ENGINE_MODEL_TYPE_WORKER_H_
 
+#include <map>
+#include <string>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
@@ -164,6 +167,6 @@ class SYNC_EXPORT ModelTypeWorker : public syncer::UpdateHandler,
   base::WeakPtrFactory<ModelTypeWorker> weak_ptr_factory_;
 };
 
-}  // namespace syncer
+}  // namespace syncer_v2
 
 #endif  // SYNC_ENGINE_MODEL_TYPE_WORKER_H_

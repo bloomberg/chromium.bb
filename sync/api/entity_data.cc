@@ -4,6 +4,8 @@
 
 #include "sync/api/entity_data.h"
 
+#include <algorithm>
+
 #include "base/logging.h"
 
 namespace syncer_v2 {

@@ -21,8 +21,10 @@ class SYNC_EXPORT ReadTransaction : public BaseTransaction {
   ~ReadTransaction() override;
 
  protected:  // Don't allow creation on heap, except by sync API wrapper.
-  friend class syncer::ReadTransaction;
   void* operator new(size_t size) { return (::operator new)(size); }
+
+ private:
+  friend class syncer::ReadTransaction;
 
   DISALLOW_COPY_AND_ASSIGN(ReadTransaction);
 };

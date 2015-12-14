@@ -26,7 +26,7 @@ EntityChange EntityChange::CreateDelete(std::string client_key) {
 EntityChange::EntityChange(std::string client_key,
                            ChangeType type,
                            EntityDataPtr data)
-    : client_key_(client_key), type_(type), data_(data){};
+    : client_key_(client_key), type_(type), data_(data) {}
 
 EntityChange::~EntityChange() {}
 

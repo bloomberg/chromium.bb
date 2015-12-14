@@ -4,6 +4,7 @@
 
 #include "sync/api/sync_data.h"
 
+#include <algorithm>
 #include <ostream>
 
 #include "base/json/json_writer.h"

@@ -61,7 +61,7 @@ Id GetFirstEntryWithName(BaseTransaction* rtrans,
 Id GetOnlyEntryWithName(BaseTransaction* rtrans,
                         const syncable::Id& parent_id,
                         const string& name) {
-  CHECK(1 == CountEntriesWithName(rtrans, parent_id, name));
+  CHECK_EQ(1, CountEntriesWithName(rtrans, parent_id, name));
   return GetFirstEntryWithName(rtrans, parent_id, name);
 }
 

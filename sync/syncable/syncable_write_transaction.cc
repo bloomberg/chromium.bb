@@ -4,6 +4,8 @@
 
 #include "sync/syncable/syncable_write_transaction.h"
 
+#include <string>
+
 #include "sync/syncable/directory.h"
 #include "sync/syncable/directory_change_delegate.h"
 #include "sync/syncable/mutable_entry.h"
@@ -177,7 +179,7 @@ std::string WriterTagToString(WriterTag writer_tag) {
     ENUM_CASE(HANDLE_SAVE_FAILURE);
     ENUM_CASE(PURGE_ENTRIES);
     ENUM_CASE(SYNCAPI);
-  };
+  }
   NOTREACHED();
   return std::string();
 }

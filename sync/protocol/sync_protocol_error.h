@@ -10,7 +10,7 @@
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/model_type.h"
 
-namespace syncer{
+namespace syncer {
 
 enum SyncProtocolErrorType {
   // Success case.

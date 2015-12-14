@@ -700,7 +700,7 @@ TEST_F(SyncableDirectoryTest, TestGetUnsynced) {
     WriteTransaction trans(FROM_HERE, UNITTEST, dir().get());
 
     dir()->GetUnsyncedMetaHandles(&trans, &handles);
-    ASSERT_TRUE(0 == handles.size());
+    ASSERT_EQ(0u, handles.size());
 
     MutableEntry e1(&trans, CREATE, BOOKMARKS, trans.root_id(), "abba");
     ASSERT_TRUE(e1.good());
@@ -720,7 +720,7 @@ TEST_F(SyncableDirectoryTest, TestGetUnsynced) {
     WriteTransaction trans(FROM_HERE, UNITTEST, dir().get());
 
     dir()->GetUnsyncedMetaHandles(&trans, &handles);
-    ASSERT_TRUE(0 == handles.size());
+    ASSERT_EQ(0u, handles.size());
 
     MutableEntry e3(&trans, GET_BY_HANDLE, handle1);
     ASSERT_TRUE(e3.good());
@@ -730,7 +730,7 @@ TEST_F(SyncableDirectoryTest, TestGetUnsynced) {
   {
     WriteTransaction trans(FROM_HERE, UNITTEST, dir().get());
     dir()->GetUnsyncedMetaHandles(&trans, &handles);
-    ASSERT_TRUE(1 == handles.size());
+    ASSERT_EQ(1u, handles.size());
     ASSERT_TRUE(handle1 == handles[0]);
 
     MutableEntry e4(&trans, GET_BY_HANDLE, handle2);
@@ -741,7 +741,7 @@ TEST_F(SyncableDirectoryTest, TestGetUnsynced) {
   {
     WriteTransaction trans(FROM_HERE, UNITTEST, dir().get());
     dir()->GetUnsyncedMetaHandles(&trans, &handles);
-    ASSERT_TRUE(2 == handles.size());
+    ASSERT_EQ(2u, handles.size());
     if (handle1 == handles[0]) {
       ASSERT_TRUE(handle2 == handles[1]);
     } else {
@@ -759,7 +759,7 @@ TEST_F(SyncableDirectoryTest, TestGetUnsynced) {
   {
     WriteTransaction trans(FROM_HERE, UNITTEST, dir().get());
     dir()->GetUnsyncedMetaHandles(&trans, &handles);
-    ASSERT_TRUE(1 == handles.size());
+    ASSERT_EQ(1u, handles.size());
     ASSERT_TRUE(handle2 == handles[0]);
   }
 }
@@ -772,7 +772,7 @@ TEST_F(SyncableDirectoryTest, TestGetUnappliedUpdates) {
     WriteTransaction trans(FROM_HERE, UNITTEST, dir().get());
 
     dir()->GetUnappliedUpdateMetaHandles(&trans, all_types, &handles);
-    ASSERT_TRUE(0 == handles.size());
+    ASSERT_EQ(0u, handles.size());
 
     MutableEntry e1(&trans, CREATE, BOOKMARKS, trans.root_id(), "abba");
     ASSERT_TRUE(e1.good());
@@ -794,7 +794,7 @@ TEST_F(SyncableDirectoryTest, TestGetUnappliedUpdates) {
     WriteTransaction trans(FROM_HERE, UNITTEST, dir().get());
 
     dir()->GetUnappliedUpdateMetaHandles(&trans, all_types, &handles);
-    ASSERT_TRUE(0 == handles.size());
+    ASSERT_EQ(0u, handles.size());
 
     MutableEntry e3(&trans, GET_BY_HANDLE, handle1);
     ASSERT_TRUE(e3.good());
@@ -804,7 +804,7 @@ TEST_F(SyncableDirectoryTest, TestGetUnappliedUpdates) {
   {
     WriteTransaction trans(FROM_HERE, UNITTEST, dir().get());
     dir()->GetUnappliedUpdateMetaHandles(&trans, all_types, &handles);
-    ASSERT_TRUE(1 == handles.size());
+    ASSERT_EQ(1u, handles.size());
     ASSERT_TRUE(handle1 == handles[0]);
 
     MutableEntry e4(&trans, GET_BY_HANDLE, handle2);
@@ -815,7 +815,7 @@ TEST_F(SyncableDirectoryTest, TestGetUnappliedUpdates) {
   {
     WriteTransaction trans(FROM_HERE, UNITTEST, dir().get());
     dir()->GetUnappliedUpdateMetaHandles(&trans, all_types, &handles);
-    ASSERT_TRUE(2 == handles.size());
+    ASSERT_EQ(2u, handles.size());
     if (handle1 == handles[0]) {
       ASSERT_TRUE(handle2 == handles[1]);
     } else {
@@ -831,7 +831,7 @@ TEST_F(SyncableDirectoryTest, TestGetUnappliedUpdates) {
   {
     WriteTransaction trans(FROM_HERE, UNITTEST, dir().get());
     dir()->GetUnappliedUpdateMetaHandles(&trans, all_types, &handles);
-    ASSERT_TRUE(1 == handles.size());
+    ASSERT_EQ(1u, handles.size());
     ASSERT_TRUE(handle2 == handles[0]);
   }
 }
@@ -1668,7 +1668,7 @@ class StressTransactionsDelegate : public base::PlatformThread::Delegate {
       const int rand_action = rand() % 10;
       if (rand_action < 4 && !path_name.empty()) {
         ReadTransaction trans(FROM_HERE, dir_);
-        CHECK(1 == CountEntriesWithName(&trans, trans.root_id(), path_name));
+        EXPECT_EQ(1, CountEntriesWithName(&trans, trans.root_id(), path_name));
         base::PlatformThread::Sleep(
             base::TimeDelta::FromMilliseconds(rand() % 10));
       } else {
@@ -1677,7 +1677,7 @@ class StressTransactionsDelegate : public base::PlatformThread::Delegate {
         path_name.assign(unique_name.begin(), unique_name.end());
         WriteTransaction trans(FROM_HERE, UNITTEST, dir_);
         MutableEntry e(&trans, CREATE, BOOKMARKS, trans.root_id(), path_name);
-        CHECK(e.good());
+        EXPECT_TRUE(e.good());
         base::PlatformThread::Sleep(
             base::TimeDelta::FromMilliseconds(rand() % 20));
         e.PutIsUnsynced(true);
@@ -2119,7 +2119,7 @@ TEST_F(SyncableDirectoryTest, InitialSyncEndedForType) {
   // Create the root node.
   ModelNeutralMutableEntry entry(&trans, syncable::CREATE_NEW_TYPE_ROOT,
                                  PREFERENCES);
-  DCHECK(entry.good());
+  ASSERT_TRUE(entry.good());
 
   entry.PutServerIsDir(true);
   entry.PutUniqueServerTag(ModelTypeToRootTag(PREFERENCES));

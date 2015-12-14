@@ -10,9 +10,10 @@ namespace syncer {
 namespace syncable {
 
 ScopedParentChildIndexUpdater::ScopedParentChildIndexUpdater(
-    ScopedKernelLock& proof_of_lock,
+    const ScopedKernelLock& proof_of_lock,
     EntryKernel* entry,
-    ParentChildIndex* index) : entry_(entry), index_(index) {
+    ParentChildIndex* index)
+    : entry_(entry), index_(index) {
   if (ParentChildIndex::ShouldInclude(entry_)) {
     index_->Remove(entry_);
   }
@@ -24,5 +25,5 @@ ScopedParentChildIndexUpdater::~ScopedParentChildIndexUpdater() {
   }
 }
 
-}  // namespace syncer
 }  // namespace syncable
+}  // namespace syncer

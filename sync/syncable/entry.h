@@ -5,6 +5,9 @@
 #ifndef SYNC_SYNCABLE_ENTRY_H_
 #define SYNC_SYNCABLE_ENTRY_H_
 
+#include <string>
+#include <vector>
+
 #include "sync/base/sync_export.h"
 #include "sync/syncable/entry_kernel.h"
 
@@ -216,7 +219,7 @@ class SYNC_EXPORT Entry {
   }
 
   bool GetSyncing() const;
-  bool GetDirtySync() const ;
+  bool GetDirtySync() const;
 
   ModelType GetServerModelType() const;
   ModelType GetModelType() const;

@@ -5,6 +5,8 @@
 #ifndef SYNC_TEST_ENGINE_MOCK_COMMIT_QUEUE_H_
 #define SYNC_TEST_ENGINE_MOCK_COMMIT_QUEUE_H_
 
+#include <map>
+#include <string>
 #include <vector>
 
 #include "base/macros.h"
@@ -83,6 +85,6 @@ class MockCommitQueue : public CommitQueue {
   DISALLOW_COPY_AND_ASSIGN(MockCommitQueue);
 };
 
-}  // namespace syncer
+}  // namespace syncer_v2
 
 #endif  // SYNC_TEST_ENGINE_MOCK_COMMIT_QUEUE_H_

@@ -176,4 +176,4 @@ void MockCommitQueue::SetServerVersion(const std::string& tag_hash,
   server_versions_[tag_hash] = version;
 }
 
-}  // namespace syncer
+}  // namespace syncer_v2

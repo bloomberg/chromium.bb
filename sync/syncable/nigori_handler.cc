@@ -10,5 +10,5 @@ namespace syncable {
 NigoriHandler::NigoriHandler() {}
 NigoriHandler::~NigoriHandler() {}
 
-}  // namespace syncer
 }  // namespace syncable
+}  // namespace syncer

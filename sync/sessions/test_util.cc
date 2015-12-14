@@ -4,6 +4,8 @@
 
 #include "sync/sessions/test_util.h"
 
+#include <map>
+
 namespace syncer {
 namespace sessions {
 namespace test_util {

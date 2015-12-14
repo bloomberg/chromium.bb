@@ -1140,4 +1140,4 @@ TEST_F(ModelTypeWorkerTest, ReceiveCorruptEncryption) {
   EXPECT_TRUE(HasUpdateResponseOnModelThread("tag1"));
 }
 
-}  // namespace syncer
+}  // namespace syncer_v2

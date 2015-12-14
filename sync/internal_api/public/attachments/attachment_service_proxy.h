@@ -81,10 +81,11 @@ class SYNC_EXPORT AttachmentServiceProxy : public AttachmentService {
     void UploadAttachments(const AttachmentIdList& attachment_ids) override;
 
    protected:
-    friend class base::RefCountedThreadSafe<Core>;
     ~Core() override;
 
    private:
+    friend class base::RefCountedThreadSafe<Core>;
+
     base::WeakPtr<AttachmentService> wrapped_;
 
     DISALLOW_COPY_AND_ASSIGN(Core);

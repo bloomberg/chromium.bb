@@ -5,6 +5,8 @@
 #ifndef SYNC_TOOLS_NULL_INVALIDATION_STATE_TRACKER_H_
 #define SYNC_TOOLS_NULL_INVALIDATION_STATE_TRACKER_H_
 
+#include <string>
+
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "components/invalidation/impl/invalidation_state_tracker.h"

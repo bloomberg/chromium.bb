@@ -237,7 +237,7 @@ void MutableEntry::PutSpecifics(const sync_pb::EntitySpecifics& value) {
 
 void MutableEntry::PutUniquePosition(const UniquePosition& value) {
   DCHECK(kernel_);
-  if(!kernel_->ref(UNIQUE_POSITION).Equals(value)) {
+  if (!kernel_->ref(UNIQUE_POSITION).Equals(value)) {
     write_transaction()->TrackChangesTo(kernel_);
     // We should never overwrite a valid position with an invalid one.
     DCHECK(value.IsValid());

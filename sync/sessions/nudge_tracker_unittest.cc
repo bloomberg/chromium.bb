@@ -2,10 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "sync/sessions/nudge_tracker.h"
+
+#include <string>
+#include <vector>
+
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "sync/internal_api/public/base/model_type_test_util.h"
-#include "sync/sessions/nudge_tracker.h"
 #include "sync/test/mock_invalidation.h"
 #include "sync/test/mock_invalidation_tracker.h"
 #include "sync/test/trackable_mock_invalidation.h"
@@ -196,7 +200,7 @@ TEST_F(NudgeTrackerTest, HintCoalescing) {
     ASSERT_EQ(2, bm_gu_trigger.notification_hint_size());
     EXPECT_EQ("bm_hint_1", bm_gu_trigger.notification_hint(0));
     EXPECT_EQ("bm_hint_2",
-              bm_gu_trigger.notification_hint(1)); // most recent last.
+              bm_gu_trigger.notification_hint(1));  // most recent last.
     EXPECT_FALSE(bm_gu_trigger.client_dropped_hints());
 
     // Verify the new type, too.

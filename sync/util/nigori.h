@@ -24,7 +24,7 @@ namespace syncer {
 // for your secret (basically a map key), and |Encrypt| and |Decrypt| to store
 // and retrieve the secret.
 //
-// TODO: Link to doc.
+// https://www.cl.cam.ac.uk/~drt24/nigori/nigori-overview.pdf
 class SYNC_EXPORT Nigori {
  public:
   enum Type {

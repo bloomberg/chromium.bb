@@ -5,6 +5,7 @@
 #include "sync/engine/model_type_worker.h"
 
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/format_macros.h"
@@ -461,4 +462,4 @@ bool ModelTypeWorker::DecryptSpecifics(Cryptographer* cryptographer,
   return true;
 }
 
-}  // namespace syncer
+}  // namespace syncer_v2

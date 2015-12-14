@@ -4,8 +4,6 @@
 
 #include "sync/syncable/directory_backing_store.h"
 
-#include "build/build_config.h"
-
 #include <limits>
 
 #include "base/base64.h"
@@ -16,6 +14,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "sql/connection.h"
 #include "sql/error_delegate_util.h"
 #include "sql/statement.h"
@@ -1210,8 +1209,8 @@ bool DirectoryBackingStore::MigrateVersion79To80() {
 }
 
 bool DirectoryBackingStore::MigrateVersion80To81() {
-  if(!db_->Execute(
-         "ALTER TABLE metas ADD COLUMN server_ordinal_in_parent BLOB"))
+  if (!db_->Execute(
+          "ALTER TABLE metas ADD COLUMN server_ordinal_in_parent BLOB"))
     return false;
 
   sql::Statement get_positions(db_->GetUniqueStatement(
@@ -1221,7 +1220,7 @@ bool DirectoryBackingStore::MigrateVersion80To81() {
       "UPDATE metas SET server_ordinal_in_parent = ?"
       "WHERE metahandle = ?"));
 
-  while(get_positions.Step()) {
+  while (get_positions.Step()) {
     int64 metahandle = get_positions.ColumnInt64(0);
     int64 position = get_positions.ColumnInt64(1);
 
@@ -1229,7 +1228,7 @@ bool DirectoryBackingStore::MigrateVersion80To81() {
     put_ordinals.BindBlob(0, ordinal.data(), ordinal.length());
     put_ordinals.BindInt64(1, metahandle);
 
-    if(!put_ordinals.Run())
+    if (!put_ordinals.Run())
       return false;
     put_ordinals.Reset(true);
   }
@@ -1390,7 +1389,7 @@ bool DirectoryBackingStore::MigrateVersion85To86() {
         // when we see updates for this item.  That should ensure that commonly
         // modified items will end up with the proper tag values eventually.
         unique_bookmark_tag = syncable::GenerateSyncableBookmarkHash(
-            std::string(), // cache_guid left intentionally blank.
+            std::string(),  // cache_guid left intentionally blank.
             id_string.substr(1));
       }
 

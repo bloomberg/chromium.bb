@@ -5,6 +5,7 @@
 #include "sync/syncable/parent_child_index.h"
 
 #include <list>
+#include <string>
 
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -176,10 +177,10 @@ TEST_F(ParentChildIndexTest, ChildInsertionAndIteration) {
   EntryKernel* b4 = MakeBookmark(4, 4, false);
 
   // Insert them out-of-order to test different cases.
-  index_.Insert(b3); // Only child.
-  index_.Insert(b4); // Right-most child.
-  index_.Insert(b1); // Left-most child.
-  index_.Insert(b2); // Between existing items.
+  index_.Insert(b3);  // Only child.
+  index_.Insert(b4);  // Right-most child.
+  index_.Insert(b1);  // Left-most child.
+  index_.Insert(b2);  // Between existing items.
 
   // Double-check they've been added.
   EXPECT_TRUE(index_.Contains(b1));

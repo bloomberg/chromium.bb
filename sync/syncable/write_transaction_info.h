@@ -5,6 +5,8 @@
 #ifndef SYNC_SYNCABLE_WRITE_TRANSACTION_INFO_H_
 #define SYNC_SYNCABLE_WRITE_TRANSACTION_INFO_H_
 
+#include <string>
+
 #include "sync/syncable/entry_kernel.h"
 #include "sync/syncable/syncable_base_transaction.h"
 

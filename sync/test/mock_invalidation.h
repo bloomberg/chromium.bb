@@ -5,6 +5,8 @@
 #ifndef SYNC_TEST_MOCK_INVALIDATION_H_
 #define SYNC_TEST_MOCK_INVALIDATION_H_
 
+#include <string>
+
 #include "base/memory/scoped_ptr.h"
 #include "sync/internal_api/public/base/invalidation_interface.h"
 

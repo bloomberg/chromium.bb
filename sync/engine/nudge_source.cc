@@ -16,7 +16,7 @@ const char* GetNudgeSourceString(NudgeSource nudge_source) {
     ENUM_CASE(NUDGE_SOURCE_NOTIFICATION);
     ENUM_CASE(NUDGE_SOURCE_LOCAL);
     ENUM_CASE(NUDGE_SOURCE_LOCAL_REFRESH);
-  };
+  }
   NOTREACHED();
   return "";
 }

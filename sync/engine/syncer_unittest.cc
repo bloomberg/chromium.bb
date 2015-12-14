@@ -176,7 +176,7 @@ void TypeDebugInfoCache::OnStatusCountersUpdated(
   status_counters_map_[type] = counters;
 }
 
-} // namespace
+}  // namespace
 
 class SyncerTest : public testing::Test,
                    public SyncSession::Delegate,
@@ -237,7 +237,7 @@ class SyncerTest : public testing::Test,
     DVLOG(1) << "HandleSyncEngineEvent in unittest " << event.what_happened;
     // we only test for entry-specific events, not status changed ones.
     switch (event.what_happened) {
-      case SyncCycleEvent::SYNC_CYCLE_BEGIN: // Fall through.
+      case SyncCycleEvent::SYNC_CYCLE_BEGIN:  // Fall through.
       case SyncCycleEvent::STATUS_CHANGED:
       case SyncCycleEvent::SYNC_CYCLE_ENDED:
         return;
@@ -604,6 +604,7 @@ class SyncerTest : public testing::Test,
   sessions::NudgeTracker nudge_tracker_;
   scoped_ptr<MockDebugInfoGetter> debug_info_getter_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(SyncerTest);
 };
 
@@ -2418,15 +2419,15 @@ TEST_F(SyncerTest, ConflictMatchingEntryHandlesUnsanitizedNames) {
 
     Entry A(&trans, GET_BY_ID, ids_.FromNumber(1));
     ASSERT_TRUE(A.good());
-    EXPECT_TRUE(A.GetIsUnsynced()== false);
-    EXPECT_TRUE(A.GetIsUnappliedUpdate()== false);
-    EXPECT_TRUE(A.GetServerVersion()== 20);
+    EXPECT_FALSE(A.GetIsUnsynced());
+    EXPECT_FALSE(A.GetIsUnappliedUpdate());
+    EXPECT_EQ(20, A.GetServerVersion());
 
     Entry B(&trans, GET_BY_ID, ids_.FromNumber(2));
     ASSERT_TRUE(B.good());
-    EXPECT_TRUE(B.GetIsUnsynced()== false);
-    EXPECT_TRUE(B.GetIsUnappliedUpdate()== false);
-    EXPECT_TRUE(B.GetServerVersion()== 20);
+    EXPECT_FALSE(B.GetIsUnsynced());
+    EXPECT_FALSE(B.GetIsUnappliedUpdate());
+    EXPECT_EQ(20, B.GetServerVersion());
   }
 }
 
@@ -2460,15 +2461,15 @@ TEST_F(SyncerTest, ConflictMatchingEntryHandlesNormalNames) {
 
     Entry A(&trans, GET_BY_ID, ids_.FromNumber(1));
     ASSERT_TRUE(A.good());
-    EXPECT_TRUE(A.GetIsUnsynced()== false);
-    EXPECT_TRUE(A.GetIsUnappliedUpdate()== false);
-    EXPECT_TRUE(A.GetServerVersion()== 20);
+    EXPECT_FALSE(A.GetIsUnsynced());
+    EXPECT_FALSE(A.GetIsUnappliedUpdate());
+    EXPECT_EQ(20, A.GetServerVersion());
 
     Entry B(&trans, GET_BY_ID, ids_.FromNumber(2));
     ASSERT_TRUE(B.good());
-    EXPECT_TRUE(B.GetIsUnsynced()== false);
-    EXPECT_TRUE(B.GetIsUnappliedUpdate()== false);
-    EXPECT_TRUE(B.GetServerVersion()== 20);
+    EXPECT_FALSE(B.GetIsUnsynced());
+    EXPECT_FALSE(B.GetIsUnappliedUpdate());
+    EXPECT_EQ(20, B.GetServerVersion());
   }
 }
 
@@ -2902,11 +2903,11 @@ TEST_F(SyncerTest, FolderSwapUpdate) {
     syncable::ReadTransaction trans(FROM_HERE, directory());
     Entry id1(&trans, GET_BY_ID, ids_.FromNumber(7801));
     ASSERT_TRUE(id1.good());
-    EXPECT_TRUE("fred" == id1.GetNonUniqueName());
+    EXPECT_EQ("fred", id1.GetNonUniqueName());
     EXPECT_TRUE(root_id_ == id1.GetParentId());
     Entry id2(&trans, GET_BY_ID, ids_.FromNumber(1024));
     ASSERT_TRUE(id2.good());
-    EXPECT_TRUE("bob" == id2.GetNonUniqueName());
+    EXPECT_EQ("bob", id2.GetNonUniqueName());
     EXPECT_TRUE(root_id_ == id2.GetParentId());
   }
   saw_syncer_event_ = false;
@@ -2924,15 +2925,15 @@ TEST_F(SyncerTest, NameCollidingFolderSwapWorksFine) {
     syncable::ReadTransaction trans(FROM_HERE, directory());
     Entry id1(&trans, GET_BY_ID, ids_.FromNumber(7801));
     ASSERT_TRUE(id1.good());
-    EXPECT_TRUE("bob" == id1.GetNonUniqueName());
+    EXPECT_EQ("bob", id1.GetNonUniqueName());
     EXPECT_TRUE(root_id_ == id1.GetParentId());
     Entry id2(&trans, GET_BY_ID, ids_.FromNumber(1024));
     ASSERT_TRUE(id2.good());
-    EXPECT_TRUE("fred" == id2.GetNonUniqueName());
+    EXPECT_EQ("fred", id2.GetNonUniqueName());
     EXPECT_TRUE(root_id_ == id2.GetParentId());
     Entry id3(&trans, GET_BY_ID, ids_.FromNumber(4096));
     ASSERT_TRUE(id3.good());
-    EXPECT_TRUE("alice" == id3.GetNonUniqueName());
+    EXPECT_EQ("alice", id3.GetNonUniqueName());
     EXPECT_TRUE(root_id_ == id3.GetParentId());
   }
   mock_server_->AddUpdateDirectory(1024, 0, "bob", 2, 20,
@@ -2946,15 +2947,15 @@ TEST_F(SyncerTest, NameCollidingFolderSwapWorksFine) {
     syncable::ReadTransaction trans(FROM_HERE, directory());
     Entry id1(&trans, GET_BY_ID, ids_.FromNumber(7801));
     ASSERT_TRUE(id1.good());
-    EXPECT_TRUE("fred" == id1.GetNonUniqueName());
+    EXPECT_EQ("fred", id1.GetNonUniqueName());
     EXPECT_TRUE(root_id_ == id1.GetParentId());
     Entry id2(&trans, GET_BY_ID, ids_.FromNumber(1024));
     ASSERT_TRUE(id2.good());
-    EXPECT_TRUE("bob" == id2.GetNonUniqueName());
+    EXPECT_EQ("bob", id2.GetNonUniqueName());
     EXPECT_TRUE(root_id_ == id2.GetParentId());
     Entry id3(&trans, GET_BY_ID, ids_.FromNumber(4096));
     ASSERT_TRUE(id3.good());
-    EXPECT_TRUE("bob" == id3.GetNonUniqueName());
+    EXPECT_EQ("bob", id3.GetNonUniqueName());
     EXPECT_TRUE(root_id_ == id3.GetParentId());
   }
   saw_syncer_event_ = false;
@@ -3431,8 +3432,8 @@ TEST_F(SyncerTest, SiblingDirectoriesBecomeCircular) {
     ASSERT_TRUE(A.good());
     MutableEntry B(&wtrans, GET_BY_ID, ids_.FromNumber(2));
     ASSERT_TRUE(B.good());
-    EXPECT_TRUE(A.GetNonUniqueName()== "B");
-    EXPECT_TRUE(B.GetNonUniqueName()== "B");
+    EXPECT_EQ("B", A.GetNonUniqueName());
+    EXPECT_EQ("B", B.GetNonUniqueName());
   }
 }
 
@@ -3598,11 +3599,11 @@ TEST_F(SyncerTest, ConflictResolverMergesLocalDeleteAndServerUpdate) {
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
     Entry local_deleted(&trans, GET_BY_ID, ids_.FromNumber(1));
-    EXPECT_TRUE(local_deleted.GetBaseVersion()== 10);
-    EXPECT_TRUE(local_deleted.GetIsUnappliedUpdate()== false);
-    EXPECT_TRUE(local_deleted.GetIsUnsynced()== true);
-    EXPECT_TRUE(local_deleted.GetIsDel()== true);
-    EXPECT_TRUE(local_deleted.GetIsDir()== false);
+    EXPECT_EQ(10, local_deleted.GetBaseVersion());
+    EXPECT_FALSE(local_deleted.GetIsUnappliedUpdate());
+    EXPECT_TRUE(local_deleted.GetIsUnsynced());
+    EXPECT_TRUE(local_deleted.GetIsDel());
+    EXPECT_FALSE(local_deleted.GetIsDir());
   }
 }
 
@@ -3637,11 +3638,11 @@ TEST_F(SyncerTest, UpdateFlipsTheFolderBit) {
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
     Entry local_deleted(&trans, GET_BY_ID, ids_.FromNumber(1));
-    EXPECT_TRUE(local_deleted.GetBaseVersion()== 1);
-    EXPECT_TRUE(local_deleted.GetIsUnappliedUpdate()== false);
-    EXPECT_TRUE(local_deleted.GetIsUnsynced()== true);
-    EXPECT_TRUE(local_deleted.GetIsDel()== true);
-    EXPECT_TRUE(local_deleted.GetIsDir()== true);
+    EXPECT_EQ(1, local_deleted.GetBaseVersion());
+    EXPECT_FALSE(local_deleted.GetIsUnappliedUpdate());
+    EXPECT_TRUE(local_deleted.GetIsUnsynced());
+    EXPECT_TRUE(local_deleted.GetIsDel());
+    EXPECT_TRUE(local_deleted.GetIsDir());
   }
 }
 
@@ -4010,8 +4011,8 @@ TEST_F(SyncerTest, EnsureWeSendUpOldParent) {
   EXPECT_TRUE(SyncShareNudge());
   const sync_pb::CommitMessage& commit = mock_server_->last_sent_commit();
   ASSERT_EQ(2, commit.entries_size());
-  EXPECT_TRUE(commit.entries(0).parent_id_string() == "2");
-  EXPECT_TRUE(commit.entries(0).old_parent_id() == "0");
+  EXPECT_EQ("2", commit.entries(0).parent_id_string());
+  EXPECT_EQ("0", commit.entries(0).old_parent_id());
   EXPECT_FALSE(commit.entries(1).has_old_parent_id());
 }
 
@@ -4209,8 +4210,8 @@ TEST_F(SyncerTest, ClientTagIllegalUpdateIgnored) {
     ASSERT_TRUE(perm_folder.good());
     EXPECT_FALSE(perm_folder.GetIsUnappliedUpdate());
     EXPECT_FALSE(perm_folder.GetIsUnsynced());
-    EXPECT_EQ(perm_folder.GetUniqueClientTag(), "permfolder");
-    EXPECT_TRUE(perm_folder.GetNonUniqueName()== "permitem1");
+    EXPECT_EQ("permfolder", perm_folder.GetUniqueClientTag());
+    EXPECT_EQ("permitem1", perm_folder.GetNonUniqueName());
     EXPECT_TRUE(perm_folder.GetId().ServerKnows());
   }
 
@@ -4232,7 +4233,7 @@ TEST_F(SyncerTest, ClientTagIllegalUpdateIgnored) {
     ASSERT_TRUE(perm_folder.good());
     EXPECT_FALSE(perm_folder.GetIsUnappliedUpdate());
     EXPECT_FALSE(perm_folder.GetIsUnsynced());
-    EXPECT_EQ(perm_folder.GetNonUniqueName(), "permitem1");
+    EXPECT_EQ("permitem1", perm_folder.GetNonUniqueName());
   }
 }
 
@@ -4287,7 +4288,7 @@ TEST_F(SyncerTest, ClientTagUncommittedTagMatchesUpdate) {
     EXPECT_FALSE(pref.GetIsDel());
     EXPECT_FALSE(pref.GetIsUnappliedUpdate());
     EXPECT_FALSE(pref.GetIsUnsynced());
-    EXPECT_TRUE(10 < pref.GetBaseVersion());
+    EXPECT_LT(10, pref.GetBaseVersion());
     // Entry should have been given the new ID while preserving the
     // metahandle; client should have won the conflict resolution.
     EXPECT_EQ(original_metahandle, pref.GetMetahandle());
@@ -4589,7 +4590,7 @@ TEST_F(SyncerTest, UniqueServerTagUpdates) {
     ASSERT_TRUE(hurdle.good());
     ASSERT_TRUE(!hurdle.GetIsDel());
     ASSERT_TRUE(hurdle.GetUniqueServerTag().empty());
-    ASSERT_TRUE(hurdle.GetNonUniqueName()== "bob");
+    ASSERT_EQ("bob", hurdle.GetNonUniqueName());
 
     // Try to lookup by the tagname.  These should fail.
     Entry tag_alpha(&trans, GET_BY_SERVER_TAG, "alpha");
@@ -4615,19 +4616,19 @@ TEST_F(SyncerTest, UniqueServerTagUpdates) {
     Entry tag_alpha(&trans, GET_BY_SERVER_TAG, "alpha");
     ASSERT_TRUE(tag_alpha.good());
     ASSERT_TRUE(!tag_alpha.GetIsDel());
-    ASSERT_TRUE(tag_alpha.GetUniqueServerTag()== "alpha");
-    ASSERT_TRUE(tag_alpha.GetNonUniqueName()== "update1");
+    ASSERT_EQ("alpha", tag_alpha.GetUniqueServerTag());
+    ASSERT_EQ("update1", tag_alpha.GetNonUniqueName());
     Entry tag_bob(&trans, GET_BY_SERVER_TAG, "bob");
     ASSERT_TRUE(tag_bob.good());
     ASSERT_TRUE(!tag_bob.GetIsDel());
-    ASSERT_TRUE(tag_bob.GetUniqueServerTag()== "bob");
-    ASSERT_TRUE(tag_bob.GetNonUniqueName()== "update2");
+    ASSERT_EQ("bob", tag_bob.GetUniqueServerTag());
+    ASSERT_EQ("update2", tag_bob.GetNonUniqueName());
     // The old item should be unchanged.
     Entry hurdle(&trans, GET_BY_HANDLE, hurdle_handle);
     ASSERT_TRUE(hurdle.good());
     ASSERT_TRUE(!hurdle.GetIsDel());
     ASSERT_TRUE(hurdle.GetUniqueServerTag().empty());
-    ASSERT_TRUE(hurdle.GetNonUniqueName()== "bob");
+    ASSERT_EQ("bob", hurdle.GetNonUniqueName());
   }
 }
 

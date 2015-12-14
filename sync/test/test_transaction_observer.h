@@ -5,6 +5,7 @@
 #ifndef SYNC_TEST_TEST_TRANSACTION_OBSERVER_H_
 #define SYNC_TEST_TEST_TRANSACTION_OBSERVER_H_
 
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/syncable/transaction_observer.h"
@@ -33,9 +34,9 @@ class TestTransactionObserver :
   int transactions_observed();
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(TestTransactionObserver);
-
   int transactions_observed_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestTransactionObserver);
 };
 
 }  // namespace syncable

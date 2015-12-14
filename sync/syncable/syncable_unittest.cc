@@ -54,12 +54,10 @@ class TestBackingStore : public OnDiskDirectoryBackingStore {
 
   bool SaveChanges(const Directory::SaveChangesSnapshot& snapshot) override;
 
-   void StartFailingSaveChanges() {
-     fail_save_changes_ = true;
-   }
+  void StartFailingSaveChanges() { fail_save_changes_ = true; }
 
  private:
-   bool fail_save_changes_;
+  bool fail_save_changes_;
 };
 
 TestBackingStore::TestBackingStore(const std::string& dir_name,
@@ -71,7 +69,7 @@ TestBackingStore::TestBackingStore(const std::string& dir_name,
 TestBackingStore::~TestBackingStore() { }
 
 bool TestBackingStore::SaveChanges(
-    const Directory::SaveChangesSnapshot& snapshot){
+    const Directory::SaveChangesSnapshot& snapshot) {
   if (fail_save_changes_) {
     return false;
   } else {
@@ -84,7 +82,7 @@ class TestDirectory : public Directory {
  public:
   // A factory function used to work around some initialization order issues.
   static TestDirectory* Create(
-      Encryptor *encryptor,
+      Encryptor* encryptor,
       const WeakHandle<UnrecoverableErrorHandler>& handler,
       const std::string& dir_name,
       const base::FilePath& backing_filepath);
@@ -104,7 +102,7 @@ class TestDirectory : public Directory {
 };
 
 TestDirectory* TestDirectory::Create(
-    Encryptor *encryptor,
+    Encryptor* encryptor,
     const WeakHandle<UnrecoverableErrorHandler>& handler,
     const std::string& dir_name,
     const base::FilePath& backing_filepath) {
@@ -193,7 +191,7 @@ class OnDiskSyncableDirectoryTest : public SyncableDirectoryTest {
     test_directory_->StartFailingSaveChanges();
   }
 
-  TestDirectory *test_directory_;  // mirrors scoped_ptr<Directory> dir_
+  TestDirectory* test_directory_;  // mirrors scoped_ptr<Directory> dir_
   base::ScopedTempDir temp_dir_;
   base::FilePath file_path_;
 };

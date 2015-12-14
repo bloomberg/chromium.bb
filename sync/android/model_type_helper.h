@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNC_MODEL_TYPE_HELPER_H_
-#define SYNC_MODEL_TYPE_HELPER_H_
+#ifndef SYNC_ANDROID_MODEL_TYPE_HELPER_H_
+#define SYNC_ANDROID_MODEL_TYPE_HELPER_H_
 
 #include <jni.h>
 
@@ -13,4 +13,4 @@ bool RegisterModelTypeHelperJni(JNIEnv* env);
 
 }
 
-#endif  // SYNC_MODEL_TYPE_HELPER_H_
+#endif  // SYNC_ANDROID_MODEL_TYPE_HELPER_H_

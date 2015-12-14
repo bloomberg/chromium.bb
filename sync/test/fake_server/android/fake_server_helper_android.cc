@@ -5,6 +5,8 @@
 #include "sync/test/fake_server/android/fake_server_helper_android.h"
 
 #include <jni.h>
+#include <set>
+#include <vector>
 
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
@@ -142,7 +144,7 @@ void FakeServerHelperAndroid::InjectUniqueClientEntity(
 
   sync_pb::EntitySpecifics entity_specifics;
   DeserializeEntitySpecifics(env, serialized_entity_specifics,
-                             entity_specifics);
+                             &entity_specifics);
 
   fake_server_ptr->InjectEntity(
       fake_server::UniqueClientEntity::CreateForInjection(
@@ -160,7 +162,7 @@ void FakeServerHelperAndroid::ModifyEntitySpecifics(
 
   sync_pb::EntitySpecifics entity_specifics;
   DeserializeEntitySpecifics(env, serialized_entity_specifics,
-                             entity_specifics);
+                             &entity_specifics);
 
   fake_server_ptr->ModifyEntitySpecifics(
       base::android::ConvertJavaStringToUTF8(env, id), entity_specifics);
@@ -169,14 +171,14 @@ void FakeServerHelperAndroid::ModifyEntitySpecifics(
 void FakeServerHelperAndroid::DeserializeEntitySpecifics(
     JNIEnv* env,
     jbyteArray serialized_entity_specifics,
-    sync_pb::EntitySpecifics& entity_specifics) {
+    sync_pb::EntitySpecifics* entity_specifics) {
   int specifics_bytes_length = env->GetArrayLength(serialized_entity_specifics);
   jbyte* specifics_bytes =
       env->GetByteArrayElements(serialized_entity_specifics, NULL);
   std::string specifics_string(reinterpret_cast<char *>(specifics_bytes),
                                specifics_bytes_length);
 
-  if (!entity_specifics.ParseFromString(specifics_string))
+  if (!entity_specifics->ParseFromString(specifics_string))
     NOTREACHED() << "Could not deserialize EntitySpecifics";
 }
 

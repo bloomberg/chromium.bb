@@ -31,7 +31,8 @@ class NigoriStream {
   // followed by |value| itself to the stream.
   NigoriStream& operator<<(const std::string& value) {
     uint32 size = base::HostToNet32(value.size());
-    stream_.write((char *) &size, sizeof(uint32));
+
+    stream_.write(reinterpret_cast<char*>(&size), sizeof(uint32));
     stream_ << value;
     return *this;
   }
@@ -41,9 +42,9 @@ class NigoriStream {
   // bits, to the stream.
   NigoriStream& operator<<(const Nigori::Type type) {
     uint32 size = base::HostToNet32(sizeof(uint32));
-    stream_.write((char *) &size, sizeof(uint32));
+    stream_.write(reinterpret_cast<char*>(&size), sizeof(uint32));
     uint32 value = base::HostToNet32(type);
-    stream_.write((char *) &value, sizeof(uint32));
+    stream_.write(reinterpret_cast<char*>(&value), sizeof(uint32));
     return *this;
   }
 

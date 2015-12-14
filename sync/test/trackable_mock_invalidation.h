@@ -5,6 +5,8 @@
 #ifndef SYNC_TEST_TRACKABLE_MOCK_INVALIDATION_H_
 #define SYNC_TEST_TRACKABLE_MOCK_INVALIDATION_H_
 
+#include <string>
+
 #include "sync/test/mock_invalidation.h"
 
 namespace syncer {

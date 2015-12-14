@@ -5,6 +5,8 @@
 #ifndef SYNC_SYNCABLE_SYNCABLE_BASE_TRANSACTION_H_
 #define SYNC_SYNCABLE_SYNCABLE_BASE_TRANSACTION_H_
 
+#include <string>
+
 #include "base/location.h"
 #include "sync/base/sync_export.h"
 #include "sync/syncable/syncable_id.h"

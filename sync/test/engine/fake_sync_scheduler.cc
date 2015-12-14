@@ -48,11 +48,9 @@ void FakeSyncScheduler::SetNotificationsEnabled(bool notifications_enabled) {
 }
 
 void FakeSyncScheduler::OnCredentialsUpdated() {
-
 }
 
 void FakeSyncScheduler::OnConnectionStatusChange() {
-
 }
 
 void FakeSyncScheduler::OnThrottled(

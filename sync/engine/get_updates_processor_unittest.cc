@@ -4,6 +4,8 @@
 
 #include "sync/engine/get_updates_processor.h"
 
+#include <string>
+
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "sync/engine/get_updates_delegate.h"

@@ -6,6 +6,7 @@
 
 #include "sync/protocol/proto_value_conversions.h"
 
+#include <algorithm>
 #include <string>
 
 #include "base/base64.h"

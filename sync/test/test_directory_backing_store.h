@@ -5,6 +5,8 @@
 #ifndef SYNC_TEST_TEST_DIRECTORY_BACKING_STORE_H_
 #define SYNC_TEST_TEST_DIRECTORY_BACKING_STORE_H_
 
+#include <string>
+
 #include "base/gtest_prod_util.h"
 #include "sync/syncable/directory_backing_store.h"
 

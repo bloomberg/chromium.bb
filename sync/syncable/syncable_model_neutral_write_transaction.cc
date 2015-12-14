@@ -29,5 +29,5 @@ void ModelNeutralWriteTransaction::TrackChangesTo(const EntryKernel* entry) {
   modified_handles_.insert(entry->ref(META_HANDLE));
 }
 
-}  // namespace syncer
 }  // namespace syncable
+}  // namespace syncer

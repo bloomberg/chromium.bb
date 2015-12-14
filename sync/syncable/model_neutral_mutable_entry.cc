@@ -402,7 +402,7 @@ void ModelNeutralMutableEntry::PutBaseServerSpecifics(
 void ModelNeutralMutableEntry::PutServerUniquePosition(
     const UniquePosition& value) {
   DCHECK(kernel_);
-  if(!kernel_->ref(SERVER_UNIQUE_POSITION).Equals(value)) {
+  if (!kernel_->ref(SERVER_UNIQUE_POSITION).Equals(value)) {
     base_write_transaction_->TrackChangesTo(kernel_);
     // We should never overwrite a valid position with an invalid one.
     DCHECK(value.IsValid());

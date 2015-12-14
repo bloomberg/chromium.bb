@@ -72,7 +72,7 @@ class SYNC_EXPORT AttachmentId {
 
   ImmutableAttachmentIdProto proto_;
 
-  AttachmentId(sync_pb::AttachmentIdProto* proto);
+  explicit AttachmentId(sync_pb::AttachmentIdProto* proto);
 };
 
 // All public interfaces use AttachmentIdList. AttachmentIdSet is used in

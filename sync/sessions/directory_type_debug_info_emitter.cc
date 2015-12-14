@@ -4,6 +4,8 @@
 
 #include "sync/sessions/directory_type_debug_info_emitter.h"
 
+#include <vector>
+
 #include "sync/internal_api/public/sessions/status_counters.h"
 #include "sync/internal_api/public/sessions/type_debug_info_observer.h"
 #include "sync/syncable/entry.h"

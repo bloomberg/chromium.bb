@@ -4,6 +4,8 @@
 
 #include "sync/sessions/data_type_tracker.h"
 
+#include <algorithm>
+
 #include "base/logging.h"
 #include "sync/internal_api/public/base/invalidation_interface.h"
 #include "sync/sessions/nudge_tracker.h"

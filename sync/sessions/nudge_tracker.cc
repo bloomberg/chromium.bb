@@ -25,22 +25,22 @@ const int kSyncSchedulerDelayMilliseconds = 250;
 base::TimeDelta GetDefaultDelayForType(ModelType model_type,
                                        base::TimeDelta minimum_delay) {
   switch (model_type) {
-   case AUTOFILL:
+    case AUTOFILL:
      // Accompany types rely on nudges from other types, and hence have long
      // nudge delays.
      return base::TimeDelta::FromSeconds(kDefaultShortPollIntervalSeconds);
-   case BOOKMARKS:
-   case PREFERENCES:
+    case BOOKMARKS:
+    case PREFERENCES:
      // Types with sometimes automatic changes get longer delays to allow more
      // coalescing.
      return base::TimeDelta::FromMilliseconds(kSlowNudgeDelayMilliseconds);
-   case SESSIONS:
-   case FAVICON_IMAGES:
-   case FAVICON_TRACKING:
+    case SESSIONS:
+    case FAVICON_IMAGES:
+    case FAVICON_TRACKING:
      // Types with navigation triggered changes get longer delays to allow more
      // coalescing.
      return base::TimeDelta::FromSeconds(kDefaultSessionsCommitDelaySeconds);
-   default:
+    default:
      return minimum_delay;
   }
 }

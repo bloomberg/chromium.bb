@@ -5,6 +5,8 @@
 #ifndef SYNC_SYNCABLE_SYNCABLE_WRITE_TRANSACTION_H_
 #define SYNC_SYNCABLE_SYNCABLE_WRITE_TRANSACTION_H_
 
+#include <vector>
+
 #include "sync/base/sync_export.h"
 #include "sync/syncable/entry_kernel.h"
 #include "sync/syncable/syncable_base_write_transaction.h"
@@ -65,4 +67,4 @@ class SYNC_EXPORT WriteTransaction : public BaseWriteTransaction {
 }  // namespace syncable
 }  // namespace syncer
 
-#endif //  SYNC_SYNCABLE_SYNCABLE_WRITE_TRANSACTION_H_
+#endif  // SYNC_SYNCABLE_SYNCABLE_WRITE_TRANSACTION_H_

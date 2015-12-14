@@ -156,4 +156,4 @@ TEST_F(EntityTrackerTest, ReflectedUpdateDoesntClobberCommit) {
   EXPECT_TRUE(entity->HasPendingCommit());
 }
 
-}  // namespace syncer
+}  // namespace syncer_v2

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "sync/api/fake_sync_change_processor.h"
+
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_data.h"
 

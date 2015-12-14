@@ -20,7 +20,7 @@ extern const int kNumEntriesRequiredForCorruption;
 // Returns true if the database was successfully corrupted.
 bool CorruptDatabase(const base::FilePath& backing_file_path);
 
-}  // namespace corruption_util
+}  // namespace corruption_testing
 }  // namespace syncable
 }  // namespace syncer
 

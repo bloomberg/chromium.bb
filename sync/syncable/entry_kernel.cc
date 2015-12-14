@@ -287,5 +287,5 @@ std::ostream& operator<<(std::ostream& os, const EntryKernel& entry_kernel) {
   return os;
 }
 
-}  // namespace syncer
 }  // namespace syncable
+}  // namespace syncer

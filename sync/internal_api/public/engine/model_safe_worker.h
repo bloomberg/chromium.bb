@@ -93,8 +93,6 @@ class SYNC_EXPORT ModelSafeWorker
   void WillDestroyCurrentMessageLoop() override;
 
  protected:
-  friend class base::RefCountedThreadSafe<ModelSafeWorker>;
-
   explicit ModelSafeWorker(WorkerLoopDestructionObserver* observer);
   ~ModelSafeWorker() override;
 
@@ -115,6 +113,8 @@ class SYNC_EXPORT ModelSafeWorker
   void SetWorkingLoopToCurrent();
 
  private:
+  friend class base::RefCountedThreadSafe<ModelSafeWorker>;
+
   void UnregisterForLoopDestructionAsync(
       base::Callback<void(ModelSafeGroup)> unregister_done_callback);
 

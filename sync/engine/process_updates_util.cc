@@ -4,6 +4,8 @@
 
 #include "sync/engine/process_updates_util.h"
 
+#include <string>
+
 #include "base/location.h"
 #include "base/metrics/sparse_histogram.h"
 #include "sync/engine/syncer_proto_util.h"
@@ -49,7 +51,7 @@ namespace {
 // For more information, see FindLocalIdToUpdate().
 bool UpdateContainsNewVersion(syncable::BaseTransaction *trans,
                               const sync_pb::SyncEntity &update) {
-  int64 existing_version = -1; // The server always sends positive versions.
+  int64 existing_version = -1;  // The server always sends positive versions.
   syncable::Entry existing_entry(trans, GET_BY_ID,
                                  SyncableIdFromProto(update.id_string()));
   if (existing_entry.good())
@@ -159,7 +161,6 @@ VerifyResult VerifyUpdate(
 bool ReverifyEntry(syncable::ModelNeutralWriteTransaction* trans,
                    const sync_pb::SyncEntity& entry,
                    syncable::ModelNeutralMutableEntry* same_id) {
-
   const bool deleted = entry.has_deleted() && entry.deleted();
   const bool is_directory = IsFolder(entry);
   const ModelType model_type = GetModelType(entry);

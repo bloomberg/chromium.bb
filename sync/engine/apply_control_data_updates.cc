@@ -4,6 +4,8 @@
 
 #include "sync/engine/apply_control_data_updates.h"
 
+#include <vector>
+
 #include "base/metrics/histogram.h"
 #include "sync/engine/conflict_resolver.h"
 #include "sync/engine/conflict_util.h"

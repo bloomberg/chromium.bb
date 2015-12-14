@@ -11,6 +11,7 @@
 #ifndef SYNC_ENGINE_UPDATE_APPLICATOR_H_
 #define SYNC_ENGINE_UPDATE_APPLICATOR_H_
 
+#include <set>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -34,7 +35,7 @@ class Cryptographer;
 
 class UpdateApplicator {
  public:
-  UpdateApplicator(Cryptographer* cryptographer);
+  explicit UpdateApplicator(Cryptographer* cryptographer);
   ~UpdateApplicator();
 
   // Attempt to apply the specified updates.
@@ -64,12 +65,12 @@ class UpdateApplicator {
   // Used to decrypt sensitive sync nodes.
   Cryptographer* cryptographer_;
 
-  DISALLOW_COPY_AND_ASSIGN(UpdateApplicator);
-
   int updates_applied_;
   int encryption_conflicts_;
   int hierarchy_conflicts_;
   std::set<syncable::Id> simple_conflict_ids_;
+
+  DISALLOW_COPY_AND_ASSIGN(UpdateApplicator);
 };
 
 }  // namespace syncer

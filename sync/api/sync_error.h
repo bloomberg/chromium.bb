@@ -27,21 +27,23 @@ class SYNC_EXPORT SyncError {
   // in the datatype being disabled) from actionable sync errors (which might
   // have more complicated results).
   enum ErrorType {
-    UNSET,                // No error.
-    UNRECOVERABLE_ERROR,  // An unrecoverable runtime error was encountered, and
-                          // sync should be disabled and purged completely.
-    DATATYPE_ERROR,       // A datatype error was encountered, and the datatype
-                          // should be disabled and purged completely. Note that
-                          // datatype errors may be reset, triggering a
-                          // re-enable.
-    PERSISTENCE_ERROR,    // A persistence error was detected, and the
-                          // datataype should be associated after a sync update.
-    CRYPTO_ERROR,         // A cryptographer error was detected, and the
-                          // datatype should be associated after it is resolved.
-    UNREADY_ERROR,        // A datatype is not ready to start yet, so should be
-                          // neither purged nor enabled until it is ready.
-    DATATYPE_POLICY_ERROR // A datatype should be disabled and purged due
-                          // to configuration constraints.
+    UNSET,                 // No error.
+    UNRECOVERABLE_ERROR,   // An unrecoverable runtime error was encountered,
+                           // and sync should be disabled and purged completely.
+    DATATYPE_ERROR,        // A datatype error was encountered, and the datatype
+                           // should be disabled and purged completely. Note
+                           // that datatype errors may be reset, triggering a
+                           // re-enable.
+    PERSISTENCE_ERROR,     // A persistence error was detected, and the
+                           // datataype should be associated after a sync
+                           // update.
+    CRYPTO_ERROR,          // A cryptographer error was detected, and the
+                           // datatype should be associated after it is
+                           // resolved.
+    UNREADY_ERROR,         // A datatype is not ready to start yet, so should be
+                           // neither purged nor enabled until it is ready.
+    DATATYPE_POLICY_ERROR  // A datatype should be disabled and purged due to
+                           // configuration constraints.
   };
 
   // Severity is used to indicate how an error should be logged and
@@ -93,6 +95,7 @@ class SYNC_EXPORT SyncError {
 
   // Returns empty string is IsSet() is false.
   std::string ToString() const;
+
  private:
   // Print error information to log.
   void PrintLogError() const;
