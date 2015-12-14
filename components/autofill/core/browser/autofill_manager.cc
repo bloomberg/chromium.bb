@@ -958,8 +958,10 @@ bool AutofillManager::ShouldUploadForm(const FormStructure& form) {
 
 void AutofillManager::ImportFormData(const FormStructure& submitted_form) {
   scoped_ptr<CreditCard> imported_credit_card;
-  if (!personal_data_->ImportFormData(submitted_form, &imported_credit_card))
+  if (!personal_data_->ImportFormData(
+          submitted_form, IsCreditCardUploadEnabled(), &imported_credit_card)) {
     return;
+  }
 
 #ifdef ENABLE_FORM_DEBUG_DUMP
   // Debug code for research on what autofill Chrome extracts from the last few

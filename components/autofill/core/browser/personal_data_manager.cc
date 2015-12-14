@@ -347,6 +347,7 @@ void PersonalDataManager::RemoveObserver(
 
 bool PersonalDataManager::ImportFormData(
     const FormStructure& form,
+    bool should_return_local_card,
     scoped_ptr<CreditCard>* imported_credit_card) {
   scoped_ptr<AutofillProfile> imported_profile(new AutofillProfile);
   scoped_ptr<CreditCard> local_imported_credit_card(new CreditCard);
@@ -454,8 +455,11 @@ bool PersonalDataManager::ImportFormData(
     local_imported_credit_card.reset();
   }
 
-  // Don't import if we already have this info.
-  // Don't present a prompt if we have already saved this card number.
+  // Don't import if we already have this info. Don't present a prompt if we
+  // have already saved this card number, unless should_return_local_card is
+  // true which indicates that upload is enabled. In this case, it's useful to
+  // present the upload prompt to the user to promote the card from a local card
+  // to a synced server card.
   bool merged_credit_card = false;
   if (local_imported_credit_card) {
     for (CreditCard* card : local_credit_cards_) {
@@ -466,7 +470,8 @@ bool PersonalDataManager::ImportFormData(
                                            app_locale_)) {
         merged_credit_card = true;
         UpdateCreditCard(card_copy);
-        local_imported_credit_card.reset();
+        if (!should_return_local_card)
+          local_imported_credit_card.reset();
         break;
       }
     }

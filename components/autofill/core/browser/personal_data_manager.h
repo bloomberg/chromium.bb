@@ -89,11 +89,16 @@ class PersonalDataManager : public KeyedService,
   virtual void RemoveObserver(PersonalDataManagerObserver* observer);
 
   // Scans the given |form| for importable Autofill data. If the form includes
-  // sufficient address data, it is immediately imported. If the form includes
-  // sufficient credit card data, it is stored into |credit_card|, so that we
-  // can prompt the user whether to save this data.
+  // sufficient address data for a new profile, it is immediately imported. If
+  // the form includes sufficient credit card data for a new credit card, it is
+  // stored into |credit_card| so that we can prompt the user whether to save
+  // this data. If the form contains credit card data already present in a local
+  // credit card entry *and* |should_return_local_card| is true, the data is
+  // stored into |credit_card| so that we can prompt the user whether to upload
+  // it.
   // Returns |true| if sufficient address or credit card data was found.
   bool ImportFormData(const FormStructure& form,
+                      bool should_return_local_card,
                       scoped_ptr<CreditCard>* credit_card);
 
   // Called to indicate |data_model| was used (to fill in a form). Updates
