@@ -34,6 +34,7 @@ drm_intel_bo_mrb_exec
 drm_intel_bo_pin
 drm_intel_bo_reference
 drm_intel_bo_references
+drm_intel_bo_set_softpin_offset
 drm_intel_bo_set_tiling
 drm_intel_bo_subdata
 drm_intel_bo_unmap
