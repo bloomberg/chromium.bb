@@ -5,52 +5,48 @@
 # Individual libfuzzer tests that didn't find their home yet.
 
 import("//build/config/features.gni")
-import("//testing/test.gni")
+import("//testing/libfuzzer/fuzzer_test.gni")
 
-test("brotli_fuzzer") {
+fuzzer_test("brotli_fuzzer") {
   sources = [
     "brotli_fuzzer.cc",
   ]
   deps = [
-    "//testing/libfuzzer:libfuzzer_main",
     "//third_party/brotli:brotli",
   ]
 }
 
-test("courgette_fuzzer") {
+fuzzer_test("courgette_fuzzer") {
   sources = [
     "courgette_fuzzer.cc",
   ]
   deps = [
     "//base",
     "//courgette:courgette_lib",
-    "//testing/libfuzzer:libfuzzer_main",
   ]
 }
 
-test("dns_record_fuzzer") {
+fuzzer_test("dns_record_fuzzer") {
   sources = [
     "dns_record_fuzzer.cc",
   ]
   deps = [
     "//base",
     "//net",
-    "//testing/libfuzzer:libfuzzer_main",
   ]
 }
 
-test("ftp_ctrl_response_fuzzer") {
+fuzzer_test("ftp_ctrl_response_fuzzer") {
   sources = [
     "ftp_ctrl_response_fuzzer.cc",
   ]
   deps = [
     "//base",
     "//net",
-    "//testing/libfuzzer:libfuzzer_main",
   ]
 }
 
-test("ftp_directory_listing_fuzzer") {
+fuzzer_test("ftp_directory_listing_fuzzer") {
   sources = [
     "ftp_directory_listing_fuzzer.cc",
   ]
@@ -58,136 +54,123 @@ test("ftp_directory_listing_fuzzer") {
     "//base",
     "//base:i18n",
     "//net",
-    "//testing/libfuzzer:libfuzzer_main",
   ]
 }
 
-test("language_detection_fuzzer") {
+fuzzer_test("language_detection_fuzzer") {
   sources = [
     "language_detection_fuzzer.cc",
   ]
   deps = [
     "//base",
     "//components/translate/core/language_detection:language_detection",
-    "//testing/libfuzzer:libfuzzer_main",
   ]
 }
 
 if (proprietary_codecs) {
-  test("mp4_box_reader_fuzzer") {
+  fuzzer_test("mp4_box_reader_fuzzer") {
     sources = [
       "mp4_box_reader_fuzzer.cc",
     ]
     deps = [
       "//base",
       "//media",
-      "//testing/libfuzzer:libfuzzer_main",
     ]
   }
 
-  test("es_parser_adts_fuzzer") {
+  fuzzer_test("es_parser_adts_fuzzer") {
     sources = [
       "es_parser_adts_fuzzer.cc",
     ]
     deps = [
       "//base",
       "//media",
-      "//testing/libfuzzer:libfuzzer_main",
     ]
   }
 
-  test("es_parser_h264_fuzzer") {
+  fuzzer_test("es_parser_h264_fuzzer") {
     sources = [
       "es_parser_h264_fuzzer.cc",
     ]
     deps = [
       "//base",
       "//media",
-      "//testing/libfuzzer:libfuzzer_main",
     ]
   }
 
-  test("es_parser_mpeg1audio_fuzzer") {
+  fuzzer_test("es_parser_mpeg1audio_fuzzer") {
     sources = [
       "es_parser_mpeg1audio_fuzzer.cc",
     ]
     deps = [
       "//base",
       "//media",
-      "//testing/libfuzzer:libfuzzer_main",
     ]
   }
 }
 
-test("snappy_fuzzer") {
+fuzzer_test("snappy_fuzzer") {
   sources = [
     "snappy_fuzzer.cc",
   ]
   deps = [
-    "//testing/libfuzzer:libfuzzer_main",
     "//third_party/snappy:snappy",
   ]
 }
 
-test("string_tokenizer_fuzzer") {
+fuzzer_test("string_tokenizer_fuzzer") {
   sources = [
     "string_tokenizer_fuzzer.cc",
   ]
   deps = [
     "//base",
-    "//testing/libfuzzer:libfuzzer_main",
   ]
 }
 
-test("string_to_int_fuzzer") {
+fuzzer_test("string_to_int_fuzzer") {
   sources = [
     "string_to_int_fuzzer.cc",
   ]
   deps = [
     "//base",
-    "//testing/libfuzzer:libfuzzer_main",
   ]
 }
 
-test("unescape_url_component_fuzzer") {
+fuzzer_test("unescape_url_component_fuzzer") {
   sources = [
     "unescape_url_component_fuzzer.cc",
   ]
   deps = [
     "//base",
     "//net",
-    "//testing/libfuzzer:libfuzzer_main",
   ]
 }
 
-test("url_parse_fuzzer") {
+fuzzer_test("url_parse_fuzzer") {
   sources = [
     "url_parse_fuzzer.cc",
   ]
   deps = [
     "//base",
     "//base:i18n",
-    "//testing/libfuzzer:libfuzzer_main",
     "//url:url",
   ]
 }
 
-test("vp9_parser_fuzzer") {
+fuzzer_test("vp9_parser_fuzzer") {
   sources = [
     "vp9_parser_fuzzer.cc",
   ]
   deps = [
     "//media",
-    "//testing/libfuzzer:libfuzzer_main",
   ]
 }
 
-test("v8_json_parser_fuzzer") {
+fuzzer_test("v8_json_parser_fuzzer") {
   sources = [
     "v8_json_parser_fuzzer.cc",
   ]
   deps = [
-    "//testing/libfuzzer:libfuzzer_main",
     "//v8",
     "//v8:v8_libplatform",
   ]
@@ -197,69 +180,65 @@ test("v8_json_parser_fuzzer") {
   ]
 }
 
-test("base_json_reader_fuzzer") {
+fuzzer_test("base_json_reader_fuzzer") {
   sources = [
     "base_json_reader_fuzzer.cc",
   ]
   deps = [
     "//base",
-    "//testing/libfuzzer:libfuzzer_main",
   ]
 }
 
-test("gfx_png_image_fuzzer") {
+fuzzer_test("gfx_png_image_fuzzer") {
   sources = [
     "gfx_png_image_fuzzer.cc",
   ]
   deps = [
     "//base",
-    "//testing/libfuzzer:libfuzzer_main",
     "//ui/gfx",
   ]
 }
 
-test("zlib_uncompress_fuzzer") {
+fuzzer_test("zlib_uncompress_fuzzer") {
   sources = [
     "zlib_uncompress_fuzzer.cc",
   ]
   deps = [
-    "//testing/libfuzzer:libfuzzer_main",
     "//third_party/zlib",
   ]
 }
 
-test("pdfium_fuzzer") {
+fuzzer_test("pdfium_fuzzer") {
   sources = [
     "pdfium_fuzzer.cc",
   ]
   deps = [
-    "//testing/libfuzzer:libfuzzer_main",
     "//third_party/pdfium",
     "//third_party/pdfium:test_support",
     "//v8",
     "//v8:v8_libplatform",
   ]
-  configs += [ "//third_party/pdfium:pdfium_config" ]
-  configs += [ "//v8:external_startup_data" ]
+  additional_configs = [
+    "//third_party/pdfium:pdfium_config",
+    "//v8:external_startup_data",
+  ]
 }
 
-test("websocket_frame_parser_fuzzer") {
+fuzzer_test("websocket_frame_parser_fuzzer") {
   sources = [
     "websocket_frame_parser_fuzzer.cc",
   ]
   deps = [
     "//net",
-    "//testing/libfuzzer:libfuzzer_main",
   ]
 }
 
-test("http_chunked_decoder_fuzzer") {
+fuzzer_test("http_chunked_decoder_fuzzer") {
   sources = [
     "http_chunked_decoder_fuzzer.cc",
   ]
   deps = [
     "//net",
-    "//testing/libfuzzer:libfuzzer_main",
   ]
 }
 

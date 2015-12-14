@@ -1,0 +1,83 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//testing/test.gni")
+
+# fuzzer_test is used to define individual libfuzzer tests.
+#
+# Supported attributes:
+# - (required) sources - fuzzer test source files
+# - data - test data files.
+# - deps - test dependencies
+# - additional_configs - additional configs to be used for compilation
+# - dict - a dictionary file for the fuzzer.
+#
+# The template wraps test() target with appropriate dependencies.
+# If any test run-time options are present (dict), then a launcher
+# file would be generated with <fuzzer_name>.sh name in root output
+# dir (next to test).
+template("fuzzer_test") {
+  assert(defined(invoker.sources), "Need sources in $target_name.")
+
+  test_deps = [ "//testing/libfuzzer:libfuzzer_main" ]
+
+  if (defined(invoker.deps)) {
+    test_deps += invoker.deps
+  }
+
+  test_data = []
+  if (defined(invoker.data)) {
+    test_data += invoker.data
+  }
+
+  if (defined(invoker.dict)) {
+    fuzzer_name = target_name
+    launcher_name = target_name + ".sh"
+    generated_script = "$root_build_dir/$launcher_name"
+
+    # Copy dictionary to output
+    copy(target_name + "_dict_copy") {
+      sources = [
+        invoker.dict,
+      ]
+      outputs = [
+        "$target_out_dir/{{source_file_part}}",
+      ]
+    }
+
+    # Generate test launcher
+    action(launcher_name) {
+      script = "//testing/libfuzzer/gen_fuzzer_runner.py"
+      args = [
+        "--fuzzer",
+        fuzzer_name,
+        "--launcher",
+        rebase_path(generated_script, root_build_dir),
+        "--dict",
+        rebase_path("$target_out_dir/" + invoker.dict, root_build_dir),
+      ]
+      outputs = [
+        generated_script,
+      ]
+    }
+    test_deps += [
+      ":$launcher_name",
+      ":" + fuzzer_name + "_dict_copy",
+    ]
+    test_data += [
+      invoker.dict,
+      ":$launcher_name",
+    ]
+  }
+
+  test(target_name) {
+    forward_variables_from(invoker, [ "sources" ])
+    deps = test_deps
+    data = test_data
+
+    if (defined(invoker.additional_configs)) {
+      configs += invoker.additional_configs
+    }
+  }
+}
