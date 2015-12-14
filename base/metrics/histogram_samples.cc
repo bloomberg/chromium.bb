@@ -59,8 +59,16 @@ void SampleCountPickleIterator::Get(HistogramBase::Sample* min,
 
 }  // namespace
 
+// Don't try to delegate behavior to the constructor below that accepts a
+// Matadata pointer by passing &local_meta_. Such cannot be reliably passed
+// because it has not yet been constructed -- no member variables have; the
+// class itself is in the middle of being constructed. Using it to
+// initialize meta_ is okay because the object now exists and local_meta_
+// is before meta_ in the construction order.
 HistogramSamples::HistogramSamples(uint64_t id)
-    : HistogramSamples(id, &local_meta_) {}
+    : meta_(&local_meta_) {
+  meta_->id = id;
+}
 
 HistogramSamples::HistogramSamples(uint64_t id, Metadata* meta)
     : meta_(meta) {
