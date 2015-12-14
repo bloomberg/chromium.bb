@@ -42,8 +42,8 @@ void PaintArtifact::appendToWebDisplayItemList(WebDisplayItemList* list) const
 {
     TRACE_EVENT0("blink,benchmark", "PaintArtifact::appendToWebDisplayItemList");
     for (const DisplayItem& displayItem : m_displayItemList) {
-        IntRect visualRect = displayItem.client().visualRect();
-        displayItem.appendToWebDisplayItemList(visualRect, list);
+        // TODO(wkorman): Pass the actual visual rect for the display item.
+        displayItem.appendToWebDisplayItemList(IntRect(), list);
     }
 }
 
