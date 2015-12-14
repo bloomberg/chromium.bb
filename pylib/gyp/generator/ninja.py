@@ -1058,16 +1058,16 @@ class NinjaWriter(object):
       cmd = map.get(lang)
       ninja_file.build(gch, cmd, input, variables=[(var_name, lang_flag)])
 
-  def WriteLink(self, spec, config_name, config, link_deps):
+  def WriteLink(self, spec, config_name, config, link_deps, compile_deps):
     """Write out a link step. Fills out target.binary. """
     if self.flavor != 'mac' or len(self.archs) == 1:
       return self.WriteLinkForArch(
-          self.ninja, spec, config_name, config, link_deps)
+          self.ninja, spec, config_name, config, link_deps, compile_deps)
     else:
       output = self.ComputeOutput(spec)
       inputs = [self.WriteLinkForArch(self.arch_subninjas[arch], spec,
                                       config_name, config, link_deps[arch],
-                                      arch=arch)
+                                      compile_deps, arch=arch)
                 for arch in self.archs]
       extra_bindings = []
       build_output = output
@@ -1086,7 +1086,7 @@ class NinjaWriter(object):
       return output
 
   def WriteLinkForArch(self, ninja_file, spec, config_name, config,
-                       link_deps, arch=None):
+                       link_deps, compile_deps, arch=None):
     """Write out a link step. Fills out target.binary. """
     command = {
       'executable':      'link',
@@ -1098,6 +1098,14 @@ class NinjaWriter(object):
     implicit_deps = set()
     solibs = set()
     order_deps = set()
+
+    if compile_deps:
+      # Normally, the compiles of the target already depend on compile_deps,
+      # but a shared_library target might have no sources and only link together
+      # a few static_library deps, so the link step also needs to depend
+      # on compile_deps to make sure actions in the shared_library target
+      # get run before the link.
+      order_deps.add(compile_deps)
 
     if 'dependencies' in spec:
       # Two kinds of dependencies:
@@ -1308,7 +1316,8 @@ class NinjaWriter(object):
                            # needed.
                            variables=variables)
     else:
-      self.target.binary = self.WriteLink(spec, config_name, config, link_deps)
+      self.target.binary = self.WriteLink(spec, config_name, config, link_deps,
+                                          compile_deps)
     return self.target.binary
 
   def WriteMacBundle(self, spec, mac_bundle_depends, is_empty):
