@@ -1220,6 +1220,34 @@ crbug.com/353746 virtual/android/fullscreen/video-specified-size.html [ Failure 
 
 crbug.com/527270 accessibility/name-calc-img.html [ Failure Pass Timeout ]
 
+# These tests will be affected by the removal of
+# SK_SUPPORT_SRC_BOUNDS_BLOAT_FOR_IMAGEFILTERS
+crbug.com/240827 compositing/culling/filter-occlusion-blur-large.html [ NeedsRebaseline ]
+crbug.com/240827 compositing/culling/filter-occlusion-blur.html [ NeedsRebaseline ]
+crbug.com/240827 css3/filters/effect-blur-hw.html [ NeedsRebaseline ]
+crbug.com/240827 css3/filters/effect-drop-shadow-hw.html [ NeedsRebaseline ]
+crbug.com/240827 css3/filters/effect-reference-colorspace-hw.html [ NeedsRebaseline ]
+crbug.com/240827 css3/filters/effect-reference-hidpi-hw.html [ NeedsRebaseline ]
+crbug.com/240827 css3/filters/effect-reference-hw.html [ NeedsRebaseline ]
+crbug.com/240827 css3/filters/effect-reference-ordering-hw.html [ NeedsRebaseline ]
+crbug.com/240827 css3/filters/effect-reference-subregion-hw.html [ NeedsRebaseline ]
+crbug.com/240827 css3/filters/effect-reference-zoom-hw.html [ NeedsRebaseline ]
+crbug.com/240827 css3/filters/effect-reference-zoom.html [ NeedsRebaseline ]
+crbug.com/240827 css3/filters/effect-reference.html [ NeedsRebaseline ]
+crbug.com/240827 css3/filters/filter-repaint-composited-fallback-crash.html [ NeedsRebaseline ]
+crbug.com/240827 css3/filters/filter-repaint-composited-fallback.html [ NeedsRebaseline ]
+crbug.com/240827 svg/batik/filters/feTile.svg [ NeedsRebaseline ]
+crbug.com/240827 svg/batik/text/textFeatures.svg [ NeedsRebaseline ]
+crbug.com/240827 svg/css/path-gradient-stroke-shadow.svg [ NeedsRebaseline ]
+crbug.com/240827 svg/css/rect-gradient-stroke-shadow.svg [ NeedsRebaseline ]
+crbug.com/240827 svg/dynamic-updates/SVGFEMergeNodeElement-dom-in-attr.html [ NeedsRebaseline ]
+crbug.com/240827 svg/dynamic-updates/SVGFEMergeNodeElement-svgdom-in-prop.html [ NeedsRebaseline ]
+crbug.com/240827 fast/canvas/canvas-shadow-source-in.html [ NeedsRebaseline ]
+crbug.com/240827 virtual/display_list_2d_canvas/fast/canvas/canvas-shadow-source-in.html [ NeedsRebaseline ]
+crbug.com/240827 virtual/gpu/fast/canvas/canvas-incremental-repaint.html [ NeedsRebaseline ]
+crbug.com/240827 virtual/gpu/fast/canvas/canvas-shadow-source-in.html [ NeedsRebaseline ]
+
+
 # This test has different results in Debug and Release.
 crbug.com/529038 [ Debug ] virtual/gpu/fast/canvas/canvas-composite-repaint-by-all-imagesource.html [ Failure ]
 
