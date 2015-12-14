@@ -16,6 +16,27 @@
 namespace chromecast {
 namespace media {
 
+namespace {
+
+bool RectFEqual(const RectF& r1, const RectF& r2) {
+  return r1.x == r2.x && r1.y == r2.y && r1.width == r2.width &&
+         r1.height == r2.height;
+}
+
+bool SizeEqual(const Size& s1, const Size& s2) {
+  return s1.width == s2.width && s1.height == s2.height;
+}
+
+bool DisplayRectFValid(const RectF& r) {
+  return r.width >= 0 && r.height >= 0;
+}
+
+bool ResolutionSizeValid(const Size& s) {
+  return s.width >= 0 && s.height >= 0;
+}
+
+}  // namespace
+
 // Helper class for calling VideoPlane::SetGeometry with rate-limiting.
 // SetGeometry can take on the order of 100ms to run in some implementations
 // and can be called on the order of 20x / second (as fast as graphics frames
@@ -38,6 +59,7 @@ class VideoPlaneController::RateLimitedSetVideoPlaneGeometry
   void SetGeometry(const chromecast::RectF& display_rect,
                    VideoPlane::Transform transform) {
     DCHECK(task_runner_->BelongsToCurrentThread());
+    DCHECK(DisplayRectFValid(display_rect));
 
     base::TimeTicks now = base::TimeTicks::Now();
     base::TimeDelta elapsed = now - last_set_geometry_time_;
@@ -119,11 +141,89 @@ VideoPlaneController* VideoPlaneController::GetInstance() {
   return base::Singleton<VideoPlaneController>::get();
 }
 
+// TODO(esum): SetGeometry, SetDeviceResolution, and SetGraphicsPlaneResolution
+// follow the same pattern (copy/paste). Currently it's not worth modularizing
+// since there are only 3 fields. If more fields are needed in the future,
+// consider making a generic method to implement this pattern.
 void VideoPlaneController::SetGeometry(const RectF& display_rect,
                                        VideoPlane::Transform transform) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(DisplayRectFValid(display_rect));
+  if (have_video_plane_geometry_ &&
+      RectFEqual(display_rect, video_plane_display_rect_) &&
+      transform == video_plane_transform_) {
+    VLOG(2) << "No change found in geometry parameters.";
+    return;
+  }
+
+  VLOG(1) << "New geometry parameters "
+          << " rect=" << display_rect.width << "x" << display_rect.height
+          << " @" << display_rect.x << "," << display_rect.y << " transform "
+          << transform;
+
+  have_video_plane_geometry_ = true;
+  video_plane_display_rect_ = display_rect;
+  video_plane_transform_ = transform;
+
+  MaybeRunSetGeometry();
+}
+
+void VideoPlaneController::SetDeviceResolution(const Size& resolution) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(ResolutionSizeValid(resolution));
+  if (have_output_res_ && SizeEqual(resolution, output_res_)) {
+    VLOG(2) << "No change found in output resolution.";
+    return;
+  }
+
+  VLOG(1) << "New output resolution " << resolution.width << "x"
+          << resolution.height;
+
+  have_output_res_ = true;
+  output_res_ = resolution;
+
+  MaybeRunSetGeometry();
+}
+
+void VideoPlaneController::SetGraphicsPlaneResolution(const Size& resolution) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(ResolutionSizeValid(resolution));
+  if (have_graphics_res_ && SizeEqual(resolution, graphics_res_)) {
+    VLOG(2) << "No change found in graphics resolution.";
+    return;
+  }
+
+  VLOG(1) << "New graphics resolution " << resolution.width << "x"
+          << resolution.height;
+
+  have_graphics_res_ = true;
+  graphics_res_ = resolution;
+
+  MaybeRunSetGeometry();
+}
+
+VideoPlaneController::VideoPlaneController()
+    : have_output_res_(false),
+      have_graphics_res_(false),
+      output_res_(0, 0),
+      graphics_res_(0, 0),
+      have_video_plane_geometry_(false),
+      video_plane_display_rect_(0, 0),
+      video_plane_transform_(VideoPlane::TRANSFORM_NONE),
+      media_task_runner_(MediaMessageLoop::GetTaskRunner()),
+      video_plane_wrapper_(
+          new RateLimitedSetVideoPlaneGeometry(media_task_runner_)) {}
+
+VideoPlaneController::~VideoPlaneController() {}
+
+void VideoPlaneController::MaybeRunSetGeometry() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (!HaveDataForSetGeometry())
+    return;
+
   DCHECK(graphics_res_.width != 0 && graphics_res_.height != 0);
 
-  RectF scaled_rect = display_rect;
+  RectF scaled_rect = video_plane_display_rect_;
   if (graphics_res_.width != output_res_.width ||
       graphics_res_.height != output_res_.height) {
     float sx = static_cast<float>(output_res_.width) / graphics_res_.width;
@@ -135,50 +235,15 @@ void VideoPlaneController::SetGeometry(const RectF& display_rect,
   }
 
   media_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&RateLimitedSetVideoPlaneGeometry::SetGeometry,
-                            video_plane_wrapper_, scaled_rect, transform));
-
-  have_video_plane_geometry_ = true;
-  video_plane_display_rect_ = display_rect;
-  video_plane_transform_ = transform;
+      FROM_HERE,
+      base::Bind(&RateLimitedSetVideoPlaneGeometry::SetGeometry,
+                 video_plane_wrapper_, scaled_rect, video_plane_transform_));
 }
 
-void VideoPlaneController::OnDeviceResolutionChanged(const Size& resolution) {
-  if (output_res_.width == resolution.width &&
-      output_res_.height == resolution.height)
-    return;
-
-  output_res_ = resolution;
-
-  if (have_video_plane_geometry_) {
-    SetGeometry(video_plane_display_rect_, video_plane_transform_);
-  }
+bool VideoPlaneController::HaveDataForSetGeometry() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return have_output_res_ && have_graphics_res_ && have_video_plane_geometry_;
 }
-
-void VideoPlaneController::OnGraphicsPlaneResolutionChanged(
-    const Size& resolution) {
-  if (graphics_res_.width == resolution.width &&
-      graphics_res_.height == resolution.height)
-    return;
-
-  graphics_res_ = resolution;
-
-  if (have_video_plane_geometry_) {
-    SetGeometry(video_plane_display_rect_, video_plane_transform_);
-  }
-}
-
-VideoPlaneController::VideoPlaneController()
-    : output_res_(0, 0),
-      graphics_res_(0, 0),
-      have_video_plane_geometry_(false),
-      video_plane_display_rect_(0, 0),
-      video_plane_transform_(media::VideoPlane::TRANSFORM_NONE),
-      media_task_runner_(chromecast::media::MediaMessageLoop::GetTaskRunner()),
-      video_plane_wrapper_(
-          new RateLimitedSetVideoPlaneGeometry(media_task_runner_)) {}
-
-VideoPlaneController::~VideoPlaneController() {}
 
 }  // namespace media
 }  // namespace chromecast

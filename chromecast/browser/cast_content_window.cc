@@ -78,7 +78,7 @@ void CastContentWindow::CreateWindowTree(
     gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, cast_screen);
   if (cast_screen->GetPrimaryDisplay().size() != initial_size)
     cast_screen->UpdateDisplaySize(initial_size);
-  media::VideoPlaneController::GetInstance()->OnGraphicsPlaneResolutionChanged(
+  media::VideoPlaneController::GetInstance()->SetGraphicsPlaneResolution(
       Size(initial_size.width(), initial_size.height()));
 
   CHECK(aura::Env::GetInstance());

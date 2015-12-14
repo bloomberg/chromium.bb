@@ -36,21 +36,11 @@ chromecast::media::VideoPlane::Transform ConvertTransform(
   }
 }
 
-bool ExactlyEqual(const chromecast::RectF& r1, const chromecast::RectF& r2) {
-  return r1.x == r2.x && r1.y == r2.y && r1.width == r2.width &&
-         r1.height == r2.height;
-}
-
 class OverlayCandidatesCast : public OverlayCandidatesOzone {
  public:
-  OverlayCandidatesCast()
-      : transform_(gfx::OVERLAY_TRANSFORM_INVALID), display_rect_(0, 0, 0, 0) {}
+  OverlayCandidatesCast() {}
 
   void CheckOverlaySupport(OverlaySurfaceCandidateList* surfaces) override;
-
- private:
-  gfx::OverlayTransform transform_;
-  chromecast::RectF display_rect_;
 };
 
 void OverlayCandidatesCast::CheckOverlaySupport(
@@ -70,16 +60,9 @@ void OverlayCandidatesCast::CheckOverlaySupport(
         candidate.display_rect.width(), candidate.display_rect.height());
 
     // Update video plane geometry + transform to match compositor quad.
-    if (candidate.transform != transform_ ||
-        !ExactlyEqual(display_rect, display_rect_)) {
-      transform_ = candidate.transform;
-      display_rect_ = display_rect;
+    chromecast::media::VideoPlaneController::GetInstance()->SetGeometry(
+        display_rect, ConvertTransform(candidate.transform));
 
-      chromecast::media::VideoPlaneController* video_plane =
-          chromecast::media::VideoPlaneController::GetInstance();
-      video_plane->SetGeometry(display_rect,
-                               ConvertTransform(candidate.transform));
-    }
     return;
   }
 }
