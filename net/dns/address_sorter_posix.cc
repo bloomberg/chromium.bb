@@ -16,9 +16,10 @@
 #endif
 
 #include <algorithm>
+#include <vector>
 
 #include "base/logging.h"
-#include "base/memory/scoped_vector.h"
+#include "base/memory/scoped_ptr.h"
 #include "net/base/net_errors.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/udp/datagram_client_socket.h"
@@ -186,8 +187,8 @@ struct DestinationInfo {
 
 // Returns true iff |dst_a| should precede |dst_b| in the address list.
 // RFC 3484, section 6.
-bool CompareDestinations(const DestinationInfo* dst_a,
-                         const DestinationInfo* dst_b) {
+bool CompareDestinations(const scoped_ptr<DestinationInfo>& dst_a,
+                         const scoped_ptr<DestinationInfo>& dst_b) {
   // Rule 1: Avoid unusable destinations.
   // Unusable destinations are already filtered out.
   DCHECK(dst_a->src);
@@ -257,7 +258,7 @@ AddressSorterPosix::~AddressSorterPosix() {
 void AddressSorterPosix::Sort(const AddressList& list,
                               const CallbackType& callback) const {
   DCHECK(CalledOnValidThread());
-  ScopedVector<DestinationInfo> sort_list;
+  std::vector<scoped_ptr<DestinationInfo>> sort_list;
 
   for (size_t i = 0; i < list.size(); ++i) {
     scoped_ptr<DestinationInfo> info(new DestinationInfo());
