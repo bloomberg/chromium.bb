@@ -31,6 +31,7 @@
 
 namespace blink {
 
+class LineLayoutBoxModel;
 class PaintLayer;
 class PaintLayerScrollableArea;
 

@@ -107,7 +107,7 @@ void InlineFlowBox::addToLine(InlineBox* child)
     child->setFirstLineStyleBit(isFirstLineStyle());
     child->setIsHorizontal(isHorizontal());
     if (child->isText()) {
-        if (child->lineLayoutItem().parent().isEqual(&layoutObject()))
+        if (child->lineLayoutItem().parent() == lineLayoutItem())
             m_hasTextChildren = true;
         setHasTextDescendantsOnAncestors(this);
     } else if (child->isInlineFlowBox()) {
@@ -122,7 +122,7 @@ void InlineFlowBox::addToLine(InlineBox* child)
         if (child->lineLayoutItem().isAtomicInlineLevel()) {
             shouldClearDescendantsHaveSameLineHeightAndBaseline = true;
         } else if (child->isText()) {
-            if (child->lineLayoutItem().isBR() || (!child->lineLayoutItem().parent().isEqual(&layoutObject()))) {
+            if (child->lineLayoutItem().isBR() || (child->lineLayoutItem().parent() != lineLayoutItem())) {
                 if (!parentStyle.font().fontMetrics().hasIdenticalAscentDescentAndLineGap(childStyle.font().fontMetrics())
                     || parentStyle.lineHeight() != childStyle.lineHeight()
                     || (parentStyle.verticalAlign() != BASELINE && !isRootInlineBox()) || childStyle.verticalAlign() != BASELINE)
@@ -326,7 +326,7 @@ void InlineFlowBox::determineSpacingForFlowBoxes(bool lastLine, bool isLogically
         }
 
         if (!lineBoxList->lastLineBox()->isConstructed()) {
-            LayoutInline& inlineFlow = toLayoutInline(layoutObject());
+            LineLayoutInline inlineFlow = LineLayoutInline(lineLayoutItem());
             LineLayoutItem logicallyLastRunLayoutItem = LineLayoutItem(logicallyLastRunLayoutObject);
             bool isLastObjectOnLine = !isAncestorAndWithinBlock(lineLayoutItem(), logicallyLastRunLayoutItem) || (isLastChildForLayoutObject(lineLayoutItem(), logicallyLastRunLayoutItem) && !isLogicallyLastRunWrapped);
 
@@ -637,7 +637,7 @@ void InlineFlowBox::placeBoxesInBlockDirection(LayoutUnit top, LayoutUnit maxHei
             LineLayoutBox box = LineLayoutBox(curr->lineLayoutItem());
             newLogicalTopIncludingMargins = newLogicalTop;
             // TODO(kojii): isHorizontal() does not match to m_layoutObject.isHorizontalWritingMode(). crbug.com/552954
-            // ASSERT(curr->isHorizontal() == curr->layoutObject().style()->isHorizontalWritingMode());
+            // ASSERT(curr->isHorizontal() == curr->lineLayoutItem().style()->isHorizontalWritingMode());
             LayoutUnit overSideMargin = curr->isHorizontal() ? box.marginTop() : box.marginRight();
             LayoutUnit underSideMargin = curr->isHorizontal() ? box.marginBottom() : box.marginLeft();
             newLogicalTop += overSideMargin;
@@ -999,7 +999,7 @@ bool InlineFlowBox::nodeAtPoint(HitTestResult& result, const HitTestLocation& lo
             continue;
 
         if (curr->nodeAtPoint(result, locationInContainer, accumulatedOffset, lineTop, lineBottom)) {
-            layoutObject().updateHitTestResult(result, locationInContainer.point() - toLayoutSize(accumulatedOffset));
+            lineLayoutItem().updateHitTestResult(result, locationInContainer.point() - toLayoutSize(accumulatedOffset));
             return true;
         }
 
@@ -1047,7 +1047,7 @@ bool InlineFlowBox::nodeAtPoint(HitTestResult& result, const HitTestLocation& lo
     //  Pixel snap hit testing.
     rect = LayoutRect(pixelSnappedIntRect(rect));
     if (visibleToHitTestRequest(result.hitTestRequest()) && locationInContainer.intersects(rect)) {
-        layoutObject().updateHitTestResult(result, flipForWritingMode(locationInContainer.point() - toLayoutSize(accumulatedOffset))); // Don't add in m_topLeft here, we want coords in the containing block's space.
+        lineLayoutItem().updateHitTestResult(result, flipForWritingMode(locationInContainer.point() - toLayoutSize(accumulatedOffset))); // Don't add in m_topLeft here, we want coords in the containing block's space.
         if (!result.addNodeToListBasedTestResult(lineLayoutItem().node(), locationInContainer, rect))
             return true;
     }

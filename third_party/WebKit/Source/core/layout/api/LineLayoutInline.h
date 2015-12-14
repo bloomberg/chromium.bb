@@ -97,6 +97,11 @@ public:
         return toInline()->hitTestCulledInline(result, locationInContainer, accumulatedOffset);
     }
 
+    LayoutBoxModelObject* continuation() const
+    {
+        return toInline()->continuation();
+    }
+
 protected:
     LayoutInline* toInline()
     {
