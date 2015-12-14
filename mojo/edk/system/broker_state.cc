@@ -95,16 +95,12 @@ void BrokerState::ConnectMessagePipe(uint64_t pipe_id,
 
   if (pending_child_connects_.find(pipe_id) != pending_child_connects_.end()) {
     // A child process has already tried to connect.
-    EnsureProcessesConnected(base::GetCurrentProcId(),
-                             pending_child_connects_[pipe_id]->GetProcessId());
-    pending_child_connects_[pipe_id]->ConnectMessagePipe(
-        pipe_id, base::GetCurrentProcId());
-    base::ProcessId peer_pid = pending_child_connects_[pipe_id]->GetProcessId();
+    ChildBrokerHost* child_host = pending_child_connects_[pipe_id];
+    child_host->channel()->AddRoute(pipe_id, message_pipe);
+    child_host->ConnectMessagePipe(pipe_id, 0);
     pending_child_connects_.erase(pipe_id);
-    connected_pipes_[message_pipe] = child_channels_[peer_pid];
-    child_channels_[peer_pid]->AddRoute(pipe_id, message_pipe);
-    message_pipe->GotNonTransferableChannel(
-        child_channels_[peer_pid]->channel());
+    connected_pipes_[message_pipe] = child_host->channel();
+    message_pipe->GotNonTransferableChannel(child_host->channel()->channel());
     return;
   }
 
@@ -117,7 +113,7 @@ void BrokerState::CloseMessagePipe(uint64_t pipe_id,
   base::AutoLock auto_lock(lock_);
 
   CHECK(connected_pipes_.find(message_pipe) != connected_pipes_.end());
-  connected_pipes_[message_pipe]->RemoveRoute(pipe_id, message_pipe);
+  connected_pipes_[message_pipe]->RemoveRoute(pipe_id);
   connected_pipes_.erase(message_pipe);
 }
 
@@ -181,17 +177,11 @@ void BrokerState::HandleConnectMessagePipe(ChildBrokerHost* pipe_process,
 
   if (pending_connects_.find(pipe_id) != pending_connects_.end()) {
     // This parent process is the other side of the given pipe.
-    EnsureProcessesConnected(base::GetCurrentProcId(),
-                             pipe_process->GetProcessId());
     MessagePipeDispatcher* pending_pipe = pending_connects_[pipe_id];
-    connected_pipes_[pending_pipe] =
-        child_channels_[pipe_process->GetProcessId()];
-    child_channels_[pipe_process->GetProcessId()]->AddRoute(
-        pipe_id, pending_pipe);
-    pending_pipe->GotNonTransferableChannel(
-        child_channels_[pipe_process->GetProcessId()]->channel());
-    pipe_process->ConnectMessagePipe(
-        pipe_id, base::GetCurrentProcId());
+    connected_pipes_[pending_pipe] = pipe_process->channel();
+    pipe_process->channel()->AddRoute(pipe_id, pending_pipe);
+    pending_pipe->GotNonTransferableChannel(pipe_process->channel()->channel());
+    pipe_process->ConnectMessagePipe(pipe_id, 0);
     pending_connects_.erase(pipe_id);
     return;
   }
@@ -225,6 +215,7 @@ void BrokerState::EnsureProcessesConnected(base::ProcessId pid1,
   DCHECK(internal::g_io_thread_task_runner->RunsTasksOnCurrentThread());
   lock_.AssertAcquired();
   CHECK_NE(pid1, pid2);
+  CHECK_NE(pid1, base::GetCurrentProcId());
   CHECK_NE(pid2, base::GetCurrentProcId());
   std::pair<base::ProcessId, base::ProcessId> processes;
   processes.first = std::min(pid1, pid2);
@@ -234,17 +225,6 @@ void BrokerState::EnsureProcessesConnected(base::ProcessId pid1,
 
   connected_processes_.insert(processes);
   PlatformChannelPair channel_pair;
-  if (pid1 == base::GetCurrentProcId()) {
-    CHECK(child_channels_.find(pid2) == child_channels_.end());
-    CHECK(child_processes_.find(pid2) != child_processes_.end());
-    child_channels_[pid2] = new RoutedRawChannel(
-        channel_pair.PassServerHandle(),
-        base::Bind(&BrokerState::ChannelDestructed, base::Unretained(this)));
-    child_processes_[pid2]->ConnectToProcess(base::GetCurrentProcId(),
-                                             channel_pair.PassClientHandle());
-    return;
-  }
-
   CHECK(child_processes_.find(pid1) != child_processes_.end());
   CHECK(child_processes_.find(pid2) != child_processes_.end());
   child_processes_[pid1]->ConnectToProcess(pid2,
@@ -254,14 +234,6 @@ void BrokerState::EnsureProcessesConnected(base::ProcessId pid1,
 }
 
 void BrokerState::ChannelDestructed(RoutedRawChannel* channel) {
-  DCHECK(internal::g_io_thread_task_runner->RunsTasksOnCurrentThread());
-  base::AutoLock auto_lock(lock_);
-  for (auto it : child_channels_) {
-    if (it.second == channel) {
-      child_channels_.erase(it.first);
-      break;
-    }
-  }
 }
 
 }  // namespace edk

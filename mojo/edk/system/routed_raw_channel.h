@@ -8,7 +8,6 @@
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
-#include "base/synchronization/lock.h"
 #include "mojo/edk/embedder/platform_handle_vector.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/system/broker.h"
@@ -20,20 +19,21 @@ namespace edk {
 class RawChannel;
 
 // This class wraps a RawChannel and adds routing on top of it.
-// Non-transferable MessagePipeDispatchers call here, indirectly through the
-// Broker interface, to associate with their pipe_id.
+// Any RawChannel::Delegate can call here, indirectly through the Broker
+// interface, to get notified about messages with its route_id.
 class RoutedRawChannel : public RawChannel::Delegate {
  public:
   RoutedRawChannel(
       ScopedPlatformHandle handle,
       const base::Callback<void(RoutedRawChannel*)>& destruct_callback);
 
-  // Connect the given |pipe| with the pipe_id route. Only non-transferable
-  // message pipes can call this, and they can only call it once.
-  void AddRoute(uint64_t pipe_id, MessagePipeDispatcher* pipe);
+  // These methods should all be called on the IO thread only.
 
-  // Called when the MessagePipeDispatcher is going away.
-  void RemoveRoute(uint64_t pipe_id, MessagePipeDispatcher* pipe);
+  // Connect the given |delegate| with the |route_id|.
+  void AddRoute(uint64_t route_id, RawChannel::Delegate* delegate);
+
+  // Called when the route listener is going away.
+  void RemoveRoute(uint64_t route_id);
 
   RawChannel* channel() { return channel_; }
 
@@ -49,8 +49,7 @@ class RoutedRawChannel : public RawChannel::Delegate {
 
   RawChannel* channel_;
 
-  base::Lock lock_;  // Guards access to below.
-  base::hash_map<uint64_t, MessagePipeDispatcher*> routes_;
+  base::hash_map<uint64_t, RawChannel::Delegate*> routes_;
 
   // If we got messages before the route was added (due to race conditions
   // between different channels), this is used to buffer them.

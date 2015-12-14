@@ -46,6 +46,9 @@ const int kBrokerMessageHeaderSize =
 
 #endif
 
+// Route id used for messages between ChildBroker and ChildBrokerHost.
+const uint64_t kBrokerRouteId = 1;
+
 // Multiplexing related messages. They are all asynchronous messages.
 // They are sent over RawChannel.
 enum MultiplexMessages {

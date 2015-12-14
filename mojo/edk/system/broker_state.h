@@ -61,8 +61,6 @@ class MOJO_SYSTEM_IMPL_EXPORT BrokerState : NON_EXPORTED_BASE(public Broker) {
 
   // Checks if there's a direct channel between the two processes, and if not
   // creates one and tells them about it.
-  // If one of the processes is the current one, it should be pid1.
-  // Called on the IO thread.
   void EnsureProcessesConnected(base::ProcessId pid1, base::ProcessId pid2);
 
   // Callback when a RoutedRawChannel is destroyed for cleanup.
@@ -89,10 +87,6 @@ class MOJO_SYSTEM_IMPL_EXPORT BrokerState : NON_EXPORTED_BASE(public Broker) {
   base::hash_map<MessagePipeDispatcher*, RoutedRawChannel*> connected_pipes_;
 
   base::Lock lock_;  // Guards access to below.
-
-  // Holds a map of all the RoutedRawChannel that connect this parent process to
-  // a child process. The key is the child process'd pid.
-  base::hash_map<base::ProcessId, RoutedRawChannel*> child_channels_;
 
   base::hash_map<uint64_t, ChildBrokerHost*> pending_child_connects_;
 

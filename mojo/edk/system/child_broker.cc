@@ -10,7 +10,6 @@
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/system/broker_messages.h"
 #include "mojo/edk/system/message_pipe_dispatcher.h"
-#include "mojo/edk/system/routed_raw_channel.h"
 
 namespace mojo {
 namespace edk {
@@ -163,7 +162,7 @@ void ChildBroker::CloseMessagePipe(
     uint64_t pipe_id, MessagePipeDispatcher* message_pipe) {
   DCHECK(internal::g_io_thread_task_runner->RunsTasksOnCurrentThread());
   CHECK(connected_pipes_.find(message_pipe) != connected_pipes_.end());
-  connected_pipes_[message_pipe]->RemoveRoute(pipe_id, message_pipe);
+  connected_pipes_[message_pipe]->RemoveRoute(pipe_id);
   connected_pipes_.erase(message_pipe);
 }
 
@@ -211,7 +210,12 @@ void ChildBroker::OnReadMessage(
     CHECK(pending_connects_.find(pipe_id) != pending_connects_.end());
     MessagePipeDispatcher* pipe = pending_connects_[pipe_id];
     pending_connects_.erase(pipe_id);
-    if (channels_.find(peer_pid) == channels_.end()) {
+    if (peer_pid == 0) {
+      // The other side is in the parent process.
+      connected_pipes_[pipe] = parent_async_channel_;
+      parent_async_channel_->AddRoute(pipe_id, pipe);
+      pipe->GotNonTransferableChannel(parent_async_channel_->channel());
+    } else if (channels_.find(peer_pid) == channels_.end()) {
       // We saw the peer process die before we got the reply from the parent.
       pipe->OnError(ERROR_READ_SHUTDOWN);
     } else {
@@ -241,8 +245,9 @@ void ChildBroker::ChannelDestructed(RoutedRawChannel* channel) {
 
 void ChildBroker::WriteAsyncMessage(scoped_ptr<MessageInTransit> message) {
   DCHECK(internal::g_io_thread_task_runner->RunsTasksOnCurrentThread());
+  message->set_route_id(kBrokerRouteId);
   if (parent_async_channel_) {
-    parent_async_channel_->WriteMessage(message.Pass());
+    parent_async_channel_->channel()->WriteMessage(message.Pass());
   } else {
     async_channel_queue_.AddMessage(message.Pass());
   }
@@ -252,11 +257,14 @@ void ChildBroker::InitAsyncChannel(
     ScopedPlatformHandle parent_async_channel_handle) {
   DCHECK(internal::g_io_thread_task_runner->RunsTasksOnCurrentThread());
 
-  parent_async_channel_ =
-      RawChannel::Create(parent_async_channel_handle.Pass());
-  parent_async_channel_->Init(this);
-  while (!async_channel_queue_.IsEmpty())
-    parent_async_channel_->WriteMessage(async_channel_queue_.GetMessage());
+  parent_async_channel_ = new RoutedRawChannel(
+      parent_async_channel_handle.Pass()  ,
+      base::Bind(&ChildBroker::ChannelDestructed, base::Unretained(this)));
+  parent_async_channel_->AddRoute(kBrokerRouteId, this);
+  while (!async_channel_queue_.IsEmpty()) {
+    parent_async_channel_->channel()->WriteMessage(
+        async_channel_queue_.GetMessage());
+  }
 
   while (!pending_inprocess_connects_.empty()) {
     ConnectMessagePipe(pending_inprocess_connects_.begin()->first,

@@ -7,13 +7,12 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "mojo/edk/embedder/embedder_internal.h"
-#include "mojo/edk/system/message_pipe_dispatcher.h"
 
 namespace mojo {
 namespace edk {
 
 namespace {
-const uint64_t kInternalRoutingId = 0;
+const uint64_t kInternalRouteId = 0;
 }
 
 RoutedRawChannel::PendingMessage::PendingMessage() {
@@ -36,47 +35,46 @@ RoutedRawChannel::RoutedRawChannel(
                   base::Unretained(channel_)));
 }
 
-void RoutedRawChannel::AddRoute(uint64_t pipe_id, MessagePipeDispatcher* pipe) {
-  CHECK_NE(pipe_id, kInternalRoutingId) << kInternalRoutingId << " is reserved";
-  base::AutoLock auto_lock(lock_);
-  CHECK(routes_.find(pipe_id) == routes_.end());
-  routes_[pipe_id] = pipe;
+void RoutedRawChannel::AddRoute(uint64_t route_id,
+                                RawChannel::Delegate* delegate) {
+  DCHECK(internal::g_io_thread_task_runner->RunsTasksOnCurrentThread());
+  CHECK_NE(route_id, kInternalRouteId) << kInternalRouteId << " is reserved";
+  CHECK(routes_.find(route_id) == routes_.end());
+  routes_[route_id] = delegate;
 
   for (size_t i = 0; i < pending_messages_.size();) {
     MessageInTransit::View view(pending_messages_[i]->message.size(),
                                 &pending_messages_[i]->message[0]);
-    if (view.route_id() == pipe_id) {
-      pipe->OnReadMessage(view, pending_messages_[i]->handles.Pass());
+    if (view.route_id() == route_id) {
+      delegate->OnReadMessage(view, pending_messages_[i]->handles.Pass());
       pending_messages_.erase(pending_messages_.begin() + i);
     } else {
       ++i;
     }
   }
 
-  if (close_routes_.find(pipe_id) != close_routes_.end())
-    pipe->OnError(ERROR_READ_SHUTDOWN);
+  if (close_routes_.find(route_id) != close_routes_.end())
+    delegate->OnError(ERROR_READ_SHUTDOWN);
 }
 
-void RoutedRawChannel::RemoveRoute(uint64_t pipe_id,
-                                   MessagePipeDispatcher* pipe) {
-  base::AutoLock auto_lock(lock_);
-  CHECK(routes_.find(pipe_id) != routes_.end());
-  CHECK_EQ(routes_[pipe_id], pipe);
-  routes_.erase(pipe_id);
+void RoutedRawChannel::RemoveRoute(uint64_t route_id) {
+  DCHECK(internal::g_io_thread_task_runner->RunsTasksOnCurrentThread());
+  CHECK(routes_.find(route_id) != routes_.end());
+  routes_.erase(route_id);
 
   // Only send a message to the other side to close the route if we hadn't
   // received a close route message. Otherwise they would keep going back and
   // forth.
-  if (close_routes_.find(pipe_id) != close_routes_.end()) {
-    close_routes_.erase(pipe_id);
+  if (close_routes_.find(route_id) != close_routes_.end()) {
+    close_routes_.erase(route_id);
   } else if (channel_) {
     // Default route id of 0 to reach the other side's RoutedRawChannel.
     char message_data[sizeof(uint64_t)];
-    memcpy(&message_data[0], &pipe_id, sizeof(uint64_t));
+    memcpy(&message_data[0], &route_id, sizeof(uint64_t));
     scoped_ptr<MessageInTransit> message(new MessageInTransit(
         MessageInTransit::Type::MESSAGE, arraysize(message_data),
           message_data));
-    message->set_route_id(kInternalRoutingId);
+    message->set_route_id(kInternalRouteId);
     channel_->WriteMessage(message.Pass());
   }
 
@@ -95,14 +93,13 @@ void RoutedRawChannel::OnReadMessage(
     ScopedPlatformHandleVectorPtr platform_handles) {
   DCHECK(internal::g_io_thread_task_runner->RunsTasksOnCurrentThread());
   // Note: normally, when a message arrives here we should find a corresponding
-  // entry for the MessagePipeDispatcher with the given route_id. However it is
+  // entry for the RawChannel::Delegate with the given route_id. However it is
   // possible that they just connected, and due to race conditions one side has
   // connected and sent a message (and even closed) before the other side had a
   // chance to register with this RoutedRawChannel. In that case, we must buffer
   // all messages.
-  base::AutoLock auto_lock(lock_);
   uint64_t route_id = message_view.route_id();
-  if (route_id == kInternalRoutingId) {
+  if (route_id == kInternalRouteId) {
     if (message_view.num_bytes() !=  sizeof(uint64_t)) {
       NOTREACHED() << "Invalid internal message in RoutedRawChannel." ;
       return;
@@ -134,22 +131,19 @@ void RoutedRawChannel::OnReadMessage(
 
 void RoutedRawChannel::OnError(Error error) {
   DCHECK(internal::g_io_thread_task_runner->RunsTasksOnCurrentThread());
-  bool destruct = false;
-  {
-    base::AutoLock auto_lock(lock_);
 
-    channel_->Shutdown();
-    channel_ = nullptr;
-    if (routes_.empty()) {
-      destruct = true;
-    } else {
-      for (auto it = routes_.begin(); it != routes_.end(); ++it)
-        it->second->OnError(error);
-    }
+  channel_->Shutdown();
+  channel_ = nullptr;
+  if (routes_.empty()) {
+    delete this;
+    return;
   }
 
-  if (destruct)
-    delete this;
+  for (auto it = routes_.begin(); it != routes_.end();) {
+    // Handle the delegate calling RemoveRoute in this call.
+    auto cur_it = it++;
+    cur_it->second->OnError(error);
+  }
 }
 
 }  // namespace edk

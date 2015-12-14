@@ -25,7 +25,7 @@ static const int kDefaultReadBufferSize = 256;
 
 ChildBrokerHost::ChildBrokerHost(base::ProcessHandle child_process,
                                  ScopedPlatformHandle pipe)
-    : process_id_(base::GetProcId(child_process)) {
+    : process_id_(base::GetProcId(child_process)), child_channel_(nullptr) {
   ScopedPlatformHandle parent_async_channel_handle;
 #if defined(OS_POSIX)
   parent_async_channel_handle = pipe.Pass();
@@ -55,25 +55,10 @@ ChildBrokerHost::ChildBrokerHost(base::ProcessHandle child_process,
   DCHECK(rv || GetLastError() == ERROR_IO_PENDING);
 #endif
 
-  child_channel_ = RawChannel::Create(parent_async_channel_handle.Pass());
   internal::g_io_thread_task_runner->PostTask(
       FROM_HERE,
-      base::Bind(&RawChannel::Init, base::Unretained(child_channel_), this));
-  internal::g_io_thread_task_runner->PostTask(
-      FROM_HERE,
-      base::Bind(&RawChannel::EnsureLazyInitialized,
-                  base::Unretained(child_channel_)));
-
-  BrokerState::GetInstance()->ChildBrokerHostCreated(this);
-
-#if defined(OS_WIN)
-  // Call this after RawChannel::Init because this call could cause us to get
-  // notified that the child has gone away and to delete this class and shut
-  // down child_channel_ before Init() has run.
-  internal::g_io_thread_task_runner->PostTask(
-      FROM_HERE,
-      base::Bind(&ChildBrokerHost::RegisterIOHandler, base::Unretained(this)));
-#endif
+      base::Bind(&ChildBrokerHost::InitOnIO, base::Unretained(this),
+                 base::Passed(&parent_async_channel_handle)));
 }
 
 base::ProcessId ChildBrokerHost::GetProcessId() {
@@ -96,7 +81,8 @@ void ChildBrokerHost::ConnectToProcess(base::ProcessId process_id,
   dispatchers->push_back(dispatcher);
   message->SetDispatchers(dispatchers.Pass());
   message->SerializeAndCloseDispatchers();
-  child_channel_->WriteMessage(message.Pass());
+  message->set_route_id(kBrokerRouteId);
+  child_channel_->channel()->WriteMessage(message.Pass());
 }
 
 void ChildBrokerHost::ConnectMessagePipe(uint64_t pipe_id,
@@ -109,14 +95,34 @@ void ChildBrokerHost::ConnectMessagePipe(uint64_t pipe_id,
   data.process_id = process_id;
   scoped_ptr<MessageInTransit> message(new MessageInTransit(
       MessageInTransit::Type::MESSAGE, sizeof(data), &data));
-  child_channel_->WriteMessage(message.Pass());
+  message->set_route_id(kBrokerRouteId);
+  child_channel_->channel()->WriteMessage(message.Pass());
 }
 
 ChildBrokerHost::~ChildBrokerHost() {
   DCHECK(internal::g_io_thread_task_runner->RunsTasksOnCurrentThread());
   BrokerState::GetInstance()->ChildBrokerHostDestructed(this);
   if (child_channel_)
-    child_channel_->Shutdown();
+    child_channel_->RemoveRoute(kBrokerRouteId);
+}
+
+void ChildBrokerHost::InitOnIO(
+    ScopedPlatformHandle parent_async_channel_handle) {
+  child_channel_ = new RoutedRawChannel(
+      parent_async_channel_handle.Pass(),
+      base::Bind(&ChildBrokerHost::ChannelDestructed, base::Unretained(this)));
+  child_channel_->AddRoute(kBrokerRouteId, this);
+
+  BrokerState::GetInstance()->ChildBrokerHostCreated(this);
+
+#if defined(OS_WIN)
+  // Call this after RoutedRawChannel calls its RawChannel::Init because this
+  // call could cause us to get notified that the child has gone away and to
+  // delete this class and shut down child_channel_ before Init() has run.
+  base::MessageLoopForIO::current()->RegisterIOHandler(
+      sync_channel_.get().handle, this);
+  BeginRead();
+#endif
 }
 
 void ChildBrokerHost::OnReadMessage(
@@ -149,8 +155,11 @@ void ChildBrokerHost::OnReadMessage(
 
 void ChildBrokerHost::OnError(Error error) {
   DCHECK(internal::g_io_thread_task_runner->RunsTasksOnCurrentThread());
-  child_channel_->Shutdown();
+  child_channel_->RemoveRoute(kBrokerRouteId);
   child_channel_ = nullptr;
+}
+
+void ChildBrokerHost::ChannelDestructed(RoutedRawChannel* channel) {
   // On Windows, we have two pipes to the child process. It's easier to wait
   // until we get the error from the pipe that is used for synchronous I/O.
 #if !defined(OS_WIN)
@@ -159,12 +168,6 @@ void ChildBrokerHost::OnError(Error error) {
 }
 
 #if defined(OS_WIN)
-void ChildBrokerHost::RegisterIOHandler() {
-  base::MessageLoopForIO::current()->RegisterIOHandler(
-      sync_channel_.get().handle, this);
-  BeginRead();
-}
-
 void ChildBrokerHost::BeginRead() {
   BOOL rv = ReadFile(sync_channel_.get().handle,
                      &read_data_[num_bytes_read_],

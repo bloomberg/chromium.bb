@@ -299,7 +299,11 @@ MojoResult Core::CreateMessagePipe(
                       nullptr);
   } else {
     uint64_t pipe_id = 0;
-    while (pipe_id == 0)
+    // route_id 0 is used internally in RoutedRawChannel. See kInternalRouteId
+    // in routed_raw_channel.cc.
+    // route_id 1 is used by broker communication. See kBrokerRouteId in
+    // broker_messages.h.
+    while (pipe_id < 2)
       pipe_id = base::RandUint64();
     dispatcher0->InitNonTransferable(pipe_id);
     dispatcher1->InitNonTransferable(pipe_id);

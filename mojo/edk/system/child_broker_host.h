@@ -12,7 +12,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/process/process.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
-#include "mojo/edk/system/raw_channel.h"
+#include "mojo/edk/system/routed_raw_channel.h"
 #include "mojo/edk/system/system_impl_export.h"
 
 namespace mojo {
@@ -42,11 +42,16 @@ class MOJO_SYSTEM_IMPL_EXPORT ChildBrokerHost
   void ConnectToProcess(base::ProcessId process_id, ScopedPlatformHandle pipe);
 
   // Sends a message to the child process that |pipe_id|'s other end is in
-  // |process_id|.
+  // |process_id|. If the other end is in this parent process, |process_id| will
+  // be 0.
   void ConnectMessagePipe(uint64_t pipe_id, base::ProcessId process_id);
+
+  RoutedRawChannel* channel() { return child_channel_; }
 
  private:
   ~ChildBrokerHost() override;
+
+  void InitOnIO(ScopedPlatformHandle parent_async_channel_handle);
 
   // RawChannel::Delegate implementation:
   void OnReadMessage(
@@ -54,8 +59,10 @@ class MOJO_SYSTEM_IMPL_EXPORT ChildBrokerHost
       ScopedPlatformHandleVectorPtr platform_handles) override;
   void OnError(Error error) override;
 
+  // Callback for when child_channel_ is destroyed.
+  void ChannelDestructed(RoutedRawChannel* channel);
+
 #if defined(OS_WIN)
-  void RegisterIOHandler();
   void BeginRead();
 
   // base::MessageLoopForIO::IOHandler implementation:
@@ -71,7 +78,7 @@ class MOJO_SYSTEM_IMPL_EXPORT ChildBrokerHost
   base::ProcessId process_id_;
 
   // Channel used to receive and send multiplexing related messages.
-  RawChannel* child_channel_;
+  RoutedRawChannel* child_channel_;
 
 #if defined(OS_WIN)
   // Handle to the child process, used for duplication of handles.

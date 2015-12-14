@@ -14,12 +14,11 @@
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/system/broker.h"
 #include "mojo/edk/system/message_in_transit_queue.h"
-#include "mojo/edk/system/raw_channel.h"
+#include "mojo/edk/system/routed_raw_channel.h"
 #include "mojo/edk/system/system_impl_export.h"
 
 namespace mojo {
 namespace edk {
-class RoutedRawChannel;
 struct BrokerMessage;
 
 // An implementation of Broker used in (sandboxed) child processes. It talks
@@ -100,7 +99,7 @@ class MOJO_SYSTEM_IMPL_EXPORT ChildBroker
   // would be convenient, we don't use Mojo IPC because it would be a layering
   // violation (and cirular dependency) if the system layer depended on
   // bindings.
-  RawChannel* parent_async_channel_;
+  RoutedRawChannel* parent_async_channel_;
 
   // Queue of messages to |parent_async_channel_| that are sent before it is
   // created.
