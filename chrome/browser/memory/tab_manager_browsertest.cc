@@ -15,6 +15,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/interactive_test_utils.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/test/test_utils.h"
@@ -249,6 +250,30 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, InvalidOrEmptyURL) {
   // Wait for the background tab to load which then allows it to be discarded.
   load2.Wait();
   EXPECT_TRUE(tab_manager->DiscardTab());
+}
+
+// Makes sure that PDF pages are protected.
+IN_PROC_BROWSER_TEST_F(TabManagerTest, ProtectPDFPages) {
+  TabManager* tab_manager = g_browser_process->GetTabManager();
+  ASSERT_TRUE(tab_manager);
+
+  // Start the embedded test server so we can get served the required PDF page.
+  ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
+  embedded_test_server()->StartAcceptingConnections();
+
+  // Get two tabs open, the first one being a PDF page and the second one being
+  // the foreground tab.
+  GURL url1 = embedded_test_server()->GetURL("/pdf/test.pdf");
+  ui_test_utils::NavigateToURL(browser(), url1);
+
+  GURL url2(chrome::kChromeUIAboutURL);
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), url2, NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+
+  // No discarding should be possible as the only background tab is displaying a
+  // PDF page, hence protected.
+  EXPECT_FALSE(tab_manager->DiscardTab());
 }
 
 }  // namespace memory

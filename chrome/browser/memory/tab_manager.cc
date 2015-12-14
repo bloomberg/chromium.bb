@@ -464,6 +464,13 @@ bool TabManager::CanDiscardTab(int64 target_web_contents_id) const {
   if (IsAudioTab(web_contents))
     return false;
 
+  // Do not discard PDFs as they might contain entry that is not saved and they
+  // don't remember their scrolling positions. See crbug.com/547286 and
+  // crbug.com/65244.
+  // TODO(georgesak): Remove this workaround when the bugs are fixed.
+  if (web_contents->GetContentsMimeType() == "application/pdf")
+    return false;
+
   // Do not discard a previously discarded tab if that's the desired behavior.
   if (discard_once_ && GetWebContentsData(web_contents)->DiscardCount() > 0)
     return false;
