@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<script src='../../../resources/testharness.js'></script>
+<script src='../../../resources/testharnessreport.js'></script>
+<script src='resources/shadow-dom.js'></script>
+<div id='d1'>
+  <template data-mode='closed' data-expose-as='d1_shadow'>
+    <div id='d1-1'>
+      <template data-mode='open'>
+        <slot name='d1-1-s1'></slot>
+      </template>
+      <div id='d1-2' slot='d1-1-s1'></div>
+      <slot name='d1-s1' slot='d1-1-s1'></slot>
+      <slot name='d1-s2'></slot>
+    </div>
+  </template>
+  <div id='d2' slot='d1-s1'></div>
+  <div id='d3' slot='d1-s2'></div>
+</div>
+<script>
+'use strict';
+convertTemplatesToShadowRootsWithin(d1);
+removeWhiteSpaceOnlyTextNodes(d1);
+document.body.offsetLeft;
+
+const d1_1 = d1_shadow.querySelector('#d1-1');
+const d1_2 = d1_shadow.querySelector('#d1-2');
+const d1_s1 = d1_shadow.querySelector('[name=d1-s1]');
+const d1_s2 = d1_shadow.querySelector('[name=d1-s2]');
+
+const d1_1_shadow = d1_1.shadowRoot;
+const d1_1_s1 = d1_1_shadow.querySelector('[name=d1-1-s1]');
+
+test(() => {
+  assert_equals(d1.assignedSlot, null);
+  assert_equals(d2.assignedSlot, null);
+  assert_equals(d3.assignedSlot, null);
+}, "A slot in a closed shadow tree should not be accessed via assignedSlot");
+
+test(() => {
+  assert_equals(d1_2.assignedSlot, d1_1_s1);
+  assert_equals(d1_s1.assignedSlot, d1_1_s1);
+  assert_equals(d1_s2.assignedSlot, null);
+}, "A slot in a open shadow tree should be accessed via assignedSlot from a closed shadow tree");
+
+test(() => {
+  assert_array_equals(d1_s1.getAssignedNodes(), [d2]);
+  assert_array_equals(d1_s2.getAssignedNodes(), [d3]);
+  assert_array_equals(d1_1_s1.getAssignedNodes(), [d1_2, d1_s1]);
+}, "A closed shadow tree has nothing to do with the behavior of getAssignedNodes");
+
+test(() => {
+  assert_array_equals(d1_s1.getDistributedNodes(), [d2]);
+  assert_array_equals(d1_s2.getDistributedNodes(), [d3]);
+  assert_array_equals(d1_1_s1.getDistributedNodes(), [d1_2, d2]);
+}, "A closed shadow tree has nothing to do with the behavior of getDistributedNodes");
+</script>

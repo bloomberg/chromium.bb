@@ -95,6 +95,9 @@ function convertTemplatesToShadowRootsWithin(node) {
         } else {
             shadowRoot = parent.attachShadow({'mode': mode});
         }
+        var expose = template.getAttribute("data-expose-as");
+        if (expose)
+            window[expose] = shadowRoot;
         if (template.id)
             shadowRoot.id = template.id;
         var fragments = document.importNode(template.content, true);

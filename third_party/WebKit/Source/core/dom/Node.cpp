@@ -2216,7 +2216,7 @@ HTMLSlotElement* Node::assignedSlot() const
     if (!parent)
         return nullptr;
     if (ElementShadow* shadow = parent->shadow()) {
-        if (shadow->isV1())
+        if (shadow->isV1() && shadow->isOpen())
             return shadow->assignedSlotFor(*this);
     }
     return nullptr;
