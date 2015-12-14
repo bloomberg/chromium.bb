@@ -34,41 +34,49 @@ class AutocompleteControllerAndroid : public AutocompleteControllerDelegate,
 
   // Methods that forward to AutocompleteController:
   void Start(JNIEnv* env,
-             jobject obj,
-             jstring j_text,
+             const base::android::JavaRef<jobject>& obj,
+             const base::android::JavaRef<jstring>& j_text,
              jint j_cursor_pos,
-             jstring j_desired_tld,
-             jstring j_current_url,
+             const base::android::JavaRef<jstring>& j_desired_tld,
+             const base::android::JavaRef<jstring>& j_current_url,
              bool prevent_inline_autocomplete,
              bool prefer_keyword,
              bool allow_exact_keyword_match,
              bool best_match_only);
-  base::android::ScopedJavaLocalRef<jobject> Classify(JNIEnv* env,
-                                                      jobject obj,
-                                                      jstring j_text);
-  void OnOmniboxFocused(JNIEnv* env,
-                        jobject obj,
-                        jstring j_omnibox_text,
-                        jstring j_current_url,
-                        jboolean is_query_in_omnibox,
-                        jboolean focused_from_fakebox);
-  void Stop(JNIEnv* env, jobject obj, bool clear_result);
-  void ResetSession(JNIEnv* env, jobject obj);
-  void OnSuggestionSelected(JNIEnv* env,
-                            jobject obj,
-                            jint selected_index,
-                            jstring j_current_url,
-                            jboolean is_query_in_omnibox,
-                            jboolean focused_from_fakebox,
-                            jlong elapsed_time_since_first_modified,
-                            jobject j_web_contents);
-  void DeleteSuggestion(JNIEnv* env, jobject obj, int selected_index);
+  base::android::ScopedJavaLocalRef<jobject> Classify(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jstring>& j_text);
+  void OnOmniboxFocused(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jstring>& j_omnibox_text,
+      const base::android::JavaParamRef<jstring>& j_current_url,
+      jboolean is_query_in_omnibox,
+      jboolean focused_from_fakebox);
+  void Stop(JNIEnv* env,
+            const base::android::JavaParamRef<jobject>& obj,
+            bool clear_result);
+  void ResetSession(JNIEnv* env,
+                    const base::android::JavaParamRef<jobject>& obj);
+  void OnSuggestionSelected(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      jint selected_index,
+      const base::android::JavaParamRef<jstring>& j_current_url,
+      jboolean is_query_in_omnibox,
+      jboolean focused_from_fakebox,
+      jlong elapsed_time_since_first_modified,
+      const base::android::JavaParamRef<jobject>& j_web_contents);
+  void DeleteSuggestion(JNIEnv* env,
+                        const base::android::JavaParamRef<jobject>& obj,
+                        int selected_index);
   base::android::ScopedJavaLocalRef<jstring>
-      UpdateMatchDestinationURLWithQueryFormulationTime(
-          JNIEnv* env,
-          jobject obj,
-          jint selected_index,
-          jlong elapsed_time_since_input_change);
+  UpdateMatchDestinationURLWithQueryFormulationTime(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      jint selected_index,
+      jlong elapsed_time_since_input_change);
 
   // KeyedService:
   void Shutdown() override;
@@ -127,8 +135,8 @@ class AutocompleteControllerAndroid : public AutocompleteControllerDelegate,
   // object, see documentation there for its description.
   base::android::ScopedJavaLocalRef<jobject> GetTopSynchronousResult(
       JNIEnv* env,
-      jobject obj,
-      jstring j_text,
+      const base::android::JavaRef<jobject>& obj,
+      const base::android::JavaRef<jstring>& j_text,
       bool prevent_inline_autocomplete);
 
   scoped_ptr<AutocompleteController> autocomplete_controller_;

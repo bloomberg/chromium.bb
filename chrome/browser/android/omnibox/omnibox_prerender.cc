@@ -38,8 +38,8 @@ bool RegisterOmniboxPrerender(JNIEnv* env) {
 }
 
 void OmniboxPrerender::Clear(JNIEnv* env,
-                             jobject obj,
-                             jobject j_profile_android) {
+                             const JavaParamRef<jobject>& obj,
+                             const JavaParamRef<jobject>& j_profile_android) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile_android);
   DCHECK(profile);
   if (!profile)
@@ -52,21 +52,22 @@ void OmniboxPrerender::Clear(JNIEnv* env,
 
 void OmniboxPrerender::InitializeForProfile(
     JNIEnv* env,
-    jobject obj,
-    jobject j_profile_android) {
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& j_profile_android) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile_android);
   // Initialize the AutocompleteActionPredictor for this profile.
   // It needs to register for notifications as part of its initialization.
   AutocompleteActionPredictorFactory::GetForProfile(profile);
 }
 
-void OmniboxPrerender::PrerenderMaybe(JNIEnv* env,
-                                      jobject obj,
-                                      jstring j_url,
-                                      jstring j_current_url,
-                                      jlong jsource_match,
-                                      jobject j_profile_android,
-                                      jobject j_tab) {
+void OmniboxPrerender::PrerenderMaybe(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& j_url,
+    const JavaParamRef<jstring>& j_current_url,
+    jlong jsource_match,
+    const JavaParamRef<jobject>& j_profile_android,
+    const JavaParamRef<jobject>& j_tab) {
   AutocompleteResult* autocomplete_result =
       reinterpret_cast<AutocompleteResult*>(jsource_match);
   Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile_android);

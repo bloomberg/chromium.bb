@@ -55,6 +55,7 @@ using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF16;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::ConvertUTF16ToJavaString;
+using base::android::JavaRef;
 using bookmarks::BookmarkModel;
 using metrics::OmniboxEventProto;
 
@@ -127,24 +128,25 @@ AutocompleteControllerAndroid::AutocompleteControllerAndroid(Profile* profile)
       profile_(profile) {
 }
 
-void AutocompleteControllerAndroid::Start(JNIEnv* env,
-                                          jobject obj,
-                                          jstring j_text,
-                                          jint j_cursor_pos,
-                                          jstring j_desired_tld,
-                                          jstring j_current_url,
-                                          bool prevent_inline_autocomplete,
-                                          bool prefer_keyword,
-                                          bool allow_exact_keyword_match,
-                                          bool want_asynchronous_matches) {
+void AutocompleteControllerAndroid::Start(
+    JNIEnv* env,
+    const JavaRef<jobject>& obj,
+    const JavaRef<jstring>& j_text,
+    jint j_cursor_pos,
+    const JavaRef<jstring>& j_desired_tld,
+    const JavaRef<jstring>& j_current_url,
+    bool prevent_inline_autocomplete,
+    bool prefer_keyword,
+    bool allow_exact_keyword_match,
+    bool want_asynchronous_matches) {
   if (!autocomplete_controller_)
     return;
 
   std::string desired_tld;
   GURL current_url;
-  if (j_current_url != NULL)
+  if (!j_current_url.is_null())
     current_url = GURL(ConvertJavaStringToUTF16(env, j_current_url));
-  if (j_desired_tld != NULL)
+  if (!j_desired_tld.is_null())
     desired_tld = base::android::ConvertJavaStringToUTF8(env, j_desired_tld);
   base::string16 text = ConvertJavaStringToUTF16(env, j_text);
   OmniboxEventProto::PageClassification page_classification =
@@ -160,16 +162,16 @@ void AutocompleteControllerAndroid::Start(JNIEnv* env,
 
 ScopedJavaLocalRef<jobject> AutocompleteControllerAndroid::Classify(
     JNIEnv* env,
-    jobject obj,
-    jstring j_text) {
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& j_text) {
   return GetTopSynchronousResult(env, obj, j_text, true);
 }
 
 void AutocompleteControllerAndroid::OnOmniboxFocused(
     JNIEnv* env,
-    jobject obj,
-    jstring j_omnibox_text,
-    jstring j_current_url,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& j_omnibox_text,
+    const JavaParamRef<jstring>& j_current_url,
     jboolean is_query_in_omnibox,
     jboolean focused_from_fakebox) {
   if (!autocomplete_controller_)
@@ -193,26 +195,28 @@ void AutocompleteControllerAndroid::OnOmniboxFocused(
 }
 
 void AutocompleteControllerAndroid::Stop(JNIEnv* env,
-                                         jobject obj,
+                                         const JavaParamRef<jobject>& obj,
                                          bool clear_results) {
   if (autocomplete_controller_ != NULL)
     autocomplete_controller_->Stop(clear_results);
 }
 
-void AutocompleteControllerAndroid::ResetSession(JNIEnv* env, jobject obj) {
+void AutocompleteControllerAndroid::ResetSession(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   if (autocomplete_controller_ != NULL)
     autocomplete_controller_->ResetSession();
 }
 
 void AutocompleteControllerAndroid::OnSuggestionSelected(
     JNIEnv* env,
-    jobject obj,
+    const JavaParamRef<jobject>& obj,
     jint selected_index,
-    jstring j_current_url,
+    const JavaParamRef<jstring>& j_current_url,
     jboolean is_query_in_omnibox,
     jboolean focused_from_fakebox,
     jlong elapsed_time_since_first_modified,
-    jobject j_web_contents) {
+    const JavaParamRef<jobject>& j_web_contents) {
   base::string16 url = ConvertJavaStringToUTF16(env, j_current_url);
   const GURL current_url = GURL(url);
   OmniboxEventProto::PageClassification current_page_classification =
@@ -244,9 +248,10 @@ void AutocompleteControllerAndroid::OnSuggestionSelected(
       ->OnOmniboxOpenedUrl(log);
 }
 
-void AutocompleteControllerAndroid::DeleteSuggestion(JNIEnv* env,
-                                                     jobject obj,
-                                                     int selected_index) {
+void AutocompleteControllerAndroid::DeleteSuggestion(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    int selected_index) {
   const AutocompleteResult& result = autocomplete_controller_->result();
   const AutocompleteMatch& match = result.match_at(selected_index);
   if (match.SupportsDeletion())
@@ -256,7 +261,7 @@ void AutocompleteControllerAndroid::DeleteSuggestion(JNIEnv* env,
 ScopedJavaLocalRef<jstring> AutocompleteControllerAndroid::
     UpdateMatchDestinationURLWithQueryFormulationTime(
         JNIEnv* env,
-        jobject obj,
+        const JavaParamRef<jobject>& obj,
         jint selected_index,
         jlong elapsed_time_since_input_change) {
   // In rare cases, we navigate to cached matches and the underlying result
@@ -485,8 +490,8 @@ base::string16 AutocompleteControllerAndroid::FormatURLUsingAcceptLanguages(
 ScopedJavaLocalRef<jobject>
 AutocompleteControllerAndroid::GetTopSynchronousResult(
     JNIEnv* env,
-    jobject obj,
-    jstring j_text,
+    const JavaRef<jobject>& obj,
+    const JavaRef<jstring>& j_text,
     bool prevent_inline_autocomplete) {
   if (!autocomplete_controller_)
     return ScopedJavaLocalRef<jobject>();
