@@ -10,8 +10,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/debug/alias.h"
-#include "base/debug/dump_without_crashing.h"
 #include "base/i18n/rtl.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_value_converter.h"
@@ -39,8 +37,6 @@
 namespace error_page {
 
 namespace {
-
-#define MAX_DEBUG_HISTORY_EVENTS 50
 
 // |NetErrorNavigationCorrectionTypes| enum id for Web search query.
 // Other correction types uses the |kCorrectionResourceTable| array order.
@@ -530,8 +526,6 @@ NetErrorHelperCore::~NetErrorHelperCore() {
 }
 
 void NetErrorHelperCore::CancelPendingFetches() {
-  RecordHistoryDebugEvent(HistoryDebugEvent::CANCEL_PENDING_FETCHES);
-
   // Cancel loading the alternate error page, and prevent any pending error page
   // load from starting a new error page load.  Swapping in the error page when
   // it's finished loading could abort the navigation, otherwise.
@@ -545,8 +539,6 @@ void NetErrorHelperCore::CancelPendingFetches() {
 }
 
 void NetErrorHelperCore::OnStop() {
-  RecordHistoryDebugEvent(HistoryDebugEvent::ON_STOP);
-
   if (committed_error_page_info_ &&
       committed_error_page_info_->auto_reload_triggered) {
     ReportAutoReloadFailure(committed_error_page_info_->error,
@@ -559,8 +551,6 @@ void NetErrorHelperCore::OnStop() {
 }
 
 void NetErrorHelperCore::OnWasShown() {
-  RecordHistoryDebugEvent(HistoryDebugEvent::ON_WAS_SHOWN);
-
   visible_ = true;
   if (!auto_reload_visible_only_)
     return;
@@ -569,8 +559,6 @@ void NetErrorHelperCore::OnWasShown() {
 }
 
 void NetErrorHelperCore::OnWasHidden() {
-  RecordHistoryDebugEvent(HistoryDebugEvent::ON_WAS_HIDDEN);
-
   visible_ = false;
   if (!auto_reload_visible_only_)
     return;
@@ -580,8 +568,6 @@ void NetErrorHelperCore::OnWasHidden() {
 void NetErrorHelperCore::OnStartLoad(FrameType frame_type, PageType page_type) {
   if (frame_type != MAIN_FRAME)
     return;
-
-  RecordHistoryDebugEvent(HistoryDebugEvent::ON_START_LOAD);
 
   uncommitted_load_started_ = true;
 
@@ -594,8 +580,6 @@ void NetErrorHelperCore::OnStartLoad(FrameType frame_type, PageType page_type) {
 void NetErrorHelperCore::OnCommitLoad(FrameType frame_type, const GURL& url) {
   if (frame_type != MAIN_FRAME)
     return;
-
-  RecordHistoryDebugEvent(HistoryDebugEvent::ON_COMMIT_LOAD);
 
   // If a page is committing, either it's an error page and autoreload will be
   // started again below, or it's a success page and we need to clear autoreload
@@ -635,20 +619,14 @@ void NetErrorHelperCore::OnCommitLoad(FrameType frame_type, const GURL& url) {
   }
 
   committed_error_page_info_.reset(pending_error_page_info_.release());
-
-  RecordHistoryDebugEvent(HistoryDebugEvent::ON_COMMIT_LOAD_END);
 }
 
 void NetErrorHelperCore::OnFinishLoad(FrameType frame_type) {
   if (frame_type != MAIN_FRAME)
     return;
 
-  RecordHistoryDebugEvent(HistoryDebugEvent::ON_FINISH_LOAD);
-
   if (!committed_error_page_info_) {
     auto_reload_count_ = 0;
-    RecordHistoryDebugEvent(
-        HistoryDebugEvent::ON_FINISH_LOAD_END_NOT_ERROR_PAGE);
     return;
   }
 
@@ -694,12 +672,10 @@ void NetErrorHelperCore::OnFinishLoad(FrameType frame_type) {
 
   if (!committed_error_page_info_->needs_dns_updates ||
       last_probe_status_ == DNS_PROBE_POSSIBLE) {
-    RecordHistoryDebugEvent(HistoryDebugEvent::ON_FINISH_LOAD_END_DNS_PROBE);
     return;
   }
   DVLOG(1) << "Error page finished loading; sending saved status.";
   UpdateErrorPage();
-  RecordHistoryDebugEvent(HistoryDebugEvent::ON_FINISH_LOAD_END_NO_DNS_PROBE);
 }
 
 void NetErrorHelperCore::GetErrorHTML(FrameType frame_type,
@@ -712,7 +688,6 @@ void NetErrorHelperCore::GetErrorHTML(FrameType frame_type,
     // cancelled earlier by starting a new page load (Which has now failed).
     DCHECK(!committed_error_page_info_ ||
            !committed_error_page_info_->needs_load_navigation_corrections);
-    RecordHistoryDebugEvent(HistoryDebugEvent::GET_ERROR_HTML);
 
     pending_error_page_info_.reset(
         new ErrorPageInfo(error, is_failed_post, is_ignoring_cache));
@@ -740,8 +715,6 @@ void NetErrorHelperCore::GetErrorHTML(FrameType frame_type,
 
 void NetErrorHelperCore::OnNetErrorInfo(DnsProbeStatus status) {
   DCHECK_NE(DNS_PROBE_POSSIBLE, status);
-
-  RecordHistoryDebugEvent(HistoryDebugEvent::NET_ERROR_INFO_RECEIVED);
 
   last_probe_status_ = status;
 
@@ -821,8 +794,6 @@ void NetErrorHelperCore::UpdateErrorPage() {
   DCHECK(committed_error_page_info_->is_finished_loading);
   DCHECK_NE(DNS_PROBE_POSSIBLE, last_probe_status_);
 
-  RecordHistoryDebugEvent(HistoryDebugEvent::UPDATE_ERROR_PAGE);
-
   UMA_HISTOGRAM_ENUMERATION("DnsProbe.ErrorPageUpdateStatus",
                             last_probe_status_,
                             DNS_PROBE_MAX);
@@ -852,8 +823,6 @@ void NetErrorHelperCore::OnNavigationCorrectionsFetched(
   DCHECK(committed_error_page_info_->is_finished_loading);
   DCHECK(committed_error_page_info_->needs_load_navigation_corrections);
   DCHECK(committed_error_page_info_->navigation_correction_params);
-
-  RecordHistoryDebugEvent(HistoryDebugEvent::NAVIGATION_CORRECTIONS_FETCHED);
 
   pending_error_page_info_.reset(new ErrorPageInfo(
       committed_error_page_info_->error,
@@ -918,8 +887,6 @@ blink::WebURLError NetErrorHelperCore::GetUpdatedError(
 }
 
 void NetErrorHelperCore::Reload(bool ignore_cache) {
-  RecordHistoryDebugEvent(HistoryDebugEvent::RELOAD);
-
   if (!committed_error_page_info_) {
     return;
   }
@@ -927,8 +894,6 @@ void NetErrorHelperCore::Reload(bool ignore_cache) {
 }
 
 bool NetErrorHelperCore::MaybeStartAutoReloadTimer() {
-  RecordHistoryDebugEvent(HistoryDebugEvent::MAYBE_RELOAD);
-
   if (!committed_error_page_info_ ||
       !committed_error_page_info_->is_finished_loading ||
       pending_error_page_info_ ||
@@ -944,12 +909,9 @@ void NetErrorHelperCore::StartAutoReloadTimer() {
   DCHECK(committed_error_page_info_);
   DCHECK(IsReloadableError(*committed_error_page_info_));
 
-  RecordHistoryDebugEvent(HistoryDebugEvent::START_RELOAD_TIMER);
-
   committed_error_page_info_->auto_reload_triggered = true;
 
   if (!online_ || (!visible_ && auto_reload_visible_only_)) {
-    RecordHistoryDebugEvent(HistoryDebugEvent::START_RELOAD_TIMER_PAUSED);
     auto_reload_paused_ = true;
     return;
   }
@@ -970,29 +932,12 @@ void NetErrorHelperCore::AutoReloadTimerFired() {
   //    auto-reload timer.
   DCHECK(committed_error_page_info_);
 
-  RecordHistoryDebugEvent(HistoryDebugEvent::RELOAD_TIMER_FIRED);
-
   auto_reload_count_++;
   auto_reload_in_flight_ = true;
-
-  if (!committed_error_page_info_) {
-    HistoryDebugEvent history_debug_events[MAX_DEBUG_HISTORY_EVENTS];
-    size_t num_history_debug_events = history_debug_events_.size();
-    for (size_t i = 0; i < num_history_debug_events; ++i) {
-      history_debug_events[i] = history_debug_events_[i];
-    }
-    base::debug::Alias(history_debug_events);
-    base::debug::Alias(&num_history_debug_events);
-    base::debug::DumpWithoutCrashing();
-    return;
-  }
-
   Reload(committed_error_page_info_->was_ignoring_cache);
 }
 
 void NetErrorHelperCore::PauseAutoReloadTimer() {
-  RecordHistoryDebugEvent(HistoryDebugEvent::PAUSE_RELOAD_TIMER);
-
   if (!auto_reload_timer_->IsRunning())
     return;
   DCHECK(committed_error_page_info_);
@@ -1003,8 +948,6 @@ void NetErrorHelperCore::PauseAutoReloadTimer() {
 }
 
 void NetErrorHelperCore::NetworkStateChanged(bool online) {
-  RecordHistoryDebugEvent(HistoryDebugEvent::NETWORK_STATE_CHANGED);
-
   bool was_online = online_;
   online_ = online;
   if (!was_online && online) {
@@ -1025,8 +968,6 @@ bool NetErrorHelperCore::ShouldSuppressErrorPage(FrameType frame_type,
   if (frame_type != MAIN_FRAME)
     return false;
 
-  RecordHistoryDebugEvent(HistoryDebugEvent::SHOULD_SUPPRESS_ERROR_PAGE);
-
   // If there's no auto reload attempt in flight, this error page didn't come
   // from auto reload, so don't suppress it.
   if (!auto_reload_in_flight_)
@@ -1044,8 +985,6 @@ bool NetErrorHelperCore::ShouldSuppressErrorPage(FrameType frame_type,
 void NetErrorHelperCore::ExecuteButtonPress(Button button) {
   // If there's no committed error page, should not be invoked.
   DCHECK(committed_error_page_info_);
-
-  RecordHistoryDebugEvent(HistoryDebugEvent::EXECUTE_BUTTON_PRESS);
 
   switch (button) {
     case RELOAD_BUTTON:
@@ -1139,18 +1078,6 @@ OfflinePageStatus NetErrorHelperCore::GetOfflinePageStatus() const {
 #else
   return OfflinePageStatus::NONE;
 #endif  // defined(OS_ANDROID)
-}
-
-void NetErrorHelperCore::RecordHistoryDebugEvent(
-    HistoryDebugEvent::EventType event_type) {
-  if (history_debug_events_.size() > MAX_DEBUG_HISTORY_EVENTS)
-    history_debug_events_.erase(history_debug_events_.begin());
-  HistoryDebugEvent event;
-  event.event_type = event_type;
-  event.pending_error_page_info_exists = !!pending_error_page_info_;
-  event.committed_error_page_info_exists = !!committed_error_page_info_;
-  event.timer_running = auto_reload_timer_->IsRunning();
-  history_debug_events_.push_back(event);
 }
 
 }  // namespace error_page
