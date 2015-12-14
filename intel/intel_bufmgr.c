@@ -32,7 +32,9 @@
 #include <errno.h>
 #include <drm.h>
 #include <i915_drm.h>
+#ifndef __ANDROID__
 #include <pciaccess.h>
+#endif
 #include "libdrm_macros.h"
 #include "intel_bufmgr.h"
 #include "intel_bufmgr_priv.h"
@@ -322,6 +324,7 @@ drm_intel_get_pipe_from_crtc_id(drm_intel_bufmgr *bufmgr, int crtc_id)
 	return -1;
 }
 
+#ifndef __ANDROID__
 static size_t
 drm_intel_probe_agp_aperture_size(int fd)
 {
@@ -347,6 +350,15 @@ err:
 	pci_system_cleanup ();
 	return size;
 }
+#else
+static size_t
+drm_intel_probe_agp_aperture_size(int fd)
+{
+	/* Nothing seems to rely on this value on Android anyway... */
+	fprintf(stderr, "%s: Mappable aperture size hardcoded to 64MiB\n", __func__);
+	return 64 * 1024 * 1024;
+}
+#endif
 
 int
 drm_intel_get_aperture_sizes(int fd, size_t *mappable, size_t *total)
