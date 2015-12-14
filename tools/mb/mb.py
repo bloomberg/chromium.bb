@@ -382,7 +382,6 @@ class MetaBuildWrapper(object):
         'type': contents.get('mb_type', ''),
         'gn_args': gn_args,
         'gyp_defines': gyp_defines,
-        'gyp_crosscompile': False,
     }
 
   def ReadConfigFile(self):
@@ -783,7 +782,6 @@ class MetaBuildWrapper(object):
     # Ensure that we have an environment that only contains
     # the exact values of the GYP variables we need.
     env = os.environ.copy()
-    env['GYP_GENERATORS'] = 'ninja'
     if 'GYP_CHROMIUM_NO_ACTION' in env:
       del env['GYP_CHROMIUM_NO_ACTION']
     if 'GYP_CROSSCOMPILE' in env:
