@@ -6,6 +6,7 @@
 
 import argparse
 
+from chromoting_test_utilities import GetJidFromHostLog
 from chromoting_test_utilities import InitialiseTestMachineForLinux
 from chromoting_test_utilities import PrintHostLogContents
 from chromoting_test_utilities import PROD_DIR_ID
@@ -31,6 +32,18 @@ def LaunchCTDCommand(args, command):
   host_log_file_names = []
 
   host_log_file_names.append(TestCaseSetup(args))
+  # Parse the me2me host log to obtain the JID that the host registered.
+  host_jid = GetJidFromHostLog(host_log_file_names[-1])
+
+  if not host_jid:
+    # Host-JID not found in log. Let's not attempt to run this test.
+    print 'Host-JID not found in log %s.' % host_log_file_names[-1]
+    return '[Command failed]: %s, %s' % (command, host_log_file_names)
+
+  # In order to ensure the host is online with the expected JID, pass in the
+  # jid obtained from the host-log as a command-line parameter.
+  command = command.replace('\n', '') + ' --hostjid=%s' % host_jid
+
   results = RunCommandInSubProcess(command)
 
   tear_down_index = results.find(TEST_ENVIRONMENT_TEAR_DOWN_INDICATOR)

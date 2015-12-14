@@ -8,6 +8,7 @@ import argparse
 import time
 
 from chromoting_test_utilities import CleanupUserProfileDir
+from chromoting_test_utilities import GetJidFromHostLog
 from chromoting_test_utilities import GetJidListFromTestResults
 from chromoting_test_utilities import InitialiseTestMachineForLinux
 from chromoting_test_utilities import PrintHostLogContents
@@ -55,15 +56,7 @@ def LaunchBTCommand(args, command):
     else:
       host_log_file_names.append(TestCaseSetup(args))
       # Parse the me2me host log to obtain the JID that the host registered.
-      host_jid = None
-      with open(host_log_file_names[retries], 'r') as host_log_file:
-        for line in host_log_file:
-          # The host JID will be recorded in a line saying 'Signaling
-          # connected'.
-          if 'Signaling connected. ' in line:
-            components = line.split('/')
-            host_jid = components[-1]
-            break
+      host_jid = GetJidFromHostLog(host_log_file_names[retries])
 
     results = RunCommandInSubProcess(command)
 

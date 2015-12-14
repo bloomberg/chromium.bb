@@ -46,6 +46,7 @@ def RunCommandInSubProcess(command):
 
   cmd_line = [command]
   try:
+    print 'Going to run:\n%s' % command
     results = subprocess.check_output(cmd_line, stderr=subprocess.STDOUT,
                                       shell=True)
   except subprocess.CalledProcessError, e:
@@ -225,7 +226,7 @@ def GetJidListFromTestResults(results):
   """
 
   # Reg-ex defining the JID information in the string being parsed.
-  jid_re = '(Connecting to .*.gserviceaccount.com/)(chromoting.*)(. Local.*)'
+  jid_re = '(Connecting to )(.*.gserviceaccount.com/chromoting.*)(. Local.*)'
   jids_used = []
   for line in results.split('\n'):
     match = re.search(jid_re, line)
@@ -235,3 +236,25 @@ def GetJidListFromTestResults(results):
         jids_used.append(jid_used)
 
   return jids_used
+
+
+def GetJidFromHostLog(host_log_file):
+  """Parse the me2me host log to obtain the JID that the host registered.
+
+  Args:
+    host_log_file: path to host-log file that should be parsed for a JID.
+
+  Returns:
+    host_jid: host-JID if found in host-log, else None
+  """
+  host_jid = None
+  with open(host_log_file, 'r') as log_file:
+    for line in log_file:
+      # The host JID will be recorded in a line saying 'Signaling
+      # connected'.
+      if 'Signaling connected. ' in line:
+        components = line.split(':')
+        host_jid = components[-1].lstrip()
+        break
+
+  return host_jid
