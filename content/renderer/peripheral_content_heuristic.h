@@ -8,17 +8,24 @@
 #include <set>
 
 #include "content/common/content_export.h"
-#include "content/public/renderer/render_frame.h"
 #include "url/origin.h"
-
-namespace gfx {
-class Size;
-}
 
 namespace content {
 
 class CONTENT_EXPORT PeripheralContentHeuristic {
  public:
+  // Initial decision of the peripheral content decision.
+  // These numeric values are used in UMA logs; do not change them.
+  enum Decision {
+    HEURISTIC_DECISION_PERIPHERAL = 0,
+    HEURISTIC_DECISION_ESSENTIAL_SAME_ORIGIN = 1,
+    HEURISTIC_DECISION_ESSENTIAL_CROSS_ORIGIN_BIG = 2,
+    HEURISTIC_DECISION_ESSENTIAL_CROSS_ORIGIN_WHITELISTED = 3,
+    HEURISTIC_DECISION_ESSENTIAL_CROSS_ORIGIN_TINY = 4,
+    HEURISTIC_DECISION_ESSENTIAL_UNKNOWN_SIZE = 5,
+    HEURISTIC_DECISION_NUM_ITEMS
+  };
+
   // Returns true if this content should have power saver enabled.
   //
   // Power Saver is enabled for content that are cross-origin and
@@ -36,16 +43,17 @@ class CONTENT_EXPORT PeripheralContentHeuristic {
   //
   // |content_origin| is the origin of the content e.g. plugin or video source.
   //
-  // |unobscured_size| is in zoom and device scale independent logical pixels.
-  static RenderFrame::PeripheralContentStatus GetPeripheralStatus(
+  // |width| and |height| are zoom and device scale independent logical pixels.
+  static Decision GetPeripheralStatus(
       const std::set<url::Origin>& origin_whitelist,
       const url::Origin& main_frame_origin,
       const url::Origin& content_origin,
-      const gfx::Size& unobscured_size);
+      int width,
+      int height);
 
   // Returns true if content is considered "large", and thus essential.
-  // |unobscured_size| is in zoom and device scale independent logical pixels.
-  static bool IsLargeContent(const gfx::Size& unobscured_size);
+  // |width| and |height| are zoom and device scale independent logical pixels.
+  static bool IsLargeContent(int width, int height);
 };
 
 }  // namespace content

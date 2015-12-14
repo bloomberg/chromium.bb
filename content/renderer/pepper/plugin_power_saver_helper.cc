@@ -15,7 +15,6 @@
 #include "content/renderer/peripheral_content_heuristic.h"
 #include "ppapi/shared_impl/ppapi_constants.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
-#include "ui/gfx/geometry/size.h"
 
 namespace content {
 
@@ -85,28 +84,33 @@ void PluginPowerSaverHelper::RegisterPeripheralPlugin(
       PeripheralPlugin(content_origin, unthrottle_callback));
 }
 
-RenderFrame::PeripheralContentStatus
-PluginPowerSaverHelper::GetPeripheralContentStatus(
+bool PluginPowerSaverHelper::ShouldThrottleContent(
     const url::Origin& main_frame_origin,
     const url::Origin& content_origin,
-    const gfx::Size& unobscured_size) const {
+    int width,
+    int height,
+    bool* cross_origin_main_content) const {
+  if (cross_origin_main_content)
+    *cross_origin_main_content = false;
+
   if (base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kOverridePluginPowerSaverForTesting) == "always") {
-    return RenderFrame::CONTENT_STATUS_PERIPHERAL;
+    return true;
   }
 
-  auto status = PeripheralContentHeuristic::GetPeripheralStatus(
-      origin_whitelist_, main_frame_origin, content_origin, unobscured_size);
-  if (status == RenderFrame::CONTENT_STATUS_ESSENTIAL_UNKNOWN_SIZE) {
-    // Early exit here to avoid recording a UMA. Every plugin will call this
-    // method once before the size is known (to faciliate early-exit for
-    // same-origin and whitelisted-origin content).
-    return status;
-  }
+  auto decision = PeripheralContentHeuristic::GetPeripheralStatus(
+      origin_whitelist_, main_frame_origin, content_origin, width, height);
 
-  UMA_HISTOGRAM_ENUMERATION(kPeripheralHeuristicHistogram, status,
-                            RenderFrame::CONTENT_STATUS_NUM_ITEMS);
-  return status;
+  UMA_HISTOGRAM_ENUMERATION(
+      kPeripheralHeuristicHistogram, decision,
+      PeripheralContentHeuristic::HEURISTIC_DECISION_NUM_ITEMS);
+
+  if (decision == PeripheralContentHeuristic::
+                      HEURISTIC_DECISION_ESSENTIAL_CROSS_ORIGIN_BIG &&
+      cross_origin_main_content)
+    *cross_origin_main_content = true;
+
+  return decision == PeripheralContentHeuristic::HEURISTIC_DECISION_PERIPHERAL;
 }
 
 void PluginPowerSaverHelper::WhitelistContentOrigin(

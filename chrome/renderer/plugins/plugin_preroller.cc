@@ -7,7 +7,6 @@
 #include "base/base64.h"
 #include "chrome/grit/renderer_resources.h"
 #include "chrome/renderer/plugins/chrome_plugin_placeholder.h"
-#include "chrome/renderer/plugins/power_saver_info.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebPlugin.h"
@@ -59,16 +58,16 @@ void PluginPreroller::OnThrottleStateChange() {
   if (!throttler_->IsThrottled())
     return;
 
-  PowerSaverInfo power_saver_info;
-  power_saver_info.power_saver_enabled = true;
-  power_saver_info.poster_attribute = keyframe_data_url_.spec();
-  power_saver_info.custom_poster_size = throttler_->GetSize();
+  PlaceholderPosterInfo poster_info;
+  poster_info.poster_attribute = keyframe_data_url_.spec();
+  poster_info.custom_poster_size = throttler_->GetSize();
 
   ChromePluginPlaceholder* placeholder =
       ChromePluginPlaceholder::CreateBlockedPlugin(
           render_frame(), frame_, params_, info_, identifier_, name_,
-          IDR_PLUGIN_POSTER_HTML, message_, power_saver_info);
+          IDR_PLUGIN_POSTER_HTML, message_, poster_info);
   placeholder->SetPremadePlugin(throttler_);
+  placeholder->set_power_saver_enabled(true);
   placeholder->AllowLoading();
 
   blink::WebPluginContainer* container =

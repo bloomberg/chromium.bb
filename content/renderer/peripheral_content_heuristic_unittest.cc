@@ -5,7 +5,6 @@
 #include "content/renderer/peripheral_content_heuristic.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -19,78 +18,66 @@ const char kOtherOrigin[] = "http://other.com";
 }  // namespaces
 
 TEST(PeripheralContentHeuristic, AllowSameOrigin) {
-  EXPECT_EQ(RenderFrame::CONTENT_STATUS_ESSENTIAL_SAME_ORIGIN,
-            PeripheralContentHeuristic::GetPeripheralStatus(
-                std::set<url::Origin>(), url::Origin(GURL(kSameOrigin)),
-                url::Origin(GURL(kSameOrigin)), gfx::Size(100, 100)));
-  EXPECT_EQ(RenderFrame::CONTENT_STATUS_ESSENTIAL_SAME_ORIGIN,
-            PeripheralContentHeuristic::GetPeripheralStatus(
-                std::set<url::Origin>(), url::Origin(GURL(kSameOrigin)),
-                url::Origin(GURL(kSameOrigin)), gfx::Size(1000, 1000)));
+  EXPECT_EQ(
+      PeripheralContentHeuristic::HEURISTIC_DECISION_ESSENTIAL_SAME_ORIGIN,
+      PeripheralContentHeuristic::GetPeripheralStatus(
+          std::set<url::Origin>(), url::Origin(GURL(kSameOrigin)),
+          url::Origin(GURL(kSameOrigin)), 100, 100));
+  EXPECT_EQ(
+      PeripheralContentHeuristic::HEURISTIC_DECISION_ESSENTIAL_SAME_ORIGIN,
+      PeripheralContentHeuristic::GetPeripheralStatus(
+          std::set<url::Origin>(), url::Origin(GURL(kSameOrigin)),
+          url::Origin(GURL(kSameOrigin)), 1000, 1000));
 }
 
 TEST(PeripheralContentHeuristic, DisallowCrossOriginUnlessLarge) {
-  EXPECT_EQ(RenderFrame::CONTENT_STATUS_PERIPHERAL,
+  EXPECT_EQ(PeripheralContentHeuristic::HEURISTIC_DECISION_PERIPHERAL,
             PeripheralContentHeuristic::GetPeripheralStatus(
                 std::set<url::Origin>(), url::Origin(GURL(kSameOrigin)),
-                url::Origin(GURL(kOtherOrigin)), gfx::Size(100, 100)));
-  EXPECT_EQ(RenderFrame::CONTENT_STATUS_ESSENTIAL_CROSS_ORIGIN_BIG,
-            PeripheralContentHeuristic::GetPeripheralStatus(
-                std::set<url::Origin>(), url::Origin(GURL(kSameOrigin)),
-                url::Origin(GURL(kOtherOrigin)), gfx::Size(1000, 1000)));
+                url::Origin(GURL(kOtherOrigin)), 100, 100));
+  EXPECT_EQ(
+      PeripheralContentHeuristic::HEURISTIC_DECISION_ESSENTIAL_CROSS_ORIGIN_BIG,
+      PeripheralContentHeuristic::GetPeripheralStatus(
+          std::set<url::Origin>(), url::Origin(GURL(kSameOrigin)),
+          url::Origin(GURL(kOtherOrigin)), 1000, 1000));
 }
 
 TEST(PeripheralContentHeuristic, AlwaysAllowTinyContent) {
-  EXPECT_EQ(RenderFrame::CONTENT_STATUS_ESSENTIAL_SAME_ORIGIN,
+  EXPECT_EQ(
+      PeripheralContentHeuristic::HEURISTIC_DECISION_ESSENTIAL_SAME_ORIGIN,
+      PeripheralContentHeuristic::GetPeripheralStatus(
+          std::set<url::Origin>(), url::Origin(GURL(kSameOrigin)),
+          url::Origin(GURL(kSameOrigin)), 1, 1));
+  EXPECT_EQ(PeripheralContentHeuristic::
+                HEURISTIC_DECISION_ESSENTIAL_CROSS_ORIGIN_TINY,
             PeripheralContentHeuristic::GetPeripheralStatus(
                 std::set<url::Origin>(), url::Origin(GURL(kSameOrigin)),
-                url::Origin(GURL(kSameOrigin)), gfx::Size(1, 1)));
-  EXPECT_EQ(RenderFrame::CONTENT_STATUS_ESSENTIAL_CROSS_ORIGIN_TINY,
+                url::Origin(GURL(kOtherOrigin)), 1, 1));
+  EXPECT_EQ(PeripheralContentHeuristic::
+                HEURISTIC_DECISION_ESSENTIAL_CROSS_ORIGIN_TINY,
             PeripheralContentHeuristic::GetPeripheralStatus(
                 std::set<url::Origin>(), url::Origin(GURL(kSameOrigin)),
-                url::Origin(GURL(kOtherOrigin)), gfx::Size(1, 1)));
-  EXPECT_EQ(RenderFrame::CONTENT_STATUS_ESSENTIAL_CROSS_ORIGIN_TINY,
+                url::Origin(GURL(kOtherOrigin)), 5, 5));
+  EXPECT_EQ(PeripheralContentHeuristic::HEURISTIC_DECISION_PERIPHERAL,
             PeripheralContentHeuristic::GetPeripheralStatus(
                 std::set<url::Origin>(), url::Origin(GURL(kSameOrigin)),
-                url::Origin(GURL(kOtherOrigin)), gfx::Size(5, 5)));
-  EXPECT_EQ(RenderFrame::CONTENT_STATUS_PERIPHERAL,
-            PeripheralContentHeuristic::GetPeripheralStatus(
-                std::set<url::Origin>(), url::Origin(GURL(kSameOrigin)),
-                url::Origin(GURL(kOtherOrigin)), gfx::Size(10, 10)));
+                url::Origin(GURL(kOtherOrigin)), 10, 10));
 }
 
 TEST(PeripheralContentHeuristic, TemporaryOriginWhitelist) {
-  EXPECT_EQ(RenderFrame::CONTENT_STATUS_PERIPHERAL,
+  EXPECT_EQ(PeripheralContentHeuristic::HEURISTIC_DECISION_PERIPHERAL,
             PeripheralContentHeuristic::GetPeripheralStatus(
                 std::set<url::Origin>(), url::Origin(GURL(kSameOrigin)),
-                url::Origin(GURL(kOtherOrigin)), gfx::Size(100, 100)));
+                url::Origin(GURL(kOtherOrigin)), 100, 100));
 
   std::set<url::Origin> whitelist;
   whitelist.insert(url::Origin(GURL(kOtherOrigin)));
 
-  EXPECT_EQ(RenderFrame::CONTENT_STATUS_ESSENTIAL_CROSS_ORIGIN_WHITELISTED,
+  EXPECT_EQ(PeripheralContentHeuristic::
+                HEURISTIC_DECISION_ESSENTIAL_CROSS_ORIGIN_WHITELISTED,
             PeripheralContentHeuristic::GetPeripheralStatus(
                 whitelist, url::Origin(GURL(kSameOrigin)),
-                url::Origin(GURL(kOtherOrigin)), gfx::Size(100, 100)));
-}
-
-TEST(PeripheralContentHeuristic, UndefinedSize) {
-  EXPECT_EQ(RenderFrame::CONTENT_STATUS_ESSENTIAL_SAME_ORIGIN,
-            PeripheralContentHeuristic::GetPeripheralStatus(
-                std::set<url::Origin>(), url::Origin(GURL(kSameOrigin)),
-                url::Origin(GURL(kSameOrigin)), gfx::Size()));
-
-  std::set<url::Origin> whitelist;
-  whitelist.insert(url::Origin(GURL(kOtherOrigin)));
-  EXPECT_EQ(RenderFrame::CONTENT_STATUS_ESSENTIAL_CROSS_ORIGIN_WHITELISTED,
-            PeripheralContentHeuristic::GetPeripheralStatus(
-                whitelist, url::Origin(GURL(kSameOrigin)),
-                url::Origin(GURL(kOtherOrigin)), gfx::Size()));
-
-  EXPECT_EQ(RenderFrame::CONTENT_STATUS_ESSENTIAL_UNKNOWN_SIZE,
-            PeripheralContentHeuristic::GetPeripheralStatus(
-                std::set<url::Origin>(), url::Origin(GURL(kSameOrigin)),
-                url::Origin(GURL(kOtherOrigin)), gfx::Size()));
+                url::Origin(GURL(kOtherOrigin)), 100, 100));
 }
 
 }  // namespace content

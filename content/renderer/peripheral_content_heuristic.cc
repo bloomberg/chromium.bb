@@ -6,8 +6,6 @@
 
 #include <cmath>
 
-#include "ui/gfx/geometry/size.h"
-
 namespace content {
 
 namespace {
@@ -32,37 +30,33 @@ const int kEssentialVideoMinimumArea = 120000;
 }  // namespace
 
 // static
-RenderFrame::PeripheralContentStatus
+PeripheralContentHeuristic::Decision
 PeripheralContentHeuristic::GetPeripheralStatus(
     const std::set<url::Origin>& origin_whitelist,
     const url::Origin& main_frame_origin,
     const url::Origin& content_origin,
-    const gfx::Size& unobscured_size) {
+    int width,
+    int height) {
   if (main_frame_origin.IsSameOriginWith(content_origin))
-    return RenderFrame::CONTENT_STATUS_ESSENTIAL_SAME_ORIGIN;
+    return HEURISTIC_DECISION_ESSENTIAL_SAME_ORIGIN;
+
+  if (width <= 0 || height <= 0)
+    return HEURISTIC_DECISION_ESSENTIAL_UNKNOWN_SIZE;
 
   if (origin_whitelist.count(content_origin))
-    return RenderFrame::CONTENT_STATUS_ESSENTIAL_CROSS_ORIGIN_WHITELISTED;
+    return HEURISTIC_DECISION_ESSENTIAL_CROSS_ORIGIN_WHITELISTED;
 
-  if (unobscured_size.IsEmpty())
-    return RenderFrame::CONTENT_STATUS_ESSENTIAL_UNKNOWN_SIZE;
+  if (width <= kTinyContentSize && height <= kTinyContentSize)
+    return HEURISTIC_DECISION_ESSENTIAL_CROSS_ORIGIN_TINY;
 
-  if (unobscured_size.width() <= kTinyContentSize &&
-      unobscured_size.height() <= kTinyContentSize) {
-    return RenderFrame::CONTENT_STATUS_ESSENTIAL_CROSS_ORIGIN_TINY;
-  }
+  if (IsLargeContent(width, height))
+    return HEURISTIC_DECISION_ESSENTIAL_CROSS_ORIGIN_BIG;
 
-  if (IsLargeContent(unobscured_size))
-    return RenderFrame::CONTENT_STATUS_ESSENTIAL_CROSS_ORIGIN_BIG;
-
-  return RenderFrame::CONTENT_STATUS_PERIPHERAL;
+  return HEURISTIC_DECISION_PERIPHERAL;
 }
 
 // static
-bool PeripheralContentHeuristic::IsLargeContent(
-    const gfx::Size& unobscured_size) {
-  int width = unobscured_size.width();
-  int height = unobscured_size.height();
+bool PeripheralContentHeuristic::IsLargeContent(int width, int height) {
   if (width >= kLargeContentMinWidth && height >= kLargeContentMinHeight)
     return true;
 

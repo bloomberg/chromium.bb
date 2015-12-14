@@ -2128,13 +2128,15 @@ void RenderFrameImpl::RegisterPeripheralPlugin(
       content_origin, unthrottle_callback);
 }
 
-RenderFrame::PeripheralContentStatus
-RenderFrameImpl::GetPeripheralContentStatus(
+bool RenderFrameImpl::ShouldThrottleContent(
     const url::Origin& main_frame_origin,
     const url::Origin& content_origin,
-    const gfx::Size& unobscured_size) const {
-  return plugin_power_saver_helper_->GetPeripheralContentStatus(
-      main_frame_origin, content_origin, unobscured_size);
+    int width,
+    int height,
+    bool* cross_origin_main_content) const {
+  return plugin_power_saver_helper_->ShouldThrottleContent(
+      main_frame_origin, content_origin, width, height,
+      cross_origin_main_content);
 }
 
 void RenderFrameImpl::WhitelistContentOrigin(
