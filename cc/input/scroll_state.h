@@ -7,7 +7,9 @@
 
 #include <list>
 
+#include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
+#include "cc/input/scroll_state_data.h"
 
 namespace cc {
 
@@ -24,6 +26,7 @@ class CC_EXPORT ScrollState {
               bool should_propagate,
               bool delta_consumed_for_scroll_sequence,
               bool is_direct_manipulation);
+  explicit ScrollState(scoped_ptr<ScrollStateData> data);
   ~ScrollState();
 
   // Reduce deltas by x, y.
@@ -32,74 +35,49 @@ class CC_EXPORT ScrollState {
   // |DistributeScroll| on it.
   void DistributeToScrollChainDescendant();
   // Positive when scrolling left.
-  double delta_x() const { return delta_x_; }
+  double delta_x() const { return data_->delta_x; }
   // Positive when scrolling up.
-  double delta_y() const { return delta_y_; }
+  double delta_y() const { return data_->delta_y; }
   // The location the scroll started at. For touch, the starting
   // position of the finger. For mouse, the location of the cursor.
-  int start_position_x() const { return start_position_x_; }
-  int start_position_y() const { return start_position_y_; }
+  int start_position_x() const { return data_->start_position_x; }
+  int start_position_y() const { return data_->start_position_y; }
 
   // True if this scroll is allowed to bubble upwards.
-  bool should_propagate() const { return should_propagate_; }
+  bool should_propagate() const { return data_->should_propagate; }
   // True if the user interacts directly with the screen, e.g., via touch.
-  bool is_direct_manipulation() const { return is_direct_manipulation_; }
+  bool is_direct_manipulation() const { return data_->is_direct_manipulation; }
 
   void set_scroll_chain(const std::list<LayerImpl*>& scroll_chain) {
     scroll_chain_ = scroll_chain;
   }
 
   void set_current_native_scrolling_layer(LayerImpl* layer) {
-    current_native_scrolling_layer_ = layer;
+    data_->current_native_scrolling_layer = layer;
   }
 
   LayerImpl* current_native_scrolling_layer() const {
-    return current_native_scrolling_layer_;
+    return data_->current_native_scrolling_layer;
   }
 
   bool delta_consumed_for_scroll_sequence() const {
-    return delta_consumed_for_scroll_sequence_;
+    return data_->delta_consumed_for_scroll_sequence;
   }
 
-  bool FullyConsumed() const { return !delta_x_ && !delta_y_; }
+  bool FullyConsumed() const { return !data_->delta_x && !data_->delta_y; }
 
   void set_caused_scroll(bool x, bool y) {
-    caused_scroll_x_ |= x;
-    caused_scroll_y_ |= y;
+    data_->caused_scroll_x |= x;
+    data_->caused_scroll_y |= y;
   }
 
-  bool caused_scroll_x() const { return caused_scroll_x_; }
-  bool caused_scroll_y() const { return caused_scroll_y_; }
+  bool caused_scroll_x() const { return data_->caused_scroll_x; }
+  bool caused_scroll_y() const { return data_->caused_scroll_y; }
+
+  ScrollStateData* data() { return data_.get(); }
 
  private:
-  ScrollState();
-  double delta_x_;
-  double delta_y_;
-  double start_position_x_;
-  double start_position_y_;
-
-  bool should_propagate_;
-
-  // The last layer to respond to a scroll, or null if none exists.
-  LayerImpl* current_native_scrolling_layer_;
-  // Whether the scroll sequence has had any delta consumed, in the
-  // current frame, or any child frames.
-  bool delta_consumed_for_scroll_sequence_;
-  // True if the user interacts directly with the display, e.g., via
-  // touch.
-  bool is_direct_manipulation_;
-  // TODO(tdresser): ScrollState shouldn't need to keep track of whether or not
-  // this ScrollState object has caused a scroll. Ideally, any native scroller
-  // consuming delta has caused a scroll. Currently, there are some cases where
-  // we consume delta without scrolling, such as in
-  // |Viewport::AdjustOverscroll|. Once these cases are fixed, we should get rid
-  // of |caused_scroll_*_|. See crbug.com/510045 for details.
-  bool caused_scroll_x_;
-  bool caused_scroll_y_;
-
-  // TODO(tdresser): Change LayerImpl* to an abstract scrollable type. See
-  // crbug.com/476553 for detail on the effort to unify impl and main thread
-  // scrolling, which will require an abstract scrollable type.
+  scoped_ptr<ScrollStateData> data_;
   std::list<LayerImpl*> scroll_chain_;
 };
 

@@ -166,6 +166,8 @@
         'input/scroll_elasticity_helper.h',
         'input/scroll_state.cc',
         'input/scroll_state.h',
+        'input/scroll_state_data.cc',
+        'input/scroll_state_data.h',
         'input/selection_bound_type.h',
         'input/selection.h',
         'input/top_controls_manager.cc',
