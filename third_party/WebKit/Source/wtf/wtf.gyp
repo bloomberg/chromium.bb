@@ -71,6 +71,7 @@
       'dependencies': [
           'wtf_config',
           '../config.gyp:config',
+          '<(DEPTH)/base/base.gyp:base',
           '<(DEPTH)/third_party/icu/icu.gyp:icui18n',
           '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
       ],
@@ -99,6 +100,7 @@
       },
       'export_dependent_settings': [
         'wtf_config',
+        '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/third_party/icu/icu.gyp:icui18n',
         '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
       ],
