@@ -7,6 +7,27 @@
 #include "components/autofill/core/browser/password_generator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace {
+
+void CheckPasswordCorrectness(const std::string& password) {
+  int num_upper_case_letters = 0;
+  int num_lower_case_letters = 0;
+  int num_digits = 0;
+  for (size_t i = 0; i < password.size(); i++) {
+    if (isupper(password[i]))
+      ++num_upper_case_letters;
+    else if (islower(password[i]))
+      ++num_lower_case_letters;
+    else if (isdigit(password[i]))
+      ++num_digits;
+  }
+  EXPECT_GT(num_upper_case_letters, 0) << password;
+  EXPECT_GT(num_lower_case_letters, 0) << password;
+  EXPECT_GT(num_digits, 0) << password;
+}
+
+}  // namespace
+
 namespace autofill {
 
 TEST(PasswordGeneratorTest, PasswordLength) {
@@ -28,20 +49,7 @@ TEST(PasswordGeneratorTest, PasswordLength) {
 TEST(PasswordGeneratorTest, PasswordPattern) {
   PasswordGenerator pg(12);
   std::string password = pg.Generate();
-  int num_upper_case_letters = 0;
-  int num_lower_case_letters = 0;
-  int num_digits = 0;
-  for (size_t i = 0; i < password.size(); i++) {
-    if (isupper(password[i]))
-      ++num_upper_case_letters;
-    else if (islower(password[i]))
-      ++num_lower_case_letters;
-    else if (isdigit(password[i]))
-      ++num_digits;
-  }
-  EXPECT_GT(num_upper_case_letters, 0) << password;
-  EXPECT_GT(num_lower_case_letters, 0) << password;
-  EXPECT_GT(num_digits, 0) << password;
+  CheckPasswordCorrectness(password);
 }
 
 TEST(PasswordGeneratorTest, Printable) {
@@ -50,6 +58,16 @@ TEST(PasswordGeneratorTest, Printable) {
   for (size_t i = 0; i < password.size(); i++) {
     // Make sure that the character is printable.
     EXPECT_TRUE(isgraph(password[i]));
+  }
+}
+
+TEST(PasswordGeneratorTest, ForceFixPasswordTest) {
+  std::string passwords_to_fix[] = {"nonumbersoruppercase",
+                                    "nonumbersWithuppercase",
+                                    "numbers3Anduppercase", "UmpAwgemHoc"};
+  for (auto& password : passwords_to_fix) {
+    ForceFixPassword(&password);
+    CheckPasswordCorrectness(password);
   }
 }
 

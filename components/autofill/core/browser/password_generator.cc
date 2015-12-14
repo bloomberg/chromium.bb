@@ -12,12 +12,12 @@
 #include "base/strings/string_util.h"
 #include "third_party/fips181/fips181.h"
 
-const int kMinUpper = 65;  // First upper case letter 'A'
-const int kMaxUpper = 90;  // Last upper case letter 'Z'
-const int kMinLower = 97;  // First lower case letter 'a'
-const int kMaxLower = 122; // Last lower case letter 'z'
-const int kMinDigit = 48;  // First digit '0'
-const int kMaxDigit = 57;  // Last digit '9'
+const int kMinUpper = 65;   // First upper case letter 'A'
+const int kMaxUpper = 90;   // Last upper case letter 'Z'
+const int kMinLower = 97;   // First lower case letter 'a'
+const int kMaxLower = 122;  // Last lower case letter 'z'
+const int kMinDigit = 48;   // First digit '0'
+const int kMaxDigit = 57;   // Last digit '9'
 const int kMinPasswordLength = 4;
 const int kMaxPasswordLength = 15;
 
@@ -50,9 +50,12 @@ bool VerifyPassword(const std::string& password) {
   return num_lower_case && num_upper_case && num_digits;
 }
 
-// Make sure that there is at least one upper case and one number in the
-// password. Assume that there already exists a lower case letter as it's the
-// default from gen_pron_pass.
+}  // namespace
+
+namespace autofill {
+
+const int PasswordGenerator::kDefaultPasswordLength = 12;
+
 void ForceFixPassword(std::string* password) {
   for (char& it : *password) {
     if (islower(it)) {
@@ -68,12 +71,6 @@ void ForceFixPassword(std::string* password) {
     }
   }
 }
-
-}  // namespace
-
-namespace autofill {
-
-const int PasswordGenerator::kDefaultPasswordLength = 12;
 
 PasswordGenerator::PasswordGenerator(int max_length)
     : password_length_(GetLengthFromHint(max_length, kDefaultPasswordLength)) {}

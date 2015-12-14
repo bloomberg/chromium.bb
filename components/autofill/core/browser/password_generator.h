@@ -12,6 +12,11 @@
 
 namespace autofill {
 
+// Make sure that there is at least one upper case and one number in the
+// password. |password| must not be null, and must point to a string containing
+// at least 3 lower-case letters.
+extern void ForceFixPassword(std::string* password);
+
 // Class to generate random passwords. Currently we just use a generic algorithm
 // for all sites, but eventually we can incorporate additional information to
 // determine passwords that are likely to be accepted (i.e. use pattern field,
