@@ -4,10 +4,12 @@
 
 package org.chromium.chrome.browser.compositor.bottombar.contextualsearch;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.Handler;
 import android.view.View.MeasureSpec;
 
+import org.chromium.base.ActivityState;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayContentProgressObserver;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
@@ -71,17 +73,6 @@ public class ContextualSearchPanel extends OverlayPanel {
         super(context, updateHost, panelManager);
         mSceneLayer = createNewContextualSearchSceneLayer();
         mPanelMetrics = new ContextualSearchPanelMetrics();
-    }
-
-    /**
-     * Destroy the panel's components.
-     */
-    @Override
-    public void destroy() {
-        super.destroy();
-        destroyPromoView();
-        destroyPeekPromoControl();
-        destroySearchBarControl();
     }
 
     @Override
@@ -311,6 +302,22 @@ public class ContextualSearchPanel extends OverlayPanel {
     // ============================================================================================
     // Panel base methods
     // ============================================================================================
+
+    @Override
+    protected void destroyComponents() {
+        super.destroyComponents();
+        destroyPromoView();
+        destroyPeekPromoControl();
+        destroySearchBarControl();
+    }
+
+    @Override
+    public void onActivityStateChange(Activity activity, int newState) {
+        super.onActivityStateChange(activity, newState);
+        if (newState == ActivityState.PAUSED) {
+            mManagementDelegate.logCurrentState();
+        }
+    }
 
     @Override
     public PanelPriority getPriority() {

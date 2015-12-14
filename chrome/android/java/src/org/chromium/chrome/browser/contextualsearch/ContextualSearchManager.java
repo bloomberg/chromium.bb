@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.contextualsearch;
 
-import android.app.Activity;
 import android.content.Context;
 import android.text.TextUtils;
 import android.view.View;
@@ -12,9 +11,6 @@ import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.ViewTreeObserver.OnGlobalFocusChangeListener;
 
-import org.chromium.base.ActivityState;
-import org.chromium.base.ApplicationStatus;
-import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.SysUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
@@ -72,7 +68,7 @@ import javax.annotation.Nullable;
 public class ContextualSearchManager extends ContextualSearchObservable
         implements ContextualSearchManagementDelegate,
                 ContextualSearchNetworkCommunicator, ContextualSearchSelectionHandler,
-                ContextualSearchClient, ActivityStateListener {
+                ContextualSearchClient {
 
     private static final String TAG = "ContextualSearch";
 
@@ -222,7 +218,6 @@ public class ContextualSearchManager extends ContextualSearchObservable
         mDidStartLoadingResolvedSearchRequest = false;
         mWereSearchResultsSeen = false;
         mNetworkCommunicator = this;
-        ApplicationStatus.registerStateListenerForActivity(this, mActivity);
         mIsInitialized = true;
     }
 
@@ -262,7 +257,6 @@ public class ContextualSearchManager extends ContextualSearchObservable
         nativeDestroy(mNativeContextualSearchManagerPtr);
         stopListeningForHideNotifications();
         mTabRedirectHandler.clear();
-        ApplicationStatus.unregisterActivityStateListener(this);
         if (mFindToolbarManager != null) {
             mFindToolbarManager.removeObserver(mFindToolbarObserver);
             mFindToolbarManager = null;
@@ -598,16 +592,6 @@ public class ContextualSearchManager extends ContextualSearchObservable
             for (TabModel tabModel : selector.getModels()) {
                 tabModel.removeObserver(mTabModelObserver);
             }
-        }
-    }
-
-    @Override
-    public void onActivityStateChange(Activity activity, int newState) {
-        if (newState == ActivityState.RESUMED || newState == ActivityState.STOPPED
-                || newState == ActivityState.DESTROYED) {
-            hideContextualSearch(StateChangeReason.UNKNOWN);
-        } else if (newState == ActivityState.PAUSED) {
-            mPolicy.logCurrentState(getBaseContentView());
         }
     }
 
@@ -1106,6 +1090,13 @@ public class ContextualSearchManager extends ContextualSearchObservable
             } else {
                 mDidStartLoadingResolvedSearchRequest = false;
             }
+        }
+    }
+
+    @Override
+    public void logCurrentState() {
+        if (mPolicy != null) {
+            mPolicy.logCurrentState(getBaseContentView());
         }
     }
 

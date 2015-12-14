@@ -146,13 +146,21 @@ public abstract class ContextualSearchPanelAnimation extends ContextualSearchPan
 
     @Override
     protected void closePanel(StateChangeReason reason, boolean animate) {
-        if (!mIsAnimatingPanelClosing) {
-            if (animate) {
-                mIsAnimatingPanelClosing = true;
-                animatePanelToState(PanelState.CLOSED, reason);
+        // If close without animation is called while the panel is already animating closed, cancel
+        // the animation and finish closing immediately.
+        if (mIsAnimatingPanelClosing) {
+            if (!animate) {
+                cancelAnimation(this, Property.PANEL_HEIGHT);
             } else {
-                resizePanelToState(PanelState.CLOSED, reason);
+                return;
             }
+        }
+
+        if (animate) {
+            mIsAnimatingPanelClosing = true;
+            animatePanelToState(PanelState.CLOSED, reason);
+        } else {
+            resizePanelToState(PanelState.CLOSED, reason);
         }
     }
 

@@ -67,14 +67,6 @@ public class ReaderModePanel extends OverlayPanel {
         mContentViewDelegate = contentViewDelegate;
     }
 
-    /**
-     * Destroy the panel's components.
-     */
-    public void destroy() {
-        super.destroy();
-        destroyReaderModeBarControl();
-    }
-
     @Override
     public OverlayPanelContent createNewOverlayPanelContent() {
         OverlayContentDelegate delegate = new OverlayContentDelegate() {
@@ -200,6 +192,12 @@ public class ReaderModePanel extends OverlayPanel {
     // ============================================================================================
 
     @Override
+    public void destroyComponents() {
+        super.destroyComponents();
+        destroyReaderModeBarControl();
+    }
+
+    @Override
     public PanelPriority getPriority() {
         return PanelPriority.MEDIUM;
     }
@@ -212,6 +210,10 @@ public class ReaderModePanel extends OverlayPanel {
     @Override
     protected void updatePanelForCloseOrPeek(float percent) {
         super.updatePanelForCloseOrPeek(percent);
+
+        // Do not update the panel text if the panel was closed immediately.
+        if (percent < 0.01f) return;
+
         getReaderModeBarControl().setBarText(R.string.reader_view_text);
         mReaderBarTextOpacity = 1.0f;
     }

@@ -86,4 +86,9 @@ public interface ContextualSearchManagementDelegate {
      * @return An OverlayContentDelegate to watch events on the panel's content.
      */
     OverlayContentDelegate getOverlayContentDelegate();
+
+    /**
+     * Log the current state of Contextual Search.
+     */
+    void logCurrentState();
 }

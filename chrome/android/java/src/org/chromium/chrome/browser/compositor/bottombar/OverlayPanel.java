@@ -4,8 +4,12 @@
 
 package org.chromium.chrome.browser.compositor.bottombar;
 
+import android.app.Activity;
 import android.content.Context;
 
+import org.chromium.base.ActivityState;
+import org.chromium.base.ApplicationStatus;
+import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager.PanelPriority;
@@ -22,7 +26,7 @@ import org.chromium.ui.resources.ResourceManager;
  * Controls the Overlay Panel.
  */
 public class OverlayPanel extends ContextualSearchPanelAnimation
-        implements OverlayPanelContentFactory {
+        implements ActivityStateListener, OverlayPanelContentFactory {
 
     /**
      * The extra dp added around the close button touch target.
@@ -129,13 +133,22 @@ public class OverlayPanel extends ContextualSearchPanelAnimation
      * Destroy the native components associated with this panel's content.
      */
     public void destroy() {
+        closePanel(StateChangeReason.UNKNOWN, false);
+        ApplicationStatus.unregisterActivityStateListener(this);
+    }
+
+    /**
+     * Destroy the components associated with this panel. This should be overridden by panel
+     * implementations to destroy text views and other elements.
+     */
+    protected void destroyComponents() {
         destroyOverlayPanelContent();
     }
 
     @Override
     protected void onClosed(StateChangeReason reason) {
+        destroyComponents();
         mPanelManager.notifyPanelClosed(this, reason);
-        destroy();
     }
 
     // ============================================================================================
@@ -217,6 +230,9 @@ public class OverlayPanel extends ContextualSearchPanelAnimation
      */
     public void setChromeActivity(ChromeActivity activity) {
         mActivity = activity;
+        if (mActivity != null) {
+            ApplicationStatus.registerStateListenerForActivity(this, mActivity);
+        }
     }
 
     /**
@@ -248,6 +264,18 @@ public class OverlayPanel extends ContextualSearchPanelAnimation
      */
     public boolean canBeSuppressed() {
         return false;
+    }
+
+    // ============================================================================================
+    // ActivityStateListener
+    // ============================================================================================
+
+    @Override
+    public void onActivityStateChange(Activity activity, int newState) {
+        if (newState == ActivityState.RESUMED || newState == ActivityState.STOPPED
+                || newState == ActivityState.DESTROYED) {
+            closePanel(StateChangeReason.UNKNOWN, false);
+        }
     }
 
     // ============================================================================================
