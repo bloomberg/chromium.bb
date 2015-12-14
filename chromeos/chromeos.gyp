@@ -389,6 +389,8 @@
     'chromeos_binder_sources': [
       'binder/driver.cc',
       'binder/driver.h',
+      'binder/util.cc',
+      'binder/util.h',
     ],
     'chromeos_binder_test_sources': [
       'binder/driver_unittest.cc',
