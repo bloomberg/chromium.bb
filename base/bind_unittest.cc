@@ -4,6 +4,9 @@
 
 #include "base/bind.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -150,7 +153,7 @@ class DeleteCounter {
 
 template <typename T>
 T PassThru(T scoper) {
-  return scoper.Pass();
+  return scoper;
 }
 
 // Some test functions that we can Bind to.
@@ -750,6 +753,49 @@ TEST_F(BindTest, ScopedPtr) {
       Bind(&PassThru<scoped_ptr<DeleteCounter> >);
   ptr.reset(new DeleteCounter(&deletes));
   cb_unbound.Run(ptr.Pass());
+}
+
+TEST_F(BindTest, UniquePtr) {
+  int deletes = 0;
+
+  // Tests the Passed() function's support for pointers.
+  std::unique_ptr<DeleteCounter> ptr(new DeleteCounter(&deletes));
+  Callback<std::unique_ptr<DeleteCounter>(void)> unused_callback =
+      Bind(&PassThru<std::unique_ptr<DeleteCounter>>, Passed(&ptr));
+  EXPECT_FALSE(ptr.get());
+  EXPECT_EQ(0, deletes);
+
+  // If we never invoke the Callback, it retains ownership and deletes.
+  unused_callback.Reset();
+  EXPECT_EQ(1, deletes);
+
+  // Tests the Passed() function's support for rvalues.
+  deletes = 0;
+  DeleteCounter* counter = new DeleteCounter(&deletes);
+  Callback<std::unique_ptr<DeleteCounter>(void)> callback =
+      Bind(&PassThru<std::unique_ptr<DeleteCounter>>,
+           Passed(std::unique_ptr<DeleteCounter>(counter)));
+  EXPECT_FALSE(ptr.get());
+  EXPECT_EQ(0, deletes);
+
+  // Check that ownership can be transferred back out.
+  std::unique_ptr<DeleteCounter> result = callback.Run();
+  ASSERT_EQ(counter, result.get());
+  EXPECT_EQ(0, deletes);
+
+  // Resetting does not delete since ownership was transferred.
+  callback.Reset();
+  EXPECT_EQ(0, deletes);
+
+  // Ensure that we actually did get ownership.
+  result.reset();
+  EXPECT_EQ(1, deletes);
+
+  // Test unbound argument forwarding.
+  Callback<std::unique_ptr<DeleteCounter>(std::unique_ptr<DeleteCounter>)>
+      cb_unbound = Bind(&PassThru<std::unique_ptr<DeleteCounter>>);
+  ptr.reset(new DeleteCounter(&deletes));
+  cb_unbound.Run(std::move(ptr));
 }
 
 // Argument Copy-constructor usage for non-reference parameters.

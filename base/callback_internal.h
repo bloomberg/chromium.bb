@@ -9,6 +9,7 @@
 #define BASE_CALLBACK_INTERNAL_H_
 
 #include <stddef.h>
+#include <memory>
 #include <type_traits>
 
 #include "base/atomic_ref_count.h"
@@ -94,7 +95,13 @@ class BASE_EXPORT CallbackBase {
 
 // A helper template to determine if given type is non-const move-only-type,
 // i.e. if a value of the given type should be passed via std::move() in a
-// destructive way.
+// destructive way. Types are considered to be move-only if they have a
+// sentinel MoveOnlyTypeForCPP03 member: a class typically gets this from using
+// the DISALLOW_COPY_AND_ASSIGN_WITH_MOVE_FOR_BIND macro.
+// It would be easy to generalize this trait to all move-only types... but this
+// confuses template deduction in VS2013 with certain types such as
+// std::unique_ptr.
+// TODO(dcheng): Revisit this when Windows switches to VS2015 by default.
 template <typename T> struct IsMoveOnlyType {
   template <typename U>
   static YesType Test(const typename U::MoveOnlyTypeForCPP03*);
@@ -105,6 +112,11 @@ template <typename T> struct IsMoveOnlyType {
   static const bool value = sizeof((Test<T>(0))) == sizeof(YesType) &&
                             !is_const<T>::value;
 };
+
+// Specialization of IsMoveOnlyType so that std::unique_ptr is still considered
+// move-only, even without the sentinel member.
+template <typename T>
+struct IsMoveOnlyType<std::unique_ptr<T>> : std::true_type {};
 
 template <typename>
 struct CallbackParamTraitsForMoveOnlyType;
