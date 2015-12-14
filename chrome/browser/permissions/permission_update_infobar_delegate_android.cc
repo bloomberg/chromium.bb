@@ -119,7 +119,9 @@ bool PermissionUpdateInfoBarDelegate::RegisterPermissionUpdateInfoBarDelegate(
 }
 
 void PermissionUpdateInfoBarDelegate::OnPermissionResult(
-    JNIEnv* env, jobject obj, jboolean all_permissions_granted) {
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    jboolean all_permissions_granted) {
   base::ResetAndReturn(&callback_).Run(all_permissions_granted);
   infobar()->RemoveSelf();
 }

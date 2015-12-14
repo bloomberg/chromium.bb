@@ -55,8 +55,9 @@ class PermissionUpdateInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   static bool RegisterPermissionUpdateInfoBarDelegate(JNIEnv* env);
 
-  void OnPermissionResult(
-      JNIEnv* env, jobject obj, jboolean all_permissions_granted);
+  void OnPermissionResult(JNIEnv* env,
+                          const base::android::JavaParamRef<jobject>& obj,
+                          jboolean all_permissions_granted);
 
  private:
   PermissionUpdateInfoBarDelegate(

@@ -62,9 +62,9 @@ void SpellCheckerSessionBridge::RequestTextCheck(int route_id,
 
 void SpellCheckerSessionBridge::ProcessSpellCheckResults(
     JNIEnv* env,
-    jobject jobj,
-    jintArray offset_array,
-    jintArray length_array) {
+    const JavaParamRef<jobject>& jobj,
+    const JavaParamRef<jintArray>& offset_array,
+    const JavaParamRef<jintArray>& length_array) {
   std::vector<int> offsets;
   std::vector<int> lengths;
 

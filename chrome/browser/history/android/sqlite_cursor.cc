@@ -60,7 +60,7 @@ bool SQLiteCursor::RegisterSqliteCursor(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-jint SQLiteCursor::GetCount(JNIEnv* env, jobject obj) {
+jint SQLiteCursor::GetCount(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   // Moves to maxium possible position so we will reach the last row, then finds
   // out the total number of rows.
   int current_position = position_;
@@ -70,34 +70,43 @@ jint SQLiteCursor::GetCount(JNIEnv* env, jobject obj) {
   return count;
 }
 
-ScopedJavaLocalRef<jobjectArray> SQLiteCursor::GetColumnNames(JNIEnv* env,
-                                                              jobject obj) {
+ScopedJavaLocalRef<jobjectArray> SQLiteCursor::GetColumnNames(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   return base::android::ToJavaArrayOfStrings(env, column_names_);
 }
 
-ScopedJavaLocalRef<jstring> SQLiteCursor::GetString(JNIEnv* env,
-                                                    jobject obj,
-                                                    jint column) {
+ScopedJavaLocalRef<jstring> SQLiteCursor::GetString(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    jint column) {
   base::string16 value = statement_->statement()->ColumnString16(column);
   return ScopedJavaLocalRef<jstring>(env,
       env->NewString(value.data(), value.size()));
 }
 
-jlong SQLiteCursor::GetLong(JNIEnv* env, jobject obj, jint column) {
+jlong SQLiteCursor::GetLong(JNIEnv* env,
+                            const JavaParamRef<jobject>& obj,
+                            jint column) {
   return statement_->statement()->ColumnInt64(column);
 }
 
-jint SQLiteCursor::GetInt(JNIEnv* env, jobject obj, jint column) {
+jint SQLiteCursor::GetInt(JNIEnv* env,
+                          const JavaParamRef<jobject>& obj,
+                          jint column) {
   return statement_->statement()->ColumnInt(column);
 }
 
-jdouble SQLiteCursor::GetDouble(JNIEnv* env, jobject obj, jint column) {
+jdouble SQLiteCursor::GetDouble(JNIEnv* env,
+                                const JavaParamRef<jobject>& obj,
+                                jint column) {
   return statement_->statement()->ColumnDouble(column);
 }
 
-ScopedJavaLocalRef<jbyteArray> SQLiteCursor::GetBlob(JNIEnv* env,
-                                                     jobject obj,
-                                                     jint column) {
+ScopedJavaLocalRef<jbyteArray> SQLiteCursor::GetBlob(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    jint column) {
   std::vector<unsigned char> blob;
 
   // Assume the client will only get favicon using GetBlob.
@@ -110,11 +119,15 @@ ScopedJavaLocalRef<jbyteArray> SQLiteCursor::GetBlob(JNIEnv* env,
   return base::android::ToJavaByteArray(env, &blob[0], blob.size());
 }
 
-jboolean SQLiteCursor::IsNull(JNIEnv* env, jobject obj, jint column) {
+jboolean SQLiteCursor::IsNull(JNIEnv* env,
+                              const JavaParamRef<jobject>& obj,
+                              jint column) {
   return NULL_TYPE == GetColumnTypeInternal(column) ? JNI_TRUE : JNI_FALSE;
 }
 
-jint SQLiteCursor::MoveTo(JNIEnv* env, jobject obj, jint pos) {
+jint SQLiteCursor::MoveTo(JNIEnv* env,
+                          const JavaParamRef<jobject>& obj,
+                          jint pos) {
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
       base::Bind(&SQLiteCursor::RunMoveStatementOnUIThread,
       base::Unretained(this), pos));
@@ -125,11 +138,13 @@ jint SQLiteCursor::MoveTo(JNIEnv* env, jobject obj, jint pos) {
   return position_;
 }
 
-jint SQLiteCursor::GetColumnType(JNIEnv* env, jobject obj, jint column) {
+jint SQLiteCursor::GetColumnType(JNIEnv* env,
+                                 const JavaParamRef<jobject>& obj,
+                                 jint column) {
   return GetColumnTypeInternal(column);
 }
 
-void SQLiteCursor::Destroy(JNIEnv* env, jobject obj) {
+void SQLiteCursor::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   // We do our best to cleanup when Destroy() is called from Java's finalize()
   // where the UI message loop might stop running or in the process of shutting
   // down, as the whole process will be destroyed soon, it's fine to leave some

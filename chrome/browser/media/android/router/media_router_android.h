@@ -57,35 +57,44 @@ class MediaRouterAndroid : public MediaRouterBase {
 
   // Notifies the media router that information about sinks is received for
   // a specific source URN.
-  void OnSinksReceived(
-      JNIEnv* env, jobject obj, jstring jsource_urn, jint jcount);
+  void OnSinksReceived(JNIEnv* env,
+                       const base::android::JavaParamRef<jobject>& obj,
+                       const base::android::JavaParamRef<jstring>& jsource_urn,
+                       jint jcount);
 
   // Notifies the media router about a successful route creation.
   void OnRouteCreated(
       JNIEnv* env,
-      jobject obj,
-      jstring jmedia_route_id,
-      jstring jmedia_sink_id,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jstring>& jmedia_route_id,
+      const base::android::JavaParamRef<jstring>& jmedia_sink_id,
       jint jroute_request_id,
       jboolean jis_local);
 
   // Notifies the media router that route creation or joining failed.
   void OnRouteRequestError(
       JNIEnv* env,
-      jobject obj,
-      jstring jerror_text,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jstring>& jerror_text,
       jint jroute_request_id);
 
   // Notifies the media router when the route was closed.
-  void OnRouteClosed(JNIEnv* env, jobject obj, jstring jmedia_route_id);
+  void OnRouteClosed(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jstring>& jmedia_route_id);
 
   // Notifies the media router about the result of sending a message.
-  void OnMessageSentResult(
-      JNIEnv* env, jobject obj, jboolean jsuccess, jint jcallback_id);
+  void OnMessageSentResult(JNIEnv* env,
+                           const base::android::JavaParamRef<jobject>& obj,
+                           jboolean jsuccess,
+                           jint jcallback_id);
 
   // Notifies the media router about a message received from the media route.
-  void OnMessage(
-      JNIEnv* env, jobject obj, jstring jmedia_route_id, jstring jmessage);
+  void OnMessage(JNIEnv* env,
+                 const base::android::JavaParamRef<jobject>& obj,
+                 const base::android::JavaParamRef<jstring>& jmedia_route_id,
+                 const base::android::JavaParamRef<jstring>& jmessage);
 
  private:
   friend class MediaRouterFactory;

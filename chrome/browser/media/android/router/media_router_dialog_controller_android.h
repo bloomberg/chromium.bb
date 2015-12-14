@@ -32,12 +32,18 @@ class MediaRouterDialogControllerAndroid
   // The methods called by the Java counterpart.
 
   // Notifies the controller that user has selected a sink with |jsink_id|.
-  void OnSinkSelected(JNIEnv* env, jobject obj, jstring jsink_id);
+  void OnSinkSelected(JNIEnv* env,
+                      const base::android::JavaParamRef<jobject>& obj,
+                      const base::android::JavaParamRef<jstring>& jsink_id);
   // Notifies the controller that user chose to close the route.
-  void OnRouteClosed(JNIEnv* env, jobject obj, jstring jmedia_route_id);
+  void OnRouteClosed(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jstring>& jmedia_route_id);
   // Notifies the controller that the dialog has been closed without the user
   // taking any action (e.g. closing the route or selecting a sink).
-  void OnDialogCancelled(JNIEnv* env, jobject obj);
+  void OnDialogCancelled(JNIEnv* env,
+                         const base::android::JavaParamRef<jobject>& obj);
 
  private:
   friend class content::WebContentsUserData<MediaRouterDialogControllerAndroid>;

@@ -26,11 +26,13 @@ class ProfileAndroid : public base::SupportsUserData::Data {
       jclass clazz);
 
   // Destroys this Profile when possible.
-  void DestroyWhenAppropriate(JNIEnv* env, jobject obj);
+  void DestroyWhenAppropriate(JNIEnv* env,
+                              const base::android::JavaParamRef<jobject>& obj);
 
   // Return the original profile.
   base::android::ScopedJavaLocalRef<jobject> GetOriginalProfile(
-      JNIEnv* env, jobject obj);
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
 
   // Return the incognito profile.
   //
@@ -38,13 +40,17 @@ class ProfileAndroid : public base::SupportsUserData::Data {
   // exist. If this isn't what you want, you need to check
   // HasOffTheRecordProfile() first.
   base::android::ScopedJavaLocalRef<jobject> GetOffTheRecordProfile(
-      JNIEnv* env, jobject obj);
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
 
   // Return whether an off the record profile exists.
-  jboolean HasOffTheRecordProfile(JNIEnv* env, jobject obj);
+  jboolean HasOffTheRecordProfile(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
 
   // Whether this profile is off the record.
-  jboolean IsOffTheRecord(JNIEnv* env, jobject obj);
+  jboolean IsOffTheRecord(JNIEnv* env,
+                          const base::android::JavaParamRef<jobject>& obj);
 
   explicit ProfileAndroid(Profile* profile);
   ~ProfileAndroid() override;

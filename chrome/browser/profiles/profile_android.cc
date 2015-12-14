@@ -65,14 +65,16 @@ ScopedJavaLocalRef<jobject> ProfileAndroid::GetLastUsedProfile(JNIEnv* env,
   return ScopedJavaLocalRef<jobject>(profile_android->obj_);
 }
 
-void ProfileAndroid::DestroyWhenAppropriate(JNIEnv* env, jobject obj) {
+void ProfileAndroid::DestroyWhenAppropriate(JNIEnv* env,
+                                            const JavaParamRef<jobject>& obj) {
   // Don't delete the Profile directly because the corresponding
   // RenderViewHost might not be deleted yet.
   ProfileDestroyer::DestroyProfileWhenAppropriate(profile_);
 }
 
 base::android::ScopedJavaLocalRef<jobject> ProfileAndroid::GetOriginalProfile(
-    JNIEnv* env, jobject obj) {
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   ProfileAndroid* original_profile = ProfileAndroid::FromProfile(
       profile_->GetOriginalProfile());
   DCHECK(original_profile);
@@ -80,18 +82,22 @@ base::android::ScopedJavaLocalRef<jobject> ProfileAndroid::GetOriginalProfile(
 }
 
 base::android::ScopedJavaLocalRef<jobject>
-ProfileAndroid::GetOffTheRecordProfile(JNIEnv* env, jobject obj) {
+ProfileAndroid::GetOffTheRecordProfile(JNIEnv* env,
+                                       const JavaParamRef<jobject>& obj) {
   ProfileAndroid* otr_profile = ProfileAndroid::FromProfile(
       profile_->GetOffTheRecordProfile());
   DCHECK(otr_profile);
   return otr_profile->GetJavaObject();
 }
 
-jboolean ProfileAndroid::HasOffTheRecordProfile(JNIEnv* env, jobject obj) {
+jboolean ProfileAndroid::HasOffTheRecordProfile(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   return profile_->HasOffTheRecordProfile();
 }
 
-jboolean ProfileAndroid::IsOffTheRecord(JNIEnv* env, jobject obj) {
+jboolean ProfileAndroid::IsOffTheRecord(JNIEnv* env,
+                                        const JavaParamRef<jobject>& obj) {
   return profile_->IsOffTheRecord();
 }
 

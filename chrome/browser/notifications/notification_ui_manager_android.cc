@@ -55,10 +55,10 @@ NotificationUIManagerAndroid::~NotificationUIManagerAndroid() {
 
 bool NotificationUIManagerAndroid::OnNotificationClicked(
     JNIEnv* env,
-    jobject java_object,
+    const JavaParamRef<jobject>& java_object,
     jlong persistent_notification_id,
-    jstring java_origin,
-    jstring java_tag,
+    const JavaParamRef<jstring>& java_origin,
+    const JavaParamRef<jstring>& java_tag,
     jint action_index) {
   GURL origin(ConvertJavaStringToUTF8(env, java_origin));
   std::string tag = ConvertJavaStringToUTF8(env, java_tag);
@@ -80,10 +80,10 @@ bool NotificationUIManagerAndroid::OnNotificationClicked(
 
 bool NotificationUIManagerAndroid::OnNotificationClosed(
     JNIEnv* env,
-    jobject java_object,
+    const JavaParamRef<jobject>& java_object,
     jlong persistent_notification_id,
-    jstring java_origin,
-    jstring java_tag,
+    const JavaParamRef<jstring>& java_origin,
+    const JavaParamRef<jstring>& java_tag,
     jboolean by_user) {
   GURL origin(ConvertJavaStringToUTF8(env, java_origin));
   std::string tag = ConvertJavaStringToUTF8(env, java_tag);

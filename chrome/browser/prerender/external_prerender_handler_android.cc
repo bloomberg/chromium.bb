@@ -22,14 +22,15 @@ using base::android::ConvertJavaStringToUTF16;
 
 namespace prerender {
 
-bool ExternalPrerenderHandlerAndroid::AddPrerender(JNIEnv* env,
-                                                   jobject obj,
-                                                   jobject jprofile,
-                                                   jobject jweb_contents,
-                                                   jstring jurl,
-                                                   jstring jreferrer,
-                                                   jint width,
-                                                   jint height) {
+bool ExternalPrerenderHandlerAndroid::AddPrerender(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& jprofile,
+    const JavaParamRef<jobject>& jweb_contents,
+    const JavaParamRef<jstring>& jurl,
+    const JavaParamRef<jstring>& jreferrer,
+    jint width,
+    jint height) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
 
   GURL url = GURL(ConvertJavaStringToUTF16(env, jurl));
@@ -60,8 +61,9 @@ bool ExternalPrerenderHandlerAndroid::AddPrerender(JNIEnv* env,
   return true;
 }
 
-void ExternalPrerenderHandlerAndroid::CancelCurrentPrerender(JNIEnv* env,
-                                                             jobject object) {
+void ExternalPrerenderHandlerAndroid::CancelCurrentPrerender(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& object) {
   if (!prerender_handle_)
     return;
   prerender_handle_->OnCancel();

@@ -34,34 +34,67 @@ class DataReductionProxySettingsAndroid {
   void InitDataReductionProxySettings(Profile* profile);
 
   // JNI wrapper interfaces to the indentically-named superclass methods.
-  jboolean IsDataReductionProxyAllowed(JNIEnv* env, jobject obj);
-  jboolean IsDataReductionProxyPromoAllowed(JNIEnv* env, jobject obj);
-  jboolean IsIncludedInAltFieldTrial(JNIEnv* env, jobject obj);
-  jboolean IsDataReductionProxyEnabled(JNIEnv* env, jobject obj);
-  jboolean CanUseDataReductionProxy(JNIEnv* env, jobject obj, jstring url);
-  jboolean WasLoFiModeActiveOnMainFrame(JNIEnv* env, jobject obj);
-  jboolean WasLoFiLoadImageRequestedBefore(JNIEnv* env, jobject obj);
-  void SetLoFiLoadImageRequested(JNIEnv* env, jobject obj);
-  jboolean IsDataReductionProxyManaged(JNIEnv* env, jobject obj);
-  void IncrementLoFiSnackbarShown(JNIEnv* env, jobject obj);
-  void IncrementLoFiUserRequestsForImages(JNIEnv* env, jobject obj);
-  void SetDataReductionProxyEnabled(JNIEnv* env, jobject obj, jboolean enabled);
+  jboolean IsDataReductionProxyAllowed(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+  jboolean IsDataReductionProxyPromoAllowed(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+  jboolean IsIncludedInAltFieldTrial(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+  jboolean IsDataReductionProxyEnabled(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+  jboolean CanUseDataReductionProxy(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jstring>& url);
+  jboolean WasLoFiModeActiveOnMainFrame(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+  jboolean WasLoFiLoadImageRequestedBefore(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+  void SetLoFiLoadImageRequested(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+  jboolean IsDataReductionProxyManaged(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+  void IncrementLoFiSnackbarShown(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+  void IncrementLoFiUserRequestsForImages(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+  void SetDataReductionProxyEnabled(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      jboolean enabled);
 
-  jlong GetDataReductionLastUpdateTime(JNIEnv* env, jobject obj);
-  ScopedJavaLocalRef<jlongArray> GetDailyOriginalContentLengths(JNIEnv* env,
-                                                                jobject obj);
-  ScopedJavaLocalRef<jlongArray> GetDailyReceivedContentLengths(JNIEnv* env,
-                                                                jobject obj);
+  jlong GetDataReductionLastUpdateTime(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+  ScopedJavaLocalRef<jlongArray> GetDailyOriginalContentLengths(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+  ScopedJavaLocalRef<jlongArray> GetDailyReceivedContentLengths(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
 
   // Return a Java |ContentLengths| object wrapping the results of a call to
   // DataReductionProxySettings::GetContentLengths.
-  base::android::ScopedJavaLocalRef<jobject> GetContentLengths(JNIEnv* env,
-                                                               jobject obj);
+  base::android::ScopedJavaLocalRef<jobject> GetContentLengths(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
 
   // Determines whether the data reduction proxy is unreachable. This is
   // done by keeping a count of requests which go through proxy vs those
   // which should have gone through the proxy based on the config.
-  jboolean IsDataReductionProxyUnreachable(JNIEnv* env, jobject obj);
+  jboolean IsDataReductionProxyUnreachable(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
 
   ScopedJavaLocalRef<jstring> GetTokenForAuthChallenge(JNIEnv* env,
                                                        jobject obj,
@@ -70,15 +103,21 @@ class DataReductionProxySettingsAndroid {
 
   // Returns a Java string of the Data Reduction Proxy proxy list for HTTP
   // origins as a semi-colon delimited list.
-  ScopedJavaLocalRef<jstring> GetHttpProxyList(JNIEnv* env, jobject obj);
+  ScopedJavaLocalRef<jstring> GetHttpProxyList(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
 
   // Returns a Java string of the Data Reduction Proxy proxy list for HTTPS
   // origins as a semi-colon delimited list.
-  ScopedJavaLocalRef<jstring> GetHttpsProxyList(JNIEnv* env, jobject obj);
+  ScopedJavaLocalRef<jstring> GetHttpsProxyList(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
 
   // Returns a Java string of the last Data Reduction Proxy bypass event as
   // a JSON object.
-  ScopedJavaLocalRef<jstring> GetLastBypassEvent(JNIEnv* env, jobject obj);
+  ScopedJavaLocalRef<jstring> GetLastBypassEvent(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
 
   // Registers the native methods to be call from Java.
   static bool Register(JNIEnv* env);

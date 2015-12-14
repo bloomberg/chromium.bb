@@ -21,40 +21,53 @@ class TemplateUrlServiceAndroid : public TemplateURLServiceObserver {
  public:
   TemplateUrlServiceAndroid(JNIEnv* env, jobject obj);
 
-  void Load(JNIEnv* env, jobject obj);
-  void SetUserSelectedDefaultSearchProvider(JNIEnv* env,
-                                            jobject obj,
-                                            jint selected_index);
-  jint GetDefaultSearchProvider(JNIEnv* env, jobject obj);
-  jint GetTemplateUrlCount(JNIEnv* env, jobject obj);
-  jboolean IsLoaded(JNIEnv* env, jobject obj);
-  base::android::ScopedJavaLocalRef<jobject>
-      GetPrepopulatedTemplateUrlAt(JNIEnv* env, jobject obj, jint index);
-  jboolean IsSearchProviderManaged(JNIEnv* env, jobject obj);
-  jboolean IsSearchByImageAvailable(JNIEnv* env, jobject obj);
-  jboolean IsDefaultSearchEngineGoogle(JNIEnv* env, jobject obj);
+  void Load(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+  void SetUserSelectedDefaultSearchProvider(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      jint selected_index);
+  jint GetDefaultSearchProvider(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+  jint GetTemplateUrlCount(JNIEnv* env,
+                           const base::android::JavaParamRef<jobject>& obj);
+  jboolean IsLoaded(JNIEnv* env,
+                    const base::android::JavaParamRef<jobject>& obj);
+  base::android::ScopedJavaLocalRef<jobject> GetPrepopulatedTemplateUrlAt(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      jint index);
+  jboolean IsSearchProviderManaged(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+  jboolean IsSearchByImageAvailable(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+  jboolean IsDefaultSearchEngineGoogle(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
   base::android::ScopedJavaLocalRef<jstring> GetUrlForSearchQuery(
       JNIEnv* env,
-      jobject obj,
-      jstring jquery);
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jstring>& jquery);
   base::android::ScopedJavaLocalRef<jstring> GetUrlForVoiceSearchQuery(
       JNIEnv* env,
-      jobject obj,
-      jstring jquery);
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jstring>& jquery);
   base::android::ScopedJavaLocalRef<jstring> ReplaceSearchTermsInUrl(
       JNIEnv* env,
-      jobject obj,
-      jstring jquery,
-      jstring jcurrent_url);
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jstring>& jquery,
+      const base::android::JavaParamRef<jstring>& jcurrent_url);
   base::android::ScopedJavaLocalRef<jstring> GetUrlForContextualSearchQuery(
       JNIEnv* env,
-      jobject obj,
-      jstring jquery,
-      jstring jalternate_term,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jstring>& jquery,
+      const base::android::JavaParamRef<jstring>& jalternate_term,
       jboolean jshould_prefetch);
   base::android::ScopedJavaLocalRef<jstring> GetSearchEngineUrlFromTemplateUrl(
       JNIEnv* env,
-      jobject obj,
+      const base::android::JavaParamRef<jobject>& obj,
       jint index);
 
   static bool Register(JNIEnv* env);

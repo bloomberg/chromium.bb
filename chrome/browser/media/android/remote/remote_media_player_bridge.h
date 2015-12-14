@@ -56,17 +56,30 @@ class RemoteMediaPlayerBridge : public media::MediaPlayerAndroid {
 
   // JNI functions
   base::android::ScopedJavaLocalRef<jstring> GetFrameUrl(
-      JNIEnv* env, jobject obj);
-  void OnPlaying(JNIEnv* env, jobject obj);
-  void OnPaused(JNIEnv* env, jobject obj);
-  void OnRouteUnselected(JNIEnv* env, jobject obj);
-  void OnPlaybackFinished(JNIEnv* env, jobject obj);
-  void OnRouteAvailabilityChanged(JNIEnv* env, jobject obj, jboolean available);
-  base::android::ScopedJavaLocalRef<jstring> GetTitle(JNIEnv* env, jobject obj);
-  void PauseLocal(JNIEnv* env, jobject obj);
-  jint GetLocalPosition(JNIEnv* env, jobject obj);
-  void OnCastStarting(JNIEnv* env, jobject obj, jstring casting_message);
-  void OnCastStopping(JNIEnv* env, jobject obj);
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+  void OnPlaying(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+  void OnPaused(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+  void OnRouteUnselected(JNIEnv* env,
+                         const base::android::JavaParamRef<jobject>& obj);
+  void OnPlaybackFinished(JNIEnv* env,
+                          const base::android::JavaParamRef<jobject>& obj);
+  void OnRouteAvailabilityChanged(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      jboolean available);
+  base::android::ScopedJavaLocalRef<jstring> GetTitle(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+  void PauseLocal(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+  jint GetLocalPosition(JNIEnv* env,
+                        const base::android::JavaParamRef<jobject>& obj);
+  void OnCastStarting(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jstring>& casting_message);
+  void OnCastStopping(JNIEnv* env,
+                      const base::android::JavaParamRef<jobject>& obj);
 
   // Wrappers for calls to Java used by the remote media player manager
   void RequestRemotePlayback();

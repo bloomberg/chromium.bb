@@ -314,8 +314,8 @@ void MediaRouterAndroid::UnregisterLocalMediaRoutesObserver(
 
 void MediaRouterAndroid::OnSinksReceived(
     JNIEnv* env,
-    jobject obj,
-    jstring jsource_urn,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& jsource_urn,
     jint jcount) {
   std::vector<MediaSink> sinks_converted;
   sinks_converted.reserve(jcount);
@@ -342,9 +342,9 @@ void MediaRouterAndroid::OnSinksReceived(
 
 void MediaRouterAndroid::OnRouteCreated(
     JNIEnv* env,
-    jobject obj,
-    jstring jmedia_route_id,
-    jstring jsink_id,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& jmedia_route_id,
+    const JavaParamRef<jstring>& jsink_id,
     jint jroute_request_id,
     jboolean jis_local) {
   MediaRouteRequest* request = route_requests_.Lookup(jroute_request_id);
@@ -369,8 +369,8 @@ void MediaRouterAndroid::OnRouteCreated(
 
 void MediaRouterAndroid::OnRouteRequestError(
     JNIEnv* env,
-    jobject obj,
-    jstring jerror_text,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& jerror_text,
     jint jroute_request_id) {
   MediaRouteRequest* request = route_requests_.Lookup(jroute_request_id);
   if (!request)
@@ -384,9 +384,10 @@ void MediaRouterAndroid::OnRouteRequestError(
   route_requests_.Remove(jroute_request_id);
 }
 
-void MediaRouterAndroid::OnRouteClosed(JNIEnv* env,
-                                       jobject obj,
-                                       jstring jmedia_route_id) {
+void MediaRouterAndroid::OnRouteClosed(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& jmedia_route_id) {
   MediaRoute::Id route_id = ConvertJavaStringToUTF8(env, jmedia_route_id);
   for (auto it = active_routes_.begin(); it != active_routes_.end(); ++it)
     if (it->media_route_id() == route_id) {
@@ -398,16 +399,20 @@ void MediaRouterAndroid::OnRouteClosed(JNIEnv* env,
                     OnRoutesUpdated(active_routes_));
 }
 
-void MediaRouterAndroid::OnMessageSentResult(
-    JNIEnv* env, jobject obj, jboolean jsuccess, jint jcallback_id) {
+void MediaRouterAndroid::OnMessageSentResult(JNIEnv* env,
+                                             const JavaParamRef<jobject>& obj,
+                                             jboolean jsuccess,
+                                             jint jcallback_id) {
   SendRouteMessageCallback* callback = message_callbacks_.Lookup(jcallback_id);
   callback->Run(jsuccess);
   message_callbacks_.Remove(jcallback_id);
 }
 
 // Notifies the media router about a message received from the media route.
-void MediaRouterAndroid::OnMessage(
-    JNIEnv* env, jobject obj, jstring jmedia_route_id, jstring jmessage) {
+void MediaRouterAndroid::OnMessage(JNIEnv* env,
+                                   const JavaParamRef<jobject>& obj,
+                                   const JavaParamRef<jstring>& jmedia_route_id,
+                                   const JavaParamRef<jstring>& jmessage) {
   MediaRoute::Id route_id = ConvertJavaStringToUTF8(env, jmedia_route_id);
   auto* observer_list = messages_observers_.get(route_id);
   if (!observer_list)

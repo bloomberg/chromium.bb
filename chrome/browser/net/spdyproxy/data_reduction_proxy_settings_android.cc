@@ -32,76 +32,90 @@ DataReductionProxySettingsAndroid::~DataReductionProxySettingsAndroid() {
 }
 
 jboolean DataReductionProxySettingsAndroid::IsDataReductionProxyAllowed(
-    JNIEnv* env, jobject obj) {
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   return Settings()->Allowed();
 }
 
 jboolean DataReductionProxySettingsAndroid::IsDataReductionProxyPromoAllowed(
-    JNIEnv* env, jobject obj) {
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   return Settings()->PromoAllowed();
 }
 
 jboolean DataReductionProxySettingsAndroid::IsIncludedInAltFieldTrial(
-    JNIEnv* env, jobject obj) {
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   return false;
 }
 
 jboolean DataReductionProxySettingsAndroid::IsDataReductionProxyEnabled(
-    JNIEnv* env, jobject obj) {
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   return Settings()->IsDataReductionProxyEnabled();
 }
 
 jboolean DataReductionProxySettingsAndroid::CanUseDataReductionProxy(
-    JNIEnv* env, jobject obj, jstring url) {
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& url) {
   return Settings()->CanUseDataReductionProxy(
       GURL(base::android::ConvertJavaStringToUTF16(env, url)));
 }
 
 jboolean DataReductionProxySettingsAndroid::WasLoFiModeActiveOnMainFrame(
-    JNIEnv* env, jobject obj) {
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   return Settings()->WasLoFiModeActiveOnMainFrame();
 }
 
 jboolean DataReductionProxySettingsAndroid::WasLoFiLoadImageRequestedBefore(
-    JNIEnv* env, jobject obj) {
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   return Settings()->WasLoFiLoadImageRequestedBefore();
 }
 
 void DataReductionProxySettingsAndroid::SetLoFiLoadImageRequested(
-    JNIEnv* env, jobject obj) {
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   Settings()->SetLoFiLoadImageRequested();
 }
 
 jboolean DataReductionProxySettingsAndroid::IsDataReductionProxyManaged(
-    JNIEnv* env, jobject obj) {
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   return Settings()->IsDataReductionProxyManaged();
 }
 
 void DataReductionProxySettingsAndroid::IncrementLoFiSnackbarShown(
-    JNIEnv* env, jobject obj) {
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   Settings()->IncrementLoFiSnackbarShown();
 }
 
 void DataReductionProxySettingsAndroid::IncrementLoFiUserRequestsForImages(
-    JNIEnv* env, jobject obj) {
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   Settings()->IncrementLoFiUserRequestsForImages();
 }
 
 void DataReductionProxySettingsAndroid::SetDataReductionProxyEnabled(
     JNIEnv* env,
-    jobject obj,
+    const JavaParamRef<jobject>& obj,
     jboolean enabled) {
   Settings()->SetDataReductionProxyEnabled(enabled);
 }
 
 jlong DataReductionProxySettingsAndroid::GetDataReductionLastUpdateTime(
-    JNIEnv* env, jobject obj) {
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   return Settings()->GetDataReductionLastUpdateTime();
 }
 
 base::android::ScopedJavaLocalRef<jobject>
-DataReductionProxySettingsAndroid::GetContentLengths(JNIEnv* env,
-                                                     jobject obj) {
+DataReductionProxySettingsAndroid::GetContentLengths(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   int64 original_content_length;
   int64 received_content_length;
   int64 last_update_internal;
@@ -118,20 +132,23 @@ DataReductionProxySettingsAndroid::GetContentLengths(JNIEnv* env,
 
 ScopedJavaLocalRef<jlongArray>
 DataReductionProxySettingsAndroid::GetDailyOriginalContentLengths(
-    JNIEnv* env, jobject obj) {
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   return GetDailyContentLengths(
       env, data_reduction_proxy::prefs::kDailyHttpOriginalContentLength);
 }
 
 ScopedJavaLocalRef<jlongArray>
 DataReductionProxySettingsAndroid::GetDailyReceivedContentLengths(
-    JNIEnv* env, jobject obj) {
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   return GetDailyContentLengths(
       env, data_reduction_proxy::prefs::kDailyHttpReceivedContentLength);
 }
 
 jboolean DataReductionProxySettingsAndroid::IsDataReductionProxyUnreachable(
-    JNIEnv* env, jobject obj) {
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   return Settings()->IsDataReductionProxyUnreachable();
 }
 
@@ -160,7 +177,7 @@ DataReductionProxySettingsAndroid::GetDailyContentLengths(
 
 ScopedJavaLocalRef<jstring> DataReductionProxySettingsAndroid::GetHttpProxyList(
     JNIEnv* env,
-    jobject obj) {
+    const JavaParamRef<jobject>& obj) {
   data_reduction_proxy::DataReductionProxyEventStore* event_store =
       Settings()->GetEventStore();
   if (!event_store)
@@ -170,7 +187,9 @@ ScopedJavaLocalRef<jstring> DataReductionProxySettingsAndroid::GetHttpProxyList(
 }
 
 ScopedJavaLocalRef<jstring>
-DataReductionProxySettingsAndroid::GetHttpsProxyList(JNIEnv* env, jobject obj) {
+DataReductionProxySettingsAndroid::GetHttpsProxyList(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   data_reduction_proxy::DataReductionProxyEventStore* event_store =
       Settings()->GetEventStore();
   if (!event_store)
@@ -188,8 +207,9 @@ DataReductionProxySettings* DataReductionProxySettingsAndroid::Settings() {
 }
 
 ScopedJavaLocalRef<jstring>
-DataReductionProxySettingsAndroid::GetLastBypassEvent(JNIEnv* env,
-                                                      jobject obj) {
+DataReductionProxySettingsAndroid::GetLastBypassEvent(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   data_reduction_proxy::DataReductionProxyEventStore* event_store =
       Settings()->GetEventStore();
   if (!event_store)
