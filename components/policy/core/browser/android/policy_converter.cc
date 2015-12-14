@@ -22,6 +22,7 @@
 #include "jni/PolicyConverter_jni.h"
 
 using base::android::ConvertJavaStringToUTF8;
+using base::android::JavaRef;
 
 namespace policy {
 namespace android {
@@ -50,8 +51,8 @@ base::android::ScopedJavaLocalRef<jobject> PolicyConverter::GetJavaObject() {
 }
 
 void PolicyConverter::SetPolicyBoolean(JNIEnv* env,
-                                       jobject obj,
-                                       jstring policyKey,
+                                       const JavaRef<jobject>& obj,
+                                       const JavaRef<jstring>& policyKey,
                                        jboolean value) {
   SetPolicyValue(
       ConvertJavaStringToUTF8(env, policyKey),
@@ -59,8 +60,8 @@ void PolicyConverter::SetPolicyBoolean(JNIEnv* env,
 }
 
 void PolicyConverter::SetPolicyInteger(JNIEnv* env,
-                                       jobject obj,
-                                       jstring policyKey,
+                                       const JavaRef<jobject>& obj,
+                                       const JavaRef<jstring>& policyKey,
                                        jint value) {
   SetPolicyValue(
       ConvertJavaStringToUTF8(env, policyKey),
@@ -68,18 +69,18 @@ void PolicyConverter::SetPolicyInteger(JNIEnv* env,
 }
 
 void PolicyConverter::SetPolicyString(JNIEnv* env,
-                                      jobject obj,
-                                      jstring policyKey,
-                                      jstring value) {
+                                      const JavaRef<jobject>& obj,
+                                      const JavaRef<jstring>& policyKey,
+                                      const JavaRef<jstring>& value) {
   SetPolicyValue(ConvertJavaStringToUTF8(env, policyKey),
                  make_scoped_ptr(new base::StringValue(
                      ConvertJavaStringToUTF8(env, value))));
 }
 
 void PolicyConverter::SetPolicyStringArray(JNIEnv* env,
-                                           jobject obj,
-                                           jstring policyKey,
-                                           jobjectArray array) {
+                                           const JavaRef<jobject>& obj,
+                                           const JavaRef<jstring>& policyKey,
+                                           const JavaRef<jobjectArray>& array) {
   SetPolicyValue(ConvertJavaStringToUTF8(env, policyKey),
                  ConvertJavaStringArrayToListValue(env, array).Pass());
 }
@@ -87,14 +88,15 @@ void PolicyConverter::SetPolicyStringArray(JNIEnv* env,
 // static
 scoped_ptr<base::ListValue> PolicyConverter::ConvertJavaStringArrayToListValue(
     JNIEnv* env,
-    jobjectArray array) {
-  DCHECK(array);
-  int length = static_cast<int>(env->GetArrayLength(array));
+    const JavaRef<jobjectArray>& array) {
+  DCHECK(!array.is_null());
+  int length = static_cast<int>(env->GetArrayLength(array.obj()));
   DCHECK_GE(length, 0) << "Invalid array length: " << length;
 
   scoped_ptr<base::ListValue> list_value(new base::ListValue());
   for (int i = 0; i < length; ++i) {
-    jstring str = static_cast<jstring>(env->GetObjectArrayElement(array, i));
+    jstring str =
+        static_cast<jstring>(env->GetObjectArrayElement(array.obj(), i));
     list_value->AppendString(ConvertJavaStringToUTF8(env, str));
   }
 

@@ -70,9 +70,8 @@ TEST_F(AndroidCombinedPolicyProviderTest, FlushPolices) {
       ConvertUTF8ToJavaString(env, "TestPolicy");
   ScopedJavaLocalRef<jstring> jvalue =
       ConvertUTF8ToJavaString(env, "TestValue");
-  manager.GetPolicyConverterForTesting()->SetPolicyString(env, nullptr,
-                                                          jpolicy.obj(),
-                                                          jvalue.obj());
+  manager.GetPolicyConverterForTesting()->SetPolicyString(env, nullptr, jpolicy,
+                                                          jvalue);
   manager.FlushPolicies(env, nullptr);
   const PolicyBundle& bundle = manager.policies();
   const PolicyMap& map = bundle.Get(ns);
