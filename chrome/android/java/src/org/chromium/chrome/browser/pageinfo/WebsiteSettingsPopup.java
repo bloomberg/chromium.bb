@@ -49,6 +49,7 @@ import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.website.ContentSetting;
+import org.chromium.chrome.browser.preferences.website.ContentSettingsResources;
 import org.chromium.chrome.browser.preferences.website.SingleWebsitePreferences;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.ssl.ConnectionSecurityLevel;
@@ -432,25 +433,9 @@ public class WebsiteSettingsPopup implements OnClickListener {
      * @return The resource ID of the icon to use for that permission.
      */
     private int getImageResourceForPermission(int permission) {
-        switch (permission) {
-            case ContentSettingsType.CONTENT_SETTINGS_TYPE_IMAGES:
-                return R.drawable.permission_images;
-            case ContentSettingsType.CONTENT_SETTINGS_TYPE_JAVASCRIPT:
-                return R.drawable.permission_javascript;
-            case ContentSettingsType.CONTENT_SETTINGS_TYPE_GEOLOCATION:
-                return R.drawable.permission_location;
-            case ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
-                return R.drawable.permission_camera;
-            case ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
-                return R.drawable.permission_mic;
-            case ContentSettingsType.CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
-                return R.drawable.permission_push_notification;
-            case ContentSettingsType.CONTENT_SETTINGS_TYPE_POPUPS:
-                return R.drawable.permission_popups;
-            default:
-                assert false : "Icon requested for invalid permission: " + permission;
-                return -1;
-        }
+        int icon = ContentSettingsResources.getIcon(permission);
+        assert icon != 0 : "Icon requested for invalid permission: " + permission;
+        return icon;
     }
 
     /**
