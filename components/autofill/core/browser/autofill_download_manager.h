@@ -14,8 +14,10 @@
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_type.h"
+#include "net/base/backoff_entry.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
 class PrefService;
@@ -95,21 +97,19 @@ class AutofillDownloadManager : public net::URLFetcherDelegate {
       bool observed_submission);
 
  private:
-  friend class AutofillDownloadTest;
-  FRIEND_TEST_ALL_PREFIXES(AutofillDownloadTest, QueryAndUploadTest);
-  FRIEND_TEST_ALL_PREFIXES(AutofillDownloadTest, UploadRequestIsGzipped);
+  friend class AutofillDownloadManagerTest;
+  FRIEND_TEST_ALL_PREFIXES(AutofillDownloadManagerTest, QueryAndUploadTest);
+  FRIEND_TEST_ALL_PREFIXES(AutofillDownloadManagerTest, BackoffLogic_Upload);
+  FRIEND_TEST_ALL_PREFIXES(AutofillDownloadManagerTest, BackoffLogic_Query);
+  FRIEND_TEST_ALL_PREFIXES(AutofillDownloadManagerTest, UploadRequestIsGzipped);
 
   struct FormRequestData;
   typedef std::list<std::pair<std::string, std::string> > QueryRequestCache;
 
-  // Initiates request to Autofill servers to download/upload heuristics.
-  // |form_xml| - form structure XML to upload/download.
-  // |request_data| - form signature hash(es) and indicator if it was a query.
-  // |request_data.query| - if true the data is queried and observer notified
-  //   with new data, if available. If false heuristic data is uploaded to our
-  //   servers.
-  bool StartRequest(const std::string& form_xml,
-                    const FormRequestData& request_data);
+  // Initiates request to Autofill servers to download/upload type predictions.
+  // |request_data| - form signature hash(es), request payload data and request
+  //   type (query or upload).
+  bool StartRequest(const FormRequestData& request_data);
 
   // Each request is page visited. We store last |max_form_cache_size|
   // request, to avoid going over the wire. Set to 16 in constructor. Warning:
@@ -162,11 +162,8 @@ class AutofillDownloadManager : public net::URLFetcherDelegate {
   QueryRequestCache cached_forms_;
   size_t max_form_cache_size_;
 
-  // Time when next query/upload requests are allowed. If 50x HTTP received,
-  // exponential back off is initiated, so this times will be in the future
-  // for awhile.
-  base::Time next_query_request_;
-  base::Time next_upload_request_;
+  // Used for exponential backoff of requests.
+  net::BackoffEntry fetcher_backoff_;
 
   // |positive_upload_rate_| is for matched forms,
   // |negative_upload_rate_| for non matched.
@@ -175,6 +172,8 @@ class AutofillDownloadManager : public net::URLFetcherDelegate {
 
   // Needed for unit-test.
   int fetcher_id_for_unittest_;
+
+  base::WeakPtrFactory<AutofillDownloadManager> weak_factory_;
 };
 
 }  // namespace autofill

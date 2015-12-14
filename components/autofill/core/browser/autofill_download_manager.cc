@@ -6,11 +6,14 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/logging.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/prefs/pref_service.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "components/autofill/core/browser/autofill_driver.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/autofill_xml_parser.h"
@@ -22,6 +25,7 @@
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
+#include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
 #include "url/gurl.h"
 
@@ -29,9 +33,34 @@ namespace autofill {
 
 namespace {
 
-const char kAutofillQueryServerNameStartInHeader[] = "GFE/";
 const size_t kMaxFormCacheSize = 16;
 const size_t kMaxFieldsPerQueryRequest = 100;
+
+const net::BackoffEntry::Policy kAutofillBackoffPolicy = {
+    // Number of initial errors (in sequence) to ignore before applying
+    // exponential back-off rules.
+    0,
+
+    // Initial delay for exponential back-off in ms.
+    1000,  // 1 second.
+
+    // Factor by which the waiting time will be multiplied.
+    2,
+
+    // Fuzzing percentage. ex: 10% will spread requests randomly
+    // between 90%-100% of the calculated time.
+    0.33,  // 33%.
+
+    // Maximum amount of time we are willing to delay our request in ms.
+    30 * 1000,  // 30 seconds.
+
+    // Time to keep an entry from being discarded even when it
+    // has no significant state, -1 to never discard.
+    -1,
+
+    // Don't use initial delay unless the last request was an error.
+    false,
+};
 
 #if defined(GOOGLE_CHROME_BUILD)
 const char kClientName[] = "Google Chrome";
@@ -67,6 +96,7 @@ GURL GetRequestUrl(AutofillDownloadManager::RequestType request_type) {
 struct AutofillDownloadManager::FormRequestData {
   std::vector<std::string> form_signatures;
   RequestType request_type;
+  std::string payload;
 };
 
 AutofillDownloadManager::AutofillDownloadManager(AutofillDriver* driver,
@@ -76,11 +106,11 @@ AutofillDownloadManager::AutofillDownloadManager(AutofillDriver* driver,
       pref_service_(pref_service),
       observer_(observer),
       max_form_cache_size_(kMaxFormCacheSize),
-      next_query_request_(base::Time::Now()),
-      next_upload_request_(base::Time::Now()),
+      fetcher_backoff_(&kAutofillBackoffPolicy),
       positive_upload_rate_(0),
       negative_upload_rate_(0),
-      fetcher_id_for_unittest_(0) {
+      fetcher_id_for_unittest_(0),
+      weak_factory_(this) {
   DCHECK(observer_);
   positive_upload_rate_ =
       pref_service_->GetDouble(prefs::kAutofillPositiveUploadRate);
@@ -95,11 +125,6 @@ AutofillDownloadManager::~AutofillDownloadManager() {
 
 bool AutofillDownloadManager::StartQueryRequest(
     const std::vector<FormStructure*>& forms) {
-  if (next_query_request_ > base::Time::Now()) {
-    // We are in back-off mode: do not do the request.
-    return false;
-  }
-
   // Do not send the request if it contains more fields than the server can
   // accept.
   if (CountActiveFieldsInForms(forms) > kMaxFieldsPerQueryRequest)
@@ -113,6 +138,7 @@ bool AutofillDownloadManager::StartQueryRequest(
   }
 
   request_data.request_type = AutofillDownloadManager::REQUEST_QUERY;
+  request_data.payload = form_xml;
   AutofillMetrics::LogServerQueryMetric(AutofillMetrics::QUERY_SENT);
 
   std::string query_data;
@@ -125,7 +151,7 @@ bool AutofillDownloadManager::StartQueryRequest(
     return true;
   }
 
-  return StartRequest(form_xml, request_data);
+  return StartRequest(request_data);
 }
 
 bool AutofillDownloadManager::StartUploadRequest(
@@ -139,12 +165,6 @@ bool AutofillDownloadManager::StartUploadRequest(
                                 login_form_signature, observed_submission,
                                 &form_xml))
     return false;
-
-  if (next_upload_request_ > base::Time::Now()) {
-    // We are in back-off mode: do not do the request.
-    VLOG(1) << "AutofillDownloadManager: Upload request is throttled.";
-    return false;
-  }
 
   // Flip a coin to see if we should upload this form.
   double upload_rate = form_was_autofilled ? GetPositiveUploadRate() :
@@ -160,8 +180,9 @@ bool AutofillDownloadManager::StartUploadRequest(
   FormRequestData request_data;
   request_data.form_signatures.push_back(form.FormSignature());
   request_data.request_type = AutofillDownloadManager::REQUEST_UPLOAD;
+  request_data.payload = form_xml;
 
-  return StartRequest(form_xml, request_data);
+  return StartRequest(request_data);
 }
 
 double AutofillDownloadManager::GetPositiveUploadRate() const {
@@ -191,7 +212,6 @@ void AutofillDownloadManager::SetNegativeUploadRate(double rate) {
 }
 
 bool AutofillDownloadManager::StartRequest(
-    const std::string& form_xml,
     const FormRequestData& request_data) {
   net::URLRequestContextGetter* request_context =
       driver_->GetURLRequestContext();
@@ -199,13 +219,13 @@ bool AutofillDownloadManager::StartRequest(
   GURL request_url = GetRequestUrl(request_data.request_type);
 
   std::string compressed_data;
-  if (!compression::GzipCompress(form_xml, &compressed_data)) {
+  if (!compression::GzipCompress(request_data.payload, &compressed_data)) {
     NOTREACHED();
     return false;
   }
 
-  const int compression_ratio =
-      static_cast<int>(100 * compressed_data.size() / form_xml.size());
+  const int compression_ratio = base::checked_cast<int>(
+      100 * compressed_data.size() / request_data.payload.size());
   AutofillMetrics::LogPayloadCompressionRatio(compression_ratio,
                                               request_data.request_type);
 
@@ -232,7 +252,8 @@ bool AutofillDownloadManager::StartRequest(
 
   VLOG(1) << "Sending AutofillDownloadManager "
           << RequestTypeToString(request_data.request_type)
-          << " request (compression " << compression_ratio << "): " << form_xml;
+          << " request (compression " << compression_ratio
+          << "): " << request_data.payload;
 
   return true;
 }
@@ -299,39 +320,19 @@ void AutofillDownloadManager::OnURLFetchComplete(
     return;
   }
   std::string request_type(RequestTypeToString(it->second.request_type));
-  const int kHttpResponseOk = 200;
-  const int kHttpInternalServerError = 500;
-  const int kHttpBadGateway = 502;
-  const int kHttpServiceUnavailable = 503;
 
   CHECK(it->second.form_signatures.size());
-  if (source->GetResponseCode() != kHttpResponseOk) {
-    bool back_off = false;
-    std::string server_header;
-    switch (source->GetResponseCode()) {
-      case kHttpBadGateway:
-        if (!source->GetResponseHeaders()->EnumerateHeader(NULL, "server",
-                                                           &server_header) ||
-            base::StartsWith(server_header.c_str(),
-                             kAutofillQueryServerNameStartInHeader,
-                             base::CompareCase::INSENSITIVE_ASCII) != 0)
-          break;
-        // Bad gateway was received from Autofill servers. Fall through to back
-        // off.
-      case kHttpInternalServerError:
-      case kHttpServiceUnavailable:
-        back_off = true;
-        break;
-    }
+  bool success = source->GetResponseCode() == net::HTTP_OK;
+  fetcher_backoff_.InformOfRequest(success);
 
-    if (back_off) {
-      base::Time back_off_time(base::Time::Now() + source->GetBackoffDelay());
-      if (it->second.request_type == AutofillDownloadManager::REQUEST_QUERY) {
-        next_query_request_ = back_off_time;
-      } else {
-        next_upload_request_ = back_off_time;
-      }
-    }
+  if (!success) {
+    // Reschedule with the appropriate delay, ignoring return value because
+    // payload is already well formed.
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(base::IgnoreResult(&AutofillDownloadManager::StartRequest),
+                   weak_factory_.GetWeakPtr(), it->second),
+        fetcher_backoff_.GetTimeUntilRelease());
 
     VLOG(1) << "AutofillDownloadManager: " << request_type
              << " request has failed with response "
