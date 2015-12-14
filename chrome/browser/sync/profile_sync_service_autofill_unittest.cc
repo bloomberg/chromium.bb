@@ -1268,7 +1268,8 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeRemoveProfile) {
   ASSERT_EQ(0U, new_sync_profiles.size());
 }
 
-TEST_F(ProfileSyncServiceAutofillTest, ServerChangeRace) {
+// crbug.com/569551
+TEST_F(ProfileSyncServiceAutofillTest, FLAKY_ServerChangeRace) {
   // Once for MergeDataAndStartSyncing() and twice for ProcessSyncChanges(), via
   // LoadAutofillData().
   EXPECT_CALL(autofill_table_, GetAllAutofillEntries(_)).
