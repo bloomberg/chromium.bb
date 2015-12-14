@@ -42,7 +42,7 @@
       '../../testing/gtest/include',
       '../../third_party',
       '../../third_party/libyuv/include',
-      '../../third_party/usrsctp',
+      '../../third_party/usrsctp/usrsctplib',
     ],
     # These dependencies have been translated into :jingle_deps in the GN build.
     'dependencies': [

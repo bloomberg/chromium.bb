@@ -31,7 +31,7 @@ config("jingle_unexported_configs") {
     "../../testing/gtest/include",
     "../../third_party",
     "../../third_party/libyuv/include",
-    "../../third_party/usrsctp",
+    "../../third_party/usrsctp/usrsctplib",
   ]
 
   if (is_win && current_cpu == "x86") {
