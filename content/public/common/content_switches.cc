@@ -382,6 +382,9 @@ const char kEnableLogging[]                 = "enable-logging";
 // Enables the memory benchmarking extension
 const char kEnableMemoryBenchmarking[]      = "enable-memory-benchmarking";
 
+// Enable the Mojo shell connection in renderers.
+const char kEnableMojoShellConnection[] = "enable-mojo-shell-connection";
+
 // Enables the network information API.
 const char kEnableNetworkInformation[]      = "enable-network-information";
 
@@ -987,9 +990,6 @@ const char kMemoryPressureThresholdsMb[] = "memory-pressure-thresholds-mb";
 // Windows Vista and later.
 const char kTraceExportEventsToETW[] = "trace-export-events-to-etw";
 #endif
-
-// Enable the Mojo shell connection in renderers.
-const char kEnableMojoShellConnection[] = "enable-mojo-shell-connection";
 
 // Don't dump stuff here, follow the same order as the header.
 

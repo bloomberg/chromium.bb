@@ -118,6 +118,7 @@ CONTENT_EXPORT extern const char kEnableImageColorProfiles[];
 CONTENT_EXPORT extern const char kEnableLCDText[];
 CONTENT_EXPORT extern const char kEnableLogging[];
 extern const char kEnableMemoryBenchmarking[];
+CONTENT_EXPORT extern const char kEnableMojoShellConnection[];
 CONTENT_EXPORT extern const char kEnableNetworkInformation[];
 CONTENT_EXPORT extern const char kEnablePartialRaster[];
 CONTENT_EXPORT extern const char kEnablePinch[];
@@ -300,8 +301,6 @@ CONTENT_EXPORT extern const char kFontCacheSharedHandle[];
 CONTENT_EXPORT extern const char kMemoryPressureThresholdsMb[];
 CONTENT_EXPORT extern const char kTraceExportEventsToETW[];
 #endif
-
-CONTENT_EXPORT extern const char kEnableMojoShellConnection[];
 
 // DON'T ADD RANDOM STUFF HERE. Put it in the main section above in
 // alphabetical order, or in one of the ifdefs (also in order in each section).
