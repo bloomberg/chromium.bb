@@ -13,6 +13,7 @@
 #include "chrome/browser/google/google_brand.h"
 #include "chrome/browser/profile_resetter/brandcode_config_fetcher.h"
 #include "chrome/browser/profile_resetter/brandcoded_default_settings.h"
+#include "chrome/browser/profile_resetter/profile_reset_report.pb.h"
 #include "chrome/browser/profile_resetter/profile_resetter.h"
 #include "chrome/browser/profile_resetter/resettable_settings_snapshot.h"
 #include "chrome/browser/profiles/profile.h"
@@ -149,6 +150,12 @@ void ResetProfileSettingsHandler::OnResetProfileSettingsDone(
       std::string report = SerializeSettingsReport(*setting_snapshot_,
                                                    difference);
       SendSettingsFeedback(report, profile);
+
+      // Send the same report as a protobuf to a different endpoint.
+      scoped_ptr<reset_report::ChromeResetReport> report_proto =
+          SerializeSettingsReportToProto(*setting_snapshot_, difference);
+      if (report_proto)
+        SendSettingsFeedbackProto(*report_proto, profile);
     }
   }
   setting_snapshot_.reset();
