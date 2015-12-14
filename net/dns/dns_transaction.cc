@@ -13,7 +13,6 @@
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/profiler/scoped_tracker.h"
@@ -726,7 +725,7 @@ class DnsTransactionImpl : public DnsTransaction,
     DnsUDPAttempt* attempt =
         new DnsUDPAttempt(server_index, lease.Pass(), query.Pass());
 
-    attempts_.push_back(attempt);
+    attempts_.push_back(make_scoped_ptr(attempt));
     ++attempts_count_;
 
     if (!got_socket)
@@ -771,7 +770,7 @@ class DnsTransactionImpl : public DnsTransaction,
     DnsTCPAttempt* attempt = new DnsTCPAttempt(server_index, socket.Pass(),
                                                query.Pass());
 
-    attempts_.push_back(attempt);
+    attempts_.push_back(make_scoped_ptr(attempt));
     ++attempts_count_;
     had_tcp_attempt_ = true;
 
@@ -807,7 +806,7 @@ class DnsTransactionImpl : public DnsTransaction,
                             base::TimeTicks start,
                             int rv) {
     DCHECK_LT(attempt_number, attempts_.size());
-    const DnsAttempt* attempt = attempts_[attempt_number];
+    const DnsAttempt* attempt = attempts_[attempt_number].get();
     if (attempt->GetResponse()) {
       session_->RecordRTT(attempt->server_index(),
                           base::TimeTicks::Now() - start);
@@ -819,7 +818,7 @@ class DnsTransactionImpl : public DnsTransaction,
     if (callback_.is_null())
       return;
     DCHECK_LT(attempt_number, attempts_.size());
-    const DnsAttempt* attempt = attempts_[attempt_number];
+    const DnsAttempt* attempt = attempts_[attempt_number].get();
     AttemptResult result = ProcessAttemptResult(AttemptResult(rv, attempt));
     if (result.rv != ERR_IO_PENDING)
       DoCallback(result);
@@ -909,7 +908,7 @@ class DnsTransactionImpl : public DnsTransaction,
         default:
           // Server failure.
           DCHECK(result.attempt);
-          if (result.attempt != attempts_.back()) {
+          if (result.attempt != attempts_.back().get()) {
             // This attempt already timed out. Ignore it.
             session_->RecordServerFailure(result.attempt->server_index());
             return AttemptResult(ERR_IO_PENDING, NULL);
@@ -935,7 +934,7 @@ class DnsTransactionImpl : public DnsTransaction,
       return;
     DCHECK(!attempts_.empty());
     AttemptResult result = ProcessAttemptResult(
-        AttemptResult(ERR_DNS_TIMED_OUT, attempts_.back()));
+        AttemptResult(ERR_DNS_TIMED_OUT, attempts_.back().get()));
     if (result.rv != ERR_IO_PENDING)
       DoCallback(result);
   }
@@ -953,7 +952,7 @@ class DnsTransactionImpl : public DnsTransaction,
   size_t qnames_initial_size_;
 
   // List of attempts for the current name.
-  ScopedVector<DnsAttempt> attempts_;
+  std::vector<scoped_ptr<DnsAttempt>> attempts_;
   // Count of attempts, not reset when |attempts_| vector is cleared.
   int  attempts_count_;
   bool had_tcp_attempt_;
