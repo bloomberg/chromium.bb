@@ -1066,6 +1066,12 @@ if (!is_android) {
                 "//chrome")
       }
     }
+
+    if (is_linux && !is_component_build) {
+      # Set rpath to find the CDM adapter even in a non-component build.
+      configs += [ "//build/config/gcc:rpath_for_built_shared_libraries" ]
+    }
+
     if (is_chromeos) {
       sources += rebase_path(
               chrome_tests_gypi_values.chrome_browser_tests_chromeos_sources,

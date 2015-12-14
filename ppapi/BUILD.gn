@@ -70,7 +70,7 @@ shared_library("power_saver_test_plugin") {
   ]
 }
 
-shared_library("blink_test_plugin") {
+loadable_module("blink_test_plugin") {
   sources = [
     "tests/blink_test_plugin.cc",
   ]
