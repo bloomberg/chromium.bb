@@ -302,17 +302,20 @@ public class PkpTest extends CronetTestBase {
      * Asserts that the response from the server contains an PKP error.
      * TODO(kapishnikov): currently QUIC returns ERR_QUIC_PROTOCOL_ERROR instead of expected
      * ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN error code when the pin doesn't match.
-     * This method should be changed when the bug is resolved. See http://crbug.com/548378
+     * This method should be changed when the bug is resolved.
+     * See http://crbug.com/548378
+     * See http://crbug.com/568669
      */
     private void assertErrorResponse() {
         assertNotNull("Expected an error", mListener.mError);
         int errorCode = mListener.mError.netError();
-        boolean correctErrorCode = errorCode == NetError.ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN
-                || errorCode == NetError.ERR_QUIC_PROTOCOL_ERROR;
-        assertTrue(String.format("Incorrect error code. Expected %s or %s but received %s",
-                           NetError.ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN,
-                           NetError.ERR_QUIC_PROTOCOL_ERROR, errorCode),
-                correctErrorCode);
+        Set<Integer> expectedErrors = new HashSet<>();
+        expectedErrors.add(NetError.ERR_QUIC_PROTOCOL_ERROR);
+        expectedErrors.add(NetError.ERR_CONNECTION_REFUSED);
+        expectedErrors.add(NetError.ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN);
+        assertTrue(String.format("Incorrect error code. Expected one of %s but received %s",
+                           expectedErrors, errorCode),
+                expectedErrors.contains(errorCode));
     }
 
     /**
