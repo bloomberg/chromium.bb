@@ -472,7 +472,7 @@ public class CustomTabActivity extends ChromeActivity {
         if (id == R.id.focus_url_bar || id == R.id.all_bookmarks_menu_id
                 || id == R.id.bookmark_this_page_id || id == R.id.print_id || id == R.id.help_id
                 || id == R.id.recent_tabs_menu_id || id == R.id.new_incognito_tab_menu_id
-                || id == R.id.new_tab_menu_id) {
+                || id == R.id.new_tab_menu_id || id == R.id.open_history_menu_id) {
             return true;
         } else if (id == R.id.open_in_chrome_id) {
             String url = getTabModelSelector().getCurrentTab().getUrl();
