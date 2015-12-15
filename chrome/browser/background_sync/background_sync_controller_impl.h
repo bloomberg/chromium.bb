@@ -10,6 +10,10 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/browser_thread.h"
 
+namespace content {
+struct BackgroundSyncParameters;
+}
+
 namespace rappor {
 class RapporService;
 }
@@ -19,10 +23,19 @@ class Profile;
 class BackgroundSyncControllerImpl : public content::BackgroundSyncController,
                                      public KeyedService {
  public:
+  static const char kFieldTrialName[];
+  static const char kDisabledParameterName[];
+  static const char kMaxAttemptsParameterName[];
+  static const char kInitialRetryParameterName[];
+  static const char kRetryDelayFactorParameterName[];
+  static const char kMinSyncRecoveryTimeName[];
+
   explicit BackgroundSyncControllerImpl(Profile* profile);
   ~BackgroundSyncControllerImpl() override;
 
   // content::BackgroundSyncController overrides.
+  void GetParameterOverrides(
+      content::BackgroundSyncParameters* parameters) const override;
   void NotifyBackgroundSyncRegistered(const GURL& origin) override;
   void RunInBackground(bool enabled, int64_t min_ms) override;
 

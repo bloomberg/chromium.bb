@@ -7,7 +7,6 @@
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/metrics/field_trial.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
@@ -45,16 +44,8 @@ class BackgroundSyncManager::RefCountedRegistration
 
 namespace {
 
-// The key used to index the background sync data in the ServiceWorkerStorage.
+// The key used to index the background sync data in ServiceWorkerStorage.
 const char kBackgroundSyncUserDataKey[] = "BackgroundSyncUserData";
-
-// The first time that a registration retries, it will wait at least this many
-// minutes before doing so.
-const int kInitialRetryDelayInMins = 5;
-
-// The factor by which retry delay increases. The retry time is determined by:
-// kInitialRetryDelayInMins * pow(kRetryDelayFactor, |attempts|-1).
-const int kRetryDelayFactor = 3;
 
 void PostErrorResponse(
     BackgroundSyncStatus status,
@@ -64,12 +55,6 @@ void PostErrorResponse(
       base::Bind(
           callback, status,
           base::Passed(scoped_ptr<BackgroundSyncRegistrationHandle>().Pass())));
-}
-
-bool ShouldDisableForFieldTrial() {
-  std::string experiment = base::FieldTrialList::FindFullName("BackgroundSync");
-  return base::StartsWith(experiment, "ExperimentDisable",
-                          base::CompareCase::INSENSITIVE_ASCII);
 }
 
 // Returns nullptr if the controller cannot be accessed for any reason.
@@ -115,14 +100,24 @@ void RunInBackgroundOnUIThread(
   }
 }
 
+scoped_ptr<BackgroundSyncParameters> GetControllerParameters(
+    const scoped_refptr<ServiceWorkerContextWrapper>& sw_context_wrapper,
+    scoped_ptr<BackgroundSyncParameters> parameters) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  BackgroundSyncController* background_sync_controller =
+      GetBackgroundSyncControllerOnUIThread(sw_context_wrapper);
+
+  if (!background_sync_controller) {
+    // Return default ParameterOverrides which don't disable and don't override.
+    return parameters.Pass();
+  }
+
+  background_sync_controller->GetParameterOverrides(parameters.get());
+  return parameters.Pass();
+}
+
 }  // namespace
-
-// static
-const int64_t BackgroundSyncManager::kMinSyncRecoveryTimeMs =
-    1000 * 60 * 6;  // 6 minutes
-
-// static
-const int BackgroundSyncManager::kMaxSyncAttempts = 5;
 
 BackgroundSyncManager::BackgroundSyncRegistrations::
     BackgroundSyncRegistrations()
@@ -280,9 +275,9 @@ void BackgroundSyncManager::OnStorageWiped() {
 BackgroundSyncManager::BackgroundSyncManager(
     const scoped_refptr<ServiceWorkerContextWrapper>& service_worker_context)
     : service_worker_context_(service_worker_context),
+      parameters_(new BackgroundSyncParameters()),
       disabled_(false),
       num_firing_registrations_(0),
-      max_sync_attempts_(kMaxSyncAttempts),
       clock_(new base::DefaultClock()),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -321,8 +316,27 @@ void BackgroundSyncManager::InitImpl(const base::Closure& callback) {
     return;
   }
 
-  if (ShouldDisableForFieldTrial()) {
-    DisableAndClearManager(callback);
+  scoped_ptr<BackgroundSyncParameters> parameters_copy(
+      new BackgroundSyncParameters(*parameters_));
+
+  BrowserThread::PostTaskAndReplyWithResult(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&GetControllerParameters, service_worker_context_,
+                 base::Passed(parameters_copy.Pass())),
+      base::Bind(&BackgroundSyncManager::InitDidGetControllerParameters,
+                 weak_ptr_factory_.GetWeakPtr(), callback));
+}
+
+void BackgroundSyncManager::InitDidGetControllerParameters(
+    const base::Closure& callback,
+    scoped_ptr<BackgroundSyncParameters> updated_parameters) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  parameters_ = updated_parameters.Pass();
+  if (parameters_->disable) {
+    disabled_ = true;
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  base::Bind(callback));
     return;
   }
 
@@ -449,13 +463,6 @@ void BackgroundSyncManager::RegisterImpl(
     BackgroundSyncMetrics::CountRegisterFailure(
         options.periodicity, BACKGROUND_SYNC_STATUS_STORAGE_ERROR);
     PostErrorResponse(BACKGROUND_SYNC_STATUS_STORAGE_ERROR, callback);
-    return;
-  }
-
-  if (ShouldDisableForFieldTrial()) {
-    DisableAndClearManager(base::Bind(
-        callback, BACKGROUND_SYNC_STATUS_STORAGE_ERROR,
-        base::Passed(scoped_ptr<BackgroundSyncRegistrationHandle>().Pass())));
     return;
   }
 
@@ -1080,10 +1087,10 @@ void BackgroundSyncManager::RunInBackgroundIfNecessary() {
 
   // If the browser is closed while firing events, the browser needs a task to
   // wake it back up and try again.
-  base::TimeDelta recovery_delta =
-      base::TimeDelta::FromMilliseconds(kMinSyncRecoveryTimeMs);
-  if (num_firing_registrations_ > 0 && soonest_wakeup_delta > recovery_delta)
-    soonest_wakeup_delta = recovery_delta;
+  if (num_firing_registrations_ > 0 &&
+      soonest_wakeup_delta > parameters_->min_sync_recovery_time) {
+    soonest_wakeup_delta = parameters_->min_sync_recovery_time;
+  }
 
   // Try firing again after the wakeup delta.
   if (!soonest_wakeup_delta.is_max() &&
@@ -1212,7 +1219,8 @@ void BackgroundSyncManager::FireReadyEventsDidFindRegistration(
       registration_handle->handle_id();
 
   BackgroundSyncEventLastChance last_chance =
-      registration->value()->num_attempts() == max_sync_attempts_ - 1
+      registration->value()->num_attempts() ==
+              parameters_->max_sync_attempts - 1
           ? BACKGROUND_SYNC_EVENT_LAST_CHANCE_IS_LAST_CHANCE
           : BACKGROUND_SYNC_EVENT_LAST_CHANCE_IS_NOT_LAST_CHANCE;
 
@@ -1293,7 +1301,8 @@ void BackgroundSyncManager::EventCompleteImpl(
       registration->set_sync_state(BACKGROUND_SYNC_STATE_PENDING);
       registration->set_num_attempts(0);
     } else if (status_code != SERVICE_WORKER_OK) {  // Sync failed
-      bool can_retry = registration->num_attempts() < max_sync_attempts_;
+      bool can_retry =
+          registration->num_attempts() < parameters_->max_sync_attempts;
       if (registration->sync_state() ==
           BACKGROUND_SYNC_STATE_UNREGISTERED_WHILE_FIRING) {
         registration->set_sync_state(can_retry
@@ -1304,8 +1313,9 @@ void BackgroundSyncManager::EventCompleteImpl(
         registration->set_sync_state(BACKGROUND_SYNC_STATE_PENDING);
         registration->set_delay_until(
             clock_->Now() +
-            base::TimeDelta::FromMinutes(kInitialRetryDelayInMins) *
-                pow(kRetryDelayFactor, registration->num_attempts() - 1));
+            parameters_->initial_retry_delay *
+                pow(parameters_->retry_delay_factor,
+                    registration->num_attempts() - 1));
       } else {
         registration->set_sync_state(BACKGROUND_SYNC_STATE_FAILED);
         registration->RunFinishedCallbacks();

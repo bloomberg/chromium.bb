@@ -82,6 +82,8 @@
       'public/browser/ax_event_notification_details.h',
       'public/browser/background_sync_context.h',
       'public/browser/background_sync_controller.h',
+      'public/browser/background_sync_parameters.cc',
+      'public/browser/background_sync_parameters.h',
       'public/browser/background_tracing_config.cc',
       'public/browser/background_tracing_config.h',
       'public/browser/background_tracing_manager.h',

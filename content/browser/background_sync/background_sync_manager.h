@@ -26,6 +26,7 @@
 #include "content/common/background_sync_service.mojom.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_status_code.h"
+#include "content/public/browser/background_sync_parameters.h"
 #include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
 
@@ -54,13 +55,6 @@ class CONTENT_EXPORT BackgroundSyncManager
   using StatusAndRegistrationsCallback = base::Callback<void(
       BackgroundSyncStatus,
       scoped_ptr<ScopedVector<BackgroundSyncRegistrationHandle>>)>;
-
-  // The minimum amount of time to wait before waking the browser in case it
-  // closed mid-sync.
-  static const int64_t kMinSyncRecoveryTimeMs;
-
-  // The number of times a sync event can be fired for a registration.
-  static const int kMaxSyncAttempts;
 
   static scoped_ptr<BackgroundSyncManager> Create(
       const scoped_refptr<ServiceWorkerContextWrapper>& service_worker_context);
@@ -117,7 +111,7 @@ class CONTENT_EXPORT BackgroundSyncManager
   }
   void set_max_sync_attempts(int max_attempts) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    max_sync_attempts_ = max_attempts;
+    parameters_->max_sync_attempts = max_attempts;
   }
 
  protected:
@@ -157,6 +151,7 @@ class CONTENT_EXPORT BackgroundSyncManager
                                         const BoolCallback& callback);
 
  private:
+  friend class TestBackgroundSyncManager;
   friend class BackgroundSyncManagerTest;
   friend class BackgroundSyncRegistrationHandle;
 
@@ -241,6 +236,9 @@ class CONTENT_EXPORT BackgroundSyncManager
       const scoped_refptr<RefCountedRegistration>& sync_registration);
 
   void InitImpl(const base::Closure& callback);
+  void InitDidGetControllerParameters(
+      const base::Closure& callback,
+      scoped_ptr<BackgroundSyncParameters> parameters);
   void InitDidGetDataFromBackend(
       const base::Closure& callback,
       const std::vector<std::pair<int64, std::string>>& user_data,
@@ -386,9 +384,15 @@ class CONTENT_EXPORT BackgroundSyncManager
   SWIdToRegistrationsMap active_registrations_;
   CacheStorageScheduler op_scheduler_;
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
+
+  scoped_ptr<BackgroundSyncParameters> parameters_;
+
+  // True if the manager is disabled and registrations should fail.
   bool disabled_;
+
+  // The number of registrations currently in the firing state.
   int num_firing_registrations_;
-  int max_sync_attempts_;
+
   base::CancelableCallback<void()> delayed_sync_task_;
 
   scoped_ptr<BackgroundSyncNetworkObserver> network_observer_;

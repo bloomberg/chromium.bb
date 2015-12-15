@@ -4,22 +4,84 @@
 
 #include "chrome/browser/background_sync/background_sync_controller_impl.h"
 
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/features.h"
 #include "components/rappor/rappor_utils.h"
+#include "components/variations/variations_associated_data.h"
+#include "content/public/browser/background_sync_parameters.h"
 
 #if BUILDFLAG(ANDROID_JAVA_UI)
 #include "chrome/browser/android/background_sync_launcher_android.h"
 #endif
+
+// static
+const char BackgroundSyncControllerImpl::kFieldTrialName[] = "BackgroundSync";
+const char BackgroundSyncControllerImpl::kDisabledParameterName[] = "disabled";
+const char BackgroundSyncControllerImpl::kMaxAttemptsParameterName[] =
+    "max_sync_attempts";
+const char BackgroundSyncControllerImpl::kInitialRetryParameterName[] =
+    "initial_retry_delay_mins";
+const char BackgroundSyncControllerImpl::kRetryDelayFactorParameterName[] =
+    "retry_delay_factor";
+const char BackgroundSyncControllerImpl::kMinSyncRecoveryTimeName[] =
+    "min_recovery_time_ms";
 
 BackgroundSyncControllerImpl::BackgroundSyncControllerImpl(Profile* profile)
     : profile_(profile) {}
 
 BackgroundSyncControllerImpl::~BackgroundSyncControllerImpl() = default;
 
-rappor::RapporService* BackgroundSyncControllerImpl::GetRapporService() {
-  return g_browser_process->rappor_service();
+void BackgroundSyncControllerImpl::GetParameterOverrides(
+    content::BackgroundSyncParameters* parameters) const {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  std::map<std::string, std::string> field_params;
+  if (!variations::GetVariationParams(kFieldTrialName, &field_params))
+    return;
+
+  if (base::LowerCaseEqualsASCII(field_params[kDisabledParameterName],
+                                 "true")) {
+    parameters->disable = true;
+  }
+
+  if (ContainsKey(field_params, kMaxAttemptsParameterName)) {
+    int max_attempts;
+    if (base::StringToInt(field_params[kMaxAttemptsParameterName],
+                          &max_attempts)) {
+      parameters->max_sync_attempts = max_attempts;
+    }
+  }
+
+  if (ContainsKey(field_params, kInitialRetryParameterName)) {
+    int initial_retry_delay_min;
+    if (base::StringToInt(field_params[kInitialRetryParameterName],
+                          &initial_retry_delay_min)) {
+      parameters->initial_retry_delay =
+          base::TimeDelta::FromMinutes(initial_retry_delay_min);
+    }
+  }
+
+  if (ContainsKey(field_params, kRetryDelayFactorParameterName)) {
+    int retry_delay_factor;
+    if (base::StringToInt(field_params[kRetryDelayFactorParameterName],
+                          &retry_delay_factor)) {
+      parameters->retry_delay_factor = retry_delay_factor;
+    }
+  }
+
+  if (ContainsKey(field_params, kMinSyncRecoveryTimeName)) {
+    int64_t min_sync_recovery_time_ms;
+    if (base::StringToInt64(field_params[kMinSyncRecoveryTimeName],
+                            &min_sync_recovery_time_ms)) {
+      parameters->min_sync_recovery_time =
+          base::TimeDelta::FromMilliseconds(min_sync_recovery_time_ms);
+    }
+  }
+
+  return;
 }
 
 void BackgroundSyncControllerImpl::NotifyBackgroundSyncRegistered(
@@ -46,4 +108,8 @@ void BackgroundSyncControllerImpl::RunInBackground(bool enabled,
 // TODO(jkarlin): Use BackgroundModeManager to enter background mode. See
 // https://crbug.com/484201.
 #endif
+}
+
+rappor::RapporService* BackgroundSyncControllerImpl::GetRapporService() {
+  return g_browser_process->rappor_service();
 }
