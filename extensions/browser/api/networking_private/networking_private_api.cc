@@ -153,7 +153,7 @@ bool NetworkingPrivateSetPropertiesFunction::RunAsync() {
 
   GetDelegate(browser_context())
       ->SetProperties(
-          params->network_guid, properties_dict.Pass(),
+          params->network_guid, std::move(properties_dict),
           base::Bind(&NetworkingPrivateSetPropertiesFunction::Success, this),
           base::Bind(&NetworkingPrivateSetPropertiesFunction::Failure, this));
   return true;
@@ -185,7 +185,7 @@ bool NetworkingPrivateCreateNetworkFunction::RunAsync() {
 
   GetDelegate(browser_context())
       ->CreateNetwork(
-          params->shared, properties_dict.Pass(),
+          params->shared, std::move(properties_dict),
           base::Bind(&NetworkingPrivateCreateNetworkFunction::Success, this),
           base::Bind(&NetworkingPrivateCreateNetworkFunction::Failure, this));
   return true;
@@ -362,7 +362,7 @@ bool NetworkingPrivateGetDeviceStatesFunction::RunSync() {
   }
 
   scoped_ptr<base::ListValue> device_state_list(new base::ListValue);
-  for (const private_api::DeviceStateProperties* properties : *device_states)
+  for (const auto& properties : *device_states)
     device_state_list->Append(properties->ToValue().release());
   SetResult(device_state_list.release());
   return true;

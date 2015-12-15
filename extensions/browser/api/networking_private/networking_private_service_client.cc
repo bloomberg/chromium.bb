@@ -39,8 +39,8 @@ NetworkingPrivateServiceClient::ServiceCallbacks::~ServiceCallbacks() {
 NetworkingPrivateServiceClient::NetworkingPrivateServiceClient(
     scoped_ptr<WiFiService> wifi_service,
     scoped_ptr<VerifyDelegate> verify_delegate)
-    : NetworkingPrivateDelegate(verify_delegate.Pass()),
-      wifi_service_(wifi_service.Pass()),
+    : NetworkingPrivateDelegate(std::move(verify_delegate)),
+      wifi_service_(std::move(wifi_service)),
       weak_factory_(this) {
   sequence_token_ = BrowserThread::GetBlockingPool()->GetNamedSequenceToken(
       kNetworkingPrivateSequenceTokenName);
@@ -334,7 +334,7 @@ scoped_ptr<base::ListValue>
 NetworkingPrivateServiceClient::GetEnabledNetworkTypes() {
   scoped_ptr<base::ListValue> network_list;
   network_list->AppendString(::onc::network_type::kWiFi);
-  return network_list.Pass();
+  return network_list;
 }
 
 scoped_ptr<NetworkingPrivateDelegate::DeviceStateList>
@@ -344,8 +344,8 @@ NetworkingPrivateServiceClient::GetDeviceStateList() {
       new api::networking_private::DeviceStateProperties);
   properties->type = api::networking_private::NETWORK_TYPE_WIFI;
   properties->state = api::networking_private::DEVICE_STATE_TYPE_ENABLED;
-  device_state_list->push_back(properties.Pass());
-  return device_state_list.Pass();
+  device_state_list->push_back(std::move(properties));
+  return device_state_list;
 }
 
 bool NetworkingPrivateServiceClient::EnableNetworkType(
@@ -379,7 +379,7 @@ void NetworkingPrivateServiceClient::AfterGetProperties(
     service_callbacks->failure_callback.Run(*error);
   } else {
     DCHECK(!service_callbacks->get_properties_callback.is_null());
-    service_callbacks->get_properties_callback.Run(properties.Pass());
+    service_callbacks->get_properties_callback.Run(std::move(properties));
   }
   RemoveServiceCallbacks(callback_id);
 }
@@ -390,7 +390,7 @@ void NetworkingPrivateServiceClient::AfterGetVisibleNetworks(
   ServiceCallbacks* service_callbacks = callbacks_map_.Lookup(callback_id);
   DCHECK(service_callbacks);
   DCHECK(!service_callbacks->get_visible_networks_callback.is_null());
-  service_callbacks->get_visible_networks_callback.Run(networks.Pass());
+  service_callbacks->get_visible_networks_callback.Run(std::move(networks));
   RemoveServiceCallbacks(callback_id);
 }
 

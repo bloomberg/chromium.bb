@@ -85,7 +85,7 @@ scoped_ptr<base::ListValue> CopyNetworkMapToList(
     network_list->Append(network.second->DeepCopy());
   }
 
-  return network_list.Pass();
+  return network_list;
 }
 
 // Constructs a network guid from its constituent parts.
@@ -128,7 +128,7 @@ void GetCachedNetworkPropertiesCallback(
     failure_callback.Run(*error);
     return;
   }
-  success_callback.Run(properties.Pass());
+  success_callback.Run(std::move(properties));
 }
 
 }  // namespace
@@ -136,7 +136,7 @@ void GetCachedNetworkPropertiesCallback(
 NetworkingPrivateLinux::NetworkingPrivateLinux(
     content::BrowserContext* browser_context,
     scoped_ptr<VerifyDelegate> verify_delegate)
-    : NetworkingPrivateDelegate(verify_delegate.Pass()),
+    : NetworkingPrivateDelegate(std::move(verify_delegate)),
       browser_context_(browser_context),
       dbus_thread_("Networking Private DBus"),
       network_manager_proxy_(NULL) {
@@ -575,7 +575,7 @@ void NetworkingPrivateLinux::SetCellularSimState(
 scoped_ptr<base::ListValue> NetworkingPrivateLinux::GetEnabledNetworkTypes() {
   scoped_ptr<base::ListValue> network_list(new base::ListValue);
   network_list->AppendString(::onc::network_type::kWiFi);
-  return network_list.Pass();
+  return network_list;
 }
 
 scoped_ptr<NetworkingPrivateDelegate::DeviceStateList>
@@ -585,8 +585,8 @@ NetworkingPrivateLinux::GetDeviceStateList() {
       new api::networking_private::DeviceStateProperties);
   properties->type = api::networking_private::NETWORK_TYPE_WIFI;
   properties->state = api::networking_private::DEVICE_STATE_TYPE_ENABLED;
-  device_state_list->push_back(properties.Pass());
-  return device_state_list.Pass();
+  device_state_list->push_back(std::move(properties));
+  return device_state_list;
 }
 
 bool NetworkingPrivateLinux::EnableNetworkType(const std::string& type) {
@@ -619,7 +619,7 @@ void NetworkingPrivateLinux::OnAccessPointsFound(
   // Give ownership to the member variable.
   network_map_.swap(network_map);
   SendNetworkListChangedEvent(*network_list);
-  success_callback.Run(network_list.Pass());
+  success_callback.Run(std::move(network_list));
 }
 
 void NetworkingPrivateLinux::OnAccessPointsFoundViaScan(
@@ -745,7 +745,7 @@ scoped_ptr<dbus::Response> NetworkingPrivateLinux::GetAccessPointProperty(
   if (!response) {
     LOG(ERROR) << "Failed to get property for " << property_name;
   }
-  return response.Pass();
+  return response;
 }
 
 bool NetworkingPrivateLinux::GetAccessPointInfo(
@@ -1166,7 +1166,7 @@ bool NetworkingPrivateLinux::SetConnectionStateAndPostEvent(
     changed_networks->push_back(connected_network_guid);
   }
 
-  PostOnNetworksChangedToUIThread(changed_networks.Pass());
+  PostOnNetworksChangedToUIThread(std::move(changed_networks));
   return true;
 }
 

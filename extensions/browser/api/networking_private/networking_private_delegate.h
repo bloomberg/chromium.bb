@@ -39,7 +39,7 @@ class NetworkingPrivateDelegate : public KeyedService {
   using NetworkListCallback = base::Callback<void(scoped_ptr<base::ListValue>)>;
   using FailureCallback = base::Callback<void(const std::string&)>;
   using DeviceStateList =
-      ScopedVector<api::networking_private::DeviceStateProperties>;
+      std::vector<scoped_ptr<api::networking_private::DeviceStateProperties>>;
   using VerificationProperties =
       api::networking_private::VerificationProperties;
 

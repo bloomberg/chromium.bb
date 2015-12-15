@@ -71,26 +71,26 @@ KeyedService* NetworkingPrivateDelegateFactory::BuildServiceInstanceFor(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   scoped_ptr<NetworkingPrivateDelegate::VerifyDelegate> verify_delegate;
   if (verify_factory_)
-    verify_delegate = verify_factory_->CreateDelegate().Pass();
+    verify_delegate = verify_factory_->CreateDelegate();
 
   NetworkingPrivateDelegate* delegate;
 #if defined(OS_CHROMEOS)
-  delegate =
-      new NetworkingPrivateChromeOS(browser_context, verify_delegate.Pass());
+  delegate = new NetworkingPrivateChromeOS(browser_context,
+                                           std::move(verify_delegate));
 #elif defined(OS_LINUX)
   delegate =
-      new NetworkingPrivateLinux(browser_context, verify_delegate.Pass());
+      new NetworkingPrivateLinux(browser_context, std::move(verify_delegate));
 #elif defined(OS_WIN) || defined(OS_MACOSX)
   scoped_ptr<wifi::WiFiService> wifi_service(wifi::WiFiService::Create());
-  delegate = new NetworkingPrivateServiceClient(wifi_service.Pass(),
-                                                verify_delegate.Pass());
+  delegate = new NetworkingPrivateServiceClient(std::move(wifi_service),
+                                                std::move(verify_delegate));
 #else
   NOTREACHED();
   delegate = nullptr;
 #endif
 
   if (ui_factory_)
-    delegate->set_ui_delegate(ui_factory_->CreateDelegate().Pass());
+    delegate->set_ui_delegate(ui_factory_->CreateDelegate());
 
   return delegate;
 }

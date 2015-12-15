@@ -137,7 +137,7 @@ void AppendDeviceState(
     if (!device->sim_lock_type().empty())
       properties->sim_lock_type.reset(new std::string(device->sim_lock_type()));
   }
-  device_state_list->push_back(properties.Pass());
+  device_state_list->push_back(std::move(properties));
 }
 
 void NetworkHandlerFailureCallback(
@@ -208,7 +208,7 @@ namespace extensions {
 NetworkingPrivateChromeOS::NetworkingPrivateChromeOS(
     content::BrowserContext* browser_context,
     scoped_ptr<VerifyDelegate> verify_delegate)
-    : NetworkingPrivateDelegate(verify_delegate.Pass()),
+    : NetworkingPrivateDelegate(std::move(verify_delegate)),
       browser_context_(browser_context),
       weak_ptr_factory_(this) {}
 
@@ -283,7 +283,7 @@ void NetworkingPrivateChromeOS::GetState(
       chromeos::network_util::TranslateNetworkStateToONC(network_state);
   AppendThirdPartyProviderName(network_properties.get());
 
-  success_callback.Run(network_properties.Pass());
+  success_callback.Run(std::move(network_properties));
 }
 
 void NetworkingPrivateChromeOS::SetProperties(
@@ -356,7 +356,7 @@ void NetworkingPrivateChromeOS::GetNetworks(
       AppendThirdPartyProviderName(network_dict);
   }
 
-  success_callback.Run(network_properties_list.Pass());
+  success_callback.Run(std::move(network_properties_list));
 }
 
 void NetworkingPrivateChromeOS::StartConnect(
@@ -556,7 +556,7 @@ NetworkingPrivateChromeOS::GetEnabledNetworkTypes() {
   if (state_handler->IsTechnologyEnabled(NetworkTypePattern::Cellular()))
     network_list->AppendString(::onc::network_type::kCellular);
 
-  return network_list.Pass();
+  return network_list;
 }
 
 scoped_ptr<NetworkingPrivateDelegate::DeviceStateList>
@@ -585,7 +585,7 @@ NetworkingPrivateChromeOS::GetDeviceStateList() {
     AppendDeviceState(technology, nullptr /* device */,
                       device_state_list.get());
   }
-  return device_state_list.Pass();
+  return device_state_list;
 }
 
 bool NetworkingPrivateChromeOS::EnableNetworkType(const std::string& type) {
@@ -621,7 +621,7 @@ void NetworkingPrivateChromeOS::GetPropertiesCallback(
     const base::DictionaryValue& dictionary) {
   scoped_ptr<base::DictionaryValue> dictionary_copy(dictionary.DeepCopy());
   AppendThirdPartyProviderName(dictionary_copy.get());
-  callback.Run(dictionary_copy.Pass());
+  callback.Run(std::move(dictionary_copy));
 }
 
 // Populate ThirdPartyVPN.kProviderName for third-party VPNs.
