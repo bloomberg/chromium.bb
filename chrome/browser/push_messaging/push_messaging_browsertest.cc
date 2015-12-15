@@ -335,8 +335,25 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, SubscribeFailureNoManifest) {
   ASSERT_EQ("manifest removed", script_result);
 
   ASSERT_TRUE(RunScript("subscribePush()", &script_result));
-  EXPECT_EQ("AbortError - Registration failed - no sender id provided",
+  EXPECT_EQ("AbortError - Registration failed - manifest empty or missing",
             script_result);
+}
+
+IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, SubscribeFailureNoSenderId) {
+  std::string script_result;
+
+  ASSERT_TRUE(RunScript("registerServiceWorker()", &script_result));
+  ASSERT_EQ("ok - service worker registered", script_result);
+
+  RequestAndAcceptPermission();
+
+  ASSERT_TRUE(RunScript("swapManifestNoSenderId()", &script_result));
+  ASSERT_EQ("sender id removed from manifest", script_result);
+
+  ASSERT_TRUE(RunScript("subscribePush()", &script_result));
+  EXPECT_EQ(
+      "AbortError - Registration failed - gcm_sender_id not found in manifest",
+      script_result);
 }
 
 // TODO(johnme): Test subscribing from a worker - see https://crbug.com/437298.

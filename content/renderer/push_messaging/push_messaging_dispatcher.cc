@@ -62,6 +62,12 @@ void PushMessagingDispatcher::DoSubscribe(
           service_worker_registration)
           ->registration_id();
 
+  if (manifest.IsEmpty()) {
+    OnSubscribeFromDocumentError(
+        request_id, PUSH_REGISTRATION_STATUS_MANIFEST_EMPTY_OR_MISSING);
+    return;
+  }
+
   std::string sender_id =
       manifest.gcm_sender_id.is_null()
           ? std::string()
