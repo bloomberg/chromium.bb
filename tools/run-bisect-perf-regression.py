@@ -209,6 +209,10 @@ def _CreateBisectOptionsFromConfig(config):
   if config.has_key('improvement_direction'):
     opts_dict['improvement_direction'] = int(config['improvement_direction'])
 
+  if config.has_key('required_initial_confidence'):
+    opts_dict['required_initial_confidence'] = int(
+        config['required_initial_confidence'])
+
   if config.has_key('target_arch'):
     opts_dict['target_arch'] = config['target_arch']
 

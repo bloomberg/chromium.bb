@@ -137,13 +137,16 @@ def _GetBisectPerformanceMetricsInstance(options_dict):
   return bisect_perf_regression.BisectPerformanceMetrics(opts, os.getcwd())
 
 
-def _GetExtendedOptions(improvement_dir, fake_first, ignore_confidence=True):
+def _GetExtendedOptions(improvement_dir, fake_first, ignore_confidence=True,
+                        **extra_opts):
   """Returns the a copy of the default options dict plus some options."""
   result = dict(DEFAULT_OPTIONS)
   result.update({
       'improvement_direction': improvement_dir,
       'debug_fake_first_test_mean': fake_first,
-      'debug_ignore_regression_confidence': ignore_confidence})
+      'debug_ignore_regression_confidence': ignore_confidence
+  })
+  result.update(extra_opts)
   return result
 
 
@@ -316,7 +319,7 @@ class BisectPerfRegressionTest(unittest.TestCase):
     results = _GenericDryRun(_GetExtendedOptions(1, -100))
     self.assertIsNone(results.error)
 
-  def _CheckAbortsEarly(self, results):
+  def _CheckAbortsEarly(self, results, **extra_opts):
     """Returns True if the bisect job would abort early."""
     global _MockResultsGenerator
     _MockResultsGenerator = (r for r in results)
@@ -325,7 +328,9 @@ class BisectPerfRegressionTest(unittest.TestCase):
     bisect_class.RunPerformanceTestAndParseResults = _MakeMockRunTests()
 
     try:
-      dry_run_results = _GenericDryRun(_GetExtendedOptions(0, 0, False))
+      dry_run_results = _GenericDryRun(_GetExtendedOptions(
+          improvement_dir=0, fake_first=0, ignore_confidence=False,
+          **extra_opts))
     except StopIteration:
       # If StopIteration was raised, that means that the next value after
       # the first two values was requested, so the job was not aborted.
@@ -353,6 +358,10 @@ class BisectPerfRegressionTest(unittest.TestCase):
 
   def testBisectNotAborted_MultipleValues(self):
     self.assertFalse(self._CheckAbortsEarly(MULTIPLE_VALUES))
+
+  def testBisectNotAbortedWhenRequiredConfidenceIsZero(self):
+    self.assertFalse(self._CheckAbortsEarly(
+        CLEAR_NON_REGRESSION, required_initial_confidence=0))
 
   def _CheckAbortsEarlyForReturnCode(self, results):
     """Returns True if the bisect job would abort early in return code mode."""
