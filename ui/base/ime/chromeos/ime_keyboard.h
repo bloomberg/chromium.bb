@@ -28,8 +28,9 @@ enum ModifierKey {
   kVoidKey,
   kCapsLockKey,
   kEscapeKey,
-  // IMPORTANT: You should update kCustomizableKeys[] in .cc file, if you
-  // add a customizable key.
+  kBackspaceKey,
+  // IMPORTANT: Add new key to the end, because the keys may have been stored
+  // in user preferences.
   kNumModifierKeys,
 };
 

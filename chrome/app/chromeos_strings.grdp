@@ -3675,48 +3675,52 @@ Press any key to continue exploring.
     Keyboard settings
   </message>
   <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_KEY_SEARCH_LABEL"
-           desc="The label for 'Customize modifier keys' overlay">
+           desc="The label for customizing the search key in the 'Keyboard settings' overlay">
     Search
   </message>
   <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_KEY_LEFT_CTRL_LABEL"
-           desc="The label for 'Customize modifier keys' overlay">
+           desc="The label for customizing the left ctrl key in the 'Keyboard settings' overlay">
     Ctrl
   </message>
   <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_KEY_LEFT_ALT_LABEL"
-           desc="The label for 'Customize modifier keys' overlay">
+           desc="The label for customizing the left alt key in the 'Keyboard settings' overlay">
     Alt
   </message>
   <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_KEY_CAPS_LOCK_LABEL"
-           desc="The label for 'Customize modifier keys' overlay">
+           desc="The label for customizing the caps-lock key in the 'Keyboard settings' overlay">
     Caps Lock
   </message>
   <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_KEY_DIAMOND_KEY_LABEL"
-           desc="The label for 'Customize modifier keys' overlay">
+           desc="The label for customizing the diamond key in the 'Keyboard settings' overlay">
     Diamond
   </message>
   <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_KEY_SEARCH"
-           desc="The dropdown list item for 'Customize modifier keys' overlay">
+           desc="The dropdown list item for the search key in the 'Customize modifier keys' section in the 'Keyboard settings' overlay">
     Search
   </message>
   <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_KEY_LEFT_CTRL"
-           desc="The dropdown list item for 'Customize modifier keys' overlay">
+           desc="The dropdown list item for the left ctrl key in the 'Customize modifier keys' section in the 'Keyboard settings' overlay">
     Ctrl
   </message>
   <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_KEY_LEFT_ALT"
-           desc="The dropdown list item for 'Customize modifier keys' overlay">
+           desc="The dropdown list item for the left alt key in the 'Customize modifier keys' section in the 'Keyboard settings' overlay">
     Alt
   </message>
   <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_KEY_VOID"
-           desc="The dropdown list item for 'Customize modifier keys' overlay">
+           desc="The dropdown list item for disabling the remapping in the 'Customize modifier keys' section in the 'Keyboard settings' overlay">
     Disabled
   </message>
   <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_KEY_CAPS_LOCK"
-           desc="The dropdown list item for 'Customize modifier keys' overlay">
+           desc="The dropdown list item for the caps-lock key in the 'Customize modifier keys' section in the 'Keyboard settings' overlay">
     Caps Lock
   </message>
   <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_KEY_ESCAPE"
-           desc="The dropdown list item for 'Customize modifier keys' overlay">
+           desc="The dropdown list item for the escape key in the 'Customize modifier keys' section in the 'Keyboard settings' overlay">
     Escape
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_KEY_BACKSPACE"
+           desc="The dropdown list item for the backspace key in the 'Customize modifier keys' section in the 'Keyboard settings' overlay">
+    Backspace
   </message>
   <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_SEND_FUNCTION_KEYS"
            desc="The checkbox label for a setting to interpret the top-row keys as function keys instead.">

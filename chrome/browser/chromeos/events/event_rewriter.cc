@@ -112,6 +112,11 @@ const struct ModifierRemapping {
      nullptr,
      {ui::EF_NONE, ui::DomCode::ESCAPE, ui::DomKey::ESCAPE, ui::VKEY_ESCAPE}},
     {ui::EF_NONE,
+     input_method::kBackspaceKey,
+     nullptr,
+     {ui::EF_NONE, ui::DomCode::BACKSPACE, ui::DomKey::BACKSPACE,
+      ui::VKEY_BACK}},
+    {ui::EF_NONE,
      input_method::kNumModifierKeys,
      prefs::kLanguageRemapDiamondKeyTo,
      {ui::EF_NONE, ui::DomCode::F15, ui::DomKey::F15, ui::VKEY_F15}}};
