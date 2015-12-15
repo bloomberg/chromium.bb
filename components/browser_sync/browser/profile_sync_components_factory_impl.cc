@@ -18,7 +18,9 @@
 #include "components/browser_sync/common/browser_sync_switches.h"
 #include "components/dom_distiller/core/dom_distiller_features.h"
 #include "components/history/core/browser/history_delete_directives_data_type_controller.h"
+#include "components/history/core/browser/typed_url_change_processor.h"
 #include "components/history/core/browser/typed_url_data_type_controller.h"
+#include "components/history/core/browser/typed_url_model_associator.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/sync/browser/password_data_type_controller.h"
 #include "components/sync_bookmarks/bookmark_change_processor.h"
@@ -53,7 +55,9 @@ using browser_sync::HistoryDeleteDirectivesDataTypeController;
 using browser_sync::PasswordDataTypeController;
 using browser_sync::SessionDataTypeController;
 using browser_sync::SyncBackendHost;
+using browser_sync::TypedUrlChangeProcessor;
 using browser_sync::TypedUrlDataTypeController;
+using browser_sync::TypedUrlModelAssociator;
 using sync_driver::DataTypeController;
 using sync_driver::DataTypeErrorHandler;
 using sync_driver::DataTypeManager;
@@ -374,5 +378,22 @@ ProfileSyncComponentsFactoryImpl::CreateBookmarkSyncComponents(
       kExpectMobileBookmarksFolder);
   BookmarkChangeProcessor* change_processor = new BookmarkChangeProcessor(
       sync_service->GetSyncClient(), model_associator, error_handler);
+  return SyncComponents(model_associator, change_processor);
+}
+
+sync_driver::SyncApiComponentFactory::SyncComponents
+ProfileSyncComponentsFactoryImpl::CreateTypedUrlSyncComponents(
+    sync_driver::SyncService* sync_service,
+    history::HistoryBackend* history_backend,
+    sync_driver::DataTypeErrorHandler* error_handler) {
+  DCHECK(!ui_thread_->BelongsToCurrentThread());
+
+  // TODO(zea): Once TypedURLs are converted to SyncableService, remove
+  // |sync_service_| member, and make GetSyncService require it be called on
+  // the UI thread.
+  TypedUrlModelAssociator* model_associator =
+      new TypedUrlModelAssociator(sync_service, history_backend, error_handler);
+  TypedUrlChangeProcessor* change_processor = new TypedUrlChangeProcessor(
+      model_associator, history_backend, error_handler, ui_thread_);
   return SyncComponents(model_associator, change_processor);
 }

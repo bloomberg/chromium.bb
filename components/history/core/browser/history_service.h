@@ -146,7 +146,7 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   // Returns a pointer to the TypedUrlSyncableService owned by HistoryBackend.
   // This method should only be called from the history thread, because the
   // returned service is intended to be accessed only via the history thread.
-  virtual TypedUrlSyncableService* GetTypedUrlSyncableService() const;
+  TypedUrlSyncableService* GetTypedUrlSyncableService() const;
 
   // KeyedService:
   void Shutdown() override;

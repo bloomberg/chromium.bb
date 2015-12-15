@@ -8,7 +8,6 @@
 #include <set>
 #include <vector>
 
-#include "base/scoped_observer.h"
 #include "base/threading/thread_checker.h"
 #include "components/history/core/browser/history_backend_observer.h"
 #include "components/history/core/browser/history_types.h"
@@ -69,15 +68,6 @@ class TypedUrlSyncableService : public syncer::SyncableService,
                      const history::URLRows& deleted_rows,
                      const std::set<GURL>& favicon_urls) override;
 
-  // Returns the percentage of DB accesses that have resulted in an error.
-  int GetErrorPercentage() const;
-
-  // Converts the passed URL information to a TypedUrlSpecifics structure for
-  // writing to the sync DB.
-  static void WriteToTypedUrlSpecifics(const URLRow& url,
-                                       const VisitVector& visits,
-                                       sync_pb::TypedUrlSpecifics* specifics);
-
  private:
   friend class TypedUrlSyncableServiceTest;
 
@@ -87,8 +77,9 @@ class TypedUrlSyncableService : public syncer::SyncableService,
 
   // This is a helper map used only in Merge/Process* functions. The lifetime
   // of the iterator is longer than the map object.
-  typedef std::map<GURL, std::pair<syncer::SyncChange::SyncChangeType, URLRow>>
-      TypedUrlMap;
+  typedef std::map<GURL,
+                   std::pair<syncer::SyncChange::SyncChangeType,
+                             URLRows::iterator>> TypedUrlMap;
 
   // This is a helper map used to associate visit vectors from the history db
   // to the typed urls in the above map.
@@ -102,17 +93,17 @@ class TypedUrlSyncableService : public syncer::SyncableService,
   static const MergeResult DIFF_LOCAL_VISITS_ADDED = 1 << 2;
 
   // Helper method for getting the set of synced urls.
-  // Set it as virtual for testing.
   void GetSyncedUrls(std::set<GURL>* urls) const;
 
   // Helper function that clears our error counters (used to reset stats after
   // model association so we can track model association errors separately).
-  virtual void ClearErrorStats();
+  void ClearErrorStats();
 
   // Compares |typed_url| from the server against local history to decide how
   // to merge any existing data, and updates appropriate data containers to
   // write to server and backend.
   void CreateOrUpdateUrl(const sync_pb::TypedUrlSpecifics& typed_url,
+                         history::URLRows* typed_urls,
                          TypedUrlMap* loaded_data,
                          UrlVisitVectorMap* visit_vectors,
                          history::URLRows* new_synced_urls,
@@ -147,6 +138,9 @@ class TypedUrlSyncableService : public syncer::SyncableService,
                              const TypedUrlVisitVector* new_visits,
                              const history::VisitVector* deleted_visits);
 
+  // Returns the percentage of DB accesses that have resulted in an error.
+  int GetErrorPercentage() const;
+
   // Helper function that determines if we should ignore a URL for the purposes
   // of sync, because it contains invalid data.
   bool ShouldIgnoreUrl(const GURL& url);
@@ -173,6 +167,12 @@ class TypedUrlSyncableService : public syncer::SyncableService,
                                const history::VisitVector& visits,
                                std::string title,
                                syncer::SyncChangeList* change_list);
+
+  // Converts the passed URL information to a TypedUrlSpecifics structure for
+  // writing to the sync DB.
+  static void WriteToTypedUrlSpecifics(const URLRow& url,
+                                       const VisitVector& visits,
+                                       sync_pb::TypedUrlSpecifics* specifics);
 
   // Fills |new_url| with formatted data from |typed_url|.
   static void UpdateURLRowFromTypedUrlSpecifics(
@@ -233,9 +233,6 @@ class TypedUrlSyncableService : public syncer::SyncableService,
   int num_db_errors_;
 
   base::ThreadChecker thread_checker_;
-
-  ScopedObserver<history::HistoryBackend, history::HistoryBackendObserver>
-      history_backend_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(TypedUrlSyncableService);
 };
