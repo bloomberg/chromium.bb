@@ -2155,7 +2155,10 @@ void RenderViewContextMenu::GetImageThumbnailForSearch() {
       CoreTabHelper::FromWebContents(source_web_contents_);
   if (!core_tab_helper)
     return;
-  core_tab_helper->SearchByImageInNewTab(params().src_url);
+  RenderFrameHost* render_frame_host = GetRenderFrameHost();
+  if (!render_frame_host)
+    return;
+  core_tab_helper->SearchByImageInNewTab(render_frame_host, params().src_url);
 }
 
 void RenderViewContextMenu::Inspect(int x, int y) {

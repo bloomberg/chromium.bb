@@ -53,8 +53,10 @@ class CoreTabHelper : public content::WebContentsObserver,
   // Perform an image search for the image that triggered the context menu.  The
   // |src_url| is passed to the search request and is not used directly to fetch
   // the image resources.
-  void SearchByImageInNewTab(const GURL& src_url);
+  void SearchByImageInNewTab(content::RenderFrameHost* render_frame_host,
+                             const GURL& src_url);
   void RequestThumbnailForContextNode(
+      content::RenderFrameHost* render_frame_host,
       int minimum_size,
       gfx::Size maximum_size,
       const ContextNodeThumbnailCallback& callback);

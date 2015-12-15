@@ -43,7 +43,7 @@ void ChromeWebContentsViewDelegateAndroid::ShowContextMenu(
     // the same context menu code.
     ContextMenuHelper* helper =
         ContextMenuHelper::FromWebContents(web_contents_);
-    if (helper && helper->ShowContextMenu(params))
+    if (helper && helper->ShowContextMenu(render_frame_host, params))
       return;
   }
   web_contents_->NotifyContextMenuClosed(content::CustomContextMenuContext());

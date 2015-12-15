@@ -16,6 +16,7 @@
 
 namespace content {
 struct ContextMenuParams;
+class RenderFrameHost;
 class WebContents;
 }
 
@@ -24,7 +25,8 @@ class ContextMenuHelper
  public:
   ~ContextMenuHelper() override;
 
-  bool ShowContextMenu(const content::ContextMenuParams& params);
+  bool ShowContextMenu(content::RenderFrameHost* render_frame_host,
+                       const content::ContextMenuParams& params);
 
   void SetPopulator(jobject jpopulator);
 
@@ -51,6 +53,8 @@ class ContextMenuHelper
   content::WebContents* web_contents_;
 
   content::ContextMenuParams context_menu_params_;
+  int render_frame_id_;
+  int render_process_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextMenuHelper);
 };
