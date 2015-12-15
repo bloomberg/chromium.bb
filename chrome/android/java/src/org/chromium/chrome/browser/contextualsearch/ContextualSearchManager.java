@@ -1225,19 +1225,26 @@ public class ContextualSearchManager extends ContextualSearchObservable
 
     @Override
     public void onSelectionChanged(String selection) {
-        mSelectionController.handleSelectionChanged(selection);
-        mSearchPanel.updateTopControlsState(TopControlsState.BOTH, true);
+        // Workaround to disable Contextual Search in HTML fullscreen mode. crbug.com/511977
+        if (!mActivity.getFullscreenManager().getPersistentFullscreenMode()) {
+            mSelectionController.handleSelectionChanged(selection);
+            mSearchPanel.updateTopControlsState(TopControlsState.BOTH, true);
+        }
     }
 
     @Override
     public void onSelectionEvent(int eventType, float posXPix, float posYPix) {
-        mSelectionController.handleSelectionEvent(eventType, posXPix, posYPix);
+        if (!mActivity.getFullscreenManager().getPersistentFullscreenMode()) {
+            mSelectionController.handleSelectionEvent(eventType, posXPix, posYPix);
+        }
     }
 
     @Override
     public void showUnhandledTapUIIfNeeded(final int x, final int y) {
         mDidBasePageLoadJustStart = false;
-        mSelectionController.handleShowUnhandledTapUIIfNeeded(x, y);
+        if (!mActivity.getFullscreenManager().getPersistentFullscreenMode()) {
+            mSelectionController.handleShowUnhandledTapUIIfNeeded(x, y);
+        }
     }
 
     // --------------------------------------------------------------------------------------------
@@ -1286,10 +1293,7 @@ public class ContextualSearchManager extends ContextualSearchObservable
             StateChangeReason stateChangeReason = type == SelectionType.TAP
                     ? StateChangeReason.TEXT_SELECT_TAP : StateChangeReason.TEXT_SELECT_LONG_PRESS;
             ContextualSearchUma.logSelectionIsValid(selectionValid);
-            // Workaround to disable Contextual Search in HTML fullscreen mode. crbug.com/511977
-            boolean isInFullscreenMode =
-                    mActivity.getFullscreenManager().getPersistentFullscreenMode();
-            if (selectionValid && !isInFullscreenMode) {
+            if (selectionValid) {
                 mSearchPanel.updateBasePageSelectionYPx(y);
                 showContextualSearch(stateChangeReason);
             } else {
