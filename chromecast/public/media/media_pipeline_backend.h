@@ -73,14 +73,6 @@ class MediaPipelineBackend {
       virtual ~Delegate() {}
     };
 
-    // Statistics (computed since pipeline last started playing).
-    // For video, a sample is defined as a frame.
-    struct Statistics {
-      uint64_t decoded_bytes;
-      uint64_t decoded_samples;
-      uint64_t dropped_samples;
-    };
-
     // Provides the delegate for this decoder. Called once before the backend
     // is initialized; is never called after the backend is initialized.
     virtual void SetDelegate(Delegate* delegate) = 0;
@@ -104,10 +96,6 @@ class MediaPipelineBackend {
     // calling OnPushBufferComplete() for kBufferPending case).
     virtual BufferStatus PushBuffer(CastDecoderBuffer* buffer) = 0;
 
-    // Returns the playback statistics since this decoder's creation.  Only
-    // called when playing or paused.
-    virtual void GetStatistics(Statistics* statistics) = 0;
-
    protected:
     virtual ~Decoder() {}
   };
@@ -128,6 +116,13 @@ class MediaPipelineBackend {
       int64_t timestamp_microseconds;
     };
 
+    // Statistics (computed since last call to backend Start).
+    struct Statistics {
+      // Reported as webkitAudioBytesDecoded.  Counts number of source bytes
+      // decoded (not decoder output bytes).
+      uint64_t decoded_bytes;
+    };
+
     // Provides the audio configuration.  Called once before the backend is
     // initialized, and again any time the configuration changes (in any state).
     // Note that SetConfig() may be called before SetDelegate() is called.
@@ -146,17 +141,33 @@ class MediaPipelineBackend {
     // Only called when the backend is playing.
     virtual RenderingDelay GetRenderingDelay() = 0;
 
+    // Returns the playback statistics since last call to backend Start.  Only
+    // called when playing or paused.
+    virtual void GetStatistics(Statistics* statistics) = 0;
+
    protected:
     ~AudioDecoder() override {}
   };
 
   class VideoDecoder : public Decoder {
    public:
+    // Statistics (computed since last call to backend Start).
+    struct Statistics {
+      // Counts number of source bytes decoded (not decoder output).
+      uint64_t decoded_bytes;  // Reported as webkitVideoBytesDecoded.
+      uint64_t decoded_frames;  // Reported as webkitDecodedFrames.
+      uint64_t dropped_frames;  // Reported as webkitDroppedFrames.
+    };
+
     // Provides the video configuration.  Called once before the backend is
     // initialized, and again any time the configuration changes (in any state).
     // Note that SetConfig() may be called before SetDelegate() is called.
     // Returns true if the configuration is a supported configuration.
     virtual bool SetConfig(const VideoConfig& config) = 0;
+
+    // Returns the playback statistics since last call to backend Start.  Only
+    // called when playing or paused.
+    virtual void GetStatistics(Statistics* statistics) = 0;
 
    protected:
     ~VideoDecoder() override {}

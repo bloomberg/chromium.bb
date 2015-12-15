@@ -73,11 +73,11 @@ void AudioPipelineImpl::UpdateStatistics() {
   if (client().statistics_cb.is_null())
     return;
 
-  MediaPipelineBackend::Decoder::Statistics device_stats;
-  audio_decoder_->GetStatistics(&device_stats);
+  MediaPipelineBackend::AudioDecoder::Statistics audio_stats;
+  audio_decoder_->GetStatistics(&audio_stats);
 
   ::media::PipelineStatistics current_stats;
-  current_stats.audio_bytes_decoded = device_stats.decoded_bytes;
+  current_stats.audio_bytes_decoded = audio_stats.decoded_bytes;
 
   ::media::PipelineStatistics delta_stats;
   delta_stats.audio_bytes_decoded =

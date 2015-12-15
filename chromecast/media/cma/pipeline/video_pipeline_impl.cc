@@ -101,13 +101,13 @@ void VideoPipelineImpl::UpdateStatistics() {
   if (client().statistics_cb.is_null())
     return;
 
-  MediaPipelineBackend::Decoder::Statistics device_stats;
-  video_decoder_->GetStatistics(&device_stats);
+  MediaPipelineBackend::VideoDecoder::Statistics video_stats;
+  video_decoder_->GetStatistics(&video_stats);
 
   ::media::PipelineStatistics current_stats;
-  current_stats.video_bytes_decoded = device_stats.decoded_bytes;
-  current_stats.video_frames_decoded = device_stats.decoded_samples;
-  current_stats.video_frames_dropped = device_stats.dropped_samples;
+  current_stats.video_bytes_decoded = video_stats.decoded_bytes;
+  current_stats.video_frames_decoded = video_stats.decoded_frames;
+  current_stats.video_frames_dropped = video_stats.dropped_frames;
 
   ::media::PipelineStatistics delta_stats;
   delta_stats.video_bytes_decoded =
