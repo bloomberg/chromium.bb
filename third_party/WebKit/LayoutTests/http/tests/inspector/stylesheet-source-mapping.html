@@ -23,7 +23,8 @@ function test()
 
     function locationsUpdated()
     {
-        var uiLocation = InspectorTest.testCSSWorkspaceBinding.rawLocationToUILocation(new WebInspector.CSSLocation(cssModel, styleSheetId, styleSheetURL, 2, 3));
+        var header = cssModel.styleSheetHeaderForId(styleSheetId);
+        var uiLocation = InspectorTest.testCSSWorkspaceBinding.rawLocationToUILocation(new WebInspector.CSSLocation(header, 2, 3));
         var networkURL = InspectorTest.testNetworkMapping.networkURL(uiLocation.uiSourceCode);
         if (networkURL.indexOf(".scss") === -1)
             return;
@@ -73,7 +74,8 @@ function test()
 
     function rawLocationToUILocation(line, column)
     {
-        return InspectorTest.testCSSWorkspaceBinding.rawLocationToUILocation(new WebInspector.CSSLocation(cssModel, styleSheetId, styleSheetURL, line, column));
+        var header = cssModel.styleSheetHeaderForId(styleSheetId);
+        return InspectorTest.testCSSWorkspaceBinding.rawLocationToUILocation(new WebInspector.CSSLocation(header, line, column));
     }
 
     function afterStyleSheetAdded()

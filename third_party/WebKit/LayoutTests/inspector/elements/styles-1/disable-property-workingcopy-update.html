@@ -22,7 +22,7 @@ function test()
             var headers = InspectorTest.cssModel.styleSheetHeaders();
             for (var i = 0; i < headers.length; ++i) {
                 if (headers[i].sourceURL.endsWith(".css")) {
-                    var cssLocation = new WebInspector.CSSLocation(InspectorTest.cssModel, headers[i].id, headers[i].sourceURL, 0);
+                    var cssLocation = new WebInspector.CSSLocation(headers[i], 0);
                     InspectorTest.showUISourceCode(WebInspector.cssWorkspaceBinding.rawLocationToUILocation(cssLocation).uiSourceCode, callback);
                     break;
                 }
