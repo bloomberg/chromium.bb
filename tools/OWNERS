@@ -10,12 +10,14 @@ thakis@chromium.org
 
 
 per-file bisect*.py=anantha@chromium.org
-per-file bisect*.py=rmcilroy@chromium.org
-per-file run-bisect*.py=rmcilroy@chromium.org
-per-file prepare-bisect*.py=simonhatch@chromium.org
-per-file prepare-bisect*.py=rmcilroy@chromium.org
+per-file bisect*.py=prasadv@chromium.org
+per-file bisect*.py=robertocn@chromium.org
+per-file run-bisect*.py=prasadv@chromium.org
+per-file run-bisect*.py=robertocn@chromium.org
+per-file prepare-bisect*.py=prasadv@chromium.org
+per-file prepare-bisect*.py=robertocn@chromium.org
 
-per-file boilerplate.py=rmcilroy@chromium.org
+per-file boilerplate.py=rsesek@chromium.org
 
 per-file check_git_config.py=iannucci@chromium.org
 per-file check_git_config.py=vadimsh@chromium.org
