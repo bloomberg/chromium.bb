@@ -116,10 +116,6 @@ class SyncApiComponentFactory {
   virtual SyncComponents CreateBookmarkSyncComponents(
       sync_driver::SyncService* sync_service,
       sync_driver::DataTypeErrorHandler* error_handler) = 0;
-  virtual SyncComponents CreateTypedUrlSyncComponents(
-      sync_driver::SyncService* sync_service,
-      history::HistoryBackend* history_backend,
-      sync_driver::DataTypeErrorHandler* error_handler) = 0;
 
   // Creates attachment service.
   // Note: Should only be called from the model type thread.

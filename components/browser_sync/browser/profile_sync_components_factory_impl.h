@@ -85,11 +85,6 @@ class ProfileSyncComponentsFactoryImpl
   CreateBookmarkSyncComponents(
       sync_driver::SyncService* sync_service,
       sync_driver::DataTypeErrorHandler* error_handler) override;
-  sync_driver::SyncApiComponentFactory::SyncComponents
-  CreateTypedUrlSyncComponents(
-      sync_driver::SyncService* sync_service,
-      history::HistoryBackend* history_backend,
-      sync_driver::DataTypeErrorHandler* error_handler) override;
 
  private:
   // Register data types which are enabled on both desktop and mobile.

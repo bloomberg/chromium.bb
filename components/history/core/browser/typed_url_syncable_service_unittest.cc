@@ -210,7 +210,7 @@ class TestHistoryBackend : public HistoryBackend {
 
 class TypedUrlSyncableServiceTest : public testing::Test {
  public:
-  TypedUrlSyncableServiceTest() {}
+  TypedUrlSyncableServiceTest() : typed_url_sync_service_(NULL) {}
   ~TypedUrlSyncableServiceTest() override {}
 
   void SetUp() override {
@@ -219,8 +219,8 @@ class TypedUrlSyncableServiceTest : public testing::Test {
     fake_history_backend_->Init(
         std::string(), false,
         TestHistoryDatabaseParamsForPath(test_dir_.path()));
-    typed_url_sync_service_.reset(
-        new TypedUrlSyncableService(fake_history_backend_.get()));
+    typed_url_sync_service_ =
+        fake_history_backend_->GetTypedUrlSyncableService();
     fake_change_processor_.reset(new syncer::FakeSyncChangeProcessor);
   }
 
@@ -288,7 +288,7 @@ class TypedUrlSyncableServiceTest : public testing::Test {
   base::MessageLoop message_loop_;
   base::ScopedTempDir test_dir_;
   scoped_refptr<TestHistoryBackend> fake_history_backend_;
-  scoped_ptr<TypedUrlSyncableService> typed_url_sync_service_;
+  TypedUrlSyncableService* typed_url_sync_service_;
   scoped_ptr<syncer::FakeSyncChangeProcessor> fake_change_processor_;
 };
 
@@ -305,6 +305,7 @@ void TypedUrlSyncableServiceTest::StartSyncing(
                   fake_change_processor_.get())),
           scoped_ptr<syncer::SyncErrorFactory>(
               new syncer::SyncErrorFactoryMock()));
+  typed_url_sync_service_->history_backend_observer_.RemoveAll();
   EXPECT_FALSE(result.error().IsSet()) << result.error().message();
 }
 
@@ -316,7 +317,7 @@ bool TypedUrlSyncableServiceTest::BuildAndPushLocalChanges(
     std::vector<VisitVector>* visit_vectors) {
   unsigned int total_urls = num_typed_urls + num_reload_urls;
   DCHECK(urls.size() >= total_urls);
-  if (!typed_url_sync_service_.get())
+  if (!typed_url_sync_service_)
     return false;
 
   if (total_urls) {

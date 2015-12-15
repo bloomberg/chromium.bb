@@ -12,7 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "base/task/cancelable_task_tracker.h"
-#include "components/sync_driver/non_frontend_data_type_controller.h"
+#include "components/sync_driver/non_ui_data_type_controller.h"
 #include "components/sync_driver/sync_api_component_factory.h"
 
 namespace history {
@@ -24,7 +24,7 @@ namespace browser_sync {
 class ControlTask;
 
 // A class that manages the startup and shutdown of typed_url sync.
-class TypedUrlDataTypeController : public NonFrontendDataTypeController {
+class TypedUrlDataTypeController : public sync_driver::NonUIDataTypeController {
  public:
   explicit TypedUrlDataTypeController(
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
@@ -32,7 +32,7 @@ class TypedUrlDataTypeController : public NonFrontendDataTypeController {
       sync_driver::SyncClient* sync_client,
       const char* history_disabled_pref_name);
 
-  // NonFrontendDataTypeController implementation
+  // NonUIDataTypeController implementation
   syncer::ModelType type() const override;
   syncer::ModelSafeGroup model_safe_group() const override;
   bool ReadyForStart() const override;
@@ -42,12 +42,9 @@ class TypedUrlDataTypeController : public NonFrontendDataTypeController {
   void SetBackend(history::HistoryBackend* backend);
 
  protected:
-  // NonFrontendDataTypeController interface.
+  // NonUIDataTypeController interface.
   bool PostTaskOnBackendThread(const tracked_objects::Location& from_here,
                                const base::Closure& task) override;
-  sync_driver::SyncApiComponentFactory::SyncComponents CreateSyncComponents()
-      override;
-  void DisconnectProcessor(sync_driver::ChangeProcessor* processor) override;
 
  private:
   ~TypedUrlDataTypeController() override;
@@ -63,6 +60,8 @@ class TypedUrlDataTypeController : public NonFrontendDataTypeController {
   // Helper object to make sure we don't leave tasks running on the history
   // thread.
   base::CancelableTaskTracker task_tracker_;
+
+  sync_driver::SyncClient* const sync_client_;
 
   DISALLOW_COPY_AND_ASSIGN(TypedUrlDataTypeController);
 };
