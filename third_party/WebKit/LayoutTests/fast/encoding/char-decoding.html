@@ -45,6 +45,21 @@ testDecode('x-sjis', '%82%d0', 'U+3072');
 testDecode('ms_kanji', '%82%d0', 'U+3072');
 testDecode('windows-31j', '%82%d0', 'U+3072');
 
+// Test Big5 peculiarities.
+// See https://www.w3.org/Bugs/Public/show_bug.cgi?id=27878
+testDecode('Big5', '%A4%51', 'U+5341');
+testDecode('Big5', '%A2%CC', 'U+5341');
+testDecode('Big5', '%A4%CA', 'U+5345');
+testDecode('Big5', '%A2%CE', 'U+5345');
+testDecode('Big5', '%A2%A4', 'U+2550');
+testDecode('Big5', '%F9%F9', 'U+2550');
+testDecode('Big5', '%A2%A5', 'U+255E');
+testDecode('Big5', '%F9%E9', 'U+255E');
+testDecode('Big5', '%A2%A7', 'U+2561');
+testDecode('Big5', '%F9%EB', 'U+2561');
+testDecode('Big5', '%A2%A6', 'U+256A');
+testDecode('Big5', '%F9%EA', 'U+256A');
+
 // Test that all Korean encodings of EUC-KR family are treated as windows-949.
 var korean = {
     encodings: ['korean', 'EUC-KR', 'windows-949', 'cseuckr', 'csksc56011987',
@@ -97,6 +112,10 @@ testDecode('KOI8-R', '%A4', 'U+2553');
 testDecode('KOI8-R', '%AD', 'U+255C');
 testDecode('KOI8-U', '%A4', 'U+0454');
 testDecode('KOI8-U', '%AD', 'U+0491');
+testDecode('KOI8-U', '%AE', 'U+045E');
+testDecode('KOI8-U', '%BE', 'U+040E');
+testDecode('KOI8-RU', '%AE', 'U+045E');
+testDecode('KOI8-RU', '%BE', 'U+040E');
 
 // Test that TIS-620 and ISO-8859-11 (Thai) are upgraded to windows-874.
 var thai = {

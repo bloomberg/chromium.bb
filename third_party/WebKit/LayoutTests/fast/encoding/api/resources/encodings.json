@@ -195,7 +195,8 @@
       },
       {
         "labels": [
-          "koi8-u"
+          "koi8-u",
+          "koi8-ru"
         ],
         "name": "koi8-u"
       },

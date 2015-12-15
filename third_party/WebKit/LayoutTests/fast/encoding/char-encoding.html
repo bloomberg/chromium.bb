@@ -48,6 +48,20 @@ testEncode('gb18030', 'U+FF5E', '%A1%AB');
 testEncode('GBK', 'U+22EF', '%26%238943%3B');
 testEncode('GBK', 'U+301C', '%26%2312316%3B');
 
+// Big5: See https://www.w3.org/Bugs/Public/show_bug.cgi?id=27878
+testEncode('Big5', 'U+2550', '%F9%F9');
+testEncode('Big5', 'U+255E', '%F9%E9');
+testEncode('Big5', 'U+2561', '%F9%EB');
+testEncode('Big5', 'U+256A', '%F9%EA');
+testEncode('Big5', 'U+5341', '%A4Q');
+testEncode('Big5', 'U+5345', '%A4%CA');
+
+// KOI8-U/KOI8-RU:  https://www.w3.org/Bugs/Public/show_bug.cgi?id=17053
+testEncode('KOI8-U', 'U+045E', '%AE');
+testEncode('KOI8-U', 'U+040E', '%BE');
+testEncode('KOI8-RU', 'U+045E', '%AE');
+testEncode('KOI8-RU', 'U+040E', '%BE');
+
 // Replacement encodings - should encode as UTF-8
 testEncode("csiso2022kr", "U+00A0", "%C2%A0");
 testEncode("hz-gb-2312", "U+00A0", "%C2%A0");
