@@ -234,7 +234,7 @@ TEST_F(DWriteFontProxyUnitTest, GetFamilyNames) {
   EXPECT_EQ(DWriteFontProxyMsg_GetFamilyNames::ID,
             fake_collection_->GetMessage(2)->type());
 
-  EXPECT_EQ(2, names->GetCount());
+  EXPECT_EQ(2u, names->GetCount());
   UINT32 locale_index = 0;
   BOOL locale_exists = FALSE;
   hr = names->FindLocaleName(L"fr-fr", &locale_index, &locale_exists);
