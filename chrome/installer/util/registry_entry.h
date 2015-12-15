@@ -16,6 +16,10 @@ class WorkItemList;
 // collection of registry entries should be collected into a list and written
 // transactionally using a WorkItemList. This is preferred to writing to the
 // registry directly, because if anything goes wrong, they can be rolled back.
+//
+// NOTE: This uses the default WOW64 view (32-bit on 32-bit applications, 64-bit
+// on 64-bit applications). If the view needs to be customized, a parameter
+// should be added, like in WorkItem. http://crbug.com/569816.
 class RegistryEntry {
  public:
   // A bit-field enum of places to look for this key in the Windows registry.
