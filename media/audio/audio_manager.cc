@@ -40,15 +40,17 @@ AudioManager* g_last_created = nullptr;
 // |g_last_created|.
 AudioManagerFactory* g_audio_manager_factory = nullptr;
 
-// Maximum number of failed pings to the audio thread allowed. A crash will be
-// issued once this count is reached.  We require at least two pings before
-// crashing to ensure unobservable power events aren't mistakenly caught (e.g.,
-// the system suspends before a OnSuspend() event can be fired.).
-const int kMaxHangFailureCount = 2;
+// Maximum number of failed pings to the audio thread allowed. A UMA will be
+// recorded once this count is reached; if enabled, a non-crash dump will be
+// captured as well. We require at least three failed pings before recording to
+// ensure unobservable power events aren't mistakenly caught (e.g., the system
+// suspends before a OnSuspend() event can be fired).
+const int kMaxFailedPingsCount = 3;
 
-// Helper class for managing global AudioManager data and hang timers. If the
-// audio thread is unresponsive for more than two minutes we want to crash the
-// process so we can catch offenders quickly in the field.
+// Helper class for managing global AudioManager data and hang monitor. If the
+// audio thread is hung for > |kMaxFailedPingsCount| * |max_hung_task_time_|, we
+// want to record a UMA and optionally a non-crash dump to find offenders in the
+// field.
 class AudioManagerHelper : public base::PowerObserver {
  public:
   // These values are histogrammed over time; do not change their ordinal
@@ -75,7 +77,7 @@ class AudioManagerHelper : public base::PowerObserver {
     CHECK(!monitor_task_runner_);
     monitor_task_runner_ = monitor_task_runner;
     base::PowerMonitor::Get()->AddObserver(this);
-    hang_failures_ = 0;
+    failed_pings_ = 0;
     io_task_running_ = audio_task_running_ = true;
     UpdateLastAudioThreadTimeTick();
     RecordAudioThreadStatus();
@@ -85,7 +87,7 @@ class AudioManagerHelper : public base::PowerObserver {
   void OnSuspend() override {
     base::AutoLock lock(hang_lock_);
     hang_detection_enabled_ = false;
-    hang_failures_ = 0;
+    failed_pings_ = successful_pings_ = 0;
   }
 
   // Reenable hang detection once the system comes out of the suspend state.
@@ -93,7 +95,7 @@ class AudioManagerHelper : public base::PowerObserver {
     base::AutoLock lock(hang_lock_);
     hang_detection_enabled_ = true;
     last_audio_thread_timer_tick_ = base::TimeTicks::Now();
-    hang_failures_ = 0;
+    failed_pings_ = successful_pings_ = 0;
 
     // If either of the tasks were stopped during suspend, start them now.
     if (!audio_task_running_) {
@@ -127,18 +129,23 @@ class AudioManagerHelper : public base::PowerObserver {
       const base::TimeTicks now = base::TimeTicks::Now();
       const base::TimeDelta tick_delta = now - last_audio_thread_timer_tick_;
       if (tick_delta > max_hung_task_time_) {
-        if (++hang_failures_ >= kMaxHangFailureCount &&
+        successful_pings_ = 0;
+        if (++failed_pings_ >= kMaxFailedPingsCount &&
             audio_thread_status_ < THREAD_HUNG) {
           if (enable_crash_key_logging_)
             LogAudioDriverCrashKeys();
           HistogramThreadStatus(THREAD_HUNG);
         }
       } else {
-        hang_failures_ = 0;
-        if (audio_thread_status_ == THREAD_NONE)
+        failed_pings_ = 0;
+        ++successful_pings_;
+        if (audio_thread_status_ == THREAD_NONE) {
           HistogramThreadStatus(THREAD_STARTED);
-        else if (audio_thread_status_ == THREAD_HUNG)
+        } else if (audio_thread_status_ == THREAD_HUNG &&
+                   successful_pings_ >= kMaxFailedPingsCount) {
+          // Require just as many successful pings to recover from failure.
           HistogramThreadStatus(THREAD_RECOVERED);
+        }
       }
     }
 
@@ -154,7 +161,7 @@ class AudioManagerHelper : public base::PowerObserver {
     {
       base::AutoLock lock(hang_lock_);
       last_audio_thread_timer_tick_ = base::TimeTicks::Now();
-      hang_failures_ = 0;
+      failed_pings_ = 0;
 
       // Don't post our task if the system is or will be suspended.
       if (!hang_detection_enabled_) {
@@ -222,11 +229,12 @@ class AudioManagerHelper : public base::PowerObserver {
   base::Lock hang_lock_;
   bool hang_detection_enabled_ = true;
   base::TimeTicks last_audio_thread_timer_tick_;
-  int hang_failures_ = 0;
+  uint32_t failed_pings_ = 0;
   bool io_task_running_ = false;
   bool audio_task_running_ = false;
   ThreadStatus audio_thread_status_ = THREAD_NONE;
   bool enable_crash_key_logging_ = false;
+  uint32_t successful_pings_ = 0;
 
 #if defined(OS_WIN)
   scoped_ptr<base::win::ScopedCOMInitializer> com_initializer_for_testing_;
