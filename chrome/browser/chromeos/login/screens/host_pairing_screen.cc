@@ -87,6 +87,7 @@ void HostPairingScreen::PairingStageChanged(Stage new_stage) {
       desired_page = kPageEnrollment;
       context_.SetString(kContextKeyEnrollmentDomain,
                          remora_controller_->GetEnrollmentDomain());
+      break;
     }
     case HostPairingController::STAGE_ENROLLMENT_SUCCESS: {
       remora_controller_->RemoveObserver(this);
