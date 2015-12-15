@@ -206,6 +206,27 @@
                 }
             ];
 
+            // This function checks that calling createSession() with an
+            // unsupported session type doesn't create a MediaKeySession object.
+            // Since requestMediaKeySystemAccess() is called without specifying
+            // persistent sessions, only temporary sessions will be allowed.
+            function test_unsupported_sessionType(mediaKeys)
+            {
+                var mediaKeySession = 'test';
+
+                try {
+                    mediaKeySession = mediaKeys.createSession('persistent-license');
+                    assert_unreached('Session should not be created.');
+                } catch (error) {
+                    assert_equals(error.name, 'NotSupportedError');
+                    assert_not_equals(error.message, "");
+
+                    // Since createSession() failed, |mediaKeySession| is not
+                    // touched.
+                    assert_equals(mediaKeySession, 'test');
+                }
+            }
+
             async_test(function(test)
             {
                 navigator.requestMediaKeySystemAccess('org.w3.clearkey', [{}]).then(function(access) {
@@ -214,6 +235,7 @@
                     var sessionPromises = kCreateSessionExceptionsTestCases.map(function(testCase) {
                         return test_exception(testCase, mediaKeys);
                     });
+                    sessionPromises = sessionPromises.concat(test_unsupported_sessionType(mediaKeys));
 
                     assert_not_equals(sessionPromises.length, 0);
                     return Promise.all(sessionPromises);
