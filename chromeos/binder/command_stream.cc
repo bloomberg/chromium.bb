@@ -1,0 +1,147 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chromeos/binder/command_stream.h"
+
+#include <linux/android/binder.h>
+
+#include "chromeos/binder/buffer_reader.h"
+#include "chromeos/binder/driver.h"
+#include "chromeos/binder/util.h"
+
+namespace binder {
+
+CommandStream::CommandStream(Driver* driver,
+                             IncomingCommandHandler* incoming_command_handler)
+    : driver_(driver), incoming_command_handler_(incoming_command_handler) {}
+
+CommandStream::~CommandStream() {}
+
+bool CommandStream::Fetch() {
+  DCHECK(!CanProcessIncomingCommand());
+  // Use the same value as libbinder's IPCThreadState.
+  const size_t kIncomingDataSize = 256;
+  incoming_data_.resize(kIncomingDataSize);
+
+  size_t written_bytes = 0, read_bytes = 0;
+  if (!driver_->WriteRead(nullptr, 0, incoming_data_.data(),
+                          incoming_data_.size(), &written_bytes, &read_bytes)) {
+    LOG(ERROR) << "WriteRead() failed.";
+    return false;
+  }
+  incoming_data_.resize(read_bytes);
+  incoming_data_reader_.reset(
+      new BufferReader(incoming_data_.data(), incoming_data_.size()));
+  return true;
+}
+
+bool CommandStream::CanProcessIncomingCommand() {
+  return incoming_data_reader_ && incoming_data_reader_->HasMoreData();
+}
+
+bool CommandStream::ProcessIncomingCommand() {
+  DCHECK(CanProcessIncomingCommand());
+  uint32 command = 0;
+  if (!incoming_data_reader_->Read(&command, sizeof(command)) ||
+      !OnIncomingCommand(command, incoming_data_reader_.get())) {
+    LOG(ERROR) << "Error while handling command: " << command;
+    return false;
+  }
+  return true;
+}
+
+void CommandStream::AppendOutgoingCommand(uint32 command,
+                                          const void* data,
+                                          size_t size) {
+  VLOG(1) << "Appending " << CommandToString(command) << ", this = " << this;
+
+  DCHECK_EQ(0u, size % 4);  // Must be 4-byte aligned.
+  outgoing_data_.insert(
+      outgoing_data_.end(), reinterpret_cast<const char*>(&command),
+      reinterpret_cast<const char*>(&command) + sizeof(command));
+  outgoing_data_.insert(outgoing_data_.end(),
+                        reinterpret_cast<const char*>(data),
+                        reinterpret_cast<const char*>(data) + size);
+}
+
+bool CommandStream::Flush() {
+  for (size_t pos = 0; pos < outgoing_data_.size();) {
+    size_t written_bytes = 0, read_bytes = 0;
+    if (!driver_->WriteRead(outgoing_data_.data() + pos,
+                            outgoing_data_.size() - pos, nullptr, 0,
+                            &written_bytes, &read_bytes)) {
+      LOG(ERROR) << "WriteRead() failed: pos = " << pos
+                 << ", size = " << outgoing_data_.size();
+      return false;
+    }
+    pos += written_bytes;
+  }
+  outgoing_data_.clear();
+  return true;
+}
+
+bool CommandStream::OnIncomingCommand(uint32 command, BufferReader* reader) {
+  // TODO(hashimoto): Replace all NOTIMPLEMENTED with logic to handle incoming
+  // commands.
+  VLOG(1) << "Processing " << CommandToString(command) << ", this = " << this;
+  switch (command) {
+    case BR_ERROR: {
+      int32 error = 0;
+      if (!reader->Read(&error, sizeof(error))) {
+        LOG(ERROR) << "Failed to read error code.";
+        return false;
+      }
+      break;
+    }
+    case BR_OK:
+      break;
+    case BR_TRANSACTION:
+      NOTIMPLEMENTED();
+      break;
+    case BR_REPLY:
+      NOTIMPLEMENTED();
+      break;
+    case BR_ACQUIRE_RESULT:
+      // Kernel's binder.h says this is not currently supported.
+      NOTREACHED();
+      break;
+    case BR_DEAD_REPLY:
+      NOTIMPLEMENTED();
+      break;
+    case BR_TRANSACTION_COMPLETE:
+      NOTIMPLEMENTED();
+      break;
+    case BR_INCREFS:
+    case BR_ACQUIRE:
+    case BR_RELEASE:
+    case BR_DECREFS:
+    case BR_ATTEMPT_ACQUIRE:
+      NOTIMPLEMENTED();
+      break;
+    case BR_NOOP:
+      break;
+    case BR_SPAWN_LOOPER:
+      NOTIMPLEMENTED();
+      break;
+    case BR_FINISHED:
+      // Kernel's binder.h says this is not currently supported.
+      NOTREACHED();
+      break;
+    case BR_DEAD_BINDER:
+      NOTIMPLEMENTED();
+      break;
+    case BR_CLEAR_DEATH_NOTIFICATION_DONE:
+      NOTIMPLEMENTED();
+      break;
+    case BR_FAILED_REPLY:
+      NOTIMPLEMENTED();
+      break;
+    default:
+      LOG(ERROR) << "Unexpected command: " << command;
+      return false;
+  }
+  return true;
+}
+
+}  // namespace binder

@@ -389,6 +389,8 @@
     'chromeos_binder_sources': [
       'binder/buffer_reader.cc',
       'binder/buffer_reader.h',
+      'binder/command_stream.cc',
+      'binder/command_stream.h',
       'binder/driver.cc',
       'binder/driver.h',
       'binder/util.cc',
@@ -396,6 +398,7 @@
     ],
     'chromeos_binder_test_sources': [
       'binder/buffer_reader_unittest.cc',
+      'binder/command_stream_unittest.cc',
       'binder/driver_unittest.cc',
     ],
     'chromeos_test_sources': [

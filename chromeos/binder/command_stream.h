@@ -1,0 +1,67 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef BINDER_COMMAND_STREAM_H_
+#define BINDER_COMMAND_STREAM_H_
+
+#include <vector>
+
+#include "base/basictypes.h"
+#include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
+
+namespace binder {
+
+class BufferReader;
+class Driver;
+
+// Stream of incoming (binder driver to user process) BR_* commands and outgoing
+// (user process to binder driver) BC_* commands.
+class CommandStream {
+ public:
+  // IncomingCommandHandler is responsible to handle incoming commands.
+  class IncomingCommandHandler {
+   public:
+    virtual ~IncomingCommandHandler() {}
+    // TODO(hashimoto): Add methods to handle incoming commands.
+  };
+
+  CommandStream(Driver* driver,
+                IncomingCommandHandler* incoming_command_handler);
+  ~CommandStream();
+
+  // Reads incoming commands from the driver to the buffer, and returns true on
+  // success.
+  bool Fetch();
+
+  // Returns true if any incoming commands are in the buffer.
+  bool CanProcessIncomingCommand();
+
+  // Processes an incoming command in the buffer, and returns true on success.
+  bool ProcessIncomingCommand();
+
+  // Appends a command to the outgoing command buffer.
+  void AppendOutgoingCommand(uint32 command, const void* data, size_t size);
+
+  // Writes buffered outgoing commands to the driver, and returns true on
+  // success.
+  bool Flush();
+
+ private:
+  // Calls the appropriate delegate method to handle the incoming command.
+  bool OnIncomingCommand(uint32 command, BufferReader* reader);
+
+  Driver* driver_;
+  IncomingCommandHandler* incoming_command_handler_;
+
+  std::vector<char> outgoing_data_;  // Buffer for outgoing commands.
+  std::vector<char> incoming_data_;  // Buffer for incoming commands.
+  scoped_ptr<BufferReader> incoming_data_reader_;
+
+  DISALLOW_COPY_AND_ASSIGN(CommandStream);
+};
+
+}  // namespace binder
+
+#endif  // BINDER_COMMAND_STREAM_H_
