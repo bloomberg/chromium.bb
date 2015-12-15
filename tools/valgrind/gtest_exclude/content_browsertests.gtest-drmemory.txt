@@ -66,3 +66,6 @@ TouchActionBrowserTest.DefaultAuto
 
 # https://crbug.com/536881
 IndexedDBBrowserTest.DiskFullOnCommit
+
+# https://crbug.com/569752
+SitePerProcessBrowserTest.*
