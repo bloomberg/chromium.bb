@@ -2869,10 +2869,6 @@ void WebContentsImpl::ResumeLoadingCreatedWebContents() {
   }
 }
 
-base::debug::StackTrace WebContentsImpl::GetCreationStackTrace() {
-  return stack_trace_;
-}
-
 bool WebContentsImpl::FocusLocationBarByDefault() {
   NavigationEntry* entry = controller_.GetVisibleEntry();
   if (entry && entry->GetURL() == GURL(url::kAboutBlankURL))

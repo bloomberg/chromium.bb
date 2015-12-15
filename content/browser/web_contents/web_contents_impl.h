@@ -373,7 +373,6 @@ class CONTENT_EXPORT WebContentsImpl
   void HasManifest(const HasManifestCallback& callback) override;
   void ExitFullscreen() override;
   void ResumeLoadingCreatedWebContents() override;
-  base::debug::StackTrace GetCreationStackTrace() override;
 #if defined(OS_ANDROID)
   void OnMediaSessionStateChanged();
   void ResumeMediaSession() override;
@@ -1293,9 +1292,6 @@ class CONTENT_EXPORT WebContentsImpl
   PageImportanceSignals page_importance_signals_;
 
   bool page_scale_factor_is_one_;
-
-  // Temporary to track down http://crbug.com/538612
-  base::debug::StackTrace stack_trace_;
 
   base::WeakPtrFactory<WebContentsImpl> loading_weak_factory_;
 
