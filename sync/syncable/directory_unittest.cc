@@ -4,6 +4,9 @@
 
 #include "sync/syncable/directory_unittest.h"
 
+#include <cstdlib>
+
+#include "base/rand_util.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/values_test_util.h"
@@ -1665,12 +1668,12 @@ class StressTransactionsDelegate : public base::PlatformThread::Delegate {
     std::string path_name;
 
     for (int i = 0; i < 20; ++i) {
-      const int rand_action = rand() % 10;
+      const int rand_action = base::RandInt(0, 9);
       if (rand_action < 4 && !path_name.empty()) {
         ReadTransaction trans(FROM_HERE, dir_);
         EXPECT_EQ(1, CountEntriesWithName(&trans, trans.root_id(), path_name));
         base::PlatformThread::Sleep(
-            base::TimeDelta::FromMilliseconds(rand() % 10));
+            base::TimeDelta::FromMilliseconds(base::RandInt(0, 9)));
       } else {
         std::string unique_name =
             base::StringPrintf("%d.%d", thread_number_, entry_count++);
@@ -1679,9 +1682,9 @@ class StressTransactionsDelegate : public base::PlatformThread::Delegate {
         MutableEntry e(&trans, CREATE, BOOKMARKS, trans.root_id(), path_name);
         EXPECT_TRUE(e.good());
         base::PlatformThread::Sleep(
-            base::TimeDelta::FromMilliseconds(rand() % 20));
+            base::TimeDelta::FromMilliseconds(base::RandInt(0, 19)));
         e.PutIsUnsynced(true);
-        if (e.PutId(TestIdFactory::FromNumber(rand())) &&
+        if (e.PutId(TestIdFactory::FromNumber(base::RandInt(0, RAND_MAX))) &&
             e.GetId().ServerKnows() && !e.GetId().IsRoot()) {
           e.PutBaseVersion(1);
         }
