@@ -13,10 +13,9 @@ namespace blink {
 // satisfied.
 struct WebUSBError {
     enum class Error {
-        Device,
+        Network,
+        NotFound,
         Security,
-        Service,
-        Transfer,
     };
 
     WebUSBError(Error error, const WebString& message)

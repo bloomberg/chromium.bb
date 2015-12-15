@@ -41,17 +41,9 @@ void RejectWithError(const blink::WebUSBError& error,
 }
 
 template <typename CallbacksType>
-void RejectWithDeviceError(const std::string& message,
-                           scoped_ptr<CallbacksType> callbacks) {
-  RejectWithError(blink::WebUSBError(blink::WebUSBError::Error::Device,
-                                     base::UTF8ToUTF16(message)),
-                  callbacks.Pass());
-}
-
-template <typename CallbacksType>
 void RejectWithTransferError(scoped_ptr<CallbacksType> callbacks) {
-  RejectWithError(blink::WebUSBError(blink::WebUSBError::Error::Transfer,
-                                     base::UTF8ToUTF16(kTransferFailed)),
+  RejectWithError(blink::WebUSBError(blink::WebUSBError::Error::Network,
+                                     base::ASCIIToUTF16(kTransferFailed)),
                   callbacks.Pass());
 }
 
@@ -63,8 +55,8 @@ ScopedWebCallbacks<CallbacksType> MakeScopedUSBCallbacks(
   return make_scoped_web_callbacks(
       callbacks,
       base::Bind(&RejectWithError<CallbacksType>,
-                 blink::WebUSBError(blink::WebUSBError::Error::Device,
-                                    base::UTF8ToUTF16(kDeviceUnavailable))));
+                 blink::WebUSBError(blink::WebUSBError::Error::NotFound,
+                                    base::ASCIIToUTF16(kDeviceUnavailable))));
 }
 
 void OnOpenDevice(
@@ -77,8 +69,8 @@ void OnOpenDevice(
       break;
     case device::usb::OPEN_DEVICE_ERROR_ACCESS_DENIED:
       scoped_callbacks->onError(blink::WebUSBError(
-          blink::WebUSBError::Error::Device,
-          base::UTF8ToUTF16(kDeviceNoAccess)));
+          blink::WebUSBError::Error::Security,
+          base::ASCIIToUTF16(kDeviceNoAccess)));
       break;
     default:
       NOTREACHED();
@@ -94,10 +86,13 @@ void OnGetConfiguration(
     ScopedWebCallbacks<blink::WebUSBDeviceGetConfigurationCallbacks> callbacks,
     uint8_t configuration_value) {
   auto scoped_callbacks = callbacks.PassCallbacks();
-  if (configuration_value == 0)
-    RejectWithDeviceError(kDeviceNotConfigured, scoped_callbacks.Pass());
-  else
+  if (configuration_value == 0) {
+    RejectWithError(blink::WebUSBError(blink::WebUSBError::Error::NotFound,
+                                       kDeviceNotConfigured),
+                    scoped_callbacks.Pass());
+  } else {
     scoped_callbacks->onSuccess(configuration_value);
+  }
 }
 
 void HandlePassFailDeviceOperation(
@@ -106,10 +101,13 @@ void HandlePassFailDeviceOperation(
     const std::string& failure_message,
     bool success) {
   auto scoped_callbacks = callbacks.PassCallbacks();
-  if (success)
+  if (success) {
     scoped_callbacks->onSuccess();
-  else
-    RejectWithDeviceError(failure_message, scoped_callbacks.Pass());
+  } else {
+    RejectWithError(blink::WebUSBError(blink::WebUSBError::Error::Network,
+                                       base::ASCIIToUTF16(failure_message)),
+                    scoped_callbacks.Pass());
+  }
 }
 
 void OnTransferIn(

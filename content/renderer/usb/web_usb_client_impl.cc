@@ -46,8 +46,8 @@ ScopedWebCallbacks<CallbacksType> MakeScopedUSBCallbacks(
   return make_scoped_web_callbacks(
       callbacks,
       base::Bind(&RejectCallbacksWithError<CallbacksType>,
-                 blink::WebUSBError(blink::WebUSBError::Error::Service,
-                                    base::UTF8ToUTF16(kNoServiceError))));
+                 blink::WebUSBError(blink::WebUSBError::Error::NotFound,
+                                    base::ASCIIToUTF16(kNoServiceError))));
 }
 
 void OnGetDevicesComplete(
@@ -78,8 +78,9 @@ void OnRequestDevicesComplete(
 
     scoped_callbacks->onSuccess(blink::adoptWebPtr(web_usb_device));
   } else {
-    scoped_callbacks->onSuccess(
-        blink::adoptWebPtr<blink::WebUSBDevice>(nullptr));
+    scoped_callbacks->onError(
+        blink::WebUSBError(blink::WebUSBError::Error::NotFound,
+                           base::ASCIIToUTF16("No device selected.")));
   }
 }
 
