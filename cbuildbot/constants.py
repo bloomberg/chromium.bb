@@ -414,6 +414,7 @@ HWTEST_SUITES_POOL = 'suites'
 HWTEST_CHROME_PERF_POOL = 'chromeperf'
 HWTEST_TRYBOT_POOL = HWTEST_SUITES_POOL
 HWTEST_WIFICELL_PRE_CQ_POOL = 'wificell-pre-cq'
+HWTEST_CONTINUOUS_POOL = 'continuous'
 
 
 # Defines for the various hardware test suites:
