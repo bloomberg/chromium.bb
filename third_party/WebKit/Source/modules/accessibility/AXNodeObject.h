@@ -171,7 +171,7 @@ protected:
 
     // Low-level accessibility tree exploration.
     AXObject* rawFirstChild() const override;
-    AXObject* rawFirstSibling() const override;
+    AXObject* rawNextSibling() const override;
     void addChildren() override;
     bool canHaveChildren() const override;
     void addChild(AXObject*);
@@ -199,13 +199,13 @@ protected:
     int setSize() const override;
 
     // Aria-owns.
-    void computeAriaOwnsChildren(HeapVector<Member<AXObject>>& ownedChildren);
+    void computeAriaOwnsChildren(HeapVector<Member<AXObject>>& ownedChildren) const;
 
 private:
     RawPtrWillBeMember<Node> m_node;
 
     bool isNativeCheckboxInMixedState() const;
-    String textFromDescendants(AXObjectSet& visited) const;
+    String textFromDescendants(AXObjectSet& visited, bool recursive) const override;
     String nativeTextAlternative(AXObjectSet& visited, AXNameFrom&, AXRelatedObjectVector*, NameSources*, bool* foundTextAlternative) const;
     float stepValueForRange() const;
     bool isDescendantOfElementType(const HTMLQualifiedName& tagName) const;

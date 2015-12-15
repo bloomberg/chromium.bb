@@ -1533,7 +1533,7 @@ String AXNodeObject::textAlternative(bool recursive, bool inAriaLabelledByTraver
         else if (isHTMLBRElement(node))
             textAlternative = String("\n");
         else
-            textAlternative = textFromDescendants(visited);
+            textAlternative = textFromDescendants(visited, false);
 
         if (!textAlternative.isEmpty()) {
             if (nameSources) {
@@ -1579,11 +1579,26 @@ String AXNodeObject::textAlternative(bool recursive, bool inAriaLabelledByTraver
     return String();
 }
 
-String AXNodeObject::textFromDescendants(AXObjectSet& visited) const
+String AXNodeObject::textFromDescendants(AXObjectSet& visited, bool recursive) const
 {
+    if (!canHaveChildren() && recursive)
+        return String();
+
     StringBuilder accumulatedText;
     AXObject* previous = nullptr;
-    for (AXObject* child = rawFirstChild(); child; child = child->rawFirstSibling()) {
+
+    AXObjectVector children;
+
+    HeapVector<Member<AXObject>> ownedChildren;
+    computeAriaOwnsChildren(ownedChildren);
+    for (AXObject* obj = rawFirstChild(); obj; obj = obj->rawNextSibling()) {
+        if (!axObjectCache().isAriaOwned(obj))
+            children.append(obj);
+    }
+    for (const auto& ownedChild : ownedChildren)
+        children.append(ownedChild);
+
+    for (AXObject* child : children) {
         // Skip hidden children
         if (child->isInertOrAriaHidden())
             continue;
@@ -1598,7 +1613,11 @@ String AXNodeObject::textFromDescendants(AXObjectSet& visited) const
                 accumulatedText.append(' ');
         }
 
-        String result = recursiveTextAlternative(*child, false, visited);
+        String result;
+        if (child->isPresentational())
+            result = child->textFromDescendants(visited, true);
+        else
+            result = recursiveTextAlternative(*child, false, visited);
         accumulatedText.append(result);
         previous = child;
     }
@@ -1735,7 +1754,7 @@ AXObject* AXNodeObject::rawFirstChild() const
     return axObjectCache().getOrCreate(firstChild);
 }
 
-AXObject* AXNodeObject::rawFirstSibling() const
+AXObject* AXNodeObject::rawNextSibling() const
 {
     if (!node())
         return 0;
@@ -2071,7 +2090,7 @@ void AXNodeObject::updateAccessibilityRole()
         childrenChanged();
 }
 
-void AXNodeObject::computeAriaOwnsChildren(HeapVector<Member<AXObject>>& ownedChildren)
+void AXNodeObject::computeAriaOwnsChildren(HeapVector<Member<AXObject>>& ownedChildren) const
 {
     if (!hasAttribute(aria_ownsAttr))
         return;
@@ -2596,7 +2615,7 @@ String AXNodeObject::description(AXNameFrom nameFrom, AXDescriptionFrom& descrip
         }
 
         AXObjectSet visited;
-        description = textFromDescendants(visited);
+        description = textFromDescendants(visited, false);
 
         if (!description.isEmpty()) {
             if (descriptionSources) {

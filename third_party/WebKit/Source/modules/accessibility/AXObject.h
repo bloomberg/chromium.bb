@@ -677,9 +677,10 @@ public:
     // exposed by one of the two functions above.
     virtual String placeholder(AXNameFrom, AXDescriptionFrom) const { return String(); }
 
-    // Internal function used by name and description, above.
+    // Internal functions used by name and description, above.
     typedef HeapHashSet<Member<const AXObject>> AXObjectSet;
     virtual String textAlternative(bool recursive, bool inAriaLabelledByTraversal, AXObjectSet& visited, AXNameFrom& nameFrom, AXRelatedObjectVector* relatedObjects, NameSources* nameSources) const { return String(); }
+    virtual String textFromDescendants(AXObjectSet& visited, bool recursive) const { return String(); }
 
     // Returns result of Accessible Name Calculation algorithm.
     // This is a simpler high-level interface to |name| used by Inspector.
@@ -810,7 +811,7 @@ public:
 
     // Low-level accessibility tree exploration, only for use within the accessibility module.
     virtual AXObject* rawFirstChild() const { return 0; }
-    virtual AXObject* rawFirstSibling() const { return 0; }
+    virtual AXObject* rawNextSibling() const { return 0; }
     virtual void addChildren() { }
     virtual bool canHaveChildren() const { return true; }
     bool hasChildren() const { return m_haveChildren; }

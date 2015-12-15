@@ -165,7 +165,7 @@ protected:
 
     // Low-level accessibility tree exploration, only for use within the accessibility module.
     AXObject* rawFirstChild() const override;
-    AXObject* rawFirstSibling() const override;
+    AXObject* rawNextSibling() const override;
     void addChildren() override;
     bool canHaveChildren() const override;
     void updateChildrenIfNecessary() override;

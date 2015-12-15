@@ -1428,7 +1428,7 @@ void AXLayoutObject::markCachedElementRectDirty() const
 
     // Marks children recursively, if this element changed.
     m_cachedElementRectDirty = true;
-    for (AXObject* child = rawFirstChild(); child; child = child->rawFirstSibling())
+    for (AXObject* child = rawFirstChild(); child; child = child->rawNextSibling())
         child->markCachedElementRectDirty();
 }
 
@@ -1580,7 +1580,7 @@ AXObject* AXLayoutObject::rawFirstChild() const
     return axObjectCache().getOrCreate(firstChild);
 }
 
-AXObject* AXLayoutObject::rawFirstSibling() const
+AXObject* AXLayoutObject::rawNextSibling() const
 {
     if (!m_layoutObject)
         return 0;
@@ -1639,7 +1639,7 @@ void AXLayoutObject::addChildren()
     HeapVector<Member<AXObject>> ownedChildren;
     computeAriaOwnsChildren(ownedChildren);
 
-    for (AXObject* obj = rawFirstChild(); obj; obj = obj->rawFirstSibling()) {
+    for (AXObject* obj = rawFirstChild(); obj; obj = obj->rawNextSibling()) {
         if (!axObjectCache().isAriaOwned(obj))
             addChild(obj);
     }
