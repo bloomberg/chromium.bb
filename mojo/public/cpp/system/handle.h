@@ -285,6 +285,11 @@ inline bool operator<(const Handle a, const Handle b) {
   return a.value() < b.value();
 }
 
+// Comparison, so that |Handle|s can be used as keys in hash maps.
+inline bool operator==(const Handle a, const Handle b) {
+  return a.value() == b.value();
+}
+
 }  // namespace mojo
 
 #endif  // MOJO_PUBLIC_CPP_SYSTEM_HANDLE_H_
