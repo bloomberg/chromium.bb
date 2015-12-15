@@ -1766,10 +1766,10 @@ void QuicConnection::OnHandshakeComplete() {
   sent_packet_manager_.SetHandshakeConfirmed();
   // The client should immediately ack the SHLO to confirm the handshake is
   // complete with the server.
-  if (perspective_ == Perspective::IS_CLIENT && !ack_queued_) {
+  if (perspective_ == Perspective::IS_CLIENT && !ack_queued_ &&
+      ack_frame_updated()) {
     ack_alarm_->Cancel();
     ack_alarm_->Set(clock_->ApproximateNow());
-    set_ack_frame_updated(true);
   }
 }
 
@@ -2400,10 +2400,6 @@ void QuicConnection::DiscoverMtu() {
 
 bool QuicConnection::ack_frame_updated() const {
   return received_packet_manager_.ack_frame_updated();
-}
-
-void QuicConnection::set_ack_frame_updated(bool updated) {
-  received_packet_manager_.set_ack_frame_updated(updated);
 }
 
 }  // namespace net
