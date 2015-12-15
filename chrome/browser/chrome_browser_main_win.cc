@@ -515,19 +515,6 @@ bool ChromeBrowserMainPartsWin::CheckMachineLevelInstall() {
     std::wstring exe = exe_path.value();
     base::FilePath user_exe_path(installer::GetChromeInstallPath(false, dist));
     if (base::FilePath::CompareEqualIgnoreCase(exe, user_exe_path.value())) {
-      bool is_metro = base::win::IsMetroProcess();
-      if (!is_metro) {
-        // The dialog cannot be shown in Win8 Metro as doing so hangs Chrome on
-        // an invisible dialog.
-        // TODO (gab): Get rid of this dialog altogether and auto-launch
-        // system-level Chrome instead.
-        const base::string16 text =
-            l10n_util::GetStringUTF16(IDS_MACHINE_LEVEL_INSTALL_CONFLICT);
-        const base::string16 caption =
-            l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
-        const UINT flags = MB_OK | MB_ICONERROR | MB_TOPMOST;
-        ui::MessageBox(NULL, text, caption, flags);
-      }
       base::CommandLine uninstall_cmd(
           InstallUtil::GetChromeUninstallCmd(false, dist->GetType()));
       if (!uninstall_cmd.GetProgram().empty()) {
@@ -556,7 +543,7 @@ bool ChromeBrowserMainPartsWin::CheckMachineLevelInstall() {
         sei.lpParameters = params.c_str();
         // On Windows 8 SEE_MASK_FLAG_LOG_USAGE is necessary to guarantee we
         // flip to the Desktop when launching.
-        if (is_metro)
+        if (base::win::IsMetroProcess())
           sei.fMask |= SEE_MASK_FLAG_LOG_USAGE;
 
         if (!::ShellExecuteEx(&sei))

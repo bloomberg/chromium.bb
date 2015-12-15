@@ -410,9 +410,6 @@ Chromium is unable to recover your settings.
         <message name="IDS_PASSWORDS_PAGE_AUTHENTICATION_PROMPT" desc="Text for the dialog box that prompts the user for their OS account password before revealing plaintext passwords on the password page.">
           Chromium is trying to show passwords. Type your Windows password to allow this.
         </message>
-        <message name="IDS_MACHINE_LEVEL_INSTALL_CONFLICT" desc="Error message to display when user tries to run user level Chromium even though machine level Chromium is already installed.">
-          An administrator has installed Chromium on this system, and it is available for all users. The system-level Chromium will replace your user-level installation now.
-        </message>
         <message name="IDS_INSTALL_HIGHER_VERSION" desc="Error displayed when higher version already exists.">
           This computer already has a more recent version of Chromium. If the software is not working, please uninstall Chromium and try again.
         </message>
