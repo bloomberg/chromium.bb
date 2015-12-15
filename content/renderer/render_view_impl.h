@@ -460,6 +460,7 @@ class CONTENT_EXPORT RenderViewImpl
                               bool animate) override;
 #endif
   void convertViewportToWindow(blink::WebRect* rect) override;
+  gfx::RectF ElementBoundsInWindow(const blink::WebElement& element) override;
 
   bool uses_temporary_zoom_level() const { return uses_temporary_zoom_level_; }
 

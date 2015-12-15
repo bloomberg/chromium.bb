@@ -36,7 +36,6 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "net/cert/cert_status_flags.h"
-#include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/web/WebConsoleMessage.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
@@ -749,13 +748,12 @@ void AutofillAgent::QueryAutofillSuggestions(
                                        data_list_values,
                                        data_list_labels));
 
-  blink::WebRect bounding_box_in_window = element_.boundsInViewport();
-  render_frame()->GetRenderView()->convertViewportToWindow(
-      &bounding_box_in_window);
-
   Send(new AutofillHostMsg_QueryFormFieldAutofill(
-      routing_id(), autofill_query_id_, form, field,
-      gfx::RectF(bounding_box_in_window)));
+           routing_id(),
+           autofill_query_id_,
+           form,
+           field,
+           render_frame()->GetRenderView()->ElementBoundsInWindow(element_)));
 }
 
 void AutofillAgent::FillFieldWithValue(const base::string16& value,

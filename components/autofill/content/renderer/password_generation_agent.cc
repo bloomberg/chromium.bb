@@ -436,26 +436,21 @@ bool PasswordGenerationAgent::TextDidChangeInTextField(
 }
 
 void PasswordGenerationAgent::ShowGenerationPopup() {
-  blink::WebRect bounding_box_in_window =
-      generation_element_.boundsInViewport();
-  render_frame()->GetRenderView()->convertViewportToWindow(
-      &bounding_box_in_window);
-
   Send(new AutofillHostMsg_ShowPasswordGenerationPopup(
-      routing_id(), gfx::RectF(bounding_box_in_window),
-      generation_element_.maxLength(), *generation_form_data_->form));
-
+           routing_id(),
+           render_frame()->GetRenderView()->ElementBoundsInWindow(
+               generation_element_),
+           generation_element_.maxLength(),
+           *generation_form_data_->form));
   generation_popup_shown_ = true;
 }
 
 void PasswordGenerationAgent::ShowEditingPopup() {
-  blink::WebRect bounding_box_in_window =
-      generation_element_.boundsInViewport();
-  render_frame()->GetRenderView()->convertViewportToWindow(
-      &bounding_box_in_window);
   Send(new AutofillHostMsg_ShowPasswordEditingPopup(
-      routing_id(), gfx::RectF(bounding_box_in_window),
-      *generation_form_data_->form));
+           routing_id(),
+           render_frame()->GetRenderView()->ElementBoundsInWindow(
+               generation_element_),
+           *generation_form_data_->form));
   editing_popup_shown_ = true;
 }
 

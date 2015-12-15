@@ -2179,6 +2179,13 @@ void RenderViewImpl::convertViewportToWindow(blink::WebRect* rect) {
   RenderWidget::convertViewportToWindow(rect);
 }
 
+gfx::RectF RenderViewImpl::ElementBoundsInWindow(
+    const blink::WebElement& element) {
+  blink::WebRect bounding_box_in_window = element.boundsInViewport();
+  convertViewportToWindow(&bounding_box_in_window);
+  return gfx::RectF(bounding_box_in_window);
+}
+
 void RenderViewImpl::didChangeIcon(WebLocalFrame* frame,
                                    WebIconURL::Type icon_type) {
   if (frame->parent())
