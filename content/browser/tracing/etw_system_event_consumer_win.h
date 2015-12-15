@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/threading/thread.h"
+#include "base/trace_event/tracing_agent.h"
 #include "base/values.h"
 #include "base/win/event_trace_consumer.h"
 #include "base/win/event_trace_controller.h"
@@ -19,14 +20,16 @@ struct DefaultSingletonTraits;
 
 namespace content {
 
-class EtwSystemEventConsumer :
-    public base::win::EtwTraceConsumerBase<EtwSystemEventConsumer> {
+class EtwSystemEventConsumer
+    : public base::win::EtwTraceConsumerBase<EtwSystemEventConsumer>,
+      public base::trace_event::TracingAgent {
  public:
-  typedef base::Callback<void(const scoped_refptr<base::RefCountedString>&)>
-      OutputCallback;
-
-  bool StartSystemTracing();
-  void StopSystemTracing(const OutputCallback& callback);
+  // base::trace_event::TracingAgent implementation.
+  std::string GetTracingAgentName() override;
+  std::string GetTraceEventLabel() override;
+  bool StartAgentTracing(
+      const base::trace_event::TraceConfig& trace_config) override;
+  void StopAgentTracing(const StopAgentTracingCallback& callback) override;
 
   // Retrieve the ETW consumer instance.
   static EtwSystemEventConsumer* GetInstance();
@@ -38,7 +41,7 @@ class EtwSystemEventConsumer :
 
   // Constructor.
   EtwSystemEventConsumer();
-  virtual ~EtwSystemEventConsumer();
+  ~EtwSystemEventConsumer() override;
 
   void AddSyncEventToBuffer();
   void AppendEventToBuffer(EVENT_TRACE* event);
@@ -58,11 +61,11 @@ class EtwSystemEventConsumer :
   bool StopKernelSessionTracing();
 
   void OnStopSystemTracingDone(
-    const OutputCallback& callback,
+    const StopAgentTracingCallback& callback,
     const scoped_refptr<base::RefCountedString>& result);
 
   void TraceAndConsumeOnThread();
-  void FlushOnThread(const OutputCallback& callback);
+  void FlushOnThread(const StopAgentTracingCallback& callback);
 
   scoped_ptr<base::ListValue> events_;
   base::Thread thread_;

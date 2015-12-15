@@ -64,6 +64,8 @@ source_set("trace_event") {
     "trace_log_constants.cc",
     "trace_sampling_thread.cc",
     "trace_sampling_thread.h",
+    "tracing_agent.cc",
+    "tracing_agent.h",
     "winheap_dump_provider_win.cc",
     "winheap_dump_provider_win.h",
   ]

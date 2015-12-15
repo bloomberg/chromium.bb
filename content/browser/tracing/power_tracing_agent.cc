@@ -11,13 +11,34 @@
 
 namespace content {
 
+namespace {
+
+const char kPowerTracingAgentName[] = "battor";
+const char kPowerTraceLabel[] = "powerTraceAsString";
+
+}  // namespace
+
+// static
+PowerTracingAgent* PowerTracingAgent::GetInstance() {
+  return base::Singleton<PowerTracingAgent>::get();
+}
+
 PowerTracingAgent::PowerTracingAgent() : is_tracing_(false) {
   battor_trace_provider_.reset(new BattorPowerTraceProvider());
 }
 
 PowerTracingAgent::~PowerTracingAgent() {}
 
-bool PowerTracingAgent::StartTracing() {
+std::string PowerTracingAgent::GetTracingAgentName() {
+  return kPowerTracingAgentName;
+}
+
+std::string PowerTracingAgent::GetTraceEventLabel() {
+  return kPowerTraceLabel;
+}
+
+bool PowerTracingAgent::StartAgentTracing(
+    const base::trace_event::TraceConfig& trace_config) {
   // Tracing session already in progress.
   if (is_tracing_)
     return false;
@@ -29,34 +50,30 @@ bool PowerTracingAgent::StartTracing() {
   return is_tracing_;
 }
 
-void PowerTracingAgent::StopTracing(const OutputCallback& callback) {
+void PowerTracingAgent::StopAgentTracing(
+    const StopAgentTracingCallback& callback) {
   // No tracing session in progress.
   if (!is_tracing_)
     return;
 
   // Stop tracing & collect logs.
-  OutputCallback on_stop_power_tracing_done_callback = base::Bind(
-      &PowerTracingAgent::OnStopTracingDone, base::Unretained(this), callback);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&PowerTracingAgent::FlushOnThread, base::Unretained(this),
-                 on_stop_power_tracing_done_callback));
+      base::Bind(&PowerTracingAgent::FlushOnThread,
+                 base::Unretained(this),
+                 callback));
 }
 
 void PowerTracingAgent::OnStopTracingDone(
-    const OutputCallback& callback,
+    const StopAgentTracingCallback& callback,
     const scoped_refptr<base::RefCountedString>& result) {
   is_tracing_ = false;
   // Pass the serialized events.
-  callback.Run(result);
+  callback.Run(GetTracingAgentName(), GetTraceEventLabel(), result);
 }
 
-// static
-PowerTracingAgent* PowerTracingAgent::GetInstance() {
-  return base::Singleton<PowerTracingAgent>::get();
-}
-
-void PowerTracingAgent::FlushOnThread(const OutputCallback& callback) {
+void PowerTracingAgent::FlushOnThread(
+    const StopAgentTracingCallback& callback) {
   // Pass the result to the UI Thread.
 
   // TODO(prabhur) StopTracing & GetLog need to be called on a
@@ -66,8 +83,24 @@ void PowerTracingAgent::FlushOnThread(const OutputCallback& callback) {
   battor_trace_provider_->GetLog(&battor_logs);
   scoped_refptr<base::RefCountedString> result =
       base::RefCountedString::TakeString(&battor_logs);
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(callback, result));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&PowerTracingAgent::OnStopTracingDone,
+                 base::Unretained(this),
+                 callback,
+                 result));
+}
+
+bool PowerTracingAgent::SupportsExplicitClockSync() {
+  // TODO(zhenw): return true after implementing explicit clock sync.
+  return false;
+}
+
+void PowerTracingAgent::RecordClockSyncMarker(
+    int sync_id,
+    const RecordClockSyncMarkerCallback& callback) {
+  DCHECK(SupportsExplicitClockSync());
+  // TODO(zhenw): implement explicit clock sync.
 }
 
 }  // namespace content

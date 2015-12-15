@@ -14,6 +14,9 @@ namespace content {
 
 namespace {
 
+const char kChromeTraceLabel[] = "traceEvents";
+const char kMetadataTraceLabel[] = "metadata";
+
 class StringTraceDataEndpoint : public TracingController::TraceDataEndpoint {
  public:
   typedef base::Callback<void(scoped_ptr<const base::DictionaryValue>,
@@ -118,7 +121,7 @@ class StringTraceDataSink : public TracingController::TraceDataSink {
   void AddTraceChunk(const std::string& chunk) override {
     std::string trace_string;
     if (trace_.empty())
-      trace_string = "{\"traceEvents\":[";
+      trace_string = "{\"" + std::string(kChromeTraceLabel) + "\":[";
     else
       trace_string = ",";
     trace_string += chunk;
@@ -132,24 +135,17 @@ class StringTraceDataSink : public TracingController::TraceDataSink {
     endpoint_->ReceiveTraceChunk(chunk);
   }
 
-  void SetSystemTrace(const std::string& data) override {
-    system_trace_ = data;
-  }
-
-  void SetPowerTrace(const std::string& data) override { power_trace_ = data; }
-
   void Close() override {
     AddTraceChunkAndPassToEndpoint("]");
-    if (!system_trace_.empty())
-      AddTraceChunkAndPassToEndpoint(",\"systemTraceEvents\": " +
-                                     system_trace_);
+
+    for (auto const &it : GetAgentTrace())
+      AddTraceChunkAndPassToEndpoint(",\"" + it.first + "\": " + it.second);
+
     std::string metadataJSON;
     if (base::JSONWriter::Write(*GetMetadataCopy(), &metadataJSON) &&
-        !metadataJSON.empty())
-      AddTraceChunkAndPassToEndpoint(",\"metadata\": " + metadataJSON);
-    if (!power_trace_.empty()) {
-      AddTraceChunkAndPassToEndpoint(",\"powerTraceAsString\": " +
-                                     power_trace_);
+        !metadataJSON.empty()) {
+      AddTraceChunkAndPassToEndpoint(
+          ",\"" + std::string(kMetadataTraceLabel) + "\": " + metadataJSON);
     }
 
     AddTraceChunkAndPassToEndpoint("}");
@@ -162,8 +158,6 @@ class StringTraceDataSink : public TracingController::TraceDataSink {
 
   scoped_refptr<TracingController::TraceDataEndpoint> endpoint_;
   std::string trace_;
-  std::string system_trace_;
-  std::string power_trace_;
 
   DISALLOW_COPY_AND_ASSIGN(StringTraceDataSink);
 };
@@ -183,12 +177,6 @@ class CompressedStringTraceDataSink : public TracingController::TraceDataSink {
         base::Bind(&CompressedStringTraceDataSink::AddTraceChunkOnFileThread,
                    this, chunk_ptr));
   }
-
-  void SetSystemTrace(const std::string& data) override {
-    system_trace_ = data;
-  }
-
-  void SetPowerTrace(const std::string& data) override { power_trace_ = data; }
 
   void Close() override {
     BrowserThread::PostTask(
@@ -227,7 +215,7 @@ class CompressedStringTraceDataSink : public TracingController::TraceDataSink {
     DCHECK_CURRENTLY_ON(BrowserThread::FILE);
     std::string trace;
     if (compressed_trace_data_.empty())
-      trace = "{\"traceEvents\":[";
+      trace = "{\"" + std::string(kChromeTraceLabel) + "\":[";
     else
       trace = ",";
     trace += chunk_ptr->data();
@@ -269,23 +257,23 @@ class CompressedStringTraceDataSink : public TracingController::TraceDataSink {
     if (!OpenZStreamOnFileThread())
       return;
 
-    if (compressed_trace_data_.empty())
-      AddTraceChunkAndCompressOnFileThread("{\"traceEvents\":[", false);
-
-    AddTraceChunkAndCompressOnFileThread("]", false);
-    if (!system_trace_.empty()) {
+    if (compressed_trace_data_.empty()) {
       AddTraceChunkAndCompressOnFileThread(
-          ",\"systemTraceEvents\": " + system_trace_, false);
+          "{\"" + std::string(kChromeTraceLabel) + "\":[", false);
     }
+    AddTraceChunkAndCompressOnFileThread("]", false);
+
+    for (auto const &it : GetAgentTrace()) {
+      AddTraceChunkAndCompressOnFileThread(
+          ",\"" + it.first + "\": " + it.second, false);
+    }
+
     std::string metadataJSON;
     if (base::JSONWriter::Write(*GetMetadataCopy(), &metadataJSON) &&
         !metadataJSON.empty()) {
-      AddTraceChunkAndCompressOnFileThread(",\"metadata\": " + metadataJSON,
-                                           false);
-    }
-    if (!power_trace_.empty()) {
       AddTraceChunkAndCompressOnFileThread(
-          ",\"powerTraceAsString\": " + power_trace_, false);
+          ",\"" + std::string(kMetadataTraceLabel) + "\": " + metadataJSON,
+          false);
     }
     AddTraceChunkAndCompressOnFileThread("}", true);
 
@@ -300,8 +288,6 @@ class CompressedStringTraceDataSink : public TracingController::TraceDataSink {
   scoped_ptr<z_stream> stream_;
   bool already_tried_open_;
   std::string compressed_trace_data_;
-  std::string system_trace_;
-  std::string power_trace_;
 
   DISALLOW_COPY_AND_ASSIGN(CompressedStringTraceDataSink);
 };
@@ -311,6 +297,19 @@ class CompressedStringTraceDataSink : public TracingController::TraceDataSink {
 TracingController::TraceDataSink::TraceDataSink() {}
 
 TracingController::TraceDataSink::~TraceDataSink() {}
+
+void TracingController::TraceDataSink::AddAgentTrace(
+    const std::string& trace_label,
+    const std::string& trace_data) {
+  DCHECK(additional_tracing_agent_trace_.find(trace_label) ==
+         additional_tracing_agent_trace_.end());
+  additional_tracing_agent_trace_[trace_label] = trace_data;
+}
+
+const std::map<std::string, std::string>&
+    TracingController::TraceDataSink::GetAgentTrace() const {
+  return additional_tracing_agent_trace_;
+}
 
 void TracingController::TraceDataSink::AddMetadata(
     const base::DictionaryValue& data) {

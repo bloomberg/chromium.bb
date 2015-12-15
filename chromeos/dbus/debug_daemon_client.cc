@@ -25,10 +25,14 @@
 
 namespace {
 
-// Used in DebugDaemonClient::EmptySystemStopTracingCallback().
-void EmptyStopSystemTracingCallbackBody(
-  const scoped_refptr<base::RefCountedString>& unused_result) {
-}
+const char kCrOSTracingAgentName[] = "cros";
+const char kCrOSTraceLabel[] = "systemTraceEvents";
+
+// Used in DebugDaemonClient::EmptyStopAgentTracingCallback().
+void EmptyStopAgentTracingCallbackBody(
+    const std::string& agent_name,
+    const std::string& events_label,
+    const scoped_refptr<base::RefCountedString>& unused_result) {}
 
 }  // namespace
 
@@ -194,7 +198,13 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
                    callback));
   }
 
-  void StartSystemTracing() override {
+  // base::trace_event::TracingAgent implementation.
+  std::string GetTracingAgentName() override { return kCrOSTracingAgentName; }
+
+  std::string GetTraceEventLabel() override { return kCrOSTraceLabel; }
+
+  bool StartAgentTracing(
+      const base::trace_event::TraceConfig& trace_config) override {
     dbus::MethodCall method_call(
         debugd::kDebugdInterface,
         debugd::kSystraceStart);
@@ -207,35 +217,37 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
         dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::Bind(&DebugDaemonClientImpl::OnStartMethod,
                    weak_ptr_factory_.GetWeakPtr()));
+    return true;
   }
 
-  bool RequestStopSystemTracing(
-      scoped_refptr<base::TaskRunner> task_runner,
-      const StopSystemTracingCallback& callback) override {
+  void StopAgentTracing(const StopAgentTracingCallback& callback) override {
+    DCHECK(stop_agent_tracing_task_runner_);
     if (pipe_reader_ != NULL) {
       LOG(ERROR) << "Busy doing StopSystemTracing";
-      return false;
+      return;
     }
 
-    pipe_reader_.reset(new PipeReaderForString(
-        task_runner,
-        base::Bind(&DebugDaemonClientImpl::OnIOComplete,
-                   weak_ptr_factory_.GetWeakPtr())));
+    pipe_reader_.reset(
+        new PipeReaderForString(stop_agent_tracing_task_runner_,
+                                base::Bind(&DebugDaemonClientImpl::OnIOComplete,
+                                           weak_ptr_factory_.GetWeakPtr())));
 
     base::File pipe_write_end = pipe_reader_->StartIO();
     // Create dbus::FileDescriptor on the worker thread; on return we'll
     // issue the D-Bus request to stop tracing and collect results.
     base::PostTaskAndReplyWithResult(
-        task_runner.get(),
-        FROM_HERE,
+        stop_agent_tracing_task_runner_.get(), FROM_HERE,
         base::Bind(
             &DebugDaemonClientImpl::CreateFileDescriptorToStopSystemTracing,
             base::Passed(&pipe_write_end)),
         base::Bind(
             &DebugDaemonClientImpl::OnCreateFileDescriptorRequestStopSystem,
-            weak_ptr_factory_.GetWeakPtr(),
-            callback));
-    return true;
+            weak_ptr_factory_.GetWeakPtr(), callback));
+  }
+
+  void SetStopAgentTracingTaskRunner(
+      scoped_refptr<base::TaskRunner> task_runner) override {
+    stop_agent_tracing_task_runner_ = task_runner;
   }
 
   void TestICMP(const std::string& ip_address,
@@ -557,7 +569,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
 
   // Called when a CheckValidity response is received.
   void OnCreateFileDescriptorRequestStopSystem(
-      const StopSystemTracingCallback& callback,
+      const StopAgentTracingCallback& callback,
       scoped_ptr<dbus::FileDescriptor> file_descriptor) {
     DCHECK(file_descriptor);
 
@@ -572,14 +584,13 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
 
     DVLOG(1) << "Requesting a systrace stop";
     debugdaemon_proxy_->CallMethod(
-        &method_call,
-        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&DebugDaemonClientImpl::OnRequestStopSystemTracing,
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&DebugDaemonClientImpl::OnStopAgentTracing,
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
-  // Called when a response for RequestStopSystemTracing() is received.
-  void OnRequestStopSystemTracing(dbus::Response* response) {
+  // Called when a response for StopAgentTracing() is received.
+  void OnStopAgentTracing(dbus::Response* response) {
     if (!response) {
       LOG(ERROR) << "Failed to request systrace stop";
       // If debugd crashes or completes I/O before this message is processed
@@ -602,13 +613,15 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
   void OnIOComplete() {
     std::string pipe_data;
     pipe_reader_->GetData(&pipe_data);
-    callback_.Run(base::RefCountedString::TakeString(&pipe_data));
+    callback_.Run(GetTracingAgentName(), GetTraceEventLabel(),
+                  base::RefCountedString::TakeString(&pipe_data));
     pipe_reader_.reset();
   }
 
   dbus::ObjectProxy* debugdaemon_proxy_;
   scoped_ptr<PipeReaderForString> pipe_reader_;
-  StopSystemTracingCallback callback_;
+  StopAgentTracingCallback callback_;
+  scoped_refptr<base::TaskRunner> stop_agent_tracing_task_runner_;
   base::WeakPtrFactory<DebugDaemonClientImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DebugDaemonClientImpl);
@@ -621,9 +634,9 @@ DebugDaemonClient::~DebugDaemonClient() {
 }
 
 // static
-DebugDaemonClient::StopSystemTracingCallback
-DebugDaemonClient::EmptyStopSystemTracingCallback() {
-  return base::Bind(&EmptyStopSystemTracingCallbackBody);
+DebugDaemonClient::StopAgentTracingCallback
+DebugDaemonClient::EmptyStopAgentTracingCallback() {
+  return base::Bind(&EmptyStopAgentTracingCallbackBody);
 }
 
 // static

@@ -41,7 +41,10 @@ class TracingController {
     TraceDataSink();
 
     virtual void AddTraceChunk(const std::string& chunk) {}
-    virtual void SetSystemTrace(const std::string& data) {}
+
+    // Add a TracingAgent's trace to the data sink.
+    virtual void AddAgentTrace(const std::string& trace_label,
+                               const std::string& trace_data);
 
     // Notice that TracingController adds some default metadata when
     // StopTracing is called, which may override metadata that you would
@@ -50,17 +53,20 @@ class TracingController {
     virtual scoped_ptr<const base::DictionaryValue> GetMetadataCopy() const;
     virtual void SetMetadataFilterPredicate(
         const MetadataFilterPredicate& metadata_filter_predicate);
-    // TODO(prabhur) Replace all the Set* functions with a generic function:
-    // TraceDataSink::AppendAdditionalData(const std::string& name,
-    // const std::string& trace_data)
-    virtual void SetPowerTrace(const std::string& data) {}
     virtual void Close() {}
 
    protected:
     friend class base::RefCountedThreadSafe<TraceDataSink>;
+
+    // Get a map of TracingAgent's data, which is previously added by
+    // AddAgentTrace(). The map's key is the trace label and the map's value is
+    // the trace data.
+    virtual const std::map<std::string, std::string>& GetAgentTrace() const;
+
     virtual ~TraceDataSink();
 
    private:
+    std::map<std::string, std::string> additional_tracing_agent_trace_;
     MetadataFilterPredicate metadata_filter_predicate_;
     base::DictionaryValue metadata_;
   };

@@ -15,6 +15,13 @@
 #include "base/thread_task_runner_handle.h"
 #include "chromeos/chromeos_switches.h"
 
+namespace {
+
+const char kCrOSTracingAgentName[] = "cros";
+const char kCrOSTraceLabel[] = "systemTraceEvents";
+
+}  // namespace
+
 namespace chromeos {
 
 FakeDebugDaemonClient::FakeDebugDaemonClient()
@@ -38,15 +45,29 @@ void FakeDebugDaemonClient::SetDebugMode(const std::string& subsystem,
                                          const SetDebugModeCallback& callback) {
   callback.Run(false);
 }
-void FakeDebugDaemonClient::StartSystemTracing() {}
 
-bool FakeDebugDaemonClient::RequestStopSystemTracing(
-    scoped_refptr<base::TaskRunner> task_runner,
-    const StopSystemTracingCallback& callback) {
-  std::string no_data;
-  callback.Run(base::RefCountedString::TakeString(&no_data));
+std::string FakeDebugDaemonClient::GetTracingAgentName() {
+  return kCrOSTracingAgentName;
+}
+
+std::string FakeDebugDaemonClient::GetTraceEventLabel() {
+  return kCrOSTraceLabel;
+}
+
+bool FakeDebugDaemonClient::StartAgentTracing(
+    const base::trace_event::TraceConfig& trace_config) {
   return true;
 }
+
+void FakeDebugDaemonClient::StopAgentTracing(
+    const StopAgentTracingCallback& callback) {
+  std::string no_data;
+  callback.Run(GetTracingAgentName(), GetTraceEventLabel(),
+               base::RefCountedString::TakeString(&no_data));
+}
+
+void FakeDebugDaemonClient::SetStopAgentTracingTaskRunner(
+    scoped_refptr<base::TaskRunner> task_runner) {}
 
 void FakeDebugDaemonClient::GetRoutes(bool numeric,
                                       bool ipv6,

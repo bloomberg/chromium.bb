@@ -64,6 +64,8 @@
       'trace_event/trace_log_constants.cc',
       'trace_event/trace_sampling_thread.cc',
       'trace_event/trace_sampling_thread.h',
+      'trace_event/tracing_agent.cc',
+      'trace_event/tracing_agent.h',
       'trace_event/winheap_dump_provider_win.cc',
       'trace_event/winheap_dump_provider_win.h',
     ],

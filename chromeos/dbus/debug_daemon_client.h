@@ -11,6 +11,7 @@
 #include "base/files/file.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/task_runner.h"
+#include "base/trace_event/tracing_agent.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -18,7 +19,9 @@
 namespace chromeos {
 
 // DebugDaemonClient is used to communicate with the debug daemon.
-class CHROMEOS_EXPORT DebugDaemonClient : public DBusClient {
+class CHROMEOS_EXPORT DebugDaemonClient
+    : public DBusClient,
+      public base::trace_event::TracingAgent {
  public:
   ~DebugDaemonClient() override;
 
@@ -113,21 +116,11 @@ class CHROMEOS_EXPORT DebugDaemonClient : public DBusClient {
   // Gets list of user log files that must be read by Chrome.
   virtual void GetUserLogFiles(const GetLogsCallback& callback) = 0;
 
-  // Requests to start system/kernel tracing.
-  virtual void StartSystemTracing() = 0;
+  virtual void SetStopAgentTracingTaskRunner(
+      scoped_refptr<base::TaskRunner> task_runner) = 0;
 
-  // Called once RequestStopSystemTracing() is complete. Takes one parameter:
-  // - result: the data collected while tracing was active
-  typedef base::Callback<void(const scoped_refptr<base::RefCountedString>&
-      result)> StopSystemTracingCallback;
-
-  // Requests to stop system tracing and calls |callback| when completed.
-  virtual bool RequestStopSystemTracing(
-      scoped_refptr<base::TaskRunner> task_runner,
-      const StopSystemTracingCallback& callback) = 0;
-
-  // Returns an empty SystemTracingCallback that does nothing.
-  static StopSystemTracingCallback EmptyStopSystemTracingCallback();
+  // Returns an empty StopAgentTracingCallback that does nothing.
+  static StopAgentTracingCallback EmptyStopAgentTracingCallback();
 
   // Called once TestICMP() is complete. Takes two parameters:
   // - succeeded: information was obtained successfully.

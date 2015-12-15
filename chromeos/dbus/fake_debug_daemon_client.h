@@ -27,10 +27,13 @@ class CHROMEOS_EXPORT FakeDebugDaemonClient : public DebugDaemonClient {
                      const GetDebugLogsCallback& callback) override;
   void SetDebugMode(const std::string& subsystem,
                     const SetDebugModeCallback& callback) override;
-  void StartSystemTracing() override;
-  bool RequestStopSystemTracing(
-      scoped_refptr<base::TaskRunner> task_runner,
-      const StopSystemTracingCallback& callback) override;
+  std::string GetTracingAgentName() override;
+  std::string GetTraceEventLabel() override;
+  bool StartAgentTracing(
+      const base::trace_event::TraceConfig& trace_config) override;
+  void StopAgentTracing(const StopAgentTracingCallback& callback) override;
+  void SetStopAgentTracingTaskRunner(
+      scoped_refptr<base::TaskRunner> task_runner) override;
   void GetRoutes(bool numeric,
                  bool ipv6,
                  const GetRoutesCallback& callback) override;

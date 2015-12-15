@@ -45,6 +45,9 @@ namespace {
 base::LazyInstance<TracingControllerImpl>::Leaky g_controller =
     LAZY_INSTANCE_INITIALIZER;
 
+const char kChromeTracingAgentName[] = "chrome";
+const char kETWTracingAgentName[] = "etw";
+const char kChromeTraceLabel[] = "traceEvents";
 
 std::string GetNetworkTypeString() {
   switch (net::NetworkChangeNotifier::GetConnectionType()) {
@@ -145,14 +148,8 @@ TracingControllerImpl::TracingControllerImpl()
       approximate_event_count_(0),
       pending_memory_dump_ack_count_(0),
       failed_memory_dump_count_(0),
-    // Tracing may have been enabled by ContentMainRunner if kTraceStartup
-    // is specified in command line.
-#if defined(OS_CHROMEOS) || defined(OS_WIN)
-      is_system_tracing_(false),
-#endif
       is_tracing_(false),
-      is_monitoring_(false),
-      is_power_tracing_(false) {
+      is_monitoring_(false) {
   base::trace_event::MemoryDumpManager::GetInstance()->Initialize(
       this /* delegate */, true /* is_coordinator */);
 
@@ -210,10 +207,12 @@ bool TracingControllerImpl::StartTracing(
     const TraceConfig& trace_config,
     const StartTracingDoneCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(additional_tracing_agents_.empty());
 
   if (!can_start_tracing())
     return false;
   is_tracing_ = true;
+  start_tracing_done_callback_ = callback;
 
 #if defined(OS_ANDROID)
   if (pending_get_categories_done_callback_.is_null())
@@ -221,46 +220,33 @@ bool TracingControllerImpl::StartTracing(
 #endif
 
   if (trace_config.IsSystraceEnabled()) {
-    DCHECK(!is_power_tracing_);
-    is_power_tracing_ = PowerTracingAgent::GetInstance()->StartTracing();
+    if (PowerTracingAgent::GetInstance()->StartAgentTracing(trace_config))
+      additional_tracing_agents_.push_back(PowerTracingAgent::GetInstance());
 #if defined(OS_CHROMEOS)
-    DCHECK(!is_system_tracing_);
-    chromeos::DBusThreadManager::Get()->GetDebugDaemonClient()->
-      StartSystemTracing();
-    is_system_tracing_ = true;
+    chromeos::DebugDaemonClient* debug_daemon =
+        chromeos::DBusThreadManager::Get()->GetDebugDaemonClient();
+    if (debug_daemon && debug_daemon->StartAgentTracing(trace_config)) {
+      debug_daemon->SetStopAgentTracingTaskRunner(
+          BrowserThread::GetBlockingPool());
+      additional_tracing_agents_.push_back(
+          chromeos::DBusThreadManager::Get()->GetDebugDaemonClient());
+    }
 #elif defined(OS_WIN)
-    DCHECK(!is_system_tracing_);
-    is_system_tracing_ =
-        EtwSystemEventConsumer::GetInstance()->StartSystemTracing();
+    if (EtwSystemEventConsumer::GetInstance()->StartAgentTracing(
+        trace_config)) {
+      additional_tracing_agents_.push_back(
+          EtwSystemEventConsumer::GetInstance());
+    }
 #endif
   }
 
   // TraceLog may have been enabled in startup tracing before threads are ready.
   if (TraceLog::GetInstance()->IsEnabled())
     return true;
-
-  base::Closure on_start_tracing_done_callback =
-      base::Bind(&TracingControllerImpl::OnStartTracingDone,
-                 base::Unretained(this),
-                 trace_config, callback);
-  if (!BrowserThread::PostTask(
-          BrowserThread::FILE, FROM_HERE,
-          base::Bind(&TracingControllerImpl::SetEnabledOnFileThread,
-                     base::Unretained(this), trace_config,
-                     base::trace_event::TraceLog::RECORDING_MODE,
-                     on_start_tracing_done_callback))) {
-    // BrowserThread::PostTask fails if the threads haven't been created yet,
-    // so it should be safe to just use TraceLog::SetEnabled directly.
-    base::trace_event::TraceLog::GetInstance()->SetEnabled(
-        trace_config, base::trace_event::TraceLog::RECORDING_MODE);
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            on_start_tracing_done_callback);
-  }
-
-  return true;
+  return StartAgentTracing(trace_config);
 }
 
-void TracingControllerImpl::OnStartTracingDone(
+void TracingControllerImpl::OnStartAgentTracingDone(
     const TraceConfig& trace_config,
     const StartTracingDoneCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -325,63 +311,15 @@ void TracingControllerImpl::OnStopTracingDone() {
   pending_stop_tracing_ack_count_ = trace_message_filters_.size() + 1;
   pending_stop_tracing_filters_ = trace_message_filters_;
 
-#if defined(OS_CHROMEOS) || defined(OS_WIN)
-  if (is_system_tracing_) {
-    // Disable system tracing.
-    is_system_tracing_ = false;
-    ++pending_stop_tracing_ack_count_;
-
-#if defined(OS_CHROMEOS)
-    scoped_refptr<base::TaskRunner> task_runner =
-        BrowserThread::GetBlockingPool();
-    chromeos::DBusThreadManager::Get()
-        ->GetDebugDaemonClient()
-        ->RequestStopSystemTracing(
-            task_runner,
-            base::Bind(&TracingControllerImpl::OnEndSystemTracingAcked,
-                       base::Unretained(this)));
-#elif defined(OS_WIN)
-    EtwSystemEventConsumer::GetInstance()->StopSystemTracing(
-        base::Bind(&TracingControllerImpl::OnEndSystemTracingAcked,
-                   base::Unretained(this)));
-#endif
-  }
-#endif  // defined(OS_CHROMEOS) || defined(OS_WIN)
-
-  if (is_power_tracing_) {
-    is_power_tracing_ = false;
-    ++pending_stop_tracing_ack_count_;
-    PowerTracingAgent::GetInstance()->StopTracing(
-        base::Bind(&TracingControllerImpl::OnEndPowerTracingAcked,
+  pending_stop_tracing_ack_count_ += additional_tracing_agents_.size();
+  for (auto it : additional_tracing_agents_) {
+    it->StopAgentTracing(
+        base::Bind(&TracingControllerImpl::OnEndAgentTracingAcked,
                    base::Unretained(this)));
   }
+  additional_tracing_agents_.clear();
 
-  // Handle special case of zero child processes by immediately flushing the
-  // trace log. Once the flush has completed the caller will be notified that
-  // tracing has ended.
-  if (pending_stop_tracing_ack_count_ == 1) {
-    // Flush/cancel asynchronously now, because we don't have any children to
-    // wait for.
-    if (trace_data_sink_) {
-      TraceLog::GetInstance()->Flush(
-          base::Bind(&TracingControllerImpl::OnLocalTraceDataCollected,
-                     base::Unretained(this)),
-          true);
-    } else {
-      TraceLog::GetInstance()->CancelTracing(
-          base::Bind(&TracingControllerImpl::OnLocalTraceDataCollected,
-                     base::Unretained(this)));
-    }
-  }
-
-  // Notify all child processes.
-  for (TraceMessageFilterSet::iterator it = trace_message_filters_.begin();
-      it != trace_message_filters_.end(); ++it) {
-    if (trace_data_sink_)
-      it->get()->SendEndTracing();
-    else
-      it->get()->SendCancelTracing();
-  }
+  StopAgentTracing(StopAgentTracingCallback());
 }
 
 bool TracingControllerImpl::StartMonitoring(
@@ -738,39 +676,26 @@ void TracingControllerImpl::OnStopTracingAcked(
   }
 }
 
-void TracingControllerImpl::OnEndPowerTracingAcked(
+void TracingControllerImpl::OnEndAgentTracingAcked(
+    const std::string& agent_name,
+    const std::string& events_label,
     const scoped_refptr<base::RefCountedString>& events_str_ptr) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (trace_data_sink_.get()) {
-    std::string json_string = base::GetQuotedJSONString(events_str_ptr->data());
-    trace_data_sink_->SetPowerTrace(json_string);
+    std::string json_string;
+    if (agent_name == kETWTracingAgentName) {
+      // The Windows kernel events are kept into a JSON format stored as string
+      // and must not be escaped.
+      json_string = events_str_ptr->data();
+    } else {
+      json_string = base::GetQuotedJSONString(events_str_ptr->data());
+    }
+    trace_data_sink_->AddAgentTrace(events_label, json_string);
   }
   std::vector<std::string> category_groups;
   OnStopTracingAcked(NULL, category_groups);
 }
-
-#if defined(OS_CHROMEOS) || defined(OS_WIN)
-void TracingControllerImpl::OnEndSystemTracingAcked(
-    const scoped_refptr<base::RefCountedString>& events_str_ptr) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  if (trace_data_sink_.get()) {
-#if defined(OS_WIN)
-    // The Windows kernel events are kept into a JSon format stored as string
-    // and must not be escaped.
-    std::string json_string = events_str_ptr->data();
-#else
-    std::string json_string =
-        base::GetQuotedJSONString(events_str_ptr->data());
-#endif
-    trace_data_sink_->SetSystemTrace(json_string);
-  }
-  DCHECK(!is_system_tracing_);
-  std::vector<std::string> category_groups;
-  OnStopTracingAcked(NULL, category_groups);
-}
-#endif
 
 void TracingControllerImpl::OnCaptureMonitoringSnapshotAcked(
     TraceMessageFilter* trace_message_filter) {
@@ -922,6 +847,85 @@ void TracingControllerImpl::UnregisterTracingUI(TracingUI* tracing_ui) {
   std::set<TracingUI*>::iterator it = tracing_uis_.find(tracing_ui);
   DCHECK(it != tracing_uis_.end());
   tracing_uis_.erase(it);
+}
+
+std::string TracingControllerImpl::GetTracingAgentName() {
+  return kChromeTracingAgentName;
+}
+
+std::string TracingControllerImpl::GetTraceEventLabel() {
+  return kChromeTraceLabel;
+}
+
+bool TracingControllerImpl::StartAgentTracing(
+    const base::trace_event::TraceConfig& trace_config) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  base::Closure on_start_tracing_done_callback =
+      base::Bind(&TracingControllerImpl::OnStartAgentTracingDone,
+                 base::Unretained(this),
+                 trace_config, start_tracing_done_callback_);
+  if (!BrowserThread::PostTask(
+          BrowserThread::FILE, FROM_HERE,
+          base::Bind(&TracingControllerImpl::SetEnabledOnFileThread,
+                     base::Unretained(this), trace_config,
+                     base::trace_event::TraceLog::RECORDING_MODE,
+                     on_start_tracing_done_callback))) {
+    // BrowserThread::PostTask fails if the threads haven't been created yet,
+    // so it should be safe to just use TraceLog::SetEnabled directly.
+    base::trace_event::TraceLog::GetInstance()->SetEnabled(
+        trace_config, base::trace_event::TraceLog::RECORDING_MODE);
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            on_start_tracing_done_callback);
+  }
+
+  return true;
+}
+
+void TracingControllerImpl::StopAgentTracing(
+    const StopAgentTracingCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  // Handle special case of zero child processes by immediately flushing the
+  // trace log. Once the flush has completed the caller will be notified that
+  // tracing has ended.
+  if (pending_stop_tracing_ack_count_ == 1) {
+    // Flush/cancel asynchronously now, because we don't have any children to
+    // wait for.
+    if (trace_data_sink_) {
+      TraceLog::GetInstance()->Flush(
+          base::Bind(&TracingControllerImpl::OnLocalTraceDataCollected,
+                     base::Unretained(this)),
+          true);
+    } else {
+      TraceLog::GetInstance()->CancelTracing(
+          base::Bind(&TracingControllerImpl::OnLocalTraceDataCollected,
+                     base::Unretained(this)));
+    }
+  }
+
+  // Notify all child processes.
+  for (auto it : trace_message_filters_) {
+    if (trace_data_sink_)
+      it->SendEndTracing();
+    else
+      it->SendCancelTracing();
+  }
+}
+
+bool TracingControllerImpl::SupportsExplicitClockSync() {
+  // TODO(zhenw): return true after implementing explicit clock sync.
+  return false;
+}
+
+void TracingControllerImpl::RecordClockSyncMarker(
+    int sync_id,
+    const RecordClockSyncMarkerCallback& callback) {
+  DCHECK(SupportsExplicitClockSync());
+  // TODO(zhenw): implement explicit clock sync.
+}
+
+void TracingControllerImpl::IssueClockSyncMarker() {
+  // TODO(zhenw): implement explicit clock sync.
 }
 
 void TracingControllerImpl::RequestGlobalMemoryDump(
