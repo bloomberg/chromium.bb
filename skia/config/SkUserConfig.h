@@ -233,6 +233,11 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #ifndef    SK_SUPPORT_LEGACY_HAIR_IGNORES_CAPS
 #   define SK_SUPPORT_LEGACY_HAIR_IGNORES_CAPS
 #endif
+
+#ifndef    SK_SUPPORT_LEGACY_BITMAP_SAMPLER_BIAS
+#   define SK_SUPPORT_LEGACY_BITMAP_SAMPLER_BIAS
+#endif
+
 ///////////////////////// Imported from BUILD.gn and skia_common.gypi
 
 /* In some places Skia can use static initializers for global initialization,
