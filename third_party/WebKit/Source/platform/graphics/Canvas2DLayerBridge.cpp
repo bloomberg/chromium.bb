@@ -324,8 +324,9 @@ void Canvas2DLayerBridge::disableDeferral()
     flushRecordingOnly();
     m_recorder.clear();
     // install the current matrix/clip stack onto the immediate canvas
-    if (m_imageBuffer)
-        m_imageBuffer->resetCanvas(getOrCreateSurface()->getCanvas());
+    SkSurface* surface = getOrCreateSurface();
+    if (m_imageBuffer && surface)
+        m_imageBuffer->resetCanvas(surface->getCanvas());
 }
 
 void Canvas2DLayerBridge::setImageBuffer(ImageBuffer* imageBuffer)
@@ -526,7 +527,7 @@ bool Canvas2DLayerBridge::restoreSurface()
         // Current paradigm does support switching from accelerated to non-accelerated, which would be tricky
         // due to changes to the layer tree, which can only happen at specific times during the document lifecycle.
         // Therefore, we can only accept the restored surface if it is accelerated.
-        if (surface.get() && surfaceIsAccelerated) {
+        if (surface && surfaceIsAccelerated) {
             m_surface = surface.release();
             // FIXME: draw sad canvas picture into new buffer crbug.com/243842
         }
@@ -563,12 +564,12 @@ bool Canvas2DLayerBridge::prepareMailbox(WebExternalTextureMailbox* outMailbox, 
         m_lastImageId = 0;
         return false;
     }
-    if (!checkSurfaceValid())
+
+    RefPtr<SkImage> image = newImageSnapshot(PreferAcceleration);
+    if (!image)
         return false;
 
     WebGraphicsContext3D* webContext = context();
-
-    RefPtr<SkImage> image = newImageSnapshot(PreferAcceleration);
 
     // Early exit if canvas was not drawn to since last prepareMailbox
     GLenum filter = m_filterQuality == kNone_SkFilterQuality ? GL_NEAREST : GL_LINEAR;
@@ -762,7 +763,8 @@ PassRefPtr<SkImage> Canvas2DLayerBridge::newImageSnapshot(AccelerationHint hint)
 {
     if (!checkSurfaceValid())
         return nullptr;
-    getOrCreateSurface(hint);
+    if (!getOrCreateSurface(hint))
+        return nullptr;
     flush();
     // A readback operation may alter the texture parameters, which may affect
     // the compositor's behavior. Therefore, we must trigger copy-on-write
