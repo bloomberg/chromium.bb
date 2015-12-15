@@ -28,7 +28,7 @@ def _GetDirAbove(dirname):
 # Manually check for the command-line flag. (This isn't quite right, since it
 # ignores, e.g., "--", but it's close enough.)
 if "--use_bundled_pylibs" in sys.argv[1:]:
-  sys.path.insert(0, os.path.join(_GetDirAbove("public"), "public/third_party"))
+  sys.path.insert(0, os.path.join(_GetDirAbove("mojo"), "third_party"))
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                 "pylib"))
