@@ -89,6 +89,58 @@ public class TouchInputHandler implements TouchInputHandlerInterface {
      */
     private boolean mIsDragging = false;
 
+    /**
+     * This class provides a NULL implementation which will be used until a real input
+     * strategy has been created and set.  Using this as the default implementation will prevent
+     * crashes if the owning class does not create/set a real InputStrategy before the host size
+     * information is received (or if the user interacts with the screen in that case).  This class
+     * has default values which will also allow the user to pan/zoom the desktop image until an
+     * InputStrategy implementation has been set.
+     */
+    private static class NullInputStrategy implements InputStrategyInterface {
+        NullInputStrategy() {}
+
+        @Override
+        public boolean onTap(int button) {
+            return false;
+        }
+
+        @Override
+        public boolean onPressAndHold(int button) {
+            return false;
+        }
+
+        @Override
+        public void onMotionEvent(MotionEvent event) {
+            return;
+        }
+
+        @Override
+        public void onScroll(float distanceX, float distanceY) {
+            return;
+        }
+
+        @Override
+        public void injectCursorMoveEvent(int x, int y) {
+            return;
+        }
+
+        @Override
+        public DesktopView.InputFeedbackType getShortPressFeedbackType() {
+            return DesktopView.InputFeedbackType.NONE;
+        }
+
+        @Override
+        public DesktopView.InputFeedbackType getLongPressFeedbackType() {
+            return DesktopView.InputFeedbackType.NONE;
+        }
+
+        @Override
+        public boolean isIndirectInputMode() {
+            return false;
+        }
+    }
+
     public TouchInputHandler(DesktopViewInterface viewer, Context context, RenderData renderData) {
         mViewer = viewer;
         mRenderData = renderData;
@@ -115,6 +167,8 @@ public class TouchInputHandler implements TouchInputHandlerInterface {
         mSwipeThreshold = 40 * density;
 
         mEdgeSlopInPx = ViewConfiguration.get(context).getScaledEdgeSlop();
+
+        mInputStrategy = new NullInputStrategy();
     }
 
     @Override
