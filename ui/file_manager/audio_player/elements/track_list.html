@@ -6,6 +6,7 @@
 
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/font-roboto/roboto.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-ripple/paper-ripple.html">
 
 <dom-module id="track-list">
   <link rel="import" type="css" href="track_list.css">
@@ -17,6 +18,7 @@
           <div class="data-title">[[item.title]]</div>
           <div class="data-artist">[[item.artist]]</div>
         </div>
+        <paper-ripple initial-opacity="0.08"></paper-ripple>
       </div>
     </template>
   </template>
