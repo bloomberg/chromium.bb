@@ -42,7 +42,7 @@ WebRtcAudioDeviceImpl::WebRtcAudioDeviceImpl()
 WebRtcAudioDeviceImpl::~WebRtcAudioDeviceImpl() {
   DVLOG(1) << "WebRtcAudioDeviceImpl::~WebRtcAudioDeviceImpl()";
   DCHECK(main_thread_checker_.CalledOnValidThread());
-  Terminate();
+  DCHECK(!initialized_) << "Terminate must have been called.";
 }
 
 int32_t WebRtcAudioDeviceImpl::AddRef() const {
