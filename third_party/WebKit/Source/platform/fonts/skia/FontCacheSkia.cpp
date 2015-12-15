@@ -49,12 +49,13 @@
 #include <unicode/locid.h>
 
 #if !OS(WIN) && !OS(ANDROID)
-static SkStreamAsset* streamForFontconfigInterfaceId(int fontconfigInterfaceId)
+static PassRefPtr<SkTypeface> typefaceForFontconfigInterfaceIdAndTtcIndex(int fontconfigInterfaceId, int ttcIndex)
 {
     SkAutoTUnref<SkFontConfigInterface> fci(SkFontConfigInterface::RefGlobal());
     SkFontConfigInterface::FontIdentity fontIdentity;
     fontIdentity.fID = fontconfigInterfaceId;
-    return fci->openStream(fontIdentity);
+    fontIdentity.fTTCIndex = ttcIndex;
+    return adoptRef(fci->createTypeface(fontIdentity));
 }
 #endif
 
@@ -186,16 +187,9 @@ PassRefPtr<SkTypeface> FontCache::createTypeface(const FontDescription& fontDesc
 {
 #if !OS(WIN) && !OS(ANDROID)
     if (creationParams.creationType() == CreateFontByFciIdAndTtcIndex) {
-        SkTypeface* typeface = nullptr;
         if (Platform::current()->sandboxSupport())
-            typeface = SkTypeface::CreateFromStream(streamForFontconfigInterfaceId(creationParams.fontconfigInterfaceId()), creationParams.ttcIndex());
-        else
-            typeface = SkTypeface::CreateFromFile(creationParams.filename().data(), creationParams.ttcIndex());
-
-        if (typeface)
-            return adoptRef(typeface);
-        else
-            return nullptr;
+            return typefaceForFontconfigInterfaceIdAndTtcIndex(creationParams.fontconfigInterfaceId(), creationParams.ttcIndex());
+        return adoptRef(SkTypeface::CreateFromFile(creationParams.filename().data(), creationParams.ttcIndex()));
     }
 #endif
 

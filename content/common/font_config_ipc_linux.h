@@ -6,8 +6,9 @@
 #define CONTENT_COMMON_FONT_CONFIG_IPC_LINUX_H_
 
 #include "base/compiler_specific.h"
-#include "base/containers/hash_tables.h"
+#include "base/containers/mru_cache.h"
 #include "base/synchronization/lock.h"
+#include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkStream.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "third_party/skia/include/ports/SkFontConfigInterface.h"
@@ -16,7 +17,15 @@
 
 class SkString;
 
+namespace BASE_HASH_NAMESPACE {
+template <>
+struct hash<SkFontConfigInterface::FontIdentity> {
+  std::size_t operator()(const SkFontConfigInterface::FontIdentity& sp) const;
+};
+}
+
 namespace content {
+
 
 // FontConfig implementation for Skia that proxies out of process to get out
 // of the sandbox. See http://code.google.com/p/chromium/wiki/LinuxSandboxIPC
@@ -31,7 +40,10 @@ class FontConfigIPC : public SkFontConfigInterface {
                        SkString* outFamilyName,
                        SkTypeface::Style* outStyle) override;
 
-  SkStreamAsset* openStream(const FontIdentity&) override;
+  // Returns a new SkTypeface instance or a ref'ed one from the cache. The
+  // caller should adopt the pointer.
+  SkTypeface* createTypeface(const FontIdentity& identity) override
+      WARN_UNUSED_RESULT;
 
   enum Method {
     METHOD_MATCH = 0,
@@ -43,18 +55,26 @@ class FontConfigIPC : public SkFontConfigInterface {
   };
 
  private:
-  class MappedFontFile;
+  // Marking this private in Blink's implementation of SkFontConfigInterface
+  // since our caching implementation's efficacy is impaired if both
+  // createTypeface and openStream are used in parallel.
+  SkStreamAsset* openStream(const FontIdentity&) override;
 
-  // Removes |mapped_font_file| from |mapped_font_files_|.
-  // Does not delete the passed-in object.
-  void RemoveMappedFontFile(MappedFontFile* mapped_font_file);
+  SkMemoryStream* mapFileDescriptorToStream(int fd);
 
   const int fd_;
-  // Lock preventing multiple threads from opening font file and accessing
-  // |mapped_font_files_| map at the same time.
+  // Lock preventing multiple threads from creating a typeface and removing
+  // an element from |mapped_typefaces_| map at the same time.
   base::Lock lock_;
-  // Maps font identity ID to the memory-mapped file with font data.
-  base::hash_map<uint32_t, MappedFontFile*> mapped_font_files_;
+  // Practically, this hash_map definition means that we re-map the same font
+  // file multiple times if we receive createTypeface requests for multiple
+  // ttc-indices or styles but the same fontconfig interface id. Since the usage
+  // frequency of ttc indices is very low, and style is not used by clients of
+  // this API, this seems okay.
+  base::HashingMRUCache<FontIdentity, skia::RefPtr<SkTypeface>>
+      mapped_typefaces_;
+
+  DISALLOW_COPY_AND_ASSIGN(FontConfigIPC);
 };
 
 }  // namespace content
