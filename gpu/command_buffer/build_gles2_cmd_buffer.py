@@ -639,6 +639,8 @@ _STATES = {
 #                 deprecated in ES 3.
 # is_complete: The list of valid values of type are final and will not be
 #              modified during runtime.
+# validator: If set to False will prevent creation of a ValueValidator. Values
+#            are still expected to be checked for validity and will be tested.
 _NAMED_TYPE_INFO = {
   'BlitFilter': {
     'type': 'GLenum',
@@ -2050,6 +2052,7 @@ _NAMED_TYPE_INFO = {
   },
   'VertexAttribSize': {
     'type': 'GLint',
+    'validator': False,
     'valid': [
       '1',
       '2',
@@ -8492,6 +8495,7 @@ class NamedType(object):
       self.deprecated_es3 = info['deprecated_es3']
     else:
       self.deprecated_es3 = []
+    self.create_validator = info.get('validator', True)
 
   def GetType(self):
     return self.info['type']
@@ -8513,6 +8517,9 @@ class NamedType(object):
       return False
 
     return len(self.GetValidValues()) == 1
+
+  def CreateValidator(self):
+    return self.create_validator
 
   def GetConstantValue(self):
     return self.GetValidValues()[0]
@@ -10777,7 +10784,7 @@ namespace mojo {
     with CHeaderWriter(filename) as f:
       for name in sorted(_NAMED_TYPE_INFO.keys()):
         named_type = NamedType(_NAMED_TYPE_INFO[name])
-        if named_type.IsConstant():
+        if named_type.IsConstant() or not named_type.CreateValidator():
           continue
         f.write("ValueValidator<%s> %s;\n" %
                    (named_type.GetType(), ToUnderscore(name)))
@@ -10790,7 +10797,7 @@ namespace mojo {
       names = sorted(_NAMED_TYPE_INFO.keys())
       for name in names:
         named_type = NamedType(_NAMED_TYPE_INFO[name])
-        if named_type.IsConstant():
+        if named_type.IsConstant() or not named_type.CreateValidator():
           continue
         if named_type.GetValidValues():
           f.write("static const %s valid_%s_table[] = {\n" %
@@ -10817,7 +10824,7 @@ namespace mojo {
       pre = '    : '
       for count, name in enumerate(names):
         named_type = NamedType(_NAMED_TYPE_INFO[name])
-        if named_type.IsConstant():
+        if named_type.IsConstant() or not named_type.CreateValidator():
           continue
         if named_type.GetValidValues():
           code = """%(pre)s%(name)s(

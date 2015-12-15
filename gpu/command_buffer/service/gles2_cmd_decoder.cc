@@ -8846,7 +8846,7 @@ error::Error GLES2DecoderImpl::HandleVertexAttribIPointer(
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glVertexAttribIPointer", type, "type");
     return error::kNoError;
   }
-  if (!validators_->vertex_attrib_size.IsValid(size)) {
+  if (size < 1 || size > 4) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_VALUE, "glVertexAttribIPointer", "size GL_INVALID_VALUE");
     return error::kNoError;
@@ -8933,7 +8933,7 @@ error::Error GLES2DecoderImpl::HandleVertexAttribPointer(
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glVertexAttribPointer", type, "type");
     return error::kNoError;
   }
-  if (!validators_->vertex_attrib_size.IsValid(size)) {
+  if (size < 1 || size > 4) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_VALUE, "glVertexAttribPointer", "size GL_INVALID_VALUE");
     return error::kNoError;
