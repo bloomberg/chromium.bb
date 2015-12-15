@@ -191,6 +191,9 @@ class WebContents;
 // it when we are entering fullscreen.
 - (void)adjustUIForEnteringFullscreen;
 
+// Returns YES if the fullscreen is for tab content.
+- (BOOL)isFullscreenForTabContent;
+
 #endif
 
 @end  // @interface BrowserWindowController(Private)

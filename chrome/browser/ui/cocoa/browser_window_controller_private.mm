@@ -455,13 +455,11 @@ willPositionSheet:(NSWindow*)sheet
 }
 
 - (void)configurePresentationModeController {
-  BOOL fullscreen_for_tab = browser_->exclusive_access_manager()
-                                ->fullscreen_controller()
-                                ->IsWindowFullscreenForTabOrPending();
-  BOOL kiosk_mode =
+  BOOL fullscreenForTab = [self isFullscreenForTabContent];
+  BOOL kioskMode =
       base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode);
   BOOL showDropdown =
-      !fullscreen_for_tab && !kiosk_mode && ([self floatingBarHasFocus]);
+      !fullscreenForTab && !kioskMode && ([self floatingBarHasFocus]);
 
   PermissionBubbleManager* manager = [self permissionBubbleManager];
   if (manager && manager->IsBubbleVisible()) {
@@ -717,6 +715,13 @@ willPositionSheet:(NSWindow*)sheet
   blockLayoutSubviews_ = NO;
   fullscreenTransition_.reset();
 
+  if ([self isFullscreenForTabContent]) {
+     NSRect windowFrame = [self window].frame;
+     NSRect contentViewFrame =
+        NSMakeRect(0, 0, windowFrame.size.width, windowFrame.size.height);
+     [self.chromeContentView setFrame:contentViewFrame];
+  }
+
   // In Yosemite, some combination of the titlebar and toolbar always show in
   // full-screen mode. We do not want either to show. Search for the window that
   // contains the views, and hide it. There is no need to ever unhide the view.
@@ -857,9 +862,7 @@ willPositionSheet:(NSWindow*)sheet
 
 - (void)adjustUIForEnteringFullscreen {
   fullscreen_mac::SlidingStyle style;
-  if (browser_->exclusive_access_manager()
-          ->fullscreen_controller()
-          ->IsWindowFullscreenForTabOrPending()) {
+  if ([self isFullscreenForTabContent]) {
     style = fullscreen_mac::OMNIBOX_TABS_NONE;
   } else if (enteringPresentationMode_ || [self shouldHideFullscreenToolbar]) {
     style = fullscreen_mac::OMNIBOX_TABS_HIDDEN;
@@ -1169,6 +1172,13 @@ willPositionSheet:(NSWindow*)sheet
   if (base::mac::IsOSMavericks() && !enterFullScreen)
     return NO;
 
+  // Temporary disable custom enter animation since it currently breaks the
+  // fullscreen Flash content.
+  // TODO(spqchan): Fix the custom animation to enter fullscreen so that it
+  // will work with Flash content.
+  if (enterFullScreen && [self isFullscreenForTabContent])
+    return NO;
+
   NSView* root = [[self.window contentView] superview];
   if (!root.layer)
     return NO;
@@ -1255,6 +1265,12 @@ willPositionSheet:(NSWindow*)sheet
   if (WebContents* contents = [self webContents])
     return PermissionBubbleManager::FromWebContents(contents);
   return nil;
+}
+
+- (BOOL)isFullscreenForTabContent {
+  return browser_->exclusive_access_manager()
+                 ->fullscreen_controller()
+                 ->IsWindowFullscreenForTabOrPending();
 }
 
 @end  // @implementation BrowserWindowController(Private)
