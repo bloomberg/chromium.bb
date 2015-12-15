@@ -165,7 +165,9 @@ cr.define('help', function() {
       var logo = $('product-logo');
       logo.onclick = function(e) {
         logo.classList.remove('spin');
-        setTimeout(function() { logo.classList.add('spin'); }, 0);
+        // Force a style recalc that cancels the animation specified by "spin".
+        getComputedStyle(logo).animationName;
+        logo.classList.add('spin');
       };
 
       // Attempt to update.
