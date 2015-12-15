@@ -6,6 +6,7 @@
 
 #include "base/memory/singleton.h"
 #include "base/prefs/pref_service.h"
+#include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/history/core/browser/web_history_service.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
@@ -13,8 +14,8 @@
 #include "components/sync_driver/sync_service.h"
 #include "ios/chrome/browser/signin/oauth2_token_service_factory.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
+#include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
 #include "ios/public/provider/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/public/provider/chrome/browser/keyed_service_provider.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace ios {
@@ -24,7 +25,7 @@ namespace {
 // false otherwise.
 bool IsHistorySyncEnabled(ios::ChromeBrowserState* browser_state) {
   sync_driver::SyncService* sync_service =
-      GetKeyedServiceProvider()->GetSyncServiceForBrowserState(browser_state);
+      IOSChromeProfileSyncServiceFactory::GetForBrowserState(browser_state);
   return sync_service && sync_service->IsSyncActive() &&
          sync_service->GetActiveDataTypes().Has(
              syncer::HISTORY_DELETE_DIRECTIVES);
@@ -53,8 +54,7 @@ WebHistoryServiceFactory::WebHistoryServiceFactory()
     : BrowserStateKeyedServiceFactory(
           "WebHistoryService",
           BrowserStateDependencyManager::GetInstance()) {
-  ios::KeyedServiceProvider* provider = ios::GetKeyedServiceProvider();
-  DependsOn(provider->GetSyncServiceFactory());
+  DependsOn(IOSChromeProfileSyncServiceFactory::GetInstance());
   DependsOn(OAuth2TokenServiceFactory::GetInstance());
   DependsOn(ios::SigninManagerFactory::GetInstance());
 }

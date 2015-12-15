@@ -5,7 +5,7 @@
 #include "ios/chrome/browser/browser_state/bookmark_model_loaded_observer.h"
 
 #include "components/bookmarks/browser/bookmark_model.h"
-#include "ios/public/provider/chrome/browser/keyed_service_provider.h"
+#include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
 
 BookmarkModelLoadedObserver::BookmarkModelLoadedObserver(
     ios::ChromeBrowserState* browser_state)
@@ -17,7 +17,7 @@ void BookmarkModelLoadedObserver::BookmarkModelLoaded(
     bookmarks::BookmarkModel* model,
     bool ids_reassigned) {
   // Causes lazy-load if sync is enabled.
-  ios::GetKeyedServiceProvider()->GetSyncServiceForBrowserState(browser_state_);
+  IOSChromeProfileSyncServiceFactory::GetForBrowserState(browser_state_);
   model->RemoveObserver(this);
   delete this;
 }

@@ -66,20 +66,4 @@ TestKeyedServiceProvider::TestKeyedServiceProvider() {
 TestKeyedServiceProvider::~TestKeyedServiceProvider() {
 }
 
-KeyedServiceBaseFactory* TestKeyedServiceProvider::GetSyncServiceFactory() {
-  return FakeSyncServiceFactory::GetInstance();
-}
-
-sync_driver::SyncService*
-TestKeyedServiceProvider::GetSyncServiceForBrowserState(
-    ChromeBrowserState* browser_state) {
-  return FakeSyncServiceFactory::GetForBrowserState(browser_state);
-}
-
-sync_driver::SyncService*
-TestKeyedServiceProvider::GetSyncServiceForBrowserStateIfExists(
-    ChromeBrowserState* browser_state) {
-  return FakeSyncServiceFactory::GetForBrowserStateIfExists(browser_state);
-}
-
 }  // namespace ios

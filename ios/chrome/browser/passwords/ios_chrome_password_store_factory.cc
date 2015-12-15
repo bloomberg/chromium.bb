@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/memory/singleton.h"
+#include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/password_manager/core/browser/affiliated_match_helper.h"
@@ -17,9 +18,9 @@
 #include "components/sync_driver/sync_service.h"
 #include "ios/chrome/browser/browser_state/browser_state_otr_helper.h"
 #include "ios/chrome/browser/sync/glue/sync_start_util.h"
+#include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
 #include "ios/chrome/browser/web_data_service_factory.h"
 #include "ios/public/provider/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/public/provider/chrome/browser/keyed_service_provider.h"
 #include "ios/web/public/web_thread.h"
 
 // static
@@ -48,7 +49,7 @@ void IOSChromePasswordStoreFactory::OnPasswordsSyncedStatePotentiallyChanged(
   scoped_refptr<password_manager::PasswordStore> password_store =
       GetForBrowserState(browser_state, ServiceAccessType::EXPLICIT_ACCESS);
   sync_driver::SyncService* sync_service =
-      ios::GetKeyedServiceProvider()->GetSyncServiceForBrowserStateIfExists(
+      IOSChromeProfileSyncServiceFactory::GetForBrowserStateIfExists(
           browser_state);
   net::URLRequestContextGetter* request_context_getter =
       browser_state->GetRequestContext();

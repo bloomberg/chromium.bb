@@ -29,7 +29,6 @@ KeyedServiceProvider::~KeyedServiceProvider() {
 }
 
 void KeyedServiceProvider::AssertKeyedFactoriesBuilt() {
-  GetSyncServiceFactory();
 }
 
 }  // namespace ios
