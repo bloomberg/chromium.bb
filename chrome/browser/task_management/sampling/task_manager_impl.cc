@@ -122,6 +122,14 @@ void TaskManagerImpl::GetUSERHandles(TaskId task_id,
 #endif  // defined(OS_WIN)
 }
 
+int TaskManagerImpl::GetOpenFdCount(TaskId task_id) const {
+#if defined(OS_LINUX)
+  return GetTaskGroupByTaskId(task_id)->open_fd_count();
+#else
+  return -1;
+#endif  // defined(OS_LINUX)
+}
+
 bool TaskManagerImpl::IsTaskOnBackgroundedProcess(TaskId task_id) const {
   return GetTaskGroupByTaskId(task_id)->is_backgrounded();
 }

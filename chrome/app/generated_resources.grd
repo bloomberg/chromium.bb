@@ -3519,6 +3519,12 @@ Even if you have downloaded files from this website before, the website might ha
           <message name="IDS_TASK_MANAGER_IDLE_WAKEUPS_COLUMN" desc="Task manager idle processor wakeups column">
             Idle wake ups
           </message>
+          <message name="IDS_TASK_MANAGER_OPEN_FD_COUNT_COLUMN" desc="Task manager open fds (file descriptors) count column">
+            File descriptors
+          </message>
+          <message name="IDS_TASK_MANAGER_PROCESS_PRIORITY_COLUMN" desc="Task manager process priority column">
+            Process priority
+          </message>
           <message name="IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN" desc="Task manager WebCore image cache size column.">
             Image cache
           </message>
@@ -3578,6 +3584,12 @@ Even if you have downloaded files from this website before, the website might ha
           <message name="IDS_TASK_MANAGER_IDLE_WAKEUPS_COLUMN" desc="Task manager idle processor wakeups column">
             Idle Wake Ups
           </message>
+          <message name="IDS_TASK_MANAGER_OPEN_FD_COUNT_COLUMN" desc="Task manager open fds (file descriptors) count column">
+            File Descriptors
+          </message>
+          <message name="IDS_TASK_MANAGER_PROCESS_PRIORITY_COLUMN" desc="Task manager process priority column">
+            Process Priority
+          </message>
           <message name="IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN" desc="Task manager WebCore image cache size column.">
             Image Cache
           </message>
@@ -3608,6 +3620,12 @@ Even if you have downloaded files from this website before, the website might ha
         </message>
         <message name="IDS_TASK_MANAGER_NA_CELL_TEXT" desc="The value displayed for network / webcache usage when the information is not available (Not Applicable).">
           N/A
+        </message>
+        <message name="IDS_TASK_MANAGER_BACKGROUNDED_TEXT" desc="The value displayed for a process with backgrounded priority">
+          Low
+        </message>
+        <message name="IDS_TASK_MANAGER_FOREGROUNDED_TEXT" desc="The value displayed for a process with foregrounded priority">
+          Normal
         </message>
         <message name="IDS_TASK_MANAGER_UNKNOWN_VALUE_TEXT" desc="The value displayed for an unknown NaCl debug stub port in the task manager.">
           Unknown

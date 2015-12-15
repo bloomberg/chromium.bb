@@ -40,6 +40,9 @@ class TaskGroupSampler : public base::RefCountedThreadSafe<TaskGroupSampler> {
   using OnCpuRefreshCallback = base::Callback<void(double)>;
   using OnMemoryRefreshCallback = base::Callback<void(MemoryUsageStats)>;
   using OnIdleWakeupsCallback = base::Callback<void(int)>;
+#if defined(OS_LINUX)
+  using OnOpenFdCountCallback = base::Callback<void(int)>;
+#endif  // defined(OS_LINUX)
   using OnProcessPriorityCallback = base::Callback<void(bool)>;
 
   TaskGroupSampler(
@@ -48,6 +51,9 @@ class TaskGroupSampler : public base::RefCountedThreadSafe<TaskGroupSampler> {
       const OnCpuRefreshCallback& on_cpu_refresh,
       const OnMemoryRefreshCallback& on_memory_refresh,
       const OnIdleWakeupsCallback& on_idle_wakeups,
+#if defined(OS_LINUX)
+      const OnOpenFdCountCallback& on_open_fd_count,
+#endif  // defined(OS_LINUX)
       const OnProcessPriorityCallback& on_process_priority);
 
   // Refreshes the expensive process' stats (CPU usage, memory usage, and idle
@@ -62,6 +68,9 @@ class TaskGroupSampler : public base::RefCountedThreadSafe<TaskGroupSampler> {
   double RefreshCpuUsage();
   MemoryUsageStats RefreshMemoryUsage();
   int RefreshIdleWakeupsPerSecond();
+#if defined(OS_LINUX)
+  int RefreshOpenFdCount();
+#endif  // defined(OS_LINUX)
   bool RefreshProcessPriority();
 
   // The process that holds the handle that we own so that we can use it for
@@ -79,6 +88,9 @@ class TaskGroupSampler : public base::RefCountedThreadSafe<TaskGroupSampler> {
   const OnCpuRefreshCallback on_cpu_refresh_callback_;
   const OnMemoryRefreshCallback on_memory_refresh_callback_;
   const OnIdleWakeupsCallback on_idle_wakeups_callback_;
+#if defined(OS_LINUX)
+  const OnOpenFdCountCallback on_open_fd_count_callback_;
+#endif  // defined(OS_LINUX)
   const OnProcessPriorityCallback on_process_priority_callback_;
 
   // To assert we're running on the correct thread.

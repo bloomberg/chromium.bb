@@ -59,6 +59,8 @@ bool IsSharedByGroup(int column_id) {
     case IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN:
     case IDS_TASK_MANAGER_NACL_DEBUG_STUB_PORT_COLUMN:
     case IDS_TASK_MANAGER_IDLE_WAKEUPS_COLUMN:
+    case IDS_TASK_MANAGER_OPEN_FD_COUNT_COLUMN:
+    case IDS_TASK_MANAGER_PROCESS_PRIORITY_COLUMN:
       return true;
     default:
       return false;
@@ -71,6 +73,15 @@ int ValueCompare(T value1, T value2) {
   if (value1 == value2)
     return 0;
   return value1 < value2 ? -1 : 1;
+}
+
+// This is used to sort process priority. We want the backgrounded process (with
+// a true value) to come first.
+int BooleanCompare(bool value1, bool value2) {
+  if (value1 == value2)
+    return 0;
+
+  return value1 ? -1 : 1;
 }
 
 // Used when one or both of the results to compare are unavailable.
@@ -89,6 +100,10 @@ class TaskManagerValuesStringifier {
   TaskManagerValuesStringifier()
       : n_a_string_(l10n_util::GetStringUTF16(IDS_TASK_MANAGER_NA_CELL_TEXT)),
         zero_string_(base::ASCIIToUTF16("0")),
+        backgrounded_string_(l10n_util::GetStringUTF16(
+            IDS_TASK_MANAGER_BACKGROUNDED_TEXT)),
+        foregrounded_string_(l10n_util::GetStringUTF16(
+            IDS_TASK_MANAGER_FOREGROUNDED_TEXT)),
         asterisk_string_(base::ASCIIToUTF16("*")),
         unknown_string_(l10n_util::GetStringUTF16(
             IDS_TASK_MANAGER_UNKNOWN_VALUE_TEXT)),
@@ -179,6 +194,12 @@ class TaskManagerValuesStringifier {
 
   const base::string16& n_a_string() const { return n_a_string_; }
   const base::string16& zero_string() const { return zero_string_; }
+  const base::string16& backgrounded_string() const {
+    return backgrounded_string_;
+  }
+  const base::string16& foregrounded_string() const {
+    return foregrounded_string_;
+  }
   const base::string16& asterisk_string() const { return asterisk_string_; }
   const base::string16& unknown_string() const { return unknown_string_; }
   const base::string16& disabled_nacl_debugging_string() const {
@@ -191,6 +212,12 @@ class TaskManagerValuesStringifier {
 
   // The value 0 as a string "0".
   const base::string16 zero_string_;
+
+  // The localized string "Backgrounded" for process priority.
+  const base::string16 backgrounded_string_;
+
+  // The localized string "Foregrounded" for process priority.
+  const base::string16 foregrounded_string_;
 
   // The string "*" that is used to show that there exists duplicates in the
   // GPU memory.
@@ -350,6 +377,19 @@ base::string16 TaskManagerTableModel::GetText(int row, int column) {
       return stringifier_->GetNaClPortText(
           observed_task_manager()->GetNaClDebugStubPort(tasks_[row]));
 
+    case IDS_TASK_MANAGER_PROCESS_PRIORITY_COLUMN:
+      return observed_task_manager()->IsTaskOnBackgroundedProcess(tasks_[row])
+          ? stringifier_->backgrounded_string()
+          : stringifier_->foregrounded_string();
+
+#if defined(OS_LINUX)
+    case IDS_TASK_MANAGER_OPEN_FD_COUNT_COLUMN: {
+      const int fd_count = observed_task_manager()->GetOpenFdCount(tasks_[row]);
+      return fd_count >= 0 ? base::FormatNumber(fd_count)
+                           : stringifier_->n_a_string();
+    }
+#endif  // defined(OS_LINUX)
+
     default:
       NOTREACHED();
       return base::string16();
@@ -472,6 +512,24 @@ int TaskManagerTableModel::CompareValues(int row1,
           observed_task_manager()->GetSqliteMemoryUsed(tasks_[row1]),
           observed_task_manager()->GetSqliteMemoryUsed(tasks_[row2]));
 
+    case IDS_TASK_MANAGER_PROCESS_PRIORITY_COLUMN: {
+      const bool is_proc1_bg =
+          observed_task_manager()->IsTaskOnBackgroundedProcess(tasks_[row1]);
+      const bool is_proc2_bg =
+          observed_task_manager()->IsTaskOnBackgroundedProcess(tasks_[row2]);
+      return BooleanCompare(is_proc1_bg, is_proc2_bg);
+    }
+
+#if defined(OS_LINUX)
+    case IDS_TASK_MANAGER_OPEN_FD_COUNT_COLUMN: {
+      const int proc1_fd_count =
+          observed_task_manager()->GetOpenFdCount(tasks_[row1]);
+      const int proc2_fd_count =
+          observed_task_manager()->GetOpenFdCount(tasks_[row2]);
+      return ValueCompare(proc1_fd_count, proc2_fd_count);
+    }
+#endif  // defined(OS_LINUX)
+
     default:
       NOTREACHED();
       return 0;
@@ -553,7 +611,7 @@ void TaskManagerTableModel::UpdateRefreshTypes(int column_id, bool visibility) {
     case IDS_TASK_MANAGER_PROFILE_NAME_COLUMN:
     case IDS_TASK_MANAGER_TASK_COLUMN:
     case IDS_TASK_MANAGER_PROCESS_ID_COLUMN:
-      return;  // The data is these columns do not change.
+      return;  // The data in these columns do not change.
 
     case IDS_TASK_MANAGER_NET_COLUMN:
       type = REFRESH_TYPE_NETWORK_USAGE;
@@ -621,6 +679,16 @@ void TaskManagerTableModel::UpdateRefreshTypes(int column_id, bool visibility) {
     case IDS_TASK_MANAGER_NACL_DEBUG_STUB_PORT_COLUMN:
       type = REFRESH_TYPE_NACL;
       break;
+
+    case IDS_TASK_MANAGER_PROCESS_PRIORITY_COLUMN:
+      type = REFRESH_TYPE_PRIORITY;
+      break;
+
+#if defined(OS_LINUX)
+    case IDS_TASK_MANAGER_OPEN_FD_COUNT_COLUMN:
+      type = REFRESH_TYPE_FD_COUNT;
+      break;
+#endif  // defined(OS_LINUX)
 
     default:
       NOTREACHED();

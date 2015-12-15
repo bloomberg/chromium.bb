@@ -286,6 +286,27 @@ bool ProcessMetrics::GetIOCounters(IoCounters* io_counters) const {
   return true;
 }
 
+#if defined(OS_LINUX)
+int ProcessMetrics::GetOpenFdCount() const {
+  // Use /proc/<pid>/fd to count the number of entries there.
+  FilePath fd_path = internal::GetProcPidDir(process_).Append("fd");
+
+  DIR* dir = opendir(fd_path.value().c_str());
+  if (!dir) {
+    DPLOG(ERROR) << "opendir(" << fd_path.value() << ")";
+    return -1;
+  }
+
+  int total_count = 0;
+  while (readdir(dir))
+    ++total_count;
+
+  closedir(dir);
+
+  return total_count;
+}
+#endif  // defined(OS_LINUX)
+
 ProcessMetrics::ProcessMetrics(ProcessHandle process)
     : process_(process),
       last_system_time_(0),

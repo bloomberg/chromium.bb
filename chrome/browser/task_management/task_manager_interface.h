@@ -80,6 +80,11 @@ class TaskManagerInterface {
                               int64* current,
                               int64* peak) const = 0;
 
+  // On Linux and ChromeOS, gets the number of file descriptors currently open
+  // by the process on which the task with |task_id| is running, or -1 if no
+  // valid value is currently available.
+  virtual int GetOpenFdCount(TaskId task_id) const = 0;
+
   // Returns whether the task with |task_id| is running on a backgrounded
   // process.
   virtual bool IsTaskOnBackgroundedProcess(TaskId task_id) const = 0;

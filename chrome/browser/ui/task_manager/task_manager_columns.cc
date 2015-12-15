@@ -70,6 +70,13 @@ const TableColumnData kColumns[] = {
   { IDS_TASK_MANAGER_IDLE_WAKEUPS_COLUMN, ui::TableColumn::RIGHT, -1, 0,
     arraysize("idlewakeups") * kCharWidth, -1, true, false, false },
 #endif  // defined(OS_MACOSX) || defined(OS_LINUX)
+
+#if defined(OS_LINUX)
+  { IDS_TASK_MANAGER_OPEN_FD_COUNT_COLUMN, ui::TableColumn::RIGHT, -1, 0,
+    arraysize("999") * kCharWidth, -1, true, false, false },
+#endif  // defined(OS_LINUX)
+  { IDS_TASK_MANAGER_PROCESS_PRIORITY_COLUMN, ui::TableColumn::LEFT, -1, 0,
+    arraysize("background") * kCharWidth, -1, true, true, false },
 };
 
 const size_t kColumnsSize = arraysize(kColumns);
@@ -101,7 +108,9 @@ const char kSortIsAscendingKey[] = "sort_is_ascending";
   def(IDS_TASK_MANAGER_SQLITE_MEMORY_USED_COLUMN) \
   def(IDS_TASK_MANAGER_NACL_DEBUG_STUB_PORT_COLUMN) \
   def(IDS_TASK_MANAGER_JAVASCRIPT_MEMORY_ALLOCATED_COLUMN) \
-  def(IDS_TASK_MANAGER_IDLE_WAKEUPS_COLUMN)
+  def(IDS_TASK_MANAGER_IDLE_WAKEUPS_COLUMN) \
+  def(IDS_TASK_MANAGER_OPEN_FD_COUNT_COLUMN) \
+  def(IDS_TASK_MANAGER_PROCESS_PRIORITY_COLUMN)
 // Add to the above list in the macro any new IDs added in the future. Also
 // remove the removed ones.
 

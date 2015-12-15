@@ -30,9 +30,16 @@ enum RefreshType {
   REFRESH_TYPE_NACL              = 1 << 7,
   REFRESH_TYPE_IDLE_WAKEUPS      = 1 << 8,
   REFRESH_TYPE_HANDLES           = 1 << 9,
-  REFRESH_TYPE_PRIORITY          = 1 << 10, // Whether an observer is interested
-                                            // in knowing if a process is
-                                            // foregrounded or backgrounded.
+
+  // Whether an observer is interested in knowing if a process is foregrounded
+  // or backgrounded.
+  REFRESH_TYPE_PRIORITY          = 1 << 10,
+
+#if defined(OS_LINUX)
+  // For observers interested in getting the number of open file descriptors of
+  // processes.
+  REFRESH_TYPE_FD_COUNT          = 1 << 11,
+#endif  // defined(OS_LINUX)
 };
 
 // Defines the interface for observers of the task manager.

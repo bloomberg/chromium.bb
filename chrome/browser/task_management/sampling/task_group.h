@@ -68,6 +68,10 @@ class TaskGroup {
   int nacl_debug_stub_port() const { return nacl_debug_stub_port_; }
 #endif  // !defined(DISABLE_NACL)
 
+#if defined(OS_LINUX)
+  int open_fd_count() const { return open_fd_count_; }
+#endif  // defined(OS_LINUX)
+
   int idle_wakeups_per_second() const { return idle_wakeups_per_second_; }
 
  private:
@@ -84,6 +88,10 @@ class TaskGroup {
   void OnMemoryUsageRefreshDone(MemoryUsageStats memory_usage);
 
   void OnIdleWakeupsRefreshDone(int idle_wakeups_per_second);
+
+#if defined(OS_LINUX)
+  void OnOpenFdCountRefreshDone(int open_fd_count);
+#endif  // defined(OS_LINUX)
 
   void OnProcessPriorityDone(bool is_backgrounded);
 
@@ -115,6 +123,10 @@ class TaskGroup {
   int nacl_debug_stub_port_;
 #endif  // !defined(DISABLE_NACL)
   int idle_wakeups_per_second_;
+#if defined(OS_LINUX)
+  // The number of file descriptors currently open by the process.
+  int open_fd_count_;
+#endif  // defined(OS_LINUX)
   bool gpu_memory_has_duplicates_;
   bool is_backgrounded_;
 

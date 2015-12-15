@@ -36,6 +36,9 @@ TaskGroupSampler::TaskGroupSampler(
     const OnCpuRefreshCallback& on_cpu_refresh,
     const OnMemoryRefreshCallback& on_memory_refresh,
     const OnIdleWakeupsCallback& on_idle_wakeups,
+#if defined(OS_LINUX)
+    const OnOpenFdCountCallback& on_open_fd_count,
+#endif  // defined(OS_LINUX)
     const OnProcessPriorityCallback& on_process_priority)
     : process_(process.Pass()),
       process_metrics_(CreateProcessMetrics(process_.Handle())),
@@ -43,6 +46,9 @@ TaskGroupSampler::TaskGroupSampler(
       on_cpu_refresh_callback_(on_cpu_refresh),
       on_memory_refresh_callback_(on_memory_refresh),
       on_idle_wakeups_callback_(on_idle_wakeups),
+#if defined(OS_LINUX)
+      on_open_fd_count_callback_(on_open_fd_count),
+#endif  // defined(OS_LINUX)
       on_process_priority_callback_(on_process_priority) {
   DCHECK(blocking_pool_runner.get());
 
@@ -81,6 +87,16 @@ void TaskGroupSampler::Refresh(int64 refresh_flags) {
         on_idle_wakeups_callback_);
   }
 #endif  // defined(OS_MACOSX) || defined(OS_LINUX)
+
+#if defined(OS_LINUX)
+  if (IsResourceRefreshEnabled(REFRESH_TYPE_FD_COUNT, refresh_flags)) {
+    base::PostTaskAndReplyWithResult(
+        blocking_pool_runner_.get(),
+        FROM_HERE,
+        base::Bind(&TaskGroupSampler::RefreshOpenFdCount, this),
+        on_open_fd_count_callback_);
+  }
+#endif  // defined(OS_LINUX)
 
   if (IsResourceRefreshEnabled(REFRESH_TYPE_PRIORITY, refresh_flags)) {
     base::PostTaskAndReplyWithResult(
@@ -136,6 +152,14 @@ int TaskGroupSampler::RefreshIdleWakeupsPerSecond() {
 
   return process_metrics_->GetIdleWakeupsPerSecond();
 }
+
+#if defined(OS_LINUX)
+int TaskGroupSampler::RefreshOpenFdCount() {
+  DCHECK(worker_pool_sequenced_checker_.CalledOnValidSequencedThread());
+
+  return process_metrics_->GetOpenFdCount();
+}
+#endif  // defined(OS_LINUX)
 
 bool TaskGroupSampler::RefreshProcessPriority() {
   DCHECK(worker_pool_sequenced_checker_.CalledOnValidSequencedThread());

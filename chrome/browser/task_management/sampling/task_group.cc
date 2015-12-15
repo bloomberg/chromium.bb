@@ -74,6 +74,9 @@ TaskGroup::TaskGroup(
       nacl_debug_stub_port_(-1),
 #endif  // !defined(DISABLE_NACL)
       idle_wakeups_per_second_(-1),
+#if defined(OS_LINUX)
+      open_fd_count_(-1),
+#endif  // defined(OS_LINUX)
       gpu_memory_has_duplicates_(false),
       is_backgrounded_(false),
       weak_ptr_factory_(this) {
@@ -86,6 +89,10 @@ TaskGroup::TaskGroup(
                                       weak_ptr_factory_.GetWeakPtr()),
                            base::Bind(&TaskGroup::OnIdleWakeupsRefreshDone,
                                       weak_ptr_factory_.GetWeakPtr()),
+#if defined(OS_LINUX)
+                           base::Bind(&TaskGroup::OnOpenFdCountRefreshDone,
+                                      weak_ptr_factory_.GetWeakPtr()),
+#endif  // defined(OS_LINUX)
                            base::Bind(&TaskGroup::OnProcessPriorityDone,
                                       weak_ptr_factory_.GetWeakPtr())));
   worker_thread_sampler_.swap(sampler);
@@ -152,7 +159,8 @@ void TaskGroup::Refresh(
   // 5- CPU usage.
   // 6- Memory usage.
   // 7- Idle Wakeups per second.
-  // 8- Process priority (foreground vs. background).
+  // 8- (Linux and ChromeOS only) The number of file descriptors current open.
+  // 9- Process priority (foreground vs. background).
   worker_thread_sampler_->Refresh(refresh_flags);
 }
 
@@ -218,6 +226,14 @@ void TaskGroup::OnIdleWakeupsRefreshDone(int idle_wakeups_per_second) {
 
   idle_wakeups_per_second_ = idle_wakeups_per_second;
 }
+
+#if defined(OS_LINUX)
+void TaskGroup::OnOpenFdCountRefreshDone(int open_fd_count) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  open_fd_count_ = open_fd_count;
+}
+#endif  // defined(OS_LINUX)
 
 void TaskGroup::OnProcessPriorityDone(bool is_backgrounded) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);

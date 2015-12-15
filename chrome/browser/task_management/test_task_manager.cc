@@ -59,6 +59,10 @@ void TestTaskManager::GetUSERHandles(TaskId task_id,
                                      int64* peak) const {
 }
 
+int TestTaskManager::GetOpenFdCount(TaskId task_id) const {
+  return -1;
+}
+
 bool TestTaskManager::IsTaskOnBackgroundedProcess(TaskId task_id) const {
   return false;
 }
