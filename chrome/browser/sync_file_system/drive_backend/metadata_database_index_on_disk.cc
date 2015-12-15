@@ -271,6 +271,8 @@ MetadataDatabaseIndexOnDisk::~MetadataDatabaseIndexOnDisk() {}
 void MetadataDatabaseIndexOnDisk::RemoveUnreachableItems() {
   RemoveUnreachableItemsFromDB(
       db_, service_metadata_->sync_root_tracker_id());
+  DeleteTrackerIndexes();
+  BuildTrackerIndexes();
 }
 
 bool MetadataDatabaseIndexOnDisk::GetFileMetadata(

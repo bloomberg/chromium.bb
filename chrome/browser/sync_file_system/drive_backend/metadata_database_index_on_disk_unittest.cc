@@ -226,6 +226,29 @@ TEST_F(MetadataDatabaseIndexOnDiskTest, RemoveUnreachableItemsTest) {
   EXPECT_TRUE(index_on_disk->GetFileTracker(kFileTrackerID, nullptr));
 }
 
+TEST_F(MetadataDatabaseIndexOnDiskTest, SyncRootInvalidation) {
+  CreateTestDatabase(true, nullptr);
+  EXPECT_NE(kInvalidTrackerID, index()->GetAppRootTracker("app_id"));
+
+  const int64 kNewSyncRootTrackerID = 10;
+  scoped_ptr<FileMetadata> new_sync_root_metadata =
+      test_util::CreateFolderMetadata("new_sync_root_folder_id",
+                                      kSyncRootFolderTitle);
+  scoped_ptr<FileTracker> new_sync_root_tracker =
+      test_util::CreateTracker(*new_sync_root_metadata, kNewSyncRootTrackerID,
+                               nullptr);
+
+  // Override SyncRoot with a new one.
+  index()->StoreFileMetadata(new_sync_root_metadata.Pass());
+  index()->StoreFileTracker(new_sync_root_tracker.Pass());
+  index()->SetSyncRootTrackerID(kNewSyncRootTrackerID);
+
+  // Drop trees under the old SyncRoot.
+  index()->RemoveUnreachableItems();
+
+  // Confirm the index is reconstructed.
+  EXPECT_EQ(kInvalidTrackerID, index()->GetAppRootTracker("app_id"));
+}
 
 TEST_F(MetadataDatabaseIndexOnDiskTest, BuildIndexTest) {
   CreateTestDatabase(false, nullptr);
