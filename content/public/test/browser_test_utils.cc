@@ -30,6 +30,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "net/base/filename_util.h"
 #include "net/cookies/cookie_store.h"
@@ -312,19 +313,12 @@ scoped_ptr<net::test_server::HttpResponse> CrossSiteRedirectResponseHandler(
 bool NavigateIframeToURL(WebContents* web_contents,
                          std::string iframe_id,
                          const GURL& url) {
-  // TODO(creis): This should wait for LOAD_STOP, but cross-site subframe
-  // navigations generate extra DidStartLoading and DidStopLoading messages.
-  // Until we replace swappedout:// with frame proxies, we need to listen for
-  // something else.  For now, we trigger NEW_SUBFRAME navigations and listen
-  // for commit.  See https://crbug.com/436250.
   std::string script = base::StringPrintf(
       "setTimeout(\""
       "var iframes = document.getElementById('%s');iframes.src='%s';"
       "\",0)",
       iframe_id.c_str(), url.spec().c_str());
-  WindowedNotificationObserver load_observer(
-      NOTIFICATION_NAV_ENTRY_COMMITTED,
-      Source<NavigationController>(&web_contents->GetController()));
+  TestNavigationObserver load_observer(web_contents);
   bool result = ExecuteScript(web_contents, script);
   load_observer.Wait();
   return result;
