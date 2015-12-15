@@ -85,6 +85,7 @@ void RoutedRawChannel::RemoveRoute(uint64_t route_id) {
 }
 
 RoutedRawChannel::~RoutedRawChannel() {
+  DCHECK(!channel_);
   destruct_callback_.Run(this);
 }
 
@@ -134,7 +135,7 @@ void RoutedRawChannel::OnError(Error error) {
 
   // This needs to match non-multiplexed MessagePipeDispatcher's destruction of
   // the channel only when read errors occur.
-  if (error != ERROR_WRITE) {
+  if (error != ERROR_WRITE || routes_.empty()) {
     channel_->Shutdown();
     channel_ = nullptr;
   }
