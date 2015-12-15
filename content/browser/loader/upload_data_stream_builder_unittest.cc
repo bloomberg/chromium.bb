@@ -200,4 +200,55 @@ TEST(UploadDataStreamBuilderTest, ResetUploadStreamWithBlob) {
   // Clean up for ASAN.
   base::RunLoop().RunUntilIdle();
 }
+
+TEST(UploadDataStreamBuilderTest, ResetUploadStreamWithBlob) {
+  base::MessageLoopForIO message_loop;
+  {
+    scoped_refptr<ResourceRequestBody> request_body = new ResourceRequestBody;
+
+    const std::string kBlob = "blobuuid";
+    const std::string kBlobData = "blobdata";
+    const int kBlobDataLength = 8;
+    const int64 kIdentifier = 12345;
+
+    BlobStorageContext blob_storage_context;
+    BlobDataBuilder builder(kBlob);
+    builder.AppendData(kBlobData);
+    scoped_ptr<BlobDataHandle> handle =
+        blob_storage_context.AddFinishedBlob(&builder);
+    request_body->AppendBlob(kBlob);
+    request_body->set_identifier(kIdentifier);
+
+    scoped_ptr<net::UploadDataStream> upload(UploadDataStreamBuilder::Build(
+        request_body.get(), &blob_storage_context, nullptr,
+        base::ThreadTaskRunnerHandle::Get().get()));
+
+    net::TestCompletionCallback init_callback;
+    ASSERT_EQ(net::OK, upload->Init(init_callback.callback()));
+
+    // Read part of the data.
+    const int kBufferLength = 4;
+    scoped_refptr<net::IOBufferWithSize> buffer(
+        new net::IOBufferWithSize(kBufferLength));
+    net::TestCompletionCallback read_callback;
+    int result =
+        upload->Read(buffer.get(), buffer->size(), read_callback.callback());
+    EXPECT_EQ(kBufferLength, read_callback.GetResult(result));
+    EXPECT_EQ(0,
+              std::memcmp(kBlobData.c_str(), buffer->data(), buffer->size()));
+
+    // Reset.
+    ASSERT_EQ(net::OK, upload->Init(init_callback.callback()));
+
+    // Read all the data.
+    buffer = new net::IOBufferWithSize(kBlobDataLength);
+    result =
+        upload->Read(buffer.get(), buffer->size(), read_callback.callback());
+    EXPECT_EQ(kBlobDataLength, read_callback.GetResult(result));
+    EXPECT_EQ(0,
+              std::memcmp(kBlobData.c_str(), buffer->data(), buffer->size()));
+  }
+  // Clean up for ASAN.
+  base::RunLoop().RunUntilIdle();
+}
 }  // namespace content
