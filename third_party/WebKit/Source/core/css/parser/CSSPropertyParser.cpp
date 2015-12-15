@@ -7,6 +7,7 @@
 
 #include "core/StylePropertyShorthand.h"
 #include "core/css/CSSCalculationValue.h"
+#include "core/css/CSSCounterValue.h"
 #include "core/css/CSSCrossfadeValue.h"
 #include "core/css/CSSCursorImageValue.h"
 #include "core/css/CSSCustomIdentValue.h"
@@ -2796,6 +2797,86 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeImage(CSSParserTokenRange& range,
     return nullptr;
 }
 
+static PassRefPtrWillBeRawPtr<CSSValue> consumeAttr(CSSParserTokenRange args, CSSParserContext context)
+{
+    if (args.peek().type() != IdentToken)
+        return nullptr;
+
+    String attrName = args.consumeIncludingWhitespace().value();
+    // CSS allows identifiers with "-" at the start, like "-webkit-mask-image".
+    // But HTML attribute names can't have those characters, and we should not
+    // even parse them inside attr().
+    // TODO(timloh): We should allow any <ident-token> here.
+    if (attrName[0] == '-' || !args.atEnd())
+        return nullptr;
+
+    if (context.isHTMLDocument())
+        attrName = attrName.lower();
+
+    RefPtrWillBeRawPtr<CSSFunctionValue> attrValue = CSSFunctionValue::create(CSSValueAttr);
+    attrValue->append(CSSCustomIdentValue::create(attrName));
+    return attrValue.release();
+}
+
+static PassRefPtrWillBeRawPtr<CSSValue> consumeCounterContent(CSSParserTokenRange args, bool counters)
+{
+    RefPtrWillBeRawPtr<CSSCustomIdentValue> identifier = consumeCustomIdent(args);
+    if (!identifier)
+        return nullptr;
+
+    // TODO(timloh): Make this a CSSStringValue.
+    RefPtrWillBeRawPtr<CSSCustomIdentValue> separator = nullptr;
+    if (!counters) {
+        separator = CSSCustomIdentValue::create(String());
+    } else {
+        if (!consumeCommaIncludingWhitespace(args))
+            return nullptr;
+        if (args.peek().type() != StringToken)
+            return nullptr;
+        separator = CSSCustomIdentValue::create(args.consumeIncludingWhitespace().value());
+    }
+
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> listStyle = nullptr;
+    if (consumeCommaIncludingWhitespace(args)) {
+        CSSValueID id = args.peek().id();
+        if ((id != CSSValueNone && (id < CSSValueDisc || id > CSSValueKatakanaIroha)))
+            return nullptr;
+        listStyle = consumeIdent(args);
+    } else {
+        listStyle = cssValuePool().createIdentifierValue(CSSValueDecimal);
+    }
+
+    if (!args.atEnd())
+        return nullptr;
+    return CSSCounterValue::create(identifier.release(), listStyle.release(), separator.release());
+}
+
+static PassRefPtrWillBeRawPtr<CSSValueList> consumeContent(CSSParserTokenRange& range, CSSParserContext context)
+{
+    RefPtrWillBeRawPtr<CSSValueList> values = CSSValueList::createSpaceSeparated();
+
+    do {
+        RefPtrWillBeRawPtr<CSSValue> parsedValue = consumeImage(range, context);
+        if (!parsedValue)
+            parsedValue = consumeIdent<CSSValueOpenQuote, CSSValueCloseQuote, CSSValueNoOpenQuote, CSSValueNoCloseQuote, CSSValueNormal>(range);
+        if (!parsedValue)
+            parsedValue = consumeString(range);
+        if (!parsedValue) {
+            if (range.peek().functionId() == CSSValueAttr)
+                parsedValue = consumeAttr(consumeFunction(range), context);
+            else if (range.peek().functionId() == CSSValueCounter)
+                parsedValue = consumeCounterContent(consumeFunction(range), false);
+            else if (range.peek().functionId() == CSSValueCounters)
+                parsedValue = consumeCounterContent(consumeFunction(range), true);
+            if (!parsedValue)
+                return nullptr;
+        }
+        values->append(parsedValue.release());
+    } while (!range.atEnd());
+
+    return values.release();
+}
+
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSPropertyID unresolvedProperty)
 {
     CSSPropertyID property = resolveCSSPropertyID(unresolvedProperty);
@@ -3037,6 +3118,8 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
         return consumeContain(m_range);
     case CSSPropertyTransformOrigin:
         return consumeTransformOrigin(m_range, m_context.mode(), UnitlessQuirk::Forbid);
+    case CSSPropertyContent:
+        return consumeContent(m_range, m_context);
     default:
         return nullptr;
     }

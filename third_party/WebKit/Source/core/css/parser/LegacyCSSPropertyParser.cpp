@@ -31,7 +31,6 @@
 #include "core/css/CSSBasicShapeValues.h"
 #include "core/css/CSSBorderImage.h"
 #include "core/css/CSSContentDistributionValue.h"
-#include "core/css/CSSCounterValue.h"
 #include "core/css/CSSCrossfadeValue.h"
 #include "core/css/CSSCustomIdentValue.h"
 #include "core/css/CSSFunctionValue.h"
@@ -240,12 +239,6 @@ PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSPropertyParser::createPrimitiveNume
     return cssValuePool().createValue(value->fValue, value->unit());
 }
 
-inline PassRefPtrWillBeRawPtr<CSSStringValue> CSSPropertyParser::createPrimitiveStringValue(CSSParserValue* value)
-{
-    ASSERT(value->m_unit == CSSParserValue::String || value->m_unit == CSSParserValue::Identifier);
-    return CSSStringValue::create(value->string);
-}
-
 inline PassRefPtrWillBeRawPtr<CSSCustomIdentValue> CSSPropertyParser::createPrimitiveCustomIdentValue(CSSParserValue* value)
 {
     ASSERT(value->m_unit == CSSParserValue::String || value->m_unit == CSSParserValue::Identifier);
@@ -336,15 +329,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     RefPtrWillBeRawPtr<CSSValue> parsedValue = nullptr;
 
     switch (propId) {
-    case CSSPropertyContent:              // [ <string> | <uri> | <counter> | attr(X) | open-quote |
-        // close-quote | no-open-quote | no-close-quote ]+ | inherit
-        parsedValue = parseContent();
-        break;
-
-    /* Start of supported CSS properties with validation. This is needed for parseShorthand to work
-     * correctly and allows optimization in blink::applyRule(..)
-     */
-
     case CSSPropertyBackgroundColor: // <color> | inherit
     case CSSPropertyBorderTopColor: // <color> | inherit
     case CSSPropertyBorderRightColor:
@@ -902,6 +886,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyTranslate:
     case CSSPropertyCursor:
     case CSSPropertyTransformOrigin:
+    case CSSPropertyContent:
         validPrimitive = false;
         break;
 
@@ -1256,84 +1241,6 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseScrollSnapCoordinate()
     }
 
     return parsePositionList(m_valueList);
-}
-
-// [ <string> | <uri> | <counter> | attr(X) | open-quote | close-quote | no-open-quote | no-close-quote ]+ | inherit
-// in CSS 2.1 this got somewhat reduced:
-// [ <string> | attr(X) | open-quote | close-quote | no-open-quote | no-close-quote ]+ | inherit
-PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::parseContent()
-{
-    RefPtrWillBeRawPtr<CSSValueList> values = CSSValueList::createSpaceSeparated();
-
-    while (CSSParserValue* val = m_valueList->current()) {
-        RefPtrWillBeRawPtr<CSSValue> parsedValue = nullptr;
-        if (val->m_unit == CSSParserValue::URI) {
-            // url
-            parsedValue = createCSSImageValueWithReferrer(val->string, m_context);
-        } else if (val->m_unit == CSSParserValue::Function) {
-            // attr(X) | counter(X [,Y]) | counters(X, Y, [,Z]) | -webkit-gradient(...)
-            CSSParserValueList* args = val->function->args.get();
-            if (!args)
-                return nullptr;
-            if (val->function->id == CSSValueAttr) {
-                parsedValue = parseAttr(args);
-            } else if (val->function->id == CSSValueCounter) {
-                parsedValue = parseCounterContent(args, false);
-            } else if (val->function->id == CSSValueCounters) {
-                parsedValue = parseCounterContent(args, true);
-            } else if (val->function->id == CSSValueWebkitImageSet) {
-                parsedValue = parseImageSet(m_valueList);
-            } else if (CSSPropertyParser::isGeneratedImage(val->function->id)) {
-                if (!parseGeneratedImage(m_valueList, parsedValue))
-                    return nullptr;
-            }
-        } else if (val->m_unit == CSSParserValue::Identifier) {
-            switch (val->id) {
-            case CSSValueOpenQuote:
-            case CSSValueCloseQuote:
-            case CSSValueNoOpenQuote:
-            case CSSValueNoCloseQuote:
-            case CSSValueNone:
-            case CSSValueNormal:
-                parsedValue = cssValuePool().createIdentifierValue(val->id);
-            default:
-                break;
-            }
-        } else if (val->m_unit == CSSParserValue::String) {
-            parsedValue = createPrimitiveStringValue(val);
-        }
-        if (!parsedValue)
-            return nullptr;
-        values->append(parsedValue.release());
-        m_valueList->next();
-    }
-
-    return values.release();
-}
-
-PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseAttr(CSSParserValueList* args)
-{
-    if (args->size() != 1)
-        return nullptr;
-
-    CSSParserValue* a = args->current();
-
-    if (a->m_unit != CSSParserValue::Identifier)
-        return nullptr;
-
-    String attrName = a->string;
-    // CSS allows identifiers with "-" at the start, like "-webkit-mask-image".
-    // But HTML attribute names can't have those characters, and we should not
-    // even parse them inside attr().
-    if (attrName[0] == '-')
-        return nullptr;
-
-    if (m_context.isHTMLDocument())
-        attrName = attrName.lower();
-
-    RefPtrWillBeRawPtr<CSSFunctionValue> attrValue = CSSFunctionValue::create(CSSValueAttr);
-    attrValue->append(CSSCustomIdentValue::create(attrName));
-    return attrValue.release();
 }
 
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseColor(const CSSParserValue* value, bool acceptQuirkyColors)
@@ -2736,58 +2643,6 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseGridAutoFlow(CSSParserV
     }
 
     return parsedValues;
-}
-
-PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseCounterContent(CSSParserValueList* args, bool counters)
-{
-    unsigned numArgs = args->size();
-    if (counters && numArgs != 3 && numArgs != 5)
-        return nullptr;
-    if (!counters && numArgs != 1 && numArgs != 3)
-        return nullptr;
-
-    CSSParserValue* i = args->current();
-    if (i->m_unit != CSSParserValue::Identifier)
-        return nullptr;
-    RefPtrWillBeRawPtr<CSSCustomIdentValue> identifier = createPrimitiveCustomIdentValue(i);
-
-    RefPtrWillBeRawPtr<CSSCustomIdentValue> separator = nullptr;
-    if (!counters)
-        separator = CSSCustomIdentValue::create(String());
-    else {
-        args->next();
-        if (!consumeComma(args))
-            return nullptr;
-
-        i = args->current();
-        if (i->m_unit != CSSParserValue::String)
-            return nullptr;
-
-        separator = createPrimitiveCustomIdentValue(i);
-    }
-
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> listStyle = nullptr;
-    i = args->next();
-    if (!i) // Make the list style default decimal
-        listStyle = cssValuePool().createIdentifierValue(CSSValueDecimal);
-    else {
-        if (!consumeComma(args))
-            return nullptr;
-
-        i = args->current();
-        if (i->m_unit != CSSParserValue::Identifier)
-            return nullptr;
-
-        CSSValueID listStyleID = CSSValueInvalid;
-        if (i->id == CSSValueNone || (i->id >= CSSValueDisc && i->id <= CSSValueKatakanaIroha))
-            listStyleID = i->id;
-        else
-            return nullptr;
-
-        listStyle = cssValuePool().createIdentifierValue(listStyleID);
-    }
-
-    return CSSCounterValue::create(identifier.release(), listStyle.release(), separator.release());
 }
 
 static void completeBorderRadii(RefPtrWillBeRawPtr<CSSPrimitiveValue> radii[4])

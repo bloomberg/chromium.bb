@@ -139,9 +139,6 @@ private:
     bool consume4Values(const StylePropertyShorthand&, bool important);
 
     bool parse4Values(CSSPropertyID, const CSSPropertyID* properties, bool important);
-    PassRefPtrWillBeRawPtr<CSSValueList> parseContent();
-
-    PassRefPtrWillBeRawPtr<CSSValue> parseAttr(CSSParserValueList* args);
 
     bool parseFillImage(CSSParserValueList*, RefPtrWillBeRawPtr<CSSValue>&);
 
@@ -207,8 +204,6 @@ private:
     bool consumeSystemFont(bool important);
 
     bool consumeBorderSpacing(bool important);
-
-    PassRefPtrWillBeRawPtr<CSSValue> parseCounterContent(CSSParserValueList* args, bool counters);
 
     bool parseColorParameters(const CSSParserValue*, int* colorValues, bool parseAlpha);
     bool parseHSLParameters(const CSSParserValue*, double* colorValues, bool parseAlpha);
