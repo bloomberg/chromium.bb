@@ -141,6 +141,8 @@ class NET_EXPORT_PRIVATE QuicReceivedPacketManager :
 
   bool ack_frame_updated() const { return ack_frame_updated_; }
 
+  void set_ack_frame_updated(bool updated) { ack_frame_updated_ = updated; }
+
  private:
   friend class test::QuicConnectionPeer;
   friend class test::QuicReceivedPacketManagerPeer;

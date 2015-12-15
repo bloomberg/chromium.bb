@@ -38,11 +38,7 @@ bool QuicP2PCryptoStream::Connect() {
   session()->connection()->OnHandshakeComplete();
   handshake_confirmed_ = true;
   session()->OnCryptoHandshakeEvent(QuicSession::HANDSHAKE_CONFIRMED);
-  if (session()->connection()->perspective() == Perspective::IS_CLIENT) {
-    // Send a ping from the client to the server to satisfy QUIC's version
-    // negotiation.
-    session()->connection()->SendPing();
-  }
+
   return true;
 }
 
