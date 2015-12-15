@@ -282,9 +282,13 @@ MediaCodecStatus MediaDecoderJob::QueueInputBuffer(const AccessUnit& unit) {
   }
 
   MediaCodecStatus status = media_codec_bridge_->QueueSecureInputBuffer(
-      input_buf_index, &unit.data[0], unit.data.size(), unit.key_id, unit.iv,
+      input_buf_index,
+      &unit.data[0], unit.data.size(),
+      reinterpret_cast<const uint8*>(&unit.key_id[0]), unit.key_id.size(),
+      reinterpret_cast<const uint8*>(&unit.iv[0]), unit.iv.size(),
       unit.subsamples.empty() ? NULL : &unit.subsamples[0],
-      unit.subsamples.size(), unit.timestamp);
+      unit.subsamples.size(),
+      unit.timestamp);
 
   // In case of MEDIA_CODEC_NO_KEY, we must reuse the |input_buf_index_|.
   // Otherwise MediaDrm will report errors.

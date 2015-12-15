@@ -12,7 +12,7 @@
 #include "content/common/gpu/media/android_copying_backing_strategy.h"
 #include "content/common/gpu/media/android_video_decode_accelerator.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder_mock.h"
-#include "media/base/android/media_codec_util.h"
+#include "media/base/android/media_codec_bridge.h"
 #include "media/base/android/media_jni_registrar.h"
 #include "media/video/picture.h"
 #include "media/video/video_decode_accelerator.h"
@@ -91,7 +91,7 @@ TEST_F(AndroidVideoDecodeAcceleratorTest, ConfigureUnsupportedCodec) {
 }
 
 TEST_F(AndroidVideoDecodeAcceleratorTest, ConfigureSupportedCodec) {
-  if (!media::MediaCodecUtil::IsMediaCodecAvailable())
+  if (!media::MediaCodecBridge::IsAvailable())
     return;
   EXPECT_TRUE(Configure(media::kCodecVP8));
 }

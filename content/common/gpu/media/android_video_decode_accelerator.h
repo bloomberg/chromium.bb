@@ -17,7 +17,7 @@
 #include "content/common/content_export.h"
 #include "content/common/gpu/media/avda_state_provider.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
-#include "media/base/android/sdk_media_codec_bridge.h"
+#include "media/base/android/media_codec_bridge.h"
 #include "media/video/video_decode_accelerator.h"
 
 namespace gfx {

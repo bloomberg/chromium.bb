@@ -9,12 +9,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "media/base/android/audio_decoder_job.h"
-#include "media/base/android/media_codec_util.h"
+#include "media/base/android/media_codec_bridge.h"
 #include "media/base/android/media_drm_bridge.h"
 #include "media/base/android/media_player_manager.h"
 #include "media/base/android/media_source_player.h"
 #include "media/base/android/media_url_interceptor.h"
-#include "media/base/android/sdk_media_codec_bridge.h"
 #include "media/base/android/video_decoder_job.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/decoder_buffer.h"
@@ -24,6 +23,15 @@
 #include "ui/gl/android/surface_texture.h"
 
 namespace media {
+
+// Helper macro to skip the test if MediaCodecBridge isn't available.
+#define SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE()        \
+  do {                                                            \
+    if (!MediaCodecBridge::IsAvailable()) {                       \
+      VLOG(0) << "Could not run test - not supported on device."; \
+      return;                                                     \
+    }                                                             \
+  } while (0)
 
 const base::TimeDelta kDefaultDuration =
     base::TimeDelta::FromMilliseconds(10000);

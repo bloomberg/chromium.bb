@@ -63,7 +63,7 @@
 #include "third_party/webrtc/base/ssladapter.h"
 
 #if defined(OS_ANDROID)
-#include "media/base/android/media_codec_util.h"
+#include "media/base/android/media_codec_bridge.h"
 #endif
 
 namespace content {
@@ -335,7 +335,7 @@ void PeerConnectionDependencyFactory::InitializeSignalingThread(
   }
 
 #if defined(OS_ANDROID)
-  if (!media::MediaCodecUtil::SupportsSetParameters())
+  if (!media::MediaCodecBridge::SupportsSetParameters())
     encoder_factory.reset();
 #endif
 

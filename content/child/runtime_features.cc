@@ -19,7 +19,7 @@
 #include <cpu-features.h>
 #include "base/android/build_info.h"
 #include "base/metrics/field_trial.h"
-#include "media/base/android/media_codec_util.h"
+#include "media/base/android/media_codec_bridge.h"
 #elif defined(OS_WIN)
 #include "base/win/windows_version.h"
 #endif
@@ -34,7 +34,7 @@ static void SetRuntimeFeatureDefaultsForPlatform() {
 
 #if defined(OS_ANDROID)
   // MSE/EME implementation needs Android MediaCodec API.
-  if (!media::MediaCodecUtil::IsMediaCodecAvailable()) {
+  if (!media::MediaCodecBridge::IsAvailable()) {
     WebRuntimeFeatures::enableMediaSource(false);
     WebRuntimeFeatures::enablePrefixedEncryptedMedia(false);
     WebRuntimeFeatures::enableEncryptedMedia(false);
@@ -43,7 +43,7 @@ static void SetRuntimeFeatureDefaultsForPlatform() {
   // is available.
   AndroidCpuFamily cpu_family = android_getCpuFamily();
   WebRuntimeFeatures::enableWebAudio(
-      media::MediaCodecUtil::IsMediaCodecAvailable() &&
+      media::MediaCodecBridge::IsAvailable() &&
       ((cpu_family == ANDROID_CPU_FAMILY_ARM) ||
        (cpu_family == ANDROID_CPU_FAMILY_ARM64) ||
        (cpu_family == ANDROID_CPU_FAMILY_X86) ||
@@ -121,7 +121,7 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   // API is available.
   WebRuntimeFeatures::enableWebAudio(
       !command_line.HasSwitch(switches::kDisableWebAudio) &&
-      media::MediaCodecUtil::IsMediaCodecAvailable());
+      media::MediaCodecBridge::IsAvailable());
 #else
   if (command_line.HasSwitch(switches::kDisableWebAudio))
     WebRuntimeFeatures::enableWebAudio(false);
