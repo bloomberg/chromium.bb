@@ -9,16 +9,18 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
-#include <stddef.h>         // For size_t
+#include <stddef.h>     // For size_t
 #include <assert.h>
 #include <stdarg.h>
-#ifndef WIN32
-#include <sys/time.h>
+#include <time.h>       // For clock_gettime, CLOCK_REALTIME
+#include <ctype.h>      // For isdigit, isalpha
+
+#if !defined(_WIN32)
+#include <sys/time.h>   // For gettimeofday
 #endif
-#include <time.h>
-#include <ctype.h>	// For isdigit, isalpha.
 
 // C++
+#include <ctime>
 #include <vector>
 #include <string>
 #include <algorithm>
@@ -28,9 +30,6 @@
 #include <ostream>
 #include <utility>
 #include <set>
-
-#include "build/build_config.h"
-#include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 
 // Use std names.
 using std::set;
@@ -46,7 +45,7 @@ using std::sort;
 using std::swap;
 using std::make_pair;
 
-#if defined(__GNUC__) && !defined(USE_CXX0X) && !defined(_LIBCPP_ABI_VERSION) && !defined(OS_ANDROID)
+#if defined(__GNUC__) && !defined(USE_CXX0X) && !defined(_LIBCPP_ABI_VERSION)
 
 #include <tr1/unordered_set>
 using std::tr1::unordered_set;
@@ -54,11 +53,22 @@ using std::tr1::unordered_set;
 #else
 
 #include <unordered_set>
-#if defined(WIN32) || (defined(OS_ANDROID) && !defined(_LIBCPP_ABI_VERSION))
+#if defined(_WIN32)
 using std::tr1::unordered_set;
 #else
 using std::unordered_set;
 #endif
+
+#endif
+
+#ifdef _WIN32
+
+#define snprintf _snprintf_s
+#define stricmp _stricmp
+#define strtof strtod /* not really correct but best we can do */
+#define strtoll _strtoi64
+#define strtoull _strtoui64
+#define vsnprintf vsnprintf_s
 
 #endif
 
@@ -77,35 +87,31 @@ typedef unsigned long ulong;
 typedef unsigned int uint;
 typedef unsigned short ushort;
 
+// Prevent the compiler from complaining about or optimizing away variables
+// that appear unused.
+#undef ATTRIBUTE_UNUSED
+#if defined(__GNUC__)
+#define ATTRIBUTE_UNUSED __attribute__ ((unused))
+#else
+#define ATTRIBUTE_UNUSED
+#endif
+
 // COMPILE_ASSERT causes a compile error about msg if expr is not true.
 #if __cplusplus >= 201103L
 #define COMPILE_ASSERT(expr, msg) static_assert(expr, #msg)
 #else
 template<bool> struct CompileAssert {};
 #define COMPILE_ASSERT(expr, msg) \
-  typedef CompileAssert<(bool(expr))> msg[bool(expr) ? 1 : -1]
+  typedef CompileAssert<(bool(expr))> msg[bool(expr) ? 1 : -1] ATTRIBUTE_UNUSED
 #endif
 
-// DISALLOW_EVIL_CONSTRUCTORS disallows the copy and operator= functions.
+// DISALLOW_COPY_AND_ASSIGN disallows the copy and operator= functions.
 // It goes in the private: declarations in a class.
-#define DISALLOW_EVIL_CONSTRUCTORS(TypeName) \
+#define DISALLOW_COPY_AND_ASSIGN(TypeName) \
   TypeName(const TypeName&);                 \
   void operator=(const TypeName&)
 
-#define arraysize(array) (sizeof(array)/sizeof((array)[0]))
-
-// Fake lock annotations.  For real ones, see
-// http://code.google.com/p/data-race-test/
-#ifndef ANNOTATE_PUBLISH_MEMORY_RANGE
-#define ANNOTATE_PUBLISH_MEMORY_RANGE(a, b)
-#define ANNOTATE_IGNORE_WRITES_BEGIN()
-#define ANNOTATE_IGNORE_WRITES_END()
-#define ANNOTATE_BENIGN_RACE(a, b)
-#define NO_THREAD_SAFETY_ANALYSIS
-#define ANNOTATE_HAPPENS_BEFORE(x)
-#define ANNOTATE_HAPPENS_AFTER(x)
-#define ANNOTATE_UNPROTECTED_READ(x) (x)
-#endif
+#define arraysize(array) (int)(sizeof(array)/sizeof((array)[0]))
 
 class StringPiece;
 
@@ -132,17 +138,10 @@ static inline uint64 Hash64StringWithSeed(const char* s, int len, uint32 seed) {
   return ((uint64)x << 32) | y;
 }
 
-inline bool RunningOnValgrindOrMemorySanitizer() {
-#if defined(MEMORY_SANITIZER)
-  return true;
-#else
-  return RunningOnValgrind();
-#endif
-}
+bool RunningOnValgrind();
 
 }  // namespace re2
 
-#include "util/arena.h"
 #include "util/logging.h"
 #include "util/mutex.h"
 #include "util/utf.h"

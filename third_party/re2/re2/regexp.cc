@@ -14,7 +14,7 @@ namespace re2 {
 
 // Constructor.  Allocates vectors as appropriate for operator.
 Regexp::Regexp(RegexpOp op, ParseFlags parse_flags)
-  : op_(op),
+  : op_(static_cast<uint8>(op)),
     simple_(false),
     parse_flags_(static_cast<uint16>(parse_flags)),
     ref_(1),
@@ -43,7 +43,8 @@ Regexp::~Regexp() {
       delete[] runes_;
       break;
     case kRegexpCharClass:
-      cc_->Delete();
+      if (cc_)
+        cc_->Delete();
       delete ccb_;
       break;
   }
@@ -106,7 +107,7 @@ void Regexp::Decref() {
     GLOBAL_MUTEX_LOCK(ref_mutex);
     int r = (*ref_map)[this] - 1;
     if (r < kMaxRef) {
-      ref_ = r;
+      ref_ = static_cast<uint16>(r);
       ref_map->erase(this);
     } else {
       (*ref_map)[this] = r;
@@ -210,6 +211,13 @@ Regexp* Regexp::ConcatOrAlternate(RegexpOp op, Regexp** sub, int nsub,
                                   ParseFlags flags, bool can_factor) {
   if (nsub == 1)
     return sub[0];
+
+  if (nsub == 0) {
+    if (op == kRegexpAlternate)
+      return new Regexp(kRegexpNoMatch, flags);
+    else
+      return new Regexp(kRegexpEmptyMatch, flags);
+  }
 
   Regexp** subcopy = NULL;
   if (op == kRegexpAlternate && can_factor) {
@@ -445,10 +453,11 @@ bool Regexp::Equal(Regexp* a, Regexp* b) {
         continue;
     }
 
-    int n = stk.size();
+    size_t n = stk.size();
     if (n == 0)
       break;
 
+    DCHECK_GE(n, 2);
     a = stk[n-2];
     b = stk[n-1];
     stk.resize(n-2);
@@ -517,7 +526,7 @@ class NumCapturesWalker : public Regexp::Walker<Ignored> {
 
  private:
   int ncapture_;
-  DISALLOW_EVIL_CONSTRUCTORS(NumCapturesWalker);
+  DISALLOW_COPY_AND_ASSIGN(NumCapturesWalker);
 };
 
 int Regexp::NumCaptures() {
@@ -561,7 +570,7 @@ class NamedCapturesWalker : public Regexp::Walker<Ignored> {
 
  private:
   map<string, int>* map_;
-  DISALLOW_EVIL_CONSTRUCTORS(NamedCapturesWalker);
+  DISALLOW_COPY_AND_ASSIGN(NamedCapturesWalker);
 };
 
 map<string, int>* Regexp::NamedCaptures() {
@@ -601,7 +610,7 @@ class CaptureNamesWalker : public Regexp::Walker<Ignored> {
 
  private:
   map<int, string>* map_;
-  DISALLOW_EVIL_CONSTRUCTORS(CaptureNamesWalker);
+  DISALLOW_COPY_AND_ASSIGN(CaptureNamesWalker);
 };
 
 map<int, string>* Regexp::CaptureNames() {
@@ -643,7 +652,7 @@ bool Regexp::RequiredPrefix(string *prefix, bool *foldcase, Regexp** suffix) {
       if (re->parse_flags() & Latin1) {
         prefix->resize(re->nrunes_);
         for (int j = 0; j < re->nrunes_; j++)
-          (*prefix)[j] = re->runes_[j];
+          (*prefix)[j] = static_cast<char>(re->runes_[j]);
       } else {
         // Convert to UTF-8 in place.
         // Assume worst-case space and then trim.
@@ -652,7 +661,7 @@ bool Regexp::RequiredPrefix(string *prefix, bool *foldcase, Regexp** suffix) {
         for (int j = 0; j < re->nrunes_; j++) {
           Rune r = re->runes_[j];
           if (r < Runeself)
-            *p++ = r;
+            *p++ = static_cast<char>(r);
           else
             p += runetochar(p, &r);
         }
@@ -662,14 +671,14 @@ bool Regexp::RequiredPrefix(string *prefix, bool *foldcase, Regexp** suffix) {
 
     case kRegexpLiteral:
       if ((re->parse_flags() & Latin1) || re->rune_ < Runeself) {
-        prefix->append(1, re->rune_);
+        prefix->append(1, static_cast<char>(re->rune_));
       } else {
         char buf[UTFmax];
         prefix->append(buf, runetochar(buf, &re->rune_));
       }
       break;
   }
-  *foldcase = (sub[i]->parse_flags() & FoldCase);
+  *foldcase = (sub[i]->parse_flags() & FoldCase) != 0;
   i++;
 
   // The rest.
@@ -849,7 +858,7 @@ void CharClassBuilder::Negate() {
   }
 
   ranges_.clear();
-  for (int i = 0; i < v.size(); i++)
+  for (size_t i = 0; i < v.size(); i++)
     ranges_.insert(v[i]);
 
   upper_ = AlphaMask & ~upper_;
@@ -915,12 +924,12 @@ bool CharClass::Contains(Rune r) {
 }
 
 CharClass* CharClassBuilder::GetCharClass() {
-  CharClass* cc = CharClass::New(ranges_.size());
+  CharClass* cc = CharClass::New(static_cast<int>(ranges_.size()));
   int n = 0;
   for (iterator it = begin(); it != end(); ++it)
     cc->ranges_[n++] = *it;
   cc->nranges_ = n;
-  DCHECK_LE(n, ranges_.size());
+  DCHECK_LE(n, static_cast<int>(ranges_.size()));
   cc->nrunes_ = nrunes_;
   cc->folds_ascii_ = FoldsASCII();
   return cc;

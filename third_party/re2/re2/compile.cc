@@ -230,7 +230,7 @@ class Compiler : public Regexp::Walker<Frag> {
 
   RE2::Anchor anchor_;  // anchor mode for RE2::Set
 
-  DISALLOW_EVIL_CONSTRUCTORS(Compiler);
+  DISALLOW_COPY_AND_ASSIGN(Compiler);
 };
 
 Compiler::Compiler() {
@@ -371,6 +371,8 @@ Frag Compiler::Plus(Frag a, bool nongreedy) {
 
 // Given a fragment for a, returns a fragment for a? or a?? (if nongreedy)
 Frag Compiler::Quest(Frag a, bool nongreedy) {
+  if (IsNoMatch(a))
+    return Nop();
   int id = AllocInst(1);
   if (id < 0)
     return NoMatch();
@@ -433,7 +435,10 @@ Frag Compiler::EmptyWidth(EmptyOp empty) {
   if (empty & (kEmptyWordBoundary|kEmptyNonWordBoundary)) {
     int j;
     for (int i = 0; i < 256; i = j) {
-      for (j = i+1; j < 256 && Prog::IsWordChar(i) == Prog::IsWordChar(j); j++)
+      for (j = i + 1; j < 256 &&
+                      Prog::IsWordChar(static_cast<uint8>(i)) ==
+                          Prog::IsWordChar(static_cast<uint8>(j));
+           j++)
         ;
       prog_->MarkByteRange(i, j-1);
     }
@@ -443,6 +448,8 @@ Frag Compiler::EmptyWidth(EmptyOp empty) {
 
 // Given a fragment a, returns a fragment with capturing parens around a.
 Frag Compiler::Capture(Frag a, int n) {
+  if (IsNoMatch(a))
+    return NoMatch();
   int id = AllocInst(2);
   if (id < 0)
     return NoMatch();
@@ -499,7 +506,10 @@ int Compiler::RuneByteSuffix(uint8 lo, uint8 hi, bool foldcase, int next) {
     return UncachedRuneByteSuffix(lo, hi, foldcase, next);
   }
 
-  uint64 key = ((uint64)next << 17) | (lo<<9) | (hi<<1) | (foldcase ? 1ULL : 0ULL);
+  uint64 key = (uint64)next << 17 |
+               (uint64)lo   <<  9 |
+               (uint64)hi   <<  1 |
+               (uint64)foldcase;
   map<uint64, int>::iterator it = rune_cache_.find(key);
   if (it != rune_cache_.end())
     return it->second;
@@ -551,7 +561,8 @@ void Compiler::AddRuneRangeLatin1(Rune lo, Rune hi, bool foldcase) {
     return;
   if (hi > 0xFF)
     hi = 0xFF;
-  AddSuffix(RuneByteSuffix(lo, hi, foldcase, 0));
+  AddSuffix(RuneByteSuffix(static_cast<uint8>(lo), static_cast<uint8>(hi),
+                           foldcase, 0));
 }
 
 // Table describing how to make a UTF-8 matching machine
@@ -592,7 +603,8 @@ void Compiler::Add_80_10ffff() {
     int next = 0;
     if (p.next >= 0)
       next = inst[p.next];
-    inst[i] = UncachedRuneByteSuffix(p.lo, p.hi, false, next);
+    inst[i] = UncachedRuneByteSuffix(static_cast<uint8>(p.lo),
+                                     static_cast<uint8>(p.hi), false, next);
     if ((p.lo & 0xC0) != 0x80)
       AddSuffix(inst[i]);
   }
@@ -621,7 +633,8 @@ void Compiler::AddRuneRangeUTF8(Rune lo, Rune hi, bool foldcase) {
 
   // ASCII range is always a special case.
   if (hi < Runeself) {
-    AddSuffix(RuneByteSuffix(lo, hi, foldcase, 0));
+    AddSuffix(RuneByteSuffix(static_cast<uint8>(lo), static_cast<uint8>(hi),
+                             foldcase, 0));
     return;
   }
 
@@ -749,16 +762,16 @@ Frag Compiler::PostVisit(Regexp* re, Frag, Frag, Frag* child_frags,
     }
 
     case kRegexpStar:
-      return Star(child_frags[0], re->parse_flags()&Regexp::NonGreedy);
+      return Star(child_frags[0], (re->parse_flags()&Regexp::NonGreedy) != 0);
 
     case kRegexpPlus:
-      return Plus(child_frags[0], re->parse_flags()&Regexp::NonGreedy);
+      return Plus(child_frags[0], (re->parse_flags()&Regexp::NonGreedy) != 0);
 
     case kRegexpQuest:
-      return Quest(child_frags[0], re->parse_flags()&Regexp::NonGreedy);
+      return Quest(child_frags[0], (re->parse_flags()&Regexp::NonGreedy) != 0);
 
     case kRegexpLiteral:
-      return Literal(re->rune(), re->parse_flags()&Regexp::FoldCase);
+      return Literal(re->rune(), (re->parse_flags()&Regexp::FoldCase) != 0);
 
     case kRegexpLiteralString: {
       // Concatenation of literals.
@@ -766,7 +779,8 @@ Frag Compiler::PostVisit(Regexp* re, Frag, Frag, Frag* child_frags,
         return Nop();
       Frag f;
       for (int i = 0; i < re->nrunes(); i++) {
-        Frag f1 = Literal(re->runes()[i], re->parse_flags()&Regexp::FoldCase);
+        Frag f1 = Literal(re->runes()[i],
+                          (re->parse_flags()&Regexp::FoldCase) != 0);
         if (i == 0)
           f = f1;
         else
@@ -811,7 +825,8 @@ Frag Compiler::PostVisit(Regexp* re, Frag, Frag, Frag* child_frags,
         // If this range contains all of A-Za-z or none of it,
         // the fold flag is unnecessary; don't bother.
         bool fold = foldascii;
-        if ((i->lo <= 'A' && 'z' <= i->hi) || i->hi < 'A' || 'z' < i->lo)
+        if ((i->lo <= 'A' && 'z' <= i->hi) || i->hi < 'A' || 'z' < i->lo ||
+            ('Z' < i->lo && i->hi < 'a'))
           fold = false;
 
         AddRuneRange(i->lo, i->hi, fold);
@@ -954,7 +969,7 @@ void Compiler::Setup(Regexp::ParseFlags flags, int64 max_mem,
   max_mem_ = max_mem;
   if (max_mem <= 0) {
     max_inst_ = 100000;  // more than enough
-  } else if (max_mem <= sizeof(Prog)) {
+  } else if (max_mem <= static_cast<int64>(sizeof(Prog))) {
     // No room for anything.
     max_inst_ = 0;
   } else {
@@ -974,7 +989,7 @@ void Compiler::Setup(Regexp::ParseFlags flags, int64 max_mem,
     if (m > Prog::Inst::kMaxInst)
       m = Prog::Inst::kMaxInst;
 
-    max_inst_ = m;
+    max_inst_ = static_cast<int>(m);
   }
 
   anchor_ = anchor;
