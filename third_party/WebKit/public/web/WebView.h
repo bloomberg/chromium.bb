@@ -423,8 +423,10 @@ public:
     BLINK_EXPORT static void updateVisitedLinkState(unsigned long long hash);
 
     // Tells all WebView instances to update the visited state for all
-    // their links.
-    BLINK_EXPORT static void resetVisitedLinkState();
+    // their links. Use invalidateVisitedLinkHashes to inform that the visitedlink
+    // table was changed and the salt was changed too. And all cached visitedlink
+    // hashes need to be recalculated.
+    BLINK_EXPORT static void resetVisitedLinkState(bool invalidateVisitedLinkHashes);
 
 
     // Custom colors -------------------------------------------------------

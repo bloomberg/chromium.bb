@@ -26,7 +26,7 @@ class VisitedLinkSlave : public VisitedLinkCommon,
   // Message handlers.
   void OnUpdateVisitedLinks(base::SharedMemoryHandle table);
   void OnAddVisitedLinks(const VisitedLinkSlave::Fingerprints& fingerprints);
-  void OnResetVisitedLinks();
+  void OnResetVisitedLinks(bool invalidate_hashes);
 
  private:
   void FreeTable();

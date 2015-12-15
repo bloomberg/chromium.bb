@@ -40,8 +40,9 @@ namespace visitedlink {
 class VisitedLinkUpdater {
  public:
   explicit VisitedLinkUpdater(int render_process_id)
-      : reset_needed_(false), render_process_id_(render_process_id) {
-  }
+      : reset_needed_(false),
+        invalidate_hashes_(false),
+        render_process_id_(render_process_id) {}
 
   // Informs the renderer about a new visited link table.
   void SendVisitedLinkTable(base::SharedMemory* table_memory) {
@@ -65,7 +66,7 @@ class VisitedLinkUpdater {
     if (pending_.size() + links.size() > kVisitedLinkBufferThreshold) {
       // Once the threshold is reached, there's no need to store pending visited
       // link updates -- we opt for resetting the state for all links.
-      AddReset();
+      AddReset(false);
       return;
     }
 
@@ -73,9 +74,15 @@ class VisitedLinkUpdater {
   }
 
   // Tells the updater that sending individual link updates is no longer
-  // necessary and the visited state for all links should be reset.
-  void AddReset() {
+  // necessary and the visited state for all links should be reset. If
+  // |invalidateHashes| is true all cached visited links hashes should be
+  // dropped.
+  void AddReset(bool invalidate_hashes) {
     reset_needed_ = true;
+    // Do not set to false. If tab is invisible the reset message will not be
+    // sent until tab became visible.
+    if (invalidate_hashes)
+      invalidate_hashes_ = true;
     pending_.clear();
   }
 
@@ -91,8 +98,9 @@ class VisitedLinkUpdater {
       return;
 
     if (reset_needed_) {
-      process->Send(new ChromeViewMsg_VisitedLink_Reset());
+      process->Send(new ChromeViewMsg_VisitedLink_Reset(invalidate_hashes_));
       reset_needed_ = false;
+      invalidate_hashes_ = false;
       return;
     }
 
@@ -106,6 +114,7 @@ class VisitedLinkUpdater {
 
  private:
   bool reset_needed_;
+  bool invalidate_hashes_;
   int render_process_id_;
   VisitedLinkCommon::Fingerprints pending_;
 };
@@ -154,12 +163,12 @@ void VisitedLinkEventListener::Add(VisitedLinkMaster::Fingerprint fingerprint) {
   }
 }
 
-void VisitedLinkEventListener::Reset() {
+void VisitedLinkEventListener::Reset(bool invalidate_hashes) {
   pending_visited_links_.clear();
   coalesce_timer_.Stop();
 
   for (Updaters::iterator i = updaters_.begin(); i != updaters_.end(); ++i) {
-    i->second->AddReset();
+    i->second->AddReset(invalidate_hashes);
     i->second->Update();
   }
 }

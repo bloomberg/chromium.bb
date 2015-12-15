@@ -412,9 +412,9 @@ void WebView::updateVisitedLinkState(unsigned long long linkHash)
     Page::visitedStateChanged(linkHash);
 }
 
-void WebView::resetVisitedLinkState()
+void WebView::resetVisitedLinkState(bool invalidateVisitedLinkHashes)
 {
-    Page::allVisitedStateChanged();
+    Page::allVisitedStateChanged(invalidateVisitedLinkHashes);
 }
 
 void WebView::willEnterModalLoop()

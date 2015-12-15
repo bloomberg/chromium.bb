@@ -37,7 +37,7 @@ class VisitedLinkEventListener : public VisitedLinkMaster::Listener,
 
   void NewTable(base::SharedMemory* table_memory) override;
   void Add(VisitedLinkMaster::Fingerprint fingerprint) override;
-  void Reset() override;
+  void Reset(bool invalidate_hashes) override;
 
  private:
   void CommitVisitedLinks();

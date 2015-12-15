@@ -46,7 +46,7 @@ public:
         return adoptPtrWillBeNoop(new VisitedLinkState(document));
     }
 
-    void invalidateStyleForAllLinks();
+    void invalidateStyleForAllLinks(bool invalidateVisitedLinkHashes);
     void invalidateStyleForLink(LinkHash);
 
     EInsideLink determineLinkState(const Element& element)

@@ -24,6 +24,7 @@ IPC_MESSAGE_CONTROL1(ChromeViewMsg_VisitedLink_Add, std::vector<uint64>)
 
 // History system notification that one or more history items have been
 // deleted, which at this point means that all link coloring state must be
-// re-calculated.
-IPC_MESSAGE_CONTROL0(ChromeViewMsg_VisitedLink_Reset)
-
+// re-calculated. Boolean flag is used to inform renderer process to invalidate
+// cached visited links hashes. The flag is needed because the salt will change
+// after loading the visitedlink table from the database file.
+IPC_MESSAGE_CONTROL1(ChromeViewMsg_VisitedLink_Reset, bool)

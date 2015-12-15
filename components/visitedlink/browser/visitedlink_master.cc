@@ -116,6 +116,47 @@ void AsyncClose(FILE** file) {
 
 }  // namespace
 
+struct VisitedLinkMaster::LoadFromFileResult
+    : public base::RefCountedThreadSafe<LoadFromFileResult> {
+  LoadFromFileResult(base::ScopedFILE file,
+                     scoped_ptr<base::SharedMemory> shared_memory,
+                     Fingerprint* hash_table,
+                     int32 num_entries,
+                     int32 used_count,
+                     uint8 salt[LINK_SALT_LENGTH]);
+
+  base::ScopedFILE file;
+  scoped_ptr<base::SharedMemory> shared_memory;
+  Fingerprint* hash_table;
+  int32 num_entries;
+  int32 used_count;
+  uint8 salt[LINK_SALT_LENGTH];
+
+ private:
+  friend class base::RefCountedThreadSafe<LoadFromFileResult>;
+  virtual ~LoadFromFileResult();
+
+  DISALLOW_COPY_AND_ASSIGN(LoadFromFileResult);
+};
+
+VisitedLinkMaster::LoadFromFileResult::LoadFromFileResult(
+    base::ScopedFILE file,
+    scoped_ptr<base::SharedMemory> shared_memory,
+    Fingerprint* hash_table,
+    int32 num_entries,
+    int32 used_count,
+    uint8 salt[LINK_SALT_LENGTH])
+    : file(file.Pass()),
+      shared_memory(shared_memory.Pass()),
+      hash_table(hash_table),
+      num_entries(num_entries),
+      used_count(used_count) {
+  memcpy(this->salt, salt, LINK_SALT_LENGTH);
+}
+
+VisitedLinkMaster::LoadFromFileResult::~LoadFromFileResult() {
+}
+
 // TableBuilder ---------------------------------------------------------------
 
 // How rebuilding from history works
@@ -181,7 +222,9 @@ VisitedLinkMaster::VisitedLinkMaster(content::BrowserContext* browser_context,
     : browser_context_(browser_context),
       delegate_(delegate),
       listener_(new VisitedLinkEventListener(this, browser_context)),
-      persist_to_disk_(persist_to_disk) {
+      persist_to_disk_(persist_to_disk),
+      table_is_loading_from_file_(false),
+      weak_ptr_factory_(this) {
   InitMembers();
 }
 
@@ -193,7 +236,9 @@ VisitedLinkMaster::VisitedLinkMaster(Listener* listener,
                                      int32 default_table_size)
     : browser_context_(NULL),
       delegate_(delegate),
-      persist_to_disk_(persist_to_disk) {
+      persist_to_disk_(persist_to_disk),
+      table_is_loading_from_file_(false),
+      weak_ptr_factory_(this) {
   listener_.reset(listener);
   DCHECK(listener_.get());
   InitMembers();
@@ -214,6 +259,17 @@ VisitedLinkMaster::~VisitedLinkMaster() {
   FreeURLTable();
   // FreeURLTable() will schedule closing of the file and deletion of |file_|.
   // So nothing should be done here.
+
+  if (table_is_loading_from_file_ &&
+      (!added_since_load_.empty() || !deleted_since_load_.empty())) {
+    // Delete the database file if it exists because we don't have enough time
+    // to load the table from the database file and now we have inconsistent
+    // state. On the next start table will be rebuilt.
+    base::FilePath filename;
+    GetDatabaseFileName(&filename);
+    PostIOTask(FROM_HERE,
+               base::Bind(IgnoreResult(&base::DeleteFile), filename, false));
+  }
 }
 
 void VisitedLinkMaster::InitMembers() {
@@ -224,17 +280,20 @@ void VisitedLinkMaster::InitMembers() {
   table_size_override_ = 0;
   suppress_rebuild_ = false;
   sequence_token_ = BrowserThread::GetBlockingPool()->GetSequenceToken();
-
-#ifndef NDEBUG
-  posted_asynchronous_operation_ = false;
-#endif
 }
 
 bool VisitedLinkMaster::Init() {
-  // We probably shouldn't be loading this from the UI thread,
-  // but it does need to happen early on in startup.
-  //   http://code.google.com/p/chromium/issues/detail?id=24163
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  // Create the temporary table. If the table is rebuilt that temporary table
+  // will be became the main table.
+  // The salt must be generated before the table so that it can be copied to
+  // the shared memory.
+  GenerateSalt(salt_);
+  if (!CreateURLTable(DefaultTableSize()))
+    return false;
+
+#ifndef NDEBUG
+  DebugValidate();
+#endif
 
   if (persist_to_disk_) {
     if (InitFromFile())
@@ -258,16 +317,24 @@ VisitedLinkMaster::Hash VisitedLinkMaster::TryToAddURL(const GURL& url) {
   Fingerprint fingerprint = ComputeURLFingerprint(url.spec().data(),
                                                   url.spec().size(),
                                                   salt_);
-  if (table_builder_.get()) {
+  // If the table isn't loaded the table will be rebuilt and after
+  // that accumulated fingerprints will be applied to the table.
+  if (table_builder_.get() || table_is_loading_from_file_) {
     // If we have a pending delete for this fingerprint, cancel it.
-    std::set<Fingerprint>::iterator found =
-        deleted_since_rebuild_.find(fingerprint);
-    if (found != deleted_since_rebuild_.end())
-        deleted_since_rebuild_.erase(found);
+    deleted_since_rebuild_.erase(fingerprint);
 
-    // A rebuild is in progress, save this addition in the temporary list so
-    // it can be added once rebuild is complete.
+    // A rebuild or load is in progress, save this addition in the temporary
+    // list so it can be added once rebuild is complete.
     added_since_rebuild_.insert(fingerprint);
+  }
+
+  if (table_is_loading_from_file_) {
+    // If we have a pending delete for this url, cancel it.
+    deleted_since_load_.erase(url);
+
+    // The loading is in progress, save this addition in the temporary
+    // list so it can be added once the loading is complete.
+    added_since_load_.insert(url);
   }
 
   // If the table is "full", we don't add URLs and just drop them on the floor.
@@ -289,7 +356,9 @@ void VisitedLinkMaster::PostIOTask(const tracked_objects::Location& from_here,
 
 void VisitedLinkMaster::AddURL(const GURL& url) {
   Hash index = TryToAddURL(url);
-  if (!table_builder_.get() && index != null_hash_) {
+  if (!table_builder_.get() &&
+      !table_is_loading_from_file_ &&
+      index != null_hash_) {
     // Not rebuilding, so we want to keep the file on disk up-to-date.
     if (persist_to_disk_) {
       WriteUsedItemCountToFile();
@@ -299,16 +368,19 @@ void VisitedLinkMaster::AddURL(const GURL& url) {
   }
 }
 
-void VisitedLinkMaster::AddURLs(const std::vector<GURL>& url) {
-  for (std::vector<GURL>::const_iterator i = url.begin();
-       i != url.end(); ++i) {
-    Hash index = TryToAddURL(*i);
-    if (!table_builder_.get() && index != null_hash_)
+void VisitedLinkMaster::AddURLs(const std::vector<GURL>& urls) {
+  for (const GURL& url : urls) {
+    Hash index = TryToAddURL(url);
+    if (!table_builder_.get() &&
+        !table_is_loading_from_file_ &&
+        index != null_hash_)
       ResizeTableIfNecessary();
   }
 
   // Keeps the file on disk up-to-date.
-  if (!table_builder_.get() && persist_to_disk_)
+  if (!table_builder_.get() &&
+      !table_is_loading_from_file_ &&
+      persist_to_disk_)
     WriteFullTable();
 }
 
@@ -316,6 +388,10 @@ void VisitedLinkMaster::DeleteAllURLs() {
   // Any pending modifications are invalid.
   added_since_rebuild_.clear();
   deleted_since_rebuild_.clear();
+
+  added_since_load_.clear();
+  deleted_since_load_.clear();
+  table_is_loading_from_file_ = false;
 
   // Clear the hash table.
   used_items_ = 0;
@@ -326,7 +402,7 @@ void VisitedLinkMaster::DeleteAllURLs() {
   if (!ResizeTableIfNecessary() && persist_to_disk_)
     WriteFullTable();
 
-  listener_->Reset();
+  listener_->Reset(false);
 }
 
 VisitedLinkDelegate* VisitedLinkMaster::GetDelegate() {
@@ -337,11 +413,11 @@ void VisitedLinkMaster::DeleteURLs(URLIterator* urls) {
   if (!urls->HasNextURL())
     return;
 
-  listener_->Reset();
+  listener_->Reset(false);
 
-  if (table_builder_.get()) {
-    // A rebuild is in progress, save this deletion in the temporary list so
-    // it can be added once rebuild is complete.
+  if (table_builder_.get() || table_is_loading_from_file_) {
+    // A rebuild or load is in progress, save this deletion in the temporary
+    // list so it can be added once rebuild is complete.
     while (urls->HasNextURL()) {
       const GURL& url(urls->NextURL());
       if (!url.is_valid())
@@ -353,10 +429,12 @@ void VisitedLinkMaster::DeleteURLs(URLIterator* urls) {
 
       // If the URL was just added and now we're deleting it, it may be in the
       // list of things added since the last rebuild. Delete it from that list.
-      std::set<Fingerprint>::iterator found =
-          added_since_rebuild_.find(fingerprint);
-      if (found != added_since_rebuild_.end())
-        added_since_rebuild_.erase(found);
+      added_since_rebuild_.erase(fingerprint);
+
+      if (table_is_loading_from_file_) {
+        deleted_since_load_.insert(url);
+        added_since_load_.erase(url);
+      }
 
       // Delete the URLs from the in-memory table, but don't bother writing
       // to disk since it will be replaced soon.
@@ -534,53 +612,169 @@ void VisitedLinkMaster::WriteFullTable() {
 }
 
 bool VisitedLinkMaster::InitFromFile() {
-  DCHECK(file_ == NULL);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  DCHECK(file_ == nullptr);
   DCHECK(persist_to_disk_);
 
   base::FilePath filename;
-  GetDatabaseFileName(&filename);
+  if (!GetDatabaseFileName(&filename))
+    return false;
+
+  table_is_loading_from_file_ = true;
+
+  TableLoadCompleteCallback callback = base::Bind(
+      &VisitedLinkMaster::OnTableLoadComplete, weak_ptr_factory_.GetWeakPtr());
+
+  PostIOTask(FROM_HERE,
+             base::Bind(&VisitedLinkMaster::LoadFromFile, filename, callback));
+
+  return true;
+}
+
+// static
+void VisitedLinkMaster::LoadFromFile(
+    const base::FilePath& filename,
+    const TableLoadCompleteCallback& callback) {
+  scoped_refptr<LoadFromFileResult> load_from_file_result;
+  bool success = LoadApartFromFile(filename, &load_from_file_result);
+
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(callback, success, load_from_file_result));
+}
+
+// static
+bool VisitedLinkMaster::LoadApartFromFile(
+    const base::FilePath& filename,
+    scoped_refptr<LoadFromFileResult>* load_from_file_result) {
+  DCHECK(load_from_file_result);
+
   base::ScopedFILE file_closer(base::OpenFile(filename, "rb+"));
   if (!file_closer.get())
     return false;
 
   int32 num_entries, used_count;
-  if (!ReadFileHeader(file_closer.get(), &num_entries, &used_count, salt_))
+  uint8 salt[LINK_SALT_LENGTH];
+  if (!ReadFileHeader(file_closer.get(), &num_entries, &used_count, salt))
     return false;  // Header isn't valid.
 
   // Allocate and read the table.
-  if (!CreateURLTable(num_entries, false))
+  scoped_ptr<base::SharedMemory> shared_memory;
+  VisitedLinkCommon::Fingerprint* hash_table;
+  if (!CreateApartURLTable(num_entries, salt, &shared_memory, &hash_table))
     return false;
-  if (!ReadFromFile(file_closer.get(), kFileHeaderSize,
-                    hash_table_, num_entries * sizeof(Fingerprint))) {
-    FreeURLTable();
+
+  if (!ReadFromFile(file_closer.get(), kFileHeaderSize, hash_table,
+                    num_entries * sizeof(Fingerprint))) {
     return false;
   }
-  used_items_ = used_count;
 
-#ifndef NDEBUG
-  DebugValidate();
-#endif
-
-  file_ = static_cast<FILE**>(malloc(sizeof(*file_)));
-  *file_ = file_closer.release();
+  *load_from_file_result = new LoadFromFileResult(file_closer.Pass(),
+                                                  shared_memory.Pass(),
+                                                  hash_table,
+                                                  num_entries,
+                                                  used_count,
+                                                  salt);
   return true;
 }
 
-bool VisitedLinkMaster::InitFromScratch(bool suppress_rebuild) {
-  int32 table_size = kDefaultTableSize;
-  if (table_size_override_)
-    table_size = table_size_override_;
+void VisitedLinkMaster::OnTableLoadComplete(
+    bool success,
+    scoped_refptr<LoadFromFileResult> load_from_file_result) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(persist_to_disk_);
+  DCHECK(!table_builder_.get());
 
-  // The salt must be generated before the table so that it can be copied to
-  // the shared memory.
-  GenerateSalt(salt_);
-  if (!CreateURLTable(table_size, true))
-    return false;
+  // When the apart table was loading from the database file the current table
+  // have been cleared.
+  if (!table_is_loading_from_file_)
+    return;
+
+  table_is_loading_from_file_ = false;
+
+  if (!success) {
+    // This temporary sets are used only when table was loaded.
+    added_since_load_.clear();
+    deleted_since_load_.clear();
+
+    // If the table isn't loaded the table will be rebuilt.
+    if (!suppress_rebuild_) {
+      RebuildTableFromDelegate();
+    } else {
+      // When we disallow rebuilds (normally just unit tests), just use the
+      // current empty table.
+      WriteFullTable();
+    }
+    return;
+  }
+
+  // This temporary sets are needed only to rebuild table.
+  added_since_rebuild_.clear();
+  deleted_since_rebuild_.clear();
+
+  DCHECK(load_from_file_result.get());
+
+  // Delete the previous table.
+  DCHECK(shared_memory_);
+  delete shared_memory_;
+  shared_memory_ = nullptr;
+
+  // Assign the open file.
+  DCHECK(!file_);
+  DCHECK(load_from_file_result->file.get());
+  file_ = static_cast<FILE**>(malloc(sizeof(*file_)));
+  *file_ = load_from_file_result->file.release();
+
+  // Assign the loaded table.
+  DCHECK(load_from_file_result->shared_memory.get());
+  DCHECK(load_from_file_result->hash_table);
+  memcpy(salt_, load_from_file_result->salt, LINK_SALT_LENGTH);
+  shared_memory_ = load_from_file_result->shared_memory.release();
+  hash_table_ = load_from_file_result->hash_table;
+  table_length_ = load_from_file_result->num_entries;
+  used_items_ = load_from_file_result->used_count;
 
 #ifndef NDEBUG
   DebugValidate();
 #endif
 
+  // Send an update notification to all child processes.
+  listener_->NewTable(shared_memory_);
+
+  if (!added_since_load_.empty() || !deleted_since_load_.empty()) {
+    // Resize the table if the table doesn't have enough capacity.
+    int new_used_items =
+        used_items_ + static_cast<int>(added_since_load_.size());
+    if (new_used_items >= table_length_)
+      ResizeTable(NewTableSizeForCount(new_used_items));
+
+    // Also add anything that was added while we were asynchronously
+    // loading the table.
+    for (const GURL& url : added_since_load_) {
+      Fingerprint fingerprint =
+          ComputeURLFingerprint(url.spec().data(), url.spec().size(), salt_);
+      AddFingerprint(fingerprint, false);
+    }
+    added_since_load_.clear();
+
+    // Now handle deletions.
+    for (const GURL& url : deleted_since_load_) {
+      Fingerprint fingerprint =
+          ComputeURLFingerprint(url.spec().data(), url.spec().size(), salt_);
+      DeleteFingerprint(fingerprint, false);
+    }
+    deleted_since_load_.clear();
+
+    if (persist_to_disk_)
+      WriteFullTable();
+  }
+
+  // All tabs which was loaded when table was being loaded drop their cached
+  // visited link hashes and invalidate their links again.
+  listener_->Reset(true);
+}
+
+bool VisitedLinkMaster::InitFromScratch(bool suppress_rebuild) {
   if (suppress_rebuild && persist_to_disk_) {
     // When we disallow rebuilds (normally just unit tests), just use the
     // current empty table.
@@ -596,12 +790,11 @@ bool VisitedLinkMaster::InitFromScratch(bool suppress_rebuild) {
   return RebuildTableFromDelegate();
 }
 
+// static
 bool VisitedLinkMaster::ReadFileHeader(FILE* file,
                                        int32* num_entries,
                                        int32* used_count,
                                        uint8 salt[LINK_SALT_LENGTH]) {
-  DCHECK(persist_to_disk_);
-
   // Get file size.
   // Note that there is no need to seek back to the original location in the
   // file since ReadFromFile() [which is the next call accessing the file]
@@ -665,39 +858,57 @@ bool VisitedLinkMaster::GetDatabaseFileName(base::FilePath* filename) {
 
 // Initializes the shared memory structure. The salt should already be filled
 // in so that it can be written to the shared memory
-bool VisitedLinkMaster::CreateURLTable(int32 num_entries, bool init_to_empty) {
+bool VisitedLinkMaster::CreateURLTable(int32 num_entries) {
+  scoped_ptr<base::SharedMemory> shared_memory;
+  VisitedLinkCommon::Fingerprint* hash_table;
+  if (CreateApartURLTable(num_entries, salt_, &shared_memory, &hash_table)) {
+    shared_memory_ = shared_memory.release();
+    hash_table_ = hash_table;
+    table_length_ = num_entries;
+    used_items_ = 0;
+    return true;
+  }
+
+  return false;
+}
+
+// static
+bool VisitedLinkMaster::CreateApartURLTable(
+    int32 num_entries,
+    const uint8 salt[LINK_SALT_LENGTH],
+    scoped_ptr<base::SharedMemory>* shared_memory,
+    VisitedLinkCommon::Fingerprint** hash_table) {
+  DCHECK(salt);
+  DCHECK(shared_memory);
+  DCHECK(hash_table);
+
   // The table is the size of the table followed by the entries.
   uint32 alloc_size = num_entries * sizeof(Fingerprint) + sizeof(SharedHeader);
 
   // Create the shared memory object.
-  shared_memory_ = new base::SharedMemory();
-  if (!shared_memory_)
+  scoped_ptr<base::SharedMemory> sh_mem(new base::SharedMemory());
+  if (!sh_mem)
     return false;
 
   base::SharedMemoryCreateOptions options;
   options.size = alloc_size;
   options.share_read_only = true;
 
-  if (!shared_memory_->Create(options) || !shared_memory_->Map(alloc_size)) {
-    delete shared_memory_;
-    shared_memory_ = NULL;
+  if (!sh_mem->Create(options) || !sh_mem->Map(alloc_size))
     return false;
-  }
 
-  if (init_to_empty) {
-    memset(shared_memory_->memory(), 0, alloc_size);
-    used_items_ = 0;
-  }
-  table_length_ = num_entries;
+  memset(sh_mem->memory(), 0, alloc_size);
 
   // Save the header for other processes to read.
-  SharedHeader* header = static_cast<SharedHeader*>(shared_memory_->memory());
-  header->length = table_length_;
-  memcpy(header->salt, salt_, LINK_SALT_LENGTH);
+  SharedHeader* header = static_cast<SharedHeader*>(sh_mem->memory());
+  header->length = num_entries;
+  memcpy(header->salt, salt, LINK_SALT_LENGTH);
 
   // Our table pointer is just the data immediately following the size.
-  hash_table_ = reinterpret_cast<Fingerprint*>(
-      static_cast<char*>(shared_memory_->memory()) + sizeof(SharedHeader));
+  *hash_table = reinterpret_cast<Fingerprint*>(
+      static_cast<char*>(sh_mem->memory()) + sizeof(SharedHeader));
+
+  *shared_memory = sh_mem.Pass();
 
   return true;
 }
@@ -706,7 +917,7 @@ bool VisitedLinkMaster::BeginReplaceURLTable(int32 num_entries) {
   base::SharedMemory *old_shared_memory = shared_memory_;
   Fingerprint* old_hash_table = hash_table_;
   int32 old_table_length = table_length_;
-  if (!CreateURLTable(num_entries, true)) {
+  if (!CreateURLTable(num_entries)) {
     // Try to put back the old state.
     shared_memory_ = old_shared_memory;
     hash_table_ = old_hash_table;
@@ -796,6 +1007,13 @@ void VisitedLinkMaster::ResizeTable(int32 new_size) {
     WriteFullTable();
 }
 
+uint32 VisitedLinkMaster::DefaultTableSize() const {
+  if (table_size_override_)
+    return table_size_override_;
+
+  return kDefaultTableSize;
+}
+
 uint32 VisitedLinkMaster::NewTableSizeForCount(int32 item_count) const {
   // These table sizes are selected to be the maximum prime number less than
   // a "convenient" multiple of 1K.
@@ -857,22 +1075,26 @@ void VisitedLinkMaster::OnTableRebuildComplete(
       delete old_shared_memory;
 
       // Add the stored fingerprints to the hash table.
-      for (size_t i = 0; i < fingerprints.size(); i++)
-        AddFingerprint(fingerprints[i], false);
+      for (const auto& fingerprint : fingerprints)
+        AddFingerprint(fingerprint, false);
 
       // Also add anything that was added while we were asynchronously
       // generating the new table.
-      for (std::set<Fingerprint>::iterator i = added_since_rebuild_.begin();
-           i != added_since_rebuild_.end(); ++i)
-        AddFingerprint(*i, false);
+      for (const auto& fingerprint : added_since_rebuild_)
+        AddFingerprint(fingerprint, false);
       added_since_rebuild_.clear();
 
-      // Now handle deletions.
-      DeleteFingerprintsFromCurrentTable(deleted_since_rebuild_);
+      // Now handle deletions. Do not shrink the table now, we'll shrink it when
+      // adding or deleting an url the next time.
+      for (const auto& fingerprint : deleted_since_rebuild_)
+        DeleteFingerprint(fingerprint, false);
       deleted_since_rebuild_.clear();
 
       // Send an update notification to all child processes.
       listener_->NewTable(shared_memory_);
+      // All tabs which was loaded when table was being rebuilt
+      // invalidate their links again.
+      listener_->Reset(false);
 
       if (persist_to_disk_)
         WriteFullTable();
@@ -892,9 +1114,7 @@ void VisitedLinkMaster::WriteToFile(FILE** file,
                                     void* data,
                                     int32 data_size) {
   DCHECK(persist_to_disk_);
-#ifndef NDEBUG
-  posted_asynchronous_operation_ = true;
-#endif
+  DCHECK(!table_is_loading_from_file_);
   PostIOTask(FROM_HERE,
       base::Bind(&AsyncWrite, file, offset,
                  std::string(static_cast<const char*>(data), data_size)));
@@ -929,17 +1149,11 @@ void VisitedLinkMaster::WriteHashRangeToFile(Hash first_hash, Hash last_hash) {
   }
 }
 
+// static
 bool VisitedLinkMaster::ReadFromFile(FILE* file,
                                      off_t offset,
                                      void* data,
                                      size_t data_size) {
-  DCHECK(persist_to_disk_);
-#ifndef NDEBUG
-  // Since this function is synchronous, we require that no asynchronous
-  // operations could possibly be pending.
-  DCHECK(!posted_asynchronous_operation_);
-#endif
-
   if (fseek(file, offset, SEEK_SET) != 0)
     return false;
 

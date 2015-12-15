@@ -341,12 +341,12 @@ void Page::resetDeviceColorProfileForTesting()
     RuntimeEnabledFeatures::setImageColorProfilesEnabled(false);
 }
 
-void Page::allVisitedStateChanged()
+void Page::allVisitedStateChanged(bool invalidateVisitedLinkHashes)
 {
     for (const Page* page : ordinaryPages()) {
         for (Frame* frame = page->m_mainFrame; frame; frame = frame->tree().traverseNext()) {
             if (frame->isLocalFrame())
-                toLocalFrame(frame)->document()->visitedLinkState().invalidateStyleForAllLinks();
+                toLocalFrame(frame)->document()->visitedLinkState().invalidateStyleForAllLinks(invalidateVisitedLinkHashes);
         }
     }
 }

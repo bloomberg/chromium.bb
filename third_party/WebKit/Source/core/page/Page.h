@@ -173,7 +173,7 @@ public:
     void setDeviceColorProfile(const Vector<char>&);
     void resetDeviceColorProfileForTesting();
 
-    static void allVisitedStateChanged();
+    static void allVisitedStateChanged(bool invalidateVisitedLinkHashes);
     static void visitedStateChanged(LinkHash visitedHash);
 
     PageVisibilityState visibilityState() const;

@@ -15,6 +15,8 @@
 #include "base/test/test_file_util.h"
 #include "base/timer/elapsed_timer.h"
 #include "components/visitedlink/browser/visitedlink_master.h"
+#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -41,7 +43,7 @@ class DummyVisitedLinkEventListener : public VisitedLinkMaster::Listener {
   DummyVisitedLinkEventListener() {}
   void NewTable(base::SharedMemory* table) override {}
   void Add(VisitedLinkCommon::Fingerprint) override {}
-  void Reset() override {}
+  void Reset(bool invalidate_hashes) override {}
 };
 
 
@@ -66,6 +68,9 @@ class VisitedLink : public testing::Test {
   base::FilePath db_path_;
   void SetUp() override { ASSERT_TRUE(base::CreateTemporaryFile(&db_path_)); }
   void TearDown() override { base::DeleteFile(db_path_, false); }
+
+ private:
+  content::TestBrowserThreadBundle thread_bundle_;
 };
 
 } // namespace
@@ -80,6 +85,7 @@ TEST_F(VisitedLink, TestAddAndQuery) {
   VisitedLinkMaster master(new DummyVisitedLinkEventListener(),
                            NULL, true, true, db_path_, 0);
   ASSERT_TRUE(master.Init());
+  content::RunAllBlockingPoolTasksUntilIdle();
 
   base::PerfTimeLogger timer("Visited_link_add_and_query");
 
@@ -114,6 +120,7 @@ TEST_F(VisitedLink, TestLoad) {
     // time init with empty table
     base::PerfTimeLogger initTimer("Empty_visited_link_init");
     bool success = master.Init();
+    content::RunAllBlockingPoolTasksUntilIdle();
     initTimer.Done();
     ASSERT_TRUE(success);
 
@@ -153,6 +160,7 @@ TEST_F(VisitedLink, TestLoad) {
                                db_path_,
                                0);
       bool success = master.Init();
+      content::RunAllBlockingPoolTasksUntilIdle();
       TimeDelta elapsed = cold_timer.Elapsed();
       ASSERT_TRUE(success);
 
@@ -170,6 +178,7 @@ TEST_F(VisitedLink, TestLoad) {
                                db_path_,
                                0);
       bool success = master.Init();
+      content::RunAllBlockingPoolTasksUntilIdle();
       TimeDelta elapsed = hot_timer.Elapsed();
       ASSERT_TRUE(success);
 

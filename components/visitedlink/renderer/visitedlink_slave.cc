@@ -76,8 +76,8 @@ void VisitedLinkSlave::OnAddVisitedLinks(
     WebView::updateVisitedLinkState(fingerprints[i]);
 }
 
-void VisitedLinkSlave::OnResetVisitedLinks() {
-  WebView::resetVisitedLinkState();
+void VisitedLinkSlave::OnResetVisitedLinks(bool invalidate_hashes) {
+  WebView::resetVisitedLinkState(invalidate_hashes);
 }
 
 void VisitedLinkSlave::FreeTable() {
