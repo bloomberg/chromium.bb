@@ -805,7 +805,9 @@ bool LayoutInline::hitTestCulledInline(HitTestResult& result, const HitTestLocat
         // We can not use addNodeToListBasedTestResult to determine if we fully enclose the hit-test area
         // because it can only handle rectangular targets.
         result.addNodeToListBasedTestResult(node(), locationInContainer);
-        return regionResult.contains(tmpLocation.boundingBox());
+        // We check if using list-based hit-test to continue hit testing.
+        if (!result.hitTestRequest().penetratingList())
+            return regionResult.contains(tmpLocation.boundingBox());
     }
     return false;
 }
