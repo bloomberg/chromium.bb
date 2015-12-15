@@ -463,7 +463,9 @@ bool VpxVideoDecoder::VpxDecode(const scoped_refptr<DecoderBuffer>& buffer,
     return false;
   }
 
-  CopyVpxImageToVideoFrame(vpx_image, video_frame);
+  if (!CopyVpxImageToVideoFrame(vpx_image, video_frame))
+    return false;
+
   (*video_frame)->set_timestamp(base::TimeDelta::FromMicroseconds(timestamp));
 
   // Default to the color space from the config, but if the bistream specifies
@@ -543,18 +545,25 @@ bool VpxVideoDecoder::VpxDecode(const scoped_refptr<DecoderBuffer>& buffer,
   return true;
 }
 
-void VpxVideoDecoder::CopyVpxImageToVideoFrame(
+bool VpxVideoDecoder::CopyVpxImageToVideoFrame(
     const struct vpx_image* vpx_image,
     scoped_refptr<VideoFrame>* video_frame) {
   DCHECK(vpx_image);
-  DCHECK(vpx_image->fmt == VPX_IMG_FMT_I420 ||
-         vpx_image->fmt == VPX_IMG_FMT_I444);
 
-  VideoPixelFormat codec_format = PIXEL_FORMAT_YV12;
-  if (vpx_image->fmt == VPX_IMG_FMT_I444)
-    codec_format = PIXEL_FORMAT_YV24;
-  else if (vpx_codec_alpha_)
-    codec_format = PIXEL_FORMAT_YV12A;
+  VideoPixelFormat codec_format;
+  switch (vpx_image->fmt) {
+    case VPX_IMG_FMT_I420:
+      codec_format = vpx_codec_alpha_ ? PIXEL_FORMAT_YV12A : PIXEL_FORMAT_YV12;
+      break;
+
+    case VPX_IMG_FMT_I444:
+      codec_format = PIXEL_FORMAT_YV24;
+      break;
+
+    default:
+      DLOG(ERROR) << "Unsupported pixel format: " << vpx_image->fmt;
+      return false;
+  }
 
   // The mixed |w|/|d_h| in |coded_size| is intentional. Setting the correct
   // coded width is necessary to allow coalesced memory access, which may avoid
@@ -585,7 +594,7 @@ void VpxVideoDecoder::CopyVpxImageToVideoFrame(
         "Media.Vpx.VideoDecoderBuffersInUseByDecoderAndVideoFrame",
         memory_pool_->NumberOfFrameBuffersInUseByDecoderAndVideoFrame());
 
-    return;
+    return true;
   }
 
   DCHECK(codec_format == PIXEL_FORMAT_YV12 ||
@@ -606,6 +615,8 @@ void VpxVideoDecoder::CopyVpxImageToVideoFrame(
       (*video_frame)->visible_data(VideoFrame::kVPlane),
       (*video_frame)->stride(VideoFrame::kVPlane), coded_size.width(),
       coded_size.height());
+
+  return true;
 }
 
 }  // namespace media

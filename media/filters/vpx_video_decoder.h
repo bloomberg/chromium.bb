@@ -66,7 +66,7 @@ class MEDIA_EXPORT VpxVideoDecoder : public VideoDecoder {
   bool VpxDecode(const scoped_refptr<DecoderBuffer>& buffer,
                  scoped_refptr<VideoFrame>* video_frame);
 
-  void CopyVpxImageToVideoFrame(const struct vpx_image* vpx_image,
+  bool CopyVpxImageToVideoFrame(const struct vpx_image* vpx_image,
                                 scoped_refptr<VideoFrame>* video_frame);
 
   base::ThreadChecker thread_checker_;
