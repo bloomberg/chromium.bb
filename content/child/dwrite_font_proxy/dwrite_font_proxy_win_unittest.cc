@@ -101,15 +101,15 @@ TEST_F(DWriteFontProxyUnitTest, GetFontFamilyCount) {
 
   UINT32 family_count = collection_->GetFontFamilyCount();
 
-  EXPECT_EQ(3, family_count);
-  ASSERT_EQ(1, fake_collection_->MessageCount());
+  EXPECT_EQ(3u, family_count);
+  ASSERT_EQ(1u, fake_collection_->MessageCount());
   EXPECT_EQ(DWriteFontProxyMsg_GetFamilyCount::ID,
             fake_collection_->GetMessage(0)->type());
 
   // Calling again should not cause another message to be sent.
   family_count = collection_->GetFontFamilyCount();
-  EXPECT_EQ(3, family_count);
-  ASSERT_EQ(1, fake_collection_->MessageCount());
+  EXPECT_EQ(3u, family_count);
+  ASSERT_EQ(1u, fake_collection_->MessageCount());
 }
 
 TEST_F(DWriteFontProxyUnitTest, FindFamilyNameShouldFindFamily) {
@@ -122,9 +122,9 @@ TEST_F(DWriteFontProxyUnitTest, FindFamilyNameShouldFindFamily) {
   hr = collection_->FindFamilyName(L"Arial", &index, &exists);
 
   EXPECT_EQ(S_OK, hr);
-  EXPECT_EQ(1, index);
+  EXPECT_EQ(1u, index);
   EXPECT_TRUE(exists);
-  ASSERT_EQ(2, fake_collection_->MessageCount());
+  ASSERT_EQ(2u, fake_collection_->MessageCount());
   EXPECT_EQ(DWriteFontProxyMsg_FindFamily::ID,
             fake_collection_->GetMessage(0)->type());
   EXPECT_EQ(DWriteFontProxyMsg_GetFamilyCount::ID,
@@ -143,7 +143,7 @@ TEST_F(DWriteFontProxyUnitTest, FindFamilyNameShouldReturnUINTMAXWhenNotFound) {
   EXPECT_EQ(S_OK, hr);
   EXPECT_EQ(UINT32_MAX, index);
   EXPECT_FALSE(exists);
-  ASSERT_EQ(1, fake_collection_->MessageCount());
+  ASSERT_EQ(1u, fake_collection_->MessageCount());
   EXPECT_EQ(DWriteFontProxyMsg_FindFamily::ID,
             fake_collection_->GetMessage(0)->type());
 }
@@ -157,12 +157,12 @@ TEST_F(DWriteFontProxyUnitTest, FindFamilyNameShouldNotSendDuplicateIPC) {
   BOOL exists = FALSE;
   hr = collection_->FindFamilyName(L"Arial", &index, &exists);
   ASSERT_EQ(S_OK, hr);
-  ASSERT_EQ(2, fake_collection_->MessageCount());
+  ASSERT_EQ(2u, fake_collection_->MessageCount());
 
   hr = collection_->FindFamilyName(L"Arial", &index, &exists);
 
   EXPECT_EQ(S_OK, hr);
-  EXPECT_EQ(2, fake_collection_->MessageCount());
+  EXPECT_EQ(2u, fake_collection_->MessageCount());
 }
 
 TEST_F(DWriteFontProxyUnitTest, GetFontFamilyShouldCreateFamily) {
@@ -173,13 +173,13 @@ TEST_F(DWriteFontProxyUnitTest, GetFontFamilyShouldCreateFamily) {
   UINT32 index = UINT_MAX;
   BOOL exists = FALSE;
   hr = collection_->FindFamilyName(L"Arial", &index, &exists);
-  ASSERT_EQ(2, fake_collection_->MessageCount());
+  ASSERT_EQ(2u, fake_collection_->MessageCount());
 
   mswr::ComPtr<IDWriteFontFamily> family;
   hr = collection_->GetFontFamily(2, &family);
 
   EXPECT_EQ(S_OK, hr);
-  EXPECT_EQ(2, fake_collection_->MessageCount());
+  EXPECT_EQ(2u, fake_collection_->MessageCount());
   EXPECT_NE(nullptr, family.Get());
 }
 
@@ -220,17 +220,17 @@ TEST_F(DWriteFontProxyUnitTest, GetFamilyNames) {
   UINT32 index = UINT_MAX;
   BOOL exists = FALSE;
   hr = collection_->FindFamilyName(L"Aardvark", &index, &exists);
-  ASSERT_EQ(2, fake_collection_->MessageCount());
+  ASSERT_EQ(2u, fake_collection_->MessageCount());
 
   mswr::ComPtr<IDWriteFontFamily> family;
   hr = collection_->GetFontFamily(index, &family);
   EXPECT_EQ(S_OK, hr);
-  EXPECT_EQ(2, fake_collection_->MessageCount());
+  EXPECT_EQ(2u, fake_collection_->MessageCount());
 
   mswr::ComPtr<IDWriteLocalizedStrings> names;
   hr = family->GetFamilyNames(&names);
   EXPECT_EQ(S_OK, hr);
-  EXPECT_EQ(3, fake_collection_->MessageCount());
+  EXPECT_EQ(3u, fake_collection_->MessageCount());
   EXPECT_EQ(DWriteFontProxyMsg_GetFamilyNames::ID,
             fake_collection_->GetMessage(2)->type());
 
@@ -259,17 +259,17 @@ TEST_F(DWriteFontProxyUnitTest, GetFontCollection) {
   UINT32 index = UINT_MAX;
   BOOL exists = FALSE;
   hr = collection_->FindFamilyName(L"Arial", &index, &exists);
-  ASSERT_EQ(2, fake_collection_->MessageCount());
+  ASSERT_EQ(2u, fake_collection_->MessageCount());
 
   mswr::ComPtr<IDWriteFontFamily> family;
   hr = collection_->GetFontFamily(2, &family);
   EXPECT_EQ(S_OK, hr);
-  EXPECT_EQ(2, fake_collection_->MessageCount());
+  EXPECT_EQ(2u, fake_collection_->MessageCount());
 
   mswr::ComPtr<IDWriteFontCollection> returned_collection;
   hr = family->GetFontCollection(&returned_collection);
   EXPECT_EQ(S_OK, hr);
-  EXPECT_EQ(2, fake_collection_->MessageCount());
+  EXPECT_EQ(2u, fake_collection_->MessageCount());
   EXPECT_EQ(collection_.Get(), returned_collection.Get());
 }
 
@@ -284,12 +284,12 @@ TEST_F(DWriteFontProxyUnitTest, GetFamilyNamesShouldNotIPCAfterLoadingFamily) {
   mswr::ComPtr<IDWriteFontFamily> family;
   collection_->GetFontFamily(index, &family);
   family->GetFontCount();
-  EXPECT_EQ(fake_collection_->MessageCount(), 3);
+  EXPECT_EQ(3u, fake_collection_->MessageCount());
 
   mswr::ComPtr<IDWriteLocalizedStrings> names;
   hr = family->GetFamilyNames(&names);
   EXPECT_EQ(S_OK, hr);
-  EXPECT_EQ(3, fake_collection_->MessageCount());
+  EXPECT_EQ(3u, fake_collection_->MessageCount());
 }
 
 TEST_F(DWriteFontProxyUnitTest,
@@ -301,13 +301,13 @@ TEST_F(DWriteFontProxyUnitTest,
   UINT32 index = UINT_MAX;
   BOOL exists = FALSE;
   hr = collection_->FindFamilyName(L"Arial", &index, &exists);
-  ASSERT_EQ(2, fake_collection_->MessageCount());
+  ASSERT_EQ(2u, fake_collection_->MessageCount());
 
   mswr::ComPtr<IDWriteFontFamily> family;
   hr = collection_->GetFontFamily(1654, &family);
 
   EXPECT_FALSE(SUCCEEDED(hr));
-  EXPECT_EQ(2, fake_collection_->MessageCount());
+  EXPECT_EQ(2u, fake_collection_->MessageCount());
 }
 
 TEST_F(DWriteFontProxyUnitTest, LoadingFontFamily) {
@@ -320,11 +320,11 @@ TEST_F(DWriteFontProxyUnitTest, LoadingFontFamily) {
   collection_->FindFamilyName(L"Arial", &index, &exists);
   mswr::ComPtr<IDWriteFontFamily> family;
   collection_->GetFontFamily(index, &family);
-  ASSERT_EQ(2, fake_collection_->MessageCount());
+  ASSERT_EQ(2u, fake_collection_->MessageCount());
 
   UINT32 font_count = family->GetFontCount();
   EXPECT_LT(0u, font_count);
-  EXPECT_EQ(3, fake_collection_->MessageCount());
+  EXPECT_EQ(3u, fake_collection_->MessageCount());
   EXPECT_EQ(DWriteFontProxyMsg_GetFontFiles::ID,
             fake_collection_->GetMessage(2)->type());
   mswr::ComPtr<IDWriteFont> font;
@@ -332,17 +332,17 @@ TEST_F(DWriteFontProxyUnitTest, LoadingFontFamily) {
                                     DWRITE_FONT_STRETCH_NORMAL,
                                     DWRITE_FONT_STYLE_NORMAL, &font);
   EXPECT_EQ(S_OK, hr);
-  EXPECT_EQ(3, fake_collection_->MessageCount());
+  EXPECT_EQ(3u, fake_collection_->MessageCount());
   mswr::ComPtr<IDWriteFont> font2;
   hr = family->GetFont(0, &font2);
   EXPECT_EQ(S_OK, hr);
-  EXPECT_EQ(3, fake_collection_->MessageCount());
+  EXPECT_EQ(3u, fake_collection_->MessageCount());
   mswr::ComPtr<IDWriteFontList> matching_fonts;
   hr = family->GetMatchingFonts(DWRITE_FONT_WEIGHT_NORMAL,
                                 DWRITE_FONT_STRETCH_NORMAL,
                                 DWRITE_FONT_STYLE_NORMAL, &matching_fonts);
   EXPECT_EQ(S_OK, hr);
-  EXPECT_EQ(3, fake_collection_->MessageCount());
+  EXPECT_EQ(3u, fake_collection_->MessageCount());
   EXPECT_NE(nullptr, matching_fonts.Get());
 }
 
@@ -365,12 +365,12 @@ TEST_F(DWriteFontProxyUnitTest, GetFontFromFontFaceShouldFindFont) {
   mswr::ComPtr<IDWriteFontFace> font_face;
   hr = font->CreateFontFace(&font_face);
   ASSERT_TRUE(SUCCEEDED(hr));
-  ASSERT_EQ(3, fake_collection_->MessageCount());
+  ASSERT_EQ(3u, fake_collection_->MessageCount());
 
   mswr::ComPtr<IDWriteFont> found_font;
   collection_->GetFontFromFontFace(font_face.Get(), &found_font);
   EXPECT_NE(nullptr, found_font.Get());
-  EXPECT_EQ(3, fake_collection_->MessageCount());
+  EXPECT_EQ(3u, fake_collection_->MessageCount());
 }
 
 }  // namespace
