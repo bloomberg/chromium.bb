@@ -90,6 +90,7 @@ public:
     static const AtomicString& initialMarkerEndResource() { return nullAtom; }
     static EMaskType initialMaskType() { return MT_LUMINANCE; }
     static EPaintOrder initialPaintOrder() { return PaintOrderNormal; }
+    static CSSPathValue* initialD() { return CSSPathValue::emptyPathValue(); }
     static Length initialCx() { return Length(Fixed); }
     static Length initialCy() { return Length(Fixed); }
     static Length initialX() { return Length(Fixed); }
@@ -115,6 +116,11 @@ public:
     void setTextAnchor(ETextAnchor val) { svg_inherited_flags.textAnchor = val; }
     void setMaskType(EMaskType val) { svg_noninherited_flags.f.maskType = val; }
     void setPaintOrder(EPaintOrder val) { svg_inherited_flags.paintOrder = (int)val; }
+    void setD(PassRefPtrWillBeRawPtr<CSSPathValue> d)
+    {
+        if (!(layout->d == d))
+            layout.access()->d = d;
+    }
     void setCx(const Length& obj)
     {
         if (!(layout->cx == obj))
@@ -333,6 +339,7 @@ public:
     const Color& floodColor() const { return misc->floodColor; }
     const Color& lightingColor() const { return misc->lightingColor; }
     const Length& baselineShiftValue() const { return misc->baselineShiftValue; }
+    CSSPathValue* d() const { return layout->d.get(); }
     const Length& cx() const { return layout->cx; }
     const Length& cy() const { return layout->cy; }
     const Length& x() const { return layout->x; }

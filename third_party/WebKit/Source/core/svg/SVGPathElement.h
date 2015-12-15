@@ -43,12 +43,19 @@ public:
     SVGAnimatedPath* path() { return m_path.get(); }
     SVGAnimatedNumber* pathLength() { return m_pathLength.get(); }
 
+    const SVGPathByteStream& pathByteStream() const;
+
+    bool isPresentationAttribute(const QualifiedName&) const override;
+    bool isPresentationAttributeWithSVGDOM(const QualifiedName&) const override;
+
     DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit SVGPathElement(Document&);
 
     void svgAttributeChanged(const QualifiedName&) override;
+
+    void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
 
     Node::InsertionNotificationRequest insertedInto(ContainerNode*) override;
     void removedFrom(ContainerNode*) override;

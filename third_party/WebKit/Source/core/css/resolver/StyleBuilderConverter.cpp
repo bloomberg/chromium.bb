@@ -953,4 +953,9 @@ RespectImageOrientationEnum StyleBuilderConverter::convertImageOrientation(Style
     return primitiveValue.getValueID() == CSSValueFromImage ? RespectImageOrientation : DoNotRespectImageOrientation;
 }
 
+CSSPathValue* StyleBuilderConverter::convertPath(StyleResolverState&, CSSValue& value)
+{
+    return toCSSPathValue(&value);
+}
+
 } // namespace blink

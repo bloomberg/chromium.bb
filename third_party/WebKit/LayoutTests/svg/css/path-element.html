@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<style>
+#test { d: path('M 0 0 H 30 V 40'); }
+</style>
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">
+    <path id="test" d="M 10 190 H 190" />
+</svg>
+<script>
+'use strict';
+test(function() {
+    var test = document.getElementById("test");
+    assert_equals(test.getTotalLength(), 70);
+}, "Test for getTotalLength using computed style");
+test(function() {
+    var test = document.getElementById("test");
+    assert_equals(test.getPointAtLength(70).x, 30);
+    assert_equals(test.getPointAtLength(70).y, 40);
+}, "Test for getTotalLength using computed style");
+test(function() {
+    var test = document.getElementById("test");
+    assert_equals(test.getPathSegAtLength(50), 2);
+}, "Test for getPathSegAtLength using computed style");
+</script>

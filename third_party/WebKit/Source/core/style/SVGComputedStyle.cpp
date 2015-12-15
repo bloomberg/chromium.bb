@@ -187,7 +187,7 @@ bool SVGComputedStyle::diffNeedsLayoutAndPaintInvalidation(const SVGComputedStyl
             return true;
     }
 
-    // The x, y, rx and ry properties require a re-layout.
+    // The StyleLayoutData properties require a re-layout.
     if (layout.get() != other->layout.get()) {
         if (layout->x != other->layout->x
             || layout->y != other->layout->y
@@ -195,7 +195,8 @@ bool SVGComputedStyle::diffNeedsLayoutAndPaintInvalidation(const SVGComputedStyl
             || layout->rx != other->layout->rx
             || layout->ry != other->layout->ry
             || layout->cx != other->layout->cx
-            || layout->cy != other->layout->cy)
+            || layout->cy != other->layout->cy
+            || !layout->d->equals(*other->layout->d))
             return true;
     }
 

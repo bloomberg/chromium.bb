@@ -31,6 +31,7 @@
 #ifndef SVGPath_h
 #define SVGPath_h
 
+#include "core/css/CSSPathValue.h"
 #include "core/svg/SVGPathByteStream.h"
 #include "core/svg/properties/SVGProperty.h"
 
@@ -47,16 +48,15 @@ public:
     {
         return adoptRefWillBeNoop(new SVGPath());
     }
-    static PassRefPtrWillBeRawPtr<SVGPath> create(PassOwnPtr<SVGPathByteStream> pathByteStream)
+    static PassRefPtrWillBeRawPtr<SVGPath> create(PassRefPtrWillBeRawPtr<CSSPathValue> pathValue)
     {
-        return adoptRefWillBeNoop(new SVGPath(pathByteStream));
+        return adoptRefWillBeNoop(new SVGPath(pathValue));
     }
 
     ~SVGPath() override;
 
-    const Path& path() const;
-
-    const SVGPathByteStream& byteStream() const;
+    const SVGPathByteStream& byteStream() const { return m_pathValue->byteStream(); }
+    CSSPathValue* pathValue() const { return m_pathValue.get(); }
 
     // SVGPropertyBase:
     PassRefPtrWillBeRawPtr<SVGPath> clone() const;
@@ -70,16 +70,13 @@ public:
 
     static AnimatedPropertyType classType() { return AnimatedPath; }
 
+    DECLARE_VIRTUAL_TRACE();
+
 private:
     SVGPath();
-    explicit SVGPath(PassOwnPtr<SVGPathByteStream>);
+    explicit SVGPath(PassRefPtrWillBeRawPtr<CSSPathValue>);
 
-    SVGPathByteStream& ensureByteStream();
-    void byteStreamChanged();
-    void setValueAsByteStream(PassOwnPtr<SVGPathByteStream>);
-
-    OwnPtr<SVGPathByteStream> m_byteStream;
-    mutable OwnPtr<Path> m_cachedPath;
+    RefPtrWillBeMember<CSSPathValue> m_pathValue;
 };
 
 DEFINE_SVG_PROPERTY_TYPE_CASTS(SVGPath);

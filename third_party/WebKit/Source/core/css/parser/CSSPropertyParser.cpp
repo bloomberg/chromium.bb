@@ -1926,11 +1926,8 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeContain(CSSParserTokenRange& rang
     return list.release();
 }
 
-static PassRefPtrWillBeRawPtr<CSSValue> consumeMotionPath(CSSParserTokenRange& range)
+static PassRefPtrWillBeRawPtr<CSSValue> consumePath(CSSParserTokenRange& range)
 {
-    CSSValueID id = range.peek().id();
-    if (id == CSSValueNone)
-        return consumeIdent(range);
     // FIXME: Add support for <url>, <basic-shape>, <geometry-box>.
     if (range.peek().functionId() != CSSValuePath)
         return nullptr;
@@ -1942,12 +1939,22 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeMotionPath(CSSParserTokenRange& r
     if (functionArgs.peek().type() != StringToken)
         return nullptr;
     String pathString = functionArgs.consumeIncludingWhitespace().value();
-    Path path;
-    if (!buildPathFromString(pathString, path) || !functionArgs.atEnd())
+
+    OwnPtr<SVGPathByteStream> byteStream = SVGPathByteStream::create();
+    if (!buildByteStreamFromString(pathString, *byteStream) || !functionArgs.atEnd())
         return nullptr;
 
     range = functionRange;
-    return CSSPathValue::create(pathString);
+    return CSSPathValue::create(byteStream.release());
+}
+
+static PassRefPtrWillBeRawPtr<CSSValue> consumePathOrNone(CSSParserTokenRange& range)
+{
+    CSSValueID id = range.peek().id();
+    if (id == CSSValueNone)
+        return consumeIdent(range);
+
+    return consumePath(range);
 }
 
 static PassRefPtrWillBeRawPtr<CSSValue> consumeMotionRotation(CSSParserTokenRange& range, CSSParserMode cssParserMode)
@@ -2786,8 +2793,10 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
     case CSSPropertyWebkitTextDecorationsInEffect:
     case CSSPropertyTextDecorationLine:
         return consumeTextDecorationLine(m_range);
+    case CSSPropertyD:
+        return consumePath(m_range);
     case CSSPropertyMotionPath:
-        return consumeMotionPath(m_range);
+        return consumePathOrNone(m_range);
     case CSSPropertyMotionOffset:
         return consumeLengthOrPercent(m_range, m_context.mode(), ValueRangeAll);
     case CSSPropertyMotionRotation:

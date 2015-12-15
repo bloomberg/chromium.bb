@@ -201,7 +201,8 @@ bool StyleInheritedResourceData::operator==(const StyleInheritedResourceData& ot
 }
 
 StyleLayoutData::StyleLayoutData()
-    : cx(SVGComputedStyle::initialCx())
+    : d(CSSPathValue::emptyPathValue())
+    , cx(SVGComputedStyle::initialCx())
     , cy(SVGComputedStyle::initialCy())
     , x(SVGComputedStyle::initialX())
     , y(SVGComputedStyle::initialY())
@@ -213,6 +214,7 @@ StyleLayoutData::StyleLayoutData()
 
 inline StyleLayoutData::StyleLayoutData(const StyleLayoutData& other)
     : RefCounted<StyleLayoutData>()
+    , d(other.d)
     , cx(other.cx)
     , cy(other.cy)
     , x(other.x)
@@ -236,7 +238,8 @@ bool StyleLayoutData::operator==(const StyleLayoutData& other) const
         && rx == other.rx
         && ry == other.ry
         && cx == other.cx
-        && cy == other.cy;
+        && cy == other.cy
+        && d->equals(*other.d);
 }
 
 }

@@ -876,6 +876,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyFlexShrink:
     case CSSPropertyFlexFlow:
     case CSSPropertyStrokeDasharray:
+    case CSSPropertyD:
     case CSSPropertyWebkitColumnRule:
     case CSSPropertyWebkitColumnRuleColor:
     case CSSPropertyWebkitColumnRuleWidth:

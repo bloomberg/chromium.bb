@@ -58,6 +58,8 @@ public:
     bool isEmpty() const { return m_data.isEmpty(); }
     unsigned size() const { return m_data.size(); }
 
+    bool operator==(const SVGPathByteStream& other) const { return m_data == other.m_data; }
+
 private:
     SVGPathByteStream() { }
     SVGPathByteStream(const Data& data)

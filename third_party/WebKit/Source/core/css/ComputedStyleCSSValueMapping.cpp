@@ -57,6 +57,7 @@
 #include "core/style/PathStyleMotionPath.h"
 #include "core/style/QuotesData.h"
 #include "core/style/ShadowList.h"
+#include "core/svg/SVGPathUtilities.h"
 #include "platform/LengthFunctions.h"
 
 namespace blink {
@@ -2623,6 +2624,8 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
     case CSSPropertyMarker:
         // the above properties are not yet implemented in the engine
         return nullptr;
+    case CSSPropertyD:
+        return svgStyle.d();
     case CSSPropertyCx:
         return zoomAdjustedPixelValueForLength(svgStyle.cx(), style);
     case CSSPropertyCy:

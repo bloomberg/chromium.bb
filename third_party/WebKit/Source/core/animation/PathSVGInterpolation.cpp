@@ -392,11 +392,8 @@ size_t countPathCommands(const SVGPathByteStream& path)
 
 PassRefPtr<PathSVGInterpolation> PathSVGInterpolation::maybeCreate(SVGPropertyBase* start, SVGPropertyBase* end, PassRefPtrWillBeRawPtr<SVGAnimatedPropertyBase> attribute)
 {
-    ASSERT(start->type() == SVGPath::classType());
-    ASSERT(end->type() == SVGPath::classType());
-
-    const SVGPathByteStream& startPath = static_cast<SVGPath*>(start)->byteStream();
-    const SVGPathByteStream& endPath = static_cast<SVGPath*>(end)->byteStream();
+    const SVGPathByteStream& startPath = toSVGPath(start)->pathValue()->byteStream();
+    const SVGPathByteStream& endPath = toSVGPath(end)->pathValue()->byteStream();
 
     if (startPath.size() != endPath.size())
         return nullptr;
@@ -438,7 +435,7 @@ PassRefPtrWillBeRawPtr<SVGPropertyBase> PathSVGInterpolation::fromInterpolableVa
     SVGPathByteStreamBuilder builder(*pathByteStream);
     SVGPathParser parser(&source, &builder);
     parser.parsePathDataFromSource(UnalteredParsing, false);
-    return SVGPath::create(pathByteStream.release());
+    return SVGPath::create(CSSPathValue::create(pathByteStream.release()));
 }
 
 PassRefPtrWillBeRawPtr<SVGPropertyBase> PathSVGInterpolation::interpolatedValue(SVGElement&) const

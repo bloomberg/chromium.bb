@@ -68882,7 +68882,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="9" label="font-variant"/>
   <int value="10" label="font-weight"/>
   <int value="11" label="text-rendering"/>
-  <int value="12" label="webkit-font-feature-settings"/>
+  <int value="12" label="alias-webkit-font-feature-settings"/>
   <int value="13" label="font-kerning"/>
   <int value="14" label="webkit-font-smoothing"/>
   <int value="15" label="font-variant-ligatures"/>
@@ -69374,6 +69374,21 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="501" label="scroll-snap-points-y"/>
   <int value="502" label="scroll-snap-coordinate"/>
   <int value="503" label="scroll-snap-destination"/>
+  <int value="504" label="translate"/>
+  <int value="505" label="rotate"/>
+  <int value="506" label="scale"/>
+  <int value="507" label="image-orientation"/>
+  <int value="508" label="backdrop-filter"/>
+  <int value="509" label="text-combine-upright"/>
+  <int value="510" label="text-orientation"/>
+  <int value="511" label="grid-column-gap"/>
+  <int value="512" label="grid-row-gap"/>
+  <int value="513" label="grid-gap"/>
+  <int value="514" label="font-feature-settings"/>
+  <int value="515" label="variable"/>
+  <int value="516" label="font-display"/>
+  <int value="517" label="contain"/>
+  <int value="518" label="d"/>
 </enum>
 
 <enum name="MappedEditingCommands" type="int">

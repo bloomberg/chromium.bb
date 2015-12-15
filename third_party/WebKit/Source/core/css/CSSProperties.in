@@ -170,6 +170,7 @@ counter-reset custom_all
 cursor inherited, custom_all
 cx interpolable, svg, converter=convertLength
 cy interpolable, svg, converter=convertLength
+d runtime_flag=CSSPropertyD, svg, converter=convertPath
 display
 dominant-baseline inherited, svg
 empty-cells inherited, type_name=EEmptyCell

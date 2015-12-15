@@ -25,6 +25,7 @@
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGMPathElement.h"
 #include "core/svg/SVGPathQuery.h"
+#include "core/svg/SVGPathUtilities.h"
 #include "core/svg/SVGPointTearOff.h"
 
 namespace blink {
@@ -72,50 +73,92 @@ DEFINE_NODE_FACTORY(SVGPathElement)
 
 Path SVGPathElement::asPath() const
 {
-    // If this is a <use> instance, return the referenced path to maximize geometry sharing.
-    if (const SVGElement* element = correspondingElement())
-        return toSVGPathElement(element)->asPath();
+    if (layoutObject()) {
+        const SVGComputedStyle& svgStyle = layoutObject()->styleRef().svgStyle();
+        return svgStyle.d()->path();
+    }
 
-    return m_path->currentValue()->path();
+    return m_path->currentValue()->pathValue()->path();
+}
+
+const SVGPathByteStream& SVGPathElement::pathByteStream() const
+{
+    if (layoutObject()) {
+        const SVGComputedStyle& svgStyle = layoutObject()->styleRef().svgStyle();
+        return svgStyle.d()->byteStream();
+    }
+
+    return m_path->currentValue()->byteStream();
 }
 
 float SVGPathElement::getTotalLength()
 {
-    return SVGPathQuery(m_path->currentValue()->byteStream()).getTotalLength();
+    document().updateLayoutIgnorePendingStylesheets();
+    return SVGPathQuery(pathByteStream()).getTotalLength();
 }
 
 PassRefPtrWillBeRawPtr<SVGPointTearOff> SVGPathElement::getPointAtLength(float length)
 {
-    FloatPoint point = SVGPathQuery(m_path->currentValue()->byteStream()).getPointAtLength(length);
+    document().updateLayoutIgnorePendingStylesheets();
+    FloatPoint point = SVGPathQuery(pathByteStream()).getPointAtLength(length);
     return SVGPointTearOff::create(SVGPoint::create(point), 0, PropertyIsNotAnimVal);
 }
 
 unsigned SVGPathElement::getPathSegAtLength(float length)
 {
-    return SVGPathQuery(m_path->currentValue()->byteStream()).getPathSegIndexAtLength(length);
+    document().updateLayoutIgnorePendingStylesheets();
+    return SVGPathQuery(pathByteStream()).getPathSegIndexAtLength(length);
+}
+
+bool SVGPathElement::isPresentationAttribute(const QualifiedName& attrName) const
+{
+    if (attrName == SVGNames::dAttr)
+        return true;
+    return SVGGeometryElement::isPresentationAttribute(attrName);
+}
+
+bool SVGPathElement::isPresentationAttributeWithSVGDOM(const QualifiedName& attrName) const
+{
+    if (attrName == SVGNames::dAttr)
+        return true;
+    return SVGGeometryElement::isPresentationAttributeWithSVGDOM(attrName);
 }
 
 void SVGPathElement::svgAttributeChanged(const QualifiedName& attrName)
 {
-    if (attrName == SVGNames::dAttr || attrName == SVGNames::pathLengthAttr) {
+    if (attrName == SVGNames::dAttr) {
         SVGElement::InvalidationGuard invalidationGuard(this);
+        invalidateSVGPresentationAttributeStyle();
+        setNeedsStyleRecalc(LocalStyleChange,
+            StyleChangeReasonForTracing::fromAttribute(attrName));
 
-        LayoutSVGShape* layoutObject = toLayoutSVGShape(this->layoutObject());
+        if (LayoutSVGShape* layoutPath = toLayoutSVGShape(this->layoutObject()))
+            layoutPath->setNeedsShapeUpdate();
 
-        if (attrName == SVGNames::dAttr) {
-            if (layoutObject)
-                layoutObject->setNeedsShapeUpdate();
-
-            invalidateMPathDependencies();
-        }
-
-        if (layoutObject)
-            markForLayoutAndParentResourceInvalidation(layoutObject);
+        invalidateMPathDependencies();
+        if (layoutObject())
+            markForLayoutAndParentResourceInvalidation(layoutObject());
 
         return;
     }
 
+    if (attrName == SVGNames::pathLengthAttr) {
+        SVGElement::InvalidationGuard invalidationGuard(this);
+        if (layoutObject())
+            markForLayoutAndParentResourceInvalidation(layoutObject());
+        return;
+    }
+
     SVGGeometryElement::svgAttributeChanged(attrName);
+}
+
+void SVGPathElement::collectStyleForPresentationAttribute(const QualifiedName& name, const AtomicString& value, MutableStylePropertySet* style)
+{
+    RefPtrWillBeRawPtr<SVGAnimatedPropertyBase> property = propertyFromAttribute(name);
+    if (property == m_path)
+        addPropertyToPresentationAttributeStyle(style, CSSPropertyD, m_path->currentValue()->pathValue());
+    else
+        SVGGeometryElement::collectStyleForPresentationAttribute(name, value, style);
 }
 
 void SVGPathElement::invalidateMPathDependencies()

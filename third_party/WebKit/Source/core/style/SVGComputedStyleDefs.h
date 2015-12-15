@@ -29,6 +29,7 @@
 #define SVGComputedStyleDefs_h
 
 #include "core/CoreExport.h"
+#include "core/css/CSSPathValue.h"
 #include "platform/Length.h"
 #include "platform/graphics/Color.h"
 #include "wtf/Allocator.h"
@@ -289,6 +290,7 @@ class StyleLayoutData : public RefCounted<StyleLayoutData> {
         {
             return !(*this == other);
         }
+        RefPtrWillBePersistent<CSSPathValue> d;
         Length cx;
         Length cy;
         Length x;

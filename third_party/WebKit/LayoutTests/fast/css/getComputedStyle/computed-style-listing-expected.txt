@@ -138,6 +138,7 @@ content:
 cursor: auto
 cx: 0px
 cy: 0px
+d: path('')
 direction: ltr
 display: block
 dominant-baseline: auto

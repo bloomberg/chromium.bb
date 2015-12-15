@@ -327,6 +327,7 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyWritingMode,
     CSSPropertyVectorEffect,
     CSSPropertyPaintOrder,
+    CSSPropertyD,
     CSSPropertyCx,
     CSSPropertyCy,
     CSSPropertyX,
