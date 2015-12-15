@@ -219,7 +219,10 @@ source_set("util") {
       "rpcrt4.lib",
       "winhttp.lib",
     ]
-    cflags = [ "/wd4201" ]  # nonstandard extension used : nameless struct/union.
+    cflags = [
+      "/wd4201",  # nonstandard extension used : nameless struct/union.
+      "/wd4577",  # 'noexcept' used with no exception handling mode specified.
+    ]
 
     # TODO(GYP) UseSafeExceptionHandlers masm rule.
   } else if (is_mac) {
