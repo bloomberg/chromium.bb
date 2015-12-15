@@ -41,7 +41,7 @@ var i18nTemplate = (function() {
      * @param {!HTMLElement} element The node to modify.
      * @param {string} key The name of the value in |data|.
      * @param {!LoadTimeData} data The data source to draw from.
-     * @param {!Array<ProcessingRoot>} visited
+     * @param {!Set<ProcessingRoot>} visited
      */
     'i18n-content': function(element, key, data, visited) {
       element.textContent = data.getString(key);
@@ -55,7 +55,7 @@ var i18nTemplate = (function() {
      *     if a pair, represents [content, value]. Otherwise, it should be a
      *     content string with no value.
      * @param {!LoadTimeData} data The data source to draw from.
-     * @param {!Array<ProcessingRoot>} visited
+     * @param {!Set<ProcessingRoot>} visited
      */
     'i18n-options': function(select, key, data, visited) {
       var options = data.getValue(key);
@@ -77,7 +77,7 @@ var i18nTemplate = (function() {
      *     followed by a colon, and the name of the value in |data|.
      *     Multiple attribute/key pairs may be separated by semicolons.
      * @param {!LoadTimeData} data The data source to draw from.
-     * @param {!Array<ProcessingRoot>} visited
+     * @param {!Set<ProcessingRoot>} visited
      */
     'i18n-values': function(element, attributeAndKeys, data, visited) {
       var parts = attributeAndKeys.replace(/\s/g, '').split(/;/);
@@ -137,24 +137,24 @@ var i18nTemplate = (function() {
    * @param {!LoadTimeData} data The data to draw from.
    */
   function process(root, data) {
-    processWithoutCycles(root, data, [], true);
+    processWithoutCycles(root, data, new Set(), true);
   }
 
   /**
    * Internal process() method that stops cycles while processing.
    * @param {!ProcessingRoot} root
    * @param {!LoadTimeData} data
-   * @param {!Array<ProcessingRoot>} visited Already visited roots.
+   * @param {!Set<ProcessingRoot>} visited Already visited roots.
    * @param {boolean} mark Whether nodes should be marked processed.
    */
   function processWithoutCycles(root, data, visited, mark) {
-    if (visited.indexOf(root) >= 0) {
+    if (visited.has(root)) {
       // Found a cycle. Stop it.
       return;
     }
 
     // Mark the node as visited before recursing.
-    visited.push(root);
+    visited.add(root);
 
     var importLinks = root.querySelectorAll('link[rel=import]');
     for (var i = 0; i < importLinks.length; ++i) {
@@ -198,7 +198,7 @@ var i18nTemplate = (function() {
    * Run through various [i18n-*] attributes and populate.
    * @param {!Element} element
    * @param {!LoadTimeData} data
-   * @param {!Array<ProcessingRoot>} visited
+   * @param {!Set<ProcessingRoot>} visited
    */
   function processElement(element, data, visited) {
     for (var i = 0; i < attributeNames.length; i++) {
