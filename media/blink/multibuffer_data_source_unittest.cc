@@ -243,8 +243,8 @@ class MultibufferDataSourceTest : public testing::Test {
         &MultibufferDataSourceTest::OnInitialize, base::Unretained(this)));
     message_loop_.RunUntilIdle();
 
-    // Always loading after initialize.
-    EXPECT_EQ(data_source_->downloading(), true);
+    // Not really loading until after OnInitialize is called.
+    EXPECT_EQ(data_source_->downloading(), false);
   }
 
   // Helper to initialize tests with a valid 200 response.
@@ -1035,10 +1035,10 @@ TEST_F(MultibufferDataSourceTest, File_FinishLoading) {
 
   ReceiveData(kDataSize);
 
-  EXPECT_TRUE(data_source_->downloading());
+  EXPECT_FALSE(data_source_->downloading());
   // premature didFinishLoading() will cause a retry.
   FinishLoading();
-  EXPECT_TRUE(data_source_->downloading());
+  EXPECT_FALSE(data_source_->downloading());
 
   Stop();
 }

@@ -110,6 +110,9 @@ class MEDIA_BLINK_EXPORT MultiBufferReader
   // a new position.
   void UpdateInternalState();
 
+  // Update end_ if p-1 contains an end-of-stream block.
+  void UpdateEnd(MultiBufferBlockId p);
+
   // Indirection function used to call callbacks. When we post a callback
   // we indirect it through a weak_ptr and this function to make sure we
   // don't call any callbacks after this object has been destroyed.

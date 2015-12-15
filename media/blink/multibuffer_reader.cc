@@ -162,19 +162,22 @@ void MultiBufferReader::Call(const base::Closure& cb) const {
   cb.Run();
 }
 
+void MultiBufferReader::UpdateEnd(MultiBufferBlockId p) {
+  auto i = multibuffer_->map().find(p - 1);
+  if (i != multibuffer_->map().end() && i->second->end_of_stream()) {
+    // This is an upper limit because the last-to-one block is allowed
+    // to be smaller than the rest of the blocks.
+    int64_t size_upper_limit = static_cast<int64_t>(p)
+                               << multibuffer_->block_size_shift();
+    end_ = std::min(end_, size_upper_limit);
+  }
+}
+
 void MultiBufferReader::NotifyAvailableRange(
     const Interval<MultiBufferBlockId>& range) {
   // Update end_ if we can.
   if (range.end > range.begin) {
-    auto i = multibuffer_->map().find(range.end - 1);
-    DCHECK(i != multibuffer_->map().end());
-    if (i->second->end_of_stream()) {
-      // This is an upper limit because the last-to-one block is allowed
-      // to be smaller than the rest of the blocks.
-      int64_t size_upper_limit = static_cast<int64_t>(range.end)
-                                 << multibuffer_->block_size_shift();
-      end_ = std::min(end_, size_upper_limit);
-    }
+    UpdateEnd(range.end);
   }
   UpdateInternalState();
   if (!progress_callback_.is_null()) {
@@ -200,8 +203,6 @@ void MultiBufferReader::UpdateInternalState() {
     preload_pos_ = block(pos_);
     DCHECK_GE(preload_pos_, 0);
   }
-  MultiBuffer::BlockId max_preload = block_ceil(
-      std::min(end_, pos_ + std::max(effective_preload, current_wait_size_)));
 
   // Note that we might not have been added to the multibuffer,
   // removing ourselves is a no-op in that case.
@@ -215,7 +216,11 @@ void MultiBufferReader::UpdateInternalState() {
   // position, and preload_pos_ will become the first unavailable block after
   // our current reading position again.
   preload_pos_ = multibuffer_->FindNextUnavailable(preload_pos_);
+  UpdateEnd(preload_pos_);
   DCHECK_GE(preload_pos_, 0);
+
+  MultiBuffer::BlockId max_preload = block_ceil(
+      std::min(end_, pos_ + std::max(effective_preload, current_wait_size_)));
 
   DVLOG(3) << "UpdateInternalState"
            << " pp = " << preload_pos_

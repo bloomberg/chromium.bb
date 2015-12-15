@@ -32,7 +32,8 @@
             // Use a .webm to ensure metadata is near the beginning of the file.
             var mediaFile = "resources/media-source/webm/test.webm";
             video.src = "http://127.0.0.1:8000/media/video-throttled-load.cgi?" +
-                "nph=1&name=" + mediaFile + "&throttle=40&type=video/webm";
+                "nph=1&name=" + mediaFile + "&throttle=40&type=video/webm" +
+                "avoidCache=" + Math.random();
 
             video.load();
         }

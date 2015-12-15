@@ -142,7 +142,9 @@ class MEDIA_BLINK_EXPORT MultibufferDataSource
   void ProgressCallback(int64 begin, int64 end);
 
   // call downloading_cb_ if needed.
-  void UpdateLoadingState();
+  // If |force_loading| is true, we call downloading_cb_ and tell it that
+  // we are currently loading, regardless of what reader_->IsLoading() says.
+  void UpdateLoadingState(bool force_loading);
 
   // Update |reader_|'s preload and buffer settings.
   void UpdateBufferSizes();
@@ -162,6 +164,8 @@ class MEDIA_BLINK_EXPORT MultibufferDataSource
   // i.e. range request is not supported.
   bool streaming_;
 
+  // This is the loading state that we last reported to our owner through
+  // |downloading_cb_|.
   bool loading_;
 
   // The task runner of the render thread.

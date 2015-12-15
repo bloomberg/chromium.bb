@@ -32,6 +32,10 @@ namespace media {
 // The number of milliseconds to wait before retrying a failed load.
 const int kLoaderFailedRetryDelayMs = 250;
 
+// The number of milliseconds to wait before retrying when the server
+// decides to not give us all the data at once.
+const int kLoaderPartialRetryDelayMs = 25;
+
 const int kHttpOK = 200;
 const int kHttpPartialContent = 206;
 const int kHttpRangeNotSatisfiable = 416;
@@ -51,12 +55,15 @@ ResourceMultiBufferDataProvider::ResourceMultiBufferDataProvider(
 }
 
 void ResourceMultiBufferDataProvider::Start() {
-  // In the case of a re-start, throw away any half-finished blocks.
-  fifo_.clear();
   // Prepare the request.
   WebURLRequest request(url_data_->url());
   // TODO(mkwst): Split this into video/audio.
   request.setRequestContext(WebURLRequest::RequestContextVideo);
+
+  DVLOG(1) << __FUNCTION__ << " @ " << byte_pos();
+  if (url_data_->length() > 0) {
+    DCHECK_LT(byte_pos(), url_data_->length()) << " " << url_data_->url();
+  }
 
   request.setHTTPHeaderField(
       WebString::fromUTF8(net::HttpRequestHeaders::kRange),
@@ -142,7 +149,13 @@ void ResourceMultiBufferDataProvider::willFollowRedirect(
 
   // This test is vital for security!
   if (cors_mode_ == UrlData::CORS_UNSPECIFIED) {
+    // We allow the redirect if the origin is the same.
     if (origin_ != redirects_to_.GetOrigin()) {
+      // We also allow the redirect if we don't have any data in the
+      // cache, as that means that no dangerous data mixing can occur.
+      if (url_data_->multibuffer()->map().empty() && fifo_.empty())
+        return;
+
       url_data_->Fail();
     }
   }
@@ -358,12 +371,12 @@ void ResourceMultiBufferDataProvider::didFinishLoading(
   if (url_data_->length() != kPositionNotSpecified &&
       size < url_data_->length()) {
     if (retries_ < kMaxRetries) {
-      fifo_.clear();
+      DVLOG(1) << " Partial data received.... @ pos = " << size;
       retries_++;
       base::MessageLoop::current()->PostDelayedTask(
           FROM_HERE, base::Bind(&ResourceMultiBufferDataProvider::Start,
                                 weak_factory_.GetWeakPtr()),
-          base::TimeDelta::FromMilliseconds(kLoaderFailedRetryDelayMs));
+          base::TimeDelta::FromMilliseconds(kLoaderPartialRetryDelayMs));
       return;
     } else {
       scoped_ptr<ActiveLoader> active_loader = active_loader_.Pass();
@@ -390,7 +403,7 @@ void ResourceMultiBufferDataProvider::didFail(WebURLLoader* loader,
            << error.localizedDescription.utf8().data();
   DCHECK(active_loader_.get());
 
-  if (retries_ < kMaxRetries) {
+  if (retries_ < kMaxRetries && pos_ != 0) {
     retries_++;
     base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE, base::Bind(&ResourceMultiBufferDataProvider::Start,
@@ -449,7 +462,12 @@ bool ResourceMultiBufferDataProvider::ParseContentRange(
 
 int64_t ResourceMultiBufferDataProvider::byte_pos() const {
   int64_t ret = pos_;
-  return ret << url_data_->multibuffer()->block_size_shift();
+  ret += fifo_.size();
+  ret = ret << url_data_->multibuffer()->block_size_shift();
+  if (!fifo_.empty()) {
+    ret += fifo_.back()->data_size() - block_size();
+  }
+  return ret;
 }
 
 int64_t ResourceMultiBufferDataProvider::block_size() const {

@@ -176,7 +176,6 @@ void MultibufferDataSource::Initialize(const InitializeCB& init_cb) {
     reader_->Wait(1,
                   base::Bind(&MultibufferDataSource::StartCallback, weak_ptr_));
   }
-  UpdateLoadingState();
 }
 
 void MultibufferDataSource::OnRedirect(
@@ -230,6 +229,7 @@ void MultibufferDataSource::OnRedirect(
 }
 
 void MultibufferDataSource::SetPreload(Preload preload) {
+  DVLOG(1) << __FUNCTION__ << "(" << preload << ")";
   DCHECK(render_task_runner_->BelongsToCurrentThread());
   preload_ = preload;
   UpdateBufferSizes();
@@ -393,7 +393,7 @@ void MultibufferDataSource::ReadTask() {
   } else {
     reader_->Wait(1, base::Bind(&MultibufferDataSource::ReadTask,
                                 weak_factory_.GetWeakPtr()));
-    UpdateLoadingState();
+    UpdateLoadingState(false);
   }
 }
 
@@ -476,12 +476,16 @@ void MultibufferDataSource::StartCallback() {
                                    url_data_->range_supported());
   }
 
-  UpdateLoadingState();
   render_task_runner_->PostTask(
       FROM_HERE, base::Bind(base::ResetAndReturn(&init_cb_), success));
+
+  // Even if data is cached, say that we're loading at this point for
+  // compatibility.
+  UpdateLoadingState(true);
 }
 
 void MultibufferDataSource::ProgressCallback(int64 begin, int64 end) {
+  DVLOG(1) << __FUNCTION__ << "(" << begin << ", " << end << ")";
   DCHECK(render_task_runner_->BelongsToCurrentThread());
 
   if (assume_fully_buffered())
@@ -497,13 +501,17 @@ void MultibufferDataSource::ProgressCallback(int64 begin, int64 end) {
     host_->AddBufferedByteRange(begin, end);
   }
 
-  UpdateLoadingState();
+  UpdateLoadingState(false);
 }
 
-void MultibufferDataSource::UpdateLoadingState() {
+void MultibufferDataSource::UpdateLoadingState(bool force_loading) {
+  DVLOG(1) << __FUNCTION__;
+  if (assume_fully_buffered())
+    return;
   // Update loading state.
-  if ((!!reader_ && reader_->IsLoading()) != loading_) {
-    loading_ = !loading_;
+  bool is_loading = !!reader_ && reader_->IsLoading();
+  if (force_loading || is_loading != loading_) {
+    loading_ = is_loading || force_loading;
 
     if (!loading_ && cancel_on_defer_) {
       reader_.reset(nullptr);
@@ -515,6 +523,7 @@ void MultibufferDataSource::UpdateLoadingState() {
 }
 
 void MultibufferDataSource::UpdateBufferSizes() {
+  DVLOG(1) << __FUNCTION__;
   if (!reader_)
     return;
 

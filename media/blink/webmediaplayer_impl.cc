@@ -256,6 +256,7 @@ void WebMediaPlayerImpl::load(LoadType load_type, const blink::WebURL& url,
 void WebMediaPlayerImpl::DoLoad(LoadType load_type,
                                 const blink::WebURL& url,
                                 CORSMode cors_mode) {
+  DVLOG(1) << __FUNCTION__;
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   GURL gurl(url);
@@ -928,6 +929,7 @@ void WebMediaPlayerImpl::OnPipelineEnded() {
 }
 
 void WebMediaPlayerImpl::OnPipelineError(PipelineStatus error) {
+  DVLOG(1) << __FUNCTION__;
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   DCHECK_NE(error, PIPELINE_OK);
 
@@ -1138,6 +1140,7 @@ void WebMediaPlayerImpl::Resume() {
 }
 
 void WebMediaPlayerImpl::DataSourceInitialized(bool success) {
+  DVLOG(1) << __FUNCTION__;
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   if (!success) {
@@ -1149,6 +1152,7 @@ void WebMediaPlayerImpl::DataSourceInitialized(bool success) {
 }
 
 void WebMediaPlayerImpl::NotifyDownloading(bool is_downloading) {
+  DVLOG(1) << __FUNCTION__;
   if (!is_downloading && network_state_ == WebMediaPlayer::NetworkStateLoading)
     SetNetworkState(WebMediaPlayer::NetworkStateIdle);
   else if (is_downloading && network_state_ == WebMediaPlayer::NetworkStateIdle)
