@@ -44,7 +44,9 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
   // Destroys the surface.
   virtual void Destroy() = 0;
 
-  virtual bool Resize(const gfx::Size& size, float scale_factor);
+  virtual bool Resize(const gfx::Size& size,
+                      float scale_factor,
+                      bool has_alpha);
 
   // Recreate the surface without changing the size.
   virtual bool Recreate();
@@ -224,7 +226,9 @@ class GL_EXPORT GLSurfaceAdapter : public GLSurface {
 
   bool Initialize() override;
   void Destroy() override;
-  bool Resize(const gfx::Size& size, float scale_factor) override;
+  bool Resize(const gfx::Size& size,
+              float scale_factor,
+              bool has_alpha) override;
   bool Recreate() override;
   bool DeferDraws() override;
   bool IsOffscreen() override;

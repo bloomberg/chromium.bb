@@ -339,7 +339,7 @@ void RenderingHelper::Initialize(const RenderingHelperParams& params,
 
   gl_surface_ = gfx::GLSurface::CreateViewGLSurface(window_);
 #if defined(USE_OZONE)
-  gl_surface_->Resize(platform_window_delegate_->GetSize(), 1.f);
+  gl_surface_->Resize(platform_window_delegate_->GetSize(), 1.f, true);
 #endif  // defined(USE_OZONE)
   screen_size_ = gl_surface_->GetSize();
 

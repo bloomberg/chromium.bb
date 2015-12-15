@@ -80,7 +80,9 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL {
   EGLConfig GetConfig() override;
   bool Initialize() override;
   void Destroy() override;
-  bool Resize(const gfx::Size& size, float scale_factor) override;
+  bool Resize(const gfx::Size& size,
+              float scale_factor,
+              bool has_alpha) override;
   bool Recreate() override;
   bool IsOffscreen() override;
   gfx::SwapResult SwapBuffers() override;
@@ -120,6 +122,7 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL {
 
   EGLSurface surface_;
   bool supports_post_sub_buffer_;
+  bool alpha_;
 
   scoped_ptr<VSyncProvider> vsync_provider_;
 
@@ -151,7 +154,9 @@ class GL_EXPORT PbufferGLSurfaceEGL : public GLSurfaceEGL {
   bool IsOffscreen() override;
   gfx::SwapResult SwapBuffers() override;
   gfx::Size GetSize() override;
-  bool Resize(const gfx::Size& size, float scale_factor) override;
+  bool Resize(const gfx::Size& size,
+              float scale_factor,
+              bool has_alpha) override;
   EGLSurface GetHandle() override;
   void* GetShareHandle() override;
 
@@ -180,7 +185,9 @@ class GL_EXPORT SurfacelessEGL : public GLSurfaceEGL {
   bool IsSurfaceless() const override;
   gfx::SwapResult SwapBuffers() override;
   gfx::Size GetSize() override;
-  bool Resize(const gfx::Size& size, float scale_factor) override;
+  bool Resize(const gfx::Size& size,
+              float scale_factor,
+              bool has_alpha) override;
   EGLSurface GetHandle() override;
   void* GetShareHandle() override;
 

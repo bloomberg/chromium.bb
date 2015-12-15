@@ -145,7 +145,8 @@ EGLConfig NativeViewGLSurfaceEGLX11::GetConfig() {
 }
 
 bool NativeViewGLSurfaceEGLX11::Resize(const gfx::Size& size,
-                                       float scale_factor) {
+                                       float scale_factor,
+                                       bool has_alpha) {
   if (size == GetSize())
     return true;
 

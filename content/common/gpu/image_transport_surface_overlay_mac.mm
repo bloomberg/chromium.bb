@@ -807,7 +807,8 @@ void ImageTransportSurfaceOverlayMac::OnBufferPresented(
 }
 
 bool ImageTransportSurfaceOverlayMac::Resize(const gfx::Size& pixel_size,
-                                             float scale_factor) {
+                                             float scale_factor,
+                                             bool has_alpha) {
   // Flush through any pending frames.
   DisplayAndClearAllPendingSwaps();
   pixel_size_ = pixel_size;

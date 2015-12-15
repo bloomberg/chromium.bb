@@ -17,7 +17,8 @@ class GLSurfaceMock : public gfx::GLSurface {
 
   MOCK_METHOD0(Initialize, bool());
   MOCK_METHOD0(Destroy, void());
-  MOCK_METHOD2(Resize, bool(const gfx::Size& size, float scale_factor));
+  MOCK_METHOD3(Resize,
+               bool(const gfx::Size& size, float scale_factor, bool alpha));
   MOCK_METHOD0(IsOffscreen, bool());
   MOCK_METHOD0(SwapBuffers, gfx::SwapResult());
   MOCK_METHOD4(PostSubBuffer,

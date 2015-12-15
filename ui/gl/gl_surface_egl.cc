@@ -487,6 +487,7 @@ NativeViewGLSurfaceEGL::NativeViewGLSurfaceEGL(EGLNativeWindowType window)
       size_(1, 1),
       surface_(NULL),
       supports_post_sub_buffer_(false),
+      alpha_(true),
       swap_interval_(1) {
 #if defined(OS_ANDROID)
   if (window)
@@ -653,10 +654,13 @@ gfx::Size NativeViewGLSurfaceEGL::GetSize() {
   return gfx::Size(width, height);
 }
 
-bool NativeViewGLSurfaceEGL::Resize(const gfx::Size& size, float scale_factor) {
-  if (size == GetSize())
+bool NativeViewGLSurfaceEGL::Resize(const gfx::Size& size,
+                                    float scale_factor,
+                                    bool has_alpha) {
+  if (size == GetSize() && has_alpha == alpha_)
     return true;
 
+  alpha_ = has_alpha;
   size_ = size;
 
   scoped_ptr<ui::ScopedMakeCurrent> scoped_make_current;
@@ -843,7 +847,9 @@ gfx::Size PbufferGLSurfaceEGL::GetSize() {
   return size_;
 }
 
-bool PbufferGLSurfaceEGL::Resize(const gfx::Size& size, float scale_factor) {
+bool PbufferGLSurfaceEGL::Resize(const gfx::Size& size,
+                                 float scale_factor,
+                                 bool has_alpha) {
   if (size == size_)
     return true;
 
@@ -929,7 +935,9 @@ gfx::Size SurfacelessEGL::GetSize() {
   return size_;
 }
 
-bool SurfacelessEGL::Resize(const gfx::Size& size, float scale_factor) {
+bool SurfacelessEGL::Resize(const gfx::Size& size,
+                            float scale_factor,
+                            bool has_alpha) {
   size_ = size;
   return true;
 }

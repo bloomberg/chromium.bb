@@ -29,7 +29,7 @@ bool GlRenderer::Initialize() {
     return false;
   }
 
-  surface_->Resize(size_, 1.f);
+  surface_->Resize(size_, 1.f, true);
 
   if (!context_->MakeCurrent(surface_.get())) {
     LOG(ERROR) << "Failed to make GL context current";

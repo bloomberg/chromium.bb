@@ -4355,6 +4355,7 @@ error::Error GLES2DecoderImpl::HandleResizeCHROMIUM(uint32 immediate_data_size,
   GLuint width = static_cast<GLuint>(c.width);
   GLuint height = static_cast<GLuint>(c.height);
   GLfloat scale_factor = c.scale_factor;
+  GLboolean has_alpha = c.alpha;
   TRACE_EVENT2("gpu", "glResizeChromium", "width", width, "height", height);
 
   width = std::max(1U, width);
@@ -4373,7 +4374,8 @@ error::Error GLES2DecoderImpl::HandleResizeCHROMIUM(uint32 immediate_data_size,
       return error::kLostContext;
     }
   } else {
-    if (!surface_->Resize(gfx::Size(width, height), scale_factor)) {
+    if (!surface_->Resize(gfx::Size(width, height), scale_factor,
+                          !!has_alpha)) {
       LOG(ERROR) << "GLES2DecoderImpl: Context lost because resize failed.";
       return error::kLostContext;
     }

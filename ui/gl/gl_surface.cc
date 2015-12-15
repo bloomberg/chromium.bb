@@ -97,7 +97,9 @@ bool GLSurface::Initialize() {
   return true;
 }
 
-bool GLSurface::Resize(const gfx::Size& size, float scale_factor) {
+bool GLSurface::Resize(const gfx::Size& size,
+                       float scale_factor,
+                       bool has_alpha) {
   NOTIMPLEMENTED();
   return false;
 }
@@ -253,8 +255,10 @@ void GLSurfaceAdapter::Destroy() {
   surface_->Destroy();
 }
 
-bool GLSurfaceAdapter::Resize(const gfx::Size& size, float scale_factor) {
-  return surface_->Resize(size, scale_factor);
+bool GLSurfaceAdapter::Resize(const gfx::Size& size,
+                              float scale_factor,
+                              bool has_alpha) {
+  return surface_->Resize(size, scale_factor, has_alpha);
 }
 
 bool GLSurfaceAdapter::Recreate() {
