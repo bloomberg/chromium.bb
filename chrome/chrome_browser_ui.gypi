@@ -1840,7 +1840,7 @@
       'browser/ui/webui/inspect_ui.cc',
       'browser/ui/webui/inspect_ui.h',
       'browser/ui/webui/md_downloads/downloads_list_tracker.cc',
-      'browser/ui/webui/md_downloads/downloads_list_tracher.h',
+      'browser/ui/webui/md_downloads/downloads_list_tracker.h',
       'browser/ui/webui/md_downloads/md_downloads_dom_handler.cc',
       'browser/ui/webui/md_downloads/md_downloads_dom_handler.h',
       'browser/ui/webui/md_downloads/md_downloads_ui.cc',
