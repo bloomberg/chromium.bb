@@ -3,6 +3,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# This file isn't officially supported by the Chromium project. It's maintained
+# on a best-effort basis by volunteers, so some things may be broken from time
+# to time. If you encounter errors, it's most often due to files in base that
+# have been added or moved since somebody last tried this script. Generally
+# such errors are easy to diagnose.
+
 """Bootstraps gn.
 
 It is done by first building it manually in a temporary directory, then building
