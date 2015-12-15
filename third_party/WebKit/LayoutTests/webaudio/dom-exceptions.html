@@ -265,11 +265,13 @@ function runTest() {
 
     shouldThrow("osc.setPeriodicWave(null)");
 
-    // exponentialRampToValue should throw on non-positive target values.
+    // exponentialRampToValue should throw only for "zero" target values.
     node = context.createGain();
     node.connect(context.destination);
-    shouldThrow("node.gain.exponentialRampToValueAtTime(-1, 0.1)");
+    shouldNotThrow("node.gain.exponentialRampToValueAtTime(-1, 0.1)");
     shouldThrow("node.gain.exponentialRampToValueAtTime(0, 0.1)");
+    // 1e-100 is 0 when converted to a single precision float.
+    shouldThrow("node.gain.exponentialRampToValueAtTime(1e-100, 0.1)");
     // See crbug.com/459391.
     // Math.pow(2, -149) = 1.401298464324817e-45 is the double-float value of the
     // least positive single float number. We do it this way to make sure no round-off or conversion

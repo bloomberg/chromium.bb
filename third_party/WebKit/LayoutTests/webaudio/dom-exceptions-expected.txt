@@ -146,10 +146,11 @@ PASS osc1 = context.createOscillator() did not throw exception.
 PASS osc1.start() did not throw exception.
 PASS osc1.stop() did not throw exception.
 PASS osc.setPeriodicWave(null) threw exception TypeError: Failed to execute 'setPeriodicWave' on 'OscillatorNode': parameter 1 is not of type 'PeriodicWave'..
-PASS node.gain.exponentialRampToValueAtTime(-1, 0.1) threw exception InvalidAccessError: Failed to execute 'exponentialRampToValueAtTime' on 'AudioParam': The float target value provided (-1) is outside the range [1.40130e-45, Infinity)..
-PASS node.gain.exponentialRampToValueAtTime(0, 0.1) threw exception InvalidAccessError: Failed to execute 'exponentialRampToValueAtTime' on 'AudioParam': The float target value provided (0) is outside the range [1.40130e-45, Infinity)..
+PASS node.gain.exponentialRampToValueAtTime(-1, 0.1) did not throw exception.
+PASS node.gain.exponentialRampToValueAtTime(0, 0.1) threw exception InvalidAccessError: Failed to execute 'exponentialRampToValueAtTime' on 'AudioParam': The float target value provided (0) should not be in the range (-1.40130e-45, 1.40130e-45)..
+PASS node.gain.exponentialRampToValueAtTime(1e-100, 0.1) threw exception InvalidAccessError: Failed to execute 'exponentialRampToValueAtTime' on 'AudioParam': The float target value provided (0) should not be in the range (-1.40130e-45, 1.40130e-45)..
 PASS node.gain.exponentialRampToValueAtTime(Math.pow(2, -149), 0.1) did not throw exception.
-PASS node.gain.exponentialRampToValueAtTime(Math.pow(2, -150), 0.1) threw exception InvalidAccessError: Failed to execute 'exponentialRampToValueAtTime' on 'AudioParam': The float target value provided (0) is outside the range [1.40130e-45, Infinity)..
+PASS node.gain.exponentialRampToValueAtTime(Math.pow(2, -150), 0.1) threw exception InvalidAccessError: Failed to execute 'exponentialRampToValueAtTime' on 'AudioParam': The float target value provided (0) should not be in the range (-1.40130e-45, 1.40130e-45)..
 PASS oc = new OfflineAudioContext(1, 44100, 44100) did not throw exception.
 PASS conv = oc.createConvolver() did not throw exception.
 PASS conv.buffer = {} threw exception TypeError: Failed to set the 'buffer' property on 'ConvolverNode': The provided value is not of type 'AudioBuffer'..

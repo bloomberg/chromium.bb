@@ -1,0 +1,12 @@
+Test AudioParam.exponentialRampToValueAtTime() with Negative Values.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS Negative exponential ramp from -1 to -2 is identical to the array [-1,-1.0001155138015747,-1.0002310276031494,-1.0003465414047241,-1.0004620552062988,-1.0005775690078735,-1.0006932020187378,-1.000808835029602,-1.0009244680404663,-1.0010401010513306,-1.0011557340621948,-1.001271367073059,-1.0013870000839233,-1.0015026330947876,-1.0016182661056519,-1.0017340183258057...].
+PASS Exponential ramp from 2 to -1 contains only the constant 2.
+PASS Exponential ramp from -1 to 1 contains only the constant -1.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

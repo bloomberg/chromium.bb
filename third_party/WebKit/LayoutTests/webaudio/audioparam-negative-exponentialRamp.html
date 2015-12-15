@@ -1,0 +1,122 @@
+<!doctype html>
+<html>
+  <head>
+    <script src="../resources/js-test.js"></script>
+    <script src="resources/compatibility.js"></script>
+    <script src="resources/audio-testing.js"></script>
+    <title>Test Negative AudioParam.exponentialRampToValueAtTime</title>
+  </head>
+
+  <body>
+    <script>
+      description("Test AudioParam.exponentialRampToValueAtTime() with Negative Values.");
+      window.jsTestIsAsync = true;
+      
+      var sampleRate = 48000;
+
+      var audit = Audit.createTaskRunner();
+
+      audit.defineTask("both negative values", function (done) {
+        var renderDuration = 0.125;
+
+        // Create context with two channels.  Channel 0 contains the positive-valued exponential and
+        // channel 1 contains the negative-valued exponential.  We'll compare the two channels to
+        // verify that they're the same, as they should be.
+        var context = new OfflineAudioContext(2, renderDuration * sampleRate, sampleRate);
+        var source = context.createBufferSource();
+        source.buffer = createConstantBuffer(context, 1, 1);
+        source.loop = true;
+
+        // Gain node gp is for the positive-valued exponential ramp, and gn is for the negative-valued
+        // exponential ramp.
+        var gp = context.createGain();
+        var gn = context.createGain();
+        var merger = context.createChannelMerger(2);
+
+        source.connect(gp)
+              .connect(merger, 0, 0);
+        source.connect(gn)
+              .connect(merger, 0, 1);
+        merger.connect(context.destination);
+        
+        gp.gain.setValueAtTime(1, 0);
+        gp.gain.exponentialRampToValueAtTime(2, renderDuration);
+
+        gn.gain.setValueAtTime(-1, 0);
+        gn.gain.exponentialRampToValueAtTime(-2, renderDuration);
+
+        source.start();
+
+        context.startRendering().then(function (resultBuffer) {
+          // Verify that channels have the same values, except for the sign.
+          var expected = resultBuffer.getChannelData(0);
+          var actual = resultBuffer.getChannelData(1);
+          var inverted = expected.map(sample => -sample);
+
+          Should("Negative exponential ramp from -1 to -2", actual)
+            .beEqualToArray(inverted);
+        }).then(done);
+      });
+
+      audit.defineTask("negative-end", function (done) {
+        // Positive start value and negative end value should just do nothing.
+        var renderDuration = 0.125;
+        var context = new OfflineAudioContext(1, renderDuration * sampleRate, sampleRate);
+        var source = context.createBufferSource();
+        source.buffer = createConstantBuffer(context, 1, 1);
+        source.loop = true;
+
+        // Gain node gp is for the positive-valued exponential ramp, and gn is for the negative-valued
+        // exponential ramp.
+        var g = context.createGain();
+        
+        g.gain.setValueAtTime(2, 0);
+        g.gain.exponentialRampToValueAtTime(-1, renderDuration);
+
+        source.connect(g)
+              .connect(context.destination);
+
+        source.start();
+
+        context.startRendering().then(function (resultBuffer) {
+          var actual = resultBuffer.getChannelData(0);
+
+          Should("Exponential ramp from 2 to -1", actual)
+            .beConstantValueOf(2);
+        }).then(done);
+      });
+
+      audit.defineTask("positive-end", function (done) {
+        // Positive start value and negative end value should just do nothing.
+        var renderDuration = 0.125;
+        var context = new OfflineAudioContext(1, renderDuration * sampleRate, sampleRate);
+        var source = context.createBufferSource();
+        source.buffer = createConstantBuffer(context, 1, 1);
+        source.loop = true;
+
+        var g = context.createGain();
+        
+        g.gain.setValueAtTime(-1, 0);
+        g.gain.exponentialRampToValueAtTime(1, renderDuration);
+
+        source.connect(g)
+              .connect(context.destination);
+        source.start();
+
+        context.startRendering().then(function (resultBuffer) {
+          var actual = resultBuffer.getChannelData(0);
+
+          Should("Exponential ramp from -1 to 1", actual)
+            .beConstantValueOf(-1);
+        }).then(done);
+      });
+
+      audit.defineTask("finish", function (done) {
+        finishJSTest();
+        done();
+      });
+
+      audit.runTasks();
+    </script>
+  </body>
+</html>
