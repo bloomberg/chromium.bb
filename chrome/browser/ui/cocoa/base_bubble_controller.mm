@@ -116,7 +116,7 @@
 }
 
 - (void)dealloc {
-  [[NSNotificationCenter defaultCenter] removeObserver:self];
+  [self unregisterFromNotifications];
   [super dealloc];
 }
 

@@ -254,6 +254,10 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 }
 
 - (void)windowWillClose:(NSNotification*)notification {
+  [[NSNotificationCenter defaultCenter]
+      removeObserver:self
+                name:NSWindowDidMoveNotification
+              object:nil];
   bridge_->OnBubbleClosing();
   [super windowWillClose:notification];
 }
