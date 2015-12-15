@@ -832,7 +832,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumePosition(CSSParserTokenRange& ran
     return nullptr;
 }
 
-static bool consumeTransformOrigin(CSSParserTokenRange& range, CSSParserMode cssParserMode, UnitlessQuirk unitless, RefPtrWillBeRawPtr<CSSValue>& resultX, RefPtrWillBeRawPtr<CSSValue>& resultY)
+static bool consumeOneOrTwoValuedPosition(CSSParserTokenRange& range, CSSParserMode cssParserMode, UnitlessQuirk unitless, RefPtrWillBeRawPtr<CSSValue>& resultX, RefPtrWillBeRawPtr<CSSValue>& resultY)
 {
     RefPtrWillBeRawPtr<CSSPrimitiveValue> value1 = consumePositionComponent(range, cssParserMode, unitless);
     if (!value1)
@@ -849,7 +849,7 @@ static PassRefPtrWillBeRawPtr<CSSValueList> consumeTransformOrigin(CSSParserToke
 {
     RefPtrWillBeRawPtr<CSSValue> resultX = nullptr;
     RefPtrWillBeRawPtr<CSSValue> resultY = nullptr;
-    if (consumeTransformOrigin(range, cssParserMode, unitless, resultX, resultY)) {
+    if (consumeOneOrTwoValuedPosition(range, cssParserMode, unitless, resultX, resultY)) {
         RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
         list->append(resultX.release());
         list->append(resultY.release());
@@ -2413,6 +2413,122 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeCursor(CSSParserTokenRange& range
     return list.release();
 }
 
+// This should go away once we drop support for -webkit-gradient
+static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeDeprecatedGradientPoint(CSSParserTokenRange& args, bool horizontal)
+{
+    if (args.peek().type() == IdentToken) {
+        if ((horizontal && consumeIdent<CSSValueLeft>(args)) || (!horizontal && consumeIdent<CSSValueTop>(args)))
+            return cssValuePool().createValue(0., CSSPrimitiveValue::UnitType::Percentage);
+        if ((horizontal && consumeIdent<CSSValueRight>(args)) || (!horizontal && consumeIdent<CSSValueBottom>(args)))
+            return cssValuePool().createValue(100., CSSPrimitiveValue::UnitType::Percentage);
+        if (consumeIdent<CSSValueCenter>(args))
+            return cssValuePool().createValue(50., CSSPrimitiveValue::UnitType::Percentage);
+        return nullptr;
+    }
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> result = consumePercent(args, ValueRangeAll);
+    if (!result)
+        result = consumeNumber(args, ValueRangeAll);
+    return result;
+}
+
+// Used to parse colors for -webkit-gradient(...).
+static PassRefPtrWillBeRawPtr<CSSValue> consumeDeprecatedGradientStopColor(CSSParserTokenRange& args, CSSParserMode cssParserMode)
+{
+    if (args.peek().id() == CSSValueCurrentcolor)
+        return nullptr;
+    return consumeColor(args, cssParserMode);
+}
+
+static bool consumeDeprecatedGradientColorStop(CSSParserTokenRange& range, CSSGradientColorStop& stop, CSSParserMode cssParserMode)
+{
+    CSSValueID id = range.peek().functionId();
+    if (id != CSSValueFrom && id != CSSValueTo && id != CSSValueColorStop)
+        return false;
+
+    CSSParserTokenRange args = consumeFunction(range);
+    double position;
+    if (id == CSSValueFrom || id == CSSValueTo) {
+        position = (id == CSSValueFrom) ? 0 : 1;
+    } else {
+        ASSERT(id == CSSValueColorStop);
+        const CSSParserToken& arg = args.consumeIncludingWhitespace();
+        if (arg.type() == PercentageToken)
+            position = arg.numericValue() / 100.0;
+        else if (arg.type() == NumberToken)
+            position = arg.numericValue();
+        else
+            return false;
+
+        if (!consumeCommaIncludingWhitespace(args))
+            return false;
+    }
+
+    stop.m_position = cssValuePool().createValue(position, CSSPrimitiveValue::UnitType::Number);
+    stop.m_color = consumeDeprecatedGradientStopColor(args, cssParserMode);
+    return stop.m_color && args.atEnd();
+}
+
+static PassRefPtrWillBeRawPtr<CSSValue> consumeDeprecatedGradient(CSSParserTokenRange& args, CSSParserMode cssParserMode)
+{
+    RefPtrWillBeRawPtr<CSSGradientValue> result = nullptr;
+    CSSValueID id = args.consumeIncludingWhitespace().id();
+    bool isDeprecatedRadialGradient = (id == CSSValueRadial);
+    if (isDeprecatedRadialGradient)
+        result = CSSRadialGradientValue::create(NonRepeating, CSSDeprecatedRadialGradient);
+    else if (id == CSSValueLinear)
+        result = CSSLinearGradientValue::create(NonRepeating, CSSDeprecatedLinearGradient);
+    if (!result || !consumeCommaIncludingWhitespace(args))
+        return nullptr;
+
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> point = consumeDeprecatedGradientPoint(args, true);
+    if (!point)
+        return nullptr;
+    result->setFirstX(point.release());
+    point = consumeDeprecatedGradientPoint(args, false);
+    if (!point)
+        return nullptr;
+    result->setFirstY(point.release());
+
+    if (!consumeCommaIncludingWhitespace(args))
+        return nullptr;
+
+    // For radial gradients only, we now expect a numeric radius.
+    if (isDeprecatedRadialGradient) {
+        RefPtrWillBeRawPtr<CSSPrimitiveValue> radius = consumeNumber(args, ValueRangeAll);
+        if (!radius || !consumeCommaIncludingWhitespace(args))
+            return nullptr;
+        toCSSRadialGradientValue(result.get())->setFirstRadius(radius.release());
+    }
+
+    point = consumeDeprecatedGradientPoint(args, true);
+    if (!point)
+        return nullptr;
+    result->setSecondX(point.release());
+    point = consumeDeprecatedGradientPoint(args, false);
+    if (!point)
+        return nullptr;
+    result->setSecondY(point.release());
+
+    // For radial gradients only, we now expect the second radius.
+    if (isDeprecatedRadialGradient) {
+        if (!consumeCommaIncludingWhitespace(args))
+            return nullptr;
+        RefPtrWillBeRawPtr<CSSPrimitiveValue> radius = consumeNumber(args, ValueRangeAll);
+        if (!radius)
+            return nullptr;
+        toCSSRadialGradientValue(result.get())->setSecondRadius(radius.release());
+    }
+
+    CSSGradientColorStop stop;
+    while (consumeCommaIncludingWhitespace(args)) {
+        if (!consumeDeprecatedGradientColorStop(args, stop, cssParserMode))
+            return nullptr;
+        result->addStop(stop);
+    }
+
+    return result.release();
+}
+
 static bool consumeGradientColorStops(CSSParserTokenRange& range, CSSParserMode cssParserMode, CSSGradientValue* gradient)
 {
     bool supportsColorHints = gradient->gradientType() == CSSLinearGradient || gradient->gradientType() == CSSRadialGradient;
@@ -2438,6 +2554,48 @@ static bool consumeGradientColorStops(CSSParserTokenRange& range, CSSParserMode 
 
     // Must have 2 or more stops to be valid.
     return gradient->stopCount() >= 2;
+}
+
+static PassRefPtrWillBeRawPtr<CSSValue> consumeDeprecatedRadialGradient(CSSParserTokenRange& args, CSSParserMode cssParserMode, CSSGradientRepeat repeating)
+{
+    RefPtrWillBeRawPtr<CSSRadialGradientValue> result = CSSRadialGradientValue::create(repeating, CSSPrefixedRadialGradient);
+    RefPtrWillBeRawPtr<CSSValue> centerX = nullptr;
+    RefPtrWillBeRawPtr<CSSValue> centerY = nullptr;
+    consumeOneOrTwoValuedPosition(args, cssParserMode, UnitlessQuirk::Forbid, centerX, centerY);
+    if ((centerX || centerY) && !consumeCommaIncludingWhitespace(args))
+        return nullptr;
+
+    result->setFirstX(toCSSPrimitiveValue(centerX.get()));
+    result->setSecondX(toCSSPrimitiveValue(centerX.get()));
+    result->setFirstY(toCSSPrimitiveValue(centerY.get()));
+    result->setSecondY(toCSSPrimitiveValue(centerY.get()));
+
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> shape = consumeIdent<CSSValueCircle, CSSValueEllipse>(args);
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> sizeKeyword = consumeIdent<CSSValueClosestSide, CSSValueClosestCorner, CSSValueFarthestSide, CSSValueFarthestCorner, CSSValueContain, CSSValueCover>(args);
+    if (!shape)
+        shape = consumeIdent<CSSValueCircle, CSSValueEllipse>(args);
+    result->setShape(shape);
+    result->setSizingBehavior(sizeKeyword);
+
+    // Or, two lengths or percentages
+    if (!shape && !sizeKeyword) {
+        RefPtrWillBeRawPtr<CSSPrimitiveValue> horizontalSize = nullptr;
+        RefPtrWillBeRawPtr<CSSPrimitiveValue> verticalSize = nullptr;
+        if ((horizontalSize = consumeLengthOrPercent(args, cssParserMode, ValueRangeAll))) {
+            verticalSize = consumeLengthOrPercent(args, cssParserMode, ValueRangeAll);
+            if (!verticalSize)
+                return nullptr;
+            consumeCommaIncludingWhitespace(args);
+            result->setEndHorizontalSize(horizontalSize);
+            result->setEndVerticalSize(verticalSize);
+        }
+    } else {
+        consumeCommaIncludingWhitespace(args);
+    }
+    if (!consumeGradientColorStops(args, cssParserMode, result.get()))
+        return nullptr;
+
+    return result.release();
 }
 
 static PassRefPtrWillBeRawPtr<CSSValue> consumeRadialGradient(CSSParserTokenRange& args, CSSParserMode cssParserMode, CSSGradientRepeat repeating)
@@ -2597,6 +2755,20 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeGeneratedImage(CSSParserTokenRang
         result = consumeLinearGradient(args, context.mode(), Repeating, CSSPrefixedLinearGradient);
     } else if (id == CSSValueLinearGradient) {
         result = consumeLinearGradient(args, context.mode(), NonRepeating, CSSLinearGradient);
+    } else if (id == CSSValueWebkitGradient) {
+        // FIXME: This should send a deprecation message.
+        if (context.useCounter())
+            context.useCounter()->count(UseCounter::DeprecatedWebKitGradient);
+        result = consumeDeprecatedGradient(args, context.mode());
+    } else if (id == CSSValueWebkitRadialGradient) {
+        // FIXME: This should send a deprecation message.
+        if (context.useCounter())
+            context.useCounter()->count(UseCounter::DeprecatedWebKitRadialGradient);
+        result = consumeDeprecatedRadialGradient(args, context.mode(), NonRepeating);
+    } else if (id == CSSValueWebkitRepeatingRadialGradient) {
+        if (context.useCounter())
+            context.useCounter()->count(UseCounter::DeprecatedWebKitRepeatingRadialGradient);
+        result = consumeDeprecatedRadialGradient(args, context.mode(), Repeating);
     } else if (id == CSSValueWebkitCrossFade) {
         result = consumeCrossFade(args, context);
     }
