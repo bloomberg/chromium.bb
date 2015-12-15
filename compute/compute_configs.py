@@ -17,6 +17,7 @@ DEFAULT_BASE_IMAGE = 'ubuntu-14-04-server-v20150324'
 DEFAULT_IMAGE_NAME = 'chromeos-bot-v5'
 DEFAULT_ZONE = 'us-east1-a'
 DEFAULT_MACHINE_TYPE_16 = 'n1-highmem-16'
+DEFAULT_MACHINE_TYPE_32 = 'n1-highmem-32'
 DEFAULT_SCOPES = ('https://www.googleapis.com/auth/devstorage.full_control',
                   'https://www.googleapis.com/auth/gerritcodereview')
 
@@ -59,6 +60,14 @@ configs['cros-precq-bot'] = dict(
 # A light-weight config for light jobs, like boardless masters.
 configs['cros-master'] = dict(
     machine_type='n1-standard-8',
+    zone=DEFAULT_ZONE,
+    image=DEFAULT_IMAGE_NAME,
+    scopes=DEFAULT_SCOPES,
+)
+
+# A 32-core config for resource intensive builders (such as chrome continuous).
+configs['cros-chrome-continuous-bot'] = dict(
+    machine_type=DEFAULT_MACHINE_TYPE_32,
     zone=DEFAULT_ZONE,
     image=DEFAULT_IMAGE_NAME,
     scopes=DEFAULT_SCOPES,
