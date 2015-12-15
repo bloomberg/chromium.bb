@@ -76,12 +76,12 @@ void ShowPermissionsDialogHelper::ShowPermissionsDialog(
         DevicePermissionsManager::Get(profile_)
             ->GetPermissionMessageStrings(extension_id_);
   }
-  scoped_refptr<ExtensionInstallPrompt::Prompt> prompt(
+  scoped_ptr<ExtensionInstallPrompt::Prompt> prompt(
       new ExtensionInstallPrompt::Prompt(
           ExtensionInstallPrompt::POST_INSTALL_PERMISSIONS_PROMPT));
   prompt->set_retained_files(retained_file_paths);
   prompt->set_retained_device_messages(retained_device_messages);
-  prompt_->ShowDialog(this, extension, nullptr, prompt,
+  prompt_->ShowDialog(this, extension, nullptr, prompt.Pass(),
                       ExtensionInstallPrompt::GetDefaultShowDialogCallback());
 }
 

@@ -68,7 +68,7 @@ class ProgrammableInstallPrompt : public ExtensionInstallPrompt {
   void ShowDialog(Delegate* delegate,
                   const Extension* extension,
                   const SkBitmap* icon,
-                  const scoped_refptr<ExtensionInstallPrompt::Prompt>& prompt,
+                  scoped_ptr<ExtensionInstallPrompt::Prompt> prompt,
                   const ShowDialogCallback& callback) override {
     delegate_ = delegate;
   }

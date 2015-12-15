@@ -26,14 +26,14 @@ namespace {
 void ShowExtensionInstallDialogImpl(
     ExtensionInstallPromptShowParams* show_params,
     ExtensionInstallPrompt::Delegate* delegate,
-    scoped_refptr<ExtensionInstallPrompt::Prompt> prompt) {
+    scoped_ptr<ExtensionInstallPrompt::Prompt> prompt) {
   // These objects will delete themselves when the dialog closes.
   if (!show_params->GetParentWebContents()) {
-    new WindowedInstallDialogController(show_params, delegate, prompt);
+    new WindowedInstallDialogController(show_params, delegate, prompt.Pass());
     return;
   }
 
-  new ExtensionInstallDialogController(show_params, delegate, prompt);
+  new ExtensionInstallDialogController(show_params, delegate, prompt.Pass());
 }
 
 }  // namespace
@@ -41,13 +41,14 @@ void ShowExtensionInstallDialogImpl(
 ExtensionInstallDialogController::ExtensionInstallDialogController(
     ExtensionInstallPromptShowParams* show_params,
     ExtensionInstallPrompt::Delegate* delegate,
-    scoped_refptr<ExtensionInstallPrompt::Prompt> prompt)
+    scoped_ptr<ExtensionInstallPrompt::Prompt> prompt)
     : delegate_(delegate) {
+  ExtensionInstallPrompt::PromptType promptType = prompt->type();
   view_controller_.reset([[ExtensionInstallViewController alloc]
       initWithProfile:show_params->profile()
             navigator:show_params->GetParentWebContents()
              delegate:this
-               prompt:prompt]);
+               prompt:prompt.Pass()]);
 
   base::scoped_nsobject<NSWindow> window([[ConstrainedWindowCustomWindow alloc]
       initWithContentRect:[[view_controller_ view] bounds]]);
@@ -59,7 +60,8 @@ ExtensionInstallDialogController::ExtensionInstallDialogController(
       this, show_params->GetParentWebContents(), sheet));
 
   std::string event_name = ExperienceSamplingEvent::kExtensionInstallDialog;
-  event_name.append(ExtensionInstallPrompt::PromptTypeToString(prompt->type()));
+  event_name.append(
+      ExtensionInstallPrompt::PromptTypeToString(promptType));
   sampling_event_ = ExperienceSamplingEvent::Create(event_name);
 }
 

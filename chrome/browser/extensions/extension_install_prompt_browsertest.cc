@@ -27,10 +27,9 @@ scoped_refptr<extensions::Extension> BuildTestExtension() {
 
 // ExtensionInstallPrompt::ShowDialogCallback which proceeds without showing the
 // prompt.
-void TestShowDialogCallback(
-    ExtensionInstallPromptShowParams* params,
-    ExtensionInstallPrompt::Delegate* delegate,
-    scoped_refptr<ExtensionInstallPrompt::Prompt> prompt) {
+void TestShowDialogCallback(ExtensionInstallPromptShowParams* params,
+                            ExtensionInstallPrompt::Delegate* delegate,
+                            scoped_ptr<ExtensionInstallPrompt::Prompt> prompt) {
   delegate->InstallUIProceed();
 }
 

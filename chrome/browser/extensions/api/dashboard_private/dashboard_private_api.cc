@@ -138,14 +138,14 @@ void DashboardPrivateShowPermissionPromptForDelegatedInstallFunction::
     Release();
     return;
   }
-  scoped_refptr<ExtensionInstallPrompt::Prompt> prompt(
+  scoped_ptr<ExtensionInstallPrompt::Prompt> prompt(
       new ExtensionInstallPrompt::Prompt(
           ExtensionInstallPrompt::DELEGATED_PERMISSIONS_PROMPT));
   prompt->set_delegated_username(details().delegated_user);
 
   install_prompt_.reset(new ExtensionInstallPrompt(web_contents));
   install_prompt_->ShowDialog(
-      this, dummy_extension_.get(), &icon, prompt,
+      this, dummy_extension_.get(), &icon, prompt.Pass(),
       ExtensionInstallPrompt::GetDefaultShowDialogCallback());
   // Control flow finishes up in InstallUIProceed or InstallUIAbort.
 }

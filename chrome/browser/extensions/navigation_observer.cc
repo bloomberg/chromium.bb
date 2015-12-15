@@ -82,7 +82,8 @@ void NavigationObserver::PromptToEnableExtensionIfNecessary(
         ExtensionInstallPrompt::GetReEnablePromptTypeForExtension(profile_,
                                                                   extension);
     extension_install_prompt_->ShowDialog(
-        this, extension, nullptr, new ExtensionInstallPrompt::Prompt(type),
+        this, extension, nullptr,
+        make_scoped_ptr(new ExtensionInstallPrompt::Prompt(type)),
         ExtensionInstallPrompt::GetDefaultShowDialogCallback());
   }
 }

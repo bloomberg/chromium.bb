@@ -19,11 +19,11 @@ WebstoreStartupInstaller::WebstoreStartupInstaller(
 
 WebstoreStartupInstaller::~WebstoreStartupInstaller() {}
 
-scoped_refptr<ExtensionInstallPrompt::Prompt>
+scoped_ptr<ExtensionInstallPrompt::Prompt>
 WebstoreStartupInstaller::CreateInstallPrompt() const {
   if (show_prompt_) {
-    return new ExtensionInstallPrompt::Prompt(
-        ExtensionInstallPrompt::INSTALL_PROMPT);
+    return make_scoped_ptr(new ExtensionInstallPrompt::Prompt(
+        ExtensionInstallPrompt::INSTALL_PROMPT));
   }
   return NULL;
 }

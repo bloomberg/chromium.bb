@@ -8,6 +8,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac.h"
 
@@ -31,7 +32,7 @@ class ExtensionInstallDialogController :
   ExtensionInstallDialogController(
       ExtensionInstallPromptShowParams* show_params,
       ExtensionInstallPrompt::Delegate* delegate,
-      scoped_refptr<ExtensionInstallPrompt::Prompt> prompt);
+      scoped_ptr<ExtensionInstallPrompt::Prompt> prompt);
   ~ExtensionInstallDialogController() override;
 
   // ExtensionInstallPrompt::Delegate implementation.
@@ -53,6 +54,8 @@ class ExtensionInstallDialogController :
   base::scoped_nsobject<ExtensionInstallViewController> view_controller_;
   scoped_ptr<ConstrainedWindowMac> constrained_window_;
   scoped_ptr<extensions::ExperienceSamplingEvent> sampling_event_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionInstallDialogController);
 };
 
 #endif  // CHROME_BROWSER_UI_COCOA_EXTENSIONS_EXTENSION_INSTALL_DIALOG_CONTROLLER_H_

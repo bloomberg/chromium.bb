@@ -98,11 +98,10 @@ class ExtensionInstallPrompt
   // prompt. Gets populated with raw data and exposes getters for formatted
   // strings so that the GTK/views/Cocoa install dialogs don't have to repeat
   // that logic.
-  // Ref-counted because we pass around the prompt independent of the full
-  // ExtensionInstallPrompt.
-  class Prompt : public base::RefCountedThreadSafe<Prompt> {
+  class Prompt {
    public:
     explicit Prompt(PromptType type);
+    ~Prompt();
 
     void SetPermissions(const extensions::PermissionMessages& permissions,
                         PermissionsType permissions_type);
@@ -202,8 +201,6 @@ class ExtensionInstallPrompt
       std::vector<bool> is_showing_details;
     };
 
-    virtual ~Prompt();
-
     bool ShouldDisplayRevokeButton() const;
 
     // Returns the InstallPromptPermissions corresponding to
@@ -275,7 +272,7 @@ class ExtensionInstallPrompt
 
   typedef base::Callback<void(ExtensionInstallPromptShowParams*,
                               ExtensionInstallPrompt::Delegate*,
-                              scoped_refptr<ExtensionInstallPrompt::Prompt>)>
+                              scoped_ptr<ExtensionInstallPrompt::Prompt>)>
       ShowDialogCallback;
 
   // Callback to show the default extension install dialog.
@@ -332,13 +329,13 @@ class ExtensionInstallPrompt
   virtual void ShowDialog(Delegate* delegate,
                           const extensions::Extension* extension,
                           const SkBitmap* icon,
-                          const scoped_refptr<Prompt>& prompt,
+                          scoped_ptr<Prompt> prompt,
                           const ShowDialogCallback& show_dialog_callback);
   virtual void ShowDialog(
       Delegate* delegate,
       const extensions::Extension* extension,
       const SkBitmap* icon,
-      const scoped_refptr<Prompt>& prompt,
+      scoped_ptr<Prompt> prompt,
       scoped_ptr<const extensions::PermissionSet> custom_permissions,
       const ShowDialogCallback& show_dialog_callback);
 
@@ -396,7 +393,7 @@ class ExtensionInstallPrompt
   Delegate* delegate_;
 
   // A pre-filled prompt.
-  scoped_refptr<Prompt> prompt_;
+  scoped_ptr<Prompt> prompt_;
 
   // Used to show the confirm dialog.
   ShowDialogCallback show_dialog_callback_;

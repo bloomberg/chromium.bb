@@ -22,9 +22,9 @@ void TestingShowAppListInstallDialogController(
     WindowedInstallDialogController** controller,
     ExtensionInstallPromptShowParams* show_params,
     ExtensionInstallPrompt::Delegate* delegate,
-    scoped_refptr<ExtensionInstallPrompt::Prompt> prompt) {
+    scoped_ptr<ExtensionInstallPrompt::Prompt> prompt) {
   *controller =
-      new WindowedInstallDialogController(show_params, delegate, prompt);
+      new WindowedInstallDialogController(show_params, delegate, prompt.Pass());
 }
 
 typedef InProcessBrowserTest WindowedInstallDialogControllerBrowserTest;

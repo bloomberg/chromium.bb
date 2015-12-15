@@ -79,7 +79,7 @@ class ExternalInstallError : public ExtensionInstallPrompt::Delegate,
   // shown.
   void OnDialogReady(ExtensionInstallPromptShowParams* show_params,
                      ExtensionInstallPrompt::Delegate* prompt_delegate,
-                     scoped_refptr<ExtensionInstallPrompt::Prompt> prompt);
+                     scoped_ptr<ExtensionInstallPrompt::Prompt> prompt);
 
   // The associated BrowserContext.
   content::BrowserContext* browser_context_;
@@ -99,7 +99,7 @@ class ExternalInstallError : public ExtensionInstallPrompt::Delegate,
   // The UI for showing the error.
   scoped_ptr<ExtensionInstallPrompt> install_ui_;
   scoped_ptr<ExtensionInstallPromptShowParams> install_ui_show_params_;
-  scoped_refptr<ExtensionInstallPrompt::Prompt> prompt_;
+  scoped_ptr<ExtensionInstallPrompt::Prompt> prompt_;
 
   // The UI for the given error, which will take the form of either a menu
   // alert or a bubble alert (depending on the |alert_type_|.

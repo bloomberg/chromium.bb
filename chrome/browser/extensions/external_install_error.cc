@@ -75,8 +75,8 @@ class ExternalInstallMenuAlert : public GlobalError {
 // A global error that spawns a bubble when the menu item is clicked.
 class ExternalInstallBubbleAlert : public GlobalErrorWithStandardBubble {
  public:
-  explicit ExternalInstallBubbleAlert(ExternalInstallError* error,
-                                      ExtensionInstallPrompt::Prompt* prompt);
+  ExternalInstallBubbleAlert(ExternalInstallError* error,
+                             ExtensionInstallPrompt::Prompt* prompt);
   ~ExternalInstallBubbleAlert() override;
 
  private:
@@ -101,6 +101,7 @@ class ExternalInstallBubbleAlert : public GlobalErrorWithStandardBubble {
   ExternalInstallError* error_;
 
   // The Prompt with all information, which we then use to populate the bubble.
+  // Owned by |error|.
   ExtensionInstallPrompt::Prompt* prompt_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalInstallBubbleAlert);
@@ -280,8 +281,8 @@ ExternalInstallError::ExternalInstallError(
       error_service_(GlobalErrorServiceFactory::GetForProfile(
           Profile::FromBrowserContext(browser_context_))),
       weak_factory_(this) {
-  prompt_ = new ExtensionInstallPrompt::Prompt(
-      ExtensionInstallPrompt::EXTERNAL_INSTALL_PROMPT);
+  prompt_.reset(new ExtensionInstallPrompt::Prompt(
+      ExtensionInstallPrompt::EXTERNAL_INSTALL_PROMPT));
 
   webstore_data_fetcher_.reset(new WebstoreDataFetcher(
       this, browser_context_->GetRequestContext(), GURL(), extension_id_));
@@ -332,7 +333,7 @@ void ExternalInstallError::ShowDialog(Browser* browser) {
   install_ui_show_params_.reset(
       new ExtensionInstallPromptShowParams(web_contents));
   ExtensionInstallPrompt::GetDefaultShowDialogCallback().Run(
-      install_ui_show_params_.get(), this, prompt_);
+      install_ui_show_params_.get(), this, prompt_.Pass());
 }
 
 const Extension* ExternalInstallError::GetExtension() const {
@@ -381,7 +382,7 @@ void ExternalInstallError::OnFetchComplete() {
 
   install_ui_->ShowDialog(this, GetExtension(),
                           nullptr,  // Force a fetch of the icon.
-                          prompt_,
+                          prompt_.Pass(),
                           base::Bind(&ExternalInstallError::OnDialogReady,
                                      weak_factory_.GetWeakPtr()));
 }
@@ -389,9 +390,9 @@ void ExternalInstallError::OnFetchComplete() {
 void ExternalInstallError::OnDialogReady(
     ExtensionInstallPromptShowParams* show_params,
     ExtensionInstallPrompt::Delegate* prompt_delegate,
-    scoped_refptr<ExtensionInstallPrompt::Prompt> prompt) {
+    scoped_ptr<ExtensionInstallPrompt::Prompt> prompt) {
   DCHECK_EQ(this, prompt_delegate);
-  prompt_ = prompt;
+  prompt_ = prompt.Pass();
 
   if (alert_type_ == BUBBLE_ALERT) {
     global_error_.reset(new ExternalInstallBubbleAlert(this, prompt_.get()));

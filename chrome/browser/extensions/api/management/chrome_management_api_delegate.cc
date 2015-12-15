@@ -53,7 +53,8 @@ class ManagementSetEnabledFunctionInstallPromptDelegate
         ExtensionInstallPrompt::GetReEnablePromptTypeForExtension(
             function->browser_context(), extension);
     install_prompt_->ShowDialog(
-        this, extension, nullptr, new ExtensionInstallPrompt::Prompt(type),
+        this, extension, nullptr,
+        make_scoped_ptr(new ExtensionInstallPrompt::Prompt(type)),
         ExtensionInstallPrompt::GetDefaultShowDialogCallback());
   }
   ~ManagementSetEnabledFunctionInstallPromptDelegate() override {}

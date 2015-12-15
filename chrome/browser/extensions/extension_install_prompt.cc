@@ -644,7 +644,17 @@ void ExtensionInstallPrompt::ShowDialog(
     const Extension* extension,
     const SkBitmap* icon,
     const ShowDialogCallback& show_dialog_callback) {
-  ShowDialog(delegate, extension, icon, new Prompt(INSTALL_PROMPT),
+  ShowDialog(delegate, extension, icon,
+             make_scoped_ptr(new Prompt(INSTALL_PROMPT)), show_dialog_callback);
+}
+
+void ExtensionInstallPrompt::ShowDialog(
+    Delegate* delegate,
+    const Extension* extension,
+    const SkBitmap* icon,
+    scoped_ptr<Prompt> prompt,
+    const ShowDialogCallback& show_dialog_callback) {
+  ShowDialog(delegate, extension, icon, prompt.Pass(), nullptr,
              show_dialog_callback);
 }
 
@@ -652,23 +662,15 @@ void ExtensionInstallPrompt::ShowDialog(
     Delegate* delegate,
     const Extension* extension,
     const SkBitmap* icon,
-    const scoped_refptr<Prompt>& prompt,
-    const ShowDialogCallback& show_dialog_callback) {
-  ShowDialog(delegate, extension, icon, prompt, nullptr, show_dialog_callback);
-}
-
-void ExtensionInstallPrompt::ShowDialog(
-    Delegate* delegate,
-    const Extension* extension,
-    const SkBitmap* icon,
-    const scoped_refptr<Prompt>& prompt,
+    scoped_ptr<Prompt> prompt,
     scoped_ptr<const PermissionSet> custom_permissions,
     const ShowDialogCallback& show_dialog_callback) {
   DCHECK(ui_loop_ == base::MessageLoop::current());
+  DCHECK(prompt);
   extension_ = extension;
   delegate_ = delegate;
   SetIcon(icon);
-  prompt_ = prompt;
+  prompt_ = prompt.Pass();
   custom_permissions_ = custom_permissions.Pass();
   show_dialog_callback_ = show_dialog_callback;
 
@@ -836,7 +838,8 @@ void ExtensionInstallPrompt::ShowConfirmation() {
   }
 
   if (show_dialog_callback_.is_null())
-    GetDefaultShowDialogCallback().Run(show_params_.get(), delegate_, prompt_);
+    GetDefaultShowDialogCallback().Run(show_params_.get(), delegate_,
+                                       prompt_.Pass());
   else
-    show_dialog_callback_.Run(show_params_.get(), delegate_, prompt_);
+    show_dialog_callback_.Run(show_params_.get(), delegate_, prompt_.Pass());
 }

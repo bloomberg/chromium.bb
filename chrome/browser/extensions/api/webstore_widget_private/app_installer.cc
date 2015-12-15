@@ -55,18 +55,18 @@ const GURL& AppInstaller::GetRequestorURL() const {
   return GURL::EmptyGURL();
 }
 
-scoped_refptr<ExtensionInstallPrompt::Prompt>
-AppInstaller::CreateInstallPrompt() const {
+scoped_ptr<ExtensionInstallPrompt::Prompt> AppInstaller::CreateInstallPrompt()
+    const {
   if (silent_installation_)
-    return NULL;
+    return nullptr;
 
-  scoped_refptr<ExtensionInstallPrompt::Prompt> prompt(
+  scoped_ptr<ExtensionInstallPrompt::Prompt> prompt(
       new ExtensionInstallPrompt::Prompt(
           ExtensionInstallPrompt::INLINE_INSTALL_PROMPT));
 
   prompt->SetWebstoreData(localized_user_count(), show_user_count(),
                           average_rating(), rating_count());
-  return prompt;
+  return prompt.Pass();
 }
 
 bool AppInstaller::ShouldShowPostInstallUI() const {

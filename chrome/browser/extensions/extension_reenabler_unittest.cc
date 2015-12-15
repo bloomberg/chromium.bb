@@ -80,7 +80,7 @@ class CallbackHelper {
   // The callback to run when a test ExtensionInstallPrompt is ready to show.
   void OnShow(ExtensionInstallPromptShowParams* show_params,
               ExtensionInstallPrompt::Delegate* delegate,
-              scoped_refptr<ExtensionInstallPrompt::Prompt> prompt) {
+              scoped_ptr<ExtensionInstallPrompt::Prompt> prompt) {
     DCHECK(!quit_closure_.is_null());
     quit_closure_.Run();
     quit_closure_ = base::Closure();

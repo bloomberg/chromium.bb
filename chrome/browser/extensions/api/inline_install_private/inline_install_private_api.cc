@@ -32,8 +32,8 @@ class Installer : public WebstoreInstallWithPrompt {
   // webstore.
   const GURL& GetRequestorURL() const override { return requestor_url_; }
 
-  scoped_refptr<ExtensionInstallPrompt::Prompt> CreateInstallPrompt() const
-      override;
+  scoped_ptr<ExtensionInstallPrompt::Prompt> CreateInstallPrompt()
+      const override;
 
   void OnManifestParsed() override;
 
@@ -52,16 +52,16 @@ Installer::Installer(const std::string& id,
 Installer::~Installer() {
 }
 
-scoped_refptr<ExtensionInstallPrompt::Prompt>
-Installer::CreateInstallPrompt() const {
-  scoped_refptr<ExtensionInstallPrompt::Prompt> prompt(
+scoped_ptr<ExtensionInstallPrompt::Prompt> Installer::CreateInstallPrompt()
+    const {
+  scoped_ptr<ExtensionInstallPrompt::Prompt> prompt(
       new ExtensionInstallPrompt::Prompt(
           ExtensionInstallPrompt::INLINE_INSTALL_PROMPT));
   prompt->SetWebstoreData(localized_user_count(),
                           show_user_count(),
                           average_rating(),
                           rating_count());
-  return prompt;
+  return prompt.Pass();
 }
 
 

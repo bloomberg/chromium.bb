@@ -102,14 +102,15 @@ base::string16 PrepareForDisplay(const base::string16& message,
 void ShowExtensionInstallDialogImpl(
     ExtensionInstallPromptShowParams* show_params,
     ExtensionInstallPrompt::Delegate* delegate,
-    scoped_refptr<ExtensionInstallPrompt::Prompt> prompt) {
+    scoped_ptr<ExtensionInstallPrompt::Prompt> prompt) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  bool use_tab_modal_dialog = prompt->ShouldUseTabModalDialog();
   ExtensionInstallDialogView* dialog =
       new ExtensionInstallDialogView(show_params->profile(),
                                      show_params->GetParentWebContents(),
                                      delegate,
-                                     prompt);
-  if (prompt->ShouldUseTabModalDialog()) {
+                                     prompt.Pass());
+  if (use_tab_modal_dialog) {
     content::WebContents* parent_web_contents =
         show_params->GetParentWebContents();
     if (parent_web_contents)
@@ -198,11 +199,11 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
     Profile* profile,
     content::PageNavigator* navigator,
     ExtensionInstallPrompt::Delegate* delegate,
-    scoped_refptr<ExtensionInstallPrompt::Prompt> prompt)
+    scoped_ptr<ExtensionInstallPrompt::Prompt> prompt)
     : profile_(profile),
       navigator_(navigator),
       delegate_(delegate),
-      prompt_(prompt),
+      prompt_(prompt.Pass()),
       container_(NULL),
       scroll_view_(NULL),
       handled_result_(false) {

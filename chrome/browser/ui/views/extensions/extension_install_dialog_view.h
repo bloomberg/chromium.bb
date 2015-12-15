@@ -38,11 +38,10 @@ class Link;
 class ExtensionInstallDialogView : public views::DialogDelegateView,
                                    public views::LinkListener {
  public:
-  ExtensionInstallDialogView(
-      Profile* profile,
-      content::PageNavigator* navigator,
-      ExtensionInstallPrompt::Delegate* delegate,
-      scoped_refptr<ExtensionInstallPrompt::Prompt> prompt);
+  ExtensionInstallDialogView(Profile* profile,
+                             content::PageNavigator* navigator,
+                             ExtensionInstallPrompt::Delegate* delegate,
+                             scoped_ptr<ExtensionInstallPrompt::Prompt> prompt);
   ~ExtensionInstallDialogView() override;
 
   // Returns the interior ScrollView of the dialog. This allows us to inspect
@@ -92,7 +91,7 @@ class ExtensionInstallDialogView : public views::DialogDelegateView,
   Profile* profile_;
   content::PageNavigator* navigator_;
   ExtensionInstallPrompt::Delegate* delegate_;
-  scoped_refptr<ExtensionInstallPrompt::Prompt> prompt_;
+  scoped_ptr<ExtensionInstallPrompt::Prompt> prompt_;
 
   // The container view that contains all children (heading, icon, webstore
   // data, and the scroll view with permissions etc.), excluding the buttons,

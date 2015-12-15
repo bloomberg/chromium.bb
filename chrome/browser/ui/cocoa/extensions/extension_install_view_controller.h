@@ -46,7 +46,7 @@ class PageNavigator;
   Profile* profile_; // weak
   content::PageNavigator* navigator_;  // weak
   ExtensionInstallPrompt::Delegate* delegate_;  // weak
-  scoped_refptr<ExtensionInstallPrompt::Prompt> prompt_;
+  scoped_ptr<ExtensionInstallPrompt::Prompt> prompt_;
 
   base::scoped_nsobject<NSArray> warnings_;
   BOOL isComputingRowHeight_;
@@ -68,7 +68,7 @@ class PageNavigator;
 - (id)initWithProfile:(Profile*)profile
             navigator:(content::PageNavigator*)navigator
              delegate:(ExtensionInstallPrompt::Delegate*)delegate
-               prompt:(scoped_refptr<ExtensionInstallPrompt::Prompt>)prompt;
+               prompt:(scoped_ptr<ExtensionInstallPrompt::Prompt>)prompt;
 - (IBAction)storeLinkClicked:(id)sender; // Callback for "View details" link.
 - (IBAction)cancel:(id)sender;
 - (IBAction)ok:(id)sender;

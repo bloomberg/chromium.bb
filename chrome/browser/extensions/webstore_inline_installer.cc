@@ -101,9 +101,9 @@ const GURL& WebstoreInlineInstaller::GetRequestorURL() const {
   return requestor_url_;
 }
 
-scoped_refptr<ExtensionInstallPrompt::Prompt>
+scoped_ptr<ExtensionInstallPrompt::Prompt>
 WebstoreInlineInstaller::CreateInstallPrompt() const {
-  scoped_refptr<ExtensionInstallPrompt::Prompt> prompt(
+  scoped_ptr<ExtensionInstallPrompt::Prompt> prompt(
       new ExtensionInstallPrompt::Prompt(
           ExtensionInstallPrompt::INLINE_INSTALL_PROMPT));
 
@@ -114,7 +114,7 @@ WebstoreInlineInstaller::CreateInstallPrompt() const {
                           show_user_count(),
                           average_rating(),
                           rating_count());
-  return prompt;
+  return prompt.Pass();
 }
 
 bool WebstoreInlineInstaller::ShouldShowPostInstallUI() const {

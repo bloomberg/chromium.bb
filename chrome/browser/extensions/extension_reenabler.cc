@@ -89,9 +89,10 @@ ExtensionReenabler::ExtensionReenabler(
     ExtensionInstallPrompt::PromptType type =
         ExtensionInstallPrompt::GetReEnablePromptTypeForExtension(
             browser_context, extension.get());
-    install_prompt_->ShowDialog(this, extension.get(), nullptr,
-                                new ExtensionInstallPrompt::Prompt(type),
-                                show_dialog_callback_);
+    install_prompt_->ShowDialog(
+        this, extension.get(), nullptr,
+        make_scoped_ptr(new ExtensionInstallPrompt::Prompt(type)),
+        show_dialog_callback_);
   }
 }
 
@@ -150,9 +151,10 @@ void ExtensionReenabler::OnWebstoreResponseParseSuccess(
     ExtensionInstallPrompt::PromptType type =
         ExtensionInstallPrompt::GetReEnablePromptTypeForExtension(
             browser_context_, extension_.get());
-    install_prompt_->ShowDialog(this, extension_.get(), nullptr,
-                                new ExtensionInstallPrompt::Prompt(type),
-                                show_dialog_callback_);
+    install_prompt_->ShowDialog(
+        this, extension_.get(), nullptr,
+        make_scoped_ptr(new ExtensionInstallPrompt::Prompt(type)),
+        show_dialog_callback_);
   }
 }
 

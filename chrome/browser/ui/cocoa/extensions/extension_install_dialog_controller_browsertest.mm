@@ -32,13 +32,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogControllerTest, BasicTest) {
   ExtensionInstallPromptShowParams show_params(tab);
 
   chrome::MockExtensionInstallPromptDelegate delegate;
-  scoped_refptr<ExtensionInstallPrompt::Prompt> prompt =
+  scoped_ptr<ExtensionInstallPrompt::Prompt> prompt =
       chrome::BuildExtensionInstallPrompt(extension_.get());
 
   ExtensionInstallDialogController* controller =
-      new ExtensionInstallDialogController(&show_params,
-                                           &delegate,
-                                           prompt);
+      new ExtensionInstallDialogController(&show_params, &delegate,
+                                           prompt.Pass());
 
   base::scoped_nsobject<NSWindow> window(
       [[[controller->view_controller() view] window] retain]);
@@ -57,13 +56,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogControllerTest,
   ExtensionInstallPromptShowParams show_params(tab);
 
   chrome::MockExtensionInstallPromptDelegate delegate;
-  scoped_refptr<ExtensionInstallPrompt::Prompt> prompt =
+  scoped_ptr<ExtensionInstallPrompt::Prompt> prompt =
       chrome::BuildExtensionPostInstallPermissionsPrompt(extension_.get());
 
   ExtensionInstallDialogController* controller =
-      new ExtensionInstallDialogController(&show_params,
-                                           &delegate,
-                                           prompt);
+      new ExtensionInstallDialogController(&show_params, &delegate,
+                                           prompt.Pass());
 
   base::scoped_nsobject<NSWindow> window(
       [[[controller->view_controller() view] window] retain]);

@@ -913,9 +913,10 @@ void CrxInstaller::ConfirmReEnable() {
     ExtensionInstallPrompt::PromptType type =
         ExtensionInstallPrompt::GetReEnablePromptTypeForExtension(
             service->profile(), extension());
-    client_->ShowDialog(this, extension(), nullptr,
-                        new ExtensionInstallPrompt::Prompt(type),
-                        ExtensionInstallPrompt::GetDefaultShowDialogCallback());
+    client_->ShowDialog(
+        this, extension(), nullptr,
+        make_scoped_ptr(new ExtensionInstallPrompt::Prompt(type)),
+        ExtensionInstallPrompt::GetDefaultShowDialogCallback());
   }
 }
 

@@ -127,7 +127,8 @@ ExtensionDisabledDialogDelegate::ExtensionDisabledDialogDelegate(
       ExtensionInstallPrompt::GetReEnablePromptTypeForExtension(
           service_->profile(), extension);
   install_ui_->ShowDialog(
-      this, extension_, nullptr, new ExtensionInstallPrompt::Prompt(type),
+      this, extension_, nullptr,
+      make_scoped_ptr(new ExtensionInstallPrompt::Prompt(type)),
       ExtensionInstallPrompt::GetDefaultShowDialogCallback());
 }
 

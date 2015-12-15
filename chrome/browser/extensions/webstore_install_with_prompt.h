@@ -55,7 +55,7 @@ class WebstoreInstallWithPrompt : public WebstoreStandaloneInstaller {
   bool ShouldShowPostInstallUI() const override;
   bool ShouldShowAppInstalledBubble() const override;
   content::WebContents* GetWebContents() const override;
-  scoped_refptr<ExtensionInstallPrompt::Prompt> CreateInstallPrompt()
+  scoped_ptr<ExtensionInstallPrompt::Prompt> CreateInstallPrompt()
       const override;
   scoped_ptr<ExtensionInstallPrompt> CreateInstallUI() override;
   bool CheckInlineInstallPermitted(const base::DictionaryValue& webstore_data,

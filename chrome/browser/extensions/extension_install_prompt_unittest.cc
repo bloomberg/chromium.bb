@@ -33,7 +33,7 @@ void VerifyPromptPermissionsCallback(
     size_t withheld_permissions_count,
     ExtensionInstallPromptShowParams* params,
     ExtensionInstallPrompt::Delegate* delegate,
-    scoped_refptr<ExtensionInstallPrompt::Prompt> install_prompt) {
+    scoped_ptr<ExtensionInstallPrompt::Prompt> install_prompt) {
   ASSERT_TRUE(install_prompt.get());
   EXPECT_EQ(regular_permissions_count,
             install_prompt->GetPermissionCount(
@@ -86,8 +86,9 @@ TEST_F(ExtensionInstallPromptUnitTest, PromptShowsPermissionWarnings) {
   base::RunLoop run_loop;
   prompt.ShowDialog(
       nullptr,  // no delegate
-      extension.get(), nullptr, new ExtensionInstallPrompt::Prompt(
-                                    ExtensionInstallPrompt::PERMISSIONS_PROMPT),
+      extension.get(), nullptr,
+      make_scoped_ptr(new ExtensionInstallPrompt::Prompt(
+          ExtensionInstallPrompt::PERMISSIONS_PROMPT)),
       permission_set.Pass(),
       base::Bind(&VerifyPromptPermissionsCallback, run_loop.QuitClosure(),
                  1u,    // |regular_permissions_count|.
@@ -147,13 +148,13 @@ TEST_F(ExtensionInstallPromptUnitTest,
   ExtensionInstallPrompt prompt(factory.CreateWebContents(profile()));
   base::RunLoop run_loop;
 
-  scoped_refptr<ExtensionInstallPrompt::Prompt> sub_prompt(
+  scoped_ptr<ExtensionInstallPrompt::Prompt> sub_prompt(
       new ExtensionInstallPrompt::Prompt(
           ExtensionInstallPrompt::DELEGATED_PERMISSIONS_PROMPT));
   sub_prompt->set_delegated_username("Username");
   prompt.ShowDialog(
       nullptr,  // no delegate
-      extension.get(), nullptr, sub_prompt,
+      extension.get(), nullptr, sub_prompt.Pass(),
       base::Bind(&VerifyPromptPermissionsCallback, run_loop.QuitClosure(),
                  2u,    // |regular_permissions_count|.
                  0u));  // |withheld_permissions_count|.

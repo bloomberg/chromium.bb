@@ -224,7 +224,7 @@ bool HasAttribute(id item, CellAttributesMask attributeMask) {
 - (id)initWithProfile:(Profile*)profile
             navigator:(content::PageNavigator*)navigator
              delegate:(ExtensionInstallPrompt::Delegate*)delegate
-               prompt:(scoped_refptr<ExtensionInstallPrompt::Prompt>)prompt {
+               prompt:(scoped_ptr<ExtensionInstallPrompt::Prompt>)prompt {
   // We use a different XIB in the case of bundle installs, installs with
   // webstore data, or no permission warnings. These are laid out nicely for
   // the data they display.
@@ -246,8 +246,8 @@ bool HasAttribute(id item, CellAttributesMask attributeMask) {
     profile_ = profile;
     navigator_ = navigator;
     delegate_ = delegate;
-    prompt_ = prompt;
-    warnings_.reset([[self buildWarnings:*prompt] retain]);
+    prompt_ = prompt.Pass();
+    warnings_.reset([[self buildWarnings:*prompt_] retain]);
   }
   return self;
 }
