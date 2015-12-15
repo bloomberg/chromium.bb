@@ -45,7 +45,7 @@ function sendCommand(cmd) {
 }
 
 /**
- * This allows errors to be skippped by typing "danger" into the page.
+ * This allows errors to be skippped by typing a secret phrase into the page.
  * @param {string} e The key that was just pressed.
  */
 function handleKeypress(e) {
