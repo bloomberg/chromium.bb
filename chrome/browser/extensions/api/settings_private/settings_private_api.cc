@@ -14,6 +14,10 @@
 #include "content/public/common/page_zoom.h"
 #include "extensions/browser/extension_function_registry.h"
 
+namespace {
+  const char kDelegateIsNull[] = "delegate is null";
+}
+
 namespace extensions {
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -30,6 +34,8 @@ ExtensionFunction::ResponseAction SettingsPrivateSetPrefFunction::Run() {
 
   SettingsPrivateDelegate* delegate =
       SettingsPrivateDelegateFactory::GetForBrowserContext(browser_context());
+  if (delegate == nullptr)
+    return RespondNow(Error(kDelegateIsNull));
 
   PrefsUtil::SetPrefResult result =
       delegate->SetPref(parameters->name, parameters->value.get());
@@ -63,7 +69,10 @@ ExtensionFunction::ResponseAction SettingsPrivateGetAllPrefsFunction::Run() {
   SettingsPrivateDelegate* delegate =
       SettingsPrivateDelegateFactory::GetForBrowserContext(browser_context());
 
-  return RespondNow(OneArgument(delegate->GetAllPrefs().release()));
+  if (delegate == nullptr)
+    return RespondNow(Error(kDelegateIsNull));
+  else
+    return RespondNow(OneArgument(delegate->GetAllPrefs().release()));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -80,6 +89,8 @@ ExtensionFunction::ResponseAction SettingsPrivateGetPrefFunction::Run() {
 
   SettingsPrivateDelegate* delegate =
       SettingsPrivateDelegateFactory::GetForBrowserContext(browser_context());
+  if (delegate == nullptr)
+    return RespondNow(Error(kDelegateIsNull));
 
   scoped_ptr<base::Value> value = delegate->GetPref(parameters->name);
   if (value->IsType(base::Value::TYPE_NULL))
@@ -101,7 +112,10 @@ ExtensionFunction::ResponseAction
   SettingsPrivateDelegate* delegate =
       SettingsPrivateDelegateFactory::GetForBrowserContext(browser_context());
 
-  return RespondNow(OneArgument(delegate->GetDefaultZoomPercent().release()));
+  if (delegate == nullptr)
+    return RespondNow(Error(kDelegateIsNull));
+  else
+    return RespondNow(OneArgument(delegate->GetDefaultZoomPercent().release()));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -120,6 +134,8 @@ ExtensionFunction::ResponseAction
 
   SettingsPrivateDelegate* delegate =
       SettingsPrivateDelegateFactory::GetForBrowserContext(browser_context());
+  if (delegate == nullptr)
+    return RespondNow(Error(kDelegateIsNull));
 
   delegate->SetDefaultZoomPercent(parameters->percent);
   return RespondNow(OneArgument(new base::FundamentalValue(true)));
