@@ -142,7 +142,7 @@ if (__gCrWeb && !__gCrWeb['fillPasswordForm']) {
     __gCrWeb.setAutofilled(usernameElement, false);
     formData.passwords.forEach(function(password) {
       var passwordElement =
-          __gCrWeb.getElementByNameWithParent(el, password.element);
+          __gCrWeb.getElementByNameWithParent(el, password.element, true);
       if (__gCrWeb.isAutofilled(passwordElement)) {
         __gCrWeb.setAutofilled(passwordElement, false);
         passwordElement.value = '';
@@ -178,14 +178,21 @@ if (__gCrWeb && !__gCrWeb['fillPasswordForm']) {
    * specified parent element.
    * @param {Element} parent The parent of the desired element.
    * @param {string} name The name of the desired element.
+   * @param {boolen} isPassword Whether the field should be a password field;
+   *     if not supplied, |false| is assumed.
    * @return {Element} The element if found, otherwise null;
    */
-  __gCrWeb['getElementByNameWithParent'] = function(parent, name) {
-    if (parent.name === name) {
+  __gCrWeb['getElementByNameWithParent'] = function(
+      parent, name, isPassword) {
+    isPassword = isPassword || false;
+    var parentType = parent.type || "";
+    var isParentPassword = parentType === "password";
+    if (parent.name === name && (isPassword === isParentPassword)) {
       return parent;
     }
     for (var i = 0; i < parent.children.length; i++) {
-      var el = __gCrWeb.getElementByNameWithParent(parent.children[i], name);
+      var el = __gCrWeb.getElementByNameWithParent(
+          parent.children[i], name, isPassword);
       if (el) {
         return el;
       }
@@ -229,7 +236,8 @@ if (__gCrWeb && !__gCrWeb['fillPasswordForm']) {
       var usernameInput =
           __gCrWeb.getElementByNameWithParent(form, formData.fields[0].name);
       var passwordInput =
-          __gCrWeb.getElementByNameWithParent(form, formData.fields[1].name);
+          __gCrWeb.getElementByNameWithParent(
+              form, formData.fields[1].name, true);
       if (!usernameInput.disabled && !passwordInput.disabled) {
         // If username was provided on a read-only field and it matches the
         // requested username, fill the form.
