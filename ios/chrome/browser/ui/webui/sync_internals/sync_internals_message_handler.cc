@@ -7,14 +7,13 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/sync_driver/about_sync_util.h"
 #include "components/sync_driver/sync_service.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
-#include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
 #include "ios/chrome/common/channel_info.h"
 #include "ios/public/provider/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/public/provider/chrome/browser/keyed_service_provider.h"
 #include "ios/public/provider/web/web_ui_ios.h"
 #include "ios/web/public/web_thread.h"
 #include "sync/internal_api/public/events/protocol_event.h"
@@ -232,6 +231,6 @@ void SyncInternalsMessageHandler::SendAboutInfo() {
 sync_driver::SyncService* SyncInternalsMessageHandler::GetSyncService() {
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromWebUIIOS(web_ui());
-  return IOSChromeProfileSyncServiceFactory::GetForBrowserState(
+  return ios::GetKeyedServiceProvider()->GetSyncServiceForBrowserState(
       browser_state->GetOriginalChromeBrowserState());
 }

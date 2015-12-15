@@ -10,6 +10,10 @@
 class KeyedServiceBaseFactory;
 enum class ServiceAccessType;
 
+namespace sync_driver {
+class SyncService;
+}
+
 namespace ios {
 
 class ChromeBrowserState;
@@ -30,6 +34,18 @@ class KeyedServiceProvider {
   // before any BrowserState instance is created so that dependencies are
   // correct.
   void AssertKeyedFactoriesBuilt();
+
+  // Returns the sync_driver::SyncService factory for dependencies.
+  virtual KeyedServiceBaseFactory* GetSyncServiceFactory() = 0;
+
+  // Returns an instance of sync_driver::SyncService tied to |browser_state|.
+  virtual sync_driver::SyncService* GetSyncServiceForBrowserState(
+      ChromeBrowserState* browser_state) = 0;
+
+  // Returns an instance of sync_driver::SyncService tied to |browser_state| if
+  // there is one created already.
+  virtual sync_driver::SyncService* GetSyncServiceForBrowserStateIfExists(
+      ChromeBrowserState* browser_state) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(KeyedServiceProvider);

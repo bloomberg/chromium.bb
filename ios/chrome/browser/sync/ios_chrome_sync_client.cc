@@ -45,13 +45,13 @@
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/signin/oauth2_token_service_factory.h"
 #include "ios/chrome/browser/sync/glue/sync_start_util.h"
-#include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
 #include "ios/chrome/browser/sync/sessions/ios_chrome_local_session_event_router.h"
 #include "ios/chrome/browser/undo/bookmark_undo_service_factory.h"
 #include "ios/chrome/browser/web_data_service_factory.h"
 #include "ios/chrome/common/channel_info.h"
 #include "ios/public/provider/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
+#include "ios/public/provider/chrome/browser/keyed_service_provider.h"
 #include "ios/web/public/web_thread.h"
 #include "sync/internal_api/public/engine/passive_model_worker.h"
 #include "sync/util/extensions_activity.h"
@@ -248,8 +248,9 @@ base::WeakPtr<syncer::SyncableService>
 IOSChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
   switch (type) {
     case syncer::DEVICE_INFO:
-      return IOSChromeProfileSyncServiceFactory::GetForBrowserState(
-                 browser_state_)
+      return static_cast<ProfileSyncService*>(
+                 ios::GetKeyedServiceProvider()->GetSyncServiceForBrowserState(
+                     browser_state_))
           ->GetDeviceInfoSyncableService()
           ->AsWeakPtr();
     case syncer::PREFERENCES:
@@ -293,7 +294,9 @@ IOSChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
     case syncer::FAVICON_IMAGES:
     case syncer::FAVICON_TRACKING: {
       browser_sync::FaviconCache* favicons =
-          IOSChromeProfileSyncServiceFactory::GetForBrowserState(browser_state_)
+          static_cast<ProfileSyncService*>(
+              ios::GetKeyedServiceProvider()->GetSyncServiceForBrowserState(
+                  browser_state_))
               ->GetFaviconCache();
       return favicons ? favicons->AsWeakPtr()
                       : base::WeakPtr<syncer::SyncableService>();
@@ -307,8 +310,9 @@ IOSChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
       return base::WeakPtr<syncer::SyncableService>();
     }
     case syncer::SESSIONS: {
-      return IOSChromeProfileSyncServiceFactory::GetForBrowserState(
-                 browser_state_)
+      return static_cast<ProfileSyncService*>(
+                 ios::GetKeyedServiceProvider()->GetSyncServiceForBrowserState(
+                     browser_state_))
           ->GetSessionsSyncableService()
           ->AsWeakPtr();
     }
