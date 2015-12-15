@@ -44,7 +44,7 @@ namespace skia {
 // count):
 //
 //   skia::RefPtr<SkShader> shader = ...;
-//   UseThisShader(shader.Pass());
+//   UseThisShader(std::move(shader));
 //
 // Never call ref() or unref() on the underlying ref-counted pointer. If you
 // AdoptRef() the raw pointer immediately into a skia::RefPtr and always work
