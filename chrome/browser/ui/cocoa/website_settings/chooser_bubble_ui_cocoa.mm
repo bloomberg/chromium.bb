@@ -67,13 +67,12 @@ scoped_ptr<BubbleUi> ChooserBubbleDelegate::BuildBubbleUi() {
   base::scoped_nsobject<NSButton> cancelButton_;
 
   Browser* browser_;                                // Weak.
-  ChooserBubbleDelegate* chooser_bubble_delegate_;  // Weak.
+  ChooserBubbleDelegate* chooserBubbleDelegate_;    // Weak.
 }
 
 // Designated initializer.  |browser| and |bridge| must both be non-nil.
 - (id)initWithBrowser:(Browser*)browser
-    initWithChooserBubbleDelegate:
-        (ChooserBubbleDelegate*)chooser_bubble_delegate
+    initWithChooserBubbleDelegate:(ChooserBubbleDelegate*)chooserBubbleDelegate
                            bridge:(ChooserBubbleUiCocoa*)bridge;
 
 // Makes the bubble visible.
@@ -132,18 +131,14 @@ scoped_ptr<BubbleUi> ChooserBubbleDelegate::BuildBubbleUi() {
 @implementation ChooserBubbleUiController
 
 - (id)initWithBrowser:(Browser*)browser
-    initWithChooserBubbleDelegate:
-        (ChooserBubbleDelegate*)chooser_bubble_delegate
+    initWithChooserBubbleDelegate:(ChooserBubbleDelegate*)chooserBubbleDelegate
                            bridge:(ChooserBubbleUiCocoa*)bridge {
   DCHECK(browser);
-  DCHECK(chooser_bubble_delegate);
+  DCHECK(chooserBubbleDelegate);
   DCHECK(bridge);
 
-  if (browser == nil || chooser_bubble_delegate == nil || bridge == nil)
-    return nil;
-
   browser_ = browser;
-  chooser_bubble_delegate_ = chooser_bubble_delegate;
+  chooserBubbleDelegate_ = chooserBubbleDelegate;
 
   base::scoped_nsobject<InfoBubbleWindow> window([[InfoBubbleWindow alloc]
       initWithContentRect:ui::kWindowSizeDeterminedLater
@@ -169,6 +164,10 @@ scoped_ptr<BubbleUi> ChooserBubbleDelegate::BuildBubbleUi() {
 }
 
 - (void)windowWillClose:(NSNotification*)notification {
+  [[NSNotificationCenter defaultCenter]
+      removeObserver:self
+                name:NSWindowDidMoveNotification
+              object:nil];
   bridge_->OnBubbleClosing();
   [super windowWillClose:notification];
 }
@@ -188,7 +187,6 @@ scoped_ptr<BubbleUi> ChooserBubbleDelegate::BuildBubbleUi() {
 
 - (void)show {
   NSView* view = [[self window] contentView];
-  [view setSubviews:@[]];
 
   // ------------------------------------
   // | Chooser bubble title             |
@@ -294,7 +292,7 @@ scoped_ptr<BubbleUi> ChooserBubbleDelegate::BuildBubbleUi() {
 
 - (NSInteger)numberOfRowsInTableView:(NSTableView*)tableView {
   const std::vector<base::string16>& device_names =
-      chooser_bubble_delegate_->GetOptions();
+      chooserBubbleDelegate_->GetOptions();
   if (device_names.empty()) {
     return 1;
   } else {
@@ -306,7 +304,7 @@ scoped_ptr<BubbleUi> ChooserBubbleDelegate::BuildBubbleUi() {
     objectValueForTableColumn:(NSTableColumn*)tableColumn
                           row:(NSInteger)rowIndex {
   const std::vector<base::string16>& device_names =
-      chooser_bubble_delegate_->GetOptions();
+      chooserBubbleDelegate_->GetOptions();
   if (device_names.empty()) {
     DCHECK(rowIndex == 0);
     return l10n_util::GetNSString(IDS_CHOOSER_BUBBLE_NO_DEVICES_FOUND_PROMPT);
@@ -346,7 +344,7 @@ scoped_ptr<BubbleUi> ChooserBubbleDelegate::BuildBubbleUi() {
 
 - (void)updateTableView {
   const std::vector<base::string16>& device_names =
-      chooser_bubble_delegate_->GetOptions();
+      chooserBubbleDelegate_->GetOptions();
   [tableView_ setEnabled:!device_names.empty()];
   [tableView_ reloadData];
 }
@@ -363,9 +361,9 @@ scoped_ptr<BubbleUi> ChooserBubbleDelegate::BuildBubbleUi() {
 - (NSPoint)getExpectedAnchorPoint {
   NSPoint anchor;
   if ([self hasLocationBar]) {
-    LocationBarViewMac* location_bar =
+    LocationBarViewMac* locationBar =
         [[[self getExpectedParentWindow] windowController] locationBarBridge];
-    anchor = location_bar->GetPageInfoBubblePoint();
+    anchor = locationBar->GetPageInfoBubblePoint();
   } else {
     // Center the bubble if there's no location bar.
     NSRect contentFrame = [[[self getExpectedParentWindow] contentView] frame];
@@ -447,12 +445,12 @@ scoped_ptr<BubbleUi> ChooserBubbleDelegate::BuildBubbleUi() {
 
 - (void)onConnect:(id)sender {
   NSInteger row = [tableView_ selectedRow];
-  chooser_bubble_delegate_->Select(row);
+  chooserBubbleDelegate_->Select(row);
   [self close];
 }
 
 - (void)onCancel:(id)sender {
-  chooser_bubble_delegate_->Cancel();
+  chooserBubbleDelegate_->Cancel();
   [self close];
 }
 
@@ -471,10 +469,8 @@ ChooserBubbleUiCocoa::ChooserBubbleUiCocoa(
 
 ChooserBubbleUiCocoa::~ChooserBubbleUiCocoa() {
   chooser_bubble_delegate_->set_observer(nullptr);
-  if (chooser_bubble_ui_controller_) {
-    [chooser_bubble_ui_controller_ close];
-    chooser_bubble_ui_controller_ = nil;
-  }
+  [chooser_bubble_ui_controller_ close];
+  chooser_bubble_ui_controller_ = nil;
 }
 
 void ChooserBubbleUiCocoa::Show(BubbleReference bubble_reference) {
@@ -485,17 +481,13 @@ void ChooserBubbleUiCocoa::Show(BubbleReference bubble_reference) {
                                bridge:this];
   }
 
-  if (chooser_bubble_ui_controller_) {
-    [chooser_bubble_ui_controller_ show];
-    [chooser_bubble_ui_controller_ updateTableView];
-  }
+  [chooser_bubble_ui_controller_ show];
+  [chooser_bubble_ui_controller_ updateTableView];
 }
 
 void ChooserBubbleUiCocoa::Close() {
-  if (chooser_bubble_ui_controller_) {
-    [chooser_bubble_ui_controller_ close];
-    chooser_bubble_ui_controller_ = nil;
-  }
+  [chooser_bubble_ui_controller_ close];
+  chooser_bubble_ui_controller_ = nil;
 }
 
 void ChooserBubbleUiCocoa::UpdateAnchorPosition() {
