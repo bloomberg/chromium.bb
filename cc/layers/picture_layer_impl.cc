@@ -407,6 +407,7 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
 bool PictureLayerImpl::UpdateTiles(bool resourceless_software_draw) {
   if (!resourceless_software_draw) {
     visible_rect_for_tile_priority_ = visible_layer_rect();
+    screen_space_transform_for_tile_priority_ = ScreenSpaceTransform();
   }
 
   if (!CanHaveTilings()) {
@@ -495,7 +496,7 @@ void PictureLayerImpl::UpdateViewportRectForTilePriorityInContentSpace() {
   if (visible_rect_in_content_space.IsEmpty() ||
       layer_tree_impl()->DeviceViewport() != viewport_rect_for_tile_priority) {
     gfx::Transform view_to_layer(gfx::Transform::kSkipInitialization);
-    if (ScreenSpaceTransform().GetInverse(&view_to_layer)) {
+    if (screen_space_transform_for_tile_priority_.GetInverse(&view_to_layer)) {
       // Transform from view space to content space.
       visible_rect_in_content_space = MathUtil::ProjectEnclosingClippedRect(
           view_to_layer, viewport_rect_for_tile_priority);

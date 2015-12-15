@@ -161,6 +161,7 @@ class CC_EXPORT PictureLayerImpl
   // frame that has a valid viewport for prioritizing tiles.
   gfx::Rect visible_rect_for_tile_priority_;
   gfx::Rect viewport_rect_for_tile_priority_in_content_space_;
+  gfx::Transform screen_space_transform_for_tile_priority_;
 
   gfx::Size gpu_raster_max_texture_size_;
 
