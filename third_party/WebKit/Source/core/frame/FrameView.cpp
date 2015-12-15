@@ -2290,29 +2290,12 @@ void FrameView::updateScrollCorner()
 
 Color FrameView::documentBackgroundColor() const
 {
-    // <https://bugs.webkit.org/show_bug.cgi?id=59540> We blend the background color of
-    // the document and the body against the base background color of the frame view.
-    // Background images are unfortunately impractical to include.
-
+    // The LayoutView's background color is set in Document::inheritHtmlAndBodyElementStyles.
+    // Blend this with the base background color of the FrameView. This should match the color
+    // drawn by ViewPainter::paintBoxDecorationBackground.
     Color result = baseBackgroundColor();
-    if (!frame().document())
-        return result;
-
-    Element* htmlElement = frame().document()->documentElement();
-    Element* bodyElement = frame().document()->body();
-
-    // We take the aggregate of the base background color
-    // the <html> background color, and the <body>
-    // background color to find the document color. The
-    // addition of the base background color is not
-    // technically part of the document background, but it
-    // otherwise poses problems when the aggregate is not
-    // fully opaque.
-    if (htmlElement && htmlElement->layoutObject())
-        result = result.blend(htmlElement->layoutObject()->resolveColor(CSSPropertyBackgroundColor));
-    if (bodyElement && bodyElement->layoutObject())
-        result = result.blend(bodyElement->layoutObject()->resolveColor(CSSPropertyBackgroundColor));
-
+    if (LayoutObject* documentLayoutObject = layoutView())
+        result = result.blend(documentLayoutObject->resolveColor(CSSPropertyBackgroundColor));
     return result;
 }
 
