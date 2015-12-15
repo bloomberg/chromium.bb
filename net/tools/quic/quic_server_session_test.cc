@@ -67,8 +67,9 @@ class QuicServerSessionPeer {
     return s->bandwidth_resumption_enabled_;
   }
 
-  static QuicSpdyStream* CreateOutgoingDynamicStream(QuicServerSession* s) {
-    return s->CreateOutgoingDynamicStream();
+  static QuicSpdyStream* CreateOutgoingDynamicStream(QuicServerSession* s,
+                                                     SpdyPriority priority) {
+    return s->CreateOutgoingDynamicStream(priority);
   }
 };
 
@@ -501,9 +502,9 @@ TEST_P(QuicServerSessionTest, CreateOutgoingDynamicStreamDisconnected) {
   // Tests that outgoing stream creation fails when connection is not connected.
   size_t initial_num_open_stream = session_->GetNumOpenOutgoingStreams();
   QuicConnectionPeer::CloseConnection(connection_);
-  EXPECT_DFATAL(
-      QuicServerSessionPeer::CreateOutgoingDynamicStream(session_.get()),
-      "ShouldCreateOutgoingDynamicStream called when disconnected");
+  EXPECT_DFATAL(QuicServerSessionPeer::CreateOutgoingDynamicStream(
+                    session_.get(), kDefaultPriority),
+                "ShouldCreateOutgoingDynamicStream called when disconnected");
   EXPECT_EQ(initial_num_open_stream, session_->GetNumOpenOutgoingStreams());
 }
 
@@ -511,9 +512,9 @@ TEST_P(QuicServerSessionTest, CreateOutgoingDynamicStreamUnencrypted) {
   // Tests that outgoing stream creation fails when encryption has not yet been
   // established.
   size_t initial_num_open_stream = session_->GetNumOpenOutgoingStreams();
-  EXPECT_DFATAL(
-      QuicServerSessionPeer::CreateOutgoingDynamicStream(session_.get()),
-      "Encryption not established so no outgoing stream created.");
+  EXPECT_DFATAL(QuicServerSessionPeer::CreateOutgoingDynamicStream(
+                    session_.get(), kDefaultPriority),
+                "Encryption not established so no outgoing stream created.");
   EXPECT_EQ(initial_num_open_stream, session_->GetNumOpenOutgoingStreams());
 }
 
@@ -538,14 +539,15 @@ TEST_P(QuicServerSessionTest, CreateOutgoingDynamicStreamUptoLimit) {
   // Create push streams till reaching the upper limit of allowed open streams.
   for (size_t i = 0; i < kMaxStreamsForTest; ++i) {
     QuicSpdyStream* created_stream =
-        QuicServerSessionPeer::CreateOutgoingDynamicStream(session_.get());
+        QuicServerSessionPeer::CreateOutgoingDynamicStream(session_.get(),
+                                                           kDefaultPriority);
     EXPECT_EQ(2 * (i + 1), created_stream->id());
     EXPECT_EQ(i + 1, session_->GetNumOpenOutgoingStreams());
   }
 
   // Continuing creating push stream would fail.
-  EXPECT_EQ(nullptr,
-            QuicServerSessionPeer::CreateOutgoingDynamicStream(session_.get()));
+  EXPECT_EQ(nullptr, QuicServerSessionPeer::CreateOutgoingDynamicStream(
+                         session_.get(), kDefaultPriority));
   EXPECT_EQ(kMaxStreamsForTest, session_->GetNumOpenOutgoingStreams());
 
   // Create peer initiated stream should have no problem.

@@ -150,7 +150,8 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
 
   // QuicSession methods:
   void OnStreamFrame(const QuicStreamFrame& frame) override;
-  QuicReliableClientStream* CreateOutgoingDynamicStream() override;
+  QuicReliableClientStream* CreateOutgoingDynamicStream(
+      SpdyPriority priority) override;
   QuicCryptoClientStream* GetCryptoStream() override;
   void CloseStream(QuicStreamId stream_id) override;
   void SendRstStream(QuicStreamId id,

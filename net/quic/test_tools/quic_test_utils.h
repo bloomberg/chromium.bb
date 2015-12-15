@@ -432,7 +432,8 @@ class MockQuicSpdySession : public QuicSpdySession {
   // From QuicSession.
   MOCK_METHOD2(OnConnectionClosed, void(QuicErrorCode error, bool from_peer));
   MOCK_METHOD1(CreateIncomingDynamicStream, QuicSpdyStream*(QuicStreamId id));
-  MOCK_METHOD0(CreateOutgoingDynamicStream, QuicSpdyStream*());
+  MOCK_METHOD1(CreateOutgoingDynamicStream,
+               QuicSpdyStream*(SpdyPriority priority));
   MOCK_METHOD6(WritevData,
                QuicConsumedData(QuicStreamId id,
                                 QuicIOVector data,
@@ -487,7 +488,8 @@ class TestQuicSpdyServerSession : public tools::QuicServerSession {
   ~TestQuicSpdyServerSession() override;
 
   MOCK_METHOD1(CreateIncomingDynamicStream, QuicSpdyStream*(QuicStreamId id));
-  MOCK_METHOD0(CreateOutgoingDynamicStream, QuicSpdyStream*());
+  MOCK_METHOD1(CreateOutgoingDynamicStream,
+               QuicSpdyStream*(SpdyPriority priority));
 
   QuicCryptoServerStream* GetCryptoStream() override;
 
@@ -513,7 +515,8 @@ class TestQuicSpdyClientSession : public QuicClientSessionBase {
 
   // TestQuicSpdyClientSession
   MOCK_METHOD1(CreateIncomingDynamicStream, QuicSpdyStream*(QuicStreamId id));
-  MOCK_METHOD0(CreateOutgoingDynamicStream, QuicSpdyStream*());
+  MOCK_METHOD1(CreateOutgoingDynamicStream,
+               QuicSpdyStream*(SpdyPriority priority));
 
   QuicCryptoClientStream* GetCryptoStream() override;
 

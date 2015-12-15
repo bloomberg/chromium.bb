@@ -308,10 +308,7 @@ int main(int argc, char *argv[]) {
   // Print request and response details.
   if (!FLAGS_quiet) {
     cout << "Request:" << endl;
-    cout << "headers:" << endl;
-    for (const auto& kv : header_block) {
-      cout << " " << kv.first << ": " << kv.second << endl;
-    }
+    cout << "headers:" << header_block.DebugString();
     cout << "body: " << FLAGS_body << endl;
     cout << endl;
     cout << "Response:" << endl;

@@ -65,7 +65,7 @@ class NET_EXPORT_PRIVATE QuicReliableClientStream : public QuicSpdyStream {
 
   // While the server's set_priority shouldn't be called externally, the creator
   // of client-side streams should be able to set the priority.
-  using QuicSpdyStream::set_priority;
+  using QuicSpdyStream::SetPriority;
 
   int WriteStreamData(base::StringPiece data,
                       bool fin,

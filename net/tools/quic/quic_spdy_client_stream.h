@@ -71,9 +71,9 @@ class QuicSpdyClientStream : public QuicSpdyStream {
 
   int response_code() const { return response_code_; }
 
-  // While the server's set_priority shouldn't be called externally, the creator
+  // While the server's SetPriority shouldn't be called externally, the creator
   // of client-side streams should be able to set the priority.
-  using QuicSpdyStream::set_priority;
+  using QuicSpdyStream::SetPriority;
 
   void set_allow_bidirectional_data(bool value) {
     allow_bidirectional_data_ = value;

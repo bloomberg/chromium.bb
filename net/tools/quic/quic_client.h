@@ -166,6 +166,7 @@ class QuicClient : public QuicClientBase,
   size_t latest_response_code() const;
   const std::string& latest_response_headers() const;
   const std::string& latest_response_body() const;
+  const std::string& latest_response_trailers() const;
 
  protected:
   virtual QuicEpollConnectionHelper* CreateQuicConnectionHelper();
@@ -254,10 +255,12 @@ class QuicClient : public QuicClientBase,
   bool store_response_;
   // HTTP response code from most recent response.
   size_t latest_response_code_;
-  // HTTP headers from most recent response.
+  // HTTP/2 headers from most recent response.
   std::string latest_response_headers_;
   // Body of most recent response.
   std::string latest_response_body_;
+  // HTTP/2 trailers from most recent response.
+  std::string latest_response_trailers_;
 
   // Keeps track of any data sent before the handshake.
   std::vector<QuicDataToResend*> data_sent_before_handshake_;

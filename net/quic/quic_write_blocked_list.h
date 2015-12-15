@@ -10,6 +10,7 @@
 #include "net/base/net_export.h"
 #include "net/quic/quic_flags.h"
 #include "net/quic/quic_protocol.h"
+#include "net/spdy/priority_write_scheduler.h"
 #include "net/spdy/write_blocked_list.h"
 
 namespace net {
@@ -20,13 +21,18 @@ namespace net {
 class NET_EXPORT_PRIVATE QuicWriteBlockedList {
  private:
   typedef WriteBlockedList<QuicStreamId> QuicWriteBlockedListBase;
+  typedef PriorityWriteScheduler<QuicStreamId> QuicPriorityWriteScheduler;
 
  public:
   QuicWriteBlockedList();
   ~QuicWriteBlockedList();
 
   bool HasWriteBlockedDataStreams() const {
-    return base_write_blocked_list_.HasWriteBlockedStreams();
+    if (use_new_blocked_list_) {
+      return priority_write_scheduler_.HasReadyStreams();
+    } else {
+      return base_write_blocked_list_.HasWriteBlockedStreams();
+    }
   }
 
   bool HasWriteBlockedCryptoOrHeadersStream() const {
@@ -34,7 +40,9 @@ class NET_EXPORT_PRIVATE QuicWriteBlockedList {
   }
 
   size_t NumBlockedStreams() const {
-    size_t num_blocked = base_write_blocked_list_.NumBlockedStreams();
+    size_t num_blocked = use_new_blocked_list_
+                             ? priority_write_scheduler_.NumReadyStreams()
+                             : base_write_blocked_list_.NumBlockedStreams();
     if (crypto_stream_blocked_) {
       ++num_blocked;
     }
@@ -58,11 +66,23 @@ class NET_EXPORT_PRIVATE QuicWriteBlockedList {
       return kHeadersStreamId;
     }
 
-    SpdyPriority priority =
-        base_write_blocked_list_.GetHighestPriorityWriteBlockedList();
-    QuicStreamId id = base_write_blocked_list_.PopFront(priority);
+    SpdyPriority priority;
+    QuicStreamId id;
 
-    if (base_write_blocked_list_.NumBlockedStreams(priority) == 0) {
+    if (use_new_blocked_list_) {
+      id = priority_write_scheduler_.PopNextReadyStream();
+      priority = priority_write_scheduler_.GetStreamPriority(id);
+    } else {
+      priority = base_write_blocked_list_.GetHighestPriorityWriteBlockedList();
+      id = base_write_blocked_list_.PopFront(priority);
+    }
+
+    size_t num_blocked_for_priority =
+        use_new_blocked_list_
+            ? priority_write_scheduler_.NumReadyStreams(priority)
+            : base_write_blocked_list_.NumBlockedStreams(priority);
+
+    if (num_blocked_for_priority == 0) {
       // If no streams are blocked, don't bother latching.  This stream will be
       // the first popped for its priority anyway.
       batch_write_stream_id_[priority] = 0;
@@ -75,6 +95,24 @@ class NET_EXPORT_PRIVATE QuicWriteBlockedList {
     }
 
     return id;
+  }
+
+  void RegisterStream(QuicStreamId stream_id, SpdyPriority priority) {
+    if (use_new_blocked_list_) {
+      priority_write_scheduler_.RegisterStream(stream_id, priority);
+    }
+  }
+
+  void UnregisterStream(QuicStreamId stream_id) {
+    if (use_new_blocked_list_) {
+      priority_write_scheduler_.UnregisterStream(stream_id);
+    }
+  }
+
+  void UpdateStreamPriority(QuicStreamId stream_id, SpdyPriority new_priority) {
+    if (use_new_blocked_list_) {
+      priority_write_scheduler_.UpdateStreamPriority(stream_id, new_priority);
+    }
   }
 
   void UpdateBytesForStream(QuicStreamId stream_id, size_t bytes) {
@@ -95,9 +133,9 @@ class NET_EXPORT_PRIVATE QuicWriteBlockedList {
     }
   }
 
-  // Pushes a stream to the back of the std::list for this priority level
+  // Pushes a stream to the back of the list for this priority level
   // *unless* it is latched for doing batched writes in which case it goes to
-  // the front of the std::list for this priority level.
+  // the front of the list for this priority level.
   // Headers and crypto streams are special cased to always resume first.
   void AddStream(QuicStreamId stream_id, SpdyPriority priority) {
     if (stream_id == kCryptoStreamId) {
@@ -113,9 +151,15 @@ class NET_EXPORT_PRIVATE QuicWriteBlockedList {
       headers_stream_blocked_ = true;
       return;
     }
-    if (FLAGS_quic_batch_writes &&
-        stream_id == batch_write_stream_id_[last_priority_popped_] &&
-        bytes_left_for_batch_write_[last_priority_popped_] > 0) {
+    if (use_new_blocked_list_) {
+      bool push_front =
+          FLAGS_quic_batch_writes &&
+          stream_id == batch_write_stream_id_[last_priority_popped_] &&
+          bytes_left_for_batch_write_[last_priority_popped_] > 0;
+      priority_write_scheduler_.MarkStreamReady(stream_id, push_front);
+    } else if (FLAGS_quic_batch_writes &&
+               stream_id == batch_write_stream_id_[last_priority_popped_] &&
+               bytes_left_for_batch_write_[last_priority_popped_] > 0) {
       // If the batch write stream has more data to write, push it to the front
       // for its priority level.
       base_write_blocked_list_.PushFront(stream_id, priority);
@@ -130,6 +174,8 @@ class NET_EXPORT_PRIVATE QuicWriteBlockedList {
 
  private:
   QuicWriteBlockedListBase base_write_blocked_list_;
+  QuicPriorityWriteScheduler priority_write_scheduler_;
+  bool use_new_blocked_list_ = FLAGS_quic_new_blocked_list;
 
   // If performing batch writes, this will be the stream ID of the stream doing
   // batch writes for this priority level.  We will allow this stream to write

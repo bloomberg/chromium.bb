@@ -124,11 +124,12 @@ TEST_P(QuicChromiumClientSessionTest, MaxNumStreams) {
 
   std::vector<QuicReliableClientStream*> streams;
   for (size_t i = 0; i < kDefaultMaxStreamsPerConnection; i++) {
-    QuicReliableClientStream* stream = session_.CreateOutgoingDynamicStream();
+    QuicReliableClientStream* stream =
+        session_.CreateOutgoingDynamicStream(kDefaultPriority);
     EXPECT_TRUE(stream);
     streams.push_back(stream);
   }
-  EXPECT_FALSE(session_.CreateOutgoingDynamicStream());
+  EXPECT_FALSE(session_.CreateOutgoingDynamicStream(kDefaultPriority));
 
   EXPECT_EQ(kDefaultMaxStreamsPerConnection,
             session_.GetNumOpenOutgoingStreams());
@@ -137,12 +138,12 @@ TEST_P(QuicChromiumClientSessionTest, MaxNumStreams) {
   QuicStreamId stream_id = streams[0]->id();
   session_.CloseStream(stream_id);
 
-  EXPECT_FALSE(session_.CreateOutgoingDynamicStream());
+  EXPECT_FALSE(session_.CreateOutgoingDynamicStream(kDefaultPriority));
   QuicRstStreamFrame rst1(stream_id, QUIC_STREAM_NO_ERROR, 0);
   session_.OnRstStream(rst1);
   EXPECT_EQ(kDefaultMaxStreamsPerConnection - 1,
             session_.GetNumOpenOutgoingStreams());
-  EXPECT_TRUE(session_.CreateOutgoingDynamicStream());
+  EXPECT_TRUE(session_.CreateOutgoingDynamicStream(kDefaultPriority));
 }
 
 TEST_P(QuicChromiumClientSessionTest, MaxNumStreamsViaRequest) {
@@ -150,7 +151,8 @@ TEST_P(QuicChromiumClientSessionTest, MaxNumStreamsViaRequest) {
 
   std::vector<QuicReliableClientStream*> streams;
   for (size_t i = 0; i < kDefaultMaxStreamsPerConnection; i++) {
-    QuicReliableClientStream* stream = session_.CreateOutgoingDynamicStream();
+    QuicReliableClientStream* stream =
+        session_.CreateOutgoingDynamicStream(kDefaultPriority);
     EXPECT_TRUE(stream);
     streams.push_back(stream);
   }
@@ -179,7 +181,7 @@ TEST_P(QuicChromiumClientSessionTest, GoAwayReceived) {
   // streams.
   session_.connection()->OnGoAwayFrame(
       QuicGoAwayFrame(QUIC_PEER_GOING_AWAY, 1u, "Going away."));
-  EXPECT_EQ(nullptr, session_.CreateOutgoingDynamicStream());
+  EXPECT_EQ(nullptr, session_.CreateOutgoingDynamicStream(kDefaultPriority));
 }
 
 TEST_P(QuicChromiumClientSessionTest, CanPool) {

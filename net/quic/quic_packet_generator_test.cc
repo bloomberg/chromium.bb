@@ -233,7 +233,7 @@ class QuicPacketGeneratorTest : public ::testing::TestWithParam<FecSendPolicy> {
   struct iovec iov_;
 };
 
-class MockDebugDelegate : public QuicPacketGenerator::DebugDelegate {
+class MockDebugDelegate : public QuicPacketCreator::DebugDelegate {
  public:
   MOCK_METHOD1(OnFrameAddedToPacket,
                void(const QuicFrame&));

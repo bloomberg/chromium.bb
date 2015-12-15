@@ -373,7 +373,7 @@ QuicSpdyClientStream* QuicTestClient::GetOrCreateStream() {
     }
     stream_->set_visitor(this);
     QuicSpdyClientStream* cs = reinterpret_cast<QuicSpdyClientStream*>(stream_);
-    cs->set_priority(priority_);
+    cs->SetPriority(priority_);
     cs->set_allow_bidirectional_data(allow_bidirectional_data_);
     // Set FEC policy on stream.
     ReliableQuicStreamPeer::SetFecPolicy(stream_, fec_policy_);

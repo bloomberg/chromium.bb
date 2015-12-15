@@ -55,12 +55,22 @@ class NET_EXPORT_PRIVATE QuicSpdySession : public QuicSession {
   // |delta| indicates how long that piece of data has been blocked.
   virtual void OnHeadersHeadOfLineBlocking(QuicTime::Delta delta);
 
+  // Called by the stream on creation to set priority in the write blocked list.
+  void RegisterStreamPriority(QuicStreamId id, SpdyPriority priority);
+  // Called by the stream on deletion to clear priority crom the write blocked
+  // list.
+  void UnregisterStreamPriority(QuicStreamId id);
+  // Called by the stream on SetPriority to update priority on the write blocked
+  // list.
+  void UpdateStreamPriority(QuicStreamId id, SpdyPriority new_priority);
+
  protected:
   // Override CreateIncomingDynamicStream() and CreateOutgoingDynamicStream()
   // with QuicSpdyStream return type to make sure that all data streams are
   // QuicSpdyStreams.
   QuicSpdyStream* CreateIncomingDynamicStream(QuicStreamId id) override = 0;
-  QuicSpdyStream* CreateOutgoingDynamicStream() override = 0;
+  QuicSpdyStream* CreateOutgoingDynamicStream(SpdyPriority priority) override =
+      0;
 
   QuicSpdyStream* GetSpdyDataStream(const QuicStreamId stream_id);
 

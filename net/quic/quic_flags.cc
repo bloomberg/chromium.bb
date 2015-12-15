@@ -127,3 +127,6 @@ bool FLAGS_quic_distinguish_incoming_outgoing_streams = true;
 // address token using the primary config, even if no server config id
 // is present in the client hello.
 bool FLAGS_quic_validate_stk_without_scid = true;
+
+// If true, use the new write blocked list for QUIC.
+bool FLAGS_quic_new_blocked_list = true;

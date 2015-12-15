@@ -272,7 +272,8 @@ void QuicP2PSessionTest::OnWriteResult(int result) {
 void QuicP2PSessionTest::TestStreamConnection(QuicP2PSession* from_session,
                                               QuicP2PSession* to_session,
                                               QuicStreamId expected_stream_id) {
-  QuicP2PStream* outgoing_stream = from_session->CreateOutgoingDynamicStream();
+  QuicP2PStream* outgoing_stream =
+      from_session->CreateOutgoingDynamicStream(kDefaultPriority);
   EXPECT_TRUE(outgoing_stream);
   TestP2PStreamDelegate outgoing_stream_delegate;
   outgoing_stream->SetDelegate(&outgoing_stream_delegate);
@@ -339,7 +340,8 @@ TEST_F(QuicP2PSessionTest, TransportWriteError) {
   TestP2PSessionDelegate session_delegate;
   session1_->SetDelegate(&session_delegate);
 
-  QuicP2PStream* stream = session1_->CreateOutgoingDynamicStream();
+  QuicP2PStream* stream =
+      session1_->CreateOutgoingDynamicStream(kDefaultPriority);
   EXPECT_TRUE(stream);
   TestP2PStreamDelegate stream_delegate;
   stream->SetDelegate(&stream_delegate);
@@ -369,7 +371,8 @@ TEST_F(QuicP2PSessionTest, TransportReceiveError) {
   TestP2PSessionDelegate session_delegate;
   session1_->SetDelegate(&session_delegate);
 
-  QuicP2PStream* stream = session1_->CreateOutgoingDynamicStream();
+  QuicP2PStream* stream =
+      session1_->CreateOutgoingDynamicStream(kDefaultPriority);
   EXPECT_TRUE(stream);
   TestP2PStreamDelegate stream_delegate;
   stream->SetDelegate(&stream_delegate);

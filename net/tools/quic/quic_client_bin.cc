@@ -305,15 +305,13 @@ int main(int argc, char *argv[]) {
   // Print request and response details.
   if (!FLAGS_quiet) {
     cout << "Request:" << endl;
-    cout << "headers:" << endl;
-    for (const auto& kv : header_block) {
-      cout << " " << kv.first << ": " << kv.second << endl;
-    }
+    cout << "headers:" << header_block.DebugString();
     cout << "body: " << FLAGS_body << endl;
     cout << endl;
     cout << "Response:" << endl;
     cout << "headers: " << client.latest_response_headers() << endl;
     cout << "body: " << client.latest_response_body() << endl;
+    cout << "trailers: " << client.latest_response_trailers() << endl;
   }
 
   size_t response_code = client.latest_response_code();

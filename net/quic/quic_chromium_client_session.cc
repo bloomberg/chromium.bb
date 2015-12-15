@@ -413,7 +413,7 @@ void QuicChromiumClientSession::CancelRequest(StreamRequest* request) {
 }
 
 QuicReliableClientStream*
-QuicChromiumClientSession::CreateOutgoingDynamicStream() {
+QuicChromiumClientSession::CreateOutgoingDynamicStream(SpdyPriority priority) {
   if (!crypto_stream_->encryption_established()) {
     DVLOG(1) << "Encryption not active so no outgoing stream created.";
     return nullptr;

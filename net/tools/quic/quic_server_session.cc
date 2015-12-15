@@ -222,13 +222,15 @@ bool QuicServerSession::ShouldCreateOutgoingDynamicStream() {
   return true;
 }
 
-QuicSpdyStream* QuicServerSession::CreateOutgoingDynamicStream() {
+QuicSpdyStream* QuicServerSession::CreateOutgoingDynamicStream(
+    SpdyPriority priority) {
   if (!ShouldCreateOutgoingDynamicStream()) {
     return nullptr;
   }
 
   QuicSpdyStream* stream =
       new QuicSpdyServerStream(GetNextOutgoingStreamId(), this);
+  stream->SetPriority(priority);
   ActivateStream(stream);
   return stream;
 }

@@ -69,7 +69,7 @@ QuicSpdyClientStream* QuicClientBase::CreateReliableClientStream() {
     return nullptr;
   }
 
-  return session_->CreateOutgoingDynamicStream();
+  return session_->CreateOutgoingDynamicStream(kDefaultPriority);
 }
 
 void QuicClientBase::WaitForStreamToClose(QuicStreamId id) {

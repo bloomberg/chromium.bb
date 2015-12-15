@@ -84,17 +84,6 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator
     virtual void OnResetFecGroup() = 0;
   };
 
-  // Interface which gets callbacks from the QuicPacketGenerator at interesting
-  // points.  Implementations must not mutate the state of the generator
-  // as a result of these callbacks.
-  class NET_EXPORT_PRIVATE DebugDelegate {
-   public:
-    virtual ~DebugDelegate() {}
-
-    // Called when a frame has been added to the current packet.
-    virtual void OnFrameAddedToPacket(const QuicFrame& frame) {}
-  };
-
   QuicPacketGenerator(QuicConnectionId connection_id,
                       QuicFramer* framer,
                       QuicRandom* random_generator,
@@ -216,8 +205,8 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator
                       QuicPacketNumber least_packet_awaited_by_peer,
                       QuicPacketCount max_packets_in_flight);
 
-  void set_debug_delegate(DebugDelegate* debug_delegate) {
-    debug_delegate_ = debug_delegate;
+  void set_debug_delegate(QuicPacketCreator::DebugDelegate* debug_delegate) {
+    packet_creator_.set_debug_delegate(debug_delegate);
   }
 
   void set_rtt_multiplier_for_fec_timeout(float rtt_multiplier_for_fec_timeout);
@@ -240,11 +229,8 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator
   // Returns false and flushes current open packet if the pending frame cannot
   // fit into current open packet.
   bool AddNextPendingFrame();
-  // Adds a |frame| and pads it if |needs_padding| is true.
-  bool AddFrame(const QuicFrame& frame, bool needs_padding);
 
   DelegateInterface* delegate_;
-  DebugDelegate* debug_delegate_;
 
   QuicPacketCreator packet_creator_;
   QuicFrames queued_control_frames_;

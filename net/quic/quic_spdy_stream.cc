@@ -20,16 +20,6 @@ namespace net {
   (session()->perspective() == Perspective::IS_SERVER ? "Server: " : "Client:" \
                                                                      " ")
 
-namespace {
-
-// This is somewhat arbitrary.  It's possible, but unlikely, we will either fail
-// to set a priority client-side, or cancel a stream before stripping the
-// priority from the wire server-side.  In either case, start out with a
-// priority in the middle.
-SpdyPriority kDefaultPriority = 3;
-
-}  // namespace
-
 QuicSpdyStream::QuicSpdyStream(QuicStreamId id, QuicSpdySession* spdy_session)
     : ReliableQuicStream(id, spdy_session),
       spdy_session_(spdy_session),
@@ -41,9 +31,12 @@ QuicSpdyStream::QuicSpdyStream(QuicStreamId id, QuicSpdySession* spdy_session)
   // Don't receive any callbacks from the sequencer until headers
   // are complete.
   sequencer()->SetBlockedUntilFlush();
+  spdy_session_->RegisterStreamPriority(id, priority_);
 }
 
-QuicSpdyStream::~QuicSpdyStream() {}
+QuicSpdyStream::~QuicSpdyStream() {
+  spdy_session_->UnregisterStreamPriority(id());
+}
 
 void QuicSpdyStream::CloseWriteSide() {
   if (version() > QUIC_VERSION_28 && !fin_received() && !rst_received() &&
@@ -156,8 +149,9 @@ void QuicSpdyStream::MarkTrailersConsumed(size_t bytes_consumed) {
   decompressed_trailers_.erase(0, bytes_consumed);
 }
 
-void QuicSpdyStream::set_priority(SpdyPriority priority) {
+void QuicSpdyStream::SetPriority(SpdyPriority priority) {
   DCHECK_EQ(0u, stream_bytes_written());
+  spdy_session_->UpdateStreamPriority(id(), priority);
   priority_ = priority;
 }
 
@@ -176,7 +170,7 @@ void QuicSpdyStream::OnStreamHeaders(StringPiece headers_data) {
 
 void QuicSpdyStream::OnStreamHeadersPriority(SpdyPriority priority) {
   DCHECK_EQ(Perspective::IS_SERVER, session()->connection()->perspective());
-  set_priority(priority);
+  SetPriority(priority);
 }
 
 void QuicSpdyStream::OnStreamHeadersComplete(bool fin, size_t frame_len) {

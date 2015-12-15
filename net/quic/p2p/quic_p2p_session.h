@@ -48,7 +48,8 @@ class NET_EXPORT QuicP2PSession : public QuicSession {
 
   // QuicSession overrides.
   void Initialize() override;
-  QuicP2PStream* CreateOutgoingDynamicStream() override;
+  QuicP2PStream* CreateOutgoingDynamicStream(
+      net::SpdyPriority priority) override;
 
   // QuicConnectionVisitorInterface overrides.
   void OnConnectionClosed(QuicErrorCode error, bool from_peer) override;

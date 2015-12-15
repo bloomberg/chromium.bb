@@ -76,6 +76,20 @@ void QuicSpdySession::OnHeadersHeadOfLineBlocking(QuicTime::Delta delta) {
   // Implemented in Chromium for stats tracking.
 }
 
+void QuicSpdySession::RegisterStreamPriority(QuicStreamId id,
+                                             SpdyPriority priority) {
+  write_blocked_streams()->RegisterStream(id, priority);
+}
+
+void QuicSpdySession::UnregisterStreamPriority(QuicStreamId id) {
+  write_blocked_streams()->UnregisterStream(id);
+}
+
+void QuicSpdySession::UpdateStreamPriority(QuicStreamId id,
+                                           SpdyPriority new_priority) {
+  write_blocked_streams()->UpdateStreamPriority(id, new_priority);
+}
+
 QuicSpdyStream* QuicSpdySession::GetSpdyDataStream(
     const QuicStreamId stream_id) {
   return static_cast<QuicSpdyStream*>(GetOrCreateDynamicStream(stream_id));

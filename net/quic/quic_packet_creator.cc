@@ -86,6 +86,7 @@ QuicPacketCreator::QuicPacketCreator(QuicConnectionId connection_id,
                                      QuicRandom* random_generator,
                                      DelegateInterface* delegate)
     : delegate_(delegate),
+      debug_delegate_(nullptr),
       connection_id_(connection_id),
       encryption_level_(ENCRYPTION_NONE),
       has_ack_(false),
@@ -715,6 +716,9 @@ bool QuicPacketCreator::AddFrame(const QuicFrame& frame,
   }
   if (needs_padding) {
     needs_padding_ = true;
+  }
+  if (debug_delegate_ != nullptr) {
+    debug_delegate_->OnFrameAddedToPacket(frame);
   }
 
   return true;

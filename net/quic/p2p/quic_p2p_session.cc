@@ -56,7 +56,8 @@ QuicP2PStream* QuicP2PSession::CreateIncomingDynamicStream(QuicStreamId id) {
   return stream;
 }
 
-QuicP2PStream* QuicP2PSession::CreateOutgoingDynamicStream() {
+QuicP2PStream* QuicP2PSession::CreateOutgoingDynamicStream(
+    net::SpdyPriority priority) {
   QuicP2PStream* stream = new QuicP2PStream(GetNextOutgoingStreamId(), this);
   if (stream) {
     ActivateStream(stream);

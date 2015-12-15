@@ -21,7 +21,6 @@ QuicPacketGenerator::QuicPacketGenerator(QuicConnectionId connection_id,
                                          QuicRandom* random_generator,
                                          DelegateInterface* delegate)
     : delegate_(delegate),
-      debug_delegate_(nullptr),
       packet_creator_(connection_id, framer, random_generator, this),
       batch_mode_(false),
       should_send_ack_(false),
@@ -133,9 +132,6 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(
 
     // A stream frame is created and added.
     size_t bytes_consumed = frame.stream_frame->frame_length;
-    if (debug_delegate_ != nullptr) {
-      debug_delegate_->OnFrameAddedToPacket(frame);
-    }
 
     if (listener != nullptr) {
       ack_listeners_.push_back(AckListenerWrapper(listener, bytes_consumed));
@@ -194,7 +190,7 @@ void QuicPacketGenerator::GenerateMtuDiscoveryPacket(
 
   // Send the probe packet with the new length.
   SetMaxPacketLength(target_mtu, /*force=*/true);
-  const bool success = AddFrame(frame, /*needs_padding=*/true);
+  const bool success = packet_creator_.AddPaddedSavedFrame(frame);
   if (listener != nullptr) {
     ack_listeners_.push_back(AckListenerWrapper(listener, 0));
   }
@@ -277,8 +273,8 @@ bool QuicPacketGenerator::AddNextPendingFrame() {
   if (should_send_ack_) {
     delegate_->PopulateAckFrame(&pending_ack_frame_);
     // If we can't this add the frame now, then we still need to do so later.
-    should_send_ack_ = !AddFrame(QuicFrame(&pending_ack_frame_),
-                                 /*needs_padding=*/false);
+    should_send_ack_ =
+        !packet_creator_.AddSavedFrame(QuicFrame(&pending_ack_frame_));
     // Return success if we have cleared out this flag (i.e., added the frame).
     // If we still need to send, then the frame is full, and we have failed.
     return !should_send_ack_;
@@ -288,8 +284,7 @@ bool QuicPacketGenerator::AddNextPendingFrame() {
     delegate_->PopulateStopWaitingFrame(&pending_stop_waiting_frame_);
     // If we can't this add the frame now, then we still need to do so later.
     should_send_stop_waiting_ =
-        !AddFrame(QuicFrame(&pending_stop_waiting_frame_),
-                  /*needs_padding=*/false);
+        !packet_creator_.AddSavedFrame(QuicFrame(&pending_stop_waiting_frame_));
     // Return success if we have cleared out this flag (i.e., added the frame).
     // If we still need to send, then the frame is full, and we have failed.
     return !should_send_stop_waiting_;
@@ -297,22 +292,12 @@ bool QuicPacketGenerator::AddNextPendingFrame() {
 
   LOG_IF(DFATAL, queued_control_frames_.empty())
       << "AddNextPendingFrame called with no queued control frames.";
-  if (!AddFrame(queued_control_frames_.back(), /*needs_padding=*/false)) {
+  if (!packet_creator_.AddSavedFrame(queued_control_frames_.back())) {
     // Packet was full.
     return false;
   }
   queued_control_frames_.pop_back();
   return true;
-}
-
-bool QuicPacketGenerator::AddFrame(const QuicFrame& frame,
-                                   bool needs_padding) {
-  bool success = needs_padding ? packet_creator_.AddPaddedSavedFrame(frame)
-                               : packet_creator_.AddSavedFrame(frame);
-  if (success && debug_delegate_) {
-    debug_delegate_->OnFrameAddedToPacket(frame);
-  }
-  return success;
 }
 
 void QuicPacketGenerator::StopSendingVersion() {

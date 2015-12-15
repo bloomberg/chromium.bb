@@ -44,6 +44,17 @@ class NET_EXPORT_PRIVATE QuicPacketCreator {
     virtual void OnResetFecGroup() = 0;
   };
 
+  // Interface which gets callbacks from the QuicPacketCreator at interesting
+  // points.  Implementations must not mutate the state of the creator
+  // as a result of these callbacks.
+  class NET_EXPORT_PRIVATE DebugDelegate {
+   public:
+    virtual ~DebugDelegate() {}
+
+    // Called when a frame has been added to the current packet.
+    virtual void OnFrameAddedToPacket(const QuicFrame& frame) {}
+  };
+
   // QuicRandom* required for packet entropy.
   QuicPacketCreator(QuicConnectionId connection_id,
                     QuicFramer* framer,
@@ -257,6 +268,10 @@ class NET_EXPORT_PRIVATE QuicPacketCreator {
     should_fec_protect_next_packet_ = should_fec_protect_next_packet;
   }
 
+  void set_debug_delegate(DebugDelegate* debug_delegate) {
+    debug_delegate_ = debug_delegate;
+  }
+
  private:
   friend class test::QuicPacketCreatorPeer;
 
@@ -344,8 +359,10 @@ class NET_EXPORT_PRIVATE QuicPacketCreator {
   // Fails if |buffer_len| isn't long enough for the encrypted packet.
   SerializedPacket SerializeFec(char* buffer, size_t buffer_len);
 
-  // Does not own this delegate.
+  // Does not own these delegates.
   DelegateInterface* delegate_;
+  DebugDelegate* debug_delegate_;
+
   QuicConnectionId connection_id_;
   EncryptionLevel encryption_level_;
   // True if an ack is queued in queued_frames_.

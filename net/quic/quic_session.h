@@ -219,7 +219,8 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
 
   // Create a new stream, owned by the caller, to handle a locally-initiated
   // stream.  Returns nullptr if max streams have already been opened.
-  virtual ReliableQuicStream* CreateOutgoingDynamicStream() = 0;
+  virtual ReliableQuicStream* CreateOutgoingDynamicStream(
+      SpdyPriority priority) = 0;
 
   // Return the reserved crypto stream.
   virtual QuicCryptoStream* GetCryptoStream() = 0;
@@ -260,6 +261,9 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
     largest_peer_created_stream_id_ = largest_peer_created_stream_id;
   }
   void set_error(QuicErrorCode error) { error_ = error; }
+  QuicWriteBlockedList* write_blocked_streams() {
+    return &write_blocked_streams_;
+  }
 
   size_t GetNumDynamicOutgoingStreams() const;
 

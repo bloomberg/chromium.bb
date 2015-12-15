@@ -33,6 +33,12 @@ class ReliableQuicStreamPeer;
 
 class QuicSpdySession;
 
+// This is somewhat arbitrary.  It's possible, but unlikely, we will either fail
+// to set a priority client-side, or cancel a stream before stripping the
+// priority from the wire server-side.  In either case, start out with a
+// priority in the middle.
+const SpdyPriority kDefaultPriority = 3;
+
 // A QUIC stream that can send and receive HTTP2 (SPDY) headers.
 class NET_EXPORT_PRIVATE QuicSpdyStream : public ReliableQuicStream {
  public:
@@ -129,15 +135,15 @@ class NET_EXPORT_PRIVATE QuicSpdyStream : public ReliableQuicStream {
 
   SpdyPriority priority() const { return priority_; }
 
+  // Sets priority_ to priority.  This should only be called before bytes are
+  // written to the server.
+  void SetPriority(SpdyPriority priority);
+
  protected:
   // Called by OnStreamHeadersComplete depending on which type (initial or
   // trailing) headers are expected next.
   virtual void OnInitialHeadersComplete(bool fin, size_t frame_len);
   virtual void OnTrailingHeadersComplete(bool fin, size_t frame_len);
-
-  // Sets priority_ to priority.  This should only be called before bytes are
-  // written to the server.
-  void set_priority(SpdyPriority priority);
 
   // Returns true if headers have been fully read and consumed.
   bool FinishedReadingHeaders() const;

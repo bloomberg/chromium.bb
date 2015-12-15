@@ -38,7 +38,8 @@ void QuicClientSession::OnProofValid(
 void QuicClientSession::OnProofVerifyDetailsAvailable(
     const ProofVerifyDetails& /*verify_details*/) {}
 
-QuicSpdyClientStream* QuicClientSession::CreateOutgoingDynamicStream() {
+QuicSpdyClientStream* QuicClientSession::CreateOutgoingDynamicStream(
+    SpdyPriority priority) {
   if (!crypto_stream_->encryption_established()) {
     DVLOG(1) << "Encryption not active so no outgoing stream created.";
     return nullptr;
@@ -54,6 +55,7 @@ QuicSpdyClientStream* QuicClientSession::CreateOutgoingDynamicStream() {
     return nullptr;
   }
   QuicSpdyClientStream* stream = CreateClientStream();
+  stream->SetPriority(priority);
   ActivateStream(stream);
   return stream;
 }

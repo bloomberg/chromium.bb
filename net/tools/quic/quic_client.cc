@@ -412,6 +412,7 @@ void QuicClient::OnClose(QuicSpdyStream* stream) {
     latest_response_code_ = headers.parsed_response_code();
     headers.DumpHeadersToString(&latest_response_headers_);
     latest_response_body_ = client_stream->data();
+    latest_response_trailers_ = client_stream->trailers().DebugString();
   }
 }
 
@@ -428,6 +429,11 @@ const string& QuicClient::latest_response_headers() const {
 const string& QuicClient::latest_response_body() const {
   LOG_IF(DFATAL, !store_response_) << "Response not stored!";
   return latest_response_body_;
+}
+
+const string& QuicClient::latest_response_trailers() const {
+  LOG_IF(DFATAL, !store_response_) << "Response not stored!";
+  return latest_response_trailers_;
 }
 
 QuicEpollConnectionHelper* QuicClient::CreateQuicConnectionHelper() {

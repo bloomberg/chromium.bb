@@ -125,6 +125,7 @@ class ReliableQuicStreamTest : public ::testing::TestWithParam<bool> {
         .Times(AnyNumber());
     write_blocked_list_ =
         QuicSessionPeer::GetWriteBlockedStreams(session_.get());
+    write_blocked_list_->RegisterStream(kTestStreamId, kV3HighestPriority);
   }
 
   bool fin_sent() { return ReliableQuicStreamPeer::FinSent(stream_); }

@@ -39,4 +39,5 @@ NET_EXPORT_PRIVATE extern bool FLAGS_quic_supports_trailers;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_use_primary_config_for_proof;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_distinguish_incoming_outgoing_streams;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_validate_stk_without_scid;
+NET_EXPORT_PRIVATE extern bool FLAGS_quic_new_blocked_list;
 #endif  // NET_QUIC_QUIC_FLAGS_H_
