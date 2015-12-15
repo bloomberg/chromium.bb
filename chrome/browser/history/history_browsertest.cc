@@ -328,6 +328,19 @@ IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, InvalidURLNoHistory) {
   ExpectEmptyHistory();
 }
 
+// URLs with special schemes should not go in history.
+IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, InvalidSchemeNoHistory) {
+  GURL about_blank("about:blank");
+  ui_test_utils::NavigateToURL(browser(), about_blank);
+  ExpectEmptyHistory();
+  GURL view_source("view-source:about:blank");
+  ui_test_utils::NavigateToURL(browser(), view_source);
+  ExpectEmptyHistory();
+  GURL chrome("chrome://about");
+  ui_test_utils::NavigateToURL(browser(), chrome);
+  ExpectEmptyHistory();
+}
+
 // New tab page should not show up in history.
 IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, NewTabNoHistory) {
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
