@@ -180,8 +180,6 @@ bool CalledOnIOThread() {
          !BrowserThread::IsMessageLoopValid(BrowserThread::IO);
 }
 
-void DummyEnumerationCallback(const AudioOutputDeviceEnumeration& e) {}
-
 }  // namespace
 
 
@@ -906,13 +904,6 @@ void MediaStreamManager::StartMonitoring() {
 
   monitoring_started_ = true;
   base::SystemMonitor::Get()->AddDevicesChangedObserver(this);
-
-  // Enable caching for audio output device enumerations and do an enumeration
-  // to populate the cache.
-  audio_output_device_enumerator_->SetCachePolicy(
-      AudioOutputDeviceEnumerator::CACHE_POLICY_MANUAL_INVALIDATION);
-  audio_output_device_enumerator_->Enumerate(
-      base::Bind(&DummyEnumerationCallback));
 
   // Enumerate both the audio and video input devices to cache the device lists
   // and send them to media observer.
@@ -2009,7 +2000,6 @@ void MediaStreamManager::OnDevicesChanged(
   MediaStreamType stream_type;
   if (device_type == base::SystemMonitor::DEVTYPE_AUDIO_CAPTURE) {
     stream_type = MEDIA_DEVICE_AUDIO_CAPTURE;
-    audio_output_device_enumerator_->InvalidateCache();
   } else if (device_type == base::SystemMonitor::DEVTYPE_VIDEO_CAPTURE) {
     stream_type = MEDIA_DEVICE_VIDEO_CAPTURE;
   } else {

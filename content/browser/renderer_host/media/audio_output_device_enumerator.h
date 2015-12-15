@@ -72,6 +72,10 @@ class CONTENT_EXPORT AudioOutputDeviceEnumerator {
   // Sets the cache policy.
   void SetCachePolicy(CachePolicy cache_policy);
 
+  // Returns true if the caching policy is different from
+  // CACHE_POLICY_NO_CACHING, false otherwise.
+  bool IsCacheEnabled();
+
  private:
   void InitializeOnIOThread();
   void DoEnumerateDevices();

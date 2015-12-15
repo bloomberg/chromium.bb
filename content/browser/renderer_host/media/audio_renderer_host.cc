@@ -107,6 +107,22 @@ bool IsValidDeviceId(const std::string& device_id) {
   return true;
 }
 
+bool IsDefaultDeviceId(const std::string& device_id) {
+  return device_id.empty() ||
+         device_id == media::AudioManagerBase::kDefaultDeviceId;
+}
+
+AudioOutputDeviceInfo GetDefaultDeviceInfoOnDeviceThread(
+    media::AudioManager* audio_manager) {
+  DCHECK(audio_manager->GetWorkerTaskRunner()->BelongsToCurrentThread());
+  AudioOutputDeviceInfo default_device_info = {
+      media::AudioManagerBase::kDefaultDeviceId,
+      audio_manager->GetDefaultDeviceName(),
+      audio_manager->GetDefaultOutputStreamParameters()};
+
+  return default_device_info;
+}
+
 void NotifyRenderProcessHostThatAudioStateChanged(int render_process_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -475,10 +491,25 @@ void AudioRendererHost::OnDeviceAuthorized(int stream_id,
     return;
   }
 
-  media_stream_manager_->audio_output_device_enumerator()->Enumerate(base::Bind(
-      &AudioRendererHost::TranslateDeviceID, this, device_id,
-      gurl_security_origin,
-      base::Bind(&AudioRendererHost::OnDeviceIDTranslated, this, stream_id)));
+  // If enumerator caching is disabled, avoid the enumeration if the default
+  // device is requested, since no device ID translation is needed.
+  // If enumerator caching is enabled, it is better to use its cache, even
+  // for the default device.
+  if (IsDefaultDeviceId(device_id) &&
+      !media_stream_manager_->audio_output_device_enumerator()
+           ->IsCacheEnabled()) {
+    base::PostTaskAndReplyWithResult(
+        audio_manager_->GetWorkerTaskRunner().get(), FROM_HERE,
+        base::Bind(&GetDefaultDeviceInfoOnDeviceThread, audio_manager_),
+        base::Bind(&AudioRendererHost::OnDeviceIDTranslated, this, stream_id,
+                   true));
+  } else {
+    media_stream_manager_->audio_output_device_enumerator()->Enumerate(
+        base::Bind(&AudioRendererHost::TranslateDeviceID, this, device_id,
+                   gurl_security_origin,
+                   base::Bind(&AudioRendererHost::OnDeviceIDTranslated, this,
+                              stream_id)));
+  }
 }
 
 void AudioRendererHost::OnDeviceIDTranslated(

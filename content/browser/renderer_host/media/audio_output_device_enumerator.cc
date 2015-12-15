@@ -91,6 +91,11 @@ void AudioOutputDeviceEnumerator::SetCachePolicy(CachePolicy policy) {
   cache_policy_ = policy;
 }
 
+bool AudioOutputDeviceEnumerator::IsCacheEnabled() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return cache_policy_ != CACHE_POLICY_NO_CACHING;
+}
+
 void AudioOutputDeviceEnumerator::DoEnumerateDevices() {
   DCHECK(thread_checker_.CalledOnValidThread());
   is_enumeration_ongoing_ = true;
