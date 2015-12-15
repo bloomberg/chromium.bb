@@ -316,18 +316,19 @@ void BrowserAccessibilityManagerWin::OnNodeCreated(ui::AXTree* tree,
 void BrowserAccessibilityManagerWin::OnNodeWillBeDeleted(ui::AXTree* tree,
                                                          ui::AXNode* node) {
   DCHECK(node);
-  BrowserAccessibilityManager::OnNodeWillBeDeleted(tree, node);
   BrowserAccessibility* obj = GetFromAXNode(node);
-  if (!obj)
-    return;
-  if (!obj->IsNative())
-    return;
-  g_unique_id_map.Get().erase(
-      obj->ToBrowserAccessibilityWin()->unique_id_win());
-  if (obj == tracked_scroll_object_) {
-    tracked_scroll_object_->Release();
-    tracked_scroll_object_ = NULL;
+  if (obj && obj->IsNative()) {
+    g_unique_id_map.Get().erase(
+        obj->ToBrowserAccessibilityWin()->unique_id_win());
+    if (obj == tracked_scroll_object_) {
+      tracked_scroll_object_->Release();
+      tracked_scroll_object_ = NULL;
+    }
   }
+
+  // Call the inherited function at the bottom, otherwise our call to
+  // |GetFromAXNode|, above, will fail!
+  BrowserAccessibilityManager::OnNodeWillBeDeleted(tree, node);
 }
 
 void BrowserAccessibilityManagerWin::OnAtomicUpdateFinished(
