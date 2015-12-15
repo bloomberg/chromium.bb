@@ -36,8 +36,7 @@ public:
     }
     ~CoalescingBuffer()
     {
-        for (size_t i = 0; i < m_currentOffset; ++i)
-            m_byteStream.append(m_bytes[i]);
+        m_byteStream.append(m_bytes, m_currentOffset);
     }
 
     template<typename DataType>
