@@ -269,15 +269,23 @@ BoolExpr BoolConst(bool value) {
   return BoolExpr(new const ConstBoolExprImpl(value));
 }
 
-BoolExpr operator!(const BoolExpr& cond) {
+BoolExpr Not(const BoolExpr& cond) {
   return BoolExpr(new const NegateBoolExprImpl(cond));
 }
 
-BoolExpr operator&&(const BoolExpr& lhs, const BoolExpr& rhs) {
+BoolExpr AllOf() {
+  return BoolConst(true);
+}
+
+BoolExpr AllOf(const BoolExpr& lhs, const BoolExpr& rhs) {
   return BoolExpr(new const AndBoolExprImpl(lhs, rhs));
 }
 
-BoolExpr operator||(const BoolExpr& lhs, const BoolExpr& rhs) {
+BoolExpr AnyOf() {
+  return BoolConst(false);
+}
+
+BoolExpr AnyOf(const BoolExpr& lhs, const BoolExpr& rhs) {
   return BoolExpr(new const OrBoolExprImpl(lhs, rhs));
 }
 

@@ -236,8 +236,8 @@ ResultExpr EvaluateSyscallImpl(int fs_denied_errno,
     // Used by Mojo EDK to catch a message pipe being sent over itself.
     const Arg<int> level(1);
     const Arg<int> optname(2);
-    return If(level == SOL_SOCKET && optname == SO_PEEK_OFF,
-              Allow()).Else(CrashSIGSYS());
+    return If(AllOf(level == SOL_SOCKET, optname == SO_PEEK_OFF), Allow())
+        .Else(CrashSIGSYS());
   }
 #endif
 

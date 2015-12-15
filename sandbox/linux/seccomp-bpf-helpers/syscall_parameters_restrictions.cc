@@ -126,9 +126,9 @@ ResultExpr RestrictCloneToThreadsAndEPERMFork() {
       CLONE_SYSVSEM | CLONE_SETTLS | CLONE_PARENT_SETTID | CLONE_CHILD_CLEARTID;
   const BoolExpr glibc_test = flags == kGlibcPthreadFlags;
 
-  const BoolExpr android_test = flags == kAndroidCloneMask ||
-                                flags == kObsoleteAndroidCloneMask ||
-                                flags == kGlibcPthreadFlags;
+  const BoolExpr android_test =
+      AnyOf(flags == kAndroidCloneMask, flags == kObsoleteAndroidCloneMask,
+            flags == kGlibcPthreadFlags);
 
   return If(IsAndroid() ? android_test : glibc_test, Allow())
       .ElseIf((flags & (CLONE_VM | CLONE_THREAD)) == 0, Error(EPERM))
@@ -140,11 +140,13 @@ ResultExpr RestrictPrctl() {
   // used by breakpad but not needed anymore.
   const Arg<int> option(0);
   return Switch(option)
-      .CASES((PR_GET_NAME, PR_SET_NAME, PR_GET_DUMPABLE, PR_SET_DUMPABLE),
-             Allow())
+      .CASES((PR_GET_NAME, PR_SET_NAME, PR_GET_DUMPABLE, PR_SET_DUMPABLE
 #if defined(OS_ANDROID)
-      .CASES((PR_SET_VMA, PR_SET_TIMERSLACK_PID), Allow())
+              ,
+              PR_SET_VMA, PR_SET_TIMERSLACK_PID
 #endif
+              ),
+             Allow())
       .Default(CrashSIGSYSPrctl());
 }
 
@@ -262,7 +264,7 @@ ResultExpr RestrictGetSetpriority(pid_t target_pid) {
   const Arg<int> which(0);
   const Arg<int> who(1);
   return If(which == PRIO_PROCESS,
-            If(who == 0 || who == target_pid, Allow()).Else(Error(EPERM)))
+            If(AnyOf(who == 0, who == target_pid), Allow()).Else(Error(EPERM)))
       .Else(CrashSIGSYS());
 }
 
@@ -278,7 +280,7 @@ ResultExpr RestrictSchedTarget(pid_t target_pid, int sysno) {
     case __NR_sched_setparam:
     case __NR_sched_setscheduler: {
       const Arg<pid_t> pid(0);
-      return If(pid == 0 || pid == target_pid, Allow())
+      return If(AnyOf(pid == 0, pid == target_pid), Allow())
           .Else(RewriteSchedSIGSYS());
     }
     default:
@@ -289,7 +291,7 @@ ResultExpr RestrictSchedTarget(pid_t target_pid, int sysno) {
 
 ResultExpr RestrictPrlimit64(pid_t target_pid) {
   const Arg<pid_t> pid(0);
-  return If(pid == 0 || pid == target_pid, Allow()).Else(CrashSIGSYS());
+  return If(AnyOf(pid == 0, pid == target_pid), Allow()).Else(CrashSIGSYS());
 }
 
 ResultExpr RestrictGetrusage() {
@@ -301,14 +303,12 @@ ResultExpr RestrictGetrusage() {
 ResultExpr RestrictClockID() {
   static_assert(4 == sizeof(clockid_t), "clockid_t is not 32bit");
   const Arg<clockid_t> clockid(0);
-  return If(
-                 clockid == CLOCK_MONOTONIC ||
-                 clockid == CLOCK_MONOTONIC_COARSE ||
-                 clockid == CLOCK_PROCESS_CPUTIME_ID ||
-                 clockid == CLOCK_REALTIME ||
-                 clockid == CLOCK_REALTIME_COARSE ||
-                 clockid == CLOCK_THREAD_CPUTIME_ID,
-             Allow()).Else(CrashSIGSYS());
+  return If(AnyOf(clockid == CLOCK_MONOTONIC, clockid == CLOCK_MONOTONIC_COARSE,
+                  clockid == CLOCK_PROCESS_CPUTIME_ID,
+                  clockid == CLOCK_REALTIME, clockid == CLOCK_REALTIME_COARSE,
+                  clockid == CLOCK_THREAD_CPUTIME_ID),
+            Allow())
+      .Else(CrashSIGSYS());
 }
 
 }  // namespace sandbox.

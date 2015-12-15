@@ -151,10 +151,11 @@ class BooleanLogicPolicy : public Policy {
   ResultExpr EvaluateSyscall(int sysno) const override {
     if (sysno == __NR_socketpair) {
       const Arg<int> domain(0), type(1), protocol(2);
-      return If(domain == AF_UNIX &&
-                    (type == SOCK_STREAM || type == SOCK_DGRAM) &&
-                    protocol == 0,
-                Error(EPERM)).Else(Error(EINVAL));
+      return If(AllOf(domain == AF_UNIX,
+                      AnyOf(type == SOCK_STREAM, type == SOCK_DGRAM),
+                      protocol == 0),
+                Error(EPERM))
+          .Else(Error(EINVAL));
     }
     return Allow();
   }
@@ -196,8 +197,8 @@ class MoreBooleanLogicPolicy : public Policy {
   ResultExpr EvaluateSyscall(int sysno) const override {
     if (sysno == __NR_setresuid) {
       const Arg<uid_t> ruid(0), euid(1), suid(2);
-      return If(ruid == 0 || euid == 0 || suid == 0, Error(EPERM))
-          .ElseIf(ruid == 1 && euid == 1 && suid == 1, Error(EAGAIN))
+      return If(AnyOf(ruid == 0, euid == 0, suid == 0), Error(EPERM))
+          .ElseIf(AllOf(ruid == 1, euid == 1, suid == 1), Error(EAGAIN))
           .Else(Error(EINVAL));
     }
     return Allow();
