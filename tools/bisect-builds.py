@@ -705,12 +705,15 @@ def AskIsGoodBuild(rev, official_builds, status, stdout, stderr):
   # Loop until we get a response that we can parse.
   while True:
     response = raw_input('Revision %s is '
-                         '[(g)ood/(b)ad/(r)etry/(u)nknown/(q)uit]: ' %
+                         '[(g)ood/(b)ad/(r)etry/(u)nknown/(s)tdout/(q)uit]: ' %
                          str(rev))
-    if response and response in ('g', 'b', 'r', 'u'):
+    if response in ('g', 'b', 'r', 'u'):
       return response
-    if response and response == 'q':
+    if response == 'q':
       raise SystemExit()
+    if response == 's':
+      print stdout
+      print stderr
 
 
 def IsGoodASANBuild(rev, official_builds, status, stdout, stderr):
