@@ -7,6 +7,7 @@
 
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/fetch/CrossOriginAccessControl.h"
+#include "core/fetch/FetchUtils.h"
 #include "modules/fetch/BodyStreamBuffer.h"
 #include "modules/fetch/DataConsumerHandleUtil.h"
 #include "modules/fetch/DataConsumerTee.h"
@@ -76,7 +77,7 @@ FetchResponseData* FetchResponseData::createBasicFilteredResponse()
     response->m_url = m_url;
     for (size_t i = 0; i < m_headerList->size(); ++i) {
         const FetchHeaderList::Header* header = m_headerList->list()[i].get();
-        if (header->first == "set-cookie" || header->first == "set-cookie2")
+        if (FetchUtils::isForbiddenResponseHeaderName(header->first))
             continue;
         response->m_headerList->append(header->first, header->second);
     }
@@ -103,9 +104,9 @@ FetchResponseData* FetchResponseData::createCORSFilteredResponse()
         parseAccessControlExposeHeadersAllowList(accessControlExposeHeaders, accessControlExposeHeaderSet);
     for (size_t i = 0; i < m_headerList->size(); ++i) {
         const FetchHeaderList::Header* header = m_headerList->list()[i].get();
-        if (!isOnAccessControlResponseHeaderWhitelist(header->first) && !accessControlExposeHeaderSet.contains(header->first))
-            continue;
-        response->m_headerList->append(header->first, header->second);
+        const String& name = header->first;
+        if (isOnAccessControlResponseHeaderWhitelist(name) || (accessControlExposeHeaderSet.contains(name) && !FetchUtils::isForbiddenResponseHeaderName(name)))
+            response->m_headerList->append(name, header->second);
     }
     response->m_buffer = m_buffer;
     response->m_mimeType = m_mimeType;
