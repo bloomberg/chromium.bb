@@ -3,18 +3,14 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
-#include "base/files/file_path.h"
-#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/scoped_native_library.h"
 #include "media/base/cdm_callback_promise.h"
 #include "media/base/cdm_key_information.h"
 #include "media/base/media_keys.h"
-#include "media/cdm/api/content_decryption_module.h"
 #include "media/cdm/cdm_adapter.h"
+#include "media/cdm/external_clear_key_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -31,24 +27,6 @@ MATCHER(IsNotEmpty, "") {
 // will need to be handled separately.
 
 namespace media {
-
-// INITIALIZE_CDM_MODULE is a macro in api/content_decryption_module.h.
-// However, we need to pass it as a string to GetFunctionPointer() once it
-// is expanded.
-#define STRINGIFY(X) #X
-#define MAKE_STRING(X) STRINGIFY(X)
-
-const char kExternalClearKeyKeySystem[] = "org.chromium.externalclearkey";
-
-// File name of the External ClearKey CDM on different platforms.
-const base::FilePath::CharType kExternalClearKeyCdmFileName[] =
-#if defined(OS_MACOSX)
-    FILE_PATH_LITERAL("libclearkeycdm.dylib");
-#elif defined(OS_WIN)
-    FILE_PATH_LITERAL("clearkeycdm.dll");
-#else  // OS_LINUX, etc.
-    FILE_PATH_LITERAL("libclearkeycdm.so");
-#endif
 
 // Random key ID used to create a session.
 const uint8 kKeyId[] = {
@@ -101,7 +79,7 @@ class CdmAdapterTest : public testing::Test {
     CdmConfig cdm_config;  // default settings of false are sufficient.
 
     CdmAdapter::Create(
-        kExternalClearKeyKeySystem, library_path, cdm_config,
+        helper_.KeySystemName(), library_path, cdm_config,
         base::Bind(&CdmAdapterTest::OnSessionMessage, base::Unretained(this)),
         base::Bind(&CdmAdapterTest::OnSessionClosed, base::Unretained(this)),
         base::Bind(&CdmAdapterTest::OnLegacySessionError,
@@ -168,44 +146,11 @@ class CdmAdapterTest : public testing::Test {
     RunUntilIdle();
   }
 
-  base::FilePath ExternalClearKeyLibrary() { return library_path_; }
+  base::FilePath ExternalClearKeyLibrary() { return helper_.LibraryPath(); }
 
   std::string SessionId() { return session_id_; }
 
  private:
-  void SetUp() override {
-    // Determine the location of the CDM. It is expected to be in the same
-    // directory as the current module.
-    base::FilePath current_module_dir;
-    ASSERT_TRUE(PathService::Get(base::DIR_MODULE, &current_module_dir));
-    library_path_ =
-        current_module_dir.Append(base::FilePath(kExternalClearKeyCdmFileName));
-    ASSERT_TRUE(base::PathExists(library_path_)) << library_path_.value();
-
-    // Now load the CDM library.
-    base::NativeLibraryLoadError error;
-    library_.Reset(base::LoadNativeLibrary(library_path_, &error));
-    ASSERT_TRUE(library_.is_valid()) << error.ToString();
-
-    // Call INITIALIZE_CDM_MODULE()
-    typedef void (*InitializeCdmFunc)();
-    InitializeCdmFunc initialize_cdm_func = reinterpret_cast<InitializeCdmFunc>(
-        library_.GetFunctionPointer(MAKE_STRING(INITIALIZE_CDM_MODULE)));
-    ASSERT_TRUE(initialize_cdm_func) << "No INITIALIZE_CDM_MODULE in library";
-    initialize_cdm_func();
-  }
-
-  void TearDown() override {
-    // Call DeinitializeCdmModule()
-    typedef void (*DeinitializeCdmFunc)();
-    DeinitializeCdmFunc deinitialize_cdm_func =
-        reinterpret_cast<DeinitializeCdmFunc>(
-            library_.GetFunctionPointer("DeinitializeCdmModule"));
-    ASSERT_TRUE(deinitialize_cdm_func)
-        << "No DeinitializeCdmModule() in library";
-    deinitialize_cdm_func();
-  }
-
   void OnCdmCreated(ExpectedResult expected_result,
                     const scoped_refptr<MediaKeys>& cdm,
                     const std::string& error_message) {
@@ -286,10 +231,10 @@ class CdmAdapterTest : public testing::Test {
                void(const std::string& session_id,
                     const base::Time& new_expiry_time));
 
-  // Keep a reference to the CDM.
-  base::FilePath library_path_;
-  base::ScopedNativeLibrary library_;
+  // Helper class to load/unload External Clear Key Library.
+  ExternalClearKeyTestHelper helper_;
 
+  // Keep track of the loaded CDM.
   scoped_refptr<MediaKeys> adapter_;
 
   // |session_id_| is the latest result of calling CreateSession().

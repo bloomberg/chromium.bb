@@ -17,17 +17,23 @@
 #include "base/scoped_native_library.h"
 #include "base/threading/thread.h"
 #include "media/base/cdm_config.h"
+#include "media/base/cdm_context.h"
 #include "media/base/cdm_factory.h"
 #include "media/base/cdm_promise_adapter.h"
+#include "media/base/decryptor.h"
 #include "media/base/media_export.h"
 #include "media/base/media_keys.h"
 #include "media/cdm/api/content_decryption_module.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace media {
 
+class AudioFramesImpl;
 class CdmWrapper;
 
 class MEDIA_EXPORT CdmAdapter : public MediaKeys,
+                                public CdmContext,
+                                public Decryptor,
                                 NON_EXPORTED_BASE(public cdm::Host_7),
                                 NON_EXPORTED_BASE(public cdm::Host_8) {
  public:
@@ -47,23 +53,45 @@ class MEDIA_EXPORT CdmAdapter : public MediaKeys,
 
   // MediaKeys implementation.
   void SetServerCertificate(const std::vector<uint8_t>& certificate,
-                            scoped_ptr<SimpleCdmPromise> promise) override;
+                            scoped_ptr<SimpleCdmPromise> promise) final;
   void CreateSessionAndGenerateRequest(
       SessionType session_type,
       EmeInitDataType init_data_type,
       const std::vector<uint8_t>& init_data,
-      scoped_ptr<NewSessionCdmPromise> promise) override;
+      scoped_ptr<NewSessionCdmPromise> promise) final;
   void LoadSession(SessionType session_type,
                    const std::string& session_id,
-                   scoped_ptr<NewSessionCdmPromise> promise) override;
+                   scoped_ptr<NewSessionCdmPromise> promise) final;
   void UpdateSession(const std::string& session_id,
                      const std::vector<uint8_t>& response,
-                     scoped_ptr<SimpleCdmPromise> promise) override;
+                     scoped_ptr<SimpleCdmPromise> promise) final;
   void CloseSession(const std::string& session_id,
-                    scoped_ptr<SimpleCdmPromise> promise) override;
+                    scoped_ptr<SimpleCdmPromise> promise) final;
   void RemoveSession(const std::string& session_id,
-                     scoped_ptr<SimpleCdmPromise> promise) override;
-  CdmContext* GetCdmContext() override;
+                     scoped_ptr<SimpleCdmPromise> promise) final;
+  CdmContext* GetCdmContext() final;
+
+  // CdmContext implementation.
+  Decryptor* GetDecryptor() final;
+  int GetCdmId() const final;
+
+  // Decryptor implementation.
+  void RegisterNewKeyCB(StreamType stream_type,
+                        const NewKeyCB& key_added_cb) final;
+  void Decrypt(StreamType stream_type,
+               const scoped_refptr<DecoderBuffer>& encrypted,
+               const DecryptCB& decrypt_cb) final;
+  void CancelDecrypt(StreamType stream_type) final;
+  void InitializeAudioDecoder(const AudioDecoderConfig& config,
+                              const DecoderInitCB& init_cb) final;
+  void InitializeVideoDecoder(const VideoDecoderConfig& config,
+                              const DecoderInitCB& init_cb) final;
+  void DecryptAndDecodeAudio(const scoped_refptr<DecoderBuffer>& encrypted,
+                             const AudioDecodeCB& audio_decode_cb) final;
+  void DecryptAndDecodeVideo(const scoped_refptr<DecoderBuffer>& encrypted,
+                             const VideoDecodeCB& video_decode_cb) final;
+  void ResetDecoder(StreamType stream_type) final;
+  void DeinitializeDecoder(StreamType stream_type) final;
 
   // cdm::Host_7 and cdm::Host_8 implementation.
   cdm::Buffer* Allocate(uint32_t capacity) override;
@@ -136,6 +164,11 @@ class MEDIA_EXPORT CdmAdapter : public MediaKeys,
   // Helper for SetTimer().
   void TimerExpired(void* context);
 
+  // Converts audio data stored in |audio_frames| into individual audio
+  // buffers in |result_frames|. Returns true upon success.
+  bool AudioFramesDataToAudioFrames(scoped_ptr<AudioFramesImpl> audio_frames,
+                                    Decryptor::AudioFrames* result_frames);
+
   // Keep a reference to the CDM.
   base::ScopedNativeLibrary library_;
 
@@ -152,6 +185,22 @@ class MEDIA_EXPORT CdmAdapter : public MediaKeys,
   LegacySessionErrorCB legacy_session_error_cb_;
   SessionKeysChangeCB session_keys_change_cb_;
   SessionExpirationUpdateCB session_expiration_update_cb_;
+
+  // Callbacks for deferred initialization.
+  DecoderInitCB audio_init_cb_;
+  DecoderInitCB video_init_cb_;
+
+  // Callbacks for new keys added.
+  NewKeyCB new_audio_key_cb_;
+  NewKeyCB new_video_key_cb_;
+
+  // Keep track of video frame natural size from the latest configuration
+  // as the CDM doesn't provide it.
+  gfx::Size natural_size_;
+
+  // Keep track of audio parameters.
+  int audio_samples_per_second_;
+  ChannelLayout audio_channel_layout_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 

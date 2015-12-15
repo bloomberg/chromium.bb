@@ -5,22 +5,33 @@
 #include "media/cdm/cdm_adapter.h"
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "media/base/cdm_context.h"
+#include "media/base/audio_decoder_config.h"
 #include "media/base/cdm_initialized_promise.h"
 #include "media/base/cdm_key_information.h"
+#include "media/base/channel_layout.h"
+#include "media/base/decoder_buffer.h"
+#include "media/base/decrypt_config.h"
 #include "media/base/limits.h"
+#include "media/base/sample_format.h"
+#include "media/base/video_codecs.h"
+#include "media/base/video_decoder_config.h"
+#include "media/base/video_frame.h"
+#include "media/base/video_types.h"
+#include "media/cdm/cdm_buffer_impl.h"
+#include "media/cdm/cdm_helpers.h"
 #include "media/cdm/cdm_wrapper.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace media {
 
 namespace {
 
-cdm::SessionType MediaSessionTypeToCdmSessionType(
-    MediaKeys::SessionType session_type) {
+cdm::SessionType ToCdmSessionType(MediaKeys::SessionType session_type) {
   switch (session_type) {
     case MediaKeys::TEMPORARY_SESSION:
       return cdm::kTemporary;
@@ -30,12 +41,11 @@ cdm::SessionType MediaSessionTypeToCdmSessionType(
       return cdm::kPersistentKeyRelease;
   }
 
-  NOTREACHED();
+  NOTREACHED() << "Unexpected SessionType " << session_type;
   return cdm::kTemporary;
 }
 
-cdm::InitDataType MediaInitDataTypeToCdmInitDataType(
-    EmeInitDataType init_data_type) {
+cdm::InitDataType ToCdmInitDataType(EmeInitDataType init_data_type) {
   switch (init_data_type) {
     case EmeInitDataType::CENC:
       return cdm::kCenc;
@@ -51,7 +61,7 @@ cdm::InitDataType MediaInitDataTypeToCdmInitDataType(
   return cdm::kKeyIds;
 }
 
-MediaKeys::Exception CdmErrorTypeToMediaExceptionType(cdm::Error error) {
+MediaKeys::Exception ToMediaExceptionType(cdm::Error error) {
   switch (error) {
     case cdm::kNotSupportedError:
       return MediaKeys::NOT_SUPPORTED_ERROR;
@@ -69,12 +79,11 @@ MediaKeys::Exception CdmErrorTypeToMediaExceptionType(cdm::Error error) {
       return MediaKeys::OUTPUT_ERROR;
   }
 
-  NOTREACHED();
+  NOTREACHED() << "Unexpected cdm::Error " << error;
   return MediaKeys::UNKNOWN_ERROR;
 }
 
-MediaKeys::MessageType CdmMessageTypeToMediaMessageType(
-    cdm::MessageType message_type) {
+MediaKeys::MessageType ToMediaMessageType(cdm::MessageType message_type) {
   switch (message_type) {
     case cdm::kLicenseRequest:
       return MediaKeys::LICENSE_REQUEST;
@@ -84,11 +93,11 @@ MediaKeys::MessageType CdmMessageTypeToMediaMessageType(
       return MediaKeys::LICENSE_RELEASE;
   }
 
-  NOTREACHED();
+  NOTREACHED() << "Unexpected cdm::MessageType " << message_type;
   return MediaKeys::LICENSE_REQUEST;
 }
 
-CdmKeyInformation::KeyStatus CdmKeyStatusToCdmKeyInformationKeyStatus(
+CdmKeyInformation::KeyStatus ToCdmKeyInformationKeyStatus(
     cdm::KeyStatus status) {
   switch (status) {
     case cdm::kUsable:
@@ -107,11 +116,168 @@ CdmKeyInformation::KeyStatus CdmKeyStatusToCdmKeyInformationKeyStatus(
       return CdmKeyInformation::RELEASED;
   }
 
-  NOTREACHED();
+  NOTREACHED() << "Unexpected cdm::KeyStatus " << status;
   return CdmKeyInformation::INTERNAL_ERROR;
 }
 
-static void* GetCdmHost(int host_interface_version, void* user_data) {
+cdm::AudioDecoderConfig::AudioCodec ToCdmAudioCodec(AudioCodec codec) {
+  switch (codec) {
+    case kCodecVorbis:
+      return cdm::AudioDecoderConfig::kCodecVorbis;
+    case kCodecAAC:
+      return cdm::AudioDecoderConfig::kCodecAac;
+    default:
+      DVLOG(1) << "Unsupported AudioCodec " << codec;
+      return cdm::AudioDecoderConfig::kUnknownAudioCodec;
+  }
+}
+
+cdm::VideoDecoderConfig::VideoCodec ToCdmVideoCodec(VideoCodec codec) {
+  switch (codec) {
+    case kCodecVP8:
+      return cdm::VideoDecoderConfig::kCodecVp8;
+    case kCodecH264:
+      return cdm::VideoDecoderConfig::kCodecH264;
+    case kCodecVP9:
+      return cdm::VideoDecoderConfig::kCodecVp9;
+    default:
+      DVLOG(1) << "Unsupported VideoCodec " << codec;
+      return cdm::VideoDecoderConfig::kUnknownVideoCodec;
+  }
+}
+
+cdm::VideoDecoderConfig::VideoCodecProfile ToCdmVideoCodecProfile(
+    VideoCodecProfile profile) {
+  switch (profile) {
+    case VP8PROFILE_ANY:
+    case VP9PROFILE_ANY:
+      return cdm::VideoDecoderConfig::kProfileNotNeeded;
+    case H264PROFILE_BASELINE:
+      return cdm::VideoDecoderConfig::kH264ProfileBaseline;
+    case H264PROFILE_MAIN:
+      return cdm::VideoDecoderConfig::kH264ProfileMain;
+    case H264PROFILE_EXTENDED:
+      return cdm::VideoDecoderConfig::kH264ProfileExtended;
+    case H264PROFILE_HIGH:
+      return cdm::VideoDecoderConfig::kH264ProfileHigh;
+    case H264PROFILE_HIGH10PROFILE:
+      return cdm::VideoDecoderConfig::kH264ProfileHigh10;
+    case H264PROFILE_HIGH422PROFILE:
+      return cdm::VideoDecoderConfig::kH264ProfileHigh422;
+    case H264PROFILE_HIGH444PREDICTIVEPROFILE:
+      return cdm::VideoDecoderConfig::kH264ProfileHigh444Predictive;
+    default:
+      DVLOG(1) << "Unsupported VideoCodecProfile " << profile;
+      return cdm::VideoDecoderConfig::kUnknownVideoCodecProfile;
+  }
+}
+
+cdm::VideoFormat ToCdmVideoFormat(VideoPixelFormat format) {
+  switch (format) {
+    case PIXEL_FORMAT_YV12:
+      return cdm::kYv12;
+    case PIXEL_FORMAT_I420:
+      return cdm::kI420;
+    default:
+      DVLOG(1) << "Unsupported VideoPixelFormat " << format;
+      return cdm::kUnknownVideoFormat;
+  }
+}
+
+cdm::StreamType ToCdmStreamType(Decryptor::StreamType stream_type) {
+  switch (stream_type) {
+    case Decryptor::kAudio:
+      return cdm::kStreamTypeAudio;
+    case Decryptor::kVideo:
+      return cdm::kStreamTypeVideo;
+  }
+
+  NOTREACHED() << "Unexpected Decryptor::StreamType " << stream_type;
+  return cdm::kStreamTypeVideo;
+}
+
+Decryptor::Status ToMediaDecryptorStatus(cdm::Status status) {
+  switch (status) {
+    case cdm::kSuccess:
+      return Decryptor::kSuccess;
+    case cdm::kNoKey:
+      return Decryptor::kNoKey;
+    case cdm::kNeedMoreData:
+      return Decryptor::kNeedMoreData;
+    case cdm::kDecryptError:
+      return Decryptor::kError;
+    case cdm::kDecodeError:
+      return Decryptor::kError;
+    case cdm::kSessionError:
+    case cdm::kDeferredInitialization:
+      break;
+  }
+
+  NOTREACHED() << "Unexpected cdm::Status " << status;
+  return Decryptor::kError;
+}
+
+SampleFormat ToMediaSampleFormat(cdm::AudioFormat format) {
+  switch (format) {
+    case cdm::kAudioFormatU8:
+      return kSampleFormatU8;
+    case cdm::kAudioFormatS16:
+      return kSampleFormatS16;
+    case cdm::kAudioFormatS32:
+      return kSampleFormatS32;
+    case cdm::kAudioFormatF32:
+      return kSampleFormatF32;
+    case cdm::kAudioFormatPlanarS16:
+      return kSampleFormatPlanarS16;
+    case cdm::kAudioFormatPlanarF32:
+      return kSampleFormatPlanarF32;
+    case cdm::kUnknownAudioFormat:
+      return kUnknownSampleFormat;
+  }
+
+  NOTREACHED() << "Unexpected cdm::AudioFormat " << format;
+  return kUnknownSampleFormat;
+}
+
+// Fill |input_buffer| based on the values in |encrypted|. |subsamples|
+// is used to hold some of the data. |input_buffer| will contain pointers
+// to data contained in |encrypted| and |subsamples|, so the lifetime of
+// |input_buffer| must be <= the lifetime of |encrypted| and |subsamples|.
+void ToCdmInputBuffer(const scoped_refptr<DecoderBuffer>& encrypted_buffer,
+                      std::vector<cdm::SubsampleEntry>* subsamples,
+                      cdm::InputBuffer* input_buffer) {
+  // End of stream buffers are represented as empty resources.
+  DCHECK(!input_buffer->data);
+  if (encrypted_buffer->end_of_stream())
+    return;
+
+  input_buffer->data = encrypted_buffer->data();
+  input_buffer->data_size = encrypted_buffer->data_size();
+
+  const DecryptConfig* decrypt_config = encrypted_buffer->decrypt_config();
+  input_buffer->key_id =
+      reinterpret_cast<const uint8*>(decrypt_config->key_id().data());
+  input_buffer->key_id_size = decrypt_config->key_id().size();
+  input_buffer->iv =
+      reinterpret_cast<const uint8*>(decrypt_config->iv().data());
+  input_buffer->iv_size = decrypt_config->iv().size();
+
+  DCHECK(subsamples->empty());
+  size_t num_subsamples = decrypt_config->subsamples().size();
+  if (num_subsamples > 0) {
+    subsamples->reserve(num_subsamples);
+    for (const auto& sample : decrypt_config->subsamples()) {
+      subsamples->push_back(
+          cdm::SubsampleEntry(sample.clear_bytes, sample.cypher_bytes));
+    }
+  }
+
+  input_buffer->subsamples = subsamples->data();
+  input_buffer->num_subsamples = num_subsamples;
+  input_buffer->timestamp = encrypted_buffer->timestamp().InMicroseconds();
+}
+
+void* GetCdmHost(int host_interface_version, void* user_data) {
   if (!host_interface_version || !user_data)
     return nullptr;
 
@@ -143,7 +309,8 @@ static void* GetCdmHost(int host_interface_version, void* user_data) {
     case cdm::Host_7::kVersion:
       return static_cast<cdm::Host_7*>(cdm_adapter);
     default:
-      NOTREACHED();
+      NOTREACHED() << "Unexpected host interface version "
+                   << host_interface_version;
       return nullptr;
   }
 }
@@ -195,6 +362,8 @@ CdmAdapter::CdmAdapter(
       legacy_session_error_cb_(legacy_session_error_cb),
       session_keys_change_cb_(session_keys_change_cb),
       session_expiration_update_cb_(session_expiration_update_cb),
+      audio_samples_per_second_(0),
+      audio_channel_layout_(CHANNEL_LAYOUT_NONE),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       weak_factory_(this) {
   DCHECK(!key_system_.empty());
@@ -276,9 +445,8 @@ void CdmAdapter::CreateSessionAndGenerateRequest(
 
   uint32_t promise_id = cdm_promise_adapter_.SavePromise(promise.Pass());
   cdm_->CreateSessionAndGenerateRequest(
-      promise_id, MediaSessionTypeToCdmSessionType(session_type),
-      MediaInitDataTypeToCdmInitDataType(init_data_type), init_data.data(),
-      init_data.size());
+      promise_id, ToCdmSessionType(session_type),
+      ToCdmInitDataType(init_data_type), init_data.data(), init_data.size());
 }
 
 void CdmAdapter::LoadSession(SessionType session_type,
@@ -287,7 +455,7 @@ void CdmAdapter::LoadSession(SessionType session_type,
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   uint32_t promise_id = cdm_promise_adapter_.SavePromise(promise.Pass());
-  cdm_->LoadSession(promise_id, MediaSessionTypeToCdmSessionType(session_type),
+  cdm_->LoadSession(promise_id, ToCdmSessionType(session_type),
                     session_id.data(), session_id.size());
 }
 
@@ -323,19 +491,224 @@ void CdmAdapter::RemoveSession(const std::string& session_id,
 
 CdmContext* CdmAdapter::GetCdmContext() {
   DCHECK(task_runner_->BelongsToCurrentThread());
+  return this;
+}
 
-  // TODO(jrummell): Support the Decryptor interface.
-  NOTIMPLEMENTED();
-  return nullptr;
+Decryptor* CdmAdapter::GetDecryptor() {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  return this;
+}
+
+int CdmAdapter::GetCdmId() const {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  return kInvalidCdmId;
+}
+
+void CdmAdapter::RegisterNewKeyCB(StreamType stream_type,
+                                  const NewKeyCB& key_added_cb) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  switch (stream_type) {
+    case kAudio:
+      new_audio_key_cb_ = key_added_cb;
+      return;
+    case kVideo:
+      new_video_key_cb_ = key_added_cb;
+      return;
+  }
+
+  NOTREACHED() << "Unexpected StreamType " << stream_type;
+}
+
+void CdmAdapter::Decrypt(StreamType stream_type,
+                         const scoped_refptr<DecoderBuffer>& encrypted,
+                         const DecryptCB& decrypt_cb) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
+  cdm::InputBuffer input_buffer;
+  std::vector<cdm::SubsampleEntry> subsamples;
+  scoped_ptr<DecryptedBlockImpl> decrypted_block(new DecryptedBlockImpl());
+
+  ToCdmInputBuffer(encrypted, &subsamples, &input_buffer);
+  cdm::Status status = cdm_->Decrypt(input_buffer, decrypted_block.get());
+
+  if (status != cdm::kSuccess) {
+    DVLOG(1) << __FUNCTION__ << " failed with cdm::Error " << status;
+    decrypt_cb.Run(ToMediaDecryptorStatus(status), nullptr);
+    return;
+  }
+
+  scoped_refptr<DecoderBuffer> decrypted_buffer(
+      DecoderBuffer::CopyFrom(decrypted_block->DecryptedBuffer()->Data(),
+                              decrypted_block->DecryptedBuffer()->Size()));
+  decrypted_buffer->set_timestamp(
+      base::TimeDelta::FromMicroseconds(decrypted_block->Timestamp()));
+  decrypt_cb.Run(Decryptor::kSuccess, decrypted_buffer);
+}
+
+void CdmAdapter::CancelDecrypt(StreamType stream_type) {
+  // As the Decrypt methods are synchronous, nothing can be done here.
+  DCHECK(task_runner_->BelongsToCurrentThread());
+}
+
+void CdmAdapter::InitializeAudioDecoder(const AudioDecoderConfig& config,
+                                        const DecoderInitCB& init_cb) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(audio_init_cb_.is_null());
+
+  cdm::AudioDecoderConfig cdm_decoder_config;
+  cdm_decoder_config.codec = ToCdmAudioCodec(config.codec());
+  cdm_decoder_config.channel_count =
+      ChannelLayoutToChannelCount(config.channel_layout());
+  cdm_decoder_config.bits_per_channel = config.bits_per_channel();
+  cdm_decoder_config.samples_per_second = config.samples_per_second();
+  cdm_decoder_config.extra_data =
+      const_cast<uint8_t*>(config.extra_data().data());
+  cdm_decoder_config.extra_data_size = config.extra_data().size();
+
+  cdm::Status status = cdm_->InitializeAudioDecoder(cdm_decoder_config);
+  DCHECK(status == cdm::kSuccess || status == cdm::kDeferredInitialization ||
+         status == cdm::kSessionError);
+  if (status != cdm::kSuccess && status != cdm::kDeferredInitialization) {
+    DVLOG(1) << __FUNCTION__ << " failed with cdm::Error " << status;
+    init_cb.Run(false);
+    return;
+  }
+
+  audio_samples_per_second_ = config.samples_per_second();
+  audio_channel_layout_ = config.channel_layout();
+
+  if (status == cdm::kDeferredInitialization) {
+    DVLOG(1) << "Deferred initialization in " << __FUNCTION__;
+    audio_init_cb_ = init_cb;
+    return;
+  }
+
+  init_cb.Run(true);
+}
+
+void CdmAdapter::InitializeVideoDecoder(const VideoDecoderConfig& config,
+                                        const DecoderInitCB& init_cb) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(video_init_cb_.is_null());
+
+  cdm::VideoDecoderConfig cdm_decoder_config;
+  cdm_decoder_config.codec = ToCdmVideoCodec(config.codec());
+  cdm_decoder_config.profile = ToCdmVideoCodecProfile(config.profile());
+  cdm_decoder_config.format = ToCdmVideoFormat(config.format());
+  cdm_decoder_config.coded_size.width = config.coded_size().width();
+  cdm_decoder_config.coded_size.height = config.coded_size().height();
+  cdm_decoder_config.extra_data =
+      const_cast<uint8_t*>(config.extra_data().data());
+  cdm_decoder_config.extra_data_size = config.extra_data().size();
+
+  cdm::Status status = cdm_->InitializeVideoDecoder(cdm_decoder_config);
+  DCHECK(status == cdm::kSuccess || status == cdm::kDeferredInitialization ||
+         status == cdm::kSessionError);
+  if (status != cdm::kSuccess && status != cdm::kDeferredInitialization) {
+    DVLOG(1) << __FUNCTION__ << " failed with cdm::Error " << status;
+    init_cb.Run(false);
+    return;
+  }
+
+  natural_size_ = config.natural_size();
+
+  if (status == cdm::kDeferredInitialization) {
+    DVLOG(1) << "Deferred initialization in " << __FUNCTION__;
+    video_init_cb_ = init_cb;
+    return;
+  }
+
+  init_cb.Run(true);
+}
+
+void CdmAdapter::DecryptAndDecodeAudio(
+    const scoped_refptr<DecoderBuffer>& encrypted,
+    const AudioDecodeCB& audio_decode_cb) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
+  cdm::InputBuffer input_buffer;
+  std::vector<cdm::SubsampleEntry> subsamples;
+  scoped_ptr<AudioFramesImpl> audio_frames(new AudioFramesImpl());
+
+  ToCdmInputBuffer(encrypted, &subsamples, &input_buffer);
+  cdm::Status status =
+      cdm_->DecryptAndDecodeSamples(input_buffer, audio_frames.get());
+
+  const Decryptor::AudioFrames empty_frames;
+  if (status != cdm::kSuccess) {
+    DVLOG(1) << __FUNCTION__ << " failed with cdm::Error " << status;
+    audio_decode_cb.Run(ToMediaDecryptorStatus(status), empty_frames);
+    return;
+  }
+
+  Decryptor::AudioFrames audio_frame_list;
+  DCHECK(audio_frames->FrameBuffer());
+  if (!AudioFramesDataToAudioFrames(audio_frames.Pass(), &audio_frame_list)) {
+    DVLOG(1) << __FUNCTION__ << " unable to convert Audio Frames";
+    audio_decode_cb.Run(Decryptor::kError, empty_frames);
+    return;
+  }
+
+  audio_decode_cb.Run(Decryptor::kSuccess, audio_frame_list);
+}
+
+void CdmAdapter::DecryptAndDecodeVideo(
+    const scoped_refptr<DecoderBuffer>& encrypted,
+    const VideoDecodeCB& video_decode_cb) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
+  cdm::InputBuffer input_buffer;
+  std::vector<cdm::SubsampleEntry> subsamples;
+  scoped_ptr<VideoFrameImpl> video_frame(new VideoFrameImpl());
+
+  ToCdmInputBuffer(encrypted, &subsamples, &input_buffer);
+  cdm::Status status =
+      cdm_->DecryptAndDecodeFrame(input_buffer, video_frame.get());
+
+  if (status != cdm::kSuccess) {
+    DVLOG(1) << __FUNCTION__ << " failed with cdm::Error " << status;
+    video_decode_cb.Run(ToMediaDecryptorStatus(status), nullptr);
+    return;
+  }
+
+  uint8_t* frame_data = video_frame->FrameBuffer()->Data();
+  gfx::Size frame_size(video_frame->Size().width, video_frame->Size().height);
+  scoped_refptr<VideoFrame> decoded_frame = VideoFrame::WrapExternalYuvData(
+      PIXEL_FORMAT_YV12, frame_size, gfx::Rect(frame_size), natural_size_,
+      video_frame->Stride(VideoFrameImpl::kYPlane),
+      video_frame->Stride(VideoFrameImpl::kUPlane),
+      video_frame->Stride(VideoFrameImpl::kVPlane),
+      frame_data + video_frame->PlaneOffset(VideoFrameImpl::kYPlane),
+      frame_data + video_frame->PlaneOffset(VideoFrameImpl::kUPlane),
+      frame_data + video_frame->PlaneOffset(VideoFrameImpl::kVPlane),
+      base::TimeDelta::FromMicroseconds(video_frame->Timestamp()));
+  video_decode_cb.Run(Decryptor::kSuccess, decoded_frame);
+}
+
+void CdmAdapter::ResetDecoder(StreamType stream_type) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  cdm_->ResetDecoder(ToCdmStreamType(stream_type));
+}
+
+void CdmAdapter::DeinitializeDecoder(StreamType stream_type) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  cdm_->DeinitializeDecoder(ToCdmStreamType(stream_type));
+
+  // Reset the saved values from initializing the decoder.
+  switch (stream_type) {
+    case Decryptor::kAudio:
+      audio_samples_per_second_ = 0;
+      audio_channel_layout_ = CHANNEL_LAYOUT_NONE;
+      break;
+    case Decryptor::kVideo:
+      natural_size_ = gfx::Size();
+      break;
+  }
 }
 
 cdm::Buffer* CdmAdapter::Allocate(uint32_t capacity) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-
-  // TODO(jrummell): Figure out how memory should be passed around when
-  // decrypting.
-  NOTIMPLEMENTED();
-  return nullptr;
+  return CdmBuffer::Create(capacity);
 }
 
 void CdmAdapter::SetTimer(int64_t delay_ms, void* context) {
@@ -376,7 +749,7 @@ void CdmAdapter::OnRejectPromise(uint32_t promise_id,
                                  uint32_t error_message_size) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   cdm_promise_adapter_.RejectPromise(
-      promise_id, CdmErrorTypeToMediaExceptionType(error), system_code,
+      promise_id, ToMediaExceptionType(error), system_code,
       std::string(error_message, error_message_size));
 }
 
@@ -402,7 +775,7 @@ void CdmAdapter::OnSessionMessage(const char* session_id,
   const uint8_t* message_ptr = reinterpret_cast<const uint8*>(message);
   session_message_cb_.Run(
       std::string(session_id, session_id_size),
-      CdmMessageTypeToMediaMessageType(message_type),
+      ToMediaMessageType(message_type),
       std::vector<uint8_t>(message_ptr, message_ptr + message_size),
       verified_gurl);
 }
@@ -420,8 +793,16 @@ void CdmAdapter::OnSessionKeysChange(const char* session_id,
     const auto& info = keys_info[i];
     keys.push_back(new CdmKeyInformation(
         info.key_id, info.key_id_size,
-        CdmKeyStatusToCdmKeyInformationKeyStatus(info.status),
-        info.system_code));
+        ToCdmKeyInformationKeyStatus(info.status), info.system_code));
+  }
+
+  // TODO(jrummell): Handling resume playback should be done in the media
+  // player, not in the Decryptors. http://crbug.com/413413.
+  if (has_additional_usable_key) {
+    if (!new_audio_key_cb_.is_null())
+      new_audio_key_cb_.Run();
+    if (!new_video_key_cb_.is_null())
+      new_video_key_cb_.Run();
   }
 
   session_keys_change_cb_.Run(std::string(session_id, session_id_size),
@@ -453,8 +834,7 @@ void CdmAdapter::OnLegacySessionError(const char* session_id,
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   legacy_session_error_cb_.Run(std::string(session_id, session_id_size),
-                               CdmErrorTypeToMediaExceptionType(error),
-                               system_code,
+                               ToMediaExceptionType(error), system_code,
                                std::string(error_message, error_message_size));
 }
 
@@ -488,9 +868,21 @@ void CdmAdapter::QueryOutputProtectionStatus() {
 void CdmAdapter::OnDeferredInitializationDone(cdm::StreamType stream_type,
                                               cdm::Status decoder_status) {
   DCHECK(task_runner_->BelongsToCurrentThread());
+  DVLOG_IF(1, decoder_status != cdm::kSuccess)
+      << __FUNCTION__ << " failed with cdm::Error " << decoder_status;
 
-  // Not initializing a decoder, so this should never happen.
-  NOTREACHED();
+  switch (stream_type) {
+    case cdm::kStreamTypeAudio:
+      base::ResetAndReturn(&audio_init_cb_)
+          .Run(decoder_status == cdm::kSuccess);
+      return;
+    case cdm::kStreamTypeVideo:
+      base::ResetAndReturn(&video_init_cb_)
+          .Run(decoder_status == cdm::kSuccess);
+      return;
+  }
+
+  NOTREACHED() << "Unexpected cdm::StreamType " << stream_type;
 }
 
 // The CDM owns the returned object and must call FileIO::Close() to release it.
@@ -500,6 +892,65 @@ cdm::FileIO* CdmAdapter::CreateFileIO(cdm::FileIOClient* client) {
   // TODO(jrummell): This should use the mojo FileIO client.
   NOTIMPLEMENTED();
   return nullptr;
+}
+
+bool CdmAdapter::AudioFramesDataToAudioFrames(
+    scoped_ptr<AudioFramesImpl> audio_frames,
+    Decryptor::AudioFrames* result_frames) {
+  const uint8_t* data = audio_frames->FrameBuffer()->Data();
+  const size_t data_size = audio_frames->FrameBuffer()->Size();
+  size_t bytes_left = data_size;
+  const SampleFormat sample_format =
+      ToMediaSampleFormat(audio_frames->Format());
+  const int audio_channel_count =
+      ChannelLayoutToChannelCount(audio_channel_layout_);
+  const int audio_bytes_per_frame =
+      SampleFormatToBytesPerChannel(sample_format) * audio_channel_count;
+  if (audio_bytes_per_frame <= 0)
+    return false;
+
+  // Allocate space for the channel pointers given to AudioBuffer.
+  std::vector<const uint8_t*> channel_ptrs(audio_channel_count, nullptr);
+  do {
+    // AudioFrames can contain multiple audio output buffers, which are
+    // serialized into this format:
+    // |<------------------- serialized audio buffer ------------------->|
+    // | int64_t timestamp | int64_t length | length bytes of audio data |
+    int64_t timestamp = 0;
+    int64_t frame_size = -1;
+    const size_t kHeaderSize = sizeof(timestamp) + sizeof(frame_size);
+    if (bytes_left < kHeaderSize)
+      return false;
+
+    memcpy(&timestamp, data, sizeof(timestamp));
+    memcpy(&frame_size, data + sizeof(timestamp), sizeof(frame_size));
+    data += kHeaderSize;
+    bytes_left -= kHeaderSize;
+
+    // We should *not* have empty frames in the list.
+    if (frame_size <= 0 ||
+        bytes_left < base::checked_cast<size_t>(frame_size)) {
+      return false;
+    }
+
+    // Setup channel pointers.  AudioBuffer::CopyFrom() will only use the first
+    // one in the case of interleaved data.
+    const int size_per_channel = frame_size / audio_channel_count;
+    for (int i = 0; i < audio_channel_count; ++i)
+      channel_ptrs[i] = data + i * size_per_channel;
+
+    const int frame_count = frame_size / audio_bytes_per_frame;
+    scoped_refptr<media::AudioBuffer> frame = media::AudioBuffer::CopyFrom(
+        sample_format, audio_channel_layout_, audio_channel_count,
+        audio_samples_per_second_, frame_count, &channel_ptrs[0],
+        base::TimeDelta::FromMicroseconds(timestamp));
+    result_frames->push_back(frame);
+
+    data += frame_size;
+    bytes_left -= frame_size;
+  } while (bytes_left > 0);
+
+  return true;
 }
 
 }  // namespace media
