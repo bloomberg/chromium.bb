@@ -259,10 +259,19 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   if (delegate_ && render_frame_created_)
     delegate_->RenderFrameDeleted(this);
 
-  // If this was swapped out, it already decremented the active frame count of
-  // the SiteInstance it belongs to.
-  if (IsRFHStateActive(rfh_state_))
+  bool is_active = IsRFHStateActive(rfh_state_);
+
+  // If this RenderFrameHost is swapped out, it already decremented the active
+  // frame count of the SiteInstance it belongs to.
+  if (is_active)
     GetSiteInstance()->decrement_active_frame_count();
+
+  // If this RenderFrameHost is swapping with a RenderFrameProxyHost, the
+  // RenderFrame will already be deleted in the renderer process. Main frame
+  // RenderFrames will be cleaned up as part of deleting its RenderView. In all
+  // other cases, the RenderFrame should be cleaned up (if it exists).
+  if (is_active && !frame_tree_node_->IsMainFrame() && render_frame_created_)
+    Send(new FrameMsg_Delete(routing_id_));
 
   // NULL out the swapout timer; in crash dumps this member will be null only if
   // the dtor has run.

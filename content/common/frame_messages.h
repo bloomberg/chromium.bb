@@ -523,6 +523,9 @@ IPC_MESSAGE_ROUTED1(FrameMsg_VisualStateRequest, uint64 /* id */)
 // Instructs the renderer to create a new RenderFrame object.
 IPC_MESSAGE_CONTROL1(FrameMsg_NewFrame, FrameMsg_NewFrame_Params /* params */)
 
+// Instructs the renderer to delete the RenderFrame.
+IPC_MESSAGE_ROUTED0(FrameMsg_Delete)
+
 // Instructs the renderer to create a new RenderFrameProxy object with
 // |routing_id|.  |render_view_routing_id| identifies the
 // RenderView to be associated with this proxy.  The new proxy's opener should

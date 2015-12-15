@@ -707,6 +707,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnSwapOut(int proxy_routing_id,
                  bool is_loading,
                  const FrameReplicationState& replicated_frame_state);
+  void OnDeleteFrame();
   void OnStop();
   void OnShowContextMenu(const gfx::Point& location);
   void OnContextMenuClosed(const CustomContextMenuContext& custom_context);
@@ -944,6 +945,24 @@ class CONTENT_EXPORT RenderFrameImpl
   // main frame or not. It remains accurate during destruction, even when
   // |frame_| has been invalidated.
   bool is_main_frame_;
+
+  // When a frame is detached in response to a message from the browser process,
+  // this RenderFrame should not be sending notifications back to it. This
+  // boolean is used to indicate this case.
+  bool in_browser_initiated_detach_;
+
+  // Indicates whether the frame has been inserted into the frame tree yet or
+  // not.
+  //
+  // When a frame is created by the browser process, it is for a pending
+  // navigation. In this case, it is not immediately attached to the frame tree
+  // if there is a RenderFrameProxy for the same frame. It is inserted into the
+  // frame tree at the time the pending navigation commits.
+  // Frames added by the parent document are created from the renderer process
+  // and are immediately inserted in the frame tree.
+  // TODO(dcheng): Remove this once we have FrameTreeHandle and can use the
+  // Blink Web* layer to check for provisional frames.
+  bool in_frame_tree_;
 
   base::WeakPtr<RenderViewImpl> render_view_;
   int routing_id_;

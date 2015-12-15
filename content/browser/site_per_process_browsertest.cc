@@ -29,6 +29,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -4365,6 +4366,142 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       "domAutomationController.send(frames.length)",
       &child_count));
   EXPECT_EQ(1, child_count);
+}
+
+// This test ensures that the RenderFrame isn't leaked in the renderer process
+// if a pending cross-process navigation is cancelled. The test works by trying
+// to create a new RenderFrame with the same routing id. If there is an
+// entry with the same routing ID, a CHECK is hit and the process crashes.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       SubframePendingAndBackToSameSiteInstance) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  NavigateToURL(shell(), main_url);
+
+  // Capture the FrameTreeNode this test will be navigating.
+  FrameTreeNode* node = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root()
+                            ->child_at(0);
+  EXPECT_TRUE(node);
+  EXPECT_NE(node->current_frame_host()->GetSiteInstance(),
+            node->parent()->current_frame_host()->GetSiteInstance());
+
+  // Navigate to the site of the parent, but to a page that will not commit.
+  GURL same_site_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  NavigationStallDelegate stall_delegate(same_site_url);
+  ResourceDispatcherHost::Get()->SetDelegate(&stall_delegate);
+  {
+    NavigationController::LoadURLParams params(same_site_url);
+    params.transition_type = ui::PAGE_TRANSITION_LINK;
+    params.frame_tree_node_id = node->frame_tree_node_id();
+    node->navigator()->GetController()->LoadURLWithParams(params);
+  }
+
+  // Grab the routing id of the pending RenderFrameHost and set up a process
+  // observer to ensure there is no crash when a new RenderFrame creation is
+  // attempted.
+  RenderProcessHost* process =
+      node->render_manager()->pending_frame_host()->GetProcess();
+  RenderProcessHostWatcher watcher(
+      process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  int frame_routing_id =
+      node->render_manager()->pending_frame_host()->GetRoutingID();
+  int proxy_routing_id =
+      node->render_manager()->GetProxyToParent()->GetRoutingID();
+
+  // Now go to c.com so the navigation to a.com is cancelled and send an IPC
+  // to create a new RenderFrame with the routing id of the previously pending
+  // one.
+  NavigateFrameToURL(node,
+                     embedded_test_server()->GetURL("c.com", "/title2.html"));
+  {
+    FrameMsg_NewFrame_Params params;
+    params.routing_id = frame_routing_id;
+    params.proxy_routing_id = proxy_routing_id;
+    params.opener_routing_id = MSG_ROUTING_NONE;
+    params.parent_routing_id =
+        shell()->web_contents()->GetMainFrame()->GetRoutingID();
+    params.previous_sibling_routing_id = MSG_ROUTING_NONE;
+    params.widget_params.routing_id = MSG_ROUTING_NONE;
+    params.widget_params.hidden = true;
+
+    process->Send(new FrameMsg_NewFrame(params));
+  }
+
+  // The test must wait for the process to exit, but if there is no leak, the
+  // RenderFrame will be properly created and there will be no crash.
+  // Therefore, navigate the main frame to completely different site, which
+  // will cause the original process to exit cleanly.
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("d.com", "/title3.html")));
+  watcher.Wait();
+  EXPECT_TRUE(watcher.did_exit_normally());
+
+  ResourceDispatcherHost::Get()->SetDelegate(nullptr);
+}
+
+// This test ensures that the RenderFrame isn't leaked in the renderer process
+// when a remote parent detaches a child frame. The test works by trying
+// to create a new RenderFrame with the same routing id. If there is an
+// entry with the same routing ID, a CHECK is hit and the process crashes.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ParentDetachRemoteChild) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b,b)"));
+  NavigateToURL(shell(), main_url);
+
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  EXPECT_EQ(2U, web_contents->GetFrameTree()->root()->child_count());
+
+  // Capture the FrameTreeNode this test will be navigating.
+  FrameTreeNode* node = web_contents->GetFrameTree()->root()->child_at(0);
+  EXPECT_TRUE(node);
+  EXPECT_NE(node->current_frame_host()->GetSiteInstance(),
+            node->parent()->current_frame_host()->GetSiteInstance());
+
+  // Grab the routing id of the first child RenderFrameHost and set up a process
+  // observer to ensure there is no crash when a new RenderFrame creation is
+  // attempted.
+  RenderProcessHost* process = node->current_frame_host()->GetProcess();
+  RenderProcessHostWatcher watcher(
+      process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  int frame_routing_id = node->current_frame_host()->GetRoutingID();
+  int widget_routing_id =
+      node->current_frame_host()->GetRenderWidgetHost()->GetRoutingID();
+  int parent_routing_id =
+      node->parent()->render_manager()->GetRoutingIdForSiteInstance(
+          node->current_frame_host()->GetSiteInstance());
+
+  // Have the parent frame remove the child frame from its DOM. This should
+  // result in the child RenderFrame being deleted in the remote process.
+  EXPECT_TRUE(ExecuteScript(web_contents,
+                            "document.body.removeChild("
+                            "document.querySelectorAll('iframe')[0])"));
+  EXPECT_EQ(1U, web_contents->GetFrameTree()->root()->child_count());
+
+  {
+    FrameMsg_NewFrame_Params params;
+    params.routing_id = frame_routing_id;
+    params.proxy_routing_id = MSG_ROUTING_NONE;
+    params.opener_routing_id = MSG_ROUTING_NONE;
+    params.parent_routing_id = parent_routing_id;
+    params.previous_sibling_routing_id = MSG_ROUTING_NONE;
+    params.widget_params.routing_id = widget_routing_id;
+    params.widget_params.hidden = true;
+
+    process->Send(new FrameMsg_NewFrame(params));
+  }
+
+  // The test must wait for the process to exit, but if there is no leak, the
+  // RenderFrame will be properly created and there will be no crash.
+  // Therefore, navigate the remaining subframe to completely different site,
+  // which will cause the original process to exit cleanly.
+  NavigateFrameToURL(
+      web_contents->GetFrameTree()->root()->child_at(0),
+      embedded_test_server()->GetURL("d.com", "/title3.html"));
+  watcher.Wait();
+  EXPECT_TRUE(watcher.did_exit_normally());
 }
 
 }  // namespace content

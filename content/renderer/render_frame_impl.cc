@@ -704,6 +704,10 @@ void RenderFrameImpl::CreateFrame(
         replicated_state.scope, WebString::fromUTF8(replicated_state.name),
         replicated_state.sandbox_flags, render_frame,
         previous_sibling_web_frame, frame_owner_properties);
+
+    // The RenderFrame is created and inserted into the frame tree in the above
+    // call to createLocalChild.
+    render_frame->in_frame_tree_ = true;
   } else {
     RenderFrameProxy* proxy =
         RenderFrameProxy::FromRoutingID(proxy_routing_id);
@@ -808,6 +812,8 @@ blink::WebFrame* RenderFrameImpl::ResolveOpener(int opener_frame_routing_id,
 RenderFrameImpl::RenderFrameImpl(const CreateParams& params)
     : frame_(NULL),
       is_main_frame_(true),
+      in_browser_initiated_detach_(false),
+      in_frame_tree_(false),
       render_view_(params.render_view->AsWeakPtr()),
       routing_id_(params.routing_id),
       is_swapped_out_(false),
@@ -1211,6 +1217,7 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_Navigate, OnNavigate)
     IPC_MESSAGE_HANDLER(FrameMsg_BeforeUnload, OnBeforeUnload)
     IPC_MESSAGE_HANDLER(FrameMsg_SwapOut, OnSwapOut)
+    IPC_MESSAGE_HANDLER(FrameMsg_Delete, OnDeleteFrame)
     IPC_MESSAGE_HANDLER(FrameMsg_Stop, OnStop)
     IPC_MESSAGE_HANDLER(FrameMsg_ContextMenuClosed, OnContextMenuClosed)
     IPC_MESSAGE_HANDLER(FrameMsg_CustomContextMenuAction,
@@ -1464,6 +1471,18 @@ void RenderFrameImpl::OnSwapOut(
   if (is_main_frame) {
     render_view->WasSwappedOut();
   }
+}
+
+void RenderFrameImpl::OnDeleteFrame() {
+  // TODO(nasko): If this message is received right after a commit has
+  // swapped a RenderFrameProxy with this RenderFrame, the proxy needs to be
+  // recreated in addition to the RenderFrame being deleted.
+  // See https://crbug.com/569683 for details.
+  in_browser_initiated_detach_ = true;
+
+  // This will result in a call to RendeFrameImpl::frameDetached, which
+  // deletes the object. Do not access |this| after detach.
+  frame_->detach();
 }
 
 void RenderFrameImpl::OnContextMenuClosed(
@@ -2467,6 +2486,7 @@ blink::WebFrame* RenderFrameImpl::createChildFrame(
 
   // Add the frame to the frame tree and initialize it.
   parent->appendChild(web_frame);
+  child_render_frame->in_frame_tree_ = true;
   child_render_frame->Initialize();
 
   return web_frame;
@@ -2498,9 +2518,8 @@ void RenderFrameImpl::frameDetached(blink::WebFrame* frame, DetachType type) {
                     FrameDetached(frame));
 
   // We only notify the browser process when the frame is being detached for
-  // removal. If the frame is being detached for swap, we don't need to do this
-  // since we are not modifiying the frame tree.
-  if (type == DetachType::Remove)
+  // removal and it was initiated from the renderer process.
+  if (!in_browser_initiated_detach_ && type == DetachType::Remove)
     Send(new FrameHostMsg_Detach(routing_id_));
 
   // The |is_detaching_| flag disables Send(). FrameHostMsg_Detach must be
@@ -2523,10 +2542,13 @@ void RenderFrameImpl::frameDetached(blink::WebFrame* frame, DetachType type) {
   g_frame_map.Get().erase(it);
 
   // Only remove the frame from the renderer's frame tree if the frame is
-  // being detached for removal. In the case of a swap, the frame needs to
-  // remain in the tree so WebFrame::swap() can replace it with the new frame.
-  if (!is_main_frame_ && type == DetachType::Remove)
+  // being detached for removal and is already inserted in the frame tree.
+  // In the case of a swap, the frame needs to remain in the tree so
+  // WebFrame::swap() can replace it with the new frame.
+  if (!is_main_frame_ && in_frame_tree_ &&
+      type == DetachType::Remove) {
     frame->parent()->removeChild(frame);
+  }
 
   // |frame| is invalid after here.  Be sure to clear frame_ as well, since this
   // object may not be deleted immediately and other methods may try to access
@@ -2964,6 +2986,7 @@ void RenderFrameImpl::didCommitProvisionalLoad(
 
     proxy->web_frame()->swap(frame_);
     proxy_routing_id_ = MSG_ROUTING_NONE;
+    in_frame_tree_ = true;
 
     // If this is the main frame going from a remote frame to a local frame,
     // it needs to set RenderViewImpl's pointer for the main frame to itself
