@@ -112,7 +112,7 @@ function runTests() {
 
   debug("--- click each button ---");
   for (var button = 0; button <=2; button++) {
-    eventSender.mouseDown(button, [button == 0 ? "leftButton" : button == 2 ? "rightButton" : "middleButton"]);
+    eventSender.mouseDown(button);
     eventSender.mouseUp(button);
     // TODO(crbug.com/548226): Investigate missing events in win_chromium_rel_ng on 3rd down/up.
   }

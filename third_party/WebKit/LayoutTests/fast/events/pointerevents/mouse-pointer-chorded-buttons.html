@@ -38,9 +38,9 @@ function runTests() {
   eventSender.mouseMoveTo(rect.left + 5, rect.top + 5);
   receivedEvents = [];
 
-  eventSender.mouseDown(0, ["leftButton"]);
-  eventSender.mouseDown(1, ["leftButton", "middleButton"]);
-  eventSender.mouseUp(1, ["leftButton"]);
+  eventSender.mouseDown(0);
+  eventSender.mouseDown(1);
+  eventSender.mouseUp(1);
   eventSender.mouseUp(0);
   testReceivedEvents([
     "pointerdown 0,1", "mousedown 0,1",
@@ -49,9 +49,9 @@ function runTests() {
     "pointerup 0,0", "mouseup 0,0"
   ], "LM button sequence A");
 
-  eventSender.mouseDown(0, ["leftButton"]);
-  eventSender.mouseDown(1, ["leftButton", "middleButton"]);
-  eventSender.mouseUp(0, ["middleButton"]);
+  eventSender.mouseDown(0);
+  eventSender.mouseDown(1);
+  eventSender.mouseUp(0);
   eventSender.mouseUp(1);
   testReceivedEvents([
     "pointerdown 0,1", "mousedown 0,1",
@@ -60,9 +60,9 @@ function runTests() {
     "pointerup 1,0", "mouseup 1,0"
   ], "LM button sequence B");
 
-  eventSender.mouseDown(1, ["middleButton"]);
-  eventSender.mouseDown(0, ["middleButton", "leftButton"]);
-  eventSender.mouseUp(1, ["leftButton"]);
+  eventSender.mouseDown(1);
+  eventSender.mouseDown(0);
+  eventSender.mouseUp(1);
   eventSender.mouseUp(0);
   testReceivedEvents([
     "pointerdown 1,4", "mousedown 1,4",
@@ -71,11 +71,11 @@ function runTests() {
     "pointerup 0,0", "mouseup 0,0"
   ], "LM button sequence C");
 
-  eventSender.mouseDown(0, ["leftButton"]);
-  eventSender.mouseDown(2, ["leftButton", "rightButton"]);
-  eventSender.mouseDown(1, ["leftButton", "rightButton", "middleButton"]);
-  eventSender.mouseUp(0, ["rightButton", "middleButton"]);
-  eventSender.mouseUp(1, ["rightButton"]);
+  eventSender.mouseDown(0);
+  eventSender.mouseDown(2);
+  eventSender.mouseDown(1);
+  eventSender.mouseUp(0);
+  eventSender.mouseUp(1);
   eventSender.mouseUp(2);
   testReceivedEvents([
     "pointerdown 0,1", "mousedown 0,1",
@@ -86,8 +86,8 @@ function runTests() {
     "pointerup 2,0", "mouseup 2,0"
   ], "LMR button sequence");
 
-  eventSender.mouseDown(1, ["middleButton"]);
-  eventSender.mouseMoveTo(rect.left + 6, rect.top + 6, ["middleButton"]);
+  eventSender.mouseDown(1);
+  eventSender.mouseMoveTo(rect.left + 6, rect.top + 6);
   eventSender.mouseUp(1);
   eventSender.mouseMoveTo(rect.left + 5, rect.top + 5);
   testReceivedEvents([
@@ -96,6 +96,19 @@ function runTests() {
     "pointerup 1,0", "mouseup 1,0",
     "pointermove -1,0", "mousemove 0,0",
   ], "Move with & without button");
+
+  eventSender.setMouseButtonState(1); // Off-the-page L-up M-down
+  eventSender.mouseDown(0);
+  eventSender.setMouseButtonState(2, ["leftButton", "middleButton", "rightButton"]); // Off-the-page R-down
+  eventSender.mouseUp(1);
+  eventSender.mouseUp(2);
+  eventSender.mouseUp(0);
+  testReceivedEvents([
+    "pointermove 0,5", "mousedown 0,5",
+    "pointermove 1,3", "mouseup 1,3",
+    "pointermove 2,1", "mouseup 2,1",
+    "pointerup 0,0", "mouseup 0,0",
+  ], "Off-the-page button changes");
 }
 
 function run() {
