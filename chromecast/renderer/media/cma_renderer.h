@@ -79,6 +79,7 @@ class CmaRenderer : public ::media::Renderer {
                                      ::media::PipelineStatus status);
 
   // Callbacks for AvPipelineClient.
+  void OnWaitForKey(bool is_audio);
   void OnEosReached(bool is_audio);
   void OnStatisticsUpdated(const ::media::PipelineStatistics& stats);
   void OnNaturalSizeChanged(const gfx::Size& size);

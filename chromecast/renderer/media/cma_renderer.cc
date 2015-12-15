@@ -110,7 +110,6 @@ void CmaRenderer::Initialize(
   buffering_state_cb_ = buffering_state_cb;
   ended_cb_ = ended_cb;
   error_cb_ = error_cb;
-  // TODO(erickung): wire up waiting_for_decryption_key_cb.
   waiting_for_decryption_key_cb_ = waiting_for_decryption_key_cb;
 
   MediaPipelineClient media_pipeline_client;
@@ -257,6 +256,8 @@ void CmaRenderer::InitializeAudioPipeline() {
 
   // Receive events from the audio pipeline.
   AvPipelineClient av_pipeline_client;
+  av_pipeline_client.wait_for_key_cb = ::media::BindToCurrentLoop(
+      base::Bind(&CmaRenderer::OnWaitForKey, weak_this_, true));
   av_pipeline_client.eos_cb = ::media::BindToCurrentLoop(
       base::Bind(&CmaRenderer::OnEosReached, weak_this_, true));
   av_pipeline_client.playback_error_cb =
@@ -317,6 +318,8 @@ void CmaRenderer::InitializeVideoPipeline() {
 
   // Receive events from the video pipeline.
   VideoPipelineClient client;
+  client.av_pipeline_client.wait_for_key_cb = ::media::BindToCurrentLoop(
+      base::Bind(&CmaRenderer::OnWaitForKey, weak_this_, false));
   client.av_pipeline_client.eos_cb = ::media::BindToCurrentLoop(
       base::Bind(&CmaRenderer::OnEosReached, weak_this_, false));
   client.av_pipeline_client.playback_error_cb =
@@ -362,6 +365,10 @@ void CmaRenderer::OnVideoPipelineInitializeDone(
   has_video_ = video_stream_present;
   CompleteStateTransition(kFlushed);
   base::ResetAndReturn(&init_cb_).Run(::media::PIPELINE_OK);
+}
+
+void CmaRenderer::OnWaitForKey(bool is_audio) {
+  waiting_for_decryption_key_cb_.Run();
 }
 
 void CmaRenderer::OnEosReached(bool is_audio) {

@@ -101,6 +101,7 @@ class CmaMessageFilterHost
                     base::TimeDelta max_media_time,
                     base::TimeTicks stc);
   void OnBufferingNotification(int media_id, ::media::BufferingState state);
+  void OnWaitForKey(int media_id, TrackId track_id);
   void OnEos(int media_id, TrackId track_id);
   void OnPlaybackError(int media_id, TrackId track_id,
                        ::media::PipelineStatus status);

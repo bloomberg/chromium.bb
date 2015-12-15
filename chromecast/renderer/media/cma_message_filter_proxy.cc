@@ -113,6 +113,7 @@ bool CmaMessageFilterProxy::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(CmaMsg_NotifyPipeRead, OnPipeRead)
     IPC_MESSAGE_HANDLER(CmaMsg_MediaStateChanged, OnMediaStateChanged)
     IPC_MESSAGE_HANDLER(CmaMsg_TrackStateChanged, OnTrackStateChanged)
+    IPC_MESSAGE_HANDLER(CmaMsg_WaitForKey, OnWaitForKey)
     IPC_MESSAGE_HANDLER(CmaMsg_Eos, OnEos)
     IPC_MESSAGE_HANDLER(CmaMsg_TimeUpdate, OnTimeUpdate)
     IPC_MESSAGE_HANDLER(CmaMsg_BufferingNotification, OnBufferingNotification)
@@ -190,6 +191,17 @@ void CmaMessageFilterProxy::OnTrackStateChanged(
       entry->video_delegate.state_changed_cb;
   if (!cb.is_null())
     cb.Run(status);
+}
+
+void CmaMessageFilterProxy::OnWaitForKey(int id, TrackId track_id) {
+  DelegateEntry* entry = delegates_.Lookup(id);
+  if (!entry)
+    return;
+  const base::Closure& cb = (track_id == kAudioTrackId) ?
+      entry->audio_delegate.client.wait_for_key_cb :
+      entry->video_delegate.client.av_pipeline_client.wait_for_key_cb;
+  if (!cb.is_null())
+    cb.Run();
 }
 
 void CmaMessageFilterProxy::OnEos(int id, TrackId track_id) {

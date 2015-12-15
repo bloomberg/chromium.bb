@@ -19,6 +19,9 @@ struct AvPipelineClient {
   AvPipelineClient();
   ~AvPipelineClient();
 
+  // Decryption key status notification.
+  base::Closure wait_for_key_cb;
+
   // End of stream notification.
   base::Closure eos_cb;
 

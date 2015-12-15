@@ -103,6 +103,7 @@ class CmaMessageFilterProxy : public IPC::MessageFilter {
   void OnMediaStateChanged(int id, ::media::PipelineStatus status);
   void OnTrackStateChanged(int id, TrackId track_id,
                            ::media::PipelineStatus status);
+  void OnWaitForKey(int id, TrackId track_id);
   void OnEos(int id, TrackId track_id);
   void OnTimeUpdate(int id,
                     base::TimeDelta time,

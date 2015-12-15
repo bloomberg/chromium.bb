@@ -92,6 +92,9 @@ IPC_MESSAGE_CONTROL2(CmaMsg_NotifyPipeRead,
                      int /* Media pipeline ID */,
                      chromecast::media::TrackId /* Track ID */)
 
+IPC_MESSAGE_CONTROL2(CmaMsg_WaitForKey,
+                     int /* Media pipeline ID */,
+                     chromecast::media::TrackId /* Track ID */)
 IPC_MESSAGE_CONTROL2(CmaMsg_Eos,
                      int /* Media pipeline ID */,
                      chromecast::media::TrackId /* Track ID */)
