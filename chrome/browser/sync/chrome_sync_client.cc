@@ -214,9 +214,7 @@ void ChromeSyncClient::Initialize(sync_driver::SyncService* sync_service) {
 }
 
 sync_driver::SyncService* ChromeSyncClient::GetSyncService() {
-  // TODO(zea): bring back this DCHECK after Typed URLs are converted to
-  // SyncableService.
-  // DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return sync_service_;
 }
 
@@ -353,6 +351,13 @@ ChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
       history::HistoryService* history = GetHistoryService();
       return history ? history->AsWeakPtr()
                      : base::WeakPtr<history::HistoryService>();
+    }
+    case syncer::TYPED_URLS: {
+      history::HistoryService* history = HistoryServiceFactory::GetForProfile(
+          profile_, ServiceAccessType::EXPLICIT_ACCESS);
+      if (!history)
+        return base::WeakPtr<history::TypedUrlSyncableService>();
+      return history->GetTypedUrlSyncableService()->AsWeakPtr();
     }
 #if defined(ENABLE_SPELLCHECK)
     case syncer::DICTIONARY:

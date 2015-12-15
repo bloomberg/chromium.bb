@@ -61,7 +61,11 @@ static bool CheckVisitOrdering(const VisitVector& visits) {
 
 TypedUrlSyncableService::TypedUrlSyncableService(
     HistoryBackend* history_backend)
-    : history_backend_(history_backend), processing_syncer_changes_(false) {
+    : history_backend_(history_backend),
+      processing_syncer_changes_(false),
+      num_db_accesses_(0),
+      num_db_errors_(0),
+      history_backend_observer_(this) {
   DCHECK(history_backend_);
   DCHECK(thread_checker_.CalledOnValidThread());
 }
@@ -88,16 +92,6 @@ syncer::SyncMergeResult TypedUrlSyncableService::MergeDataAndStartSyncing(
 
   DVLOG(1) << "Associating TypedUrl: MergeDataAndStartSyncing";
 
-  // Get all the typed urls from the history db.
-  history::URLRows typed_urls;
-  ++num_db_accesses_;
-  if (!history_backend_->GetAllTypedURLs(&typed_urls)) {
-    ++num_db_errors_;
-    sync_error_handler_->CreateAndUploadError(
-        FROM_HERE, "Could not get the typed_url entries.");
-    return merge_result;
-  }
-
   // Create a mapping of all local data by URLID. These will be narrowed down
   // by CreateOrUpdateUrl() to include only the entries different from sync
   // server data.
@@ -105,20 +99,33 @@ syncer::SyncMergeResult TypedUrlSyncableService::MergeDataAndStartSyncing(
 
   // Get all the visits and map the URLRows by URL.
   UrlVisitVectorMap visit_vectors;
-  for (history::URLRows::iterator iter = typed_urls.begin();
-       iter != typed_urls.end();) {
-    DCHECK_EQ(0U, visit_vectors.count(iter->url()));
-    if (!FixupURLAndGetVisits(&(*iter), &(visit_vectors[iter->url()])) ||
-        ShouldIgnoreUrl(iter->url()) ||
-        ShouldIgnoreVisits(visit_vectors[iter->url()])) {
-      // Ignore this URL if we couldn't load the visits or if there's some
-      // other problem with it (it was empty, or imported and never visited).
-      iter = typed_urls.erase(iter);
-    } else {
-      // Add url to map.
-      new_db_urls[iter->url()] =
-          std::make_pair(syncer::SyncChange::ACTION_ADD, iter);
-      ++iter;
+
+  {
+    // Get all the typed urls from the history db.
+    history::URLRows typed_urls;
+    ++num_db_accesses_;
+    if (!history_backend_->GetAllTypedURLs(&typed_urls)) {
+      ++num_db_errors_;
+      merge_result.set_error(sync_error_handler_->CreateAndUploadError(
+          FROM_HERE, "Could not get the typed_url entries."));
+      return merge_result;
+    }
+
+    for (history::URLRows::iterator iter = typed_urls.begin();
+         iter != typed_urls.end();) {
+      DCHECK_EQ(0U, visit_vectors.count(iter->url()));
+      if (!FixupURLAndGetVisits(&(*iter), &(visit_vectors[iter->url()])) ||
+          ShouldIgnoreUrl(iter->url()) ||
+          ShouldIgnoreVisits(visit_vectors[iter->url()])) {
+        // Ignore this URL if we couldn't load the visits or if there's some
+        // other problem with it (it was empty, or imported and never visited).
+        iter = typed_urls.erase(iter);
+      } else {
+        // Add url to map.
+        new_db_urls[iter->url()] =
+            std::make_pair(syncer::SyncChange::ACTION_ADD, *iter);
+        ++iter;
+      }
     }
   }
 
@@ -164,15 +171,14 @@ syncer::SyncMergeResult TypedUrlSyncableService::MergeDataAndStartSyncing(
       continue;
     }
 
-    CreateOrUpdateUrl(typed_url, &typed_urls, &new_db_urls, &visit_vectors,
-                      &new_synced_urls, &new_synced_visits,
-                      &updated_synced_urls);
+    CreateOrUpdateUrl(typed_url, &new_db_urls, &visit_vectors, &new_synced_urls,
+                      &new_synced_visits, &updated_synced_urls);
   }
 
   for (TypedUrlMap::iterator i = new_db_urls.begin(); i != new_db_urls.end();
        ++i) {
     std::string tag = i->first.spec();
-    AddTypedUrlToChangeList(i->second.first, *(i->second.second),
+    AddTypedUrlToChangeList(i->second.first, i->second.second,
                             visit_vectors[i->first], tag, &new_changes);
 
     // Add url to cache of sync state, if not already cached
@@ -188,6 +194,8 @@ syncer::SyncMergeResult TypedUrlSyncableService::MergeDataAndStartSyncing(
                           &new_synced_visits, NULL);
   }
 
+  history_backend_observer_.Add(history_backend_);
+
   UMA_HISTOGRAM_PERCENTAGE("Sync.TypedUrlMergeAndStartSyncingErrors",
                            GetErrorPercentage());
   ClearErrorStats();
@@ -201,6 +209,8 @@ void TypedUrlSyncableService::StopSyncing(syncer::ModelType type) {
 
   // Clear cache of server state.
   synced_typed_urls_.clear();
+
+  history_backend_->RemoveObserver(this);
 
   ClearErrorStats();
 
@@ -370,7 +380,6 @@ void TypedUrlSyncableService::OnURLsDeleted(
 
 void TypedUrlSyncableService::CreateOrUpdateUrl(
     const sync_pb::TypedUrlSpecifics& typed_url,
-    history::URLRows* typed_urls,
     TypedUrlMap* loaded_data,
     UrlVisitVectorMap* visit_vectors,
     history::URLRows* new_synced_urls,
@@ -405,10 +414,6 @@ void TypedUrlSyncableService::CreateOrUpdateUrl(
     bool is_existing_url =
         history_backend_->GetURL(untyped_url.url(), &untyped_url);
     if (is_existing_url) {
-      // This URL already exists locally, but was not grabbed earlier
-      // because |typed_count| is 0
-      DCHECK_EQ(untyped_url.typed_count(), 0);
-
       // Add a new entry to |loaded_data|, and set the iterator to it.
       history::VisitVector untyped_visits;
       if (!FixupURLAndGetVisits(&untyped_url, &untyped_visits)) {
@@ -421,12 +426,9 @@ void TypedUrlSyncableService::CreateOrUpdateUrl(
       (*visit_vectors)[untyped_url.url()] = untyped_visits;
 
       // Store row info that will be used to update sync's visits.
-      history::URLRows::iterator ri =
-          typed_urls->insert(typed_urls->end(), untyped_url);
       (*loaded_data)[untyped_url.url()] =
-          std::pair<syncer::SyncChange::SyncChangeType,
-                    history::URLRows::iterator>(
-              syncer::SyncChange::ACTION_UPDATE, ri);
+          std::pair<syncer::SyncChange::SyncChangeType, history::URLRow>(
+              syncer::SyncChange::ACTION_UPDATE, untyped_url);
 
       // Set iterator |it| to point to this entry.
       it = loaded_data->find(untyped_url.url());
@@ -463,21 +465,21 @@ void TypedUrlSyncableService::CreateOrUpdateUrl(
   std::vector<history::VisitInfo> added_visits;
 
   // Empty URLs should be filtered out by ShouldIgnoreUrl() previously.
-  DCHECK(!it->second.second->url().spec().empty());
+  DCHECK(!it->second.second.url().spec().empty());
 
   // Initialize fields in |new_url| to the same values as the fields in
   // the existing URLRow in the history DB. This is needed because we
   // overwrite the existing value in WriteToHistoryBackend(), but some of
   // the values in that structure are not synced (like typed_count).
-  history::URLRow new_url(*(it->second.second));
+  history::URLRow new_url(it->second.second);
 
-  MergeResult difference = MergeUrls(sync_url, *(it->second.second), &visits,
-                                     &new_url, &added_visits);
+  MergeResult difference =
+      MergeUrls(sync_url, it->second.second, &visits, &new_url, &added_visits);
 
   if (difference != DIFF_NONE) {
+    it->second.second = new_url;
     if (difference & DIFF_UPDATE_NODE) {
       // Edit map entry to reflect update to sync.
-      *(it->second.second) = new_url;
       it->second.first = syncer::SyncChange::ACTION_UPDATE;
       // We don't want to resurrect old visits that have been aged out by
       // other clients, so remove all visits that are older than the
@@ -504,7 +506,7 @@ void TypedUrlSyncableService::CreateOrUpdateUrl(
     }
     if (difference & DIFF_LOCAL_ROW_CHANGED) {
       // Add entry to updated_synced_urls to update the local db.
-      DCHECK_EQ(it->second.second->id(), new_url.id());
+      DCHECK_EQ(it->second.second.id(), new_url.id());
       updated_synced_urls->push_back(new_url);
     }
     if (difference & DIFF_LOCAL_VISITS_ADDED) {
@@ -525,23 +527,14 @@ sync_pb::TypedUrlSpecifics TypedUrlSyncableService::FilterExpiredVisits(
   sync_pb::TypedUrlSpecifics specifics(source);
   specifics.clear_visits();
   specifics.clear_visit_transitions();
-  int typed_count = 0;
   for (int i = 0; i < source.visits_size(); ++i) {
     base::Time time = base::Time::FromInternalValue(source.visits(i));
     if (!history_backend_->IsExpiredVisitTime(time)) {
       specifics.add_visits(source.visits(i));
       specifics.add_visit_transitions(source.visit_transitions(i));
-      if (source.visit_transitions(i) == ui::PAGE_TRANSITION_TYPED)
-        ++typed_count;
     }
   }
   DCHECK(specifics.visits_size() == specifics.visit_transitions_size());
-  // Treat specifics with no non-expired typed visits as though they have no
-  // non-expired visits of any kind
-  if (typed_count == 0) {
-    specifics.clear_visits();
-    specifics.clear_visit_transitions();
-  }
   return specifics;
 }
 

@@ -69,12 +69,6 @@ class TestSyncApiComponentFactory : public SyncApiComponentFactory {
       sync_driver::DataTypeErrorHandler* error_handler) override {
     return SyncApiComponentFactory::SyncComponents(nullptr, nullptr);
   }
-  SyncApiComponentFactory::SyncComponents CreateTypedUrlSyncComponents(
-      sync_driver::SyncService* sync_service,
-      history::HistoryBackend* history_backend,
-      sync_driver::DataTypeErrorHandler* error_handler) override {
-    return SyncApiComponentFactory::SyncComponents(nullptr, nullptr);
-  }
   scoped_ptr<syncer::AttachmentService> CreateAttachmentService(
       scoped_ptr<syncer::AttachmentStoreForSync> attachment_store,
       const syncer::UserShare& user_share,
