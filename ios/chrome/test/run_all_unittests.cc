@@ -5,12 +5,8 @@
 #include "base/bind.h"
 #include "base/test/launcher/unit_test_launcher.h"
 #include "ios/chrome/test/ios_chrome_unit_test_suite.h"
-#include "ios/public/test/test_keyed_service_provider.h"
 
 int main(int argc, char** argv) {
-  ios::TestKeyedServiceProvider test_keyed_service_provider;
-  ios::SetKeyedServiceProvider(&test_keyed_service_provider);
-
   IOSChromeUnitTestSuite test_suite(argc, argv);
 
   return base::LaunchUnitTests(

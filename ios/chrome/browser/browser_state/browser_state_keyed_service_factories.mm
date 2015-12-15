@@ -43,7 +43,6 @@
 #include "ios/chrome/browser/translate/translate_accept_languages_factory.h"
 #include "ios/chrome/browser/undo/bookmark_undo_service_factory.h"
 #include "ios/chrome/browser/web_data_service_factory.h"
-#include "ios/public/provider/chrome/browser/keyed_service_provider.h"
 
 // This method gets the instance of each ServiceFactory. We do this so that
 // each ServiceFactory initializes itself and registers its dependencies with
@@ -94,7 +93,4 @@ void EnsureBrowserStateKeyedServiceFactoriesBuilt() {
   suggestions::SuggestionsServiceFactory::GetInstance();
   SyncSetupServiceFactory::GetInstance();
   TranslateAcceptLanguagesFactory::GetInstance();
-
-  if (ios::GetKeyedServiceProvider())
-    ios::GetKeyedServiceProvider()->AssertKeyedFactoriesBuilt();
 }

@@ -11,8 +11,6 @@ source_set("browser") {
     "chrome_browser_provider.h",
     "geolocation_updater_provider.h",
     "geolocation_updater_provider.mm",
-    "keyed_service_provider.cc",
-    "keyed_service_provider.h",
     "signin/chrome_identity.h",
     "signin/chrome_identity.mm",
     "signin/chrome_identity_service.h",

@@ -10,7 +10,6 @@
 #include "components/metrics/metrics_provider.h"
 #include "components/sync_sessions/local_session_event_router.h"
 #include "components/sync_sessions/synced_window_delegates_getter.h"
-#include "ios/public/provider/chrome/browser/keyed_service_provider.h"
 
 namespace ios {
 

@@ -13,8 +13,6 @@ source_set("test") {
     "test_chrome_browser_provider.mm",
     "test_chrome_provider_initializer.cc",
     "test_chrome_provider_initializer.h",
-    "test_keyed_service_provider.cc",
-    "test_keyed_service_provider.h",
     "test_updatable_resource_provider.h",
     "test_updatable_resource_provider.mm",
   ]

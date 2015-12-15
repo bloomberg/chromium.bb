@@ -11,8 +11,8 @@
       'target_name': 'test_support_ios',
       'type': 'static_library',
       'sources': [
-        # TODO(droger): Move most of these files to
-        # //ios/chrome/ios_chrome_tests.gyp, see http://crbug.com/437333
+        # TODO(crbug.com/437333): Move most of these files to
+        # //ios/chrome/ios_chrome_tests.gyp.
         'public/test/fake_string_provider.cc',
         'public/test/fake_string_provider.h',
         'public/test/fake_sync_service_factory.cc',
@@ -21,8 +21,6 @@
         'public/test/test_chrome_browser_provider.mm',
         'public/test/test_chrome_provider_initializer.cc',
         'public/test/test_chrome_provider_initializer.h',
-        'public/test/test_keyed_service_provider.cc',
-        'public/test/test_keyed_service_provider.h',
         'public/test/test_updatable_resource_provider.h',
         'public/test/test_updatable_resource_provider.mm',
       ],

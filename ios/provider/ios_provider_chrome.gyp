@@ -20,8 +20,6 @@
         '../public/provider/chrome/browser/chrome_browser_provider.h',
         '../public/provider/chrome/browser/geolocation_updater_provider.h',
         '../public/provider/chrome/browser/geolocation_updater_provider.mm',
-        '../public/provider/chrome/browser/keyed_service_provider.cc',
-        '../public/provider/chrome/browser/keyed_service_provider.h',
         '../public/provider/chrome/browser/signin/chrome_identity.h',
         '../public/provider/chrome/browser/signin/chrome_identity.mm',
         '../public/provider/chrome/browser/signin/chrome_identity_service.h',
