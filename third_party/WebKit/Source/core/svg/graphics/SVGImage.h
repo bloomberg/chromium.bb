@@ -57,6 +57,7 @@ public:
     bool isTextureBacked() override { return false; }
     IntSize size() const override { return m_intrinsicSize; }
 
+    void assertSubresourcesLoaded() const;
     bool currentFrameHasSingleSecurityOrigin() const override;
 
     void startAnimation(CatchUpAnimation = CatchUp) override;
