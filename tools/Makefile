@@ -98,7 +98,7 @@ endif
 endif
 endif
 
-# SRCDIR should contain tarball for gcc-extras: gmp mpfr mpc ppl cloog-ppl.
+# SRCDIR should contain tarball for gcc-extras: gmp mpfr.
 # You can skip use of these tarball if you make SRCDIR value empty.  In this
 # case system-wide libraries will be used (they should be available for such
 # use, obviously - and this is not always the case: for example they are not
@@ -131,15 +131,9 @@ REVISION_DATE ?= $(shell $(GIT) show --no-patch --format=%cd --date=short $(REVI
 ##################################################################
 GMP_VERSION = 5.0.2
 MPFR_VERSION = 3.0.1
-MPC_VERSION = 0.9
-PPL_VERSION = 0.11.2
-CLOOG_PPL_VERSION = 0.15.9
 define GCC_EXTRAS
 gmp: $(GMP_VERSION), \
-mpfr: $(MPFR_VERSION), \
-mpc: $(MPC_VERSION), \
-ppl: $(PPL_VERSION), \
-cloog-ppl: $(CLOOG_PPL_VERSION)
+mpfr: $(MPFR_VERSION)
 endef
 BINUTILS_VERSION = 2.24.0
 NACL_BINUTILS_GIT_BASE = 237df3fa4a1d939e6fd1af0c3e5029a25a137310
@@ -204,15 +198,14 @@ gcc-extras:
 	    echo -n "$(GCC_EXTRAS)" > BUILD/.gcc-extras-version; \
 	fi
 
-gcc-extras := gmp mpfr mpc ppl cloog-ppl
+gcc-extras := gmp mpfr
 
-gcc_extra_dir = $(subst cloog-ppl,cloog,$*)
 gcc_extra_version = $($(shell echo $*| tr '[:lower:]-' '[:upper:]_')_VERSION)
 
 all-src-gcc-extras = $(gcc-extras:%=SRC/.gcc-extra-%)
 $(all-src-gcc-extras): SRC/.gcc-extra-%: | SRC
 	rm -rf SRC/.gcc-extra-$*
-	cd SRC && tar xpf $(SRCDIR)/$(gcc_extra_dir)/$*-$(gcc_extra_version).tar.*
+	cd SRC && tar xpf $(SRCDIR)/$*/$*-$(gcc_extra_version).tar.*
 	mv SRC/$*-$(gcc_extra_version) SRC/.gcc-extra-$*
 
 # All Macs need Core2 assembly and --enable-fat is broken with stock MacOS gcc.
@@ -243,39 +236,6 @@ BUILD/.gcc-extra-build-gmp: | BUILD SRC/.gcc-extra-gmp
 
 BUILD/.gcc-extra-build-mpfr: | SRC/.gcc-extra-mpfr BUILD/.gcc-extra-install-gmp
 	$(gcc-extra-configure) --with-gmp=$$BUILD/.gcc-extra-install-gmp
-
-BUILD/.gcc-extra-build-mpc: | SRC/.gcc-extra-mpc BUILD/.gcc-extra-install-gmp \
-                                                 BUILD/.gcc-extra-install-mpfr
-	$(gcc-extra-configure) \
-	    --with-gmp=$$BUILD/.gcc-extra-install-gmp \
-	    --with-mpfr=$$BUILD/.gcc-extra-install-mpfr
-
-BUILD/.gcc-extra-build-ppl: | SRC/.gcc-extra-ppl BUILD/.gcc-extra-install-gmp
-	$(gcc-extra-configure) \
-	    --enable-interfaces="cxx c" \
-	    --with-gmp-prefix=$$BUILD/.gcc-extra-install-gmp
-
-.PHONY: fix-cloog-ppl-check
-fix-cloog-ppl-check: | SRC/.gcc-extra-cloog-ppl
-	for i in SRC/.gcc-extra-cloog-ppl/configure{.in,} ; do \
-	    sed -e s'|ppl_minor_version=10|ppl_minor_version=11|'<$$i >$$i.out;\
-	    cat $$i.out >$$i; \
-	    rm $$i.out; \
-	done
-	sed -e s'|LIBS = @LIBS@|LIBS = @LIBS@ -lstdc++ -lm |' \
-	    <SRC/.gcc-extra-cloog-ppl/Makefile.in \
-	    >SRC/.gcc-extra-cloog-ppl/Makefile.in.out
-	cat SRC/.gcc-extra-cloog-ppl/Makefile.in.out \
-	    >SRC/.gcc-extra-cloog-ppl/Makefile.in
-	rm SRC/.gcc-extra-cloog-ppl/Makefile.in.out
-	find SRC/.gcc-extra-cloog-ppl -print0 | \
-	    xargs -0 touch -r SRC/.gcc-extra-cloog-ppl
-
-BUILD/.gcc-extra-build-cloog-ppl: fix-cloog-ppl-check | \
-                                                    BUILD/.gcc-extra-install-ppl
-	$(gcc-extra-configure) \
-	    --with-gmp=$$BUILD/.gcc-extra-install-gmp \
-	    --with-ppl=$$BUILD/.gcc-extra-install-ppl
 
 all-install-gcc-extras = $(gcc-extras:%=BUILD/.gcc-extra-install-%)
 $(all-install-gcc-extras): BUILD/.gcc-extra-install-%: | SRC \
@@ -364,8 +324,6 @@ GCC_SRC_DIR = $(abspath SRC/gcc)
 
 GMP_DIR = $(abspath BUILD/.gcc-extra-install-gmp)
 MPFR_DIR = $(abspath BUILD/.gcc-extra-install-mpfr)
-PPL_DIR = $(abspath BUILD/.gcc-extra-install-ppl)
-CLOOG_DIR = $(abspath BUILD/.gcc-extra-install-cloog-ppl)
 
 # For Linux we want to make sure we don't dynamically link in libstdc++
 # because it ties our binaries to a host GCC version that other places
@@ -380,16 +338,11 @@ ifneq ($(SRCDIR),)
 GCC_EXTRAS_FLAGS = \
     --with-gmp=$(GMP_DIR) \
     --with-mpfr=$(MPFR_DIR) \
-    --with-ppl=$(PPL_DIR) \
-    --with-host-libstdcxx="-lpwl $(lstdc++) -lm" \
-    --with-cloog=$(CLOOG_DIR) \
-    --disable-ppl-version-check
+    --with-host-libstdcxx="-lpwl $(lstdc++) -lm"
 else
 GCC_EXTRAS_FLAGS = \
     --with-gmp \
-    --with-mpfr \
-    --with-ppl \
-    --with-cloog
+    --with-mpfr
 endif
 
 GCC_CONFIGURE_FLAGS = \
