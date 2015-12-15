@@ -24,7 +24,7 @@ class WebContents;
 // implemented.
 class CONTENT_EXPORT AccessibilityTreeFormatter {
  public:
-  explicit AccessibilityTreeFormatter(BrowserAccessibility* root);
+  explicit AccessibilityTreeFormatter();
   virtual ~AccessibilityTreeFormatter();
 
   // A single filter specification. See GetAllowString() and GetDenyString()
@@ -42,7 +42,8 @@ class CONTENT_EXPORT AccessibilityTreeFormatter {
         : match_str(match_str), type(type) {}
   };
 
-  static AccessibilityTreeFormatter* Create(WebContents* wc);
+  // Create the appropriate native subclass of AccessibilityTreeFormatter.
+  static AccessibilityTreeFormatter* Create();
 
   static bool MatchesFilters(
       const std::vector<Filter>& filters,
@@ -69,10 +70,12 @@ class CONTENT_EXPORT AccessibilityTreeFormatter {
   //     "children": [ ]
   //   } ]
   // }
-  scoped_ptr<base::DictionaryValue> BuildAccessibilityTree();
+  scoped_ptr<base::DictionaryValue> BuildAccessibilityTree(
+      BrowserAccessibility* root);
 
   // Dumps a BrowserAccessibility tree into a string.
-  void FormatAccessibilityTree(base::string16* contents);
+  void FormatAccessibilityTree(
+      BrowserAccessibility* root, base::string16* contents);
 
   // Set regular expression filters that apply to each component of every
   // line before it's output.
@@ -83,13 +86,14 @@ class CONTENT_EXPORT AccessibilityTreeFormatter {
   void set_show_ids(bool show_ids) { show_ids_ = show_ids; }
 
   // Suffix of the expectation file corresponding to html file.
+  // Overridden by each platform subclass.
   // Example:
   // HTML test:      test-file.html
   // Expected:       test-file-expected-mac.txt.
-  static const base::FilePath::StringType GetExpectedFileSuffix();
+  virtual const base::FilePath::StringType GetExpectedFileSuffix() = 0;
 
-  // A platform-specific string that indicates a given line in a file
-  // is an allow-empty, allow or deny filter. Example:
+  // A string that indicates a given line in a file is an allow-empty,
+  // allow or deny filter. Overridden by each platform subclass. Example:
   // Mac values:
   //   GetAllowEmptyString() -> "@MAC-ALLOW-EMPTY:"
   //   GetAllowString() -> "@MAC-ALLOW:"
@@ -101,36 +105,35 @@ class CONTENT_EXPORT AccessibilityTreeFormatter {
   // @MAC-DENY:subrole*
   // -->
   // <p>Text</p>
-  static const std::string GetAllowEmptyString();
-  static const std::string GetAllowString();
-  static const std::string GetDenyString();
+  virtual const std::string GetAllowEmptyString() = 0;
+  virtual const std::string GetAllowString() = 0;
+  virtual const std::string GetDenyString() = 0;
 
  protected:
-  void RecursiveFormatAccessibilityTree(const BrowserAccessibility& node,
-                                        base::string16* contents,
-                                        int indent);
-  void RecursiveBuildAccessibilityTree(const BrowserAccessibility& node,
-                                       base::DictionaryValue* tree_node);
-  void RecursiveFormatAccessibilityTree(const base::DictionaryValue& tree_node,
-                                        base::string16* contents,
-                                        int depth = 0);
+  //
+  // Overridden by platform subclasses.
+  //
 
-  // Overridden by each platform to add the required attributes for each node
-  // into the given dict.
-  void AddProperties(const BrowserAccessibility& node,
-                     base::DictionaryValue* dict);
+  virtual uint32 ChildCount(const BrowserAccessibility& node) const;
+
+  virtual BrowserAccessibility* GetChild(
+      const BrowserAccessibility& node, uint32 i) const;
+
+  // Add the attributes for each node into the given dict.
+  virtual void AddProperties(const BrowserAccessibility& node,
+                             base::DictionaryValue* dict) = 0;
+
+  // Returns a platform specific representation of a BrowserAccessibility.
+  virtual base::string16 ToString(const base::DictionaryValue& node) = 0;
+
+  //
+  // Utility functions to be used by each platform.
+  //
 
   base::string16 FormatCoordinates(const char* name,
                                    const char* x_name,
                                    const char* y_name,
                                    const base::DictionaryValue& value);
-
-  // Returns a platform specific representation of a BrowserAccessibility.
-  base::string16 ToString(const base::DictionaryValue& node);
-
-  void Initialize();
-
-  bool MatchesFilters(const base::string16& text, bool default_result) const;
 
   // Writes the given attribute string out to |line| if it matches the filters.
   void WriteAttribute(bool include_by_default,
@@ -140,7 +143,19 @@ class CONTENT_EXPORT AccessibilityTreeFormatter {
                       const std::string& attr,
                       base::string16* line);
 
-  BrowserAccessibility* root_;
+  bool show_ids() { return show_ids_; }
+
+ private:
+  void RecursiveFormatAccessibilityTree(const BrowserAccessibility& node,
+                                        base::string16* contents,
+                                        int indent);
+  void RecursiveBuildAccessibilityTree(const BrowserAccessibility& node,
+                                       base::DictionaryValue* tree_node);
+  void RecursiveFormatAccessibilityTree(const base::DictionaryValue& tree_node,
+                                        base::string16* contents,
+                                        int depth = 0);
+
+  bool MatchesFilters(const base::string16& text, bool default_result) const;
 
   // Filters used when formatting the accessibility tree as text.
   std::vector<Filter> filters_;

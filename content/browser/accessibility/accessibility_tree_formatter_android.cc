@@ -67,10 +67,33 @@ const char* INT_ATTRIBUTES[] = {
 };
 }
 
-void AccessibilityTreeFormatter::Initialize() {
+class AccessibilityTreeFormatterAndroid : public AccessibilityTreeFormatter {
+ public:
+  explicit AccessibilityTreeFormatterAndroid();
+  ~AccessibilityTreeFormatterAndroid() override;
+
+ private:
+  const base::FilePath::StringType GetExpectedFileSuffix() override;
+  const std::string GetAllowEmptyString() override;
+  const std::string GetAllowString() override;
+  const std::string GetDenyString() override;
+  void AddProperties(const BrowserAccessibility& node,
+                     base::DictionaryValue* dict) override;
+  base::string16 ToString(const base::DictionaryValue& node) override;
+};
+
+// static
+AccessibilityTreeFormatter* AccessibilityTreeFormatter::Create() {
+  return new AccessibilityTreeFormatterAndroid();
 }
 
-void AccessibilityTreeFormatter::AddProperties(
+AccessibilityTreeFormatterAndroid::AccessibilityTreeFormatterAndroid() {
+}
+
+AccessibilityTreeFormatterAndroid::~AccessibilityTreeFormatterAndroid() {
+}
+
+void AccessibilityTreeFormatterAndroid::AddProperties(
     const BrowserAccessibility& node, base::DictionaryValue* dict) {
   dict->SetInteger("id", node.GetId());
 
@@ -133,11 +156,11 @@ void AccessibilityTreeFormatter::AddProperties(
   dict->SetBoolean("action_scroll_right", android_node->CanScrollRight());
 }
 
-base::string16 AccessibilityTreeFormatter::ToString(
+base::string16 AccessibilityTreeFormatterAndroid::ToString(
     const base::DictionaryValue& dict) {
   base::string16 line;
 
-  if (show_ids_) {
+  if (show_ids()) {
     int id_value;
     dict.GetInteger("id", &id_value);
     WriteAttribute(true, base::IntToString16(id_value), &line);
@@ -177,24 +200,20 @@ base::string16 AccessibilityTreeFormatter::ToString(
   return line;
 }
 
-// static
 const base::FilePath::StringType
-AccessibilityTreeFormatter::GetExpectedFileSuffix() {
+AccessibilityTreeFormatterAndroid::GetExpectedFileSuffix() {
   return FILE_PATH_LITERAL("-expected-android.txt");
 }
 
-// static
-const std::string AccessibilityTreeFormatter::GetAllowEmptyString() {
+const std::string AccessibilityTreeFormatterAndroid::GetAllowEmptyString() {
   return "@ANDROID-ALLOW-EMPTY:";
 }
 
-// static
-const std::string AccessibilityTreeFormatter::GetAllowString() {
+const std::string AccessibilityTreeFormatterAndroid::GetAllowString() {
   return "@ANDROID-ALLOW:";
 }
 
-// static
-const std::string AccessibilityTreeFormatter::GetDenyString() {
+const std::string AccessibilityTreeFormatterAndroid::GetDenyString() {
   return "@ANDROID-DENY:";
 }
 

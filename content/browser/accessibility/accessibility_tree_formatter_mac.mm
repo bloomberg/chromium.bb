@@ -192,12 +192,35 @@ NSArray* BuildAllAttributesArray() {
 
 }  // namespace
 
-void AccessibilityTreeFormatter::Initialize() {
+class AccessibilityTreeFormatterMac : public AccessibilityTreeFormatter {
+ public:
+  explicit AccessibilityTreeFormatterMac();
+  ~AccessibilityTreeFormatterMac() override;
+
+ private:
+  const base::FilePath::StringType GetExpectedFileSuffix() override;
+  const std::string GetAllowEmptyString() override;
+  const std::string GetAllowString() override;
+  const std::string GetDenyString() override;
+  void AddProperties(const BrowserAccessibility& node,
+                     base::DictionaryValue* dict) override;
+  base::string16 ToString(const base::DictionaryValue& node) override;
+};
+
+// static
+AccessibilityTreeFormatter* AccessibilityTreeFormatter::Create() {
+  return new AccessibilityTreeFormatterMac();
 }
 
+AccessibilityTreeFormatterMac::AccessibilityTreeFormatterMac() {
+}
 
-void AccessibilityTreeFormatter::AddProperties(const BrowserAccessibility& node,
-                                               base::DictionaryValue* dict) {
+AccessibilityTreeFormatterMac::~AccessibilityTreeFormatterMac() {
+}
+
+void AccessibilityTreeFormatterMac::AddProperties(
+    const BrowserAccessibility& node,
+    base::DictionaryValue* dict) {
   dict->SetInteger("id", node.GetId());
   BrowserAccessibilityCocoa* cocoa_node =
       const_cast<BrowserAccessibility*>(&node)->ToBrowserAccessibilityCocoa();
@@ -229,10 +252,10 @@ void AccessibilityTreeFormatter::AddProperties(const BrowserAccessibility& node,
   dict->Set(kSizeDictAttr, PopulateSize(cocoa_node).release());
 }
 
-base::string16 AccessibilityTreeFormatter::ToString(
+base::string16 AccessibilityTreeFormatterMac::ToString(
     const base::DictionaryValue& dict) {
   base::string16 line;
-  if (show_ids_) {
+  if (show_ids()) {
     int id_value;
     dict.GetInteger("id", &id_value);
     WriteAttribute(true, base::IntToString16(id_value), &line);
@@ -298,24 +321,20 @@ base::string16 AccessibilityTreeFormatter::ToString(
   return line;
 }
 
-// static
 const base::FilePath::StringType
-AccessibilityTreeFormatter::GetExpectedFileSuffix() {
+AccessibilityTreeFormatterMac::GetExpectedFileSuffix() {
   return FILE_PATH_LITERAL("-expected-mac.txt");
 }
 
-// static
-const string AccessibilityTreeFormatter::GetAllowEmptyString() {
+const string AccessibilityTreeFormatterMac::GetAllowEmptyString() {
   return "@MAC-ALLOW-EMPTY:";
 }
 
-// static
-const string AccessibilityTreeFormatter::GetAllowString() {
+const string AccessibilityTreeFormatterMac::GetAllowString() {
   return "@MAC-ALLOW:";
 }
 
-// static
-const string AccessibilityTreeFormatter::GetDenyString() {
+const string AccessibilityTreeFormatterMac::GetDenyString() {
   return "@MAC-DENY:";
 }
 

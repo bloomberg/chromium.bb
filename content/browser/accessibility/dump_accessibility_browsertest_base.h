@@ -84,6 +84,11 @@ class DumpAccessibilityTestBase : public ContentBrowserTest {
       std::vector<AccessibilityTreeFormatter::Filter>* filters,
       std::string* wait_for);
 
+  // Create the right AccessibilityTreeFormatter subclass.
+  AccessibilityTreeFormatter* CreateAccessibilityTreeFormatter();
+
+  void RunTestForPlatform(const base::FilePath file_path, const char* file_dir);
+
   // The default filters plus the filters loaded from the test file.
   std::vector<AccessibilityTreeFormatter::Filter> filters_;
 
@@ -91,6 +96,12 @@ class DumpAccessibilityTestBase : public ContentBrowserTest {
   // http://crbug.com/568674
   ScopedLeakSanitizerDisabler lsan_disabler;
 #endif
+
+  // The current AccessibilityTreeFormatter.
+  scoped_ptr<AccessibilityTreeFormatter> formatter_;
+
+  // Whether we're doing a native pass or internal/blink tree pass.
+  bool is_blink_pass_;
 };
 
 }  // namespace content

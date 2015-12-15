@@ -63,11 +63,18 @@ cr.define('accessibility', function() {
     document.location.reload(); // FIXME see TODO above
   }
 
+  function toggleInternalTree() {
+    chrome.send('toggleInternalTree');
+    document.location.reload(); // FIXME see TODO above
+  }
+
   function initialize() {
     console.log('initialize');
     var data = requestData();
 
     addGlobalAccessibilityModeToggle(data['global_a11y_mode']);
+
+    addInternalTreeToggle(data['global_internal_tree_mode']);
 
     $('pages').textContent = '';
 
@@ -84,6 +91,15 @@ cr.define('accessibility', function() {
                                     (full_a11y_on ? 'true' : 'false'));
     $('toggle_global').addEventListener('click',
                                         toggleGlobalAccessibility);
+  }
+
+  function addInternalTreeToggle(global_internal_tree_mode) {
+    var on = global_internal_tree_mode;
+    $('toggle_internal').textContent = (on ? 'on' : 'off');
+    $('toggle_internal').setAttribute('aria-pressed',
+                                      (on ? 'true' : 'false'));
+    $('toggle_internal').addEventListener('click',
+                                          toggleInternalTree);
   }
 
   function addToPagesList(data) {

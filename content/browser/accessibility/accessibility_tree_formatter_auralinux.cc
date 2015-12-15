@@ -15,8 +15,35 @@
 
 namespace content {
 
-void AccessibilityTreeFormatter::AddProperties(const BrowserAccessibility& node,
-                                               base::DictionaryValue* dict) {
+class AccessibilityTreeFormatterAuraLinux : public AccessibilityTreeFormatter {
+ public:
+  explicit AccessibilityTreeFormatterAuraLinux();
+  ~AccessibilityTreeFormatterAuraLinux() override;
+
+ private:
+  const base::FilePath::StringType GetExpectedFileSuffix() override;
+  const std::string GetAllowEmptyString() override;
+  const std::string GetAllowString() override;
+  const std::string GetDenyString() override;
+  void AddProperties(const BrowserAccessibility& node,
+                     base::DictionaryValue* dict) override;
+  base::string16 ToString(const base::DictionaryValue& node) override;
+};
+
+// static
+AccessibilityTreeFormatter* AccessibilityTreeFormatter::Create() {
+  return new AccessibilityTreeFormatterAuraLinux();
+}
+
+AccessibilityTreeFormatterAuraLinux::AccessibilityTreeFormatterAuraLinux() {
+}
+
+AccessibilityTreeFormatterAuraLinux::~AccessibilityTreeFormatterAuraLinux() {
+}
+
+void AccessibilityTreeFormatterAuraLinux::AddProperties(
+    const BrowserAccessibility& node,
+    base::DictionaryValue* dict) {
   dict->SetInteger("id", node.GetId());
   BrowserAccessibilityAuraLinux* acc_obj =
       const_cast<BrowserAccessibility*>(&node)
@@ -38,7 +65,7 @@ void AccessibilityTreeFormatter::AddProperties(const BrowserAccessibility& node,
   dict->Set("states", states);
 }
 
-base::string16 AccessibilityTreeFormatter::ToString(
+base::string16 AccessibilityTreeFormatterAuraLinux::ToString(
     const base::DictionaryValue& node) {
   base::string16 line;
   std::string role_value;
@@ -74,27 +101,21 @@ base::string16 AccessibilityTreeFormatter::ToString(
   return line + base::ASCIIToUTF16("\n");
 }
 
-void AccessibilityTreeFormatter::Initialize() {
-}
-
-// static
 const base::FilePath::StringType
-AccessibilityTreeFormatter::GetExpectedFileSuffix() {
+AccessibilityTreeFormatterAuraLinux::GetExpectedFileSuffix() {
   return FILE_PATH_LITERAL("-expected-auralinux.txt");
 }
 
-// static
-const std::string AccessibilityTreeFormatter::GetAllowEmptyString() {
+const std::string AccessibilityTreeFormatterAuraLinux::GetAllowEmptyString() {
   return "@AURALINUX-ALLOW-EMPTY:";
 }
 
-// static
-const std::string AccessibilityTreeFormatter::GetAllowString() {
+const std::string AccessibilityTreeFormatterAuraLinux::GetAllowString() {
   return "@AURALINUX-ALLOW:";
 }
 
-// static
-const std::string AccessibilityTreeFormatter::GetDenyString() {
+const std::string AccessibilityTreeFormatterAuraLinux::GetDenyString() {
   return "@AURALINUX-DENY:";
 }
+
 }

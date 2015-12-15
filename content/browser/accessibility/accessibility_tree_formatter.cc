@@ -25,40 +25,25 @@ const char* kSkipChildren = "@NO_CHILDREN_DUMP";
 const char* kChildrenDictAttr = "children";
 }
 
-AccessibilityTreeFormatter::AccessibilityTreeFormatter(
-    BrowserAccessibility* root)
-    : root_(root),
-      show_ids_(false) {
-  Initialize();
+AccessibilityTreeFormatter::AccessibilityTreeFormatter()
+    : show_ids_(false) {
 }
-
-// static
-AccessibilityTreeFormatter* AccessibilityTreeFormatter::Create(
-    WebContents* web_contents) {
-  BrowserAccessibilityManager* manager =
-      static_cast<WebContentsImpl*>(web_contents)->
-          GetRootBrowserAccessibilityManager();
-  if (!manager)
-    return NULL;
-
-  BrowserAccessibility* root = manager->GetRoot();
-  return new AccessibilityTreeFormatter(root);
-}
-
 
 AccessibilityTreeFormatter::~AccessibilityTreeFormatter() {
 }
 
 scoped_ptr<base::DictionaryValue>
-AccessibilityTreeFormatter::BuildAccessibilityTree() {
+AccessibilityTreeFormatter::BuildAccessibilityTree(
+    BrowserAccessibility* root) {
+  CHECK(root);
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
-  RecursiveBuildAccessibilityTree(*root_, dict.get());
+  RecursiveBuildAccessibilityTree(*root, dict.get());
   return dict.Pass();
 }
 
 void AccessibilityTreeFormatter::FormatAccessibilityTree(
-    base::string16* contents) {
-  scoped_ptr<base::DictionaryValue> dict = BuildAccessibilityTree();
+    BrowserAccessibility* root, base::string16* contents) {
+  scoped_ptr<base::DictionaryValue> dict = BuildAccessibilityTree(root);
   RecursiveFormatAccessibilityTree(*(dict.get()), contents);
 }
 
@@ -69,8 +54,8 @@ void AccessibilityTreeFormatter::RecursiveBuildAccessibilityTree(
   base::ListValue* children = new base::ListValue;
   dict->Set(kChildrenDictAttr, children);
 
-  for (size_t i = 0; i < node.PlatformChildCount(); ++i) {
-    BrowserAccessibility* child_node = node.PlatformGetChild(i);
+  for (size_t i = 0; i < ChildCount(node); ++i) {
+    BrowserAccessibility* child_node = GetChild(node, i);
     base::DictionaryValue* child_dict = new base::DictionaryValue;
     children->Append(child_dict);
     RecursiveBuildAccessibilityTree(*child_node, child_dict);
@@ -98,46 +83,19 @@ void AccessibilityTreeFormatter::RecursiveFormatAccessibilityTree(
   }
 }
 
-#if !defined(PLATFORM_HAS_NATIVE_ACCESSIBILITY_IMPL)
-void AccessibilityTreeFormatter::AddProperties(const BrowserAccessibility& node,
-                                               base::DictionaryValue* dict) {
-  dict->SetInteger("id", node.GetId());
-}
-
-base::string16 AccessibilityTreeFormatter::ToString(
-    const base::DictionaryValue& node) {
-  int id_value;
-  node.GetInteger("id", &id_value);
-  return base::IntToString16(id_value);
-}
-
-void AccessibilityTreeFormatter::Initialize() {}
-
-// static
-const base::FilePath::StringType
-AccessibilityTreeFormatter::GetExpectedFileSuffix() {
-  return base::FilePath::StringType();
-}
-
-// static
-const std::string AccessibilityTreeFormatter::GetAllowEmptyString() {
-  return std::string();
-}
-
-// static
-const std::string AccessibilityTreeFormatter::GetAllowString() {
-  return std::string();
-}
-
-// static
-const std::string AccessibilityTreeFormatter::GetDenyString() {
-  return std::string();
-}
-#endif  // PLATFORM_HAS_NATIVE_ACCESSIBILITY_IMPL
-
 void AccessibilityTreeFormatter::SetFilters(
     const std::vector<Filter>& filters) {
   filters_ = filters;
+}
+
+uint32 AccessibilityTreeFormatter::ChildCount(
+    const BrowserAccessibility& node) const{
+  return node.PlatformChildCount();
+}
+
+BrowserAccessibility* AccessibilityTreeFormatter::GetChild(
+    const BrowserAccessibility& node, uint32 i) const {
+  return node.PlatformGetChild(i);
 }
 
 // static
