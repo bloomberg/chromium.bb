@@ -294,6 +294,27 @@ void HostContentSettingsMap::SetWebsiteSettingDefaultScope(
                                resource_identifier, make_scoped_ptr(value));
 }
 
+void HostContentSettingsMap::SetWebsiteSettingCustomScope(
+    const ContentSettingsPattern& primary_pattern,
+    const ContentSettingsPattern& secondary_pattern,
+    ContentSettingsType content_type,
+    const std::string& resource_identifier,
+    scoped_ptr<base::Value> value) {
+  DCHECK(SupportsResourceIdentifier(content_type) ||
+         resource_identifier.empty());
+  UsedContentSettingsProviders();
+
+  base::Value* val = value.release();
+  for (auto& provider_pair : content_settings_providers_) {
+    if (provider_pair.second->SetWebsiteSetting(primary_pattern,
+                                                secondary_pattern, content_type,
+                                                resource_identifier, val)) {
+      return;
+    }
+  }
+  NOTREACHED();
+}
+
 void HostContentSettingsMap::SetNarrowestContentSetting(
     const GURL& primary_url,
     const GURL& secondary_url,
@@ -535,27 +556,6 @@ void HostContentSettingsMap::ShutdownOnUIThread() {
        ++it) {
     it->second->ShutdownOnUIThread();
   }
-}
-
-void HostContentSettingsMap::SetWebsiteSettingCustomScope(
-    const ContentSettingsPattern& primary_pattern,
-    const ContentSettingsPattern& secondary_pattern,
-    ContentSettingsType content_type,
-    const std::string& resource_identifier,
-    scoped_ptr<base::Value> value) {
-  DCHECK(SupportsResourceIdentifier(content_type) ||
-         resource_identifier.empty());
-  UsedContentSettingsProviders();
-
-  base::Value* val = value.release();
-  for (auto& provider_pair : content_settings_providers_) {
-    if (provider_pair.second->SetWebsiteSetting(primary_pattern,
-                                                secondary_pattern, content_type,
-                                                resource_identifier, val)) {
-      return;
-    }
-  }
-  NOTREACHED();
 }
 
 void HostContentSettingsMap::AddSettingsForOneType(

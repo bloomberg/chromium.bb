@@ -159,6 +159,17 @@ class HostContentSettingsMap : public content_settings::Observer,
                                      const std::string& resource_identifier,
                                      base::Value* value);
 
+  // Sets a rule to apply the |value| for all sites matching |pattern|,
+  // |content_type| and |resource_identifier|. Setting the value to null removes
+  // the given pattern pair. Unless adding a custom-scoped setting, most
+  // developers will want to use SetWebsiteSettingDefaultScope() instead.
+  void SetWebsiteSettingCustomScope(
+      const ContentSettingsPattern& primary_pattern,
+      const ContentSettingsPattern& secondary_pattern,
+      ContentSettingsType content_type,
+      const std::string& resource_identifier,
+      scoped_ptr<base::Value> value);
+
   // Sets the most specific rule that currently defines the setting for the
   // given content type. TODO(raymes): Remove this once all content settings
   // are scoped to origin scope. There is no scope more narrow than origin
@@ -253,17 +264,6 @@ class HostContentSettingsMap : public content_settings::Observer,
   typedef ProviderMap::const_iterator ConstProviderIterator;
 
   ~HostContentSettingsMap() override;
-
-  // Sets a rule to apply the |value| for all sites matching |pattern|,
-  // |content_type| and |resource_identifier|. Setting the value to null removes
-  // the given pattern pair. Unless adding a custom-scoped setting, most
-  // developers will want to use SetWebsiteSettingDefaultScope() instead.
-  void SetWebsiteSettingCustomScope(
-      const ContentSettingsPattern& primary_pattern,
-      const ContentSettingsPattern& secondary_pattern,
-      ContentSettingsType content_type,
-      const std::string& resource_identifier,
-      scoped_ptr<base::Value> value);
 
   ContentSetting GetDefaultContentSettingFromProvider(
       ContentSettingsType content_type,

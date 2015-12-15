@@ -94,6 +94,46 @@ std::string GetKey(const net::X509Certificate& cert, net::CertStatus error) {
   return base::UintToString(error) + base64_fingerprint;
 }
 
+void MigrateOldSettings(HostContentSettingsMap* map) {
+  // Migrate old settings. Previously SSL would use the same pattern twice,
+  // instead of using ContentSettingsPattern::Wildcard(). This has no impact on
+  // lookups using GetWebsiteSetting (because Wildcard matches everything) but
+  // it has an impact when trying to change the existing content setting. We
+  // need to migrate the old-format keys.
+  // TODO(raymes): Remove this after ~M51 when clients have migrated. We should
+  // leave in some code to remove old-format settings for a long time.
+  // crbug.com/569734.
+  ContentSettingsForOneType settings;
+  map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS,
+                             std::string(), &settings);
+  for (const ContentSettingPatternSource& setting : settings) {
+    // Migrate old-format settings only.
+    if (setting.secondary_pattern != ContentSettingsPattern::Wildcard()) {
+      GURL url(setting.primary_pattern.ToString());
+      // Pull out the value of the old-format setting. Only do this if the
+      // patterns are as we expect them to be, otherwise the setting will just
+      // be removed for safety.
+      scoped_ptr<base::Value> value;
+      if (setting.primary_pattern == setting.secondary_pattern &&
+          url.is_valid()) {
+        value = map->GetWebsiteSetting(url, url,
+                                       CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS,
+                                       std::string(), nullptr);
+      }
+      // Remove the old pattern.
+      map->SetWebsiteSettingCustomScope(
+          setting.primary_pattern, setting.secondary_pattern,
+          CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS, std::string(), nullptr);
+      // Set the new pattern.
+      if (value) {
+        map->SetWebsiteSettingDefaultScope(
+            url, GURL(), CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS,
+            std::string(), value.release());
+      }
+    }
+  }
+}
+
 }  // namespace
 
 // This helper function gets the dictionary of certificate fingerprints to
@@ -221,6 +261,7 @@ ChromeSSLHostStateDelegate::ChromeSSLHostStateDelegate(Profile* profile)
     : clock_(new base::DefaultClock()),
       profile_(profile),
       current_expiration_guid_(base::GenerateGUID()) {
+  MigrateOldSettings(HostContentSettingsMapFactory::GetForProfile(profile));
   if (ExpireAtSessionEnd())
     should_remember_ssl_decisions_ =
         FORGET_SSL_EXCEPTION_DECISIONS_AT_SESSION_END;
