@@ -59,7 +59,7 @@ public class PowerMonitor implements ApplicationStatus.ApplicationStateListener 
             ApplicationStatus.registerApplicationStateListener(sInstance);
             IntentFilter ifilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
             Intent batteryStatusIntent = context.registerReceiver(null, ifilter);
-            onBatteryChargingChanged(batteryStatusIntent);
+            if (batteryStatusIntent != null) onBatteryChargingChanged(batteryStatusIntent);
         }
     }
 
