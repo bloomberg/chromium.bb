@@ -5872,15 +5872,15 @@ bool WebGLRenderingContextBase::validateCopyTexSubImage(const char* functionName
     if (!validateSize(functionName, xoffset, yoffset, zoffset) || !validateSize(functionName, width, height))
         return false;
     // Before checking if it is in the range, check if overflow happens first.
-    Checked<GLint, RecordOverflow> maxX = xoffset;
+    CheckedInt<GLint> maxX = xoffset;
     maxX += width;
-    Checked<GLint, RecordOverflow> maxY = yoffset;
+    CheckedInt<GLint> maxY = yoffset;
     maxY += height;
-    if (maxX.hasOverflowed() || maxY.hasOverflowed()) {
+    if (!maxX.isValid() || !maxY.isValid()) {
         synthesizeGLError(GL_INVALID_VALUE, functionName, "bad dimensions");
         return false;
     }
-    if (maxX.unsafeGet() > tex->getWidth(target, level) || maxY.unsafeGet() > tex->getHeight(target, level) || zoffset >= tex->getDepth(target, level)) {
+    if (maxX.value() > tex->getWidth(target, level) || maxY.value() > tex->getHeight(target, level) || zoffset >= tex->getDepth(target, level)) {
         synthesizeGLError(GL_INVALID_VALUE, functionName, "rectangle out of range");
         return false;
     }
@@ -6157,14 +6157,14 @@ bool WebGLRenderingContextBase::validateCompressedTexSubDimensions(const char* f
             synthesizeGLError(GL_INVALID_OPERATION, functionName, "xoffset or yoffset not multiple of 4");
             return false;
         }
-        Checked<GLint, RecordOverflow> maxX = xoffset, maxY = yoffset;
+        CheckedInt<GLint> maxX = xoffset, maxY = yoffset;
         maxX += width;
         maxY += height;
-        if (maxX.hasOverflowed() || ((width % kBlockWidth) && maxX.unsafeGet() != tex->getWidth(target, level))) {
+        if (!maxX.isValid() || ((width % kBlockWidth) && maxX.value() != tex->getWidth(target, level))) {
             synthesizeGLError(GL_INVALID_OPERATION, functionName, "width not multiple of 4 and width + xoffset not equal to width of the texture level for ETC2/EAC format texture");
             return false;
         }
-        if (maxY.hasOverflowed() || ((height % kBlockHeight) && maxY.unsafeGet() != tex->getHeight(target, level))) {
+        if (!maxY.isValid() || ((height % kBlockHeight) && maxY.value() != tex->getHeight(target, level))) {
             synthesizeGLError(GL_INVALID_OPERATION, functionName, "height not multiple of 4 and height + yoffset not equal to height of the texture level for ETC2/EAC format texture");
             return false;
         }
@@ -6181,11 +6181,11 @@ bool WebGLRenderingContextBase::validateCompressedTexSubDimensions(const char* f
             return false;
         }
         // Before checking if it is in the range, check if overflow happens first.
-        Checked<GLint, RecordOverflow> maxX = xoffset, maxY = yoffset;
+        CheckedInt<GLint> maxX = xoffset, maxY = yoffset;
         maxX += width;
         maxY += height;
-        if (maxX.hasOverflowed() || maxY.hasOverflowed() || maxX.unsafeGet() > tex->getWidth(target, level)
-            || maxY.unsafeGet() > tex->getHeight(target, level)) {
+        if (!maxX.isValid() || !maxY.isValid() || maxX.value() > tex->getWidth(target, level)
+            || maxY.value() > tex->getHeight(target, level)) {
             synthesizeGLError(GL_INVALID_VALUE, functionName, "dimensions out of range");
             return false;
         }

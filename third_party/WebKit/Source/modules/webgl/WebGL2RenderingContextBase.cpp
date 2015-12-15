@@ -23,6 +23,7 @@
 #include "modules/webgl/WebGLTransformFeedback.h"
 #include "modules/webgl/WebGLUniformLocation.h"
 #include "modules/webgl/WebGLVertexArrayObject.h"
+#include "platform/CheckedInt.h"
 #include "platform/NotImplemented.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
@@ -905,14 +906,14 @@ bool WebGL2RenderingContextBase::validateTexSubImage3D(const char* functionName,
     }
 
     // Before checking if it is in the range, check if overflow happens first.
-    Checked<GLint, RecordOverflow> maxX = xoffset, maxY = yoffset, maxZ = zoffset;
+    CheckedInt<GLint> maxX = xoffset, maxY = yoffset, maxZ = zoffset;
     maxX += width;
     maxY += height;
     maxZ += depth;
-    if (maxX.hasOverflowed() || maxY.hasOverflowed() || maxZ.hasOverflowed()
-        || maxX.unsafeGet() > tex->getWidth(target, level)
-        || maxY.unsafeGet() > tex->getHeight(target, level)
-        || maxZ.unsafeGet() > tex->getDepth(target, level)) {
+    if (!maxX.isValid() || !maxY.isValid() || !maxZ.isValid()
+        || maxX.value() > tex->getWidth(target, level)
+        || maxY.value() > tex->getHeight(target, level)
+        || maxZ.value() > tex->getDepth(target, level)) {
         synthesizeGLError(GL_INVALID_VALUE, functionName, "dimensions out of range");
         return false;
     }
