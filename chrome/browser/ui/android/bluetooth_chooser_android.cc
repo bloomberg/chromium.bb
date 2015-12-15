@@ -9,7 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ssl/chrome_security_state_model_client.h"
 #include "chrome/browser/ssl/security_state_model.h"
-#include "chrome/browser/ui/android/window_android_helper.h"
+#include "chrome/browser/ui/android/view_android_helper.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "jni/BluetoothChooserDialog_jni.h"
 #include "ui/android/window_android.h"

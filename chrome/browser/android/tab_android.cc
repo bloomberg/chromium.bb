@@ -39,7 +39,7 @@
 #include "chrome/browser/ui/android/infobars/infobar_container_android.h"
 #include "chrome/browser/ui/android/tab_model/tab_model.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
-#include "chrome/browser/ui/android/window_android_helper.h"
+#include "chrome/browser/ui/android/view_android_helper.h"
 #include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
 #include "chrome/browser/ui/search/instant_search_prerenderer.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
@@ -419,8 +419,8 @@ void TabAndroid::InitWebContents(
       SessionTabHelper::FromWebContents(web_contents())->session_id().id());
   ContextMenuHelper::FromWebContents(web_contents())->SetPopulator(
       jcontext_menu_populator);
-  WindowAndroidHelper::FromWebContents(web_contents())->
-      SetWindowAndroid(content_view_core->GetWindowAndroid());
+  ViewAndroidHelper::FromWebContents(web_contents())->
+      SetViewAndroid(content_view_core);
   CoreTabHelper::FromWebContents(web_contents())->set_delegate(this);
   SearchTabHelper::FromWebContents(web_contents())->set_delegate(this);
   web_contents_delegate_.reset(

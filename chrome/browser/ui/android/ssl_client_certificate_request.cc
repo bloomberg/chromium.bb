@@ -12,7 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "chrome/browser/ssl/ssl_client_certificate_selector.h"
-#include "chrome/browser/ui/android/window_android_helper.h"
+#include "chrome/browser/ui/android/view_android_helper.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/client_certificate_delegate.h"
 #include "crypto/scoped_openssl_types.h"
@@ -24,6 +24,7 @@
 #include "net/ssl/openssl_client_key_store.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_client_cert_type.h"
+#include "ui/android/view_android.h"
 #include "ui/android/window_android.h"
 
 namespace chrome {
@@ -202,8 +203,8 @@ void ShowSSLClientCertificateSelector(
     content::WebContents* contents,
     net::SSLCertRequestInfo* cert_request_info,
     scoped_ptr<content::ClientCertificateDelegate> delegate) {
-  ui::WindowAndroid* window =
-      WindowAndroidHelper::FromWebContents(contents)->GetWindowAndroid();
+  ui::WindowAndroid* window = ViewAndroidHelper::FromWebContents(contents)
+      ->GetViewAndroid()->GetWindowAndroid();
   DCHECK(window);
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   StartClientCertificateRequest(cert_request_info, window, delegate.Pass());

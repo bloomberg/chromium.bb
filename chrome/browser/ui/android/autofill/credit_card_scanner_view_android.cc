@@ -8,7 +8,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/ui/android/window_android_helper.h"
+#include "chrome/browser/ui/android/view_android_helper.h"
 #include "chrome/browser/ui/autofill/credit_card_scanner_view_delegate.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "jni/CreditCardScanner_jni.h"
@@ -47,7 +47,7 @@ CreditCardScannerViewAndroid::CreditCardScannerViewAndroid(
           base::android::AttachCurrentThread(),
           reinterpret_cast<intptr_t>(this),
           base::android::GetApplicationContext(),
-          WindowAndroidHelper::FromWebContents(web_contents)
+          ViewAndroidHelper::FromWebContents(web_contents)->GetViewAndroid()
               ->GetWindowAndroid()->GetJavaObject().obj())) {}
 
 CreditCardScannerViewAndroid::~CreditCardScannerViewAndroid() {}

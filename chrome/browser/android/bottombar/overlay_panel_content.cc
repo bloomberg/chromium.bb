@@ -14,7 +14,7 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/ui/android/window_android_helper.h"
+#include "chrome/browser/ui/android/view_android_helper.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
 #include "components/variations/variations_associated_data.h"
@@ -103,8 +103,8 @@ void OverlayPanelContent::SetWebContents(
   // TODO(pedrosimonetti): confirm if we need this after promoting it
   // to a real tab.
   TabAndroid::AttachTabHelpers(web_contents_.get());
-  WindowAndroidHelper::FromWebContents(web_contents_.get())
-      ->SetWindowAndroid(content_view_core->GetWindowAndroid());
+  ViewAndroidHelper::FromWebContents(web_contents_.get())
+      ->SetViewAndroid(content_view_core);
   web_contents_delegate_.reset(
       new web_contents_delegate_android::WebContentsDelegateAndroid(
           env, jweb_contents_delegate));

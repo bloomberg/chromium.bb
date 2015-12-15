@@ -36,7 +36,6 @@ class RenderWidgetHostViewAndroid;
 struct MenuItem;
 
 class ContentViewCoreImpl : public ContentViewCore,
-                            public ui::ViewAndroid,
                             public ui::OverscrollRefreshHandler,
                             public WebContentsObserver {
  public:
