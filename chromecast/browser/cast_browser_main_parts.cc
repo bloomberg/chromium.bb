@@ -202,6 +202,9 @@ DefaultCommandLineSwitch g_default_switches[] = {
   // BrowserThreadsStarted).  The GPU process will be created as soon as a
   // renderer needs it, which always happens after main loop starts.
   { switches::kDisableGpuEarlyInit, "" },
+  // Enable navigator.connection API.
+  // TODO(derekjchow): Remove this switch when enabled by default.
+  { switches::kEnableNetworkInformation, "" },
   { NULL, NULL },  // Termination
 };
 
