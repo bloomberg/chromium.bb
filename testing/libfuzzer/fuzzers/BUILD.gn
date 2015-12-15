@@ -7,6 +7,12 @@
 import("//build/config/features.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 
+fuzzer_test("empty_fuzzer") {
+  sources = [
+    "empty_fuzzer.cc",
+  ]
+}
+
 fuzzer_test("brotli_fuzzer") {
   sources = [
     "brotli_fuzzer.cc",
