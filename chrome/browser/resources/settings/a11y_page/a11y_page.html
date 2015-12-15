@@ -10,7 +10,9 @@
       <span i18n-content="a11yExplanation"></span>
       <a i18n-values="href:a11yLearnMoreUrl" i18n-content="learnMore"
           target="_blank"></a>
+    </div>
 
+    <div class="settings-box">
       <settings-checkbox i18n-values="label:optionsInMenuLabel"
           pref="{{prefs.settings.a11y.enable_menu}}">
       </settings-checkbox>
@@ -58,7 +60,9 @@
       <settings-checkbox pref="{{prefs.settings.a11y.virtual_keyboard}}"
           i18n-values="label:onScreenKeyboardLabel">
       </settings-checkbox>
+    </div>
 
+    <div class="settings-box">
       <div class="button-strip">
         <paper-button i18n-content="moreFeaturesLink"
             on-tap="onMoreFeaturesTap_"></paper-button>
