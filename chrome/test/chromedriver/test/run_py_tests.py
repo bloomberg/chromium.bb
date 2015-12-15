@@ -38,10 +38,9 @@ _TEST_DATA_DIR = os.path.join(chrome_paths.GetTestData(), 'chromedriver')
 
 if util.IsLinux():
   sys.path.insert(0, os.path.join(chrome_paths.GetSrc(), 'build', 'android'))
+  from devil.android import device_utils
+  from devil.android import forwarder
   from pylib import constants
-  from pylib import forwarder
-  from pylib import valgrind_tools
-  from pylib.device import device_utils
 
 
 _NEGATIVE_FILTER = [

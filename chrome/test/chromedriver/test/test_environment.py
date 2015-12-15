@@ -19,10 +19,9 @@ _THIS_DIR = os.path.abspath(os.path.dirname(__file__))
 
 if util.IsLinux():
   sys.path.insert(0, os.path.join(chrome_paths.GetSrc(), 'build', 'android'))
-  from pylib import forwarder
-  from pylib import valgrind_tools
-  from pylib.device import device_errors
-  from pylib.device import device_utils
+  from devil.android import device_errors
+  from devil.android import device_utils
+  from devil.android import forwarder
 
 ANDROID_TEST_HTTP_PORT = 2311
 ANDROID_TEST_HTTPS_PORT = 2411

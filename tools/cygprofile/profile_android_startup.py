@@ -18,12 +18,12 @@ import tempfile
 import time
 
 sys.path.append(os.path.join(sys.path[0], '..', '..', 'build', 'android'))
+from devil.android import device_errors
+from devil.android import device_utils
+from devil.android import forwarder
+from devil.android.sdk import intent
 from pylib import constants
 from pylib import flag_changer
-from pylib import forwarder
-from pylib.device import device_errors
-from pylib.device import device_utils
-from pylib.device import intent
 
 sys.path.append(os.path.join(sys.path[0], '..', '..', 'tools', 'telemetry'))
 from telemetry.internal.util import webpagereplay
