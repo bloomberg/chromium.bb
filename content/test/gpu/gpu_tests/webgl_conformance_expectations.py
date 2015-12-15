@@ -83,6 +83,9 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'd3d9'], bug=896) # angle bug ID
     self.Fail('conformance/glsl/bugs/floor-div-cos-should-not-truncate.html',
         ['win', 'd3d9'], bug=1179) # angle bug ID
+    # The functions test have been persistently flaky on D3D9
+    self.Flaky('conformance/glsl/functions/*',
+        ['win', 'd3d9'], bug=415609)
 
     # WIN / D3D9 / Intel failures
     self.Fail('conformance/ogles/GL/cos/cos_001_to_006.html',
