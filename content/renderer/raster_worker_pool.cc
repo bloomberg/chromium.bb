@@ -4,6 +4,8 @@
 
 #include "content/renderer/raster_worker_pool.h"
 
+#include <utility>
+
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/trace_event/trace_event.h"
@@ -47,7 +49,8 @@ class RasterWorkerPool::RasterWorkerPoolSequencedTaskRunner
       if (!graph_.nodes.empty())
         dependencies = 1;
 
-      cc::TaskGraph::Node node(graph_task.get(), 0, dependencies);
+      cc::TaskGraph::Node node(graph_task.get(), 0u /* category */,
+                               0u /* priority */, dependencies);
       if (dependencies) {
         graph_.edges.push_back(
             cc::TaskGraph::Edge(graph_.nodes.back().task, node.task));
@@ -148,7 +151,9 @@ bool RasterWorkerPool::PostDelayedTask(
   tasks_.push_back(make_scoped_refptr(new ClosureTask(task)));
   graph_.Reset();
   for (const auto& graph_task : tasks_)
-    graph_.nodes.push_back(cc::TaskGraph::Node(graph_task.get(), 0, 0));
+    graph_.nodes.push_back(
+        cc::TaskGraph::Node(graph_task.get(), 0u /* category */,
+                            0u /* priority */, 0u /* dependencies */));
 
   ScheduleTasksWithLockAcquired(namespace_token_, &graph_);
   completed_tasks_.clear();
@@ -164,7 +169,7 @@ void RasterWorkerPool::Run() {
   base::AutoLock lock(lock_);
 
   while (true) {
-    if (!work_queue_.HasReadyToRunTasks()) {
+    if (!RunTaskWithLockAcquired()) {
       // Exit when shutdown is set and no more tasks are pending.
       if (shutdown_)
         break;
@@ -173,8 +178,6 @@ void RasterWorkerPool::Run() {
       has_ready_to_run_tasks_cv_.Wait();
       continue;
     }
-
-    RunTaskWithLockAcquired();
   }
 }
 
@@ -258,12 +261,28 @@ void RasterWorkerPool::CollectCompletedTasksWithLockAcquired(
   work_queue_.CollectCompletedTasks(token, completed_tasks);
 }
 
-void RasterWorkerPool::RunTaskWithLockAcquired() {
+bool RasterWorkerPool::RunTaskWithLockAcquired() {
   TRACE_EVENT0("toplevel", "TaskGraphRunner::RunTask");
 
   lock_.AssertAcquired();
 
-  auto prioritized_task = work_queue_.GetNextTaskToRun();
+  // Find the first category with any tasks to run. This task graph runner
+  // treats categories as an additional priority.
+  // TODO(ericrk): Add more category/thread logic.
+  const auto& ready_to_run_namespaces = work_queue_.ready_to_run_namespaces();
+  auto found = std::find_if(
+      ready_to_run_namespaces.cbegin(), ready_to_run_namespaces.cend(),
+      [](const std::pair<uint16_t,
+                         cc::TaskGraphWorkQueue::TaskNamespace::Vector>& pair) {
+        return !pair.second.empty();
+      });
+
+  if (found == ready_to_run_namespaces.cend()) {
+    return false;
+  }
+
+  const uint16_t category = found->first;
+  auto prioritized_task = work_queue_.GetNextTaskToRun(category);
   cc::Task* task = prioritized_task.task;
 
   // There may be more work available, so wake up another worker thread.
@@ -288,6 +307,8 @@ void RasterWorkerPool::RunTaskWithLockAcquired() {
   if (work_queue_.HasFinishedRunningTasksInNamespace(
           prioritized_task.task_namespace))
     has_namespaces_with_finished_running_tasks_cv_.Broadcast();
+
+  return true;
 }
 
 RasterWorkerPool::ClosureTask::ClosureTask(const base::Closure& closure)

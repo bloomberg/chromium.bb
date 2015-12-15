@@ -5,11 +5,41 @@
 #include "cc/raster/task_graph_work_queue.h"
 
 #include <algorithm>
+#include <map>
 #include <utility>
 
 #include "base/trace_event/trace_event.h"
 
 namespace cc {
+namespace {
+
+bool CompareTaskPriority(const TaskGraphWorkQueue::PrioritizedTask& a,
+                         const TaskGraphWorkQueue::PrioritizedTask& b) {
+  // In this system, numerically lower priority is run first.
+  return a.priority > b.priority;
+}
+
+class CompareTaskNamespacePriority {
+ public:
+  explicit CompareTaskNamespacePriority(uint16_t category)
+      : category_(category) {}
+
+  bool operator()(const TaskGraphWorkQueue::TaskNamespace* a,
+                  const TaskGraphWorkQueue::TaskNamespace* b) {
+    DCHECK(!a->ready_to_run_tasks.at(category_).empty());
+    DCHECK(!b->ready_to_run_tasks.at(category_).empty());
+
+    // Compare based on task priority of the ready_to_run_tasks heap .front()
+    // will hold the max element of the heap, except after pop_heap, when max
+    // element is moved to .back().
+    return CompareTaskPriority(a->ready_to_run_tasks.at(category_).front(),
+                               b->ready_to_run_tasks.at(category_).front());
+  }
+
+ private:
+  uint16_t category_;
+};
+}  // namespace
 
 TaskGraphWorkQueue::TaskNamespace::TaskNamespace() {}
 
@@ -37,7 +67,9 @@ void TaskGraphWorkQueue::ScheduleTasks(NamespaceToken token, TaskGraph* graph) {
   }
 
   // Build new "ready to run" queue and remove nodes from old graph.
-  task_namespace.ready_to_run_tasks.clear();
+  for (auto& ready_to_run_tasks_it : task_namespace.ready_to_run_tasks) {
+    ready_to_run_tasks_it.second.clear();
+  }
   for (const TaskGraph::Node& node : graph->nodes) {
     // Remove any old nodes that are associated with this task. The result is
     // that the old graph is left with all nodes not present in this graph,
@@ -66,14 +98,17 @@ void TaskGraphWorkQueue::ScheduleTasks(NamespaceToken token, TaskGraph* graph) {
                   node.task) != task_namespace.running_tasks.end())
       continue;
 
-    task_namespace.ready_to_run_tasks.push_back(
-        PrioritizedTask(node.task, &task_namespace, node.priority));
+    task_namespace.ready_to_run_tasks[node.category].push_back(PrioritizedTask(
+        node.task, &task_namespace, node.category, node.priority));
   }
 
-  // Rearrange the elements in |ready_to_run_tasks| in such a way that they
-  // form a heap.
-  std::make_heap(task_namespace.ready_to_run_tasks.begin(),
-                 task_namespace.ready_to_run_tasks.end(), CompareTaskPriority);
+  // Rearrange the elements in each vector within |ready_to_run_tasks| in such a
+  // way that they form a heap.
+  for (auto& it : task_namespace.ready_to_run_tasks) {
+    auto& ready_to_run_tasks = it.second;
+    std::make_heap(ready_to_run_tasks.begin(), ready_to_run_tasks.end(),
+                   CompareTaskPriority);
+  }
 
   // Swap task graph.
   task_namespace.graph.Swap(graph);
@@ -100,41 +135,59 @@ void TaskGraphWorkQueue::ScheduleTasks(NamespaceToken token, TaskGraph* graph) {
   }
 
   // Build new "ready to run" task namespaces queue.
-  ready_to_run_namespaces_.clear();
-  for (auto& it : namespaces_) {
-    if (!it.second.ready_to_run_tasks.empty())
-      ready_to_run_namespaces_.push_back(&it.second);
+  for (auto& ready_to_run_namespaces_it : ready_to_run_namespaces_) {
+    ready_to_run_namespaces_it.second.clear();
+  }
+  for (auto& namespace_it : namespaces_) {
+    auto& task_namespace = namespace_it.second;
+    for (auto& ready_to_run_tasks_it : task_namespace.ready_to_run_tasks) {
+      auto& ready_to_run_tasks = ready_to_run_tasks_it.second;
+      uint16_t category = ready_to_run_tasks_it.first;
+      if (!ready_to_run_tasks.empty()) {
+        ready_to_run_namespaces_[category].push_back(&task_namespace);
+      }
+    }
   }
 
   // Rearrange the task namespaces in |ready_to_run_namespaces| in such a
   // way that they form a heap.
-  std::make_heap(ready_to_run_namespaces_.begin(),
-                 ready_to_run_namespaces_.end(), CompareTaskNamespacePriority);
+  for (auto& it : ready_to_run_namespaces_) {
+    uint16_t category = it.first;
+    auto& task_namespace = it.second;
+    std::make_heap(task_namespace.begin(), task_namespace.end(),
+                   CompareTaskNamespacePriority(category));
+  }
 }
 
-TaskGraphWorkQueue::PrioritizedTask TaskGraphWorkQueue::GetNextTaskToRun() {
-  DCHECK(!ready_to_run_namespaces_.empty());
+TaskGraphWorkQueue::PrioritizedTask TaskGraphWorkQueue::GetNextTaskToRun(
+    uint16_t category) {
+  TaskNamespace::Vector& ready_to_run_namespaces =
+      ready_to_run_namespaces_[category];
+  DCHECK(!ready_to_run_namespaces.empty());
 
-  // Take top priority TaskNamespace from |ready_to_run_namespaces_|.
-  std::pop_heap(ready_to_run_namespaces_.begin(),
-                ready_to_run_namespaces_.end(), CompareTaskNamespacePriority);
-  TaskNamespace* task_namespace = ready_to_run_namespaces_.back();
-  ready_to_run_namespaces_.pop_back();
-  DCHECK(!task_namespace->ready_to_run_tasks.empty());
+  // Take top priority TaskNamespace from |ready_to_run_namespaces|.
+  std::pop_heap(ready_to_run_namespaces.begin(), ready_to_run_namespaces.end(),
+                CompareTaskNamespacePriority(category));
+  TaskNamespace* task_namespace = ready_to_run_namespaces.back();
+  ready_to_run_namespaces.pop_back();
+
+  PrioritizedTask::Vector& ready_to_run_tasks =
+      task_namespace->ready_to_run_tasks[category];
+  DCHECK(!ready_to_run_tasks.empty());
 
   // Take top priority task from |ready_to_run_tasks|.
-  std::pop_heap(task_namespace->ready_to_run_tasks.begin(),
-                task_namespace->ready_to_run_tasks.end(), CompareTaskPriority);
-  PrioritizedTask task = task_namespace->ready_to_run_tasks.back();
-  task_namespace->ready_to_run_tasks.pop_back();
+  std::pop_heap(ready_to_run_tasks.begin(), ready_to_run_tasks.end(),
+                CompareTaskPriority);
+  PrioritizedTask task = ready_to_run_tasks.back();
+  ready_to_run_tasks.pop_back();
 
-  // Add task namespace back to |ready_to_run_namespaces_| if not empty after
+  // Add task namespace back to |ready_to_run_namespaces| if not empty after
   // taking top priority task.
-  if (!task_namespace->ready_to_run_tasks.empty()) {
-    ready_to_run_namespaces_.push_back(task_namespace);
-    std::push_heap(ready_to_run_namespaces_.begin(),
-                   ready_to_run_namespaces_.end(),
-                   CompareTaskNamespacePriority);
+  if (!ready_to_run_tasks.empty()) {
+    ready_to_run_namespaces.push_back(task_namespace);
+    std::push_heap(ready_to_run_namespaces.begin(),
+                   ready_to_run_namespaces.end(),
+                   CompareTaskNamespacePriority(category));
   }
 
   // Add task to |running_tasks|.
@@ -164,19 +217,26 @@ void TaskGraphWorkQueue::CompleteTask(const PrioritizedTask& completed_task) {
     dependent_node.dependencies--;
     // Task is ready if it has no dependencies. Add it to |ready_to_run_tasks_|.
     if (!dependent_node.dependencies) {
-      bool was_empty = task_namespace->ready_to_run_tasks.empty();
-      task_namespace->ready_to_run_tasks.push_back(PrioritizedTask(
-          dependent_node.task, task_namespace, dependent_node.priority));
-      std::push_heap(task_namespace->ready_to_run_tasks.begin(),
-                     task_namespace->ready_to_run_tasks.end(),
+      PrioritizedTask::Vector& ready_to_run_tasks =
+          task_namespace->ready_to_run_tasks[dependent_node.category];
+
+      bool was_empty = ready_to_run_tasks.empty();
+      ready_to_run_tasks.push_back(
+          PrioritizedTask(dependent_node.task, task_namespace,
+                          dependent_node.category, dependent_node.priority));
+      std::push_heap(ready_to_run_tasks.begin(), ready_to_run_tasks.end(),
                      CompareTaskPriority);
+
       // Task namespace is ready if it has at least one ready to run task. Add
       // it to |ready_to_run_namespaces_| if it just become ready.
       if (was_empty) {
-        DCHECK(std::find(ready_to_run_namespaces_.begin(),
-                         ready_to_run_namespaces_.end(),
-                         task_namespace) == ready_to_run_namespaces_.end());
-        ready_to_run_namespaces_.push_back(task_namespace);
+        TaskNamespace::Vector& ready_to_run_namespaces =
+            ready_to_run_namespaces_[dependent_node.category];
+
+        DCHECK(std::find(ready_to_run_namespaces.begin(),
+                         ready_to_run_namespaces.end(),
+                         task_namespace) == ready_to_run_namespaces.end());
+        ready_to_run_namespaces.push_back(task_namespace);
       }
       ready_to_run_namespaces_has_heap_properties = false;
     }
@@ -185,9 +245,13 @@ void TaskGraphWorkQueue::CompleteTask(const PrioritizedTask& completed_task) {
   // Rearrange the task namespaces in |ready_to_run_namespaces_| in such a way
   // that they yet again form a heap.
   if (!ready_to_run_namespaces_has_heap_properties) {
-    std::make_heap(ready_to_run_namespaces_.begin(),
-                   ready_to_run_namespaces_.end(),
-                   CompareTaskNamespacePriority);
+    for (auto& it : ready_to_run_namespaces_) {
+      uint16_t category = it.first;
+      auto& ready_to_run_namespaces = it.second;
+      std::make_heap(ready_to_run_namespaces.begin(),
+                     ready_to_run_namespaces.end(),
+                     CompareTaskNamespacePriority(category));
+    }
   }
 
   // Finally add task to |completed_tasks_|.
@@ -209,7 +273,7 @@ void TaskGraphWorkQueue::CollectCompletedTasks(NamespaceToken token,
 
   // Remove namespace if finished running tasks.
   DCHECK_EQ(0u, task_namespace.completed_tasks.size());
-  DCHECK_EQ(0u, task_namespace.ready_to_run_tasks.size());
+  DCHECK(!HasReadyToRunTasksInNamespace(&task_namespace));
   DCHECK_EQ(0u, task_namespace.running_tasks.size());
   namespaces_.erase(it);
 }

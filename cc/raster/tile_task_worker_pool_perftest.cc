@@ -223,13 +223,14 @@ class TileTaskWorkerPoolPerfTestBase {
 
       for (auto& decode_task : raster_task->dependencies()) {
         graph->nodes.push_back(
-            TaskGraph::Node(decode_task.get(), priority, 0u));
+            TaskGraph::Node(decode_task.get(), 0u /* group */, priority, 0u));
         graph->edges.push_back(
             TaskGraph::Edge(raster_task.get(), decode_task.get()));
       }
 
-      graph->nodes.push_back(TaskGraph::Node(
-          raster_task.get(), priority, raster_task->dependencies().size()));
+      graph->nodes.push_back(
+          TaskGraph::Node(raster_task.get(), 0u /* group */, priority,
+                          raster_task->dependencies().size()));
     }
   }
 
