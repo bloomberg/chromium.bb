@@ -646,7 +646,6 @@ TEST_F(Canvas2DLayerBridgeTest, BackgroundRenderingWhileHibernatingWithDeferredR
     bridge->setImageBuffer(&mockImageBuffer);
     bridge->disableDeferral();
 
-
     // Register an alternate Logger for tracking hibernation events
     OwnPtr<MockLogger> mockLogger = adoptPtr(new MockLogger);
     MockLogger* mockLoggerPtr = mockLogger.get();
@@ -670,6 +669,65 @@ TEST_F(Canvas2DLayerBridgeTest, BackgroundRenderingWhileHibernatingWithDeferredR
     OwnPtr<WebWaitableEvent> switchEvent = adoptPtr(Platform::current()->createWaitableEvent());
     testThread->taskRunner()->postTask(BLINK_FROM_HERE, new RenderingTask(bridge.get(), switchEvent.get()));
     switchEvent->wait();
+    ::testing::Mock::VerifyAndClearExpectations(mockLoggerPtr);
+    ::testing::Mock::VerifyAndClearExpectations(&mockImageBuffer);
+    EXPECT_FALSE(bridge->isAccelerated());
+    EXPECT_FALSE(bridge->isHibernating());
+
+    // Unhide
+    EXPECT_CALL(mockImageBuffer, resetCanvas(_)).Times(AtLeast(1));
+    OwnPtr<WebWaitableEvent> unhideEvent = adoptPtr(Platform::current()->createWaitableEvent());
+    testThread->taskRunner()->postTask(BLINK_FROM_HERE, new SetIsHiddenTask(bridge.get(), false, unhideEvent.get()));
+    unhideEvent->wait();
+    ::testing::Mock::VerifyAndClearExpectations(mockLoggerPtr);
+    ::testing::Mock::VerifyAndClearExpectations(&mockImageBuffer);
+    EXPECT_TRUE(bridge->isAccelerated()); // Becoming visible causes switch back to GPU
+    EXPECT_FALSE(bridge->isHibernating());
+
+    // Tear down the bridge on the thread so that 'bridge' can go out of scope
+    // without crashing due to thread checks
+    EXPECT_CALL(mockImageBuffer, resetCanvas(_)).Times(AnyNumber());
+    OwnPtr<WebWaitableEvent> bridgeDestroyedEvent = adoptPtr(Platform::current()->createWaitableEvent());
+    testThread->taskRunner()->postTask(BLINK_FROM_HERE, new DestroyBridgeTask(&bridge, bridgeDestroyedEvent.get()));
+    bridgeDestroyedEvent->wait();
+}
+
+TEST_F(Canvas2DLayerBridgeTest, DisableDeferredRenderingWhileHibernating)
+{
+    MockCanvasContext mainMock;
+    OwnPtr<WebThread> testThread = adoptPtr(Platform::current()->createThread("TestThread"));
+
+    // The Canvas2DLayerBridge has to be created on the thread that will use it
+    // to avoid WeakPtr thread check issues.
+    Canvas2DLayerBridgePtr bridge;
+    OwnPtr<WebWaitableEvent> bridgeCreatedEvent = adoptPtr(Platform::current()->createWaitableEvent());
+    testThread->taskRunner()->postTask(BLINK_FROM_HERE, new CreateBridgeTask(&bridge, &mainMock, this, bridgeCreatedEvent.get()));
+    bridgeCreatedEvent->wait();
+    MockImageBuffer mockImageBuffer;
+    EXPECT_CALL(mockImageBuffer, resetCanvas(_)).Times(AnyNumber());
+    bridge->setImageBuffer(&mockImageBuffer);
+
+    // Register an alternate Logger for tracking hibernation events
+    OwnPtr<MockLogger> mockLogger = adoptPtr(new MockLogger);
+    MockLogger* mockLoggerPtr = mockLogger.get();
+    bridge->setLoggerForTesting(mockLogger.release());
+
+    // Test entering hibernation
+    OwnPtr<WebWaitableEvent> hibernationStartedEvent = adoptPtr(Platform::current()->createWaitableEvent());
+    EXPECT_CALL(*mockLoggerPtr, reportHibernationEvent(Canvas2DLayerBridge::HibernationScheduled));
+    EXPECT_CALL(*mockLoggerPtr, didStartHibernating())
+        .WillOnce(testing::Invoke(hibernationStartedEvent.get(), &WebWaitableEvent::signal));
+    testThread->taskRunner()->postTask(BLINK_FROM_HERE, new SetIsHiddenTask(bridge.get(), true));
+    hibernationStartedEvent->wait();
+    ::testing::Mock::VerifyAndClearExpectations(mockLoggerPtr);
+    ::testing::Mock::VerifyAndClearExpectations(&mockImageBuffer);
+    EXPECT_FALSE(bridge->isAccelerated());
+    EXPECT_TRUE(bridge->isHibernating());
+
+    // Disable deferral while background rendering
+    EXPECT_CALL(*mockLoggerPtr, reportHibernationEvent(Canvas2DLayerBridge::HibernationEndedWithSwitchToBackgroundRendering));
+    EXPECT_CALL(mockImageBuffer, resetCanvas(_)).Times(AtLeast(1));
+    bridge->disableDeferral();
     ::testing::Mock::VerifyAndClearExpectations(mockLoggerPtr);
     ::testing::Mock::VerifyAndClearExpectations(&mockImageBuffer);
     EXPECT_FALSE(bridge->isAccelerated());
