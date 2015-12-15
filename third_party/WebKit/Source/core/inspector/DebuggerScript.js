@@ -277,22 +277,22 @@ DebuggerScript.currentCallFrameByIndex = function(execState, index)
 
 DebuggerScript.stepIntoStatement = function(execState)
 {
-    execState.prepareStep(Debug.StepAction.StepIn, 1);
+    execState.prepareStep(Debug.StepAction.StepIn);
 }
 
 DebuggerScript.stepFrameStatement = function(execState)
 {
-    execState.prepareStep(Debug.StepAction.StepFrame, 1);
+    execState.prepareStep(Debug.StepAction.StepFrame);
 }
 
 DebuggerScript.stepOverStatement = function(execState, callFrame)
 {
-    execState.prepareStep(Debug.StepAction.StepNext, 1);
+    execState.prepareStep(Debug.StepAction.StepNext);
 }
 
 DebuggerScript.stepOutOfFunction = function(execState, callFrame)
 {
-    execState.prepareStep(Debug.StepAction.StepOut, 1);
+    execState.prepareStep(Debug.StepAction.StepOut);
 }
 
 DebuggerScript.clearStepping = function()
