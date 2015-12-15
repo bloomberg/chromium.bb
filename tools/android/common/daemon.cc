@@ -15,7 +15,7 @@
 
 namespace {
 
-const char kNoSpawnDaemon[] = "D";
+const char kNoSpawnDaemon[] = "no-spawn-daemon";
 
 int g_exit_status = 0;
 

@@ -1125,7 +1125,7 @@ class ChromiumAndroidDriver(driver.Driver):
 
         self._log_debug('Starting forwarder')
         self._forwarder_process = self._port._server_process_constructor(
-            self._port, 'Forwarder', self._android_commands.adb_command() + ['shell', '%s -D %s' % (self._driver_details.device_forwarder_path(), FORWARD_PORTS)])
+            self._port, 'Forwarder', self._android_commands.adb_command() + ['shell', '%s -no-spawn-daemon %s' % (self._driver_details.device_forwarder_path(), FORWARD_PORTS)])
         self._forwarder_process.start()
 
         deadline = time.time() + DRIVER_START_STOP_TIMEOUT_SECS
