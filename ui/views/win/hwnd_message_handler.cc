@@ -2271,6 +2271,9 @@ LRESULT HWNDMessageHandler::HandleMouseEventInternal(UINT message,
   // messages are only received for the client area. We need to ignore the
   // synthesized mouse messages for all points in the client area and places
   // which return HTNOWHERE.
+  // TODO(ananta)
+  // Windows does not reliably set the touch flag on mouse messages. Look into
+  // a better way of identifying mouse messages originating from touch.
   if (ui::IsMouseEventFromTouch(message)) {
     LPARAM l_param_ht = l_param;
     // For mouse events (except wheel events), location is in window coordinates
@@ -2283,28 +2286,6 @@ LRESULT HWNDMessageHandler::HandleMouseEventInternal(UINT message,
     LRESULT hittest = SendMessage(hwnd(), WM_NCHITTEST, 0, l_param_ht);
     if (hittest == HTCLIENT || hittest == HTNOWHERE)
       return 0;
-  }
-
-  // Windows does not reliably set the touch flag on mouse moves nc mouse
-  // moves/mouse wheel messages etc. We also ignore mouse leaves as they are
-  // artificially generated messages in response to the TrackMouseEvents API.
-  // The code below is primarily for validation that we don't receive
-  // other mouse messages while we are in a touch sequence.
-  switch (message) {
-    case WM_MOUSEMOVE:
-    case WM_NCMOUSEMOVE:
-    case WM_MOUSELEAVE:
-    case WM_NCMOUSELEAVE:
-    case WM_MOUSEWHEEL:
-    case WM_MOUSEHWHEEL:
-      break;
-
-    default:
-      // Remove this CHECK once we validate that our hypothesis about the above
-      // mouse events being the only ones on which the touch flag is not set
-      // is correct.
-      CHECK(touch_ids_.empty());
-      break;
   }
 
   // Certain logitech drivers send the WM_MOUSEHWHEEL message to the parent
