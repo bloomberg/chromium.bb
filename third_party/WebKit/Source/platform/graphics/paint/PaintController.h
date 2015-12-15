@@ -178,7 +178,7 @@ protected:
         , m_textPainted(false)
         , m_imagePainted(false)
         , m_skippingCacheCount(0)
-        , m_numCachedItems(0)
+        , m_numCachedNewItems(0)
         , m_nextScope(1) { }
 
 private:
@@ -249,7 +249,7 @@ private:
 
     int m_skippingCacheCount;
 
-    int m_numCachedItems;
+    int m_numCachedNewItems;
 
     unsigned m_nextScope;
     Vector<unsigned> m_scopeStack;

@@ -60,7 +60,7 @@ void PaintController::processNewItem(DisplayItem& displayItem)
     ASSERT(!skippingCache() || !displayItem.isCached());
 
     if (displayItem.isCached())
-        ++m_numCachedItems;
+        ++m_numCachedNewItems;
 
 #if ENABLE(ASSERT)
     // Verify noop begin/end pairs have been removed.
@@ -279,7 +279,8 @@ void PaintController::commitNewDisplayItems()
 {
     TRACE_EVENT2("blink,benchmark", "PaintController::commitNewDisplayItems",
         "current_display_list_size", (int)m_currentPaintArtifact.displayItemList().size(),
-        "num_non_cached_new_items", (int)m_newDisplayItemList.size() - m_numCachedItems);
+        "num_non_cached_new_items", (int)m_newDisplayItemList.size() - m_numCachedNewItems);
+    m_numCachedNewItems = 0;
 
     if (RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled()
         && !m_newDisplayItemList.isEmpty()
@@ -314,7 +315,6 @@ void PaintController::commitNewDisplayItems()
         m_currentPaintArtifact.displayItemList().swap(m_newDisplayItemList);
         m_currentPaintArtifact.paintChunks() = m_newPaintChunks.releasePaintChunks();
         m_validlyCachedClientsDirty = true;
-        m_numCachedItems = 0;
         return;
     }
 
@@ -399,7 +399,6 @@ void PaintController::commitNewDisplayItems()
 
     m_newDisplayItemList.clear();
     m_validlyCachedClientsDirty = true;
-    m_numCachedItems = 0;
 }
 
 size_t PaintController::approximateUnsharedMemoryUsage() const
