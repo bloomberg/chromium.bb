@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/sanitizers/sanitizers.gni")
 import("//build/toolchain/toolchain.gni")
 
 # This config causes functions not to be automatically exported from shared
@@ -67,7 +68,9 @@ config("executable_ldconfig") {
       "-Wl,-z,nocopyreloc",
     ]
   } else {
-    if (is_component_build) {
+    # See the rpath_for... config above for why this is necessary for component
+    # builds. Sanitizers use a custom libc++ where this is also necessary.
+    if (is_component_build || using_sanitizer) {
       configs = [ ":rpath_for_built_shared_libraries" ]
     }
 
