@@ -380,11 +380,9 @@ PDFViewer.prototype = {
         }
         return;
       case 71: // g key.
-        if (this.materialToolbar_ && (e.ctrlKey || e.metaKey)) {
+        if (this.materialToolbar_ && (e.ctrlKey || e.metaKey) && e.altKey) {
           this.toolbarManager_.showToolbars();
           this.materialToolbar_.selectPageNumber();
-          // To prevent the default "find text" behaviour in Chrome.
-          e.preventDefault();
         }
         return;
       case 219:  // left bracket.
