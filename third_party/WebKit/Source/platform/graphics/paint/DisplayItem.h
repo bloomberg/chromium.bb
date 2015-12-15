@@ -338,11 +338,15 @@ public:
             && m_derivedSize == other.m_derivedSize
             && m_skippedCache == other.m_skippedCache;
     }
+
+    // True if the client is non-null. Because m_client is const, this should
+    // never be false except when we explicitly create a tombstone/"dead display
+    // item" as part of moving an item from one list to another (see:
+    // DisplayItemList::appendByMoving).
+    bool hasValidClient() const { return m_client; }
 #endif
 
     virtual bool drawsContent() const { return false; }
-
-    bool isValid() const { return m_client; }
 
 #ifndef NDEBUG
     static WTF::String typeAsDebugString(DisplayItem::Type);

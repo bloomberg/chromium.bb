@@ -195,8 +195,8 @@ size_t PaintController::findMatchingItemFromIndex(const DisplayItem::Id& id, con
     const Vector<size_t>& indices = it->value;
     for (size_t index : indices) {
         const DisplayItem& existingItem = list[index];
-        ASSERT(!existingItem.isValid() || existingItem.client() == id.client);
-        if (existingItem.isValid() && id.matches(existingItem))
+        ASSERT(!existingItem.hasValidClient() || existingItem.client() == id.client);
+        if (id.matches(existingItem))
             return index;
     }
 
@@ -239,7 +239,7 @@ DisplayItemList::iterator PaintController::findOutOfOrderCachedItemForward(const
     DisplayItemList::iterator currentEnd = m_currentPaintArtifact.displayItemList().end();
     for (; context.nextItemToIndex != currentEnd; ++context.nextItemToIndex) {
         const DisplayItem& item = *context.nextItemToIndex;
-        ASSERT(item.isValid());
+        ASSERT(item.hasValidClient());
         if (item.isCacheable() && clientCacheIsValid(item.client())) {
             if (id.matches(item))
                 return context.nextItemToIndex++;
@@ -258,7 +258,7 @@ void PaintController::copyCachedSubsequence(DisplayItemList::iterator& currentIt
     do {
         // We should always find the EndSubsequence display item.
         ASSERT(currentIt != m_currentPaintArtifact.displayItemList().end());
-        ASSERT(currentIt->isValid());
+        ASSERT(currentIt->hasValidClient());
         updatedList.appendByMoving(*currentIt);
         ++currentIt;
     } while (!endSubsequenceId.matches(updatedList.last()));
@@ -537,7 +537,7 @@ void PaintController::checkNoRemainingCachedDisplayItems()
     ASSERT(RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled());
 
     for (const auto& displayItem : m_currentPaintArtifact.displayItemList()) {
-        if (!displayItem.isValid() || !displayItem.isCacheable() || !clientCacheIsValid(displayItem.client()))
+        if (!displayItem.hasValidClient() || !displayItem.isCacheable() || !clientCacheIsValid(displayItem.client()))
             continue;
         showUnderInvalidationError("", "May be under-invalidation: no new display item", nullptr, &displayItem);
     }
@@ -557,10 +557,8 @@ WTF::String PaintController::displayItemListAsDebugString(const DisplayItemList&
             stringBuilder.append(",\n");
         stringBuilder.append(String::format("{index: %d, ", (int)i));
         displayItem.dumpPropertiesAsDebugString(stringBuilder);
-        if (displayItem.isValid()) {
-            stringBuilder.append(", cacheIsValid: ");
-            stringBuilder.append(clientCacheIsValid(displayItem.client()) ? "true" : "false");
-        }
+        stringBuilder.append(", cacheIsValid: ");
+        stringBuilder.append(clientCacheIsValid(displayItem.client()) ? "true" : "false");
         stringBuilder.append('}');
     }
     return stringBuilder.toString();

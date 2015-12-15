@@ -217,8 +217,8 @@ WTF::String DisplayItem::asDebugString() const
 
 void DisplayItem::dumpPropertiesAsDebugString(WTF::StringBuilder& stringBuilder) const
 {
-    if (!isValid()) {
-        stringBuilder.append("valid: false, originalDebugString: ");
+    if (!hasValidClient()) {
+        stringBuilder.append("validClient: false, originalDebugString: ");
         // This is the original debug string which is in json format.
         stringBuilder.append(clientDebugString());
         return;

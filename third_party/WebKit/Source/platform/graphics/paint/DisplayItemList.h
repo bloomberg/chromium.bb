@@ -35,10 +35,12 @@ public:
 #ifndef NDEBUG
         WTF::String originalDebugString = item.asDebugString();
 #endif
-        ASSERT(item.isValid());
+        ASSERT(item.hasValidClient());
         DisplayItem& result = ContiguousContainer::appendByMoving(item, item.derivedSize());
-        // ContiguousContainer::appendByMoving() called in-place constructor on item, which invalidated it.
-        ASSERT(!item.isValid());
+        // ContiguousContainer::appendByMoving() calls an in-place constructor
+        // on item which replaces it with a tombstone/"dead display item" that
+        // can be safely destructed but should never be used.
+        ASSERT(!item.hasValidClient());
 #ifndef NDEBUG
         // Save original debug string in the old item to help debugging.
         item.setClientDebugString(originalDebugString);
