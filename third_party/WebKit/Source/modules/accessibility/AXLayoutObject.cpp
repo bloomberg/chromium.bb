@@ -216,24 +216,11 @@ LayoutRect AXLayoutObject::elementRect() const
     return m_cachedElementRect;
 }
 
-void AXLayoutObject::setLayoutObject(LayoutObject* layoutObject)
-{
-    m_layoutObject = layoutObject;
-    setNode(layoutObject->node());
-}
-
 LayoutBoxModelObject* AXLayoutObject::layoutBoxModelObject() const
 {
     if (!m_layoutObject || !m_layoutObject->isBoxModelObject())
         return 0;
     return toLayoutBoxModelObject(m_layoutObject);
-}
-
-Document* AXLayoutObject::topDocument() const
-{
-    if (!document())
-        return 0;
-    return &document()->topDocument();
 }
 
 bool AXLayoutObject::shouldNotifyActiveDescendant() const
@@ -2206,18 +2193,6 @@ AXObject* AXLayoutObject::treeAncestorDisallowingChild() const
             return treeAncestor;
     }
     return 0;
-}
-
-bool AXLayoutObject::nodeIsTextControl(const Node* node) const
-{
-    if (!node)
-        return false;
-
-    const AXObject* axObjectForNode = axObjectCache().getOrCreate(const_cast<Node*>(node));
-    if (!axObjectForNode)
-        return false;
-
-    return axObjectForNode->isTextControl();
 }
 
 bool AXLayoutObject::isTabItemSelected() const

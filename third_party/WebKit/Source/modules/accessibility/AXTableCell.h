@@ -56,7 +56,6 @@ public:
 
 protected:
     virtual AXObject* parentTable() const;
-    int m_rowIndex;
     AccessibilityRole determineAccessibilityRole() final;
 
 private:

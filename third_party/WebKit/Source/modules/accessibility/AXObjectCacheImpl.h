@@ -139,13 +139,10 @@ public:
     void handleAriaExpandedChange(Node*);
     void handleAriaSelectedChanged(Node*);
 
-    void recomputeIsIgnored(LayoutObject*);
-
     bool accessibilityEnabled();
     bool inlineTextBoxAccessibilityEnabled();
 
     void removeAXID(AXObject*);
-    bool isIDinUse(AXID id) const { return m_idsInUse.contains(id); }
 
     AXID platformGenerateAXID() const;
 

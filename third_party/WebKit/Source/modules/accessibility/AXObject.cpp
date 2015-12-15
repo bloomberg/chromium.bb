@@ -1037,18 +1037,6 @@ int AXObject::indexInParent() const
     return 0;
 }
 
-void AXObject::ariaTreeRows(AXObjectVector& result)
-{
-    for (const auto& child : children()) {
-        // Add tree items as the rows.
-        if (child->roleValue() == TreeItemRole)
-            result.append(child);
-
-        // Now see if this item also has rows hiding inside of it.
-        child->ariaTreeRows(result);
-    }
-}
-
 bool AXObject::isLiveRegion() const
 {
     const AtomicString& liveRegion = liveRegionStatus();

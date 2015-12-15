@@ -486,19 +486,6 @@ void AXTable::rowHeaders(AXObjectVector& headers)
         toAXTableRow(m_rows[r].get())->headerObjectsForRow(headers);
 }
 
-void AXTable::cells(AXObject::AXObjectVector& cells)
-{
-    if (!m_layoutObject)
-        return;
-
-    updateChildrenIfNecessary();
-
-    int numRows = m_rows.size();
-    for (int row = 0; row < numRows; ++row) {
-        cells.appendVector(m_rows[row]->children());
-    }
-}
-
 unsigned AXTable::columnCount()
 {
     updateChildrenIfNecessary();

@@ -51,8 +51,6 @@ private:
     bool isAXSVGRoot() const override { return true; }
 };
 
-DEFINE_AX_OBJECT_TYPE_CASTS(AXSVGRoot, isAXSVGRoot());
-
 } // namespace blink
 
 #endif // AXSVGRoot_h

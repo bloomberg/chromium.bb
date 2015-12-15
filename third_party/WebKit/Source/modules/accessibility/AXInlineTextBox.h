@@ -47,8 +47,6 @@ public:
     void init() override;
     void detach() override;
 
-    void setInlineTextBox(AbstractInlineTextBox* inlineTextBox) { m_inlineTextBox = inlineTextBox; }
-
     AccessibilityRole roleValue() const override { return InlineTextBoxRole; }
     String name(AXNameFrom&, AXObject::AXObjectVector* nameObjects) const override;
     void textCharacterOffsets(Vector<int>&) const override;

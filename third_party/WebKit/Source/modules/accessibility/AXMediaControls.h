@@ -63,7 +63,6 @@ public:
 
     String description(AXNameFrom, AXDescriptionFrom&, AXObjectVector* descriptionObjects) const override;
     String valueDescription() const override;
-    const AtomicString& getAttribute(const QualifiedName& attribute) const;
 
 private:
     AccessibilityMediaTimeline(LayoutObject*, AXObjectCacheImpl&);
@@ -83,7 +82,6 @@ public:
 
 private:
     AXMediaControlsContainer(LayoutObject*, AXObjectCacheImpl&);
-    bool controllingVideoElement() const;
     bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
 };
 

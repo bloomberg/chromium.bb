@@ -39,7 +39,6 @@ class AXScrollView final : public AXObject {
 public:
     static AXScrollView* create(FrameView*, AXObjectCacheImpl&);
     AccessibilityRole roleValue() const override { return ScrollAreaRole; }
-    FrameView* scrollView() const { return m_scrollView; }
 
     ~AXScrollView() override;
     DECLARE_VIRTUAL_TRACE();
@@ -81,8 +80,6 @@ private:
     Member<AXObject> m_verticalScrollbar;
     bool m_childrenDirty;
 };
-
-DEFINE_AX_OBJECT_TYPE_CASTS(AXScrollView, isAXScrollView());
 
 } // namespace blink
 

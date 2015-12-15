@@ -55,10 +55,6 @@ public:
     void setRowIndex(int rowIndex) { m_rowIndex = rowIndex; }
     int rowIndex() const { return m_rowIndex; }
 
-    // allows the table to add other children that may not originate
-    // in the row, but their col/row spans overlap into it
-    void appendChild(AXObject*);
-
 protected:
     AccessibilityRole determineAccessibilityRole() final;
 

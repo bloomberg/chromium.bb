@@ -57,7 +57,6 @@ private:
     void addChildren() final;
 
     bool canSetValueAttribute() const final { return true; }
-    const AtomicString& getAttribute(const QualifiedName& attribute) const;
 
     void setValue(const String&) final;
     AccessibilityOrientation orientation() const final;

@@ -1074,12 +1074,6 @@ void AXObjectCacheImpl::labelChanged(Element* element)
     textChanged(toHTMLLabelElement(element)->control());
 }
 
-void AXObjectCacheImpl::recomputeIsIgnored(LayoutObject* layoutObject)
-{
-    if (AXObject* obj = get(layoutObject))
-        obj->notifyIfIgnoredValueChanged();
-}
-
 void AXObjectCacheImpl::inlineTextBoxesUpdated(LayoutObject* layoutObject)
 {
     if (!inlineTextBoxAccessibilityEnabled())

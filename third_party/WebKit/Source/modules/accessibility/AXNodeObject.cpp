@@ -1472,16 +1472,6 @@ static bool isInSameNonInlineBlockFlow(LayoutObject* r1, LayoutObject* r2)
     return b1 && b2 && b1 == b2;
 }
 
-AXObject* AXNodeObject::findChildWithTagName(const HTMLQualifiedName& tagName) const
-{
-    for (AXObject* child = rawFirstChild(); child; child = child->rawFirstSibling()) {
-        Node* childNode = child->node();
-        if (childNode && childNode->hasTagName(tagName))
-            return child;
-    }
-    return 0;
-}
-
 bool AXNodeObject::isNativeCheckboxInMixedState() const
 {
     if (!isHTMLInputElement(m_node))

@@ -67,9 +67,6 @@ public:
 
     unsigned columnCount();
     unsigned rowCount();
-
-    // all the cells in the table
-    void cells(AXObjectVector&);
     AXTableCell* cellForColumnAndRow(unsigned column, unsigned row);
 
     void columnHeaders(AXObjectVector&);

@@ -105,11 +105,6 @@ void AXSlider::addChildren()
         m_children.append(thumb);
 }
 
-const AtomicString& AXSlider::getAttribute(const QualifiedName& attribute) const
-{
-    return element()->getAttribute(attribute);
-}
-
 AXObject* AXSlider::elementAccessibilityHitTest(const IntPoint& point) const
 {
     if (m_children.size()) {

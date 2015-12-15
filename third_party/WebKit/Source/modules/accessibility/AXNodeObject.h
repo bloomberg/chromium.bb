@@ -208,11 +208,8 @@ private:
     String textFromDescendants(AXObjectSet& visited) const;
     String nativeTextAlternative(AXObjectSet& visited, AXNameFrom&, AXRelatedObjectVector*, NameSources*, bool* foundTextAlternative) const;
     float stepValueForRange() const;
-    AXObject* findChildWithTagName(const HTMLQualifiedName&) const;
     bool isDescendantOfElementType(const HTMLQualifiedName& tagName) const;
 };
-
-DEFINE_AX_OBJECT_TYPE_CASTS(AXNodeObject, isAXNodeObject());
 
 } // namespace blink
 

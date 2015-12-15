@@ -61,8 +61,6 @@ class AXSpinButtonPart final : public AXMockObject {
 public:
     static AXSpinButtonPart* create(AXObjectCacheImpl&);
     ~AXSpinButtonPart() override { }
-
-    bool isIncrementor() const { return m_isIncrementor; }
     void setIsIncrementor(bool value) { m_isIncrementor = value; }
 
 private:
