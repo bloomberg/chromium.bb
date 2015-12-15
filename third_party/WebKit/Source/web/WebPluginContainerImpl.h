@@ -90,7 +90,7 @@ public:
     void frameRectsChanged() override;
     void setParentVisible(bool) override;
     void setParent(Widget*) override;
-    void widgetPositionsUpdated() override;
+    void widgetGeometryMayHaveChanged() override;
     bool isPluginContainer() const override { return true; }
     void eventListenersRemoved() override;
 

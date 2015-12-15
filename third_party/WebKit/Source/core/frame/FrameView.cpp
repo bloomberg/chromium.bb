@@ -132,7 +132,7 @@ FrameView::FrameView(LocalFrame* frame)
     , m_layoutSizeFixedToFrameSize(true)
     , m_didScrollTimer(this, &FrameView::didScrollTimerFired)
     , m_topControlsViewportAdjustment(0)
-    , m_needsUpdateWidgetPositions(false)
+    , m_needsUpdateWidgetGeometries(false)
     , m_needsUpdateViewportIntersection(true)
     , m_needsUpdateViewportIntersectionInSubtree(true)
 #if ENABLE(ASSERT)
@@ -1144,18 +1144,14 @@ void FrameView::removePart(LayoutPart* object)
     m_parts.remove(object);
 }
 
-void FrameView::updateWidgetPositions()
+void FrameView::updateWidgetGeometries()
 {
     Vector<RefPtr<LayoutPart>> parts;
     copyToVector(m_parts, parts);
 
     // Script or plugins could detach the frame so abort processing if that happens.
-
     for (size_t i = 0; i < parts.size() && layoutView(); ++i)
-        parts[i]->updateWidgetPosition();
-
-    for (size_t i = 0; i < parts.size() && layoutView(); ++i)
-        parts[i]->widgetPositionsUpdated();
+        parts[i]->updateWidgetGeometry();
 }
 
 void FrameView::addPartToUpdate(LayoutEmbeddedObject& object)
@@ -1570,7 +1566,7 @@ void FrameView::updateLayersAndCompositingAfterScrollIfNeeded()
     // Update widget and layer positions after scrolling, but only if we're not inside of
     // layout.
     if (!m_nestedLayoutCount) {
-        updateWidgetPositions();
+        updateWidgetGeometries();
         if (LayoutView* layoutView = this->layoutView())
             layoutView->layer()->setNeedsCompositingInputsUpdate();
     }
@@ -1903,7 +1899,7 @@ bool FrameView::updateWidgets()
 
         if (element->needsWidgetUpdate())
             element->updateWidget();
-        object.updateWidgetPosition();
+        object.updateWidgetGeometry();
 
         // Prevent plugins from causing infinite updates of themselves.
         // FIXME: Do we really need to prevent this?
@@ -1965,9 +1961,9 @@ void FrameView::performPostLayoutTasks()
     // to PageEventHandler.
     frame().localFrameRoot()->eventHandler().scheduleCursorUpdate();
 
-    updateWidgetPositions();
+    updateWidgetGeometries();
 
-    // Plugins could have torn down the page inside updateWidgetPositions().
+    // Plugins could have torn down the page inside updateWidgetGeometries().
     if (!layoutView())
         return;
 
@@ -2321,14 +2317,14 @@ void FrameView::setNodeToDraw(Node* node)
     m_nodeToDraw = node;
 }
 
-void FrameView::updateWidgetPositionsIfNeeded()
+void FrameView::updateWidgetGeometriesIfNeeded()
 {
-    if (!m_needsUpdateWidgetPositions)
+    if (!m_needsUpdateWidgetGeometries)
         return;
 
-    m_needsUpdateWidgetPositions = false;
+    m_needsUpdateWidgetGeometries = false;
 
-    updateWidgetPositions();
+    updateWidgetGeometries();
 }
 
 void FrameView::updateAllLifecyclePhases()
@@ -2563,7 +2559,7 @@ void FrameView::updateStyleAndLayoutIfNeededRecursive()
     m_frame->document()->layoutView()->assertLaidOut();
 #endif
 
-    updateWidgetPositionsIfNeeded();
+    updateWidgetGeometriesIfNeeded();
 
     if (lifecycle().state() < DocumentLifecycle::LayoutClean)
         lifecycle().advanceTo(DocumentLifecycle::LayoutClean);

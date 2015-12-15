@@ -106,8 +106,7 @@ public:
 
     virtual void frameRectsChanged() { }
 
-    // Notifies this widget that other widgets on the page have been repositioned.
-    virtual void widgetPositionsUpdated() { }
+    virtual void widgetGeometryMayHaveChanged() { }
 
     virtual IntRect convertToContainingWidget(const IntRect&) const;
     virtual IntRect convertFromContainingWidget(const IntRect&) const;

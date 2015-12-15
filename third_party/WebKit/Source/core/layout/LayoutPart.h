@@ -47,9 +47,7 @@ public:
     Widget* widget() const;
 
     void updateOnWidgetChange();
-    void updateWidgetPosition();
-    void widgetPositionsUpdated();
-    bool updateWidgetGeometry();
+    void updateWidgetGeometry();
 
     bool isLayoutPart() const final { return true; }
     virtual void paintContents(const PaintInfo&, const LayoutPoint&) const;
@@ -68,6 +66,7 @@ protected:
     void invalidatePaintOfSubtreesIfNeeded(PaintInvalidationState&) override;
 
 private:
+    bool updateWidgetGeometryInternal();
     CompositingReasons additionalCompositingReasons() const override;
 
     void willBeDestroyed() final;

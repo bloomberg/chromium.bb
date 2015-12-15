@@ -105,7 +105,6 @@ namespace blink {
 void WebPluginContainerImpl::setFrameRect(const IntRect& frameRect)
 {
     Widget::setFrameRect(frameRect);
-    reportGeometry();
 }
 
 void WebPluginContainerImpl::layoutIfNeeded()
@@ -221,9 +220,9 @@ void WebPluginContainerImpl::frameRectsChanged()
     reportGeometry();
 }
 
-void WebPluginContainerImpl::widgetPositionsUpdated()
+void WebPluginContainerImpl::widgetGeometryMayHaveChanged()
 {
-    Widget::widgetPositionsUpdated();
+    Widget::widgetGeometryMayHaveChanged();
     reportGeometry();
 }
 
