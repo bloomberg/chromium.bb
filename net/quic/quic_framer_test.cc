@@ -4612,5 +4612,66 @@ TEST_P(QuicFramerTest, ConstructMisFramedEncryptedPacket) {
   EXPECT_EQ(QUIC_INVALID_PACKET_HEADER, framer_.error());
 }
 
+// Tests for fuzzing with Dr. Fuzz
+// Xref http://www.chromium.org/developers/testing/dr-fuzz for more details.
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// target function to be fuzzed by Dr. Fuzz
+void QuicFramerFuzzFunc(unsigned char* data, size_t size) {
+  QuicFramer framer(QuicSupportedVersions(), QuicTime::Zero(),
+                    Perspective::IS_SERVER);
+  const char* const packet_bytes = reinterpret_cast<const char*>(data);
+
+  // Test the CryptoFramer.
+  StringPiece crypto_input(packet_bytes, size);
+  std::unique_ptr<CryptoHandshakeMessage> handshake_message(
+      CryptoFramer::ParseMessage(crypto_input));
+
+  // Test the regular QuicFramer with the same input.
+  NoOpFramerVisitor visitor;
+  framer.set_visitor(&visitor);
+  QuicEncryptedPacket packet(packet_bytes, size);
+  framer.ProcessPacket(packet);
+}
+
+#ifdef __cplusplus
+}
+#endif
+
+TEST_P(QuicFramerTest, FramerFuzzTest) {
+  // clang-format off
+  unsigned char packet[] = {
+    // public flags (8 byte connection_id)
+    0x3C,
+    // connection_id
+    0x10, 0x32, 0x54, 0x76,
+    0x98, 0xBA, 0xDC, 0xFE,
+    // packet number
+    0xBC, 0x9A, 0x78, 0x56,
+    0x34, 0x12,
+    // private flags
+    0x00,
+
+    // frame type (stream frame with fin)
+    0xFF,
+    // stream id
+    0x04, 0x03, 0x02, 0x01,
+    // offset
+    0x54, 0x76, 0x10, 0x32,
+    0xDC, 0xFE, 0x98, 0xBA,
+    // data length
+    0x0c, 0x00,
+    // data
+    'h',  'e',  'l',  'l',
+    'o',  ' ',  'w',  'o',
+    'r',  'l',  'd',  '!',
+  };
+  // clang-format on
+
+  QuicFramerFuzzFunc(packet, arraysize(packet));
+}
+
 }  // namespace test
 }  // namespace net
