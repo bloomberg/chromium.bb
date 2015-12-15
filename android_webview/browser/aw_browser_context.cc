@@ -319,15 +319,10 @@ AwMessagePortService* AwBrowserContext::GetMessagePortService() {
 void AwBrowserContext::InitUserPrefService() {
   user_prefs::PrefRegistrySyncable* pref_registry =
       new user_prefs::PrefRegistrySyncable();
-  // We only use the autocomplete feature of the Autofill, which is
-  // controlled via the manager_delegate. We don't use the rest
-  // of autofill, which is why it is hardcoded as disabled here.
-  pref_registry->RegisterBooleanPref(
-      autofill::prefs::kAutofillEnabled, false);
-  pref_registry->RegisterDoublePref(
-      autofill::prefs::kAutofillPositiveUploadRate, 0.0);
-  pref_registry->RegisterDoublePref(
-      autofill::prefs::kAutofillNegativeUploadRate, 0.0);
+  // We only use the autocomplete feature of Autofill, which is controlled via
+  // the manager_delegate. We don't use the rest of Autofill, which is why it is
+  // hardcoded as disabled here.
+  pref_registry->RegisterBooleanPref(autofill::prefs::kAutofillEnabled, false);
   pref_registry->RegisterBooleanPref(kDataReductionProxyEnabled, false);
   data_reduction_proxy::RegisterSimpleProfilePrefs(pref_registry);
   policy::URLBlacklistManager::RegisterProfilePrefs(pref_registry);

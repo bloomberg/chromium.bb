@@ -72,11 +72,6 @@ using base::TimeTicks;
 
 namespace {
 
-// We only send a fraction of the forms to upload server.
-// The rate for positive/negative matches potentially could be different.
-const double kAutofillPositiveUploadRateDefaultValue = 0.20;
-const double kAutofillNegativeUploadRateDefaultValue = 0.20;
-
 const size_t kMaxRecentFormSignaturesToRemember = 3;
 
 // Set a conservative upper bound on the number of forms we are willing to
@@ -160,8 +155,7 @@ AutofillManager::AutofillManager(
       test_delegate_(NULL),
       weak_ptr_factory_(this) {
   if (enable_download_manager == ENABLE_AUTOFILL_DOWNLOAD_MANAGER) {
-    download_manager_.reset(
-        new AutofillDownloadManager(driver, client_->GetPrefs(), this));
+    download_manager_.reset(new AutofillDownloadManager(driver, this));
   }
 }
 
@@ -184,10 +178,6 @@ void AutofillManager::RegisterProfilePrefs(
   // This choice is made on a per-device basis, so it's not syncable.
   registry->RegisterBooleanPref(
       prefs::kAutofillWalletImportStorageCheckboxState, true);
-  registry->RegisterDoublePref(prefs::kAutofillPositiveUploadRate,
-                               kAutofillPositiveUploadRateDefaultValue);
-  registry->RegisterDoublePref(prefs::kAutofillNegativeUploadRate,
-                               kAutofillNegativeUploadRateDefaultValue);
 }
 
 void AutofillManager::SetExternalDelegate(AutofillExternalDelegate* delegate) {

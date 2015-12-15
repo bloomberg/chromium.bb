@@ -20,8 +20,6 @@
 #include "net/base/backoff_entry.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
-class PrefService;
-
 namespace net {
 class URLFetcher;
 }  // namespace net
@@ -62,10 +60,9 @@ class AutofillDownloadManager : public net::URLFetcherDelegate {
     virtual ~Observer() {}
   };
 
-  // |driver| and |pref_service| must outlive this instance.
+  // |driver| must outlive this instance.
   // |observer| - observer to notify on successful completion or error.
   AutofillDownloadManager(AutofillDriver* driver,
-                          PrefService* pref_service,
                           Observer* observer);
   ~AutofillDownloadManager() override;
 
@@ -74,11 +71,7 @@ class AutofillDownloadManager : public net::URLFetcherDelegate {
   // |forms| - array of forms aggregated in this request.
   virtual bool StartQueryRequest(const std::vector<FormStructure*>& forms);
 
-  // Starts an upload request for the given |form|, unless throttled by the
-  // server. The probability of the request going over the wire is
-  // GetPositiveUploadRate() if |form_was_autofilled| is true, or
-  // GetNegativeUploadRate() otherwise. The observer will be called even if
-  // there was no actual trip over the wire.
+  // Starts an upload request for the given |form|.
   // |available_field_types| should contain the types for which we have data
   // stored on the local client.
   // |login_form_signature| may be empty. It is non-empty when the user fills
@@ -133,21 +126,9 @@ class AutofillDownloadManager : public net::URLFetcherDelegate {
   // net::URLFetcherDelegate implementation:
   void OnURLFetchComplete(const net::URLFetcher* source) override;
 
-  // Probability of the form upload. Between 0 (no upload) and 1 (upload all).
-  // GetPositiveUploadRate() is for matched forms,
-  // GetNegativeUploadRate() for non-matched.
-  double GetPositiveUploadRate() const;
-  double GetNegativeUploadRate() const;
-  void SetPositiveUploadRate(double rate);
-  void SetNegativeUploadRate(double rate);
-
   // The AutofillDriver that this instance will use. Must not be null, and must
   // outlive this instance.
   AutofillDriver* const driver_;  // WEAK
-
-  // The PrefService that this instance will use. Must not be null, and must
-  // outlive this instance.
-  PrefService* const pref_service_;  // WEAK
 
   // The observer to notify when server predictions are successfully received.
   // Must not be null.
@@ -164,11 +145,6 @@ class AutofillDownloadManager : public net::URLFetcherDelegate {
 
   // Used for exponential backoff of requests.
   net::BackoffEntry fetcher_backoff_;
-
-  // |positive_upload_rate_| is for matched forms,
-  // |negative_upload_rate_| for non matched.
-  double positive_upload_rate_;
-  double negative_upload_rate_;
 
   // Needed for unit-test.
   int fetcher_id_for_unittest_;

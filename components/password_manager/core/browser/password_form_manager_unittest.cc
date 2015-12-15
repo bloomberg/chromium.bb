@@ -98,9 +98,8 @@ class MockAutofillDownloadManager : public autofill::AutofillDownloadManager {
  public:
   MockAutofillDownloadManager(
       autofill::AutofillDriver* driver,
-      PrefService* pref_service,
       autofill::AutofillDownloadManager::Observer* observer)
-      : AutofillDownloadManager(driver, pref_service, observer) {}
+      : AutofillDownloadManager(driver, observer) {}
 
   MOCK_METHOD5(StartUploadRequest,
                bool(const autofill::FormStructure&,
@@ -137,14 +136,9 @@ class MockPasswordManagerDriver : public StubPasswordManagerDriver {
     scoped_ptr<TestingPrefServiceSimple> prefs(new TestingPrefServiceSimple());
     prefs->registry()->RegisterBooleanPref(autofill::prefs::kAutofillEnabled,
                                            true);
-    prefs->registry()->RegisterDoublePref(
-        autofill::prefs::kAutofillPositiveUploadRate, 1);
-    prefs->registry()->RegisterDoublePref(
-        autofill::prefs::kAutofillNegativeUploadRate, 1);
     test_autofill_client_.SetPrefs(prefs.Pass());
     mock_autofill_download_manager_ = new MockAutofillDownloadManager(
-        &test_autofill_driver_, test_autofill_client_.GetPrefs(),
-        &mock_autofill_manager_);
+        &test_autofill_driver_, &mock_autofill_manager_);
     // AutofillManager takes ownership of |mock_autofill_download_manager_|.
     mock_autofill_manager_.SetDownloadManager(mock_autofill_download_manager_);
   }

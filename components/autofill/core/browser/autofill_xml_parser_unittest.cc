@@ -32,21 +32,6 @@ class AutofillQueryXmlParserTest : public testing::Test {
   UploadRequired upload_required_;
 };
 
-class AutofillUploadXmlParserTest : public testing::Test {
- public:
-  AutofillUploadXmlParserTest(): positive_(0), negative_(0) {}
-  ~AutofillUploadXmlParserTest() override{};
-
- protected:
-  void ParseUploadXML(std::string xml, bool should_succeed) {
-    EXPECT_EQ(should_succeed,
-              ParseAutofillUploadXml(std::move(xml), &positive_, &negative_));
-  }
-
-  double positive_;
-  double negative_;
-};
-
 TEST_F(AutofillQueryXmlParserTest, BasicQuery) {
   // An XML string representing a basic query response.
   std::string xml = "<autofillqueryresponse>"
@@ -149,31 +134,6 @@ TEST_F(AutofillQueryXmlParserTest, ParseErrors) {
   EXPECT_EQ(USE_UPLOAD_RATES, upload_required_);
   ASSERT_EQ(1U, field_infos_.size());
   EXPECT_EQ(NO_SERVER_DATA, field_infos_[0].field_type);
-}
-
-// Test successful upload response.
-TEST_F(AutofillUploadXmlParserTest, TestSuccessfulResponse) {
-  ParseUploadXML("<autofilluploadresponse positiveuploadrate=\"0.5\" "
-                 "negativeuploadrate=\"0.3\"/>",
-                 true);
-
-  EXPECT_DOUBLE_EQ(0.5, positive_);
-  EXPECT_DOUBLE_EQ(0.3, negative_);
-}
-
-// Test failed upload response.
-TEST_F(AutofillUploadXmlParserTest, TestFailedResponse) {
-  ParseUploadXML("<autofilluploadresponse positiveuploadrate=\"\" "
-                 "negativeuploadrate=\"0.3\"/>",
-                 false);
-
-  ParseUploadXML("<autofilluploadresponse positiveuploadrate=\"0.5\" "
-                 "negativeuploadrate=\"0.3\"",
-                 false);
-
-  ParseUploadXML("bad data", false);
-
-  ParseUploadXML(std::string(), false);
 }
 
 }  // namespace

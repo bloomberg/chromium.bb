@@ -265,9 +265,8 @@ class TestPersonalDataManager : public PersonalDataManager {
 class TestAutofillDownloadManager : public AutofillDownloadManager {
  public:
   TestAutofillDownloadManager(AutofillDriver* driver,
-                              PrefService* pref_service,
                               AutofillDownloadManager::Observer* observer)
-      : AutofillDownloadManager(driver, pref_service, observer) {}
+      : AutofillDownloadManager(driver, observer) {}
 
   bool StartQueryRequest(const std::vector<FormStructure*>& forms) override {
     last_queried_forms_ = forms;
@@ -720,8 +719,7 @@ class AutofillManagerTest : public testing::Test {
     autofill_manager_.reset(new TestAutofillManager(
         autofill_driver_.get(), &autofill_client_, &personal_data_));
     download_manager_ = new TestAutofillDownloadManager(
-        autofill_driver_.get(), autofill_client_.GetPrefs(),
-        autofill_manager_.get());
+        autofill_driver_.get(), autofill_manager_.get());
     // AutofillManager takes ownership of |download_manager_|.
     autofill_manager_->set_download_manager(download_manager_);
     external_delegate_.reset(new TestAutofillExternalDelegate(

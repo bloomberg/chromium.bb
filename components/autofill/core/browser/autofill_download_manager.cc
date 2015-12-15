@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/prefs/pref_service.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -100,22 +99,14 @@ struct AutofillDownloadManager::FormRequestData {
 };
 
 AutofillDownloadManager::AutofillDownloadManager(AutofillDriver* driver,
-                                                 PrefService* pref_service,
                                                  Observer* observer)
     : driver_(driver),
-      pref_service_(pref_service),
       observer_(observer),
       max_form_cache_size_(kMaxFormCacheSize),
       fetcher_backoff_(&kAutofillBackoffPolicy),
-      positive_upload_rate_(0),
-      negative_upload_rate_(0),
       fetcher_id_for_unittest_(0),
       weak_factory_(this) {
   DCHECK(observer_);
-  positive_upload_rate_ =
-      pref_service_->GetDouble(prefs::kAutofillPositiveUploadRate);
-  negative_upload_rate_ =
-      pref_service_->GetDouble(prefs::kAutofillNegativeUploadRate);
 }
 
 AutofillDownloadManager::~AutofillDownloadManager() {
@@ -166,12 +157,7 @@ bool AutofillDownloadManager::StartUploadRequest(
                                 &form_xml))
     return false;
 
-  // Flip a coin to see if we should upload this form.
-  double upload_rate = form_was_autofilled ? GetPositiveUploadRate() :
-                                             GetNegativeUploadRate();
-  if (form.upload_required() == UPLOAD_NOT_REQUIRED ||
-      (form.upload_required() == USE_UPLOAD_RATES &&
-       base::RandDouble() > upload_rate)) {
+  if (form.upload_required() == UPLOAD_NOT_REQUIRED) {
     VLOG(1) << "AutofillDownloadManager: Upload request is ignored.";
     // If we ever need notification that upload was skipped, add it here.
     return false;
@@ -183,32 +169,6 @@ bool AutofillDownloadManager::StartUploadRequest(
   request_data.payload = form_xml;
 
   return StartRequest(request_data);
-}
-
-double AutofillDownloadManager::GetPositiveUploadRate() const {
-  return positive_upload_rate_;
-}
-
-double AutofillDownloadManager::GetNegativeUploadRate() const {
-  return negative_upload_rate_;
-}
-
-void AutofillDownloadManager::SetPositiveUploadRate(double rate) {
-  if (rate == positive_upload_rate_)
-    return;
-  positive_upload_rate_ = rate;
-  DCHECK_GE(rate, 0.0);
-  DCHECK_LE(rate, 1.0);
-  pref_service_->SetDouble(prefs::kAutofillPositiveUploadRate, rate);
-}
-
-void AutofillDownloadManager::SetNegativeUploadRate(double rate) {
-  if (rate == negative_upload_rate_)
-    return;
-  negative_upload_rate_ = rate;
-  DCHECK_GE(rate, 0.0);
-  DCHECK_LE(rate, 1.0);
-  pref_service_->SetDouble(prefs::kAutofillNegativeUploadRate, rate);
 }
 
 bool AutofillDownloadManager::StartRequest(
@@ -350,15 +310,6 @@ void AutofillDownloadManager::OnURLFetchComplete(
       observer_->OnLoadedServerPredictions(std::move(response_body),
                                            it->second.form_signatures);
     } else {
-      double new_positive_upload_rate = 0;
-      double new_negative_upload_rate = 0;
-      if (ParseAutofillUploadXml(std::move(response_body),
-                                 &new_positive_upload_rate,
-                                 &new_negative_upload_rate)) {
-        SetPositiveUploadRate(new_positive_upload_rate);
-        SetNegativeUploadRate(new_negative_upload_rate);
-      }
-
       observer_->OnUploadedPossibleFieldTypes();
     }
   }

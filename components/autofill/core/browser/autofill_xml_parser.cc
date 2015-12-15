@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/autofill/core/browser/autofill_server_field_info.h"
 #include "components/autofill/core/browser/field_types.h"
@@ -78,37 +77,6 @@ bool ParseAutofillQueryXml(std::string xml,
       !reader.IsClosingElement()) {
     return false;  // Malformed input.
   }
-  return true;
-}
-
-bool ParseAutofillUploadXml(std::string xml,
-                            double* positive_upload_rate,
-                            double* negative_upload_rate) {
-  DCHECK(positive_upload_rate);
-  DCHECK(negative_upload_rate);
-
-  XmlReader reader;
-  if (!reader.Load(xml))
-    return false;
-
-  // Seek to the first opening tag.
-  if (!reader.Read())
-    return false;  // Malformed input.
-
-  if (reader.NodeName() != "autofilluploadresponse")
-    return false;  // Malformed input.
-
-  std::string attribute_value;
-  // TODO(crbug.com/561619) Make the two attributes non-required and use 1 as
-  // the default value.
-  if (!reader.NodeAttribute("positiveuploadrate", &attribute_value))
-    return false;  // Missing required attribute.
-  if (!base::StringToDouble(attribute_value, positive_upload_rate))
-    return false;  // Invalid attribute value.
-  if (!reader.NodeAttribute("negativeuploadrate", &attribute_value))
-    return false;  // Missing required attribute.
-  if (!base::StringToDouble(attribute_value, negative_upload_rate))
-    return false;  // Invalid attribute value.
   return true;
 }
 

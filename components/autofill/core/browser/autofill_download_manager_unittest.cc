@@ -7,7 +7,6 @@
 #include <list>
 #include <utility>
 
-#include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -16,7 +15,6 @@
 #include "base/thread_task_runner_handle.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
-#include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/test_autofill_driver.h"
@@ -70,10 +68,9 @@ class AutofillDownloadManagerTest : public AutofillDownloadManager::Observer,
                                     public testing::Test {
  public:
   AutofillDownloadManagerTest()
-      : prefs_(test::PrefServiceForTesting()),
-        request_context_(new net::TestURLRequestContextGetter(
+      : request_context_(new net::TestURLRequestContextGetter(
             base::ThreadTaskRunnerHandle::Get())),
-        download_manager_(&driver_, prefs_.get(), this) {
+        download_manager_(&driver_, this) {
     driver_.SetURLRequestContext(request_context_.get());
   }
 
@@ -127,7 +124,6 @@ class AutofillDownloadManagerTest : public AutofillDownloadManager::Observer,
 
   base::MessageLoop message_loop_;
   std::list<ResponseData> responses_;
-  scoped_ptr<PrefService> prefs_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_;
   TestAutofillDriver driver_;
   AutofillDownloadManager download_manager_;
@@ -230,9 +226,6 @@ TEST_F(AutofillDownloadManagerTest, QueryAndUploadTest) {
   histogram.ExpectUniqueSample("Autofill.ServerQueryResponse",
                                AutofillMetrics::QUERY_SENT, 1);
 
-  // Set upload to 100% so requests happen.
-  download_manager_.SetPositiveUploadRate(1.0);
-  download_manager_.SetNegativeUploadRate(1.0);
   // Request with id 1.
   EXPECT_TRUE(download_manager_.StartUploadRequest(
       *(form_structures[0]), true, ServerFieldTypeSet(), std::string(), true));
@@ -244,8 +237,8 @@ TEST_F(AutofillDownloadManagerTest, QueryAndUploadTest) {
   EXPECT_TRUE(download_manager_.StartUploadRequest(
       *(form_structures[2]), false, ServerFieldTypeSet(), "42", true));
 
-  const char *responses[] = {
-    "<autofillqueryresponse>"
+  const char* responses[] = {
+      "<autofillqueryresponse>"
       "<field autofilltype=\"0\" />"
       "<field autofilltype=\"3\" />"
       "<field autofilltype=\"5\" />"
@@ -254,31 +247,29 @@ TEST_F(AutofillDownloadManagerTest, QueryAndUploadTest) {
       "<field autofilltype=\"30\" />"
       "<field autofilltype=\"31\" />"
       "<field autofilltype=\"33\" />"
-    "</autofillqueryresponse>",
-    "<autofilluploadresponse positiveuploadrate=\"0.5\" "
-    "negativeuploadrate=\"0.3\"/>",
-    "<html></html>",
+      "</autofillqueryresponse>",
+      "", "<html></html>",
   };
 
   // Return them out of sequence.
+
+  // Request 1: Successful upload.
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(1);
   ASSERT_TRUE(fetcher);
   FakeOnURLFetchComplete(fetcher, net::HTTP_OK, std::string(responses[1]));
 
-  // After that upload rates would be adjusted to 0.5/0.3
-  EXPECT_DOUBLE_EQ(0.5, download_manager_.GetPositiveUploadRate());
-  EXPECT_DOUBLE_EQ(0.3, download_manager_.GetNegativeUploadRate());
-
+  // Request 2: Unsuccessful upload.
   fetcher = factory.GetFetcherByID(2);
   ASSERT_TRUE(fetcher);
   FakeOnURLFetchComplete(fetcher, net::HTTP_NOT_FOUND,
                          std::string(responses[2]));
-
+  // Request 0: Successful query.
   fetcher = factory.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
   FakeOnURLFetchComplete(fetcher, net::HTTP_OK, std::string(responses[0]));
   EXPECT_EQ(3U, responses_.size());
 
+  // Check Request 1.
   EXPECT_EQ(AutofillDownloadManagerTest::UPLOAD_SUCCESSFULL,
             responses_.front().type_of_response);
   EXPECT_EQ(0, responses_.front().error);
@@ -287,6 +278,7 @@ TEST_F(AutofillDownloadManagerTest, QueryAndUploadTest) {
   EXPECT_EQ(std::string(), responses_.front().response);
   responses_.pop_front();
 
+  // Check Request 2.
   EXPECT_EQ(AutofillDownloadManagerTest::REQUEST_UPLOAD_FAILED,
             responses_.front().type_of_response);
   EXPECT_EQ(net::HTTP_NOT_FOUND, responses_.front().error);
@@ -296,23 +288,13 @@ TEST_F(AutofillDownloadManagerTest, QueryAndUploadTest) {
   EXPECT_EQ(std::string(), responses_.front().response);
   responses_.pop_front();
 
+  // Check Request 0.
   EXPECT_EQ(responses_.front().type_of_response,
             AutofillDownloadManagerTest::QUERY_SUCCESSFULL);
   EXPECT_EQ(0, responses_.front().error);
   EXPECT_EQ(std::string(), responses_.front().signature);
   EXPECT_EQ(responses[0], responses_.front().response);
   responses_.pop_front();
-
-  // Set upload to 0% so no new requests happen.
-  download_manager_.SetPositiveUploadRate(0.0);
-  download_manager_.SetNegativeUploadRate(0.0);
-  // No actual requests for the next two calls, as we set upload rate to 0%.
-  EXPECT_FALSE(download_manager_.StartUploadRequest(
-      *(form_structures[0]), true, ServerFieldTypeSet(), std::string(), true));
-  EXPECT_FALSE(download_manager_.StartUploadRequest(
-      *(form_structures[1]), false, ServerFieldTypeSet(), std::string(), true));
-  fetcher = factory.GetFetcherByID(4);
-  EXPECT_EQ(NULL, fetcher);
 
   // Modify form structures to miss the cache.
   field.label = ASCIIToUTF16("Address line 2");
@@ -322,7 +304,7 @@ TEST_F(AutofillDownloadManagerTest, QueryAndUploadTest) {
   form_structure = new FormStructure(form);
   form_structures.push_back(form_structure);
 
-  // Request with id 4.
+  // Request with id 4, not successful.
   EXPECT_TRUE(download_manager_.StartQueryRequest(form_structures.get()));
   fetcher = factory.GetFetcherByID(4);
   ASSERT_TRUE(fetcher);
@@ -331,6 +313,7 @@ TEST_F(AutofillDownloadManagerTest, QueryAndUploadTest) {
   FakeOnURLFetchComplete(fetcher, net::HTTP_INTERNAL_SERVER_ERROR,
                          std::string(responses[0]));
 
+  // Check Request 4.
   EXPECT_EQ(AutofillDownloadManagerTest::REQUEST_QUERY_FAILED,
             responses_.front().type_of_response);
   EXPECT_EQ(net::HTTP_INTERNAL_SERVER_ERROR, responses_.front().error);
@@ -427,9 +410,6 @@ TEST_F(AutofillDownloadManagerTest, BackoffLogic_Upload) {
 
   scoped_ptr<FormStructure> form_structure(new FormStructure(form));
 
-  // Set upload to 100% so requests happen.
-  download_manager_.SetPositiveUploadRate(1.0);
-  download_manager_.SetNegativeUploadRate(1.0);
   // Request with id 0.
   EXPECT_TRUE(download_manager_.StartUploadRequest(
       *form_structure, true, ServerFieldTypeSet(), std::string(), true));
@@ -447,19 +427,28 @@ TEST_F(AutofillDownloadManagerTest, BackoffLogic_Upload) {
       base::TimeDelta::FromMilliseconds(1100));
   base::MessageLoop::current()->Run();
 
-  // Get the retried request.
+  // Check that it was a failure.
+  EXPECT_EQ(AutofillDownloadManagerTest::REQUEST_UPLOAD_FAILED,
+            responses_.front().type_of_response);
+  EXPECT_EQ(net::HTTP_NOT_FOUND, responses_.front().error);
+  EXPECT_EQ(form_structure->FormSignature(), responses_.front().signature);
+  // Expected response on non-query request is an empty string.
+  EXPECT_EQ(std::string(), responses_.front().response);
+  responses_.pop_front();
+
+  // Get the retried request, and make it successful.
   fetcher = factory.GetFetcherByID(1);
   ASSERT_TRUE(fetcher);
+  FakeOnURLFetchComplete(fetcher, net::HTTP_OK, "");
 
-  // The retried request is a success.
-  FakeOnURLFetchComplete(fetcher, net::HTTP_OK,
-                         "<autofilluploadresponse positiveuploadrate=\"0.5\""
-                         " negativeuploadrate=\"0.3\"/>");
-  EXPECT_EQ(2U, responses_.size());
-
-  // After last success, upload rates are adjusted to 0.5/0.3.
-  EXPECT_DOUBLE_EQ(0.5, download_manager_.GetPositiveUploadRate());
-  EXPECT_DOUBLE_EQ(0.3, download_manager_.GetNegativeUploadRate());
+  // Check success of response.
+  EXPECT_EQ(AutofillDownloadManagerTest::UPLOAD_SUCCESSFULL,
+            responses_.front().type_of_response);
+  EXPECT_EQ(0, responses_.front().error);
+  EXPECT_EQ(std::string(), responses_.front().signature);
+  // Expected response on non-query request is an empty string.
+  EXPECT_EQ(std::string(), responses_.front().response);
+  responses_.pop_front();
 }
 
 TEST_F(AutofillDownloadManagerTest, QueryTooManyFieldsTest) {
@@ -749,10 +738,6 @@ TEST_F(AutofillDownloadManagerTest, UploadRequestIsGzipped) {
   FormStructure* form_structure = new FormStructure(form);
   ScopedVector<FormStructure> form_structures;
   form_structures.push_back(form_structure);
-
-  // Set upload to 100% so requests happen.
-  download_manager_.SetPositiveUploadRate(1.0);
-  download_manager_.SetNegativeUploadRate(1.0);
 
   base::HistogramTester histogram;
   // Request with id 0.

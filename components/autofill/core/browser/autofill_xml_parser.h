@@ -37,24 +37,6 @@ bool ParseAutofillQueryXml(std::string xml,
                            std::vector<AutofillServerFieldInfo>* field_infos,
                            UploadRequired* upload_required);
 
-// The XML parser for Autofill upload responses.  Typical upload responses look
-// like:
-//
-// <autofilluploadresponse negativeuploadrate="0.00125" positiveuploadrate="1"/>
-//
-// The positive upload rate is the percentage of uploads to send to the server
-// when something in the users profile matches what they have entered in a form.
-// The negative upload rate is the percentage of uploads to send when nothing in
-// the form matches what's in the users profile.
-// The negative upload rate is typically much lower than the positive upload
-// rate.
-//
-// Parses |xml| and on success returns true and fills the upload rates based on
-// the attributes of the autofilluploadresponse tag. On failure returns false.
-bool ParseAutofillUploadXml(std::string xml,
-                            double* positive_upload_rate,
-                            double* negative_upload_rate);
-
 }  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_XML_PARSER_H_
