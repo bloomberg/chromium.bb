@@ -51,7 +51,7 @@
 // border, unless it's the selected tab.
 - (void)drawBorder:(NSRect)dirtyRect {
   NSWindow* window = [self window];
-  ui::ThemeProvider* themeProvider = [window themeProvider];
+  const ui::ThemeProvider* themeProvider = [window themeProvider];
   if (!themeProvider)
     return;
 

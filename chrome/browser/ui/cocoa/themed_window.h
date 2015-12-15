@@ -33,7 +33,7 @@ enum ThemeImageAlignment {
 
 // Implemented by windows that support theming.
 @interface NSWindow (ThemeProvider)
-- (ThemeProvider*)themeProvider;
+- (const ThemeProvider*)themeProvider;
 - (ThemedWindowStyle)themedWindowStyle;
 
 // Returns the position in window coordinates that the top left of a theme

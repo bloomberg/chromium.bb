@@ -29,7 +29,7 @@
 
 @implementation TabWindowOverlayWindow
 
-- (ui::ThemeProvider*)themeProvider {
+- (const ui::ThemeProvider*)themeProvider {
   if ([self parentWindow])
     return [[[self parentWindow] windowController] themeProvider];
   return NULL;

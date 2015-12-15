@@ -69,7 +69,7 @@ typedef enum {
 // Turn off theming.  Temporary work-around.
 - (void)setShouldTheme:(BOOL)shouldTheme;
 
-- (void)drawBorderAndFillForTheme:(ui::ThemeProvider*)themeProvider
+- (void)drawBorderAndFillForTheme:(const ui::ThemeProvider*)themeProvider
                       controlView:(NSView*)controlView
                         innerPath:(NSBezierPath*)innerPath
               showClickedGradient:(BOOL)showClickedGradient

@@ -130,7 +130,7 @@ const CGFloat kImageNoFocusAlpha = 0.65;
   return windowHasFocus ? 1.0 : kImageNoFocusAlpha;
 }
 
-- (ui::ThemeProvider*)themeProviderForWindow:(NSWindow*)window {
+- (const ui::ThemeProvider*)themeProviderForWindow:(NSWindow*)window {
   return [window themeProvider];
 }
 
@@ -174,7 +174,7 @@ const CGFloat kImageNoFocusAlpha = 0.65;
   if (!imageID)
     return nil;
 
-  ui::ThemeProvider* themeProvider =
+  const ui::ThemeProvider* themeProvider =
       [self themeProviderForWindow:[controlView window]];
   if (!themeProvider)
     return nil;

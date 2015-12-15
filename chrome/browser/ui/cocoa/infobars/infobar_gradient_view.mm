@@ -47,7 +47,7 @@
 }
 
 - (NSColor*)strokeColor {
-  ui::ThemeProvider* themeProvider = [[self window] themeProvider];
+  const ui::ThemeProvider* themeProvider = [[self window] themeProvider];
   if (!themeProvider)
     return [NSColor blackColor];
 

@@ -340,7 +340,7 @@ static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
 }
 
 // TODO(viettrungluu): clean up/reorganize.
-- (void)drawBorderAndFillForTheme:(ui::ThemeProvider*)themeProvider
+- (void)drawBorderAndFillForTheme:(const ui::ThemeProvider*)themeProvider
                       controlView:(NSView*)controlView
                         innerPath:(NSBezierPath*)innerPath
               showClickedGradient:(BOOL)showClickedGradient
@@ -526,7 +526,7 @@ static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
   BOOL pressed = ([((NSControl*)[self controlView]) isEnabled] &&
                   [self isHighlighted]);
   NSWindow* window = [controlView window];
-  ui::ThemeProvider* themeProvider = [window themeProvider];
+  const ui::ThemeProvider* themeProvider = [window themeProvider];
   BOOL active = [window isKeyWindow] || [window isMainWindow];
 
   // Draw custom focus ring only if AppKit won't draw one automatically.
@@ -604,7 +604,8 @@ static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
     CGContextRef context =
         (CGContextRef)([[NSGraphicsContext currentContext] graphicsPort]);
 
-    ui::ThemeProvider* themeProvider = [[controlView window] themeProvider];
+    const ui::ThemeProvider* themeProvider =
+        [[controlView window] themeProvider];
     NSColor* color = themeProvider ?
         themeProvider->GetNSColorTint(ThemeProperties::TINT_BUTTONS) :
         [NSColor blackColor];

@@ -30,7 +30,7 @@
 
 - (NSColor*)strokeColor {
   BOOL isActive = [[self window] isMainWindow];
-  ui::ThemeProvider* themeProvider = [[self window] themeProvider];
+  const ui::ThemeProvider* themeProvider = [[self window] themeProvider];
   return themeProvider ? themeProvider->GetNSColor(
       isActive ? ThemeProperties::COLOR_TOOLBAR_STROKE :
                  ThemeProperties::COLOR_TOOLBAR_STROKE_INACTIVE) :
@@ -61,7 +61,7 @@
   // Draw the top highlight
   borderRect.origin.y -= [self cr_lineWidth];
   if (NSIntersectsRect(borderRect, dirtyRect)) {
-    ui::ThemeProvider* themeProvider = [[self window] themeProvider];
+    const ui::ThemeProvider* themeProvider = [[self window] themeProvider];
     if (themeProvider) {
       int resourceName = themeProvider->UsingSystemTheme()
                              ? ThemeProperties::COLOR_TOOLBAR_BEZEL

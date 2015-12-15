@@ -10,7 +10,7 @@
 
 @implementation ChromeBrowserWindow
 
-- (ui::ThemeProvider*)themeProvider {
+- (const ui::ThemeProvider*)themeProvider {
   id delegate = [self delegate];
   if (![delegate respondsToSelector:@selector(themeProvider)])
     return NULL;

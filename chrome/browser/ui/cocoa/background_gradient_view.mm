@@ -55,7 +55,7 @@
       cr_setPatternPhase:[self patternPhase]
                  forView:[self cr_viewBeingDrawnTo]];
 
-  ui::ThemeProvider* themeProvider = [[self window] themeProvider];
+  const ui::ThemeProvider* themeProvider = [[self window] themeProvider];
   if (themeProvider && !themeProvider->UsingSystemTheme()) {
     // If the background image is semi transparent then we need something
     // to blend against. Using 20% black gives us a color similar to Windows.
@@ -91,7 +91,7 @@
     window = [window parentWindow];
   BOOL isActive = [window isMainWindow];
 
-  ui::ThemeProvider* themeProvider = [window themeProvider];
+  const ui::ThemeProvider* themeProvider = [window themeProvider];
   if (!themeProvider)
     return [NSColor blackColor];
   return themeProvider->GetNSColor(
@@ -100,7 +100,7 @@
 }
 
 - (NSColor*)backgroundImageColor {
-  ui::ThemeProvider* themeProvider = [[self window] themeProvider];
+  const ui::ThemeProvider* themeProvider = [[self window] themeProvider];
   if (!themeProvider)
     return [[self window] backgroundColor];
 
@@ -131,7 +131,7 @@
 - (void)viewWillStartLiveResize {
   [super viewWillStartLiveResize];
 
-  ui::ThemeProvider* themeProvider = [[self window] themeProvider];
+  const ui::ThemeProvider* themeProvider = [[self window] themeProvider];
   if (themeProvider && themeProvider->UsingSystemTheme()) {
     // The default theme's background image is a subtle texture pattern that
     // we can scale without being easily noticed. Optimize this case by

@@ -250,7 +250,7 @@ const CGFloat kWindowGradientHeight = 24.0;
                            forView:(NSView*)view
                             bounds:(NSRect)bounds
               forceBlackBackground:(BOOL)forceBlackBackground {
-  ui::ThemeProvider* themeProvider = [[view window] themeProvider];
+  const ui::ThemeProvider* themeProvider = [[view window] themeProvider];
   if (!themeProvider)
     return NO;
 
@@ -341,7 +341,7 @@ const CGFloat kWindowGradientHeight = 24.0;
 }
 
 - (NSColor*)titleColor {
-  ui::ThemeProvider* themeProvider = [self themeProvider];
+  const ui::ThemeProvider* themeProvider = [self themeProvider];
   if (!themeProvider)
     return [NSColor windowFrameTextColor];
 

@@ -2358,7 +2358,7 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
 }
 
 - (void)setNewTabImages {
-  ui::ThemeProvider* theme = [[tabStripView_ window] themeProvider];
+  const ui::ThemeProvider* theme = [[tabStripView_ window] themeProvider];
   if (!theme)
     return;
 

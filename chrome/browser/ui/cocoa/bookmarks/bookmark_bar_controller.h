@@ -436,7 +436,7 @@ willAnimateFromState:(BookmarkBar::State)oldState
 - (void)frameDidChange;
 - (int64)nodeIdFromMenuTag:(int32)tag;
 - (int32)menuTagFromNodeId:(int64)menuid;
-- (void)updateTheme:(ui::ThemeProvider*)themeProvider;
+- (void)updateTheme:(const ui::ThemeProvider*)themeProvider;
 - (BookmarkButton*)buttonForDroppingOnAtPoint:(NSPoint)point;
 - (BOOL)isEventAnExitEvent:(NSEvent*)event;
 - (BOOL)shrinkOrHideView:(NSView*)view forMaxX:(CGFloat)maxViewX;

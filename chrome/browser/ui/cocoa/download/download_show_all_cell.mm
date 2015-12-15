@@ -39,8 +39,8 @@ const CGFloat kTextPosTop = 10;
 const CGFloat kOuterStrokeWidth = 1;
 
 @interface DownloadShowAllCell(Private)
-- (ui::ThemeProvider*)backgroundThemeWrappingProvider:
-    (ui::ThemeProvider*)provider;
+- (const ui::ThemeProvider*)backgroundThemeWrappingProvider:
+    (const ui::ThemeProvider*)provider;
 - (BOOL)pressedWithDefaultTheme;
 - (NSColor*)titleColor;
 @end
@@ -72,8 +72,8 @@ const CGFloat kOuterStrokeWidth = 1;
   // Override to make sure it doesn't do anything if it's called accidentally.
 }
 
-- (ui::ThemeProvider*)backgroundThemeWrappingProvider:
-    (ui::ThemeProvider*)provider {
+- (const ui::ThemeProvider*)backgroundThemeWrappingProvider:
+    (const ui::ThemeProvider*)provider {
   if (!themeProvider_.get()) {
     themeProvider_.reset(new BackgroundTheme(provider));
   }
@@ -83,7 +83,7 @@ const CGFloat kOuterStrokeWidth = 1;
 
 // Returns if the button was pressed while the default theme was active.
 - (BOOL)pressedWithDefaultTheme {
-  ui::ThemeProvider* themeProvider =
+  const ui::ThemeProvider* themeProvider =
       [[[self controlView] window] themeProvider];
   bool isDefaultTheme =
       !themeProvider->HasCustomImage(IDR_THEME_BUTTON_BACKGROUND);
@@ -92,7 +92,7 @@ const CGFloat kOuterStrokeWidth = 1;
 
 // Returns the text color that should be used to draw title text.
 - (NSColor*)titleColor {
-  ui::ThemeProvider* themeProvider =
+  const ui::ThemeProvider* themeProvider =
       [[[self controlView] window] themeProvider];
   if (!themeProvider || [self pressedWithDefaultTheme])
     return [NSColor alternateSelectedControlTextColor];
@@ -112,7 +112,7 @@ const CGFloat kOuterStrokeWidth = 1;
   // with a background that looks like windows (some transparent white) if a
   // theme is used. Use custom theme object with a white color gradient to trick
   // the superclass into drawing what we want.
-  ui::ThemeProvider* themeProvider =
+  const ui::ThemeProvider* themeProvider =
       [[[self controlView] window] themeProvider];
   if (!themeProvider)
     return;

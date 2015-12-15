@@ -1556,11 +1556,8 @@ void SetUpBrowserWindowCommandHandler(NSWindow* window) {
   }];
 }
 
-// TODO(estade): change this function to return a const* or const& and remove
-// this cast.
-- (ui::ThemeProvider*)themeProvider {
-  return const_cast<ui::ThemeProvider*>(
-      &ThemeService::GetThemeProviderForProfile(browser_->profile()));
+- (const ui::ThemeProvider*)themeProvider {
+  return &ThemeService::GetThemeProviderForProfile(browser_->profile());
 }
 
 - (ThemedWindowStyle)themedWindowStyle {

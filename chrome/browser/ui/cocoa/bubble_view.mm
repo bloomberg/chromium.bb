@@ -76,9 +76,9 @@ const float kWindowEdge = 0.7f;
   float bottomRightRadius =
       cornerFlags_ & kRoundedBottomRightCorner ? kBubbleCornerRadius : 0;
 
-  ui::ThemeProvider* themeProvider =
-      themeProvider_ ? [themeProvider_ themeProvider] :
-                       [[self window] themeProvider];
+  const ui::ThemeProvider* themeProvider = themeProvider_
+                                               ? [themeProvider_ themeProvider]
+                                               : [[self window] themeProvider];
 
   // Background / Edge
 

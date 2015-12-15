@@ -79,7 +79,7 @@ const CGFloat kLabelTextBottomSpacing = 4;
              inView:(NSView*)controlView {
   base::scoped_nsobject<NSMutableAttributedString> themedTitle(
       [[NSMutableAttributedString alloc] initWithAttributedString:title]);
-  ui::ThemeProvider* themeProvider = [[controlView window] themeProvider];
+  const ui::ThemeProvider* themeProvider = [[controlView window] themeProvider];
   if (themeProvider) {
     NSColor* textColor = themeProvider->GetNSColor(
         ThemeProperties::COLOR_SUPERVISED_USER_LABEL);
@@ -92,7 +92,7 @@ const CGFloat kLabelTextBottomSpacing = 4;
 }
 
 - (void)drawInteriorWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
-  ui::ThemeProvider* themeProvider = [[controlView window] themeProvider];
+  const ui::ThemeProvider* themeProvider = [[controlView window] themeProvider];
   if (themeProvider) {
     // Draw the label button background using the color provided by
     // |themeProvider|. First paint the border.

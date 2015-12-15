@@ -8,7 +8,7 @@
 // don't needs to know about the theming machinery.
 @implementation NSWindow (ThemeProvider)
 
-- (ThemeProvider*)themeProvider {
+- (const ThemeProvider*)themeProvider {
   return NULL;
 }
 

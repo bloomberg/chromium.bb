@@ -90,7 +90,7 @@
 
   // Paint button background image if there is one (otherwise the border won't
   // look right).
-  ui::ThemeProvider* themeProvider = [[controlView window] themeProvider];
+  const ui::ThemeProvider* themeProvider = [[controlView window] themeProvider];
   if (themeProvider) {
     NSColor* backgroundImageColor = nil;
     if (themeProvider->HasCustomImage(IDR_THEME_BUTTON_BACKGROUND)) {

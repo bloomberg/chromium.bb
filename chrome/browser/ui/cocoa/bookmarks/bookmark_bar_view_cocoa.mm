@@ -26,7 +26,7 @@ using bookmarks::BookmarkNode;
 
 @interface BookmarkBarView (Private)
 - (void)themeDidChangeNotification:(NSNotification*)aNotification;
-- (void)updateTheme:(ui::ThemeProvider*)themeProvider;
+- (void)updateTheme:(const ui::ThemeProvider*)themeProvider;
 
 // NSView override.
 - (void)setFrameSize:(NSSize)size;
@@ -82,7 +82,7 @@ using bookmarks::BookmarkNode;
 // controller desn't have access to it until it's placed in the view
 // hierarchy.  This is the spot where we close the loop.
 - (void)viewWillMoveToWindow:(NSWindow*)window {
-  ui::ThemeProvider* themeProvider = [window themeProvider];
+  const ui::ThemeProvider* themeProvider = [window themeProvider];
   [self updateTheme:themeProvider];
   [controller_ updateTheme:themeProvider];
   [super viewWillMoveToWindow:window];
@@ -99,7 +99,7 @@ using bookmarks::BookmarkNode;
 
 // Adapt appearance to the current theme. Called after theme changes and before
 // this is shown for the first time.
-- (void)updateTheme:(ui::ThemeProvider*)themeProvider {
+- (void)updateTheme:(const ui::ThemeProvider*)themeProvider {
   if (!themeProvider)
     return;
 

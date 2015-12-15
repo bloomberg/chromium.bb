@@ -118,8 +118,8 @@ using content::DownloadItem;
 - (void)stopIndeterminateAnimation;
 - (NSString*)elideTitle:(int)availableWidth;
 - (NSString*)elideStatus:(int)availableWidth;
-- (ui::ThemeProvider*)backgroundThemeWrappingProvider:
-    (ui::ThemeProvider*)provider;
+- (const ui::ThemeProvider*)backgroundThemeWrappingProvider:
+    (const ui::ThemeProvider*)provider;
 - (BOOL)pressedWithDefaultThemeOnPart:(DownloadItemMousePosition)part;
 - (NSColor*)titleColorForPart:(DownloadItemMousePosition)part;
 - (void)drawSecondaryTitleInRect:(NSRect)innerFrame;
@@ -386,8 +386,8 @@ using content::DownloadItem;
       availableWidth, gfx::ELIDE_TAIL));
 }
 
-- (ui::ThemeProvider*)backgroundThemeWrappingProvider:
-    (ui::ThemeProvider*)provider {
+- (const ui::ThemeProvider*)backgroundThemeWrappingProvider:
+    (const ui::ThemeProvider*)provider {
   if (!themeProvider_.get()) {
     themeProvider_.reset(new BackgroundTheme(provider));
   }
@@ -403,7 +403,7 @@ using content::DownloadItem;
 
 // Returns the text color that should be used to draw text on |part|.
 - (NSColor*)titleColorForPart:(DownloadItemMousePosition)part {
-  ui::ThemeProvider* themeProvider =
+  const ui::ThemeProvider* themeProvider =
       [[[self controlView] window] themeProvider];
   if ([self pressedWithDefaultThemeOnPart:part] || !themeProvider)
     return [NSColor alternateSelectedControlTextColor];
@@ -443,7 +443,7 @@ using content::DownloadItem;
 }
 
 - (BOOL)isDefaultTheme {
-  ui::ThemeProvider* themeProvider =
+  const ui::ThemeProvider* themeProvider =
       [[[self controlView] window] themeProvider];
   if (!themeProvider)
     return YES;
@@ -463,7 +463,7 @@ using content::DownloadItem;
   // with a background that looks like windows (some transparent white) if a
   // theme is used. Use custom theme object with a white color gradient to trick
   // the superclass into drawing what we want.
-  ui::ThemeProvider* themeProvider =
+  const ui::ThemeProvider* themeProvider =
       [[[self controlView] window] themeProvider];
 
   NSGradient* bgGradient = nil;
@@ -559,7 +559,7 @@ using content::DownloadItem;
     canvas.set_composite_alpha(true);
     canvas.Translate(gfx::Vector2d(x, y));
 
-    ui::ThemeProvider* themeProvider =
+    const ui::ThemeProvider* themeProvider =
         [[[self controlView] window] themeProvider];
     ui::DefaultThemeProvider defaultTheme;
     if (!themeProvider)

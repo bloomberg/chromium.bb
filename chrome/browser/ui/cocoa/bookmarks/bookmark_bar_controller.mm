@@ -1198,7 +1198,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   // the hierarchy.  If that second part is now true, set the color.
   // (If not we'll set the color on the 1st themeChanged:
   // notification.)
-  ui::ThemeProvider* themeProvider = [[[self view] window] themeProvider];
+  const ui::ThemeProvider* themeProvider = [[[self view] window] themeProvider];
   if (themeProvider) {
     NSColor* color =
         themeProvider->GetNSColor(ThemeProperties::COLOR_BOOKMARK_TEXT);
@@ -1915,7 +1915,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 // because our trigger is an [NSView viewWillMoveToWindow:], which the
 // controller doesn't normally know about.  Otherwise we don't have
 // access to the theme before we know what window we will be on.
-- (void)updateTheme:(ui::ThemeProvider*)themeProvider {
+- (void)updateTheme:(const ui::ThemeProvider*)themeProvider {
   if (!themeProvider)
     return;
   NSColor* color =

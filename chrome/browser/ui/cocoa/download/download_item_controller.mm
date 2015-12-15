@@ -83,7 +83,7 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
 
 @interface DownloadItemController (Private)
 - (void)themeDidChangeNotification:(NSNotification*)aNotification;
-- (void)updateTheme:(ui::ThemeProvider*)themeProvider;
+- (void)updateTheme:(const ui::ThemeProvider*)themeProvider;
 - (void)setState:(DownloadItemState)state;
 - (void)initExperienceSamplingEvent:(const char*)event;
 - (void)updateExperienceSamplingEvent:(const char*)event;
@@ -320,7 +320,7 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
 
 // Adapt appearance to the current theme. Called after theme changes and before
 // this is shown for the first time.
-- (void)updateTheme:(ui::ThemeProvider*)themeProvider {
+- (void)updateTheme:(const ui::ThemeProvider*)themeProvider {
   if (!themeProvider)
     return;
 

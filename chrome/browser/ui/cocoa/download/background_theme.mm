@@ -6,8 +6,8 @@
 
 #import "chrome/browser/themes/theme_properties.h"
 
-BackgroundTheme::BackgroundTheme(ui::ThemeProvider* provider) :
-    provider_(provider) {
+BackgroundTheme::BackgroundTheme(const ui::ThemeProvider* provider)
+    : provider_(provider) {
   NSColor* bgColor = [NSColor colorWithCalibratedRed:241/255.0
                                                green:245/255.0
                                                 blue:250/255.0

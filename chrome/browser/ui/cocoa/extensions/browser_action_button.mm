@@ -566,8 +566,8 @@ void ToolbarActionViewDelegateBridge::DoShowContextMenu() {
                                    yRadius:2] fill];
 }
 
-- (ui::ThemeProvider*)themeProviderForWindow:(NSWindow*)window {
-  ui::ThemeProvider* themeProvider = [window themeProvider];
+- (const ui::ThemeProvider*)themeProviderForWindow:(NSWindow*)window {
+  const ui::ThemeProvider* themeProvider = [window themeProvider];
   if (!themeProvider)
     themeProvider =
         [[browserActionsController_ browser]->window()->GetNativeWindow()

@@ -356,7 +356,7 @@ class Command;
 - (void)updateDevToolsForContents:(content::WebContents*)contents;
 
 // Gets the current theme provider.
-- (ui::ThemeProvider*)themeProvider;
+- (const ui::ThemeProvider*)themeProvider;
 
 // Gets the window style.
 - (ThemedWindowStyle)themedWindowStyle;

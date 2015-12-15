@@ -12,7 +12,7 @@
 
 class BackgroundTheme : public ui::ThemeProvider {
  public:
-  BackgroundTheme(ui::ThemeProvider* provider);
+  BackgroundTheme(const ui::ThemeProvider* provider);
   ~BackgroundTheme() override;
 
   // Overridden from ui::ThemeProvider:
@@ -31,7 +31,7 @@ class BackgroundTheme : public ui::ThemeProvider {
   NSGradient* GetNSGradient(int id) const override;
 
  private:
-  ui::ThemeProvider* provider_;
+  const ui::ThemeProvider* provider_;
   base::scoped_nsobject<NSGradient> buttonGradient_;
   base::scoped_nsobject<NSGradient> buttonPressedGradient_;
   base::scoped_nsobject<NSColor> borderColor_;
