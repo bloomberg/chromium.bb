@@ -381,17 +381,12 @@ html[dir='rtl'] .entry-name {
 }
 
 .shown > .cr-dialog-frame {
-  -webkit-transform: perspective(500px) scale(1)
-                     translateY(0) rotateX(0);
   opacity: 1;
 }
 
 .cr-dialog-frame {
-  -webkit-transform: perspective(500px) scale(0.99)
-                     translateY(-20px) rotateX(5deg);
   opacity: 0;
-  transition: all 180ms;
-  transition-duration: 250ms;
+  transition: opacity 250ms;
 }
 
 .cr-dialog-shield {
