@@ -438,16 +438,18 @@ drm_intel_gem_dump_validation_list(drm_intel_bufmgr_gem *bufmgr_gem)
 			drm_intel_bo_gem *target_gem =
 			    (drm_intel_bo_gem *) target_bo;
 
-			DBG("%2d: %d %s(%s)@0x%016llx -> "
-			    "%d (%s)@0x%016llx + 0x%08x\n",
+			DBG("%2d: %d %s(%s)@0x%08x %08x -> "
+			    "%d (%s)@0x%08x %08x + 0x%08x\n",
 			    i,
 			    bo_gem->gem_handle,
 			    bo_gem->is_softpin ? "*" : "",
 			    bo_gem->name,
-			    (unsigned long long) bo_gem->relocs[j].offset,
+			    upper_32_bits(bo_gem->relocs[j].offset),
+			    lower_32_bits(bo_gem->relocs[j].offset),
 			    target_gem->gem_handle,
 			    target_gem->name,
-			    (unsigned long long) target_bo->offset64,
+			    upper_32_bits(target_bo->offset64),
+			    lower_32_bits(target_bo->offset64),
 			    bo_gem->relocs[j].delta);
 		}
 
@@ -456,14 +458,15 @@ drm_intel_gem_dump_validation_list(drm_intel_bufmgr_gem *bufmgr_gem)
 			drm_intel_bo_gem *target_gem =
 			    (drm_intel_bo_gem *) target_bo;
 			DBG("%2d: %d %s(%s) -> "
-			    "%d *(%s)@0x%016lx\n",
+			    "%d *(%s)@0x%08x %08x\n",
 			    i,
 			    bo_gem->gem_handle,
 			    bo_gem->is_softpin ? "*" : "",
 			    bo_gem->name,
 			    target_gem->gem_handle,
 			    target_gem->name,
-			    target_bo->offset64);
+			    upper_32_bits(target_bo->offset64),
+			    lower_32_bits(target_bo->offset64));
 		}
 	}
 }
@@ -2242,10 +2245,12 @@ drm_intel_update_buffer_offsets2 (drm_intel_bufmgr_gem *bufmgr_gem)
 			 * has relocated our object... Indicating a programming error
 			 */
 			assert(!bo_gem->is_softpin);
-			DBG("BO %d (%s) migrated: 0x%016llx -> 0x%016llx\n",
+			DBG("BO %d (%s) migrated: 0x%08x %08x -> 0x%08x %08x\n",
 			    bo_gem->gem_handle, bo_gem->name,
-			    (unsigned long long) bo->offset64,
-			    (unsigned long long) bufmgr_gem->exec2_objects[i].offset);
+			    upper_32_bits(bo->offset64),
+			    lower_32_bits(bo->offset64),
+			    upper_32_bits(bufmgr_gem->exec2_objects[i].offset),
+			    lower_32_bits(bufmgr_gem->exec2_objects[i].offset));
 			bo->offset64 = bufmgr_gem->exec2_objects[i].offset;
 			bo->offset = bufmgr_gem->exec2_objects[i].offset;
 		}
