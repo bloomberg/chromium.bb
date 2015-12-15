@@ -154,7 +154,7 @@ public class TouchInputHandler implements TouchInputHandlerInterface {
     public void onClientSizeChanged(int width, int height) {
         mPanGestureBounds = new Rect(
                 mEdgeSlopInPx, mEdgeSlopInPx, width - mEdgeSlopInPx, height - mEdgeSlopInPx);
-        mDesktopCanvas.repositionImageWithZoom();
+        mDesktopCanvas.repositionImageWithZoom(true);
     }
 
     @Override
@@ -174,7 +174,7 @@ public class TouchInputHandler implements TouchInputHandlerInterface {
             }
         }
 
-        mDesktopCanvas.repositionImageWithZoom();
+        mDesktopCanvas.repositionImage(true);
     }
 
     @Override
@@ -224,9 +224,10 @@ public class TouchInputHandler implements TouchInputHandlerInterface {
         if (mInputStrategy.isIndirectInputMode() || mIsDragging) {
             viewportPoint = mDesktopCanvas.getViewportPosition();
         } else {
+            PointF adjustedViewportSize = mDesktopCanvas.getViewportSize();
             synchronized (mRenderData) {
-                float[] viewportPosition = new float[] {(float) mRenderData.screenWidth / 2,
-                                                        (float) mRenderData.screenHeight / 2};
+                float[] viewportPosition = new float[] {(float) adjustedViewportSize.x / 2,
+                                                        (float) adjustedViewportSize.y / 2};
                 Matrix inverted = new Matrix();
                 mRenderData.transform.invert(inverted);
                 inverted.mapPoints(viewportPosition);
@@ -265,7 +266,7 @@ public class TouchInputHandler implements TouchInputHandlerInterface {
             moveCursor((int) newX, (int) newY);
         }
 
-        mDesktopCanvas.repositionImage();
+        mDesktopCanvas.repositionImage(true);
     }
 
     /** Moves the cursor to the specified position on the screen. */
@@ -402,7 +403,9 @@ public class TouchInputHandler implements TouchInputHandlerInterface {
                 mRenderData.transform.postScale(
                         scaleFactor, scaleFactor, detector.getFocusX(), detector.getFocusY());
             }
-            mDesktopCanvas.repositionImageWithZoom();
+            // For indirect input modes we want to zoom using the cursor as the focal point, for
+            // direct modes we use the actual focal point of the gesture.
+            mDesktopCanvas.repositionImageWithZoom(mInputStrategy.isIndirectInputMode());
 
             return true;
         }
