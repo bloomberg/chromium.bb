@@ -449,6 +449,122 @@ TEST_F(ScoredHistoryMatchTest, GetTopicalityScoreTrailingSlash) {
   EXPECT_EQ(hostname_no_slash, hostname);
 }
 
+TEST_F(ScoredHistoryMatchTest, FilterMatches) {
+  // For ease in interpreting this test, imagine the URL
+  //    http://test.com/default/foo.aspxhome/hello.html.
+  //    012345678901234567890123456789012345678901234567
+  //              1         2         3         4
+  // We test how FilterTermMatchesByWordStarts() reacts to various
+  // one-character inputs.
+  WordStarts terms_to_word_starts_offsets;
+  terms_to_word_starts_offsets.push_back(0);
+  WordStarts word_starts;
+  word_starts.push_back(0);
+  word_starts.push_back(7);
+  word_starts.push_back(12);
+  word_starts.push_back(16);
+  word_starts.push_back(24);
+  word_starts.push_back(28);
+  word_starts.push_back(37);
+  word_starts.push_back(43);
+
+  // Check that "h" matches "http", "hello", and "html" but not "aspxhome" when
+  // asked to filter non-word-start matches after the hostname.  The "15" in
+  // the filter call below is the position of the "/" ending the hostname.
+  TermMatches term_matches;
+  term_matches.push_back(TermMatch(0, 0, 1));
+  term_matches.push_back(TermMatch(0, 32, 1));
+  term_matches.push_back(TermMatch(0, 37, 1));
+  term_matches.push_back(TermMatch(0, 43, 1));
+  TermMatches filtered_term_matches =
+      ScoredHistoryMatch::FilterTermMatchesByWordStarts(
+          term_matches, terms_to_word_starts_offsets, word_starts, 15,
+          std::string::npos);
+  ASSERT_EQ(3u, filtered_term_matches.size());
+  EXPECT_EQ(0u, filtered_term_matches[0].offset);
+  EXPECT_EQ(37u, filtered_term_matches[1].offset);
+  EXPECT_EQ(43u, filtered_term_matches[2].offset);
+  // The "http" match should remain after removing the mid-word matches in the
+  // scheme.  The "4" is the position of the ":" character ending the scheme.
+  filtered_term_matches = ScoredHistoryMatch::FilterTermMatchesByWordStarts(
+      filtered_term_matches, terms_to_word_starts_offsets, word_starts, 0, 5);
+  ASSERT_EQ(3u, filtered_term_matches.size());
+  EXPECT_EQ(0u, filtered_term_matches[0].offset);
+  EXPECT_EQ(37u, filtered_term_matches[1].offset);
+  EXPECT_EQ(43u, filtered_term_matches[2].offset);
+
+  // Check that "t" matches "http" twice and "test" twice but not "default" or
+  // "html" when asked to filter non-word-start matches after the hostname.
+  term_matches.clear();
+  term_matches.push_back(TermMatch(0, 1, 1));
+  term_matches.push_back(TermMatch(0, 2, 1));
+  term_matches.push_back(TermMatch(0, 7, 1));
+  term_matches.push_back(TermMatch(0, 10, 1));
+  term_matches.push_back(TermMatch(0, 22, 1));
+  term_matches.push_back(TermMatch(0, 45, 1));
+  filtered_term_matches = ScoredHistoryMatch::FilterTermMatchesByWordStarts(
+      term_matches, terms_to_word_starts_offsets, word_starts, 15,
+      std::string::npos);
+  ASSERT_EQ(4u, filtered_term_matches.size());
+  EXPECT_EQ(1u, filtered_term_matches[0].offset);
+  EXPECT_EQ(2u, filtered_term_matches[1].offset);
+  EXPECT_EQ(7u, filtered_term_matches[2].offset);
+  EXPECT_EQ(10u, filtered_term_matches[3].offset);
+  // The "http" matches should disappear after removing mid-word matches in the
+  // scheme.
+  filtered_term_matches = ScoredHistoryMatch::FilterTermMatchesByWordStarts(
+      filtered_term_matches, terms_to_word_starts_offsets, word_starts, 0, 4);
+  ASSERT_EQ(2u, filtered_term_matches.size());
+  EXPECT_EQ(7u, filtered_term_matches[0].offset);
+  EXPECT_EQ(10u, filtered_term_matches[1].offset);
+
+  // Check that "e" matches "test" but not "default" or "hello" when asked to
+  // filter non-word-start matches after the hostname.
+  term_matches.clear();
+  term_matches.push_back(TermMatch(0, 8, 1));
+  term_matches.push_back(TermMatch(0, 17, 1));
+  term_matches.push_back(TermMatch(0, 38, 1));
+  filtered_term_matches = ScoredHistoryMatch::FilterTermMatchesByWordStarts(
+      term_matches, terms_to_word_starts_offsets, word_starts, 15,
+      std::string::npos);
+  ASSERT_EQ(1u, filtered_term_matches.size());
+  EXPECT_EQ(8u, filtered_term_matches[0].offset);
+
+  // Check that "d" matches "default" when asked to filter non-word-start
+  // matches after the hostname.
+  term_matches.clear();
+  term_matches.push_back(TermMatch(0, 16, 1));
+  filtered_term_matches = ScoredHistoryMatch::FilterTermMatchesByWordStarts(
+      term_matches, terms_to_word_starts_offsets, word_starts, 15,
+      std::string::npos);
+  ASSERT_EQ(1u, filtered_term_matches.size());
+  EXPECT_EQ(16u, filtered_term_matches[0].offset);
+
+  // Check that "a" matches "aspxhome" but not "default" when asked to filter
+  // non-word-start matches after the hostname.
+  term_matches.clear();
+  term_matches.push_back(TermMatch(0, 19, 1));
+  term_matches.push_back(TermMatch(0, 28, 1));
+  filtered_term_matches = ScoredHistoryMatch::FilterTermMatchesByWordStarts(
+      term_matches, terms_to_word_starts_offsets, word_starts, 15,
+      std::string::npos);
+  ASSERT_EQ(1u, filtered_term_matches.size());
+  EXPECT_EQ(28u, filtered_term_matches[0].offset);
+
+  // Check that ".a" matches "aspxhome", i.e., that we recognize that is
+  // is a valid match at a word break.  To recognize this,
+  // |terms_to_word_starts_offsets| must record that the "word" in this term
+  // starts at the second character.
+  terms_to_word_starts_offsets[0] = 1;
+  term_matches.clear();
+  term_matches.push_back(TermMatch(0, 27, 1));
+  filtered_term_matches = ScoredHistoryMatch::FilterTermMatchesByWordStarts(
+      term_matches, terms_to_word_starts_offsets, word_starts, 15,
+      std::string::npos);
+  ASSERT_EQ(1u, filtered_term_matches.size());
+  EXPECT_EQ(27u, filtered_term_matches[0].offset);
+}
+
 // This function only tests scoring of single terms that match exactly
 // once somewhere in the URL or title.
 TEST_F(ScoredHistoryMatchTest, GetTopicalityScore) {
