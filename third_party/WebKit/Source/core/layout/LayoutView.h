@@ -229,7 +229,8 @@ private:
     int viewLogicalWidthForBoxSizing() const;
     int viewLogicalHeightForBoxSizing() const;
 
-    RawPtrWillBeUntracedMember<FrameView> m_frameView;
+    GC_PLUGIN_IGNORE("http://crbug.com/509911")
+    FrameView* m_frameView;
 
     // The current selection represented as 2 boundaries.
     // Selection boundaries are represented in LayoutView by a tuple

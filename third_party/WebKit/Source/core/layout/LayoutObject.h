@@ -726,12 +726,12 @@ public:
 
     Node* node() const
     {
-        return isAnonymous() ? nullptr : m_node;
+        return isAnonymous() ? 0 : m_node;
     }
 
     Node* nonPseudoNode() const
     {
-        return isPseudoElement() ? nullptr : node();
+        return isPseudoElement() ? 0 : node();
     }
 
     void clearNode() { m_node = nullptr; }
@@ -1545,8 +1545,9 @@ private:
 
     RefPtr<ComputedStyle> m_style;
 
-    // Oilpan: This untraced pointer to the owning Node is considered safe.
-    RawPtrWillBeUntracedMember<Node> m_node;
+    // Oilpan: raw pointer back to the owning Node is considered safe.
+    GC_PLUGIN_IGNORE("http://crbug.com/509911")
+    Node* m_node;
 
     LayoutObject* m_parent;
     LayoutObject* m_previous;
