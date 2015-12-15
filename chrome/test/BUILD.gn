@@ -743,38 +743,6 @@ if (!is_android) {
     ]
   }
 
-  # TODO(GYP): Delete this after we've converted everything to GN.
-  # The _run targets exist only for compatibility w/ GYP.
-  group("telemetry_gpu_new_test_run") {
-    testonly = true
-    deps = [
-      ":telemetry_gpu_new_test",
-    ]
-  }
-
-  group("telemetry_gpu_new_test") {
-    deps = [
-      "//tools/perf/chrome_telemetry_build:telemetry_chrome_test",
-    ]
-
-    data = [
-      # For isolate contract.
-      "//testing/scripts/common.py",
-      "//testing/xvfb.py",
-      "//testing/scripts/run_telemetry_benchmark_as_googletest.py",
-
-      "//content/test/gpu/",
-      "//content/test/data/gpu/",
-
-      # For GpuProcess.video
-      "//content/test/data/media/bear.ogv",
-
-      # For webgl_conformance
-      "//third_party/webgl/",
-      "//content/test/gpu/run_gpu_test.py",
-    ]
-  }
-
   group("telemetry_gpu_unittests_run") {
     testonly = true
     deps = [
