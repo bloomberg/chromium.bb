@@ -96,3 +96,6 @@ suggested workflows.
 
 See [bug-triage-labels.md](bug-triage-labels.md) for labeling tips for network
 and non-network bugs.
+
+See [crash-course-in-net-internals.md](crash-course-in-net-internals.md) for
+some help on getting started with about:net-internals debugging.

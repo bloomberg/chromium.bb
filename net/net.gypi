@@ -1928,6 +1928,7 @@
       'docs/bug-triage-labels.md',
       'docs/bug-triage-suggested-workflow.md',
       'docs/code-patterns.md',
+      'docs/crash-course-in-net-internals.md',
       'docs/life-of-a-url-request.md',
       'sdch/README.md',
     ],
