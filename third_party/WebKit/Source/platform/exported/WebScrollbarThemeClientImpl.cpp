@@ -214,16 +214,6 @@ bool WebScrollbarThemeClientImpl::isOverlayScrollbar() const
     return m_scrollbar.isOverlay();
 }
 
-bool WebScrollbarThemeClientImpl::isAlphaLocked() const
-{
-    return m_scrollbar.isAlphaLocked();
-}
-
-void WebScrollbarThemeClientImpl::setIsAlphaLocked(bool flag)
-{
-    m_scrollbar.setIsAlphaLocked(flag);
-}
-
 float WebScrollbarThemeClientImpl::elasticOverscroll() const
 {
     return m_scrollbar.elasticOverscroll();

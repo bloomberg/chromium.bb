@@ -75,8 +75,6 @@ public:
     bool enabled() const override;
     void setEnabled(bool) override;
     bool isOverlayScrollbar() const override;
-    bool isAlphaLocked() const override;
-    void setIsAlphaLocked(bool) override;
     float elasticOverscroll() const override;
     void setElasticOverscroll(float) override;
     bool trackNeedsRepaint() const override;

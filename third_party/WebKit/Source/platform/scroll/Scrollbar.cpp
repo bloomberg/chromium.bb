@@ -64,7 +64,6 @@ Scrollbar::Scrollbar(ScrollableArea* scrollableArea, ScrollbarOrientation orient
     , m_enabled(true)
     , m_scrollTimer(this, &Scrollbar::autoscrollTimerFired)
     , m_overlapsResizer(false)
-    , m_isAlphaLocked(false)
     , m_elasticOverscroll(0)
     , m_trackNeedsRepaint(true)
     , m_thumbNeedsRepaint(true)

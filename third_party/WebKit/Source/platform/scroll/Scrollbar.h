@@ -135,9 +135,6 @@ public:
 
     void moveThumb(int pos, bool draggingDocument = false);
 
-    bool isAlphaLocked() const override { return m_isAlphaLocked; }
-    void setIsAlphaLocked(bool flag) override { m_isAlphaLocked = flag; }
-
     float elasticOverscroll() const override { return m_elasticOverscroll; }
     void setElasticOverscroll(float elasticOverscroll) override { m_elasticOverscroll = elasticOverscroll; }
 
@@ -196,8 +193,6 @@ protected:
 
     Timer<Scrollbar> m_scrollTimer;
     bool m_overlapsResizer;
-
-    bool m_isAlphaLocked;
 
     float m_elasticOverscroll;
 

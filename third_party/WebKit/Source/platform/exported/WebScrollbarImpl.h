@@ -56,8 +56,6 @@ public:
     bool isCustomScrollbar() const override;
     Orientation orientation() const override;
     bool isLeftSideVerticalScrollbar() const override;
-    bool isAlphaLocked() const override;
-    void setIsAlphaLocked(bool) override;
     float elasticOverscroll() const override;
     void setElasticOverscroll(float) override;
 
