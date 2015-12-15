@@ -264,7 +264,7 @@ ResultExpr RestrictGetSetpriority(pid_t target_pid) {
   const Arg<int> which(0);
   const Arg<int> who(1);
   return If(which == PRIO_PROCESS,
-            If(AnyOf(who == 0, who == target_pid), Allow()).Else(Error(EPERM)))
+            Switch(who).CASES((0, target_pid), Allow()).Default(Error(EPERM)))
       .Else(CrashSIGSYS());
 }
 
@@ -280,8 +280,9 @@ ResultExpr RestrictSchedTarget(pid_t target_pid, int sysno) {
     case __NR_sched_setparam:
     case __NR_sched_setscheduler: {
       const Arg<pid_t> pid(0);
-      return If(AnyOf(pid == 0, pid == target_pid), Allow())
-          .Else(RewriteSchedSIGSYS());
+      return Switch(pid)
+          .CASES((0, target_pid), Allow())
+          .Default(RewriteSchedSIGSYS());
     }
     default:
       NOTREACHED();
@@ -291,7 +292,7 @@ ResultExpr RestrictSchedTarget(pid_t target_pid, int sysno) {
 
 ResultExpr RestrictPrlimit64(pid_t target_pid) {
   const Arg<pid_t> pid(0);
-  return If(AnyOf(pid == 0, pid == target_pid), Allow()).Else(CrashSIGSYS());
+  return Switch(pid).CASES((0, target_pid), Allow()).Default(CrashSIGSYS());
 }
 
 ResultExpr RestrictGetrusage() {
@@ -303,12 +304,11 @@ ResultExpr RestrictGetrusage() {
 ResultExpr RestrictClockID() {
   static_assert(4 == sizeof(clockid_t), "clockid_t is not 32bit");
   const Arg<clockid_t> clockid(0);
-  return If(AnyOf(clockid == CLOCK_MONOTONIC, clockid == CLOCK_MONOTONIC_COARSE,
-                  clockid == CLOCK_PROCESS_CPUTIME_ID,
-                  clockid == CLOCK_REALTIME, clockid == CLOCK_REALTIME_COARSE,
-                  clockid == CLOCK_THREAD_CPUTIME_ID),
-            Allow())
-      .Else(CrashSIGSYS());
+  return Switch(clockid)
+      .CASES((CLOCK_MONOTONIC, CLOCK_MONOTONIC_COARSE, CLOCK_PROCESS_CPUTIME_ID,
+              CLOCK_REALTIME, CLOCK_REALTIME_COARSE, CLOCK_THREAD_CPUTIME_ID),
+             Allow())
+      .Default(CrashSIGSYS());
 }
 
 }  // namespace sandbox.

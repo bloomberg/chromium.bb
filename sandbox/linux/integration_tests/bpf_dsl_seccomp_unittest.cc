@@ -1728,13 +1728,11 @@ ResultExpr PthreadPolicyEquality::EvaluateSyscall(int sysno) const {
                                            CLONE_SIGHAND | CLONE_THREAD |
                                            CLONE_SYSVSEM;
     const Arg<unsigned long> flags(0);
-
-    // TODO(mdempsky): Rewrite to use Switch/CASES once it works.
-    return If(AnyOf(flags == kGlibcCloneMask,
-                    flags == (kBaseAndroidCloneMask | CLONE_DETACHED),
-                    flags == kBaseAndroidCloneMask),
-              Allow())
-        .Else(Trap(PthreadTrapHandler, "Unknown mask"));
+    return Switch(flags)
+        .CASES((kGlibcCloneMask, (kBaseAndroidCloneMask | CLONE_DETACHED),
+                kBaseAndroidCloneMask),
+               Allow())
+        .Default(Trap(PthreadTrapHandler, "Unknown mask"));
   }
 
   return Allow();
