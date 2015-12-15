@@ -299,9 +299,6 @@ INSTANTIATE_TEST_CASE_P(
 
 IN_PROC_BROWSER_TEST_P(WebRtcVideoQualityBrowserTest,
                        MANUAL_TestVideoQuality) {
-  if (OnWinXp())
-    return;  // Fails on XP. http://crbug.com/353078.
-
   ASSERT_GE(TestTimeouts::action_max_timeout().InSeconds(), 150) <<
       "This is a long-running test; you must specify "
       "--ui-test-action-max-timeout to have a value of at least 150000.";

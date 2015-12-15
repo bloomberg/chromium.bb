@@ -654,7 +654,7 @@ void MAYBE_WebRtcAudioQualityBrowserTest::SetupAndRecordAudioCall(
 void MAYBE_WebRtcAudioQualityBrowserTest::TestWithFakeDeviceGetUserMedia(
     const std::string& constraints,
     const std::string& perf_modifier) {
-  if (OnWinXp() || OnWin8()) {
+  if (OnWin8()) {
     // http://crbug.com/379798.
     LOG(ERROR) << "This test is not implemented for Windows XP/Win8.";
     return;
@@ -679,7 +679,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcAudioQualityBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcAudioQualityBrowserTest,
                        MANUAL_TestCallQualityWithAudioFromWebAudio) {
-  if (OnWinXp() || OnWin8()) {
+  if (OnWin8()) {
     // http://crbug.com/379798.
     LOG(ERROR) << "This test is not implemented for Windows XP/Win8.";
     return;
@@ -754,7 +754,7 @@ void MAYBE_WebRtcAudioQualityBrowserTest::TestAutoGainControl(
     const base::FilePath::StringType& reference_filename,
     const std::string& constraints,
     const std::string& perf_modifier) {
-  if (OnWinXp() || OnWin8()) {
+  if (OnWin8()) {
     // http://crbug.com/379798.
     LOG(ERROR) << "This test is not implemented for Windows XP/Win8.";
     return;
