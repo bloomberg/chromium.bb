@@ -4,35 +4,57 @@
 
 import("//chrome/version.gni")
 
-static_library("common") {
-  sources = [
-    "data_reduction_proxy_bypass_action_list.h",
-    "data_reduction_proxy_bypass_type_list.h",
-    "data_reduction_proxy_client_config_parser.cc",
-    "data_reduction_proxy_client_config_parser.h",
-    "data_reduction_proxy_config_values.h",
-    "data_reduction_proxy_event_creator.cc",
-    "data_reduction_proxy_event_creator.h",
-    "data_reduction_proxy_event_storage_delegate.h",
-    "data_reduction_proxy_event_store.cc",
-    "data_reduction_proxy_event_store.h",
-    "data_reduction_proxy_headers.cc",
-    "data_reduction_proxy_headers.h",
-    "data_reduction_proxy_params.cc",
-    "data_reduction_proxy_params.h",
-    "data_reduction_proxy_pref_names.cc",
-    "data_reduction_proxy_pref_names.h",
-    "data_reduction_proxy_switches.cc",
-    "data_reduction_proxy_switches.h",
-  ]
+# Variables:
+#   deps: Extra dependencies.
+template("common_tmpl") {
+  source_set(target_name) {
+    sources = [
+      "data_reduction_proxy_bypass_action_list.h",
+      "data_reduction_proxy_bypass_type_list.h",
+      "data_reduction_proxy_client_config_parser.cc",
+      "data_reduction_proxy_client_config_parser.h",
+      "data_reduction_proxy_config_values.h",
+      "data_reduction_proxy_event_creator.cc",
+      "data_reduction_proxy_event_creator.h",
+      "data_reduction_proxy_event_storage_delegate.h",
+      "data_reduction_proxy_event_store.cc",
+      "data_reduction_proxy_event_store.h",
+      "data_reduction_proxy_headers.cc",
+      "data_reduction_proxy_headers.h",
+      "data_reduction_proxy_params.cc",
+      "data_reduction_proxy_params.h",
+      "data_reduction_proxy_pref_names.cc",
+      "data_reduction_proxy_pref_names.h",
+      "data_reduction_proxy_switches.cc",
+      "data_reduction_proxy_switches.h",
+    ]
 
-  public_deps = [
-    ":version_header",
-  ]
+    public_deps = [
+      ":version_header",
+    ]
+    deps = [
+      "//base",
+      "//components/data_reduction_proxy/proto:data_reduction_proxy_proto",
+      "//components/variations",
+    ]
+
+    if (defined(invoker.deps)) {
+      deps += invoker.deps
+    }
+  }
+}
+
+if (is_android) {
+  common_tmpl("common_small") {
+    deps = [
+      "//net:net_small",
+      "//url:url_lib_use_icu_alternatives_on_android",
+    ]
+  }
+}
+
+common_tmpl("common") {
   deps = [
-    "//base",
-    "//components/data_reduction_proxy/proto:data_reduction_proxy_proto",
-    "//components/variations",
     "//net",
     "//url",
   ]

@@ -5,7 +5,6 @@
 {
   'conditions': [
     ['OS=="android"', {
-      # TODO(mef): Figure out what needs to be done for gn script.
       'targets': [
         {
           'target_name': 'cronet_jni_headers',

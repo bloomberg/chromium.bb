@@ -81,7 +81,7 @@
     },
     {
       # Protobuf compiler / generator for QUIC crypto protocol buffer.
-      # GN version: //net/quic/proto
+      # GN version: //net:net_quic_proto
       'target_name': 'net_quic_proto',
       'type': 'static_library',
       'sources': [

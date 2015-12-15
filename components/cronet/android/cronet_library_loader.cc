@@ -28,7 +28,7 @@
 #include "url/url_util.h"
 
 #if defined(USE_ICU_ALTERNATIVES_ON_ANDROID)
-#include "url/android/url_jni_registrar.h"
+#include "url/android/url_jni_registrar.h"  // nogncheck
 #else
 #include "base/i18n/icu_util.h"
 #endif

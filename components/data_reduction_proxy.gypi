@@ -8,7 +8,6 @@
   {
      'data_reduction_proxy_core_browser_sources' : [
         # Note: sources list duplicated in GN build.
-        "data_reduction_proxy/core/browser/data_reduction_proxy_debug_ui_service.h",
         'data_reduction_proxy/core/browser/data_reduction_proxy_bypass_protocol.cc',
         'data_reduction_proxy/core/browser/data_reduction_proxy_bypass_protocol.h',
         'data_reduction_proxy/core/browser/data_reduction_proxy_bypass_stats.cc',
@@ -23,6 +22,7 @@
         'data_reduction_proxy/core/browser/data_reduction_proxy_config_service_client.h',
         'data_reduction_proxy/core/browser/data_reduction_proxy_configurator.cc',
         'data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h',
+        'data_reduction_proxy/core/browser/data_reduction_proxy_debug_ui_service.h',
         'data_reduction_proxy/core/browser/data_reduction_proxy_delegate.cc',
         'data_reduction_proxy/core/browser/data_reduction_proxy_delegate.h',
         'data_reduction_proxy/core/browser/data_reduction_proxy_experiments_stats.cc',
@@ -88,7 +88,7 @@
     ['OS=="android"', {
       'targets' : [
        {
-         # GN version: //components/data_reduction_proxy/core/browser
+         # GN version: //components/data_reduction_proxy/core/browser:browser_small
          'target_name': 'data_reduction_proxy_core_browser_small',
          'type': 'static_library',
          'dependencies': [
@@ -106,7 +106,7 @@
          ],
        },
        {
-         # GN version: //components/data_reduction_proxy/core/common
+         # GN version: //components/data_reduction_proxy/core/common:common_small
          'target_name': 'data_reduction_proxy_core_common_small',
          'type': 'static_library',
          'dependencies': [

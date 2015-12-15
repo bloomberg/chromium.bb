@@ -191,6 +191,11 @@
             '../cc/blink/cc_blink_tests.gyp:cc_blink_unittests_apk',
             '../cc/cc_tests.gyp:cc_unittests_apk',
             #"//clank" TODO(GYP) - conditional somehow?
+            '../components/components.gyp:cronet_sample_apk',
+            '../components/components.gyp:cronet_sample_test_apk',
+            '../components/components.gyp:cronet_test_apk',
+            '../components/components.gyp:cronet_test_instrumentation_apk',
+            '../components/components.gyp:cronet_unittests_apk',
             '../components/components_tests.gyp:components_browsertests_apk',
             '../components/components_tests.gyp:components_junit_tests',
             '../components/components_tests.gyp:components_unittests_apk',
@@ -761,10 +766,6 @@
           'dependencies': [
             '../base/base.gyp:base_perftests_apk',
             '../cc/cc_tests.gyp:cc_perftests_apk',
-            '../components/components.gyp:cronet_sample_apk',
-            '../components/components.gyp:cronet_sample_test_apk',
-            '../components/components.gyp:cronet_test_apk',
-            '../components/components.gyp:cronet_test_instrumentation_apk',
             '../components/components.gyp:cronet_perf_test_apk',
             '../content/content_shell_and_tests.gyp:chromium_linker_test_apk',
             '../content/content_shell_and_tests.gyp:content_shell_test_apk',
