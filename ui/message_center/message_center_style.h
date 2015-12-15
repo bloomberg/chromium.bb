@@ -118,8 +118,8 @@ const SkColor kHoveredButtonBackgroundColor = SkColorSetRGB(243, 243, 243);
 const int kProgressBarThickness = 5;
 const int kProgressBarTopPadding = 16;
 const int kProgressBarCornerRadius = 3;
-const SkColor kProgressBarBackgroundColor = SkColorSetRGB(216, 216, 216);
-const SkColor kProgressBarSliceColor = SkColorSetRGB(120, 120, 120);
+const SkColor kProgressBarBackgroundColor = SkColorSetARGB(26, 0, 0, 0);
+const SkColor kProgressBarSliceColor = SkColorSetRGB(26, 194, 34);
 
 // Line limits.
 const int kMaxTitleLines = 2;
