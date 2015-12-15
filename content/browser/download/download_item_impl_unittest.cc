@@ -203,21 +203,21 @@ class DownloadItemTest : public testing::Test {
   // be torn down at the end of the test unless DestroyDownloadItem is
   // called.
   DownloadItemImpl* CreateDownloadItem() {
-    // Normally, the download system takes ownership of info, and is
-    // responsible for deleting it.  In these unit tests, however, we
-    // don't call the function that deletes it, so we do so ourselves.
-    scoped_ptr<DownloadCreateInfo> info_;
+    scoped_ptr<DownloadCreateInfo> info;
 
-    info_.reset(new DownloadCreateInfo());
-    static uint32 next_id = DownloadItem::kInvalidId + 1;
-    info_->save_info = scoped_ptr<DownloadSaveInfo>(new DownloadSaveInfo());
-    info_->save_info->prompt_for_save_location = false;
-    info_->url_chain.push_back(GURL());
-    info_->etag = "SomethingToSatisfyResumption";
+    info.reset(new DownloadCreateInfo());
+    info->save_info = scoped_ptr<DownloadSaveInfo>(new DownloadSaveInfo());
+    info->save_info->prompt_for_save_location = false;
+    info->url_chain.push_back(GURL());
+    info->etag = "SomethingToSatisfyResumption";
 
-    DownloadItemImpl* download =
-        new DownloadItemImpl(
-            &delegate_, next_id++, *(info_.get()), net::BoundNetLog());
+    return CreateDownloadItemWithCreateInfo(info.Pass());
+  }
+
+  DownloadItemImpl* CreateDownloadItemWithCreateInfo(
+      scoped_ptr<DownloadCreateInfo> info) {
+    DownloadItemImpl* download = new DownloadItemImpl(
+        &delegate_, next_download_id_++, *(info.get()), net::BoundNetLog());
     allocated_downloads_.insert(download);
     return download;
   }
@@ -312,6 +312,7 @@ class DownloadItemTest : public testing::Test {
   }
 
  private:
+  int next_download_id_ = DownloadItem::kInvalidId + 1;
   base::MessageLoopForUI loop_;
   TestBrowserThread ui_thread_;    // UI thread
   TestBrowserThread file_thread_;  // FILE thread
@@ -404,7 +405,6 @@ TEST_F(DownloadItemTest, ContinueAfterInterrupted) {
   TestBrowserContext test_browser_context;
   DownloadItemImpl* item = CreateDownloadItem();
   TestDownloadItemObserver observer(item);
-  DownloadItemImplDelegate::DownloadTargetCallback callback;
   MockDownloadFile* download_file =
       DoIntermediateRename(item, DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
 
@@ -437,7 +437,6 @@ TEST_F(DownloadItemTest, RestartAfterInterrupted) {
 
   DownloadItemImpl* item = CreateDownloadItem();
   TestDownloadItemObserver observer(item);
-  DownloadItemImplDelegate::DownloadTargetCallback callback;
   MockDownloadFile* download_file =
       DoIntermediateRename(item, DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
 
@@ -461,7 +460,6 @@ TEST_F(DownloadItemTest, UnresumableInterrupt) {
 
   DownloadItemImpl* item = CreateDownloadItem();
   TestDownloadItemObserver observer(item);
-  DownloadItemImplDelegate::DownloadTargetCallback callback;
   MockDownloadFile* download_file =
       DoIntermediateRename(item, DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
 
@@ -544,6 +542,50 @@ TEST_F(DownloadItemTest, LimitRestartsAfterInterrupted) {
   }
 
   CleanupItem(item, mock_download_file, DownloadItem::INTERRUPTED);
+}
+
+// Test that resumption uses the final URL in a URL chain when resuming.
+TEST_F(DownloadItemTest, ResumeUsingFinalURL) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableDownloadResumption);
+
+  TestBrowserContext test_browser_context;
+  scoped_ptr<DownloadCreateInfo> create_info(new DownloadCreateInfo);
+  create_info->save_info = scoped_ptr<DownloadSaveInfo>(new DownloadSaveInfo());
+  create_info->save_info->prompt_for_save_location = false;
+  create_info->etag = "SomethingToSatisfyResumption";
+  create_info->url_chain.push_back(GURL("http://example.com/a"));
+  create_info->url_chain.push_back(GURL("http://example.com/b"));
+  create_info->url_chain.push_back(GURL("http://example.com/c"));
+
+  DownloadItemImpl* item = CreateDownloadItemWithCreateInfo(create_info.Pass());
+  TestDownloadItemObserver observer(item);
+  MockDownloadFile* download_file =
+      DoIntermediateRename(item, DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
+
+  // Interrupt the download, using a continuable interrupt.
+  EXPECT_CALL(*download_file, FullPath()).WillOnce(Return(base::FilePath()));
+  EXPECT_CALL(*download_file, Detach());
+  EXPECT_CALL(*mock_delegate(), GetBrowserContext())
+      .WillRepeatedly(Return(&test_browser_context));
+  EXPECT_CALL(*mock_delegate(), MockResumeInterruptedDownload(
+                                    Property(&DownloadUrlParameters::url,
+                                             GURL("http://example.com/c")),
+                                    _))
+      .Times(1);
+  item->DestinationObserverAsWeakPtr()->DestinationError(
+      DOWNLOAD_INTERRUPT_REASON_FILE_TRANSIENT_ERROR);
+  ASSERT_TRUE(observer.CheckAndResetDownloadUpdated());
+  ASSERT_EQ(1, observer.interrupt_count());
+
+  // Test expectations verify that ResumeInterruptedDownload() is called (by way
+  // of MockResumeInterruptedDownload) after the download is interrupted. But
+  // the mock doesn't follow through with the resumption.
+  // ResumeInterruptedDownload() being called is sufficient for verifying that
+  // the resumption was triggered.
+  RunAllPendingInMessageLoops();
+
+  CleanupItem(item, download_file, DownloadItem::INTERRUPTED);
 }
 
 TEST_F(DownloadItemTest, NotificationAfterRemove) {
