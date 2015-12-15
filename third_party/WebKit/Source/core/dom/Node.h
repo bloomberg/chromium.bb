@@ -305,6 +305,8 @@ public:
     // shadow tree but its root is detached from its host. This can happen when handling
     // queued events (e.g. during execCommand()).
     Element* shadowHost() const;
+    // crbug.com/569532: containingShadowRoot() can return nullptr even if isInShadowTree() returns true.
+    // This can happen when handling queued events (e.g. during execCommand())
     ShadowRoot* containingShadowRoot() const;
     ShadowRoot* youngestShadowRoot() const;
 

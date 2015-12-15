@@ -138,9 +138,10 @@ bool InsertionPoint::shouldUseFallbackElements() const
 
 bool InsertionPoint::canBeActive() const
 {
-    if (!isInShadowTree())
+    ShadowRoot* shadowRoot = containingShadowRoot();
+    if (!shadowRoot)
         return false;
-    if (containingShadowRoot()->isV1())
+    if (shadowRoot->isV1())
         return false;
     return !Traversal<InsertionPoint>::firstAncestor(*this);
 }
@@ -150,8 +151,7 @@ bool InsertionPoint::isActive() const
     if (!canBeActive())
         return false;
     ShadowRoot* shadowRoot = containingShadowRoot();
-    if (!shadowRoot)
-        return false;
+    ASSERT(shadowRoot);
     if (!isHTMLShadowElement(*this) || shadowRoot->descendantShadowElementCount() <= 1)
         return true;
 
