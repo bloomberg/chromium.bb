@@ -251,12 +251,6 @@
 # define NACL_STACK_PAD_BELOW_ALIGN (0)
 # define NACL_STACK_RED_ZONE      (0)
 
-/*
- * NOTE: Used by various assembler files, needs to be
- *       synchronized with NaClThreadContext
- */
-# define NACL_CALLEE_SAVE_LIST {r4, r5, r6, r7, r8, r9, r10, fp, sp}
-
 #elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_mips
 
 # undef  NACL_KERN_STACK_SIZE        // Mips needs 128k pthread stack size

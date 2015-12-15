@@ -38,6 +38,7 @@ DEFINE_GLOBAL_HIDDEN_FUNCTION(NaClSyscallSeg):
   str lr, [sp, #-0x18]
 
   /* store thread state to the nacl_user entry */
+  str sp, [r0, #NACL_THREAD_CONTEXT_OFFSET_STACK_PTR]
   stmia r0, NACL_CALLEE_SAVE_LIST
   /* if r0 is NULL, we would have faulted here */
 DEFINE_GLOBAL_HIDDEN_LOCATION(NaClSyscallSegRegsSaved):

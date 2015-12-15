@@ -84,12 +84,14 @@ DEFINE_GLOBAL_HIDDEN_FUNCTION(NaClSwitch):
   fmxr fpscr, ip
 
 /*
+ * Restore register state from struct NaClThreadContext.
+ *
  * TODO(mcgrathr): Perhaps drop callee-saved registers (r4-r8,r10-r11)
  * from this restore and instead just clear them in NaClStartSwitch.
  */
-  ldmia r0!, NACL_CALLEE_SAVE_LIST
-  add r0, #4  /* skip prog_ctr in struct NaClThreadContext */
-  /* Read sysret and new_prog_ctr from struct NaClThreadContext */
-  ldmia r0, {r0, r1}
+  ldmia r0, NACL_CALLEE_SAVE_LIST
+  ldr sp, [r0, #NACL_THREAD_CONTEXT_OFFSET_STACK_PTR]
+  /* Loads the "sysret" field into r0 and the "new_prog_ctr" field into r1. */
+  ldrd r0, r1, [r0, #NACL_THREAD_CONTEXT_OFFSET_SYSRET]
   /* Transfer control to untrusted code */
   bx r1

@@ -35,9 +35,8 @@ typedef uint32_t nacl_reg_t;
 
 struct NaClThreadContext {
   /*
-   * r4 through to stack_ptr correspond to NACL_CALLEE_SAVE_LIST, and
-   * the assembly code expects them to appear at the start of the
-   * struct.
+   * r4 through to fp correspond to NACL_CALLEE_SAVE_LIST, and the assembly
+   * code expects them to appear at the start of the struct.
    */
   nacl_reg_t  r4, r5, r6, r7, r8, r9, r10, fp, stack_ptr, prog_ctr;
   /*           0   4   8   c  10  14   18  1c         20        24 */
@@ -77,12 +76,24 @@ NORETURN void NaClStartSwitch(struct NaClThreadContext *);
 #endif /* !defined(__ASSEMBLER__) */
 
 /*
+ * List of registers at the start of NaClThreadContext, for use with the
+ * instructions LDM and STM.
+ *
+ * Note that we omit "sp" from this list and save/restore it separately,
+ * because using "sp" with LDM/STM is considered deprecated (see
+ * https://crbug.com/564044).
+ */
+#define NACL_CALLEE_SAVE_LIST {r4, r5, r6, r7, r8, r9, r10, fp}
+
+/*
  * Given an offset for a field in NaClThreadContext, this returns the
  * field's offset from r9, given that r9 points to tls_value1.
  */
 #define NACL_R9_OFFSET(offset) \
     ((offset) - NACL_THREAD_CONTEXT_OFFSET_TLS_VALUE1)
 
+#define NACL_THREAD_CONTEXT_OFFSET_STACK_PTR 0x20
+#define NACL_THREAD_CONTEXT_OFFSET_SYSRET 0x28
 #define NACL_THREAD_CONTEXT_OFFSET_TRUSTED_STACK_PTR 0x30
 #define NACL_THREAD_CONTEXT_OFFSET_TLS_IDX 0x34
 #define NACL_THREAD_CONTEXT_OFFSET_FPSCR 0x38
@@ -103,6 +114,8 @@ static INLINE void NaClThreadContextOffsetCheck(void) {
     NACL_COMPILE_TIME_ASSERT(offset_name == \
                              offsetof(struct NaClThreadContext, field));
 
+  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_STACK_PTR, stack_ptr);
+  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_SYSRET, sysret);
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_TRUSTED_STACK_PTR,
                    trusted_stack_ptr);
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_TLS_IDX, tls_idx);
