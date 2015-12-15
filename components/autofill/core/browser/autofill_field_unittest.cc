@@ -19,17 +19,17 @@ using base::UTF8ToUTF16;
 namespace autofill {
 namespace {
 
-#if defined(OS_WIN)
-// VS 2015 gives a warning about its limitations:
-// warning C4592: symbol will be dynamically initialized
-#pragma warning(disable : 4592)
-#endif
-
-const std::vector<const char*> kNotNumericMonthsContentsNoPlaceholder = {
+const std::vector<const char*> NotNumericMonthsContentsNoPlaceholder()
+{
+  const std::vector<const char*> result = {
     "Jan", "Feb", "Mar", "Apr", "May", "Jun",
     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+  return result;
+}
 
-const std::vector<const char*> kNotNumericMonthsContentsWithPlaceholder = {
+const std::vector<const char*> NotNumericMonthsContentsWithPlaceholder()
+{
+  const std::vector<const char*> result = {
     "Select a Month",
     "Jan",
     "Feb",
@@ -43,6 +43,8 @@ const std::vector<const char*> kNotNumericMonthsContentsWithPlaceholder = {
     "Oct",
     "Nov",
     "Dec"};
+  return result;
+}
 
 // Returns a FormFieldData object corresponding to a <select> field populated
 // with the given |values| and |contents|.
@@ -458,23 +460,23 @@ TEST(AutofillFieldTest, FillSelectControlWithExpirationMonth) {
   TestCase test_cases[] = {
       // Values start at 1.
       {{"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"},
-       kNotNumericMonthsContentsNoPlaceholder},
+       NotNumericMonthsContentsNoPlaceholder()},
       // Values start at 0.
       {{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"},
-       kNotNumericMonthsContentsNoPlaceholder},
+       NotNumericMonthsContentsNoPlaceholder()},
       // Values start at 00.
       {{"00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11"},
-       kNotNumericMonthsContentsNoPlaceholder},
+       NotNumericMonthsContentsNoPlaceholder()},
       // Values start at 0 and the first content is a placeholder.
       {{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"},
-       kNotNumericMonthsContentsWithPlaceholder},
+       NotNumericMonthsContentsWithPlaceholder()},
       // Values start at 1 and the first content is a placeholder.
       {{"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13"},
-       kNotNumericMonthsContentsWithPlaceholder},
+       NotNumericMonthsContentsWithPlaceholder()},
       // Values start at 01 and the first content is a placeholder.
       {{"01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12",
         "13"},
-       kNotNumericMonthsContentsWithPlaceholder}};
+       NotNumericMonthsContentsWithPlaceholder()}};
 
   for (TestCase test_case : test_cases) {
     ASSERT_EQ(test_case.select_values.size(), test_case.select_contents.size());
