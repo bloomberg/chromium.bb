@@ -27,32 +27,43 @@ class Profile;
 
 class SiteEngagementScore {
  public:
+  // The parameters which can be varied via field trial. All "points" values
+  // should be appended to the end of the enum prior to MAX_VARIATION.
+  enum Variation {
+    // The maximum number of points that can be accrued in one day.
+    MAX_POINTS_PER_DAY = 0,
+
+    // The period over which site engagement decays.
+    DECAY_PERIOD_IN_DAYS,
+
+    // The number of points to decay per period.
+    DECAY_POINTS,
+
+    // The number of points given for navigations.
+    NAVIGATION_POINTS,
+
+    // The number of points given for user input.
+    USER_INPUT_POINTS,
+
+    // The number of points given for media playing. Initially calibrated such
+    // that at least 30 minutes of foreground media would be required to allow a
+    // site to reach the daily engagement maximum.
+    VISIBLE_MEDIA_POINTS,
+    HIDDEN_MEDIA_POINTS,
+
+    MAX_VARIATION
+  };
+
   // The maximum number of points that are allowed.
   static const double kMaxPoints;
 
-  // The maximum number of points that can be accrued in one day.
-  static double g_max_points_per_day;
-
-  // The number of points given for navigations.
-  static double g_navigation_points;
-
-  // The number of points given for user input (indicating time-on-site).
-  static double g_user_input_points;
-
-  // The number of points given for media playing. Initially calibrated such
-  // that at least 30 minutes of video watching or audio listening would be
-  // required to allow a site to reach the daily engagement maximum.
-  static double g_visible_media_playing_points;
-
-  // The number of points given for media playing in a non-visible tab.
-  static double g_hidden_media_playing_points;
-
-  // Decaying works by removing a portion of the score periodically. This
-  // constant determines how often that happens.
-  static int g_decay_period_in_days;
-
-  // How much the score decays after every kDecayPeriodInDays.
-  static double g_decay_points;
+  static double GetMaxPointsPerDay();
+  static double GetDecayPeriodInDays();
+  static double GetDecayPoints();
+  static double GetNavigationPoints();
+  static double GetUserInputPoints();
+  static double GetVisibleMediaPoints();
+  static double GetHiddenMediaPoints();
 
   // Update the default engagement settings via variations.
   static void UpdateFromVariations();
@@ -78,6 +89,9 @@ class SiteEngagementScore {
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementScoreTest, PartiallyEmptyDictionary);
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementScoreTest, PopulatedDictionary);
   friend class SiteEngagementScoreTest;
+
+  // Array holding the values corresponding to each item in Variation array.
+  static double param_values[];
 
   // Keys used in the content settings dictionary.
   static const char* kRawScoreKey;
