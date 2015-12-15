@@ -175,7 +175,7 @@ public class LibraryLoader {
             @Override
             protected Void doInBackground(Void... params) {
                 TraceEvent.begin("LibraryLoader.asyncPrefetchLibrariesToMemory");
-                boolean success = nativeForkAndPrefetchNativeLibrary();
+                boolean success = nativeForkAndPrefetchNativeLibrary(true);
                 if (!success) {
                     Log.w(TAG, "Forking a process to prefetch the native library failed.");
                 }
@@ -451,5 +451,5 @@ public class LibraryLoader {
     // Finds the ranges corresponding to the native library pages, forks a new
     // process to prefetch these pages and waits for it. The new process then
     // terminates. This is blocking.
-    private static native boolean nativeForkAndPrefetchNativeLibrary();
+    private static native boolean nativeForkAndPrefetchNativeLibrary(boolean isColdStart);
 }

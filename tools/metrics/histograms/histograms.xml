@@ -17662,6 +17662,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="LibraryLoader.PercentageOfResidentCodeBeforePrefetch"
+    units="percent">
+  <owner>lizeb@chromium.org</owner>
+  <summary>
+    Percentage of the native library code pages resident in memory. Recorded
+    immediately before the library prefetching kicks in, only on Android.
+  </summary>
+</histogram>
+
 <histogram name="LibraryLoader.PrefetchStatus" enum="BooleanSuccess">
   <owner>lizeb@chromium.org</owner>
   <summary>
@@ -84491,6 +84500,8 @@ To add a new entry, add it with any value and run test to compute valid value.
 <histogram_suffixes name="StartupTemperature" separator=".">
   <suffix name="ColdStartup" label="Startup was cold (mostly hard faults)."/>
   <suffix name="WarmStartup" label="Startup was warm (almost no hard faults)."/>
+  <affected-histogram
+      name="LibraryLoader.PercentageOfResidentCodeBeforePrefetch"/>
   <affected-histogram name="Startup.BrowserMainToRendererMain"/>
   <affected-histogram name="Startup.BrowserMessageLoopStartTime"/>
   <affected-histogram name="Startup.BrowserMessageLoopStartTimeFromMainEntry"/>
