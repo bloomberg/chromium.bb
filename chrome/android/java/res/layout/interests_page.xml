@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2015 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<org.chromium.chrome.browser.ntp.interests.InterestsView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
+    android:paddingTop="@dimen/tab_strip_height" >
+
+   <GridView
+      android:id="@+id/interests_list_view"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:gravity="center"
+      android:horizontalSpacing="10dp"
+      android:verticalSpacing="10dp"
+      android:numColumns="auto_fit"
+      android:paddingTop="@dimen/toolbar_height_no_shadow"
+      android:stretchMode="columnWidth" />
+    
+</org.chromium.chrome.browser.ntp.interests.InterestsView>

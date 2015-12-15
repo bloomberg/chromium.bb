@@ -190,6 +190,26 @@
                 android:textColor="#5a5a5a" />
         </FrameLayout>
         <FrameLayout
+            android:id="@+id/interests_button"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="?attr/listChoiceBackgroundIndicator"
+            android:contentDescription="@string/accessibility_ntp_toolbar_btn_interests"
+            android:paddingBottom="12dp"
+            android:paddingTop="12dp"
+            android:visibility="gone" >
+            <TextView
+                android:layout_gravity="center_horizontal"
+                android:layout_height="match_parent"
+                android:layout_width="wrap_content"
+                android:drawablePadding="8dp"
+                android:gravity="center_vertical"
+                android:text="@string/ntp_interests"
+                android:textColor="#5a5a5a"
+                android:textSize="12sp" />
+        </FrameLayout>
+        <FrameLayout
             android:id="@+id/recent_tabs_button"
             android:layout_width="0dp"
             android:layout_height="match_parent"

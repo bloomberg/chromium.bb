@@ -86,9 +86,9 @@ void InterestsService::OnObtainedInterests(
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobjectArray> j_interests =
       ConvertInterestsToJava(env, interests.Pass());
-  Java_GetInterestsCallback_onInterestsAvailableCallback(env,
-                                                         j_callback.obj(),
-                                                         j_interests.obj());
+  Java_GetInterestsCallback_onInterestsAvailable(env,
+                                                 j_callback.obj(),
+                                                 j_interests.obj());
 }
 
 static jlong Init(JNIEnv* env,

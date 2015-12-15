@@ -119,6 +119,9 @@ public class NewTabPageView extends FrameLayout
         /** @return Whether voice search is enabled and the microphone should be shown. */
         boolean isVoiceSearchEnabled();
 
+        /** @return Whether the NTP Interests tab is enabled and its button should be shown. */
+        boolean isInterestsEnabled();
+
         /** @return Whether the document mode opt out promo should be shown. */
         boolean shouldShowOptOutPromo();
 
@@ -136,6 +139,9 @@ public class NewTabPageView extends FrameLayout
 
         /** Opens a given URL in the current tab. */
         void open(String url);
+
+        /** Opens the interests dialog. */
+        void navigateToInterests();
 
         /**
          * Animates the search box up into the omnibox and bring up the keyboard.
@@ -313,6 +319,12 @@ public class NewTabPageView extends FrameLayout
                 mManager.navigateToBookmarks();
             }
         });
+        toolbar.getInterestsButton().setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mManager.navigateToInterests();
+            }
+        });
 
         initializeSearchBoxScrollHandling();
         addOnLayoutChangeListener(this);
@@ -346,6 +358,11 @@ public class NewTabPageView extends FrameLayout
                             SnippetsManager.NUM_SNIPPETS_ACTIONS);
                 }
             });
+        }
+
+        // Set up interests
+        if (manager.isInterestsEnabled()) {
+            toolbar.getInterestsButton().setVisibility(View.VISIBLE);
         }
     }
 

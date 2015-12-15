@@ -45,6 +45,8 @@ import org.chromium.chrome.browser.ntp.BookmarksPage.BookmarkSelectedListener;
 import org.chromium.chrome.browser.ntp.LogoBridge.Logo;
 import org.chromium.chrome.browser.ntp.LogoBridge.LogoObserver;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
+import org.chromium.chrome.browser.ntp.interests.InterestsPage;
+import org.chromium.chrome.browser.ntp.interests.InterestsPage.InterestsClickListener;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.preferences.DocumentModeManager;
 import org.chromium.chrome.browser.preferences.DocumentModePreference;
@@ -69,6 +71,7 @@ import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.net.NetworkChangeNotifier;
+import org.chromium.sync.signin.ChromeSigninController;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.PageTransition;
 
@@ -190,6 +193,24 @@ public class NewTabPage
         }
     }
 
+    public static void launchInterestsDialog(Activity activity, final Tab tab) {
+        InterestsPage page =
+                new InterestsPage(activity, tab, Profile.getLastUsedProfile());
+        final Dialog dialog = new NativePageDialog(activity, page);
+
+        InterestsClickListener listener = new InterestsClickListener() {
+            @Override
+            public void onInterestClicked(String name) {
+                tab.loadUrl(new LoadUrlParams(
+                        TemplateUrlService.getInstance().getUrlForSearchQuery(name)));
+                dialog.dismiss();
+            }
+        };
+
+        page.setListener(listener);
+        dialog.show();
+    }
+
     public static void launchRecentTabsDialog(Activity activity, Tab tab) {
         DocumentRecentTabsManager manager = new DocumentRecentTabsManager(tab, activity);
         NativePage page = new RecentTabsPage(activity, manager);
@@ -216,6 +237,12 @@ public class NewTabPage
         @Override
         public boolean isVoiceSearchEnabled() {
             return mFakeboxDelegate != null && mFakeboxDelegate.isVoiceSearchEnabled();
+        }
+
+        @Override
+        public boolean isInterestsEnabled() {
+            return CommandLine.getInstance().hasSwitch(ChromeSwitches.ENABLE_INTERESTS)
+                    && ChromeSigninController.get(mActivity).isSignedIn();
         }
 
         private void recordOpenedMostVisitedItem(MostVisitedItem item) {
@@ -377,6 +404,14 @@ public class NewTabPage
             } else {
                 mTab.loadUrl(new LoadUrlParams(UrlConstants.RECENT_TABS_URL));
             }
+        }
+
+        @Override
+        public void navigateToInterests() {
+            if (mIsDestroyed) return;
+            RecordUserAction.record("MobileNTP.Interests.OpenDialog");
+            // TODO(peconn): Make this load a native page on tablets.
+            launchInterestsDialog(mActivity, mTab);
         }
 
         @Override

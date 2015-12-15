@@ -93,6 +93,11 @@ public abstract class ChromeSwitches {
      */
     public static final String ENABLE_NTP_SNIPPETS = "enable-ntp-snippets";
 
+    /**
+     * Enable interests on the NTP
+     */
+    public static final String ENABLE_INTERESTS = "enable-interests";
+
     ///////////////////////////////////////////////////////////////////////////////////////////////
     // Native Switches
     ///////////////////////////////////////////////////////////////////////////////////////////////

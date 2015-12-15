@@ -22,7 +22,7 @@ import org.chromium.chrome.browser.widget.TintedDrawable;
  */
 public class NewTabPageToolbar extends LinearLayout {
 
-    private ViewGroup mBookmarksButton, mRecentTabsButton;
+    private ViewGroup mBookmarksButton, mRecentTabsButton, mInterestsButton;
 
     /**
      * Constructor for inflating from xml.
@@ -39,6 +39,10 @@ public class NewTabPageToolbar extends LinearLayout {
         return mRecentTabsButton;
     }
 
+    public View getInterestsButton() {
+        return mInterestsButton;
+    }
+
     @Override
     protected void onFinishInflate() {
         mBookmarksButton = initButton(R.id.bookmarks_button, R.drawable.btn_star);
@@ -49,6 +53,9 @@ public class NewTabPageToolbar extends LinearLayout {
             ((TextView) mBookmarksButton.getChildAt(0)).setContentDescription(
                     getResources().getString(R.string.offline_pages_ntp_button_accessibility));
         }
+        ((TextView) mBookmarksButton.getChildAt(0)).setText(OfflinePageBridge.isEnabled()
+                ? R.string.offline_pages_ntp_button_name : R.string.ntp_bookmarks);
+        mInterestsButton =  initButton(R.id.interests_button, R.drawable.btn_star_filled);
     }
 
     private ViewGroup initButton(int buttonId, int drawableId) {

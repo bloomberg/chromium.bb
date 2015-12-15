@@ -264,6 +264,12 @@
     <dimen name="ntp_list_item_favicon_container_size">24dp</dimen>
     <dimen name="ntp_shadow_height">9dp</dimen>
     <dimen name="snippets_thumbnail_size">90dp</dimen>
+    
+    <!-- Interests page -->
+    <dimen name="ntp_interest_item_text_size">20sp</dimen>
+    <dimen name="ntp_interest_item_min_height">180dp</dimen>
+    <dimen name="ntp_interest_item_image_size">120dp</dimen>
+    <dimen name="ntp_interest_item_image_text_size">20sp</dimen>
 
     <!-- Bookmarks page -->
     <dimen name="bookmark_folder_min_height">48dp</dimen>

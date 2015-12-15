@@ -88,7 +88,7 @@ void InterestsFetcher::FetchInterests(
 void InterestsFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
   const net::URLRequestStatus& status = source->GetStatus();
   if (!status.is_success()) {
-    VLOG(2) << "Network error " << status.error();
+    DLOG(WARNING) << "Network error " << status.error();
     callback_.Run(nullptr);
     return;
   }
@@ -96,6 +96,7 @@ void InterestsFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
   int response_code = source->GetResponseCode();
   // If we get an authorization error, refresh token and retry once.
   if (response_code == net::HTTP_UNAUTHORIZED && !access_token_expired_) {
+    DLOG(WARNING) << "Authorization error.";
     access_token_expired_ = true;
     token_service_->InvalidateAccessToken(account_id_,
                                           GetApiScopes(),
@@ -105,7 +106,7 @@ void InterestsFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
   }
 
   if (response_code != net::HTTP_OK) {
-    VLOG(2) << "HTTP error " << response_code;
+    DLOG(WARNING) << "HTTP error " << response_code;
     callback_.Run(nullptr);
     return;
   }
@@ -137,12 +138,17 @@ void InterestsFetcher::OnGetTokenSuccess(
 void InterestsFetcher::OnGetTokenFailure(
     const OAuth2TokenService::Request* request,
     const GoogleServiceAuthError& error) {
-  DLOG(WARNING) << error.ToString();
+  DLOG(WARNING) << "Failed to get OAuth2 Token: " << error.ToString();
 
   callback_.Run(nullptr);
 }
 
 void InterestsFetcher::StartOAuth2Request() {
+  if (account_id_.empty()) {
+    DLOG(WARNING) << "AccountId is empty, user is not signed in.";
+    return;
+  }
+
   oauth_request_ =
       token_service_->StartRequest(account_id_, GetApiScopes(), this);
 }

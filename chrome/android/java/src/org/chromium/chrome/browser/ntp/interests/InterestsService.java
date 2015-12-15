@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.ntp;
+package org.chromium.chrome.browser.ntp.interests;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -11,6 +11,7 @@ import org.chromium.chrome.browser.profiles.Profile;
  * Retrieve the user's interests.
  */
 public class InterestsService {
+
     private long mNativeInterestsService;
 
     /**
@@ -49,7 +50,7 @@ public class InterestsService {
          * @param interests The array of interests. Null if error.
          */
         @CalledByNative("GetInterestsCallback")
-        public void onInterestsAvailableCallback(Interest[] interests);
+        public void onInterestsAvailable(Interest[] interests);
     }
 
     /**
@@ -71,14 +72,7 @@ public class InterestsService {
     }
 
     public void getInterests(final GetInterestsCallback callback) {
-        GetInterestsCallback wrappedCallback = new GetInterestsCallback() {
-            @Override
-            public void onInterestsAvailableCallback(Interest[] interests) {
-                callback.onInterestsAvailableCallback(interests);
-            }
-        };
-
-        nativeGetInterests(mNativeInterestsService, wrappedCallback);
+        nativeGetInterests(mNativeInterestsService, callback);
     }
 
     /*

@@ -25,4 +25,6 @@ public class UrlConstants {
     public static final String RECENT_TABS_URL = "chrome-native://recent-tabs/";
     public static final String RECENT_TABS_HOST = "recent-tabs";
     public static final String HISTORY_URL = "chrome://history/";
+    public static final String INTERESTS_URL = "chrome-native://interests/";
+    public static final String INTERESTS_HOST = "interests";
 }

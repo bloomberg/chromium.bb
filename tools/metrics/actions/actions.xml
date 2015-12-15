@@ -8111,6 +8111,11 @@ should be able to be added at any place in this file.
   <description>User opened the app menu.</description>
 </action>
 
+<action name="MobileNTP.Interests.OpenDialog">
+  <owner>peconn@chromium.org</owner>
+  <description>User opened the interests dialog.</description>
+</action>
+
 <action name="MobileNTP.Snippets.Click">
   <owner>knn@chromium.org</owner>
   <description>

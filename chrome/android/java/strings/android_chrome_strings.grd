@@ -1675,6 +1675,12 @@ You are signing in with a managed account and giving its administrator control o
       <message name="IDS_NTP_BOOKMARKS" desc="Text for bookmarks button [CHAR-LIMIT=20]">
         Bookmarks
       </message>
+      <message name="IDS_NTP_INTERESTS" desc="Text for a button to display interests. Interests are topics that we think the user is interested in (eg. sports teams, hobbies, places). [CHAR-LIMIT=20]">
+        Interests
+      </message>
+      <message name="IDS_NTP_NO_INTERESTS_TOAST" desc="Toast notification displayed when interests retrieval fails">
+        Could not retrieve interests.
+      </message>
       <message name="IDS_RECENT_TABS" desc="Text for button to show 'Recent tabs', i.e. recently closed tabs and tabs that are open on other devices [CHAR-LIMIT=20]">
         Recent tabs
       </message>
@@ -2153,6 +2159,9 @@ Just open Chrome on your computer, go to the menu, and select “Sign in to Chro
       </message>
       <message name="IDS_ACCESSIBILITY_NTP_TOOLBAR_BTN_BOOKMARKS" desc="Content description for the bookmarks tab of the new tab page.">
         Bookmarks
+      </message>
+      <message name="IDS_ACCESSIBILITY_NTP_TOOLBAR_BTN_INTERESTS" desc="Content description for the interests section of the new tab page.">
+        Interests
       </message>
       <message name="IDS_ACCESSIBILITY_NTP_TOOLBAR_BTN_RECENT_TABS" desc="Content description for the recent tabs section of the new tab page.">
         Recent tabs
