@@ -20,7 +20,6 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "build/build_config.h"
 #include "net/base/net_export.h"
 #include "net/base/network_delegate.h"
@@ -233,7 +232,7 @@ class NET_EXPORT URLRequestContextBuilder {
   void SetCertVerifier(scoped_ptr<CertVerifier> cert_verifier);
 
   void SetInterceptors(
-      ScopedVector<URLRequestInterceptor> url_request_interceptors);
+      std::vector<scoped_ptr<URLRequestInterceptor>> url_request_interceptors);
 
   // Override the default in-memory cookie store and channel id service.
   // |cookie_store| must not be NULL. |channel_id_service| may be NULL to
@@ -297,7 +296,7 @@ class NET_EXPORT URLRequestContextBuilder {
   scoped_ptr<FtpTransactionFactory> ftp_transaction_factory_;
   scoped_ptr<HttpAuthHandlerFactory> http_auth_handler_factory_;
   scoped_ptr<CertVerifier> cert_verifier_;
-  ScopedVector<URLRequestInterceptor> url_request_interceptors_;
+  std::vector<scoped_ptr<URLRequestInterceptor>> url_request_interceptors_;
   scoped_ptr<HttpServerProperties> http_server_properties_;
 
   DISALLOW_COPY_AND_ASSIGN(URLRequestContextBuilder);

@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/memory/scoped_ptr.h"
 #include "net/proxy/proxy_config_service_fixed.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"

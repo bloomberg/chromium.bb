@@ -5,10 +5,12 @@
 #include "net/url_request/url_request_context_builder.h"
 
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/thread_task_runner_handle.h"
@@ -244,8 +246,8 @@ void URLRequestContextBuilder::SetCertVerifier(
 }
 
 void URLRequestContextBuilder::SetInterceptors(
-    ScopedVector<URLRequestInterceptor> url_request_interceptors) {
-  url_request_interceptors_ = url_request_interceptors.Pass();
+    std::vector<scoped_ptr<URLRequestInterceptor>> url_request_interceptors) {
+  url_request_interceptors_ = std::move(url_request_interceptors);
 }
 
 void URLRequestContextBuilder::SetCookieAndChannelIdStores(
@@ -456,18 +458,17 @@ scoped_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   if (!url_request_interceptors_.empty()) {
     // Set up interceptors in the reverse order.
 
-    for (ScopedVector<net::URLRequestInterceptor>::reverse_iterator i =
-             url_request_interceptors_.rbegin();
+    for (auto i = url_request_interceptors_.rbegin();
          i != url_request_interceptors_.rend(); ++i) {
       top_job_factory.reset(new net::URLRequestInterceptingJobFactory(
-          top_job_factory.Pass(), make_scoped_ptr(*i)));
+          std::move(top_job_factory), std::move(*i)));
     }
-    url_request_interceptors_.weak_clear();
+    url_request_interceptors_.clear();
   }
-  storage->set_job_factory(top_job_factory.Pass());
+  storage->set_job_factory(std::move(top_job_factory));
   // TODO(willchan): Support sdch.
 
-  return context.Pass();
+  return std::move(context);
 }
 
 }  // namespace net
