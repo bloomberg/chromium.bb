@@ -65,6 +65,7 @@ class RTCPeerConnection final
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(RTCPeerConnection);
 public:
+    // TODO(hbos): Create with expired RTCCertificate should fail, see crbug.com/565278.
     static RTCPeerConnection* create(ExecutionContext*, const Dictionary&, const Dictionary&, ExceptionState&);
     ~RTCPeerConnection() override;
 

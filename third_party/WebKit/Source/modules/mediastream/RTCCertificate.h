@@ -32,6 +32,7 @@
 #define RTCCertificate_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "core/dom/DOMTimeStamp.h"
 #include "platform/heap/GarbageCollected.h"
 #include "public/platform/WebRTCCertificate.h"
 #include "wtf/OwnPtr.h"
@@ -49,6 +50,9 @@ public:
     WebRTCCertificate* certificateShallowCopy() const;
 
     DEFINE_INLINE_TRACE() {}
+
+    // Returns the expiration time in ms relative to epoch, 1970-01-01T00:00:00Z.
+    DOMTimeStamp expires() const;
 
 private:
     OwnPtr<WebRTCCertificate> m_certificate;

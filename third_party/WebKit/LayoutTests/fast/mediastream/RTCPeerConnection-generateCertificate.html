@@ -53,11 +53,11 @@ function generate2ECDSAFailed()
     finishJSTest();
 }
 
-// Helper methods.
+// Helper functions.
 function certificateSanityCheck(cert, certVariableName)
 {
     shouldBeNonNull(certVariableName);
-    // TODO(hbos): Check cert.expires when WebRTC certificates have reasonable expires values.
+    shouldBeTrue('new Date().getTime() < ' + certVariableName + '.expires');
 }
 
 // Run each generate test sequentially. The ith generate method will make sure

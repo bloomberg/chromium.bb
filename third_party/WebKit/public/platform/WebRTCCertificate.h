@@ -26,9 +26,8 @@ public:
 
     virtual const WebRTCKeyParams& keyParams() const = 0;
 
-    // The date and time after which the certificate should be considered invalid.
-    // Expressed in time since 1970-01-01T00:00:00Z in milliseconds.
-    virtual double expires() const = 0;
+    // Returns the expiration time in ms relative to epoch, 1970-01-01T00:00:00Z.
+    virtual uint64_t expires() const = 0;
 
 private:
     WebRTCCertificate(const WebRTCCertificate&) = delete;

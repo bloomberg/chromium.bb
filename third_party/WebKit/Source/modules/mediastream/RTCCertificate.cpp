@@ -43,4 +43,9 @@ WebRTCCertificate* RTCCertificate::certificateShallowCopy() const
     return m_certificate->shallowCopy();
 }
 
+DOMTimeStamp RTCCertificate::expires() const
+{
+    return static_cast<DOMTimeStamp>(m_certificate->expires());
+}
+
 } // namespace blink
