@@ -130,6 +130,7 @@ template("generate_nonsfi_test_nmf") {
                              "nmfflags",
                              "testonly",
                              "public_deps",
+                             "visibility",
                            ])
 
     script = "//ppapi/tests/create_nonsfi_test_nmf.py"

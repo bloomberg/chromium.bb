@@ -974,11 +974,7 @@ if (!is_android) {
           "//chrome/test/data/nacl",
           "//ppapi/native_client:irt",
           "//ppapi:ppapi_nacl_tests_all",
-
-          # "../ppapi/ppapi_nacl.gyp:ppapi_nacl_tests",  # TODO(GYP) bug 512901
-          # "../ppapi/tests/extensions/extensions.gyp:ppapi_tests_extensions_background_keepalive",  # TODO(GYP) bug 512900
-          # "../ppapi/tests/extensions/extensions.gyp:ppapi_tests_extensions_media_galleries",  # TODO(GYP) bug 512900
-          # "../ppapi/tests/extensions/extensions.gyp:ppapi_tests_extensions_packaged_app",  # TODO(GYP) bug 512900
+          "//ppapi/tests/extensions",
         ]
         if (is_chromeos) {
           sources += [ "//third_party/liblouis/nacl_wrapper/liblouis_wrapper_browsertest.cc" ]
