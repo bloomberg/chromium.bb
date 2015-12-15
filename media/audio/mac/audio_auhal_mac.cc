@@ -500,8 +500,9 @@ bool AUHALStream::ConfigureAUHAL() {
   }
 
   bool size_was_changed = false;
-  if (!manager_->MaybeChangeBufferSize(device_, audio_unit_, 0,
-                                       number_of_frames_, &size_was_changed)) {
+  const bool is_input = false;
+  if (!manager_->MaybeChangeBufferSize(device_, is_input, number_of_frames_,
+                                       &size_was_changed)) {
     CloseAudioUnit();
     return false;
   }
