@@ -46,29 +46,19 @@ class CC_EXPORT Task : public base::RefCountedThreadSafe<Task> {
 
 // A task dependency graph describes the order in which to execute a set
 // of tasks. Dependencies are represented as edges. Each node is assigned
-// a category, a priority and a run count that matches the number of
-// dependencies. Priority range from 0 (most favorable scheduling) to UINT16_MAX
-// (least favorable). Categories range from 0 to UINT16_MAX. It is up to the
-// implementation and its consumer to determine the meaning (if any) of a
-// category. A TaskGraphRunner implementation may chose to prioritize certain
-// categories over others, regardless of the individual priorities of tasks.
+// a priority and a run count that matches the number of dependencies.
+// Priority range from 0 (most favorable scheduling) to UINT_MAX
+// (least favorable).
 struct CC_EXPORT TaskGraph {
   struct Node {
     typedef std::vector<Node> Vector;
 
-    Node(Task* task,
-         uint16_t category,
-         uint16_t priority,
-         uint32_t dependencies)
-        : task(task),
-          category(category),
-          priority(priority),
-          dependencies(dependencies) {}
+    Node(Task* task, size_t priority, size_t dependencies)
+        : task(task), priority(priority), dependencies(dependencies) {}
 
     Task* task;
-    uint16_t category;
-    uint16_t priority;
-    uint32_t dependencies;
+    size_t priority;
+    size_t dependencies;
   };
 
   struct Edge {

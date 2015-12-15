@@ -24,20 +24,17 @@ class TaskGraphRunnerTestBase {
              unsigned id,
              unsigned dependent_id,
              unsigned dependent_count,
-             unsigned category,
              unsigned priority)
         : namespace_index(namespace_index),
           id(id),
           dependent_id(dependent_id),
           dependent_count(dependent_count),
-          category(category),
           priority(priority) {}
 
     int namespace_index;
     unsigned id;
     unsigned dependent_id;
     unsigned dependent_count;
-    unsigned category;
     unsigned priority;
   };
 
@@ -129,8 +126,8 @@ TYPED_TEST_P(TaskGraphRunnerTest, Basic) {
     EXPECT_EQ(0u, this->run_task_ids(i).size());
     EXPECT_EQ(0u, this->on_task_completed_ids(i).size());
 
-    this->ScheduleTasks(
-        i, std::vector<TaskInfo>(1, TaskInfo(i, 0u, 0u, 0u, 0u, 0u)));
+    this->ScheduleTasks(i,
+                        std::vector<TaskInfo>(1, TaskInfo(i, 0u, 0u, 0u, 0u)));
   }
 
   for (int i = 0; i < kNamespaceCount; ++i) {
@@ -141,8 +138,8 @@ TYPED_TEST_P(TaskGraphRunnerTest, Basic) {
   }
 
   for (int i = 0; i < kNamespaceCount; ++i)
-    this->ScheduleTasks(
-        i, std::vector<TaskInfo>(1, TaskInfo(i, 0u, 0u, 1u, 0u, 0u)));
+    this->ScheduleTasks(i,
+                        std::vector<TaskInfo>(1, TaskInfo(i, 0u, 0u, 1u, 0u)));
 
   for (int i = 0; i < kNamespaceCount; ++i) {
     this->RunAllTasks(i);
@@ -152,8 +149,8 @@ TYPED_TEST_P(TaskGraphRunnerTest, Basic) {
   }
 
   for (int i = 0; i < kNamespaceCount; ++i)
-    this->ScheduleTasks(
-        i, std::vector<TaskInfo>(1, TaskInfo(i, 0u, 0u, 2u, 0u, 0u)));
+    this->ScheduleTasks(i,
+                        std::vector<TaskInfo>(1, TaskInfo(i, 0u, 0u, 2u, 0u)));
 
   for (int i = 0; i < kNamespaceCount; ++i) {
     this->RunAllTasks(i);
@@ -170,7 +167,7 @@ TYPED_TEST_P(TaskGraphRunnerTest, Dependencies) {
   for (int i = 0; i < kNamespaceCount; ++i) {
     this->ScheduleTasks(i, std::vector<TaskInfo>(1, TaskInfo(i, 0u, 1u,
                                                              1u,  // 1 dependent
-                                                             0u, 0u)));
+                                                             0u)));
   }
 
   for (int i = 0; i < kNamespaceCount; ++i) {
@@ -188,7 +185,7 @@ TYPED_TEST_P(TaskGraphRunnerTest, Dependencies) {
     this->ScheduleTasks(i,
                         std::vector<TaskInfo>(1, TaskInfo(i, 2u, 3u,
                                                           2u,  // 2 dependents
-                                                          0u, 0u)));
+                                                          0u)));
   }
 
   for (int i = 0; i < kNamespaceCount; ++i) {
@@ -204,60 +201,7 @@ TYPED_TEST_P(TaskGraphRunnerTest, Dependencies) {
   }
 }
 
-TYPED_TEST_P(TaskGraphRunnerTest, Categorys) {
-  const int kNamespaceCount = TaskGraphRunnerTestBase::kNamespaceCount;
-  const unsigned kCategoryCount = 3;
-  using TaskInfo = TaskGraphRunnerTestBase::TaskInfo;
-
-  for (int i = 0; i < kNamespaceCount; ++i) {
-    EXPECT_EQ(0u, this->run_task_ids(i).size());
-    EXPECT_EQ(0u, this->on_task_completed_ids(i).size());
-    std::vector<TaskInfo> tasks;
-    for (unsigned j = 0; j < kCategoryCount; ++j) {
-      tasks.emplace_back(i, 0u, 0u, 0u, j, 0u);
-    }
-    this->ScheduleTasks(i, tasks);
-  }
-
-  for (int i = 0; i < kNamespaceCount; ++i) {
-    this->RunAllTasks(i);
-
-    EXPECT_EQ(kCategoryCount, this->run_task_ids(i).size());
-    EXPECT_EQ(kCategoryCount, this->on_task_completed_ids(i).size());
-  }
-
-  for (int i = 0; i < kNamespaceCount; ++i) {
-    std::vector<TaskInfo> tasks;
-    for (unsigned j = 0; j < kCategoryCount; ++j) {
-      tasks.emplace_back(i, 0u, 0u, 1u, j, 0u);
-    }
-    this->ScheduleTasks(i, tasks);
-  }
-
-  for (int i = 0; i < kNamespaceCount; ++i) {
-    this->RunAllTasks(i);
-
-    EXPECT_EQ(kCategoryCount * 3u, this->run_task_ids(i).size());
-    EXPECT_EQ(kCategoryCount * 2u, this->on_task_completed_ids(i).size());
-  }
-
-  for (int i = 0; i < kNamespaceCount; ++i) {
-    std::vector<TaskInfo> tasks;
-    for (unsigned j = 0; j < kCategoryCount; ++j) {
-      tasks.emplace_back(i, 0u, 0u, 2u, j, 0u);
-    }
-    this->ScheduleTasks(i, tasks);
-  }
-
-  for (int i = 0; i < kNamespaceCount; ++i) {
-    this->RunAllTasks(i);
-
-    EXPECT_EQ(kCategoryCount * 6u, this->run_task_ids(i).size());
-    EXPECT_EQ(kCategoryCount * 3u, this->on_task_completed_ids(i).size());
-  }
-}
-
-REGISTER_TYPED_TEST_CASE_P(TaskGraphRunnerTest, Basic, Dependencies, Categorys);
+REGISTER_TYPED_TEST_CASE_P(TaskGraphRunnerTest, Basic, Dependencies);
 
 template <typename TaskRunnerTestDelegate>
 using SingleThreadTaskGraphRunnerTest =
@@ -271,8 +215,8 @@ TYPED_TEST_P(SingleThreadTaskGraphRunnerTest, Priority) {
 
   for (int i = 0; i < kNamespaceCount; ++i) {
     TaskInfo tasks[] = {
-        TaskInfo(i, 0u, 2u, 1u, 0u, 1u),  // Priority 1
-        TaskInfo(i, 1u, 3u, 1u, 0u, 0u)   // Priority 0
+        TaskInfo(i, 0u, 2u, 1u, 1u),  // Priority 1
+        TaskInfo(i, 1u, 3u, 1u, 0u)   // Priority 0
     };
     this->ScheduleTasks(i,
                         std::vector<TaskInfo>(tasks, tasks + arraysize(tasks)));

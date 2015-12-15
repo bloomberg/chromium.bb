@@ -65,13 +65,13 @@ void TaskGraphRunnerTestBase::ScheduleTasks(
     scoped_refptr<FakeTaskImpl> new_task(
         new FakeTaskImpl(this, it->namespace_index, it->id));
     new_graph.nodes.push_back(
-        TaskGraph::Node(new_task.get(), it->category, it->priority, 0u));
+        TaskGraph::Node(new_task.get(), it->priority, 0u));
     for (unsigned i = 0; i < it->dependent_count; ++i) {
       scoped_refptr<FakeDependentTaskImpl> new_dependent_task(
           new FakeDependentTaskImpl(this, it->namespace_index,
                                     it->dependent_id));
-      new_graph.nodes.push_back(TaskGraph::Node(
-          new_dependent_task.get(), it->category, it->priority, 1u));
+      new_graph.nodes.push_back(
+          TaskGraph::Node(new_dependent_task.get(), it->priority, 1u));
       new_graph.edges.push_back(
           TaskGraph::Edge(new_task.get(), new_dependent_task.get()));
 
