@@ -381,7 +381,7 @@ File File::Duplicate() {
   File other(other_fd);
   if (async())
     other.async_ = true;
-  return other.Pass();
+  return other;
 }
 
 // Static.

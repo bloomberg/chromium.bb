@@ -752,7 +752,7 @@ TEST_F(BindTest, ScopedPtr) {
   Callback<scoped_ptr<DeleteCounter>(scoped_ptr<DeleteCounter>)> cb_unbound =
       Bind(&PassThru<scoped_ptr<DeleteCounter> >);
   ptr.reset(new DeleteCounter(&deletes));
-  cb_unbound.Run(ptr.Pass());
+  cb_unbound.Run(std::move(ptr));
 }
 
 TEST_F(BindTest, UniquePtr) {

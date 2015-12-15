@@ -4,6 +4,8 @@
 
 #include "base/process/process.h"
 
+#include <utility>
+
 #include "base/process/kill.h"
 #include "base/test/multiprocess_test.h"
 #include "base/test/test_timeouts.h"
@@ -49,13 +51,13 @@ TEST_F(ProcessTest, Move) {
   Process process2;
   EXPECT_FALSE(process2.IsValid());
 
-  process2 = process1.Pass();
+  process2 = std::move(process1);
   EXPECT_TRUE(process2.IsValid());
   EXPECT_FALSE(process1.IsValid());
   EXPECT_FALSE(process2.is_current());
 
   Process process3 = Process::Current();
-  process2 = process3.Pass();
+  process2 = std::move(process3);
   EXPECT_TRUE(process2.is_current());
   EXPECT_TRUE(process2.IsValid());
   EXPECT_FALSE(process3.IsValid());

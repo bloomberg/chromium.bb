@@ -4,6 +4,8 @@
 
 #include "base/files/file_proxy.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file.h"
@@ -24,7 +26,7 @@ namespace base {
 class FileHelper {
  public:
    FileHelper(FileProxy* proxy, File file)
-      : file_(file.Pass()),
+      : file_(std::move(file)),
         error_(File::FILE_ERROR_FAILED),
         task_runner_(proxy->task_runner()),
         proxy_(AsWeakPtr(proxy)) {
@@ -32,7 +34,7 @@ class FileHelper {
 
    void PassFile() {
      if (proxy_)
-       proxy_->SetFile(file_.Pass());
+       proxy_->SetFile(std::move(file_));
      else if (file_.IsValid())
        task_runner_->PostTask(FROM_HERE, Bind(&FileDeleter, Passed(&file_)));
    }
@@ -52,7 +54,7 @@ namespace {
 class GenericFileHelper : public FileHelper {
  public:
   GenericFileHelper(FileProxy* proxy, File file)
-      : FileHelper(proxy, file.Pass()) {
+      : FileHelper(proxy, std::move(file)) {
   }
 
   void Close() {
@@ -88,7 +90,7 @@ class GenericFileHelper : public FileHelper {
 class CreateOrOpenHelper : public FileHelper {
  public:
   CreateOrOpenHelper(FileProxy* proxy, File file)
-      : FileHelper(proxy, file.Pass()) {
+      : FileHelper(proxy, std::move(file)) {
   }
 
   void RunWork(const FilePath& file_path, int file_flags) {
@@ -109,7 +111,7 @@ class CreateOrOpenHelper : public FileHelper {
 class CreateTemporaryHelper : public FileHelper {
  public:
   CreateTemporaryHelper(FileProxy* proxy, File file)
-      : FileHelper(proxy, file.Pass()) {
+      : FileHelper(proxy, std::move(file)) {
   }
 
   void RunWork(uint32 additional_file_flags) {
@@ -151,7 +153,7 @@ class CreateTemporaryHelper : public FileHelper {
 class GetInfoHelper : public FileHelper {
  public:
   GetInfoHelper(FileProxy* proxy, File file)
-      : FileHelper(proxy, file.Pass()) {
+      : FileHelper(proxy, std::move(file)) {
   }
 
   void RunWork() {
@@ -173,7 +175,7 @@ class GetInfoHelper : public FileHelper {
 class ReadHelper : public FileHelper {
  public:
   ReadHelper(FileProxy* proxy, File file, int bytes_to_read)
-      : FileHelper(proxy, file.Pass()),
+      : FileHelper(proxy, std::move(file)),
         buffer_(new char[bytes_to_read]),
         bytes_to_read_(bytes_to_read),
         bytes_read_(0) {
@@ -202,7 +204,7 @@ class WriteHelper : public FileHelper {
   WriteHelper(FileProxy* proxy,
               File file,
               const char* buffer, int bytes_to_write)
-      : FileHelper(proxy, file.Pass()),
+      : FileHelper(proxy, std::move(file)),
         buffer_(new char[bytes_to_write]),
         bytes_to_write_(bytes_to_write),
         bytes_written_(0) {
@@ -266,11 +268,11 @@ bool FileProxy::IsValid() const {
 
 void FileProxy::SetFile(File file) {
   DCHECK(!file_.IsValid());
-  file_ = file.Pass();
+  file_ = std::move(file);
 }
 
 File FileProxy::TakeFile() {
-  return file_.Pass();
+  return std::move(file_);
 }
 
 PlatformFile FileProxy::GetPlatformFile() const {
@@ -279,7 +281,7 @@ PlatformFile FileProxy::GetPlatformFile() const {
 
 bool FileProxy::Close(const StatusCallback& callback) {
   DCHECK(file_.IsValid());
-  GenericFileHelper* helper = new GenericFileHelper(this, file_.Pass());
+  GenericFileHelper* helper = new GenericFileHelper(this, std::move(file_));
   return task_runner_->PostTaskAndReply(
       FROM_HERE,
       Bind(&GenericFileHelper::Close, Unretained(helper)),
@@ -288,7 +290,7 @@ bool FileProxy::Close(const StatusCallback& callback) {
 
 bool FileProxy::GetInfo(const GetFileInfoCallback& callback) {
   DCHECK(file_.IsValid());
-  GetInfoHelper* helper = new GetInfoHelper(this, file_.Pass());
+  GetInfoHelper* helper = new GetInfoHelper(this, std::move(file_));
   return task_runner_->PostTaskAndReply(
       FROM_HERE,
       Bind(&GetInfoHelper::RunWork, Unretained(helper)),
@@ -302,7 +304,7 @@ bool FileProxy::Read(int64 offset,
   if (bytes_to_read < 0)
     return false;
 
-  ReadHelper* helper = new ReadHelper(this, file_.Pass(), bytes_to_read);
+  ReadHelper* helper = new ReadHelper(this, std::move(file_), bytes_to_read);
   return task_runner_->PostTaskAndReply(
       FROM_HERE,
       Bind(&ReadHelper::RunWork, Unretained(helper), offset),
@@ -318,7 +320,7 @@ bool FileProxy::Write(int64 offset,
     return false;
 
   WriteHelper* helper =
-      new WriteHelper(this, file_.Pass(), buffer, bytes_to_write);
+      new WriteHelper(this, std::move(file_), buffer, bytes_to_write);
   return task_runner_->PostTaskAndReply(
       FROM_HERE,
       Bind(&WriteHelper::RunWork, Unretained(helper), offset),
@@ -329,7 +331,7 @@ bool FileProxy::SetTimes(Time last_access_time,
                          Time last_modified_time,
                          const StatusCallback& callback) {
   DCHECK(file_.IsValid());
-  GenericFileHelper* helper = new GenericFileHelper(this, file_.Pass());
+  GenericFileHelper* helper = new GenericFileHelper(this, std::move(file_));
   return task_runner_->PostTaskAndReply(
       FROM_HERE,
       Bind(&GenericFileHelper::SetTimes, Unretained(helper), last_access_time,
@@ -339,7 +341,7 @@ bool FileProxy::SetTimes(Time last_access_time,
 
 bool FileProxy::SetLength(int64 length, const StatusCallback& callback) {
   DCHECK(file_.IsValid());
-  GenericFileHelper* helper = new GenericFileHelper(this, file_.Pass());
+  GenericFileHelper* helper = new GenericFileHelper(this, std::move(file_));
   return task_runner_->PostTaskAndReply(
       FROM_HERE,
       Bind(&GenericFileHelper::SetLength, Unretained(helper), length),
@@ -348,7 +350,7 @@ bool FileProxy::SetLength(int64 length, const StatusCallback& callback) {
 
 bool FileProxy::Flush(const StatusCallback& callback) {
   DCHECK(file_.IsValid());
-  GenericFileHelper* helper = new GenericFileHelper(this, file_.Pass());
+  GenericFileHelper* helper = new GenericFileHelper(this, std::move(file_));
   return task_runner_->PostTaskAndReply(
       FROM_HERE,
       Bind(&GenericFileHelper::Flush, Unretained(helper)),

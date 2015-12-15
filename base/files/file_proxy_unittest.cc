@@ -4,6 +4,8 @@
 
 #include "base/files/file_proxy.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
@@ -208,7 +210,7 @@ TEST_F(FileProxyTest, SetAndTake) {
   ASSERT_TRUE(file.IsValid());
   FileProxy proxy(file_task_runner());
   EXPECT_FALSE(proxy.IsValid());
-  proxy.SetFile(file.Pass());
+  proxy.SetFile(std::move(file));
   EXPECT_TRUE(proxy.IsValid());
   EXPECT_FALSE(file.IsValid());
 

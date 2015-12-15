@@ -4,6 +4,8 @@
 
 #include "base/files/memory_mapped_file.h"
 
+#include <utility>
+
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -93,7 +95,7 @@ TEST_F(MemoryMappedFileTest, MapWholeFileUsingRegion) {
   MemoryMappedFile map;
 
   File file(temp_file_path(), File::FLAG_OPEN | File::FLAG_READ);
-  map.Initialize(file.Pass(), MemoryMappedFile::Region::kWholeFile);
+  map.Initialize(std::move(file), MemoryMappedFile::Region::kWholeFile);
   ASSERT_EQ(kFileSize, map.length());
   ASSERT_TRUE(map.data() != NULL);
   EXPECT_TRUE(map.IsValid());
@@ -108,7 +110,7 @@ TEST_F(MemoryMappedFileTest, MapPartialRegionAtBeginning) {
 
   File file(temp_file_path(), File::FLAG_OPEN | File::FLAG_READ);
   MemoryMappedFile::Region region = {0, kPartialSize};
-  map.Initialize(file.Pass(), region);
+  map.Initialize(std::move(file), region);
   ASSERT_EQ(kPartialSize, map.length());
   ASSERT_TRUE(map.data() != NULL);
   EXPECT_TRUE(map.IsValid());
@@ -124,7 +126,7 @@ TEST_F(MemoryMappedFileTest, MapPartialRegionAtEnd) {
 
   File file(temp_file_path(), File::FLAG_OPEN | File::FLAG_READ);
   MemoryMappedFile::Region region = {kOffset, kPartialSize};
-  map.Initialize(file.Pass(), region);
+  map.Initialize(std::move(file), region);
   ASSERT_EQ(kPartialSize, map.length());
   ASSERT_TRUE(map.data() != NULL);
   EXPECT_TRUE(map.IsValid());
@@ -141,7 +143,7 @@ TEST_F(MemoryMappedFileTest, MapSmallPartialRegionInTheMiddle) {
 
   File file(temp_file_path(), File::FLAG_OPEN | File::FLAG_READ);
   MemoryMappedFile::Region region = {kOffset, kPartialSize};
-  map.Initialize(file.Pass(), region);
+  map.Initialize(std::move(file), region);
   ASSERT_EQ(kPartialSize, map.length());
   ASSERT_TRUE(map.data() != NULL);
   EXPECT_TRUE(map.IsValid());
@@ -158,7 +160,7 @@ TEST_F(MemoryMappedFileTest, MapLargePartialRegionInTheMiddle) {
 
   File file(temp_file_path(), File::FLAG_OPEN | File::FLAG_READ);
   MemoryMappedFile::Region region = {kOffset, kPartialSize};
-  map.Initialize(file.Pass(), region);
+  map.Initialize(std::move(file), region);
   ASSERT_EQ(kPartialSize, map.length());
   ASSERT_TRUE(map.data() != NULL);
   EXPECT_TRUE(map.IsValid());

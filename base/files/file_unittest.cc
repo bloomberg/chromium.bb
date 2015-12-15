@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/files/file.h"
+
+#include <utility>
+
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/time/time.h"
@@ -240,7 +243,7 @@ TEST(FileTest, Append) {
   ASSERT_TRUE(file2.IsValid());
 
   // Test passing the file around.
-  file = file2.Pass();
+  file = std::move(file2);
   EXPECT_FALSE(file2.IsValid());
   ASSERT_TRUE(file.IsValid());
 

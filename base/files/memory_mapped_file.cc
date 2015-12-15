@@ -4,6 +4,8 @@
 
 #include "base/files/memory_mapped_file.h"
 
+#include <utility>
+
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/sys_info.h"
@@ -47,7 +49,7 @@ bool MemoryMappedFile::Initialize(const FilePath& file_name) {
 }
 
 bool MemoryMappedFile::Initialize(File file) {
-  return Initialize(file.Pass(), Region::kWholeFile);
+  return Initialize(std::move(file), Region::kWholeFile);
 }
 
 bool MemoryMappedFile::Initialize(File file, const Region& region) {
@@ -59,7 +61,7 @@ bool MemoryMappedFile::Initialize(File file, const Region& region) {
     DCHECK_GT(region.size, 0);
   }
 
-  file_ = file.Pass();
+  file_ = std::move(file);
 
   if (!MapFileRegionToMemory(region)) {
     CloseHandles();
