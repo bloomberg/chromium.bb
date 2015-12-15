@@ -317,7 +317,7 @@
     "type": "unknown",
   },
   "nacl_loader_unittests": {
-    "label": "//components/nacl:nacl_loader_unittests",
+    "label": "//components/nacl/loader:nacl_loader_unittests",
     "type": "raw",
     "args": [],
   },

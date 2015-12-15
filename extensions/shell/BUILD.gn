@@ -89,28 +89,6 @@ source_set("app_shell_lib") {
     sources += chromeos_sources
   }
 
-  # TODO(GYP): Enable this when //components/nacl GN is done. See
-  # http://crbug.com/430602
-  if (false) {
-    if (enable_nacl) {
-      if (is_linux) {
-        deps += [ "//components/nacl:nacl_helper" ]
-      }
-      deps += [
-        "//components/nacl",
-        "//components/nacl:browser",
-        "//components/nacl:common",
-        "//components/nacl:renderer",
-        "//components/nacl:switches",
-      ]
-      nacl_sources =
-          rebase_path(app_shell_gypi_values.app_shell_lib_sources_nacl,
-                      ".",
-                      "//extensions/shell")
-      sources += nacl_sources
-    }
-  }
-
   if (enable_nacl) {
     sources += [
       "browser/shell_nacl_browser_delegate.cc",
@@ -118,16 +96,15 @@ source_set("app_shell_lib") {
     ]
 
     deps += [
-      "//components/nacl",
-      "//components/nacl:nacl_browser",
-      "//components/nacl:nacl_common",
-      "//components/nacl:nacl_renderer",
-      "//components/nacl:nacl_switches",
+      "//components/nacl/browser",
+      "//components/nacl/common",
+      "//components/nacl/loader",
+      "//components/nacl/renderer",
       "//components/nacl/renderer/plugin:nacl_trusted_plugin",
     ]
 
     if (is_linux) {
-      deps += [ "//components/nacl:nacl_helper" ]
+      deps += [ "//components/nacl/loader:nacl_helper" ]
     }
   }
 

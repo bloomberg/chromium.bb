@@ -79,8 +79,8 @@ static_library("renderer") {
 
   if (enable_nacl) {
     deps += [
-      "//components/nacl",
-      "//components/nacl:nacl_renderer",
+      "//components/nacl/loader",
+      "//components/nacl/renderer",
     ]
   }
 
