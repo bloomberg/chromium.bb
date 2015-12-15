@@ -453,13 +453,13 @@ group("both_gn_and_gyp") {
     }
 
     if (enable_nacl) {
-      deps += [ "//components/nacl/loader:nacl_loader_unittests" ]
+      deps += [ "//components/nacl:nacl_loader_unittests" ]
 
       if (is_linux) {
         # TODO(dpranke): Figure out what platforms should actually have this.
         deps += [
-          "//components/nacl/loader:helper_nonsfi",
-          "//components/nacl/loader:nacl_helper",
+          "//components/nacl:helper_nonsfi",
+          "//components/nacl:nacl_helper",
         ]
       }
     }

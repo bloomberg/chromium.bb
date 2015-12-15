@@ -478,7 +478,7 @@ source_set("browser") {
   if (enable_nacl) {
     sources +=
         rebase_path(gypi_values.chrome_browser_nacl_sources, ".", "//chrome")
-    deps += [ "//components/nacl/browser" ]
+    deps += [ "//components/nacl:nacl_browser" ]
   }
 
   if (enable_configuration_policy) {

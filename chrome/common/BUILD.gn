@@ -83,7 +83,6 @@ static_library("common") {
     "//components/metrics",
     "//components/metrics:net",
     "//components/nacl/common:process_type",
-    "//components/nacl/common:switches",
     "//components/omnibox/common",
     "//components/policy:policy_component_common",
     "//components/strings",
@@ -191,7 +190,7 @@ static_library("common") {
   }
 
   if (enable_nacl) {
-    public_deps += [ "//components/nacl/common" ]
+    public_deps += [ "//components/nacl:nacl_common" ]
   }
 
   # Printing.
@@ -334,9 +333,12 @@ static_library("constants") {
     "//base",
     "//base/third_party/dynamic_annotations",
     "//components/bookmarks/common",
-    "//components/nacl/common:switches",
     "//third_party/widevine/cdm:version_h",
   ]
+
+  if (enable_nacl) {
+    deps += [ "//components/nacl:nacl_switches" ]
+  }
 
   if (is_android) {
     # This dependency must only be added for Android.

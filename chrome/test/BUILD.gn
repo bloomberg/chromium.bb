@@ -447,8 +447,8 @@ if (!is_android) {
 
       if (enable_nacl) {
         data_deps += [
-          "//components/nacl/loader:nacl_helper",
-          "//components/nacl/loader:helper_nonsfi",
+          "//components/nacl:nacl_helper",
+          "//components/nacl:helper_nonsfi",
         ]
       }
 
