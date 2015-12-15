@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/chrome_style.h"
 #include "chrome/browser/ui/cocoa/browser_window_cocoa.h"
 #include "chrome/browser/ui/cocoa/browser_window_controller.h"
+#import "chrome/browser/ui/cocoa/bubble_sync_promo_controller.h"
 #include "chrome/browser/ui/cocoa/extensions/browser_actions_controller.h"
 #include "chrome/browser/ui/cocoa/extensions/bundle_util.h"
 #include "chrome/browser/ui/cocoa/hover_close_button.h"
@@ -112,7 +113,12 @@ void ExtensionInstalledBubbleBridge::UpdateAnchorPosition() {
 
 @synthesize bundle = bundle_;
 @synthesize installedBubble = installedBubble_;
-// Exposed for unit test.
+// Exposed for unit tests.
+@synthesize howToUse = howToUse_;
+@synthesize howToManage = howToManage_;
+@synthesize appInstalledShortcutLink = appInstalledShortcutLink_;
+@synthesize manageShortcutLink = manageShortcutLink_;
+@synthesize promoContainer = promoContainer_;
 @synthesize pageActionPreviewShowing = pageActionPreviewShowing_;
 
 - (id)initWithParentWindow:(NSWindow*)parentWindow
@@ -158,28 +164,12 @@ void ExtensionInstalledBubbleBridge::UpdateAnchorPosition() {
   return installedBubble_->extension();
 }
 
-// Sets |promo_| based on |promoPlaceholder_|, sets |promoPlaceholder_| to nil.
-- (void)initializeLabel {
- // Replace the promo placeholder NSTextField with the real label NSTextView.
- // The former doesn't show links in a nice way, but the latter can't be added
- // in IB without a containing scroll view, so create the NSTextView
- // programmatically.
- promo_.reset([[HyperlinkTextView alloc]
-     initWithFrame:[promoPlaceholder_ frame]]);
- [promo_.get() setAutoresizingMask:[promoPlaceholder_ autoresizingMask]];
- [[promoPlaceholder_ superview]
-     replaceSubview:promoPlaceholder_ with:promo_.get()];
- promoPlaceholder_ = nil;  // Now released.
- [promo_.get() setDelegate:self];
-}
-
 - (void)windowWillClose:(NSNotification*)notification {
   // Turn off page action icon preview when the window closes, unless we
   // already removed it when the window resigned key status.
   [self removePageActionPreviewIfNecessary];
   browser_ = nullptr;
   [closeButton_ setTrackingEnabled:NO];
-  [promo_ setDelegate:nil];
   [super windowWillClose:notification];
 }
 
@@ -199,16 +189,6 @@ void ExtensionInstalledBubbleBridge::UpdateAnchorPosition() {
   bool didClose =
       [self bubbleReference]->CloseBubble(BUBBLE_CLOSE_USER_DISMISSED);
   DCHECK(didClose);
-}
-
-- (BOOL)textView:(NSTextView*)aTextView
-   clickedOnLink:(id)link
-         atIndex:(NSUInteger)charIndex {
-  DCHECK_EQ(promo_.get(), aTextView);
-  chrome::ShowBrowserSignin(
-      browser_,
-      signin_metrics::AccessPoint::ACCESS_POINT_EXTENSION_INSTALL_BUBBLE);
-  return YES;
 }
 
 // Extracted to a function here so that it can be overridden for unit testing.
@@ -385,32 +365,30 @@ void ExtensionInstalledBubbleBridge::UpdateAnchorPosition() {
     return newWindowHeight;
   }
 
-  int sync_promo_height = 0;
+  CGFloat syncPromoHeight = 0;
   if (installedBubble_->options() & ExtensionInstalledBubble::SIGN_IN_PROMO) {
-    // First calculate the height of the sign-in promo.
-    NSFont* font = [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
+    signin_metrics::AccessPoint accessPoint =
+       signin_metrics::AccessPoint::ACCESS_POINT_EXTENSION_INSTALL_BUBBLE;
+    syncPromoController_.reset(
+        [[BubbleSyncPromoController alloc]
+            initWithBrowser:browser_
+              promoStringId:IDS_EXTENSION_INSTALLED_SYNC_PROMO_NEW
+               linkStringId:IDS_EXTENSION_INSTALLED_SYNC_PROMO_LINK_NEW
+                accessPoint:accessPoint]);
+    [promoContainer_ addSubview:[syncPromoController_ view]];
 
-    NSString* link(l10n_util::GetNSStringWithFixup(
-        IDS_EXTENSION_INSTALLED_SIGNIN_PROMO_LINK));
-    NSString* message(l10n_util::GetNSStringWithFixup(
-        IDS_EXTENSION_INSTALLED_SIGNIN_PROMO));
-    message = [link stringByAppendingString:message];
+    // Resize the sync promo and its placeholder.
+    NSRect syncPromoPlaceholderFrame = [promoContainer_ frame];
+    CGFloat windowWidth = NSWidth([[self bubble] frame]);
+    syncPromoPlaceholderFrame.size.width = windowWidth;
+    syncPromoHeight =
+        [syncPromoController_ preferredHeightForWidth:windowWidth];
+    syncPromoPlaceholderFrame.size.height = syncPromoHeight;
 
-    HyperlinkTextView* view = promo_.get();
-    [view setMessage:message withFont:font messageColor:[NSColor blackColor]];
-    [view addLinkRange:NSMakeRange(0, [link length])
-               withURL:@"about:blank"  // using a link here is bad ui
-             linkColor:skia::SkColorToCalibratedNSColor(
-                           chrome_style::GetLinkColor())];
-
-    // HACK! The TextView does not report correct height even after you stuff
-    // it with text (it tells you it is single-line even if it is multiline), so
-    // here the hidden howToUse_ TextField is temporarily repurposed to
-    // calculate the correct height for the TextView.
-    [[howToUse_ cell] setAttributedStringValue:[promo_ attributedString]];
-    [GTMUILocalizerAndLayoutTweaker
-          sizeToFitFixedWidthTextField:howToUse_];
-    sync_promo_height = NSHeight([howToUse_ frame]);
+    [promoContainer_ setFrame:syncPromoPlaceholderFrame];
+    [[syncPromoController_ view] setFrame:syncPromoPlaceholderFrame];
+  } else {
+    [promoContainer_ setHidden:YES];
   }
 
   // First part of extension installed message, the heading.
@@ -456,12 +434,10 @@ void ExtensionInstalledBubbleBridge::UpdateAnchorPosition() {
   }
 
   // Sync sign-in promo, if any.
-  if (sync_promo_height > 0) {
-    NSRect promo_frame = [promo_.get() frame];
-    promo_frame.size.height = sync_promo_height;
-    [promo_.get() setFrame:promo_frame];
+  if (syncPromoHeight > 0) {
     newWindowHeight += extension_installed_bubble::kInnerVerticalMargin;
-    newWindowHeight += sync_promo_height;
+    newWindowHeight += syncPromoHeight;
+    newWindowHeight -= extension_installed_bubble::kOuterVerticalMargin;
   }
 
   if (installedBubble_->options() & ExtensionInstalledBubble::SHOW_KEYBINDING) {
@@ -564,28 +540,7 @@ void ExtensionInstalledBubbleBridge::UpdateAnchorPosition() {
     adjustView(manageShortcutLink_, &nextY);
 
   if (installedBubble_->options() & ExtensionInstalledBubble::SIGN_IN_PROMO)
-    adjustView(promo_.get(), &nextY);
-}
-
-// Exposed for unit testing.
-- (NSRect)headingFrame {
-  return [heading_ frame];
-}
-
-- (NSRect)frameOfHowToUse {
-  return [howToUse_ frame];
-}
-
-- (NSRect)frameOfHowToManage {
-  return [howToManage_ frame];
-}
-
-- (NSRect)frameOfSigninPromo {
-  return [promo_ frame];
-}
-
-- (NSButton*)appInstalledShortcutLink {
-  return appShortcutLink_;
+    adjustView(promoContainer_, &nextY);
 }
 
 - (void)updateAnchorPosition {
@@ -613,12 +568,6 @@ void ExtensionInstalledBubbleBridge::UpdateAnchorPosition() {
 - (void)doClose {
   installedBubble_ = nullptr;
   [self close];
-}
-
-- (void)awakeFromNib {
-  if (bundle_)
-    return;
-  [self initializeLabel];
 }
 
 @end

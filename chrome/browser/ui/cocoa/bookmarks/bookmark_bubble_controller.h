@@ -11,7 +11,7 @@
 #import "chrome/browser/ui/cocoa/has_weak_browser_pointer.h"
 
 @class BookmarkBubbleController;
-@class BookmarkSyncPromoController;
+@class BubbleSyncPromoController;
 
 namespace bookmarks {
 class BookmarkBubbleObserver;
@@ -42,7 +42,7 @@ class ManagedBookmarkService;
   scoped_ptr<BookmarkModelObserverForCocoa> bookmarkObserver_;
 
   // Sync promo controller, if the sync promo is displayed.
-  base::scoped_nsobject<BookmarkSyncPromoController> syncPromoController_;
+  base::scoped_nsobject<BubbleSyncPromoController> syncPromoController_;
 
   IBOutlet NSTextField* bigTitle_;   // "Bookmark" or "Bookmark Added!"
   IBOutlet NSTextField* nameTextField_;

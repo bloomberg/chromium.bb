@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/bookmarks/bookmark_sync_promo_controller.h"
+#import "chrome/browser/ui/cocoa/bubble_sync_promo_controller.h"
 
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/signin/signin_promo.h"
@@ -43,11 +43,17 @@ const int kFontSize = 11;
 
 }  // namespace
 
-@implementation BookmarkSyncPromoController
+@implementation BubbleSyncPromoController
 
-- (id)initWithBrowser:(Browser*)browser {
+- (id)initWithBrowser:(Browser*)browser
+        promoStringId:(int)promoStringId
+         linkStringId:(int)linkStringId
+          accessPoint:(signin_metrics::AccessPoint)accessPoint {
   if ((self = [super init])) {
     browser_ = browser;
+    promoStringId_ = promoStringId;
+    linkStringId_ = linkStringId;
+    accessPoint_ = accessPoint;
   }
   return self;
 }
@@ -77,11 +83,9 @@ const int kFontSize = 11;
 
   // Add the sync promo text.
   size_t offset;
-  const base::string16 linkText = l10n_util::GetStringUTF16(
-      IDS_BOOKMARK_SYNC_PROMO_LINK);
-  const base::string16 promoText =  l10n_util::GetStringFUTF16(
-      IDS_BOOKMARK_SYNC_PROMO_MESSAGE,
-      linkText, &offset);
+  const base::string16 linkText = l10n_util::GetStringUTF16(linkStringId_);
+  const base::string16 promoText =
+      l10n_util::GetStringFUTF16(promoStringId_, linkText, &offset);
   NSString* nsPromoText = SysUTF16ToNSString(promoText);
   NSString* nsLinkText = SysUTF16ToNSString(linkText);
   NSFont* font = [NSFont labelFontOfSize:kFontSize];
@@ -108,8 +112,7 @@ const int kFontSize = 11;
 - (BOOL)textView:(NSTextView *)textView
    clickedOnLink:(id)link
          atIndex:(NSUInteger)charIndex {
-  chrome::ShowBrowserSignin(
-      browser_, signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_BUBBLE);
+  chrome::ShowBrowserSignin(browser_, accessPoint_);
   return YES;
 }
 

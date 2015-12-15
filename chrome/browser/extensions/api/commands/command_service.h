@@ -200,6 +200,10 @@ class CommandService : public BrowserContextKeyedAPI,
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
+  void UpdateKeybindingsForTest(const Extension* extension) {
+    UpdateKeybindings(extension);
+  }
+
  private:
   friend class BrowserContextKeyedAPIFactory<CommandService>;
 

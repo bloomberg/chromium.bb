@@ -10,14 +10,16 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_button.h"
-#import "chrome/browser/ui/cocoa/bookmarks/bookmark_sync_promo_controller.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
+#import "chrome/browser/ui/cocoa/bubble_sync_promo_controller.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
+#include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/managed/managed_bookmark_service.h"
+#include "components/signin/core/browser/signin_metrics.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
@@ -82,7 +84,12 @@ using bookmarks::BookmarkNode;
   Browser* browser = chrome::FindBrowserWithWindow(self.parentWindow);
   if (SyncPromoUI::ShouldShowSyncPromo(browser->profile())) {
     syncPromoController_.reset(
-        [[BookmarkSyncPromoController alloc] initWithBrowser:browser]);
+        [[BubbleSyncPromoController alloc]
+            initWithBrowser:browser
+              promoStringId:IDS_BOOKMARK_SYNC_PROMO_MESSAGE
+               linkStringId:IDS_BOOKMARK_SYNC_PROMO_LINK
+                accessPoint:
+                    signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_BUBBLE]);
     [syncPromoPlaceholder_ addSubview:[syncPromoController_ view]];
 
     // Resize the sync promo and its placeholder.
