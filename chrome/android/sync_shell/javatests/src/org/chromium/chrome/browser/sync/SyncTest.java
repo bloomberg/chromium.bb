@@ -60,7 +60,7 @@ public class SyncTest extends SyncTestBase {
         SyncTestUtil.verifySyncIsActiveForAccount(mContext, account);
         stopSync();
         SyncTestUtil.verifySyncIsDisabled(mContext, account);
-        startSync();
+        startSyncAndWait();
         SyncTestUtil.verifySyncIsActiveForAccount(mContext, account);
     }
 
@@ -100,6 +100,18 @@ public class SyncTest extends SyncTestBase {
         // But then re-enabling Chrome sync should.
         mSyncContentResolver.setSyncAutomatically(account, authority, true);
         SyncTestUtil.verifySyncIsActiveForAccount(mContext, account);
+    }
+
+    @LargeTest
+    @Feature({"Sync"})
+    public void testMasterSyncBlocksSyncStart() throws InterruptedException {
+        Account account = setUpTestAccountAndSignInToSync();
+        stopSync();
+        SyncTestUtil.verifySyncIsDisabled(mContext, account);
+
+        mSyncContentResolver.setMasterSyncAutomatically(false);
+        startSync();
+        SyncTestUtil.verifySyncIsDisabled(mContext, account);
     }
 
     private static ContentViewCore getContentViewCore(ChromeActivity activity) {

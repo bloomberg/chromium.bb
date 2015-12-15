@@ -71,6 +71,12 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
         AndroidSyncSettings.registerObserver(context, this);
         mProfileSyncService = ProfileSyncService.get();
         mProfileSyncService.addSyncStateChangedListener(this);
+        mProfileSyncService.setMasterSyncEnabledProvider(
+                new ProfileSyncService.MasterSyncEnabledProvider() {
+                    public boolean isMasterSyncEnabled() {
+                        return AndroidSyncSettings.isMasterSyncEnabled(mContext);
+                    }
+                });
 
         setSessionsId();
 

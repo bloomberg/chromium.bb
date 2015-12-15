@@ -102,6 +102,9 @@ ProfileSyncServiceAndroid::ProfileSyncServiceAndroid(JNIEnv* env, jobject obj)
 bool ProfileSyncServiceAndroid::Init() {
   if (sync_service_) {
     sync_service_->AddObserver(this);
+    sync_service_->SetPlatformSyncAllowedProvider(
+        base::Bind(&ProfileSyncServiceAndroid::IsSyncAllowedByAndroid,
+                   base::Unretained(this)));
     return true;
   } else {
     return false;
@@ -109,8 +112,10 @@ bool ProfileSyncServiceAndroid::Init() {
 }
 
 ProfileSyncServiceAndroid::~ProfileSyncServiceAndroid() {
-  if (sync_service_ && sync_service_->HasObserver(this)) {
+  if (sync_service_) {
     sync_service_->RemoveObserver(this);
+    sync_service_->SetPlatformSyncAllowedProvider(
+        ProfileSyncService::PlatformSyncAllowedProvider());
   }
 }
 
@@ -118,6 +123,13 @@ void ProfileSyncServiceAndroid::OnStateChanged() {
   // Notify the java world that our sync state has changed.
   JNIEnv* env = AttachCurrentThread();
   Java_ProfileSyncService_syncStateChanged(
+      env, weak_java_profile_sync_service_.get(env).obj());
+}
+
+bool ProfileSyncServiceAndroid::IsSyncAllowedByAndroid() const {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  JNIEnv* env = AttachCurrentThread();
+  return Java_ProfileSyncService_isMasterSyncEnabled(
       env, weak_java_profile_sync_service_.get(env).obj());
 }
 

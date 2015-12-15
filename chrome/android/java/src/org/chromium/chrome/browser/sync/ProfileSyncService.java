@@ -55,6 +55,14 @@ public class ProfileSyncService {
         }
     }
 
+    /**
+     * Provider for the Android master sync flag.
+     */
+    interface MasterSyncEnabledProvider {
+        // Returns whether master sync is enabled.
+        public boolean isMasterSyncEnabled();
+    }
+
     private static final String TAG = "ProfileSyncService";
 
     private static final int[] ALL_SELECTABLE_TYPES = new int[] {
@@ -78,6 +86,11 @@ public class ProfileSyncService {
      * {@link init()}.
      */
     private long mNativeProfileSyncServiceAndroid;
+
+    /**
+     * An object that knows whether Android's master sync setting is enabled.
+     */
+    private MasterSyncEnabledProvider mMasterSyncEnabledProvider;
 
     /**
      * Retrieves or creates the ProfileSyncService singleton instance. Returns null if sync is
@@ -475,6 +488,27 @@ public class ProfileSyncService {
     public void setPassphrasePrompted(boolean prompted) {
         nativeSetPassphrasePrompted(mNativeProfileSyncServiceAndroid,
                                     prompted);
+    }
+
+    /**
+     * Set the MasterSyncEnabledProvider for ProfileSyncService.
+     *
+     * This method is intentionally package-scope and should only be called once.
+     */
+    void setMasterSyncEnabledProvider(MasterSyncEnabledProvider masterSyncEnabledProvider) {
+        ThreadUtils.assertOnUiThread();
+        assert mMasterSyncEnabledProvider == null;
+        mMasterSyncEnabledProvider = masterSyncEnabledProvider;
+    }
+
+    /**
+     * Returns whether Android's master sync setting is enabled.
+     */
+    @CalledByNative
+    public boolean isMasterSyncEnabled() {
+        ThreadUtils.assertOnUiThread();
+        assert mMasterSyncEnabledProvider != null;
+        return mMasterSyncEnabledProvider.isMasterSyncEnabled();
     }
 
     /**

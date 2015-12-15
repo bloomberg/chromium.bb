@@ -309,6 +309,10 @@ void ProfileSyncService::Initialize() {
     sync_state = NOT_SIGNED_IN;
   } else if (IsManaged()) {
     sync_state = IS_MANAGED;
+  } else if (!IsSyncAllowedByPlatform()) {
+    // This case should currently never be hit, as Android's master sync isn't
+    // plumbed into PSS until after this function. See http://crbug.com/568771.
+    sync_state = NOT_ALLOWED_BY_PLATFORM;
   } else if (!IsSyncRequested()) {
     if (HasSyncSetupCompleted()) {
       sync_state = NOT_REQUESTED;
@@ -323,7 +327,8 @@ void ProfileSyncService::Initialize() {
 
   // If sync isn't allowed, the only thing to do is to turn it off.
   if (!IsSyncAllowed()) {
-    RequestStop(CLEAR_DATA);
+    // Only clear data if disallowed by policy.
+    RequestStop(IsManaged() ? CLEAR_DATA : KEEP_DATA);
     return;
   }
 
@@ -1669,7 +1674,7 @@ void ProfileSyncService::SetSetupInProgress(bool setup_in_progress) {
 }
 
 bool ProfileSyncService::IsSyncAllowed() const {
-  return IsSyncAllowedByFlag() && !IsManaged();
+  return IsSyncAllowedByFlag() && !IsManaged() && IsSyncAllowedByPlatform();
 }
 
 bool ProfileSyncService::IsSyncActive() const {
@@ -1902,6 +1907,11 @@ base::Time ProfileSyncService::GetExplicitPassphraseTime() const {
 bool ProfileSyncService::IsCryptographerReady(
     const syncer::BaseTransaction* trans) const {
   return backend_.get() && backend_->IsCryptographerReady(trans);
+}
+
+void ProfileSyncService::SetPlatformSyncAllowedProvider(
+    const PlatformSyncAllowedProvider& platform_sync_allowed_provider) {
+  platform_sync_allowed_provider_ = platform_sync_allowed_provider;
 }
 
 void ProfileSyncService::ConfigureDataTypeManager() {
@@ -2435,6 +2445,11 @@ bool ProfileSyncService::IsSyncAllowedByFlag() {
       switches::kDisableSync);
 }
 
+bool ProfileSyncService::IsSyncAllowedByPlatform() const {
+  return platform_sync_allowed_provider_.is_null() ||
+         platform_sync_allowed_provider_.Run();
+}
+
 bool ProfileSyncService::IsManaged() const {
   return sync_prefs_.IsManaged() || sync_disabled_by_admin_;
 }
@@ -2455,6 +2470,10 @@ SigninManagerBase* ProfileSyncService::signin() const {
 }
 
 void ProfileSyncService::RequestStart() {
+  if (!IsSyncAllowed()) {
+    // Sync cannot be requested if it's not allowed.
+    return;
+  }
   DCHECK(sync_client_);
   sync_prefs_.SetSyncRequested(true);
   DCHECK(!signin_.get() || signin_->GetOriginal()->IsAuthenticated());

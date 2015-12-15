@@ -184,6 +184,7 @@ class ProfileSyncService : public sync_driver::SyncService,
                            public SigninManagerBase::Observer {
  public:
   typedef browser_sync::SyncBackendHost::Status Status;
+  typedef base::Callback<bool(void)> PlatformSyncAllowedProvider;
 
   enum SyncEventCodes  {
     MIN_SYNC_EVENT_CODE = 0,
@@ -443,6 +444,9 @@ class ProfileSyncService : public sync_driver::SyncService,
   // assume it's running on the UI thread.
   static bool IsSyncAllowedByFlag();
 
+  // Returns whether sync is currently allowed on this platform.
+  bool IsSyncAllowedByPlatform() const;
+
   // Returns whether sync is managed, i.e. controlled by configuration
   // management. If so, the user is not allowed to configure sync.
   virtual bool IsManaged() const;
@@ -580,6 +584,10 @@ class ProfileSyncService : public sync_driver::SyncService,
   // SyncPrefs. Will return the empty string if no bootstrap token exists.
   std::string GetCustomPassphraseKey() const;
 
+  // Set the provider for whether sync is currently allowed by the platform.
+  void SetPlatformSyncAllowedProvider(
+      const PlatformSyncAllowedProvider& platform_sync_allowed_provider);
+
   // Needed to test whether the directory is deleted properly.
   base::FilePath GetDirectoryPathForTest() const;
 
@@ -664,6 +672,7 @@ class ProfileSyncService : public sync_driver::SyncService,
                               // is false. Might indicate a stop-and-clear.
     NEEDS_CONFIRMATION,       // The user must confirm sync settings.
     IS_MANAGED,               // Sync is disallowed by enterprise policy.
+    NOT_ALLOWED_BY_PLATFORM,  // Sync is disallowed by the platform.
     SYNC_INITIAL_STATE_LIMIT
   };
 
@@ -1022,6 +1031,10 @@ class ProfileSyncService : public sync_driver::SyncService,
   // the user. This logic is only enabled on platforms that consume the
   // IsPassphrasePrompted sync preference.
   bool passphrase_prompt_triggered_by_version_;
+
+  // An object that lets us check whether sync is currently allowed on this
+  // platform.
+  PlatformSyncAllowedProvider platform_sync_allowed_provider_;
 
   // Used to ensure that certain operations are performed on the thread that
   // this object was created on.

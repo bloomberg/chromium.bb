@@ -138,6 +138,10 @@ public class SyncTestBase extends ChromeActivityTestCaseBase<ChromeActivity> {
                 mProfileSyncService.requestStart();
             }
         });
+    }
+
+    protected void startSyncAndWait() throws InterruptedException {
+        startSync();
         SyncTestUtil.waitForSyncActive();
     }
 
@@ -163,8 +167,7 @@ public class SyncTestBase extends ChromeActivityTestCaseBase<ChromeActivity> {
                     }
 
                     @Override
-                    public void onSigninCancelled() {
-                    }
+                    public void onSigninCancelled() {}
                 });
             }
         });

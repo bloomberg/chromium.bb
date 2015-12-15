@@ -185,6 +185,9 @@ class ProfileSyncServiceAndroid : public sync_driver::SyncServiceObserver {
   static bool Register(JNIEnv* env);
 
  private:
+  // Returns whether sync is allowed by Android.
+  bool IsSyncAllowedByAndroid() const;
+
   // A reference to the Chrome profile object.
   Profile* profile_;
 

@@ -51,11 +51,17 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
      * Fake ProfileSyncService for test to control the value returned from
      * isPassphraseRequiredForDecryption.
      */
-    private static class FakeProfileSyncService extends ProfileSyncService {
+    private class FakeProfileSyncService extends ProfileSyncService {
         private boolean mPassphraseRequiredForDecryption;
 
         public FakeProfileSyncService() {
             super();
+            setMasterSyncEnabledProvider(new MasterSyncEnabledProvider() {
+                @Override
+                public boolean isMasterSyncEnabled() {
+                    return AndroidSyncSettings.isMasterSyncEnabled(mContext);
+                }
+            });
         }
 
         @Override
