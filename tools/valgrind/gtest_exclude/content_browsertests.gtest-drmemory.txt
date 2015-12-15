@@ -58,9 +58,6 @@ WebRtcGetUserMediaBrowserTest.TestGetUserMediaAspectRatio4To3
 WebRtcGetUserMediaBrowserTest.TwoGetUserMediaAndCheckCallbackAfterFailure
 WebRtcGetUserMediaBrowserTest.TwoGetUserMediaWithEqualConstraints
 
-# https://crbug.com/507012
-ServiceWorkerVersionBrowserTest.ReadResourceFailure_WaitingWorker
-
 # https://crbug.com/376668
 TouchActionBrowserTest.DefaultAuto
 

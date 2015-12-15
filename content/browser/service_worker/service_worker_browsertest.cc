@@ -470,6 +470,10 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
         pattern,
         wrapper()->context()->storage()->NewRegistrationId(),
         wrapper()->context()->AsWeakPtr());
+    // Set the update check time to avoid triggering updates in the middle of
+    // tests.
+    registration_->set_last_update_check(base::Time::Now());
+
     version_ = new ServiceWorkerVersion(
         registration_.get(),
         embedded_test_server()->GetURL(worker_url),
