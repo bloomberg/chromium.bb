@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+#include <vector>
+
 #include "base/bind.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
@@ -9,7 +12,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/memory/scoped_vector.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -325,11 +327,11 @@ class PrinterProviderApiTest : public ShellApiTest {
   // in |expoected_printers| are unique.
   void ValidatePrinterListValue(
       const base::ListValue& printers,
-      const ScopedVector<base::Value>& expected_printers) {
+      const std::vector<scoped_ptr<base::Value>> expected_printers) {
     ASSERT_EQ(expected_printers.size(), printers.GetSize());
-    for (const base::Value* printer_value : expected_printers) {
-      EXPECT_TRUE(printers.Find(*printer_value) != printers.end())
-          << "Unable to find " << *printer_value << " in " << printers;
+    for (const auto& printer_value : expected_printers) {
+      EXPECT_TRUE(printers.Find(*printer_value.get()) != printers.end())
+          << "Unable to find " << *printer_value.get() << " in " << printers;
     }
   }
 
@@ -484,7 +486,7 @@ IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, GetPrintersSuccess) {
 
   run_loop.Run();
 
-  ScopedVector<base::Value> expected_printers;
+  std::vector<scoped_ptr<base::Value>> expected_printers;
   expected_printers.push_back(
       DictionaryBuilder()
           .Set("description", "Test printer")
@@ -502,7 +504,7 @@ IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, GetPrintersSuccess) {
           .Set("name", "Printer 2")
           .Build());
 
-  ValidatePrinterListValue(printers, expected_printers);
+  ValidatePrinterListValue(printers, std::move(expected_printers));
 }
 
 IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, GetPrintersAsyncSuccess) {
@@ -523,7 +525,7 @@ IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, GetPrintersAsyncSuccess) {
 
   run_loop.Run();
 
-  ScopedVector<base::Value> expected_printers;
+  std::vector<scoped_ptr<base::Value>> expected_printers;
   expected_printers.push_back(
       DictionaryBuilder()
           .Set("description", "Test printer")
@@ -533,7 +535,7 @@ IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, GetPrintersAsyncSuccess) {
           .Set("name", "Printer 1")
           .Build());
 
-  ValidatePrinterListValue(printers, expected_printers);
+  ValidatePrinterListValue(printers, std::move(expected_printers));
 }
 
 IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, GetPrintersTwoExtensions) {
@@ -561,7 +563,7 @@ IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, GetPrintersTwoExtensions) {
 
   run_loop.Run();
 
-  ScopedVector<base::Value> expected_printers;
+  std::vector<scoped_ptr<base::Value>> expected_printers;
   expected_printers.push_back(
       DictionaryBuilder()
           .Set("description", "Test printer")
@@ -595,7 +597,7 @@ IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, GetPrintersTwoExtensions) {
           .Set("name", "Printer 2")
           .Build());
 
-  ValidatePrinterListValue(printers, expected_printers);
+  ValidatePrinterListValue(printers, std::move(expected_printers));
 }
 
 IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest,
@@ -656,7 +658,7 @@ IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest,
 
   run_loop.Run();
 
-  ScopedVector<base::Value> expected_printers;
+  std::vector<scoped_ptr<base::Value>> expected_printers;
   expected_printers.push_back(
       DictionaryBuilder()
           .Set("description", "Test printer")
@@ -674,7 +676,7 @@ IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest,
           .Set("name", "Printer 2")
           .Build());
 
-  ValidatePrinterListValue(printers, expected_printers);
+  ValidatePrinterListValue(printers, std::move(expected_printers));
 }
 
 IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest,
@@ -703,7 +705,7 @@ IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest,
 
   run_loop.Run();
 
-  ScopedVector<base::Value> expected_printers;
+  std::vector<scoped_ptr<base::Value>> expected_printers;
   expected_printers.push_back(
       DictionaryBuilder()
           .Set("description", "Test printer")
@@ -721,7 +723,7 @@ IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest,
           .Set("name", "Printer 2")
           .Build());
 
-  ValidatePrinterListValue(printers, expected_printers);
+  ValidatePrinterListValue(printers, std::move(expected_printers));
 }
 
 IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, GetPrintersNoListener) {

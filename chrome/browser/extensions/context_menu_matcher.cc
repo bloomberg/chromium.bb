@@ -113,13 +113,10 @@ void ContextMenuMatcher::AppendExtensionItems(
       menu_model_->AddItem(menu_id, title);
     } else {
       ui::SimpleMenuModel* submenu = new ui::SimpleMenuModel(delegate_);
-      extension_menu_models_.push_back(submenu);
+      extension_menu_models_.push_back(make_scoped_ptr(submenu));
       menu_model_->AddSubMenu(menu_id, title, submenu);
-      RecursivelyAppendExtensionItems(submenu_items,
-                                      can_cross_incognito,
-                                      selection_text,
-                                      submenu,
-                                      index,
+      RecursivelyAppendExtensionItems(submenu_items, can_cross_incognito,
+                                      selection_text, submenu, index,
                                       false);  // is_action_menu_top_level
     }
     if (!is_action_menu)
@@ -266,13 +263,10 @@ void ContextMenuMatcher::RecursivelyAppendExtensionItems(
         menu_model->AddItem(menu_id, title);
       } else {
         ui::SimpleMenuModel* submenu = new ui::SimpleMenuModel(delegate_);
-        extension_menu_models_.push_back(submenu);
+        extension_menu_models_.push_back(make_scoped_ptr(submenu));
         menu_model->AddSubMenu(menu_id, title, submenu);
-        RecursivelyAppendExtensionItems(children,
-                                        can_cross_incognito,
-                                        selection_text,
-                                        submenu,
-                                        index,
+        RecursivelyAppendExtensionItems(children, can_cross_incognito,
+                                        selection_text, submenu, index,
                                         false);  // is_action_menu_top_level
       }
     } else if (item->type() == MenuItem::CHECKBOX) {

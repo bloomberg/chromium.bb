@@ -78,7 +78,7 @@ void RulesRegistryService::EnsureDefaultRulesRegistriesRegistered(
     // Create a RulesCacheDelegate.
     web_request_cache_delegate =
         new RulesCacheDelegate(true /*log_storage_init_delay*/);
-    cache_delegates_.push_back(web_request_cache_delegate);
+    cache_delegates_.push_back(make_scoped_ptr(web_request_cache_delegate));
   }
   scoped_refptr<WebRequestRulesRegistry> web_request_rules_registry(
       new WebRequestRulesRegistry(browser_context_, web_request_cache_delegate,
@@ -95,7 +95,7 @@ void RulesRegistryService::EnsureDefaultRulesRegistriesRegistered(
   if (rules_registry_id == kDefaultRulesRegistryID) {
     RulesCacheDelegate* content_rules_cache_delegate =
         new RulesCacheDelegate(false /*log_storage_init_delay*/);
-    cache_delegates_.push_back(content_rules_cache_delegate);
+    cache_delegates_.push_back(make_scoped_ptr(content_rules_cache_delegate));
     scoped_refptr<ContentRulesRegistry> content_rules_registry =
         ExtensionsAPIClient::Get()->CreateContentRulesRegistry(
             browser_context_, content_rules_cache_delegate);

@@ -18,7 +18,6 @@
 
 #include "base/environment.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "base/rand_util.h"
 #include "base/time/time.h"
@@ -487,7 +486,7 @@ void SimulateAttack(Server* server,
   const size_t kNumClients = 50;
   DiscreteTimeSimulation simulation;
   ExtensionThrottleManager manager;
-  ScopedVector<Requester> requesters;
+  std::vector<scoped_ptr<Requester>> requesters;
   for (size_t i = 0; i < kNumAttackers; ++i) {
     // Use a tiny time_between_requests so the attackers will ping the
     // server at every tick of the simulation.
@@ -500,7 +499,7 @@ void SimulateAttack(Server* server,
         new Requester(throttler_entry.get(), TimeDelta::FromMilliseconds(1),
                       server, attacker_results);
     attacker->SetStartupJitter(TimeDelta::FromSeconds(120));
-    requesters.push_back(attacker);
+    requesters.push_back(make_scoped_ptr(attacker));
     simulation.AddActor(attacker);
   }
   for (size_t i = 0; i < kNumClients; ++i) {
@@ -515,7 +514,7 @@ void SimulateAttack(Server* server,
                       client_results);
     client->SetStartupJitter(TimeDelta::FromSeconds(120));
     client->SetRequestJitter(TimeDelta::FromMinutes(1));
-    requesters.push_back(client);
+    requesters.push_back(make_scoped_ptr(client));
     simulation.AddActor(client);
   }
   simulation.AddActor(server);
