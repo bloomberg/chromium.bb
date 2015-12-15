@@ -12,6 +12,7 @@ import android.os.Parcel;
 import android.os.ParcelUuid;
 import android.os.Parcelable;
 
+import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -423,6 +424,12 @@ import java.util.UUID;
     public void removeObserver(WebContentsObserver observer) {
         if (mObserverProxy == null) return;
         mObserverProxy.removeObserver(observer);
+    }
+
+    @VisibleForTesting
+    @Override
+    public ObserverList.RewindableIterator<WebContentsObserver> getObserversForTesting() {
+        return mObserverProxy.getObserversForTesting();
     }
 
     @Override

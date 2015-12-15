@@ -352,8 +352,8 @@ public abstract class ChromeActivityTestCaseBase<T extends ChromeActivity>
      * Load a url in a new tab. The {@link Tab} will pretend to be created from a link.
      * @param url The url of the page to load.
      */
-    public void loadUrlInNewTab(final String url) throws InterruptedException {
-        loadUrlInNewTab(url, false);
+    public Tab loadUrlInNewTab(final String url) throws InterruptedException {
+        return loadUrlInNewTab(url, false);
     }
 
     /**
@@ -361,7 +361,7 @@ public abstract class ChromeActivityTestCaseBase<T extends ChromeActivity>
      * @param url The url of the page to load.
      * @param incognito Whether the new tab should be incognito.
      */
-    public void loadUrlInNewTab(final String url, final boolean incognito)
+    public Tab loadUrlInNewTab(final String url, final boolean incognito)
             throws InterruptedException {
         Tab tab = null;
         if (FeatureUtilities.isDocumentMode(getInstrumentation().getContext())) {
@@ -405,6 +405,7 @@ public abstract class ChromeActivityTestCaseBase<T extends ChromeActivity>
         }
         ChromeTabUtils.waitForTabPageLoaded(tab, url);
         getInstrumentation().waitForIdleSync();
+        return tab;
     }
 
     /**
