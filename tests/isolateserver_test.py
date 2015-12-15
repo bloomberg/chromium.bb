@@ -548,13 +548,13 @@ class IsolateServerStorageApiTest(TestCase):
         {'digest': item.digest, 'size': item.size, 'is_isolated': 0}]}
     contains_response = {'items': [
         {'index': 0,
-         'gs_upload_url': server + '/content-gs/whatevs/1234',
+         'gs_upload_url': server + '/FAKE_GCS/whatevs/1234',
          'upload_ticket': 'ticket!'}]}
     requests = [
       self.mock_contains_request(
           server, namespace, contains_request, contains_response),
       (
-        server + '/content-gs/whatevs/1234',
+        server + '/FAKE_GCS/whatevs/1234',
         {
           'data': data,
           'content_type': 'application/octet-stream',

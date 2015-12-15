@@ -93,7 +93,7 @@ class IsolateServerHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     return size >= min_direct_gs
 
   def _generate_signed_url(self, digest, namespace='default'):
-    return '%s/content-gs/%s/%s' % (self.server.url, namespace, digest)
+    return '%s/FAKE_GCS/%s/%s' % (self.server.url, namespace, digest)
 
   def _generate_ticket(self, entry_dict):
     embedded = dict(
@@ -169,8 +169,8 @@ class IsolateServerHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       self._drop_body()
     else:
       body = self._read_body()
-    if self.path.startswith('/content-gs/'):
-      namespace, h = self.path[len('/content-gs/'):].split('/', 1)
+    if self.path.startswith('/FAKE_GCS/'):
+      namespace, h = self.path[len('/FAKE_GCS/'):].split('/', 1)
       self.server.contents.setdefault(namespace, {})[h] = body
       self._octet_stream('')
     else:

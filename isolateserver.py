@@ -497,20 +497,6 @@ class Storage(object):
 
     return uploaded
 
-  def get_fetch_url(self, item):
-    """Returns an URL that can be used to fetch given item once it's uploaded.
-
-    Note that if namespace uses compression, data at given URL is compressed.
-
-    Arguments:
-      item: Item to get fetch URL for.
-
-    Returns:
-      An URL or None if underlying protocol doesn't support this.
-    """
-    item.prepare(self._hash_algo)
-    return self._storage_api.get_fetch_url(item.digest)
-
   def async_push(self, channel, item, push_state):
     """Starts asynchronous push to the server in a parallel thread.
 
@@ -849,17 +835,6 @@ class StorageApi(object):
     """
     raise NotImplementedError()
 
-  def get_fetch_url(self, digest):
-    """Returns an URL that can be used to fetch an item with given digest.
-
-    Arguments:
-      digest: hex digest of item to fetch.
-
-    Returns:
-      An URL or None if the protocol doesn't support this.
-    """
-    raise NotImplementedError()
-
   def fetch(self, digest, offset=0):
     """Fetches an object and yields its content.
 
@@ -981,11 +956,6 @@ class IsolateServer(StorageApi):
   @property
   def namespace(self):
     return self._namespace
-
-  def get_fetch_url(self, digest):
-    assert isinstance(digest, basestring)
-    return '%s/content-gs/retrieve/%s/%s' % (
-        self._base_url, self._namespace, digest)
 
   def fetch(self, digest, offset=0):
     assert offset >= 0
@@ -1182,6 +1152,8 @@ class IsolateServer(StorageApi):
         'namespace': self._namespace_dict,
         'offset': offset,
     }
+    # TODO(maruel): url + '?' + urllib.urlencode(data) once a HTTP GET endpoint
+    # is added.
     return net.url_read_json(
         url=url,
         data=data,
