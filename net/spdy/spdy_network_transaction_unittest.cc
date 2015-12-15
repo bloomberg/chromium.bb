@@ -5958,12 +5958,12 @@ TEST_P(SpdyNetworkTransactionTest, WindowUpdateSent) {
       spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
   reads.push_back(CreateMockRead(*resp, writes.size() + reads.size()));
 
-  ScopedVector<SpdyFrame> body_frames;
+  std::vector<scoped_ptr<SpdyFrame>> body_frames;
   const std::string body_data(kChunkSize, 'x');
   for (size_t remaining = kTargetSize; remaining != 0;) {
     size_t frame_size = std::min(remaining, body_data.size());
-    body_frames.push_back(spdy_util_.ConstructSpdyBodyFrame(
-        1, body_data.data(), frame_size, false));
+    body_frames.push_back(make_scoped_ptr(spdy_util_.ConstructSpdyBodyFrame(
+        1, body_data.data(), frame_size, false)));
     reads.push_back(
         CreateMockRead(*body_frames.back(), writes.size() + reads.size()));
     remaining -= frame_size;
