@@ -2711,7 +2711,7 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
             list->append(cssValuePool().createIdentifierValue(CSSValueStyle));
         if (style.contain() & ContainsLayout)
             list->append(cssValuePool().createIdentifierValue(CSSValueLayout));
-        if (style.contain() & ContainsPaint)
+        if (style.containsPaint())
             list->append(cssValuePool().createIdentifierValue(CSSValuePaint));
         ASSERT(list->length());
         return list.release();

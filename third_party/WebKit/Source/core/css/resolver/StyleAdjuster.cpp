@@ -203,7 +203,8 @@ void StyleAdjuster::adjustComputedStyle(ComputedStyle& style, const ComputedStyl
         || style.hasIsolation()
         || style.position() == FixedPosition
         || isInTopLayer(element, style)
-        || hasWillChangeThatCreatesStackingContext(style)))
+        || hasWillChangeThatCreatesStackingContext(style)
+        || style.containsPaint()))
         style.setZIndex(0);
 
     if (doesNotInheritTextDecoration(style, element))

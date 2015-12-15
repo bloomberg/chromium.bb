@@ -69,12 +69,12 @@ static void adjustClipRectsForChildren(const LayoutObject& layoutObject, ClipRec
 
 static void applyClipRects(const ClipRectsContext& context, const LayoutObject& layoutObject, LayoutPoint offset, ClipRects& clipRects)
 {
-    ASSERT(layoutObject.hasOverflowClip() || layoutObject.hasClip());
+    ASSERT(layoutObject.hasOverflowClip() || layoutObject.hasClip() || layoutObject.style()->containsPaint());
     LayoutView* view = layoutObject.view();
     ASSERT(view);
     if (clipRects.fixed() && context.rootLayer->layoutObject() == view)
         offset -= toIntSize(view->frameView()->scrollPosition());
-    if (layoutObject.hasOverflowClip()) {
+    if (layoutObject.hasOverflowClip() || layoutObject.style()->containsPaint()) {
         ClipRect newOverflowClip = toLayoutBox(layoutObject).overflowClipRect(offset, context.scrollbarRelevancy);
         newOverflowClip.setHasRadius(layoutObject.style()->hasBorderRadius());
         clipRects.setOverflowClipRect(intersection(newOverflowClip, clipRects.overflowClipRect()));
@@ -82,6 +82,10 @@ static void applyClipRects(const ClipRectsContext& context, const LayoutObject& 
             clipRects.setPosClipRect(intersection(newOverflowClip, clipRects.posClipRect()));
         if (layoutObject.isLayoutView())
             clipRects.setFixedClipRect(intersection(newOverflowClip, clipRects.fixedClipRect()));
+        if (layoutObject.style()->containsPaint()) {
+            clipRects.setPosClipRect(intersection(newOverflowClip, clipRects.posClipRect()));
+            clipRects.setFixedClipRect(intersection(newOverflowClip, clipRects.fixedClipRect()));
+        }
     }
     if (layoutObject.hasClip()) {
         LayoutRect newClip = toLayoutBox(layoutObject).clipRect(offset);
@@ -213,7 +217,7 @@ void PaintLayerClipper::calculateRects(const ClipRectsContext& context, const La
     layerBounds = LayoutRect(offset, LayoutSize(m_layoutObject.layer()->size()));
 
     // Update the clip rects that will be passed to child layers.
-    if (m_layoutObject.hasOverflowClip() && shouldRespectOverflowClip(context)) {
+    if ((m_layoutObject.hasOverflowClip() && shouldRespectOverflowClip(context)) || m_layoutObject.style()->containsPaint()) {
         foregroundRect.intersect(toLayoutBox(m_layoutObject).overflowClipRect(offset, context.scrollbarRelevancy));
         if (m_layoutObject.style()->hasBorderRadius())
             foregroundRect.setHasRadius(true);
@@ -267,7 +271,7 @@ void PaintLayerClipper::calculateClipRects(const ClipRectsContext& context, Clip
 
     adjustClipRectsForChildren(m_layoutObject, clipRects);
 
-    if ((m_layoutObject.hasOverflowClip() && shouldRespectOverflowClip(context)) || m_layoutObject.hasClip()) {
+    if ((m_layoutObject.hasOverflowClip() && shouldRespectOverflowClip(context)) || m_layoutObject.hasClip() || m_layoutObject.style()->containsPaint()) {
         // This offset cannot use convertToLayerCoords, because sometimes our rootLayer may be across
         // some transformed layer boundary, for example, in the PaintLayerCompositor overlapMap, where
         // clipRects are needed in view space.

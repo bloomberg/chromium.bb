@@ -261,14 +261,13 @@ public:
     bool hasVisibleNonLayerContent() const { return m_hasVisibleNonLayerContent; }
     bool hasNonCompositedChild() const { ASSERT(isAllowedToQueryCompositingState()); return m_hasNonCompositedChild; }
 
-    // Gets the ancestor layer that serves as the containing block of this layer. It is assumed
-    // that this layer is established by an out-of-flow positioned layout object (i.e. either
-    // absolutely or fixed positioned).
+    // Gets the ancestor layer that serves as the containing block of this layer. This is either
+    // another out of flow positioned layer, or one that contains paint.
     // If |ancestor| is specified, |*skippedAncestor| will be set to true if |ancestor| is found in
     // the ancestry chain between this layer and the containing block layer; if not found, it will
     // be set to false. Either both |ancestor| and |skippedAncestor| should be nullptr, or none of
     // them should.
-    PaintLayer* enclosingPositionedAncestor(const PaintLayer* ancestor = nullptr, bool* skippedAncestor = nullptr) const;
+    PaintLayer* containingLayerForOutOfFlowPositioned(const PaintLayer* ancestor = nullptr, bool* skippedAncestor = nullptr) const;
 
     bool isPaintInvalidationContainer() const;
 
@@ -458,15 +457,6 @@ public:
     PaintLayerScrollableArea* scrollableArea() const { return m_scrollableArea.get(); }
     PaintLayerClipper& clipper() { return m_clipper; }
     const PaintLayerClipper& clipper() const { return m_clipper; }
-
-    inline bool isPositionedContainer() const
-    {
-        // FIXME: This is not in sync with containingBlock.
-        // LayoutObject::canContainFixedPositionObjects() should probably be used
-        // instead.
-        LayoutBoxModelObject* layerlayoutObject = layoutObject();
-        return isRootLayer() || layerlayoutObject->isPositioned() || hasTransformRelatedProperty();
-    }
 
     bool scrollsOverflow() const;
 

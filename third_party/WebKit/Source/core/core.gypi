@@ -3930,6 +3930,7 @@
             'layout/MultiColumnFragmentainerGroupTest.cpp',
             'layout/OverflowModelTest.cpp',
             'layout/PaginationTest.cpp',
+            'layout/PaintContainmentTest.cpp',
             'layout/compositing/CompositedLayerMappingTest.cpp',
             'layout/shapes/BoxShapeTest.cpp',
             'loader/FrameFetchContextTest.cpp',

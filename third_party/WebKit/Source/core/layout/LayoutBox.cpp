@@ -4058,7 +4058,7 @@ static bool shouldBeConsideredAsReplaced(Node* node)
 
 bool LayoutBox::avoidsFloats() const
 {
-    return isAtomicInlineLevel() || shouldBeConsideredAsReplaced(node()) || hasOverflowClip() || isHR() || isLegend() || isWritingModeRoot() || isFlexItemIncludingDeprecated();
+    return isAtomicInlineLevel() || shouldBeConsideredAsReplaced(node()) || hasOverflowClip() || isHR() || isLegend() || isWritingModeRoot() || isFlexItemIncludingDeprecated() || style()->containsPaint();
 }
 
 bool LayoutBox::hasNonCompositedScrollbars() const

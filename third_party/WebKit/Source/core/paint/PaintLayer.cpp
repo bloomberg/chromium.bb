@@ -752,15 +752,15 @@ bool PaintLayer::updateLayerPosition()
     }
 
     // Subtract our parent's scroll offset.
-    if (PaintLayer* positionedParent = layoutObject()->isOutOfFlowPositioned() ? enclosingPositionedAncestor() : nullptr) {
+    if (PaintLayer* containingLayer = layoutObject()->isOutOfFlowPositioned() ? containingLayerForOutOfFlowPositioned() : nullptr) {
         // For positioned layers, we subtract out the enclosing positioned layer's scroll offset.
-        if (positionedParent->layoutObject()->hasOverflowClip()) {
-            IntSize offset = positionedParent->layoutBox()->scrolledContentOffset();
+        if (containingLayer->layoutObject()->hasOverflowClip()) {
+            IntSize offset = containingLayer->layoutBox()->scrolledContentOffset();
             localPoint -= offset;
         }
 
-        if (positionedParent->layoutObject()->isInFlowPositioned() && positionedParent->layoutObject()->isLayoutInline()) {
-            LayoutSize offset = toLayoutInline(positionedParent->layoutObject())->offsetForInFlowPositionedInline(*toLayoutBox(layoutObject()));
+        if (containingLayer->layoutObject()->isInFlowPositioned() && containingLayer->layoutObject()->isLayoutInline()) {
+            LayoutSize offset = toLayoutInline(containingLayer->layoutObject())->offsetForInFlowPositionedInline(*toLayoutBox(layoutObject()));
             localPoint += offset;
         }
     } else if (parent() && parent()->layoutObject()->hasOverflowClip()) {
@@ -818,19 +818,28 @@ FloatPoint PaintLayer::perspectiveOrigin() const
     return FloatPoint(floatValueForLength(style.perspectiveOriginX(), borderBox.width().toFloat()), floatValueForLength(style.perspectiveOriginY(), borderBox.height().toFloat()));
 }
 
-static inline bool isFixedPositionedContainer(PaintLayer* layer)
+static inline bool isContainerForFixedPositioned(PaintLayer* layer)
 {
     return layer->isRootLayer() || layer->hasTransformRelatedProperty();
 }
 
-PaintLayer* PaintLayer::enclosingPositionedAncestor(const PaintLayer* ancestor, bool* skippedAncestor) const
+static inline bool isContainerForPositioned(PaintLayer* layer)
+{
+    // FIXME: This is not in sync with containingBlock.
+    // LayoutObject::canContainFixedPositionObjects() should probably be used
+    // instead.
+    LayoutBoxModelObject* layerlayoutObject = layer->layoutObject();
+    return layer->isRootLayer() || layerlayoutObject->isPositioned() || layer->hasTransformRelatedProperty() || layerlayoutObject->style()->containsPaint();
+}
+
+PaintLayer* PaintLayer::containingLayerForOutOfFlowPositioned(const PaintLayer* ancestor, bool* skippedAncestor) const
 {
     ASSERT(!ancestor || skippedAncestor); // If we have specified an ancestor, surely the caller needs to know whether we skipped it.
     if (skippedAncestor)
         *skippedAncestor = false;
     if (layoutObject()->style()->position() == FixedPosition) {
         PaintLayer* curr = parent();
-        while (curr && !isFixedPositionedContainer(curr)) {
+        while (curr && !isContainerForFixedPositioned(curr)) {
             if (skippedAncestor && curr == ancestor)
                 *skippedAncestor = true;
             curr = curr->parent();
@@ -840,7 +849,7 @@ PaintLayer* PaintLayer::enclosingPositionedAncestor(const PaintLayer* ancestor, 
     }
 
     PaintLayer* curr = parent();
-    while (curr && !curr->isPositionedContainer()) {
+    while (curr && !isContainerForPositioned(curr)) {
         if (skippedAncestor && curr == ancestor)
             *skippedAncestor = true;
         curr = curr->parent();
@@ -1277,7 +1286,7 @@ static inline const PaintLayer* accumulateOffsetTowardsAncestor(const PaintLayer
     PaintLayer* parentLayer;
     if (position == AbsolutePosition || position == FixedPosition) {
         bool foundAncestorFirst;
-        parentLayer = layer->enclosingPositionedAncestor(ancestorLayer, &foundAncestorFirst);
+        parentLayer = layer->containingLayerForOutOfFlowPositioned(ancestorLayer, &foundAncestorFirst);
 
         if (foundAncestorFirst) {
             // Found ancestorLayer before the container of the out-of-flow object, so compute offset
@@ -2371,7 +2380,7 @@ bool PaintLayer::backgroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect) 
 
     // We can't consult child layers if we clip, since they might cover
     // parts of the rect that are clipped out.
-    if (layoutObject()->hasOverflowClip())
+    if (layoutObject()->hasOverflowClip() || layoutObject()->style()->containsPaint())
         return false;
 
     return childBackgroundIsKnownToBeOpaqueInRect(localRect);

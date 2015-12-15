@@ -37,7 +37,7 @@ static const PaintLayer* findParentLayerOnClippingContainerChain(const PaintLaye
             for (current = current->parent(); current && !current->canContainFixedPositionObjects(); current = current->parent()) {
                 // All types of clips apply to fixed-position descendants of other fixed-position elements.
                 // Note: it's unclear whether this is what the spec says. Firefox does not clip, but Chrome does.
-                if (current->style()->position() == FixedPosition && current->hasClipOrOverflowClip()) {
+                if (current->style()->position() == FixedPosition && current->hasClipRelatedProperty()) {
                     ASSERT(current->hasLayer());
                     return static_cast<const LayoutBoxModelObject*>(current)->layer();
                 }
@@ -56,7 +56,7 @@ static const PaintLayer* findParentLayerOnClippingContainerChain(const PaintLaye
         if (current->hasLayer())
             return static_cast<const LayoutBoxModelObject*>(current)->layer();
         // Having clip or overflow clip forces the LayoutObject to become a layer.
-        ASSERT(!current->hasClipOrOverflowClip());
+        ASSERT(!current->hasClipRelatedProperty());
     }
     ASSERT_NOT_REACHED();
     return nullptr;
@@ -82,7 +82,7 @@ static bool hasClippedStackingAncestor(const PaintLayer* layer, const PaintLayer
         if (current == clippingLayer)
             return foundInterveningClip;
 
-        if (current->layoutObject()->hasClipOrOverflowClip() && !clippingLayoutObject->isDescendantOf(current->layoutObject()))
+        if (current->layoutObject()->hasClipRelatedProperty() && !clippingLayoutObject->isDescendantOf(current->layoutObject()))
             foundInterveningClip = true;
 
         if (const LayoutObject* container = current->clippingContainer()) {
@@ -130,10 +130,10 @@ void CompositingInputsUpdater::updateRecursive(PaintLayer* layer, UpdateType upd
             bool layerIsFixedPosition = layer->layoutObject()->style()->position() == FixedPosition;
             properties.nearestFixedPositionLayer = layerIsFixedPosition ? layer : parent->nearestFixedPositionLayer();
 
-            if (info.hasAncestorWithClipOrOverflowClip) {
+            if (info.hasAncestorWithClipRelatedProperty) {
                 const PaintLayer* parentLayerOnClippingContainerChain = findParentLayerOnClippingContainerChain(layer);
-                const bool parentHasClipOrOverflowClip = parentLayerOnClippingContainerChain->layoutObject()->hasClipOrOverflowClip();
-                properties.clippingContainer = parentHasClipOrOverflowClip ? parentLayerOnClippingContainerChain->layoutObject() : parentLayerOnClippingContainerChain->clippingContainer();
+                const bool parentHasClipRelatedProperty = parentLayerOnClippingContainerChain->layoutObject()->hasClipRelatedProperty();
+                properties.clippingContainer = parentHasClipRelatedProperty ? parentLayerOnClippingContainerChain->layoutObject() : parentLayerOnClippingContainerChain->clippingContainer();
             }
 
             if (info.lastScrollingAncestor) {
@@ -167,8 +167,8 @@ void CompositingInputsUpdater::updateRecursive(PaintLayer* layer, UpdateType upd
     if (layer->scrollsOverflow())
         info.lastScrollingAncestor = layer;
 
-    if (layer->layoutObject()->hasClipOrOverflowClip())
-        info.hasAncestorWithClipOrOverflowClip = true;
+    if (layer->layoutObject()->hasClipRelatedProperty())
+        info.hasAncestorWithClipRelatedProperty = true;
 
     if (layer->layoutObject()->hasClipPath())
         info.hasAncestorWithClipPath = true;

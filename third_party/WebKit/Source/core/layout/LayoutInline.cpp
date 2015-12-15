@@ -1142,6 +1142,12 @@ LayoutSize LayoutInline::offsetFromContainer(const LayoutObject* container, cons
     return offset;
 }
 
+PaintLayerType LayoutInline::layerTypeRequired() const
+{
+    return isInFlowPositioned() || createsGroup() || hasClipPath() || style()->shouldCompositeForCurrentAnimations()
+        ||  style()->hasCompositorProxy() || style()->containsPaint() ? NormalPaintLayer : NoPaintLayer;
+}
+
 void LayoutInline::mapLocalToContainer(const LayoutBoxModelObject* paintInvalidationContainer, TransformState& transformState, MapCoordinatesFlags mode, bool* wasFixed, const PaintInvalidationState* paintInvalidationState) const
 {
     if (paintInvalidationContainer == this)

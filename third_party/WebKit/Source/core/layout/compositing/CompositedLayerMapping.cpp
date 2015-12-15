@@ -568,7 +568,7 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration()
 static IntRect clipBox(LayoutBox* layoutObject)
 {
     LayoutRect result = LayoutRect(LayoutRect::infiniteIntRect());
-    if (layoutObject->hasOverflowClip())
+    if (layoutObject->hasOverflowClip() || layoutObject->style()->containsPaint())
         result = layoutObject->overflowClipRect(LayoutPoint());
 
     if (layoutObject->hasClip())

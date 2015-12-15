@@ -35,7 +35,7 @@ private:
             : ancestorStackingContext(nullptr)
             , enclosingCompositedLayer(nullptr)
             , lastScrollingAncestor(nullptr)
-            , hasAncestorWithClipOrOverflowClip(false)
+            , hasAncestorWithClipRelatedProperty(false)
             , hasAncestorWithClipPath(false)
         {
         }
@@ -48,7 +48,7 @@ private:
         // actually controls the scrolling of this layer, which we find on the
         // containing block chain.
         PaintLayer* lastScrollingAncestor;
-        bool hasAncestorWithClipOrOverflowClip;
+        bool hasAncestorWithClipRelatedProperty;
         bool hasAncestorWithClipPath;
     };
 

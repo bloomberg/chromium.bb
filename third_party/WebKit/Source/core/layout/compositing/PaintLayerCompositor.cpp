@@ -777,7 +777,7 @@ bool PaintLayerCompositor::canBeComposited(const PaintLayer* layer) const
 // into the hierarchy between this layer and its children in the z-order hierarchy.
 bool PaintLayerCompositor::clipsCompositingDescendants(const PaintLayer* layer) const
 {
-    return layer->hasCompositingDescendant() && layer->layoutObject()->hasClipOrOverflowClip();
+    return layer->hasCompositingDescendant() && layer->layoutObject()->hasClipRelatedProperty();
 }
 
 // If an element has composited negative z-index children, those children paint in front of the

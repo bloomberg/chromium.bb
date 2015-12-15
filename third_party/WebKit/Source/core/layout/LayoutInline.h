@@ -228,7 +228,7 @@ private:
 
     bool nodeAtPoint(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) final;
 
-    PaintLayerType layerTypeRequired() const override { return isInFlowPositioned() || createsGroup() || hasClipPath() || style()->shouldCompositeForCurrentAnimations() || style()->hasCompositorProxy() ? NormalPaintLayer : NoPaintLayer; }
+    PaintLayerType layerTypeRequired() const override;
 
     LayoutUnit offsetLeft() const final;
     LayoutUnit offsetTop() const final;

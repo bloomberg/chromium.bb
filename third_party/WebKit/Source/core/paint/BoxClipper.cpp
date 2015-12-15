@@ -24,9 +24,10 @@ BoxClipper::BoxClipper(const LayoutBox& box, const PaintInfo& paintInfo, const L
         return;
 
     bool isControlClip = m_box.hasControlClip();
-    bool isOverflowClip = m_box.hasOverflowClip() && !m_box.layer()->isSelfPaintingLayer();
+    bool isOverflowOrContainmentClip = (m_box.hasOverflowClip() && !m_box.layer()->isSelfPaintingLayer())
+        || m_box.style()->containsPaint();
 
-    if (!isControlClip && !isOverflowClip)
+    if (!isControlClip && !isOverflowOrContainmentClip)
         return;
 
     LayoutRect clipRect = isControlClip ? m_box.controlClipRect(accumulatedOffset) : m_box.overflowClipRect(accumulatedOffset);
@@ -64,7 +65,7 @@ BoxClipper::~BoxClipper()
     if (m_clipType == DisplayItem::UninitializedType)
         return;
 
-    ASSERT(m_box.hasControlClip() || (m_box.hasOverflowClip() && !m_box.layer()->isSelfPaintingLayer()));
+    ASSERT(m_box.hasControlClip() || (m_box.hasOverflowClip() && !m_box.layer()->isSelfPaintingLayer()) || m_box.style()->containsPaint());
     m_paintInfo.context.paintController().endItem<EndClipDisplayItem>(m_box, DisplayItem::clipTypeToEndClipType(m_clipType));
 }
 

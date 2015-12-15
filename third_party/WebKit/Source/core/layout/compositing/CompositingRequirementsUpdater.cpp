@@ -166,7 +166,7 @@ static CompositingReasons subtreeReasonsForCompositing(PaintLayer* layer, bool h
 
         // FIXME: This should move into CompositingReasonFinder::potentialCompositingReasonsFromStyle, but
         // theres a poor interaction with LayoutTextControlSingleLine, which sets this hasOverflowClip directly.
-        if (layer->layoutObject()->hasClipOrOverflowClip())
+        if (layer->layoutObject()->hasClipRelatedProperty())
             subtreeReasons |= CompositingReasonClipsCompositingDescendants;
 
         if (layer->layoutObject()->style()->position() == FixedPosition)

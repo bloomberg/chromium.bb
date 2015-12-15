@@ -826,6 +826,7 @@ public:
     bool hasVisualOverflowingEffect() const { return boxShadow() || hasBorderImageOutsets() || hasOutline(); }
 
     Containment contain() const { return static_cast<Containment>(rareNonInheritedData->m_contain); }
+    bool containsPaint() const { return rareNonInheritedData->m_contain & ContainsPaint; }
 
     EBoxSizing boxSizing() const { return m_box->boxSizing(); }
     EUserModify userModify() const { return static_cast<EUserModify>(rareInheritedData->userModify); }
