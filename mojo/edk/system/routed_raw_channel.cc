@@ -132,8 +132,13 @@ void RoutedRawChannel::OnReadMessage(
 void RoutedRawChannel::OnError(Error error) {
   DCHECK(internal::g_io_thread_task_runner->RunsTasksOnCurrentThread());
 
-  channel_->Shutdown();
-  channel_ = nullptr;
+  // This needs to match non-multiplexed MessagePipeDispatcher's destruction of
+  // the channel only when read errors occur.
+  if (error != ERROR_WRITE) {
+    channel_->Shutdown();
+    channel_ = nullptr;
+  }
+
   if (routes_.empty()) {
     delete this;
     return;

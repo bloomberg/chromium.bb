@@ -618,7 +618,7 @@ MojoResult MessagePipeDispatcher::ReadMessageImplNoLock(
     uint32_t* num_dispatchers,
     MojoReadMessageFlags flags) {
   lock().AssertAcquired();
-  if (channel_) {
+  if (transferable_ && channel_) {
     channel_->EnsureLazyInitialized();
   } else if (!transferable_) {
     if (non_transferable_state_ == WAITING_FOR_READ_OR_WRITE) {
@@ -718,7 +718,7 @@ MojoResult MessagePipeDispatcher::AddAwakableImplNoLock(
     uintptr_t context,
     HandleSignalsState* signals_state) {
   lock().AssertAcquired();
-  if (channel_) {
+  if (transferable_ && channel_) {
     channel_->EnsureLazyInitialized();
   } else if (!transferable_ &&
              non_transferable_state_ == WAITING_FOR_READ_OR_WRITE) {
