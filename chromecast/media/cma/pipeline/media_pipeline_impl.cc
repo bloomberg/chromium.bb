@@ -59,7 +59,7 @@ MediaPipelineImpl::MediaPipelineImpl()
       backend_initialized_(false),
       paused_(false),
       target_playback_rate_(1.0f),
-      enable_time_update_(false),
+      backend_started_(false),
       pending_time_update_task_(false),
       statistics_rolling_counter_(0),
       weak_factory_(this) {
@@ -201,7 +201,7 @@ void MediaPipelineImpl::StartPlayingFrom(base::TimeDelta time) {
   }
 
   // Enable time updates.
-  enable_time_update_ = true;
+  backend_started_ = true;
   statistics_rolling_counter_ = 0;
   if (!pending_time_update_task_) {
     pending_time_update_task_ = true;
@@ -236,8 +236,7 @@ void MediaPipelineImpl::Flush(const ::media::PipelineStatusCB& status_cb) {
   DCHECK(audio_pipeline_ || video_pipeline_);
   DCHECK(!pending_flush_callbacks_);
 
-  // No need to update media time anymore.
-  enable_time_update_ = false;
+  backend_started_ = false;
 
   buffering_controller_->Reset();
 
@@ -286,9 +285,7 @@ void MediaPipelineImpl::Stop() {
   // audio/video pipelines. This will ensure A/V Flush won't happen in
   // stopped state.
   pending_flush_callbacks_.reset();
-
-  // No need to update media time anymore.
-  enable_time_update_ = false;
+  backend_started_ = false;
 
   // Stop both the audio and video pipeline.
   if (audio_pipeline_)
@@ -307,6 +304,8 @@ void MediaPipelineImpl::SetPlaybackRate(double rate) {
   CMALOG(kLogControl) << __FUNCTION__ << " rate=" << rate;
   DCHECK(thread_checker_.CalledOnValidThread());
   target_playback_rate_ = rate;
+  if (!backend_started_)
+    return;
   if (buffering_controller_ && buffering_controller_->IsBuffering())
     return;
 
@@ -370,7 +369,7 @@ void MediaPipelineImpl::OnBufferingNotification(bool is_buffering) {
 
 void MediaPipelineImpl::UpdateMediaTime() {
   pending_time_update_task_ = false;
-  if (!enable_time_update_)
+  if (!backend_started_)
     return;
 
   if (statistics_rolling_counter_ == 0) {

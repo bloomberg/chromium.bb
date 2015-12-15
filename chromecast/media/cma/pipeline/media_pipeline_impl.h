@@ -96,8 +96,7 @@ class MediaPipelineImpl {
   float target_playback_rate_;
 
   // The media time is retrieved at regular intervals.
-  // Indicate whether time update is enabled.
-  bool enable_time_update_;
+  bool backend_started_;  // Whether or not the backend is playing/paused.
   bool pending_time_update_task_;
   base::TimeDelta last_media_time_;
 
