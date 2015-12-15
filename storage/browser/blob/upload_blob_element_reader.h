@@ -6,10 +6,15 @@
 #define STORAGE_BROWSER_BLOB_UPLOAD_BLOB_ELEMENT_READER_H_
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/base/completion_callback.h"
 #include "net/base/upload_element_reader.h"
 #include "storage/browser/storage_browser_export.h"
+
+namespace base {
+class SingleThreadTaskRunner;
+}
 
 namespace net {
 class IOBuffer;
@@ -18,6 +23,7 @@ class IOBuffer;
 namespace storage {
 class BlobDataHandle;
 class BlobReader;
+class FileSystemContext;
 
 // This class is a wrapper around the BlobReader to make it conform
 // to the net::UploadElementReader interface, and it also holds around the
@@ -25,8 +31,9 @@ class BlobReader;
 class STORAGE_EXPORT UploadBlobElementReader
     : NON_EXPORTED_BASE(public net::UploadElementReader) {
  public:
-  UploadBlobElementReader(scoped_ptr<BlobReader> reader,
-                          scoped_ptr<BlobDataHandle> handle);
+  UploadBlobElementReader(scoped_ptr<BlobDataHandle> handle,
+                          FileSystemContext* file_system_context,
+                          base::SingleThreadTaskRunner* file_task_runner);
   ~UploadBlobElementReader() override;
 
   int Init(const net::CompletionCallback& callback) override;
@@ -44,8 +51,10 @@ class STORAGE_EXPORT UploadBlobElementReader
   const std::string& uuid() const;
 
  private:
-  scoped_ptr<BlobReader> reader_;
   scoped_ptr<BlobDataHandle> handle_;
+  scoped_refptr<FileSystemContext> file_system_context_;
+  scoped_refptr<base::SingleThreadTaskRunner> file_runner_;
+  scoped_ptr<BlobReader> reader_;
 
   DISALLOW_COPY_AND_ASSIGN(UploadBlobElementReader);
 };

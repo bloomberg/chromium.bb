@@ -4,20 +4,27 @@
 
 #include "storage/browser/blob/upload_blob_element_reader.h"
 
+#include "base/single_thread_task_runner.h"
 #include "net/base/net_errors.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_reader.h"
+#include "storage/browser/fileapi/file_system_context.h"
 
 namespace storage {
 
 UploadBlobElementReader::UploadBlobElementReader(
-    scoped_ptr<storage::BlobReader> reader,
-    scoped_ptr<BlobDataHandle> handle)
-    : reader_(reader.Pass()), handle_(handle.Pass()) {}
+    scoped_ptr<BlobDataHandle> handle,
+    FileSystemContext* file_system_context,
+    base::SingleThreadTaskRunner* file_task_runner)
+    : handle_(handle.Pass()),
+      file_system_context_(file_system_context),
+      file_runner_(file_task_runner) {}
 
 UploadBlobElementReader::~UploadBlobElementReader() {}
 
 int UploadBlobElementReader::Init(const net::CompletionCallback& callback) {
+  reader_ =
+      handle_->CreateReader(file_system_context_.get(), file_runner_.get());
   BlobReader::Status status = reader_->CalculateSize(callback);
   switch (status) {
     case BlobReader::Status::NET_ERROR:
