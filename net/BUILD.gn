@@ -1209,7 +1209,7 @@ if (is_android) {
     sources = [
       "android/javatests/src/org/chromium/net/AndroidKeyStoreTestUtil.java",
       "test/android/javatests/src/org/chromium/net/test/DummySpnegoAuthenticator.java",
-      "test/android/javatests/src/org/chromium/net/test/EmbeddedTestServer.java",
+      "test/android/javatests/src/org/chromium/net/test/EmbeddedTestServerImpl.java",
     ]
     jni_package = "net/test"
   }

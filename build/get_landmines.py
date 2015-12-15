@@ -36,6 +36,7 @@ def print_landmines():
   if platform() == 'android':
     print 'Clobber: to handle new way of suppressing findbugs failures.'
     print 'Clobber to fix gyp not rename package name (crbug.com/457038)'
+    print 'Clobber to work around incremental dex issue (crbug.com/569713)'
   if platform() == 'win' and builder() == 'ninja':
     print 'Compile on cc_unittests fails due to symbols removed in r185063.'
   if platform() == 'linux' and builder() == 'ninja':

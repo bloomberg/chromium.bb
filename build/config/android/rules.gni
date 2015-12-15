@@ -1351,6 +1351,17 @@ template("android_apk") {
     if (defined(invoker.native_lib_version_arg)) {
       _native_lib_version_arg = invoker.native_lib_version_arg
     }
+
+    _native_libraries_template =
+        "//base/android/java/templates/NativeLibraries.template"
+    if (defined(invoker.native_libraries_template)) {
+      _native_libraries_template = invoker.native_libraries_template
+    }
+
+    _native_libraries_package_name = "org/chromium/base/library_loader"
+    if (defined(invoker.native_libraries_package_name)) {
+      _native_libraries_package_name = invoker.native_libraries_package_name
+    }
   }
 
   _android_manifest_deps = []
@@ -1436,9 +1447,9 @@ template("android_apk") {
     }
 
     java_cpp_template("${_template_name}__native_libraries_java") {
-      package_name = "org/chromium/base/library_loader"
+      package_name = _native_libraries_package_name
       sources = [
-        "//base/android/java/templates/NativeLibraries.template",
+        _native_libraries_template,
       ]
       inputs = [
         _build_config,
@@ -1466,6 +1477,22 @@ template("android_apk") {
       }
     }
     _srcjar_deps += [ ":${_template_name}__native_libraries_java" ]
+  } else if (defined(invoker.native_libraries_template) &&
+             invoker.native_libraries_template != "") {
+    java_cpp_template("${_template_name}__empty_native_libraries_java") {
+      assert(defined(invoker.native_libraries_package_name))
+      package_name = invoker.native_libraries_package_name
+      sources = [
+        invoker.native_libraries_template,
+      ]
+      inputs = [
+        _build_config,
+      ]
+      deps = [
+        ":$build_config_target",
+      ]
+    }
+    _srcjar_deps += [ ":${_template_name}__empty_native_libraries_java" ]
   }
 
   java_target = "${_template_name}__java"
@@ -1910,12 +1937,19 @@ template("instrumentation_test_apk") {
     deps = []
     data_deps = []
     forward_variables_from(invoker, "*")
-    deps += [ "//testing/android/broker:broker_java" ]
+    deps += [
+      "//base:base_java",
+      "//testing/android/broker:broker_java",
+    ]
     data_deps += [
       "//testing/android/driver:driver_apk",
       "//tools/android/forwarder2",
       "//tools/android/md5sum",
     ]
+
+    native_libraries_template =
+        "//base/test/android/java/templates/NativeTestLibraries.template"
+    native_libraries_package_name = "org.chromium.base.test.library_loader"
 
     run_findbugs =
         defined(invoker.run_findbugs) && invoker.run_findbugs &&

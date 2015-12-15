@@ -85,7 +85,7 @@
     'input_jars_paths': [],
     'library_dexed_jars_paths': [],
     'additional_src_dirs': [],
-    'generated_src_dirs': [],
+    'generated_src_dirs': [ '<(native_libraries_java_dir)' ],
     'app_manifest_version_name%': '<(android_app_version_name)',
     'app_manifest_version_code%': '<(android_app_version_code)',
     # aapt generates this proguard.txt.
@@ -114,9 +114,7 @@
     'package_input_paths': [],
     'ordered_libraries_file': '<(intermediate_dir)/native_libraries.json',
     'additional_ordered_libraries_file': '<(intermediate_dir)/additional_native_libraries.json',
-    'native_libraries_template': '<(DEPTH)/base/android/java/templates/NativeLibraries.template',
     'native_libraries_java_dir': '<(intermediate_dir)/native_libraries_java/',
-    'native_libraries_java_file': '<(native_libraries_java_dir)/NativeLibraries.java',
     'native_libraries_java_stamp': '<(intermediate_dir)/native_libraries_java.stamp',
     'native_libraries_template_data_dir': '<(intermediate_dir)/native_libraries/',
     'native_libraries_template_data_file': '<(native_libraries_template_data_dir)/native_libraries_array.h',
@@ -182,6 +180,13 @@
       'create_abi_split%': '<(create_abi_split)',
       'final_apk_path%': '<(PRODUCT_DIR)/apks/<(apk_name).apk',
       'conditions': [
+        ['is_test_apk == 1', {
+          'native_libraries_template': '<(DEPTH)/base/test/android/java/templates/NativeTestLibraries.template',
+          'native_libraries_java_file_name': 'NativeTestLibraries.java',
+        }, {
+          'native_libraries_template': '<(DEPTH)/base/android/java/templates/NativeLibraries.template',
+          'native_libraries_java_file_name': 'NativeLibraries.java',
+        }],
         ['gyp_managed_install == 1 and native_lib_target != ""', {
           'conditions': [
             ['create_abi_split == 0', {
@@ -219,6 +224,8 @@
     },
     'native_lib_target%': '',
     'native_lib_version_name%': '',
+    'native_libraries_template': '<(native_libraries_template)',
+    'native_libraries_java_file': '<(native_libraries_java_dir)/<(native_libraries_java_file_name)',
     'use_chromium_linker%' : 0,
     'load_library_from_zip%' : 0,
     'use_relocation_packer%' : 0,
@@ -317,7 +324,6 @@
             },
           }],
         ],
-        'generated_src_dirs': [ '<(native_libraries_java_dir)' ],
         'native_libs_paths': [
           '<(SHARED_LIB_DIR)/<(native_lib_target).>(android_product_extension)',
           '<@(chromium_linker_path)'
@@ -403,7 +409,7 @@
           ],
           'action': [
             'python', '<(DEPTH)/build/android/gyp/gcc_preprocess.py',
-            '--include-path=',
+            '--include-path=<(DEPTH)',
             '--output=<(native_libraries_java_file)',
             '--template=<(native_libraries_template)',
             '--stamp=<(native_libraries_java_stamp)',
@@ -582,6 +588,28 @@
             ],
           },
         }],
+      ],
+    }, {
+      'actions': [
+        {
+          'action_name': 'empty_native_libraries_<(_target_name)',
+          'message': 'Creating empty NativeLibraries.java for <(_target_name)',
+          'inputs': [
+            '<(DEPTH)/build/android/gyp/util/build_utils.py',
+            '<(DEPTH)/build/android/gyp/gcc_preprocess.py',
+            '<(native_libraries_template)',
+          ],
+          'outputs': [
+            '<(native_libraries_java_stamp)',
+          ],
+          'action': [
+            'python', '<(DEPTH)/build/android/gyp/gcc_preprocess.py',
+            '--include-path=<(DEPTH)',
+            '--output=<(native_libraries_java_file)',
+            '--template=<(native_libraries_template)',
+            '--stamp=<(native_libraries_java_stamp)',
+          ],
+        },
       ],
     }], # native_lib_target != ''
     ['gyp_managed_install == 0 or create_standalone_apk == 1 or create_abi_split == 1', {
