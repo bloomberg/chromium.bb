@@ -200,7 +200,7 @@ Press ^C to abort.
     subprocess.check_call(['git', 'reset', '--soft', original_head])
 
     # Write the new README.
-    open(readme_path, 'w').write(readme_content_new)
+    open(readme_path, 'wb').write(readme_content_new)
 
     # Commit everything.
     subprocess.check_call(['git', 'add', readme_path])
