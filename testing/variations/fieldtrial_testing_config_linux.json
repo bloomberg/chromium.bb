@@ -1,4 +1,9 @@
 {
+    "AsyncDNS": [
+        {
+            "group_name": "AsyncDNSA"
+        }
+    ],
     "AutofillClassifier": [
         {
             "group_name": "Enabled"
