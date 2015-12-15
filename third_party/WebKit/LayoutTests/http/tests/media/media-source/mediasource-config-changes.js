@@ -88,6 +88,12 @@ function mediaSourceConfigChangeTest(directory, idA, idB, description)
                 });
 
                 test.waitForExpectedEvents(function() {
+                    // TODO(wolenetz): Remove this hacky console warning once
+                    // desktop and android expectations match. It allows a
+                    // passing platform-specific expectation to override a
+                    // failing non-platform-specific expectation.
+                    console.warn('Ignore this warning. See https://crbug.com/568704#c2');
+
                     test.done();
                 });
             });

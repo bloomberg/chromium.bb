@@ -10,6 +10,11 @@
     <body>
         <div id="log"></div>
         <script>
+          // TODO(wolenetz): Remove this hacky console warning once desktop and
+          // android expectations match. It allows a passing platform-specific
+          // expectation to override a failing non-platform-specific expectation.
+          console.warn('Ignore this warning. See https://crbug.com/568704#c2');
+
           mediasource_test(function(test, mediaElement, mediaSource)
           {
               mediaSource.endOfStream();
