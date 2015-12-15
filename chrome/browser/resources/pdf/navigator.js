@@ -73,11 +73,21 @@ Navigator.prototype = {
    *    position.
    */
   onViewportReceived_: function(viewportPosition) {
+    var originalUrl = this.originalUrl_;
+    var hashIndex = originalUrl.search('#');
+    if (hashIndex != -1)
+      originalUrl = originalUrl.substring(0, hashIndex);
+
+    var newUrl = viewportPosition.url;
+    hashIndex = newUrl.search('#');
+    if (hashIndex != -1)
+      newUrl = newUrl.substring(0, hashIndex);
+
     var pageNumber = viewportPosition.page;
-    if (pageNumber != undefined)
+    if (pageNumber != undefined && originalUrl == newUrl)
       this.viewport_.goToPage(pageNumber);
     else
-      this.navigateInCurrentTabCallback_(viewportPosition['url']);
+      this.navigateInCurrentTabCallback_(viewportPosition.url);
   },
 
   /**

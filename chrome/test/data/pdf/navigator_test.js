@@ -245,6 +245,15 @@ var tests = [
         navigateInCurrentTabCallback,
         navigateInNewTabCallback);
 
+    // Regression test for https://crbug.com/569040
+    doNavigationUrlTestInCurrentTabAndNewTab(
+        navigator,
+        'http://something.else/foo#page=5',
+        'http://something.else/foo#page=5',
+        mockCallback,
+        navigateInCurrentTabCallback,
+        navigateInNewTabCallback);
+
     chrome.test.succeed();
   },
   /**
