@@ -451,7 +451,10 @@ void CmaRenderer::OnFlushDone(::media::PipelineStatus status) {
   }
 
   CompleteStateTransition(kFlushed);
-  base::ResetAndReturn(&flush_cb_).Run();
+  // If OnError was called while the flush was in progress, |flush_cb_| might
+  // be null.
+  if (!flush_cb_.is_null())
+    base::ResetAndReturn(&flush_cb_).Run();
 }
 
 void CmaRenderer::OnError(::media::PipelineStatus error) {
