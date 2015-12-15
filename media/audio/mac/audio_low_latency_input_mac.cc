@@ -196,8 +196,7 @@ bool AUAudioInputStream::Open() {
     return false;
   }
 
-  const bool is_input = true;
-  if (!manager_->MaybeChangeBufferSize(input_device_id_, is_input,
+  if (!manager_->MaybeChangeBufferSize(input_device_id_, audio_unit_, 1,
                                        number_of_frames_,
                                        &buffer_size_was_changed_)) {
     result = kAudioUnitErr_FormatNotSupported;
