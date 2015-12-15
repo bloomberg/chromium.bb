@@ -116,6 +116,9 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
   // when receiving items.
   void SetServerEncryptionKey(const std::string& key_name);
 
+  MockCommitQueue* mock_queue();
+  SharedModelTypeProcessor* type_processor();
+
  private:
   static std::string GenerateTagHash(const std::string& tag);
   static sync_pb::EntitySpecifics GenerateSpecifics(const std::string& tag,
@@ -197,16 +200,17 @@ void SharedModelTypeProcessorTest::StartDone(
   // Hand off ownership of |mock_queue_ptr_|, while keeping
   // an unsafe pointer to it.  This is why we can only connect once.
   DCHECK(mock_queue_ptr_);
-  context->type_processor->OnConnect(mock_queue_ptr_.Pass());
+  context->type_processor->OnConnect(std::move(mock_queue_ptr_));
   // The context's type processor is a proxy; run the task it posted.
   sync_loop_.RunUntilIdle();
 }
 
 void SharedModelTypeProcessorTest::WriteItem(const std::string& tag,
                                              const std::string& value) {
-  sync_pb::EntitySpecifics specifics = GenerateSpecifics(tag, value);
-  // Use the tag as non-unique name.
-  type_processor_->Put(tag, tag, specifics, nullptr);
+  scoped_ptr<EntityData> entity_data = make_scoped_ptr(new EntityData());
+  entity_data->specifics = GenerateSpecifics(tag, value);
+  entity_data->non_unique_name = tag;
+  type_processor_->Put(tag, std::move(entity_data), nullptr);
 }
 
 void SharedModelTypeProcessorTest::DeleteItem(const std::string& tag) {
@@ -313,6 +317,14 @@ void SharedModelTypeProcessorTest::SetServerEncryptionKey(
   mock_queue_->SetServerEncryptionKey(key_name);
 }
 
+MockCommitQueue* SharedModelTypeProcessorTest::mock_queue() {
+  return mock_queue_;
+}
+
+SharedModelTypeProcessor* SharedModelTypeProcessorTest::type_processor() {
+  return type_processor_.get();
+}
+
 std::string SharedModelTypeProcessorTest::GenerateTagHash(
     const std::string& tag) {
   return syncer::syncable::GenerateSyncableHash(kModelType, tag);
@@ -391,6 +403,52 @@ TEST_F(SharedModelTypeProcessorTest, CreateLocalItem) {
   EXPECT_FALSE(tag1_data.is_deleted());
   EXPECT_EQ("tag1", tag1_data.specifics.preference().name());
   EXPECT_EQ("value1", tag1_data.specifics.preference().value());
+}
+
+// The purpose of this test case is to test setting |client_tag_hash| and |id|
+// on the EntityData object as we pass it into the Put method of the processor.
+// TODO(skym): Update this test to verify that specifying a |client_tag_hash|
+// on update has no effect once crbug/561818 is completed.
+TEST_F(SharedModelTypeProcessorTest, CreateAndModifyWithOverrides) {
+  InitializeToReadyState();
+  EXPECT_EQ(0U, GetNumCommitRequestLists());
+
+  scoped_ptr<EntityData> entity_data = make_scoped_ptr(new EntityData());
+  entity_data->specifics.mutable_preference()->set_name("tag1");
+  entity_data->specifics.mutable_preference()->set_value("value1");
+
+  entity_data->non_unique_name = "tag1";
+  entity_data->client_tag_hash = "hash";
+  entity_data->id = "cid1";
+  type_processor()->Put("tag1", std::move(entity_data), nullptr);
+
+  // Don't access through tag because we forced a specific hash.
+  EXPECT_EQ(1U, GetNumCommitRequestLists());
+  ASSERT_TRUE(mock_queue()->HasCommitRequestForTagHash("hash"));
+  const EntityData& out_entity1 =
+      mock_queue()->GetLatestCommitRequestForTagHash("hash").entity.value();
+
+  EXPECT_EQ("hash", out_entity1.client_tag_hash);
+  EXPECT_EQ("cid1", out_entity1.id);
+  EXPECT_EQ("value1", out_entity1.specifics.preference().value());
+
+  entity_data.reset(new EntityData());
+  entity_data->specifics.mutable_preference()->set_name("tag2");
+  entity_data->specifics.mutable_preference()->set_value("value2");
+  entity_data->non_unique_name = "tag2";
+  entity_data->client_tag_hash = "hash";
+  entity_data->id = "cid2";
+  type_processor()->Put("tag2", std::move(entity_data), nullptr);
+
+  EXPECT_EQ(2U, GetNumCommitRequestLists());
+  ASSERT_TRUE(mock_queue()->HasCommitRequestForTagHash("hash"));
+  const EntityData& out_entity2 =
+      mock_queue()->GetLatestCommitRequestForTagHash("hash").entity.value();
+
+  // Should still see old cid1 value, override is not respected on update.
+  EXPECT_EQ("hash", out_entity2.client_tag_hash);
+  EXPECT_EQ("cid1", out_entity2.id);
+  EXPECT_EQ("value2", out_entity2.specifics.preference().value());
 }
 
 // Creates a new local item then modifies it.

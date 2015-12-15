@@ -65,8 +65,7 @@ class SYNC_EXPORT SharedModelTypeProcessor : public ModelTypeProcessor,
 
   // ModelTypeChangeProcessor implementation.
   void Put(const std::string& client_key,
-           const std::string& non_unique_name,
-           const sync_pb::EntitySpecifics& specifics,
+           scoped_ptr<EntityData> entity_data,
            MetadataChangeList* metadata_change_list) override;
   void Delete(const std::string& client_key,
               MetadataChangeList* metadata_change_list) override;

@@ -65,8 +65,7 @@ class SYNC_EXPORT ModelTypeEntity {
   void ApplyUpdateFromServer(const UpdateResponseData& response_data);
 
   // Applies a local change to this item.
-  void MakeLocalChange(const std::string& non_unique_name,
-                       const sync_pb::EntitySpecifics& specifics,
+  void MakeLocalChange(scoped_ptr<EntityData> entity_data,
                        base::Time modification_time);
 
   // Schedule a commit if the |name| does not match this item's last known

@@ -57,7 +57,10 @@ class ModelTypeEntityTest : public ::testing::Test {
 
   void MakeLocalChange(ModelTypeEntity* entity,
                        const sync_pb::EntitySpecifics& specifics) {
-    entity->MakeLocalChange("foo", specifics, kMtime);
+    scoped_ptr<EntityData> entity_data = make_scoped_ptr(new EntityData());
+    entity_data->specifics = specifics;
+    entity_data->non_unique_name = "foo";
+    entity->MakeLocalChange(entity_data.Pass(), kMtime);
   }
 
   scoped_ptr<ModelTypeEntity> NewServerItem() {

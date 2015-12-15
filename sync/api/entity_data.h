@@ -65,7 +65,7 @@ struct SYNC_EXPORT EntityData {
   sync_pb::UniquePosition unique_position;
 
   // True if EntityData represents deleted entity; otherwise false.
-  // Note that EntityData would be considered to represent a deletion if it
+  // Note that EntityData would be considered to represent a deletion if its
   // specifics hasn't been set.
   bool is_deleted() const { return specifics.ByteSize() == 0; }
 
