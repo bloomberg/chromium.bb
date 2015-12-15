@@ -2476,7 +2476,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // PushState happened before first navigation entry or called right after
   // window.open when the url is empty.
   if (!navItem ||
-      (navigationManager.GetEntryCount() <= 1 && navItem->GetURL().is_empty()))
+      (navigationManager.GetItemCount() <= 1 && navItem->GetURL().is_empty()))
     return YES;
   if (!web::history_state_util::IsHistoryStateChangeValid(navItem->GetURL(),
                                                           pushURL)) {
@@ -2553,7 +2553,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // ReplaceState happened before first navigation entry or called right
   // after window.open when the url is empty/not valid.
   if (!navItem ||
-      (navigationManager.GetEntryCount() <= 1 && navItem->GetURL().is_empty()))
+      (navigationManager.GetItemCount() <= 1 && navItem->GetURL().is_empty()))
     return YES;
   if (!web::history_state_util::IsHistoryStateChangeValid(navItem->GetURL(),
                                                           replaceURL)) {
@@ -3132,7 +3132,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     const web::NavigationManagerImpl& navigationManager =
         self.webStateImpl->GetNavigationManagerImpl();
     GURL mainDocumentURL =
-        navigationManager.GetEntryCount()
+        navigationManager.GetItemCount()
             ? navigationManager.GetLastCommittedItem()->GetURL()
             : [self currentURL];
     _lastUserInteraction.reset(new web::UserInteractionEvent(mainDocumentURL));

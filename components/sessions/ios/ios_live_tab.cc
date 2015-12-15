@@ -29,11 +29,11 @@ IOSLiveTab::IOSLiveTab(web::WebState* web_state) : web_state_(web_state) {}
 IOSLiveTab::~IOSLiveTab() {}
 
 bool IOSLiveTab::IsInitialBlankNavigation() {
-  return navigation_manager()->GetEntryCount() == 0;
+  return navigation_manager()->GetItemCount() == 0;
 }
 
 int IOSLiveTab::GetCurrentEntryIndex() {
-  return navigation_manager()->GetCurrentEntryIndex();
+  return navigation_manager()->GetCurrentItemIndex();
 }
 
 int IOSLiveTab::GetPendingEntryIndex() {
@@ -51,7 +51,7 @@ sessions::SerializedNavigationEntry IOSLiveTab::GetPendingEntry() {
 }
 
 int IOSLiveTab::GetEntryCount() {
-  return navigation_manager()->GetEntryCount();
+  return navigation_manager()->GetItemCount();
 }
 
 void IOSLiveTab::LoadIfNecessary() {

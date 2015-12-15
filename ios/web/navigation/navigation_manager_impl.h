@@ -78,10 +78,6 @@ class NavigationManagerImpl : public NavigationManager {
   void LoadURL(const GURL& url,
                const Referrer& referrer,
                ui::PageTransition type);
-  bool CanGoBack() const;
-  bool CanGoForward() const;
-  void GoBack();
-  void GoForward();
 
   // Convenience accessors to get the underlying NavigationItems from the
   // SessionEntries returned from |session_controller_|'s -lastUserEntry and
@@ -106,10 +102,16 @@ class NavigationManagerImpl : public NavigationManager {
   void LoadIfNecessary() override;
   void AddTransientURLRewriter(
       BrowserURLRewriter::URLRewriter rewriter) override;
-  int GetEntryCount() const override;
+  int GetItemCount() const override;
   NavigationItem* GetItemAtIndex(size_t index) const override;
-  int GetCurrentEntryIndex() const override;
+  int GetCurrentItemIndex() const override;
   int GetPendingItemIndex() const override;
+  int GetLastCommittedItemIndex() const override;
+  bool RemoveItemAtIndex(int index) override;
+  bool CanGoBack() const override;
+  bool CanGoForward() const override;
+  void GoBack() override;
+  void GoForward() override;
 
   // Returns the current list of transient url rewriters, passing ownership to
   // the caller.
@@ -124,6 +126,7 @@ class NavigationManagerImpl : public NavigationManager {
   // Copy state from |navigation_manager|, including a copy of that object's
   // CRWSessionController.
   void CopyState(NavigationManagerImpl* navigation_manager);
+
  private:
   // The primary delegate for this manager.
   NavigationManagerDelegate* delegate_;

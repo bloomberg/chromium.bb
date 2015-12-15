@@ -1079,7 +1079,7 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 
   // The searched item almost always be the last one, so walk backward rather
   // than forward.
-  for (int i = navigationManager->GetEntryCount() - 1; 0 <= i; i--) {
+  for (int i = navigationManager->GetItemCount() - 1; 0 <= i; i--) {
     web::NavigationItem* item = navigationManager->GetItemAtIndex(i);
     if (item->GetUniqueID() != navigationItemID)
       continue;
@@ -1095,7 +1095,7 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
       web::SSLStatus previousSSLStatus = item->GetSSL();
       SSLStatus.cert_status = certStatus;
       SSLStatus.security_style = style;
-      if (navigationManager->GetCurrentEntryIndex() == i &&
+      if (navigationManager->GetCurrentItemIndex() == i &&
           !previousSSLStatus.Equals(SSLStatus)) {
         [self didUpdateSSLStatusForCurrentNavigationItem];
       }

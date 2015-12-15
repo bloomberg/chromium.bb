@@ -53,15 +53,15 @@ std::string IOSChromeSyncedTabDelegate::GetExtensionAppId() const {
 }
 
 bool IOSChromeSyncedTabDelegate::IsInitialBlankNavigation() const {
-  return web_state_->GetNavigationManager()->GetEntryCount() == 0;
+  return web_state_->GetNavigationManager()->GetItemCount() == 0;
 }
 
 int IOSChromeSyncedTabDelegate::GetCurrentEntryIndex() const {
-  return web_state_->GetNavigationManager()->GetCurrentEntryIndex();
+  return web_state_->GetNavigationManager()->GetCurrentItemIndex();
 }
 
 int IOSChromeSyncedTabDelegate::GetEntryCount() const {
-  return web_state_->GetNavigationManager()->GetEntryCount();
+  return web_state_->GetNavigationManager()->GetItemCount();
 }
 
 GURL IOSChromeSyncedTabDelegate::GetVirtualURLAtIndex(int i) const {

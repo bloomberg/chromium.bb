@@ -27,7 +27,7 @@ bool AreURLsInPageNavigation(const GURL& existing_url, const GURL& new_url) {
   url::Replacements<char> replacements;
   replacements.ClearRef();
   return existing_url.ReplaceComponents(replacements) ==
-      new_url.ReplaceComponents(replacements);
+         new_url.ReplaceComponents(replacements);
 }
 
 }  // anonymous namespace
@@ -48,10 +48,6 @@ NavigationManagerImpl::~NavigationManagerImpl() {
   DCHECK(!facade_delegate_);
 
   [session_controller_ setNavigationManager:nullptr];
-}
-
-CRWSessionController* NavigationManagerImpl::GetSessionController() {
-  return session_controller_;
 }
 
 void NavigationManagerImpl::SetSessionController(
@@ -129,6 +125,53 @@ void NavigationManagerImpl::OnNavigationItemCommitted() {
   }
 }
 
+CRWSessionController* NavigationManagerImpl::GetSessionController() {
+  return session_controller_;
+}
+
+int NavigationManagerImpl::GetLastCommittedEntryIndex() const {
+  return GetLastCommittedItemIndex();
+}
+
+bool NavigationManagerImpl::RemoveEntryAtIndex(int index) {
+  return RemoveItemAtIndex(index);
+}
+
+void NavigationManagerImpl::LoadURL(const GURL& url,
+                                    const web::Referrer& referrer,
+                                    ui::PageTransition type) {
+  WebState::OpenURLParams params(url, referrer, CURRENT_TAB, type, NO);
+  delegate_->GetWebState()->OpenURL(params);
+}
+
+NavigationItem* NavigationManagerImpl::GetLastUserItem() const {
+  CRWSessionEntry* entry = [session_controller_ lastUserEntry];
+  return [entry navigationItem];
+}
+
+NavigationItem* NavigationManagerImpl::GetPreviousItem() const {
+  CRWSessionEntry* entry = [session_controller_ previousEntry];
+  return [entry navigationItem];
+}
+
+std::vector<NavigationItem*> NavigationManagerImpl::GetItems() {
+  std::vector<NavigationItem*> items;
+  size_t i = 0;
+  items.resize([session_controller_ entries].count);
+  for (CRWSessionEntry* entry in [session_controller_ entries]) {
+    items[i++] = entry.navigationItem;
+  }
+  return items;
+}
+
+BrowserState* NavigationManagerImpl::GetBrowserState() const {
+  return browser_state_;
+}
+
+WebState* NavigationManagerImpl::GetWebState() const {
+  return delegate_->GetWebState();
+}
+
 NavigationItem* NavigationManagerImpl::GetVisibleItem() const {
   CRWSessionEntry* entry = [session_controller_ visibleEntry];
   return [entry navigationItem];
@@ -155,35 +198,6 @@ void NavigationManagerImpl::LoadIfNecessary() {
   // Nothing to do; iOS loads lazily.
 }
 
-int NavigationManagerImpl::GetLastCommittedEntryIndex() const {
-  if (![[session_controller_ entries] count])
-    return -1;
-  return [session_controller_ currentNavigationIndex];
-}
-
-bool NavigationManagerImpl::RemoveEntryAtIndex(int index) {
-  if (index == GetLastCommittedEntryIndex() || index == GetPendingItemIndex())
-    return false;
-
-  NSUInteger idx = static_cast<NSUInteger>(index);
-  NSArray* entries = [session_controller_ entries];
-  if (idx >= entries.count)
-    return false;
-
-  [session_controller_ removeEntryAtIndex:index];
-  return true;
-}
-
-NavigationItem* NavigationManagerImpl::GetLastUserItem() const {
-  CRWSessionEntry* entry = [session_controller_ lastUserEntry];
-  return [entry navigationItem];
-}
-
-NavigationItem* NavigationManagerImpl::GetPreviousItem() const {
-  CRWSessionEntry* entry = [session_controller_ previousEntry];
-  return [entry navigationItem];
-}
-
 void NavigationManagerImpl::AddTransientURLRewriter(
     BrowserURLRewriter::URLRewriter rewriter) {
   DCHECK(rewriter);
@@ -194,7 +208,7 @@ void NavigationManagerImpl::AddTransientURLRewriter(
   transient_url_rewriters_->push_back(rewriter);
 }
 
-int NavigationManagerImpl::GetEntryCount() const {
+int NavigationManagerImpl::GetItemCount() const {
   return [[session_controller_ entries] count];
 }
 
@@ -203,30 +217,33 @@ NavigationItem* NavigationManagerImpl::GetItemAtIndex(size_t index) const {
   return index < entries.count ? [entries[index] navigationItem] : nullptr;
 }
 
-int NavigationManagerImpl::GetCurrentEntryIndex() const {
+int NavigationManagerImpl::GetCurrentItemIndex() const {
   return [session_controller_ currentNavigationIndex];
 }
 
 int NavigationManagerImpl::GetPendingItemIndex() const {
   if ([session_controller_ hasPendingEntry])
-    return GetCurrentEntryIndex();
+    return GetCurrentItemIndex();
   return -1;
 }
 
-scoped_ptr<std::vector<BrowserURLRewriter::URLRewriter>>
-NavigationManagerImpl::GetTransientURLRewriters() {
-  return transient_url_rewriters_.Pass();
+int NavigationManagerImpl::GetLastCommittedItemIndex() const {
+  if (![[session_controller_ entries] count])
+    return -1;
+  return [session_controller_ currentNavigationIndex];
 }
 
-void NavigationManagerImpl::RemoveTransientURLRewriters() {
-  transient_url_rewriters_.reset();
-}
+bool NavigationManagerImpl::RemoveItemAtIndex(int index) {
+  if (index == GetLastCommittedItemIndex() || index == GetPendingItemIndex())
+    return false;
 
-void NavigationManagerImpl::LoadURL(const GURL& url,
-                                    const web::Referrer& referrer,
-                                    ui::PageTransition type) {
-  WebState::OpenURLParams params(url, referrer, CURRENT_TAB, type, NO);
-  delegate_->GetWebState()->OpenURL(params);
+  NSUInteger idx = static_cast<NSUInteger>(index);
+  NSArray* entries = [session_controller_ entries];
+  if (idx >= entries.count)
+    return false;
+
+  [session_controller_ removeEntryAtIndex:index];
+  return true;
 }
 
 bool NavigationManagerImpl::CanGoBack() const {
@@ -253,22 +270,13 @@ void NavigationManagerImpl::GoForward() {
   }
 }
 
-std::vector<NavigationItem*> NavigationManagerImpl::GetItems() {
-  std::vector<NavigationItem*> items;
-  size_t i = 0;
-  items.resize([session_controller_ entries].count);
-  for (CRWSessionEntry* entry in [session_controller_ entries]) {
-    items[i++] = entry.navigationItem;
-  }
-  return items;
+scoped_ptr<std::vector<BrowserURLRewriter::URLRewriter>>
+NavigationManagerImpl::GetTransientURLRewriters() {
+  return transient_url_rewriters_.Pass();
 }
 
-BrowserState* NavigationManagerImpl::GetBrowserState() const {
-  return browser_state_;
-}
-
-WebState* NavigationManagerImpl::GetWebState() const {
-  return delegate_->GetWebState();
+void NavigationManagerImpl::RemoveTransientURLRewriters() {
+  transient_url_rewriters_.reset();
 }
 
 void NavigationManagerImpl::CopyState(
@@ -278,4 +286,3 @@ void NavigationManagerImpl::CopyState(
 }
 
 }  // namespace web
-
