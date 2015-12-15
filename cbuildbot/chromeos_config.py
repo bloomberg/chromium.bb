@@ -1705,6 +1705,12 @@ def GetConfig():
       'guado_moblab',
   ])
 
+  # *-cheets devices run a different suite
+  _paladin_cheets_hwtest_boards = frozenset([
+    'cyan-cheets',
+    'veyron_minnie-cheets',
+  ])
+
   _paladin_chroot_replace_boards = frozenset([
       'butterfly',
       'daisy_spring',
@@ -1729,6 +1735,18 @@ def GetConfig():
                 config_lib.HWTestConfig(
                     constants.HWTEST_MOBLAB_QUICK_SUITE,
                     blocking=True, num=1, timeout=120*60,
+                    pool=constants.HWTEST_PALADIN_POOL)
+            ])
+      if board in _paladin_cheets_hwtest_boards:
+        customizations.update(
+            hw_tests=[
+                config_lib.HWTestConfig(
+                    constants.HWTEST_COMMIT_SUITE,
+                    blocking=True, timeout=120*60,
+                    pool=constants.HWTEST_PALADIN_POOL),
+                config_lib.HWTestConfig(
+                    constants.HWTEST_ARC_COMMIT_SUITE,
+                    blocking=True, timeout=120*60,
                     pool=constants.HWTEST_PALADIN_POOL)
             ])
       if board in _paladin_jetstream_hwtest_boards:
