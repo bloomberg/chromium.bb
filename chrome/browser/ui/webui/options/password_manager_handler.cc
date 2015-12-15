@@ -45,14 +45,13 @@ namespace {
 // chrome/browser/resources/options/password_manager_list.js.
 const char kOriginField[] = "origin";
 const char kShownUrlField[] = "shownUrl";
-const char kIsAndroidUriField[] = "isAndroidUri";
 const char kIsSecureField[] = "isSecure";
 const char kUsernameField[] = "username";
 const char kPasswordField[] = "password";
 const char kFederationField[] = "federation";
 
-// Copies from |form| to |entry| the origin, shown origin, whether the origin is
-// Android URI, and whether the origin is secure.
+// Copies from |form| to |entry| the origin, shown origin and whether the
+// origin is secure or not.
 void CopyOriginInfoOfPasswordForm(const autofill::PasswordForm& form,
                                   const std::string& languages,
                                   base::DictionaryValue* entry) {
@@ -61,10 +60,8 @@ void CopyOriginInfoOfPasswordForm(const autofill::PasswordForm& form,
       url_formatter::FormatUrl(
           form.origin, languages, url_formatter::kFormatUrlOmitNothing,
           net::UnescapeRule::SPACES, nullptr, nullptr, nullptr));
-  bool is_android_uri = false;
-  entry->SetString(kShownUrlField, password_manager::GetShownOrigin(
-                                       form, languages, &is_android_uri));
-  entry->SetBoolean(kIsAndroidUriField, is_android_uri);
+  entry->SetString(kShownUrlField,
+                   password_manager::GetShownOrigin(form, languages));
   entry->SetBoolean(kIsSecureField, content::IsOriginSecure(form.origin));
 }
 
@@ -129,7 +126,8 @@ void PasswordManagerHandler::GetLocalizedValues(
   localized_strings->SetString("passwordsManagePasswordsBeforeLinkText",
                                full_text.substr(0, offset));
   localized_strings->SetString("passwordsManagePasswordsLinkText",
-                               full_text.substr(offset, link_text.size()));
+                               full_text.substr(offset,
+                                                link_text.size()));
   localized_strings->SetString("passwordsManagePasswordsAfterLinkText",
                                full_text.substr(offset + link_text.size()));
 

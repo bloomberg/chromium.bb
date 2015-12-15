@@ -22,15 +22,11 @@ const char* const kRemovedPrefixes[] = {"m.", "mobile.", "www."};
 }  // namespace
 
 std::string GetShownOrigin(const autofill::PasswordForm& password_form,
-                           const std::string& languages,
-                           bool* is_android_uri) {
-  DCHECK(is_android_uri != nullptr);
-
+                           const std::string& languages) {
   password_manager::FacetURI facet_uri =
       password_manager::FacetURI::FromPotentiallyInvalidSpec(
           password_form.signon_realm);
-  *is_android_uri = facet_uri.IsValidAndroidFacetURI();
-  if (*is_android_uri)
+  if (facet_uri.IsValidAndroidFacetURI())
     return GetHumanReadableOriginForAndroidUri(facet_uri);
 
   std::string original =

@@ -20,12 +20,9 @@ namespace password_manager {
 // Returns a string suitable for security display to the user (just like
 // |FormatUrlForSecurityDisplayOmitScheme| based on origin of |password_form|
 // and |languages|) and without prefixes "m.", "mobile." or "www.". For Android
-// URIs, returns the result of GetHumanReadableOriginForAndroidUri and sets
-// |*is_android_uri| to true, otherwise |*is_android_uri| is set to false.
-// |is_android_uri| is required to be non-null.
+// URIs, returns the result of GetHumanReadableOriginForAndroidUri.
 std::string GetShownOrigin(const autofill::PasswordForm& password_form,
-                           const std::string& languages,
-                           bool* is_android_uri);
+                           const std::string& languages);
 
 }  // namespace password_manager
 
