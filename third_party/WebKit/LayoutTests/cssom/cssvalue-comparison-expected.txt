@@ -24,9 +24,6 @@ PASS Two CSSValues "rotate(15deg)" and "rotate(1.55rad)" for property "-webkit-t
 PASS Two CSSValues "url(dummy://test.png)" for property "background-image" are equal. 
 PASS Two CSSValues "url(dummy://green.png)" for property "background-image" are equal. 
 PASS Two CSSValues "url(dummy://test.png)" and "url(dummy://green.png)" for property "background-image" are not equal. 
-PASS Two CSSValues "bold" for property "font-weight" are equal. 
-PASS Two CSSValues "inherit" for property "font-weight" are equal. 
-PASS Two CSSValues "bold" and "inherit" for property "font-weight" are not equal. 
 PASS Two CSSValues "counter(a)" for property "content" are equal. 
 PASS Two CSSValues "counters(a, '.')" for property "content" are equal. 
 PASS Two CSSValues "counter(a)" and "counters(a, '.')" for property "content" are not equal. 
@@ -61,9 +58,27 @@ PASS Two CSSValues "1 2 3 4" and "2 3 4 5" for property "border-image-slice" are
 PASS Two CSSValues "url(resources/greenbox.png) 0 0, pointer" for property "cursor" are equal. 
 PASS Two CSSValues "url(resources/cursor.png) 1 1, wait" for property "cursor" are equal. 
 PASS Two CSSValues "url(resources/greenbox.png) 0 0, pointer" and "url(resources/cursor.png) 1 1, wait" for property "cursor" are not equal. 
-PASS Two CSSValues "italic bold 12px/30px arial" for property "font" are equal. 
-PASS Two CSSValues "italic bold 8px/16px helvetica" for property "font" are equal. 
-PASS Two CSSValues "italic bold 12px/30px arial" and "italic bold 8px/16px helvetica" for property "font" are not equal. 
+PASS Two CSSValues "italic" for property "font-style" are equal. 
+PASS Two CSSValues "oblique" for property "font-style" are equal. 
+PASS Two CSSValues "italic" and "oblique" for property "font-style" are not equal. 
+PASS Two CSSValues "small-caps" for property "font-variant" are equal. 
+PASS Two CSSValues "normal" for property "font-variant" are equal. 
+PASS Two CSSValues "small-caps" and "normal" for property "font-variant" are not equal. 
+PASS Two CSSValues "bold" for property "font-weight" are equal. 
+PASS Two CSSValues "bolder" for property "font-weight" are equal. 
+PASS Two CSSValues "bold" and "bolder" for property "font-weight" are not equal. 
+PASS Two CSSValues "semi-condensed" for property "font-stretch" are equal. 
+PASS Two CSSValues "expanded" for property "font-stretch" are equal. 
+PASS Two CSSValues "semi-condensed" and "expanded" for property "font-stretch" are not equal. 
+PASS Two CSSValues "12px" for property "font-size" are equal. 
+PASS Two CSSValues "8px" for property "font-size" are equal. 
+PASS Two CSSValues "12px" and "8px" for property "font-size" are not equal. 
+PASS Two CSSValues "30pz" for property "line-height" are equal. 
+PASS Two CSSValues "16px" for property "line-height" are equal. 
+PASS Two CSSValues "30pz" and "16px" for property "line-height" are not equal. 
+PASS Two CSSValues "arial" for property "font-family" are equal. 
+PASS Two CSSValues "helvetica" for property "font-family" are equal. 
+PASS Two CSSValues "arial" and "helvetica" for property "font-family" are not equal. 
 PASS Two CSSValues "-webkit-gradient(linear, left top, left bottom, from(#ccc), to(#000))" for property "background-image" are equal. 
 PASS Two CSSValues "-webkit-gradient(radial, 45 45, 0, 52 50, 0, from(#A7D30C), to(rgba(1,159,98,0)), color-stop(90%, #019F62))" for property "background-image" are equal. 
 PASS Two CSSValues "-webkit-gradient(linear, left top, left bottom, from(#ccc), to(#000))" and "-webkit-gradient(radial, 45 45, 0, 52 50, 0, from(#A7D30C), to(rgba(1,159,98,0)), color-stop(90%, #019F62))" for property "background-image" are not equal. 
