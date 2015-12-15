@@ -138,15 +138,9 @@ void ChildBroker::ConnectMessagePipe(uint64_t pipe_id,
           base::Bind(&ChildBroker::ChannelDestructed, base::Unretained(this)));
     }
 
-    connected_pipes_[pending_connects_[pipe_id]] = in_process_pipes_channel1_;
-    connected_pipes_[message_pipe] = in_process_pipes_channel2_;
-    in_process_pipes_channel1_->AddRoute(pipe_id, pending_connects_[pipe_id]);
-    in_process_pipes_channel2_->AddRoute(pipe_id, message_pipe);
-    pending_connects_[pipe_id]->GotNonTransferableChannel(
-        in_process_pipes_channel1_->channel());
-    message_pipe->GotNonTransferableChannel(
-        in_process_pipes_channel2_->channel());
-
+    AttachMessagePipe(pending_connects_[pipe_id], pipe_id,
+                      in_process_pipes_channel1_);
+    AttachMessagePipe(message_pipe, pipe_id, in_process_pipes_channel2_);
     pending_connects_.erase(pipe_id);
     return;
   }
@@ -212,17 +206,13 @@ void ChildBroker::OnReadMessage(
     pending_connects_.erase(pipe_id);
     if (peer_pid == 0) {
       // The other side is in the parent process.
-      connected_pipes_[pipe] = parent_async_channel_;
-      parent_async_channel_->AddRoute(pipe_id, pipe);
-      pipe->GotNonTransferableChannel(parent_async_channel_->channel());
+      AttachMessagePipe(pipe, pipe_id, parent_async_channel_);
     } else if (channels_.find(peer_pid) == channels_.end()) {
       // We saw the peer process die before we got the reply from the parent.
       pipe->OnError(ERROR_READ_SHUTDOWN);
     } else {
       CHECK(connected_pipes_.find(pipe) == connected_pipes_.end());
-      connected_pipes_[pipe] = channels_[peer_pid];
-      channels_[peer_pid]->AddRoute(pipe_id, pipe);
-      pipe->GotNonTransferableChannel(channels_[peer_pid]->channel());
+      AttachMessagePipe(pipe, pipe_id, channels_[peer_pid]);
     }
   } else {
     NOTREACHED();
@@ -271,6 +261,18 @@ void ChildBroker::InitAsyncChannel(
                        pending_inprocess_connects_.begin()->second);
     pending_inprocess_connects_.erase(pending_inprocess_connects_.begin());
   }
+}
+
+void ChildBroker::AttachMessagePipe(MessagePipeDispatcher* message_pipe,
+                                    uint64_t pipe_id,
+                                    RoutedRawChannel* raw_channel) {
+  connected_pipes_[message_pipe] = raw_channel;
+  // Note: we must call GotNonTransferableChannel before AddRoute because there
+  // could be race conditions if the pipe got queued messages in |AddRoute| but
+  // then when it's read it returns no messages because it doesn't have the
+  // channel yet.
+  message_pipe->GotNonTransferableChannel(raw_channel->channel());
+  raw_channel->AddRoute(pipe_id, message_pipe);
 }
 
 #if defined(OS_WIN)

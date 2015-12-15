@@ -70,6 +70,11 @@ class MOJO_SYSTEM_IMPL_EXPORT ChildBroker
   // Initializes |parent_async_channel_|.
   void InitAsyncChannel(ScopedPlatformHandle parent_async_channel_handle);
 
+  // Helper method to connect the given MessagePipe to the channel.
+  void AttachMessagePipe(MessagePipeDispatcher* message_pipe,
+                         uint64_t pipe_id,
+                         RoutedRawChannel* raw_channel);
+
 #if defined(OS_WIN)
   // Helper method to write the given message and read back the result.
   bool WriteAndReadResponse(BrokerMessage* message,

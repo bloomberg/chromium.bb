@@ -80,15 +80,9 @@ void BrokerState::ConnectMessagePipe(uint64_t pipe_id,
           base::Bind(&BrokerState::ChannelDestructed, base::Unretained(this)));
     }
 
-    connected_pipes_[pending_connects_[pipe_id]] = in_process_pipes_channel1_;
-    connected_pipes_[message_pipe] = in_process_pipes_channel2_;
-    in_process_pipes_channel1_->AddRoute(pipe_id, pending_connects_[pipe_id]);
-    in_process_pipes_channel2_->AddRoute(pipe_id, message_pipe);
-    pending_connects_[pipe_id]->GotNonTransferableChannel(
-        in_process_pipes_channel1_->channel());
-    message_pipe->GotNonTransferableChannel(
-        in_process_pipes_channel2_->channel());
-
+    AttachMessagePipe(pending_connects_[pipe_id], pipe_id,
+                     in_process_pipes_channel1_);
+    AttachMessagePipe(message_pipe, pipe_id, in_process_pipes_channel2_);
     pending_connects_.erase(pipe_id);
     return;
   }
@@ -96,11 +90,9 @@ void BrokerState::ConnectMessagePipe(uint64_t pipe_id,
   if (pending_child_connects_.find(pipe_id) != pending_child_connects_.end()) {
     // A child process has already tried to connect.
     ChildBrokerHost* child_host = pending_child_connects_[pipe_id];
-    child_host->channel()->AddRoute(pipe_id, message_pipe);
+    AttachMessagePipe(message_pipe, pipe_id, child_host->channel());
     child_host->ConnectMessagePipe(pipe_id, 0);
     pending_child_connects_.erase(pipe_id);
-    connected_pipes_[message_pipe] = child_host->channel();
-    message_pipe->GotNonTransferableChannel(child_host->channel()->channel());
     return;
   }
 
@@ -178,9 +170,7 @@ void BrokerState::HandleConnectMessagePipe(ChildBrokerHost* pipe_process,
   if (pending_connects_.find(pipe_id) != pending_connects_.end()) {
     // This parent process is the other side of the given pipe.
     MessagePipeDispatcher* pending_pipe = pending_connects_[pipe_id];
-    connected_pipes_[pending_pipe] = pipe_process->channel();
-    pipe_process->channel()->AddRoute(pipe_id, pending_pipe);
-    pending_pipe->GotNonTransferableChannel(pipe_process->channel()->channel());
+    AttachMessagePipe(pending_pipe, pipe_id, pipe_process->channel());
     pipe_process->ConnectMessagePipe(pipe_id, 0);
     pending_connects_.erase(pipe_id);
     return;
@@ -234,6 +224,18 @@ void BrokerState::EnsureProcessesConnected(base::ProcessId pid1,
 }
 
 void BrokerState::ChannelDestructed(RoutedRawChannel* channel) {
+}
+
+void BrokerState::AttachMessagePipe(MessagePipeDispatcher* message_pipe,
+                                    uint64_t pipe_id,
+                                    RoutedRawChannel* raw_channel) {
+  connected_pipes_[message_pipe] = raw_channel;
+  // Note: we must call GotNonTransferableChannel before AddRoute because there
+  // could be race conditions if the pipe got queued messages in |AddRoute| but
+  // then when it's read it returns no messages because it doesn't have the
+  // channel yet.
+  message_pipe->GotNonTransferableChannel(raw_channel->channel());
+  raw_channel->AddRoute(pipe_id, message_pipe);
 }
 
 }  // namespace edk

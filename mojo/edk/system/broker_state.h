@@ -67,6 +67,11 @@ class MOJO_SYSTEM_IMPL_EXPORT BrokerState : NON_EXPORTED_BASE(public Broker) {
   // Called on the IO thread.
   void ChannelDestructed(RoutedRawChannel* channel);
 
+  // Helper method to connect the given MessagePipe to the channel.
+  void AttachMessagePipe(MessagePipeDispatcher* message_pipe,
+                         uint64_t pipe_id,
+                         RoutedRawChannel* raw_channel);
+
 #if defined(OS_WIN)
   // Used in the parent (unsandboxed) process to hold a mapping between HANDLES
   // and tokens. When a child process wants to send a HANDLE to another process,
