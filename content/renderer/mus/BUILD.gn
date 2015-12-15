@@ -18,6 +18,7 @@ source_set("mus") {
     "//base",
     "//cc",
     "//components/mus/public/interfaces",
+    "//content/common:mojo_bindings",
     "//mojo/converters/blink",
     "//third_party/WebKit/public:blink",
   ]
