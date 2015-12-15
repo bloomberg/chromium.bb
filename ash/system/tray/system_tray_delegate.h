@@ -188,6 +188,9 @@ class ASH_EXPORT SystemTrayDelegate {
   // Shows settings related to multiple displays.
   virtual void ShowDisplaySettings();
 
+  // Shows settings related to power.
+  virtual void ShowPowerSettings();
+
   // Shows the page that lets you disable performance tracing.
   virtual void ShowChromeSlow();
 

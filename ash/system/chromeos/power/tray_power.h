@@ -22,6 +22,7 @@ class MessageCenter;
 namespace ash {
 
 class BatteryNotification;
+class DualRoleNotification;
 
 namespace tray {
 class PowerTrayView;
@@ -83,9 +84,12 @@ class ASH_EXPORT TrayPower : public SystemTrayItem,
   // Overridden from PowerStatus::Observer.
   void OnPowerStatusChanged() override;
 
-  // Show a notification that a low-power USB charger has been connected.
+  // Shows a notification that a low-power USB charger has been connected.
   // Returns true if a notification was shown or explicitly hidden.
   bool MaybeShowUsbChargerNotification();
+
+  // Shows a notification when dual-role devices are connected.
+  void MaybeShowDualRoleNotification();
 
   // Sets |notification_state_|. Returns true if a notification should be shown.
   bool UpdateNotificationState();
@@ -95,6 +99,7 @@ class ASH_EXPORT TrayPower : public SystemTrayItem,
   message_center::MessageCenter* message_center_;  // Not owned.
   tray::PowerTrayView* power_tray_;
   scoped_ptr<BatteryNotification> battery_notification_;
+  scoped_ptr<DualRoleNotification> dual_role_notification_;
   NotificationState notification_state_;
 
   // Was a USB charger connected the last time OnPowerStatusChanged() was

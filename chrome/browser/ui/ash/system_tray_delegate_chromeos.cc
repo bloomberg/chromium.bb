@@ -19,6 +19,7 @@
 #include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
 #include "ash/system/bluetooth/bluetooth_observer.h"
+#include "ash/system/chromeos/power/power_status.h"
 #include "ash/system/chromeos/session/logout_button_observer.h"
 #include "ash/system/chromeos/shutdown_policy_observer.h"
 #include "ash/system/date/clock_observer.h"
@@ -469,6 +470,15 @@ void SystemTrayDelegateChromeOS::ShowDisplaySettings() {
   }
   content::RecordAction(base::UserMetricsAction("ShowDisplayOptions"));
   ShowSettingsSubPageForActiveUser(kDisplaySettingsSubPageName);
+}
+
+void SystemTrayDelegateChromeOS::ShowPowerSettings() {
+  if (!(switches::PowerOverlayEnabled() ||
+        (ash::PowerStatus::Get()->IsBatteryPresent() &&
+         ash::PowerStatus::Get()->SupportsDualRoleDevices()))) {
+    return;
+  }
+  ShowSettingsSubPageForActiveUser(chrome::kPowerOptionsSubPage);
 }
 
 void SystemTrayDelegateChromeOS::ShowChromeSlow() {

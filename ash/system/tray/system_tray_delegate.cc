@@ -124,6 +124,8 @@ void SystemTrayDelegate::ShowNetworkSettingsForGuid(const std::string& guid) {
 void SystemTrayDelegate::ShowDisplaySettings() {
 }
 
+void SystemTrayDelegate::ShowPowerSettings() {}
+
 void SystemTrayDelegate::ShowChromeSlow() {
 }
 

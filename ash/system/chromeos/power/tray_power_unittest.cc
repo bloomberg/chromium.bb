@@ -20,11 +20,12 @@ namespace {
 
 class MockMessageCenter : public message_center::FakeMessageCenter {
  public:
-  MockMessageCenter() : add_count_(0), remove_count_(0) {}
+  MockMessageCenter() : add_count_(0), remove_count_(0), update_count_(0) {}
   ~MockMessageCenter() override {}
 
   int add_count() const { return add_count_; }
   int remove_count() const { return remove_count_; }
+  int update_count() const { return update_count_; }
 
   // message_center::FakeMessageCenter overrides:
   void AddNotification(scoped_ptr<Notification> notification) override {
@@ -39,6 +40,15 @@ class MockMessageCenter : public message_center::FakeMessageCenter {
     remove_count_++;
     notifications_.erase(id);
   }
+  void UpdateNotification(const std::string& id,
+                          scoped_ptr<Notification> new_notification) override {
+    update_count_++;
+    Notification* notification = FindVisibleNotificationById(id);
+    if (notification)
+      notifications_.erase(id);
+    notifications_.insert(
+        std::make_pair(new_notification->id(), std::move(new_notification)));
+  }
 
   Notification* FindVisibleNotificationById(const std::string& id) override {
     auto it = notifications_.find(id);
@@ -48,6 +58,7 @@ class MockMessageCenter : public message_center::FakeMessageCenter {
  private:
   int add_count_;
   int remove_count_;
+  int update_count_;
   std::map<std::string, scoped_ptr<Notification>> notifications_;
 
   DISALLOW_COPY_AND_ASSIGN(MockMessageCenter);
@@ -85,6 +96,11 @@ class TrayPowerTest : public test::AshTestBase {
   bool MaybeShowUsbChargerNotification(const PowerSupplyProperties& proto) {
     PowerStatus::Get()->SetProtoForTesting(proto);
     return tray_power_->MaybeShowUsbChargerNotification();
+  }
+
+  void MaybeShowDualRoleNotification(const PowerSupplyProperties& proto) {
+    PowerStatus::Get()->SetProtoForTesting(proto);
+    tray_power_->MaybeShowDualRoleNotification();
   }
 
   void UpdateNotificationState(const PowerSupplyProperties& proto,
@@ -197,6 +213,105 @@ TEST_F(TrayPowerTest, MaybeShowUsbChargerNotification) {
   MaybeShowUsbChargerNotification(usb_connected);
   EXPECT_EQ(4, message_center()->add_count());
   SetUsbChargerConnected(true);
+}
+
+TEST_F(TrayPowerTest, MaybeShowDualRoleNotification) {
+  PowerSupplyProperties discharging = DefaultPowerSupplyProperties();
+  discharging.set_supports_dual_role_devices(true);
+  MaybeShowDualRoleNotification(discharging);
+  EXPECT_EQ(0, message_center()->add_count());
+  EXPECT_EQ(0, message_center()->update_count());
+  EXPECT_EQ(0, message_center()->remove_count());
+
+  // Notification shows when connecting a dual-role device.
+  PowerSupplyProperties dual_role = DefaultPowerSupplyProperties();
+  dual_role.set_supports_dual_role_devices(true);
+  power_manager::PowerSupplyProperties_PowerSource* source =
+      dual_role.add_available_external_power_source();
+  source->set_id("dual-role1");
+  source->set_active_by_default(false);
+  MaybeShowDualRoleNotification(dual_role);
+  EXPECT_EQ(1, message_center()->add_count());
+  EXPECT_EQ(0, message_center()->update_count());
+  EXPECT_EQ(0, message_center()->remove_count());
+
+  // Connecting another dual-role device updates the notification to be plural.
+  source = dual_role.add_available_external_power_source();
+  source->set_id("dual-role2");
+  source->set_active_by_default(false);
+  MaybeShowDualRoleNotification(dual_role);
+  EXPECT_EQ(1, message_center()->add_count());
+  EXPECT_EQ(1, message_center()->update_count());
+  EXPECT_EQ(0, message_center()->remove_count());
+
+  // Connecting a 3rd dual-role device doesn't affect the notification.
+  source = dual_role.add_available_external_power_source();
+  source->set_id("dual-role3");
+  source->set_active_by_default(false);
+  MaybeShowDualRoleNotification(dual_role);
+  EXPECT_EQ(1, message_center()->add_count());
+  EXPECT_EQ(1, message_center()->update_count());
+  EXPECT_EQ(0, message_center()->remove_count());
+
+  // Connecting a legacy USB device removes the notification.
+  PowerSupplyProperties legacy(dual_role);
+  power_manager::PowerSupplyProperties_PowerSource* legacy_source =
+      legacy.add_available_external_power_source();
+  legacy_source->set_id("legacy");
+  legacy_source->set_active_by_default(true);
+  legacy.set_external_power_source_id("legacy");
+  legacy.set_external_power(
+      power_manager::PowerSupplyProperties_ExternalPower_USB);
+  MaybeShowDualRoleNotification(legacy);
+  EXPECT_EQ(1, message_center()->add_count());
+  EXPECT_EQ(1, message_center()->update_count());
+  EXPECT_EQ(1, message_center()->remove_count());
+
+  // Removing the legacy USB device adds the notification again.
+  MaybeShowDualRoleNotification(dual_role);
+  EXPECT_EQ(2, message_center()->add_count());
+  EXPECT_EQ(1, message_center()->update_count());
+  EXPECT_EQ(1, message_center()->remove_count());
+
+  // Charging from the device updates the notification.
+  dual_role.set_external_power_source_id("dual-role1");
+  dual_role.set_external_power(
+      power_manager::PowerSupplyProperties_ExternalPower_USB);
+  MaybeShowDualRoleNotification(dual_role);
+  EXPECT_EQ(2, message_center()->add_count());
+  EXPECT_EQ(2, message_center()->update_count());
+  EXPECT_EQ(1, message_center()->remove_count());
+
+  // Adding a device as a sink doesn't change the notification, because the
+  // notification exposes the source.
+  source = dual_role.add_available_external_power_source();
+  source->set_active_by_default(false);
+  MaybeShowDualRoleNotification(dual_role);
+  EXPECT_EQ(2, message_center()->add_count());
+  EXPECT_EQ(2, message_center()->update_count());
+  EXPECT_EQ(1, message_center()->remove_count());
+
+  // Changing the source to a sink changes the notification.
+  dual_role.set_external_power_source_id("");
+  dual_role.set_external_power(
+      power_manager::PowerSupplyProperties_ExternalPower_DISCONNECTED);
+  MaybeShowDualRoleNotification(dual_role);
+  EXPECT_EQ(2, message_center()->add_count());
+  EXPECT_EQ(3, message_center()->update_count());
+  EXPECT_EQ(1, message_center()->remove_count());
+
+  // An unrelated change has no effect.
+  dual_role.set_battery_time_to_empty_sec(2 * 60 * 60);
+  MaybeShowDualRoleNotification(dual_role);
+  EXPECT_EQ(2, message_center()->add_count());
+  EXPECT_EQ(3, message_center()->update_count());
+  EXPECT_EQ(1, message_center()->remove_count());
+
+  // Removing devices hides the notification.
+  MaybeShowDualRoleNotification(discharging);
+  EXPECT_EQ(2, message_center()->add_count());
+  EXPECT_EQ(3, message_center()->update_count());
+  EXPECT_EQ(2, message_center()->remove_count());
 }
 
 TEST_F(TrayPowerTest, UpdateNotificationState) {

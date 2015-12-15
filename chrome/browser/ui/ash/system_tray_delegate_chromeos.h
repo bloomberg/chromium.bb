@@ -95,6 +95,7 @@ class SystemTrayDelegateChromeOS
   void ShowSetTimeDialog() override;
   void ShowNetworkSettingsForGuid(const std::string& guid) override;
   void ShowDisplaySettings() override;
+  void ShowPowerSettings() override;
   void ShowChromeSlow() override;
   bool ShouldShowDisplayNotification() override;
   void ShowIMESettings() override;

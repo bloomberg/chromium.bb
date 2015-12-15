@@ -75,6 +75,7 @@ const char kNotifierDeprecatedAccelerator[] = "ash.accelerator-controller";
 const char kNotifierDisplay[] = "ash.display";
 const char kNotifierDisplayError[] = "ash.display.error";
 const char kNotifierDisplayResolutionChange[] = "ash.display.resolution-change";
+const char kNotifierDualRole[] = "ash.dual-role";
 const char kNotifierLocale[] = "ash.locale";
 const char kNotifierMultiProfileFirstRun[] = "ash.multi-profile.first-run";
 const char kNotifierNetworkPortalDetector[] = "ash.network.portal-detector";

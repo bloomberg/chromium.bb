@@ -9,6 +9,7 @@
 #include "ash/shell.h"
 #include "ash/system/chromeos/devicetype_utils.h"
 #include "ash/system/chromeos/power/battery_notification.h"
+#include "ash/system/chromeos/power/dual_role_notification.h"
 #include "ash/system/date/date_view.h"
 #include "ash/system/system_notifier.h"
 #include "ash/system/tray/system_tray_delegate.h"
@@ -190,6 +191,7 @@ void TrayPower::OnPowerStatusChanged() {
     return;
 
   MaybeShowUsbChargerNotification();
+  MaybeShowDualRoleNotification();
 
   if (battery_alert) {
     // Remove any existing notification so it's dismissed before adding a new
@@ -239,6 +241,18 @@ bool TrayPower::MaybeShowUsbChargerNotification() {
     return true;
   }
   return false;
+}
+
+void TrayPower::MaybeShowDualRoleNotification() {
+  const PowerStatus& status = *PowerStatus::Get();
+  if (!status.HasDualRoleDevices()) {
+    dual_role_notification_.reset();
+    return;
+  }
+
+  if (!dual_role_notification_)
+    dual_role_notification_.reset(new DualRoleNotification(message_center_));
+  dual_role_notification_->Update();
 }
 
 bool TrayPower::UpdateNotificationState() {
