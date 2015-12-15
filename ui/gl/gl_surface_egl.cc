@@ -32,6 +32,11 @@
 #endif
 
 #if defined(USE_X11) && !defined(OS_CHROMEOS)
+extern "C" {
+#include <X11/Xlib.h>
+#define Status int
+}
+#include "ui/base/x/x11_util_internal.h"
 #include "ui/gfx/x/x11_switches.h"
 #endif
 
@@ -69,6 +74,11 @@
 #define EGL_PLATFORM_ANGLE_TYPE_OPENGL_ANGLE 0x320D
 #define EGL_PLATFORM_ANGLE_TYPE_OPENGLES_ANGLE 0x320E
 #endif /* EGL_ANGLE_platform_angle_opengl */
+
+#ifndef EGL_ANGLE_x11_visual
+#define EGL_ANGLE_x11_visual 1
+#define EGL_X11_VISUAL_ID_ANGLE 0x33A3
+#endif /* EGL_ANGLE_x11_visual */
 
 using ui::GetLastEGLErrorString;
 
@@ -142,6 +152,13 @@ EGLDisplay GetPlatformANGLEDisplay(EGLNativeDisplayType native_display,
     display_attribs.push_back(EGL_PLATFORM_ANGLE_DEVICE_TYPE_ANGLE);
     display_attribs.push_back(EGL_PLATFORM_ANGLE_DEVICE_TYPE_WARP_ANGLE);
   }
+
+#if defined(USE_X11) && !defined(OS_CHROMEOS)
+  Visual* visual;
+  ui::ChooseVisualForWindow(&visual, nullptr);
+  display_attribs.push_back(EGL_X11_VISUAL_ID_ANGLE);
+  display_attribs.push_back((EGLint)visual->visualid);
+#endif
 
   display_attribs.push_back(EGL_NONE);
 
