@@ -302,9 +302,6 @@ const char kDisableOutOfProcessPac[] = "disable-out-of-process-pac";
 const char kDisablePasswordManagerReauthentication[] =
     "disable-password-manager-reauthentication";
 
-// Disable the new material UI - requires out of process PDF plugin.
-const char kDisablePdfMaterialUI[]          = "disable-pdf-material-ui";
-
 // Disables the Permissions Blacklist, which blocks access to permissions
 // for blacklisted sites.
 const char kDisablePermissionsBlacklist[] = "disable-permissions-blacklist";
@@ -465,9 +462,6 @@ const char kEnableOfflineAutoReloadVisibleOnly[] =
 
 // Enables panels (always on-top docked pop-up windows).
 const char kEnablePanels[]                  = "enable-panels";
-
-// Enable the new material UI - requires out of process PDF plugin.
-const char kEnablePdfMaterialUI[]           = "enable-pdf-material-ui";
 
 // Enables the Permissions Blacklist, which blocks access to permissions
 // for blacklisted sites.
@@ -1354,17 +1348,6 @@ bool MdHistoryEnabled() {
 bool MdPolicyPageEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       ::switches::kEnableMaterialDesignPolicyPage);
-}
-
-bool PdfMaterialUIEnabled() {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(kEnablePdfMaterialUI))
-    return true;
-
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(kDisablePdfMaterialUI))
-    return false;
-
-  // Default.
-  return true;
 }
 
 bool SettingsWindowEnabled() {

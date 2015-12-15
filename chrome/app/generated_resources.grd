@@ -6415,18 +6415,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_SITE_ENGAGEMENT_SERVICE_DESCRIPTION" desc="Description for the flag to enable the site engagement service.">
         Enables the Site Engagement Service, which records interaction with sites and allocates resources accordingly.
       </message>
-      <message name="IDS_FLAGS_OUT_OF_PROCESS_PDF_NAME" desc="Title for the flag to enable out of process PDF.">
-        Out of process PDF
-      </message>
-      <message name="IDS_FLAGS_OUT_OF_PROCESS_PDF_DESCRIPTION" desc="Description for the flag to enable out of process PDF.">
-        Enable the out of process PDF plugin.
-      </message>
-      <message name="IDS_FLAGS_PDF_MATERIAL_UI_NAME" desc="Title for the flag to enable the new material UI in the PDF Viewer.">
-        Material UI for PDF
-      </message>
-      <message name="IDS_FLAGS_PDF_MATERIAL_UI_DESCRIPTION" desc="Description for the flag to enable the new material UI in the PDF Viewer.">
-        Enable the new material UI in the PDF Viewer.
-      </message>
       <message name="IDS_FLAGS_THREADED_SCROLLING_NAME" desc="Title for the flag for threaded scrolling.">
         Threaded scrolling
       </message>

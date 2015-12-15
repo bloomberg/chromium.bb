@@ -6,7 +6,6 @@
 
 #include "base/strings/string_util.h"
 #include "chrome/common/chrome_content_client.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/grit/browser_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -16,12 +15,6 @@ namespace {
 
 // Tags in the manifest to be replaced.
 const char kNameTag[] = "<NAME>";
-const char kIndexTag[] = "<INDEX>";
-
-// The index html pages to load for the material and non-material version of
-// the viewer.
-const char kRegularIndex[] = "index.html";
-const char kMaterialIndex[] = "index-material.html";
 
 }  // namespace
 
@@ -41,10 +34,6 @@ std::string GetManifest() {
   base::ReplaceFirstSubstringAfterOffset(
       &manifest_contents, 0, kNameTag, ChromeContentClient::kPDFPluginName);
 
-  DCHECK(manifest_contents.find(kIndexTag) != std::string::npos);
-  std::string index = switches::PdfMaterialUIEnabled() ?
-      kMaterialIndex : kRegularIndex;
-  base::ReplaceSubstringsAfterOffset(&manifest_contents, 0, kIndexTag, index);
   return manifest_contents;
 }
 

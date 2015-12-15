@@ -67,10 +67,6 @@ class PDFExtensionTest : public ExtensionApiTest,
  public:
   ~PDFExtensionTest() override {}
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(switches::kDisablePdfMaterialUI);
-  }
-
   void SetUpOnMainThread() override {
     ExtensionApiTest::SetUpOnMainThread();
     ASSERT_TRUE(embedded_test_server()->Start());
@@ -318,7 +314,7 @@ INSTANTIATE_TEST_CASE_P(PDFTestFiles,
                         testing::Range(0, kNumberLoadTestParts));
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, Basic) {
-  RunTestsInFile("basic_test.js", "test.pdf");
+  RunTestsInFile("basic_test_material.js", "test.pdf");
 }
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, BasicPlugin) {
@@ -343,6 +339,16 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, ParamsParser) {
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, ZoomManager) {
   RunTestsInFile("zoom_manager_test.js", "test.pdf");
+}
+
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, Elements) {
+  // Although this test file does not require a PDF to be loaded, loading the
+  // elements without loading a PDF is difficult.
+  RunTestsInFile("material_elements_test.js", "test.pdf");
+}
+
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, ToolbarManager) {
+  RunTestsInFile("toolbar_manager_test.js", "test.pdf");
 }
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, Title) {
@@ -502,58 +508,3 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PdfZoomWithoutBubble) {
 #endif
 }
 
-class MaterialPDFExtensionTest : public PDFExtensionTest {
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(switches::kEnablePdfMaterialUI);
-  }
-};
-
-IN_PROC_BROWSER_TEST_F(MaterialPDFExtensionTest, Basic) {
-  RunTestsInFile("basic_test_material.js", "test.pdf");
-}
-
-IN_PROC_BROWSER_TEST_F(MaterialPDFExtensionTest, BasicPlugin) {
-  RunTestsInFile("basic_plugin_test.js", "test.pdf");
-}
-
-IN_PROC_BROWSER_TEST_F(MaterialPDFExtensionTest, Viewport) {
-  RunTestsInFile("viewport_test.js", "test.pdf");
-}
-
-IN_PROC_BROWSER_TEST_F(MaterialPDFExtensionTest, Bookmark) {
-  RunTestsInFile("bookmarks_test.js", "test-bookmarks.pdf");
-}
-
-IN_PROC_BROWSER_TEST_F(MaterialPDFExtensionTest, Navigator) {
-  RunTestsInFile("navigator_test.js", "test.pdf");
-}
-
-IN_PROC_BROWSER_TEST_F(MaterialPDFExtensionTest, ParamsParser) {
-  RunTestsInFile("params_parser_test.js", "test.pdf");
-}
-
-IN_PROC_BROWSER_TEST_F(MaterialPDFExtensionTest, ZoomManager) {
-  RunTestsInFile("zoom_manager_test.js", "test.pdf");
-}
-
-IN_PROC_BROWSER_TEST_F(MaterialPDFExtensionTest, Elements) {
-  // Although this test file does not require a PDF to be loaded, loading the
-  // elements without loading a PDF is difficult.
-  RunTestsInFile("material_elements_test.js", "test.pdf");
-}
-
-IN_PROC_BROWSER_TEST_F(MaterialPDFExtensionTest, ToolbarManager) {
-  RunTestsInFile("toolbar_manager_test.js", "test.pdf");
-}
-
-IN_PROC_BROWSER_TEST_F(MaterialPDFExtensionTest, Title) {
-  RunTestsInFile("title_test.js", "test-title.pdf");
-}
-
-IN_PROC_BROWSER_TEST_F(MaterialPDFExtensionTest, WhitespaceTitle) {
-  RunTestsInFile("whitespace_title_test.js", "test-whitespace-title.pdf");
-}
-
-IN_PROC_BROWSER_TEST_F(MaterialPDFExtensionTest, PageChange) {
-  RunTestsInFile("page_change_test.js", "test-bookmarks.pdf");
-}

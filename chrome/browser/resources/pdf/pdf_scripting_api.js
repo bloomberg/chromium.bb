@@ -274,23 +274,12 @@ function PDFCreateOutOfProcessPlugin(src) {
   // Prevent the frame from being tab-focusable.
   iframe.setAttribute('tabindex', '-1');
 
-  // TODO(raymes): This below is a hack to tell if the material design PDF UI
-  // has been enabled. Remove this as soon as we remove the material design PDF
-  // flag.
-  var EXTENSION_URL = 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/';
-  var PAGE_NAME = 'index.html';
-  var MATERIAL_PAGE_NAME = 'index-material.html';
-  fetch(EXTENSION_URL + PAGE_NAME, {
-    method: 'get'
-  }).then(function() {
-    iframe.setAttribute('src', EXTENSION_URL + PAGE_NAME + '?' + src);
-  }, function() {
-    iframe.setAttribute('src', EXTENSION_URL + MATERIAL_PAGE_NAME + '?' + src);
-  }).then(function() {
-    iframe.onload = function() {
-      client.setPlugin(iframe.contentWindow);
-    };
-  });
+  var EXTENSION_URL =
+      'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/index-material.html';
+  iframe.setAttribute('src', EXTENSION_URL + '?' + src);
+  iframe.onload = function() {
+    client.setPlugin(iframe.contentWindow);
+  };
 
   // Add the functions to the iframe so that they can be called directly.
   iframe.setViewportChangedCallback =
