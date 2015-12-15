@@ -99,20 +99,6 @@ base::FilePath PlatformCrashpadInitialization(bool initial_client,
   return database_path;
 }
 
-extern "C" {
-
-// Crashes the process after generating a dump for the provided exception. Note
-// that the crash reporter should be initialized before calling this function
-// for it to do anything.
-// NOTE: This function is used by SyzyASAN to invoke a crash. If you change the
-// the name or signature of this function you will break SyzyASAN instrumented
-// releases of Chrome. Please contact syzygy-team@chromium.org before doing so!
-int __declspec(dllexport) CrashForException(
-    EXCEPTION_POINTERS* info) {
-  g_crashpad_client.Get().DumpAndCrash(info);
-  return EXCEPTION_CONTINUE_SEARCH;
-}
-
 // TODO(scottmg): http://crbug.com/546288 These exported functions are for
 // compatibility with how Breakpad worked, but it seems like there's no need to
 // do the CreateRemoteThread() dance with a minor extension of the Crashpad API
@@ -133,6 +119,8 @@ namespace {
 MSVC_DISABLE_OPTIMIZE()
 MSVC_PUSH_DISABLE_WARNING(4748)
 
+// Note that this function must be in a namespace for the [Renderer hang]
+// annotations to work on the crash server.
 DWORD WINAPI DumpProcessWithoutCrashThread(void*) {
   DumpProcessWithoutCrash();
   return 0;
@@ -154,17 +142,36 @@ MSVC_ENABLE_OPTIMIZE()
 
 }  // namespace
 
-// Injects a thread into a remote process to dump state when there is no crash.
-extern "C" HANDLE __declspec(dllexport) __cdecl InjectDumpProcessWithoutCrash(
-    HANDLE process) {
-  return CreateRemoteThread(process, NULL, 0, DumpProcessWithoutCrashThread, 0,
-                            0, NULL);
+}  // namespace internal
+}  // namespace crash_reporter
+
+extern "C" {
+
+// Crashes the process after generating a dump for the provided exception. Note
+// that the crash reporter should be initialized before calling this function
+// for it to do anything.
+// NOTE: This function is used by SyzyASAN to invoke a crash. If you change the
+// the name or signature of this function you will break SyzyASAN instrumented
+// releases of Chrome. Please contact syzygy-team@chromium.org before doing so!
+int __declspec(dllexport) CrashForException(
+    EXCEPTION_POINTERS* info) {
+  crash_reporter::internal::g_crashpad_client.Get().DumpAndCrash(info);
+  return EXCEPTION_CONTINUE_SEARCH;
 }
 
-extern "C" HANDLE __declspec(dllexport) __cdecl InjectDumpForHangDebugging(
+// Injects a thread into a remote process to dump state when there is no crash.
+HANDLE __declspec(dllexport) __cdecl InjectDumpProcessWithoutCrash(
     HANDLE process) {
-  return CreateRemoteThread(process, NULL, 0, DumpForHangDebuggingThread, 0, 0,
-                            NULL);
+  return CreateRemoteThread(
+      process, NULL, 0, crash_reporter::internal::DumpProcessWithoutCrashThread,
+      0, 0, NULL);
+}
+
+HANDLE __declspec(dllexport) __cdecl InjectDumpForHangDebugging(
+    HANDLE process) {
+  return CreateRemoteThread(
+      process, NULL, 0, crash_reporter::internal::DumpForHangDebuggingThread, 0,
+      0, NULL);
 }
 
 #if defined(ARCH_CPU_X86_64)
@@ -251,6 +258,3 @@ void __declspec(dllexport) __cdecl UnregisterNonABICompliantCodeRange(
 #endif  // ARCH_CPU_X86_64
 
 }  // extern "C"
-
-}  // namespace internal
-}  // namespace crash_reporter
