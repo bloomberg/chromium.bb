@@ -53,6 +53,16 @@
   return _scrollView.get();
 }
 
+- (CGFloat)topContentPadding {
+  return self.scrollView.contentInset.top;
+}
+
+- (void)setTopContentPadding:(CGFloat)newTopInset {
+  UIEdgeInsets inset = self.scrollView.contentInset;
+  inset.top = newTopInset;
+  self.scrollView.contentInset = inset;
+}
+
 - (UIView*)view {
   return _view.get();
 }

@@ -97,6 +97,14 @@ UIView* GetFirstResponderSubview(UIView* view) {
   return [_contentView frame];
 }
 
+- (CGFloat)topContentPadding {
+  return [_contentView topContentPadding];
+}
+
+- (void)setTopContentPadding:(CGFloat)newTopContentPadding {
+  [_contentView setTopContentPadding:newTopContentPadding];
+}
+
 - (NSArray*)gestureRecognizers {
   return [_contentView gestureRecognizers];
 }

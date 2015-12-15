@@ -22,6 +22,15 @@
 // The web view's frame rectangle.
 @property(readonly, assign) CGRect frame;
 
+// Adds a top padding to content view. Implementations of this protocol can
+// implement this method using UIScrollView.contentInset (where applicable) or
+// via resizing a subview's frame. Changing this property may impact performance
+// if implementation resizes its subview. Can be used as a workaround for
+// WKWebView bug, where UIScrollView.content inset does not work
+// (rdar://23584409). TODO(crbug.com/569349) remove this property once radar is
+// fixed.
+@property(nonatomic, assign) CGFloat topContentPadding;
+
 // A Boolean value indicating whether web content can programmatically display
 // the keyboard.
 @property(nonatomic, assign) BOOL keyboardDisplayRequiresUserAction;

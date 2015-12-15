@@ -16,6 +16,12 @@
 // be a subview of the CRWContentView.
 @property(nonatomic, retain, readonly) UIScrollView* scrollView;
 
+// Adds a top padding to content view. Implementations of this protocol can
+// implement this method using UIScrollView.contentInset (where applicable) or
+// via resizing a subview's frame. Can be used as a workaround for WKWebView
+// bug, where UIScrollView.content inset does not work (rdar://23584409).
+@property(nonatomic, assign) CGFloat topContentPadding;
+
 // Returns YES if content is being displayed in the scroll view.
 // TODO(stuartmorgan): See if this can be removed from the public interface.
 - (BOOL)isViewAlive;
