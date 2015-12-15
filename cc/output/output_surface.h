@@ -118,7 +118,7 @@ class CC_EXPORT OutputSurface : public base::trace_event::MemoryDumpProvider {
   virtual void EnsureBackbuffer();
   virtual void DiscardBackbuffer();
 
-  virtual void Reshape(const gfx::Size& size, float scale_factor);
+  virtual void Reshape(const gfx::Size& size, float scale_factor, bool alpha);
   gfx::Size SurfaceSize() const { return surface_size_; }
   float device_scale_factor() const { return device_scale_factor_; }
 
@@ -182,6 +182,7 @@ class CC_EXPORT OutputSurface : public base::trace_event::MemoryDumpProvider {
   scoped_ptr<SoftwareOutputDevice> software_device_;
   gfx::Size surface_size_;
   float device_scale_factor_;
+  bool has_alpha_;
   base::ThreadChecker client_thread_checker_;
 
   void CommitVSyncParameters(base::TimeTicks timebase,

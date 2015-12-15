@@ -33,7 +33,7 @@ class GpuSurfacelessBrowserCompositorOutputSurface
   void SwapBuffers(cc::CompositorFrame* frame) override;
   void OnSwapBuffersComplete() override;
   void BindFramebuffer() override;
-  void Reshape(const gfx::Size& size, float scale_factor) override;
+  void Reshape(const gfx::Size& size, float scale_factor, bool alpha) override;
   bool IsDisplayedAsOverlayPlane() const override;
   unsigned GetOverlayTextureId() const override;
 

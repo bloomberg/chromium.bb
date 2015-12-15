@@ -124,6 +124,7 @@ OutputSurface::OutputSurface(
       worker_context_provider_(worker_context_provider),
       software_device_(std::move(software_device)),
       device_scale_factor_(-1),
+      has_alpha_(true),
       external_stencil_test_enabled_(false),
       weak_ptr_factory_(this) {
   client_thread_checker_.DetachFromThread();
@@ -250,15 +251,19 @@ void OutputSurface::DiscardBackbuffer() {
     software_device_->DiscardBackbuffer();
 }
 
-void OutputSurface::Reshape(const gfx::Size& size, float scale_factor) {
-  if (size == surface_size_ && scale_factor == device_scale_factor_)
+void OutputSurface::Reshape(const gfx::Size& size,
+                            float scale_factor,
+                            bool has_alpha) {
+  if (size == surface_size_ && scale_factor == device_scale_factor_ &&
+      has_alpha == has_alpha_)
     return;
 
   surface_size_ = size;
   device_scale_factor_ = scale_factor;
+  has_alpha_ = has_alpha;
   if (context_provider_.get()) {
     context_provider_->ContextGL()->ResizeCHROMIUM(size.width(), size.height(),
-                                                   scale_factor, GL_TRUE);
+                                                   scale_factor, has_alpha);
   }
   if (software_device_)
     software_device_->Resize(size, scale_factor);

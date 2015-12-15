@@ -111,8 +111,9 @@ void SynchronousCompositorOutputSurface::DetachFromClient() {
   cc::OutputSurface::DetachFromClient();
 }
 
-void SynchronousCompositorOutputSurface::Reshape(
-    const gfx::Size& size, float scale_factor) {
+void SynchronousCompositorOutputSurface::Reshape(const gfx::Size& size,
+                                                 float scale_factor,
+                                                 bool has_alpha) {
   // Intentional no-op: surface size is controlled by the embedder.
 }
 

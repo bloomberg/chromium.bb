@@ -40,7 +40,7 @@ class MailboxOutputSurface : public CompositorOutputSurface {
   void DetachFromClient() override;
   void EnsureBackbuffer() override;
   void DiscardBackbuffer() override;
-  void Reshape(const gfx::Size& size, float scale_factor) override;
+  void Reshape(const gfx::Size& size, float scale_factor, bool alpha) override;
   void BindFramebuffer() override;
   void SwapBuffers(cc::CompositorFrame* frame) override;
 

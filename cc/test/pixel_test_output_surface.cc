@@ -33,10 +33,11 @@ PixelTestOutputSurface::PixelTestOutputSurface(
       external_stencil_test_(false) {}
 
 void PixelTestOutputSurface::Reshape(const gfx::Size& size,
-                                     float scale_factor) {
+                                     float scale_factor,
+                                     bool has_alpha) {
   gfx::Size expanded_size(size.width() + surface_expansion_size_.width(),
                           size.height() + surface_expansion_size_.height());
-  OutputSurface::Reshape(expanded_size, scale_factor);
+  OutputSurface::Reshape(expanded_size, scale_factor, has_alpha);
 }
 
 bool PixelTestOutputSurface::HasExternalStencilTest() const {

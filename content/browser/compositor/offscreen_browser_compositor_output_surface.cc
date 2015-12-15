@@ -102,7 +102,8 @@ void OffscreenBrowserCompositorOutputSurface::DiscardBackbuffer() {
 }
 
 void OffscreenBrowserCompositorOutputSurface::Reshape(const gfx::Size& size,
-                                                      float scale_factor) {
+                                                      float scale_factor,
+                                                      bool alpha) {
   if (size == surface_size_)
     return;
 

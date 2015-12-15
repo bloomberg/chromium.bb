@@ -87,8 +87,9 @@ void GpuSurfacelessBrowserCompositorOutputSurface::BindFramebuffer() {
 
 void GpuSurfacelessBrowserCompositorOutputSurface::Reshape(
     const gfx::Size& size,
-    float scale_factor) {
-  GpuBrowserCompositorOutputSurface::Reshape(size, scale_factor);
+    float scale_factor,
+    bool alpha) {
+  GpuBrowserCompositorOutputSurface::Reshape(size, scale_factor, alpha);
   DCHECK(output_surface_);
   output_surface_->Reshape(SurfaceSize(), scale_factor);
 }

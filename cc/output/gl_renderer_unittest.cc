@@ -1132,7 +1132,9 @@ class NonReshapableOutputSurface : public FakeOutputSurface {
                           false) {
     surface_size_ = gfx::Size(500, 500);
   }
-  void Reshape(const gfx::Size& size, float scale_factor) override {}
+  void Reshape(const gfx::Size& size,
+               float scale_factor,
+               bool has_alpha) override {}
   void set_fixed_size(const gfx::Size& size) { surface_size_ = size; }
 };
 
@@ -1756,7 +1758,8 @@ class MockOutputSurface : public OutputSurface {
 
   MOCK_METHOD0(EnsureBackbuffer, void());
   MOCK_METHOD0(DiscardBackbuffer, void());
-  MOCK_METHOD2(Reshape, void(const gfx::Size& size, float scale_factor));
+  MOCK_METHOD3(Reshape,
+               void(const gfx::Size& size, float scale_factor, bool has_alpha));
   MOCK_METHOD0(BindFramebuffer, void());
   MOCK_METHOD1(SwapBuffers, void(CompositorFrame* frame));
 };
@@ -1780,17 +1783,19 @@ class MockOutputSurfaceTest : public GLRendererTest {
   void SwapBuffers() { renderer_->SwapBuffers(CompositorFrameMetadata()); }
 
   void DrawFrame(float device_scale_factor,
-                 const gfx::Rect& device_viewport_rect) {
+                 const gfx::Rect& device_viewport_rect,
+                 bool transparent) {
     RenderPassId render_pass_id(1, 0);
     RenderPass* render_pass =
         AddRenderPass(&render_passes_in_draw_order_, render_pass_id,
                       device_viewport_rect, gfx::Transform());
     AddQuad(render_pass, device_viewport_rect, SK_ColorGREEN);
+    render_pass->has_transparent_background = transparent;
 
     EXPECT_CALL(output_surface_, EnsureBackbuffer()).WillRepeatedly(Return());
 
-    EXPECT_CALL(output_surface_,
-                Reshape(device_viewport_rect.size(), device_scale_factor))
+    EXPECT_CALL(output_surface_, Reshape(device_viewport_rect.size(),
+                                         device_scale_factor, transparent))
         .Times(1);
 
     EXPECT_CALL(output_surface_, BindFramebuffer()).Times(1);
@@ -1823,7 +1828,15 @@ class MockOutputSurfaceTest : public GLRendererTest {
 
 TEST_F(MockOutputSurfaceTest, DrawFrameAndSwap) {
   gfx::Rect device_viewport_rect(1, 1);
-  DrawFrame(1.f, device_viewport_rect);
+  DrawFrame(1.f, device_viewport_rect, true);
+
+  EXPECT_CALL(output_surface_, SwapBuffers(_)).Times(1);
+  renderer_->SwapBuffers(CompositorFrameMetadata());
+}
+
+TEST_F(MockOutputSurfaceTest, DrawOpaqueFrameAndSwap) {
+  gfx::Rect device_viewport_rect(1, 1);
+  DrawFrame(1.f, device_viewport_rect, false);
 
   EXPECT_CALL(output_surface_, SwapBuffers(_)).Times(1);
   renderer_->SwapBuffers(CompositorFrameMetadata());
@@ -1832,23 +1845,23 @@ TEST_F(MockOutputSurfaceTest, DrawFrameAndSwap) {
 TEST_F(MockOutputSurfaceTest, DrawFrameAndResizeAndSwap) {
   gfx::Rect device_viewport_rect(1, 1);
 
-  DrawFrame(1.f, device_viewport_rect);
+  DrawFrame(1.f, device_viewport_rect, true);
   EXPECT_CALL(output_surface_, SwapBuffers(_)).Times(1);
   renderer_->SwapBuffers(CompositorFrameMetadata());
 
   device_viewport_rect = gfx::Rect(2, 2);
 
-  DrawFrame(2.f, device_viewport_rect);
+  DrawFrame(2.f, device_viewport_rect, true);
   EXPECT_CALL(output_surface_, SwapBuffers(_)).Times(1);
   renderer_->SwapBuffers(CompositorFrameMetadata());
 
-  DrawFrame(2.f, device_viewport_rect);
+  DrawFrame(2.f, device_viewport_rect, true);
   EXPECT_CALL(output_surface_, SwapBuffers(_)).Times(1);
   renderer_->SwapBuffers(CompositorFrameMetadata());
 
   device_viewport_rect = gfx::Rect(1, 1);
 
-  DrawFrame(1.f, device_viewport_rect);
+  DrawFrame(1.f, device_viewport_rect, true);
   EXPECT_CALL(output_surface_, SwapBuffers(_)).Times(1);
   renderer_->SwapBuffers(CompositorFrameMetadata());
 }

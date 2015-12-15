@@ -66,7 +66,9 @@ class SynchronousCompositorOutputSurface
   // OutputSurface.
   bool BindToClient(cc::OutputSurfaceClient* surface_client) override;
   void DetachFromClient() override;
-  void Reshape(const gfx::Size& size, float scale_factor) override;
+  void Reshape(const gfx::Size& size,
+               float scale_factor,
+               bool has_alpha) override;
   void SwapBuffers(cc::CompositorFrame* frame) override;
   void Invalidate() override;
 
