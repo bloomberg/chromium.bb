@@ -232,6 +232,12 @@ If you update this file, be sure also to update google_chrome_strings.grd. -->
         <message name="IDS_LINUX_WHEEZY_PRECISE_OBSOLETE_NOW" desc="A message displayed on an at-launch infobar and about:help warning the user that the computer they are using is no longer supported.">
           Chromium may not function correctly because it is no longer supported on this Linux system.
         </message>
+        <message name="IDS_LINUX_WHEEZY_PRECISE_OBSOLETE_SOON_CAN_UPGRADE" desc="A message displayed on an at-launch infobar and about:help warning the user that the computer they are using is about to become unsupported, unless they upgrade to the 64-bit version.">
+          Future versions of 32-bit Chromium will no longer support this Linux system, please upgrade to 64-bit Chromium.
+        </message>
+        <message name="IDS_LINUX_WHEEZY_PRECISE_OBSOLETE_NOW_CAN_UPGRADE" desc="A message displayed on an at-launch infobar and about:help warning the user that the computer they are using is no longer supported, unless they upgrade to the 64-bit version.">
+          32-bit Chromium may not function correctly because it is no longer supported on this Linux system. Please upgrade to 64-bit Chromium.
+        </message>
       </if>
       <if expr="is_macosx">
         <message name="IDS_MAC_10_678_OBSOLETE_SOON" desc="A message displayed on an at-launch infobar and About (Help) page warning the user that the OS version they are using is about to become unsupported.">

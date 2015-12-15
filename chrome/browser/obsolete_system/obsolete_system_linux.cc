@@ -7,6 +7,7 @@
 #if defined(GOOGLE_CHROME_BUILD) && !defined(OS_CHROMEOS)
 #include <gnu/libc-version.h>
 
+#include "base/sys_info.h"
 #include "base/version.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
@@ -40,12 +41,21 @@ bool ObsoleteSystem::IsObsoleteNowOrSoon() {
 // static
 base::string16 ObsoleteSystem::LocalizedObsoleteString() {
 #if defined(GOOGLE_CHROME_BUILD) && !defined(OS_CHROMEOS)
-  return l10n_util::GetStringUTF16(
-      IsEndOfTheLine() ? IDS_LINUX_WHEEZY_PRECISE_OBSOLETE_NOW
-                       : IDS_LINUX_WHEEZY_PRECISE_OBSOLETE_SOON);
+  const bool is_eol = IsEndOfTheLine();
+  int id = is_eol ? IDS_LINUX_WHEEZY_PRECISE_OBSOLETE_NOW
+                  : IDS_LINUX_WHEEZY_PRECISE_OBSOLETE_SOON;
+#if defined(ARCH_CPU_32_BITS)
+  // On 32-bit builds, check if the kernel is 64-bit. If so, tell users to
+  // switch to 64-bit Chrome.
+  if (base::SysInfo::OperatingSystemArchitecture() == "x86_64") {
+    id = is_eol ? IDS_LINUX_WHEEZY_PRECISE_OBSOLETE_NOW_CAN_UPGRADE
+                : IDS_LINUX_WHEEZY_PRECISE_OBSOLETE_SOON_CAN_UPGRADE;
+  }
+#endif  // defined(ARCH_CPU_32_BITS)
+  return l10n_util::GetStringUTF16(id);
 #else
   return base::string16();
-#endif
+#endif  // defined(GOOGLE_CHROME_BUILD) && !defined(OS_CHROMEOS)
 }
 
 // static
