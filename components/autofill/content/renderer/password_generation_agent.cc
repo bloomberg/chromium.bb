@@ -343,6 +343,7 @@ void PasswordGenerationAgent::DetermineGenerationElement() {
     if (password_elements.empty()) {
       // It might be if JavaScript changes field names.
       VLOG(2) << "Fields for generation are not found";
+      return;
     }
     generation_form_data_.reset(new AccountCreationFormData(
         possible_form_data.form, std::move(password_elements)));
