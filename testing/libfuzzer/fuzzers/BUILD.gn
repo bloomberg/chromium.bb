@@ -228,6 +228,7 @@ fuzzer_test("pdfium_fuzzer") {
     "//third_party/pdfium:pdfium_config",
     "//v8:external_startup_data",
   ]
+  dict = "pdf.dict"
 }
 
 fuzzer_test("websocket_frame_parser_fuzzer") {
